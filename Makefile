@@ -6,7 +6,7 @@
 
 PROGRAM = flashrom
 
-CC      = gcc
+CC     ?= gcc
 STRIP	= strip
 INSTALL = /usr/bin/install
 PREFIX  = /usr/local
@@ -57,7 +57,7 @@ distclean: clean
 	rm -f .dependencies
 
 dep:
-	@$(CC) -MM *.c > .dependencies
+	@$(CC) $(SVNDEF) -MM *.c > .dependencies
 
 pciutils:
 	@echo; printf "Checking for pciutils and zlib... "
