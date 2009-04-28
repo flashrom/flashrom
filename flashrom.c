@@ -344,7 +344,7 @@ int main(int argc, char *argv[])
 	int force = 0;
 	int read_it = 0, write_it = 0, erase_it = 0, verify_it = 0;
 	int ret = 0, i;
-#ifdef __FreeBSD__
+#if defined(__FreeBSD__) || defined(__DragonFly__)
 	int io_fd;
 #endif
 
@@ -462,7 +462,7 @@ int main(int argc, char *argv[])
 	/* First get full io access */
 #if defined (__sun) && (defined(__i386) || defined(__amd64))
 	if (sysi86(SI86V86, V86SC_IOPL, PS_IOPL) != 0) {
-#elif defined(__FreeBSD__)
+#elif defined(__FreeBSD__) || defined (__DragonFly__)
 	if ((io_fd = open("/dev/io", O_RDWR)) < 0) {
 #else
 	if (iopl(3) != 0) {
