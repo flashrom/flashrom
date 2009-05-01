@@ -306,6 +306,10 @@ void usage(const char *name)
 	printf("usage: %s [-rwvEVfLhR] [-c chipname] [-s exclude_start]\n",
 	       name);
 	printf("       [-e exclude_end] [-m [vendor:]part] [-l file.layout] [-i imagename] [file]\n");
+	printf("Please  note that the command line interface for flashrom will "
+		"change before flashrom 1.0. Do not use flashrom in scripts or "
+		"other automated tools without checking that your flashrom "
+		"version won't interpret them in a totally different way.\n\n");
 	printf
 	    ("   -r | --read:                      read flash and save into file\n"
 	     "   -w | --write:                     write file into flash\n"
