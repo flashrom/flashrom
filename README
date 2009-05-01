@@ -21,6 +21,17 @@ To build the flashrom utility you need to install the following packages:
 * pciutils-devel / pciutils-dev / libpci-dev
 * zlib-devel / zlib1g-dev
 
+To compile on Solaris, use the commands below:
+gmake LDFLAGS="-L$pathtolibpci -lpci -lz" CC="gcc -I$pathtopciheaders" CFLAGS=-O2
+
+To compile on DragonFly BSD, use the commands below:
+ln -s /usr/pkg/include/pciutils pci
+gmake CFLAGS=-I. LDFLAGS="-L/usr/pkg/lib -lpci -lz"
+
+To compile and run on Darwin/Mac OS X:
+Install DirectIO from coresystems GmbH.
+DirectIO is available at http://www.coresystems.de/en/directio
+
 
 Usage / Options
 ---------------

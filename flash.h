@@ -30,6 +30,14 @@
 #include <stdint.h>
 #include <stdio.h>
 
+/* for iopl and outb under Solaris */
+#if defined (__sun) && (defined(__i386) || defined(__amd64))
+#include <strings.h>
+#include <sys/sysi86.h>
+#include <sys/psw.h>
+#include <asm/sunddi.h>
+#endif
+
 #if (defined(__MACH__) && defined(__APPLE__))
 #define __DARWIN__
 #endif
@@ -50,12 +58,22 @@
     #define off64_t off_t
     #define lseek64 lseek
 #endif
+#if defined (__sun) && (defined(__i386) || defined(__amd64))
+  /* Note different order for outb */
+  #define OUTB(x,y) outb(y, x)
+  #define OUTW(x,y) outw(y, x)
+  #define OUTL(x,y) outl(y, x)
+  #define INB  inb
+  #define INW  inw
+  #define INL  inl
+#else
   #define OUTB outb
   #define OUTW outw
   #define OUTL outl
   #define INB  inb
   #define INW  inw
   #define INL  inl
+#endif
 #endif
 
 static inline void chip_writeb(uint8_t b, volatile void *addr)
