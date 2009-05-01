@@ -476,7 +476,7 @@ extern struct flashchip flashchips[];
 
 /* udelay.c */
 void myusec_delay(int time);
-void myusec_calibrate_delay();
+void myusec_calibrate_delay(void);
 
 /* PCI handling for board/chipset_enable */
 struct pci_access *pacc;
@@ -538,8 +538,8 @@ int probe_spi_rems(struct flashchip *flash);
 int probe_spi_res(struct flashchip *flash);
 int spi_command(unsigned int writecnt, unsigned int readcnt,
 		const unsigned char *writearr, unsigned char *readarr);
-int spi_write_enable();
-int spi_write_disable();
+int spi_write_enable(void);
+int spi_write_disable(void);
 int spi_chip_erase_60(struct flashchip *flash);
 int spi_chip_erase_c7(struct flashchip *flash);
 int spi_chip_erase_60_c7(struct flashchip *flash);
@@ -548,7 +548,7 @@ int spi_block_erase_52(const struct flashchip *flash, unsigned long addr);
 int spi_block_erase_d8(const struct flashchip *flash, unsigned long addr);
 int spi_chip_write(struct flashchip *flash, uint8_t *buf);
 int spi_chip_read(struct flashchip *flash, uint8_t *buf);
-uint8_t spi_read_status_register();
+uint8_t spi_read_status_register(void);
 int spi_disable_blockprotect(void);
 void spi_byte_program(int address, uint8_t byte);
 int spi_nbyte_read(int address, uint8_t *bytes, int len);
@@ -570,7 +570,7 @@ int erase_en29f002a(struct flashchip *flash);
 int write_en29f002a(struct flashchip *flash, uint8_t *buf);
 
 /* ichspi.c */
-int ich_init_opcodes();
+int ich_init_opcodes(void);
 int ich_spi_command(unsigned int writecnt, unsigned int readcnt,
 		    const unsigned char *writearr, unsigned char *readarr);
 int ich_spi_read(struct flashchip *flash, uint8_t * buf);
