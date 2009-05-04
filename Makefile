@@ -38,8 +38,10 @@ OBJS = chipset_enable.o board_enable.o udelay.o jedec.o stm50flw0x0x.o \
 
 all: pciutils dep $(PROGRAM)
 
-# Set the flashrom version string
-SVNDEF := -D'FLASHROM_VERSION="0.9.0"'
+# Set the flashrom version string from the highest revision number
+# of the checked out flashrom files.
+SVNDEF := -D'FLASHROM_VERSION="0.9.0-r$(shell svnversion -cn . \
+          | sed -e "s/.*://" -e "s/\([0-9]*\).*/\1/")"'
 
 $(PROGRAM): $(OBJS)
 	$(CC) -o $(PROGRAM) $(OBJS) $(LDFLAGS)
