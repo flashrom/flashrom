@@ -326,7 +326,7 @@ void usage(const char *name)
 
 void print_version(void)
 {
-	printf("flashrom r%s\n", FLASHROM_VERSION);
+	printf("flashrom v%s\n", FLASHROM_VERSION);
 }
 
 int main(int argc, char *argv[])
