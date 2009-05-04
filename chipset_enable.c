@@ -680,8 +680,16 @@ static int enable_flash_sb600(struct pci_dev *dev, const char *name)
 	flashbus = BUS_TYPE_SB600_SPI;
 
 	/* Enable SPI ROM in SB600 PM register. */
+	/* If we enable SPI ROM here, we have to disable it after we leave.
+	 * But how can we know which ROM we are going to handle? So we have
+	 * to trade off. We only access LPC ROM if we boot via LPC ROM. And
+	 * only SPI ROM if we boot via SPI ROM. If you want to do it crossly,
+	 * you have to use the code below.
+	 */
+	/*
 	OUTB(0x8f, 0xcd6);
 	OUTB(0x0e, 0xcd7);
+	*/
 
 	return 0;
 }
