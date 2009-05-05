@@ -511,7 +511,7 @@ static int enable_flash_cs5536(struct pci_dev *dev, const char *name)
 	unsigned char buf[8];
 
 	fd_msr = open("/dev/cpu/0/msr", O_RDWR);
-	if (!fd_msr) {
+	if (fd_msr == -1) {
 		perror("open msr");
 		return -1;
 	}
