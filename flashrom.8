@@ -49,15 +49,49 @@ Probe only for specified flash ROM chip.
 .TP
 .B "\-s, \-\-estart" <addr>
 Exclude start position (obsolete).
+.sp
+flashrom supports ROM layouts. This allows you to flash certain parts of
+the flash chip only. A ROM layout file looks like follows:
+.sp
+  00000000:00008fff gfxrom
+  00009000:0003ffff normal
+  00040000:0007ffff fallback
+.sp
+  i.e.:
+  startaddr:endaddr name
+.sp
+All addresses are offsets within the file, not absolute addresses!
+If you only want to update the normal image in a ROM you can say:
+.sp
+.B "  flashrom -w --layout rom.layout --image normal agami_aruma.rom"
+.sp
+To update normal and fallback but leave the VGA BIOS alone, say:
+.sp
+.B "  flashrom -w -l rom.layout -i normal \"
+.br
+.B "           -i fallback agami_aruma.rom"
+.sp
+Currently overlapping sections are not supported.
+.sp
+ROM layouts should replace the -s and -e option since they are more
+flexible and they should lead to a ROM update file format with the
+ROM layout and the ROM image in one file (cpio, zip or something?).
 .TP
 .B "\-e, \-\-eend" <addr> 
 Exclude end postion (obsolete).
 .TP
 .B "\-m, \-\-mainboard" <[vendor:]part>
-Override mainboard settings. This option is needed for some mainboards,
-see the
-.B "flashrom \-\-list\-supported"
-output for a list. The vendor is not required when the board name is unique.
+Override mainboard settings.
+.sp
+flashrom reads the coreboot table to determine the current mainboard. If no
+coreboot table could be read or if you want to override these values, you can
+specify -m, e.g.:
+.sp
+.B "  flashrom -w --mainboard AGAMI:ARUMA agami_aruma.rom"
+.sp
+See the 'Supported mainboards' section in the output of 'flashrom -L' for
+a list of boards which require the specification of the board name, if no
+coreboot table is found.
 .TP
 .B "\-f, \-\-force"
 Force write without checking whether the ROM image file is really meant
