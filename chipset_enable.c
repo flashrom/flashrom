@@ -658,33 +658,49 @@ static int enable_flash_amd8111(struct pci_dev *dev, const char *name)
 
 static int enable_flash_sb600(struct pci_dev *dev, const char *name)
 {
-	uint32_t tmp, low_bits, num;
+	uint32_t tmp, prot;
 	uint8_t reg;
-
-	low_bits = tmp = pci_read_long(dev, 0xa0);
-	low_bits &= ~0xffffc000; /* for mmap aligning requirements */
-	low_bits &= 0xfffffff0;	/* remove low 4 bits */
-	tmp &= 0xffffc000;
-	printf_debug("SPI base address is at 0x%x\n", tmp + low_bits);
-
-	sb600_spibar = physmap("SB600 SPI registers", tmp, 0x4000);
-	sb600_spibar += low_bits;
 
 	/* Clear ROM protect 0-3. */
 	for (reg = 0x50; reg < 0x60; reg += 4) {
-		num = pci_read_long(dev, reg);
-		num &= 0xfffffffc;
-		pci_write_byte(dev, reg, num);
+		prot = pci_read_long(dev, reg);
+		/* No protection flags for this region?*/
+		if ((prot & 0x3) == 0)
+			continue;
+		printf_debug("SB600 %s%sprotected from %u to %u\n",
+			(prot & 0x1) ? "write " : "",
+			(prot & 0x2) ? "read " : "",
+			(prot & 0xfffffc00),
+			(prot & 0xfffffc00) + ((prot & 0x3ff) << 8));
+		prot &= 0xfffffffc;
+		pci_write_byte(dev, reg, prot);
+		prot = pci_read_long(dev, reg);
+		if (prot & 0x3)
+			printf("SB600 still %s%sprotected from %u to %u\n",
+				(prot & 0x1) ? "write " : "",
+				(prot & 0x2) ? "read " : "",
+				(prot & 0xfffffc00),
+				(prot & 0xfffffc00) + ((prot & 0x3ff) << 8));
 	}
+
+	/* Read SPI_BaseAddr */
+	tmp = pci_read_long(dev, 0xa0);
+	tmp &= 0xfffffff0;	/* remove low 4 bits (reserved) */
+	printf_debug("SPI base address is at 0x%x\n", tmp);
+
+	/* Physical memory can only be mapped at page (4k) boundaries */
+	sb600_spibar = physmap("SB600 SPI registers", tmp & 0xfffff000, 0x1000);
+	/* The low bits of the SPI base address are used as offset into the mapped page */
+	sb600_spibar += tmp & 0xfff;
 
 	flashbus = BUS_TYPE_SB600_SPI;
 
-	/* Enable SPI ROM in SB600 PM register. */
-	/* If we enable SPI ROM here, we have to disable it after we leave.
+	/* Force enable SPI ROM in SB600 PM register.
+	 * If we enable SPI ROM here, we have to disable it after we leave.
 	 * But how can we know which ROM we are going to handle? So we have
 	 * to trade off. We only access LPC ROM if we boot via LPC ROM. And
-	 * only SPI ROM if we boot via SPI ROM. If you want to do it crossly,
-	 * you have to use the code below.
+	 * only SPI ROM if we boot via SPI ROM. If you want to access SPI on
+	 * boards with LPC straps, you have to use the code below.
 	 */
 	/*
 	OUTB(0x8f, 0xcd6);
