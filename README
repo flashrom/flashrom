@@ -3,7 +3,7 @@ flashrom README
 -------------------------------------------------------------------------------
 
 flashrom is a utility for reading, writing, verifying and erasing flash ROM
-chips.  It's often used to flash BIOS/coreboot/firmware images.
+chips. It's often used to flash BIOS/coreboot/firmware images.
 
 It supports a wide range of DIP32, PLCC32, DIP8, SO8/SOIC8, TSOP32, and
 TSOP40 chips, which use various protocols such as LPC, FWH, parallel flash,
@@ -15,31 +15,41 @@ or SPI.
 Build Requirements
 ------------------
 
-To build the flashrom utility you need to install the following packages or
-ports:
+To build flashrom you need to install the following packages or ports:
 
 Linux et al:
-* pciutils
-* pciutils-devel / pciutils-dev / libpci-dev
-* zlib-devel / zlib1g-dev
+
+ * pciutils
+ * pciutils-devel / pciutils-dev / libpci-dev
+ * zlib-devel / zlib1g-dev
 
 On FreeBSD, you need the following ports:
-* devel/gmake
-* devel/libpci
 
-To compile on FreeBSD, use the command below:
-gmake
+ * devel/gmake
+ * devel/libpci
 
-To compile on Solaris, use the commands below:
-gmake LDFLAGS="-L$pathtolibpci -lpci -lz" CC="gcc -I$pathtopciheaders" CFLAGS=-O2
+To compile on Linux, use:
 
-To compile on DragonFly BSD, use the commands below:
-ln -s /usr/pkg/include/pciutils pci
-gmake CFLAGS=-I. LDFLAGS="-L/usr/pkg/lib -lpci -lz"
+ make
+
+To compile on FreeBSD, use:
+
+ gmake
+
+To compile on Solaris, use:
+
+ gmake LDFLAGS="-L$pathtolibpci -lpci -lz" CC="gcc -I$pathtopciheaders" \
+       CFLAGS=-O2
+
+To compile on DragonFly BSD, use:
+
+ ln -s /usr/pkg/include/pciutils pci
+ gmake CFLAGS=-I. LDFLAGS="-L/usr/pkg/lib -lpci -lz"
 
 To compile and run on Darwin/Mac OS X:
-Install DirectIO from coresystems GmbH.
-DirectIO is available at http://www.coresystems.de/en/directio
+
+ Install DirectIO from coresystems GmbH.
+ DirectIO is available at http://www.coresystems.de/en/directio.
 
 
 Usage / Options
@@ -51,52 +61,19 @@ Please see the flashrom(8) manpage.
 Exit status
 -----------
 
-flashrom exits with 0 on success, 1 on most failures but with 2 if /dev/mem
-(/dev/xsvc on Solaris) can not be opened and with 3 if a call to mmap() fails.
+Please see the flashrom(8) manpage.
 
 
 coreboot Table and Mainboard Identification
 --------------------------------------------
 
-flashrom reads the coreboot table to determine the current mainboard. If no
-coreboot table could be read or if you want to override these values, you can
-specify -m, e.g.:
-
- $ flashrom -w --mainboard AGAMI:ARUMA agami_aruma.rom
-
-See the 'Supported mainboards' section in the output of 'flashrom -L' for
-a list of boards which require the specification of the board name, if no
-coreboot table is found.
+Please see the flashrom(8) manpage.
 
 
 ROM Layout Support
 ------------------
 
-flashrom supports ROM layouts. This allows you to flash certain parts of
-the flash chip only. A ROM layout file looks like follows:
-
-  00000000:00008fff gfxrom
-  00009000:0003ffff normal
-  00040000:0007ffff fallback
-
-  i.e.:
-  startaddr:endaddr name
-
-  All addresses are offsets within the file, not absolute addresses!
-  
-If you only want to update the normal image in a ROM you can say:
-
-  flashrom -w --layout rom.layout --image normal agami_aruma.rom
-     
-To update normal and fallback but leave the VGA BIOS alone, say:
-
-  flashrom -w -l rom.layout -i normal -i fallback agami_aruma.rom
- 
-Currently overlapping sections are not supported.
-
-ROM layouts should replace the -s and -e option since they are more 
-flexible and they should lead to a ROM update file format with the 
-ROM layout and the ROM image in one file (cpio, zip or something?).
+Please see the flashrom(8) manpage.
 
 
 Supported Flash Chips / Chipsets / Mainboards
