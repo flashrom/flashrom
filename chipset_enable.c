@@ -512,13 +512,13 @@ static int enable_flash_cs5536(struct pci_dev *dev, const char *name)
 
 	fd_msr = open("/dev/cpu/0/msr", O_RDWR);
 	if (fd_msr == -1) {
-		perror("open msr");
+		perror("open(/dev/cpu/0/msr)");
+		printf("Cannot operate on MSR. Did you run 'modprobe msr'?\n");
 		return -1;
 	}
 
 	if (lseek64(fd_msr, (off64_t) MSR_RCONF_DEFAULT, SEEK_SET) == -1) {
 		perror("lseek64");
-		printf("Cannot operate on MSR. Did you run 'modprobe msr'?\n");
 		close(fd_msr);
 		return -1;
 	}
