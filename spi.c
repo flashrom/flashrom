@@ -275,6 +275,15 @@ void spi_prettyprint_status_register_st_m25p(uint8_t status)
 	spi_prettyprint_status_register_common(status);
 }
 
+void spi_prettyprint_status_register_sst25(uint8_t status)
+{
+	printf_debug("Chip status register: Block Protect Write Disable "
+		     "(BPL) is %sset\n", (status & (1 << 7)) ? "" : "not ");
+	printf_debug("Chip status register: Auto Address Increment Programming "
+		     "(AAI) is %sset\n", (status & (1 << 6)) ? "" : "not ");
+	spi_prettyprint_status_register_common(status);
+}
+
 /* Prettyprint the status register. Works for
  * SST 25VF016
  */
@@ -289,11 +298,7 @@ void spi_prettyprint_status_register_sst25vf016(uint8_t status)
 		"100000H-1FFFFFH",
 		"all", "all"
 	};
-	printf_debug("Chip status register: Block Protect Write Disable "
-		     "(BPL) is %sset\n", (status & (1 << 7)) ? "" : "not ");
-	printf_debug("Chip status register: Auto Address Increment Programming "
-		     "(AAI) is %sset\n", (status & (1 << 6)) ? "" : "not ");
-	spi_prettyprint_status_register_common(status);
+	spi_prettyprint_status_register_sst25(status);
 	printf_debug("Resulting block protection : %s\n",
 		     bpt[(status & 0x1c) >> 2]);
 }
@@ -307,13 +312,9 @@ void spi_prettyprint_status_register_sst25vf040b(uint8_t status)
 		"0x40000-0x7ffff",
 		"all blocks", "all blocks", "all blocks", "all blocks"
 	};
-	printf_debug("Chip status register: Block Protect Write Disable "
-		"(BPL) is %sset\n", (status & (1 << 7)) ? "" : "not ");
-	printf_debug("Chip status register: Auto Address Increment Programming "
-		"(AAI) is %sset\n", (status & (1 << 6)) ? "" : "not ");
-	spi_prettyprint_status_register_common(status);
+	spi_prettyprint_status_register_sst25(status);
 	printf_debug("Resulting block protection : %s\n",
-		bpt[(status & 0x3c) >> 2]);
+		bpt[(status & 0x1c) >> 2]);
 }
 
 void spi_prettyprint_status_register(struct flashchip *flash)
@@ -340,6 +341,9 @@ void spi_prettyprint_status_register(struct flashchip *flash)
 		case 0x8d:
 		case 0x258d:
 			spi_prettyprint_status_register_sst25vf040b(status);
+			break;
+		case 0x258e:
+			spi_prettyprint_status_register_sst25(status);
 			break;
 		}
 		break;
