@@ -675,12 +675,11 @@ static int enable_flash_sb600(struct pci_dev *dev, const char *name)
 		prot &= 0xfffffffc;
 		pci_write_byte(dev, reg, prot);
 		prot = pci_read_long(dev, reg);
-		if (prot & 0x3)
-			printf("SB600 still %s%sprotected from %u to %u\n",
-				(prot & 0x1) ? "write " : "",
-				(prot & 0x2) ? "read " : "",
-				(prot & 0xfffffc00),
-				(prot & 0xfffffc00) + ((prot & 0x3ff) << 8));
+		printf("SB600 %s%sunprotect failed from %u to %u\n",
+			(prot & 0x1) ? "write " : "",
+			(prot & 0x2) ? "read " : "",
+			(prot & 0xfffffc00),
+			(prot & 0xfffffc00) + ((prot & 0x3ff) << 8));
 	}
 
 	/* Read SPI_BaseAddr */
