@@ -741,18 +741,10 @@ static int enable_flash_ck804(struct pci_dev *dev, const char *name)
 static int enable_flash_sb400(struct pci_dev *dev, const char *name)
 {
 	uint8_t tmp;
-	struct pci_filter f;
 	struct pci_dev *smbusdev;
 
 	/* Look for the SMBus device. */
-	pci_filter_init((struct pci_access *)0, &f);
-	f.vendor = 0x1002;
-	f.device = 0x4372;
-
-	for (smbusdev = pacc->devices; smbusdev; smbusdev = smbusdev->next) {
-		if (pci_filter_match(&f, smbusdev))
-			break;
-	}
+	smbusdev = pci_dev_find(0x1002, 0x4372);
 
 	if (!smbusdev) {
 		fprintf(stderr, "ERROR: SMBus device not found. Aborting.\n");
