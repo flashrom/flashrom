@@ -186,6 +186,7 @@ extern struct flashchip flashchips[];
 #define AMIC_A29040B		0x86
 #define AMIC_A49LF040A		0x9d
 
+/* This chip vendor/device ID is probably a misinterpreted LHA header. */
 #define ASD_ID			0x25	/* ASD, not listed in JEP106W */
 #define ASD_AE49F2008		0x52
 
