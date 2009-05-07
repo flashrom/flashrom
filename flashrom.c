@@ -369,6 +369,8 @@ int main(int argc, char *argv[])
 	unsigned int exclude_start_position = 0, exclude_end_position = 0;	// [x,y)
 	char *tempstr = NULL, *tempstr2 = NULL;
 
+	print_version();
+
 	if (argc > 1) {
 		/* Yes, print them. */
 		int i;
@@ -438,7 +440,7 @@ int main(int argc, char *argv[])
 			exit(0);
 			break;
 		case 'R':
-			print_version();
+			/* print_version() is always called during startup. */
 			exit(0);
 			break;
 		case 'h':
