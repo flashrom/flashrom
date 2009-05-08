@@ -236,6 +236,8 @@ int erase_flash(struct flashchip *flash)
 		fprintf(stderr, "ERROR: flashrom has no erase function for this flash chip.\n");
 		return 1;
 	}
+	flash->erase(flash);
+
 	if (!flash->read) {
 		printf("FAILED!\n");
 		fprintf(stderr, "ERROR: flashrom has no read function for this flash chip.\n");
