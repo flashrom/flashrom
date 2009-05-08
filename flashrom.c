@@ -21,7 +21,6 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include <errno.h>
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -30,51 +29,27 @@
 #include <string.h>
 #include <stdlib.h>
 #include <getopt.h>
-#include <pci/pci.h>
 #include "flash.h"
 
 char *chip_to_probe = NULL;
-struct pci_access *pacc;	/* For board and chipset_enable */
 int exclude_start_page, exclude_end_page;
 int verbose = 0;
+int programmer = PROGRAMMER_INTERNAL;
 
-struct pci_dev *pci_dev_find(uint16_t vendor, uint16_t device)
-{
-	struct pci_dev *temp;
-	struct pci_filter filter;
+const struct programmer_entry programmer_table[] = {
+	{
+		.init		= internal_init,
+		.shutdown	= internal_shutdown,
+		.chip_readb	= internal_chip_readb,
+		.chip_readw	= internal_chip_readw,
+		.chip_readl	= internal_chip_readl,
+		.chip_writeb	= internal_chip_writeb,
+		.chip_writew	= internal_chip_writew,
+		.chip_writel	= internal_chip_writel,
+	},
 
-	pci_filter_init(NULL, &filter);
-	filter.vendor = vendor;
-	filter.device = device;
-
-	for (temp = pacc->devices; temp; temp = temp->next)
-		if (pci_filter_match(&filter, temp))
-			return temp;
-
-	return NULL;
-}
-
-struct pci_dev *pci_card_find(uint16_t vendor, uint16_t device,
-			      uint16_t card_vendor, uint16_t card_device)
-{
-	struct pci_dev *temp;
-	struct pci_filter filter;
-
-	pci_filter_init(NULL, &filter);
-	filter.vendor = vendor;
-	filter.device = device;
-
-	for (temp = pacc->devices; temp; temp = temp->next)
-		if (pci_filter_match(&filter, temp)) {
-			if ((card_vendor ==
-			     pci_read_word(temp, PCI_SUBSYSTEM_VENDOR_ID))
-			    && (card_device ==
-				pci_read_word(temp, PCI_SUBSYSTEM_ID)))
-				return temp;
-		}
-
-	return NULL;
-}
+	{},
+};
 
 void map_flash_registers(struct flashchip *flash)
 {
@@ -362,9 +337,6 @@ int main(int argc, char *argv[])
 	int force = 0;
 	int read_it = 0, write_it = 0, erase_it = 0, verify_it = 0;
 	int ret = 0, i;
-#if defined(__FreeBSD__) || defined(__DragonFly__)
-	int io_fd;
-#endif
 
 	static struct option long_options[] = {
 		{"read", 0, 0, 'r'},
@@ -380,6 +352,7 @@ int main(int argc, char *argv[])
 		{"layout", 1, 0, 'l'},
 		{"image", 1, 0, 'i'},
 		{"list-supported", 0, 0, 'L'},
+		{"programmer", 1, 0, 'p'},
 		{"help", 0, 0, 'h'},
 		{"version", 0, 0, 'R'},
 		{0, 0, 0, 0}
@@ -401,7 +374,7 @@ int main(int argc, char *argv[])
 	}
 
 	setbuf(stdout, NULL);
-	while ((opt = getopt_long(argc, argv, "rRwvVEfc:s:e:m:l:i:Lh",
+	while ((opt = getopt_long(argc, argv, "rRwvVEfc:s:e:m:l:i:p:Lh",
 				  long_options, &option_index)) != EOF) {
 		switch (opt) {
 		case 'r':
@@ -460,6 +433,14 @@ int main(int argc, char *argv[])
 			print_supported_boards();
 			exit(0);
 			break;
+		case 'p':
+			if (strncmp(optarg, "internal", 8) == 0) {
+				programmer = PROGRAMMER_INTERNAL;
+			} else {
+				printf("Error: Unknown programmer.\n");
+				exit(1);
+			}
+			break;
 		case 'R':
 			/* print_version() is always called during startup. */
 			exit(0);
@@ -479,41 +460,9 @@ int main(int argc, char *argv[])
 	if (optind < argc)
 		filename = argv[optind++];
 
-	/* First get full io access */
-#if defined (__sun) && (defined(__i386) || defined(__amd64))
-	if (sysi86(SI86V86, V86SC_IOPL, PS_IOPL) != 0) {
-#elif defined(__FreeBSD__) || defined (__DragonFly__)
-	if ((io_fd = open("/dev/io", O_RDWR)) < 0) {
-#else
-	if (iopl(3) != 0) {
-#endif
-		fprintf(stderr, "ERROR: Could not get IO privileges (%s).\nYou need to be root.\n", strerror(errno));
-		exit(1);
-	}
-
-	/* Initialize PCI access for flash enables */
-	pacc = pci_alloc();	/* Get the pci_access structure */
-	/* Set all options you want -- here we stick with the defaults */
-	pci_init(pacc);		/* Initialize the PCI library */
-	pci_scan_bus(pacc);	/* We want to get the list of devices */
+	ret = programmer_init();
 
 	myusec_calibrate_delay();
-
-	/* We look at the lbtable first to see if we need a
-	 * mainboard specific flash enable sequence.
-	 */
-	coreboot_init();
-
-	/* try to enable it. Failure IS an option, since not all motherboards
-	 * really need this to be done, etc., etc.
-	 */
-	ret = chipset_flash_enable();
-	if (ret == -2) {
-		printf("WARNING: No chipset found. Flash detection "
-		       "will most likely fail.\n");
-	}
-
-	board_flash_enable(lb_vendor, lb_part);
 
 	for (i = 0; i < ARRAY_SIZE(flashes); i++) {
 		flashes[i] =
@@ -704,8 +653,7 @@ int main(int argc, char *argv[])
 	if (verify_it)
 		ret |= verify_flash(flash, buf);
 
-#ifdef __FreeBSD__
-	close(io_fd);
-#endif
+	programmer_shutdown();
+
 	return ret;
 }
