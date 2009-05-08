@@ -539,6 +539,7 @@ void physunmap(void *virt_addr, size_t len);
 extern int verbose;
 #define printf_debug(x...) { if (verbose) printf(x); }
 void map_flash_registers(struct flashchip *flash);
+int read_memmapped(struct flashchip *flash, uint8_t *buf);
 
 /* layout.c */
 int show_id(uint8_t *bios, int size, int force);

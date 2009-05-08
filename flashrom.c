@@ -4,6 +4,7 @@
  * Copyright (C) 2000 Silicon Integrated System Corporation
  * Copyright (C) 2004 Tyan Corp <yhlu@tyan.com>
  * Copyright (C) 2005-2008 coresystems GmbH 
+ * Copyright (C) 2008,2009 Carl-Daniel Hailfinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -81,6 +82,18 @@ void map_flash_registers(struct flashchip *flash)
 	flash->virtual_registers = physmap("flash chip registers", (0xFFFFFFFF - 0x400000 - size + 1), size);
 }
 
+int read_memmapped(struct flashchip *flash, uint8_t *buf)
+{
+	int i;
+
+	/* We could do a memcpy as optimization if the flash is onboard */
+	//memcpy(buf, (const char *)flash->virtual_memory, flash->total_size * 1024);
+	for (i = 0; i < flash->total_size * 1024; i++)
+		buf[i] = chip_readb(flash->virtual_memory + i);
+		
+	return 0;
+}
+
 struct flashchip *probe_flash(struct flashchip *first_flash, int force)
 {
 	volatile uint8_t *bios;
@@ -145,9 +158,11 @@ int verify_flash(struct flashchip *flash, uint8_t *buf)
 	int idx;
 	int total_size = flash->total_size * 1024;
 	uint8_t *buf2 = (uint8_t *) calloc(total_size, sizeof(char));
-	if (flash->read == NULL)
-		memcpy(buf2, (const char *)flash->virtual_memory, total_size);
-	else
+	if (!flash->read) {
+		printf("FAILED!\n");
+		fprintf(stderr, "ERROR: flashrom has no read function for this flash chip.\n");
+		return 1;
+	} else
 		flash->read(flash, buf2);
 
 	printf("Verifying flash... ");
@@ -191,9 +206,11 @@ int read_flash(struct flashchip *flash, char *filename, unsigned int exclude_sta
 		exit(1);
 	}
 	printf("Reading flash... ");
-	if (flash->read == NULL)
-		memcpy(buf, (const char *)flash->virtual_memory, size);
-	else
+	if (!flash->read) {
+		printf("FAILED!\n");
+		fprintf(stderr, "ERROR: flashrom has no read function for this flash chip.\n");
+		return 1;
+	} else
 		flash->read(flash, buf);
 
 	if (exclude_end_position - exclude_start_position > 0)
@@ -219,11 +236,13 @@ int erase_flash(struct flashchip *flash)
 		fprintf(stderr, "ERROR: flashrom has no erase function for this flash chip.\n");
 		return 1;
 	}
-	flash->erase(flash);
-	if (NULL == flash->read)
-		memcpy(buf, (const char *)flash->virtual_memory, size);
-	else
+	if (!flash->read) {
+		printf("FAILED!\n");
+		fprintf(stderr, "ERROR: flashrom has no read function for this flash chip.\n");
+		return 1;
+	} else
 		flash->read(flash, buf);
+
 	for (erasedbytes = 0; erasedbytes < size; erasedbytes++)
 		if (0xff != buf[erasedbytes]) {
 			printf("FAILED!\n");
@@ -537,9 +556,11 @@ int main(int argc, char *argv[])
 				exit(1);
 			}
 			printf("Force reading flash... ");
-			if (!flashes[0]->read)
-				memcpy(buf, (const char *)flashes[0]->virtual_memory, size);
-			else
+			if (!flashes[0]->read) {
+				printf("FAILED!\n");
+				fprintf(stderr, "ERROR: flashrom has no read function for this flash chip.\n");
+				return 1;
+			} else
 				flashes[0]->read(flashes[0], buf);
 
 			if (exclude_end_position - exclude_start_position > 0)
@@ -648,6 +669,9 @@ int main(int argc, char *argv[])
 	 */
 
 	// ////////////////////////////////////////////////////////////
+	/* FIXME: This memcpy will not work for SPI nor external flashers.
+	 * Convert to chip_readb.
+	 */
 	if (exclude_end_position - exclude_start_position > 0)
 		memcpy(buf + exclude_start_position,
 		       (const char *)flash->virtual_memory +
