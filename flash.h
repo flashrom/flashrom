@@ -76,34 +76,64 @@
 #endif
 #endif
 
-static inline void chip_writeb(uint8_t b, volatile void *addr)
+extern int programmer;
+#define PROGRAMMER_INTERNAL 0x00
+
+struct programmer_entry {
+	const char *vendor;
+	const char *name;
+
+	int (*init) (void);
+	int (*shutdown) (void);
+
+	void (*chip_writeb) (uint8_t val, volatile void *addr);
+	void (*chip_writew) (uint16_t val, volatile void *addr);
+	void (*chip_writel) (uint32_t val, volatile void *addr);
+	uint8_t (*chip_readb) (const volatile void *addr);
+	uint16_t (*chip_readw) (const volatile void *addr);
+	uint32_t (*chip_readl) (const volatile void *addr);
+};
+
+extern const struct programmer_entry programmer_table[];
+
+static inline int programmer_init(void)
 {
-	*(volatile uint8_t *) addr = b;
+	return programmer_table[programmer].init();
 }
 
-static inline void chip_writew(uint16_t b, volatile void *addr)
+static inline int programmer_shutdown(void)
 {
-	*(volatile uint16_t *) addr = b;
+	return programmer_table[programmer].shutdown();
 }
 
-static inline void chip_writel(uint32_t b, volatile void *addr)
+static inline void chip_writeb(uint8_t val, volatile void *addr)
 {
-	*(volatile uint32_t *) addr = b;
+	programmer_table[programmer].chip_writeb(val, addr);
+}
+
+static inline void chip_writew(uint16_t val, volatile void *addr)
+{
+	programmer_table[programmer].chip_writew(val, addr);
+}
+
+static inline void chip_writel(uint32_t val, volatile void *addr)
+{
+	programmer_table[programmer].chip_writel(val, addr);
 }
 
 static inline uint8_t chip_readb(const volatile void *addr)
 {
-	return *(volatile uint8_t *) addr;
+	return programmer_table[programmer].chip_readb(addr);
 }
 
 static inline uint16_t chip_readw(const volatile void *addr)
 {
-	return *(volatile uint16_t *) addr;
+	return programmer_table[programmer].chip_readw(addr);
 }
 
 static inline uint32_t chip_readl(const volatile void *addr)
 {
-	return *(volatile uint32_t *) addr;
+	return programmer_table[programmer].chip_readl(addr);
 }
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
@@ -534,6 +564,16 @@ extern void *spibar;
 /* physmap.c */
 void *physmap(const char *descr, unsigned long phys_addr, size_t len);
 void physunmap(void *virt_addr, size_t len);
+
+/* internal.c */
+int internal_init(void);
+int internal_shutdown(void);
+void internal_chip_writeb(uint8_t val, volatile void *addr);
+void internal_chip_writew(uint16_t val, volatile void *addr);
+void internal_chip_writel(uint32_t val, volatile void *addr);
+uint8_t internal_chip_readb(const volatile void *addr);
+uint16_t internal_chip_readw(const volatile void *addr);
+uint32_t internal_chip_readl(const volatile void *addr);
 
 /* flashrom.c */
 extern int verbose;
