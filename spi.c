@@ -618,19 +618,45 @@ int spi_chip_read(struct flashchip *flash, uint8_t *buf)
 	return 1;
 }
 
+/*
+ * Program chip using byte programming. (SLOW!)
+ * This is for chips which can only handle one byte writes
+ * and for chips where memory mapped programming is impossible
+ * (e.g. due to size constraints in IT87* for over 512 kB)
+ */
+int spi_chip_write_1(struct flashchip *flash, uint8_t *buf)
+{
+	int total_size = 1024 * flash->total_size;
+	int i;
+
+	spi_disable_blockprotect();
+	for (i = 0; i < total_size; i++) {
+		spi_write_enable();
+		spi_byte_program(i, buf[i]);
+		while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
+			myusec_delay(10);
+	}
+
+	return 0;
+}
+
+/*
+ * Program chip using page (256 bytes) programming.
+ * Some SPI masters can't do this, they use single byte programming instead.
+ */
 int spi_chip_write(struct flashchip *flash, uint8_t *buf)
 {
 	switch (flashbus) {
 	case BUS_TYPE_IT87XX_SPI:
-		return it8716f_spi_chip_write(flash, buf);
+		return it8716f_spi_chip_write_256(flash, buf);
 	case BUS_TYPE_SB600_SPI:
-		return sb600_spi_write(flash, buf);
+		return sb600_spi_write_1(flash, buf);
 	case BUS_TYPE_ICH7_SPI:
 	case BUS_TYPE_ICH9_SPI:
 	case BUS_TYPE_VIA_SPI:
-		return ich_spi_write(flash, buf);
+		return ich_spi_write_256(flash, buf);
 	case BUS_TYPE_WBSIO_SPI:
-		return wbsio_spi_write(flash, buf);
+		return wbsio_spi_write_1(flash, buf);
 	default:
 		printf_debug
 		    ("%s called, but no SPI chipset/strapping detected\n",
@@ -650,7 +676,7 @@ int spi_aai_write(struct flashchip *flash, uint8_t *buf)
 	case BUS_TYPE_WBSIO_SPI:
 		fprintf(stderr, "%s: impossible with Winbond SPI masters,"
 				" degrading to byte program\n", __func__);
-		return spi_chip_write(flash, buf);
+		return spi_chip_write_1(flash, buf);
 	default:
 		break;
 	}

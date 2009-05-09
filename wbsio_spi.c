@@ -186,7 +186,7 @@ int wbsio_spi_read(struct flashchip *flash, uint8_t *buf)
 	return 0;
 }
 
-int wbsio_spi_write(struct flashchip *flash, uint8_t *buf)
+int wbsio_spi_write_1(struct flashchip *flash, uint8_t *buf)
 {
 	int pos, size = flash->total_size * 1024;
 	int result;
