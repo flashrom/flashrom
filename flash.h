@@ -618,7 +618,7 @@ int spi_chip_erase_d8(struct flashchip *flash);
 int spi_block_erase_52(const struct flashchip *flash, unsigned long addr);
 int spi_block_erase_d8(const struct flashchip *flash, unsigned long addr);
 int spi_chip_write_1(struct flashchip *flash, uint8_t *buf);
-int spi_chip_write(struct flashchip *flash, uint8_t *buf);
+int spi_chip_write_256(struct flashchip *flash, uint8_t *buf);
 int spi_chip_read(struct flashchip *flash, uint8_t *buf);
 uint8_t spi_read_status_register(void);
 int spi_disable_blockprotect(void);

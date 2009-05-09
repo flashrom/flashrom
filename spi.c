@@ -644,7 +644,7 @@ int spi_chip_write_1(struct flashchip *flash, uint8_t *buf)
  * Program chip using page (256 bytes) programming.
  * Some SPI masters can't do this, they use single byte programming instead.
  */
-int spi_chip_write(struct flashchip *flash, uint8_t *buf)
+int spi_chip_write_256(struct flashchip *flash, uint8_t *buf)
 {
 	switch (flashbus) {
 	case BUS_TYPE_IT87XX_SPI:
