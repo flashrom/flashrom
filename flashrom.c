@@ -48,6 +48,17 @@ const struct programmer_entry programmer_table[] = {
 		.chip_writel	= internal_chip_writel,
 	},
 
+	{
+		.init		= dummy_init,
+		.shutdown	= dummy_shutdown,
+		.chip_readb	= dummy_chip_readb,
+		.chip_readw	= dummy_chip_readw,
+		.chip_readl	= dummy_chip_readl,
+		.chip_writeb	= dummy_chip_writeb,
+		.chip_writew	= dummy_chip_writew,
+		.chip_writel	= dummy_chip_writel,
+	},
+
 	{},
 };
 
@@ -437,6 +448,8 @@ int main(int argc, char *argv[])
 		case 'p':
 			if (strncmp(optarg, "internal", 8) == 0) {
 				programmer = PROGRAMMER_INTERNAL;
+			} else if (strncmp(optarg, "dummy", 5) == 0) {
+				programmer = PROGRAMMER_DUMMY;
 			} else {
 				printf("Error: Unknown programmer.\n");
 				exit(1);
