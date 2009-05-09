@@ -88,9 +88,24 @@ static int spi_res(unsigned char *readarr)
 int spi_write_enable(void)
 {
 	const unsigned char cmd[JEDEC_WREN_OUTSIZE] = { JEDEC_WREN };
+	int result;
 
 	/* Send WREN (Write Enable) */
-	return spi_command(sizeof(cmd), 0, cmd, NULL);
+	result = spi_command(sizeof(cmd), 0, cmd, NULL);
+	if (result) {
+		printf_debug("spi_write_enable failed");
+		switch (flashbus) {
+		case BUS_TYPE_ICH7_SPI:
+		case BUS_TYPE_ICH9_SPI:
+		case BUS_TYPE_VIA_SPI:
+			printf_debug(" due to SPI master limitation, ignoring"
+				     " and hoping it will be run as PREOP\n");
+			return 0;
+		default:
+			printf_debug("\n");
+		}
+	}
+	return result;
 }
 
 int spi_write_disable(void)
@@ -361,10 +376,8 @@ int spi_chip_erase_60(struct flashchip *flash)
 		return result;
 	}
 	result = spi_write_enable();
-	if (result) {
-		printf_debug("spi_write_enable failed\n");
+	if (result)
 		return result;
-	}
 	/* Send CE (Chip Erase) */
 	result = spi_command(sizeof(cmd), 0, cmd, NULL);
 	if (result) {
@@ -391,10 +404,8 @@ int spi_chip_erase_c7(struct flashchip *flash)
 		return result;
 	}
 	result = spi_write_enable();
-	if (result) {
-		printf_debug("spi_write_enable failed\n");
+	if (result)
 		return result;
-	}
 	/* Send CE (Chip Erase) */
 	result = spi_command(sizeof(cmd), 0, cmd, NULL);
 	if (result) {
@@ -424,11 +435,14 @@ int spi_chip_erase_60_c7(struct flashchip *flash)
 int spi_block_erase_52(const struct flashchip *flash, unsigned long addr)
 {
 	unsigned char cmd[JEDEC_BE_52_OUTSIZE] = {JEDEC_BE_52};
+	int result;
 
 	cmd[1] = (addr & 0x00ff0000) >> 16;
 	cmd[2] = (addr & 0x0000ff00) >> 8;
 	cmd[3] = (addr & 0x000000ff);
-	spi_write_enable();
+	result = spi_write_enable();
+	if (result)
+		return result;
 	/* Send BE (Block Erase) */
 	spi_command(sizeof(cmd), 0, cmd, NULL);
 	/* Wait until the Write-In-Progress bit is cleared.
@@ -447,11 +461,14 @@ int spi_block_erase_52(const struct flashchip *flash, unsigned long addr)
 int spi_block_erase_d8(const struct flashchip *flash, unsigned long addr)
 {
 	unsigned char cmd[JEDEC_BE_D8_OUTSIZE] = { JEDEC_BE_D8 };
+	int result;
 
 	cmd[1] = (addr & 0x00ff0000) >> 16;
 	cmd[2] = (addr & 0x0000ff00) >> 8;
 	cmd[3] = (addr & 0x000000ff);
-	spi_write_enable();
+	result = spi_write_enable();
+	if (result)
+		return result;
 	/* Send BE (Block Erase) */
 	spi_command(sizeof(cmd), 0, cmd, NULL);
 	/* Wait until the Write-In-Progress bit is cleared.
@@ -489,11 +506,15 @@ int spi_chip_erase_d8(struct flashchip *flash)
 int spi_sector_erase(const struct flashchip *flash, unsigned long addr)
 {
 	unsigned char cmd[JEDEC_SE_OUTSIZE] = { JEDEC_SE };
+	int result;
+	
 	cmd[1] = (addr & 0x00ff0000) >> 16;
 	cmd[2] = (addr & 0x0000ff00) >> 8;
 	cmd[3] = (addr & 0x000000ff);
 
-	spi_write_enable();
+	result = spi_write_enable();
+	if (result)
+		return result;
 	/* Send SE (Sector Erase) */
 	spi_command(sizeof(cmd), 0, cmd, NULL);
 	/* Wait until the Write-In-Progress bit is cleared.
@@ -623,6 +644,8 @@ int spi_aai_write(struct flashchip *flash, uint8_t *buf)
 {
 	uint32_t pos = 2, size = flash->total_size * 1024;
 	unsigned char w[6] = {0xad, 0, 0, 0, buf[0], buf[1]};
+	int result;
+
 	switch (flashbus) {
 	case BUS_TYPE_WBSIO_SPI:
 		fprintf(stderr, "%s: impossible with Winbond SPI masters,"
@@ -632,7 +655,9 @@ int spi_aai_write(struct flashchip *flash, uint8_t *buf)
 		break;
 	}
 	flash->erase(flash);
-	spi_write_enable();
+	result = spi_write_enable();
+	if (result)
+		return result;
 	spi_command(6, 0, w, NULL);
 	while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
 		myusec_delay(5); /* SST25VF040B Tbp is max 10us */
