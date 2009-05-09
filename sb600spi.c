@@ -64,7 +64,7 @@ uint8_t sb600_read_status_register(void)
 	return readarr[0];
 }
 
-int sb600_spi_write(struct flashchip *flash, uint8_t *buf)
+int sb600_spi_write_1(struct flashchip *flash, uint8_t *buf)
 {
 	int rc = 0, i;
 	int total_size = flash->total_size * 1024;

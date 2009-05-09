@@ -617,6 +617,7 @@ int spi_chip_erase_60_c7(struct flashchip *flash);
 int spi_chip_erase_d8(struct flashchip *flash);
 int spi_block_erase_52(const struct flashchip *flash, unsigned long addr);
 int spi_block_erase_d8(const struct flashchip *flash, unsigned long addr);
+int spi_chip_write_1(struct flashchip *flash, uint8_t *buf);
 int spi_chip_write(struct flashchip *flash, uint8_t *buf);
 int spi_chip_read(struct flashchip *flash, uint8_t *buf);
 uint8_t spi_read_status_register(void);
@@ -645,7 +646,7 @@ int ich_init_opcodes(void);
 int ich_spi_command(unsigned int writecnt, unsigned int readcnt,
 		    const unsigned char *writearr, unsigned char *readarr);
 int ich_spi_read(struct flashchip *flash, uint8_t * buf);
-int ich_spi_write(struct flashchip *flash, uint8_t * buf);
+int ich_spi_write_256(struct flashchip *flash, uint8_t * buf);
 
 /* it87spi.c */
 extern uint16_t it8716f_flashport;
@@ -653,13 +654,14 @@ int it87xx_probe_spi_flash(const char *name);
 int it8716f_spi_command(unsigned int writecnt, unsigned int readcnt,
 			const unsigned char *writearr, unsigned char *readarr);
 int it8716f_spi_chip_read(struct flashchip *flash, uint8_t *buf);
-int it8716f_spi_chip_write(struct flashchip *flash, uint8_t *buf);
+int it8716f_spi_chip_write_1(struct flashchip *flash, uint8_t *buf);
+int it8716f_spi_chip_write_256(struct flashchip *flash, uint8_t *buf);
 
 /* sb600spi.c */
 int sb600_spi_command(unsigned int writecnt, unsigned int readcnt,
 		      const unsigned char *writearr, unsigned char *readarr);
 int sb600_spi_read(struct flashchip *flash, uint8_t *buf);
-int sb600_spi_write(struct flashchip *flash, uint8_t *buf);
+int sb600_spi_write_1(struct flashchip *flash, uint8_t *buf);
 uint8_t sb600_read_status_register(void);
 extern uint8_t volatile *sb600_spibar;
 
@@ -758,7 +760,7 @@ int write_49f002(struct flashchip *flash, uint8_t *buf);
 int wbsio_check_for_spi(const char *name);
 int wbsio_spi_command(unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr);
 int wbsio_spi_read(struct flashchip *flash, uint8_t *buf);
-int wbsio_spi_write(struct flashchip *flash, uint8_t *buf);
+int wbsio_spi_write_1(struct flashchip *flash, uint8_t *buf);
 
 /* stm50flw0x0x.c */
 int probe_stm50flw0x0x(struct flashchip *flash);
