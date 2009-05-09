@@ -313,6 +313,7 @@ void usage(const char *name)
 	     "   -l | --layout <file.layout>:      read rom layout from file\n"
 	     "   -i | --image <name>:              only flash image name from flash layout\n"
 	     "   -L | --list-supported:            print supported devices\n"
+	     "   -p | --programmer <name>:         specify the programmer device\n"
 	     "   -h | --help:                      print this help text\n"
 	     "   -R | --version:                   print the version (release)\n"
 	     "\n" " If no file is specified, then all that happens"
