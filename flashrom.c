@@ -82,7 +82,6 @@ int read_memmapped(struct flashchip *flash, uint8_t *buf)
 
 struct flashchip *probe_flash(struct flashchip *first_flash, int force)
 {
-	volatile uint8_t *bios;
 	struct flashchip *flash;
 	unsigned long base = 0, size;
 
@@ -114,7 +113,7 @@ struct flashchip *probe_flash(struct flashchip *first_flash, int force)
 		}
 
 		base = flashbase ? flashbase : (0xffffffff - size + 1);
-		flash->virtual_memory = bios = physmap("flash chip", base, size);
+		flash->virtual_memory = physmap("flash chip", base, size);
 
 		if (force)
 			break;
@@ -127,7 +126,7 @@ struct flashchip *probe_flash(struct flashchip *first_flash, int force)
 			break;
 
 notfound:
-		physunmap((void *)bios, size);
+		physunmap((void *)flash->virtual_memory, size);
 	}
 
 	if (!flash || !flash->name)
