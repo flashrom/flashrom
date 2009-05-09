@@ -77,7 +77,8 @@
 #endif
 
 extern int programmer;
-#define PROGRAMMER_INTERNAL 0x00
+#define PROGRAMMER_INTERNAL	0x00
+#define PROGRAMMER_DUMMY	0x01
 
 struct programmer_entry {
 	const char *vendor;
@@ -574,6 +575,16 @@ void internal_chip_writel(uint32_t val, volatile void *addr);
 uint8_t internal_chip_readb(const volatile void *addr);
 uint16_t internal_chip_readw(const volatile void *addr);
 uint32_t internal_chip_readl(const volatile void *addr);
+
+/* dummyflasher.c */
+int dummy_init(void);
+int dummy_shutdown(void);
+void dummy_chip_writeb(uint8_t val, volatile void *addr);
+void dummy_chip_writew(uint16_t val, volatile void *addr);
+void dummy_chip_writel(uint32_t val, volatile void *addr);
+uint8_t dummy_chip_readb(const volatile void *addr);
+uint16_t dummy_chip_readw(const volatile void *addr);
+uint32_t dummy_chip_readl(const volatile void *addr);
 
 /* flashrom.c */
 extern int verbose;
