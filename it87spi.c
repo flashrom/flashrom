@@ -219,10 +219,12 @@ static int it8716f_spi_page_program(int block, uint8_t *buf, uint8_t *bios)
 }
 
 /*
- * IT8716F only allows maximum of 512 kb SPI mapped to LPC memory cycles
  * Program chip using firmware cycle byte programming. (SLOW!)
+ * This is for chips which can only handle one byte writes
+ * and for chips where memory mapped programming is impossible due to
+ * size constraints in IT87* (over 512 kB)
  */
-int it8716f_over512k_spi_chip_write(struct flashchip *flash, uint8_t *buf)
+int it8716f_spi_chip_write_1(struct flashchip *flash, uint8_t *buf)
 {
 	int total_size = 1024 * flash->total_size;
 	int i;
@@ -269,13 +271,17 @@ int it8716f_spi_chip_read(struct flashchip *flash, uint8_t *buf)
 	return 0;
 }
 
-int it8716f_spi_chip_write(struct flashchip *flash, uint8_t *buf)
+int it8716f_spi_chip_write_256(struct flashchip *flash, uint8_t *buf)
 {
 	int total_size = 1024 * flash->total_size;
 	int i;
 
+	/*
+	 * IT8716F only allows maximum of 512 kb SPI chip size for memory
+	 * mapped access.
+	 */
 	if (total_size > 512 * 1024) {
-		it8716f_over512k_spi_chip_write(flash, buf);
+		it8716f_spi_chip_write_1(flash, buf);
 	} else {
 		for (i = 0; i < total_size / 256; i++) {
 			it8716f_spi_page_program(i, buf,

@@ -707,7 +707,7 @@ int ich_spi_read(struct flashchip *flash, uint8_t * buf)
 	return rc;
 }
 
-int ich_spi_write(struct flashchip *flash, uint8_t * buf)
+int ich_spi_write_256(struct flashchip *flash, uint8_t * buf)
 {
 	int i, j, rc = 0;
 	int total_size = flash->total_size * 1024;
