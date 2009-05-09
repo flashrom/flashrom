@@ -458,9 +458,9 @@ static int ich7_run_opcode(OPCODE op, uint32_t offset,
 	REGWRITE16(ICH7_REG_SPIC, temp16);
 
 	/* wait for cycle complete */
-	timeout = 1000 * 60;	// 60s is a looong timeout.
+	timeout = 100 * 1000 * 60;	// 60s is a looong timeout.
 	while (((REGREAD16(ICH7_REG_SPIS) & SPIS_CDS) == 0) && --timeout) {
-		myusec_delay(1000);
+		myusec_delay(10);
 	}
 	if (!timeout) {
 		printf_debug("timeout\n");
@@ -575,9 +575,9 @@ static int ich9_run_opcode(OPCODE op, uint32_t offset,
 	REGWRITE32(ICH9_REG_SSFS, temp32);
 
 	/*wait for cycle complete */
-	timeout = 1000 * 60;	// 60s is a looong timeout.
+	timeout = 100 * 1000 * 60;	// 60s is a looong timeout.
 	while (((REGREAD32(ICH9_REG_SSFS) & SSFS_CDS) == 0) && --timeout) {
-		myusec_delay(1000);
+		myusec_delay(10);
 	}
 	if (!timeout) {
 		printf_debug("timeout\n");
