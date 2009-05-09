@@ -113,7 +113,7 @@ struct flashchip *probe_flash(struct flashchip *first_flash, int force)
 			size = getpagesize();
 		}
 
-		base = flashbase && flashchips == first_flash ? flashbase : (0xffffffff - size + 1);
+		base = flashbase ? flashbase : (0xffffffff - size + 1);
 		flash->virtual_memory = bios = physmap("flash chip", base, size);
 
 		if (force)
@@ -135,7 +135,6 @@ notfound:
 
 	printf("Found chip \"%s %s\" (%d KB) at physical address 0x%lx.\n",
 	       flash->vendor, flash->name, flash->total_size, base);
-	flashbase = base;
 	return flash;
 }
 
