@@ -196,11 +196,14 @@ int it8716f_spi_command(unsigned int writecnt, unsigned int readcnt,
 }
 
 /* Page size is usually 256 bytes */
-static void it8716f_spi_page_program(int block, uint8_t *buf, uint8_t *bios)
+static int it8716f_spi_page_program(int block, uint8_t *buf, uint8_t *bios)
 {
 	int i;
+	int result;
 
-	spi_write_enable();
+	result = spi_write_enable();
+	if (result)
+		return result;
 	OUTB(0x06, it8716f_flashport + 1);
 	OUTB(((2 + (fast_spi ? 1 : 0)) << 4), it8716f_flashport);
 	for (i = 0; i < 256; i++) {
@@ -212,6 +215,7 @@ static void it8716f_spi_page_program(int block, uint8_t *buf, uint8_t *bios)
 	 */
 	while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
 		usleep(1000);
+	return 0;
 }
 
 /*
@@ -222,12 +226,15 @@ int it8716f_over512k_spi_chip_write(struct flashchip *flash, uint8_t *buf)
 {
 	int total_size = 1024 * flash->total_size;
 	int i;
+	int result;
 
 	fast_spi = 0;
 
 	spi_disable_blockprotect();
 	for (i = 0; i < total_size; i++) {
-		spi_write_enable();
+		result = spi_write_enable();
+		if (result)
+			return result;
 		spi_byte_program(i, buf[i]);
 		while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
 			myusec_delay(10);
