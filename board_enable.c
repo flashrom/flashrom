@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2005-2007 coresystems GmbH <stepan@coresystems.de>
  * Copyright (C) 2006 Uwe Hermann <uwe@hermann-uwe.de>
- * Copyright (C) 2007-2008 Luc Verhaegen <libv@skynet.be>
+ * Copyright (C) 2007-2009 Luc Verhaegen <libv@skynet.be>
  * Copyright (C) 2007 Carl-Daniel Hailfinger
  *
  * This program is free software; you can redistribute it and/or modify
@@ -152,20 +152,43 @@ static int w83627thf_gpio4_4_raise_4e(const char *name)
 }
 
 /**
- * Suited for VIAs EPIA M and MII, and maybe other CLE266 based EPIAs.
- *
- * We don't need to do this when using coreboot, GPIO15 is never lowered there.
+ * w83627: Enable MEMW# and set ROM size to max.
  */
-static int board_via_epia_m(const char *name)
+static void w836xx_memw_enable(uint16_t index)
 {
-	struct pci_dev *dev;
-	uint16_t base;
+	w836xx_ext_enter(index);
+	if (!(wbsio_read(index, 0x24) & 0x02)) {	/* Flash ROM enabled? */
+		/* Enable MEMW# and set ROM size select to max. (4M). */
+		wbsio_mask(index, 0x24, 0x28, 0x28);
+	}
+	w836xx_ext_leave(index);
+}
+
+/**
+ * Common routine for several VT823x based boards.
+ */
+static void vt823x_set_all_writes_to_lpc(struct pci_dev *dev)
+{
 	uint8_t val;
 
-	dev = pci_dev_find(0x1106, 0x3177);	/* VT8235 ISA bridge */
-	if (!dev) {
-		fprintf(stderr, "\nERROR: VT8235 ISA bridge not found.\n");
-		return -1;
+	/* All memory cycles, not just ROM ones, go to LPC. */
+	val = pci_read_byte(dev, 0x59);
+	val &= ~0x80;
+	pci_write_byte(dev, 0x59, val);
+}
+
+/**
+ * VT823x: Set one of the GPIO pins.
+ */
+static void vt823x_gpio_set(struct pci_dev *dev, uint8_t gpio, int raise)
+{
+	uint16_t base;
+	uint8_t val, bit;
+
+	if ((gpio < 12) || (gpio > 15)) {
+		fprintf(stderr, "\nERROR: "
+			"VT823x GPIO%02d is not implemented.\n", gpio);
+		return;
 	}
 
 	/* GPIO12-15 -> output */
@@ -173,13 +196,37 @@ static int board_via_epia_m(const char *name)
 	val |= 0x10;
 	pci_write_byte(dev, 0xE4, val);
 
-	/* Get Power Management IO address. */
-	base = pci_read_word(dev, 0x88) & 0xFF80;
+	/* Now raise/drop the GPIO line itself. */
+	bit = 0x01 << (gpio - 8);
 
-	/* Enable GPIO15 which is connected to write protect. */
+	/* We need the I/O Base Address for this board's flash enable. */
+	base = pci_read_word(dev, 0x88) & 0xff80;
+
 	val = INB(base + 0x4D);
-	val |= 0x80;
+	if (raise)
+		val |= bit;
+	else
+		val &= ~bit;
 	OUTB(val, base + 0x4D);
+}
+
+/**
+ * Suited for VIAs EPIA M and MII, and maybe other CLE266 based EPIAs.
+ *
+ * We don't need to do this when using coreboot, GPIO15 is never lowered there.
+ */
+static int board_via_epia_m(const char *name)
+{
+	struct pci_dev *dev;
+
+	dev = pci_dev_find(0x1106, 0x3177);	/* VT8235 ISA bridge */
+	if (!dev) {
+		fprintf(stderr, "\nERROR: VT8235 ISA bridge not found.\n");
+		return -1;
+	}
+
+	/* GPIO15 is connected to write protect. */
+	vt823x_gpio_set(dev, 15, 1);
 
 	return 0;
 }
@@ -192,7 +239,6 @@ static int board_via_epia_m(const char *name)
 static int board_asus_a7v8x_mx(const char *name)
 {
 	struct pci_dev *dev;
-	uint8_t val;
 
 	dev = pci_dev_find(0x1106, 0x3177);	/* VT8235 ISA bridge */
 	if (!dev)
@@ -202,29 +248,18 @@ static int board_asus_a7v8x_mx(const char *name)
 		return -1;
 	}
 
-	/* This bit is marked reserved actually. */
-	val = pci_read_byte(dev, 0x59);
-	val &= 0x7F;
-	pci_write_byte(dev, 0x59, val);
-
-	/* Raise ROM MEMW# line on Winbond W83697 Super I/O. */
-	w836xx_ext_enter(0x2E);
-
-	if (!(wbsio_read(0x2E, 0x24) & 0x02))	/* Flash ROM enabled? */
-		wbsio_mask(0x2E, 0x24, 0x08, 0x08);	/* Enable MEMW#. */
-
-	w836xx_ext_leave(0x2E);
+	vt823x_set_all_writes_to_lpc(dev);
+	w836xx_memw_enable(0x2E);
 
 	return 0;
 }
 
 /**
- * Suited for VIAs EPIA SP.
+ * Suited for VIAs EPIA SP and EPIA CN.
  */
 static int board_via_epia_sp(const char *name)
 {
 	struct pci_dev *dev;
-	uint8_t val;
 
 	dev = pci_dev_find(0x1106, 0x3227);	/* VT8237R ISA bridge */
 	if (!dev) {
@@ -232,10 +267,25 @@ static int board_via_epia_sp(const char *name)
 		return -1;
 	}
 
-	/* All memory cycles, not just ROM ones, go to LPC */
-	val = pci_read_byte(dev, 0x59);
-	val &= ~0x80;
-	pci_write_byte(dev, 0x59, val);
+	vt823x_set_all_writes_to_lpc(dev);
+
+	return 0;
+}
+
+/**
+ * Suited for EPoX EP-8K5A2.
+ */
+static int board_epox_ep_8k5a2(const char *name)
+{
+	struct pci_dev *dev;
+
+	dev = pci_dev_find(0x1106, 0x3177);	/* VT8235 ISA bridge */
+	if (!dev) {
+		fprintf(stderr, "\nERROR: VT8235 ISA bridge not found.\n");
+		return -1;
+	}
+
+	w836xx_memw_enable(0x2E);
 
 	return 0;
 }
@@ -578,8 +628,6 @@ static int board_msi_kt4v(const char *name)
 {
 	struct pci_dev *dev;
 	uint8_t val;
-	uint32_t val2;
-	uint16_t port;
 
 	dev = pci_dev_find(0x1106, 0x3177);	/* VT8235 ISA bridge */
 	if (!dev) {
@@ -591,23 +639,8 @@ static int board_msi_kt4v(const char *name)
 	val &= 0x0c;
 	pci_write_byte(dev, 0x59, val);
 
-	/* We need the I/O Base Address for this board's flash enable. */
-	port = pci_read_word(dev, 0x88) & 0xff80;
-
-	/* Starting at 'I/O Base + 0x4c' is the GPO Port Output Value.
-	 * We must assert GPO12 for our enable, which is in 0x4d.
-	 */
-	val2 = INB(port + 0x4d);
-	val2 |= 0x10;
-	OUTB(val2, port + 0x4d);
-
-	/* Raise ROM MEMW# line on Winbond W83697 Super I/O. */
-	w836xx_ext_enter(0x2e);
-	if (!(wbsio_read(0x2e, 0x24) & 0x02)) {	/* Flash ROM enabled? */
-		/* Enable MEMW# and set ROM size select to max. (4M). */
-		wbsio_mask(0x2e, 0x24, 0x28, 0x28);
-	}
-	w836xx_ext_leave(0x2e);
+	vt823x_gpio_set(dev, 12, 1);
+	w836xx_memw_enable(0x2E);
 
 	return 0;
 }
@@ -667,6 +700,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x8086, 0x1a30, 0x1043, 0x8070,  0x8086, 0x244b, 0x1043, 0x8028, NULL,         NULL,          "ASUS",        "P4B266",         ich2_gpio22_raise},
 	{0x10B9, 0x1541,      0,      0,  0x10B9, 0x1533,      0,      0, "asus",       "p5a",         "ASUS",        "P5A",            board_asus_p5a},
 	{0x1106, 0x3149, 0x1565, 0x3206,  0x1106, 0x3344, 0x1565, 0x1202, NULL,         NULL,          "BioStar",     "P4M80-M4",       board_biostar_p4m80_m4},
+	{0x1106, 0x3177, 0x1106, 0x3177,  0x1106, 0x3059, 0x1695, 0x3005, NULL,         NULL,          "EPoX",        "EP-8K5A2",       board_epox_ep_8k5a2},
 	{0x8086, 0x7110,      0,      0,  0x8086, 0x7190,      0,      0, "epox",       "ep-bx3",      "EPoX",        "EP-BX3",         board_epox_ep_bx3},
 	{0x1039, 0x0761,      0,      0,       0,      0,      0,      0, "gigabyte",   "2761gxdk",    "GIGABYTE",    "GA-2761GXDK",    it87xx_probe_spi_flash},
 	{0x1106, 0x3227, 0x1458, 0x5001,  0x10ec, 0x8139, 0x1458, 0xe000, NULL,         NULL,          "GIGABYTE",    "GA-7VT600",      board_biostar_p4m80_m4},
