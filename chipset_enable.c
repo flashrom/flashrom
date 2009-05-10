@@ -660,6 +660,8 @@ static int enable_flash_sb600(struct pci_dev *dev, const char *name)
 {
 	uint32_t tmp, prot;
 	uint8_t reg;
+	struct pci_dev *smbus_dev;
+	int has_spi = 1;
 
 	/* Clear ROM protect 0-3. */
 	for (reg = 0x50; reg < 0x60; reg += 4) {
@@ -688,12 +690,47 @@ static int enable_flash_sb600(struct pci_dev *dev, const char *name)
 	tmp &= 0xfffffff0;	/* remove low 4 bits (reserved) */
 	printf_debug("SPI base address is at 0x%x\n", tmp);
 
+	/* If the BAR has address 0, it is unlikely SPI is used. */
+	if (!tmp)
+		has_spi = 0;
+
 	/* Physical memory can only be mapped at page (4k) boundaries */
 	sb600_spibar = physmap("SB600 SPI registers", tmp & 0xfffff000, 0x1000);
 	/* The low bits of the SPI base address are used as offset into the mapped page */
 	sb600_spibar += tmp & 0xfff;
 
-	flashbus = BUS_TYPE_SB600_SPI;
+	/* Look for the SMBus device. */
+	smbus_dev = pci_dev_find(0x1002, 0x4385);
+
+	if (!smbus_dev) {
+		fprintf(stderr, "ERROR: SMBus device not found. Not enabling SPI.\n");
+		has_spi = 0;
+	} else {
+		/* Note about the bit tests below: If a bit is zero, the GPIO is SPI. */
+		/* GPIO11/SPI_DO and GPIO12/SPI_DI status */
+		reg = pci_read_byte(smbus_dev, 0xAB);
+		reg &= 0xC0;
+		printf_debug("GPIO11 used for %s\n", (reg & (1 << 6)) ? "GPIO" : "SPI_DO");
+		printf_debug("GPIO12 used for %s\n", (reg & (1 << 7)) ? "GPIO" : "SPI_DI");
+		if (reg != 0x00)
+			has_spi = 0;
+		/* GPIO31/SPI_HOLD and GPIO32/SPI_CS status */
+		reg = pci_read_byte(smbus_dev, 0x83);
+		reg &= 0xC0;
+		printf_debug("GPIO31 used for %s\n", (reg & (1 << 6)) ? "GPIO" : "SPI_HOLD");
+		printf_debug("GPIO32 used for %s\n", (reg & (1 << 7)) ? "GPIO" : "SPI_CS");
+		if (reg != 0x00)
+			has_spi = 0;
+		/* GPIO47/SPI_CLK status */
+		reg = pci_read_byte(smbus_dev, 0xA7);
+		reg &= 0x40;
+		printf_debug("GPIO47 used for %s\n", (reg & (1 << 6)) ? "GPIO" : "SPI_CLK");
+		if (reg != 0x00)
+			has_spi = 0;
+	}
+
+	if (has_spi)
+		flashbus = BUS_TYPE_SB600_SPI;
 
 	/* Force enable SPI ROM in SB600 PM register.
 	 * If we enable SPI ROM here, we have to disable it after we leave.
