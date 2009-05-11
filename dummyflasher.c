@@ -30,59 +30,59 @@
 
 int dummy_init(void)
 {
-	printf("%s\n", __func__);
+	printf_debug("%s\n", __func__);
 	return 0; 
 }
 
 int dummy_shutdown(void)
 {
-	printf("%s\n", __func__);
+	printf_debug("%s\n", __func__);
 	return 0;
 }
 
 void *dummy_map(const char *descr, unsigned long phys_addr, size_t len)
 {
-	printf("%s: Mapping %s, 0x%lx bytes at 0x%08lx\n",
+	printf_debug("%s: Mapping %s, 0x%lx bytes at 0x%08lx\n",
 		__func__, descr, (unsigned long)len, phys_addr);
 	return (void *)phys_addr;
 }
 
 void dummy_unmap(void *virt_addr, size_t len)
 {
-	printf("%s: Unmapping 0x%lx bytes at %p\n",
+	printf_debug("%s: Unmapping 0x%lx bytes at %p\n",
 		__func__, (unsigned long)len, virt_addr);
 }
 
 void dummy_chip_writeb(uint8_t val, volatile void *addr)
 {
-	printf("%s: addr=%p, val=0x%02x\n", __func__, addr, val);
+	printf_debug("%s: addr=%p, val=0x%02x\n", __func__, addr, val);
 }
 
 void dummy_chip_writew(uint16_t val, volatile void *addr)
 {
-	printf("%s: addr=%p, val=0x%04x\n", __func__, addr, val);
+	printf_debug("%s: addr=%p, val=0x%04x\n", __func__, addr, val);
 }
 
 void dummy_chip_writel(uint32_t val, volatile void *addr)
 {
-	printf("%s: addr=%p, val=0x%08x\n", __func__, addr, val);
+	printf_debug("%s: addr=%p, val=0x%08x\n", __func__, addr, val);
 }
 
 uint8_t dummy_chip_readb(const volatile void *addr)
 {
-	printf("%s:  addr=%p\n", __func__, addr);
+	printf_debug("%s:  addr=%p, returning 0xff\n", __func__, addr);
 	return 0xff;
 }
 
 uint16_t dummy_chip_readw(const volatile void *addr)
 {
-	printf("%s:  addr=%p\n", __func__, addr);
+	printf_debug("%s:  addr=%p, returning 0xffff\n", __func__, addr);
 	return 0xffff;
 }
 
 uint32_t dummy_chip_readl(const volatile void *addr)
 {
-	printf("%s:  addr=%p\n", __func__, addr);
+	printf_debug("%s:  addr=%p, returning 0xffffffff\n", __func__, addr);
 	return 0xffffffff;
 }
 
