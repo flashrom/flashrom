@@ -120,7 +120,7 @@ static void wait_stm50flw0x0x(volatile uint8_t *bios)
  */
 int unlock_block_stm50flw0x0x(struct flashchip *flash, int offset)
 {
-	volatile uint8_t *flash_addr = flash->virtual_registers + 2;
+	volatile uint8_t *wrprotect = flash->virtual_registers + 2;
 	const uint8_t unlock_sector = 0x00;
 	int j;
 
@@ -142,8 +142,8 @@ int unlock_block_stm50flw0x0x(struct flashchip *flash, int offset)
 		// unlock each 4k-sector
 		for (j = 0; j < 0x10000; j += 0x1000) {
 			printf_debug("unlocking at 0x%x\n", offset + j);
-			chip_writeb(unlock_sector, flash_addr + offset + j);
-			if (chip_readb(flash_addr + offset + j) != unlock_sector) {
+			chip_writeb(unlock_sector, wrprotect + offset + j);
+			if (chip_readb(wrprotect + offset + j) != unlock_sector) {
 				printf("Cannot unlock sector @ 0x%x\n",
 				       offset + j);
 				return -1;
@@ -151,8 +151,8 @@ int unlock_block_stm50flw0x0x(struct flashchip *flash, int offset)
 		}
 	} else {
 		printf_debug("unlocking at 0x%x\n", offset);
-		chip_writeb(unlock_sector, flash_addr + offset);
-		if (chip_readb(flash_addr + offset) != unlock_sector) {
+		chip_writeb(unlock_sector, wrprotect + offset);
+		if (chip_readb(wrprotect + offset) != unlock_sector) {
 			printf("Cannot unlock sector @ 0x%x\n", offset);
 			return -1;
 		}
