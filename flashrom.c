@@ -65,6 +65,7 @@ const struct programmer_entry programmer_table[] = {
 void map_flash_registers(struct flashchip *flash)
 {
 	size_t size = flash->total_size * 1024;
+	/* Flash registers live 4 MByte below the flash. */
 	flash->virtual_registers = physmap("flash chip registers", (0xFFFFFFFF - 0x400000 - size + 1), size);
 }
 
