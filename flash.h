@@ -87,6 +87,9 @@ struct programmer_entry {
 	int (*init) (void);
 	int (*shutdown) (void);
 
+	void * (*map_flash_region) (const char *descr, unsigned long phys_addr, size_t len);
+	void (*unmap_flash_region) (void *virt_addr, size_t len);
+
 	void (*chip_writeb) (uint8_t val, volatile void *addr);
 	void (*chip_writew) (uint16_t val, volatile void *addr);
 	void (*chip_writel) (uint32_t val, volatile void *addr);
@@ -105,6 +108,16 @@ static inline int programmer_init(void)
 static inline int programmer_shutdown(void)
 {
 	return programmer_table[programmer].shutdown();
+}
+
+static inline void *programmer_map_flash_region(const char *descr, unsigned long phys_addr, size_t len)
+{
+	return programmer_table[programmer].map_flash_region(descr, phys_addr, len);
+}
+
+static inline void programmer_unmap_flash_region(void *virt_addr, size_t len)
+{
+	programmer_table[programmer].unmap_flash_region(virt_addr, len);
 }
 
 static inline void chip_writeb(uint8_t val, volatile void *addr)
@@ -579,6 +592,8 @@ uint32_t internal_chip_readl(const volatile void *addr);
 /* dummyflasher.c */
 int dummy_init(void);
 int dummy_shutdown(void);
+void *dummy_map(const char *descr, unsigned long phys_addr, size_t len);
+void dummy_unmap(void *virt_addr, size_t len);
 void dummy_chip_writeb(uint8_t val, volatile void *addr);
 void dummy_chip_writew(uint16_t val, volatile void *addr);
 void dummy_chip_writel(uint32_t val, volatile void *addr);
