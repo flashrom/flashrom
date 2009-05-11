@@ -92,6 +92,7 @@ int probe_jedec(struct flashchip *flash)
 	volatile uint8_t *bios = flash->virtual_memory;
 	uint8_t id1, id2;
 	uint32_t largeid1, largeid2;
+	uint32_t flashcontent1, flashcontent2;
 
 	/* Issue JEDEC Product ID Entry command */
 	chip_writeb(0xAA, bios + 0x5555);
@@ -133,6 +134,26 @@ int probe_jedec(struct flashchip *flash)
 	printf_debug("%s: id1 0x%02x, id2 0x%02x", __FUNCTION__, largeid1, largeid2);
 	if (!oddparity(id1))
 		printf_debug(", id1 parity violation");
+
+	/* Read the product ID location again. We should now see normal flash contents. */
+	flashcontent1 = chip_readb(bios);
+	flashcontent2 = chip_readb(bios + 0x01);
+
+	/* Check if it is a continuation ID, this should be a while loop. */
+	if (flashcontent1 == 0x7F) {
+		flashcontent1 <<= 8;
+		flashcontent1 |= chip_readb(bios + 0x100);
+	}
+	if (flashcontent2 == 0x7F) {
+		flashcontent2 <<= 8;
+		flashcontent2 |= chip_readb(bios + 0x101);
+	}
+
+	if (largeid1 == flashcontent1)
+		printf_debug(", id1 is normal flash content");
+	if (largeid2 == flashcontent2)
+		printf_debug(", id2 is normal flash content");
+
 	printf_debug("\n");
 	if (largeid1 == flash->manufacture_id && largeid2 == flash->model_id)
 		return 1;
