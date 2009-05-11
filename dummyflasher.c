@@ -40,6 +40,19 @@ int dummy_shutdown(void)
 	return 0;
 }
 
+void *dummy_map(const char *descr, unsigned long phys_addr, size_t len)
+{
+	printf("%s: Mapping %s, 0x%lx bytes at 0x%08lx\n",
+		__func__, descr, (unsigned long)len, phys_addr);
+	return (void *)phys_addr;
+}
+
+void dummy_unmap(void *virt_addr, size_t len)
+{
+	printf("%s: Unmapping 0x%lx bytes at %p\n",
+		__func__, (unsigned long)len, virt_addr);
+}
+
 void dummy_chip_writeb(uint8_t val, volatile void *addr)
 {
 	printf("%s: addr=%p, val=0x%02x\n", __func__, addr, val);

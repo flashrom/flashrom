@@ -40,6 +40,8 @@ const struct programmer_entry programmer_table[] = {
 	{
 		.init		= internal_init,
 		.shutdown	= internal_shutdown,
+		.map_flash_region	= physmap,
+		.unmap_flash_region	= physunmap,
 		.chip_readb	= internal_chip_readb,
 		.chip_readw	= internal_chip_readw,
 		.chip_readl	= internal_chip_readl,
@@ -51,6 +53,8 @@ const struct programmer_entry programmer_table[] = {
 	{
 		.init		= dummy_init,
 		.shutdown	= dummy_shutdown,
+		.map_flash_region	= dummy_map,
+		.unmap_flash_region	= dummy_unmap,
 		.chip_readb	= dummy_chip_readb,
 		.chip_readw	= dummy_chip_readw,
 		.chip_readl	= dummy_chip_readl,
@@ -66,7 +70,7 @@ void map_flash_registers(struct flashchip *flash)
 {
 	size_t size = flash->total_size * 1024;
 	/* Flash registers live 4 MByte below the flash. */
-	flash->virtual_registers = physmap("flash chip registers", (0xFFFFFFFF - 0x400000 - size + 1), size);
+	flash->virtual_registers = programmer_map_flash_region("flash chip registers", (0xFFFFFFFF - 0x400000 - size + 1), size);
 }
 
 int read_memmapped(struct flashchip *flash, uint8_t *buf)
@@ -98,23 +102,8 @@ struct flashchip *probe_flash(struct flashchip *first_flash, int force)
 
 		size = flash->total_size * 1024;
 
-		/* If getpagesize() > size -> 
-		 * "Can't mmap memory using /dev/mem: Invalid argument"
-		 * This should never happen as we don't support any flash chips
-		 * smaller than 4k or 8k (yet).
-		 */
-
-		if (getpagesize() > size) {
-			/*
-			 * if a flash size of 0 is mapped, we map a single page
-			 * so we can probe in that area whether we know the
-			 * vendor at least.
-			 */
-			size = getpagesize();
-		}
-
 		base = flashbase ? flashbase : (0xffffffff - size + 1);
-		flash->virtual_memory = physmap("flash chip", base, size);
+		flash->virtual_memory = programmer_map_flash_region("flash chip", base, size);
 
 		if (force)
 			break;
@@ -127,7 +116,8 @@ struct flashchip *probe_flash(struct flashchip *first_flash, int force)
 			break;
 
 notfound:
-		physunmap((void *)flash->virtual_memory, size);
+		/* The intermediate cast to unsigned long works around a gcc warning bug. */
+		programmer_unmap_flash_region((void *)(unsigned long)flash->virtual_memory, size);
 	}
 
 	if (!flash || !flash->name)

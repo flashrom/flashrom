@@ -69,12 +69,33 @@ void *sys_physmap(unsigned long phys_addr, size_t len)
 
 void physunmap(void *virt_addr, size_t len)
 {
+	if (len == 0) {
+		printf_debug("Not unmapping zero size at %p\n", virt_addr);
+		return;
+	}
+		
 	munmap(virt_addr, len);
 }
 #endif
 
 void *physmap(const char *descr, unsigned long phys_addr, size_t len)
 {
+	if (len == 0) {
+		printf_debug("Not mapping %s, zero size at 0x%08lx\n",
+			descr, phys_addr);
+		return NULL;
+	}
+		
+	if ((getpagesize() - 1) & len) {
+		fprintf(stderr, "Mapping %s at 0x%08lx, unaligned size 0x%lx\n",
+			descr, phys_addr, (unsigned long)len);
+	}
+
+	if ((getpagesize() - 1) & phys_addr) {
+		fprintf(stderr, "Mapping %s, 0x%lx bytes at unaligned 0x%08lx\n",
+			descr, (unsigned long)len, phys_addr);
+	}
+
 	void *virt_addr = sys_physmap(phys_addr, len);
 
 	if (NULL == virt_addr) {
