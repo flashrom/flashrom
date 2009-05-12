@@ -1322,7 +1322,7 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_jedec,
 		.erase		= erase_chip_jedec,
-		.write		= write_39sf020,
+		.write		= write_49f002,
 		.read		= read_memmapped,
 	},
 
@@ -1336,7 +1336,7 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_jedec,
 		.erase		= erase_chip_jedec,
-		.write		= write_39sf020,
+		.write		= write_49f002,
 		.read		= read_memmapped,
 	},
 
@@ -1350,7 +1350,7 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_jedec,
 		.erase		= erase_chip_jedec,
-		.write		= write_39sf020,
+		.write		= write_49f002,
 		.read		= read_memmapped,
 	},
 
@@ -1364,7 +1364,7 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.erase		= erase_chip_jedec,
-		.write		= write_39sf020,
+		.write		= write_49f002,
 		.read		= read_memmapped,
 	},
 
@@ -1378,7 +1378,7 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.erase		= erase_chip_jedec,
-		.write		= write_39sf020,
+		.write		= write_49f002,
 		.read		= read_memmapped,
 	},
 
@@ -1392,7 +1392,7 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_jedec,
 		.erase		= erase_chip_jedec,
-		.write		= write_39sf020,
+		.write		= write_49f002,
 		.read		= read_memmapped,
 	},
 
@@ -1406,7 +1406,7 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PROBE,
 		.probe		= probe_jedec,
 		.erase		= erase_chip_jedec,
-		.write		= write_39sf020,
+		.write		= write_49f002,
 		.read		= read_memmapped,
 	},
 
@@ -1420,7 +1420,7 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.erase		= erase_chip_jedec,
-		.write		= write_39sf020,
+		.write		= write_49f002,
 		.read		= read_memmapped,
 	},
 
@@ -2134,7 +2134,7 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.erase		= erase_chip_jedec,
-		.write		= write_39sf020,
+		.write		= write_49f002,
 		.read		= read_memmapped,
 	},
 
@@ -2148,7 +2148,7 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_jedec,
 		.erase		= erase_chip_jedec,
-		.write		= write_39sf020,
+		.write		= write_49f002,
 		.read		= read_memmapped,
 	},
 
@@ -2176,7 +2176,7 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_jedec,
 		.erase		= erase_chip_jedec,
-		.write		= write_39sf020,
+		.write		= write_49f002,
 		.read		= read_memmapped,
 	},
 
@@ -2190,7 +2190,7 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_jedec,
 		.erase		= erase_chip_jedec,
-		.write		= write_39sf020,
+		.write		= write_49f002,
 		.read		= read_memmapped,
 	},
 
