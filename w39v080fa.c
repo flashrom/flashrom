@@ -180,8 +180,8 @@ int erase_winbond_fwhub(struct flashchip *flash)
 	printf("\n");
 
 	for (i = 0; i < total_size; i++) {
-		if (bios[i] != 0xff) {
-			fprintf(stderr, "Error: Flash chip erase failed at 0x%08x(0x%02x)\n", i, bios[i]);
+		if (chip_readb(bios + i) != 0xff) {
+			fprintf(stderr, "Error: Flash chip erase failed at 0x%08x(0x%02x)\n", i, chip_readb(bios + i));
 			return -1;
 		}
 	}
