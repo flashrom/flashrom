@@ -122,7 +122,7 @@ int erase_sst_fwhub(struct flashchip *flash)
 
 	// dumb check if erase was successful.
 	for (i = 0; i < total_size; i++) {
-		if (bios[i] != 0xff) {
+		if (chip_readb(bios + i) != 0xff) {
 			printf("ERASE FAILED!\n");
 			return -1;
 		}
