@@ -32,8 +32,8 @@ int write_49f002(struct flashchip *flash, uint8_t *buf)
 
 	printf("Programming page: ");
 	for (i = 0; i < total_size / page_size; i++) {
-		/* write to the sector */
 		printf("%04d at address: 0x%08x ", i, i * page_size);
+		/* Byte-wise writing of 'page_size' bytes. */
 		write_sector_jedec(bios, buf + i * page_size,
 				   bios + i * page_size, page_size);
 		printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
