@@ -67,8 +67,8 @@ int erase_w39v040c(struct flashchip *flash)
 		erase_sector_jedec(flash->virtual_memory, i);
 
 	for (i = 0; i < total_size; i++)
-		if (0xff != bios[i]) {
-			printf("ERASE FAILED at 0x%08x!  Expected=0xff, Read=0x%02x\n", i, bios[i]);
+		if (0xff != chip_readb(bios + i)) {
+			printf("ERASE FAILED at 0x%08x!  Expected=0xff, Read=0x%02x\n", i, chip_readb(bios + i));
 			return -1;
 		}
 
