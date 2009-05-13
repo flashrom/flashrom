@@ -57,9 +57,11 @@ int spi_command(unsigned int writecnt, unsigned int readcnt,
 static int spi_rdid(unsigned char *readarr, int bytes)
 {
 	const unsigned char cmd[JEDEC_RDID_OUTSIZE] = { JEDEC_RDID };
+	int ret;
 
-	if (spi_command(sizeof(cmd), bytes, cmd, readarr))
-		return 1;
+	ret = spi_command(sizeof(cmd), bytes, cmd, readarr);
+	if (ret)
+		return ret;
 	printf_debug("RDID returned %02x %02x %02x.\n", readarr[0], readarr[1],
 		     readarr[2]);
 	return 0;
@@ -67,20 +69,42 @@ static int spi_rdid(unsigned char *readarr, int bytes)
 
 static int spi_rems(unsigned char *readarr)
 {
-	const unsigned char cmd[JEDEC_REMS_OUTSIZE] = { JEDEC_REMS, 0, 0, 0 };
+	unsigned char cmd[JEDEC_REMS_OUTSIZE] = { JEDEC_REMS, 0, 0, 0 };
+	uint32_t readaddr;
+	int ret;
 
-	if (spi_command(sizeof(cmd), JEDEC_REMS_INSIZE, cmd, readarr))
-		return 1;
+	ret = spi_command(sizeof(cmd), JEDEC_REMS_INSIZE, cmd, readarr);
+	if (ret == SPI_INVALID_ADDRESS) {
+		/* Find the lowest even address allowed for reads. */
+		readaddr = (spi_get_valid_read_addr() + 1) & ~1;
+		cmd[1] = (readaddr >> 16) & 0xff,
+		cmd[2] = (readaddr >> 8) & 0xff,
+		cmd[3] = (readaddr >> 0) & 0xff,
+		ret = spi_command(sizeof(cmd), JEDEC_REMS_INSIZE, cmd, readarr);
+	}
+	if (ret)
+		return ret;
 	printf_debug("REMS returned %02x %02x.\n", readarr[0], readarr[1]);
 	return 0;
 }
 
 static int spi_res(unsigned char *readarr)
 {
-	const unsigned char cmd[JEDEC_RES_OUTSIZE] = { JEDEC_RES, 0, 0, 0 };
+	unsigned char cmd[JEDEC_RES_OUTSIZE] = { JEDEC_RES, 0, 0, 0 };
+	uint32_t readaddr;
+	int ret;
 
-	if (spi_command(sizeof(cmd), JEDEC_RES_INSIZE, cmd, readarr))
-		return 1;
+	ret = spi_command(sizeof(cmd), JEDEC_RES_INSIZE, cmd, readarr);
+	if (ret == SPI_INVALID_ADDRESS) {
+		/* Find the lowest even address allowed for reads. */
+		readaddr = (spi_get_valid_read_addr() + 1) & ~1;
+		cmd[1] = (readaddr >> 16) & 0xff,
+		cmd[2] = (readaddr >> 8) & 0xff,
+		cmd[3] = (readaddr >> 0) & 0xff,
+		ret = spi_command(sizeof(cmd), JEDEC_RES_INSIZE, cmd, readarr);
+	}
+	if (ret)
+		return ret;
 	printf_debug("RES returned %02x.\n", readarr[0]);
 	return 0;
 }
@@ -248,13 +272,16 @@ uint8_t spi_read_status_register(void)
 {
 	const unsigned char cmd[JEDEC_RDSR_OUTSIZE] = { JEDEC_RDSR };
 	unsigned char readarr[2]; /* JEDEC_RDSR_INSIZE=1 but wbsio needs 2 */
+	int ret;
 
 	/* Read Status Register */
 	if (flashbus == BUS_TYPE_SB600_SPI) {
 		/* SB600 uses a different way to read status register. */
 		return sb600_read_status_register();
 	} else {
-		spi_command(sizeof(cmd), sizeof(readarr), cmd, readarr);
+		ret = spi_command(sizeof(cmd), sizeof(readarr), cmd, readarr);
+		if (ret)
+			printf_debug("RDSR failed!\n");
 	}
 
 	return readarr[0];
@@ -664,6 +691,12 @@ int spi_chip_write_256(struct flashchip *flash, uint8_t *buf)
 	}
 
 	return 1;
+}
+
+uint32_t spi_get_valid_read_addr(void)
+{
+	/* Need to return BBAR for ICH chipsets. */
+	return 0;
 }
 
 int spi_aai_write(struct flashchip *flash, uint8_t *buf)

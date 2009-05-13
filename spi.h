@@ -105,4 +105,8 @@
 #define JEDEC_BYTE_PROGRAM_OUTSIZE	0x05
 #define JEDEC_BYTE_PROGRAM_INSIZE	0x00
 
+/* Error codes */
+#define SPI_INVALID_OPCODE	-2
+#define SPI_INVALID_ADDRESS	-3
+
 #endif		/* !__SPI_H__ */
