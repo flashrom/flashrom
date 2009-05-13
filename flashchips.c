@@ -1182,7 +1182,7 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.erase		= spi_chip_erase_c7,
-		.write		= spi_chip_write_256,
+		.write		= spi_chip_write_1,
 		.read		= spi_chip_read,
 	},
 
@@ -1196,7 +1196,7 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.erase		= spi_chip_erase_c7,
-		.write		= spi_chip_write_256,
+		.write		= spi_chip_write_1,
 		.read		= spi_chip_read,
 	},
 
@@ -1210,7 +1210,7 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.erase		= spi_chip_erase_c7,
-		.write		= spi_chip_write_256,
+		.write		= spi_chip_write_1,
 		.read		= spi_chip_read,
 	},
 
@@ -1224,7 +1224,7 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PR,
 		.probe		= probe_spi_rems,
 		.erase		= spi_chip_erase_60,
-		.write		= spi_chip_write_256,
+		.write		= spi_chip_write_1,
 		.read		= spi_chip_read,
 	},
 
@@ -1238,7 +1238,7 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PR,
 		.probe		= probe_spi_rems,
 		.erase		= spi_chip_erase_c7,
-		.write		= spi_aai_write,
+		.write		= spi_chip_write_1,
 		.read		= spi_chip_read,
 	},
 
