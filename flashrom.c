@@ -63,6 +63,19 @@ const struct programmer_entry programmer_table[] = {
 		.chip_writel		= dummy_chip_writel,
 	},
 
+	{
+		.init			= nic3com_init,
+		.shutdown		= nic3com_shutdown,
+		.map_flash_region	= nic3com_map,
+		.unmap_flash_region	= nic3com_unmap,
+		.chip_readb		= nic3com_chip_readb,
+		.chip_readw		= nic3com_chip_readw,
+		.chip_readl		= nic3com_chip_readl,
+		.chip_writeb		= nic3com_chip_writeb,
+		.chip_writew		= nic3com_chip_writew,
+		.chip_writel		= nic3com_chip_writel,
+	},
+
 	{},
 };
 
@@ -439,6 +452,8 @@ int main(int argc, char *argv[])
 				programmer = PROGRAMMER_INTERNAL;
 			} else if (strncmp(optarg, "dummy", 5) == 0) {
 				programmer = PROGRAMMER_DUMMY;
+			} else if (strncmp(optarg, "nic3com", 7) == 0) {
+				programmer = PROGRAMMER_NIC3COM;
 			} else {
 				printf("Error: Unknown programmer.\n");
 				exit(1);

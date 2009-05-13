@@ -530,6 +530,20 @@ struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Atmel",
+		.name		= "AT49BV512",
+		.manufacture_id	= ATMEL_ID,
+		.model_id	= AT_49BV512,
+		.total_size	= 64,
+		.page_size	= 64,
+		.tested		= TEST_OK_PREW,
+		.probe		= probe_jedec,
+		.erase		= erase_chip_jedec,
+		.write		= write_49f002,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "Atmel",
 		.name		= "AT49F002(N)",
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_49F002N,

@@ -79,6 +79,7 @@
 extern int programmer;
 #define PROGRAMMER_INTERNAL	0x00
 #define PROGRAMMER_DUMMY	0x01
+#define PROGRAMMER_NIC3COM	0x02
 
 struct programmer_entry {
 	const char *vendor;
@@ -281,6 +282,7 @@ extern struct flashchip flashchips[];
 #define AT_45DB321D		0x2701 /* Buggy data sheet */
 #define AT_45DB642		/* No ID available */
 #define AT_45DB642D		0x2800
+#define AT_49BV512		0x03
 #define AT_49F002N		0x07	/* for AT49F002(N)  */
 #define AT_49F002NT		0x08	/* for AT49F002(N)T */
 
@@ -600,6 +602,18 @@ void dummy_chip_writel(uint32_t val, volatile void *addr);
 uint8_t dummy_chip_readb(const volatile void *addr);
 uint16_t dummy_chip_readw(const volatile void *addr);
 uint32_t dummy_chip_readl(const volatile void *addr);
+
+/* nic3com.c */
+int nic3com_init(void);
+int nic3com_shutdown(void);
+void *nic3com_map(const char *descr, unsigned long phys_addr, size_t len);
+void nic3com_unmap(void *virt_addr, size_t len);
+void nic3com_chip_writeb(uint8_t val, volatile void *addr);
+void nic3com_chip_writew(uint16_t val, volatile void *addr);
+void nic3com_chip_writel(uint32_t val, volatile void *addr);
+uint8_t nic3com_chip_readb(const volatile void *addr);
+uint16_t nic3com_chip_readw(const volatile void *addr);
+uint32_t nic3com_chip_readl(const volatile void *addr);
 
 /* flashrom.c */
 extern int verbose;
