@@ -767,7 +767,7 @@ int ich_spi_command(unsigned int writecnt, unsigned int readcnt,
 	/* unknown / not programmed command */
 	if (opcode_index == -1) {
 		printf_debug("Invalid OPCODE 0x%02x\n", cmd);
-		return 1;
+		return SPI_INVALID_OPCODE;
 	}
 
 	opcode = &(curopcodes->opcode[opcode_index]);
