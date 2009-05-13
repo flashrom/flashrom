@@ -384,7 +384,7 @@ void spi_prettyprint_status_register(struct flashchip *flash)
 		case 0x258d:
 			spi_prettyprint_status_register_sst25vf040b(status);
 			break;
-		case 0x258e:
+		default:
 			spi_prettyprint_status_register_sst25(status);
 			break;
 		}
