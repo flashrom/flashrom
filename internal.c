@@ -34,6 +34,17 @@ int io_fd;
 
 struct pci_access *pacc;	/* For board and chipset_enable */
 
+struct pci_dev *pci_dev_find_filter(struct pci_filter filter)
+{
+	struct pci_dev *temp;
+
+	for (temp = pacc->devices; temp; temp = temp->next)
+		if (pci_filter_match(&filter, temp))
+			return temp;
+
+	return NULL;
+}
+
 struct pci_dev *pci_dev_find(uint16_t vendor, uint16_t device)
 {
 	struct pci_dev *temp;
