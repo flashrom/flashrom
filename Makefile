@@ -8,11 +8,13 @@ PROGRAM = flashrom
 
 CC     ?= gcc
 STRIP	= strip
-INSTALL = /usr/bin/install
-PREFIX  = /usr/local
-#CFLAGS  = -O2 -g -Wall -Werror
-CFLAGS  = -Os -Wall -Werror
-LDFLAGS = 
+INSTALL = install
+PREFIX  ?= /usr/local
+CFLAGS  ?= -Os -Wall -Werror
+
+prefix = $(DESTDIR)$(PREFIX)
+man8dir = $(prefix)/share/man/man8
+sbindir = $(prefix)/sbin
 
 OS_ARCH	= $(shell uname)
 ifneq ($(OS_ARCH), SunOS)
@@ -27,7 +29,7 @@ CFLAGS += -I/usr/local/include
 LDFLAGS += -L/usr/local/lib
 endif
 
-LDFLAGS += -lpci -lz
+LIBS += -lpci -lz
 
 OBJS = chipset_enable.o board_enable.o udelay.o jedec.o stm50flw0x0x.o \
 	sst28sf040.o am29f040b.o mx29f002.o m29f400bt.o \
@@ -45,8 +47,7 @@ SVNDEF := -D'FLASHROM_VERSION="0.9.0-r$(shell svnversion -cn . \
           | sed -e "s/.*://" -e "s/\([0-9]*\).*/\1/")"'
 
 $(PROGRAM): $(OBJS)
-	$(CC) -o $(PROGRAM) $(OBJS) $(LDFLAGS)
-	$(STRIP) $(STRIP_ARGS) $(PROGRAM)
+	$(CC) $(LDFLAGS) -o $(PROGRAM) $(OBJS) $(LIBS)
 
 flashrom.o: flashrom.c
 	$(CC) -c $(CFLAGS) $(SVNDEF) $(CPPFLAGS) $< -o $@
@@ -58,7 +59,10 @@ distclean: clean
 	rm -f .dependencies
 
 dep:
-	@$(CC) $(SVNDEF) -MM *.c > .dependencies
+	@$(CC) $(CPPFLAGS) $(SVNDEF) -MM *.c > .dependencies
+
+strip: $(PROGRAM)
+	$(STRIP) $(STRIP_ARGS) $(PROGRAM)
 
 pciutils:
 	@echo; printf "Checking for pciutils and zlib... "
@@ -66,7 +70,7 @@ pciutils:
 		   echo "struct pci_access *pacc;";	   \
 		   echo "int main(int argc, char **argv)"; \
 		   echo "{ pacc = pci_alloc(); return 0; }"; ) > .test.c )
-	@$(CC) $(CFLAGS) .test.c -o .test $(LDFLAGS) >/dev/null 2>&1 &&	\
+	@$(CC) $(CFLAGS) $(LDFLAGS) .test.c -o .test $(LIBS) >/dev/null 2>&1 &&	\
 		echo "found." || ( echo "not found."; echo;		\
 		echo "Please install pciutils-devel and zlib-devel.";	\
 		echo "See README for more information."; echo;		\
@@ -74,9 +78,9 @@ pciutils:
 	@rm -f .test.c .test
 
 install: $(PROGRAM)
-	$(INSTALL) $(PROGRAM) $(PREFIX)/sbin
-	mkdir -p $(PREFIX)/share/man/man8
-	$(INSTALL) $(PROGRAM).8 $(PREFIX)/share/man/man8
+	mkdir -p $(sbindir) $(man8dir)
+	$(INSTALL) -m 0755 $(PROGRAM) $(sbindir)
+	$(INSTALL) -m 0644 $(PROGRAM).8 $(man8dir)
 
 .PHONY: all clean distclean dep pciutils
 
