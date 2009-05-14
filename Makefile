@@ -6,15 +6,11 @@
 
 PROGRAM = flashrom
 
-CC     ?= gcc
-STRIP	= strip
+CC      ?= gcc
+STRIP   = strip
 INSTALL = install
 PREFIX  ?= /usr/local
 CFLAGS  ?= -Os -Wall -Werror
-
-prefix = $(DESTDIR)$(PREFIX)
-man8dir = $(prefix)/share/man/man8
-sbindir = $(prefix)/sbin
 
 OS_ARCH	= $(shell uname)
 ifneq ($(OS_ARCH), SunOS)
@@ -78,9 +74,10 @@ pciutils:
 	@rm -f .test.c .test
 
 install: $(PROGRAM)
-	mkdir -p $(sbindir) $(man8dir)
-	$(INSTALL) -m 0755 $(PROGRAM) $(sbindir)
-	$(INSTALL) -m 0644 $(PROGRAM).8 $(man8dir)
+	mkdir -p $(DESTDIR)$(PREFIX)/sbin
+	mkdir -p $(DESTDIR)$(PREFIX)/share/man/man8
+	$(INSTALL) -m 0755 $(PROGRAM) $(DESTDIR)$(PREFIX)/sbin
+	$(INSTALL) -m 0644 $(PROGRAM).8 $(DESTDIR)$(PREFIX)/share/man/man8
 
 .PHONY: all clean distclean dep pciutils
 
