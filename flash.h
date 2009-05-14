@@ -29,6 +29,7 @@
 #include <unistd.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <pci/pci.h>
 
 /* for iopl and outb under Solaris */
 #if defined (__sun) && (defined(__i386) || defined(__amd64))
@@ -545,6 +546,7 @@ void myusec_calibrate_delay(void);
 
 /* PCI handling for board/chipset_enable */
 struct pci_access *pacc;
+struct pci_dev *pci_dev_find_filter(struct pci_filter filter);
 struct pci_dev *pci_dev_find(uint16_t vendor, uint16_t device);
 struct pci_dev *pci_card_find(uint16_t vendor, uint16_t device,
 			      uint16_t card_vendor, uint16_t card_device);
@@ -623,6 +625,7 @@ extern int verbose;
 #define printf_debug(x...) { if (verbose) printf(x); }
 void map_flash_registers(struct flashchip *flash);
 int read_memmapped(struct flashchip *flash, uint8_t *buf);
+extern char *nic_pcidev;
 
 /* layout.c */
 int show_id(uint8_t *bios, int size, int force);
