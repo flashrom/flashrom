@@ -24,7 +24,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
-#include <pci/pci.h>
 #include "flash.h"
 
 #define BIOS_ROM_ADDR		0x04
@@ -38,6 +37,7 @@
 
 uint32_t io_base_addr;
 struct pci_access *pacc;
+struct pci_filter filter;
 
 #if defined(__FreeBSD__) || defined(__DragonFly__)
 int io_fd;
@@ -69,10 +69,38 @@ static struct nic_status {
 	{},
 };
 
+uint32_t nic3com_validate(struct pci_dev *dev)
+{
+	int i = 0;
+	uint32_t addr = -1;
+
+	for (i = 0; nics[i].device_name != NULL; i++) {
+		if (dev->device_id != nics[i].device_id)
+			continue;
+
+		addr = pci_read_long(dev, PCI_IO_BASE_ADDRESS) & ~0x03;
+
+		printf("Found NIC \"3COM %s\" (%04x:%04x), addr = 0x%x\n",
+		       nics[i].device_name, PCI_VENDOR_ID_3COM,
+		       nics[i].device_id, addr);
+
+		if (nics[i].status == NT) {
+			printf("===\nThis NIC is UNTESTED. Please email a "
+			       "report including the 'flashrom -p nic3com'\n"
+			       "output to flashrom@coreboot.org if it works "
+			       "for you. Thank you for your help!\n===\n");
+		}
+
+		return addr;
+	}
+
+	return addr;
+}
+
 int nic3com_init(void)
 {
-	int i, found = 0;
 	struct pci_dev *dev;
+	char *msg = NULL;
 
 #if defined (__sun) && (defined(__i386) || defined(__amd64))
 	if (sysi86(SI86V86, V86SC_IOPL, PS_IOPL) != 0) {
@@ -90,29 +118,25 @@ int nic3com_init(void)
 	pci_init(pacc);         /* Initialize the PCI library */
 	pci_scan_bus(pacc);     /* We want to get the list of devices */
 
-	for (i = 0; nics[i].device_name != NULL; i++) {
-		dev = pci_dev_find(PCI_VENDOR_ID_3COM, nics[i].device_id);
-		if (!dev)
-			continue;
-
-		io_base_addr = pci_read_long(dev, PCI_IO_BASE_ADDRESS) & ~0x03;
-
-		printf("Found NIC \"3COM %s\" (%04x:%04x), addr = 0x%x\n",
-		       nics[i].device_name, PCI_VENDOR_ID_3COM,
-		       nics[i].device_id, io_base_addr);
-
-		if (nics[i].status == NT) {
-			printf("===\nThis NIC is UNTESTED. Please email a "
-			       "report including the 'flashrom -p nic3com'\n"
-			       "output to flashrom@coreboot.org if it works "
-			       "for you. Thank you for your help!\n===\n");
+	if (nic_pcidev != NULL) {
+		pci_filter_init(pacc, &filter);
+		
+		if ((msg = pci_filter_parse_slot(&filter, nic_pcidev))) {
+			fprintf(stderr, "Error: %s\n", msg);
+			exit(1);
 		}
-
-		found = 1;
-		break;
 	}
 
-	if (!found) {
+	if (!filter.vendor && !filter.device) {
+		pci_filter_init(pacc, &filter);
+		filter.vendor = PCI_VENDOR_ID_3COM;
+	}
+
+	dev = pci_dev_find_filter(filter);
+
+	if (dev && (dev->vendor_id == PCI_VENDOR_ID_3COM))
+		io_base_addr = nic3com_validate(dev);
+	else {
 		fprintf(stderr, "Error: No supported 3COM NIC found.\n");
 		exit(1);
 	}
@@ -129,6 +153,8 @@ int nic3com_init(void)
 
 int nic3com_shutdown(void)
 {
+	free(nic_pcidev);
+	pci_cleanup(pacc);
 	return 0;
 }
 
