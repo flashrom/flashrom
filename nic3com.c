@@ -158,7 +158,7 @@ void nic3com_unmap(void *virt_addr, size_t len)
 
 void nic3com_chip_writeb(uint8_t val, volatile void *addr)
 {
-	OUTL((uint32_t)addr, io_base_addr + BIOS_ROM_ADDR);
+	OUTL((uint32_t)(intptr_t)addr, io_base_addr + BIOS_ROM_ADDR);
 	OUTB(val, io_base_addr + BIOS_ROM_DATA);
 }
 
@@ -174,7 +174,7 @@ uint8_t nic3com_chip_readb(const volatile void *addr)
 {
 	uint8_t val;
 
-	OUTL((uint32_t)addr, io_base_addr + BIOS_ROM_ADDR);
+	OUTL((uint32_t)(intptr_t)addr, io_base_addr + BIOS_ROM_ADDR);
 	val = INB(io_base_addr + BIOS_ROM_DATA);
 
 	return val;

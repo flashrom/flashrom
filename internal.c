@@ -102,7 +102,7 @@ int internal_init(void)
 {
 	int ret = 0;
 
-	get_io_perms(void);
+	get_io_perms();
 
 	/* Initialize PCI access for flash enables */
 	pacc = pci_alloc();	/* Get the pci_access structure */

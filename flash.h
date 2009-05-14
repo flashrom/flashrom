@@ -585,6 +585,7 @@ void *physmap(const char *descr, unsigned long phys_addr, size_t len);
 void physunmap(void *virt_addr, size_t len);
 
 /* internal.c */
+void get_io_perms(void);
 int internal_init(void);
 int internal_shutdown(void);
 void internal_chip_writeb(uint8_t val, volatile void *addr);
