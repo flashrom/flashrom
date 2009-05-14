@@ -593,6 +593,9 @@ void internal_chip_writel(uint32_t val, volatile void *addr);
 uint8_t internal_chip_readb(const volatile void *addr);
 uint16_t internal_chip_readw(const volatile void *addr);
 uint32_t internal_chip_readl(const volatile void *addr);
+#if defined(__FreeBSD__) || defined(__DragonFly__)
+extern int io_fd;
+#endif
 
 /* dummyflasher.c */
 int dummy_init(void);
