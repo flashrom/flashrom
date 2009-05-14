@@ -571,7 +571,8 @@ typedef enum {
 	BUS_TYPE_IT87XX_SPI,
 	BUS_TYPE_SB600_SPI,
 	BUS_TYPE_VIA_SPI,
-	BUS_TYPE_WBSIO_SPI
+	BUS_TYPE_WBSIO_SPI,
+	BUS_TYPE_DUMMY_SPI
 } flashbus_t;
 
 extern flashbus_t flashbus;
@@ -602,6 +603,8 @@ void dummy_chip_writel(uint32_t val, volatile void *addr);
 uint8_t dummy_chip_readb(const volatile void *addr);
 uint16_t dummy_chip_readw(const volatile void *addr);
 uint32_t dummy_chip_readl(const volatile void *addr);
+int dummy_spi_command(unsigned int writecnt, unsigned int readcnt,
+		      const unsigned char *writearr, unsigned char *readarr);
 
 /* nic3com.c */
 int nic3com_init(void);

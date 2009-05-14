@@ -31,6 +31,7 @@
 int dummy_init(void)
 {
 	printf_debug("%s\n", __func__);
+	flashbus = BUS_TYPE_DUMMY_SPI;
 	return 0; 
 }
 
@@ -86,3 +87,23 @@ uint32_t dummy_chip_readl(const volatile void *addr)
 	return 0xffffffff;
 }
 
+int dummy_spi_command(unsigned int writecnt, unsigned int readcnt,
+		      const unsigned char *writearr, unsigned char *readarr)
+{
+	int i;
+
+	printf_debug("%s:", __func__);
+
+	printf_debug(" writing %u bytes:", writecnt);
+	for (i = 0; i < writecnt; i++)
+		printf_debug(" 0x%02x", writearr[i]);
+
+	printf_debug(" reading %u bytes:", readcnt);
+	for (i = 0; i < readcnt; i++) {
+		printf_debug(" 0xff");
+		readarr[i] = 0xff;
+	}
+
+	printf_debug("\n");
+	return 0;
+}
