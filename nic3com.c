@@ -67,18 +67,18 @@ static struct nic_status {
 
 uint32_t nic3com_validate(struct pci_dev *dev)
 {
-	int i = 0;
-	uint32_t addr = -1;
+	int i;
+	uint32_t addr;
 
 	for (i = 0; nics[i].device_name != NULL; i++) {
 		if (dev->device_id != nics[i].device_id)
 			continue;
 
-		addr = pci_read_long(dev, PCI_IO_BASE_ADDRESS) & ~0x03;
+		addr = (uint32_t)(dev->base_addr[0] & ~0x03);
 
-		printf("Found NIC \"3COM %s\" (%04x:%04x), addr = 0x%x\n",
-		       nics[i].device_name, PCI_VENDOR_ID_3COM,
-		       nics[i].device_id, addr);
+		printf("Found NIC \"3COM %s\" (%04x:%04x, BDF %02x:%02x.%x)\n",
+		       nics[i].device_name, dev->vendor_id,
+		       dev->device_id, dev->bus, dev->dev, dev->func);
 
 		if (nics[i].status == NT) {
 			printf("===\nThis NIC is UNTESTED. Please email a "
@@ -90,40 +90,47 @@ uint32_t nic3com_validate(struct pci_dev *dev)
 		return addr;
 	}
 
-	return addr;
+	return 0;
 }
 
 int nic3com_init(void)
 {
 	struct pci_dev *dev;
 	char *msg = NULL;
+	int found = 0;
 
 	get_io_perms();
 
 	pacc = pci_alloc();     /* Get the pci_access structure */
 	pci_init(pacc);         /* Initialize the PCI library */
 	pci_scan_bus(pacc);     /* We want to get the list of devices */
+	pci_filter_init(pacc, &filter);
 
+	/* Filter by vendor and also bb:dd.f (if supplied by the user). */
+	filter.vendor = PCI_VENDOR_ID_3COM;
 	if (nic_pcidev != NULL) {
-		pci_filter_init(pacc, &filter);
-		
 		if ((msg = pci_filter_parse_slot(&filter, nic_pcidev))) {
 			fprintf(stderr, "Error: %s\n", msg);
 			exit(1);
 		}
 	}
 
-	if (!filter.vendor && !filter.device) {
-		pci_filter_init(pacc, &filter);
-		filter.vendor = PCI_VENDOR_ID_3COM;
+	for (dev = pacc->devices; dev; dev = dev->next) {
+		if (pci_filter_match(&filter, dev)) {
+			if ((io_base_addr = nic3com_validate(dev)) != 0)
+				found++;
+		}
 	}
 
-	dev = pci_dev_find_filter(filter);
-
-	if (dev && (dev->vendor_id == PCI_VENDOR_ID_3COM))
-		io_base_addr = nic3com_validate(dev);
-	else {
+	/* Only continue if exactly one supported NIC has been found. */
+	if (found == 0) {
 		fprintf(stderr, "Error: No supported 3COM NIC found.\n");
+		exit(1);
+	} else if (found > 1) {
+		fprintf(stderr, "Error: Multiple supported NICs found. "
+			"Please use 'flashrom -p nic3com=bb:dd.f' \n"
+			"to explicitly select the card with the given BDF "
+			"(PCI bus, device, function).\n");
 		exit(1);
 	}
 

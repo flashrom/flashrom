@@ -1,13 +1,17 @@
-.TH FLASHROM 8 "April 11, 2009"
+.TH FLASHROM 8 "May 14, 2009"
 .SH NAME
-flashrom \- read, write, verify and erase BIOS/ROM/flash chips
+flashrom \- detect, read, write, verify and erase flash chips
 .SH SYNOPSIS
-.B flashrom \fR[\fB\-rwvEVfLhR\fR] [\fB\-c\fR chipname] [\fB\-s\fR exclude_start] [\fB\-e\fR exclude_end]
-         [\fB-m\fR [vendor:]part] [\fB-l\fR file.layout] [\fB-i\fR image_name] [file]
+.B flashrom \fR[\fB\-EVfLhR\fR] [\fB\-r\fR file] [\fB\-w\fR file] [\fB\-v\fR file]
+         [\fB\-c\fR chipname] [\fB\-s\fR addr] [\fB\-e\fR addr] [\fB\-m\fR [vendor:]part]
+         [\fB\-l\fR file] [\fB\-i\fR image] [\fB\-p\fR programmer] [file]
 .SH DESCRIPTION
 .B flashrom
-is a utility for reading, writing, verifying and erasing flash ROM chips.
-It's often used to flash BIOS/coreboot/firmware images.
+is a utility for detecting, reading, writing, verifying and erasing flash ROM
+chips. It's often used to flash BIOS/EFI/coreboot/firmware images in-system
+using a supported mainboard, but it also supports flashing of network cards
+(NICs), SATA controller cards, and other external devices which can program
+flash chips.
 .PP
 It supports a wide range of DIP32, PLCC32, DIP8, SO8/SOIC8, TSOP32, and
 TSOP40 chips, which use various protocols such as LPC, FWH, parallel flash,
@@ -126,11 +130,24 @@ of the box.
 .B "\-p, \-\-programmer <name>"
 Specify the programmer device. Currently supported are:
 .sp
-.BR " internal" " (default, for in-system flashing in the mainboard)"
-.br
-.BR " nic3com" " (for flash ROMs on 3COM network cards)"
-.br
-.BR " dummy" " (just prints all operations and accesses)"
+.BR "* internal" " (default, for in-system flashing in the mainboard)"
+.sp
+.BR "* nic3com" " (for flash ROMs on 3COM network cards)"
+.sp
+If you have multiple supported NICs in your system, you must use
+.B "flashrom -p nic3com=bb:dd.f"
+to explicitly select one of them, where
+.B bb
+is the PCI bus number,
+.B dd
+is the PCI device number, and
+.B f
+is the PCI function number of the desired NIC.
+.sp
+Example:
+.B "flashrom -p nic3com=05:04.0"
+.sp
+.BR "* dummy" " (just prints all operations and accesses)"
 .TP
 .B "\-h, \-\-help"
 Show a help text and exit.
