@@ -102,7 +102,7 @@ static struct lb_header *find_lb_table(void *base, unsigned long start,
 		    (struct lb_record *)(((char *)base) + addr + sizeof(*head));
 		if (memcmp(head->signature, "LBIO", 4) != 0)
 			continue;
-		printf_debug("Found canidate at: %08lx-%08lx\n",
+		printf_debug("Found candidate at: %08lx-%08lx\n",
 			     addr, addr + head->table_bytes);
 		if (head->header_bytes != sizeof(*head)) {
 			fprintf(stderr, "Header bytes of %d are incorrect.\n",
