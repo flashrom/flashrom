@@ -83,11 +83,8 @@ struct pci_dev *pci_card_find(uint16_t vendor, uint16_t device,
 	return NULL;
 }
 
-int internal_init(void)
+void get_io_perms(void)
 {
-	int ret = 0;
-
-	/* First get full io access */
 #if defined (__sun) && (defined(__i386) || defined(__amd64))
 	if (sysi86(SI86V86, V86SC_IOPL, PS_IOPL) != 0) {
 #elif defined(__FreeBSD__) || defined (__DragonFly__)
@@ -95,9 +92,17 @@ int internal_init(void)
 #else
 	if (iopl(3) != 0) {
 #endif
-		fprintf(stderr, "ERROR: Could not get IO privileges (%s).\nYou need to be root.\n", strerror(errno));
+		fprintf(stderr, "ERROR: Could not get I/O privileges (%s).\n"
+			"You need to be root.\n", strerror(errno));
 		exit(1);
 	}
+}
+
+int internal_init(void)
+{
+	int ret = 0;
+
+	get_io_perms(void);
 
 	/* Initialize PCI access for flash enables */
 	pacc = pci_alloc();	/* Get the pci_access structure */
