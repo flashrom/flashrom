@@ -46,6 +46,8 @@ int spi_command(unsigned int writecnt, unsigned int readcnt,
 		return sb600_spi_command(writecnt, readcnt, writearr, readarr);
 	case BUS_TYPE_WBSIO_SPI:
 		return wbsio_spi_command(writecnt, readcnt, writearr, readarr);
+	case BUS_TYPE_DUMMY_SPI:
+		return dummy_spi_command(writecnt, readcnt, writearr, readarr);
 	default:
 		printf_debug
 		    ("%s called, but no SPI chipset/strapping detected\n",
@@ -58,12 +60,15 @@ static int spi_rdid(unsigned char *readarr, int bytes)
 {
 	const unsigned char cmd[JEDEC_RDID_OUTSIZE] = { JEDEC_RDID };
 	int ret;
+	int i;
 
 	ret = spi_command(sizeof(cmd), bytes, cmd, readarr);
 	if (ret)
 		return ret;
-	printf_debug("RDID returned %02x %02x %02x.\n", readarr[0], readarr[1],
-		     readarr[2]);
+	printf_debug("RDID returned");
+	for (i = 0; i < bytes; i++)
+		printf_debug(" 0x%02x", readarr[i]);
+	printf_debug("\n");
 	return 0;
 }
 
@@ -202,6 +207,7 @@ int probe_spi_rdid4(struct flashchip *flash)
 	case BUS_TYPE_VIA_SPI:
 	case BUS_TYPE_SB600_SPI:
 	case BUS_TYPE_WBSIO_SPI:
+	case BUS_TYPE_DUMMY_SPI:
 		return probe_spi_rdid_generic(flash, 4);
 	default:
 		printf_debug("4b ID not supported on this SPI controller\n");
