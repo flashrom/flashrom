@@ -39,10 +39,6 @@ uint32_t io_base_addr;
 struct pci_access *pacc;
 struct pci_filter filter;
 
-#if defined(__FreeBSD__) || defined(__DragonFly__)
-int io_fd;
-#endif
-
 #define OK 0
 #define NT 1	/* Not tested */
 
@@ -102,17 +98,7 @@ int nic3com_init(void)
 	struct pci_dev *dev;
 	char *msg = NULL;
 
-#if defined (__sun) && (defined(__i386) || defined(__amd64))
-	if (sysi86(SI86V86, V86SC_IOPL, PS_IOPL) != 0) {
-#elif defined(__FreeBSD__) || defined (__DragonFly__)
-	if ((io_fd = open("/dev/io", O_RDWR)) < 0) {
-#else
-	if (iopl(3) != 0) {
-#endif
-		fprintf(stderr, "ERROR: Could not get IO privileges (%s).\n"
-			"You need to be root.\n", strerror(errno));
-		exit(1);
-	}
+	get_io_perms();
 
 	pacc = pci_alloc();     /* Get the pci_access structure */
 	pci_init(pacc);         /* Initialize the PCI library */
@@ -155,6 +141,9 @@ int nic3com_shutdown(void)
 {
 	free(nic_pcidev);
 	pci_cleanup(pacc);
+#if defined(__FreeBSD__) || defined(__DragonFly__)
+	close(io_fd);
+#endif
 	return 0;
 }
 
