@@ -121,8 +121,10 @@ int spi_write_enable(void)
 
 	/* Send WREN (Write Enable) */
 	result = spi_command(sizeof(cmd), 0, cmd, NULL);
-	if (result) {
-		printf_debug("spi_write_enable failed");
+
+	if (result)
+		printf_debug("%s failed", __func__);
+	if (result == SPI_INVALID_OPCODE) {
 		switch (flashbus) {
 		case BUS_TYPE_ICH7_SPI:
 		case BUS_TYPE_ICH9_SPI:
@@ -131,9 +133,12 @@ int spi_write_enable(void)
 				     " and hoping it will be run as PREOP\n");
 			return 0;
 		default:
-			printf_debug("\n");
+			break;
 		}
 	}
+	if (result)
+		printf_debug("\n");
+
 	return result;
 }
 
@@ -561,9 +566,29 @@ int spi_sector_erase(const struct flashchip *flash, unsigned long addr)
 int spi_write_status_enable(void)
 {
 	const unsigned char cmd[JEDEC_EWSR_OUTSIZE] = { JEDEC_EWSR };
+	int result;
 
 	/* Send EWSR (Enable Write Status Register). */
-	return spi_command(JEDEC_EWSR_OUTSIZE, JEDEC_EWSR_INSIZE, cmd, NULL);
+	result = spi_command(sizeof(cmd), JEDEC_EWSR_INSIZE, cmd, NULL);
+
+	if (result)
+		printf_debug("%s failed", __func__);
+	if (result == SPI_INVALID_OPCODE) {
+		switch (flashbus) {
+		case BUS_TYPE_ICH7_SPI:
+		case BUS_TYPE_ICH9_SPI:
+		case BUS_TYPE_VIA_SPI:
+			printf_debug(" due to SPI master limitation, ignoring"
+				     " and hoping it will be run as PREOP\n");
+			return 0;
+		default:
+			break;
+		}
+	}
+	if (result)
+		printf_debug("\n");
+
+	return result;
 }
 
 /*
