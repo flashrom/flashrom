@@ -719,7 +719,8 @@ static int enable_flash_sb600(struct pci_dev *dev, const char *name)
 		reg &= 0xC0;
 		printf_debug("GPIO31 used for %s\n", (reg & (1 << 6)) ? "GPIO" : "SPI_HOLD");
 		printf_debug("GPIO32 used for %s\n", (reg & (1 << 7)) ? "GPIO" : "SPI_CS");
-		if (reg != 0x00)
+		/* SPI_HOLD is not used on all boards, filter it out. */
+		if ((reg & 0x80) != 0x00)
 			has_spi = 0;
 		/* GPIO47/SPI_CLK status */
 		reg = pci_read_byte(smbus_dev, 0xA7);
@@ -731,6 +732,29 @@ static int enable_flash_sb600(struct pci_dev *dev, const char *name)
 
 	if (has_spi)
 		flashbus = BUS_TYPE_SB600_SPI;
+
+	/* Read ROM strap override register. */
+	OUTB(0x8f, 0xcd6);
+	reg = INB(0xcd7);
+	reg &= 0x0e;
+	printf_debug("ROM strap override is %sactive", (reg & 0x02) ? "" : "not ");
+	if (reg & 0x02) {
+		switch ((reg & 0x0c) >> 2) {
+		case 0x00:
+			printf_debug(": LPC");
+			break;
+		case 0x01:
+			printf_debug(": PCI");
+			break;
+		case 0x02:
+			printf_debug(": FWH");
+			break;
+		case 0x03:
+			printf_debug(": SPI");
+			break;
+		}
+	}
+	printf_debug("\n");
 
 	/* Force enable SPI ROM in SB600 PM register.
 	 * If we enable SPI ROM here, we have to disable it after we leave.
