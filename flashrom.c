@@ -35,7 +35,6 @@ char *chip_to_probe = NULL;
 int exclude_start_page, exclude_end_page;
 int verbose = 0;
 int programmer = PROGRAMMER_INTERNAL;
-char *nic_pcidev = NULL;
 
 const struct programmer_entry programmer_table[] = {
 	{
@@ -446,6 +445,9 @@ int main(int argc, char *argv[])
 			print_supported_chips();
 			print_supported_chipsets();
 			print_supported_boards();
+			printf("\nSupported PCI devices flashrom can use "
+			       "as programmer:\n\n");
+			print_supported_pcidevs(nics_3com);
 			exit(0);
 			break;
 		case 'p':
@@ -456,7 +458,7 @@ int main(int argc, char *argv[])
 			} else if (strncmp(optarg, "nic3com", 7) == 0) {
 				programmer = PROGRAMMER_NIC3COM;
 				if (optarg[7] == '=')
-					nic_pcidev = strdup(optarg + 8);
+					pcidev_bdf = strdup(optarg + 8);
 			} else {
 				printf("Error: Unknown programmer.\n");
 				exit(1);
