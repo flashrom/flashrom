@@ -551,6 +551,23 @@ struct pci_dev *pci_dev_find(uint16_t vendor, uint16_t device);
 struct pci_dev *pci_card_find(uint16_t vendor, uint16_t device,
 			      uint16_t card_vendor, uint16_t card_device);
 
+/* pcidev.c */
+#define PCI_OK 0
+#define PCI_NT 1    /* Not tested */
+extern uint32_t io_base_addr;
+extern struct pci_access *pacc;
+extern struct pci_filter filter;
+struct pcidev_status {
+	uint16_t vendor_id;
+	uint16_t device_id;
+	int status;
+	const char *vendor_name;
+	const char *device_name;
+};
+uint32_t pcidev_validate(struct pci_dev *dev, struct pcidev_status *devs);
+uint32_t pcidev_init(uint16_t vendor_id, struct pcidev_status *devs);
+void print_supported_pcidevs(struct pcidev_status *devs);
+
 /* board_enable.c */
 void w836xx_ext_enter(uint16_t port);
 void w836xx_ext_leave(uint16_t port);
@@ -623,13 +640,14 @@ void nic3com_chip_writel(uint32_t val, volatile void *addr);
 uint8_t nic3com_chip_readb(const volatile void *addr);
 uint16_t nic3com_chip_readw(const volatile void *addr);
 uint32_t nic3com_chip_readl(const volatile void *addr);
+extern struct pcidev_status nics_3com[];
 
 /* flashrom.c */
 extern int verbose;
 #define printf_debug(x...) { if (verbose) printf(x); }
 void map_flash_registers(struct flashchip *flash);
 int read_memmapped(struct flashchip *flash, uint8_t *buf);
-extern char *nic_pcidev;
+extern char *pcidev_bdf;
 
 /* layout.c */
 int show_id(uint8_t *bios, int size, int force);
