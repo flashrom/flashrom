@@ -31,108 +31,32 @@
 #define INT_STATUS		0x0e
 #define SELECT_REG_WINDOW	0x800
 
-#define PCI_IO_BASE_ADDRESS	0x10
-
 #define PCI_VENDOR_ID_3COM	0x10b7
 
-uint32_t io_base_addr;
-struct pci_access *pacc;
-struct pci_filter filter;
-
-#define OK 0
-#define NT 1	/* Not tested */
-
-static struct nic_status {
-	uint16_t device_id;
-	int status;
-	const char *device_name;
-} nics[] = {
+struct pcidev_status nics_3com[] = {
 	/* 3C90xB */
-	{0x9055, NT, "3C90xB: PCI 10/100 Mbps; shared 10BASE-T/100BASE-TX"},
-	{0x9001, NT, "3C90xB: PCI 10/100 Mbps; shared 10BASE-T/100BASE-T4" },
-	{0x9004, NT, "3C90xB: PCI 10BASE-T (TPO)" },
-	{0x9005, NT, "3C90xB: PCI 10BASE-T/10BASE2/AUI (COMBO)" },
-	{0x9006, NT, "3C90xB: PCI 10BASE-T/10BASE2 (TPC)" },
-	{0x900a, NT, "3C90xB: PCI 10BASE-FL" },
-	{0x905a, NT, "3C90xB: PCI 10BASE-FX" },
+	{0x10b7, 0x9055, PCI_NT, "3COM", "3C90xB: PCI 10/100 Mbps; shared 10BASE-T/100BASE-TX"},
+	{0x10b7, 0x9001, PCI_NT, "3COM", "3C90xB: PCI 10/100 Mbps; shared 10BASE-T/100BASE-T4" },
+	{0x10b7, 0x9004, PCI_NT, "3COM", "3C90xB: PCI 10BASE-T (TPO)" },
+	{0x10b7, 0x9005, PCI_NT, "3COM", "3C90xB: PCI 10BASE-T/10BASE2/AUI (COMBO)" },
+	{0x10b7, 0x9006, PCI_NT, "3COM", "3C90xB: PCI 10BASE-T/10BASE2 (TPC)" },
+	{0x10b7, 0x900a, PCI_NT, "3COM", "3C90xB: PCI 10BASE-FL" },
+	{0x10b7, 0x905a, PCI_NT, "3COM", "3C90xB: PCI 10BASE-FX" },
 
 	/* 3C905C */
-	{0x9200, OK, "3C905C: EtherLink 10/100 PCI (TX)" },
+	{0x10b7, 0x9200, PCI_OK, "3COM", "3C905C: EtherLink 10/100 PCI (TX)" },
 
 	/* 3C980C */
-	{0x9805, NT, "3C980C: EtherLink Server 10/100 PCI (TX)" },
+	{0x10b7, 0x9805, PCI_NT, "3COM", "3C980C: EtherLink Server 10/100 PCI (TX)" },
 
 	{},
 };
 
-uint32_t nic3com_validate(struct pci_dev *dev)
-{
-	int i;
-	uint32_t addr;
-
-	for (i = 0; nics[i].device_name != NULL; i++) {
-		if (dev->device_id != nics[i].device_id)
-			continue;
-
-		addr = (uint32_t)(dev->base_addr[0] & ~0x03);
-
-		printf("Found NIC \"3COM %s\" (%04x:%04x, BDF %02x:%02x.%x)\n",
-		       nics[i].device_name, dev->vendor_id,
-		       dev->device_id, dev->bus, dev->dev, dev->func);
-
-		if (nics[i].status == NT) {
-			printf("===\nThis NIC is UNTESTED. Please email a "
-			       "report including the 'flashrom -p nic3com'\n"
-			       "output to flashrom@coreboot.org if it works "
-			       "for you. Thank you for your help!\n===\n");
-		}
-
-		return addr;
-	}
-
-	return 0;
-}
-
 int nic3com_init(void)
 {
-	struct pci_dev *dev;
-	char *msg = NULL;
-	int found = 0;
-
 	get_io_perms();
 
-	pacc = pci_alloc();     /* Get the pci_access structure */
-	pci_init(pacc);         /* Initialize the PCI library */
-	pci_scan_bus(pacc);     /* We want to get the list of devices */
-	pci_filter_init(pacc, &filter);
-
-	/* Filter by vendor and also bb:dd.f (if supplied by the user). */
-	filter.vendor = PCI_VENDOR_ID_3COM;
-	if (nic_pcidev != NULL) {
-		if ((msg = pci_filter_parse_slot(&filter, nic_pcidev))) {
-			fprintf(stderr, "Error: %s\n", msg);
-			exit(1);
-		}
-	}
-
-	for (dev = pacc->devices; dev; dev = dev->next) {
-		if (pci_filter_match(&filter, dev)) {
-			if ((io_base_addr = nic3com_validate(dev)) != 0)
-				found++;
-		}
-	}
-
-	/* Only continue if exactly one supported NIC has been found. */
-	if (found == 0) {
-		fprintf(stderr, "Error: No supported 3COM NIC found.\n");
-		exit(1);
-	} else if (found > 1) {
-		fprintf(stderr, "Error: Multiple supported NICs found. "
-			"Please use 'flashrom -p nic3com=bb:dd.f' \n"
-			"to explicitly select the card with the given BDF "
-			"(PCI bus, device, function).\n");
-		exit(1);
-	}
+	io_base_addr = pcidev_init(PCI_VENDOR_ID_3COM, nics_3com);
 
 	/*
 	 * The lowest 16 bytes of the I/O mapped register space of (most) 3COM
@@ -146,7 +70,7 @@ int nic3com_init(void)
 
 int nic3com_shutdown(void)
 {
-	free(nic_pcidev);
+	free(pcidev_bdf);
 	pci_cleanup(pacc);
 #if defined(__FreeBSD__) || defined(__DragonFly__)
 	close(io_fd);

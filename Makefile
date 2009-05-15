@@ -33,7 +33,7 @@ OBJS = chipset_enable.o board_enable.o udelay.o jedec.o stm50flw0x0x.o \
 	sst49lfxxxc.o sst_fwhub.o layout.o cbtable.o flashchips.o physmap.o \
 	flashrom.o w39v080fa.o sharplhf00l04.o w29ee011.o spi.o it87spi.o \
 	ichspi.o w39v040c.o sb600spi.o wbsio_spi.o m29f002.o internal.o \
-	dummyflasher.o nic3com.o
+	dummyflasher.o pcidev.o nic3com.o
 
 all: pciutils dep $(PROGRAM)
 
