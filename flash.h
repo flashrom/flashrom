@@ -104,55 +104,17 @@ struct programmer_entry {
 
 extern const struct programmer_entry programmer_table[];
 
-static inline int programmer_init(void)
-{
-	return programmer_table[programmer].init();
-}
-
-static inline int programmer_shutdown(void)
-{
-	return programmer_table[programmer].shutdown();
-}
-
-static inline void *programmer_map_flash_region(const char *descr, unsigned long phys_addr, size_t len)
-{
-	return programmer_table[programmer].map_flash_region(descr, phys_addr, len);
-}
-
-static inline void programmer_unmap_flash_region(void *virt_addr, size_t len)
-{
-	programmer_table[programmer].unmap_flash_region(virt_addr, len);
-}
-
-static inline void chip_writeb(uint8_t val, chipaddr addr)
-{
-	programmer_table[programmer].chip_writeb(val, addr);
-}
-
-static inline void chip_writew(uint16_t val, chipaddr addr)
-{
-	programmer_table[programmer].chip_writew(val, addr);
-}
-
-static inline void chip_writel(uint32_t val, chipaddr addr)
-{
-	programmer_table[programmer].chip_writel(val, addr);
-}
-
-static inline uint8_t chip_readb(const chipaddr addr)
-{
-	return programmer_table[programmer].chip_readb(addr);
-}
-
-static inline uint16_t chip_readw(const chipaddr addr)
-{
-	return programmer_table[programmer].chip_readw(addr);
-}
-
-static inline uint32_t chip_readl(const chipaddr addr)
-{
-	return programmer_table[programmer].chip_readl(addr);
-}
+int programmer_init(void);
+int programmer_shutdown(void);
+void *programmer_map_flash_region(const char *descr, unsigned long phys_addr,
+				  size_t len);
+void programmer_unmap_flash_region(void *virt_addr, size_t len);
+void chip_writeb(uint8_t val, chipaddr addr);
+void chip_writew(uint16_t val, chipaddr addr);
+void chip_writel(uint32_t val, chipaddr addr);
+uint8_t chip_readb(const chipaddr addr);
+uint16_t chip_readw(const chipaddr addr);
+uint32_t chip_readl(const chipaddr addr);
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 
