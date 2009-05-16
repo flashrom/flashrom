@@ -661,30 +661,6 @@ static int board_msi_kt4v(const char *name)
  * When a board is identified through its coreboot ids (in both cases), the
  * main pci ids are still required to match, as a safeguard.
  */
-struct board_pciid_enable {
-	/* Any device, but make it sensible, like the ISA bridge. */
-	uint16_t first_vendor;
-	uint16_t first_device;
-	uint16_t first_card_vendor;
-	uint16_t first_card_device;
-
-	/* Any device, but make it sensible, like
-	 * the host bridge. May be NULL.
-	 */
-	uint16_t second_vendor;
-	uint16_t second_device;
-	uint16_t second_card_vendor;
-	uint16_t second_card_device;
-
-	/* The vendor / part name from the coreboot table. */
-	const char *lb_vendor;
-	const char *lb_part;
-
-	const char *vendor_name;
-	const char *board_name;
-
-	int (*enable) (const char *name);
-};
 
 /* Please keep this list alphabetically ordered by vendor/board name. */
 struct board_pciid_enable board_pciid_enables[] = {
@@ -725,27 +701,132 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{     0,      0,      0,      0,       0,      0,      0,      0, NULL,         NULL,          NULL,          NULL,             NULL}, /* end marker */
 };
 
+/* Please keep this list alphabetically ordered by vendor/board. */
+const struct board_info boards_ok[] = {
+	/* Verified working boards that don't need write-enables. */
+	{ "Abit",		"AX8", },
+	{ "Advantech",		"PCM-5820", },
+	{ "ASI",		"MB-5BLMP", },
+	{ "ASUS",		"A8N-E", },
+	{ "ASUS",		"A8NE-FM/S", },
+	{ "ASUS",		"A8N-SLI Premium", },
+	{ "ASUS",		"A8V-E Deluxe", },
+	{ "ASUS",		"M2A-VM", },
+	{ "ASUS",		"M2N-E", },
+	{ "ASUS",		"P2B", },
+	{ "ASUS",		"P2B-F", },
+	{ "ASUS",		"P2B-D", },
+	{ "ASUS",		"P2B-DS", },
+	{ "ASUS",		"A7V400-MX", },
+	{ "ASUS",		"A7V8X-MX", },
+	{ "ASUS",		"P4B266", },
+	{ "ASUS",		"A8V-E SE", },
+	{ "ASUS",		"P2L97-S", },
+	{ "ASUS",		"M2A-MX", },
+	{ "A-Trend",		"ATC-6220", },
+	{ "BCOM",		"WinNET100", },
+	{ "GIGABYTE",		"GA-6BXC", },
+	{ "GIGABYTE",		"GA-6BXDU", },
+	{ "MSI",		"KT4V", },
+	{ "MSI",		"MS-7046", },
+	{ "MSI",		"MS-7065", },
+	{ "MSI",		"MS-7236 (945PL Neo3)", },
+	{ "NEC",		"PowerMate 2000", },
+	{ "PC Engines",		"Alix.1c", },
+	{ "PC Engines",		"Alix.2c2", },
+	{ "PC Engines",		"Alix.2c3", },
+	{ "PC Engines",		"Alix.3c3", },
+	{ "RCA",		"RM4100", },
+	{ "Sun",		"Blade x6250", },
+	{ "Thomson",		"IP1000", },
+	{ "T-Online",		"S-100", },
+	{ "Tyan",		"S1846", },
+	{ "Tyan",		"S2498 (Tomcat K7M)", },
+	{ "Tyan",		"S2881", },
+	{ "Tyan",		"S2882", },
+	{ "Tyan",		"S2882-D", },
+	{ "Tyan",		"S3095", },
+	{ "Tyan",		"S5180", },
+	{ "Tyan",		"S5191", },
+	{ "Tyan",		"S5197", },
+	{ "Tyan",		"S5211", },
+	{ "Tyan",		"S5211-1U", },
+	{ "Tyan",		"S5220", },
+	{ "Tyan",		"S5375", },
+	{ "Tyan",		"iS5375-1U", },
+	{ "Tyan",		"S5376G2NR/S5376}WAG2NR", },
+	{ "Tyan",		"S5377", },
+	{ "Tyan",		"S5397", },
+	{ "VIA",		"EPIA-M", },
+	{ "VIA",		"EPIA-MII", },
+	{ "VIA",		"EPIA-CN", },
+	{ "VIA",		"EPIA-LN", },
+	{ "VIA",		"VB700X", },
+	{ "VIA",		"NAB74X0", },
+	{ "VIA",		"pc2500e", },
+
+	{},
+};
+
+/* Please keep this list alphabetically ordered by vendor/board. */
+const struct board_info boards_bad[] = {
+	/* Verified non-working boards (for now). */
+	{ "ASUS",		"A7N8X-E Deluxe", },
+	{ "ASUS",		"MEW-AM", },
+	{ "ASUS",		"MEW-VM", },
+	{ "ASUS",		"P3B-F", },
+	{ "Biostar",		"M6TBA", },
+	{ "FIC",		"VA-502", },
+	{ "MSI",		"MS-7260 (K9N Neo)", },
+	{ "PCCHIPS",		"M537DMA33", },
+	{ "Soyo",		"SY-5VD", },
+	{ "Sun",		"Fire x4540", },
+	{ "Sun",		"Fire x4150", },
+	{ "Sun",		"Fire x4200", },
+	{ "Sun",		"Fire x4600", },
+
+	{},
+};
+
+void print_supported_boards_helper(const struct board_info *b)
+{
+	int i, j;
+
+	for (i = 0; b[i].vendor != NULL; i++) {
+		printf("%s", b[i].vendor);
+		for (j = 0; j < 25 - strlen(b[i].vendor); j++)
+			printf(" ");
+		printf("%s", b[i].name);
+		for (j = 0; j < 23 - strlen(b[i].name); j++)
+			printf(" ");
+		printf("\n");
+	}
+}
+
 void print_supported_boards(void)
 {
-	int i;
+	int i, j;
+	struct board_pciid_enable *b = board_pciid_enables;
 
-	printf("\nSupported mainboards (this list is not exhaustive!):\n\n");
-
-	for (i = 0; board_pciid_enables[i].vendor_name != NULL; i++) {
-		if (board_pciid_enables[i].lb_vendor != NULL) {
-			printf("%s %s (-m %s:%s)\n",
-			       board_pciid_enables[i].vendor_name,
-			       board_pciid_enables[i].board_name,
-			       board_pciid_enables[i].lb_vendor,
-			       board_pciid_enables[i].lb_part);
-		} else {
-			printf("%s %s (autodetected)\n",
-			       board_pciid_enables[i].vendor_name,
-			       board_pciid_enables[i].board_name);
-		}
+	printf("\nSupported boards which need write-enable code:\n\n");
+	for (i = 0; b[i].vendor_name != NULL; i++) {
+		printf("%s", b[i].vendor_name);
+		for (j = 0; j < 25 - strlen(b[i].vendor_name); j++)
+			printf(" ");
+		printf("%s", b[i].board_name);
+		for (j = 0; j < 25 - strlen(b[i].board_name); j++)
+			printf(" ");
+		if (b[i].lb_vendor != NULL)
+			printf("(-m %s:%s)\n", b[i].lb_vendor, b[i].lb_part);
+		else
+			printf("(autodetected)\n");
 	}
 
-	printf("\nSee also: http://coreboot.org/Flashrom\n");
+	printf("\nSupported boards which don't need write-enable code:\n\n");
+	print_supported_boards_helper(boards_ok);
+
+	printf("\nBoards which have been verified to NOT work (yet):\n\n");
+	print_supported_boards_helper(boards_bad);
 }
 
 /**

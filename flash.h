@@ -168,6 +168,52 @@ struct flashchip {
 
 extern struct flashchip flashchips[];
 
+struct penable {
+	uint16_t vendor_id;
+	uint16_t device_id;
+	int status;
+	const char *vendor_name;
+	const char *device_name;
+	int (*doit) (struct pci_dev *dev, const char *name);
+};
+
+extern const struct penable chipset_enables[];
+
+struct board_pciid_enable {
+	/* Any device, but make it sensible, like the ISA bridge. */
+	uint16_t first_vendor;
+	uint16_t first_device;
+	uint16_t first_card_vendor;
+	uint16_t first_card_device;
+
+	/* Any device, but make it sensible, like
+	 * the host bridge. May be NULL.
+	 */
+	uint16_t second_vendor;
+	uint16_t second_device;
+	uint16_t second_card_vendor;
+	uint16_t second_card_device;
+
+	/* The vendor / part name from the coreboot table. */
+	const char *lb_vendor;
+	const char *lb_part;
+
+	const char *vendor_name;
+	const char *board_name;
+
+	int (*enable) (const char *name);
+};
+
+extern struct board_pciid_enable board_pciid_enables[];
+
+struct board_info {
+	const char *vendor;
+	const char *name;
+};
+
+extern const struct board_info boards_ok[];
+extern const struct board_info boards_bad[];
+
 /*
  * Please keep this list sorted alphabetically by manufacturer. The first
  * entry of each section should be the manufacturer ID, followed by the

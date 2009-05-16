@@ -399,6 +399,7 @@ int main(int argc, char *argv[])
 	int option_index = 0;
 	int force = 0;
 	int read_it = 0, write_it = 0, erase_it = 0, verify_it = 0;
+	int list_supported = 0;
 	int ret = 0, i;
 
 	static struct option long_options[] = {
@@ -491,13 +492,7 @@ int main(int argc, char *argv[])
 			find_romentry(tempstr);
 			break;
 		case 'L':
-			print_supported_chips();
-			print_supported_chipsets();
-			print_supported_boards();
-			printf("\nSupported PCI devices flashrom can use "
-			       "as programmer:\n\n");
-			print_supported_pcidevs(nics_3com);
-			exit(0);
+			list_supported = 1;
 			break;
 		case 'p':
 			if (strncmp(optarg, "internal", 8) == 0) {
@@ -522,6 +517,16 @@ int main(int argc, char *argv[])
 			usage(argv[0]);
 			break;
 		}
+	}
+
+	if (list_supported) {
+		print_supported_chips();
+		print_supported_chipsets();
+		print_supported_boards();
+		printf("\nSupported PCI devices flashrom can use "
+		       "as programmer:\n\n");
+		print_supported_pcidevs(nics_3com);
+		exit(0);
 	}
 
 	if (read_it && write_it) {
