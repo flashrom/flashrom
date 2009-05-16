@@ -83,7 +83,7 @@ void map_flash_registers(struct flashchip *flash)
 {
 	size_t size = flash->total_size * 1024;
 	/* Flash registers live 4 MByte below the flash. */
-	flash->virtual_registers = programmer_map_flash_region("flash chip registers", (0xFFFFFFFF - 0x400000 - size + 1), size);
+	flash->virtual_registers = (chipaddr)programmer_map_flash_region("flash chip registers", (0xFFFFFFFF - 0x400000 - size + 1), size);
 }
 
 int read_memmapped(struct flashchip *flash, uint8_t *buf)
@@ -116,7 +116,7 @@ struct flashchip *probe_flash(struct flashchip *first_flash, int force)
 		size = flash->total_size * 1024;
 
 		base = flashbase ? flashbase : (0xffffffff - size + 1);
-		flash->virtual_memory = programmer_map_flash_region("flash chip", base, size);
+		flash->virtual_memory = (chipaddr)programmer_map_flash_region("flash chip", base, size);
 
 		if (force)
 			break;
@@ -129,8 +129,7 @@ struct flashchip *probe_flash(struct flashchip *first_flash, int force)
 			break;
 
 notfound:
-		/* The intermediate cast to unsigned long works around a gcc warning bug. */
-		programmer_unmap_flash_region((void *)(unsigned long)flash->virtual_memory, size);
+		programmer_unmap_flash_region((void *)flash->virtual_memory, size);
 	}
 
 	if (!flash || !flash->name)

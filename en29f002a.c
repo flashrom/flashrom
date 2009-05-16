@@ -32,7 +32,7 @@
 
 int probe_en29f512(struct flashchip *flash)
 {
-	volatile uint8_t *bios = flash->virtual_memory;
+	chipaddr bios = flash->virtual_memory;
 	uint8_t id1, id2;
 
 	chip_writeb(0xAA, bios + 0x555);
@@ -65,7 +65,7 @@ int probe_en29f512(struct flashchip *flash)
 /* This does not seem to function properly for EN29F002NT. */
 int probe_en29f002a(struct flashchip *flash)
 {
-	volatile uint8_t *bios = flash->virtual_memory;
+	chipaddr bios = flash->virtual_memory;
 	uint8_t id1, id2;
 
 	chip_writeb(0xAA, bios + 0x555);
@@ -95,10 +95,10 @@ int write_en29f002a(struct flashchip *flash, uint8_t *buf)
 {
 	int i;
 	int total_size = flash->total_size * 1024;
-	volatile uint8_t *bios = flash->virtual_memory;
-	volatile uint8_t *dst = bios;
+	chipaddr bios = flash->virtual_memory;
+	chipaddr dst = bios;
 
-	// *bios = 0xF0;
+	//chip_writeb(0xF0, bios);
 	myusec_delay(10);
 	erase_chip_jedec(flash);
 

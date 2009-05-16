@@ -138,45 +138,45 @@ int internal_shutdown(void)
 	return 0;
 }
 
-void internal_chip_writeb(uint8_t val, volatile void *addr)
+void internal_chip_writeb(uint8_t val, chipaddr addr)
 {
 	*(volatile uint8_t *) addr = val;
 }
 
-void internal_chip_writew(uint16_t val, volatile void *addr)
+void internal_chip_writew(uint16_t val, chipaddr addr)
 {
 	*(volatile uint16_t *) addr = val;
 }
 
-void internal_chip_writel(uint32_t val, volatile void *addr)
+void internal_chip_writel(uint32_t val, chipaddr addr)
 {
 	*(volatile uint32_t *) addr = val;
 }
 
-uint8_t internal_chip_readb(const volatile void *addr)
+uint8_t internal_chip_readb(const chipaddr addr)
 {
 	return *(volatile uint8_t *) addr;
 }
 
-uint16_t internal_chip_readw(const volatile void *addr)
+uint16_t internal_chip_readw(const chipaddr addr)
 {
 	return *(volatile uint16_t *) addr;
 }
 
-uint32_t internal_chip_readl(const volatile void *addr)
+uint32_t internal_chip_readl(const chipaddr addr)
 {
 	return *(volatile uint32_t *) addr;
 }
 
 /* Little-endian fallback for drivers not supporting 16 bit accesses */
-void fallback_chip_writew(uint16_t val, volatile void *addr)
+void fallback_chip_writew(uint16_t val, chipaddr addr)
 {
 	chip_writeb(val & 0xff, addr);
 	chip_writeb((val >> 8) & 0xff, addr + 1);
 }
 
 /* Little-endian fallback for drivers not supporting 16 bit accesses */
-uint16_t fallback_chip_readw(const volatile void *addr)
+uint16_t fallback_chip_readw(const chipaddr addr)
 {
 	uint16_t val;
 	val = chip_readb(addr);
@@ -185,14 +185,14 @@ uint16_t fallback_chip_readw(const volatile void *addr)
 }
 
 /* Little-endian fallback for drivers not supporting 32 bit accesses */
-void fallback_chip_writel(uint32_t val, volatile void *addr)
+void fallback_chip_writel(uint32_t val, chipaddr addr)
 {
 	chip_writew(val & 0xffff, addr);
 	chip_writew((val >> 16) & 0xffff, addr + 2);
 }
 
 /* Little-endian fallback for drivers not supporting 32 bit accesses */
-uint32_t fallback_chip_readl(const volatile void *addr)
+uint32_t fallback_chip_readl(const chipaddr addr)
 {
 	uint32_t val;
 	val = chip_readw(addr);
