@@ -32,6 +32,7 @@ uint32_t io_base_addr;
 struct pci_access *pacc;
 struct pci_filter filter;
 char *pcidev_bdf = NULL;
+struct pci_dev *pcidev_dev = NULL;
 
 uint32_t pcidev_validate(struct pci_dev *dev, struct pcidev_status *devs)
 {
@@ -67,7 +68,7 @@ uint32_t pcidev_init(uint16_t vendor_id, struct pcidev_status *devs)
 	struct pci_dev *dev;
 	char *msg = NULL;
 	int found = 0;
-	uint32_t addr = 0;
+	uint32_t addr = 0, curaddr = 0;
 
 	pacc = pci_alloc();     /* Get the pci_access structure */
 	pci_init(pacc);         /* Initialize the PCI library */
@@ -85,8 +86,11 @@ uint32_t pcidev_init(uint16_t vendor_id, struct pcidev_status *devs)
 
 	for (dev = pacc->devices; dev; dev = dev->next) {
 		if (pci_filter_match(&filter, dev)) {
-			if ((addr = pcidev_validate(dev, devs)) != 0)
+			if ((addr = pcidev_validate(dev, devs)) != 0) {
+				curaddr = addr;
+				pcidev_dev = dev;
 				found++;
+			}
 		}
 	}
 
@@ -102,7 +106,7 @@ uint32_t pcidev_init(uint16_t vendor_id, struct pcidev_status *devs)
 		exit(1);
 	}
 
-	return addr;
+	return curaddr;
 }
 
 void print_supported_pcidevs(struct pcidev_status *devs)
