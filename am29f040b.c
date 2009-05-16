@@ -22,7 +22,7 @@
 #include <stdint.h>
 #include "flash.h"
 
-static __inline__ int erase_sector_29f040b(volatile uint8_t *bios,
+static __inline__ int erase_sector_29f040b(chipaddr bios,
 					   unsigned long address)
 {
 	chip_writeb(0xAA, bios + 0x555);
@@ -40,17 +40,16 @@ static __inline__ int erase_sector_29f040b(volatile uint8_t *bios,
 	return 0;
 }
 
-static __inline__ int write_sector_29f040b(volatile uint8_t *bios,
+static __inline__ int write_sector_29f040b(chipaddr bios,
 					   uint8_t *src,
-					   volatile uint8_t *dst,
+					   chipaddr dst,
 					   unsigned int page_size)
 {
 	int i;
 
 	for (i = 0; i < page_size; i++) {
 		if ((i & 0xfff) == 0xfff)
-			printf("0x%08lx", (unsigned long)dst -
-			       (unsigned long)bios);
+			printf("0x%08lx", dst - bios);
 
 		chip_writeb(0xAA, bios + 0x555);
 		chip_writeb(0x55, bios + 0x2AA);
@@ -69,7 +68,7 @@ static __inline__ int write_sector_29f040b(volatile uint8_t *bios,
 
 int probe_29f040b(struct flashchip *flash)
 {
-	volatile uint8_t *bios = flash->virtual_memory;
+	chipaddr bios = flash->virtual_memory;
 	uint8_t id1, id2;
 
 	chip_writeb(0xAA, bios + 0x555);
@@ -92,7 +91,7 @@ int probe_29f040b(struct flashchip *flash)
 
 int erase_29f040b(struct flashchip *flash)
 {
-	volatile uint8_t *bios = flash->virtual_memory;
+	chipaddr bios = flash->virtual_memory;
 
 	chip_writeb(0xAA, bios + 0x555);
 	chip_writeb(0x55, bios + 0x2AA);
@@ -112,7 +111,7 @@ int write_29f040b(struct flashchip *flash, uint8_t *buf)
 	int i;
 	int total_size = flash->total_size * 1024;
 	int page_size = flash->page_size;
-	volatile uint8_t *bios = flash->virtual_memory;
+	chipaddr bios = flash->virtual_memory;
 
 	printf("Programming page ");
 	for (i = 0; i < total_size / page_size; i++) {

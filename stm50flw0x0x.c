@@ -31,7 +31,7 @@
 #include <stdint.h>
 #include "flash.h"
 
-void protect_stm50flw0x0x(volatile uint8_t *bios)
+void protect_stm50flw0x0x(chipaddr bios)
 {
 	chip_writeb(0xAA, bios + 0x5555);
 	chip_writeb(0x55, bios + 0x2AAA);
@@ -42,7 +42,7 @@ void protect_stm50flw0x0x(volatile uint8_t *bios)
 
 int probe_stm50flw0x0x(struct flashchip *flash)
 {
-	volatile uint8_t *bios = flash->virtual_memory;
+	chipaddr bios = flash->virtual_memory;
 	uint8_t id1, id2;
 	uint32_t largeid1, largeid2;
 
@@ -91,7 +91,7 @@ int probe_stm50flw0x0x(struct flashchip *flash)
 	return 1;
 }
 
-static void wait_stm50flw0x0x(volatile uint8_t *bios)
+static void wait_stm50flw0x0x(chipaddr bios)
 {
 	uint8_t id1;
 	// id2;
@@ -120,7 +120,7 @@ static void wait_stm50flw0x0x(volatile uint8_t *bios)
  */
 int unlock_block_stm50flw0x0x(struct flashchip *flash, int offset)
 {
-	volatile uint8_t *wrprotect = flash->virtual_registers + 2;
+	chipaddr wrprotect = flash->virtual_registers + 2;
 	const uint8_t unlock_sector = 0x00;
 	int j;
 
@@ -163,12 +163,12 @@ int unlock_block_stm50flw0x0x(struct flashchip *flash, int offset)
 
 int erase_block_stm50flw0x0x(struct flashchip *flash, int offset)
 {
-	volatile uint8_t *bios = flash->virtual_memory + offset;
+	chipaddr bios = flash->virtual_memory + offset;
 	int j;
 
 	// clear status register
 	chip_writeb(0x50, bios);
-	printf_debug("Erase at %p\n", bios);
+	printf_debug("Erase at 0x%lx\n", bios);
 	// now start it
 	chip_writeb(0x20, bios);
 	chip_writeb(0xd0, bios);
@@ -188,11 +188,11 @@ int erase_block_stm50flw0x0x(struct flashchip *flash, int offset)
 	return 0;
 }
 
-int write_page_stm50flw0x0x(volatile uint8_t *bios, uint8_t *src,
-			    volatile uint8_t *dst, int page_size)
+int write_page_stm50flw0x0x(chipaddr bios, uint8_t *src,
+			    chipaddr dst, int page_size)
 {
 	int i, rc = 0;
-	volatile uint8_t *d = dst;
+	chipaddr d = dst;
 	uint8_t *s = src;
 
 	/* transfer data from source to destination */
@@ -219,8 +219,8 @@ int write_page_stm50flw0x0x(volatile uint8_t *bios, uint8_t *src,
 	}
 
 	if (rc) {
-		fprintf(stderr, " page %d failed!\n",
-			(unsigned int)(d - bios) / page_size);
+		fprintf(stderr, " page 0x%lx failed!\n",
+			(d - bios) / page_size);
 	}
 
 	return rc;
@@ -234,7 +234,7 @@ int erase_stm50flw0x0x(struct flashchip *flash)
 	int i, rc = 0;
 	int total_size = flash->total_size * 1024;
 	int page_size = flash->page_size;
-	volatile uint8_t *bios = flash->virtual_memory;
+	chipaddr bios = flash->virtual_memory;
 
 	printf("Erasing page:\n");
 	for (i = 0; (i < total_size / page_size) && (rc == 0); i++) {
@@ -256,7 +256,7 @@ int write_stm50flw0x0x(struct flashchip *flash, uint8_t * buf)
 	int i, rc = 0;
 	int total_size = flash->total_size * 1024;
 	int page_size = flash->page_size;
-	volatile uint8_t *bios = flash->virtual_memory;
+	chipaddr bios = flash->virtual_memory;
 
 	printf("Programming page: \n");
 	for (i = 0; (i < total_size / page_size) && (rc == 0); i++) {

@@ -20,7 +20,7 @@
 
 #include "flash.h"
 
-void protect_m29f400bt(volatile uint8_t *bios)
+void protect_m29f400bt(chipaddr bios)
 {
 	chip_writeb(0xAA, bios + 0xAAA);
 	chip_writeb(0x55, bios + 0x555);
@@ -29,8 +29,8 @@ void protect_m29f400bt(volatile uint8_t *bios)
 	usleep(200);
 }
 
-void write_page_m29f400bt(volatile uint8_t *bios, uint8_t *src,
-			  volatile uint8_t *dst, int page_size)
+void write_page_m29f400bt(chipaddr bios, uint8_t *src,
+			  chipaddr dst, int page_size)
 {
 	int i;
 
@@ -41,12 +41,12 @@ void write_page_m29f400bt(volatile uint8_t *bios, uint8_t *src,
 
 		/* transfer data from source to destination */
 		chip_writeb(*src, dst);
-		//*(volatile char *) (bios) = 0xF0;
+		//chip_writeb(0xF0, bios);
 		//usleep(5);
 		toggle_ready_jedec(dst);
 		printf
-		    ("Value in the flash at address %p = %#x, want %#x\n",
-		     (uint8_t *) (dst - bios), chip_readb(dst), *src);
+		    ("Value in the flash at address 0x%lx = %#x, want %#x\n",
+		     (dst - bios), chip_readb(dst), *src);
 		dst++;
 		src++;
 	}
@@ -54,7 +54,7 @@ void write_page_m29f400bt(volatile uint8_t *bios, uint8_t *src,
 
 int probe_m29f400bt(struct flashchip *flash)
 {
-	volatile uint8_t *bios = flash->virtual_memory;
+	chipaddr bios = flash->virtual_memory;
 	uint8_t id1, id2;
 
 	chip_writeb(0xAA, bios + 0xAAA);
@@ -85,7 +85,7 @@ int probe_m29f400bt(struct flashchip *flash)
 
 int erase_m29f400bt(struct flashchip *flash)
 {
-	volatile uint8_t *bios = flash->virtual_memory;
+	chipaddr bios = flash->virtual_memory;
 
 	chip_writeb(0xAA, bios + 0xAAA);
 	chip_writeb(0x55, bios + 0x555);
@@ -101,7 +101,7 @@ int erase_m29f400bt(struct flashchip *flash)
 	return 0;
 }
 
-int block_erase_m29f400bt(volatile uint8_t *bios, volatile uint8_t *dst)
+int block_erase_m29f400bt(chipaddr bios, chipaddr dst)
 {
 
 	chip_writeb(0xAA, bios + 0xAAA);
@@ -110,7 +110,7 @@ int block_erase_m29f400bt(volatile uint8_t *bios, volatile uint8_t *dst)
 
 	chip_writeb(0xAA, bios + 0xAAA);
 	chip_writeb(0x55, bios + 0x555);
-	//*(volatile uint8_t *) (bios + 0xAAA) = 0x10;
+	//chip_writeb(0x10, bios + 0xAAA);
 	chip_writeb(0x30, dst);
 
 	myusec_delay(10);
@@ -124,7 +124,7 @@ int write_m29f400bt(struct flashchip *flash, uint8_t *buf)
 	int i;
 	int total_size = flash->total_size * 1024;
 	int page_size = flash->page_size;
-	volatile uint8_t *bios = flash->virtual_memory;
+	chipaddr bios = flash->virtual_memory;
 
 	//erase_m29f400bt (flash);
 	printf("Programming page:\n ");
@@ -176,7 +176,7 @@ int write_m29f400bt(struct flashchip *flash, uint8_t *buf)
 
 int write_coreboot_m29f400bt(struct flashchip *flash, uint8_t *buf)
 {
-	volatile uint8_t *bios = flash->virtual_memory;
+	chipaddr bios = flash->virtual_memory;
 
 	printf("Programming page:\n ");
 	/*********************************

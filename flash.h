@@ -77,6 +77,8 @@
 #endif
 #endif
 
+typedef unsigned long chipaddr;
+
 extern int programmer;
 #define PROGRAMMER_INTERNAL	0x00
 #define PROGRAMMER_DUMMY	0x01
@@ -92,12 +94,12 @@ struct programmer_entry {
 	void * (*map_flash_region) (const char *descr, unsigned long phys_addr, size_t len);
 	void (*unmap_flash_region) (void *virt_addr, size_t len);
 
-	void (*chip_writeb) (uint8_t val, volatile void *addr);
-	void (*chip_writew) (uint16_t val, volatile void *addr);
-	void (*chip_writel) (uint32_t val, volatile void *addr);
-	uint8_t (*chip_readb) (const volatile void *addr);
-	uint16_t (*chip_readw) (const volatile void *addr);
-	uint32_t (*chip_readl) (const volatile void *addr);
+	void (*chip_writeb) (uint8_t val, chipaddr addr);
+	void (*chip_writew) (uint16_t val, chipaddr addr);
+	void (*chip_writel) (uint32_t val, chipaddr addr);
+	uint8_t (*chip_readb) (const chipaddr addr);
+	uint16_t (*chip_readw) (const chipaddr addr);
+	uint32_t (*chip_readl) (const chipaddr addr);
 };
 
 extern const struct programmer_entry programmer_table[];
@@ -122,32 +124,32 @@ static inline void programmer_unmap_flash_region(void *virt_addr, size_t len)
 	programmer_table[programmer].unmap_flash_region(virt_addr, len);
 }
 
-static inline void chip_writeb(uint8_t val, volatile void *addr)
+static inline void chip_writeb(uint8_t val, chipaddr addr)
 {
 	programmer_table[programmer].chip_writeb(val, addr);
 }
 
-static inline void chip_writew(uint16_t val, volatile void *addr)
+static inline void chip_writew(uint16_t val, chipaddr addr)
 {
 	programmer_table[programmer].chip_writew(val, addr);
 }
 
-static inline void chip_writel(uint32_t val, volatile void *addr)
+static inline void chip_writel(uint32_t val, chipaddr addr)
 {
 	programmer_table[programmer].chip_writel(val, addr);
 }
 
-static inline uint8_t chip_readb(const volatile void *addr)
+static inline uint8_t chip_readb(const chipaddr addr)
 {
 	return programmer_table[programmer].chip_readb(addr);
 }
 
-static inline uint16_t chip_readw(const volatile void *addr)
+static inline uint16_t chip_readw(const chipaddr addr)
 {
 	return programmer_table[programmer].chip_readw(addr);
 }
 
-static inline uint32_t chip_readl(const volatile void *addr)
+static inline uint32_t chip_readl(const chipaddr addr)
 {
 	return programmer_table[programmer].chip_readl(addr);
 }
@@ -180,8 +182,8 @@ struct flashchip {
 	int (*read) (struct flashchip *flash, uint8_t *buf);
 
 	/* Some flash devices have an additional register space. */
-	volatile uint8_t *virtual_memory;
-	volatile uint8_t *virtual_registers;
+	chipaddr virtual_memory;
+	chipaddr virtual_registers;
 };
 
 #define TEST_UNTESTED	0
@@ -605,16 +607,16 @@ void physunmap(void *virt_addr, size_t len);
 void get_io_perms(void);
 int internal_init(void);
 int internal_shutdown(void);
-void internal_chip_writeb(uint8_t val, volatile void *addr);
-void internal_chip_writew(uint16_t val, volatile void *addr);
-void internal_chip_writel(uint32_t val, volatile void *addr);
-uint8_t internal_chip_readb(const volatile void *addr);
-uint16_t internal_chip_readw(const volatile void *addr);
-uint32_t internal_chip_readl(const volatile void *addr);
-void fallback_chip_writew(uint16_t val, volatile void *addr);
-void fallback_chip_writel(uint32_t val, volatile void *addr);
-uint16_t fallback_chip_readw(const volatile void *addr);
-uint32_t fallback_chip_readl(const volatile void *addr);
+void internal_chip_writeb(uint8_t val, chipaddr addr);
+void internal_chip_writew(uint16_t val, chipaddr addr);
+void internal_chip_writel(uint32_t val, chipaddr addr);
+uint8_t internal_chip_readb(const chipaddr addr);
+uint16_t internal_chip_readw(const chipaddr addr);
+uint32_t internal_chip_readl(const chipaddr addr);
+void fallback_chip_writew(uint16_t val, chipaddr addr);
+void fallback_chip_writel(uint32_t val, chipaddr addr);
+uint16_t fallback_chip_readw(const chipaddr addr);
+uint32_t fallback_chip_readl(const chipaddr addr);
 #if defined(__FreeBSD__) || defined(__DragonFly__)
 extern int io_fd;
 #endif
@@ -624,12 +626,12 @@ int dummy_init(void);
 int dummy_shutdown(void);
 void *dummy_map(const char *descr, unsigned long phys_addr, size_t len);
 void dummy_unmap(void *virt_addr, size_t len);
-void dummy_chip_writeb(uint8_t val, volatile void *addr);
-void dummy_chip_writew(uint16_t val, volatile void *addr);
-void dummy_chip_writel(uint32_t val, volatile void *addr);
-uint8_t dummy_chip_readb(const volatile void *addr);
-uint16_t dummy_chip_readw(const volatile void *addr);
-uint32_t dummy_chip_readl(const volatile void *addr);
+void dummy_chip_writeb(uint8_t val, chipaddr addr);
+void dummy_chip_writew(uint16_t val, chipaddr addr);
+void dummy_chip_writel(uint32_t val, chipaddr addr);
+uint8_t dummy_chip_readb(const chipaddr addr);
+uint16_t dummy_chip_readw(const chipaddr addr);
+uint32_t dummy_chip_readl(const chipaddr addr);
 int dummy_spi_command(unsigned int writecnt, unsigned int readcnt,
 		      const unsigned char *writearr, unsigned char *readarr);
 
@@ -638,8 +640,8 @@ int nic3com_init(void);
 int nic3com_shutdown(void);
 void *nic3com_map(const char *descr, unsigned long phys_addr, size_t len);
 void nic3com_unmap(void *virt_addr, size_t len);
-void nic3com_chip_writeb(uint8_t val, volatile void *addr);
-uint8_t nic3com_chip_readb(const volatile void *addr);
+void nic3com_chip_writeb(uint8_t val, chipaddr addr);
+uint8_t nic3com_chip_readb(const chipaddr addr);
 extern struct pcidev_status nics_3com[];
 
 /* flashrom.c */
@@ -725,19 +727,19 @@ extern uint8_t volatile *sb600_spibar;
 
 /* jedec.c */
 uint8_t oddparity(uint8_t val);
-void toggle_ready_jedec(volatile uint8_t *dst);
-void data_polling_jedec(volatile uint8_t *dst, uint8_t data);
-void unprotect_jedec(volatile uint8_t *bios);
-void protect_jedec(volatile uint8_t *bios);
-int write_byte_program_jedec(volatile uint8_t *bios, uint8_t *src,
-			     volatile uint8_t *dst);
+void toggle_ready_jedec(chipaddr dst);
+void data_polling_jedec(chipaddr dst, uint8_t data);
+void unprotect_jedec(chipaddr bios);
+void protect_jedec(chipaddr bios);
+int write_byte_program_jedec(chipaddr bios, uint8_t *src,
+			     chipaddr dst);
 int probe_jedec(struct flashchip *flash);
 int erase_chip_jedec(struct flashchip *flash);
 int write_jedec(struct flashchip *flash, uint8_t *buf);
-int erase_sector_jedec(volatile uint8_t *bios, unsigned int page);
-int erase_block_jedec(volatile uint8_t *bios, unsigned int page);
-int write_sector_jedec(volatile uint8_t *bios, uint8_t *src,
-		       volatile uint8_t *dst, unsigned int page_size);
+int erase_sector_jedec(chipaddr bios, unsigned int page);
+int erase_block_jedec(chipaddr bios, unsigned int page);
+int write_sector_jedec(chipaddr bios, uint8_t *src,
+		       chipaddr dst, unsigned int page_size);
 
 /* m29f002.c */
 int erase_m29f002(struct flashchip *flash);
@@ -747,15 +749,15 @@ int write_m29f002b(struct flashchip *flash, uint8_t *buf);
 /* m29f400bt.c */
 int probe_m29f400bt(struct flashchip *flash);
 int erase_m29f400bt(struct flashchip *flash);
-int block_erase_m29f400bt(volatile uint8_t *bios,
-				 volatile uint8_t *dst);
+int block_erase_m29f400bt(chipaddr bios,
+				 chipaddr dst);
 int write_m29f400bt(struct flashchip *flash, uint8_t *buf);
 int write_coreboot_m29f400bt(struct flashchip *flash, uint8_t *buf);
-void toggle_ready_m29f400bt(volatile uint8_t *dst);
-void data_polling_m29f400bt(volatile uint8_t *dst, uint8_t data);
-void protect_m29f400bt(volatile uint8_t *bios);
-void write_page_m29f400bt(volatile uint8_t *bios, uint8_t *src,
-			  volatile uint8_t *dst, int page_size);
+void toggle_ready_m29f400bt(chipaddr dst);
+void data_polling_m29f400bt(chipaddr dst, uint8_t data);
+void protect_m29f400bt(chipaddr bios);
+void write_page_m29f400bt(chipaddr bios, uint8_t *src,
+			  chipaddr dst, int page_size);
 
 /* mx29f002.c */
 int probe_29f002(struct flashchip *flash);
@@ -771,9 +773,9 @@ int write_49fl00x(struct flashchip *flash, uint8_t *buf);
 int probe_lhf00l04(struct flashchip *flash);
 int erase_lhf00l04(struct flashchip *flash);
 int write_lhf00l04(struct flashchip *flash, uint8_t *buf);
-void toggle_ready_lhf00l04(volatile uint8_t *dst);
-void data_polling_lhf00l04(volatile uint8_t *dst, uint8_t data);
-void protect_lhf00l04(volatile uint8_t *bios);
+void toggle_ready_lhf00l04(chipaddr dst);
+void data_polling_lhf00l04(chipaddr dst, uint8_t data);
+void protect_lhf00l04(chipaddr bios);
 
 /* sst28sf040.c */
 int probe_28sf040(struct flashchip *flash);
