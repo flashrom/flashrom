@@ -24,9 +24,6 @@
  * Contains the board specific flash enables.
  */
 
-#include <stdio.h>
-#include <pci/pci.h>
-#include <stdint.h>
 #include <string.h>
 #include <fcntl.h>
 #include "flash.h"

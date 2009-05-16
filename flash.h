@@ -548,13 +548,6 @@ extern struct flashchip flashchips[];
 void myusec_delay(int time);
 void myusec_calibrate_delay(void);
 
-/* PCI handling for board/chipset_enable */
-struct pci_access *pacc;
-struct pci_dev *pci_dev_find_filter(struct pci_filter filter);
-struct pci_dev *pci_dev_find(uint16_t vendor, uint16_t device);
-struct pci_dev *pci_card_find(uint16_t vendor, uint16_t device,
-			      uint16_t card_vendor, uint16_t card_device);
-
 /* pcidev.c */
 #define PCI_OK 0
 #define PCI_NT 1    /* Not tested */
@@ -607,6 +600,10 @@ void *physmap(const char *descr, unsigned long phys_addr, size_t len);
 void physunmap(void *virt_addr, size_t len);
 
 /* internal.c */
+struct pci_dev *pci_dev_find_filter(struct pci_filter filter);
+struct pci_dev *pci_dev_find(uint16_t vendor, uint16_t device);
+struct pci_dev *pci_card_find(uint16_t vendor, uint16_t device,
+			      uint16_t card_vendor, uint16_t card_device);
 void get_io_perms(void);
 int internal_init(void);
 int internal_shutdown(void);

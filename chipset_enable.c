@@ -25,14 +25,11 @@
 
 #define _LARGEFILE64_SOURCE
 
-#include <stdio.h>
-#include <pci/pci.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
 #include <fcntl.h>
-#include <unistd.h>
 #include "flash.h"
 
 unsigned long flashbase = 0;

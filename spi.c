@@ -22,9 +22,6 @@
  * Contains the generic SPI framework
  */
 
-#include <stdio.h>
-#include <pci/pci.h>
-#include <stdint.h>
 #include <string.h>
 #include "flash.h"
 #include "spi.h"

@@ -32,11 +32,8 @@
  *
  */
 
-#include <stdio.h>
 #include <string.h>
-#include <stdint.h>
 #include <sys/mman.h>
-#include <pci/pci.h>
 #include "flash.h"
 #include "spi.h"
 

@@ -18,8 +18,6 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include <stdio.h>
-#include <stdint.h>
 #include "flash.h"
 
 static __inline__ int erase_sector_29f040b(chipaddr bios,
