@@ -28,7 +28,7 @@
 #define RESET			0xFF
 #define READ_ID			0x90
 
-static __inline__ void protect_28sf040(chipaddr bios)
+static void protect_28sf040(chipaddr bios)
 {
 	uint8_t tmp;
 
@@ -41,7 +41,7 @@ static __inline__ void protect_28sf040(chipaddr bios)
 	tmp = chip_readb(bios + 0x040A);
 }
 
-static __inline__ void unprotect_28sf040(chipaddr bios)
+static void unprotect_28sf040(chipaddr bios)
 {
 	uint8_t tmp;
 
@@ -54,8 +54,7 @@ static __inline__ void unprotect_28sf040(chipaddr bios)
 	tmp = chip_readb(bios + 0x041A);
 }
 
-static __inline__ int erase_sector_28sf040(chipaddr bios,
-					   unsigned long address)
+static int erase_sector_28sf040(chipaddr bios, unsigned long address)
 {
 	chip_writeb(AUTO_PG_ERASE1, bios);
 	chip_writeb(AUTO_PG_ERASE2, bios + address);
@@ -66,10 +65,8 @@ static __inline__ int erase_sector_28sf040(chipaddr bios,
 	return 0;
 }
 
-static __inline__ int write_sector_28sf040(chipaddr bios,
-					   uint8_t *src,
-					   chipaddr dst,
-					   unsigned int page_size)
+static int write_sector_28sf040(chipaddr bios, uint8_t *src, chipaddr dst,
+				unsigned int page_size)
 {
 	int i;
 

@@ -38,8 +38,8 @@
 #define	STATUS_ESS		(1 << 6)
 #define	STATUS_WSMS		(1 << 7)
 
-static __inline__ int write_lockbits_49lfxxxc(chipaddr bios, int size,
-					      unsigned char bits)
+static int write_lockbits_49lfxxxc(chipaddr bios, int size,
+				   unsigned char bits)
 {
 	int i, left = size;
 	unsigned long address;
@@ -65,8 +65,7 @@ static __inline__ int write_lockbits_49lfxxxc(chipaddr bios, int size,
 	return 0;
 }
 
-static __inline__ int erase_sector_49lfxxxc(chipaddr bios,
-					    unsigned long address)
+static int erase_sector_49lfxxxc(chipaddr bios, unsigned long address)
 {
 	unsigned char status;
 
@@ -85,10 +84,8 @@ static __inline__ int erase_sector_49lfxxxc(chipaddr bios,
 	return 0;
 }
 
-static __inline__ int write_sector_49lfxxxc(chipaddr bios,
-					    uint8_t *src,
-					    chipaddr dst,
-					    unsigned int page_size)
+static int write_sector_49lfxxxc(chipaddr bios, uint8_t *src, chipaddr dst,
+				 unsigned int page_size)
 {
 	int i;
 	unsigned char status;

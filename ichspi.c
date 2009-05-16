@@ -127,14 +127,14 @@ typedef struct _OPCODES {
 static OPCODES *curopcodes = NULL;
 
 /* HW access functions */
-static inline uint32_t REGREAD32(int X)
+static uint32_t REGREAD32(int X)
 {
 	volatile uint32_t regval;
 	regval = *(volatile uint32_t *)((uint8_t *) spibar + X);
 	return regval;
 }
 
-static inline uint16_t REGREAD16(int X)
+static uint16_t REGREAD16(int X)
 {
 	volatile uint16_t regval;
 	regval = *(volatile uint16_t *)((uint8_t *) spibar + X);
@@ -146,8 +146,8 @@ static inline uint16_t REGREAD16(int X)
 #define REGWRITE8(X,Y)  (*(uint8_t *)((uint8_t *)spibar+X)=Y)
 
 /* Common SPI functions */
-static inline int find_opcode(OPCODES *op, uint8_t opcode);
-static inline int find_preop(OPCODES *op, uint8_t preop);
+static int find_opcode(OPCODES *op, uint8_t opcode);
+static int find_preop(OPCODES *op, uint8_t preop);
 static int generate_opcodes(OPCODES * op);
 static int program_opcodes(OPCODES * op);
 static int run_opcode(OPCODE op, uint32_t offset,
@@ -192,7 +192,7 @@ OPCODES O_ST_M25P = {
 
 OPCODES O_EXISTING = {};
 
-static inline int find_opcode(OPCODES *op, uint8_t opcode)
+static int find_opcode(OPCODES *op, uint8_t opcode)
 {
 	int a;
 
@@ -204,7 +204,7 @@ static inline int find_opcode(OPCODES *op, uint8_t opcode)
 	return -1;
 }
 
-static inline int find_preop(OPCODES *op, uint8_t preop)
+static int find_preop(OPCODES *op, uint8_t preop)
 {
 	int a;
 
