@@ -20,7 +20,6 @@
 
 /* Adapted from the Intel FW hub stuff for 82802ax parts. */
 
-#include <stdio.h>
 #include "flash.h"
 
 // I need that Berkeley bit-map printer

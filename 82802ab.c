@@ -26,9 +26,7 @@
  *  - Order number: 290658-004
  */
 
-#include <stdio.h>
 #include <string.h>
-#include <stdint.h>
 #include "flash.h"
 
 // I need that Berkeley bit-map printer

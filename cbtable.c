@@ -21,11 +21,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include <stdio.h>
-#include <stdint.h>
 #include <stdlib.h>
 #include <fcntl.h>
-#include <unistd.h>
 #include <sys/types.h>
 #include <string.h>
 #include <errno.h>

@@ -19,7 +19,6 @@
  */
 
 #include <sys/time.h>
-#include <stdio.h>
 #include "flash.h"
 
 // count to a billion. Time it. If it's < 1 sec, count to 10B, etc.

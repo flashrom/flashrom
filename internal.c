@@ -25,14 +25,11 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
-#include <pci/pci.h>
 #include "flash.h"
 
 #if defined(__FreeBSD__) || defined(__DragonFly__)
 int io_fd;
 #endif
-
-struct pci_access *pacc;	/* For board and chipset_enable */
 
 struct pci_dev *pci_dev_find_filter(struct pci_filter filter)
 {

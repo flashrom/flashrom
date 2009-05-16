@@ -26,8 +26,6 @@
  * EN29LV040(A) has 1C,4F and uses short F0 reset sequence
  */
 
-#include <stdio.h>
-#include <stdint.h>
 #include "flash.h"
 
 int probe_en29f512(struct flashchip *flash)
