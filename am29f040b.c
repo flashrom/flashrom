@@ -20,8 +20,7 @@
 
 #include "flash.h"
 
-static __inline__ int erase_sector_29f040b(chipaddr bios,
-					   unsigned long address)
+static int erase_sector_29f040b(chipaddr bios, unsigned long address)
 {
 	chip_writeb(0xAA, bios + 0x555);
 	chip_writeb(0x55, bios + 0x2AA);
@@ -38,10 +37,8 @@ static __inline__ int erase_sector_29f040b(chipaddr bios,
 	return 0;
 }
 
-static __inline__ int write_sector_29f040b(chipaddr bios,
-					   uint8_t *src,
-					   chipaddr dst,
-					   unsigned int page_size)
+static int write_sector_29f040b(chipaddr bios, uint8_t *src, chipaddr dst,
+				unsigned int page_size)
 {
 	int i;
 

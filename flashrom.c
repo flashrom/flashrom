@@ -77,6 +77,58 @@ const struct programmer_entry programmer_table[] = {
 	{},
 };
 
+int programmer_init(void)
+{
+	return programmer_table[programmer].init();
+}
+
+int programmer_shutdown(void)
+{
+	return programmer_table[programmer].shutdown();
+}
+
+void *programmer_map_flash_region(const char *descr, unsigned long phys_addr,
+				  size_t len)
+{
+	return programmer_table[programmer].map_flash_region(descr,
+							     phys_addr, len);
+}
+
+void programmer_unmap_flash_region(void *virt_addr, size_t len)
+{
+	programmer_table[programmer].unmap_flash_region(virt_addr, len);
+}
+
+void chip_writeb(uint8_t val, chipaddr addr)
+{
+	programmer_table[programmer].chip_writeb(val, addr);
+}
+
+void chip_writew(uint16_t val, chipaddr addr)
+{
+	programmer_table[programmer].chip_writew(val, addr);
+}
+
+void chip_writel(uint32_t val, chipaddr addr)
+{
+	programmer_table[programmer].chip_writel(val, addr);
+}
+
+uint8_t chip_readb(const chipaddr addr)
+{
+	return programmer_table[programmer].chip_readb(addr);
+}
+
+uint16_t chip_readw(const chipaddr addr)
+{
+	return programmer_table[programmer].chip_readw(addr);
+}
+
+uint32_t chip_readl(const chipaddr addr)
+{
+	return programmer_table[programmer].chip_readl(addr);
+}
+
 void map_flash_registers(struct flashchip *flash)
 {
 	size_t size = flash->total_size * 1024;
