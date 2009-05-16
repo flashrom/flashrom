@@ -26,6 +26,8 @@
 #include <errno.h>
 #include "flash.h"
 
+#define PCI_IO_BASE_ADDRESS 0x10
+
 uint32_t io_base_addr;
 struct pci_access *pacc;
 struct pci_filter filter;
@@ -40,7 +42,8 @@ uint32_t pcidev_validate(struct pci_dev *dev, struct pcidev_status *devs)
 		if (dev->device_id != devs[i].device_id)
 			continue;
 
-		addr = (uint32_t)(dev->base_addr[0] & ~0x03);
+		/* Don't use dev->base_addr[0], won't work on older libpci. */
+		addr = pci_read_long(dev, PCI_IO_BASE_ADDRESS) & ~0x03;
 
 		printf("Found \"%s %s\" (%04x:%04x, BDF %02x:%02x.%x)\n",
 		       devs[i].vendor_name, devs[i].device_name, dev->vendor_id,
