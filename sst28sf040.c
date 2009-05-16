@@ -30,7 +30,7 @@
 #define RESET			0xFF
 #define READ_ID			0x90
 
-static __inline__ void protect_28sf040(volatile uint8_t *bios)
+static __inline__ void protect_28sf040(chipaddr bios)
 {
 	uint8_t tmp;
 
@@ -43,7 +43,7 @@ static __inline__ void protect_28sf040(volatile uint8_t *bios)
 	tmp = chip_readb(bios + 0x040A);
 }
 
-static __inline__ void unprotect_28sf040(volatile uint8_t *bios)
+static __inline__ void unprotect_28sf040(chipaddr bios)
 {
 	uint8_t tmp;
 
@@ -56,7 +56,7 @@ static __inline__ void unprotect_28sf040(volatile uint8_t *bios)
 	tmp = chip_readb(bios + 0x041A);
 }
 
-static __inline__ int erase_sector_28sf040(volatile uint8_t *bios,
+static __inline__ int erase_sector_28sf040(chipaddr bios,
 					   unsigned long address)
 {
 	chip_writeb(AUTO_PG_ERASE1, bios);
@@ -68,9 +68,9 @@ static __inline__ int erase_sector_28sf040(volatile uint8_t *bios,
 	return 0;
 }
 
-static __inline__ int write_sector_28sf040(volatile uint8_t *bios,
+static __inline__ int write_sector_28sf040(chipaddr bios,
 					   uint8_t *src,
-					   volatile uint8_t *dst,
+					   chipaddr dst,
 					   unsigned int page_size)
 {
 	int i;
@@ -95,7 +95,7 @@ static __inline__ int write_sector_28sf040(volatile uint8_t *bios,
 
 int probe_28sf040(struct flashchip *flash)
 {
-	volatile uint8_t *bios = flash->virtual_memory;
+	chipaddr bios = flash->virtual_memory;
 	uint8_t id1, id2;
 
 	chip_writeb(RESET, bios);
@@ -119,7 +119,7 @@ int probe_28sf040(struct flashchip *flash)
 
 int erase_28sf040(struct flashchip *flash)
 {
-	volatile uint8_t *bios = flash->virtual_memory;
+	chipaddr bios = flash->virtual_memory;
 
 	unprotect_28sf040(bios);
 	chip_writeb(CHIP_ERASE, bios);
@@ -137,7 +137,7 @@ int write_28sf040(struct flashchip *flash, uint8_t *buf)
 	int i;
 	int total_size = flash->total_size * 1024;
 	int page_size = flash->page_size;
-	volatile uint8_t *bios = flash->virtual_memory;
+	chipaddr bios = flash->virtual_memory;
 
 	unprotect_28sf040(bios);
 

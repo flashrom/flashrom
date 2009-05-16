@@ -23,7 +23,7 @@
 
 int probe_w29ee011(struct flashchip *flash)
 {
-	volatile uint8_t *bios = flash->virtual_memory;
+	chipaddr bios = flash->virtual_memory;
 	uint8_t id1, id2;
 	extern char *chip_to_probe;
 

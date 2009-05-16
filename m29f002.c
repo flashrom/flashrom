@@ -22,7 +22,7 @@
 
 int erase_m29f002(struct flashchip *flash)
 {
-	volatile uint8_t *bios = flash->virtual_memory;
+	chipaddr bios = flash->virtual_memory;
 	chip_writeb(0xaa, bios + 0x555);
 	chip_writeb(0x55, bios + 0xaaa);
 	chip_writeb(0x80, bios + 0x555);
@@ -34,8 +34,8 @@ int erase_m29f002(struct flashchip *flash)
 	return 0;
 }
 
-static void rewrite_block(volatile uint8_t *bios, uint8_t *src,
-			  volatile uint8_t *dst, int size)
+static void rewrite_block(chipaddr bios, uint8_t *src,
+			  chipaddr dst, int size)
 {
 	/* erase */
 	chip_writeb(0xaa, bios + 0x555);
@@ -59,7 +59,7 @@ static void rewrite_block(volatile uint8_t *bios, uint8_t *src,
 	}
 }
 
-static void do_block(volatile uint8_t *bios, uint8_t *src, int i,
+static void do_block(chipaddr bios, uint8_t *src, int i,
 		     unsigned long start, int size)
 {
 	printf("%d at address: 0x%08lx", i, start);
@@ -70,7 +70,7 @@ static void do_block(volatile uint8_t *bios, uint8_t *src, int i,
 int write_m29f002t(struct flashchip *flash, uint8_t *buf)
 {
 	int i, page_size = flash->page_size;
-	volatile uint8_t *bios = flash->virtual_memory;
+	chipaddr bios = flash->virtual_memory;
 
 	/* M29F002(N)T has 7 blocks. From bottom to top their sizes are:
 	 * 64k 64k 64k 32k 8k 8k 16k
@@ -92,7 +92,7 @@ int write_m29f002t(struct flashchip *flash, uint8_t *buf)
 int write_m29f002b(struct flashchip *flash, uint8_t *buf)
 {
 	int i = 0, page_size = flash->page_size;
-	volatile uint8_t *bios = flash->virtual_memory;
+	chipaddr bios = flash->virtual_memory;
 
 	/* M29F002B has 7 blocks. From bottom to top their sizes are:
 	 * 16k 8k 8k 32k 64k 64k 64k

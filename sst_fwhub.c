@@ -37,7 +37,7 @@ void print_sst_fwhub_status(uint8_t status)
 
 int check_sst_fwhub_block_lock(struct flashchip *flash, int offset)
 {
-	volatile uint8_t *registers = flash->virtual_registers;
+	chipaddr registers = flash->virtual_registers;
 	uint8_t blockstatus;
 
 	blockstatus = chip_readb(registers + offset + 2);
@@ -63,7 +63,7 @@ int check_sst_fwhub_block_lock(struct flashchip *flash, int offset)
 
 int clear_sst_fwhub_block_lock(struct flashchip *flash, int offset)
 {
-	volatile uint8_t *registers = flash->virtual_registers;
+	chipaddr registers = flash->virtual_registers;
 	uint8_t blockstatus;
 
 	blockstatus = check_sst_fwhub_block_lock(flash, offset);
@@ -115,7 +115,7 @@ int erase_sst_fwhub(struct flashchip *flash)
 {
 	int i;
 	unsigned int total_size = flash->total_size * 1024;
-	volatile uint8_t *bios = flash->virtual_memory;
+	chipaddr bios = flash->virtual_memory;
 
 	for (i = 0; i < total_size; i += flash->page_size)
 		erase_sst_fwhub_block(flash, i);
@@ -136,7 +136,7 @@ int write_sst_fwhub(struct flashchip *flash, uint8_t *buf)
 	int i;
 	int total_size = flash->total_size * 1024;
 	int page_size = flash->page_size;
-	volatile uint8_t *bios = flash->virtual_memory;
+	chipaddr bios = flash->virtual_memory;
 	uint8_t blockstatus;
 
 	// FIXME: We want block wide erase instead of ironing the whole chip

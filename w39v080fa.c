@@ -23,7 +23,7 @@
 
 int probe_winbond_fwhub(struct flashchip *flash)
 {
-	volatile uint8_t *bios = flash->virtual_memory;
+	chipaddr bios = flash->virtual_memory;
 	uint8_t vid, did;
 
 	/* Product Identification Entry */
@@ -54,7 +54,7 @@ int probe_winbond_fwhub(struct flashchip *flash)
 
 static int unlock_block_winbond_fwhub(struct flashchip *flash, int offset)
 {
-	volatile uint8_t *wrprotect = flash->virtual_registers + offset + 2;
+	chipaddr wrprotect = flash->virtual_registers + offset + 2;
 	uint8_t locking;
 
 	printf_debug("Trying to unlock block @0x%08x = 0x%02x\n", offset,
@@ -98,7 +98,7 @@ static int unlock_block_winbond_fwhub(struct flashchip *flash, int offset)
 int unlock_winbond_fwhub(struct flashchip *flash)
 {
 	int i, total_size = flash->total_size * 1024;
-	volatile uint8_t *bios = flash->virtual_memory;
+	chipaddr bios = flash->virtual_memory;
 	uint8_t locking;
 
 	/* Are there any hardware restrictions that we can't overcome? 
@@ -143,7 +143,7 @@ int unlock_winbond_fwhub(struct flashchip *flash)
 	return 0;
 }
 
-static int erase_sector_winbond_fwhub(volatile uint8_t *bios,
+static int erase_sector_winbond_fwhub(chipaddr bios,
 				      unsigned int sector)
 {
 	/* Remember: too much sleep can waste your day. */
@@ -168,7 +168,7 @@ static int erase_sector_winbond_fwhub(volatile uint8_t *bios,
 int erase_winbond_fwhub(struct flashchip *flash)
 {
 	int i, total_size = flash->total_size * 1024;
-	volatile uint8_t *bios = flash->virtual_memory;
+	chipaddr bios = flash->virtual_memory;
 
 	unlock_winbond_fwhub(flash);
 
@@ -193,7 +193,7 @@ int write_winbond_fwhub(struct flashchip *flash, uint8_t *buf)
 {
 	int i;
 	int total_size = flash->total_size * 1024;
-	volatile uint8_t *bios = flash->virtual_memory;
+	chipaddr bios = flash->virtual_memory;
 
 	if (erase_winbond_fwhub(flash))
 		return -1;

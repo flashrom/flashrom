@@ -45,7 +45,7 @@ void print_82802ab_status(uint8_t status)
 
 int probe_82802ab(struct flashchip *flash)
 {
-	volatile uint8_t *bios = flash->virtual_memory;
+	chipaddr bios = flash->virtual_memory;
 	uint8_t id1, id2;
 
 #if 0
@@ -79,7 +79,7 @@ int probe_82802ab(struct flashchip *flash)
 	return 1;
 }
 
-uint8_t wait_82802ab(volatile uint8_t *bios)
+uint8_t wait_82802ab(chipaddr bios)
 {
 	uint8_t status;
 	uint8_t id1, id2;
@@ -109,8 +109,8 @@ uint8_t wait_82802ab(volatile uint8_t *bios)
 
 int erase_82802ab_block(struct flashchip *flash, int offset)
 {
-	volatile uint8_t *bios = flash->virtual_memory + offset;
-	volatile uint8_t *wrprotect = flash->virtual_registers + offset + 2;
+	chipaddr bios = flash->virtual_memory + offset;
+	chipaddr wrprotect = flash->virtual_registers + offset + 2;
 	int j;
 	uint8_t status;
 
@@ -155,8 +155,8 @@ int erase_82802ab(struct flashchip *flash)
 	return 0;
 }
 
-void write_page_82802ab(volatile uint8_t *bios, uint8_t *src,
-			volatile uint8_t *dst, int page_size)
+void write_page_82802ab(chipaddr bios, uint8_t *src,
+			chipaddr dst, int page_size)
 {
 	int i;
 
@@ -173,7 +173,7 @@ int write_82802ab(struct flashchip *flash, uint8_t *buf)
 	int i;
 	int total_size = flash->total_size * 1024;
 	int page_size = flash->page_size;
-	volatile uint8_t *bios = flash->virtual_memory;
+	chipaddr bios = flash->virtual_memory;
 
 	printf("Programming page: \n");
 	for (i = 0; i < total_size / page_size; i++) {
