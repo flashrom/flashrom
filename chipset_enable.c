@@ -924,20 +924,11 @@ static int get_flashbase_sc520(struct pci_dev *dev, const char *name)
 	return 0;
 }
 
-typedef struct penable {
-	uint16_t vendor_id;
-	uint16_t device_id;
-	int status;
-	const char *vendor_name;
-	const char *device_name;
-	int (*doit) (struct pci_dev *dev, const char *name);
-} FLASH_ENABLE;
-
 #define OK 0
 #define NT 1	/* Not tested */
 
 /* Please keep this list alphabetically sorted by vendor/device. */
-static const FLASH_ENABLE enables[] = {
+const struct penable chipset_enables[] = {
 	{0x10B9, 0x1533, OK, "ALi", "M1533",		enable_flash_ali_m1533},
 	{0x1022, 0x7440, OK, "AMD", "AMD-768",		enable_flash_amd8111},
 	{0x1022, 0x7468, OK, "AMD", "AMD8111",		enable_flash_amd8111},
@@ -1014,6 +1005,8 @@ static const FLASH_ENABLE enables[] = {
 	{0x1106, 0x3372, OK, "VIA", "VT8237S",		enable_flash_vt8237s_spi},
 	{0x1106, 0x0586, OK, "VIA", "VT82C586A/B",	enable_flash_amd8111},
 	{0x1106, 0x0686, NT, "VIA", "VT82C686A/B",	enable_flash_amd8111},
+
+	{},
 };
 
 void print_supported_chipsets(void)
@@ -1022,11 +1015,13 @@ void print_supported_chipsets(void)
 
 	printf("\nSupported chipsets:\n\n");
 
-	for (i = 0; i < ARRAY_SIZE(enables); i++)
-		printf("%s %s [%04x:%04x]%s\n", enables[i].vendor_name,
-		       enables[i].device_name, enables[i].vendor_id,
-		       enables[i].device_id,
-		       (enables[i].status == OK) ? "" : " (untested)");
+	for (i = 0; chipset_enables[i].vendor_name != NULL; i++) {
+		printf("%s %s [%04x:%04x]%s\n", chipset_enables[i].vendor_name,
+		       chipset_enables[i].device_name,
+		       chipset_enables[i].vendor_id,
+		       chipset_enables[i].device_id,
+		       (chipset_enables[i].status == OK) ? "" : " (untested)");
+	}
 }
 
 int chipset_flash_enable(void)
@@ -1036,17 +1031,20 @@ int chipset_flash_enable(void)
 	int i;
 
 	/* Now let's try to find the chipset we have... */
-	for (i = 0; i < ARRAY_SIZE(enables); i++) {
-		dev = pci_dev_find(enables[i].vendor_id, enables[i].device_id);
+	for (i = 0; chipset_enables[i].vendor_name != NULL; i++) {
+		dev = pci_dev_find(chipset_enables[i].vendor_id,
+				   chipset_enables[i].device_id);
 		if (dev)
 			break;
 	}
 
 	if (dev) {
 		printf("Found chipset \"%s %s\", enabling flash write... ",
-		       enables[i].vendor_name, enables[i].device_name);
+		       chipset_enables[i].vendor_name,
+		       chipset_enables[i].device_name);
 
-		ret = enables[i].doit(dev, enables[i].device_name);
+		ret = chipset_enables[i].doit(dev,
+					      chipset_enables[i].device_name);
 		if (ret)
 			printf("FAILED!\n");
 		else
