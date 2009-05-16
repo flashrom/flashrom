@@ -29,13 +29,17 @@
 #define BIOS_ROM_ADDR		0x04
 #define BIOS_ROM_DATA		0x08
 #define INT_STATUS		0x0e
+#define INTERNAL_CONFIG		0x00
 #define SELECT_REG_WINDOW	0x800
 
 #define PCI_VENDOR_ID_3COM	0x10b7
 
+uint32_t internal_conf;
+uint16_t id;
+
 struct pcidev_status nics_3com[] = {
 	/* 3C90xB */
-	{0x10b7, 0x9055, PCI_NT, "3COM", "3C90xB: PCI 10/100 Mbps; shared 10BASE-T/100BASE-TX"},
+	{0x10b7, 0x9055, PCI_OK, "3COM", "3C90xB: PCI 10/100 Mbps; shared 10BASE-T/100BASE-TX"},
 	{0x10b7, 0x9001, PCI_NT, "3COM", "3C90xB: PCI 10/100 Mbps; shared 10BASE-T/100BASE-T4" },
 	{0x10b7, 0x9004, PCI_NT, "3COM", "3C90xB: PCI 10BASE-T (TPO)" },
 	{0x10b7, 0x9005, PCI_NT, "3COM", "3C90xB: PCI 10BASE-T/10BASE2/AUI (COMBO)" },
@@ -57,6 +61,18 @@ int nic3com_init(void)
 	get_io_perms();
 
 	io_base_addr = pcidev_init(PCI_VENDOR_ID_3COM, nics_3com);
+	id = pcidev_dev->device_id;
+
+	/* 3COM 3C90xB cards need a special fixup. */
+	if (id == 0x9055 || id == 0x9001 || id == 0x9004 || id == 0x9005
+	    || id == 0x9006 || id == 0x900a || id == 0x905a) {
+		/* Select register window 3 and save the receiver status. */
+		OUTW(SELECT_REG_WINDOW + 3, io_base_addr + INT_STATUS);
+		internal_conf = INL(io_base_addr + INTERNAL_CONFIG);
+
+		/* Set receiver type to MII for full BIOS ROM access. */
+		OUTL((internal_conf & 0xf00fffff) | 0x00600000, io_base_addr);
+	}
 
 	/*
 	 * The lowest 16 bytes of the I/O mapped register space of (most) 3COM
@@ -70,6 +86,14 @@ int nic3com_init(void)
 
 int nic3com_shutdown(void)
 {
+	/* 3COM 3C90xB cards need a special fixup. */
+	if (id == 0x9055 || id == 0x9001 || id == 0x9004 || id == 0x9005
+	    || id == 0x9006 || id == 0x900a || id == 0x905a) {
+		/* Select register window 3 and restore the receiver status. */
+		OUTW(SELECT_REG_WINDOW + 3, io_base_addr + INT_STATUS);
+		OUTL(internal_conf, io_base_addr + INTERNAL_CONFIG);
+	}
+
 	free(pcidev_bdf);
 	pci_cleanup(pacc);
 #if defined(__FreeBSD__) || defined(__DragonFly__)

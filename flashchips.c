@@ -376,6 +376,20 @@ struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Atmel",
+		.name		= "AT29C010A",
+		.manufacture_id	= ATMEL_ID,
+		.model_id	= AT_29C010A,
+		.total_size	= 128,
+		.page_size	= 128,
+		.tested		= TEST_OK_PRE,
+		.probe		= probe_jedec,
+		.erase		= erase_chip_jedec,
+		.write		= write_jedec,	/* FIXME */
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "Atmel",
 		.name		= "AT29C020",
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_29C020,

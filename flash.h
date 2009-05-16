@@ -193,6 +193,7 @@ struct flashchip {
 #define TEST_OK_ERASE	(1<<2)
 #define TEST_OK_WRITE	(1<<3)
 #define TEST_OK_PR	(TEST_OK_PROBE|TEST_OK_READ)
+#define TEST_OK_PRE	(TEST_OK_PROBE|TEST_OK_READ|TEST_OK_ERASE)
 #define TEST_OK_PREW	(TEST_OK_PROBE|TEST_OK_READ|TEST_OK_ERASE|TEST_OK_WRITE)
 #define TEST_OK_MASK	0x0f
 
@@ -258,6 +259,7 @@ extern struct flashchip flashchips[];
 #define AT_26DF321		0x4700	/* also 25DF321 */
 #define AT_26F004		0x0400
 #define AT_29C040A		0xA4
+#define AT_29C010A		0xD5	
 #define AT_29C020		0xDA
 #define AT_45BR3214B		/* No ID available */
 #define AT_45CS1282		0x2920
@@ -559,6 +561,7 @@ struct pci_dev *pci_card_find(uint16_t vendor, uint16_t device,
 extern uint32_t io_base_addr;
 extern struct pci_access *pacc;
 extern struct pci_filter filter;
+extern struct pci_dev *pcidev_dev;
 struct pcidev_status {
 	uint16_t vendor_id;
 	uint16_t device_id;
