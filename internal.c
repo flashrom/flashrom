@@ -168,3 +168,34 @@ uint32_t internal_chip_readl(const volatile void *addr)
 	return *(volatile uint32_t *) addr;
 }
 
+/* Little-endian fallback for drivers not supporting 16 bit accesses */
+void fallback_chip_writew(uint16_t val, volatile void *addr)
+{
+	chip_writeb(val & 0xff, addr);
+	chip_writeb((val >> 8) & 0xff, addr + 1);
+}
+
+/* Little-endian fallback for drivers not supporting 16 bit accesses */
+uint16_t fallback_chip_readw(const volatile void *addr)
+{
+	uint16_t val;
+	val = chip_readb(addr);
+	val |= chip_readb(addr + 1) << 8;
+	return val;
+}
+
+/* Little-endian fallback for drivers not supporting 32 bit accesses */
+void fallback_chip_writel(uint32_t val, volatile void *addr)
+{
+	chip_writew(val & 0xffff, addr);
+	chip_writew((val >> 16) & 0xffff, addr + 2);
+}
+
+/* Little-endian fallback for drivers not supporting 32 bit accesses */
+uint32_t fallback_chip_readl(const volatile void *addr)
+{
+	uint32_t val;
+	val = chip_readw(addr);
+	val |= chip_readw(addr + 2) << 16;
+	return val;
+}
