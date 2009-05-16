@@ -26,9 +26,7 @@
  * ST M50FLW080B (not yet tested)
  */
 
-#include <stdio.h>
 #include <string.h>
-#include <stdint.h>
 #include "flash.h"
 
 void protect_stm50flw0x0x(chipaddr bios)

@@ -23,9 +23,6 @@
  * Contains the ITE IT87* SPI specific routines
  */
 
-#include <stdio.h>
-#include <pci/pci.h>
-#include <stdint.h>
 #include <string.h>
 #include "flash.h"
 #include "spi.h"
