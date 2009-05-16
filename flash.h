@@ -611,6 +611,10 @@ void internal_chip_writel(uint32_t val, volatile void *addr);
 uint8_t internal_chip_readb(const volatile void *addr);
 uint16_t internal_chip_readw(const volatile void *addr);
 uint32_t internal_chip_readl(const volatile void *addr);
+void fallback_chip_writew(uint16_t val, volatile void *addr);
+void fallback_chip_writel(uint32_t val, volatile void *addr);
+uint16_t fallback_chip_readw(const volatile void *addr);
+uint32_t fallback_chip_readl(const volatile void *addr);
 #if defined(__FreeBSD__) || defined(__DragonFly__)
 extern int io_fd;
 #endif
@@ -635,11 +639,7 @@ int nic3com_shutdown(void);
 void *nic3com_map(const char *descr, unsigned long phys_addr, size_t len);
 void nic3com_unmap(void *virt_addr, size_t len);
 void nic3com_chip_writeb(uint8_t val, volatile void *addr);
-void nic3com_chip_writew(uint16_t val, volatile void *addr);
-void nic3com_chip_writel(uint32_t val, volatile void *addr);
 uint8_t nic3com_chip_readb(const volatile void *addr);
-uint16_t nic3com_chip_readw(const volatile void *addr);
-uint32_t nic3com_chip_readl(const volatile void *addr);
 extern struct pcidev_status nics_3com[];
 
 /* flashrom.c */

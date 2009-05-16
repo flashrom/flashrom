@@ -93,14 +93,6 @@ void nic3com_chip_writeb(uint8_t val, volatile void *addr)
 	OUTB(val, io_base_addr + BIOS_ROM_DATA);
 }
 
-void nic3com_chip_writew(uint16_t val, volatile void *addr)
-{
-}
-
-void nic3com_chip_writel(uint32_t val, volatile void *addr)
-{
-}
-
 uint8_t nic3com_chip_readb(const volatile void *addr)
 {
 	uint8_t val;
@@ -109,14 +101,4 @@ uint8_t nic3com_chip_readb(const volatile void *addr)
 	val = INB(io_base_addr + BIOS_ROM_DATA);
 
 	return val;
-}
-
-uint16_t nic3com_chip_readw(const volatile void *addr)
-{
-	return 0xffff;
-}
-
-uint32_t nic3com_chip_readl(const volatile void *addr)
-{
-	return 0xffffffff;
 }
