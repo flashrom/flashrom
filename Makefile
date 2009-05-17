@@ -46,7 +46,7 @@ $(PROGRAM): $(OBJS)
 	$(CC) $(LDFLAGS) -o $(PROGRAM) $(OBJS) $(LIBS)
 
 flashrom.o: flashrom.c
-	$(CC) -c $(CFLAGS) $(SVNDEF) $(CPPFLAGS) $< -o $@
+	$(CC) $(CFLAGS) $(CPPFLAGS)  -c -o $@ $< $(SVNDEF)
 
 clean:
 	rm -f $(PROGRAM) *.o

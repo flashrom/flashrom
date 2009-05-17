@@ -560,7 +560,6 @@ void myusec_calibrate_delay(void);
 /* pcidev.c */
 #define PCI_OK 0
 #define PCI_NT 1    /* Not tested */
-#define PCI_IO_BASE_ADDRESS 0x10
 
 extern uint32_t io_base_addr;
 extern struct pci_access *pacc;
@@ -669,7 +668,6 @@ void satasii_unmap(void *virt_addr, size_t len);
 void satasii_chip_writeb(uint8_t val, chipaddr addr);
 uint8_t satasii_chip_readb(const chipaddr addr);
 extern struct pcidev_status satas_sii[];
-
 
 /* flashrom.c */
 extern int verbose;
