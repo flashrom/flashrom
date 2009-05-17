@@ -81,18 +81,18 @@ void physunmap(void *virt_addr, size_t len)
 void *physmap(const char *descr, unsigned long phys_addr, size_t len)
 {
 	if (len == 0) {
-		printf_debug("Not mapping %s, zero size at 0x%08lx\n",
-			descr, phys_addr);
+		printf_debug("Not mapping %s, zero size at 0x%08lx.\n",
+			     descr, phys_addr);
 		return NULL;
 	}
 		
 	if ((getpagesize() - 1) & len) {
-		fprintf(stderr, "Mapping %s at 0x%08lx, unaligned size 0x%lx\n",
+		fprintf(stderr, "Mapping %s at 0x%08lx, unaligned size 0x%lx.\n",
 			descr, phys_addr, (unsigned long)len);
 	}
 
 	if ((getpagesize() - 1) & phys_addr) {
-		fprintf(stderr, "Mapping %s, 0x%lx bytes at unaligned 0x%08lx\n",
+		fprintf(stderr, "Mapping %s, 0x%lx bytes at unaligned 0x%08lx.\n",
 			descr, (unsigned long)len, phys_addr);
 	}
 

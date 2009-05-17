@@ -543,6 +543,7 @@ int main(int argc, char *argv[])
 		printf("\nSupported PCI devices flashrom can use "
 		       "as programmer:\n\n");
 		print_supported_pcidevs(nics_3com);
+		print_supported_pcidevs(satas_sii);
 		exit(0);
 	}
 
