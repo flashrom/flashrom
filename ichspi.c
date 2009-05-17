@@ -129,21 +129,17 @@ static OPCODES *curopcodes = NULL;
 /* HW access functions */
 static uint32_t REGREAD32(int X)
 {
-	volatile uint32_t regval;
-	regval = *(volatile uint32_t *)((uint8_t *) spibar + X);
-	return regval;
+	return mmio_readl(spibar + X);
 }
 
 static uint16_t REGREAD16(int X)
 {
-	volatile uint16_t regval;
-	regval = *(volatile uint16_t *)((uint8_t *) spibar + X);
-	return regval;
+	return mmio_readw(spibar + X);
 }
 
-#define REGWRITE32(X,Y) (*(uint32_t *)((uint8_t *)spibar+X)=Y)
-#define REGWRITE16(X,Y) (*(uint16_t *)((uint8_t *)spibar+X)=Y)
-#define REGWRITE8(X,Y)  (*(uint8_t *)((uint8_t *)spibar+X)=Y)
+#define REGWRITE32(X,Y) mmio_writel(Y, spibar+X)
+#define REGWRITE16(X,Y) mmio_writew(Y, spibar+X)
+#define REGWRITE8(X,Y)  mmio_writeb(Y, spibar+X)
 
 /* Common SPI functions */
 static int find_opcode(OPCODES *op, uint8_t opcode);
