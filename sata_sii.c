@@ -15,7 +15,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, , 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
 /* Datasheets can be found on http://www.siliconimage.com. Great thanks! */
@@ -39,6 +39,7 @@ struct pcidev_status satas_sii[] = {
 	{0x1095, 0x3124, PCI_NT, "Silicon Image", "SiI 3124 PCI-X Serial ATA Controller"},
 	{0x1095, 0x3132, PCI_OK, "Silicon Image", "SiI 3132 Serial ATA Raid II Controller"},
 	{0x1095, 0x3512, PCI_NT, "Silicon Image", "SiI 3512 [SATALink/SATARaid] Serial ATA Controller"},
+
 	{},
 };
 
@@ -50,33 +51,27 @@ int satasii_init(void)
 	get_io_perms();
 
 	pcidev_init(PCI_VENDOR_ID_SII, satas_sii);
-
 	id = pcidev_dev->device_id;
 
 	if ((id == 0x3132) || (id == 0x3124)) {
-		/* BAR 0, offset 0x70 */
-		addr = pci_read_long(pcidev_dev, PCI_IO_BASE_ADDRESS) & ~0x07;
+		addr = pci_read_long(pcidev_dev, PCI_BASE_ADDRESS_0) & ~0x07;
 		reg_offset = 0x70;
 	} else {
-		/* BAR 5, offset 0x50 */
-		addr = pci_read_long(pcidev_dev, PCI_IO_BASE_ADDRESS + (5 * 4)) & ~0x07;
+		addr = pci_read_long(pcidev_dev, PCI_BASE_ADDRESS_5) & ~0x07;
 		reg_offset = 0x50;
 	}
 
-	sii_bar = physmap("SATA SIL registers", addr, 0x100);
-	sii_bar += reg_offset;
+	sii_bar = physmap("SATA SIL registers", addr, 0x100) + reg_offset;
 
-	/* check if rom cycle are OK */
-	if (!(mmio_readl(sii_bar)) & (1 << 26)) {
+	/* Check if ROM cycle are OK. */
+	if (!(mmio_readl(sii_bar)) & (1 << 26))
 		printf("Warning: Flash seems unconnected\n");
-	}
 
 	return 0;
 }
 
 int satasii_shutdown(void)
 {
-
 	free(pcidev_bdf);
 	pci_cleanup(pacc);
 #if defined(__FreeBSD__) || defined(__DragonFly__)
@@ -96,21 +91,19 @@ void satasii_unmap(void *virt_addr, size_t len)
 
 void satasii_chip_writeb(uint8_t val, chipaddr addr)
 {
-
-	uint32_t ctrl_reg, addr_reg;
+	uint32_t ctrl_reg, data_reg;
 
 	while ((ctrl_reg = mmio_readl(sii_bar)) & (1 << 25)) ;
 
-	/* Mask out unused/reserved bits, set writes and start transaction */
+	/* Mask out unused/reserved bits, set writes and start transaction. */
 	ctrl_reg &= 0xfcf80000;
 	ctrl_reg |= (1 << 25) | (0 << 24) | ((uint32_t) addr & 0x7ffff);
 
-	addr_reg = (mmio_readl((sii_bar + 4)) & ~0xff) | val;
-	mmio_writel(addr_reg, (sii_bar + 4));
+	data_reg = (mmio_readl((sii_bar + 4)) & ~0xff) | val;
+	mmio_writel(data_reg, (sii_bar + 4));
 	mmio_writel(ctrl_reg, sii_bar);
 
 	while (mmio_readl(sii_bar) & (1 << 25)) ;
-
 }
 
 uint8_t satasii_chip_readb(const chipaddr addr)
@@ -119,13 +112,13 @@ uint8_t satasii_chip_readb(const chipaddr addr)
 
 	while ((ctrl_reg = mmio_readl(sii_bar)) & (1 << 25)) ;
 
-	/* Mask out unused/reserved bits, set reads and start transaction */
+	/* Mask out unused/reserved bits, set reads and start transaction. */
 	ctrl_reg &= 0xfcf80000;
 	ctrl_reg |= (1 << 25) | (1 << 24) | ((uint32_t) addr & 0x7ffff);
 
 	mmio_writel(ctrl_reg, sii_bar);
 
-	while ((mmio_readl(sii_bar)) & (1 << 25)) ;
+	while (mmio_readl(sii_bar) & (1 << 25)) ;
 
 	return (mmio_readl(sii_bar + 4)) & 0xff;
 }

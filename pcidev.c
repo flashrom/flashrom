@@ -42,16 +42,16 @@ uint32_t pcidev_validate(struct pci_dev *dev, struct pcidev_status *devs)
 			continue;
 
 		/* Don't use dev->base_addr[0], won't work on older libpci. */
-		addr = pci_read_long(dev, PCI_IO_BASE_ADDRESS) & ~0x03;
+		addr = pci_read_long(dev, PCI_BASE_ADDRESS_0) & ~0x03;
 
-		printf("Found \"%s %s\" (%04x:%04x, BDF %02x:%02x.%x)\n",
+		printf("Found \"%s %s\" (%04x:%04x, BDF %02x:%02x.%x).\n",
 		       devs[i].vendor_name, devs[i].device_name, dev->vendor_id,
 		       dev->device_id, dev->bus, dev->dev, dev->func);
 
 		if (devs[i].status == PCI_NT) {
-			printf("===\nThis PCI device is UNTESTED. Please email "
-			       "a report including the 'flashrom -p xxxxxx'\n"
-			       "output to flashrom@coreboot.org if it works "
+			printf("===\nThis PCI device is UNTESTED. Please "
+			       "report the 'flashrom -p xxxx' output \n"
+			       "to flashrom@coreboot.org if it works "
 			       "for you. Thank you for your help!\n===\n");
 		}
 
@@ -98,7 +98,7 @@ uint32_t pcidev_init(uint16_t vendor_id, struct pcidev_status *devs)
 		exit(1);
 	} else if (found > 1) {
 		fprintf(stderr, "Error: Multiple supported PCI devices found. "
-			"Please use 'flashrom -p xxxxxx=bb:dd.f' \n"
+			"Use 'flashrom -p xxxx=bb:dd.f' \n"
 			"to explicitly select the card with the given BDF "
 			"(PCI bus, device, function).\n");
 		exit(1);
