@@ -102,15 +102,6 @@ int nic3com_shutdown(void)
 	return 0;
 }
 
-void *nic3com_map(const char *descr, unsigned long phys_addr, size_t len)
-{
-	return 0;
-}
-
-void nic3com_unmap(void *virt_addr, size_t len)
-{
-}
-
 void nic3com_chip_writeb(uint8_t val, chipaddr addr)
 {
 	OUTL((uint32_t)addr, io_base_addr + BIOS_ROM_ADDR);

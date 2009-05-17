@@ -64,8 +64,8 @@ const struct programmer_entry programmer_table[] = {
 	{
 		.init			= nic3com_init,
 		.shutdown		= nic3com_shutdown,
-		.map_flash_region	= nic3com_map,
-		.unmap_flash_region	= nic3com_unmap,
+		.map_flash_region	= fallback_map,
+		.unmap_flash_region	= fallback_unmap,
 		.chip_readb		= nic3com_chip_readb,
 		.chip_readw		= fallback_chip_readw,
 		.chip_readl		= fallback_chip_readl,
@@ -77,8 +77,8 @@ const struct programmer_entry programmer_table[] = {
 	{
 		.init			= satasii_init,
 		.shutdown		= satasii_shutdown,
-		.map_flash_region	= satasii_map,
-		.unmap_flash_region	= satasii_unmap,
+		.map_flash_region	= fallback_map,
+		.unmap_flash_region	= fallback_unmap,
 		.chip_readb		= satasii_chip_readb,
 		.chip_readw		= fallback_chip_readw,
 		.chip_readl		= fallback_chip_readl,
