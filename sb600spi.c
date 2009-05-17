@@ -37,7 +37,7 @@ typedef struct _spi_controller {
 } sb600_spi_controller;
 
 sb600_spi_controller *spi_bar = NULL;
-uint8_t volatile *sb600_spibar;
+uint8_t *sb600_spibar;
 
 int sb600_spi_read(struct flashchip *flash, uint8_t *buf)
 {
@@ -91,17 +91,17 @@ int sb600_spi_write_1(struct flashchip *flash, uint8_t *buf)
 
 void reset_internal_fifo_pointer(void)
 {
-	sb600_spibar[2] |= 0x10;
+	mmio_writeb(mmio_readb(sb600_spibar + 2) | 0x10, sb600_spibar + 2);
 
-	while (sb600_spibar[0xD] & 0x7)
+	while (mmio_readb(sb600_spibar + 0xD) & 0x7)
 		printf("reset\n");
 }
 
 void execute_command(void)
 {
-	sb600_spibar[2] |= 1;
+	mmio_writeb(mmio_readb(sb600_spibar + 2) | 1, sb600_spibar + 2);
 
-	while (sb600_spibar[2] & 1)
+	while (mmio_readb(sb600_spibar + 2) & 1)
 		;
 }
 
@@ -131,8 +131,8 @@ int sb600_spi_command(unsigned int writecnt, unsigned int readcnt,
 		return 1;
 	}
 
-	sb600_spibar[0] = cmd;
-	sb600_spibar[1] = readcnt << 4 | (writecnt);
+	mmio_writeb(cmd, sb600_spibar + 0);
+	mmio_writeb(readcnt << 4 | (writecnt), sb600_spibar + 1);
 
 	/* Before we use the FIFO, reset it first. */
 	reset_internal_fifo_pointer();
@@ -140,7 +140,7 @@ int sb600_spi_command(unsigned int writecnt, unsigned int readcnt,
 	/* Send the write byte to FIFO. */
 	for (count = 0; count < writecnt; count++, writearr++) {
 		printf_debug(" [%x]", *writearr);
-		sb600_spibar[0xC] = *writearr;
+		mmio_writeb(*writearr, sb600_spibar + 0xC);
 	}
 	printf_debug("\n");
 
@@ -160,13 +160,13 @@ int sb600_spi_command(unsigned int writecnt, unsigned int readcnt,
 	reset_internal_fifo_pointer();
 
 	for (count = 0; count < writecnt; count++) {
-		cmd = sb600_spibar[0xC];	/* Skip the byte we send. */
+		cmd = mmio_readb(sb600_spibar + 0xC);	/* Skip the byte we send. */
 		printf_debug("[ %2x]", cmd);
 	}
 
-	printf_debug("The FIFO pointer 6 is %d.\n", sb600_spibar[0xd] & 0x07);
+	printf_debug("The FIFO pointer 6 is %d.\n", mmio_readb(sb600_spibar + 0xd) & 0x07);
 	for (count = 0; count < readcnt; count++, readarr++) {
-		*readarr = sb600_spibar[0xC];
+		*readarr = mmio_readb(sb600_spibar + 0xC);
 		printf_debug("[%02x]", *readarr);
 	}
 	printf_debug("\n");

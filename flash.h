@@ -621,6 +621,12 @@ void internal_chip_writel(uint32_t val, chipaddr addr);
 uint8_t internal_chip_readb(const chipaddr addr);
 uint16_t internal_chip_readw(const chipaddr addr);
 uint32_t internal_chip_readl(const chipaddr addr);
+void mmio_writeb(uint8_t val, void *addr);
+void mmio_writew(uint16_t val, void *addr);
+void mmio_writel(uint32_t val, void *addr);
+uint8_t mmio_readb(void *addr);
+uint16_t mmio_readw(void *addr);
+uint32_t mmio_readl(void *addr);
 void fallback_chip_writew(uint16_t val, chipaddr addr);
 void fallback_chip_writel(uint32_t val, chipaddr addr);
 uint16_t fallback_chip_readw(const chipaddr addr);
@@ -731,7 +737,7 @@ int sb600_spi_command(unsigned int writecnt, unsigned int readcnt,
 int sb600_spi_read(struct flashchip *flash, uint8_t *buf);
 int sb600_spi_write_1(struct flashchip *flash, uint8_t *buf);
 uint8_t sb600_read_status_register(void);
-extern uint8_t volatile *sb600_spibar;
+extern uint8_t *sb600_spibar;
 
 /* jedec.c */
 uint8_t oddparity(uint8_t val);
