@@ -80,15 +80,6 @@ int satasii_shutdown(void)
 	return 0;
 }
 
-void *satasii_map(const char *descr, unsigned long phys_addr, size_t len)
-{
-	return 0;
-}
-
-void satasii_unmap(void *virt_addr, size_t len)
-{
-}
-
 void satasii_chip_writeb(uint8_t val, chipaddr addr)
 {
 	uint32_t ctrl_reg, data_reg;
