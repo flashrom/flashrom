@@ -83,6 +83,7 @@ extern int programmer;
 #define PROGRAMMER_INTERNAL	0x00
 #define PROGRAMMER_DUMMY	0x01
 #define PROGRAMMER_NIC3COM	0x02
+#define PROGRAMMER_SATASII	0x03
 
 struct programmer_entry {
 	const char *vendor;
@@ -559,6 +560,8 @@ void myusec_calibrate_delay(void);
 /* pcidev.c */
 #define PCI_OK 0
 #define PCI_NT 1    /* Not tested */
+#define PCI_IO_BASE_ADDRESS 0x10
+
 extern uint32_t io_base_addr;
 extern struct pci_access *pacc;
 extern struct pci_filter filter;
@@ -657,6 +660,16 @@ void nic3com_unmap(void *virt_addr, size_t len);
 void nic3com_chip_writeb(uint8_t val, chipaddr addr);
 uint8_t nic3com_chip_readb(const chipaddr addr);
 extern struct pcidev_status nics_3com[];
+
+/* satasii.c */
+int satasii_init(void);
+int satasii_shutdown(void);
+void *satasii_map(const char *descr, unsigned long phys_addr, size_t len);
+void satasii_unmap(void *virt_addr, size_t len);
+void satasii_chip_writeb(uint8_t val, chipaddr addr);
+uint8_t satasii_chip_readb(const chipaddr addr);
+extern struct pcidev_status satas_sii[];
+
 
 /* flashrom.c */
 extern int verbose;

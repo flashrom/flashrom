@@ -26,8 +26,6 @@
 #include <errno.h>
 #include "flash.h"
 
-#define PCI_IO_BASE_ADDRESS 0x10
-
 uint32_t io_base_addr;
 struct pci_access *pacc;
 struct pci_filter filter;

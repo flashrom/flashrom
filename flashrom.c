@@ -74,6 +74,19 @@ const struct programmer_entry programmer_table[] = {
 		.chip_writel		= fallback_chip_writel,
 	},
 
+	{
+		.init			= satasii_init,
+		.shutdown		= satasii_shutdown,
+		.map_flash_region	= satasii_map,
+		.unmap_flash_region	= satasii_unmap,
+		.chip_readb		= satasii_chip_readb,
+		.chip_readw		= fallback_chip_readw,
+		.chip_readl		= fallback_chip_readl,
+		.chip_writeb		= satasii_chip_writeb,
+		.chip_writew		= fallback_chip_writew,
+		.chip_writel		= fallback_chip_writel,
+	},
+
 	{},
 };
 
@@ -501,6 +514,10 @@ int main(int argc, char *argv[])
 				programmer = PROGRAMMER_DUMMY;
 			} else if (strncmp(optarg, "nic3com", 7) == 0) {
 				programmer = PROGRAMMER_NIC3COM;
+				if (optarg[7] == '=')
+					pcidev_bdf = strdup(optarg + 8);
+			} else if (strncmp(optarg, "satasii", 7) == 0) {
+				programmer = PROGRAMMER_SATASII;
 				if (optarg[7] == '=')
 					pcidev_bdf = strdup(optarg + 8);
 			} else {
