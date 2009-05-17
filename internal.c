@@ -195,6 +195,17 @@ uint32_t mmio_readl(void *addr)
 	return *(volatile uint32_t *) addr;
 }
 
+/* Fallback map() for programmers which don't need special handling */
+void *fallback_map(const char *descr, unsigned long phys_addr, size_t len)
+{
+	return 0;
+}
+
+/* Fallback unmap() for programmers which don't need special handling */
+void fallback_unmap(void *virt_addr, size_t len)
+{
+}
+
 /* Little-endian fallback for drivers not supporting 16 bit accesses */
 void fallback_chip_writew(uint16_t val, chipaddr addr)
 {
