@@ -215,7 +215,7 @@ static int enable_flash_vt8237s_spi(struct pci_dev *dev, const char *name)
 	spibar = physmap("VT8237S MMIO registers", mmio_base, 0x70);
 
 	printf_debug("0x6c: 0x%04x     (CLOCK/DEBUG)\n",
-		     *(uint16_t *) (spibar + 0x6c));
+		     mmio_readw(spibar + 0x6c));
 
 	flashbus = BUS_TYPE_VIA_SPI;
 	ich_init_opcodes();
@@ -245,14 +245,14 @@ static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
 	/* Map RCBA to virtual memory */
 	rcrb = physmap("ICH RCRB", tmp, 0x4000);
 
-	gcs = *(volatile uint32_t *)(rcrb + 0x3410);
+	gcs = mmio_readl(rcrb + 0x3410);
 	printf_debug("GCS = 0x%x: ", gcs);
 	printf_debug("BIOS Interface Lock-Down: %sabled, ",
 		     (gcs & 0x1) ? "en" : "dis");
 	bbs = (gcs >> 10) & 0x3;
 	printf_debug("BOOT BIOS Straps: 0x%x (%s)\n", bbs, straps_names[bbs]);
 
-	buc = *(volatile uint8_t *)(rcrb + 0x3414);
+	buc = mmio_readb(rcrb + 0x3414);
 	printf_debug("Top Swap : %s\n",
 		     (buc & 1) ? "enabled (A16 inverted)" : "not enabled");
 
@@ -292,44 +292,44 @@ static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
 	switch (flashbus) {
 	case BUS_TYPE_ICH7_SPI:
 		printf_debug("0x00: 0x%04x     (SPIS)\n",
-			     *(uint16_t *) (spibar + 0));
+			     mmio_readw(spibar + 0));
 		printf_debug("0x02: 0x%04x     (SPIC)\n",
-			     *(uint16_t *) (spibar + 2));
+			     mmio_readw(spibar + 2));
 		printf_debug("0x04: 0x%08x (SPIA)\n",
-			     *(uint32_t *) (spibar + 4));
+			     mmio_readl(spibar + 4));
 		for (i = 0; i < 8; i++) {
 			int offs;
 			offs = 8 + (i * 8);
 			printf_debug("0x%02x: 0x%08x (SPID%d)\n", offs,
-				     *(uint32_t *) (spibar + offs), i);
+				     mmio_readl(spibar + offs), i);
 			printf_debug("0x%02x: 0x%08x (SPID%d+4)\n", offs + 4,
-				     *(uint32_t *) (spibar + offs + 4), i);
+				     mmio_readl(spibar + offs + 4), i);
 		}
 		printf_debug("0x50: 0x%08x (BBAR)\n",
-			     *(uint32_t *) (spibar + 0x50));
+			     mmio_readl(spibar + 0x50));
 		printf_debug("0x54: 0x%04x     (PREOP)\n",
-			     *(uint16_t *) (spibar + 0x54));
+			     mmio_readw(spibar + 0x54));
 		printf_debug("0x56: 0x%04x     (OPTYPE)\n",
-			     *(uint16_t *) (spibar + 0x56));
+			     mmio_readw(spibar + 0x56));
 		printf_debug("0x58: 0x%08x (OPMENU)\n",
-			     *(uint32_t *) (spibar + 0x58));
+			     mmio_readl(spibar + 0x58));
 		printf_debug("0x5c: 0x%08x (OPMENU+4)\n",
-			     *(uint32_t *) (spibar + 0x5c));
+			     mmio_readl(spibar + 0x5c));
 		for (i = 0; i < 4; i++) {
 			int offs;
 			offs = 0x60 + (i * 4);
 			printf_debug("0x%02x: 0x%08x (PBR%d)\n", offs,
-				     *(uint32_t *) (spibar + offs), i);
+				     mmio_readl(spibar + offs), i);
 		}
 		printf_debug("\n");
-		if ((*(uint16_t *) spibar) & (1 << 15)) {
+		if (mmio_readw(spibar) & (1 << 15)) {
 			printf("WARNING: SPI Configuration Lockdown activated.\n");
 			ichspi_lock = 1;
 		}
 		ich_init_opcodes();
 		break;
 	case BUS_TYPE_ICH9_SPI:
-		tmp2 = *(uint16_t *) (spibar + 4);
+		tmp2 = mmio_readw(spibar + 4);
 		printf_debug("0x04: 0x%04x (HSFS)\n", tmp2);
 		printf_debug("FLOCKDN %i, ", (tmp2 >> 15 & 1));
 		printf_debug("FDV %i, ", (tmp2 >> 14) & 1);
@@ -340,7 +340,7 @@ static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
 		printf_debug("FCERR %i, ", (tmp2 >> 1) & 1);
 		printf_debug("FDONE %i\n", (tmp2 >> 0) & 1);
 
-		tmp = *(uint32_t *) (spibar + 0x50);
+		tmp = mmio_readl(spibar + 0x50);
 		printf_debug("0x50: 0x%08x (FRAP)\n", tmp);
 		printf_debug("BMWAG %i, ", (tmp >> 24) & 0xff);
 		printf_debug("BMRAG %i, ", (tmp >> 16) & 0xff);
@@ -348,39 +348,39 @@ static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
 		printf_debug("BRRA %i\n", (tmp >> 0) & 0xff);
 
 		printf_debug("0x54: 0x%08x (FREG0)\n",
-			     *(uint32_t *) (spibar + 0x54));
+			     mmio_readl(spibar + 0x54));
 		printf_debug("0x58: 0x%08x (FREG1)\n",
-			     *(uint32_t *) (spibar + 0x58));
+			     mmio_readl(spibar + 0x58));
 		printf_debug("0x5C: 0x%08x (FREG2)\n",
-			     *(uint32_t *) (spibar + 0x5C));
+			     mmio_readl(spibar + 0x5C));
 		printf_debug("0x60: 0x%08x (FREG3)\n",
-			     *(uint32_t *) (spibar + 0x60));
+			     mmio_readl(spibar + 0x60));
 		printf_debug("0x64: 0x%08x (FREG4)\n",
-			     *(uint32_t *) (spibar + 0x64));
+			     mmio_readl(spibar + 0x64));
 		printf_debug("0x74: 0x%08x (PR0)\n",
-			     *(uint32_t *) (spibar + 0x74));
+			     mmio_readl(spibar + 0x74));
 		printf_debug("0x78: 0x%08x (PR1)\n",
-			     *(uint32_t *) (spibar + 0x78));
+			     mmio_readl(spibar + 0x78));
 		printf_debug("0x7C: 0x%08x (PR2)\n",
-			     *(uint32_t *) (spibar + 0x7C));
+			     mmio_readl(spibar + 0x7C));
 		printf_debug("0x80: 0x%08x (PR3)\n",
-			     *(uint32_t *) (spibar + 0x80));
+			     mmio_readl(spibar + 0x80));
 		printf_debug("0x84: 0x%08x (PR4)\n",
-			     *(uint32_t *) (spibar + 0x84));
+			     mmio_readl(spibar + 0x84));
 		printf_debug("0x90: 0x%08x (SSFS, SSFC)\n",
-			     *(uint32_t *) (spibar + 0x90));
+			     mmio_readl(spibar + 0x90));
 		printf_debug("0x94: 0x%04x     (PREOP)\n",
-			     *(uint16_t *) (spibar + 0x94));
+			     mmio_readw(spibar + 0x94));
 		printf_debug("0x96: 0x%04x     (OPTYPE)\n",
-			     *(uint16_t *) (spibar + 0x96));
+			     mmio_readw(spibar + 0x96));
 		printf_debug("0x98: 0x%08x (OPMENU)\n",
-			     *(uint32_t *) (spibar + 0x98));
+			     mmio_readl(spibar + 0x98));
 		printf_debug("0x9C: 0x%08x (OPMENU+4)\n",
-			     *(uint32_t *) (spibar + 0x9C));
+			     mmio_readl(spibar + 0x9C));
 		printf_debug("0xA0: 0x%08x (BBAR)\n",
-			     *(uint32_t *) (spibar + 0xA0));
+			     mmio_readl(spibar + 0xA0));
 		printf_debug("0xB0: 0x%08x (FDOC)\n",
-			     *(uint32_t *) (spibar + 0xB0));
+			     mmio_readl(spibar + 0xB0));
 		if (tmp2 & (1 << 15)) {
 			printf("WARNING: SPI Configuration Lockdown activated.\n");
 			ichspi_lock = 1;
@@ -897,7 +897,7 @@ static int get_flashbase_sc520(struct pci_dev *dev, const char *name)
 	 *    BOOTCS region (PARx[31:29] = 100b)e
 	 */
 	for (i = 0x88; i <= 0xc4; i += 4) {
-		parx = *(volatile uint32_t *)(mmcr + i);
+		parx = mmio_readl(mmcr + i);
 		if ((parx >> 29) == 4) {
 			bootcs_found = 1;
 			break; /* BOOTCS found */

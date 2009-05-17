@@ -137,30 +137,60 @@ int internal_shutdown(void)
 
 void internal_chip_writeb(uint8_t val, chipaddr addr)
 {
-	*(volatile uint8_t *) addr = val;
+	mmio_writeb(val, (void *) addr);
 }
 
 void internal_chip_writew(uint16_t val, chipaddr addr)
 {
-	*(volatile uint16_t *) addr = val;
+	mmio_writew(val, (void *) addr);
 }
 
 void internal_chip_writel(uint32_t val, chipaddr addr)
 {
-	*(volatile uint32_t *) addr = val;
+	mmio_writel(val, (void *) addr);
 }
 
 uint8_t internal_chip_readb(const chipaddr addr)
 {
-	return *(volatile uint8_t *) addr;
+	return mmio_readb((void *) addr);
 }
 
 uint16_t internal_chip_readw(const chipaddr addr)
 {
-	return *(volatile uint16_t *) addr;
+	return mmio_readw((void *) addr);
 }
 
 uint32_t internal_chip_readl(const chipaddr addr)
+{
+	return mmio_readl((void *) addr);
+}
+
+void mmio_writeb(uint8_t val, void *addr)
+{
+	*(volatile uint8_t *) addr = val;
+}
+
+void mmio_writew(uint16_t val, void *addr)
+{
+	*(volatile uint16_t *) addr = val;
+}
+
+void mmio_writel(uint32_t val, void *addr)
+{
+	*(volatile uint32_t *) addr = val;
+}
+
+uint8_t mmio_readb(void *addr)
+{
+	return *(volatile uint8_t *) addr;
+}
+
+uint16_t mmio_readw(void *addr)
+{
+	return *(volatile uint16_t *) addr;
+}
+
+uint32_t mmio_readl(void *addr)
 {
 	return *(volatile uint32_t *) addr;
 }
