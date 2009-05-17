@@ -1132,6 +1132,20 @@ struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "PMC",
+		.name		= "Pm39LV010",
+		.manufacture_id	= PMC_ID_NOPREFIX,
+		.model_id	= PMC_39F010,
+		.total_size	= 128,
+		.page_size	= 4096,
+		.tested		= TEST_OK_PREW,
+		.probe		= probe_jedec,
+		.erase		= erase_chip_jedec,
+		.write		= write_49f002,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "PMC",
 		.name		= "Pm49FL002",
 		.manufacture_id	= PMC_ID_NOPREFIX,
 		.model_id	= PMC_49FL002,
@@ -1389,7 +1403,7 @@ struct flashchip flashchips[] = {
 		.model_id	= SST_39VF512,
 		.total_size	= 64,
 		.page_size	= 4096,
-		.tested		= TEST_OK_PREW,
+		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.erase		= erase_chip_jedec,
 		.write		= write_49f002,
@@ -1403,7 +1417,7 @@ struct flashchip flashchips[] = {
 		.model_id	= SST_39VF010,
 		.total_size	= 128,
 		.page_size	= 4096,
-		.tested		= TEST_UNTESTED,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_jedec,
 		.erase		= erase_chip_jedec,
 		.write		= write_49f002,
