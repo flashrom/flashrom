@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2000 Silicon Integrated System Corporation
  * Copyright (C) 2004 Tyan Corp <yhlu@tyan.com>
- * Copyright (C) 2005-2008 coresystems GmbH 
+ * Copyright (C) 2005-2008 coresystems GmbH
  * Copyright (C) 2008,2009 Carl-Daniel Hailfinger
  *
  * This program is free software; you can redistribute it and/or modify
@@ -367,13 +367,15 @@ void print_supported_chips(void)
 
 void usage(const char *name)
 {
-	printf("usage: %s [-rwvEVfLhR] [-c chipname] [-s exclude_start]\n",
+	printf("usage: %s [-EVfLhR] [-r file] [-w file] [-v file] [-c chipname] [-s addr]\n"
+	       "       [-e addr] [-m [vendor:]part] [-l file] [-i image] [-p programmer] [file]",
 	       name);
-	printf("       [-e exclude_end] [-m [vendor:]part] [-l file.layout] [-i imagename] [file]\n");
-	printf("Please  note that the command line interface for flashrom will "
-		"change before flashrom 1.0. Do not use flashrom in scripts or "
-		"other automated tools without checking that your flashrom "
+
+	printf("\n\nPlease note that the command line interface for flashrom will "
+		"change before flashrom 1.0.\nDo not use flashrom in scripts or "
+		"other automated tools without checking that your flashrom\n"
 		"version won't interpret them in a totally different way.\n\n");
+
 	printf
 	    ("   -r | --read:                      read flash and save into file\n"
 	     "   -w | --write:                     write file into flash\n"
@@ -389,9 +391,10 @@ void usage(const char *name)
 	     "   -i | --image <name>:              only flash image name from flash layout\n"
 	     "   -L | --list-supported:            print supported devices\n"
 	     "   -p | --programmer <name>:         specify the programmer device\n"
+	     "                                     (internal, dummy, nic3com, satasii)\n"
 	     "   -h | --help:                      print this help text\n"
 	     "   -R | --version:                   print the version (release)\n"
-	     "\n" " If no file is specified, then all that happens"
+	     "\nIf no file is specified, then all that happens"
 	     " is that flash info is dumped.\n\n");
 	exit(1);
 }

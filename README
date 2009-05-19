@@ -3,7 +3,10 @@ flashrom README
 -------------------------------------------------------------------------------
 
 flashrom is a utility for reading, writing, verifying and erasing flash ROM
-chips. It's often used to flash BIOS/coreboot/firmware images.
+chips. It's often used to flash BIOS/EFI/coreboot/firmware images in-system
+using a supported mainboard, but it also supports flashing of network
+cards (NICs), SATA controller cards, and other external devices which can
+program flash chips.
 
 It supports a wide range of DIP32, PLCC32, DIP8, SO8/SOIC8, TSOP32, and
 TSOP40 chips, which use various protocols such as LPC, FWH, parallel flash,
@@ -80,7 +83,7 @@ Supported Flash Chips / Chipsets / Mainboards
 ---------------------------------------------
 
 Please check the output of 'flashrom -L' for the list of supported
-flash chips, chipsets/southbridges, and mainboards.
+flash chips, chipsets/southbridges, mainboards, and flash programmers.
 
 See also http://coreboot.org/Flashrom for more details.
 

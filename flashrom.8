@@ -132,11 +132,18 @@ Specify the programmer device. Currently supported are:
 .sp
 .BR "* internal" " (default, for in-system flashing in the mainboard)"
 .sp
+.BR "* dummy" " (just prints all operations and accesses)"
+.sp
 .BR "* nic3com" " (for flash ROMs on 3COM network cards)"
 .sp
-If you have multiple supported NICs in your system, you must use
-.B "flashrom -p nic3com=bb:dd.f"
-to explicitly select one of them, where
+.BR "* satasii" " (for flash ROMs on Silicon Image SATA/IDE controllers)"
+.sp
+If you have multiple supported PCI cards which can program flash chips
+(NICs, SATA/IDE controllers, etc.) in your system, you must use the
+.B "flashrom -p xxxx=bb:dd.f"
+syntax to explicitly select one of them, where
+.B xxxx
+is the name of the programmer
 .B bb
 is the PCI bus number,
 .B dd
@@ -147,9 +154,9 @@ is the PCI function number of the desired NIC.
 Example:
 .B "flashrom -p nic3com=05:04.0"
 .sp
-.BR "* satasii" " (for flash ROMs on Silicon Image SATA/IDE controller cards)"
-.sp
-.BR "* dummy" " (just prints all operations and accesses)"
+Currently the following programmers support this mechanism:
+.BR nic3com ,
+.BR satasii .
 .TP
 .B "\-h, \-\-help"
 Show a help text and exit.
