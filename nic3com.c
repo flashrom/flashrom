@@ -110,10 +110,6 @@ void nic3com_chip_writeb(uint8_t val, chipaddr addr)
 
 uint8_t nic3com_chip_readb(const chipaddr addr)
 {
-	uint8_t val;
-
 	OUTL((uint32_t)addr, io_base_addr + BIOS_ROM_ADDR);
-	val = INB(io_base_addr + BIOS_ROM_DATA);
-
-	return val;
+	return INB(io_base_addr + BIOS_ROM_DATA);
 }
