@@ -10,6 +10,7 @@ CC      ?= gcc
 STRIP   = strip
 INSTALL = install
 PREFIX  ?= /usr/local
+MANDIR  ?= $(PREFIX)/share/man
 CFLAGS  ?= -Os -Wall -Werror
 
 OS_ARCH	= $(shell uname)
@@ -75,9 +76,9 @@ pciutils:
 
 install: $(PROGRAM)
 	mkdir -p $(DESTDIR)$(PREFIX)/sbin
-	mkdir -p $(DESTDIR)$(PREFIX)/share/man/man8
+	mkdir -p $(DESTDIR)$(MANDIR)/man8
 	$(INSTALL) -m 0755 $(PROGRAM) $(DESTDIR)$(PREFIX)/sbin
-	$(INSTALL) -m 0644 $(PROGRAM).8 $(DESTDIR)$(PREFIX)/share/man/man8
+	$(INSTALL) -m 0644 $(PROGRAM).8 $(DESTDIR)$(MANDIR)/man8
 
 .PHONY: all clean distclean dep pciutils
 
