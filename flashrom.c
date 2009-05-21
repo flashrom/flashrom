@@ -658,10 +658,12 @@ int main(int argc, char *argv[])
 				printf(" WRITE");
 			printf("\n");
 		}
-		printf("Please email a report to flashrom@coreboot.org if any of the above operations\n");
-		printf("work correctly for you with this flash part. Please include the full output\n");
-		printf("from the program, including chipset found. Thank you for your help!\n");
-		printf("===\n");
+		printf("Please email a report to flashrom@coreboot.org if any "
+		       "of the above operations\nwork correctly for you with "
+		       "this flash part. Please include the flashrom\noutput "
+		       "with the additional -V option for all operations you "
+		       "tested (-V, -rV,\n-wV, -EV), and mention which "
+		       "mainboard you tested. Thanks for your help!\n===\n");
 	}
 
 	if (!(read_it | write_it | verify_it | erase_it)) {
