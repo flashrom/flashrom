@@ -24,7 +24,7 @@
 #include "flash.h"
 
 /**
- * List of supported flash ROM chips.
+ * List of supported flash chips.
  *
  * Please keep the list sorted by vendor name and chip name, so that
  * the output of 'flashrom -L' is alphabetically sorted.
