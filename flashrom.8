@@ -1,4 +1,4 @@
-.TH FLASHROM 8 "May 14, 2009"
+.TH FLASHROM 8 "May 21, 2009"
 .SH NAME
 flashrom \- detect, read, write, verify and erase flash chips
 .SH SYNOPSIS
@@ -7,7 +7,7 @@ flashrom \- detect, read, write, verify and erase flash chips
          [\fB\-l\fR file] [\fB\-i\fR image] [\fB\-p\fR programmer] [file]
 .SH DESCRIPTION
 .B flashrom
-is a utility for detecting, reading, writing, verifying and erasing flash ROM
+is a utility for detecting, reading, writing, verifying and erasing flash
 chips. It's often used to flash BIOS/EFI/coreboot/firmware images in-system
 using a supported mainboard, but it also supports flashing of network cards
 (NICs), SATA controller cards, and other external devices which can program
@@ -23,8 +23,7 @@ for details on coreboot)
 .SH OPTIONS
 Please note that the command line interface for flashrom will change before
 flashrom 1.0. Do not use flashrom in scripts or other automated tools without
-checking that your flashrom version won't interpret them in a totally different
-way.
+checking that your flashrom version won't interpret options in a different way.
 .PP
 If no file is specified, then all that happens
 is that flash info is dumped and the flash chip is set to writable.
@@ -77,7 +76,7 @@ To update normal and fallback but leave the VGA BIOS alone, say:
 .sp
 Currently overlapping sections are not supported.
 .sp
-ROM layouts should replace the -s and -e option since they are more
+ROM layouts should replace the \-s and \-e option since they are more
 flexible and they should lead to a ROM update file format with the
 ROM layout and the ROM image in one file (cpio, zip or something?).
 .TP
@@ -89,11 +88,11 @@ Override mainboard settings.
 .sp
 flashrom reads the coreboot table to determine the current mainboard. If no
 coreboot table could be read or if you want to override these values, you can
-specify -m, e.g.:
+specify \-m, e.g.:
 .sp
 .B "  flashrom -w --mainboard AGAMI:ARUMA agami_aruma.rom"
 .sp
-See the 'Supported mainboards' section in the output of 'flashrom -L' for
+See the 'Supported mainboards' section in the output of 'flashrom \-L' for
 a list of boards which require the specification of the board name, if no
 coreboot table is found.
 .TP
@@ -114,18 +113,14 @@ Only flash image
 from flash layout.
 .TP
 .B "\-L, \-\-list\-supported"
-List the ROM chips, chipsets, and mainboards supported by flashrom.
-The list of mainboards consists of those boards which need a special
-ROM write-enable function for flashrom to work.
+List the flash chips, chipsets, mainboards, and PCI card "programmers"
+supported by flashrom.
 .sp
-There are many other boards which will work out of the box, without such
-special support in flashrom. Some of the known-good/known-bad and tested ones
-are listed at
-.BR http://coreboot.org/Flashrom#Supported_mainboards ,
-but the list is not exhaustive, of course.
-.sp
-Please let us know if you can verify other boards to work or not work out
-of the box.
+There are many unlisted boards which will work out of the box, without
+special support in flashrom. Please let us know if you can verify that
+other boards work or do not work out of the box. For verification you have
+to test an ERASE and/or WRITE operation, so make sure you only do that
+if you have proper means to recover from failure!
 .TP
 .B "\-p, \-\-programmer <name>"
 Specify the programmer device. Currently supported are:
