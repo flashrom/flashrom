@@ -313,7 +313,7 @@ int erase_flash(struct flashchip *flash)
 
 void print_supported_chips(void)
 {
-	int okcol = 0, pos = 0;
+	int okcol = 0, pos = 0, i;
 	struct flashchip *f;
 
 	for (f = flashchips; f->name != NULL; f++) {
@@ -323,7 +323,8 @@ void print_supported_chips(void)
 	}
 	okcol = (okcol + 7) & ~7;
 
-	POS_PRINT("Supported flash chips:");
+	printf("Supported flash chips:\n\n");
+	POS_PRINT("Vendor:   Device:");
 	while (pos < okcol) {
 		printf("\t");
 		pos += 8 - (pos % 8);
@@ -331,8 +332,16 @@ void print_supported_chips(void)
 	printf("Tested OK operations:\tKnown BAD operations:\n\n");
 
 	for (f = flashchips; f->name != NULL; f++) {
-		printf("%s %s", f->vendor, f->name);
-		pos = strlen(f->vendor) + 1 + strlen(f->name);
+		/* Don't print "unknown XXXX SPI chip" entries. */
+		if (!strncmp(f->name, "unknown", 7))
+			continue;
+
+		printf("%s", f->vendor);
+		for (i = 0; i < 10 - strlen(f->vendor); i++)
+			printf(" ");
+		printf("%s", f->name);
+
+		pos = 10 + strlen(f->name);
 		while (pos < okcol) {
 			printf("\t");
 			pos += 8 - (pos % 8);
@@ -368,13 +377,13 @@ void print_supported_chips(void)
 void usage(const char *name)
 {
 	printf("usage: %s [-EVfLhR] [-r file] [-w file] [-v file] [-c chipname] [-s addr]\n"
-	       "       [-e addr] [-m [vendor:]part] [-l file] [-i image] [-p programmer] [file]",
+	       "       [-e addr] [-m [vendor:]part] [-l file] [-i image] [-p programmer] [file]\n\n",
 	       name);
 
-	printf("\n\nPlease note that the command line interface for flashrom will "
-		"change before flashrom 1.0.\nDo not use flashrom in scripts or "
-		"other automated tools without checking that your flashrom\n"
-		"version won't interpret them in a totally different way.\n\n");
+	printf("Please note that the command line interface for flashrom will "
+		"change before\nflashrom 1.0. Do not use flashrom in scripts "
+		"or other automated tools without\nchecking that your flashrom"
+		" version won't interpret options in a different way.\n\n");
 
 	printf
 	    ("   -r | --read:                      read flash and save into file\n"
@@ -387,7 +396,7 @@ void usage(const char *name)
 	     "   -e | --eend <addr>:               exclude end postion\n"
 	     "   -m | --mainboard <[vendor:]part>: override mainboard settings\n"
 	     "   -f | --force:                     force write without checking image\n"
-	     "   -l | --layout <file.layout>:      read rom layout from file\n"
+	     "   -l | --layout <file.layout>:      read ROM layout from file\n"
 	     "   -i | --image <name>:              only flash image name from flash layout\n"
 	     "   -L | --list-supported:            print supported devices\n"
 	     "   -p | --programmer <name>:         specify the programmer device\n"

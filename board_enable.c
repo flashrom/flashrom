@@ -822,7 +822,9 @@ void print_supported_boards(void)
 	int i, j;
 	struct board_pciid_enable *b = board_pciid_enables;
 
-	printf("\nSupported boards which need write-enable code:\n\n");
+	printf("\nSupported boards which need write-enable code:\n\nVendor:   "
+	       "               Board:                   Required option:\n\n");
+
 	for (i = 0; b[i].vendor_name != NULL; i++) {
 		printf("%s", b[i].vendor_name);
 		for (j = 0; j < 25 - strlen(b[i].vendor_name); j++)
@@ -831,9 +833,9 @@ void print_supported_boards(void)
 		for (j = 0; j < 25 - strlen(b[i].board_name); j++)
 			printf(" ");
 		if (b[i].lb_vendor != NULL)
-			printf("(-m %s:%s)\n", b[i].lb_vendor, b[i].lb_part);
+			printf("-m %s:%s\n", b[i].lb_vendor, b[i].lb_part);
 		else
-			printf("(autodetected)\n");
+			printf("(none, board is autodetected)\n");
 	}
 
 	printf("\nSupported boards which don't need write-enable code:\n\n");
