@@ -85,5 +85,10 @@ Supported Flash Chips / Chipsets / Mainboards
 Please check the output of 'flashrom -L' for the list of supported
 flash chips, chipsets/southbridges, mainboards, and flash programmers.
 
-See also http://coreboot.org/Flashrom for more details.
+Website
+-------
+
+The official flashrom website is:
+
+  http://coreboot.org/Flashrom
 
