@@ -619,6 +619,7 @@ static int board_biostar_p4m80_m4(const char *name)
  *
  * Suited for:
  *   - MSI KT4V and KT4V-L: AMD K7 + VIA KT400 + VT8235
+ *   - MSI KT4 Ultra: AMD K7 + VIA KT400 + VT8235
  *   - MSI KT3 Ultra2: AMD K7 + VIA KT333 + VT8235
  */
 static int board_msi_kt4v(const char *name)
@@ -664,8 +665,8 @@ static int board_msi_kt4v(const char *name)
 
 /* Please keep this list alphabetically ordered by vendor/board name. */
 struct board_pciid_enable board_pciid_enables[] = {
-	/* first pci-id set [4],          second pci-id set [4],          coreboot id [2],             vendor name    board name        flash enable */
-	{0x8086, 0x1130,      0,      0,  0x105a, 0x0d30, 0x105a, 0x4d33, "acorp",      "6a815epd",    "Acorp",       "6A815EPD",       board_acorp_6a815epd},
+	/* first pci-id set [4],          second pci-id set [4],          coreboot id [2],             vendor name    board name            flash enable */
+	{0x8086, 0x1130,      0,      0,  0x105a, 0x0d30, 0x105a, 0x4d33, "acorp",      "6a815epd",    "Acorp",       "6A815EPD",           board_acorp_6a815epd},
 	{0x1022, 0x746B, 0x1022, 0x36C0,       0,      0,      0,      0, "AGAMI",      "ARUMA",       "agami",       "Aruma",              w83627hf_gpio24_raise_2e},
 	{0x1022, 0x2090,      0,      0,  0x1022, 0x2080,      0,      0, "artecgroup", "dbe61",       "Artec Group", "DBE61",              board_artecgroup_dbe6x},
 	{0x1022, 0x2090,      0,      0,  0x1022, 0x2080,      0,      0, "artecgroup", "dbe62",       "Artec Group", "DBE62",              board_artecgroup_dbe6x},
@@ -693,6 +694,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x10de, 0x005e,      0,      0,       0,      0,      0,      0, "msi",        "k8n-neo3",    "MSI",         "K8N Neo3",           w83627thf_gpio4_4_raise_4e},
 	{0x1106, 0x3149, 0x1462, 0x7094,  0x10ec, 0x8167, 0x1462, 0x094c, NULL,         NULL,          "MSI",         "K8T Neo2",           w83627thf_gpio4_4_raise_2e},
 	{0x1106, 0x0571, 0x1462, 0x7120,       0,      0,      0,      0, "msi",        "kt4v",        "MSI",         "KT4V",               board_msi_kt4v},
+	{0x13f6, 0x0111, 0x1462, 0x5900,  0x1106, 0x3177, 0x1106,      0, "msi",        "kt4ultra",    "MSI",         "KT4 Ultra",          board_msi_kt4v},
 	{0x8086, 0x2658, 0x1462, 0x7046,  0x1106, 0x3044, 0x1462, 0x046d, NULL,         NULL,          "MSI",         "MS-7046",            ich6_gpio19_raise},
 	{0x8086, 0x1076, 0x8086, 0x1176,  0x1106, 0x3059, 0x10f1, 0x2498, NULL,         NULL,          "Tyan",        "S2498 (Tomcat K7M)", board_asus_a7v8x_mx},
 	{0x1106, 0x0314, 0x1106, 0xaa08,  0x1106, 0x3227, 0x1106, 0xAA08, NULL,         NULL,          "VIA",         "EPIA-CN",            board_via_epia_sp},
@@ -764,7 +766,7 @@ const struct board_info boards_ok[] = {
 	{ "Tyan",		"S5220", },
 	{ "Tyan",		"S5375", },
 	{ "Tyan",		"iS5375-1U", },
-	{ "Tyan",		"S5376G2NR/S5376}WAG2NR", },
+	{ "Tyan",		"S5376G2NR/S5376WAG2NR", },
 	{ "Tyan",		"S5377", },
 	{ "Tyan",		"S5397", },
 	{ "VIA",		"EPIA-M", },
