@@ -609,7 +609,7 @@ static int board_biostar_p4m80_m4(const char *name)
 	wbsio_mask(0x2e, 0x24, 0x04, 0x04);
 
 	/* exit IT87xx conf mode */
-	wbsio_write(0x2, 0x2e, 0x2);
+	wbsio_write(0x2e, 0x02, 0x02);
 
 	return 0;
 }
