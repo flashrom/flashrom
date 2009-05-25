@@ -32,24 +32,24 @@ static uint16_t wbsio_get_spibase(uint16_t port)
 	uint16_t flashport = 0;
 
 	w836xx_ext_enter(port);
-	id = wbsio_read(port, 0x20);
+	id = sio_read(port, 0x20);
 	if (id != 0xa0) {
 		fprintf(stderr, "\nW83627 not found at 0x%x, id=0x%02x want=0xa0.\n", port, id);
 		goto done;
 	}
 
-	if (0 == (wbsio_read(port, 0x24) & 2)) {
+	if (0 == (sio_read(port, 0x24) & 2)) {
 		fprintf(stderr, "\nW83627 found at 0x%x, but SPI pins are not enabled. (CR[0x24] bit 1=0)\n", port);
 		goto done;
 	}
 
-	wbsio_write(port, 0x07, 0x06);
-	if (0 == (wbsio_read(port, 0x30) & 1)) {
+	sio_write(port, 0x07, 0x06);
+	if (0 == (sio_read(port, 0x30) & 1)) {
 		fprintf(stderr, "\nW83627 found at 0x%x, but SPI is not enabled. (LDN6[0x30] bit 0=0)\n", port);
 		goto done;
 	}
 
-	flashport = (wbsio_read(port, 0x62) << 8) | wbsio_read(port, 0x63);
+	flashport = (sio_read(port, 0x62) << 8) | sio_read(port, 0x63);
 
 done:
 	w836xx_ext_leave(port);

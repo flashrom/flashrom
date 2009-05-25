@@ -44,26 +44,26 @@ void w836xx_ext_leave(uint16_t port)
 	OUTB(0xAA, port);
 }
 
-/* General functions for reading/writing Winbond Super I/Os. */
-unsigned char wbsio_read(uint16_t index, uint8_t reg)
+/* Generic Super I/O helper functions */
+uint8_t sio_read(uint16_t port, uint8_t reg)
 {
-	OUTB(reg, index);
-	return INB(index + 1);
+	OUTB(reg, port);
+	return INB(port + 1);
 }
 
-void wbsio_write(uint16_t index, uint8_t reg, uint8_t data)
+void sio_write(uint16_t port, uint8_t reg, uint8_t data)
 {
-	OUTB(reg, index);
-	OUTB(data, index + 1);
+	OUTB(reg, port);
+	OUTB(data, port + 1);
 }
 
-void wbsio_mask(uint16_t index, uint8_t reg, uint8_t data, uint8_t mask)
+void sio_mask(uint16_t port, uint8_t reg, uint8_t data, uint8_t mask)
 {
 	uint8_t tmp;
 
-	OUTB(reg, index);
-	tmp = INB(index + 1) & ~mask;
-	OUTB(tmp | (data & mask), index + 1);
+	OUTB(reg, port);
+	tmp = INB(port + 1) & ~mask;
+	OUTB(tmp | (data & mask), port + 1);
 }
 
 /**
@@ -73,30 +73,30 @@ void wbsio_mask(uint16_t index, uint8_t reg, uint8_t data, uint8_t mask)
  *  - Agami Aruma
  *  - IWILL DK8-HTX
  */
-static int w83627hf_gpio24_raise(uint16_t index, const char *name)
+static int w83627hf_gpio24_raise(uint16_t port, const char *name)
 {
-	w836xx_ext_enter(index);
+	w836xx_ext_enter(port);
 
 	/* Is this the W83627HF? */
-	if (wbsio_read(index, 0x20) != 0x52) {	/* Super I/O device ID reg. */
+	if (sio_read(port, 0x20) != 0x52) {	/* Super I/O device ID reg. */
 		fprintf(stderr, "\nERROR: %s: W83627HF: Wrong ID: 0x%02X.\n",
-			name, wbsio_read(index, 0x20));
-		w836xx_ext_leave(index);
+			name, sio_read(port, 0x20));
+		w836xx_ext_leave(port);
 		return -1;
 	}
 
 	/* PIN89S: WDTO/GP24 multiplex -> GPIO24 */
-	wbsio_mask(index, 0x2B, 0x10, 0x10);
+	sio_mask(port, 0x2B, 0x10, 0x10);
 
 	/* Select logical device 8: GPIO port 2 */
-	wbsio_write(index, 0x07, 0x08);
+	sio_write(port, 0x07, 0x08);
 
-	wbsio_mask(index, 0x30, 0x01, 0x01);	/* Activate logical device. */
-	wbsio_mask(index, 0xF0, 0x00, 0x10);	/* GPIO24 -> output */
-	wbsio_mask(index, 0xF2, 0x00, 0x10);	/* Clear GPIO24 inversion */
-	wbsio_mask(index, 0xF1, 0x10, 0x10);	/* Raise GPIO24 */
+	sio_mask(port, 0x30, 0x01, 0x01);	/* Activate logical device. */
+	sio_mask(port, 0xF0, 0x00, 0x10);	/* GPIO24 -> output */
+	sio_mask(port, 0xF2, 0x00, 0x10);	/* Clear GPIO24 inversion */
+	sio_mask(port, 0xF1, 0x10, 0x10);	/* Raise GPIO24 */
 
-	w836xx_ext_leave(index);
+	w836xx_ext_leave(port);
 
 	return 0;
 }
@@ -113,27 +113,27 @@ static int w83627hf_gpio24_raise_2e(const char *name)
  *  - MSI K8T Neo2-F
  *  - MSI K8N-NEO3
  */
-static int w83627thf_gpio4_4_raise(uint16_t index, const char *name)
+static int w83627thf_gpio4_4_raise(uint16_t port, const char *name)
 {
-	w836xx_ext_enter(index);
+	w836xx_ext_enter(port);
 
 	/* Is this the W83627THF? */
-	if (wbsio_read(index, 0x20) != 0x82) {	/* Super I/O device ID reg. */
+	if (sio_read(port, 0x20) != 0x82) {	/* Super I/O device ID reg. */
 		fprintf(stderr, "\nERROR: %s: W83627THF: Wrong ID: 0x%02X.\n",
-			name, wbsio_read(index, 0x20));
-		w836xx_ext_leave(index);
+			name, sio_read(port, 0x20));
+		w836xx_ext_leave(port);
 		return -1;
 	}
 
 	/* PINxxxxS: GPIO4/bit 4 multiplex -> GPIOXXX */
 
-	wbsio_write(index, 0x07, 0x09);      /* Select LDN 9: GPIO port 4 */
-	wbsio_mask(index, 0x30, 0x02, 0x02); /* Activate logical device. */
-	wbsio_mask(index, 0xF4, 0x00, 0x10); /* GPIO4 bit 4 -> output */
-	wbsio_mask(index, 0xF6, 0x00, 0x10); /* Clear GPIO4 bit 4 inversion */
-	wbsio_mask(index, 0xF5, 0x10, 0x10); /* Raise GPIO4 bit 4 */
+	sio_write(port, 0x07, 0x09);      /* Select LDN 9: GPIO port 4 */
+	sio_mask(port, 0x30, 0x02, 0x02); /* Activate logical device. */
+	sio_mask(port, 0xF4, 0x00, 0x10); /* GPIO4 bit 4 -> output */
+	sio_mask(port, 0xF6, 0x00, 0x10); /* Clear GPIO4 bit 4 inversion */
+	sio_mask(port, 0xF5, 0x10, 0x10); /* Raise GPIO4 bit 4 */
 
-	w836xx_ext_leave(index);
+	w836xx_ext_leave(port);
 
 	return 0;
 }
@@ -151,14 +151,14 @@ static int w83627thf_gpio4_4_raise_4e(const char *name)
 /**
  * w83627: Enable MEMW# and set ROM size to max.
  */
-static void w836xx_memw_enable(uint16_t index)
+static void w836xx_memw_enable(uint16_t port)
 {
-	w836xx_ext_enter(index);
-	if (!(wbsio_read(index, 0x24) & 0x02)) {	/* Flash ROM enabled? */
+	w836xx_ext_enter(port);
+	if (!(sio_read(port, 0x24) & 0x02)) {	/* Flash ROM enabled? */
 		/* Enable MEMW# and set ROM size select to max. (4M). */
-		wbsio_mask(index, 0x24, 0x28, 0x28);
+		sio_mask(port, 0x24, 0x28, 0x28);
 	}
-	w836xx_ext_leave(index);
+	w836xx_ext_leave(port);
 }
 
 /**
@@ -595,21 +595,18 @@ static int board_kontron_986lcd_m(const char *name)
 static int board_biostar_p4m80_m4(const char *name)
 {
 	/* enter IT87xx conf mode */
-	OUTB(0x87, 0x2e);
-	OUTB(0x01, 0x2e);
-	OUTB(0x55, 0x2e);
-	OUTB(0x55, 0x2e);
+	enter_conf_mode_ite(0x2e);
 
 	/* select right flash chip */
-	wbsio_mask(0x2e, 0x22, 0x80, 0x80);
+	sio_mask(0x2e, 0x22, 0x80, 0x80);
 
 	/* bit 3: flash chip write enable
 	 * bit 7: map flash chip at 1MB-128K (why though? ignoring this.)
 	 */
-	wbsio_mask(0x2e, 0x24, 0x04, 0x04);
+	sio_mask(0x2e, 0x24, 0x04, 0x04);
 
 	/* exit IT87xx conf mode */
-	wbsio_write(0x2e, 0x02, 0x02);
+	exit_conf_mode_ite(0x2e);
 
 	return 0;
 }
