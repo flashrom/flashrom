@@ -34,23 +34,10 @@ uint16_t it8716f_flashport = 0;
 /* use fast 33MHz SPI (<>0) or slow 16MHz (0) */
 int fast_spi = 1;
 
-/* Generic Super I/O helper functions */
-uint8_t regval(uint16_t port, uint8_t reg)
-{
-	OUTB(reg, port);
-	return INB(port + 1);
-}
-
-void regwrite(uint16_t port, uint8_t reg, uint8_t val)
-{
-	OUTB(reg, port);
-	OUTB(val, port + 1);
-}
-
 /* Helper functions for most recent ITE IT87xx Super I/O chips */
 #define CHIP_ID_BYTE1_REG	0x20
 #define CHIP_ID_BYTE2_REG	0x21
-static void enter_conf_mode_ite(uint16_t port)
+void enter_conf_mode_ite(uint16_t port)
 {
 	OUTB(0x87, port);
 	OUTB(0x01, port);
@@ -61,9 +48,9 @@ static void enter_conf_mode_ite(uint16_t port)
 		OUTB(0xaa, port);
 }
 
-static void exit_conf_mode_ite(uint16_t port)
+void exit_conf_mode_ite(uint16_t port)
 {
-	regwrite(port, 0x02, 0x02);
+	sio_write(port, 0x02, 0x02);
 }
 
 static uint16_t find_ite_spi_flash_port(uint16_t port)
@@ -73,13 +60,13 @@ static uint16_t find_ite_spi_flash_port(uint16_t port)
 
 	enter_conf_mode_ite(port);
 
-	id = regval(port, CHIP_ID_BYTE1_REG) << 8;
-	id |= regval(port, CHIP_ID_BYTE2_REG);
+	id = sio_read(port, CHIP_ID_BYTE1_REG) << 8;
+	id |= sio_read(port, CHIP_ID_BYTE2_REG);
 
 	/* TODO: Handle more IT87xx if they support flash translation */
 	if (0x8716 == id || 0x8718 == id) {
 		/* NOLDN, reg 0x24, mask out lowest bit (suspend) */
-		tmp = regval(port, 0x24) & 0xFE;
+		tmp = sio_read(port, 0x24) & 0xFE;
 		printf("Serial flash segment 0x%08x-0x%08x %sabled\n",
 		       0xFFFE0000, 0xFFFFFFFF, (tmp & 1 << 1) ? "en" : "dis");
 		printf("Serial flash segment 0x%08x-0x%08x %sabled\n",
@@ -94,13 +81,13 @@ static uint16_t find_ite_spi_flash_port(uint16_t port)
 		if ((tmp & 0xe) && (!(tmp & 1 << 4))) {
 			printf("Enabling LPC write to serial flash\n");
 			tmp |= 1 << 4;
-			regwrite(port, 0x24, tmp);
+			sio_write(port, 0x24, tmp);
 		}
 		printf("serial flash pin %i\n", (tmp & 1 << 5) ? 87 : 29);
 		/* LDN 0x7, reg 0x64/0x65 */
-		regwrite(port, 0x07, 0x7);
-		flashport = regval(port, 0x64) << 8;
-		flashport |= regval(port, 0x65);
+		sio_write(port, 0x07, 0x7);
+		flashport = sio_read(port, 0x64) << 8;
+		flashport |= sio_read(port, 0x65);
 	}
 	exit_conf_mode_ite(port);
 	return flashport;

@@ -579,9 +579,9 @@ void print_supported_pcidevs(struct pcidev_status *devs);
 /* board_enable.c */
 void w836xx_ext_enter(uint16_t port);
 void w836xx_ext_leave(uint16_t port);
-unsigned char wbsio_read(uint16_t index, uint8_t reg);
-void wbsio_write(uint16_t index, uint8_t reg, uint8_t data);
-void wbsio_mask(uint16_t index, uint8_t reg, uint8_t data, uint8_t mask);
+uint8_t sio_read(uint16_t port, uint8_t reg);
+void sio_write(uint16_t port, uint8_t reg, uint8_t data);
+void sio_mask(uint16_t port, uint8_t reg, uint8_t data, uint8_t mask);
 int board_flash_enable(const char *vendor, const char *part);
 void print_supported_boards(void);
 
@@ -737,6 +737,8 @@ int ich_spi_write_256(struct flashchip *flash, uint8_t * buf);
 
 /* it87spi.c */
 extern uint16_t it8716f_flashport;
+void enter_conf_mode_ite(uint16_t port);
+void exit_conf_mode_ite(uint16_t port);
 int it87xx_probe_spi_flash(const char *name);
 int it8716f_spi_command(unsigned int writecnt, unsigned int readcnt,
 			const unsigned char *writearr, unsigned char *readarr);
