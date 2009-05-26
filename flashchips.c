@@ -2055,6 +2055,34 @@ struct flashchip flashchips[] = {
 	},
 
 	{
+		.vendor		= "Texas Instruments",
+		.name		= "TMS29F002RB",
+		.manufacture_id	= TI_OLD_ID,
+		.model_id	= TI_TMS29F002RB,
+		.total_size	= 256,
+		.page_size	= 16384, /* Non-uniform sectors */
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_jedec,
+		.erase		= NULL,
+		.write		= NULL,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "Texas Instruments",
+		.name		= "TMS29F002RT",
+		.manufacture_id	= TI_OLD_ID,
+		.model_id	= TI_TMS29F002RT,
+		.total_size	= 256,
+		.page_size	= 16384, /* Non-uniform sectors */
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_jedec,
+		.erase		= NULL,
+		.write		= NULL,
+		.read		= read_memmapped,
+	},
+
+	{
 		.vendor		= "Winbond",
 		.name		= "W25x10",
 		.manufacture_id	= WINBOND_NEX_ID,
