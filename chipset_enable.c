@@ -769,6 +769,19 @@ static int enable_flash_sb600(struct pci_dev *dev, const char *name)
 	return 0;
 }
 
+static int enable_flash_nvidia_nforce2(struct pci_dev *dev, const char *name)
+{
+    uint8_t tmp;
+
+    pci_write_byte(dev, 0x92, 0);
+
+    tmp = pci_read_byte(dev, 0x6d);
+    tmp |= 0x01;
+    pci_write_byte(dev, 0x6d, tmp);
+
+    return 0;
+}
+
 static int enable_flash_ck804(struct pci_dev *dev, const char *name)
 {
 	uint8_t old, new;
@@ -981,6 +994,7 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x122e, OK, "Intel", "PIIX",		enable_flash_piix4},
 	{0x10de, 0x0050, OK, "NVIDIA", "CK804",		enable_flash_ck804}, /* LPC */
 	{0x10de, 0x0051, OK, "NVIDIA", "CK804",		enable_flash_ck804}, /* Pro */
+	{0x10de, 0x0060, OK, "NVIDIA", "NForce2",       enable_flash_nvidia_nforce2},
 	/* Slave, should not be here, to fix known bug for A01. */
 	{0x10de, 0x00d3, OK, "NVIDIA", "CK804",		enable_flash_ck804},
 	{0x10de, 0x0260, NT, "NVIDIA", "MCP51",		enable_flash_ck804},
