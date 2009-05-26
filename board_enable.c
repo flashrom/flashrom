@@ -717,6 +717,7 @@ const struct board_info boards_ok[] = {
 	{ "ASUS",		"P2B-F", },
 	{ "ASUS",		"P2B-D", },
 	{ "ASUS",		"P2B-DS", },
+	{ "ASUS",		"A7N8X Deluxe", },
 	{ "ASUS",		"A7V400-MX", },
 	{ "ASUS",		"A7V8X-MX", },
 	{ "ASUS",		"P4B266", },
@@ -781,7 +782,6 @@ const struct board_info boards_ok[] = {
 const struct board_info boards_bad[] = {
 	/* Verified non-working boards (for now). */
 	{ "Abit",		"IS-10", },
-	{ "ASUS",		"A7N8X-E Deluxe", },
 	{ "ASUS",		"MEW-AM", },
 	{ "ASUS",		"MEW-VM", },
 	{ "ASUS",		"P3B-F", },
