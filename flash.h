@@ -525,6 +525,9 @@ extern const struct board_info boards_bad[];
 #define S29C31004T		0x63
 
 #define TI_ID			0x97	/* Texas Instruments */
+#define TI_OLD_ID		0x01	/* TI chips from last century */
+#define TI_TMS29F002RT		0xB0
+#define TI_TMS29F002RB		0x34
 
 /*
  * W25X chips are SPI, first byte of device ID is memory type, second
