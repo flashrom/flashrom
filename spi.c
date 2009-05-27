@@ -150,8 +150,8 @@ int spi_write_disable(void)
 static int probe_spi_rdid_generic(struct flashchip *flash, int bytes)
 {
 	unsigned char readarr[4];
-	uint32_t manuf_id;
-	uint32_t model_id;
+	uint32_t id1;
+	uint32_t id2;
 
 	if (spi_rdid(readarr, bytes))
 		return 0;
@@ -163,21 +163,20 @@ static int probe_spi_rdid_generic(struct flashchip *flash, int bytes)
 	if (readarr[0] == 0x7f) {
 		if (!oddparity(readarr[1]))
 			printf_debug("RDID byte 1 parity violation.\n");
-		manuf_id = (readarr[0] << 8) | readarr[1];
-		model_id = readarr[2];
+		id1 = (readarr[0] << 8) | readarr[1];
+		id2 = readarr[2];
 		if (bytes > 3) {
-			model_id <<= 8;
-			model_id |= readarr[3];
+			id2 <<= 8;
+			id2 |= readarr[3];
 		}
 	} else {
-		manuf_id = readarr[0];
-		model_id = (readarr[1] << 8) | readarr[2];
+		id1 = readarr[0];
+		id2 = (readarr[1] << 8) | readarr[2];
 	}
 
-	printf_debug("%s: id1 0x%02x, id2 0x%02x\n", __FUNCTION__, manuf_id,
-		     model_id);
+	printf_debug("%s: id1 0x%02x, id2 0x%02x\n", __FUNCTION__, id1, id2);
 
-	if (manuf_id == flash->manufacture_id && model_id == flash->model_id) {
+	if (id1 == flash->manufacture_id && id2 == flash->model_id) {
 		/* Print the status register to tell the
 		 * user about possible write protection.
 		 */
@@ -187,7 +186,7 @@ static int probe_spi_rdid_generic(struct flashchip *flash, int bytes)
 	}
 
 	/* Test if this is a pure vendor match. */
-	if (manuf_id == flash->manufacture_id &&
+	if (id1 == flash->manufacture_id &&
 	    GENERIC_DEVICE_ID == flash->model_id)
 		return 1;
 
@@ -221,18 +220,17 @@ int probe_spi_rdid4(struct flashchip *flash)
 int probe_spi_rems(struct flashchip *flash)
 {
 	unsigned char readarr[JEDEC_REMS_INSIZE];
-	uint32_t manuf_id, model_id;
+	uint32_t id1, id2;
 
 	if (spi_rems(readarr))
 		return 0;
 
-	manuf_id = readarr[0];
-	model_id = readarr[1];
+	id1 = readarr[0];
+	id2 = readarr[1];
 
-	printf_debug("%s: id1 0x%x, id2 0x%x\n", __FUNCTION__, manuf_id,
-		     model_id);
+	printf_debug("%s: id1 0x%x, id2 0x%x\n", __FUNCTION__, id1, id2);
 
-	if (manuf_id == flash->manufacture_id && model_id == flash->model_id) {
+	if (id1 == flash->manufacture_id && id2 == flash->model_id) {
 		/* Print the status register to tell the
 		 * user about possible write protection.
 		 */
@@ -242,7 +240,7 @@ int probe_spi_rems(struct flashchip *flash)
 	}
 
 	/* Test if this is a pure vendor match. */
-	if (manuf_id == flash->manufacture_id &&
+	if (id1 == flash->manufacture_id &&
 	    GENERIC_DEVICE_ID == flash->model_id)
 		return 1;
 
@@ -252,7 +250,7 @@ int probe_spi_rems(struct flashchip *flash)
 int probe_spi_res(struct flashchip *flash)
 {
 	unsigned char readarr[3];
-	uint32_t model_id;
+	uint32_t id2;
 
 	/* Check if RDID was successful and did not return 0xff 0xff 0xff.
 	 * In that case, RES is pointless.
@@ -264,9 +262,9 @@ int probe_spi_res(struct flashchip *flash)
 	if (spi_res(readarr))
 		return 0;
 
-	model_id = readarr[0];
-	printf_debug("%s: id 0x%x\n", __FUNCTION__, model_id);
-	if (model_id != flash->model_id)
+	id2 = readarr[0];
+	printf_debug("%s: id 0x%x\n", __FUNCTION__, id2);
+	if (id2 != flash->model_id)
 		return 0;
 
 	/* Print the status register to tell the
