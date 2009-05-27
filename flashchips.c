@@ -2055,7 +2055,7 @@ struct flashchip flashchips[] = {
 	},
 
 	{
-		.vendor		= "Texas Instruments",
+		.vendor		= "TI",
 		.name		= "TMS29F002RB",
 		.manufacture_id	= TI_OLD_ID,
 		.model_id	= TI_TMS29F002RB,
@@ -2069,7 +2069,7 @@ struct flashchip flashchips[] = {
 	},
 
 	{
-		.vendor		= "Texas Instruments",
+		.vendor		= "TI",
 		.name		= "TMS29F002RT",
 		.manufacture_id	= TI_OLD_ID,
 		.model_id	= TI_TMS29F002RT,
