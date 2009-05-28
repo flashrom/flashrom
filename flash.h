@@ -92,7 +92,8 @@ struct programmer_entry {
 	int (*init) (void);
 	int (*shutdown) (void);
 
-	void * (*map_flash_region) (const char *descr, unsigned long phys_addr, size_t len);
+	void * (*map_flash_region) (const char *descr, unsigned long phys_addr,
+				    size_t len);
 	void (*unmap_flash_region) (void *virt_addr, size_t len);
 
 	void (*chip_writeb) (uint8_t val, chipaddr addr);
@@ -151,20 +152,20 @@ struct flashchip {
 
 #define TEST_UNTESTED	0
 
-#define TEST_OK_PROBE	(1<<0)
-#define TEST_OK_READ	(1<<1)
-#define TEST_OK_ERASE	(1<<2)
-#define TEST_OK_WRITE	(1<<3)
-#define TEST_OK_PR	(TEST_OK_PROBE|TEST_OK_READ)
-#define TEST_OK_PRE	(TEST_OK_PROBE|TEST_OK_READ|TEST_OK_ERASE)
-#define TEST_OK_PREW	(TEST_OK_PROBE|TEST_OK_READ|TEST_OK_ERASE|TEST_OK_WRITE)
+#define TEST_OK_PROBE	(1 << 0)
+#define TEST_OK_READ	(1 << 1)
+#define TEST_OK_ERASE	(1 << 2)
+#define TEST_OK_WRITE	(1 << 3)
+#define TEST_OK_PR	(TEST_OK_PROBE | TEST_OK_READ)
+#define TEST_OK_PRE	(TEST_OK_PROBE | TEST_OK_READ | TEST_OK_ERASE)
+#define TEST_OK_PREW	(TEST_OK_PROBE | TEST_OK_READ | TEST_OK_ERASE | TEST_OK_WRITE)
 #define TEST_OK_MASK	0x0f
 
-#define TEST_BAD_PROBE	(1<<4)
-#define TEST_BAD_READ	(1<<5)
-#define TEST_BAD_ERASE	(1<<6)
-#define TEST_BAD_WRITE	(1<<7)
-#define TEST_BAD_PREW	(TEST_BAD_PROBE|TEST_BAD_READ|TEST_BAD_ERASE|TEST_BAD_WRITE)
+#define TEST_BAD_PROBE	(1 << 4)
+#define TEST_BAD_READ	(1 << 5)
+#define TEST_BAD_ERASE	(1 << 6)
+#define TEST_BAD_WRITE	(1 << 7)
+#define TEST_BAD_PREW	(TEST_BAD_PROBE | TEST_BAD_READ | TEST_BAD_ERASE | TEST_BAD_WRITE)
 #define TEST_BAD_MASK	0xf0
 
 extern struct flashchip flashchips[];
@@ -534,7 +535,7 @@ extern const struct board_info boards_bad[];
  * byte of device ID is related to log(bitsize).
  */
 #define WINBOND_ID		0xDA	/* Winbond */
-#define WINBOND_NEX_ID		0xEF	/* Winbond (ex Nexcom) serial flash devices */
+#define WINBOND_NEX_ID		0xEF	/* Winbond (ex Nexcom) serial flashes */
 #define W_25X10			0x3011
 #define W_25X20			0x3012
 #define W_25X40			0x3013
@@ -659,8 +660,6 @@ int dummy_spi_command(unsigned int writecnt, unsigned int readcnt,
 /* nic3com.c */
 int nic3com_init(void);
 int nic3com_shutdown(void);
-void *nic3com_map(const char *descr, unsigned long phys_addr, size_t len);
-void nic3com_unmap(void *virt_addr, size_t len);
 void nic3com_chip_writeb(uint8_t val, chipaddr addr);
 uint8_t nic3com_chip_readb(const chipaddr addr);
 extern struct pcidev_status nics_3com[];
@@ -668,8 +667,6 @@ extern struct pcidev_status nics_3com[];
 /* satasii.c */
 int satasii_init(void);
 int satasii_shutdown(void);
-void *satasii_map(const char *descr, unsigned long phys_addr, size_t len);
-void satasii_unmap(void *virt_addr, size_t len);
 void satasii_chip_writeb(uint8_t val, chipaddr addr);
 uint8_t satasii_chip_readb(const chipaddr addr);
 extern struct pcidev_status satas_sii[];
@@ -850,7 +847,8 @@ int write_49f002(struct flashchip *flash, uint8_t *buf);
 
 /* wbsio_spi.c */
 int wbsio_check_for_spi(const char *name);
-int wbsio_spi_command(unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr);
+int wbsio_spi_command(unsigned int writecnt, unsigned int readcnt,
+		      const unsigned char *writearr, unsigned char *readarr);
 int wbsio_spi_read(struct flashchip *flash, uint8_t *buf);
 int wbsio_spi_write_1(struct flashchip *flash, uint8_t *buf);
 

@@ -15,7 +15,7 @@ or SPI.
 (see http://coreboot.org for details on coreboot)
 
 
-Build Requirements
+Build Instructions
 ------------------
 
 To build flashrom you need to install the following packages or ports:
@@ -53,6 +53,18 @@ To compile and run on Darwin/Mac OS X:
 
  Install DirectIO from coresystems GmbH.
  DirectIO is available at http://www.coresystems.de/en/directio.
+
+
+Installation
+------------
+
+In order to install flashrom and the manpage into /usr/local, type:
+
+ sudo make install
+
+For installation in a different directory use DESTDIR, e.g. like this:
+
+ sudo make DESTDIR=/usr install
 
 
 Usage / Options
