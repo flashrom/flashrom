@@ -754,6 +754,34 @@ struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Intel",
+		.name		= "28F001BX-B",
+		.manufacture_id	= INTEL_ID,
+		.model_id	= P28F001BXB,
+		.total_size	= 128,
+		.page_size	= 128 * 1024, /* 8k + 2x4k + 112k */
+		.tested		= TEST_BAD_ERASE|TEST_BAD_WRITE,
+		.probe		= probe_jedec,
+		.erase		= NULL,
+		.write		= NULL,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "Intel",
+		.name		= "28F001BX-T",
+		.manufacture_id	= INTEL_ID,
+		.model_id	= P28F001BXT,
+		.total_size	= 128,
+		.page_size	= 128 * 1024, /* 112k + 2x4k + 8k */
+		.tested		= TEST_OK_PR|TEST_BAD_ERASE|TEST_BAD_WRITE,
+		.probe		= probe_jedec,
+		.erase		= NULL,
+		.write		= NULL,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "Intel",
 		.name		= "82802AB",
 		.manufacture_id	= INTEL_ID,
 		.model_id	= 173,
