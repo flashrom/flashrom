@@ -345,6 +345,8 @@ extern const struct board_info boards_bad[];
 #define IM_29F004T		0xAF
 
 #define INTEL_ID		0x89	/* Intel */
+#define P28F001BXT		0x94	/* 28F001BX-T */
+#define P28F001BXB		0x95	/* 28F001BX-B */
 
 #define ISSI_ID			0xD5	/* ISSI Integrated Silicon Solutions */
 
