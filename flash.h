@@ -84,6 +84,7 @@ extern int programmer;
 #define PROGRAMMER_DUMMY	0x01
 #define PROGRAMMER_NIC3COM	0x02
 #define PROGRAMMER_SATASII	0x03
+#define PROGRAMMER_IT87SPI	0x04
 
 struct programmer_entry {
 	const char *vendor;
@@ -752,6 +753,7 @@ int ich_spi_write_256(struct flashchip *flash, uint8_t * buf);
 extern uint16_t it8716f_flashport;
 void enter_conf_mode_ite(uint16_t port);
 void exit_conf_mode_ite(uint16_t port);
+int it87spi_init(void);
 int it87xx_probe_spi_flash(const char *name);
 int it8716f_spi_command(unsigned int writecnt, unsigned int readcnt,
 			const unsigned char *writearr, unsigned char *readarr);
