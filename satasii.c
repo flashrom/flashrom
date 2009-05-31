@@ -64,7 +64,7 @@ int satasii_init(void)
 	sii_bar = physmap("SATA SIL registers", addr, 0x100) + reg_offset;
 
 	/* Check if ROM cycle are OK. */
-	if ((id != 0x0680) && (!(mmio_readl(sii_bar)) & (1 << 26)))
+	if ((id != 0x0680) && (!(mmio_readl(sii_bar) & (1 << 26))))
 		printf("Warning: Flash seems unconnected.\n");
 
 	return 0;
