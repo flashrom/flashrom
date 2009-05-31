@@ -93,7 +93,7 @@ static uint16_t find_ite_spi_flash_port(uint16_t port)
 	return flashport;
 }
 
-int it87xx_probe_spi_flash(const char *name)
+int it87spi_common_init(void)
 {
 	it8716f_flashport = find_ite_spi_flash_port(ITE_SUPERIO_PORT1);
 
@@ -104,6 +104,19 @@ int it87xx_probe_spi_flash(const char *name)
 		spi_controller = SPI_CONTROLLER_IT87XX;
 
 	return (!it8716f_flashport);
+}
+
+
+int it87spi_init(void)
+{
+	get_io_perms();
+
+	return it87spi_common_init();
+}
+
+int it87xx_probe_spi_flash(const char *name)
+{
+	return it87spi_common_init();
 }
 
 /*
@@ -241,7 +254,7 @@ int it8716f_spi_chip_read(struct flashchip *flash, uint8_t *buf)
 	int i;
 	fast_spi = 0;
 
-	if (total_size > 512 * 1024) {
+	if ((programmer == PROGRAMMER_IT87SPI) || (total_size > 512 * 1024)) {
 		for (i = 0; i < total_size; i += 3) {
 			int toread = 3;
 			if (total_size - i < toread)
@@ -264,7 +277,7 @@ int it8716f_spi_chip_write_256(struct flashchip *flash, uint8_t *buf)
 	 * IT8716F only allows maximum of 512 kb SPI chip size for memory
 	 * mapped access.
 	 */
-	if (total_size > 512 * 1024) {
+	if ((programmer == PROGRAMMER_IT87SPI) || (total_size > 512 * 1024)) {
 		it8716f_spi_chip_write_1(flash, buf);
 	} else {
 		for (i = 0; i < total_size / 256; i++) {
