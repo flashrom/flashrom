@@ -87,6 +87,19 @@ const struct programmer_entry programmer_table[] = {
 		.chip_writel		= fallback_chip_writel,
 	},
 
+	{
+		.init			= it87spi_init,
+		.shutdown		= dummy_shutdown,
+		.map_flash_region	= dummy_map,
+		.unmap_flash_region	= dummy_unmap,
+		.chip_readb		= dummy_chip_readb,
+		.chip_readw		= dummy_chip_readw,
+		.chip_readl		= dummy_chip_readl,
+		.chip_writeb		= dummy_chip_writeb,
+		.chip_writew		= dummy_chip_writew,
+		.chip_writel		= dummy_chip_writel,
+	},
+
 	{},
 };
 
@@ -400,7 +413,7 @@ void usage(const char *name)
 	     "   -i | --image <name>:              only flash image name from flash layout\n"
 	     "   -L | --list-supported:            print supported devices\n"
 	     "   -p | --programmer <name>:         specify the programmer device\n"
-	     "                                     (internal, dummy, nic3com, satasii)\n"
+	     "                                     (internal, dummy, nic3com, satasii, it87spi)\n"
 	     "   -h | --help:                      print this help text\n"
 	     "   -R | --version:                   print the version (release)\n"
 	     "\nIf no file is specified, then all that happens"
@@ -532,6 +545,8 @@ int main(int argc, char *argv[])
 				programmer = PROGRAMMER_SATASII;
 				if (optarg[7] == '=')
 					pcidev_bdf = strdup(optarg + 8);
+			} else if (strncmp(optarg, "it87spi", 7) == 0) {
+				programmer = PROGRAMMER_IT87SPI;
 			} else {
 				printf("Error: Unknown programmer.\n");
 				exit(1);
