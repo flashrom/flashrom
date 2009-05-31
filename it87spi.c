@@ -101,7 +101,7 @@ int it87xx_probe_spi_flash(const char *name)
 		it8716f_flashport = find_ite_spi_flash_port(ITE_SUPERIO_PORT2);
 
 	if (it8716f_flashport)
-		flashbus = BUS_TYPE_IT87XX_SPI;
+		spi_controller = SPI_CONTROLLER_IT87XX;
 
 	return (!it8716f_flashport);
 }

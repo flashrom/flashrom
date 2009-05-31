@@ -26,24 +26,27 @@
 #include "flash.h"
 #include "spi.h"
 
+enum spi_controller spi_controller = SPI_CONTROLLER_NONE;
+void *spibar = NULL;
+
 void spi_prettyprint_status_register(struct flashchip *flash);
 
 int spi_command(unsigned int writecnt, unsigned int readcnt,
 		const unsigned char *writearr, unsigned char *readarr)
 {
-	switch (flashbus) {
-	case BUS_TYPE_IT87XX_SPI:
+	switch (spi_controller) {
+	case SPI_CONTROLLER_IT87XX:
 		return it8716f_spi_command(writecnt, readcnt, writearr,
 					   readarr);
-	case BUS_TYPE_ICH7_SPI:
-	case BUS_TYPE_ICH9_SPI:
-	case BUS_TYPE_VIA_SPI:
+	case SPI_CONTROLLER_ICH7:
+	case SPI_CONTROLLER_ICH9:
+	case SPI_CONTROLLER_VIA:
 		return ich_spi_command(writecnt, readcnt, writearr, readarr);
-	case BUS_TYPE_SB600_SPI:
+	case SPI_CONTROLLER_SB600:
 		return sb600_spi_command(writecnt, readcnt, writearr, readarr);
-	case BUS_TYPE_WBSIO_SPI:
+	case SPI_CONTROLLER_WBSIO:
 		return wbsio_spi_command(writecnt, readcnt, writearr, readarr);
-	case BUS_TYPE_DUMMY_SPI:
+	case SPI_CONTROLLER_DUMMY:
 		return dummy_spi_command(writecnt, readcnt, writearr, readarr);
 	default:
 		printf_debug
@@ -122,10 +125,10 @@ int spi_write_enable(void)
 	if (result)
 		printf_debug("%s failed", __func__);
 	if (result == SPI_INVALID_OPCODE) {
-		switch (flashbus) {
-		case BUS_TYPE_ICH7_SPI:
-		case BUS_TYPE_ICH9_SPI:
-		case BUS_TYPE_VIA_SPI:
+		switch (spi_controller) {
+		case SPI_CONTROLLER_ICH7:
+		case SPI_CONTROLLER_ICH9:
+		case SPI_CONTROLLER_VIA:
 			printf_debug(" due to SPI master limitation, ignoring"
 				     " and hoping it will be run as PREOP\n");
 			return 0;
@@ -202,13 +205,13 @@ int probe_spi_rdid(struct flashchip *flash)
 int probe_spi_rdid4(struct flashchip *flash)
 {
 	/* only some SPI chipsets support 4 bytes commands */
-	switch (flashbus) {
-	case BUS_TYPE_ICH7_SPI:
-	case BUS_TYPE_ICH9_SPI:
-	case BUS_TYPE_VIA_SPI:
-	case BUS_TYPE_SB600_SPI:
-	case BUS_TYPE_WBSIO_SPI:
-	case BUS_TYPE_DUMMY_SPI:
+	switch (spi_controller) {
+	case SPI_CONTROLLER_ICH7:
+	case SPI_CONTROLLER_ICH9:
+	case SPI_CONTROLLER_VIA:
+	case SPI_CONTROLLER_SB600:
+	case SPI_CONTROLLER_WBSIO:
+	case SPI_CONTROLLER_DUMMY:
 		return probe_spi_rdid_generic(flash, 4);
 	default:
 		printf_debug("4b ID not supported on this SPI controller\n");
@@ -281,7 +284,7 @@ uint8_t spi_read_status_register(void)
 	int ret;
 
 	/* Read Status Register */
-	if (flashbus == BUS_TYPE_SB600_SPI) {
+	if (spi_controller == SPI_CONTROLLER_SB600) {
 		/* SB600 uses a different way to read status register. */
 		return sb600_read_status_register();
 	} else {
@@ -569,10 +572,10 @@ int spi_write_status_enable(void)
 	if (result)
 		printf_debug("%s failed", __func__);
 	if (result == SPI_INVALID_OPCODE) {
-		switch (flashbus) {
-		case BUS_TYPE_ICH7_SPI:
-		case BUS_TYPE_ICH9_SPI:
-		case BUS_TYPE_VIA_SPI:
+		switch (spi_controller) {
+		case SPI_CONTROLLER_ICH7:
+		case SPI_CONTROLLER_ICH9:
+		case SPI_CONTROLLER_VIA:
 			printf_debug(" due to SPI master limitation, ignoring"
 				     " and hoping it will be run as PREOP\n");
 			return 0;
@@ -651,16 +654,16 @@ int spi_nbyte_read(int address, uint8_t *bytes, int len)
 
 int spi_chip_read(struct flashchip *flash, uint8_t *buf)
 {
-	switch (flashbus) {
-	case BUS_TYPE_IT87XX_SPI:
+	switch (spi_controller) {
+	case SPI_CONTROLLER_IT87XX:
 		return it8716f_spi_chip_read(flash, buf);
-	case BUS_TYPE_SB600_SPI:
+	case SPI_CONTROLLER_SB600:
 		return sb600_spi_read(flash, buf);
-	case BUS_TYPE_ICH7_SPI:
-	case BUS_TYPE_ICH9_SPI:
-	case BUS_TYPE_VIA_SPI:
+	case SPI_CONTROLLER_ICH7:
+	case SPI_CONTROLLER_ICH9:
+	case SPI_CONTROLLER_VIA:
 		return ich_spi_read(flash, buf);
-	case BUS_TYPE_WBSIO_SPI:
+	case SPI_CONTROLLER_WBSIO:
 		return wbsio_spi_read(flash, buf);
 	default:
 		printf_debug
@@ -699,16 +702,16 @@ int spi_chip_write_1(struct flashchip *flash, uint8_t *buf)
  */
 int spi_chip_write_256(struct flashchip *flash, uint8_t *buf)
 {
-	switch (flashbus) {
-	case BUS_TYPE_IT87XX_SPI:
+	switch (spi_controller) {
+	case SPI_CONTROLLER_IT87XX:
 		return it8716f_spi_chip_write_256(flash, buf);
-	case BUS_TYPE_SB600_SPI:
+	case SPI_CONTROLLER_SB600:
 		return sb600_spi_write_1(flash, buf);
-	case BUS_TYPE_ICH7_SPI:
-	case BUS_TYPE_ICH9_SPI:
-	case BUS_TYPE_VIA_SPI:
+	case SPI_CONTROLLER_ICH7:
+	case SPI_CONTROLLER_ICH9:
+	case SPI_CONTROLLER_VIA:
 		return ich_spi_write_256(flash, buf);
-	case BUS_TYPE_WBSIO_SPI:
+	case SPI_CONTROLLER_WBSIO:
 		return wbsio_spi_write_1(flash, buf);
 	default:
 		printf_debug
@@ -731,8 +734,8 @@ int spi_aai_write(struct flashchip *flash, uint8_t *buf)
 	unsigned char w[6] = {0xad, 0, 0, 0, buf[0], buf[1]};
 	int result;
 
-	switch (flashbus) {
-	case BUS_TYPE_WBSIO_SPI:
+	switch (spi_controller) {
+	case SPI_CONTROLLER_WBSIO:
 		fprintf(stderr, "%s: impossible with Winbond SPI masters,"
 				" degrading to byte program\n", __func__);
 		return spi_chip_write_1(flash, buf);
