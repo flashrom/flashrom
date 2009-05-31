@@ -29,7 +29,7 @@
 int dummy_init(void)
 {
 	printf_debug("%s\n", __func__);
-	flashbus = BUS_TYPE_DUMMY_SPI;
+	spi_controller = SPI_CONTROLLER_DUMMY;
 	return 0; 
 }
 

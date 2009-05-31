@@ -223,15 +223,15 @@ static int generate_opcodes(OPCODES * op)
 		return -1;
 	}
 
-	switch (flashbus) {
-	case BUS_TYPE_ICH7_SPI:
-	case BUS_TYPE_VIA_SPI:
+	switch (spi_controller) {
+	case SPI_CONTROLLER_ICH7:
+	case SPI_CONTROLLER_VIA:
 		preop = REGREAD16(ICH7_REG_PREOP);
 		optype = REGREAD16(ICH7_REG_OPTYPE);
 		opmenu[0] = REGREAD32(ICH7_REG_OPMENU);
 		opmenu[1] = REGREAD32(ICH7_REG_OPMENU + 4);
 		break;
-	case BUS_TYPE_ICH9_SPI:
+	case SPI_CONTROLLER_ICH9:
 		preop = REGREAD16(ICH9_REG_PREOP);
 		optype = REGREAD16(ICH9_REG_OPTYPE);
 		opmenu[0] = REGREAD32(ICH9_REG_OPMENU);
@@ -305,15 +305,15 @@ int program_opcodes(OPCODES * op)
 	}
 
 	printf_debug("\n%s: preop=%04x optype=%04x opmenu=%08x%08x\n", __func__, preop, optype, opmenu[0], opmenu[1]);
-	switch (flashbus) {
-	case BUS_TYPE_ICH7_SPI:
-	case BUS_TYPE_VIA_SPI:
+	switch (spi_controller) {
+	case SPI_CONTROLLER_ICH7:
+	case SPI_CONTROLLER_VIA:
 		REGWRITE16(ICH7_REG_PREOP, preop);
 		REGWRITE16(ICH7_REG_OPTYPE, optype);
 		REGWRITE32(ICH7_REG_OPMENU, opmenu[0]);
 		REGWRITE32(ICH7_REG_OPMENU + 4, opmenu[1]);
 		break;
-	case BUS_TYPE_ICH9_SPI:
+	case SPI_CONTROLLER_ICH9:
 		REGWRITE16(ICH9_REG_PREOP, preop);
 		REGWRITE16(ICH9_REG_OPTYPE, optype);
 		REGWRITE32(ICH9_REG_OPMENU, opmenu[0]);
@@ -599,12 +599,12 @@ static int ich9_run_opcode(OPCODE op, uint32_t offset,
 static int run_opcode(OPCODE op, uint32_t offset,
 		      uint8_t datalength, uint8_t * data)
 {
-	switch (flashbus) {
-	case BUS_TYPE_VIA_SPI:
+	switch (spi_controller) {
+	case SPI_CONTROLLER_VIA:
 		return ich7_run_opcode(op, offset, datalength, data, 16);
-	case BUS_TYPE_ICH7_SPI:
+	case SPI_CONTROLLER_ICH7:
 		return ich7_run_opcode(op, offset, datalength, data, 64);
-	case BUS_TYPE_ICH9_SPI:
+	case SPI_CONTROLLER_ICH9:
 		return ich9_run_opcode(op, offset, datalength, data);
 	default:
 		printf_debug("%s: unsupported chipset\n", __FUNCTION__);
@@ -688,7 +688,7 @@ int ich_spi_read(struct flashchip *flash, uint8_t * buf)
 	int page_size = flash->page_size;
 	int maxdata = 64;
 
-	if (flashbus == BUS_TYPE_VIA_SPI) {
+	if (spi_controller == SPI_CONTROLLER_VIA) {
 		maxdata = 16;
 	}
 
@@ -723,7 +723,7 @@ int ich_spi_write_256(struct flashchip *flash, uint8_t * buf)
 			break;
 		}
 
-		if (flashbus == BUS_TYPE_VIA_SPI)
+		if (spi_controller == SPI_CONTROLLER_VIA)
 			maxdata = 16;
 
 		for (j = 0; j < erase_size / page_size; j++) {

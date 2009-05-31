@@ -63,7 +63,7 @@ int wbsio_check_for_spi(const char *name)
 			return 1;
 
 	printf_debug("\nwbsio_spibase = 0x%x\n", wbsio_spibase);
-	flashbus = BUS_TYPE_WBSIO_SPI;
+	spi_controller = SPI_CONTROLLER_WBSIO;
 	return 0;
 }
 
