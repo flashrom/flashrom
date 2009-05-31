@@ -42,8 +42,7 @@ unsigned long flashbase = 0;
  * Eventually, this will become an array when multiple flash support works.
  */
 
-flashbus_t flashbus = BUS_TYPE_LPC;
-void *spibar = NULL;
+enum chipbustype buses_supported = CHIP_BUSTYPE_UNKNOWN;
 
 extern int ichspi_lock;
 
@@ -218,7 +217,7 @@ static int enable_flash_vt8237s_spi(struct pci_dev *dev, const char *name)
 	printf_debug("0x6c: 0x%04x     (CLOCK/DEBUG)\n",
 		     mmio_readw(spibar + 0x6c));
 
-	flashbus = BUS_TYPE_VIA_SPI;
+	spi_controller = SPI_CONTROLLER_VIA;
 	ich_init_opcodes();
 
 	return 0;
@@ -269,17 +268,17 @@ static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
 
 	switch (ich_generation) {
 	case 7:
-		flashbus = BUS_TYPE_ICH7_SPI;
+		spi_controller = SPI_CONTROLLER_ICH7;
 		spibar_offset = 0x3020;
 		break;
 	case 8:
-		flashbus = BUS_TYPE_ICH9_SPI;
+		spi_controller = SPI_CONTROLLER_ICH9;
 		spibar_offset = 0x3020;
 		break;
 	case 9:
 	case 10:
 	default:		/* Future version might behave the same */
-		flashbus = BUS_TYPE_ICH9_SPI;
+		spi_controller = SPI_CONTROLLER_ICH9;
 		spibar_offset = 0x3800;
 		break;
 	}
@@ -290,8 +289,8 @@ static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
 	/* Assign Virtual Address */
 	spibar = rcrb + spibar_offset;
 
-	switch (flashbus) {
-	case BUS_TYPE_ICH7_SPI:
+	switch (spi_controller) {
+	case SPI_CONTROLLER_ICH7:
 		printf_debug("0x00: 0x%04x     (SPIS)\n",
 			     mmio_readw(spibar + 0));
 		printf_debug("0x02: 0x%04x     (SPIC)\n",
@@ -329,7 +328,7 @@ static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
 		}
 		ich_init_opcodes();
 		break;
-	case BUS_TYPE_ICH9_SPI:
+	case SPI_CONTROLLER_ICH9:
 		tmp2 = mmio_readw(spibar + 4);
 		printf_debug("0x04: 0x%04x (HSFS)\n", tmp2);
 		printf_debug("FLOCKDN %i, ", (tmp2 >> 15 & 1));
@@ -729,7 +728,7 @@ static int enable_flash_sb600(struct pci_dev *dev, const char *name)
 	}
 
 	if (has_spi)
-		flashbus = BUS_TYPE_SB600_SPI;
+		spi_controller = SPI_CONTROLLER_SB600;
 
 	/* Read ROM strap override register. */
 	OUTB(0x8f, 0xcd6);

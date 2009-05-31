@@ -120,9 +120,21 @@ uint32_t chip_readl(const chipaddr addr);
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 
+enum chipbustype {
+	CHIP_BUSTYPE_PARALLEL	= 1 << 0,
+	CHIP_BUSTYPE_LPC	= 1 << 1,
+	CHIP_BUSTYPE_FWH	= 1 << 2,
+	CHIP_BUSTYPE_SPI	= 1 << 3,
+	CHIP_BUSTYPE_NONSPI	= CHIP_BUSTYPE_PARALLEL | CHIP_BUSTYPE_LPC | CHIP_BUSTYPE_FWH,
+	CHIP_BUSTYPE_UNKNOWN	= CHIP_BUSTYPE_PARALLEL | CHIP_BUSTYPE_LPC | CHIP_BUSTYPE_FWH | CHIP_BUSTYPE_SPI,
+};
+
 struct flashchip {
 	const char *vendor;
 	const char *name;
+
+	enum chipbustype bustype;
+
 	/*
 	 * With 32bit manufacture_id and model_id we can cover IDs up to
 	 * (including) the 4th bank of JEDEC JEP106W Standard Manufacturer's
@@ -592,24 +604,11 @@ int board_flash_enable(const char *vendor, const char *part);
 void print_supported_boards(void);
 
 /* chipset_enable.c */
+extern enum chipbustype buses_supported;
 int chipset_flash_enable(void);
 void print_supported_chipsets(void);
 
 extern unsigned long flashbase;
-
-typedef enum {
-	BUS_TYPE_LPC,
-	BUS_TYPE_ICH7_SPI,
-	BUS_TYPE_ICH9_SPI,
-	BUS_TYPE_IT87XX_SPI,
-	BUS_TYPE_SB600_SPI,
-	BUS_TYPE_VIA_SPI,
-	BUS_TYPE_WBSIO_SPI,
-	BUS_TYPE_DUMMY_SPI
-} flashbus_t;
-
-extern flashbus_t flashbus;
-extern void *spibar;
 
 /* physmap.c */
 void *physmap(const char *descr, unsigned long phys_addr, size_t len);
@@ -691,6 +690,18 @@ int coreboot_init(void);
 extern char *lb_part, *lb_vendor;
 
 /* spi.c */
+enum spi_controller {
+	SPI_CONTROLLER_NONE,
+	SPI_CONTROLLER_ICH7,
+	SPI_CONTROLLER_ICH9,
+	SPI_CONTROLLER_IT87XX,
+	SPI_CONTROLLER_SB600,
+	SPI_CONTROLLER_VIA,
+	SPI_CONTROLLER_WBSIO,
+	SPI_CONTROLLER_DUMMY,
+};
+extern enum spi_controller spi_controller;
+extern void *spibar;
 int probe_spi_rdid(struct flashchip *flash);
 int probe_spi_rdid4(struct flashchip *flash);
 int probe_spi_rems(struct flashchip *flash);

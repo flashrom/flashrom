@@ -40,6 +40,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "AMD",
 		.name		= "Am29F002(N)BB",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= AMD_ID,
 		.model_id	= AM_29F002BB,
 		.total_size	= 256,
@@ -54,6 +55,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "AMD",
 		.name		= "Am29F002(N)BT",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= AMD_ID,
 		.model_id	= AM_29F002BT,
 		.total_size	= 256,
@@ -68,6 +70,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "AMD",
 		.name		= "Am29F016D",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= AMD_ID,
 		.model_id	= AM_29F016D,
 		.total_size	= 2048,
@@ -82,6 +85,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "AMD",
 		.name		= "Am29F040B",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= AMD_ID,
 		.model_id	= AM_29F040B,
 		.total_size	= 512,
@@ -96,6 +100,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "AMD",
 		.name		= "Am29F080B",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= 0x01,
 		.model_id	= 0xd5,
 		.total_size	= 1024,
@@ -110,6 +115,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "AMD",
 		.name		= "Am29LV040B",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= AMD_ID,
 		.model_id	= AM_29LV040B,
 		.total_size	= 512,
@@ -124,6 +130,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "AMD",
 		.name		= "Am29LV081B",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= 0x01,
 		.model_id	= 0x38,
 		.total_size	= 1024,
@@ -138,6 +145,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "ASD",
 		.name		= "AE49F2008",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= ASD_ID,
 		.model_id	= ASD_AE49F2008,
 		.total_size	= 256,
@@ -152,6 +160,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Atmel",
 		.name		= "AT25DF021",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_25DF021,
 		.total_size	= 256,
@@ -166,6 +175,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Atmel",
 		.name		= "AT25DF041A",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_25DF041A,
 		.total_size	= 512,
@@ -180,6 +190,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Atmel",
 		.name		= "AT25DF081",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_25DF081,
 		.total_size	= 1024,
@@ -194,6 +205,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Atmel",
 		.name		= "AT25DF161",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_25DF161,
 		.total_size	= 2048,
@@ -208,6 +220,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Atmel",
 		.name		= "AT25DF321",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_25DF321,
 		.total_size	= 4096,
@@ -222,6 +235,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Atmel",
 		.name		= "AT25DF321A",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_25DF321A,
 		.total_size	= 4096,
@@ -236,6 +250,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Atmel",
 		.name		= "AT25DF641",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_25DF641,
 		.total_size	= 8192,
@@ -250,6 +265,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Atmel",
 		.name		= "AT25F512B",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_25F512B,
 		.total_size	= 64,
@@ -264,6 +280,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Atmel",
 		.name		= "AT25FS010",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_25FS010,
 		.total_size	= 128,
@@ -278,6 +295,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Atmel",
 		.name		= "AT25FS040",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_25FS040,
 		.total_size	= 512,
@@ -292,6 +310,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Atmel",
 		.name		= "AT26DF041",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_26DF041,
 		.total_size	= 512,
@@ -306,6 +325,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Atmel",
 		.name		= "AT26DF081A",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_26DF081A,
 		.total_size	= 1024,
@@ -320,6 +340,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Atmel",
 		.name		= "AT26DF161",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_26DF161,
 		.total_size	= 2048,
@@ -334,6 +355,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Atmel",
 		.name		= "AT26DF161A",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_26DF161A,
 		.total_size	= 2048,
@@ -349,6 +371,7 @@ struct flashchip flashchips[] = {
 	/*{
 		.vendor		= "Atmel",
 		.name		= "AT26DF321",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_26DF321,
 		.total_size	= 4096,
@@ -363,6 +386,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Atmel",
 		.name		= "AT26F004",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_26F004,
 		.total_size	= 512,
@@ -377,6 +401,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Atmel",
 		.name		= "AT29C010A",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_29C010A,
 		.total_size	= 128,
@@ -391,6 +416,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Atmel",
 		.name		= "AT29C020",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_29C020,
 		.total_size	= 256,
@@ -405,6 +431,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Atmel",
 		.name		= "AT29C040A",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_29C040A,
 		.total_size	= 512,
@@ -419,6 +446,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Atmel",
 		.name		= "AT45CS1282",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_45CS1282,
 		.total_size	= 16896 /* No power of two sizes */,
@@ -433,6 +461,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Atmel",
 		.name		= "AT45DB011D",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_45DB011D,
 		.total_size	= 128 /* Size can only be determined from status register */,
@@ -447,6 +476,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Atmel",
 		.name		= "AT45DB021D",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_45DB021D,
 		.total_size	= 256 /* Size can only be determined from status register */,
@@ -461,6 +491,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Atmel",
 		.name		= "AT45DB041D",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_45DB041D,
 		.total_size	= 512 /* Size can only be determined from status register */,
@@ -475,6 +506,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Atmel",
 		.name		= "AT45DB081D",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_45DB081D,
 		.total_size	= 1024 /* Size can only be determined from status register */,
@@ -489,6 +521,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Atmel",
 		.name		= "AT45DB161D",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_45DB161D,
 		.total_size	= 2048 /* Size can only be determined from status register */,
@@ -503,6 +536,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Atmel",
 		.name		= "AT45DB321C",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_45DB321C,
 		.total_size	= 4224 /* No power of two sizes */,
@@ -517,6 +551,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Atmel",
 		.name		= "AT45DB321D",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_45DB321D,
 		.total_size	= 4096 /* Size can only be determined from status register */,
@@ -531,6 +566,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Atmel",
 		.name		= "AT45DB642D",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_45DB642D,
 		.total_size	= 8192 /* Size can only be determined from status register */,
@@ -545,6 +581,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Atmel",
 		.name		= "AT49BV512",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_49BV512,
 		.total_size	= 64,
@@ -559,6 +596,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Atmel",
 		.name		= "AT49F002(N)",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_49F002N,
 		.total_size	= 256,
@@ -573,6 +611,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Atmel",
 		.name		= "AT49F002(N)T",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_49F002NT,
 		.total_size	= 256,
@@ -587,6 +626,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "AMIC",
 		.name		= "A25L40P",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= AMIC_ID,
 		.model_id	= AMIC_A25L40P,
 		.total_size	= 512,
@@ -601,6 +641,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "AMIC",
 		.name		= "A29002B",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= AMIC_ID_NOPREFIX,
 		.model_id	= AMIC_A29002B,
 		.total_size	= 256,
@@ -615,6 +656,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "AMIC",
 		.name		= "A29002T",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= AMIC_ID_NOPREFIX,
 		.model_id	= AMIC_A29002T,
 		.total_size	= 256,
@@ -629,6 +671,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "AMIC",
 		.name		= "A29040B",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= AMIC_ID_NOPREFIX,
 		.model_id	= AMIC_A29040B,
 		.total_size	= 512,
@@ -643,6 +686,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "AMIC",
 		.name		= "A49LF040A",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= AMIC_ID_NOPREFIX,
 		.model_id	= AMIC_A49LF040A,
 		.total_size	= 512,
@@ -657,6 +701,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "EMST",
 		.name		= "F49B002UA",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= EMST_ID,
 		.model_id	= EMST_F49B002UA,
 		.total_size	= 256,
@@ -671,6 +716,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "EON",
 		.name		= "EN29F002(A)(N)B",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= EON_ID,
 		.model_id	= EN_29F002B,
 		.total_size	= 256,
@@ -685,6 +731,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "EON",
 		.name		= "EN29F002(A)(N)T",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= EON_ID,
 		.model_id	= EN_29F002T,
 		.total_size	= 256,
@@ -699,6 +746,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Fujitsu",
 		.name		= "MBM29F004BC",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= FUJITSU_ID,
 		.model_id	= MBM29F004BC,
 		.total_size	= 512,
@@ -713,6 +761,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Fujitsu",
 		.name		= "MBM29F004TC",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= FUJITSU_ID,
 		.model_id	= MBM29F004TC,
 		.total_size	= 512,
@@ -727,6 +776,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Fujitsu",
 		.name		= "MBM29F400BC",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= FUJITSU_ID,
 		.model_id	= MBM29F400BC,
 		.total_size	= 512,
@@ -741,6 +791,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Fujitsu",
 		.name		= "MBM29F400TC",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= FUJITSU_ID,
 		.model_id	= MBM29F400TC,
 		.total_size	= 512,
@@ -755,6 +806,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Intel",
 		.name		= "28F001BX-B",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= INTEL_ID,
 		.model_id	= P28F001BXB,
 		.total_size	= 128,
@@ -769,6 +821,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Intel",
 		.name		= "28F001BX-T",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= INTEL_ID,
 		.model_id	= P28F001BXT,
 		.total_size	= 128,
@@ -783,6 +836,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Intel",
 		.name		= "82802AB",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= INTEL_ID,
 		.model_id	= 173,
 		.total_size	= 512,
@@ -797,6 +851,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Intel",
 		.name		= "82802AC",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= INTEL_ID,
 		.model_id	= 172,
 		.total_size	= 1024,
@@ -811,6 +866,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Macronix",
 		.name		= "MX25L512",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= MX_ID,
 		.model_id	= MX_25L512,
 		.total_size	= 64,
@@ -825,6 +881,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Macronix",
 		.name		= "MX25L1005",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= MX_ID,
 		.model_id	= MX_25L1005,
 		.total_size	= 128,
@@ -839,6 +896,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Macronix",
 		.name		= "MX25L2005",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= MX_ID,
 		.model_id	= MX_25L2005,
 		.total_size	= 256,
@@ -853,6 +911,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Macronix",
 		.name		= "MX25L4005",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= MX_ID,
 		.model_id	= MX_25L4005,
 		.total_size	= 512,
@@ -867,6 +926,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Macronix",
 		.name		= "MX25L8005",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= MX_ID,
 		.model_id	= MX_25L8005,
 		.total_size	= 1024,
@@ -881,6 +941,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Macronix",
 		.name		= "MX25L1605",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= MX_ID,
 		.model_id	= MX_25L1605,
 		.total_size	= 2048,
@@ -895,6 +956,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Macronix",
 		.name		= "MX25L1635D",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= MX_ID,
 		.model_id	= MX_25L1635D,
 		.total_size	= 2048,
@@ -909,6 +971,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Macronix",
 		.name		= "MX25L3205",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= MX_ID,
 		.model_id	= MX_25L3205,
 		.total_size	= 4096,
@@ -923,6 +986,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Macronix",
 		.name		= "MX25L3235D",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= MX_ID,
 		.model_id	= MX_25L3235D,
 		.total_size	= 4096,
@@ -937,6 +1001,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Macronix",
 		.name		= "MX25L6405",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= MX_ID,
 		.model_id	= MX_25L6405,
 		.total_size	= 8192,
@@ -951,6 +1016,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Macronix",
 		.name		= "MX25L12805",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= MX_ID,
 		.model_id	= MX_25L12805,
 		.total_size	= 16384,
@@ -965,6 +1031,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Macronix",
 		.name		= "MX29F002B",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= MX_ID,
 		.model_id	= MX_29F002B,
 		.total_size	= 256,
@@ -979,6 +1046,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Macronix",
 		.name		= "MX29F002T",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= MX_ID,
 		.model_id	= MX_29F002T,
 		.total_size	= 256,
@@ -993,6 +1061,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Macronix",
 		.name		= "MX29LV040C",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= MX_ID,
 		.model_id	= MX_29LV040C,
 		.total_size	= 512,
@@ -1007,6 +1076,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Numonyx",
 		.name		= "M25PE10",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= 0x8011,
 		.total_size	= 128,
@@ -1021,6 +1091,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Numonyx",
 		.name		= "M25PE20",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= 0x8012,
 		.total_size	= 256,
@@ -1035,6 +1106,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Numonyx",
 		.name		= "M25PE40",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= 0x8013,
 		.total_size	= 256,
@@ -1049,6 +1121,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Numonyx",
 		.name		= "M25PE80",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= 0x8014,
 		.total_size	= 1024,
@@ -1063,6 +1136,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Numonyx",
 		.name		= "M25PE16",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= 0x8015,
 		.total_size	= 2048,
@@ -1077,6 +1151,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "PMC",
 		.name		= "Pm25LV010",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= PMC_ID,
 		.model_id	= PMC_25LV010,
 		.total_size	= 128,
@@ -1091,6 +1166,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "PMC",
 		.name		= "Pm25LV016B",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= PMC_ID,
 		.model_id	= PMC_25LV016B,
 		.total_size	= 2048,
@@ -1105,6 +1181,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "PMC",
 		.name		= "Pm25LV020",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= PMC_ID,
 		.model_id	= PMC_25LV020,
 		.total_size	= 256,
@@ -1119,6 +1196,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "PMC",
 		.name		= "Pm25LV040",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= PMC_ID,
 		.model_id	= PMC_25LV040,
 		.total_size	= 512,
@@ -1133,6 +1211,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "PMC",
 		.name		= "Pm25LV080B",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= PMC_ID,
 		.model_id	= PMC_25LV080B,
 		.total_size	= 1024,
@@ -1147,6 +1226,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "PMC",
 		.name		= "Pm25LV512",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= PMC_ID,
 		.model_id	= PMC_25LV512,
 		.total_size	= 64,
@@ -1161,6 +1241,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "PMC",
 		.name		= "Pm39LV010",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= PMC_ID_NOPREFIX,
 		.model_id	= PMC_39F010,
 		.total_size	= 128,
@@ -1175,6 +1256,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "PMC",
 		.name		= "Pm49FL002",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= PMC_ID_NOPREFIX,
 		.model_id	= PMC_49FL002,
 		.total_size	= 256,
@@ -1189,6 +1271,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "PMC",
 		.name		= "Pm49FL004",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= PMC_ID_NOPREFIX,
 		.model_id	= PMC_49FL004,
 		.total_size	= 512,
@@ -1203,6 +1286,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Sharp",
 		.name		= "LHF00L04",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= SHARP_ID,
 		.model_id	= SHARP_LHF00L04,
 		.total_size	= 1024,
@@ -1217,6 +1301,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Spansion",
 		.name		= "S25FL016A",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= SPANSION_ID,
 		.model_id	= SPANSION_S25FL016A,
 		.total_size	= 2048,
@@ -1231,6 +1316,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "SST",
 		.name		= "SST25VF016B",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= SST_ID,
 		.model_id	= SST_25VF016B,
 		.total_size	= 2048,
@@ -1245,6 +1331,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "SST",
 		.name		= "SST25VF032B",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= SST_ID,
 		.model_id	= SST_25VF032B,
 		.total_size	= 4096,
@@ -1259,6 +1346,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "SST",
 		.name		= "SST25VF040B",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= SST_ID,
 		.model_id	= SST_25VF040B,
 		.total_size	= 512,
@@ -1273,6 +1361,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "SST",
 		.name		= "SST25VF040.REMS",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= 0xbf,
 		.model_id	= 0x44,
 		.total_size	= 512,
@@ -1287,6 +1376,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "SST",
 		.name		= "SST25VF040B.REMS",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= 0xbf,
 		.model_id	= 0x8d,
 		.total_size	= 512,
@@ -1301,6 +1391,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "SST",
 		.name		= "SST25VF080B",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= SST_ID,
 		.model_id	= SST_25VF080B,
 		.total_size	= 1024,
@@ -1315,6 +1406,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "SST",
 		.name		= "SST28SF040A",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= SST_ID,
 		.model_id	= SST_28SF040,
 		.total_size	= 512,
@@ -1329,6 +1421,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "SST",
 		.name		= "SST29EE010",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= SST_ID,
 		.model_id	= SST_29EE010,
 		.total_size	= 128,
@@ -1343,6 +1436,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "SST",
 		.name		= "SST29LE010",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= SST_ID,
 		.model_id	= SST_29LE010,
 		.total_size	= 128,
@@ -1357,6 +1451,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "SST",
 		.name		= "SST29EE020A",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= SST_ID,
 		.model_id	= SST_29EE020A,
 		.total_size	= 256,
@@ -1371,6 +1466,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "SST",
 		.name		= "SST29LE020",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= SST_ID,
 		.model_id	= SST_29LE020,
 		.total_size	= 256,
@@ -1385,6 +1481,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "SST",
 		.name		= "SST39SF010A",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= SST_ID,
 		.model_id	= SST_39SF010,
 		.total_size	= 128,
@@ -1399,6 +1496,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "SST",
 		.name		= "SST39SF020A",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= SST_ID,
 		.model_id	= SST_39SF020,
 		.total_size	= 256,
@@ -1413,6 +1511,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "SST",
 		.name		= "SST39SF040",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= SST_ID,
 		.model_id	= SST_39SF040,
 		.total_size	= 512,
@@ -1427,6 +1526,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "SST",
 		.name		= "SST39VF512",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= SST_ID,
 		.model_id	= SST_39VF512,
 		.total_size	= 64,
@@ -1441,6 +1541,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "SST",
 		.name		= "SST39VF010",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= SST_ID,
 		.model_id	= SST_39VF010,
 		.total_size	= 128,
@@ -1455,6 +1556,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "SST",
 		.name		= "SST39VF020",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= SST_ID,
 		.model_id	= SST_39VF020,
 		.total_size	= 256,
@@ -1469,6 +1571,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "SST",
 		.name		= "SST39VF040",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= SST_ID,
 		.model_id	= SST_39VF040,
 		.total_size	= 512,
@@ -1483,6 +1586,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "SST",
 		.name		= "SST39VF080",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= 0xbf,
 		.model_id	= 0xd8,
 		.total_size	= 1024,
@@ -1497,6 +1601,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "SST",
 		.name		= "SST49LF002A/B",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= SST_ID,
 		.model_id	= SST_49LF002A,
 		.total_size	= 256,
@@ -1511,6 +1616,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "SST",
 		.name		= "SST49LF003A/B",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= SST_ID,
 		.model_id	= SST_49LF003A,
 		.total_size	= 384,
@@ -1525,6 +1631,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "SST",
 		.name		= "SST49LF004A/B",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= SST_ID,
 		.model_id	= SST_49LF004A,
 		.total_size	= 512,
@@ -1539,6 +1646,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "SST",
 		.name		= "SST49LF004C",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= SST_ID,
 		.model_id	= SST_49LF004C,
 		.total_size	= 512,
@@ -1553,6 +1661,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "SST",
 		.name		= "SST49LF008A",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= SST_ID,
 		.model_id	= SST_49LF008A,
 		.total_size	= 1024,
@@ -1567,6 +1676,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "SST",
 		.name		= "SST49LF008C",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= SST_ID,
 		.model_id	= SST_49LF008C,
 		.total_size	= 1024,
@@ -1581,6 +1691,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "SST",
 		.name		= "SST49LF016C",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= SST_ID,
 		.model_id	= SST_49LF016C,
 		.total_size	= 2048,
@@ -1595,6 +1706,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "SST",
 		.name		= "SST49LF020",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= SST_ID,
 		.model_id	= SST_49LF020,
 		.total_size	= 256,
@@ -1609,6 +1721,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "SST",
 		.name		= "SST49LF020A",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= SST_ID,
 		.model_id	= SST_49LF020A,
 		.total_size	= 256,
@@ -1623,6 +1736,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "SST",
 		.name		= "SST49LF040",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= SST_ID,
 		.model_id	= SST_49LF040,
 		.total_size	= 512,
@@ -1637,6 +1751,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "SST",
 		.name		= "SST49LF040B",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= SST_ID,
 		.model_id	= SST_49LF040B,
 		.total_size	= 512,
@@ -1651,6 +1766,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "SST",
 		.name		= "SST49LF080A",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= SST_ID,
 		.model_id	= SST_49LF080A,
 		.total_size	= 1024,
@@ -1665,6 +1781,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "SST",
 		.name		= "SST49LF160C",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= SST_ID,
 		.model_id	= SST_49LF160C,
 		.total_size	= 2048,
@@ -1679,6 +1796,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "ST",
 		.name		= "M25P05-A",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M25P05A,
 		.total_size	= 64,
@@ -1693,6 +1811,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "ST",
 		.name		= "M25P10-A",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M25P10A,
 		.total_size	= 128,
@@ -1707,6 +1826,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "ST",
 		.name		= "M25P20",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M25P20,
 		.total_size	= 256,
@@ -1721,6 +1841,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "ST",
 		.name		= "M25P40",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M25P40,
 		.total_size	= 512,
@@ -1735,6 +1856,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "ST",
 		.name		= "M25P40-old",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M25P40_RES,
 		.total_size	= 512,
@@ -1749,6 +1871,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "ST",
 		.name		= "M25P80",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M25P80,
 		.total_size	= 1024,
@@ -1763,6 +1886,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "ST",
 		.name		= "M25P16",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M25P16,
 		.total_size	= 2048,
@@ -1777,6 +1901,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "ST",
 		.name		= "M25P32",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M25P32,
 		.total_size	= 4096,
@@ -1791,6 +1916,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "ST",
 		.name		= "M25P64",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M25P64,
 		.total_size	= 8192,
@@ -1805,6 +1931,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "ST",
 		.name		= "M25P128",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M25P128,
 		.total_size	= 16384,
@@ -1819,6 +1946,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "ST",
 		.name		= "M29F002B",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M29F002B,
 		.total_size	= 256,
@@ -1833,6 +1961,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "ST",
 		.name		= "M29F002T/NT",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M29F002T,
 		.total_size	= 256,
@@ -1847,6 +1976,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "ST",
 		.name		= "M29F040B",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M29F040B,
 		.total_size	= 512,
@@ -1861,6 +1991,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "ST",
 		.name		= "M29F400BT",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M29F400BT,
 		.total_size	= 512,
@@ -1875,6 +2006,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "ST",
 		.name		= "M29W010B",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M29W010B,
 		.total_size	= 128,
@@ -1889,6 +2021,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "ST",
 		.name		= "M29W040B",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M29W040B,
 		.total_size	= 512,
@@ -1903,6 +2036,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "ST",
 		.name		= "M50FLW040A",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M50FLW040A,
 		.total_size	= 512,
@@ -1917,6 +2051,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "ST",
 		.name		= "M50FLW040B",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M50FLW040B,
 		.total_size	= 512,
@@ -1931,6 +2066,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "ST",
 		.name		= "M50FLW080A",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M50FLW080A,
 		.total_size	= 1024,
@@ -1945,6 +2081,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "ST",
 		.name		= "M50FLW080B",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M50FLW080B,
 		.total_size	= 1024,
@@ -1959,6 +2096,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "ST",
 		.name		= "M50FW002",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M50FW002,
 		.total_size	= 256,
@@ -1973,6 +2111,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "ST",
 		.name		= "M50FW016",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M50FW016,
 		.total_size	= 2048,
@@ -1987,6 +2126,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "ST",
 		.name		= "M50FW040",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M50FW040,
 		.total_size	= 512,
@@ -2001,6 +2141,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "ST",
 		.name		= "M50FW080",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M50FW080,
 		.total_size	= 1024,
@@ -2015,6 +2156,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "ST",
 		.name		= "M50LPW116",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M50LPW116,
 		.total_size	= 2048,
@@ -2029,6 +2171,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "SyncMOS",
 		.name		= "S29C31004T",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= SYNCMOS_ID,
 		.model_id	= S29C31004T,
 		.total_size	= 512,
@@ -2043,6 +2186,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "SyncMOS",
 		.name		= "S29C51001T",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= SYNCMOS_ID,
 		.model_id	= S29C51001T,
 		.total_size	= 128,
@@ -2057,6 +2201,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "SyncMOS",
 		.name		= "S29C51002T",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= SYNCMOS_ID,
 		.model_id	= S29C51002T,
 		.total_size	= 256,
@@ -2071,6 +2216,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "SyncMOS",
 		.name		= "S29C51004T",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= SYNCMOS_ID,
 		.model_id	= S29C51004T,
 		.total_size	= 512,
@@ -2085,6 +2231,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "TI",
 		.name		= "TMS29F002RB",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= TI_OLD_ID,
 		.model_id	= TI_TMS29F002RB,
 		.total_size	= 256,
@@ -2099,6 +2246,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "TI",
 		.name		= "TMS29F002RT",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= TI_OLD_ID,
 		.model_id	= TI_TMS29F002RT,
 		.total_size	= 256,
@@ -2113,6 +2261,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Winbond",
 		.name		= "W25x10",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= WINBOND_NEX_ID,
 		.model_id	= W_25X10,
 		.total_size	= 128,
@@ -2127,6 +2276,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Winbond",
 		.name		= "W25x20",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= WINBOND_NEX_ID,
 		.model_id	= W_25X20,
 		.total_size	= 256,
@@ -2141,6 +2291,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Winbond",
 		.name		= "W25x40",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= WINBOND_NEX_ID,
 		.model_id	= W_25X40,
 		.total_size	= 512,
@@ -2155,6 +2306,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Winbond",
 		.name		= "W25x80",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= WINBOND_NEX_ID,
 		.model_id	= W_25X80,
 		.total_size	= 1024,
@@ -2169,6 +2321,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Winbond",
 		.name		= "W29C011",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= WINBOND_ID,
 		.model_id	= W_29C011,
 		.total_size	= 128,
@@ -2183,6 +2336,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Winbond",
 		.name		= "W29C020C",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= WINBOND_ID,
 		.model_id	= W_29C020C,
 		.total_size	= 256,
@@ -2197,6 +2351,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Winbond",
 		.name		= "W29C040P",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= WINBOND_ID,
 		.model_id	= W_29C040P,
 		.total_size	= 512,
@@ -2211,6 +2366,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Winbond",
 		.name		= "W29EE011",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= WINBOND_ID,
 		.model_id	= W_29C011,
 		.total_size	= 128,
@@ -2225,6 +2381,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Winbond",
 		.name		= "W39V040A",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= WINBOND_ID,
 		.model_id	= W_39V040A,
 		.total_size	= 512,
@@ -2239,6 +2396,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Winbond",
 		.name		= "W39V040B",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= WINBOND_ID,
 		.model_id	= W_39V040B,
 		.total_size	= 512,
@@ -2253,6 +2411,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Winbond",
 		.name		= "W39V040C",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= WINBOND_ID,
 		.model_id	= 0x50,
 		.total_size	= 512,
@@ -2267,6 +2426,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Winbond",
 		.name		= "W39V040FA",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= WINBOND_ID,
 		.model_id	= W_39V040FA,
 		.total_size	= 512,
@@ -2281,6 +2441,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Winbond",
 		.name		= "W39V080A",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= WINBOND_ID,
 		.model_id	= W_39V080A,
 		.total_size	= 1024,
@@ -2295,6 +2456,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Winbond",
 		.name		= "W49F002U",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= WINBOND_ID,
 		.model_id	= W_49F002U,
 		.total_size	= 256,
@@ -2309,6 +2471,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Winbond",
 		.name		= "W49V002A",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= WINBOND_ID,
 		.model_id	= W_49V002A,
 		.total_size	= 256,
@@ -2323,6 +2486,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Winbond",
 		.name		= "W49V002FA",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= WINBOND_ID,
 		.model_id	= W_49V002FA,
 		.total_size	= 256,
@@ -2337,6 +2501,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Winbond",
 		.name		= "W39V080FA",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= WINBOND_ID,
 		.model_id	= W_39V080FA,
 		.total_size	= 1024,
@@ -2351,6 +2516,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Winbond",
 		.name		= "W39V080FA (dual mode)",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= WINBOND_ID,
 		.model_id	= W_39V080FA_DM,
 		.total_size	= 512,
@@ -2365,6 +2531,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Atmel",
 		.name		= "unknown Atmel SPI chip",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= GENERIC_DEVICE_ID,
 		.total_size	= 0,
@@ -2379,6 +2546,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "EON",
 		.name		= "unknown EON SPI chip",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= EON_ID_NOPREFIX,
 		.model_id	= GENERIC_DEVICE_ID,
 		.total_size	= 0,
@@ -2393,6 +2561,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Macronix",
 		.name		= "unknown Macronix SPI chip",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= MX_ID,
 		.model_id	= GENERIC_DEVICE_ID,
 		.total_size	= 0,
@@ -2407,6 +2576,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "PMC",
 		.name		= "unknown PMC SPI chip",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= PMC_ID,
 		.model_id	= GENERIC_DEVICE_ID,
 		.total_size	= 0,
@@ -2421,6 +2591,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "SST",
 		.name		= "unknown SST SPI chip",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= SST_ID,
 		.model_id	= GENERIC_DEVICE_ID,
 		.total_size	= 0,
@@ -2435,6 +2606,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "ST",
 		.name		= "unknown ST SPI chip",
+		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= GENERIC_DEVICE_ID,
 		.total_size	= 0,

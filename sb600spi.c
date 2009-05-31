@@ -25,7 +25,7 @@
 #include "flash.h"
 #include "spi.h"
 
-typedef struct _spi_controller {
+struct sb600_spi_controller {
 	unsigned int spi_cntrl0;	/* 00h */
 	unsigned int restrictedcmd1;	/* 04h */
 	unsigned int restrictedcmd2;	/* 08h */
@@ -34,9 +34,9 @@ typedef struct _spi_controller {
 	unsigned int spi_cmdvalue1;	/* 14h */
 	unsigned int spi_cmdvalue2;	/* 18h */
 	unsigned int spi_fakeid;	/* 1Ch */
-} sb600_spi_controller;
+};
 
-sb600_spi_controller *spi_bar = NULL;
+struct sb600_spi_controller *spi_bar = NULL;
 uint8_t *sb600_spibar;
 
 int sb600_spi_read(struct flashchip *flash, uint8_t *buf)
@@ -114,7 +114,7 @@ int sb600_spi_command(unsigned int writecnt, unsigned int readcnt,
 
 	writecnt--;
 
-	spi_bar = (sb600_spi_controller *) sb600_spibar;
+	spi_bar = (struct sb600_spi_controller *) sb600_spibar;
 
 	printf_debug("%s, cmd=%x, writecnt=%x, readcnt=%x\n",
 		     __func__, cmd, writecnt, readcnt);
