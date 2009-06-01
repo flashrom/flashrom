@@ -365,25 +365,20 @@ static int board_asus_p5a(const char *name)
 
 static int board_ibm_x3455(const char *name)
 {
-	uint8_t byte;
-
 	/* Set GPIO lines in the Broadcom HT-1000 southbridge. */
-	OUTB(0x45, 0xcd6);
-	byte = INB(0xcd7);
-	OUTB(byte | 0x20, 0xcd7);
+	/* It's not a superio but it uses the same index/data port method. */
+	sio_mask(0xcd6, 0x45, 0x20, 0x20);
 
 	return 0;
 }
 
 static int board_hp_dl145_g3_enable(const char *name)
 {
-	uint8_t byte;
-
 	/* Set GPIO lines in the Broadcom HT-1000 southbridge. */
-	OUTB(0x44, 0xcd6);	/* GPIO 0 reg from PM regs */
-	byte = INB(0xcd7);
+	/* GPIO 0 reg from PM regs */
 	/* Set GPIO 2 and 5 high, connected to flash WP# and TBL# pins. */
-	OUTB(byte | 0x24, 0xcd7);
+	/* It's not a superio but it uses the same index/data port method. */
+	sio_mask(0xcd6, 0x44, 0x24, 0x24);
 
 	return 0;
 }
