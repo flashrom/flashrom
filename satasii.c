@@ -67,6 +67,8 @@ int satasii_init(void)
 	if ((id != 0x0680) && (!(mmio_readl(sii_bar) & (1 << 26))))
 		printf("Warning: Flash seems unconnected.\n");
 
+	buses_supported = CHIP_BUSTYPE_PARALLEL;
+
 	return 0;
 }
 
