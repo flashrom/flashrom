@@ -314,6 +314,11 @@ int read_flash(struct flashchip *flash, char *filename, unsigned int exclude_sta
 	FILE *image;
 	unsigned long size = flash->total_size * 1024;
 	unsigned char *buf = calloc(size, sizeof(char));
+
+	if (!filename) {
+		printf("Error: No filename specified.\n");
+		return 1;
+	}
 	if ((image = fopen(filename, "w")) == NULL) {
 		perror(filename);
 		exit(1);
@@ -670,35 +675,7 @@ int main(int argc, char *argv[])
 				printf("Run flashrom -L to view the hardware supported in this flashrom version.\n");
 				exit(1);
 			}
-			if (!filename) {
-				printf("Error: No filename specified.\n");
-				exit(1);
-			}
-			size = flashes[0]->total_size * 1024;
-			buf = (uint8_t *) calloc(size, sizeof(char));
-
-			if ((image = fopen(filename, "w")) == NULL) {
-				perror(filename);
-				exit(1);
-			}
-			printf("Force reading flash... ");
-			if (!flashes[0]->read) {
-				printf("FAILED!\n");
-				fprintf(stderr, "ERROR: flashrom has no read function for this flash chip.\n");
-				return 1;
-			} else
-				flashes[0]->read(flashes[0], buf);
-
-			if (exclude_end_position - exclude_start_position > 0)
-				memset(buf + exclude_start_position, 0,
-				       exclude_end_position -
-				       exclude_start_position);
-
-			numbytes = fwrite(buf, 1, size, image);
-			fclose(image);
-			printf("%s.\n", numbytes == size ? "done" : "FAILED");
-			free(buf);
-			return numbytes != size;
+			return read_flash(flashes[0], filename, exclude_start_position, exclude_end_position);
 		}
 		// FIXME: flash writes stay enabled!
 		exit(1);
