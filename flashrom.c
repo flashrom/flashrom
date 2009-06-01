@@ -332,6 +332,7 @@ int read_flash(struct flashchip *flash, char *filename, unsigned int exclude_sta
 
 	numbytes = fwrite(buf, 1, size, image);
 	fclose(image);
+	free(buf);
 	printf("%s.\n", numbytes == size ? "done" : "FAILED");
 	if (numbytes != size)
 		return 1;
