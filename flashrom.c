@@ -174,10 +174,51 @@ int read_memmapped(struct flashchip *flash, uint8_t *buf)
 	return 0;
 }
 
+char *strcat_realloc(char *dest, const char *src)
+{
+	dest = realloc(dest, strlen(dest) + strlen(src) + 1);
+	if (!dest)
+		return NULL;
+	strcat(dest, src);
+	return dest;
+}
+
+/* Return a string corresponding to the bustype parameter.
+ * Memory is obtained with malloc() and can be freed with free().
+ */
+char *flashbuses_to_text(enum chipbustype bustype)
+{
+	char *ret = calloc(1, 1);
+	if (bustype == CHIP_BUSTYPE_UNKNOWN) {
+		ret = strcat_realloc(ret, "Unknown,");
+	/* FIXME: Once all chipsets and flash chips have been updated, NONSPI
+	 * will cease to exist and should be eliminated here as well.
+	 */
+	} else if (bustype == CHIP_BUSTYPE_NONSPI) {
+		ret = strcat_realloc(ret, "Non-SPI,");
+	} else {
+		if (bustype & CHIP_BUSTYPE_PARALLEL)
+			ret = strcat_realloc(ret, "Parallel,");
+		if (bustype & CHIP_BUSTYPE_LPC)
+			ret = strcat_realloc(ret, "LPC,");
+		if (bustype & CHIP_BUSTYPE_FWH)
+			ret = strcat_realloc(ret, "FWH,");
+		if (bustype & CHIP_BUSTYPE_SPI)
+			ret = strcat_realloc(ret, "SPI,");
+		if (bustype == CHIP_BUSTYPE_NONE)
+			ret = strcat_realloc(ret, "None,");
+	}
+	/* Kill last comma. */
+	ret[strlen(ret) - 1] = '\0';
+	ret = realloc(ret, strlen(ret) + 1);
+	return ret;
+}
+
 struct flashchip *probe_flash(struct flashchip *first_flash, int force)
 {
 	struct flashchip *flash;
 	unsigned long base = 0, size;
+	char *tmp;
 
 	for (flash = first_flash; flash && flash->name; flash++) {
 		if (chip_to_probe && strcmp(flash->name, chip_to_probe) != 0)
@@ -186,6 +227,15 @@ struct flashchip *probe_flash(struct flashchip *first_flash, int force)
 			     flash->vendor, flash->name, flash->total_size);
 		if (!flash->probe && !force) {
 			printf_debug("failed! flashrom has no probe function for this flash chip.\n");
+			continue;
+		}
+		if (!(buses_supported & flash->bustype)) {
+			tmp = flashbuses_to_text(buses_supported);
+			printf_debug("skipped. Host bus type %s ", tmp);
+			free(tmp);
+			tmp = flashbuses_to_text(flash->bustype);
+			printf_debug("and chip bus type %s are incompatible.\n", tmp);
+			free(tmp);
 			continue;
 		}
 

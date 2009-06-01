@@ -36,13 +36,12 @@
 unsigned long flashbase = 0;
 
 /**
- * flashrom defaults to LPC flash devices. If a known SPI controller is found
- * and the SPI strappings are set, this will be overwritten by the probing code.
- *
- * Eventually, this will become an array when multiple flash support works.
+ * flashrom defaults to Parallel/LPC/FWH flash devices. If a known host
+ * controller is found, the init routine sets the buses_supported bitfield to
+ * contain the supported buses for that controller.
  */
 
-enum chipbustype buses_supported = CHIP_BUSTYPE_UNKNOWN;
+enum chipbustype buses_supported = CHIP_BUSTYPE_NONSPI;
 
 extern int ichspi_lock;
 
@@ -217,6 +216,8 @@ static int enable_flash_vt8237s_spi(struct pci_dev *dev, const char *name)
 	printf_debug("0x6c: 0x%04x     (CLOCK/DEBUG)\n",
 		     mmio_readw(spibar + 0x6c));
 
+	/* Not sure if it speaks all these bus protocols. */
+	buses_supported = CHIP_BUSTYPE_LPC | CHIP_BUSTYPE_FWH | CHIP_BUSTYPE_SPI;
 	spi_controller = SPI_CONTROLLER_VIA;
 	ich_init_opcodes();
 
@@ -262,22 +263,29 @@ static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
 	 */
 
 	if (ich_generation == 7 && bbs == ICH_STRAP_LPC) {
+		/* Not sure if it speaks LPC as well. */
+		buses_supported = CHIP_BUSTYPE_LPC | CHIP_BUSTYPE_FWH;
 		/* No further SPI initialization required */
 		return ret;
 	}
 
 	switch (ich_generation) {
 	case 7:
+		buses_supported = CHIP_BUSTYPE_SPI;
 		spi_controller = SPI_CONTROLLER_ICH7;
 		spibar_offset = 0x3020;
 		break;
 	case 8:
+		/* Not sure if it speaks LPC as well. */
+		buses_supported = CHIP_BUSTYPE_LPC | CHIP_BUSTYPE_FWH | CHIP_BUSTYPE_SPI;
 		spi_controller = SPI_CONTROLLER_ICH9;
 		spibar_offset = 0x3020;
 		break;
 	case 9:
 	case 10:
 	default:		/* Future version might behave the same */
+		/* Not sure if it speaks LPC as well. */
+		buses_supported = CHIP_BUSTYPE_LPC | CHIP_BUSTYPE_FWH | CHIP_BUSTYPE_SPI;
 		spi_controller = SPI_CONTROLLER_ICH9;
 		spibar_offset = 0x3800;
 		break;
@@ -727,8 +735,11 @@ static int enable_flash_sb600(struct pci_dev *dev, const char *name)
 			has_spi = 0;
 	}
 
-	if (has_spi)
+	buses_supported = CHIP_BUSTYPE_LPC | CHIP_BUSTYPE_FWH;
+	if (has_spi) {
+		buses_supported |= CHIP_BUSTYPE_SPI;
 		spi_controller = SPI_CONTROLLER_SB600;
+	}
 
 	/* Read ROM strap override register. */
 	OUTB(0x8f, 0xcd6);

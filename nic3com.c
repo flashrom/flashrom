@@ -81,6 +81,8 @@ int nic3com_init(void)
 	 */
 	OUTW(SELECT_REG_WINDOW + 0, io_base_addr + INT_STATUS);
 
+	buses_supported = CHIP_BUSTYPE_PARALLEL;
+
 	return 0;
 }
 
