@@ -109,14 +109,23 @@ int it87spi_common_init(void)
 
 int it87spi_init(void)
 {
-	get_io_perms();
+	int ret;
 
-	return it87spi_common_init();
+	get_io_perms();
+	ret = it87spi_common_init();
+	if (!ret)
+		buses_supported = CHIP_BUSTYPE_SPI;
+	return ret;
 }
 
 int it87xx_probe_spi_flash(const char *name)
 {
-	return it87spi_common_init();
+	int ret;
+
+	ret = it87spi_common_init();
+	if (!ret)
+		buses_supported |= CHIP_BUSTYPE_SPI;
+	return ret;
 }
 
 /*
