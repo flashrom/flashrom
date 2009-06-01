@@ -135,6 +135,18 @@ Specify the programmer device. Currently supported are:
 .sp
 .BR "* it87spi" " (for flash ROMs behind a IT87xx SuperI/O LPC/SPI translation unit)"
 .sp
+The dummy programmer has an optional parameter specifying the bus types it
+should support. For that you have to use the
+.B "flashrom -p dummy=type"
+syntax where
+.B type
+can be any comma-separated combination of
+.B parallel lpc fwh spi all
+in any order.
+.sp
+Example:
+.B "flashrom -p dummy=lpc,fwh"
+.sp
 If you have multiple supported PCI cards which can program flash chips
 (NICs, SATA/IDE controllers, etc.) in your system, you must use the
 .B "flashrom -p xxxx=bb:dd.f"

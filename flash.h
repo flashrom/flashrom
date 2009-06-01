@@ -122,6 +122,7 @@ uint32_t chip_readl(const chipaddr addr);
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 
 enum chipbustype {
+	CHIP_BUSTYPE_NONE	= 0,
 	CHIP_BUSTYPE_PARALLEL	= 1 << 0,
 	CHIP_BUSTYPE_LPC	= 1 << 1,
 	CHIP_BUSTYPE_FWH	= 1 << 2,
@@ -646,6 +647,7 @@ extern int io_fd;
 #endif
 
 /* dummyflasher.c */
+extern char *dummytype;
 int dummy_init(void);
 int dummy_shutdown(void);
 void *dummy_map(const char *descr, unsigned long phys_addr, size_t len);
