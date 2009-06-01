@@ -537,6 +537,8 @@ int main(int argc, char *argv[])
 				programmer = PROGRAMMER_INTERNAL;
 			} else if (strncmp(optarg, "dummy", 5) == 0) {
 				programmer = PROGRAMMER_DUMMY;
+				if (optarg[5] == '=')
+					dummytype = strdup(optarg + 6);
 			} else if (strncmp(optarg, "nic3com", 7) == 0) {
 				programmer = PROGRAMMER_NIC3COM;
 				if (optarg[7] == '=')
