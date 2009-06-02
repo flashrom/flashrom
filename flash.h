@@ -248,7 +248,9 @@ extern const struct board_info boards_bad[];
 #define AM_29F002BT		0xB0
 #define AM_29F002BB		0x34
 #define AM_29F040B		0xA4
+#define AM_29F080B		0xD5
 #define AM_29LV040B		0x4F
+#define AM_29LV081B		0x38
 #define AM_29F016D		0xAD
 
 #define AMIC_ID			0x7F37	/* AMIC */
