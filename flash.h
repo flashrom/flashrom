@@ -287,6 +287,7 @@ extern const struct board_info boards_bad[];
 #define AT_29C040A		0xA4
 #define AT_29C010A		0xD5	
 #define AT_29C020		0xDA
+#define AT_29C512		0x5D	
 #define AT_45BR3214B		/* No ID available */
 #define AT_45CS1282		0x2920
 #define AT_45D011		/* No ID available */
