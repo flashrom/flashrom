@@ -781,15 +781,15 @@ static int enable_flash_sb600(struct pci_dev *dev, const char *name)
 
 static int enable_flash_nvidia_nforce2(struct pci_dev *dev, const char *name)
 {
-    uint8_t tmp;
+	uint8_t tmp;
 
-    pci_write_byte(dev, 0x92, 0);
+	pci_write_byte(dev, 0x92, 0);
 
-    tmp = pci_read_byte(dev, 0x6d);
-    tmp |= 0x01;
-    pci_write_byte(dev, 0x6d, tmp);
+	tmp = pci_read_byte(dev, 0x6d);
+	tmp |= 0x01;
+	pci_write_byte(dev, 0x6d, tmp);
 
-    return 0;
+	return 0;
 }
 
 static int enable_flash_ck804(struct pci_dev *dev, const char *name)
