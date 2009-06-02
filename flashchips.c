@@ -400,6 +400,22 @@ struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Atmel",
+		.name		= "AT29C512",
+		.bustype	= CHIP_BUSTYPE_NONSPI,
+		.manufacture_id	= ATMEL_ID,
+		.model_id	= AT_29C512,
+		.total_size	= 64,
+		.page_size	= 128,
+		.tested		= TEST_OK_PREW,
+		.probe		= probe_jedec,
+		.erase		= erase_chip_jedec,
+		.write		= write_jedec,
+		.read		= read_memmapped,
+
+	},
+
+	{
+		.vendor		= "Atmel",
 		.name		= "AT29C010A",
 		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= ATMEL_ID,

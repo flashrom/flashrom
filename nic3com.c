@@ -46,6 +46,7 @@ struct pcidev_status nics_3com[] = {
 	{0x10b7, 0x9006, PCI_NT, "3COM", "3C90xB: PCI 10BASE-T/10BASE2 (TPC)" },
 	{0x10b7, 0x900a, PCI_NT, "3COM", "3C90xB: PCI 10BASE-FL" },
 	{0x10b7, 0x905a, PCI_NT, "3COM", "3C90xB: PCI 10BASE-FX" },
+	{0x10b7, 0x9058, PCI_NT, "3COM", "3C905B: Cyclone 10/100/BNC" },
 
 	/* 3C905C */
 	{0x10b7, 0x9200, PCI_OK, "3COM", "3C905C: EtherLink 10/100 PCI (TX)" },
@@ -65,7 +66,7 @@ int nic3com_init(void)
 
 	/* 3COM 3C90xB cards need a special fixup. */
 	if (id == 0x9055 || id == 0x9001 || id == 0x9004 || id == 0x9005
-	    || id == 0x9006 || id == 0x900a || id == 0x905a) {
+	    || id == 0x9006 || id == 0x900a || id == 0x905a || id == 0x9058) {
 		/* Select register window 3 and save the receiver status. */
 		OUTW(SELECT_REG_WINDOW + 3, io_base_addr + INT_STATUS);
 		internal_conf = INL(io_base_addr + INTERNAL_CONFIG);
@@ -90,7 +91,7 @@ int nic3com_shutdown(void)
 {
 	/* 3COM 3C90xB cards need a special fixup. */
 	if (id == 0x9055 || id == 0x9001 || id == 0x9004 || id == 0x9005
-	    || id == 0x9006 || id == 0x900a || id == 0x905a) {
+	    || id == 0x9006 || id == 0x900a || id == 0x905a || id == 0x9058) {
 		/* Select register window 3 and restore the receiver status. */
 		OUTW(SELECT_REG_WINDOW + 3, io_base_addr + INT_STATUS);
 		OUTL(internal_conf, io_base_addr + INTERNAL_CONFIG);
