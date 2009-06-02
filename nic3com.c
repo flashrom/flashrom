@@ -46,7 +46,7 @@ struct pcidev_status nics_3com[] = {
 	{0x10b7, 0x9006, PCI_NT, "3COM", "3C90xB: PCI 10BASE-T/10BASE2 (TPC)" },
 	{0x10b7, 0x900a, PCI_NT, "3COM", "3C90xB: PCI 10BASE-FL" },
 	{0x10b7, 0x905a, PCI_NT, "3COM", "3C90xB: PCI 10BASE-FX" },
-	{0x10b7, 0x9058, PCI_NT, "3COM", "3C905B: Cyclone 10/100/BNC" },
+	{0x10b7, 0x9058, PCI_OK, "3COM", "3C905B: Cyclone 10/100/BNC" },
 
 	/* 3C905C */
 	{0x10b7, 0x9200, PCI_OK, "3COM", "3C905C: EtherLink 10/100 PCI (TX)" },

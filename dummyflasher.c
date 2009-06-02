@@ -66,7 +66,7 @@ int dummy_init(void)
 	if (buses_supported == CHIP_BUSTYPE_NONE)
 		printf_debug("Support for all flash bus types disabled.\n");
 	free(dummytype);
-	return 0; 
+	return 0;
 }
 
 int dummy_shutdown(void)
