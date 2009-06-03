@@ -372,6 +372,31 @@ static int board_ibm_x3455(const char *name)
 	return 0;
 }
 
+/**
+ * Suited for the Gigabyte GA-K8N-SLI: CK804 southbridge.
+ */
+static int board_ga_k8n_sli(const char *name)
+{
+	struct pci_dev *dev;
+	uint32_t base;
+	uint8_t tmp;
+
+	dev = pci_dev_find(0x10DE, 0x0050);	/* NVIDIA CK804 LPC */
+	if (!dev) {
+		fprintf(stderr, "\nERROR: NVIDIA LPC bridge not found.\n");
+		return -1;
+	}
+
+	base = pci_read_long(dev, 0x64) & 0x0000FF00; /* System control area */
+
+	/* if anyone knows more about nvidia lpcs, feel free to explain this */
+	tmp = inb(base + 0xE1);
+	tmp |= 0x05;
+	outb(tmp, base + 0xE1);
+
+	return 0;
+}
+
 static int board_hp_dl145_g3_enable(const char *name)
 {
 	/* Set GPIO lines in the Broadcom HT-1000 southbridge. */
@@ -670,6 +695,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x8086, 0x7110,      0,      0,  0x8086, 0x7190,      0,      0, "epox",       "ep-bx3",      "EPoX",        "EP-BX3",             board_epox_ep_bx3},
 	{0x1039, 0x0761,      0,      0,       0,      0,      0,      0, "gigabyte",   "2761gxdk",    "GIGABYTE",    "GA-2761GXDK",        it87xx_probe_spi_flash},
 	{0x1106, 0x3227, 0x1458, 0x5001,  0x10ec, 0x8139, 0x1458, 0xe000, NULL,         NULL,          "GIGABYTE",    "GA-7VT600",          board_biostar_p4m80_m4},
+	{0x10DE, 0x0050, 0x1458, 0x0C11,  0x10DE, 0x005e, 0x1458, 0x5000, NULL,         NULL,          "GIGABYTE",    "GA-K8N-SLI",         board_ga_k8n_sli},
 	{0x10de, 0x0360,      0,      0,       0,      0,      0,      0, "gigabyte",   "m57sli",      "GIGABYTE",    "GA-M57SLI-S4",       it87xx_probe_spi_flash},
 	{0x10de, 0x03e0,      0,      0,       0,      0,      0,      0, "gigabyte",   "m61p",        "GIGABYTE",    "GA-M61P-S3",         it87xx_probe_spi_flash},
 	{0x1002, 0x4398, 0x1458, 0x5004,  0x1002, 0x4391, 0x1458, 0xb000, NULL,         NULL,          "GIGABYTE",    "GA-MA78G-DS3H",      it87xx_probe_spi_flash},
@@ -787,7 +813,6 @@ const struct board_info boards_bad[] = {
 	{ "Boser",		"HS-6637", },
 	{ "DFI",		"855GME-MGF", },
 	{ "FIC",		"VA-502", },
-	{ "GIGABYTE",		"GA-K8N-SLI", },
 	{ "MSI",		"MS-6178", },
 	{ "MSI",		"MS-7260 (K9N Neo)", },
 	{ "PCCHIPS",		"M537DMA33", },
