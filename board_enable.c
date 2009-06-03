@@ -390,9 +390,9 @@ static int board_ga_k8n_sli(const char *name)
 	base = pci_read_long(dev, 0x64) & 0x0000FF00; /* System control area */
 
 	/* if anyone knows more about nvidia lpcs, feel free to explain this */
-	tmp = inb(base + 0xE1);
+	tmp = INB(base + 0xE1);
 	tmp |= 0x05;
-	outb(tmp, base + 0xE1);
+	OUTB(tmp, base + 0xE1);
 
 	return 0;
 }
