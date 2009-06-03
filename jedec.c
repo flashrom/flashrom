@@ -91,6 +91,22 @@ int probe_jedec(struct flashchip *flash)
 	uint8_t id1, id2;
 	uint32_t largeid1, largeid2;
 	uint32_t flashcontent1, flashcontent2;
+	int probe_timing_enter, probe_timing_exit;
+
+	if (flash->probe_timing > 0) 
+		probe_timing_enter = probe_timing_exit = flash->probe_timing;
+	else if (flash->probe_timing == TIMING_ZERO) { /* No delay. */
+		probe_timing_enter = probe_timing_exit = 0;
+	} else if (flash->probe_timing == TIMING_FIXME) { /* == _IGNORED */
+		printf_debug("Chip lacks correct probe timing information, "
+			     "using default 10mS/40uS\n");
+		probe_timing_enter = 10000;
+		probe_timing_exit = 40;
+	} else {
+		printf("Chip has negative value in probe_timing, failing "
+		       "without chip access\n");
+		return 0;
+	}
 
 	/* Issue JEDEC Product ID Entry command */
 	chip_writeb(0xAA, bios + 0x5555);
@@ -101,7 +117,7 @@ int probe_jedec(struct flashchip *flash)
 	/* Older chips may need up to 100 us to respond. The ATMEL 29C020
 	 * needs 10 ms according to the data sheet.
 	 */
-	myusec_delay(10000);
+	myusec_delay(probe_timing_enter);
 
 	/* Read product ID */
 	id1 = chip_readb(bios);
@@ -127,7 +143,7 @@ int probe_jedec(struct flashchip *flash)
 	chip_writeb(0x55, bios + 0x2AAA);
 	myusec_delay(10);
 	chip_writeb(0xF0, bios + 0x5555);
-	myusec_delay(40);
+	myusec_delay(probe_timing_exit);
 
 	printf_debug("%s: id1 0x%02x, id2 0x%02x", __FUNCTION__, largeid1, largeid2);
 	if (!oddparity(id1))
