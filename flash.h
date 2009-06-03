@@ -155,6 +155,9 @@ struct flashchip {
 	uint32_t tested;
 
 	int (*probe) (struct flashchip *flash);
+
+	/* Delay after "enter/exit ID mode" commands in microseconds. */
+	int probe_timing;
 	int (*erase) (struct flashchip *flash);
 	int (*write) (struct flashchip *flash, uint8_t *buf);
 	int (*read) (struct flashchip *flash, uint8_t *buf);
@@ -181,6 +184,16 @@ struct flashchip {
 #define TEST_BAD_WRITE	(1 << 7)
 #define TEST_BAD_PREW	(TEST_BAD_PROBE | TEST_BAD_READ | TEST_BAD_ERASE | TEST_BAD_WRITE)
 #define TEST_BAD_MASK	0xf0
+
+/* Timing used in probe routines. ZERO is -2 to differentiate between an unset
+ * field and zero delay.
+ * 
+ * SPI devices will always have zero delay and ignore this field.
+ */
+#define TIMING_FIXME	-1
+/* this is intentionally same value as fixme */
+#define TIMING_IGNORED	-1
+#define TIMING_ZERO	-2
 
 extern struct flashchip flashchips[];
 
