@@ -97,6 +97,7 @@ Supported Flash Chips / Chipsets / Mainboards
 Please check the output of 'flashrom -L' for the list of supported
 flash chips, chipsets/southbridges, mainboards, and flash programmers.
 
+
 Website
 -------
 
