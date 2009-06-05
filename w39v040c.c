@@ -26,22 +26,22 @@ int probe_w39v040c(struct flashchip *flash)
 	uint8_t id1, id2, lock;
 
 	chip_writeb(0xAA, bios + 0x5555);
-	myusec_delay(10);
+	programmer_delay(10);
 	chip_writeb(0x55, bios + 0x2AAA);
-	myusec_delay(10);
+	programmer_delay(10);
 	chip_writeb(0x90, bios + 0x5555);
-	myusec_delay(10);
+	programmer_delay(10);
 
 	id1 = chip_readb(bios);
 	id2 = chip_readb(bios + 1);
 	lock = chip_readb(bios + 0xfff2);
 
 	chip_writeb(0xAA, bios + 0x5555);
-	myusec_delay(10);
+	programmer_delay(10);
 	chip_writeb(0x55, bios + 0x2AAA);
-	myusec_delay(10);
+	programmer_delay(10);
 	chip_writeb(0xF0, bios + 0x5555);
-	myusec_delay(40);
+	programmer_delay(40);
 
 	printf_debug("%s: id1 0x%02x, id2 0x%02x", __func__, id1, id2);
 	if (!oddparity(id1))

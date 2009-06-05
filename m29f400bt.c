@@ -26,7 +26,7 @@ void protect_m29f400bt(chipaddr bios)
 	chip_writeb(0x55, bios + 0x555);
 	chip_writeb(0xA0, bios + 0xAAA);
 
-	usleep(200);
+	programmer_delay(200);
 }
 
 void write_page_m29f400bt(chipaddr bios, uint8_t *src,
@@ -42,7 +42,7 @@ void write_page_m29f400bt(chipaddr bios, uint8_t *src,
 		/* transfer data from source to destination */
 		chip_writeb(*src, dst);
 		//chip_writeb(0xF0, bios);
-		//usleep(5);
+		//programmer_delay(5);
 		toggle_ready_jedec(dst);
 		printf
 		    ("Value in the flash at address 0x%lx = %#x, want %#x\n",
@@ -61,7 +61,7 @@ int probe_m29f400bt(struct flashchip *flash)
 	chip_writeb(0x55, bios + 0x555);
 	chip_writeb(0x90, bios + 0xAAA);
 
-	myusec_delay(10);
+	programmer_delay(10);
 
 	id1 = chip_readb(bios);
 	/* The data sheet says id2 is at (bios + 0x01) and id2 listed in
@@ -73,7 +73,7 @@ int probe_m29f400bt(struct flashchip *flash)
 	chip_writeb(0x55, bios + 0x555);
 	chip_writeb(0xF0, bios + 0xAAA);
 
-	myusec_delay(10);
+	programmer_delay(10);
 
 	printf_debug("%s: id1 0x%02x, id2 0x%02x\n", __FUNCTION__, id1, id2);
 
@@ -95,7 +95,7 @@ int erase_m29f400bt(struct flashchip *flash)
 	chip_writeb(0x55, bios + 0x555);
 	chip_writeb(0x10, bios + 0xAAA);
 
-	myusec_delay(10);
+	programmer_delay(10);
 	toggle_ready_jedec(bios);
 
 	return 0;
@@ -113,7 +113,7 @@ int block_erase_m29f400bt(chipaddr bios, chipaddr dst)
 	//chip_writeb(0x10, bios + 0xAAA);
 	chip_writeb(0x30, dst);
 
-	myusec_delay(10);
+	programmer_delay(10);
 	toggle_ready_jedec(bios);
 
 	return 0;

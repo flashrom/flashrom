@@ -35,7 +35,7 @@ void protect_stm50flw0x0x(chipaddr bios)
 	chip_writeb(0x55, bios + 0x2AAA);
 	chip_writeb(0xA0, bios + 0x5555);
 
-	usleep(200);
+	programmer_delay(200);
 }
 
 int probe_stm50flw0x0x(struct flashchip *flash)
@@ -46,11 +46,11 @@ int probe_stm50flw0x0x(struct flashchip *flash)
 
 	/* Issue JEDEC Product ID Entry command */
 	chip_writeb(0xAA, bios + 0x5555);
-	myusec_delay(10);
+	programmer_delay(10);
 	chip_writeb(0x55, bios + 0x2AAA);
-	myusec_delay(10);
+	programmer_delay(10);
 	chip_writeb(0x90, bios + 0x5555);
-	myusec_delay(40);
+	programmer_delay(40);
 
 	/* Read product ID */
 	id1 = chip_readb(bios);
@@ -72,11 +72,11 @@ int probe_stm50flw0x0x(struct flashchip *flash)
 
 	/* Issue JEDEC Product ID Exit command */
 	chip_writeb(0xAA, bios + 0x5555);
-	myusec_delay(10);
+	programmer_delay(10);
 	chip_writeb(0x55, bios + 0x2AAA);
-	myusec_delay(10);
+	programmer_delay(10);
 	chip_writeb(0xF0, bios + 0x5555);
-	myusec_delay(40);
+	programmer_delay(40);
 
 	printf_debug("%s: id1 0x%02x, id2 0x%02x\n", __FUNCTION__, largeid1,
 		     largeid2);
@@ -101,7 +101,7 @@ static void wait_stm50flw0x0x(chipaddr bios)
 	// put another command to get out of status register mode
 
 	chip_writeb(0x90, bios);
-	myusec_delay(10);
+	programmer_delay(10);
 
 	id1 = chip_readb(bios);
 
@@ -170,7 +170,7 @@ int erase_block_stm50flw0x0x(struct flashchip *flash, int offset)
 	// now start it
 	chip_writeb(0x20, bios);
 	chip_writeb(0xd0, bios);
-	myusec_delay(10);
+	programmer_delay(10);
 
 	wait_stm50flw0x0x(flash->virtual_memory);
 

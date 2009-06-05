@@ -29,7 +29,7 @@ static int erase_sector_29f040b(chipaddr bios, unsigned long address)
 	chip_writeb(0x55, bios + 0x2AA);
 	chip_writeb(0x30, bios + address);
 
-	sleep(2);
+	programmer_delay(2 * 1000 * 1000);
 
 	/* wait for Toggle bit ready         */
 	toggle_ready_jedec(bios + address);
@@ -75,7 +75,7 @@ int probe_29f040b(struct flashchip *flash)
 
 	chip_writeb(0xF0, bios);
 
-	myusec_delay(10);
+	programmer_delay(10);
 
 	printf_debug("%s: id1 0x%02x, id2 0x%02x\n", __FUNCTION__, id1, id2);
 	if (id1 == flash->manufacture_id && id2 == flash->model_id)
@@ -95,7 +95,7 @@ int erase_29f040b(struct flashchip *flash)
 	chip_writeb(0x55, bios + 0x2AA);
 	chip_writeb(0x10, bios + 0x555);
 
-	myusec_delay(10);
+	programmer_delay(10);
 	toggle_ready_jedec(bios);
 
 	return 0;

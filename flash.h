@@ -103,6 +103,8 @@ struct programmer_entry {
 	uint8_t (*chip_readb) (const chipaddr addr);
 	uint16_t (*chip_readw) (const chipaddr addr);
 	uint32_t (*chip_readl) (const chipaddr addr);
+
+	void (*delay) (int usecs);
 };
 
 extern const struct programmer_entry programmer_table[];
@@ -118,6 +120,7 @@ void chip_writel(uint32_t val, chipaddr addr);
 uint8_t chip_readb(const chipaddr addr);
 uint16_t chip_readw(const chipaddr addr);
 uint32_t chip_readl(const chipaddr addr);
+void programmer_delay(int usecs);
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 
@@ -590,7 +593,7 @@ extern const struct board_info boards_bad[];
 #define W_49V002FA		0x32
 
 /* udelay.c */
-void myusec_delay(int time);
+void myusec_delay(int usecs);
 void myusec_calibrate_delay(void);
 
 /* pcidev.c */
@@ -652,6 +655,7 @@ void mmio_writel(uint32_t val, void *addr);
 uint8_t mmio_readb(void *addr);
 uint16_t mmio_readw(void *addr);
 uint32_t mmio_readl(void *addr);
+void internal_delay(int usecs);
 void *fallback_map(const char *descr, unsigned long phys_addr, size_t len);
 void fallback_unmap(void *virt_addr, size_t len);
 void fallback_chip_writew(uint16_t val, chipaddr addr);

@@ -24,10 +24,10 @@
 // count to a billion. Time it. If it's < 1 sec, count to 10B, etc.
 unsigned long micro = 1;
 
-void myusec_delay(int time)
+void myusec_delay(int usecs)
 {
 	volatile unsigned long i;
-	for (i = 0; i < time * micro; i++) ;
+	for (i = 0; i < usecs * micro; i++) ;
 }
 
 void myusec_calibrate_delay(void)
