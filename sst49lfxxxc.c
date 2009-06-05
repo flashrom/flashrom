@@ -38,28 +38,37 @@
 #define	STATUS_ESS		(1 << 6)
 #define	STATUS_WSMS		(1 << 7)
 
-static int write_lockbits_49lfxxxc(chipaddr bios, int size,
-				   unsigned char bits)
+static int write_lockbits_49lfxxxc(chipaddr bios, int size, unsigned char bits)
 {
 	int i, left = size;
 	unsigned long address;
 
-	//printf("bios=0x%08lx\n", (unsigned long)bios);
+	printf_debug("\nbios=0x%08lx\n", bios);
 	for (i = 0; left > 65536; i++, left -= 65536) {
-		//printf("lockbits at address=0x%08lx is 0x%01x\n", (unsigned long)0xFFC00000 - size + (i * 65536) + 2, *(bios + (i * 65536) + 2) );
+		printf_debug("lockbits at address=%p is 0x%01x\n",
+			     (void *)(0xffc00000 - size + (i * 65536) + 2),
+			     chip_readb(bios + (i * 65536) + 2));
 		chip_writeb(bits, bios + (i * 65536) + 2);
 	}
 	address = i * 65536;
-	//printf("lockbits at address=0x%08lx is 0x%01x\n", (unsigned long)0xFFc00000 - size + address + 2, *(bios + address + 2) );
+	printf_debug("lockbits at address=%p is 0x%01x\n",
+		     (void *)(0xffc00000 - size + address + 2),
+		     chip_readb(bios + address + 2));
 	chip_writeb(bits, bios + address + 2);
 	address += 32768;
-	//printf("lockbits at address=0x%08lx is 0x%01x\n", (unsigned long)0xFFc00000 - size + address + 2, *(bios + address + 2) );
+	printf_debug("lockbits at address=%p is 0x%01x\n",
+		     (void *)(0xffc00000 - size + address + 2),
+		     chip_readb(bios + address + 2));
 	chip_writeb(bits, bios + address + 2);
 	address += 8192;
-	//printf("lockbits at address=0x%08lx is 0x%01x\n", (unsigned long)0xFFc00000 - size + address + 2, *(bios + address + 2) );
+	printf_debug("lockbits at address=%p is 0x%01x\n",
+		     (void *)(0xffc00000 - size + address + 2),
+		     chip_readb(bios + address + 2));
 	chip_writeb(bits, bios + address + 2);
 	address += 8192;
-	//printf("lockbits at address=0x%08lx is 0x%01x\n", (unsigned long)0xFFc00000 - size + address + 2, *(bios + address + 2) );
+	printf_debug("lockbits at address=%p is 0x%01x\n",
+		     (void *)(0xffc00000 - size + address + 2),
+		     chip_readb(bios + address + 2));
 	chip_writeb(bits, bios + address + 2);
 
 	return 0;
@@ -118,7 +127,6 @@ static int write_sector_49lfxxxc(chipaddr bios, uint8_t *src, chipaddr dst,
 int probe_49lfxxxc(struct flashchip *flash)
 {
 	chipaddr bios = flash->virtual_memory;
-
 	uint8_t id1, id2;
 
 	chip_writeb(RESET, bios);
