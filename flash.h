@@ -360,6 +360,10 @@ extern const struct board_info boards_bad[];
 #define EN_25B80		0x2014
 #define EN_25B16		0x2015
 #define EN_25B32		0x2016
+#define EN_25B64		0x2017
+#define EN_25F40		0x3113
+#define EN_25F80		0x3114
+#define EN_25F16		0x3115
 #define EN_29F512		0x7F21
 #define EN_29F010		0x7F20
 #define EN_29F040A		0x7F04
