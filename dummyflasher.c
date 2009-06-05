@@ -35,7 +35,7 @@ int dummy_init(void)
 	printf_debug("%s\n", __func__);
 
 	/* "all" is equivalent to specifying no type. */
-	if (!strcmp(dummytype, "all")) {
+	if (dummytype && (!strcmp(dummytype, "all"))) {
 		free(dummytype);
 		dummytype = NULL;
 	}
