@@ -43,9 +43,11 @@ const struct programmer_entry programmer_table[] = {
 		.chip_readb		= internal_chip_readb,
 		.chip_readw		= internal_chip_readw,
 		.chip_readl		= internal_chip_readl,
+		.chip_readn		= internal_chip_readn,
 		.chip_writeb		= internal_chip_writeb,
 		.chip_writew		= internal_chip_writew,
 		.chip_writel		= internal_chip_writel,
+		.chip_writen		= fallback_chip_writen,
 		.delay			= internal_delay,
 	},
 
@@ -57,9 +59,11 @@ const struct programmer_entry programmer_table[] = {
 		.chip_readb		= dummy_chip_readb,
 		.chip_readw		= dummy_chip_readw,
 		.chip_readl		= dummy_chip_readl,
+		.chip_readn		= dummy_chip_readn,
 		.chip_writeb		= dummy_chip_writeb,
 		.chip_writew		= dummy_chip_writew,
 		.chip_writel		= dummy_chip_writel,
+		.chip_writen		= dummy_chip_writen,
 		.delay			= internal_delay,
 	},
 
@@ -71,9 +75,11 @@ const struct programmer_entry programmer_table[] = {
 		.chip_readb		= nic3com_chip_readb,
 		.chip_readw		= fallback_chip_readw,
 		.chip_readl		= fallback_chip_readl,
+		.chip_readn		= fallback_chip_readn,
 		.chip_writeb		= nic3com_chip_writeb,
 		.chip_writew		= fallback_chip_writew,
 		.chip_writel		= fallback_chip_writel,
+		.chip_writen		= fallback_chip_writen,
 		.delay			= internal_delay,
 	},
 
@@ -85,9 +91,11 @@ const struct programmer_entry programmer_table[] = {
 		.chip_readb		= satasii_chip_readb,
 		.chip_readw		= fallback_chip_readw,
 		.chip_readl		= fallback_chip_readl,
+		.chip_readn		= fallback_chip_readn,
 		.chip_writeb		= satasii_chip_writeb,
 		.chip_writew		= fallback_chip_writew,
 		.chip_writel		= fallback_chip_writel,
+		.chip_writen		= fallback_chip_writen,
 		.delay			= internal_delay,
 	},
 
@@ -97,11 +105,13 @@ const struct programmer_entry programmer_table[] = {
 		.map_flash_region	= dummy_map,
 		.unmap_flash_region	= dummy_unmap,
 		.chip_readb		= dummy_chip_readb,
-		.chip_readw		= dummy_chip_readw,
-		.chip_readl		= dummy_chip_readl,
+		.chip_readw		= fallback_chip_readw,
+		.chip_readl		= fallback_chip_readl,
+		.chip_readn		= fallback_chip_readn,
 		.chip_writeb		= dummy_chip_writeb,
-		.chip_writew		= dummy_chip_writew,
-		.chip_writel		= dummy_chip_writel,
+		.chip_writew		= fallback_chip_writew,
+		.chip_writel		= fallback_chip_writel,
+		.chip_writen		= fallback_chip_writen,
 		.delay			= internal_delay,
 	},
 
@@ -145,6 +155,11 @@ void chip_writel(uint32_t val, chipaddr addr)
 	programmer_table[programmer].chip_writel(val, addr);
 }
 
+void chip_writen(uint8_t *buf, chipaddr addr, size_t len)
+{
+	programmer_table[programmer].chip_writen(buf, addr, len);
+}
+
 uint8_t chip_readb(const chipaddr addr)
 {
 	return programmer_table[programmer].chip_readb(addr);
@@ -158,6 +173,12 @@ uint16_t chip_readw(const chipaddr addr)
 uint32_t chip_readl(const chipaddr addr)
 {
 	return programmer_table[programmer].chip_readl(addr);
+}
+
+void chip_readn(uint8_t *buf, chipaddr addr, size_t len)
+{
+	programmer_table[programmer].chip_readn(buf, addr, len);
+	return;
 }
 
 void programmer_delay(int usecs)
@@ -174,12 +195,7 @@ void map_flash_registers(struct flashchip *flash)
 
 int read_memmapped(struct flashchip *flash, uint8_t *buf)
 {
-	int i;
-
-	/* We could do a memcpy as optimization if the flash is onboard */
-	//memcpy(buf, (const char *)flash->virtual_memory, flash->total_size * 1024);
-	for (i = 0; i < flash->total_size * 1024; i++)
-		buf[i] = chip_readb(flash->virtual_memory + i);
+	chip_readn(buf, flash->virtual_memory, flash->total_size * 1024);
 		
 	return 0;
 }
@@ -784,14 +800,10 @@ int main(int argc, char *argv[])
 	 */
 
 	// ////////////////////////////////////////////////////////////
-	/* FIXME: This memcpy will not work for SPI nor external flashers.
-	 * Convert to chip_readb.
-	 */
 	if (exclude_end_position - exclude_start_position > 0)
-		memcpy(buf + exclude_start_position,
-		       (const char *)flash->virtual_memory +
-		       exclude_start_position,
-		       exclude_end_position - exclude_start_position);
+		chip_readn(buf + exclude_start_position,
+			   flash->virtual_memory + exclude_start_position,
+			   exclude_end_position - exclude_start_position);
 
 	exclude_start_page = exclude_start_position / flash->page_size;
 	if ((exclude_start_position % flash->page_size) != 0) {
@@ -802,6 +814,7 @@ int main(int argc, char *argv[])
 
 	// This should be moved into each flash part's code to do it 
 	// cleanly. This does the job.
+	/* FIXME: Adapt to the external flasher infrastructure. */
 	handle_romentries(buf, (uint8_t *) flash->virtual_memory);
 
 	// ////////////////////////////////////////////////////////////

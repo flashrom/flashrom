@@ -220,6 +220,7 @@ int handle_romentries(uint8_t *buffer, uint8_t *content)
 		if (rom_entries[i].included)
 			continue;
 
+	/* FIXME: Adapt to the external flasher infrastructure. */
 		memcpy(buffer + rom_entries[i].start,
 		       content + rom_entries[i].start,
 		       rom_entries[i].end - rom_entries[i].start);

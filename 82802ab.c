@@ -27,6 +27,7 @@
  */
 
 #include <string.h>
+#include <stdlib.h>
 #include "flash.h"
 
 // I need that Berkeley bit-map printer
@@ -172,7 +173,12 @@ int write_82802ab(struct flashchip *flash, uint8_t *buf)
 	int total_size = flash->total_size * 1024;
 	int page_size = flash->page_size;
 	chipaddr bios = flash->virtual_memory;
+	uint8_t *tmpbuf = malloc(page_size);
 
+	if (!tmpbuf) {
+		printf("Could not allocate memory!\n");
+		exit(1);
+	}
 	printf("Programming page: \n");
 	for (i = 0; i < total_size / page_size; i++) {
 		printf
@@ -186,8 +192,8 @@ int write_82802ab(struct flashchip *flash, uint8_t *buf)
 		 * or not erased and rewritten; their data is retained also in
 		 * sudden power off situations
 		 */
-		if (!memcmp((void *)(buf + i * page_size),
-			    (void *)(bios + i * page_size), page_size)) {
+		chip_readn(tmpbuf, bios + i * page_size, page_size);
+		if (!memcmp((void *)(buf + i * page_size), tmpbuf, page_size)) {
 			printf("SKIPPED\n");
 			continue;
 		}
@@ -199,6 +205,7 @@ int write_82802ab(struct flashchip *flash, uint8_t *buf)
 	}
 	printf("\n");
 	protect_jedec(bios);
+	free(tmpbuf);
 
 	return 0;
 }
