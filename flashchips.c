@@ -427,7 +427,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Atmel",
 		.name		= "AT29C010A",
-		.bustype	= CHIP_BUSTYPE_NONSPI,
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_29C010A,
 		.total_size	= 128,
@@ -443,7 +443,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Atmel",
 		.name		= "AT29C020",
-		.bustype	= CHIP_BUSTYPE_NONSPI,
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_29C020,
 		.total_size	= 256,
@@ -459,7 +459,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Atmel",
 		.name		= "AT29C040A",
-		.bustype	= CHIP_BUSTYPE_NONSPI,
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_29C040A,
 		.total_size	= 512,
@@ -610,7 +610,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Atmel",
 		.name		= "AT49BV512",
-		.bustype	= CHIP_BUSTYPE_NONSPI,
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_49BV512,
 		.total_size	= 64,
@@ -626,7 +626,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Atmel",
 		.name		= "AT49F002(N)",
-		.bustype	= CHIP_BUSTYPE_NONSPI,
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_49F002N,
 		.total_size	= 256,
@@ -642,7 +642,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Atmel",
 		.name		= "AT49F002(N)T",
-		.bustype	= CHIP_BUSTYPE_NONSPI,
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= AT_49F002NT,
 		.total_size	= 256,
@@ -705,7 +705,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "AMIC",
 		.name		= "A29040B",
-		.bustype	= CHIP_BUSTYPE_NONSPI,
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
 		.manufacture_id	= AMIC_ID_NOPREFIX,
 		.model_id	= AMIC_A29040B,
 		.total_size	= 512,
@@ -721,7 +721,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "AMIC",
 		.name		= "A49LF040A",
-		.bustype	= CHIP_BUSTYPE_NONSPI,
+		.bustype	= CHIP_BUSTYPE_LPC,
 		.manufacture_id	= AMIC_ID_NOPREFIX,
 		.model_id	= AMIC_A49LF040A,
 		.total_size	= 512,
@@ -737,7 +737,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "EMST",
 		.name		= "F49B002UA",
-		.bustype	= CHIP_BUSTYPE_NONSPI,
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
 		.manufacture_id	= EMST_ID,
 		.model_id	= EMST_F49B002UA,
 		.total_size	= 256,
@@ -753,7 +753,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "EON",
 		.name		= "EN29F002(A)(N)B",
-		.bustype	= CHIP_BUSTYPE_NONSPI,
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
 		.manufacture_id	= EON_ID,
 		.model_id	= EN_29F002B,
 		.total_size	= 256,
@@ -769,7 +769,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "EON",
 		.name		= "EN29F002(A)(N)T",
-		.bustype	= CHIP_BUSTYPE_NONSPI,
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
 		.manufacture_id	= EON_ID,
 		.model_id	= EN_29F002T,
 		.total_size	= 256,
@@ -849,7 +849,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Intel",
 		.name		= "28F001BX-B",
-		.bustype	= CHIP_BUSTYPE_NONSPI,
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
 		.manufacture_id	= INTEL_ID,
 		.model_id	= P28F001BXB,
 		.total_size	= 128,
@@ -865,7 +865,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Intel",
 		.name		= "28F001BX-T",
-		.bustype	= CHIP_BUSTYPE_NONSPI,
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
 		.manufacture_id	= INTEL_ID,
 		.model_id	= P28F001BXT,
 		.total_size	= 128,
@@ -2436,7 +2436,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Winbond",
 		.name		= "W29C020C",
-		.bustype	= CHIP_BUSTYPE_NONSPI,
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
 		.manufacture_id	= WINBOND_ID,
 		.model_id	= W_29C020C,
 		.total_size	= 256,
@@ -2452,7 +2452,7 @@ struct flashchip flashchips[] = {
 	{
 		.vendor		= "Winbond",
 		.name		= "W29C040P",
-		.bustype	= CHIP_BUSTYPE_NONSPI,
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
 		.manufacture_id	= WINBOND_ID,
 		.model_id	= W_29C040P,
 		.total_size	= 512,
