@@ -29,7 +29,7 @@ int erase_m29f002(struct flashchip *flash)
 	chip_writeb(0xaa, bios + 0x555);
 	chip_writeb(0x55, bios + 0xaaa);
 	chip_writeb(0x10, bios + 0x555);
-	myusec_delay(10);
+	programmer_delay(10);
 	toggle_ready_jedec(bios);
 	return 0;
 }
@@ -44,7 +44,7 @@ static void rewrite_block(chipaddr bios, uint8_t *src,
 	chip_writeb(0xaa, bios + 0x555);
 	chip_writeb(0x55, bios + 0xaaa);
 	chip_writeb(0x30, dst);
-	myusec_delay(10);
+	programmer_delay(10);
 	toggle_ready_jedec(bios);
 
 	/* program */

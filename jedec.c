@@ -73,7 +73,7 @@ void unprotect_jedec(chipaddr bios)
 	chip_writeb(0x55, bios + 0x2AAA);
 	chip_writeb(0x20, bios + 0x5555);
 
-	usleep(200);
+	programmer_delay(200);
 }
 
 void protect_jedec(chipaddr bios)
@@ -82,7 +82,7 @@ void protect_jedec(chipaddr bios)
 	chip_writeb(0x55, bios + 0x2AAA);
 	chip_writeb(0xA0, bios + 0x5555);
 
-	usleep(200);
+	programmer_delay(200);
 }
 
 int probe_jedec(struct flashchip *flash)
@@ -110,14 +110,14 @@ int probe_jedec(struct flashchip *flash)
 
 	/* Issue JEDEC Product ID Entry command */
 	chip_writeb(0xAA, bios + 0x5555);
-	myusec_delay(10);
+	programmer_delay(10);
 	chip_writeb(0x55, bios + 0x2AAA);
-	myusec_delay(10);
+	programmer_delay(10);
 	chip_writeb(0x90, bios + 0x5555);
 	/* Older chips may need up to 100 us to respond. The ATMEL 29C020
 	 * needs 10 ms according to the data sheet.
 	 */
-	myusec_delay(probe_timing_enter);
+	programmer_delay(probe_timing_enter);
 
 	/* Read product ID */
 	id1 = chip_readb(bios);
@@ -139,11 +139,11 @@ int probe_jedec(struct flashchip *flash)
 
 	/* Issue JEDEC Product ID Exit command */
 	chip_writeb(0xAA, bios + 0x5555);
-	myusec_delay(10);
+	programmer_delay(10);
 	chip_writeb(0x55, bios + 0x2AAA);
-	myusec_delay(10);
+	programmer_delay(10);
 	chip_writeb(0xF0, bios + 0x5555);
-	myusec_delay(probe_timing_exit);
+	programmer_delay(probe_timing_exit);
 
 	printf_debug("%s: id1 0x%02x, id2 0x%02x", __FUNCTION__, largeid1, largeid2);
 	if (!oddparity(id1))
@@ -179,18 +179,18 @@ int erase_sector_jedec(chipaddr bios, unsigned int page)
 {
 	/*  Issue the Sector Erase command   */
 	chip_writeb(0xAA, bios + 0x5555);
-	myusec_delay(10);
+	programmer_delay(10);
 	chip_writeb(0x55, bios + 0x2AAA);
-	myusec_delay(10);
+	programmer_delay(10);
 	chip_writeb(0x80, bios + 0x5555);
-	myusec_delay(10);
+	programmer_delay(10);
 
 	chip_writeb(0xAA, bios + 0x5555);
-	myusec_delay(10);
+	programmer_delay(10);
 	chip_writeb(0x55, bios + 0x2AAA);
-	myusec_delay(10);
+	programmer_delay(10);
 	chip_writeb(0x30, bios + page);
-	myusec_delay(10);
+	programmer_delay(10);
 
 	/* wait for Toggle bit ready         */
 	toggle_ready_jedec(bios);
@@ -202,18 +202,18 @@ int erase_block_jedec(chipaddr bios, unsigned int block)
 {
 	/*  Issue the Sector Erase command   */
 	chip_writeb(0xAA, bios + 0x5555);
-	myusec_delay(10);
+	programmer_delay(10);
 	chip_writeb(0x55, bios + 0x2AAA);
-	myusec_delay(10);
+	programmer_delay(10);
 	chip_writeb(0x80, bios + 0x5555);
-	myusec_delay(10);
+	programmer_delay(10);
 
 	chip_writeb(0xAA, bios + 0x5555);
-	myusec_delay(10);
+	programmer_delay(10);
 	chip_writeb(0x55, bios + 0x2AAA);
-	myusec_delay(10);
+	programmer_delay(10);
 	chip_writeb(0x50, bios + block);
-	myusec_delay(10);
+	programmer_delay(10);
 
 	/* wait for Toggle bit ready         */
 	toggle_ready_jedec(bios);
@@ -227,18 +227,18 @@ int erase_chip_jedec(struct flashchip *flash)
 
 	/*  Issue the JEDEC Chip Erase command   */
 	chip_writeb(0xAA, bios + 0x5555);
-	myusec_delay(10);
+	programmer_delay(10);
 	chip_writeb(0x55, bios + 0x2AAA);
-	myusec_delay(10);
+	programmer_delay(10);
 	chip_writeb(0x80, bios + 0x5555);
-	myusec_delay(10);
+	programmer_delay(10);
 
 	chip_writeb(0xAA, bios + 0x5555);
-	myusec_delay(10);
+	programmer_delay(10);
 	chip_writeb(0x55, bios + 0x2AAA);
-	myusec_delay(10);
+	programmer_delay(10);
 	chip_writeb(0x10, bios + 0x5555);
-	myusec_delay(10);
+	programmer_delay(10);
 
 	toggle_ready_jedec(bios);
 

@@ -220,7 +220,7 @@ static int it8716f_spi_page_program(int block, uint8_t *buf, uint8_t *bios)
 	 * This usually takes 1-10 ms, so wait in 1 ms steps.
 	 */
 	while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
-		usleep(1000);
+		programmer_delay(1000);
 	return 0;
 }
 
@@ -245,7 +245,7 @@ int it8716f_spi_chip_write_1(struct flashchip *flash, uint8_t *buf)
 			return result;
 		spi_byte_program(i, buf[i]);
 		while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
-			myusec_delay(10);
+			programmer_delay(10);
 	}
 	/* resume normal ops... */
 	OUTB(0x20, it8716f_flashport);

@@ -37,7 +37,7 @@ int probe_en29f512(struct flashchip *flash)
 	chip_writeb(0x55, bios + 0x2AA);
 	chip_writeb(0x90, bios + 0x555);
 
-	myusec_delay(10);
+	programmer_delay(10);
 
 	id1 = chip_readb(bios + 0x100);
 	id2 = chip_readb(bios + 0x101);
@@ -70,7 +70,7 @@ int probe_en29f002a(struct flashchip *flash)
 	chip_writeb(0x55, bios + 0xAAA);
 	chip_writeb(0x90, bios + 0x555);
 
-	myusec_delay(10);
+	programmer_delay(10);
 
 	id1 = chip_readb(bios + 0x100);
 	id2 = chip_readb(bios + 0x101);
@@ -97,7 +97,7 @@ int write_en29f002a(struct flashchip *flash, uint8_t *buf)
 	chipaddr dst = bios;
 
 	//chip_writeb(0xF0, bios);
-	myusec_delay(10);
+	programmer_delay(10);
 	erase_chip_jedec(flash);
 
 	printf("Programming page: ");

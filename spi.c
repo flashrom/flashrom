@@ -425,7 +425,7 @@ int spi_chip_erase_60(struct flashchip *flash)
 	 */
 	/* FIXME: We assume spi_read_status_register will never fail. */
 	while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
-		sleep(1);
+		programmer_delay(1000 * 1000);
 	return 0;
 }
 
@@ -453,7 +453,7 @@ int spi_chip_erase_c7(struct flashchip *flash)
 	 */
 	/* FIXME: We assume spi_read_status_register will never fail. */
 	while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
-		sleep(1);
+		programmer_delay(1000 * 1000);
 	return 0;
 }
 
@@ -485,7 +485,7 @@ int spi_block_erase_52(const struct flashchip *flash, unsigned long addr)
 	 * This usually takes 100-4000 ms, so wait in 100 ms steps.
 	 */
 	while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
-		usleep(100 * 1000);
+		programmer_delay(100 * 1000);
 	return 0;
 }
 
@@ -511,7 +511,7 @@ int spi_block_erase_d8(const struct flashchip *flash, unsigned long addr)
 	 * This usually takes 100-4000 ms, so wait in 100 ms steps.
 	 */
 	while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
-		usleep(100 * 1000);
+		programmer_delay(100 * 1000);
 	return 0;
 }
 
@@ -557,7 +557,7 @@ int spi_sector_erase(const struct flashchip *flash, unsigned long addr)
 	 * This usually takes 15-800 ms, so wait in 10 ms steps.
 	 */
 	while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
-		usleep(10 * 1000);
+		programmer_delay(10 * 1000);
 	return 0;
 }
 
@@ -690,7 +690,7 @@ int spi_chip_write_1(struct flashchip *flash, uint8_t *buf)
 		spi_write_enable();
 		spi_byte_program(i, buf[i]);
 		while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
-			myusec_delay(10);
+			programmer_delay(10);
 	}
 
 	return 0;
@@ -748,13 +748,13 @@ int spi_aai_write(struct flashchip *flash, uint8_t *buf)
 		return result;
 	spi_command(6, 0, w, NULL);
 	while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
-		myusec_delay(5); /* SST25VF040B Tbp is max 10us */
+		programmer_delay(5); /* SST25VF040B Tbp is max 10us */
 	while (pos < size) {
 		w[1] = buf[pos++];
 		w[2] = buf[pos++];
 		spi_command(3, 0, w, NULL);
 		while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
-			myusec_delay(5); /* SST25VF040B Tbp is max 10us */
+			programmer_delay(5); /* SST25VF040B Tbp is max 10us */
 	}
 	spi_write_disable();
 	return 0;

@@ -46,6 +46,7 @@ const struct programmer_entry programmer_table[] = {
 		.chip_writeb		= internal_chip_writeb,
 		.chip_writew		= internal_chip_writew,
 		.chip_writel		= internal_chip_writel,
+		.delay			= internal_delay,
 	},
 
 	{
@@ -59,6 +60,7 @@ const struct programmer_entry programmer_table[] = {
 		.chip_writeb		= dummy_chip_writeb,
 		.chip_writew		= dummy_chip_writew,
 		.chip_writel		= dummy_chip_writel,
+		.delay			= internal_delay,
 	},
 
 	{
@@ -72,6 +74,7 @@ const struct programmer_entry programmer_table[] = {
 		.chip_writeb		= nic3com_chip_writeb,
 		.chip_writew		= fallback_chip_writew,
 		.chip_writel		= fallback_chip_writel,
+		.delay			= internal_delay,
 	},
 
 	{
@@ -85,6 +88,7 @@ const struct programmer_entry programmer_table[] = {
 		.chip_writeb		= satasii_chip_writeb,
 		.chip_writew		= fallback_chip_writew,
 		.chip_writel		= fallback_chip_writel,
+		.delay			= internal_delay,
 	},
 
 	{
@@ -98,6 +102,7 @@ const struct programmer_entry programmer_table[] = {
 		.chip_writeb		= dummy_chip_writeb,
 		.chip_writew		= dummy_chip_writew,
 		.chip_writel		= dummy_chip_writel,
+		.delay			= internal_delay,
 	},
 
 	{},
@@ -153,6 +158,11 @@ uint16_t chip_readw(const chipaddr addr)
 uint32_t chip_readl(const chipaddr addr)
 {
 	return programmer_table[programmer].chip_readl(addr);
+}
+
+void programmer_delay(int usecs)
+{
+	programmer_table[programmer].delay(usecs);
 }
 
 void map_flash_registers(struct flashchip *flash)
