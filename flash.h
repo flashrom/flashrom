@@ -100,10 +100,11 @@ struct programmer_entry {
 	void (*chip_writeb) (uint8_t val, chipaddr addr);
 	void (*chip_writew) (uint16_t val, chipaddr addr);
 	void (*chip_writel) (uint32_t val, chipaddr addr);
+	void (*chip_writen) (uint8_t *buf, chipaddr addr, size_t len);
 	uint8_t (*chip_readb) (const chipaddr addr);
 	uint16_t (*chip_readw) (const chipaddr addr);
 	uint32_t (*chip_readl) (const chipaddr addr);
-
+	void (*chip_readn) (uint8_t *buf, const chipaddr addr, size_t len);
 	void (*delay) (int usecs);
 };
 
@@ -117,9 +118,11 @@ void programmer_unmap_flash_region(void *virt_addr, size_t len);
 void chip_writeb(uint8_t val, chipaddr addr);
 void chip_writew(uint16_t val, chipaddr addr);
 void chip_writel(uint32_t val, chipaddr addr);
+void chip_writen(uint8_t *buf, chipaddr addr, size_t len);
 uint8_t chip_readb(const chipaddr addr);
 uint16_t chip_readw(const chipaddr addr);
 uint32_t chip_readl(const chipaddr addr);
+void chip_readn(uint8_t *buf, const chipaddr addr, size_t len);
 void programmer_delay(int usecs);
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
@@ -649,6 +652,7 @@ void internal_chip_writel(uint32_t val, chipaddr addr);
 uint8_t internal_chip_readb(const chipaddr addr);
 uint16_t internal_chip_readw(const chipaddr addr);
 uint32_t internal_chip_readl(const chipaddr addr);
+void internal_chip_readn(uint8_t *buf, const chipaddr addr, size_t len);
 void mmio_writeb(uint8_t val, void *addr);
 void mmio_writew(uint16_t val, void *addr);
 void mmio_writel(uint32_t val, void *addr);
@@ -660,8 +664,10 @@ void *fallback_map(const char *descr, unsigned long phys_addr, size_t len);
 void fallback_unmap(void *virt_addr, size_t len);
 void fallback_chip_writew(uint16_t val, chipaddr addr);
 void fallback_chip_writel(uint32_t val, chipaddr addr);
+void fallback_chip_writen(uint8_t *buf, chipaddr addr, size_t len);
 uint16_t fallback_chip_readw(const chipaddr addr);
 uint32_t fallback_chip_readl(const chipaddr addr);
+void fallback_chip_readn(uint8_t *buf, const chipaddr addr, size_t len);
 #if defined(__FreeBSD__) || defined(__DragonFly__)
 extern int io_fd;
 #endif
@@ -675,9 +681,11 @@ void dummy_unmap(void *virt_addr, size_t len);
 void dummy_chip_writeb(uint8_t val, chipaddr addr);
 void dummy_chip_writew(uint16_t val, chipaddr addr);
 void dummy_chip_writel(uint32_t val, chipaddr addr);
+void dummy_chip_writen(uint8_t *buf, chipaddr addr, size_t len);
 uint8_t dummy_chip_readb(const chipaddr addr);
 uint16_t dummy_chip_readw(const chipaddr addr);
 uint32_t dummy_chip_readl(const chipaddr addr);
+void dummy_chip_readn(uint8_t *buf, const chipaddr addr, size_t len);
 int dummy_spi_command(unsigned int writecnt, unsigned int readcnt,
 		      const unsigned char *writearr, unsigned char *readarr);
 

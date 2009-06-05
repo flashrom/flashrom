@@ -103,6 +103,18 @@ void dummy_chip_writel(uint32_t val, chipaddr addr)
 	printf_debug("%s: addr=0x%lx, val=0x%08x\n", __func__, addr, val);
 }
 
+void dummy_chip_writen(uint8_t *buf, chipaddr addr, size_t len)
+{
+	size_t i;
+	printf_debug("%s: addr=0x%lx, len=0x%08lx, writing data (hex):",
+		     __func__, addr, (unsigned long)len);
+	for (i = 0; i < len; i++) {
+		if ((i % 16) == 0)
+			printf_debug("\n");
+		printf_debug("%02x ", buf[i])
+	}
+}
+
 uint8_t dummy_chip_readb(const chipaddr addr)
 {
 	printf_debug("%s:  addr=0x%lx, returning 0xff\n", __func__, addr);
@@ -119,6 +131,14 @@ uint32_t dummy_chip_readl(const chipaddr addr)
 {
 	printf_debug("%s:  addr=0x%lx, returning 0xffffffff\n", __func__, addr);
 	return 0xffffffff;
+}
+
+void dummy_chip_readn(uint8_t *buf, const chipaddr addr, size_t len)
+{
+	printf_debug("%s:  addr=0x%lx, len=0x%lx, returning array of 0xff\n",
+		     __func__, addr, (unsigned long)len);
+	memset(buf, 0xff, len);
+	return;
 }
 
 int dummy_spi_command(unsigned int writecnt, unsigned int readcnt,
