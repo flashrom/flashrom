@@ -165,6 +165,12 @@ uint32_t internal_chip_readl(const chipaddr addr)
 	return mmio_readl((void *) addr);
 }
 
+void internal_chip_readn(uint8_t *buf, const chipaddr addr, size_t len)
+{
+	memcpy(buf, (void *)addr, len);
+	return;
+}
+
 void mmio_writeb(uint8_t val, void *addr)
 {
 	*(volatile uint8_t *) addr = val;
@@ -248,4 +254,20 @@ uint32_t fallback_chip_readl(const chipaddr addr)
 	val = chip_readw(addr);
 	val |= chip_readw(addr + 2) << 16;
 	return val;
+}
+
+void fallback_chip_writen(uint8_t *buf, chipaddr addr, size_t len)
+{
+	size_t i;
+	for (i = 0; i < len; i++)
+		chip_writeb(buf[i], addr + i);
+	return;
+}
+
+void fallback_chip_readn(uint8_t *buf, chipaddr addr, size_t len)
+{
+	size_t i;
+	for (i = 0; i < len; i++)
+		buf[i] = chip_readb(addr + i);
+	return;
 }
