@@ -53,9 +53,9 @@ int probe_82802ab(struct flashchip *flash)
 #endif
 
 	chip_writeb(0xff, bios);
-	myusec_delay(10);
+	programmer_delay(10);
 	chip_writeb(0x90, bios);
-	myusec_delay(10);
+	programmer_delay(10);
 
 	id1 = chip_readb(bios);
 	id2 = chip_readb(bios + 0x01);
@@ -65,7 +65,7 @@ int probe_82802ab(struct flashchip *flash)
 	chip_writeb(0x55, bios + 0x2AAA);
 	chip_writeb(0xF0, bios + 0x5555);
 
-	myusec_delay(10);
+	programmer_delay(10);
 
 	printf_debug("%s: id1 0x%02x, id2 0x%02x\n", __FUNCTION__, id1, id2);
 
@@ -92,7 +92,7 @@ uint8_t wait_82802ab(chipaddr bios)
 	// put another command to get out of status register mode
 
 	chip_writeb(0x90, bios);
-	myusec_delay(10);
+	programmer_delay(10);
 
 	id1 = chip_readb(bios);
 	id2 = chip_readb(bios + 0x01);
@@ -124,7 +124,7 @@ int erase_82802ab_block(struct flashchip *flash, int offset)
 	// now start it
 	chip_writeb(0x20, bios);
 	chip_writeb(0xd0, bios);
-	myusec_delay(10);
+	programmer_delay(10);
 	// now let's see what the register is
 	status = wait_82802ab(flash->virtual_memory);
 	//print_82802ab_status(status);

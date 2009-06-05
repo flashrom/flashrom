@@ -195,6 +195,18 @@ uint32_t mmio_readl(void *addr)
 	return *(volatile uint32_t *) addr;
 }
 
+void internal_delay(int usecs)
+{
+	/* If the delay is >1 s, use usleep because timing does not need to
+	 * be so precise.
+	 */
+	if (usecs > 1000000) {
+		usleep(usecs);
+	} else {
+		myusec_delay(usecs);
+	}
+}
+
 /* Fallback map() for programmers which don't need special handling */
 void *fallback_map(const char *descr, unsigned long phys_addr, size_t len)
 {

@@ -34,7 +34,7 @@ int probe_29f002(struct flashchip *flash)
 
 	chip_writeb(0xF0, bios);
 
-	myusec_delay(10);
+	programmer_delay(10);
 
 	printf_debug("%s: id1 0x%02x, id2 0x%02x\n", __FUNCTION__, id1, id2);
 	if (id1 == flash->manufacture_id && id2 == flash->model_id)
@@ -55,7 +55,7 @@ int erase_29f002(struct flashchip *flash)
 	chip_writeb(0x55, bios + 0x2AA);
 	chip_writeb(0x10, bios + 0x555);
 
-	myusec_delay(100);
+	programmer_delay(100);
 	toggle_ready_jedec(bios);
 
 	//   while ((*bios & 0x40) != 0x40)
@@ -82,7 +82,7 @@ int write_29f002(struct flashchip *flash, uint8_t *buf)
 	chipaddr dst = bios;
 
 	chip_writeb(0xF0, bios);
-	myusec_delay(10);
+	programmer_delay(10);
 	erase_29f002(flash);
 	//*bios = 0xF0;
 #if 1

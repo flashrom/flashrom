@@ -29,7 +29,7 @@ int probe_winbond_fwhub(struct flashchip *flash)
 	chip_writeb(0xAA, bios + 0x5555);
 	chip_writeb(0x55, bios + 0x2AAA);
 	chip_writeb(0x90, bios + 0x5555);
-	myusec_delay(10);
+	programmer_delay(10);
 
 	/* Read product ID */
 	id1 = chip_readb(bios);
@@ -39,7 +39,7 @@ int probe_winbond_fwhub(struct flashchip *flash)
 	chip_writeb(0xAA, bios + 0x5555);
 	chip_writeb(0x55, bios + 0x2AAA);
 	chip_writeb(0xF0, bios + 0x5555);
-	myusec_delay(10);
+	programmer_delay(10);
 
 	printf_debug("%s: id1 0x%x, id2 0x%x\n", __FUNCTION__, id1, id2);
 
@@ -108,7 +108,7 @@ int unlock_winbond_fwhub(struct flashchip *flash)
 	chip_writeb(0xAA, bios + 0x5555);
 	chip_writeb(0x55, bios + 0x2AAA);
 	chip_writeb(0x90, bios + 0x5555);
-	myusec_delay(10);
+	programmer_delay(10);
 
 	/* Read Hardware Lock Bits */
 	locking = chip_readb(bios + 0xffff2);
@@ -117,7 +117,7 @@ int unlock_winbond_fwhub(struct flashchip *flash)
 	chip_writeb(0xAA, bios + 0x5555);
 	chip_writeb(0x55, bios + 0x2AAA);
 	chip_writeb(0xF0, bios + 0x5555);
-	myusec_delay(10);
+	programmer_delay(10);
 
 	printf_debug("Lockout bits:\n");
 

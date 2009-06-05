@@ -159,7 +159,7 @@ int wbsio_spi_command(unsigned int writecnt, unsigned int readcnt,
 
 	OUTB(writearr[0], wbsio_spibase);
 	OUTB(mode, wbsio_spibase + 1);
-	myusec_delay(10);
+	programmer_delay(10);
 
 	if (!readcnt)
 		return 0;
@@ -203,7 +203,7 @@ int wbsio_spi_write_1(struct flashchip *flash, uint8_t *buf)
 	for (pos = 0; pos < size; pos++) {
 		spi_byte_program(pos, buf[pos]);
 		while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
-			myusec_delay(10);
+			programmer_delay(10);
 	}
 	spi_write_disable();
 	return 0;
