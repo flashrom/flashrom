@@ -38,38 +38,39 @@
 #define	STATUS_ESS		(1 << 6)
 #define	STATUS_WSMS		(1 << 7)
 
-static int write_lockbits_49lfxxxc(chipaddr bios, int size, unsigned char bits)
+static int write_lockbits_49lfxxxc(struct flashchip *flash, unsigned char bits)
 {
-	int i, left = size;
+	chipaddr registers = flash->virtual_registers;
+	int i, left = flash->total_size * 1024;
 	unsigned long address;
 
-	printf_debug("\nbios=0x%08lx\n", bios);
+	printf_debug("\nbios=0x%08lx\n", registers);
 	for (i = 0; left > 65536; i++, left -= 65536) {
-		printf_debug("lockbits at address=%p is 0x%01x\n",
-			     (void *)(0xffc00000 - size + (i * 65536) + 2),
-			     chip_readb(bios + (i * 65536) + 2));
-		chip_writeb(bits, bios + (i * 65536) + 2);
+		printf_debug("lockbits at address=0x%08lx is 0x%01x\n",
+			     registers + (i * 65536) + 2,
+			     chip_readb(registers + (i * 65536) + 2));
+		chip_writeb(bits, registers + (i * 65536) + 2);
 	}
 	address = i * 65536;
-	printf_debug("lockbits at address=%p is 0x%01x\n",
-		     (void *)(0xffc00000 - size + address + 2),
-		     chip_readb(bios + address + 2));
-	chip_writeb(bits, bios + address + 2);
+	printf_debug("lockbits at address=0x%08lx is 0x%01x\n",
+		     registers + address + 2,
+		     chip_readb(registers + address + 2));
+	chip_writeb(bits, registers + address + 2);
 	address += 32768;
-	printf_debug("lockbits at address=%p is 0x%01x\n",
-		     (void *)(0xffc00000 - size + address + 2),
-		     chip_readb(bios + address + 2));
-	chip_writeb(bits, bios + address + 2);
+	printf_debug("lockbits at address=0x%08lx is 0x%01x\n",
+		     registers + address + 2,
+		     chip_readb(registers + address + 2));
+	chip_writeb(bits, registers + address + 2);
 	address += 8192;
-	printf_debug("lockbits at address=%p is 0x%01x\n",
-		     (void *)(0xffc00000 - size + address + 2),
-		     chip_readb(bios + address + 2));
-	chip_writeb(bits, bios + address + 2);
+	printf_debug("lockbits at address=0x%08lx is 0x%01x\n",
+		     registers + address + 2,
+		     chip_readb(registers + address + 2));
+	chip_writeb(bits, registers + address + 2);
 	address += 8192;
-	printf_debug("lockbits at address=%p is 0x%01x\n",
-		     (void *)(0xffc00000 - size + address + 2),
-		     chip_readb(bios + address + 2));
-	chip_writeb(bits, bios + address + 2);
+	printf_debug("lockbits at address=0x%08lx is 0x%01x\n",
+		     registers + address + 2,
+		     chip_readb(registers + address + 2));
+	chip_writeb(bits, registers + address + 2);
 
 	return 0;
 }
@@ -150,11 +151,10 @@ int probe_49lfxxxc(struct flashchip *flash)
 int erase_49lfxxxc(struct flashchip *flash)
 {
 	chipaddr bios = flash->virtual_memory;
-	chipaddr registers = flash->virtual_registers;
 	int i;
 	unsigned int total_size = flash->total_size * 1024;
 
-	write_lockbits_49lfxxxc(registers, total_size, 0);
+	write_lockbits_49lfxxxc(flash, 0);
 	for (i = 0; i < total_size; i += flash->page_size)
 		if (erase_sector_49lfxxxc(bios, i) != 0)
 			return (-1);
@@ -171,7 +171,7 @@ int write_49lfxxxc(struct flashchip *flash, uint8_t *buf)
 	int page_size = flash->page_size;
 	chipaddr bios = flash->virtual_memory;
 
-	write_lockbits_49lfxxxc(flash->virtual_registers, total_size, 0);
+	write_lockbits_49lfxxxc(flash, 0);
 	printf("Programming page: ");
 	for (i = 0; i < total_size / page_size; i++) {
 		/* erase the page before programming */
