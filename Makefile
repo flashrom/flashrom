@@ -25,6 +25,7 @@ INSTALL = install
 PREFIX  ?= /usr/local
 MANDIR  ?= $(PREFIX)/share/man
 CFLAGS  ?= -Os -Wall -Werror
+EXPORTDIR ?= .
 
 OS_ARCH	= $(shell uname)
 ifneq ($(OS_ARCH), SunOS)
@@ -53,8 +54,13 @@ all: pciutils dep $(PROGRAM)
 
 # Set the flashrom version string from the highest revision number
 # of the checked out flashrom files.
-SVNDEF := -D'FLASHROM_VERSION="0.9.0-r$(shell svnversion -cn . \
-          | sed -e "s/.*://" -e "s/\([0-9]*\).*/\1/")"'
+# Note to packagers: Any tree exported with "make export" or "make tarball"
+# will not require subversion. The downloadable snapshots are already exported.
+SVNVERSION := $(shell LANG=C svnversion -cn . | sed -e "s/.*://" -e "s/\([0-9]*\).*/\1/" | grep "[0-9]" || echo unknown)
+
+VERSION := 0.9.0-r$(SVNVERSION)
+
+SVNDEF := -D'FLASHROM_VERSION="$(VERSION)"'
 
 $(PROGRAM): $(OBJS)
 	$(CC) $(LDFLAGS) -o $(PROGRAM) $(OBJS) $(LIBS)
@@ -93,6 +99,17 @@ install: $(PROGRAM)
 	$(INSTALL) -m 0755 $(PROGRAM) $(DESTDIR)$(PREFIX)/sbin
 	$(INSTALL) -m 0644 $(PROGRAM).8 $(DESTDIR)$(MANDIR)/man8
 
-.PHONY: all clean distclean dep pciutils
+export:
+	@rm -rf $(EXPORTDIR)/flashrom-$(VERSION)
+	@svn export -r BASE . $(EXPORTDIR)/flashrom-$(VERSION)
+	@sed "s/^SVNVERSION.*/SVNVERSION := $(SVNVERSION)/" Makefile >$(EXPORTDIR)/flashrom-$(VERSION)/Makefile
+	@echo Exported $(EXPORTDIR)/flashrom-$(VERSION)/
+
+tarball: export
+	@tar cfz $(EXPORTDIR)/flashrom-$(VERSION).tar.gz -C $(EXPORTDIR)/ flashrom-$(VERSION)/
+	@rm -rf $(EXPORTDIR)/flashrom-$(VERSION)
+	@echo Created $(EXPORTDIR)/flashrom-$(VERSION).tar.gz
+
+.PHONY: all clean distclean dep pciutils export tarball
 
 -include .dependencies

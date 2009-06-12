@@ -15,6 +15,25 @@ or SPI.
 (see http://coreboot.org for details on coreboot)
 
 
+Packaging
+---------
+
+To package flashrom and remove dependencies on subversion, either use
+make export
+or
+make tarball
+
+make export will export all flashrom files from the subversion repository at
+revision BASE into a directory named $EXPORTDIR/flashrom-$VERSION-r$SVNREVISION
+and will additionally modify the Makefile in that directory to contain the svn
+revision of the exported tree.
+
+make tarball will simply tar up the result of make export and gzip compress it.
+
+The snapshot tarballs are the result of make tarball and require no further
+processing.
+
+
 Build Instructions
 ------------------
 
