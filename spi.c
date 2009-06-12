@@ -616,6 +616,27 @@ void spi_byte_program(int address, uint8_t byte)
 	spi_command(sizeof(cmd), 0, cmd, NULL);
 }
 
+int spi_nbyte_program(int address, uint8_t *bytes, int len)
+{
+	unsigned char cmd[JEDEC_BYTE_PROGRAM_OUTSIZE - 1 + 256] = {
+		JEDEC_BYTE_PROGRAM,
+		(address >> 16) & 0xff,
+		(address >> 8) & 0xff,
+		(address >> 0) & 0xff,
+	};
+
+	if (len > 256) {
+		printf_debug ("%s called for too long a write\n",
+		     __FUNCTION__);
+		return 1;
+	}
+
+	memcpy(&cmd[4], bytes, len);
+
+	/* Send Byte-Program */
+	return spi_command(4 + len, 0, cmd, NULL);
+}
+
 int spi_disable_blockprotect(void)
 {
 	uint8_t status;

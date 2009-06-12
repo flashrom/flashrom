@@ -757,6 +757,7 @@ int spi_chip_read(struct flashchip *flash, uint8_t *buf);
 uint8_t spi_read_status_register(void);
 int spi_disable_blockprotect(void);
 void spi_byte_program(int address, uint8_t byte);
+int spi_nbyte_program(int address, uint8_t *bytes, int len);
 int spi_nbyte_read(int address, uint8_t *bytes, int len);
 int spi_aai_write(struct flashchip *flash, uint8_t *buf);
 uint32_t spi_get_valid_read_addr(void);
