@@ -2,7 +2,7 @@
 .SH NAME
 flashrom \- detect, read, write, verify and erase flash chips
 .SH SYNOPSIS
-.B flashrom \fR[\fB\-EVfLhR\fR] [\fB\-r\fR file] [\fB\-w\fR file] [\fB\-v\fR file]
+.B flashrom \fR[\fB\-VfLhR\fR] [\fB\-E\fR|\fB\-r\fR file|\fB\-w\fR file|\fB\-v\fR file]
          [\fB\-c\fR chipname] [\fB\-s\fR addr] [\fB\-e\fR addr] [\fB\-m\fR [vendor:]part]
          [\fB\-l\fR file] [\fB\-i\fR image] [\fB\-p\fR programmer] [file]
 .SH DESCRIPTION
@@ -25,7 +25,8 @@ Please note that the command line interface for flashrom will change before
 flashrom 1.0. Do not use flashrom in scripts or other automated tools without
 checking that your flashrom version won't interpret options in a different way.
 .PP
-If no file is specified, then all that happens
+You can specify one of -E, -r, -w, -v or no operation.
+If no operation is specified, then all that happens
 is that flash info is dumped and the flash chip is set to writable.
 .TP
 .B "\-r, \-\-read <file>"
