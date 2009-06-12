@@ -820,11 +820,13 @@ int main(int argc, char *argv[])
 	// ////////////////////////////////////////////////////////////
 
 	if (write_it) {
+		printf("Writing flash chip... ");
 		if (!flash->write) {
 			fprintf(stderr, "Error: flashrom has no write function for this flash chip.\n");
 			return 1;
 		}
 		ret |= flash->write(flash, buf);
+		if (!ret) printf("COMPLETE.\n");
 	}
 
 	if (verify_it)
