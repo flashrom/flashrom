@@ -385,6 +385,8 @@ extern const struct board_info boards_bad[];
 #define IM_29F004T		0xAF
 
 #define INTEL_ID		0x89	/* Intel */
+#define I_82802AB			0xAD
+#define I_82802AC			0xAC
 #define P28F001BXT		0x94	/* 28F001BX-T */
 #define P28F001BXB		0x95	/* 28F001BX-B */
 
@@ -503,7 +505,7 @@ extern const struct board_info boards_bad[];
 #define SST_29EE512		0x5D
 #define SST_29EE010		0x07
 #define SST_29LE010		0x08	/* also SST29VE010 */
-#define SST_29EE020A		0x10
+#define SST_29EE020A		0x10	/* also SST29EE020 */
 #define SST_29LE020		0x12	/* also SST29VE020 */
 #define SST_29SF020		0x24
 #define SST_29VF020		0x25
@@ -516,6 +518,7 @@ extern const struct board_info boards_bad[];
 #define SST_39VF010		0xD5
 #define SST_39VF020		0xD6
 #define SST_39VF040		0xD7
+#define SST_39VF080		0xD8
 #define SST_49LF040B		0x50
 #define SST_49LF040		0x51
 #define SST_49LF020		0x61
@@ -545,6 +548,11 @@ extern const struct board_info boards_bad[];
 #define ST_M25P32		0x2016
 #define ST_M25P64		0x2017
 #define ST_M25P128		0x2018
+#define ST_M25PE10		0x8011
+#define ST_M25PE20		0x8012
+#define ST_M25PE40		0x8013
+#define ST_M25PE80		0x8014
+#define ST_M25PE16		0x8015
 #define ST_M50FLW040A		0x08
 #define ST_M50FLW040B		0x28
 #define ST_M50FLW080A		0x80
@@ -592,6 +600,7 @@ extern const struct board_info boards_bad[];
 #define W_39V040FA		0x34
 #define W_39V040A		0x3D
 #define W_39V040B		0x54
+#define W_39V040C		0x50
 #define W_39V080A		0xD0
 #define W_39V080FA		0xD3
 #define W_39V080FA_DM		0x93
