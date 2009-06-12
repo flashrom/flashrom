@@ -471,7 +471,7 @@ void print_supported_chips(void)
 
 void usage(const char *name)
 {
-	printf("usage: %s [-EVfLhR] [-r file] [-w file] [-v file] [-c chipname] [-s addr]\n"
+	printf("usage: %s [-VfLhR] [-E|-r file|-w file|-v file] [-c chipname] [-s addr]\n"
 	       "       [-e addr] [-m [vendor:]part] [-l file] [-i image] [-p programmer] [file]\n\n",
 	       name);
 
@@ -498,7 +498,8 @@ void usage(const char *name)
 	     "                                     (internal, dummy, nic3com, satasii, it87spi)\n"
 	     "   -h | --help:                      print this help text\n"
 	     "   -R | --version:                   print the version (release)\n"
-	     "\nIf no file is specified, then all that happens"
+	     "\nYou can specify one of -E, -r, -w, -v or no operation.\n"
+	     "If no operation is specified, then all that happens"
 	     " is that flash info is dumped.\n\n");
 	exit(1);
 }
@@ -520,6 +521,7 @@ int main(int argc, char *argv[])
 	int force = 0;
 	int read_it = 0, write_it = 0, erase_it = 0, verify_it = 0;
 	int list_supported = 0;
+	int operation_specified = 0;
 	int ret = 0, i;
 
 	static struct option long_options[] = {
@@ -562,12 +564,27 @@ int main(int argc, char *argv[])
 				  long_options, &option_index)) != EOF) {
 		switch (opt) {
 		case 'r':
+			if (++operation_specified > 1) {
+				fprintf(stderr, "More than one operation "
+					"specified. Aborting.\n");
+				exit(1);
+			}
 			read_it = 1;
 			break;
 		case 'w':
+			if (++operation_specified > 1) {
+				fprintf(stderr, "More than one operation "
+					"specified. Aborting.\n");
+				exit(1);
+			}
 			write_it = 1;
 			break;
 		case 'v':
+			if (++operation_specified > 1) {
+				fprintf(stderr, "More than one operation "
+					"specified. Aborting.\n");
+				exit(1);
+			}
 			verify_it = 1;
 			break;
 		case 'c':
@@ -577,6 +594,11 @@ int main(int argc, char *argv[])
 			verbose = 1;
 			break;
 		case 'E':
+			if (++operation_specified > 1) {
+				fprintf(stderr, "More than one operation "
+					"specified. Aborting.\n");
+				exit(1);
+			}
 			erase_it = 1;
 			break;
 		case 's':
