@@ -200,6 +200,11 @@ int read_memmapped(struct flashchip *flash, uint8_t *buf)
 	return 0;
 }
 
+int min(int a, int b)
+{
+	return (a < b) ? a : b;
+}
+
 char *strcat_realloc(char *dest, const char *src)
 {
 	dest = realloc(dest, strlen(dest) + strlen(src) + 1);

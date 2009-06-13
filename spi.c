@@ -673,6 +673,33 @@ int spi_nbyte_read(int address, uint8_t *bytes, int len)
 	return spi_command(sizeof(cmd), len, cmd, bytes);
 }
 
+/*
+ * Read a complete flash chip.
+ * Each page is read separately in chunks with a maximum size of chunksize.
+ */
+int spi_read_chunked(struct flashchip *flash, uint8_t *buf, int chunksize)
+{
+	int rc = 0;
+	int i, j;
+	int total_size = flash->total_size * 1024;
+	int page_size = flash->page_size;
+	int toread;
+
+	for (j = 0; j < total_size / page_size; j++) {
+		for (i = 0; i < page_size; i += chunksize) {
+			toread = min(chunksize, page_size - i);
+			rc = spi_nbyte_read(j * page_size + i,
+					    buf + j * page_size + i, toread);
+			if (rc)
+				break;
+		}
+		if (rc)
+			break;
+	}
+
+	return rc;
+}
+
 int spi_chip_read(struct flashchip *flash, uint8_t *buf)
 {
 	switch (spi_controller) {

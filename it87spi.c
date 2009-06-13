@@ -260,18 +260,12 @@ int it8716f_spi_chip_write_1(struct flashchip *flash, uint8_t *buf)
 int it8716f_spi_chip_read(struct flashchip *flash, uint8_t *buf)
 {
 	int total_size = 1024 * flash->total_size;
-	int i;
 	fast_spi = 0;
 
 	if ((programmer == PROGRAMMER_IT87SPI) || (total_size > 512 * 1024)) {
-		for (i = 0; i < total_size; i += 3) {
-			int toread = 3;
-			if (total_size - i < toread)
-				toread = total_size - i;
-			spi_nbyte_read(i, buf + i, toread);
-		}
+		spi_read_chunked(flash, buf, 3);
 	} else {
-		memcpy(buf, (const char *)flash->virtual_memory, total_size);
+		read_memmapped(flash, buf);
 	}
 
 	return 0;

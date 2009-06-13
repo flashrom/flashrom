@@ -41,14 +41,8 @@ uint8_t *sb600_spibar;
 
 int sb600_spi_read(struct flashchip *flash, uint8_t *buf)
 {
-	int rc = 0, i;
-	int total_size = flash->total_size * 1024;
-	int page_size = 8;
-
-	for (i = 0; i < total_size / page_size; i++)
-		spi_nbyte_read(i * page_size, (void *)(buf + i * page_size),
-			       page_size);
-	return rc;
+	/* Maximum read length is 8 bytes. */
+	return spi_read_chunked(flash, buf, 8);
 }
 
 uint8_t sb600_read_status_register(void)
