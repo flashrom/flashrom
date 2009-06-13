@@ -721,6 +721,7 @@ extern int verbose;
 #define printf_debug(x...) { if (verbose) printf(x); }
 void map_flash_registers(struct flashchip *flash);
 int read_memmapped(struct flashchip *flash, uint8_t *buf);
+int min(int a, int b);
 extern char *pcidev_bdf;
 
 /* layout.c */
@@ -768,6 +769,7 @@ int spi_disable_blockprotect(void);
 void spi_byte_program(int address, uint8_t byte);
 int spi_nbyte_program(int address, uint8_t *bytes, int len);
 int spi_nbyte_read(int address, uint8_t *bytes, int len);
+int spi_read_chunked(struct flashchip *flash, uint8_t *buf, int chunksize);
 int spi_aai_write(struct flashchip *flash, uint8_t *buf);
 uint32_t spi_get_valid_read_addr(void);
 
