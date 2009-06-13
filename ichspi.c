@@ -148,8 +148,6 @@ static int generate_opcodes(OPCODES * op);
 static int program_opcodes(OPCODES * op);
 static int run_opcode(OPCODE op, uint32_t offset,
 		      uint8_t datalength, uint8_t * data);
-static int ich_spi_read_page(struct flashchip *flash, uint8_t * buf,
-			     int offset, int maxdata);
 static int ich_spi_write_page(struct flashchip *flash, uint8_t * bytes,
 			      int offset, int maxdata);
 
@@ -614,38 +612,6 @@ static int run_opcode(OPCODE op, uint32_t offset,
 	return -1;
 }
 
-static int ich_spi_read_page(struct flashchip *flash, uint8_t * buf, int offset,
-			     int maxdata)
-{
-	int page_size = flash->page_size;
-	uint32_t remaining = flash->page_size;
-	int a;
-
-	printf_debug("ich_spi_read_page: offset=%d, number=%d, buf=%p\n",
-		     offset, page_size, buf);
-
-	for (a = 0; a < page_size; a += maxdata) {
-		if (remaining < maxdata) {
-
-			if (spi_nbyte_read(offset + (page_size - remaining),
-				&buf[page_size - remaining], remaining)) {
-				printf_debug("Error reading");
-				return 1;
-			}
-			remaining = 0;
-		} else {
-			if (spi_nbyte_read(offset + (page_size - remaining),
-				&buf[page_size - remaining], maxdata)) {
-				printf_debug("Error reading");
-				return 1;
-			}
-			remaining -= maxdata;
-		}
-	}
-
-	return 0;
-}
-
 static int ich_spi_write_page(struct flashchip *flash, uint8_t * bytes,
 			      int offset, int maxdata)
 {
@@ -683,21 +649,12 @@ static int ich_spi_write_page(struct flashchip *flash, uint8_t * bytes,
 
 int ich_spi_read(struct flashchip *flash, uint8_t * buf)
 {
-	int i, rc = 0;
-	int total_size = flash->total_size * 1024;
-	int page_size = flash->page_size;
 	int maxdata = 64;
 
-	if (spi_controller == SPI_CONTROLLER_VIA) {
+	if (spi_controller == SPI_CONTROLLER_VIA)
 		maxdata = 16;
-	}
 
-	for (i = 0; (i < total_size / page_size) && (rc == 0); i++) {
-		rc = ich_spi_read_page(flash, (void *)(buf + i * page_size),
-				       i * page_size, maxdata);
-	}
-
-	return rc;
+	return spi_read_chunked(flash, buf, maxdata);
 }
 
 int ich_spi_write_256(struct flashchip *flash, uint8_t * buf)

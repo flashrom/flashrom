@@ -177,12 +177,12 @@ int wbsio_spi_read(struct flashchip *flash, uint8_t *buf)
 {
 	int size = flash->total_size * 1024;
 
-	if (flash->total_size > 1024) {
+	if (size > 1024 * 1024) {
 		fprintf(stderr, "%s: Winbond saved on 4 register bits so max chip size is 1024 KB!\n", __func__);
 		return 1;
 	}
 
-	memcpy(buf, (const char *)flash->virtual_memory, size);
+	read_memmapped(flash, buf);
 	return 0;
 }
 
