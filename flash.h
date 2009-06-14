@@ -453,6 +453,8 @@ extern const struct board_info boards_bad[];
 #define PMC_25LV040		0x7E
 #define PMC_25LV080B		0x13
 #define PMC_25LV016B		0x14
+#define PMC_29F002T		0x1D
+#define PMC_29F002B		0x2D
 #define PMC_39LV512		0x1B
 #define PMC_39F010		0x1C	/* also Pm39LV010 */
 #define PMC_39LV020		0x3D
@@ -782,6 +784,9 @@ int write_82802ab(struct flashchip *flash, uint8_t *buf);
 int probe_29f040b(struct flashchip *flash);
 int erase_29f040b(struct flashchip *flash);
 int write_29f040b(struct flashchip *flash, uint8_t *buf);
+
+/* pm29f002.c */
+int write_pm29f002(struct flashchip *flash, uint8_t *buf);
 
 /* en29f002a.c */
 int probe_en29f002a(struct flashchip *flash);
