@@ -1514,6 +1514,38 @@ struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "PMC",
+		.name		= "Pm29F0002T",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= PMC_ID_NOPREFIX,
+		.model_id	= PMC_29F002T,
+		.total_size	= 256,
+		.page_size	= 8192,
+		.tested		= TEST_OK_PREW,
+		.probe		= probe_29f040b,
+		.probe_timing	= TIMING_FIXME, 
+		.erase		= erase_29f040b,
+		.write		= write_pm29f002,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "PMC",
+		.name		= "Pm29F0002B",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= PMC_ID_NOPREFIX,
+		.model_id	= PMC_29F002B,
+		.total_size	= 256,
+		.page_size	= 8192,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_29f040b,
+		.probe_timing	= TIMING_FIXME, 
+		.erase		= erase_29f040b,
+		.write		= write_pm29f002,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "PMC",
 		.name		= "Pm39LV010",
 		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= PMC_ID_NOPREFIX,
