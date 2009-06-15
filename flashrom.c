@@ -28,6 +28,7 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include "flash.h"
+#include "flashchips.h"
 
 char *chip_to_probe = NULL;
 int exclude_start_page, exclude_end_page;
