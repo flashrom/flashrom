@@ -29,6 +29,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "flash.h"
+#include "flashchips.h"
 
 void protect_stm50flw0x0x(chipaddr bios)
 {
