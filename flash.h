@@ -4,6 +4,7 @@
  * Copyright (C) 2000 Silicon Integrated System Corporation
  * Copyright (C) 2000 Ronald G. Minnich <rminnich@gmail.com>
  * Copyright (C) 2005-2007 coresystems GmbH <stepan@coresystems.de>
+ * Copyright (C) 2006-2009 Carl-Daniel Hailfinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -353,17 +354,22 @@ extern const struct board_info boards_bad[];
  */
 #define EON_ID			0x7F1C	/* EON Silicon Devices */
 #define EON_ID_NOPREFIX		0x1C	/* EON, missing 0x7F prefix */
-#define EN_25B05		0x2010	/* 2^19 kbit or 2^16 kByte */
-#define EN_25B10		0x2011
-#define EN_25B20		0x2012
-#define EN_25B40		0x2013
-#define EN_25B80		0x2014
-#define EN_25B16		0x2015
-#define EN_25B32		0x2016
-#define EN_25B64		0x2017
+#define EN_25B05		0x2010	/* also P05, 2^19 kbit or 2^16 kByte */
+#define EN_25B10		0x2011	/* also P10 */
+#define EN_25B20		0x2012	/* also P20 */
+#define EN_25B40		0x2013	/* also P40 */
+#define EN_25B80		0x2014	/* also P80 */
+#define EN_25B16		0x2015	/* also P16 */
+#define EN_25B32		0x2016	/* also P32 */
+#define EN_25B64		0x2017	/* also P64 */
+#define EN_25D16		0x3015
+#define EN_25F05		0x3110
+#define EN_25F10		0x3111
+#define EN_25F20		0x3112
 #define EN_25F40		0x3113
 #define EN_25F80		0x3114
 #define EN_25F16		0x3115
+#define EN_25F32		0x3116
 #define EN_29F512		0x7F21
 #define EN_29F010		0x7F20
 #define EN_29F040A		0x7F04
