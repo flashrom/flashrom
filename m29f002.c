@@ -31,12 +31,19 @@ int erase_m29f002(struct flashchip *flash)
 	chip_writeb(0x10, bios + 0x555);
 	programmer_delay(10);
 	toggle_ready_jedec(bios);
+	if (check_erased_range(flash, 0, flash->total_size * 1024)) {
+		fprintf(stderr, "ERASE FAILED!\n");
+		return -1;
+	}
 	return 0;
 }
 
-static void rewrite_block(chipaddr bios, uint8_t *src,
-			  chipaddr dst, int size)
+static int rewrite_block(struct flashchip *flash, uint8_t *src,
+			  unsigned long start, int size)
 {
+	chipaddr bios = flash->virtual_memory;
+	chipaddr dst = bios + start;
+
 	/* erase */
 	chip_writeb(0xaa, bios + 0x555);
 	chip_writeb(0x55, bios + 0xaaa);
@@ -46,6 +53,10 @@ static void rewrite_block(chipaddr bios, uint8_t *src,
 	chip_writeb(0x30, dst);
 	programmer_delay(10);
 	toggle_ready_jedec(bios);
+	if (check_erased_range(flash, start, size)) {
+		fprintf(stderr, "ERASE FAILED!\n");
+		return -1;
+	}
 
 	/* program */
 	while (size--) {
@@ -57,20 +68,24 @@ static void rewrite_block(chipaddr bios, uint8_t *src,
 		dst++;
 		src++;
 	}
+	return 0;
 }
 
-static void do_block(chipaddr bios, uint8_t *src, int i,
+static int do_block(struct flashchip *flash, uint8_t *src, int i,
 		     unsigned long start, int size)
 {
+	int ret;
 	printf("%d at address: 0x%08lx", i, start);
-	rewrite_block(bios, src + start, bios + start, size);
+	ret = rewrite_block(flash, src + start, start, size);
+	if (ret)
+		return ret;
 	printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+	return 0;
 }
 
 int write_m29f002t(struct flashchip *flash, uint8_t *buf)
 {
 	int i, page_size = flash->page_size;
-	chipaddr bios = flash->virtual_memory;
 
 	/* M29F002(N)T has 7 blocks. From bottom to top their sizes are:
 	 * 64k 64k 64k 32k 8k 8k 16k
@@ -79,11 +94,11 @@ int write_m29f002t(struct flashchip *flash, uint8_t *buf)
 
 	printf("Programming block: ");
 	for (i = 0; i < 3; i++)
-		do_block(bios, buf, i, i * page_size, page_size);
-	do_block(bios, buf, i++, 0x30000, 32 * 1024);
-	do_block(bios, buf, i++, 0x38000, 8 * 1024);
-	do_block(bios, buf, i++, 0x3a000, 8 * 1024);
-	do_block(bios, buf, i, 0x3c000, 16 * 1024);
+		do_block(flash, buf, i, i * page_size, page_size);
+	do_block(flash, buf, i++, 0x30000, 32 * 1024);
+	do_block(flash, buf, i++, 0x38000, 8 * 1024);
+	do_block(flash, buf, i++, 0x3a000, 8 * 1024);
+	do_block(flash, buf, i, 0x3c000, 16 * 1024);
 
 	printf("\n");
 	return 0;
@@ -92,7 +107,6 @@ int write_m29f002t(struct flashchip *flash, uint8_t *buf)
 int write_m29f002b(struct flashchip *flash, uint8_t *buf)
 {
 	int i = 0, page_size = flash->page_size;
-	chipaddr bios = flash->virtual_memory;
 
 	/* M29F002B has 7 blocks. From bottom to top their sizes are:
 	 * 16k 8k 8k 32k 64k 64k 64k
@@ -100,12 +114,12 @@ int write_m29f002b(struct flashchip *flash, uint8_t *buf)
 	 */
 
 	printf("Programming block: ");
-	do_block(bios, buf, i++, 0x00000, 16 * 1024);
-	do_block(bios, buf, i++, 0x04000, 8 * 1024);
-	do_block(bios, buf, i++, 0x06000, 8 * 1024);
-	do_block(bios, buf, i++, 0x08000, 32 * 1024);
+	do_block(flash, buf, i++, 0x00000, 16 * 1024);
+	do_block(flash, buf, i++, 0x04000, 8 * 1024);
+	do_block(flash, buf, i++, 0x06000, 8 * 1024);
+	do_block(flash, buf, i++, 0x08000, 32 * 1024);
 	for (; i < 7; i++)
-		do_block(bios, buf, i, (i - 3) * page_size, page_size);
+		do_block(flash, buf, i, (i - 3) * page_size, page_size);
 
 	printf("\n");
 	return 0;

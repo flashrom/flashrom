@@ -124,6 +124,10 @@ int erase_lhf00l04_block(struct flashchip *flash, int offset)
 	print_lhf00l04_status(status);
 	printf("DONE BLOCK 0x%x\n", offset);
 
+	if (check_erased_range(flash, offset, flash->page_size)) {
+		fprintf(stderr, "ERASE FAILED!\n");
+		return -1;
+	}
 	return 0;
 }
 
@@ -135,7 +139,10 @@ int erase_lhf00l04(struct flashchip *flash)
 	printf("total_size is %d; flash->page_size is %d\n",
 	       total_size, flash->page_size);
 	for (i = 0; i < total_size; i += flash->page_size)
-		erase_lhf00l04_block(flash, i);
+		if (erase_lhf00l04_block(flash, i)) {
+			fprintf(stderr, "ERASE FAILED!\n");
+			return -1;
+		}
 	printf("DONE ERASE\n");
 
 	return 0;
@@ -161,9 +168,8 @@ int write_lhf00l04(struct flashchip *flash, uint8_t *buf)
 	int page_size = flash->page_size;
 	chipaddr bios = flash->virtual_memory;
 
-	erase_lhf00l04(flash);
-	if (chip_readb(bios) != 0xff) {
-		printf("ERASE FAILED!\n");
+	if (erase_lhf00l04(flash)) {
+		fprintf(stderr, "ERASE FAILED!\n");
 		return -1;
 	}
 	printf("Programming page: ");

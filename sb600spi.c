@@ -63,7 +63,10 @@ int sb600_spi_write_1(struct flashchip *flash, uint8_t *buf)
 
 	/* Erase first */
 	printf("Erasing flash before programming... ");
-	flash->erase(flash);
+	if (flash->erase(flash)) {
+		fprintf(stderr, "ERASE FAILED!\n");
+		return -1;
+	}
 	printf("done.\n");
 
 	printf("Programming flash");

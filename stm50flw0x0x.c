@@ -164,7 +164,6 @@ int unlock_block_stm50flw0x0x(struct flashchip *flash, int offset)
 int erase_block_stm50flw0x0x(struct flashchip *flash, int offset)
 {
 	chipaddr bios = flash->virtual_memory + offset;
-	int j;
 
 	// clear status register
 	chip_writeb(0x50, bios);
@@ -176,13 +175,10 @@ int erase_block_stm50flw0x0x(struct flashchip *flash, int offset)
 
 	wait_stm50flw0x0x(flash->virtual_memory);
 
-	for (j = 0; j < flash->page_size; j++) {
-		if (chip_readb(bios + j) != 0xFF) {
-			printf("Erase failed at 0x%x\n", offset + j);
-			return -1;
-		}
+	if (check_erased_range(flash, offset, flash->page_size)) {
+		fprintf(stderr, "ERASE FAILED!\n");
+		return -1;
 	}
-
 	printf("DONE BLOCK 0x%x\n", offset);
 
 	return 0;
@@ -231,24 +227,29 @@ int write_page_stm50flw0x0x(chipaddr bios, uint8_t *src,
  */
 int erase_stm50flw0x0x(struct flashchip *flash)
 {
-	int i, rc = 0;
+	int i;
 	int total_size = flash->total_size * 1024;
 	int page_size = flash->page_size;
 	chipaddr bios = flash->virtual_memory;
 
 	printf("Erasing page:\n");
-	for (i = 0; (i < total_size / page_size) && (rc == 0); i++) {
+	for (i = 0; i < total_size / page_size; i++) {
 		printf
 		    ("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
 		printf("%04d at address: 0x%08x ", i, i * page_size);
-		rc = unlock_block_stm50flw0x0x(flash, i * page_size);
-		if (!rc)
-			rc = erase_block_stm50flw0x0x(flash, i * page_size);
+		if (unlock_block_stm50flw0x0x(flash, i * page_size)) {
+			fprintf(stderr, "UNLOCK FAILED!\n");
+			return -1;
+		}
+		if (erase_block_stm50flw0x0x(flash, i * page_size)) {
+			fprintf(stderr, "ERASE FAILED!\n");
+			return -1;
+		}
 	}
 	printf("\n");
 	protect_stm50flw0x0x(bios);
 
-	return rc;
+	return 0;
 }
 
 int write_stm50flw0x0x(struct flashchip *flash, uint8_t * buf)

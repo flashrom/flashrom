@@ -53,7 +53,6 @@ int erase_49fl00x(struct flashchip *flash)
 	int i;
 	int total_size = flash->total_size * 1024;
 	int page_size = flash->page_size;
-	chipaddr bios = flash->virtual_memory;
 
 	/* unprotected */
 	write_lockbits_49fl00x(flash->virtual_registers,
@@ -69,7 +68,10 @@ int erase_49fl00x(struct flashchip *flash)
 			continue;
 
 		/* erase the page */
-		erase_block_jedec(bios, i * page_size);
+		if (erase_block_jedec(flash, i * page_size, page_size)) {
+			fprintf(stderr, "ERASE FAILED!\n");
+			return -1;
+		}
 		printf("%04d at address: 0x%08x", i, i * page_size);
 		printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
 		fflush(stdout);
@@ -100,7 +102,10 @@ int write_49fl00x(struct flashchip *flash, uint8_t *buf)
 			continue;
 
 		/* erase the page before programming */
-		erase_block_jedec(bios, i * page_size);
+		if (erase_block_jedec(flash, i * page_size, page_size)) {
+			fprintf(stderr, "ERASE FAILED!\n");
+			return -1;
+		}
 
 		/* write to the sector */
 		printf("%04d at address: 0x%08x", i, i * page_size);

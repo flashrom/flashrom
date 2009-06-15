@@ -27,7 +27,10 @@ int write_pm29f002(struct flashchip *flash, uint8_t *buf)
 	chipaddr dst = bios;
 
 	/* Pm29F002T/B use the same erase method... */
-	erase_29f040b(flash);
+	if (erase_29f040b(flash)) {
+		fprintf(stderr, "ERASE FAILED!\n");
+		return -1;
+	}
 
 	printf("Programming page: ");
 	for (i = 0; i < total_size; i++) {

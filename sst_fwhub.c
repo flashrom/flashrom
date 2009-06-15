@@ -94,7 +94,7 @@ int probe_sst_fwhub(struct flashchip *flash)
 	return 1;
 }
 
-int erase_sst_fwhub_block(struct flashchip *flash, int offset)
+int erase_sst_fwhub_block(struct flashchip *flash, int offset, int page_size)
 {
 	uint8_t blockstatus = clear_sst_fwhub_block_lock(flash, offset);
 
@@ -104,7 +104,10 @@ int erase_sst_fwhub_block(struct flashchip *flash, int offset)
 		return 1;
 	}
 
-	erase_block_jedec(flash->virtual_memory, offset);
+	if (erase_block_jedec(flash, offset, page_size)) {
+		fprintf(stderr, "ERASE FAILED!\n");
+		return -1;
+	}
 	toggle_ready_jedec(flash->virtual_memory);
 
 	return 0;
@@ -114,15 +117,10 @@ int erase_sst_fwhub(struct flashchip *flash)
 {
 	int i;
 	unsigned int total_size = flash->total_size * 1024;
-	chipaddr bios = flash->virtual_memory;
 
-	for (i = 0; i < total_size; i += flash->page_size)
-		erase_sst_fwhub_block(flash, i);
-
-	// dumb check if erase was successful.
-	for (i = 0; i < total_size; i++) {
-		if (chip_readb(bios + i) != 0xff) {
-			printf("ERASE FAILED!\n");
+	for (i = 0; i < total_size; i += flash->page_size) {
+		if (erase_sst_fwhub_block(flash, i, flash->page_size)) {
+			fprintf(stderr, "ERASE FAILED!\n");
 			return -1;
 		}
 	}
@@ -139,8 +137,10 @@ int write_sst_fwhub(struct flashchip *flash, uint8_t *buf)
 	uint8_t blockstatus;
 
 	// FIXME: We want block wide erase instead of ironing the whole chip
-	if (erase_sst_fwhub(flash))
+	if (erase_sst_fwhub(flash)) {
+		fprintf(stderr, "ERASE FAILED!\n");
 		return -1;
+	}
 
 	printf("Programming page: ");
 	for (i = 0; i < total_size / page_size; i++) {

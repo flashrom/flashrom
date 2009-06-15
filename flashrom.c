@@ -206,6 +206,11 @@ int min(int a, int b)
 	return (a < b) ? a : b;
 }
 
+int max(int a, int b)
+{
+	return (a > b) ? a : b;
+}
+
 char *strcat_realloc(char *dest, const char *src)
 {
 	dest = realloc(dest, strlen(dest) + strlen(src) + 1);
@@ -243,6 +248,86 @@ char *flashbuses_to_text(enum chipbustype bustype)
 	/* Kill last comma. */
 	ret[strlen(ret) - 1] = '\0';
 	ret = realloc(ret, strlen(ret) + 1);
+	return ret;
+}
+
+/* start is an offset to the base address of the flash chip */
+int check_erased_range(struct flashchip *flash, int start, int len)
+{
+	int ret;
+	uint8_t *cmpbuf = malloc(len);
+
+	if (!cmpbuf) {
+		fprintf(stderr, "Could not allocate memory!\n");
+		exit(1);
+	}
+	memset(cmpbuf, 0xff, len);
+	ret = verify_range(flash, cmpbuf, start, len, "ERASE");
+	free(cmpbuf);
+	return ret;
+}
+
+/**
+ * @cmpbuf	buffer to compare against
+ * @start	offset to the base address of the flash chip
+ * @len		length of the verified area
+ * @message	string to print in the "FAILED" message
+ * @return	0 for success, -1 for failure
+ */
+int verify_range(struct flashchip *flash, uint8_t *cmpbuf, int start, int len, char *message)
+{
+	int i, j, starthere, lenhere, ret = 0;
+	chipaddr bios = flash->virtual_memory;
+	int page_size = flash->page_size;
+	uint8_t *readbuf = malloc(page_size);
+
+	if (!len)
+		goto out_free;
+
+	if (!readbuf) {
+		fprintf(stderr, "Could not allocate memory!\n");
+		exit(1);
+	}
+
+	if (start + len > flash->total_size * 1024) {
+		fprintf(stderr, "Error: %s called with start 0x%x + len 0x%x >"
+			" total_size 0x%x\n", __func__, start, len,
+			flash->total_size * 1024);
+		ret = -1;
+		goto out_free;
+	}
+	if (!message)
+		message = "VERIFY";
+	
+	/* Warning: This loop has a very unusual condition and body.
+	 * The loop needs to go through each page with at least one affected
+	 * byte. The lowest page number is (start / page_size) since that
+	 * division rounds down. The highest page number we want is the page
+	 * where the last byte of the range lives. That last byte has the
+	 * address (start + len - 1), thus the highest page number is
+	 * (start + len - 1) / page_size. Since we want to include that last
+	 * page as well, the loop condition uses <=.
+	 */
+	for (i = start / page_size; i <= (start + len - 1) / page_size; i++) {
+		/* Byte position of the first byte in the range in this page. */
+		starthere = max(start, i * page_size);
+		/* Length of bytes in the range in this page. */
+		lenhere = min(start + len, (i + 1) * page_size) - starthere;
+		chip_readn(readbuf, bios + starthere, lenhere);
+		for (j = 0; j < lenhere; j++) {
+			if (cmpbuf[starthere - start + j] != readbuf[j]) {
+				fprintf(stderr, "%s FAILED at 0x%08x! "
+					"Expected=0x%02x, Read=0x%02x\n",
+					message, starthere + j,
+					cmpbuf[starthere - start + j], readbuf[j]);
+				ret = -1;
+				goto out_free;
+			}
+		}
+	}
+
+out_free:
+	free(readbuf);
 	return ret;
 }
 
@@ -389,6 +474,9 @@ int erase_flash(struct flashchip *flash)
 	}
 	flash->erase(flash);
 
+	/* FIXME: The lines below are superfluous. We should check the result
+	 * of flash->erase(flash) instead.
+	 */
 	if (!flash->read) {
 		printf("FAILED!\n");
 		fprintf(stderr, "ERROR: flashrom has no read function for this flash chip.\n");
