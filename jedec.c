@@ -175,8 +175,10 @@ int probe_jedec(struct flashchip *flash)
 	return 0;
 }
 
-int erase_sector_jedec(chipaddr bios, unsigned int page)
+int erase_sector_jedec(struct flashchip *flash, unsigned int page, int pagesize)
 {
+	chipaddr bios = flash->virtual_memory;
+
 	/*  Issue the Sector Erase command   */
 	chip_writeb(0xAA, bios + 0x5555);
 	programmer_delay(10);
@@ -195,11 +197,17 @@ int erase_sector_jedec(chipaddr bios, unsigned int page)
 	/* wait for Toggle bit ready         */
 	toggle_ready_jedec(bios);
 
+	if (check_erased_range(flash, page, pagesize)) {
+		fprintf(stderr,"ERASE FAILED!\n");
+		return -1;
+	}
 	return 0;
 }
 
-int erase_block_jedec(chipaddr bios, unsigned int block)
+int erase_block_jedec(struct flashchip *flash, unsigned int block, int blocksize)
 {
+	chipaddr bios = flash->virtual_memory;
+
 	/*  Issue the Sector Erase command   */
 	chip_writeb(0xAA, bios + 0x5555);
 	programmer_delay(10);
@@ -218,11 +226,16 @@ int erase_block_jedec(chipaddr bios, unsigned int block)
 	/* wait for Toggle bit ready         */
 	toggle_ready_jedec(bios);
 
+	if (check_erased_range(flash, block, blocksize)) {
+		fprintf(stderr,"ERASE FAILED!\n");
+		return -1;
+	}
 	return 0;
 }
 
 int erase_chip_jedec(struct flashchip *flash)
 {
+	int total_size = flash->total_size * 1024;
 	chipaddr bios = flash->virtual_memory;
 
 	/*  Issue the JEDEC Chip Erase command   */
@@ -242,6 +255,10 @@ int erase_chip_jedec(struct flashchip *flash)
 
 	toggle_ready_jedec(bios);
 
+	if (check_erased_range(flash, 0, total_size)) {
+		fprintf(stderr,"ERASE FAILED!\n");
+		return -1;
+	}
 	return 0;
 }
 
@@ -342,15 +359,11 @@ int write_jedec(struct flashchip *flash, uint8_t *buf)
 	int page_size = flash->page_size;
 	chipaddr bios = flash->virtual_memory;
 
-	erase_chip_jedec(flash);
-	// dumb check if erase was successful.
-	for (i = 0; i < total_size; i++) {
-		if (chip_readb(bios + i) != 0xff) {
-			printf("ERASE FAILED @%d, val %02x!\n", i, chip_readb(bios + i));
-			return -1;
-		}
+	if (erase_chip_jedec(flash)) {
+		fprintf(stderr,"ERASE FAILED!\n");
+		return -1;
 	}
-
+	
 	printf("Programming page: ");
 	for (i = 0; i < total_size / page_size; i++) {
 		printf("%04d at address: 0x%08x", i, i * page_size);

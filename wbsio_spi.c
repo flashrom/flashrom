@@ -196,7 +196,10 @@ int wbsio_spi_write_1(struct flashchip *flash, uint8_t *buf)
 		return 1;
 	}
 
-	flash->erase(flash);
+	if (flash->erase(flash)) {
+		fprintf(stderr, "ERASE FAILED!\n");
+		return -1;
+	}
 	result = spi_write_enable();
 	if (result)
 		return result;

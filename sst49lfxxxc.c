@@ -75,9 +75,10 @@ static int write_lockbits_49lfxxxc(struct flashchip *flash, unsigned char bits)
 	return 0;
 }
 
-static int erase_sector_49lfxxxc(chipaddr bios, unsigned long address)
+static int erase_sector_49lfxxxc(struct flashchip *flash, unsigned long address, int sector_size)
 {
 	unsigned char status;
+	chipaddr bios = flash->virtual_memory;
 
 	chip_writeb(SECTOR_ERASE, bios);
 	chip_writeb(ERASE, bios + address);
@@ -91,6 +92,10 @@ static int erase_sector_49lfxxxc(chipaddr bios, unsigned long address)
 		}
 	} while (!(status & STATUS_WSMS));
 
+	if (check_erased_range(flash, address, sector_size)) {
+		fprintf(stderr, "ERASE FAILED!\n");
+		return -1;
+	}
 	return 0;
 }
 
@@ -156,7 +161,7 @@ int erase_49lfxxxc(struct flashchip *flash)
 
 	write_lockbits_49lfxxxc(flash, 0);
 	for (i = 0; i < total_size; i += flash->page_size)
-		if (erase_sector_49lfxxxc(bios, i) != 0)
+		if (erase_sector_49lfxxxc(flash, i, flash->page_size))
 			return (-1);
 
 	chip_writeb(RESET, bios);
@@ -175,7 +180,10 @@ int write_49lfxxxc(struct flashchip *flash, uint8_t *buf)
 	printf("Programming page: ");
 	for (i = 0; i < total_size / page_size; i++) {
 		/* erase the page before programming */
-		erase_sector_49lfxxxc(bios, i * page_size);
+		if (erase_sector_49lfxxxc(flash, i * page_size, flash->page_size)) {
+			fprintf(stderr, "ERASE FAILED!\n");
+			return -1;
+		}
 
 		/* write to the sector */
 		printf("%04d at address: 0x%08x", i, i * page_size);

@@ -142,9 +142,10 @@ int unlock_winbond_fwhub(struct flashchip *flash)
 	return 0;
 }
 
-static int erase_sector_winbond_fwhub(chipaddr bios,
+static int erase_sector_winbond_fwhub(struct flashchip *flash,
 				      unsigned int sector)
 {
+	chipaddr bios = flash->virtual_memory;
 	/* Remember: too much sleep can waste your day. */
 
 	printf("0x%08x\b\b\b\b\b\b\b\b\b\b", sector);
@@ -161,29 +162,29 @@ static int erase_sector_winbond_fwhub(chipaddr bios,
 	/* wait for Toggle bit ready */
 	toggle_ready_jedec(bios);
 
+	if (check_erased_range(flash, sector, flash->page_size)) {
+		fprintf(stderr, "ERASE FAILED!\n");
+		return -1;
+	}
 	return 0;
 }
 
 int erase_winbond_fwhub(struct flashchip *flash)
 {
 	int i, total_size = flash->total_size * 1024;
-	chipaddr bios = flash->virtual_memory;
 
 	unlock_winbond_fwhub(flash);
 
 	printf("Erasing:     ");
 
-	for (i = 0; i < total_size; i += flash->page_size)
-		erase_sector_winbond_fwhub(bios, i);
-
-	printf("\n");
-
-	for (i = 0; i < total_size; i++) {
-		if (chip_readb(bios + i) != 0xff) {
-			fprintf(stderr, "Error: Flash chip erase failed at 0x%08x(0x%02x)\n", i, chip_readb(bios + i));
+	for (i = 0; i < total_size; i += flash->page_size) {
+		if (erase_sector_winbond_fwhub(flash, i)) {
+			fprintf(stderr, "ERASE FAILED!\n");
 			return -1;
 		}
 	}
+
+	printf("\n");
 
 	return 0;
 }

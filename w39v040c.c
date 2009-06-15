@@ -60,16 +60,13 @@ int erase_w39v040c(struct flashchip *flash)
 {
 	int i;
 	unsigned int total_size = flash->total_size * 1024;
-	chipaddr bios = flash->virtual_memory;
 
-	for (i = 0; i < total_size; i += flash->page_size)
-		erase_sector_jedec(flash->virtual_memory, i);
-
-	for (i = 0; i < total_size; i++)
-		if (0xff != chip_readb(bios + i)) {
-			printf("ERASE FAILED at 0x%08x!  Expected=0xff, Read=0x%02x\n", i, chip_readb(bios + i));
+	for (i = 0; i < total_size; i += flash->page_size) {
+		if (erase_sector_jedec(flash, i, flash->page_size)) {
+			fprintf(stderr, "ERASE FAILED!\n");
 			return -1;
 		}
+	}
 
 	return 0;
 }
@@ -81,8 +78,10 @@ int write_w39v040c(struct flashchip *flash, uint8_t *buf)
 	int page_size = flash->page_size;
 	chipaddr bios = flash->virtual_memory;
 
-	if (flash->erase(flash))
+	if (flash->erase(flash)) {
+		fprintf(stderr, "ERASE FAILED!\n");
 		return -1;
+	}
 
 	printf("Programming page: ");
 	for (i = 0; i < total_size / page_size; i++) {

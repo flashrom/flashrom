@@ -71,6 +71,10 @@ int erase_29f002(struct flashchip *flash)
 	chip_writeb(0x30, bios + 0x3bfff);
 #endif
 
+	if (check_erased_range(flash, 0, flash->total_size * 1024)) {
+		fprintf(stderr, "ERASE FAILED!\n");
+		return -1;
+	}
 	return 0;
 }
 
@@ -83,7 +87,10 @@ int write_29f002(struct flashchip *flash, uint8_t *buf)
 
 	chip_writeb(0xF0, bios);
 	programmer_delay(10);
-	erase_29f002(flash);
+	if (erase_29f002(flash)) {
+		fprintf(stderr, "ERASE FAILED!\n");
+		return -1;
+	}
 	//*bios = 0xF0;
 #if 1
 	printf("Programming page: ");
