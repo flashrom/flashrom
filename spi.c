@@ -24,6 +24,7 @@
 
 #include <string.h>
 #include "flash.h"
+#include "flashchips.h"
 #include "spi.h"
 
 enum spi_controller spi_controller = SPI_CONTROLLER_NONE;
