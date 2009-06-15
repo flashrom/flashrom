@@ -364,6 +364,9 @@ extern int verbose;
 void map_flash_registers(struct flashchip *flash);
 int read_memmapped(struct flashchip *flash, uint8_t *buf);
 int min(int a, int b);
+int max(int a, int b);
+int check_erased_range(struct flashchip *flash, int start, int len);
+int verify_range(struct flashchip *flash, uint8_t *cmpbuf, int start, int len, char *message);
 extern char *pcidev_bdf;
 
 /* layout.c */
@@ -471,8 +474,8 @@ int write_byte_program_jedec(chipaddr bios, uint8_t *src,
 int probe_jedec(struct flashchip *flash);
 int erase_chip_jedec(struct flashchip *flash);
 int write_jedec(struct flashchip *flash, uint8_t *buf);
-int erase_sector_jedec(chipaddr bios, unsigned int page);
-int erase_block_jedec(chipaddr bios, unsigned int page);
+int erase_sector_jedec(struct flashchip *flash, unsigned int page, int pagesize);
+int erase_block_jedec(struct flashchip *flash, unsigned int page, int blocksize);
 int write_sector_jedec(chipaddr bios, uint8_t *src,
 		       chipaddr dst, unsigned int page_size);
 
@@ -484,8 +487,7 @@ int write_m29f002b(struct flashchip *flash, uint8_t *buf);
 /* m29f400bt.c */
 int probe_m29f400bt(struct flashchip *flash);
 int erase_m29f400bt(struct flashchip *flash);
-int block_erase_m29f400bt(chipaddr bios,
-				 chipaddr dst);
+int block_erase_m29f400bt(struct flashchip *flash, int start, int len);
 int write_m29f400bt(struct flashchip *flash, uint8_t *buf);
 int write_coreboot_m29f400bt(struct flashchip *flash, uint8_t *buf);
 void toggle_ready_m29f400bt(chipaddr dst);

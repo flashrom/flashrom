@@ -27,7 +27,10 @@ int write_49f002(struct flashchip *flash, uint8_t *buf)
 	int page_size = flash->page_size;
 	chipaddr bios = flash->virtual_memory;
 
-	erase_chip_jedec(flash);
+	if (erase_chip_jedec(flash)) {
+		fprintf(stderr, "ERASE FAILED!\n");
+		return -1;
+	}
 
 	printf("Programming page: ");
 	for (i = 0; i < total_size / page_size; i++) {

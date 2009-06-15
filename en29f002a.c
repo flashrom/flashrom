@@ -98,7 +98,10 @@ int write_en29f002a(struct flashchip *flash, uint8_t *buf)
 
 	//chip_writeb(0xF0, bios);
 	programmer_delay(10);
-	erase_chip_jedec(flash);
+	if (erase_chip_jedec(flash)) {
+		fprintf(stderr, "ERASE FAILED!\n");
+		return -1;
+	}
 
 	printf("Programming page: ");
 	for (i = 0; i < total_size; i++) {

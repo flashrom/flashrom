@@ -25,12 +25,14 @@ int erase_49lf040(struct flashchip *flash)
 	int i;
 	int total_size = flash->total_size * 1024;
 	int page_size = flash->page_size;
-	chipaddr bios = flash->virtual_memory;
 
 	for (i = 0; i < total_size / page_size; i++) {
 		/* Chip erase only works in parallel programming mode
 		 * for the 49lf040. Use sector-erase instead */
-		erase_sector_jedec(bios, i * page_size);
+		if (erase_sector_jedec(flash, i * page_size, page_size)) {
+			fprintf(stderr, "ERASE FAILED!\n");
+			return -1;
+		}
 	}
 
 	return 0;
@@ -48,7 +50,10 @@ int write_49lf040(struct flashchip *flash, uint8_t *buf)
 		/* erase the page before programming
 		 * Chip erase only works in parallel programming mode
 		 * for the 49lf040. Use sector-erase instead */
-		erase_sector_jedec(bios, i * page_size);
+		if (erase_sector_jedec(flash, i * page_size, page_size)) {
+			fprintf(stderr, "ERASE FAILED!\n");
+			return -1;
+		}
 
 		/* write to the sector */
 		if (i % 10 == 0)
