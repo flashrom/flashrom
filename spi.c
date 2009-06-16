@@ -47,6 +47,8 @@ int spi_command(unsigned int writecnt, unsigned int readcnt,
 		return sb600_spi_command(writecnt, readcnt, writearr, readarr);
 	case SPI_CONTROLLER_WBSIO:
 		return wbsio_spi_command(writecnt, readcnt, writearr, readarr);
+	case SPI_CONTROLLER_FT2232:
+		return ft2232_spi_command(writecnt, readcnt, writearr, readarr);
 	case SPI_CONTROLLER_DUMMY:
 		return dummy_spi_command(writecnt, readcnt, writearr, readarr);
 	default:
@@ -212,6 +214,7 @@ int probe_spi_rdid4(struct flashchip *flash)
 	case SPI_CONTROLLER_VIA:
 	case SPI_CONTROLLER_SB600:
 	case SPI_CONTROLLER_WBSIO:
+	case SPI_CONTROLLER_FT2232:
 	case SPI_CONTROLLER_DUMMY:
 		return probe_spi_rdid_generic(flash, 4);
 	default:
@@ -726,6 +729,8 @@ int spi_chip_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 		return ich_spi_read(flash, buf, start, len);
 	case SPI_CONTROLLER_WBSIO:
 		return wbsio_spi_read(flash, buf, start, len);
+	case SPI_CONTROLLER_FT2232:
+		return ft2232_spi_read(flash, buf, start, len);
 	default:
 		printf_debug
 		    ("%s called, but no SPI chipset/strapping detected\n",
@@ -774,6 +779,8 @@ int spi_chip_write_256(struct flashchip *flash, uint8_t *buf)
 		return ich_spi_write_256(flash, buf);
 	case SPI_CONTROLLER_WBSIO:
 		return wbsio_spi_write_1(flash, buf);
+	case SPI_CONTROLLER_FT2232:
+		return ft2232_spi_write_256(flash, buf);
 	default:
 		printf_debug
 		    ("%s called, but no SPI chipset/strapping detected\n",

@@ -22,6 +22,7 @@ PROGRAM = flashrom
 CC      ?= gcc
 STRIP   = strip
 INSTALL = install
+DIFF    = diff
 PREFIX  ?= /usr/local
 MANDIR  ?= $(PREFIX)/share/man
 CFLAGS  ?= -Os -Wall -Werror
@@ -48,9 +49,9 @@ OBJS = chipset_enable.o board_enable.o udelay.o jedec.o stm50flw0x0x.o \
 	sst49lfxxxc.o sst_fwhub.o layout.o cbtable.o flashchips.o physmap.o \
 	flashrom.o w39v080fa.o sharplhf00l04.o w29ee011.o spi.o it87spi.o \
 	ichspi.o w39v040c.o sb600spi.o wbsio_spi.o m29f002.o internal.o \
-	dummyflasher.o pcidev.o nic3com.o satasii.o
+	dummyflasher.o pcidev.o nic3com.o satasii.o ft2232_spi.o
 
-all: pciutils dep $(PROGRAM)
+all: pciutils .features dep $(PROGRAM)
 
 # Set the flashrom version string from the highest revision number
 # of the checked out flashrom files.
@@ -63,16 +64,19 @@ VERSION := 0.9.0-r$(SVNVERSION)
 SVNDEF := -D'FLASHROM_VERSION="$(VERSION)"'
 
 $(PROGRAM): $(OBJS)
-	$(CC) $(LDFLAGS) -o $(PROGRAM) $(OBJS) $(LIBS)
+	$(CC) $(LDFLAGS) -o $(PROGRAM) $(OBJS) $(LIBS) $(FEATURE_LIBS)
 
 flashrom.o: flashrom.c
-	$(CC) $(CFLAGS) $(CPPFLAGS)  -c -o $@ $< $(SVNDEF)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(FEATURE_CFLAGS) -c -o $@ $< $(SVNDEF)
+
+%.o: %.c .features
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(FEATURE_CFLAGS) -c $< -o $@
 
 clean:
 	rm -f $(PROGRAM) *.o
 
 distclean: clean
-	rm -f .dependencies
+	rm -f .dependencies .features
 
 dep:
 	@$(CC) $(CPPFLAGS) $(SVNDEF) -MM *.c > .dependencies
@@ -81,7 +85,7 @@ strip: $(PROGRAM)
 	$(STRIP) $(STRIP_ARGS) $(PROGRAM)
 
 compiler:
-	@echo; printf "Checking for a C compiler... "
+	@printf "Checking for a C compiler... "
 	@$(shell ( echo "int main(int argc, char **argv)"; \
 		   echo "{ return 0; }"; ) > .test.c )
 	@$(CC) $(CFLAGS) $(LDFLAGS) .test.c -o .test >/dev/null &&	\
@@ -89,8 +93,10 @@ compiler:
 		rm -f .test.c .test; exit 1)
 	@rm -f .test.c .test
 
-pciutils: compiler
-	@echo; printf "Checking for pciutils and zlib... "
+# We don't specify compiler as requirement because the compiler is already
+# checked during makefile remake through .features
+pciutils:
+	@printf "Checking for pciutils and zlib... "
 	@$(shell ( echo "#include <pci/pci.h>";		   \
 		   echo "struct pci_access *pacc;";	   \
 		   echo "int main(int argc, char **argv)"; \
@@ -101,6 +107,19 @@ pciutils: compiler
 		echo "See README for more information."; echo;		\
 		rm -f .test.c .test; exit 1)
 	@rm -f .test.c .test
+
+.features: compiler
+	@printf "Checking for FTDI support... "
+	@$(shell ( echo "#include <ftdi.h>";		   \
+		   echo "struct ftdi_context *ftdic = NULL;";	   \
+		   echo "int main(int argc, char **argv)"; \
+		   echo "{ return ftdi_init(ftdic); }"; ) > .featuretest.c )
+	@$(CC) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest $(LIBS) -lftdi >/dev/null 2>&1 &&	\
+		( echo "found."; echo FEATURE_CFLAGS := -D'FT2232_SPI_SUPPORT=1' > .features.tmp;	\
+		  echo FEATURE_LIBS := -lftdi >> .features.tmp) ||	\
+		( echo "not found."; echo "" > .features.tmp )
+	@$(DIFF) -q .features.tmp .features >/dev/null 2>&1 && rm .features.tmp || mv .features.tmp .features
+	@rm -f .featuretest.c .featuretest
 
 install: $(PROGRAM)
 	mkdir -p $(DESTDIR)$(PREFIX)/sbin
@@ -122,3 +141,4 @@ tarball: export
 .PHONY: all clean distclean dep compiler pciutils export tarball
 
 -include .dependencies
+-include .features
