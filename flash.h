@@ -167,7 +167,7 @@ struct flashchip {
 	int probe_timing;
 	int (*erase) (struct flashchip *flash);
 	int (*write) (struct flashchip *flash, uint8_t *buf);
-	int (*read) (struct flashchip *flash, uint8_t *buf);
+	int (*read) (struct flashchip *flash, uint8_t *buf, int start, int len);
 
 	/* Some flash devices have an additional register space. */
 	chipaddr virtual_memory;
@@ -362,7 +362,7 @@ extern struct pcidev_status satas_sii[];
 extern int verbose;
 #define printf_debug(x...) { if (verbose) printf(x); }
 void map_flash_registers(struct flashchip *flash);
-int read_memmapped(struct flashchip *flash, uint8_t *buf);
+int read_memmapped(struct flashchip *flash, uint8_t *buf, int start, int len);
 int min(int a, int b);
 int max(int a, int b);
 int check_erased_range(struct flashchip *flash, int start, int len);
@@ -408,13 +408,13 @@ int spi_block_erase_52(const struct flashchip *flash, unsigned long addr);
 int spi_block_erase_d8(const struct flashchip *flash, unsigned long addr);
 int spi_chip_write_1(struct flashchip *flash, uint8_t *buf);
 int spi_chip_write_256(struct flashchip *flash, uint8_t *buf);
-int spi_chip_read(struct flashchip *flash, uint8_t *buf);
+int spi_chip_read(struct flashchip *flash, uint8_t *buf, int start, int len);
 uint8_t spi_read_status_register(void);
 int spi_disable_blockprotect(void);
 void spi_byte_program(int address, uint8_t byte);
 int spi_nbyte_program(int address, uint8_t *bytes, int len);
 int spi_nbyte_read(int address, uint8_t *bytes, int len);
-int spi_read_chunked(struct flashchip *flash, uint8_t *buf, int chunksize);
+int spi_read_chunked(struct flashchip *flash, uint8_t *buf, int start, int len, int chunksize);
 int spi_aai_write(struct flashchip *flash, uint8_t *buf);
 uint32_t spi_get_valid_read_addr(void);
 
@@ -440,7 +440,7 @@ int write_en29f002a(struct flashchip *flash, uint8_t *buf);
 int ich_init_opcodes(void);
 int ich_spi_command(unsigned int writecnt, unsigned int readcnt,
 		    const unsigned char *writearr, unsigned char *readarr);
-int ich_spi_read(struct flashchip *flash, uint8_t * buf);
+int ich_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
 int ich_spi_write_256(struct flashchip *flash, uint8_t * buf);
 
 /* it87spi.c */
@@ -451,14 +451,14 @@ int it87spi_init(void);
 int it87xx_probe_spi_flash(const char *name);
 int it8716f_spi_command(unsigned int writecnt, unsigned int readcnt,
 			const unsigned char *writearr, unsigned char *readarr);
-int it8716f_spi_chip_read(struct flashchip *flash, uint8_t *buf);
+int it8716f_spi_chip_read(struct flashchip *flash, uint8_t *buf, int start, int len);
 int it8716f_spi_chip_write_1(struct flashchip *flash, uint8_t *buf);
 int it8716f_spi_chip_write_256(struct flashchip *flash, uint8_t *buf);
 
 /* sb600spi.c */
 int sb600_spi_command(unsigned int writecnt, unsigned int readcnt,
 		      const unsigned char *writearr, unsigned char *readarr);
-int sb600_spi_read(struct flashchip *flash, uint8_t *buf);
+int sb600_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
 int sb600_spi_write_1(struct flashchip *flash, uint8_t *buf);
 uint8_t sb600_read_status_register(void);
 extern uint8_t *sb600_spibar;
@@ -557,7 +557,7 @@ int write_49f002(struct flashchip *flash, uint8_t *buf);
 int wbsio_check_for_spi(const char *name);
 int wbsio_spi_command(unsigned int writecnt, unsigned int readcnt,
 		      const unsigned char *writearr, unsigned char *readarr);
-int wbsio_spi_read(struct flashchip *flash, uint8_t *buf);
+int wbsio_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
 int wbsio_spi_write_1(struct flashchip *flash, uint8_t *buf);
 
 /* stm50flw0x0x.c */

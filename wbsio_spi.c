@@ -173,7 +173,7 @@ int wbsio_spi_command(unsigned int writecnt, unsigned int readcnt,
 	return 0;
 }
 
-int wbsio_spi_read(struct flashchip *flash, uint8_t *buf)
+int wbsio_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
 	int size = flash->total_size * 1024;
 
@@ -182,7 +182,7 @@ int wbsio_spi_read(struct flashchip *flash, uint8_t *buf)
 		return 1;
 	}
 
-	read_memmapped(flash, buf);
+	read_memmapped(flash, buf, start, len);
 	return 0;
 }
 

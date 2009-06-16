@@ -647,14 +647,14 @@ static int ich_spi_write_page(struct flashchip *flash, uint8_t * bytes,
 	return 0;
 }
 
-int ich_spi_read(struct flashchip *flash, uint8_t * buf)
+int ich_spi_read(struct flashchip *flash, uint8_t * buf, int start, int len)
 {
 	int maxdata = 64;
 
 	if (spi_controller == SPI_CONTROLLER_VIA)
 		maxdata = 16;
 
-	return spi_read_chunked(flash, buf, maxdata);
+	return spi_read_chunked(flash, buf, start, len, maxdata);
 }
 
 int ich_spi_write_256(struct flashchip *flash, uint8_t * buf)
