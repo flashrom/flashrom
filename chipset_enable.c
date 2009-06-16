@@ -1037,11 +1037,14 @@ const struct penable chipset_enables[] = {
 
 void print_supported_chipsets(void)
 {
-	int i, j;
+	int i, j, chipsetcount = 0;
 	const struct penable *c = chipset_enables;
 
-	printf("\nSupported chipsets:\n\nVendor:                  Chipset:"
-	       "                 PCI IDs:\n\n");
+	for (i = 0; c[i].vendor_name != NULL; i++)
+		chipsetcount++;
+
+	printf("\nSupported chipsets (total: %d):\n\nVendor:                  "
+	       "Chipset:                 PCI IDs:\n\n", chipsetcount);
 
 	for (i = 0; c[i].vendor_name != NULL; i++) {
 		printf("%s", c[i].vendor_name);

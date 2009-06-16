@@ -516,9 +516,22 @@ int erase_flash(struct flashchip *flash)
 #endif
 #define POS_PRINT(x) do { pos += strlen(x); printf(x); } while (0)
 
+static int digits(int n)
+{
+	int i;
+
+	if (!n)
+		return 1;
+
+	for (i = 0; n; ++i)
+		n /= 10;
+
+	return i;
+}
+
 void print_supported_chips(void)
 {
-	int okcol = 0, pos = 0, i;
+	int okcol = 0, pos = 0, i, chipcount = 0;
 	struct flashchip *f;
 
 	for (f = flashchips; f->name != NULL; f++) {
@@ -528,13 +541,18 @@ void print_supported_chips(void)
 	}
 	okcol = (okcol + 7) & ~7;
 
-	printf("Supported flash chips:\n\n");
+	for (f = flashchips; f->name != NULL; f++)
+		chipcount++;
+
+	printf("\nSupported flash chips (total: %d):\n\n", chipcount);
 	POS_PRINT("Vendor:   Device:");
 	while (pos < okcol) {
 		printf("\t");
 		pos += 8 - (pos % 8);
 	}
-	printf("Tested OK operations:\tKnown BAD operations:\n\n");
+
+	printf("Tested OK:\tKnown BAD:  Size/KB:  Type:\n\n");
+	printf("(P = PROBE, R = READ, E = ERASE, W = WRITE)\n\n");
 
 	for (f = flashchips; f->name != NULL; f++) {
 		/* Don't print "unknown XXXX SPI chip" entries. */
@@ -553,29 +571,33 @@ void print_supported_chips(void)
 		}
 		if ((f->tested & TEST_OK_MASK)) {
 			if ((f->tested & TEST_OK_PROBE))
-				POS_PRINT("PROBE ");
+				POS_PRINT("P ");
 			if ((f->tested & TEST_OK_READ))
-				POS_PRINT("READ ");
+				POS_PRINT("R ");
 			if ((f->tested & TEST_OK_ERASE))
-				POS_PRINT("ERASE ");
+				POS_PRINT("E ");
 			if ((f->tested & TEST_OK_WRITE))
-				POS_PRINT("WRITE");
+				POS_PRINT("W ");
 		}
-		while (pos < okcol + 24) {
+		while (pos < okcol + 9) {
 			printf("\t");
 			pos += 8 - (pos % 8);
 		}
 		if ((f->tested & TEST_BAD_MASK)) {
 			if ((f->tested & TEST_BAD_PROBE))
-				printf("PROBE ");
+				printf("P ");
 			if ((f->tested & TEST_BAD_READ))
-				printf("READ ");
+				printf("R ");
 			if ((f->tested & TEST_BAD_ERASE))
-				printf("ERASE ");
+				printf("E ");
 			if ((f->tested & TEST_BAD_WRITE))
-				printf("WRITE");
+				printf("W ");
 		}
-		printf("\n");
+
+		printf("\t    %d", f->total_size);
+		for (i = 0; i < 10 - digits(f->total_size); i++)
+			printf(" ");
+		printf("%s\n", flashbuses_to_text(f->bustype));
 	}
 }
 
