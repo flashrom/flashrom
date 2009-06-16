@@ -80,7 +80,16 @@ dep:
 strip: $(PROGRAM)
 	$(STRIP) $(STRIP_ARGS) $(PROGRAM)
 
-pciutils:
+compiler:
+	@echo; printf "Checking for a C compiler... "
+	@$(shell ( echo "int main(int argc, char **argv)"; \
+		   echo "{ return 0; }"; ) > .test.c )
+	@$(CC) $(CFLAGS) $(LDFLAGS) .test.c -o .test >/dev/null &&	\
+		echo "found." || ( echo "not found."; \
+		rm -f .test.c .test; exit 1)
+	@rm -f .test.c .test
+
+pciutils: compiler
 	@echo; printf "Checking for pciutils and zlib... "
 	@$(shell ( echo "#include <pci/pci.h>";		   \
 		   echo "struct pci_access *pacc;";	   \
@@ -110,6 +119,6 @@ tarball: export
 	@rm -rf $(EXPORTDIR)/flashrom-$(VERSION)
 	@echo Created $(EXPORTDIR)/flashrom-$(VERSION).tar.gz
 
-.PHONY: all clean distclean dep pciutils export tarball
+.PHONY: all clean distclean dep compiler pciutils export tarball
 
 -include .dependencies
