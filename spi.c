@@ -678,19 +678,31 @@ int spi_nbyte_read(int address, uint8_t *bytes, int len)
  * Read a complete flash chip.
  * Each page is read separately in chunks with a maximum size of chunksize.
  */
-int spi_read_chunked(struct flashchip *flash, uint8_t *buf, int chunksize)
+int spi_read_chunked(struct flashchip *flash, uint8_t *buf, int start, int len, int chunksize)
 {
 	int rc = 0;
-	int i, j;
-	int total_size = flash->total_size * 1024;
+	int i, j, starthere, lenhere;
 	int page_size = flash->page_size;
 	int toread;
 
-	for (j = 0; j < total_size / page_size; j++) {
-		for (i = 0; i < page_size; i += chunksize) {
-			toread = min(chunksize, page_size - i);
-			rc = spi_nbyte_read(j * page_size + i,
-					    buf + j * page_size + i, toread);
+	/* Warning: This loop has a very unusual condition and body.
+	 * The loop needs to go through each page with at least one affected
+	 * byte. The lowest page number is (start / page_size) since that
+	 * division rounds down. The highest page number we want is the page
+	 * where the last byte of the range lives. That last byte has the
+	 * address (start + len - 1), thus the highest page number is
+	 * (start + len - 1) / page_size. Since we want to include that last
+	 * page as well, the loop condition uses <=.
+	 */
+	for (i = start / page_size; i <= (start + len - 1) / page_size; i++) {
+		/* Byte position of the first byte in the range in this page. */
+		/* starthere is an offset to the base address of the chip. */
+		starthere = max(start, i * page_size);
+		/* Length of bytes in the range in this page. */
+		lenhere = min(start + len, (i + 1) * page_size) - starthere;
+		for (j = 0; j < lenhere; j += chunksize) {
+			toread = min(chunksize, lenhere - j);
+			rc = spi_nbyte_read(starthere + j, buf + starthere - start + j, toread);
 			if (rc)
 				break;
 		}
@@ -701,19 +713,19 @@ int spi_read_chunked(struct flashchip *flash, uint8_t *buf, int chunksize)
 	return rc;
 }
 
-int spi_chip_read(struct flashchip *flash, uint8_t *buf)
+int spi_chip_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
 	switch (spi_controller) {
 	case SPI_CONTROLLER_IT87XX:
-		return it8716f_spi_chip_read(flash, buf);
+		return it8716f_spi_chip_read(flash, buf, start, len);
 	case SPI_CONTROLLER_SB600:
-		return sb600_spi_read(flash, buf);
+		return sb600_spi_read(flash, buf, start, len);
 	case SPI_CONTROLLER_ICH7:
 	case SPI_CONTROLLER_ICH9:
 	case SPI_CONTROLLER_VIA:
-		return ich_spi_read(flash, buf);
+		return ich_spi_read(flash, buf, start, len);
 	case SPI_CONTROLLER_WBSIO:
-		return wbsio_spi_read(flash, buf);
+		return wbsio_spi_read(flash, buf, start, len);
 	default:
 		printf_debug
 		    ("%s called, but no SPI chipset/strapping detected\n",
