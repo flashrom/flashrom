@@ -86,6 +86,7 @@ extern int programmer;
 #define PROGRAMMER_NIC3COM	0x02
 #define PROGRAMMER_SATASII	0x03
 #define PROGRAMMER_IT87SPI	0x04
+#define PROGRAMMER_FT2232SPI	0x05
 
 struct programmer_entry {
 	const char *vendor;
@@ -358,6 +359,13 @@ void satasii_chip_writeb(uint8_t val, chipaddr addr);
 uint8_t satasii_chip_readb(const chipaddr addr);
 extern struct pcidev_status satas_sii[];
 
+/* ft2232_spi.c */
+int ft2232_spi_init(void);
+int ft2232_spi_command(unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr);
+int ft2232_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
+int ft2232_spi_write1(struct flashchip *flash, uint8_t *buf);
+int ft2232_spi_write_256(struct flashchip *flash, uint8_t *buf);
+
 /* flashrom.c */
 extern int verbose;
 #define printf_debug(x...) { if (verbose) printf(x); }
@@ -388,6 +396,7 @@ enum spi_controller {
 	SPI_CONTROLLER_SB600,
 	SPI_CONTROLLER_VIA,
 	SPI_CONTROLLER_WBSIO,
+	SPI_CONTROLLER_FT2232,
 	SPI_CONTROLLER_DUMMY,
 };
 extern enum spi_controller spi_controller;

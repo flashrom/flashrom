@@ -116,6 +116,22 @@ const struct programmer_entry programmer_table[] = {
 		.delay			= internal_delay,
 	},
 
+	{
+		.init			= ft2232_spi_init,
+		.shutdown		= dummy_shutdown,
+		.map_flash_region	= dummy_map,
+		.unmap_flash_region	= dummy_unmap,
+		.chip_readb		= dummy_chip_readb,
+		.chip_readw		= fallback_chip_readw,
+		.chip_readl		= fallback_chip_readl,
+		.chip_readn		= fallback_chip_readn,
+		.chip_writeb		= dummy_chip_writeb,
+		.chip_writew		= fallback_chip_writew,
+		.chip_writel		= fallback_chip_writel,
+		.chip_writen		= fallback_chip_writen,
+		.delay			= internal_delay,
+	},
+
 	{},
 };
 
@@ -589,7 +605,7 @@ void usage(const char *name)
 	     "   -i | --image <name>:              only flash image name from flash layout\n"
 	     "   -L | --list-supported:            print supported devices\n"
 	     "   -p | --programmer <name>:         specify the programmer device\n"
-	     "                                     (internal, dummy, nic3com, satasii, it87spi)\n"
+	     "                                     (internal, dummy, nic3com, satasii, it87spi, ft2232spi)\n"
 	     "   -h | --help:                      print this help text\n"
 	     "   -R | --version:                   print the version (release)\n"
 	     "\nYou can specify one of -E, -r, -w, -v or no operation.\n"
@@ -747,6 +763,8 @@ int main(int argc, char *argv[])
 					pcidev_bdf = strdup(optarg + 8);
 			} else if (strncmp(optarg, "it87spi", 7) == 0) {
 				programmer = PROGRAMMER_IT87SPI;
+			} else if (strncmp(optarg, "ft2232spi", 9) == 0) {
+				programmer = PROGRAMMER_FT2232SPI;
 			} else {
 				printf("Error: Unknown programmer.\n");
 				exit(1);
