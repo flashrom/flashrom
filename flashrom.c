@@ -194,9 +194,9 @@ void map_flash_registers(struct flashchip *flash)
 	flash->virtual_registers = (chipaddr)programmer_map_flash_region("flash chip registers", (0xFFFFFFFF - 0x400000 - size + 1), size);
 }
 
-int read_memmapped(struct flashchip *flash, uint8_t *buf)
+int read_memmapped(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
-	chip_readn(buf, flash->virtual_memory, flash->total_size * 1024);
+	chip_readn(buf, flash->virtual_memory + start, len);
 		
 	return 0;
 }
@@ -393,7 +393,7 @@ int verify_flash(struct flashchip *flash, uint8_t *buf)
 		fprintf(stderr, "ERROR: flashrom has no read function for this flash chip.\n");
 		return 1;
 	} else
-		flash->read(flash, buf2);
+		flash->read(flash, buf2, 0, total_size);
 
 	printf("Verifying flash... ");
 
@@ -446,7 +446,7 @@ int read_flash(struct flashchip *flash, char *filename, unsigned int exclude_sta
 		fprintf(stderr, "ERROR: flashrom has no read function for this flash chip.\n");
 		return 1;
 	} else
-		flash->read(flash, buf);
+		flash->read(flash, buf, 0, size);
 
 	if (exclude_end_position - exclude_start_position > 0)
 		memset(buf + exclude_start_position, 0,
@@ -482,7 +482,7 @@ int erase_flash(struct flashchip *flash)
 		fprintf(stderr, "ERROR: flashrom has no read function for this flash chip.\n");
 		return 1;
 	} else
-		flash->read(flash, buf);
+		flash->read(flash, buf, 0, size);
 
 	for (erasedbytes = 0; erasedbytes < size; erasedbytes++)
 		if (0xff != buf[erasedbytes]) {
@@ -915,6 +915,7 @@ int main(int argc, char *argv[])
 	 * completely once all flash chips can do rom layouts. stepan
 	 */
 
+	/* FIXME: This code is totally broken. It treats exclude ranges as include ranges. */
 	// ////////////////////////////////////////////////////////////
 	if (exclude_end_position - exclude_start_position > 0)
 		chip_readn(buf + exclude_start_position,

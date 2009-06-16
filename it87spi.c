@@ -257,15 +257,15 @@ int it8716f_spi_chip_write_1(struct flashchip *flash, uint8_t *buf)
  * IT8716F only allows maximum of 512 kb SPI mapped to LPC memory cycles
  * Need to read this big flash using firmware cycles 3 byte at a time.
  */
-int it8716f_spi_chip_read(struct flashchip *flash, uint8_t *buf)
+int it8716f_spi_chip_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
 	int total_size = 1024 * flash->total_size;
 	fast_spi = 0;
 
 	if ((programmer == PROGRAMMER_IT87SPI) || (total_size > 512 * 1024)) {
-		spi_read_chunked(flash, buf, 3);
+		spi_read_chunked(flash, buf, start, len, 3);
 	} else {
-		read_memmapped(flash, buf);
+		read_memmapped(flash, buf, start, len);
 	}
 
 	return 0;

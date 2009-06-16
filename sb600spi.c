@@ -39,10 +39,10 @@ struct sb600_spi_controller {
 struct sb600_spi_controller *spi_bar = NULL;
 uint8_t *sb600_spibar;
 
-int sb600_spi_read(struct flashchip *flash, uint8_t *buf)
+int sb600_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
 	/* Maximum read length is 8 bytes. */
-	return spi_read_chunked(flash, buf, 8);
+	return spi_read_chunked(flash, buf, start, len, 8);
 }
 
 uint8_t sb600_read_status_register(void)
