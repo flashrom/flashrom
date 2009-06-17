@@ -827,62 +827,6 @@ const struct board_info boards_bad[] = {
 	{},
 };
 
-void print_supported_boards_helper(const struct board_info *b)
-{
-	int i, j, boardcount = 0;
-
-	for (i = 0; b[i].vendor != NULL; i++)
-		boardcount++;
-
-	for (i = 0; b[i].vendor != NULL; i++) {
-		printf("%s", b[i].vendor);
-		for (j = 0; j < 25 - strlen(b[i].vendor); j++)
-			printf(" ");
-		printf("%s", b[i].name);
-		for (j = 0; j < 23 - strlen(b[i].name); j++)
-			printf(" ");
-		printf("\n");
-	}
-}
-
-void print_supported_boards(void)
-{
-	int i, j, boardcount = 0;
-	struct board_pciid_enable *b = board_pciid_enables;
-
-	for (i = 0; b[i].vendor_name != NULL; i++)
-		boardcount++;
-
-	printf("\nSupported boards which need write-enable code (total: %d):"
-	       "\n\nVendor:                  Board:                   "
-	       "Required option:\n\n", boardcount);
-
-	for (i = 0; b[i].vendor_name != NULL; i++) {
-		printf("%s", b[i].vendor_name);
-		for (j = 0; j < 25 - strlen(b[i].vendor_name); j++)
-			printf(" ");
-		printf("%s", b[i].board_name);
-		for (j = 0; j < 25 - strlen(b[i].board_name); j++)
-			printf(" ");
-		if (b[i].lb_vendor != NULL)
-			printf("-m %s:%s\n", b[i].lb_vendor, b[i].lb_part);
-		else
-			printf("(none, board is autodetected)\n");
-	}
-
-	for (i = 0, boardcount = 0; boards_ok[i].vendor != NULL; i++)
-		boardcount++;
-	printf("\nSupported boards which don't need write-enable code "
-	       "(total: %d):\n\n", boardcount);
-	print_supported_boards_helper(boards_ok);
-
-	for (i = 0, boardcount = 0; boards_bad[i].vendor != NULL; i++)
-		boardcount++;
-	printf("\nBoards which have been verified to NOT work yet "
-	       "(total: %d):\n\n", boardcount);
-	print_supported_boards_helper(boards_bad);
-}
-
 /**
  * Match boards on coreboot table gathered vendor and part name.
  * Require main PCI IDs to match too as extra safety.
