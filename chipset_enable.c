@@ -948,9 +948,6 @@ static int get_flashbase_sc520(struct pci_dev *dev, const char *name)
 	return 0;
 }
 
-#define OK 0
-#define NT 1	/* Not tested */
-
 /* Please keep this list alphabetically sorted by vendor/device. */
 const struct penable chipset_enables[] = {
 	{0x10B9, 0x1533, OK, "ALi", "M1533",		enable_flash_ali_m1533},
@@ -1034,29 +1031,6 @@ const struct penable chipset_enables[] = {
 
 	{},
 };
-
-void print_supported_chipsets(void)
-{
-	int i, j, chipsetcount = 0;
-	const struct penable *c = chipset_enables;
-
-	for (i = 0; c[i].vendor_name != NULL; i++)
-		chipsetcount++;
-
-	printf("\nSupported chipsets (total: %d):\n\nVendor:                  "
-	       "Chipset:                 PCI IDs:\n\n", chipsetcount);
-
-	for (i = 0; c[i].vendor_name != NULL; i++) {
-		printf("%s", c[i].vendor_name);
-		for (j = 0; j < 25 - strlen(c[i].vendor_name); j++)
-			printf(" ");
-		printf("%s", c[i].device_name);
-		for (j = 0; j < 25 - strlen(c[i].device_name); j++)
-			printf(" ");
-		printf("%04x:%04x%s\n", c[i].vendor_id, c[i].device_id,
-		       (c[i].status == OK) ? "" : " (untested)");
-	}
-}
 
 int chipset_flash_enable(void)
 {

@@ -272,6 +272,12 @@ struct pcidev_status {
 };
 uint32_t pcidev_validate(struct pci_dev *dev, struct pcidev_status *devs);
 uint32_t pcidev_init(uint16_t vendor_id, struct pcidev_status *devs);
+
+/* print.c */
+char *flashbuses_to_text(enum chipbustype bustype);
+void print_supported_chips(void);
+void print_supported_chipsets(void);
+void print_supported_boards(void);
 void print_supported_pcidevs(struct pcidev_status *devs);
 
 /* board_enable.c */
@@ -281,12 +287,10 @@ uint8_t sio_read(uint16_t port, uint8_t reg);
 void sio_write(uint16_t port, uint8_t reg, uint8_t data);
 void sio_mask(uint16_t port, uint8_t reg, uint8_t data, uint8_t mask);
 int board_flash_enable(const char *vendor, const char *part);
-void print_supported_boards(void);
 
 /* chipset_enable.c */
 extern enum chipbustype buses_supported;
 int chipset_flash_enable(void);
-void print_supported_chipsets(void);
 
 extern unsigned long flashbase;
 
@@ -376,6 +380,10 @@ int max(int a, int b);
 int check_erased_range(struct flashchip *flash, int start, int len);
 int verify_range(struct flashchip *flash, uint8_t *cmpbuf, int start, int len, char *message);
 extern char *pcidev_bdf;
+char *strcat_realloc(char *dest, const char *src);
+
+#define OK 0
+#define NT 1    /* Not tested */
 
 /* layout.c */
 int show_id(uint8_t *bios, int size, int force);
