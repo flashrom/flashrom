@@ -617,30 +617,17 @@ static int ich_spi_write_page(struct flashchip *flash, uint8_t * bytes,
 {
 	int page_size = flash->page_size;
 	uint32_t remaining = page_size;
-	int a;
+	int towrite;
 
 	printf_debug("ich_spi_write_page: offset=%d, number=%d, buf=%p\n",
 		     offset, page_size, bytes);
 
-	for (a = 0; a < page_size; a += maxdata) {
-		if (remaining < maxdata) {
-			if (run_opcode
-			    (curopcodes->opcode[0],
-			     offset + (page_size - remaining), remaining,
-			     &bytes[page_size - remaining]) != 0) {
-				printf_debug("Error writing");
-				return 1;
-			}
-			remaining = 0;
-		} else {
-			if (run_opcode
-			    (curopcodes->opcode[0],
-			     offset + (page_size - remaining), maxdata,
-			     &bytes[page_size - remaining]) != 0) {
-				printf_debug("Error writing");
-				return 1;
-			}
-			remaining -= maxdata;
+	for (; remaining > 0; remaining -= towrite) {
+		towrite = min(remaining, maxdata);
+		if (spi_nbyte_program(offset + (page_size - remaining),
+				      &bytes[page_size - remaining], towrite)) {
+			printf_debug("Error writing");
+			return 1;
 		}
 	}
 
