@@ -661,6 +661,38 @@ static int board_msi_kt4v(const char *name)
 }
 
 /**
+ * Suited for Soyo SY-7VCA: Pro133A + VT82C686.
+ */
+static int board_soyo_sy_7vca(const char *name)
+{
+    	struct pci_dev *dev;
+	uint32_t base;
+	uint8_t tmp;
+
+	/* VT82C686 Power management */
+	dev = pci_dev_find(0x1106, 0x3057);
+	if (!dev) {
+		fprintf(stderr, "\nERROR: VT82C686 PM device not found.\n");
+		return -1;
+	}
+
+	/* GPO0 output from PM IO base + 0x4C */
+	tmp = pci_read_byte(dev, 0x54);
+	tmp &= ~0x03;
+	pci_write_byte(dev, 0x54, tmp);
+
+	/* PM IO base */
+	base = pci_read_long(dev, 0x48) & 0x0000FF00;
+
+	/* Drop GPO0 */
+	tmp = INB(base + 0x4C);
+	tmp &= ~0x01;
+	OUTB(tmp, base + 0x4C);
+
+	return 0;
+}
+
+/**
  * We use 2 sets of IDs here, you're free to choose which is which. This
  * is to provide a very high degree of certainty when matching a board on
  * the basis of subsystem/card IDs. As not every vendor handles
@@ -715,6 +747,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x1106, 0x0571, 0x1462, 0x7120,       0,      0,      0,      0, "msi",        "kt4v",        "MSI",         "MS-6712 (KT4V)",     board_msi_kt4v},
 	{0x13f6, 0x0111, 0x1462, 0x5900,  0x1106, 0x3177, 0x1106,      0, "msi",        "kt4ultra",    "MSI",         "MS-6590 (KT4 Ultra)",board_msi_kt4v},
 	{0x8086, 0x2658, 0x1462, 0x7046,  0x1106, 0x3044, 0x1462, 0x046d, NULL,         NULL,          "MSI",         "MS-7046",            ich6_gpio19_raise},
+	{0x1106, 0x3038, 0x0925, 0x1234,  0x1106, 0x3058, 0x15DD, 0x7609, NULL,         NULL,          "Soyo",        "SY-7VCA",            board_soyo_sy_7vca},
 	{0x8086, 0x1076, 0x8086, 0x1176,  0x1106, 0x3059, 0x10f1, 0x2498, NULL,         NULL,          "Tyan",        "S2498 (Tomcat K7M)", board_asus_a7v8x_mx},
 	{0x1106, 0x0314, 0x1106, 0xaa08,  0x1106, 0x3227, 0x1106, 0xAA08, NULL,         NULL,          "VIA",         "EPIA-CN",            board_via_epia_sp},
 	{0x1106, 0x3177, 0x1106, 0xAA01,  0x1106, 0x3123, 0x1106, 0xAA01, NULL,         NULL,          "VIA",         "EPIA M/MII/...",     board_via_epia_m},
