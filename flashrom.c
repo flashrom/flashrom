@@ -236,37 +236,6 @@ char *strcat_realloc(char *dest, const char *src)
 	return dest;
 }
 
-/* Return a string corresponding to the bustype parameter.
- * Memory is obtained with malloc() and can be freed with free().
- */
-char *flashbuses_to_text(enum chipbustype bustype)
-{
-	char *ret = calloc(1, 1);
-	if (bustype == CHIP_BUSTYPE_UNKNOWN) {
-		ret = strcat_realloc(ret, "Unknown,");
-	/* FIXME: Once all chipsets and flash chips have been updated, NONSPI
-	 * will cease to exist and should be eliminated here as well.
-	 */
-	} else if (bustype == CHIP_BUSTYPE_NONSPI) {
-		ret = strcat_realloc(ret, "Non-SPI,");
-	} else {
-		if (bustype & CHIP_BUSTYPE_PARALLEL)
-			ret = strcat_realloc(ret, "Parallel,");
-		if (bustype & CHIP_BUSTYPE_LPC)
-			ret = strcat_realloc(ret, "LPC,");
-		if (bustype & CHIP_BUSTYPE_FWH)
-			ret = strcat_realloc(ret, "FWH,");
-		if (bustype & CHIP_BUSTYPE_SPI)
-			ret = strcat_realloc(ret, "SPI,");
-		if (bustype == CHIP_BUSTYPE_NONE)
-			ret = strcat_realloc(ret, "None,");
-	}
-	/* Kill last comma. */
-	ret[strlen(ret) - 1] = '\0';
-	ret = realloc(ret, strlen(ret) + 1);
-	return ret;
-}
-
 /* start is an offset to the base address of the flash chip */
 int check_erased_range(struct flashchip *flash, int start, int len)
 {
@@ -509,96 +478,6 @@ int erase_flash(struct flashchip *flash)
 		}
 	printf("SUCCESS.\n");
 	return 0;
-}
-
-#ifndef MAX
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
-#endif
-#define POS_PRINT(x) do { pos += strlen(x); printf(x); } while (0)
-
-static int digits(int n)
-{
-	int i;
-
-	if (!n)
-		return 1;
-
-	for (i = 0; n; ++i)
-		n /= 10;
-
-	return i;
-}
-
-void print_supported_chips(void)
-{
-	int okcol = 0, pos = 0, i, chipcount = 0;
-	struct flashchip *f;
-
-	for (f = flashchips; f->name != NULL; f++) {
-		if (GENERIC_DEVICE_ID == f->model_id)
-			continue;
-		okcol = MAX(okcol, strlen(f->vendor) + 1 + strlen(f->name));
-	}
-	okcol = (okcol + 7) & ~7;
-
-	for (f = flashchips; f->name != NULL; f++)
-		chipcount++;
-
-	printf("\nSupported flash chips (total: %d):\n\n", chipcount);
-	POS_PRINT("Vendor:   Device:");
-	while (pos < okcol) {
-		printf("\t");
-		pos += 8 - (pos % 8);
-	}
-
-	printf("Tested OK:\tKnown BAD:  Size/KB:  Type:\n\n");
-	printf("(P = PROBE, R = READ, E = ERASE, W = WRITE)\n\n");
-
-	for (f = flashchips; f->name != NULL; f++) {
-		/* Don't print "unknown XXXX SPI chip" entries. */
-		if (!strncmp(f->name, "unknown", 7))
-			continue;
-
-		printf("%s", f->vendor);
-		for (i = 0; i < 10 - strlen(f->vendor); i++)
-			printf(" ");
-		printf("%s", f->name);
-
-		pos = 10 + strlen(f->name);
-		while (pos < okcol) {
-			printf("\t");
-			pos += 8 - (pos % 8);
-		}
-		if ((f->tested & TEST_OK_MASK)) {
-			if ((f->tested & TEST_OK_PROBE))
-				POS_PRINT("P ");
-			if ((f->tested & TEST_OK_READ))
-				POS_PRINT("R ");
-			if ((f->tested & TEST_OK_ERASE))
-				POS_PRINT("E ");
-			if ((f->tested & TEST_OK_WRITE))
-				POS_PRINT("W ");
-		}
-		while (pos < okcol + 9) {
-			printf("\t");
-			pos += 8 - (pos % 8);
-		}
-		if ((f->tested & TEST_BAD_MASK)) {
-			if ((f->tested & TEST_BAD_PROBE))
-				printf("P ");
-			if ((f->tested & TEST_BAD_READ))
-				printf("R ");
-			if ((f->tested & TEST_BAD_ERASE))
-				printf("E ");
-			if ((f->tested & TEST_BAD_WRITE))
-				printf("W ");
-		}
-
-		printf("\t    %d", f->total_size);
-		for (i = 0; i < 10 - digits(f->total_size); i++)
-			printf(" ");
-		printf("%s\n", flashbuses_to_text(f->bustype));
-	}
 }
 
 void usage(const char *name)
