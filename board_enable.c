@@ -762,6 +762,7 @@ const struct board_info boards_ok[] = {
 	{ "Abit",		"AX8", },
 	{ "Advantech",		"PCM-5820", },
 	{ "ASI",		"MB-5BLMP", },
+	{ "ASRock",		"A770CrossFire", },
 	{ "ASUS",		"A7N8X Deluxe", },
 	{ "ASUS",		"A7N8X-E Deluxe", },
 	{ "ASUS",		"A7V400-MX", },
@@ -847,7 +848,9 @@ const struct board_info boards_bad[] = {
 	{ "Biostar",		"M6TBA", },
 	{ "Boser",		"HS-6637", },
 	{ "DFI",		"855GME-MGF", },
+	{ "Elitegroup",		"K7VTA3", },
 	{ "FIC",		"VA-502", },
+	{ "GIGABYTE",		"GA-7ZM", },
 	{ "MSI",		"MS-6178", },
 	{ "MSI",		"MS-7260 (K9N Neo)", },
 	{ "PCCHIPS",		"M537DMA33", },
@@ -873,6 +876,7 @@ const struct board_info laptops_bad[] = {
 	/* Verified non-working boards (for now). */
 	{ "Acer",		"Aspire One", },
 	{ "Dell",		"Latitude CPi A366XT", },
+	{ "HP/Compaq",		"nx9010", },
 	{ "IBM/Lenovo",		"Thinkpad T40p", },
 	{ "IBM/Lenovo",		"240", },
 
