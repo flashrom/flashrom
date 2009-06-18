@@ -1021,6 +1021,7 @@ const struct penable chipset_enables[] = {
 	{0x1039, 0x0630, NT, "SiS", "SiS630",		enable_flash_sis630},
 	{0x1106, 0x8324, OK, "VIA", "CX700",		enable_flash_vt823x},
 	{0x1106, 0x8231, NT, "VIA", "VT8231",		enable_flash_vt823x},
+	{0x1106, 0x3074, NT, "VIA", "VT8233",		enable_flash_vt823x},
 	{0x1106, 0x3177, OK, "VIA", "VT8235",		enable_flash_vt823x},
 	{0x1106, 0x3227, OK, "VIA", "VT8237",		enable_flash_vt823x},
 	{0x1106, 0x3337, OK, "VIA", "VT8237A",		enable_flash_vt823x},
