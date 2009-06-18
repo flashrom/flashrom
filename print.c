@@ -167,12 +167,14 @@ void print_supported_chipsets(void)
 	}
 }
 
-void print_supported_boards_helper(const struct board_info *b)
+void print_supported_boards_helper(const struct board_info *b, const char *msg)
 {
 	int i, j, boardcount = 0;
 
 	for (i = 0; b[i].vendor != NULL; i++)
 		boardcount++;
+
+	printf("\n%s (total: %d):\n\n", msg, boardcount);
 
 	for (i = 0; b[i].vendor != NULL; i++) {
 		printf("%s", b[i].vendor);
@@ -210,15 +212,12 @@ void print_supported_boards(void)
 			printf("(none, board is autodetected)\n");
 	}
 
-	for (i = 0, boardcount = 0; boards_ok[i].vendor != NULL; i++)
-		boardcount++;
-	printf("\nSupported boards which don't need write-enable code "
-	       "(total: %d):\n\n", boardcount);
-	print_supported_boards_helper(boards_ok);
-
-	for (i = 0, boardcount = 0; boards_bad[i].vendor != NULL; i++)
-		boardcount++;
-	printf("\nBoards which have been verified to NOT work yet "
-	       "(total: %d):\n\n", boardcount);
-	print_supported_boards_helper(boards_bad);
+	print_supported_boards_helper(boards_ok,
+		"Supported boards which don't need write-enable code");
+	print_supported_boards_helper(boards_bad,
+		"Boards which have been verified to NOT work yet");
+	print_supported_boards_helper(laptops_ok,
+		"Laptops which have been verified to work");
+	print_supported_boards_helper(laptops_bad,
+		"Laptops which have been verified to NOT work yet");
 }

@@ -250,6 +250,8 @@ struct board_info {
 
 extern const struct board_info boards_ok[];
 extern const struct board_info boards_bad[];
+extern const struct board_info laptops_ok[];
+extern const struct board_info laptops_bad[];
 
 /* udelay.c */
 void myusec_delay(int usecs);
