@@ -860,6 +860,25 @@ const struct board_info boards_bad[] = {
 	{},
 };
 
+/* Please keep this list alphabetically ordered by vendor/board. */
+const struct board_info laptops_ok[] = {
+	/* Verified working laptops. */
+	{ "Lenovo",		"3000 V100 TF05Cxx", },
+
+	{},
+};
+
+/* Please keep this list alphabetically ordered by vendor/board. */
+const struct board_info laptops_bad[] = {
+	/* Verified non-working boards (for now). */
+	{ "Acer",		"Aspire One", },
+	{ "Dell",		"Latitude CPi A366XT", },
+	{ "IBM/Lenovo",		"Thinkpad T40p", },
+	{ "IBM/Lenovo",		"240", },
+
+	{},
+};
+
 /**
  * Match boards on coreboot table gathered vendor and part name.
  * Require main PCI IDs to match too as extra safety.
