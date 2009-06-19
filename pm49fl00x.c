@@ -22,8 +22,6 @@
 
 #include "flash.h"
 
-extern int exclude_start_page, exclude_end_page;
-
 void write_lockbits_49fl00x(chipaddr bios, int size,
 			    unsigned char bits, int block_size)
 {
@@ -64,9 +62,6 @@ int erase_49fl00x(struct flashchip *flash)
 	 */
 	printf("Erasing page: ");
 	for (i = 0; i < total_size / page_size; i++) {
-		if ((i >= exclude_start_page) && (i < exclude_end_page))
-			continue;
-
 		/* erase the page */
 		if (erase_block_jedec(flash, i * page_size, page_size)) {
 			fprintf(stderr, "ERASE FAILED!\n");
@@ -98,9 +93,6 @@ int write_49fl00x(struct flashchip *flash, uint8_t *buf)
 
 	printf("Programming page: ");
 	for (i = 0; i < total_size / page_size; i++) {
-		if ((i >= exclude_start_page) && (i < exclude_end_page))
-			continue;
-
 		/* erase the page before programming */
 		if (erase_block_jedec(flash, i * page_size, page_size)) {
 			fprintf(stderr, "ERASE FAILED!\n");

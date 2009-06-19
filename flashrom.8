@@ -3,7 +3,7 @@
 flashrom \- detect, read, write, verify and erase flash chips
 .SH SYNOPSIS
 .B flashrom \fR[\fB\-VfLzhR\fR] [\fB\-E\fR|\fB\-r\fR file|\fB\-w\fR file|\fB\-v\fR file]
-         [\fB\-c\fR chipname] [\fB\-s\fR addr] [\fB\-e\fR addr] [\fB\-m\fR [vendor:]part]
+         [\fB\-c\fR chipname] [\fB\-m\fR [vendor:]part]
          [\fB\-l\fR file] [\fB\-i\fR image] [\fB\-p\fR programmer] [file]
 .SH DESCRIPTION
 .B flashrom
@@ -50,9 +50,6 @@ More verbose output.
 .TP
 .B "\-c, \-\-chip" <chipname>
 Probe only for specified flash ROM chip.
-.TP
-.B "\-s, \-\-estart" <addr>
-Exclude start position (obsolete).
 .sp
 flashrom supports ROM layouts. This allows you to flash certain parts of
 the flash chip only. A ROM layout file looks like follows:
@@ -80,9 +77,6 @@ Currently overlapping sections are not supported.
 ROM layouts should replace the \-s and \-e option since they are more
 flexible and they should lead to a ROM update file format with the
 ROM layout and the ROM image in one file (cpio, zip or something?).
-.TP
-.B "\-e, \-\-eend" <addr> 
-Exclude end postion (obsolete).
 .TP
 .B "\-m, \-\-mainboard" <[vendor:]part>
 Override mainboard settings.
