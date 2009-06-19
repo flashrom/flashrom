@@ -182,16 +182,21 @@ static void vt823x_gpio_set(struct pci_dev *dev, uint8_t gpio, int raise)
 	uint16_t base;
 	uint8_t val, bit;
 
-	if ((gpio < 12) || (gpio > 15)) {
+	if ((gpio >= 12) && (gpio <= 15)) {
+		/* GPIO12-15 -> output */
+		val = pci_read_byte(dev, 0xE4);
+		val |= 0x10;
+		pci_write_byte(dev, 0xE4, val);
+	} else if (gpio == 9) {
+		/* GPIO9 -> Output */
+		val = pci_read_byte(dev, 0xE4);
+		val |= 0x20;
+		pci_write_byte(dev, 0xE4, val);
+	} else {
 		fprintf(stderr, "\nERROR: "
 			"VT823x GPIO%02d is not implemented.\n", gpio);
 		return;
 	}
-
-	/* GPIO12-15 -> output */
-	val = pci_read_byte(dev, 0xE4);
-	val |= 0x10;
-	pci_write_byte(dev, 0xE4, val);
 
 	/* Now raise/drop the GPIO line itself. */
 	bit = 0x01 << (gpio - 8);
@@ -265,6 +270,28 @@ static int board_via_epia_sp(const char *name)
 	}
 
 	vt823x_set_all_writes_to_lpc(dev);
+
+	return 0;
+}
+
+/**
+ * Suited for VIAs EPIA N & NL.
+ */
+static int board_via_epia_n(const char *name)
+{
+	struct pci_dev *dev;
+
+	dev = pci_dev_find(0x1106, 0x3227);	/* VT8237R ISA bridge */
+	if (!dev) {
+		fprintf(stderr, "\nERROR: VT8237R ISA bridge not found.\n");
+		return -1;
+	}
+
+	/* All memory cycles, not just ROM ones, go to LPC */
+	vt823x_set_all_writes_to_lpc(dev);
+
+	/* GPIO9 -> output */
+	vt823x_gpio_set(dev, 9, 1);
 
 	return 0;
 }
@@ -819,6 +846,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x8086, 0x1076, 0x8086, 0x1176,  0x1106, 0x3059, 0x10f1, 0x2498, NULL,         NULL,          "Tyan",        "S2498 (Tomcat K7M)", board_asus_a7v8x_mx},
 	{0x1106, 0x0314, 0x1106, 0xaa08,  0x1106, 0x3227, 0x1106, 0xAA08, NULL,         NULL,          "VIA",         "EPIA-CN",            board_via_epia_sp},
 	{0x1106, 0x3177, 0x1106, 0xAA01,  0x1106, 0x3123, 0x1106, 0xAA01, NULL,         NULL,          "VIA",         "EPIA M/MII/...",     board_via_epia_m},
+	{0x1106, 0x0259, 0x1106, 0x3227,  0x1106, 0x3065, 0x1106, 0x3149, "via",        "epia-n",      "VIA",         "EPIA-N/NL",          board_via_epia_n}, /* TODO: remove coreboot ids */
 	{0x1106, 0x3227, 0x1106, 0xAA01,  0x1106, 0x0259, 0x1106, 0xAA01, NULL,         NULL,          "VIA",         "EPIA SP",            board_via_epia_sp},
 	{0x1106, 0x5337, 0x1458, 0xb003,  0x1106, 0x287e, 0x1106, 0x337e, "via",        "pc3500g",     "VIA",         "PC3500G",            it87xx_probe_spi_flash},
 	{     0,      0,      0,      0,       0,      0,      0,      0, NULL,         NULL,          NULL,          NULL,                 NULL}, /* end marker */
