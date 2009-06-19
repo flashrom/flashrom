@@ -248,6 +248,12 @@ struct board_info {
 	const char *name;
 };
 
+struct board_info_url {
+	const char *vendor;
+	const char *name;
+	const char *url;
+};
+
 extern const struct board_info boards_ok[];
 extern const struct board_info boards_bad[];
 extern const struct board_info laptops_ok[];
@@ -281,6 +287,12 @@ void print_supported_chips(void);
 void print_supported_chipsets(void);
 void print_supported_boards(void);
 void print_supported_pcidevs(struct pcidev_status *devs);
+void print_supported_chips_wiki(void);
+void print_supported_boards_wiki(void);
+void print_supported_chipsets_wiki(void);
+void print_supported_pcidevs_wiki_header(void);
+void print_supported_pcidevs_wiki_footer(void);
+void print_supported_pcidevs_wiki(struct pcidev_status *devs);
 
 /* board_enable.c */
 void w836xx_ext_enter(uint16_t port);
