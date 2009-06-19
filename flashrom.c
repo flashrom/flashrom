@@ -482,9 +482,8 @@ int erase_flash(struct flashchip *flash)
 
 void usage(const char *name)
 {
-	printf("usage: %s [-VfLhR] [-E|-r file|-w file|-v file] [-c chipname] [-s addr]\n"
-	       "       [-e addr] [-m [vendor:]part] [-l file] [-i image] [-p programmer] [file]\n\n",
-	       name);
+	printf("usage: %s [-VfLzhR] [-E|-r file|-w file|-v file] [-c chipname] [-s addr]\n"
+              "       [-e addr] [-m [vendor:]part] [-l file] [-i image] [-p programmer] [file]\n\n", name);
 
 	printf("Please note that the command line interface for flashrom will "
 		"change before\nflashrom 1.0. Do not use flashrom in scripts "
@@ -505,12 +504,14 @@ void usage(const char *name)
 	     "   -l | --layout <file.layout>:      read ROM layout from file\n"
 	     "   -i | --image <name>:              only flash image name from flash layout\n"
 	     "   -L | --list-supported:            print supported devices\n"
+	     "   -z | --list-supported-wiki:       print supported devices in wiki syntax\n"
 	     "   -p | --programmer <name>:         specify the programmer device\n"
-	     "                                     (internal, dummy, nic3com, satasii, it87spi, ft2232spi)\n"
+	     "                                     (internal, dummy, nic3com, satasii,\n"
+	     "                                     it87spi, ft2232spi)\n"
 	     "   -h | --help:                      print this help text\n"
 	     "   -R | --version:                   print the version (release)\n"
-	     "\nYou can specify one of -E, -r, -w, -v or no operation.\n"
-	     "If no operation is specified, then all that happens"
+	     "\nYou can specify one of -E, -r, -w, -v or no operation. "
+	     "If no operation is\nspecified, then all that happens"
 	     " is that flash info is dumped.\n\n");
 	exit(1);
 }
@@ -531,7 +532,7 @@ int main(int argc, char *argv[])
 	int option_index = 0;
 	int force = 0;
 	int read_it = 0, write_it = 0, erase_it = 0, verify_it = 0;
-	int list_supported = 0;
+	int list_supported = 0, list_supported_wiki = 0;
 	int operation_specified = 0;
 	int ret = 0, i;
 
@@ -549,6 +550,7 @@ int main(int argc, char *argv[])
 		{"layout", 1, 0, 'l'},
 		{"image", 1, 0, 'i'},
 		{"list-supported", 0, 0, 'L'},
+		{"list-supported-wiki", 0, 0, 'z'},
 		{"programmer", 1, 0, 'p'},
 		{"help", 0, 0, 'h'},
 		{"version", 0, 0, 'R'},
@@ -571,7 +573,7 @@ int main(int argc, char *argv[])
 	}
 
 	setbuf(stdout, NULL);
-	while ((opt = getopt_long(argc, argv, "rRwvVEfc:s:e:m:l:i:p:Lh",
+	while ((opt = getopt_long(argc, argv, "rRwvVEfc:s:e:m:l:i:p:Lzh",
 				  long_options, &option_index)) != EOF) {
 		switch (opt) {
 		case 'r':
@@ -647,6 +649,9 @@ int main(int argc, char *argv[])
 		case 'L':
 			list_supported = 1;
 			break;
+		case 'z':
+			list_supported_wiki = 1;
+			break;
 		case 'p':
 			if (strncmp(optarg, "internal", 8) == 0) {
 				programmer = PROGRAMMER_INTERNAL;
@@ -690,6 +695,18 @@ int main(int argc, char *argv[])
 		       "as programmer:\n\n");
 		print_supported_pcidevs(nics_3com);
 		print_supported_pcidevs(satas_sii);
+		exit(0);
+	}
+
+	if (list_supported_wiki) {
+		printf("= Supported devices =\n");
+		print_supported_chips_wiki();
+		print_supported_chipsets_wiki();
+		print_supported_boards_wiki();
+		print_supported_pcidevs_wiki_header();
+		print_supported_pcidevs_wiki(nics_3com);
+		print_supported_pcidevs_wiki(satas_sii);
+		print_supported_pcidevs_wiki_footer();
 		exit(0);
 	}
 

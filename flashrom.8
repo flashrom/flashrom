@@ -2,7 +2,7 @@
 .SH NAME
 flashrom \- detect, read, write, verify and erase flash chips
 .SH SYNOPSIS
-.B flashrom \fR[\fB\-VfLhR\fR] [\fB\-E\fR|\fB\-r\fR file|\fB\-w\fR file|\fB\-v\fR file]
+.B flashrom \fR[\fB\-VfLzhR\fR] [\fB\-E\fR|\fB\-r\fR file|\fB\-w\fR file|\fB\-v\fR file]
          [\fB\-c\fR chipname] [\fB\-s\fR addr] [\fB\-e\fR addr] [\fB\-m\fR [vendor:]part]
          [\fB\-l\fR file] [\fB\-i\fR image] [\fB\-p\fR programmer] [file]
 .SH DESCRIPTION
@@ -122,6 +122,12 @@ special support in flashrom. Please let us know if you can verify that
 other boards work or do not work out of the box. For verification you have
 to test an ERASE and/or WRITE operation, so make sure you only do that
 if you have proper means to recover from failure!
+.TP
+.B "\-z, \-\-list\-supported-wiki"
+Same as
+.BR \-\-list\-supported ,
+but outputs the supported hardware in MediaWiki syntax, so that it can be
+easily pasted into the wiki page at http://coreboot.org/Flashrom.
 .TP
 .B "\-p, \-\-programmer <name>"
 Specify the programmer device. Currently supported are:
