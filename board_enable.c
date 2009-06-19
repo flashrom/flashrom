@@ -923,6 +923,8 @@ const struct board_info boards_ok[] = {
 	{ "Tyan",		"S5376G2NR/S5376WAG2NR", },
 	{ "Tyan",		"S5377", },
 	{ "Tyan",		"S5397", },
+	{ "VIA",		"EPIA-EX15000", },
+	{ "VIA",		"EPIA-NX15000", },
 	{ "VIA",		"EPIA-LN", },
 	{ "VIA",		"NAB74X0", },
 	{ "VIA",		"pc2500e", },
