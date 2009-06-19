@@ -31,7 +31,6 @@
 #include "flashchips.h"
 
 char *chip_to_probe = NULL;
-int exclude_start_page, exclude_end_page;
 int verbose = 0;
 int programmer = PROGRAMMER_INTERNAL;
 
@@ -410,7 +409,7 @@ int verify_flash(struct flashchip *flash, uint8_t *buf)
 	return 0;
 }
 
-int read_flash(struct flashchip *flash, char *filename, unsigned int exclude_start_position, unsigned int exclude_end_position)
+int read_flash(struct flashchip *flash, char *filename)
 {
 	unsigned long numbytes;
 	FILE *image;
@@ -432,10 +431,6 @@ int read_flash(struct flashchip *flash, char *filename, unsigned int exclude_sta
 		return 1;
 	} else
 		flash->read(flash, buf, 0, size);
-
-	if (exclude_end_position - exclude_start_position > 0)
-		memset(buf + exclude_start_position, 0,
-		       exclude_end_position - exclude_start_position);
 
 	numbytes = fwrite(buf, 1, size, image);
 	fclose(image);
@@ -482,8 +477,8 @@ int erase_flash(struct flashchip *flash)
 
 void usage(const char *name)
 {
-	printf("usage: %s [-VfLzhR] [-E|-r file|-w file|-v file] [-c chipname] [-s addr]\n"
-              "       [-e addr] [-m [vendor:]part] [-l file] [-i image] [-p programmer] [file]\n\n", name);
+	printf("usage: %s [-VfLzhR] [-E|-r file|-w file|-v file] [-c chipname]\n"
+              "       [-m [vendor:]part] [-l file] [-i image] [-p programmer] [file]\n\n", name);
 
 	printf("Please note that the command line interface for flashrom will "
 		"change before\nflashrom 1.0. Do not use flashrom in scripts "
@@ -497,8 +492,6 @@ void usage(const char *name)
 	     "   -E | --erase:                     erase flash device\n"
 	     "   -V | --verbose:                   more verbose output\n"
 	     "   -c | --chip <chipname>:           probe only for specified flash chip\n"
-	     "   -s | --estart <addr>:             exclude start position\n"
-	     "   -e | --eend <addr>:               exclude end postion\n"
 	     "   -m | --mainboard <[vendor:]part>: override mainboard settings\n"
 	     "   -f | --force:                     force write without checking image\n"
 	     "   -l | --layout <file.layout>:      read ROM layout from file\n"
@@ -542,8 +535,6 @@ int main(int argc, char *argv[])
 		{"erase", 0, 0, 'E'},
 		{"verify", 0, 0, 'v'},
 		{"chip", 1, 0, 'c'},
-		{"estart", 1, 0, 's'},
-		{"eend", 1, 0, 'e'},
 		{"mainboard", 1, 0, 'm'},
 		{"verbose", 0, 0, 'V'},
 		{"force", 0, 0, 'f'},
@@ -559,7 +550,6 @@ int main(int argc, char *argv[])
 
 	char *filename = NULL;
 
-	unsigned int exclude_start_position = 0, exclude_end_position = 0;	// [x,y)
 	char *tempstr = NULL, *tempstr2 = NULL;
 
 	print_version();
@@ -573,7 +563,7 @@ int main(int argc, char *argv[])
 	}
 
 	setbuf(stdout, NULL);
-	while ((opt = getopt_long(argc, argv, "rRwvVEfc:s:e:m:l:i:p:Lzh",
+	while ((opt = getopt_long(argc, argv, "rRwvVEfc:m:l:i:p:Lzh",
 				  long_options, &option_index)) != EOF) {
 		switch (opt) {
 		case 'r':
@@ -613,14 +603,6 @@ int main(int argc, char *argv[])
 				exit(1);
 			}
 			erase_it = 1;
-			break;
-		case 's':
-			tempstr = strdup(optarg);
-			sscanf(tempstr, "%x", &exclude_start_position);
-			break;
-		case 'e':
-			tempstr = strdup(optarg);
-			sscanf(tempstr, "%x", &exclude_end_position);
 			break;
 		case 'm':
 			tempstr = strdup(optarg);
@@ -753,7 +735,7 @@ int main(int argc, char *argv[])
 				printf("Run flashrom -L to view the hardware supported in this flashrom version.\n");
 				exit(1);
 			}
-			return read_flash(flashes[0], filename, exclude_start_position, exclude_end_position);
+			return read_flash(flashes[0], filename);
 		}
 		// FIXME: flash writes stay enabled!
 		exit(1);
@@ -817,7 +799,7 @@ int main(int argc, char *argv[])
 		if (erase_flash(flash))
 			return 1;
 	} else if (read_it) {
-		if (read_flash(flash, filename, exclude_start_position, exclude_end_position))
+		if (read_flash(flash, filename))
 			return 1;
 	} else {
 		struct stat image_stat;
@@ -843,27 +825,6 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 	}
-
-	/* exclude range stuff. Nice idea, but at the moment it is only
-	 * supported in hardware by the pm49fl004 chips. 
-	 * Instead of implementing this for all chips I suggest advancing
-	 * it to the rom layout feature below and drop exclude range
-	 * completely once all flash chips can do rom layouts. stepan
-	 */
-
-	/* FIXME: This code is totally broken. It treats exclude ranges as include ranges. */
-	// ////////////////////////////////////////////////////////////
-	if (exclude_end_position - exclude_start_position > 0)
-		chip_readn(buf + exclude_start_position,
-			   flash->virtual_memory + exclude_start_position,
-			   exclude_end_position - exclude_start_position);
-
-	exclude_start_page = exclude_start_position / flash->page_size;
-	if ((exclude_start_position % flash->page_size) != 0) {
-		exclude_start_page++;
-	}
-	exclude_end_page = exclude_end_position / flash->page_size;
-	// ////////////////////////////////////////////////////////////
 
 	// This should be moved into each flash part's code to do it 
 	// cleanly. This does the job.
