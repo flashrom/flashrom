@@ -35,6 +35,7 @@ uint16_t id;
 
 struct pcidev_status satas_sii[] = {
 	{0x1095, 0x0680, PCI_OK, "Silicon Image", "PCI0680 Ultra ATA-133 Host Ctrl"},
+	{0x1095, 0x3112, PCI_OK, "Silicon Image", "SiI 3112 [SATALink/SATARaid] SATA Ctrl"},
 	{0x1095, 0x3114, PCI_OK, "Silicon Image", "SiI 3114 [SATALink/SATARaid] SATA Ctrl"},
 	{0x1095, 0x3124, PCI_NT, "Silicon Image", "SiI 3124 PCI-X SATA Ctrl"},
 	{0x1095, 0x3132, PCI_OK, "Silicon Image", "SiI 3132 SATA Raid II Ctrl"},
