@@ -41,6 +41,22 @@ struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "AMD",
+		.name		= "Am29F010A/B",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= AMD_ID,
+		.model_id	= AM_29F010B,	/* Same as Am29F010A */
+		.total_size	= 128,
+		.page_size	= 16 * 1024,
+		.tested		= TEST_OK_PREW,
+		.probe		= probe_29f040b,
+		.probe_timing	= TIMING_FIXME,
+		.erase		= erase_29f040b,
+		.write		= write_pm29f002,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "AMD",
 		.name		= "Am29F002(N)BB",
 		.bustype	= CHIP_BUSTYPE_NONSPI,
 		.manufacture_id	= AMD_ID,
