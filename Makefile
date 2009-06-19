@@ -51,7 +51,7 @@ OBJS = chipset_enable.o board_enable.o udelay.o jedec.o stm50flw0x0x.o \
 	ichspi.o w39v040c.o sb600spi.o wbsio_spi.o m29f002.o internal.o \
 	dummyflasher.o pcidev.o nic3com.o satasii.o ft2232_spi.o print.o
 
-all: pciutils .features dep $(PROGRAM)
+all: pciutils features dep $(PROGRAM)
 
 # Set the flashrom version string from the highest revision number
 # of the checked out flashrom files.
@@ -66,7 +66,11 @@ SVNDEF := -D'FLASHROM_VERSION="$(VERSION)"'
 $(PROGRAM): $(OBJS)
 	$(CC) $(LDFLAGS) -o $(PROGRAM) $(OBJS) $(LIBS) $(FEATURE_LIBS)
 
-flashrom.o: flashrom.c
+FEATURE_CFLAGS = $(shell LANG=C grep -q "FTDISUPPORT := yes" .features && printf "%s" "-D'FT2232_SPI_SUPPORT=1'")
+
+FEATURE_LIBS = $(shell LANG=C grep -q "FTDISUPPORT := yes" .features && printf "%s" "-lftdi")
+
+flashrom.o: flashrom.c .features
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(FEATURE_CFLAGS) -c -o $@ $< $(SVNDEF)
 
 %.o: %.c .features
@@ -93,9 +97,7 @@ compiler:
 		rm -f .test.c .test; exit 1)
 	@rm -f .test.c .test
 
-# We don't specify compiler as requirement because the compiler is already
-# checked during makefile remake through .features
-pciutils:
+pciutils: compiler
 	@printf "Checking for pciutils and zlib... "
 	@$(shell ( echo "#include <pci/pci.h>";		   \
 		   echo "struct pci_access *pacc;";	   \
@@ -108,16 +110,18 @@ pciutils:
 		rm -f .test.c .test; exit 1)
 	@rm -f .test.c .test
 
-.features: compiler
+.features: features
+
+features: compiler
+	@echo "FEATURES := yes" > .features.tmp
 	@printf "Checking for FTDI support... "
 	@$(shell ( echo "#include <ftdi.h>";		   \
 		   echo "struct ftdi_context *ftdic = NULL;";	   \
 		   echo "int main(int argc, char **argv)"; \
 		   echo "{ return ftdi_init(ftdic); }"; ) > .featuretest.c )
 	@$(CC) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest $(LIBS) -lftdi >/dev/null 2>&1 &&	\
-		( echo "found."; echo FEATURE_CFLAGS := -D'FT2232_SPI_SUPPORT=1' > .features.tmp;	\
-		  echo FEATURE_LIBS := -lftdi >> .features.tmp) ||	\
-		( echo "not found."; echo "" > .features.tmp )
+		( echo "found."; echo "FTDISUPPORT := yes" >> .features.tmp ) ||	\
+		( echo "not found."; echo "FTDISUPPORT := no" >> .features.tmp )
 	@$(DIFF) -q .features.tmp .features >/dev/null 2>&1 && rm .features.tmp || mv .features.tmp .features
 	@rm -f .featuretest.c .featuretest
 
@@ -138,7 +142,6 @@ tarball: export
 	@rm -rf $(EXPORTDIR)/flashrom-$(VERSION)
 	@echo Created $(EXPORTDIR)/flashrom-$(VERSION).tar.gz
 
-.PHONY: all clean distclean dep compiler pciutils export tarball
+.PHONY: all clean distclean dep compiler pciutils features export tarball
 
 -include .dependencies
--include .features
