@@ -58,19 +58,6 @@ int erase_29f002(struct flashchip *flash)
 	programmer_delay(100);
 	toggle_ready_jedec(bios);
 
-	//   while ((*bios & 0x40) != 0x40)
-	//;
-
-#if 0
-	toggle_ready_jedec(bios);
-	chip_writeb(0x30, bios + 0x0ffff);
-	chip_writeb(0x30, bios + 0x1ffff);
-	chip_writeb(0x30, bios + 0x2ffff);
-	chip_writeb(0x30, bios + 0x37fff);
-	chip_writeb(0x30, bios + 0x39fff);
-	chip_writeb(0x30, bios + 0x3bfff);
-#endif
-
 	if (check_erased_range(flash, 0, flash->total_size * 1024)) {
 		fprintf(stderr, "ERASE FAILED!\n");
 		return -1;
@@ -91,8 +78,6 @@ int write_29f002(struct flashchip *flash, uint8_t *buf)
 		fprintf(stderr, "ERASE FAILED!\n");
 		return -1;
 	}
-	//*bios = 0xF0;
-#if 1
 	printf("Programming page: ");
 	for (i = 0; i < total_size; i++) {
 		/* write to the sector */
@@ -109,7 +94,6 @@ int write_29f002(struct flashchip *flash, uint8_t *buf)
 		if ((i & 0xfff) == 0)
 			printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
 	}
-#endif
 	printf("\n");
 
 	return 0;
