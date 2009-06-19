@@ -222,21 +222,21 @@ void print_supported_boards(void)
 		"Laptops which have been verified to NOT work yet");
 }
 
-#define CHIPSET_TH "{| border=\"0\" style=\"font-size: smaller\"\n\
+const char *chipset_th = "{| border=\"0\" style=\"font-size: smaller\"\n\
 |- bgcolor=\"#6699dd\"\n! align=\"left\" | Vendor\n\
 ! align=\"left\" | Southbridge\n! align=\"left\" | PCI IDs\n\
-! align=\"left\" | Status\n\n"
+! align=\"left\" | Status\n\n";
 
-#define BOARD_TH "{| border=\"0\" style=\"font-size: smaller\" valign=\"top\"\
-\n|- bgcolor=\"#6699dd\"\n! align=\"left\" | Vendor\n\
-! align=\"left\" | Mainboard\n! align=\"left\" | Status\n\n"
+const char *board_th = "{| border=\"0\" style=\"font-size: smaller\" \
+valign=\"top\"\n|- bgcolor=\"#6699dd\"\n! align=\"left\" | Vendor\n\
+! align=\"left\" | Mainboard\n! align=\"left\" | Status\n\n";
 
-#define BOARD_TH2 "{| border=\"0\" style=\"font-size: smaller\" valign=\"top\"\
-\n|- bgcolor=\"#6699dd\"\n! align=\"left\" | Vendor\n\
+const char *board_th2 = "{| border=\"0\" style=\"font-size: smaller\" \
+valign=\"top\"\n|- bgcolor=\"#6699dd\"\n! align=\"left\" | Vendor\n\
 ! align=\"left\" | Mainboard\n! align=\"left\" | Required option\n\
-! align=\"left\" | Status\n\n"
+! align=\"left\" | Status\n\n";
 
-#define BOARD_INTRO "\
+const char *board_intro = "\
 \n== Supported mainboards ==\n\n\
 In general, it is very likely that flashrom works out of the box even if your \
 mainboard is not listed below.\n\nThis is a list of mainboards where we have \
@@ -246,21 +246,22 @@ chip), or that they do not yet work at all. If they do not work, support may \
 or may not be added later.\n\n\
 Mainboards which don't appear in the list may or may not work (we don't \
 know, someone has to give it a try). Please report any further verified \
-mainboards on the [[Mailinglist|mailing list]].\n"
+mainboards on the [[Mailinglist|mailing list]].\n";
 
-#define CHIP_TH "{| border=\"0\" style=\"font-size: smaller\" valign=\"top\"\n\
-|- bgcolor=\"#6699dd\"\n! align=\"left\" | Vendor\n\
+const char *chip_th = "{| border=\"0\" style=\"font-size: smaller\" \
+valign=\"top\"\n|- bgcolor=\"#6699dd\"\n! align=\"left\" | Vendor\n\
 ! align=\"left\" | Device\n! align=\"left\" | Size / KB\n\
 ! align=\"left\" | Type\n! align=\"left\" colspan=\"4\" | Status\n\n\
 |- bgcolor=\"#6699ff\"\n| colspan=\"4\" | &nbsp;\n\
-| Probe\n| Read\n| Write\n| Erase\n\n"
+| Probe\n| Read\n| Write\n| Erase\n\n";
 
-#define PROGRAMMER_SECTION "\n== Supported programmers ==\n\nThis is a list \
+const char *programmer_section = "\
+\n== Supported programmers ==\n\nThis is a list \
 of supported PCI devices flashrom can use as programmer:\n\n{| border=\"0\" \
 valign=\"top\"\n| valign=\"top\"|\n\n{| border=\"0\" style=\"font-size: \
 smaller\" valign=\"top\"\n|- bgcolor=\"#6699dd\"\n! align=\"left\" | Vendor\n\
 ! align=\"left\" | Device\n! align=\"left\" | PCI IDs\n\
-! align=\"left\" | Status\n\n"
+! align=\"left\" | Status\n\n";
 
 const struct board_info_url boards_url[] = {
 	/* Verified working boards that don't need write-enables. */
@@ -268,22 +269,26 @@ const struct board_info_url boards_url[] = {
 	{ "Abit",		"AX8",			"http://www.abit.com.tw/page/en/motherboard/motherboard_detail.php?DEFTITLE=Y&fMTYPE=Socket%20939&pMODEL_NAME=AX8" },
 	{ "Advantech",		"PCM-5820", 		"http://taiwan.advantech.com.tw/products/Model_Detail.asp?model_id=1-1TGZL8&BU=ACG&PD=" },
 	{ "ASI",		"MB-5BLMP",		"http://www.hojerteknik.com/winnet.htm" },
-	{ "ASUS",		"A8N-E",		"http://www.asus.com.tw/products.aspx?l1=3&l2=15&l3=171&l4=0&model=455&modelmenu=2" },
-	{ "ASUS",		"A8NE-FM/S",		"http://www.hardwareschotte.de/hardware/preise/proid_1266090/preis_ASUS+A8NE-FM" },
-	{ "ASUS",		"A8N-SLI Premium",	"http://www.asus.com.tw/products.aspx?l1=3&l2=15&l3=148&l4=0&model=539&modelmenu=1" },
-	{ "ASUS",		"A8V-E Deluxe",		"http://www.asus.com.tw/products.aspx?l1=3&l2=15&l3=143&l4=0&model=376&modelmenu=1" },
-	{ "ASUS",		"M2A-VM",		"http://www.asus.com.tw/products.aspx?l1=3&l2=101&l3=496&l4=0&model=1568&modelmenu=1" },
-	{ "ASUS",		"M2N-E",		"http://www.asus.com/products.aspx?l1=3&l2=101&l3=308&l4=0&model=1181&modelmenu=1" },
-	{ "ASUS",		"P2B",			"http://www.motherboard.cz/mb/asus/P2B.htm" },
-	{ "ASUS",		"P2B-F",		"http://www.motherboard.cz/mb/asus/P2B-F.htm" },
-	{ "ASUS",		"P2B-D",		"ftp://ftp.asus.com.tw/pub/ASUS/mb/slot1/440bx/p2b-d/" },
-	{ "ASUS",		"P2B-DS",		"ftp://ftp.asus.com.tw/pub/ASUS/mb/slot1/440bx/p2b-ds/" },
+	{ "ASRock",		"A770CrossFire",	NULL },
+	{ "ASUS",		"A7N8X Deluxe",		"http://www.asus.com/Product.aspx?P_ID=wAsRYm41KTp78MFC" },
+	{ "ASUS",		"A7N8X-E Deluxe",	"http://www.asus.com/products.aspx?l1=3&l2=13&l3=56&l4=0&model=217&modelmenu=1" },
 	{ "ASUS",		"A7V400-MX",		"http://www.asus.com.tw/products.aspx?l1=3&l2=13&l3=63&l4=0&model=228&modelmenu=1" },
 	{ "ASUS",		"A7V8X-MX",		"http://www.asus.com.tw/products.aspx?l1=3&l2=13&l3=64&l4=0&model=229&modelmenu=1" },
-	{ "ASUS",		"P4B266",		"http://www.ciao.co.uk/ASUS_Intel_845D_Chipset_P4B266__5409807#productdetail" },
+	{ "ASUS",		"A8N-E",		"http://www.asus.com.tw/products.aspx?l1=3&l2=15&l3=171&l4=0&model=455&modelmenu=2" },
+	{ "ASUS",		"A8NE-FM/S",		"http://www.hardwareschotte.de/hardware/preise/proid_1266090/preis_ASUS+A8NE-FM" },
+	{ "ASUS",		"A8N-SLI",		"http://asus.com/product.aspx?P_ID=J9FKa8z2xVId3pDK" },
+	{ "ASUS",		"A8N-SLI Premium",	"http://www.asus.com.tw/products.aspx?l1=3&l2=15&l3=148&l4=0&model=539&modelmenu=1" },
+	{ "ASUS",		"A8V-E Deluxe",		"http://www.asus.com.tw/products.aspx?l1=3&l2=15&l3=143&l4=0&model=376&modelmenu=1" },
 	{ "ASUS",		"A8V-E SE",		"http://www.asus.com.tw/products.aspx?l1=3&l2=15&l3=143&l4=0&model=576&modelmenu=1" },
-	{ "ASUS",		"P2L97-S",		"http://www.motherboard.cz/mb/asus/P2L97-S.htm" },
 	{ "ASUS",		"M2A-MX",		"http://www.asus.com/products.aspx?l1=3&l2=101&l3=583&l4=0&model=1909&modelmenu=1" },
+	{ "ASUS",		"M2A-VM",		"http://www.asus.com.tw/products.aspx?l1=3&l2=101&l3=496&l4=0&model=1568&modelmenu=1" },
+	{ "ASUS",		"M2N-E",		"http://www.asus.com/products.aspx?l1=3&l2=101&l3=308&l4=0&model=1181&modelmenu=1" },
+	{ "ASUS",		"M2V",			"http://asus.com/Product.aspx?P_ID=OqYlEDFfF6ZqZGvp" },
+	{ "ASUS",		"P2B",			"http://www.motherboard.cz/mb/asus/P2B.htm" },
+	{ "ASUS",		"P2B-D",		"ftp://ftp.asus.com.tw/pub/ASUS/mb/slot1/440bx/p2b-d/" },
+	{ "ASUS",		"P2B-DS",		"ftp://ftp.asus.com.tw/pub/ASUS/mb/slot1/440bx/p2b-ds/" },
+	{ "ASUS",		"P2B-F",		"http://www.motherboard.cz/mb/asus/P2B-F.htm" },
+	{ "ASUS",		"P2L97-S",		"http://www.motherboard.cz/mb/asus/P2L97-S.htm" },
 	{ "ASUS",		"P5B-Deluxe",		"ftp://ftp.asus.com.tw/pub/ASUS/mb/socket775/P5B-Deluxe/" },
 	{ "ASUS",		"P6T Deluxe V2",	"http://www.asus.com/product.aspx?P_ID=iRlP8RG9han6saZx" },
 	{ "A-Trend",		"ATC-6220",		"http://www.motherboard.cz/mb/atrend/atc6220.htm" },
@@ -292,30 +297,32 @@ const struct board_info_url boards_url[] = {
 	{ "GIGABYTE",		"GA-6BXDU",		"http://www.gigabyte.com.tw/Products/Motherboard/Products_Spec.aspx?ProductID=1429" },
 	{ "GIGABYTE",		"GA-6ZMA",		"http://www.gigabyte.de/Support/Motherboard/BIOS_Model.aspx?ProductID=3289" },
 	{ "Intel",		"EP80759",		NULL },
-	{ "MSI",		"KT4V",			NULL },
-	{ "MSI",		"MS-7046",		NULL },
+	{ "Jetway",		"J7F4K1G5D-PB",		"http://www.jetway.com.tw/jetway/system/productshow2.asp?id=389&proname=J7F4K1G5D-P" },
+	{ "MSI",		"MS-6570 (K7N2)",	NULL },
 	{ "MSI",		"MS-7065",		NULL },
-	{ "MSI",		"MS-7236 (945PL Neo3)",	"http://global.msi.com.tw/index.php?func=prodmbspec&maincat_no=1&cat2_no=&cat3_no=&prod_no=1173#menu" },
-	{ "MSI",		"MS-7345 (P35 Neo2-FIR)","http://www.msi.com/index.php?func=prodcpusupport&maincat_no=1&cat2_no=170&cat3_no=&prod_no=1261#menu" },
 	{ "MSI",		"MS-7168 (Orion)",	"http://support.packardbell.co.uk/uk/item/index.php?i=spec_orion&pi=platform_honeymoon_istart" },
+	{ "MSI",		"MS-7236 (945PL Neo3)",	"http://global.msi.com.tw/index.php?func=prodmbspec&maincat_no=1&cat2_no=&cat3_no=&prod_no=1173#menu" },
+	{ "MSI",		"MS-7255 (P4M890M)",	"http://us.msi.com/product/p_spec.asp?model=P4M890M" },
+	{ "MSI",		"MS-7345 (P35 Neo2-FIR)","http://www.msi.com/index.php?func=prodcpusupport&maincat_no=1&cat2_no=170&cat3_no=&prod_no=1261#menu" },
 	{ "NEC",		"PowerMate 2000",	"http://support.necam.com/mobilesolutions/hardware/Desktops/pm2000/celeron/" },
 	{ "PC Engines",		"Alix.1c",		"http://pcengines.ch/alix1c.htm" },
 	{ "PC Engines",		"Alix.2c2",		"http://pcengines.ch/alix2c2.htm" },
 	{ "PC Engines",		"Alix.2c3",		"http://pcengines.ch/alix2c3.htm" },
 	{ "PC Engines",		"Alix.3c3",		"http://pcengines.ch/alix3c3.htm" },
+	{ "PC Engines",		"Alix.3d3",		"http://pcengines.ch/alix3d3.htm" },
 	{ "RCA",		"RM4100",		"http://www.settoplinux.org" },
-	{ "Supermicro",		"H8QC8",		"http://www.supermicro.com/Aplus/motherboard/Opteron/nforce/H8QC8.cfm" },
 	{ "Sun",		"Blade x6250",		"http://www.sun.com/servers/blades/x6250/" },
+	{ "Supermicro",		"H8QC8",		"http://www.supermicro.com/Aplus/motherboard/Opteron/nforce/H8QC8.cfm" },
 	{ "Thomson",		"IP1000",		"http://www.settoplinux.org" },
 	{ "T-Online",		"S-100",		"http://wiki.freifunk-hannover.de/T-Online_S_100" },
+	{ "Tyan",		"iS5375-1U",		"http://www.tyan.com/product_board_detail.aspx?pid=610" },
 	{ "Tyan",		"S1846",		"http://www.tyan.com/archive/products/html/tsunamiatx.html" },
-	// { "Tyan",		"S2498 (Tomcat K7M)",	"http://www.tyan.com/archive/products/html/tomcatk7m.html" },
 	{ "Tyan",		"S2881",		"http://www.tyan.com/product_board_detail.aspx?pid=115" },
 	{ "Tyan",		"S2882",		"http://www.tyan.com/product_board_detail.aspx?pid=121" },
 	{ "Tyan",		"S2882-D",		"http://www.tyan.com/product_board_detail.aspx?pid=127" },
-	{ "Tyan",		"S2891",		NULL },
-	{ "Tyan",		"S2892",		NULL },
-	{ "Tyan",		"S2895",		NULL },
+	{ "Tyan",		"S2891",		"http://www.tyan.com/product_board_detail.aspx?pid=144" },
+	{ "Tyan",		"S2892",		"http://www.tyan.com/product_board_detail.aspx?pid=145" },
+	{ "Tyan",		"S2895",		"http://www.tyan.com/archive/products/html/thunderk8we.html" },
 	{ "Tyan",		"S3095",		"http://www.tyan.com/product_board_detail.aspx?pid=181" },
 	{ "Tyan",		"S5180",		"http://www.tyan.com/product_board_detail.aspx?pid=456" },
 	{ "Tyan",		"S5191",		"http://www.tyan.com/product_board_detail.aspx?pid=343" },
@@ -324,27 +331,58 @@ const struct board_info_url boards_url[] = {
 	{ "Tyan",		"S5211-1U",		"http://www.tyan.com/product_board_detail.aspx?pid=593" },
 	{ "Tyan",		"S5220",		"http://www.tyan.com/product_board_detail.aspx?pid=597" },
 	{ "Tyan",		"S5375",		"http://www.tyan.com/product_board_detail.aspx?pid=566" },
-	{ "Tyan",		"iS5375-1U",		"http://www.tyan.com/product_board_detail.aspx?pid=610" },
 	{ "Tyan",		"S5376G2NR/S5376WAG2NR","http://www.tyan.com/product_board_detail.aspx?pid=605" },
 	{ "Tyan",		"S5377",		"http://www.tyan.com/product_board_detail.aspx?pid=601" },
 	{ "Tyan",		"S5397",		"http://www.tyan.com/product_board_detail.aspx?pid=560" },
-	{ "VIA",		"EPIA-M",		"http://www.via.com.tw/en/products/mainboards/motherboards.jsp?motherboard_id=81" },
-	{ "VIA",		"EPIA-MII",		"http://www.via.com.tw/en/products/mainboards/motherboards.jsp?motherboard_id=202" },
-	{ "VIA",		"EPIA-CN",		"http://www.via.com.tw/en/products/mainboards/motherboards.jsp?motherboard_id=400" },
+	{ "VIA",		"EPIA-EX15000G",	"http://www.via.com.tw/en/products/embedded/ProductDetail.jsp?productLine=1&motherboard_id=450" },
 	{ "VIA",		"EPIA-LN",		"http://www.via.com.tw/en/products/mainboards/motherboards.jsp?motherboard_id=473" },
-	{ "VIA",		"VB700X",		"http://www.via.com.tw/en/products/mainboards/motherboards.jsp?motherboard_id=490" },
+	{ "VIA",		"EPIA-NX15000G",	"http://www.via.com.tw/en/products/embedded/ProductDetail.jsp?productLine=1&motherboard_id=470" },
 	{ "VIA",		"NAB74X0",		"http://www.via.com.tw/en/products/mainboards/motherboards.jsp?motherboard_id=590" },
 	{ "VIA",		"pc2500e",		"http://www.via.com.tw/en/initiatives/empowered/pc2500_mainboard/index.jsp" },
+	{ "VIA",		"VB700X",		"http://www.via.com.tw/en/products/mainboards/motherboards.jsp?motherboard_id=490" },
 
 	/* Verified working boards that DO need write-enables. */
 	/* Please keep this list alphabetically ordered by vendor/board. */
 	{ "Acorp",		"6A815EPD",		NULL },
-	/* TODO: Fill in entries/URLs for the remaining boards. */
+	{ "agami",		"Aruma",		NULL },
+	{ "Albatron",		"PM266A",		NULL },
+	{ "Artec Group",	"DBE61",		NULL },
+	{ "Artec Group",	"DBE62",		NULL },
+	{ "ASUS",		"A7V8-MX SE",		NULL },
+	{ "ASUS",		"P4B266",		"http://www.ciao.co.uk/ASUS_Intel_845D_Chipset_P4B266__5409807#productdetail" },
+	{ "ASUS",		"P5A",			NULL },
+	{ "BioStar",		"P4M80-M4",		NULL },
+	{ "EPoX",		"EP-8K5A2",		NULL },
+	{ "EPoX",		"EP-BX3",		NULL },
+	{ "GIGABYTE",		"GA-2761GXDK",		NULL },
+	{ "GIGABYTE",		"GA-7VT600",		NULL },
+	{ "GIGABYTE",		"GA-K8N-SLI",		NULL },
+	{ "GIGABYTE",		"GA-M57SLI-S4",		NULL },
+	{ "GIGABYTE",		"GA-M61P-S3",		NULL },
+	{ "GIGABYTE",		"GA-MA78G-DS3H",	NULL },
+	{ "GIGABYTE",		"GA-MA78GM-S2H",	NULL },
+	{ "GIGABYTE",		"GA-MA790FX-DQ6",	NULL },
+	{ "HP",			"DL145 G3",		NULL },
+	{ "IBM",		"x3455",		NULL },
+	{ "Intel",		"D201GLY",		NULL },
+	{ "IWILL",		"DK8-HTX",		NULL },
+	{ "Kontron",		"986LCD-M",		NULL },
+	{ "MSI",		"MS-7135 (K8N Neo3)",	NULL },
+	{ "MSI",		"MS-6702E (K8T Neo2-F)",NULL },
+	{ "MSI",		"MS-6712 (KT4V)",	NULL },
+	{ "MSI",		"MS-6590 (KT4 Ultra)",	NULL },
+	{ "MSI",		"MS-7046",		NULL },
+	{ "Soyo",		"SY-7VCA",		NULL },
+	{ "Tyan",		"S2498 (Tomcat K7M)",	"http://www.tyan.com/archive/products/html/tomcatk7m.html" },
+	{ "VIA",		"EPIA-CN",		"http://www.via.com.tw/en/products/mainboards/motherboards.jsp?motherboard_id=400" },
+	{ "VIA",		"EPIA M/MII/...",	NULL },
+	{ "VIA",		"EPIA SP",		NULL },
+	{ "VIA",		"PC3500G",		NULL },
 
 	/* Verified non-working boards (for now). */
 	/* Please keep this list alphabetically ordered by vendor/board. */
 	{ "Abit",		"IS-10",		"http://www.abit.com.tw/page/en/motherboard/motherboard_detail.php?pMODEL_NAME=IS-10&fMTYPE=Socket+478" },
-	{ "ASUS",		"A7N8X-E Deluxe",	"http://www.asus.com/products.aspx?l1=3&l2=13&l3=56&l4=0&model=217&modelmenu=1" },
+	{ "ASUS",		"M3N78 Pro",		NULL },
 	{ "ASUS",		"MEW-AM",		"ftp://ftp.asus.com.tw/pub/ASUS/mb/sock370/810/mew-am/" },
 	{ "ASUS",		"MEW-VM",		"http://www.elhvb.com/mboards/OEM/HP/manual/ASUS%20MEW-VM.htm" },
 	{ "ASUS",		"P3B-F",		"ftp://ftp.asus.com.tw/pub/ASUS/mb/slot1/440bx/p3b-f/" },
@@ -352,7 +390,11 @@ const struct board_info_url boards_url[] = {
 	{ "ASUS",		"P5BV-M",		"ftp://ftp.asus.com.tw/pub/ASUS/mb/socket775/P5B-VM/" },
 	{ "Biostar",		"M6TBA",		"ftp://ftp.biostar-usa.com/manuals/M6TBA/" },
 	{ "Boser",		"HS-6637",		"http://www.boser.com.tw/manual/HS-62376637v3.4.pdf" },
+	{ "DFI",		"855GME-MGF",		NULL },
+	{ "Elitegroup",		"K7VTA3",		NULL },
 	{ "FIC",		"VA-502",		"ftp://ftp.fic.com.tw/motherboard/manual/socket7/va-502/" },
+	{ "GIGABYTE",		"GA-7ZM",		NULL },
+	{ "MSI",		"MS-6178",		NULL },
 	{ "MSI",		"MS-7260 (K9N Neo)",	"http://global.msi.com.tw/index.php?func=proddesc&prod_no=255&maincat_no=1" },
 	{ "PCCHIPS",		"M537DMA33",		"http://motherboards.mbarron.net/models/pcchips/m537dma.htm" },
 	{ "Soyo",		"SY-5VD",		"http://www.soyo.com/content/Downloads/163/&c=80&p=464&l=English" },
@@ -360,6 +402,18 @@ const struct board_info_url boards_url[] = {
 	{ "Sun",		"Fire x4150",		"http://www.sun.com/servers/x64/x4150/" },
 	{ "Sun",		"Fire x4200",		"http://www.sun.com/servers/entry/x4200/" },
 	{ "Sun",		"Fire x4600",		"http://www.sun.com/servers/x64/x4600/" },
+
+	/* Verified working laptops. */
+	/* Please keep this list alphabetically ordered by vendor/board. */
+	{ "Lenovo",		"3000 V100 TF05Cxx",	NULL },
+
+	/* Verified non-working laptops (for now). */
+	/* Please keep this list alphabetically ordered by vendor/board. */
+	{ "Acer",		"Aspire One",		NULL },
+	{ "Dell",		"Latitude CPi A366XT",	NULL },
+	{ "IBM/Lenovo",		"Thinkpad T40p",	NULL },
+	{ "IBM/Lenovo",		"240",			NULL },
+
 	{ NULL,			NULL,			0 },
 };
 
@@ -386,7 +440,7 @@ void print_supported_chipsets_wiki(void)
 
 	printf("\n== Supported chipsets ==\n\nTotal amount of supported "
 	       "chipsets: '''%d'''\n\n{| border=\"0\" valign=\"top\"\n| "
-	       "valign=\"top\"|\n\n%s", enablescount, CHIPSET_TH);
+	       "valign=\"top\"|\n\n%s", enablescount, chipset_th);
 
 	e = chipset_enables;
 	for (i = 0, j = 0; e[i].vendor_name != NULL; i++, j++) {
@@ -402,7 +456,7 @@ void print_supported_chipsets_wiki(void)
 
 		/* Split table in three columns. */
 		if (j >= (enablescount / 3 + 1)) {
-			printf("\n|}\n\n| valign=\"top\"|\n\n" CHIPSET_TH);
+			printf("\n|}\n\n| valign=\"top\"|\n\n%s", chipset_th);
 			j = 0;
 		}
 	}
@@ -422,7 +476,7 @@ static void wiki_helper(const char *heading, const char *status,
 
 	printf("\n'''%s'''\n\nTotal amount of boards: '''%d'''\n\n"
 	       "{| border=\"0\" valign=\"top\"\n| valign=\"top\"|\n\n%s",
-	       heading, boardcount, BOARD_TH);
+	       heading, boardcount, board_th);
 
         for (i = 0, j = 0, b = boards; b[i].vendor != NULL; i++, j++) {
 		/* Alternate colors if the vendor changes. */
@@ -439,7 +493,7 @@ static void wiki_helper(const char *heading, const char *status,
 
 		/* Split table in 'cols' columns. */
 		if (j >= (boardcount / cols + 1)) {
-			printf("\n|}\n\n| valign=\"top\"|\n\n" BOARD_TH);
+			printf("\n|}\n\n| valign=\"top\"|\n\n%s", board_th);
 			j = 0;
 		}
 	}
@@ -457,7 +511,7 @@ static void wiki_helper2(const char *heading, int cols)
 
 	printf("\n'''%s'''\n\nTotal amount of boards: '''%d'''\n\n"
 	       "{| border=\"0\" valign=\"top\"\n| valign=\"top\"|\n\n%s",
-	       heading, boardcount, BOARD_TH2);
+	       heading, boardcount, board_th2);
 
 	b = board_pciid_enables;
 	for (i = 0, j = 0; b[i].vendor_name != NULL; i++, j++) {
@@ -475,7 +529,7 @@ static void wiki_helper2(const char *heading, int cols)
 
 		/* Split table in three columns. */
 		if (j >= (boardcount / cols + 1)) {
-			printf("\n|}\n\n| valign=\"top\"|\n\n" BOARD_TH2);
+			printf("\n|}\n\n| valign=\"top\"|\n\n%s", board_th2);
 			j = 0;
 		}
 	}
@@ -485,7 +539,7 @@ static void wiki_helper2(const char *heading, int cols)
 
 void print_supported_boards_wiki(void)
 {
-	printf("%s", BOARD_INTRO);
+	printf("%s", board_intro);
 	wiki_helper("Known good (worked out of the box)", "OK", 3, boards_ok);
 	wiki_helper2("Known good (with write-enable code in flashrom)", 3);
 	wiki_helper("Not supported (yet)", "No", 3, boards_bad);
@@ -501,7 +555,7 @@ void print_supported_chips_wiki(void)
 
 	printf("\n== Supported chips ==\n\nTotal amount of supported "
 	       "chips: '''%d'''\n\n{| border=\"0\" valign=\"top\"\n"
-		"| valign=\"top\"|\n\n%s", chipcount, CHIP_TH);
+		"| valign=\"top\"|\n\n%s", chipcount, chip_th);
 
 	for (f = flashchips; f->name != NULL; f++, i++) {
 		if (!strncmp(f->name, "unknown", 7))
@@ -522,7 +576,7 @@ void print_supported_chips_wiki(void)
 
 		/* Split table into three columns. */
 		if (i >= (chipcount / 3 + 1)) {
-			printf("\n|}\n\n| valign=\"top\"|\n\n" CHIP_TH);
+			printf("\n|}\n\n| valign=\"top\"|\n\n%s", chip_th);
 			i = 0;
 		}
 
@@ -534,7 +588,7 @@ void print_supported_chips_wiki(void)
 
 void print_supported_pcidevs_wiki_header(void)
 {
-	printf("%s", PROGRAMMER_SECTION);
+	printf("%s", programmer_section);
 }
 
 void print_supported_pcidevs_wiki_footer(void)
