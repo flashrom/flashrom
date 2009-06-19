@@ -693,6 +693,73 @@ static int board_soyo_sy_7vca(const char *name)
 }
 
 /**
+ * Find the runtime registers of an SMSC Super I/O, after verifying its
+ * chip ID.
+ *
+ * Returns the base port of the runtime register block, or 0 on error.
+ */
+static uint16_t smsc_find_runtime(uint16_t sio_port, uint16_t chip_id,
+                                  uint8_t logical_device)
+{
+	uint16_t rt_port = 0;
+
+	/* Verify the chip ID. */
+	OUTB(0x55, sio_port);  /* enable configuration */
+	if (sio_read(sio_port, 0x20) != chip_id) {
+		fprintf(stderr, "\nERROR: SMSC super I/O not found.\n");
+		goto out;
+	}
+
+	/* If the runtime block is active, get its address. */
+	sio_write(sio_port, 0x07, logical_device);
+	if (sio_read(sio_port, 0x30) & 1) {
+		rt_port = (sio_read(sio_port, 0x60) << 8)
+		          | sio_read(sio_port, 0x61);
+	}
+
+	if (rt_port == 0) {
+		fprintf(stderr, "\nERROR: "
+			"Super I/O runtime interface not available.\n");
+	}
+out:
+	OUTB(0xaa, sio_port);  /* disable configuration */
+	return rt_port;
+}
+
+/**
+ * Disable write protection on the Mitac 6513WU.  WP# on the FWH is
+ * connected to GP30 on the Super I/O, and TBL# is always high.
+ */
+static int board_mitac_6513wu(const char *name)
+{
+	struct pci_dev *dev;
+	uint16_t rt_port;
+	uint8_t val;
+
+	dev = pci_dev_find(0x8086, 0x2410);	/* Intel 82801AA ISA bridge */
+	if (!dev) {
+		fprintf(stderr, "\nERROR: Intel 82801AA ISA bridge not found.\n");
+		return -1;
+	}
+
+	rt_port = smsc_find_runtime(0x4e, 0x54, 0xa);
+	if (rt_port == 0)
+		return -1;
+
+	/* Configure the GPIO pin. */
+	val = INB(rt_port + 0x33);  /* GP30 config */
+	val &= ~0x87;               /* output, non-inverted, GPIO, push/pull */
+	OUTB(val, rt_port + 0x33);
+
+	/* Disable write protection. */
+	val = INB(rt_port + 0x4d);  /* GP3 values */
+	val |= 0x01;                /* set GP30 high */
+	OUTB(val, rt_port + 0x4d);
+
+	return 0;
+}
+
+/**
  * We use 2 sets of IDs here, you're free to choose which is which. This
  * is to provide a very high degree of certainty when matching a board on
  * the basis of subsystem/card IDs. As not every vendor handles
@@ -742,6 +809,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	/* Note: There are >= 2 version of the Kontron 986LCD-M/mITX! */
 	{0x8086, 0x27b8,      0,      0,       0,      0,      0,      0, "kontron",    "986lcd-m",    "Kontron",     "986LCD-M",           board_kontron_986lcd_m},
 	{0x10ec, 0x8168, 0x10ec, 0x8168,  0x104c, 0x8023, 0x104c, 0x8019, "kontron",    "986lcd-m",    "Kontron",     "986LCD-M",           board_kontron_986lcd_m},
+	{0x8086, 0x2411, 0x8086, 0x2411,  0x8086, 0x7125, 0x0e11, 0xb165, NULL,         NULL,          "Mitac",       "6513WU",             board_mitac_6513wu},
 	{0x10de, 0x005e,      0,      0,       0,      0,      0,      0, "msi",        "k8n-neo3",    "MSI",         "MS-7135 (K8N Neo3)", w83627thf_gpio4_4_raise_4e},
 	{0x1106, 0x3149, 0x1462, 0x7094,  0x10ec, 0x8167, 0x1462, 0x094c, NULL,         NULL,          "MSI",         "MS-6702E (K8T Neo2-F)",w83627thf_gpio4_4_raise_2e},
 	{0x1106, 0x0571, 0x1462, 0x7120,       0,      0,      0,      0, "msi",        "kt4v",        "MSI",         "MS-6712 (KT4V)",     board_msi_kt4v},
