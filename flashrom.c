@@ -681,14 +681,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (list_supported_wiki) {
-		printf("= Supported devices =\n");
-		print_supported_chips_wiki();
-		print_supported_chipsets_wiki();
-		print_supported_boards_wiki();
-		print_supported_pcidevs_wiki_header();
-		print_supported_pcidevs_wiki(nics_3com);
-		print_supported_pcidevs_wiki(satas_sii);
-		print_supported_pcidevs_wiki_footer();
+		print_wiki_tables();
 		exit(0);
 	}
 
