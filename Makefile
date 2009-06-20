@@ -74,7 +74,7 @@ flashrom.o: flashrom.c .features
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(FEATURE_CFLAGS) -c -o $@ $< $(SVNDEF)
 
 %.o: %.c .features
-	$(CC) $(CFLAGS) $(CPPFLAGS) $(FEATURE_CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(FEATURE_CFLAGS) -c $< -o $@ $(SVNDEF)
 
 clean:
 	rm -f $(PROGRAM) *.o
