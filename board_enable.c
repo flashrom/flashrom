@@ -719,6 +719,23 @@ static int board_soyo_sy_7vca(const char *name)
 	return 0;
 }
 
+static int it8705f_write_enable(uint8_t port, const char *name)
+{
+	enter_conf_mode_ite(port);
+	sio_mask(port, 0x24, 0x04, 0x04); /* Flash ROM I/F Writes Enable */
+	exit_conf_mode_ite(port);
+
+	return 0;
+}
+
+/**
+ * Suited for Shuttle AK38N: VIA KT333CF + VIA VT8235 + ITE IT8705F
+ */
+static int it8705f_write_enable_2e(const char *name)
+{
+	return it8705f_write_enable(0x2e, name);
+}
+
 /**
  * Find the runtime registers of an SMSC Super I/O, after verifying its
  * chip ID.
@@ -842,6 +859,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x1106, 0x0571, 0x1462, 0x7120,       0,      0,      0,      0, "msi",        "kt4v",        "MSI",         "MS-6712 (KT4V)",     board_msi_kt4v},
 	{0x8086, 0x2658, 0x1462, 0x7046,  0x1106, 0x3044, 0x1462, 0x046d, NULL,         NULL,          "MSI",         "MS-7046",            ich6_gpio19_raise},
 	{0x10de, 0x005e,      0,      0,       0,      0,      0,      0, "msi",        "k8n-neo3",    "MSI",         "MS-7135 (K8N Neo3)", w83627thf_gpio4_4_raise_4e},
+	{0x1106, 0x3104, 0x1297, 0xa238,  0x1106, 0x3059, 0x1297, 0xc063, NULL,         NULL,          "Shuttle",     "AK38N",              it8705f_write_enable_2e},
 	{0x1106, 0x3038, 0x0925, 0x1234,  0x1106, 0x3058, 0x15DD, 0x7609, NULL,         NULL,          "Soyo",        "SY-7VCA",            board_soyo_sy_7vca},
 	{0x8086, 0x1076, 0x8086, 0x1176,  0x1106, 0x3059, 0x10f1, 0x2498, NULL,         NULL,          "Tyan",        "S2498 (Tomcat K7M)", board_asus_a7v8x_mx},
 	{0x1106, 0x0314, 0x1106, 0xaa08,  0x1106, 0x3227, 0x1106, 0xAA08, NULL,         NULL,          "VIA",         "EPIA-CN",            board_via_epia_sp},
