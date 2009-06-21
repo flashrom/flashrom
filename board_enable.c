@@ -729,7 +729,9 @@ static int it8705f_write_enable(uint8_t port, const char *name)
 }
 
 /**
- * Suited for Shuttle AK38N: VIA KT333CF + VIA VT8235 + ITE IT8705F
+ * Suited for:
+ *   - Shuttle AK38N: VIA KT333CF + VIA VT8235 + ITE IT8705F
+ *   - Elitegroup K7VTA3: VIA Apollo KT266/A/333 + VIA VT8235 + ITE IT8705F
  */
 static int it8705f_write_enable_2e(const char *name)
 {
@@ -835,6 +837,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x8086, 0x1a30, 0x1043, 0x8070,  0x8086, 0x244b, 0x1043, 0x8028, NULL,         NULL,          "ASUS",        "P4B266",             ich2_gpio22_raise},
 	{0x10B9, 0x1541,      0,      0,  0x10B9, 0x1533,      0,      0, "asus",       "p5a",         "ASUS",        "P5A",                board_asus_p5a},
 	{0x1106, 0x3149, 0x1565, 0x3206,  0x1106, 0x3344, 0x1565, 0x1202, NULL,         NULL,          "BioStar",     "P4M80-M4",           board_biostar_p4m80_m4},
+	{0x1106, 0x3038, 0x1019, 0x0996,  0x1106, 0x3177, 0x1019, 0x0996, NULL,         NULL,          "Elitegroup",  "K7VTA3",             it8705f_write_enable_2e},
 	{0x1106, 0x3177, 0x1106, 0x3177,  0x1106, 0x3059, 0x1695, 0x3005, NULL,         NULL,          "EPoX",        "EP-8K5A2",           board_epox_ep_8k5a2},
 	{0x8086, 0x7110,      0,      0,  0x8086, 0x7190,      0,      0, "epox",       "ep-bx3",      "EPoX",        "EP-BX3",             board_epox_ep_bx3},
 	{0x1039, 0x0761,      0,      0,       0,      0,      0,      0, "gigabyte",   "2761gxdk",    "GIGABYTE",    "GA-2761GXDK",        it87xx_probe_spi_flash},
@@ -867,6 +870,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x1106, 0x0259, 0x1106, 0x3227,  0x1106, 0x3065, 0x1106, 0x3149, "via",        "epia-n",      "VIA",         "EPIA-N/NL",          board_via_epia_n}, /* TODO: remove coreboot ids */
 	{0x1106, 0x3227, 0x1106, 0xAA01,  0x1106, 0x0259, 0x1106, 0xAA01, NULL,         NULL,          "VIA",         "EPIA SP",            board_via_epia_sp},
 	{0x1106, 0x5337, 0x1458, 0xb003,  0x1106, 0x287e, 0x1106, 0x337e, "via",        "pc3500g",     "VIA",         "PC3500G",            it87xx_probe_spi_flash},
+
 	{     0,      0,      0,      0,       0,      0,      0,      0, NULL,         NULL,          NULL,          NULL,                 NULL}, /* end marker */
 };
 
@@ -964,7 +968,6 @@ const struct board_info boards_bad[] = {
 	{ "Biostar",		"M6TBA", },
 	{ "Boser",		"HS-6637", },
 	{ "DFI",		"855GME-MGF", },
-	{ "Elitegroup",		"K7VTA3", },
 	{ "FIC",		"VA-502", },
 	{ "GIGABYTE",		"GA-7ZM", },
 	{ "MSI",		"MS-6178", },
