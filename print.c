@@ -451,6 +451,7 @@ const struct board_info_notes boards_notes[] = {
 	{ "ASUS",		"A8V-E SE",		"See http://www.coreboot.org/pipermail/coreboot/2007-October/026496.html." },
 	{ "ASUS",		"M2A-VM",		"See http://www.coreboot.org/pipermail/coreboot/2007-September/025281.html." },
 	{ "BCOM",		"WinNET100",		"Used in the IGEL-316 thin client." },
+	{ "GIGABYTE",		"GA-7ZM",		"Works fine iff you remove jumper JP9 on the board and disable the flash protection BIOS option." },
 
 	/* Verified working boards that DO need write-enables. */
 	{ "Acer",		"Aspire One",		"See http://www.coreboot.org/pipermail/coreboot/2009-May/048041.html." },
