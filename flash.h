@@ -87,6 +87,7 @@ extern int programmer;
 #define PROGRAMMER_SATASII	0x03
 #define PROGRAMMER_IT87SPI	0x04
 #define PROGRAMMER_FT2232SPI	0x05
+#define PROGRAMMER_SERPROG	0x06
 
 struct programmer_entry {
 	const char *vendor;
@@ -585,4 +586,12 @@ int probe_stm50flw0x0x(struct flashchip *flash);
 int erase_stm50flw0x0x(struct flashchip *flash);
 int write_stm50flw0x0x(struct flashchip *flash, uint8_t *buf);
 
+/* serprog.c */
+extern char* serprog_param;
+int serprog_init(void);
+int serprog_shutdown(void);
+void serprog_chip_writeb(uint8_t val, chipaddr addr);
+uint8_t serprog_chip_readb(const chipaddr addr);
+void serprog_chip_readn(uint8_t *buf, const chipaddr addr, size_t len);
+void serprog_delay(int delay);
 #endif				/* !__FLASH_H__ */
