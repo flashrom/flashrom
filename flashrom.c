@@ -130,6 +130,21 @@ const struct programmer_entry programmer_table[] = {
 		.chip_writen		= fallback_chip_writen,
 		.delay			= internal_delay,
 	},
+	{
+		.init			= serprog_init,
+		.shutdown		= serprog_shutdown,
+		.map_flash_region	= fallback_map,
+		.unmap_flash_region	= fallback_unmap,
+		.chip_readb		= serprog_chip_readb,
+		.chip_readw		= fallback_chip_readw,
+		.chip_readl		= fallback_chip_readl,
+		.chip_readn		= serprog_chip_readn,
+		.chip_writeb		= serprog_chip_writeb,
+		.chip_writew		= fallback_chip_writew,
+		.chip_writel		= fallback_chip_writel,
+		.chip_writen		= fallback_chip_writen,
+		.delay			= serprog_delay,
+	},
 
 	{},
 };
@@ -500,7 +515,7 @@ void usage(const char *name)
 	     "   -z | --list-supported-wiki:       print supported devices in wiki syntax\n"
 	     "   -p | --programmer <name>:         specify the programmer device\n"
 	     "                                     (internal, dummy, nic3com, satasii,\n"
-	     "                                     it87spi, ft2232spi)\n"
+	     "                                     it87spi, ft2232spi, serprog)\n"
 	     "   -h | --help:                      print this help text\n"
 	     "   -R | --version:                   print the version (release)\n"
 	     "\nYou can specify one of -E, -r, -w, -v or no operation. "
@@ -653,6 +668,10 @@ int main(int argc, char *argv[])
 				programmer = PROGRAMMER_IT87SPI;
 			} else if (strncmp(optarg, "ft2232spi", 9) == 0) {
 				programmer = PROGRAMMER_FT2232SPI;
+ 			} else if (strncmp(optarg, "serprog", 7) == 0) {
+ 				programmer = PROGRAMMER_SERPROG;
+ 				if (optarg[7] == '=')
+ 					serprog_param = strdup(optarg + 8);
 			} else {
 				printf("Error: Unknown programmer.\n");
 				exit(1);
