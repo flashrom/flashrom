@@ -80,6 +80,8 @@ void physunmap(void *virt_addr, size_t len)
 
 void *physmap(const char *descr, unsigned long phys_addr, size_t len)
 {
+	void *virt_addr;
+
 	if (len == 0) {
 		printf_debug("Not mapping %s, zero size at 0x%08lx.\n",
 			     descr, phys_addr);
@@ -96,7 +98,7 @@ void *physmap(const char *descr, unsigned long phys_addr, size_t len)
 			descr, (unsigned long)len, phys_addr);
 	}
 
-	void *virt_addr = sys_physmap(phys_addr, len);
+	virt_addr = sys_physmap(phys_addr, len);
 
 	if (NULL == virt_addr) {
 		if (NULL == descr)
