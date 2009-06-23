@@ -71,11 +71,8 @@ FEATURE_CFLAGS = $(shell LANG=C grep -q "FTDISUPPORT := yes" .features && printf
 
 FEATURE_LIBS = $(shell LANG=C grep -q "FTDISUPPORT := yes" .features && printf "%s" "-lftdi")
 
-flashrom.o: flashrom.c .features
-	$(CC) $(CFLAGS) $(CPPFLAGS) $(FEATURE_CFLAGS) -c -o $@ $< $(SVNDEF)
-
 %.o: %.c .features
-	$(CC) $(CFLAGS) $(CPPFLAGS) $(FEATURE_CFLAGS) -c $< -o $@ $(SVNDEF)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(FEATURE_CFLAGS) $(SVNDEF) -o $@ -c $<
 
 clean:
 	rm -f $(PROGRAM) *.o
