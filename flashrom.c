@@ -480,6 +480,7 @@ void usage(const char *name)
 	    ("   -r | --read:                      read flash and save into file\n"
 	     "   -w | --write:                     write file into flash\n"
 	     "   -v | --verify:                    verify flash against file\n"
+	     "   -n | --noverify:                  don't verify flash against file\n"
 	     "   -E | --erase:                     erase flash device\n"
 	     "   -V | --verbose:                   more verbose output\n"
 	     "   -c | --chip <chipname>:           probe only for specified flash chip\n"
@@ -515,7 +516,7 @@ int main(int argc, char *argv[])
 	int option_index = 0;
 	int force = 0;
 	int read_it = 0, write_it = 0, erase_it = 0, verify_it = 0;
-	int list_supported = 0, list_supported_wiki = 0;
+	int dont_verify_it = 0, list_supported = 0, list_supported_wiki = 0;
 	int operation_specified = 0;
 	int ret = 0, i;
 
@@ -524,6 +525,7 @@ int main(int argc, char *argv[])
 		{"write", 0, 0, 'w'},
 		{"erase", 0, 0, 'E'},
 		{"verify", 0, 0, 'v'},
+		{"noverify", 0, 0, 'n'},
 		{"chip", 1, 0, 'c'},
 		{"mainboard", 1, 0, 'm'},
 		{"verbose", 0, 0, 'V'},
@@ -553,7 +555,7 @@ int main(int argc, char *argv[])
 	}
 
 	setbuf(stdout, NULL);
-	while ((opt = getopt_long(argc, argv, "rRwvVEfc:m:l:i:p:Lzh",
+	while ((opt = getopt_long(argc, argv, "rRwvnVEfc:m:l:i:p:Lzh",
 				  long_options, &option_index)) != EOF) {
 		switch (opt) {
 		case 'r':
@@ -579,6 +581,9 @@ int main(int argc, char *argv[])
 				exit(1);
 			}
 			verify_it = 1;
+			break;
+		case 'n':
+			dont_verify_it = 1;
 			break;
 		case 'c':
 			chip_to_probe = strdup(optarg);
@@ -778,6 +783,10 @@ int main(int argc, char *argv[])
 		// FIXME: flash writes stay enabled!
 		exit(1);
 	}
+
+	/* Always verify write operations unless -n is used. */
+	if (write_it && !dont_verify_it)
+		verify_it = 1;
 
 	size = flash->total_size * 1024;
 	buf = (uint8_t *) calloc(size, sizeof(char));
