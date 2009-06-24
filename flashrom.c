@@ -276,13 +276,16 @@ int check_erased_range(struct flashchip *flash, int start, int len)
 int verify_range(struct flashchip *flash, uint8_t *cmpbuf, int start, int len, char *message)
 {
 	int i, j, starthere, lenhere, ret = 0;
-	chipaddr bios = flash->virtual_memory;
 	int page_size = flash->page_size;
 	uint8_t *readbuf = malloc(page_size);
 
 	if (!len)
 		goto out_free;
 
+	if (!flash->read) {
+		fprintf(stderr, "ERROR: flashrom has no read function for this flash chip.\n");
+		return 1;
+	}
 	if (!readbuf) {
 		fprintf(stderr, "Could not allocate memory!\n");
 		exit(1);
@@ -312,7 +315,7 @@ int verify_range(struct flashchip *flash, uint8_t *cmpbuf, int start, int len, c
 		starthere = max(start, i * page_size);
 		/* Length of bytes in the range in this page. */
 		lenhere = min(start + len, (i + 1) * page_size) - starthere;
-		chip_readn(readbuf, bios + starthere, lenhere);
+		flash->read(flash, readbuf, starthere, lenhere);
 		for (j = 0; j < lenhere; j++) {
 			if (cmpbuf[starthere - start + j] != readbuf[j]) {
 				fprintf(stderr, "%s FAILED at 0x%08x! "
@@ -384,44 +387,17 @@ notfound:
 
 int verify_flash(struct flashchip *flash, uint8_t *buf)
 {
-	int idx;
+	int ret;
 	int total_size = flash->total_size * 1024;
-	uint8_t *buf2 = (uint8_t *) calloc(total_size, sizeof(char));
-	if (!flash->read) {
-		printf("FAILED!\n");
-		fprintf(stderr, "ERROR: flashrom has no read function for this flash chip.\n");
-		return 1;
-	} else
-		flash->read(flash, buf2, 0, total_size);
 
 	printf("Verifying flash... ");
 
-	if (verbose)
-		printf("address: 0x00000000\b\b\b\b\b\b\b\b\b\b");
+	ret = verify_range(flash, buf, 0, total_size, NULL);
 
-	for (idx = 0; idx < total_size; idx++) {
-		if (verbose && ((idx & 0xfff) == 0xfff))
-			printf("0x%08x", idx);
+	if (!ret)
+		printf("VERIFIED.          \n");
 
-		if (*(buf2 + idx) != *(buf + idx)) {
-			if (verbose)
-				printf("0x%08x FAILED!", idx);
-			else
-				printf("FAILED at 0x%08x!", idx);
-			printf("  Expected=0x%02x, Read=0x%02x\n",
-			       *(buf + idx), *(buf2 + idx));
-			return 1;
-		}
-
-		if (verbose && ((idx & 0xfff) == 0xfff))
-			printf("\b\b\b\b\b\b\b\b\b\b");
-	}
-	if (verbose)
-		printf("\b\b\b\b\b\b\b\b\b\b ");
-
-	printf("VERIFIED.          \n");
-
-	return 0;
+	return ret;
 }
 
 int read_flash(struct flashchip *flash, char *filename)
