@@ -2,9 +2,8 @@
 .SH NAME
 flashrom \- detect, read, write, verify and erase flash chips
 .SH SYNOPSIS
-.B flashrom \fR[\fB\-VfLzhR\fR] [\fB\-E\fR|\fB\-r\fR file|\fB\-w\fR file|\fB\-v\fR file]
-         [\fB\-c\fR chipname] [\fB\-m\fR [vendor:]part]
-         [\fB\-l\fR file] [\fB\-i\fR image] [\fB\-p\fR programmer]
+.B flashrom \fR[\fB\-VfLzhRn\fR] [\fB\-E\fR|\fB\-r\fR file|\fB\-w\fR file|\fB\-v\fR file] [\fB\-c\fR chipname]
+         [\fB\-m\fR [vendor:]part] [\fB\-l\fR file] [\fB\-i\fR image] [\fB\-p\fR programmer]
 .SH DESCRIPTION
 .B flashrom
 is a utility for detecting, reading, writing, verifying and erasing flash
@@ -37,6 +36,21 @@ Read flash ROM contents and save them into the given
 Write file into flash ROM (default when
 .B <file>
 is specified).
+.TP
+.B "\-n, \-\-noverify"
+Do
+.B not
+verify the flash ROM contents after writing them to the chip. Using this
+option is
+.B not
+recommended, you should only use it if you know what you are doing and you
+feel that the time for verification takes too long.
+.sp
+Typical usage is:
+.B "flashrom -wn file"
+.sp
+This option is only useful in combination with
+.BR \-\-write .
 .TP
 .B "\-v, \-\-verify <file>"
 Verify the flash ROM contents against the given
