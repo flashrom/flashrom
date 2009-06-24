@@ -661,7 +661,7 @@ int ich_spi_write_256(struct flashchip *flash, uint8_t * buf)
 		 * For this, we need to add a block erase function to
 		 * struct flashchip.
 		 */
-		rc = spi_block_erase_d8(flash, i * erase_size);
+		rc = spi_block_erase_d8(flash, i * erase_size, erase_size);
 		if (rc) {
 			printf("Error erasing block at 0x%x\n", i);
 			break;
