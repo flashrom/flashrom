@@ -493,7 +493,7 @@ int erase_flash(struct flashchip *flash)
 void usage(const char *name)
 {
 	printf("usage: %s [-VfLzhR] [-E|-r file|-w file|-v file] [-c chipname]\n"
-              "       [-m [vendor:]part] [-l file] [-i image] [-p programmer] [file]\n\n", name);
+              "       [-m [vendor:]part] [-l file] [-i image] [-p programmer]\n\n", name);
 
 	printf("Please note that the command line interface for flashrom will "
 		"change before\nflashrom 1.0. Do not use flashrom in scripts "
@@ -518,9 +518,8 @@ void usage(const char *name)
 	     "                                     it87spi, ft2232spi, serprog)\n"
 	     "   -h | --help:                      print this help text\n"
 	     "   -R | --version:                   print the version (release)\n"
-	     "\nYou can specify one of -E, -r, -w, -v or no operation. "
-	     "If no operation is\nspecified, then all that happens"
-	     " is that flash info is dumped.\n\n");
+	     "\nYou can specify one of -E, -r, -w, -v or no operation. If no operation is\n"
+	     "specified, then all that happens is that flash info is dumped.\n\n");
 	exit(1);
 }
 
