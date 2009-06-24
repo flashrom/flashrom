@@ -1,7 +1,7 @@
 /*
  * This file is part of the flashrom project.
  *
- * Copyright (C) 2007, 2008 Carl-Daniel Hailfinger
+ * Copyright (C) 2007, 2008, 2009 Carl-Daniel Hailfinger
  * Copyright (C) 2008 coresystems GmbH
  *
  * This program is free software; you can redistribute it and/or modify
@@ -430,6 +430,10 @@ int spi_chip_erase_60(struct flashchip *flash)
 	/* FIXME: We assume spi_read_status_register will never fail. */
 	while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
 		programmer_delay(1000 * 1000);
+	if (check_erased_range(flash, 0, flash->total_size * 1024)) {
+		fprintf(stderr, "ERASE FAILED!\n");
+		return -1;
+	}
 	return 0;
 }
 
@@ -458,6 +462,10 @@ int spi_chip_erase_c7(struct flashchip *flash)
 	/* FIXME: We assume spi_read_status_register will never fail. */
 	while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
 		programmer_delay(1000 * 1000);
+	if (check_erased_range(flash, 0, flash->total_size * 1024)) {
+		fprintf(stderr, "ERASE FAILED!\n");
+		return -1;
+	}
 	return 0;
 }
 
@@ -472,9 +480,9 @@ int spi_chip_erase_60_c7(struct flashchip *flash)
 	return result;
 }
 
-int spi_block_erase_52(const struct flashchip *flash, unsigned long addr)
+int spi_block_erase_52(struct flashchip *flash, unsigned int addr, unsigned int blocklen)
 {
-	unsigned char cmd[JEDEC_BE_52_OUTSIZE] = {JEDEC_BE_52};
+	unsigned char cmd[JEDEC_BE_52_OUTSIZE] = {JEDEC_BE_52, };
 	int result;
 
 	cmd[1] = (addr & 0x00ff0000) >> 16;
@@ -490,6 +498,10 @@ int spi_block_erase_52(const struct flashchip *flash, unsigned long addr)
 	 */
 	while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
 		programmer_delay(100 * 1000);
+	if (check_erased_range(flash, addr, blocklen)) {
+		fprintf(stderr, "ERASE FAILED!\n");
+		return -1;
+	}
 	return 0;
 }
 
@@ -498,9 +510,9 @@ int spi_block_erase_52(const struct flashchip *flash, unsigned long addr)
  * 32k for SST
  * 4-32k non-uniform for EON
  */
-int spi_block_erase_d8(const struct flashchip *flash, unsigned long addr)
+int spi_block_erase_d8(struct flashchip *flash, unsigned int addr, unsigned int blocklen)
 {
-	unsigned char cmd[JEDEC_BE_D8_OUTSIZE] = { JEDEC_BE_D8 };
+	unsigned char cmd[JEDEC_BE_D8_OUTSIZE] = { JEDEC_BE_D8, };
 	int result;
 
 	cmd[1] = (addr & 0x00ff0000) >> 16;
@@ -516,6 +528,10 @@ int spi_block_erase_d8(const struct flashchip *flash, unsigned long addr)
 	 */
 	while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
 		programmer_delay(100 * 1000);
+	if (check_erased_range(flash, addr, blocklen)) {
+		fprintf(stderr, "ERASE FAILED!\n");
+		return -1;
+	}
 	return 0;
 }
 
@@ -530,7 +546,7 @@ int spi_chip_erase_d8(struct flashchip *flash)
 	printf("Erasing chip: \n");
 
 	for (i = 0; i < total_size / erase_size; i++) {
-		rc = spi_block_erase_d8(flash, i * erase_size);
+		rc = spi_block_erase_d8(flash, i * erase_size, erase_size);
 		if (rc) {
 			printf("Error erasing block at 0x%x\n", i);
 			break;
@@ -543,9 +559,9 @@ int spi_chip_erase_d8(struct flashchip *flash)
 }
 
 /* Sector size is usually 4k, though Macronix eliteflash has 64k */
-int spi_sector_erase(const struct flashchip *flash, unsigned long addr)
+int spi_block_erase_20(struct flashchip *flash, unsigned int addr, unsigned int blocklen)
 {
-	unsigned char cmd[JEDEC_SE_OUTSIZE] = { JEDEC_SE };
+	unsigned char cmd[JEDEC_SE_OUTSIZE] = { JEDEC_SE, };
 	int result;
 	
 	cmd[1] = (addr & 0x00ff0000) >> 16;
@@ -562,7 +578,29 @@ int spi_sector_erase(const struct flashchip *flash, unsigned long addr)
 	 */
 	while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
 		programmer_delay(10 * 1000);
+	if (check_erased_range(flash, addr, blocklen)) {
+		fprintf(stderr, "ERASE FAILED!\n");
+		return -1;
+	}
 	return 0;
+}
+
+int spi_block_erase_60(struct flashchip *flash, unsigned int addr, unsigned int blocklen)
+{
+	if ((addr != 0) || (blocklen != flash->total_size * 1024)) {
+		fprintf(stderr, "%s called with incorrect arguments\n", __func__);
+		return -1;
+	}
+	return spi_chip_erase_60(flash);
+}
+
+int spi_block_erase_c7(struct flashchip *flash, unsigned int addr, unsigned int blocklen)
+{
+	if ((addr != 0) || (blocklen != flash->total_size * 1024)) {
+		fprintf(stderr, "%s called with incorrect arguments\n", __func__);
+		return -1;
+	}
+	return spi_chip_erase_c7(flash);
 }
 
 int spi_write_status_enable(void)
@@ -810,7 +848,10 @@ int spi_aai_write(struct flashchip *flash, uint8_t *buf)
 	default:
 		break;
 	}
-	flash->erase(flash);
+	if (flash->erase(flash)) {
+		fprintf(stderr, "ERASE FAILED!\n");
+		return -1;
+	}
 	result = spi_write_enable();
 	if (result)
 		return result;
