@@ -262,12 +262,14 @@ int erase_chip_jedec(struct flashchip *flash)
 	return 0;
 }
 
-int write_page_write_jedec(chipaddr bios, uint8_t *src,
-			   chipaddr dst, int page_size)
+int write_page_write_jedec(struct flashchip *flash, uint8_t *src,
+			   int start, int page_size)
 {
 	int i, tried = 0, start_index = 0, ok;
-	chipaddr d = dst;
 	uint8_t *s = src;
+	chipaddr bios = flash->virtual_memory;
+	chipaddr dst = bios + start;
+	chipaddr d = dst;
 
 retry:
 	/* Issue JEDEC Data Unprotect comand */
@@ -288,15 +290,7 @@ retry:
 
 	dst = d;
 	src = s;
-	ok = 1;
-	for (i = 0; i < page_size; i++) {
-		if (chip_readb(dst) != *src) {
-			ok = 0;
-			break;
-		}
-		dst++;
-		src++;
-	}
+	ok = !verify_range(flash, src, start, page_size, NULL);
 
 	if (!ok && tried++ < MAX_REFLASH_TRIES) {
 		start_index = i;
@@ -367,8 +361,8 @@ int write_jedec(struct flashchip *flash, uint8_t *buf)
 	printf("Programming page: ");
 	for (i = 0; i < total_size / page_size; i++) {
 		printf("%04d at address: 0x%08x", i, i * page_size);
-		write_page_write_jedec(bios, buf + i * page_size,
-				       bios + i * page_size, page_size);
+		write_page_write_jedec(flash, buf + i * page_size,
+				       i * page_size, page_size);
 		printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
 	}
 	printf("\n");
