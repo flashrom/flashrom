@@ -211,7 +211,7 @@ int ft2232_spi_command(unsigned int writecnt, unsigned int readcnt,
 
 	}
 
-    deassert_cs:
+deassert_cs:
 	printf_debug("De-assert CS#\n");
 	buf[i++] = SET_BITS_LOW;
 	buf[i++] = (port_val |= CS_BIT);
