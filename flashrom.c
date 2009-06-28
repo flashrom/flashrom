@@ -380,8 +380,10 @@ notfound:
 	if (!flash || !flash->name)
 		return NULL;
 
-	printf("Found chip \"%s %s\" (%d KB) at physical address 0x%lx.\n",
-	       flash->vendor, flash->name, flash->total_size, base);
+	printf("Found chip \"%s %s\" (%d KB, %s) at physical address 0x%lx.\n",
+	       flash->vendor, flash->name, flash->total_size,
+	       flashbuses_to_text(flash->bustype), base);
+
 	return flash;
 }
 
