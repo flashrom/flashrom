@@ -83,11 +83,12 @@ static uint16_t find_ite_spi_flash_port(uint16_t port)
 			tmp |= 1 << 4;
 			sio_write(port, 0x24, tmp);
 		}
-		printf("serial flash pin %i\n", (tmp & 1 << 5) ? 87 : 29);
+		printf("Serial flash pin %i\n", (tmp & 1 << 5) ? 87 : 29);
 		/* LDN 0x7, reg 0x64/0x65 */
 		sio_write(port, 0x07, 0x7);
 		flashport = sio_read(port, 0x64) << 8;
 		flashport |= sio_read(port, 0x65);
+		printf("Serial flash port 0x%04x\n", flashport);
 	}
 	exit_conf_mode_ite(port);
 	return flashport;
@@ -113,8 +114,11 @@ int it87spi_init(void)
 
 	get_io_perms();
 	ret = it87spi_common_init();
-	if (!ret)
+	if (!ret) {
 		buses_supported = CHIP_BUSTYPE_SPI;
+	} else {
+		buses_supported = CHIP_BUSTYPE_NONE;
+	}
 	return ret;
 }
 
