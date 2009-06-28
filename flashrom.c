@@ -692,7 +692,10 @@ int main(int argc, char *argv[])
 	if (optind < argc)
 		filename = argv[optind++];
 
-	ret = programmer_init();
+	if (programmer_init()) {
+		fprintf(stderr, "Error: Programmer initialization failed.\n");
+		exit(1);
+	}
 
 	myusec_calibrate_delay();
 
