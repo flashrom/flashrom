@@ -209,7 +209,6 @@ uint32_t chip_readl(const chipaddr addr)
 void chip_readn(uint8_t *buf, chipaddr addr, size_t len)
 {
 	programmer_table[programmer].chip_readn(buf, addr, len);
-	return;
 }
 
 void programmer_delay(int usecs)

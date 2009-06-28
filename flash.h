@@ -590,11 +590,12 @@ int erase_stm50flw0x0x(struct flashchip *flash);
 int write_stm50flw0x0x(struct flashchip *flash, uint8_t *buf);
 
 /* serprog.c */
-extern char* serprog_param;
+extern char *serprog_param;
 int serprog_init(void);
 int serprog_shutdown(void);
 void serprog_chip_writeb(uint8_t val, chipaddr addr);
 uint8_t serprog_chip_readb(const chipaddr addr);
 void serprog_chip_readn(uint8_t *buf, const chipaddr addr, size_t len);
 void serprog_delay(int delay);
+
 #endif				/* !__FLASH_H__ */

@@ -393,7 +393,7 @@ static int board_asus_p5a(const char *name)
 static int board_ibm_x3455(const char *name)
 {
 	/* Set GPIO lines in the Broadcom HT-1000 southbridge. */
-	/* It's not a superio but it uses the same index/data port method. */
+	/* It's not a Super I/O but it uses the same index/data port method. */
 	sio_mask(0xcd6, 0x45, 0x20, 0x20);
 
 	return 0;
@@ -429,7 +429,7 @@ static int board_hp_dl145_g3_enable(const char *name)
 	/* Set GPIO lines in the Broadcom HT-1000 southbridge. */
 	/* GPIO 0 reg from PM regs */
 	/* Set GPIO 2 and 5 high, connected to flash WP# and TBL# pins. */
-	/* It's not a superio but it uses the same index/data port method. */
+	/* It's not a Super I/O but it uses the same index/data port method. */
 	sio_mask(0xcd6, 0x44, 0x24, 0x24);
 
 	return 0;
@@ -750,9 +750,9 @@ static uint16_t smsc_find_runtime(uint16_t sio_port, uint16_t chip_id,
 	uint16_t rt_port = 0;
 
 	/* Verify the chip ID. */
-	OUTB(0x55, sio_port);  /* enable configuration */
+	OUTB(0x55, sio_port);  /* Enable configuration. */
 	if (sio_read(sio_port, 0x20) != chip_id) {
-		fprintf(stderr, "\nERROR: SMSC super I/O not found.\n");
+		fprintf(stderr, "\nERROR: SMSC Super I/O not found.\n");
 		goto out;
 	}
 
@@ -768,7 +768,7 @@ static uint16_t smsc_find_runtime(uint16_t sio_port, uint16_t chip_id,
 			"Super I/O runtime interface not available.\n");
 	}
 out:
-	OUTB(0xaa, sio_port);  /* disable configuration */
+	OUTB(0xaa, sio_port);  /* Disable configuration. */
 	return rt_port;
 }
 
@@ -788,18 +788,18 @@ static int board_mitac_6513wu(const char *name)
 		return -1;
 	}
 
-	rt_port = smsc_find_runtime(0x4e, 0x54, 0xa);
+	rt_port = smsc_find_runtime(0x4e, 0x54 /* LPC47U33x */, 0xa);
 	if (rt_port == 0)
 		return -1;
 
 	/* Configure the GPIO pin. */
 	val = INB(rt_port + 0x33);  /* GP30 config */
-	val &= ~0x87;               /* output, non-inverted, GPIO, push/pull */
+	val &= ~0x87;               /* Output, non-inverted, GPIO, push/pull */
 	OUTB(val, rt_port + 0x33);
 
 	/* Disable write protection. */
 	val = INB(rt_port + 0x4d);  /* GP3 values */
-	val |= 0x01;                /* set GP30 high */
+	val |= 0x01;                /* Set GP30 high. */
 	OUTB(val, rt_port + 0x4d);
 
 	return 0;

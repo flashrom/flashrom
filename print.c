@@ -289,7 +289,7 @@ In general, flashing laptops is more difficult because laptops\n\n\
 * often have special protection stuff which has to be handled by flashrom,\n\
 * often use flash translation circuits which need drivers in flashrom.\n\n\
 <div style=\"margin-top:0.5em; padding:0.5em 0.5em 0.5em 0.5em; \
-background-color:#ff9f9f; align:right; border:1px solid #aabbcc;\">\n\
+background-color:#ff6666; align:right; border:1px solid #000000;\">\n\
 '''IMPORTANT:''' At this point we recommend to '''not''' use flashrom on \
 untested laptops unless you have a means to recover from a flashing that goes \
 wrong (a working backup flash chip and/or good soldering skills).\n</div>\n";
@@ -649,6 +649,7 @@ void print_supported_chips_wiki(void)
 		"| valign=\"top\"|\n\n%s", chipcount, chip_th);
 
 	for (f = flashchips; f->name != NULL; f++, i++) {
+		/* Don't print "unknown XXXX SPI chip" entries. */
 		if (!strncmp(f->name, "unknown", 7))
 			continue;
 

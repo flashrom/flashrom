@@ -1059,7 +1059,7 @@ int chipset_flash_enable(void)
 		else
 			printf("OK.\n");
 	}
-	printf("This chipset supports the following protcols: %s.\n",
+	printf("This chipset supports the following protocols: %s.\n",
 	       flashbuses_to_text(buses_supported));
 
 	return ret;
