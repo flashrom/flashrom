@@ -133,6 +133,7 @@ export:
 	@rm -rf $(EXPORTDIR)/flashrom-$(VERSION)
 	@svn export -r BASE . $(EXPORTDIR)/flashrom-$(VERSION)
 	@sed "s/^SVNVERSION.*/SVNVERSION := $(SVNVERSION)/" Makefile >$(EXPORTDIR)/flashrom-$(VERSION)/Makefile
+	@LC_ALL=C svn log >$(EXPORTDIR)/flashrom-$(VERSION)/ChangeLog
 	@echo Exported $(EXPORTDIR)/flashrom-$(VERSION)/
 
 tarball: export
