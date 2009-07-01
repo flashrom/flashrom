@@ -368,6 +368,9 @@ uint8_t satasii_chip_readb(const chipaddr addr);
 extern struct pcidev_status satas_sii[];
 
 /* ft2232_spi.c */
+#define FTDI_FT2232H 0x6010
+#define FTDI_FT4232H 0x6011
+extern char *ft2232spi_param;
 int ft2232_spi_init(void);
 int ft2232_spi_command(unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr);
 int ft2232_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
