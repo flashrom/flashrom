@@ -183,6 +183,23 @@ Example:
 Currently the following programmers support this mechanism:
 .BR nic3com ,
 .BR satasii .
+.sp
+The ft2232spi has an optional parameter specifying the controller type and
+interface/port it should support. For that you have to use the
+.B "flashrom -p ft2232spi=model,port=interface"
+syntax where
+.B model
+can be any of
+.B 2232H 4232H
+and
+.B interface
+can be any of
+.B A
+.BR B .
+The default model is
+.B 4232H
+and the default interface is
+.BR B .
 .TP
 .B "\-h, \-\-help"
 Show a help text and exit.

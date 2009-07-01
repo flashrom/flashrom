@@ -649,10 +649,12 @@ int main(int argc, char *argv[])
 				programmer = PROGRAMMER_IT87SPI;
 			} else if (strncmp(optarg, "ft2232spi", 9) == 0) {
 				programmer = PROGRAMMER_FT2232SPI;
- 			} else if (strncmp(optarg, "serprog", 7) == 0) {
- 				programmer = PROGRAMMER_SERPROG;
- 				if (optarg[7] == '=')
- 					serprog_param = strdup(optarg + 8);
+				if (optarg[9] == '=')
+					ft2232spi_param = strdup(optarg + 10);
+			} else if (strncmp(optarg, "serprog", 7) == 0) {
+				programmer = PROGRAMMER_SERPROG;
+				if (optarg[7] == '=')
+					serprog_param = strdup(optarg + 8);
 			} else {
 				printf("Error: Unknown programmer.\n");
 				exit(1);

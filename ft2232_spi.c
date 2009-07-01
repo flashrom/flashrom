@@ -22,8 +22,11 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include "flash.h"
 #include "spi.h"
+
+char *ft2232spi_param = NULL;
 
 #if FT2232_SPI_SUPPORT == 1
 
@@ -71,15 +74,47 @@ int ft2232_spi_init(void)
 	struct ftdi_context *ftdic = &ftdic_context;
 	unsigned char buf[512];
 	unsigned char port_val = 0;
-
+	char *portpos = NULL;
+	int ft2232_type = FTDI_FT4232H;
+	enum ftdi_interface ft2232_interface = INTERFACE_B;
 
 	if (ftdi_init(ftdic) < 0) {
 		fprintf(stderr, "ftdi_init failed\n");
 		return EXIT_FAILURE;
 	}
 
-	// f = ftdi_usb_open(ftdic, 0x0403, 0x6010); // FT2232
-	f = ftdi_usb_open(ftdic, 0x0403, 0x6011); // FT4232
+	if (ft2232spi_param && !strlen(ft2232spi_param)) {
+		free(ft2232spi_param);
+		ft2232spi_param = NULL;
+	}
+	if (ft2232spi_param) {
+		if (strstr(ft2232spi_param, "2232"))
+			ft2232_type = FTDI_FT2232H;
+		if (strstr(ft2232spi_param, "4232"))
+			ft2232_type = FTDI_FT4232H;
+		portpos = strstr(ft2232spi_param, "port=");
+		if (portpos) {
+			portpos += 5;
+			switch (toupper(*portpos)) {
+			case 'A':
+				ft2232_interface = INTERFACE_A;
+				break;
+			case 'B':
+				ft2232_interface = INTERFACE_B;
+				break;
+			default:
+				fprintf(stderr, "Invalid interface specified, "
+					"using default.\n");
+			}
+		}
+		free(ft2232spi_param);
+	}
+	printf_debug("Using device type %s ",
+		     (ft2232_type == FTDI_FT2232H) ? "2232H" : "4232H");
+	printf_debug("interface %s\n",
+		     (ft2232_interface == INTERFACE_A) ? "A" : "B");
+
+	f = ftdi_usb_open(ftdic, 0x0403, ft2232_type);
 
 	if (f < 0 && f != -5) {
 		fprintf(stderr, "Unable to open ftdi device: %d (%s)\n", f,
@@ -87,8 +122,8 @@ int ft2232_spi_init(void)
 		exit(-1);
 	}
 
-	if (ftdi_set_interface(ftdic, INTERFACE_B) < 0) {
-		fprintf(stderr, "Unable to select FT2232 channel B: %s\n",
+	if (ftdi_set_interface(ftdic, ft2232_interface) < 0) {
+		fprintf(stderr, "Unable to select interface: %s\n",
 				ftdic->error_str);
 	}
 
