@@ -806,6 +806,32 @@ static int board_mitac_6513wu(const char *name)
 }
 
 /**
+ * Suited for Abit IP35: Intel P35 + ICH9R.
+ */
+static int board_abit_ip35(const char *name)
+{
+	struct pci_dev *dev;
+	uint16_t base;
+	uint8_t tmp;
+
+	dev = pci_dev_find(0x8086, 0x2916);	/* Intel ICH9R LPC Interface */
+	if (!dev) {
+		fprintf(stderr, "\nERROR: Intel ICH9R LPC not found.\n");
+		return -1;
+	}
+
+	/* get LPC GPIO base */
+	base = pci_read_long(dev, 0x48) & 0x0000FFC0;
+
+	/* Raise GPIO 16 */
+	tmp = INB(base + 0x0E);
+	tmp |= 0x01;
+	OUTB(tmp, base + 0x0E);
+
+	return 0;
+}
+
+/**
  * We use 2 sets of IDs here, you're free to choose which is which. This
  * is to provide a very high degree of certainty when matching a board on
  * the basis of subsystem/card IDs. As not every vendor handles
@@ -828,6 +854,7 @@ static int board_mitac_6513wu(const char *name)
 /* Please keep this list alphabetically ordered by vendor/board name. */
 struct board_pciid_enable board_pciid_enables[] = {
 	/* first pci-id set [4],          second pci-id set [4],          coreboot id [2],             vendor name    board name            flash enable */
+	{0x8086, 0x2926, 0x147b, 0x1084,  0x11ab, 0x4364, 0x147b, 0x1084, NULL,         NULL,          "Abit",        "IP35",               board_abit_ip35},
 	{0x8086, 0x1130,      0,      0,  0x105a, 0x0d30, 0x105a, 0x4d33, "acorp",      "6a815epd",    "Acorp",       "6A815EPD",           board_acorp_6a815epd},
 	{0x1022, 0x746B, 0x1022, 0x36C0,       0,      0,      0,      0, "AGAMI",      "ARUMA",       "agami",       "Aruma",              w83627hf_gpio24_raise_2e},
 	{0x1106, 0x3177, 0x17F2, 0x3177,  0x1106, 0x3148, 0x17F2, 0x3148, NULL,         NULL,          "Albatron",    "PM266A*",            board_epox_ep_8k5a2},
