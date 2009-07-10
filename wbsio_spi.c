@@ -90,7 +90,7 @@ int wbsio_check_for_spi(const char *name)
  * Would one more byte of RAM in the chip (to get all 24 bits) really make
  * such a big difference?
  */
-int wbsio_spi_command(unsigned int writecnt, unsigned int readcnt,
+int wbsio_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		      const unsigned char *writearr, unsigned char *readarr)
 {
 	int i;

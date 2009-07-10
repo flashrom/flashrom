@@ -682,7 +682,7 @@ int ich_spi_write_256(struct flashchip *flash, uint8_t * buf)
 	return rc;
 }
 
-int ich_spi_command(unsigned int writecnt, unsigned int readcnt,
+int ich_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		    const unsigned char *writearr, unsigned char *readarr)
 {
 	int a;

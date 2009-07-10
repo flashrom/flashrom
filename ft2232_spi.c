@@ -193,7 +193,7 @@ int ft2232_spi_init(void)
 	return 0;
 }
 
-int ft2232_spi_command(unsigned int writecnt, unsigned int readcnt,
+int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		const unsigned char *writearr, unsigned char *readarr)
 {
 	struct ftdi_context *ftdic = &ftdic_context;
@@ -298,7 +298,7 @@ int ft2232_spi_init(void)
 	exit(1);
 }
 
-int ft2232_spi_command(unsigned int writecnt, unsigned int readcnt,
+int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		const unsigned char *writearr, unsigned char *readarr)
 {
 	fprintf(stderr, "FT2232 SPI support was not compiled in\n");
