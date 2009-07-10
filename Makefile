@@ -58,7 +58,7 @@ all: pciutils features dep $(PROGRAM)
 # of the checked out flashrom files.
 # Note to packagers: Any tree exported with "make export" or "make tarball"
 # will not require subversion. The downloadable snapshots are already exported.
-SVNVERSION := $(shell LANG=C svnversion -cn . | sed -e "s/.*://" -e "s/\([0-9]*\).*/\1/" | grep "[0-9]" || echo unknown)
+SVNVERSION := $(shell LC_ALL=C svnversion -cn . | sed -e "s/.*://" -e "s/\([0-9]*\).*/\1/" | grep "[0-9]" || echo unknown)
 
 VERSION := 0.9.0-r$(SVNVERSION)
 
@@ -67,9 +67,14 @@ SVNDEF := -D'FLASHROM_VERSION="$(VERSION)"'
 $(PROGRAM): $(OBJS)
 	$(CC) $(LDFLAGS) -o $(PROGRAM) $(OBJS) $(LIBS) $(FEATURE_LIBS)
 
-FEATURE_CFLAGS = $(shell LANG=C grep -q "FTDISUPPORT := yes" .features && printf "%s" "-D'FT2232_SPI_SUPPORT=1'")
+FEATURE_CFLAGS = $(shell LC_ALL=C grep -q "FTDISUPPORT := yes" .features && printf "%s" "-D'FT2232_SPI_SUPPORT=1'")
 
-FEATURE_LIBS = $(shell LANG=C grep -q "FTDISUPPORT := yes" .features && printf "%s" "-lftdi")
+FEATURE_LIBS = $(shell LC_ALL=C grep -q "FTDISUPPORT := yes" .features && printf "%s" "-lftdi")
+
+# TAROPTIONS reduces information leakage from the packager's system.
+# If other tar programs support command line arguments for setting uid/gid of
+# stored files, they can be handled here as well.
+TAROPTIONS = $(shell LC_ALL=C tar --version|grep -q GNU && echo "--owner=root --group=root")
 
 %.o: %.c .features
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(FEATURE_CFLAGS) $(SVNDEF) -o $@ -c $<
@@ -137,9 +142,9 @@ export:
 	@echo Exported $(EXPORTDIR)/flashrom-$(VERSION)/
 
 tarball: export
-	@tar cfz $(EXPORTDIR)/flashrom-$(VERSION).tar.gz -C $(EXPORTDIR)/ flashrom-$(VERSION)/
+	@tar cjf $(EXPORTDIR)/flashrom-$(VERSION).tar.bz2 -C $(EXPORTDIR)/ $(TAROPTIONS) flashrom-$(VERSION)/
 	@rm -rf $(EXPORTDIR)/flashrom-$(VERSION)
-	@echo Created $(EXPORTDIR)/flashrom-$(VERSION).tar.gz
+	@echo Created $(EXPORTDIR)/flashrom-$(VERSION).tar.bz2
 
 .PHONY: all clean distclean dep compiler pciutils features export tarball
 
