@@ -52,7 +52,7 @@ uint8_t sb600_read_status_register(void)
 	unsigned char readarr[JEDEC_RDSR_INSIZE];
 
 	/* Read Status Register */
-	spi_command(sizeof(cmd), sizeof(readarr), cmd, readarr);
+	spi_send_command(sizeof(cmd), sizeof(readarr), cmd, readarr);
 	return readarr[0];
 }
 
@@ -103,7 +103,7 @@ static void execute_command(void)
 		;
 }
 
-int sb600_spi_command(unsigned int writecnt, unsigned int readcnt,
+int sb600_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		      const unsigned char *writearr, unsigned char *readarr)
 {
 	int count;

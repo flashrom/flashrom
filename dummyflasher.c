@@ -141,7 +141,7 @@ void dummy_chip_readn(uint8_t *buf, const chipaddr addr, size_t len)
 	return;
 }
 
-int dummy_spi_command(unsigned int writecnt, unsigned int readcnt,
+int dummy_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		      const unsigned char *writearr, unsigned char *readarr)
 {
 	int i;

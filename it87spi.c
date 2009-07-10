@@ -141,7 +141,7 @@ int it87xx_probe_spi_flash(const char *name)
  * commands with the address in inverse wire order. That's why the register
  * ordering in case 4 and 5 may seem strange.
  */
-int it8716f_spi_command(unsigned int writecnt, unsigned int readcnt,
+int it8716f_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 			const unsigned char *writearr, unsigned char *readarr)
 {
 	uint8_t busy, writeenc;
