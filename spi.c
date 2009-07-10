@@ -32,25 +32,25 @@ void *spibar = NULL;
 
 void spi_prettyprint_status_register(struct flashchip *flash);
 
-int spi_command(unsigned int writecnt, unsigned int readcnt,
+int spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		const unsigned char *writearr, unsigned char *readarr)
 {
 	switch (spi_controller) {
 	case SPI_CONTROLLER_IT87XX:
-		return it8716f_spi_command(writecnt, readcnt, writearr,
+		return it8716f_spi_send_command(writecnt, readcnt, writearr,
 					   readarr);
 	case SPI_CONTROLLER_ICH7:
 	case SPI_CONTROLLER_ICH9:
 	case SPI_CONTROLLER_VIA:
-		return ich_spi_command(writecnt, readcnt, writearr, readarr);
+		return ich_spi_send_command(writecnt, readcnt, writearr, readarr);
 	case SPI_CONTROLLER_SB600:
-		return sb600_spi_command(writecnt, readcnt, writearr, readarr);
+		return sb600_spi_send_command(writecnt, readcnt, writearr, readarr);
 	case SPI_CONTROLLER_WBSIO:
-		return wbsio_spi_command(writecnt, readcnt, writearr, readarr);
+		return wbsio_spi_send_command(writecnt, readcnt, writearr, readarr);
 	case SPI_CONTROLLER_FT2232:
-		return ft2232_spi_command(writecnt, readcnt, writearr, readarr);
+		return ft2232_spi_send_command(writecnt, readcnt, writearr, readarr);
 	case SPI_CONTROLLER_DUMMY:
-		return dummy_spi_command(writecnt, readcnt, writearr, readarr);
+		return dummy_spi_send_command(writecnt, readcnt, writearr, readarr);
 	default:
 		printf_debug
 		    ("%s called, but no SPI chipset/strapping detected\n",
@@ -59,13 +59,23 @@ int spi_command(unsigned int writecnt, unsigned int readcnt,
 	return 1;
 }
 
+int spi_send_multicommand(struct spi_command *spicommands)
+{
+	int res = 0;
+	while ((spicommands->writecnt || spicommands->readcnt) && !res) {
+		res = spi_send_command(spicommands->writecnt, spicommands->readcnt,
+				       spicommands->writearr, spicommands->readarr);
+	}
+	return res;
+}
+
 static int spi_rdid(unsigned char *readarr, int bytes)
 {
 	const unsigned char cmd[JEDEC_RDID_OUTSIZE] = { JEDEC_RDID };
 	int ret;
 	int i;
 
-	ret = spi_command(sizeof(cmd), bytes, cmd, readarr);
+	ret = spi_send_command(sizeof(cmd), bytes, cmd, readarr);
 	if (ret)
 		return ret;
 	printf_debug("RDID returned");
@@ -81,14 +91,14 @@ static int spi_rems(unsigned char *readarr)
 	uint32_t readaddr;
 	int ret;
 
-	ret = spi_command(sizeof(cmd), JEDEC_REMS_INSIZE, cmd, readarr);
+	ret = spi_send_command(sizeof(cmd), JEDEC_REMS_INSIZE, cmd, readarr);
 	if (ret == SPI_INVALID_ADDRESS) {
 		/* Find the lowest even address allowed for reads. */
 		readaddr = (spi_get_valid_read_addr() + 1) & ~1;
 		cmd[1] = (readaddr >> 16) & 0xff,
 		cmd[2] = (readaddr >> 8) & 0xff,
 		cmd[3] = (readaddr >> 0) & 0xff,
-		ret = spi_command(sizeof(cmd), JEDEC_REMS_INSIZE, cmd, readarr);
+		ret = spi_send_command(sizeof(cmd), JEDEC_REMS_INSIZE, cmd, readarr);
 	}
 	if (ret)
 		return ret;
@@ -102,14 +112,14 @@ static int spi_res(unsigned char *readarr)
 	uint32_t readaddr;
 	int ret;
 
-	ret = spi_command(sizeof(cmd), JEDEC_RES_INSIZE, cmd, readarr);
+	ret = spi_send_command(sizeof(cmd), JEDEC_RES_INSIZE, cmd, readarr);
 	if (ret == SPI_INVALID_ADDRESS) {
 		/* Find the lowest even address allowed for reads. */
 		readaddr = (spi_get_valid_read_addr() + 1) & ~1;
 		cmd[1] = (readaddr >> 16) & 0xff,
 		cmd[2] = (readaddr >> 8) & 0xff,
 		cmd[3] = (readaddr >> 0) & 0xff,
-		ret = spi_command(sizeof(cmd), JEDEC_RES_INSIZE, cmd, readarr);
+		ret = spi_send_command(sizeof(cmd), JEDEC_RES_INSIZE, cmd, readarr);
 	}
 	if (ret)
 		return ret;
@@ -123,7 +133,7 @@ int spi_write_enable(void)
 	int result;
 
 	/* Send WREN (Write Enable) */
-	result = spi_command(sizeof(cmd), 0, cmd, NULL);
+	result = spi_send_command(sizeof(cmd), 0, cmd, NULL);
 
 	if (result)
 		printf_debug("%s failed", __func__);
@@ -150,7 +160,7 @@ int spi_write_disable(void)
 	const unsigned char cmd[JEDEC_WRDI_OUTSIZE] = { JEDEC_WRDI };
 
 	/* Send WRDI (Write Disable) */
-	return spi_command(sizeof(cmd), 0, cmd, NULL);
+	return spi_send_command(sizeof(cmd), 0, cmd, NULL);
 }
 
 static int probe_spi_rdid_generic(struct flashchip *flash, int bytes)
@@ -292,7 +302,7 @@ uint8_t spi_read_status_register(void)
 		/* SB600 uses a different way to read status register. */
 		return sb600_read_status_register();
 	} else {
-		ret = spi_command(sizeof(cmd), sizeof(readarr), cmd, readarr);
+		ret = spi_send_command(sizeof(cmd), sizeof(readarr), cmd, readarr);
 		if (ret)
 			printf_debug("RDSR failed!\n");
 	}
@@ -419,7 +429,7 @@ int spi_chip_erase_60(struct flashchip *flash)
 	if (result)
 		return result;
 	/* Send CE (Chip Erase) */
-	result = spi_command(sizeof(cmd), 0, cmd, NULL);
+	result = spi_send_command(sizeof(cmd), 0, cmd, NULL);
 	if (result) {
 		printf_debug("spi_chip_erase_60 failed sending erase\n");
 		return result;
@@ -451,7 +461,7 @@ int spi_chip_erase_c7(struct flashchip *flash)
 	if (result)
 		return result;
 	/* Send CE (Chip Erase) */
-	result = spi_command(sizeof(cmd), 0, cmd, NULL);
+	result = spi_send_command(sizeof(cmd), 0, cmd, NULL);
 	if (result) {
 		printf_debug("spi_chip_erase_60 failed sending erase\n");
 		return result;
@@ -492,7 +502,7 @@ int spi_block_erase_52(struct flashchip *flash, unsigned int addr, unsigned int 
 	if (result)
 		return result;
 	/* Send BE (Block Erase) */
-	spi_command(sizeof(cmd), 0, cmd, NULL);
+	spi_send_command(sizeof(cmd), 0, cmd, NULL);
 	/* Wait until the Write-In-Progress bit is cleared.
 	 * This usually takes 100-4000 ms, so wait in 100 ms steps.
 	 */
@@ -522,7 +532,7 @@ int spi_block_erase_d8(struct flashchip *flash, unsigned int addr, unsigned int 
 	if (result)
 		return result;
 	/* Send BE (Block Erase) */
-	spi_command(sizeof(cmd), 0, cmd, NULL);
+	spi_send_command(sizeof(cmd), 0, cmd, NULL);
 	/* Wait until the Write-In-Progress bit is cleared.
 	 * This usually takes 100-4000 ms, so wait in 100 ms steps.
 	 */
@@ -572,7 +582,7 @@ int spi_block_erase_20(struct flashchip *flash, unsigned int addr, unsigned int 
 	if (result)
 		return result;
 	/* Send SE (Sector Erase) */
-	spi_command(sizeof(cmd), 0, cmd, NULL);
+	spi_send_command(sizeof(cmd), 0, cmd, NULL);
 	/* Wait until the Write-In-Progress bit is cleared.
 	 * This usually takes 15-800 ms, so wait in 10 ms steps.
 	 */
@@ -609,7 +619,7 @@ int spi_write_status_enable(void)
 	int result;
 
 	/* Send EWSR (Enable Write Status Register). */
-	result = spi_command(sizeof(cmd), JEDEC_EWSR_INSIZE, cmd, NULL);
+	result = spi_send_command(sizeof(cmd), JEDEC_EWSR_INSIZE, cmd, NULL);
 
 	if (result)
 		printf_debug("%s failed", __func__);
@@ -641,7 +651,7 @@ int spi_write_status_register(int status)
 	    { JEDEC_WRSR, (unsigned char)status };
 
 	/* Send WRSR (Write Status Register) */
-	return spi_command(sizeof(cmd), 0, cmd, NULL);
+	return spi_send_command(sizeof(cmd), 0, cmd, NULL);
 }
 
 void spi_byte_program(int address, uint8_t byte)
@@ -655,7 +665,7 @@ void spi_byte_program(int address, uint8_t byte)
 	};
 
 	/* Send Byte-Program */
-	spi_command(sizeof(cmd), 0, cmd, NULL);
+	spi_send_command(sizeof(cmd), 0, cmd, NULL);
 }
 
 int spi_nbyte_program(int address, uint8_t *bytes, int len)
@@ -676,7 +686,7 @@ int spi_nbyte_program(int address, uint8_t *bytes, int len)
 	memcpy(&cmd[4], bytes, len);
 
 	/* Send Byte-Program */
-	return spi_command(4 + len, 0, cmd, NULL);
+	return spi_send_command(4 + len, 0, cmd, NULL);
 }
 
 int spi_disable_blockprotect(void)
@@ -712,7 +722,7 @@ int spi_nbyte_read(int address, uint8_t *bytes, int len)
 	};
 
 	/* Send Read */
-	return spi_command(sizeof(cmd), len, cmd, bytes);
+	return spi_send_command(sizeof(cmd), len, cmd, bytes);
 }
 
 /*
@@ -855,13 +865,13 @@ int spi_aai_write(struct flashchip *flash, uint8_t *buf)
 	result = spi_write_enable();
 	if (result)
 		return result;
-	spi_command(6, 0, w, NULL);
+	spi_send_command(6, 0, w, NULL);
 	while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
 		programmer_delay(5); /* SST25VF040B Tbp is max 10us */
 	while (pos < size) {
 		w[1] = buf[pos++];
 		w[2] = buf[pos++];
-		spi_command(3, 0, w, NULL);
+		spi_send_command(3, 0, w, NULL);
 		while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
 			programmer_delay(5); /* SST25VF040B Tbp is max 10us */
 	}
