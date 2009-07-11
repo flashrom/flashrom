@@ -1,7 +1,7 @@
 /*
  * This file is part of the flashrom project.
  *
- * Copyright (C) 2007, 2008 Carl-Daniel Hailfinger
+ * Copyright (C) 2007, 2008, 2009 Carl-Daniel Hailfinger
  * Copyright (C) 2008 Ronald Hoogenboom <ronald@zonnet.nl>
  * Copyright (C) 2008 coresystems GmbH
  *
@@ -24,12 +24,14 @@
  */
 
 #include <string.h>
+#include <stdlib.h>
 #include "flash.h"
 #include "spi.h"
 
 #define ITE_SUPERIO_PORT1	0x2e
 #define ITE_SUPERIO_PORT2	0x4e
 
+char *it87opts = NULL;
 uint16_t it8716f_flashport = 0;
 /* use fast 33MHz SPI (<>0) or slow 16MHz (0) */
 int fast_spi = 1;
@@ -56,6 +58,7 @@ void exit_conf_mode_ite(uint16_t port)
 static uint16_t find_ite_spi_flash_port(uint16_t port)
 {
 	uint8_t tmp = 0;
+	char *portpos = NULL;
 	uint16_t id, flashport = 0;
 
 	enter_conf_mode_ite(port);
@@ -77,6 +80,9 @@ static uint16_t find_ite_spi_flash_port(uint16_t port)
 		       0xFFF80000, 0xFFFEFFFF, (tmp & 1 << 3) ? "en" : "dis");
 		printf("LPC write to serial flash %sabled\n",
 		       (tmp & 1 << 4) ? "en" : "dis");
+		/* The LPC->SPI force write enable below only makes sense for
+		 * non-programmer mode.
+		 */
 		/* If any serial flash segment is enabled, enable writing. */
 		if ((tmp & 0xe) && (!(tmp & 1 << 4))) {
 			printf("Enabling LPC write to serial flash\n");
@@ -89,6 +95,17 @@ static uint16_t find_ite_spi_flash_port(uint16_t port)
 		flashport = sio_read(port, 0x64) << 8;
 		flashport |= sio_read(port, 0x65);
 		printf("Serial flash port 0x%04x\n", flashport);
+		if (it87opts && !strlen(it87opts)) {
+			free(it87opts);
+			it87opts = NULL;
+		}
+		if (it87opts && (portpos = strstr(it87opts, "port="))) {
+			portpos += 5;
+			flashport = strtol(portpos, (char **)NULL, 0);
+			printf("Forcing serial flash port 0x%04x\n", flashport);
+			sio_write(port, 0x64, (flashport >> 8));
+			sio_write(port, 0x65, (flashport & 0xff));
+		}
 	}
 	exit_conf_mode_ite(port);
 	return flashport;
@@ -206,10 +223,11 @@ int it8716f_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 }
 
 /* Page size is usually 256 bytes */
-static int it8716f_spi_page_program(int block, uint8_t *buf, uint8_t *bios)
+static int it8716f_spi_page_program(struct flashchip *flash, int block, uint8_t *buf)
 {
 	int i;
 	int result;
+	chipaddr bios = flash->virtual_memory;
 
 	result = spi_write_enable();
 	if (result)
@@ -217,7 +235,7 @@ static int it8716f_spi_page_program(int block, uint8_t *buf, uint8_t *bios)
 	OUTB(0x06, it8716f_flashport + 1);
 	OUTB(((2 + (fast_spi ? 1 : 0)) << 4), it8716f_flashport);
 	for (i = 0; i < 256; i++) {
-		bios[256 * block + i] = buf[256 * block + i];
+		chip_writeb(buf[256 * block + i], bios + 256 * block + i);
 	}
 	OUTB(0, it8716f_flashport);
 	/* Wait until the Write-In-Progress bit is cleared.
@@ -288,8 +306,7 @@ int it8716f_spi_chip_write_256(struct flashchip *flash, uint8_t *buf)
 		it8716f_spi_chip_write_1(flash, buf);
 	} else {
 		for (i = 0; i < total_size / 256; i++) {
-			it8716f_spi_page_program(i, buf,
-				(uint8_t *)flash->virtual_memory);
+			it8716f_spi_page_program(flash, i, buf);
 		}
 	}
 
