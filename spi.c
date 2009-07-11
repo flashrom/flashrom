@@ -536,17 +536,30 @@ int spi_chip_erase_60_c7(struct flashchip *flash)
 
 int spi_block_erase_52(struct flashchip *flash, unsigned int addr, unsigned int blocklen)
 {
-	unsigned char cmd[JEDEC_BE_52_OUTSIZE] = {JEDEC_BE_52, };
 	int result;
+	struct spi_command spicommands[] = {
+	{
+		.writecnt	= JEDEC_WREN_OUTSIZE,
+		.writearr	= (const unsigned char[]){ JEDEC_WREN },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= JEDEC_BE_52_OUTSIZE,
+		.writearr	= (const unsigned char[]){ JEDEC_BE_52, (addr >> 16) & 0xff, (addr >> 8) & 0xff, (addr & 0xff) },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= 0,
+		.writearr	= NULL,
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}};
 
-	cmd[1] = (addr & 0x00ff0000) >> 16;
-	cmd[2] = (addr & 0x0000ff00) >> 8;
-	cmd[3] = (addr & 0x000000ff);
-	result = spi_write_enable();
-	if (result)
+	result = spi_send_multicommand(spicommands);
+	if (result) {
+		printf_debug("%s failed during command execution\n", __func__);
 		return result;
-	/* Send BE (Block Erase) */
-	spi_send_command(sizeof(cmd), 0, cmd, NULL);
+	}
 	/* Wait until the Write-In-Progress bit is cleared.
 	 * This usually takes 100-4000 ms, so wait in 100 ms steps.
 	 */
@@ -566,17 +579,30 @@ int spi_block_erase_52(struct flashchip *flash, unsigned int addr, unsigned int 
  */
 int spi_block_erase_d8(struct flashchip *flash, unsigned int addr, unsigned int blocklen)
 {
-	unsigned char cmd[JEDEC_BE_D8_OUTSIZE] = { JEDEC_BE_D8, };
 	int result;
+	struct spi_command spicommands[] = {
+	{
+		.writecnt	= JEDEC_WREN_OUTSIZE,
+		.writearr	= (const unsigned char[]){ JEDEC_WREN },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= JEDEC_BE_D8_OUTSIZE,
+		.writearr	= (const unsigned char[]){ JEDEC_BE_D8, (addr >> 16) & 0xff, (addr >> 8) & 0xff, (addr & 0xff) },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= 0,
+		.writearr	= NULL,
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}};
 
-	cmd[1] = (addr & 0x00ff0000) >> 16;
-	cmd[2] = (addr & 0x0000ff00) >> 8;
-	cmd[3] = (addr & 0x000000ff);
-	result = spi_write_enable();
-	if (result)
+	result = spi_send_multicommand(spicommands);
+	if (result) {
+		printf_debug("%s failed during command execution\n", __func__);
 		return result;
-	/* Send BE (Block Erase) */
-	spi_send_command(sizeof(cmd), 0, cmd, NULL);
+	}
 	/* Wait until the Write-In-Progress bit is cleared.
 	 * This usually takes 100-4000 ms, so wait in 100 ms steps.
 	 */
@@ -615,18 +641,30 @@ int spi_chip_erase_d8(struct flashchip *flash)
 /* Sector size is usually 4k, though Macronix eliteflash has 64k */
 int spi_block_erase_20(struct flashchip *flash, unsigned int addr, unsigned int blocklen)
 {
-	unsigned char cmd[JEDEC_SE_OUTSIZE] = { JEDEC_SE, };
 	int result;
-	
-	cmd[1] = (addr & 0x00ff0000) >> 16;
-	cmd[2] = (addr & 0x0000ff00) >> 8;
-	cmd[3] = (addr & 0x000000ff);
+	struct spi_command spicommands[] = {
+	{
+		.writecnt	= JEDEC_WREN_OUTSIZE,
+		.writearr	= (const unsigned char[]){ JEDEC_WREN },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= JEDEC_SE_OUTSIZE,
+		.writearr	= (const unsigned char[]){ JEDEC_SE, (addr >> 16) & 0xff, (addr >> 8) & 0xff, (addr & 0xff) },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= 0,
+		.writearr	= NULL,
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}};
 
-	result = spi_write_enable();
-	if (result)
+	result = spi_send_multicommand(spicommands);
+	if (result) {
+		printf_debug("%s failed during command execution\n", __func__);
 		return result;
-	/* Send SE (Sector Erase) */
-	spi_send_command(sizeof(cmd), 0, cmd, NULL);
+	}
 	/* Wait until the Write-In-Progress bit is cleared.
 	 * This usually takes 15-800 ms, so wait in 10 ms steps.
 	 */
