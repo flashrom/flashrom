@@ -2795,6 +2795,22 @@ struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Winbond",
+		.name		= "W25x16",
+		.bustype	= CHIP_BUSTYPE_SPI,
+		.manufacture_id	= WINBOND_NEX_ID,
+		.model_id	= W_25X16,
+		.total_size	= 2048,
+		.page_size	= 256,
+		.tested		= TEST_OK_PR,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.erase		= spi_chip_erase_c7,
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read,
+	},
+
+	{
+		.vendor		= "Winbond",
 		.name		= "W29C011",
 		.bustype	= CHIP_BUSTYPE_PARALLEL,
 		.manufacture_id	= WINBOND_ID,
