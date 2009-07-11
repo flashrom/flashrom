@@ -61,12 +61,30 @@ int spi_send_command(unsigned int writecnt, unsigned int readcnt,
 
 int spi_send_multicommand(struct spi_command *spicommands)
 {
-	int res = 0;
-	while ((spicommands->writecnt || spicommands->readcnt) && !res) {
-		res = spi_send_command(spicommands->writecnt, spicommands->readcnt,
+	int ret = 0;
+	while ((spicommands->writecnt || spicommands->readcnt) && !ret) {
+		ret = spi_send_command(spicommands->writecnt, spicommands->readcnt,
 				       spicommands->writearr, spicommands->readarr);
+		/* This awful hack needs to be replaced with a multicommand
+		 * capable ICH/VIA SPI driver.
+		 */
+		if ((ret == SPI_INVALID_OPCODE) &&
+		    ((spicommands->writearr[0] == JEDEC_WREN) ||
+		     (spicommands->writearr[0] == JEDEC_EWSR))) {
+			switch (spi_controller) {
+			case SPI_CONTROLLER_ICH7:
+			case SPI_CONTROLLER_ICH9:
+			case SPI_CONTROLLER_VIA:
+				printf_debug(" due to SPI master limitation, ignoring"
+					     " and hoping it will be run as PREOP\n");
+				ret = 0;
+			default:
+				break;
+			}
+		}
+		spicommands++;
 	}
-	return res;
+	return ret;
 }
 
 static int spi_rdid(unsigned char *readarr, int bytes)
@@ -417,21 +435,34 @@ void spi_prettyprint_status_register(struct flashchip *flash)
 
 int spi_chip_erase_60(struct flashchip *flash)
 {
-	const unsigned char cmd[JEDEC_CE_60_OUTSIZE] = {JEDEC_CE_60};
 	int result;
+	struct spi_command spicommands[] = {
+	{
+		.writecnt	= JEDEC_WREN_OUTSIZE,
+		.writearr	= (const unsigned char[]){ JEDEC_WREN },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= JEDEC_CE_60_OUTSIZE,
+		.writearr	= (const unsigned char[]){ JEDEC_CE_60 },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= 0,
+		.writearr	= NULL,
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}};
 	
 	result = spi_disable_blockprotect();
 	if (result) {
 		printf_debug("spi_disable_blockprotect failed\n");
 		return result;
 	}
-	result = spi_write_enable();
-	if (result)
-		return result;
-	/* Send CE (Chip Erase) */
-	result = spi_send_command(sizeof(cmd), 0, cmd, NULL);
+	
+	result = spi_send_multicommand(spicommands);
 	if (result) {
-		printf_debug("spi_chip_erase_60 failed sending erase\n");
+		printf_debug("%s failed during command execution\n", __func__);
 		return result;
 	}
 	/* Wait until the Write-In-Progress bit is cleared.
@@ -449,21 +480,34 @@ int spi_chip_erase_60(struct flashchip *flash)
 
 int spi_chip_erase_c7(struct flashchip *flash)
 {
-	const unsigned char cmd[JEDEC_CE_C7_OUTSIZE] = { JEDEC_CE_C7 };
 	int result;
+	struct spi_command spicommands[] = {
+	{
+		.writecnt	= JEDEC_WREN_OUTSIZE,
+		.writearr	= (const unsigned char[]){ JEDEC_WREN },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= JEDEC_CE_C7_OUTSIZE,
+		.writearr	= (const unsigned char[]){ JEDEC_CE_C7 },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= 0,
+		.writearr	= NULL,
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}};
 
 	result = spi_disable_blockprotect();
 	if (result) {
 		printf_debug("spi_disable_blockprotect failed\n");
 		return result;
 	}
-	result = spi_write_enable();
-	if (result)
-		return result;
-	/* Send CE (Chip Erase) */
-	result = spi_send_command(sizeof(cmd), 0, cmd, NULL);
+
+	result = spi_send_multicommand(spicommands);
 	if (result) {
-		printf_debug("spi_chip_erase_60 failed sending erase\n");
+		printf_debug("%s failed during command execution\n", __func__);
 		return result;
 	}
 	/* Wait until the Write-In-Progress bit is cleared.
