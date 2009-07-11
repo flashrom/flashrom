@@ -647,6 +647,8 @@ int main(int argc, char *argv[])
 					pcidev_bdf = strdup(optarg + 8);
 			} else if (strncmp(optarg, "it87spi", 7) == 0) {
 				programmer = PROGRAMMER_IT87SPI;
+				if (optarg[7] == '=')
+					it87opts = strdup(optarg + 8);
 			} else if (strncmp(optarg, "ft2232spi", 9) == 0) {
 				programmer = PROGRAMMER_FT2232SPI;
 				if (optarg[9] == '=')

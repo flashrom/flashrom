@@ -479,6 +479,7 @@ int ich_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
 int ich_spi_write_256(struct flashchip *flash, uint8_t * buf);
 
 /* it87spi.c */
+extern char *it87opts;
 extern uint16_t it8716f_flashport;
 void enter_conf_mode_ite(uint16_t port);
 void exit_conf_mode_ite(uint16_t port);
