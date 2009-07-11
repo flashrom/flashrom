@@ -184,6 +184,14 @@ Currently the following programmers support this mechanism:
 .BR nic3com ,
 .BR satasii .
 .sp
+The it87spi has an optional parameter which will set the I/O base port of the
+IT87* SPI controller interface to the port specified in the parameter.
+For that you have to use the
+.B "flashrom -p it87spi=port=portnum"
+syntax where
+.B portnum
+is an I/O port number which must be a multiple of 8.
+.sp
 The ft2232spi has an optional parameter specifying the controller type and
 interface/port it should support. For that you have to use the
 .B "flashrom -p ft2232spi=model,port=interface"
