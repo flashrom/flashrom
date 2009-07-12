@@ -200,11 +200,8 @@ int wbsio_spi_write_1(struct flashchip *flash, uint8_t *buf)
 		fprintf(stderr, "ERASE FAILED!\n");
 		return -1;
 	}
-	result = spi_write_enable();
-	if (result)
-		return result;
 	for (pos = 0; pos < size; pos++) {
-		spi_byte_program(pos, buf[pos]);
+		result = spi_byte_program(pos, buf[pos]);
 		while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
 			programmer_delay(10);
 	}

@@ -276,7 +276,6 @@ int ft2232_spi_write_256(struct flashchip *flash, uint8_t *buf)
 		else
 			l = total_size - i;
 
-		spi_write_enable();
 		if ((r = spi_nbyte_program(i, &buf[i], l))) {
 			fprintf(stderr, "%s: write fail %d\n", __FUNCTION__, r);
 			// spi_write_disable();  chip does this for us

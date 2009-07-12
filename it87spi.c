@@ -232,6 +232,7 @@ static int it8716f_spi_page_program(struct flashchip *flash, int block, uint8_t 
 	result = spi_write_enable();
 	if (result)
 		return result;
+	/* FIXME: The command below seems to be redundant or wrong. */
 	OUTB(0x06, it8716f_flashport + 1);
 	OUTB(((2 + (fast_spi ? 1 : 0)) << 4), it8716f_flashport);
 	for (i = 0; i < 256; i++) {
@@ -262,10 +263,7 @@ int it8716f_spi_chip_write_1(struct flashchip *flash, uint8_t *buf)
 
 	spi_disable_blockprotect();
 	for (i = 0; i < total_size; i++) {
-		result = spi_write_enable();
-		if (result)
-			return result;
-		spi_byte_program(i, buf[i]);
+		result = spi_byte_program(i, buf[i]);
 		while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
 			programmer_delay(10);
 	}
