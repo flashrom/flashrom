@@ -73,10 +73,7 @@ int sb600_spi_write_1(struct flashchip *flash, uint8_t *buf)
 	printf("Programming flash");
 	for (i = 0; i < total_size; i++, buf++) {
 		spi_disable_blockprotect();
-		result = spi_write_enable();
-		if (result)
-			return result;
-		spi_byte_program(i, *buf);
+		result = spi_byte_program(i, *buf);
 		/* wait program complete. */
 		if (i % 0x8000 == 0)
 			printf(".");
