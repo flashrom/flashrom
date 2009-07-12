@@ -154,21 +154,7 @@ int spi_write_enable(void)
 	result = spi_send_command(sizeof(cmd), 0, cmd, NULL);
 
 	if (result)
-		printf_debug("%s failed", __func__);
-	if (result == SPI_INVALID_OPCODE) {
-		switch (spi_controller) {
-		case SPI_CONTROLLER_ICH7:
-		case SPI_CONTROLLER_ICH9:
-		case SPI_CONTROLLER_VIA:
-			printf_debug(" due to SPI master limitation, ignoring"
-				     " and hoping it will be run as PREOP\n");
-			return 0;
-		default:
-			break;
-		}
-	}
-	if (result)
-		printf_debug("\n");
+		printf_debug("%s failed\n", __func__);
 
 	return result;
 }
@@ -736,39 +722,80 @@ int spi_write_status_register(int status)
 	return spi_send_command(sizeof(cmd), 0, cmd, NULL);
 }
 
-void spi_byte_program(int address, uint8_t byte)
+int spi_byte_program(int addr, uint8_t byte)
 {
-	const unsigned char cmd[JEDEC_BYTE_PROGRAM_OUTSIZE] = {
-		JEDEC_BYTE_PROGRAM,
-		(address >> 16) & 0xff,
-		(address >> 8) & 0xff,
-		(address >> 0) & 0xff,
-		byte
-	};
+	int result;
+	struct spi_command spicommands[] = {
+	{
+		.writecnt	= JEDEC_WREN_OUTSIZE,
+		.writearr	= (const unsigned char[]){ JEDEC_WREN },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= JEDEC_BYTE_PROGRAM_OUTSIZE,
+		.writearr	= (const unsigned char[]){ JEDEC_BYTE_PROGRAM, (addr >> 16) & 0xff, (addr >> 8) & 0xff, (addr & 0xff), byte },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= 0,
+		.writearr	= NULL,
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}};
 
-	/* Send Byte-Program */
-	spi_send_command(sizeof(cmd), 0, cmd, NULL);
+	result = spi_send_multicommand(spicommands);
+	if (result) {
+		printf_debug("%s failed during command execution\n", __func__);
+		return result;
+	}
+	return result;
 }
 
 int spi_nbyte_program(int address, uint8_t *bytes, int len)
 {
+	int result;
+	/* FIXME: Switch to malloc based on len unless that kills speed. */
 	unsigned char cmd[JEDEC_BYTE_PROGRAM_OUTSIZE - 1 + 256] = {
 		JEDEC_BYTE_PROGRAM,
 		(address >> 16) & 0xff,
 		(address >> 8) & 0xff,
 		(address >> 0) & 0xff,
 	};
+	struct spi_command spicommands[] = {
+	{
+		.writecnt	= JEDEC_WREN_OUTSIZE,
+		.writearr	= (const unsigned char[]){ JEDEC_WREN },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= JEDEC_BYTE_PROGRAM_OUTSIZE - 1 + len,
+		.writearr	= cmd,
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= 0,
+		.writearr	= NULL,
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}};
 
+	if (!len) {
+		printf_debug ("%s called for zero-length write\n", __func__);
+		return 1;
+	}
 	if (len > 256) {
-		printf_debug ("%s called for too long a write\n",
-		     __FUNCTION__);
+		printf_debug ("%s called for too long a write\n", __func__);
 		return 1;
 	}
 
 	memcpy(&cmd[4], bytes, len);
 
-	/* Send Byte-Program */
-	return spi_send_command(4 + len, 0, cmd, NULL);
+	result = spi_send_multicommand(spicommands);
+	if (result) {
+		printf_debug("%s failed during command execution\n", __func__);
+		return result;
+	}
+	return result;
 }
 
 int spi_disable_blockprotect(void)
@@ -883,7 +910,6 @@ int spi_chip_write_1(struct flashchip *flash, uint8_t *buf)
 
 	spi_disable_blockprotect();
 	for (i = 0; i < total_size; i++) {
-		spi_write_enable();
 		spi_byte_program(i, buf[i]);
 		while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
 			programmer_delay(10);
