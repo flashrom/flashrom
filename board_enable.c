@@ -832,6 +832,44 @@ static int board_abit_ip35(const char *name)
 }
 
 /**
+ * Suited for Asus A7V8X: VIA KT400 + VT8235 + IT8703F-A
+ */
+static int board_asus_a7v8x(const char *name)
+{
+	uint16_t id, base;
+	uint8_t tmp;
+
+	/* find the IT8703F */
+	w836xx_ext_enter(0x2E);
+	id = (sio_read(0x2E, 0x20) << 8) | sio_read(0x2E, 0x21);
+	w836xx_ext_leave(0x2E);
+
+	if (id != 0x8701) {
+		fprintf(stderr, "\nERROR: IT8703F SuperIO not found.\n");
+		return -1;
+	}
+
+	/* Get the GP567 IO base */
+	w836xx_ext_enter(0x2E);
+	sio_write(0x2E, 0x07, 0x0C);
+	base = (sio_read(0x2E, 0x60) << 8) | sio_read(0x2E, 0x61);
+	w836xx_ext_leave(0x2E);
+
+	if (!base) {
+		fprintf(stderr, "\nERROR: Failed to read IT8703F SuperIO GPIO"
+			" Base.\n");
+		return -1;
+	}
+
+	/* Raise GP51. */
+	tmp = INB(base);
+	tmp |= 0x02;
+	OUTB(tmp, base);
+
+	return 0;
+}
+
+/**
  * We use 2 sets of IDs here, you're free to choose which is which. This
  * is to provide a very high degree of certainty when matching a board on
  * the basis of subsystem/card IDs. As not every vendor handles
@@ -860,6 +898,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x1106, 0x3177, 0x17F2, 0x3177,  0x1106, 0x3148, 0x17F2, 0x3148, NULL,         NULL,          "Albatron",    "PM266A*",            board_epox_ep_8k5a2},
 	{0x1022, 0x2090,      0,      0,  0x1022, 0x2080,      0,      0, "artecgroup", "dbe61",       "Artec Group", "DBE61",              board_artecgroup_dbe6x},
 	{0x1022, 0x2090,      0,      0,  0x1022, 0x2080,      0,      0, "artecgroup", "dbe62",       "Artec Group", "DBE62",              board_artecgroup_dbe6x},
+	{0x1106, 0x3189, 0x1043, 0x807F,  0x1106, 0x3177, 0x1043, 0x808C, NULL,         NULL,          "ASUS",        "A7V8X",              board_asus_a7v8x},
 	{0x1106, 0x3177, 0x1043, 0x80A1,  0x1106, 0x3205, 0x1043, 0x8118, NULL,         NULL,          "ASUS",        "A7V8X-MX SE",        board_asus_a7v8x_mx},
 	{0x8086, 0x1a30, 0x1043, 0x8070,  0x8086, 0x244b, 0x1043, 0x8028, NULL,         NULL,          "ASUS",        "P4B266",             ich2_gpio22_raise},
 	{0x10B9, 0x1541,      0,      0,  0x10B9, 0x1533,      0,      0, "asus",       "p5a",         "ASUS",        "P5A",                board_asus_p5a},
