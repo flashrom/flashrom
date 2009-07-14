@@ -170,7 +170,7 @@ int it8716f_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	if (readcnt > 3) {
 		printf("%s called with unsupported readcnt %i.\n",
 		       __FUNCTION__, readcnt);
-		return 1;
+		return SPI_INVALID_LENGTH;
 	}
 	switch (writecnt) {
 	case 1:
@@ -200,7 +200,7 @@ int it8716f_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	default:
 		printf("%s called with unsupported writecnt %i.\n",
 		       __FUNCTION__, writecnt);
-		return 1;
+		return SPI_INVALID_LENGTH;
 	}
 	/*
 	 * Start IO, 33 or 16 MHz, readcnt input bytes, writecnt output bytes.

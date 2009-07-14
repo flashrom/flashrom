@@ -154,7 +154,8 @@ int wbsio_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	if (!mode) {
 		fprintf(stderr, "%s: unsupported command type wr=%d rd=%d\n",
 			__func__, writecnt, readcnt);
-		return 1;
+		/* Command type refers to the number of bytes read/written. */
+		return SPI_INVALID_LENGTH;
 	}
 
 	OUTB(writearr[0], wbsio_spibase);
