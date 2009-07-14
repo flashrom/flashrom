@@ -599,10 +599,16 @@ static int run_opcode(OPCODE op, uint32_t offset,
 {
 	switch (spi_controller) {
 	case SPI_CONTROLLER_VIA:
+		if (datalength > 16)
+			return SPI_INVALID_LENGTH;
 		return ich7_run_opcode(op, offset, datalength, data, 16);
 	case SPI_CONTROLLER_ICH7:
+		if (datalength > 64)
+			return SPI_INVALID_LENGTH;
 		return ich7_run_opcode(op, offset, datalength, data, 64);
 	case SPI_CONTROLLER_ICH9:
+		if (datalength > 64)
+			return SPI_INVALID_LENGTH;
 		return ich9_run_opcode(op, offset, datalength, data);
 	default:
 		printf_debug("%s: unsupported chipset\n", __FUNCTION__);
@@ -686,6 +692,7 @@ int ich_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		    const unsigned char *writearr, unsigned char *readarr)
 {
 	int a;
+	int result;
 	int opcode_index = -1;
 	const unsigned char cmd = *writearr;
 	OPCODE *opcode;
@@ -728,10 +735,10 @@ int ich_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		count = readcnt;
 	}
 
-	if (run_opcode(*opcode, addr, count, data) != 0) {
+	result = run_opcode(*opcode, addr, count, data);
+	if (result) {
 		printf_debug("run OPCODE 0x%02x failed\n", opcode->opcode);
-		return 1;
 	}
 
-	return 0;
+	return result;
 }
