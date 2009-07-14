@@ -114,14 +114,14 @@ int sb600_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 
 	if (readcnt > 8) {
 		printf("%s, SB600 SPI controller can not receive %d bytes, "
-		       "which is limited with 8 bytes\n", __func__, readcnt);
-		return 1;
+		       "it is limited to 8 bytes\n", __func__, readcnt);
+		return SPI_INVALID_LENGTH;
 	}
 
 	if (writecnt > 8) {
-		printf("%s, SB600 SPI controller can not sent %d bytes, "
-		       "which is limited with 8 bytes\n", __func__, writecnt);
-		return 1;
+		printf("%s, SB600 SPI controller can not send %d bytes, "
+		       "it is limited to 8 bytes\n", __func__, writecnt);
+		return SPI_INVALID_LENGTH;
 	}
 
 	mmio_writeb(cmd, sb600_spibar + 0);

@@ -201,6 +201,9 @@ int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	unsigned char port_val = 0;
 	int i, ret = 0;
 
+	if (writecnt > 65536 || readcnt > 65536)
+		return SPI_INVALID_LENGTH;
+
 	buf = realloc(buf, writecnt + readcnt + 100);
 	if (!buf) {
 		fprintf(stderr, "Out of memory!\n");
