@@ -30,6 +30,7 @@
 #include "flash.h"
 #include "flashchips.h"
 
+const char *flashrom_version = FLASHROM_VERSION;
 char *chip_to_probe = NULL;
 int verbose = 0;
 int programmer = PROGRAMMER_INTERNAL;
@@ -503,7 +504,7 @@ void usage(const char *name)
 
 void print_version(void)
 {
-	printf("flashrom v%s\n", FLASHROM_VERSION);
+	printf("flashrom v%s\n", flashrom_version);
 }
 
 int main(int argc, char *argv[])
