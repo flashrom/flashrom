@@ -718,7 +718,7 @@ void print_wiki_tables(void)
 {
 	time_t t = time(NULL);
 
-	printf(wiki_header, ctime(&t), FLASHROM_VERSION);
+	printf(wiki_header, ctime(&t), flashrom_version);
 	print_supported_chips_wiki();
 	print_supported_chipsets_wiki();
 	print_supported_boards_wiki();
