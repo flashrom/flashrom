@@ -754,21 +754,7 @@ int spi_write_status_enable(void)
 	result = spi_send_command(sizeof(cmd), JEDEC_EWSR_INSIZE, cmd, NULL);
 
 	if (result)
-		printf_debug("%s failed", __func__);
-	if (result == SPI_INVALID_OPCODE) {
-		switch (spi_controller) {
-		case SPI_CONTROLLER_ICH7:
-		case SPI_CONTROLLER_ICH9:
-		case SPI_CONTROLLER_VIA:
-			printf_debug(" due to SPI master limitation, ignoring"
-				     " and hoping it will be run as PREOP\n");
-			return 0;
-		default:
-			break;
-		}
-	}
-	if (result)
-		printf_debug("\n");
+		printf_debug("%s failed\n", __func__);
 
 	return result;
 }
@@ -779,11 +765,30 @@ int spi_write_status_enable(void)
  */
 int spi_write_status_register(int status)
 {
-	const unsigned char cmd[JEDEC_WRSR_OUTSIZE] =
-	    { JEDEC_WRSR, (unsigned char)status };
+	int result;
+	struct spi_command spicommands[] = {
+	{
+		.writecnt	= JEDEC_EWSR_OUTSIZE,
+		.writearr	= (const unsigned char[]){ JEDEC_EWSR },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= JEDEC_WRSR_OUTSIZE,
+		.writearr	= (const unsigned char[]){ JEDEC_WRSR, (unsigned char) status },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= 0,
+		.writearr	= NULL,
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}};
 
-	/* Send WRSR (Write Status Register) */
-	return spi_send_command(sizeof(cmd), 0, cmd, NULL);
+	result = spi_send_multicommand(spicommands);
+	if (result) {
+		printf_debug("%s failed during command execution\n", __func__);
+	}
+	return result;
 }
 
 int spi_byte_program(int addr, uint8_t byte)
@@ -810,7 +815,6 @@ int spi_byte_program(int addr, uint8_t byte)
 	result = spi_send_multicommand(spicommands);
 	if (result) {
 		printf_debug("%s failed during command execution\n", __func__);
-		return result;
 	}
 	return result;
 }
@@ -857,7 +861,6 @@ int spi_nbyte_program(int address, uint8_t *bytes, int len)
 	result = spi_send_multicommand(spicommands);
 	if (result) {
 		printf_debug("%s failed during command execution\n", __func__);
-		return result;
 	}
 	return result;
 }
@@ -871,11 +874,6 @@ int spi_disable_blockprotect(void)
 	/* If there is block protection in effect, unprotect it first. */
 	if ((status & 0x3c) != 0) {
 		printf_debug("Some block protection in effect, disabling\n");
-		result = spi_write_status_enable();
-		if (result) {
-			printf_debug("spi_write_status_enable failed\n");
-			return result;
-		}
 		result = spi_write_status_register(status & ~0x3c);
 		if (result) {
 			printf_debug("spi_write_status_register failed\n");
