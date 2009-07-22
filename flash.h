@@ -420,8 +420,18 @@ struct spi_command {
 	const unsigned char *writearr;
 	unsigned char *readarr;
 };
+struct spi_programmer {
+	int (*command)(unsigned int writecnt, unsigned int readcnt,
+		   const unsigned char *writearr, unsigned char *readarr);
+	int (*multicommand)(struct spi_command *spicommands);
+
+	/* Optimized functions for this programmer */
+	int (*read)(struct flashchip *flash, uint8_t *buf, int start, int len);
+	int (*write_256)(struct flashchip *flash, uint8_t *buf);
+};
 
 extern enum spi_controller spi_controller;
+extern const struct spi_programmer spi_programmer[];
 extern void *spibar;
 int probe_spi_rdid(struct flashchip *flash);
 int probe_spi_rdid4(struct flashchip *flash);
@@ -452,6 +462,9 @@ int spi_nbyte_read(int addr, uint8_t *bytes, int len);
 int spi_read_chunked(struct flashchip *flash, uint8_t *buf, int start, int len, int chunksize);
 int spi_aai_write(struct flashchip *flash, uint8_t *buf);
 uint32_t spi_get_valid_read_addr(void);
+int default_spi_send_command(unsigned int writecnt, unsigned int readcnt,
+			     const unsigned char *writearr, unsigned char *readarr);
+int default_spi_send_multicommand(struct spi_command *spicommands);
 
 /* 82802ab.c */
 int probe_82802ab(struct flashchip *flash);
@@ -477,6 +490,7 @@ int ich_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		    const unsigned char *writearr, unsigned char *readarr);
 int ich_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
 int ich_spi_write_256(struct flashchip *flash, uint8_t * buf);
+int ich_spi_send_multicommand(struct spi_command *spicommands);
 
 /* it87spi.c */
 extern char *it87opts;
