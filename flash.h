@@ -379,6 +379,7 @@ int ft2232_spi_write_256(struct flashchip *flash, uint8_t *buf);
 
 /* flashrom.c */
 extern int verbose;
+extern const char *flashrom_version;
 #define printf_debug(x...) { if (verbose) printf(x); }
 void map_flash_registers(struct flashchip *flash);
 int read_memmapped(struct flashchip *flash, uint8_t *buf, int start, int len);
