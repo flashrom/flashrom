@@ -742,3 +742,23 @@ int ich_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 
 	return result;
 }
+
+int ich_spi_send_multicommand(struct spi_command *spicommands)
+{
+	int ret = 0;
+	while ((spicommands->writecnt || spicommands->readcnt) && !ret) {
+		ret = ich_spi_send_command(spicommands->writecnt, spicommands->readcnt,
+					   spicommands->writearr, spicommands->readarr);
+		/* This awful hack needs to be smarter.
+		 */
+		if ((ret == SPI_INVALID_OPCODE) &&
+		    ((spicommands->writearr[0] == JEDEC_WREN) ||
+		     (spicommands->writearr[0] == JEDEC_EWSR))) {
+			printf_debug(" due to SPI master limitation, ignoring"
+				     " and hoping it will be run as PREOP\n");
+			ret = 0;
+		}
+		spicommands++;
+	}
+	return ret;
+}
