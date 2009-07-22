@@ -32,59 +32,123 @@ void *spibar = NULL;
 
 void spi_prettyprint_status_register(struct flashchip *flash);
 
+const struct spi_programmer spi_programmer[] = {
+	{ /* SPI_CONTROLLER_NONE */
+		.command = NULL,
+		.multicommand = NULL,
+		.read = NULL,
+		.write_256 = NULL,
+	},
+
+	{ /* SPI_CONTROLLER_ICH7 */
+		.command = ich_spi_send_command,
+		.multicommand = ich_spi_send_multicommand,
+		.read = ich_spi_read,
+		.write_256 = ich_spi_write_256,
+	},
+
+	{ /* SPI_CONTROLLER_ICH9 */
+		.command = ich_spi_send_command,
+		.multicommand = ich_spi_send_multicommand,
+		.read = ich_spi_read,
+		.write_256 = ich_spi_write_256,
+	},
+
+	{ /* SPI_CONTROLLER_IT87XX */
+		.command = it8716f_spi_send_command,
+		.multicommand = default_spi_send_multicommand,
+		.read = it8716f_spi_chip_read,
+		.write_256 = it8716f_spi_chip_write_256,
+	},
+
+	{ /* SPI_CONTROLLER_SB600 */
+		.command = sb600_spi_send_command,
+		.multicommand = default_spi_send_multicommand,
+		.read = sb600_spi_read,
+		.write_256 = sb600_spi_write_1,
+	},
+
+	{ /* SPI_CONTROLLER_VIA */
+		.command = ich_spi_send_command,
+		.multicommand = ich_spi_send_multicommand,
+		.read = ich_spi_read,
+		.write_256 = ich_spi_write_256,
+	},
+
+	{ /* SPI_CONTROLLER_WBSIO */
+		.command = wbsio_spi_send_command,
+		.multicommand = default_spi_send_multicommand,
+		.read = wbsio_spi_read,
+		.write_256 = wbsio_spi_write_1,
+	},
+
+	{ /* SPI_CONTROLLER_FT2232 */
+		.command = ft2232_spi_send_command,
+		.multicommand = default_spi_send_multicommand,
+		.read = ft2232_spi_read,
+		.write_256 = ft2232_spi_write_256,
+	},
+
+	{ /* SPI_CONTROLLER_DUMMY */
+		.command = dummy_spi_send_command,
+		.multicommand = default_spi_send_multicommand,
+		.read = NULL,
+		.write_256 = NULL,
+	},
+};
+
+
 int spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		const unsigned char *writearr, unsigned char *readarr)
 {
-	switch (spi_controller) {
-	case SPI_CONTROLLER_IT87XX:
-		return it8716f_spi_send_command(writecnt, readcnt, writearr,
-					   readarr);
-	case SPI_CONTROLLER_ICH7:
-	case SPI_CONTROLLER_ICH9:
-	case SPI_CONTROLLER_VIA:
-		return ich_spi_send_command(writecnt, readcnt, writearr, readarr);
-	case SPI_CONTROLLER_SB600:
-		return sb600_spi_send_command(writecnt, readcnt, writearr, readarr);
-	case SPI_CONTROLLER_WBSIO:
-		return wbsio_spi_send_command(writecnt, readcnt, writearr, readarr);
-	case SPI_CONTROLLER_FT2232:
-		return ft2232_spi_send_command(writecnt, readcnt, writearr, readarr);
-	case SPI_CONTROLLER_DUMMY:
-		return dummy_spi_send_command(writecnt, readcnt, writearr, readarr);
-	default:
-		printf_debug
-		    ("%s called, but no SPI chipset/strapping detected\n",
-		     __FUNCTION__);
+	if (!spi_programmer[spi_controller].command) {
+		fprintf(stderr, "%s called, but SPI is unsupported on this "
+			"hardware. Please report a bug.\n", __func__);
+		return 1;
 	}
-	return 1;
+
+	return spi_programmer[spi_controller].command(writecnt, readcnt,
+						      writearr, readarr);
 }
 
 int spi_send_multicommand(struct spi_command *spicommands)
 {
-	int ret = 0;
-	while ((spicommands->writecnt || spicommands->readcnt) && !ret) {
-		ret = spi_send_command(spicommands->writecnt, spicommands->readcnt,
-				       spicommands->writearr, spicommands->readarr);
-		/* This awful hack needs to be replaced with a multicommand
-		 * capable ICH/VIA SPI driver.
-		 */
-		if ((ret == SPI_INVALID_OPCODE) &&
-		    ((spicommands->writearr[0] == JEDEC_WREN) ||
-		     (spicommands->writearr[0] == JEDEC_EWSR))) {
-			switch (spi_controller) {
-			case SPI_CONTROLLER_ICH7:
-			case SPI_CONTROLLER_ICH9:
-			case SPI_CONTROLLER_VIA:
-				printf_debug(" due to SPI master limitation, ignoring"
-					     " and hoping it will be run as PREOP\n");
-				ret = 0;
-			default:
-				break;
-			}
-		}
-		spicommands++;
+	if (!spi_programmer[spi_controller].multicommand) {
+		fprintf(stderr, "%s called, but SPI is unsupported on this "
+			"hardware. Please report a bug.\n", __func__);
+		return 1;
 	}
-	return ret;
+
+	return spi_programmer[spi_controller].multicommand(spicommands);
+}
+
+int default_spi_send_command(unsigned int writecnt, unsigned int readcnt,
+			     const unsigned char *writearr, unsigned char *readarr)
+{
+	struct spi_command cmd[] = {
+	{
+		.writecnt = writecnt,
+		.readcnt = readcnt,
+		.writearr = writearr,
+		.readarr = readarr,
+	}, {
+		.writecnt = 0,
+		.writearr = NULL,
+		.readcnt = 0,
+		.readarr = NULL,
+	}};
+
+	return spi_send_multicommand(cmd);
+}
+
+int default_spi_send_multicommand(struct spi_command *spicommands)
+{
+	int result = 0;
+	while ((spicommands->writecnt || spicommands->readcnt) && !result) {
+		result = spi_send_command(spicommands->writecnt, spicommands->readcnt,
+					  spicommands->writearr, spicommands->readarr);
+	}
+	return result;
 }
 
 static int spi_rdid(unsigned char *readarr, int bytes)
@@ -298,18 +362,18 @@ int probe_spi_res(struct flashchip *flash)
 uint8_t spi_read_status_register(void)
 {
 	const unsigned char cmd[JEDEC_RDSR_OUTSIZE] = { JEDEC_RDSR };
+	/* FIXME: No workarounds for driver/hardware bugs in generic code. */
 	unsigned char readarr[2]; /* JEDEC_RDSR_INSIZE=1 but wbsio needs 2 */
 	int ret;
 
 	/* Read Status Register */
-	if (spi_controller == SPI_CONTROLLER_SB600) {
-		/* SB600 uses a different way to read status register. */
+	if (spi_controller == SPI_CONTROLLER_SB600) { /* FIXME */
+		/* Workaround for SB600 hardware bug. Can be killed later. */
 		return sb600_read_status_register();
-	} else {
-		ret = spi_send_command(sizeof(cmd), sizeof(readarr), cmd, readarr);
-		if (ret)
-			printf_debug("RDSR failed!\n");
 	}
+	ret = spi_send_command(sizeof(cmd), sizeof(readarr), cmd, readarr);
+	if (ret)
+		printf_debug("RDSR failed!\n");
 
 	return readarr[0];
 }
@@ -875,26 +939,13 @@ int spi_read_chunked(struct flashchip *flash, uint8_t *buf, int start, int len, 
 
 int spi_chip_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
-	switch (spi_controller) {
-	case SPI_CONTROLLER_IT87XX:
-		return it8716f_spi_chip_read(flash, buf, start, len);
-	case SPI_CONTROLLER_SB600:
-		return sb600_spi_read(flash, buf, start, len);
-	case SPI_CONTROLLER_ICH7:
-	case SPI_CONTROLLER_ICH9:
-	case SPI_CONTROLLER_VIA:
-		return ich_spi_read(flash, buf, start, len);
-	case SPI_CONTROLLER_WBSIO:
-		return wbsio_spi_read(flash, buf, start, len);
-	case SPI_CONTROLLER_FT2232:
-		return ft2232_spi_read(flash, buf, start, len);
-	default:
-		printf_debug
-		    ("%s called, but no SPI chipset/strapping detected\n",
-		     __FUNCTION__);
+	if (!spi_programmer[spi_controller].read) {
+		fprintf(stderr, "%s called, but SPI read is unsupported on this"
+			" hardware. Please report a bug.\n", __func__);
+		return 1;
 	}
 
-	return 1;
+	return spi_programmer[spi_controller].read(flash, buf, start, len);
 }
 
 /*
@@ -924,26 +975,13 @@ int spi_chip_write_1(struct flashchip *flash, uint8_t *buf)
  */
 int spi_chip_write_256(struct flashchip *flash, uint8_t *buf)
 {
-	switch (spi_controller) {
-	case SPI_CONTROLLER_IT87XX:
-		return it8716f_spi_chip_write_256(flash, buf);
-	case SPI_CONTROLLER_SB600:
-		return sb600_spi_write_1(flash, buf);
-	case SPI_CONTROLLER_ICH7:
-	case SPI_CONTROLLER_ICH9:
-	case SPI_CONTROLLER_VIA:
-		return ich_spi_write_256(flash, buf);
-	case SPI_CONTROLLER_WBSIO:
-		return wbsio_spi_write_1(flash, buf);
-	case SPI_CONTROLLER_FT2232:
-		return ft2232_spi_write_256(flash, buf);
-	default:
-		printf_debug
-		    ("%s called, but no SPI chipset/strapping detected\n",
-		     __FUNCTION__);
+	if (!spi_programmer[spi_controller].write_256) {
+		fprintf(stderr, "%s called, but SPI page write is unsupported "
+			" on this hardware. Please report a bug.\n", __func__);
+		return 1;
 	}
 
-	return 1;
+	return spi_programmer[spi_controller].write_256(flash, buf);
 }
 
 uint32_t spi_get_valid_read_addr(void)
