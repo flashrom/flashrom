@@ -511,7 +511,6 @@ int sb600_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		      const unsigned char *writearr, unsigned char *readarr);
 int sb600_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
 int sb600_spi_write_1(struct flashchip *flash, uint8_t *buf);
-uint8_t sb600_read_status_register(void);
 extern uint8_t *sb600_spibar;
 
 /* jedec.c */

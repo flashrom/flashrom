@@ -38,22 +38,12 @@
  *};
  */
 
-uint8_t *sb600_spibar;
+uint8_t *sb600_spibar = NULL;
 
 int sb600_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
 	/* Maximum read length is 8 bytes. */
 	return spi_read_chunked(flash, buf, start, len, 8);
-}
-
-uint8_t sb600_read_status_register(void)
-{
-	const unsigned char cmd[0x02] = { JEDEC_RDSR, 0x00 };
-	unsigned char readarr[JEDEC_RDSR_INSIZE];
-
-	/* Read Status Register */
-	spi_send_command(sizeof(cmd), sizeof(readarr), cmd, readarr);
-	return readarr[0];
 }
 
 int sb600_spi_write_1(struct flashchip *flash, uint8_t *buf)
@@ -106,6 +96,7 @@ int sb600_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	int count;
 	/* First byte is cmd which can not being sent through FIFO. */
 	unsigned char cmd = *writearr++;
+	unsigned int readoffby1;
 
 	writecnt--;
 
@@ -124,8 +115,15 @@ int sb600_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		return SPI_INVALID_LENGTH;
 	}
 
+	/* This is a workaround for a bug in SB600 and SB700. If we only send
+	 * an opcode and no additional data/address, the SPI controller will
+	 * read one byte too few from the chip. Basically, the last byte of
+	 * the chip response is discarded and will not end up in the FIFO.
+	 * It is unclear if the CS# line is set high too early as well.
+	 */
+	readoffby1 = (writecnt) ? 0 : 1;
+	mmio_writeb((readcnt + readoffby1) << 4 | (writecnt), sb600_spibar + 1);
 	mmio_writeb(cmd, sb600_spibar + 0);
-	mmio_writeb(readcnt << 4 | (writecnt), sb600_spibar + 1);
 
 	/* Before we use the FIFO, reset it first. */
 	reset_internal_fifo_pointer();
@@ -147,17 +145,25 @@ int sb600_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 
 	/*
 	 * After the command executed, we should find out the index of the
-	 * received byte. Here we just reset the FIFO pointer, skip the
-	 * writecnt, is there anyone who have anther method to replace it?
+	 * received byte. Here we just reset the FIFO pointer and skip the
+	 * writecnt.
+	 * It would be possible to increase the FIFO pointer by one instead
+	 * of reading and discarding one byte from the FIFO.
+	 * The FIFO is implemented on top of an 8 byte ring buffer and the
+	 * buffer is never cleared. For every byte that is shifted out after
+	 * the opcode, the FIFO already stores the response from the chip.
+	 * Usually, the chip will respond with 0x00 or 0xff.
 	 */
 	reset_internal_fifo_pointer();
 
+	/* Skip the bytes we sent. */
 	for (count = 0; count < writecnt; count++) {
-		cmd = mmio_readb(sb600_spibar + 0xC);	/* Skip the byte we send. */
+		cmd = mmio_readb(sb600_spibar + 0xC);
 		printf_debug("[ %2x]", cmd);
 	}
 
-	printf_debug("The FIFO pointer 6 is %d.\n", mmio_readb(sb600_spibar + 0xd) & 0x07);
+	printf_debug("The FIFO pointer after skipping is %d.\n",
+		     mmio_readb(sb600_spibar + 0xd) & 0x07);
 	for (count = 0; count < readcnt; count++, readarr++) {
 		*readarr = mmio_readb(sb600_spibar + 0xC);
 		printf_debug("[%02x]", *readarr);
