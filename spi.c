@@ -367,10 +367,6 @@ uint8_t spi_read_status_register(void)
 	int ret;
 
 	/* Read Status Register */
-	if (spi_controller == SPI_CONTROLLER_SB600) { /* FIXME */
-		/* Workaround for SB600 hardware bug. Can be killed later. */
-		return sb600_read_status_register();
-	}
 	ret = spi_send_command(sizeof(cmd), sizeof(readarr), cmd, readarr);
 	if (ret)
 		fprintf(stderr, "RDSR failed!\n");
