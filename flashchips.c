@@ -32,11 +32,20 @@
  */
 struct flashchip flashchips[] = {
 
-	/* Vendor, Chip, Vendor ID, Chip ID,
-	 * Bus Type, 
-	 * Total size (kB), Page size (B),
-	 * Test status,
-	 * Probe function, Probe function timing, Erase function, Write function, Read function
+	/*
+	 * .vendor		= Vendor name
+	 * .name		= Chip name
+	 * .bustype		= Supported flash bus types (Parallel, LPC...)
+	 * .manufacture_id	= Manufacturer chip ID
+	 * .model_id		= Model chip ID
+	 * .total_size		= Total size in (binary) kbytes
+	 * .page_size		= Page or eraseblock(?) size in bytes
+	 * .tested		= Test status
+	 * .probe		= Probe function
+	 * .probe_timing	= Probe function delay
+	 * .erase		= Chip erase function
+	 * .write		= Chip write function
+	 * .read		= Chip read function
 	 */
 
 	{
