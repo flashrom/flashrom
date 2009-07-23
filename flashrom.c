@@ -278,6 +278,7 @@ int verify_range(struct flashchip *flash, uint8_t *cmpbuf, int start, int len, c
 	int i, j, starthere, lenhere, ret = 0;
 	int page_size = flash->page_size;
 	uint8_t *readbuf = malloc(page_size);
+	int failcount = 0;
 
 	if (!len)
 		goto out_free;
@@ -318,14 +319,20 @@ int verify_range(struct flashchip *flash, uint8_t *cmpbuf, int start, int len, c
 		flash->read(flash, readbuf, starthere, lenhere);
 		for (j = 0; j < lenhere; j++) {
 			if (cmpbuf[starthere - start + j] != readbuf[j]) {
-				fprintf(stderr, "%s FAILED at 0x%08x! "
-					"Expected=0x%02x, Read=0x%02x\n",
-					message, starthere + j,
-					cmpbuf[starthere - start + j], readbuf[j]);
-				ret = -1;
-				goto out_free;
+				/* Only print the first failure. */
+				if (!failcount++)
+					fprintf(stderr, "%s FAILED at 0x%08x! "
+						"Expected=0x%02x, Read=0x%02x,",
+						message, starthere + j,
+						cmpbuf[starthere - start + j],
+						readbuf[j]);
 			}
 		}
+	}
+	if (failcount) {
+		fprintf(stderr, " failed byte count from 0x%08x-0x%08x: 0x%x\n",
+			start, start + len - 1, failcount);
+		ret = -1;
 	}
 
 out_free:
