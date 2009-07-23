@@ -28,11 +28,10 @@ int probe_w29ee011(struct flashchip *flash)
 	extern char *chip_to_probe;
 
 	if (!chip_to_probe || strcmp(chip_to_probe, "W29EE011")) {
-		printf_debug("\n===\n");
-		printf_debug("  Probing disabled for Winbond W29EE011 because the probing sequence puts the\n");
-		printf_debug("  AMIC A49LF040A in a funky state.\n");
-		printf_debug("  Use 'flashrom -c W29EE011' if you have a board with this chip.");
-		printf_debug("\n===\n");
+		printf_debug("Probing disabled for Winbond W29EE011 because "
+			     "the probing sequence puts the AMIC A49LF040A in "
+			     "a funky state. Use 'flashrom -c W29EE011' if you "
+			     "have a board with this chip.\n");
 		return 0;
 	}
 
