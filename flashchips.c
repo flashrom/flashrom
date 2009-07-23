@@ -2249,6 +2249,27 @@ struct flashchip flashchips[] = {
 		.read		= spi_chip_read,
 	},
 
+	/* The ST M25P05 is a bit of a problem. It has the same ID as the
+	 * ST M25P05-A in RES mode, but supports only 128 byte writes instead
+	 * of 256 byte writes. We rely heavily on the fact that probe_spi_res
+	 * only is successful if RDID does not work.
+	 */
+	{
+		.vendor		= "ST",
+		.name		= "M25P05.RES",
+		.bustype	= CHIP_BUSTYPE_SPI,
+		.manufacture_id	= ST_ID,
+		.model_id	= ST_M25P05_RES,
+		.total_size	= 64,
+		.page_size	= 256,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_res,
+		.probe_timing	= TIMING_ZERO,
+		.erase		= spi_chip_erase_c7,
+		.write		= spi_chip_write_1, /* 128 */
+		.read		= spi_chip_read,
+	},
+
 	{
 		.vendor		= "ST",
 		.name		= "M25P10-A",
@@ -2262,6 +2283,23 @@ struct flashchip flashchips[] = {
 		.probe_timing	= TIMING_ZERO,
 		.erase		= spi_chip_erase_c7,
 		.write		= spi_chip_write_256,
+		.read		= spi_chip_read,
+	},
+
+	/* The ST M25P10 has the same problem as the M25P05. */
+	{
+		.vendor		= "ST",
+		.name		= "M25P10.RES",
+		.bustype	= CHIP_BUSTYPE_SPI,
+		.manufacture_id	= ST_ID,
+		.model_id	= ST_M25P10_RES,
+		.total_size	= 128,
+		.page_size	= 256,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_res,
+		.probe_timing	= TIMING_ZERO,
+		.erase		= spi_chip_erase_c7,
+		.write		= spi_chip_write_1, /* 128 */
 		.read		= spi_chip_read,
 	},
 
