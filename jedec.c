@@ -99,7 +99,7 @@ int probe_jedec(struct flashchip *flash)
 		probe_timing_enter = probe_timing_exit = 0;
 	} else if (flash->probe_timing == TIMING_FIXME) { /* == _IGNORED */
 		printf_debug("Chip lacks correct probe timing information, "
-			     "using default 10mS/40uS\n");
+			     "using default 10mS/40uS. ");
 		probe_timing_enter = 10000;
 		probe_timing_exit = 40;
 	} else {
