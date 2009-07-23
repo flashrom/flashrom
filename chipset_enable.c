@@ -692,25 +692,49 @@ static int enable_flash_sb600(struct pci_dev *dev, const char *name)
 
 	/* Read SPI_BaseAddr */
 	tmp = pci_read_long(dev, 0xa0);
-	tmp &= 0xfffffff0;	/* remove low 4 bits (reserved) */
+	tmp &= 0xffffffe0;	/* remove bits 4-0 (reserved) */
 	printf_debug("SPI base address is at 0x%x\n", tmp);
 
 	/* If the BAR has address 0, it is unlikely SPI is used. */
 	if (!tmp)
 		has_spi = 0;
 
-	/* Physical memory can only be mapped at page (4k) boundaries */
-	sb600_spibar = physmap("SB600 SPI registers", tmp & 0xfffff000, 0x1000);
-	/* The low bits of the SPI base address are used as offset into the mapped page */
-	sb600_spibar += tmp & 0xfff;
+	if (has_spi) {
+		/* Physical memory has to be mapped at page (4k) boundaries. */
+		sb600_spibar = physmap("SB600 SPI registers", tmp & 0xfffff000,
+				       0x1000);
+		/* The low bits of the SPI base address are used as offset into
+		 * the mapped page.
+		 */
+		sb600_spibar += tmp & 0xfff;
+
+		tmp = pci_read_long(dev, 0xa0);
+		printf_debug("AltSpiCSEnable=%i, SpiRomEnable=%i, "
+			     "AbortEnable=%i\n", tmp & 0x1, (tmp & 0x2) >> 1,
+			     (tmp & 0x4) >> 2);
+		tmp = (pci_read_byte(dev, 0xba) & 0x4) >> 2;
+		printf_debug("PrefetchEnSPIFromIMC=%i, ", tmp);
+
+		tmp = pci_read_byte(dev, 0xbb);
+		printf_debug("PrefetchEnSPIFromHost=%i, SpiOpEnInLpcMode=%i\n",
+			     tmp & 0x1, (tmp & 0x20) >> 5);
+		tmp = mmio_readl(sb600_spibar);
+		printf_debug("SpiArbEnable=%i, SpiAccessMacRomEn=%i, "
+			     "SpiHostAccessRomEn=%i, ArbWaitCount=%i, "
+			     "SpiBridgeDisable=%i, DropOneClkOnRd=%i\n",
+			     (tmp >> 19) & 0x1, (tmp >> 22) & 0x1,
+			     (tmp >> 23) & 0x1, (tmp >> 24) & 0x7,
+			     (tmp >> 27) & 0x1, (tmp >> 28) & 0x1);
+	}
 
 	/* Look for the SMBus device. */
 	smbus_dev = pci_dev_find(0x1002, 0x4385);
 
-	if (!smbus_dev) {
+	if (has_spi && !smbus_dev) {
 		fprintf(stderr, "ERROR: SMBus device not found. Not enabling SPI.\n");
 		has_spi = 0;
-	} else {
+	}
+	if (has_spi) {
 		/* Note about the bit tests below: If a bit is zero, the GPIO is SPI. */
 		/* GPIO11/SPI_DO and GPIO12/SPI_DI status */
 		reg = pci_read_byte(smbus_dev, 0xAB);
