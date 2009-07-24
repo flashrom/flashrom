@@ -851,12 +851,17 @@ int main(int argc, char *argv[])
 			fprintf(stderr, "Error: flashrom has no write function for this flash chip.\n");
 			return 1;
 		}
-		ret |= flash->write(flash, buf);
-		if (!ret) printf("COMPLETE.\n");
+		ret = flash->write(flash, buf);
+		if (ret) {
+			fprintf(stderr, "FAILED!\n");
+			return 1;
+		} else {
+			printf("COMPLETE.\n");
+		}
 	}
 
 	if (verify_it)
-		ret |= verify_flash(flash, buf);
+		ret = verify_flash(flash, buf);
 
 	programmer_shutdown();
 
