@@ -1428,10 +1428,10 @@ struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Macronix",
-		.name		= "MX29LV040C",
+		.name		= "MX29LV040",
 		.bustype	= CHIP_BUSTYPE_PARALLEL,
 		.manufacture_id	= MX_ID,
-		.model_id	= MX_29LV040C,
+		.model_id	= MX_29LV040,
 		.total_size	= 512,
 		.page_size	= 64 * 1024,
 		.tested		= TEST_OK_PR,
