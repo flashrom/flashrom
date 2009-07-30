@@ -780,7 +780,7 @@ int main(int argc, char *argv[])
 				printf(" WRITE");
 			printf("\n");
 		}
-		printf("Please email a report to flashrom@coreboot.org if any "
+		printf("Please email a report to flashrom@flashrom.org if any "
 		       "of the above operations\nwork correctly for you with "
 		       "this flash part. Please include the flashrom\noutput "
 		       "with the additional -V option for all operations you "
