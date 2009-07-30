@@ -1134,7 +1134,14 @@ static struct board_pciid_enable *board_match_coreboot_name(const char *vendor,
 	if (partmatch)
 		return partmatch;
 
-	printf("\nUnknown vendor:board from coreboot table or -m option: %s:%s\n\n", vendor, part);
+	if (!partvendor_from_cbtable) {
+		/* Only warn if the mainboard type was not gathered from the
+		 * coreboot table. If it was, the coreboot implementor is
+		 * expected to fix flashrom, too.
+		 */
+		printf("\nUnknown vendor:board from -m option: %s:%s\n\n",
+		       vendor, part);
+	}
 	return NULL;
 }
 
@@ -1187,7 +1194,7 @@ int board_flash_enable(const char *vendor, const char *part)
 		board = board_match_pci_card_ids();
 
 	if (board) {
-		printf("Found board \"%s %s\", enabling flash write... ",
+		printf("Disabling flash write protection for board \"%s %s\"... ",
 		       board->vendor_name, board->board_name);
 
 		ret = board->enable(board->vendor_name);

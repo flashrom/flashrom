@@ -402,6 +402,7 @@ int handle_romentries(uint8_t *buffer, uint8_t *content);
 /* cbtable.c */
 int coreboot_init(void);
 extern char *lb_part, *lb_vendor;
+extern int partvendor_from_cbtable;
 
 /* spi.c */
 enum spi_controller {
