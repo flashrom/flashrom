@@ -147,6 +147,7 @@ int default_spi_send_multicommand(struct spi_command *spicommands)
 	while ((spicommands->writecnt || spicommands->readcnt) && !result) {
 		result = spi_send_command(spicommands->writecnt, spicommands->readcnt,
 					  spicommands->writearr, spicommands->readarr);
+		spicommands++;
 	}
 	return result;
 }
