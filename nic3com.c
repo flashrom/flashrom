@@ -20,10 +20,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <fcntl.h>
 #include <sys/types.h>
-#include <sys/stat.h>
-#include <errno.h>
 #include "flash.h"
 
 #define BIOS_ROM_ADDR		0x04
@@ -99,9 +96,7 @@ int nic3com_shutdown(void)
 
 	free(pcidev_bdf);
 	pci_cleanup(pacc);
-#if defined(__FreeBSD__) || defined(__DragonFly__)
-	close(io_fd);
-#endif
+	release_io_perms();
 	return 0;
 }
 

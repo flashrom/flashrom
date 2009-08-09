@@ -308,6 +308,7 @@ struct pci_dev *pci_dev_find(uint16_t vendor, uint16_t device);
 struct pci_dev *pci_card_find(uint16_t vendor, uint16_t device,
 			      uint16_t card_vendor, uint16_t card_device);
 void get_io_perms(void);
+void release_io_perms(void);
 int internal_init(void);
 int internal_shutdown(void);
 void internal_chip_writeb(uint8_t val, chipaddr addr);
