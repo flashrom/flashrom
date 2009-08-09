@@ -21,10 +21,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include <fcntl.h>
 #include <sys/types.h>
-#include <sys/stat.h>
-#include <errno.h>
 #include "flash.h"
 
 char *dummytype = NULL;
