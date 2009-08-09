@@ -95,6 +95,13 @@ void get_io_perms(void)
 	}
 }
 
+void release_io_perms(void)
+{
+#if defined(__FreeBSD__) || defined(__DragonFly__)
+	close(io_fd);
+#endif
+}
+
 int internal_init(void)
 {
 	int ret = 0;
@@ -128,9 +135,7 @@ int internal_init(void)
 
 int internal_shutdown(void)
 {
-#if defined(__FreeBSD__) || defined(__DragonFly__)
-	close(io_fd);
-#endif
+	release_io_perms();
 
 	return 0;
 }
