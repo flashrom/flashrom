@@ -39,8 +39,6 @@
 
 char *serprog_param = NULL;
 
-#define SERPROG_SUPPORT 1
-
 #if SERPROG_SUPPORT == 1
 
 #define MSGHEADER "serprog:"

@@ -22,11 +22,8 @@
  */
 
 #include <stdlib.h>
-#include <fcntl.h>
 #include <sys/types.h>
 #include <string.h>
-#include <errno.h>
-#include <sys/mman.h>
 #include "flash.h"
 #include "coreboot_tables.h"
 

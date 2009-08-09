@@ -33,7 +33,6 @@
  */
 
 #include <string.h>
-#include <sys/mman.h>
 #include "flash.h"
 #include "spi.h"
 
