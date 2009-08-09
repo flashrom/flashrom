@@ -68,6 +68,8 @@ $(PROGRAM): $(OBJS)
 	$(CC) $(LDFLAGS) -o $(PROGRAM) $(OBJS) $(LIBS) $(FEATURE_LIBS)
 
 FEATURE_CFLAGS = $(shell LC_ALL=C grep -q "FTDISUPPORT := yes" .features && printf "%s" "-D'FT2232_SPI_SUPPORT=1'")
+# Always enable serprog for now. Needs to be disabled on Windows.
+FEATURE_CFLAGS += -D'SERPROG_SUPPORT=1'
 
 FEATURE_LIBS = $(shell LC_ALL=C grep -q "FTDISUPPORT := yes" .features && printf "%s" "-lftdi")
 

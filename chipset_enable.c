@@ -29,7 +29,6 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/mman.h>
 #include <fcntl.h>
 #include "flash.h"
 
@@ -968,7 +967,7 @@ static int get_flashbase_sc520(struct pci_dev *dev, const char *name)
 	}
 
 	/* 4. Clean up */
-	munmap(mmcr, getpagesize());
+	physunmap(mmcr, getpagesize());
 	return 0;
 }
 
