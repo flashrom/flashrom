@@ -963,6 +963,13 @@ int spi_chip_write_1(struct flashchip *flash, uint8_t *buf)
 	int i;
 
 	spi_disable_blockprotect();
+	/* Erase first */
+	printf("Erasing flash before programming... ");
+	if (flash->erase(flash)) {
+		fprintf(stderr, "ERASE FAILED!\n");
+		return -1;
+	}
+	printf("done.\n");
 	for (i = 0; i < total_size; i++) {
 		spi_byte_program(i, buf[i]);
 		while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
