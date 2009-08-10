@@ -45,12 +45,14 @@ int sb600_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 	return spi_read_chunked(flash, buf, start, len, 8);
 }
 
+/* FIXME: SB600 can write 5 bytes per transaction. */
 int sb600_spi_write_1(struct flashchip *flash, uint8_t *buf)
 {
 	int rc = 0, i;
 	int total_size = flash->total_size * 1024;
 	int result;
 
+	spi_disable_blockprotect();
 	/* Erase first */
 	printf("Erasing flash before programming... ");
 	if (flash->erase(flash)) {
@@ -61,7 +63,6 @@ int sb600_spi_write_1(struct flashchip *flash, uint8_t *buf)
 
 	printf("Programming flash");
 	for (i = 0; i < total_size; i++, buf++) {
-		spi_disable_blockprotect();
 		result = spi_byte_program(i, *buf);
 		/* wait program complete. */
 		if (i % 0x8000 == 0)

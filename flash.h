@@ -505,7 +505,6 @@ int it87xx_probe_spi_flash(const char *name);
 int it8716f_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 			const unsigned char *writearr, unsigned char *readarr);
 int it8716f_spi_chip_read(struct flashchip *flash, uint8_t *buf, int start, int len);
-int it8716f_spi_chip_write_1(struct flashchip *flash, uint8_t *buf);
 int it8716f_spi_chip_write_256(struct flashchip *flash, uint8_t *buf);
 
 /* sb600spi.c */
