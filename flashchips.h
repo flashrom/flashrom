@@ -39,20 +39,44 @@
 #define ALLIANCE_ID		0x52	/* Alliance Semiconductor */
 
 #define AMD_ID			0x01	/* AMD */
+#define AM_29DL400BT		0x0C
+#define AM_29DL400BB		0x0F
+#define AM_29DL800BT		0x4A
+#define AM_29DL800BB		0xCB
+#define AM_29F002BB		0x34	/* Same as Am29F002NBB */
+#define AM_29F002BT		0xB0	/* Same as Am29F002NBT */
+#define AM_29F004BB		0x7B
+#define AM_29F004BT		0x77
+#define AM_29F016D		0xAD
 #define AM_29F010B		0x20	/* Same as Am29F010A */
-#define AM_29F002BT		0xB0
-#define AM_29F002BB		0x34
 #define AM_29F040B		0xA4
 #define AM_29F080B		0xD5
+#define AM_29F200BB		0x57
+#define AM_29F200BT		0x51
+#define AM_29F400BB		0xAB
+#define AM_29F400BT		0x23
+#define AM_29F800BB		0x58
+#define AM_29F800BT		0xD6
+#define AM_29LV002BB		0xC2
+#define AM_29LV002BT		0x40
+#define AM_29LV004BB		0xB6
+#define AM_29LV004BT		0xB5
+#define AM_29LV008BB		0x37
+#define AM_29LV008BT		0x3E
 #define AM_29LV040B		0x4F
-#define AM_29LV081B		0x38
-#define AM_29F016D		0xAD
+#define AM_29LV080B		0x38	/* Same as Am29LV081B */
+#define AM_29LV200BB		0xBF
+#define AM_29LV200BT		0x3B
+#define AM_29LV800BB		0x5B	/* Same as Am29LV800DB */
+#define AM_29LV400BT		0xB9
+#define AM_29LV400BB		0xBA
+#define AM_29LV800BT		0xDA	/* Same as Am29LV800DT */
 
 #define AMIC_ID			0x7F37	/* AMIC */
 #define AMIC_ID_NOPREFIX	0x37	/* AMIC */
 #define AMIC_A25L40P		0x2013
 #define AMIC_A29002B		0x0d
-#define AMIC_A29002T		0x8c
+#define AMIC_A29002T		0x8C	/* Same as A290021T */
 #define AMIC_A29040B		0x86
 #define AMIC_A29400T		0xB0	/* Same as 294001T */
 #define AMIC_A29400U		0x31	/* Same as A294001U */
@@ -194,16 +218,29 @@
 #define MBM29LV800TA		0xDA	/* Same as MBM29LV800TE */
 
 #define HYUNDAI_ID		0xAD	/* Hyundai */
+#define HY_29F400T		0x23	/* Same as HY_29F400AT */
+#define HY_29F800B		0x58	/* Same as HY_29F800AB */
+#define HY_29LV800B		0x5B
+#define HY_29F040A		0xA4
+#define HY_29F400B		0xAB	/* Same as HY_29F400AB */
+#define HY_29F002		0xB0
+#define HY_29LV400T		0xB9
+#define HY_29LV400B		0xBA
+#define HY_29F080		0xD5
+#define HY_29F800T		0xD6	/* Same as HY_29F800AT */
+#define HY_29LV800T		0xDA
 
 #define IMT_ID			0x7F1F	/* Integrated Memory Technologies */
 #define IM_29F004B		0xAE
 #define IM_29F004T		0xAF
 
 #define INTEL_ID		0x89	/* Intel */
-#define I_82802AB			0xAD
-#define I_82802AC			0xAC
+#define I_82802AB		0xAD
+#define I_82802AC		0xAC
 #define P28F001BXT		0x94	/* 28F001BX-T */
 #define P28F001BXB		0x95	/* 28F001BX-B */
+#define SHARP_LH28F008SA	0xA2	/* Sharp chip, Intel Vendor ID */
+#define SHARP_LH28F008SC	0xA6	/* Sharp chip, Intel Vendor ID */
 
 #define ISSI_ID			0xD5	/* ISSI Integrated Silicon Solutions */
 
@@ -287,14 +324,20 @@
 #define PMC_49FL004		0x6E
 
 #define SHARP_ID		0xB0	/* Sharp */
-#define SHARP_LHF00L04		0xCF
+#define SHARP_LH28F008BJxxPT	0xEC
+#define SHARP_LH28F008BJxxPB	0xED
+#define SHARP_LH28F800BVxxBTL	0x4B
+#define SHARP_LH28F800BVxxBV	0x4D
+#define SHARP_LH28F800BVxxTV	0x4C
+#define SHARP_LHF00L02		0xC9	/* Same as LHF00L06/LHF00L07 */
+#define SHARP_LHF00L04		0xCF	/* Same as LHF00L03/LHF00L05 */
 
 /*
  * Spansion was previously a joint venture of AMD and Fujitsu.
  * S25 chips are SPI. The first device ID byte is memory type and
  * the second device ID byte is memory capacity.
  */
-#define SPANSION_ID		0x01	/* Spansion */
+#define SPANSION_ID		0x01	/* Spansion, same ID as AMD */
 #define SPANSION_S25FL016A	0x0214
 
 /*
@@ -336,13 +379,13 @@
 #define SST_29SF040		0x13
 #define SST_29VF040		0x14
 #define SST_39SF010		0xB5
-#define SST_39SF020		0xB6
+#define SST_39SF020		0xB6	/* Same as 39SF020A */
 #define SST_39SF040		0xB7
 #define SST_39VF512		0xD4
 #define SST_39VF010		0xD5
-#define SST_39VF020		0xD6
-#define SST_39VF040		0xD7
-#define SST_39VF080		0xD8	/* Same as SST_39LF080/39VF080/39VF088 */
+#define SST_39VF020		0xD6	/* Same as 39LF020 */
+#define SST_39VF040		0xD7	/* Same as 39LF040 */
+#define SST_39VF080		0xD8	/* Same as 39LF080/39VF080/39VF088 */
 #define SST_49LF040B		0x50
 #define SST_49LF040		0x51
 #define SST_49LF020		0x61
@@ -351,7 +394,7 @@
 #define SST_49LF080A		0x5B
 #define SST_49LF002A		0x57
 #define SST_49LF003A		0x1B
-#define SST_49LF004A		0x60
+#define SST_49LF004A		0x60	/* Same as 49LF004B */
 #define SST_49LF008A		0x5A
 #define SST_49LF004C		0x54
 #define SST_49LF008C		0x59
@@ -389,14 +432,14 @@
 #define ST_M50FW080		0x2D
 #define ST_M50FW016		0x2E
 #define ST_M50LPW116		0x30
-#define ST_M29F002B		0x34
-#define ST_M29F002T		0xB0	/* M29F002T / M29F002NT */
-#define ST_M29F040B		0xE2
+#define ST_M29F002B		0x34	/* Same as M29F002BB */
+#define ST_M29F002T		0xB0	/* Same as M29F002BT/M29F002NT/M29F002BNT */
+#define ST_M29F040B		0xE2	/* Same as M29F040 */
 #define ST_M29F080		0xF1
 #define ST_M29F200BT		0xD3
 #define ST_M29F200BB		0xD4
-#define ST_M29F400BT		0xD5
-#define ST_M29F400BB		0xD6
+#define ST_M29F400BT		0xD5	/* Same as M29F400T */
+#define ST_M29F400BB		0xD6	/* Same as M29F400B */
 #define ST_M29F800DB		0x58
 #define ST_M29F800DT		0xEC
 #define ST_M29W010B		0x23
@@ -427,8 +470,8 @@
 #define W_25X32			0x3016
 #define W_25X64			0x3017
 #define W_29C011		0xC1
-#define W_29C020C		0x45
-#define W_29C040P		0x46
+#define W_29C020C		0x45	/* Same as W29C020 */
+#define W_29C040P		0x46	/* Same as W29C040 */
 #define W_29EE011		0xC1
 #define W_39L020		0xB5
 #define W_39L040		0xB6
