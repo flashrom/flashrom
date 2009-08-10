@@ -271,6 +271,14 @@ int ft2232_spi_write_256(struct flashchip *flash, uint8_t *buf)
 	int total_size = 1024 * flash->total_size;
 	int i;
 
+	spi_disable_blockprotect();
+	/* Erase first */
+	printf("Erasing flash before programming... ");
+	if (flash->erase(flash)) {
+		fprintf(stderr, "ERASE FAILED!\n");
+		return -1;
+	}
+	printf("done.\n");
 	printf_debug("total_size is %d\n", total_size);
 	for (i = 0; i < total_size; i += 256) {
 		int l, r;
@@ -281,14 +289,12 @@ int ft2232_spi_write_256(struct flashchip *flash, uint8_t *buf)
 
 		if ((r = spi_nbyte_program(i, &buf[i], l))) {
 			fprintf(stderr, "%s: write fail %d\n", __FUNCTION__, r);
-			// spi_write_disable();  chip does this for us
 			return 1;
 		}
 		
 		while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
 			/* loop */;
 	}
-	// spi_write_disable();  chip does this for us
 
 	return 0;
 }

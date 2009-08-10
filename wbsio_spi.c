@@ -183,29 +183,17 @@ int wbsio_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 		return 1;
 	}
 
-	read_memmapped(flash, buf, start, len);
-	return 0;
+	return read_memmapped(flash, buf, start, len);
 }
 
 int wbsio_spi_write_1(struct flashchip *flash, uint8_t *buf)
 {
-	int pos, size = flash->total_size * 1024;
-	int result;
+	int size = flash->total_size * 1024;
 
-	if (flash->total_size > 1024) {
+	if (size > 1024 * 1024) {
 		fprintf(stderr, "%s: Winbond saved on 4 register bits so max chip size is 1024 KB!\n", __func__);
 		return 1;
 	}
 
-	if (flash->erase(flash)) {
-		fprintf(stderr, "ERASE FAILED!\n");
-		return -1;
-	}
-	for (pos = 0; pos < size; pos++) {
-		result = spi_byte_program(pos, buf[pos]);
-		while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
-			programmer_delay(10);
-	}
-	spi_write_disable();
-	return 0;
+	return spi_chip_write_1(flash, buf);
 }

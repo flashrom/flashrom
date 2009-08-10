@@ -248,32 +248,6 @@ static int it8716f_spi_page_program(struct flashchip *flash, int block, uint8_t 
 }
 
 /*
- * Program chip using firmware cycle byte programming. (SLOW!)
- * This is for chips which can only handle one byte writes
- * and for chips where memory mapped programming is impossible due to
- * size constraints in IT87* (over 512 kB)
- */
-int it8716f_spi_chip_write_1(struct flashchip *flash, uint8_t *buf)
-{
-	int total_size = 1024 * flash->total_size;
-	int i;
-	int result;
-
-	fast_spi = 0;
-
-	spi_disable_blockprotect();
-	for (i = 0; i < total_size; i++) {
-		result = spi_byte_program(i, buf[i]);
-		while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
-			programmer_delay(10);
-	}
-	/* resume normal ops... */
-	OUTB(0x20, it8716f_flashport);
-
-	return 0;
-}
-
-/*
  * IT8716F only allows maximum of 512 kb SPI mapped to LPC memory cycles
  * Need to read this big flash using firmware cycles 3 byte at a time.
  */
@@ -301,8 +275,16 @@ int it8716f_spi_chip_write_256(struct flashchip *flash, uint8_t *buf)
 	 * mapped access.
 	 */
 	if ((programmer == PROGRAMMER_IT87SPI) || (total_size > 512 * 1024)) {
-		it8716f_spi_chip_write_1(flash, buf);
+		spi_chip_write_1(flash, buf);
 	} else {
+		spi_disable_blockprotect();
+		/* Erase first */
+		printf("Erasing flash before programming... ");
+		if (flash->erase(flash)) {
+			fprintf(stderr, "ERASE FAILED!\n");
+			return -1;
+		}
+		printf("done.\n");
 		for (i = 0; i < total_size / 256; i++) {
 			it8716f_spi_page_program(flash, i, buf);
 		}
