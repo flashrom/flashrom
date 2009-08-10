@@ -191,11 +191,47 @@ static int enable_flash_ich(struct pci_dev *dev, const char *name,
 
 static int enable_flash_ich_4e(struct pci_dev *dev, const char *name)
 {
+	/*
+	 * Note: ICH5 has registers similar to FWH_SEL1, FWH_SEL2 and
+	 * FWH_DEC_EN1, but they are called FB_SEL1, FB_SEL2, FB_DEC_EN1 and
+	 * FB_DEC_EN2.
+	 */
 	return enable_flash_ich(dev, name, 0x4e);
 }
 
 static int enable_flash_ich_dc(struct pci_dev *dev, const char *name)
 {
+	uint32_t fwh_conf;
+	int i;
+
+	/* Ignore all legacy ranges below 1 MB. */
+	/* FWH_SEL1 */
+	fwh_conf = pci_read_long(dev, 0xd0);
+	for (i = 7; i >= 0; i--)
+		printf_debug("\n0x%08x/0x%08x FWH IDSEL: 0x%x",
+			     (0x1ff8 + i) * 0x80000,
+			     (0x1ff0 + i) * 0x80000,
+			     (fwh_conf >> (i * 4)) & 0xf);
+	/* FWH_SEL2 */
+	fwh_conf = pci_read_word(dev, 0xd4);
+	for (i = 3; i >= 0; i--)
+		printf_debug("\n0x%08x/0x%08x FWH IDSEL: 0x%x",
+			     (0xff4 + i) * 0x100000,
+			     (0xff0 + i) * 0x100000,
+			     (fwh_conf >> (i * 4)) & 0xf);
+	/* FWH_DEC_EN1 */
+	fwh_conf = pci_read_word(dev, 0xd8);
+	for (i = 7; i >= 0; i--)
+		printf_debug("\n0x%08x/0x%08x FWH decode %sabled",
+			     (0x1ff8 + i) * 0x80000,
+			     (0x1ff0 + i) * 0x80000,
+			     (fwh_conf >> (i + 0x8)) & 0x1 ? "en" : "dis");
+	for (i = 3; i >= 0; i--)
+		printf_debug("\n0x%08x/0x%08x FWH decode %sabled",
+			     (0xff4 + i) * 0x100000,
+			     (0xff0 + i) * 0x100000,
+			     (fwh_conf >> i) & 0x1 ? "en" : "dis");
+
 	return enable_flash_ich(dev, name, 0xdc);
 }
 
