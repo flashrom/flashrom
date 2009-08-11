@@ -2,7 +2,7 @@
  * This file is part of the flashrom project.
  *
  * Copyright (C) 2000 Silicon Integrated System Corporation
- * Copyright (C) 2005-2007 coresystems GmbH <stepan@coresystems.de>
+ * Copyright (C) 2005-2009 coresystems GmbH <stepan@coresystems.de>
  * Copyright (C) 2006 Uwe Hermann <uwe@hermann-uwe.de>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -98,7 +98,7 @@ static int enable_flash_sis630(struct pci_dev *dev, const char *name)
 	}
 
 	OUTB(0x24, 0x2e);
-	printf("2f is %#x\n", INB(0x2f));
+	printf_debug("2f is %#x\n", INB(0x2f));
 	b = INB(0x2f) | 0xfc;
 	OUTB(0x24, 0x2e);
 	OUTB(b, 0x2f);
@@ -146,7 +146,7 @@ static int enable_flash_piix4(struct pci_dev *dev, const char *name)
 	pci_write_word(dev, xbcs, new);
 
 	if (pci_read_word(dev, xbcs) != new) {
-		printf("tried to set 0x%x to 0x%x on %s failed (WARNING ONLY)\n", xbcs, new, name);
+		printf_debug("tried to set 0x%x to 0x%x on %s failed (WARNING ONLY)\n", xbcs, new, name);
 		return -1;
 	}
 
@@ -182,7 +182,7 @@ static int enable_flash_ich(struct pci_dev *dev, const char *name,
 	pci_write_byte(dev, bios_cntl, new);
 
 	if (pci_read_byte(dev, bios_cntl) != new) {
-		printf("tried to set 0x%x to 0x%x on %s failed (WARNING ONLY)\n", bios_cntl, new, name);
+		printf_debug("tried to set 0x%x to 0x%x on %s failed (WARNING ONLY)\n", bios_cntl, new, name);
 		return -1;
 	}
 
@@ -487,7 +487,7 @@ static int enable_flash_vt823x(struct pci_dev *dev, const char *name)
 	pci_write_byte(dev, 0x40, val);
 
 	if (pci_read_byte(dev, 0x40) != val) {
-		printf("\nWARNING: Failed to enable ROM Write on \"%s\"\n",
+		printf("\nWARNING: Failed to enable flash write on \"%s\"\n",
 		       name);
 		return -1;
 	}
@@ -627,7 +627,7 @@ static int enable_flash_sc1100(struct pci_dev *dev, const char *name)
 	new = pci_read_byte(dev, 0x52);
 
 	if (new != 0xee) {
-		printf("tried to set register 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x52, new, name);
+		printf_debug("tried to set register 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x52, new, name);
 		return -1;
 	}
 
@@ -647,8 +647,8 @@ static int enable_flash_sis5595(struct pci_dev *dev, const char *name)
 
 	newer = pci_read_byte(dev, 0x45);
 	if (newer != new) {
-		printf("tried to set register 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x45, new, name);
-		printf("Stuck at 0x%x\n", newer);
+		printf_debug("tried to set register 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x45, new, name);
+		printf_debug("Stuck at 0x%x\n", newer);
 		return -1;
 	}
 
@@ -659,8 +659,8 @@ static int enable_flash_sis5595(struct pci_dev *dev, const char *name)
 	pci_write_byte(dev, 0x40, new);
 	newer = pci_read_byte(dev, 0x40);
 	if (newer != new) {
-		printf("tried to set register 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x40, new, name);
-		printf("Stuck at 0x%x\n", newer);
+		printf_debug("tried to set register 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x40, new, name);
+		printf_debug("Stuck at 0x%x\n", newer);
 		return -1;
 	}
 	return 0;
@@ -677,7 +677,7 @@ static int enable_flash_amd8111(struct pci_dev *dev, const char *name)
 	if (new != old) {
 		pci_write_byte(dev, 0x43, new);
 		if (pci_read_byte(dev, 0x43) != new) {
-			printf("tried to set 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x43, new, name);
+			printf_debug("tried to set 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x43, new, name);
 		}
 	}
 
@@ -689,7 +689,7 @@ static int enable_flash_amd8111(struct pci_dev *dev, const char *name)
 	pci_write_byte(dev, 0x40, new);
 
 	if (pci_read_byte(dev, 0x40) != new) {
-		printf("tried to set 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x40, new, name);
+		printf_debug("tried to set 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x40, new, name);
 		return -1;
 	}
 
@@ -860,7 +860,7 @@ static int enable_flash_ck804(struct pci_dev *dev, const char *name)
 	if (new != old) {
 		pci_write_byte(dev, 0x88, new);
 		if (pci_read_byte(dev, 0x88) != new) {
-			printf("tried to set 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x88, new, name);
+			printf_debug("tried to set 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x88, new, name);
 		}
 	}
 
@@ -871,7 +871,7 @@ static int enable_flash_ck804(struct pci_dev *dev, const char *name)
 	pci_write_byte(dev, 0x6d, new);
 
 	if (pci_read_byte(dev, 0x6d) != new) {
-		printf("tried to set 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x6d, new, name);
+		printf_debug("tried to set 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x6d, new, name);
 		return -1;
 	}
 
@@ -937,7 +937,7 @@ static int enable_flash_mcp55(struct pci_dev *dev, const char *name)
 	pci_write_byte(dev, 0x6d, new);
 
 	if (pci_read_byte(dev, 0x6d) != new) {
-		printf("tried to set 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x6d, new, name);
+		printf_debug("tried to set 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x6d, new, name);
 		return -1;
 	}
 
