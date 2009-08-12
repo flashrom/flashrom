@@ -24,45 +24,43 @@
 #include <sys/types.h>
 #include "flash.h"
 
-char *dummytype = NULL;
-
 int dummy_init(void)
 {
 	int i;
 	printf_debug("%s\n", __func__);
 
 	/* "all" is equivalent to specifying no type. */
-	if (dummytype && (!strcmp(dummytype, "all"))) {
-		free(dummytype);
-		dummytype = NULL;
+	if (programmer_param && (!strcmp(programmer_param, "all"))) {
+		free(programmer_param);
+		programmer_param = NULL;
 	}
-	if (!dummytype)
-		dummytype = strdup("parallel,lpc,fwh,spi");
+	if (!programmer_param)
+		programmer_param = strdup("parallel,lpc,fwh,spi");
 	/* Convert the parameters to lowercase. */
-	for (i = 0; dummytype[i] != '\0'; i++)
-		dummytype[i] = (char)tolower(dummytype[i]);
+	for (i = 0; programmer_param[i] != '\0'; i++)
+		programmer_param[i] = (char)tolower(programmer_param[i]);
 
 	buses_supported = CHIP_BUSTYPE_NONE;
-	if (strstr(dummytype, "parallel")) {
+	if (strstr(programmer_param, "parallel")) {
 		buses_supported |= CHIP_BUSTYPE_PARALLEL;
 		printf_debug("Enabling support for %s flash.\n", "parallel");
 	}
-	if (strstr(dummytype, "lpc")) {
+	if (strstr(programmer_param, "lpc")) {
 		buses_supported |= CHIP_BUSTYPE_LPC;
 		printf_debug("Enabling support for %s flash.\n", "LPC");
 	}
-	if (strstr(dummytype, "fwh")) {
+	if (strstr(programmer_param, "fwh")) {
 		buses_supported |= CHIP_BUSTYPE_FWH;
 		printf_debug("Enabling support for %s flash.\n", "FWH");
 	}
-	if (strstr(dummytype, "spi")) {
+	if (strstr(programmer_param, "spi")) {
 		buses_supported |= CHIP_BUSTYPE_SPI;
 		spi_controller = SPI_CONTROLLER_DUMMY;
 		printf_debug("Enabling support for %s flash.\n", "SPI");
 	}
 	if (buses_supported == CHIP_BUSTYPE_NONE)
 		printf_debug("Support for all flash bus types disabled.\n");
-	free(dummytype);
+	free(programmer_param);
 	return 0;
 }
 
