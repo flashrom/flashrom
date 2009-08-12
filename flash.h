@@ -277,7 +277,7 @@ struct pcidev_status {
 	const char *device_name;
 };
 uint32_t pcidev_validate(struct pci_dev *dev, struct pcidev_status *devs);
-uint32_t pcidev_init(uint16_t vendor_id, struct pcidev_status *devs);
+uint32_t pcidev_init(uint16_t vendor_id, struct pcidev_status *devs, char *pcidev_bdf);
 
 /* print.c */
 char *flashbuses_to_text(enum chipbustype bustype);
@@ -350,7 +350,6 @@ extern int io_fd;
 #endif
 
 /* dummyflasher.c */
-extern char *dummytype;
 int dummy_init(void);
 int dummy_shutdown(void);
 void *dummy_map(const char *descr, unsigned long phys_addr, size_t len);
@@ -383,13 +382,13 @@ extern struct pcidev_status satas_sii[];
 /* ft2232_spi.c */
 #define FTDI_FT2232H 0x6010
 #define FTDI_FT4232H 0x6011
-extern char *ft2232spi_param;
 int ft2232_spi_init(void);
 int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr);
 int ft2232_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
 int ft2232_spi_write_256(struct flashchip *flash, uint8_t *buf);
 
 /* flashrom.c */
+extern char *programmer_param;
 extern int verbose;
 extern const char *flashrom_version;
 #define printf_debug(x...) { if (verbose) printf(x); }
@@ -399,7 +398,6 @@ int min(int a, int b);
 int max(int a, int b);
 int check_erased_range(struct flashchip *flash, int start, int len);
 int verify_range(struct flashchip *flash, uint8_t *cmpbuf, int start, int len, char *message);
-extern char *pcidev_bdf;
 char *strcat_realloc(char *dest, const char *src);
 
 #define OK 0
@@ -507,7 +505,6 @@ int ich_spi_write_256(struct flashchip *flash, uint8_t * buf);
 int ich_spi_send_multicommand(struct spi_command *spicommands);
 
 /* it87spi.c */
-extern char *it87opts;
 extern uint16_t it8716f_flashport;
 void enter_conf_mode_ite(uint16_t port);
 void exit_conf_mode_ite(uint16_t port);
@@ -628,7 +625,6 @@ int erase_stm50flw0x0x(struct flashchip *flash);
 int write_stm50flw0x0x(struct flashchip *flash, uint8_t *buf);
 
 /* serprog.c */
-extern char *serprog_param;
 int serprog_init(void);
 int serprog_shutdown(void);
 void serprog_chip_writeb(uint8_t val, chipaddr addr);

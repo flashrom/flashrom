@@ -26,8 +26,6 @@
 #include "flash.h"
 #include "spi.h"
 
-char *ft2232spi_param = NULL;
-
 #if FT2232_SPI_SUPPORT == 1
 
 #include <ftdi.h>
@@ -83,16 +81,16 @@ int ft2232_spi_init(void)
 		return EXIT_FAILURE;
 	}
 
-	if (ft2232spi_param && !strlen(ft2232spi_param)) {
-		free(ft2232spi_param);
-		ft2232spi_param = NULL;
+	if (programmer_param && !strlen(programmer_param)) {
+		free(programmer_param);
+		programmer_param = NULL;
 	}
-	if (ft2232spi_param) {
-		if (strstr(ft2232spi_param, "2232"))
+	if (programmer_param) {
+		if (strstr(programmer_param, "2232"))
 			ft2232_type = FTDI_FT2232H;
-		if (strstr(ft2232spi_param, "4232"))
+		if (strstr(programmer_param, "4232"))
 			ft2232_type = FTDI_FT4232H;
-		portpos = strstr(ft2232spi_param, "port=");
+		portpos = strstr(programmer_param, "port=");
 		if (portpos) {
 			portpos += 5;
 			switch (toupper(*portpos)) {
@@ -107,7 +105,7 @@ int ft2232_spi_init(void)
 					"using default.\n");
 			}
 		}
-		free(ft2232spi_param);
+		free(programmer_param);
 	}
 	printf_debug("Using device type %s ",
 		     (ft2232_type == FTDI_FT2232H) ? "2232H" : "4232H");

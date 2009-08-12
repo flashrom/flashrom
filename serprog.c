@@ -19,8 +19,14 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include <string.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include "flash.h"
+
+#if SERPROG_SUPPORT == 1
+
+#include <string.h>
 #include <ctype.h>
 #include <fcntl.h>
 #include <sys/types.h>
@@ -31,15 +37,8 @@
 #include <netdb.h>
 #include <sys/stat.h>
 #include <errno.h>
-#include <stdio.h>
-#include <unistd.h>
 #include <inttypes.h>
 #include <termios.h>
-#include "flash.h"
-
-char *serprog_param = NULL;
-
-#if SERPROG_SUPPORT == 1
 
 #define MSGHEADER "serprog:"
 
@@ -431,15 +430,15 @@ int serprog_init(void)
 	char *dev;
 	printf_debug("%s\n", __func__);
 	/* the parameter is either of format "/dev/device:baud" or "ip:port" */
-	if ((!serprog_param) || (!strlen(serprog_param))) {
+	if ((!programmer_param) || (!strlen(programmer_param))) {
 		nodevice:
 		fprintf(stderr,
 			"Error: No device/host given for the serial programmer driver.\n"
 			"Use flashrom -p serprog=/dev/device:baud or flashrom -p serprog=ip:port\n");
 		exit(1);
 	}
-	num = strstr(serprog_param, ":");
-	len = num - serprog_param;
+	num = strstr(programmer_param, ":");
+	len = num - programmer_param;
 	if (!len) goto nodevice;
 	if (!num) {
 		fprintf(stderr,
@@ -447,15 +446,15 @@ int serprog_init(void)
 			"Use flashrom -p serprog=/dev/device:baud or flashrom -p serprog=ip:port\n");
 		exit(1);
 	}
-	len = num - serprog_param;
+	len = num - programmer_param;
 	dev = malloc(len + 1);
 	if (!dev) sp_die("Error: memory allocation failure");
-	memcpy(dev, serprog_param, len);
+	memcpy(dev, programmer_param, len);
 	dev[len] = 0;
 	num = strdup(num + 1);
 	if (!num) sp_die("Error: memory allocation failure");
-	free(serprog_param);
-	serprog_param = NULL;
+	free(programmer_param);
+	programmer_param = NULL;
 
 	if (dev[0] == '/') sp_fd = sp_openserport(dev, atoi(num));
 	else sp_fd = sp_opensocket(dev, atoi(num));

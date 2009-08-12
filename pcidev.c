@@ -26,7 +26,6 @@
 uint32_t io_base_addr;
 struct pci_access *pacc;
 struct pci_filter filter;
-char *pcidev_bdf = NULL;
 struct pci_dev *pcidev_dev = NULL;
 
 uint32_t pcidev_validate(struct pci_dev *dev, struct pcidev_status *devs)
@@ -58,7 +57,7 @@ uint32_t pcidev_validate(struct pci_dev *dev, struct pcidev_status *devs)
 	return 0;
 }
 
-uint32_t pcidev_init(uint16_t vendor_id, struct pcidev_status *devs)
+uint32_t pcidev_init(uint16_t vendor_id, struct pcidev_status *devs, char *pcidev_bdf)
 {
 	struct pci_dev *dev;
 	char *msg = NULL;
