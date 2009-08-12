@@ -139,6 +139,7 @@ const struct programmer_entry programmer_table[] = {
 		.delay			= internal_delay,
 	},
 
+#if SERPROG_SUPPORT == 1
 	{
 		.name			= "serprog",
 		.init			= serprog_init,
@@ -155,6 +156,7 @@ const struct programmer_entry programmer_table[] = {
 		.chip_writen		= fallback_chip_writen,
 		.delay			= serprog_delay,
 	},
+#endif
 
 	{}, /* This entry corresponds to PROGRAMMER_INVALID. */
 };
