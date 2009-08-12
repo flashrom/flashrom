@@ -87,7 +87,9 @@ enum programmer {
 	PROGRAMMER_SATASII,
 	PROGRAMMER_IT87SPI,
 	PROGRAMMER_FT2232SPI,
+#if SERPROG_SUPPORT == 1
 	PROGRAMMER_SERPROG,
+#endif
 	PROGRAMMER_INVALID /* This must always be the last entry. */
 };
 
