@@ -38,6 +38,7 @@ char *programmer_param = NULL;
 
 const struct programmer_entry programmer_table[] = {
 	{
+		.name			= "internal",
 		.init			= internal_init,
 		.shutdown		= internal_shutdown,
 		.map_flash_region	= physmap,
@@ -54,6 +55,7 @@ const struct programmer_entry programmer_table[] = {
 	},
 
 	{
+		.name			= "dummy",
 		.init			= dummy_init,
 		.shutdown		= dummy_shutdown,
 		.map_flash_region	= dummy_map,
@@ -70,6 +72,7 @@ const struct programmer_entry programmer_table[] = {
 	},
 
 	{
+		.name			= "nic3com",
 		.init			= nic3com_init,
 		.shutdown		= nic3com_shutdown,
 		.map_flash_region	= fallback_map,
@@ -86,6 +89,7 @@ const struct programmer_entry programmer_table[] = {
 	},
 
 	{
+		.name			= "satasii",
 		.init			= satasii_init,
 		.shutdown		= satasii_shutdown,
 		.map_flash_region	= fallback_map,
@@ -102,6 +106,7 @@ const struct programmer_entry programmer_table[] = {
 	},
 
 	{
+		.name			= "it87spi",
 		.init			= it87spi_init,
 		.shutdown		= fallback_shutdown,
 		.map_flash_region	= fallback_map,
@@ -118,6 +123,7 @@ const struct programmer_entry programmer_table[] = {
 	},
 
 	{
+		.name			= "ft2232spi",
 		.init			= ft2232_spi_init,
 		.shutdown		= fallback_shutdown,
 		.map_flash_region	= fallback_map,
@@ -134,6 +140,7 @@ const struct programmer_entry programmer_table[] = {
 	},
 
 	{
+		.name			= "serprog",
 		.init			= serprog_init,
 		.shutdown		= serprog_shutdown,
 		.map_flash_region	= fallback_map,
@@ -149,7 +156,7 @@ const struct programmer_entry programmer_table[] = {
 		.delay			= serprog_delay,
 	},
 
-	{},
+	{}, /* This entry corresponds to PROGRAMMER_INVALID. */
 };
 
 int programmer_init(void)
@@ -523,6 +530,8 @@ int main(int argc, char *argv[])
 	FILE *image;
 	/* Probe for up to three flash chips. */
 	struct flashchip *flash, *flashes[3];
+	const char *name;
+	int namelen;
 	int opt;
 	int option_index = 0;
 	int force = 0;
@@ -563,6 +572,12 @@ int main(int argc, char *argv[])
 		printf_debug("The arguments are:\n");
 		for (i = 1; i < argc; ++i)
 			printf_debug("%s\n", argv[i]);
+	}
+
+	/* Safety check. */
+	if (ARRAY_SIZE(programmer_table) - 1 != PROGRAMMER_INVALID) {
+		fprintf(stderr, "Programmer table miscompilation!\n");
+		exit(1);
 	}
 
 	setbuf(stdout, NULL);
@@ -641,35 +656,28 @@ int main(int argc, char *argv[])
 			list_supported_wiki = 1;
 			break;
 		case 'p':
-			if (strncmp(optarg, "internal", 8) == 0) {
-				programmer = PROGRAMMER_INTERNAL;
-				if (optarg[8] == '=')
-					programmer_param = strdup(optarg + 9);
-			} else if (strncmp(optarg, "dummy", 5) == 0) {
-				programmer = PROGRAMMER_DUMMY;
-				if (optarg[5] == '=')
-					programmer_param = strdup(optarg + 6);
-			} else if (strncmp(optarg, "nic3com", 7) == 0) {
-				programmer = PROGRAMMER_NIC3COM;
-				if (optarg[7] == '=')
-					programmer_param = strdup(optarg + 8);
-			} else if (strncmp(optarg, "satasii", 7) == 0) {
-				programmer = PROGRAMMER_SATASII;
-				if (optarg[7] == '=')
-					programmer_param = strdup(optarg + 8);
-			} else if (strncmp(optarg, "it87spi", 7) == 0) {
-				programmer = PROGRAMMER_IT87SPI;
-				if (optarg[7] == '=')
-					programmer_param = strdup(optarg + 8);
-			} else if (strncmp(optarg, "ft2232spi", 9) == 0) {
-				programmer = PROGRAMMER_FT2232SPI;
-				if (optarg[9] == '=')
-					programmer_param = strdup(optarg + 10);
-			} else if (strncmp(optarg, "serprog", 7) == 0) {
-				programmer = PROGRAMMER_SERPROG;
-				if (optarg[7] == '=')
-					programmer_param = strdup(optarg + 8);
-			} else {
+			for (programmer = 0; programmer < PROGRAMMER_INVALID; programmer++) {
+				name = programmer_table[programmer].name;
+				namelen = strlen(name);
+				if (strncmp(optarg, name, namelen) == 0) {
+					switch (optarg[namelen]) {
+					case '=':
+						programmer_param = strdup(optarg + namelen + 1);
+						break;
+					case '\0':
+						break;
+					default:
+						/* The continue refers to the
+						 * for loop. It is here to be
+						 * able to differentiate between
+						 * foo and foobar.
+						 */
+						continue;
+					}
+					break;
+				}
+			}
+			if (programmer == PROGRAMMER_INVALID) {
 				printf("Error: Unknown programmer.\n");
 				exit(1);
 			}
