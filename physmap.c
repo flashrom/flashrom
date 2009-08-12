@@ -2,6 +2,7 @@
  * This file is part of the flashrom project.
  *
  * Copyright (C) 2009 Peter Stuge <peter@stuge.se>
+ * Copyright (C) 2009 coresystems GmbH
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +22,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <string.h>
 #include <errno.h>
 #include "flash.h"
 
@@ -117,3 +119,136 @@ void *physmap(const char *descr, unsigned long phys_addr, size_t len)
 
 	return virt_addr;
 }
+
+#ifdef __linux__
+/*
+ * Reading and writing to MSRs, however requires instructions rdmsr/wrmsr,
+ * which are ring0 privileged instructions so only the kernel can do the
+ * read/write.  This function, therefore, requires that the msr kernel module
+ * be loaded to access these instructions from user space using device
+ * /dev/cpu/0/msr.
+ */
+
+static int fd_msr = -1;
+
+msr_t rdmsr(int addr)
+{
+	uint8_t buf[8];
+	msr_t msr = { 0xffffffff, 0xffffffff };
+
+	if (lseek(fd_msr, (off_t) addr, SEEK_SET) == -1) {
+		perror("Could not lseek() to MSR");
+		close(fd_msr);
+		exit(1);
+	}
+
+	if (read(fd_msr, buf, 8) == 8) {
+		msr.lo = *(uint32_t *)buf;
+		msr.hi = *(uint32_t *)(buf + 4);
+
+		return msr;
+	}
+
+	if (errno != EIO) {
+		// A severe error.
+		perror("Could not read() MSR");
+		close(fd_msr);
+		exit(1);
+	}
+
+	return msr;
+}
+
+int wrmsr(int addr, msr_t msr)
+{
+	if (lseek(fd_msr, (off_t) addr, SEEK_SET) == -1) {
+		perror("Could not lseek() to MSR");
+		close(fd_msr);
+		exit(1);
+	}
+
+	if (write(fd_msr, &msr, 8) != 8 && errno != EIO) {
+		perror("Could not write() MSR");
+		close(fd_msr);
+		exit(1);
+	}
+
+	/* some MSRs must not be written */
+	if (errno == EIO)
+		return -1;
+
+	return 0;
+}
+
+int setup_cpu_msr(int cpu)
+{
+	char msrfilename[64];
+	memset(msrfilename, 0, 64);
+	sprintf(msrfilename, "/dev/cpu/%d/msr", cpu);
+
+	if (fd_msr != -1) {
+		printf("MSR was already initialized\n");
+		return -1;
+	}
+
+	fd_msr = open(msrfilename, O_RDWR);
+
+	if (fd_msr < 0) {
+		perror("Error while opening /dev/cpu/0/msr");
+		printf("Did you run 'modprobe msr'?\n");
+		return -1;
+	}
+
+	return 0;
+}
+
+void cleanup_cpu_msr(void)
+{
+	if (fd_msr == -1) {
+		printf("No MSR initialized.\n");
+		return;
+	}
+
+	close(fd_msr);
+
+	/* Clear MSR file descriptor */
+	fd_msr = -1;
+}
+#else
+#ifdef __DARWIN__
+int setup_cpu_msr(int cpu)
+{
+	// Always succeed for now
+	return 0;
+}
+
+void cleanup_cpu_msr(void)
+{
+	// Nothing, yet.
+}
+#else
+msr_t rdmsr(int addr)
+{
+	msr_t ret = { 0xffffffff, 0xffffffff };
+
+	return ret;
+}
+
+int wrmsr(int addr, msr_t msr)
+{
+	return -1;
+}
+
+int setup_cpu_msr(int cpu)
+{
+	printf("No MSR support for your OS yet.\n");
+	return -1;
+}
+
+void cleanup_cpu_msr(void)
+{
+	// Nothing, yet.
+}
+#endif
+#endif
+

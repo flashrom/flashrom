@@ -2,7 +2,7 @@
  * This file is part of the flashrom project.
  *
  * Copyright (C) 2000 Silicon Integrated System Corporation
- * Copyright (C) 2005-2009 coresystems GmbH <stepan@coresystems.de>
+ * Copyright (C) 2005-2009 coresystems GmbH
  * Copyright (C) 2006 Uwe Hermann <uwe@hermann-uwe.de>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -527,91 +527,35 @@ static int enable_flash_cs5530(struct pci_dev *dev, const char *name)
 
 /**
  * Geode systems write protect the BIOS via RCONFs (cache settings similar
- * to MTRRs). To unlock, change MSR 0x1808 top byte to 0x22. Reading and
- * writing to MSRs, however requires instructions rdmsr/wrmsr, which are
- * ring0 privileged instructions so only the kernel can do the read/write.
- * This function, therefore, requires that the msr kernel module be loaded
- * to access these instructions from user space using device /dev/cpu/0/msr.
- *
- * This hard-coded location could have potential problems on SMP machines
- * since it assumes cpu0, but it is safe on the Geode which is not SMP.
+ * to MTRRs). To unlock, change MSR 0x1808 top byte to 0x22. 
  *
  * Geode systems also write protect the NOR flash chip itself via MSR_NORF_CTL.
  * To enable write to NOR Boot flash for the benefit of systems that have such
  * a setup, raise MSR 0x51400018 WE_CS3 (write enable Boot Flash Chip Select).
- *
- * This is probably not portable beyond Linux.
  */
 static int enable_flash_cs5536(struct pci_dev *dev, const char *name)
 {
 #define MSR_RCONF_DEFAULT	0x1808
 #define MSR_NORF_CTL		0x51400018
 
-	int fd_msr;
-	unsigned char buf[8];
+	msr_t msr;
 
-	fd_msr = open("/dev/cpu/0/msr", O_RDWR);
-	if (fd_msr == -1) {
-		perror("open(/dev/cpu/0/msr)");
-		printf("Cannot operate on MSR. Did you run 'modprobe msr'?\n");
+	/* Geode only has a single core */
+	if (setup_cpu_msr(0))
 		return -1;
+
+	msr = rdmsr(MSR_RCONF_DEFAULT);
+	if ((msr.hi >> 24) != 0x22) {
+		msr.hi &= 0xfbffffff;
+		wrmsr(MSR_RCONF_DEFAULT, msr);
 	}
 
-	if (lseek64(fd_msr, (off64_t) MSR_RCONF_DEFAULT, SEEK_SET) == -1) {
-		perror("lseek64");
-		close(fd_msr);
-		return -1;
-	}
-
-	if (read(fd_msr, buf, 8) != 8) {
-		perror("read msr");
-		close(fd_msr);
-		return -1;
-	}
-
-	if (buf[7] != 0x22) {
-		buf[7] &= 0xfb;
-		if (lseek64(fd_msr, (off64_t) MSR_RCONF_DEFAULT,
-			    SEEK_SET) == -1) {
-			perror("lseek64");
-			close(fd_msr);
-			return -1;
-		}
-
-		if (write(fd_msr, buf, 8) < 0) {
-			perror("msr write");
-			close(fd_msr);
-			return -1;
-		}
-	}
-
-	if (lseek64(fd_msr, (off64_t) MSR_NORF_CTL, SEEK_SET) == -1) {
-		perror("lseek64");
-		close(fd_msr);
-		return -1;
-	}
-
-	if (read(fd_msr, buf, 8) != 8) {
-		perror("read msr");
-		close(fd_msr);
-		return -1;
-	}
-
+	msr = rdmsr(MSR_NORF_CTL);
 	/* Raise WE_CS3 bit. */
-	buf[0] |= 0x08;
+	msr.lo |= 0x08;
+	wrmsr(MSR_NORF_CTL, msr);
 
-	if (lseek64(fd_msr, (off64_t) MSR_NORF_CTL, SEEK_SET) == -1) {
-		perror("lseek64");
-		close(fd_msr);
-		return -1;
-	}
-	if (write(fd_msr, buf, 8) < 0) {
-		perror("msr write");
-		close(fd_msr);
-		return -1;
-	}
-
-	close(fd_msr);
+	cleanup_cpu_msr();
 
 #undef MSR_RCONF_DEFAULT
 #undef MSR_NORF_CTL
