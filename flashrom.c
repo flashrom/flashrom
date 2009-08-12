@@ -33,7 +33,7 @@
 const char *flashrom_version = FLASHROM_VERSION;
 char *chip_to_probe = NULL;
 int verbose = 0;
-int programmer = PROGRAMMER_INTERNAL;
+enum programmer programmer = PROGRAMMER_INTERNAL;
 
 const struct programmer_entry programmer_table[] = {
 	{
@@ -102,14 +102,14 @@ const struct programmer_entry programmer_table[] = {
 
 	{
 		.init			= it87spi_init,
-		.shutdown		= dummy_shutdown,
-		.map_flash_region	= dummy_map,
-		.unmap_flash_region	= dummy_unmap,
+		.shutdown		= fallback_shutdown,
+		.map_flash_region	= fallback_map,
+		.unmap_flash_region	= fallback_unmap,
 		.chip_readb		= dummy_chip_readb,
 		.chip_readw		= fallback_chip_readw,
 		.chip_readl		= fallback_chip_readl,
 		.chip_readn		= fallback_chip_readn,
-		.chip_writeb		= dummy_chip_writeb,
+		.chip_writeb		= fallback_chip_writeb,
 		.chip_writew		= fallback_chip_writew,
 		.chip_writel		= fallback_chip_writel,
 		.chip_writen		= fallback_chip_writen,
@@ -118,19 +118,20 @@ const struct programmer_entry programmer_table[] = {
 
 	{
 		.init			= ft2232_spi_init,
-		.shutdown		= dummy_shutdown,
-		.map_flash_region	= dummy_map,
-		.unmap_flash_region	= dummy_unmap,
+		.shutdown		= fallback_shutdown,
+		.map_flash_region	= fallback_map,
+		.unmap_flash_region	= fallback_unmap,
 		.chip_readb		= dummy_chip_readb,
 		.chip_readw		= fallback_chip_readw,
 		.chip_readl		= fallback_chip_readl,
 		.chip_readn		= fallback_chip_readn,
-		.chip_writeb		= dummy_chip_writeb,
+		.chip_writeb		= fallback_chip_writeb,
 		.chip_writew		= fallback_chip_writew,
 		.chip_writel		= fallback_chip_writel,
 		.chip_writen		= fallback_chip_writen,
 		.delay			= internal_delay,
 	},
+
 	{
 		.init			= serprog_init,
 		.shutdown		= serprog_shutdown,

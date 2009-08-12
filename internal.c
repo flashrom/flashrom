@@ -218,6 +218,12 @@ void internal_delay(int usecs)
 	}
 }
 
+/* Fallback shutdown() for programmers which don't need special handling */
+int fallback_shutdown(void)
+{
+	return 0;
+}
+
 /* Fallback map() for programmers which don't need special handling */
 void *fallback_map(const char *descr, unsigned long phys_addr, size_t len)
 {
@@ -226,6 +232,11 @@ void *fallback_map(const char *descr, unsigned long phys_addr, size_t len)
 
 /* Fallback unmap() for programmers which don't need special handling */
 void fallback_unmap(void *virt_addr, size_t len)
+{
+}
+
+/* No-op fallback for drivers not supporting addr/data pair accesses */
+void fallback_chip_writeb(uint8_t val, chipaddr addr)
 {
 }
 

@@ -80,14 +80,17 @@
 
 typedef unsigned long chipaddr;
 
-extern int programmer;
-#define PROGRAMMER_INTERNAL	0x00
-#define PROGRAMMER_DUMMY	0x01
-#define PROGRAMMER_NIC3COM	0x02
-#define PROGRAMMER_SATASII	0x03
-#define PROGRAMMER_IT87SPI	0x04
-#define PROGRAMMER_FT2232SPI	0x05
-#define PROGRAMMER_SERPROG	0x06
+enum programmer {
+	PROGRAMMER_INTERNAL,
+	PROGRAMMER_DUMMY,
+	PROGRAMMER_NIC3COM,
+	PROGRAMMER_SATASII,
+	PROGRAMMER_IT87SPI,
+	PROGRAMMER_FT2232SPI,
+	PROGRAMMER_SERPROG,
+};
+
+extern enum programmer programmer;
 
 struct programmer_entry {
 	const char *vendor;
@@ -332,8 +335,10 @@ uint8_t mmio_readb(void *addr);
 uint16_t mmio_readw(void *addr);
 uint32_t mmio_readl(void *addr);
 void internal_delay(int usecs);
+int fallback_shutdown(void);
 void *fallback_map(const char *descr, unsigned long phys_addr, size_t len);
 void fallback_unmap(void *virt_addr, size_t len);
+void fallback_chip_writeb(uint8_t val, chipaddr addr);
 void fallback_chip_writew(uint16_t val, chipaddr addr);
 void fallback_chip_writel(uint32_t val, chipaddr addr);
 void fallback_chip_writen(uint8_t *buf, chipaddr addr, size_t len);
@@ -382,7 +387,6 @@ extern char *ft2232spi_param;
 int ft2232_spi_init(void);
 int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr);
 int ft2232_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
-int ft2232_spi_write1(struct flashchip *flash, uint8_t *buf);
 int ft2232_spi_write_256(struct flashchip *flash, uint8_t *buf);
 
 /* flashrom.c */
