@@ -495,51 +495,29 @@ static int board_artecgroup_dbe6x(const char *name)
 #define DBE6x_BOOT_LOC_FLASH		(2)
 #define DBE6x_BOOT_LOC_FWHUB		(3)
 
-	unsigned long msr[2];
-	int msr_fd;
+	msr_t msr;
 	unsigned long boot_loc;
 
-	msr_fd = open("/dev/cpu/0/msr", O_RDWR);
-	if (msr_fd == -1) {
-		perror("open /dev/cpu/0/msr");
+	/* Geode only has a single core */
+	if (setup_cpu_msr(0))
 		return -1;
-	}
 
-	if (lseek(msr_fd, DBE6x_MSR_DIVIL_BALL_OPTS, SEEK_SET) == -1) {
-		perror("lseek");
-		close(msr_fd);
-		return -1;
-	}
+	msr = rdmsr(DBE6x_MSR_DIVIL_BALL_OPTS);
 
-	if (read(msr_fd, (void *)msr, 8) != 8) {
-		perror("read");
-		close(msr_fd);
-		return -1;
-	}
-
-	if ((msr[0] & (DBE6x_BOOT_OP_LATCHED)) ==
+	if ((msr.lo & (DBE6x_BOOT_OP_LATCHED)) ==
 	    (DBE6x_BOOT_LOC_FWHUB << DBE6x_BOOT_OP_LATCHED_SHIFT))
 		boot_loc = DBE6x_BOOT_LOC_FWHUB;
 	else
 		boot_loc = DBE6x_BOOT_LOC_FLASH;
 
-	msr[0] &= ~(DBE6x_PRI_BOOT_LOC | DBE6x_SEC_BOOT_LOC);
-	msr[0] |= ((boot_loc << DBE6x_PRI_BOOT_LOC_SHIFT) |
+	msr.lo &= ~(DBE6x_PRI_BOOT_LOC | DBE6x_SEC_BOOT_LOC);
+	msr.lo |= ((boot_loc << DBE6x_PRI_BOOT_LOC_SHIFT) |
 		   (boot_loc << DBE6x_SEC_BOOT_LOC_SHIFT));
 
-	if (lseek(msr_fd, DBE6x_MSR_DIVIL_BALL_OPTS, SEEK_SET) == -1) {
-		perror("lseek");
-		close(msr_fd);
-		return -1;
-	}
+	wrmsr(DBE6x_MSR_DIVIL_BALL_OPTS, msr);
 
-	if (write(msr_fd, (void *)msr, 8) != 8) {
-		perror("write");
-		close(msr_fd);
-		return -1;
-	}
+	cleanup_cpu_msr();
 
-	close(msr_fd);
 	return 0;
 }
 
