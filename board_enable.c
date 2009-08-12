@@ -888,6 +888,32 @@ static int board_asus_a7v8x(const char *name)
 }
 
 /**
+ * Suited for Asus P4P800-E: Intel Intel 865PE + ICH5R.
+ */
+static int board_asus_p4p800(const char *name)
+{
+	struct pci_dev *dev;
+	uint16_t base;
+	uint8_t tmp;
+
+	dev = pci_dev_find(0x8086, 0x24D0);	/* Intel ICH5R ISA Bridge */
+	if (!dev) {
+		fprintf(stderr, "\nERROR: Intel ICH5R ISA Bridge not found.\n");
+		return -1;
+	}
+
+	/* get PM IO base */
+	base = pci_read_long(dev, 0x58) & 0x0000FFC0;
+
+	/* Raise GPIO 21 */
+	tmp = INB(base + 0x0E);
+	tmp |= 0x20;
+	OUTB(tmp, base + 0x0E);
+
+	return 0;
+}
+
+/**
  * We use 2 sets of IDs here, you're free to choose which is which. This
  * is to provide a very high degree of certainty when matching a board on
  * the basis of subsystem/card IDs. As not every vendor handles
@@ -920,6 +946,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x1106, 0x3189, 0x1043, 0x807F,  0x1106, 0x3177, 0x1043, 0x808C, NULL,         NULL,          "ASUS",        "A7V8X",              board_asus_a7v8x},
 	{0x1106, 0x3177, 0x1043, 0x80A1,  0x1106, 0x3205, 0x1043, 0x8118, NULL,         NULL,          "ASUS",        "A7V8X-MX SE",        board_asus_a7v8x_mx},
 	{0x8086, 0x1a30, 0x1043, 0x8070,  0x8086, 0x244b, 0x1043, 0x8028, NULL,         NULL,          "ASUS",        "P4B266",             ich2_gpio22_raise},
+	{0x8086, 0x2570, 0x1043, 0x80F2,  0x105A, 0x3373, 0x1043, 0x80F5, NULL,         NULL,          "ASUS",        "P4P800-E Deluxe",    board_asus_p4p800},
 	{0x10B9, 0x1541,      0,      0,  0x10B9, 0x1533,      0,      0, "asus",       "p5a",         "ASUS",        "P5A",                board_asus_p5a},
 	{0x1106, 0x3149, 0x1565, 0x3206,  0x1106, 0x3344, 0x1565, 0x1202, NULL,         NULL,          "Biostar",     "P4M80-M4",           it8705_rom_write_enable},
 	{0x1106, 0x3038, 0x1019, 0x0996,  0x1106, 0x3177, 0x1019, 0x0996, NULL,         NULL,          "Elitegroup",  "K7VTA3",             it8705f_write_enable_2e},
