@@ -23,9 +23,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "flash.h"
-
-#if SERPROG_SUPPORT == 1
-
 #include <string.h>
 #include <ctype.h>
 #include <fcntl.h>
@@ -774,42 +771,3 @@ void serprog_delay(int delay)
 	sp_opbuf_usage += 5;
 	sp_prev_was_write = 0;
 }
-
-#else
-
-int serprog_init(void)
-{
-	fprintf(stderr, "Serial programmer support was not compiled in\n");
-	exit(1);
-}
-
-int serprog_shutdown(void)
-{
-	fprintf(stderr, "Serial programmer support was not compiled in\n");
-	exit(1);
-}
-
-void serprog_chip_writeb(uint8_t val, chipaddr addr)
-{
-	fprintf(stderr, "Serial programmer support was not compiled in\n");
-	exit(1);
-}
-
-uint8_t serprog_chip_readb(const chipaddr addr)
-{
-	fprintf(stderr, "Serial programmer support was not compiled in\n");
-	exit(1);
-}
-
-void serprog_chip_readn(uint8_t *buf, const chipaddr addr, size_t len)
-{
-	fprintf(stderr, "Serial programmer support was not compiled in\n");
-	exit(1);
-}
-
-void serprog_delay(int delay)
-{
-	fprintf(stderr, "Serial programmer support was not compiled in\n");
-	exit(1);
-}
-#endif
