@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2000 Silicon Integrated System Corporation
  * Copyright (C) 2000 Ronald G. Minnich <rminnich@gmail.com>
- * Copyright (C) 2005-2007 coresystems GmbH <stepan@coresystems.de>
+ * Copyright (C) 2005-2009 coresystems GmbH
  * Copyright (C) 2006-2009 Carl-Daniel Hailfinger
  *
  * This program is free software; you can redistribute it and/or modify
@@ -301,6 +301,13 @@ extern unsigned long flashbase;
 /* physmap.c */
 void *physmap(const char *descr, unsigned long phys_addr, size_t len);
 void physunmap(void *virt_addr, size_t len);
+int setup_cpu_msr(int cpu);
+void cleanup_cpu_msr(void);
+#ifndef __DARWIN__
+typedef struct { uint32_t hi, lo; } msr_t;
+msr_t rdmsr(int addr);
+int wrmsr(int addr, msr_t msr);
+#endif
 
 /* internal.c */
 struct pci_dev *pci_dev_find_filter(struct pci_filter filter);
