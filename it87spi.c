@@ -31,7 +31,6 @@
 #define ITE_SUPERIO_PORT1	0x2e
 #define ITE_SUPERIO_PORT2	0x4e
 
-char *it87opts = NULL;
 uint16_t it8716f_flashport = 0;
 /* use fast 33MHz SPI (<>0) or slow 16MHz (0) */
 int fast_spi = 1;
@@ -95,11 +94,11 @@ static uint16_t find_ite_spi_flash_port(uint16_t port)
 		flashport = sio_read(port, 0x64) << 8;
 		flashport |= sio_read(port, 0x65);
 		printf("Serial flash port 0x%04x\n", flashport);
-		if (it87opts && !strlen(it87opts)) {
-			free(it87opts);
-			it87opts = NULL;
+		if (programmer_param && !strlen(programmer_param)) {
+			free(programmer_param);
+			programmer_param = NULL;
 		}
-		if (it87opts && (portpos = strstr(it87opts, "port="))) {
+		if (programmer_param && (portpos = strstr(programmer_param, "port="))) {
 			portpos += 5;
 			flashport = strtol(portpos, (char **)NULL, 0);
 			printf("Forcing serial flash port 0x%04x\n", flashport);
