@@ -88,6 +88,7 @@ enum programmer {
 	PROGRAMMER_IT87SPI,
 	PROGRAMMER_FT2232SPI,
 	PROGRAMMER_SERPROG,
+	PROGRAMMER_INVALID /* This must always be the last entry. */
 };
 
 extern enum programmer programmer;
