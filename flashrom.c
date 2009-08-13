@@ -488,6 +488,11 @@ int erase_flash(struct flashchip *flash)
 
 void usage(const char *name)
 {
+	const char *pname;
+	int pnamelen;
+	int remaining = 0;
+	enum programmer p;
+
 	printf("usage: %s [-VfLzhR] [-E|-r file|-w file|-v file] [-c chipname]\n"
               "       [-m [vendor:]part] [-l file] [-i image] [-p programmer]\n\n", name);
 
@@ -510,9 +515,33 @@ void usage(const char *name)
 	     "   -i | --image <name>:              only flash image name from flash layout\n"
 	     "   -L | --list-supported:            print supported devices\n"
 	     "   -z | --list-supported-wiki:       print supported devices in wiki syntax\n"
-	     "   -p | --programmer <name>:         specify the programmer device\n"
-	     "                                     (internal, dummy, nic3com, satasii,\n"
-	     "                                     it87spi, ft2232spi, serprog)\n"
+	     "   -p | --programmer <name>:         specify the programmer device");
+
+	for (p = 0; p < PROGRAMMER_INVALID; p++) {
+		pname = programmer_table[p].name;
+		pnamelen = strlen(pname);
+		if (remaining - pnamelen - 2 < 0) {
+			printf("\n                                     ");
+			remaining = 43;
+		} else {
+			printf(" ");
+			remaining--;
+		}
+		if (p == 0) {
+			printf("(");
+			remaining--;
+		}
+		printf("%s", pname);
+		remaining -= pnamelen;
+		if (p < PROGRAMMER_INVALID - 1) {
+			printf(",");
+			remaining--;
+		} else {
+			printf(")\n");
+		}
+	}
+		
+	printf(
 	     "   -h | --help:                      print this help text\n"
 	     "   -R | --version:                   print the version (release)\n"
 	     "\nYou can specify one of -E, -r, -w, -v or no operation. If no operation is\n"
