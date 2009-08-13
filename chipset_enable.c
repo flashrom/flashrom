@@ -203,6 +203,7 @@ static int enable_flash_ich_dc(struct pci_dev *dev, const char *name)
 {
 	uint32_t fwh_conf;
 	int i;
+	char *idsel = NULL;
 
 	/* Ignore all legacy ranges below 1 MB. */
 	/* FWH_SEL1 */
@@ -231,6 +232,19 @@ static int enable_flash_ich_dc(struct pci_dev *dev, const char *name)
 			     (0xff4 + i) * 0x100000,
 			     (0xff0 + i) * 0x100000,
 			     (fwh_conf >> i) & 0x1 ? "en" : "dis");
+
+	if (programmer_param)
+		idsel = strstr(programmer_param, "fwh_idsel=");
+
+	if (idsel) {
+		idsel += strlen("fwh_idsel=");
+		fwh_conf = (uint32_t)strtoul(idsel, NULL, 0);
+
+		/* FIXME: Need to undo this on shutdown. */
+		printf("\nSetting IDSEL=0x%x for top 16 MB", fwh_conf);
+		pci_write_long(dev, 0xd0, fwh_conf);
+		pci_write_word(dev, 0xd4, fwh_conf);
+	}
 
 	return enable_flash_ich(dev, name, 0xdc);
 }
