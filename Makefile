@@ -70,6 +70,9 @@ CONFIG_SERPROG = yes
 ifeq ($(CONFIG_SERPROG), yes)
 FEATURE_CFLAGS += -D'SERPROG_SUPPORT=1'
 OBJS += serprog.o
+ifeq ($(OS_ARCH), SunOS)
+LIBS += -lsocket
+endif
 endif
 
 FEATURE_CFLAGS += $(shell LC_ALL=C grep -q "FTDISUPPORT := yes" .features && printf "%s" "-D'FT2232_SPI_SUPPORT=1'")

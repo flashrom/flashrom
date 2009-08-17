@@ -43,7 +43,7 @@ Linux et al:
 
  * pciutils
  * pciutils-devel / pciutils-dev / libpci-dev
- * zlib-devel / zlib1g-dev
+ * zlib-devel / zlib1g-dev (only needed if libpci is static)
 
 On FreeBSD, you need the following ports:
 
@@ -58,15 +58,18 @@ To compile on FreeBSD, use:
 
  gmake
 
+To compile on Nexenta, use:
+
+ make
+
 To compile on Solaris, use:
 
- gmake LDFLAGS="-L$pathtolibpci -lpci -lz" CC="gcc -I$pathtopciheaders" \
-       CFLAGS=-O2
+ gmake LDFLAGS="-L$pathtolibpci" CC="gcc -I$pathtopciheaders" CFLAGS=-O2
 
 To compile on DragonFly BSD, use:
 
  ln -s /usr/pkg/include/pciutils pci
- gmake CFLAGS=-I. LDFLAGS="-L/usr/pkg/lib -lpci -lz"
+ gmake CFLAGS=-I. LDFLAGS="-L/usr/pkg/lib"
 
 To compile and run on Darwin/Mac OS X:
 
