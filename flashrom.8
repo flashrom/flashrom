@@ -146,6 +146,8 @@ Specify the programmer device. Currently supported are:
 .sp
 .BR "* ft2232spi" " (for flash ROMs attached to a FT2232H/FT4232H based USB SPI programmer)"
 .sp
+.BR "* serprog" " (for flash ROMs attached to Urja's AVR programmer)"
+.sp
 The dummy programmer has an optional parameter specifying the bus types it
 should support. For that you have to use the
 .B "flashrom -p dummy=type"
@@ -178,16 +180,16 @@ Currently the following programmers support this mechanism:
 .BR nic3com ,
 .BR satasii .
 .sp
-The it87spi has an optional parameter which will set the I/O base port of the
-IT87* SPI controller interface to the port specified in the parameter.
-For that you have to use the
+The it87spi programmer has an optional parameter which will set the I/O base
+port of the IT87* SPI controller interface to the port specified in the
+parameter. For that you have to use the
 .B "flashrom -p it87spi=port=portnum"
 syntax where
 .B portnum
 is an I/O port number which must be a multiple of 8.
 .sp
-The ft2232spi has an optional parameter specifying the controller type and
-interface/port it should support. For that you have to use the
+The ft2232spi programmer has an optional parameter specifying the controller
+type and interface/port it should support. For that you have to use the
 .B "flashrom -p ft2232spi=model,port=interface"
 syntax where
 .B model
@@ -202,6 +204,19 @@ The default model is
 .B 4232H
 and the default interface is
 .BR B .
+.sp
+The serprog programmer has an optional parameter specifying either a serial
+device/baud combination or an IP/port combination for communication with the
+programmer. For serial, you have to use the
+.B "flashrom -p serprog=/dev/device:baud"
+syntax and for IP, you have to use
+.B "flashrom -p serprog=ip:port"
+instead. More information about serprog is available in serprog-protocol.txt in
+the source distribution.
+.sp
+Support for some programmers can be disabled at compile time.
+.B "flashrom -h"
+lists all supported programmers.
 .TP
 .B "\-h, \-\-help"
 Show a help text and exit.
