@@ -930,8 +930,7 @@ int main(int argc, char *argv[])
 
 	// This should be moved into each flash part's code to do it 
 	// cleanly. This does the job.
-	/* FIXME: Adapt to the external flasher infrastructure. */
-	handle_romentries(buf, (uint8_t *) flash->virtual_memory);
+	handle_romentries(buf, flash);
 
 	// ////////////////////////////////////////////////////////////
 
