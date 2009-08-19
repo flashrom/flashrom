@@ -122,6 +122,7 @@ const struct programmer_entry programmer_table[] = {
 		.delay			= internal_delay,
 	},
 
+#if FT2232_SPI_SUPPORT == 1
 	{
 		.name			= "ft2232spi",
 		.init			= ft2232_spi_init,
@@ -138,6 +139,7 @@ const struct programmer_entry programmer_table[] = {
 		.chip_writen		= fallback_chip_writen,
 		.delay			= internal_delay,
 	},
+#endif
 
 #if SERPROG_SUPPORT == 1
 	{
@@ -608,6 +610,10 @@ int main(int argc, char *argv[])
 	/* Safety check. */
 	if (ARRAY_SIZE(programmer_table) - 1 != PROGRAMMER_INVALID) {
 		fprintf(stderr, "Programmer table miscompilation!\n");
+		exit(1);
+	}
+	if (spi_programmer_count - 1 != SPI_CONTROLLER_INVALID) {
+		fprintf(stderr, "SPI programmer table miscompilation!\n");
 		exit(1);
 	}
 
