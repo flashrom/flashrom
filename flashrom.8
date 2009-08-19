@@ -150,7 +150,7 @@ Specify the programmer device. Currently supported are:
 .sp
 The dummy programmer has an optional parameter specifying the bus types it
 should support. For that you have to use the
-.B "flashrom -p dummy=type"
+.B "flashrom -p dummy:type"
 syntax where
 .B type
 can be any comma-separated combination of
@@ -158,11 +158,11 @@ can be any comma-separated combination of
 in any order.
 .sp
 Example:
-.B "flashrom -p dummy=lpc,fwh"
+.B "flashrom -p dummy:lpc,fwh"
 .sp
 If you have multiple supported PCI cards which can program flash chips
 (NICs, SATA/IDE controllers, etc.) in your system, you must use the
-.B "flashrom -p xxxx=bb:dd.f"
+.B "flashrom -p xxxx:bb:dd.f"
 syntax to explicitly select one of them, where
 .B xxxx
 is the name of the programmer
@@ -174,7 +174,7 @@ is the PCI device number, and
 is the PCI function number of the desired NIC.
 .sp
 Example:
-.B "flashrom -p nic3com=05:04.0"
+.B "flashrom -p nic3com:05:04.0"
 .sp
 Currently the following programmers support this mechanism:
 .BR nic3com ,
@@ -183,14 +183,14 @@ Currently the following programmers support this mechanism:
 The it87spi programmer has an optional parameter which will set the I/O base
 port of the IT87* SPI controller interface to the port specified in the
 parameter. For that you have to use the
-.B "flashrom -p it87spi=port=portnum"
+.B "flashrom -p it87spi:port=portnum"
 syntax where
 .B portnum
 is an I/O port number which must be a multiple of 8.
 .sp
 The ft2232spi programmer has an optional parameter specifying the controller
 type and interface/port it should support. For that you have to use the
-.B "flashrom -p ft2232spi=model,port=interface"
+.B "flashrom -p ft2232spi:model,port=interface"
 syntax where
 .B model
 can be any of
@@ -208,9 +208,9 @@ and the default interface is
 The serprog programmer has an optional parameter specifying either a serial
 device/baud combination or an IP/port combination for communication with the
 programmer. For serial, you have to use the
-.B "flashrom -p serprog=/dev/device:baud"
+.B "flashrom -p serprog:/dev/device:baud"
 syntax and for IP, you have to use
-.B "flashrom -p serprog=ip:port"
+.B "flashrom -p serprog:ip:port"
 instead. More information about serprog is available in serprog-protocol.txt in
 the source distribution.
 .sp
