@@ -234,6 +234,7 @@ void map_flash_registers(struct flashchip *flash)
 {
 	size_t size = flash->total_size * 1024;
 	/* Flash registers live 4 MByte below the flash. */
+	/* FIXME: This is incorrect for nonstandard flashbase. */
 	flash->virtual_registers = (chipaddr)programmer_map_flash_region("flash chip registers", (0xFFFFFFFF - 0x400000 - size + 1), size);
 }
 
@@ -486,6 +487,15 @@ int erase_flash(struct flashchip *flash)
 		}
 	printf("SUCCESS.\n");
 	return 0;
+}
+
+void emergency_help_message()
+{
+	fprintf(stderr, "Your flash chip is in an unknown state.\n"
+		"Get help on IRC at irc.freenode.net channel #flashrom or\n"
+		"mail flashrom@flashrom.org\n"
+		"------------------------------------------------------------\n"
+		"DO NOT REBOOT OR POWEROFF!\n");
 }
 
 void usage(const char *name)
@@ -792,6 +802,7 @@ int main(int argc, char *argv[])
 				printf("Run flashrom -L to view the hardware supported in this flashrom version.\n");
 				exit(1);
 			}
+			printf("Please note that forced reads most likely contain garbage.\n");
 			return read_flash(flashes[0], filename);
 		}
 		// FIXME: flash writes stay enabled!
@@ -857,14 +868,44 @@ int main(int argc, char *argv[])
 	buf = (uint8_t *) calloc(size, sizeof(char));
 
 	if (erase_it) {
-		if (erase_flash(flash))
+		if (flash->tested & TEST_BAD_ERASE) {
+			fprintf(stderr, "Erase is not working on this chip. ");
+			if (!force) {
+				fprintf(stderr, "Aborting.\n");
+				return 1;
+			} else {
+				fprintf(stderr, "Continuing anyway.\n");
+			}
+		}
+		if (erase_flash(flash)) {
+			emergency_help_message();
 			return 1;
+		}
 	} else if (read_it) {
 		if (read_flash(flash, filename))
 			return 1;
 	} else {
 		struct stat image_stat;
 
+		if (flash->tested & TEST_BAD_ERASE) {
+			fprintf(stderr, "Erase is not working on this chip "
+				"and erase is needed for write. ");
+			if (!force) {
+				fprintf(stderr, "Aborting.\n");
+				return 1;
+			} else {
+				fprintf(stderr, "Continuing anyway.\n");
+			}
+		}
+		if (flash->tested & TEST_BAD_WRITE) {
+			fprintf(stderr, "Write is not working on this chip. ");
+			if (!force) {
+				fprintf(stderr, "Aborting.\n");
+				return 1;
+			} else {
+				fprintf(stderr, "Continuing anyway.\n");
+			}
+		}
 		if ((image = fopen(filename, "r")) == NULL) {
 			perror(filename);
 			exit(1);
@@ -903,14 +944,24 @@ int main(int argc, char *argv[])
 		ret = flash->write(flash, buf);
 		if (ret) {
 			fprintf(stderr, "FAILED!\n");
+			emergency_help_message();
 			return 1;
 		} else {
 			printf("COMPLETE.\n");
 		}
 	}
 
-	if (verify_it)
+	if (verify_it) {
+		/* Work around chips which need some time to calm down. */
+		if (write_it)
+			programmer_delay(1000*1000);
 		ret = verify_flash(flash, buf);
+		/* If we tried to write, and now we don't properly verify, we
+		 * might have an emergency situation.
+		 */
+		if (ret && write_it)
+			emergency_help_message();
+	}
 
 	programmer_shutdown();
 
