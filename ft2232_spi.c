@@ -18,6 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#if FT2232_SPI_SUPPORT == 1
+
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -25,9 +27,6 @@
 #include <ctype.h>
 #include "flash.h"
 #include "spi.h"
-
-#if FT2232_SPI_SUPPORT == 1
-
 #include <ftdi.h>
 
 /* the 'H' chips can run internally at either 12Mhz or 60Mhz.
@@ -297,29 +296,4 @@ int ft2232_spi_write_256(struct flashchip *flash, uint8_t *buf)
 	return 0;
 }
 
-#else
-int ft2232_spi_init(void)
-{
-	fprintf(stderr, "FT2232 SPI support was not compiled in\n");
-	exit(1);
-}
-
-int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt,
-		const unsigned char *writearr, unsigned char *readarr)
-{
-	fprintf(stderr, "FT2232 SPI support was not compiled in\n");
-	exit(1);
-}
-
-int ft2232_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
-{
-	fprintf(stderr, "FT2232 SPI support was not compiled in\n");
-	exit(1);
-}
-
-int ft2232_spi_write_256(struct flashchip *flash, uint8_t *buf)
-{
-	fprintf(stderr, "FT2232 SPI support was not compiled in\n");
-	exit(1);
-}
 #endif

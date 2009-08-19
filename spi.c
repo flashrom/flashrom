@@ -82,12 +82,14 @@ const struct spi_programmer spi_programmer[] = {
 		.write_256 = wbsio_spi_write_1,
 	},
 
+#if FT2232_SPI_SUPPORT == 1
 	{ /* SPI_CONTROLLER_FT2232 */
 		.command = ft2232_spi_send_command,
 		.multicommand = default_spi_send_multicommand,
 		.read = ft2232_spi_read,
 		.write_256 = ft2232_spi_write_256,
 	},
+#endif
 
 	{ /* SPI_CONTROLLER_DUMMY */
 		.command = dummy_spi_send_command,
@@ -95,8 +97,11 @@ const struct spi_programmer spi_programmer[] = {
 		.read = NULL,
 		.write_256 = NULL,
 	},
+
+	{}, /* This entry corresponds to SPI_CONTROLLER_INVALID. */
 };
 
+const int spi_programmer_count = ARRAY_SIZE(spi_programmer);
 
 int spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		const unsigned char *writearr, unsigned char *readarr)
@@ -293,7 +298,9 @@ int probe_spi_rdid4(struct flashchip *flash)
 	case SPI_CONTROLLER_VIA:
 	case SPI_CONTROLLER_SB600:
 	case SPI_CONTROLLER_WBSIO:
+#if FT2232_SPI_SUPPORT == 1
 	case SPI_CONTROLLER_FT2232:
+#endif
 	case SPI_CONTROLLER_DUMMY:
 		return probe_spi_rdid_generic(flash, 4);
 	default:
