@@ -196,11 +196,11 @@ int find_romentry(char *name)
 	return -1;
 }
 
-int handle_romentries(uint8_t *buffer, uint8_t *content)
+int handle_romentries(uint8_t *buffer, struct flashchip *flash)
 {
 	int i;
 
-	// This function does not safe flash write cycles.
+	// This function does not save flash write cycles.
 	// 
 	// Also it does not cope with overlapping rom layout
 	// sections. 
@@ -220,10 +220,9 @@ int handle_romentries(uint8_t *buffer, uint8_t *content)
 		if (rom_entries[i].included)
 			continue;
 
-	/* FIXME: Adapt to the external flasher infrastructure. */
-		memcpy(buffer + rom_entries[i].start,
-		       content + rom_entries[i].start,
-		       rom_entries[i].end - rom_entries[i].start);
+		flash->read(flash, buffer + rom_entries[i].start,
+			    rom_entries[i].start,
+			    rom_entries[i].end - rom_entries[i].start + 1);
 	}
 
 	return 0;
