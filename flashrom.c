@@ -708,7 +708,7 @@ int main(int argc, char *argv[])
 				namelen = strlen(name);
 				if (strncmp(optarg, name, namelen) == 0) {
 					switch (optarg[namelen]) {
-					case '=':
+					case ':':
 						programmer_param = strdup(optarg + namelen + 1);
 						break;
 					case '\0':
@@ -725,7 +725,7 @@ int main(int argc, char *argv[])
 				}
 			}
 			if (programmer == PROGRAMMER_INVALID) {
-				printf("Error: Unknown programmer.\n");
+				printf("Error: Unknown programmer %s.\n", optarg);
 				exit(1);
 			}
 			break;
