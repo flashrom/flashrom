@@ -86,7 +86,9 @@ enum programmer {
 	PROGRAMMER_NIC3COM,
 	PROGRAMMER_SATASII,
 	PROGRAMMER_IT87SPI,
+#if FT2232_SPI_SUPPORT == 1
 	PROGRAMMER_FT2232SPI,
+#endif
 #if SERPROG_SUPPORT == 1
 	PROGRAMMER_SERPROG,
 #endif
@@ -436,9 +438,13 @@ enum spi_controller {
 	SPI_CONTROLLER_SB600,
 	SPI_CONTROLLER_VIA,
 	SPI_CONTROLLER_WBSIO,
+#if FT2232_SPI_SUPPORT == 1
 	SPI_CONTROLLER_FT2232,
+#endif
 	SPI_CONTROLLER_DUMMY,
+	SPI_CONTROLLER_INVALID /* This must always be the last entry. */
 };
+extern const int spi_programmer_count;
 struct spi_command {
 	unsigned int writecnt;
 	unsigned int readcnt;
