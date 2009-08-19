@@ -309,10 +309,20 @@ void *physmap(const char *descr, unsigned long phys_addr, size_t len);
 void physunmap(void *virt_addr, size_t len);
 int setup_cpu_msr(int cpu);
 void cleanup_cpu_msr(void);
-#ifndef __DARWIN__
+#if !defined(__DARWIN__) && !defined(__FreeBSD__) && !defined(__DragonFly__)
 typedef struct { uint32_t hi, lo; } msr_t;
 msr_t rdmsr(int addr);
 int wrmsr(int addr, msr_t msr);
+#endif
+#if defined(__FreeBSD__) || defined(__DragonFly__)
+/* FreeBSD already has conflicting definitions for wrmsr/rdmsr. */
+#undef rdmsr
+#undef wrmsr
+#define rdmsr freebsd_rdmsr
+#define wrmsr freebsd_wrmsr
+typedef struct { uint32_t hi, lo; } msr_t;
+msr_t freebsd_rdmsr(int addr);
+int freebsd_wrmsr(int addr, msr_t msr);
 #endif
 
 /* internal.c */
