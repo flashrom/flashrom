@@ -215,6 +215,91 @@ void cleanup_cpu_msr(void)
 	fd_msr = -1;
 }
 #else
+#if defined(__FreeBSD__) || defined(__DragonFly__)
+#include <sys/ioctl.h>
+
+typedef struct {
+	int msr;
+	uint64_t data;
+} cpu_msr_args_t;
+#define CPU_RDMSR _IOWR('c', 1, cpu_msr_args_t)
+#define CPU_WRMSR _IOWR('c', 2, cpu_msr_args_t)
+
+static int fd_msr = -1;
+
+msr_t rdmsr(int addr)
+{
+	cpu_msr_args_t args;
+
+	msr_t msr = { 0xffffffff, 0xffffffff };
+
+	args.msr = addr;
+
+	if (ioctl(fd_msr, CPU_RDMSR, &args) < 0) {
+		perror("CPU_RDMSR");
+		close(fd_msr);
+		exit(1);
+	}
+
+	msr.lo = args.data & 0xffffffff;
+	msr.hi = args.data >> 32;
+
+	return msr;
+}
+
+int wrmsr(int addr, msr_t msr)
+{
+	cpu_msr_args_t args;
+
+	args.msr = addr;
+	args.data = (((uint64_t)msr.hi) << 32) | msr.lo;
+
+	if (ioctl(fd_msr, CPU_WRMSR, &args) < 0) {
+		perror("CPU_WRMSR");
+		close(fd_msr);
+		exit(1);
+	}
+
+	return 0;
+}
+
+int setup_cpu_msr(int cpu)
+{
+	char msrfilename[64];
+	memset(msrfilename, 0, 64);
+	sprintf(msrfilename, "/dev/cpu%d", cpu);
+
+	if (fd_msr != -1) {
+		printf("MSR was already initialized\n");
+		return -1;
+	}
+
+	fd_msr = open(msrfilename, O_RDWR);
+
+	if (fd_msr < 0) {
+		perror("Error while opening /dev/cpu0");
+		printf("Did you install ports/sysutils/devcpu?\n");
+		return -1;
+	}
+
+	return 0;
+}
+
+void cleanup_cpu_msr(void)
+{
+	if (fd_msr == -1) {
+		printf("No MSR initialized.\n");
+		return;
+	}
+
+	close(fd_msr);
+
+	/* Clear MSR file descriptor */
+	fd_msr = -1;
+}
+
+#else
+
 #ifdef __DARWIN__
 int setup_cpu_msr(int cpu)
 {
@@ -249,6 +334,7 @@ void cleanup_cpu_msr(void)
 {
 	// Nothing, yet.
 }
+#endif
 #endif
 #endif
 
