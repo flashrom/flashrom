@@ -422,7 +422,7 @@ char *strcat_realloc(char *dest, const char *src);
 int show_id(uint8_t *bios, int size, int force);
 int read_romlayout(char *name);
 int find_romentry(char *name);
-int handle_romentries(uint8_t *buffer, uint8_t *content);
+int handle_romentries(uint8_t *buffer, struct flashchip *flash);
 
 /* cbtable.c */
 int coreboot_init(void);
