@@ -351,6 +351,7 @@ const struct board_info_url boards_url[] = {
 	{ "T-Online",		"S-100",		"http://wiki.freifunk-hannover.de/T-Online_S_100" },
 	{ "Tyan",		"iS5375-1U",		"http://www.tyan.com/product_board_detail.aspx?pid=610" },
 	{ "Tyan",		"S1846",		"http://www.tyan.com/archive/products/html/tsunamiatx.html" },
+	{ "Tyan",		"S2466",		"http://www.tyan.com/product_board_detail.aspx?pid=461" },
 	{ "Tyan",		"S2881",		"http://www.tyan.com/product_board_detail.aspx?pid=115" },
 	{ "Tyan",		"S2882",		"http://www.tyan.com/product_board_detail.aspx?pid=121" },
 	{ "Tyan",		"S2882-D",		"http://www.tyan.com/product_board_detail.aspx?pid=127" },
@@ -380,10 +381,12 @@ const struct board_info_url boards_url[] = {
 	{ "Acorp",		"6A815EPD",		"http://web.archive.org/web/20021206163652/www.acorp.com.tw/English/default.asp" },
 	{ "agami",		"Aruma",		"http://web.archive.org/web/20080212111524/http://www.agami.com/site/ais-6000-series" },
 	{ "Albatron",		"PM266A Pro",		"http://www.albatron.com.tw/English/Product/MB/pro_detail.asp?rlink=Overview&no=56" }, /* FIXME */
+	{ "AOpen",		"vKM400Am-S",		"http://usa.aopen.com/products_detail.aspx?Auno=824" },
 	{ "Artec Group",	"DBE61",		"http://wiki.thincan.org/DBE61" },
 	{ "Artec Group",	"DBE62",		"http://wiki.thincan.org/DBE62" },
 	{ "ASUS",		"A7V8X-MX SE",		"http://www.asus.com/product.aspx?P_ID=1guVBT1qV5oqhHyZ" },
 	{ "ASUS",		"P4B266",		"http://www.ciao.co.uk/ASUS_Intel_845D_Chipset_P4B266__5409807#productdetail" },
+	{ "ASUS",		"P4P800-E Deluxe",	"http://www.asus.com/product.aspx?P_ID=INIJUvLlif7LHp3g" },
 	{ "ASUS",		"P5A",			"ftp://ftp.asus.com.tw/pub/ASUS/mb/sock7/ali/p5a/" },
 	{ "Biostar",		"P4M80-M4",		"http://www.biostar-usa.com/mbdetails.asp?model=p4m80-m4" },
 	{ "Elitegroup",		"K7VTA3",		"http://www.ecs.com.tw/ECSWebSite/Products/ProductsDetail.aspx?detailid=264&CategoryID=1&DetailName=Specification&MenuID=52&LanID=0" },
@@ -420,6 +423,9 @@ const struct board_info_url boards_url[] = {
  
 	/* Verified non-working boards (for now). */
 	{ "Abit",		"IS-10",		"http://www.abit.com.tw/page/en/motherboard/motherboard_detail.php?pMODEL_NAME=IS-10&fMTYPE=Socket+478" },
+	{ "ASRock",		"K7VT4A+",		"http://www.asrock.com/mb/overview.asp?Model=K7VT4A%%2b&s=" },
+	{ "ASUS",		"A7V600-X",		"http://www.asus.com/product.aspx?P_ID=L2XYS0rmtCjeOr4k" },
+	{ "ASUS",		"M2N68",		"http://www.asus.com/product.aspx?P_ID=iDZQ9yNK2CbKW6Zv"},
 	{ "ASUS",		"M3N78 Pro",		"http://www.asus.com/product.aspx?P_ID=DVvm9CU0G1bCC4gp" },
 	{ "ASUS",		"MEW-AM",		"ftp://ftp.asus.com.tw/pub/ASUS/mb/sock370/810/mew-am/" },
 	{ "ASUS",		"MEW-VM",		"http://www.elhvb.com/mboards/OEM/HP/manual/ASUS%20MEW-VM.htm" },

@@ -637,7 +637,7 @@ static int it8705_rom_write_enable(const char *name)
 }
 
 /**
- * Suited for A-Open vKM400 AM-S: VIA KM400 + VT8237 + IT8705F.
+ * Suited for AOpen vKM400Am-S: VIA KM400 + VT8237 + IT8705F.
  */
 static int board_aopen_vkm400(const char *name)
 {
@@ -866,7 +866,7 @@ static int board_asus_a7v8x(const char *name)
 }
 
 /**
- * Suited for Asus P4P800-E: Intel Intel 865PE + ICH5R.
+ * Suited for Asus P4P800-E Deluxe: Intel Intel 865PE + ICH5R.
  */
 static int board_asus_p4p800(const char *name)
 {
@@ -918,7 +918,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x8086, 0x1130,      0,      0,  0x105a, 0x0d30, 0x105a, 0x4d33, "acorp",      "6a815epd",    "Acorp",       "6A815EPD",           board_acorp_6a815epd},
 	{0x1022, 0x746B, 0x1022, 0x36C0,       0,      0,      0,      0, "AGAMI",      "ARUMA",       "agami",       "Aruma",              w83627hf_gpio24_raise_2e},
 	{0x1106, 0x3177, 0x17F2, 0x3177,  0x1106, 0x3148, 0x17F2, 0x3148, NULL,         NULL,          "Albatron",    "PM266A*",            board_epox_ep_8k5a2},
-	{0x1106, 0x3205, 0x1106, 0x3205,  0x10EC, 0x8139, 0xA0A0, 0x0477, NULL,         NULL,          "AOpen",       "vKM400 AM-s",        board_aopen_vkm400},
+	{0x1106, 0x3205, 0x1106, 0x3205,  0x10EC, 0x8139, 0xA0A0, 0x0477, NULL,         NULL,          "AOpen",       "vKM400Am-S",         board_aopen_vkm400},
 	{0x1022, 0x2090,      0,      0,  0x1022, 0x2080,      0,      0, "artecgroup", "dbe61",       "Artec Group", "DBE61",              board_artecgroup_dbe6x},
 	{0x1022, 0x2090,      0,      0,  0x1022, 0x2080,      0,      0, "artecgroup", "dbe62",       "Artec Group", "DBE62",              board_artecgroup_dbe6x},
 	{0x1106, 0x3189, 0x1043, 0x807F,  0x1106, 0x3177, 0x1043, 0x808C, NULL,         NULL,          "ASUS",        "A7V8X",              board_asus_a7v8x},
@@ -1022,6 +1022,7 @@ const struct board_info boards_ok[] = {
 	{ "T-Online",		"S-100", },
 	{ "Tyan",		"iS5375-1U", },
 	{ "Tyan",		"S1846", },
+	{ "Tyan",		"S2466", },
 	{ "Tyan",		"S2881", },
 	{ "Tyan",		"S2882", },
 	{ "Tyan",		"S2882-D", },
@@ -1054,6 +1055,9 @@ const struct board_info boards_ok[] = {
 const struct board_info boards_bad[] = {
 	/* Verified non-working boards (for now). */
 	{ "Abit",		"IS-10", },
+	{ "ASRock",		"K7VT4A+", },
+	{ "ASUS",		"A7V600-X", },
+	{ "ASUS",		"M2N68", },
 	{ "ASUS",		"M3N78 Pro", },
 	{ "ASUS",		"MEW-AM", },
 	{ "ASUS",		"MEW-VM", },
