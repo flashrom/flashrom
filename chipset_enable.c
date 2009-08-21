@@ -1012,6 +1012,7 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x2919, OK, "Intel", "ICH9M",		enable_flash_ich9},
 	{0x8086, 0x2917, OK, "Intel", "ICH9M-E",	enable_flash_ich9},
 	{0x8086, 0x2916, OK, "Intel", "ICH9R",		enable_flash_ich9},
+	{0x8086, 0x2910, OK, "Intel", "ICH9 Engineering Sample", enable_flash_ich9},
 	{0x8086, 0x1234, NT, "Intel", "MPIIX",		enable_flash_piix4},
 	{0x8086, 0x7000, OK, "Intel", "PIIX3",		enable_flash_piix4},
 	{0x8086, 0x7110, OK, "Intel", "PIIX4/4E/4M",	enable_flash_piix4},
