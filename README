@@ -117,10 +117,17 @@ Please check the output of 'flashrom -L' for the list of supported
 flash chips, chipsets/southbridges, mainboards, and flash programmers.
 
 
-Website
+Contact
 -------
 
 The official flashrom website is:
 
   http://www.flashrom.org/
 
+The IRC channel is
+
+  #flashrom at irc.freenode.net
+
+The Mailing list addess is
+
+  flashrom@flashrom.org
