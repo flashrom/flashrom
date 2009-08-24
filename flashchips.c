@@ -1396,6 +1396,38 @@ struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Macronix",
+		.name		= "MX29F001B",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= MX_ID,
+		.model_id	= MX_29F001B,
+		.total_size	= 128,
+		.page_size	= 32 * 1024,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_29f002,
+		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (mx29f002.c) */
+		.erase		= erase_29f002,
+		.write		= write_29f002,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "Macronix",
+		.name		= "MX29F001T",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= MX_ID,
+		.model_id	= MX_29F001T,
+		.total_size	= 128,
+		.page_size	= 32 * 1024,
+		.tested		= TEST_OK_PREW,
+		.probe		= probe_29f002,
+		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (mx29f002.c) */
+		.erase		= erase_29f002,
+		.write		= write_29f002,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "Macronix",
 		.name		= "MX29F002B",
 		.bustype	= CHIP_BUSTYPE_PARALLEL,
 		.manufacture_id	= MX_ID,
