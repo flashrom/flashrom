@@ -60,7 +60,9 @@ all: pciutils features dep $(PROGRAM)
 # will not require subversion. The downloadable snapshots are already exported.
 SVNVERSION := $(shell LC_ALL=C svnversion -cn . | sed -e "s/.*://" -e "s/\([0-9]*\).*/\1/" | grep "[0-9]" || echo unknown)
 
-VERSION := 0.9.0-r$(SVNVERSION)
+RELEASE := 0.9.0
+VERSION := $(RELEASE)-r$(SVNVERSION)
+RELEASENAME ?= $(VERSION)
 
 SVNDEF := -D'FLASHROM_VERSION="$(VERSION)"'
 
@@ -146,16 +148,16 @@ install: $(PROGRAM)
 	$(INSTALL) -m 0644 $(PROGRAM).8 $(DESTDIR)$(MANDIR)/man8
 
 export:
-	@rm -rf $(EXPORTDIR)/flashrom-$(VERSION)
-	@svn export -r BASE . $(EXPORTDIR)/flashrom-$(VERSION)
-	@sed "s/^SVNVERSION.*/SVNVERSION := $(SVNVERSION)/" Makefile >$(EXPORTDIR)/flashrom-$(VERSION)/Makefile
-	@LC_ALL=C svn log >$(EXPORTDIR)/flashrom-$(VERSION)/ChangeLog
-	@echo Exported $(EXPORTDIR)/flashrom-$(VERSION)/
+	@rm -rf $(EXPORTDIR)/flashrom-$(RELEASENAME)
+	@svn export -r BASE . $(EXPORTDIR)/flashrom-$(RELEASENAME)
+	@sed "s/^SVNVERSION.*/SVNVERSION := $(SVNVERSION)/" Makefile >$(EXPORTDIR)/flashrom-$(RELEASENAME)/Makefile
+	@LC_ALL=C svn log >$(EXPORTDIR)/flashrom-$(RELEASENAME)/ChangeLog
+	@echo Exported $(EXPORTDIR)/flashrom-$(RELEASENAME)/
 
 tarball: export
-	@tar cjf $(EXPORTDIR)/flashrom-$(VERSION).tar.bz2 -C $(EXPORTDIR)/ $(TAROPTIONS) flashrom-$(VERSION)/
-	@rm -rf $(EXPORTDIR)/flashrom-$(VERSION)
-	@echo Created $(EXPORTDIR)/flashrom-$(VERSION).tar.bz2
+	@tar cjf $(EXPORTDIR)/flashrom-$(RELEASENAME).tar.bz2 -C $(EXPORTDIR)/ $(TAROPTIONS) flashrom-$(RELEASENAME)/
+	@rm -rf $(EXPORTDIR)/flashrom-$(RELEASENAME)
+	@echo Created $(EXPORTDIR)/flashrom-$(RELEASENAME).tar.bz2
 
 .PHONY: all clean distclean dep compiler pciutils features export tarball
 
