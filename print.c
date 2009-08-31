@@ -431,8 +431,6 @@ const struct board_info_url boards_url[] = {
 	{ "Abit",		"IS-10",		"http://www.abit.com.tw/page/en/motherboard/motherboard_detail.php?pMODEL_NAME=IS-10&fMTYPE=Socket+478" },
 	{ "ASRock",		"K7VT4A+",		"http://www.asrock.com/mb/overview.asp?Model=K7VT4A%%2b&s=" },
 	{ "ASUS",		"A7V600-X",		"http://www.asus.com/product.aspx?P_ID=L2XYS0rmtCjeOr4k" },
-	{ "ASUS",		"M2N68",		"http://www.asus.com/product.aspx?P_ID=iDZQ9yNK2CbKW6Zv"},
-	{ "ASUS",		"M3N78 Pro",		"http://www.asus.com/product.aspx?P_ID=DVvm9CU0G1bCC4gp" },
 	{ "ASUS",		"MEW-AM",		"ftp://ftp.asus.com.tw/pub/ASUS/mb/sock370/810/mew-am/" },
 	{ "ASUS",		"MEW-VM",		"http://www.elhvb.com/mboards/OEM/HP/manual/ASUS%20MEW-VM.htm" },
 	{ "ASUS",		"P3B-F",		"ftp://ftp.asus.com.tw/pub/ASUS/mb/slot1/440bx/p3b-f/" },
@@ -444,7 +442,6 @@ const struct board_info_url boards_url[] = {
 	{ "FIC",		"VA-502",		"ftp://ftp.fic.com.tw/motherboard/manual/socket7/va-502/" },
 	{ "MSI",		"MS-6178",		"http://www.msi-technology.de/index.php?func=proddesc&prod_no=343&maincat_no=1" },
 	{ "MSI",		"MS-7260 (K9N Neo)",	"http://www.msi.com/index.php?func=proddesc&maincat_no=1&prod_no=255" },
-	{ "PCCHIPS",		"M537DMA33",		"http://motherboards.mbarron.net/models/pcchips/m537dma.htm" },
 	{ "Soyo",		"SY-5VD",		"http://www.soyo.com/content/Downloads/163/&c=80&p=464&l=English" },
 	{ "Sun",		"Fire x4540",		"http://www.sun.com/servers/x64/x4540/" },
 	{ "Sun",		"Fire x4150",		"http://www.sun.com/servers/x64/x4150/" },
@@ -478,7 +475,6 @@ const struct board_info_notes boards_notes[] = {
 	{ "Acer",		"Aspire One",		"See http://www.coreboot.org/pipermail/coreboot/2009-May/048041.html." },
 
 	/* Verified non-working boards (for now). */
-	{ "ASUS",		"M3N78 Pro",		"SPI flash translation seems to be done in the NVIDIA MCP78 southbridge, but we don't have MCP78 datasheets." },
 	{ "MSI",		"MS-6178",		"Immediately powers off if you try to hot-plug the chip. However, this does '''not''' happen if you use coreboot." },
 	{ "MSI",		"MS-7260 (K9N Neo)",	"Interestingly flashrom does not work when the vendor BIOS is booted, but it ''does'' work flawlessly when the machine is booted with coreboot." },
 
