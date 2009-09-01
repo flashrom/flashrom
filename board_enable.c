@@ -865,6 +865,70 @@ static int board_asus_a7v8x(const char *name)
 	return 0;
 }
 
+/*
+ * General routine for raising/dropping GPIO lines on the ITE IT8712F.
+ * There is only some limited checking on the port numbers.
+ */
+static int
+it8712f_gpio_set(unsigned int line, int raise)
+{
+	unsigned int port;
+	uint16_t id, base;
+	uint8_t tmp;
+
+	port = line / 10;
+	port--;
+	line %= 10;
+
+	/* Check line */
+	if ((port > 4) || /* also catches unsigned -1 */
+	    ((port < 4) && (line > 7)) || ((port == 4) && (line > 5))) {
+	    fprintf(stderr,
+		    "\nERROR: Unsupported IT8712F GPIO Line %02d.\n", line);
+	    return -1;
+	}
+
+	/* find the IT8712F */
+	enter_conf_mode_ite(0x2E);
+	id = (sio_read(0x2E, 0x20) << 8) | sio_read(0x2E, 0x21);
+	exit_conf_mode_ite(0x2E);
+
+	if (id != 0x8712) {
+		fprintf(stderr, "\nERROR: IT8712F SuperIO not found.\n");
+		return -1;
+	}
+
+	/* Get the GPIO base */
+	enter_conf_mode_ite(0x2E);
+	sio_write(0x2E, 0x07, 0x07);
+	base = (sio_read(0x2E, 0x62) << 8) | sio_read(0x2E, 0x63);
+	exit_conf_mode_ite(0x2E);
+
+	if (!base) {
+		fprintf(stderr, "\nERROR: Failed to read IT8712F SuperIO GPIO"
+			" Base.\n");
+		return -1;
+	}
+
+	/* set GPIO. */
+	tmp = INB(base + port);
+	if (raise)
+	    tmp |= 1 << line;
+	else
+	    tmp &= ~(1 << line);
+	OUTB(tmp, base + port);
+
+	return 0;
+}
+
+/**
+ * Suited for Asus A7V600-X: VIA KT600 + VT8237 + IT8712F
+ */
+static int board_asus_a7v600x(const char *name)
+{
+	return it8712f_gpio_set(32, 1);
+}
+
 /**
  * Suited for Asus P4P800-E Deluxe: Intel Intel 865PE + ICH5R.
  */
@@ -921,6 +985,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x1106, 0x3205, 0x1106, 0x3205,  0x10EC, 0x8139, 0xA0A0, 0x0477, NULL,         NULL,          "AOpen",       "vKM400Am-S",         board_aopen_vkm400},
 	{0x1022, 0x2090,      0,      0,  0x1022, 0x2080,      0,      0, "artecgroup", "dbe61",       "Artec Group", "DBE61",              board_artecgroup_dbe6x},
 	{0x1022, 0x2090,      0,      0,  0x1022, 0x2080,      0,      0, "artecgroup", "dbe62",       "Artec Group", "DBE62",              board_artecgroup_dbe6x},
+	{0x1106, 0x3189, 0x1043, 0x807F,  0x1106, 0x3065, 0x1043, 0x80ED, NULL,         NULL,          "ASUS",        "A7V600-X",           board_asus_a7v600x},
 	{0x1106, 0x3189, 0x1043, 0x807F,  0x1106, 0x3177, 0x1043, 0x808C, NULL,         NULL,          "ASUS",        "A7V8X",              board_asus_a7v8x},
 	{0x1106, 0x3177, 0x1043, 0x80A1,  0x1106, 0x3205, 0x1043, 0x8118, NULL,         NULL,          "ASUS",        "A7V8X-MX SE",        board_asus_a7v8x_mx},
 	{0x8086, 0x1a30, 0x1043, 0x8070,  0x8086, 0x244b, 0x1043, 0x8028, NULL,         NULL,          "ASUS",        "P4B266",             ich2_gpio22_raise},
