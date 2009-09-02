@@ -89,6 +89,23 @@ const struct programmer_entry programmer_table[] = {
 	},
 
 	{
+		.name			= "drkaiser",
+		.init			= drkaiser_init,
+		.shutdown		= drkaiser_shutdown,
+		.map_flash_region	= fallback_map,
+		.unmap_flash_region	= fallback_unmap,
+		.chip_readb		= drkaiser_chip_readb,
+		.chip_readw		= fallback_chip_readw,
+		.chip_readl		= fallback_chip_readl,
+		.chip_readn		= fallback_chip_readn,
+		.chip_writeb		= drkaiser_chip_writeb,
+		.chip_writew		= fallback_chip_writew,
+		.chip_writel		= fallback_chip_writel,
+		.chip_writen		= fallback_chip_writen,
+		.delay			= internal_delay,
+	},
+
+	{
 		.name			= "satasii",
 		.init			= satasii_init,
 		.shutdown		= satasii_shutdown,
@@ -747,6 +764,7 @@ int main(int argc, char *argv[])
 		printf("\nSupported PCI devices flashrom can use "
 		       "as programmer:\n\n");
 		print_supported_pcidevs(nics_3com);
+		print_supported_pcidevs(drkaiser_pcidev);
 		print_supported_pcidevs(satas_sii);
 		exit(0);
 	}

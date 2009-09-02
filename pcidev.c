@@ -28,7 +28,7 @@ struct pci_access *pacc;
 struct pci_filter filter;
 struct pci_dev *pcidev_dev = NULL;
 
-uint32_t pcidev_validate(struct pci_dev *dev, struct pcidev_status *devs)
+uint32_t pcidev_validate(struct pci_dev *dev, uint32_t bar, struct pcidev_status *devs)
 {
 	int i;
 	uint32_t addr;
@@ -37,9 +37,9 @@ uint32_t pcidev_validate(struct pci_dev *dev, struct pcidev_status *devs)
 		if (dev->device_id != devs[i].device_id)
 			continue;
 
-		/* Don't use dev->base_addr[0], won't work on older libpci. */
-		addr = pci_read_long(dev, PCI_BASE_ADDRESS_0) & ~0x03;
-
+		/* Don't use dev->base_addr[x] (as value for 'bar'), won't work on older libpci. */
+		addr = pci_read_long(dev, bar) & ~0x03;
+		
 		printf("Found \"%s %s\" (%04x:%04x, BDF %02x:%02x.%x).\n",
 		       devs[i].vendor_name, devs[i].device_name, dev->vendor_id,
 		       dev->device_id, dev->bus, dev->dev, dev->func);
@@ -57,7 +57,7 @@ uint32_t pcidev_validate(struct pci_dev *dev, struct pcidev_status *devs)
 	return 0;
 }
 
-uint32_t pcidev_init(uint16_t vendor_id, struct pcidev_status *devs, char *pcidev_bdf)
+uint32_t pcidev_init(uint16_t vendor_id, uint32_t bar, struct pcidev_status *devs, char *pcidev_bdf)
 {
 	struct pci_dev *dev;
 	char *msg = NULL;
@@ -80,7 +80,7 @@ uint32_t pcidev_init(uint16_t vendor_id, struct pcidev_status *devs, char *pcide
 
 	for (dev = pacc->devices; dev; dev = dev->next) {
 		if (pci_filter_match(&filter, dev)) {
-			if ((addr = pcidev_validate(dev, devs)) != 0) {
+			if ((addr = pcidev_validate(dev, bar, devs)) != 0) {
 				curaddr = addr;
 				pcidev_dev = dev;
 				found++;
