@@ -1127,7 +1127,6 @@ const struct board_info boards_bad[] = {
 	/* Verified non-working boards (for now). */
 	{ "Abit",		"IS-10", },
 	{ "ASRock",		"K7VT4A+", },
-	{ "ASUS",		"A7V600-X", },
 	{ "ASUS",		"MEW-AM", },
 	{ "ASUS",		"MEW-VM", },
 	{ "ASUS",		"P3B-F", },
