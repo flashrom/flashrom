@@ -84,6 +84,7 @@ enum programmer {
 	PROGRAMMER_INTERNAL,
 	PROGRAMMER_DUMMY,
 	PROGRAMMER_NIC3COM,
+	PROGRAMMER_DRKAISER,
 	PROGRAMMER_SATASII,
 	PROGRAMMER_IT87SPI,
 #if FT2232_SPI_SUPPORT == 1
@@ -281,8 +282,8 @@ struct pcidev_status {
 	const char *vendor_name;
 	const char *device_name;
 };
-uint32_t pcidev_validate(struct pci_dev *dev, struct pcidev_status *devs);
-uint32_t pcidev_init(uint16_t vendor_id, struct pcidev_status *devs, char *pcidev_bdf);
+uint32_t pcidev_validate(struct pci_dev *dev, uint32_t bar, struct pcidev_status *devs);
+uint32_t pcidev_init(uint16_t vendor_id, uint32_t bar, struct pcidev_status *devs, char *pcidev_bdf);
 
 /* print.c */
 char *flashbuses_to_text(enum chipbustype bustype);
@@ -386,6 +387,13 @@ int nic3com_shutdown(void);
 void nic3com_chip_writeb(uint8_t val, chipaddr addr);
 uint8_t nic3com_chip_readb(const chipaddr addr);
 extern struct pcidev_status nics_3com[];
+
+/* drkaiser.c */
+int drkaiser_init(void);
+int drkaiser_shutdown(void);
+void drkaiser_chip_writeb(uint8_t val, chipaddr addr);
+uint8_t drkaiser_chip_readb(const chipaddr addr);
+extern struct pcidev_status drkaiser_pcidev[];
 
 /* satasii.c */
 int satasii_init(void);
