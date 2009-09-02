@@ -130,7 +130,11 @@ int internal_init(void)
 
 	board_flash_enable(lb_vendor, lb_part);
 
-	return ret; 
+	/* Even if chipset init returns an error code, we don't want to abort.
+	 * The error code might have been a warning only.
+	 * Besides that, we don't check the board enable return code either.
+	 */
+	return 0; 
 }
 
 int internal_shutdown(void)
