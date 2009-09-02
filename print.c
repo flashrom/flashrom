@@ -390,6 +390,7 @@ const struct board_info_url boards_url[] = {
 	{ "AOpen",		"vKM400Am-S",		"http://usa.aopen.com/products_detail.aspx?Auno=824" },
 	{ "Artec Group",	"DBE61",		"http://wiki.thincan.org/DBE61" },
 	{ "Artec Group",	"DBE62",		"http://wiki.thincan.org/DBE62" },
+	{ "ASUS",		"A7V600-X",		"http://www.asus.com/product.aspx?P_ID=L2XYS0rmtCjeOr4k" },
 	{ "ASUS",		"A7V8X-MX SE",		"http://www.asus.com/product.aspx?P_ID=1guVBT1qV5oqhHyZ" },
 	{ "ASUS",		"P4B266",		"http://www.ciao.co.uk/ASUS_Intel_845D_Chipset_P4B266__5409807#productdetail" },
 	{ "ASUS",		"P4P800-E Deluxe",	"http://www.asus.com/product.aspx?P_ID=INIJUvLlif7LHp3g" },
@@ -430,7 +431,6 @@ const struct board_info_url boards_url[] = {
 	/* Verified non-working boards (for now). */
 	{ "Abit",		"IS-10",		"http://www.abit.com.tw/page/en/motherboard/motherboard_detail.php?pMODEL_NAME=IS-10&fMTYPE=Socket+478" },
 	{ "ASRock",		"K7VT4A+",		"http://www.asrock.com/mb/overview.asp?Model=K7VT4A%%2b&s=" },
-	{ "ASUS",		"A7V600-X",		"http://www.asus.com/product.aspx?P_ID=L2XYS0rmtCjeOr4k" },
 	{ "ASUS",		"MEW-AM",		"ftp://ftp.asus.com.tw/pub/ASUS/mb/sock370/810/mew-am/" },
 	{ "ASUS",		"MEW-VM",		"http://www.elhvb.com/mboards/OEM/HP/manual/ASUS%20MEW-VM.htm" },
 	{ "ASUS",		"P3B-F",		"ftp://ftp.asus.com.tw/pub/ASUS/mb/slot1/440bx/p3b-f/" },
