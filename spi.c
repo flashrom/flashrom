@@ -264,7 +264,7 @@ static int probe_spi_rdid_generic(struct flashchip *flash, int bytes)
 		id2 = (readarr[1] << 8) | readarr[2];
 	}
 
-	printf_debug("%s: id1 0x%02x, id2 0x%02x\n", __FUNCTION__, id1, id2);
+	printf_debug("%s: id1 0x%02x, id2 0x%02x\n", __func__, id1, id2);
 
 	if (id1 == flash->manufacture_id && id2 == flash->model_id) {
 		/* Print the status register to tell the
@@ -321,7 +321,7 @@ int probe_spi_rems(struct flashchip *flash)
 	id1 = readarr[0];
 	id2 = readarr[1];
 
-	printf_debug("%s: id1 0x%x, id2 0x%x\n", __FUNCTION__, id1, id2);
+	printf_debug("%s: id1 0x%x, id2 0x%x\n", __func__, id1, id2);
 
 	if (id1 == flash->manufacture_id && id2 == flash->model_id) {
 		/* Print the status register to tell the
@@ -356,7 +356,7 @@ int probe_spi_res(struct flashchip *flash)
 		return 0;
 
 	id2 = readarr[0];
-	printf_debug("%s: id 0x%x\n", __FUNCTION__, id2);
+	printf_debug("%s: id 0x%x\n", __func__, id2);
 	if (id2 != flash->model_id)
 		return 0;
 
