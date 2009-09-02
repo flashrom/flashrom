@@ -216,7 +216,7 @@ static int generate_opcodes(OPCODES * op)
 	uint32_t opmenu[2];
 
 	if (op == NULL) {
-		printf_debug("\n%s: null OPCODES pointer!\n", __FUNCTION__);
+		printf_debug("\n%s: null OPCODES pointer!\n", __func__);
 		return -1;
 	}
 
@@ -235,7 +235,7 @@ static int generate_opcodes(OPCODES * op)
 		opmenu[1] = REGREAD32(ICH9_REG_OPMENU + 4);
 		break;
 	default:
-		printf_debug("%s: unsupported chipset\n", __FUNCTION__);
+		printf_debug("%s: unsupported chipset\n", __func__);
 		return -1;
 	}
 
@@ -317,7 +317,7 @@ int program_opcodes(OPCODES * op)
 		REGWRITE32(ICH9_REG_OPMENU + 4, opmenu[1]);
 		break;
 	default:
-		printf_debug("%s: unsupported chipset\n", __FUNCTION__);
+		printf_debug("%s: unsupported chipset\n", __func__);
 		return -1;
 	}
 
@@ -610,7 +610,7 @@ static int run_opcode(OPCODE op, uint32_t offset,
 			return SPI_INVALID_LENGTH;
 		return ich9_run_opcode(op, offset, datalength, data);
 	default:
-		printf_debug("%s: unsupported chipset\n", __FUNCTION__);
+		printf_debug("%s: unsupported chipset\n", __func__);
 	}
 
 	/* If we ever get here, something really weird happened */

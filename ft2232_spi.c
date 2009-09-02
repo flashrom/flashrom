@@ -285,7 +285,7 @@ int ft2232_spi_write_256(struct flashchip *flash, uint8_t *buf)
 			l = total_size - i;
 
 		if ((r = spi_nbyte_program(i, &buf[i], l))) {
-			fprintf(stderr, "%s: write fail %d\n", __FUNCTION__, r);
+			fprintf(stderr, "%s: write fail %d\n", __func__, r);
 			return 1;
 		}
 		

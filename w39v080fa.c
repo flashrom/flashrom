@@ -41,7 +41,7 @@ int probe_winbond_fwhub(struct flashchip *flash)
 	chip_writeb(0xF0, bios + 0x5555);
 	programmer_delay(10);
 
-	printf_debug("%s: id1 0x%x, id2 0x%x\n", __FUNCTION__, id1, id2);
+	printf_debug("%s: id1 0x%x, id2 0x%x\n", __func__, id1, id2);
 
 	if (id1 != flash->manufacture_id || id2 != flash->model_id)
 		return 0;
