@@ -60,7 +60,7 @@ all: pciutils features dep $(PROGRAM)
 # will not require subversion. The downloadable snapshots are already exported.
 SVNVERSION := $(shell LC_ALL=C svnversion -cn . | sed -e "s/.*://" -e "s/\([0-9]*\).*/\1/" | grep "[0-9]" || echo unknown)
 
-RELEASE := 0.9.0
+RELEASE := 0.9.1
 VERSION := $(RELEASE)-r$(SVNVERSION)
 RELEASENAME ?= $(VERSION)
 
