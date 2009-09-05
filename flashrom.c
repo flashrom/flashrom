@@ -474,36 +474,66 @@ int read_flash(struct flashchip *flash, char *filename)
 
 int erase_flash(struct flashchip *flash)
 {
-	uint32_t erasedbytes;
-	unsigned long size = flash->total_size * 1024;
-	unsigned char *buf = calloc(size, sizeof(char));
+	int i, j, k, ret = 0, found = 0;
+
 	printf("Erasing flash chip... ");
-	if (NULL == flash->erase) {
-		printf("FAILED!\n");
+	for (k = 0; k < NUM_ERASEFUNCTIONS; k++) {
+		unsigned long done = 0;
+		struct block_eraser eraser = flash->block_erasers[k];
+
+		printf_debug("Looking at blockwise erase function %i... ", k);
+		if (!eraser.block_erase && !eraser.eraseblocks[0].count) {
+			printf_debug("not defined. "
+				"Looking for another erase function.\n");
+			continue;
+		}
+		if (!eraser.block_erase && eraser.eraseblocks[0].count) {
+			printf_debug("eraseblock layout is known, but no "
+				"matching block erase function found. "
+				"Looking for another erase function.\n");
+			continue;
+		}
+		if (eraser.block_erase && !eraser.eraseblocks[0].count) {
+			printf_debug("block erase function found, but "
+				"eraseblock layout is unknown. "
+				"Looking for another erase function.\n");
+			continue;
+		}
+		found = 1;
+		printf_debug("trying... ");
+		for (i = 0; i < NUM_ERASEREGIONS; i++) {
+			/* count==0 for all automatically initialized array
+			 * members so the loop below won't be executed for them.
+			 */
+			for (j = 0; j < eraser.eraseblocks[i].count; j++) {
+				ret = eraser.block_erase(flash, done + eraser.eraseblocks[i].size * j, eraser.eraseblocks[i].size);
+				if (ret)
+					break;
+			}
+			if (ret)
+				break;
+		}
+		/* If everything is OK, don't try another erase function. */
+		if (!ret)
+			break;
+	}
+	/* If no block erase function was found or block erase failed, retry. */
+	if ((!found || ret) && (flash->erase)) {
+		found = 1;
+		printf_debug("Trying whole-chip erase function... ");
+		ret = flash->erase(flash);
+	}
+	if (!found) {
 		fprintf(stderr, "ERROR: flashrom has no erase function for this flash chip.\n");
 		return 1;
 	}
-	flash->erase(flash);
 
-	/* FIXME: The lines below are superfluous. We should check the result
-	 * of flash->erase(flash) instead.
-	 */
-	if (!flash->read) {
-		printf("FAILED!\n");
-		fprintf(stderr, "ERROR: flashrom has no read function for this flash chip.\n");
-		return 1;
-	} else
-		flash->read(flash, buf, 0, size);
-
-	for (erasedbytes = 0; erasedbytes < size; erasedbytes++)
-		if (0xff != buf[erasedbytes]) {
-			printf("FAILED!\n");
-			fprintf(stderr, "ERROR at 0x%08x: Expected=0xff, Read=0x%02x\n",
-				erasedbytes, buf[erasedbytes]);
-			return 1;
-		}
-	printf("SUCCESS.\n");
-	return 0;
+	if (ret) {
+		fprintf(stderr, "FAILED!\n");
+	} else {
+		printf("SUCCESS.\n");
+	}
+	return ret;
 }
 
 void emergency_help_message()
