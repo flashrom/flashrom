@@ -47,14 +47,11 @@ int probe_82802ab(struct flashchip *flash)
 	chipaddr bios = flash->virtual_memory;
 	uint8_t id1, id2;
 
-#if 0
-	chip_writeb(0xAA, bios + 0x5555);
-	chip_writeb(0x55, bios + 0x2AAA);
-	chip_writeb(0x90, bios + 0x5555);
-#endif
-
-	chip_writeb(0xff, bios);
+	/* Reset to get a clean state */
+	chip_writeb(0xFF, bios);
 	programmer_delay(10);
+
+	/* Enter ID mode */
 	chip_writeb(0x90, bios);
 	programmer_delay(10);
 
@@ -62,9 +59,7 @@ int probe_82802ab(struct flashchip *flash)
 	id2 = chip_readb(bios + 0x01);
 
 	/* Leave ID mode */
-	chip_writeb(0xAA, bios + 0x5555);
-	chip_writeb(0x55, bios + 0x2AAA);
-	chip_writeb(0xF0, bios + 0x5555);
+	chip_writeb(0xFF, bios);
 
 	programmer_delay(10);
 
@@ -81,7 +76,6 @@ int probe_82802ab(struct flashchip *flash)
 uint8_t wait_82802ab(chipaddr bios)
 {
 	uint8_t status;
-	uint8_t id1, id2;
 
 	chip_writeb(0x70, bios);
 	if ((chip_readb(bios) & 0x80) == 0) {	// it's busy
@@ -90,18 +84,8 @@ uint8_t wait_82802ab(chipaddr bios)
 
 	status = chip_readb(bios);
 
-	// put another command to get out of status register mode
-
-	chip_writeb(0x90, bios);
-	programmer_delay(10);
-
-	id1 = chip_readb(bios);
-	id2 = chip_readb(bios + 0x01);
-
-	// this is needed to jam it out of "read id" mode
-	chip_writeb(0xAA, bios + 0x5555);
-	chip_writeb(0x55, bios + 0x2AAA);
-	chip_writeb(0xF0, bios + 0x5555);
+	/* Reset to get a clean state */
+	chip_writeb(0xFF, bios);
 
 	return status;
 }
