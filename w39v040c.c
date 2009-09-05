@@ -72,7 +72,7 @@ int write_w39v040c(struct flashchip *flash, uint8_t *buf)
 	int page_size = flash->page_size;
 	chipaddr bios = flash->virtual_memory;
 
-	if (flash->erase(flash)) {
+	if (erase_flash(flash)) {
 		fprintf(stderr, "ERASE FAILED!\n");
 		return -1;
 	}

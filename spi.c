@@ -972,7 +972,7 @@ int spi_chip_write_1(struct flashchip *flash, uint8_t *buf)
 	spi_disable_blockprotect();
 	/* Erase first */
 	printf("Erasing flash before programming... ");
-	if (flash->erase(flash)) {
+	if (erase_flash(flash)) {
 		fprintf(stderr, "ERASE FAILED!\n");
 		return -1;
 	}
@@ -1021,7 +1021,7 @@ int spi_aai_write(struct flashchip *flash, uint8_t *buf)
 	default:
 		break;
 	}
-	if (flash->erase(flash)) {
+	if (erase_flash(flash)) {
 		fprintf(stderr, "ERASE FAILED!\n");
 		return -1;
 	}
