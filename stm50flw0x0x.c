@@ -42,49 +42,10 @@ void protect_stm50flw0x0x(chipaddr bios)
 
 int probe_stm50flw0x0x(struct flashchip *flash)
 {
-	chipaddr bios = flash->virtual_memory;
-	uint8_t id1, id2;
-	uint32_t largeid1, largeid2;
+	int result = probe_jedec(flash);
 
-	/* Issue JEDEC Product ID Entry command */
-	chip_writeb(0xAA, bios + 0x5555);
-	programmer_delay(10);
-	chip_writeb(0x55, bios + 0x2AAA);
-	programmer_delay(10);
-	chip_writeb(0x90, bios + 0x5555);
-	programmer_delay(40);
-
-	/* Read product ID */
-	id1 = chip_readb(bios);
-	id2 = chip_readb(bios + 0x01);
-	largeid1 = id1;
-	largeid2 = id2;
-
-	/* Check if it is a continuation ID, this should be a while loop. */
-	if (id1 == 0x7F) {
-		largeid1 <<= 8;
-		id1 = chip_readb(bios + 0x100);
-		largeid1 |= id1;
-	}
-	if (id2 == 0x7F) {
-		largeid2 <<= 8;
-		id2 = chip_readb(bios + 0x101);
-		largeid2 |= id2;
-	}
-
-	/* Issue JEDEC Product ID Exit command */
-	chip_writeb(0xAA, bios + 0x5555);
-	programmer_delay(10);
-	chip_writeb(0x55, bios + 0x2AAA);
-	programmer_delay(10);
-	chip_writeb(0xF0, bios + 0x5555);
-	programmer_delay(40);
-
-	printf_debug("%s: id1 0x%02x, id2 0x%02x\n", __func__, largeid1,
-		     largeid2);
-
-	if (largeid1 != flash->manufacture_id || largeid2 != flash->model_id)
-		return 0;
+	if (!result)
+		return result;
 
 	map_flash_registers(flash);
 

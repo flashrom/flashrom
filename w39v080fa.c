@@ -22,29 +22,10 @@
 
 int probe_winbond_fwhub(struct flashchip *flash)
 {
-	chipaddr bios = flash->virtual_memory;
-	uint8_t id1, id2;
+	int result = probe_jedec(flash);
 
-	/* Product Identification Entry */
-	chip_writeb(0xAA, bios + 0x5555);
-	chip_writeb(0x55, bios + 0x2AAA);
-	chip_writeb(0x90, bios + 0x5555);
-	programmer_delay(10);
-
-	/* Read product ID */
-	id1 = chip_readb(bios);
-	id2 = chip_readb(bios + 0x01);
-
-	/* Product Identifixation Exit */
-	chip_writeb(0xAA, bios + 0x5555);
-	chip_writeb(0x55, bios + 0x2AAA);
-	chip_writeb(0xF0, bios + 0x5555);
-	programmer_delay(10);
-
-	printf_debug("%s: id1 0x%x, id2 0x%x\n", __func__, id1, id2);
-
-	if (id1 != flash->manufacture_id || id2 != flash->model_id)
-		return 0;
+	if (!result)
+		return result;
 
 	map_flash_registers(flash);
 
