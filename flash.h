@@ -149,6 +149,17 @@ enum chipbustype {
 	CHIP_BUSTYPE_UNKNOWN	= CHIP_BUSTYPE_PARALLEL | CHIP_BUSTYPE_LPC | CHIP_BUSTYPE_FWH | CHIP_BUSTYPE_SPI,
 };
 
+/*
+ * How many different contiguous runs of erase blocks with one size each do
+ * we have for a given erase function?
+ */
+#define NUM_ERASEREGIONS 5
+
+/*
+ * How many different erase functions do we have per chip?
+ */
+#define NUM_ERASEFUNCTIONS 5
+
 struct flashchip {
 	const char *vendor;
 	const char *name;
@@ -177,6 +188,19 @@ struct flashchip {
 	/* Delay after "enter/exit ID mode" commands in microseconds. */
 	int probe_timing;
 	int (*erase) (struct flashchip *flash);
+
+	/*
+	 * Erase blocks and associated erase function. The default entry is a
+	 * chip-sized virtual block together with the chip erase function.
+	 */
+	struct block_eraser {
+		struct eraseblock{
+			unsigned int size; /* Eraseblock size */
+			unsigned int count; /* Number of contiguous blocks with that size */
+		} eraseblocks[NUM_ERASEREGIONS];
+		int (*block_erase) (struct flashchip *flash, unsigned int blockaddr, unsigned int blocklen);
+	} block_erasers[NUM_ERASEFUNCTIONS];
+
 	int (*write) (struct flashchip *flash, uint8_t *buf);
 	int (*read) (struct flashchip *flash, uint8_t *buf, int start, int len);
 
@@ -417,6 +441,7 @@ extern const char *flashrom_version;
 #define printf_debug(x...) { if (verbose) printf(x); }
 void map_flash_registers(struct flashchip *flash);
 int read_memmapped(struct flashchip *flash, uint8_t *buf, int start, int len);
+int erase_flash(struct flashchip *flash);
 int min(int a, int b);
 int max(int a, int b);
 int check_erased_range(struct flashchip *flash, int start, int len);

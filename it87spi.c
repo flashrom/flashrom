@@ -279,7 +279,7 @@ int it8716f_spi_chip_write_256(struct flashchip *flash, uint8_t *buf)
 		spi_disable_blockprotect();
 		/* Erase first */
 		printf("Erasing flash before programming... ");
-		if (flash->erase(flash)) {
+		if (erase_flash(flash)) {
 			fprintf(stderr, "ERASE FAILED!\n");
 			return -1;
 		}
