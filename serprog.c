@@ -105,7 +105,7 @@ static int sp_opensocket(char *ip, unsigned int port)
 {
 	int flag = 1;
 	struct hostent *hostPtr = NULL;
-	struct sockaddr_in sp;
+	union { struct sockaddr_in si; struct sockaddr s; } sp = {};
 	int sock;
 	printf_debug(MSGHEADER "IP %s port %d\n", ip, port);
 	sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -117,11 +117,10 @@ static int sp_opensocket(char *ip, unsigned int port)
 		if (NULL == hostPtr)
 			sp_die("Error: cannot resolve");
 	}
-	memset(&sp, 0, sizeof(sp));
-	sp.sin_family = AF_INET;
-	sp.sin_port = htons(port);
-	(void)memcpy(&sp.sin_addr, hostPtr->h_addr, hostPtr->h_length);
-	if (connect(sock, (struct sockaddr *)&sp, sizeof(sp)) < 0) {
+	sp.si.sin_family = AF_INET;
+	sp.si.sin_port = htons(port);
+	(void)memcpy(&sp.si.sin_addr, hostPtr->h_addr, hostPtr->h_length);
+	if (connect(sock, &sp.s, sizeof(sp.si)) < 0) {
 		close(sock);
 		sp_die("Error: serprog cannot connect");
 	}
