@@ -58,7 +58,7 @@ all: pciutils features dep $(PROGRAM)
 # of the checked out flashrom files.
 # Note to packagers: Any tree exported with "make export" or "make tarball"
 # will not require subversion. The downloadable snapshots are already exported.
-SVNVERSION := $(shell LC_ALL=C svnversion -cn . | sed -e "s/.*://" -e "s/\([0-9]*\).*/\1/" | grep "[0-9]" || echo unknown)
+SVNVERSION := $(shell LC_ALL=C svnversion -cn . | sed -e "s/.*://" -e "s/\([0-9]*\).*/\1/" | grep "[0-9]" || LC_ALL=C svn info . | grep ^Revision | sed "s/.*[[:blank:]]\+\([0-9]*\)[^0-9]*/\1/" | grep "[0-9]" || echo unknown)
 
 RELEASE := 0.9.1
 VERSION := $(RELEASE)-r$(SVNVERSION)
