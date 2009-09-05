@@ -23,7 +23,11 @@
 int probe_w39v040c(struct flashchip *flash)
 {
 	chipaddr bios = flash->virtual_memory;
-	uint8_t id1, id2, lock;
+	int result = probe_jedec(flash);
+	uint8_t lock;
+
+	if (!result)
+		return result;
 
 	chip_writeb(0xAA, bios + 0x5555);
 	programmer_delay(10);
@@ -32,8 +36,6 @@ int probe_w39v040c(struct flashchip *flash)
 	chip_writeb(0x90, bios + 0x5555);
 	programmer_delay(10);
 
-	id1 = chip_readb(bios);
-	id2 = chip_readb(bios + 1);
 	lock = chip_readb(bios + 0xfff2);
 
 	chip_writeb(0xAA, bios + 0x5555);
@@ -43,17 +45,9 @@ int probe_w39v040c(struct flashchip *flash)
 	chip_writeb(0xF0, bios + 0x5555);
 	programmer_delay(40);
 
-	printf_debug("%s: id1 0x%02x, id2 0x%02x", __func__, id1, id2);
-	if (!oddparity(id1))
-		printf_debug(", id1 parity violation");
-	printf_debug("\n");
-	if (flash->manufacture_id == id1 && flash->model_id == id2) {
-		printf("%s: Boot block #TBL is %slocked, rest of chip #WP is %slocked.\n",
-			__func__, lock & 0x4 ? "" : "un", lock & 0x8 ? "" : "un");
-		return 1;
-	}
-
-	return 0;
+	printf("%s: Boot block #TBL is %slocked, rest of chip #WP is %slocked.\n",
+		__func__, lock & 0x4 ? "" : "un", lock & 0x8 ? "" : "un");
+	return 1;
 }
 
 int erase_w39v040c(struct flashchip *flash)
