@@ -731,8 +731,15 @@ void print_wiki_tables(void)
 	print_supported_chipsets_wiki();
 	print_supported_boards_wiki();
 	printf("%s", programmer_section);
+#if NIC3COM_SUPPORT == 1
 	print_supported_pcidevs_wiki(nics_3com);
+#endif
+#if DRKAISER_SUPPORT == 1
+	/* FIXME: drkaiser_pcidev is missing here. */
+#endif
+#if SATASII_SUPPORT == 1
 	print_supported_pcidevs_wiki(satas_sii);
+#endif
 	printf("\n|}\n");
 }
 

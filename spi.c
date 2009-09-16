@@ -91,12 +91,14 @@ const struct spi_programmer spi_programmer[] = {
 	},
 #endif
 
+#if DUMMY_SUPPORT == 1
 	{ /* SPI_CONTROLLER_DUMMY */
 		.command = dummy_spi_send_command,
 		.multicommand = default_spi_send_multicommand,
 		.read = NULL,
 		.write_256 = NULL,
 	},
+#endif
 
 	{}, /* This entry corresponds to SPI_CONTROLLER_INVALID. */
 };
@@ -301,7 +303,9 @@ int probe_spi_rdid4(struct flashchip *flash)
 #if FT2232_SPI_SUPPORT == 1
 	case SPI_CONTROLLER_FT2232:
 #endif
+#if DUMMY_SUPPORT == 1
 	case SPI_CONTROLLER_DUMMY:
+#endif
 		return probe_spi_rdid_generic(flash, 4);
 	default:
 		printf_debug("4b ID not supported on this SPI controller\n");
