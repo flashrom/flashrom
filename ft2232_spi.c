@@ -70,7 +70,6 @@ int ft2232_spi_init(void)
 	int f;
 	struct ftdi_context *ftdic = &ftdic_context;
 	unsigned char buf[512];
-	unsigned char port_val = 0;
 	char *portpos = NULL;
 	int ft2232_type = FTDI_FT4232H;
 	enum ftdi_interface ft2232_interface = INTERFACE_B;
@@ -175,9 +174,8 @@ int ft2232_spi_init(void)
 	 *    dir: 0x0b  CS=output, DI=input, DO=output, SK=output
 	 */
 #define CS_BIT 0x08
-
 	buf[0] = SET_BITS_LOW;
-	buf[1] = (port_val = CS_BIT);
+	buf[1] = CS_BIT;
 	buf[2] = 0x0b;
 	if (send_buf(ftdic, buf, 3))
 		return -1;
@@ -195,7 +193,6 @@ int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 {
 	struct ftdi_context *ftdic = &ftdic_context;
 	static unsigned char *buf = NULL;
-	unsigned char port_val = 0;
 	int i, ret = 0;
 
 	if (writecnt > 65536 || readcnt > 65536)
@@ -213,10 +210,11 @@ int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	 * as possible together.  if we're not expecting to
 	 * read, we can assert CS, write, and deassert CS all
 	 * in one shot.  if reading, we do three separate
-	 * operations. */
+	 * operations.
+	 */
 	printf_debug("Assert CS#\n");
 	buf[i++] = SET_BITS_LOW;
-	buf[i++] = (port_val &= ~CS_BIT);
+	buf[i++] = 0 & ~CS_BIT; /* assertive */
 	buf[i++] = 0x0b;
 
 	if (writecnt) {
@@ -236,20 +234,19 @@ int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		buf[i++] = ((readcnt - 1) >> 8) & 0xff;
 		ret = send_buf(ftdic, buf, i);
 		i = 0;
-		if (ret) goto deassert_cs;
-
-		/* FIXME: This is unreliable. There's no guarantee that we read
-		 * the response directly after sending the read command.
-		 * We may be scheduled out etc.
-		 */
-		ret = get_buf(ftdic, readarr, readcnt);
+		if (ret == 0) {
+			/* FIXME: This is unreliable. There's no guarantee that we read
+			 * the response directly after sending the read command.
+			 * We may be scheduled out etc.
+			 */
+			ret = get_buf(ftdic, readarr, readcnt);
+		}
 
 	}
 
-deassert_cs:
 	printf_debug("De-assert CS#\n");
 	buf[i++] = SET_BITS_LOW;
-	buf[i++] = (port_val |= CS_BIT);
+	buf[i++] = CS_BIT;
 	buf[i++] = 0x0b;
 	if (send_buf(ftdic, buf, i))
 		return -1;
