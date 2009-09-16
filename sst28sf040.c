@@ -30,28 +30,24 @@
 
 static void protect_28sf040(chipaddr bios)
 {
-	uint8_t tmp;
-
-	tmp = chip_readb(bios + 0x1823);
-	tmp = chip_readb(bios + 0x1820);
-	tmp = chip_readb(bios + 0x1822);
-	tmp = chip_readb(bios + 0x0418);
-	tmp = chip_readb(bios + 0x041B);
-	tmp = chip_readb(bios + 0x0419);
-	tmp = chip_readb(bios + 0x040A);
+	chip_readb(bios + 0x1823);
+	chip_readb(bios + 0x1820);
+	chip_readb(bios + 0x1822);
+	chip_readb(bios + 0x0418);
+	chip_readb(bios + 0x041B);
+	chip_readb(bios + 0x0419);
+	chip_readb(bios + 0x040A);
 }
 
 static void unprotect_28sf040(chipaddr bios)
 {
-	uint8_t tmp;
-
-	tmp = chip_readb(bios + 0x1823);
-	tmp = chip_readb(bios + 0x1820);
-	tmp = chip_readb(bios + 0x1822);
-	tmp = chip_readb(bios + 0x0418);
-	tmp = chip_readb(bios + 0x041B);
-	tmp = chip_readb(bios + 0x0419);
-	tmp = chip_readb(bios + 0x041A);
+	chip_readb(bios + 0x1823);
+	chip_readb(bios + 0x1820);
+	chip_readb(bios + 0x1822);
+	chip_readb(bios + 0x0418);
+	chip_readb(bios + 0x041B);
+	chip_readb(bios + 0x0419);
+	chip_readb(bios + 0x041A);
 }
 
 static int erase_sector_28sf040(struct flashchip *flash, unsigned long address, int sector_size)
