@@ -83,6 +83,9 @@ CONFIG_DUMMY ?= yes
 # Always enable Dr. Kaiser for now.
 CONFIG_DRKAISER ?= yes
 
+# Always enable wiki printing for now.
+CONFIG_PRINT_WIKI ?= no
+
 ifeq ($(CONFIG_SERPROG), yes)
 FEATURE_CFLAGS += -D'SERPROG_SUPPORT=1'
 OBJS += serprog.o
@@ -116,6 +119,11 @@ endif
 ifeq ($(CONFIG_DRKAISER), yes)
 FEATURE_CFLAGS += -D'DRKAISER_SUPPORT=1'
 OBJS += drkaiser.o
+endif
+
+ifeq ($(CONFIG_PRINT_WIKI), yes)
+FEATURE_CFLAGS += -D'PRINT_WIKI_SUPPORT=1'
+OBJS += print_wiki.o
 endif
 
 $(PROGRAM): $(OBJS)
