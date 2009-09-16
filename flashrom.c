@@ -54,6 +54,7 @@ const struct programmer_entry programmer_table[] = {
 		.delay			= internal_delay,
 	},
 
+#if DUMMY_SUPPORT == 1
 	{
 		.name			= "dummy",
 		.init			= dummy_init,
@@ -70,7 +71,9 @@ const struct programmer_entry programmer_table[] = {
 		.chip_writen		= dummy_chip_writen,
 		.delay			= internal_delay,
 	},
+#endif
 
+#if NIC3COM_SUPPORT == 1
 	{
 		.name			= "nic3com",
 		.init			= nic3com_init,
@@ -87,7 +90,9 @@ const struct programmer_entry programmer_table[] = {
 		.chip_writen		= fallback_chip_writen,
 		.delay			= internal_delay,
 	},
+#endif
 
+#if DRKAISER_SUPPORT == 1
 	{
 		.name			= "drkaiser",
 		.init			= drkaiser_init,
@@ -104,7 +109,9 @@ const struct programmer_entry programmer_table[] = {
 		.chip_writen		= fallback_chip_writen,
 		.delay			= internal_delay,
 	},
+#endif
 
+#if SATASII_SUPPORT == 1
 	{
 		.name			= "satasii",
 		.init			= satasii_init,
@@ -121,18 +128,19 @@ const struct programmer_entry programmer_table[] = {
 		.chip_writen		= fallback_chip_writen,
 		.delay			= internal_delay,
 	},
+#endif
 
 	{
 		.name			= "it87spi",
 		.init			= it87spi_init,
-		.shutdown		= fallback_shutdown,
+		.shutdown		= noop_shutdown,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
-		.chip_readb		= dummy_chip_readb,
+		.chip_readb		= noop_chip_readb,
 		.chip_readw		= fallback_chip_readw,
 		.chip_readl		= fallback_chip_readl,
 		.chip_readn		= fallback_chip_readn,
-		.chip_writeb		= fallback_chip_writeb,
+		.chip_writeb		= noop_chip_writeb,
 		.chip_writew		= fallback_chip_writew,
 		.chip_writel		= fallback_chip_writel,
 		.chip_writen		= fallback_chip_writen,
@@ -143,14 +151,14 @@ const struct programmer_entry programmer_table[] = {
 	{
 		.name			= "ft2232spi",
 		.init			= ft2232_spi_init,
-		.shutdown		= fallback_shutdown,
+		.shutdown		= noop_shutdown, /* Missing shutdown */
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
-		.chip_readb		= dummy_chip_readb,
+		.chip_readb		= noop_chip_readb,
 		.chip_readw		= fallback_chip_readw,
 		.chip_readl		= fallback_chip_readl,
 		.chip_readn		= fallback_chip_readn,
-		.chip_writeb		= fallback_chip_writeb,
+		.chip_writeb		= noop_chip_writeb,
 		.chip_writew		= fallback_chip_writew,
 		.chip_writel		= fallback_chip_writel,
 		.chip_writen		= fallback_chip_writen,
@@ -793,9 +801,15 @@ int main(int argc, char *argv[])
 		print_supported_boards();
 		printf("\nSupported PCI devices flashrom can use "
 		       "as programmer:\n\n");
+#if NIC3COM_SUPPORT == 1
 		print_supported_pcidevs(nics_3com);
+#endif
+#if DRKAISER_SUPPORT == 1
 		print_supported_pcidevs(drkaiser_pcidev);
+#endif
+#if SATASII_SUPPORT == 1
 		print_supported_pcidevs(satas_sii);
+#endif
 		exit(0);
 	}
 

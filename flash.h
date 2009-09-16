@@ -82,10 +82,18 @@ typedef unsigned long chipaddr;
 
 enum programmer {
 	PROGRAMMER_INTERNAL,
+#if DUMMY_SUPPORT == 1
 	PROGRAMMER_DUMMY,
+#endif
+#if NIC3COM_SUPPORT == 1
 	PROGRAMMER_NIC3COM,
+#endif
+#if DRKAISER_SUPPORT == 1
 	PROGRAMMER_DRKAISER,
+#endif
+#if SATASII_SUPPORT == 1
 	PROGRAMMER_SATASII,
+#endif
 	PROGRAMMER_IT87SPI,
 #if FT2232_SPI_SUPPORT == 1
 	PROGRAMMER_FT2232SPI,
@@ -375,10 +383,11 @@ uint8_t mmio_readb(void *addr);
 uint16_t mmio_readw(void *addr);
 uint32_t mmio_readl(void *addr);
 void internal_delay(int usecs);
-int fallback_shutdown(void);
+int noop_shutdown(void);
 void *fallback_map(const char *descr, unsigned long phys_addr, size_t len);
 void fallback_unmap(void *virt_addr, size_t len);
-void fallback_chip_writeb(uint8_t val, chipaddr addr);
+uint8_t noop_chip_readb(const chipaddr addr);
+void noop_chip_writeb(uint8_t val, chipaddr addr);
 void fallback_chip_writew(uint16_t val, chipaddr addr);
 void fallback_chip_writel(uint32_t val, chipaddr addr);
 void fallback_chip_writen(uint8_t *buf, chipaddr addr, size_t len);
@@ -474,7 +483,9 @@ enum spi_controller {
 #if FT2232_SPI_SUPPORT == 1
 	SPI_CONTROLLER_FT2232,
 #endif
+#if DUMMY_SUPPORT == 1
 	SPI_CONTROLLER_DUMMY,
+#endif
 	SPI_CONTROLLER_INVALID /* This must always be the last entry. */
 };
 extern const int spi_programmer_count;
