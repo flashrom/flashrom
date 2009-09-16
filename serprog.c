@@ -95,7 +95,7 @@ static int sp_opbuf_usage = 0;
 	whether the command is supported before doing it */
 static int sp_check_avail_automatic = 0;
 
-static void sp_die(char *msg)
+static void __attribute__((noreturn)) sp_die(char *msg)
 {
 	perror(msg);
 	exit(1);
