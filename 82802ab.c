@@ -33,13 +33,13 @@
 // I need that Berkeley bit-map printer
 void print_82802ab_status(uint8_t status)
 {
-	printf("%s", status & 0x80 ? "Ready:" : "Busy:");
-	printf("%s", status & 0x40 ? "BE SUSPEND:" : "BE RUN/FINISH:");
-	printf("%s", status & 0x20 ? "BE ERROR:" : "BE OK:");
-	printf("%s", status & 0x10 ? "PROG ERR:" : "PROG OK:");
-	printf("%s", status & 0x8 ? "VP ERR:" : "VPP OK:");
-	printf("%s", status & 0x4 ? "PROG SUSPEND:" : "PROG RUN/FINISH:");
-	printf("%s", status & 0x2 ? "WP|TBL#|WP#,ABORT:" : "UNLOCK:");
+	printf_debug("%s", status & 0x80 ? "Ready:" : "Busy:");
+	printf_debug("%s", status & 0x40 ? "BE SUSPEND:" : "BE RUN/FINISH:");
+	printf_debug("%s", status & 0x20 ? "BE ERROR:" : "BE OK:");
+	printf_debug("%s", status & 0x10 ? "PROG ERR:" : "PROG OK:");
+	printf_debug("%s", status & 0x8 ? "VP ERR:" : "VPP OK:");
+	printf_debug("%s", status & 0x4 ? "PROG SUSPEND:" : "PROG RUN/FINISH:");
+	printf_debug("%s", status & 0x2 ? "WP|TBL#|WP#,ABORT:" : "UNLOCK:");
 }
 
 int probe_82802ab(struct flashchip *flash)
@@ -98,20 +98,19 @@ int erase_82802ab_block(struct flashchip *flash, int offset)
 
 	// clear status register
 	chip_writeb(0x50, bios);
-	//printf("Erase at %p\n", bios);
+
 	// clear write protect
-	//printf("write protect is at %p\n", (wrprotect));
-	//printf("write protect is 0x%x\n", *(wrprotect));
 	chip_writeb(0, wrprotect);
-	//printf("write protect is 0x%x\n", *(wrprotect));
 
 	// now start it
 	chip_writeb(0x20, bios);
 	chip_writeb(0xd0, bios);
 	programmer_delay(10);
+
 	// now let's see what the register is
 	status = wait_82802ab(flash->virtual_memory);
-	//print_82802ab_status(status);
+	print_82802ab_status(status);
+
 	if (check_erased_range(flash, offset, flash->page_size)) {
 		fprintf(stderr, "ERASE FAILED!\n");
 		return -1;
