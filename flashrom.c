@@ -581,7 +581,9 @@ void usage(const char *name)
 	     "   -l | --layout <file.layout>:      read ROM layout from file\n"
 	     "   -i | --image <name>:              only flash image name from flash layout\n"
 	     "   -L | --list-supported:            print supported devices\n"
+#if CONFIG_PRINT_WIKI == 1
 	     "   -z | --list-supported-wiki:       print supported devices in wiki syntax\n"
+#endif
 	     "   -p | --programmer <name>:         specify the programmer device");
 
 	for (p = 0; p < PROGRAMMER_INVALID; p++) {
@@ -634,10 +636,18 @@ int main(int argc, char *argv[])
 	int option_index = 0;
 	int force = 0;
 	int read_it = 0, write_it = 0, erase_it = 0, verify_it = 0;
-	int dont_verify_it = 0, list_supported = 0, list_supported_wiki = 0;
+	int dont_verify_it = 0, list_supported = 0;
+#if CONFIG_PRINT_WIKI == 1
+	int list_supported_wiki = 0;
+#endif
 	int operation_specified = 0;
 	int ret = 0, i;
 
+#if CONFIG_PRINT_WIKI == 1
+	const char *optstring = "rRwvnVEfc:m:l:i:p:Lzh";
+#else
+	const char *optstring = "rRwvnVEfc:m:l:i:p:Lh";
+#endif
 	static struct option long_options[] = {
 		{"read", 0, 0, 'r'},
 		{"write", 0, 0, 'w'},
@@ -651,7 +661,9 @@ int main(int argc, char *argv[])
 		{"layout", 1, 0, 'l'},
 		{"image", 1, 0, 'i'},
 		{"list-supported", 0, 0, 'L'},
+#if CONFIG_PRINT_WIKI == 1
 		{"list-supported-wiki", 0, 0, 'z'},
+#endif
 		{"programmer", 1, 0, 'p'},
 		{"help", 0, 0, 'h'},
 		{"version", 0, 0, 'R'},
@@ -683,7 +695,7 @@ int main(int argc, char *argv[])
 	}
 
 	setbuf(stdout, NULL);
-	while ((opt = getopt_long(argc, argv, "rRwvnVEfc:m:l:i:p:Lzh",
+	while ((opt = getopt_long(argc, argv, optstring,
 				  long_options, &option_index)) != EOF) {
 		switch (opt) {
 		case 'r':
@@ -754,9 +766,11 @@ int main(int argc, char *argv[])
 		case 'L':
 			list_supported = 1;
 			break;
+#if CONFIG_PRINT_WIKI == 1
 		case 'z':
 			list_supported_wiki = 1;
 			break;
+#endif
 		case 'p':
 			for (programmer = 0; programmer < PROGRAMMER_INVALID; programmer++) {
 				name = programmer_table[programmer].name;
@@ -813,10 +827,12 @@ int main(int argc, char *argv[])
 		exit(0);
 	}
 
+#if CONFIG_PRINT_WIKI == 1
 	if (list_supported_wiki) {
 		print_wiki_tables();
 		exit(0);
 	}
+#endif
 
 	if (read_it && write_it) {
 		printf("Error: -r and -w are mutually exclusive.\n");
