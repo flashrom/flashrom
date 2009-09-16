@@ -73,7 +73,6 @@ int probe_lhf00l04(struct flashchip *flash)
 uint8_t wait_lhf00l04(chipaddr bios)
 {
 	uint8_t status;
-	uint8_t id1, id2;
 
 	chip_writeb(0x70, bios);
 	if ((chip_readb(bios) & 0x80) == 0) {	// it's busy
@@ -82,13 +81,13 @@ uint8_t wait_lhf00l04(chipaddr bios)
 
 	status = chip_readb(bios);
 
-	// put another command to get out of status register mode
+	// put another command to get out of status register mode.
 
 	chip_writeb(0x90, bios);
 	programmer_delay(10);
 
-	id1 = chip_readb(bios);
-	id2 = chip_readb(bios + 0x01);
+	chip_readb(bios);		// vendor ID
+	chip_readb(bios + 0x01);	// device ID
 
 	// this is needed to jam it out of "read id" mode
 	chip_writeb(0xAA, bios + 0x5555);

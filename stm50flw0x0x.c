@@ -54,19 +54,17 @@ int probe_stm50flw0x0x(struct flashchip *flash)
 
 static void wait_stm50flw0x0x(chipaddr bios)
 {
-	uint8_t id1;
-	// id2;
-
 	chip_writeb(0x70, bios);
 	if ((chip_readb(bios) & 0x80) == 0) {	// it's busy
 		while ((chip_readb(bios) & 0x80) == 0) ;
 	}
+
 	// put another command to get out of status register mode
 
 	chip_writeb(0x90, bios);
 	programmer_delay(10);
 
-	id1 = chip_readb(bios);
+	chip_readb(bios); // Read device ID (to make sure?)
 
 	// this is needed to jam it out of "read id" mode
 	chip_writeb(0xAA, bios + 0x5555);
