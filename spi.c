@@ -118,7 +118,7 @@ int spi_send_command(unsigned int writecnt, unsigned int readcnt,
 						      writearr, readarr);
 }
 
-int spi_send_multicommand(struct spi_command *spicommands)
+int spi_send_multicommand(struct spi_command *cmds)
 {
 	if (!spi_programmer[spi_controller].multicommand) {
 		fprintf(stderr, "%s called, but SPI is unsupported on this "
@@ -126,7 +126,7 @@ int spi_send_multicommand(struct spi_command *spicommands)
 		return 1;
 	}
 
-	return spi_programmer[spi_controller].multicommand(spicommands);
+	return spi_programmer[spi_controller].multicommand(cmds);
 }
 
 int default_spi_send_command(unsigned int writecnt, unsigned int readcnt,
@@ -148,13 +148,12 @@ int default_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	return spi_send_multicommand(cmd);
 }
 
-int default_spi_send_multicommand(struct spi_command *spicommands)
+int default_spi_send_multicommand(struct spi_command *cmds)
 {
 	int result = 0;
-	while ((spicommands->writecnt || spicommands->readcnt) && !result) {
-		result = spi_send_command(spicommands->writecnt, spicommands->readcnt,
-					  spicommands->writearr, spicommands->readarr);
-		spicommands++;
+	for (; (cmds->writecnt || cmds->readcnt) && !result; cmds++) {
+		result = spi_send_command(cmds->writecnt, cmds->readcnt,
+					  cmds->writearr, cmds->readarr);
 	}
 	return result;
 }
@@ -494,7 +493,7 @@ void spi_prettyprint_status_register(struct flashchip *flash)
 int spi_chip_erase_60(struct flashchip *flash)
 {
 	int result;
-	struct spi_command spicommands[] = {
+	struct spi_command cmds[] = {
 	{
 		.writecnt	= JEDEC_WREN_OUTSIZE,
 		.writearr	= (const unsigned char[]){ JEDEC_WREN },
@@ -518,7 +517,7 @@ int spi_chip_erase_60(struct flashchip *flash)
 		return result;
 	}
 	
-	result = spi_send_multicommand(spicommands);
+	result = spi_send_multicommand(cmds);
 	if (result) {
 		fprintf(stderr, "%s failed during command execution\n",
 			__func__);
@@ -540,7 +539,7 @@ int spi_chip_erase_60(struct flashchip *flash)
 int spi_chip_erase_c7(struct flashchip *flash)
 {
 	int result;
-	struct spi_command spicommands[] = {
+	struct spi_command cmds[] = {
 	{
 		.writecnt	= JEDEC_WREN_OUTSIZE,
 		.writearr	= (const unsigned char[]){ JEDEC_WREN },
@@ -564,7 +563,7 @@ int spi_chip_erase_c7(struct flashchip *flash)
 		return result;
 	}
 
-	result = spi_send_multicommand(spicommands);
+	result = spi_send_multicommand(cmds);
 	if (result) {
 		fprintf(stderr, "%s failed during command execution\n", __func__);
 		return result;
@@ -596,7 +595,7 @@ int spi_chip_erase_60_c7(struct flashchip *flash)
 int spi_block_erase_52(struct flashchip *flash, unsigned int addr, unsigned int blocklen)
 {
 	int result;
-	struct spi_command spicommands[] = {
+	struct spi_command cmds[] = {
 	{
 		.writecnt	= JEDEC_WREN_OUTSIZE,
 		.writearr	= (const unsigned char[]){ JEDEC_WREN },
@@ -614,7 +613,7 @@ int spi_block_erase_52(struct flashchip *flash, unsigned int addr, unsigned int 
 		.readarr	= NULL,
 	}};
 
-	result = spi_send_multicommand(spicommands);
+	result = spi_send_multicommand(cmds);
 	if (result) {
 		fprintf(stderr, "%s failed during command execution\n",
 			__func__);
@@ -640,7 +639,7 @@ int spi_block_erase_52(struct flashchip *flash, unsigned int addr, unsigned int 
 int spi_block_erase_d8(struct flashchip *flash, unsigned int addr, unsigned int blocklen)
 {
 	int result;
-	struct spi_command spicommands[] = {
+	struct spi_command cmds[] = {
 	{
 		.writecnt	= JEDEC_WREN_OUTSIZE,
 		.writearr	= (const unsigned char[]){ JEDEC_WREN },
@@ -658,7 +657,7 @@ int spi_block_erase_d8(struct flashchip *flash, unsigned int addr, unsigned int 
 		.readarr	= NULL,
 	}};
 
-	result = spi_send_multicommand(spicommands);
+	result = spi_send_multicommand(cmds);
 	if (result) {
 		fprintf(stderr, "%s failed during command execution\n", __func__);
 		return result;
@@ -702,7 +701,7 @@ int spi_chip_erase_d8(struct flashchip *flash)
 int spi_block_erase_20(struct flashchip *flash, unsigned int addr, unsigned int blocklen)
 {
 	int result;
-	struct spi_command spicommands[] = {
+	struct spi_command cmds[] = {
 	{
 		.writecnt	= JEDEC_WREN_OUTSIZE,
 		.writearr	= (const unsigned char[]){ JEDEC_WREN },
@@ -720,7 +719,7 @@ int spi_block_erase_20(struct flashchip *flash, unsigned int addr, unsigned int 
 		.readarr	= NULL,
 	}};
 
-	result = spi_send_multicommand(spicommands);
+	result = spi_send_multicommand(cmds);
 	if (result) {
 		fprintf(stderr, "%s failed during command execution\n",
 			__func__);
@@ -779,7 +778,7 @@ int spi_write_status_enable(void)
 int spi_write_status_register(int status)
 {
 	int result;
-	struct spi_command spicommands[] = {
+	struct spi_command cmds[] = {
 	{
 		.writecnt	= JEDEC_EWSR_OUTSIZE,
 		.writearr	= (const unsigned char[]){ JEDEC_EWSR },
@@ -797,7 +796,7 @@ int spi_write_status_register(int status)
 		.readarr	= NULL,
 	}};
 
-	result = spi_send_multicommand(spicommands);
+	result = spi_send_multicommand(cmds);
 	if (result) {
 		fprintf(stderr, "%s failed during command execution\n",
 			__func__);
@@ -808,7 +807,7 @@ int spi_write_status_register(int status)
 int spi_byte_program(int addr, uint8_t byte)
 {
 	int result;
-	struct spi_command spicommands[] = {
+	struct spi_command cmds[] = {
 	{
 		.writecnt	= JEDEC_WREN_OUTSIZE,
 		.writearr	= (const unsigned char[]){ JEDEC_WREN },
@@ -826,7 +825,7 @@ int spi_byte_program(int addr, uint8_t byte)
 		.readarr	= NULL,
 	}};
 
-	result = spi_send_multicommand(spicommands);
+	result = spi_send_multicommand(cmds);
 	if (result) {
 		fprintf(stderr, "%s failed during command execution\n",
 			__func__);
@@ -844,7 +843,7 @@ int spi_nbyte_program(int address, uint8_t *bytes, int len)
 		(address >> 8) & 0xff,
 		(address >> 0) & 0xff,
 	};
-	struct spi_command spicommands[] = {
+	struct spi_command cmds[] = {
 	{
 		.writecnt	= JEDEC_WREN_OUTSIZE,
 		.writearr	= (const unsigned char[]){ JEDEC_WREN },
@@ -873,7 +872,7 @@ int spi_nbyte_program(int address, uint8_t *bytes, int len)
 
 	memcpy(&cmd[4], bytes, len);
 
-	result = spi_send_multicommand(spicommands);
+	result = spi_send_multicommand(cmds);
 	if (result) {
 		fprintf(stderr, "%s failed during command execution\n",
 			__func__);

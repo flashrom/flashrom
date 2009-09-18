@@ -742,22 +742,29 @@ int ich_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	return result;
 }
 
-int ich_spi_send_multicommand(struct spi_command *spicommands)
+int ich_spi_send_multicommand(struct spi_command *cmds)
 {
 	int ret = 0;
-	while ((spicommands->writecnt || spicommands->readcnt) && !ret) {
-		ret = ich_spi_send_command(spicommands->writecnt, spicommands->readcnt,
-					   spicommands->writearr, spicommands->readarr);
-		/* This awful hack needs to be smarter.
-		 */
-		if ((ret == SPI_INVALID_OPCODE) &&
-		    ((spicommands->writearr[0] == JEDEC_WREN) ||
-		     (spicommands->writearr[0] == JEDEC_EWSR))) {
-			printf_debug(" due to SPI master limitation, ignoring"
-				     " and hoping it will be run as PREOP\n");
-			ret = 0;
-		}
-		spicommands++;
+	int oppos, preoppos;
+	for (; (cmds->writecnt || cmds->readcnt) && !ret; cmds++) {
+		/* Is the next command valid or a terminator? */
+		if ((cmds + 1)->writecnt || (cmds + 1)->readcnt) {
+			preoppos = find_preop(curopcodes, cmds->writearr[0]);
+			oppos = find_opcode(curopcodes, (cmds + 1)->writearr[0]);
+			/* Is the opcode of the current command listed in the
+			 * ICH struct OPCODES as associated preopcode for the
+			 * opcode of the next command?
+			 */
+			if ((oppos != -1) && (preoppos != -1) &&
+			    (curopcodes->opcode[oppos].atomic - 1 == preoppos)) {
+				printf_debug("opcode 0x%02x will be run as PREOP\n",
+					     cmds->writearr[0]);
+				continue;
+			}
+		}	
+			
+		ret = ich_spi_send_command(cmds->writecnt, cmds->readcnt,
+					   cmds->writearr, cmds->readarr);
 	}
 	return ret;
 }

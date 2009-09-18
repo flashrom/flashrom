@@ -498,7 +498,7 @@ struct spi_command {
 struct spi_programmer {
 	int (*command)(unsigned int writecnt, unsigned int readcnt,
 		   const unsigned char *writearr, unsigned char *readarr);
-	int (*multicommand)(struct spi_command *spicommands);
+	int (*multicommand)(struct spi_command *cmds);
 
 	/* Optimized functions for this programmer */
 	int (*read)(struct flashchip *flash, uint8_t *buf, int start, int len);
@@ -514,7 +514,7 @@ int probe_spi_rems(struct flashchip *flash);
 int probe_spi_res(struct flashchip *flash);
 int spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		const unsigned char *writearr, unsigned char *readarr);
-int spi_send_multicommand(struct spi_command *spicommands);
+int spi_send_multicommand(struct spi_command *cmds);
 int spi_write_enable(void);
 int spi_write_disable(void);
 int spi_chip_erase_60(struct flashchip *flash);
@@ -539,7 +539,7 @@ int spi_aai_write(struct flashchip *flash, uint8_t *buf);
 uint32_t spi_get_valid_read_addr(void);
 int default_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 			     const unsigned char *writearr, unsigned char *readarr);
-int default_spi_send_multicommand(struct spi_command *spicommands);
+int default_spi_send_multicommand(struct spi_command *cmds);
 
 /* 82802ab.c */
 int probe_82802ab(struct flashchip *flash);
@@ -565,7 +565,7 @@ int ich_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		    const unsigned char *writearr, unsigned char *readarr);
 int ich_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
 int ich_spi_write_256(struct flashchip *flash, uint8_t * buf);
-int ich_spi_send_multicommand(struct spi_command *spicommands);
+int ich_spi_send_multicommand(struct spi_command *cmds);
 
 /* it87spi.c */
 extern uint16_t it8716f_flashport;
