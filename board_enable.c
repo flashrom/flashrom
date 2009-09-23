@@ -569,6 +569,17 @@ static int ich2_gpio22_raise(const char *name)
 }
 
 /**
+ * Suited for the Dell S1850. All parameters except the last one are documented
+ * in the public Intel 82801EB ICH5 / 82801ER ICH5R Datasheet. The last
+ * parameter (GPIO number) has to be in the range [16,31] according to said
+ * Intel Datasheet and was found by exhaustive search.
+ */
+static int ich5_gpio23_raise(const char *name)
+{
+	return ich_gpio_raise(name, 0x8086, 0x24d0, 0x58, 0x0c, 0xffc0, 23);
+}
+
+/**
  * Suited for MSI MS-7046.
  */
 static int ich6_gpio19_raise(const char *name)
@@ -992,6 +1003,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x8086, 0x2570, 0x1043, 0x80F2,  0x105A, 0x3373, 0x1043, 0x80F5, NULL,         NULL,          "ASUS",        "P4P800-E Deluxe",    board_asus_p4p800},
 	{0x10B9, 0x1541,      0,      0,  0x10B9, 0x1533,      0,      0, "asus",       "p5a",         "ASUS",        "P5A",                board_asus_p5a},
 	{0x1106, 0x3149, 0x1565, 0x3206,  0x1106, 0x3344, 0x1565, 0x1202, NULL,         NULL,          "Biostar",     "P4M80-M4",           it8705_rom_write_enable},
+	{0x8086, 0x3590, 0x1028, 0x016c,  0x1000, 0x0030, 0x1028, 0x016c, NULL,         NULL,          "Dell",        "S1850",              ich5_gpio23_raise},
 	{0x1106, 0x3038, 0x1019, 0x0996,  0x1106, 0x3177, 0x1019, 0x0996, NULL,         NULL,          "Elitegroup",  "K7VTA3",             it8705f_write_enable_2e},
 	{0x1106, 0x3177, 0x1106, 0x3177,  0x1106, 0x3059, 0x1695, 0x3005, NULL,         NULL,          "EPoX",        "EP-8K5A2",           board_epox_ep_8k5a2},
 	{0x8086, 0x7110,      0,      0,  0x8086, 0x7190,      0,      0, "epox",       "ep-bx3",      "EPoX",        "EP-BX3",             board_epox_ep_bx3},
