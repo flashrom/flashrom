@@ -2141,6 +2141,9 @@ struct flashchip flashchips[] = {
 	},
 
 	{
+		/* Contrary to the data sheet, TBL# on the SST49LF004B affects the top 128kB (instead of 64kB)
+		 * and is only honored for 64k block erase, but not 4k sector erase.
+		 */
 		.vendor		= "SST",
 		.name		= "SST49LF004A/B",
 		.bustype	= CHIP_BUSTYPE_FWH, /* A/A Mux */
@@ -2151,7 +2154,20 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_sst_fwhub,
 		.probe_timing	= 1,		/* 150 ns | routine is wrapper to probe_jedec (sst_fwhub.c) */
-		.erase		= erase_sst_fwhub,
+		.erase		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 128} },
+				.block_erase = erase_sector_jedec, /* missing unlock */
+			}, {
+				.eraseblocks = { {64 * 1024, 8} },
+				.block_erase = erase_sst_fwhub_block, /* same as erase_sector_block, but with unlock */
+			}, {
+				.eraseblocks = { {512 * 1024, 1} },
+				.block_erase = NULL, /* AA 55 80 AA 55 10, only in PP mode */
+			},
+		},
 		.write		= write_sst_fwhub,
 		.read		= read_memmapped,
 	},

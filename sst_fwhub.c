@@ -94,7 +94,7 @@ int probe_sst_fwhub(struct flashchip *flash)
 	return 1;
 }
 
-int erase_sst_fwhub_block(struct flashchip *flash, int offset, int page_size)
+int erase_sst_fwhub_block(struct flashchip *flash, unsigned int offset, unsigned int page_size)
 {
 	uint8_t blockstatus = clear_sst_fwhub_block_lock(flash, offset);
 

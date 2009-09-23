@@ -175,7 +175,7 @@ int probe_jedec(struct flashchip *flash)
 	return 0;
 }
 
-int erase_sector_jedec(struct flashchip *flash, unsigned int page, int pagesize)
+int erase_sector_jedec(struct flashchip *flash, unsigned int page, unsigned int pagesize)
 {
 	chipaddr bios = flash->virtual_memory;
 
@@ -204,7 +204,7 @@ int erase_sector_jedec(struct flashchip *flash, unsigned int page, int pagesize)
 	return 0;
 }
 
-int erase_block_jedec(struct flashchip *flash, unsigned int block, int blocksize)
+int erase_block_jedec(struct flashchip *flash, unsigned int block, unsigned int blocksize)
 {
 	chipaddr bios = flash->virtual_memory;
 
