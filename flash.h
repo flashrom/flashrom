@@ -225,6 +225,7 @@ struct flashchip {
 #define TEST_OK_WRITE	(1 << 3)
 #define TEST_OK_PR	(TEST_OK_PROBE | TEST_OK_READ)
 #define TEST_OK_PRE	(TEST_OK_PROBE | TEST_OK_READ | TEST_OK_ERASE)
+#define TEST_OK_PRW	(TEST_OK_PROBE | TEST_OK_READ | TEST_OK_WRITE)
 #define TEST_OK_PREW	(TEST_OK_PROBE | TEST_OK_READ | TEST_OK_ERASE | TEST_OK_WRITE)
 #define TEST_OK_MASK	0x0f
 
@@ -596,8 +597,8 @@ int write_byte_program_jedec(chipaddr bios, uint8_t *src,
 int probe_jedec(struct flashchip *flash);
 int erase_chip_jedec(struct flashchip *flash);
 int write_jedec(struct flashchip *flash, uint8_t *buf);
-int erase_sector_jedec(struct flashchip *flash, unsigned int page, int pagesize);
-int erase_block_jedec(struct flashchip *flash, unsigned int page, int blocksize);
+int erase_sector_jedec(struct flashchip *flash, unsigned int page, unsigned int pagesize);
+int erase_block_jedec(struct flashchip *flash, unsigned int page, unsigned int blocksize);
 int write_sector_jedec(chipaddr bios, uint8_t *src,
 		       chipaddr dst, unsigned int page_size);
 
@@ -657,6 +658,7 @@ int write_49lfxxxc(struct flashchip *flash, uint8_t *buf);
 /* sst_fwhub.c */
 int probe_sst_fwhub(struct flashchip *flash);
 int erase_sst_fwhub(struct flashchip *flash);
+int erase_sst_fwhub_block(struct flashchip *flash, unsigned int offset, unsigned int page_size);
 int write_sst_fwhub(struct flashchip *flash, uint8_t *buf);
 
 /* w39v040c.c */
