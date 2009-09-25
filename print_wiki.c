@@ -541,7 +541,7 @@ void print_wiki_tables(void)
 	print_supported_pcidevs_wiki(nics_3com);
 #endif
 #if DRKAISER_SUPPORT == 1
-	/* FIXME: drkaiser_pcidev is missing here. */
+	print_supported_pcidevs_wiki(drkaiser_pcidev);
 #endif
 #if SATASII_SUPPORT == 1
 	print_supported_pcidevs_wiki(satas_sii);
