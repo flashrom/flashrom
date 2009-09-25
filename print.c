@@ -181,7 +181,7 @@ void print_supported_boards_helper(const struct board_info *b, const char *msg)
 		for (j = 0; j < 25 - strlen(b[i].vendor); j++)
 			printf(" ");
 		printf("%s", b[i].name);
-		for (j = 0; j < 23 - strlen(b[i].name); j++)
+		for (j = 0; j < 28 - strlen(b[i].name); j++)
 			printf(" ");
 		printf("\n");
 	}
@@ -196,7 +196,7 @@ void print_supported_boards(void)
 		boardcount++;
 
 	printf("\nSupported boards which need write-enable code (total: %d):"
-	       "\n\nVendor:                  Board:                   "
+	       "\n\nVendor:                  Board:                        "
 	       "Required option:\n\n", boardcount);
 
 	for (i = 0; b[i].vendor_name != NULL; i++) {
@@ -204,7 +204,7 @@ void print_supported_boards(void)
 		for (j = 0; j < 25 - strlen(b[i].vendor_name); j++)
 			printf(" ");
 		printf("%s", b[i].board_name);
-		for (j = 0; j < 25 - strlen(b[i].board_name); j++)
+		for (j = 0; j < 30 - strlen(b[i].board_name); j++)
 			printf(" ");
 		if (b[i].lb_vendor != NULL)
 			printf("-m %s:%s\n", b[i].lb_vendor, b[i].lb_part);
