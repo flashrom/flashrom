@@ -68,6 +68,9 @@ SVNDEF := -D'FLASHROM_VERSION="$(VERSION)"'
 # Always enable serprog for now. Needs to be disabled on Windows.
 CONFIG_SERPROG ?= yes
 
+# Bitbanging SPI infrastructure is not used yet.
+CONFIG_BITBANG_SPI ?= no
+
 # Always enable 3Com NICs for now.
 CONFIG_NIC3COM ?= yes
 
@@ -92,6 +95,11 @@ OBJS += serprog.o
 ifeq ($(OS_ARCH), SunOS)
 LIBS += -lsocket
 endif
+endif
+
+ifeq ($(CONFIG_BITBANG_SPI), yes)
+FEATURE_CFLAGS += -D'BITBANG_SPI_SUPPORT=1'
+OBJS += bitbang_spi.o
 endif
 
 ifeq ($(CONFIG_NIC3COM), yes)

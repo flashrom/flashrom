@@ -693,6 +693,12 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "SPI programmer table miscompilation!\n");
 		exit(1);
 	}
+#if BITBANG_SPI_SUPPORT == 1
+	if (spi_bitbang_master_count - 1 != SPI_BITBANG_INVALID) {
+		fprintf(stderr, "Bitbanging SPI master table miscompilation!\n");
+		exit(1);
+	}
+#endif
 
 	setbuf(stdout, NULL);
 	while ((opt = getopt_long(argc, argv, optstring,
