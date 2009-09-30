@@ -28,7 +28,8 @@ struct pci_access *pacc;
 struct pci_filter filter;
 struct pci_dev *pcidev_dev = NULL;
 
-uint32_t pcidev_validate(struct pci_dev *dev, uint32_t bar, struct pcidev_status *devs)
+uint32_t pcidev_validate(struct pci_dev *dev, uint32_t bar,
+			 struct pcidev_status *devs)
 {
 	int i;
 	uint32_t addr;
@@ -37,12 +38,16 @@ uint32_t pcidev_validate(struct pci_dev *dev, uint32_t bar, struct pcidev_status
 		if (dev->device_id != devs[i].device_id)
 			continue;
 
-		/* Don't use dev->base_addr[x] (as value for 'bar'), won't work on older libpci. */
+		/*
+		 * Don't use dev->base_addr[x] (as value for 'bar'), won't
+		 * work on older libpci.
+		 */
 		addr = pci_read_long(dev, bar) & ~0x03;
 		
 		printf("Found \"%s %s\" (%04x:%04x, BDF %02x:%02x.%x).\n",
-		       devs[i].vendor_name, devs[i].device_name, dev->vendor_id,
-		       dev->device_id, dev->bus, dev->dev, dev->func);
+		       devs[i].vendor_name, devs[i].device_name,
+		       dev->vendor_id, dev->device_id, dev->bus, dev->dev,
+		       dev->func);
 
 		if (devs[i].status == PCI_NT) {
 			printf("===\nThis PCI device is UNTESTED. Please "
@@ -57,7 +62,8 @@ uint32_t pcidev_validate(struct pci_dev *dev, uint32_t bar, struct pcidev_status
 	return 0;
 }
 
-uint32_t pcidev_init(uint16_t vendor_id, uint32_t bar, struct pcidev_status *devs, char *pcidev_bdf)
+uint32_t pcidev_init(uint16_t vendor_id, uint32_t bar,
+		     struct pcidev_status *devs, char *pcidev_bdf)
 {
 	struct pci_dev *dev;
 	char *msg = NULL;
