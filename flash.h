@@ -88,6 +88,9 @@ enum programmer {
 #if NIC3COM_SUPPORT == 1
 	PROGRAMMER_NIC3COM,
 #endif
+#if GFXNVIDIA_SUPPORT == 1
+	PROGRAMMER_GFXNVIDIA,
+#endif
 #if DRKAISER_SUPPORT == 1
 	PROGRAMMER_DRKAISER,
 #endif
@@ -436,6 +439,13 @@ int nic3com_shutdown(void);
 void nic3com_chip_writeb(uint8_t val, chipaddr addr);
 uint8_t nic3com_chip_readb(const chipaddr addr);
 extern struct pcidev_status nics_3com[];
+
+/* gfxnvidia.c */
+int gfxnvidia_init(void);
+int gfxnvidia_shutdown(void);
+void gfxnvidia_chip_writeb(uint8_t val, chipaddr addr);
+uint8_t gfxnvidia_chip_readb(const chipaddr addr);
+extern struct pcidev_status gfx_nvidia[];
 
 /* drkaiser.c */
 int drkaiser_init(void);
