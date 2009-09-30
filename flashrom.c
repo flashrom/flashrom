@@ -92,6 +92,25 @@ const struct programmer_entry programmer_table[] = {
 	},
 #endif
 
+#if GFXNVIDIA_SUPPORT == 1
+	{
+		.name			= "gfxnvidia",
+		.init			= gfxnvidia_init,
+		.shutdown		= gfxnvidia_shutdown,
+		.map_flash_region	= fallback_map,
+		.unmap_flash_region	= fallback_unmap,
+		.chip_readb		= gfxnvidia_chip_readb,
+		.chip_readw		= fallback_chip_readw,
+		.chip_readl		= fallback_chip_readl,
+		.chip_readn		= fallback_chip_readn,
+		.chip_writeb		= gfxnvidia_chip_writeb,
+		.chip_writew		= fallback_chip_writew,
+		.chip_writel		= fallback_chip_writel,
+		.chip_writen		= fallback_chip_writen,
+		.delay			= internal_delay,
+	},
+#endif
+
 #if DRKAISER_SUPPORT == 1
 	{
 		.name			= "drkaiser",
@@ -824,6 +843,9 @@ int main(int argc, char *argv[])
 #if NIC3COM_SUPPORT == 1
 		print_supported_pcidevs(nics_3com);
 #endif
+#if GFXNVIDIA_SUPPORT == 1
+		print_supported_pcidevs(gfx_nvidia);
+#endif
 #if DRKAISER_SUPPORT == 1
 		print_supported_pcidevs(drkaiser_pcidev);
 #endif
@@ -868,6 +890,7 @@ int main(int argc, char *argv[])
 		for (i = 0; i < ARRAY_SIZE(flashes) && flashes[i]; i++)
 			printf(" %s", flashes[i]->name);
 		printf("\nPlease specify which chip to use with the -c <chipname> option.\n");
+		programmer_shutdown();
 		exit(1);
 	} else if (!flashes[0]) {
 		printf("No EEPROM/flash device found.\n");
@@ -890,6 +913,7 @@ int main(int argc, char *argv[])
 			return read_flash(flashes[0], filename);
 		}
 		// FIXME: flash writes stay enabled!
+		programmer_shutdown();
 		exit(1);
 	}
 
@@ -935,12 +959,14 @@ int main(int argc, char *argv[])
 	if (!(read_it | write_it | verify_it | erase_it)) {
 		printf("No operations were specified.\n");
 		// FIXME: flash writes stay enabled!
+		programmer_shutdown();
 		exit(1);
 	}
 
 	if (!filename && !erase_it) {
 		printf("Error: No filename specified.\n");
 		// FIXME: flash writes stay enabled!
+		programmer_shutdown();
 		exit(1);
 	}
 
@@ -956,6 +982,7 @@ int main(int argc, char *argv[])
 			fprintf(stderr, "Erase is not working on this chip. ");
 			if (!force) {
 				fprintf(stderr, "Aborting.\n");
+				programmer_shutdown();
 				return 1;
 			} else {
 				fprintf(stderr, "Continuing anyway.\n");
@@ -963,11 +990,14 @@ int main(int argc, char *argv[])
 		}
 		if (erase_flash(flash)) {
 			emergency_help_message();
+			programmer_shutdown();
 			return 1;
 		}
 	} else if (read_it) {
-		if (read_flash(flash, filename))
+		if (read_flash(flash, filename)) {
+			programmer_shutdown();
 			return 1;
+		}
 	} else {
 		struct stat image_stat;
 
@@ -976,6 +1006,7 @@ int main(int argc, char *argv[])
 				"and erase is needed for write. ");
 			if (!force) {
 				fprintf(stderr, "Aborting.\n");
+				programmer_shutdown();
 				return 1;
 			} else {
 				fprintf(stderr, "Continuing anyway.\n");
@@ -985,6 +1016,7 @@ int main(int argc, char *argv[])
 			fprintf(stderr, "Write is not working on this chip. ");
 			if (!force) {
 				fprintf(stderr, "Aborting.\n");
+				programmer_shutdown();
 				return 1;
 			} else {
 				fprintf(stderr, "Continuing anyway.\n");
@@ -992,14 +1024,17 @@ int main(int argc, char *argv[])
 		}
 		if ((image = fopen(filename, "r")) == NULL) {
 			perror(filename);
+			programmer_shutdown();
 			exit(1);
 		}
 		if (fstat(fileno(image), &image_stat) != 0) {
 			perror(filename);
+			programmer_shutdown();
 			exit(1);
 		}
 		if (image_stat.st_size != flash->total_size * 1024) {
 			fprintf(stderr, "Error: Image size doesn't match\n");
+			programmer_shutdown();
 			exit(1);
 		}
 
@@ -1008,6 +1043,7 @@ int main(int argc, char *argv[])
 		fclose(image);
 		if (numbytes != size) {
 			fprintf(stderr, "Error: Failed to read file. Got %ld bytes, wanted %ld!\n", numbytes, size);
+			programmer_shutdown();
 			return 1;
 		}
 	}
@@ -1022,12 +1058,14 @@ int main(int argc, char *argv[])
 		printf("Writing flash chip... ");
 		if (!flash->write) {
 			fprintf(stderr, "Error: flashrom has no write function for this flash chip.\n");
+			programmer_shutdown();
 			return 1;
 		}
 		ret = flash->write(flash, buf);
 		if (ret) {
 			fprintf(stderr, "FAILED!\n");
 			emergency_help_message();
+			programmer_shutdown();
 			return 1;
 		} else {
 			printf("COMPLETE.\n");

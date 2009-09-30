@@ -74,6 +74,9 @@ CONFIG_BITBANG_SPI ?= no
 # Always enable 3Com NICs for now.
 CONFIG_NIC3COM ?= yes
 
+# Always enable NVIDIA graphics cards for now.
+CONFIG_GFXNVIDIA ?= yes
+
 # Always enable SiI SATA controllers for now.
 CONFIG_SATASII ?= yes
 
@@ -105,6 +108,11 @@ endif
 ifeq ($(CONFIG_NIC3COM), yes)
 FEATURE_CFLAGS += -D'NIC3COM_SUPPORT=1'
 OBJS += nic3com.o
+endif
+
+ifeq ($(CONFIG_GFXNVIDIA), yes)
+FEATURE_CFLAGS += -D'GFXNVIDIA_SUPPORT=1'
+OBJS += gfxnvidia.o
 endif
 
 ifeq ($(CONFIG_SATASII), yes)
