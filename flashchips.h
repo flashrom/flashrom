@@ -251,11 +251,11 @@
  * and use the same set of IDs.
  */
 #define MX_ID			0xC2	/* Macronix (MX) */
-#define MX_25L512		0x2010	/* 2^19 kbit or 2^16 kByte */
+#define MX_25L512		0x2010	/* Same as MX25V512 */
 #define MX_25L1005		0x2011
 #define MX_25L2005		0x2012
 #define MX_25L4005		0x2013	/* MX25L4005{,A} */
-#define MX_25L8005		0x2014
+#define MX_25L8005		0x2014	/* Same as MX25V8005 */
 #define MX_25L1605		0x2015	/* MX25L1605{,A,D} */
 #define MX_25L3205		0x2016	/* MX25L3205{,A} */
 #define MX_25L6405		0x2017	/* MX25L3205{,D} */
