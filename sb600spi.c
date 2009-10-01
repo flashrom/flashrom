@@ -48,9 +48,9 @@ int sb600_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 /* FIXME: SB600 can write 5 bytes per transaction. */
 int sb600_spi_write_1(struct flashchip *flash, uint8_t *buf)
 {
-	int rc = 0, i;
+	int i;
 	int total_size = flash->total_size * 1024;
-	int result;
+	int result = 0;
 
 	spi_disable_blockprotect();
 	/* Erase first */
@@ -63,10 +63,10 @@ int sb600_spi_write_1(struct flashchip *flash, uint8_t *buf)
 
 	printf("Programming flash");
 	for (i = 0; i < total_size; i++, buf++) {
-		result = spi_byte_program(i, *buf);
+		result = spi_nbyte_program(i, buf, 1);
 		if (result) {
-			// spi_byte_program reported the error for us already
-			printf_debug("... continuing anyway.\n");
+			fprintf(stderr, "Write error!\n");
+			return result;
 		}
 
 		/* wait program complete. */
@@ -76,7 +76,7 @@ int sb600_spi_write_1(struct flashchip *flash, uint8_t *buf)
 			;
 	}
 	printf(" done.\n");
-	return rc;
+	return result;
 }
 
 static void reset_internal_fifo_pointer(void)
