@@ -713,7 +713,7 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 #if BITBANG_SPI_SUPPORT == 1
-	if (spi_bitbang_master_count - 1 != SPI_BITBANG_INVALID) {
+	if (bitbang_spi_master_count - 1 != BITBANG_SPI_INVALID) {
 		fprintf(stderr, "Bitbanging SPI master table miscompilation!\n");
 		exit(1);
 	}
