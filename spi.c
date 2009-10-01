@@ -970,7 +970,7 @@ int spi_chip_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 int spi_chip_write_1(struct flashchip *flash, uint8_t *buf)
 {
 	int total_size = 1024 * flash->total_size;
-	int i;
+	int i, result = 0;
 
 	spi_disable_blockprotect();
 	/* Erase first */
@@ -981,7 +981,9 @@ int spi_chip_write_1(struct flashchip *flash, uint8_t *buf)
 	}
 	printf("done.\n");
 	for (i = 0; i < total_size; i++) {
-		spi_byte_program(i, buf[i]);
+		result = spi_byte_program(i, buf[i]);
+		if (result)
+			return 1;
 		while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
 			programmer_delay(10);
 	}
