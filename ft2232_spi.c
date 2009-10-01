@@ -29,15 +29,20 @@
 #include "spi.h"
 #include <ftdi.h>
 
-/* the 'H' chips can run internally at either 12Mhz or 60Mhz.
- * the non-H chips can only run at 12Mhz. */
+/*
+ * The 'H' chips can run internally at either 12MHz or 60MHz.
+ * The non-H chips can only run at 12MHz.
+ */
 #define CLOCK_5X 1
 
-/* in either case, the divisor is a simple integer clock divider. 
- * if CLOCK_5X is set, this divisor divides 30Mhz, else it
- * divides 6Mhz */
-#define DIVIDE_BY 3  // e.g. '3' will give either 10Mhz or 2Mhz spi clock
+/*
+ * In either case, the divisor is a simple integer clock divider.
+ * If CLOCK_5X is set, this divisor divides 30MHz, else it divides 6MHz.
+ */
+#define DIVIDE_BY 3  /* e.g. '3' will give either 10MHz or 2MHz SPI clock. */
 
+#define BITMODE_BITBANG_NORMAL	1
+#define BITMODE_BITBANG_SPI	2
 
 static struct ftdi_context ftdic_context;
 
@@ -76,7 +81,7 @@ int ft2232_spi_init(void)
 
 	if (ftdi_init(ftdic) < 0) {
 		fprintf(stderr, "ftdi_init failed\n");
-		return EXIT_FAILURE;
+		return EXIT_FAILURE; // TODO
 	}
 
 	if (programmer_param && !strlen(programmer_param)) {
@@ -113,9 +118,9 @@ int ft2232_spi_init(void)
 	f = ftdi_usb_open(ftdic, 0x0403, ft2232_type);
 
 	if (f < 0 && f != -5) {
-		fprintf(stderr, "Unable to open ftdi device: %d (%s)\n", f,
+		fprintf(stderr, "Unable to open FTDI device: %d (%s)\n", f,
 				ftdi_get_error_string(ftdic));
-		exit(-1);
+		exit(-1); // TODO
 	}
 
 	if (ftdi_set_interface(ftdic, ft2232_interface) < 0) {
@@ -124,7 +129,7 @@ int ft2232_spi_init(void)
 	}
 
 	if (ftdi_usb_reset(ftdic) < 0) {
-		fprintf(stderr, "Unable to reset ftdi device\n");
+		fprintf(stderr, "Unable to reset FTDI device\n");
 	}
 
 	if (ftdi_set_latency_timer(ftdic, 2) < 0) {
@@ -135,13 +140,13 @@ int ft2232_spi_init(void)
 		fprintf(stderr, "Unable to set chunk size\n");
 	}
 
-	if (ftdi_set_bitmode(ftdic, 0x00, 2) < 0) {
-		fprintf(stderr, "Unable to set bitmode\n");
+	if (ftdi_set_bitmode(ftdic, 0x00, BITMODE_BITBANG_SPI) < 0) {
+		fprintf(stderr, "Unable to set bitmode to SPI\n");
 	}
 
 #if CLOCK_5X
 	printf_debug("Disable divide-by-5 front stage\n");
-	buf[0] = 0x8a;		/* disable divide-by-5 */
+	buf[0] = 0x8a;		/* Disable divide-by-5. */
 	if (send_buf(ftdic, buf, 1))
 		return -1;
 #define MPSSE_CLK 60.0
@@ -154,16 +159,16 @@ int ft2232_spi_init(void)
 	printf_debug("Set clock divisor\n");
 	buf[0] = 0x86;		/* command "set divisor" */
 	/* valueL/valueH are (desired_divisor - 1) */
-	buf[1] = (DIVIDE_BY-1) & 0xff;
-	buf[2] = ((DIVIDE_BY-1) >> 8) & 0xff;
+	buf[1] = (DIVIDE_BY - 1) & 0xff;
+	buf[2] = ((DIVIDE_BY - 1) >> 8) & 0xff;
 	if (send_buf(ftdic, buf, 3))
 		return -1;
 
 	printf("SPI clock is %fMHz\n",
-		(double)(MPSSE_CLK / (((DIVIDE_BY-1) + 1) * 2)));
+	       (double)(MPSSE_CLK / (((DIVIDE_BY - 1) + 1) * 2)));
 
-	/* Disconnect TDI/DO to TDO/DI for Loopback */
-	printf_debug("No loopback of tdi/do tdo/di\n");
+	/* Disconnect TDI/DO to TDO/DI for loopback. */
+	printf_debug("No loopback of TDI/DO TDO/DI\n");
 	buf[0] = 0x85;
 	if (send_buf(ftdic, buf, 1))
 		return -1;
@@ -180,7 +185,7 @@ int ft2232_spi_init(void)
 	if (send_buf(ftdic, buf, 3))
 		return -1;
 
-	printf_debug("\nft2232 chosen\n");
+	// printf_debug("\nft2232 chosen\n");
 
 	buses_supported = CHIP_BUSTYPE_SPI;
 	spi_controller = SPI_CONTROLLER_FT2232;
@@ -193,7 +198,7 @@ int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 {
 	struct ftdi_context *ftdic = &ftdic_context;
 	static unsigned char *buf = NULL;
-	int i, ret = 0;
+	int i = 0, ret = 0;
 
 	if (writecnt > 65536 || readcnt > 65536)
 		return SPI_INVALID_LENGTH;
@@ -201,15 +206,13 @@ int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	buf = realloc(buf, writecnt + readcnt + 100);
 	if (!buf) {
 		fprintf(stderr, "Out of memory!\n");
-		exit(1);
+		exit(1); // -1
 	}
 
-	i = 0;
-
-	/* minimize USB transfers by packing as many commands
-	 * as possible together.  if we're not expecting to
-	 * read, we can assert CS, write, and deassert CS all
-	 * in one shot.  if reading, we do three separate
+	/*
+	 * Minimize USB transfers by packing as many commands as possible
+	 * together. If we're not expecting to read, we can assert CS#, write,
+	 * and deassert CS# all in one shot. If reading, we do three separate
 	 * operations.
 	 */
 	printf_debug("Assert CS#\n");
@@ -221,11 +224,12 @@ int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		buf[i++] = 0x11;
 		buf[i++] = (writecnt - 1) & 0xff;
 		buf[i++] = ((writecnt - 1) >> 8) & 0xff;
-		memcpy(buf+i, writearr, writecnt);
+		memcpy(buf + i, writearr, writecnt);
 		i += writecnt;
 	}
 
-	/* optionally terminate this batch of commands with a
+	/*
+	 * Optionally terminate this batch of commands with a
 	 * read command, then do the fetch of the results.
 	 */
 	if (readcnt) {
@@ -235,13 +239,13 @@ int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		ret = send_buf(ftdic, buf, i);
 		i = 0;
 		if (ret == 0) {
-			/* FIXME: This is unreliable. There's no guarantee that we read
-			 * the response directly after sending the read command.
-			 * We may be scheduled out etc.
+			/*
+			 * FIXME: This is unreliable. There's no guarantee that
+			 * we read the response directly after sending the read
+			 * command. We may be scheduled out etc.
 			 */
 			ret = get_buf(ftdic, readarr, readcnt);
 		}
-
 	}
 
 	printf_debug("De-assert CS#\n");
@@ -266,7 +270,7 @@ int ft2232_spi_write_256(struct flashchip *flash, uint8_t *buf)
 	int i;
 
 	spi_disable_blockprotect();
-	/* Erase first */
+	/* Erase first. */
 	printf("Erasing flash before programming... ");
 	if (erase_flash(flash)) {
 		fprintf(stderr, "ERASE FAILED!\n");
@@ -285,7 +289,7 @@ int ft2232_spi_write_256(struct flashchip *flash, uint8_t *buf)
 			fprintf(stderr, "%s: write fail %d\n", __func__, r);
 			return 1;
 		}
-		
+
 		while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
 			/* loop */;
 	}

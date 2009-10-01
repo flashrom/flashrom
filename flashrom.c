@@ -563,12 +563,12 @@ int erase_flash(struct flashchip *flash)
 	return ret;
 }
 
-void emergency_help_message()
+void emergency_help_message(void)
 {
 	fprintf(stderr, "Your flash chip is in an unknown state.\n"
-		"Get help on IRC at irc.freenode.net channel #flashrom or\n"
-		"mail flashrom@flashrom.org\n"
-		"------------------------------------------------------------\n"
+		"Get help on IRC at irc.freenode.net (channel #flashrom) or\n"
+		"mail flashrom@flashrom.org!\n--------------------"
+		"-----------------------------------------------------------\n"
 		"DO NOT REBOOT OR POWEROFF!\n");
 }
 
