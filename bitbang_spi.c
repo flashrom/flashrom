@@ -26,40 +26,40 @@
 #include "spi.h"
 
 /* Length of half a clock period in usecs */
-int bitbang_half_period = 0;
+int bitbang_spi_half_period = 0;
 
-enum spi_bitbang_master spi_bitbang_master = SPI_BITBANG_INVALID;
+enum bitbang_spi_master bitbang_spi_master = BITBANG_SPI_INVALID;
 
-const struct spi_bitbang_master_entry spi_bitbang_master_table[] = {
-	{}, /* This entry corresponds to SPI_BITBANG_INVALID. */
+const struct bitbang_spi_master_entry bitbang_spi_master_table[] = {
+	{}, /* This entry corresponds to BITBANG_SPI_INVALID. */
 };
 
-const int spi_bitbang_master_count = ARRAY_SIZE(spi_bitbang_master_table);
+const int bitbang_spi_master_count = ARRAY_SIZE(bitbang_spi_master_table);
 
-void bitbang_set_cs(int val)
+void bitbang_spi_set_cs(int val)
 {
-	spi_bitbang_master_table[spi_bitbang_master].set_cs(val);
+	bitbang_spi_master_table[bitbang_spi_master].set_cs(val);
 }
 
-void bitbang_set_sck(int val)
+void bitbang_spi_set_sck(int val)
 {
-	spi_bitbang_master_table[spi_bitbang_master].set_sck(val);
+	bitbang_spi_master_table[bitbang_spi_master].set_sck(val);
 }
 
-void bitbang_set_mosi(int val)
+void bitbang_spi_set_mosi(int val)
 {
-	spi_bitbang_master_table[spi_bitbang_master].set_mosi(val);
+	bitbang_spi_master_table[bitbang_spi_master].set_mosi(val);
 }
 
-int bitbang_get_miso(void)
+int bitbang_spi_get_miso(void)
 {
-	return spi_bitbang_master_table[spi_bitbang_master].get_miso();
+	return bitbang_spi_master_table[bitbang_spi_master].get_miso();
 }
 
 int bitbang_spi_init(void)
 {
-	bitbang_set_cs(1);
-	bitbang_set_sck(0);
+	bitbang_spi_set_cs(1);
+	bitbang_spi_set_sck(0);
 	buses_supported = CHIP_BUSTYPE_SPI;
 	return 0;
 }
@@ -70,13 +70,13 @@ uint8_t bitbang_spi_readwrite_byte(uint8_t val)
 	int i;
 
 	for (i = 7; i >= 0; i--) {
-		bitbang_set_mosi((val >> i) & 1);
-		programmer_delay(bitbang_half_period);
-		bitbang_set_sck(1);
+		bitbang_spi_set_mosi((val >> i) & 1);
+		programmer_delay(bitbang_spi_half_period);
+		bitbang_spi_set_sck(1);
 		ret <<= 1;
-		ret |= bitbang_get_miso();
-		programmer_delay(bitbang_half_period);
-		bitbang_set_sck(0);
+		ret |= bitbang_spi_get_miso();
+		programmer_delay(bitbang_spi_half_period);
+		bitbang_spi_set_sck(0);
 	}
 	return ret;
 }
@@ -117,13 +117,13 @@ int bitbang_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	/* Make sure any non-read data is 0xff. */
 	memset(bufin + writecnt, 0xff, readcnt);
 
-	bitbang_set_cs(0);
+	bitbang_spi_set_cs(0);
 	for (i = 0; i < readcnt + writecnt; i++) {
 		bufin[i] = bitbang_spi_readwrite_byte(bufout[i]);
 	}
-	programmer_delay(bitbang_half_period);
-	bitbang_set_cs(1);
-	programmer_delay(bitbang_half_period);
+	programmer_delay(bitbang_spi_half_period);
+	bitbang_spi_set_cs(1);
+	programmer_delay(bitbang_spi_half_period);
 	memcpy(readarr, bufin + writecnt, readcnt);
 
 	return 0;
@@ -149,7 +149,7 @@ int bitbang_spi_write_256(struct flashchip *flash, uint8_t *buf)
 			l = total_size - i;
 
 		if ((r = spi_nbyte_program(i, &buf[i], l))) {
-			fprintf(stderr, "%s: write fail %d\n", __FUNCTION__, r);
+			fprintf(stderr, "%s: write fail %d\n", __func__, r);
 			return 1;
 		}
 		
