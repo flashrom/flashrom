@@ -74,8 +74,8 @@ CONFIG_BITBANG_SPI ?= no
 # Always enable 3Com NICs for now.
 CONFIG_NIC3COM ?= yes
 
-# Always enable NVIDIA graphics cards for now.
-CONFIG_GFXNVIDIA ?= yes
+# Disable NVIDIA graphics cards for now, write/erase don't work properly.
+CONFIG_GFXNVIDIA ?= no
 
 # Always enable SiI SATA controllers for now.
 CONFIG_SATASII ?= yes
