@@ -41,7 +41,7 @@ CFLAGS += -I/usr/local/include
 LDFLAGS += -L/usr/local/lib
 endif
 
-LIBS += -lpci -lz
+LIBS += -lpci
 
 OBJS = chipset_enable.o board_enable.o udelay.o jedec.o stm50flw0x0x.o \
 	sst28sf040.o am29f040b.o mx29f002.o m29f400bt.o pm29f002.o \
@@ -142,6 +142,9 @@ FEATURE_CFLAGS += -D'PRINT_WIKI_SUPPORT=1'
 OBJS += print_wiki.o
 endif
 
+# We could use PULLED_IN_LIBS, but that would be ugly.
+FEATURE_LIBS += $(shell LC_ALL=C grep -q "NEEDLIBZ := yes" .libdeps && printf "%s" "-lz")
+
 $(PROGRAM): $(OBJS)
 	$(CC) $(LDFLAGS) -o $(PROGRAM) $(OBJS) $(LIBS) $(FEATURE_LIBS)
 
@@ -157,7 +160,7 @@ clean:
 	rm -f $(PROGRAM) *.o
 
 distclean: clean
-	rm -f .dependencies .features
+	rm -f .dependencies .features .libdeps
 
 dep:
 	@$(CC) $(CPPFLAGS) $(SVNDEF) -MM *.c > .dependencies
@@ -175,17 +178,36 @@ compiler:
 	@rm -f .test.c .test
 
 pciutils: compiler
-	@printf "Checking for pciutils and zlib... "
+	@printf "Checking for libpci headers... "
 	@$(shell ( echo "#include <pci/pci.h>";		   \
 		   echo "struct pci_access *pacc;";	   \
 		   echo "int main(int argc, char **argv)"; \
 		   echo "{ pacc = pci_alloc(); return 0; }"; ) > .test.c )
-	@$(CC) $(CFLAGS) $(LDFLAGS) .test.c -o .test $(LIBS) >/dev/null 2>&1 &&	\
-		echo "found." || ( echo "not found."; echo;		\
-		echo "Please install pciutils-devel and zlib-devel.";	\
-		echo "See README for more information."; echo;		\
-		rm -f .test.c .test; exit 1)
-	@rm -f .test.c .test
+	@$(CC) -c $(CFLAGS) .test.c -o .test.o >/dev/null 2>&1 &&		\
+		echo "found." || ( echo "not found."; echo;			\
+		echo "Please install libpci headers (package pciutils-devel).";	\
+		echo "See README for more information."; echo;			\
+		rm -f .test.c .test.o; exit 1)
+	@printf "Checking for libpci... "
+	@$(shell ( echo "#include <pci/pci.h>";		   \
+		   echo "int main(int argc, char **argv)"; \
+		   echo "{ return 0; }"; ) > .test1.c )
+	@$(CC) $(CFLAGS) $(LDFLAGS) .test1.c -o .test1 $(LIBS) >/dev/null 2>&1 &&	\
+		echo "found." || ( echo "not found."; echo;				\
+		echo "Please install libpci (package pciutils).";			\
+		echo "See README for more information."; echo;				\
+		rm -f .test1.c .test1; exit 1)
+	@printf "Checking if libpci is sufficient... "
+	@printf "" > .libdeps
+	@$(CC) $(LDFLAGS) .test.o -o .test $(LIBS) >/dev/null 2>&1 &&				\
+		echo "yes." || ( echo "no.";							\
+		printf "Checking if libz is present and supplies all needed symbols...";	\
+		$(CC) $(LDFLAGS) .test.o -o .test $(LIBS) -lz >/dev/null 2>&1 &&		\
+		( echo "yes."; echo "NEEDLIBZ := yes" > .libdeps ) || ( echo "no."; echo;	\
+		echo "Please install libz.";			\
+		echo "See README for more information."; echo;				\
+		rm -f .test.c .test.o .test; exit 1) )
+	@rm -f .test.c .test.o .test .test1.c .test1
 
 .features: features
 
