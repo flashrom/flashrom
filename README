@@ -38,7 +38,7 @@ To build flashrom you need to install the following packages or ports:
 
 Linux et al:
 
- * pciutils
+ * pciutils / libpci
  * pciutils-devel / pciutils-dev / libpci-dev
  * zlib-devel / zlib1g-dev (only needed if libpci is static)
 
@@ -79,11 +79,14 @@ Installation
 
 In order to install flashrom and the manpage into /usr/local, type:
 
- sudo make install
+ make install
 
 For installation in a different directory use DESTDIR, e.g. like this:
 
- sudo make DESTDIR=/usr install
+ make DESTDIR=/usr install
+
+If you have insufficient permissions for the destination directory, use sudo
+by adding sudo in front of the commands above.
 
 
 Usage / Options
