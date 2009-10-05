@@ -400,13 +400,30 @@ static int board_ibm_x3455(const char *name)
 }
 
 /**
+ * No docs, so we are just guessing that these might be individual gpio lines.
+ */
+static void nvidia_mcp_gpio_raise(struct pci_dev *dev, uint8_t offset)
+{
+	uint16_t base;
+	uint8_t tmp;
+
+	base = pci_read_long(dev, 0x64) & 0x0000FF00; /* System control area */
+
+	base += 0xC0;
+
+	/* if anyone knows more about nvidia mcps, feel free to explain this */
+	tmp = INB(base + offset);
+	tmp &= ~0x0F;
+	tmp |= 0x05;
+	OUTB(tmp, base + offset);
+}
+
+/**
  * Suited for the Gigabyte GA-K8N-SLI: CK804 southbridge.
  */
 static int board_ga_k8n_sli(const char *name)
 {
 	struct pci_dev *dev;
-	uint32_t base;
-	uint8_t tmp;
 
 	dev = pci_dev_find(0x10DE, 0x0050);	/* NVIDIA CK804 LPC */
 	if (!dev) {
@@ -414,15 +431,29 @@ static int board_ga_k8n_sli(const char *name)
 		return -1;
 	}
 
-	base = pci_read_long(dev, 0x64) & 0x0000FF00; /* System control area */
-
-	/* if anyone knows more about nvidia lpcs, feel free to explain this */
-	tmp = INB(base + 0xE1);
-	tmp |= 0x05;
-	OUTB(tmp, base + 0xE1);
+	nvidia_mcp_gpio_raise(dev, 0x21);
 
 	return 0;
 }
+
+/**
+ * Suited for ASUS P5ND2-SLI Deluxe: LGA775 + nForce4 SLI + MCP04.
+ */
+static int board_asus_p5nd2_sli(const char *name)
+{
+	struct pci_dev *dev;
+
+	dev = pci_dev_find(0x10DE, 0x0030);	/* NVIDIA nForce4 ISA Bridge */
+	if (!dev) {
+		fprintf(stderr, "\nERROR: NVIDIA ISA bridge not found.\n");
+		return -1;
+	}
+
+	nvidia_mcp_gpio_raise(dev, 0x10);
+
+	return 0;
+}
+
 
 static int board_hp_dl145_g3_enable(const char *name)
 {
@@ -1002,6 +1033,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x8086, 0x1a30, 0x1043, 0x8070,  0x8086, 0x244b, 0x1043, 0x8028, NULL,         NULL,          "ASUS",        "P4B266",             ich2_gpio22_raise},
 	{0x8086, 0x2570, 0x1043, 0x80F2,  0x105A, 0x3373, 0x1043, 0x80F5, NULL,         NULL,          "ASUS",        "P4P800-E Deluxe",    board_asus_p4p800},
 	{0x10B9, 0x1541,      0,      0,  0x10B9, 0x1533,      0,      0, "asus",       "p5a",         "ASUS",        "P5A",                board_asus_p5a},
+	{0x10DE, 0x0030, 0x1043, 0x818a,  0x8086, 0x100E, 0x1043, 0x80EE, NULL,         NULL,          "ASUS",        "P5ND2-SLI Deluxe",   board_asus_p5nd2_sli},
 	{0x1106, 0x3149, 0x1565, 0x3206,  0x1106, 0x3344, 0x1565, 0x1202, NULL,         NULL,          "Biostar",     "P4M80-M4",           it8705_rom_write_enable},
 	{0x8086, 0x3590, 0x1028, 0x016c,  0x1000, 0x0030, 0x1028, 0x016c, NULL,         NULL,          "Dell",        "S1850",              ich5_gpio23_raise},
 	{0x1106, 0x3038, 0x1019, 0x0996,  0x1106, 0x3177, 0x1019, 0x0996, NULL,         NULL,          "Elitegroup",  "K7VTA3",             it8705f_write_enable_2e},
