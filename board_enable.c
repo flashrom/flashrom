@@ -454,6 +454,23 @@ static int board_asus_p5nd2_sli(const char *name)
 	return 0;
 }
 
+/**
+ * Suited for EPoX EP-8RDA3+: Socket A + nForce2 Ultra 400 + MCP2.
+ */
+static int board_epox_ep_8rda3plus(const char *name)
+{
+	struct pci_dev *dev;
+
+	dev = pci_dev_find(0x10DE, 0x0060);	/* NVIDIA nForce2 ISA Bridge */
+	if (!dev) {
+		fprintf(stderr, "\nERROR: NVIDIA ISA bridge not found.\n");
+		return -1;
+	}
+
+	nvidia_mcp_gpio_raise(dev, 0x31);
+
+	return 0;
+}
 
 static int board_hp_dl145_g3_enable(const char *name)
 {
@@ -1038,6 +1055,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x8086, 0x3590, 0x1028, 0x016c,  0x1000, 0x0030, 0x1028, 0x016c, NULL,         NULL,          "Dell",        "S1850",              ich5_gpio23_raise},
 	{0x1106, 0x3038, 0x1019, 0x0996,  0x1106, 0x3177, 0x1019, 0x0996, NULL,         NULL,          "Elitegroup",  "K7VTA3",             it8705f_write_enable_2e},
 	{0x1106, 0x3177, 0x1106, 0x3177,  0x1106, 0x3059, 0x1695, 0x3005, NULL,         NULL,          "EPoX",        "EP-8K5A2",           board_epox_ep_8k5a2},
+	{0x10EC, 0x8139, 0x1695, 0x9001,  0x11C1, 0x5811, 0x1695, 0x9015, NULL,         NULL,          "EPoX",        "EP-8RDA3+",          board_epox_ep_8rda3plus},
 	{0x8086, 0x7110,      0,      0,  0x8086, 0x7190,      0,      0, "epox",       "ep-bx3",      "EPoX",        "EP-BX3",             board_epox_ep_bx3},
 	{0x1039, 0x0761,      0,      0,       0,      0,      0,      0, "gigabyte",   "2761gxdk",    "GIGABYTE",    "GA-2761GXDK",        it87xx_probe_spi_flash},
 	{0x1106, 0x3227, 0x1458, 0x5001,  0x10ec, 0x8139, 0x1458, 0xe000, NULL,         NULL,          "GIGABYTE",    "GA-7VT600",          it8705_rom_write_enable},
