@@ -1015,6 +1015,12 @@ static int board_asus_p4p800(const char *name)
 }
 
 /**
+ * Below is the list of boards which need a special "board enable" code in
+ * flashrom before their ROM chip can be accessed/written to.
+ *
+ * NOTE: Please add boards that _don't_ need such enables or don't work yet
+ *       to the respective tables in print.c. Thanks!
+ *
  * We use 2 sets of IDs here, you're free to choose which is which. This
  * is to provide a very high degree of certainty when matching a board on
  * the basis of subsystem/card IDs. As not every vendor handles
@@ -1089,149 +1095,6 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x1106, 0x5337, 0x1458, 0xb003,  0x1106, 0x287e, 0x1106, 0x337e, "via",        "pc3500g",     "VIA",         "PC3500G",            it87xx_probe_spi_flash},
 
 	{     0,      0,      0,      0,       0,      0,      0,      0, NULL,         NULL,          NULL,          NULL,                 NULL}, /* end marker */
-};
-
-/* Please keep this list alphabetically ordered by vendor/board. */
-const struct board_info boards_ok[] = {
-	/* Verified working boards that don't need write-enables. */
-	{ "Abit",		"AX8", },
-	{ "Abit",		"Fatal1ty F-I90HD", },
-	{ "Advantech",		"PCM-5820", },
-	{ "ASI",		"MB-5BLMP", },
-	{ "ASRock",		"A770CrossFire", },
-	{ "ASUS",		"A7N8X Deluxe", },
-	{ "ASUS",		"A7N8X-E Deluxe", },
-	{ "ASUS",		"A7V400-MX", },
-	{ "ASUS",		"A7V8X-MX", },
-	{ "ASUS",		"A8N-E", },
-	{ "ASUS",		"A8NE-FM/S", },
-	{ "ASUS",		"A8N-SLI", },
-	{ "ASUS",		"A8N-SLI Premium", },
-	{ "ASUS",		"A8V Deluxe", },
-	{ "ASUS",		"A8V-E Deluxe", },
-	{ "ASUS",		"A8V-E SE", },
-	{ "ASUS",		"M2A-MX", },
-	{ "ASUS",		"M2A-VM", },
-	{ "ASUS",		"M2N-E", },
-	{ "ASUS",		"M2V", },
-	{ "ASUS",		"M3A78-EM", },
-	{ "ASUS",		"P2B", },
-	{ "ASUS",		"P2B-D", },
-	{ "ASUS",		"P2B-DS", },
-	{ "ASUS",		"P2B-F", },
-	{ "ASUS",		"P2L97-S", },
-	{ "ASUS",		"P5B-Deluxe", },
-	{ "ASUS",		"P5KC", },
-	{ "ASUS",		"P5L-MX", },
-	{ "ASUS",		"P6T Deluxe V2", },
-	{ "A-Trend",		"ATC-6220", },
-	{ "BCOM",		"WinNET100", },
-	{ "Elitegroup",		"P6VAP-A+", },
-	{ "GIGABYTE",		"GA-6BXC", },
-	{ "GIGABYTE",		"GA-6BXDU", },
-	{ "GIGABYTE",		"GA-6ZMA", },
-	{ "GIGABYTE",		"GA-7ZM", },
-	{ "GIGABYTE",		"GA-EP35-DS3L", },
-	{ "GIGABYTE",		"GA-EX58-UD4P", },
-	{ "GIGABYTE",		"GA-MA78GPM-DS2H", },
-	{ "GIGABYTE",		"GA-MA790GP-DS4H", },
-	{ "GIGABYTE",		"GA-MA770T-UD3P", },
-	{ "Intel",		"EP80759", },
-	{ "Jetway",		"J7F4K1G5D-PB", },
-	{ "MSI",		"MS-6570 (K7N2)", },
-	{ "MSI",		"MS-7065", },
-	{ "MSI",		"MS-7168 (Orion)", },
-	{ "MSI",		"MS-7236 (945PL Neo3)", },
-	{ "MSI",		"MS-7255 (P4M890M)", },
-	{ "MSI",		"MS-7345 (P35 Neo2-FIR)", },
-	{ "MSI",		"MS-7368 (K9AG Neo2-Digital)", },
-	{ "NEC",		"PowerMate 2000", },
-	{ "PC Engines",		"Alix.1c", },
-	{ "PC Engines",		"Alix.2c2", },
-	{ "PC Engines",		"Alix.2c3", },
-	{ "PC Engines",		"Alix.3c3", },
-	{ "PC Engines",		"Alix.3d3", },
-	{ "RCA",		"RM4100", },
-	{ "Sun",		"Blade x6250", },
-	{ "Supermicro",		"H8QC8", },
-	{ "Thomson",		"IP1000", },
-	{ "TriGem",		"Lomita", },
-	{ "T-Online",		"S-100", },
-	{ "Tyan",		"iS5375-1U", },
-	{ "Tyan",		"S1846", },
-	{ "Tyan",		"S2466", },
-	{ "Tyan",		"S2881", },
-	{ "Tyan",		"S2882", },
-	{ "Tyan",		"S2882-D", },
-	{ "Tyan",		"S2891", },
-	{ "Tyan",		"S2892", },
-	{ "Tyan",		"S2895", },
-	{ "Tyan",		"S3095", },
-	{ "Tyan",		"S5180", },
-	{ "Tyan",		"S5191", },
-	{ "Tyan",		"S5197", },
-	{ "Tyan",		"S5211", },
-	{ "Tyan",		"S5211-1U", },
-	{ "Tyan",		"S5220", },
-	{ "Tyan",		"S5375", },
-	{ "Tyan",		"S5376G2NR/S5376WAG2NR", },
-	{ "Tyan",		"S5377", },
-	{ "Tyan",		"S5397", },
-	{ "VIA",		"EPIA-EX15000G", },
-	{ "VIA",		"EPIA-LN", },
-	{ "VIA",		"EPIA-M700", },
-	{ "VIA",		"EPIA-NX15000G", },
-	{ "VIA",		"NAB74X0", },
-	{ "VIA",		"pc2500e", },
-	{ "VIA",		"VB700X", },
-
-	{},
-};
-
-/* Please keep this list alphabetically ordered by vendor/board. */
-const struct board_info boards_bad[] = {
-	/* Verified non-working boards (for now). */
-	{ "Abit",		"IS-10", },
-	{ "ASRock",		"K7VT4A+", },
-	{ "ASUS",		"MEW-AM", },
-	{ "ASUS",		"MEW-VM", },
-	{ "ASUS",		"P3B-F", },
-	{ "ASUS",		"P5B", },
-	{ "ASUS",		"P5BV-M", },
-	{ "Biostar",		"M6TBA", },
-	{ "Boser",		"HS-6637", },
-	{ "DFI",		"855GME-MGF", },
-	{ "FIC",		"VA-502", },
-	{ "MSI",		"MS-6178", },
-	{ "MSI",		"MS-7260 (K9N Neo)", },
-	{ "Soyo",		"SY-5VD", },
-	{ "Sun",		"Fire x4150", },
-	{ "Sun",		"Fire x4200", },
-	{ "Sun",		"Fire x4540", },
-	{ "Sun",		"Fire x4600", },
-
-	{},
-};
-
-/* Please keep this list alphabetically ordered by vendor/board. */
-const struct board_info laptops_ok[] = {
-	/* Verified working laptops. */
-	{ "Lenovo",		"3000 V100 TF05Cxx", },
-
-	{},
-};
-
-/* Please keep this list alphabetically ordered by vendor/board. */
-const struct board_info laptops_bad[] = {
-	/* Verified non-working laptops (for now). */
-	{ "Acer",		"Aspire One", },
-	{ "ASUS",		"Eee PC 701 4G", },
-	{ "Dell",		"Latitude CPi A366XT", },
-	{ "HP/Compaq",		"nx9010", },
-	{ "IBM/Lenovo",		"Thinkpad T40p", },
-	{ "IBM/Lenovo",		"240", },
-
-	{},
 };
 
 /**
