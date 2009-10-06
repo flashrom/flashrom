@@ -270,6 +270,8 @@ const struct board_info boards_ok[] = {
 	{ "GIGABYTE",		"GA-MA770T-UD3P", },
 	{ "Intel",		"EP80759", },
 	{ "Jetway",		"J7F4K1G5D-PB", },
+	{ "MSI",                "MS-6153", },
+	{ "MSI",                "MS-6156", },
 	{ "MSI",		"MS-6570 (K7N2)", },
 	{ "MSI",		"MS-7065", },
 	{ "MSI",		"MS-7168 (Orion)", },
