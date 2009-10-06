@@ -547,6 +547,9 @@ void print_wiki_tables(void)
 #if NIC3COM_SUPPORT == 1
 	print_supported_pcidevs_wiki(nics_3com);
 #endif
+#if GFXNVIDIA_SUPPORT == 1
+	print_supported_pcidevs_wiki(gfx_nvidia);
+#endif
 #if DRKAISER_SUPPORT == 1
 	print_supported_pcidevs_wiki(drkaiser_pcidev);
 #endif
