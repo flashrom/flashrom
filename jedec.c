@@ -114,9 +114,6 @@ int probe_jedec(struct flashchip *flash)
 	chip_writeb(0x55, bios + 0x2AAA);
 	programmer_delay(10);
 	chip_writeb(0x90, bios + 0x5555);
-	/* Older chips may need up to 100 us to respond. The ATMEL 29C020
-	 * needs 10 ms according to the data sheet.
-	 */
 	programmer_delay(probe_timing_enter);
 
 	/* Read product ID */
