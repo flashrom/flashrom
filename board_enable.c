@@ -400,6 +400,26 @@ static int board_ibm_x3455(const char *name)
 }
 
 /**
+ * Suited for Shuttle FN25 (SN25P): AMD S939 + Nvidia CK804 (nForce4).
+ */
+static int board_shuttle_fn25(const char *name)
+{
+	struct pci_dev *dev;
+
+	dev = pci_dev_find(0x10DE, 0x0050);	/* NVIDIA CK804 ISA Bridge. */
+	if (!dev) {
+		fprintf(stderr,
+			"\nERROR: NVIDIA nForce4 ISA bridge not found.\n");
+		return -1;
+	}
+
+	/* one of those bits seems to be connected to TBL#, but -ENOINFO. */
+	pci_write_byte(dev, 0x92, 0);
+
+	return 0;
+}
+
+/**
  * No docs, so we are just guessing that these might be individual gpio lines.
  */
 static void nvidia_mcp_gpio_raise(struct pci_dev *dev, uint8_t offset)
@@ -1086,6 +1106,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x8086, 0x2658, 0x1462, 0x7046,  0x1106, 0x3044, 0x1462, 0x046d, NULL,         NULL,          "MSI",         "MS-7046",            ich6_gpio19_raise},
 	{0x10de, 0x005e,      0,      0,       0,      0,      0,      0, "msi",        "k8n-neo3",    "MSI",         "MS-7135 (K8N Neo3)", w83627thf_gpio4_4_raise_4e},
 	{0x1106, 0x3104, 0x1297, 0xa238,  0x1106, 0x3059, 0x1297, 0xc063, NULL,         NULL,          "Shuttle",     "AK38N",              it8705f_write_enable_2e},
+	{0x10DE, 0x0050, 0x1297, 0x5036,  0x1412, 0x1724, 0x1297, 0x5036, NULL,         NULL,          "Shuttle",     "FN25",               board_shuttle_fn25},
 	{0x1106, 0x3038, 0x0925, 0x1234,  0x1106, 0x3058, 0x15DD, 0x7609, NULL,         NULL,          "Soyo",        "SY-7VCA",            board_soyo_sy_7vca},
 	{0x8086, 0x1076, 0x8086, 0x1176,  0x1106, 0x3059, 0x10f1, 0x2498, NULL,         NULL,          "Tyan",        "S2498 (Tomcat K7M)", board_asus_a7v8x_mx},
 	{0x1106, 0x0314, 0x1106, 0xaa08,  0x1106, 0x3227, 0x1106, 0xAA08, NULL,         NULL,          "VIA",         "EPIA-CN",            board_via_epia_sp},
