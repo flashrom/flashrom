@@ -756,11 +756,8 @@ int ich_spi_send_multicommand(struct spi_command *cmds)
 			 * opcode of the next command?
 			 */
 			if ((oppos != -1) && (preoppos != -1) &&
-			    (curopcodes->opcode[oppos].atomic - 1 == preoppos)) {
-				printf_debug("opcode 0x%02x will be run as PREOP\n",
-					     cmds->writearr[0]);
+			    ((curopcodes->opcode[oppos].atomic - 1) == preoppos))
 				continue;
-			}
 		}	
 			
 		ret = ich_spi_send_command(cmds->writecnt, cmds->readcnt,
