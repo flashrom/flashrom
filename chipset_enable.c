@@ -42,6 +42,17 @@ unsigned long flashbase = 0;
 
 enum chipbustype buses_supported = CHIP_BUSTYPE_NONSPI;
 
+/**
+ * Programmers supporting multiple buses can have differing size limits on
+ * each bus. Store the limits for each bus in a common struct.
+ */
+struct decode_sizes max_rom_decode = {
+	.parallel	= 0xffffffff,
+	.lpc		= 0xffffffff,
+	.fwh		= 0xffffffff,
+	.spi		= 0xffffffff
+};
+
 extern int ichspi_lock;
 
 static int enable_flash_ali_m1533(struct pci_dev *dev, const char *name)

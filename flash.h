@@ -352,9 +352,17 @@ void sio_write(uint16_t port, uint8_t reg, uint8_t data);
 void sio_mask(uint16_t port, uint8_t reg, uint8_t data, uint8_t mask);
 int board_flash_enable(const char *vendor, const char *part);
 
+struct decode_sizes {
+	uint32_t parallel;
+	uint32_t lpc;
+	uint32_t fwh;
+	uint32_t spi;
+};
+
 /* chipset_enable.c */
 extern enum chipbustype buses_supported;
 int chipset_flash_enable(void);
+extern struct decode_sizes max_rom_decode;
 
 extern unsigned long flashbase;
 
