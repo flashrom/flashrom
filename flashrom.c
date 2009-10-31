@@ -299,6 +299,15 @@ int max(int a, int b)
 	return (a > b) ? a : b;
 }
 
+int bitcount(unsigned long a)
+{
+	int i = 0;
+	for (; a != 0; a >>= 1)
+		if (a & 1)
+			i++;
+	return i;
+}
+
 char *strcat_realloc(char *dest, const char *src)
 {
 	dest = realloc(dest, strlen(dest) + strlen(src) + 1);
@@ -398,10 +407,60 @@ out_free:
 	return ret;
 }
 
+int check_max_decode(enum chipbustype buses, uint32_t size)
+{
+	int limitexceeded = 0;
+	if ((buses & CHIP_BUSTYPE_PARALLEL) &&
+	    (max_rom_decode.parallel < size)) {
+		limitexceeded++;
+		printf_debug("Chip size %u kB is bigger than supported "
+			     "size %u kB of chipset/board/programmer "
+			     "for %s interface, "
+			     "probe/read/erase/write may fail. ", size / 1024,
+			     max_rom_decode.parallel / 1024, "Parallel");
+	}
+	if ((buses & CHIP_BUSTYPE_LPC) && (max_rom_decode.lpc < size)) {
+		limitexceeded++;
+		printf_debug("Chip size %u kB is bigger than supported "
+			     "size %u kB of chipset/board/programmer "
+			     "for %s interface, "
+			     "probe/read/erase/write may fail. ", size / 1024,
+			     max_rom_decode.lpc / 1024, "LPC");
+	}
+	if ((buses & CHIP_BUSTYPE_FWH) && (max_rom_decode.fwh < size)) {
+		limitexceeded++;
+		printf_debug("Chip size %u kB is bigger than supported "
+			     "size %u kB of chipset/board/programmer "
+			     "for %s interface, "
+			     "probe/read/erase/write may fail. ", size / 1024,
+			     max_rom_decode.fwh / 1024, "FWH");
+	}
+	if ((buses & CHIP_BUSTYPE_SPI) && (max_rom_decode.spi < size)) {
+		limitexceeded++;
+		printf_debug("Chip size %u kB is bigger than supported "
+			     "size %u kB of chipset/board/programmer "
+			     "for %s interface, "
+			     "probe/read/erase/write may fail. ", size / 1024,
+			     max_rom_decode.spi / 1024, "SPI");
+	}
+	if (!limitexceeded)
+		return 0;
+	/* Sometimes chip and programmer have more than one bus in common,
+	 * and the limit is not exceeded on all buses. Tell the user.
+	 */
+	if (bitcount(buses) > limitexceeded)
+		printf_debug("There is at least one common chip/programmer "
+			     "interface which can support a chip of this size. "
+			     "You can try --force at your own risk.\n");
+	return 1;
+}
+
 struct flashchip *probe_flash(struct flashchip *first_flash, int force)
 {
 	struct flashchip *flash;
-	unsigned long base = 0, size;
+	unsigned long base = 0;
+	uint32_t size;
+	enum chipbustype buses_common;
 	char *tmp;
 
 	for (flash = first_flash; flash && flash->name; flash++) {
@@ -413,7 +472,8 @@ struct flashchip *probe_flash(struct flashchip *first_flash, int force)
 			printf_debug("failed! flashrom has no probe function for this flash chip.\n");
 			continue;
 		}
-		if (!(buses_supported & flash->bustype)) {
+		buses_common = buses_supported & flash->bustype;
+		if (!buses_common) {
 			tmp = flashbuses_to_text(buses_supported);
 			printf_debug("skipped. Host bus type %s ", tmp);
 			free(tmp);
@@ -424,6 +484,7 @@ struct flashchip *probe_flash(struct flashchip *first_flash, int force)
 		}
 
 		size = flash->total_size * 1024;
+		check_max_decode(buses_common, size);
 
 		base = flashbase ? flashbase : (0xffffffff - size + 1);
 		flash->virtual_memory = (chipaddr)programmer_map_flash_region("flash chip", base, size);
@@ -956,6 +1017,15 @@ int main(int argc, char *argv[])
 		       "mainboard you tested. Thanks for your help!\n===\n");
 	}
 
+	size = flash->total_size * 1024;
+	if (check_max_decode((buses_supported & flash->bustype), size) &&
+	    (!force)) {
+		fprintf(stderr, "Chip is too big for this programmer "
+			"(-V gives details). Use --force to override.\n");
+		programmer_shutdown();
+		return 1;
+	}
+
 	if (!(read_it | write_it | verify_it | erase_it)) {
 		printf("No operations were specified.\n");
 		// FIXME: flash writes stay enabled!
@@ -974,7 +1044,6 @@ int main(int argc, char *argv[])
 	if (write_it && !dont_verify_it)
 		verify_it = 1;
 
-	size = flash->total_size * 1024;
 	buf = (uint8_t *) calloc(size, sizeof(char));
 
 	if (erase_it) {
