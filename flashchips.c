@@ -2236,7 +2236,7 @@ struct flashchip flashchips[] = {
 				.block_erase = erase_sector_jedec, /* missing unlock */
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = erase_sst_fwhub_block, /* same as erase_sector_block, but with unlock */
+				.block_erase = erase_sst_fwhub_block, /* same as erase_block_jedec, but with unlock */
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
 				.block_erase = NULL, /* AA 55 80 AA 55 10, only in PP mode */
