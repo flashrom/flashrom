@@ -242,6 +242,8 @@ const struct board_info boards_ok[] = {
 	{ "ASUS",		"A8V Deluxe", },
 	{ "ASUS",		"A8V-E Deluxe", },
 	{ "ASUS",		"A8V-E SE", },
+	{ "ASUS",		"K8V", },
+	{ "ASUS",		"K8V SE Deluxe", },
 	{ "ASUS",		"M2A-MX", },
 	{ "ASUS",		"M2A-VM", },
 	{ "ASUS",		"M2N-E", },
