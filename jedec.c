@@ -262,7 +262,7 @@ int erase_chip_jedec(struct flashchip *flash)
 int write_page_write_jedec(struct flashchip *flash, uint8_t *src,
 			   int start, int page_size)
 {
-	int i, tried = 0, start_index = 0, ok;
+	int i, tried = 0, ok;
 	uint8_t *s = src;
 	chipaddr bios = flash->virtual_memory;
 	chipaddr dst = bios + start;
@@ -275,7 +275,7 @@ retry:
 	chip_writeb(0xA0, bios + 0x5555);
 
 	/* transfer data from source to destination */
-	for (i = start_index; i < page_size; i++) {
+	for (i = 0; i < page_size; i++) {
 		/* If the data is 0xFF, don't program it */
 		if (*src != 0xFF)
 			chip_writeb(*src, dst);
@@ -290,7 +290,7 @@ retry:
 	ok = !verify_range(flash, src, start, page_size, NULL);
 
 	if (!ok && tried++ < MAX_REFLASH_TRIES) {
-		start_index = i;
+		fprintf(stderr, "retrying.\n");
 		goto retry;
 	}
 	if (!ok) {
