@@ -70,54 +70,193 @@ static int enable_flash_ali_m1533(struct pci_dev *dev, const char *name)
 	return 0;
 }
 
+static int enable_flash_sis85c496(struct pci_dev *dev, const char *name)
+{
+	uint8_t tmp;
+
+	tmp = pci_read_byte(dev, 0xd0);
+	tmp |= 0xf8;
+	pci_write_byte(dev, 0xd0, tmp);
+
+	return 0;
+}
+
+static int enable_flash_sis_mapping(struct pci_dev *dev, const char *name)
+{
+	uint8_t new, newer;
+
+	/* Extended BIOS enable = 1, Lower BIOS Enable = 1 */
+	/* This is 0xFFF8000~0xFFFF0000 decoding on SiS 540/630. */
+	new = pci_read_byte(dev, 0x40);
+	new &= (~0x04); /* No idea why we clear bit 2. */
+	new |= 0xb; /* 0x3 for some chipsets, bit 7 seems to be don't care. */
+	pci_write_byte(dev, 0x40, new);
+	newer = pci_read_byte(dev, 0x40);
+	if (newer != new) {
+		printf_debug("tried to set register 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x40, new, name);
+		printf_debug("Stuck at 0x%x\n", newer);
+		return -1;
+	}
+	return 0;
+}
+
+static struct pci_dev *find_southbridge(uint16_t vendor, const char *name)
+{
+	struct pci_dev *sbdev;
+	
+	sbdev = pci_dev_find_vendorclass(vendor, 0x0601);
+	if (!sbdev)
+		sbdev = pci_dev_find_vendorclass(vendor, 0x0680);
+	if (!sbdev)
+		sbdev = pci_dev_find_vendorclass(vendor, 0x0000);
+	if (!sbdev)
+		fprintf(stderr, "No southbridge found for %s!\n", name);
+	if (sbdev)
+		printf_debug("Found southbridge %04x:%04x at %02x:%02x:%01x\n",
+			     sbdev->vendor_id, sbdev->device_id,
+			     sbdev->bus, sbdev->dev, sbdev->func);
+	return sbdev;
+}
+
+static int enable_flash_sis501(struct pci_dev *dev, const char *name)
+{
+	uint8_t tmp;
+	int ret = 0;
+	struct pci_dev *sbdev;
+
+	sbdev = find_southbridge(dev->vendor_id, name);
+	if (!sbdev)
+		return -1;
+
+	ret = enable_flash_sis_mapping(sbdev, name);
+
+	tmp = sio_read(0x22, 0x80);
+	tmp &= (~0x20);
+	tmp |= 0x4;
+	sio_write(0x22, 0x80, tmp);
+
+	tmp = sio_read(0x22, 0x70);
+	tmp &= (~0x20);
+	tmp |= 0x4;
+	sio_write(0x22, 0x70, tmp);
+	
+	return ret;
+}
+
+static int enable_flash_sis5511(struct pci_dev *dev, const char *name)
+{
+	uint8_t tmp;
+	int ret = 0;
+	struct pci_dev *sbdev;
+
+	sbdev = find_southbridge(dev->vendor_id, name);
+	if (!sbdev)
+		return -1;
+
+	ret = enable_flash_sis_mapping(sbdev, name);
+
+	tmp = sio_read(0x22, 0x50);
+	tmp &= (~0x20);
+	tmp |= 0x4;
+	sio_write(0x22, 0x50, tmp);
+
+	return ret;
+}
+
+static int enable_flash_sis5596(struct pci_dev *dev, const char *name)
+{
+	int ret;
+
+	ret = enable_flash_sis5511(dev, name);
+
+	/* FIXME: Needs same superio handling as enable_flash_sis630 */
+	return ret;
+}
+
+static int enable_flash_sis530(struct pci_dev *dev, const char *name)
+{
+	uint8_t new, newer;
+	int ret = 0;
+	struct pci_dev *sbdev;
+
+	sbdev = find_southbridge(dev->vendor_id, name);
+	if (!sbdev)
+		return -1;
+
+	ret = enable_flash_sis_mapping(sbdev, name);
+
+	new = pci_read_byte(sbdev, 0x45);
+	new &= (~0x20);
+	new |= 0x4;
+	pci_write_byte(sbdev, 0x45, new);
+	newer = pci_read_byte(dev, 0x45);
+	if (newer != new) {
+		printf_debug("tried to set register 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x45, new, name);
+		printf_debug("Stuck at 0x%x\n", newer);
+		ret = -1;
+	}
+
+	return ret;
+}
+
+static int enable_flash_sis540(struct pci_dev *dev, const char *name)
+{
+	uint8_t new, newer;
+	int ret = 0;
+	struct pci_dev *sbdev;
+
+	sbdev = find_southbridge(dev->vendor_id, name);
+	if (!sbdev)
+		return -1;
+
+	ret = enable_flash_sis_mapping(sbdev, name);
+
+	new = pci_read_byte(sbdev, 0x45);
+	new &= (~0x80);
+	new |= 0x40;
+	pci_write_byte(sbdev, 0x45, new);
+	newer = pci_read_byte(dev, 0x45);
+	if (newer != new) {
+		printf_debug("tried to set register 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x45, new, name);
+		printf_debug("Stuck at 0x%x\n", newer);
+		ret = -1;
+	}
+
+	return ret;
+}
+
 static int enable_flash_sis630(struct pci_dev *dev, const char *name)
 {
-	uint8_t b;
+	uint8_t tmp;
+	uint16_t siobase;
+	int ret;
 
-	/* Enable 0xFFF8000~0xFFFF0000 decoding on SiS 540/630. */
-	b = pci_read_byte(dev, 0x40);
-	pci_write_byte(dev, 0x40, b | 0xb);
-
-	/* Flash write enable on SiS 540/630. */
-	b = pci_read_byte(dev, 0x45);
-	pci_write_byte(dev, 0x45, b | 0x40);
+	ret = enable_flash_sis540(dev, name);
 
 	/* The same thing on SiS 950 Super I/O side... */
 
 	/* First probe for Super I/O on config port 0x2e. */
-	OUTB(0x87, 0x2e);
-	OUTB(0x01, 0x2e);
-	OUTB(0x55, 0x2e);
-	OUTB(0x55, 0x2e);
+	siobase = 0x2e;
+	enter_conf_mode_ite(siobase);
 
-	if (INB(0x2f) != 0x87) {
+	if (INB(siobase + 1) != 0x87) {
 		/* If that failed, try config port 0x4e. */
-		OUTB(0x87, 0x4e);
-		OUTB(0x01, 0x4e);
-		OUTB(0x55, 0x4e);
-		OUTB(0xaa, 0x4e);
-		if (INB(0x4f) != 0x87) {
-			printf("Can not access SiS 950\n");
+		siobase = 0x4e;
+		enter_conf_mode_ite(siobase);
+		if (INB(siobase + 1) != 0x87) {
+			printf("Can not find SuperI/O.\n");
 			return -1;
 		}
-		OUTB(0x24, 0x4e);
-		b = INB(0x4f) | 0xfc;
-		OUTB(0x24, 0x4e);
-		OUTB(b, 0x4f);
-		OUTB(0x02, 0x4e);
-		OUTB(0x02, 0x4f);
 	}
 
-	OUTB(0x24, 0x2e);
-	printf_debug("2f is %#x\n", INB(0x2f));
-	b = INB(0x2f) | 0xfc;
-	OUTB(0x24, 0x2e);
-	OUTB(b, 0x2f);
+	/* Enable flash mapping. Works for most old ITE style SuperI/O. */
+	tmp = sio_read(siobase, 0x24);
+	tmp |= 0xfc;
+	sio_write(siobase, 0x24, tmp);
 
-	OUTB(0x02, 0x2e);
-	OUTB(0x02, 0x2f);
+	exit_conf_mode_ite(siobase);
 
-	return 0;
+	return ret;
 }
 
 /* Datasheet:
@@ -603,38 +742,6 @@ static int enable_flash_sc1100(struct pci_dev *dev, const char *name)
 	return 0;
 }
 
-static int enable_flash_sis5595(struct pci_dev *dev, const char *name)
-{
-	uint8_t new, newer;
-
-	new = pci_read_byte(dev, 0x45);
-
-	new &= (~0x20);		/* Clear bit 5. */
-	new |= 0x4;		/* Set bit 2. */
-
-	pci_write_byte(dev, 0x45, new);
-
-	newer = pci_read_byte(dev, 0x45);
-	if (newer != new) {
-		printf_debug("tried to set register 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x45, new, name);
-		printf_debug("Stuck at 0x%x\n", newer);
-		return -1;
-	}
-
-	/* Extended BIOS enable = 1, Lower BIOS Enable = 1 */
-	new = pci_read_byte(dev, 0x40);
-	new &= 0xFB;
-	new |= 0x3;
-	pci_write_byte(dev, 0x40, new);
-	newer = pci_read_byte(dev, 0x40);
-	if (newer != new) {
-		printf_debug("tried to set register 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x40, new, name);
-		printf_debug("Stuck at 0x%x\n", newer);
-		return -1;
-	}
-	return 0;
-}
-
 /* Works for AMD-8111, VIA VT82C586A/B, VIA VT82C686A/B. */
 static int enable_flash_amd8111(struct pci_dev *dev, const char *name)
 {
@@ -1048,8 +1155,34 @@ const struct penable chipset_enables[] = {
 	{0x10de, 0x0366, OK, "NVIDIA", "MCP55",		enable_flash_mcp55}, /* LPC */
 	{0x10de, 0x0367, OK, "NVIDIA", "MCP55",		enable_flash_mcp55}, /* Pro */
 	{0x10de, 0x0548, OK, "NVIDIA", "MCP67",		enable_flash_mcp55},
-	{0x1039, 0x0008, OK, "SiS", "SiS5595",		enable_flash_sis5595},
-	{0x1039, 0x0630, NT, "SiS", "SiS630",		enable_flash_sis630},
+	{0x1039, 0x0496, NT, "SiS", "SiS 85C496+497",	enable_flash_sis85c496},
+	{0x1039, 0x0406, NT, "SiS", "SiS 501/5101/5501", enable_flash_sis501},
+	{0x1039, 0x5511, NT, "SiS", "SiS 5511",		enable_flash_sis5511},
+	{0x1039, 0x5596, NT, "SiS", "SiS 5596",		enable_flash_sis5596},
+	{0x1039, 0x5571, NT, "SiS", "SiS 5571",		enable_flash_sis530},
+	{0x1039, 0x5591, NT, "SiS", "SiS 5591/5592",	enable_flash_sis530},
+	{0x1039, 0x5597, NT, "SiS", "SiS 5597/5598/5581/5120", enable_flash_sis530},
+	{0x1039, 0x0530, NT, "SiS", "SiS 530",		enable_flash_sis530},
+	{0x1039, 0x5600, NT, "SiS", "SiS 600",		enable_flash_sis530},
+	{0x1039, 0x0620, NT, "SiS", "SiS 620",		enable_flash_sis530},
+	{0x1039, 0x0540, NT, "SiS", "SiS 540",		enable_flash_sis540},
+	{0x1039, 0x0630, NT, "SiS", "SiS 630",		enable_flash_sis630},
+	{0x1039, 0x0635, NT, "SiS", "SiS 635",		enable_flash_sis630},
+	{0x1039, 0x0640, NT, "SiS", "SiS 640",		enable_flash_sis630},
+	{0x1039, 0x0645, NT, "SiS", "SiS 645",		enable_flash_sis630},
+	{0x1039, 0x0646, NT, "SiS", "SiS 645DX",	enable_flash_sis630},
+	{0x1039, 0x0648, NT, "SiS", "SiS 648",		enable_flash_sis630},
+	{0x1039, 0x0650, NT, "SiS", "SiS 650",		enable_flash_sis630},
+	{0x1039, 0x0651, NT, "SiS", "SiS 651",		enable_flash_sis630},
+	{0x1039, 0x0655, NT, "SiS", "SiS 655",		enable_flash_sis630},
+	{0x1039, 0x0730, NT, "SiS", "SiS 730",		enable_flash_sis630},
+	{0x1039, 0x0733, NT, "SiS", "SiS 733",		enable_flash_sis630},
+	{0x1039, 0x0735, NT, "SiS", "SiS 735",		enable_flash_sis630},
+	{0x1039, 0x0740, NT, "SiS", "SiS 740",		enable_flash_sis630},
+	{0x1039, 0x0745, NT, "SiS", "SiS 745",		enable_flash_sis630},
+	{0x1039, 0x0746, NT, "SiS", "SiS 746",		enable_flash_sis630},
+	{0x1039, 0x0748, NT, "SiS", "SiS 748",		enable_flash_sis630},
+	{0x1039, 0x0755, NT, "SiS", "SiS 755",		enable_flash_sis630},
 	{0x1106, 0x8324, OK, "VIA", "CX700",		enable_flash_vt823x},
 	{0x1106, 0x8231, NT, "VIA", "VT8231",		enable_flash_vt823x},
 	{0x1106, 0x3074, NT, "VIA", "VT8233",		enable_flash_vt823x},
