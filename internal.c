@@ -42,6 +42,26 @@ struct pci_dev *pci_dev_find_filter(struct pci_filter filter)
 	return NULL;
 }
 
+struct pci_dev *pci_dev_find_vendorclass(uint16_t vendor, uint16_t class)
+{
+	struct pci_dev *temp;
+	struct pci_filter filter;
+	uint16_t tmp2;
+
+	pci_filter_init(NULL, &filter);
+	filter.vendor = vendor;
+
+	for (temp = pacc->devices; temp; temp = temp->next)
+		if (pci_filter_match(&filter, temp)) {
+			/* Read PCI class */
+			tmp2 = pci_read_word(temp, 0x0a);
+			if (tmp2 == class)
+				return temp;
+		}
+
+	return NULL;
+}
+
 struct pci_dev *pci_dev_find(uint16_t vendor, uint16_t device)
 {
 	struct pci_dev *temp;
