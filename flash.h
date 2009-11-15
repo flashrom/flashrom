@@ -389,6 +389,7 @@ int freebsd_wrmsr(int addr, msr_t msr);
 
 /* internal.c */
 struct pci_dev *pci_dev_find_filter(struct pci_filter filter);
+struct pci_dev *pci_dev_find_vendorclass(uint16_t vendor, uint16_t class);
 struct pci_dev *pci_dev_find(uint16_t vendor, uint16_t device);
 struct pci_dev *pci_card_find(uint16_t vendor, uint16_t device,
 			      uint16_t card_vendor, uint16_t card_device);
