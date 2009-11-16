@@ -615,8 +615,8 @@ int spi_block_erase_52(struct flashchip *flash, unsigned int addr, unsigned int 
 
 	result = spi_send_multicommand(cmds);
 	if (result) {
-		fprintf(stderr, "%s failed during command execution\n",
-			__func__);
+		fprintf(stderr, "%s failed during command execution at address 0x%x\n",
+			__func__, addr);
 		return result;
 	}
 	/* Wait until the Write-In-Progress bit is cleared.
@@ -659,7 +659,8 @@ int spi_block_erase_d8(struct flashchip *flash, unsigned int addr, unsigned int 
 
 	result = spi_send_multicommand(cmds);
 	if (result) {
-		fprintf(stderr, "%s failed during command execution\n", __func__);
+		fprintf(stderr, "%s failed during command execution at address 0x%x\n",
+			__func__, addr);
 		return result;
 	}
 	/* Wait until the Write-In-Progress bit is cleared.
@@ -721,8 +722,8 @@ int spi_block_erase_20(struct flashchip *flash, unsigned int addr, unsigned int 
 
 	result = spi_send_multicommand(cmds);
 	if (result) {
-		fprintf(stderr, "%s failed during command execution\n",
-			__func__);
+		fprintf(stderr, "%s failed during command execution at address 0x%x\n",
+			__func__, addr);
 		return result;
 	}
 	/* Wait until the Write-In-Progress bit is cleared.
@@ -827,21 +828,21 @@ int spi_byte_program(int addr, uint8_t byte)
 
 	result = spi_send_multicommand(cmds);
 	if (result) {
-		fprintf(stderr, "%s failed during command execution\n",
-			__func__);
+		fprintf(stderr, "%s failed during command execution at address 0x%x\n",
+			__func__, addr);
 	}
 	return result;
 }
 
-int spi_nbyte_program(int address, uint8_t *bytes, int len)
+int spi_nbyte_program(int addr, uint8_t *bytes, int len)
 {
 	int result;
 	/* FIXME: Switch to malloc based on len unless that kills speed. */
 	unsigned char cmd[JEDEC_BYTE_PROGRAM_OUTSIZE - 1 + 256] = {
 		JEDEC_BYTE_PROGRAM,
-		(address >> 16) & 0xff,
-		(address >> 8) & 0xff,
-		(address >> 0) & 0xff,
+		(addr >> 16) & 0xff,
+		(addr >> 8) & 0xff,
+		(addr >> 0) & 0xff,
 	};
 	struct spi_command cmds[] = {
 	{
@@ -874,8 +875,8 @@ int spi_nbyte_program(int address, uint8_t *bytes, int len)
 
 	result = spi_send_multicommand(cmds);
 	if (result) {
-		fprintf(stderr, "%s failed during command execution\n",
-			__func__);
+		fprintf(stderr, "%s failed during command execution at address 0x%x\n",
+			__func__, addr);
 	}
 	return result;
 }
