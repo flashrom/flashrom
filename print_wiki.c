@@ -115,6 +115,8 @@ const struct board_info_url boards_url[] = {
 	{ "ASUS",		"A8V Deluxe",		"http://www.asus.com/product.aspx?P_ID=tvpdgPNCPaABZRVU" },
 	{ "ASUS",		"A8V-E Deluxe",		"http://www.asus.com.tw/products.aspx?l1=3&l2=15&l3=143&l4=0&model=376&modelmenu=1" },
 	{ "ASUS",		"A8V-E SE",		"http://www.asus.com.tw/products.aspx?l1=3&l2=15&l3=143&l4=0&model=576&modelmenu=1" },
+	{ "ASUS",		"K8V",			"http://www.asus.com/product.aspx?P_ID=fG2KZOWF7v6MRFRm" },
+	{ "ASUS",		"K8V SE Deluxe",	"http://www.asus.com/product.aspx?P_ID=65HeDI8XM1u6Uy6o" },
 	{ "ASUS",		"M2A-MX",		"http://www.asus.com/products.aspx?l1=3&l2=101&l3=583&l4=0&model=1909&modelmenu=1" },
 	{ "ASUS",		"M2A-VM",		"http://www.asus.com.tw/products.aspx?l1=3&l2=101&l3=496&l4=0&model=1568&modelmenu=1" },
 	{ "ASUS",		"M2N-E",		"http://www.asus.com/products.aspx?l1=3&l2=101&l3=308&l4=0&model=1181&modelmenu=1" },
@@ -131,6 +133,7 @@ const struct board_info_url boards_url[] = {
 	{ "ASUS",		"P6T Deluxe V2",	"http://www.asus.com/product.aspx?P_ID=iRlP8RG9han6saZx" },
 	{ "A-Trend",		"ATC-6220",		"http://www.motherboard.cz/mb/atrend/atc6220.htm" },
 	{ "BCOM",		"WinNET100",		"http://www.coreboot.org/BCOM_WINNET100" },
+	{ "Elitegroup",		"K7S5A",		"http://www.ecs.com.tw/ECSWebSite/Products/ProductsDetail.aspx?detailid=279&CategoryID=1&DetailName=Specification&MenuID=1&LanID=0" },
 	{ "Elitegroup",		"P6VAP-A+",		"http://www.ecs.com.tw/ECSWebSite/Products/ProductsDetail.aspx?detailid=117&CategoryID=1&DetailName=Specification&MenuID=1&LanID=0" },
 	{ "GIGABYTE",		"GA-6BXC",		"http://www.gigabyte.com.tw/Products/Motherboard/Products_Spec.aspx?ClassValue=Motherboard&ProductID=1445&ProductName=GA-6BXC" },
 	{ "GIGABYTE",		"GA-6BXDU",		"http://www.gigabyte.com.tw/Products/Motherboard/Products_Spec.aspx?ProductID=1429" },
@@ -282,7 +285,8 @@ const struct board_info_notes boards_notes[] = {
 	{ "ASUS",		"A8V-E SE",		"See http://www.coreboot.org/pipermail/coreboot/2007-October/026496.html." },
 	{ "ASUS",		"M2A-VM",		"See http://www.coreboot.org/pipermail/coreboot/2007-September/025281.html." },
 	{ "BCOM",		"WinNET100",		"Used in the IGEL-316 thin client." },
-	{ "GIGABYTE",		"GA-7ZM",		"Works fine iff you remove jumper JP9 on the board and disable the flash protection BIOS option." },
+	{ "GIGABYTE",		"GA-7ZM",		"Works fine if you remove jumper JP9 on the board and disable the flash protection BIOS option." },
+	{ "ASUS",		"M2N-E",		"If the machine doesn't come up again after flashing, try resetting the NVRAM(CMOS). The MAC address of the onboard network card will change to the value stored in the new image, so backup the old address first. See http://www.flashrom.org/pipermail/flashrom/2009-November/000879.html" },
 
 	/* Verified working boards that DO need write-enables. */
 	{ "Acer",		"Aspire One",		"See http://www.coreboot.org/pipermail/coreboot/2009-May/048041.html." },
