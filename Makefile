@@ -89,7 +89,7 @@ CONFIG_DUMMY ?= yes
 # Always enable Dr. Kaiser for now.
 CONFIG_DRKAISER ?= yes
 
-# Always enable wiki printing for now.
+# Disable wiki printing by default. It is only useful if you have wiki access.
 CONFIG_PRINT_WIKI ?= no
 
 ifeq ($(CONFIG_SERPROG), yes)
