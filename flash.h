@@ -338,11 +338,9 @@ uint32_t pcidev_init(uint16_t vendor_id, uint32_t bar, struct pcidev_status *dev
 
 /* print.c */
 char *flashbuses_to_text(enum chipbustype bustype);
-void print_supported_chips(void);
-void print_supported_chipsets(void);
-void print_supported_boards(void);
+void print_supported(void);
 void print_supported_pcidevs(struct pcidev_status *devs);
-void print_wiki_tables(void);
+void print_supported_wiki(void);
 
 /* board_enable.c */
 void w836xx_ext_enter(uint16_t port);

@@ -801,14 +801,25 @@ int main(int argc, char *argv[])
 			write_it = 1;
 			break;
 		case 'v':
+			//FIXME: gracefully handle superfluous -v
 			if (++operation_specified > 1) {
 				fprintf(stderr, "More than one operation "
 					"specified. Aborting.\n");
 				exit(1);
 			}
+			if (dont_verify_it) {
+				fprintf(stderr, "--verify and --noverify are"
+					"mutually exclusive. Aborting.\n");
+				exit(1);
+			}
 			verify_it = 1;
 			break;
 		case 'n':
+			if (verify_it) {
+				fprintf(stderr, "--verify and --noverify are"
+					"mutually exclusive. Aborting.\n");
+				exit(1);
+			}
 			dont_verify_it = 1;
 			break;
 		case 'c':
@@ -896,29 +907,13 @@ int main(int argc, char *argv[])
 	}
 
 	if (list_supported) {
-		print_supported_chips();
-		print_supported_chipsets();
-		print_supported_boards();
-		printf("\nSupported PCI devices flashrom can use "
-		       "as programmer:\n\n");
-#if NIC3COM_SUPPORT == 1
-		print_supported_pcidevs(nics_3com);
-#endif
-#if GFXNVIDIA_SUPPORT == 1
-		print_supported_pcidevs(gfx_nvidia);
-#endif
-#if DRKAISER_SUPPORT == 1
-		print_supported_pcidevs(drkaiser_pcidev);
-#endif
-#if SATASII_SUPPORT == 1
-		print_supported_pcidevs(satas_sii);
-#endif
+		print_supported();
 		exit(0);
 	}
 
 #if PRINT_WIKI_SUPPORT == 1
 	if (list_supported_wiki) {
-		print_wiki_tables();
+		print_supported_wiki();
 		exit(0);
 	}
 #endif
@@ -930,6 +925,11 @@ int main(int argc, char *argv[])
 
 	if (optind < argc)
 		filename = argv[optind++];
+	
+	if (optind < argc) {
+		printf("Error: Extra parameter found.\n");
+		usage(argv[0]);
+	}
 
 	if (programmer_init()) {
 		fprintf(stderr, "Error: Programmer initialization failed.\n");
@@ -1146,7 +1146,7 @@ int main(int argc, char *argv[])
 		if (write_it)
 			programmer_delay(1000*1000);
 		ret = verify_flash(flash, buf);
-		/* If we tried to write, and now we don't properly verify, we
+		/* If we tried to write, and verification now fails, we
 		 * might have an emergency situation.
 		 */
 		if (ret && write_it)
