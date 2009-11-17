@@ -222,6 +222,27 @@ void print_supported_boards(void)
 		"Laptops which have been verified to NOT work yet");
 }
 
+void print_supported(void)
+{
+		print_supported_chips();
+		print_supported_chipsets();
+		print_supported_boards();
+		printf("\nSupported PCI devices flashrom can use "
+		       "as programmer:\n\n");
+#if NIC3COM_SUPPORT == 1
+		print_supported_pcidevs(nics_3com);
+#endif
+#if GFXNVIDIA_SUPPORT == 1
+		print_supported_pcidevs(gfx_nvidia);
+#endif
+#if DRKAISER_SUPPORT == 1
+		print_supported_pcidevs(drkaiser_pcidev);
+#endif
+#if SATASII_SUPPORT == 1
+		print_supported_pcidevs(satas_sii);
+#endif
+}
+
 
 /* Please keep this list alphabetically ordered by vendor/board. */
 const struct board_info boards_ok[] = {

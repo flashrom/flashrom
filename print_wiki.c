@@ -539,7 +539,7 @@ void print_supported_pcidevs_wiki(struct pcidev_status *devs)
 	}
 }
 
-void print_wiki_tables(void)
+void print_supported_wiki(void)
 {
 	time_t t = time(NULL);
 
