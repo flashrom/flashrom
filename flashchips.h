@@ -34,6 +34,7 @@
  * SPI parts have 16-bit device IDs if they support RDID.
  */
 
+#define GENERIC_MANUF_ID	0xffff	/* Check if there is a vendor ID */
 #define GENERIC_DEVICE_ID	0xffff	/* Only match the vendor ID */
 
 #define ALLIANCE_ID		0x52	/* Alliance Semiconductor */
