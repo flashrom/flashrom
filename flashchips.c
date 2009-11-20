@@ -3340,5 +3340,32 @@ struct flashchip flashchips[] = {
 		.read		= NULL,
 	},
 
+	{
+		.vendor		= "Generic",
+		.name		= "unknown SPI chip (RDID)",
+		.bustype	= CHIP_BUSTYPE_SPI,
+		.manufacture_id	= GENERIC_MANUF_ID,
+		.model_id	= GENERIC_DEVICE_ID,
+		.total_size	= 0,
+		.page_size	= 256,
+		.tested		= TEST_BAD_PREW,
+		.probe		= probe_spi_rdid,
+		.erase		= NULL,
+		.write		= NULL,
+	},
+	{
+		.vendor		= "Generic",
+		.name		= "unknown SPI chip (REMS)",
+		.bustype	= CHIP_BUSTYPE_SPI,
+		.manufacture_id	= GENERIC_MANUF_ID,
+		.model_id	= GENERIC_DEVICE_ID,
+		.total_size	= 0,
+		.page_size	= 256,
+		.tested		= TEST_BAD_PREW,
+		.probe		= probe_spi_rems,
+		.erase		= NULL,
+		.write		= NULL,
+	},
+
 	{ NULL 	}
 };
