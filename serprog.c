@@ -61,7 +61,7 @@
 #define S_CMD_Q_RDNMAXLEN	0x11	/* Query read-n maximum length			*/
 #define S_CMD_S_BUSTYPE		0x12	/* Set used bustype(s).				*/
 
-static int sp_fd;
+int sp_fd;
 
 static uint16_t sp_device_serbuf_size = 16;
 static uint16_t sp_device_opbuf_size = 300;
@@ -185,7 +185,7 @@ static const struct baudentry sp_baudtable[] = {
 	{0, 0}			/* Terminator */
 };
 
-static int sp_openserport(char *dev, unsigned int baud)
+int sp_openserport(char *dev, unsigned int baud)
 {
 	struct termios options;
 	int fd, i;
@@ -208,20 +208,16 @@ static int sp_openserport(char *dev, unsigned int baud)
 			break;
 		}
 	}
-	options.c_cflag &= ~PARENB;
-	options.c_cflag &= ~CSTOPB;
-	options.c_cflag &= ~CSIZE;
-	options.c_cflag |= CS8;
-	options.c_cflag &= ~CRTSCTS;
+	options.c_cflag &= ~(PARENB | CSTOPB | CSIZE | CRTSCTS);
+	options.c_cflag |= (CS8 | CLOCAL | CREAD);
 	options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
 	options.c_iflag &= ~(IXON | IXOFF | IXANY | ICRNL | IGNCR | INLCR);
 	options.c_oflag &= ~OPOST;
-	options.c_cflag |= (CLOCAL | CREAD);
 	tcsetattr(fd, TCSANOW, &options);
 	return fd;
 }
 
-static void sp_flush_incoming(void)
+void sp_flush_incoming(void)
 {
 	int i;
 	for (i=0;i<100;i++) { /* In case the device doesnt do EAGAIN, just read 0 */
