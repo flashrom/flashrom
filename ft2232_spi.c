@@ -198,7 +198,8 @@ int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 {
 	struct ftdi_context *ftdic = &ftdic_context;
 	static unsigned char *buf = NULL;
-	int i = 0, ret = 0;
+	/* failed is special. We use bitwise ops, but it is essentially bool. */
+	int i = 0, ret = 0, failed = 0;
 
 	if (writecnt > 65536 || readcnt > 65536)
 		return SPI_INVALID_LENGTH;
@@ -237,6 +238,11 @@ int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		buf[i++] = (readcnt - 1) & 0xff;
 		buf[i++] = ((readcnt - 1) >> 8) & 0xff;
 		ret = send_buf(ftdic, buf, i);
+		failed = ret;
+		/* We can't abort here, we still have to deassert CS#. */
+		if (ret)
+			fprintf(stderr, "send_buf failed before read: %i\n",
+				ret);
 		i = 0;
 		if (ret == 0) {
 			/*
@@ -245,6 +251,10 @@ int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 			 * command. We may be scheduled out etc.
 			 */
 			ret = get_buf(ftdic, readarr, readcnt);
+			failed |= ret;
+			/* We can't abort here either. */
+			if (ret)
+				fprintf(stderr, "get_buf failed: %i\n", ret);
 		}
 	}
 
@@ -252,10 +262,12 @@ int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	buf[i++] = SET_BITS_LOW;
 	buf[i++] = CS_BIT;
 	buf[i++] = 0x0b;
-	if (send_buf(ftdic, buf, i))
-		return -1;
+	ret = send_buf(ftdic, buf, i);
+	failed |= ret;
+	if (ret)
+		fprintf(stderr, "send_buf failed at end: %i\n", ret);
 
-	return ret;
+	return failed ? -1 : 0;
 }
 
 int ft2232_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
