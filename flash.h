@@ -736,8 +736,11 @@ void serprog_chip_writeb(uint8_t val, chipaddr addr);
 uint8_t serprog_chip_readb(const chipaddr addr);
 void serprog_chip_readn(uint8_t *buf, const chipaddr addr, size_t len);
 void serprog_delay(int delay);
+
+/* serial.c */
 void sp_flush_incoming(void);
 int sp_openserport(char *dev, unsigned int baud);
+void __attribute__((noreturn)) sp_die(char *msg);
 extern int sp_fd;
 
 #endif				/* !__FLASH_H__ */

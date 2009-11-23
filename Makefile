@@ -138,6 +138,10 @@ FEATURE_CFLAGS += -D'DRKAISER_SUPPORT=1'
 OBJS += drkaiser.o
 endif
 
+ifeq ($(CONFIG_SERPROG), yes)
+OBJS += serial.o
+endif
+
 ifeq ($(CONFIG_PRINT_WIKI), yes)
 FEATURE_CFLAGS += -D'PRINT_WIKI_SUPPORT=1'
 OBJS += print_wiki.o
