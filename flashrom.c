@@ -407,6 +407,142 @@ out_free:
 	return ret;
 }
 
+/* This function generates various test patterns useful for testing controller
+ * and chip communication as well as chip behaviour.
+ *
+ * If a byte can be written multiple times, each time keeping 0-bits at 0
+ * and changing 1-bits to 0 if the new value for that bit is 0, the effect
+ * is essentially an AND operation. That's also the reason why this function
+ * provides the result of AND between various patterns.
+ *
+ * Below is a list of patterns (and their block length).
+ * Pattern 0 is 05 15 25 35 45 55 65 75 85 95 a5 b5 c5 d5 e5 f5 (16 Bytes)
+ * Pattern 1 is 0a 1a 2a 3a 4a 5a 6a 7a 8a 9a aa ba ca da ea fa (16 Bytes)
+ * Pattern 2 is 50 51 52 53 54 55 56 57 58 59 5a 5b 5c 5d 5e 5f (16 Bytes)
+ * Pattern 3 is a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 aa ab ac ad ae af (16 Bytes)
+ * Pattern 4 is 00 10 20 30 40 50 60 70 80 90 a0 b0 c0 d0 e0 f0 (16 Bytes)
+ * Pattern 5 is 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f (16 Bytes)
+ * Pattern 6 is 00 (1 Byte)
+ * Pattern 7 is ff (1 Byte)
+ * Patterns 0-7 have a big-endian block number in the last 2 bytes of each 256
+ * byte block.
+ *
+ * Pattern 8 is 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f 10 11... (256 B)
+ * Pattern 9 is ff fe fd fc fb fa f9 f8 f7 f6 f5 f4 f3 f2 f1 f0 ef ee... (256 B)
+ * Pattern 10 is 00 00 00 01 00 02 00 03 00 04... (128 kB big-endian counter)
+ * Pattern 11 is ff ff ff fe ff fd ff fc ff fb... (128 kB big-endian downwards)
+ * Pattern 12 is 00 (1 Byte)
+ * Pattern 13 is ff (1 Byte)
+ * Patterns 8-13 have no block number.
+ *
+ * Patterns 0-3 are created to detect and efficiently diagnose communication
+ * slips like missed bits or bytes and their repetitive nature gives good visual
+ * cues to the person inspecting the results. In addition, the following holds:
+ * AND Pattern 0/1 == Pattern 4
+ * AND Pattern 2/3 == Pattern 5
+ * AND Pattern 0/1/2/3 == AND Pattern 4/5 == Pattern 6
+ * A weakness of pattern 0-5 is the inability to detect swaps/copies between
+ * any two 16-byte blocks except for the last 16-byte block in a 256-byte bloc.
+ * They work perfectly for detecting any swaps/aliasing of blocks >= 256 bytes.
+ * 0x5 and 0xa were picked because they are 0101 and 1010 binary.
+ * Patterns 8-9 are best for detecting swaps/aliasing of blocks < 256 bytes.
+ * Besides that, they provide for bit testing of the last two bytes of every
+ * 256 byte block which contains the block number for patterns 0-6.
+ * Patterns 10-11 are special purpose for detecting subblock aliasing with
+ * block sizes >256 bytes (some Dataflash chips etc.)
+ * AND Pattern 8/9 == Pattern 12
+ * AND Pattern 10/11 == Pattern 12
+ * Pattern 13 is the completely erased state.
+ * None of the patterns can detect aliasing at boundaries which are a multiple
+ * of 16 MBytes (but such chips do not exist anyway for Parallel/LPC/FWH/SPI).
+ */
+int generate_testpattern(uint8_t *buf, uint32_t size, int variant)
+{
+	int i;
+
+	if (!buf) {
+		fprintf(stderr, "Invalid buffer!\n");
+		return 1;
+	}
+
+	switch (variant) {
+	case 0:
+		for (i = 0; i < size; i++)
+			buf[i] = (i & 0xf) << 4 | 0x5;
+		break;
+	case 1:
+		for (i = 0; i < size; i++)
+			buf[i] = (i & 0xf) << 4 | 0xa;
+		break;
+	case 2:
+		for (i = 0; i < size; i++)
+			buf[i] = 0x50 | (i & 0xf);
+		break;
+	case 3:
+		for (i = 0; i < size; i++)
+			buf[i] = 0xa0 | (i & 0xf);
+		break;
+	case 4:
+		for (i = 0; i < size; i++)
+			buf[i] = (i & 0xf) << 4;
+		break;
+	case 5:
+		for (i = 0; i < size; i++)
+			buf[i] = i & 0xf;
+		break;
+	case 6:
+		memset(buf, 0x00, size);
+		break;
+	case 7:
+		memset(buf, 0xff, size);
+		break;
+	case 8:
+		for (i = 0; i < size; i++)
+			buf[i] = i & 0xff;
+		break;
+	case 9:
+		for (i = 0; i < size; i++)
+			buf[i] = ~(i & 0xff);
+		break;
+	case 10:
+		for (i = 0; i < size % 2; i++) {
+			buf[i * 2] = (i >> 8) & 0xff;
+			buf[i * 2 + 1] = i & 0xff;
+		}
+		if (size & 0x1)
+			buf[i * 2] = (i >> 8) & 0xff;
+		break;
+	case 11:
+		for (i = 0; i < size % 2; i++) {
+			buf[i * 2] = ~((i >> 8) & 0xff);
+			buf[i * 2 + 1] = ~(i & 0xff);
+		}
+		if (size & 0x1)
+			buf[i * 2] = ~((i >> 8) & 0xff);
+		break;
+	case 12:
+		memset(buf, 0x00, size);
+		break;
+	case 13:
+		memset(buf, 0xff, size);
+		break;
+	}
+
+	if ((variant >= 0) && (variant <= 7)) {
+		/* Write block number in the last two bytes of each 256-byte
+		 * block, big endian for easier reading of the hexdump.
+		 * Note that this wraps around for chips larger than 2^24 bytes
+		 * (16 MB).
+		 */
+		for (i = 0; i < size / 256; i++) {
+			buf[i * 256 + 254] = (i >> 8) & 0xff;
+			buf[i * 256 + 255] = i & 0xff;
+		}
+	}
+
+	return 0;
+}
+
 int check_max_decode(enum chipbustype buses, uint32_t size)
 {
 	int limitexceeded = 0;
