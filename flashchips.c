@@ -1847,6 +1847,22 @@ struct flashchip flashchips[] = {
 	},
 
 	{
+		.vendor		= "Sanyo",
+		.name		= "LF25FW203A",
+		.bustype	= CHIP_BUSTYPE_SPI,
+		.manufacture_id	= SANYO_ID,
+		.model_id	= SANYO_LE25FW203A,
+		.total_size	= 2048,
+		.page_size	= 256,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.erase		= spi_chip_erase_c7,
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read,
+	},
+
+	{
 		.vendor		= "Sharp",
 		.name		= "LHF00L04",
 		.bustype	= CHIP_BUSTYPE_FWH, /* A/A Mux */
