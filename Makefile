@@ -25,7 +25,7 @@ INSTALL = install
 DIFF    = diff
 PREFIX  ?= /usr/local
 MANDIR  ?= $(PREFIX)/share/man
-CFLAGS  ?= -Os -Wall -Werror -g
+CFLAGS  ?= -Os -Wall -Werror
 EXPORTDIR ?= .
 
 OS_ARCH	= $(shell uname)
