@@ -131,34 +131,37 @@ int buspirate_sendrecv(unsigned char *buf, unsigned int writecnt, unsigned int r
 	return 0;
 }
 
+static const struct buspirate_spispeeds spispeeds[] = {
+	{"30k",		0x0},
+	{"125k",	0x1},
+	{"250k",	0x2},
+	{"1M",		0x3},
+	{"2M",		0x4},
+	{"2.6M",	0x5},
+	{"4M",		0x6},
+	{"8M",		0x7},
+	{NULL,		0x0}
+};
+
 int buspirate_spi_init(void)
 {
 	unsigned char buf[512];
 	int ret = 0;
 	int i;
-	char *devpos = NULL;
 	char *dev = NULL;
-	int devlen;
+	char *speed = NULL;
+	int spispeed = 0x7;
 
 	if (programmer_param && !strlen(programmer_param)) {
 		free(programmer_param);
 		programmer_param = NULL;
 	}
 	if (programmer_param) {
-		devpos = strstr(programmer_param, "dev=");
-		if (devpos) {
-			devpos += 4;
-			devlen = strcspn(devpos, ",:");
-			if (devlen) {
-				dev = malloc(devlen + 1);
-				if (!dev) {
-					fprintf(stderr, "Out of memory!\n");
-					exit(1);
-				}
-				strncpy(dev, devpos, devlen);
-				dev[devlen] = '\0';
-			}
-		}
+		dev = extract_param(&programmer_param, "dev=", ",:");
+		speed = extract_param(&programmer_param, "spispeed=", ",:");
+		if (strlen(programmer_param))
+			fprintf(stderr, "Unhandled programmer parameters: %s\n",
+				programmer_param);
 		free(programmer_param);
 		programmer_param = NULL;
 	}
@@ -167,6 +170,18 @@ int buspirate_spi_init(void)
 			"buspiratespi:dev=/dev/ttyUSB0\n");
 		return 1;
 	}
+	if (speed) {
+		for (i = 0; spispeeds[i].name; i++)
+			if (!strncasecmp(spispeeds[i].name, speed,
+			    strlen(spispeeds[i].name))) {
+				spispeed = spispeeds[i].speed;
+				break;
+			}
+		if (!spispeeds[i].name)
+			fprintf(stderr, "Invalid SPI speed, using default.\n");
+	}
+	/* This works because speeds numbering starts at 0 and is contiguous. */
+	printf_debug("SPI speed is %sHz\n", spispeeds[spispeed].name);
 
 	ret = buspirate_serialport_setup(dev);
 	if (ret)
@@ -224,8 +239,8 @@ int buspirate_spi_init(void)
 		return 1;
 	}
 
-	/* Set speed to 8 MHz */
-	buf[0] = 0x60 | 0x7;
+	/* Set SPI speed */
+	buf[0] = 0x60 | spispeed;
 	ret = buspirate_sendrecv(buf, 1, 1);
 	if (ret)
 		return 1;
@@ -351,8 +366,7 @@ int buspirate_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 
 int buspirate_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
-	/* Maximum read length is 12 bytes, use 8 for now. */
-	return spi_read_chunked(flash, buf, start, len, 8);
+	return spi_read_chunked(flash, buf, start, len, 12);
 }
 
 /* We could do 12-byte writes, but for now we use the generic 1-byte code. */

@@ -488,6 +488,10 @@ int bitbang_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
 int bitbang_spi_write_256(struct flashchip *flash, uint8_t *buf);
 
 /* buspirate_spi.c */
+struct buspirate_spispeeds {
+	const char *name;
+	const int speed;
+};
 int buspirate_spi_init(void);
 int buspirate_spi_shutdown(void);
 int buspirate_spi_send_command(unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr);
@@ -503,6 +507,7 @@ int read_memmapped(struct flashchip *flash, uint8_t *buf, int start, int len);
 int erase_flash(struct flashchip *flash);
 int min(int a, int b);
 int max(int a, int b);
+char *extract_param(char **haystack, char *needle, char *delim);
 int check_erased_range(struct flashchip *flash, int start, int len);
 int verify_range(struct flashchip *flash, uint8_t *cmpbuf, int start, int len, char *message);
 char *strcat_realloc(char *dest, const char *src);
