@@ -336,6 +336,60 @@ char *strcat_realloc(char *dest, const char *src)
 	return dest;
 }
 
+/* This is a somewhat hacked function similar in some ways to strtok().
+ * It will look for needle in haystack, return a copy of needle and remove
+ * everything from the first occurrence of needle to the next delimiter
+ * from haystack.
+ */
+char *extract_param(char **haystack, char *needle, char *delim)
+{
+	char *param_pos, *rest, *tmp;
+	char *dev = NULL;
+	int devlen;
+
+	param_pos = strstr(*haystack, needle);
+	do {
+		if (!param_pos)
+			return NULL;
+		/* Beginning of the string? */
+		if (param_pos == *haystack)
+			break;
+		/* After a delimiter? */
+		if (strchr(delim, *(param_pos - 1)))
+			break;
+		/* Continue searching. */
+		param_pos++;
+		param_pos = strstr(param_pos, needle);
+	} while (1);
+		
+	if (param_pos) {
+		param_pos += strlen(needle);
+		devlen = strcspn(param_pos, delim);
+		if (devlen) {
+			dev = malloc(devlen + 1);
+			if (!dev) {
+				fprintf(stderr, "Out of memory!\n");
+				exit(1);
+			}
+			strncpy(dev, param_pos, devlen);
+			dev[devlen] = '\0';
+		}
+		rest = param_pos + devlen;
+		rest += strspn(rest, delim);
+		param_pos -= strlen(needle);
+		memmove(param_pos, rest, strlen(rest) + 1);
+		tmp = realloc(*haystack, strlen(*haystack) + 1);
+		if (!tmp) {
+			fprintf(stderr, "Out of memory!\n");
+			exit(1);
+		}
+		*haystack = tmp;
+	}
+	
+
+	return dev;
+}
+
 /* start is an offset to the base address of the flash chip */
 int check_erased_range(struct flashchip *flash, int start, int len)
 {

@@ -152,6 +152,8 @@ Specify the programmer device. Currently supported are:
 .sp
 .BR "* serprog" " (for flash ROMs attached to Urja's AVR programmer)"
 .sp
+.BR "* buspiratespi" " (for flash ROMs attached to a Bus Pirate)"
+.sp
 The dummy programmer has an optional parameter specifying the bus types it
 should support. For that you have to use the
 .B "flashrom -p dummy:type"
@@ -218,6 +220,16 @@ syntax and for IP, you have to use
 .B "flashrom -p serprog:ip:port"
 instead. More information about serprog is available in serprog-protocol.txt in
 the source distribution.
+.sp
+The buspiratespi programmer has a required dev parameter specifying the Bus
+Pirate device node and an optional spispeed parameter specifying the frequency
+of the SPI bus. The parameter delimiter is a comma. Syntax is
+.B "flashrom -p buspiratespi:dev=/dev/device,spispeed=frequency"
+where
+.B frequency
+can be any of
+.B 30k 125k 250k 1M 2M 2.6M 4M 8M
+(in Hz).
 .sp
 Support for some programmers can be disabled at compile time.
 .B "flashrom -h"
