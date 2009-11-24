@@ -100,6 +100,15 @@ const struct spi_programmer spi_programmer[] = {
 	},
 #endif
 
+#if BUSPIRATE_SPI_SUPPORT == 1
+	{ /* SPI_CONTROLLER_BUSPIRATE */
+		.command = buspirate_spi_send_command,
+		.multicommand = default_spi_send_multicommand,
+		.read = buspirate_spi_read,
+		.write_256 = spi_chip_write_1,
+	},
+#endif
+
 	{}, /* This entry corresponds to SPI_CONTROLLER_INVALID. */
 };
 

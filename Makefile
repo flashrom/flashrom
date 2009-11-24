@@ -25,7 +25,7 @@ INSTALL = install
 DIFF    = diff
 PREFIX  ?= /usr/local
 MANDIR  ?= $(PREFIX)/share/man
-CFLAGS  ?= -Os -Wall -Werror
+CFLAGS  ?= -Os -Wall -Werror -g
 EXPORTDIR ?= .
 
 OS_ARCH	= $(shell uname)
@@ -89,6 +89,9 @@ CONFIG_DUMMY ?= yes
 # Always enable Dr. Kaiser for now.
 CONFIG_DRKAISER ?= yes
 
+# Always enable Bus Pirate SPI for now.
+CONFIG_BUSPIRATESPI ?= yes
+
 # Disable wiki printing by default. It is only useful if you have wiki access.
 CONFIG_PRINT_WIKI ?= no
 
@@ -138,8 +141,18 @@ FEATURE_CFLAGS += -D'DRKAISER_SUPPORT=1'
 OBJS += drkaiser.o
 endif
 
+ifeq ($(CONFIG_BUSPIRATESPI), yes)
+FEATURE_CFLAGS += -D'BUSPIRATE_SPI_SUPPORT=1'
+OBJS += buspirate_spi.o
+endif
+
+# Ugly, but there's no elif/elseif.
 ifeq ($(CONFIG_SERPROG), yes)
 OBJS += serial.o
+else
+ifeq ($(CONFIG_BUSPIRATESPI), yes)
+OBJS += serial.o
+endif
 endif
 
 ifeq ($(CONFIG_PRINT_WIKI), yes)
