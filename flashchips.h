@@ -326,6 +326,14 @@
 #define PMC_49FL002		0x6D
 #define PMC_49FL004		0x6E
 
+/* 
+ * The Sanyo chip found so far uses SPI, first byte is manufacture code,
+ * second byte is the device code,
+ * third byte is a dummy byte.
+ */
+#define SANYO_ID		0x62
+#define SANYO_LE25FW203A	0x1600
+
 #define SHARP_ID		0xB0	/* Sharp */
 #define SHARP_LH28F008BJxxPT	0xEC
 #define SHARP_LH28F008BJxxPB	0xED
