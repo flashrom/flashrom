@@ -3341,6 +3341,22 @@ struct flashchip flashchips[] = {
 	},
 
 	{
+		.vendor		= "Sanyo",
+		.name		= "unknown Sanyo SPI chip",
+		.bustype	= CHIP_BUSTYPE_SPI,
+		.manufacture_id	= SANYO_ID,
+		.model_id	= GENERIC_DEVICE_ID,
+		.total_size	= 0,
+		.page_size	= 256,
+		.tested		= TEST_BAD_PREW,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.erase		= NULL,
+		.write		= NULL,
+		.read		= NULL,
+	},
+
+	{
 		.vendor		= "Generic",
 		.name		= "unknown SPI chip (RDID)",
 		.bustype	= CHIP_BUSTYPE_SPI,
