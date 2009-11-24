@@ -104,6 +104,9 @@ enum programmer {
 #if SERPROG_SUPPORT == 1
 	PROGRAMMER_SERPROG,
 #endif
+#if BUSPIRATE_SPI_SUPPORT == 1
+	PROGRAMMER_BUSPIRATESPI,
+#endif
 	PROGRAMMER_INVALID /* This must always be the last entry. */
 };
 
@@ -484,6 +487,12 @@ int bitbang_spi_send_command(unsigned int writecnt, unsigned int readcnt, const 
 int bitbang_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
 int bitbang_spi_write_256(struct flashchip *flash, uint8_t *buf);
 
+/* buspirate_spi.c */
+int buspirate_spi_init(void);
+int buspirate_spi_shutdown(void);
+int buspirate_spi_send_command(unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr);
+int buspirate_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
+
 /* flashrom.c */
 extern char *programmer_param;
 extern int verbose;
@@ -526,6 +535,9 @@ enum spi_controller {
 #endif
 #if DUMMY_SUPPORT == 1
 	SPI_CONTROLLER_DUMMY,
+#endif
+#if BUSPIRATE_SPI_SUPPORT == 1
+	SPI_CONTROLLER_BUSPIRATE,
 #endif
 	SPI_CONTROLLER_INVALID /* This must always be the last entry. */
 };

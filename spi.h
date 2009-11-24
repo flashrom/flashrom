@@ -106,6 +106,7 @@
 #define JEDEC_BYTE_PROGRAM_INSIZE	0x00
 
 /* Error codes */
+#define SPI_GENERIC_ERROR	-1
 #define SPI_INVALID_OPCODE	-2
 #define SPI_INVALID_ADDRESS	-3
 #define SPI_INVALID_LENGTH	-4

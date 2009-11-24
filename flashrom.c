@@ -204,6 +204,25 @@ const struct programmer_entry programmer_table[] = {
 	},
 #endif
 
+#if BUSPIRATE_SPI_SUPPORT == 1
+	{
+		.name			= "buspiratespi",
+		.init			= buspirate_spi_init,
+		.shutdown		= buspirate_spi_shutdown,
+		.map_flash_region	= fallback_map,
+		.unmap_flash_region	= fallback_unmap,
+		.chip_readb		= noop_chip_readb,
+		.chip_readw		= fallback_chip_readw,
+		.chip_readl		= fallback_chip_readl,
+		.chip_readn		= fallback_chip_readn,
+		.chip_writeb		= noop_chip_writeb,
+		.chip_writew		= fallback_chip_writew,
+		.chip_writel		= fallback_chip_writel,
+		.chip_writen		= fallback_chip_writen,
+		.delay			= internal_delay,
+	},
+#endif
+
 	{}, /* This entry corresponds to PROGRAMMER_INVALID. */
 };
 
