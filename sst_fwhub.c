@@ -2,6 +2,7 @@
  * This file is part of the flashrom project.
  *
  * Copyright (C) 2000 Silicon Integrated System Corporation
+ * Copyright (C) 2009 Kontron Modular Computers
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +21,8 @@
 
 /* Adapted from the Intel FW hub stuff for 82802ax parts. */
 
+#include <stdlib.h>
+#include <string.h>
 #include "flash.h"
 
 // I need that Berkeley bit-map printer
@@ -130,28 +133,33 @@ int erase_sst_fwhub(struct flashchip *flash)
 
 int write_sst_fwhub(struct flashchip *flash, uint8_t *buf)
 {
-	int i;
+	int i, rc;
 	int total_size = flash->total_size * 1024;
 	int page_size = flash->page_size;
 	chipaddr bios = flash->virtual_memory;
-	uint8_t blockstatus;
-
-	// FIXME: We want block wide erase instead of ironing the whole chip
-	if (erase_sst_fwhub(flash)) {
-		fprintf(stderr, "ERASE FAILED!\n");
-		return -1;
-	}
-
+	uint8_t *readbuf = malloc(page_size);
+	
 	printf("Programming page: ");
 	for (i = 0; i < total_size / page_size; i++) {
 		printf("%04d at address: 0x%08x", i, i * page_size);
-		blockstatus = clear_sst_fwhub_block_lock(flash, i * page_size);
-		if (blockstatus) {
-			printf(" is locked down permanently, aborting\n");
-			return 1;
+
+		/* Auto Skip Blocks, which already contain the desired data:
+		 * Faster, because we only write, what has changed
+		 * More secure, because blocks, which are excluded
+		 * (with the exclude or layout feature)
+		 * are not erased and rewritten; data is retained also
+		 * in sudden power off situations
+		 */
+		flash->read(flash, readbuf, i * page_size, page_size);
+		if (memcmp((void *)(buf + i * page_size),
+			   (void *)(readbuf), page_size)) {
+			rc = erase_sst_fwhub_block(flash, i * page_size,
+						   page_size);
+			if (rc)
+				return 1;
+			write_sector_jedec(bios, buf + i * page_size,
+					   bios + i * page_size, page_size);
 		}
-		write_sector_jedec(bios, buf + i * page_size,
-				   bios + i * page_size, page_size);
 		printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
 	}
 	printf("\n");
