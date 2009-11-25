@@ -200,14 +200,22 @@ int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	static unsigned char *buf = NULL;
 	/* failed is special. We use bitwise ops, but it is essentially bool. */
 	int i = 0, ret = 0, failed = 0;
+	int bufsize;
+	static int oldbufsize = 0;
 
 	if (writecnt > 65536 || readcnt > 65536)
 		return SPI_INVALID_LENGTH;
 
-	buf = realloc(buf, writecnt + readcnt + 100);
-	if (!buf) {
-		fprintf(stderr, "Out of memory!\n");
-		exit(1); // -1
+	/* buf is not used for the response from the chip. */
+	bufsize = max(writecnt + 9, 260 + 9);
+	/* Never shrink. realloc() calls are expensive. */
+	if (bufsize > oldbufsize) {
+		buf = realloc(buf, bufsize);
+		if (!buf) {
+			fprintf(stderr, "Out of memory!\n");
+			exit(1);
+		}
+		oldbufsize = bufsize;
 	}
 
 	/*

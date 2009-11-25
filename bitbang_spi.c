@@ -87,14 +87,16 @@ int bitbang_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	static unsigned char *bufout = NULL;
 	static unsigned char *bufin = NULL;
 	static int oldbufsize = 0;
-	int bufsize = max(writecnt + readcnt, 260);
+	int bufsize;
 	int i;
 
 	/* Arbitrary size limitation here. We're only constrained by memory. */
 	if (writecnt > 65536 || readcnt > 65536)
 		return SPI_INVALID_LENGTH;
 
-	if (bufsize != oldbufsize) {
+	bufsize = max(writecnt + readcnt, 260);
+	/* Never shrink. realloc() calls are expensive. */
+	if (bufsize > oldbufsize) {
 		bufout = realloc(bufout, bufsize);
 		if (!bufout) {
 			fprintf(stderr, "Out of memory!\n");
@@ -109,6 +111,7 @@ int bitbang_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 				free(bufout);
 			exit(1);
 		}
+		oldbufsize = bufsize;
 	}
 		
 	memcpy(bufout, writearr, writecnt);
