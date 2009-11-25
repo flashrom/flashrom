@@ -658,20 +658,16 @@ int ich_spi_write_256(struct flashchip *flash, uint8_t * buf)
 	int maxdata = 64;
 
 	spi_disable_blockprotect();
+	/* Erase first */
+	printf("Erasing flash before programming... ");
+	if (erase_flash(flash)) {
+		fprintf(stderr, "ERASE FAILED!\n");
+		return -1;
+	}
+	printf("done.\n");
 
 	printf("Programming page: \n");
-
 	for (i = 0; i < total_size / erase_size; i++) {
-		/* FIMXE: call the chip-specific spi_block_erase_XX instead.
-		 * For this, we need to add a block erase function to
-		 * struct flashchip.
-		 */
-		rc = spi_block_erase_d8(flash, i * erase_size, erase_size);
-		if (rc) {
-			printf("Error erasing block at 0x%x\n", i);
-			break;
-		}
-
 		if (spi_controller == SPI_CONTROLLER_VIA)
 			maxdata = 16;
 
