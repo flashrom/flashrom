@@ -407,7 +407,8 @@ int check_erased_range(struct flashchip *flash, int start, int len)
 }
 
 /**
- * @cmpbuf	buffer to compare against
+ * @cmpbuf	buffer to compare against, cmpbuf[0] is expected to match the
+		flash content at location start
  * @start	offset to the base address of the flash chip
  * @len		length of the verified area
  * @message	string to print in the "FAILED" message
