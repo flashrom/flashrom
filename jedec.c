@@ -64,25 +64,11 @@ void data_polling_jedec(chipaddr dst, uint8_t data)
 	}
 }
 
-void unprotect_jedec(chipaddr bios)
-{
-	chip_writeb(0xAA, bios + 0x5555);
-	chip_writeb(0x55, bios + 0x2AAA);
-	chip_writeb(0x80, bios + 0x5555);
-	chip_writeb(0xAA, bios + 0x5555);
-	chip_writeb(0x55, bios + 0x2AAA);
-	chip_writeb(0x20, bios + 0x5555);
-
-	programmer_delay(200);
-}
-
-void protect_jedec(chipaddr bios)
+void start_program_jedec(chipaddr bios)
 {
 	chip_writeb(0xAA, bios + 0x5555);
 	chip_writeb(0x55, bios + 0x2AAA);
 	chip_writeb(0xA0, bios + 0x5555);
-
-	programmer_delay(200);
 }
 
 int probe_jedec(struct flashchip *flash)
@@ -270,9 +256,7 @@ int write_page_write_jedec(struct flashchip *flash, uint8_t *src,
 
 retry:
 	/* Issue JEDEC Data Unprotect comand */
-	chip_writeb(0xAA, bios + 0x5555);
-	chip_writeb(0x55, bios + 0x2AAA);
-	chip_writeb(0xA0, bios + 0x5555);
+	start_program_jedec(bios);
 
 	/* transfer data from source to destination */
 	for (i = 0; i < page_size; i++) {
@@ -312,9 +296,7 @@ int write_byte_program_jedec(chipaddr bios, uint8_t *src,
 
 retry:
 	/* Issue JEDEC Byte Program command */
-	chip_writeb(0xAA, bios + 0x5555);
-	chip_writeb(0x55, bios + 0x2AAA);
-	chip_writeb(0xA0, bios + 0x5555);
+	start_program_jedec(bios);
 
 	/* transfer data from source to destination */
 	chip_writeb(*src, dst);
@@ -353,7 +335,6 @@ int write_jedec(struct flashchip *flash, uint8_t *buf)
 	int i, failed = 0;
 	int total_size = flash->total_size * 1024;
 	int page_size = flash->page_size;
-	chipaddr bios = flash->virtual_memory;
 
 	if (erase_chip_jedec(flash)) {
 		fprintf(stderr,"ERASE FAILED!\n");
@@ -369,7 +350,6 @@ int write_jedec(struct flashchip *flash, uint8_t *buf)
 		printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
 	}
 	printf("\n");
-	protect_jedec(bios);
 
 	return failed;
 }

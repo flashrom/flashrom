@@ -31,15 +31,6 @@
 #include "flash.h"
 #include "flashchips.h"
 
-void protect_stm50flw0x0x(chipaddr bios)
-{
-	chip_writeb(0xAA, bios + 0x5555);
-	chip_writeb(0x55, bios + 0x2AAA);
-	chip_writeb(0xA0, bios + 0x5555);
-
-	programmer_delay(200);
-}
-
 int probe_stm50flw0x0x(struct flashchip *flash)
 {
 	int result = probe_jedec(flash);
@@ -189,7 +180,6 @@ int erase_stm50flw0x0x(struct flashchip *flash)
 	int i;
 	int total_size = flash->total_size * 1024;
 	int page_size = flash->page_size;
-	chipaddr bios = flash->virtual_memory;
 
 	printf("Erasing page:\n");
 	for (i = 0; i < total_size / page_size; i++) {
@@ -206,7 +196,6 @@ int erase_stm50flw0x0x(struct flashchip *flash)
 		}
 	}
 	printf("\n");
-	protect_stm50flw0x0x(bios);
 
 	return 0;
 }
@@ -250,7 +239,6 @@ int write_stm50flw0x0x(struct flashchip *flash, uint8_t * buf)
 					bios + i * page_size, page_size);
 	}
 	printf("\n");
-	protect_stm50flw0x0x(bios);
 	free(tmpbuf);
 
 	return rc;
