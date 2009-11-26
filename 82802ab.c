@@ -190,7 +190,6 @@ int write_82802ab(struct flashchip *flash, uint8_t *buf)
 				   bios + i * page_size, page_size);
 	}
 	printf("\n");
-	protect_jedec(bios);
 	free(tmpbuf);
 
 	return 0;

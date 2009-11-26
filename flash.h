@@ -647,8 +647,7 @@ extern uint8_t *sb600_spibar;
 uint8_t oddparity(uint8_t val);
 void toggle_ready_jedec(chipaddr dst);
 void data_polling_jedec(chipaddr dst, uint8_t data);
-void unprotect_jedec(chipaddr bios);
-void protect_jedec(chipaddr bios);
+void start_program_jedec(chipaddr bios);
 int write_byte_program_jedec(chipaddr bios, uint8_t *src,
 			     chipaddr dst);
 int probe_jedec(struct flashchip *flash);

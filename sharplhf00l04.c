@@ -179,7 +179,6 @@ int write_lhf00l04(struct flashchip *flash, uint8_t *buf)
 		printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
 	}
 	printf("\n");
-	protect_jedec(bios);
 
 	return 0;
 }
