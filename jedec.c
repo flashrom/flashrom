@@ -353,3 +353,30 @@ int write_jedec(struct flashchip *flash, uint8_t *buf)
 
 	return failed;
 }
+
+int write_jedec_1(struct flashchip *flash, uint8_t * buf)
+{
+	int i;
+	chipaddr bios = flash->virtual_memory;
+	chipaddr dst = bios;
+
+	programmer_delay(10);
+	if (erase_flash(flash)) {
+		fprintf(stderr, "ERASE FAILED!\n");
+		return -1;
+	}
+
+	printf("Programming page: ");
+	for (i = 0; i < flash->total_size; i++) {
+		if ((i & 0x3) == 0)
+			printf("address: 0x%08lx", (unsigned long)i * 1024);
+
+                write_sector_jedec(bios, buf + i * 1024, dst + i * 1024, 1024);
+
+		if ((i & 0x3) == 0)
+			printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+	}
+
+	printf("\n");
+	return 0;
+}

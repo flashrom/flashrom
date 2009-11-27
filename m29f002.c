@@ -45,6 +45,7 @@ static int rewrite_block(struct flashchip *flash, uint8_t *src,
 	chipaddr dst = bios + start;
 
 	/* erase */
+	/* FIXME: use erase_sector_jedec? */
 	chip_writeb(0xaa, bios + 0x555);
 	chip_writeb(0x55, bios + 0xaaa);
 	chip_writeb(0x80, bios + 0x555);
@@ -59,6 +60,7 @@ static int rewrite_block(struct flashchip *flash, uint8_t *src,
 	}
 
 	/* program */
+	/* FIXME: use write_sector_jedec? */
 	while (size--) {
 		chip_writeb(0xaa, bios + 0x555);
 		chip_writeb(0x55, bios + 0xaaa);

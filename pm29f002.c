@@ -20,18 +20,20 @@
 
 #include "flash.h"
 
+/* if write_sector_jedec is used,
+   this is write_jedec_1 */
 int write_pm29f002(struct flashchip *flash, uint8_t *buf)
 {
 	int i, total_size = flash->total_size * 1024;
 	chipaddr bios = flash->virtual_memory;
 	chipaddr dst = bios;
 
-	/* Pm29F002T/B use the same erase method... */
-	if (erase_29f040b(flash)) {
+	if (erase_flash(flash)) {
 		fprintf(stderr, "ERASE FAILED!\n");
 		return -1;
 	}
 
+	/* FIXME: use write_sector_jedec? */
 	printf("Programming page: ");
 	for (i = 0; i < total_size; i++) {
 		if ((i & 0xfff) == 0)

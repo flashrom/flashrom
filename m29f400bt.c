@@ -20,6 +20,12 @@
 
 #include "flash.h"
 
+/* WARNING! 
+   This chip uses the standard JEDEC Addresses in 16-bit mode as word
+   addresses. In byte mode, 0xAAA has to be used instead of 0x555 and
+   0x555 instead of 0x2AA. Do *not* blindly replace with standard JEDEC
+   functions. */
+
 void write_page_m29f400bt(chipaddr bios, uint8_t *src,
 			  chipaddr dst, int page_size)
 {
