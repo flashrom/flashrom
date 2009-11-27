@@ -81,7 +81,7 @@ struct flashchip flashchips[] = {
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,
 		.erase		= erase_chip_jedec,
-		.write		= write_en29f002a,
+		.write		= write_jedec_1,
 		.read		= read_memmapped,
 	},
 
@@ -93,11 +93,11 @@ struct flashchip flashchips[] = {
 		.model_id	= AM_29F002BT,
 		.total_size	= 256,
 		.page_size	= 256,
-		.tested		= TEST_OK_PREW,
+		.tested		= TEST_OK_PRE,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,
 		.erase		= erase_chip_jedec,
-		.write		= write_en29f002a,
+		.write		= write_jedec_1,
 		.read		= read_memmapped,
 	},
 
@@ -739,7 +739,7 @@ struct flashchip flashchips[] = {
 		.probe		= probe_29f002,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (mx29f002.c) */
 		.erase		= erase_29f002,
-		.write		= write_29f002,
+		.write		= write_jedec_1,
 		.read		= read_memmapped,
 	},
 
@@ -751,11 +751,11 @@ struct flashchip flashchips[] = {
 		.model_id	= AMIC_A29002T,
 		.total_size	= 256,
 		.page_size	= 64 * 1024,
-		.tested		= TEST_OK_PREW,
+		.tested		= TEST_OK_PRE,
 		.probe		= probe_29f002,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (mx29f002.c) */
 		.erase		= erase_29f002,
-		.write		= write_29f002,
+		.write		= write_jedec_1,
 		.read		= read_memmapped,
 	},
 
@@ -1075,7 +1075,7 @@ struct flashchip flashchips[] = {
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
 		.erase		= erase_chip_jedec,
-		.write		= write_en29f002a,
+		.write		= write_jedec_1,
 		.read		= read_memmapped,
 	},
 
@@ -1087,11 +1087,11 @@ struct flashchip flashchips[] = {
 		.model_id	= EN_29F002T,
 		.total_size	= 256,
 		.page_size	= 256,
-		.tested		= TEST_OK_PREW,
+		.tested		= TEST_OK_PRE,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
 		.erase		= erase_chip_jedec,
-		.write		= write_en29f002a,
+		.write		= write_jedec_1,
 		.read		= read_memmapped,
 	},
 
@@ -1518,11 +1518,11 @@ struct flashchip flashchips[] = {
 		.model_id	= MX_29F001B,
 		.total_size	= 128,
 		.page_size	= 32 * 1024,
-		.tested		= TEST_OK_PREW,
+		.tested		= TEST_OK_PRE,
 		.probe		= probe_29f002,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (mx29f002.c) */
 		.erase		= erase_29f002,
-		.write		= write_29f002,
+		.write		= write_jedec_1,
 		.read		= read_memmapped,
 	},
 
@@ -1534,11 +1534,11 @@ struct flashchip flashchips[] = {
 		.model_id	= MX_29F001T,
 		.total_size	= 128,
 		.page_size	= 32 * 1024,
-		.tested		= TEST_OK_PREW,
+		.tested		= TEST_OK_PRE,
 		.probe		= probe_29f002,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (mx29f002.c) */
 		.erase		= erase_29f002,
-		.write		= write_29f002,
+		.write		= write_jedec_1,
 		.read		= read_memmapped,
 	},
 
@@ -1554,7 +1554,7 @@ struct flashchip flashchips[] = {
 		.probe		= probe_29f002,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (mx29f002.c) */
 		.erase		= erase_29f002,
-		.write		= write_29f002,
+		.write		= write_jedec_1,
 		.read		= read_memmapped,
 	},
 
@@ -1566,11 +1566,11 @@ struct flashchip flashchips[] = {
 		.model_id	= MX_29F002T,
 		.total_size	= 256,
 		.page_size	= 64 * 1024,
-		.tested		= TEST_OK_PREW,
+		.tested		= TEST_OK_PRE,
 		.probe		= probe_29f002,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (mx29f002.c) */
 		.erase		= erase_29f002,
-		.write		= write_29f002,
+		.write		= write_jedec_1,
 		.read		= read_memmapped,
 	},
 
@@ -1586,7 +1586,7 @@ struct flashchip flashchips[] = {
 		.probe		= probe_29f002,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (mx29f002.c) */
 		.erase		= erase_29f002,
-		.write		= write_29f002,
+		.write		= write_jedec_1,
 		.read		= read_memmapped,
 	},
 

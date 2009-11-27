@@ -653,6 +653,7 @@ int write_byte_program_jedec(chipaddr bios, uint8_t *src,
 int probe_jedec(struct flashchip *flash);
 int erase_chip_jedec(struct flashchip *flash);
 int write_jedec(struct flashchip *flash, uint8_t *buf);
+int write_jedec_1(struct flashchip *flash, uint8_t *buf);
 int erase_sector_jedec(struct flashchip *flash, unsigned int page, unsigned int pagesize);
 int erase_block_jedec(struct flashchip *flash, unsigned int page, unsigned int blocksize);
 int write_sector_jedec(chipaddr bios, uint8_t *src,
