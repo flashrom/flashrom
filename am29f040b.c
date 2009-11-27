@@ -20,6 +20,8 @@
 
 #include "flash.h"
 
+/* FIMXE: check that the 2 second delay is really needed.
+          Use erase_sector_jedec if not? */
 static int erase_sector_29f040b(struct flashchip *flash, unsigned long address)
 {
 	int page_size = flash->page_size;
@@ -44,6 +46,7 @@ static int erase_sector_29f040b(struct flashchip *flash, unsigned long address)
 	return 0;
 }
 
+/* FIXME: use write_sector_jedec? */
 static int write_sector_29f040b(chipaddr bios, uint8_t *src, chipaddr dst,
 				unsigned int page_size)
 {
@@ -91,6 +94,7 @@ int probe_29f040b(struct flashchip *flash)
 	return 0;
 }
 
+/* FIXME: use erase_chip_jedec? */
 int erase_29f040b(struct flashchip *flash)
 {
 	int total_size = flash->total_size * 1024;

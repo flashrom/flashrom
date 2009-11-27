@@ -87,39 +87,3 @@ int probe_en29f002a(struct flashchip *flash)
 
 	return 0;
 }
-
-/* The EN29F002 chip needs repeated single byte writing, no block writing. */
-int write_en29f002a(struct flashchip *flash, uint8_t *buf)
-{
-	int i;
-	int total_size = flash->total_size * 1024;
-	chipaddr bios = flash->virtual_memory;
-	chipaddr dst = bios;
-
-	//chip_writeb(0xF0, bios);
-	programmer_delay(10);
-	if (erase_chip_jedec(flash)) {
-		fprintf(stderr, "ERASE FAILED!\n");
-		return -1;
-	}
-
-	printf("Programming page: ");
-	for (i = 0; i < total_size; i++) {
-		/* write to the sector */
-		if ((i & 0xfff) == 0)
-			printf("address: 0x%08lx", (unsigned long)i);
-		chip_writeb(0xAA, bios + 0x5555);
-		chip_writeb(0x55, bios + 0x2AAA);
-		chip_writeb(0xA0, bios + 0x5555);
-		chip_writeb(*buf++, dst++);
-
-		/* wait for Toggle bit ready */
-		toggle_ready_jedec(dst);
-
-		if ((i & 0xfff) == 0)
-			printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
-	}
-
-	printf("\n");
-	return 0;
-}
