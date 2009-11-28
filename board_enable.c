@@ -523,32 +523,6 @@ static int board_epox_ep_bx3(const char *name)
 }
 
 /**
- * Suited for Acorp 6A815EPD.
- */
-static int board_acorp_6a815epd(const char *name)
-{
-	struct pci_dev *dev;
-	uint16_t port;
-	uint8_t val;
-
-	dev = pci_dev_find(0x8086, 0x2440);	/* Intel ICH2 LPC */
-	if (!dev) {
-		fprintf(stderr, "\nERROR: ICH2 LPC bridge not found.\n");
-		return -1;
-	}
-
-	/* Use GPIOBASE register to find where the GPIO is mapped. */
-	port = (pci_read_word(dev, 0x58) & 0xFFC0) + 0xE;
-
-	val = INB(port);
-	val |= 0x80;		/* Top Block Lock -- pin 8 of PLCC32 */
-	val |= 0x40;		/* Lower Blocks Lock -- pin 7 of PLCC32 */
-	OUTB(val, port);
-
-	return 0;
-}
-
-/**
  * Suited for Artec Group DBE61 and DBE62.
  */
 static int board_artecgroup_dbe6x(const char *name)
@@ -590,105 +564,262 @@ static int board_artecgroup_dbe6x(const char *name)
 }
 
 /**
- * Set the specified GPIO on the specified ICHx southbridge to high.
- *
- * @param name The name of this board.
- * @param ich_vendor PCI vendor ID of the specified ICHx southbridge.
- * @param ich_device PCI device ID of the specified ICHx southbridge.
- * @param gpiobase_reg GPIOBASE register offset in the LPC bridge.
- * @param gp_lvl Offset of GP_LVL register in I/O space, relative to GPIOBASE.
- * @param gp_lvl_bitmask GP_LVL bitmask (set GPIO bits to 1, all others to 0).
- * @param gpio_bit The bit (GPIO) which shall be set to high.
- * @return If the write-enable was successful return 0, otherwise return -1.
+ * Set a GPIO line on a given intel ICH LPC controller.
  */
-static int ich_gpio_raise(const char *name, uint16_t ich_vendor,
-			  uint16_t ich_device, uint8_t gpiobase_reg,
-			  uint8_t gp_lvl, uint32_t gp_lvl_bitmask,
-			  unsigned int gpio_bit)
+static int intel_ich_gpio_set(int gpio, int raise)
 {
-	struct pci_dev *dev;
-	uint16_t gpiobar;
-	uint32_t reg32;
+	/* table mapping the different intel ICH LPC chipsets. */
+	static struct {
+		uint16_t id;
+		uint8_t base_reg;
+		uint32_t bank0;
+		uint32_t bank1;
+		uint32_t bank2;
+	} intel_ich_gpio_table[] = {
+		{0x2410, 0x58, 0x0FE30000,          0,          0}, /* 82801AA (ICH) */
+		{0x2420, 0x58, 0x0FE30000,          0,          0}, /* 82801AB (ICH0) */
+		{0x2440, 0x58, 0x1BFF391B,          0,          0}, /* 82801BA (ICH2) */
+		{0x244C, 0x58, 0x1A23399B,          0,          0}, /* 82801BAM (ICH2M) */
+		{0x2450, 0x58, 0x1BFF0000,          0,          0}, /* 82801E (C-ICH) */
+		{0x2480, 0x58, 0x1BFF0000, 0x00000FFF,          0}, /* 82801CA (ICH3-S) */
+		{0x248C, 0x58, 0x1A230000, 0x00000FFF,          0}, /* 82801CAM (ICH3-M) */
+		{0x24C0, 0x58, 0x1BFF0000, 0x00000FFF,          0}, /* 82801DB/DBL (ICH4/ICH4-L) */
+		{0x24CC, 0x58, 0x1A030000, 0x00000FFF,          0}, /* 82801DBM (ICH4-M) */
+		{0x24D0, 0x58, 0x1BFF0000, 0x00030305,          0}, /* 82801EB/ER (ICH5/ICH5R) */
+		{0x2640, 0x48, 0x1BFF0000, 0x00030307,          0}, /* 82801FB/FR (ICH6/ICH6R) */
+		{0x2641, 0x48, 0x1BFF0000, 0x00030307,          0}, /* 82801FBM (ICH6M) */
+		{0x27B8, 0x48, 0xFFFFFFFF, 0x000300FF,          0}, /* 82801GB/GR (ICH7 Family) */
+		{0x27B9, 0x48, 0xFFEBFFFE, 0x000300FE,          0}, /* 82801GBM (ICH7-M) */
+		{0x27BD, 0x48, 0xFFEBFFFE, 0x000300FE,          0}, /* 82801GHM (ICH7-M DH) */
+		{0x2810, 0x48, 0xFFFFFFFF, 0x00FF0FFF,          0}, /* 82801HB/HR (ICH8/R) */
+		{0x2811, 0x48, 0xFFFFFFFF, 0x00FF0FFF,          0}, /* 82801HBM (ICH8M-E) */
+		{0x2812, 0x48, 0xFFFFFFFF, 0x00FF0FFF,          0}, /* 82801HH (ICH8DH) */
+		{0x2814, 0x48, 0xFFFFFFFF, 0x00FF0FFF,          0}, /* 82801HO (ICH8DO) */
+		{0x2815, 0x48, 0xFFFFFFFF, 0x00FF0FFF,          0}, /* 82801HEM (ICH8M) */
+		{0x2912, 0x48, 0xFFFFFFFF, 0x00FFFFFF,          0}, /* 82801IH (ICH9DH) */
+		{0x2914, 0x48, 0xFFFFFFFF, 0x00FFFFFF,          0}, /* 82801IO (ICH9DO) */
+		{0x2916, 0x48, 0xFFFFFFFF, 0x00FFFFFF,          0}, /* 82801IR (ICH9R) */
+		{0x2917, 0x48, 0xFFFFFFFF, 0x00FFFFFF,          0}, /* 82801IEM (ICH9M-E) */
+		{0x2918, 0x48, 0xFFFFFFFF, 0x00FFFFFF,          0}, /* 82801IB (ICH9) */
+		{0x2919, 0x48, 0xFFFFFFFF, 0x00FFFFFF,          0}, /* 82801IBM (ICH9M) */
+		{0x3A14, 0x48, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000100}, /* 82801JDO (ICH10DO) */
+		{0x3A16, 0x48, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000100}, /* 82801JIR (ICH10R) */
+		{0x3A18, 0x48, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000100}, /* 82801JIB (ICH10) */
+		{0x3A1A, 0x48, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000100}, /* 82801JD (ICH10D) */
+		{0, 0, 0, 0, 0} /* end marker */
+	};
 
-	dev = pci_dev_find(ich_vendor, ich_device);	/* Intel ICHx LPC */
+	struct pci_dev *dev;
+	uint16_t base;
+	uint32_t tmp;
+	int i, allowed;
+
+	/* First, look for a known LPC bridge */
+	for (dev = pacc->devices; dev; dev = dev->next)
+		if ((dev->vendor_id == 0x8086) &&
+		    (dev->device_class == 0x0601)) { /* ISA Bridge */
+			/* Is this device in our list? */
+			for (i = 0; intel_ich_gpio_table[i].id; i++)
+				if (dev->device_id == intel_ich_gpio_table[i].id)
+					break;
+
+			if (intel_ich_gpio_table[i].id)
+				break;
+		}
+
 	if (!dev) {
-		fprintf(stderr, "\nERROR: ICHx LPC dev %4x:%4x not found.\n",
-			ich_vendor, ich_device);
+		fprintf(stderr, "\nERROR: No Known Intel LPC Bridge found.\n");
 		return -1;
 	}
 
-	/* Use GPIOBASE register to find the I/O space for GPIO. */
-	gpiobar = pci_read_word(dev, gpiobase_reg) & gp_lvl_bitmask;
+	/* According to the datasheets, all intel ICHs have the gpio bar 5:1
+	   strapped to zero. From some mobile ich9 version on, this becomes
+	   6:1. The mask below catches all. */
+	base = pci_read_word(dev, intel_ich_gpio_table[i].base_reg) & 0xFFC0;
 
-	/* Set specified GPIO to high. */
-	reg32 = INL(gpiobar + gp_lvl);
-	reg32 |= (1 << gpio_bit);
-	OUTL(reg32, gpiobar + gp_lvl);
+	/* check whether the line is allowed */
+	if (gpio < 32)
+		allowed = (intel_ich_gpio_table[i].bank0 >> gpio) & 0x01;
+	else if (gpio < 64)
+		allowed = (intel_ich_gpio_table[i].bank1 >> (gpio - 32)) & 0x01;
+	else
+		allowed = (intel_ich_gpio_table[i].bank2 >> (gpio - 64)) & 0x01;
+
+	if (!allowed) {
+		fprintf(stderr, "\nERROR: This Intel LPC Bridge does not allow"
+			" setting GPIO%02d\n", gpio);
+		return -1;
+	}
+
+	printf("\nIntel ICH LPC Bridge: %sing GPIO%02d.\n",
+	       raise ? "Rais" : "Dropp", gpio);
+
+	if (gpio < 32) {
+		/* Set line to GPIO */
+		tmp = INL(base);
+		/* ICH/ICH0 multiplexes 27/28 on the line set. */
+		if ((gpio == 28) &&
+		    ((dev->device_id == 0x2410) || (dev->device_id == 0x2420)))
+			tmp |= 1 << 27;
+		else
+			tmp |= 1 << gpio;
+		OUTL(tmp, base);
+
+		/* As soon as we are talking to ICH8 and above, this register
+		   decides whether we can set the gpio or not. */
+		if (dev->device_id > 0x2800) {
+			tmp = INL(base);
+			if (!(tmp & (1 << gpio))) {
+				fprintf(stderr, "\nERROR: This Intel LPC Bridge"
+					" does not allow setting GPIO%02d\n",
+					gpio);
+				return -1;
+			}
+		}
+
+		/* Set GPIO to OUTPUT */
+		tmp = INL(base + 0x04);
+		tmp &= ~(1 << gpio);
+		OUTL(tmp, base + 0x04);
+
+		/* Raise GPIO line */
+		tmp = INL(base + 0x0C);
+		if (raise)
+			tmp |= 1 << gpio;
+		else
+			tmp &= ~(1 << gpio);
+		OUTL(tmp, base + 0x0C);
+	} else if (gpio < 64) {
+		gpio -= 32;
+
+		/* Set line to GPIO */
+		tmp = INL(base + 0x30);
+		tmp |= 1 << gpio;
+		OUTL(tmp, base + 0x30);
+
+		/* As soon as we are talking to ICH8 and above, this register
+		   decides whether we can set the gpio or not. */
+		if (dev->device_id > 0x2800) {
+			tmp = INL(base + 30);
+			if (!(tmp & (1 << gpio))) {
+				fprintf(stderr, "\nERROR: This Intel LPC Bridge"
+					" does not allow setting GPIO%02d\n",
+					gpio + 32);
+				return -1;
+			}
+		}
+
+		/* Set GPIO to OUTPUT */
+		tmp = INL(base + 0x34);
+		tmp &= ~(1 << gpio);
+		OUTL(tmp, base + 0x34);
+
+		/* Raise GPIO line */
+		tmp = INL(base + 0x38);
+		if (raise)
+			tmp |= 1 << gpio;
+		else
+			tmp &= ~(1 << gpio);
+		OUTL(tmp, base + 0x38);
+	} else {
+		gpio -= 64;
+
+		/* Set line to GPIO */
+		tmp = INL(base + 0x40);
+		tmp |= 1 << gpio;
+		OUTL(tmp, base + 0x40);
+
+		tmp = INL(base + 40);
+		if (!(tmp & (1 << gpio))) {
+			fprintf(stderr, "\nERROR: This Intel LPC Bridge does "
+				"not allow setting GPIO%02d\n", gpio + 64);
+			return -1;
+		}
+
+		/* Set GPIO to OUTPUT */
+		tmp = INL(base + 0x44);
+		tmp &= ~(1 << gpio);
+		OUTL(tmp, base + 0x44);
+
+		/* Raise GPIO line */
+		tmp = INL(base + 0x48);
+		if (raise)
+			tmp |= 1 << gpio;
+		else
+			tmp &= ~(1 << gpio);
+		OUTL(tmp, base + 0x48);
+	}
 
 	return 0;
 }
 
 /**
- * Suited for ASUS P4B266.
+ * Suited for Abit IP35: Intel P35 + ICH9R.
  */
-static int ich2_gpio22_raise(const char *name)
+static int intel_ich_gpio16_raise(const char *name)
 {
-	return ich_gpio_raise(name, 0x8086, 0x2440, 0x58, 0x0c, 0xffc0, 22);
+	return intel_ich_gpio_set(16, 1);
 }
 
 /**
- * Suited for the Dell PowerEdge 1850. All parameters except the last one are
- * documented in the public Intel 82801EB ICH5 / 82801ER ICH5R datasheet. The
- * last parameter (GPIO number) has to be in the range [16,31] according to
- * said Intel datasheet and was found by exhaustive search.
+ * Suited for MSI MS-7046: LGA775 + 915P + ICH6.
  */
-static int ich5_gpio23_raise(const char *name)
+static int intel_ich_gpio19_raise(const char *name)
 {
-	return ich_gpio_raise(name, 0x8086, 0x24d0, 0x58, 0x0c, 0xffc0, 23);
+	return intel_ich_gpio_set(19, 1);
 }
 
 /**
- * Suited for MSI MS-7046.
+ * Suited for Asus P4P800-E Deluxe: Intel socket478 + 865PE + ICH5R.
  */
-static int ich6_gpio19_raise(const char *name)
+static int intel_ich_gpio21_raise(const char *name)
 {
-	return ich_gpio_raise(name, 0x8086, 0x2640, 0x48, 0x0c, 0xffc0, 19);
+	return intel_ich_gpio_set(21, 1);
 }
 
+/**
+ * Suited for ASUS P4B266: socket478 + intel 845D + ICH2.
+ */
+static int intel_ich_gpio22_raise(const char *name)
+{
+	return intel_ich_gpio_set(22, 1);
+}
+
+/**
+ * Suited for Dell Poweredge 1850: Intel PPGA604 + E7520 + ICH5R.
+ */
+static int intel_ich_gpio23_raise(const char *name)
+{
+	return intel_ich_gpio_set(23, 1);
+}
+
+/**
+ * Suited for Acorp 6A815EPD: socket 370 + intel 815 + ICH2.
+ */
+static int board_acorp_6a815epd(const char *name)
+{
+	int ret;
+
+	/* Lower Blocks Lock -- pin 7 of PLCC32 */
+	ret = intel_ich_gpio_set(22, 1);
+	if (!ret) /* Top Block Lock -- pin 8 of PLCC32 */
+		ret = intel_ich_gpio_set(23, 1);
+
+	return ret;
+}
+
+/**
+ * Suited for Kontron 986LCD-M: socket478 + 915GM + ICH7R.
+ */
 static int board_kontron_986lcd_m(const char *name)
 {
-	struct pci_dev *dev;
-	uint16_t gpiobar;
-	uint32_t val;
+	int ret;
 
-#define ICH7_GPIO_LVL2 0x38
+	ret = intel_ich_gpio_set(34, 1); /* #TBL */
+	if (!ret)
+		ret = intel_ich_gpio_set(35, 1); /* #WP */
 
-	dev = pci_dev_find(0x8086, 0x27b8);	/* Intel ICH7 LPC */
-	if (!dev) {
-		// This will never happen on this board
-		fprintf(stderr, "\nERROR: ICH7 LPC bridge not found.\n");
-		return -1;
-	}
-
-	/* Use GPIOBASE register to find where the GPIO is mapped. */
-	gpiobar = pci_read_word(dev, 0x48) & 0xfffc;
-
-	val = INL(gpiobar + ICH7_GPIO_LVL2);	/* GP_LVL2 */
-	printf_debug("\nGPIOBAR=0x%04x GP_LVL: 0x%08x\n", gpiobar, val);
-
-	/* bit 2 (0x04) = 0 #TBL --> bootblock locking = 1
-	 * bit 2 (0x04) = 1 #TBL --> bootblock locking = 0
-	 * bit 3 (0x08) = 0 #WP --> block locking = 1
-	 * bit 3 (0x08) = 1 #WP --> block locking = 0
-	 *
-	 * To enable full block locking, you would do:
-	 *     val &= ~ ((1 << 2) | (1 << 3));
-	 */
-	val |= (1 << 2) | (1 << 3);
-
-	OUTL(val, gpiobar + ICH7_GPIO_LVL2);
-
-	return 0;
+	return ret;
 }
 
 /**
@@ -881,32 +1012,6 @@ static int board_mitac_6513wu(const char *name)
 }
 
 /**
- * Suited for Abit IP35: Intel P35 + ICH9R.
- */
-static int board_abit_ip35(const char *name)
-{
-	struct pci_dev *dev;
-	uint16_t base;
-	uint8_t tmp;
-
-	dev = pci_dev_find(0x8086, 0x2916);	/* Intel ICH9R LPC Interface */
-	if (!dev) {
-		fprintf(stderr, "\nERROR: Intel ICH9R LPC not found.\n");
-		return -1;
-	}
-
-	/* get LPC GPIO base */
-	base = pci_read_long(dev, 0x48) & 0x0000FFC0;
-
-	/* Raise GPIO 16 */
-	tmp = INB(base + 0x0E);
-	tmp |= 0x01;
-	OUTB(tmp, base + 0x0E);
-
-	return 0;
-}
-
-/**
  * Suited for Asus A7V8X: VIA KT400 + VT8235 + IT8703F-A
  */
 static int board_asus_a7v8x(const char *name)
@@ -1009,32 +1114,6 @@ static int board_asus_a7v600x(const char *name)
 }
 
 /**
- * Suited for Asus P4P800-E Deluxe: Intel Intel 865PE + ICH5R.
- */
-static int board_asus_p4p800(const char *name)
-{
-	struct pci_dev *dev;
-	uint16_t base;
-	uint8_t tmp;
-
-	dev = pci_dev_find(0x8086, 0x24D0);	/* Intel ICH5R ISA Bridge */
-	if (!dev) {
-		fprintf(stderr, "\nERROR: Intel ICH5R ISA Bridge not found.\n");
-		return -1;
-	}
-
-	/* get PM IO base */
-	base = pci_read_long(dev, 0x58) & 0x0000FFC0;
-
-	/* Raise GPIO 21 */
-	tmp = INB(base + 0x0E);
-	tmp |= 0x20;
-	OUTB(tmp, base + 0x0E);
-
-	return 0;
-}
-
-/**
  * Below is the list of boards which need a special "board enable" code in
  * flashrom before their ROM chip can be accessed/written to.
  *
@@ -1063,7 +1142,7 @@ static int board_asus_p4p800(const char *name)
 /* Please keep this list alphabetically ordered by vendor/board name. */
 struct board_pciid_enable board_pciid_enables[] = {
 	/* first pci-id set [4],          second pci-id set [4],          coreboot id [2],             vendor name    board name            flash enable */
-	{0x8086, 0x2926, 0x147b, 0x1084,  0x11ab, 0x4364, 0x147b, 0x1084, NULL,         NULL,          "Abit",        "IP35",               board_abit_ip35},
+	{0x8086, 0x2926, 0x147b, 0x1084,  0x11ab, 0x4364, 0x147b, 0x1084, NULL,         NULL,          "Abit",        "IP35",               intel_ich_gpio16_raise},
 	{0x8086, 0x1130,      0,      0,  0x105a, 0x0d30, 0x105a, 0x4d33, "acorp",      "6a815epd",    "Acorp",       "6A815EPD",           board_acorp_6a815epd},
 	{0x1022, 0x746B, 0x1022, 0x36C0,       0,      0,      0,      0, "AGAMI",      "ARUMA",       "agami",       "Aruma",              w83627hf_gpio24_raise_2e},
 	{0x1106, 0x3177, 0x17F2, 0x3177,  0x1106, 0x3148, 0x17F2, 0x3148, NULL,         NULL,          "Albatron",    "PM266A*",            board_epox_ep_8k5a2},
@@ -1073,12 +1152,12 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x1106, 0x3189, 0x1043, 0x807F,  0x1106, 0x3065, 0x1043, 0x80ED, NULL,         NULL,          "ASUS",        "A7V600-X",           board_asus_a7v600x},
 	{0x1106, 0x3189, 0x1043, 0x807F,  0x1106, 0x3177, 0x1043, 0x808C, NULL,         NULL,          "ASUS",        "A7V8X",              board_asus_a7v8x},
 	{0x1106, 0x3177, 0x1043, 0x80A1,  0x1106, 0x3205, 0x1043, 0x8118, NULL,         NULL,          "ASUS",        "A7V8X-MX SE",        board_asus_a7v8x_mx},
-	{0x8086, 0x1a30, 0x1043, 0x8070,  0x8086, 0x244b, 0x1043, 0x8028, NULL,         NULL,          "ASUS",        "P4B266",             ich2_gpio22_raise},
-	{0x8086, 0x2570, 0x1043, 0x80F2,  0x105A, 0x3373, 0x1043, 0x80F5, NULL,         NULL,          "ASUS",        "P4P800-E Deluxe",    board_asus_p4p800},
+	{0x8086, 0x1a30, 0x1043, 0x8070,  0x8086, 0x244b, 0x1043, 0x8028, NULL,         NULL,          "ASUS",        "P4B266",             intel_ich_gpio22_raise},
+	{0x8086, 0x2570, 0x1043, 0x80F2,  0x105A, 0x3373, 0x1043, 0x80F5, NULL,         NULL,          "ASUS",        "P4P800-E Deluxe",    intel_ich_gpio21_raise},
 	{0x10B9, 0x1541,      0,      0,  0x10B9, 0x1533,      0,      0, "asus",       "p5a",         "ASUS",        "P5A",                board_asus_p5a},
 	{0x10DE, 0x0030, 0x1043, 0x818a,  0x8086, 0x100E, 0x1043, 0x80EE, NULL,         NULL,          "ASUS",        "P5ND2-SLI Deluxe",   board_asus_p5nd2_sli},
 	{0x1106, 0x3149, 0x1565, 0x3206,  0x1106, 0x3344, 0x1565, 0x1202, NULL,         NULL,          "Biostar",     "P4M80-M4",           it8705_rom_write_enable},
-	{0x8086, 0x3590, 0x1028, 0x016c,  0x1000, 0x0030, 0x1028, 0x016c, NULL,         NULL,          "Dell",        "PowerEdge 1850",     ich5_gpio23_raise},
+	{0x8086, 0x3590, 0x1028, 0x016c,  0x1000, 0x0030, 0x1028, 0x016c, NULL,         NULL,          "Dell",        "PowerEdge 1850",     intel_ich_gpio23_raise},
 	{0x1106, 0x3038, 0x1019, 0x0996,  0x1106, 0x3177, 0x1019, 0x0996, NULL,         NULL,          "Elitegroup",  "K7VTA3",             it8705f_write_enable_2e},
 	{0x1106, 0x3177, 0x1106, 0x3177,  0x1106, 0x3059, 0x1695, 0x3005, NULL,         NULL,          "EPoX",        "EP-8K5A2",           board_epox_ep_8k5a2},
 	{0x10EC, 0x8139, 0x1695, 0x9001,  0x11C1, 0x5811, 0x1695, 0x9015, NULL,         NULL,          "EPoX",        "EP-8RDA3+",          board_epox_ep_8rda3plus},
@@ -1103,7 +1182,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x13f6, 0x0111, 0x1462, 0x5900,  0x1106, 0x3177, 0x1106,      0, "msi",        "kt4ultra",    "MSI",         "MS-6590 (KT4 Ultra)",board_msi_kt4v},
 	{0x1106, 0x3149, 0x1462, 0x7094,  0x10ec, 0x8167, 0x1462, 0x094c, NULL,         NULL,          "MSI",         "MS-6702E (K8T Neo2-F)",w83627thf_gpio4_4_raise_2e},
 	{0x1106, 0x0571, 0x1462, 0x7120,       0,      0,      0,      0, "msi",        "kt4v",        "MSI",         "MS-6712 (KT4V)",     board_msi_kt4v},
-	{0x8086, 0x2658, 0x1462, 0x7046,  0x1106, 0x3044, 0x1462, 0x046d, NULL,         NULL,          "MSI",         "MS-7046",            ich6_gpio19_raise},
+	{0x8086, 0x2658, 0x1462, 0x7046,  0x1106, 0x3044, 0x1462, 0x046d, NULL,         NULL,          "MSI",         "MS-7046",            intel_ich_gpio19_raise},
 	{0x10de, 0x005e,      0,      0,       0,      0,      0,      0, "msi",        "k8n-neo3",    "MSI",         "MS-7135 (K8N Neo3)", w83627thf_gpio4_4_raise_4e},
 	{0x1106, 0x3104, 0x1297, 0xa238,  0x1106, 0x3059, 0x1297, 0xc063, NULL,         NULL,          "Shuttle",     "AK38N",              it8705f_write_enable_2e},
 	{0x10DE, 0x0050, 0x1297, 0x5036,  0x1412, 0x1724, 0x1297, 0x5036, NULL,         NULL,          "Shuttle",     "FN25",               board_shuttle_fn25},
