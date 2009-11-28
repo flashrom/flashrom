@@ -786,7 +786,9 @@ static int intel_ich_gpio22_raise(const char *name)
 }
 
 /**
- * Suited for Dell Poweredge 1850: Intel PPGA604 + E7520 + ICH5R.
+ * Suited for:
+ * - Dell Poweredge 1850: Intel PPGA604 + E7520 + ICH5R.
+ * - ASRock P4i65GV: Intel Socket478 + 865GV + ICH5R.
  */
 static int intel_ich_gpio23_raise(const char *name)
 {
@@ -1144,6 +1146,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	/* first pci-id set [4],          second pci-id set [4],          coreboot id [2],             vendor name    board name            flash enable */
 	{0x8086, 0x2926, 0x147b, 0x1084,  0x11ab, 0x4364, 0x147b, 0x1084, NULL,         NULL,          "Abit",        "IP35",               intel_ich_gpio16_raise},
 	{0x8086, 0x1130,      0,      0,  0x105a, 0x0d30, 0x105a, 0x4d33, "acorp",      "6a815epd",    "Acorp",       "6A815EPD",           board_acorp_6a815epd},
+	{0x8086, 0x24D4, 0x1849, 0x24D0,  0x8086, 0x24D5, 0x1849, 0x9739, NULL,         NULL,          "ASRock",      "P4i65GV",            intel_ich_gpio23_raise},
 	{0x1022, 0x746B, 0x1022, 0x36C0,       0,      0,      0,      0, "AGAMI",      "ARUMA",       "agami",       "Aruma",              w83627hf_gpio24_raise_2e},
 	{0x1106, 0x3177, 0x17F2, 0x3177,  0x1106, 0x3148, 0x17F2, 0x3148, NULL,         NULL,          "Albatron",    "PM266A*",            board_epox_ep_8k5a2},
 	{0x1106, 0x3205, 0x1106, 0x3205,  0x10EC, 0x8139, 0xA0A0, 0x0477, NULL,         NULL,          "AOpen",       "vKM400Am-S",         board_aopen_vkm400},
