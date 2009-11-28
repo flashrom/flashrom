@@ -874,12 +874,10 @@ static int board_aopen_vkm400(const char *name)
  * Suited for:
  *   - MSI KT4V and KT4V-L: AMD K7 + VIA KT400 + VT8235
  *   - MSI KT4 Ultra: AMD K7 + VIA KT400 + VT8235
- *   - MSI KT3 Ultra2: AMD K7 + VIA KT333 + VT8235
  */
 static int board_msi_kt4v(const char *name)
 {
 	struct pci_dev *dev;
-	uint8_t val;
 
 	dev = pci_dev_find(0x1106, 0x3177);	/* VT8235 ISA bridge */
 	if (!dev) {
@@ -887,9 +885,7 @@ static int board_msi_kt4v(const char *name)
 		return -1;
 	}
 
-	val = pci_read_byte(dev, 0x59);
-	val &= 0x0c;
-	pci_write_byte(dev, 0x59, val);
+	vt823x_set_all_writes_to_lpc(dev);
 
 	vt823x_gpio_set(dev, 12, 1);
 	w836xx_memw_enable(0x2E);
@@ -1187,7 +1183,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x8086, 0x2411, 0x8086, 0x2411,  0x8086, 0x7125, 0x0e11, 0xb165, NULL,         NULL,          "Mitac",       "6513WU",             board_mitac_6513wu},
 	{0x13f6, 0x0111, 0x1462, 0x5900,  0x1106, 0x3177, 0x1106,      0, "msi",        "kt4ultra",    "MSI",         "MS-6590 (KT4 Ultra)",board_msi_kt4v},
 	{0x1106, 0x3149, 0x1462, 0x7094,  0x10ec, 0x8167, 0x1462, 0x094c, NULL,         NULL,          "MSI",         "MS-6702E (K8T Neo2-F)",w83627thf_gpio4_4_raise_2e},
-	{0x1106, 0x0571, 0x1462, 0x7120,       0,      0,      0,      0, "msi",        "kt4v",        "MSI",         "MS-6712 (KT4V)",     board_msi_kt4v},
+	{0x1106, 0x0571, 0x1462, 0x7120,  0x1106, 0x3065, 0x1462, 0x7120, NULL,         NULL,          "MSI",         "MS-6712 (KT4V)",     board_msi_kt4v},
 	{0x8086, 0x2658, 0x1462, 0x7046,  0x1106, 0x3044, 0x1462, 0x046d, NULL,         NULL,          "MSI",         "MS-7046",            intel_ich_gpio19_raise},
 	{0x10de, 0x005e,      0,      0,       0,      0,      0,      0, "msi",        "k8n-neo3",    "MSI",         "MS-7135 (K8N Neo3)", w83627thf_gpio4_4_raise_4e},
 	{0x1106, 0x3104, 0x1297, 0xa238,  0x1106, 0x3059, 0x1297, 0xc063, NULL,         NULL,          "Shuttle",     "AK38N",              it8705f_write_enable_2e},
