@@ -297,18 +297,13 @@ static int board_via_epia_n(const char *name)
 }
 
 /**
- * Suited for EPoX EP-8K5A2 and Albatron PM266A Pro.
+ * Suited for:
+ *   - EPoX EP-8K5A2: VIA KT333 + VT8235.
+ *   - Albatron PM266A Pro: VIA P4M266A + VT8235.
+ *   - Shuttle AK31 (all versions): VIA KT266 + VT8233.
  */
-static int board_epox_ep_8k5a2(const char *name)
+static int w836xx_memw_enable_2e(const char *name)
 {
-	struct pci_dev *dev;
-
-	dev = pci_dev_find(0x1106, 0x3177);	/* VT8235 ISA bridge */
-	if (!dev) {
-		fprintf(stderr, "\nERROR: VT8235 ISA bridge not found.\n");
-		return -1;
-	}
-
 	w836xx_memw_enable(0x2E);
 
 	return 0;
@@ -1146,7 +1141,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x8086, 0x1130,      0,      0,  0x105a, 0x0d30, 0x105a, 0x4d33, "acorp",      "6a815epd",    "Acorp",       "6A815EPD",           board_acorp_6a815epd},
 	{0x8086, 0x24D4, 0x1849, 0x24D0,  0x8086, 0x24D5, 0x1849, 0x9739, NULL,         NULL,          "ASRock",      "P4i65GV",            intel_ich_gpio23_raise},
 	{0x1022, 0x746B, 0x1022, 0x36C0,       0,      0,      0,      0, "AGAMI",      "ARUMA",       "agami",       "Aruma",              w83627hf_gpio24_raise_2e},
-	{0x1106, 0x3177, 0x17F2, 0x3177,  0x1106, 0x3148, 0x17F2, 0x3148, NULL,         NULL,          "Albatron",    "PM266A*",            board_epox_ep_8k5a2},
+	{0x1106, 0x3177, 0x17F2, 0x3177,  0x1106, 0x3148, 0x17F2, 0x3148, NULL,         NULL,          "Albatron",    "PM266A",             w836xx_memw_enable_2e},
 	{0x1106, 0x3205, 0x1106, 0x3205,  0x10EC, 0x8139, 0xA0A0, 0x0477, NULL,         NULL,          "AOpen",       "vKM400Am-S",         board_aopen_vkm400},
 	{0x1022, 0x2090,      0,      0,  0x1022, 0x2080,      0,      0, "artecgroup", "dbe61",       "Artec Group", "DBE61",              board_artecgroup_dbe6x},
 	{0x1022, 0x2090,      0,      0,  0x1022, 0x2080,      0,      0, "artecgroup", "dbe62",       "Artec Group", "DBE62",              board_artecgroup_dbe6x},
@@ -1161,7 +1156,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x1106, 0x3149, 0x1565, 0x3206,  0x1106, 0x3344, 0x1565, 0x1202, NULL,         NULL,          "Biostar",     "P4M80-M4",           it8705_rom_write_enable},
 	{0x8086, 0x3590, 0x1028, 0x016c,  0x1000, 0x0030, 0x1028, 0x016c, NULL,         NULL,          "Dell",        "PowerEdge 1850",     intel_ich_gpio23_raise},
 	{0x1106, 0x3038, 0x1019, 0x0996,  0x1106, 0x3177, 0x1019, 0x0996, NULL,         NULL,          "Elitegroup",  "K7VTA3",             it8705f_write_enable_2e},
-	{0x1106, 0x3177, 0x1106, 0x3177,  0x1106, 0x3059, 0x1695, 0x3005, NULL,         NULL,          "EPoX",        "EP-8K5A2",           board_epox_ep_8k5a2},
+	{0x1106, 0x3177, 0x1106, 0x3177,  0x1106, 0x3059, 0x1695, 0x3005, NULL,         NULL,          "EPoX",        "EP-8K5A2",           w836xx_memw_enable_2e},
 	{0x10EC, 0x8139, 0x1695, 0x9001,  0x11C1, 0x5811, 0x1695, 0x9015, NULL,         NULL,          "EPoX",        "EP-8RDA3+",          board_epox_ep_8rda3plus},
 	{0x8086, 0x7110,      0,      0,  0x8086, 0x7190,      0,      0, "epox",       "ep-bx3",      "EPoX",        "EP-BX3",             board_epox_ep_bx3},
 	{0x1039, 0x0761,      0,      0,       0,      0,      0,      0, "gigabyte",   "2761gxdk",    "GIGABYTE",    "GA-2761GXDK",        it87xx_probe_spi_flash},
@@ -1186,6 +1181,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x1106, 0x0571, 0x1462, 0x7120,  0x1106, 0x3065, 0x1462, 0x7120, NULL,         NULL,          "MSI",         "MS-6712 (KT4V)",     board_msi_kt4v},
 	{0x8086, 0x2658, 0x1462, 0x7046,  0x1106, 0x3044, 0x1462, 0x046d, NULL,         NULL,          "MSI",         "MS-7046",            intel_ich_gpio19_raise},
 	{0x10de, 0x005e,      0,      0,       0,      0,      0,      0, "msi",        "k8n-neo3",    "MSI",         "MS-7135 (K8N Neo3)", w83627thf_gpio4_4_raise_4e},
+	{0x1106, 0x3099,      0,      0,  0x1106, 0x3074,      0,      0, "shuttle",    "ak31",        "Shuttle",     "AK31",               w836xx_memw_enable_2e},
 	{0x1106, 0x3104, 0x1297, 0xa238,  0x1106, 0x3059, 0x1297, 0xc063, NULL,         NULL,          "Shuttle",     "AK38N",              it8705f_write_enable_2e},
 	{0x10DE, 0x0050, 0x1297, 0x5036,  0x1412, 0x1724, 0x1297, 0x5036, NULL,         NULL,          "Shuttle",     "FN25",               board_shuttle_fn25},
 	{0x1106, 0x3038, 0x0925, 0x1234,  0x1106, 0x3058, 0x15DD, 0x7609, NULL,         NULL,          "Soyo",        "SY-7VCA",            board_soyo_sy_7vca},
