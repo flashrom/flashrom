@@ -104,6 +104,7 @@ const struct board_info_url boards_url[] = {
 	{ "Advantech",		"PCM-5820", 		"http://www.emacinc.com/sbc_pc_compatible/pcm_5820.htm" },
 	{ "ASI",		"MB-5BLMP",		"http://www.hojerteknik.com/winnet.htm" },
 	{ "ASRock",		"A770CrossFire",	"http://www.asrock.com/mb/overview.asp?Model=A770CrossFire&s=AM2\%2b" },
+	{ "ASRock",		"K8S8X",		"http://www.asrock.com/mb/overview.asp?Model=K8S8X" },
 	{ "ASUS",		"A7N8X Deluxe",		"http://www.asus.com/Product.aspx?P_ID=wAsRYm41KTp78MFC" },
 	{ "ASUS",		"A7N8X-E Deluxe",	"http://www.asus.com/products.aspx?l1=3&l2=13&l3=56&l4=0&model=217&modelmenu=1" },
 	{ "ASUS",		"A7V400-MX",		"http://www.asus.com.tw/products.aspx?l1=3&l2=13&l3=63&l4=0&model=228&modelmenu=1" },
@@ -117,6 +118,7 @@ const struct board_info_url boards_url[] = {
 	{ "ASUS",		"A8V-E SE",		"http://www.asus.com.tw/products.aspx?l1=3&l2=15&l3=143&l4=0&model=576&modelmenu=1" },
 	{ "ASUS",		"K8V",			"http://www.asus.com/product.aspx?P_ID=fG2KZOWF7v6MRFRm" },
 	{ "ASUS",		"K8V SE Deluxe",	"http://www.asus.com/product.aspx?P_ID=65HeDI8XM1u6Uy6o" },
+	{ "ASUS",		"K8V-X SE",		"http://asus.com/product.aspx?P_ID=lzDXlbBVHkdckHVr" },
 	{ "ASUS",		"M2A-MX",		"http://www.asus.com/products.aspx?l1=3&l2=101&l3=583&l4=0&model=1909&modelmenu=1" },
 	{ "ASUS",		"M2A-VM",		"http://www.asus.com.tw/products.aspx?l1=3&l2=101&l3=496&l4=0&model=1568&modelmenu=1" },
 	{ "ASUS",		"M2N-E",		"http://www.asus.com/products.aspx?l1=3&l2=101&l3=308&l4=0&model=1181&modelmenu=1" },
@@ -133,6 +135,7 @@ const struct board_info_url boards_url[] = {
 	{ "ASUS",		"P6T Deluxe V2",	"http://www.asus.com/product.aspx?P_ID=iRlP8RG9han6saZx" },
 	{ "A-Trend",		"ATC-6220",		"http://www.motherboard.cz/mb/atrend/atc6220.htm" },
 	{ "BCOM",		"WinNET100",		"http://www.coreboot.org/BCOM_WINNET100" },
+	{ "DFI",		"Blood-Iron P35 T2RL",	"http://lp.lanparty.com.tw/portal/CM/cmproduct/XX_cmproddetail/XX_WbProdsWindow?itemId=516&downloadFlag=false&action=1" },
 	{ "Elitegroup",		"K7S5A",		"http://www.ecs.com.tw/ECSWebSite/Products/ProductsDetail.aspx?detailid=279&CategoryID=1&DetailName=Specification&MenuID=1&LanID=0" },
 	{ "Elitegroup",		"P6VAP-A+",		"http://www.ecs.com.tw/ECSWebSite/Products/ProductsDetail.aspx?detailid=117&CategoryID=1&DetailName=Specification&MenuID=1&LanID=0" },
 	{ "GIGABYTE",		"GA-6BXC",		"http://www.gigabyte.com.tw/Products/Motherboard/Products_Spec.aspx?ClassValue=Motherboard&ProductID=1445&ProductName=GA-6BXC" },
@@ -282,6 +285,7 @@ const struct board_info_url boards_url[] = {
 const struct board_info_notes boards_notes[] = {
 	/* Verified working boards that don't need write-enables. */
 	{ "ASI",		"MB-5BLMP",		"Used in the IGEL WinNET III thin client." },
+	{ "ASRock",		"K8S8X",		"The Super I/O isn't found on this board. See http://www.flashrom.org/pipermail/flashrom/2009-November/000937.html." },
 	{ "ASUS",		"A8V-E SE",		"See http://www.coreboot.org/pipermail/coreboot/2007-October/026496.html." },
 	{ "ASUS",		"M2A-VM",		"See http://www.coreboot.org/pipermail/coreboot/2007-September/025281.html." },
 	{ "BCOM",		"WinNET100",		"Used in the IGEL-316 thin client." },
