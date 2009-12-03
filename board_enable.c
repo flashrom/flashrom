@@ -415,38 +415,39 @@ static int board_shuttle_fn25(const char *name)
 }
 
 /**
- * No docs, so we are just guessing that these might be individual gpio lines.
+ * Very similar to AMD 8111 IO Hub.
  */
-static void nvidia_mcp_gpio_raise(struct pci_dev *dev, uint8_t offset)
+static int nvidia_mcp_gpio_set(int gpio, int raise)
 {
+	struct pci_dev *dev;
 	uint16_t base;
 	uint8_t tmp;
 
-	base = pci_read_long(dev, 0x64) & 0x0000FF00; /* System control area */
-
-	base += 0xC0;
-
-	/* if anyone knows more about nvidia mcps, feel free to explain this */
-	tmp = INB(base + offset);
-	tmp &= ~0x0F;
-	tmp |= 0x05;
-	OUTB(tmp, base + offset);
-}
-
-/**
- * Suited for the Gigabyte GA-K8N-SLI: CK804 southbridge.
- */
-static int board_ga_k8n_sli(const char *name)
-{
-	struct pci_dev *dev;
-
-	dev = pci_dev_find(0x10DE, 0x0050);	/* NVIDIA CK804 LPC */
-	if (!dev) {
-		fprintf(stderr, "\nERROR: NVIDIA LPC bridge not found.\n");
+	if ((gpio < 0) || (gpio > 31)) {
+		fprintf(stderr, "\nERROR: unsupported GPIO: %d.\n", gpio);
 		return -1;
 	}
 
-	nvidia_mcp_gpio_raise(dev, 0x21);
+	dev = pci_dev_find_vendorclass(0x10DE, 0x0C05);
+	switch (dev->device_id) {
+	case 0x0030: /* CK804 */
+	case 0x0050: /* MCP04 */
+	case 0x0060: /* MCP2 */
+		break;
+	default:
+		fprintf(stderr, "\nERROR: no nVidia SMBus controller found.\n");
+		return -1;
+	}
+
+	base = pci_read_long(dev, 0x64) & 0x0000FF00; /* System control area */
+	base += 0xC0;
+
+	tmp = INB(base + gpio);
+	tmp &= ~0x0F; /* null lower nibble */
+	tmp |= 0x04; /* gpio -> output. */
+	if (raise)
+		tmp |= 0x01;
+	OUTB(tmp, base + gpio);
 
 	return 0;
 }
@@ -454,37 +455,25 @@ static int board_ga_k8n_sli(const char *name)
 /**
  * Suited for ASUS P5ND2-SLI Deluxe: LGA775 + nForce4 SLI + MCP04.
  */
-static int board_asus_p5nd2_sli(const char *name)
+static int nvidia_mcp_gpio10_raise(const char *name)
 {
-	struct pci_dev *dev;
+	return nvidia_mcp_gpio_set(0x10, 1);
+}
 
-	dev = pci_dev_find(0x10DE, 0x0030);	/* NVIDIA nForce4 ISA Bridge */
-	if (!dev) {
-		fprintf(stderr, "\nERROR: NVIDIA ISA bridge not found.\n");
-		return -1;
-	}
-
-	nvidia_mcp_gpio_raise(dev, 0x10);
-
-	return 0;
+/**
+ * Suited for the Gigabyte GA-K8N-SLI: CK804 southbridge.
+ */
+static int nvidia_mcp_gpio21_raise(const char *name)
+{
+	return nvidia_mcp_gpio_set(0x21, 0x01);
 }
 
 /**
  * Suited for EPoX EP-8RDA3+: Socket A + nForce2 Ultra 400 + MCP2.
  */
-static int board_epox_ep_8rda3plus(const char *name)
+static int nvidia_mcp_gpio31_raise(const char *name)
 {
-	struct pci_dev *dev;
-
-	dev = pci_dev_find(0x10DE, 0x0060);	/* NVIDIA nForce2 ISA Bridge */
-	if (!dev) {
-		fprintf(stderr, "\nERROR: NVIDIA ISA bridge not found.\n");
-		return -1;
-	}
-
-	nvidia_mcp_gpio_raise(dev, 0x31);
-
-	return 0;
+	return nvidia_mcp_gpio_set(0x31, 0x01);
 }
 
 static int board_hp_dl145_g3_enable(const char *name)
@@ -1152,16 +1141,16 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x8086, 0x1A30, 0x1043, 0x8025,  0x8086, 0x244B, 0x104D, 0x80F0, NULL,         NULL,          "ASUS",        "P4B266-LM",          intel_ich_gpio21_raise},
 	{0x8086, 0x2570, 0x1043, 0x80F2,  0x105A, 0x3373, 0x1043, 0x80F5, NULL,         NULL,          "ASUS",        "P4P800-E Deluxe",    intel_ich_gpio21_raise},
 	{0x10B9, 0x1541,      0,      0,  0x10B9, 0x1533,      0,      0, "asus",       "p5a",         "ASUS",        "P5A",                board_asus_p5a},
-	{0x10DE, 0x0030, 0x1043, 0x818a,  0x8086, 0x100E, 0x1043, 0x80EE, NULL,         NULL,          "ASUS",        "P5ND2-SLI Deluxe",   board_asus_p5nd2_sli},
+	{0x10DE, 0x0030, 0x1043, 0x818a,  0x8086, 0x100E, 0x1043, 0x80EE, NULL,         NULL,          "ASUS",        "P5ND2-SLI Deluxe",   nvidia_mcp_gpio10_raise},
 	{0x1106, 0x3149, 0x1565, 0x3206,  0x1106, 0x3344, 0x1565, 0x1202, NULL,         NULL,          "Biostar",     "P4M80-M4",           it8705_rom_write_enable},
 	{0x8086, 0x3590, 0x1028, 0x016c,  0x1000, 0x0030, 0x1028, 0x016c, NULL,         NULL,          "Dell",        "PowerEdge 1850",     intel_ich_gpio23_raise},
 	{0x1106, 0x3038, 0x1019, 0x0996,  0x1106, 0x3177, 0x1019, 0x0996, NULL,         NULL,          "Elitegroup",  "K7VTA3",             it8705f_write_enable_2e},
 	{0x1106, 0x3177, 0x1106, 0x3177,  0x1106, 0x3059, 0x1695, 0x3005, NULL,         NULL,          "EPoX",        "EP-8K5A2",           w836xx_memw_enable_2e},
-	{0x10EC, 0x8139, 0x1695, 0x9001,  0x11C1, 0x5811, 0x1695, 0x9015, NULL,         NULL,          "EPoX",        "EP-8RDA3+",          board_epox_ep_8rda3plus},
+	{0x10EC, 0x8139, 0x1695, 0x9001,  0x11C1, 0x5811, 0x1695, 0x9015, NULL,         NULL,          "EPoX",        "EP-8RDA3+",          nvidia_mcp_gpio31_raise},
 	{0x8086, 0x7110,      0,      0,  0x8086, 0x7190,      0,      0, "epox",       "ep-bx3",      "EPoX",        "EP-BX3",             board_epox_ep_bx3},
 	{0x1039, 0x0761,      0,      0,       0,      0,      0,      0, "gigabyte",   "2761gxdk",    "GIGABYTE",    "GA-2761GXDK",        it87xx_probe_spi_flash},
 	{0x1106, 0x3227, 0x1458, 0x5001,  0x10ec, 0x8139, 0x1458, 0xe000, NULL,         NULL,          "GIGABYTE",    "GA-7VT600",          it8705_rom_write_enable},
-	{0x10DE, 0x0050, 0x1458, 0x0C11,  0x10DE, 0x005e, 0x1458, 0x5000, NULL,         NULL,          "GIGABYTE",    "GA-K8N-SLI",         board_ga_k8n_sli},
+	{0x10DE, 0x0050, 0x1458, 0x0C11,  0x10DE, 0x005e, 0x1458, 0x5000, NULL,         NULL,          "GIGABYTE",    "GA-K8N-SLI",         nvidia_mcp_gpio21_raise},
 	{0x10de, 0x0360,      0,      0,       0,      0,      0,      0, "gigabyte",   "m57sli",      "GIGABYTE",    "GA-M57SLI-S4",       it87xx_probe_spi_flash},
 	{0x10de, 0x03e0,      0,      0,       0,      0,      0,      0, "gigabyte",   "m61p",        "GIGABYTE",    "GA-M61P-S3",         it87xx_probe_spi_flash},
 	{0x1002, 0x4398, 0x1458, 0x5004,  0x1002, 0x4391, 0x1458, 0xb000, NULL,         NULL,          "GIGABYTE",    "GA-MA78G-DS3H",      it87xx_probe_spi_flash},
