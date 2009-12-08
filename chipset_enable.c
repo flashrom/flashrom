@@ -270,6 +270,8 @@ static int enable_flash_piix4(struct pci_dev *dev, const char *name)
 	uint16_t old, new;
 	uint16_t xbcs = 0x4e;	/* X-Bus Chip Select register. */
 
+	buses_supported = CHIP_BUSTYPE_PARALLEL;
+
 	old = pci_read_word(dev, xbcs);
 
 	/* Set bit 9: 1-Meg Extended BIOS Enable (PCI master accesses to
