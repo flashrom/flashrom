@@ -225,40 +225,6 @@ static int enable_flash_sis540(struct pci_dev *dev, const char *name)
 	return ret;
 }
 
-static int enable_flash_sis630(struct pci_dev *dev, const char *name)
-{
-	uint8_t tmp;
-	uint16_t siobase;
-	int ret;
-
-	ret = enable_flash_sis540(dev, name);
-
-	/* The same thing on SiS 950 Super I/O side... */
-
-	/* First probe for Super I/O on config port 0x2e. */
-	siobase = 0x2e;
-	enter_conf_mode_ite(siobase);
-
-	if (INB(siobase + 1) != 0x87) {
-		/* If that failed, try config port 0x4e. */
-		siobase = 0x4e;
-		enter_conf_mode_ite(siobase);
-		if (INB(siobase + 1) != 0x87) {
-			printf("Can not find SuperI/O.\n");
-			return -1;
-		}
-	}
-
-	/* Enable flash mapping. Works for most old ITE style SuperI/O. */
-	tmp = sio_read(siobase, 0x24);
-	tmp |= 0xfc;
-	sio_write(siobase, 0x24, tmp);
-
-	exit_conf_mode_ite(siobase);
-
-	return ret;
-}
-
 /* Datasheet:
  *   - Name: 82371AB PCI-TO-ISA / IDE XCELERATOR (PIIX4)
  *   - URL: http://www.intel.com/design/intarch/datashts/290562.htm
@@ -1171,23 +1137,23 @@ const struct penable chipset_enables[] = {
 	{0x1039, 0x5600, NT, "SiS", "600",		enable_flash_sis530},
 	{0x1039, 0x0620, NT, "SiS", "620",		enable_flash_sis530},
 	{0x1039, 0x0540, NT, "SiS", "540",		enable_flash_sis540},
-	{0x1039, 0x0630, NT, "SiS", "630",		enable_flash_sis630},
-	{0x1039, 0x0635, NT, "SiS", "635",		enable_flash_sis630},
-	{0x1039, 0x0640, NT, "SiS", "640",		enable_flash_sis630},
-	{0x1039, 0x0645, NT, "SiS", "645",		enable_flash_sis630},
-	{0x1039, 0x0646, NT, "SiS", "645DX",		enable_flash_sis630},
-	{0x1039, 0x0648, NT, "SiS", "648",		enable_flash_sis630},
-	{0x1039, 0x0650, NT, "SiS", "650",		enable_flash_sis630},
-	{0x1039, 0x0651, NT, "SiS", "651",		enable_flash_sis630},
-	{0x1039, 0x0655, NT, "SiS", "655",		enable_flash_sis630},
-	{0x1039, 0x0730, NT, "SiS", "730",		enable_flash_sis630},
-	{0x1039, 0x0733, NT, "SiS", "733",		enable_flash_sis630},
-	{0x1039, 0x0735, OK, "SiS", "735",		enable_flash_sis630},
-	{0x1039, 0x0740, NT, "SiS", "740",		enable_flash_sis630},
-	{0x1039, 0x0745, NT, "SiS", "745",		enable_flash_sis630},
-	{0x1039, 0x0746, NT, "SiS", "746",		enable_flash_sis630},
-	{0x1039, 0x0748, NT, "SiS", "748",		enable_flash_sis630},
-	{0x1039, 0x0755, NT, "SiS", "755",		enable_flash_sis630},
+	{0x1039, 0x0630, NT, "SiS", "630",		enable_flash_sis540},
+	{0x1039, 0x0635, NT, "SiS", "635",		enable_flash_sis540},
+	{0x1039, 0x0640, NT, "SiS", "640",		enable_flash_sis540},
+	{0x1039, 0x0645, NT, "SiS", "645",		enable_flash_sis540},
+	{0x1039, 0x0646, NT, "SiS", "645DX",		enable_flash_sis540},
+	{0x1039, 0x0648, NT, "SiS", "648",		enable_flash_sis540},
+	{0x1039, 0x0650, NT, "SiS", "650",		enable_flash_sis540},
+	{0x1039, 0x0651, NT, "SiS", "651",		enable_flash_sis540},
+	{0x1039, 0x0655, NT, "SiS", "655",		enable_flash_sis540},
+	{0x1039, 0x0730, NT, "SiS", "730",		enable_flash_sis540},
+	{0x1039, 0x0733, NT, "SiS", "733",		enable_flash_sis540},
+	{0x1039, 0x0735, OK, "SiS", "735",		enable_flash_sis540},
+	{0x1039, 0x0740, NT, "SiS", "740",		enable_flash_sis540},
+	{0x1039, 0x0745, NT, "SiS", "745",		enable_flash_sis540},
+	{0x1039, 0x0746, NT, "SiS", "746",		enable_flash_sis540},
+	{0x1039, 0x0748, NT, "SiS", "748",		enable_flash_sis540},
+	{0x1039, 0x0755, NT, "SiS", "755",		enable_flash_sis540},
 	{0x1106, 0x8324, OK, "VIA", "CX700",		enable_flash_vt823x},
 	{0x1106, 0x8231, NT, "VIA", "VT8231",		enable_flash_vt823x},
 	{0x1106, 0x3074, NT, "VIA", "VT8233",		enable_flash_vt823x},
