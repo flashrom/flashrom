@@ -180,7 +180,7 @@ static void vt823x_set_all_writes_to_lpc(struct pci_dev *dev)
 static void vt823x_gpio_set(struct pci_dev *dev, uint8_t gpio, int raise)
 {
 	uint16_t base;
-	uint8_t val, bit;
+	uint8_t val, bit, offset;
 
 	if ((gpio >= 12) && (gpio <= 15)) {
 		/* GPIO12-15 -> output */
@@ -192,24 +192,28 @@ static void vt823x_gpio_set(struct pci_dev *dev, uint8_t gpio, int raise)
 		val = pci_read_byte(dev, 0xE4);
 		val |= 0x20;
 		pci_write_byte(dev, 0xE4, val);
+	} else if (gpio == 5) {
+		val = pci_read_byte(dev, 0xE4);
+		val |= 0x01;
+		pci_write_byte(dev, 0xE4, val);
 	} else {
 		fprintf(stderr, "\nERROR: "
 			"VT823x GPIO%02d is not implemented.\n", gpio);
 		return;
 	}
 
-	/* Now raise/drop the GPIO line itself. */
-	bit = 0x01 << (gpio - 8);
-
 	/* We need the I/O Base Address for this board's flash enable. */
 	base = pci_read_word(dev, 0x88) & 0xff80;
 
-	val = INB(base + 0x4D);
+	offset = 0x4C + gpio / 8;
+	bit = 0x01 << (gpio % 8);
+
+	val = INB(base + offset);
 	if (raise)
 		val |= bit;
 	else
 		val &= ~bit;
-	OUTB(val, base + 0x4D);
+	OUTB(val, base + offset);
 }
 
 /**
@@ -1100,6 +1104,26 @@ static int board_asus_a7v600x(const char *name)
 }
 
 /**
+ * Suited for Asus M2V-MX: VIA K8M890 + VT8237A + IT8716F
+ */
+static int board_asus_m2v_mx(const char *name)
+{
+	struct pci_dev *dev;
+
+	dev = pci_dev_find(0x1106, 0x3337);	/* VT8237A ISA bridge */
+	if (!dev) {
+		fprintf(stderr, "\nERROR: VT8237A ISA bridge not found.\n");
+		return -1;
+	}
+
+	/* GPO5 is connected to WP# and TBL#. */
+	vt823x_gpio_set(dev, 5, 1);
+
+	return 0;
+}
+
+
+/**
  * Below is the list of boards which need a special "board enable" code in
  * flashrom before their ROM chip can be accessed/written to.
  *
@@ -1139,6 +1163,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x1106, 0x3189, 0x1043, 0x807F,  0x1106, 0x3065, 0x1043, 0x80ED, NULL,         NULL,          "ASUS",        "A7V600-X",           board_asus_a7v600x},
 	{0x1106, 0x3189, 0x1043, 0x807F,  0x1106, 0x3177, 0x1043, 0x808C, NULL,         NULL,          "ASUS",        "A7V8X",              board_asus_a7v8x},
 	{0x1106, 0x3177, 0x1043, 0x80A1,  0x1106, 0x3205, 0x1043, 0x8118, NULL,         NULL,          "ASUS",        "A7V8X-MX SE",        board_asus_a7v8x_mx},
+	{0x1106, 0x1336, 0x1043, 0x80ed,  0x1106, 0x3288, 0x1043, 0x8249, NULL,         NULL,          "ASUS",        "M2V-MX",             board_asus_m2v_mx},
 	{0x8086, 0x1a30, 0x1043, 0x8070,  0x8086, 0x244b, 0x1043, 0x8028, NULL,         NULL,          "ASUS",        "P4B266",             intel_ich_gpio22_raise},
 	{0x8086, 0x1A30, 0x1043, 0x8025,  0x8086, 0x244B, 0x104D, 0x80F0, NULL,         NULL,          "ASUS",        "P4B266-LM",          intel_ich_gpio21_raise},
 	{0x8086, 0x2570, 0x1043, 0x80F2,  0x105A, 0x3373, 0x1043, 0x80F5, NULL,         NULL,          "ASUS",        "P4P800-E Deluxe",    intel_ich_gpio21_raise},
