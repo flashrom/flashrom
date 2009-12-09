@@ -814,6 +814,8 @@ static int board_kontron_986lcd_m(const char *name)
  * Suited for:
  *   - Biostar P4M80-M4: VIA P4M800 + VT8237 + IT8705AF
  *   - GIGABYTE GA-7VT600: VIA KT600 + VT8237 + IT8705
+ *
+ * SIS950 superio probably requires the same flash write enable.
  */
 static int it8705_rom_write_enable(const char *name)
 {
