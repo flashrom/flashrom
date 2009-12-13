@@ -33,10 +33,38 @@
 const char *flashrom_version = FLASHROM_VERSION;
 char *chip_to_probe = NULL;
 int verbose = 0;
+
+#if INTERNAL_SUPPORT == 1
 enum programmer programmer = PROGRAMMER_INTERNAL;
+#elif DUMMY_SUPPORT == 1
+enum programmer programmer = PROGRAMMER_DUMMY;
+#else
+/* Activating the #error explodes on make dep. */
+//#error Neither internal nor dummy selected
+#endif
+
 char *programmer_param = NULL;
 
+/**
+ * flashrom defaults to Parallel/LPC/FWH flash devices. If a known host
+ * controller is found, the init routine sets the buses_supported bitfield to
+ * contain the supported buses for that controller.
+ */
+enum chipbustype buses_supported = CHIP_BUSTYPE_NONSPI;
+
+/**
+ * Programmers supporting multiple buses can have differing size limits on
+ * each bus. Store the limits for each bus in a common struct.
+ */
+struct decode_sizes max_rom_decode = {
+	.parallel	= 0xffffffff,
+	.lpc		= 0xffffffff,
+	.fwh		= 0xffffffff,
+	.spi		= 0xffffffff
+};
+
 const struct programmer_entry programmer_table[] = {
+#if INTERNAL_SUPPORT == 1
 	{
 		.name			= "internal",
 		.init			= internal_init,
@@ -53,6 +81,7 @@ const struct programmer_entry programmer_table[] = {
 		.chip_writen		= fallback_chip_writen,
 		.delay			= internal_delay,
 	},
+#endif
 
 #if DUMMY_SUPPORT == 1
 	{
@@ -149,6 +178,7 @@ const struct programmer_entry programmer_table[] = {
 	},
 #endif
 
+#if INTERNAL_SUPPORT == 1
 	{
 		.name			= "it87spi",
 		.init			= it87spi_init,
@@ -165,6 +195,7 @@ const struct programmer_entry programmer_table[] = {
 		.chip_writen		= fallback_chip_writen,
 		.delay			= internal_delay,
 	},
+#endif
 
 #if FT2232_SPI_SUPPORT == 1
 	{
@@ -307,6 +338,8 @@ int read_memmapped(struct flashchip *flash, uint8_t *buf, int start, int len)
 		
 	return 0;
 }
+
+unsigned long flashbase = 0;
 
 int min(int a, int b)
 {
@@ -866,7 +899,9 @@ void usage(const char *name)
 	     "   -E | --erase:                     erase flash device\n"
 	     "   -V | --verbose:                   more verbose output\n"
 	     "   -c | --chip <chipname>:           probe only for specified flash chip\n"
+#if INTERNAL_SUPPORT == 1
 	     "   -m | --mainboard <[vendor:]part>: override mainboard settings\n"
+#endif
 	     "   -f | --force:                     force write without checking image\n"
 	     "   -l | --layout <file.layout>:      read ROM layout from file\n"
 	     "   -i | --image <name>:              only flash image name from flash layout\n"
@@ -962,7 +997,7 @@ int main(int argc, char *argv[])
 
 	char *filename = NULL;
 
-	char *tempstr = NULL, *tempstr2 = NULL;
+	char *tempstr = NULL;
 
 	print_version();
 
@@ -1046,18 +1081,12 @@ int main(int argc, char *argv[])
 			}
 			erase_it = 1;
 			break;
+#if INTERNAL_SUPPORT == 1
 		case 'm':
 			tempstr = strdup(optarg);
-			strtok(tempstr, ":");
-			tempstr2 = strtok(NULL, ":");
-			if (tempstr2) {
-				lb_vendor = tempstr;
-				lb_part = tempstr2;
-			} else {
-				lb_vendor = NULL;
-				lb_part = tempstr;
-			}
+			lb_vendor_dev_from_string(tempstr);
 			break;
+#endif
 		case 'f':
 			force = 1;
 			break;
@@ -1224,7 +1253,8 @@ int main(int argc, char *argv[])
 		       "this flash part. Please include the flashrom\noutput "
 		       "with the additional -V option for all operations you "
 		       "tested (-V, -rV,\n-wV, -EV), and mention which "
-		       "mainboard you tested. Thanks for your help!\n===\n");
+		       "mainboard or programmer you tested. Thanks for your "
+		       "help!\n===\n");
 	}
 
 	size = flash->total_size * 1024;
@@ -1318,7 +1348,9 @@ int main(int argc, char *argv[])
 		}
 
 		numbytes = fread(buf, 1, size, image);
+#if INTERNAL_SUPPORT == 1
 		show_id(buf, size, force);
+#endif
 		fclose(image);
 		if (numbytes != size) {
 			fprintf(stderr, "Error: Failed to read file. Got %ld bytes, wanted %ld!\n", numbytes, size);

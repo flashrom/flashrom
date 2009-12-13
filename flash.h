@@ -30,7 +30,9 @@
 #include <unistd.h>
 #include <stdint.h>
 #include <stdio.h>
+#if NEED_PCI == 1
 #include <pci/pci.h>
+#endif
 
 /* for iopl and outb under Solaris */
 #if defined (__sun) && (defined(__i386) || defined(__amd64))
@@ -81,7 +83,9 @@
 typedef unsigned long chipaddr;
 
 enum programmer {
+#if INTERNAL_SUPPORT == 1
 	PROGRAMMER_INTERNAL,
+#endif
 #if DUMMY_SUPPORT == 1
 	PROGRAMMER_DUMMY,
 #endif
@@ -97,7 +101,9 @@ enum programmer {
 #if SATASII_SUPPORT == 1
 	PROGRAMMER_SATASII,
 #endif
+#if INTERNAL_SUPPORT == 1
 	PROGRAMMER_IT87SPI,
+#endif
 #if FT2232_SPI_SUPPORT == 1
 	PROGRAMMER_FT2232SPI,
 #endif
@@ -269,6 +275,7 @@ struct flashchip {
 
 extern struct flashchip flashchips[];
 
+#if INTERNAL_SUPPORT == 1
 struct penable {
 	uint16_t vendor_id;
 	uint16_t device_id;
@@ -316,11 +323,13 @@ extern const struct board_info boards_ok[];
 extern const struct board_info boards_bad[];
 extern const struct board_info laptops_ok[];
 extern const struct board_info laptops_bad[];
+#endif
 
 /* udelay.c */
 void myusec_delay(int usecs);
 void myusec_calibrate_delay(void);
 
+#if NEED_PCI == 1
 /* pcidev.c */
 #define PCI_OK 0
 #define PCI_NT 1    /* Not tested */
@@ -338,11 +347,14 @@ struct pcidev_status {
 };
 uint32_t pcidev_validate(struct pci_dev *dev, uint32_t bar, struct pcidev_status *devs);
 uint32_t pcidev_init(uint16_t vendor_id, uint32_t bar, struct pcidev_status *devs, char *pcidev_bdf);
+#endif
 
 /* print.c */
 char *flashbuses_to_text(enum chipbustype bustype);
 void print_supported(void);
+#if (NIC3COM_SUPPORT == 1) || (GFXNVIDIA_SUPPORT == 1) || (DRKAISER_SUPPORT == 1) || (SATASII_SUPPORT == 1)
 void print_supported_pcidevs(struct pcidev_status *devs);
+#endif
 void print_supported_wiki(void);
 
 /* board_enable.c */
@@ -353,19 +365,8 @@ void sio_write(uint16_t port, uint8_t reg, uint8_t data);
 void sio_mask(uint16_t port, uint8_t reg, uint8_t data, uint8_t mask);
 int board_flash_enable(const char *vendor, const char *part);
 
-struct decode_sizes {
-	uint32_t parallel;
-	uint32_t lpc;
-	uint32_t fwh;
-	uint32_t spi;
-};
-
 /* chipset_enable.c */
-extern enum chipbustype buses_supported;
 int chipset_flash_enable(void);
-extern struct decode_sizes max_rom_decode;
-
-extern unsigned long flashbase;
 
 /* physmap.c */
 void *physmap(const char *descr, unsigned long phys_addr, size_t len);
@@ -389,13 +390,16 @@ int freebsd_wrmsr(int addr, msr_t msr);
 #endif
 
 /* internal.c */
+#if NEED_PCI == 1
 struct pci_dev *pci_dev_find_filter(struct pci_filter filter);
 struct pci_dev *pci_dev_find_vendorclass(uint16_t vendor, uint16_t class);
 struct pci_dev *pci_dev_find(uint16_t vendor, uint16_t device);
 struct pci_dev *pci_card_find(uint16_t vendor, uint16_t device,
 			      uint16_t card_vendor, uint16_t card_device);
+#endif
 void get_io_perms(void);
 void release_io_perms(void);
+#if INTERNAL_SUPPORT == 1
 int internal_init(void);
 int internal_shutdown(void);
 void internal_chip_writeb(uint8_t val, chipaddr addr);
@@ -405,6 +409,7 @@ uint8_t internal_chip_readb(const chipaddr addr);
 uint16_t internal_chip_readw(const chipaddr addr);
 uint32_t internal_chip_readl(const chipaddr addr);
 void internal_chip_readn(uint8_t *buf, const chipaddr addr, size_t len);
+#endif
 void mmio_writeb(uint8_t val, void *addr);
 void mmio_writew(uint16_t val, void *addr);
 void mmio_writel(uint32_t val, void *addr);
@@ -428,6 +433,7 @@ extern int io_fd;
 #endif
 
 /* dummyflasher.c */
+#if DUMMY_SUPPORT == 1
 int dummy_init(void);
 int dummy_shutdown(void);
 void *dummy_map(const char *descr, unsigned long phys_addr, size_t len);
@@ -442,34 +448,43 @@ uint32_t dummy_chip_readl(const chipaddr addr);
 void dummy_chip_readn(uint8_t *buf, const chipaddr addr, size_t len);
 int dummy_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		      const unsigned char *writearr, unsigned char *readarr);
+#endif
 
 /* nic3com.c */
+#if NIC3COM_SUPPORT == 1
 int nic3com_init(void);
 int nic3com_shutdown(void);
 void nic3com_chip_writeb(uint8_t val, chipaddr addr);
 uint8_t nic3com_chip_readb(const chipaddr addr);
 extern struct pcidev_status nics_3com[];
+#endif
 
 /* gfxnvidia.c */
+#if GFXNVIDIA_SUPPORT == 1
 int gfxnvidia_init(void);
 int gfxnvidia_shutdown(void);
 void gfxnvidia_chip_writeb(uint8_t val, chipaddr addr);
 uint8_t gfxnvidia_chip_readb(const chipaddr addr);
 extern struct pcidev_status gfx_nvidia[];
+#endif
 
 /* drkaiser.c */
+#if DRKAISER_SUPPORT == 1
 int drkaiser_init(void);
 int drkaiser_shutdown(void);
 void drkaiser_chip_writeb(uint8_t val, chipaddr addr);
 uint8_t drkaiser_chip_readb(const chipaddr addr);
 extern struct pcidev_status drkaiser_pcidev[];
+#endif
 
 /* satasii.c */
+#if SATASII_SUPPORT == 1
 int satasii_init(void);
 int satasii_shutdown(void);
 void satasii_chip_writeb(uint8_t val, chipaddr addr);
 uint8_t satasii_chip_readb(const chipaddr addr);
 extern struct pcidev_status satas_sii[];
+#endif
 
 /* ft2232_spi.c */
 #define FTDI_FT2232H 0x6010
@@ -498,7 +513,16 @@ int buspirate_spi_send_command(unsigned int writecnt, unsigned int readcnt, cons
 int buspirate_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
 
 /* flashrom.c */
+extern enum chipbustype buses_supported;
+struct decode_sizes {
+	uint32_t parallel;
+	uint32_t lpc;
+	uint32_t fwh;
+	uint32_t spi;
+};
+extern struct decode_sizes max_rom_decode;
 extern char *programmer_param;
+extern unsigned long flashbase;
 extern int verbose;
 extern const char *flashrom_version;
 #define printf_debug(x...) { if (verbose) printf(x); }
@@ -522,6 +546,7 @@ int find_romentry(char *name);
 int handle_romentries(uint8_t *buffer, struct flashchip *flash);
 
 /* cbtable.c */
+void lb_vendor_dev_from_string(char *boardstring);
 int coreboot_init(void);
 extern char *lb_part, *lb_vendor;
 extern int partvendor_from_cbtable;
@@ -529,12 +554,14 @@ extern int partvendor_from_cbtable;
 /* spi.c */
 enum spi_controller {
 	SPI_CONTROLLER_NONE,
+#if INTERNAL_SUPPORT == 1
 	SPI_CONTROLLER_ICH7,
 	SPI_CONTROLLER_ICH9,
 	SPI_CONTROLLER_IT87XX,
 	SPI_CONTROLLER_SB600,
 	SPI_CONTROLLER_VIA,
 	SPI_CONTROLLER_WBSIO,
+#endif
 #if FT2232_SPI_SUPPORT == 1
 	SPI_CONTROLLER_FT2232,
 #endif

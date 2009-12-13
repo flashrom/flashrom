@@ -31,6 +31,7 @@
 int io_fd;
 #endif
 
+#if NEED_PCI == 1
 struct pci_dev *pci_dev_find_filter(struct pci_filter filter)
 {
 	struct pci_dev *temp;
@@ -99,6 +100,7 @@ struct pci_dev *pci_card_find(uint16_t vendor, uint16_t device,
 
 	return NULL;
 }
+#endif
 
 void get_io_perms(void)
 {
@@ -122,6 +124,7 @@ void release_io_perms(void)
 #endif
 }
 
+#if INTERNAL_SUPPORT == 1
 int internal_init(void)
 {
 	int ret = 0;
@@ -163,6 +166,7 @@ int internal_shutdown(void)
 
 	return 0;
 }
+#endif
 
 void internal_chip_writeb(uint8_t val, chipaddr addr)
 {

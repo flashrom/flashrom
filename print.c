@@ -144,6 +144,7 @@ void print_supported_chips(void)
 	}
 }
 
+#if INTERNAL_SUPPORT == 1
 void print_supported_chipsets(void)
 {
 	int i, j, chipsetcount = 0;
@@ -221,12 +222,15 @@ void print_supported_boards(void)
 	print_supported_boards_helper(laptops_bad,
 		"Laptops which have been verified to NOT work yet");
 }
+#endif
 
 void print_supported(void)
 {
 		print_supported_chips();
+#if INTERNAL_SUPPORT == 1
 		print_supported_chipsets();
 		print_supported_boards();
+#endif
 		printf("\nSupported PCI devices flashrom can use "
 		       "as programmer:\n\n");
 #if NIC3COM_SUPPORT == 1
@@ -244,6 +248,7 @@ void print_supported(void)
 }
 
 
+#if INTERNAL_SUPPORT == 1
 /* Please keep this list alphabetically ordered by vendor/board. */
 const struct board_info boards_ok[] = {
 	/* Verified working boards that don't need write-enables. */
@@ -394,4 +399,5 @@ const struct board_info laptops_bad[] = {
 
 	{},
 };
+#endif
 

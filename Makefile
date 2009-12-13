@@ -43,13 +43,11 @@ endif
 
 LIBS += -lpci
 
-OBJS = chipset_enable.o board_enable.o udelay.o jedec.o stm50flw0x0x.o \
-	sst28sf040.o am29f040b.o mx29f002.o m29f400bt.o pm29f002.o \
-	w49f002u.o 82802ab.o pm49fl00x.o sst49lf040.o en29f002a.o \
-	sst49lfxxxc.o sst_fwhub.o layout.o cbtable.o flashchips.o physmap.o \
-	flashrom.o w39v080fa.o sharplhf00l04.o w29ee011.o spi.o it87spi.o \
-	ichspi.o w39v040c.o sb600spi.o wbsio_spi.o m29f002.o internal.o \
-	pcidev.o print.o
+OBJS = jedec.o stm50flw0x0x.o w39v080fa.o sharplhf00l04.o w29ee011.o \
+	sst28sf040.o am29f040b.o mx29f002.o m29f400bt.o pm29f002.o w39v040c.o \
+	w49f002u.o 82802ab.o pm49fl00x.o sst49lf040.o en29f002a.o m29f002.o \
+	sst49lfxxxc.o sst_fwhub.o flashchips.o layout.o spi.o \
+	flashrom.o print.o physmap.o internal.o udelay.o
 
 all: pciutils features dep $(PROGRAM)
 
@@ -64,6 +62,9 @@ VERSION := $(RELEASE)-r$(SVNVERSION)
 RELEASENAME ?= $(VERSION)
 
 SVNDEF := -D'FLASHROM_VERSION="$(VERSION)"'
+
+# Always enable internal/onboard support for now.
+CONFIG_INTERNAL ?= yes
 
 # Always enable serprog for now. Needs to be disabled on Windows.
 CONFIG_SERPROG ?= yes
@@ -95,6 +96,12 @@ CONFIG_BUSPIRATESPI ?= yes
 # Disable wiki printing by default. It is only useful if you have wiki access.
 CONFIG_PRINT_WIKI ?= no
 
+ifeq ($(CONFIG_INTERNAL), yes)
+FEATURE_CFLAGS += -D'INTERNAL_SUPPORT=1'
+OBJS += chipset_enable.o board_enable.o cbtable.o it87spi.o ichspi.o sb600spi.o wbsio_spi.o
+NEED_PCI := yes
+endif
+
 ifeq ($(CONFIG_SERPROG), yes)
 FEATURE_CFLAGS += -D'SERPROG_SUPPORT=1'
 OBJS += serprog.o
@@ -111,16 +118,19 @@ endif
 ifeq ($(CONFIG_NIC3COM), yes)
 FEATURE_CFLAGS += -D'NIC3COM_SUPPORT=1'
 OBJS += nic3com.o
+NEED_PCI := yes
 endif
 
 ifeq ($(CONFIG_GFXNVIDIA), yes)
 FEATURE_CFLAGS += -D'GFXNVIDIA_SUPPORT=1'
 OBJS += gfxnvidia.o
+NEED_PCI := yes
 endif
 
 ifeq ($(CONFIG_SATASII), yes)
 FEATURE_CFLAGS += -D'SATASII_SUPPORT=1'
 OBJS += satasii.o
+NEED_PCI := yes
 endif
 
 FTDILIBS := $(shell pkg-config --libs libftdi 2>/dev/null || printf "%s" "-lftdi -lusb")
@@ -139,6 +149,7 @@ endif
 ifeq ($(CONFIG_DRKAISER), yes)
 FEATURE_CFLAGS += -D'DRKAISER_SUPPORT=1'
 OBJS += drkaiser.o
+NEED_PCI := yes
 endif
 
 ifeq ($(CONFIG_BUSPIRATESPI), yes)
@@ -153,6 +164,11 @@ else
 ifeq ($(CONFIG_BUSPIRATESPI), yes)
 OBJS += serial.o
 endif
+endif
+
+ifeq ($(NEED_PCI), yes)
+FEATURE_CFLAGS += -D'NEED_PCI=1'
+OBJS += pcidev.o
 endif
 
 ifeq ($(CONFIG_PRINT_WIKI), yes)
