@@ -23,8 +23,10 @@
 #include <ctype.h>
 #include "flash.h"
 
+#if INTERNAL_SUPPORT == 1
 char *mainboard_vendor = NULL;
 char *mainboard_part = NULL;
+#endif
 int romimages = 0;
 
 #define MAX_ROMLAYOUT	16
@@ -38,6 +40,7 @@ typedef struct {
 
 romlayout_t rom_entries[MAX_ROMLAYOUT];
 
+#if INTERNAL_SUPPORT == 1 /* FIXME: Move the whole block to cbtable.c? */
 static char *def_name = "DEFAULT";
 
 int show_id(uint8_t *bios, int size, int force)
@@ -126,6 +129,7 @@ int show_id(uint8_t *bios, int size, int force)
 
 	return 0;
 }
+#endif
 
 int read_romlayout(char *name)
 {
