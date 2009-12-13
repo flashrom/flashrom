@@ -30,6 +30,20 @@
 char *lb_part = NULL, *lb_vendor = NULL;
 int partvendor_from_cbtable = 0;
 
+void lb_vendor_dev_from_string(char *boardstring)
+{
+	char *tempstr2 = NULL;
+	strtok(boardstring, ":");
+	tempstr2 = strtok(NULL, ":");
+	if (tempstr2) {
+		lb_vendor = boardstring;
+		lb_part = tempstr2;
+	} else {
+		lb_vendor = NULL;
+		lb_part = boardstring;
+	}
+}
+
 static unsigned long compute_checksum(void *addr, unsigned long length)
 {
 	uint8_t *ptr;

@@ -40,6 +40,7 @@ const struct spi_programmer spi_programmer[] = {
 		.write_256 = NULL,
 	},
 
+#if INTERNAL_SUPPORT == 1
 	{ /* SPI_CONTROLLER_ICH7 */
 		.command = ich_spi_send_command,
 		.multicommand = ich_spi_send_multicommand,
@@ -81,6 +82,7 @@ const struct spi_programmer spi_programmer[] = {
 		.read = wbsio_spi_read,
 		.write_256 = wbsio_spi_write_1,
 	},
+#endif
 
 #if FT2232_SPI_SUPPORT == 1
 	{ /* SPI_CONTROLLER_FT2232 */
@@ -308,11 +310,13 @@ int probe_spi_rdid4(struct flashchip *flash)
 {
 	/* only some SPI chipsets support 4 bytes commands */
 	switch (spi_controller) {
+#if INTERNAL_SUPPORT == 1
 	case SPI_CONTROLLER_ICH7:
 	case SPI_CONTROLLER_ICH9:
 	case SPI_CONTROLLER_VIA:
 	case SPI_CONTROLLER_SB600:
 	case SPI_CONTROLLER_WBSIO:
+#endif
 #if FT2232_SPI_SUPPORT == 1
 	case SPI_CONTROLLER_FT2232:
 #endif
@@ -1042,10 +1046,12 @@ int spi_aai_write(struct flashchip *flash, uint8_t *buf)
 	int result;
 
 	switch (spi_controller) {
+#if INTERNAL_SUPPORT == 1
 	case SPI_CONTROLLER_WBSIO:
 		fprintf(stderr, "%s: impossible with Winbond SPI masters,"
 				" degrading to byte program\n", __func__);
 		return spi_chip_write_1(flash, buf);
+#endif
 	default:
 		break;
 	}
