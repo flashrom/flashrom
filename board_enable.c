@@ -494,25 +494,6 @@ static int nvidia_mcp_gpio31_raise(const char *name)
 }
 
 /**
- * Suited for EPoX EP-BX3, and maybe some other Intel 440BX based boards.
- */
-static int board_epox_ep_bx3(const char *name)
-{
-	uint8_t tmp;
-
-	/* Raise GPIO22. */
-	tmp = INB(0x4036);
-	OUTB(tmp, 0xEB);
-
-	tmp |= 0x40;
-
-	OUTB(tmp, 0x4036);
-	OUTB(tmp, 0xEB);
-
-	return 0;
-}
-
-/**
  * Suited for Artec Group DBE61 and DBE62.
  */
 static int board_artecgroup_dbe6x(const char *name)
@@ -551,6 +532,83 @@ static int board_artecgroup_dbe6x(const char *name)
 	cleanup_cpu_msr();
 
 	return 0;
+}
+
+/**
+ * Helper function to raise/drop a given gpo line on intel PIIX4{,E,M}
+ */
+static int intel_piix4_gpo_set(unsigned int gpo, int raise)
+{
+	struct pci_dev *dev;
+	uint32_t tmp, base;
+
+	dev = pci_dev_find(0x8086, 0x7110);	/* Intel PIIX4 ISA bridge */
+	if (!dev) {
+		fprintf(stderr, "\nERROR: Intel PIIX4 ISA bridge not found.\n");
+		return -1;
+	}
+
+	/* sanity check */
+	if (gpo > 30) {
+		fprintf(stderr, "\nERROR: Intel PIIX4 has no GPO%d.\n", gpo);
+		return -1;
+	}
+
+	/* these are dual function pins which are most likely in use already */
+	if (((gpo >= 1) && (gpo <= 7)) ||
+	    ((gpo >= 9) && (gpo <= 21)) || (gpo == 29)) {
+		fprintf(stderr, "\nERROR: Unsupported PIIX4 GPO%d.\n", gpo);
+		return -1;
+	}
+
+	/* dual function that need special enable. */
+	if ((gpo >= 22) && (gpo <= 26)) {
+		tmp = pci_read_long(dev, 0xB0); /* GENCFG */
+		switch (gpo) {
+		case 22: /* XBUS: XDIR#/GPO22 */
+		case 23: /* XBUS: XOE#/GPO23 */
+			tmp |= 1 << 28;
+			break;
+		case 24: /* RTCSS#/GPO24 */
+			tmp |= 1 << 29;
+			break;
+		case 25: /* RTCALE/GPO25 */
+			tmp |= 1 << 30;
+			break;
+		case 26: /* KBCSS#/GPO26 */
+			tmp |= 1 << 31;
+			break;
+		}
+		pci_write_long(dev, 0xB0, tmp);
+	}
+
+	/* GPO {0,8,27,28,30} are always available. */
+
+	dev = pci_dev_find(0x8086, 0x7113);	/* Intel PIIX4 PM */
+	if (!dev) {
+		fprintf(stderr, "\nERROR: Intel PIIX4 PM not found.\n");
+		return -1;
+	}
+
+	/* PM IO base */
+	base = pci_read_long(dev, 0x40) & 0x0000FFC0;
+
+	tmp = INL(base + 0x34); /* GPO register */
+	if (raise)
+		tmp |= 0x01 << gpo;
+	else
+		tmp |= ~(0x01 << gpo);
+	OUTL(tmp, base + 0x34);
+
+	return 0;
+}
+
+/**
+ * Suited for EPoX EP-BX3, and maybe some other Intel 440BX based boards.
+ */
+static int board_epox_ep_bx3(const char *name)
+{
+	return intel_piix4_gpo_set(22, 1);
 }
 
 /**
