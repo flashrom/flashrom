@@ -105,6 +105,7 @@ const struct board_info_url boards_url[] = {
 	{ "ASI",		"MB-5BLMP",		"http://www.hojerteknik.com/winnet.htm" },
 	{ "ASRock",		"A770CrossFire",	"http://www.asrock.com/mb/overview.asp?Model=A770CrossFire&s=AM2\%2b" },
 	{ "ASRock",		"K8S8X",		"http://www.asrock.com/mb/overview.asp?Model=K8S8X" },
+	{ "ASRock",		"M3A790GXH/128M"	"http://www.asrock.com/MB/overview.asp?Model=M3A790GXH/128M" },
 	{ "ASUS",		"A7N8X Deluxe",		"http://www.asus.com/Product.aspx?P_ID=wAsRYm41KTp78MFC" },
 	{ "ASUS",		"A7N8X-E Deluxe",	"http://www.asus.com/products.aspx?l1=3&l2=13&l3=56&l4=0&model=217&modelmenu=1" },
 	{ "ASUS",		"A7V400-MX",		"http://www.asus.com.tw/products.aspx?l1=3&l2=13&l3=63&l4=0&model=228&modelmenu=1" },

@@ -260,6 +260,7 @@ const struct board_info boards_ok[] = {
 	{ "ASI",		"MB-5BLMP", },
 	{ "ASRock",		"A770CrossFire", },
 	{ "ASRock",		"K8S8X", },
+	{ "ASRock",		"M3A790GXH/128M" },
 	{ "ASUS",		"A7N8X Deluxe", },
 	{ "ASUS",		"A7N8X-E Deluxe", },
 	{ "ASUS",		"A7V400-MX", },
