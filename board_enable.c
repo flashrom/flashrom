@@ -605,7 +605,8 @@ static int intel_ich_gpio_set(int gpio, int raise)
 	int i, allowed;
 
 	/* First, look for a known LPC bridge */
-	for (dev = pacc->devices; dev; dev = dev->next)
+	for (dev = pacc->devices; dev; dev = dev->next) {
+		pci_fill_info(dev, PCI_FILL_CLASS);
 		if ((dev->vendor_id == 0x8086) &&
 		    (dev->device_class == 0x0601)) { /* ISA Bridge */
 			/* Is this device in our list? */
@@ -616,6 +617,7 @@ static int intel_ich_gpio_set(int gpio, int raise)
 			if (intel_ich_gpio_table[i].id)
 				break;
 		}
+	}
 
 	if (!dev) {
 		fprintf(stderr, "\nERROR: No Known Intel LPC Bridge found.\n");
