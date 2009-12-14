@@ -231,8 +231,10 @@ void print_supported(void)
 		print_supported_chipsets();
 		print_supported_boards();
 #endif
+#if (NIC3COM_SUPPORT == 1) || (GFXNVIDIA_SUPPORT == 1) || (DRKAISER_SUPPORT == 1) || (SATASII_SUPPORT == 1)
 		printf("\nSupported PCI devices flashrom can use "
 		       "as programmer:\n\n");
+#endif
 #if NIC3COM_SUPPORT == 1
 		print_supported_pcidevs(nics_3com);
 #endif
