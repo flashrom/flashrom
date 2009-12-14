@@ -806,10 +806,11 @@ int read_flash(struct flashchip *flash, char *filename)
 int erase_flash(struct flashchip *flash)
 {
 	int i, j, k, ret = 0, found = 0;
+	unsigned int start, len;
 
 	printf("Erasing flash chip... ");
 	for (k = 0; k < NUM_ERASEFUNCTIONS; k++) {
-		unsigned long done = 0;
+		unsigned int done = 0;
 		struct block_eraser eraser = flash->block_erasers[k];
 
 		printf_debug("Looking at blockwise erase function %i... ", k);
@@ -833,17 +834,39 @@ int erase_flash(struct flashchip *flash)
 		found = 1;
 		printf_debug("trying... ");
 		for (i = 0; i < NUM_ERASEREGIONS; i++) {
+			/* Blocks with zero size are bugs in flashchips.c.
+			 * FIXME: This check should be performed on startup.
+			 */
+			if (eraser.eraseblocks[i].count &&
+			    !eraser.eraseblocks[i].size) {
+				fprintf(stderr, "ERROR: Erase region with size "
+					"0 for this chip. Please report a bug "
+					"at flashrom@flashrom.org\n");
+				ret = 1;
+				break;
+			}
 			/* count==0 for all automatically initialized array
 			 * members so the loop below won't be executed for them.
 			 */
 			for (j = 0; j < eraser.eraseblocks[i].count; j++) {
-				ret = eraser.block_erase(flash, done + eraser.eraseblocks[i].size * j, eraser.eraseblocks[i].size);
+				start = done + eraser.eraseblocks[i].size * j;
+				len = eraser.eraseblocks[i].size;
+				printf_debug("0x%06x-0x%06x, ", start,
+					     start + len - 1);
+				ret = eraser.block_erase(flash, start, len);
 				if (ret)
 					break;
 			}
 			if (ret)
 				break;
+			done += eraser.eraseblocks[i].count *
+				eraser.eraseblocks[i].size;
 		}
+		printf_debug("\n");
+		if (done != flash->total_size * 1024)
+			fprintf(stderr, "ERROR: Erase region walking erased "
+				"0x%06x bytes total, expected 0x%06x bytes.",
+				done, flash->total_size * 1024);
 		/* If everything is OK, don't try another erase function. */
 		if (!ret)
 			break;
