@@ -24,61 +24,10 @@
 #ifndef __FLASH_H__
 #define __FLASH_H__ 1
 
-#if defined(__GLIBC__)
-#include <sys/io.h>
-#endif
 #include <unistd.h>
 #include <stdint.h>
 #include <stdio.h>
-#if NEED_PCI == 1
-#include <pci/pci.h>
-#endif
-
-/* for iopl and outb under Solaris */
-#if defined (__sun) && (defined(__i386) || defined(__amd64))
-#include <strings.h>
-#include <sys/sysi86.h>
-#include <sys/psw.h>
-#include <asm/sunddi.h>
-#endif
-
-#if (defined(__MACH__) && defined(__APPLE__))
-#define __DARWIN__
-#endif
-
-#if defined(__FreeBSD__) || defined(__DragonFly__)
-  #include <machine/cpufunc.h>
-  #define off64_t off_t
-  #define lseek64 lseek
-  #define OUTB(x, y) do { u_int tmp = (y); outb(tmp, (x)); } while (0)
-  #define OUTW(x, y) do { u_int tmp = (y); outw(tmp, (x)); } while (0)
-  #define OUTL(x, y) do { u_int tmp = (y); outl(tmp, (x)); } while (0)
-  #define INB(x) __extension__ ({ u_int tmp = (x); inb(tmp); })
-  #define INW(x) __extension__ ({ u_int tmp = (x); inw(tmp); })
-  #define INL(x) __extension__ ({ u_int tmp = (x); inl(tmp); })
-#else
-#if defined(__DARWIN__)
-    #include <DirectIO/darwinio.h>
-    #define off64_t off_t
-    #define lseek64 lseek
-#endif
-#if defined (__sun) && (defined(__i386) || defined(__amd64))
-  /* Note different order for outb */
-  #define OUTB(x,y) outb(y, x)
-  #define OUTW(x,y) outw(y, x)
-  #define OUTL(x,y) outl(y, x)
-  #define INB  inb
-  #define INW  inw
-  #define INL  inl
-#else
-  #define OUTB outb
-  #define OUTW outw
-  #define OUTL outl
-  #define INB  inb
-  #define INW  inw
-  #define INL  inl
-#endif
-#endif
+#include "hwaccess.h"
 
 typedef unsigned long chipaddr;
 
@@ -373,21 +322,12 @@ void *physmap(const char *descr, unsigned long phys_addr, size_t len);
 void physunmap(void *virt_addr, size_t len);
 int setup_cpu_msr(int cpu);
 void cleanup_cpu_msr(void);
-#if !defined(__DARWIN__) && !defined(__FreeBSD__) && !defined(__DragonFly__)
-typedef struct { uint32_t hi, lo; } msr_t;
-msr_t rdmsr(int addr);
-int wrmsr(int addr, msr_t msr);
-#endif
-#if defined(__FreeBSD__) || defined(__DragonFly__)
-/* FreeBSD already has conflicting definitions for wrmsr/rdmsr. */
-#undef rdmsr
-#undef wrmsr
-#define rdmsr freebsd_rdmsr
-#define wrmsr freebsd_wrmsr
-typedef struct { uint32_t hi, lo; } msr_t;
-msr_t freebsd_rdmsr(int addr);
-int freebsd_wrmsr(int addr, msr_t msr);
-#endif
+
+/* cbtable.c */
+void lb_vendor_dev_from_string(char *boardstring);
+int coreboot_init(void);
+extern char *lb_part, *lb_vendor;
+extern int partvendor_from_cbtable;
 
 /* internal.c */
 #if NEED_PCI == 1
@@ -428,9 +368,6 @@ void fallback_chip_writen(uint8_t *buf, chipaddr addr, size_t len);
 uint16_t fallback_chip_readw(const chipaddr addr);
 uint32_t fallback_chip_readl(const chipaddr addr);
 void fallback_chip_readn(uint8_t *buf, const chipaddr addr, size_t len);
-#if defined(__FreeBSD__) || defined(__DragonFly__)
-extern int io_fd;
-#endif
 
 /* dummyflasher.c */
 #if DUMMY_SUPPORT == 1
@@ -545,12 +482,6 @@ int read_romlayout(char *name);
 int find_romentry(char *name);
 int handle_romentries(uint8_t *buffer, struct flashchip *flash);
 
-/* cbtable.c */
-void lb_vendor_dev_from_string(char *boardstring);
-int coreboot_init(void);
-extern char *lb_part, *lb_vendor;
-extern int partvendor_from_cbtable;
-
 /* spi.c */
 enum spi_controller {
 	SPI_CONTROLLER_NONE,
@@ -593,56 +524,13 @@ struct spi_programmer {
 extern enum spi_controller spi_controller;
 extern const struct spi_programmer spi_programmer[];
 extern void *spibar;
-int probe_spi_rdid(struct flashchip *flash);
-int probe_spi_rdid4(struct flashchip *flash);
-int probe_spi_rems(struct flashchip *flash);
-int probe_spi_res(struct flashchip *flash);
 int spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		const unsigned char *writearr, unsigned char *readarr);
 int spi_send_multicommand(struct spi_command *cmds);
-int spi_write_enable(void);
-int spi_write_disable(void);
-int spi_chip_erase_60(struct flashchip *flash);
-int spi_chip_erase_c7(struct flashchip *flash);
-int spi_chip_erase_60_c7(struct flashchip *flash);
-int spi_chip_erase_d8(struct flashchip *flash);
-int spi_block_erase_20(struct flashchip *flash, unsigned int addr, unsigned int blocklen);
-int spi_block_erase_52(struct flashchip *flash, unsigned int addr, unsigned int blocklen);
-int spi_block_erase_d8(struct flashchip *flash, unsigned int addr, unsigned int blocklen);
-int spi_block_erase_60(struct flashchip *flash, unsigned int addr, unsigned int blocklen);
-int spi_block_erase_c7(struct flashchip *flash, unsigned int addr, unsigned int blocklen);
-int spi_chip_write_1(struct flashchip *flash, uint8_t *buf);
-int spi_chip_write_256(struct flashchip *flash, uint8_t *buf);
-int spi_chip_read(struct flashchip *flash, uint8_t *buf, int start, int len);
-uint8_t spi_read_status_register(void);
-int spi_disable_blockprotect(void);
-int spi_byte_program(int addr, uint8_t byte);
-int spi_nbyte_program(int addr, uint8_t *bytes, int len);
-int spi_nbyte_read(int addr, uint8_t *bytes, int len);
-int spi_read_chunked(struct flashchip *flash, uint8_t *buf, int start, int len, int chunksize);
-int spi_aai_write(struct flashchip *flash, uint8_t *buf);
-uint32_t spi_get_valid_read_addr(void);
 int default_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 			     const unsigned char *writearr, unsigned char *readarr);
 int default_spi_send_multicommand(struct spi_command *cmds);
-
-/* 82802ab.c */
-int probe_82802ab(struct flashchip *flash);
-int erase_82802ab(struct flashchip *flash);
-int write_82802ab(struct flashchip *flash, uint8_t *buf);
-
-/* am29f040b.c */
-int probe_29f040b(struct flashchip *flash);
-int erase_29f040b(struct flashchip *flash);
-int write_29f040b(struct flashchip *flash, uint8_t *buf);
-
-/* pm29f002.c */
-int write_pm29f002(struct flashchip *flash, uint8_t *buf);
-
-/* en29f002a.c */
-int probe_en29f002a(struct flashchip *flash);
-int erase_en29f002a(struct flashchip *flash);
-int write_en29f002a(struct flashchip *flash, uint8_t *buf);
+uint32_t spi_get_valid_read_addr(void);
 
 /* ichspi.c */
 int ich_init_opcodes(void);
@@ -670,108 +558,12 @@ int sb600_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
 int sb600_spi_write_1(struct flashchip *flash, uint8_t *buf);
 extern uint8_t *sb600_spibar;
 
-/* jedec.c */
-uint8_t oddparity(uint8_t val);
-void toggle_ready_jedec(chipaddr dst);
-void data_polling_jedec(chipaddr dst, uint8_t data);
-void start_program_jedec(chipaddr bios);
-int write_byte_program_jedec(chipaddr bios, uint8_t *src,
-			     chipaddr dst);
-int probe_jedec(struct flashchip *flash);
-int erase_chip_jedec(struct flashchip *flash);
-int write_jedec(struct flashchip *flash, uint8_t *buf);
-int write_jedec_1(struct flashchip *flash, uint8_t *buf);
-int erase_sector_jedec(struct flashchip *flash, unsigned int page, unsigned int pagesize);
-int erase_block_jedec(struct flashchip *flash, unsigned int page, unsigned int blocksize);
-int write_sector_jedec(chipaddr bios, uint8_t *src,
-		       chipaddr dst, unsigned int page_size);
-
-/* m29f002.c */
-int erase_m29f002(struct flashchip *flash);
-int write_m29f002t(struct flashchip *flash, uint8_t *buf);
-int write_m29f002b(struct flashchip *flash, uint8_t *buf);
-
-/* m29f400bt.c */
-int probe_m29f400bt(struct flashchip *flash);
-int erase_m29f400bt(struct flashchip *flash);
-int block_erase_m29f400bt(struct flashchip *flash, int start, int len);
-int write_m29f400bt(struct flashchip *flash, uint8_t *buf);
-int write_coreboot_m29f400bt(struct flashchip *flash, uint8_t *buf);
-void toggle_ready_m29f400bt(chipaddr dst);
-void data_polling_m29f400bt(chipaddr dst, uint8_t data);
-void protect_m29f400bt(chipaddr bios);
-void write_page_m29f400bt(chipaddr bios, uint8_t *src,
-			  chipaddr dst, int page_size);
-
-/* mx29f002.c */
-int probe_29f002(struct flashchip *flash);
-int erase_29f002(struct flashchip *flash);
-int write_29f002(struct flashchip *flash, uint8_t *buf);
-
-/* pm49fl00x.c */
-int probe_49fl00x(struct flashchip *flash);
-int erase_49fl00x(struct flashchip *flash);
-int write_49fl00x(struct flashchip *flash, uint8_t *buf);
-
-/* sharplhf00l04.c */
-int probe_lhf00l04(struct flashchip *flash);
-int erase_lhf00l04(struct flashchip *flash);
-int write_lhf00l04(struct flashchip *flash, uint8_t *buf);
-void toggle_ready_lhf00l04(chipaddr dst);
-void data_polling_lhf00l04(chipaddr dst, uint8_t data);
-void protect_lhf00l04(chipaddr bios);
-
-/* sst28sf040.c */
-int probe_28sf040(struct flashchip *flash);
-int erase_28sf040(struct flashchip *flash);
-int write_28sf040(struct flashchip *flash, uint8_t *buf);
-
-/* sst39sf020.c */
-int probe_39sf020(struct flashchip *flash);
-int write_39sf020(struct flashchip *flash, uint8_t *buf);
-
-/* sst49lf040.c */
-int erase_49lf040(struct flashchip *flash);
-int write_49lf040(struct flashchip *flash, uint8_t *buf);
-
-/* sst49lfxxxc.c */
-int probe_49lfxxxc(struct flashchip *flash);
-int erase_49lfxxxc(struct flashchip *flash);
-int write_49lfxxxc(struct flashchip *flash, uint8_t *buf);
-
-/* sst_fwhub.c */
-int probe_sst_fwhub(struct flashchip *flash);
-int erase_sst_fwhub(struct flashchip *flash);
-int erase_sst_fwhub_block(struct flashchip *flash, unsigned int offset, unsigned int page_size);
-int write_sst_fwhub(struct flashchip *flash, uint8_t *buf);
-
-/* w39v040c.c */
-int probe_w39v040c(struct flashchip *flash);
-int erase_w39v040c(struct flashchip *flash);
-int write_w39v040c(struct flashchip *flash, uint8_t *buf);
-
-/* w39V080fa.c */
-int probe_winbond_fwhub(struct flashchip *flash);
-int erase_winbond_fwhub(struct flashchip *flash);
-int write_winbond_fwhub(struct flashchip *flash, uint8_t *buf);
-
-/* w29ee011.c */
-int probe_w29ee011(struct flashchip *flash);
-
-/* w49f002u.c */
-int write_49f002(struct flashchip *flash, uint8_t *buf);
-
 /* wbsio_spi.c */
 int wbsio_check_for_spi(const char *name);
 int wbsio_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		      const unsigned char *writearr, unsigned char *readarr);
 int wbsio_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
 int wbsio_spi_write_1(struct flashchip *flash, uint8_t *buf);
-
-/* stm50flw0x0x.c */
-int probe_stm50flw0x0x(struct flashchip *flash);
-int erase_stm50flw0x0x(struct flashchip *flash);
-int write_stm50flw0x0x(struct flashchip *flash, uint8_t *buf);
 
 /* serprog.c */
 int serprog_init(void);
@@ -786,5 +578,7 @@ void sp_flush_incoming(void);
 int sp_openserport(char *dev, unsigned int baud);
 void __attribute__((noreturn)) sp_die(char *msg);
 extern int sp_fd;
+
+#include "chipdrivers.h"
 
 #endif				/* !__FLASH_H__ */
