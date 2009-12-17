@@ -96,11 +96,14 @@ int probe_jedec(struct flashchip *flash)
 
 	/* Issue JEDEC Product ID Entry command */
 	chip_writeb(0xAA, bios + 0x5555);
-	programmer_delay(10);
+	if (probe_timing_enter)
+		programmer_delay(10);
 	chip_writeb(0x55, bios + 0x2AAA);
-	programmer_delay(10);
+	if (probe_timing_enter)
+		programmer_delay(10);
 	chip_writeb(0x90, bios + 0x5555);
-	programmer_delay(probe_timing_enter);
+	if (probe_timing_enter)
+		programmer_delay(probe_timing_enter);
 
 	/* Read product ID */
 	id1 = chip_readb(bios);
@@ -122,11 +125,14 @@ int probe_jedec(struct flashchip *flash)
 
 	/* Issue JEDEC Product ID Exit command */
 	chip_writeb(0xAA, bios + 0x5555);
-	programmer_delay(10);
+	if (probe_timing_exit)
+		programmer_delay(10);
 	chip_writeb(0x55, bios + 0x2AAA);
-	programmer_delay(10);
+	if (probe_timing_exit)
+		programmer_delay(10);
 	chip_writeb(0xF0, bios + 0x5555);
-	programmer_delay(probe_timing_exit);
+	if (probe_timing_exit)
+		programmer_delay(probe_timing_exit);
 
 	printf_debug("%s: id1 0x%02x, id2 0x%02x", __func__, largeid1, largeid2);
 	if (!oddparity(id1))
