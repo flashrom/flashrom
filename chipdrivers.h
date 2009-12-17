@@ -97,8 +97,6 @@ int erase_m29f400bt(struct flashchip *flash);
 int block_erase_m29f400bt(struct flashchip *flash, int start, int len);
 int write_m29f400bt(struct flashchip *flash, uint8_t *buf);
 int write_coreboot_m29f400bt(struct flashchip *flash, uint8_t *buf);
-void toggle_ready_m29f400bt(chipaddr dst);
-void data_polling_m29f400bt(chipaddr dst, uint8_t data);
 void protect_m29f400bt(chipaddr bios);
 void write_page_m29f400bt(chipaddr bios, uint8_t *src,
 			  chipaddr dst, int page_size);
@@ -117,8 +115,6 @@ int write_49fl00x(struct flashchip *flash, uint8_t *buf);
 int probe_lhf00l04(struct flashchip *flash);
 int erase_lhf00l04(struct flashchip *flash);
 int write_lhf00l04(struct flashchip *flash, uint8_t *buf);
-void toggle_ready_lhf00l04(chipaddr dst);
-void data_polling_lhf00l04(chipaddr dst, uint8_t data);
 void protect_lhf00l04(chipaddr bios);
 
 /* sst28sf040.c */
