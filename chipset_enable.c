@@ -4,6 +4,7 @@
  * Copyright (C) 2000 Silicon Integrated System Corporation
  * Copyright (C) 2005-2009 coresystems GmbH
  * Copyright (C) 2006 Uwe Hermann <uwe@hermann-uwe.de>
+ * Copyright (C) 2007,2008,2009 Carl-Daniel Hailfinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -301,34 +302,10 @@ static int enable_flash_ich_dc(struct pci_dev *dev, const char *name)
 	uint32_t fwh_conf;
 	int i;
 	char *idsel = NULL;
-
-	/* Ignore all legacy ranges below 1 MB. */
-	/* FWH_SEL1 */
-	fwh_conf = pci_read_long(dev, 0xd0);
-	for (i = 7; i >= 0; i--)
-		printf_debug("\n0x%08x/0x%08x FWH IDSEL: 0x%x",
-			     (0x1ff8 + i) * 0x80000,
-			     (0x1ff0 + i) * 0x80000,
-			     (fwh_conf >> (i * 4)) & 0xf);
-	/* FWH_SEL2 */
-	fwh_conf = pci_read_word(dev, 0xd4);
-	for (i = 3; i >= 0; i--)
-		printf_debug("\n0x%08x/0x%08x FWH IDSEL: 0x%x",
-			     (0xff4 + i) * 0x100000,
-			     (0xff0 + i) * 0x100000,
-			     (fwh_conf >> (i * 4)) & 0xf);
-	/* FWH_DEC_EN1 */
-	fwh_conf = pci_read_word(dev, 0xd8);
-	for (i = 7; i >= 0; i--)
-		printf_debug("\n0x%08x/0x%08x FWH decode %sabled",
-			     (0x1ff8 + i) * 0x80000,
-			     (0x1ff0 + i) * 0x80000,
-			     (fwh_conf >> (i + 0x8)) & 0x1 ? "en" : "dis");
-	for (i = 3; i >= 0; i--)
-		printf_debug("\n0x%08x/0x%08x FWH decode %sabled",
-			     (0xff4 + i) * 0x100000,
-			     (0xff0 + i) * 0x100000,
-			     (fwh_conf >> i) & 0x1 ? "en" : "dis");
+	int tmp;
+	int max_decode_fwh_idsel = 0;
+	int max_decode_fwh_decode = 0;
+	int contiguous = 1;
 
 	if (programmer_param)
 		idsel = strstr(programmer_param, "fwh_idsel=");
@@ -341,8 +318,76 @@ static int enable_flash_ich_dc(struct pci_dev *dev, const char *name)
 		printf("\nSetting IDSEL=0x%x for top 16 MB", fwh_conf);
 		pci_write_long(dev, 0xd0, fwh_conf);
 		pci_write_word(dev, 0xd4, fwh_conf);
+		/* FIXME: Decode settings are not changed. */
 	}
 
+	/* Ignore all legacy ranges below 1 MB.
+	 * We currently only support flashing the chip which responds to
+	 * IDSEL=0. To support IDSEL!=0, flashbase and decode size calculations
+	 * have to be adjusted.
+	 */
+	/* FWH_SEL1 */
+	fwh_conf = pci_read_long(dev, 0xd0);
+	for (i = 7; i >= 0; i--) {
+		tmp = (fwh_conf >> (i * 4)) & 0xf;
+		printf_debug("\n0x%08x/0x%08x FWH IDSEL: 0x%x",
+			     (0x1ff8 + i) * 0x80000,
+			     (0x1ff0 + i) * 0x80000,
+			     tmp);
+		if ((tmp == 0) && contiguous) {
+			max_decode_fwh_idsel = (8 - i) * 0x80000;
+		} else {
+			contiguous = 0;
+		}
+	}
+	/* FWH_SEL2 */
+	fwh_conf = pci_read_word(dev, 0xd4);
+	for (i = 3; i >= 0; i--) {
+		tmp = (fwh_conf >> (i * 4)) & 0xf;
+		printf_debug("\n0x%08x/0x%08x FWH IDSEL: 0x%x",
+			     (0xff4 + i) * 0x100000,
+			     (0xff0 + i) * 0x100000,
+			     tmp);
+		if ((tmp == 0) && contiguous) {
+			max_decode_fwh_idsel = (8 - i) * 0x100000;
+		} else {
+			contiguous = 0;
+		}
+	}
+	contiguous = 1;
+	/* FWH_DEC_EN1 */
+	fwh_conf = pci_read_word(dev, 0xd8);
+	for (i = 7; i >= 0; i--) {
+		tmp = (fwh_conf >> (i + 0x8)) & 0x1;
+		printf_debug("\n0x%08x/0x%08x FWH decode %sabled",
+			     (0x1ff8 + i) * 0x80000,
+			     (0x1ff0 + i) * 0x80000,
+			     tmp ? "en" : "dis");
+		if ((tmp == 0) && contiguous) {
+			max_decode_fwh_decode = (8 - i) * 0x80000;
+		} else {
+			contiguous = 0;
+		}
+	}
+	for (i = 3; i >= 0; i--) {
+		tmp = (fwh_conf >> i) & 0x1;
+		printf_debug("\n0x%08x/0x%08x FWH decode %sabled",
+			     (0xff4 + i) * 0x100000,
+			     (0xff0 + i) * 0x100000,
+			     tmp ? "en" : "dis");
+		if ((tmp == 0) && contiguous) {
+			max_decode_fwh_decode = (8 - i) * 0x100000;
+		} else {
+			contiguous = 0;
+		}
+	}
+	max_rom_decode.fwh = min(max_decode_fwh_idsel, max_decode_fwh_decode);
+	printf_debug("\nMaximum FWH chip size: 0x%x bytes", max_rom_decode.fwh);
+
+	/* If we're called by enable_flash_ich_dc_spi, it will override
+	 * buses_supported anyway.
+	 */
+	buses_supported = CHIP_BUSTYPE_FWH;
 	return enable_flash_ich(dev, name, 0xdc);
 }
 
@@ -355,6 +400,7 @@ static int enable_flash_vt8237s_spi(struct pci_dev *dev, const char *name)
 {
 	uint32_t mmio_base;
 
+	/* Do we really need no write enable? */
 	mmio_base = (pci_read_long(dev, 0xbc)) << 8;
 	printf_debug("MMIO base at = 0x%x\n", mmio_base);
 	spibar = physmap("VT8237S MMIO registers", mmio_base, 0x70);
@@ -409,8 +455,7 @@ static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
 	 */
 
 	if (ich_generation == 7 && bbs == ICH_STRAP_LPC) {
-		/* Not sure if it speaks LPC as well. */
-		buses_supported = CHIP_BUSTYPE_LPC | CHIP_BUSTYPE_FWH;
+		buses_supported = CHIP_BUSTYPE_FWH;
 		/* No further SPI initialization required */
 		return ret;
 	}
@@ -422,16 +467,14 @@ static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
 		spibar_offset = 0x3020;
 		break;
 	case 8:
-		/* Not sure if it speaks LPC as well. */
-		buses_supported = CHIP_BUSTYPE_LPC | CHIP_BUSTYPE_FWH | CHIP_BUSTYPE_SPI;
+		buses_supported = CHIP_BUSTYPE_FWH | CHIP_BUSTYPE_SPI;
 		spi_controller = SPI_CONTROLLER_ICH9;
 		spibar_offset = 0x3020;
 		break;
 	case 9:
 	case 10:
 	default:		/* Future version might behave the same */
-		/* Not sure if it speaks LPC as well. */
-		buses_supported = CHIP_BUSTYPE_LPC | CHIP_BUSTYPE_FWH | CHIP_BUSTYPE_SPI;
+		buses_supported = CHIP_BUSTYPE_FWH | CHIP_BUSTYPE_SPI;
 		spi_controller = SPI_CONTROLLER_ICH9;
 		spibar_offset = 0x3800;
 		break;
@@ -612,14 +655,22 @@ static int enable_flash_cs5530(struct pci_dev *dev, const char *name)
 
 #define DECODE_CONTROL_REG2		0x5b	/* F0 index 0x5b */
 #define ROM_AT_LOGIC_CONTROL_REG	0x52	/* F0 index 0x52 */
+#define CS5530_RESET_CONTROL_REG	0x44	/* F0 index 0x44 */
+#define CS5530_USB_SHADOW_REG		0x43	/* F0 index 0x43 */
 
 #define LOWER_ROM_ADDRESS_RANGE		(1 << 0)
 #define ROM_WRITE_ENABLE		(1 << 1)
 #define UPPER_ROM_ADDRESS_RANGE		(1 << 2)
 #define BIOS_ROM_POSITIVE_DECODE	(1 << 5)
+#define CS5530_ISA_MASTER		(1 << 7)
+#define CS5530_ENABLE_SA2320		(1 << 2)
+#define CS5530_ENABLE_SA20		(1 << 6)
 
+	buses_supported = CHIP_BUSTYPE_PARALLEL;
 	/* Decode 0x000E0000-0x000FFFFF (128 KB), not just 64 KB, and
 	 * decode 0xFF000000-0xFFFFFFFF (16 MB), not just 256 KB.
+	 * FIXME: Should we really touch the low mapping below 1 MB? Flashrom
+	 * ignores that region completely.
 	 * Make the configured ROM areas writable.
 	 */
 	reg8 = pci_read_byte(dev, ROM_AT_LOGIC_CONTROL_REG);
@@ -632,6 +683,24 @@ static int enable_flash_cs5530(struct pci_dev *dev, const char *name)
 	reg8 = pci_read_byte(dev, DECODE_CONTROL_REG2);
 	reg8 |= BIOS_ROM_POSITIVE_DECODE;
 	pci_write_byte(dev, DECODE_CONTROL_REG2, reg8);
+
+	reg8 = pci_read_byte(dev, CS5530_RESET_CONTROL_REG);
+	if (reg8 & CS5530_ISA_MASTER) {
+		/* We have A0-A23 available. */
+		max_rom_decode.parallel = 16 * 1024 * 1024;
+	} else {
+		reg8 = pci_read_byte(dev, CS5530_USB_SHADOW_REG);
+		if (reg8 & CS5530_ENABLE_SA2320) {
+			/* We have A0-19, A20-A23 available. */
+			max_rom_decode.parallel = 16 * 1024 * 1024;
+		} else if (reg8 & CS5530_ENABLE_SA20) {
+			/* We have A0-19, A20 available. */
+			max_rom_decode.parallel = 2 * 1024 * 1024;
+		} else {
+			/* A20 and above are not active. */
+			max_rom_decode.parallel = 1024 * 1024;
+		}
+	}
 
 	return 0;
 }
