@@ -33,7 +33,7 @@ uint8_t oddparity(uint8_t val)
 	return (val ^ (val >> 1)) & 0x1;
 }
 
-void toggle_ready_jedec(chipaddr dst)
+void toggle_ready_jedec_common(chipaddr dst, int delay)
 {
 	unsigned int i = 0;
 	uint8_t tmp1, tmp2;
@@ -41,12 +41,33 @@ void toggle_ready_jedec(chipaddr dst)
 	tmp1 = chip_readb(dst) & 0x40;
 
 	while (i++ < 0xFFFFFFF) {
+		if (delay)
+			programmer_delay(delay);
 		tmp2 = chip_readb(dst) & 0x40;
 		if (tmp1 == tmp2) {
 			break;
 		}
 		tmp1 = tmp2;
 	}
+	if (i > 0x100000)
+		printf_debug("%s: excessive loops, i=0x%x\n", __func__, i);
+}
+
+void toggle_ready_jedec(chipaddr dst)
+{
+	toggle_ready_jedec_common(dst, 0);
+}
+
+/* Some chips require a minimum delay between toggle bit reads.
+ * The Winbond W39V040C wants 50 ms between reads on sector erase toggle,
+ * but experiments show that 2 ms are already enough. Pick a safety factor
+ * of 4 and use an 8 ms delay.
+ * Given that erase is slow on all chips, it is recommended to use 
+ * toggle_ready_jedec_slow in erase functions.
+ */
+void toggle_ready_jedec_slow(chipaddr dst)
+{
+	toggle_ready_jedec_common(dst, 8 * 1000);
 }
 
 void data_polling_jedec(chipaddr dst, uint8_t data)
@@ -62,6 +83,8 @@ void data_polling_jedec(chipaddr dst, uint8_t data)
 			break;
 		}
 	}
+	if (i > 0x100000)
+		printf_debug("%s: excessive loops, i=0x%x\n", __func__, i);
 }
 
 void start_program_jedec(chipaddr bios)
@@ -184,7 +207,7 @@ int erase_sector_jedec(struct flashchip *flash, unsigned int page, unsigned int 
 	programmer_delay(10);
 
 	/* wait for Toggle bit ready         */
-	toggle_ready_jedec(bios);
+	toggle_ready_jedec_slow(bios);
 
 	if (check_erased_range(flash, page, pagesize)) {
 		fprintf(stderr,"ERASE FAILED!\n");
@@ -213,7 +236,7 @@ int erase_block_jedec(struct flashchip *flash, unsigned int block, unsigned int 
 	programmer_delay(10);
 
 	/* wait for Toggle bit ready         */
-	toggle_ready_jedec(bios);
+	toggle_ready_jedec_slow(bios);
 
 	if (check_erased_range(flash, block, blocksize)) {
 		fprintf(stderr,"ERASE FAILED!\n");
@@ -242,7 +265,7 @@ int erase_chip_jedec(struct flashchip *flash)
 	chip_writeb(0x10, bios + 0x5555);
 	programmer_delay(10);
 
-	toggle_ready_jedec(bios);
+	toggle_ready_jedec_slow(bios);
 
 	if (check_erased_range(flash, 0, total_size)) {
 		fprintf(stderr,"ERASE FAILED!\n");
