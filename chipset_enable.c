@@ -5,6 +5,7 @@
  * Copyright (C) 2005-2009 coresystems GmbH
  * Copyright (C) 2006 Uwe Hermann <uwe@hermann-uwe.de>
  * Copyright (C) 2007,2008,2009 Carl-Daniel Hailfinger
+ * Copyright (C) 2009 Kontron Modular Computers GmbH
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -390,6 +391,26 @@ static int enable_flash_ich_dc(struct pci_dev *dev, const char *name)
 	buses_supported = CHIP_BUSTYPE_FWH;
 	return enable_flash_ich(dev, name, 0xdc);
 }
+
+static int enable_flash_poulsbo(struct pci_dev *dev, const char *name)
+{
+       uint16_t old, new;
+       int err;
+
+       if ((err = enable_flash_ich(dev, name, 0xd8)) != 0)
+               return err;
+
+       old = pci_read_byte(dev, 0xd9);
+       printf_debug("BIOS Prefetch Enable: %sabled, ",
+                    (old & 1) ? "en" : "dis");
+       new = old & ~1;
+
+       if (new != old)
+               pci_write_byte(dev, 0xd9, new);
+
+       return 0;
+}
+
 
 #define ICH_STRAP_RSVD 0x00
 #define ICH_STRAP_SPI  0x01
@@ -1155,6 +1176,7 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x7000, OK, "Intel", "PIIX3",		enable_flash_piix4},
 	{0x8086, 0x7110, OK, "Intel", "PIIX4/4E/4M",	enable_flash_piix4},
 	{0x8086, 0x122e, OK, "Intel", "PIIX",		enable_flash_piix4},
+	{0x8086, 0x8119, OK, "Intel", "Poulsbo",        enable_flash_poulsbo},
 	{0x10de, 0x0030, OK, "NVIDIA", "nForce4/MCP4",  enable_flash_nvidia_nforce2},
 	{0x10de, 0x0050, OK, "NVIDIA", "CK804",		enable_flash_ck804}, /* LPC */
 	{0x10de, 0x0051, OK, "NVIDIA", "CK804",		enable_flash_ck804}, /* Pro */
