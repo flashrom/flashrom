@@ -174,8 +174,8 @@ struct flashchip {
 	int (*erase) (struct flashchip *flash);
 
 	/*
-	 * Erase blocks and associated erase function. The default entry is a
-	 * chip-sized virtual block together with the chip erase function.
+	 * Erase blocks and associated erase function. Any chip erase function
+	 * is stored as chip-sized virtual block together with said function.
 	 */
 	struct block_eraser {
 		struct eraseblock{
