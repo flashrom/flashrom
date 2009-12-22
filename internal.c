@@ -125,6 +125,17 @@ void release_io_perms(void)
 }
 
 #if INTERNAL_SUPPORT == 1
+struct superio superio = {};
+
+void probe_superio(void)
+{
+	superio = probe_superio_ite();
+#if 0	/* Winbond SuperI/O code is not yet available. */
+	if (superio.vendor == SUPERIO_VENDOR_NONE)
+		superio = probe_superio_winbond();
+#endif
+}
+
 int internal_init(void)
 {
 	int ret = 0;
@@ -141,6 +152,9 @@ int internal_init(void)
 	 * mainboard specific flash enable sequence.
 	 */
 	coreboot_init();
+
+	/* Probe for the SuperI/O chip and fill global struct superio. */
+	probe_superio();
 
 	/* try to enable it. Failure IS an option, since not all motherboards
 	 * really need this to be done, etc., etc.

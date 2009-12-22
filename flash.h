@@ -331,6 +331,14 @@ extern int partvendor_from_cbtable;
 
 /* internal.c */
 #if NEED_PCI == 1
+struct superio {
+	uint16_t vendor;
+	uint16_t port;
+	uint16_t model;
+};
+extern struct superio superio;
+#define SUPERIO_VENDOR_NONE	0x0
+#define SUPERIO_VENDOR_ITE	0x1
 struct pci_dev *pci_dev_find_filter(struct pci_filter filter);
 struct pci_dev *pci_dev_find_vendorclass(uint16_t vendor, uint16_t class);
 struct pci_dev *pci_dev_find(uint16_t vendor, uint16_t device);
@@ -340,6 +348,7 @@ struct pci_dev *pci_card_find(uint16_t vendor, uint16_t device,
 void get_io_perms(void);
 void release_io_perms(void);
 #if INTERNAL_SUPPORT == 1
+void probe_superio(void);
 int internal_init(void);
 int internal_shutdown(void);
 void internal_chip_writeb(uint8_t val, chipaddr addr);
@@ -544,6 +553,7 @@ int ich_spi_send_multicommand(struct spi_command *cmds);
 extern uint16_t it8716f_flashport;
 void enter_conf_mode_ite(uint16_t port);
 void exit_conf_mode_ite(uint16_t port);
+struct superio probe_superio_ite(void);
 int it87spi_init(void);
 int it87xx_probe_spi_flash(const char *name);
 int it8716f_spi_send_command(unsigned int writecnt, unsigned int readcnt,
