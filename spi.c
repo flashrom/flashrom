@@ -807,6 +807,7 @@ int spi_write_status_register(int status)
 	int result;
 	struct spi_command cmds[] = {
 	{
+	/* FIXME: WRSR requires either EWSR or WREN depending on chip type. */
 		.writecnt	= JEDEC_EWSR_OUTSIZE,
 		.writearr	= (const unsigned char[]){ JEDEC_EWSR },
 		.readcnt	= 0,
@@ -1059,6 +1060,7 @@ int spi_aai_write(struct flashchip *flash, uint8_t *buf)
 		fprintf(stderr, "ERASE FAILED!\n");
 		return -1;
 	}
+	/* FIXME: This will fail on ICH/VIA SPI. */
 	result = spi_write_enable();
 	if (result)
 		return result;
