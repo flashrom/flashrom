@@ -440,20 +440,30 @@ static int nvidia_mcp_gpio_set(int gpio, int raise)
 	uint16_t base;
 	uint8_t tmp;
 
-	if ((gpio < 0) || (gpio > 31)) {
+	if ((gpio < 0) || (gpio >= 0x40)) {
 		fprintf(stderr, "\nERROR: unsupported GPIO: %d.\n", gpio);
 		return -1;
 	}
 
-	dev = pci_dev_find_vendorclass(0x10DE, 0x0C05);
+	/* First, check the ISA Bridge */
+	dev = pci_dev_find_vendorclass(0x10DE, 0x0601);
 	switch (dev->device_id) {
 	case 0x0030: /* CK804 */
 	case 0x0050: /* MCP04 */
 	case 0x0060: /* MCP2 */
 		break;
 	default:
-		fprintf(stderr, "\nERROR: no nVidia SMBus controller found.\n");
+	    /* Newer MCPs use the SMBus Controller */
+	    dev = pci_dev_find_vendorclass(0x10DE, 0x0C05);
+	    switch (dev->device_id) {
+	    case 0x0264: /* MCP51 */
+		break;
+	    default:
+		fprintf(stderr,
+			"\nERROR: no nVidia LPC/SMBus controller found.\n");
 		return -1;
+	    }
+	    break;
 	}
 
 	base = pci_read_long(dev, 0x64) & 0x0000FF00; /* System control area */
