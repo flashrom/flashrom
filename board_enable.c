@@ -66,6 +66,35 @@ void sio_mask(uint16_t port, uint8_t reg, uint8_t data, uint8_t mask)
 	OUTB(tmp | (data & mask), port + 1);
 }
 
+/* Not used yet. */
+#if 0
+static int enable_flash_decode_superio(void)
+{
+	int ret;
+	uint8_t tmp;
+
+	switch (superio.vendor) {
+	case SUPERIO_VENDOR_NONE:
+		ret = -1;
+		break;
+	case SUPERIO_VENDOR_ITE:
+		enter_conf_mode_ite(superio.port);
+		/* Enable flash mapping. Works for most old ITE style SuperI/O. */
+		tmp = sio_read(superio.port, 0x24);
+		tmp |= 0xfc;
+		sio_write(superio.port, 0x24, tmp);
+		exit_conf_mode_ite(superio.port);
+		ret = 0;
+		break;
+	default:
+		printf_debug("Unhandled SuperI/O type!\n");
+		ret = -1;
+		break;
+	}
+	return ret;
+}
+#endif
+
 /**
  * Winbond W83627HF: Raise GPIO24.
  *

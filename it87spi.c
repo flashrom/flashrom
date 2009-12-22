@@ -54,19 +54,55 @@ void exit_conf_mode_ite(uint16_t port)
 	sio_write(port, 0x02, 0x02);
 }
 
-static uint16_t find_ite_spi_flash_port(uint16_t port)
+uint16_t probe_id_ite(uint16_t port)
+{
+	uint16_t id;
+
+	enter_conf_mode_ite(port);
+	id = sio_read(port, CHIP_ID_BYTE1_REG) << 8;
+	id |= sio_read(port, CHIP_ID_BYTE2_REG);
+	exit_conf_mode_ite(port);
+
+	return id;
+}
+
+struct superio probe_superio_ite(void)
+{
+	struct superio ret = {};
+	uint16_t ite_ports[] = {ITE_SUPERIO_PORT1, ITE_SUPERIO_PORT2, 0};
+	uint16_t *i = ite_ports;
+
+	ret.vendor = SUPERIO_VENDOR_ITE;
+	for (; *i; i++) {
+		ret.port = *i;
+		ret.model = probe_id_ite(ret.port);
+		switch (ret.model >> 8) {
+		case 0x82:
+		case 0x86:
+		case 0x87:
+			printf_debug("Found ITE SuperI/O, id %04hx\n",
+				     ret.model);
+			return ret;
+		}
+	}
+
+	/* No good ID found. */
+	ret.vendor = SUPERIO_VENDOR_NONE;
+	ret.port = 0;
+	ret.model = 0;
+	return ret;
+}
+
+static uint16_t find_ite_spi_flash_port(uint16_t port, uint16_t id)
 {
 	uint8_t tmp = 0;
 	char *portpos = NULL;
-	uint16_t id, flashport = 0;
+	uint16_t flashport = 0;
 
-	enter_conf_mode_ite(port);
-
-	id = sio_read(port, CHIP_ID_BYTE1_REG) << 8;
-	id |= sio_read(port, CHIP_ID_BYTE2_REG);
-
-	/* TODO: Handle more IT87xx if they support flash translation */
-	if (0x8716 == id || 0x8718 == id) {
+	switch (id) {
+	case 0x8716:
+	case 0x8718:
+		enter_conf_mode_ite(port);
 		/* NOLDN, reg 0x24, mask out lowest bit (suspend) */
 		tmp = sio_read(port, 0x24) & 0xFE;
 		printf("Serial flash segment 0x%08x-0x%08x %sabled\n",
@@ -105,17 +141,21 @@ static uint16_t find_ite_spi_flash_port(uint16_t port)
 			sio_write(port, 0x64, (flashport >> 8));
 			sio_write(port, 0x65, (flashport & 0xff));
 		}
+		exit_conf_mode_ite(port);
+		break;
+	/* TODO: Handle more IT87xx if they support flash translation */
+	default:
+		printf("SuperI/O ID %04hx is not on the controller list.\n", id);
 	}
-	exit_conf_mode_ite(port);
 	return flashport;
 }
 
 int it87spi_common_init(void)
 {
-	it8716f_flashport = find_ite_spi_flash_port(ITE_SUPERIO_PORT1);
+	if (superio.vendor != SUPERIO_VENDOR_ITE)
+		return 1;
 
-	if (!it8716f_flashport)
-		it8716f_flashport = find_ite_spi_flash_port(ITE_SUPERIO_PORT2);
+	it8716f_flashport = find_ite_spi_flash_port(superio.port, superio.model);
 
 	if (it8716f_flashport)
 		spi_controller = SPI_CONTROLLER_IT87XX;
@@ -129,6 +169,8 @@ int it87spi_init(void)
 	int ret;
 
 	get_io_perms();
+	/* Probe for the SuperI/O chip and fill global struct superio. */
+	probe_superio();
 	ret = it87spi_common_init();
 	if (!ret) {
 		buses_supported = CHIP_BUSTYPE_SPI;
