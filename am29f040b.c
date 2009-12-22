@@ -22,9 +22,8 @@
 
 /* FIMXE: check that the 2 second delay is really needed.
           Use erase_sector_jedec if not? */
-static int erase_sector_29f040b(struct flashchip *flash, unsigned long address)
+int erase_sector_29f040b(struct flashchip *flash, unsigned int address, unsigned int blocklen)
 {
-	int page_size = flash->page_size;
 	chipaddr bios = flash->virtual_memory;
 
 	chip_writeb(0xAA, bios + 0x555);
@@ -39,11 +38,22 @@ static int erase_sector_29f040b(struct flashchip *flash, unsigned long address)
 	/* wait for Toggle bit ready         */
 	toggle_ready_jedec(bios + address);
 
-	if (check_erased_range(flash, address, page_size)) {
+	if (check_erased_range(flash, address, blocklen)) {
 		fprintf(stderr, "ERASE FAILED!\n");
 		return -1;
 	}
 	return 0;
+}
+
+/* erase chip with block_erase() prototype */
+int erase_chip_29f040b(struct flashchip *flash, unsigned int addr, unsigned int blocklen)
+{
+	if ((addr != 0) || (blocklen != flash->total_size * 1024)) {
+		fprintf(stderr, "%s called with incorrect arguments\n",
+			__func__);
+		return -1;
+	}
+	return erase_29f040b(flash);
 }
 
 /* FIXME: use write_sector_jedec? */
@@ -127,7 +137,7 @@ int write_29f040b(struct flashchip *flash, uint8_t *buf)
 	printf("Programming page ");
 	for (i = 0; i < total_size / page_size; i++) {
 		/* erase the page before programming */
-		if (erase_sector_29f040b(flash, i * page_size)) {
+		if (erase_sector_29f040b(flash, i * page_size, page_size)) {
 			fprintf(stderr, "ERASE FAILED!\n");
 			return -1;
 		}

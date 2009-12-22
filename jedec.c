@@ -245,6 +245,17 @@ int erase_block_jedec(struct flashchip *flash, unsigned int block, unsigned int 
 	return 0;
 }
 
+/* erase chip with block_erase() prototype */
+int erase_chip_block_jedec(struct flashchip *flash, unsigned int addr, unsigned int blocksize)
+{
+	if ((addr != 0) || (blocksize != flash->total_size * 1024)) {
+		fprintf(stderr, "%s called with incorrect arguments\n",
+			__func__);
+		return -1;
+	}
+	return erase_chip_jedec(flash);
+}
+
 int erase_chip_jedec(struct flashchip *flash)
 {
 	int total_size = flash->total_size * 1024;

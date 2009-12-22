@@ -60,6 +60,8 @@ int write_82802ab(struct flashchip *flash, uint8_t *buf);
 /* am29f040b.c */
 int probe_29f040b(struct flashchip *flash);
 int erase_29f040b(struct flashchip *flash);
+int erase_sector_29f040b(struct flashchip *flash, unsigned int blockaddr, unsigned int blocksize);
+int erase_chip_29f040b(struct flashchip *flash, unsigned int blockaddr, unsigned int blocksize);
 int write_29f040b(struct flashchip *flash, uint8_t *buf);
 
 /* pm29f002.c */
@@ -83,6 +85,7 @@ int write_jedec(struct flashchip *flash, uint8_t *buf);
 int write_jedec_1(struct flashchip *flash, uint8_t *buf);
 int erase_sector_jedec(struct flashchip *flash, unsigned int page, unsigned int pagesize);
 int erase_block_jedec(struct flashchip *flash, unsigned int page, unsigned int blocksize);
+int erase_chip_block_jedec(struct flashchip *flash, unsigned int page, unsigned int blocksize);
 int write_sector_jedec(chipaddr bios, uint8_t *src,
 		       chipaddr dst, unsigned int page_size);
 
