@@ -20,8 +20,7 @@
 
 #include "flash.h"
 
-/* FIMXE: check that the 2 second delay is really needed.
-          Use erase_sector_jedec if not? */
+/* FIMXE: Use erase_sector_jedec if not? */
 int erase_sector_29f040b(struct flashchip *flash, unsigned int address, unsigned int blocklen)
 {
 	chipaddr bios = flash->virtual_memory;
@@ -33,7 +32,7 @@ int erase_sector_29f040b(struct flashchip *flash, unsigned int address, unsigned
 	chip_writeb(0x55, bios + 0x2AA);
 	chip_writeb(0x30, bios + address);
 
-	programmer_delay(2 * 1000 * 1000);
+	programmer_delay(10);
 
 	/* wait for Toggle bit ready         */
 	toggle_ready_jedec(bios + address);

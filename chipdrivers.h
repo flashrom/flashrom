@@ -97,7 +97,8 @@ int write_m29f002b(struct flashchip *flash, uint8_t *buf);
 /* m29f400bt.c */
 int probe_m29f400bt(struct flashchip *flash);
 int erase_m29f400bt(struct flashchip *flash);
-int block_erase_m29f400bt(struct flashchip *flash, int start, int len);
+int block_erase_m29f400bt(struct flashchip *flash, unsigned int start, unsigned int len);
+int block_erase_chip_m29f400bt(struct flashchip *flash, unsigned int start, unsigned int len);
 int write_m29f400bt(struct flashchip *flash, uint8_t *buf);
 int write_coreboot_m29f400bt(struct flashchip *flash, uint8_t *buf);
 void protect_m29f400bt(chipaddr bios);
@@ -107,6 +108,8 @@ void write_page_m29f400bt(chipaddr bios, uint8_t *src,
 /* mx29f002.c */
 int probe_29f002(struct flashchip *flash);
 int erase_29f002(struct flashchip *flash);
+int erase_chip_29f002(struct flashchip *flash, unsigned int addr, unsigned int blocklen);
+int erase_sector_29f002(struct flashchip *flash, unsigned int address, unsigned int blocklen);
 int write_29f002(struct flashchip *flash, uint8_t *buf);
 
 /* pm49fl00x.c */
