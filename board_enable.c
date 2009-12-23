@@ -191,25 +191,40 @@ static void w836xx_memw_enable(uint16_t port)
 }
 
 /**
- * Common routine for several VT823x based boards.
+ * Suited for:
+ *   - EPoX EP-8K5A2: VIA KT333 + VT8235.
+ *   - Albatron PM266A Pro: VIA P4M266A + VT8235.
+ *   - Shuttle AK31 (all versions): VIA KT266 + VT8233.
+ *   - ASUS A7V8X-MX SE and A7V400-MX: AMD K7 + VIA KM400A + VT8235
+ *   - Tyan S2498 (Tomcat K7M): AMD Geode NX + VIA KM400 + VT8237.
  */
-static void vt823x_set_all_writes_to_lpc(struct pci_dev *dev)
+static int w836xx_memw_enable_2e(const char *name)
 {
-	uint8_t val;
+	w836xx_memw_enable(0x2E);
 
-	/* All memory cycles, not just ROM ones, go to LPC. */
-	val = pci_read_byte(dev, 0x59);
-	val &= ~0x80;
-	pci_write_byte(dev, 0x59, val);
+	return 0;
 }
+
 
 /**
  * VT823x: Set one of the GPIO pins.
  */
-static void vt823x_gpio_set(struct pci_dev *dev, uint8_t gpio, int raise)
+static int via_vt823x_gpio_set(uint8_t gpio, int raise)
 {
+	struct pci_dev *dev;
 	uint16_t base;
 	uint8_t val, bit, offset;
+
+	dev = pci_dev_find_vendorclass(0x1106, 0x0601);
+	switch (dev->device_id) {
+	case 0x3177:	/* VT8235 */
+	case 0x3227:	/* VT8237R */
+	case 0x3337:	/* VT8237A */
+		break;
+	default:
+		fprintf(stderr, "\nERROR: VT823x ISA bridge not found.\n");
+		return -1;
+	}
 
 	if ((gpio >= 12) && (gpio <= 15)) {
 		/* GPIO12-15 -> output */
@@ -228,7 +243,7 @@ static void vt823x_gpio_set(struct pci_dev *dev, uint8_t gpio, int raise)
 	} else {
 		fprintf(stderr, "\nERROR: "
 			"VT823x GPIO%02d is not implemented.\n", gpio);
-		return;
+		return -1;
 	}
 
 	/* We need the I/O Base Address for this board's flash enable. */
@@ -243,103 +258,53 @@ static void vt823x_gpio_set(struct pci_dev *dev, uint8_t gpio, int raise)
 	else
 		val &= ~bit;
 	OUTB(val, base + offset);
-}
-
-/**
- * Suited for VIAs EPIA M and MII, and maybe other CLE266 based EPIAs.
- *
- * We don't need to do this when using coreboot, GPIO15 is never lowered there.
- */
-static int board_via_epia_m(const char *name)
-{
-	struct pci_dev *dev;
-
-	dev = pci_dev_find(0x1106, 0x3177);	/* VT8235 ISA bridge */
-	if (!dev) {
-		fprintf(stderr, "\nERROR: VT8235 ISA bridge not found.\n");
-		return -1;
-	}
-
-	/* GPIO15 is connected to write protect. */
-	vt823x_gpio_set(dev, 15, 1);
 
 	return 0;
 }
 
 /**
- * Suited for:
- *   - ASUS A7V8X-MX SE and A7V400-MX: AMD K7 + VIA KM400A + VT8235
- *   - Tyan S2498 (Tomcat K7M): AMD Geode NX + VIA KM400 + VT8237.
+ * Suited for Asus M2V-MX: VIA K8M890 + VT8237A + IT8716F
  */
-static int board_asus_a7v8x_mx(const char *name)
+static int via_vt823x_gpio5_raise(const char *name)
 {
-	struct pci_dev *dev;
-
-	dev = pci_dev_find(0x1106, 0x3177);	/* VT8235 ISA bridge */
-	if (!dev)
-		dev = pci_dev_find(0x1106, 0x3227);	/* VT8237 ISA bridge */
-	if (!dev) {
-		fprintf(stderr, "\nERROR: VT823x ISA bridge not found.\n");
-		return -1;
-	}
-
-	vt823x_set_all_writes_to_lpc(dev);
-	w836xx_memw_enable(0x2E);
-
-	return 0;
-}
-
-/**
- * Suited for VIAs EPIA SP and EPIA CN.
- */
-static int board_via_epia_sp(const char *name)
-{
-	struct pci_dev *dev;
-
-	dev = pci_dev_find(0x1106, 0x3227);	/* VT8237R ISA bridge */
-	if (!dev) {
-		fprintf(stderr, "\nERROR: VT8237R ISA bridge not found.\n");
-		return -1;
-	}
-
-	vt823x_set_all_writes_to_lpc(dev);
-
-	return 0;
+	/* On M2V-MX: GPO5 is connected to WP# and TBL#. */
+	return via_vt823x_gpio_set(5, 1);
 }
 
 /**
  * Suited for VIAs EPIA N & NL.
  */
-static int board_via_epia_n(const char *name)
+static int via_vt823x_gpio9_raise(const char *name)
 {
-	struct pci_dev *dev;
-
-	dev = pci_dev_find(0x1106, 0x3227);	/* VT8237R ISA bridge */
-	if (!dev) {
-		fprintf(stderr, "\nERROR: VT8237R ISA bridge not found.\n");
-		return -1;
-	}
-
-	/* All memory cycles, not just ROM ones, go to LPC */
-	vt823x_set_all_writes_to_lpc(dev);
-
-	/* GPIO9 -> output */
-	vt823x_gpio_set(dev, 9, 1);
-
-	return 0;
+	return via_vt823x_gpio_set(9, 1);
 }
 
 /**
- * Suited for:
- *   - EPoX EP-8K5A2: VIA KT333 + VT8235.
- *   - Albatron PM266A Pro: VIA P4M266A + VT8235.
- *   - Shuttle AK31 (all versions): VIA KT266 + VT8233.
+ * Suited for VIAs EPIA M and MII, and maybe other CLE266 based EPIAs.
+ *
+ * We don't need to do this for EPIA M when using coreboot, GPIO15 is never
+ * lowered there.
  */
-static int w836xx_memw_enable_2e(const char *name)
+static int via_vt823x_gpio15_raise(const char *name)
 {
+	return via_vt823x_gpio_set(15, 1);
+}
+
+/**
+ * Winbond W83697HF Super I/O + VIA VT8235 southbridge
+ *
+ * Suited for:
+ *   - MSI KT4V and KT4V-L: AMD K7 + VIA KT400 + VT8235
+ *   - MSI KT4 Ultra: AMD K7 + VIA KT400 + VT8235
+ */
+static int board_msi_kt4v(const char *name)
+{
+	int ret;
+
+	ret = via_vt823x_gpio_set(12, 1);
 	w836xx_memw_enable(0x2E);
 
-	return 0;
+	return ret;
 }
 
 /**
@@ -919,6 +884,7 @@ static int board_kontron_986lcd_m(const char *name)
  * Suited for:
  *   - Biostar P4M80-M4: VIA P4M800 + VT8237 + IT8705AF
  *   - GIGABYTE GA-7VT600: VIA KT600 + VT8237 + IT8705
+ *   - AOpen vKM400Am-S: VIA KM400 + VT8237 + IT8705F.
  *
  * SIS950 superio probably requires the same flash write enable.
  */
@@ -937,49 +903,6 @@ static int it8705_rom_write_enable(const char *name)
 
 	/* exit IT87xx conf mode */
 	exit_conf_mode_ite(0x2e);
-
-	return 0;
-}
-
-/**
- * Suited for AOpen vKM400Am-S: VIA KM400 + VT8237 + IT8705F.
- */
-static int board_aopen_vkm400(const char *name)
-{
-	struct pci_dev *dev;
-
-	dev = pci_dev_find(0x1106, 0x3227);	/* VT8237 ISA bridge */
-	if (!dev) {
-		fprintf(stderr, "\nERROR: VT8237 ISA bridge not found.\n");
-		return -1;
-	}
-
-	vt823x_set_all_writes_to_lpc(dev);
-
-	return it8705_rom_write_enable(name);
-}
-
-/**
- * Winbond W83697HF Super I/O + VIA VT8235 southbridge
- *
- * Suited for:
- *   - MSI KT4V and KT4V-L: AMD K7 + VIA KT400 + VT8235
- *   - MSI KT4 Ultra: AMD K7 + VIA KT400 + VT8235
- */
-static int board_msi_kt4v(const char *name)
-{
-	struct pci_dev *dev;
-
-	dev = pci_dev_find(0x1106, 0x3177);	/* VT8235 ISA bridge */
-	if (!dev) {
-		fprintf(stderr, "\nERROR: VT823x ISA bridge not found.\n");
-		return -1;
-	}
-
-	vt823x_set_all_writes_to_lpc(dev);
-
-	vt823x_gpio_set(dev, 12, 1);
-	w836xx_memw_enable(0x2E);
 
 	return 0;
 }
@@ -1215,26 +1138,6 @@ static int board_asus_a7v600x(const char *name)
 }
 
 /**
- * Suited for Asus M2V-MX: VIA K8M890 + VT8237A + IT8716F
- */
-static int board_asus_m2v_mx(const char *name)
-{
-	struct pci_dev *dev;
-
-	dev = pci_dev_find(0x1106, 0x3337);	/* VT8237A ISA bridge */
-	if (!dev) {
-		fprintf(stderr, "\nERROR: VT8237A ISA bridge not found.\n");
-		return -1;
-	}
-
-	/* GPO5 is connected to WP# and TBL#. */
-	vt823x_gpio_set(dev, 5, 1);
-
-	return 0;
-}
-
-
-/**
  * Below is the list of boards which need a special "board enable" code in
  * flashrom before their ROM chip can be accessed/written to.
  *
@@ -1268,13 +1171,13 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x8086, 0x24D4, 0x1849, 0x24D0,  0x8086, 0x24D5, 0x1849, 0x9739, NULL,         NULL,          "ASRock",      "P4i65GV",            intel_ich_gpio23_raise},
 	{0x1022, 0x746B,      0,      0,       0,      0,      0,      0, "AGAMI",      "ARUMA",       "agami",       "Aruma",              w83627hf_gpio24_raise_2e},
 	{0x1106, 0x3177, 0x17F2, 0x3177,  0x1106, 0x3148, 0x17F2, 0x3148, NULL,         NULL,          "Albatron",    "PM266A",             w836xx_memw_enable_2e},
-	{0x1106, 0x3205, 0x1106, 0x3205,  0x10EC, 0x8139, 0xA0A0, 0x0477, NULL,         NULL,          "AOpen",       "vKM400Am-S",         board_aopen_vkm400},
+	{0x1106, 0x3205, 0x1106, 0x3205,  0x10EC, 0x8139, 0xA0A0, 0x0477, NULL,         NULL,          "AOpen",       "vKM400Am-S",         it8705_rom_write_enable},
 	{0x1022, 0x2090,      0,      0,  0x1022, 0x2080,      0,      0, "artecgroup", "dbe61",       "Artec Group", "DBE61",              board_artecgroup_dbe6x},
 	{0x1022, 0x2090,      0,      0,  0x1022, 0x2080,      0,      0, "artecgroup", "dbe62",       "Artec Group", "DBE62",              board_artecgroup_dbe6x},
 	{0x1106, 0x3189, 0x1043, 0x807F,  0x1106, 0x3065, 0x1043, 0x80ED, NULL,         NULL,          "ASUS",        "A7V600-X",           board_asus_a7v600x},
 	{0x1106, 0x3189, 0x1043, 0x807F,  0x1106, 0x3177, 0x1043, 0x808C, NULL,         NULL,          "ASUS",        "A7V8X",              board_asus_a7v8x},
-	{0x1106, 0x3177, 0x1043, 0x80A1,  0x1106, 0x3205, 0x1043, 0x8118, NULL,         NULL,          "ASUS",        "A7V8X-MX SE",        board_asus_a7v8x_mx},
-	{0x1106, 0x1336, 0x1043, 0x80ed,  0x1106, 0x3288, 0x1043, 0x8249, NULL,         NULL,          "ASUS",        "M2V-MX",             board_asus_m2v_mx},
+	{0x1106, 0x3177, 0x1043, 0x80A1,  0x1106, 0x3205, 0x1043, 0x8118, NULL,         NULL,          "ASUS",        "A7V8X-MX SE",        w836xx_memw_enable_2e},
+	{0x1106, 0x1336, 0x1043, 0x80ed,  0x1106, 0x3288, 0x1043, 0x8249, NULL,         NULL,          "ASUS",        "M2V-MX",             via_vt823x_gpio5_raise},
 	{0x8086, 0x1a30, 0x1043, 0x8070,  0x8086, 0x244b, 0x1043, 0x8028, NULL,         NULL,          "ASUS",        "P4B266",             intel_ich_gpio22_raise},
 	{0x8086, 0x1A30, 0x1043, 0x8025,  0x8086, 0x244B, 0x104D, 0x80F0, NULL,         NULL,          "ASUS",        "P4B266-LM",          intel_ich_gpio21_raise},
 	{0x8086, 0x2570, 0x1043, 0x80F2,  0x105A, 0x3373, 0x1043, 0x80F5, NULL,         NULL,          "ASUS",        "P4P800-E Deluxe",    intel_ich_gpio21_raise},
@@ -1310,11 +1213,9 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x1106, 0x3104, 0x1297, 0xa238,  0x1106, 0x3059, 0x1297, 0xc063, NULL,         NULL,          "Shuttle",     "AK38N",              shuttle_ak38n},
 	{0x10DE, 0x0050, 0x1297, 0x5036,  0x1412, 0x1724, 0x1297, 0x5036, NULL,         NULL,          "Shuttle",     "FN25",               board_shuttle_fn25},
 	{0x1106, 0x3038, 0x0925, 0x1234,  0x1106, 0x3058, 0x15DD, 0x7609, NULL,         NULL,          "Soyo",        "SY-7VCA",            board_soyo_sy_7vca},
-	{0x8086, 0x1076, 0x8086, 0x1176,  0x1106, 0x3059, 0x10f1, 0x2498, NULL,         NULL,          "Tyan",        "S2498 (Tomcat K7M)", board_asus_a7v8x_mx},
-	{0x1106, 0x0314, 0x1106, 0xaa08,  0x1106, 0x3227, 0x1106, 0xAA08, NULL,         NULL,          "VIA",         "EPIA-CN",            board_via_epia_sp},
-	{0x1106, 0x3177, 0x1106, 0xAA01,  0x1106, 0x3123, 0x1106, 0xAA01, NULL,         NULL,          "VIA",         "EPIA M/MII/...",     board_via_epia_m},
-	{0x1106, 0x0259, 0x1106, 0x3227,  0x1106, 0x3065, 0x1106, 0x3149, NULL,         NULL,          "VIA",         "EPIA-N/NL",          board_via_epia_n},
-	{0x1106, 0x3227, 0x1106, 0xAA01,  0x1106, 0x0259, 0x1106, 0xAA01, NULL,         NULL,          "VIA",         "EPIA SP",            board_via_epia_sp},
+	{0x8086, 0x1076, 0x8086, 0x1176,  0x1106, 0x3059, 0x10f1, 0x2498, NULL,         NULL,          "Tyan",        "S2498 (Tomcat K7M)", w836xx_memw_enable_2e},
+	{0x1106, 0x3177, 0x1106, 0xAA01,  0x1106, 0x3123, 0x1106, 0xAA01, NULL,         NULL,          "VIA",         "EPIA M/MII/...",     via_vt823x_gpio15_raise},
+	{0x1106, 0x0259, 0x1106, 0x3227,  0x1106, 0x3065, 0x1106, 0x3149, NULL,         NULL,          "VIA",         "EPIA-N/NL",          via_vt823x_gpio9_raise},
 	{0x1106, 0x5337, 0x1458, 0xb003,  0x1106, 0x287e, 0x1106, 0x337e, NULL,         NULL,          "VIA",         "PC3500G",            it87xx_probe_spi_flash},
 
 	{     0,      0,      0,      0,       0,      0,      0,      0, NULL,         NULL,          NULL,          NULL,                 NULL}, /* end marker */
