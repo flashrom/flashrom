@@ -474,6 +474,14 @@ static int nvidia_mcp_gpio_set(int gpio, int raise)
 }
 
 /**
+ * Suited for MSI K8N Neo4: nVidia CK804.
+ */
+static int nvidia_mcp_gpio2_raise(const char *name)
+{
+	return nvidia_mcp_gpio_set(0x02, 1);
+}
+
+/**
  * Suited for ASUS P5ND2-SLI Deluxe: LGA775 + nForce4 SLI + MCP04.
  */
 static int nvidia_mcp_gpio10_raise(const char *name)
@@ -1209,6 +1217,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x1106, 0x0571, 0x1462, 0x7120,  0x1106, 0x3065, 0x1462, 0x7120, NULL,         NULL,          "MSI",         "MS-6712 (KT4V)",     board_msi_kt4v},
 	{0x8086, 0x2658, 0x1462, 0x7046,  0x1106, 0x3044, 0x1462, 0x046d, NULL,         NULL,          "MSI",         "MS-7046",            intel_ich_gpio19_raise},
 	{0x10DE, 0x005E, 0x1462, 0x7135,  0x10DE, 0x0050, 0x1462, 0x7135, "msi",        "k8n-neo3",    "MSI",         "MS-7135 (K8N Neo3)", w83627thf_gpio4_4_raise_4e},
+	{0x10DE, 0x005E, 0x1462, 0x7125,  0x10DE, 0x0052, 0x1462, 0x7125, NULL,         NULL,          "MSI",         "K8N Neo4-F",         nvidia_mcp_gpio2_raise},
 	{0x1106, 0x3099,      0,      0,  0x1106, 0x3074,      0,      0, "shuttle",    "ak31",        "Shuttle",     "AK31",               w836xx_memw_enable_2e},
 	{0x1106, 0x3104, 0x1297, 0xa238,  0x1106, 0x3059, 0x1297, 0xc063, NULL,         NULL,          "Shuttle",     "AK38N",              shuttle_ak38n},
 	{0x10DE, 0x0050, 0x1297, 0x5036,  0x1412, 0x1724, 0x1297, 0x5036, NULL,         NULL,          "Shuttle",     "FN25",               board_shuttle_fn25},
