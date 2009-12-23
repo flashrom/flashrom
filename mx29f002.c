@@ -43,6 +43,39 @@ int probe_29f002(struct flashchip *flash)
 	return 0;
 }
 
+int erase_sector_29f002(struct flashchip *flash, unsigned int address, unsigned int blocklen)
+{
+	chipaddr bios = flash->virtual_memory;
+
+	chip_writeb(0xAA, bios + 0x555);
+	chip_writeb(0x55, bios + 0x2AA);
+	chip_writeb(0x80, bios + 0x555);
+	chip_writeb(0xAA, bios + 0x555);
+	chip_writeb(0x55, bios + 0x2AA);
+	chip_writeb(0x30, bios + address);
+
+	programmer_delay(10);
+
+	/* wait for Toggle bit ready         */
+	toggle_ready_jedec(bios + address);
+
+	if (check_erased_range(flash, address, blocklen)) {
+		fprintf(stderr, "ERASE FAILED!\n");
+		return -1;
+	}
+	return 0;
+}
+
+int erase_chip_29f002(struct flashchip *flash, unsigned int addr, unsigned int blocklen)
+{
+	if ((addr != 0) || (blocklen != flash->total_size * 1024)) {
+		fprintf(stderr, "%s called with incorrect arguments\n",
+			__func__);
+		return -1;
+	}
+	return erase_29f002(flash);
+}
+
 /* FIXME: Use erase_chip_jedec?
  * erase_29f002 uses shorter addresses, sends F0 (exit ID mode) and
  * and has a bigger delay before polling the toggle bit */
