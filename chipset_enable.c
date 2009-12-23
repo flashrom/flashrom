@@ -667,6 +667,13 @@ static int enable_flash_vt823x(struct pci_dev *dev, const char *name)
 		return -1;
 	}
 
+	if (dev->device_id == 0x3227) { /* VT8237R */
+	    /* All memory cycles, not just ROM ones, go to LPC. */
+	    val = pci_read_byte(dev, 0x59);
+	    val &= ~0x80;
+	    pci_write_byte(dev, 0x59, val);
+	}
+
 	return 0;
 }
 
