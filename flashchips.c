@@ -2370,10 +2370,29 @@ struct flashchip flashchips[] = {
 		.model_id	= SST_25VF016B,
 		.total_size	= 2048,
 		.page_size	= 256,
-		.tested		= TEST_OK_PREW,
+		.tested		= TEST_OK_PRW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= spi_chip_erase_c7,
+		.erase		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 512} },
+				.block_erase = spi_block_erase_20,
+			}, {
+				.eraseblocks = { {32 * 1024, 64} },
+				.block_erase = spi_block_erase_52,
+			}, {
+				.eraseblocks = { {64 * 1024, 32} },
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { {2 * 1024 * 1024, 1} },
+				.block_erase = spi_block_erase_60,
+			}, {
+				.eraseblocks = { {2 * 1024 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			},
+		},
 		.write		= spi_chip_write_1,
 		.read		= spi_chip_read,
 	},
@@ -2386,10 +2405,58 @@ struct flashchip flashchips[] = {
 		.model_id	= SST_25VF032B,
 		.total_size	= 4096,
 		.page_size	= 256,
-		.tested		= TEST_OK_PREW,
+		.tested		= TEST_OK_PRW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= spi_chip_erase_c7,
+		.erase		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 1024} },
+				.block_erase = spi_block_erase_20,
+			}, {
+				.eraseblocks = { {32 * 1024, 128} },
+				.block_erase = spi_block_erase_52,
+			}, {
+				.eraseblocks = { {64 * 1024, 64} },
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { {4 * 1024 * 1024, 1} },
+				.block_erase = spi_block_erase_60,
+			}, {
+				.eraseblocks = { {4 * 1024 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			},
+		},
+		.write		= spi_chip_write_1,
+		.read		= spi_chip_read,
+	},
+
+	{
+		.vendor		= "SST",
+		.name		= "SST25VF040.REMS",
+		.bustype	= CHIP_BUSTYPE_SPI,
+		.manufacture_id	= SST_ID,
+		.model_id	= SST_25VF040_REMS,
+		.total_size	= 512,
+		.page_size	= 256,
+		.tested		= TEST_OK_PR,
+		.probe		= probe_spi_rems,
+		.probe_timing	= TIMING_ZERO,
+		.erase		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 128} },
+				.block_erase = spi_block_erase_20,
+			}, {
+				.eraseblocks = { {32 * 1024, 16} },
+				.block_erase = spi_block_erase_52,
+			}, {
+				.eraseblocks = { {512 * 1024, 1} },
+				.block_erase = spi_block_erase_60,
+			},
+		},
 		.write		= spi_chip_write_1,
 		.read		= spi_chip_read,
 	},
@@ -2405,23 +2472,26 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= spi_chip_erase_c7,
-		.write		= spi_chip_write_1,
-		.read		= spi_chip_read,
-	},
-
-	{
-		.vendor		= "SST",
-		.name		= "SST25VF040.REMS",
-		.bustype	= CHIP_BUSTYPE_SPI,
-		.manufacture_id	= SST_ID,
-		.model_id	= SST_25VF040_REMS,
-		.total_size	= 512,
-		.page_size	= 64 * 1024,
-		.tested		= TEST_OK_PR,
-		.probe		= probe_spi_rems,
-		.probe_timing	= TIMING_ZERO,
-		.erase		= spi_chip_erase_60,
+		.erase		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 128} },
+				.block_erase = spi_block_erase_20,
+			}, {
+				.eraseblocks = { {32 * 1024, 16} },
+				.block_erase = spi_block_erase_52,
+			}, {
+				.eraseblocks = { {64 * 1024, 8} },
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { {512 * 1024, 1} },
+				.block_erase = spi_block_erase_60,
+			}, {
+				.eraseblocks = { {512 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			},
+		},
 		.write		= spi_chip_write_1,
 		.read		= spi_chip_read,
 	},
@@ -2433,11 +2503,30 @@ struct flashchip flashchips[] = {
 		.manufacture_id	= SST_ID,
 		.model_id	= SST_25VF040B_REMS,
 		.total_size	= 512,
-		.page_size	= 64 * 1024,
+		.page_size	= 256,
 		.tested		= TEST_OK_PR,
 		.probe		= probe_spi_rems,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= spi_chip_erase_c7,
+		.erase		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 128} },
+				.block_erase = spi_block_erase_20,
+			}, {
+				.eraseblocks = { {32 * 1024, 16} },
+				.block_erase = spi_block_erase_52,
+			}, {
+				.eraseblocks = { {64 * 1024, 8} },
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { {512 * 1024, 1} },
+				.block_erase = spi_block_erase_60,
+			}, {
+				.eraseblocks = { {512 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			},
+		},
 		.write		= spi_chip_write_1,
 		.read		= spi_chip_read,
 	},
@@ -2450,10 +2539,29 @@ struct flashchip flashchips[] = {
 		.model_id	= SST_25VF080B,
 		.total_size	= 1024,
 		.page_size	= 256,
-		.tested		= TEST_OK_PREW,
+		.tested		= TEST_OK_PRW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= spi_chip_erase_60_c7,
+		.erase		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 256} },
+				.block_erase = spi_block_erase_20,
+			}, {
+				.eraseblocks = { {32 * 1024, 32} },
+				.block_erase = spi_block_erase_52,
+			}, {
+				.eraseblocks = { {64 * 1024, 16} },
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { {1024 * 1024, 1} },
+				.block_erase = spi_block_erase_60,
+			}, {
+				.eraseblocks = { {1024 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			},
+		},
 		.write		= spi_chip_write_1,
 		.read		= spi_chip_read,
 	},
