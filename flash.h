@@ -481,6 +481,7 @@ char *extract_param(char **haystack, char *needle, char *delim);
 int check_erased_range(struct flashchip *flash, int start, int len);
 int verify_range(struct flashchip *flash, uint8_t *cmpbuf, int start, int len, char *message);
 char *strcat_realloc(char *dest, const char *src);
+int doit(struct flashchip *flash, int force, char *filename, int read_it, int write_it, int erase_it, int verify_it);
 
 #define OK 0
 #define NT 1    /* Not tested */
