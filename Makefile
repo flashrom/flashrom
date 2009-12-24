@@ -41,11 +41,16 @@ CFLAGS += -I/usr/local/include
 LDFLAGS += -L/usr/local/lib
 endif
 
-OBJS = jedec.o stm50flw0x0x.o w39v080fa.o sharplhf00l04.o w29ee011.o \
+CHIP_OBJS = jedec.o stm50flw0x0x.o w39v080fa.o sharplhf00l04.o w29ee011.o \
 	sst28sf040.o am29f040b.o mx29f002.o m29f400bt.o pm29f002.o w39v040c.o \
 	w49f002u.o 82802ab.o pm49fl00x.o sst49lf040.o en29f002a.o m29f002.o \
-	sst49lfxxxc.o sst_fwhub.o flashchips.o layout.o spi.o \
-	flashrom.o print.o udelay.o
+	sst49lfxxxc.o sst_fwhub.o flashchips.o spi.o
+
+LIB_OBJS = layout.o
+
+CLI_OBJS = flashrom.o print.o
+
+PROGRAMMER_OBJS = udelay.o
 
 all: pciutils features dep $(PROGRAM)
 
@@ -96,13 +101,13 @@ CONFIG_PRINT_WIKI ?= no
 
 ifeq ($(CONFIG_INTERNAL), yes)
 FEATURE_CFLAGS += -D'INTERNAL_SUPPORT=1'
-OBJS += chipset_enable.o board_enable.o cbtable.o it87spi.o ichspi.o sb600spi.o wbsio_spi.o
+PROGRAMMER_OBJS += chipset_enable.o board_enable.o cbtable.o it87spi.o ichspi.o sb600spi.o wbsio_spi.o
 NEED_PCI := yes
 endif
 
 ifeq ($(CONFIG_SERPROG), yes)
 FEATURE_CFLAGS += -D'SERPROG_SUPPORT=1'
-OBJS += serprog.o
+PROGRAMMER_OBJS += serprog.o
 ifeq ($(OS_ARCH), SunOS)
 LIBS += -lsocket
 endif
@@ -110,24 +115,24 @@ endif
 
 ifeq ($(CONFIG_BITBANG_SPI), yes)
 FEATURE_CFLAGS += -D'BITBANG_SPI_SUPPORT=1'
-OBJS += bitbang_spi.o
+PROGRAMMER_OBJS += bitbang_spi.o
 endif
 
 ifeq ($(CONFIG_NIC3COM), yes)
 FEATURE_CFLAGS += -D'NIC3COM_SUPPORT=1'
-OBJS += nic3com.o
+PROGRAMMER_OBJS += nic3com.o
 NEED_PCI := yes
 endif
 
 ifeq ($(CONFIG_GFXNVIDIA), yes)
 FEATURE_CFLAGS += -D'GFXNVIDIA_SUPPORT=1'
-OBJS += gfxnvidia.o
+PROGRAMMER_OBJS += gfxnvidia.o
 NEED_PCI := yes
 endif
 
 ifeq ($(CONFIG_SATASII), yes)
 FEATURE_CFLAGS += -D'SATASII_SUPPORT=1'
-OBJS += satasii.o
+PROGRAMMER_OBJS += satasii.o
 NEED_PCI := yes
 endif
 
@@ -136,47 +141,54 @@ ifeq ($(CONFIG_FT2232SPI), yes)
 # This is a totally ugly hack.
 FEATURE_CFLAGS += $(shell LC_ALL=C grep -q "FTDISUPPORT := yes" .features && printf "%s" "-D'FT2232_SPI_SUPPORT=1'")
 FEATURE_LIBS += $(shell LC_ALL=C grep -q "FTDISUPPORT := yes" .features && printf "%s" "$(FTDILIBS)")
-OBJS += ft2232_spi.o
+PROGRAMMER_OBJS += ft2232_spi.o
 endif
 
 ifeq ($(CONFIG_DUMMY), yes)
 FEATURE_CFLAGS += -D'DUMMY_SUPPORT=1'
-OBJS += dummyflasher.o
+PROGRAMMER_OBJS += dummyflasher.o
 endif
 
 ifeq ($(CONFIG_DRKAISER), yes)
 FEATURE_CFLAGS += -D'DRKAISER_SUPPORT=1'
-OBJS += drkaiser.o
+PROGRAMMER_OBJS += drkaiser.o
 NEED_PCI := yes
 endif
 
 ifeq ($(CONFIG_BUSPIRATESPI), yes)
 FEATURE_CFLAGS += -D'BUSPIRATE_SPI_SUPPORT=1'
-OBJS += buspirate_spi.o
+PROGRAMMER_OBJS += buspirate_spi.o
 endif
 
 # Ugly, but there's no elif/elseif.
 ifeq ($(CONFIG_SERPROG), yes)
-OBJS += serial.o
+LIB_OBJS += serial.o
 else
 ifeq ($(CONFIG_BUSPIRATESPI), yes)
-OBJS += serial.o
+LIB_OBJS += serial.o
 endif
 endif
 
 ifeq ($(NEED_PCI), yes)
 LIBS += -lpci
 FEATURE_CFLAGS += -D'NEED_PCI=1'
-OBJS += pcidev.o physmap.o internal.o
+PROGRAMMER_OBJS += pcidev.o physmap.o internal.o #FIXME: We need to move stuff
+ 						# from internal.c and pcidev.c to pci.c
+						# internal.c needs to be split
+						# into internal-programmer-only stuff
+						# and a support lib for all internal+pci
+						# based stuff.
 endif
 
 ifeq ($(CONFIG_PRINT_WIKI), yes)
 FEATURE_CFLAGS += -D'PRINT_WIKI_SUPPORT=1'
-OBJS += print_wiki.o
+CLI_OBJS += print_wiki.o
 endif
 
 # We could use PULLED_IN_LIBS, but that would be ugly.
 FEATURE_LIBS += $(shell LC_ALL=C grep -q "NEEDLIBZ := yes" .libdeps && printf "%s" "-lz")
+
+OBJS = $(CHIP_OBJS) $(CLI_OBJS) $(PROGRAMMER_OBJS) $(LIB_OBJS)
 
 $(PROGRAM): $(OBJS)
 	$(CC) $(LDFLAGS) -o $(PROGRAM) $(OBJS) $(FEATURE_LIBS) $(LIBS)
