@@ -63,3 +63,16 @@ void myusec_calibrate_delay(void)
 		     (unsigned long)micro, timeusec);
 	printf("OK.\n");
 }
+
+void internal_delay(int usecs)
+{
+	/* If the delay is >1 s, use usleep because timing does not need to
+	 * be so precise.
+	 */
+	if (usecs > 1000000) {
+		usleep(usecs);
+	} else {
+		myusec_delay(usecs);
+	}
+}
+
