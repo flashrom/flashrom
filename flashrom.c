@@ -899,14 +899,26 @@ void emergency_help_message(void)
 		"DO NOT REBOOT OR POWEROFF!\n");
 }
 
-void usage(const char *name)
+/* The way to go if you want a delimited list of programmers*/
+void list_programmers(char *delim)
+{
+	enum programmer p;
+	for (p = 0; p < PROGRAMMER_INVALID; p++) {
+		printf("%s", programmer_table[p].name);
+		if (p < PROGRAMMER_INVALID - 1)
+			printf("%s", delim);
+	}
+	printf("\n");	
+}
+
+void cli_usage(const char *name)
 {
 	const char *pname;
 	int pnamelen;
 	int remaining = 0;
 	enum programmer p;
 
-	printf("usage: %s [-VfLzhR] [-E|-r file|-w file|-v file] [-c chipname]\n"
+	printf("cli_usage: %s [-VfLzhR] [-E|-r file|-w file|-v file] [-c chipname]\n"
               "       [-m [vendor:]part] [-l file] [-i image] [-p programmer]\n\n", name);
 
 	printf("Please note that the command line interface for flashrom will "
@@ -971,11 +983,70 @@ void print_version(void)
 	printf("flashrom v%s\n", flashrom_version);
 }
 
+int selfcheck(void)
+{
+	/* Safety check. */
+	if (ARRAY_SIZE(programmer_table) - 1 != PROGRAMMER_INVALID) {
+		fprintf(stderr, "Programmer table miscompilation!\n");
+		return 1;
+	}
+	if (spi_programmer_count - 1 != SPI_CONTROLLER_INVALID) {
+		fprintf(stderr, "SPI programmer table miscompilation!\n");
+		return 1;
+	}
+#if BITBANG_SPI_SUPPORT == 1
+	if (bitbang_spi_master_count - 1 != BITBANG_SPI_INVALID) {
+		fprintf(stderr, "Bitbanging SPI master table miscompilation!\n");
+		return 1;
+	}
+#endif
+	return 0;
+}
+
+void check_chip_supported(struct flashchip *flash)
+{
+	if (TEST_OK_MASK != (flash->tested & TEST_OK_MASK)) {
+		printf("===\n");
+		if (flash->tested & TEST_BAD_MASK) {
+			printf("This flash part has status NOT WORKING for operations:");
+			if (flash->tested & TEST_BAD_PROBE)
+				printf(" PROBE");
+			if (flash->tested & TEST_BAD_READ)
+				printf(" READ");
+			if (flash->tested & TEST_BAD_ERASE)
+				printf(" ERASE");
+			if (flash->tested & TEST_BAD_WRITE)
+				printf(" WRITE");
+			printf("\n");
+		}
+		if ((!(flash->tested & TEST_BAD_PROBE) && !(flash->tested & TEST_OK_PROBE)) ||
+		    (!(flash->tested & TEST_BAD_READ) && !(flash->tested & TEST_OK_READ)) ||
+		    (!(flash->tested & TEST_BAD_ERASE) && !(flash->tested & TEST_OK_ERASE)) ||
+		    (!(flash->tested & TEST_BAD_WRITE) && !(flash->tested & TEST_OK_WRITE))) {
+			printf("This flash part has status UNTESTED for operations:");
+			if (!(flash->tested & TEST_BAD_PROBE) && !(flash->tested & TEST_OK_PROBE))
+				printf(" PROBE");
+			if (!(flash->tested & TEST_BAD_READ) && !(flash->tested & TEST_OK_READ))
+				printf(" READ");
+			if (!(flash->tested & TEST_BAD_ERASE) && !(flash->tested & TEST_OK_ERASE))
+				printf(" ERASE");
+			if (!(flash->tested & TEST_BAD_WRITE) && !(flash->tested & TEST_OK_WRITE))
+				printf(" WRITE");
+			printf("\n");
+		}
+		printf("Please email a report to flashrom@flashrom.org if any "
+		       "of the above operations\nwork correctly for you with "
+		       "this flash part. Please include the flashrom\noutput "
+		       "with the additional -V option for all operations you "
+		       "tested (-V, -rV,\n-wV, -EV), and mention which "
+		       "mainboard or programmer you tested. Thanks for your "
+		       "help!\n===\n");
+	}
+}
+
 int main(int argc, char *argv[])
 {
-	uint8_t *buf;
-	unsigned long size, numbytes;
-	FILE *image;
+	unsigned long size;
 	/* Probe for up to three flash chips. */
 	struct flashchip *flash, *flashes[3];
 	const char *name;
@@ -989,7 +1060,7 @@ int main(int argc, char *argv[])
 	int list_supported_wiki = 0;
 #endif
 	int operation_specified = 0;
-	int ret = 0, i;
+	int i;
 
 #if PRINT_WIKI_SUPPORT == 1
 	const char *optstring = "rRwvnVEfc:m:l:i:p:Lzh";
@@ -1032,21 +1103,8 @@ int main(int argc, char *argv[])
 			printf_debug("%s\n", argv[i]);
 	}
 
-	/* Safety check. */
-	if (ARRAY_SIZE(programmer_table) - 1 != PROGRAMMER_INVALID) {
-		fprintf(stderr, "Programmer table miscompilation!\n");
+	if (selfcheck())
 		exit(1);
-	}
-	if (spi_programmer_count - 1 != SPI_CONTROLLER_INVALID) {
-		fprintf(stderr, "SPI programmer table miscompilation!\n");
-		exit(1);
-	}
-#if BITBANG_SPI_SUPPORT == 1
-	if (bitbang_spi_master_count - 1 != BITBANG_SPI_INVALID) {
-		fprintf(stderr, "Bitbanging SPI master table miscompilation!\n");
-		exit(1);
-	}
-#endif
 
 	setbuf(stdout, NULL);
 	while ((opt = getopt_long(argc, argv, optstring,
@@ -1163,7 +1221,7 @@ int main(int argc, char *argv[])
 			break;
 		case 'h':
 		default:
-			usage(argv[0]);
+			cli_usage(argv[0]);
 			break;
 		}
 	}
@@ -1182,7 +1240,7 @@ int main(int argc, char *argv[])
 
 	if (read_it && write_it) {
 		printf("Error: -r and -w are mutually exclusive.\n");
-		usage(argv[0]);
+		cli_usage(argv[0]);
 	}
 
 	if (optind < argc)
@@ -1190,7 +1248,7 @@ int main(int argc, char *argv[])
 	
 	if (optind < argc) {
 		printf("Error: Extra parameter found.\n");
-		usage(argv[0]);
+		cli_usage(argv[0]);
 	}
 
 	if (programmer_init()) {
@@ -1198,6 +1256,7 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
+	// FIXME: Delay calibration should happen in programmer code.
 	myusec_calibrate_delay();
 
 	for (i = 0; i < ARRAY_SIZE(flashes); i++) {
@@ -1242,43 +1301,7 @@ int main(int argc, char *argv[])
 
 	flash = flashes[0];
 
-	if (TEST_OK_MASK != (flash->tested & TEST_OK_MASK)) {
-		printf("===\n");
-		if (flash->tested & TEST_BAD_MASK) {
-			printf("This flash part has status NOT WORKING for operations:");
-			if (flash->tested & TEST_BAD_PROBE)
-				printf(" PROBE");
-			if (flash->tested & TEST_BAD_READ)
-				printf(" READ");
-			if (flash->tested & TEST_BAD_ERASE)
-				printf(" ERASE");
-			if (flash->tested & TEST_BAD_WRITE)
-				printf(" WRITE");
-			printf("\n");
-		}
-		if ((!(flash->tested & TEST_BAD_PROBE) && !(flash->tested & TEST_OK_PROBE)) ||
-		    (!(flash->tested & TEST_BAD_READ) && !(flash->tested & TEST_OK_READ)) ||
-		    (!(flash->tested & TEST_BAD_ERASE) && !(flash->tested & TEST_OK_ERASE)) ||
-		    (!(flash->tested & TEST_BAD_WRITE) && !(flash->tested & TEST_OK_WRITE))) {
-			printf("This flash part has status UNTESTED for operations:");
-			if (!(flash->tested & TEST_BAD_PROBE) && !(flash->tested & TEST_OK_PROBE))
-				printf(" PROBE");
-			if (!(flash->tested & TEST_BAD_READ) && !(flash->tested & TEST_OK_READ))
-				printf(" READ");
-			if (!(flash->tested & TEST_BAD_ERASE) && !(flash->tested & TEST_OK_ERASE))
-				printf(" ERASE");
-			if (!(flash->tested & TEST_BAD_WRITE) && !(flash->tested & TEST_OK_WRITE))
-				printf(" WRITE");
-			printf("\n");
-		}
-		printf("Please email a report to flashrom@flashrom.org if any "
-		       "of the above operations\nwork correctly for you with "
-		       "this flash part. Please include the flashrom\noutput "
-		       "with the additional -V option for all operations you "
-		       "tested (-V, -rV,\n-wV, -EV), and mention which "
-		       "mainboard or programmer you tested. Thanks for your "
-		       "help!\n===\n");
-	}
+	check_chip_supported(flash);
 
 	size = flash->total_size * 1024;
 	if (check_max_decode((buses_supported & flash->bustype), size) &&
@@ -1307,6 +1330,21 @@ int main(int argc, char *argv[])
 	if (write_it && !dont_verify_it)
 		verify_it = 1;
 
+	return doit(flash, force, filename, read_it, write_it, erase_it, verify_it);
+}
+
+/* This function signature is horrible. We need to design a better interface,
+ * but right now it allows us to split off the CLI code.
+ */
+int doit(struct flashchip *flash, int force, char *filename, int read_it, int write_it, int erase_it, int verify_it)
+{
+	uint8_t *buf;
+	unsigned long numbytes;
+	FILE *image;
+	int ret = 0;
+	unsigned long size;
+
+	size = flash->total_size * 1024;
 	buf = (uint8_t *) calloc(size, sizeof(char));
 
 	if (erase_it) {
