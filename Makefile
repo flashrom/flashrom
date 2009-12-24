@@ -41,8 +41,6 @@ CFLAGS += -I/usr/local/include
 LDFLAGS += -L/usr/local/lib
 endif
 
-LIBS += -lpci
-
 OBJS = jedec.o stm50flw0x0x.o w39v080fa.o sharplhf00l04.o w29ee011.o \
 	sst28sf040.o am29f040b.o mx29f002.o m29f400bt.o pm29f002.o w39v040c.o \
 	w49f002u.o 82802ab.o pm49fl00x.o sst49lf040.o en29f002a.o m29f002.o \
@@ -167,6 +165,7 @@ endif
 endif
 
 ifeq ($(NEED_PCI), yes)
+LIBS += -lpci
 FEATURE_CFLAGS += -D'NEED_PCI=1'
 OBJS += pcidev.o physmap.o internal.o
 endif
@@ -211,6 +210,7 @@ compiler:
 		rm -f .test.c .test; exit 1)
 	@rm -f .test.c .test
 
+ifeq ($(NEED_PCI), yes)
 pciutils: compiler
 	@printf "Checking for libpci headers... "
 	@$(shell ( echo "#include <pci/pci.h>";		   \
@@ -226,25 +226,30 @@ pciutils: compiler
 	@$(shell ( echo "#include <pci/pci.h>";		   \
 		   echo "int main(int argc, char **argv)"; \
 		   echo "{ return 0; }"; ) > .test1.c )
-	@$(CC) $(CFLAGS) $(LDFLAGS) .test1.c -o .test1 $(LIBS) >/dev/null 2>&1 &&	\
+	@$(CC) $(CFLAGS) $(LDFLAGS) .test1.c -o .test1 -lpci $(LIBS) >/dev/null 2>&1 &&	\
 		echo "found." || ( echo "not found."; echo;				\
 		echo "Please install libpci (package pciutils).";			\
 		echo "See README for more information."; echo;				\
 		rm -f .test1.c .test1; exit 1)
 	@printf "Checking if libpci is sufficient... "
 	@printf "" > .libdeps
-	@$(CC) $(LDFLAGS) .test.o -o .test $(LIBS) >/dev/null 2>&1 &&				\
+	@$(CC) $(LDFLAGS) .test.o -o .test -lpci $(LIBS) >/dev/null 2>&1 &&				\
 		echo "yes." || ( echo "no.";							\
 		printf "Checking if libz is present and supplies all needed symbols...";	\
-		$(CC) $(LDFLAGS) .test.o -o .test $(LIBS) -lz >/dev/null 2>&1 &&		\
+		$(CC) $(LDFLAGS) .test.o -o .test -lpci -lz $(LIBS) >/dev/null 2>&1 &&		\
 		( echo "yes."; echo "NEEDLIBZ := yes" > .libdeps ) || ( echo "no."; echo;	\
 		echo "Please install libz.";			\
 		echo "See README for more information."; echo;				\
 		rm -f .test.c .test.o .test; exit 1) )
 	@rm -f .test.c .test.o .test .test1.c .test1
+else
+pciutils: compiler
+	@printf "" > .libdeps
+endif
 
 .features: features
 
+ifeq ($(CONFIG_FT2232SPI), yes)
 features: compiler
 	@echo "FEATURES := yes" > .features.tmp
 	@printf "Checking for FTDI support... "
@@ -257,6 +262,10 @@ features: compiler
 		( echo "not found."; echo "FTDISUPPORT := no" >> .features.tmp )
 	@$(DIFF) -q .features.tmp .features >/dev/null 2>&1 && rm .features.tmp || mv .features.tmp .features
 	@rm -f .featuretest.c .featuretest
+else
+features: compiler
+	@echo "FEATURES := yes" > .features
+endif
 
 install: $(PROGRAM)
 	mkdir -p $(DESTDIR)$(PREFIX)/sbin
