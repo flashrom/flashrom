@@ -11,6 +11,8 @@ program flash chips.
 It supports a wide range of DIP32, PLCC32, DIP8, SO8/SOIC8, TSOP32, and TSOP40
 chips, which use various protocols such as LPC, FWH, parallel flash, or SPI.
 
+Please see the flashrom(8) manpage.
+
 
 Packaging
 ---------
@@ -87,37 +89,6 @@ For installation in a different directory use DESTDIR, e.g. like this:
 
 If you have insufficient permissions for the destination directory, use sudo
 by adding sudo in front of the commands above.
-
-
-Usage / Options
----------------
-
-Please see the flashrom(8) manpage.
-
-
-Exit status
------------
-
-Please see the flashrom(8) manpage.
-
-
-coreboot Table and Mainboard Identification
---------------------------------------------
-
-Please see the flashrom(8) manpage.
-
-
-ROM Layout Support
-------------------
-
-Please see the flashrom(8) manpage.
-
-
-Supported Flash Chips / Chipsets / Mainboards
----------------------------------------------
-
-Please check the output of 'flashrom -L' for the list of supported
-flash chips, chipsets/southbridges, mainboards, and flash programmers.
 
 
 Contact
