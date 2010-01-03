@@ -364,7 +364,7 @@ static int enable_flash_ich_dc(struct pci_dev *dev, const char *name)
 			     (0x1ff8 + i) * 0x80000,
 			     (0x1ff0 + i) * 0x80000,
 			     tmp ? "en" : "dis");
-		if ((tmp == 0) && contiguous) {
+		if ((tmp == 1) && contiguous) {
 			max_decode_fwh_decode = (8 - i) * 0x80000;
 		} else {
 			contiguous = 0;
@@ -376,7 +376,7 @@ static int enable_flash_ich_dc(struct pci_dev *dev, const char *name)
 			     (0xff4 + i) * 0x100000,
 			     (0xff0 + i) * 0x100000,
 			     tmp ? "en" : "dis");
-		if ((tmp == 0) && contiguous) {
+		if ((tmp == 1) && contiguous) {
 			max_decode_fwh_decode = (8 - i) * 0x100000;
 		} else {
 			contiguous = 0;
