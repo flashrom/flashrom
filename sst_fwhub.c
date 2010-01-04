@@ -157,8 +157,8 @@ int write_sst_fwhub(struct flashchip *flash, uint8_t *buf)
 						   page_size);
 			if (rc)
 				return 1;
-			write_sector_jedec(bios, buf + i * page_size,
-					   bios + i * page_size, page_size);
+			write_sector_jedec_common(flash, buf + i * page_size,
+					   bios + i * page_size, page_size, 0xffff);
 		}
 		printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
 	}

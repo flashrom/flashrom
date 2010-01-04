@@ -101,8 +101,8 @@ int write_49fl00x(struct flashchip *flash, uint8_t *buf)
 
 		/* write to the sector */
 		printf("%04d at address: 0x%08x", i, i * page_size);
-		write_sector_jedec(bios, buf + i * page_size,
-				   bios + i * page_size, page_size);
+		write_sector_jedec_common(flash, buf + i * page_size,
+				   bios + i * page_size, page_size, 0xffff);
 		printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
 		fflush(stdout);
 	}
