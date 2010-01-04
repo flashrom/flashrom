@@ -144,6 +144,9 @@ enum chipbustype {
  */
 #define NUM_ERASEFUNCTIONS 5
 
+#define FEATURE_REGISTERMAP (1 << 0)
+#define FEATURE_BYTEWRITES (1 << 1)
+
 struct flashchip {
 	const char *vendor;
 	const char *name;
@@ -160,6 +163,7 @@ struct flashchip {
 
 	int total_size;
 	int page_size;
+	int feature_bits;
 
 	/*
 	 * Indicate if flashrom has been tested with this flash chip and if

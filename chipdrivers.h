@@ -76,7 +76,6 @@ int write_en29f002a(struct flashchip *flash, uint8_t *buf);
 uint8_t oddparity(uint8_t val);
 void toggle_ready_jedec(chipaddr dst);
 void data_polling_jedec(chipaddr dst, uint8_t data);
-void start_program_jedec(chipaddr bios);
 int write_byte_program_jedec(chipaddr bios, uint8_t *src,
 			     chipaddr dst);
 int probe_jedec(struct flashchip *flash);
@@ -86,8 +85,7 @@ int write_jedec_1(struct flashchip *flash, uint8_t *buf);
 int erase_sector_jedec(struct flashchip *flash, unsigned int page, unsigned int pagesize);
 int erase_block_jedec(struct flashchip *flash, unsigned int page, unsigned int blocksize);
 int erase_chip_block_jedec(struct flashchip *flash, unsigned int page, unsigned int blocksize);
-int write_sector_jedec(chipaddr bios, uint8_t *src,
-		       chipaddr dst, unsigned int page_size);
+int write_sector_jedec_common(struct flashchip *flash, uint8_t *src, chipaddr dst, unsigned int page_size, unsigned int mask);
 
 /* m29f002.c */
 int erase_m29f002(struct flashchip *flash);

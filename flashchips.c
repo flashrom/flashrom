@@ -5,6 +5,7 @@
  * Copyright (C) 2004 Tyan Corp
  * Copyright (C) 2005-2008 coresystems GmbH <stepan@openbios.org>
  * Copyright (C) 2006-2009 Carl-Daniel Hailfinger
+ * Copyright (C) 2009 Sean Nelson <audiohacked@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
