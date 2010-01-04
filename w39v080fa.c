@@ -182,7 +182,7 @@ int write_winbond_fwhub(struct flashchip *flash, uint8_t *buf)
 	printf("Programming: ");
 	for (i = 0; i < total_size; i += flash->page_size) {
 		printf("0x%08x\b\b\b\b\b\b\b\b\b\b", i);
-		write_sector_jedec(bios, buf + i, bios + i, flash->page_size);
+		write_sector_jedec_common(flash, buf + i, bios + i, flash->page_size, 0xffff);
 	}
 	printf("\n");
 
