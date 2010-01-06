@@ -28,6 +28,11 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "hwaccess.h"
+#ifdef _WIN32
+#include <windows.h>
+#undef min
+#undef max
+#endif
 
 typedef unsigned long chipaddr;
 
@@ -591,10 +596,16 @@ void serprog_chip_readn(uint8_t *buf, const chipaddr addr, size_t len);
 void serprog_delay(int delay);
 
 /* serial.c */
+#if _WIN32
+typedef HANDLE fdtype;
+#else
+typedef int fdtype;
+#endif
+
 void sp_flush_incoming(void);
-int sp_openserport(char *dev, unsigned int baud);
+fdtype sp_openserport(char *dev, unsigned int baud);
 void __attribute__((noreturn)) sp_die(char *msg);
-extern int sp_fd;
+extern fdtype sp_fd;
 int serialport_shutdown(void);
 int serialport_write(unsigned char *buf, unsigned int writecnt);
 int serialport_read(unsigned char *buf, unsigned int readcnt);
