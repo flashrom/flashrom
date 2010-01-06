@@ -30,9 +30,13 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <inttypes.h>
+#ifdef _WIN32
+#include <conio.h>
+#else
 #include <termios.h>
+#endif
 
-int sp_fd;
+fdtype sp_fd;
 
 void __attribute__((noreturn)) sp_die(char *msg)
 {
@@ -40,6 +44,7 @@ void __attribute__((noreturn)) sp_die(char *msg)
 	exit(1);
 }
 
+#ifndef _WIN32
 struct baudentry {
 	int flag;
 	unsigned int baud;
@@ -94,9 +99,36 @@ static const struct baudentry sp_baudtable[] = {
 #endif
 	{0, 0}			/* Terminator */
 };
+#endif
 
-int sp_openserport(char *dev, unsigned int baud)
+fdtype sp_openserport(char *dev, unsigned int baud)
 {
+#ifdef _WIN32
+	HANDLE fd;
+	fd = CreateFile(dev, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+	if (fd == INVALID_HANDLE_VALUE) {
+		sp_die("Error: cannot open serial port");
+	}
+	DCB dcb;
+	if (!GetCommState(fd, &dcb)) {
+		sp_die("Error: Could not fetch serial port configuration");
+	}
+	switch (baud) {
+		case 9600: dcb.BaudRate = CBR_9600; break;
+		case 19200: dcb.BaudRate = CBR_19200; break;
+		case 38400: dcb.BaudRate = CBR_38400; break;
+		case 57600: dcb.BaudRate = CBR_57600; break;
+		case 115200: dcb.BaudRate = CBR_115200; break;
+		default: sp_die("Error: Could not set baud rate");
+	}
+	dcb.ByteSize=8;
+	dcb.Parity=NOPARITY;
+	dcb.StopBits=ONESTOPBIT;
+	if (!SetCommState(fd, &dcb)) {
+		sp_die("Error: Could not change serial port configuration");
+	}
+	return fd;
+#else
 	struct termios options;
 	int fd, i;
 	fd = open(dev, O_RDWR | O_NOCTTY | O_NDELAY);
@@ -125,26 +157,39 @@ int sp_openserport(char *dev, unsigned int baud)
 	options.c_oflag &= ~OPOST;
 	tcsetattr(fd, TCSANOW, &options);
 	return fd;
+#endif
 }
 
 void sp_flush_incoming(void)
 {
+#ifdef _WIN32
+	PurgeComm(sp_fd, PURGE_RXCLEAR);
+#else
 	tcflush(sp_fd, TCIFLUSH);
+#endif
 	return;
 }
 
 int serialport_shutdown(void)
 {
+#ifdef _WIN32
+	CloseHandle(sp_fd);
+#else
 	close(sp_fd);
+#endif
 	return 0;
 }
 
 int serialport_write(unsigned char *buf, unsigned int writecnt)
 {
-	int tmp = 0;
+	long tmp = 0;
 
 	while (writecnt > 0) {
+#ifdef _WIN32
+		WriteFile(sp_fd, buf, writecnt, &tmp, NULL);
+#else
 		tmp = write(sp_fd, buf, writecnt);
+#endif
 		if (tmp == -1)
 			return 1;
 		if (!tmp)
@@ -158,10 +203,14 @@ int serialport_write(unsigned char *buf, unsigned int writecnt)
 
 int serialport_read(unsigned char *buf, unsigned int readcnt)
 {
-	int tmp = 0;
+	long tmp = 0;
 
 	while (readcnt > 0) {
+#ifdef _WIN32
+		ReadFile(sp_fd, buf, readcnt, &tmp, NULL);
+#else
 		tmp = read(sp_fd, buf, readcnt);
+#endif
 		if (tmp == -1)
 			return 1;
 		if (!tmp)
