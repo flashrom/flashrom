@@ -2,6 +2,7 @@
  * This file is part of the flashrom project.
  *
  * Copyright (C) 2009 Urja Rannikko <urjaman@gmail.com>
+ * Copyright (C) 2009,2010 Carl-Daniel Hailfinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -139,4 +140,55 @@ void sp_flush_incoming(void)
 			sp_die("flush read");
 	}
 	return;
+}
+
+int serialport_shutdown(void)
+{
+	close(sp_fd);
+	return 0;
+}
+
+int serialport_write(unsigned char *buf, unsigned int writecnt)
+{
+	int tmp = 0;
+
+	while (tmp != writecnt) {
+		tmp = write(sp_fd, buf + tmp, writecnt - tmp);
+		if (tmp == -1)
+			return 1;
+		if (!tmp)
+			printf_debug("Empty write\n");
+	}
+
+	return 0;
+}
+
+int serialport_read(unsigned char *buf, unsigned int readcnt)
+{
+	int tmp = 0;
+
+	while (tmp != readcnt) {
+		tmp = read(sp_fd, buf + tmp, readcnt - tmp);
+		if (tmp == -1)
+			return 1;
+		if (!tmp)
+			printf_debug("Empty read\n");
+	}
+
+	return 0;
+}
+
+int serialport_discard_read(void)
+{
+	int flags;
+
+	printf_debug("%s\n", __func__);
+	flags = fcntl(sp_fd, F_GETFL);
+	flags |= O_NONBLOCK;
+	fcntl(sp_fd, F_SETFL, flags);
+	sp_flush_incoming();
+	flags &= ~O_NONBLOCK;
+	fcntl(sp_fd, F_SETFL, flags);
+
+	return 0;
 }

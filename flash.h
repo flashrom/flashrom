@@ -595,6 +595,10 @@ void sp_flush_incoming(void);
 int sp_openserport(char *dev, unsigned int baud);
 void __attribute__((noreturn)) sp_die(char *msg);
 extern int sp_fd;
+int serialport_shutdown(void);
+int serialport_write(unsigned char *buf, unsigned int writecnt);
+int serialport_read(unsigned char *buf, unsigned int readcnt);
+int serialport_discard_read(void);
 
 #include "chipdrivers.h"
 
