@@ -50,7 +50,7 @@ LIB_OBJS = layout.o
 
 CLI_OBJS = flashrom.o print.o
 
-PROGRAMMER_OBJS = udelay.o
+PROGRAMMER_OBJS = udelay.o programmer.o
 
 all: pciutils features dep $(PROGRAM)
 
