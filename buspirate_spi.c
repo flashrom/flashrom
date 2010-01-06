@@ -22,7 +22,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include <fcntl.h>
 #include "flash.h"
 #include "spi.h"
 
@@ -36,63 +35,12 @@ int buspirate_serialport_setup(char *dev)
 	sp_fd = sp_openserport(dev, 115200);
 	return 0;
 }
-
-int buspirate_serialport_shutdown(void)
-{
-	close(sp_fd);
-	return 0;
-}
-
-int serialport_write(unsigned char *buf, unsigned int writecnt)
-{
-	int tmp = 0;
-
-	while (tmp != writecnt) {
-		tmp = write(sp_fd, buf + tmp, writecnt - tmp);
-		if (tmp == -1)
-			return 1;
-		if (!tmp)
-			printf_debug("Empty write\n");
-	}
-
-	return 0;
-}
-
-int serialport_read(unsigned char *buf, unsigned int readcnt)
-{
-	int tmp = 0;
-
-	while (tmp != readcnt) {
-		tmp = read(sp_fd, buf + tmp, readcnt - tmp);
-		if (tmp == -1)
-			return 1;
-		if (!tmp)
-			printf_debug("Empty read\n");
-	}
-
-	return 0;
-}
-
-int buspirate_discard_read(void)
-{
-	int flags;
-
-	printf_debug("%s\n", __func__);
-	flags = fcntl(sp_fd, F_GETFL);
-	flags |= O_NONBLOCK;
-	fcntl(sp_fd, F_SETFL, flags);
-	sp_flush_incoming();
-	flags &= ~O_NONBLOCK;
-	fcntl(sp_fd, F_SETFL, flags);
-
-	return 0;
-}
 #else
 #define buspirate_serialport_setup(...) 0
-#define buspirate_serialport_shutdown(...) 0
+#define serialport_shutdown(...) 0
 #define serialport_write(...) 0
 #define serialport_read(...) 0
-#define buspirate_discard_read(...) 0
+#define serialport_discard_read(...) 0
 #endif
 
 int buspirate_sendrecv(unsigned char *buf, unsigned int writecnt, unsigned int readcnt)
@@ -196,7 +144,7 @@ int buspirate_spi_init(void)
 		if (ret)
 			return ret;
 		/* Read any response and discard it. */
-		ret = buspirate_discard_read();
+		ret = serialport_discard_read();
 		if (ret)
 			return ret;
 	}
@@ -302,7 +250,7 @@ int buspirate_spi_shutdown(void)
 		return ret;
 
 	/* Shut down serial port communication */
-	ret = buspirate_serialport_shutdown();
+	ret = serialport_shutdown();
 	if (ret)
 		return ret;
 	printf_debug("Bus Pirate shutdown completed.\n");
