@@ -40,7 +40,7 @@ int buspirate_serialport_setup(char *dev)
 #define serialport_shutdown(...) 0
 #define serialport_write(...) 0
 #define serialport_read(...) 0
-#define serialport_discard_read(...) 0
+#define sp_flush_incoming(...) 0
 #endif
 
 int buspirate_sendrecv(unsigned char *buf, unsigned int writecnt, unsigned int readcnt)
@@ -144,9 +144,7 @@ int buspirate_spi_init(void)
 		if (ret)
 			return ret;
 		/* Read any response and discard it. */
-		ret = serialport_discard_read();
-		if (ret)
-			return ret;
+		sp_flush_incoming();
 	}
 	/* Enter raw bitbang mode */
 	buf[0] = 0x00;

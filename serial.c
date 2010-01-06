@@ -129,16 +129,7 @@ int sp_openserport(char *dev, unsigned int baud)
 
 void sp_flush_incoming(void)
 {
-	int i;
-	for (i=0;i<100;i++) { /* In case the device doesnt do EAGAIN, just read 0 */
-		unsigned char flush[16];
-		ssize_t rv;
-		rv = read(sp_fd, flush, sizeof(flush));
-		if ((rv == -1) && (errno == EAGAIN))
-			break;
-		if (rv == -1)
-			sp_die("flush read");
-	}
+	tcflush(sp_fd, TCIFLUSH);
 	return;
 }
 
@@ -152,12 +143,14 @@ int serialport_write(unsigned char *buf, unsigned int writecnt)
 {
 	int tmp = 0;
 
-	while (tmp != writecnt) {
-		tmp = write(sp_fd, buf + tmp, writecnt - tmp);
+	while (writecnt > 0) {
+		tmp = write(sp_fd, buf, writecnt);
 		if (tmp == -1)
 			return 1;
 		if (!tmp)
 			printf_debug("Empty write\n");
+		writecnt -= tmp; 
+		buf += tmp;
 	}
 
 	return 0;
@@ -167,28 +160,15 @@ int serialport_read(unsigned char *buf, unsigned int readcnt)
 {
 	int tmp = 0;
 
-	while (tmp != readcnt) {
-		tmp = read(sp_fd, buf + tmp, readcnt - tmp);
+	while (readcnt > 0) {
+		tmp = read(sp_fd, buf, readcnt);
 		if (tmp == -1)
 			return 1;
 		if (!tmp)
 			printf_debug("Empty read\n");
+		readcnt -= tmp;
+		buf += tmp;
 	}
-
-	return 0;
-}
-
-int serialport_discard_read(void)
-{
-	int flags;
-
-	printf_debug("%s\n", __func__);
-	flags = fcntl(sp_fd, F_GETFL);
-	flags |= O_NONBLOCK;
-	fcntl(sp_fd, F_SETFL, flags);
-	sp_flush_incoming();
-	flags &= ~O_NONBLOCK;
-	fcntl(sp_fd, F_SETFL, flags);
 
 	return 0;
 }
