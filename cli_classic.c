@@ -205,7 +205,7 @@ int cli_classic(int argc, char *argv[])
 			chip_to_probe = strdup(optarg);
 			break;
 		case 'V':
-			verbose = 1;
+			verbose++;
 			break;
 		case 'E':
 			if (++operation_specified > 1) {
