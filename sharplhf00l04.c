@@ -33,80 +33,20 @@ void print_lhf00l04_status(uint8_t status)
 	printf("%s", status & 0x2 ? "WP|TBL#|WP#,ABORT:" : "UNLOCK:");
 }
 
-int probe_lhf00l04(struct flashchip *flash)
+/* FIXME: The datasheet is unclear whether we should use toggle_ready_jedec
+ * or wait_82802ab.
+ */
+
+int erase_lhf00l04_block(struct flashchip *flash, unsigned int blockaddr, unsigned int blocklen)
 {
-	chipaddr bios = flash->virtual_memory;
-	uint8_t id1, id2;
-
-#if 0
-	/* Enter ID mode */
-	chip_writeb(0xAA, bios + 0x5555);
-	chip_writeb(0x55, bios + 0x2AAA);
-	chip_writeb(0x90, bios + 0x5555);
-#endif
-
-	chip_writeb(0xff, bios);
-	programmer_delay(10);
-	chip_writeb(0x90, bios);
-	programmer_delay(10);
-
-	id1 = chip_readb(bios);
-	id2 = chip_readb(bios + 0x01);
-
-	/* Leave ID mode */
-	chip_writeb(0xAA, bios + 0x5555);
-	chip_writeb(0x55, bios + 0x2AAA);
-	chip_writeb(0xF0, bios + 0x5555);
-
-	programmer_delay(10);
-
-	printf_debug("%s: id1 0x%02x, id2 0x%02x\n", __func__, id1, id2);
-
-	if (id1 != flash->manufacture_id || id2 != flash->model_id)
-		return 0;
-
-	map_flash_registers(flash);
-
-	return 1;
-}
-
-uint8_t wait_lhf00l04(chipaddr bios)
-{
-	uint8_t status;
-
-	chip_writeb(0x70, bios);
-	if ((chip_readb(bios) & 0x80) == 0) {	// it's busy
-		while ((chip_readb(bios) & 0x80) == 0) ;
-	}
-
-	status = chip_readb(bios);
-
-	// put another command to get out of status register mode.
-
-	chip_writeb(0x90, bios);
-	programmer_delay(10);
-
-	chip_readb(bios);		// vendor ID
-	chip_readb(bios + 0x01);	// device ID
-
-	// this is needed to jam it out of "read id" mode
-	chip_writeb(0xAA, bios + 0x5555);
-	chip_writeb(0x55, bios + 0x2AAA);
-	chip_writeb(0xF0, bios + 0x5555);
-
-	return status;
-}
-
-int erase_lhf00l04_block(struct flashchip *flash, int offset)
-{
-	chipaddr bios = flash->virtual_memory + offset;
-	chipaddr wrprotect = flash->virtual_registers + offset + 2;
+	chipaddr bios = flash->virtual_memory + blockaddr;
+	chipaddr wrprotect = flash->virtual_registers + blockaddr + 2;
 	uint8_t status;
 
 	// clear status register
 	chip_writeb(0x50, bios);
 	printf("Erase at 0x%lx\n", bios);
-	status = wait_lhf00l04(flash->virtual_memory);
+	status = wait_82802ab(flash->virtual_memory);
 	print_lhf00l04_status(status);
 	// clear write protect
 	printf("write protect is at 0x%lx\n", (wrprotect));
@@ -119,31 +59,14 @@ int erase_lhf00l04_block(struct flashchip *flash, int offset)
 	chip_writeb(0xd0, bios);
 	programmer_delay(10);
 	// now let's see what the register is
-	status = wait_lhf00l04(flash->virtual_memory);
+	status = wait_82802ab(flash->virtual_memory);
 	print_lhf00l04_status(status);
-	printf("DONE BLOCK 0x%x\n", offset);
+	printf("DONE BLOCK 0x%x\n", blockaddr);
 
-	if (check_erased_range(flash, offset, flash->page_size)) {
+	if (check_erased_range(flash, blockaddr, blocklen)) {
 		fprintf(stderr, "ERASE FAILED!\n");
 		return -1;
 	}
-	return 0;
-}
-
-int erase_lhf00l04(struct flashchip *flash)
-{
-	int i;
-	unsigned int total_size = flash->total_size * 1024;
-
-	printf("total_size is %d; flash->page_size is %d\n",
-	       total_size, flash->page_size);
-	for (i = 0; i < total_size; i += flash->page_size)
-		if (erase_lhf00l04_block(flash, i)) {
-			fprintf(stderr, "ERASE FAILED!\n");
-			return -1;
-		}
-	printf("DONE ERASE\n");
-
 	return 0;
 }
 
@@ -156,7 +79,7 @@ void write_page_lhf00l04(chipaddr bios, uint8_t *src,
 		/* transfer data from source to destination */
 		chip_writeb(0x40, dst);
 		chip_writeb(*src++, dst++);
-		wait_lhf00l04(bios);
+		wait_82802ab(bios);
 	}
 }
 
@@ -167,7 +90,7 @@ int write_lhf00l04(struct flashchip *flash, uint8_t *buf)
 	int page_size = flash->page_size;
 	chipaddr bios = flash->virtual_memory;
 
-	if (erase_lhf00l04(flash)) {
+	if (erase_flash(flash)) {
 		fprintf(stderr, "ERASE FAILED!\n");
 		return -1;
 	}
