@@ -24,6 +24,17 @@
 #include "flash.h"
 #include "spi.h"
 
+/* Change this to #define if you want lowlevel debugging of commands
+ * sent to the SB600/SB700 SPI controller.
+ */
+#undef COMM_DEBUG
+
+#ifdef COMM_DEBUG
+#define msg_comm_debug printf_debug
+#else
+#define msg_comm_debug(...) do {} while (0)
+#endif
+
 /* This struct is unused, but helps visualize the SB600 SPI BAR layout.
  *struct sb600_spi_controller {
  *	unsigned int spi_cntrl0;	/ * 00h * /
@@ -105,7 +116,7 @@ int sb600_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 
 	writecnt--;
 
-	printf_debug("%s, cmd=%x, writecnt=%x, readcnt=%x\n",
+	msg_comm_debug("%s, cmd=%x, writecnt=%x, readcnt=%x\n",
 		     __func__, cmd, writecnt, readcnt);
 
 	if (readcnt > 8) {
@@ -135,10 +146,10 @@ int sb600_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 
 	/* Send the write byte to FIFO. */
 	for (count = 0; count < writecnt; count++, writearr++) {
-		printf_debug(" [%x]", *writearr);
+		msg_comm_debug(" [%x]", *writearr);
 		mmio_writeb(*writearr, sb600_spibar + 0xC);
 	}
-	printf_debug("\n");
+	msg_comm_debug("\n");
 
 	/*
 	 * We should send the data by sequence, which means we need to reset
@@ -164,16 +175,16 @@ int sb600_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	/* Skip the bytes we sent. */
 	for (count = 0; count < writecnt; count++) {
 		cmd = mmio_readb(sb600_spibar + 0xC);
-		printf_debug("[ %2x]", cmd);
+		msg_comm_debug("[ %2x]", cmd);
 	}
 
-	printf_debug("The FIFO pointer after skipping is %d.\n",
+	msg_comm_debug("The FIFO pointer after skipping is %d.\n",
 		     mmio_readb(sb600_spibar + 0xd) & 0x07);
 	for (count = 0; count < readcnt; count++, readarr++) {
 		*readarr = mmio_readb(sb600_spibar + 0xC);
-		printf_debug("[%02x]", *readarr);
+		msg_comm_debug("[%02x]", *readarr);
 	}
-	printf_debug("\n");
+	msg_comm_debug("\n");
 
 	return 0;
 }

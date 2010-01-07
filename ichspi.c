@@ -36,6 +36,17 @@
 #include "flash.h"
 #include "spi.h"
 
+/* Change this to #define if you want lowlevel debugging of commands
+ * sent to the ICH/VIA SPI controller.
+ */
+#undef COMM_DEBUG
+
+#ifdef COMM_DEBUG
+#define msg_comm_debug printf_debug
+#else
+#define msg_comm_debug(...) do {} while (0)
+#endif
+
 /* ICH9 controller register definition */
 #define ICH9_REG_FADDR         0x08	/* 32 Bits */
 #define ICH9_REG_FDATA0                0x10	/* 64 Bytes */
@@ -624,7 +635,7 @@ static int ich_spi_write_page(struct flashchip *flash, uint8_t * bytes,
 	uint32_t remaining = page_size;
 	int towrite;
 
-	printf_debug("ich_spi_write_page: offset=%d, number=%d, buf=%p\n",
+	msg_comm_debug("ich_spi_write_page: offset=%d, number=%d, buf=%p\n",
 		     offset, page_size, bytes);
 
 	for (; remaining > 0; remaining -= towrite) {
