@@ -2522,9 +2522,24 @@ struct flashchip flashchips[] = {
 		.total_size	= 1024,
 		.page_size	= 64 * 1024,
 		.tested		= TEST_UNTESTED,
-		.probe		= probe_lhf00l04,
-		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (sharplhf00l04.c) */
-		.erase		= erase_lhf00l04,
+		.probe		= probe_49lfxxxc,
+		.probe_timing	= TIMING_ZERO,
+		.erase		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = {
+					{64 * 1024, 15},
+					{8 * 1024, 8}
+				 },
+				.block_erase = erase_lhf00l04_block,
+			}, {
+				.eraseblocks = {
+					{1024 * 1024, 1}
+				},
+				.block_erase = NULL, /* 30 D0, only in PP mode */
+			},
+		},
 		.write		= write_lhf00l04,
 		.read		= read_memmapped,
 	},

@@ -53,6 +53,7 @@ int spi_read_chunked(struct flashchip *flash, uint8_t *buf, int start, int len, 
 int spi_aai_write(struct flashchip *flash, uint8_t *buf);
 
 /* 82802ab.c */
+uint8_t wait_82802ab(chipaddr bios);
 int probe_82802ab(struct flashchip *flash);
 int erase_82802ab(struct flashchip *flash);
 int write_82802ab(struct flashchip *flash, uint8_t *buf);
@@ -117,7 +118,7 @@ int write_49fl00x(struct flashchip *flash, uint8_t *buf);
 
 /* sharplhf00l04.c */
 int probe_lhf00l04(struct flashchip *flash);
-int erase_lhf00l04(struct flashchip *flash);
+int erase_lhf00l04_block(struct flashchip *flash, unsigned int blockaddr, unsigned int blocklen);
 int write_lhf00l04(struct flashchip *flash, uint8_t *buf);
 void protect_lhf00l04(chipaddr bios);
 
