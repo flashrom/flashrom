@@ -29,6 +29,17 @@
 #include "spi.h"
 #include <ftdi.h>
 
+/* Change this to #define if you want lowlevel debugging of commands
+ * sent to the FT2232 SPI controller.
+ */
+#undef COMM_DEBUG
+
+#ifdef COMM_DEBUG
+#define msg_comm_debug printf_debug
+#else
+#define msg_comm_debug(...) do {} while (0)
+#endif
+
 /*
  * The 'H' chips can run internally at either 12MHz or 60MHz.
  * The non-H chips can only run at 12MHz.
@@ -224,7 +235,7 @@ int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	 * and deassert CS# all in one shot. If reading, we do three separate
 	 * operations.
 	 */
-	printf_debug("Assert CS#\n");
+	msg_comm_debug("Assert CS#\n");
 	buf[i++] = SET_BITS_LOW;
 	buf[i++] = 0 & ~CS_BIT; /* assertive */
 	buf[i++] = 0x0b;
@@ -266,7 +277,7 @@ int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		}
 	}
 
-	printf_debug("De-assert CS#\n");
+	msg_comm_debug("De-assert CS#\n");
 	buf[i++] = SET_BITS_LOW;
 	buf[i++] = CS_BIT;
 	buf[i++] = 0x0b;

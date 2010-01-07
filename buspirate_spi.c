@@ -25,6 +25,17 @@
 #include "flash.h"
 #include "spi.h"
 
+/* Change this to #define if you want lowlevel debugging of commands
+ * sent to the Bus Pirate.
+ */
+#undef COMM_DEBUG
+
+#ifdef COMM_DEBUG
+#define msg_comm_debug printf_debug
+#else
+#define msg_comm_debug(...) do {} while (0)
+#endif
+
 /* Change this to #define if you want to test without a serial implementation */
 #undef FAKE_COMMUNICATION
 
@@ -47,14 +58,14 @@ int buspirate_sendrecv(unsigned char *buf, unsigned int writecnt, unsigned int r
 {
 	int i, ret = 0;
 
-	printf_debug("%s: write %i, read %i\n", __func__, writecnt, readcnt);
+	msg_comm_debug("%s: write %i, read %i ", __func__, writecnt, readcnt);
 	if (!writecnt && !readcnt) {
 		fprintf(stderr, "Zero length command!\n");
 		return 1;
 	}
-	printf_debug("Sending");
+	msg_comm_debug("Sending");
 	for (i = 0; i < writecnt; i++)
-		printf_debug(" 0x%02x", buf[i]);
+		msg_comm_debug(" 0x%02x", buf[i]);
 #ifdef FAKE_COMMUNICATION
 	/* Placate the caller for now. */
 	if (readcnt) {
@@ -72,10 +83,10 @@ int buspirate_sendrecv(unsigned char *buf, unsigned int writecnt, unsigned int r
 	if (ret)
 		return ret;
 #endif
-	printf_debug(", receiving");
+	msg_comm_debug(", receiving");
 	for (i = 0; i < readcnt; i++)
-		printf_debug(" 0x%02x", buf[i]);
-	printf_debug("\n");
+		msg_comm_debug(" 0x%02x", buf[i]);
+	msg_comm_debug("\n");
 	return 0;
 }
 

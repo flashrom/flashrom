@@ -2,6 +2,7 @@
  * This file is part of the flashrom project.
  *
  * Copyright (C) 2008 Peter Stuge <peter@stuge.se>
+ * Copyright (C) 2009,2010 Carl-Daniel Hailfinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +21,17 @@
 #include <string.h>
 #include "flash.h"
 #include "spi.h"
+
+/* Change this to #define if you want lowlevel debugging of commands
+ * sent to the Winbond W836xx SPI controller.
+ */
+#undef COMM_DEBUG
+
+#ifdef COMM_DEBUG
+#define msg_comm_debug printf_debug
+#else
+#define msg_comm_debug(...) do {} while (0)
+#endif
 
 #define WBSIO_PORT1	0x2e
 #define WBSIO_PORT2	0x4e
@@ -62,7 +74,7 @@ int wbsio_check_for_spi(const char *name)
 		if (0 == (wbsio_spibase = wbsio_get_spibase(WBSIO_PORT2)))
 			return 1;
 
-	printf_debug("\nwbsio_spibase = 0x%x\n", wbsio_spibase);
+	msg_comm_debug("\nwbsio_spibase = 0x%x\n", wbsio_spibase);
 
 	buses_supported |= CHIP_BUSTYPE_SPI;
 	spi_controller = SPI_CONTROLLER_WBSIO;
@@ -96,42 +108,42 @@ int wbsio_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	int i;
 	uint8_t mode = 0;
 
-	printf_debug("%s:", __func__);
+	msg_comm_debug("%s:", __func__);
 
 	if (1 == writecnt && 0 == readcnt) {
 		mode = 0x10;
 	} else if (2 == writecnt && 0 == readcnt) {
 		OUTB(writearr[1], wbsio_spibase + 4);
-		printf_debug(" data=0x%02x", writearr[1]);
+		msg_comm_debug(" data=0x%02x", writearr[1]);
 		mode = 0x20;
 	} else if (1 == writecnt && 2 == readcnt) {
 		mode = 0x30;
 	} else if (4 == writecnt && 0 == readcnt) {
-		printf_debug(" addr=0x%02x", (writearr[1] & 0x0f));
+		msg_comm_debug(" addr=0x%02x", (writearr[1] & 0x0f));
 		for (i = 2; i < writecnt; i++) {
 			OUTB(writearr[i], wbsio_spibase + i);
-			printf_debug("%02x", writearr[i]);
+			msg_comm_debug("%02x", writearr[i]);
 		}
 		mode = 0x40 | (writearr[1] & 0x0f);
 	} else if (5 == writecnt && 0 == readcnt) {
-		printf_debug(" addr=0x%02x", (writearr[1] & 0x0f));
+		msg_comm_debug(" addr=0x%02x", (writearr[1] & 0x0f));
 		for (i = 2; i < 4; i++) {
 			OUTB(writearr[i], wbsio_spibase + i);
-			printf_debug("%02x", writearr[i]);
+			msg_comm_debug("%02x", writearr[i]);
 		}
 		OUTB(writearr[i], wbsio_spibase + i);
-		printf_debug(" data=0x%02x", writearr[i]);
+		msg_comm_debug(" data=0x%02x", writearr[i]);
 		mode = 0x50 | (writearr[1] & 0x0f);
 	} else if (8 == writecnt && 0 == readcnt) {
-		printf_debug(" addr=0x%02x", (writearr[1] & 0x0f));
+		msg_comm_debug(" addr=0x%02x", (writearr[1] & 0x0f));
 		for (i = 2; i < 4; i++) {
 			OUTB(writearr[i], wbsio_spibase + i);
-			printf_debug("%02x", writearr[i]);
+			msg_comm_debug("%02x", writearr[i]);
 		}
-		printf_debug(" data=0x");
+		msg_comm_debug(" data=0x");
 		for (; i < writecnt; i++) {
 			OUTB(writearr[i], wbsio_spibase + i);
-			printf_debug("%02x", writearr[i]);
+			msg_comm_debug("%02x", writearr[i]);
 		}
 		mode = 0x60 | (writearr[1] & 0x0f);
 	} else if (5 == writecnt && 4 == readcnt) {
@@ -142,14 +154,14 @@ int wbsio_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		 */
 		;
 	} else if (4 == writecnt && readcnt >= 1 && readcnt <= 4) {
-		printf_debug(" addr=0x%02x", (writearr[1] & 0x0f));
+		msg_comm_debug(" addr=0x%02x", (writearr[1] & 0x0f));
 		for (i = 2; i < writecnt; i++) {
 			OUTB(writearr[i], wbsio_spibase + i);
-			printf_debug("%02x", writearr[i]);
+			msg_comm_debug("%02x", writearr[i]);
 		}
 		mode = ((7 + readcnt) << 4) | (writearr[1] & 0x0f);
 	}
-	printf_debug(" cmd=%02x mode=%02x\n", writearr[0], mode);
+	msg_comm_debug(" cmd=%02x mode=%02x\n", writearr[0], mode);
 
 	if (!mode) {
 		fprintf(stderr, "%s: unsupported command type wr=%d rd=%d\n",
@@ -165,12 +177,12 @@ int wbsio_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	if (!readcnt)
 		return 0;
 
-	printf_debug("%s: returning data =", __func__);
+	msg_comm_debug("%s: returning data =", __func__);
 	for (i = 0; i < readcnt; i++) {
 		readarr[i] = INB(wbsio_spibase + 4 + i);
-		printf_debug(" 0x%02x", readarr[i]);
+		msg_comm_debug(" 0x%02x", readarr[i]);
 	}
-	printf_debug("\n");
+	msg_comm_debug("\n");
 	return 0;
 }
 
