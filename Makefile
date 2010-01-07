@@ -48,7 +48,7 @@ CHIP_OBJS = jedec.o stm50flw0x0x.o w39v080fa.o sharplhf00l04.o w29ee011.o \
 
 LIB_OBJS = layout.o
 
-CLI_OBJS = flashrom.o cli_classic.o print.o
+CLI_OBJS = flashrom.o cli_classic.o cli_output.o print.o
 
 PROGRAMMER_OBJS = udelay.o programmer.o
 

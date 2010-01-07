@@ -504,6 +504,25 @@ int doit(struct flashchip *flash, int force, char *filename, int read_it, int wr
 #define OK 0
 #define NT 1    /* Not tested */
 
+/* cli_output.c */
+int print(int type, const char *fmt, ...);
+#define MSG_ERROR 0
+#define MSG_INFO 1
+#define MSG_DEBUG 2
+#define MSG_BARF 3
+#define msg_gerr(x) print(MSG_ERROR, x) /* general errors */
+#define msg_perr(x) print(MSG_ERROR, x) /* programmer errors */
+#define msg_cerr(x) print(MSG_ERROR, x) /* chip errors */
+#define msg_ginfo(x) print(MSG_INFO, x) /* general info */
+#define msg_pinfo(x) print(MSG_INFO, x) /* programmer info */
+#define msg_cinfo(x) print(MSG_INFO, x) /* chip info */
+#define msg_gdbg(x) print(MSG_DEBUG, x) /* general debug */
+#define msg_pdbg(x) print(MSG_DEBUG, x) /* programmer debug */
+#define msg_cdbg(x) print(MSG_DEBUG, x) /* chip debug */
+#define msg_gspew(x) print(MSG_BARF, x) /* general debug barf  */
+#define msg_pspew(x) print(MSG_BARF, x) /* programmer debug barf  */
+#define msg_cspew(x) print(MSG_BARF, x) /* chip debug barf  */
+
 /* cli_classic.c */
 int cli_classic(int argc, char *argv[]);
 
