@@ -482,20 +482,30 @@ extern char *programmer_param;
 extern unsigned long flashbase;
 extern int verbose;
 extern const char *flashrom_version;
+extern char *chip_to_probe;
 #define printf_debug(x...) { if (verbose) printf(x); }
 void map_flash_registers(struct flashchip *flash);
 int read_memmapped(struct flashchip *flash, uint8_t *buf, int start, int len);
 int erase_flash(struct flashchip *flash);
+struct flashchip *probe_flash(struct flashchip *first_flash, int force);
+int read_flash(struct flashchip *flash, char *filename);
+void check_chip_supported(struct flashchip *flash);
+int check_max_decode(enum chipbustype buses, uint32_t size);
 int min(int a, int b);
 int max(int a, int b);
 char *extract_param(char **haystack, char *needle, char *delim);
 int check_erased_range(struct flashchip *flash, int start, int len);
 int verify_range(struct flashchip *flash, uint8_t *cmpbuf, int start, int len, char *message);
 char *strcat_realloc(char *dest, const char *src);
+void print_version(void);
+int selfcheck(void);
 int doit(struct flashchip *flash, int force, char *filename, int read_it, int write_it, int erase_it, int verify_it);
 
 #define OK 0
 #define NT 1    /* Not tested */
+
+/* cli_classic.c */
+int cli_classic(int argc, char *argv[]);
 
 /* layout.c */
 int show_id(uint8_t *bios, int size, int force);
