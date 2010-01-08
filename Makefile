@@ -178,6 +178,10 @@ PROGRAMMER_OBJS += pcidev.o physmap.o internal.o #FIXME: We need to move stuff
 						# into internal-programmer-only stuff
 						# and a support lib for all internal+pci
 						# based stuff.
+ifeq ($(OS_ARCH), NetBSD)
+LIBS += -lpciutils #		The libpci we want.
+LIBS += -l$(shell uname -m) #	For (i386|x86_64)_iopl(2).
+endif
 endif
 
 ifeq ($(CONFIG_PRINT_WIKI), yes)

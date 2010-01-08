@@ -65,10 +65,10 @@ To compile on Solaris, use:
 
  gmake LDFLAGS="-L$pathtolibpci" CC="gcc -I$pathtopciheaders" CFLAGS=-O2
 
-To compile on DragonFly BSD, use:
+To compile on NetBSD or DragonFly BSD, use:
 
  ln -s /usr/pkg/include/pciutils pci
- gmake CFLAGS=-I. LDFLAGS="-L/usr/pkg/lib"
+ gmake CFLAGS=-I. LDFLAGS="-L/usr/pkg/lib -Wl,-rpath-link,/usr/pkg/lib"
 
 To compile and run on Darwin/Mac OS X:
 
