@@ -373,6 +373,19 @@ retry:
 	return failed;
 }
 
+int getaddrmask(struct flashchip *flash)
+{
+	switch (flash->feature_bits & FEATURE_ADDR_MASK) {
+	case FEATURE_ADDR_FULL:
+		return MASK_FULL;
+		break;
+	default:
+		fprintf(stderr, "%s called with unknown mask\n", __func__);
+		return 0;
+		break;
+	}
+}
+
 int write_jedec(struct flashchip *flash, uint8_t *buf)
 {
 	int i, failed = 0;
@@ -438,7 +451,10 @@ int erase_chip_block_jedec(struct flashchip *flash, unsigned int addr,
 
 int probe_jedec(struct flashchip *flash)
 {
-	return probe_jedec_common(flash, MASK_FULL, 1);
+	int mask;
+
+	mask = getaddrmask(flash);
+	return probe_jedec_common(flash, mask, 1);
 }
 
 int erase_sector_jedec(struct flashchip *flash, unsigned int page, unsigned int size)
