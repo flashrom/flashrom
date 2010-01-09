@@ -164,13 +164,29 @@
 #define EON_ID			0x7F1C	/* EON Silicon Devices */
 #define EON_ID_NOPREFIX		0x1C	/* EON, missing 0x7F prefix */
 #define EN_25B05		0x2010	/* Same as P05, 2^19 kbit or 2^16 kByte */
+#define EN_25B05T		0x25
+#define EN_25B05B		0x95
 #define EN_25B10		0x2011	/* Same as P10 */
+#define EN_25B10T		0x40
+#define EN_25B10B		0x30
 #define EN_25B20		0x2012	/* Same as P20 */
+#define EN_25B20T		0x41
+#define EN_25B20B		0x31
 #define EN_25B40		0x2013	/* Same as P40 */
+#define EN_25B40T		0x42
+#define EN_25B40B		0x32
 #define EN_25B80		0x2014	/* Same as P80 */
+#define EN_25B80T		0x43
+#define EN_25B80B		0x33
 #define EN_25B16		0x2015	/* Same as P16 */
+#define EN_25B16T		0x44
+#define EN_25B16B		0x34
 #define EN_25B32		0x2016	/* Same as P32 */
+#define EN_25B32T		0x45
+#define EN_25B32B		0x35
 #define EN_25B64		0x2017	/* Same as P64 */
+#define EN_25B64T		0x46
+#define EN_25B64B		0x36
 #define EN_25D16		0x3015
 #define EN_25F05		0x3110
 #define EN_25F10		0x3111
