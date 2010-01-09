@@ -139,7 +139,7 @@ fdtype sp_openserport(char *dev, unsigned int baud)
 	for (i = 0;; i++) {
 		if (sp_baudtable[i].baud == 0) {
 			close(fd);
-			fprintf(stderr,
+			msg_perr(
 				"Error: cannot configure for baudrate %d\n",
 				baud);
 			exit(1);
@@ -193,7 +193,7 @@ int serialport_write(unsigned char *buf, unsigned int writecnt)
 		if (tmp == -1)
 			return 1;
 		if (!tmp)
-			printf_debug("Empty write\n");
+			msg_pdbg("Empty write\n");
 		writecnt -= tmp; 
 		buf += tmp;
 	}
@@ -214,7 +214,7 @@ int serialport_read(unsigned char *buf, unsigned int readcnt)
 		if (tmp == -1)
 			return 1;
 		if (!tmp)
-			printf_debug("Empty read\n");
+			msg_pdbg("Empty read\n");
 		readcnt -= tmp;
 		buf += tmp;
 	}
