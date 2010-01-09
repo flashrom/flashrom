@@ -149,8 +149,10 @@ enum chipbustype {
  */
 #define NUM_ERASEFUNCTIONS 5
 
-#define FEATURE_REGISTERMAP (1 << 0)
-#define FEATURE_BYTEWRITES (1 << 1)
+#define FEATURE_REGISTERMAP	(1 << 0)
+#define FEATURE_BYTEWRITES	(1 << 1)
+#define FEATURE_ADDR_FULL	(0 << 2)
+#define FEATURE_ADDR_MASK	(3 << 2)
 
 struct flashchip {
 	const char *vendor;
