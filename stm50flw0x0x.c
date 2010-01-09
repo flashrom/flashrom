@@ -31,18 +31,6 @@
 #include "flash.h"
 #include "flashchips.h"
 
-int probe_stm50flw0x0x(struct flashchip *flash)
-{
-	int result = probe_jedec(flash);
-
-	if (!result)
-		return result;
-
-	map_flash_registers(flash);
-
-	return 1;
-}
-
 static void wait_stm50flw0x0x(chipaddr bios)
 {
 	chip_writeb(0x70, bios);

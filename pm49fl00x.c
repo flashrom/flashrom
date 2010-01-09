@@ -36,16 +36,6 @@ void write_lockbits_49fl00x(chipaddr bios, int size,
 	}
 }
 
-int probe_49fl00x(struct flashchip *flash)
-{
-	int ret = probe_jedec(flash);
-
-	if (ret == 1)
-		map_flash_registers(flash);
-
-	return ret;
-}
-
 int erase_49fl00x(struct flashchip *flash)
 {
 	int i;
