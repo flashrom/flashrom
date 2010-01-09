@@ -90,32 +90,32 @@ uint8_t wait_82802ab(chipaddr bios)
 	return status;
 }
 
-int erase_82802ab_block(struct flashchip *flash, int offset)
+int erase_82802ab_block(struct flashchip *flash, unsigned int page, unsigned int pagesize)
 {
-	chipaddr bios = flash->virtual_memory + offset;
-	chipaddr wrprotect = flash->virtual_registers + offset + 2;
+	chipaddr bios = flash->virtual_memory;
+	chipaddr wrprotect = flash->virtual_registers + page + 2;
 	uint8_t status;
 
 	// clear status register
-	chip_writeb(0x50, bios);
+	chip_writeb(0x50, bios + page);
 
 	// clear write protect
 	chip_writeb(0, wrprotect);
 
 	// now start it
-	chip_writeb(0x20, bios);
-	chip_writeb(0xd0, bios);
+	chip_writeb(0x20, bios + page);
+	chip_writeb(0xd0, bios + page);
 	programmer_delay(10);
 
 	// now let's see what the register is
-	status = wait_82802ab(flash->virtual_memory);
+	status = wait_82802ab(bios);
 	print_82802ab_status(status);
 
-	if (check_erased_range(flash, offset, flash->page_size)) {
+	if (check_erased_range(flash, page, pagesize)) {
 		fprintf(stderr, "ERASE FAILED!\n");
 		return -1;
 	}
-	printf("DONE BLOCK 0x%x\n", offset);
+	printf("DONE BLOCK 0x%x\n", page);
 
 	return 0;
 }
@@ -128,7 +128,7 @@ int erase_82802ab(struct flashchip *flash)
 	printf("total_size is %d; flash->page_size is %d\n",
 	       total_size, flash->page_size);
 	for (i = 0; i < total_size; i += flash->page_size)
-		if (erase_82802ab_block(flash, i)) {
+		if (erase_82802ab_block(flash, i, flash->page_size)) {
 			fprintf(stderr, "ERASE FAILED!\n");
 			return -1;
 		}
@@ -182,7 +182,7 @@ int write_82802ab(struct flashchip *flash, uint8_t *buf)
 		}
 
 		/* erase block by block and write block by block; this is the most secure way */
-		if (erase_82802ab_block(flash, i * page_size)) {
+		if (erase_82802ab_block(flash, i * page_size, page_size)) {
 			fprintf(stderr, "ERASE FAILED!\n");
 			return -1;
 		}

@@ -56,6 +56,7 @@ int spi_aai_write(struct flashchip *flash, uint8_t *buf);
 uint8_t wait_82802ab(chipaddr bios);
 int probe_82802ab(struct flashchip *flash);
 int erase_82802ab(struct flashchip *flash);
+int erase_82802ab_block(struct flashchip *flash, unsigned int page, unsigned int pagesize);
 int write_82802ab(struct flashchip *flash, uint8_t *buf);
 
 /* am29f040b.c */
