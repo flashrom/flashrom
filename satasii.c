@@ -63,7 +63,7 @@ int satasii_init(void)
 
 	/* Check if ROM cycle are OK. */
 	if ((id != 0x0680) && (!(mmio_readl(sii_bar) & (1 << 26))))
-		printf("Warning: Flash seems unconnected.\n");
+		msg_pinfo("Warning: Flash seems unconnected.\n");
 
 	buses_supported = CHIP_BUSTYPE_PARALLEL;
 
