@@ -99,14 +99,14 @@ int bitbang_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	if (bufsize > oldbufsize) {
 		bufout = realloc(bufout, bufsize);
 		if (!bufout) {
-			fprintf(stderr, "Out of memory!\n");
+			msg_perr("Out of memory!\n");
 			if (bufin)
 				free(bufin);
 			exit(1);
 		}
 		bufin = realloc(bufout, bufsize);
 		if (!bufin) {
-			fprintf(stderr, "Out of memory!\n");
+			msg_perr("Out of memory!\n");
 			if (bufout)
 				free(bufout);
 			exit(1);
@@ -143,7 +143,7 @@ int bitbang_spi_write_256(struct flashchip *flash, uint8_t *buf)
 	int total_size = 1024 * flash->total_size;
 	int i;
 
-	printf_debug("total_size is %d\n", total_size);
+	msg_pdbg("total_size is %d\n", total_size);
 	for (i = 0; i < total_size; i += 256) {
 		int l, r;
 		if (i + 256 <= total_size)
@@ -152,7 +152,7 @@ int bitbang_spi_write_256(struct flashchip *flash, uint8_t *buf)
 			l = total_size - i;
 
 		if ((r = spi_nbyte_program(i, &buf[i], l))) {
-			fprintf(stderr, "%s: write fail %d\n", __func__, r);
+			msg_perr("%s: write fail %d\n", __func__, r);
 			return 1;
 		}
 		
