@@ -967,7 +967,7 @@ static int board_msi_651ml(const char *name)
 	base = pci_read_word(dev, 0x74);
 	temp = INW(base + 0x68);
 	temp &= ~(1 << 0);		/* Make pin output? */
-	printf_debug("changed to %04x\n",temp);
+	OUTW(temp, base + 0x68);
 
 	temp = INW(base + 0x64);
 	temp |= (1 << 0);		/* Raise output? */
