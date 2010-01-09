@@ -508,22 +508,22 @@ int doit(struct flashchip *flash, int force, char *filename, int read_it, int wr
 
 /* cli_output.c */
 int print(int type, const char *fmt, ...);
-#define MSG_ERROR 0
-#define MSG_INFO 1
-#define MSG_DEBUG 2
-#define MSG_BARF 3
-#define msg_gerr(x) print(MSG_ERROR, x) /* general errors */
-#define msg_perr(x) print(MSG_ERROR, x) /* programmer errors */
-#define msg_cerr(x) print(MSG_ERROR, x) /* chip errors */
-#define msg_ginfo(x) print(MSG_INFO, x) /* general info */
-#define msg_pinfo(x) print(MSG_INFO, x) /* programmer info */
-#define msg_cinfo(x) print(MSG_INFO, x) /* chip info */
-#define msg_gdbg(x) print(MSG_DEBUG, x) /* general debug */
-#define msg_pdbg(x) print(MSG_DEBUG, x) /* programmer debug */
-#define msg_cdbg(x) print(MSG_DEBUG, x) /* chip debug */
-#define msg_gspew(x) print(MSG_BARF, x) /* general debug barf  */
-#define msg_pspew(x) print(MSG_BARF, x) /* programmer debug barf  */
-#define msg_cspew(x) print(MSG_BARF, x) /* chip debug barf  */
+#define MSG_ERROR	0
+#define MSG_INFO	1
+#define MSG_DEBUG	2
+#define MSG_BARF	3
+#define msg_gerr(...)	print(MSG_ERROR, __VA_ARGS__)	/* general errors */
+#define msg_perr(...)	print(MSG_ERROR, __VA_ARGS__)	/* programmer errors */
+#define msg_cerr(...)	print(MSG_ERROR, __VA_ARGS__)	/* chip errors */
+#define msg_ginfo(...)	print(MSG_INFO, __VA_ARGS__)	/* general info */
+#define msg_pinfo(...)	print(MSG_INFO, __VA_ARGS__)	/* programmer info */
+#define msg_cinfo(...)	print(MSG_INFO, __VA_ARGS__)	/* chip info */
+#define msg_gdbg(...)	print(MSG_DEBUG, __VA_ARGS__)	/* general debug */
+#define msg_pdbg(...)	print(MSG_DEBUG, __VA_ARGS__)	/* programmer debug */
+#define msg_cdbg(...)	print(MSG_DEBUG, __VA_ARGS__)	/* chip debug */
+#define msg_gspew(...)	print(MSG_BARF, __VA_ARGS__)	/* general debug barf  */
+#define msg_pspew(...)	print(MSG_BARF, __VA_ARGS__)	/* programmer debug barf  */
+#define msg_cspew(...)	print(MSG_BARF, __VA_ARGS__)	/* chip debug barf  */
 
 /* cli_classic.c */
 int cli_classic(int argc, char *argv[]);
