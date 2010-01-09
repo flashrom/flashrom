@@ -947,6 +947,37 @@ static int board_soyo_sy_7vca(const char *name)
 	return 0;
 }
 
+/**
+ * Enable some GPIO pin on SiS southbridge.
+ * Suited for MSI 651M-L: SiS651 / SiS962
+ */
+static int board_msi_651ml(const char *name)
+{
+    	struct pci_dev *dev;
+	uint16_t base;
+	uint16_t temp;
+
+	dev = pci_dev_find(0x1039, 0x0962);
+	if (!dev) {
+		fprintf(stderr, "Expected south bridge not found\n");
+		return 1;
+	}
+
+	/* Registers 68 and 64 seem like bitmaps */
+	base = pci_read_word(dev, 0x74);
+	temp = INW(base + 0x68);
+	temp &= ~(1 << 0);		/* Make pin output? */
+	printf_debug("changed to %04x\n",temp);
+
+	temp = INW(base + 0x64);
+	temp |= (1 << 0);		/* Raise output? */
+	OUTW(temp, base + 0x64);
+
+	w836xx_memw_enable(0x2E);
+
+	return 0;
+}
+
 static int it8705f_write_enable(uint8_t port, const char *name)
 {
 	enter_conf_mode_ite(port);
@@ -1215,6 +1246,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x13f6, 0x0111, 0x1462, 0x5900,  0x1106, 0x3177, 0x1106,      0, NULL,         NULL,          "MSI",         "MS-6590 (KT4 Ultra)",board_msi_kt4v},
 	{0x1106, 0x3149, 0x1462, 0x7094,  0x10ec, 0x8167, 0x1462, 0x094c, NULL,         NULL,          "MSI",         "MS-6702E (K8T Neo2-F)",w83627thf_gpio4_4_raise_2e},
 	{0x1106, 0x0571, 0x1462, 0x7120,  0x1106, 0x3065, 0x1462, 0x7120, NULL,         NULL,          "MSI",         "MS-6712 (KT4V)",     board_msi_kt4v},
+	{0x1039, 0x7012, 0x1462, 0x0050,  0x1039, 0x6325, 0x1462, 0x0058, NULL,         NULL,          "MSI",         "MS-7005 (651M-L)",   board_msi_651ml},
 	{0x8086, 0x2658, 0x1462, 0x7046,  0x1106, 0x3044, 0x1462, 0x046d, NULL,         NULL,          "MSI",         "MS-7046",            intel_ich_gpio19_raise},
 	{0x10DE, 0x005E, 0x1462, 0x7135,  0x10DE, 0x0050, 0x1462, 0x7135, "msi",        "k8n-neo3",    "MSI",         "MS-7135 (K8N Neo3)", w83627thf_gpio4_4_raise_4e},
 	{0x10DE, 0x005E, 0x1462, 0x7125,  0x10DE, 0x0052, 0x1462, 0x7125, NULL,         NULL,          "MSI",         "K8N Neo4-F",         nvidia_mcp_gpio2_raise},
