@@ -189,13 +189,13 @@ int probe_jedec_common(struct flashchip *flash,
 		printf_debug(", id2 is normal flash content");
 
 	printf_debug("\n");
-	if (largeid1 == flash->manufacture_id && largeid2 == flash->model_id)
-		return 1;
+	if (largeid1 != flash->manufacture_id || largeid2 != flash->model_id)
+		return 0;
 
 	if (flash->feature_bits & FEATURE_REGISTERMAP)
 		map_flash_registers(flash);
 
-	return 0;
+	return 1;
 }
 
 int erase_sector_jedec_common(struct flashchip *flash, unsigned int page,

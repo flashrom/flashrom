@@ -89,8 +89,6 @@ int probe_sst_fwhub(struct flashchip *flash)
 	if (probe_jedec(flash) == 0)
 		return 0;
 
-	map_flash_registers(flash);
-
 	for (i = 0; i < flash->total_size * 1024; i += flash->page_size)
 		check_sst_fwhub_block_lock(flash, i);
 

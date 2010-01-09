@@ -20,18 +20,6 @@
 
 #include "flash.h"
 
-int probe_winbond_fwhub(struct flashchip *flash)
-{
-	int result = probe_jedec(flash);
-
-	if (!result)
-		return result;
-
-	map_flash_registers(flash);
-
-	return 1;
-}
-
 static int unlock_block_winbond_fwhub(struct flashchip *flash, int offset)
 {
 	chipaddr wrprotect = flash->virtual_registers + offset + 2;
