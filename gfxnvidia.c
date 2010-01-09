@@ -64,7 +64,7 @@ int gfxnvidia_init(void)
 	io_base_addr = pcidev_init(PCI_VENDOR_ID_NVIDIA, PCI_BASE_ADDRESS_0,
 				   gfx_nvidia, programmer_param);
 	io_base_addr += 0x300000;
-	printf("Detected NVIDIA I/O base address: 0x%x.\n", io_base_addr);
+	msg_pinfo("Detected NVIDIA I/O base address: 0x%x.\n", io_base_addr);
 
 	/* Allow access to flash interface (will disable screen). */
 	reg32 = pci_read_long(pcidev_dev, 0x50);
