@@ -136,8 +136,8 @@ PROGRAMMER_OBJS += satasii.o
 NEED_PCI := yes
 endif
 
-FTDILIBS := $(shell pkg-config --libs libftdi 2>/dev/null || printf "%s" "-lftdi -lusb")
 ifeq ($(CONFIG_FT2232SPI), yes)
+FTDILIBS := $(shell pkg-config --libs libftdi 2>/dev/null || printf "%s" "-lftdi -lusb")
 # This is a totally ugly hack.
 FEATURE_CFLAGS += $(shell LC_ALL=C grep -q "FTDISUPPORT := yes" .features && printf "%s" "-D'FT2232_SPI_SUPPORT=1'")
 FEATURE_LIBS += $(shell LC_ALL=C grep -q "FTDISUPPORT := yes" .features && printf "%s" "$(FTDILIBS)")
@@ -280,7 +280,8 @@ features: compiler
 	@rm -f .featuretest.c .featuretest
 else
 features: compiler
-	@echo "FEATURES := yes" > .features
+	@echo "FEATURES := yes" > .features.tmp
+	@$(DIFF) -q .features.tmp .features >/dev/null 2>&1 && rm .features.tmp || mv .features.tmp .features
 endif
 
 install: $(PROGRAM)
