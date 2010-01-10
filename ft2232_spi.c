@@ -29,17 +29,6 @@
 #include "spi.h"
 #include <ftdi.h>
 
-/* Change this to #define if you want lowlevel debugging of commands
- * sent to the FT2232 SPI controller.
- */
-#undef COMM_DEBUG
-
-#ifdef COMM_DEBUG
-#define msg_comm_debug printf_debug
-#else
-#define msg_comm_debug(...) do {} while (0)
-#endif
-
 /*
  * The 'H' chips can run internally at either 12MHz or 60MHz.
  * The non-H chips can only run at 12MHz.
@@ -62,7 +51,7 @@ int send_buf(struct ftdi_context *ftdic, const unsigned char *buf, int size)
 	int r;
 	r = ftdi_write_data(ftdic, (unsigned char *) buf, size);
 	if (r < 0) {
-		fprintf(stderr, "ftdi_write_data: %d, %s\n", r,
+		msg_perr("ftdi_write_data: %d, %s\n", r,
 				ftdi_get_error_string(ftdic));
 		return 1;
 	}
@@ -74,7 +63,7 @@ int get_buf(struct ftdi_context *ftdic, const unsigned char *buf, int size)
 	int r;
 	r = ftdi_read_data(ftdic, (unsigned char *) buf, size);
 	if (r < 0) {
-		fprintf(stderr, "ftdi_read_data: %d, %s\n", r,
+		msg_perr("ftdi_read_data: %d, %s\n", r,
 				ftdi_get_error_string(ftdic));
 		return 1;
 	}
@@ -91,7 +80,7 @@ int ft2232_spi_init(void)
 	enum ftdi_interface ft2232_interface = INTERFACE_B;
 
 	if (ftdi_init(ftdic) < 0) {
-		fprintf(stderr, "ftdi_init failed\n");
+		msg_perr("ftdi_init failed\n");
 		return EXIT_FAILURE; // TODO
 	}
 
@@ -115,48 +104,48 @@ int ft2232_spi_init(void)
 				ft2232_interface = INTERFACE_B;
 				break;
 			default:
-				fprintf(stderr, "Invalid interface specified, "
+				msg_perr("Invalid interface specified, "
 					"using default.\n");
 			}
 		}
 		free(programmer_param);
 	}
-	printf_debug("Using device type %s ",
+	msg_pdbg("Using device type %s ",
 		     (ft2232_type == FTDI_FT2232H) ? "2232H" : "4232H");
-	printf_debug("interface %s\n",
+	msg_pdbg("interface %s\n",
 		     (ft2232_interface == INTERFACE_A) ? "A" : "B");
 
 	f = ftdi_usb_open(ftdic, 0x0403, ft2232_type);
 
 	if (f < 0 && f != -5) {
-		fprintf(stderr, "Unable to open FTDI device: %d (%s)\n", f,
+		msg_perr("Unable to open FTDI device: %d (%s)\n", f,
 				ftdi_get_error_string(ftdic));
 		exit(-1); // TODO
 	}
 
 	if (ftdi_set_interface(ftdic, ft2232_interface) < 0) {
-		fprintf(stderr, "Unable to select interface: %s\n",
+		msg_perr("Unable to select interface: %s\n",
 				ftdic->error_str);
 	}
 
 	if (ftdi_usb_reset(ftdic) < 0) {
-		fprintf(stderr, "Unable to reset FTDI device\n");
+		msg_perr("Unable to reset FTDI device\n");
 	}
 
 	if (ftdi_set_latency_timer(ftdic, 2) < 0) {
-		fprintf(stderr, "Unable to set latency timer\n");
+		msg_perr("Unable to set latency timer\n");
 	}
 
 	if (ftdi_write_data_set_chunksize(ftdic, 512)) {
-		fprintf(stderr, "Unable to set chunk size\n");
+		msg_perr("Unable to set chunk size\n");
 	}
 
 	if (ftdi_set_bitmode(ftdic, 0x00, BITMODE_BITBANG_SPI) < 0) {
-		fprintf(stderr, "Unable to set bitmode to SPI\n");
+		msg_perr("Unable to set bitmode to SPI\n");
 	}
 
 #if CLOCK_5X
-	printf_debug("Disable divide-by-5 front stage\n");
+	msg_pdbg("Disable divide-by-5 front stage\n");
 	buf[0] = 0x8a;		/* Disable divide-by-5. */
 	if (send_buf(ftdic, buf, 1))
 		return -1;
@@ -167,7 +156,7 @@ int ft2232_spi_init(void)
 #define MPSSE_CLK 12.0
 
 #endif
-	printf_debug("Set clock divisor\n");
+	msg_pdbg("Set clock divisor\n");
 	buf[0] = 0x86;		/* command "set divisor" */
 	/* valueL/valueH are (desired_divisor - 1) */
 	buf[1] = (DIVIDE_BY - 1) & 0xff;
@@ -175,16 +164,16 @@ int ft2232_spi_init(void)
 	if (send_buf(ftdic, buf, 3))
 		return -1;
 
-	printf("SPI clock is %fMHz\n",
+	msg_pdbg("SPI clock is %fMHz\n",
 	       (double)(MPSSE_CLK / (((DIVIDE_BY - 1) + 1) * 2)));
 
 	/* Disconnect TDI/DO to TDO/DI for loopback. */
-	printf_debug("No loopback of TDI/DO TDO/DI\n");
+	msg_pdbg("No loopback of TDI/DO TDO/DI\n");
 	buf[0] = 0x85;
 	if (send_buf(ftdic, buf, 1))
 		return -1;
 
-	printf_debug("Set data bits\n");
+	msg_pdbg("Set data bits\n");
 	/* Set data bits low-byte command:
 	 *  value: 0x08  CS=high, DI=low, DO=low, SK=low
 	 *    dir: 0x0b  CS=output, DI=input, DO=output, SK=output
@@ -196,7 +185,7 @@ int ft2232_spi_init(void)
 	if (send_buf(ftdic, buf, 3))
 		return -1;
 
-	// printf_debug("\nft2232 chosen\n");
+	// msg_pdbg("\nft2232 chosen\n");
 
 	buses_supported = CHIP_BUSTYPE_SPI;
 	spi_controller = SPI_CONTROLLER_FT2232;
@@ -223,7 +212,7 @@ int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	if (bufsize > oldbufsize) {
 		buf = realloc(buf, bufsize);
 		if (!buf) {
-			fprintf(stderr, "Out of memory!\n");
+			msg_perr("Out of memory!\n");
 			exit(1);
 		}
 		oldbufsize = bufsize;
@@ -235,7 +224,7 @@ int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	 * and deassert CS# all in one shot. If reading, we do three separate
 	 * operations.
 	 */
-	msg_comm_debug("Assert CS#\n");
+	msg_pspew("Assert CS#\n");
 	buf[i++] = SET_BITS_LOW;
 	buf[i++] = 0 & ~CS_BIT; /* assertive */
 	buf[i++] = 0x0b;
@@ -260,7 +249,7 @@ int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		failed = ret;
 		/* We can't abort here, we still have to deassert CS#. */
 		if (ret)
-			fprintf(stderr, "send_buf failed before read: %i\n",
+			msg_perr("send_buf failed before read: %i\n",
 				ret);
 		i = 0;
 		if (ret == 0) {
@@ -273,18 +262,18 @@ int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 			failed |= ret;
 			/* We can't abort here either. */
 			if (ret)
-				fprintf(stderr, "get_buf failed: %i\n", ret);
+				msg_perr("get_buf failed: %i\n", ret);
 		}
 	}
 
-	msg_comm_debug("De-assert CS#\n");
+	msg_pspew("De-assert CS#\n");
 	buf[i++] = SET_BITS_LOW;
 	buf[i++] = CS_BIT;
 	buf[i++] = 0x0b;
 	ret = send_buf(ftdic, buf, i);
 	failed |= ret;
 	if (ret)
-		fprintf(stderr, "send_buf failed at end: %i\n", ret);
+		msg_perr("send_buf failed at end: %i\n", ret);
 
 	return failed ? -1 : 0;
 }
@@ -302,13 +291,13 @@ int ft2232_spi_write_256(struct flashchip *flash, uint8_t *buf)
 
 	spi_disable_blockprotect();
 	/* Erase first. */
-	printf("Erasing flash before programming... ");
+	msg_pinfo("Erasing flash before programming... ");
 	if (erase_flash(flash)) {
-		fprintf(stderr, "ERASE FAILED!\n");
+		msg_perr("ERASE FAILED!\n");
 		return -1;
 	}
-	printf("done.\n");
-	printf_debug("total_size is %d\n", total_size);
+	msg_pinfo("done.\n");
+	msg_pdbg("total_size is %d\n", total_size);
 	for (i = 0; i < total_size; i += 256) {
 		int l, r;
 		if (i + 256 <= total_size)
@@ -317,7 +306,7 @@ int ft2232_spi_write_256(struct flashchip *flash, uint8_t *buf)
 			l = total_size - i;
 
 		if ((r = spi_nbyte_program(i, &buf[i], l))) {
-			fprintf(stderr, "%s: write fail %d\n", __func__, r);
+			msg_perr("%s: write fail %d\n", __func__, r);
 			return 1;
 		}
 
