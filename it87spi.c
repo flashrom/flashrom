@@ -80,7 +80,7 @@ struct superio probe_superio_ite(void)
 		case 0x82:
 		case 0x86:
 		case 0x87:
-			printf_debug("Found ITE SuperI/O, id %04hx\n",
+			msg_pinfo("Found ITE SuperI/O, id %04hx\n",
 				     ret.model);
 			return ret;
 		}
@@ -105,31 +105,31 @@ static uint16_t find_ite_spi_flash_port(uint16_t port, uint16_t id)
 		enter_conf_mode_ite(port);
 		/* NOLDN, reg 0x24, mask out lowest bit (suspend) */
 		tmp = sio_read(port, 0x24) & 0xFE;
-		printf("Serial flash segment 0x%08x-0x%08x %sabled\n",
+		msg_pdbg("Serial flash segment 0x%08x-0x%08x %sabled\n",
 		       0xFFFE0000, 0xFFFFFFFF, (tmp & 1 << 1) ? "en" : "dis");
-		printf("Serial flash segment 0x%08x-0x%08x %sabled\n",
+		msg_pdbg("Serial flash segment 0x%08x-0x%08x %sabled\n",
 		       0x000E0000, 0x000FFFFF, (tmp & 1 << 1) ? "en" : "dis");
-		printf("Serial flash segment 0x%08x-0x%08x %sabled\n",
+		msg_pdbg("Serial flash segment 0x%08x-0x%08x %sabled\n",
 		       0xFFEE0000, 0xFFEFFFFF, (tmp & 1 << 2) ? "en" : "dis");
-		printf("Serial flash segment 0x%08x-0x%08x %sabled\n",
+		msg_pdbg("Serial flash segment 0x%08x-0x%08x %sabled\n",
 		       0xFFF80000, 0xFFFEFFFF, (tmp & 1 << 3) ? "en" : "dis");
-		printf("LPC write to serial flash %sabled\n",
+		msg_pdbg("LPC write to serial flash %sabled\n",
 		       (tmp & 1 << 4) ? "en" : "dis");
 		/* The LPC->SPI force write enable below only makes sense for
 		 * non-programmer mode.
 		 */
 		/* If any serial flash segment is enabled, enable writing. */
 		if ((tmp & 0xe) && (!(tmp & 1 << 4))) {
-			printf("Enabling LPC write to serial flash\n");
+			msg_pdbg("Enabling LPC write to serial flash\n");
 			tmp |= 1 << 4;
 			sio_write(port, 0x24, tmp);
 		}
-		printf("Serial flash pin %i\n", (tmp & 1 << 5) ? 87 : 29);
+		msg_pdbg("Serial flash pin %i\n", (tmp & 1 << 5) ? 87 : 29);
 		/* LDN 0x7, reg 0x64/0x65 */
 		sio_write(port, 0x07, 0x7);
 		flashport = sio_read(port, 0x64) << 8;
 		flashport |= sio_read(port, 0x65);
-		printf("Serial flash port 0x%04x\n", flashport);
+		msg_pdbg("Serial flash port 0x%04x\n", flashport);
 		if (programmer_param && !strlen(programmer_param)) {
 			free(programmer_param);
 			programmer_param = NULL;
@@ -137,7 +137,7 @@ static uint16_t find_ite_spi_flash_port(uint16_t port, uint16_t id)
 		if (programmer_param && (portpos = strstr(programmer_param, "port="))) {
 			portpos += 5;
 			flashport = strtol(portpos, (char **)NULL, 0);
-			printf("Forcing serial flash port 0x%04x\n", flashport);
+			msg_pinfo("Forcing serial flash port 0x%04x\n", flashport);
 			sio_write(port, 0x64, (flashport >> 8));
 			sio_write(port, 0x65, (flashport & 0xff));
 		}
@@ -145,7 +145,7 @@ static uint16_t find_ite_spi_flash_port(uint16_t port, uint16_t id)
 		break;
 	/* TODO: Handle more IT87xx if they support flash translation */
 	default:
-		printf("SuperI/O ID %04hx is not on the controller list.\n", id);
+		msg_pinfo("SuperI/O ID %04hx is not on the controller list.\n", id);
 	}
 	return flashport;
 }
@@ -209,7 +209,7 @@ int it8716f_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		busy = INB(it8716f_flashport) & 0x80;
 	} while (busy);
 	if (readcnt > 3) {
-		printf("%s called with unsupported readcnt %i.\n",
+		msg_pinfo("%s called with unsupported readcnt %i.\n",
 		       __func__, readcnt);
 		return SPI_INVALID_LENGTH;
 	}
@@ -239,7 +239,7 @@ int it8716f_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		writeenc = 0x3;
 		break;
 	default:
-		printf("%s called with unsupported writecnt %i.\n",
+		msg_pinfo("%s called with unsupported writecnt %i.\n",
 		       __func__, writecnt);
 		return SPI_INVALID_LENGTH;
 	}
@@ -320,12 +320,12 @@ int it8716f_spi_chip_write_256(struct flashchip *flash, uint8_t *buf)
 	} else {
 		spi_disable_blockprotect();
 		/* Erase first */
-		printf("Erasing flash before programming... ");
+		msg_pinfo("Erasing flash before programming... ");
 		if (erase_flash(flash)) {
-			fprintf(stderr, "ERASE FAILED!\n");
+			msg_perr("ERASE FAILED!\n");
 			return -1;
 		}
-		printf("done.\n");
+		msg_pinfo("done.\n");
 		for (i = 0; i < total_size / 256; i++) {
 			it8716f_spi_page_program(flash, i, buf);
 		}
