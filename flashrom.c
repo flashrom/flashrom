@@ -39,8 +39,37 @@ enum programmer programmer = PROGRAMMER_INTERNAL;
 #elif DUMMY_SUPPORT == 1
 enum programmer programmer = PROGRAMMER_DUMMY;
 #else
-/* Activating the #error explodes on make dep. */
-//#error Neither internal nor dummy selected
+/* If neither internal nor dummy are selected, we must pick a sensible default.
+ * Since there is no reason to prefer a particular external programmer, we fail
+ * if more than one of them is selected. If only one is selected, it is clear
+ * that the user wants that one to become the default.
+ */
+#if NIC3COM_SUPPORT+GFXNVIDIA_SUPPORT+DRKAISER_SUPPORT+SATASII_SUPPORT+FT2232_SPI_SUPPORT+SERPROG_SUPPORT+BUSPIRATE_SPI_SUPPORT > 1
+#error Please enable either CONFIG_DUMMY or CONFIG_INTERNAL or disable support for all external programmers except one.
+#endif
+enum programmer programmer =
+#if NIC3COM_SUPPORT == 1
+	PROGRAMMER_NIC3COM
+#endif
+#if GFXNVIDIA_SUPPORT == 1
+	PROGRAMMER_GFXNVIDIA
+#endif
+#if DRKAISER_SUPPORT == 1
+	PROGRAMMER_DRKAISER
+#endif
+#if SATASII_SUPPORT == 1
+	PROGRAMMER_SATASII
+#endif
+#if FT2232_SPI_SUPPORT == 1
+	PROGRAMMER_FT2232SPI
+#endif
+#if SERPROG_SUPPORT == 1
+	PROGRAMMER_SERPROG
+#endif
+#if BUSPIRATE_SPI_SUPPORT == 1
+	PROGRAMMER_BUSPIRATESPI
+#endif
+;
 #endif
 
 char *programmer_param = NULL;
