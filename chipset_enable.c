@@ -144,16 +144,6 @@ static int enable_flash_sis5511(struct pci_dev *dev, const char *name)
 	return ret;
 }
 
-static int enable_flash_sis5596(struct pci_dev *dev, const char *name)
-{
-	int ret;
-
-	ret = enable_flash_sis5511(dev, name);
-
-	/* FIXME: Needs same superio handling as enable_flash_sis630 */
-	return ret;
-}
-
 static int enable_flash_sis530(struct pci_dev *dev, const char *name)
 {
 	uint8_t new, newer;
@@ -170,7 +160,7 @@ static int enable_flash_sis530(struct pci_dev *dev, const char *name)
 	new &= (~0x20);
 	new |= 0x4;
 	pci_write_byte(sbdev, 0x45, new);
-	newer = pci_read_byte(dev, 0x45);
+	newer = pci_read_byte(sbdev, 0x45);
 	if (newer != new) {
 		printf_debug("tried to set register 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x45, new, name);
 		printf_debug("Stuck at 0x%x\n", newer);
@@ -196,7 +186,7 @@ static int enable_flash_sis540(struct pci_dev *dev, const char *name)
 	new &= (~0x80);
 	new |= 0x40;
 	pci_write_byte(sbdev, 0x45, new);
-	newer = pci_read_byte(dev, 0x45);
+	newer = pci_read_byte(sbdev, 0x45);
 	if (newer != new) {
 		printf_debug("tried to set register 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x45, new, name);
 		printf_debug("Stuck at 0x%x\n", newer);
@@ -1206,7 +1196,7 @@ const struct penable chipset_enables[] = {
 	{0x1039, 0x0496, NT, "SiS", "85C496+497",	enable_flash_sis85c496},
 	{0x1039, 0x0406, NT, "SiS", "501/5101/5501",	enable_flash_sis501},
 	{0x1039, 0x5511, NT, "SiS", "5511",		enable_flash_sis5511},
-	{0x1039, 0x5596, NT, "SiS", "5596",		enable_flash_sis5596},
+	{0x1039, 0x5596, NT, "SiS", "5596",		enable_flash_sis5511},
 	{0x1039, 0x5571, NT, "SiS", "5571",		enable_flash_sis530},
 	{0x1039, 0x5591, NT, "SiS", "5591/5592",	enable_flash_sis530},
 	{0x1039, 0x5597, NT, "SiS", "5597/5598/5581/5120", enable_flash_sis530},
