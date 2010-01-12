@@ -46,12 +46,12 @@
   #include <machine/cpufunc.h>
   #define off64_t off_t
   #define lseek64 lseek
-  #define OUTB(x, y) do { u_int tmp = (y); outb(tmp, (x)); } while (0)
-  #define OUTW(x, y) do { u_int tmp = (y); outw(tmp, (x)); } while (0)
-  #define OUTL(x, y) do { u_int tmp = (y); outl(tmp, (x)); } while (0)
-  #define INB(x) __extension__ ({ u_int tmp = (x); inb(tmp); })
-  #define INW(x) __extension__ ({ u_int tmp = (x); inw(tmp); })
-  #define INL(x) __extension__ ({ u_int tmp = (x); inl(tmp); })
+  #define OUTB(x, y) do { u_int outb_tmp = (y); outb(outb_tmp, (x)); } while (0)
+  #define OUTW(x, y) do { u_int outw_tmp = (y); outw(outw_tmp, (x)); } while (0)
+  #define OUTL(x, y) do { u_int outl_tmp = (y); outl(outl_tmp, (x)); } while (0)
+  #define INB(x) __extension__ ({ u_int inb_tmp = (x); inb(inb_tmp); })
+  #define INW(x) __extension__ ({ u_int inw_tmp = (x); inw(inw_tmp); })
+  #define INL(x) __extension__ ({ u_int inl_tmp = (x); inl(inl_tmp); })
 #else
 #if defined(__DARWIN__)
     #include <DirectIO/darwinio.h>

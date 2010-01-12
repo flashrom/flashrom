@@ -150,7 +150,6 @@ int cli_classic(int argc, char *argv[])
 
 	if (argc > 1) {
 		/* Yes, print them. */
-		int i;
 		printf_debug("The arguments are:\n");
 		for (i = 1; i < argc; ++i)
 			printf_debug("%s\n", argv[i]);

@@ -297,7 +297,6 @@ void internal_delay(int usecs);
 
 extern uint32_t io_base_addr;
 extern struct pci_access *pacc;
-extern struct pci_filter filter;
 extern struct pci_dev *pcidev_dev;
 struct pcidev_status {
 	uint16_t vendor_id;

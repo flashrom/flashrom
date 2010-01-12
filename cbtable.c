@@ -50,7 +50,7 @@ static unsigned long compute_checksum(void *addr, unsigned long length)
 	volatile union {
 		uint8_t byte[2];
 		uint16_t word;
-	} value;
+	} chksum;
 	unsigned long sum;
 	unsigned long i;
 
@@ -72,10 +72,10 @@ static unsigned long compute_checksum(void *addr, unsigned long length)
 			sum = (sum + (sum >> 16)) & 0xFFFF;
 		}
 	}
-	value.byte[0] = sum & 0xff;
-	value.byte[1] = (sum >> 8) & 0xff;
+	chksum.byte[0] = sum & 0xff;
+	chksum.byte[1] = (sum >> 8) & 0xff;
 
-	return (~value.word) & 0xFFFF;
+	return (~chksum.word) & 0xFFFF;
 }
 
 #define for_each_lbrec(head, rec) \
