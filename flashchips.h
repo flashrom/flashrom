@@ -365,6 +365,7 @@
  * the second device ID byte is memory capacity.
  */
 #define SPANSION_ID		0x01	/* Spansion, same ID as AMD */
+#define SPANSION_S25FL008A	0x0213
 #define SPANSION_S25FL016A	0x0214
 
 /*
