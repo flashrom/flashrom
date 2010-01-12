@@ -46,7 +46,7 @@ int spi_chip_write_256(struct flashchip *flash, uint8_t *buf);
 int spi_chip_read(struct flashchip *flash, uint8_t *buf, int start, int len);
 uint8_t spi_read_status_register(void);
 int spi_disable_blockprotect(void);
-int spi_byte_program(int addr, uint8_t byte);
+int spi_byte_program(int addr, uint8_t databyte);
 int spi_nbyte_program(int addr, uint8_t *bytes, int len);
 int spi_nbyte_read(int addr, uint8_t *bytes, int len);
 int spi_read_chunked(struct flashchip *flash, uint8_t *buf, int start, int len, int chunksize);

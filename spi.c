@@ -832,7 +832,7 @@ int spi_write_status_register(int status)
 	return result;
 }
 
-int spi_byte_program(int addr, uint8_t byte)
+int spi_byte_program(int addr, uint8_t databyte)
 {
 	int result;
 	struct spi_command cmds[] = {
@@ -843,7 +843,7 @@ int spi_byte_program(int addr, uint8_t byte)
 		.readarr	= NULL,
 	}, {
 		.writecnt	= JEDEC_BYTE_PROGRAM_OUTSIZE,
-		.writearr	= (const unsigned char[]){ JEDEC_BYTE_PROGRAM, (addr >> 16) & 0xff, (addr >> 8) & 0xff, (addr & 0xff), byte },
+		.writearr	= (const unsigned char[]){ JEDEC_BYTE_PROGRAM, (addr >> 16) & 0xff, (addr >> 8) & 0xff, (addr & 0xff), databyte },
 		.readcnt	= 0,
 		.readarr	= NULL,
 	}, {

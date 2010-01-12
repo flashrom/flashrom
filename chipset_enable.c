@@ -1026,19 +1026,19 @@ static int enable_flash_sb400(struct pci_dev *dev, const char *name)
 
 static int enable_flash_mcp55(struct pci_dev *dev, const char *name)
 {
-	uint8_t old, new, byte;
-	uint16_t word;
+	uint8_t old, new, val;
+	uint16_t wordval;
 
 	/* Set the 0-16 MB enable bits. */
-	byte = pci_read_byte(dev, 0x88);
-	byte |= 0xff;		/* 256K */
-	pci_write_byte(dev, 0x88, byte);
-	byte = pci_read_byte(dev, 0x8c);
-	byte |= 0xff;		/* 1M */
-	pci_write_byte(dev, 0x8c, byte);
-	word = pci_read_word(dev, 0x90);
-	word |= 0x7fff;		/* 16M */
-	pci_write_word(dev, 0x90, word);
+	val = pci_read_byte(dev, 0x88);
+	val |= 0xff;		/* 256K */
+	pci_write_byte(dev, 0x88, val);
+	val = pci_read_byte(dev, 0x8c);
+	val |= 0xff;		/* 1M */
+	pci_write_byte(dev, 0x8c, val);
+	wordval = pci_read_word(dev, 0x90);
+	wordval |= 0x7fff;	/* 16M */
+	pci_write_word(dev, 0x90, wordval);
 
 	old = pci_read_byte(dev, 0x6d);
 	new = old | 0x01;
