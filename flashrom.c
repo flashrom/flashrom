@@ -833,6 +833,54 @@ int read_flash(struct flashchip *flash, char *filename)
 	return 0;
 }
 
+/* This function shares a lot of its structure with erase_flash(). */
+int selfcheck_eraseblocks(struct flashchip *flash)
+{
+	int i, k;
+
+	for (k = 0; k < NUM_ERASEFUNCTIONS; k++) {
+		unsigned int done = 0;
+		struct block_eraser eraser = flash->block_erasers[k];
+
+		for (i = 0; i < NUM_ERASEREGIONS; i++) {
+			/* Blocks with zero size are bugs in flashchips.c. */
+			if (eraser.eraseblocks[i].count &&
+			    !eraser.eraseblocks[i].size) {
+				msg_gerr("ERROR: Flash chip %s erase function "
+					"%i region %i has size 0. Please report"
+					" a bug at flashrom@flashrom.org\n",
+					flash->name, k, i);
+				return 1;
+				break;
+			}
+			/* Blocks with zero count are bugs in flashchips.c. */
+			if (!eraser.eraseblocks[i].count &&
+			    eraser.eraseblocks[i].size) {
+				msg_gerr("ERROR: Flash chip %s erase function "
+					"%i region %i has count 0. Please report"
+					" a bug at flashrom@flashrom.org\n",
+					flash->name, k, i);
+				return 1;
+				break;
+			}
+			done += eraser.eraseblocks[i].count *
+				eraser.eraseblocks[i].size;
+		}
+		/* This erase function is completely empty. */
+		if (!done)
+			continue;
+		if (done != flash->total_size * 1024) {
+			msg_gerr("ERROR: Flash chip %s erase function %i "
+				"region walking resulted in 0x%06x bytes total,"
+				" expected 0x%06x bytes. Please report a bug at"
+				" flashrom@flashrom.org\n", flash->name, k,
+				done, flash->total_size * 1024);
+			return 1;
+		}
+	}
+	return 0;
+}
+
 int erase_flash(struct flashchip *flash)
 {
 	int i, j, k, ret = 0, found = 0;
@@ -864,17 +912,6 @@ int erase_flash(struct flashchip *flash)
 		found = 1;
 		printf_debug("trying... ");
 		for (i = 0; i < NUM_ERASEREGIONS; i++) {
-			/* Blocks with zero size are bugs in flashchips.c.
-			 * FIXME: This check should be performed on startup.
-			 */
-			if (eraser.eraseblocks[i].count &&
-			    !eraser.eraseblocks[i].size) {
-				fprintf(stderr, "ERROR: Erase region with size "
-					"0 for this chip. Please report a bug "
-					"at flashrom@flashrom.org\n");
-				ret = 1;
-				break;
-			}
 			/* count==0 for all automatically initialized array
 			 * members so the loop below won't be executed for them.
 			 */
@@ -893,10 +930,6 @@ int erase_flash(struct flashchip *flash)
 				eraser.eraseblocks[i].size;
 		}
 		printf_debug("\n");
-		if (done != flash->total_size * 1024)
-			fprintf(stderr, "ERROR: Erase region walking erased "
-				"0x%06x bytes total, expected 0x%06x bytes.",
-				done, flash->total_size * 1024);
 		/* If everything is OK, don't try another erase function. */
 		if (!ret)
 			break;
@@ -948,22 +981,30 @@ void print_version(void)
 
 int selfcheck(void)
 {
-	/* Safety check. */
+	int ret = 0;
+	struct flashchip *flash;
+
+	/* Safety check. Instead of aborting after the first error, check
+	 * if more errors exist.
+	 */
 	if (ARRAY_SIZE(programmer_table) - 1 != PROGRAMMER_INVALID) {
 		fprintf(stderr, "Programmer table miscompilation!\n");
-		return 1;
+		ret = 1;
 	}
 	if (spi_programmer_count - 1 != SPI_CONTROLLER_INVALID) {
 		fprintf(stderr, "SPI programmer table miscompilation!\n");
-		return 1;
+		ret = 1;
 	}
 #if BITBANG_SPI_SUPPORT == 1
 	if (bitbang_spi_master_count - 1 != BITBANG_SPI_INVALID) {
 		fprintf(stderr, "Bitbanging SPI master table miscompilation!\n");
-		return 1;
+		ret = 1;
 	}
 #endif
-	return 0;
+	for (flash = flashchips; flash && flash->name; flash++)
+		if (selfcheck_eraseblocks(flash))
+			ret = 1;
+	return ret;
 }
 
 void check_chip_supported(struct flashchip *flash)
