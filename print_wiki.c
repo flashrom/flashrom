@@ -75,7 +75,7 @@ valign=\"top\"\n|- bgcolor=\"#6699dd\"\n! align=\"left\" | Vendor\n\
 ! align=\"left\" | Device\n! align=\"left\" | Size / KB\n\
 ! align=\"left\" | Type\n! align=\"left\" colspan=\"4\" | Status\n\n\
 |- bgcolor=\"#6699ff\"\n| colspan=\"4\" | &nbsp;\n\
-| Probe\n| Read\n| Write\n| Erase\n\n";
+| Probe\n| Read\n| Erase\n| Write\n\n";
 
 const char *programmer_section = "\
 \n== Supported programmers ==\n\nThis is a list \
