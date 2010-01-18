@@ -1181,7 +1181,7 @@ struct flashchip flashchips[] = {
 				},
 				.block_erase = spi_block_erase_d8,
 			}, {
-				.eraseblocks = { {256 * 1024, 1} },
+				.eraseblocks = { {512 * 1024, 1} },
 				.block_erase = spi_block_erase_c7,
 			}
 		},
@@ -1213,7 +1213,7 @@ struct flashchip flashchips[] = {
 				},
 				.block_erase = spi_block_erase_d8,
 			}, {
-				.eraseblocks = { {256 * 1024, 1} },
+				.eraseblocks = { {512 * 1024, 1} },
 				.block_erase = spi_block_erase_c7,
 			}
 		},
