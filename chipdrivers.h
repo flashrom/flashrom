@@ -167,6 +167,9 @@ int write_49f002(struct flashchip *flash, uint8_t *buf);
 /* stm50flw0x0x.c */
 int probe_stm50flw0x0x(struct flashchip *flash);
 int erase_stm50flw0x0x(struct flashchip *flash);
+int erase_block_stm50flw0x0x(struct flashchip *flash, unsigned int block, unsigned int blocksize);
+int erase_sector_stm50flw0x0x(struct flashchip *flash, unsigned int block, unsigned int blocksize);
+int erase_chip_stm50flw0x0x(struct flashchip *flash, unsigned int addr, unsigned int blocklen);
 int write_stm50flw0x0x(struct flashchip *flash, uint8_t *buf);
 
 #endif /* !__CHIPDRIVERS_H__ */
