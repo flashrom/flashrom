@@ -2,6 +2,7 @@
  * This file is part of the flashrom project.
  *
  * Copyright (C) 2008 Claus Gindhart <claus.gindhart@kontron.com>
+ * Copyright (C) 2009 Sean Nelson <audiohacked@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -99,9 +100,9 @@ int unlock_block_stm50flw0x0x(struct flashchip *flash, int offset)
 	return 0;
 }
 
-int erase_block_stm50flw0x0x(struct flashchip *flash, int offset)
+int erase_block_stm50flw0x0x(struct flashchip *flash, unsigned int block, unsigned int blocksize)
 {
-	chipaddr bios = flash->virtual_memory + offset;
+	chipaddr bios = flash->virtual_memory + block;
 
 	// clear status register
 	chip_writeb(0x50, bios);
@@ -113,11 +114,34 @@ int erase_block_stm50flw0x0x(struct flashchip *flash, int offset)
 
 	wait_stm50flw0x0x(flash->virtual_memory);
 
-	if (check_erased_range(flash, offset, flash->page_size)) {
+	if (check_erased_range(flash, block, blocksize)) {
 		fprintf(stderr, "ERASE FAILED!\n");
 		return -1;
 	}
-	printf("DONE BLOCK 0x%x\n", offset);
+	printf("DONE BLOCK 0x%x\n", block);
+
+	return 0;
+}
+
+int erase_sector_stm50flw0x0x(struct flashchip *flash, unsigned int sector, unsigned int sectorsize)
+{
+	chipaddr bios = flash->virtual_memory + sector;
+
+	// clear status register
+	chip_writeb(0x50, bios);
+	printf_debug("Erase at 0x%lx\n", bios);
+	// now start it
+	chip_writeb(0x32, bios);
+	chip_writeb(0xd0, bios);
+	programmer_delay(10);
+
+	wait_stm50flw0x0x(flash->virtual_memory);
+
+	if (check_erased_range(flash, sector, sectorsize)) {
+		fprintf(stderr, "ERASE FAILED!\n");
+		return -1;
+	}
+	printf("DONE BLOCK 0x%x\n", sector);
 
 	return 0;
 }
@@ -178,7 +202,7 @@ int erase_stm50flw0x0x(struct flashchip *flash)
 			fprintf(stderr, "UNLOCK FAILED!\n");
 			return -1;
 		}
-		if (erase_block_stm50flw0x0x(flash, i * page_size)) {
+		if (erase_block_stm50flw0x0x(flash, i * page_size, page_size)) {
 			fprintf(stderr, "ERASE FAILED!\n");
 			return -1;
 		}
@@ -186,6 +210,16 @@ int erase_stm50flw0x0x(struct flashchip *flash)
 	printf("\n");
 
 	return 0;
+}
+
+int erase_chip_stm50flw0x0x(struct flashchip *flash, unsigned int addr, unsigned int blocklen)
+{
+	if ((addr != 0) || (blocklen != flash->total_size * 1024)) {
+		msg_cerr("%s called with incorrect arguments\n",
+			__func__);
+		return -1;
+	}
+	return erase_stm50flw0x0x(flash);
 }
 
 int write_stm50flw0x0x(struct flashchip *flash, uint8_t * buf)
@@ -221,7 +255,7 @@ int write_stm50flw0x0x(struct flashchip *flash, uint8_t * buf)
 
 		rc = unlock_block_stm50flw0x0x(flash, i * page_size);
 		if (!rc)
-			rc = erase_block_stm50flw0x0x(flash, i * page_size);
+			rc = erase_block_stm50flw0x0x(flash, i * page_size, page_size);
 		if (!rc)
 			write_page_stm50flw0x0x(bios, buf + i * page_size,
 					bios + i * page_size, page_size);
