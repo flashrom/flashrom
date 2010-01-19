@@ -74,6 +74,11 @@
 #define JEDEC_BE_D8_OUTSIZE	0x04
 #define JEDEC_BE_D8_INSIZE	0x00
 
+/* Block Erase 0xd7 is supported by PMC chips. */
+#define JEDEC_BE_D7		0xd7
+#define JEDEC_BE_D7_OUTSIZE	0x04
+#define JEDEC_BE_D7_INSIZE	0x00
+
 /* Sector Erase 0x20 is supported by Macronix/SST chips. */
 #define JEDEC_SE		0x20
 #define JEDEC_SE_OUTSIZE	0x04

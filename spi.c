@@ -701,6 +701,48 @@ int spi_block_erase_d8(struct flashchip *flash, unsigned int addr, unsigned int 
 	return 0;
 }
 
+/* Block size is usually
+ * 4k for PMC
+ */
+int spi_block_erase_d7(struct flashchip *flash, unsigned int addr, unsigned int blocklen)
+{
+	int result;
+	struct spi_command cmds[] = {
+	{
+		.writecnt	= JEDEC_WREN_OUTSIZE,
+		.writearr	= (const unsigned char[]){ JEDEC_WREN },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= JEDEC_BE_D7_OUTSIZE,
+		.writearr	= (const unsigned char[]){ JEDEC_BE_D7, (addr >> 16) & 0xff, (addr >> 8) & 0xff, (addr & 0xff) },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= 0,
+		.writearr	= NULL,
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}};
+
+	result = spi_send_multicommand(cmds);
+	if (result) {
+		fprintf(stderr, "%s failed during command execution at address 0x%x\n",
+			__func__, addr);
+		return result;
+	}
+	/* Wait until the Write-In-Progress bit is cleared.
+	 * This usually takes 100-4000 ms, so wait in 100 ms steps.
+	 */
+	while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
+		programmer_delay(100 * 1000);
+	if (check_erased_range(flash, addr, blocklen)) {
+		fprintf(stderr, "ERASE FAILED!\n");
+		return -1;
+	}
+	return 0;
+}
+
 int spi_chip_erase_d8(struct flashchip *flash)
 {
 	int i, rc = 0;
