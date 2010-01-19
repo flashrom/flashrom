@@ -111,6 +111,15 @@ const struct spi_programmer spi_programmer[] = {
 	},
 #endif
 
+#if DEDIPROG_SUPPORT == 1
+	{ /* SPI_CONTROLLER_DEDIPROG */
+		.command = dediprog_spi_send_command,
+		.multicommand = default_spi_send_multicommand,
+		.read = dediprog_spi_read,
+		.write_256 = spi_chip_write_1,
+	},
+#endif
+
 	{}, /* This entry corresponds to SPI_CONTROLLER_INVALID. */
 };
 
