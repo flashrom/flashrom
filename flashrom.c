@@ -833,10 +833,13 @@ int read_flash(struct flashchip *flash, char *filename)
 	return 0;
 }
 
-/* This function shares a lot of its structure with erase_flash(). */
+/* This function shares a lot of its structure with erase_flash().
+ * Even if an error is found, the function will keep going and check the rest.
+ */
 int selfcheck_eraseblocks(struct flashchip *flash)
 {
-	int i, k;
+	int i, j, k;
+	int ret = 0;
 
 	for (k = 0; k < NUM_ERASEFUNCTIONS; k++) {
 		unsigned int done = 0;
@@ -850,8 +853,7 @@ int selfcheck_eraseblocks(struct flashchip *flash)
 					"%i region %i has size 0. Please report"
 					" a bug at flashrom@flashrom.org\n",
 					flash->name, k, i);
-				return 1;
-				break;
+				ret = 1;
 			}
 			/* Blocks with zero count are bugs in flashchips.c. */
 			if (!eraser.eraseblocks[i].count &&
@@ -860,13 +862,15 @@ int selfcheck_eraseblocks(struct flashchip *flash)
 					"%i region %i has count 0. Please report"
 					" a bug at flashrom@flashrom.org\n",
 					flash->name, k, i);
-				return 1;
-				break;
+				ret = 1;
 			}
 			done += eraser.eraseblocks[i].count *
 				eraser.eraseblocks[i].size;
 		}
-		/* This erase function is completely empty. */
+		/* Empty eraseblock definition with erase function.  */
+		if (!done && eraser.block_erase)
+			msg_pspew("Strange: Empty eraseblock definition with "
+				"non-empty erase function. Not an error.\n");
 		if (!done)
 			continue;
 		if (done != flash->total_size * 1024) {
@@ -875,10 +879,25 @@ int selfcheck_eraseblocks(struct flashchip *flash)
 				" expected 0x%06x bytes. Please report a bug at"
 				" flashrom@flashrom.org\n", flash->name, k,
 				done, flash->total_size * 1024);
-			return 1;
+			ret = 1;
 		}
+		if (!eraser.block_erase)
+			continue;
+		/* Check if there are identical erase functions for different
+		 * layouts. That would imply "magic" erase functions. The
+		 * easiest way to check this is with function pointers.
+		 */
+		for (j = k + 1; j < NUM_ERASEFUNCTIONS; j++)
+			if (eraser.block_erase ==
+			    flash->block_erasers[j].block_erase) {
+				msg_gerr("ERROR: Flash chip %s erase function "
+					"%i and %i are identical. Please report"
+					" a bug at flashrom@flashrom.org\n",
+					flash->name, k, j);
+				ret = 1;
+			}
 	}
-	return 0;
+	return ret;
 }
 
 int erase_flash(struct flashchip *flash)
