@@ -67,6 +67,9 @@ enum programmer {
 #if BUSPIRATE_SPI_SUPPORT == 1
 	PROGRAMMER_BUSPIRATESPI,
 #endif
+#if DEDIPROG_SUPPORT == 1
+	PROGRAMMER_DEDIPROG,
+#endif
 	PROGRAMMER_INVALID /* This must always be the last entry. */
 };
 
@@ -470,6 +473,12 @@ int buspirate_spi_shutdown(void);
 int buspirate_spi_send_command(unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr);
 int buspirate_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
 
+/* dediprog.c */
+int dediprog_init(void);
+int dediprog_shutdown(void);
+int dediprog_spi_send_command(unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr);
+int dediprog_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
+
 /* flashrom.c */
 extern enum chipbustype buses_supported;
 struct decode_sizes {
@@ -552,6 +561,9 @@ enum spi_controller {
 #endif
 #if BUSPIRATE_SPI_SUPPORT == 1
 	SPI_CONTROLLER_BUSPIRATE,
+#endif
+#if DEDIPROG_SUPPORT == 1
+	SPI_CONTROLLER_DEDIPROG,
 #endif
 	SPI_CONTROLLER_INVALID /* This must always be the last entry. */
 };
