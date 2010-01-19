@@ -96,6 +96,9 @@ CONFIG_DRKAISER ?= yes
 # Always enable Bus Pirate SPI for now.
 CONFIG_BUSPIRATESPI ?= yes
 
+# Disable Dediprog SF100 until support is complete and tested.
+CONFIG_DEDIPROG ?= no
+
 # Disable wiki printing by default. It is only useful if you have wiki access.
 CONFIG_PRINT_WIKI ?= no
 
@@ -158,6 +161,12 @@ endif
 ifeq ($(CONFIG_BUSPIRATESPI), yes)
 FEATURE_CFLAGS += -D'BUSPIRATE_SPI_SUPPORT=1'
 PROGRAMMER_OBJS += buspirate_spi.o
+endif
+
+ifeq ($(CONFIG_DEDIPROG), yes)
+FEATURE_CFLAGS += -D'DEDIPROG_SUPPORT=1'
+FEATURE_LIBS += -lusb
+PROGRAMMER_OBJS += dediprog.o
 endif
 
 # Ugly, but there's no elif/elseif.

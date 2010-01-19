@@ -44,7 +44,7 @@ enum programmer programmer = PROGRAMMER_DUMMY;
  * if more than one of them is selected. If only one is selected, it is clear
  * that the user wants that one to become the default.
  */
-#if NIC3COM_SUPPORT+GFXNVIDIA_SUPPORT+DRKAISER_SUPPORT+SATASII_SUPPORT+FT2232_SPI_SUPPORT+SERPROG_SUPPORT+BUSPIRATE_SPI_SUPPORT > 1
+#if NIC3COM_SUPPORT+GFXNVIDIA_SUPPORT+DRKAISER_SUPPORT+SATASII_SUPPORT+FT2232_SPI_SUPPORT+SERPROG_SUPPORT+BUSPIRATE_SPI_SUPPORT+DEDIPROG_SUPPORT > 1
 #error Please enable either CONFIG_DUMMY or CONFIG_INTERNAL or disable support for all external programmers except one.
 #endif
 enum programmer programmer =
@@ -68,6 +68,9 @@ enum programmer programmer =
 #endif
 #if BUSPIRATE_SPI_SUPPORT == 1
 	PROGRAMMER_BUSPIRATESPI
+#endif
+#if DEDIPROG_SUPPORT == 1
+	PROGRAMMER_DEDIPROG
 #endif
 ;
 #endif
@@ -269,6 +272,25 @@ const struct programmer_entry programmer_table[] = {
 		.name			= "buspiratespi",
 		.init			= buspirate_spi_init,
 		.shutdown		= buspirate_spi_shutdown,
+		.map_flash_region	= fallback_map,
+		.unmap_flash_region	= fallback_unmap,
+		.chip_readb		= noop_chip_readb,
+		.chip_readw		= fallback_chip_readw,
+		.chip_readl		= fallback_chip_readl,
+		.chip_readn		= fallback_chip_readn,
+		.chip_writeb		= noop_chip_writeb,
+		.chip_writew		= fallback_chip_writew,
+		.chip_writel		= fallback_chip_writel,
+		.chip_writen		= fallback_chip_writen,
+		.delay			= internal_delay,
+	},
+#endif
+
+#if DEDIPROG_SUPPORT == 1
+	{
+		.name			= "dediprog",
+		.init			= dediprog_init,
+		.shutdown		= dediprog_shutdown,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
 		.chip_readb		= noop_chip_readb,
