@@ -5043,7 +5043,7 @@ struct flashchip flashchips[] = {
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {1 * 1024, 496} },
+				.eraseblocks = { {1 * 1024, 512} },
 				.block_erase = erase_sector_jedec,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
