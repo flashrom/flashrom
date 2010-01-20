@@ -265,6 +265,9 @@ struct board_pciid_enable {
 	uint16_t second_card_vendor;
 	uint16_t second_card_device;
 
+	/* Pattern to match DMI entries */
+	const char *dmi_pattern;
+
 	/* The vendor / part name from the coreboot table. */
 	const char *lb_vendor;
 	const char *lb_part;
@@ -342,6 +345,11 @@ void lb_vendor_dev_from_string(char *boardstring);
 int coreboot_init(void);
 extern char *lb_part, *lb_vendor;
 extern int partvendor_from_cbtable;
+
+/* dmi.c */
+extern int has_dmi_support;
+void dmi_init(void);
+int dmi_match(const char *pattern);
 
 /* internal.c */
 #if NEED_PCI == 1
