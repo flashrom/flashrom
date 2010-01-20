@@ -152,6 +152,7 @@ int internal_init(void)
 	 * mainboard specific flash enable sequence.
 	 */
 	coreboot_init();
+	dmi_init();
 
 	/* Probe for the SuperI/O chip and fill global struct superio. */
 	probe_superio();
