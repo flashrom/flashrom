@@ -3,6 +3,7 @@
  *
  * Copyright (C) 2000 Silicon Integrated System Corporation
  * Copyright (C) 2005-2007 coresystems GmbH
+ * Copyright (C) 2009 Sean Nelson <audiohacked@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,6 +35,15 @@
 #define STATUS_BPS		(1 << 1)
 #define	STATUS_ESS		(1 << 6)
 #define	STATUS_WSMS		(1 << 7)
+
+int unlock_block_49lfxxxc(struct flashchip *flash, unsigned long address, unsigned char bits)
+{
+	unsigned long lock = flash->virtual_registers + address + 2;
+	printf_debug("lockbits at address=0x%08lx is 0x%01x\n", lock, chip_readb(lock));
+	chip_writeb(bits, lock);
+
+	return 0;
+}
 
 static int write_lockbits_49lfxxxc(struct flashchip *flash, unsigned char bits)
 {
@@ -72,7 +82,7 @@ static int write_lockbits_49lfxxxc(struct flashchip *flash, unsigned char bits)
 	return 0;
 }
 
-static int erase_sector_49lfxxxc(struct flashchip *flash, unsigned long address, int sector_size)
+int erase_sector_49lfxxxc(struct flashchip *flash, unsigned int address, unsigned int sector_size)
 {
 	unsigned char status;
 	chipaddr bios = flash->virtual_memory;
@@ -91,6 +101,31 @@ static int erase_sector_49lfxxxc(struct flashchip *flash, unsigned long address,
 	chip_writeb(RESET, bios);
 
 	if (check_erased_range(flash, address, sector_size)) {
+		fprintf(stderr, "ERASE FAILED!\n");
+		return -1;
+	}
+	return 0;
+}
+
+int erase_block_49lfxxxc(struct flashchip *flash, unsigned int address, unsigned int block_size)
+{
+	unsigned char status;
+	chipaddr bios = flash->virtual_memory;
+
+	chip_writeb(BLOCK_ERASE, bios);
+	chip_writeb(ERASE, bios + address);
+
+	do {
+		status = chip_readb(bios);
+		if (status & (STATUS_ESS | STATUS_BPS)) {
+			printf("block erase FAILED at address=0x%08lx status=0x%01x\n", bios + address, status);
+			chip_writeb(CLEAR_STATUS, bios);
+			return (-1);
+		}
+	} while (!(status & STATUS_WSMS));
+	chip_writeb(RESET, bios);
+
+	if (check_erased_range(flash, address, block_size)) {
 		fprintf(stderr, "ERASE FAILED!\n");
 		return -1;
 	}
