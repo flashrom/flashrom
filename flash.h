@@ -275,6 +275,7 @@ struct board_pciid_enable {
 	const char *vendor_name;
 	const char *board_name;
 
+	int max_rom_decode_parallel;
 	int (*enable) (const char *name);
 };
 
