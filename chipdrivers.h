@@ -126,7 +126,8 @@ void protect_lhf00l04(chipaddr bios);
 
 /* sst28sf040.c */
 int probe_28sf040(struct flashchip *flash);
-int erase_28sf040(struct flashchip *flash);
+int erase_chip_28sf040(struct flashchip *flash, unsigned int addr, unsigned int blocklen);
+int erase_sector_28sf040(struct flashchip *flash, unsigned int address, unsigned int sector_size);
 int write_28sf040(struct flashchip *flash, uint8_t *buf);
 
 /* sst39sf020.c */
@@ -140,12 +141,16 @@ int write_49lf040(struct flashchip *flash, uint8_t *buf);
 /* sst49lfxxxc.c */
 int probe_49lfxxxc(struct flashchip *flash);
 int erase_49lfxxxc(struct flashchip *flash);
+int erase_sector_49lfxxxc(struct flashchip *flash, unsigned int address, unsigned int sector_size);
+int erase_block_49lfxxxc(struct flashchip *flash, unsigned int address, unsigned int sector_size);
+int erase_chip_49lfxxxc(struct flashchip *flash, unsigned int addr, unsigned int blocksize);
 int write_49lfxxxc(struct flashchip *flash, uint8_t *buf);
 
 /* sst_fwhub.c */
 int probe_sst_fwhub(struct flashchip *flash);
 int erase_sst_fwhub(struct flashchip *flash);
 int erase_sst_fwhub_block(struct flashchip *flash, unsigned int offset, unsigned int page_size);
+int erase_sst_fwhub_sector(struct flashchip *flash, unsigned int offset, unsigned int page_size);
 int write_sst_fwhub(struct flashchip *flash, uint8_t *buf);
 
 /* w39v040c.c */
