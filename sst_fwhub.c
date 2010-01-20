@@ -3,6 +3,7 @@
  *
  * Copyright (C) 2000 Silicon Integrated System Corporation
  * Copyright (C) 2009 Kontron Modular Computers
+ * Copyright (C) 2009 Sean Nelson <audiohacked@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -106,6 +107,25 @@ int erase_sst_fwhub_block(struct flashchip *flash, unsigned int offset, unsigned
 	}
 
 	if (erase_block_jedec(flash, offset, page_size)) {
+		fprintf(stderr, "ERASE FAILED!\n");
+		return -1;
+	}
+	toggle_ready_jedec(flash->virtual_memory);
+
+	return 0;
+}
+
+int erase_sst_fwhub_sector(struct flashchip *flash, unsigned int offset, unsigned int page_size)
+{
+	uint8_t blockstatus = clear_sst_fwhub_block_lock(flash, offset);
+
+	if (blockstatus) {
+		printf("Sector lock clearing failed, not erasing sector "
+			"at 0x%06x\n", offset);
+		return 1;
+	}
+
+	if (erase_sector_jedec(flash, offset, page_size)) {
 		fprintf(stderr, "ERASE FAILED!\n");
 		return -1;
 	}

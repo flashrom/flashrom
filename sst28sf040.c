@@ -3,6 +3,7 @@
  *
  * Copyright (C) 2000 Silicon Integrated System Corporation
  * Copyright (C) 2005 coresystems GmbH <stepan@openbios.org>
+ * Copyright (C) 2009 Sean Nelson <audiohacked@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,7 +51,7 @@ static void unprotect_28sf040(chipaddr bios)
 	chip_readb(bios + 0x041A);
 }
 
-static int erase_sector_28sf040(struct flashchip *flash, unsigned long address, int sector_size)
+int erase_sector_28sf040(struct flashchip *flash, unsigned int address, unsigned int sector_size)
 {
 	chipaddr bios = flash->virtual_memory;
 
@@ -67,7 +68,7 @@ static int erase_sector_28sf040(struct flashchip *flash, unsigned long address, 
 	return 0;
 }
 
-static int write_sector_28sf040(chipaddr bios, uint8_t *src, chipaddr dst,
+int write_sector_28sf040(chipaddr bios, uint8_t *src, chipaddr dst,
 				unsigned int page_size)
 {
 	int i;
@@ -161,4 +162,14 @@ int write_28sf040(struct flashchip *flash, uint8_t *buf)
 	protect_28sf040(bios);
 
 	return 0;
+}
+
+int erase_chip_28sf040(struct flashchip *flash, unsigned int addr, unsigned int blocklen)
+{
+	if ((addr != 0) || (blocklen != flash->total_size * 1024)) {
+		fprintf(stderr, "%s called with incorrect arguments\n",
+			__func__);
+		return -1;
+	}
+	return erase_28sf040(flash);
 }

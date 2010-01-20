@@ -3480,7 +3480,7 @@ struct flashchip flashchips[] = {
 				.eraseblocks = {
 					{1024 * 1024, 1}
 				},
-				.block_erase = NULL, /* 30 D0, only in PP mode */
+				.block_erase = NULL, /* 30 D0, only in A/A mux mode */
 			},
 		},
 		.write		= write_lhf00l04,
@@ -3754,7 +3754,17 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_28sf040,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (sst28sf040.c) */
-		.erase		= erase_28sf040,
+		.erase		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {128, 4096} },
+				.block_erase = erase_sector_28sf040,
+			}, {
+				.eraseblocks = { {512 * 1024, 1} },
+				.block_erase = erase_chip_28sf040,
+			}
+		},
 		.write		= write_28sf040,
 		.read		= read_memmapped,
 	},
@@ -3767,10 +3777,17 @@ struct flashchip flashchips[] = {
 		.model_id	= SST_29EE010,
 		.total_size	= 128,
 		.page_size	= 128,
-		.tested		= TEST_OK_PREW,
+		.tested		= TEST_OK_PRW,
 		.probe		= probe_jedec,
 		.probe_timing	= 10, 
-		.erase		= erase_chip_jedec,
+		.erase		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {128 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			}
+		},
 		.write		= write_jedec,
 		.read		= read_memmapped,
 	},
@@ -3786,7 +3803,14 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= 10, 
-		.erase		= erase_chip_jedec,
+		.erase		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {128 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			}
+		},
 		.write		= write_jedec,
 		.read		= read_memmapped,
 	},
@@ -3799,10 +3823,17 @@ struct flashchip flashchips[] = {
 		.model_id	= SST_29EE020A,
 		.total_size	= 256,
 		.page_size	= 128,
-		.tested		= TEST_OK_PREW,
+		.tested		= TEST_OK_PRW,
 		.probe		= probe_jedec,
 		.probe_timing	= 10,
-		.erase		= erase_chip_jedec,
+		.erase		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {256 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			}
+		},
 		.write		= write_jedec,
 		.read		= read_memmapped,
 	},
@@ -3818,7 +3849,14 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= 10, 
-		.erase		= erase_chip_jedec,
+		.erase		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {256 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			}
+		},
 		.write		= write_jedec,
 		.read		= read_memmapped,
 	},
@@ -3831,10 +3869,20 @@ struct flashchip flashchips[] = {
 		.model_id	= SST_39SF010,
 		.total_size	= 128,
 		.page_size	= 4096,
-		.tested		= TEST_OK_PREW,
+		.tested		= TEST_OK_PRW,
 		.probe		= probe_jedec,
 		.probe_timing	= 1,			/* 150 ns */
-		.erase		= erase_chip_jedec,
+		.erase		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 32} },
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {128 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			}
+		},
 		.write		= write_49f002,
 		.read		= read_memmapped,
 	},
@@ -3847,10 +3895,20 @@ struct flashchip flashchips[] = {
 		.model_id	= SST_39SF020,
 		.total_size	= 256,
 		.page_size	= 4096,
-		.tested		= TEST_OK_PREW,
+		.tested		= TEST_OK_PRW,
 		.probe		= probe_jedec,
 		.probe_timing	= 1,			/* 150 ns */ 
-		.erase		= erase_chip_jedec,
+		.erase		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 64} },
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {256 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			}
+		},
 		.write		= write_49f002,
 		.read		= read_memmapped,
 	},
@@ -3863,10 +3921,20 @@ struct flashchip flashchips[] = {
 		.model_id	= SST_39SF040,
 		.total_size	= 512,
 		.page_size	= 4096,
-		.tested		= TEST_OK_PREW,
+		.tested		= TEST_OK_PRW,
 		.probe		= probe_jedec,
 		.probe_timing	= 1,			/* 150 ns */ 
-		.erase		= erase_chip_jedec,
+		.erase		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 128} },
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {512 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			}
+		},
 		.write		= write_49f002,
 		.read		= read_memmapped,
 	},
@@ -3879,10 +3947,20 @@ struct flashchip flashchips[] = {
 		.model_id	= SST_39VF512,
 		.total_size	= 64,
 		.page_size	= 4096,
-		.tested		= TEST_OK_PREW,
+		.tested		= TEST_OK_PRW,
 		.probe		= probe_jedec,
 		.probe_timing	= 1,			/* 150 ns*/ 
-		.erase		= erase_chip_jedec,
+		.erase		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 16} },
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {64 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			}
+		},
 		.write		= write_49f002,
 		.read		= read_memmapped,
 	},
@@ -3895,10 +3973,20 @@ struct flashchip flashchips[] = {
 		.model_id	= SST_39VF010,
 		.total_size	= 128,
 		.page_size	= 4096,
-		.tested		= TEST_OK_PREW,
+		.tested		= TEST_OK_PRW,
 		.probe		= probe_jedec,
 		.probe_timing	= 1,			/* 150 ns */ 
-		.erase		= erase_chip_jedec,
+		.erase		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 32} },
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {128 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			}
+		},
 		.write		= write_49f002,
 		.read		= read_memmapped,
 	},
@@ -3911,10 +3999,20 @@ struct flashchip flashchips[] = {
 		.model_id	= SST_39VF020,
 		.total_size	= 256,
 		.page_size	= 4096,
-		.tested		= TEST_OK_PREW,
+		.tested		= TEST_OK_PRW,
 		.probe		= probe_jedec,
 		.probe_timing	= 1,			/* 150 ns */ 
-		.erase		= erase_chip_jedec,
+		.erase		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 64} },
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {256 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			}
+		},
 		.write		= write_49f002,
 		.read		= read_memmapped,
 	},
@@ -3930,7 +4028,17 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PROBE,
 		.probe		= probe_jedec,
 		.probe_timing	= 1,			/* 150 ns */ 
-		.erase		= erase_chip_jedec,
+		.erase		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 128} },
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {512 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			}
+		},
 		.write		= write_49f002,
 		.read		= read_memmapped,
 	},
@@ -3946,7 +4054,20 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= 1,			/* 150 ns */ 
-		.erase		= erase_chip_jedec,
+		.erase		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 256} },
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {64 * 1024, 16} },
+				.block_erase = erase_block_jedec,
+			}, {
+				.eraseblocks = { {1024 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			}
+		},
 		.write		= write_49f002,
 		.read		= read_memmapped,
 	},
@@ -3960,10 +4081,23 @@ struct flashchip flashchips[] = {
 		.total_size	= 256,
 		.page_size	= 16 * 1024,
 		.feature_bits	= FEATURE_REGISTERMAP,
-		.tested		= TEST_OK_PREW,
+		.tested		= TEST_OK_PRW,
 		.probe		= probe_sst_fwhub,
 		.probe_timing	= 1,		/* 150 ns | routine is wrapper to probe_jedec (sst_fwhub.c) */
-		.erase		= erase_sst_fwhub,
+		.erase		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 64} },
+				.block_erase = erase_sst_fwhub_sector,
+			}, {
+				.eraseblocks = { {16 * 1024, 16} },
+				.block_erase = erase_sst_fwhub_block,
+			}, {
+				.eraseblocks = { {256 * 1024, 1} },
+				.block_erase = NULL, /* AA 55 80 AA 55 10, only in A/A mux mode */
+			}
+		},
 		.write		= write_sst_fwhub,
 		.read		= read_memmapped,
 	},
@@ -3980,7 +4114,20 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PR,
 		.probe		= probe_sst_fwhub,
 		.probe_timing	= 1,		/* 150 ns | routine is wrapper to probe_jedec (sst_fwhub.c) */
-		.erase		= erase_sst_fwhub,
+		.erase		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 96} },
+				.block_erase = erase_sst_fwhub_sector,
+			}, {
+				.eraseblocks = { {64 * 1024, 6} },
+				.block_erase = erase_sst_fwhub_block,
+			}, {
+				.eraseblocks = { {384 * 1024, 1} },
+				.block_erase = NULL, /* AA 55 80 AA 55 10, only in A/A mux mode */
+			}
+		},
 		.write		= write_sst_fwhub,
 		.read		= read_memmapped,
 	},
@@ -4011,7 +4158,7 @@ struct flashchip flashchips[] = {
 				.block_erase = erase_sst_fwhub_block, /* same as erase_block_jedec, but with unlock */
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = NULL, /* AA 55 80 AA 55 10, only in PP mode */
+				.block_erase = NULL, /* AA 55 80 AA 55 10, only in A/A mux mode */
 			},
 		},
 		.write		= write_sst_fwhub,
@@ -4029,7 +4176,22 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_49lfxxxc,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (sst49lfxxxc.c) */
-		.erase		= erase_49lfxxxc,
+		.erase		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 128} },
+				.block_erase = erase_sector_49lfxxxc,
+			}, {
+				.eraseblocks = { 
+					{64 * 1024, 7},
+					{32 * 1024, 1},
+					{8 * 1024, 2},
+					{16 * 1024, 1},
+				},
+				.block_erase = erase_block_49lfxxxc,
+			}
+		},
 		.write		= write_49lfxxxc,
 		.read		= read_memmapped,
 	},
@@ -4043,10 +4205,23 @@ struct flashchip flashchips[] = {
 		.total_size	= 1024,
 		.page_size	= 64 * 1024,
 		.feature_bits	= FEATURE_REGISTERMAP,
-		.tested		= TEST_OK_PREW,
+		.tested		= TEST_OK_PRW,
 		.probe		= probe_sst_fwhub,
 		.probe_timing	= 1,		/* 150 ns | routine is wrapper to probe_jedec (sst_fwhub.c) */
-		.erase		= erase_sst_fwhub,
+		.erase		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 256} },
+				.block_erase = erase_sst_fwhub_sector,
+			}, {
+				.eraseblocks = { {64 * 1024, 16} },
+				.block_erase = erase_sst_fwhub_block,
+			}, {
+				.eraseblocks = { {1024 * 1024, 1} },
+				.block_erase = NULL, /* AA 55 80 AA 55 10, only in A/A mux mode */
+			}
+		},
 		.write		= write_sst_fwhub,
 		.read		= read_memmapped,
 	},
@@ -4062,7 +4237,22 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_49lfxxxc,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (sst49lfxxxc.c) */
-		.erase		= erase_49lfxxxc,
+		.erase		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 256} },
+				.block_erase = erase_sector_49lfxxxc,
+			}, {
+				.eraseblocks = { 
+					{64 * 1024, 15},
+					{32 * 1024, 1},
+					{8 * 1024, 2},
+					{16 * 1024, 1},
+				},
+				.block_erase = erase_block_49lfxxxc,
+			}
+		},
 		.write		= write_49lfxxxc,
 		.read		= read_memmapped,
 	},
@@ -4075,10 +4265,25 @@ struct flashchip flashchips[] = {
 		.model_id	= SST_49LF016C,
 		.total_size	= 2048,
 		.page_size	= 4 * 1024,
-		.tested		= TEST_OK_PREW,
+		.tested		= TEST_OK_PRW,
 		.probe		= probe_49lfxxxc,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (sst49lfxxxc.c) */
-		.erase		= erase_49lfxxxc,
+		.erase		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 512} },
+				.block_erase = erase_sector_49lfxxxc,
+			}, {
+				.eraseblocks = { 
+					{64 * 1024, 31},
+					{32 * 1024, 1},
+					{8 * 1024, 2},
+					{16 * 1024, 1},
+				},
+				.block_erase = erase_block_49lfxxxc,
+			}
+		},
 		.write		= write_49lfxxxc,
 		.read		= read_memmapped,
 	},
@@ -4094,7 +4299,20 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PR,
 		.probe		= probe_jedec,
 		.probe_timing	= 1,			/* 150 ns */ 
-		.erase		= erase_49lf040,
+		.erase		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 64} },
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {16 * 1024, 16} },
+				.block_erase = erase_block_jedec,
+			}, {
+				.eraseblocks = { {256 * 1024, 1} },
+				.block_erase = NULL,
+			}
+		},
 		.write		= write_49lf040,
 		.read		= read_memmapped,
 	},
@@ -4107,10 +4325,23 @@ struct flashchip flashchips[] = {
 		.model_id	= SST_49LF020A,
 		.total_size	= 256,
 		.page_size	= 4 * 1024,
-		.tested		= TEST_OK_PREW,
+		.tested		= TEST_OK_PRW,
 		.probe		= probe_jedec,
 		.probe_timing	= 1,			/* 150 ns */ 
-		.erase		= erase_49lf040,
+		.erase		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 64} },
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {16 * 1024, 16} },
+				.block_erase = erase_block_jedec,
+			}, {
+				.eraseblocks = { {256 * 1024, 1} },
+				.block_erase = NULL,
+			}
+		},
 		.write		= write_49lf040,
 		.read		= read_memmapped,
 	},
@@ -4123,10 +4354,23 @@ struct flashchip flashchips[] = {
 		.model_id	= SST_49LF040,
 		.total_size	= 512,
 		.page_size	= 4096,
-		.tested		= TEST_OK_PREW,
+		.tested		= TEST_OK_PRW,
 		.probe		= probe_jedec,
 		.probe_timing	= 1,			/* 150 ns */ 
-		.erase		= erase_49lf040,
+		.erase		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 128} },
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {64 * 1024, 8} },
+				.block_erase = erase_block_jedec,
+			}, {
+				.eraseblocks = { {512 * 1024, 1} },
+				.block_erase = NULL,
+			}
+		},
 		.write		= write_49lf040,
 		.read		= read_memmapped,
 	},
@@ -4140,11 +4384,24 @@ struct flashchip flashchips[] = {
 		.total_size	= 512,
 		.page_size	= 64 * 1024,
 		.feature_bits	= FEATURE_REGISTERMAP,
-		.tested		= TEST_OK_PREW,
-		.probe		= probe_sst_fwhub,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_jedec,
 		.probe_timing	= 1,		/* 150ns | routine is wrapper to probe_jedec (sst_fwhub.c) */
-		.erase		= erase_sst_fwhub,
-		.write		= write_sst_fwhub,
+		.erase		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 128} },
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {64 * 1024, 8} },
+				.block_erase = erase_block_jedec,
+			}, {
+				.eraseblocks = { {512 * 1024, 1} },
+				.block_erase = NULL,
+			}
+		},
+		.write		= write_49lf040,
 		.read		= read_memmapped,
 	},
 
@@ -4156,10 +4413,23 @@ struct flashchip flashchips[] = {
  		.model_id	= SST_49LF080A,
 		.total_size	= 1024,
 		.page_size	= 4096,
-		.tested		= TEST_OK_PREW,
+		.tested		= TEST_OK_PRW,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_FIXME, 
-		.erase		= erase_49lf040,
+		.erase		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 256} },
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {64 * 1024, 16} },
+				.block_erase = erase_block_jedec,
+			}, {
+				.eraseblocks = { {1024 * 1024, 1} },
+				.block_erase = NULL,
+			}
+		},
 		.write		= write_49lf040,
 		.read		= read_memmapped,
 	},
@@ -4172,10 +4442,26 @@ struct flashchip flashchips[] = {
 		.model_id	= SST_49LF160C,
 		.total_size	= 2048,
 		.page_size	= 4 * 1024,
-		.tested		= TEST_OK_PREW,
+		.tested		= TEST_OK_PRW,
 		.probe		= probe_49lfxxxc,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (sst49lfxxxc.c) */
 		.erase		= erase_49lfxxxc,
+		.erase		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 512} },
+				.block_erase = erase_sector_49lfxxxc,
+			}, {
+				.eraseblocks = { 
+					{64 * 1024, 31},
+					{32 * 1024, 1},
+					{8 * 1024, 2},
+					{16 * 1024, 1},
+				},
+				.block_erase = erase_block_49lfxxxc,
+			}
+		},
 		.write		= write_49lfxxxc,
 		.read		= read_memmapped,
 	},
