@@ -104,7 +104,7 @@ CONFIG_PRINT_WIKI ?= no
 
 ifeq ($(CONFIG_INTERNAL), yes)
 FEATURE_CFLAGS += -D'INTERNAL_SUPPORT=1'
-PROGRAMMER_OBJS += chipset_enable.o board_enable.o cbtable.o it87spi.o ichspi.o sb600spi.o wbsio_spi.o
+PROGRAMMER_OBJS += chipset_enable.o board_enable.o cbtable.o dmi.o it87spi.o ichspi.o sb600spi.o wbsio_spi.o
 NEED_PCI := yes
 endif
 
