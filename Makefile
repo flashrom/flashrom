@@ -33,11 +33,11 @@ ifneq ($(OS_ARCH), SunOS)
 STRIP_ARGS = -s
 endif
 ifeq ($(OS_ARCH), Darwin)
-CFLAGS += -I/usr/local/include
-LDFLAGS += -framework IOKit -framework DirectIO -L/usr/local/lib
+CPPFLAGS += -I/opt/local/include -I/usr/local/include
+LDFLAGS += -framework IOKit -framework DirectIO -L/opt/local/lib -L/usr/local/lib
 endif
 ifeq ($(OS_ARCH), FreeBSD)
-CFLAGS += -I/usr/local/include
+CPPFLAGS += -I/usr/local/include
 LDFLAGS += -L/usr/local/lib
 endif
 
@@ -221,7 +221,7 @@ distclean: clean
 	rm -f .dependencies .features .libdeps
 
 dep:
-	@$(CC) $(CPPFLAGS) $(SVNDEF) -MM *.c > .dependencies
+	$(CC) $(CPPFLAGS) $(SVNDEF) -MM *.c > .dependencies
 
 strip: $(PROGRAM)
 	$(STRIP) $(STRIP_ARGS) $(PROGRAM)
@@ -230,7 +230,7 @@ compiler:
 	@printf "Checking for a C compiler... "
 	@$(shell ( echo "int main(int argc, char **argv)"; \
 		   echo "{ return 0; }"; ) > .test.c )
-	@$(CC) $(CFLAGS) $(LDFLAGS) .test.c -o .test >/dev/null &&	\
+	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .test.c -o .test >/dev/null &&	\
 		echo "found." || ( echo "not found."; \
 		rm -f .test.c .test; exit 1)
 	@rm -f .test.c .test
@@ -242,7 +242,7 @@ pciutils: compiler
 		   echo "struct pci_access *pacc;";	   \
 		   echo "int main(int argc, char **argv)"; \
 		   echo "{ pacc = pci_alloc(); return 0; }"; ) > .test.c )
-	@$(CC) -c $(CFLAGS) .test.c -o .test.o >/dev/null 2>&1 &&		\
+	@$(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o >/dev/null 2>&1 &&		\
 		echo "found." || ( echo "not found."; echo;			\
 		echo "Please install libpci headers (package pciutils-devel).";	\
 		echo "See README for more information."; echo;			\
@@ -251,7 +251,7 @@ pciutils: compiler
 	@$(shell ( echo "#include <pci/pci.h>";		   \
 		   echo "int main(int argc, char **argv)"; \
 		   echo "{ return 0; }"; ) > .test1.c )
-	@$(CC) $(CFLAGS) $(LDFLAGS) .test1.c -o .test1 -lpci $(LIBS) >/dev/null 2>&1 &&	\
+	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .test1.c -o .test1 -lpci $(LIBS) >/dev/null 2>&1 &&	\
 		echo "found." || ( echo "not found."; echo;				\
 		echo "Please install libpci (package pciutils).";			\
 		echo "See README for more information."; echo;				\
@@ -282,7 +282,7 @@ features: compiler
 		   echo "struct ftdi_context *ftdic = NULL;";	   \
 		   echo "int main(int argc, char **argv)"; \
 		   echo "{ return ftdi_init(ftdic); }"; ) > .featuretest.c )
-	@$(CC) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest $(FTDILIBS) $(LIBS) >/dev/null 2>&1 &&	\
+	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest $(FTDILIBS) $(LIBS) >/dev/null 2>&1 &&	\
 		( echo "found."; echo "FTDISUPPORT := yes" >> .features.tmp ) ||	\
 		( echo "not found."; echo "FTDISUPPORT := no" >> .features.tmp )
 	@$(DIFF) -q .features.tmp .features >/dev/null 2>&1 && rm .features.tmp || mv .features.tmp .features
