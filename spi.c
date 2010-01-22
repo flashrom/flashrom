@@ -335,6 +335,9 @@ int probe_spi_rdid4(struct flashchip *flash)
 #if BUSPIRATE_SPI_SUPPORT == 1
 	case SPI_CONTROLLER_BUSPIRATE:
 #endif
+#if DEDIPROG_SUPPORT == 1
+	case SPI_CONTROLLER_DEDIPROG:
+#endif
 		return probe_spi_rdid_generic(flash, 4);
 	default:
 		printf_debug("4b ID not supported on this SPI controller\n");

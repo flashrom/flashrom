@@ -145,8 +145,9 @@ int dediprog_set_spi_speed(uint16_t speed)
 
 int dediprog_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
-	/* Maximum read length is 4 bytes for now. */
-	return spi_read_chunked(flash, buf, start, len, 4);
+	msg_pspew("%s, start=0x%x, len=0x%x\n", __func__, start, len);
+	/* Chosen read length is 16 bytes for now. */
+	return spi_read_chunked(flash, buf, start, len, 16);
 }
 
 int dediprog_spi_send_command(unsigned int writecnt, unsigned int readcnt,
@@ -154,19 +155,22 @@ int dediprog_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 {
 	int ret;
 
+	msg_pspew("%s, writecnt=%i, readcnt=%i\n", __func__, writecnt, readcnt);
 	/* Paranoid, but I don't want to be blamed if anything explodes. */
-	if ((writecnt != 1) && (writecnt != 4))
+	if (writecnt > 5) {
 		msg_perr("Untested writecnt=%i, aborting.\n", writecnt);
-	if (readcnt > 4)
+		return 1;
+	}
+	/* 16 byte reads should work. */
+	if (readcnt > 16) {
 		msg_perr("Untested readcnt=%i, aborting.\n", readcnt);
-	if ((readcnt == 0) && (writecnt != 1))
-		msg_perr("Untested writecnt=%i, readcnt=%i combination, "
-			 "aborting.\n", writecnt, readcnt);
+		return 1;
+	}
 	
 	ret = usb_control_msg(dediprog_handle, 0x42, 0x1, 0xff, readcnt ? 0x1 : 0x0, (char *)writearr, writecnt, DEFAULT_TIMEOUT);
 	if (ret != writecnt) {
-		msg_perr("Command Send SPI failed, ret=%i, expected %i!\n",
-			 ret, writecnt);
+		msg_perr("Send SPI failed, expected %i, got %i %s!\n",
+			 writecnt, ret, usb_strerror());
 		return 1;
 	}
 	if (!readcnt)
@@ -174,8 +178,8 @@ int dediprog_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	memset(readarr, 0, readcnt);
 	ret = usb_control_msg(dediprog_handle, 0xc2, 0x01, 0xbb8, 0x0000, (char *)readarr, readcnt, DEFAULT_TIMEOUT);
 	if (ret != readcnt) {
-		msg_perr("Command Receive SPI failed, ret=%i, expected %i!\n",
-			 ret, readcnt);
+		msg_perr("Receive SPI failed, expected %i, got %i %s!\n",
+			 readcnt, ret, usb_strerror());
 		return 1;
 	}
 	return 0;
