@@ -221,7 +221,7 @@ distclean: clean
 	rm -f .dependencies .features .libdeps
 
 dep:
-	$(CC) $(CPPFLAGS) $(SVNDEF) -MM *.c > .dependencies
+	@$(CC) $(CPPFLAGS) $(SVNDEF) -MM *.c > .dependencies
 
 strip: $(PROGRAM)
 	$(STRIP) $(STRIP_ARGS) $(PROGRAM)
