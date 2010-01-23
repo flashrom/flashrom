@@ -406,6 +406,7 @@
 #define SST_29VF020		0x25
 #define SST_29SF040		0x13
 #define SST_29VF040		0x14
+#define SST_39SF512		0xB4
 #define SST_39SF010		0xB5
 #define SST_39SF020		0xB6	/* Same as 39SF020A */
 #define SST_39SF040		0xB7
