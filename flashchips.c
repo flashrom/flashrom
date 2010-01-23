@@ -3863,6 +3863,32 @@ struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "SST",
+		.name		= "SST39SF512",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= SST_ID,
+		.model_id	= SST_39SF512,
+		.total_size	= 64,
+		.page_size	= 4096,
+		.tested		= TEST_OK_PREW,
+		.probe		= probe_jedec,
+		.probe_timing	= 1,			/* 150 ns */
+		.erase		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 16} },
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {64 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			}
+		},
+		.write		= write_49f002,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "SST",
 		.name		= "SST39SF010A",
 		.bustype	= CHIP_BUSTYPE_PARALLEL,
 		.manufacture_id	= SST_ID,
