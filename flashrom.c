@@ -834,7 +834,7 @@ int read_flash(struct flashchip *flash, char *filename)
 		printf("Error: No filename specified.\n");
 		return 1;
 	}
-	if ((image = fopen(filename, "w")) == NULL) {
+	if ((image = fopen(filename, "wb")) == NULL) {
 		perror(filename);
 		exit(1);
 	}
@@ -1154,7 +1154,7 @@ int doit(struct flashchip *flash, int force, char *filename, int read_it, int wr
 				fprintf(stderr, "Continuing anyway.\n");
 			}
 		}
-		if ((image = fopen(filename, "r")) == NULL) {
+		if ((image = fopen(filename, "rb")) == NULL) {
 			perror(filename);
 			programmer_shutdown();
 			exit(1);
