@@ -105,7 +105,15 @@ fdtype sp_openserport(char *dev, unsigned int baud)
 {
 #ifdef _WIN32
 	HANDLE fd;
-	fd = CreateFile(dev, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+	char* dev2 = dev;
+	if ((strlen(dev) > 3) && (tolower(dev[0])=='c') && (tolower(dev[1])=='o') && (tolower(dev[2])=='m')) {
+		dev2 = malloc(strlen(dev)+5);
+		strcpy(dev2, "\\\\.\\");
+		strcpy(dev2+4, dev);
+	}
+	fd = CreateFile(dev2, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+	if (dev2 != dev)
+		free(dev2);
 	if (fd == INVALID_HANDLE_VALUE) {
 		sp_die("Error: cannot open serial port");
 	}
