@@ -79,8 +79,8 @@ void dmi_init(void)
 			printf_debug("DMI pipe open error\n");
 			goto out_free;
 		}
-		fgets(answerbuf, DMI_MAX_ANSWER_LEN, dmidecode_pipe);
-		if (ferror(dmidecode_pipe))
+		if (!fgets(answerbuf, DMI_MAX_ANSWER_LEN, dmidecode_pipe) &&
+		    ferror(dmidecode_pipe))
 		{
 			printf_debug("DMI pipe read error\n");
 			pclose(dmidecode_pipe);
