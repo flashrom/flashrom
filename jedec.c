@@ -27,6 +27,7 @@
 #define MAX_REFLASH_TRIES 0x10
 #define MASK_FULL 0xffff
 #define MASK_2AA 0x7ff
+#define MASK_AAA 0xfff
 
 /* Check one byte for odd parity */
 uint8_t oddparity(uint8_t val)
@@ -98,8 +99,7 @@ void start_program_jedec_common(struct flashchip *flash, unsigned int mask)
 	chip_writeb(0xA0, bios + (0x5555 & mask));
 }
 
-int probe_jedec_common(struct flashchip *flash,
-			unsigned int mask, int long_reset)
+int probe_jedec_common(struct flashchip *flash, unsigned int mask)
 {
 	chipaddr bios = flash->virtual_memory;
 	uint8_t id1, id2;
@@ -152,7 +152,7 @@ int probe_jedec_common(struct flashchip *flash,
 	}
 
 	/* Issue JEDEC Product ID Exit command */
-	if (long_reset)
+	if ((flash->feature_bits & FEATURE_SHORT_RESET) == FEATURE_LONG_RESET)
 	{
 		chip_writeb(0xAA, bios + (0x5555 & mask));
 		if (probe_timing_exit)
@@ -379,6 +379,12 @@ int getaddrmask(struct flashchip *flash)
 	case FEATURE_ADDR_FULL:
 		return MASK_FULL;
 		break;
+	case FEATURE_ADDR_2AA:
+		return MASK_2AA;
+		break;
+	case FEATURE_ADDR_AAA:
+		return MASK_AAA;
+		break;
 	default:
 		fprintf(stderr, "%s called with unknown mask\n", __func__);
 		return 0;
@@ -388,9 +394,12 @@ int getaddrmask(struct flashchip *flash)
 
 int write_jedec(struct flashchip *flash, uint8_t *buf)
 {
+	int mask;
 	int i, failed = 0;
 	int total_size = flash->total_size * 1024;
 	int page_size = flash->page_size;
+
+	mask = getaddrmask(flash);
 
 	if (erase_chip_jedec(flash)) {
 		fprintf(stderr,"ERASE FAILED!\n");
@@ -401,7 +410,7 @@ int write_jedec(struct flashchip *flash, uint8_t *buf)
 	for (i = 0; i < total_size / page_size; i++) {
 		printf("%04d at address: 0x%08x", i, i * page_size);
 		if (write_page_write_jedec_common(flash, buf + i * page_size,
-					   i * page_size, page_size, MASK_FULL))
+					   i * page_size, page_size, mask))
 			failed = 1;
 		printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
 	}
@@ -415,6 +424,9 @@ int write_jedec_1(struct flashchip *flash, uint8_t * buf)
 	int i;
 	chipaddr bios = flash->virtual_memory;
 	chipaddr dst = bios;
+	int mask;
+
+	mask = getaddrmask(flash);
 
 	programmer_delay(10);
 	if (erase_flash(flash)) {
@@ -427,7 +439,7 @@ int write_jedec_1(struct flashchip *flash, uint8_t * buf)
 		if ((i & 0x3) == 0)
 			printf("address: 0x%08lx", (unsigned long)i * 1024);
 
-                write_sector_jedec_common(flash, buf + i * 1024, dst + i * 1024, 1024, MASK_FULL);
+                write_sector_jedec_common(flash, buf + i * 1024, dst + i * 1024, 1024, mask);
 
 		if ((i & 0x3) == 0)
 			printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
@@ -441,12 +453,15 @@ int write_jedec_1(struct flashchip *flash, uint8_t * buf)
 int erase_chip_block_jedec(struct flashchip *flash, unsigned int addr,
 			   unsigned int blocksize)
 {
+	int mask;
+
+	mask = getaddrmask(flash);
 	if ((addr != 0) || (blocksize != flash->total_size * 1024)) {
 		fprintf(stderr, "%s called with incorrect arguments\n",
 			__func__);
 		return -1;
 	}
-	return erase_chip_jedec_common(flash, MASK_FULL);
+	return erase_chip_jedec_common(flash, mask);
 }
 
 int probe_jedec(struct flashchip *flash)
@@ -454,20 +469,29 @@ int probe_jedec(struct flashchip *flash)
 	int mask;
 
 	mask = getaddrmask(flash);
-	return probe_jedec_common(flash, mask, 1);
+	return probe_jedec_common(flash, mask);
 }
 
 int erase_sector_jedec(struct flashchip *flash, unsigned int page, unsigned int size)
 {
-	return erase_sector_jedec_common(flash, page, size, MASK_FULL);
+	int mask;
+
+	mask = getaddrmask(flash);
+	return erase_sector_jedec_common(flash, page, size, mask);
 }
 
 int erase_block_jedec(struct flashchip *flash, unsigned int page, unsigned int size)
 {
-	return erase_block_jedec_common(flash, page, size, MASK_FULL);
+	int mask;
+
+	mask = getaddrmask(flash);
+	return erase_block_jedec_common(flash, page, size, mask);
 }
 
 int erase_chip_jedec(struct flashchip *flash)
 {
-	return erase_chip_jedec_common(flash, MASK_FULL);
+	int mask;
+
+	mask = getaddrmask(flash);
+	return erase_chip_jedec_common(flash, mask);
 }
