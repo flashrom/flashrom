@@ -1208,6 +1208,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x1106, 0x3177, 0x1106, 0x3177,  0x1106, 0x3059, 0x1695, 0x3005, NULL,          NULL,         NULL,          "EPoX",        "EP-8K5A2",              0,   w836xx_memw_enable_2e},
 	{0x10EC, 0x8139, 0x1695, 0x9001,  0x11C1, 0x5811, 0x1695, 0x9015, NULL,          NULL,         NULL,          "EPoX",        "EP-8RDA3+",             0,   nvidia_mcp_gpio31_raise},
 	{0x8086, 0x7110,      0,      0,  0x8086, 0x7190,      0,      0, NULL,          "epox",       "ep-bx3",      "EPoX",        "EP-BX3",                0,   board_epox_ep_bx3},
+	{0x1106, 0x0686, 0x1106, 0x0686,  0x1106, 0x3058, 0x1458, 0xa000, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-7ZM",                512, NULL},
 	{0x1039, 0x0761,      0,      0,  0x10EC, 0x8168,      0,      0, NULL,          "gigabyte",   "2761gxdk",    "GIGABYTE",    "GA-2761GXDK",           0,   it87xx_probe_spi_flash},
 	{0x1106, 0x3227, 0x1458, 0x5001,  0x10ec, 0x8139, 0x1458, 0xe000, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-7VT600",             0,   it8705f_write_enable_2e},
 	{0x10DE, 0x0050, 0x1458, 0x0C11,  0x10DE, 0x005e, 0x1458, 0x5000, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-K8N-SLI",            0,   nvidia_mcp_gpio21_raise},
@@ -1359,14 +1360,17 @@ int board_flash_enable(const char *vendor, const char *part)
 			max_rom_decode.parallel =
 				board->max_rom_decode_parallel * 1024;
 
-		printf("Disabling flash write protection for board \"%s %s\"... ",
-		       board->vendor_name, board->board_name);
+		if (board->enable != NULL) {
+			printf("Disabling flash write protection for "
+			       "board \"%s %s\"... ", board->vendor_name,
+			       board->board_name);
 
-		ret = board->enable(board->vendor_name);
-		if (ret)
-			printf("FAILED!\n");
-		else
-			printf("OK.\n");
+			ret = board->enable(board->vendor_name);
+			if (ret)
+				printf("FAILED!\n");
+			else
+				printf("OK.\n");
+		}
 	}
 
 	return ret;
