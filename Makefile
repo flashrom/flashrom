@@ -42,8 +42,7 @@ LDFLAGS += -L/usr/local/lib
 endif
 
 CHIP_OBJS = jedec.o stm50flw0x0x.o w39v080fa.o sharplhf00l04.o w29ee011.o \
-	sst28sf040.o am29f040b.o mx29f002.o m29f400bt.o pm29f002.o w39v040c.o \
-	w49f002u.o 82802ab.o pm49fl00x.o sst49lf040.o en29f002a.o m29f002.o \
+	sst28sf040.o m29f400bt.o 82802ab.o pm49fl00x.o \
 	sst49lfxxxc.o sst_fwhub.o flashchips.o spi.o
 
 LIB_OBJS = layout.o
