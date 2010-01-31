@@ -167,6 +167,7 @@ const struct board_info_url boards_url[] = {
 	{ "RCA",		"RM4100",		"http://www.settoplinux.org/index.php?title=RCA_RM4100" },
 	{ "Sun",		"Blade x6250",		"http://www.sun.com/servers/blades/x6250/" },
 	{ "Supermicro",		"H8QC8",		"http://www.supermicro.com/Aplus/motherboard/Opteron/nforce/H8QC8.cfm" },
+	{ "Tekram",		"P6Pro-A5",		"http://www.motherboard.cz/mb/tekram/P6Pro-A5.htm" },
 	{ "Thomson",		"IP1000",		"http://www.settoplinux.org/index.php?title=Thomson_IP1000" },
 	{ "TriGem",		"Lomita",		"http://www.e4allupgraders.info/dir1/motherboards/socket370/lomita.shtml" },
 	{ "T-Online",		"S-100",		"http://wiki.freifunk-hannover.de/T-Online_S_100" },
