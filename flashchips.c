@@ -5050,6 +5050,30 @@ struct flashchip flashchips[] = {
 		.read		= read_memmapped,
 	},
 
+        {
+                .vendor         = "ST",
+                .name           = "M29W512B",
+                .bustype        = CHIP_BUSTYPE_PARALLEL,
+                .manufacture_id = ST_ID,
+                .model_id       = ST_M29W512B,
+                .total_size     = 64,
+                .page_size      = 64 * 1024,
+                .feature_bits   = FEATURE_ADDR_2AA | FEATURE_EITHER_RESET,
+                .tested         = TEST_OK_PREW,
+                .probe          = probe_jedec,
+                .probe_timing   = TIMING_ZERO,
+                .erase          = NULL,
+                .block_erasers  =
+                {
+                        {
+                                .eraseblocks = { {64 * 1024, 1} },
+                                .block_erase = erase_chip_block_jedec,
+                        }
+                },
+                .write          = write_jedec_1,
+                .read           = read_memmapped,
+        },
+
 	{
 		.vendor		= "ST",
 		.name		= "M50FLW040A",
