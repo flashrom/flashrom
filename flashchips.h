@@ -473,6 +473,7 @@
 #define ST_M29F800DT		0xEC
 #define ST_M29W010B		0x23
 #define ST_M29W040B		0xE3
+#define ST_M29W512B		0x27
 
 #define SYNCMOS_ID		0x40	/* SyncMOS and Mosel Vitelic */
 #define S29C51001T		0x01
