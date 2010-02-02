@@ -3,6 +3,7 @@
  *
  * Copyright (C) 2009 Peter Stuge <peter@stuge.se>
  * Copyright (C) 2009 coresystems GmbH
+ * Copyright (C) 2010 Carl-Daniel Hailfinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,6 +37,10 @@ void *sys_physmap(unsigned long phys_addr, size_t len)
 	return map_physical(phys_addr, len);
 }
 
+/* The OS X driver does not differentiate between mapping types. */
+#define sys_physmap_rw_uncached	sys_physmap
+#define sys_physmap_ro_cached	sys_physmap
+
 void physunmap(void *virt_addr, size_t len)
 {
 	unmap_physical(virt_addr, len);
@@ -51,8 +56,10 @@ void physunmap(void *virt_addr, size_t len)
 #endif
 
 static int fd_mem = -1;
+static int fd_mem_cached = -1;
 
-void *sys_physmap(unsigned long phys_addr, size_t len)
+/* For MMIO access. Must be uncached, doesn't make sense to restrict to ro. */
+void *sys_physmap_rw_uncached(unsigned long phys_addr, size_t len)
 {
 	void *virt_addr;
 
@@ -69,6 +76,26 @@ void *sys_physmap(unsigned long phys_addr, size_t len)
 	return MAP_FAILED == virt_addr ? NULL : virt_addr;
 }
 
+/* For reading DMI/coreboot/whatever tables. We should never write, and we
+ * do not care about caching.
+ */
+void *sys_physmap_ro_cached(unsigned long phys_addr, size_t len)
+{
+	void *virt_addr;
+
+	if (-1 == fd_mem_cached) {
+		/* Open the memory device CACHED. */
+		if (-1 == (fd_mem_cached = open(MEM_DEV, O_RDWR))) {
+			perror("Critical error: open(" MEM_DEV ")");
+			exit(2);
+		}
+	}
+
+	virt_addr = mmap(0, len, PROT_READ, MAP_SHARED,
+			 fd_mem_cached, (off_t)phys_addr);
+	return MAP_FAILED == virt_addr ? NULL : virt_addr;
+}
+
 void physunmap(void *virt_addr, size_t len)
 {
 	if (len == 0) {
@@ -80,7 +107,12 @@ void physunmap(void *virt_addr, size_t len)
 }
 #endif
 
-void *physmap(const char *descr, unsigned long phys_addr, size_t len)
+#define PHYSMAP_NOFAIL	0
+#define PHYSMAP_MAYFAIL	1
+#define PHYSMAP_RW	0
+#define PHYSMAP_RO	1
+
+void *physmap_common(const char *descr, unsigned long phys_addr, size_t len, int mayfail, int readonly)
 {
 	void *virt_addr;
 
@@ -100,7 +132,11 @@ void *physmap(const char *descr, unsigned long phys_addr, size_t len)
 			descr, (unsigned long)len, phys_addr);
 	}
 
-	virt_addr = sys_physmap(phys_addr, len);
+	if (readonly) {
+		virt_addr = sys_physmap_ro_cached(phys_addr, len);
+	} else {
+		virt_addr = sys_physmap_rw_uncached(phys_addr, len);
+	}
 
 	if (NULL == virt_addr) {
 		if (NULL == descr)
@@ -114,10 +150,21 @@ void *physmap(const char *descr, unsigned long phys_addr, size_t len)
 			fprintf(stderr, "You can override CONFIG_X86_PAT at boot with the nopat kernel parameter but\n");
 			fprintf(stderr, "disabling the other option unfortunately requires a kernel recompile. Sorry!\n");
 		}
-		exit(3);
+		if (!mayfail)
+			exit(3);
 	}
 
 	return virt_addr;
+}
+
+void *physmap(const char *descr, unsigned long phys_addr, size_t len)
+{
+	return physmap_common(descr, phys_addr, len, PHYSMAP_NOFAIL, PHYSMAP_RW);
+}
+
+void *physmap_try_ro(const char *descr, unsigned long phys_addr, size_t len)
+{
+	return physmap_common(descr, phys_addr, len, PHYSMAP_MAYFAIL, PHYSMAP_RO);
 }
 
 #ifdef __linux__
