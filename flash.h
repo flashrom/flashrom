@@ -343,6 +343,7 @@ int chipset_flash_enable(void);
 
 /* physmap.c */
 void *physmap(const char *descr, unsigned long phys_addr, size_t len);
+void *physmap_try_ro(const char *descr, unsigned long phys_addr, size_t len);
 void physunmap(void *virt_addr, size_t len);
 int setup_cpu_msr(int cpu);
 void cleanup_cpu_msr(void);

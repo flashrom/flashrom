@@ -6,6 +6,7 @@
  * (Written by Eric Biederman <ebiederman@lnxi.com> for Linux Networx)
  * Copyright (C) 2006-2009 coresystems GmbH
  * (Written by Stefan Reinauer <stepan@coresystems.de> for coresystems GmbH)
+ * Copyright (C) 2010 Carl-Daniel Hailfinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -207,11 +208,15 @@ int coreboot_init(void)
 #else
 	start = 0x0;
 #endif
-	table_area = physmap("low megabyte", start, BYTES_TO_MAP);
+	table_area = physmap_try_ro("low megabyte", start, BYTES_TO_MAP - start);
+	if (!table_area) {
+		msg_perr("Failed getting access to coreboot low tables.\n");
+		return -1;
+	}
 
 	lb_table = find_lb_table(table_area, 0x00000, 0x1000);
 	if (!lb_table)
-		lb_table = find_lb_table(table_area, 0xf0000, BYTES_TO_MAP);
+		lb_table = find_lb_table(table_area, 0xf0000 - start, BYTES_TO_MAP - start);
 	if (lb_table) {
 		struct lb_forward *forward = (struct lb_forward *)
 			(((char *)lb_table) + lb_table->header_bytes);
@@ -219,7 +224,12 @@ int coreboot_init(void)
 			start = forward->forward;
 			start &= ~(getpagesize() - 1);
 			physunmap(table_area, BYTES_TO_MAP);
-			table_area = physmap("high tables", start, BYTES_TO_MAP);
+			table_area = physmap_try_ro("high tables", start, BYTES_TO_MAP);
+			if (!table_area) {
+				msg_perr("Failed getting access to coreboot "
+					 "high tables.\n");
+				return -1;
+			}
 			lb_table = find_lb_table(table_area, 0x00000, 0x1000);
 		}
 	}
