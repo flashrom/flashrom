@@ -1235,7 +1235,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x10DE, 0x0050, 0x1297, 0x5036,  0x1412, 0x1724, 0x1297, 0x5036, NULL,          NULL,         NULL,          "Shuttle",     "FN25",                  0,   board_shuttle_fn25},
 	{0x1106, 0x3038, 0x0925, 0x1234,  0x1106, 0x3058, 0x15DD, 0x7609, NULL,          NULL,         NULL,          "Soyo",        "SY-7VCA",               0,   board_soyo_sy_7vca},
 	{0x8086, 0x1076, 0x8086, 0x1176,  0x1106, 0x3059, 0x10f1, 0x2498, NULL,          NULL,         NULL,          "Tyan",        "S2498 (Tomcat K7M)",    0,   w836xx_memw_enable_2e},
-	{0x1106, 0x3038, 0x0925, 0x1234,       0,      0,      0,      0, NULL,          NULL,         NULL,          "Tekram",      "P6Pro-A5",              256, NULL},
+	{0x1106, 0x3038, 0x0925, 0x1234,  0x1106, 0x0596, 0x1106,      0, NULL,          NULL,         NULL,          "Tekram",      "P6Pro-A5",              256, NULL},
 	{0x1106, 0x3177, 0x1106, 0xAA01,  0x1106, 0x3123, 0x1106, 0xAA01, NULL,          NULL,         NULL,          "VIA",         "EPIA M/MII/...",        0,   via_vt823x_gpio15_raise},
 	{0x1106, 0x0259, 0x1106, 0x3227,  0x1106, 0x3065, 0x1106, 0x3149, NULL,          NULL,         NULL,          "VIA",         "EPIA-N/NL",             0,   via_vt823x_gpio9_raise},
 	{0x1106, 0x5337, 0x1458, 0xb003,  0x1106, 0x287e, 0x1106, 0x337e, NULL,          NULL,         NULL,          "VIA",         "PC3500G",               0,   it87xx_probe_spi_flash},
