@@ -1305,7 +1305,8 @@ static struct board_pciid_enable *board_match_pci_card_ids(void)
 	struct board_pciid_enable *board = board_pciid_enables;
 
 	for (; board->vendor_name; board++) {
-		if (!board->first_card_vendor || !board->first_card_device)
+		if ((!board->first_card_vendor || !board->first_card_device) &&
+		      !board->dmi_pattern)
 			continue;
 
 		if (!pci_card_find(board->first_vendor, board->first_device,
