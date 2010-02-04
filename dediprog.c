@@ -294,6 +294,8 @@ int dediprog_init(void)
 		 dev->descriptor.idVendor,
 		 dev->descriptor.idProduct);
 	dediprog_handle = usb_open(dev);
+	usb_set_configuration(dediprog_handle, 1);
+	usb_claim_interface(dediprog_handle, 0);
 	/* URB 6. Command A. */
 	if (dediprog_command_a())
 		return 1;
