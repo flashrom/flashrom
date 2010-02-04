@@ -1160,9 +1160,10 @@ static int board_asus_a7v600x(const char *name)
  * subsystem/card IDs in a sane manner.
  *
  * Keep the second set NULLed if it should be ignored. Keep the subsystem IDs
- * NULLed if they don't identify the board fully. But please take care to
- * provide an as complete set of pci ids as possible; autodetection is the
- * preferred behaviour and we would like to make sure that matches are unique.
+ * NULLed if they don't identify the board fully and if you can't use DMI.
+ * But please take care to provide an as complete set of pci ids as possible;
+ * autodetection is the preferred behaviour and we would like to make sure that
+ * matches are unique.
  *
  * If PCI IDs are not sufficient for board matching, the match can be further
  * constrained by a string that has to be present in the DMI database for
@@ -1170,6 +1171,11 @@ static int board_asus_a7v600x(const char *name)
  * substring match, unless it is anchored to the beginning (with a ^ in front)
  * or the end (with a $ at the end). Both anchors may be specified at the
  * same time to match the full field.
+ *
+ * When a board is matched through DMI, the first and second main PCI IDs
+ * and the first subsystem PCI ID have to match as well. If you specify the
+ * first subsystem ID as 0x0:0x0, the DMI matching code expects that the
+ * subsystem ID of that device is indeed zero.
  *
  * The coreboot ids are used two fold. When running with a coreboot firmware,
  * the ids uniquely matches the coreboot board identification string. When a
