@@ -191,7 +191,6 @@ struct flashchip {
 
 	/* Delay after "enter/exit ID mode" commands in microseconds. */
 	int probe_timing;
-	int (*erase) (struct flashchip *flash);
 
 	/*
 	 * Erase blocks and associated erase function. Any chip erase function
