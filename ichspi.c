@@ -5,6 +5,7 @@
  * Copyright (C) 2008 Claus Gindhart <claus.gindhart@kontron.com>
  * Copyright (C) 2008 Dominik Geyer <dominik.geyer@kontron.com>
  * Copyright (C) 2008 coresystems GmbH <info@coresystems.de>
+ * Copyright (C) 2009 Carl-Daniel Hailfinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -116,7 +117,7 @@ typedef struct _OPCODE {
 	uint8_t atomic;		//Use preop: (0: none, 1: preop0, 2: preop1
 } OPCODE;
 
-/* Opcode definition:
+/* Suggested opcode definition:
  * Preop 1: Write Enable
  * Preop 2: Write Status register enable
  *
@@ -126,7 +127,7 @@ typedef struct _OPCODE {
  * OP 3: Read Status register
  * OP 4: Read ID
  * OP 5: Write Status register
- * OP 6: chip private (read JDEC id)
+ * OP 6: chip private (read JEDEC id)
  * OP 7: Chip erase
  */
 typedef struct _OPCODES {
@@ -167,6 +168,7 @@ struct preop_opcode_pair {
 	uint8_t opcode;
 };
 
+/* List of opcodes which need preopcodes and matching preopcodes. Unused. */
 struct preop_opcode_pair pops[] = {
 	{JEDEC_WREN, JEDEC_BYTE_PROGRAM},
 	{JEDEC_WREN, JEDEC_SE}, /* sector erase */
@@ -174,24 +176,30 @@ struct preop_opcode_pair pops[] = {
 	{JEDEC_WREN, JEDEC_BE_D8}, /* block erase */
 	{JEDEC_WREN, JEDEC_CE_60}, /* chip erase */
 	{JEDEC_WREN, JEDEC_CE_C7}, /* chip erase */
+	 /* FIXME: WRSR requires either EWSR or WREN depending on chip type. */
+	{JEDEC_WREN, JEDEC_WRSR},
 	{JEDEC_EWSR, JEDEC_WRSR},
 	{0,}
 };
 
+/* Reasonable default configuration. Needs ad-hoc modifications if we
+ * encounter unlisted opcodes. Fun.
+ */
 OPCODES O_ST_M25P = {
 	{
 	 JEDEC_WREN,
-	 0},
+	 JEDEC_EWSR,
+	},
 	{
-	 {JEDEC_BYTE_PROGRAM, SPI_OPCODE_TYPE_WRITE_WITH_ADDRESS, 1},	// Write Byte
+	 {JEDEC_BYTE_PROGRAM, SPI_OPCODE_TYPE_WRITE_WITH_ADDRESS, 0},	// Write Byte
 	 {JEDEC_READ, SPI_OPCODE_TYPE_READ_WITH_ADDRESS, 0},	// Read Data
-	 {JEDEC_BE_D8, SPI_OPCODE_TYPE_WRITE_WITH_ADDRESS, 1},	// Erase Sector
+	 {JEDEC_BE_D8, SPI_OPCODE_TYPE_WRITE_WITH_ADDRESS, 0},	// Erase Sector
 	 {JEDEC_RDSR, SPI_OPCODE_TYPE_READ_NO_ADDRESS, 0},	// Read Device Status Reg
 	 {JEDEC_REMS, SPI_OPCODE_TYPE_READ_WITH_ADDRESS, 0},	// Read Electronic Manufacturer Signature
-	 {JEDEC_WRSR, SPI_OPCODE_TYPE_WRITE_NO_ADDRESS, 1},	// Write Status Register
+	 {JEDEC_WRSR, SPI_OPCODE_TYPE_WRITE_NO_ADDRESS, 0},	// Write Status Register
 	 {JEDEC_RDID, SPI_OPCODE_TYPE_READ_NO_ADDRESS, 0},	// Read JDEC ID
-	 {JEDEC_CE_C7, SPI_OPCODE_TYPE_WRITE_NO_ADDRESS, 1},	// Bulk erase
-	 }
+	 {JEDEC_CE_C7, SPI_OPCODE_TYPE_WRITE_NO_ADDRESS, 0},	// Bulk erase
+	}
 };
 
 OPCODES O_EXISTING = {};
@@ -220,9 +228,10 @@ static int find_preop(OPCODES *op, uint8_t preop)
 	return -1;
 }
 
+/* Create a struct OPCODES based on what we find in the locked down chipset. */
 static int generate_opcodes(OPCODES * op)
 {
-	int a, b, i;
+	int a;
 	uint16_t preop, optype;
 	uint32_t opmenu[2];
 
@@ -268,16 +277,9 @@ static int generate_opcodes(OPCODES * op)
 		opmenu[1] >>= 8;
 	}
 
-	/* atomic (link opcode with required pre-op) */
-	for (a = 4; a < 8; a++)
+	/* No preopcodes used by default. */
+	for (a = 0; a < 8; a++)
 		op->opcode[a].atomic = 0;
-
-	for (i = 0; pops[i].opcode; i++) {
-		a = find_opcode(op, pops[i].opcode);
-		b = find_preop(op, pops[i].preop);
-		if ((a != -1) && (b != -1))
-			op->opcode[a].atomic = (uint8_t) ++b;
-	}
 
 	return 0;
 }
@@ -442,14 +444,15 @@ static int ich7_run_opcode(OPCODE op, uint32_t offset,
 	temp16 |= ((uint16_t) (opcode_index & 0x07)) << 4;
 
 	/* Handle Atomic */
-	if (op.atomic != 0) {
-		/* Select atomic command */
+	switch (op.atomic) {
+	case 2:
+		/* Select second preop. */
+		temp16 |= SPIC_SPOP;
+		/* And fall through. */
+	case 1:
+		/* Atomic command (preop+op) */
 		temp16 |= SPIC_ACS;
-		/* Select prefix opcode */
-		if ((op.atomic - 1) == 1) {
-			/*Select prefix opcode 2 */
-			temp16 |= SPIC_SPOP;
-		}
+		break;
 	}
 
 	/* Start */
@@ -559,14 +562,15 @@ static int ich9_run_opcode(OPCODE op, uint32_t offset,
 	temp32 |= ((uint32_t) (opcode_index & 0x07)) << (8 + 4);
 
 	/* Handle Atomic */
-	if (op.atomic != 0) {
-		/* Select atomic command */
+	switch (op.atomic) {
+	case 2:
+		/* Select second preop. */
+		temp32 |= SSFC_SPOP;
+		/* And fall through. */
+	case 1:
+		/* Atomic command (preop+op) */
 		temp32 |= SSFC_ACS;
-		/* Selct prefix opcode */
-		if ((op.atomic - 1) == 1) {
-			/*Select prefix opcode 2 */
-			temp32 |= SSFC_SPOP;
-		}
+		break;
 	}
 
 	/* Start */
@@ -609,16 +613,28 @@ static int run_opcode(OPCODE op, uint32_t offset,
 {
 	switch (spi_controller) {
 	case SPI_CONTROLLER_VIA:
-		if (datalength > 16)
+		if (datalength > 16) {
+			fprintf(stderr, "%s: Internal command size error for "
+				"opcode 0x%02x, got datalength=%i, want <=16\n",
+				__func__, op.opcode, datalength);
 			return SPI_INVALID_LENGTH;
+		}
 		return ich7_run_opcode(op, offset, datalength, data, 16);
 	case SPI_CONTROLLER_ICH7:
-		if (datalength > 64)
+		if (datalength > 64) {
+			fprintf(stderr, "%s: Internal command size error for "
+				"opcode 0x%02x, got datalength=%i, want <=16\n",
+				__func__, op.opcode, datalength);
 			return SPI_INVALID_LENGTH;
+		}
 		return ich7_run_opcode(op, offset, datalength, data, 64);
 	case SPI_CONTROLLER_ICH9:
-		if (datalength > 64)
+		if (datalength > 64) {
+			fprintf(stderr, "%s: Internal command size error for "
+				"opcode 0x%02x, got datalength=%i, want <=16\n",
+				__func__, op.opcode, datalength);
 			return SPI_INVALID_LENGTH;
+		}
 		return ich9_run_opcode(op, offset, datalength, data);
 	default:
 		printf_debug("%s: unsupported chipset\n", __func__);
@@ -697,7 +713,6 @@ int ich_spi_write_256(struct flashchip *flash, uint8_t * buf)
 int ich_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		    const unsigned char *writearr, unsigned char *readarr)
 {
-	int a;
 	int result;
 	int opcode_index = -1;
 	const unsigned char cmd = *writearr;
@@ -707,20 +722,53 @@ int ich_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	int count;
 
 	/* find cmd in opcodes-table */
-	for (a = 0; a < 8; a++) {
-		if ((curopcodes->opcode[a]).opcode == cmd) {
-			opcode_index = a;
-			break;
-		}
-	}
-
-	/* unknown / not programmed command */
+	opcode_index = find_opcode(curopcodes, cmd);
 	if (opcode_index == -1) {
+		/* FIXME: Reprogram opcodes if possible. Autodetect type of
+		 * opcode by checking readcnt/writecnt.
+		 */
 		printf_debug("Invalid OPCODE 0x%02x\n", cmd);
 		return SPI_INVALID_OPCODE;
 	}
 
 	opcode = &(curopcodes->opcode[opcode_index]);
+
+	/* The following valid writecnt/readcnt combinations exist:
+	 * writecnt  = 4, readcnt >= 0
+	 * writecnt  = 1, readcnt >= 0
+	 * writecnt >= 4, readcnt  = 0
+	 * writecnt >= 1, readcnt  = 0
+	 * writecnt >= 1 is guaranteed for all commands.
+	 */
+	if ((opcode->spi_type == SPI_OPCODE_TYPE_READ_WITH_ADDRESS) &&
+	    (writecnt != 4)) {
+		fprintf(stderr, "%s: Internal command size error for opcode "
+			"0x%02x, got writecnt=%i, want =4\n", __func__, cmd,
+			writecnt);
+		return SPI_INVALID_LENGTH;
+	}
+	if ((opcode->spi_type == SPI_OPCODE_TYPE_READ_NO_ADDRESS) &&
+	    (writecnt != 1)) {
+		fprintf(stderr, "%s: Internal command size error for opcode "
+			"0x%02x, got writecnt=%i, want =1\n", __func__, cmd,
+			writecnt);
+		return SPI_INVALID_LENGTH;
+	}
+	if ((opcode->spi_type == SPI_OPCODE_TYPE_WRITE_WITH_ADDRESS) &&
+	    (writecnt < 4)) {
+		fprintf(stderr, "%s: Internal command size error for opcode "
+			"0x%02x, got writecnt=%i, want >=4\n", __func__, cmd,
+			writecnt);
+		return SPI_INVALID_LENGTH;
+	}
+	if (((opcode->spi_type == SPI_OPCODE_TYPE_WRITE_WITH_ADDRESS) ||
+	     (opcode->spi_type == SPI_OPCODE_TYPE_WRITE_NO_ADDRESS)) &&
+	    (readcnt)) {
+		fprintf(stderr, "%s: Internal command size error for opcode "
+			"0x%02x, got readcnt=%i, want =0\n", __func__, cmd,
+			readcnt);
+		return SPI_INVALID_LENGTH;
+	}
 
 	/* if opcode-type requires an address */
 	if (opcode->spi_type == SPI_OPCODE_TYPE_READ_WITH_ADDRESS ||
@@ -752,23 +800,69 @@ int ich_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 int ich_spi_send_multicommand(struct spi_command *cmds)
 {
 	int ret = 0;
+	int i;
 	int oppos, preoppos;
 	for (; (cmds->writecnt || cmds->readcnt) && !ret; cmds++) {
-		/* Is the next command valid or a terminator? */
 		if ((cmds + 1)->writecnt || (cmds + 1)->readcnt) {
+			/* Next command is valid. */
 			preoppos = find_preop(curopcodes, cmds->writearr[0]);
 			oppos = find_opcode(curopcodes, (cmds + 1)->writearr[0]);
-			/* Is the opcode of the current command listed in the
-			 * ICH struct OPCODES as associated preopcode for the
-			 * opcode of the next command?
-			 */
-			if ((oppos != -1) && (preoppos != -1) &&
-			    ((curopcodes->opcode[oppos].atomic - 1) == preoppos))
+			if ((oppos == -1) && (preoppos != -1)) {
+				/* Current command is listed as preopcode in
+				 * ICH struct OPCODES, but next command is not
+				 * listed as opcode in that struct.
+				 * Check for command sanity, then
+				 * try to reprogram the ICH opcode list.
+				 */
+				if (find_preop(curopcodes,
+					       (cmds + 1)->writearr[0]) != -1) {
+					fprintf(stderr, "%s: Two subsequent "
+						"preopcodes 0x%02x and 0x%02x, "
+						"ignoring the first.\n",
+						__func__, cmds->writearr[0],
+						(cmds + 1)->writearr[0]);
+					continue;
+				}
+				/* If the chipset is locked down, we'll fail
+				 * during execution of the next command anyway.
+				 * No need to bother with fixups.
+				 */
+				if (!ichspi_lock) {
+					printf_debug("%s: FIXME: Add on-the-fly"
+						     " reprogramming of the "
+						     "chipset opcode list.\n",
+						     __func__);
+				 	/* FIXME: Reprogram opcode menu.
+					 * Find a less-useful opcode, replace it
+					 * with the wanted opcode, detect optype
+					 * and reprogram the opcode menu.
+					 * Update oppos so the next if-statement
+					 * can do something useful.
+					 */
+					//curopcodes.opcode[lessusefulindex] = (cmds + 1)->writearr[0]);
+					//update_optypes(curopcodes);
+					//program_opcodes(curopcodes);
+					//oppos = find_opcode(curopcodes, (cmds + 1)->writearr[0]);
+					continue;
+				}
+			}
+			if ((oppos != -1) && (preoppos != -1)) {
+				/* Current command is listed as preopcode in
+				 * ICH struct OPCODES and next command is listed
+				 * as opcode in that struct. Match them up.
+				 */
+				curopcodes->opcode[oppos].atomic = preoppos + 1;
 				continue;
-		}	
-			
+			}
+			/* If none of the above if-statements about oppos or
+			 * preoppos matched, this is a normal opcode.
+			 */
+		}
 		ret = ich_spi_send_command(cmds->writecnt, cmds->readcnt,
 					   cmds->writearr, cmds->readarr);
+		/* Reset the type of all opcodes to non-atomic. */
+		for (i = 0; i < 8; i++)
+			curopcodes->opcode[i].atomic = 0;
 	}
 	return ret;
 }
