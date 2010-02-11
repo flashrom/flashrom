@@ -44,7 +44,6 @@ struct flashchip flashchips[] = {
 	 * .tested		= Test status
 	 * .probe		= Probe function
 	 * .probe_timing	= Probe function delay
-	 * .erase		= Chip erase function
 	 * .block_erasers[]	= Array of erase layouts and erase functions
 	 * {
 	 *	.eraseblocks[]	= Array of { blocksize, blockcount }
@@ -66,7 +65,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -93,7 +91,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -125,7 +122,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -157,7 +153,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (am29f040b.c) */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -184,7 +179,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (am29f040b.c) */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -211,7 +205,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -238,7 +231,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (am29f040b.c) */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -265,7 +257,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (am29f040b.c) */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -292,7 +283,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_FIXME, 
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -323,7 +313,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -358,7 +347,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -393,7 +381,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -428,7 +415,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -463,7 +449,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PRW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -498,7 +483,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -533,7 +517,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -568,7 +551,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -603,7 +585,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -638,7 +619,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -673,7 +653,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -696,7 +675,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -731,7 +709,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -766,7 +743,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -802,7 +778,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= spi_chip_erase_60_c7,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
 	  },*/
@@ -818,7 +793,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -854,7 +828,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= 10000, /* 10mS, Enter=Exec */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -879,7 +852,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= 10000, /* 10mS, Enter=Exec */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -903,7 +875,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= 10000,			/* 10ms */ 
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -927,7 +898,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= 10000,			/* 10 ms */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -950,7 +920,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_BAD_READ,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.write		= NULL /* Incompatible Page write */,
 		.read		= NULL /* Incompatible read */,
 	},
@@ -966,7 +935,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_BAD_READ,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.write		= NULL,
 		.read		= NULL,
 	},
@@ -982,7 +950,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_BAD_READ,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.write		= NULL,
 		.read		= NULL,
 	},
@@ -998,7 +965,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_BAD_READ,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.write		= NULL,
 		.read		= NULL,
 	},
@@ -1014,7 +980,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_BAD_READ,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.write		= NULL,
 		.read		= NULL,
 	},
@@ -1030,7 +995,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_BAD_READ,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.write		= NULL,
 		.read		= NULL,
 	},
@@ -1046,7 +1010,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_BAD_READ,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.write		= NULL,
 		.read		= NULL /* Incompatible read */,
 	},
@@ -1062,7 +1025,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_BAD_READ,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.write		= NULL,
 		.read		= NULL,
 	},
@@ -1078,7 +1040,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_BAD_READ,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.write		= NULL,
 		.read		= NULL,
 	},
@@ -1095,7 +1056,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -1119,7 +1079,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -1151,7 +1110,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -1184,7 +1142,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PRW,
 		.probe		= probe_spi_rdid4,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -1216,7 +1173,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PRW,
 		.probe		= probe_spi_rdid4,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -1249,7 +1205,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (mx29f002.c) */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -1281,7 +1236,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (mx29f002.c) */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -1313,7 +1267,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (am29f040b.c) */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -1340,7 +1293,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,	/* routine is wrapper to probe_jedec (pm49fl00x.c) */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -1367,7 +1319,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -1398,7 +1349,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -1429,7 +1379,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -1460,7 +1409,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -1491,7 +1439,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -1522,7 +1469,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -1554,7 +1500,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -1586,7 +1531,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -1618,7 +1562,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -1650,7 +1593,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -1682,7 +1624,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -1714,7 +1655,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -1746,7 +1686,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -1778,7 +1717,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -1810,7 +1748,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -1842,7 +1779,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -1874,7 +1810,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -1906,7 +1841,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -1941,7 +1875,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -1976,7 +1909,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -2011,7 +1943,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -2046,7 +1977,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PROBE,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -2078,7 +2008,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -2110,7 +2039,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -2142,7 +2070,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -2175,7 +2102,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -2207,7 +2133,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -2239,7 +2164,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -2271,7 +2195,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -2304,7 +2227,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_m29f400bt,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (m29f400bt.c) */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -2336,7 +2258,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_m29f400bt,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (m29f400bt.c) */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -2368,7 +2289,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_BAD_WRITE,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -2396,7 +2316,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_BAD_WRITE,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -2424,7 +2343,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PRW,
 		.probe		= probe_82802ab,
 		.probe_timing	= TIMING_IGNORED, /* routine does not use probe_timing (82802ab.c) */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -2448,7 +2366,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PRW,
 		.probe		= probe_82802ab,
 		.probe_timing	= TIMING_IGNORED, /* routine does not use probe_timing (82802ab.c) */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -2471,7 +2388,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -2506,7 +2422,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -2538,7 +2453,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -2573,7 +2487,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PRW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -2608,7 +2521,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PRW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -2643,7 +2555,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PRW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -2678,7 +2589,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -2710,7 +2620,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PRW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -2742,7 +2651,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -2774,7 +2682,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PROBE,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -2806,7 +2713,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -2839,7 +2745,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (mx29f002.c) */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -2872,7 +2777,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (mx29f002.c) */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -2905,7 +2809,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (mx29f002.c) */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -2937,7 +2840,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (mx29f002.c) */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -2969,7 +2871,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (mx29f002.c) */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -2995,7 +2896,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -3024,7 +2924,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -3053,7 +2952,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -3082,7 +2980,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -3111,7 +3008,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -3140,7 +3036,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -3169,7 +3064,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -3204,7 +3098,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -3233,7 +3126,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -3262,7 +3154,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -3297,7 +3188,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -3327,7 +3217,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_FIXME, 
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -3359,7 +3248,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_FIXME, 
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -3391,7 +3279,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -3421,7 +3308,7 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,	/* routine is wrapper to probe_jedec (pm49fl00x.c) */
-		.erase		= NULL, /* Was: erase_49fl00x */
+		/* .erase	= NULL, Was: erase_49fl00x */
 		.block_erasers	=
 		{
 			{
@@ -3451,7 +3338,7 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,	/* routine is wrapper to probe_jedec (pm49fl00x.c) */
-		.erase		= NULL, /* Was: erase_49fl00x */
+		/* .erase	= NULL, Was: erase_49fl00x */
 		.block_erasers	=
 		{
 			{
@@ -3480,7 +3367,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -3507,7 +3393,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_49lfxxxc,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -3538,7 +3423,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -3564,7 +3448,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PRW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -3590,7 +3473,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PRW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -3625,7 +3507,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PRW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -3660,7 +3541,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PR,
 		.probe		= probe_spi_rems,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -3689,7 +3569,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -3724,7 +3603,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PR,
 		.probe		= probe_spi_rems,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -3759,7 +3637,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PRW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -3795,7 +3672,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_28sf040,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (sst28sf040.c) */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -3822,7 +3698,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= 10, 
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -3846,7 +3721,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= 10, 
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -3870,7 +3744,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= 10,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -3894,7 +3767,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= 10, 
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -3918,7 +3790,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= 1,			/* 150 ns */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -3945,7 +3816,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= 1,			/* 150 ns */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -3972,7 +3842,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= 1,			/* 150 ns */ 
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -3999,7 +3868,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= 1,			/* 150 ns */ 
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -4026,7 +3894,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= 1,			/* 150 ns*/ 
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -4053,7 +3920,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= 1,			/* 150 ns */ 
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -4080,7 +3946,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= 1,			/* 150 ns */ 
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -4107,7 +3972,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= 1,			/* 150 ns */ 
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -4134,7 +3998,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= 1,			/* 150 ns */ 
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -4164,7 +4027,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PRW,
 		.probe		= probe_sst_fwhub,
 		.probe_timing	= 1,		/* 150 ns | routine is wrapper to probe_jedec (sst_fwhub.c) */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -4194,7 +4056,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PR,
 		.probe		= probe_sst_fwhub,
 		.probe_timing	= 1,		/* 150 ns | routine is wrapper to probe_jedec (sst_fwhub.c) */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -4227,7 +4088,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_sst_fwhub,
 		.probe_timing	= 1,		/* 150 ns | routine is wrapper to probe_jedec (sst_fwhub.c) */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -4257,7 +4117,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_49lfxxxc,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (sst49lfxxxc.c) */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -4289,7 +4148,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PRW,
 		.probe		= probe_sst_fwhub,
 		.probe_timing	= 1,		/* 150 ns | routine is wrapper to probe_jedec (sst_fwhub.c) */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -4319,7 +4177,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_49lfxxxc,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (sst49lfxxxc.c) */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -4351,7 +4208,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PRW,
 		.probe		= probe_49lfxxxc,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (sst49lfxxxc.c) */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -4383,7 +4239,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= 1,			/* 150 ns */ 
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -4413,7 +4268,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= 1,			/* 150 ns */ 
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -4443,7 +4297,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= 1,			/* 150 ns */ 
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -4473,7 +4326,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= 1,		/* 150ns | routine is wrapper to probe_jedec (sst_fwhub.c) */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -4503,7 +4355,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_FIXME, 
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -4533,8 +4384,7 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PRW,
 		.probe		= probe_49lfxxxc,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (sst49lfxxxc.c) */
-		.erase		= erase_49lfxxxc,
-		.erase		= NULL,
+		/* .erase	= NULL, Was: erase_49flxxxc */
 		.block_erasers	=
 		{
 			{
@@ -4565,7 +4415,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -4596,7 +4445,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_res,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -4622,7 +4470,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -4649,7 +4496,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_res,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -4675,7 +4521,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -4701,7 +4546,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PRW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -4727,7 +4571,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_res,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -4753,7 +4596,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PRW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -4779,7 +4621,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PRW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -4805,7 +4646,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PRW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -4831,7 +4671,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -4857,7 +4696,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -4884,7 +4722,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -4916,7 +4753,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -4948,7 +4784,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (am29f040b.c) */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -4976,7 +4811,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_m29f400bt,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (m29f400bt.c) */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -5008,7 +4842,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -5035,7 +4868,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -5062,7 +4894,6 @@ struct flashchip flashchips[] = {
                 .tested         = TEST_OK_PREW,
                 .probe          = probe_jedec,
                 .probe_timing   = TIMING_ZERO,
-                .erase          = NULL,
                 .block_erasers  =
                 {
                         {
@@ -5086,7 +4917,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_82802ab,
 		.probe_timing	= TIMING_FIXME,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -5121,7 +4951,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_82802ab,
 		.probe_timing	= TIMING_FIXME,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -5156,7 +4985,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_82802ab,
 		.probe_timing	= TIMING_FIXME,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -5191,7 +5019,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_82802ab,
 		.probe_timing	= TIMING_FIXME,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -5226,7 +5053,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_82802ab,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (sst49lfxxxc.c) */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -5258,7 +5084,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_82802ab,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (82802ab.c) */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -5285,7 +5110,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PRW,
 		.probe		= probe_82802ab,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (82802ab.c) */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -5312,7 +5136,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PRW,
 		.probe		= probe_82802ab,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (82802ab.c) */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -5339,7 +5162,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_82802ab,
 		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -5372,7 +5194,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -5399,7 +5220,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -5426,7 +5246,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -5453,7 +5272,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -5480,7 +5298,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -5512,7 +5329,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -5543,7 +5359,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -5578,7 +5393,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -5613,7 +5427,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PRW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -5648,7 +5461,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PRW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -5683,7 +5495,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PR,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -5718,7 +5529,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PROBE,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -5753,7 +5563,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -5789,7 +5598,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= 10,		/* used datasheet for the W29C011A */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -5813,7 +5621,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= 10, 
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -5837,7 +5644,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= 10, 
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -5861,7 +5667,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PRW,
 		.probe		= probe_w29ee011,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (w29ee011.c) */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -5885,7 +5690,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= 10, 
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -5912,7 +5716,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= 10, 
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -5939,7 +5742,7 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_FIXME,
-		.erase		= NULL, /* Was erase_w39v040c */
+		/* .erase	= NULL, Was erase_w39v040c */
 		.block_erasers	=
 		{
 			{
@@ -5966,7 +5769,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= 10, 
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -5996,7 +5798,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= 10, 
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -6023,7 +5824,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= 10,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -6055,7 +5855,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= 10, 
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -6087,7 +5886,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= 10,
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
@@ -6119,7 +5917,7 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_FIXME,
-		.erase		= NULL, /* Was erase_winbond_fwhub */
+		/* .erase	= NULL, Was erase_winbond_fwhub */
 		.block_erasers	=
 		{
 			{
@@ -6146,7 +5944,7 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_FIXME,
-		.erase		= NULL, /* Was erase_winbond_fwhub */
+		/* .erase	= NULL, Was erase_winbond_fwhub */
 		.block_erasers	=
 		{
 			{
@@ -6172,7 +5970,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_BAD_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.write		= NULL,
 		.read		= NULL,
 	},
@@ -6188,7 +5985,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_BAD_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.write		= NULL,
 		.read		= NULL,
 	},
@@ -6204,7 +6000,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_BAD_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.write		= NULL,
 		.read		= NULL,
 	},
@@ -6220,7 +6015,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_BAD_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.write		= NULL,
 		.read		= NULL,
 	},
@@ -6236,7 +6030,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_BAD_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.write		= NULL,
 		.read		= NULL,
 	},
@@ -6252,7 +6045,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_BAD_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.write		= NULL,
 		.read		= NULL,
 	},
@@ -6268,7 +6060,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_BAD_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.erase		= NULL,
 		.write		= NULL,
 		.read		= NULL,
 	},
@@ -6283,7 +6074,6 @@ struct flashchip flashchips[] = {
 		.page_size	= 256,
 		.tested		= TEST_BAD_PREW,
 		.probe		= probe_spi_rdid,
-		.erase		= NULL,
 		.write		= NULL,
 	},
 	{
@@ -6296,7 +6086,6 @@ struct flashchip flashchips[] = {
 		.page_size	= 256,
 		.tested		= TEST_BAD_PREW,
 		.probe		= probe_spi_rems,
-		.erase		= NULL,
 		.write		= NULL,
 	},
 
