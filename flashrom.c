@@ -975,12 +975,6 @@ int erase_flash(struct flashchip *flash)
 		if (!ret)
 			break;
 	}
-	/* If no block erase function was found or block erase failed, retry. */
-	if ((!found || ret) && (flash->erase)) {
-		found = 1;
-		printf_debug("Trying whole-chip erase function... ");
-		ret = flash->erase(flash);
-	}
 	if (!found) {
 		fprintf(stderr, "ERROR: flashrom has no erase function for this flash chip.\n");
 		return 1;
