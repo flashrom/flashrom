@@ -162,7 +162,8 @@ int dmi_match(const char *pattern)
 		return 0;
 
 	for (i = 0;i < DMI_ID_INVALID; i++)
-		return dmi_compare(dmistrings[i], pattern);
+		if(dmi_compare(dmistrings[i], pattern))
+			return 1;
 
 	return 0;
 }
