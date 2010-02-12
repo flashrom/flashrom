@@ -385,17 +385,30 @@ int probe_spi_res(struct flashchip *flash)
 {
 	unsigned char readarr[3];
 	uint32_t id2;
+	const unsigned char allff[] = {0xff, 0xff, 0xff};
+	const unsigned char all00[] = {0x00, 0x00, 0x00};
 
-	/* Check if RDID was successful and did not return 0xff 0xff 0xff.
-	 * In that case, RES is pointless.
+	/* Check if RDID is usable and does not return 0xff 0xff 0xff or
+	 * 0x00 0x00 0x00. In that case, RES is pointless.
 	 */
-	if (!spi_rdid(readarr, 3) && ((readarr[0] != 0xff) ||
-	    (readarr[1] != 0xff) || (readarr[2] != 0xff)))
+	if (!spi_rdid(readarr, 3) && memcmp(readarr, allff, 3) &&
+	    memcmp(readarr, all00, 3)) {
+		msg_cdbg("Ignoring RES in favour of RDID.\n");
 		return 0;
+	}
+	/* Check if REMS is usable and does not return 0xff 0xff or
+	 * 0x00 0x00. In that case, RES is pointless.
+	 */
+	if (!spi_rems(readarr) && memcmp(readarr, allff, JEDEC_REMS_INSIZE) &&
+	    memcmp(readarr, all00, JEDEC_REMS_INSIZE)) {
+		msg_cdbg("Ignoring RES in favour of REMS.\n");
+		return 0;
+	}
 
 	if (spi_res(readarr))
 		return 0;
 
+	/* FIXME: Handle the case where RES gives a 2-byte response. */
 	id2 = readarr[0];
 	printf_debug("%s: id 0x%x\n", __func__, id2);
 	if (id2 != flash->model_id)
