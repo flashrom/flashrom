@@ -27,10 +27,6 @@
 #include <errno.h>
 #include "flash.h"
 
-#if defined(__FreeBSD__) || defined(__DragonFly__)
-int io_fd;
-#endif
-
 #if NEED_PCI == 1
 struct pci_dev *pci_dev_find_filter(struct pci_filter filter)
 {
@@ -101,28 +97,6 @@ struct pci_dev *pci_card_find(uint16_t vendor, uint16_t device,
 	return NULL;
 }
 #endif
-
-void get_io_perms(void)
-{
-#if defined (__sun) && (defined(__i386) || defined(__amd64))
-	if (sysi86(SI86V86, V86SC_IOPL, PS_IOPL) != 0) {
-#elif defined(__FreeBSD__) || defined (__DragonFly__)
-	if ((io_fd = open("/dev/io", O_RDWR)) < 0) {
-#else
-	if (iopl(3) != 0) {
-#endif
-		fprintf(stderr, "ERROR: Could not get I/O privileges (%s).\n"
-			"You need to be root.\n", strerror(errno));
-		exit(1);
-	}
-}
-
-void release_io_perms(void)
-{
-#if defined(__FreeBSD__) || defined(__DragonFly__)
-	close(io_fd);
-#endif
-}
 
 #if INTERNAL_SUPPORT == 1
 struct superio superio = {};
@@ -217,34 +191,4 @@ void internal_chip_readn(uint8_t *buf, const chipaddr addr, size_t len)
 {
 	memcpy(buf, (void *)addr, len);
 	return;
-}
-
-void mmio_writeb(uint8_t val, void *addr)
-{
-	*(volatile uint8_t *) addr = val;
-}
-
-void mmio_writew(uint16_t val, void *addr)
-{
-	*(volatile uint16_t *) addr = val;
-}
-
-void mmio_writel(uint32_t val, void *addr)
-{
-	*(volatile uint32_t *) addr = val;
-}
-
-uint8_t mmio_readb(void *addr)
-{
-	return *(volatile uint8_t *) addr;
-}
-
-uint16_t mmio_readw(void *addr)
-{
-	return *(volatile uint16_t *) addr;
-}
-
-uint32_t mmio_readl(void *addr)
-{
-	return *(volatile uint32_t *) addr;
 }

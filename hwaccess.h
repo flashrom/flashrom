@@ -133,10 +133,6 @@ inl(uint16_t port)
   #endif
 #endif
 
-#if defined(__FreeBSD__) || defined(__DragonFly__)
-extern int io_fd;
-#endif
-
 #if !defined(__DARWIN__) && !defined(__FreeBSD__) && !defined(__DragonFly__)
 typedef struct { uint32_t hi, lo; } msr_t;
 msr_t rdmsr(int addr);

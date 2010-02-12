@@ -103,7 +103,7 @@ CONFIG_PRINT_WIKI ?= no
 
 ifeq ($(CONFIG_INTERNAL), yes)
 FEATURE_CFLAGS += -D'INTERNAL_SUPPORT=1'
-PROGRAMMER_OBJS += chipset_enable.o board_enable.o cbtable.o dmi.o it87spi.o ichspi.o sb600spi.o wbsio_spi.o
+PROGRAMMER_OBJS += chipset_enable.o board_enable.o cbtable.o dmi.o it87spi.o ichspi.o sb600spi.o wbsio_spi.o internal.o
 NEED_PCI := yes
 endif
 
@@ -180,12 +180,7 @@ endif
 ifeq ($(NEED_PCI), yes)
 LIBS += -lpci
 FEATURE_CFLAGS += -D'NEED_PCI=1'
-PROGRAMMER_OBJS += pcidev.o physmap.o internal.o #FIXME: We need to move stuff
- 						# from internal.c and pcidev.c to pci.c
-						# internal.c needs to be split
-						# into internal-programmer-only stuff
-						# and a support lib for all internal+pci
-						# based stuff.
+PROGRAMMER_OBJS += pcidev.o physmap.o hwaccess.o
 ifeq ($(OS_ARCH), NetBSD)
 LIBS += -lpciutils #		The libpci we want.
 LIBS += -l$(shell uname -m) #	For (i386|x86_64)_iopl(2).
