@@ -2342,7 +2342,6 @@ struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_82802ab,
 		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
-		.erase		= NULL,
 		.block_erasers	=
 		{
 			{
