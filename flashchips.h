@@ -254,6 +254,9 @@
 #define INTEL_ID		0x89	/* Intel */
 #define I_82802AB		0xAD
 #define I_82802AC		0xAC
+#define E_28F004S5		0xA7
+#define E_28F008S5		0xA6
+#define E_28F016S5		0xAA
 #define P28F001BXT		0x94	/* 28F001BX-T */
 #define P28F001BXB		0x95	/* 28F001BX-B */
 #define SHARP_LH28F008SA	0xA2	/* Sharp chip, Intel Vendor ID */
