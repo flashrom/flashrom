@@ -2333,6 +2333,29 @@ struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Intel",
+		.name		= "28F004S5",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= INTEL_ID,
+		.model_id	= E_28F004S5,
+		.total_size	= 512,
+		.page_size	= 256,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_82802ab,
+		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
+		.erase		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {64 * 1024, 8} },
+				.block_erase = erase_82802ab_block,
+			},
+		},
+		.write		= write_82802ab,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "Intel",
 		.name		= "82802AB",
 		.bustype	= CHIP_BUSTYPE_FWH,
 		.manufacture_id	= INTEL_ID,
