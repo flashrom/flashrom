@@ -99,6 +99,8 @@ struct programmer_entry {
 
 extern const struct programmer_entry programmer_table[];
 
+int register_shutdown(void (*function) (void *data), void *data);
+
 int programmer_init(void);
 int programmer_shutdown(void);
 void *programmer_map_flash_region(const char *descr, unsigned long phys_addr,

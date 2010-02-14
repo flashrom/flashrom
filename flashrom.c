@@ -308,6 +308,35 @@ const struct programmer_entry programmer_table[] = {
 	{}, /* This entry corresponds to PROGRAMMER_INVALID. */
 };
 
+#define SHUTDOWN_MAXFN 4
+static int shutdown_fn_count = 0;
+struct shutdown_func_data {
+	void (*func) (void *data);
+	void *data;
+} shutdown_fn[SHUTDOWN_MAXFN];
+
+/* Register a function to be executed on programmer shutdown.
+ * The advantage over atexit() is that you can supply a void pointer which will
+ * be used as parameter to the registered function upon programmer shutdown.
+ * This pointer can point to arbitrary data used by said function, e.g. undo
+ * information for GPIO settings etc. If unneeded, set data=NULL.
+ * Please note that the first (void *data) belongs to the function signature of
+ * the function passed as first parameter.
+ */
+int register_shutdown(void (*function) (void *data), void *data)
+{
+	if (shutdown_fn_count >= SHUTDOWN_MAXFN) {
+		msg_perr("Tried to register more than %n shutdown functions.\n",
+			 SHUTDOWN_MAXFN);
+		return 1;
+	}
+	shutdown_fn[shutdown_fn_count].func = function;
+	shutdown_fn[shutdown_fn_count].data = data;
+	shutdown_fn_count++;
+
+	return 0;
+}
+
 int programmer_init(void)
 {
 	return programmer_table[programmer].init();
@@ -315,6 +344,10 @@ int programmer_init(void)
 
 int programmer_shutdown(void)
 {
+	int i;
+
+	for (i = shutdown_fn_count - 1; i >= 0; i--)
+		shutdown_fn[i].func(shutdown_fn[i].data);
 	return programmer_table[programmer].shutdown();
 }
 
