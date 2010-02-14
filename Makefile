@@ -183,7 +183,7 @@ FEATURE_CFLAGS += -D'NEED_PCI=1'
 PROGRAMMER_OBJS += pcidev.o physmap.o hwaccess.o
 ifeq ($(OS_ARCH), NetBSD)
 LIBS += -lpciutils #		The libpci we want.
-LIBS += -l$(shell uname -m) #	For (i386|x86_64)_iopl(2).
+LIBS += -l$(shell uname -p) #	For (i386|x86_64)_iopl(2).
 endif
 endif
 
