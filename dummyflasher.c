@@ -38,7 +38,8 @@ int dummy_init(void)
 		programmer_param = strdup("parallel,lpc,fwh,spi");
 	/* Convert the parameters to lowercase. */
 	for (i = 0; programmer_param[i] != '\0'; i++)
-		programmer_param[i] = (char)tolower(programmer_param[i]);
+		programmer_param[i] =
+		    (char)tolower((unsigned char)programmer_param[i]);
 
 	buses_supported = CHIP_BUSTYPE_NONE;
 	if (strstr(programmer_param, "parallel")) {
