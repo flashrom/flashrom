@@ -68,7 +68,7 @@ To compile on Solaris, use:
 To compile on NetBSD or DragonFly BSD, use:
 
  ln -s /usr/pkg/include/pciutils pci
- gmake CFLAGS=-I. LDFLAGS="-L/usr/pkg/lib -Wl,-rpath-link,/usr/pkg/lib"
+ gmake CPPFLAGS=-I. LDFLAGS="-L/usr/pkg/lib -Wl,-rpath-link,/usr/pkg/lib"
 
 To compile and run on Darwin/Mac OS X:
 
