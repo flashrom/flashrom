@@ -117,6 +117,7 @@ int write_29f002(struct flashchip *flash, uint8_t *buf);
 int probe_49fl00x(struct flashchip *flash);
 int erase_49fl00x(struct flashchip *flash);
 int write_49fl00x(struct flashchip *flash, uint8_t *buf);
+int unlock_49fl00x(struct flashchip *flash);
 
 /* sharplhf00l04.c */
 int probe_lhf00l04(struct flashchip *flash);
@@ -145,6 +146,7 @@ int erase_sector_49lfxxxc(struct flashchip *flash, unsigned int address, unsigne
 int erase_block_49lfxxxc(struct flashchip *flash, unsigned int address, unsigned int sector_size);
 int erase_chip_49lfxxxc(struct flashchip *flash, unsigned int addr, unsigned int blocksize);
 int write_49lfxxxc(struct flashchip *flash, uint8_t *buf);
+int unlock_49lfxxxc(struct flashchip *flash);
 
 /* sst_fwhub.c */
 int probe_sst_fwhub(struct flashchip *flash);
@@ -157,11 +159,13 @@ int write_sst_fwhub(struct flashchip *flash, uint8_t *buf);
 int probe_w39v040c(struct flashchip *flash);
 int erase_w39v040c(struct flashchip *flash);
 int write_w39v040c(struct flashchip *flash, uint8_t *buf);
+int printlock_w39v040c(struct flashchip *flash);
 
 /* w39V080fa.c */
 int probe_winbond_fwhub(struct flashchip *flash);
 int erase_winbond_fwhub(struct flashchip *flash);
 int write_winbond_fwhub(struct flashchip *flash, uint8_t *buf);
+int unlock_winbond_fwhub(struct flashchip *flash);
 
 /* w29ee011.c */
 int probe_w29ee011(struct flashchip *flash);
