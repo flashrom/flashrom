@@ -50,6 +50,32 @@ int probe_w39v040c(struct flashchip *flash)
 	return 1;
 }
 
+int printlock_w39v040c(struct flashchip *flash)
+{
+	chipaddr bios = flash->virtual_memory;
+	uint8_t lock;
+
+	chip_writeb(0xAA, bios + 0x5555);
+	programmer_delay(10);
+	chip_writeb(0x55, bios + 0x2AAA);
+	programmer_delay(10);
+	chip_writeb(0x90, bios + 0x5555);
+	programmer_delay(10);
+
+	lock = chip_readb(bios + 0xfff2);
+
+	chip_writeb(0xAA, bios + 0x5555);
+	programmer_delay(10);
+	chip_writeb(0x55, bios + 0x2AAA);
+	programmer_delay(10);
+	chip_writeb(0xF0, bios + 0x5555);
+	programmer_delay(40);
+
+	printf("%s: Boot block #TBL is %slocked, rest of chip #WP is %slocked.\n",
+		__func__, lock & 0x4 ? "" : "un", lock & 0x8 ? "" : "un");
+	return 0;
+}
+
 int erase_w39v040c(struct flashchip *flash)
 {
 	int i;

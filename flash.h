@@ -206,6 +206,8 @@ struct flashchip {
 		int (*block_erase) (struct flashchip *flash, unsigned int blockaddr, unsigned int blocklen);
 	} block_erasers[NUM_ERASEFUNCTIONS];
 
+	int (*printlock) (struct flashchip *flash);
+	int (*unlock) (struct flashchip *flash);
 	int (*write) (struct flashchip *flash, uint8_t *buf);
 	int (*read) (struct flashchip *flash, uint8_t *buf, int start, int len);
 

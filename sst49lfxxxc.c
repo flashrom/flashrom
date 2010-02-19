@@ -82,6 +82,11 @@ static int write_lockbits_49lfxxxc(struct flashchip *flash, unsigned char bits)
 	return 0;
 }
 
+int unlock_49lfxxxc(struct flashchip *flash)
+{
+	return write_lockbits_49lfxxxc(flash, 0);
+}
+
 int erase_sector_49lfxxxc(struct flashchip *flash, unsigned int address, unsigned int sector_size)
 {
 	unsigned char status;

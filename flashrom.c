@@ -838,6 +838,9 @@ notfound:
 	       flash->vendor, flash->name, flash->total_size,
 	       flashbuses_to_text(flash->bustype), base);
 
+	if (flash->printlock)
+		flash->printlock(flash);
+
 	return flash;
 }
 
@@ -1147,18 +1150,27 @@ int doit(struct flashchip *flash, int force, char *filename, int read_it, int wr
 				fprintf(stderr, "Continuing anyway.\n");
 			}
 		}
+		if (flash->unlock)
+			flash->unlock(flash);
+
 		if (erase_flash(flash)) {
 			emergency_help_message();
 			programmer_shutdown();
 			return 1;
 		}
 	} else if (read_it) {
+		if (flash->unlock)
+			flash->unlock(flash);
+
 		if (read_flash(flash, filename)) {
 			programmer_shutdown();
 			return 1;
 		}
 	} else {
 		struct stat image_stat;
+
+		if (flash->unlock)
+			flash->unlock(flash);
 
 		if (flash->tested & TEST_BAD_ERASE) {
 			fprintf(stderr, "Erase is not working on this chip "
