@@ -566,6 +566,9 @@ void print_supported_wiki(void)
 #if SATASII_SUPPORT == 1
 	print_supported_pcidevs_wiki(satas_sii);
 #endif
+#if ATAHPT_SUPPORT == 1
+	print_supported_pcidevs_wiki(ata_hpt);
+#endif
 	printf("\n|}\n");
 }
 
