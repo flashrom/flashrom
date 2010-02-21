@@ -83,6 +83,10 @@ CONFIG_GFXNVIDIA ?= no
 # Always enable SiI SATA controllers for now.
 CONFIG_SATASII ?= yes
 
+# Highpoint (HPT) ATA/RAID controller support.
+# IMPORTANT: This code is not yet working!
+CONFIG_ATAHPT ?= no
+
 # Always enable FT2232 SPI dongles for now.
 CONFIG_FT2232SPI ?= yes
 
@@ -135,6 +139,12 @@ endif
 ifeq ($(CONFIG_SATASII), yes)
 FEATURE_CFLAGS += -D'SATASII_SUPPORT=1'
 PROGRAMMER_OBJS += satasii.o
+NEED_PCI := yes
+endif
+
+ifeq ($(CONFIG_ATAHPT), yes)
+FEATURE_CFLAGS += -D'ATAHPT_SUPPORT=1'
+PROGRAMMER_OBJS += atahpt.o
 NEED_PCI := yes
 endif
 

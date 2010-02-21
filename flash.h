@@ -55,6 +55,9 @@ enum programmer {
 #if SATASII_SUPPORT == 1
 	PROGRAMMER_SATASII,
 #endif
+#if ATAHPT_SUPPORT == 1
+	PROGRAMMER_ATAHPT,
+#endif
 #if INTERNAL_SUPPORT == 1
 	PROGRAMMER_IT87SPI,
 #endif
@@ -328,7 +331,7 @@ uint32_t pcidev_init(uint16_t vendor_id, uint32_t bar, struct pcidev_status *dev
 /* print.c */
 char *flashbuses_to_text(enum chipbustype bustype);
 void print_supported(void);
-#if (NIC3COM_SUPPORT == 1) || (GFXNVIDIA_SUPPORT == 1) || (DRKAISER_SUPPORT == 1) || (SATASII_SUPPORT == 1)
+#if (NIC3COM_SUPPORT == 1) || (GFXNVIDIA_SUPPORT == 1) || (DRKAISER_SUPPORT == 1) || (SATASII_SUPPORT == 1) || (ATAHPT_SUPPORT == 1)
 void print_supported_pcidevs(struct pcidev_status *devs);
 #endif
 void print_supported_wiki(void);
@@ -464,6 +467,15 @@ int satasii_shutdown(void);
 void satasii_chip_writeb(uint8_t val, chipaddr addr);
 uint8_t satasii_chip_readb(const chipaddr addr);
 extern struct pcidev_status satas_sii[];
+#endif
+
+/* atahpt.c */
+#if ATAHPT_SUPPORT == 1
+int atahpt_init(void);
+int atahpt_shutdown(void);
+void atahpt_chip_writeb(uint8_t val, chipaddr addr);
+uint8_t atahpt_chip_readb(const chipaddr addr);
+extern struct pcidev_status ata_hpt[];
 #endif
 
 /* ft2232_spi.c */

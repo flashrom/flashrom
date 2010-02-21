@@ -44,7 +44,7 @@ enum programmer programmer = PROGRAMMER_DUMMY;
  * if more than one of them is selected. If only one is selected, it is clear
  * that the user wants that one to become the default.
  */
-#if NIC3COM_SUPPORT+GFXNVIDIA_SUPPORT+DRKAISER_SUPPORT+SATASII_SUPPORT+FT2232_SPI_SUPPORT+SERPROG_SUPPORT+BUSPIRATE_SPI_SUPPORT+DEDIPROG_SUPPORT > 1
+#if NIC3COM_SUPPORT+GFXNVIDIA_SUPPORT+DRKAISER_SUPPORT+SATASII_SUPPORT+ATAHPT_SUPPORT+FT2232_SPI_SUPPORT+SERPROG_SUPPORT+BUSPIRATE_SPI_SUPPORT+DEDIPROG_SUPPORT > 1
 #error Please enable either CONFIG_DUMMY or CONFIG_INTERNAL or disable support for all external programmers except one.
 #endif
 enum programmer programmer =
@@ -59,6 +59,9 @@ enum programmer programmer =
 #endif
 #if SATASII_SUPPORT == 1
 	PROGRAMMER_SATASII
+#endif
+#if ATAHPT_SUPPORT == 1
+	PROGRAMMER_ATAHPT
 #endif
 #if FT2232_SPI_SUPPORT == 1
 	PROGRAMMER_FT2232SPI
@@ -203,6 +206,25 @@ const struct programmer_entry programmer_table[] = {
 		.chip_readl		= fallback_chip_readl,
 		.chip_readn		= fallback_chip_readn,
 		.chip_writeb		= satasii_chip_writeb,
+		.chip_writew		= fallback_chip_writew,
+		.chip_writel		= fallback_chip_writel,
+		.chip_writen		= fallback_chip_writen,
+		.delay			= internal_delay,
+	},
+#endif
+
+#if ATAHPT_SUPPORT == 1
+	{
+		.name			= "atahpt",
+		.init			= atahpt_init,
+		.shutdown		= atahpt_shutdown,
+		.map_flash_region	= fallback_map,
+		.unmap_flash_region	= fallback_unmap,
+		.chip_readb		= atahpt_chip_readb,
+		.chip_readw		= fallback_chip_readw,
+		.chip_readl		= fallback_chip_readl,
+		.chip_readn		= fallback_chip_readn,
+		.chip_writeb		= atahpt_chip_writeb,
 		.chip_writew		= fallback_chip_writew,
 		.chip_writel		= fallback_chip_writel,
 		.chip_writen		= fallback_chip_writen,
