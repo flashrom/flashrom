@@ -60,21 +60,6 @@ int erase_82802ab(struct flashchip *flash);
 int erase_82802ab_block(struct flashchip *flash, unsigned int page, unsigned int pagesize);
 int write_82802ab(struct flashchip *flash, uint8_t *buf);
 
-/* am29f040b.c */
-int probe_29f040b(struct flashchip *flash);
-int erase_29f040b(struct flashchip *flash);
-int erase_sector_29f040b(struct flashchip *flash, unsigned int blockaddr, unsigned int blocksize);
-int erase_chip_29f040b(struct flashchip *flash, unsigned int blockaddr, unsigned int blocksize);
-int write_29f040b(struct flashchip *flash, uint8_t *buf);
-
-/* pm29f002.c */
-int write_pm29f002(struct flashchip *flash, uint8_t *buf);
-
-/* en29f002a.c */
-int probe_en29f002a(struct flashchip *flash);
-int erase_en29f002a(struct flashchip *flash);
-int write_en29f002a(struct flashchip *flash, uint8_t *buf);
-
 /* jedec.c */
 uint8_t oddparity(uint8_t val);
 void toggle_ready_jedec(chipaddr dst);
@@ -90,11 +75,6 @@ int erase_block_jedec(struct flashchip *flash, unsigned int page, unsigned int b
 int erase_chip_block_jedec(struct flashchip *flash, unsigned int page, unsigned int blocksize);
 int write_sector_jedec_common(struct flashchip *flash, uint8_t *src, chipaddr dst, unsigned int page_size, unsigned int mask);
 
-/* m29f002.c */
-int erase_m29f002(struct flashchip *flash);
-int write_m29f002t(struct flashchip *flash, uint8_t *buf);
-int write_m29f002b(struct flashchip *flash, uint8_t *buf);
-
 /* m29f400bt.c */
 int probe_m29f400bt(struct flashchip *flash);
 int erase_m29f400bt(struct flashchip *flash);
@@ -105,13 +85,6 @@ int write_coreboot_m29f400bt(struct flashchip *flash, uint8_t *buf);
 void protect_m29f400bt(chipaddr bios);
 void write_page_m29f400bt(chipaddr bios, uint8_t *src,
 			  chipaddr dst, int page_size);
-
-/* mx29f002.c */
-int probe_29f002(struct flashchip *flash);
-int erase_29f002(struct flashchip *flash);
-int erase_chip_29f002(struct flashchip *flash, unsigned int addr, unsigned int blocklen);
-int erase_sector_29f002(struct flashchip *flash, unsigned int address, unsigned int blocklen);
-int write_29f002(struct flashchip *flash, uint8_t *buf);
 
 /* pm49fl00x.c */
 int probe_49fl00x(struct flashchip *flash);
@@ -130,14 +103,6 @@ int probe_28sf040(struct flashchip *flash);
 int erase_chip_28sf040(struct flashchip *flash, unsigned int addr, unsigned int blocklen);
 int erase_sector_28sf040(struct flashchip *flash, unsigned int address, unsigned int sector_size);
 int write_28sf040(struct flashchip *flash, uint8_t *buf);
-
-/* sst39sf020.c */
-int probe_39sf020(struct flashchip *flash);
-int write_39sf020(struct flashchip *flash, uint8_t *buf);
-
-/* sst49lf040.c */
-int erase_49lf040(struct flashchip *flash);
-int write_49lf040(struct flashchip *flash, uint8_t *buf);
 
 /* sst49lfxxxc.c */
 int probe_49lfxxxc(struct flashchip *flash);
@@ -169,9 +134,6 @@ int unlock_winbond_fwhub(struct flashchip *flash);
 
 /* w29ee011.c */
 int probe_w29ee011(struct flashchip *flash);
-
-/* w49f002u.c */
-int write_49f002(struct flashchip *flash, uint8_t *buf);
 
 /* stm50flw0x0x.c */
 int probe_stm50flw0x0x(struct flashchip *flash);
