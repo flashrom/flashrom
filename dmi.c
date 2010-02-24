@@ -36,16 +36,13 @@ enum dmi_strings {
 
 /* The short_id for baseboard starts with "m" as in mainboard to leave
    "b" available for BIOS */
-struct {
-	const char *dmidecode_name;
-	char short_id[3];
-} dmi_properties[DMI_ID_INVALID] = {
-	{"system-manufacturer", "sm"},
-	{"system-product-name", "sp"},
-	{"system-version", "sv"},
-	{"baseboard-manufacturer", "mm"},
-	{"baseboard-product-name", "mp"},
-	{"baseboard-version", "mv"}
+const char *dmidecode_names[DMI_ID_INVALID] = {
+	"system-manufacturer",
+	"system-product-name",
+	"system-version",
+	"baseboard-manufacturer",
+	"baseboard-product-name",
+	"baseboard-version"
 };
 
 #define DMI_COMMAND_LEN_MAX 260
@@ -71,8 +68,7 @@ void dmi_init(void)
 	{
 		char commandline[DMI_COMMAND_LEN_MAX+40];
 		snprintf(commandline, sizeof(commandline),
-		         "%s -s %s", dmidecode_command,
-		         dmi_properties[i].dmidecode_name);
+		         "%s -s %s", dmidecode_command, dmidecode_names[i]);
 		dmidecode_pipe = popen(commandline, "r");
 		if (!dmidecode_pipe)
 		{
@@ -100,7 +96,8 @@ void dmi_init(void)
 		if (answerbuf[0] != 0 &&
 		    answerbuf[strlen(answerbuf) - 1] == '\n')
 			answerbuf[strlen(answerbuf) - 1] = 0;
-		printf_debug("DMI string %d: \"%s\"\n", i, answerbuf);
+		printf_debug("DMI string %s: \"%s\"\n", dmidecode_names[i],
+		             answerbuf);
 		dmistrings[i] = strdup(answerbuf);
 	}
 	has_dmi_support = 1;
