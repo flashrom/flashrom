@@ -29,7 +29,7 @@
 #define PCI_MAGIC_DRKAISER_VALUE	0xa971
 
 struct pcidev_status drkaiser_pcidev[] = {
-	{0x1803, 0x5057, PCI_OK, "Dr. Kaiser", "PC-Waechter (Actel FPGA)"},
+	{0x1803, 0x5057, OK, "Dr. Kaiser", "PC-Waechter (Actel FPGA)"},
 	{},
 };
 
