@@ -578,6 +578,7 @@ static int board_artecgroup_dbe6x(const char *name)
  */
 static int intel_piix4_gpo_set(unsigned int gpo, int raise)
 {
+	unsigned int gpo_byte, gpo_bit;
 	struct pci_dev *dev;
 	uint32_t tmp, base;
 
@@ -632,12 +633,14 @@ static int intel_piix4_gpo_set(unsigned int gpo, int raise)
 	/* PM IO base */
 	base = pci_read_long(dev, 0x40) & 0x0000FFC0;
 
-	tmp = INL(base + 0x34); /* GPO register */
+	gpo_byte = gpo >> 3;
+	gpo_bit = gpo & 7;
+	tmp = INB(base + 0x34 + gpo_byte); /* GPO register */
 	if (raise)
-		tmp |= 0x01 << gpo;
+		tmp |= 0x01 << gpo_bit;
 	else
-		tmp |= ~(0x01 << gpo);
-	OUTL(tmp, base + 0x34);
+		tmp &= ~(0x01 << gpo_bit);
+	OUTB(tmp, base + 0x34 + gpo_byte);
 
 	return 0;
 }
