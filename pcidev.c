@@ -49,7 +49,7 @@ uint32_t pcidev_validate(struct pci_dev *dev, uint32_t bar,
 		       dev->vendor_id, dev->device_id, dev->bus, dev->dev,
 		       dev->func);
 
-		if (devs[i].status == PCI_NT) {
+		if (devs[i].status == NT) {
 			printf("===\nThis PCI device is UNTESTED. Please "
 			       "report the 'flashrom -p xxxx' output \n"
 			       "to flashrom@flashrom.org if it works "
@@ -117,6 +117,6 @@ void print_supported_pcidevs(struct pcidev_status *devs)
 		printf("%s %s [%02x:%02x]%s\n", devs[i].vendor_name,
 		       devs[i].device_name, devs[i].vendor_id,
 		       devs[i].device_id,
-		       (devs[i].status == PCI_NT) ? " (untested)" : "");
+		       (devs[i].status == NT) ? " (untested)" : "");
 	}
 }

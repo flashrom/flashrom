@@ -31,9 +31,9 @@
 #define PCI_VENDOR_ID_HPT	0x1103
 
 struct pcidev_status ata_hpt[] = {
-	{0x1103, 0x0004, PCI_NT, "Highpoint", "HPT366/368/370/370A/372/372N"},
-	{0x1103, 0x0005, PCI_NT, "Highpoint", "HPT372A/372N"},
-	{0x1103, 0x0006, PCI_NT, "Highpoint", "HPT302/302N"},
+	{0x1103, 0x0004, NT, "Highpoint", "HPT366/368/370/370A/372/372N"},
+	{0x1103, 0x0005, NT, "Highpoint", "HPT372A/372N"},
+	{0x1103, 0x0006, NT, "Highpoint", "HPT302/302N"},
 
 	{},
 };

@@ -541,7 +541,7 @@ void print_supported_pcidevs_wiki(struct pcidev_status *devs)
 		       "%04x:%04x || {{%s}}\n", (c) ? "eeeeee" : "dddddd",
 		       devs[i].vendor_name, devs[i].device_name,
 		       devs[i].vendor_id, devs[i].device_id,
-		       (devs[i].status == PCI_NT) ? (c) ? "?2" : "?" : "OK");
+		       (devs[i].status == NT) ? (c) ? "?2" : "?" : "OK");
 	}
 }
 

@@ -311,8 +311,6 @@ void internal_delay(int usecs);
 
 #if NEED_PCI == 1
 /* pcidev.c */
-#define PCI_OK 0
-#define PCI_NT 1    /* Not tested */
 
 extern uint32_t io_base_addr;
 extern struct pci_access *pacc;
