@@ -1060,7 +1060,7 @@ static int enable_flash_mcp55(struct pci_dev *dev, const char *name)
 static int enable_flash_mcp6x_7x_common(struct pci_dev *dev, const char *name)
 {
 	int ret = 0;
-	uint8_t byte;
+	uint8_t val;
 	uint16_t status;
 	char *busname;
 	uint32_t mcp_spibaraddr;
@@ -1070,10 +1070,10 @@ static int enable_flash_mcp6x_7x_common(struct pci_dev *dev, const char *name)
 	msg_pinfo("This chipset is not really supported yet. Guesswork...\n");
 
 	/* dev is the ISA bridge. No idea what the stuff below does. */
-	byte = pci_read_byte(dev, 0x8a);
+	val = pci_read_byte(dev, 0x8a);
 	msg_pdbg("ISA/LPC bridge reg 0x8a contents: 0x%02x, bit 6 is %i, bit 5 "
-		 "is %i\n", byte, (byte >> 6) & 0x1, (byte >> 5) & 0x1);
-	switch ((byte >> 5) & 0x3) {
+		 "is %i\n", val, (val >> 6) & 0x1, (val >> 5) & 0x1);
+	switch ((val >> 5) & 0x3) {
 	case 0x0:
 		buses_supported = CHIP_BUSTYPE_LPC;
 		break;
@@ -1090,9 +1090,9 @@ static int enable_flash_mcp6x_7x_common(struct pci_dev *dev, const char *name)
 
 	/* Force enable SPI and disable LPC? Not a good idea. */
 #if 0
-	byte |= (1 << 6);
-	byte &= ~(1 << 5);
-	pci_write_byte(dev, 0x8a, byte);
+	val |= (1 << 6);
+	val &= ~(1 << 5);
+	pci_write_byte(dev, 0x8a, val);
 #endif
 
 	/* Look for the SMBus device (SMBus PCI class) */
@@ -1224,16 +1224,16 @@ static int enable_flash_mcp7x(struct pci_dev *dev, const char *name)
 
 static int enable_flash_ht1000(struct pci_dev *dev, const char *name)
 {
-	uint8_t byte;
+	uint8_t val;
 
 	/* Set the 4MB enable bit. */
-	byte = pci_read_byte(dev, 0x41);
-	byte |= 0x0e;
-	pci_write_byte(dev, 0x41, byte);
+	val = pci_read_byte(dev, 0x41);
+	val |= 0x0e;
+	pci_write_byte(dev, 0x41, val);
 
-	byte = pci_read_byte(dev, 0x43);
-	byte |= (1 << 4);
-	pci_write_byte(dev, 0x43, byte);
+	val = pci_read_byte(dev, 0x43);
+	val |= (1 << 4);
+	pci_write_byte(dev, 0x43, val);
 
 	return 0;
 }
