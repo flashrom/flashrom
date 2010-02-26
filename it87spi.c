@@ -26,6 +26,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "flash.h"
+#include "chipdrivers.h"
 #include "spi.h"
 
 #define ITE_SUPERIO_PORT1	0x2e

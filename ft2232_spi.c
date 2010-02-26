@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include "flash.h"
+#include "chipdrivers.h"
 #include "spi.h"
 #include <ftdi.h>
 

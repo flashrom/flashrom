@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include "flash.h"
+#include "chipdrivers.h"
 #include "spi.h"
 
 /* Length of half a clock period in usecs */

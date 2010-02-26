@@ -20,6 +20,7 @@
 
 #include <string.h>
 #include "flash.h"
+#include "chipdrivers.h"
 #include "spi.h"
 
 #define WBSIO_PORT1	0x2e

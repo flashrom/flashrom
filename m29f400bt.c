@@ -19,6 +19,7 @@
  */
 
 #include "flash.h"
+#include "chipdrivers.h"
 
 /* WARNING! 
    This chip uses the standard JEDEC Addresses in 16-bit mode as word

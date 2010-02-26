@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #include "flash.h"
 #include "flashchips.h"
+#include "chipdrivers.h"
 
 static void wait_stm50flw0x0x(chipaddr bios)
 {

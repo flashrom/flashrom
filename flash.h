@@ -681,6 +681,4 @@ int serialport_shutdown(void);
 int serialport_write(unsigned char *buf, unsigned int writecnt);
 int serialport_read(unsigned char *buf, unsigned int readcnt);
 
-#include "chipdrivers.h"
-
 #endif				/* !__FLASH_H__ */

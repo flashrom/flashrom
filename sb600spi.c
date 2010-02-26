@@ -22,6 +22,7 @@
 
 #include <string.h>
 #include "flash.h"
+#include "chipdrivers.h"
 #include "spi.h"
 
 /* This struct is unused, but helps visualize the SB600 SPI BAR layout.
