@@ -110,6 +110,8 @@ void probe_superio(void)
 #endif
 }
 
+int is_laptop;
+
 int internal_init(void)
 {
 	int ret = 0;
@@ -130,6 +132,16 @@ int internal_init(void)
 
 	/* Probe for the SuperI/O chip and fill global struct superio. */
 	probe_superio();
+
+	/* Warn if a laptop is detected */
+	if (is_laptop)
+		printf("========================================================================\n"
+		       "WARNING! You seem to be running flashrom on a laptop.\n"
+		       "Laptops, notebooks and netbooks are difficult to support and we recommend\n"
+		       "to use the vendor flashing utility. The embedded controller (EC) in these\n"
+		       "machines often interacts badly with flashing\n"
+		       "See http://www.flashrom.org/Laptops\n"
+		       "========================================================================\n");
 
 	/* try to enable it. Failure IS an option, since not all motherboards
 	 * really need this to be done, etc., etc.
