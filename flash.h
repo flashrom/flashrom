@@ -382,6 +382,7 @@ struct pci_dev *pci_card_find(uint16_t vendor, uint16_t device,
 void get_io_perms(void);
 void release_io_perms(void);
 #if INTERNAL_SUPPORT == 1
+extern int is_laptop;
 void probe_superio(void);
 int internal_init(void);
 int internal_shutdown(void);
