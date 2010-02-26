@@ -98,6 +98,7 @@ static char *get_dmi_string(const char *string_name)
 void dmi_init(void)
 {
 	int i;
+	char *chassis_type;
 	has_dmi_support = 1;
 	for (i = 0; i < DMI_ID_INVALID; i++) {
 		dmistrings[i] = get_dmi_string(dmidecode_names[i]);
@@ -106,6 +107,13 @@ void dmi_init(void)
 			break;
 		}
 	}
+
+	chassis_type = get_dmi_string("chassis-type");
+	if (chassis_type && !strcmp(chassis_type, "Notebook")) {
+		printf_debug("Laptop detected via DMI");
+		is_laptop = 1;
+	}
+	free(chassis_type);
 }
 
 /**
