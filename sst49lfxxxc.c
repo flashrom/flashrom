@@ -22,6 +22,7 @@
 
 #include <stdlib.h>
 #include "flash.h"
+#include "chipdrivers.h"
 
 #define SECTOR_ERASE		0x30
 #define BLOCK_ERASE		0x20

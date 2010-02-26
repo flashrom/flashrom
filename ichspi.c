@@ -35,6 +35,7 @@
 
 #include <string.h>
 #include "flash.h"
+#include "chipdrivers.h"
 #include "spi.h"
 
 /* Change this to #define if you want lowlevel debugging of commands

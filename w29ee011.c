@@ -20,6 +20,7 @@
 
 #include <string.h>
 #include "flash.h"
+#include "chipdrivers.h"
 
 int probe_w29ee011(struct flashchip *flash)
 {

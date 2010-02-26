@@ -19,6 +19,7 @@
  */
 
 #include "flash.h"
+#include "chipdrivers.h"
 
 int probe_w39v040c(struct flashchip *flash)
 {
