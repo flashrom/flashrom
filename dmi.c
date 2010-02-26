@@ -54,55 +54,58 @@ char *dmistrings[DMI_ID_INVALID];
 /* strings longer than 4096 in DMI are just insane */
 #define DMI_MAX_ANSWER_LEN 4096
 
-void dmi_init(void)
+static char *get_dmi_string(const char *string_name)
 {
 	FILE *dmidecode_pipe;
-	int i;
-	char *answerbuf = malloc(DMI_MAX_ANSWER_LEN);
-	if(!answerbuf)
-	{
-		fprintf(stderr, "DMI: couldn't alloc answer buffer\n");
-		return;
+	char *result;
+	char answerbuf[DMI_MAX_ANSWER_LEN];
+	char commandline[DMI_COMMAND_LEN_MAX+40];
+	snprintf(commandline, sizeof(commandline),
+		 "%s -s %s", dmidecode_command, string_name);
+	dmidecode_pipe = popen(commandline, "r");
+	if (!dmidecode_pipe) {
+		printf_debug("DMI pipe open error\n");
+		return NULL;
 	}
-	for (i = 0; i < DMI_ID_INVALID; i++)
-	{
-		char commandline[DMI_COMMAND_LEN_MAX+40];
-		snprintf(commandline, sizeof(commandline),
-		         "%s -s %s", dmidecode_command, dmidecode_names[i]);
-		dmidecode_pipe = popen(commandline, "r");
-		if (!dmidecode_pipe)
-		{
-			printf_debug("DMI pipe open error\n");
-			goto out_free;
-		}
-		if (!fgets(answerbuf, DMI_MAX_ANSWER_LEN, dmidecode_pipe) &&
-		    ferror(dmidecode_pipe))
-		{
-			printf_debug("DMI pipe read error\n");
-			pclose(dmidecode_pipe);
-			goto out_free;
-		}
-		/* Toss all output above DMI_MAX_ANSWER_LEN away to prevent
-		   deadlock on pclose. */
-		while (!feof(dmidecode_pipe))
-			getc(dmidecode_pipe);
-		if (pclose(dmidecode_pipe) != 0)
-		{
-			printf_debug("DMI pipe close error\n");
-			goto out_free;
-		}
+	if (!fgets(answerbuf, DMI_MAX_ANSWER_LEN, dmidecode_pipe) &&
+	    ferror(dmidecode_pipe)) {
+		printf_debug("DMI pipe read error\n");
+		pclose(dmidecode_pipe);
+		return NULL;
+	}
+	/* Toss all output above DMI_MAX_ANSWER_LEN away to prevent
+	   deadlock on pclose. */
+	while (!feof(dmidecode_pipe))
+		getc(dmidecode_pipe);
+	if (pclose(dmidecode_pipe) != 0) {
+		printf_debug("DMI pipe close error\n");
+		return NULL;
+	}
 
-		/* chomp trailing newline */
-		if (answerbuf[0] != 0 &&
-		    answerbuf[strlen(answerbuf) - 1] == '\n')
-			answerbuf[strlen(answerbuf) - 1] = 0;
-		printf_debug("DMI string %s: \"%s\"\n", dmidecode_names[i],
-		             answerbuf);
-		dmistrings[i] = strdup(answerbuf);
-	}
+	/* chomp trailing newline */
+	if (answerbuf[0] != 0 &&
+	    answerbuf[strlen(answerbuf) - 1] == '\n')
+		answerbuf[strlen(answerbuf) - 1] = 0;
+	printf_debug("DMI string %s: \"%s\"\n", string_name, answerbuf);
+
+	result = strdup(answerbuf);
+	if (!result)
+		puts("WARNING: Out of memory - DMI support fails");
+
+	return result;
+}
+
+void dmi_init(void)
+{
+	int i;
 	has_dmi_support = 1;
-out_free:
-	free(answerbuf);
+	for (i = 0; i < DMI_ID_INVALID; i++) {
+		dmistrings[i] = get_dmi_string(dmidecode_names[i]);
+		if (!dmistrings[i]) {
+			has_dmi_support = 0;
+			break;
+		}
+	}
 }
 
 /**
