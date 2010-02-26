@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "flash.h"
+#include "chipdrivers.h"
 
 // I need that Berkeley bit-map printer
 void print_sst_fwhub_status(uint8_t status)

@@ -21,6 +21,7 @@
  */
 
 #include "flash.h"
+#include "chipdrivers.h"
 
 void write_lockbits_49fl00x(chipaddr bios, int size,
 			    unsigned char bits, int block_size)

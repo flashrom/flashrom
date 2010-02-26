@@ -24,6 +24,7 @@
 
 #include "flash.h"
 #include "flashchips.h"
+#include "chipdrivers.h"
 
 /**
  * List of supported flash chips.

@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include "flash.h"
+#include "chipdrivers.h"
 #include "spi.h"
 
 /* Change this to #define if you want to test without a serial implementation */

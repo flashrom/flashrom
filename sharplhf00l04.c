@@ -20,6 +20,7 @@
 
 #include <stdlib.h>
 #include "flash.h"
+#include "chipdrivers.h"
 
 // I need that Berkeley bit-map printer
 void print_lhf00l04_status(uint8_t status)

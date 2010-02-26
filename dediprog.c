@@ -23,6 +23,7 @@
 #include <sys/types.h>
 #include <usb.h>
 #include "flash.h"
+#include "chipdrivers.h"
 #include "spi.h"
 
 #define DEFAULT_TIMEOUT 3000

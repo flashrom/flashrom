@@ -19,6 +19,7 @@
  */
 
 #include "flash.h"
+#include "chipdrivers.h"
 
 static int unlock_block_winbond_fwhub(struct flashchip *flash, int offset)
 {
