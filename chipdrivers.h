@@ -87,10 +87,8 @@ void write_page_m29f400bt(chipaddr bios, uint8_t *src,
 			  chipaddr dst, int page_size);
 
 /* pm49fl00x.c */
-int probe_49fl00x(struct flashchip *flash);
-int erase_49fl00x(struct flashchip *flash);
-int write_49fl00x(struct flashchip *flash, uint8_t *buf);
 int unlock_49fl00x(struct flashchip *flash);
+int lock_49fl00x(struct flashchip *flash);
 
 /* sharplhf00l04.c */
 int probe_lhf00l04(struct flashchip *flash);
