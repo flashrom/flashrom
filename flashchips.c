@@ -1306,7 +1306,8 @@ struct flashchip flashchips[] = {
 				.block_erase = erase_chip_block_jedec,
 			}
 		},
-		.write		= write_49fl00x,
+		.unlock		= unlock_49fl00x,
+		.write		= write_jedec_1,
 		.read		= read_memmapped,
 	},
 
@@ -3347,7 +3348,7 @@ struct flashchip flashchips[] = {
 			}
 		},
 		.unlock		= unlock_49fl00x,
-		.write		= write_49fl00x,
+		.write		= write_jedec_1,
 		.read		= read_memmapped,
 	},
 
@@ -3377,7 +3378,7 @@ struct flashchip flashchips[] = {
 			}
 		},
 		.unlock		= unlock_49fl00x,
-		.write		= write_49fl00x,
+		.write		= write_jedec_1,
 		.read		= read_memmapped,
 	},
 
