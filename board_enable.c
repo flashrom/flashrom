@@ -233,6 +233,50 @@ static int it8705f_write_enable_2e(const char *name)
 	return it8705f_write_enable(0x2e, name);
 }
 
+static int pc87360_gpio_set(uint8_t gpio, int raise)
+{
+        static const int bankbase[] = {0, 4, 8, 10, 12};
+        int gpio_bank = gpio / 8;
+        int gpio_pin = gpio % 8;
+        uint16_t baseport;
+        uint8_t id;
+        uint8_t val;
+
+        if (gpio_bank > 4)
+        {
+                fprintf(stderr, "PC87360: Invalid GPIO %d\n", gpio);
+                return -1;
+        }
+
+        id = sio_read(0x2E, 0x20);
+        if (id != 0xE1)
+        {
+                fprintf(stderr, "PC87360: unexpected ID %02x\n", id);
+                return -1;
+        }
+
+        sio_write(0x2E, 0x07, 0x07);		/* select GPIO device */
+        baseport = (sio_read(0x2E, 0x60) << 8) | sio_read(0x2E, 0x61);
+        if((baseport & 0xFFF0) == 0xFFF0 || baseport == 0)
+        {
+                fprintf (stderr, "PC87360: invalid GPIO base address %04x\n",
+                         baseport);
+                return -1;
+        }
+        sio_mask (0x2E, 0x30, 0x01, 0x01);	/* Enable logical device */
+        sio_write(0x2E, 0xF0, gpio_bank*16 + gpio_pin);
+        sio_mask (0x2E, 0xF1, 0x01, 0x01);	/* Make pin output */
+
+        val = INB(baseport + bankbase[gpio_bank]);
+        if(raise)
+                val |= 1 << gpio_pin;
+        else
+                val &= ~(1 << gpio_pin);
+        OUTB(val, baseport + bankbase[gpio_bank]);
+
+        return 0;
+}
+
 /**
  * VT823x: Set one of the GPIO pins.
  */
@@ -880,6 +924,21 @@ static int intel_ich_gpio22_raise(const char *name)
 }
 
 /**
+ * Suited for HP Vectra VL400: 815 + ICH + PC87360.
+ */
+
+static int board_hp_vl400(const char *name)
+{
+        int ret;
+        ret = intel_ich_gpio_set(25, 1);	/* Master write enable ? */
+        if (!ret)
+                ret = pc87360_gpio_set(0x09, 1);	/* #WP ? */
+        if (!ret)
+                ret = pc87360_gpio_set(0x27, 1);	/* #TBL */
+        return ret;
+}
+
+/**
  * Suited for:
  * - Dell Poweredge 1850: Intel PPGA604 + E7520 + ICH5R.
  * - ASRock P4i65GV: Intel Socket478 + 865GV + ICH5R.
@@ -1227,6 +1286,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x1002, 0x4398, 0x1458, 0x5004,  0x1002, 0x4391, 0x1458, 0xb002, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-MA78GM-S2H",         0,   it87xx_probe_spi_flash},
 	{0x1002, 0x438d, 0x1458, 0x5001,  0x1002, 0x5956, 0x1002, 0x5956, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-MA790FX-DQ6",        0,   it87xx_probe_spi_flash},
 	{0x1166, 0x0223, 0x103c, 0x320d,  0x102b, 0x0522, 0x103c, 0x31fa, NULL,          "hp",         "dl145_g3",    "HP",          "DL145 G3",              0,   board_hp_dl145_g3_enable},
+	{0x8086, 0x2415, 0x103c, 0x1249,  0x10b7, 0x9200, 0x103c, 0x1246, NULL,          NULL,         NULL,          "HP",          "Vectra VL400",          0,   board_hp_vl400}, 
 	{0x1166, 0x0205, 0x1014, 0x0347,  0x1002, 0x515E, 0x1014, 0x0325, NULL,          NULL,         NULL,          "IBM",         "x3455",                 0,   board_ibm_x3455},
 	{0x1039, 0x5513, 0x8086, 0xd61f,  0x1039, 0x6330, 0x8086, 0xd61f, NULL,          NULL,         NULL,          "Intel",       "D201GLY",               0,   wbsio_check_for_spi},
 	{0x1022, 0x7468,      0,      0,       0,      0,      0,      0, NULL,          "iwill",      "dk8_htx",     "IWILL",       "DK8-HTX",               0,   w83627hf_gpio24_raise_2e},
