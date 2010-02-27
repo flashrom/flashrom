@@ -43,6 +43,12 @@ int unlock_49fl00x(struct flashchip *flash)
 	return 0;
 }
 
+int lock_49fl00x(struct flashchip *flash)
+{
+	write_lockbits_49fl00x(flash->virtual_registers, flash->total_size * 1024, 1, flash->page_size);
+	return 0;
+}
+
 int erase_49fl00x(struct flashchip *flash)
 {
 	int i;
