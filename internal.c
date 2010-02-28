@@ -100,6 +100,7 @@ struct pci_dev *pci_card_find(uint16_t vendor, uint16_t device,
 
 #if INTERNAL_SUPPORT == 1
 struct superio superio = {};
+int force_boardenable = 0;
 
 void probe_superio(void)
 {
@@ -116,6 +117,25 @@ int internal_init(void)
 {
 	int ret = 0;
 
+	if (programmer_param && !strlen(programmer_param)) {
+		free(programmer_param);
+		programmer_param = NULL;
+	}
+	if (programmer_param) {
+		char *arg;
+		arg = extract_param(&programmer_param, "boardenable=", ",:");
+		if (arg && !strcmp(arg,"force"))
+			force_boardenable = 1;
+		else if (arg)
+			msg_perr("Unknown argument for boardenable: %s\n", arg);
+		free(arg);
+
+		if (strlen(programmer_param))
+			msg_perr("Unhandled programmer parameters: %s\n",
+				programmer_param);
+		free(programmer_param);
+		programmer_param = NULL;
+	}
 	get_io_perms();
 
 	/* Initialize PCI access for flash enables */
