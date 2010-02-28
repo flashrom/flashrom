@@ -288,6 +288,7 @@ struct board_pciid_enable {
 	const char *board_name;
 
 	int max_rom_decode_parallel;
+	int status;
 	int (*enable) (const char *name);
 };
 
@@ -383,6 +384,7 @@ void get_io_perms(void);
 void release_io_perms(void);
 #if INTERNAL_SUPPORT == 1
 extern int is_laptop;
+extern int force_boardenable;
 void probe_superio(void);
 int internal_init(void);
 int internal_shutdown(void);
