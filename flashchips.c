@@ -2095,6 +2095,33 @@ struct flashchip flashchips[] = {
 	},
 
 	{
+		.vendor		= "Eon",
+		.name		= "EN29F010",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= EON_ID,
+		.model_id	= EN_29F010,
+		.total_size	= 128,
+		.page_size	= 128,
+		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_EITHER_RESET,
+		.tested		= TEST_OK_PREW,
+		.probe		= probe_jedec,
+		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {16 * 1024, 8} },
+				.block_erase = erase_sector_jedec,
+			},
+			{
+				.eraseblocks = { {128 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			},
+		},
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+	},
+
+	{
 		.vendor		= "EON",
 		.name		= "EN29F002(A)(N)B",
 		.bustype	= CHIP_BUSTYPE_PARALLEL,
