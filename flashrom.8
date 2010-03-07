@@ -175,6 +175,47 @@ colon. While some programmers take arguments at fixed positions, other
 programmers use a key/value interface in which the key and value is separated
 by an equal sign and different pairs are separated by a comma or a colon.
 .TP
+.BR "internal " programmer
+Some mainboards require to run mainboard specific code to enable flash erase
+and write support (and probe support on old systems with parallel flash).
+The mainboard brand and model (if it requires specific code) is usually
+autodetected using one of the following mechanisms: If your system is
+running coreboot, the mainboard type is determined from the coreboot table,
+otherwise, the mainboard is detected by examining the onboard PCI devices
+and possibly DMI info. If PCI and DMI do not contain information to uniquely
+identify the mainboard (which is the exception), it might be necessary to
+specify the mainboard using the \-m switch (see above).
+.sp
+Some of these board-specific flash enabling functions (called board enables)
+in flashrom have not yet been tested. If your mainboard is detected needing
+an untested board enable function, a warning message is printed and the
+board enable is not executed, because a wrong board enable function might
+cause the system to behave erratically, as board enable functions touch the
+low-level internals of a mainboard. Not executing a board enable function
+(if one is needed) might cause detection or erasing failure. If your board
+protects only part of the flash (commonly the top end, called boot block),
+flashrom might encounter an error only after erasing the unprotected part,
+so running without the board-enable function might be dangerous for erase
+and write (which includes erase).
+.sp
+The suggested procedure for a mainboard with untested board specific code is
+to first try to probe the ROM (just invoke flashrom and check that it
+detects your flash chip type) without running the board enable code (i.e.
+without any parameters). If it finds your chip, fine, otherwise, retry
+probing your chip with the board-enable code running, using
+.sp
+.B "flashrom -p internal:boardenable=force"
+.sp
+If your chip is still not detected, the board enable code seems to be broken
+or the flash chip unsupported. Otherwise, make a backup of your current ROM
+contents (using \-r) and store it to a medium outside of your computer, like
+an USB drive or a network share. If you needed to run the board enable code
+already for probing, use it for reading too. Now you can try to write the
+new image. You should enable the board enable code in any case now, as it
+has been written because it is known that writing/erasing without the board
+enable is going to fail. In any case (success or failure), please report to
+the flashrom mailing list, see below.
+.sp
 .BR "dummy " programmer
 An optional parameter specifies the bus types it
 should support. For that you have to use the
