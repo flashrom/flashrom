@@ -554,6 +554,7 @@ static int nvidia_mcp_gpio0_raise(const char *name)
 
 /**
  * Suited for MSI K8N Neo4: nVidia CK804.
+ * Suited for MSI K8N GM2-L: nVidia MCP51.
  */
 static int nvidia_mcp_gpio2_raise(const char *name)
 {
@@ -1312,6 +1313,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x1039, 0x7012, 0x1462, 0x0050,  0x1039, 0x6325, 0x1462, 0x0058, NULL,          NULL,         NULL,          "MSI",         "MS-7005 (651M-L)",      0,   OK, board_msi_651ml},
 	{0x8086, 0x2658, 0x1462, 0x7046,  0x1106, 0x3044, 0x1462, 0x046d, NULL,          NULL,         NULL,          "MSI",         "MS-7046",               0,   OK, intel_ich_gpio19_raise},
 	{0x10DE, 0x005E, 0x1462, 0x7135,  0x10DE, 0x0050, 0x1462, 0x7135, NULL,          "msi",        "k8n-neo3",    "MSI",         "MS-7135 (K8N Neo3)",    0,   OK, w83627thf_gpio4_4_raise_4e},
+	{0x10DE, 0x0270, 0x1462, 0x7207,  0x10DE, 0x0264, 0x1462, 0x7207, NULL,          NULL,         NULL,          "MSI",         "MS-7207 (K8N GM2-L)",   0,   NT, nvidia_mcp_gpio2_raise},
 	{0x10DE, 0x005E, 0x1462, 0x7125,  0x10DE, 0x0052, 0x1462, 0x7125, NULL,          NULL,         NULL,          "MSI",         "K8N Neo4-F",            0,   OK, nvidia_mcp_gpio2_raise},
 	{0x1106, 0x3099,      0,      0,  0x1106, 0x3074,      0,      0, NULL,          "shuttle",    "ak31",        "Shuttle",     "AK31",                  0,   OK, w836xx_memw_enable_2e},
 	{0x1106, 0x3104, 0x1297, 0xa238,  0x1106, 0x3059, 0x1297, 0xc063, NULL,          NULL,         NULL,          "Shuttle",     "AK38N",                 256, OK, it8705f_write_enable_2e},
