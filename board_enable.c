@@ -917,7 +917,9 @@ static int intel_ich_gpio21_raise(const char *name)
 }
 
 /**
- * Suited for ASUS P4B266: socket478 + intel 845D + ICH2.
+ * Suited for:
+ *  - Asus P4B266: socket478 + intel 845D + ICH2.
+ *  - Asus P4B-MX variant in HP Vectra VL420 SFF: socket478 + 845D + ICH2
  */
 static int intel_ich_gpio22_raise(const char *name)
 {
@@ -1289,6 +1291,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x1002, 0x438d, 0x1458, 0x5001,  0x1002, 0x5956, 0x1002, 0x5956, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-MA790FX-DQ6",        0,   OK, it87xx_probe_spi_flash},
 	{0x1166, 0x0223, 0x103c, 0x320d,  0x102b, 0x0522, 0x103c, 0x31fa, NULL,          "hp",         "dl145_g3",    "HP",          "DL145 G3",              0,   OK, board_hp_dl145_g3_enable},
 	{0x8086, 0x2415, 0x103c, 0x1249,  0x10b7, 0x9200, 0x103c, 0x1246, NULL,          NULL,         NULL,          "HP",          "Vectra VL400",          0,   OK, board_hp_vl400}, 
+	{0x8086, 0x1a30, 0x103c, 0x1a30,  0x8086, 0x2443, 0x103c, 0x2440, "^VL420$",     NULL,         NULL,          "HP",          "VL420 SFF",             0,   OK, intel_ich_gpio22_raise},
 	{0x1166, 0x0205, 0x1014, 0x0347,  0x1002, 0x515E, 0x1014, 0x0325, NULL,          NULL,         NULL,          "IBM",         "x3455",                 0,   OK, board_ibm_x3455},
 	{0x1039, 0x5513, 0x8086, 0xd61f,  0x1039, 0x6330, 0x8086, 0xd61f, NULL,          NULL,         NULL,          "Intel",       "D201GLY",               0,   OK, wbsio_check_for_spi},
 	{0x1022, 0x7468,      0,      0,       0,      0,      0,      0, NULL,          "iwill",      "dk8_htx",     "IWILL",       "DK8-HTX",               0,   OK, w83627hf_gpio24_raise_2e},
