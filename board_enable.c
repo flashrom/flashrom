@@ -1425,30 +1425,6 @@ static struct board_pciid_enable *board_match_pci_card_ids(void)
 			}
 		}
 
-		if (board->status == NT) {
-			if (!force_boardenable)
-			{
-				printf("WARNING: Your mainboard is %s %s, but the mainboard-specific\n"
-				       "code has not been marked as working. To help flashrom development, please\n"
-				       "test flashrom on your board. As the code to support your board is untested,\n"
-				       "we strongly recommend that as an additional safety measure you make\n"
-				       "store backup of your current ROM contents (obtained by flashrom -r) on\n"
-				       "a medium that can be accessed from a different computer (like an USB\n"
-				       "drive or a network share of another system) before you try to erase or\n"
-				       "write.\n"
-				       "The untested code does not run unless you specify the\n"
-				       " \"-p internal:boardenable=force\" command line option. Depending on your\n"
-				       "hardware environment, erasing, writing or even probing can fail without\n"
-				       "running the board specific code. Running the board-specific code might\n"
-				       "cause your computer to behave erratically if it is wrong.\n"
-				       "Please report the results of running the board enable code to\n"
-				       "flashrom@flashrom.org.\n",
-				       board->vendor_name, board->board_name);
-				continue;
-			}
-			printf("NOTE: Running an untested board enable procedure.\n"
-			       "Please report success/failure to flashrom@flashrom.org\n");
-		}
 		return board;
 	}
 
@@ -1465,6 +1441,23 @@ int board_flash_enable(const char *vendor, const char *part)
 
 	if (!board)
 		board = board_match_pci_card_ids();
+
+        if (board->status == NT) {
+                if (!force_boardenable)
+                {
+                        printf("WARNING: Your mainboard is %s %s, but the mainboard-specific\n"
+                               "code has not been tested, and thus will not not be executed by default.\n"
+                               "Depending on your hardware environment, erasing, writing or even probing\n"
+                               "can fail without running the board specific code.\n\n"
+                               "Please see the man page (section PROGRAMMER SPECIFIC INFO, subsection\n"
+                               "\"internal programmer\") for details\n",
+                               board->vendor_name, board->board_name);
+                        board = NULL;
+                }
+                else
+                        printf("NOTE: Running an untested board enable procedure.\n"
+                               "Please report success/failure to flashrom@flashrom.org\n");
+        }
 
 	if (board) {
 		if (board->max_rom_decode_parallel)
