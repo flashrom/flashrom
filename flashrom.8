@@ -131,7 +131,7 @@ Same as
 but outputs the supported hardware in MediaWiki syntax, so that it can be
 easily pasted into the wiki page at http://www.flashrom.org/.
 .TP
-.B "\-p, \-\-programmer <name>"
+.B "\-p, \-\-programmer <name>[:parameters]"
 Specify the programmer device. Currently supported are:
 .sp
 .BR "* internal" " (default, for in-system flashing in the mainboard)"
@@ -156,7 +156,27 @@ Specify the programmer device. Currently supported are:
 .sp
 .BR "* buspiratespi" " (for flash ROMs attached to a Bus Pirate)"
 .sp
-The dummy programmer has an optional parameter specifying the bus types it
+Some programmers have optional or mandatory parameters which are described
+in detail in the
+.B PROGRAMMER SPECIFIC INFO
+section. Support for some programmers can be disabled at compile time.
+.B "flashrom -h"
+lists all supported programmers.
+.TP
+.B "\-h, \-\-help"
+Show a help text and exit.
+.TP
+.B "\-R, \-\-version"
+Show version information and exit.
+.SH PROGRAMMER SPECIFIC INFO
+Some programmer drivers accept further parameters to set programmer-specific
+parameters. These parameters are seperated from the programmer name by a
+colon. While some programmers take arguments at fixed positions, other
+programmers use a key/value interface in which the key and value is separated
+by an equal sign and different pairs are separated by a comma or a colon.
+.TP
+.BR "dummy " programmer
+An optional parameter specifies the bus types it
 should support. For that you have to use the
 .B "flashrom -p dummy:type"
 syntax where
@@ -167,11 +187,13 @@ in any order.
 .sp
 Example:
 .B "flashrom -p dummy:lpc,fwh"
-.sp
-If you have multiple supported PCI cards which can program flash chips
-(NICs, SATA/IDE controllers, etc.) in your system, you must use the
+.TP
+.BR "nic3com" , " gfxnvidia" , " satasii" and " atahpt " programmers
+These programmers have an option to specify the PCI address of the card
+your want to use, which must be specified if more than one card supported
+by the selected programmer is installed in your system. The syntax is
 .B "flashrom -p xxxx:bb:dd.f"
-syntax to explicitly select one of them, where
+, where
 .B xxxx
 is the name of the programmer
 .B bb
@@ -183,22 +205,18 @@ is the PCI function number of the desired NIC.
 .sp
 Example:
 .B "flashrom -p nic3com:05:04.0"
-.sp
-Currently the following programmers support this mechanism:
-.BR nic3com ,
-.BR gfxnvidia ,
-.BR satasii ,
-.BR atahpt .
-.sp
-The it87spi programmer has an optional parameter which will set the I/O base
-port of the IT87* SPI controller interface to the port specified in the
-parameter. For that you have to use the
+.TP
+.BR "it87spi " programmer
+An optional parameter sets the I/O base port of the IT87* SPI controller
+interface to the port specified in the parameter instead of using the port
+address set by the BIOS. For that you have to use the
 .B "flashrom -p it87spi:port=portnum"
 syntax where
 .B portnum
 is an I/O port number which must be a multiple of 8.
-.sp
-The ft2232spi programmer has an optional parameter specifying the controller
+.TP
+.BR "ft2232spi " programmer
+An optional parameter species the controller
 type and interface/port it should support. For that you have to use the
 .B "flashrom -p ft2232spi:model,port=interface"
 syntax where
@@ -208,41 +226,35 @@ can be any of
 and
 .B interface
 can be any of
-.B A
-.BR B .
+.BR "A B" .
 The default model is
 .B 4232H
 and the default interface is
 .BR B .
-.sp
-The serprog programmer has an optional parameter specifying either a serial
+.TP
+.BR "serprog " programmer
+A mandatory parameter specifies either a serial
 device/baud combination or an IP/port combination for communication with the
-programmer. For serial, you have to use the
+programmer. In the device/baud combination, the device has to start with a
+slash. For serial, you have to use the
 .B "flashrom -p serprog:/dev/device:baud"
 syntax and for IP, you have to use
 .B "flashrom -p serprog:ip:port"
 instead. More information about serprog is available in serprog-protocol.txt in
 the source distribution.
+.TP
+.BR "buspiratespi " programmer
+A required dev parameter specifyies the Bus Pirate device node and an optional
+spispeed parameter specifyies the frequency of the SPI bus. The parameter
+delimiter is a comma. Syntax is
 .sp
-The buspiratespi programmer has a required dev parameter specifying the Bus
-Pirate device node and an optional spispeed parameter specifying the frequency
-of the SPI bus. The parameter delimiter is a comma. Syntax is
 .B "flashrom -p buspiratespi:dev=/dev/device,spispeed=frequency"
+.sp
 where
 .B frequency
 can be any of
 .B 30k 125k 250k 1M 2M 2.6M 4M 8M
-(in Hz).
-.sp
-Support for some programmers can be disabled at compile time.
-.B "flashrom -h"
-lists all supported programmers.
-.TP
-.B "\-h, \-\-help"
-Show a help text and exit.
-.TP
-.B "\-R, \-\-version"
-Show version information and exit.
+(in Hz). The default is the maximum frequency of 8 MHz.
 .SH EXIT STATUS
 flashrom exits with 0 on success, 1 on most failures but with 2 if /dev/mem
 (/dev/xsvc on Solaris) can not be opened and with 3 if a call to mmap() fails.
