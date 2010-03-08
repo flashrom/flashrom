@@ -620,6 +620,67 @@ out_free:
 	return ret;
 }
 
+/**
+ * Check if the buffer @have can be programmed to the content of @want without
+ * erasing. This is only possible if all chunks of size @gran are either kept
+ * as-is or changed from an all-ones state to any other state.
+ * The following write granularities (enum @gran) are known:
+ * - 1 bit. Each bit can be cleared individually.
+ * - 1 byte. A byte can be written once. Further writes to an already written
+ *   byte cause the contents to be either undefined or to stay unchanged.
+ * - 128 bytes. If less than 128 bytes are written, the rest will be
+ *   erased. Each write to a 128-byte region will trigger an automatic erase
+ *   before anything is written. Very uncommon behaviour and unsupported by
+ *   this function.
+ * - 256 bytes. If less than 256 bytes are written, the contents of the
+ *   unwritten bytes are undefined.
+ *
+ * @have        buffer with current content
+ * @want        buffer with desired content
+ * @len         length of the verified area
+ * @gran	write granularity (enum, not count)
+ * @return      0 if no erase is needed, 1 otherwise
+ */
+int need_erase(uint8_t *have, uint8_t *want, int len, enum write_granularity gran)
+{
+	int result = 0;
+	int i, j, limit;
+
+	switch (gran) {
+	case write_gran_1bit:
+		for (i = 0; i < len; i++)
+			if ((have[i] & want[i]) != want[i]) {
+				result = 1;
+				break;
+			}
+		break;
+	case write_gran_1byte:
+		for (i = 0; i < len; i++)
+			if ((have[i] != want[i]) && (have[i] != 0xff)) {
+				result = 1;
+				break;
+			}
+		break;
+	case write_gran_256bytes:
+		for (j = 0; j < len / 256; j++) {
+			limit = min (256, len - j * 256);
+			/* Are have and want identical? */
+			if (!memcmp(have + j * 256, want + j * 256, limit))
+				continue;
+			/* have needs to be in erased state. */
+			for (i = 0; i < limit; i++)
+				if (have[i] != 0xff) {
+					result = 1;
+					break;
+				}
+			if (result)
+				break;
+		}
+		break;
+	}
+	return result;
+}
+
 /* This function generates various test patterns useful for testing controller
  * and chip communication as well as chip behaviour.
  *
