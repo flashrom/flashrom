@@ -512,6 +512,11 @@ int dediprog_spi_send_command(unsigned int writecnt, unsigned int readcnt, const
 int dediprog_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
 
 /* flashrom.c */
+enum write_granularity {
+	write_gran_1bit,
+	write_gran_1byte,
+	write_gran_256bytes,
+};
 extern enum chipbustype buses_supported;
 struct decode_sizes {
 	uint32_t parallel;
@@ -538,6 +543,7 @@ int max(int a, int b);
 char *extract_param(char **haystack, char *needle, char *delim);
 int check_erased_range(struct flashchip *flash, int start, int len);
 int verify_range(struct flashchip *flash, uint8_t *cmpbuf, int start, int len, char *message);
+int need_erase(uint8_t *have, uint8_t *want, int len, enum write_granularity gran);
 char *strcat_realloc(char *dest, const char *src);
 void print_version(void);
 int selfcheck(void);
