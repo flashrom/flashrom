@@ -1445,7 +1445,7 @@ int board_flash_enable(const char *vendor, const char *part)
 	if (!board)
 		board = board_match_pci_card_ids();
 
-        if (board->status == NT) {
+        if (board && board->status == NT) {
                 if (!force_boardenable)
                 {
                         printf("WARNING: Your mainboard is %s %s, but the mainboard-specific\n"
