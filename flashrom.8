@@ -22,7 +22,11 @@ checking that your flashrom version won't interpret options in a different way.
 .PP
 You can specify one of \-E, \-r, \-w, \-v or no operation.
 If no operation is specified, then all that happens
-is that flash info is dumped and the flash chip is set to writable.
+is that flash info is dumped and the flash chip is set to writable. It is
+recommended that if you try flashrom the first time on a system, you run it
+in probe only mode and check the output. Also you are advised to make a
+backup of your current ROM contents with \-r before you try to write a new
+image.
 .TP
 .B "\-r, \-\-read <file>"
 Read flash ROM contents and save them into the given
