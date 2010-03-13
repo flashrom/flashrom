@@ -79,7 +79,7 @@ static int enable_flash_decode_superio(void)
 		break;
 	case SUPERIO_VENDOR_ITE:
 		enter_conf_mode_ite(superio.port);
-		/* Enable flash mapping. Works for most old ITE style SuperI/O. */
+		/* Enable flash mapping. Works for most old ITE style Super I/O. */
 		tmp = sio_read(superio.port, 0x24);
 		tmp |= 0xfc;
 		sio_write(superio.port, 0x24, tmp);
@@ -87,7 +87,7 @@ static int enable_flash_decode_superio(void)
 		ret = 0;
 		break;
 	default:
-		printf_debug("Unhandled SuperI/O type!\n");
+		printf_debug("Unhandled Super I/O type!\n");
 		ret = -1;
 		break;
 	}
@@ -226,7 +226,7 @@ static int it8705f_write_enable(uint8_t port, const char *name)
  *  - GIGABYTE GA-7VT600: VIA KT600 + VT8237 + IT8705
  *  - Shuttle AK38N: VIA KT333CF + VIA VT8235 + ITE IT8705F
  *
- * SIS950 superio probably requires the same flash write enable.
+ * The SIS950 Super I/O probably requires the same flash write enable.
  */
 static int it8705f_write_enable_2e(const char *name)
 {
@@ -239,36 +239,32 @@ static int pc87360_gpio_set(uint8_t gpio, int raise)
         int gpio_bank = gpio / 8;
         int gpio_pin = gpio % 8;
         uint16_t baseport;
-        uint8_t id;
-        uint8_t val;
+        uint8_t id, val;
 
-        if (gpio_bank > 4)
-        {
+        if (gpio_bank > 4) {
                 fprintf(stderr, "PC87360: Invalid GPIO %d\n", gpio);
                 return -1;
         }
 
         id = sio_read(0x2E, 0x20);
-        if (id != 0xE1)
-        {
+        if (id != 0xE1) {
                 fprintf(stderr, "PC87360: unexpected ID %02x\n", id);
                 return -1;
         }
 
-        sio_write(0x2E, 0x07, 0x07);		/* select GPIO device */
+        sio_write(0x2E, 0x07, 0x07);		/* Select GPIO device */
         baseport = (sio_read(0x2E, 0x60) << 8) | sio_read(0x2E, 0x61);
-        if((baseport & 0xFFF0) == 0xFFF0 || baseport == 0)
-        {
+        if ((baseport & 0xFFF0) == 0xFFF0 || baseport == 0) {
                 fprintf (stderr, "PC87360: invalid GPIO base address %04x\n",
                          baseport);
                 return -1;
         }
         sio_mask (0x2E, 0x30, 0x01, 0x01);	/* Enable logical device */
-        sio_write(0x2E, 0xF0, gpio_bank*16 + gpio_pin);
+        sio_write(0x2E, 0xF0, gpio_bank * 16 + gpio_pin);
         sio_mask (0x2E, 0xF1, 0x01, 0x01);	/* Make pin output */
 
         val = INB(baseport + bankbase[gpio_bank]);
-        if(raise)
+        if (raise)
                 val |= 1 << gpio_pin;
         else
                 val &= ~(1 << gpio_pin);
@@ -1028,8 +1024,7 @@ static int board_soyo_sy_7vca(const char *name)
 static int board_msi_651ml(const char *name)
 {
     	struct pci_dev *dev;
-	uint16_t base;
-	uint16_t temp;
+	uint16_t base, temp;
 
 	dev = pci_dev_find(0x1039, 0x0962);
 	if (!dev) {
@@ -1133,7 +1128,7 @@ static int board_asus_a7v8x(const char *name)
 	w836xx_ext_leave(0x2E);
 
 	if (id != 0x8701) {
-		fprintf(stderr, "\nERROR: IT8703F SuperIO not found.\n");
+		fprintf(stderr, "\nERROR: IT8703F Super I/O not found.\n");
 		return -1;
 	}
 
@@ -1144,7 +1139,7 @@ static int board_asus_a7v8x(const char *name)
 	w836xx_ext_leave(0x2E);
 
 	if (!base) {
-		fprintf(stderr, "\nERROR: Failed to read IT8703F SuperIO GPIO"
+		fprintf(stderr, "\nERROR: Failed to read IT8703F Super I/O GPIO"
 			" Base.\n");
 		return -1;
 	}
@@ -1161,8 +1156,7 @@ static int board_asus_a7v8x(const char *name)
  * General routine for raising/dropping GPIO lines on the ITE IT8712F.
  * There is only some limited checking on the port numbers.
  */
-static int
-it8712f_gpio_set(unsigned int line, int raise)
+static int it8712f_gpio_set(unsigned int line, int raise)
 {
 	unsigned int port;
 	uint16_t id, base;
@@ -1186,7 +1180,7 @@ it8712f_gpio_set(unsigned int line, int raise)
 	exit_conf_mode_ite(0x2E);
 
 	if (id != 0x8712) {
-		fprintf(stderr, "\nERROR: IT8712F SuperIO not found.\n");
+		fprintf(stderr, "\nERROR: IT8712F Super I/O not found.\n");
 		return -1;
 	}
 
@@ -1197,7 +1191,7 @@ it8712f_gpio_set(unsigned int line, int raise)
 	exit_conf_mode_ite(0x2E);
 
 	if (!base) {
-		fprintf(stderr, "\nERROR: Failed to read IT8712F SuperIO GPIO"
+		fprintf(stderr, "\nERROR: Failed to read IT8712F Super I/O GPIO"
 			" Base.\n");
 		return -1;
 	}
@@ -1446,20 +1440,19 @@ int board_flash_enable(const char *vendor, const char *part)
 		board = board_match_pci_card_ids();
 
         if (board && board->status == NT) {
-                if (!force_boardenable)
-                {
+                if (!force_boardenable) {
                         printf("WARNING: Your mainboard is %s %s, but the mainboard-specific\n"
                                "code has not been tested, and thus will not not be executed by default.\n"
                                "Depending on your hardware environment, erasing, writing or even probing\n"
                                "can fail without running the board specific code.\n\n"
                                "Please see the man page (section PROGRAMMER SPECIFIC INFO, subsection\n"
-                               "\"internal programmer\") for details\n",
+                               "\"internal programmer\") for details.\n",
                                board->vendor_name, board->board_name);
                         board = NULL;
-                }
-                else
+                } else {
                         printf("NOTE: Running an untested board enable procedure.\n"
-                               "Please report success/failure to flashrom@flashrom.org\n");
+                               "Please report success/failure to flashrom@flashrom.org.\n");
+		}
         }
 
 	if (board) {

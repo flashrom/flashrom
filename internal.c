@@ -105,7 +105,8 @@ int force_boardenable = 0;
 void probe_superio(void)
 {
 	superio = probe_superio_ite();
-#if 0	/* Winbond SuperI/O code is not yet available. */
+#if 0
+	/* Winbond Super I/O code is not yet available. */
 	if (superio.vendor == SUPERIO_VENDOR_NONE)
 		superio = probe_superio_winbond();
 #endif
@@ -150,17 +151,17 @@ int internal_init(void)
 	coreboot_init();
 	dmi_init();
 
-	/* Probe for the SuperI/O chip and fill global struct superio. */
+	/* Probe for the Super I/O chip and fill global struct superio. */
 	probe_superio();
 
-	/* Warn if a laptop is detected */
+	/* Warn if a laptop is detected. */
 	if (is_laptop)
 		printf("========================================================================\n"
 		       "WARNING! You seem to be running flashrom on a laptop.\n"
 		       "Laptops, notebooks and netbooks are difficult to support and we recommend\n"
 		       "to use the vendor flashing utility. The embedded controller (EC) in these\n"
-		       "machines often interacts badly with flashing\n"
-		       "See http://www.flashrom.org/Laptops\n"
+		       "machines often interacts badly with flashing.\n"
+		       "See http://www.flashrom.org/Laptops for details.\n"
 		       "========================================================================\n");
 
 	/* try to enable it. Failure IS an option, since not all motherboards
