@@ -664,7 +664,7 @@ int need_erase(uint8_t *have, uint8_t *want, int len, enum write_granularity gra
 	case write_gran_256bytes:
 		for (j = 0; j < len / 256; j++) {
 			limit = min (256, len - j * 256);
-			/* Are have and want identical? */
+			/* Are 'have' and 'want' identical? */
 			if (!memcmp(have + j * 256, want + j * 256, limit))
 				continue;
 			/* have needs to be in erased state. */
@@ -1028,7 +1028,7 @@ int selfcheck_eraseblocks(struct flashchip *flash)
 		 * layouts. That would imply "magic" erase functions. The
 		 * easiest way to check this is with function pointers.
 		 */
-		for (j = k + 1; j < NUM_ERASEFUNCTIONS; j++)
+		for (j = k + 1; j < NUM_ERASEFUNCTIONS; j++) {
 			if (eraser.block_erase ==
 			    flash->block_erasers[j].block_erase) {
 				msg_gerr("ERROR: Flash chip %s erase function "
@@ -1037,6 +1037,7 @@ int selfcheck_eraseblocks(struct flashchip *flash)
 					flash->name, k, j);
 				ret = 1;
 			}
+		}
 	}
 	return ret;
 }
@@ -1198,7 +1199,7 @@ void check_chip_supported(struct flashchip *flash)
 		       "this flash part. Please include the flashrom\noutput "
 		       "with the additional -V option for all operations you "
 		       "tested (-V, -rV,\n-wV, -EV), and mention which "
-		       "mainboard or programmer you tested. Thanks for your "
+		       "mainboard or programmer you tested.\nThanks for your "
 		       "help!\n===\n");
 	}
 }

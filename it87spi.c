@@ -81,7 +81,7 @@ struct superio probe_superio_ite(void)
 		case 0x82:
 		case 0x86:
 		case 0x87:
-			msg_pinfo("Found ITE SuperI/O, id %04hx\n",
+			msg_pinfo("Found ITE Super I/O, id %04hx\n",
 				     ret.model);
 			return ret;
 		}
@@ -170,7 +170,7 @@ int it87spi_init(void)
 	int ret;
 
 	get_io_perms();
-	/* Probe for the SuperI/O chip and fill global struct superio. */
+	/* Probe for the Super I/O chip and fill global struct superio. */
 	probe_superio();
 	ret = it87spi_common_init();
 	if (!ret) {

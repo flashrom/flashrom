@@ -31,18 +31,20 @@ enum dmi_strings {
 	DMI_BB_MANUFACTURER,
 	DMI_BB_PRODUCT,
 	DMI_BB_VERSION,
-	DMI_ID_INVALID /* This must always be the last entry */
+	DMI_ID_INVALID, /* This must always be the last entry! */
 };
 
-/* The short_id for baseboard starts with "m" as in mainboard to leave
-   "b" available for BIOS */
+/*
+ * The short_id for baseboard starts with "m" as in mainboard to leave
+ * "b" available for BIOS.
+ */
 const char *dmidecode_names[DMI_ID_INVALID] = {
 	"system-manufacturer",
 	"system-product-name",
 	"system-version",
 	"baseboard-manufacturer",
 	"baseboard-product-name",
-	"baseboard-version"
+	"baseboard-version",
 };
 
 #define DMI_COMMAND_LEN_MAX 260
@@ -51,7 +53,7 @@ const char *dmidecode_command = "dmidecode";
 int has_dmi_support = 0;
 char *dmistrings[DMI_ID_INVALID];
 
-/* strings longer than 4096 in DMI are just insane */
+/* Strings longer than 4096 in DMI are just insane. */
 #define DMI_MAX_ANSWER_LEN 4096
 
 static char *get_dmi_string(const char *string_name)
@@ -59,7 +61,8 @@ static char *get_dmi_string(const char *string_name)
 	FILE *dmidecode_pipe;
 	char *result;
 	char answerbuf[DMI_MAX_ANSWER_LEN];
-	char commandline[DMI_COMMAND_LEN_MAX+40];
+	char commandline[DMI_COMMAND_LEN_MAX + 40];
+
 	snprintf(commandline, sizeof(commandline),
 		 "%s -s %s", dmidecode_command, string_name);
 	dmidecode_pipe = popen(commandline, "r");
@@ -82,7 +85,7 @@ static char *get_dmi_string(const char *string_name)
 		return NULL;
 	}
 
-	/* chomp trailing newline */
+	/* Chomp trailing newline. */
 	if (answerbuf[0] != 0 &&
 	    answerbuf[strlen(answerbuf) - 1] == '\n')
 		answerbuf[strlen(answerbuf) - 1] = 0;
@@ -99,6 +102,7 @@ void dmi_init(void)
 {
 	int i;
 	char *chassis_type;
+
 	has_dmi_support = 1;
 	for (i = 0; i < DMI_ID_INVALID; i++) {
 		dmistrings[i] = get_dmi_string(dmidecode_names[i]);
@@ -131,8 +135,9 @@ static int dmi_compare(const char *value, const char *pattern)
 {
 	int anchored = 0;
 	int patternlen;
+
 	printf_debug("matching %s against %s\n", value, pattern);
-	/* The empty string is part of all strings */
+	/* The empty string is part of all strings! */
 	if (pattern[0] == 0)
 		return 1;
 
@@ -145,11 +150,11 @@ static int dmi_compare(const char *value, const char *pattern)
 	if (pattern[patternlen - 1] == '$') {
 		int valuelen = strlen(value);
 		patternlen--;
-		if(patternlen > valuelen)
+		if (patternlen > valuelen)
 			return 0;
 
 		/* full string match: require same length */
-		if(anchored && (valuelen != patternlen))
+		if (anchored && (valuelen != patternlen))
 			return 0;
 
 		/* start character to make ends match */
@@ -166,11 +171,12 @@ static int dmi_compare(const char *value, const char *pattern)
 int dmi_match(const char *pattern)
 {
 	int i;
+
 	if (!has_dmi_support)
 		return 0;
 
-	for (i = 0;i < DMI_ID_INVALID; i++)
-		if(dmi_compare(dmistrings[i], pattern))
+	for (i = 0; i < DMI_ID_INVALID; i++)
+		if (dmi_compare(dmistrings[i], pattern))
 			return 1;
 
 	return 0;

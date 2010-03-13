@@ -27,25 +27,25 @@ int print(int type, const char *fmt, ...)
 	va_list ap;
 	int ret;
 	FILE *output_type;
-	
-	switch (type)
-	{
+
+	switch (type) {
 	case MSG_ERROR:
 		output_type = stderr;
 		break;
 	case MSG_BARF:
-		if (verbose < 2) return 0;
+		if (verbose < 2)
+			return 0;
 	case MSG_DEBUG:
-		if (verbose < 1) return 0;
+		if (verbose < 1)
+			return 0;
 	case MSG_INFO:
 	default:
 		output_type = stdout;
 		break;
 	}
-	
+
 	va_start(ap, fmt);
 	ret = vfprintf(output_type, fmt, ap);
 	va_end(ap);
 	return ret;
 }
-
