@@ -105,13 +105,15 @@ fdtype sp_openserport(char *dev, unsigned int baud)
 {
 #ifdef _WIN32
 	HANDLE fd;
-	char* dev2 = dev;
-	if ((strlen(dev) > 3) && (tolower(dev[0])=='c') && (tolower(dev[1])=='o') && (tolower(dev[2])=='m')) {
-		dev2 = malloc(strlen(dev)+5);
+	char *dev2 = dev;
+	if ((strlen(dev) > 3) && (tolower(dev[0]) == 'c')
+	    && (tolower(dev[1]) == 'o') && (tolower(dev[2]) == 'm')) {
+		dev2 = malloc(strlen(dev) + 5);
 		strcpy(dev2, "\\\\.\\");
-		strcpy(dev2+4, dev);
+		strcpy(dev2 + 4, dev);
 	}
-	fd = CreateFile(dev2, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+	fd = CreateFile(dev2, GENERIC_READ | GENERIC_WRITE, 0, NULL,
+			OPEN_EXISTING, 0, NULL);
 	if (dev2 != dev)
 		free(dev2);
 	if (fd == INVALID_HANDLE_VALUE) {
@@ -129,9 +131,9 @@ fdtype sp_openserport(char *dev, unsigned int baud)
 		case 115200: dcb.BaudRate = CBR_115200; break;
 		default: sp_die("Error: Could not set baud rate");
 	}
-	dcb.ByteSize=8;
-	dcb.Parity=NOPARITY;
-	dcb.StopBits=ONESTOPBIT;
+	dcb.ByteSize = 8;
+	dcb.Parity = NOPARITY;
+	dcb.StopBits = ONESTOPBIT;
 	if (!SetCommState(fd, &dcb)) {
 		sp_die("Error: Could not change serial port configuration");
 	}
@@ -147,9 +149,8 @@ fdtype sp_openserport(char *dev, unsigned int baud)
 	for (i = 0;; i++) {
 		if (sp_baudtable[i].baud == 0) {
 			close(fd);
-			msg_perr(
-				"Error: cannot configure for baudrate %d\n",
-				baud);
+			msg_perr("Error: cannot configure for baudrate %d\n",
+				 baud);
 			exit(1);
 		}
 		if (sp_baudtable[i].baud == baud) {
