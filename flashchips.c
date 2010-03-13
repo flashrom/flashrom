@@ -2137,10 +2137,10 @@ struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { 
-					{64 * 1024, 3},
-					{32 * 1024, 1},
-					{8 * 1024, 2},
 					{16 * 1024, 1},
+					{8 * 1024, 2},
+					{32 * 1024, 1},
+					{64 * 1024, 3},
 				},
 				.block_erase = erase_sector_jedec,
 			}, {
@@ -2168,10 +2168,10 @@ struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { 
-					{16 * 1024, 1},
-					{8 * 1024, 2},
-					{32 * 1024, 1},
 					{64 * 1024, 3},
+					{32 * 1024, 1},
+					{8 * 1024, 2},
+					{16 * 1024, 1},
 				},
 				.block_erase = erase_sector_jedec,
 			}, {
