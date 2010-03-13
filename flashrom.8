@@ -62,6 +62,30 @@ More verbose output.
 .TP
 .B "\-c, \-\-chip" <chipname>
 Probe only for specified flash ROM chip.
+.TP
+.B "\-m, \-\-mainboard" <[vendor:]part>
+Override mainboard settings.
+.sp
+flashrom reads the coreboot table to determine the current mainboard. If no
+coreboot table could be read or if you want to override these values, you can
+specify \-m, e.g.:
+.sp
+.B "  flashrom -w --mainboard AGAMI:ARUMA agami_aruma.rom"
+.sp
+See the 'Supported mainboards' section in the output of 'flashrom \-L' for
+a list of boards which require the specification of the board name, if no
+coreboot table is found.
+.TP
+.B "\-f, \-\-force"
+Force write without checking whether the ROM image file is really meant
+to be used on this board.
+.sp
+Note: This check only works while coreboot is running, and only for those
+boards where the coreboot code supports it.
+.TP
+.B "\-l, \-\-layout <file>"
+Read ROM layout from
+.BR <file> .
 .sp
 flashrom supports ROM layouts. This allows you to flash certain parts of
 the flash chip only. A ROM layout file looks like follows:
@@ -89,30 +113,6 @@ Currently overlapping sections are not supported.
 ROM layouts should replace the \-s and \-e option since they are more
 flexible and they should lead to a ROM update file format with the
 ROM layout and the ROM image in one file (cpio, zip or something?).
-.TP
-.B "\-m, \-\-mainboard" <[vendor:]part>
-Override mainboard settings.
-.sp
-flashrom reads the coreboot table to determine the current mainboard. If no
-coreboot table could be read or if you want to override these values, you can
-specify \-m, e.g.:
-.sp
-.B "  flashrom -w --mainboard AGAMI:ARUMA agami_aruma.rom"
-.sp
-See the 'Supported mainboards' section in the output of 'flashrom \-L' for
-a list of boards which require the specification of the board name, if no
-coreboot table is found.
-.TP
-.B "\-f, \-\-force"
-Force write without checking whether the ROM image file is really meant
-to be used on this board.
-.sp
-Note: This check only works while coreboot is running, and only for those
-boards where the coreboot code supports it.
-.TP
-.B "\-l, \-\-layout <file>"
-Read ROM layout from
-.BR <file> .
 .TP
 .B "\-i, \-\-image <name>"
 Only flash image
