@@ -144,6 +144,7 @@ const struct board_info_url boards_url[] = {
 	{ "GIGABYTE",		"GA-6ZMA",		"http://www.gigabyte.de/Support/Motherboard/BIOS_Model.aspx?ProductID=3289" },
 	{ "GIGABYTE",		"GA-EX58-UD4P",		"http://www.gigabyte.com.tw/Products/Motherboard/Products_Overview.aspx?ProductID=2986" },
 	{ "GIGABYTE",		"GA-EP35-DS3L",		"http://www.gigabyte.com.tw/Products/Motherboard/Products_Overview.aspx?ProductID=2778" },
+	{ "GIGABYTE",		"GA-MA69VM-S2",		"http://www.gigabyte.com.tw/Products/Motherboard/Products_Overview.aspx?ProductID=2500" },
 	{ "GIGABYTE",		"GA-MA790GP-DS4H",	"http://www.gigabyte.com.tw/Products/Motherboard/Products_Spec.aspx?ProductID=2887" },
 	{ "GIGABYTE",		"GA-MA78GPM-DS2H",	"http://www.gigabyte.com.tw/Products/Motherboard/Products_Spec.aspx?ProductID=2859" },
 	{ "GIGABYTE",		"GA-MA770T-UD3P",	"http://www.gigabyte.com.tw/Products/Motherboard/Products_Spec.aspx?ProductID=3096" },
