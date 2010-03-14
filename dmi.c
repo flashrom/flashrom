@@ -24,21 +24,7 @@
 
 #include "flash.h"
 
-enum dmi_strings {
-	DMI_SYS_MANUFACTURER,
-	DMI_SYS_PRODUCT,
-	DMI_SYS_VERSION,
-	DMI_BB_MANUFACTURER,
-	DMI_BB_PRODUCT,
-	DMI_BB_VERSION,
-	DMI_ID_INVALID, /* This must always be the last entry! */
-};
-
-/*
- * The short_id for baseboard starts with "m" as in mainboard to leave
- * "b" available for BIOS.
- */
-const char *dmidecode_names[DMI_ID_INVALID] = {
+const char *dmidecode_names[] = {
 	"system-manufacturer",
 	"system-product-name",
 	"system-version",
@@ -51,7 +37,7 @@ const char *dmidecode_names[DMI_ID_INVALID] = {
 const char *dmidecode_command = "dmidecode";
 
 int has_dmi_support = 0;
-char *dmistrings[DMI_ID_INVALID];
+char *dmistrings[ARRAY_SIZE(dmidecode_names)];
 
 /* Strings longer than 4096 in DMI are just insane. */
 #define DMI_MAX_ANSWER_LEN 4096
@@ -104,17 +90,17 @@ void dmi_init(void)
 	char *chassis_type;
 
 	has_dmi_support = 1;
-	for (i = 0; i < DMI_ID_INVALID; i++) {
+	for (i = 0; i < ARRAY_SIZE(dmidecode_names); i++) {
 		dmistrings[i] = get_dmi_string(dmidecode_names[i]);
 		if (!dmistrings[i]) {
 			has_dmi_support = 0;
-			break;
+			return;
 		}
 	}
 
 	chassis_type = get_dmi_string("chassis-type");
 	if (chassis_type && !strcmp(chassis_type, "Notebook")) {
-		printf_debug("Laptop detected via DMI");
+		printf_debug("Laptop detected via DMI\n");
 		is_laptop = 1;
 	}
 	free(chassis_type);
@@ -175,7 +161,7 @@ int dmi_match(const char *pattern)
 	if (!has_dmi_support)
 		return 0;
 
-	for (i = 0; i < DMI_ID_INVALID; i++)
+	for (i = 0; i < ARRAY_SIZE(dmidecode_names); i++)
 		if (dmi_compare(dmistrings[i], pattern))
 			return 1;
 
