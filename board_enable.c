@@ -1293,6 +1293,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x10DE, 0x0050, 0x1458, 0x0C11,  0x10DE, 0x005e, 0x1458, 0x5000, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-K8N-SLI",            0,   OK, nvidia_mcp_gpio21_raise},
 	{0x10DE, 0x0360, 0x1458, 0x0C11,  0x10DE, 0x0369, 0x1458, 0x5001, NULL,          "gigabyte",   "m57sli",      "GIGABYTE",    "GA-M57SLI-S4",          0,   OK, it87xx_probe_spi_flash},
 	{0x10de, 0x03e0,      0,      0,  0x10DE, 0x03D0,      0,      0, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-M61P-S3",            0,   OK, it87xx_probe_spi_flash},
+	{0x1002, 0x7910, 0x1458, 0x5000,  0x1002, 0x438D, 0x1458, 0x5001, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-MA69VM-S2",          0,   OK, it87xx_probe_spi_flash},
 	{0x1002, 0x4398, 0x1458, 0x5004,  0x1002, 0x4391, 0x1458, 0xb000, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-MA78G-DS3H",         0,   OK, it87xx_probe_spi_flash},
 	{0x1002, 0x4398, 0x1458, 0x5004,  0x1002, 0x4391, 0x1458, 0xb002, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-MA78GM-S2H",         0,   OK, it87xx_probe_spi_flash},
 	{0x1002, 0x438d, 0x1458, 0x5001,  0x1002, 0x5956, 0x1002, 0x5956, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-MA790FX-DQ6",        0,   OK, it87xx_probe_spi_flash},
