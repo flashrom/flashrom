@@ -301,6 +301,7 @@ const struct board_info boards_ok[] = {
 	{ "GIGABYTE",		"GA-7ZM", },
 	{ "GIGABYTE",		"GA-EP35-DS3L", },
 	{ "GIGABYTE",		"GA-EX58-UD4P", },
+	{ "GIGABYTE",		"GA-MA69VM-S2", },
 	{ "GIGABYTE",		"GA-MA78GPM-DS2H", },
 	{ "GIGABYTE",		"GA-MA790GP-DS4H", },
 	{ "GIGABYTE",		"GA-MA770T-UD3P", },
