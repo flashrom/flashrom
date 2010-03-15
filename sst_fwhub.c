@@ -83,18 +83,14 @@ int clear_sst_fwhub_block_lock(struct flashchip *flash, int offset)
 	return blockstatus;
 }
 
-/* probe_jedec works fine for probing */
-int probe_sst_fwhub(struct flashchip *flash)
+int printlock_sst_fwhub(struct flashchip *flash)
 {
 	int i;
-
-	if (probe_jedec(flash) == 0)
-		return 0;
 
 	for (i = 0; i < flash->total_size * 1024; i += flash->page_size)
 		check_sst_fwhub_block_lock(flash, i);
 
-	return 1;
+	return 0;
 }
 
 int erase_sst_fwhub_block(struct flashchip *flash, unsigned int offset, unsigned int page_size)
