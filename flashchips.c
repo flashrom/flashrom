@@ -2392,7 +2392,7 @@ struct flashchip flashchips[] = {
 		.model_id	= I_82802AB,
 		.total_size	= 512,
 		.page_size	= 64 * 1024,
-		.feature_bits	= 0,
+		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_OK_PRW,
 		.probe		= probe_82802ab,
 		.probe_timing	= TIMING_IGNORED, /* routine does not use probe_timing (82802ab.c) */
@@ -2415,7 +2415,7 @@ struct flashchip flashchips[] = {
 		.model_id	= I_82802AC,
 		.total_size	= 1024,
 		.page_size	= 64 * 1024,
-		.feature_bits	= 0,
+		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_OK_PRW,
 		.probe		= probe_82802ab,
 		.probe_timing	= TIMING_IGNORED, /* routine does not use probe_timing (82802ab.c) */
@@ -3442,9 +3442,9 @@ struct flashchip flashchips[] = {
 		.model_id	= SHARP_LHF00L04,
 		.total_size	= 1024,
 		.page_size	= 64 * 1024,
-		.feature_bits	= FEATURE_EITHER_RESET,
+		.feature_bits	= FEATURE_EITHER_RESET | FEATURE_REGISTERMAP,
 		.tested		= TEST_UNTESTED,
-		.probe		= probe_49lfxxxc,
+		.probe		= probe_82802ab,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
 		{
@@ -3723,7 +3723,7 @@ struct flashchip flashchips[] = {
 		.page_size	= 256,
 		.feature_bits	= 0,
 		.tested		= TEST_UNTESTED,
-		.probe		= probe_28sf040,
+		.probe		= probe_82802ab,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (sst28sf040.c) */
 		.block_erasers	=
 		{
@@ -4078,8 +4078,8 @@ struct flashchip flashchips[] = {
 		.page_size	= 16 * 1024,
 		.feature_bits	= FEATURE_REGISTERMAP | FEATURE_EITHER_RESET,
 		.tested		= TEST_OK_PRW,
-		.probe		= probe_sst_fwhub,
-		.probe_timing	= 1,		/* 150 ns | routine is wrapper to probe_jedec (sst_fwhub.c) */
+		.probe		= probe_jedec,
+		.probe_timing	= 1,		/* 150 ns */
 		.block_erasers	=
 		{
 			{
@@ -4093,6 +4093,7 @@ struct flashchip flashchips[] = {
 				.block_erase = NULL, /* AA 55 80 AA 55 10, only in A/A mux mode */
 			}
 		},
+		.printlock	= printlock_sst_fwhub,
 		.write		= write_sst_fwhub,
 		.read		= read_memmapped,
 	},
@@ -4107,8 +4108,8 @@ struct flashchip flashchips[] = {
 		.page_size	= 64 * 1024,
 		.feature_bits	= FEATURE_REGISTERMAP | FEATURE_EITHER_RESET,
 		.tested		= TEST_OK_PR,
-		.probe		= probe_sst_fwhub,
-		.probe_timing	= 1,		/* 150 ns | routine is wrapper to probe_jedec (sst_fwhub.c) */
+		.probe		= probe_jedec,
+		.probe_timing	= 1,		/* 150 ns */
 		.block_erasers	=
 		{
 			{
@@ -4122,6 +4123,7 @@ struct flashchip flashchips[] = {
 				.block_erase = NULL, /* AA 55 80 AA 55 10, only in A/A mux mode */
 			}
 		},
+		.printlock	= printlock_sst_fwhub,
 		.write		= write_sst_fwhub,
 		.read		= read_memmapped,
 	},
@@ -4139,8 +4141,8 @@ struct flashchip flashchips[] = {
 		.page_size	= 64 * 1024,
 		.feature_bits	= FEATURE_REGISTERMAP | FEATURE_EITHER_RESET,
 		.tested		= TEST_OK_PREW,
-		.probe		= probe_sst_fwhub,
-		.probe_timing	= 1,		/* 150 ns | routine is wrapper to probe_jedec (sst_fwhub.c) */
+		.probe		= probe_jedec,
+		.probe_timing	= 1,		/* 150 ns */
 		.block_erasers	=
 		{
 			{
@@ -4154,6 +4156,7 @@ struct flashchip flashchips[] = {
 				.block_erase = NULL, /* AA 55 80 AA 55 10, only in A/A mux mode */
 			},
 		},
+		.printlock	= printlock_sst_fwhub,
 		.write		= write_sst_fwhub,
 		.read		= read_memmapped,
 	},
@@ -4166,9 +4169,9 @@ struct flashchip flashchips[] = {
 		.model_id	= SST_49LF004C,
 		.total_size	= 512,
 		.page_size	= 4 * 1024,
-		.feature_bits	= 0,
+		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_UNTESTED,
-		.probe		= probe_49lfxxxc,
+		.probe		= probe_82802ab,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (sst49lfxxxc.c) */
 		.block_erasers	=
 		{
@@ -4199,8 +4202,8 @@ struct flashchip flashchips[] = {
 		.page_size	= 64 * 1024,
 		.feature_bits	= FEATURE_REGISTERMAP | FEATURE_EITHER_RESET,
 		.tested		= TEST_OK_PRW,
-		.probe		= probe_sst_fwhub,
-		.probe_timing	= 1,		/* 150 ns | routine is wrapper to probe_jedec (sst_fwhub.c) */
+		.probe		= probe_jedec,
+		.probe_timing	= 1,		/* 150 ns */
 		.block_erasers	=
 		{
 			{
@@ -4214,6 +4217,7 @@ struct flashchip flashchips[] = {
 				.block_erase = NULL, /* AA 55 80 AA 55 10, only in A/A mux mode */
 			}
 		},
+		.printlock	= printlock_sst_fwhub,
 		.write		= write_sst_fwhub,
 		.read		= read_memmapped,
 	},
@@ -4226,9 +4230,9 @@ struct flashchip flashchips[] = {
 		.model_id	= SST_49LF008C,
 		.total_size	= 1024,
 		.page_size	= 4 * 1024,
-		.feature_bits	= 0,
+		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_UNTESTED,
-		.probe		= probe_49lfxxxc,
+		.probe		= probe_82802ab,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (sst49lfxxxc.c) */
 		.block_erasers	=
 		{
@@ -4257,9 +4261,9 @@ struct flashchip flashchips[] = {
 		.model_id	= SST_49LF016C,
 		.total_size	= 2048,
 		.page_size	= 4 * 1024,
-		.feature_bits	= 0,
+		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_OK_PRW,
-		.probe		= probe_49lfxxxc,
+		.probe		= probe_82802ab,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (sst49lfxxxc.c) */
 		.block_erasers	=
 		{
@@ -4378,7 +4382,7 @@ struct flashchip flashchips[] = {
 		.feature_bits	= FEATURE_EITHER_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
-		.probe_timing	= 1,		/* 150ns | routine is wrapper to probe_jedec (sst_fwhub.c) */
+		.probe_timing	= 1,		/* 150ns */
 		.block_erasers	=
 		{
 			{
@@ -4433,9 +4437,9 @@ struct flashchip flashchips[] = {
 		.model_id	= SST_49LF160C,
 		.total_size	= 2048,
 		.page_size	= 4 * 1024,
-		.feature_bits	= 0,
+		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_OK_PRW,
-		.probe		= probe_49lfxxxc,
+		.probe		= probe_82802ab,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (sst49lfxxxc.c) */
 		.block_erasers	=
 		{
@@ -4966,7 +4970,7 @@ struct flashchip flashchips[] = {
 		.model_id	= ST_M50FLW040A,
 		.total_size	= 512,
 		.page_size	= 64 * 1024,
-		.feature_bits	= 0,
+		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_82802ab,
 		.probe_timing	= TIMING_FIXME,
@@ -5000,7 +5004,7 @@ struct flashchip flashchips[] = {
 		.model_id	= ST_M50FLW040B,
 		.total_size	= 512,
 		.page_size	= 64 * 1024,
-		.feature_bits	= 0,
+		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_82802ab,
 		.probe_timing	= TIMING_FIXME,
@@ -5034,7 +5038,7 @@ struct flashchip flashchips[] = {
 		.model_id	= ST_M50FLW080A,
 		.total_size	= 1024,
 		.page_size	= 64 * 1024,
-		.feature_bits	= 0,
+		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_82802ab,
 		.probe_timing	= TIMING_FIXME,
@@ -5068,7 +5072,7 @@ struct flashchip flashchips[] = {
 		.model_id	= ST_M50FLW080B,
 		.total_size	= 1024,
 		.page_size	= 64 * 1024,
-		.feature_bits	= 0,
+		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_82802ab,
 		.probe_timing	= TIMING_FIXME,
@@ -5102,7 +5106,7 @@ struct flashchip flashchips[] = {
 		.model_id	= ST_M50FW002,
 		.total_size	= 256,
 		.page_size	= 64 * 1024,
-		.feature_bits	= 0,
+		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_82802ab,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (sst49lfxxxc.c) */
@@ -5133,7 +5137,7 @@ struct flashchip flashchips[] = {
 		.model_id	= ST_M50FW016,
 		.total_size	= 2048,
 		.page_size	= 64 * 1024,
-		.feature_bits	= 0,
+		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_82802ab,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (82802ab.c) */
@@ -5159,7 +5163,7 @@ struct flashchip flashchips[] = {
 		.model_id	= ST_M50FW040,
 		.total_size	= 512,
 		.page_size	= 64 * 1024,
-		.feature_bits	= 0,
+		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_OK_PRW,
 		.probe		= probe_82802ab,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (82802ab.c) */
@@ -5185,7 +5189,7 @@ struct flashchip flashchips[] = {
 		.model_id	= ST_M50FW080,
 		.total_size	= 1024,
 		.page_size	= 64 * 1024,
-		.feature_bits	= 0,
+		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_OK_PRW,
 		.probe		= probe_82802ab,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (82802ab.c) */
@@ -5211,7 +5215,7 @@ struct flashchip flashchips[] = {
 		.model_id	= ST_M50LPW116,
 		.total_size	= 2048,
 		.page_size	= 64 * 1024,
-		.feature_bits	= 0,
+		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_82802ab,
 		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
