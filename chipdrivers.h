@@ -119,9 +119,6 @@ int write_sst_fwhub(struct flashchip *flash, uint8_t *buf);
 int printlock_sst_fwhub(struct flashchip *flash);
 
 /* w39v040c.c */
-int probe_w39v040c(struct flashchip *flash);
-int erase_w39v040c(struct flashchip *flash);
-int write_w39v040c(struct flashchip *flash, uint8_t *buf);
 int printlock_w39v040c(struct flashchip *flash);
 
 /* w39V080fa.c */
