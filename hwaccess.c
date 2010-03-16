@@ -36,7 +36,9 @@ void get_io_perms(void)
 	if (sysi86(SI86V86, V86SC_IOPL, PS_IOPL) != 0) {
 #elif defined(__FreeBSD__) || defined (__DragonFly__)
 	if ((io_fd = open("/dev/io", O_RDWR)) < 0) {
-#else
+#elif __DJGPP__
+	if (0) {
+#else 
 	if (iopl(3) != 0) {
 #endif
 		fprintf(stderr, "ERROR: Could not get I/O privileges (%s).\n"
@@ -51,6 +53,44 @@ void release_io_perms(void)
 	close(io_fd);
 #endif
 }
+
+#ifdef __DJGPP__
+
+extern unsigned short  segFS;
+
+#include <sys/farptr.h>
+
+void mmio_writeb(uint8_t val, void *addr)
+{
+	_farpokeb(segFS, (unsigned long) addr, val);
+}
+
+void mmio_writew(uint16_t val, void *addr)
+{
+	_farpokew(segFS, (unsigned long) addr, val);
+}
+
+void mmio_writel(uint32_t val, void *addr)
+{
+	_farpokel(segFS, (unsigned long) addr, val);
+}
+
+uint8_t mmio_readb(void *addr)
+{
+	return _farpeekb(segFS, (unsigned long) addr);
+}
+
+uint16_t mmio_readw(void *addr)
+{
+	return _farpeekw(segFS, (unsigned long) addr);
+}
+
+uint32_t mmio_readl(void *addr)
+{
+	return _farpeekl(segFS, (unsigned long) addr);
+}
+
+#else
 
 void mmio_writeb(uint8_t val, void *addr)
 {
@@ -81,3 +121,4 @@ uint32_t mmio_readl(void *addr)
 {
 	return *(volatile uint32_t *) addr;
 }
+#endif

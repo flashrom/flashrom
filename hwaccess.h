@@ -68,12 +68,30 @@
   #define INW  inw
   #define INL  inl
 #else
+
+#ifdef __DJGPP__
+
+#include <pc.h>
+
+  #define OUTB(x,y) outportb(y, x)
+  #define OUTW(x,y) outportw(y, x)
+  #define OUTL(x,y) outportl(y, x)
+
+  #define INB  inportb
+  #define INW  inportw
+  #define INL  inportl
+
+#else 
+
   #define OUTB outb
   #define OUTW outw
   #define OUTL outl
   #define INB  inb
   #define INW  inw
   #define INL  inl
+
+#endif
+
 #endif
 #endif
 
