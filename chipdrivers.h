@@ -59,6 +59,8 @@ int probe_82802ab(struct flashchip *flash);
 int erase_82802ab(struct flashchip *flash);
 int erase_82802ab_block(struct flashchip *flash, unsigned int page, unsigned int pagesize);
 int write_82802ab(struct flashchip *flash, uint8_t *buf);
+void print_82802ab_status(uint8_t status);
+void write_page_82802ab(chipaddr bios, uint8_t *src, chipaddr dst, int page_size);
 
 /* jedec.c */
 uint8_t oddparity(uint8_t val);
