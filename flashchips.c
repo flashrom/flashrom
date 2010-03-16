@@ -4084,17 +4084,19 @@ struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 64} },
-				.block_erase = erase_sst_fwhub_sector,
+				.block_erase = erase_sector_jedec,
 			}, {
 				.eraseblocks = { {16 * 1024, 16} },
-				.block_erase = erase_sst_fwhub_block,
+				.block_erase = erase_block_jedec,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
 				.block_erase = NULL, /* AA 55 80 AA 55 10, only in A/A mux mode */
 			}
 		},
 		.printlock	= printlock_sst_fwhub,
-		.write		= write_sst_fwhub,
+		.printlock	= printlock_sst_fwhub,
+		.unlock		= unlock_sst_fwhub,
+		.write		= write_jedec_1,
 		.read		= read_memmapped,
 	},
 
@@ -4114,17 +4116,19 @@ struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 96} },
-				.block_erase = erase_sst_fwhub_sector,
+				.block_erase = erase_sector_jedec,
 			}, {
 				.eraseblocks = { {64 * 1024, 6} },
-				.block_erase = erase_sst_fwhub_block,
+				.block_erase = erase_block_jedec,
 			}, {
 				.eraseblocks = { {384 * 1024, 1} },
 				.block_erase = NULL, /* AA 55 80 AA 55 10, only in A/A mux mode */
 			}
 		},
 		.printlock	= printlock_sst_fwhub,
-		.write		= write_sst_fwhub,
+		.printlock	= printlock_sst_fwhub,
+		.unlock		= unlock_sst_fwhub,
+		.write		= write_jedec_1,
 		.read		= read_memmapped,
 	},
 
@@ -4147,17 +4151,19 @@ struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = erase_sector_jedec, /* missing unlock */
+				.block_erase = erase_sector_jedec,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = erase_sst_fwhub_block, /* same as erase_block_jedec, but with unlock */
+				.block_erase = erase_block_jedec,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
 				.block_erase = NULL, /* AA 55 80 AA 55 10, only in A/A mux mode */
 			},
 		},
 		.printlock	= printlock_sst_fwhub,
-		.write		= write_sst_fwhub,
+		.printlock	= printlock_sst_fwhub,
+		.unlock		= unlock_sst_fwhub,
+		.write		= write_jedec_1,
 		.read		= read_memmapped,
 	},
 
@@ -4208,17 +4214,19 @@ struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = erase_sst_fwhub_sector,
+				.block_erase = erase_sector_jedec,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = erase_sst_fwhub_block,
+				.block_erase = erase_block_jedec,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
 				.block_erase = NULL, /* AA 55 80 AA 55 10, only in A/A mux mode */
 			}
 		},
 		.printlock	= printlock_sst_fwhub,
-		.write		= write_sst_fwhub,
+		.printlock	= printlock_sst_fwhub,
+		.unlock		= unlock_sst_fwhub,
+		.write		= write_jedec_1,
 		.read		= read_memmapped,
 	},
 

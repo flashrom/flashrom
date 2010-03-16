@@ -111,11 +111,8 @@ int write_49lfxxxc(struct flashchip *flash, uint8_t *buf);
 int unlock_49lfxxxc(struct flashchip *flash);
 
 /* sst_fwhub.c */
-int erase_sst_fwhub(struct flashchip *flash);
-int erase_sst_fwhub_block(struct flashchip *flash, unsigned int offset, unsigned int page_size);
-int erase_sst_fwhub_sector(struct flashchip *flash, unsigned int offset, unsigned int page_size);
-int write_sst_fwhub(struct flashchip *flash, uint8_t *buf);
 int printlock_sst_fwhub(struct flashchip *flash);
+int unlock_sst_fwhub(struct flashchip *flash);
 
 /* w39v040c.c */
 int printlock_w39v040c(struct flashchip *flash);
