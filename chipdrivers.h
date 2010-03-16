@@ -93,13 +93,10 @@ int unlock_49fl00x(struct flashchip *flash);
 int lock_49fl00x(struct flashchip *flash);
 
 /* sharplhf00l04.c */
-int probe_lhf00l04(struct flashchip *flash);
 int erase_lhf00l04_block(struct flashchip *flash, unsigned int blockaddr, unsigned int blocklen);
 int write_lhf00l04(struct flashchip *flash, uint8_t *buf);
-void protect_lhf00l04(chipaddr bios);
 
 /* sst28sf040.c */
-int probe_28sf040(struct flashchip *flash);
 int erase_chip_28sf040(struct flashchip *flash, unsigned int addr, unsigned int blocklen);
 int erase_sector_28sf040(struct flashchip *flash, unsigned int address, unsigned int sector_size);
 int write_28sf040(struct flashchip *flash, uint8_t *buf);
