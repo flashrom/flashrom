@@ -122,9 +122,6 @@ int printlock_sst_fwhub(struct flashchip *flash);
 int printlock_w39v040c(struct flashchip *flash);
 
 /* w39V080fa.c */
-int probe_winbond_fwhub(struct flashchip *flash);
-int erase_winbond_fwhub(struct flashchip *flash);
-int write_winbond_fwhub(struct flashchip *flash, uint8_t *buf);
 int unlock_winbond_fwhub(struct flashchip *flash);
 
 /* w29ee011.c */
