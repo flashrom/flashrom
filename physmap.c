@@ -4,6 +4,7 @@
  * Copyright (C) 2009 Peter Stuge <peter@stuge.se>
  * Copyright (C) 2009 coresystems GmbH
  * Copyright (C) 2010 Carl-Daniel Hailfinger
+ * Copyright (C) 2010 Rudolf Marek <r.marek@assembler.cz>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +28,77 @@
 #include <errno.h>
 #include "flash.h"
 
-#ifdef __DARWIN__
+#ifdef __DJGPP__
+#include <dpmi.h>
+
+#define MEM_DEV "dpmi"
+
+unsigned short  segFS = 0;
+
+void *sys_physmap(unsigned long phys_addr, size_t len)
+{
+	int ret;
+	__dpmi_meminfo mi;
+
+	if (segFS == 0)  {
+		segFS = __dpmi_allocate_ldt_descriptors (1);
+		__dpmi_set_segment_base_address (segFS, 0x0);
+		__dpmi_set_segment_limit (segFS, 0xffffffff);
+	}
+
+	mi.address = phys_addr;
+	mi.size = len;
+	ret =  __dpmi_physical_address_mapping (&mi);
+
+	if (ret != 0) {
+		return NULL;
+	}
+
+	return (void *) mi.address;
+}
+
+#define sys_physmap_rw_uncached	sys_physmap
+
+#include <sys/movedata.h>
+#include <sys/segments.h>
+#include <go32.h>
+
+static void *realmem_cpy;
+
+void *sys_physmap_ro_cached(unsigned long phys_addr, size_t len)
+{
+	/* no support for not a 1MB of mem */
+	if ((phys_addr + len) > 1024*1024)
+		return NULL;
+
+	if (realmem_cpy)
+		return realmem_cpy + phys_addr;
+
+	realmem_cpy = valloc(1024*1024);
+
+	if (!realmem_cpy)
+		return NULL;
+
+	movedata(_dos_ds, 0, _my_ds(), (unsigned long) realmem_cpy, 1024*1024);
+	return realmem_cpy + phys_addr;
+}
+
+
+void physunmap(void *virt_addr, size_t len)
+{
+	__dpmi_meminfo mi;
+
+	/* we ignore unmaps for our cheat 1MB copy */
+	if ((virt_addr >= realmem_cpy) && ((virt_addr + len) <= (realmem_cpy + 1024*1024))) {
+		return;
+	}
+
+	mi.address = (unsigned long) virt_addr;
+	__dpmi_free_physical_address_mapping(&mi);
+}
+
+#elif defined(__DARWIN__)
+
 #include <DirectIO/darwinio.h>
 
 #define MEM_DEV "DirectIO"
