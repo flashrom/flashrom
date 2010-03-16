@@ -92,30 +92,6 @@ int write_sector_28sf040(chipaddr bios, uint8_t *src, chipaddr dst,
 	return 0;
 }
 
-int probe_28sf040(struct flashchip *flash)
-{
-	chipaddr bios = flash->virtual_memory;
-	uint8_t id1, id2;
-
-	chip_writeb(RESET, bios);
-	programmer_delay(10);
-
-	chip_writeb(READ_ID, bios);
-	programmer_delay(10);
-	id1 = chip_readb(bios);
-	programmer_delay(10);
-	id2 = chip_readb(bios + 0x01);
-
-	chip_writeb(RESET, bios);
-	programmer_delay(10);
-
-	printf_debug("%s: id1 0x%02x, id2 0x%02x\n", __func__, id1, id2);
-	if (id1 == flash->manufacture_id && id2 == flash->model_id)
-		return 1;
-
-	return 0;
-}
-
 int erase_28sf040(struct flashchip *flash)
 {
 	chipaddr bios = flash->virtual_memory;
