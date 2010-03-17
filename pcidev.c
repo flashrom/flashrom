@@ -32,6 +32,7 @@ uint32_t pcidev_validate(struct pci_dev *dev, uint32_t bar,
 			 struct pcidev_status *devs)
 {
 	int i;
+	/* FIXME: 64 bit memory BARs need a 64 bit addr. */
 	uint32_t addr;
 
 	for (i = 0; devs[i].device_name != NULL; i++) {
@@ -42,12 +43,27 @@ uint32_t pcidev_validate(struct pci_dev *dev, uint32_t bar,
 		 * Don't use dev->base_addr[x] (as value for 'bar'), won't
 		 * work on older libpci.
 		 */
-		addr = pci_read_long(dev, bar) & ~0x03;
+		addr = pci_read_long(dev, bar);
 		
 		printf("Found \"%s %s\" (%04x:%04x, BDF %02x:%02x.%x).\n",
 		       devs[i].vendor_name, devs[i].device_name,
 		       dev->vendor_id, dev->device_id, dev->bus, dev->dev,
 		       dev->func);
+		msg_pdbg("Requested BAR is %s", (addr & 0x1) ? "IO" : "MEM");
+		if (addr & 0x1) {
+			/* Mask off IO space indicator and reserved bit. */
+			msg_pdbg("\n");
+			addr &= ~0x3;
+		} else {
+			msg_pdbg(", %sbit, %sprefetchable\n",
+				 ((addr & 0x6) == 0x0) ? "32" :
+				 (((addr & 0x6) == 0x4) ? "64" : "reserved"),
+				 (addr & 0x8) ? "" : "not ");
+			/* Mask off Mem space indicator, 32/64bit type indicator
+			 * and Prefetchable indicator.
+			 */
+			addr &= ~0xf;
+		}
 
 		if (devs[i].status == NT) {
 			printf("===\nThis PCI device is UNTESTED. Please "
