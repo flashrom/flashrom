@@ -213,6 +213,7 @@ const struct board_info_url boards_url[] = {
 	{ "ASUS",		"A7V8X-MX SE",		"http://www.asus.com/product.aspx?P_ID=1guVBT1qV5oqhHyZ" },
 	{ "ASUS",		"A7V8X-X",		"http://www.asus.com/product.aspx?P_ID=YcXfRrWHZ9RKoVmw" },
 	{ "ASUS",		"P4B266",		"http://www.ciao.co.uk/ASUS_Intel_845D_Chipset_P4B266__5409807#productdetail" },
+	{ "ASUS",		"P4C800-E Deluxe",	"http://www.asus.com/product.aspx?P_ID=cFuVCr9bXXCckmcK" },
 	{ "ASUS",		"P4P800-E Deluxe",	"http://www.asus.com/product.aspx?P_ID=INIJUvLlif7LHp3g" },
 	{ "ASUS",		"P5ND2-SLI Deluxe",	"http://www.asus.com/product.aspx?P_ID=WY7XroDuUImVbgp5" },
 	{ "ASUS",		"P5A",			"ftp://ftp.asus.com.tw/pub/ASUS/mb/sock7/ali/p5a/" },
