@@ -33,26 +33,6 @@
 #include "flashchips.h"
 #include "chipdrivers.h"
 
-static void wait_stm50flw0x0x(chipaddr bios)
-{
-	chip_writeb(0x70, bios);
-	if ((chip_readb(bios) & 0x80) == 0) {	// it's busy
-		while ((chip_readb(bios) & 0x80) == 0) ;
-	}
-
-	// put another command to get out of status register mode
-
-	chip_writeb(0x90, bios);
-	programmer_delay(10);
-
-	chip_readb(bios); // Read device ID (to make sure?)
-
-	// this is needed to jam it out of "read id" mode
-	chip_writeb(0xAA, bios + 0x5555);
-	chip_writeb(0x55, bios + 0x2AAA);
-	chip_writeb(0xF0, bios + 0x5555);
-}
-
 /*
  * claus.gindhart@kontron.com
  * The ST M50FLW080B and STM50FLW080B chips have to be unlocked,
@@ -101,25 +81,16 @@ int unlock_block_stm50flw0x0x(struct flashchip *flash, int offset)
 	return 0;
 }
 
-int erase_block_stm50flw0x0x(struct flashchip *flash, unsigned int block, unsigned int blocksize)
+int unlock_stm50flw0x0x(struct flashchip *flash)
 {
-	chipaddr bios = flash->virtual_memory + block;
+	int i;
 
-	// clear status register
-	chip_writeb(0x50, bios);
-	printf_debug("Erase at 0x%lx\n", bios);
-	// now start it
-	chip_writeb(0x20, bios);
-	chip_writeb(0xd0, bios);
-	programmer_delay(10);
-
-	wait_stm50flw0x0x(flash->virtual_memory);
-
-	if (check_erased_range(flash, block, blocksize)) {
-		fprintf(stderr, "ERASE FAILED!\n");
-		return -1;
+	for (i = 0; i < flash->total_size; i+= flash->page_size) {
+		if(unlock_block_stm50flw0x0x(flash, i)) {
+			fprintf(stderr, "UNLOCK FAILED!\n");
+			return -1;
+		}
 	}
-	printf("DONE BLOCK 0x%x\n", block);
 
 	return 0;
 }
@@ -136,7 +107,7 @@ int erase_sector_stm50flw0x0x(struct flashchip *flash, unsigned int sector, unsi
 	chip_writeb(0xd0, bios);
 	programmer_delay(10);
 
-	wait_stm50flw0x0x(flash->virtual_memory);
+	wait_82802ab(flash->virtual_memory);
 
 	if (check_erased_range(flash, sector, sectorsize)) {
 		fprintf(stderr, "ERASE FAILED!\n");
@@ -147,63 +118,28 @@ int erase_sector_stm50flw0x0x(struct flashchip *flash, unsigned int sector, unsi
 	return 0;
 }
 
-int write_page_stm50flw0x0x(chipaddr bios, uint8_t *src,
-			    chipaddr dst, int page_size)
-{
-	int i, rc = 0;
-	chipaddr d = dst;
-	uint8_t *s = src;
-
-	/* transfer data from source to destination */
-	for (i = 0; i < page_size; i++) {
-		chip_writeb(0x40, dst);
-		chip_writeb(*src++, dst++);
-		wait_stm50flw0x0x(bios);
-	}
-
-/* claus.gindhart@kontron.com
- * TODO
- * I think, that verification is not required, but
- * i leave it in anyway
- */
-	dst = d;
-	src = s;
-	for (i = 0; i < page_size; i++) {
-		if (chip_readb(dst) != *src) {
-			rc = -1;
-			break;
-		}
-		dst++;
-		src++;
-	}
-
-	if (rc) {
-		fprintf(stderr, " page 0x%lx failed!\n",
-			(d - bios) / page_size);
-	}
-
-	return rc;
-}
-
-/* I simply erase block by block
- * I Chip This is not the fastest way, but it works
- */
-int erase_stm50flw0x0x(struct flashchip *flash)
+int erase_chip_stm50flw0x0x(struct flashchip *flash, unsigned int addr, unsigned int blocklen)
 {
 	int i;
 	int total_size = flash->total_size * 1024;
 	int page_size = flash->page_size;
+
+	if ((addr != 0) || (blocklen != flash->total_size * 1024)) {
+		msg_cerr("%s called with incorrect arguments\n",
+			__func__);
+		return -1;
+	}
 
 	printf("Erasing page:\n");
 	for (i = 0; i < total_size / page_size; i++) {
 		printf
 		    ("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
 		printf("%04d at address: 0x%08x ", i, i * page_size);
-		if (unlock_block_stm50flw0x0x(flash, i * page_size)) {
-			fprintf(stderr, "UNLOCK FAILED!\n");
-			return -1;
-		}
-		if (erase_block_stm50flw0x0x(flash, i * page_size, page_size)) {
+		//if (unlock_block_stm50flw0x0x(flash, i * page_size)) {
+		//	fprintf(stderr, "UNLOCK FAILED!\n");
+		//	return -1;
+		//}
+		if (erase_block_82802ab(flash, i * page_size, page_size)) {
 			fprintf(stderr, "ERASE FAILED!\n");
 			return -1;
 		}
@@ -211,58 +147,4 @@ int erase_stm50flw0x0x(struct flashchip *flash)
 	printf("\n");
 
 	return 0;
-}
-
-int erase_chip_stm50flw0x0x(struct flashchip *flash, unsigned int addr, unsigned int blocklen)
-{
-	if ((addr != 0) || (blocklen != flash->total_size * 1024)) {
-		msg_cerr("%s called with incorrect arguments\n",
-			__func__);
-		return -1;
-	}
-	return erase_stm50flw0x0x(flash);
-}
-
-int write_stm50flw0x0x(struct flashchip *flash, uint8_t * buf)
-{
-	int i, rc = 0;
-	int total_size = flash->total_size * 1024;
-	int page_size = flash->page_size;
-	chipaddr bios = flash->virtual_memory;
-	uint8_t *tmpbuf = malloc(page_size);
-
-	if (!tmpbuf) {
-		printf("Could not allocate memory!\n");
-		exit(1);
-	}
-	printf("Programming page: \n");
-	for (i = 0; (i < total_size / page_size) && (rc == 0); i++) {
-		printf
-		    ("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
-		printf("%04d at address: 0x%08x ", i, i * page_size);
-
-		/* Auto Skip Blocks, which already contain the desired data
-		 * Faster, because we only write, what has changed
-		 * More secure, because blocks, which are excluded
-		 * (with the exclude or layout feature)
-		 * are not erased and rewritten; data is retained also
-		 * in sudden power off situations
-		 */
-		chip_readn(tmpbuf, bios + i * page_size, page_size);
-		if (!memcmp((void *)(buf + i * page_size), tmpbuf, page_size)) {
-			printf("SKIPPED\n");
-			continue;
-		}
-
-		rc = unlock_block_stm50flw0x0x(flash, i * page_size);
-		if (!rc)
-			rc = erase_block_stm50flw0x0x(flash, i * page_size, page_size);
-		if (!rc)
-			write_page_stm50flw0x0x(bios, buf + i * page_size,
-					bios + i * page_size, page_size);
-	}
-	printf("\n");
-	free(tmpbuf);
-
-	return rc;
 }
