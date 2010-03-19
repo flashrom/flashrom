@@ -549,6 +549,14 @@ static int nvidia_mcp_gpio0_raise(const char *name)
 }
 
 /**
+ * Suited for Abit KN8 Ultra: nVidia CK804.
+ */
+static int nvidia_mcp_gpio2_lower(const char *name)
+{
+	return nvidia_mcp_gpio_set(0x02, 0);
+}
+
+/**
  * Suited for MSI K8N Neo4: nVidia CK804.
  * Suited for MSI K8N GM2-L: nVidia MCP51.
  */
@@ -1279,6 +1287,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	/* first pci-id set [4],          second pci-id set [4],          dmi identifier coreboot id [2],             vendor name    board name       max_rom_...  OK? flash enable */
 	{0x8086, 0x2926, 0x147b, 0x1084,  0x11ab, 0x4364, 0x147b, 0x1084, NULL,          NULL,         NULL,          "Abit",        "IP35",                  0,   OK, intel_ich_gpio16_raise},
 	{0x8086, 0x2930, 0x147b, 0x1083,  0x10ec, 0x8167, 0x147b, 0x1083, NULL,          NULL,         NULL,          "Abit",        "IP35 Pro",              0,   OK, intel_ich_gpio16_raise},
+	{0x10de, 0x0050, 0x147b, 0x1c1a,       0,      0,      0,      0, NULL,          NULL,         NULL,          "Abit",        "KN8 Ultra",             0,   NT, nvidia_mcp_gpio2_lower},
 	{0x1106, 0x0691,      0,      0,  0x1106, 0x3057,      0,      0, NULL,          "abit",       "vt6x4",       "Abit",        "VT6X4",                 0,   NT, via_apollo_gpo4_lower},
 	{0x105a, 0x0d30, 0x105a, 0x4d33,  0x8086, 0x1130, 0x8086,      0, NULL,          NULL,         NULL,          "Acorp",       "6A815EPD",              0,   OK, board_acorp_6a815epd},
 	{0x8086, 0x24D4, 0x1849, 0x24D0,  0x8086, 0x24D5, 0x1849, 0x9739, NULL,          NULL,         NULL,          "ASRock",      "P4i65GV",               0,   OK, intel_ich_gpio23_raise},
