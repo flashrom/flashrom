@@ -1013,11 +1013,11 @@ static int board_kontron_986lcd_m(const char *name)
 /**
  * Suited for Soyo SY-7VCA: Pro133A + VT82C686.
  */
-static int board_soyo_sy_7vca(const char *name)
+static int via_apollo_gpo_set(int gpio, int raise)
 {
-    	struct pci_dev *dev;
+	struct pci_dev *dev;
 	uint32_t base;
-	uint8_t tmp;
+	uint32_t tmp;
 
 	/* VT82C686 Power management */
 	dev = pci_dev_find(0x1106, 0x3057);
@@ -1026,18 +1026,38 @@ static int board_soyo_sy_7vca(const char *name)
 		return -1;
 	}
 
-	/* GPO0 output from PM IO base + 0x4C */
+	printf("\nVIA Apollo ACPI: %sing GPIO%02d.\n",
+	       raise ? "Rais" : "Dropp", gpio);
+
+	/* select GPO function on multiplexed pins */
 	tmp = pci_read_byte(dev, 0x54);
-	tmp &= ~0x03;
+	switch(gpio)
+	{
+		case 0:
+			tmp &= ~0x03;
+			break;
+		case 1:
+			tmp |= 0x04;
+			break;
+		case 2:
+			tmp |= 0x08;
+			break;
+		case 3:
+			tmp |= 0x10;
+			break;
+	}
 	pci_write_byte(dev, 0x54, tmp);
 
 	/* PM IO base */
 	base = pci_read_long(dev, 0x48) & 0x0000FF00;
 
 	/* Drop GPO0 */
-	tmp = INB(base + 0x4C);
-	tmp &= ~0x01;
-	OUTB(tmp, base + 0x4C);
+	tmp = INL(base + 0x4C);
+	if (raise)
+		tmp |= 1U << gpio;
+	else
+		tmp &= ~(1U << gpio);
+	OUTL(tmp, base + 0x4C);
 
 	return 0;
 }
@@ -1048,6 +1068,14 @@ static int board_soyo_sy_7vca(const char *name)
 static int via_apollo_gpo4_lower(const char *name)
 {
 	return via_apollo_gpo_set(4, 0);
+}
+
+/**
+ * Suited for Soyo SY-7VCA: Pro133A + VT82C686.
+ */
+static int via_apollo_gpo0_lower(const char *name)
+{
+	return via_apollo_gpo_set(0, 0);
 }
 
 /**
@@ -1355,7 +1383,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x1106, 0x3099,      0,      0,  0x1106, 0x3074,      0,      0, NULL,          "shuttle",    "ak31",        "Shuttle",     "AK31",                  0,   OK, w836xx_memw_enable_2e},
 	{0x1106, 0x3104, 0x1297, 0xa238,  0x1106, 0x3059, 0x1297, 0xc063, NULL,          NULL,         NULL,          "Shuttle",     "AK38N",                 256, OK, it8705f_write_enable_2e},
 	{0x10DE, 0x0050, 0x1297, 0x5036,  0x1412, 0x1724, 0x1297, 0x5036, NULL,          NULL,         NULL,          "Shuttle",     "FN25",                  0,   OK, board_shuttle_fn25},
-	{0x1106, 0x3038, 0x0925, 0x1234,  0x1106, 0x3058, 0x15DD, 0x7609, NULL,          NULL,         NULL,          "Soyo",        "SY-7VCA",               0,   OK, board_soyo_sy_7vca},
+	{0x1106, 0x3038, 0x0925, 0x1234,  0x1106, 0x3058, 0x15DD, 0x7609, NULL,          NULL,         NULL,          "Soyo",        "SY-7VCA",               0,   OK, via_apollo_gpo0_lower},
 	{0x8086, 0x1076, 0x8086, 0x1176,  0x1106, 0x3059, 0x10f1, 0x2498, NULL,          NULL,         NULL,          "Tyan",        "S2498 (Tomcat K7M)",    0,   OK, w836xx_memw_enable_2e},
 	{0x1106, 0x3038, 0x0925, 0x1234,  0x1106, 0x0596, 0x1106,      0, NULL,          NULL,         NULL,          "Tekram",      "P6Pro-A5",              256, OK, NULL},
 	{0x1106, 0x3177, 0x1106, 0xAA01,  0x1106, 0x3123, 0x1106, 0xAA01, NULL,          NULL,         NULL,          "VIA",         "EPIA M/MII/...",        0,   OK, via_vt823x_gpio15_raise},
