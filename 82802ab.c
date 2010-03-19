@@ -32,7 +32,7 @@
 #include "chipdrivers.h"
 
 // I need that Berkeley bit-map printer
-void print_82802ab_status(uint8_t status)
+void print_status_82802ab(uint8_t status)
 {
 	printf_debug("%s", status & 0x80 ? "Ready:" : "Busy:");
 	printf_debug("%s", status & 0x40 ? "BE SUSPEND:" : "BE RUN/FINISH:");
@@ -92,17 +92,26 @@ uint8_t wait_82802ab(chipaddr bios)
 	return status;
 }
 
-int erase_82802ab_block(struct flashchip *flash, unsigned int page, unsigned int pagesize)
+int unlock_82802ab(struct flashchip *flash)
+{
+	int i;
+	//chipaddr wrprotect = flash->virtual_registers + page + 2;
+
+	for (i = 0; i < flash->total_size; i+= flash->page_size)
+	{
+		chip_writeb(0, flash->virtual_registers + i + 2);
+	}
+
+	return 0;
+}
+
+int erase_block_82802ab(struct flashchip *flash, unsigned int page, unsigned int pagesize)
 {
 	chipaddr bios = flash->virtual_memory;
-	chipaddr wrprotect = flash->virtual_registers + page + 2;
 	uint8_t status;
 
 	// clear status register
 	chip_writeb(0x50, bios + page);
-
-	// clear write protect
-	chip_writeb(0, wrprotect);
 
 	// now start it
 	chip_writeb(0x20, bios + page);
@@ -111,7 +120,7 @@ int erase_82802ab_block(struct flashchip *flash, unsigned int page, unsigned int
 
 	// now let's see what the register is
 	status = wait_82802ab(bios);
-	print_82802ab_status(status);
+	print_status_82802ab(status);
 
 	if (check_erased_range(flash, page, pagesize)) {
 		fprintf(stderr, "ERASE FAILED!\n");
@@ -130,7 +139,7 @@ int erase_82802ab(struct flashchip *flash)
 	printf("total_size is %d; flash->page_size is %d\n",
 	       total_size, flash->page_size);
 	for (i = 0; i < total_size; i += flash->page_size)
-		if (erase_82802ab_block(flash, i, flash->page_size)) {
+		if (erase_block_82802ab(flash, i, flash->page_size)) {
 			fprintf(stderr, "ERASE FAILED!\n");
 			return -1;
 		}
@@ -184,7 +193,7 @@ int write_82802ab(struct flashchip *flash, uint8_t *buf)
 		}
 
 		/* erase block by block and write block by block; this is the most secure way */
-		if (erase_82802ab_block(flash, i * page_size, page_size)) {
+		if (erase_block_82802ab(flash, i * page_size, page_size)) {
 			fprintf(stderr, "ERASE FAILED!\n");
 			return -1;
 		}

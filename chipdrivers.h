@@ -57,10 +57,11 @@ int spi_aai_write(struct flashchip *flash, uint8_t *buf);
 uint8_t wait_82802ab(chipaddr bios);
 int probe_82802ab(struct flashchip *flash);
 int erase_82802ab(struct flashchip *flash);
-int erase_82802ab_block(struct flashchip *flash, unsigned int page, unsigned int pagesize);
+int erase_block_82802ab(struct flashchip *flash, unsigned int page, unsigned int pagesize);
 int write_82802ab(struct flashchip *flash, uint8_t *buf);
-void print_82802ab_status(uint8_t status);
+void print_status_82802ab(uint8_t status);
 void write_page_82802ab(chipaddr bios, uint8_t *src, chipaddr dst, int page_size);
+int unlock_82802ab(struct flashchip *flash);
 
 /* jedec.c */
 uint8_t oddparity(uint8_t val);
@@ -92,10 +93,6 @@ void write_page_m29f400bt(chipaddr bios, uint8_t *src,
 int unlock_49fl00x(struct flashchip *flash);
 int lock_49fl00x(struct flashchip *flash);
 
-/* sharplhf00l04.c */
-int erase_lhf00l04_block(struct flashchip *flash, unsigned int blockaddr, unsigned int blocklen);
-int write_lhf00l04(struct flashchip *flash, uint8_t *buf);
-
 /* sst28sf040.c */
 int erase_chip_28sf040(struct flashchip *flash, unsigned int addr, unsigned int blocklen);
 int erase_sector_28sf040(struct flashchip *flash, unsigned int address, unsigned int sector_size);
@@ -124,11 +121,8 @@ int unlock_winbond_fwhub(struct flashchip *flash);
 int probe_w29ee011(struct flashchip *flash);
 
 /* stm50flw0x0x.c */
-int probe_stm50flw0x0x(struct flashchip *flash);
-int erase_stm50flw0x0x(struct flashchip *flash);
-int erase_block_stm50flw0x0x(struct flashchip *flash, unsigned int block, unsigned int blocksize);
 int erase_sector_stm50flw0x0x(struct flashchip *flash, unsigned int block, unsigned int blocksize);
 int erase_chip_stm50flw0x0x(struct flashchip *flash, unsigned int addr, unsigned int blocklen);
-int write_stm50flw0x0x(struct flashchip *flash, uint8_t *buf);
+int unlock_stm50flw0x0x(struct flashchip *flash);
 
 #endif /* !__CHIPDRIVERS_H__ */
