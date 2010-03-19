@@ -1363,7 +1363,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x10de, 0x03e0,      0,      0,  0x10DE, 0x03D0,      0,      0, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-M61P-S3",            0,   OK, it87xx_probe_spi_flash},
 	{0x1002, 0x7910, 0x1458, 0x5000,  0x1002, 0x438D, 0x1458, 0x5001, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-MA69VM-S2",          0,   OK, it87xx_probe_spi_flash},
 	{0x1002, 0x4398, 0x1458, 0x5004,  0x1002, 0x4391, 0x1458, 0xb000, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-MA78G-DS3H",         0,   OK, it87xx_probe_spi_flash},
-	{0x1002, 0x4398, 0x1458, 0x5004,  0x1002, 0x4391, 0x1458, 0xb002, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-MA78GM-S2H",         0,   OK, it87xx_probe_spi_flash},
+	{0x1002, 0x4398, 0x1458, 0x5004,  0x1002, 0x4391, 0x1458, 0xb002, "^GA-MA78GM-S2H$", NULL,         NULL,          "GIGABYTE",    "GA-MA78GM-S2H",         0,   OK, it87xx_probe_spi_flash},
 	{0x1002, 0x438d, 0x1458, 0x5001,  0x1002, 0x5956, 0x1002, 0x5956, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-MA790FX-DQ6",        0,   OK, it87xx_probe_spi_flash},
 	{0x1166, 0x0223, 0x103c, 0x320d,  0x102b, 0x0522, 0x103c, 0x31fa, NULL,          "hp",         "dl145_g3",    "HP",          "DL145 G3",              0,   OK, board_hp_dl145_g3_enable},
 	{0x8086, 0x2415, 0x103c, 0x1249,  0x10b7, 0x9200, 0x103c, 0x1246, NULL,          NULL,         NULL,          "HP",          "Vectra VL400",          0,   OK, board_hp_vl400}, 
