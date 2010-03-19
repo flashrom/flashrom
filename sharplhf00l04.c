@@ -36,7 +36,7 @@ int erase_lhf00l04_block(struct flashchip *flash, unsigned int blockaddr, unsign
 	chip_writeb(0x50, bios);
 	printf("Erase at 0x%lx\n", bios);
 	status = wait_82802ab(flash->virtual_memory);
-	print_82802ab_status(status);
+	print_status_82802ab(status);
 	// clear write protect
 	printf("write protect is at 0x%lx\n", (wrprotect));
 	printf("write protect is 0x%x\n", chip_readb(wrprotect));
@@ -49,7 +49,7 @@ int erase_lhf00l04_block(struct flashchip *flash, unsigned int blockaddr, unsign
 	programmer_delay(10);
 	// now let's see what the register is
 	status = wait_82802ab(flash->virtual_memory);
-	print_82802ab_status(status);
+	print_status_82802ab(status);
 	printf("DONE BLOCK 0x%x\n", blockaddr);
 
 	if (check_erased_range(flash, blockaddr, blocklen)) {
