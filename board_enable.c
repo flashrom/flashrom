@@ -703,6 +703,14 @@ static int board_epox_ep_bx3(const char *name)
 }
 
 /**
+ * Suited for Intel SE440BX-2
+ */
+static int intel_piix4_gpo27_lower(const char *name)
+{
+        return intel_piix4_gpo_set(27, 0);
+}
+
+/**
  * Set a GPIO line on a given intel ICH LPC controller.
  */
 static int intel_ich_gpio_set(int gpio, int raise)
@@ -1314,6 +1322,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x8086, 0x1a30, 0x103c, 0x1a30,  0x8086, 0x2443, 0x103c, 0x2440, "^VL420$",     NULL,         NULL,          "HP",          "VL420 SFF",             0,   OK, intel_ich_gpio22_raise},
 	{0x1166, 0x0205, 0x1014, 0x0347,  0x1002, 0x515E, 0x1014, 0x0325, NULL,          NULL,         NULL,          "IBM",         "x3455",                 0,   OK, board_ibm_x3455},
 	{0x1039, 0x5513, 0x8086, 0xd61f,  0x1039, 0x6330, 0x8086, 0xd61f, NULL,          NULL,         NULL,          "Intel",       "D201GLY",               0,   OK, wbsio_check_for_spi},
+	{0x8086, 0x7190,      0,      0,  0x8086, 0x7110,      0,      0, "^SE440BX-2$", NULL,         NULL,          "Intel",       "SE440BX-2",             0,   NT, intel_piix4_gpo27_lower},
 	{0x1022, 0x7468,      0,      0,       0,      0,      0,      0, NULL,          "iwill",      "dk8_htx",     "IWILL",       "DK8-HTX",               0,   OK, w83627hf_gpio24_raise_2e},
 	{0x8086, 0x27A0,      0,      0,  0x8086, 0x27b8,      0,      0, NULL,          "kontron",    "986lcd-m",    "Kontron",     "986LCD-M",              0,   OK, board_kontron_986lcd_m},
 	{0x8086, 0x2411, 0x8086, 0x2411,  0x8086, 0x7125, 0x0e11, 0xb165, NULL,          NULL,         NULL,          "Mitac",       "6513WU",                0,   OK, board_mitac_6513wu},
