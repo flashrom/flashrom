@@ -97,7 +97,7 @@ int unlock_82802ab(struct flashchip *flash)
 	int i;
 	//chipaddr wrprotect = flash->virtual_registers + page + 2;
 
-	for (i = 0; i < flash->total_size; i+= flash->page_size)
+	for (i = 0; i < flash->total_size * 1024; i+= flash->page_size)
 	{
 		chip_writeb(0, flash->virtual_registers + i + 2);
 	}

@@ -85,7 +85,7 @@ int unlock_stm50flw0x0x(struct flashchip *flash)
 {
 	int i;
 
-	for (i = 0; i < flash->total_size; i+= flash->page_size) {
+	for (i = 0; i < flash->total_size * 1024; i+= flash->page_size) {
 		if(unlock_block_stm50flw0x0x(flash, i)) {
 			fprintf(stderr, "UNLOCK FAILED!\n");
 			return -1;
