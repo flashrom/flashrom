@@ -42,7 +42,7 @@ Linux et al:
 
  * pciutils / libpci
  * pciutils-devel / pciutils-dev / libpci-dev
- * zlib-devel / zlib1g-dev (only needed if libpci is static)
+ * zlib-devel / zlib1g-dev (needed if libpci was compiled with libz support)
 
 On FreeBSD, you need the following ports:
 
@@ -75,6 +75,25 @@ To compile and run on Darwin/Mac OS X:
  Install DirectIO from coresystems GmbH.
  DirectIO is available at http://www.coresystems.de/en/directio.
 
+To cross-compile on Linux for DOS:
+
+ Get RPMs of the cross compiler from the DJGPP site and install them:
+ djcross-binutils-2.19.1-10ap.i386.rpm
+ djcross-gcc-tools-4.4.1-1ap.i686.rpm
+ djcross-gcc-4.3.2-8ap.i686.rpm
+ Download pciutils 3.1.5 and apply http://assembler.cz/flashrom/pciutils.patch
+ Download and compile http://assembler.cz/flashrom/libgetopt/
+ Compile pciutils, see README.DJGPP for instructions.
+ Enter the flashrom directory.
+ ../libpci should contain pciutils source and binaries.
+ ../libgetopt should contain getopt.a from libgetopt.
+ Run either (change settings where appropriate)
+ make CC=i586-pc-msdosdjgpp-gcc STRIP=i586-pc-msdosdjgpp-strip OS_ARCH=DOS
+ or (above settings hardcoded)
+ make djgpp-dos
+ You might have to add WARNERROR=no to the make command line.
+ To run flashrom.exe, download http://clio.rice.edu/djgpp/csdpmi7b.zip and
+ make sure CWSDPMI.EXE is in the current directory.
 
 Installation
 ------------
