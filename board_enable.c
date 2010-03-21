@@ -206,6 +206,17 @@ static int w836xx_memw_enable_2e(const char *name)
 }
 
 /**
+ * Suited for:
+ *   - Termtek TK-3370 (rev. 2.5b)
+ */
+static int w836xx_memw_enable_4e(const char *name)
+{
+	w836xx_memw_enable(0x4E);
+
+	return 0;
+}
+
+/**
  *
  */
 static int it8705f_write_enable(uint8_t port, const char *name)
@@ -1400,6 +1411,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x1106, 0x3038, 0x0925, 0x1234,  0x1106, 0x3058, 0x15DD, 0x7609, NULL,          NULL,         NULL,          "Soyo",        "SY-7VCA",               0,   OK, via_apollo_gpo0_lower},
 	{0x8086, 0x1076, 0x8086, 0x1176,  0x1106, 0x3059, 0x10f1, 0x2498, NULL,          NULL,         NULL,          "Tyan",        "S2498 (Tomcat K7M)",    0,   OK, w836xx_memw_enable_2e},
 	{0x1106, 0x3038, 0x0925, 0x1234,  0x1106, 0x0596, 0x1106,      0, NULL,          NULL,         NULL,          "Tekram",      "P6Pro-A5",              256, OK, NULL},
+	{0x1106, 0x3123, 0x1106, 0x3123,  0x1106, 0x3059, 0x1106, 0x4161, NULL,          NULL,         NULL,          "Termtek",     "TK-3370 (Rev:2.5B)",    0,   OK, w836xx_memw_enable_4e},
 	{0x1106, 0x3177, 0x1106, 0xAA01,  0x1106, 0x3123, 0x1106, 0xAA01, NULL,          NULL,         NULL,          "VIA",         "EPIA M/MII/...",        0,   OK, via_vt823x_gpio15_raise},
 	{0x1106, 0x0259, 0x1106, 0x3227,  0x1106, 0x3065, 0x1106, 0x3149, NULL,          NULL,         NULL,          "VIA",         "EPIA-N/NL",             0,   OK, via_vt823x_gpio9_raise},
 	{0x1106, 0x5337, 0x1458, 0xb003,  0x1106, 0x287e, 0x1106, 0x337e, NULL,          NULL,         NULL,          "VIA",         "PC3500G",               0,   OK, it87xx_probe_spi_flash},
