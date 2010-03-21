@@ -2,6 +2,7 @@
 # This file is part of the flashrom project.
 #
 # Copyright (C) 2005 coresystems GmbH <stepan@coresystems.de>
+# Copyright (C) 2009,2010 Carl-Daniel Hailfinger
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,15 +21,22 @@
 PROGRAM = flashrom
 
 CC      ?= gcc
-STRIP   = strip
+STRIP   ?= strip
 INSTALL = install
 DIFF    = diff
 PREFIX  ?= /usr/local
 MANDIR  ?= $(PREFIX)/share/man
-CFLAGS  ?= -Os -Wall -Werror -Wshadow
+CFLAGS  ?= -Os -Wall -Wshadow
 EXPORTDIR ?= .
 
-OS_ARCH	= $(shell uname)
+WARNERROR ?= yes
+
+ifeq ($(WARNERROR), yes)
+CFLAGS += -Werror
+endif
+
+# FIXME We have to differentiate between host and target arch.
+OS_ARCH	?= $(shell uname)
 ifneq ($(OS_ARCH), SunOS)
 STRIP_ARGS = -s
 endif
@@ -39,6 +47,12 @@ endif
 ifeq ($(OS_ARCH), FreeBSD)
 CPPFLAGS += -I/usr/local/include
 LDFLAGS += -L/usr/local/lib
+endif
+ifeq ($(OS_ARCH), DOS)
+CPPFLAGS += -I../libgetopt -I../libpci/include
+# Bus Pirate and Serprog are not supported under DOS.
+CONFIG_BUSPIRATESPI = no
+CONFIG_SERPROG = no
 endif
 
 CHIP_OBJS = jedec.o stm50flw0x0x.o w39v040c.o w39v080fa.o w29ee011.o \
@@ -188,12 +202,26 @@ endif
 endif
 
 ifeq ($(NEED_PCI), yes)
-LIBS += -lpci
+ifneq ($(OS_ARCH), DOS)
+# FIXME This workaround is needed until libpci detection can handle
+# cross-compiling for DOS.
+CHECK_LIBPCI = yes
+endif
+endif
+
+ifeq ($(NEED_PCI), yes)
 FEATURE_CFLAGS += -D'NEED_PCI=1'
 PROGRAMMER_OBJS += pcidev.o physmap.o hwaccess.o
 ifeq ($(OS_ARCH), NetBSD)
 LIBS += -lpciutils #		The libpci we want.
 LIBS += -l$(shell uname -p) #	For (i386|x86_64)_iopl(2).
+else
+ifeq ($(OS_ARCH), DOS)
+# FIXME There needs to be a better way to do this
+LIBS += ../libpci/lib/libpci.a ../libgetopt/libgetopt.a
+else
+LIBS += -lpci
+endif
 endif
 endif
 
@@ -239,7 +267,7 @@ compiler:
 		rm -f .test.c .test; exit 1)
 	@rm -f .test.c .test
 
-ifeq ($(NEED_PCI), yes)
+ifeq ($(CHECK_LIBPCI), yes)
 pciutils: compiler
 	@printf "Checking for libpci headers... "
 	@$(shell ( echo "#include <pci/pci.h>";		   \
@@ -315,6 +343,9 @@ tarball: export
 	@rm -rf $(EXPORTDIR)/flashrom-$(RELEASENAME)
 	@echo Created $(EXPORTDIR)/flashrom-$(RELEASENAME).tar.bz2
 
-.PHONY: all clean distclean dep compiler pciutils features export tarball
+djgpp-dos: clean
+	make CC=i586-pc-msdosdjgpp-gcc STRIP=i586-pc-msdosdjgpp-strip WARNERROR=no OS_ARCH=DOS
+
+.PHONY: all clean distclean dep compiler pciutils features export tarball dos
 
 -include .dependencies
