@@ -279,26 +279,17 @@ pciutils: compiler
 		echo "Please install libpci headers (package pciutils-devel).";	\
 		echo "See README for more information."; echo;			\
 		rm -f .test.c .test.o; exit 1)
-	@printf "Checking for libpci... "
-	@$(shell ( echo "#include <pci/pci.h>";		   \
-		   echo "int main(int argc, char **argv)"; \
-		   echo "{ return 0; }"; ) > .test1.c )
-	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .test1.c -o .test1 -lpci $(LIBS) >/dev/null 2>&1 &&	\
-		echo "found." || ( echo "not found."; echo;				\
-		echo "Please install libpci (package pciutils).";			\
-		echo "See README for more information."; echo;				\
-		rm -f .test1.c .test1; exit 1)
-	@printf "Checking if libpci is sufficient... "
+	@printf "Checking if libpci is present and sufficient... "
 	@printf "" > .libdeps
-	@$(CC) $(LDFLAGS) .test.o -o .test -lpci $(LIBS) >/dev/null 2>&1 &&				\
+	@$(CC) $(LDFLAGS) .test.o -o .test $(LIBS) >/dev/null 2>&1 &&				\
 		echo "yes." || ( echo "no.";							\
-		printf "Checking if libz is present and supplies all needed symbols...";	\
-		$(CC) $(LDFLAGS) .test.o -o .test -lpci -lz $(LIBS) >/dev/null 2>&1 &&		\
+		printf "Checking if libz+libpci are present and sufficient...";	\
+		$(CC) $(LDFLAGS) .test.o -o .test $(LIBS) -lz >/dev/null 2>&1 &&		\
 		( echo "yes."; echo "NEEDLIBZ := yes" > .libdeps ) || ( echo "no."; echo;	\
-		echo "Please install libz.";			\
+		echo "Please install libpci (package pciutils) and/or libz.";			\
 		echo "See README for more information."; echo;				\
 		rm -f .test.c .test.o .test; exit 1) )
-	@rm -f .test.c .test.o .test .test1.c .test1
+	@rm -f .test.c .test.o .test
 else
 pciutils: compiler
 	@printf "" > .libdeps
