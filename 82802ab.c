@@ -206,10 +206,10 @@ int write_82802ab(struct flashchip *flash, uint8_t *buf)
 	return 0;
 }
 
-int unlock_28f004s5(struct flashrom *flash)
+int unlock_28f004s5(struct flashchip *flash)
 {
 	chipaddr bios = flash->virtual_memory;
-	uint8_t mcfg, bcfg, need_unlock = 0, can_unlock = 0;
+	uint8_t mcfg, bcfg, need_unlock = 0, can_unlock = 0, i;
 
 	/* Clear status register */
 	chip_writeb(0x50, bios);
