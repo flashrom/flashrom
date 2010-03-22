@@ -108,7 +108,7 @@ const struct spi_programmer spi_programmer[] = {
 		.command = buspirate_spi_send_command,
 		.multicommand = default_spi_send_multicommand,
 		.read = buspirate_spi_read,
-		.write_256 = spi_chip_write_1,
+		.write_256 = buspirate_spi_write_256,
 	},
 #endif
 
