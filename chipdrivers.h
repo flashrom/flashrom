@@ -62,6 +62,7 @@ int write_82802ab(struct flashchip *flash, uint8_t *buf);
 void print_status_82802ab(uint8_t status);
 void write_page_82802ab(chipaddr bios, uint8_t *src, chipaddr dst, int page_size);
 int unlock_82802ab(struct flashchip *flash);
+int unlock_28f004s5(struct flashchip *flash);
 
 /* jedec.c */
 uint8_t oddparity(uint8_t val);
