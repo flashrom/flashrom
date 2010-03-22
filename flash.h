@@ -504,6 +504,7 @@ int buspirate_spi_init(void);
 int buspirate_spi_shutdown(void);
 int buspirate_spi_send_command(unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr);
 int buspirate_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
+int buspirate_spi_write_256(struct flashchip *flash, uint8_t *buf);
 
 /* dediprog.c */
 int dediprog_init(void);
