@@ -2316,7 +2316,7 @@ struct flashchip flashchips[] = {
 		.model_id	= P28F001BXB,
 		.total_size	= 128,
 		.page_size	= 128 * 1024, /* 8k + 2x4k + 112k */
-		.tested		= TEST_BAD_WRITE,
+		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
 		.block_erasers	=
@@ -2330,7 +2330,7 @@ struct flashchip flashchips[] = {
 				.block_erase = erase_block_82802ab,
 			},
 		},
-		.write		= NULL,
+		.write		= write_82802ab,
 		.read		= read_memmapped,
 	},
 
@@ -2342,7 +2342,7 @@ struct flashchip flashchips[] = {
 		.model_id	= P28F001BXT,
 		.total_size	= 128,
 		.page_size	= 128 * 1024, /* 112k + 2x4k + 8k */
-		.tested		= TEST_BAD_WRITE,
+		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
 		.block_erasers	=
@@ -2356,7 +2356,7 @@ struct flashchip flashchips[] = {
 				.block_erase = erase_block_82802ab,
 			},
 		},
-		.write		= NULL,
+		.write		= write_82802ab,
 		.read		= read_memmapped,
 	},
 
@@ -2368,7 +2368,6 @@ struct flashchip flashchips[] = {
 		.model_id	= E_28F004S5,
 		.total_size	= 512,
 		.page_size	= 256,
-		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_82802ab,
 		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
@@ -2379,7 +2378,7 @@ struct flashchip flashchips[] = {
 				.block_erase = erase_block_82802ab,
 			},
 		},
-		.unlock		= unlock_82802ab,
+		.unlock		= unlock_28f004s5,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
 	},
