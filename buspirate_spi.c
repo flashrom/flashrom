@@ -316,4 +316,39 @@ int buspirate_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len
 	return spi_read_chunked(flash, buf, start, len, 12);
 }
 
-/* We could do 12-byte writes, but for now we use the generic 1-byte code. */
+int buspirate_spi_write_256(struct flashchip *flash, uint8_t *buf)
+{
+	int total_size = 1024 * flash->total_size;
+	int i;
+
+	spi_disable_blockprotect();
+	/* Erase first. */
+	msg_pinfo("Erasing flash before programming... ");
+	if (erase_flash(flash)) {
+		msg_perr("ERASE FAILED!\n");
+		return -1;
+	}
+	msg_pinfo("done.\n");
+
+	/* FIXME: We could do 12 byte writes, but then we'd have to make sure
+	 * not to cross a 256 byte page boundary. This problem only applies to
+	 * writes, reads can cross page boundaries just fine.
+	 */
+	for (i = 0; i < total_size; i += 8) {
+		int l, r;
+		if (i + 8 <= total_size)
+			l = 8;
+		else
+			l = total_size - i;
+
+		if ((r = spi_nbyte_program(i, &buf[i], l))) {
+			msg_perr("%s: write fail %d\n", __func__, r);
+			return 1;
+		}
+
+		while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
+			/* loop */;
+	}
+
+	return 0;
+}
