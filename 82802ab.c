@@ -47,6 +47,7 @@ int probe_82802ab(struct flashchip *flash)
 {
 	chipaddr bios = flash->virtual_memory;
 	uint8_t id1, id2;
+	uint8_t flashcontent1, flashcontent2;
 
 	/* Reset to get a clean state */
 	chip_writeb(0xFF, bios);
@@ -64,8 +65,21 @@ int probe_82802ab(struct flashchip *flash)
 
 	programmer_delay(10);
 
-	printf_debug("%s: id1 0x%02x, id2 0x%02x\n", __func__, id1, id2);
+	printf_debug("%s: id1 0x%02x, id2 0x%02x", __func__, id1, id2);
 
+	if (!oddparity(id1))
+		printf_debug(", id1 parity violation");
+
+	/* Read the product ID location again. We should now see normal flash contents. */
+	flashcontent1 = chip_readb(bios);
+	flashcontent2 = chip_readb(bios + 0x01);
+
+	if (id1 == flashcontent1)
+		printf_debug(", id1 is normal flash content");
+	if (id2 == flashcontent2)
+		printf_debug(", id2 is normal flash content");
+
+	printf_debug("\n");
 	if (id1 != flash->manufacture_id || id2 != flash->model_id)
 		return 0;
 
