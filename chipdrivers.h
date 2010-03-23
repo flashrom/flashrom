@@ -100,11 +100,7 @@ int erase_sector_28sf040(struct flashchip *flash, unsigned int address, unsigned
 int write_28sf040(struct flashchip *flash, uint8_t *buf);
 
 /* sst49lfxxxc.c */
-int probe_49lfxxxc(struct flashchip *flash);
-int erase_49lfxxxc(struct flashchip *flash);
 int erase_sector_49lfxxxc(struct flashchip *flash, unsigned int address, unsigned int sector_size);
-int erase_block_49lfxxxc(struct flashchip *flash, unsigned int address, unsigned int sector_size);
-int erase_chip_49lfxxxc(struct flashchip *flash, unsigned int addr, unsigned int blocksize);
 int write_49lfxxxc(struct flashchip *flash, uint8_t *buf);
 int unlock_49lfxxxc(struct flashchip *flash);
 
