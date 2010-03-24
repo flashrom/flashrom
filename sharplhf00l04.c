@@ -34,14 +34,14 @@ int erase_lhf00l04_block(struct flashchip *flash, unsigned int blockaddr, unsign
 
 	// clear status register
 	chip_writeb(0x50, bios);
-	printf("Erase at 0x%lx\n", bios);
+	msg_cdbg("Erase at 0x%lx\n", bios);
 	status = wait_82802ab(flash->virtual_memory);
 	print_status_82802ab(status);
 	// clear write protect
-	printf("write protect is at 0x%lx\n", (wrprotect));
-	printf("write protect is 0x%x\n", chip_readb(wrprotect));
+	msg_cspew("write protect is at 0x%lx\n", (wrprotect));
+	msg_cspew("write protect is 0x%x\n", chip_readb(wrprotect));
 	chip_writeb(0, wrprotect);
-	printf("write protect is 0x%x\n", chip_readb(wrprotect));
+	msg_cspew("write protect is 0x%x\n", chip_readb(wrprotect));
 
 	// now start it
 	chip_writeb(0x20, bios);
@@ -50,10 +50,10 @@ int erase_lhf00l04_block(struct flashchip *flash, unsigned int blockaddr, unsign
 	// now let's see what the register is
 	status = wait_82802ab(flash->virtual_memory);
 	print_status_82802ab(status);
-	printf("DONE BLOCK 0x%x\n", blockaddr);
+	msg_cinfo("DONE BLOCK 0x%x\n", blockaddr);
 
 	if (check_erased_range(flash, blockaddr, blocklen)) {
-		fprintf(stderr, "ERASE FAILED!\n");
+		msg_cerr("ERASE FAILED!\n");
 		return -1;
 	}
 	return 0;
@@ -67,17 +67,17 @@ int write_lhf00l04(struct flashchip *flash, uint8_t *buf)
 	chipaddr bios = flash->virtual_memory;
 
 	if (erase_flash(flash)) {
-		fprintf(stderr, "ERASE FAILED!\n");
+		msg_cerr("ERASE FAILED!\n");
 		return -1;
 	}
-	printf("Programming page: ");
+	msg_cinfo("Programming page: ");
 	for (i = 0; i < total_size / page_size; i++) {
-		printf("%04d at address: 0x%08x", i, i * page_size);
+		msg_cinfo("%04d at address: 0x%08x", i, i * page_size);
 		write_page_82802ab(bios, buf + i * page_size,
 				    bios + i * page_size, page_size);
-		printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+		msg_cinfo("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
 	}
-	printf("\n");
+	msg_cinfo("\n");
 
 	return 0;
 }

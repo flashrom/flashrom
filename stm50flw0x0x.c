@@ -61,19 +61,19 @@ int unlock_block_stm50flw0x0x(struct flashchip *flash, int offset)
 
 		// unlock each 4k-sector
 		for (j = 0; j < 0x10000; j += 0x1000) {
-			printf_debug("unlocking at 0x%x\n", offset + j);
+			msg_cdbg("unlocking at 0x%x\n", offset + j);
 			chip_writeb(unlock_sector, wrprotect + offset + j);
 			if (chip_readb(wrprotect + offset + j) != unlock_sector) {
-				printf("Cannot unlock sector @ 0x%x\n",
+				msg_cerr("Cannot unlock sector @ 0x%x\n",
 				       offset + j);
 				return -1;
 			}
 		}
 	} else {
-		printf_debug("unlocking at 0x%x\n", offset);
+		msg_cdbg("unlocking at 0x%x\n", offset);
 		chip_writeb(unlock_sector, wrprotect + offset);
 		if (chip_readb(wrprotect + offset) != unlock_sector) {
-			printf("Cannot unlock sector @ 0x%x\n", offset);
+			msg_cerr("Cannot unlock sector @ 0x%x\n", offset);
 			return -1;
 		}
 	}
@@ -87,7 +87,7 @@ int unlock_stm50flw0x0x(struct flashchip *flash)
 
 	for (i = 0; i < flash->total_size * 1024; i+= flash->page_size) {
 		if(unlock_block_stm50flw0x0x(flash, i)) {
-			fprintf(stderr, "UNLOCK FAILED!\n");
+			msg_cerr("UNLOCK FAILED!\n");
 			return -1;
 		}
 	}
@@ -101,7 +101,7 @@ int erase_sector_stm50flw0x0x(struct flashchip *flash, unsigned int sector, unsi
 
 	// clear status register
 	chip_writeb(0x50, bios);
-	printf_debug("Erase at 0x%lx\n", bios);
+	msg_cdbg("Erase at 0x%lx\n", bios);
 	// now start it
 	chip_writeb(0x32, bios);
 	chip_writeb(0xd0, bios);
@@ -110,10 +110,10 @@ int erase_sector_stm50flw0x0x(struct flashchip *flash, unsigned int sector, unsi
 	wait_82802ab(flash->virtual_memory);
 
 	if (check_erased_range(flash, sector, sectorsize)) {
-		fprintf(stderr, "ERASE FAILED!\n");
+		msg_cerr("ERASE FAILED!\n");
 		return -1;
 	}
-	printf("DONE BLOCK 0x%x\n", sector);
+	msg_cinfo("DONE BLOCK 0x%x\n", sector);
 
 	return 0;
 }
@@ -130,21 +130,20 @@ int erase_chip_stm50flw0x0x(struct flashchip *flash, unsigned int addr, unsigned
 		return -1;
 	}
 
-	printf("Erasing page:\n");
+	msg_cinfo("Erasing page:\n");
 	for (i = 0; i < total_size / page_size; i++) {
-		printf
-		    ("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
-		printf("%04d at address: 0x%08x ", i, i * page_size);
+		msg_cinfo("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+		msg_cinfo("%04d at address: 0x%08x ", i, i * page_size);
 		//if (unlock_block_stm50flw0x0x(flash, i * page_size)) {
-		//	fprintf(stderr, "UNLOCK FAILED!\n");
+		//	msg_cerr("UNLOCK FAILED!\n");
 		//	return -1;
 		//}
 		if (erase_block_82802ab(flash, i * page_size, page_size)) {
-			fprintf(stderr, "ERASE FAILED!\n");
+			msg_cerr("ERASE FAILED!\n");
 			return -1;
 		}
 	}
-	printf("\n");
+	msg_cinfo("\n");
 
 	return 0;
 }

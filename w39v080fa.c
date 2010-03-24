@@ -26,37 +26,37 @@ static int unlock_block_winbond_fwhub(struct flashchip *flash, int offset)
 	chipaddr wrprotect = flash->virtual_registers + offset + 2;
 	uint8_t locking;
 
-	printf_debug("Trying to unlock block @0x%08x = 0x%02x\n", offset,
+	msg_cdbg("Trying to unlock block @0x%08x = 0x%02x\n", offset,
 		     chip_readb(wrprotect));
 
 	locking = chip_readb(wrprotect);
 	switch (locking & 0x7) {
 	case 0:
-		printf_debug("Full Access.\n");
+		msg_cdbg("Full Access.\n");
 		return 0;
 	case 1:
-		printf_debug("Write Lock (Default State).\n");
+		msg_cdbg("Write Lock (Default State).\n");
 		chip_writeb(0, wrprotect);
 		return 0;
 	case 2:
-		printf_debug("Locked Open (Full Access, Lock Down).\n");
+		msg_cdbg("Locked Open (Full Access, Lock Down).\n");
 		return 0;
 	case 3:
-		fprintf(stderr, "Error: Write Lock, Locked Down.\n");
+		msg_cerr("Error: Write Lock, Locked Down.\n");
 		return -1;
 	case 4:
-		printf_debug("Read Lock.\n");
+		msg_cdbg("Read Lock.\n");
 		chip_writeb(0, wrprotect);
 		return 0;
 	case 5:
-		printf_debug("Read/Write Lock.\n");
+		msg_cdbg("Read/Write Lock.\n");
 		chip_writeb(0, wrprotect);
 		return 0;
 	case 6:
-		fprintf(stderr, "Error: Read Lock, Locked Down.\n");
+		msg_cerr("Error: Read Lock, Locked Down.\n");
 		return -1;
 	case 7:
-		fprintf(stderr, "Error: Read/Write Lock, Locked Down.\n");
+		msg_cerr("Error: Read/Write Lock, Locked Down.\n");
 		return -1;
 	}
 
@@ -89,17 +89,17 @@ int unlock_winbond_fwhub(struct flashchip *flash)
 	chip_writeb(0xF0, bios + 0x5555);
 	programmer_delay(10);
 
-	printf_debug("Lockout bits:\n");
+	msg_cdbg("Lockout bits:\n");
 
 	if (locking & (1 << 2))
-		fprintf(stderr, "Error: hardware bootblock locking (#TBL).\n");
+		msg_cerr("Error: hardware bootblock locking (#TBL).\n");
 	else
-		printf_debug("No hardware bootblock locking (good!)\n");
+		msg_cdbg("No hardware bootblock locking (good!)\n");
 
 	if (locking & (1 << 3))
-		fprintf(stderr, "Error: hardware block locking (#WP).\n");
+		msg_cerr("Error: hardware block locking (#WP).\n");
 	else
-		printf_debug("No hardware block locking (good!)\n");
+		msg_cdbg("No hardware block locking (good!)\n");
 
 	if (locking & ((1 << 2) | (1 << 3)))
 		return -1;
