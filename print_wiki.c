@@ -289,6 +289,7 @@ const struct board_info_url boards_url[] = {
 	{ "Sun",		"Fire x4600",		"http://www.sun.com/servers/x64/x4600/" },
 
 	/* Verified working laptops. */
+	{ "Acer",		"Aspire 1520",		"http://support.acer.com/us/en/acerpanam/notebook/0000/Acer/Aspire1520/Aspire1520nv.shtml" },
 	{ "Lenovo",		"3000 V100 TF05Cxx",	"http://www5.pc.ibm.com/europe/products.nsf/products?openagent&brand=Lenovo3000Notebook&series=Lenovo+3000+V+Series#viewallmodelstop" },
 
 	/* Verified non-working laptops (for now). */
