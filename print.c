@@ -263,6 +263,7 @@ const struct board_info boards_ok[] = {
 	{ "ASRock",		"M3A790GXH/128M" },
 	{ "ASUS",		"A7N8X Deluxe", },
 	{ "ASUS",		"A7N8X-E Deluxe", },
+	{ "ASUS",		"A7V133", },
 	{ "ASUS",		"A7V400-MX", },
 	{ "ASUS",		"A7V8X-MX", },
 	{ "ASUS",		"A7V8X-X", },
