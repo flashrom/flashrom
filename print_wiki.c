@@ -134,6 +134,7 @@ const struct board_info_url boards_url[] = {
 	{ "ASUS",		"P5B-Deluxe",		"http://www.asus.com/product.aspx?P_ID=bswT66IBSb2rEWNa" },
 	{ "ASUS",		"P5KC",			"http://www.asus.com/product.aspx?P_ID=fFZ8oUIGmLpwNMjj" },
 	{ "ASUS",		"P5L-MX",		"http://www.asus.com/product.aspx?P_ID=X70d3NCzH2DE9vWH" },
+	{ "ASUS",		"P6T Deluxe",		"http://www.asus.com/product.aspx?P_ID=vXixf82co6Q5v0BZ" },
 	{ "ASUS",		"P6T Deluxe V2",	"http://www.asus.com/product.aspx?P_ID=iRlP8RG9han6saZx" },
 	{ "A-Trend",		"ATC-6220",		"http://www.motherboard.cz/mb/atrend/atc6220.htm" },
 	{ "BCOM",		"WinNET100",		"http://www.coreboot.org/BCOM_WINNET100" },
