@@ -29,7 +29,7 @@ int probe_w29ee011(struct flashchip *flash)
 	extern char *chip_to_probe;
 
 	if (!chip_to_probe || strcmp(chip_to_probe, "W29EE011")) {
-		printf_debug("Probing disabled for Winbond W29EE011 because "
+		msg_cdbg("Probing disabled for Winbond W29EE011 because "
 			     "the probing sequence puts the AMIC A49LF040A in "
 			     "a funky state. Use 'flashrom -c W29EE011' if you "
 			     "have a board with this chip.\n");
@@ -62,7 +62,7 @@ int probe_w29ee011(struct flashchip *flash)
 	chip_writeb(0xF0, bios + 0x5555);
 	programmer_delay(10);
 
-	printf_debug("%s: id1 0x%02x, id2 0x%02x\n", __func__, id1, id2);
+	msg_cdbg("%s: id1 0x%02x, id2 0x%02x\n", __func__, id1, id2);
 
 	if (id1 == flash->manufacture_id && id2 == flash->model_id)
 		return 1;

@@ -34,13 +34,13 @@
 // I need that Berkeley bit-map printer
 void print_status_82802ab(uint8_t status)
 {
-	printf_debug("%s", status & 0x80 ? "Ready:" : "Busy:");
-	printf_debug("%s", status & 0x40 ? "BE SUSPEND:" : "BE RUN/FINISH:");
-	printf_debug("%s", status & 0x20 ? "BE ERROR:" : "BE OK:");
-	printf_debug("%s", status & 0x10 ? "PROG ERR:" : "PROG OK:");
-	printf_debug("%s", status & 0x8 ? "VP ERR:" : "VPP OK:");
-	printf_debug("%s", status & 0x4 ? "PROG SUSPEND:" : "PROG RUN/FINISH:");
-	printf_debug("%s", status & 0x2 ? "WP|TBL#|WP#,ABORT:" : "UNLOCK:");
+	msg_cdbg("%s", status & 0x80 ? "Ready:" : "Busy:");
+	msg_cdbg("%s", status & 0x40 ? "BE SUSPEND:" : "BE RUN/FINISH:");
+	msg_cdbg("%s", status & 0x20 ? "BE ERROR:" : "BE OK:");
+	msg_cdbg("%s", status & 0x10 ? "PROG ERR:" : "PROG OK:");
+	msg_cdbg("%s", status & 0x8 ? "VP ERR:" : "VPP OK:");
+	msg_cdbg("%s", status & 0x4 ? "PROG SUSPEND:" : "PROG RUN/FINISH:");
+	msg_cdbg("%s", status & 0x2 ? "WP|TBL#|WP#,ABORT:" : "UNLOCK:");
 }
 
 int probe_82802ab(struct flashchip *flash)
@@ -65,21 +65,21 @@ int probe_82802ab(struct flashchip *flash)
 
 	programmer_delay(10);
 
-	printf_debug("%s: id1 0x%02x, id2 0x%02x", __func__, id1, id2);
+	msg_cdbg("%s: id1 0x%02x, id2 0x%02x", __func__, id1, id2);
 
 	if (!oddparity(id1))
-		printf_debug(", id1 parity violation");
+		msg_cdbg(", id1 parity violation");
 
 	/* Read the product ID location again. We should now see normal flash contents. */
 	flashcontent1 = chip_readb(bios);
 	flashcontent2 = chip_readb(bios + 0x01);
 
 	if (id1 == flashcontent1)
-		printf_debug(", id1 is normal flash content");
+		msg_cdbg(", id1 is normal flash content");
 	if (id2 == flashcontent2)
-		printf_debug(", id2 is normal flash content");
+		msg_cdbg(", id2 is normal flash content");
 
-	printf_debug("\n");
+	msg_cdbg("\n");
 	if (id1 != flash->manufacture_id || id2 != flash->model_id)
 		return 0;
 
@@ -137,10 +137,10 @@ int erase_block_82802ab(struct flashchip *flash, unsigned int page, unsigned int
 	print_status_82802ab(status);
 
 	if (check_erased_range(flash, page, pagesize)) {
-		fprintf(stderr, "ERASE FAILED!\n");
+		msg_cerr("ERASE FAILED!\n");
 		return -1;
 	}
-	printf("DONE BLOCK 0x%x\n", page);
+	msg_cinfo("DONE BLOCK 0x%x\n", page);
 
 	return 0;
 }
@@ -150,14 +150,14 @@ int erase_82802ab(struct flashchip *flash)
 	int i;
 	unsigned int total_size = flash->total_size * 1024;
 
-	printf("total_size is %d; flash->page_size is %d\n",
+	msg_cspew("total_size is %d; flash->page_size is %d\n",
 	       total_size, flash->page_size);
 	for (i = 0; i < total_size; i += flash->page_size)
 		if (erase_block_82802ab(flash, i, flash->page_size)) {
-			fprintf(stderr, "ERASE FAILED!\n");
+			msg_cerr("ERASE FAILED!\n");
 			return -1;
 		}
-	printf("DONE ERASE\n");
+	msg_cinfo("DONE ERASE\n");
 
 	return 0;
 }
@@ -184,14 +184,13 @@ int write_82802ab(struct flashchip *flash, uint8_t *buf)
 	uint8_t *tmpbuf = malloc(page_size);
 
 	if (!tmpbuf) {
-		printf("Could not allocate memory!\n");
+		msg_cerr("Could not allocate memory!\n");
 		exit(1);
 	}
-	printf("Programming page: \n");
+	msg_cinfo("Programming page: \n");
 	for (i = 0; i < total_size / page_size; i++) {
-		printf
-		    ("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
-		printf("%04d at address: 0x%08x", i, i * page_size);
+		msg_cinfo("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+		msg_cinfo("%04d at address: 0x%08x", i, i * page_size);
 
 		/* Auto Skip Blocks, which already contain the desired data
 		 * Faster, because we only write, what has changed
@@ -202,19 +201,19 @@ int write_82802ab(struct flashchip *flash, uint8_t *buf)
 		 */
 		chip_readn(tmpbuf, bios + i * page_size, page_size);
 		if (!memcmp((void *)(buf + i * page_size), tmpbuf, page_size)) {
-			printf("SKIPPED\n");
+			msg_cdbg("SKIPPED\n");
 			continue;
 		}
 
 		/* erase block by block and write block by block; this is the most secure way */
 		if (erase_block_82802ab(flash, i * page_size, page_size)) {
-			fprintf(stderr, "ERASE FAILED!\n");
+			msg_cerr("ERASE FAILED!\n");
 			return -1;
 		}
 		write_page_82802ab(bios, buf + i * page_size,
 				   bios + i * page_size, page_size);
 	}
-	printf("\n");
+	msg_cinfo("DONE!\n");
 	free(tmpbuf);
 
 	return 0;
@@ -234,7 +233,7 @@ int unlock_28f004s5(struct flashchip *flash)
 
 	/* Read master lock-bit */
 	mcfg = chip_readb(bios + 0x3);
-	msg_cinfo("master lock is ");
+	msg_cdbg("master lock is ");
 	if (mcfg) {
 		msg_cdbg("locked!\n");
 	} else {
@@ -256,9 +255,11 @@ int unlock_28f004s5(struct flashchip *flash)
 
 	/* Unlock: clear block lock-bits, if needed */
 	if (can_unlock && need_unlock) {
+		msg_cdbg("Unlock: ");
 		chip_writeb(0x60, bios);
 		chip_writeb(0xD0, bios);
 		chip_writeb(0xFF, bios);
+		msg_cdbg("Done!\n");
 	}
 
 	/* Error: master locked or a block is locked */

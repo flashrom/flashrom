@@ -63,7 +63,7 @@ int erase_sector_28sf040(struct flashchip *flash, unsigned int address, unsigned
 	toggle_ready_jedec(bios);
 
 	if (check_erased_range(flash, address, sector_size)) {
-		fprintf(stderr, "ERASE FAILED!\n");
+		msg_cerr("ERASE FAILED!\n");
 		return -1;
 	}
 	return 0;
@@ -105,7 +105,7 @@ int erase_28sf040(struct flashchip *flash)
 	toggle_ready_jedec(bios);
 
 	if (check_erased_range(flash, 0, flash->total_size * 1024)) {
-		fprintf(stderr, "ERASE FAILED!\n");
+		msg_cerr("ERASE FAILED!\n");
 		return -1;
 	}
 	return 0;
@@ -120,21 +120,21 @@ int write_28sf040(struct flashchip *flash, uint8_t *buf)
 
 	unprotect_28sf040(bios);
 
-	printf("Programming page: ");
+	msg_cinfo("Programming page: ");
 	for (i = 0; i < total_size / page_size; i++) {
 		/* erase the page before programming */
 		if (erase_sector_28sf040(flash, i * page_size, page_size)) {
-			fprintf(stderr, "ERASE FAILED!\n");
+			msg_cerr("ERASE FAILED!\n");
 			return -1;
 		}
 
 		/* write to the sector */
-		printf("%04d at address: 0x%08x", i, i * page_size);
+		msg_cinfo("%04d at address: 0x%08x", i, i * page_size);
 		write_sector_28sf040(bios, buf + i * page_size,
 				     bios + i * page_size, page_size);
-		printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+		msg_cinfo("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
 	}
-	printf("\n");
+	msg_cinfo("\n");
 
 	protect_28sf040(bios);
 
@@ -144,7 +144,7 @@ int write_28sf040(struct flashchip *flash, uint8_t *buf)
 int erase_chip_28sf040(struct flashchip *flash, unsigned int addr, unsigned int blocklen)
 {
 	if ((addr != 0) || (blocklen != flash->total_size * 1024)) {
-		fprintf(stderr, "%s called with incorrect arguments\n",
+		msg_cerr("%s called with incorrect arguments\n",
 			__func__);
 		return -1;
 	}

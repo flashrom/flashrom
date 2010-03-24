@@ -42,7 +42,7 @@ int printlock_w39v040c(struct flashchip *flash)
 	chip_writeb(0xF0, bios + 0x5555);
 	programmer_delay(40);
 
-	printf("%s: Boot block #TBL is %slocked, rest of chip #WP is %slocked.\n",
+	msg_cdbg("%s: Boot block #TBL is %slocked, rest of chip #WP is %slocked.\n",
 		__func__, lock & 0x4 ? "" : "un", lock & 0x8 ? "" : "un");
 	return 0;
 }
