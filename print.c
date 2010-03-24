@@ -290,6 +290,7 @@ const struct board_info boards_ok[] = {
 	{ "ASUS",		"P5B-Deluxe", },
 	{ "ASUS",		"P5KC", },
 	{ "ASUS",		"P5L-MX", },
+	{ "ASUS",		"P6T Deluxe", },
 	{ "ASUS",		"P6T Deluxe V2", },
 	{ "A-Trend",		"ATC-6220", },
 	{ "BCOM",		"WinNET100", },
