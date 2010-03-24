@@ -27,7 +27,7 @@
 int unlock_block_49lfxxxc(struct flashchip *flash, unsigned long address, unsigned char bits)
 {
 	unsigned long lock = flash->virtual_registers + address + 2;
-	printf_debug("lockbits at address=0x%08lx is 0x%01x\n", lock, chip_readb(lock));
+	msg_cdbg("lockbits at address=0x%08lx is 0x%01x\n", lock, chip_readb(lock));
 	chip_writeb(bits, lock);
 
 	return 0;
@@ -39,30 +39,30 @@ static int write_lockbits_49lfxxxc(struct flashchip *flash, unsigned char bits)
 	int i, left = flash->total_size * 1024;
 	unsigned long address;
 
-	printf_debug("\nbios=0x%08lx\n", registers);
+	msg_cdbg("\nbios=0x%08lx\n", registers);
 	for (i = 0; left > 65536; i++, left -= 65536) {
-		printf_debug("lockbits at address=0x%08lx is 0x%01x\n",
+		msg_cdbg("lockbits at address=0x%08lx is 0x%01x\n",
 			     registers + (i * 65536) + 2,
 			     chip_readb(registers + (i * 65536) + 2));
 		chip_writeb(bits, registers + (i * 65536) + 2);
 	}
 	address = i * 65536;
-	printf_debug("lockbits at address=0x%08lx is 0x%01x\n",
+	msg_cdbg("lockbits at address=0x%08lx is 0x%01x\n",
 		     registers + address + 2,
 		     chip_readb(registers + address + 2));
 	chip_writeb(bits, registers + address + 2);
 	address += 32768;
-	printf_debug("lockbits at address=0x%08lx is 0x%01x\n",
+	msg_cdbg("lockbits at address=0x%08lx is 0x%01x\n",
 		     registers + address + 2,
 		     chip_readb(registers + address + 2));
 	chip_writeb(bits, registers + address + 2);
 	address += 8192;
-	printf_debug("lockbits at address=0x%08lx is 0x%01x\n",
+	msg_cdbg("lockbits at address=0x%08lx is 0x%01x\n",
 		     registers + address + 2,
 		     chip_readb(registers + address + 2));
 	chip_writeb(bits, registers + address + 2);
 	address += 8192;
-	printf_debug("lockbits at address=0x%08lx is 0x%01x\n",
+	msg_cdbg("lockbits at address=0x%08lx is 0x%01x\n",
 		     registers + address + 2,
 		     chip_readb(registers + address + 2));
 	chip_writeb(bits, registers + address + 2);
@@ -86,7 +86,7 @@ int erase_sector_49lfxxxc(struct flashchip *flash, unsigned int address, unsigne
 	status = wait_82802ab(bios);
 
 	if (check_erased_range(flash, address, sector_size)) {
-		fprintf(stderr, "ERASE FAILED!\n");
+		msg_cerr("ERASE FAILED!\n");
 		return -1;
 	}
 	return 0;
@@ -100,21 +100,21 @@ int write_49lfxxxc(struct flashchip *flash, uint8_t *buf)
 	chipaddr bios = flash->virtual_memory;
 
 	write_lockbits_49lfxxxc(flash, 0);
-	printf("Programming page: ");
+	msg_cinfo("Programming page: ");
 	for (i = 0; i < total_size / page_size; i++) {
 		/* erase the page before programming */
 		if (erase_sector_49lfxxxc(flash, i * page_size, flash->page_size)) {
-			fprintf(stderr, "ERASE FAILED!\n");
+			msg_cerr("ERASE FAILED!\n");
 			return -1;
 		}
 
 		/* write to the sector */
-		printf("%04d at address: 0x%08x", i, i * page_size);
+		msg_cinfo("%04d at address: 0x%08x", i, i * page_size);
 		write_page_82802ab(bios, buf + i * page_size,
 				      bios + i * page_size, page_size);
-		printf("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+		msg_cinfo("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
 	}
-	printf("\n");
+	msg_cinfo("\n");
 
 	chip_writeb(0xFF, bios);
 
