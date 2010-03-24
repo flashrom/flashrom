@@ -108,6 +108,7 @@ const struct board_info_url boards_url[] = {
 	{ "ASRock",		"M3A790GXH/128M"	"http://www.asrock.com/MB/overview.asp?Model=M3A790GXH/128M" },
 	{ "ASUS",		"A7N8X Deluxe",		"http://www.asus.com/Product.aspx?P_ID=wAsRYm41KTp78MFC" },
 	{ "ASUS",		"A7N8X-E Deluxe",	"http://www.asus.com/products.aspx?l1=3&l2=13&l3=56&l4=0&model=217&modelmenu=1" },
+	{ "ASUS",		"A7V133",		"ftp://ftp.asus.com.tw/pub/ASUS/mb/socka/kt133a/a7v133/" },
 	{ "ASUS",		"A7V400-MX",		"http://www.asus.com.tw/products.aspx?l1=3&l2=13&l3=63&l4=0&model=228&modelmenu=1" },
 	{ "ASUS",		"A7V8X-MX",		"http://www.asus.com.tw/products.aspx?l1=3&l2=13&l3=64&l4=0&model=229&modelmenu=1" },
 	{ "ASUS",		"A8N-E",		"http://www.asus.com.tw/products.aspx?l1=3&l2=15&l3=171&l4=0&model=455&modelmenu=2" },
@@ -201,6 +202,7 @@ const struct board_info_url boards_url[] = {
 	{ "VIA",		"VB700X",		"http://www.via.com.tw/en/products/mainboards/motherboards.jsp?motherboard_id=490" },
 
 	/* Verified working boards that DO need write-enables. */
+	{ "Abit",		"VT6X4",		"http://www.abit.com.tw/page/en/motherboard/motherboard_detail.php?fMTYPE=Slot%201&pMODEL_NAME=VT6X4" },
 	{ "Abit",		"IP35",			"http://www.abit.com.tw/page/en/motherboard/motherboard_detail.php?fMTYPE=LGA775&pMODEL_NAME=IP35" },
 	{ "Acorp",		"6A815EPD",		"http://web.archive.org/web/20021206163652/www.acorp.com.tw/English/default.asp" },
 	{ "agami",		"Aruma",		"http://web.archive.org/web/20080212111524/http://www.agami.com/site/ais-6000-series" },
