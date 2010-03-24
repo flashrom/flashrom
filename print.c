@@ -311,6 +311,7 @@ const struct board_info boards_ok[] = {
 	{ "Jetway",		"J7F4K1G5D-PB", },
 	{ "MSI",                "MS-6153", },
 	{ "MSI",                "MS-6156", },
+	{ "MSI",                "MS-6330 (K7T Turbo)", },
 	{ "MSI",		"MS-6570 (K7N2)", },
 	{ "MSI",		"MS-7065", },
 	{ "MSI",		"MS-7168 (Orion)", },
