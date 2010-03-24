@@ -56,11 +56,14 @@ static char *get_dmi_string(const char *string_name)
 		printf_debug("DMI pipe open error\n");
 		return NULL;
 	}
-	if (!fgets(answerbuf, DMI_MAX_ANSWER_LEN, dmidecode_pipe) &&
-	    ferror(dmidecode_pipe)) {
-		printf_debug("DMI pipe read error\n");
-		pclose(dmidecode_pipe);
-		return NULL;
+	if (!fgets(answerbuf, DMI_MAX_ANSWER_LEN, dmidecode_pipe)) {
+		if(ferror(dmidecode_pipe)) {
+			printf_debug("DMI pipe read error\n");
+			pclose(dmidecode_pipe);
+			return NULL;
+		} else {
+			answerbuf[0] = 0;	/* Hit EOF */
+		}
 	}
 	/* Toss all output above DMI_MAX_ANSWER_LEN away to prevent
 	   deadlock on pclose. */
