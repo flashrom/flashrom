@@ -154,6 +154,7 @@ const struct board_info_url boards_url[] = {
 	{ "Jetway",		"J7F4K1G5D-PB",		"http://www.jetway.com.tw/jetway/system/productshow2.asp?id=389&proname=J7F4K1G5D-P" },
 	{ "MSI",		"MS-6153",		"http://www.msi.com/index.php?func=proddesc&maincat_no=1&prod_no=336" },
 	{ "MSI",		"MS-6156",		"http://uk.ts.fujitsu.com/rl/servicesupport/techsupport/boards/Motherboards/MicroStar/Ms6156/MS6156.htm" },
+	{ "MSI",		"MS-6330 (K7T Turbo)",	"http://www.msi.com/index.php?func=proddesc&maincat_no=1&prod_no=327" },
 	{ "MSI",		"MS-6570 (K7N2)",	"http://www.msi.com/index.php?func=proddesc&maincat_no=1&prod_no=519" },
 	{ "MSI",		"MS-7065",		"http://browse.geekbench.ca/geekbench2/view/53114" },
 	{ "MSI",		"MS-7168 (Orion)",	"http://support.packardbell.co.uk/uk/item/index.php?i=spec_orion&pi=platform_honeymoon_istart" },
