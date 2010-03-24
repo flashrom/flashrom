@@ -395,7 +395,7 @@ const struct board_info boards_bad[] = {
 const struct board_info laptops_ok[] = {
 	/* Verified working laptops. */
 	{ "Lenovo",		"3000 V100 TF05Cxx", },
-	{ "Acer",               "Aspire 1520",          "http://support.acer.com/us/en/acerpanam/notebook/0000/Acer/Aspire1520/Aspire1520nv.shtml" },
+	{ "Acer",               "Aspire 1520", },
 
 	{},
 };
