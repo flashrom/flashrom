@@ -173,6 +173,9 @@ int internal_init(void)
 		       "will most likely fail.\n");
 	}
 
+	/* Probe for IT87* LPC->SPI translation unconditionally. */
+	it87xx_probe_spi_flash(NULL);
+
 	board_flash_enable(lb_vendor, lb_part);
 
 	/* Even if chipset init returns an error code, we don't want to abort.
