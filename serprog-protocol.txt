@@ -46,14 +46,14 @@ Additional information of the above commands:
 		cmd 7 support: byte 0 bit 7
 		cmd 8 support: byte 1 bit 0, and so on.
 	0x04 (Q_SERBUF):
-		If the programmer has guaranteedly working flow control,
+		If the programmer has a guaranteed working flow control,
 		it should return a big bogus value - eg 0xFFFF.
 	0x05 (Q_BUSTYPE):
 		The bit's are defined as follows:
 		bit 0: PARALLEL, bit 1: LPC, bit 2: FWH, bit 3: SPI (if ever supported).
 	0x06 (Q_CHIPSIZE):
 		Only applicable to parallel programmers.
-		An LPC/FHW/SPI-programmer can report this as not supported in the command bitmap.
+		An LPC/FWH/SPI-programmer can report this as not supported in the command bitmap.
 	0x08 (Q_WRNMAXLEN):
 		If a programmer reports a bigger maximum write-n length than the serial buffer size,
 		it is assumed that the programmer can process the data fast enough to take in the

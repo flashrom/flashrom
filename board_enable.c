@@ -341,7 +341,7 @@ static int via_vt823x_gpio_set(uint8_t gpio, int raise)
 }
 
 /**
- * Suited for Asus M2V-MX: VIA K8M890 + VT8237A + IT8716F
+ * Suited for ASUS M2V-MX: VIA K8M890 + VT8237A + IT8716F
  */
 static int via_vt823x_gpio5_raise(const char *name)
 {
@@ -350,7 +350,7 @@ static int via_vt823x_gpio5_raise(const char *name)
 }
 
 /**
- * Suited for VIAs EPIA N & NL.
+ * Suited for VIA EPIA N & NL.
  */
 static int via_vt823x_gpio9_raise(const char *name)
 {
@@ -358,7 +358,7 @@ static int via_vt823x_gpio9_raise(const char *name)
 }
 
 /**
- * Suited for VIAs EPIA M and MII, and maybe other CLE266 based EPIAs.
+ * Suited for VIA EPIA M and MII, and maybe other CLE266 based EPIAs.
  *
  * We don't need to do this for EPIA M when using coreboot, GPIO15 is never
  * lowered there.
@@ -484,7 +484,7 @@ static int board_ibm_x3455(const char *name)
 }
 
 /**
- * Suited for Shuttle FN25 (SN25P): AMD S939 + Nvidia CK804 (nForce4).
+ * Suited for Shuttle FN25 (SN25P): AMD S939 + NVIDIA CK804 (nForce4).
  */
 static int board_shuttle_fn25(const char *name)
 {
@@ -532,7 +532,7 @@ static int nvidia_mcp_gpio_set(int gpio, int raise)
 		break;
 	    default:
 		fprintf(stderr,
-			"\nERROR: no nVidia LPC/SMBus controller found.\n");
+			"\nERROR: no NVIDIA LPC/SMBus controller found.\n");
 		return -1;
 	    }
 	    break;
@@ -553,7 +553,7 @@ static int nvidia_mcp_gpio_set(int gpio, int raise)
 
 /**
  * Suited for ASUS A8N-LA: nVidia MCP51.
- * Suited for ASUS M2NBP-VM CSM: nVidia MCP51.
+ * Suited for ASUS M2NBP-VM CSM: NVIDIA MCP51.
  */
 static int nvidia_mcp_gpio0_raise(const char *name)
 {
@@ -569,8 +569,8 @@ static int nvidia_mcp_gpio2_lower(const char *name)
 }
 
 /**
- * Suited for MSI K8N Neo4: nVidia CK804.
- * Suited for MSI K8N GM2-L: nVidia MCP51.
+ * Suited for MSI K8N Neo4: NVIDIA CK804.
+ * Suited for MSI K8N GM2-L: NVIDIA MCP51.
  */
 static int nvidia_mcp_gpio2_raise(const char *name)
 {
@@ -643,7 +643,7 @@ static int board_artecgroup_dbe6x(const char *name)
 }
 
 /**
- * Helper function to raise/drop a given gpo line on intel PIIX4{,E,M}
+ * Helper function to raise/drop a given gpo line on Intel PIIX4{,E,M}.
  */
 static int intel_piix4_gpo_set(unsigned int gpo, int raise)
 {
@@ -731,11 +731,11 @@ static int intel_piix4_gpo27_lower(const char *name)
 }
 
 /**
- * Set a GPIO line on a given intel ICH LPC controller.
+ * Set a GPIO line on a given Intel ICH LPC controller.
  */
 static int intel_ich_gpio_set(int gpio, int raise)
 {
-	/* table mapping the different intel ICH LPC chipsets. */
+	/* Table mapping the different Intel ICH LPC chipsets. */
 	static struct {
 		uint16_t id;
 		uint8_t base_reg;
@@ -801,8 +801,8 @@ static int intel_ich_gpio_set(int gpio, int raise)
 		return -1;
 	}
 
-	/* According to the datasheets, all intel ICHs have the gpio bar 5:1
-	   strapped to zero. From some mobile ich9 version on, this becomes
+	/* According to the datasheets, all Intel ICHs have the GPIO bar 5:1
+	   strapped to zero. From some mobile ICH9 version on, this becomes
 	   6:1. The mask below catches all. */
 	base = pci_read_word(dev, intel_ich_gpio_table[i].base_reg) & 0xFFC0;
 
@@ -949,9 +949,9 @@ static int intel_ich_gpio19_raise(const char *name)
 
 /**
  * Suited for:
- * - Asus P4B266LM (Sony Vaio PCV-RX650): socket478 + 845D + ICH2.
- * - Asus P4C800-E Deluxe: socket478 + 875P + ICH5.
- * - Asus P4P800-E Deluxe: Intel socket478 + 865PE + ICH5R.
+ * - ASUS P4B266LM (Sony Vaio PCV-RX650): socket478 + 845D + ICH2.
+ * - ASUS P4C800-E Deluxe: socket478 + 875P + ICH5.
+ * - ASUS P4P800-E Deluxe: Intel socket478 + 865PE + ICH5R.
  */
 static int intel_ich_gpio21_raise(const char *name)
 {
@@ -960,9 +960,9 @@ static int intel_ich_gpio21_raise(const char *name)
 
 /**
  * Suited for:
- *  - Asus P4B266: socket478 + intel 845D + ICH2.
- *  - Asus P4B533-E: socket478 + 845E + ICH4
- *  - Asus P4B-MX variant in HP Vectra VL420 SFF: socket478 + 845D + ICH2
+ *  - ASUS P4B266: socket478 + Intel 845D + ICH2.
+ *  - ASUS P4B533-E: socket478 + 845E + ICH4
+ *  - ASUS P4B-MX variant in HP Vectra VL420 SFF: socket478 + 845D + ICH2
  */
 static int intel_ich_gpio22_raise(const char *name)
 {
@@ -986,7 +986,7 @@ static int board_hp_vl400(const char *name)
 
 /**
  * Suited for:
- * - Dell Poweredge 1850: Intel PPGA604 + E7520 + ICH5R.
+ * - Dell PowerEdge 1850: Intel PPGA604 + E7520 + ICH5R.
  * - ASRock P4i65GV: Intel Socket478 + 865GV + ICH5R.
  */
 static int intel_ich_gpio23_raise(const char *name)
@@ -1197,7 +1197,7 @@ static int board_mitac_6513wu(const char *name)
 }
 
 /**
- * Suited for Asus A7V8X: VIA KT400 + VT8235 + IT8703F-A
+ * Suited for ASUS A7V8X: VIA KT400 + VT8235 + IT8703F-A
  */
 static int board_asus_a7v8x(const char *name)
 {
@@ -1291,8 +1291,8 @@ static int it8712f_gpio_set(unsigned int line, int raise)
 
 /**
  * Suited for:
- * - Asus A7V600-X: VIA KT600 + VT8237 + IT8712F
- * - Asus A7V8X-X: VIA KT400 + VT8235 + IT8712F
+ * - ASUS A7V600-X: VIA KT600 + VT8237 + IT8712F
+ * - ASUS A7V8X-X: VIA KT400 + VT8235 + IT8712F
  */
 static int it8712f_gpio3_1_raise(const char *name)
 {
@@ -1319,7 +1319,7 @@ static int it8712f_gpio3_1_raise(const char *name)
  *
  * If PCI IDs are not sufficient for board matching, the match can be further
  * constrained by a string that has to be present in the DMI database for
- * the baseboard or the system entry. The pattern is matched by case sensitve
+ * the baseboard or the system entry. The pattern is matched by case sensitive
  * substring match, unless it is anchored to the beginning (with a ^ in front)
  * or the end (with a $ at the end). Both anchors may be specified at the
  * same time to match the full field.
