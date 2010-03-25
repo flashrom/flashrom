@@ -106,6 +106,14 @@ static uint16_t find_ite_spi_flash_port(uint16_t port, uint16_t id)
 		enter_conf_mode_ite(port);
 		/* NOLDN, reg 0x24, mask out lowest bit (suspend) */
 		tmp = sio_read(port, 0x24) & 0xFE;
+		/* If IT87SPI was not explicitly selected, we want to check
+		 * quickly if LPC->SPI translation is active.
+		 */
+		if ((programmer == PROGRAMMER_INTERNAL) && !(tmp & (0x0E))) {
+			msg_pdbg("No IT87* serial flash segment enabled.\n");
+			exit_conf_mode_ite(port);
+			break;
+		}
 		msg_pdbg("Serial flash segment 0x%08x-0x%08x %sabled\n",
 		       0xFFFE0000, 0xFFFFFFFF, (tmp & 1 << 1) ? "en" : "dis");
 		msg_pdbg("Serial flash segment 0x%08x-0x%08x %sabled\n",
@@ -135,12 +143,17 @@ static uint16_t find_ite_spi_flash_port(uint16_t port, uint16_t id)
 			free(programmer_param);
 			programmer_param = NULL;
 		}
-		if (programmer_param && (portpos = strstr(programmer_param, "port="))) {
-			portpos += 5;
-			flashport = strtol(portpos, (char **)NULL, 0);
-			msg_pinfo("Forcing serial flash port 0x%04x\n", flashport);
-			sio_write(port, 0x64, (flashport >> 8));
-			sio_write(port, 0x65, (flashport & 0xff));
+		if (programmer_param) {
+			portpos = extract_param(&programmer_param,
+						"it87spiport=", ",:");
+			if (portpos) {
+				flashport = strtol(portpos, (char **)NULL, 0);
+				msg_pinfo("Forcing serial flash port 0x%04x\n",
+					  flashport);
+				sio_write(port, 0x64, (flashport >> 8));
+				sio_write(port, 0x65, (flashport & 0xff));
+				free(portpos);
+			}
 		}
 		exit_conf_mode_ite(port);
 		break;
