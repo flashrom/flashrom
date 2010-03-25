@@ -220,6 +220,15 @@ has been written because it is known that writing/erasing without the board
 enable is going to fail. In any case (success or failure), please report to
 the flashrom mailing list, see below.
 .sp
+If your mainboard uses an ITE IT87 series Super I/O for LPC<->SPI flash bus
+translation, flashrom should autodetect that configuration. You can use
+.B "flashrom -p internal:it87spiport=portnum"
+syntax as explained in the
+.B it87spi
+programmer section to use a non-default port for controlling the IT87 series
+Super I/O. In the unlikely case flashrom doesn't detect an active IT87 LPC<->SPI
+bridge, you can try to force recognition by using the it87spi programmer.
+.TP
 .BR "dummy " programmer
 An optional parameter specifies the bus types it
 should support. For that you have to use the
@@ -233,7 +242,7 @@ in any order.
 Example:
 .B "flashrom -p dummy:lpc,fwh"
 .TP
-.BR "nic3com" , " gfxnvidia" , " satasii" and " atahpt " programmers
+.BR "nic3com" , " gfxnvidia" , " satasii " and " atahpt " programmers
 These programmers have an option to specify the PCI address of the card
 your want to use, which must be specified if more than one card supported
 by the selected programmer is installed in your system. The syntax is
@@ -255,7 +264,7 @@ Example:
 An optional parameter sets the I/O base port of the IT87* SPI controller
 interface to the port specified in the parameter instead of using the port
 address set by the BIOS. For that you have to use the
-.B "flashrom -p it87spi:port=portnum"
+.B "flashrom -p it87spi:it87spiport=portnum"
 syntax where
 .B portnum
 is an I/O port number which must be a multiple of 8.
