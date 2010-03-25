@@ -27,11 +27,11 @@
 /* The coreboot table information is for conveying information
  * from the firmware to the loaded OS image.  Primarily this
  * is expected to be information that cannot be discovered by
- * other means, such as quering the hardware directly.
+ * other means, such as querying the hardware directly.
  *
  * All of the information should be Position Independent Data.  
  * That is it should be safe to relocated any of the information
- * without it's meaning/correctnes changing.   For table that
+ * without it's meaning/correctness changing.   For table that
  * can reasonably be used on multiple architectures the data
  * size should be fixed.  This should ease the transition between
  * 32 bit and 64 bit architectures etc.
@@ -48,7 +48,7 @@
  * table entry is required or not.  This should remove much of the
  * long term compatibility burden as table entries which are
  * irrelevant or have been replaced by better alternatives may be
- * dropped.  Of course it is polite and expidite to include extra
+ * dropped.  Of course it is polite and expedite to include extra
  * table entries and be backwards compatible, but it is not required.
  */
 
@@ -78,10 +78,10 @@ struct lb_header {
 	uint32_t table_entries;
 };
 
-/* Every entry in the boot enviroment list will correspond to a boot
+/* Every entry in the boot environment list will correspond to a boot
  * info record.  Encoding both type and size.  The type is obviously
  * so you can tell what it is.  The size allows you to skip that
- * boot enviroment record if you don't know what it easy.  This allows
+ * boot environment record if you don't know what it easy.  This allows
  * forward compatibility with records not yet defined.
  */
 struct lb_record {

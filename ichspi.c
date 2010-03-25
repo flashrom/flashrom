@@ -536,7 +536,7 @@ static int ich9_run_opcode(OPCODE op, uint32_t offset,
 
 	/* clear error status registers */
 	temp32 |= (SSFS_CDS + SSFS_FCERR);
-	/* USE 20 MhZ */
+	/* Use 20 MHz */
 	temp32 |= SSFC_SCF_20MHZ;
 
 	if (datalength != 0) {
