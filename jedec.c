@@ -345,7 +345,7 @@ int write_page_write_jedec_common(struct flashchip *flash, uint8_t *src,
 	chipaddr d = dst;
 
 retry:
-	/* Issue JEDEC Start Program comand */
+	/* Issue JEDEC Start Program command */
 	start_program_jedec_common(flash, mask);
 
 	/* transfer data from source to destination */

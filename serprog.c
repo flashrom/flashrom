@@ -66,7 +66,7 @@ static uint16_t sp_device_opbuf_size = 300;
 /* Bitmap of supported commands */
 static uint8_t sp_cmdmap[32];
 
-/* sp_prev_was_write used to detect writes with continouous addresses
+/* sp_prev_was_write used to detect writes with contiguous addresses
 	and combine them to write-n's */
 static int sp_prev_was_write = 0;
 /* sp_write_n_addr used as the starting addr of the currently
@@ -138,7 +138,7 @@ static int sp_sync_read_timeout(int loops)
 	return -1;
 }
 
-/* Synchronize: a bit tricky algorhytm that tries to (and in my tests has *
+/* Synchronize: a bit tricky algorithm that tries to (and in my tests has *
  * always succeeded in) bring the serial protocol to known waiting-for-   *
  * command state - uses nonblocking read - rest of the driver uses	  *
  * blocking read - TODO: add an alarm() timer for the rest of the app on  *
@@ -534,7 +534,7 @@ static void sp_check_opbuf_usage(int bytes_to_be_added)
 	if (sp_device_opbuf_size <= (sp_opbuf_usage + bytes_to_be_added)) {
 		sp_execute_opbuf();
 		/* If this happens in the mid of an page load the page load *
-		 * will propably fail.					    */
+		 * will probably fail.					    */
 		msg_pdbg(MSGHEADER "Warning: executed operation buffer due to size reasons\n");
 	}
 }
@@ -589,7 +589,7 @@ uint8_t serprog_chip_readb(const chipaddr addr)
 	return c;
 }
 
-/* Local version that really does the job, doesnt care of max_read_n. */
+/* Local version that really does the job, doesn't care of max_read_n. */
 static void sp_do_read_n(uint8_t * buf, const chipaddr addr, size_t len)
 {
 	int rd_bytes = 0;

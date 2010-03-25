@@ -49,7 +49,7 @@ int unlock_block_stm50flw0x0x(struct flashchip *flash, int offset)
 	 * to them. The size of the locking sectors depends on the type
 	 * of chip.
 	 *
-	 * Sometimes, the BIOS does this for you; so you propably
+	 * Sometimes, the BIOS does this for you; so you probably
 	 * don't need to worry about that.
 	 */
 

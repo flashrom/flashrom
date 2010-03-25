@@ -1133,7 +1133,7 @@ struct flashchip flashchips[] = {
 	},
 
 	/* The next two chip definitions have top/bottom boot blocks, but has no
-	device differenciation between the two */
+	device differentiation between the two */
 	{
 		.vendor		= "AMIC",
 		.name		= "A25L40PT",
