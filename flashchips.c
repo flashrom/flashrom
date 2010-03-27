@@ -3326,7 +3326,7 @@ struct flashchip flashchips[] = {
 		.name		= "Pm39LV010",
 		.bustype	= CHIP_BUSTYPE_PARALLEL,
 		.manufacture_id	= PMC_ID_NOPREFIX,
-		.model_id	= PMC_39F010,
+		.model_id	= PMC_39F010,	/* Pm39LV010 and Pm39F010 have identical IDs but different voltage */
 		.total_size	= 128,
 		.page_size	= 4096,
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_EITHER_RESET,
@@ -3350,6 +3350,64 @@ struct flashchip flashchips[] = {
 		.read		= read_memmapped,
 	},
 
+	{
+		.vendor		= "PMC",
+		.name		= "Pm39LV020",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= PMC_ID_NOPREFIX,
+		.model_id	= PMC_39LV020,
+		.total_size	= 256,
+		.page_size	= 4096,
+		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_EITHER_RESET,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_jedec,
+		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
+		.block_erasers =
+		{
+			{
+				.eraseblocks = { {4 * 1024, 64} },
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {64 * 1024, 4} },
+				.block_erase = erase_block_jedec,
+			}, {
+				.eraseblocks = { {256 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			}
+		},
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "PMC",
+		.name		= "Pm39LV040",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= PMC_ID_NOPREFIX,
+		.model_id	= PMC_39LV040,
+		.total_size	= 512,
+		.page_size	= 4096,
+		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_EITHER_RESET,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_jedec,
+		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
+		.block_erasers =
+		{
+			{
+				.eraseblocks = { {4 * 1024, 128} },
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {64 * 1024, 8} },
+				.block_erase = erase_block_jedec,
+			}, {
+				.eraseblocks = { {512 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			}
+		},
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+	},
+	
 	{
 		.vendor		= "PMC",
 		.name		= "Pm49FL002",
