@@ -27,6 +27,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <getopt.h>
+#if HAVE_UTSNAME == 1
+#include <sys/utsname.h>
+#endif
 #include "flash.h"
 #include "flashchips.h"
 
@@ -1133,9 +1136,44 @@ void list_programmers(char *delim)
 	printf("\n");	
 }
 
+void print_sysinfo(void)
+{
+#if HAVE_UTSNAME == 1
+	struct utsname osinfo;
+	uname(&osinfo);
+
+	msg_ginfo(" on %s %s (%s)", osinfo.sysname, osinfo.release,
+		  osinfo.machine);
+#else
+	msg_ginfo(" on unknown machine");
+#endif
+	msg_ginfo(", built with");
+#if NEED_PCI == 1
+#ifdef PCILIB_VERSION
+	msg_ginfo(" libpci %s,", PCILIB_VERSION);
+#else
+	msg_ginfo(" unknown PCI library,");
+#endif
+#endif
+#ifdef __clang__
+	msg_ginfo(" LLVM %i/clang %i", __llvm__, __clang__);
+#elif defined(__GNUC__)
+	msg_ginfo(" GCC");
+#ifdef __VERSION__
+	msg_ginfo(" %s", __VERSION__);
+#else
+	msg_ginfo(" unknown version");
+#endif
+#else
+	msg_ginfo(" unknown compiler");
+#endif
+	msg_ginfo("\n");
+}
+
 void print_version(void)
 {
-	printf("flashrom v%s\n", flashrom_version);
+	printf("flashrom v%s", flashrom_version);
+	print_sysinfo();
 }
 
 int selfcheck(void)
