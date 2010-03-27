@@ -230,6 +230,8 @@ FEATURE_CFLAGS += -D'PRINT_WIKI_SUPPORT=1'
 CLI_OBJS += print_wiki.o
 endif
 
+FEATURE_CFLAGS += $(shell LC_ALL=C grep -q "UTSNAME := yes" .features && printf "%s" "-D'HAVE_UTSNAME=1'")
+
 # We could use PULLED_IN_LIBS, but that would be ugly.
 FEATURE_LIBS += $(shell LC_ALL=C grep -q "NEEDLIBZ := yes" .libdeps && printf "%s" "-lz")
 
@@ -308,12 +310,29 @@ features: compiler
 	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest $(FTDILIBS) $(LIBS) >/dev/null 2>&1 &&	\
 		( echo "found."; echo "FTDISUPPORT := yes" >> .features.tmp ) ||	\
 		( echo "not found."; echo "FTDISUPPORT := no" >> .features.tmp )
+	@printf "Checking for utsname support... "
+	@$(shell ( echo "#include <sys/utsname.h>";		   \
+		   echo "struct utsname osinfo;";	   \
+		   echo "int main(int argc, char **argv)"; \
+		   echo "{ uname (&osinfo); return 0; }"; ) > .featuretest.c )
+	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest >/dev/null 2>&1 &&	\
+		( echo "found."; echo "UTSNAME := yes" >> .features.tmp ) ||	\
+		( echo "not found."; echo "UTSNAME := no" >> .features.tmp )
 	@$(DIFF) -q .features.tmp .features >/dev/null 2>&1 && rm .features.tmp || mv .features.tmp .features
 	@rm -f .featuretest.c .featuretest
 else
 features: compiler
 	@echo "FEATURES := yes" > .features.tmp
+	@printf "Checking for utsname support... "
+	@$(shell ( echo "#include <sys/utsname.h>";		   \
+		   echo "struct utsname osinfo;";	   \
+		   echo "int main(int argc, char **argv)"; \
+		   echo "{ uname (&osinfo); return 0; }"; ) > .featuretest.c )
+	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest >/dev/null 2>&1 &&	\
+		( echo "found."; echo "UTSNAME := yes" >> .features.tmp ) ||	\
+		( echo "not found."; echo "UTSNAME := no" >> .features.tmp )
 	@$(DIFF) -q .features.tmp .features >/dev/null 2>&1 && rm .features.tmp || mv .features.tmp .features
+	@rm -f .featuretest.c .featuretest
 endif
 
 install: $(PROGRAM)
