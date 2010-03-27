@@ -2,6 +2,7 @@
  * This file is part of the flashrom project.
  *
  * Copyright (C) 2000 Silicon Integrated System Corporation
+ * Copyright (C) 2009,2010 Carl-Daniel Hailfinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +20,8 @@
  */
 
 #include <sys/time.h>
+#include <stdlib.h>
+#include <limits.h>
 #include "flash.h"
 
 // count to a billion. Time it. If it's < 1 sec, count to 10B, etc.
@@ -30,21 +33,30 @@ void myusec_delay(int usecs)
 	for (i = 0; i < usecs * micro; i++) ;
 }
 
+unsigned long measure_delay(int usecs)
+{
+	unsigned long timeusec;
+	struct timeval start, end;
+	
+	gettimeofday(&start, 0);
+	myusec_delay(usecs);
+	gettimeofday(&end, 0);
+	timeusec = 1000000 * (end.tv_sec - start.tv_sec) +
+		   (end.tv_usec - start.tv_usec);
+
+	return timeusec;
+}
+
 void myusec_calibrate_delay(void)
 {
 	int count = 1000;
 	unsigned long timeusec;
-	struct timeval start, end;
 	int ok = 0;
 
 	printf("Calibrating delay loop... ");
 
 	while (!ok) {
-		gettimeofday(&start, 0);
-		myusec_delay(count);
-		gettimeofday(&end, 0);
-		timeusec = 1000000 * (end.tv_sec - start.tv_sec) +
-		    (end.tv_usec - start.tv_usec);
+		timeusec = measure_delay(count);
 		count *= 2;
 		if (timeusec < 1000000 / 4)
 			continue;
@@ -53,14 +65,18 @@ void myusec_calibrate_delay(void)
 
 	// compute one microsecond. That will be count / time
 	micro = count / timeusec;
+	msg_pdbg("%ldM loops per second, ", micro);
 
-	gettimeofday(&start, 0);
-	myusec_delay(100);
-	gettimeofday(&end, 0);
-	timeusec = 1000000 * (end.tv_sec - start.tv_sec) +
-	    (end.tv_usec - start.tv_usec);
-	printf_debug("%ldM loops per second, 100 myus = %ld us. ",
-		     (unsigned long)micro, timeusec);
+	/* We're interested in the actual precision. */
+	timeusec = measure_delay(10);
+	msg_pdbg("10 myus = %ld us, ", timeusec);
+	timeusec = measure_delay(100);
+	msg_pdbg("100 myus = %ld us, ", timeusec);
+	timeusec = measure_delay(1000);
+	msg_pdbg("1000 myus = %ld us, ", timeusec);
+	timeusec = measure_delay(10000);
+	msg_pdbg("10000 myus = %ld us, ", timeusec);
+
 	printf("OK.\n");
 }
 
