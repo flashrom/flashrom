@@ -103,6 +103,7 @@ static uint16_t find_ite_spi_flash_port(uint16_t port, uint16_t id)
 	switch (id) {
 	case 0x8716:
 	case 0x8718:
+	case 0x8720:
 		enter_conf_mode_ite(port);
 		/* NOLDN, reg 0x24, mask out lowest bit (suspend) */
 		tmp = sio_read(port, 0x24) & 0xFE;
@@ -159,7 +160,7 @@ static uint16_t find_ite_spi_flash_port(uint16_t port, uint16_t id)
 		break;
 	/* TODO: Handle more IT87xx if they support flash translation */
 	default:
-		msg_pinfo("SuperI/O ID %04hx is not on the controller list.\n", id);
+		msg_pdbg("SuperI/O ID %04hx is not on the controller list.\n", id);
 	}
 	return flashport;
 }
@@ -199,8 +200,11 @@ int it87xx_probe_spi_flash(const char *name)
 	int ret;
 
 	ret = it87spi_common_init();
-	if (!ret)
+	if (!ret) {
+		if (buses_supported & CHIP_BUSTYPE_SPI)
+			msg_pdbg("Overriding chipset SPI with IT87 SPI.\n");
 		buses_supported |= CHIP_BUSTYPE_SPI;
+	}
 	return ret;
 }
 
