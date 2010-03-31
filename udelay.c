@@ -24,13 +24,16 @@
 #include <limits.h>
 #include "flash.h"
 
-// count to a billion. Time it. If it's < 1 sec, count to 10B, etc.
+/* loops per microsecond */
 unsigned long micro = 1;
 
-void myusec_delay(int usecs)
+__attribute__ ((noinline)) void myusec_delay(int usecs)
 {
-	volatile unsigned long i;
-	for (i = 0; i < usecs * micro; i++) ;
+	unsigned long i;
+	for (i = 0; i < usecs * micro; i++) {
+		/* Make sure the compiler doesn't optimize the loop away. */
+		asm volatile ("" : : "rm" (i) );
+	}
 }
 
 unsigned long measure_delay(int usecs)
@@ -43,29 +46,61 @@ unsigned long measure_delay(int usecs)
 	gettimeofday(&end, 0);
 	timeusec = 1000000 * (end.tv_sec - start.tv_sec) +
 		   (end.tv_usec - start.tv_usec);
+	/* Protect against time going forward too much. */
+	if ((end.tv_sec > start.tv_sec) &&
+	    ((end.tv_sec - start.tv_sec) >= LONG_MAX / 1000000 - 1))
+		timeusec = LONG_MAX;
+	/* Protect against time going backwards during leap seconds. */
+	if ((end.tv_sec < start.tv_sec) || (timeusec > LONG_MAX))
+		timeusec = 1;
 
 	return timeusec;
 }
 
 void myusec_calibrate_delay(void)
 {
-	int count = 1000;
+	unsigned long count = 1000;
 	unsigned long timeusec;
-	int ok = 0;
+	int i, tries = 0;
 
 	printf("Calibrating delay loop... ");
 
-	while (!ok) {
+recalibrate:
+	while (1) {
 		timeusec = measure_delay(count);
+		if (timeusec > 1000000 / 4)
+			break;
+		if (count >= ULONG_MAX / 2) {
+			msg_pinfo("timer loop overflow, reduced precision. ");
+			break;
+		}
 		count *= 2;
-		if (timeusec < 1000000 / 4)
-			continue;
-		ok = 1;
 	}
+	tries ++;
 
-	// compute one microsecond. That will be count / time
-	micro = count / timeusec;
-	msg_pdbg("%ldM loops per second, ", micro);
+	/* Avoid division by zero, but in that case the loop is shot anyway. */
+	if (!timeusec)
+		timeusec = 1;
+	
+	/* Compute rounded up number of loops per microsecond. */
+	micro = (count * micro) / timeusec + 1;
+	msg_pdbg("%luM loops per second, ", micro);
+
+	/* Did we try to recalibrate less than 5 times? */
+	if (tries < 5) {
+		/* Recheck our timing to make sure we weren't just hitting
+		 * a scheduler delay or something similar.
+		 */
+		for (i = 0; i < 4; i++) {
+			if (measure_delay(100) < 90) {
+				msg_pdbg("delay more than 10% too short, "
+					 "recalculating... ");
+				goto recalibrate;
+			}
+		}
+	} else {
+		msg_perr("delay loop is unreliable, trying to continue ");
+	}
 
 	/* We're interested in the actual precision. */
 	timeusec = measure_delay(10);
