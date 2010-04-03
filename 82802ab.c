@@ -48,6 +48,7 @@ int probe_82802ab(struct flashchip *flash)
 	chipaddr bios = flash->virtual_memory;
 	uint8_t id1, id2;
 	uint8_t flashcontent1, flashcontent2;
+	int shifted = (flash->feature_bits & FEATURE_ADDR_SHIFTED) != 0;
 
 	/* Reset to get a clean state */
 	chip_writeb(0xFF, bios);
@@ -57,8 +58,8 @@ int probe_82802ab(struct flashchip *flash)
 	chip_writeb(0x90, bios);
 	programmer_delay(10);
 
-	id1 = chip_readb(bios);
-	id2 = chip_readb(bios + 0x01);
+	id1 = chip_readb(bios + (0x00 << shifted));
+	id2 = chip_readb(bios + (0x01 << shifted));
 
 	/* Leave ID mode */
 	chip_writeb(0xFF, bios);
@@ -71,8 +72,8 @@ int probe_82802ab(struct flashchip *flash)
 		msg_cdbg(", id1 parity violation");
 
 	/* Read the product ID location again. We should now see normal flash contents. */
-	flashcontent1 = chip_readb(bios);
-	flashcontent2 = chip_readb(bios + 0x01);
+	flashcontent1 = chip_readb(bios + (0x00 << shifted));
+	flashcontent2 = chip_readb(bios + (0x01 << shifted));
 
 	if (id1 == flashcontent1)
 		msg_cdbg(", id1 is normal flash content");
@@ -178,44 +179,25 @@ void write_page_82802ab(chipaddr bios, uint8_t *src,
 int write_82802ab(struct flashchip *flash, uint8_t *buf)
 {
 	int i;
-	int total_size = flash->total_size * 1024;
-	int page_size = flash->page_size;
 	chipaddr bios = flash->virtual_memory;
-	uint8_t *tmpbuf = malloc(page_size);
 
-	if (!tmpbuf) {
-		msg_cerr("Could not allocate memory!\n");
-		exit(1);
+	if (erase_flash(flash)) {
+		msg_cerr("ERASE FAILED!\n");
+		return -1;
 	}
-	msg_cinfo("Programming page: \n");
-	for (i = 0; i < total_size / page_size; i++) {
-		msg_cinfo("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
-		msg_cinfo("%04d at address: 0x%08x", i, i * page_size);
 
-		/* Auto Skip Blocks, which already contain the desired data
-		 * Faster, because we only write, what has changed
-		 * More secure, because blocks, which are excluded
-		 * (with the exclude or layout feature)
-		 * or not erased and rewritten; their data is retained also in
-		 * sudden power off situations
-		 */
-		chip_readn(tmpbuf, bios + i * page_size, page_size);
-		if (!memcmp((void *)(buf + i * page_size), tmpbuf, page_size)) {
-			msg_cdbg("SKIPPED\n");
-			continue;
-		}
+	msg_cinfo("Programming at: ");
+	for (i = 0; i < flash->total_size; i++) {
+		if ((i & 0x3) == 0)
+			msg_cinfo("address: 0x%08lx", (unsigned long)i * 1024);
 
-		/* erase block by block and write block by block; this is the most secure way */
-		if (erase_block_82802ab(flash, i * page_size, page_size)) {
-			msg_cerr("ERASE FAILED!\n");
-			return -1;
-		}
-		write_page_82802ab(bios, buf + i * page_size,
-				   bios + i * page_size, page_size);
+                write_page_82802ab(bios, buf + i * 1024, bios + i * 1024, 1024);
+
+		if ((i & 0x3) == 0)
+			msg_cinfo("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
 	}
+
 	msg_cinfo("DONE!\n");
-	free(tmpbuf);
-
 	return 0;
 }
 

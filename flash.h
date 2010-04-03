@@ -166,7 +166,7 @@ enum chipbustype {
 #define FEATURE_ADDR_MASK	(3 << 2)
 #define FEATURE_ADDR_2AA	(1 << 2)
 #define FEATURE_ADDR_AAA	(2 << 2)
-#define FEATURE_ADDR_SHIFTED	0
+#define FEATURE_ADDR_SHIFTED	(1 << 5)
 
 struct flashchip {
 	const char *vendor;
