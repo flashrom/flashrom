@@ -259,6 +259,10 @@
 #define E_28F016S5		0xAA
 #define P28F001BXT		0x94	/* 28F001BX-T */
 #define P28F001BXB		0x95	/* 28F001BX-B */
+#define P28F004BT		0x78	/* 28F004BV/BE-T */
+#define P28F004BB		0x79	/* 28F004BV/BE-B */
+#define P28F400BT		0x70	/* 28F400BV/CV/CE-T */
+#define P28F400BB		0x71	/* 28F400BV/CV/CE-B */
 #define SHARP_LH28F008SA	0xA2	/* Sharp chip, Intel Vendor ID */
 #define SHARP_LH28F008SC	0xA6	/* Sharp chip, Intel Vendor ID */
 

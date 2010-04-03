@@ -2385,6 +2385,116 @@ struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Intel",
+		.name		= "28F004BV/BE-B",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= INTEL_ID,
+		.model_id	= P28F004BB,
+		.total_size	= 512,
+		.page_size	= 128 * 1024, /* maximal block size */
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_82802ab,
+		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { 
+					{16 * 1024, 1},
+					{8 * 1024, 2},
+					{96 * 1024, 1},
+					{128 * 1024, 3},
+				},
+				.block_erase = erase_block_82802ab,
+			},
+		},
+		.write		= write_82802ab,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "Intel",
+		.name		= "28F004BV/BE-T",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= INTEL_ID,
+		.model_id	= P28F004BT,
+		.total_size	= 512,
+		.page_size	= 128 * 1024, /* maximal block size */
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_82802ab,
+		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { 
+					{128 * 1024, 3},
+					{96 * 1024, 1},
+					{8 * 1024, 2},
+					{16 * 1024, 1},
+				},
+				.block_erase = erase_block_82802ab,
+			},
+		},
+		.write		= write_82802ab,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "Intel",
+		.name		= "28F400BV/CV/CE-B",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= INTEL_ID,
+		.model_id	= P28F400BB,
+		.total_size	= 512,
+		.page_size	= 128 * 1024, /* maximal block size */
+		.feature_bits	= FEATURE_ADDR_SHIFTED,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_82802ab,
+		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { 
+					{16 * 1024, 1},
+					{8 * 1024, 2},
+					{96 * 1024, 1},
+					{128 * 1024, 3},
+				},
+				.block_erase = erase_block_82802ab,
+			},
+		},
+		.write		= write_82802ab,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "Intel",
+		.name		= "28F400BV/CV/CE-T",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= INTEL_ID,
+		.model_id	= P28F400BT,
+		.total_size	= 512,
+		.page_size	= 128 * 1024, /* maximal block size */
+		.feature_bits	= FEATURE_ADDR_SHIFTED,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_82802ab,
+		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { 
+					{128 * 1024, 3},
+					{96 * 1024, 1},
+					{8 * 1024, 2},
+					{16 * 1024, 1},
+				},
+				.block_erase = erase_block_82802ab,
+			},
+		},
+		.write		= write_82802ab,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "Intel",
 		.name		= "82802AB",
 		.bustype	= CHIP_BUSTYPE_FWH,
 		.manufacture_id	= INTEL_ID,
