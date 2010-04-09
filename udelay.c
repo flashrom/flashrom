@@ -66,6 +66,7 @@ void myusec_calibrate_delay(void)
 	printf("Calibrating delay loop... ");
 
 recalibrate:
+	count = 1000;
 	while (1) {
 		timeusec = measure_delay(count);
 		if (timeusec > 1000000 / 4)
@@ -93,7 +94,7 @@ recalibrate:
 		 */
 		for (i = 0; i < 4; i++) {
 			if (measure_delay(100) < 90) {
-				msg_pdbg("delay more than 10% too short, "
+				msg_pdbg("delay more than 10%% too short, "
 					 "recalculating... ");
 				goto recalibrate;
 			}
