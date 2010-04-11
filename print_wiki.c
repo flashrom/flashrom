@@ -215,6 +215,7 @@ const struct board_info_url boards_url[] = {
 	{ "Abit",		"VT6X4",		"http://www.abit.com.tw/page/en/motherboard/motherboard_detail.php?fMTYPE=Slot%201&pMODEL_NAME=VT6X4" },
 	{ "Abit",		"IP35",			"http://www.abit.com.tw/page/en/motherboard/motherboard_detail.php?fMTYPE=LGA775&pMODEL_NAME=IP35" },
 	{ "Abit",		"IP35 Pro",		"http://www.abit.com.tw/page/de/motherboard/motherboard_detail.php?fMTYPE=LGA775&pMODEL_NAME=IP35%20Pro" },
+	{ "Abit",               "NF7-S",                "http://www.abit.com.tw/page/en/motherboard/motherboard_detail.php?fMTYPE=Socket%20A&pMODEL_NAME=NF7-S"},
 	{ "Acorp",		"6A815EPD",		"http://web.archive.org/web/20021206163652/www.acorp.com.tw/English/default.asp" },
 	{ "agami",		"Aruma",		"http://web.archive.org/web/20080212111524/http://www.agami.com/site/ais-6000-series" },
 	{ "Albatron",		"PM266A Pro",		"http://www.albatron.com.tw/English/Product/MB/pro_detail.asp?rlink=Overview&no=56" }, /* FIXME */
