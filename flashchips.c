@@ -5593,6 +5593,108 @@ struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Winbond",
+		.name		= "W25Q80",
+		.bustype	= CHIP_BUSTYPE_SPI,
+		.manufacture_id	= WINBOND_NEX_ID,
+		.model_id	= W_25Q80,
+		.total_size	= 1024,
+		.page_size	= 256,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 256} },
+				.block_erase = spi_block_erase_20,
+			}, {
+				.eraseblocks = { {32 * 1024, 32} },
+				.block_erase = spi_block_erase_52,
+			}, {
+				.eraseblocks = { {64 * 1024, 16} },
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { {1024 * 1024, 1} },
+				.block_erase = spi_block_erase_60,
+			}, {
+				.eraseblocks = { {1024 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
+		},
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read,
+	},
+
+	{
+		.vendor		= "Winbond",
+		.name		= "W25Q16",
+		.bustype	= CHIP_BUSTYPE_SPI,
+		.manufacture_id	= WINBOND_NEX_ID,
+		.model_id	= W_25Q16,
+		.total_size	= 2048,
+		.page_size	= 256,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 512} },
+				.block_erase = spi_block_erase_20,
+			}, {
+				.eraseblocks = { {32 * 1024, 64} },
+				.block_erase = spi_block_erase_52,
+			}, {
+				.eraseblocks = { {64 * 1024, 32} },
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { {2 * 1024 * 1024, 1} },
+				.block_erase = spi_block_erase_60,
+			}, {
+				.eraseblocks = { {2 * 1024 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
+		},
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read,
+	},
+
+	{
+		.vendor		= "Winbond",
+		.name		= "W25Q32",
+		.bustype	= CHIP_BUSTYPE_SPI,
+		.manufacture_id	= WINBOND_NEX_ID,
+		.model_id	= W_25Q32,
+		.total_size	= 4096,
+		.page_size	= 256,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 1024} },
+				.block_erase = spi_block_erase_20,
+			}, {
+				.eraseblocks = { {32 * 1024, 128} },
+				.block_erase = spi_block_erase_52,
+			}, {
+				.eraseblocks = { {64 * 1024, 64} },
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { {4 * 1024 * 1024, 1} },
+				.block_erase = spi_block_erase_60,
+			}, {
+				.eraseblocks = { {4 * 1024 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
+		},
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read,
+	},
+
+	{
+		.vendor		= "Winbond",
 		.name		= "W25x10",
 		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= WINBOND_NEX_ID,
