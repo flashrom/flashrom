@@ -202,11 +202,7 @@ endif
 endif
 
 ifeq ($(NEED_PCI), yes)
-ifneq ($(OS_ARCH), DOS)
-# FIXME This workaround is needed until libpci detection can handle
-# cross-compiling for DOS.
 CHECK_LIBPCI = yes
-endif
 endif
 
 ifeq ($(NEED_PCI), yes)

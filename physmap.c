@@ -30,20 +30,45 @@
 
 #ifdef __DJGPP__
 #include <dpmi.h>
+#include <sys/nearptr.h>
 
 #define MEM_DEV "dpmi"
 
-unsigned short  segFS = 0;
+static void *realmem_map;
+
+static void *map_first_meg(unsigned long phys_addr, size_t len)
+{
+
+	if (realmem_map) {
+		return realmem_map + phys_addr;
+	}
+
+	realmem_map = valloc(1024 * 1024);
+
+	if (!realmem_map) {
+		return NULL;
+	}
+
+	if (__djgpp_map_physical_memory(realmem_map, (1024 * 1024), 0)) {
+		return NULL;
+	}
+
+	return realmem_map + phys_addr;
+}
 
 void *sys_physmap(unsigned long phys_addr, size_t len)
 {
 	int ret;
 	__dpmi_meminfo mi;
 
-	if (segFS == 0)  {
-		segFS = __dpmi_allocate_ldt_descriptors (1);
-		__dpmi_set_segment_base_address (segFS, 0x0);
-		__dpmi_set_segment_limit (segFS, 0xffffffff);
+	/* enable 4GB limit on DS descriptor */
+	if (!__djgpp_nearptr_enable()) {
+		return NULL;
+	}
+
+	if ((phys_addr + len - 1) < (1024 * 1024)) {
+	/* we need to use another method to map first 1MB */
+		return map_first_meg(phys_addr, len);
 	}
 
 	mi.address = phys_addr;
@@ -54,42 +79,18 @@ void *sys_physmap(unsigned long phys_addr, size_t len)
 		return NULL;
 	}
 
-	return (void *) mi.address;
+	return (void *) mi.address + __djgpp_conventional_base;
 }
 
 #define sys_physmap_rw_uncached	sys_physmap
-
-#include <sys/movedata.h>
-#include <sys/segments.h>
-#include <go32.h>
-
-static void *realmem_cpy;
-
-void *sys_physmap_ro_cached(unsigned long phys_addr, size_t len)
-{
-	/* no support for not a 1MB of mem */
-	if ((phys_addr + len) > 1024*1024)
-		return NULL;
-
-	if (realmem_cpy)
-		return realmem_cpy + phys_addr;
-
-	realmem_cpy = valloc(1024*1024);
-
-	if (!realmem_cpy)
-		return NULL;
-
-	movedata(_dos_ds, 0, _my_ds(), (unsigned long) realmem_cpy, 1024*1024);
-	return realmem_cpy + phys_addr;
-}
-
+#define sys_physmap_ro_cached	sys_physmap
 
 void physunmap(void *virt_addr, size_t len)
 {
 	__dpmi_meminfo mi;
 
-	/* we ignore unmaps for our cheat 1MB copy */
-	if ((virt_addr >= realmem_cpy) && ((virt_addr + len) <= (realmem_cpy + 1024*1024))) {
+	/* we ignore unmaps for our first 1MB */
+	if ((virt_addr >= realmem_map) && ((virt_addr + len) <= (realmem_map + (1024 * 1024)))) {
 		return;
 	}
 
