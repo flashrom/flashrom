@@ -101,6 +101,7 @@ struct pci_dev *pci_card_find(uint16_t vendor, uint16_t device,
 #if INTERNAL_SUPPORT == 1
 struct superio superio = {};
 int force_boardenable = 0;
+int force_boardmismatch = 0;
 
 void probe_superio(void)
 {
@@ -117,26 +118,42 @@ int is_laptop;
 int internal_init(void)
 {
 	int ret = 0;
+	int force_laptop = 0;
+	char *arg;
 
-	if (programmer_param && !strlen(programmer_param)) {
-		free(programmer_param);
-		programmer_param = NULL;
+	arg = extract_param(&programmer_param, "boardenable=", ",:");
+	if (arg && !strcmp(arg,"force")) {
+		force_boardenable = 1;
+	} else if (arg && !strlen(arg)) {
+		msg_perr("Missing argument for boardenable.\n");
+	} else if (arg) {
+		msg_perr("Unknown argument for boardenable: %s\n", arg);
+		exit(1);
 	}
-	if (programmer_param) {
-		char *arg;
-		arg = extract_param(&programmer_param, "boardenable=", ",:");
-		if (arg && !strcmp(arg,"force"))
-			force_boardenable = 1;
-		else if (arg)
-			msg_perr("Unknown argument for boardenable: %s\n", arg);
-		free(arg);
+	free(arg);
 
-		if (strlen(programmer_param))
-			msg_perr("Unhandled programmer parameters: %s\n",
-				programmer_param);
-		free(programmer_param);
-		programmer_param = NULL;
+	arg = extract_param(&programmer_param, "boardmismatch=", ",:");
+	if (arg && !strcmp(arg,"force")) {
+		force_boardmismatch = 1;
+	} else if (arg && !strlen(arg)) {
+		msg_perr("Missing argument for boardmismatch.\n");
+	} else if (arg) {
+		msg_perr("Unknown argument for boardmismatch: %s\n", arg);
+		exit(1);
 	}
+	free(arg);
+
+	arg = extract_param(&programmer_param, "laptop=", ",:");
+	if (arg && !strcmp(arg,"force_I_want_a_brick")) {
+		force_laptop = 1;
+	} else if (arg && !strlen(arg)) {
+		msg_perr("Missing argument for laptop.\n");
+	} else if (arg) {
+		msg_perr("Unknown argument for laptop: %s\n", arg);
+		exit(1);
+	}
+	free(arg);
+
 	get_io_perms();
 
 	/* Initialize PCI access for flash enables */
@@ -155,22 +172,35 @@ int internal_init(void)
 	probe_superio();
 
 	/* Warn if a laptop is detected. */
-	if (is_laptop)
-		printf("========================================================================\n"
-		       "WARNING! You seem to be running flashrom on a laptop.\n"
-		       "Laptops, notebooks and netbooks are difficult to support and we recommend\n"
-		       "to use the vendor flashing utility. The embedded controller (EC) in these\n"
-		       "machines often interacts badly with flashing.\n"
-		       "See http://www.flashrom.org/Laptops for details.\n"
-		       "========================================================================\n");
+	if (is_laptop) {
+		msg_perr("========================================================================\n"
+			 "WARNING! You seem to be running flashrom on a laptop.\n"
+			 "Laptops, notebooks and netbooks are difficult to support and we recommend\n"
+			 "to use the vendor flashing utility. The embedded controller (EC) in these\n"
+			 "machines often interacts badly with flashing.\n"
+			 "See http://www.flashrom.org/Laptops for details.\n\n"
+			 "If flash is shared with the EC, erase is guaranteed to brick your laptop\n"
+			 "and write may brick your laptop.\n"
+			 "Read and probe may irritate your EC and cause fan failure, backlight\n"
+			 "failure and sudden poweroff.\n"
+			 "You have been warned.\n"
+			 "========================================================================\n");
+		if (force_laptop) {
+			msg_perr("Proceeding anyway because user specified "
+				 "laptop=force_I_want_a_brick\n");
+		} else {
+			msg_perr("Aborting.\n");
+			exit(1);
+		}
+	}
 
 	/* try to enable it. Failure IS an option, since not all motherboards
 	 * really need this to be done, etc., etc.
 	 */
 	ret = chipset_flash_enable();
 	if (ret == -2) {
-		printf("WARNING: No chipset found. Flash detection "
-		       "will most likely fail.\n");
+		msg_perr("WARNING: No chipset found. Flash detection "
+			 "will most likely fail.\n");
 	}
 
 	/* Probe for IT87* LPC->SPI translation unconditionally. */
@@ -182,7 +212,7 @@ int internal_init(void)
 	 * The error code might have been a warning only.
 	 * Besides that, we don't check the board enable return code either.
 	 */
-	return 0; 
+	return 0;
 }
 
 int internal_shutdown(void)
