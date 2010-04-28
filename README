@@ -11,6 +11,12 @@ program flash chips.
 It supports a wide range of DIP32, PLCC32, DIP8, SO8/SOIC8, TSOP32, and TSOP40
 chips, which use various protocols such as LPC, FWH, parallel flash, or SPI.
 
+Do not use flashrom on laptops! The embedded controller (EC) present in many
+laptops interacts badly with any flash attempts and can brick your laptop
+permanently.
+
+Please make a backup of your flash chip before writing to it.
+
 Please see the flashrom(8) manpage.
 
 

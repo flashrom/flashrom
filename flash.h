@@ -385,6 +385,7 @@ void release_io_perms(void);
 #if INTERNAL_SUPPORT == 1
 extern int is_laptop;
 extern int force_boardenable;
+extern int force_boardmismatch;
 void probe_superio(void);
 int internal_init(void);
 int internal_shutdown(void);

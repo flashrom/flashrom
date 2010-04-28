@@ -248,6 +248,10 @@ int cli_classic(int argc, char *argv[])
 					switch (optarg[namelen]) {
 					case ':':
 						programmer_param = strdup(optarg + namelen + 1);
+						if (!strlen(programmer_param)) {
+							free(programmer_param);
+							programmer_param = NULL;
+						}
 						break;
 					case '\0':
 						break;
@@ -303,6 +307,21 @@ int cli_classic(int argc, char *argv[])
 		cli_classic_usage(argv[0]);
 	}
 
+	if (chip_to_probe) {
+		for (flash = flashchips; flash && flash->name; flash++)
+			if (!strcmp(flash->name, chip_to_probe))
+				break;
+		if (!flash || !flash->name) {
+			fprintf(stderr, "Error: Unknown chip '%s' specified.\n",
+				chip_to_probe);
+			printf("Run flashrom -L to view the hardware supported "
+				"in this flashrom version.\n");
+			exit(1);
+		}
+		/* Clean up after the check. */
+		flash = NULL;
+	}
+		
 	if (programmer_init()) {
 		fprintf(stderr, "Error: Programmer initialization failed.\n");
 		exit(1);
@@ -329,18 +348,14 @@ int cli_classic(int argc, char *argv[])
 	} else if (!flashes[0]) {
 		printf("No EEPROM/flash device found.\n");
 		if (!force || !chip_to_probe) {
-			printf("If you know which flash chip you have, and if this version of flashrom\n");
-			printf("supports a similar flash chip, you can try to force read your chip. Run:\n");
-			printf("flashrom -f -r -c similar_supported_flash_chip filename\n");
-			printf("\n");
-			printf("Note: flashrom can never write when the flash chip isn't found automatically.\n");
+			printf("Note: flashrom can never write if the flash chip isn't found automatically.\n");
 		}
 		if (force && read_it && chip_to_probe) {
-			printf("Force read (-f -r -c) requested, forcing chip probe success:\n");
+			printf("Force read (-f -r -c) requested, pretending the chip is there:\n");
 			flashes[0] = probe_flash(flashchips, 1);
 			if (!flashes[0]) {
-				printf("flashrom does not support a flash chip named '%s'.\n", chip_to_probe);
-				printf("Run flashrom -L to view the hardware supported in this flashrom version.\n");
+				printf("Probing for flash chip '%s' failed.\n", chip_to_probe);
+				programmer_shutdown();
 				exit(1);
 			}
 			printf("Please note that forced reads most likely contain garbage.\n");

@@ -111,14 +111,15 @@ int show_id(uint8_t *bios, int size, int force)
 	    !strcasecmp(mainboard_part, lb_part)) {
 		printf_debug("This firmware image matches this mainboard.\n");
 	} else {
-		if (force) {
+		if (force_boardmismatch) {
 			printf("WARNING: This firmware image does not "
 			       "seem to fit to this machine - forcing it.\n");
 		} else {
 			printf("ERROR: Your firmware image (%s:%s) does not "
 			       "appear to\n       be correct for the detected "
-			       "mainboard (%s:%s)\n\nOverride with --force if you "
-			       "are absolutely sure that you\nare using a correct "
+			       "mainboard (%s:%s)\n\nOverride with -p internal:"
+			       "boardmismatch=force if you are absolutely sure "
+			       "that\nyou are using a correct "
 			       "image for this mainboard or override\nthe detected "
 			       "values with --mainboard <vendor>:<mainboard>.\n\n",
 			       mainboard_vendor, mainboard_part, lb_vendor,
