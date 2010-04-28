@@ -488,7 +488,17 @@ char *extract_param(char **haystack, char *needle, char *delim)
 	char *param_pos, *rest, *tmp;
 	char *dev = NULL;
 	int devlen;
+	int needlelen;
 
+	needlelen = strlen(needle);
+	if (!needlelen) {
+		msg_gerr("%s: empty needle! Please report a bug at "
+			 "flashrom@flashrom.org\n", __func__);
+		return NULL;
+	}
+	/* No programmer parameters given. */
+	if (*haystack == NULL)
+		return NULL;
 	param_pos = strstr(*haystack, needle);
 	do {
 		if (!param_pos)
@@ -924,7 +934,8 @@ notfound:
 	if (!flash || !flash->name)
 		return NULL;
 
-	printf("Found chip \"%s %s\" (%d KB, %s) at physical address 0x%lx.\n",
+	printf("%s chip \"%s %s\" (%d KB, %s) at physical address 0x%lx.\n",
+	       force ? "Assuming" : "Found",
 	       flash->vendor, flash->name, flash->total_size,
 	       flashbuses_to_text(flash->bustype), base);
 

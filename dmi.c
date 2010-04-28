@@ -102,7 +102,8 @@ void dmi_init(void)
 	}
 
 	chassis_type = get_dmi_string("chassis-type");
-	if (chassis_type && !strcmp(chassis_type, "Notebook")) {
+	if (chassis_type && (!strcmp(chassis_type, "Notebook") ||
+			     !strcmp(chassis_type, "Portable"))) {
 		printf_debug("Laptop detected via DMI\n");
 		is_laptop = 1;
 	}
