@@ -74,8 +74,8 @@ static int enable_flash_sis_mapping(struct pci_dev *dev, const char *name)
 	pci_write_byte(dev, 0x40, new);
 	newer = pci_read_byte(dev, 0x40);
 	if (newer != new) {
-		printf_debug("tried to set register 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x40, new, name);
-		printf_debug("Stuck at 0x%x\n", newer);
+		msg_pinfo("tried to set register 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x40, new, name);
+		msg_pinfo("Stuck at 0x%x\n", newer);
 		return -1;
 	}
 	return 0;
@@ -91,9 +91,9 @@ static struct pci_dev *find_southbridge(uint16_t vendor, const char *name)
 	if (!sbdev)
 		sbdev = pci_dev_find_vendorclass(vendor, 0x0000);
 	if (!sbdev)
-		fprintf(stderr, "No southbridge found for %s!\n", name);
+		msg_perr("No southbridge found for %s!\n", name);
 	if (sbdev)
-		printf_debug("Found southbridge %04x:%04x at %02x:%02x:%01x\n",
+		msg_pdbg("Found southbridge %04x:%04x at %02x:%02x:%01x\n",
 			     sbdev->vendor_id, sbdev->device_id,
 			     sbdev->bus, sbdev->dev, sbdev->func);
 	return sbdev;
@@ -162,8 +162,8 @@ static int enable_flash_sis530(struct pci_dev *dev, const char *name)
 	pci_write_byte(sbdev, 0x45, new);
 	newer = pci_read_byte(sbdev, 0x45);
 	if (newer != new) {
-		printf_debug("tried to set register 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x45, new, name);
-		printf_debug("Stuck at 0x%x\n", newer);
+		msg_pinfo("tried to set register 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x45, new, name);
+		msg_pinfo("Stuck at 0x%x\n", newer);
 		ret = -1;
 	}
 
@@ -188,8 +188,8 @@ static int enable_flash_sis540(struct pci_dev *dev, const char *name)
 	pci_write_byte(sbdev, 0x45, new);
 	newer = pci_read_byte(sbdev, 0x45);
 	if (newer != new) {
-		printf_debug("tried to set register 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x45, new, name);
-		printf_debug("Stuck at 0x%x\n", newer);
+		msg_pinfo("tried to set register 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x45, new, name);
+		msg_pinfo("Stuck at 0x%x\n", newer);
 		ret = -1;
 	}
 
@@ -235,7 +235,7 @@ static int enable_flash_piix4(struct pci_dev *dev, const char *name)
 	pci_write_word(dev, xbcs, new);
 
 	if (pci_read_word(dev, xbcs) != new) {
-		printf_debug("tried to set 0x%x to 0x%x on %s failed (WARNING ONLY)\n", xbcs, new, name);
+		msg_pinfo("tried to set 0x%x to 0x%x on %s failed (WARNING ONLY)\n", xbcs, new, name);
 		return -1;
 	}
 
@@ -257,11 +257,11 @@ static int enable_flash_ich(struct pci_dev *dev, const char *name,
 	 */
 	old = pci_read_byte(dev, bios_cntl);
 
-	printf_debug("\nBIOS Lock Enable: %sabled, ",
+	msg_pdbg("\nBIOS Lock Enable: %sabled, ",
 		     (old & (1 << 1)) ? "en" : "dis");
-	printf_debug("BIOS Write Enable: %sabled, ",
+	msg_pdbg("BIOS Write Enable: %sabled, ",
 		     (old & (1 << 0)) ? "en" : "dis");
-	printf_debug("BIOS_CNTL is 0x%x\n", old);
+	msg_pdbg("BIOS_CNTL is 0x%x\n", old);
 
 	new = old | 1;
 
@@ -271,7 +271,7 @@ static int enable_flash_ich(struct pci_dev *dev, const char *name,
 	pci_write_byte(dev, bios_cntl, new);
 
 	if (pci_read_byte(dev, bios_cntl) != new) {
-		printf_debug("tried to set 0x%x to 0x%x on %s failed (WARNING ONLY)\n", bios_cntl, new, name);
+		msg_pinfo("tried to set 0x%x to 0x%x on %s failed (WARNING ONLY)\n", bios_cntl, new, name);
 		return -1;
 	}
 
@@ -306,7 +306,7 @@ static int enable_flash_ich_dc(struct pci_dev *dev, const char *name)
 		fwh_conf = (uint32_t)strtoul(idsel, NULL, 0);
 
 		/* FIXME: Need to undo this on shutdown. */
-		printf("\nSetting IDSEL=0x%x for top 16 MB", fwh_conf);
+		msg_pinfo("\nSetting IDSEL=0x%x for top 16 MB", fwh_conf);
 		pci_write_long(dev, 0xd0, fwh_conf);
 		pci_write_word(dev, 0xd4, fwh_conf);
 		/* FIXME: Decode settings are not changed. */
@@ -321,7 +321,7 @@ static int enable_flash_ich_dc(struct pci_dev *dev, const char *name)
 	fwh_conf = pci_read_long(dev, 0xd0);
 	for (i = 7; i >= 0; i--) {
 		tmp = (fwh_conf >> (i * 4)) & 0xf;
-		printf_debug("\n0x%08x/0x%08x FWH IDSEL: 0x%x",
+		msg_pdbg("\n0x%08x/0x%08x FWH IDSEL: 0x%x",
 			     (0x1ff8 + i) * 0x80000,
 			     (0x1ff0 + i) * 0x80000,
 			     tmp);
@@ -335,7 +335,7 @@ static int enable_flash_ich_dc(struct pci_dev *dev, const char *name)
 	fwh_conf = pci_read_word(dev, 0xd4);
 	for (i = 3; i >= 0; i--) {
 		tmp = (fwh_conf >> (i * 4)) & 0xf;
-		printf_debug("\n0x%08x/0x%08x FWH IDSEL: 0x%x",
+		msg_pdbg("\n0x%08x/0x%08x FWH IDSEL: 0x%x",
 			     (0xff4 + i) * 0x100000,
 			     (0xff0 + i) * 0x100000,
 			     tmp);
@@ -350,7 +350,7 @@ static int enable_flash_ich_dc(struct pci_dev *dev, const char *name)
 	fwh_conf = pci_read_word(dev, 0xd8);
 	for (i = 7; i >= 0; i--) {
 		tmp = (fwh_conf >> (i + 0x8)) & 0x1;
-		printf_debug("\n0x%08x/0x%08x FWH decode %sabled",
+		msg_pdbg("\n0x%08x/0x%08x FWH decode %sabled",
 			     (0x1ff8 + i) * 0x80000,
 			     (0x1ff0 + i) * 0x80000,
 			     tmp ? "en" : "dis");
@@ -362,7 +362,7 @@ static int enable_flash_ich_dc(struct pci_dev *dev, const char *name)
 	}
 	for (i = 3; i >= 0; i--) {
 		tmp = (fwh_conf >> i) & 0x1;
-		printf_debug("\n0x%08x/0x%08x FWH decode %sabled",
+		msg_pdbg("\n0x%08x/0x%08x FWH decode %sabled",
 			     (0xff4 + i) * 0x100000,
 			     (0xff0 + i) * 0x100000,
 			     tmp ? "en" : "dis");
@@ -373,7 +373,7 @@ static int enable_flash_ich_dc(struct pci_dev *dev, const char *name)
 		}
 	}
 	max_rom_decode.fwh = min(max_decode_fwh_idsel, max_decode_fwh_decode);
-	printf_debug("\nMaximum FWH chip size: 0x%x bytes", max_rom_decode.fwh);
+	msg_pdbg("\nMaximum FWH chip size: 0x%x bytes", max_rom_decode.fwh);
 
 	/* If we're called by enable_flash_ich_dc_spi, it will override
 	 * buses_supported anyway.
@@ -391,7 +391,7 @@ static int enable_flash_poulsbo(struct pci_dev *dev, const char *name)
                return err;
 
        old = pci_read_byte(dev, 0xd9);
-       printf_debug("BIOS Prefetch Enable: %sabled, ",
+       msg_pdbg("BIOS Prefetch Enable: %sabled, ",
                     (old & 1) ? "en" : "dis");
        new = old & ~1;
 
@@ -413,10 +413,10 @@ static int enable_flash_vt8237s_spi(struct pci_dev *dev, const char *name)
 
 	/* Do we really need no write enable? */
 	mmio_base = (pci_read_long(dev, 0xbc)) << 8;
-	printf_debug("MMIO base at = 0x%x\n", mmio_base);
+	msg_pdbg("MMIO base at = 0x%x\n", mmio_base);
 	spibar = physmap("VT8237S MMIO registers", mmio_base, 0x70);
 
-	printf_debug("0x6c: 0x%04x     (CLOCK/DEBUG)\n",
+	msg_pdbg("0x6c: 0x%04x     (CLOCK/DEBUG)\n",
 		     mmio_readw(spibar + 0x6c));
 
 	/* Not sure if it speaks all these bus protocols. */
@@ -444,20 +444,20 @@ static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
 
 	/* Get physical address of Root Complex Register Block */
 	tmp = pci_read_long(dev, 0xf0) & 0xffffc000;
-	printf_debug("\nRoot Complex Register Block address = 0x%x\n", tmp);
+	msg_pdbg("\nRoot Complex Register Block address = 0x%x\n", tmp);
 
 	/* Map RCBA to virtual memory */
 	rcrb = physmap("ICH RCRB", tmp, 0x4000);
 
 	gcs = mmio_readl(rcrb + 0x3410);
-	printf_debug("GCS = 0x%x: ", gcs);
-	printf_debug("BIOS Interface Lock-Down: %sabled, ",
+	msg_pdbg("GCS = 0x%x: ", gcs);
+	msg_pdbg("BIOS Interface Lock-Down: %sabled, ",
 		     (gcs & 0x1) ? "en" : "dis");
 	bbs = (gcs >> 10) & 0x3;
-	printf_debug("BOOT BIOS Straps: 0x%x (%s)\n", bbs, straps_names[bbs]);
+	msg_pdbg("BOOT BIOS Straps: 0x%x (%s)\n", bbs, straps_names[bbs]);
 
 	buc = mmio_readb(rcrb + 0x3414);
-	printf_debug("Top Swap : %s\n",
+	msg_pdbg("Top Swap : %s\n",
 		     (buc & 1) ? "enabled (A16 inverted)" : "not enabled");
 
 	/* It seems the ICH7 does not support SPI and LPC chips at the same
@@ -492,105 +492,105 @@ static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
 	}
 
 	/* SPIBAR is at RCRB+0x3020 for ICH[78] and RCRB+0x3800 for ICH9. */
-	printf_debug("SPIBAR = 0x%x + 0x%04x\n", tmp, spibar_offset);
+	msg_pdbg("SPIBAR = 0x%x + 0x%04x\n", tmp, spibar_offset);
 
 	/* Assign Virtual Address */
 	spibar = rcrb + spibar_offset;
 
 	switch (spi_controller) {
 	case SPI_CONTROLLER_ICH7:
-		printf_debug("0x00: 0x%04x     (SPIS)\n",
+		msg_pdbg("0x00: 0x%04x     (SPIS)\n",
 			     mmio_readw(spibar + 0));
-		printf_debug("0x02: 0x%04x     (SPIC)\n",
+		msg_pdbg("0x02: 0x%04x     (SPIC)\n",
 			     mmio_readw(spibar + 2));
-		printf_debug("0x04: 0x%08x (SPIA)\n",
+		msg_pdbg("0x04: 0x%08x (SPIA)\n",
 			     mmio_readl(spibar + 4));
 		for (i = 0; i < 8; i++) {
 			int offs;
 			offs = 8 + (i * 8);
-			printf_debug("0x%02x: 0x%08x (SPID%d)\n", offs,
+			msg_pdbg("0x%02x: 0x%08x (SPID%d)\n", offs,
 				     mmio_readl(spibar + offs), i);
-			printf_debug("0x%02x: 0x%08x (SPID%d+4)\n", offs + 4,
+			msg_pdbg("0x%02x: 0x%08x (SPID%d+4)\n", offs + 4,
 				     mmio_readl(spibar + offs + 4), i);
 		}
-		printf_debug("0x50: 0x%08x (BBAR)\n",
+		msg_pdbg("0x50: 0x%08x (BBAR)\n",
 			     mmio_readl(spibar + 0x50));
-		printf_debug("0x54: 0x%04x     (PREOP)\n",
+		msg_pdbg("0x54: 0x%04x     (PREOP)\n",
 			     mmio_readw(spibar + 0x54));
-		printf_debug("0x56: 0x%04x     (OPTYPE)\n",
+		msg_pdbg("0x56: 0x%04x     (OPTYPE)\n",
 			     mmio_readw(spibar + 0x56));
-		printf_debug("0x58: 0x%08x (OPMENU)\n",
+		msg_pdbg("0x58: 0x%08x (OPMENU)\n",
 			     mmio_readl(spibar + 0x58));
-		printf_debug("0x5c: 0x%08x (OPMENU+4)\n",
+		msg_pdbg("0x5c: 0x%08x (OPMENU+4)\n",
 			     mmio_readl(spibar + 0x5c));
 		for (i = 0; i < 4; i++) {
 			int offs;
 			offs = 0x60 + (i * 4);
-			printf_debug("0x%02x: 0x%08x (PBR%d)\n", offs,
+			msg_pdbg("0x%02x: 0x%08x (PBR%d)\n", offs,
 				     mmio_readl(spibar + offs), i);
 		}
-		printf_debug("\n");
+		msg_pdbg("\n");
 		if (mmio_readw(spibar) & (1 << 15)) {
-			printf("WARNING: SPI Configuration Lockdown activated.\n");
+			msg_pinfo("WARNING: SPI Configuration Lockdown activated.\n");
 			ichspi_lock = 1;
 		}
 		ich_init_opcodes();
 		break;
 	case SPI_CONTROLLER_ICH9:
 		tmp2 = mmio_readw(spibar + 4);
-		printf_debug("0x04: 0x%04x (HSFS)\n", tmp2);
-		printf_debug("FLOCKDN %i, ", (tmp2 >> 15 & 1));
-		printf_debug("FDV %i, ", (tmp2 >> 14) & 1);
-		printf_debug("FDOPSS %i, ", (tmp2 >> 13) & 1);
-		printf_debug("SCIP %i, ", (tmp2 >> 5) & 1);
-		printf_debug("BERASE %i, ", (tmp2 >> 3) & 3);
-		printf_debug("AEL %i, ", (tmp2 >> 2) & 1);
-		printf_debug("FCERR %i, ", (tmp2 >> 1) & 1);
-		printf_debug("FDONE %i\n", (tmp2 >> 0) & 1);
+		msg_pdbg("0x04: 0x%04x (HSFS)\n", tmp2);
+		msg_pdbg("FLOCKDN %i, ", (tmp2 >> 15 & 1));
+		msg_pdbg("FDV %i, ", (tmp2 >> 14) & 1);
+		msg_pdbg("FDOPSS %i, ", (tmp2 >> 13) & 1);
+		msg_pdbg("SCIP %i, ", (tmp2 >> 5) & 1);
+		msg_pdbg("BERASE %i, ", (tmp2 >> 3) & 3);
+		msg_pdbg("AEL %i, ", (tmp2 >> 2) & 1);
+		msg_pdbg("FCERR %i, ", (tmp2 >> 1) & 1);
+		msg_pdbg("FDONE %i\n", (tmp2 >> 0) & 1);
 
 		tmp = mmio_readl(spibar + 0x50);
-		printf_debug("0x50: 0x%08x (FRAP)\n", tmp);
-		printf_debug("BMWAG %i, ", (tmp >> 24) & 0xff);
-		printf_debug("BMRAG %i, ", (tmp >> 16) & 0xff);
-		printf_debug("BRWA %i, ", (tmp >> 8) & 0xff);
-		printf_debug("BRRA %i\n", (tmp >> 0) & 0xff);
+		msg_pdbg("0x50: 0x%08x (FRAP)\n", tmp);
+		msg_pdbg("BMWAG %i, ", (tmp >> 24) & 0xff);
+		msg_pdbg("BMRAG %i, ", (tmp >> 16) & 0xff);
+		msg_pdbg("BRWA %i, ", (tmp >> 8) & 0xff);
+		msg_pdbg("BRRA %i\n", (tmp >> 0) & 0xff);
 
-		printf_debug("0x54: 0x%08x (FREG0)\n",
+		msg_pdbg("0x54: 0x%08x (FREG0)\n",
 			     mmio_readl(spibar + 0x54));
-		printf_debug("0x58: 0x%08x (FREG1)\n",
+		msg_pdbg("0x58: 0x%08x (FREG1)\n",
 			     mmio_readl(spibar + 0x58));
-		printf_debug("0x5C: 0x%08x (FREG2)\n",
+		msg_pdbg("0x5C: 0x%08x (FREG2)\n",
 			     mmio_readl(spibar + 0x5C));
-		printf_debug("0x60: 0x%08x (FREG3)\n",
+		msg_pdbg("0x60: 0x%08x (FREG3)\n",
 			     mmio_readl(spibar + 0x60));
-		printf_debug("0x64: 0x%08x (FREG4)\n",
+		msg_pdbg("0x64: 0x%08x (FREG4)\n",
 			     mmio_readl(spibar + 0x64));
-		printf_debug("0x74: 0x%08x (PR0)\n",
+		msg_pdbg("0x74: 0x%08x (PR0)\n",
 			     mmio_readl(spibar + 0x74));
-		printf_debug("0x78: 0x%08x (PR1)\n",
+		msg_pdbg("0x78: 0x%08x (PR1)\n",
 			     mmio_readl(spibar + 0x78));
-		printf_debug("0x7C: 0x%08x (PR2)\n",
+		msg_pdbg("0x7C: 0x%08x (PR2)\n",
 			     mmio_readl(spibar + 0x7C));
-		printf_debug("0x80: 0x%08x (PR3)\n",
+		msg_pdbg("0x80: 0x%08x (PR3)\n",
 			     mmio_readl(spibar + 0x80));
-		printf_debug("0x84: 0x%08x (PR4)\n",
+		msg_pdbg("0x84: 0x%08x (PR4)\n",
 			     mmio_readl(spibar + 0x84));
-		printf_debug("0x90: 0x%08x (SSFS, SSFC)\n",
+		msg_pdbg("0x90: 0x%08x (SSFS, SSFC)\n",
 			     mmio_readl(spibar + 0x90));
-		printf_debug("0x94: 0x%04x     (PREOP)\n",
+		msg_pdbg("0x94: 0x%04x     (PREOP)\n",
 			     mmio_readw(spibar + 0x94));
-		printf_debug("0x96: 0x%04x     (OPTYPE)\n",
+		msg_pdbg("0x96: 0x%04x     (OPTYPE)\n",
 			     mmio_readw(spibar + 0x96));
-		printf_debug("0x98: 0x%08x (OPMENU)\n",
+		msg_pdbg("0x98: 0x%08x (OPMENU)\n",
 			     mmio_readl(spibar + 0x98));
-		printf_debug("0x9C: 0x%08x (OPMENU+4)\n",
+		msg_pdbg("0x9C: 0x%08x (OPMENU+4)\n",
 			     mmio_readl(spibar + 0x9C));
-		printf_debug("0xA0: 0x%08x (BBAR)\n",
+		msg_pdbg("0xA0: 0x%08x (BBAR)\n",
 			     mmio_readl(spibar + 0xA0));
-		printf_debug("0xB0: 0x%08x (FDOC)\n",
+		msg_pdbg("0xB0: 0x%08x (FDOC)\n",
 			     mmio_readl(spibar + 0xB0));
 		if (tmp2 & (1 << 15)) {
-			printf("WARNING: SPI Configuration Lockdown activated.\n");
+			msg_pinfo("WARNING: SPI Configuration Lockdown activated.\n");
 			ichspi_lock = 1;
 		}
 		ich_init_opcodes();
@@ -601,18 +601,18 @@ static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
 	}
 
 	old = pci_read_byte(dev, 0xdc);
-	printf_debug("SPI Read Configuration: ");
+	msg_pdbg("SPI Read Configuration: ");
 	new = (old >> 2) & 0x3;
 	switch (new) {
 	case 0:
 	case 1:
 	case 2:
-		printf_debug("prefetching %sabled, caching %sabled, ",
+		msg_pdbg("prefetching %sabled, caching %sabled, ",
 			     (new & 0x2) ? "en" : "dis",
 			     (new & 0x1) ? "dis" : "en");
 		break;
 	default:
-		printf_debug("invalid prefetching/caching settings, ");
+		msg_pdbg("invalid prefetching/caching settings, ");
 		break;
 	}
 
@@ -652,7 +652,7 @@ static int enable_flash_vt823x(struct pci_dev *dev, const char *name)
 	pci_write_byte(dev, 0x40, val);
 
 	if (pci_read_byte(dev, 0x40) != val) {
-		printf("\nWARNING: Failed to enable flash write on \"%s\"\n",
+		msg_pinfo("\nWARNING: Failed to enable flash write on \"%s\"\n",
 		       name);
 		return -1;
 	}
@@ -769,7 +769,7 @@ static int enable_flash_sc1100(struct pci_dev *dev, const char *name)
 	new = pci_read_byte(dev, 0x52);
 
 	if (new != 0xee) {
-		printf_debug("tried to set register 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x52, new, name);
+		msg_pinfo("tried to set register 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x52, new, name);
 		return -1;
 	}
 
@@ -787,7 +787,7 @@ static int enable_flash_amd8111(struct pci_dev *dev, const char *name)
 	if (new != old) {
 		pci_write_byte(dev, 0x43, new);
 		if (pci_read_byte(dev, 0x43) != new) {
-			printf_debug("tried to set 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x43, new, name);
+			msg_pinfo("tried to set 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x43, new, name);
 		}
 	}
 
@@ -799,7 +799,7 @@ static int enable_flash_amd8111(struct pci_dev *dev, const char *name)
 	pci_write_byte(dev, 0x40, new);
 
 	if (pci_read_byte(dev, 0x40) != new) {
-		printf_debug("tried to set 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x40, new, name);
+		msg_pinfo("tried to set 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x40, new, name);
 		return -1;
 	}
 
@@ -819,7 +819,7 @@ static int enable_flash_sb600(struct pci_dev *dev, const char *name)
 		/* No protection flags for this region?*/
 		if ((prot & 0x3) == 0)
 			continue;
-		printf_debug("SB600 %s%sprotected from %u to %u\n",
+		msg_pinfo("SB600 %s%sprotected from %u to %u\n",
 			(prot & 0x1) ? "write " : "",
 			(prot & 0x2) ? "read " : "",
 			(prot & 0xfffffc00),
@@ -828,7 +828,7 @@ static int enable_flash_sb600(struct pci_dev *dev, const char *name)
 		pci_write_byte(dev, reg, prot);
 		prot = pci_read_long(dev, reg);
 		if (prot & 0x3)
-			printf("SB600 %s%sunprotect failed from %u to %u\n",
+			msg_perr("SB600 %s%sunprotect failed from %u to %u\n",
 				(prot & 0x1) ? "write " : "",
 				(prot & 0x2) ? "read " : "",
 				(prot & 0xfffffc00),
@@ -838,7 +838,7 @@ static int enable_flash_sb600(struct pci_dev *dev, const char *name)
 	/* Read SPI_BaseAddr */
 	tmp = pci_read_long(dev, 0xa0);
 	tmp &= 0xffffffe0;	/* remove bits 4-0 (reserved) */
-	printf_debug("SPI base address is at 0x%x\n", tmp);
+	msg_pdbg("SPI base address is at 0x%x\n", tmp);
 
 	/* If the BAR has address 0, it is unlikely SPI is used. */
 	if (!tmp)
@@ -854,17 +854,17 @@ static int enable_flash_sb600(struct pci_dev *dev, const char *name)
 		sb600_spibar += tmp & 0xfff;
 
 		tmp = pci_read_long(dev, 0xa0);
-		printf_debug("AltSpiCSEnable=%i, SpiRomEnable=%i, "
+		msg_pdbg("AltSpiCSEnable=%i, SpiRomEnable=%i, "
 			     "AbortEnable=%i\n", tmp & 0x1, (tmp & 0x2) >> 1,
 			     (tmp & 0x4) >> 2);
 		tmp = (pci_read_byte(dev, 0xba) & 0x4) >> 2;
-		printf_debug("PrefetchEnSPIFromIMC=%i, ", tmp);
+		msg_pdbg("PrefetchEnSPIFromIMC=%i, ", tmp);
 
 		tmp = pci_read_byte(dev, 0xbb);
-		printf_debug("PrefetchEnSPIFromHost=%i, SpiOpEnInLpcMode=%i\n",
+		msg_pdbg("PrefetchEnSPIFromHost=%i, SpiOpEnInLpcMode=%i\n",
 			     tmp & 0x1, (tmp & 0x20) >> 5);
 		tmp = mmio_readl(sb600_spibar);
-		printf_debug("SpiArbEnable=%i, SpiAccessMacRomEn=%i, "
+		msg_pdbg("SpiArbEnable=%i, SpiAccessMacRomEn=%i, "
 			     "SpiHostAccessRomEn=%i, ArbWaitCount=%i, "
 			     "SpiBridgeDisable=%i, DropOneClkOnRd=%i\n",
 			     (tmp >> 19) & 0x1, (tmp >> 22) & 0x1,
@@ -876,7 +876,7 @@ static int enable_flash_sb600(struct pci_dev *dev, const char *name)
 	smbus_dev = pci_dev_find(0x1002, 0x4385);
 
 	if (has_spi && !smbus_dev) {
-		fprintf(stderr, "ERROR: SMBus device not found. Not enabling SPI.\n");
+		msg_perr("ERROR: SMBus device not found. Not enabling SPI.\n");
 		has_spi = 0;
 	}
 	if (has_spi) {
@@ -884,22 +884,22 @@ static int enable_flash_sb600(struct pci_dev *dev, const char *name)
 		/* GPIO11/SPI_DO and GPIO12/SPI_DI status */
 		reg = pci_read_byte(smbus_dev, 0xAB);
 		reg &= 0xC0;
-		printf_debug("GPIO11 used for %s\n", (reg & (1 << 6)) ? "GPIO" : "SPI_DO");
-		printf_debug("GPIO12 used for %s\n", (reg & (1 << 7)) ? "GPIO" : "SPI_DI");
+		msg_pdbg("GPIO11 used for %s\n", (reg & (1 << 6)) ? "GPIO" : "SPI_DO");
+		msg_pdbg("GPIO12 used for %s\n", (reg & (1 << 7)) ? "GPIO" : "SPI_DI");
 		if (reg != 0x00)
 			has_spi = 0;
 		/* GPIO31/SPI_HOLD and GPIO32/SPI_CS status */
 		reg = pci_read_byte(smbus_dev, 0x83);
 		reg &= 0xC0;
-		printf_debug("GPIO31 used for %s\n", (reg & (1 << 6)) ? "GPIO" : "SPI_HOLD");
-		printf_debug("GPIO32 used for %s\n", (reg & (1 << 7)) ? "GPIO" : "SPI_CS");
+		msg_pdbg("GPIO31 used for %s\n", (reg & (1 << 6)) ? "GPIO" : "SPI_HOLD");
+		msg_pdbg("GPIO32 used for %s\n", (reg & (1 << 7)) ? "GPIO" : "SPI_CS");
 		/* SPI_HOLD is not used on all boards, filter it out. */
 		if ((reg & 0x80) != 0x00)
 			has_spi = 0;
 		/* GPIO47/SPI_CLK status */
 		reg = pci_read_byte(smbus_dev, 0xA7);
 		reg &= 0x40;
-		printf_debug("GPIO47 used for %s\n", (reg & (1 << 6)) ? "GPIO" : "SPI_CLK");
+		msg_pdbg("GPIO47 used for %s\n", (reg & (1 << 6)) ? "GPIO" : "SPI_CLK");
 		if (reg != 0x00)
 			has_spi = 0;
 	}
@@ -914,24 +914,24 @@ static int enable_flash_sb600(struct pci_dev *dev, const char *name)
 	OUTB(0x8f, 0xcd6);
 	reg = INB(0xcd7);
 	reg &= 0x0e;
-	printf_debug("ROM strap override is %sactive", (reg & 0x02) ? "" : "not ");
+	msg_pdbg("ROM strap override is %sactive", (reg & 0x02) ? "" : "not ");
 	if (reg & 0x02) {
 		switch ((reg & 0x0c) >> 2) {
 		case 0x00:
-			printf_debug(": LPC");
+			msg_pdbg(": LPC");
 			break;
 		case 0x01:
-			printf_debug(": PCI");
+			msg_pdbg(": PCI");
 			break;
 		case 0x02:
-			printf_debug(": FWH");
+			msg_pdbg(": FWH");
 			break;
 		case 0x03:
-			printf_debug(": SPI");
+			msg_pdbg(": SPI");
 			break;
 		}
 	}
-	printf_debug("\n");
+	msg_pdbg("\n");
 
 	/* Force enable SPI ROM in SB600 PM register.
 	 * If we enable SPI ROM here, we have to disable it after we leave.
@@ -970,7 +970,7 @@ static int enable_flash_ck804(struct pci_dev *dev, const char *name)
 	if (new != old) {
 		pci_write_byte(dev, 0x88, new);
 		if (pci_read_byte(dev, 0x88) != new) {
-			printf_debug("tried to set 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x88, new, name);
+			msg_pinfo("tried to set 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x88, new, name);
 		}
 	}
 
@@ -981,7 +981,7 @@ static int enable_flash_ck804(struct pci_dev *dev, const char *name)
 	pci_write_byte(dev, 0x6d, new);
 
 	if (pci_read_byte(dev, 0x6d) != new) {
-		printf_debug("tried to set 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x6d, new, name);
+		msg_pinfo("tried to set 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x6d, new, name);
 		return -1;
 	}
 
@@ -998,7 +998,7 @@ static int enable_flash_sb400(struct pci_dev *dev, const char *name)
 	smbusdev = pci_dev_find(0x1002, 0x4372);
 
 	if (!smbusdev) {
-		fprintf(stderr, "ERROR: SMBus device not found. Aborting.\n");
+		msg_perr("ERROR: SMBus device not found. Aborting.\n");
 		exit(1);
 	}
 
@@ -1047,7 +1047,7 @@ static int enable_flash_mcp55(struct pci_dev *dev, const char *name)
 	pci_write_byte(dev, 0x6d, new);
 
 	if (pci_read_byte(dev, 0x6d) != new) {
-		printf_debug("tried to set 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x6d, new, name);
+		msg_pinfo("tried to set 0x%x to 0x%x on %s failed (WARNING ONLY)\n", 0x6d, new, name);
 		return -1;
 	}
 
@@ -1277,7 +1277,7 @@ static int get_flashbase_sc520(struct pci_dev *dev, const char *name)
 			flashbase = parx << 12;
 		}
 	} else {
-		printf("AMD Elan SC520 detected, but no BOOTCS. Assuming flash at 4G\n");
+		msg_pinfo("AMD Elan SC520 detected, but no BOOTCS. Assuming flash at 4G\n");
 	}
 
 	/* 4. Clean up */
@@ -1436,18 +1436,18 @@ int chipset_flash_enable(void)
 	}
 
 	if (dev) {
-		printf("Found chipset \"%s %s\", enabling flash write... ",
+		msg_pinfo("Found chipset \"%s %s\", enabling flash write... ",
 		       chipset_enables[i].vendor_name,
 		       chipset_enables[i].device_name);
 
 		ret = chipset_enables[i].doit(dev,
 					      chipset_enables[i].device_name);
 		if (ret)
-			printf("FAILED!\n");
+			msg_pinfo("FAILED!\n");
 		else
-			printf("OK.\n");
+			msg_pinfo("OK.\n");
 	}
-	printf("This chipset supports the following protocols: %s.\n",
+	msg_pinfo("This chipset supports the following protocols: %s.\n",
 	       flashbuses_to_text(buses_supported));
 
 	return ret;

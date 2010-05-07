@@ -520,7 +520,7 @@ char *extract_param(char **haystack, char *needle, char *delim)
 		if (devlen) {
 			dev = malloc(devlen + 1);
 			if (!dev) {
-				fprintf(stderr, "Out of memory!\n");
+				msg_gerr("Out of memory!\n");
 				exit(1);
 			}
 			strncpy(dev, param_pos, devlen);
@@ -532,7 +532,7 @@ char *extract_param(char **haystack, char *needle, char *delim)
 		memmove(param_pos, rest, strlen(rest) + 1);
 		tmp = realloc(*haystack, strlen(*haystack) + 1);
 		if (!tmp) {
-			fprintf(stderr, "Out of memory!\n");
+			msg_gerr("Out of memory!\n");
 			exit(1);
 		}
 		*haystack = tmp;
@@ -549,7 +549,7 @@ int check_erased_range(struct flashchip *flash, int start, int len)
 	uint8_t *cmpbuf = malloc(len);
 
 	if (!cmpbuf) {
-		fprintf(stderr, "Could not allocate memory!\n");
+		msg_gerr("Could not allocate memory!\n");
 		exit(1);
 	}
 	memset(cmpbuf, 0xff, len);
@@ -577,16 +577,16 @@ int verify_range(struct flashchip *flash, uint8_t *cmpbuf, int start, int len, c
 		goto out_free;
 
 	if (!flash->read) {
-		fprintf(stderr, "ERROR: flashrom has no read function for this flash chip.\n");
+		msg_cerr("ERROR: flashrom has no read function for this flash chip.\n");
 		return 1;
 	}
 	if (!readbuf) {
-		fprintf(stderr, "Could not allocate memory!\n");
+		msg_gerr("Could not allocate memory!\n");
 		exit(1);
 	}
 
 	if (start + len > flash->total_size * 1024) {
-		fprintf(stderr, "Error: %s called with start 0x%x + len 0x%x >"
+		msg_gerr("Error: %s called with start 0x%x + len 0x%x >"
 			" total_size 0x%x\n", __func__, start, len,
 			flash->total_size * 1024);
 		ret = -1;
@@ -614,7 +614,7 @@ int verify_range(struct flashchip *flash, uint8_t *cmpbuf, int start, int len, c
 			if (cmpbuf[starthere - start + j] != readbuf[j]) {
 				/* Only print the first failure. */
 				if (!failcount++)
-					fprintf(stderr, "%s FAILED at 0x%08x! "
+					msg_cerr("%s FAILED at 0x%08x! "
 						"Expected=0x%02x, Read=0x%02x,",
 						message, starthere + j,
 						cmpbuf[starthere - start + j],
@@ -623,7 +623,7 @@ int verify_range(struct flashchip *flash, uint8_t *cmpbuf, int start, int len, c
 		}
 	}
 	if (failcount) {
-		fprintf(stderr, " failed byte count from 0x%08x-0x%08x: 0x%x\n",
+		msg_cerr(" failed byte count from 0x%08x-0x%08x: 0x%x\n",
 			start, start + len - 1, failcount);
 		ret = -1;
 	}
@@ -748,7 +748,7 @@ int generate_testpattern(uint8_t *buf, uint32_t size, int variant)
 	int i;
 
 	if (!buf) {
-		fprintf(stderr, "Invalid buffer!\n");
+		msg_gerr("Invalid buffer!\n");
 		return 1;
 	}
 
@@ -836,7 +836,7 @@ int check_max_decode(enum chipbustype buses, uint32_t size)
 	if ((buses & CHIP_BUSTYPE_PARALLEL) &&
 	    (max_rom_decode.parallel < size)) {
 		limitexceeded++;
-		printf_debug("Chip size %u kB is bigger than supported "
+		msg_pdbg("Chip size %u kB is bigger than supported "
 			     "size %u kB of chipset/board/programmer "
 			     "for %s interface, "
 			     "probe/read/erase/write may fail. ", size / 1024,
@@ -844,7 +844,7 @@ int check_max_decode(enum chipbustype buses, uint32_t size)
 	}
 	if ((buses & CHIP_BUSTYPE_LPC) && (max_rom_decode.lpc < size)) {
 		limitexceeded++;
-		printf_debug("Chip size %u kB is bigger than supported "
+		msg_pdbg("Chip size %u kB is bigger than supported "
 			     "size %u kB of chipset/board/programmer "
 			     "for %s interface, "
 			     "probe/read/erase/write may fail. ", size / 1024,
@@ -852,7 +852,7 @@ int check_max_decode(enum chipbustype buses, uint32_t size)
 	}
 	if ((buses & CHIP_BUSTYPE_FWH) && (max_rom_decode.fwh < size)) {
 		limitexceeded++;
-		printf_debug("Chip size %u kB is bigger than supported "
+		msg_pdbg("Chip size %u kB is bigger than supported "
 			     "size %u kB of chipset/board/programmer "
 			     "for %s interface, "
 			     "probe/read/erase/write may fail. ", size / 1024,
@@ -860,7 +860,7 @@ int check_max_decode(enum chipbustype buses, uint32_t size)
 	}
 	if ((buses & CHIP_BUSTYPE_SPI) && (max_rom_decode.spi < size)) {
 		limitexceeded++;
-		printf_debug("Chip size %u kB is bigger than supported "
+		msg_pdbg("Chip size %u kB is bigger than supported "
 			     "size %u kB of chipset/board/programmer "
 			     "for %s interface, "
 			     "probe/read/erase/write may fail. ", size / 1024,
@@ -873,7 +873,7 @@ int check_max_decode(enum chipbustype buses, uint32_t size)
 	 */
 	if (bitcount(buses) > limitexceeded)
 		/* FIXME: This message is designed towards CLI users. */
-		printf_debug("There is at least one common chip/programmer "
+		msg_pdbg("There is at least one common chip/programmer "
 			     "interface which can support a chip of this size. "
 			     "You can try --force at your own risk.\n");
 	return 1;
@@ -934,7 +934,7 @@ notfound:
 	if (!flash || !flash->name)
 		return NULL;
 
-	printf("%s chip \"%s %s\" (%d KB, %s) at physical address 0x%lx.\n",
+	msg_cinfo("%s chip \"%s %s\" (%d KB, %s) at physical address 0x%lx.\n",
 	       force ? "Assuming" : "Found",
 	       flash->vendor, flash->name, flash->total_size,
 	       flashbuses_to_text(flash->bustype), base);
@@ -950,12 +950,12 @@ int verify_flash(struct flashchip *flash, uint8_t *buf)
 	int ret;
 	int total_size = flash->total_size * 1024;
 
-	printf("Verifying flash... ");
+	msg_cinfo("Verifying flash... ");
 
 	ret = verify_range(flash, buf, 0, total_size, NULL);
 
 	if (!ret)
-		printf("VERIFIED.          \n");
+		msg_cinfo("VERIFIED.          \n");
 
 	return ret;
 }
@@ -968,17 +968,17 @@ int read_flash(struct flashchip *flash, char *filename)
 	unsigned char *buf = calloc(size, sizeof(char));
 
 	if (!filename) {
-		printf("Error: No filename specified.\n");
+		msg_gerr("Error: No filename specified.\n");
 		return 1;
 	}
 	if ((image = fopen(filename, "wb")) == NULL) {
 		perror(filename);
 		exit(1);
 	}
-	printf("Reading flash... ");
+	msg_cinfo("Reading flash... ");
 	if (!flash->read) {
-		printf("FAILED!\n");
-		fprintf(stderr, "ERROR: flashrom has no read function for this flash chip.\n");
+		msg_cinfo("FAILED!\n");
+		msg_cerr("ERROR: flashrom has no read function for this flash chip.\n");
 		return 1;
 	} else
 		flash->read(flash, buf, 0, size);
@@ -986,7 +986,7 @@ int read_flash(struct flashchip *flash, char *filename)
 	numbytes = fwrite(buf, 1, size, image);
 	fclose(image);
 	free(buf);
-	printf("%s.\n", numbytes == size ? "done" : "FAILED");
+	msg_cinfo("%s.\n", numbytes == size ? "done" : "FAILED");
 	if (numbytes != size)
 		return 1;
 	return 0;
@@ -1028,7 +1028,7 @@ int selfcheck_eraseblocks(struct flashchip *flash)
 		}
 		/* Empty eraseblock definition with erase function.  */
 		if (!done && eraser.block_erase)
-			msg_pspew("Strange: Empty eraseblock definition with "
+			msg_gspew("Strange: Empty eraseblock definition with "
 				"non-empty erase function. Not an error.\n");
 		if (!done)
 			continue;
@@ -1065,31 +1065,31 @@ int erase_flash(struct flashchip *flash)
 	int i, j, k, ret = 0, found = 0;
 	unsigned int start, len;
 
-	printf("Erasing flash chip... ");
+	msg_cinfo("Erasing flash chip... ");
 	for (k = 0; k < NUM_ERASEFUNCTIONS; k++) {
 		unsigned int done = 0;
 		struct block_eraser eraser = flash->block_erasers[k];
 
-		printf_debug("Looking at blockwise erase function %i... ", k);
+		msg_cdbg("Looking at blockwise erase function %i... ", k);
 		if (!eraser.block_erase && !eraser.eraseblocks[0].count) {
-			printf_debug("not defined. "
+			msg_cdbg("not defined. "
 				"Looking for another erase function.\n");
 			continue;
 		}
 		if (!eraser.block_erase && eraser.eraseblocks[0].count) {
-			printf_debug("eraseblock layout is known, but no "
+			msg_cdbg("eraseblock layout is known, but no "
 				"matching block erase function found. "
 				"Looking for another erase function.\n");
 			continue;
 		}
 		if (eraser.block_erase && !eraser.eraseblocks[0].count) {
-			printf_debug("block erase function found, but "
+			msg_cdbg("block erase function found, but "
 				"eraseblock layout is unknown. "
 				"Looking for another erase function.\n");
 			continue;
 		}
 		found = 1;
-		printf_debug("trying... ");
+		msg_cdbg("trying... ");
 		for (i = 0; i < NUM_ERASEREGIONS; i++) {
 			/* count==0 for all automatically initialized array
 			 * members so the loop below won't be executed for them.
@@ -1097,7 +1097,7 @@ int erase_flash(struct flashchip *flash)
 			for (j = 0; j < eraser.eraseblocks[i].count; j++) {
 				start = done + eraser.eraseblocks[i].size * j;
 				len = eraser.eraseblocks[i].size;
-				printf_debug("0x%06x-0x%06x, ", start,
+				msg_cdbg("0x%06x-0x%06x, ", start,
 					     start + len - 1);
 				ret = eraser.block_erase(flash, start, len);
 				if (ret)
@@ -1108,27 +1108,27 @@ int erase_flash(struct flashchip *flash)
 			done += eraser.eraseblocks[i].count *
 				eraser.eraseblocks[i].size;
 		}
-		printf_debug("\n");
+		msg_cdbg("\n");
 		/* If everything is OK, don't try another erase function. */
 		if (!ret)
 			break;
 	}
 	if (!found) {
-		fprintf(stderr, "ERROR: flashrom has no erase function for this flash chip.\n");
+		msg_cerr("ERROR: flashrom has no erase function for this flash chip.\n");
 		return 1;
 	}
 
 	if (ret) {
-		fprintf(stderr, "FAILED!\n");
+		msg_cerr("FAILED!\n");
 	} else {
-		printf("SUCCESS.\n");
+		msg_cinfo("SUCCESS.\n");
 	}
 	return ret;
 }
 
 void emergency_help_message(void)
 {
-	fprintf(stderr, "Your flash chip is in an unknown state.\n"
+	msg_gerr("Your flash chip is in an unknown state.\n"
 		"Get help on IRC at irc.freenode.net (channel #flashrom) or\n"
 		"mail flashrom@flashrom.org!\n--------------------"
 		"-----------------------------------------------------------\n"
@@ -1140,11 +1140,11 @@ void list_programmers(char *delim)
 {
 	enum programmer p;
 	for (p = 0; p < PROGRAMMER_INVALID; p++) {
-		printf("%s", programmer_table[p].name);
+		msg_ginfo("%s", programmer_table[p].name);
 		if (p < PROGRAMMER_INVALID - 1)
-			printf("%s", delim);
+			msg_ginfo("%s", delim);
 	}
-	printf("\n");	
+	msg_ginfo("\n");	
 }
 
 void print_sysinfo(void)
@@ -1183,7 +1183,7 @@ void print_sysinfo(void)
 
 void print_version(void)
 {
-	printf("flashrom v%s", flashrom_version);
+	msg_ginfo("flashrom v%s\n", flashrom_version);
 	print_sysinfo();
 }
 
@@ -1196,16 +1196,16 @@ int selfcheck(void)
 	 * if more errors exist.
 	 */
 	if (ARRAY_SIZE(programmer_table) - 1 != PROGRAMMER_INVALID) {
-		fprintf(stderr, "Programmer table miscompilation!\n");
+		msg_gerr("Programmer table miscompilation!\n");
 		ret = 1;
 	}
 	if (spi_programmer_count - 1 != SPI_CONTROLLER_INVALID) {
-		fprintf(stderr, "SPI programmer table miscompilation!\n");
+		msg_gerr("SPI programmer table miscompilation!\n");
 		ret = 1;
 	}
 #if BITBANG_SPI_SUPPORT == 1
 	if (bitbang_spi_master_count - 1 != BITBANG_SPI_INVALID) {
-		fprintf(stderr, "Bitbanging SPI master table miscompilation!\n");
+		msg_gerr("Bitbanging SPI master table miscompilation!\n");
 		ret = 1;
 	}
 #endif
@@ -1218,36 +1218,36 @@ int selfcheck(void)
 void check_chip_supported(struct flashchip *flash)
 {
 	if (TEST_OK_MASK != (flash->tested & TEST_OK_MASK)) {
-		printf("===\n");
+		msg_cinfo("===\n");
 		if (flash->tested & TEST_BAD_MASK) {
-			printf("This flash part has status NOT WORKING for operations:");
+			msg_cinfo("This flash part has status NOT WORKING for operations:");
 			if (flash->tested & TEST_BAD_PROBE)
-				printf(" PROBE");
+				msg_cinfo(" PROBE");
 			if (flash->tested & TEST_BAD_READ)
-				printf(" READ");
+				msg_cinfo(" READ");
 			if (flash->tested & TEST_BAD_ERASE)
-				printf(" ERASE");
+				msg_cinfo(" ERASE");
 			if (flash->tested & TEST_BAD_WRITE)
-				printf(" WRITE");
-			printf("\n");
+				msg_cinfo(" WRITE");
+			msg_cinfo("\n");
 		}
 		if ((!(flash->tested & TEST_BAD_PROBE) && !(flash->tested & TEST_OK_PROBE)) ||
 		    (!(flash->tested & TEST_BAD_READ) && !(flash->tested & TEST_OK_READ)) ||
 		    (!(flash->tested & TEST_BAD_ERASE) && !(flash->tested & TEST_OK_ERASE)) ||
 		    (!(flash->tested & TEST_BAD_WRITE) && !(flash->tested & TEST_OK_WRITE))) {
-			printf("This flash part has status UNTESTED for operations:");
+			msg_cinfo("This flash part has status UNTESTED for operations:");
 			if (!(flash->tested & TEST_BAD_PROBE) && !(flash->tested & TEST_OK_PROBE))
-				printf(" PROBE");
+				msg_cinfo(" PROBE");
 			if (!(flash->tested & TEST_BAD_READ) && !(flash->tested & TEST_OK_READ))
-				printf(" READ");
+				msg_cinfo(" READ");
 			if (!(flash->tested & TEST_BAD_ERASE) && !(flash->tested & TEST_OK_ERASE))
-				printf(" ERASE");
+				msg_cinfo(" ERASE");
 			if (!(flash->tested & TEST_BAD_WRITE) && !(flash->tested & TEST_OK_WRITE))
-				printf(" WRITE");
-			printf("\n");
+				msg_cinfo(" WRITE");
+			msg_cinfo("\n");
 		}
 		/* FIXME: This message is designed towards CLI users. */
-		printf("Please email a report to flashrom@flashrom.org if any "
+		msg_cinfo("Please email a report to flashrom@flashrom.org if any "
 		       "of the above operations\nwork correctly for you with "
 		       "this flash part. Please include the flashrom\noutput "
 		       "with the additional -V option for all operations you "
@@ -1278,13 +1278,13 @@ int doit(struct flashchip *flash, int force, char *filename, int read_it, int wr
 
 	if (erase_it) {
 		if (flash->tested & TEST_BAD_ERASE) {
-			fprintf(stderr, "Erase is not working on this chip. ");
+			msg_cerr("Erase is not working on this chip. ");
 			if (!force) {
-				fprintf(stderr, "Aborting.\n");
+				msg_cerr("Aborting.\n");
 				programmer_shutdown();
 				return 1;
 			} else {
-				fprintf(stderr, "Continuing anyway.\n");
+				msg_cerr("Continuing anyway.\n");
 			}
 		}
 		if (flash->unlock)
@@ -1310,24 +1310,24 @@ int doit(struct flashchip *flash, int force, char *filename, int read_it, int wr
 			flash->unlock(flash);
 
 		if (flash->tested & TEST_BAD_ERASE) {
-			fprintf(stderr, "Erase is not working on this chip "
+			msg_cerr("Erase is not working on this chip "
 				"and erase is needed for write. ");
 			if (!force) {
-				fprintf(stderr, "Aborting.\n");
+				msg_cerr("Aborting.\n");
 				programmer_shutdown();
 				return 1;
 			} else {
-				fprintf(stderr, "Continuing anyway.\n");
+				msg_cerr("Continuing anyway.\n");
 			}
 		}
 		if (flash->tested & TEST_BAD_WRITE) {
-			fprintf(stderr, "Write is not working on this chip. ");
+			msg_cerr("Write is not working on this chip. ");
 			if (!force) {
-				fprintf(stderr, "Aborting.\n");
+				msg_cerr("Aborting.\n");
 				programmer_shutdown();
 				return 1;
 			} else {
-				fprintf(stderr, "Continuing anyway.\n");
+				msg_cerr("Continuing anyway.\n");
 			}
 		}
 		if ((image = fopen(filename, "rb")) == NULL) {
@@ -1341,7 +1341,7 @@ int doit(struct flashchip *flash, int force, char *filename, int read_it, int wr
 			exit(1);
 		}
 		if (image_stat.st_size != flash->total_size * 1024) {
-			fprintf(stderr, "Error: Image size doesn't match\n");
+			msg_gerr("Error: Image size doesn't match\n");
 			programmer_shutdown();
 			exit(1);
 		}
@@ -1352,7 +1352,7 @@ int doit(struct flashchip *flash, int force, char *filename, int read_it, int wr
 #endif
 		fclose(image);
 		if (numbytes != size) {
-			fprintf(stderr, "Error: Failed to read file. Got %ld bytes, wanted %ld!\n", numbytes, size);
+			msg_gerr("Error: Failed to read file. Got %ld bytes, wanted %ld!\n", numbytes, size);
 			programmer_shutdown();
 			return 1;
 		}
@@ -1365,20 +1365,20 @@ int doit(struct flashchip *flash, int force, char *filename, int read_it, int wr
 	// ////////////////////////////////////////////////////////////
 
 	if (write_it) {
-		printf("Writing flash chip... ");
+		msg_cinfo("Writing flash chip... ");
 		if (!flash->write) {
-			fprintf(stderr, "Error: flashrom has no write function for this flash chip.\n");
+			msg_cerr("Error: flashrom has no write function for this flash chip.\n");
 			programmer_shutdown();
 			return 1;
 		}
 		ret = flash->write(flash, buf);
 		if (ret) {
-			fprintf(stderr, "FAILED!\n");
+			msg_cerr("FAILED!\n");
 			emergency_help_message();
 			programmer_shutdown();
 			return 1;
 		} else {
-			printf("COMPLETE.\n");
+			msg_cinfo("COMPLETE.\n");
 		}
 	}
 
