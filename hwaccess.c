@@ -41,7 +41,7 @@ void get_io_perms(void)
 #else 
 	if (iopl(3) != 0) {
 #endif
-		fprintf(stderr, "ERROR: Could not get I/O privileges (%s).\n"
+		msg_perr("ERROR: Could not get I/O privileges (%s).\n"
 			"You need to be root.\n", strerror(errno));
 		exit(1);
 	}

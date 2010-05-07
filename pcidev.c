@@ -45,7 +45,7 @@ uint32_t pcidev_validate(struct pci_dev *dev, uint32_t bar,
 		 */
 		addr = pci_read_long(dev, bar);
 		
-		printf("Found \"%s %s\" (%04x:%04x, BDF %02x:%02x.%x).\n",
+		msg_pinfo("Found \"%s %s\" (%04x:%04x, BDF %02x:%02x.%x).\n",
 		       devs[i].vendor_name, devs[i].device_name,
 		       dev->vendor_id, dev->device_id, dev->bus, dev->dev,
 		       dev->func);
@@ -66,7 +66,7 @@ uint32_t pcidev_validate(struct pci_dev *dev, uint32_t bar,
 		}
 
 		if (devs[i].status == NT) {
-			printf("===\nThis PCI device is UNTESTED. Please "
+			msg_pinfo("===\nThis PCI device is UNTESTED. Please "
 			       "report the 'flashrom -p xxxx' output \n"
 			       "to flashrom@flashrom.org if it works "
 			       "for you. Thank you for your help!\n===\n");
@@ -95,7 +95,7 @@ uint32_t pcidev_init(uint16_t vendor_id, uint32_t bar,
 	filter.vendor = vendor_id;
 	if (pcidev_bdf != NULL) {
 		if ((msg = pci_filter_parse_slot(&filter, pcidev_bdf))) {
-			fprintf(stderr, "Error: %s\n", msg);
+			msg_perr("Error: %s\n", msg);
 			exit(1);
 		}
 	}
@@ -112,10 +112,10 @@ uint32_t pcidev_init(uint16_t vendor_id, uint32_t bar,
 
 	/* Only continue if exactly one supported PCI dev has been found. */
 	if (found == 0) {
-		fprintf(stderr, "Error: No supported PCI device found.\n");
+		msg_perr("Error: No supported PCI device found.\n");
 		exit(1);
 	} else if (found > 1) {
-		fprintf(stderr, "Error: Multiple supported PCI devices found. "
+		msg_perr("Error: Multiple supported PCI devices found. "
 			"Use 'flashrom -p xxxx:bb:dd.f' \n"
 			"to explicitly select the card with the given BDF "
 			"(PCI bus, device, function).\n");
@@ -130,7 +130,7 @@ void print_supported_pcidevs(struct pcidev_status *devs)
 	int i;
 
 	for (i = 0; devs[i].vendor_name != NULL; i++) {
-		printf("%s %s [%02x:%02x]%s\n", devs[i].vendor_name,
+		msg_pinfo("%s %s [%02x:%02x]%s\n", devs[i].vendor_name,
 		       devs[i].device_name, devs[i].vendor_id,
 		       devs[i].device_id,
 		       (devs[i].status == NT) ? " (untested)" : "");
