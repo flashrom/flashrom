@@ -158,7 +158,7 @@ void *sys_physmap_ro_cached(unsigned long phys_addr, size_t len)
 	if (-1 == fd_mem_cached) {
 		/* Open the memory device CACHED. */
 		if (-1 == (fd_mem_cached = open(MEM_DEV, O_RDWR))) {
-			perror("Critical error: open(" MEM_DEV ")");
+			msg_perr("Critical error: open(" MEM_DEV "): %s", strerror(errno));
 			exit(2);
 		}
 	}
@@ -171,7 +171,7 @@ void *sys_physmap_ro_cached(unsigned long phys_addr, size_t len)
 void physunmap(void *virt_addr, size_t len)
 {
 	if (len == 0) {
-		printf_debug("Not unmapping zero size at %p\n", virt_addr);
+		msg_pspew("Not unmapping zero size at %p\n", virt_addr);
 		return;
 	}
 		
@@ -189,18 +189,18 @@ void *physmap_common(const char *descr, unsigned long phys_addr, size_t len, int
 	void *virt_addr;
 
 	if (len == 0) {
-		printf_debug("Not mapping %s, zero size at 0x%08lx.\n",
+		msg_pspew("Not mapping %s, zero size at 0x%08lx.\n",
 			     descr, phys_addr);
 		return NULL;
 	}
 		
 	if ((getpagesize() - 1) & len) {
-		fprintf(stderr, "Mapping %s at 0x%08lx, unaligned size 0x%lx.\n",
+		msg_perr("Mapping %s at 0x%08lx, unaligned size 0x%lx.\n",
 			descr, phys_addr, (unsigned long)len);
 	}
 
 	if ((getpagesize() - 1) & phys_addr) {
-		fprintf(stderr, "Mapping %s, 0x%lx bytes at unaligned 0x%08lx.\n",
+		msg_perr("Mapping %s, 0x%lx bytes at unaligned 0x%08lx.\n",
 			descr, (unsigned long)len, phys_addr);
 	}
 
@@ -213,15 +213,17 @@ void *physmap_common(const char *descr, unsigned long phys_addr, size_t len, int
 	if (NULL == virt_addr) {
 		if (NULL == descr)
 			descr = "memory";
-		fprintf(stderr, "Error accessing %s, 0x%lx bytes at 0x%08lx\n", descr, (unsigned long)len, phys_addr);
+		msg_perr("Error accessing %s, 0x%lx bytes at 0x%08lx\n", descr, (unsigned long)len, phys_addr);
 		perror(MEM_DEV " mmap failed");
+#ifdef __linux__
 		if (EINVAL == errno) {
-			fprintf(stderr, "In Linux this error can be caused by the CONFIG_NONPROMISC_DEVMEM (<2.6.27),\n");
-			fprintf(stderr, "CONFIG_STRICT_DEVMEM (>=2.6.27) and CONFIG_X86_PAT kernel options.\n");
-			fprintf(stderr, "Please check if either is enabled in your kernel before reporting a failure.\n");
-			fprintf(stderr, "You can override CONFIG_X86_PAT at boot with the nopat kernel parameter but\n");
-			fprintf(stderr, "disabling the other option unfortunately requires a kernel recompile. Sorry!\n");
+			msg_perr("In Linux this error can be caused by the CONFIG_NONPROMISC_DEVMEM (<2.6.27),\n");
+			msg_perr("CONFIG_STRICT_DEVMEM (>=2.6.27) and CONFIG_X86_PAT kernel options.\n");
+			msg_perr("Please check if either is enabled in your kernel before reporting a failure.\n");
+			msg_perr("You can override CONFIG_X86_PAT at boot with the nopat kernel parameter but\n");
+			msg_perr("disabling the other option unfortunately requires a kernel recompile. Sorry!\n");
 		}
+#endif
 		if (!mayfail)
 			exit(3);
 	}
@@ -306,7 +308,7 @@ int setup_cpu_msr(int cpu)
 	sprintf(msrfilename, "/dev/cpu/%d/msr", cpu);
 
 	if (fd_msr != -1) {
-		printf("MSR was already initialized\n");
+		msg_pinfo("MSR was already initialized\n");
 		return -1;
 	}
 
@@ -314,7 +316,7 @@ int setup_cpu_msr(int cpu)
 
 	if (fd_msr < 0) {
 		perror("Error while opening /dev/cpu/0/msr");
-		printf("Did you run 'modprobe msr'?\n");
+		msg_pinfo("Did you run 'modprobe msr'?\n");
 		return -1;
 	}
 
@@ -324,7 +326,7 @@ int setup_cpu_msr(int cpu)
 void cleanup_cpu_msr(void)
 {
 	if (fd_msr == -1) {
-		printf("No MSR initialized.\n");
+		msg_pinfo("No MSR initialized.\n");
 		return;
 	}
 
@@ -389,7 +391,7 @@ int setup_cpu_msr(int cpu)
 	sprintf(msrfilename, "/dev/cpu%d", cpu);
 
 	if (fd_msr != -1) {
-		printf("MSR was already initialized\n");
+		msg_pinfo("MSR was already initialized\n");
 		return -1;
 	}
 
@@ -397,7 +399,7 @@ int setup_cpu_msr(int cpu)
 
 	if (fd_msr < 0) {
 		perror("Error while opening /dev/cpu0");
-		printf("Did you install ports/sysutils/devcpu?\n");
+		msg_pinfo("Did you install ports/sysutils/devcpu?\n");
 		return -1;
 	}
 
@@ -407,7 +409,7 @@ int setup_cpu_msr(int cpu)
 void cleanup_cpu_msr(void)
 {
 	if (fd_msr == -1) {
-		printf("No MSR initialized.\n");
+		msg_pinfo("No MSR initialized.\n");
 		return;
 	}
 
@@ -445,7 +447,7 @@ int wrmsr(int addr, msr_t msr)
 
 int setup_cpu_msr(int cpu)
 {
-	printf("No MSR support for your OS yet.\n");
+	msg_pinfo("No MSR support for your OS yet.\n");
 	return -1;
 }
 

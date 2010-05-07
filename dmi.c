@@ -53,12 +53,12 @@ static char *get_dmi_string(const char *string_name)
 		 "%s -s %s", dmidecode_command, string_name);
 	dmidecode_pipe = popen(commandline, "r");
 	if (!dmidecode_pipe) {
-		printf_debug("DMI pipe open error\n");
+		msg_perr("DMI pipe open error\n");
 		return NULL;
 	}
 	if (!fgets(answerbuf, DMI_MAX_ANSWER_LEN, dmidecode_pipe)) {
 		if(ferror(dmidecode_pipe)) {
-			printf_debug("DMI pipe read error\n");
+			msg_perr("DMI pipe read error\n");
 			pclose(dmidecode_pipe);
 			return NULL;
 		} else {
@@ -70,7 +70,8 @@ static char *get_dmi_string(const char *string_name)
 	while (!feof(dmidecode_pipe))
 		getc(dmidecode_pipe);
 	if (pclose(dmidecode_pipe) != 0) {
-		printf_debug("DMI pipe close error\n");
+		msg_pinfo("dmidecode execution unsucessfull - continuing "
+			"without DMI info\n");
 		return NULL;
 	}
 
@@ -78,7 +79,7 @@ static char *get_dmi_string(const char *string_name)
 	if (answerbuf[0] != 0 &&
 	    answerbuf[strlen(answerbuf) - 1] == '\n')
 		answerbuf[strlen(answerbuf) - 1] = 0;
-	printf_debug("DMI string %s: \"%s\"\n", string_name, answerbuf);
+	msg_pdbg("DMI string %s: \"%s\"\n", string_name, answerbuf);
 
 	result = strdup(answerbuf);
 	if (!result)
@@ -104,7 +105,7 @@ void dmi_init(void)
 	chassis_type = get_dmi_string("chassis-type");
 	if (chassis_type && (!strcmp(chassis_type, "Notebook") ||
 			     !strcmp(chassis_type, "Portable"))) {
-		printf_debug("Laptop detected via DMI\n");
+		msg_pdbg("Laptop detected via DMI\n");
 		is_laptop = 1;
 	}
 	free(chassis_type);
@@ -126,7 +127,7 @@ static int dmi_compare(const char *value, const char *pattern)
 	int anchored = 0;
 	int patternlen;
 
-	printf_debug("matching %s against %s\n", value, pattern);
+	msg_pspew("matching %s against %s\n", value, pattern);
 	/* The empty string is part of all strings! */
 	if (pattern[0] == 0)
 		return 1;

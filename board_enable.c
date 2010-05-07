@@ -87,7 +87,7 @@ static int enable_flash_decode_superio(void)
 		ret = 0;
 		break;
 	default:
-		printf_debug("Unhandled Super I/O type!\n");
+		msg_pdbg("Unhandled Super I/O type!\n");
 		ret = -1;
 		break;
 	}
@@ -108,7 +108,7 @@ static int w83627hf_gpio24_raise(uint16_t port, const char *name)
 
 	/* Is this the W83627HF? */
 	if (sio_read(port, 0x20) != 0x52) {	/* Super I/O device ID reg. */
-		fprintf(stderr, "\nERROR: %s: W83627HF: Wrong ID: 0x%02X.\n",
+		msg_perr("\nERROR: %s: W83627HF: Wrong ID: 0x%02X.\n",
 			name, sio_read(port, 0x20));
 		w836xx_ext_leave(port);
 		return -1;
@@ -148,7 +148,7 @@ static int w83627thf_gpio4_4_raise(uint16_t port, const char *name)
 
 	/* Is this the W83627THF? */
 	if (sio_read(port, 0x20) != 0x82) {	/* Super I/O device ID reg. */
-		fprintf(stderr, "\nERROR: %s: W83627THF: Wrong ID: 0x%02X.\n",
+		msg_perr("\nERROR: %s: W83627THF: Wrong ID: 0x%02X.\n",
 			name, sio_read(port, 0x20));
 		w836xx_ext_leave(port);
 		return -1;
@@ -253,20 +253,20 @@ static int pc87360_gpio_set(uint8_t gpio, int raise)
         uint8_t id, val;
 
         if (gpio_bank > 4) {
-                fprintf(stderr, "PC87360: Invalid GPIO %d\n", gpio);
+                msg_perr("PC87360: Invalid GPIO %d\n", gpio);
                 return -1;
         }
 
         id = sio_read(0x2E, 0x20);
         if (id != 0xE1) {
-                fprintf(stderr, "PC87360: unexpected ID %02x\n", id);
+                msg_perr("PC87360: unexpected ID %02x\n", id);
                 return -1;
         }
 
         sio_write(0x2E, 0x07, 0x07);		/* Select GPIO device */
         baseport = (sio_read(0x2E, 0x60) << 8) | sio_read(0x2E, 0x61);
         if ((baseport & 0xFFF0) == 0xFFF0 || baseport == 0) {
-                fprintf (stderr, "PC87360: invalid GPIO base address %04x\n",
+                msg_perr("PC87360: invalid GPIO base address %04x\n",
                          baseport);
                 return -1;
         }
@@ -300,7 +300,7 @@ static int via_vt823x_gpio_set(uint8_t gpio, int raise)
 	case 0x3337:	/* VT8237A */
 		break;
 	default:
-		fprintf(stderr, "\nERROR: VT823x ISA bridge not found.\n");
+		msg_perr("\nERROR: VT823x ISA bridge not found.\n");
 		return -1;
 	}
 
@@ -319,7 +319,7 @@ static int via_vt823x_gpio_set(uint8_t gpio, int raise)
 		val |= 0x01;
 		pci_write_byte(dev, 0xE4, val);
 	} else {
-		fprintf(stderr, "\nERROR: "
+		msg_perr("\nERROR: "
 			"VT823x GPIO%02d is not implemented.\n", gpio);
 		return -1;
 	}
@@ -411,7 +411,7 @@ static int board_asus_p5a(const char *name)
 	}
 
 	if (i == ASUSP5A_LOOP) {
-		printf("%s: Unable to contact device.\n", name);
+		msg_perr("%s: Unable to contact device.\n", name);
 		return -1;
 	}
 
@@ -427,7 +427,7 @@ static int board_asus_p5a(const char *name)
 	}
 
 	if ((i == ASUSP5A_LOOP) || !(tmp & 0x10)) {
-		printf("%s: failed to read device.\n", name);
+		msg_perr("%s: failed to read device.\n", name);
 		return -1;
 	}
 
@@ -454,7 +454,7 @@ static int board_asus_p5a(const char *name)
 	}
 
 	if ((i == ASUSP5A_LOOP) || !(tmp & 0x10)) {
-		printf("%s: failed to write to device.\n", name);
+		msg_perr("%s: failed to write to device.\n", name);
 		return -1;
 	}
 
@@ -492,8 +492,7 @@ static int board_shuttle_fn25(const char *name)
 
 	dev = pci_dev_find(0x10DE, 0x0050);	/* NVIDIA CK804 ISA Bridge. */
 	if (!dev) {
-		fprintf(stderr,
-			"\nERROR: NVIDIA nForce4 ISA bridge not found.\n");
+		msg_perr("\nERROR: NVIDIA nForce4 ISA bridge not found.\n");
 		return -1;
 	}
 
@@ -513,7 +512,7 @@ static int nvidia_mcp_gpio_set(int gpio, int raise)
 	uint8_t tmp;
 
 	if ((gpio < 0) || (gpio >= 0x40)) {
-		fprintf(stderr, "\nERROR: unsupported GPIO: %d.\n", gpio);
+		msg_perr("\nERROR: unsupported GPIO: %d.\n", gpio);
 		return -1;
 	}
 
@@ -531,8 +530,7 @@ static int nvidia_mcp_gpio_set(int gpio, int raise)
 	    case 0x0264: /* MCP51 */
 		break;
 	    default:
-		fprintf(stderr,
-			"\nERROR: no NVIDIA LPC/SMBus controller found.\n");
+		msg_perr("\nERROR: no NVIDIA LPC/SMBus controller found.\n");
 		return -1;
 	    }
 	    break;
@@ -661,20 +659,20 @@ static int intel_piix4_gpo_set(unsigned int gpo, int raise)
 
 	dev = pci_dev_find(0x8086, 0x7110);	/* Intel PIIX4 ISA bridge */
 	if (!dev) {
-		fprintf(stderr, "\nERROR: Intel PIIX4 ISA bridge not found.\n");
+		msg_perr("\nERROR: Intel PIIX4 ISA bridge not found.\n");
 		return -1;
 	}
 
 	/* sanity check */
 	if (gpo > 30) {
-		fprintf(stderr, "\nERROR: Intel PIIX4 has no GPO%d.\n", gpo);
+		msg_perr("\nERROR: Intel PIIX4 has no GPO%d.\n", gpo);
 		return -1;
 	}
 
 	/* these are dual function pins which are most likely in use already */
 	if (((gpo >= 1) && (gpo <= 7)) ||
 	    ((gpo >= 9) && (gpo <= 21)) || (gpo == 29)) {
-		fprintf(stderr, "\nERROR: Unsupported PIIX4 GPO%d.\n", gpo);
+		msg_perr("\nERROR: Unsupported PIIX4 GPO%d.\n", gpo);
 		return -1;
 	}
 
@@ -703,7 +701,7 @@ static int intel_piix4_gpo_set(unsigned int gpo, int raise)
 
 	dev = pci_dev_find(0x8086, 0x7113);	/* Intel PIIX4 PM */
 	if (!dev) {
-		fprintf(stderr, "\nERROR: Intel PIIX4 PM not found.\n");
+		msg_perr("\nERROR: Intel PIIX4 PM not found.\n");
 		return -1;
 	}
 
@@ -805,7 +803,7 @@ static int intel_ich_gpio_set(int gpio, int raise)
 	}
 
 	if (!dev) {
-		fprintf(stderr, "\nERROR: No Known Intel LPC Bridge found.\n");
+		msg_perr("\nERROR: No Known Intel LPC Bridge found.\n");
 		return -1;
 	}
 
@@ -823,12 +821,12 @@ static int intel_ich_gpio_set(int gpio, int raise)
 		allowed = (intel_ich_gpio_table[i].bank2 >> (gpio - 64)) & 0x01;
 
 	if (!allowed) {
-		fprintf(stderr, "\nERROR: This Intel LPC Bridge does not allow"
+		msg_perr("\nERROR: This Intel LPC Bridge does not allow"
 			" setting GPIO%02d\n", gpio);
 		return -1;
 	}
 
-	printf("\nIntel ICH LPC Bridge: %sing GPIO%02d.\n",
+	msg_pdbg("\nIntel ICH LPC Bridge: %sing GPIO%02d.\n",
 	       raise ? "Rais" : "Dropp", gpio);
 
 	if (gpio < 32) {
@@ -847,7 +845,7 @@ static int intel_ich_gpio_set(int gpio, int raise)
 		if (dev->device_id > 0x2800) {
 			tmp = INL(base);
 			if (!(tmp & (1 << gpio))) {
-				fprintf(stderr, "\nERROR: This Intel LPC Bridge"
+				msg_perr("\nERROR: This Intel LPC Bridge"
 					" does not allow setting GPIO%02d\n",
 					gpio);
 				return -1;
@@ -879,7 +877,7 @@ static int intel_ich_gpio_set(int gpio, int raise)
 		if (dev->device_id > 0x2800) {
 			tmp = INL(base + 30);
 			if (!(tmp & (1 << gpio))) {
-				fprintf(stderr, "\nERROR: This Intel LPC Bridge"
+				msg_perr("\nERROR: This Intel LPC Bridge"
 					" does not allow setting GPIO%02d\n",
 					gpio + 32);
 				return -1;
@@ -908,7 +906,7 @@ static int intel_ich_gpio_set(int gpio, int raise)
 
 		tmp = INL(base + 40);
 		if (!(tmp & (1 << gpio))) {
-			fprintf(stderr, "\nERROR: This Intel LPC Bridge does "
+			msg_perr("\nERROR: This Intel LPC Bridge does "
 				"not allow setting GPIO%02d\n", gpio + 64);
 			return -1;
 		}
@@ -1051,11 +1049,11 @@ static int via_apollo_gpo_set(int gpio, int raise)
 	/* VT82C686 Power management */
 	dev = pci_dev_find(0x1106, 0x3057);
 	if (!dev) {
-		fprintf(stderr, "\nERROR: VT82C686 PM device not found.\n");
+		msg_perr("\nERROR: VT82C686 PM device not found.\n");
 		return -1;
 	}
 
-	printf("\nVIA Apollo ACPI: %sing GPIO%02d.\n",
+	msg_pdbg("\nVIA Apollo ACPI: %sing GPIO%02d.\n",
 	       raise ? "Rais" : "Dropp", gpio);
 
 	/* select GPO function on multiplexed pins */
@@ -1118,7 +1116,7 @@ static int board_msi_651ml(const char *name)
 
 	dev = pci_dev_find(0x1039, 0x0962);
 	if (!dev) {
-		fprintf(stderr, "Expected south bridge not found\n");
+		msg_perr("Expected south bridge not found\n");
 		return 1;
 	}
 
@@ -1151,7 +1149,7 @@ static uint16_t smsc_find_runtime(uint16_t sio_port, uint16_t chip_id,
 	/* Verify the chip ID. */
 	OUTB(0x55, sio_port);  /* Enable configuration. */
 	if (sio_read(sio_port, 0x20) != chip_id) {
-		fprintf(stderr, "\nERROR: SMSC Super I/O not found.\n");
+		msg_perr("\nERROR: SMSC Super I/O not found.\n");
 		goto out;
 	}
 
@@ -1163,7 +1161,7 @@ static uint16_t smsc_find_runtime(uint16_t sio_port, uint16_t chip_id,
 	}
 
 	if (rt_port == 0) {
-		fprintf(stderr, "\nERROR: "
+		msg_perr("\nERROR: "
 			"Super I/O runtime interface not available.\n");
 	}
 out:
@@ -1183,7 +1181,7 @@ static int board_mitac_6513wu(const char *name)
 
 	dev = pci_dev_find(0x8086, 0x2410);	/* Intel 82801AA ISA bridge */
 	if (!dev) {
-		fprintf(stderr, "\nERROR: Intel 82801AA ISA bridge not found.\n");
+		msg_perr("\nERROR: Intel 82801AA ISA bridge not found.\n");
 		return -1;
 	}
 
@@ -1218,7 +1216,7 @@ static int board_asus_a7v8x(const char *name)
 	w836xx_ext_leave(0x2E);
 
 	if (id != 0x8701) {
-		fprintf(stderr, "\nERROR: IT8703F Super I/O not found.\n");
+		msg_perr("\nERROR: IT8703F Super I/O not found.\n");
 		return -1;
 	}
 
@@ -1229,7 +1227,7 @@ static int board_asus_a7v8x(const char *name)
 	w836xx_ext_leave(0x2E);
 
 	if (!base) {
-		fprintf(stderr, "\nERROR: Failed to read IT8703F Super I/O GPIO"
+		msg_perr("\nERROR: Failed to read IT8703F Super I/O GPIO"
 			" Base.\n");
 		return -1;
 	}
@@ -1259,8 +1257,7 @@ static int it8712f_gpio_set(unsigned int line, int raise)
 	/* Check line */
 	if ((port > 4) || /* also catches unsigned -1 */
 	    ((port < 4) && (line > 7)) || ((port == 4) && (line > 5))) {
-	    fprintf(stderr,
-		    "\nERROR: Unsupported IT8712F GPIO Line %02d.\n", line);
+	    msg_perr("\nERROR: Unsupported IT8712F GPIO Line %02d.\n", line);
 	    return -1;
 	}
 
@@ -1270,7 +1267,7 @@ static int it8712f_gpio_set(unsigned int line, int raise)
 	exit_conf_mode_ite(0x2E);
 
 	if (id != 0x8712) {
-		fprintf(stderr, "\nERROR: IT8712F Super I/O not found.\n");
+		msg_perr("\nERROR: IT8712F Super I/O not found.\n");
 		return -1;
 	}
 
@@ -1281,7 +1278,7 @@ static int it8712f_gpio_set(unsigned int line, int raise)
 	exit_conf_mode_ite(0x2E);
 
 	if (!base) {
-		fprintf(stderr, "\nERROR: Failed to read IT8712F Super I/O GPIO"
+		msg_perr("\nERROR: Failed to read IT8712F Super I/O GPIO"
 			" Base.\n");
 		return -1;
 	}
@@ -1450,10 +1447,10 @@ static struct board_pciid_enable *board_match_coreboot_name(const char *vendor,
 
 		if (partmatch) {
 			/* a second entry has a matching part name */
-			printf("AMBIGUOUS BOARD NAME: %s\n", part);
-			printf("At least vendors '%s' and '%s' match.\n",
+			msg_pinfo("AMBIGUOUS BOARD NAME: %s\n", part);
+			msg_pinfo("At least vendors '%s' and '%s' match.\n",
 			       partmatch->lb_vendor, board->lb_vendor);
-			printf("Please use the full -m vendor:part syntax.\n");
+			msg_perr("Please use the full -m vendor:part syntax.\n");
 			return NULL;
 		}
 		partmatch = board;
@@ -1467,7 +1464,7 @@ static struct board_pciid_enable *board_match_coreboot_name(const char *vendor,
 		 * coreboot table. If it was, the coreboot implementor is
 		 * expected to fix flashrom, too.
 		 */
-		printf("\nUnknown vendor:board from -m option: %s:%s\n\n",
+		msg_perr("\nUnknown vendor:board from -m option: %s:%s\n\n",
 		       vendor, part);
 	}
 	return NULL;
@@ -1507,7 +1504,7 @@ static struct board_pciid_enable *board_match_pci_card_ids(void)
 
 		if (board->dmi_pattern) {
 			if (!has_dmi_support) {
-				fprintf(stderr, "WARNING: Can't autodetect %s %s,"
+				msg_perr("WARNING: Can't autodetect %s %s,"
 				       " DMI info unavailable.\n",
 				       board->vendor_name, board->board_name);
 				continue;
@@ -1536,7 +1533,7 @@ int board_flash_enable(const char *vendor, const char *part)
 
         if (board && board->status == NT) {
                 if (!force_boardenable) {
-                        printf("WARNING: Your mainboard is %s %s, but the mainboard-specific\n"
+                        msg_pinfo("WARNING: Your mainboard is %s %s, but the mainboard-specific\n"
                                "code has not been tested, and thus will not not be executed by default.\n"
                                "Depending on your hardware environment, erasing, writing or even probing\n"
                                "can fail without running the board specific code.\n\n"
@@ -1545,7 +1542,7 @@ int board_flash_enable(const char *vendor, const char *part)
                                board->vendor_name, board->board_name);
                         board = NULL;
                 } else {
-                        printf("NOTE: Running an untested board enable procedure.\n"
+                        msg_pinfo("NOTE: Running an untested board enable procedure.\n"
                                "Please report success/failure to flashrom@flashrom.org.\n");
 		}
         }
@@ -1556,15 +1553,15 @@ int board_flash_enable(const char *vendor, const char *part)
 				board->max_rom_decode_parallel * 1024;
 
 		if (board->enable != NULL) {
-			printf("Disabling flash write protection for "
+			msg_pinfo("Disabling flash write protection for "
 			       "board \"%s %s\"... ", board->vendor_name,
 			       board->board_name);
 
 			ret = board->enable(board->vendor_name);
 			if (ret)
-				printf("FAILED!\n");
+				msg_pinfo("FAILED!\n");
 			else
-				printf("OK.\n");
+				msg_pinfo("OK.\n");
 		}
 	}
 

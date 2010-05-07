@@ -112,29 +112,29 @@ static struct lb_header *find_lb_table(void *base, unsigned long start,
 		    (struct lb_record *)(((char *)base) + addr + sizeof(*head));
 		if (memcmp(head->signature, "LBIO", 4) != 0)
 			continue;
-		printf_debug("Found candidate at: %08lx-%08lx\n",
+		msg_pdbg("Found candidate at: %08lx-%08lx\n",
 			     addr, addr + head->table_bytes);
 		if (head->header_bytes != sizeof(*head)) {
-			fprintf(stderr, "Header bytes of %d are incorrect.\n",
+			msg_perr("Header bytes of %d are incorrect.\n",
 				head->header_bytes);
 			continue;
 		}
 		if (count_lb_records(head) != head->table_entries) {
-			fprintf(stderr, "Bad record count: %d.\n",
+			msg_perr("Bad record count: %d.\n",
 				head->table_entries);
 			continue;
 		}
 		if (compute_checksum((uint8_t *) head, sizeof(*head)) != 0) {
-			fprintf(stderr, "Bad header checksum.\n");
+			msg_perr("Bad header checksum.\n");
 			continue;
 		}
 		if (compute_checksum(recs, head->table_bytes)
 		    != head->table_checksum) {
-			fprintf(stderr, "Bad table checksum: %04x.\n",
+			msg_perr("Bad table checksum: %04x.\n",
 				head->table_checksum);
 			continue;
 		}
-		printf_debug("Found coreboot table at 0x%08lx.\n", addr);
+		msg_pdbg("Found coreboot table at 0x%08lx.\n", addr);
 		return head;
 
 	};
@@ -150,7 +150,7 @@ static void find_mainboard(struct lb_record *ptr, unsigned long addr)
 
 	rec = (struct lb_mainboard *)ptr;
 	max_size = rec->size - sizeof(*rec);
-	printf("Vendor ID: %.*s, part ID: %.*s\n",
+	msg_pdbg("Vendor ID: %.*s, part ID: %.*s\n",
 	       max_size - rec->vendor_idx,
 	       rec->strings + rec->vendor_idx,
 	       max_size - rec->part_number_idx,
@@ -161,7 +161,7 @@ static void find_mainboard(struct lb_record *ptr, unsigned long addr)
 		 rec->strings + rec->part_number_idx);
 
 	if (lb_part) {
-		printf("Overwritten by command line, vendor ID: %s, part ID: %s.\n", lb_vendor, lb_part);
+		msg_pdbg("Overwritten by command line, vendor ID: %s, part ID: %s.\n", lb_vendor, lb_part);
 	} else {
 		partvendor_from_cbtable = 1;
 		lb_part = strdup(part);
@@ -235,16 +235,16 @@ int coreboot_init(void)
 	}
 
 	if (!lb_table) {
-		printf("No coreboot table found.\n");
+		msg_pinfo("No coreboot table found.\n");
 		return -1;
 	}
 
 	addr = ((char *)lb_table) - ((char *)table_area) + start;
-	fprintf(stdout, "coreboot table found at 0x%lx.\n", 
+	msg_pinfo("coreboot table found at 0x%lx.\n", 
 		(unsigned long)lb_table - (unsigned long)table_area + start);
 	rec = (struct lb_record *)(((char *)lb_table) + lb_table->header_bytes);
 	last = (struct lb_record *)(((char *)rec) + lb_table->table_bytes);
-	printf_debug("coreboot header(%d) checksum: %04x table(%d) checksum: %04x entries: %d\n",
+	msg_pdbg("coreboot header(%d) checksum: %04x table(%d) checksum: %04x entries: %d\n",
 	     lb_table->header_bytes, lb_table->header_checksum,
 	     lb_table->table_bytes, lb_table->table_checksum,
 	     lb_table->table_entries);
