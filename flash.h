@@ -548,6 +548,7 @@ int verify_range(struct flashchip *flash, uint8_t *cmpbuf, int start, int len, c
 int need_erase(uint8_t *have, uint8_t *want, int len, enum write_granularity gran);
 char *strcat_realloc(char *dest, const char *src);
 void print_version(void);
+void print_banner(void);
 int selfcheck(void);
 int doit(struct flashchip *flash, int force, char *filename, int read_it, int write_it, int erase_it, int verify_it);
 
