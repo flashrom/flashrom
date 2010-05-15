@@ -37,33 +37,53 @@ void cli_classic_usage(const char *name)
 	int remaining = 0;
 	enum programmer p;
 
-	printf("Usage: %s [-VfLzhR] [-E|-r file|-w file|-v file] [-c chipname]\n"
-              "       [-m [vendor:]part] [-l file] [-i image] [-p programmer]\n\n", name);
-
-	printf("Please note that the command line interface for flashrom will "
-		"change before\nflashrom 1.0. Do not use flashrom in scripts "
-		"or other automated tools without\nchecking that your flashrom"
-		" version won't interpret options in a different way.\n\n");
-
-	printf
-	    ("   -r | --read:                      read flash and save into file\n"
-	     "   -w | --write:                     write file into flash\n"
-	     "   -v | --verify:                    verify flash against file\n"
-	     "   -n | --noverify:                  don't verify flash against file\n"
-	     "   -E | --erase:                     erase flash device\n"
-	     "   -V | --verbose:                   more verbose output\n"
-	     "   -c | --chip <chipname>:           probe only for specified flash chip\n"
-#if INTERNAL_SUPPORT == 1
-	     "   -m | --mainboard <[vendor:]part>: override mainboard settings\n"
-#endif
-	     "   -f | --force:                     force write without checking image\n"
-	     "   -l | --layout <file.layout>:      read ROM layout from file\n"
-	     "   -i | --image <name>:              only flash image name from flash layout\n"
-	     "   -L | --list-supported:            print supported devices\n"
+	printf("Usage: %s [-n] [-V] [-f] [-h|-R|-L|"
 #if PRINT_WIKI_SUPPORT == 1
-	     "   -z | --list-supported-wiki:       print supported devices in wiki syntax\n"
+	         "-z|"
 #endif
-	     "   -p | --programmer <name>:         specify the programmer device");
+	         "-E|-r <file>|-w <file>|-v <file>]\n"
+	       "       [-c <chipname>] [-m [<vendor>:]<part>] [-l <file>]\n"
+	       "       [-i <image>] [-p <programmername>[:<parameters>]]\n",
+	       name);
+
+	printf("Please note that the command line interface for flashrom has "
+	         "changed between\n"
+	       "0.9.1 and 0.9.2 and will change again before flashrom 1.0.\n"
+	       "Do not use flashrom in scripts or other automated tools "
+	         "without checking\n"
+	       "that your flashrom version won't interpret options in a "
+	         "different way.\n\n");
+
+	printf("   -h | --help                       print this help text\n"
+	       "   -R | --version                    print version (release)\n"
+	       "   -r | --read <file>                read flash and save to "
+	         "<file>\n"
+	       "   -w | --write <file>               write <file> to flash\n"
+	       "   -v | --verify <file>              verify flash against "
+	         "<file>\n"
+	       "   -E | --erase                      erase flash device\n"
+	       "   -V | --verbose                    more verbose output\n"
+	       "   -c | --chip <chipname>            probe only for specified "
+	         "flash chip\n"
+#if INTERNAL_SUPPORT == 1
+	       /* FIXME: --mainboard should be a programmer parameter */
+	       "   -m | --mainboard <[vendor:]part>  override mainboard "
+	         "detection\n"
+#endif
+	       "   -f | --force                      force specific operations "
+	         "(see man page)\n"
+	       "   -n | --noverify                   don't auto-verify\n"
+	       "   -l | --layout <file>              read ROM layout from "
+	         "<file>\n"
+	       "   -i | --image <name>               only flash image <name> "
+	         "from flash layout\n"
+	       "   -L | --list-supported             print supported devices\n"
+#if PRINT_WIKI_SUPPORT == 1
+	       "   -z | --list-supported-wiki        print supported devices "
+	         "in wiki syntax\n"
+#endif
+	       "   -p | --programmer <name>[:<param>] specify the programmer "
+	         "device");
 
 	for (p = 0; p < PROGRAMMER_INVALID; p++) {
 		pname = programmer_table[p].name;
@@ -88,12 +108,19 @@ void cli_classic_usage(const char *name)
 			printf(")\n");
 		}
 	}
-		
-	printf(
-	     "   -h | --help:                      print this help text\n"
-	     "   -R | --version:                   print the version (release)\n"
-	     "\nYou can specify one of -E, -r, -w, -v or no operation. If no operation is\n"
-	     "specified, then all that happens is that flash info is dumped.\n\n");
+
+	printf("\nYou can specify one of -h, -R, -L, "
+#if PRINT_WIKI_SUPPORT == 1
+	         "-z, "
+#endif
+	         "-E, -r, -w, -v or no operation.\n"
+	       "If no operation is specified, flashrom will only probe for "
+	         "flash chips.\n\n");
+}
+
+void cli_classic_abort_usage(const char *name)
+{
+	printf("Please run \"%s --help\" for usage info.\n", name);
 	exit(1);
 }
 
@@ -115,16 +142,12 @@ int cli_classic(int argc, char *argv[])
 	int operation_specified = 0;
 	int i;
 
-#if PRINT_WIKI_SUPPORT == 1
-	const char *optstring = "rRwvnVEfc:m:l:i:p:Lzh";
-#else
-	const char *optstring = "rRwvnVEfc:m:l:i:p:Lh";
-#endif
+	const char *optstring = "r:Rw:v:nVEfc:m:l:i:p:Lzh";
 	static struct option long_options[] = {
-		{"read", 0, 0, 'r'},
-		{"write", 0, 0, 'w'},
+		{"read", 1, 0, 'r'},
+		{"write", 1, 0, 'w'},
 		{"erase", 0, 0, 'E'},
-		{"verify", 0, 0, 'v'},
+		{"verify", 1, 0, 'v'},
 		{"noverify", 0, 0, 'n'},
 		{"chip", 1, 0, 'c'},
 		{"mainboard", 1, 0, 'm'},
@@ -133,9 +156,7 @@ int cli_classic(int argc, char *argv[])
 		{"layout", 1, 0, 'l'},
 		{"image", 1, 0, 'i'},
 		{"list-supported", 0, 0, 'L'},
-#if PRINT_WIKI_SUPPORT == 1
 		{"list-supported-wiki", 0, 0, 'z'},
-#endif
 		{"programmer", 1, 0, 'p'},
 		{"help", 0, 0, 'h'},
 		{"version", 0, 0, 'R'},
@@ -147,18 +168,15 @@ int cli_classic(int argc, char *argv[])
 	char *tempstr = NULL;
 
 	print_version();
-
-	if (argc > 1) {
-		/* Yes, print them. */
-		printf_debug("The arguments are:\n");
-		for (i = 1; i < argc; ++i)
-			printf_debug("%s\n", argv[i]);
-	}
+	print_banner();
 
 	if (selfcheck())
 		exit(1);
 
 	setbuf(stdout, NULL);
+	/* FIXME: Delay all operation_specified checks until after command
+	 * line parsing to allow --help overriding everything else.
+	 */
 	while ((opt = getopt_long(argc, argv, optstring,
 				  long_options, &option_index)) != EOF) {
 		switch (opt) {
@@ -166,16 +184,18 @@ int cli_classic(int argc, char *argv[])
 			if (++operation_specified > 1) {
 				fprintf(stderr, "More than one operation "
 					"specified. Aborting.\n");
-				exit(1);
+				cli_classic_abort_usage(argv[0]);
 			}
+			filename = strdup(optarg);
 			read_it = 1;
 			break;
 		case 'w':
 			if (++operation_specified > 1) {
 				fprintf(stderr, "More than one operation "
 					"specified. Aborting.\n");
-				exit(1);
+				cli_classic_abort_usage(argv[0]);
 			}
+			filename = strdup(optarg);
 			write_it = 1;
 			break;
 		case 'v':
@@ -183,20 +203,21 @@ int cli_classic(int argc, char *argv[])
 			if (++operation_specified > 1) {
 				fprintf(stderr, "More than one operation "
 					"specified. Aborting.\n");
-				exit(1);
+				cli_classic_abort_usage(argv[0]);
 			}
 			if (dont_verify_it) {
 				fprintf(stderr, "--verify and --noverify are"
 					"mutually exclusive. Aborting.\n");
-				exit(1);
+				cli_classic_abort_usage(argv[0]);
 			}
+			filename = strdup(optarg);
 			verify_it = 1;
 			break;
 		case 'n':
 			if (verify_it) {
 				fprintf(stderr, "--verify and --noverify are"
 					"mutually exclusive. Aborting.\n");
-				exit(1);
+				cli_classic_abort_usage(argv[0]);
 			}
 			dont_verify_it = 1;
 			break;
@@ -210,36 +231,55 @@ int cli_classic(int argc, char *argv[])
 			if (++operation_specified > 1) {
 				fprintf(stderr, "More than one operation "
 					"specified. Aborting.\n");
-				exit(1);
+				cli_classic_abort_usage(argv[0]);
 			}
 			erase_it = 1;
 			break;
-#if INTERNAL_SUPPORT == 1
 		case 'm':
+#if INTERNAL_SUPPORT == 1
 			tempstr = strdup(optarg);
 			lb_vendor_dev_from_string(tempstr);
-			break;
+#else
+			fprintf(stderr, "Error: Internal programmer support "
+				"was not compiled in and --mainboard only\n"
+				"applies to the internal programmer. Aborting.\n");
+			cli_classic_abort_usage(argv[0]);
 #endif
+			break;
 		case 'f':
 			force = 1;
 			break;
 		case 'l':
 			tempstr = strdup(optarg);
 			if (read_romlayout(tempstr))
-				exit(1);
+				cli_classic_abort_usage(argv[0]);
 			break;
 		case 'i':
 			tempstr = strdup(optarg);
 			find_romentry(tempstr);
 			break;
 		case 'L':
+			if (++operation_specified > 1) {
+				fprintf(stderr, "More than one operation "
+					"specified. Aborting.\n");
+				cli_classic_abort_usage(argv[0]);
+			}
 			list_supported = 1;
 			break;
-#if PRINT_WIKI_SUPPORT == 1
 		case 'z':
+#if PRINT_WIKI_SUPPORT == 1
+			if (++operation_specified > 1) {
+				fprintf(stderr, "More than one operation "
+					"specified. Aborting.\n");
+				cli_classic_abort_usage(argv[0]);
+			}
 			list_supported_wiki = 1;
-			break;
+#else
+			fprintf(stderr, "Error: Wiki output was not compiled "
+				"in. Aborting.\n");
+			cli_classic_abort_usage(argv[0]);
 #endif
+			break;
 		case 'p':
 			for (programmer = 0; programmer < PROGRAMMER_INVALID; programmer++) {
 				name = programmer_table[programmer].name;
@@ -267,20 +307,36 @@ int cli_classic(int argc, char *argv[])
 				}
 			}
 			if (programmer == PROGRAMMER_INVALID) {
-				printf("Error: Unknown programmer %s.\n", optarg);
-				exit(1);
+				fprintf(stderr, "Error: Unknown programmer "
+					"%s.\n", optarg);
+				cli_classic_abort_usage(argv[0]);
 			}
 			break;
 		case 'R':
 			/* print_version() is always called during startup. */
+			if (++operation_specified > 1) {
+				fprintf(stderr, "More than one operation "
+					"specified. Aborting.\n");
+				cli_classic_abort_usage(argv[0]);
+			}
 			exit(0);
 			break;
 		case 'h':
-		default:
+			if (++operation_specified > 1) {
+				fprintf(stderr, "More than one operation "
+					"specified. Aborting.\n");
+				cli_classic_abort_usage(argv[0]);
+			}
 			cli_classic_usage(argv[0]);
+			exit(0);
+			break;
+		default:
+			cli_classic_abort_usage(argv[0]);
 			break;
 		}
 	}
+
+	/* FIXME: Print the actions flashrom will take. */
 
 	if (list_supported) {
 		print_supported();
@@ -294,18 +350,18 @@ int cli_classic(int argc, char *argv[])
 	}
 #endif
 
-	if (read_it && write_it) {
-		printf("Error: -r and -w are mutually exclusive.\n");
-		cli_classic_usage(argv[0]);
+	if (optind < argc) {
+		fprintf(stderr, "Error: Extra parameter found.\n");
+		cli_classic_abort_usage(argv[0]);
 	}
 
-	if (optind < argc)
-		filename = argv[optind++];
-	
-	if (optind < argc) {
-		printf("Error: Extra parameter found.\n");
-		cli_classic_usage(argv[0]);
+#if INTERNAL_SUPPORT == 1
+	if ((programmer != PROGRAMMER_INTERNAL) && (lb_part || lb_vendor)) {
+		fprintf(stderr, "Error: --mainboard requires the internal "
+				"programmer. Aborting.\n");
+		cli_classic_abort_usage(argv[0]);
 	}
+#endif
 
 	if (chip_to_probe) {
 		for (flash = flashchips; flash && flash->name; flash++)
@@ -321,13 +377,15 @@ int cli_classic(int argc, char *argv[])
 		/* Clean up after the check. */
 		flash = NULL;
 	}
-		
+
+	msg_pdbg("Initializing %s programmer\n",
+		 programmer_table[programmer].name);
 	if (programmer_init()) {
 		fprintf(stderr, "Error: Programmer initialization failed.\n");
 		exit(1);
 	}
 
-	// FIXME: Delay calibration should happen in programmer code.
+	/* FIXME: Delay calibration should happen in programmer code. */
 	myusec_calibrate_delay();
 
 	for (i = 0; i < ARRAY_SIZE(flashes); i++) {
@@ -383,7 +441,7 @@ int cli_classic(int argc, char *argv[])
 		printf("No operations were specified.\n");
 		// FIXME: flash writes stay enabled!
 		programmer_shutdown();
-		exit(1);
+		exit(0);
 	}
 
 	if (!filename && !erase_it) {

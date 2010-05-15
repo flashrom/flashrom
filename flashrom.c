@@ -1130,8 +1130,9 @@ void emergency_help_message(void)
 {
 	msg_gerr("Your flash chip is in an unknown state.\n"
 		"Get help on IRC at irc.freenode.net (channel #flashrom) or\n"
-		"mail flashrom@flashrom.org!\n--------------------"
-		"-----------------------------------------------------------\n"
+		"mail flashrom@flashrom.org!\n"
+		"-------------------------------------------------------------"
+		  "------------------\n"
 		"DO NOT REBOOT OR POWEROFF!\n");
 }
 
@@ -1183,8 +1184,15 @@ void print_sysinfo(void)
 
 void print_version(void)
 {
-	msg_ginfo("flashrom v%s\n", flashrom_version);
+	msg_ginfo("flashrom v%s", flashrom_version);
 	print_sysinfo();
+}
+
+void print_banner(void)
+{
+	msg_ginfo("flashrom is free software, get the source code at "
+		    "http://www.flashrom.org\n");
+	msg_ginfo("\n");
 }
 
 int selfcheck(void)
@@ -1247,13 +1255,20 @@ void check_chip_supported(struct flashchip *flash)
 			msg_cinfo("\n");
 		}
 		/* FIXME: This message is designed towards CLI users. */
-		msg_cinfo("Please email a report to flashrom@flashrom.org if any "
-		       "of the above operations\nwork correctly for you with "
-		       "this flash part. Please include the flashrom\noutput "
-		       "with the additional -V option for all operations you "
-		       "tested (-V, -rV,\n-wV, -EV), and mention which "
-		       "mainboard or programmer you tested.\nThanks for your "
-		       "help!\n===\n");
+		msg_cinfo("The test status of this chip may have been updated "
+			    "in the latest development\n"
+			  "version of flashrom. If you are running the latest "
+			    "development version,\n"
+			  "please email a report to flashrom@flashrom.org if "
+			    "any of the above operations\n"
+			  "work correctly for you with this flash part. Please "
+			    "include the flashrom\n"
+			  "output with the additional -V option for all "
+			    "operations you tested (-V, -Vr,\n"
+			  "-Vw, -VE), and mention which mainboard or "
+			    "programmer you tested.\n"
+			  "Thanks for your help!\n"
+			  "===\n");
 	}
 }
 

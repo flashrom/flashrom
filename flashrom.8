@@ -1,9 +1,13 @@
-.TH FLASHROM 8 "May 21, 2009"
+.TH FLASHROM 8 "Apr 29, 2010"
 .SH NAME
 flashrom \- detect, read, write, verify and erase flash chips
 .SH SYNOPSIS
-.B flashrom \fR[\fB\-VfLzhRn\fR] [\fB\-E\fR|\fB\-r\fR file|\fB\-w\fR file|\fB\-v\fR file] [\fB\-c\fR chipname]
-         [\fB\-m\fR [vendor:]part] [\fB\-l\fR file] [\fB\-i\fR image] [\fB\-p\fR programmer]
+.B flashrom \fR[\fB\-n\fR] [\fB\-V\fR] [\fB\-f\fR] [\fB\-h\fR|\fB\-R\fR|\
+\fB\-L\fR|\fB\-z\fR|\fB\-E\fR|\fB\-r\fR <file>|\fB\-w\fR <file>|\
+\fB\-v\fR <file>]
+         [\fB\-c\fR <chipname>] [\fB\-m\fR [<vendor>:]<part>] \
+[\fB\-l\fR <file>]
+         [\fB\-i\fR <image>] [\fB\-p\fR <programmername>[:<parameters>]]
 .SH DESCRIPTION
 .B flashrom
 is a utility for detecting, reading, writing, verifying and erasing flash
@@ -20,9 +24,8 @@ Please note that the command line interface for flashrom will change before
 flashrom 1.0. Do not use flashrom in scripts or other automated tools without
 checking that your flashrom version won't interpret options in a different way.
 .PP
-You can specify one of \-E, \-r, \-w, \-v or no operation.
-If no operation is specified, then all that happens
-is that flash info is dumped and the flash chip is set to writable. It is
+You can specify one of \-h, \-R, \-L, \-z, \-E, \-r, \-w, \-v or no operation.
+If no operation is specified, flashrom will only probe for flash chips. It is
 recommended that if you try flashrom the first time on a system, you run it
 in probe only mode and check the output. Also you are advised to make a
 backup of your current ROM contents with \-r before you try to write a new
@@ -33,19 +36,19 @@ Read flash ROM contents and save them into the given
 .BR <file> .
 .TP
 .B "\-w, \-\-write <file>"
-Write file into flash ROM.
+Write
+.B <file>
+into flash ROM.
 .TP
 .B "\-n, \-\-noverify"
-Do
-.B not
-verify the flash ROM contents after writing them to the chip. Using this
+Skip the automatic verification of flash ROM contents after writing. Using this
 option is
 .B not
-recommended, you should only use it if you know what you are doing and you
+recommended, you should only use it if you know what you are doing and if you
 feel that the time for verification takes too long.
 .sp
 Typical usage is:
-.B "flashrom -wn file"
+.B "flashrom -n -w file"
 .sp
 This option is only useful in combination with
 .BR \-\-write .
@@ -66,14 +69,14 @@ printed by
 .B "flashrom \-L"
 without the vendor name. Please note that the chip name is case sensitive.
 .TP
-.B "\-m, \-\-mainboard" <[vendor:]part>
+.B "\-m, \-\-mainboard" [<vendor>:]<part>
 Override mainboard settings.
 .sp
 flashrom reads the coreboot table to determine the current mainboard. If no
 coreboot table could be read or if you want to override these values, you can
 specify \-m, e.g.:
 .sp
-.B "  flashrom -w --mainboard AGAMI:ARUMA agami_aruma.rom"
+.B "  flashrom --mainboard AGAMI:ARUMA -w agami_aruma.rom"
 .sp
 See the 'Supported mainboards' section in the output of 'flashrom \-L' for
 a list of boards which require the specification of the board name, if no
@@ -108,19 +111,15 @@ the flash chip only. A ROM layout file looks like follows:
 All addresses are offsets within the file, not absolute addresses!
 If you only want to update the normal image in a ROM you can say:
 .sp
-.B "  flashrom -w --layout rom.layout --image normal agami_aruma.rom"
+.B "  flashrom --layout rom.layout --image normal -w agami_aruma.rom"
 .sp
 To update normal and fallback but leave the VGA BIOS alone, say:
 .sp
-.B "  flashrom -w -l rom.layout -i normal \"
+.B "  flashrom -l rom.layout -i normal \"
 .br
-.B "           -i fallback agami_aruma.rom"
+.B "           -i fallback -w agami_aruma.rom"
 .sp
 Currently overlapping sections are not supported.
-.sp
-ROM layouts should replace the \-s and \-e option since they are more
-flexible and they should lead to a ROM update file format with the
-ROM layout and the ROM image in one file (cpio, zip or something?).
 .TP
 .B "\-i, \-\-image <name>"
 Only flash image
@@ -141,7 +140,8 @@ if you have proper means to recover from failure!
 Same as
 .BR \-\-list\-supported ,
 but outputs the supported hardware in MediaWiki syntax, so that it can be
-easily pasted into the wiki page at http://www.flashrom.org/.
+easily pasted into the wiki page at http://www.flashrom.org/. Please note
+that MediaWiki output is not compiled in by default.
 .TP
 .B "\-p, \-\-programmer <name>[:parameter[,parameter[,parameter]]]"
 Specify the programmer device. Currently supported are:
@@ -237,6 +237,7 @@ do not match, it will refuse to write the image unless you specify
 .sp
 If your mainboard uses an ITE IT87 series Super I/O for LPC<->SPI flash bus
 translation, flashrom should autodetect that configuration. You can use
+.sp
 .B "flashrom -p internal:it87spiport=portnum"
 syntax as explained in the
 .B it87spi
@@ -382,6 +383,8 @@ Li-Ta Lo
 .br
 Markus Boas <ryven@ryven.de>
 .br
+Michael Karcher <flashrom@mkarcher.dialup.fu-berlin.de>
+.br
 Nikolay Petukhov <nikolay.petukhov@gmail.com>
 .br
 Peter Stuge <peter@stuge.se>
@@ -391,6 +394,8 @@ Reinder E.N. de Haan <lb_reha@mveas.com>
 Ronald G. Minnich <rminnich@gmail.com>
 .br
 Ronald Hoogenboom <ronald@zonnet.nl>
+.br
+Sean Nelson <audiohacked@gmail.com>
 .br
 Stefan Reinauer <stepan@coresystems.de>
 .br
@@ -406,5 +411,6 @@ Yinghai Lu
 .br
 some others 
 .PP
-This manual page was written by Uwe Hermann <uwe@hermann-uwe.de>.
+This manual page was written by Uwe Hermann <uwe@hermann-uwe.de> and Carl-Daniel
+Hailfinger.
 It is licensed under the terms of the GNU GPL (version 2 or later).

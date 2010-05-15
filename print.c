@@ -247,6 +247,9 @@ void print_supported(void)
 #if SATASII_SUPPORT == 1
 		print_supported_pcidevs(satas_sii);
 #endif
+#if ATAHPT_SUPPORT == 1
+		print_supported_pcidevs(ata_hpt);
+#endif
 }
 
 
