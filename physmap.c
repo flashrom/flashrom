@@ -282,13 +282,17 @@ msr_t rdmsr(int addr)
 
 int wrmsr(int addr, msr_t msr)
 {
+	uint32_t buf[2];
+	buf[0] = msr.lo;
+	buf[1] = msr.hi;
+
 	if (lseek(fd_msr, (off_t) addr, SEEK_SET) == -1) {
 		perror("Could not lseek() to MSR");
 		close(fd_msr);
 		exit(1);
 	}
 
-	if (write(fd_msr, &msr, 8) != 8 && errno != EIO) {
+	if (write(fd_msr, buf, 8) != 8 && errno != EIO) {
 		perror("Could not write() MSR");
 		close(fd_msr);
 		exit(1);
