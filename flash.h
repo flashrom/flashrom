@@ -46,6 +46,10 @@ enum programmer {
 #if NIC3COM_SUPPORT == 1
 	PROGRAMMER_NIC3COM,
 #endif
+#if NICREALTEK_SUPPORT == 1
+	PROGRAMMER_NICREALTEK,
+	PROGRAMMER_NICREALTEK2,
+#endif	
 #if GFXNVIDIA_SUPPORT == 1
 	PROGRAMMER_GFXNVIDIA,
 #endif
@@ -330,7 +334,7 @@ uint32_t pcidev_init(uint16_t vendor_id, uint32_t bar, struct pcidev_status *dev
 /* print.c */
 char *flashbuses_to_text(enum chipbustype bustype);
 void print_supported(void);
-#if (NIC3COM_SUPPORT == 1) || (GFXNVIDIA_SUPPORT == 1) || (DRKAISER_SUPPORT == 1) || (SATASII_SUPPORT == 1) || (ATAHPT_SUPPORT == 1)
+#if (NIC3COM_SUPPORT == 1) || (GFXNVIDIA_SUPPORT == 1) || (DRKAISER_SUPPORT == 1) || (SATASII_SUPPORT == 1) || (ATAHPT_SUPPORT == 1) || (NICREALTEK_SUPPORT == 1)
 void print_supported_pcidevs(struct pcidev_status *devs);
 #endif
 void print_supported_wiki(void);
@@ -461,6 +465,18 @@ void drkaiser_chip_writeb(uint8_t val, chipaddr addr);
 uint8_t drkaiser_chip_readb(const chipaddr addr);
 extern struct pcidev_status drkaiser_pcidev[];
 #endif
+
+/* nicrealtek.c */
+#if NICREALTEK_SUPPORT == 1
+int nicrealtek_init(void);
+int nicsmc1211_init(void);
+int nicrealtek_shutdown(void);
+void nicrealtek_chip_writeb(uint8_t val, chipaddr addr);
+uint8_t nicrealtek_chip_readb(const chipaddr addr);
+extern struct pcidev_status nics_realtek[];
+extern struct pcidev_status nics_realteksmc1211[];
+#endif
+
 
 /* satasii.c */
 #if SATASII_SUPPORT == 1
