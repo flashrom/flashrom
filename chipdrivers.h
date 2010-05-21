@@ -51,6 +51,7 @@ int spi_byte_program(int addr, uint8_t databyte);
 int spi_nbyte_program(int addr, uint8_t *bytes, int len);
 int spi_nbyte_read(int addr, uint8_t *bytes, int len);
 int spi_read_chunked(struct flashchip *flash, uint8_t *buf, int start, int len, int chunksize);
+int spi_write_chunked(struct flashchip *flash, uint8_t *buf, int start, int len, int chunksize);
 int spi_aai_write(struct flashchip *flash, uint8_t *buf);
 
 /* 82802ab.c */
