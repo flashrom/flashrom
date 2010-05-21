@@ -789,9 +789,11 @@ static int intel_ich_gpio_set(int gpio, int raise)
 
 	/* First, look for a known LPC bridge */
 	for (dev = pacc->devices; dev; dev = dev->next) {
-		pci_fill_info(dev, PCI_FILL_CLASS);
+		uint16_t device_class;
+		/* libpci before version 2.2.4 does not store class info. */
+		device_class = pci_read_word(dev, PCI_CLASS_DEVICE);
 		if ((dev->vendor_id == 0x8086) &&
-		    (dev->device_class == 0x0601)) { /* ISA Bridge */
+		    (device_class == 0x0601)) { /* ISA Bridge */
 			/* Is this device in our list? */
 			for (i = 0; intel_ich_gpio_table[i].id; i++)
 				if (dev->device_id == intel_ich_gpio_table[i].id)
