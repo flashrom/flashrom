@@ -47,12 +47,16 @@ enum programmer programmer = PROGRAMMER_DUMMY;
  * if more than one of them is selected. If only one is selected, it is clear
  * that the user wants that one to become the default.
  */
-#if NIC3COM_SUPPORT+GFXNVIDIA_SUPPORT+DRKAISER_SUPPORT+SATASII_SUPPORT+ATAHPT_SUPPORT+FT2232_SPI_SUPPORT+SERPROG_SUPPORT+BUSPIRATE_SPI_SUPPORT+DEDIPROG_SUPPORT > 1
+#if NIC3COM_SUPPORT+GFXNVIDIA_SUPPORT+DRKAISER_SUPPORT+SATASII_SUPPORT+ATAHPT_SUPPORT+FT2232_SPI_SUPPORT+SERPROG_SUPPORT+BUSPIRATE_SPI_SUPPORT+DEDIPROG_SUPPORT+NICREALTEK_SUPPORT > 1
 #error Please enable either CONFIG_DUMMY or CONFIG_INTERNAL or disable support for all external programmers except one.
 #endif
 enum programmer programmer =
 #if NIC3COM_SUPPORT == 1
 	PROGRAMMER_NIC3COM
+#endif
+#if NICREALTEK_SUPPORT == 1
+	PROGRAMMER_NICREALTEK
+	PROGRAMMER_NICREALTEK2
 #endif
 #if GFXNVIDIA_SUPPORT == 1
 	PROGRAMMER_GFXNVIDIA
@@ -158,6 +162,42 @@ const struct programmer_entry programmer_table[] = {
 		.delay			= internal_delay,
 	},
 #endif
+
+#if NICREALTEK_SUPPORT == 1
+	{
+		.name                   = "nicrealtek",
+		.init                   = nicrealtek_init,
+		.shutdown               = nicrealtek_shutdown,
+		.map_flash_region       = fallback_map,
+		.unmap_flash_region     = fallback_unmap,
+		.chip_readb             = nicrealtek_chip_readb,
+		.chip_readw             = fallback_chip_readw,
+		.chip_readl             = fallback_chip_readl,
+		.chip_readn             = fallback_chip_readn,
+		.chip_writeb            = nicrealtek_chip_writeb,
+		.chip_writew            = fallback_chip_writew,
+		.chip_writel            = fallback_chip_writel,
+		.chip_writen            = fallback_chip_writen,
+		.delay                  = internal_delay,
+	},
+	{
+		.name                   = "nicsmc1211",
+		.init                   = nicsmc1211_init,
+		.shutdown               = nicrealtek_shutdown,
+		.map_flash_region       = fallback_map,
+		.unmap_flash_region     = fallback_unmap,
+		.chip_readb             = nicrealtek_chip_readb,
+		.chip_readw             = fallback_chip_readw,
+		.chip_readl             = fallback_chip_readl,
+		.chip_readn             = fallback_chip_readn,
+		.chip_writeb            = nicrealtek_chip_writeb,
+		.chip_writew            = fallback_chip_writew,
+		.chip_writel            = fallback_chip_writel,
+		.chip_writen            = fallback_chip_writen,
+		.delay                  = internal_delay,
+	},
+#endif
+
 
 #if GFXNVIDIA_SUPPORT == 1
 	{

@@ -110,6 +110,9 @@ CONFIG_DUMMY ?= yes
 # Always enable Dr. Kaiser for now.
 CONFIG_DRKAISER ?= yes
 
+# Always enable Realtek NICs for now.
+CONFIG_NICREALTEK ?= yes
+
 # Always enable Bus Pirate SPI for now.
 CONFIG_BUSPIRATESPI ?= yes
 
@@ -178,6 +181,12 @@ endif
 ifeq ($(CONFIG_DRKAISER), yes)
 FEATURE_CFLAGS += -D'DRKAISER_SUPPORT=1'
 PROGRAMMER_OBJS += drkaiser.o
+NEED_PCI := yes
+endif
+
+ifeq ($(CONFIG_NICREALTEK), yes)
+FEATURE_CFLAGS += -D'NICREALTEK_SUPPORT=1'
+PROGRAMMER_OBJS += nicrealtek.o
 NEED_PCI := yes
 endif
 
