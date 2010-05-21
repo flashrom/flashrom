@@ -4,6 +4,7 @@
  * Copyright (C) 2008 Wang Qingpei <Qingpei.Wang@amd.com>
  * Copyright (C) 2008 Joe Bao <Zheng.Bao@amd.com>
  * Copyright (C) 2008 Advanced Micro Devices, Inc.
+ * Copyright (C) 2009, 2010 Carl-Daniel Hailfinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,7 +50,6 @@ int sb600_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 /* FIXME: SB600 can write 5 bytes per transaction. */
 int sb600_spi_write_1(struct flashchip *flash, uint8_t *buf)
 {
-	int i;
 	int total_size = flash->total_size * 1024;
 	int result = 0;
 
@@ -63,19 +63,7 @@ int sb600_spi_write_1(struct flashchip *flash, uint8_t *buf)
 	msg_pinfo("done.\n");
 
 	msg_pinfo("Programming flash");
-	for (i = 0; i < total_size; i++, buf++) {
-		result = spi_nbyte_program(i, buf, 1);
-		if (result) {
-			msg_perr("Write error!\n");
-			return result;
-		}
-
-		/* wait program complete. */
-		if (i % 0x8000 == 0)
-			msg_pspew(".");
-		while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
-			;
-	}
+	result = spi_write_chunked(flash, buf, 0, total_size, 5);
 	msg_pinfo(" done.\n");
 	return result;
 }

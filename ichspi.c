@@ -5,7 +5,7 @@
  * Copyright (C) 2008 Claus Gindhart <claus.gindhart@kontron.com>
  * Copyright (C) 2008 Dominik Geyer <dominik.geyer@kontron.com>
  * Copyright (C) 2008 coresystems GmbH <info@coresystems.de>
- * Copyright (C) 2009 Carl-Daniel Hailfinger
+ * Copyright (C) 2009, 2010 Carl-Daniel Hailfinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -149,8 +149,6 @@ static int generate_opcodes(OPCODES * op);
 static int program_opcodes(OPCODES * op);
 static int run_opcode(OPCODE op, uint32_t offset,
 		      uint8_t datalength, uint8_t * data);
-static int ich_spi_write_page(struct flashchip *flash, uint8_t * bytes,
-			      int offset, int maxdata);
 
 /* for pairing opcodes with their required preop */
 struct preop_opcode_pair {
@@ -636,28 +634,6 @@ static int run_opcode(OPCODE op, uint32_t offset,
 	return -1;
 }
 
-static int ich_spi_write_page(struct flashchip *flash, uint8_t * bytes,
-			      int offset, int maxdata)
-{
-	int page_size = flash->page_size;
-	uint32_t remaining = page_size;
-	int towrite;
-
-	msg_pspew("ich_spi_write_page: offset=%d, number=%d, buf=%p\n",
-		     offset, page_size, bytes);
-
-	for (; remaining > 0; remaining -= towrite) {
-		towrite = min(remaining, maxdata);
-		if (spi_nbyte_program(offset + (page_size - remaining),
-				      &bytes[page_size - remaining], towrite)) {
-			msg_perr("Error writing");
-			return 1;
-		}
-	}
-
-	return 0;
-}
-
 int ich_spi_read(struct flashchip *flash, uint8_t * buf, int start, int len)
 {
 	int maxdata = 64;
@@ -670,11 +646,13 @@ int ich_spi_read(struct flashchip *flash, uint8_t * buf, int start, int len)
 
 int ich_spi_write_256(struct flashchip *flash, uint8_t * buf)
 {
-	int i, j, rc = 0;
+	int i, ret = 0;
 	int total_size = flash->total_size * 1024;
-	int page_size = flash->page_size;
 	int erase_size = 64 * 1024;
 	int maxdata = 64;
+
+	if (spi_controller == SPI_CONTROLLER_VIA)
+		maxdata = 16;
 
 	spi_disable_blockprotect();
 	/* Erase first */
@@ -687,19 +665,15 @@ int ich_spi_write_256(struct flashchip *flash, uint8_t * buf)
 
 	msg_pinfo("Programming page: \n");
 	for (i = 0; i < total_size / erase_size; i++) {
-		if (spi_controller == SPI_CONTROLLER_VIA)
-			maxdata = 16;
-
-		for (j = 0; j < erase_size / page_size; j++) {
-			ich_spi_write_page(flash,
-			   (void *)(buf + (i * erase_size) + (j * page_size)),
-			   (i * erase_size) + (j * page_size), maxdata);
-		}
+		ret = spi_write_chunked(flash, buf + (i * erase_size),
+					i * erase_size, erase_size, maxdata);
+		if (ret)
+			break;
 	}
 
 	msg_pinfo("\n");
 
-	return rc;
+	return ret;
 }
 
 int ich_spi_send_command(unsigned int writecnt, unsigned int readcnt,

@@ -1,7 +1,7 @@
 /*
  * This file is part of the flashrom project.
  *
- * Copyright (C) 2007, 2008, 2009 Carl-Daniel Hailfinger
+ * Copyright (C) 2007, 2008, 2009, 2010 Carl-Daniel Hailfinger
  * Copyright (C) 2008 coresystems GmbH
  *
  * This program is free software; you can redistribute it and/or modify
@@ -874,7 +874,7 @@ int spi_nbyte_read(int address, uint8_t *bytes, int len)
 }
 
 /*
- * Read a complete flash chip.
+ * Read a part of the flash chip.
  * Each page is read separately in chunks with a maximum size of chunksize.
  */
 int spi_read_chunked(struct flashchip *flash, uint8_t *buf, int start, int len, int chunksize)
@@ -904,6 +904,52 @@ int spi_read_chunked(struct flashchip *flash, uint8_t *buf, int start, int len, 
 			rc = spi_nbyte_read(starthere + j, buf + starthere - start + j, toread);
 			if (rc)
 				break;
+		}
+		if (rc)
+			break;
+	}
+
+	return rc;
+}
+
+/*
+ * Write a part of the flash chip.
+ * Each page is written separately in chunks with a maximum size of chunksize.
+ */
+int spi_write_chunked(struct flashchip *flash, uint8_t *buf, int start, int len, int chunksize)
+{
+	int rc = 0;
+	int i, j, starthere, lenhere;
+	/* FIXME: page_size is the wrong variable. We need max_writechunk_size
+	 * in struct flashchip to do this properly. All chips using
+	 * spi_chip_write_256 have page_size set to max_writechunk_size, so
+	 * we're OK for now.
+	 */
+	int page_size = flash->page_size;
+	int towrite;
+
+	/* Warning: This loop has a very unusual condition and body.
+	 * The loop needs to go through each page with at least one affected
+	 * byte. The lowest page number is (start / page_size) since that
+	 * division rounds down. The highest page number we want is the page
+	 * where the last byte of the range lives. That last byte has the
+	 * address (start + len - 1), thus the highest page number is
+	 * (start + len - 1) / page_size. Since we want to include that last
+	 * page as well, the loop condition uses <=.
+	 */
+	for (i = start / page_size; i <= (start + len - 1) / page_size; i++) {
+		/* Byte position of the first byte in the range in this page. */
+		/* starthere is an offset to the base address of the chip. */
+		starthere = max(start, i * page_size);
+		/* Length of bytes in the range in this page. */
+		lenhere = min(start + len, (i + 1) * page_size) - starthere;
+		for (j = 0; j < lenhere; j += chunksize) {
+			towrite = min(chunksize, lenhere - j);
+			rc = spi_nbyte_program(starthere + j, buf + starthere - start + j, towrite);
+			if (rc)
+				break;
+			while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
+				programmer_delay(10);
 		}
 		if (rc)
 			break;

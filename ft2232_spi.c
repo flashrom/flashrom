@@ -2,7 +2,7 @@
  * This file is part of the flashrom project.
  *
  * Copyright (C) 2009 Paul Fox <pgf@laptop.org>
- * Copyright (C) 2009 Carl-Daniel Hailfinger
+ * Copyright (C) 2009, 2010 Carl-Daniel Hailfinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -288,7 +288,6 @@ int ft2232_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 int ft2232_spi_write_256(struct flashchip *flash, uint8_t *buf)
 {
 	int total_size = 1024 * flash->total_size;
-	int i;
 
 	spi_disable_blockprotect();
 	/* Erase first. */
@@ -299,23 +298,7 @@ int ft2232_spi_write_256(struct flashchip *flash, uint8_t *buf)
 	}
 	msg_pinfo("done.\n");
 	msg_pdbg("total_size is %d\n", total_size);
-	for (i = 0; i < total_size; i += 256) {
-		int l, r;
-		if (i + 256 <= total_size)
-			l = 256;
-		else
-			l = total_size - i;
-
-		if ((r = spi_nbyte_program(i, &buf[i], l))) {
-			msg_perr("%s: write fail %d\n", __func__, r);
-			return 1;
-		}
-
-		while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
-			/* loop */;
-	}
-
-	return 0;
+	return spi_write_chunked(flash, buf, 0, total_size, 256);
 }
 
 #endif
