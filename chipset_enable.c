@@ -1354,7 +1354,15 @@ const struct penable chipset_enables[] = {
 	{0x10de, 0x0262, NT, "NVIDIA", "MCP51",		enable_flash_ck804},
 	{0x10de, 0x0263, NT, "NVIDIA", "MCP51",		enable_flash_ck804},
 	{0x10de, 0x0360, OK, "NVIDIA", "MCP55",		enable_flash_mcp55}, /* M57SLI*/
-	{0x10de, 0x0361, OK, "NVIDIA", "MCP55",		enable_flash_mcp55}, /* LPC */
+	/* 10de:0361 is present in Tyan S2915 OEM systems, but not connected to
+	 * the flash chip. Instead, 10de:0364 is connected to the flash chip.
+	 * Until we have PCI device class matching or some fallback mechanism,
+	 * this is needed to get flashrom working on Tyan S2915 and maybe other
+	 * dual-MCP55 boards.
+	 */
+#if 0
+	{0x10de, 0x0361, NT, "NVIDIA", "MCP55",		enable_flash_mcp55}, /* LPC */
+#endif
 	{0x10de, 0x0362, OK, "NVIDIA", "MCP55",		enable_flash_mcp55}, /* LPC */
 	{0x10de, 0x0363, OK, "NVIDIA", "MCP55",		enable_flash_mcp55}, /* LPC */
 	{0x10de, 0x0364, OK, "NVIDIA", "MCP55",		enable_flash_mcp55}, /* LPC */
