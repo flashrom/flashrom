@@ -378,6 +378,9 @@ int cli_classic(int argc, char *argv[])
 		flash = NULL;
 	}
 
+	/* FIXME: Delay calibration should happen in programmer code. */
+	myusec_calibrate_delay();
+
 	msg_pdbg("Initializing %s programmer\n",
 		 programmer_table[programmer].name);
 	if (programmer_init()) {
@@ -386,8 +389,6 @@ int cli_classic(int argc, char *argv[])
 	}
 
 	/* FIXME: Delay calibration should happen in programmer code. */
-	myusec_calibrate_delay();
-
 	for (i = 0; i < ARRAY_SIZE(flashes); i++) {
 		flashes[i] =
 		    probe_flash(i ? flashes[i - 1] + 1 : flashchips, 0);
