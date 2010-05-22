@@ -1447,6 +1447,9 @@ int chipset_flash_enable(void)
 		msg_pinfo("Found chipset \"%s %s\", enabling flash write... ",
 		       chipset_enables[i].vendor_name,
 		       chipset_enables[i].device_name);
+		msg_pdbg("chipset PCI ID is %04x:%04x, ",
+			 chipset_enables[i].vendor_id,
+			 chipset_enables[i].device_id);
 
 		ret = chipset_enables[i].doit(dev,
 					      chipset_enables[i].device_name);
