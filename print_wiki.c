@@ -371,7 +371,7 @@ static int note(const char *vendor, const char *board)
 	return -1;
 }
 
-void print_supported_chipsets_wiki(void)
+static void print_supported_chipsets_wiki(int cols)
 {
 	int i, j, enablescount = 0, color = 1;
 	const struct penable *e;
@@ -389,14 +389,14 @@ void print_supported_chipsets_wiki(void)
 		if (i > 0 && strcmp(e[i].vendor_name, e[i - 1].vendor_name))
 			color = !color;
 
-		printf("|- bgcolor=\"#%s\" valign=\"top\"\n| %s || %s "
+		printf("|- bgcolor=\"#%s\"\n| %s || %s "
 		       "|| %04x:%04x || %s\n", (color) ? "eeeeee" : "dddddd",
 		       e[i].vendor_name, e[i].device_name,
 		       e[i].vendor_id, e[i].device_id,
-		       (e[i].status == OK) ? "{{OK}}" : "?");
+		       (e[i].status == OK) ? "{{OK}}" : "{{?3}}");
 
-		/* Split table in three columns. */
-		if (j >= (enablescount / 3 + 1)) {
+		/* Split table in 'cols' columns. */
+		if (j >= (enablescount / cols + 1)) {
 			printf("\n|}\n\n| valign=\"top\"|\n\n%s", chipset_th);
 			j = 0;
 		}
@@ -429,7 +429,7 @@ static void wiki_helper(const char *heading, const char *status,
 		k = url(b[i].vendor, b[i].name);
 		c = note(b[i].vendor, b[i].name);
 
-		printf("|- bgcolor=\"#%s\" valign=\"top\"\n| %s || %s%s %s%s ||"
+		printf("|- bgcolor=\"#%s\"\n| %s || %s%s %s%s ||"
 		       " {{%s}}", (color) ? "eeeeee" : "dddddd", b[i].vendor,
 		       (k != -1 && u[k].url) ? "[" : "",
 		       (k != -1 && u[k].url) ? u[k].url : "",
@@ -479,17 +479,18 @@ static void wiki_helper2(const char *heading, int cols)
 
 		k = url(b[i].vendor_name, b[i].board_name);
 
-		printf("|- bgcolor=\"#%s\" valign=\"top\"\n| %s || %s%s %s%s "
-		       "|| %s%s%s%s || {{OK}}\n", (color) ? "eeeeee" : "dddddd",
+		printf("|- bgcolor=\"#%s\"\n| %s || %s%s %s%s "
+		       "|| %s%s%s%s || {{%s}}\n", (color) ? "eeeeee" : "dddddd",
 		       b[i].vendor_name, (k != -1 && u[k].url) ? "[" : "",
 		       (k != -1 && u[k].url) ? u[k].url : "", b[i].board_name,
 		       (k != -1 && u[k].url) ? "]" : "",
 		       (b[i].lb_vendor) ? "-m " : "&mdash;",
 		       (b[i].lb_vendor) ? b[i].lb_vendor : "",
 		       (b[i].lb_vendor) ? ":" : "",
-		       (b[i].lb_vendor) ? b[i].lb_part : "");
+		       (b[i].lb_vendor) ? b[i].lb_part : "",
+		       (b[i].status == OK) ? "OK" : "?3");
 
-		/* Split table in three columns. */
+		/* Split table in 'cols' columns. */
 		if (j >= (boardcount / cols + 1)) {
 			printf("\n|}\n\n| valign=\"top\"|\n\n%s", board_th2);
 			j = 0;
@@ -499,11 +500,11 @@ static void wiki_helper2(const char *heading, int cols)
 	printf("\n|}\n\n|}\n");
 }
 
-void print_supported_boards_wiki(void)
+static void print_supported_boards_wiki(void)
 {
 	printf("%s", board_intro);
 	wiki_helper("Known good (worked out of the box)", "OK", 3, boards_ok);
-	wiki_helper2("Known good (with write-enable code in flashrom)", 3);
+	wiki_helper2("Known good (with write-enable code in flashrom)", 2);
 	wiki_helper("Not supported (yet)", "No", 3, boards_bad);
 
 	printf("%s", laptop_intro);
@@ -512,7 +513,7 @@ void print_supported_boards_wiki(void)
 }
 #endif
 
-void print_supported_chips_wiki(void)
+static void print_supported_chips_wiki(int cols)
 {
 	int i = 0, c = 1, chipcount = 0;
 	struct flashchip *f, *old = NULL;
@@ -535,21 +536,21 @@ void print_supported_chips_wiki(void)
 			c = !c;
 
 		t = f->tested;
-		printf("|- bgcolor=\"#%s\" valign=\"top\"\n| %s || %s || %d "
+		printf("|- bgcolor=\"#%s\"\n| %s || %s || %d "
 		       "|| %s || {{%s}} || {{%s}} || {{%s}} || {{%s}}\n",
 		       (c == 1) ? "eeeeee" : "dddddd", f->vendor, f->name,
 		       f->total_size, flashbuses_to_text(f->bustype),
 		       (t & TEST_OK_PROBE) ? "OK" :
-		       (t & TEST_BAD_PROBE) ? "No" : ((c) ? "?2" : "?"),
+		       (t & TEST_BAD_PROBE) ? "No" : "?3",
 		       (t & TEST_OK_READ) ? "OK" :
-		       (t & TEST_BAD_READ) ? "No" : ((c) ? "?2" : "?"),
+		       (t & TEST_BAD_READ) ? "No" : "?3",
 		       (t & TEST_OK_ERASE) ? "OK" :
-		       (t & TEST_BAD_ERASE) ? "No" : ((c) ? "?2" : "?"),
+		       (t & TEST_BAD_ERASE) ? "No" : "?3",
 		       (t & TEST_OK_WRITE) ? "OK" :
-		       (t & TEST_BAD_WRITE) ? "No" : ((c) ? "?2" : "?"));
+		       (t & TEST_BAD_WRITE) ? "No" : "?3");
 
-		/* Split table into three columns. */
-		if (i >= (chipcount / 3 + 1)) {
+		/* Split table into 'cols' columns. */
+		if (i >= (chipcount / cols + 1)) {
 			printf("\n|}\n\n| valign=\"top\"|\n\n%s", chip_th);
 			i = 0;
 		}
@@ -560,7 +561,7 @@ void print_supported_chips_wiki(void)
 	printf("\n|}\n\n|}\n");
 }
 
-void print_supported_pcidevs_wiki(struct pcidev_status *devs)
+static void print_supported_pcidevs_wiki(struct pcidev_status *devs)
 {
 	int i = 0;
 	static int c = 0;
@@ -569,11 +570,11 @@ void print_supported_pcidevs_wiki(struct pcidev_status *devs)
 	c = !c;
 
 	for (i = 0; devs[i].vendor_name != NULL; i++) {
-		printf("|- bgcolor=\"#%s\" valign=\"top\"\n| %s || %s || "
+		printf("|- bgcolor=\"#%s\"\n| %s || %s || "
 		       "%04x:%04x || {{%s}}\n", (c) ? "eeeeee" : "dddddd",
 		       devs[i].vendor_name, devs[i].device_name,
 		       devs[i].vendor_id, devs[i].device_id,
-		       (devs[i].status == NT) ? (c) ? "?2" : "?" : "OK");
+		       (devs[i].status == NT) ? "?3" : "OK");
 	}
 }
 
@@ -583,8 +584,8 @@ void print_supported_wiki(void)
 
 	printf(wiki_header, ctime(&t), flashrom_version);
 #if INTERNAL_SUPPORT == 1
-	print_supported_chips_wiki();
-	print_supported_chipsets_wiki();
+	print_supported_chips_wiki(2);
+	print_supported_chipsets_wiki(3);
 	print_supported_boards_wiki();
 #endif
 	printf("%s", programmer_section);
