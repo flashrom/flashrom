@@ -238,6 +238,10 @@ void print_supported(void)
 #if NIC3COM_SUPPORT == 1
 		print_supported_pcidevs(nics_3com);
 #endif
+#if NICREALTEK_SUPPORT == 1
+		print_supported_pcidevs(nics_realtek);
+		print_supported_pcidevs(nics_realteksmc1211);
+#endif
 #if GFXNVIDIA_SUPPORT == 1
 		print_supported_pcidevs(gfx_nvidia);
 #endif
