@@ -96,6 +96,48 @@ static int enable_flash_decode_superio(void)
 #endif
 
 /**
+ * SMSC FDC37B787: Raise GPIO50
+ */
+
+static int fdc37b787_gpio50_raise(uint16_t port, const char * name)
+{
+	uint8_t id, val;
+
+	OUTB(0x55, port);	/* enter conf mode */
+	id = sio_read(port, 0x20);
+	if (id != 0x44) {
+		fprintf(stderr, "\nERROR: %s: FDC37B787: Wrong ID 0x%02X.\n",
+		        name, id);
+		OUTB(0xAA, port); /* leave conf mode */
+		return -1;
+	}
+
+	sio_write(port, 0x07, 0x08);	/* Select Aux I/O subdevice */
+
+	val = sio_read(port, 0xC8);	/* GP50 */
+	if ((val & 0x1B) != 0x10)	/* output, no invert, GPIO */
+	{
+		fprintf(stderr, "\nERROR: %s: GPIO50 mode 0x%02X unexpected.\n",
+		        name, val);
+		OUTB(0xAA, port);
+		return -1;
+	}
+
+	sio_mask(port, 0xF9, 0x01, 0x01);
+
+	OUTB(0xAA, port);		/* Leave conf mode */
+	return 0;
+}
+
+/**
+ * Suited for Nokia IP530: Intel 440BX + PIIX4 + FDC37B787
+ */
+static int fdc37b787_gpio50_raise_3f0(const char *name)
+{
+	return fdc37b787_gpio50_raise(0x3f0, name);
+}
+
+/**
  * Winbond W83627HF: Raise GPIO24.
  *
  * Suited for:
@@ -1406,6 +1448,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x10DE, 0x005E, 0x1462, 0x7135,  0x10DE, 0x0050, 0x1462, 0x7135, NULL,          "msi",        "k8n-neo3",    "MSI",         "MS-7135 (K8N Neo3)",    0,   OK, w83627thf_gpio4_4_raise_4e},
 	{0x10DE, 0x0270, 0x1462, 0x7207,  0x10DE, 0x0264, 0x1462, 0x7207, NULL,          NULL,         NULL,          "MSI",         "MS-7207 (K8N GM2-L)",   0,   NT, nvidia_mcp_gpio2_raise},
 	{0x10DE, 0x005E, 0x1462, 0x7125,  0x10DE, 0x0052, 0x1462, 0x7125, NULL,          NULL,         NULL,          "MSI",         "K8N Neo4-F",            0,   OK, nvidia_mcp_gpio2_raise},
+	{0x1011, 0x0019, 0xaa55, 0xaa55,  0x8086, 0x7190,      0,      0, NULL,          NULL,         NULL,          "Nokia",       "IP530",                 0,   OK, fdc37b787_gpio50_raise_3f0},
 	{0x1106, 0x3099,      0,      0,  0x1106, 0x3074,      0,      0, NULL,          "shuttle",    "ak31",        "Shuttle",     "AK31",                  0,   OK, w836xx_memw_enable_2e},
 	{0x1106, 0x3104, 0x1297, 0xa238,  0x1106, 0x3059, 0x1297, 0xc063, NULL,          NULL,         NULL,          "Shuttle",     "AK38N",                 256, OK, it8705f_write_enable_2e},
 	{0x10DE, 0x0050, 0x1297, 0x5036,  0x1412, 0x1724, 0x1297, 0x5036, NULL,          NULL,         NULL,          "Shuttle",     "FN25",                  0,   OK, board_shuttle_fn25},
