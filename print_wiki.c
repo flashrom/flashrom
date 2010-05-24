@@ -592,6 +592,10 @@ void print_supported_wiki(void)
 #if NIC3COM_SUPPORT == 1
 	print_supported_pcidevs_wiki(nics_3com);
 #endif
+#if NICREALTEK_SUPPORT == 1
+	print_supported_pcidevs_wiki(nics_realtek);
+	print_supported_pcidevs_wiki(nics_realteksmc1211);
+#endif
 #if GFXNVIDIA_SUPPORT == 1
 	print_supported_pcidevs_wiki(gfx_nvidia);
 #endif

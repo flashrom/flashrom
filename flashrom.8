@@ -152,6 +152,10 @@ Specify the programmer device. Currently supported are:
 .sp
 .BR "* nic3com" " (for flash ROMs on 3COM network cards)"
 .sp
+.BR "* nicrealtek" " (for flash ROMs on Realtek network cards)"
+.sp
+.BR "* nicsmc1211" " (for flash ROMs on RTL8139-compatible SMC2 network cards)"
+.sp
 .BR "* gfxnvidia" " (for flash ROMs on NVIDIA graphics cards)"
 .sp
 .BR "* drkaiser" " (for flash ROMs on Dr. Kaiser PC-Waechter PCI cards)"
@@ -276,7 +280,7 @@ in any order.
 Example:
 .B "flashrom -p dummy:lpc,fwh"
 .TP
-.BR "nic3com" , " gfxnvidia" , " satasii " and " atahpt " programmers
+.BR "nic3com" , " nicrealtek" , " nicsmc1211" , " gfxnvidia" , " satasii " and " atahpt " programmers
 These programmers have an option to specify the PCI address of the card
 your want to use, which must be specified if more than one card supported
 by the selected programmer is installed in your system. The syntax is
