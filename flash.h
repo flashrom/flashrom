@@ -63,7 +63,9 @@ enum programmer {
 	PROGRAMMER_ATAHPT,
 #endif
 #if INTERNAL_SUPPORT == 1
+#if defined(__i386__) || defined(__x86_64__)
 	PROGRAMMER_IT87SPI,
+#endif
 #endif
 #if FT2232_SPI_SUPPORT == 1
 	PROGRAMMER_FT2232SPI,
@@ -407,6 +409,12 @@ void mmio_writel(uint32_t val, void *addr);
 uint8_t mmio_readb(void *addr);
 uint16_t mmio_readw(void *addr);
 uint32_t mmio_readl(void *addr);
+void mmio_le_writeb(uint8_t val, void *addr);
+void mmio_le_writew(uint16_t val, void *addr);
+void mmio_le_writel(uint32_t val, void *addr);
+uint8_t mmio_le_readb(void *addr);
+uint16_t mmio_le_readw(void *addr);
+uint32_t mmio_le_readl(void *addr);
 
 /* programmer.c */
 int noop_shutdown(void);
@@ -603,12 +611,14 @@ int handle_romentries(uint8_t *buffer, struct flashchip *flash);
 enum spi_controller {
 	SPI_CONTROLLER_NONE,
 #if INTERNAL_SUPPORT == 1
+#if defined(__i386__) || defined(__x86_64__)
 	SPI_CONTROLLER_ICH7,
 	SPI_CONTROLLER_ICH9,
 	SPI_CONTROLLER_IT87XX,
 	SPI_CONTROLLER_SB600,
 	SPI_CONTROLLER_VIA,
 	SPI_CONTROLLER_WBSIO,
+#endif
 #endif
 #if FT2232_SPI_SUPPORT == 1
 	SPI_CONTROLLER_FT2232,

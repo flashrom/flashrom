@@ -276,6 +276,7 @@ const struct programmer_entry programmer_table[] = {
 #endif
 
 #if INTERNAL_SUPPORT == 1
+#if defined(__i386__) || defined(__x86_64__)
 	{
 		.name			= "it87spi",
 		.init			= it87spi_init,
@@ -292,6 +293,7 @@ const struct programmer_entry programmer_table[] = {
 		.chip_writen		= fallback_chip_writen,
 		.delay			= internal_delay,
 	},
+#endif
 #endif
 
 #if FT2232_SPI_SUPPORT == 1
@@ -1208,16 +1210,21 @@ void print_sysinfo(void)
 #endif
 #endif
 #ifdef __clang__
-	msg_ginfo(" LLVM %i/clang %i", __llvm__, __clang__);
+	msg_ginfo(" LLVM %i/clang %i, ", __llvm__, __clang__);
 #elif defined(__GNUC__)
 	msg_ginfo(" GCC");
 #ifdef __VERSION__
-	msg_ginfo(" %s", __VERSION__);
+	msg_ginfo(" %s,", __VERSION__);
 #else
-	msg_ginfo(" unknown version");
+	msg_ginfo(" unknown version,");
 #endif
 #else
-	msg_ginfo(" unknown compiler");
+	msg_ginfo(" unknown compiler,");
+#endif
+#if defined (__FLASHROM_LITTLE_ENDIAN__)
+	msg_ginfo(" little endian");
+#else
+	msg_ginfo(" big endian");
 #endif
 	msg_ginfo("\n");
 }
