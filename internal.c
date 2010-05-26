@@ -99,9 +99,11 @@ struct pci_dev *pci_card_find(uint16_t vendor, uint16_t device,
 #endif
 
 #if INTERNAL_SUPPORT == 1
-struct superio superio = {};
 int force_boardenable = 0;
 int force_boardmismatch = 0;
+
+#if defined(__i386__) || defined(__x86_64__)
+struct superio superio = {};
 
 void probe_superio(void)
 {
@@ -112,8 +114,9 @@ void probe_superio(void)
 		superio = probe_superio_winbond();
 #endif
 }
+#endif
 
-int is_laptop;
+int is_laptop = 0;
 
 int internal_init(void)
 {
@@ -166,10 +169,13 @@ int internal_init(void)
 	 * mainboard specific flash enable sequence.
 	 */
 	coreboot_init();
+
+#if defined(__i386__) || defined(__x86_64__)
 	dmi_init();
 
 	/* Probe for the Super I/O chip and fill global struct superio. */
 	probe_superio();
+#endif
 
 	/* Warn if a laptop is detected. */
 	if (is_laptop) {
@@ -203,8 +209,10 @@ int internal_init(void)
 			 "will most likely fail.\n");
 	}
 
+#if defined(__i386__) || defined(__x86_64__)
 	/* Probe for IT87* LPC->SPI translation unconditionally. */
 	it87xx_probe_spi_flash(NULL);
+#endif
 
 	board_flash_enable(lb_vendor, lb_part);
 

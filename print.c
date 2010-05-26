@@ -261,6 +261,7 @@ void print_supported(void)
 /* Please keep this list alphabetically ordered by vendor/board. */
 const struct board_info boards_ok[] = {
 	/* Verified working boards that don't need write-enables. */
+#if defined(__i386__) || defined(__x86_64__)
 	{ "Abit",		"AX8", },
 	{ "Abit",		"Fatal1ty F-I90HD", },
 	{ "Advantech",		"PCM-5820", },
@@ -381,13 +382,14 @@ const struct board_info boards_ok[] = {
 	{ "VIA",		"pc2500e", },
 	{ "VIA",		"PC3500G", },
 	{ "VIA",		"VB700X", },
-
+#endif
 	{},
 };
 
 /* Please keep this list alphabetically ordered by vendor/board. */
 const struct board_info boards_bad[] = {
 	/* Verified non-working boards (for now). */
+#if defined(__i386__) || defined(__x86_64__)
 	{ "Abit",		"IS-10", },
 	{ "ASRock",		"K7VT4A+", },
 	{ "ASUS",		"MEW-AM", },
@@ -405,29 +407,31 @@ const struct board_info boards_bad[] = {
 	{ "Sun",		"Fire x4200", },
 	{ "Sun",		"Fire x4540", },
 	{ "Sun",		"Fire x4600", },
-
+#endif
 	{},
 };
 
 /* Please keep this list alphabetically ordered by vendor/board. */
 const struct board_info laptops_ok[] = {
 	/* Verified working laptops. */
+#if defined(__i386__) || defined(__x86_64__)
 	{ "Lenovo",		"3000 V100 TF05Cxx", },
 	{ "Acer",               "Aspire 1520", },
-
+#endif
 	{},
 };
 
 /* Please keep this list alphabetically ordered by vendor/board. */
 const struct board_info laptops_bad[] = {
 	/* Verified non-working laptops (for now). */
+#if defined(__i386__) || defined(__x86_64__)
 	{ "Acer",		"Aspire One", },
 	{ "ASUS",		"Eee PC 701 4G", },
 	{ "Dell",		"Latitude CPi A366XT", },
 	{ "HP/Compaq",		"nx9010", },
 	{ "IBM/Lenovo",		"Thinkpad T40p", },
 	{ "IBM/Lenovo",		"240", },
-
+#endif
 	{},
 };
 #endif

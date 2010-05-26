@@ -104,6 +104,7 @@ wrong (a working backup flash chip and/or good soldering skills).\n</div>\n";
 /* Please keep these lists alphabetically ordered by vendor/board. */
 const struct board_info_url boards_url[] = {
 	/* Verified working boards that don't need write-enables. */
+#if defined(__i386__) || defined(__x86_64__)
 	{ "Abit",		"AX8",			"http://www.abit.com.tw/page/en/motherboard/motherboard_detail.php?DEFTITLE=Y&fMTYPE=Socket%20939&pMODEL_NAME=AX8" },
 	{ "Abit",		"Fatal1ty F-I90HD",	"http://www.abit.com.tw/page/de/motherboard/motherboard_detail.php?pMODEL_NAME=Fatal1ty+F-I90HD&fMTYPE=LGA775" },
 	{ "Advantech",		"PCM-5820", 		"http://www.emacinc.com/sbc_pc_compatible/pcm_5820.htm" },
@@ -279,8 +280,10 @@ const struct board_info_url boards_url[] = {
 	{ "VIA",		"EPIA-N/NL",		"http://www.via.com.tw/en/products/embedded/ProductDetail.jsp?productLine=1&motherboard_id=221" }, /* EPIA-N link for now */
 	{ "VIA",		"EPIA SP",		"http://www.via.com.tw/en/products/embedded/ProductDetail.jsp?productLine=1&motherboard_id=261" },
 	{ "VIA",		"PC3500G",		"http://www.via.com.tw/en/initiatives/empowered/pc3500_mainboard/index.jsp" },
+#endif
  
 	/* Verified non-working boards (for now). */
+#if defined(__i386__) || defined(__x86_64__)
 	{ "Abit",		"IS-10",		"http://www.abit.com.tw/page/en/motherboard/motherboard_detail.php?pMODEL_NAME=IS-10&fMTYPE=Socket+478" },
 	{ "ASRock",		"K7VT4A+",		"http://www.asrock.com/mb/overview.asp?Model=K7VT4A%%2b&s=" },
 	{ "ASUS",		"MEW-AM",		"ftp://ftp.asus.com.tw/pub/ASUS/mb/sock370/810/mew-am/" },
@@ -298,18 +301,23 @@ const struct board_info_url boards_url[] = {
 	{ "Sun",		"Fire x4150",		"http://www.sun.com/servers/x64/x4150/" },
 	{ "Sun",		"Fire x4200",		"http://www.sun.com/servers/entry/x4200/" },
 	{ "Sun",		"Fire x4600",		"http://www.sun.com/servers/x64/x4600/" },
+#endif
 
 	/* Verified working laptops. */
+#if defined(__i386__) || defined(__x86_64__)
 	{ "Acer",		"Aspire 1520",		"http://support.acer.com/us/en/acerpanam/notebook/0000/Acer/Aspire1520/Aspire1520nv.shtml" },
 	{ "Lenovo",		"3000 V100 TF05Cxx",	"http://www5.pc.ibm.com/europe/products.nsf/products?openagent&brand=Lenovo3000Notebook&series=Lenovo+3000+V+Series#viewallmodelstop" },
+#endif
 
 	/* Verified non-working laptops (for now). */
+#if defined(__i386__) || defined(__x86_64__)
 	{ "Acer",		"Aspire One",		NULL },
 	{ "ASUS",		"Eee PC 701 4G",	"http://www.asus.com/product.aspx?P_ID=h6SPd3tEzLEsrEiS" },
 	{ "Dell",		"Latitude CPi A366XT",	"http://www.coreboot.org/Dell_Latitude_CPi_A366XT" },
 	{ "HP/Compaq",		"nx9010",		"http://h20000.www2.hp.com/bizsupport/TechSupport/Document.jsp?lang=en&cc=us&objectID=c00348514" },
 	{ "IBM/Lenovo",		"Thinkpad T40p",	"http://www.thinkwiki.org/wiki/Category:T40p" },
 	{ "IBM/Lenovo",		"240",			"http://www.stanford.edu/~bresnan//tp240.html" },
+#endif
 
 	{ NULL,			NULL,			0 },
 };
@@ -317,6 +325,7 @@ const struct board_info_url boards_url[] = {
 /* Please keep these lists alphabetically ordered by vendor/board. */
 const struct board_info_notes boards_notes[] = {
 	/* Verified working boards that don't need write-enables. */
+#if defined(__i386__) || defined(__x86_64__)
 	{ "ASI",		"MB-5BLMP",		"Used in the IGEL WinNET III thin client." },
 	{ "ASRock",		"K8S8X",		"The Super I/O isn't found on this board. See http://www.flashrom.org/pipermail/flashrom/2009-November/000937.html." },
 	{ "ASUS",		"A8V-E SE",		"See http://www.coreboot.org/pipermail/coreboot/2007-October/026496.html." },
@@ -324,23 +333,30 @@ const struct board_info_notes boards_notes[] = {
 	{ "BCOM",		"WinNET100",		"Used in the IGEL-316 thin client." },
 	{ "GIGABYTE",		"GA-7ZM",		"Works fine if you remove jumper JP9 on the board and disable the flash protection BIOS option." },
 	{ "ASUS",		"M2N-E",		"If the machine doesn't come up again after flashing, try resetting the NVRAM(CMOS). The MAC address of the onboard network card will change to the value stored in the new image, so backup the old address first. See http://www.flashrom.org/pipermail/flashrom/2009-November/000879.html" },
+#endif
 
 	/* Verified working boards that DO need write-enables. */
+#if defined(__i386__) || defined(__x86_64__)
 	{ "Acer",		"Aspire One",		"See http://www.coreboot.org/pipermail/coreboot/2009-May/048041.html." },
+#endif
 
 	/* Verified non-working boards (for now). */
+#if defined(__i386__) || defined(__x86_64__)
 	{ "MSI",		"MS-6178",		"Immediately powers off if you try to hot-plug the chip. However, this does '''not''' happen if you use coreboot." },
 	{ "MSI",		"MS-7260 (K9N Neo)",	"Interestingly flashrom does not work when the vendor BIOS is booted, but it ''does'' work flawlessly when the machine is booted with coreboot." },
+#endif
 
 	/* Verified working laptops. */
 	/* None which need comments, yet... */
 
 	/* Verified non-working laptops (for now). */
+#if defined(__i386__) || defined(__x86_64__)
 	{ "Acer",		"Aspire One",		"http://www.coreboot.org/pipermail/coreboot/2009-May/048041.html" },
 	{ "ASUS",		"Eee PC 701 4G",	"It seems the chip (25X40VSIG) is behind some SPI flash translation layer (likely in the EC, the ENE KB3310)." },
 	{ "Dell",		"Latitude CPi A366XT",	"The laptop immediately powers off if you try to hot-swap the chip. It's not yet tested if write/erase would work on this laptop." },
 	{ "HP/Compaq",		"nx9010",		"Hangs upon '''flashrom -V''' (needs hard power-cycle then)." },
 	{ "IBM/Lenovo",		"Thinkpad T40p",	"Seems to (partially) work at first, but one block/sector cannot be written which then leaves you with a bricked laptop. Maybe this can be investigated and fixed in software later." },
+#endif
 
 	{ NULL,			NULL,			0 },
 };

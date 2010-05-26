@@ -241,6 +241,8 @@ void *physmap_try_ro(const char *descr, unsigned long phys_addr, size_t len)
 	return physmap_common(descr, phys_addr, len, PHYSMAP_MAYFAIL, PHYSMAP_RO);
 }
 
+#if defined(__i386__) || defined(__x86_64__)
+
 #ifdef __linux__
 /*
  * Reading and writing to MSRs, however requires instructions rdmsr/wrmsr,
@@ -462,4 +464,6 @@ void cleanup_cpu_msr(void)
 #endif
 #endif
 #endif
-
+#else
+/* Does MSR exist on non-x86 architectures? */
+#endif
