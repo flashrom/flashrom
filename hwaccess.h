@@ -24,12 +24,138 @@
 #ifndef __HWACCESS_H__
 #define __HWACCESS_H__ 1
 
+#if defined (__i386__) || defined (__x86_64__)
 #if defined(__GLIBC__)
 #include <sys/io.h>
 #endif
+#endif
+
 #if NEED_PCI == 1
 #include <pci/pci.h>
 #endif
+
+#if defined (__i386__) || defined (__x86_64__)
+
+/* All x86 is little-endian. */
+#define __FLASHROM_LITTLE_ENDIAN__ 1
+
+#elif defined (__mips) || defined (__mips__) || defined (_mips) || defined (mips)
+
+/* MIPS can be either endian. */
+#if defined (__MIPSEL) || defined (__MIPSEL__) || defined (_MIPSEL) || defined (MIPSEL)
+#define __FLASHROM_LITTLE_ENDIAN__ 1
+#elif defined (__MIPSEB) || defined (__MIPSEB__) || defined (_MIPSEB) || defined (MIPSEB)
+#define __FLASHROM_BIG_ENDIAN__ 1
+#endif
+
+#elif defined(__powerpc__) || defined(__powerpc64__) || defined(__ppc__) || defined(__ppc64__)
+
+/* PowerPC can be either endian. */
+#if defined (_BIG_ENDIAN) || defined (__BIG_ENDIAN__)
+#define __FLASHROM_BIG_ENDIAN__ 1
+/* Error checking in case some weird header has #defines for LE as well. */
+#if defined (_LITTLE_ENDIAN) || defined (__LITTLE_ENDIAN__)
+#error Conflicting endianness #define
+#endif
+#else
+#error Little-endian PowerPC #defines are unknown
+#endif
+
+#endif
+
+#if !defined (__FLASHROM_BIG_ENDIAN__) && !defined (__FLASHROM_LITTLE_ENDIAN__)
+/* Nonstandard libc-specific macros for determining endianness. */
+#if defined(__GLIBC__)
+#include <endian.h>
+#if BYTE_ORDER == LITTLE_ENDIAN
+#define __FLASHROM_LITTLE_ENDIAN__ 1
+#elif BYTE_ORDER == BIG_ENDIAN
+#define __FLASHROM_BIG_ENDIAN__ 1
+#endif
+#endif
+#endif
+
+#if !defined (__FLASHROM_BIG_ENDIAN__) && !defined (__FLASHROM_LITTLE_ENDIAN__)
+#error Unable to determine endianness. Please add support for your arch or libc.
+#endif
+
+#define ___constant_swab8(x) ((uint8_t) (				\
+	(((uint8_t)(x) & (uint8_t)0xffU))))
+
+#define ___constant_swab16(x) ((uint16_t) (				\
+	(((uint16_t)(x) & (uint16_t)0x00ffU) << 8) |			\
+	(((uint16_t)(x) & (uint16_t)0xff00U) >> 8)))
+
+#define ___constant_swab32(x) ((uint32_t) (				\
+	(((uint32_t)(x) & (uint32_t)0x000000ffUL) << 24) |		\
+	(((uint32_t)(x) & (uint32_t)0x0000ff00UL) <<  8) |		\
+	(((uint32_t)(x) & (uint32_t)0x00ff0000UL) >>  8) |		\
+	(((uint32_t)(x) & (uint32_t)0xff000000UL) >> 24)))
+
+#define ___constant_swab64(x) ((uint64_t) (				\
+	(((uint64_t)(x) & (uint64_t)0x00000000000000ffULL) << 56) |	\
+	(((uint64_t)(x) & (uint64_t)0x000000000000ff00ULL) << 40) |	\
+	(((uint64_t)(x) & (uint64_t)0x0000000000ff0000ULL) << 24) |	\
+	(((uint64_t)(x) & (uint64_t)0x00000000ff000000ULL) <<  8) |	\
+	(((uint64_t)(x) & (uint64_t)0x000000ff00000000ULL) >>  8) |	\
+	(((uint64_t)(x) & (uint64_t)0x0000ff0000000000ULL) >> 24) |	\
+	(((uint64_t)(x) & (uint64_t)0x00ff000000000000ULL) >> 40) |	\
+	(((uint64_t)(x) & (uint64_t)0xff00000000000000ULL) >> 56)))
+
+#if defined (__FLASHROM_BIG_ENDIAN__)
+
+#define cpu_to_le(bits)							\
+static inline uint##bits##_t cpu_to_le##bits(uint##bits##_t val)	\
+{									\
+	return ___constant_swab##bits(val);				\
+}
+
+cpu_to_le(8)
+cpu_to_le(16)
+cpu_to_le(32)
+cpu_to_le(64)
+
+#define cpu_to_be8
+#define cpu_to_be16
+#define cpu_to_be32
+#define cpu_to_be64
+
+#elif defined (__FLASHROM_LITTLE_ENDIAN__)
+
+#define cpu_to_be(bits)							\
+static inline uint##bits##_t cpu_to_be##bits(uint##bits##_t val)	\
+{									\
+	return ___constant_swab##bits(val);				\
+}
+
+cpu_to_be(8)
+cpu_to_be(16)
+cpu_to_be(32)
+cpu_to_be(64)
+
+#define cpu_to_le8
+#define cpu_to_le16
+#define cpu_to_le32
+#define cpu_to_le64
+
+#else
+
+#error Could not determine endianness.
+
+#endif
+
+#define be_to_cpu8 cpu_to_be8
+#define be_to_cpu16 cpu_to_be16
+#define be_to_cpu32 cpu_to_be32
+#define be_to_cpu64 cpu_to_be64
+#define le_to_cpu8 cpu_to_le8
+#define le_to_cpu16 cpu_to_le16
+#define le_to_cpu32 cpu_to_le32
+#define le_to_cpu64 cpu_to_le64
+
+#if defined (__i386__) || defined (__x86_64__)
+
+#define __FLASHROM_HAVE_OUTB__ 1
 
 /* for iopl and outb under Solaris */
 #if defined (__sun) && (defined(__i386) || defined(__amd64))
@@ -160,6 +286,20 @@ int wrmsr(int addr, msr_t msr);
 typedef struct { uint32_t hi, lo; } msr_t;
 msr_t freebsd_rdmsr(int addr);
 int freebsd_wrmsr(int addr, msr_t msr);
+#endif
+
+#elif defined(__powerpc__) || defined(__powerpc64__) || defined(__ppc__) || defined(__ppc64__)
+
+/* PCI port I/O is not yet implemented on PowerPC. */
+
+#elif defined (__mips) || defined (__mips__) || defined (_mips) || defined (mips)
+
+/* PCI port I/O is not yet implemented on MIPS. */
+
+#else
+
+#error Unknown architecture, please check if it supports PCI port IO.
+
 #endif
 
 #endif /* !__HWACCESS_H__ */

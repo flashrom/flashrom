@@ -172,11 +172,13 @@ int probe_spi_rdid4(struct flashchip *flash)
 	/* only some SPI chipsets support 4 bytes commands */
 	switch (spi_controller) {
 #if INTERNAL_SUPPORT == 1
+#if defined(__i386__) || defined(__x86_64__)
 	case SPI_CONTROLLER_ICH7:
 	case SPI_CONTROLLER_ICH9:
 	case SPI_CONTROLLER_VIA:
 	case SPI_CONTROLLER_SB600:
 	case SPI_CONTROLLER_WBSIO:
+#endif
 #endif
 #if FT2232_SPI_SUPPORT == 1
 	case SPI_CONTROLLER_FT2232:
@@ -996,10 +998,12 @@ int spi_aai_write(struct flashchip *flash, uint8_t *buf)
 
 	switch (spi_controller) {
 #if INTERNAL_SUPPORT == 1
+#if defined(__i386__) || defined(__x86_64__)
 	case SPI_CONTROLLER_WBSIO:
 		msg_cerr("%s: impossible with Winbond SPI masters,"
 				" degrading to byte program\n", __func__);
 		return spi_chip_write_1(flash, buf);
+#endif
 #endif
 	default:
 		break;

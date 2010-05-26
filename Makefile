@@ -124,7 +124,9 @@ CONFIG_PRINT_WIKI ?= no
 
 ifeq ($(CONFIG_INTERNAL), yes)
 FEATURE_CFLAGS += -D'INTERNAL_SUPPORT=1'
-PROGRAMMER_OBJS += chipset_enable.o board_enable.o cbtable.o dmi.o it87spi.o ichspi.o sb600spi.o wbsio_spi.o internal.o
+PROGRAMMER_OBJS += chipset_enable.o board_enable.o cbtable.o dmi.o internal.o
+# FIXME: The PROGRAMMER_OBJS below should only be included on x86.
+PROGRAMMER_OBJS += it87spi.o ichspi.o sb600spi.o wbsio_spi.o
 NEED_PCI := yes
 endif
 
@@ -260,7 +262,7 @@ distclean: clean
 	rm -f .dependencies .features .libdeps
 
 dep:
-	@$(CC) $(CPPFLAGS) $(SVNDEF) -MM *.c > .dependencies
+	@$(CC) $(CPPFLAGS) $(SVNDEF) -MM $(OBJS:.o=.c) > .dependencies
 
 strip: $(PROGRAM)
 	$(STRIP) $(STRIP_ARGS) $(PROGRAM)

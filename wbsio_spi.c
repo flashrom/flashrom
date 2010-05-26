@@ -18,6 +18,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#if defined(__i386__) || defined(__x86_64__)
+
 #include <string.h>
 #include "flash.h"
 #include "chipdrivers.h"
@@ -199,3 +201,5 @@ int wbsio_spi_write_1(struct flashchip *flash, uint8_t *buf)
 
 	return spi_chip_write_1(flash, buf);
 }
+
+#endif

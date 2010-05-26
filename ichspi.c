@@ -33,6 +33,8 @@
  *
  */
 
+#if defined(__i386__) || defined(__x86_64__)
+
 #include <string.h>
 #include "flash.h"
 #include "chipdrivers.h"
@@ -832,3 +834,5 @@ int ich_spi_send_multicommand(struct spi_command *cmds)
 	}
 	return ret;
 }
+
+#endif

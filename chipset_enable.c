@@ -34,6 +34,8 @@
 #include <fcntl.h>
 #include "flash.h"
 
+#if defined(__i386__) || defined(__x86_64__)
+
 extern int ichspi_lock;
 
 static int enable_flash_ali_m1533(struct pci_dev *dev, const char *name)
@@ -1285,8 +1287,11 @@ static int get_flashbase_sc520(struct pci_dev *dev, const char *name)
 	return 0;
 }
 
+#endif
+
 /* Please keep this list alphabetically sorted by vendor/device. */
 const struct penable chipset_enables[] = {
+#if defined(__i386__) || defined(__x86_64__)
 	{0x10B9, 0x1533, OK, "ALi", "M1533",		enable_flash_ali_m1533},
 	{0x1022, 0x7440, OK, "AMD", "AMD-768",		enable_flash_amd8111},
 	{0x1022, 0x7468, OK, "AMD", "AMD8111",		enable_flash_amd8111},
@@ -1425,7 +1430,7 @@ const struct penable chipset_enables[] = {
 	{0x1106, 0x0596, OK, "VIA", "VT82C596",		enable_flash_amd8111},
 	{0x1106, 0x0586, OK, "VIA", "VT82C586A/B",	enable_flash_amd8111},
 	{0x1106, 0x0686, NT, "VIA", "VT82C686A/B",	enable_flash_amd8111},
-
+#endif
 	{},
 };
 

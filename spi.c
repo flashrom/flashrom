@@ -42,6 +42,7 @@ const struct spi_programmer spi_programmer[] = {
 	},
 
 #if INTERNAL_SUPPORT == 1
+#if defined(__i386__) || defined(__x86_64__)
 	{ /* SPI_CONTROLLER_ICH7 */
 		.command = ich_spi_send_command,
 		.multicommand = ich_spi_send_multicommand,
@@ -83,6 +84,7 @@ const struct spi_programmer spi_programmer[] = {
 		.read = wbsio_spi_read,
 		.write_256 = wbsio_spi_write_1,
 	},
+#endif
 #endif
 
 #if FT2232_SPI_SUPPORT == 1
