@@ -36,8 +36,6 @@
 
 #if defined(__i386__) || defined(__x86_64__)
 
-extern int ichspi_lock;
-
 static int enable_flash_ali_m1533(struct pci_dev *dev, const char *name)
 {
 	uint8_t tmp;
@@ -515,8 +513,9 @@ static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
 			msg_pdbg("0x%02x: 0x%08x (SPID%d+4)\n", offs + 4,
 				     mmio_readl(spibar + offs + 4), i);
 		}
+		ichspi_bbar = mmio_readl(spibar + 0x50);
 		msg_pdbg("0x50: 0x%08x (BBAR)\n",
-			     mmio_readl(spibar + 0x50));
+			     ichspi_bbar);
 		msg_pdbg("0x54: 0x%04x     (PREOP)\n",
 			     mmio_readw(spibar + 0x54));
 		msg_pdbg("0x56: 0x%04x     (OPTYPE)\n",
@@ -587,8 +586,9 @@ static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
 			     mmio_readl(spibar + 0x98));
 		msg_pdbg("0x9C: 0x%08x (OPMENU+4)\n",
 			     mmio_readl(spibar + 0x9C));
+		ichspi_bbar = mmio_readl(spibar + 0xA0);
 		msg_pdbg("0xA0: 0x%08x (BBAR)\n",
-			     mmio_readl(spibar + 0xA0));
+			     ichspi_bbar);
 		msg_pdbg("0xB0: 0x%08x (FDOC)\n",
 			     mmio_readl(spibar + 0xB0));
 		if (tmp2 & (1 << 15)) {
