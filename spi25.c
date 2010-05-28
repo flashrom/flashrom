@@ -67,20 +67,20 @@ static int spi_rems(unsigned char *readarr)
 	return 0;
 }
 
-static int spi_res(unsigned char *readarr)
+static int spi_res(unsigned char *readarr, int bytes)
 {
 	unsigned char cmd[JEDEC_RES_OUTSIZE] = { JEDEC_RES, 0, 0, 0 };
 	uint32_t readaddr;
 	int ret;
 
-	ret = spi_send_command(sizeof(cmd), JEDEC_RES_INSIZE, cmd, readarr);
+	ret = spi_send_command(sizeof(cmd), bytes, cmd, readarr);
 	if (ret == SPI_INVALID_ADDRESS) {
 		/* Find the lowest even address allowed for reads. */
 		readaddr = (spi_get_valid_read_addr() + 1) & ~1;
 		cmd[1] = (readaddr >> 16) & 0xff,
 		cmd[2] = (readaddr >> 8) & 0xff,
 		cmd[3] = (readaddr >> 0) & 0xff,
-		ret = spi_send_command(sizeof(cmd), JEDEC_RES_INSIZE, cmd, readarr);
+		ret = spi_send_command(sizeof(cmd), bytes, cmd, readarr);
 	}
 	if (ret)
 		return ret;
@@ -235,12 +235,14 @@ int probe_spi_rems(struct flashchip *flash)
 	return 0;
 }
 
-int probe_spi_res(struct flashchip *flash)
+int probe_spi_res1(struct flashchip *flash)
 {
 	unsigned char readarr[3];
 	uint32_t id2;
 	const unsigned char allff[] = {0xff, 0xff, 0xff};
 	const unsigned char all00[] = {0x00, 0x00, 0x00};
+
+	/* We only want one-byte RES if RDID and REMS are unusable. */
 
 	/* Check if RDID is usable and does not return 0xff 0xff 0xff or
 	 * 0x00 0x00 0x00. In that case, RES is pointless.
@@ -259,13 +261,37 @@ int probe_spi_res(struct flashchip *flash)
 		return 0;
 	}
 
-	if (spi_res(readarr))
+	if (spi_res(readarr, 1))
 		return 0;
 
-	/* FIXME: Handle the case where RES gives a 2-byte response. */
 	id2 = readarr[0];
+
 	msg_cdbg("%s: id 0x%x\n", __func__, id2);
+
 	if (id2 != flash->model_id)
+		return 0;
+
+	/* Print the status register to tell the
+	 * user about possible write protection.
+	 */
+	spi_prettyprint_status_register(flash);
+	return 1;
+}
+
+int probe_spi_res2(struct flashchip *flash)
+{
+	unsigned char readarr[2];
+	uint32_t id1, id2;
+
+	if (spi_res(readarr, 2))
+		return 0;
+
+	id1 = readarr[0];
+	id2 = readarr[1];
+
+	msg_cdbg("%s: id1 0x%x, id2 0x%x\n", __func__, id1, id2);
+
+	if (id1 != flash->manufacture_id || id2 != flash->model_id)
 		return 0;
 
 	/* Print the status register to tell the
