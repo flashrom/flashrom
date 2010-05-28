@@ -663,6 +663,8 @@ int default_spi_send_multicommand(struct spi_command *cmds);
 uint32_t spi_get_valid_read_addr(void);
 
 /* ichspi.c */
+extern int ichspi_lock;
+extern uint32_t ichspi_bbar;
 int ich_init_opcodes(void);
 int ich_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		    const unsigned char *writearr, unsigned char *readarr);
