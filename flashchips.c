@@ -4665,19 +4665,19 @@ struct flashchip flashchips[] = {
 
 	/* The ST M25P05 is a bit of a problem. It has the same ID as the
 	 * ST M25P05-A in RES mode, but supports only 128 byte writes instead
-	 * of 256 byte writes. We rely heavily on the fact that probe_spi_res
+	 * of 256 byte writes. We rely heavily on the fact that probe_spi_res1
 	 * only is successful if RDID does not work.
 	 */
 	{
 		.vendor		= "ST",
 		.name		= "M25P05.RES",
 		.bustype	= CHIP_BUSTYPE_SPI,
-		.manufacture_id	= ST_ID,
+		.manufacture_id	= 0, /* Not used. */
 		.model_id	= ST_M25P05_RES,
 		.total_size	= 64,
 		.page_size	= 256,
 		.tested		= TEST_UNTESTED,
-		.probe		= probe_spi_res,
+		.probe		= probe_spi_res1,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
 		{
@@ -4723,12 +4723,12 @@ struct flashchip flashchips[] = {
 		.vendor		= "ST",
 		.name		= "M25P10.RES",
 		.bustype	= CHIP_BUSTYPE_SPI,
-		.manufacture_id	= ST_ID,
+		.manufacture_id	= 0, /* Not used. */
 		.model_id	= ST_M25P10_RES,
 		.total_size	= 128,
 		.page_size	= 256,
 		.tested		= TEST_UNTESTED,
-		.probe		= probe_spi_res,
+		.probe		= probe_spi_res1,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
 		{
@@ -4798,12 +4798,12 @@ struct flashchip flashchips[] = {
 		.vendor		= "ST",
 		.name		= "M25P40-old",
 		.bustype	= CHIP_BUSTYPE_SPI,
-		.manufacture_id	= ST_ID,
+		.manufacture_id	= 0, /* Not used. */
 		.model_id	= ST_M25P40_RES,
 		.total_size	= 512,
 		.page_size	= 256,
 		.tested		= TEST_UNTESTED,
-		.probe		= probe_spi_res,
+		.probe		= probe_spi_res1,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
 		{

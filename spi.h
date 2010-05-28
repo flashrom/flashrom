@@ -27,6 +27,7 @@
 /* Read Electronic ID */
 #define JEDEC_RDID		0x9f
 #define JEDEC_RDID_OUTSIZE	0x01
+/* INSIZE may be 0x04 for some chips*/
 #define JEDEC_RDID_INSIZE	0x03
 
 /* AT25F512A has bit 3 as don't care bit in commands */
@@ -42,6 +43,7 @@
 /* Read Electronic Signature */
 #define JEDEC_RES		0xab
 #define JEDEC_RES_OUTSIZE	0x04
+/* INSIZE may be 0x02 for some chips*/
 #define JEDEC_RES_INSIZE	0x01
 
 /* Write Enable */
