@@ -103,6 +103,8 @@
 /* ICH SPI configuration lock-down. May be set during chipset enabling. */
 int ichspi_lock = 0;
 
+uint32_t ichspi_bbar = 0;
+
 typedef struct _OPCODE {
 	uint8_t opcode;		//This commands spi opcode
 	uint8_t spi_type;	//This commands spi type
@@ -327,6 +329,34 @@ int program_opcodes(OPCODES * op)
 	return 0;
 }
 
+/*
+ * Try to set BBAR (BIOS Base Address Register), but read back the value in case
+ * it didn't stick.
+ */
+void ich_set_bbar(uint32_t minaddr)
+{
+	switch (spi_controller) {
+	case SPI_CONTROLLER_ICH7:
+		mmio_writel(minaddr, spibar + 0x50);
+		ichspi_bbar = mmio_readl(spibar + 0x50);
+		/* We don't have any option except complaining. */
+		if (ichspi_bbar != minaddr)
+			msg_perr("Setting BBAR failed!\n");
+		break;
+	case SPI_CONTROLLER_ICH9:
+		mmio_writel(minaddr, spibar + 0xA0);
+		ichspi_bbar = mmio_readl(spibar + 0xA0);
+		/* We don't have any option except complaining. */
+		if (ichspi_bbar != minaddr)
+			msg_perr("Setting BBAR failed!\n");
+		break;
+	default:
+		/* Not sure if BBAR actually exists on VIA. */
+		msg_pdbg("Setting BBAR is not implemented for VIA yet.\n");
+		break;
+	}
+}
+
 /* This function generates OPCODES from or programs OPCODES to ICH according to
  * the chipset's SPI configuration lock.
  *
@@ -341,13 +371,18 @@ int ich_init_opcodes(void)
 		return 0;
 
 	if (ichspi_lock) {
-		msg_pdbg("Generating OPCODES... ");
+		msg_pdbg("Reading OPCODES... ");
 		curopcodes_done = &O_EXISTING;
 		rc = generate_opcodes(curopcodes_done);
 	} else {
 		msg_pdbg("Programming OPCODES... ");
 		curopcodes_done = &O_ST_M25P;
 		rc = program_opcodes(curopcodes_done);
+		/* Technically not part of opcode init, but it allows opcodes
+		 * to run without transaction errors by setting the lowest
+		 * allowed address to zero.
+		 */
+		ich_set_bbar(0);
 	}
 
 	if (rc) {
@@ -743,6 +778,19 @@ int ich_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	    opcode->spi_type == SPI_OPCODE_TYPE_WRITE_WITH_ADDRESS) {
 		addr = (writearr[1] << 16) |
 		    (writearr[2] << 8) | (writearr[3] << 0);
+		switch (spi_controller) {
+		case SPI_CONTROLLER_ICH7:
+		case SPI_CONTROLLER_ICH9:
+			if (addr < ichspi_bbar) {
+				msg_perr("%s: Address 0x%06x below allowed "
+					 "range 0x%06x-0xffffff\n", __func__,
+					 addr, ichspi_bbar);
+				return SPI_INVALID_ADDRESS;
+			}
+			break;
+		default:
+			break;
+		}
 	}
 
 	/* translate read/write array/count */

@@ -207,8 +207,22 @@ int spi_chip_write_256(struct flashchip *flash, uint8_t *buf)
 	return spi_programmer[spi_controller].write_256(flash, buf);
 }
 
+/*
+ * Get the lowest allowed address for read accesses. This often happens to
+ * be the lowest allowed address for all commands which take an address.
+ * This is a programmer limitation.
+ */
 uint32_t spi_get_valid_read_addr(void)
 {
-	/* Need to return BBAR for ICH chipsets. */
-	return 0;
+	switch (spi_controller) {
+#if INTERNAL_SUPPORT == 1
+#if defined(__i386__) || defined(__x86_64__)
+	case SPI_CONTROLLER_ICH7:
+		/* Return BBAR for ICH chipsets. */
+		return ichspi_bbar;
+#endif
+#endif
+	default:
+		return 0;
+	}
 }
