@@ -20,6 +20,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#include <unistd.h>
+#include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -310,8 +312,8 @@ int wrmsr(int addr, msr_t msr)
 int setup_cpu_msr(int cpu)
 {
 	char msrfilename[64];
-	memset(msrfilename, 0, 64);
-	sprintf(msrfilename, "/dev/cpu/%d/msr", cpu);
+	memset(msrfilename, 0, sizeof(msrfilename));
+	snprintf(msrfilename, sizeof(msrfilename), "/dev/cpu/%d/msr", cpu);
 
 	if (fd_msr != -1) {
 		msg_pinfo("MSR was already initialized\n");
@@ -393,8 +395,8 @@ int wrmsr(int addr, msr_t msr)
 int setup_cpu_msr(int cpu)
 {
 	char msrfilename[64];
-	memset(msrfilename, 0, 64);
-	sprintf(msrfilename, "/dev/cpu%d", cpu);
+	memset(msrfilename, 0, sizeof(msrfilename));
+	snprintf(msrfilename, sizeof(msrfilename), "/dev/cpu%d", cpu);
 
 	if (fd_msr != -1) {
 		msg_pinfo("MSR was already initialized\n");

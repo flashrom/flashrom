@@ -20,7 +20,6 @@
 
 #if defined(__i386__) || defined(__x86_64__)
 
-#include <string.h>
 #include "flash.h"
 #include "chipdrivers.h"
 #include "spi.h"

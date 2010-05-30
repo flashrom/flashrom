@@ -24,14 +24,16 @@
 #ifndef __FLASH_H__
 #define __FLASH_H__ 1
 
-#include <unistd.h>
 #include <stdint.h>
-#include <stdio.h>
 #include "hwaccess.h"
 #ifdef _WIN32
 #include <windows.h>
 #undef min
 #undef max
+#endif
+
+#ifndef NULL
+#define NULL ((void *) 0)
 #endif
 
 typedef unsigned long chipaddr;
@@ -556,7 +558,6 @@ extern unsigned long flashbase;
 extern int verbose;
 extern const char *flashrom_version;
 extern char *chip_to_probe;
-#define printf_debug(x...) { if (verbose) printf(x); }
 void map_flash_registers(struct flashchip *flash);
 int read_memmapped(struct flashchip *flash, uint8_t *buf, int start, int len);
 int erase_flash(struct flashchip *flash);

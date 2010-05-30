@@ -18,7 +18,6 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#include <stdlib.h>
 #include "flash.h"
 
 /* No-op shutdown() for programmers which don't need special handling */

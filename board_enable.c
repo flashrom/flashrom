@@ -25,7 +25,6 @@
  */
 
 #include <string.h>
-#include <fcntl.h>
 #include "flash.h"
 
 #if defined(__i386__) || defined(__x86_64__)
@@ -107,8 +106,8 @@ static int fdc37b787_gpio50_raise(uint16_t port, const char * name)
 	OUTB(0x55, port);	/* enter conf mode */
 	id = sio_read(port, 0x20);
 	if (id != 0x44) {
-		fprintf(stderr, "\nERROR: %s: FDC37B787: Wrong ID 0x%02X.\n",
-		        name, id);
+		msg_perr("\nERROR: %s: FDC37B787: Wrong ID 0x%02X.\n",
+			 name, id);
 		OUTB(0xAA, port); /* leave conf mode */
 		return -1;
 	}
@@ -118,8 +117,8 @@ static int fdc37b787_gpio50_raise(uint16_t port, const char * name)
 	val = sio_read(port, 0xC8);	/* GP50 */
 	if ((val & 0x1B) != 0x10)	/* output, no invert, GPIO */
 	{
-		fprintf(stderr, "\nERROR: %s: GPIO50 mode 0x%02X unexpected.\n",
-		        name, val);
+		msg_perr("\nERROR: %s: GPIO50 mode 0x%02X unexpected.\n",
+			 name, val);
 		OUTB(0xAA, port);
 		return -1;
 	}
