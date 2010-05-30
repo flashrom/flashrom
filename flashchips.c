@@ -6086,7 +6086,7 @@ struct flashchip flashchips[] = {
 		.model_id	= W_39V040FA,
 		.total_size	= 512,
 		.page_size	= 64 * 1024,
-		.feature_bits	= FEATURE_EITHER_RESET,
+		.feature_bits	= FEATURE_REGISTERMAP | FEATURE_EITHER_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= 10, 
@@ -6103,6 +6103,8 @@ struct flashchip flashchips[] = {
 				.block_erase = erase_chip_block_jedec,
 			}
 		},
+		.printlock	= printlock_sst_fwhub,
+		.unlock		= unlock_sst_fwhub,
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
 	},
