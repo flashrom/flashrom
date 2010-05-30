@@ -19,6 +19,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#include <unistd.h>
 #include <sys/time.h>
 #include <stdlib.h>
 #include <limits.h>
@@ -63,7 +64,7 @@ void myusec_calibrate_delay(void)
 	unsigned long timeusec;
 	int i, tries = 0;
 
-	printf("Calibrating delay loop... ");
+	msg_pinfo("Calibrating delay loop... ");
 
 recalibrate:
 	count = 1000;
@@ -113,7 +114,7 @@ recalibrate:
 	timeusec = measure_delay(10000);
 	msg_pdbg("10000 myus = %ld us, ", timeusec);
 
-	printf("OK.\n");
+	msg_pinfo("OK.\n");
 }
 
 void internal_delay(int usecs)

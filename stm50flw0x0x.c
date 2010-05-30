@@ -27,8 +27,6 @@
  * ST M50FLW080B (not yet tested)
  */
 
-#include <string.h>
-#include <stdlib.h>
 #include "flash.h"
 #include "flashchips.h"
 #include "chipdrivers.h"
