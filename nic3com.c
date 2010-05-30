@@ -21,8 +21,6 @@
 #if defined(__i386__) || defined(__x86_64__)
 
 #include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
 #include "flash.h"
 
 #define BIOS_ROM_ADDR		0x04

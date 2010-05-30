@@ -22,8 +22,6 @@
 
 /* Adapted from the Intel FW hub stuff for 82802ax parts. */
 
-#include <stdlib.h>
-#include <string.h>
 #include "flash.h"
 #include "chipdrivers.h"
 

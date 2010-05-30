@@ -18,6 +18,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
@@ -73,7 +74,7 @@ int show_id(uint8_t *bios, int size, int force)
 	mb_vendor_offset = *(walk - 2);
 	if ((*walk) == 0 || ((*walk) & 0x3ff) != 0 || (*walk) > size ||
 	    mb_part_offset > size || mb_vendor_offset > size) {
-		printf("Flash image seems to be a legacy BIOS. Disabling checks.\n");
+		msg_pinfo("Flash image seems to be a legacy BIOS. Disabling checks.\n");
 		return 0;
 	}
 
@@ -81,25 +82,25 @@ int show_id(uint8_t *bios, int size, int force)
 	mb_vendor = (char *)(bios + size - mb_vendor_offset);
 	if (!isprint((unsigned char)*mb_part) ||
 	    !isprint((unsigned char)*mb_vendor)) {
-		printf("Flash image seems to have garbage in the ID location."
+		msg_pinfo("Flash image seems to have garbage in the ID location."
 		       " Disabling checks.\n");
 		return 0;
 	}
 
-	printf_debug("coreboot last image size "
+	msg_pdbg("coreboot last image size "
 		     "(not ROM size) is %d bytes.\n", *walk);
 
 	mainboard_part = strdup(mb_part);
 	mainboard_vendor = strdup(mb_vendor);
-	printf_debug("Manufacturer: %s\n", mainboard_vendor);
-	printf_debug("Mainboard ID: %s\n", mainboard_part);
+	msg_pdbg("Manufacturer: %s\n", mainboard_vendor);
+	msg_pdbg("Mainboard ID: %s\n", mainboard_part);
 
 	/*
 	 * If lb_vendor is not set, the coreboot table was
 	 * not found. Nor was -m VENDOR:PART specified.
 	 */
 	if (!lb_vendor || !lb_part) {
-		printf("Note: If the following flash access fails, "
+		msg_pinfo("Note: If the following flash access fails, "
 		       "try -m <vendor>:<mainboard>.\n");
 		return 0;
 	}
@@ -109,13 +110,13 @@ int show_id(uint8_t *bios, int size, int force)
 	 */
 	if (!strcasecmp(mainboard_vendor, lb_vendor) &&
 	    !strcasecmp(mainboard_part, lb_part)) {
-		printf_debug("This firmware image matches this mainboard.\n");
+		msg_pdbg("This firmware image matches this mainboard.\n");
 	} else {
 		if (force_boardmismatch) {
-			printf("WARNING: This firmware image does not "
+			msg_pinfo("WARNING: This firmware image does not "
 			       "seem to fit to this machine - forcing it.\n");
 		} else {
-			printf("ERROR: Your firmware image (%s:%s) does not "
+			msg_pinfo("ERROR: Your firmware image (%s:%s) does not "
 			       "appear to\n       be correct for the detected "
 			       "mainboard (%s:%s)\n\nOverride with -p internal:"
 			       "boardmismatch=force if you are absolutely sure "
@@ -141,7 +142,7 @@ int read_romlayout(char *name)
 	romlayout = fopen(name, "r");
 
 	if (!romlayout) {
-		fprintf(stderr, "ERROR: Could not open ROM layout (%s).\n",
+		msg_gerr("ERROR: Could not open ROM layout (%s).\n",
 			name);
 		return -1;
 	}
@@ -159,7 +160,7 @@ int read_romlayout(char *name)
 		tstr1 = strtok(tempstr, ":");
 		tstr2 = strtok(NULL, ":");
 		if (!tstr1 || !tstr2) {
-			fprintf(stderr, "Error parsing layout file.\n");
+			msg_gerr("Error parsing layout file.\n");
 			fclose(romlayout);
 			return 1;
 		}
@@ -170,7 +171,7 @@ int read_romlayout(char *name)
 	}
 
 	for (i = 0; i < romimages; i++) {
-		printf_debug("romlayout %08x - %08x named %s\n",
+		msg_gdbg("romlayout %08x - %08x named %s\n",
 			     rom_entries[i].start,
 			     rom_entries[i].end, rom_entries[i].name);
 	}
@@ -187,16 +188,16 @@ int find_romentry(char *name)
 	if (!romimages)
 		return -1;
 
-	printf("Looking for \"%s\"... ", name);
+	msg_ginfo("Looking for \"%s\"... ", name);
 
 	for (i = 0; i < romimages; i++) {
 		if (!strcmp(rom_entries[i].name, name)) {
 			rom_entries[i].included = 1;
-			printf("found.\n");
+			msg_ginfo("found.\n");
 			return i;
 		}
 	}
-	printf("not found.\n");	// Not found. Error.
+	msg_ginfo("not found.\n");	// Not found. Error.
 
 	return -1;
 }

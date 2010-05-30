@@ -26,8 +26,6 @@
  *  - Order number: 290658-004
  */
 
-#include <string.h>
-#include <stdlib.h>
 #include "flash.h"
 #include "chipdrivers.h"
 

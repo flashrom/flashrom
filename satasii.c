@@ -21,7 +21,6 @@
 /* Datasheets can be found on http://www.siliconimage.com. Great thanks! */
 
 #include <stdlib.h>
-#include <string.h>
 #include "flash.h"
 
 #define PCI_VENDOR_ID_SII	0x1095

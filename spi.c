@@ -22,7 +22,6 @@
  * Contains the generic SPI framework
  */
 
-#include <string.h>
 #include "flash.h"
 #include "flashchips.h"
 #include "chipdrivers.h"

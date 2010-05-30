@@ -19,8 +19,6 @@
  */
 
 #include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
 #include "flash.h"
 
 #define PCI_VENDOR_ID_DRKAISER		0x1803
