@@ -255,8 +255,10 @@ TAROPTIONS = $(shell LC_ALL=C tar --version|grep -q GNU && echo "--owner=root --
 %.o: %.c .features
 	$(CC) $(CFLAGS) $(CPPFLAGS) $(FEATURE_CFLAGS) $(SVNDEF) -o $@ -c $<
 
+# Make sure to add all names of generated binaries here.
+# This includes all frontends and libflashrom.
 clean:
-	rm -f $(PROGRAM) *.o
+	rm -f $(PROGRAM) $(PROGRAM).exe *.o
 
 distclean: clean
 	rm -f .dependencies .features .libdeps
