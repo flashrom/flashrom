@@ -171,7 +171,7 @@ int probe_spi_rdid4(struct flashchip *flash)
 {
 	/* only some SPI chipsets support 4 bytes commands */
 	switch (spi_controller) {
-#if INTERNAL_SUPPORT == 1
+#if CONFIG_INTERNAL == 1
 #if defined(__i386__) || defined(__x86_64__)
 	case SPI_CONTROLLER_ICH7:
 	case SPI_CONTROLLER_ICH9:
@@ -180,16 +180,16 @@ int probe_spi_rdid4(struct flashchip *flash)
 	case SPI_CONTROLLER_WBSIO:
 #endif
 #endif
-#if FT2232_SPI_SUPPORT == 1
+#if CONFIG_FT2232_SPI == 1
 	case SPI_CONTROLLER_FT2232:
 #endif
-#if DUMMY_SUPPORT == 1
+#if CONFIG_DUMMY == 1
 	case SPI_CONTROLLER_DUMMY:
 #endif
-#if BUSPIRATE_SPI_SUPPORT == 1
+#if CONFIG_BUSPIRATE_SPI == 1
 	case SPI_CONTROLLER_BUSPIRATE:
 #endif
-#if DEDIPROG_SUPPORT == 1
+#if CONFIG_DEDIPROG == 1
 	case SPI_CONTROLLER_DEDIPROG:
 #endif
 		return probe_spi_rdid_generic(flash, 4);
@@ -1023,7 +1023,7 @@ int spi_aai_write(struct flashchip *flash, uint8_t *buf)
 	int result;
 
 	switch (spi_controller) {
-#if INTERNAL_SUPPORT == 1
+#if CONFIG_INTERNAL == 1
 #if defined(__i386__) || defined(__x86_64__)
 	case SPI_CONTROLLER_WBSIO:
 		msg_cerr("%s: impossible with Winbond SPI masters,"

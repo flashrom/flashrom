@@ -40,7 +40,7 @@ const struct spi_programmer spi_programmer[] = {
 		.write_256 = NULL,
 	},
 
-#if INTERNAL_SUPPORT == 1
+#if CONFIG_INTERNAL == 1
 #if defined(__i386__) || defined(__x86_64__)
 	{ /* SPI_CONTROLLER_ICH7 */
 		.command = ich_spi_send_command,
@@ -86,7 +86,7 @@ const struct spi_programmer spi_programmer[] = {
 #endif
 #endif
 
-#if FT2232_SPI_SUPPORT == 1
+#if CONFIG_FT2232_SPI == 1
 	{ /* SPI_CONTROLLER_FT2232 */
 		.command = ft2232_spi_send_command,
 		.multicommand = default_spi_send_multicommand,
@@ -95,7 +95,7 @@ const struct spi_programmer spi_programmer[] = {
 	},
 #endif
 
-#if DUMMY_SUPPORT == 1
+#if CONFIG_DUMMY == 1
 	{ /* SPI_CONTROLLER_DUMMY */
 		.command = dummy_spi_send_command,
 		.multicommand = default_spi_send_multicommand,
@@ -104,7 +104,7 @@ const struct spi_programmer spi_programmer[] = {
 	},
 #endif
 
-#if BUSPIRATE_SPI_SUPPORT == 1
+#if CONFIG_BUSPIRATE_SPI == 1
 	{ /* SPI_CONTROLLER_BUSPIRATE */
 		.command = buspirate_spi_send_command,
 		.multicommand = default_spi_send_multicommand,
@@ -113,7 +113,7 @@ const struct spi_programmer spi_programmer[] = {
 	},
 #endif
 
-#if DEDIPROG_SUPPORT == 1
+#if CONFIG_DEDIPROG == 1
 	{ /* SPI_CONTROLLER_DEDIPROG */
 		.command = dediprog_spi_send_command,
 		.multicommand = default_spi_send_multicommand,
@@ -214,7 +214,7 @@ int spi_chip_write_256(struct flashchip *flash, uint8_t *buf)
 uint32_t spi_get_valid_read_addr(void)
 {
 	switch (spi_controller) {
-#if INTERNAL_SUPPORT == 1
+#if CONFIG_INTERNAL == 1
 #if defined(__i386__) || defined(__x86_64__)
 	case SPI_CONTROLLER_ICH7:
 		/* Return BBAR for ICH chipsets. */

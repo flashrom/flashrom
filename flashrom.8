@@ -166,11 +166,11 @@ Specify the programmer device. Currently supported are:
 .sp
 .BR "* it87spi" " (for flash ROMs behind an ITE IT87xx Super I/O LPC/SPI translation unit)"
 .sp
-.BR "* ft2232spi" " (for flash ROMs attached to a FT2232H/FT4232H based USB SPI programmer)"
+.BR "* ft2232_spi" " (for flash ROMs attached to a FT2232H/FT4232H based USB SPI programmer)"
 .sp
 .BR "* serprog" " (for flash ROMs attached to Urja's AVR programmer)"
 .sp
-.BR "* buspiratespi" " (for flash ROMs attached to a Bus Pirate)"
+.BR "* buspirate_spi" " (for flash ROMs attached to a Bus Pirate)"
 .sp
 Some programmers have optional or mandatory parameters which are described
 in detail in the
@@ -307,10 +307,10 @@ syntax where
 .B portnum
 is an I/O port number which must be a multiple of 8.
 .TP
-.BR "ft2232spi " programmer
+.BR "ft2232_spi " programmer
 An optional parameter species the controller
 type and interface/port it should support. For that you have to use the
-.B "flashrom -p ft2232spi:model,port=interface"
+.B "flashrom -p ft2232_spi:model,port=interface"
 syntax where
 .B model
 can be any of
@@ -335,12 +335,12 @@ syntax and for IP, you have to use
 instead. More information about serprog is available in serprog-protocol.txt in
 the source distribution.
 .TP
-.BR "buspiratespi " programmer
+.BR "buspirate_spi " programmer
 A required dev parameter specifies the Bus Pirate device node and an optional
 spispeed parameter specifies the frequency of the SPI bus. The parameter
 delimiter is a comma. Syntax is
 .sp
-.B "flashrom -p buspiratespi:dev=/dev/device,spispeed=frequency"
+.B "flashrom -p buspirate_spi:dev=/dev/device,spispeed=frequency"
 .sp
 where
 .B frequency

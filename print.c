@@ -145,7 +145,7 @@ void print_supported_chips(void)
 	}
 }
 
-#if INTERNAL_SUPPORT == 1
+#if CONFIG_INTERNAL == 1
 void print_supported_chipsets(void)
 {
 	int i, j, chipsetcount = 0;
@@ -228,37 +228,37 @@ void print_supported_boards(void)
 void print_supported(void)
 {
 		print_supported_chips();
-#if INTERNAL_SUPPORT == 1
+#if CONFIG_INTERNAL == 1
 		print_supported_chipsets();
 		print_supported_boards();
 #endif
-#if (NIC3COM_SUPPORT == 1) || (GFXNVIDIA_SUPPORT == 1) || (DRKAISER_SUPPORT == 1) || (SATASII_SUPPORT == 1)
+#if CONFIG_NIC3COM+CONFIG_NICREALTEK+CONFIG_GFXNVIDIA+CONFIG_DRKAISER+CONFIG_SATASII+CONFIG_ATAHPT >= 1
 		printf("\nSupported PCI devices flashrom can use "
 		       "as programmer:\n\n");
 #endif
-#if NIC3COM_SUPPORT == 1
+#if CONFIG_NIC3COM == 1
 		print_supported_pcidevs(nics_3com);
 #endif
-#if NICREALTEK_SUPPORT == 1
+#if CONFIG_NICREALTEK == 1
 		print_supported_pcidevs(nics_realtek);
 		print_supported_pcidevs(nics_realteksmc1211);
 #endif
-#if GFXNVIDIA_SUPPORT == 1
+#if CONFIG_GFXNVIDIA == 1
 		print_supported_pcidevs(gfx_nvidia);
 #endif
-#if DRKAISER_SUPPORT == 1
+#if CONFIG_DRKAISER == 1
 		print_supported_pcidevs(drkaiser_pcidev);
 #endif
-#if SATASII_SUPPORT == 1
+#if CONFIG_SATASII == 1
 		print_supported_pcidevs(satas_sii);
 #endif
-#if ATAHPT_SUPPORT == 1
+#if CONFIG_ATAHPT == 1
 		print_supported_pcidevs(ata_hpt);
 #endif
 }
 
 
-#if INTERNAL_SUPPORT == 1
+#if CONFIG_INTERNAL == 1
 /* Please keep this list alphabetically ordered by vendor/board. */
 const struct board_info boards_ok[] = {
 	/* Verified working boards that don't need write-enables. */
