@@ -51,7 +51,7 @@ endif
 ifeq ($(OS_ARCH), DOS)
 CPPFLAGS += -I../libgetopt -I../libpci/include
 # Bus Pirate and Serprog are not supported under DOS.
-CONFIG_BUSPIRATESPI = no
+CONFIG_BUSPIRATE_SPI = no
 CONFIG_SERPROG = no
 endif
 
@@ -102,7 +102,7 @@ CONFIG_SATASII ?= yes
 CONFIG_ATAHPT ?= no
 
 # Always enable FT2232 SPI dongles for now.
-CONFIG_FT2232SPI ?= yes
+CONFIG_FT2232_SPI ?= yes
 
 # Always enable dummy tracing for now.
 CONFIG_DUMMY ?= yes
@@ -114,7 +114,7 @@ CONFIG_DRKAISER ?= yes
 CONFIG_NICREALTEK ?= yes
 
 # Always enable Bus Pirate SPI for now.
-CONFIG_BUSPIRATESPI ?= yes
+CONFIG_BUSPIRATE_SPI ?= yes
 
 # Disable Dediprog SF100 until support is complete and tested.
 CONFIG_DEDIPROG ?= no
@@ -123,7 +123,7 @@ CONFIG_DEDIPROG ?= no
 CONFIG_PRINT_WIKI ?= no
 
 ifeq ($(CONFIG_INTERNAL), yes)
-FEATURE_CFLAGS += -D'INTERNAL_SUPPORT=1'
+FEATURE_CFLAGS += -D'CONFIG_INTERNAL=1'
 PROGRAMMER_OBJS += chipset_enable.o board_enable.o cbtable.o dmi.o internal.o
 # FIXME: The PROGRAMMER_OBJS below should only be included on x86.
 PROGRAMMER_OBJS += it87spi.o ichspi.o sb600spi.o wbsio_spi.o
@@ -131,7 +131,7 @@ NEED_PCI := yes
 endif
 
 ifeq ($(CONFIG_SERPROG), yes)
-FEATURE_CFLAGS += -D'SERPROG_SUPPORT=1'
+FEATURE_CFLAGS += -D'CONFIG_SERPROG=1'
 PROGRAMMER_OBJS += serprog.o
 ifeq ($(OS_ARCH), SunOS)
 LIBS += -lsocket
@@ -139,66 +139,66 @@ endif
 endif
 
 ifeq ($(CONFIG_BITBANG_SPI), yes)
-FEATURE_CFLAGS += -D'BITBANG_SPI_SUPPORT=1'
+FEATURE_CFLAGS += -D'CONFIG_BITBANG_SPI=1'
 PROGRAMMER_OBJS += bitbang_spi.o
 endif
 
 ifeq ($(CONFIG_NIC3COM), yes)
-FEATURE_CFLAGS += -D'NIC3COM_SUPPORT=1'
+FEATURE_CFLAGS += -D'CONFIG_NIC3COM=1'
 PROGRAMMER_OBJS += nic3com.o
 NEED_PCI := yes
 endif
 
 ifeq ($(CONFIG_GFXNVIDIA), yes)
-FEATURE_CFLAGS += -D'GFXNVIDIA_SUPPORT=1'
+FEATURE_CFLAGS += -D'CONFIG_GFXNVIDIA=1'
 PROGRAMMER_OBJS += gfxnvidia.o
 NEED_PCI := yes
 endif
 
 ifeq ($(CONFIG_SATASII), yes)
-FEATURE_CFLAGS += -D'SATASII_SUPPORT=1'
+FEATURE_CFLAGS += -D'CONFIG_SATASII=1'
 PROGRAMMER_OBJS += satasii.o
 NEED_PCI := yes
 endif
 
 ifeq ($(CONFIG_ATAHPT), yes)
-FEATURE_CFLAGS += -D'ATAHPT_SUPPORT=1'
+FEATURE_CFLAGS += -D'CONFIG_ATAHPT=1'
 PROGRAMMER_OBJS += atahpt.o
 NEED_PCI := yes
 endif
 
-ifeq ($(CONFIG_FT2232SPI), yes)
+ifeq ($(CONFIG_FT2232_SPI), yes)
 FTDILIBS := $(shell pkg-config --libs libftdi 2>/dev/null || printf "%s" "-lftdi -lusb")
 # This is a totally ugly hack.
-FEATURE_CFLAGS += $(shell LC_ALL=C grep -q "FTDISUPPORT := yes" .features && printf "%s" "-D'FT2232_SPI_SUPPORT=1'")
+FEATURE_CFLAGS += $(shell LC_ALL=C grep -q "FTDISUPPORT := yes" .features && printf "%s" "-D'CONFIG_FT2232_SPI=1'")
 FEATURE_LIBS += $(shell LC_ALL=C grep -q "FTDISUPPORT := yes" .features && printf "%s" "$(FTDILIBS)")
 PROGRAMMER_OBJS += ft2232_spi.o
 endif
 
 ifeq ($(CONFIG_DUMMY), yes)
-FEATURE_CFLAGS += -D'DUMMY_SUPPORT=1'
+FEATURE_CFLAGS += -D'CONFIG_DUMMY=1'
 PROGRAMMER_OBJS += dummyflasher.o
 endif
 
 ifeq ($(CONFIG_DRKAISER), yes)
-FEATURE_CFLAGS += -D'DRKAISER_SUPPORT=1'
+FEATURE_CFLAGS += -D'CONFIG_DRKAISER=1'
 PROGRAMMER_OBJS += drkaiser.o
 NEED_PCI := yes
 endif
 
 ifeq ($(CONFIG_NICREALTEK), yes)
-FEATURE_CFLAGS += -D'NICREALTEK_SUPPORT=1'
+FEATURE_CFLAGS += -D'CONFIG_NICREALTEK=1'
 PROGRAMMER_OBJS += nicrealtek.o
 NEED_PCI := yes
 endif
 
-ifeq ($(CONFIG_BUSPIRATESPI), yes)
-FEATURE_CFLAGS += -D'BUSPIRATE_SPI_SUPPORT=1'
+ifeq ($(CONFIG_BUSPIRATE_SPI), yes)
+FEATURE_CFLAGS += -D'CONFIG_BUSPIRATE_SPI=1'
 PROGRAMMER_OBJS += buspirate_spi.o
 endif
 
 ifeq ($(CONFIG_DEDIPROG), yes)
-FEATURE_CFLAGS += -D'DEDIPROG_SUPPORT=1'
+FEATURE_CFLAGS += -D'CONFIG_DEDIPROG=1'
 FEATURE_LIBS += -lusb
 PROGRAMMER_OBJS += dediprog.o
 endif
@@ -207,7 +207,7 @@ endif
 ifeq ($(CONFIG_SERPROG), yes)
 LIB_OBJS += serial.o
 else
-ifeq ($(CONFIG_BUSPIRATESPI), yes)
+ifeq ($(CONFIG_BUSPIRATE_SPI), yes)
 LIB_OBJS += serial.o
 endif
 endif
@@ -233,7 +233,7 @@ endif
 endif
 
 ifeq ($(CONFIG_PRINT_WIKI), yes)
-FEATURE_CFLAGS += -D'PRINT_WIKI_SUPPORT=1'
+FEATURE_CFLAGS += -D'CONFIG_PRINT_WIKI=1'
 CLI_OBJS += print_wiki.o
 endif
 
@@ -308,7 +308,7 @@ endif
 
 .features: features
 
-ifeq ($(CONFIG_FT2232SPI), yes)
+ifeq ($(CONFIG_FT2232_SPI), yes)
 features: compiler
 	@echo "FEATURES := yes" > .features.tmp
 	@printf "Checking for FTDI support... "
