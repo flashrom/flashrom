@@ -116,7 +116,7 @@ int buspirate_spi_init(void)
 	}
 	if (!dev) {
 		msg_perr("No serial device given. Use flashrom -p "
-			"buspiratespi:dev=/dev/ttyUSB0\n");
+			"buspirate_spi:dev=/dev/ttyUSB0\n");
 		return 1;
 	}
 	if (speed) {

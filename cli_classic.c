@@ -39,7 +39,7 @@ void cli_classic_usage(const char *name)
 	enum programmer p;
 
 	printf("Usage: %s [-n] [-V] [-f] [-h|-R|-L|"
-#if PRINT_WIKI_SUPPORT == 1
+#if CONFIG_PRINT_WIKI == 1
 	         "-z|"
 #endif
 	         "-E|-r <file>|-w <file>|-v <file>]\n"
@@ -66,7 +66,7 @@ void cli_classic_usage(const char *name)
 	       "   -V | --verbose                    more verbose output\n"
 	       "   -c | --chip <chipname>            probe only for specified "
 	         "flash chip\n"
-#if INTERNAL_SUPPORT == 1
+#if CONFIG_INTERNAL == 1
 	       /* FIXME: --mainboard should be a programmer parameter */
 	       "   -m | --mainboard <[vendor:]part>  override mainboard "
 	         "detection\n"
@@ -79,7 +79,7 @@ void cli_classic_usage(const char *name)
 	       "   -i | --image <name>               only flash image <name> "
 	         "from flash layout\n"
 	       "   -L | --list-supported             print supported devices\n"
-#if PRINT_WIKI_SUPPORT == 1
+#if CONFIG_PRINT_WIKI == 1
 	       "   -z | --list-supported-wiki        print supported devices "
 	         "in wiki syntax\n"
 #endif
@@ -111,7 +111,7 @@ void cli_classic_usage(const char *name)
 	}
 
 	printf("\nYou can specify one of -h, -R, -L, "
-#if PRINT_WIKI_SUPPORT == 1
+#if CONFIG_PRINT_WIKI == 1
 	         "-z, "
 #endif
 	         "-E, -r, -w, -v or no operation.\n"
@@ -137,7 +137,7 @@ int cli_classic(int argc, char *argv[])
 	int force = 0;
 	int read_it = 0, write_it = 0, erase_it = 0, verify_it = 0;
 	int dont_verify_it = 0, list_supported = 0;
-#if PRINT_WIKI_SUPPORT == 1
+#if CONFIG_PRINT_WIKI == 1
 	int list_supported_wiki = 0;
 #endif
 	int operation_specified = 0;
@@ -237,7 +237,7 @@ int cli_classic(int argc, char *argv[])
 			erase_it = 1;
 			break;
 		case 'm':
-#if INTERNAL_SUPPORT == 1
+#if CONFIG_INTERNAL == 1
 			tempstr = strdup(optarg);
 			lb_vendor_dev_from_string(tempstr);
 #else
@@ -268,7 +268,7 @@ int cli_classic(int argc, char *argv[])
 			list_supported = 1;
 			break;
 		case 'z':
-#if PRINT_WIKI_SUPPORT == 1
+#if CONFIG_PRINT_WIKI == 1
 			if (++operation_specified > 1) {
 				fprintf(stderr, "More than one operation "
 					"specified. Aborting.\n");
@@ -344,7 +344,7 @@ int cli_classic(int argc, char *argv[])
 		exit(0);
 	}
 
-#if PRINT_WIKI_SUPPORT == 1
+#if CONFIG_PRINT_WIKI == 1
 	if (list_supported_wiki) {
 		print_supported_wiki();
 		exit(0);
@@ -356,7 +356,7 @@ int cli_classic(int argc, char *argv[])
 		cli_classic_abort_usage(argv[0]);
 	}
 
-#if INTERNAL_SUPPORT == 1
+#if CONFIG_INTERNAL == 1
 	if ((programmer != PROGRAMMER_INTERNAL) && (lb_part || lb_vendor)) {
 		fprintf(stderr, "Error: --mainboard requires the internal "
 				"programmer. Aborting.\n");

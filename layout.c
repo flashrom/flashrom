@@ -24,7 +24,7 @@
 #include <ctype.h>
 #include "flash.h"
 
-#if INTERNAL_SUPPORT == 1
+#if CONFIG_INTERNAL == 1
 char *mainboard_vendor = NULL;
 char *mainboard_part = NULL;
 #endif
@@ -41,7 +41,7 @@ typedef struct {
 
 romlayout_t rom_entries[MAX_ROMLAYOUT];
 
-#if INTERNAL_SUPPORT == 1 /* FIXME: Move the whole block to cbtable.c? */
+#if CONFIG_INTERNAL == 1 /* FIXME: Move the whole block to cbtable.c? */
 static char *def_name = "DEFAULT";
 
 int show_id(uint8_t *bios, int size, int force)
