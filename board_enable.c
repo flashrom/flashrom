@@ -551,6 +551,7 @@ static int nvidia_mcp_gpio_set(int gpio, int raise)
 {
 	struct pci_dev *dev;
 	uint16_t base;
+	uint16_t devclass;
 	uint8_t tmp;
 
 	if ((gpio < 0) || (gpio >= 0x40)) {
@@ -565,17 +566,33 @@ static int nvidia_mcp_gpio_set(int gpio, int raise)
 	case 0x0050: /* MCP04 */
 	case 0x0060: /* MCP2 */
 		break;
-	default:
-	    /* Newer MCPs use the SMBus Controller */
-	    dev = pci_dev_find_vendorclass(0x10DE, 0x0C05);
-	    switch (dev->device_id) {
-	    case 0x0264: /* MCP51 */
+	case 0x0260: /* MCP51 */
+	case 0x0364: /* MCP55 */
+		/* find SMBus controller on *this* southbridge */
+		/* The infamous Tyan S2915-E has two south bridges; they are
+		   easily told apart from each other by the class of the 
+		   LPC bridge, but have the same SMBus bridge IDs */
+		if (dev->func != 0) {
+			msg_perr("MCP LPC bridge at unexpected function"
+			         " number %d\n", dev->func);
+			return -1;
+		}
+
+		dev = pci_get_dev(pacc, dev->domain, dev->bus, dev->dev, 1);
+		if (!dev) {
+			msg_perr("MCP SMBus controller could not be found\n");
+			return -1;
+		}
+		devclass = pci_read_word(dev, PCI_CLASS_DEVICE);
+		if (devclass != 0x0C05) {
+			msg_perr("Unexpected device class %04x for SMBus"
+			         " controller\n", devclass);
+			return -1;
+		}
 		break;
-	    default:
+	default:
 		msg_perr("\nERROR: no NVIDIA LPC/SMBus controller found.\n");
 		return -1;
-	    }
-	    break;
 	}
 
 	base = pci_read_long(dev, 0x64) & 0x0000FF00; /* System control area */
@@ -615,6 +632,22 @@ static int nvidia_mcp_gpio2_lower(const char *name)
 static int nvidia_mcp_gpio2_raise(const char *name)
 {
 	return nvidia_mcp_gpio_set(0x02, 1);
+}
+
+
+/**
+ * Suited for HP xw9400 (Tyan S2915-E OEM): Dual(!) nVidia MCP55.
+ *   Notes: a) There are two MCP55 chips, so also two SMBus bridges on that
+ *             board. We can't tell the SMBus logical devices apart, but we
+ *             can tell the LPC bridge functions apart.
+ *             We need to choose the SMBus bridge next to the LPC bridge with
+ *             ID 0x364 and the "LPC bridge" class.
+ *          b) #TBL is hardwired on that board to a pull-down. It can be
+ *             overridden by connecting the two solder points next to F2.
+ */
+static int nvidia_mcp_gpio5_raise(const char *name)
+{
+	return nvidia_mcp_gpio_set(0x05, 1);
 }
 
 /**
@@ -1436,6 +1469,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x1166, 0x0223, 0x103c, 0x320d,  0x102b, 0x0522, 0x103c, 0x31fa, NULL,          "hp",         "dl145_g3",    "HP",          "DL145 G3",              0,   OK, board_hp_dl145_g3_enable},
 	{0x8086, 0x2415, 0x103c, 0x1249,  0x10b7, 0x9200, 0x103c, 0x1246, NULL,          NULL,         NULL,          "HP",          "Vectra VL400",          0,   OK, board_hp_vl400}, 
 	{0x8086, 0x1a30, 0x103c, 0x1a30,  0x8086, 0x2443, 0x103c, 0x2440, "^VL420$",     NULL,         NULL,          "HP",          "VL420 SFF",             0,   OK, intel_ich_gpio22_raise},
+	{0x10de, 0x0369, 0x103c, 0x12fe,  0x10de, 0x0364, 0x103c, 0x12fe, NULL,          NULL,         NULL,          "HP",          "xw9400",                0,   OK, nvidia_mcp_gpio5_raise},
 	{0x8086, 0x27A0,      0,      0,  0x8086, 0x27B9,      0,      0, NULL,          "ibase",      "mb899",       "iBASE",       "MB899",                 0,   NT, intel_ich_gpio26_raise},
 	{0x1166, 0x0205, 0x1014, 0x0347,  0x1002, 0x515E, 0x1014, 0x0325, NULL,          NULL,         NULL,          "IBM",         "x3455",                 0,   OK, board_ibm_x3455},
 	{0x1039, 0x5513, 0x8086, 0xd61f,  0x1039, 0x6330, 0x8086, 0xd61f, NULL,          NULL,         NULL,          "Intel",       "D201GLY",               0,   OK, wbsio_check_for_spi},
