@@ -305,12 +305,22 @@ extern struct board_pciid_enable board_pciid_enables[];
 struct board_info {
 	const char *vendor;
 	const char *name;
+	const int working;
+#ifdef CONFIG_PRINT_WIKI
+	const char *url;
+	const char *note;
+#endif
 };
 
-extern const struct board_info boards_ok[];
-extern const struct board_info boards_bad[];
-extern const struct board_info laptops_ok[];
-extern const struct board_info laptops_bad[];
+#ifdef CONFIG_PRINT_WIKI
+#define B(vendor, name, status, url, note) { vendor, name, status, url, note }
+#else
+#define B(vendor, name, status, url, note) { vendor, name, status }
+#endif
+
+extern const struct board_info boards_known[];
+extern const struct board_info laptops_known[];
+
 #endif
 
 /* udelay.c */
