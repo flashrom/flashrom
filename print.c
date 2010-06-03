@@ -450,14 +450,14 @@ const struct board_info boards_known[] = {
 /* Please keep this list alphabetically ordered by vendor/board. */
 const struct board_info laptops_known[] = {
 #if defined(__i386__) || defined(__x86_64__)
-	B("Acer",	"Aspire 1520",	1, "http://support.acer.com/us/en/acerpanam/notebook/0000/Acer/Aspire1520/Aspire1520nv.shtml", NULL),
-	B("Acer",	"Aspire One",	0, NULL, "http://www.coreboot.org/pipermail/coreboot/2009-May/048041.html"),
-	B("ASUS",	"Eee PC 701 4G",0, "http://www.asus.com/product.aspx?P_ID=h6SPd3tEzLEsrEiS", "It seems the chip (25X40VSIG) is behind some SPI flash translation layer (likely in the EC, the ENE KB3310)."),
-	B("Dell",	"Latitude CPi A366XT",0, "http://www.coreboot.org/Dell_Latitude_CPi_A366XT", "The laptop immediately powers off if you try to hot-swap the chip. It's not yet tested if write/erase would work on this laptop."),
-	B("HP/Compaq",	"nx9010",	0, "http://h20000.www2.hp.com/bizsupport/TechSupport/Document.jsp?lang=en&cc=us&objectID=c00348514", "Hangs upon '''flashrom -V''' (needs hard power-cycle then)."),
-	B("IBM/Lenovo",	"Thinkpad T40p",0, "http://www.thinkwiki.org/wiki/Category:T40p", NULL),
-	B("IBM/Lenovo",	"240",		0, "http://www.stanford.edu/~bresnan//tp240.html", "Seems to (partially) work at first, but one block/sector cannot be written which then leaves you with a bricked laptop. Maybe this can be investigated and fixed in software later."),
-	B("Lenovo",	"3000 V100 TF05Cxx",1, "http://www5.pc.ibm.com/europe/products.nsf/products?openagent&brand=Lenovo3000Notebook&series=Lenovo+3000+V+Series#viewallmodelstop", NULL),
+	B("Acer",	"Aspire 1520",		1, "http://support.acer.com/us/en/acerpanam/notebook/0000/Acer/Aspire1520/Aspire1520nv.shtml", NULL),
+	B("Acer",	"Aspire One",		0, NULL, "http://www.coreboot.org/pipermail/coreboot/2009-May/048041.html"),
+	B("ASUS",	"Eee PC 701 4G",	0, "http://www.asus.com/product.aspx?P_ID=h6SPd3tEzLEsrEiS", "It seems the chip (25X40VSIG) is behind some SPI flash translation layer (likely in the EC, the ENE KB3310)."),
+	B("Dell",	"Latitude CPi A366XT",	0, "http://www.coreboot.org/Dell_Latitude_CPi_A366XT", "The laptop immediately powers off if you try to hot-swap the chip. It's not yet tested if write/erase would work on this laptop."),
+	B("HP/Compaq",	"nx9010",		0, "http://h20000.www2.hp.com/bizsupport/TechSupport/Document.jsp?lang=en&cc=us&objectID=c00348514", "Hangs upon '''flashrom -V''' (needs hard power-cycle then)."),
+	B("IBM/Lenovo",	"Thinkpad T40p",	0, "http://www.thinkwiki.org/wiki/Category:T40p", NULL),
+	B("IBM/Lenovo",	"240",			0, "http://www.stanford.edu/~bresnan//tp240.html", "Seems to (partially) work at first, but one block/sector cannot be written which then leaves you with a bricked laptop. Maybe this can be investigated and fixed in software later."),
+	B("Lenovo",	"3000 V100 TF05Cxx",	1, "http://www5.pc.ibm.com/europe/products.nsf/products?openagent&brand=Lenovo3000Notebook&series=Lenovo+3000+V+Series#viewallmodelstop", NULL),
 #endif
 
 	{},
