@@ -25,15 +25,12 @@
 #define __FLASH_H__ 1
 
 #include <stdint.h>
+#include <stddef.h>
 #include "hwaccess.h"
 #ifdef _WIN32
 #include <windows.h>
 #undef min
 #undef max
-#endif
-
-#ifndef NULL
-#define NULL ((void *) 0)
 #endif
 
 typedef unsigned long chipaddr;
