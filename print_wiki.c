@@ -146,8 +146,8 @@ static void wiki_helper(const char *devicetype, int cols,
 
 		k = 0;
 		while ((b[k].vendor_name != NULL)
-			&& !strcmp(b[k].vendor_name, boards[i].vendor)
-			&& !strcmp(b[k].board_name, boards[i].name)) {
+			&& strcmp(b[k].vendor_name, boards[i].vendor)
+			&& strcmp(b[k].board_name, boards[i].name)) {
 			k++;
 		}
 
