@@ -394,7 +394,7 @@ struct shutdown_func_data {
 int register_shutdown(void (*function) (void *data), void *data)
 {
 	if (shutdown_fn_count >= SHUTDOWN_MAXFN) {
-		msg_perr("Tried to register more than %n shutdown functions.\n",
+		msg_perr("Tried to register more than %i shutdown functions.\n",
 			 SHUTDOWN_MAXFN);
 		return 1;
 	}

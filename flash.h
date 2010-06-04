@@ -591,7 +591,8 @@ int doit(struct flashchip *flash, int force, char *filename, int read_it, int wr
 #define NT 1    /* Not tested */
 
 /* cli_output.c */
-int print(int type, const char *fmt, ...);
+/* Let gcc and clang check for correct printf-style format strings. */
+int print(int type, const char *fmt, ...) __attribute__((format(printf, 2, 3)));
 #define MSG_ERROR	0
 #define MSG_INFO	1
 #define MSG_DEBUG	2
