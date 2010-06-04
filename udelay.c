@@ -91,7 +91,7 @@ void myusec_calibrate_delay(void)
 	msg_pinfo("Calibrating delay loop... ");
 	resolution = measure_os_delay_resolution();
 	if (resolution) {
-		msg_pdbg("OS timer resolution is %u usecs, ", resolution);
+		msg_pdbg("OS timer resolution is %lu usecs, ", resolution);
 	} else {
 		msg_pinfo("OS timer resolution is unusable. ");
 	}
