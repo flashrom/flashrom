@@ -220,8 +220,10 @@ ifeq ($(NEED_PCI), yes)
 FEATURE_CFLAGS += -D'NEED_PCI=1'
 PROGRAMMER_OBJS += pcidev.o physmap.o hwaccess.o
 ifeq ($(OS_ARCH), NetBSD)
-LIBS += -lpciutils #		The libpci we want.
-LIBS += -l$(shell uname -p) #	For (i386|x86_64)_iopl(2).
+# The libpci we want is called libpciutils on NetBSD and needs NetBSD libpci.
+LIBS += -lpciutils -lpci
+# For (i386|x86_64)_iopl(2).
+LIBS += -l$(shell uname -p)
 else
 ifeq ($(OS_ARCH), DOS)
 # FIXME There needs to be a better way to do this
