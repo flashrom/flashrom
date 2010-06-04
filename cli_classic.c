@@ -38,14 +38,13 @@ void cli_classic_usage(const char *name)
 	int remaining = 0;
 	enum programmer p;
 
-	printf("Usage: %s [-n] [-V] [-f] [-h|-R|-L|"
+	printf("Usage: flashrom [-n] [-V] [-f] [-h|-R|-L|"
 #if CONFIG_PRINT_WIKI == 1
 	         "-z|"
 #endif
 	         "-E|-r <file>|-w <file>|-v <file>]\n"
 	       "       [-c <chipname>] [-m [<vendor>:]<part>] [-l <file>]\n"
-	       "       [-i <image>] [-p <programmername>[:<parameters>]]\n",
-	       name);
+	       "       [-i <image>] [-p <programmername>[:<parameters>]]\n\n");
 
 	printf("Please note that the command line interface for flashrom has "
 	         "changed between\n"
@@ -119,9 +118,9 @@ void cli_classic_usage(const char *name)
 	         "flash chips.\n\n");
 }
 
-void cli_classic_abort_usage(const char *name)
+void cli_classic_abort_usage(void)
 {
-	printf("Please run \"%s --help\" for usage info.\n", name);
+	printf("Please run \"flashrom --help\" for usage info.\n");
 	exit(1);
 }
 
@@ -185,7 +184,7 @@ int cli_classic(int argc, char *argv[])
 			if (++operation_specified > 1) {
 				fprintf(stderr, "More than one operation "
 					"specified. Aborting.\n");
-				cli_classic_abort_usage(argv[0]);
+				cli_classic_abort_usage();
 			}
 			filename = strdup(optarg);
 			read_it = 1;
@@ -194,7 +193,7 @@ int cli_classic(int argc, char *argv[])
 			if (++operation_specified > 1) {
 				fprintf(stderr, "More than one operation "
 					"specified. Aborting.\n");
-				cli_classic_abort_usage(argv[0]);
+				cli_classic_abort_usage();
 			}
 			filename = strdup(optarg);
 			write_it = 1;
@@ -204,12 +203,12 @@ int cli_classic(int argc, char *argv[])
 			if (++operation_specified > 1) {
 				fprintf(stderr, "More than one operation "
 					"specified. Aborting.\n");
-				cli_classic_abort_usage(argv[0]);
+				cli_classic_abort_usage();
 			}
 			if (dont_verify_it) {
 				fprintf(stderr, "--verify and --noverify are"
 					"mutually exclusive. Aborting.\n");
-				cli_classic_abort_usage(argv[0]);
+				cli_classic_abort_usage();
 			}
 			filename = strdup(optarg);
 			verify_it = 1;
@@ -218,7 +217,7 @@ int cli_classic(int argc, char *argv[])
 			if (verify_it) {
 				fprintf(stderr, "--verify and --noverify are"
 					"mutually exclusive. Aborting.\n");
-				cli_classic_abort_usage(argv[0]);
+				cli_classic_abort_usage();
 			}
 			dont_verify_it = 1;
 			break;
@@ -232,7 +231,7 @@ int cli_classic(int argc, char *argv[])
 			if (++operation_specified > 1) {
 				fprintf(stderr, "More than one operation "
 					"specified. Aborting.\n");
-				cli_classic_abort_usage(argv[0]);
+				cli_classic_abort_usage();
 			}
 			erase_it = 1;
 			break;
@@ -244,7 +243,7 @@ int cli_classic(int argc, char *argv[])
 			fprintf(stderr, "Error: Internal programmer support "
 				"was not compiled in and --mainboard only\n"
 				"applies to the internal programmer. Aborting.\n");
-			cli_classic_abort_usage(argv[0]);
+			cli_classic_abort_usage();
 #endif
 			break;
 		case 'f':
@@ -253,7 +252,7 @@ int cli_classic(int argc, char *argv[])
 		case 'l':
 			tempstr = strdup(optarg);
 			if (read_romlayout(tempstr))
-				cli_classic_abort_usage(argv[0]);
+				cli_classic_abort_usage();
 			break;
 		case 'i':
 			tempstr = strdup(optarg);
@@ -263,7 +262,7 @@ int cli_classic(int argc, char *argv[])
 			if (++operation_specified > 1) {
 				fprintf(stderr, "More than one operation "
 					"specified. Aborting.\n");
-				cli_classic_abort_usage(argv[0]);
+				cli_classic_abort_usage();
 			}
 			list_supported = 1;
 			break;
@@ -272,13 +271,13 @@ int cli_classic(int argc, char *argv[])
 			if (++operation_specified > 1) {
 				fprintf(stderr, "More than one operation "
 					"specified. Aborting.\n");
-				cli_classic_abort_usage(argv[0]);
+				cli_classic_abort_usage();
 			}
 			list_supported_wiki = 1;
 #else
 			fprintf(stderr, "Error: Wiki output was not compiled "
 				"in. Aborting.\n");
-			cli_classic_abort_usage(argv[0]);
+			cli_classic_abort_usage();
 #endif
 			break;
 		case 'p':
@@ -310,7 +309,7 @@ int cli_classic(int argc, char *argv[])
 			if (programmer == PROGRAMMER_INVALID) {
 				fprintf(stderr, "Error: Unknown programmer "
 					"%s.\n", optarg);
-				cli_classic_abort_usage(argv[0]);
+				cli_classic_abort_usage();
 			}
 			break;
 		case 'R':
@@ -318,7 +317,7 @@ int cli_classic(int argc, char *argv[])
 			if (++operation_specified > 1) {
 				fprintf(stderr, "More than one operation "
 					"specified. Aborting.\n");
-				cli_classic_abort_usage(argv[0]);
+				cli_classic_abort_usage();
 			}
 			exit(0);
 			break;
@@ -326,13 +325,13 @@ int cli_classic(int argc, char *argv[])
 			if (++operation_specified > 1) {
 				fprintf(stderr, "More than one operation "
 					"specified. Aborting.\n");
-				cli_classic_abort_usage(argv[0]);
+				cli_classic_abort_usage();
 			}
 			cli_classic_usage(argv[0]);
 			exit(0);
 			break;
 		default:
-			cli_classic_abort_usage(argv[0]);
+			cli_classic_abort_usage();
 			break;
 		}
 	}
@@ -353,14 +352,14 @@ int cli_classic(int argc, char *argv[])
 
 	if (optind < argc) {
 		fprintf(stderr, "Error: Extra parameter found.\n");
-		cli_classic_abort_usage(argv[0]);
+		cli_classic_abort_usage();
 	}
 
 #if CONFIG_INTERNAL == 1
 	if ((programmer != PROGRAMMER_INTERNAL) && (lb_part || lb_vendor)) {
 		fprintf(stderr, "Error: --mainboard requires the internal "
 				"programmer. Aborting.\n");
-		cli_classic_abort_usage(argv[0]);
+		cli_classic_abort_usage();
 	}
 #endif
 
