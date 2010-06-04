@@ -120,7 +120,7 @@ CONFIG_BUSPIRATE_SPI ?= yes
 CONFIG_DEDIPROG ?= no
 
 # Disable wiki printing by default. It is only useful if you have wiki access.
-CONFIG_PRINT_WIKI ?= yes
+CONFIG_PRINT_WIKI ?= no
 
 ifeq ($(CONFIG_INTERNAL), yes)
 FEATURE_CFLAGS += -D'CONFIG_INTERNAL=1'
