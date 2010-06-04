@@ -361,6 +361,9 @@ int board_flash_enable(const char *vendor, const char *part);
 /* chipset_enable.c */
 int chipset_flash_enable(void);
 
+/* processor_enable.c */
+int processor_flash_enable(void);
+
 /* physmap.c */
 void *physmap(const char *descr, unsigned long phys_addr, size_t len);
 void *physmap_try_ro(const char *descr, unsigned long phys_addr, size_t len);

@@ -165,16 +165,28 @@ int internal_init(void)
 	pci_init(pacc);		/* Initialize the PCI library */
 	pci_scan_bus(pacc);	/* We want to get the list of devices */
 
-	/* We look at the lbtable first to see if we need a
+	if (processor_flash_enable()) {
+		msg_perr("Processor detection/init failed.\n"
+			 "Aborting.\n");
+		return 1;
+	}
+
+#if defined(__i386__) || defined(__x86_64__)
+	/* We look at the cbtable first to see if we need a
 	 * mainboard specific flash enable sequence.
 	 */
 	coreboot_init();
 
-#if defined(__i386__) || defined(__x86_64__)
 	dmi_init();
 
 	/* Probe for the Super I/O chip and fill global struct superio. */
 	probe_superio();
+#else
+	/* FIXME: Enable cbtable searching on all non-x86 platforms supported
+	 *        by coreboot.
+	 * FIXME: Find a replacement for DMI on non-x86.
+	 * FIXME: Enable Super I/O probing once port I/O is possible.
+	 */
 #endif
 
 	/* Warn if a laptop is detected. */
@@ -200,6 +212,7 @@ int internal_init(void)
 		}
 	}
 
+#if __FLASHROM_LITTLE_ENDIAN__
 	/* try to enable it. Failure IS an option, since not all motherboards
 	 * really need this to be done, etc., etc.
 	 */
@@ -220,7 +233,26 @@ int internal_init(void)
 	 * The error code might have been a warning only.
 	 * Besides that, we don't check the board enable return code either.
 	 */
+#if defined(__i386__) || defined(__x86_64__)
 	return 0;
+#else
+	msg_perr("Your platform is not supported yet for the internal "
+		 "programmer due to missing\n"
+		 "flash_base and top/bottom alignment information.\n"
+		 "Aborting.\n");
+	return 1;
+#endif
+#else
+	/* FIXME: Remove this unconditional abort once all PCI drivers are
+	 * converted to use little-endian accesses for memory BARs.
+	 */
+	msg_perr("Your platform is not supported yet for the internal "
+		 "programmer because it has\n"
+		 "not been converted from native endian to little endian "
+		 "access yet.\n"
+		 "Aborting.\n");
+	return 1;
+#endif
 }
 
 int internal_shutdown(void)
