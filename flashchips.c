@@ -1072,6 +1072,29 @@ struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Atmel",
+		.name		= "AT49F020",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= ATMEL_ID,
+		.model_id	= AT_49F020,
+		.total_size	= 256,
+		.page_size	= 256,
+		.feature_bits	= FEATURE_EITHER_RESET,
+		.tested		= TEST_OK_PREW,
+		.probe		= probe_jedec,
+		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {256 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			}
+		},
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "Atmel",
 		.name		= "AT49F002(N)",
 		.bustype	= CHIP_BUSTYPE_PARALLEL,
 		.manufacture_id	= ATMEL_ID,
