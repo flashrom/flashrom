@@ -65,7 +65,7 @@ CLI_OBJS = flashrom.o cli_classic.o cli_output.o print.o
 
 PROGRAMMER_OBJS = udelay.o programmer.o
 
-all: pciutils features dep $(PROGRAM)
+all: pciutils features $(PROGRAM)
 
 # Set the flashrom version string from the highest revision number
 # of the checked out flashrom files.
@@ -255,18 +255,15 @@ $(PROGRAM): $(OBJS)
 TAROPTIONS = $(shell LC_ALL=C tar --version|grep -q GNU && echo "--owner=root --group=root")
 
 %.o: %.c .features
-	$(CC) $(CFLAGS) $(CPPFLAGS) $(FEATURE_CFLAGS) $(SVNDEF) -o $@ -c $<
+	$(CC) -MMD $(CFLAGS) $(CPPFLAGS) $(FEATURE_CFLAGS) $(SVNDEF) -o $@ -c $<
 
 # Make sure to add all names of generated binaries here.
 # This includes all frontends and libflashrom.
 clean:
-	rm -f $(PROGRAM) $(PROGRAM).exe *.o
+	rm -f $(PROGRAM) $(PROGRAM).exe *.o *.d
 
 distclean: clean
-	rm -f .dependencies .features .libdeps
-
-dep:
-	@$(CC) $(CPPFLAGS) $(SVNDEF) -MM $(OBJS:.o=.c) > .dependencies
+	rm -f .features .libdeps
 
 strip: $(PROGRAM)
 	$(STRIP) $(STRIP_ARGS) $(PROGRAM)
@@ -367,6 +364,6 @@ tarball: export
 djgpp-dos: clean
 	make CC=i586-pc-msdosdjgpp-gcc STRIP=i586-pc-msdosdjgpp-strip WARNERROR=no OS_ARCH=DOS
 
-.PHONY: all clean distclean dep compiler pciutils features export tarball dos
+.PHONY: all clean distclean compiler pciutils features export tarball dos
 
--include .dependencies
+-include $(OBJS:.o=.d)
