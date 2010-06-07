@@ -49,6 +49,9 @@ enum programmer {
 	PROGRAMMER_NICREALTEK,
 	PROGRAMMER_NICREALTEK2,
 #endif	
+#if CONFIG_NICNATSEMI == 1
+	PROGRAMMER_NICNATSEMI,
+#endif	
 #if CONFIG_GFXNVIDIA == 1
 	PROGRAMMER_GFXNVIDIA,
 #endif
@@ -339,7 +342,7 @@ uint32_t pcidev_init(uint16_t vendor_id, uint32_t bar, struct pcidev_status *dev
 /* print.c */
 char *flashbuses_to_text(enum chipbustype bustype);
 void print_supported(void);
-#if CONFIG_NIC3COM+CONFIG_NICREALTEK+CONFIG_GFXNVIDIA+CONFIG_DRKAISER+CONFIG_SATASII+CONFIG_ATAHPT >= 1
+#if CONFIG_NIC3COM+CONFIG_NICREALTEK+CONFIG_NICNATSEMI+CONFIG_GFXNVIDIA+CONFIG_DRKAISER+CONFIG_SATASII+CONFIG_ATAHPT >= 1
 void print_supported_pcidevs(struct pcidev_status *devs);
 #endif
 void print_supported_wiki(void);
@@ -491,6 +494,14 @@ extern struct pcidev_status nics_realtek[];
 extern struct pcidev_status nics_realteksmc1211[];
 #endif
 
+/* nicnatsemi.c */
+#if CONFIG_NICNATSEMI == 1
+int nicnatsemi_init(void);
+int nicnatsemi_shutdown(void);
+void nicnatsemi_chip_writeb(uint8_t val, chipaddr addr);
+uint8_t nicnatsemi_chip_readb(const chipaddr addr);
+extern struct pcidev_status nics_natsemi[];
+#endif
 
 /* satasii.c */
 #if CONFIG_SATASII == 1
