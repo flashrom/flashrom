@@ -309,12 +309,6 @@ struct board_info {
 #endif
 };
 
-#ifdef CONFIG_PRINT_WIKI
-#define B(vendor, name, status, url, note) { vendor, name, status, url, note }
-#else
-#define B(vendor, name, status, url, note) { vendor, name, status }
-#endif
-
 extern const struct board_info boards_known[];
 extern const struct board_info laptops_known[];
 
