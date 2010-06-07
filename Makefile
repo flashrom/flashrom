@@ -113,6 +113,9 @@ CONFIG_DRKAISER ?= yes
 # Always enable Realtek NICs for now.
 CONFIG_NICREALTEK ?= yes
 
+# Disable National Semiconductor NICs until support is complete and tested.
+CONFIG_NICNATSEMI ?= no
+
 # Always enable Bus Pirate SPI for now.
 CONFIG_BUSPIRATE_SPI ?= yes
 
@@ -189,6 +192,12 @@ endif
 ifeq ($(CONFIG_NICREALTEK), yes)
 FEATURE_CFLAGS += -D'CONFIG_NICREALTEK=1'
 PROGRAMMER_OBJS += nicrealtek.o
+NEED_PCI := yes
+endif
+
+ifeq ($(CONFIG_NICNATSEMI), yes)
+FEATURE_CFLAGS += -D'CONFIG_NICNATSEMI=1'
+PROGRAMMER_OBJS += nicnatsemi.o
 NEED_PCI := yes
 endif
 
