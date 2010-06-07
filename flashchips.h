@@ -144,6 +144,7 @@
 #define AT_45DB642		/* No ID available */
 #define AT_45DB642D		0x2800
 #define AT_49BV512		0x03
+#define AT_49F020		0x0B
 #define AT_49F002N		0x07	/* for AT49F002(N)  */
 #define AT_49F002NT		0x08	/* for AT49F002(N)T */
 
