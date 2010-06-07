@@ -59,7 +59,7 @@ done:
 	return flashport;
 }
 
-int wbsio_check_for_spi(const char *name)
+int wbsio_check_for_spi(void)
 {
 	if (0 == (wbsio_spibase = wbsio_get_spibase(WBSIO_PORT1)))
 		if (0 == (wbsio_spibase = wbsio_get_spibase(WBSIO_PORT2)))
