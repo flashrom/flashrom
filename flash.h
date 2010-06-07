@@ -294,7 +294,7 @@ struct board_pciid_enable {
 
 	int max_rom_decode_parallel;
 	int status;
-	int (*enable) (const char *name);
+	int (*enable) (void);
 };
 
 extern struct board_pciid_enable board_pciid_enables[];
@@ -698,7 +698,7 @@ int sb600_spi_write_1(struct flashchip *flash, uint8_t *buf);
 extern uint8_t *sb600_spibar;
 
 /* wbsio_spi.c */
-int wbsio_check_for_spi(const char *name);
+int wbsio_check_for_spi(void);
 int wbsio_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		      const unsigned char *writearr, unsigned char *readarr);
 int wbsio_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
