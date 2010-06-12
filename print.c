@@ -440,6 +440,7 @@ const struct board_info boards_known[] = {
 	B("VIA",	"EPIA M/MII/...",	1, "http://www.via.com.tw/en/products/embedded/ProductDetail.jsp?productLine=1&motherboard_id=202", NULL), /* EPIA-MII link for now */
 	B("VIA",	"EPIA SP",		1, "http://www.via.com.tw/en/products/embedded/ProductDetail.jsp?productLine=1&motherboard_id=261", NULL),
 	B("VIA",	"EPIA-CN",		1, "http://www.via.com.tw/en/products/mainboards/motherboards.jsp?motherboard_id=400", NULL),
+	B("VIA",	"EPIA EK",		1, "http://www.via.com.tw/en/products/embedded/ProductDetail.jsp?motherboard_id=420", NULL),
 	B("VIA",	"EPIA-EX15000G",	1, "http://www.via.com.tw/en/products/embedded/ProductDetail.jsp?productLine=1&motherboard_id=450", NULL),
 	B("VIA",	"EPIA-LN",		1, "http://www.via.com.tw/en/products/mainboards/motherboards.jsp?motherboard_id=473", NULL),
 	B("VIA",	"EPIA-M700",		1, "http://via.com.tw/servlet/downloadSvl?motherboard_id=670&download_file_id=3700", NULL),
