@@ -377,6 +377,7 @@ const struct board_info boards_known[] = {
 	B("MSI",	"MS-6702E (K8T Neo2-F)",1, "http://www.msi.com/index.php?func=proddesc&maincat_no=1&prod_no=588", NULL),
 	B("MSI",	"MS-6712 (KT4V)",	1, "http://www.msi.com/index.php?func=proddesc&maincat_no=1&prod_no=505", NULL),
 	B("MSI",	"MS-7005 (651M-L)",	1, "http://www.msi.com/index.php?func=proddesc&maincat_no=1&prod_no=559", NULL),
+	B("MSI",	"MS-7025 (K8N Neo2 Platinum)",	1, "http://www.msi.com/index.php?func=proddesc&maincat_no=1&prod_no=587", NULL),
 	B("MSI",	"MS-7046",		1, "http://www.heimir.de/ms7046/", NULL),
 	B("MSI",	"MS-7065",		1, "http://browse.geekbench.ca/geekbench2/view/53114", NULL),
 	B("MSI",	"MS-7135 (K8N Neo3)",	1, "http://www.msi.com/index.php?func=proddesc&maincat_no=1&prod_no=170", NULL),
