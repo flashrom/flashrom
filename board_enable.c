@@ -659,7 +659,7 @@ static int nvidia_mcp_gpio8_raise(void)
 /**
  * Suited for MSI K8N Neo2 Platinum: Socket 939 + nForce3 Ultra + CK8.
  */
-static int nvidia_mcp_gpio0c_raise(const char *name)
+static int nvidia_mcp_gpio0c_raise(void)
 {
 	return nvidia_mcp_gpio_set(0x0c, 1);
 }
