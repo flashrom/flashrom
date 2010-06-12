@@ -389,7 +389,7 @@ static int via_vt823x_gpio5_raise(void)
 }
 
 /**
- * Suited for VIA EPIA N & NL.
+ * Suited for VIA EPIA EK & N & NL.
  */
 static int via_vt823x_gpio9_raise(void)
 {
@@ -1490,6 +1490,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x1106, 0x3038, 0x0925, 0x1234,  0x1106, 0x0596, 0x1106,      0, NULL,          NULL,         NULL,          "Tekram",      "P6Pro-A5",              256, OK, NULL},
 	{0x1106, 0x3123, 0x1106, 0x3123,  0x1106, 0x3059, 0x1106, 0x4161, NULL,          NULL,         NULL,          "Termtek",     "TK-3370 (Rev:2.5B)",    0,   OK, w836xx_memw_enable_4e},
 	{0x8086, 0x1076, 0x8086, 0x1176,  0x1106, 0x3059, 0x10f1, 0x2498, NULL,          NULL,         NULL,          "Tyan",        "S2498 (Tomcat K7M)",    0,   OK, w836xx_memw_enable_2e},
+	{0x1106, 0x0259, 0x1106, 0xAA07,  0x1106, 0x3227, 0x1106, 0xAA07, NULL,          NULL,         NULL,          "VIA",         "EPIA EK",               0,   NT, via_vt823x_gpio9_raise},
 	{0x1106, 0x3177, 0x1106, 0xAA01,  0x1106, 0x3123, 0x1106, 0xAA01, NULL,          NULL,         NULL,          "VIA",         "EPIA M/MII/...",        0,   OK, via_vt823x_gpio15_raise},
 	{0x1106, 0x0259, 0x1106, 0x3227,  0x1106, 0x3065, 0x1106, 0x3149, NULL,          NULL,         NULL,          "VIA",         "EPIA-N/NL",             0,   OK, via_vt823x_gpio9_raise},
 #endif
