@@ -37,6 +37,8 @@
 
 #if defined(__i386__) || defined(__x86_64__)
 
+#define NOT_DONE_YET 1
+
 static int enable_flash_ali_m1533(struct pci_dev *dev, const char *name)
 {
 	uint8_t tmp;
@@ -640,6 +642,32 @@ static int enable_flash_ich9(struct pci_dev *dev, const char *name)
 static int enable_flash_ich10(struct pci_dev *dev, const char *name)
 {
 	return enable_flash_ich_dc_spi(dev, name, 10);
+}
+
+static void via_do_byte_merge(void * arg)
+{
+	struct pci_dev * dev = arg;
+	uint8_t val;
+
+	msg_pdbg("Re-enabling byte merging\n");
+	val = pci_read_byte(dev, 0x71);
+	val |= 0x40;
+	pci_write_byte(dev, 0x71, val);
+}
+
+static int via_no_byte_merge(struct pci_dev *dev, const char *name)
+{
+	uint8_t val;
+
+	val = pci_read_byte(dev, 0x71);
+	if (val & 0x40)
+	{
+		msg_pdbg("Disabling byte merging\n");
+		val &= ~0x40;
+		pci_write_byte(dev, 0x71, val);
+		register_shutdown(via_do_byte_merge, dev);
+	}
+	return NOT_DONE_YET;	/* need to find south bridge, too */
 }
 
 static int enable_flash_vt823x(struct pci_dev *dev, const char *name)
@@ -1420,6 +1448,14 @@ const struct penable chipset_enables[] = {
 	{0x1039, 0x0746, NT, "SiS", "746",		enable_flash_sis540},
 	{0x1039, 0x0748, NT, "SiS", "748",		enable_flash_sis540},
 	{0x1039, 0x0755, NT, "SiS", "755",		enable_flash_sis540},
+	/* VIA northbridges */
+	{0x1106, 0x0585, NT, "VIA", "VT82C585VPX",	via_no_byte_merge},
+	{0x1106, 0x0595, NT, "VIA", "VT82C595",		via_no_byte_merge},
+	{0x1106, 0x0597, NT, "VIA", "VT82C597",		via_no_byte_merge},
+	{0x1106, 0x0691, NT, "VIA", "VT82C69x",		via_no_byte_merge}, /* 691, 693a, 694t, 694x checked */
+	{0x1106, 0x0601, NT, "VIA", "VT8601/VT8601A",	via_no_byte_merge},
+	{0x1106, 0x8601, NT, "VIA", "VT8601T",		via_no_byte_merge},
+	/* VIA southbridges */
 	{0x1106, 0x8324, OK, "VIA", "CX700",		enable_flash_vt823x},
 	{0x1106, 0x8231, NT, "VIA", "VT8231",		enable_flash_vt823x},
 	{0x1106, 0x3074, NT, "VIA", "VT8233",		enable_flash_vt823x},
@@ -1446,11 +1482,16 @@ int chipset_flash_enable(void)
 	for (i = 0; chipset_enables[i].vendor_name != NULL; i++) {
 		dev = pci_dev_find(chipset_enables[i].vendor_id,
 				   chipset_enables[i].device_id);
-		if (dev)
-			break;
-	}
-
-	if (dev) {
+		if (!dev)
+			continue;
+		if (ret != -2) {
+			msg_pinfo("WARNING: unexpected second chipset match: "
+			       "\"%s %s\"\nignoring, please report lspci and "
+			       "board URL to flashrom@flashrom.org!\n",
+				chipset_enables[i].vendor_name,
+					chipset_enables[i].device_name);
+			continue;
+		}
 		msg_pinfo("Found chipset \"%s %s\", enabling flash write... ",
 		       chipset_enables[i].vendor_name,
 		       chipset_enables[i].device_name);
@@ -1460,11 +1501,15 @@ int chipset_flash_enable(void)
 
 		ret = chipset_enables[i].doit(dev,
 					      chipset_enables[i].device_name);
-		if (ret)
+		if (ret == NOT_DONE_YET) {
+			ret = -2;
+			msg_pinfo("OK - searching further chips.\n");
+		} else if (ret < 0)
 			msg_pinfo("FAILED!\n");
-		else
+		else if(ret == 0)
 			msg_pinfo("OK.\n");
 	}
+
 	msg_pinfo("This chipset supports the following protocols: %s.\n",
 	       flashbuses_to_text(buses_supported));
 
