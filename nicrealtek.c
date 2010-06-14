@@ -65,6 +65,7 @@ int nicsmc1211_init(void)
 
 int nicrealtek_shutdown(void)
 {
+	/* FIXME: We forgot to disable software access again. */
 	free(programmer_param);
 	pci_cleanup(pacc);
 	release_io_perms();
@@ -73,8 +74,14 @@ int nicrealtek_shutdown(void)
 
 void nicrealtek_chip_writeb(uint8_t val, chipaddr addr)
 {
+	/* Output addr and data, set WE to 0, set OE to 1, set CS to 0,
+	 * enable software access.
+	 */
 	OUTL(((uint32_t)addr & 0x01FFFF) | 0x0A0000 | (val << 24),
 	     io_base_addr + BIOS_ROM_ADDR);
+	/* Output addr and data, set WE to 1, set OE to 1, set CS to 1,
+	 * enable software access.
+	 */
 	OUTL(((uint32_t)addr & 0x01FFFF) | 0x1E0000 | (val << 24),
 	     io_base_addr + BIOS_ROM_ADDR);
 }
@@ -83,11 +90,20 @@ uint8_t nicrealtek_chip_readb(const chipaddr addr)
 {
 	uint8_t val;
 
+	/* FIXME: Can we skip reading the old data and simply use 0? */
+	/* Read old data. */
 	val = INB(io_base_addr + BIOS_ROM_DATA);
+	/* Output new addr and old data, set WE to 1, set OE to 0, set CS to 0,
+	 * enable software access.
+	 */
 	OUTL(((uint32_t)addr & 0x01FFFF) | 0x060000 | (val << 24),
 	     io_base_addr + BIOS_ROM_ADDR);
 
+	/* Read new data. */
 	val = INB(io_base_addr + BIOS_ROM_DATA);
+	/* Output addr and new data, set WE to 1, set OE to 1, set CS to 1,
+	 * enable software access.
+	 */
 	OUTL(((uint32_t)addr & 0x01FFFF) | 0x1E0000 | (val << 24),
 	     io_base_addr + BIOS_ROM_ADDR);
 
