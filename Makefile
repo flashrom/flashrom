@@ -50,6 +50,8 @@ LDFLAGS += -L/usr/local/lib
 endif
 ifeq ($(OS_ARCH), DOS)
 CPPFLAGS += -I../libgetopt -I../libpci/include
+# FIXME Check if we can achieve the same effect with -L../libgetopt -lgetopt
+LIBS += ../libgetopt/libgetopt.a
 # Bus Pirate and Serprog are not supported under DOS.
 CONFIG_BUSPIRATE_SPI = no
 CONFIG_SERPROG = no
@@ -136,9 +138,8 @@ endif
 ifeq ($(CONFIG_SERPROG), yes)
 FEATURE_CFLAGS += -D'CONFIG_SERPROG=1'
 PROGRAMMER_OBJS += serprog.o
-ifeq ($(OS_ARCH), SunOS)
-LIBS += -lsocket
-endif
+NEED_SERIAL := yes
+NEED_NET := yes
 endif
 
 ifeq ($(CONFIG_BITBANG_SPI), yes)
@@ -204,6 +205,7 @@ endif
 ifeq ($(CONFIG_BUSPIRATE_SPI), yes)
 FEATURE_CFLAGS += -D'CONFIG_BUSPIRATE_SPI=1'
 PROGRAMMER_OBJS += buspirate_spi.o
+NEED_SERIAL := yes
 endif
 
 ifeq ($(CONFIG_DEDIPROG), yes)
@@ -212,20 +214,18 @@ FEATURE_LIBS += -lusb
 PROGRAMMER_OBJS += dediprog.o
 endif
 
-# Ugly, but there's no elif/elseif.
-ifeq ($(CONFIG_SERPROG), yes)
+ifeq ($(NEED_SERIAL), yes)
 LIB_OBJS += serial.o
-else
-ifeq ($(CONFIG_BUSPIRATE_SPI), yes)
-LIB_OBJS += serial.o
+endif
+
+ifeq ($(NEED_NET), yes)
+ifeq ($(OS_ARCH), SunOS)
+LIBS += -lsocket
 endif
 endif
 
 ifeq ($(NEED_PCI), yes)
 CHECK_LIBPCI = yes
-endif
-
-ifeq ($(NEED_PCI), yes)
 FEATURE_CFLAGS += -D'NEED_PCI=1'
 PROGRAMMER_OBJS += pcidev.o physmap.o hwaccess.o
 ifeq ($(OS_ARCH), NetBSD)
@@ -236,7 +236,7 @@ LIBS += -l$(shell uname -p)
 else
 ifeq ($(OS_ARCH), DOS)
 # FIXME There needs to be a better way to do this
-LIBS += ../libpci/lib/libpci.a ../libgetopt/libgetopt.a
+LIBS += ../libpci/lib/libpci.a
 else
 LIBS += -lpci
 endif
