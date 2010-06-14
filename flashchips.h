@@ -388,7 +388,7 @@
 #define SST_25VF512A_REMS	0x48	/* REMS or RES opcode */
 #define SST_25VF010_REMS	0x49	/* REMS or RES opcode */
 #define SST_25VF020_REMS	0x43	/* REMS or RES opcode */
-#define SST_25VF040_REMS	0x44	/* REMS or RES opcode */
+#define SST_25VF040_REMS	0x44	/* REMS or RES opcode, same as SST25LF040A */
 #define SST_25VF040B		0x258D
 #define SST_25VF040B_REMS	0x8D	/* REMS or RES opcode */
 #define SST_25VF080_REMS	0x80	/* REMS or RES opcode */
