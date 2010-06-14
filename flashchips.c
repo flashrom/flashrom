@@ -3840,6 +3840,34 @@ struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "SST",
+		.name		= "SST25LF040A.RES",
+		.bustype	= CHIP_BUSTYPE_SPI,
+		.manufacture_id	= SST_ID,
+		.model_id	= SST_25VF040_REMS,
+		.total_size	= 512,
+		.page_size	= 256,
+		.tested		= TEST_OK_PROBE,
+		.probe		= probe_spi_res2,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 128} },
+				.block_erase = spi_block_erase_20,
+			}, {
+				.eraseblocks = { {32 * 1024, 16} },
+				.block_erase = spi_block_erase_52,
+			}, {
+				.eraseblocks = { {512 * 1024, 1} },
+				.block_erase = spi_block_erase_60,
+			},
+		},
+		.write		= spi_chip_write_1,
+		.read		= spi_chip_read,
+	},
+
+	{
+		.vendor		= "SST",
 		.name		= "SST25VF040B.REMS",
 		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= SST_ID,
