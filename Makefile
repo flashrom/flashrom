@@ -49,6 +49,7 @@ CPPFLAGS += -I/usr/local/include
 LDFLAGS += -L/usr/local/lib
 endif
 ifeq ($(OS_ARCH), DOS)
+EXEC_SUFFIX := .exe
 CPPFLAGS += -I../libgetopt -I../libpci/include
 # FIXME Check if we can achieve the same effect with -L../libgetopt -lgetopt
 LIBS += ../libgetopt/libgetopt.a
@@ -67,7 +68,7 @@ CLI_OBJS = flashrom.o cli_classic.o cli_output.o print.o
 
 PROGRAMMER_OBJS = udelay.o programmer.o
 
-all: pciutils features $(PROGRAM)
+all: pciutils features $(PROGRAM)$(EXEC_SUFFIX)
 
 # Set the flashrom version string from the highest revision number
 # of the checked out flashrom files.
@@ -255,8 +256,8 @@ FEATURE_LIBS += $(shell LC_ALL=C grep -q "NEEDLIBZ := yes" .libdeps && printf "%
 
 OBJS = $(CHIP_OBJS) $(CLI_OBJS) $(PROGRAMMER_OBJS) $(LIB_OBJS)
 
-$(PROGRAM): $(OBJS)
-	$(CC) $(LDFLAGS) -o $(PROGRAM) $(OBJS) $(FEATURE_LIBS) $(LIBS)
+$(PROGRAM)$(EXEC_SUFFIX): $(OBJS)
+	$(CC) $(LDFLAGS) -o $(PROGRAM)$(EXEC_SUFFIX) $(OBJS) $(FEATURE_LIBS) $(LIBS)
 
 # TAROPTIONS reduces information leakage from the packager's system.
 # If other tar programs support command line arguments for setting uid/gid of
@@ -268,23 +269,24 @@ TAROPTIONS = $(shell LC_ALL=C tar --version|grep -q GNU && echo "--owner=root --
 
 # Make sure to add all names of generated binaries here.
 # This includes all frontends and libflashrom.
+# We don't use EXEC_SUFFIX here because we want to clean everything.
 clean:
 	rm -f $(PROGRAM) $(PROGRAM).exe *.o *.d
 
 distclean: clean
 	rm -f .features .libdeps
 
-strip: $(PROGRAM)
-	$(STRIP) $(STRIP_ARGS) $(PROGRAM)
+strip: $(PROGRAM)$(EXEC_SUFFIX)
+	$(STRIP) $(STRIP_ARGS) $(PROGRAM)$(EXEC_SUFFIX)
 
 compiler:
 	@printf "Checking for a C compiler... "
 	@$(shell ( echo "int main(int argc, char **argv)"; \
 		   echo "{ return 0; }"; ) > .test.c )
-	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .test.c -o .test >/dev/null &&	\
+	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .test.c -o .test$(EXEC_SUFFIX) >/dev/null &&	\
 		echo "found." || ( echo "not found."; \
-		rm -f .test.c .test; exit 1)
-	@rm -f .test.c .test
+		rm -f .test.c .test$(EXEC_SUFFIX); exit 1)
+	@rm -f .test.c .test$(EXEC_SUFFIX)
 
 ifeq ($(CHECK_LIBPCI), yes)
 pciutils: compiler
@@ -300,15 +302,15 @@ pciutils: compiler
 		rm -f .test.c .test.o; exit 1)
 	@printf "Checking if libpci is present and sufficient... "
 	@printf "" > .libdeps
-	@$(CC) $(LDFLAGS) .test.o -o .test $(LIBS) >/dev/null 2>&1 &&				\
+	@$(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) >/dev/null 2>&1 &&				\
 		echo "yes." || ( echo "no.";							\
 		printf "Checking if libz+libpci are present and sufficient...";	\
-		$(CC) $(LDFLAGS) .test.o -o .test $(LIBS) -lz >/dev/null 2>&1 &&		\
+		$(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) -lz >/dev/null 2>&1 &&		\
 		( echo "yes."; echo "NEEDLIBZ := yes" > .libdeps ) || ( echo "no."; echo;	\
 		echo "Please install libpci (package pciutils) and/or libz.";			\
 		echo "See README for more information."; echo;				\
-		rm -f .test.c .test.o .test; exit 1) )
-	@rm -f .test.c .test.o .test
+		rm -f .test.c .test.o .test$(EXEC_SUFFIX); exit 1) )
+	@rm -f .test.c .test.o .test$(EXEC_SUFFIX)
 else
 pciutils: compiler
 	@printf "" > .libdeps
@@ -324,7 +326,7 @@ features: compiler
 		   echo "struct ftdi_context *ftdic = NULL;";	   \
 		   echo "int main(int argc, char **argv)"; \
 		   echo "{ return ftdi_init(ftdic); }"; ) > .featuretest.c )
-	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest $(FTDILIBS) $(LIBS) >/dev/null 2>&1 &&	\
+	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) $(FTDILIBS) $(LIBS) >/dev/null 2>&1 &&	\
 		( echo "found."; echo "FTDISUPPORT := yes" >> .features.tmp ) ||	\
 		( echo "not found."; echo "FTDISUPPORT := no" >> .features.tmp )
 	@printf "Checking for utsname support... "
@@ -332,11 +334,11 @@ features: compiler
 		   echo "struct utsname osinfo;";	   \
 		   echo "int main(int argc, char **argv)"; \
 		   echo "{ uname (&osinfo); return 0; }"; ) > .featuretest.c )
-	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest >/dev/null 2>&1 &&	\
+	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) >/dev/null 2>&1 &&	\
 		( echo "found."; echo "UTSNAME := yes" >> .features.tmp ) ||	\
 		( echo "not found."; echo "UTSNAME := no" >> .features.tmp )
 	@$(DIFF) -q .features.tmp .features >/dev/null 2>&1 && rm .features.tmp || mv .features.tmp .features
-	@rm -f .featuretest.c .featuretest
+	@rm -f .featuretest.c .featuretest$(EXEC_SUFFIX)
 else
 features: compiler
 	@echo "FEATURES := yes" > .features.tmp
@@ -345,17 +347,17 @@ features: compiler
 		   echo "struct utsname osinfo;";	   \
 		   echo "int main(int argc, char **argv)"; \
 		   echo "{ uname (&osinfo); return 0; }"; ) > .featuretest.c )
-	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest >/dev/null 2>&1 &&	\
+	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) >/dev/null 2>&1 &&	\
 		( echo "found."; echo "UTSNAME := yes" >> .features.tmp ) ||	\
 		( echo "not found."; echo "UTSNAME := no" >> .features.tmp )
 	@$(DIFF) -q .features.tmp .features >/dev/null 2>&1 && rm .features.tmp || mv .features.tmp .features
-	@rm -f .featuretest.c .featuretest
+	@rm -f .featuretest.c .featuretest$(EXEC_SUFFIX)
 endif
 
-install: $(PROGRAM)
+install: $(PROGRAM)$(EXEC_SUFFIX)
 	mkdir -p $(DESTDIR)$(PREFIX)/sbin
 	mkdir -p $(DESTDIR)$(MANDIR)/man8
-	$(INSTALL) -m 0755 $(PROGRAM) $(DESTDIR)$(PREFIX)/sbin
+	$(INSTALL) -m 0755 $(PROGRAM)$(EXEC_SUFFIX) $(DESTDIR)$(PREFIX)/sbin
 	$(INSTALL) -m 0644 $(PROGRAM).8 $(DESTDIR)$(MANDIR)/man8
 
 export:
