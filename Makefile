@@ -53,9 +53,28 @@ EXEC_SUFFIX := .exe
 CPPFLAGS += -I../libgetopt -I../libpci/include
 # FIXME Check if we can achieve the same effect with -L../libgetopt -lgetopt
 LIBS += ../libgetopt/libgetopt.a
-# Bus Pirate and Serprog are not supported under DOS.
-CONFIG_BUSPIRATE_SPI = no
-CONFIG_SERPROG = no
+# Bus Pirate and Serprog are not supported under DOS (missing serial support).
+ifeq ($(CONFIG_BUSPIRATE_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_BUSPIRATE_SPI=yes
+else
+override CONFIG_BUSPIRATE_SPI = no
+endif
+ifeq ($(CONFIG_SERPROG), yes)
+UNSUPPORTED_FEATURES += CONFIG_SERPROG=yes
+else
+override CONFIG_SERPROG = no
+endif
+# Dediprog and FT2232 are not supported under DOS (missing USB support).
+ifeq ($(CONFIG_DEDIPROG), yes)
+UNSUPPORTED_FEATURES += CONFIG_DEDIPROG=yes
+else
+override CONFIG_DEDIPROG = no
+endif
+ifeq ($(CONFIG_FT2232_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_FT2232_SPI=yes
+else
+override CONFIG_FT2232_SPI = no
+endif
 endif
 
 CHIP_OBJS = jedec.o stm50flw0x0x.o w39v040c.o w39v080fa.o w29ee011.o \
@@ -279,7 +298,7 @@ distclean: clean
 strip: $(PROGRAM)$(EXEC_SUFFIX)
 	$(STRIP) $(STRIP_ARGS) $(PROGRAM)$(EXEC_SUFFIX)
 
-compiler:
+compiler: featuresavailable
 	@printf "Checking for a C compiler... "
 	@$(shell ( echo "int main(int argc, char **argv)"; \
 		   echo "{ return 0; }"; ) > .test.c )
@@ -317,6 +336,17 @@ pciutils: compiler
 endif
 
 .features: features
+
+# If a user does not explicitly request a non-working feature, we should
+# silently disable it. However, if a non-working (does not compile) feature
+# is explicitly requested, we should bail out with a descriptive error message.
+ifeq ($(UNSUPPORTED_FEATURES), )
+featuresavailable:
+else
+featuresavailable:
+	@echo "The following features are unavailable on your machine: $(UNSUPPORTED_FEATURES)"
+	@false
+endif
 
 ifeq ($(CONFIG_FT2232_SPI), yes)
 features: compiler
@@ -375,6 +405,6 @@ tarball: export
 djgpp-dos: clean
 	make CC=i586-pc-msdosdjgpp-gcc STRIP=i586-pc-msdosdjgpp-strip WARNERROR=no OS_ARCH=DOS
 
-.PHONY: all clean distclean compiler pciutils features export tarball dos
+.PHONY: all clean distclean compiler pciutils features export tarball dos featuresavailable
 
 -include $(OBJS:.o=.d)
