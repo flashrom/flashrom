@@ -1366,6 +1366,37 @@ struct flashchip flashchips[] = {
 	},
 
 	{
+		.vendor		= "EMST",
+		.name		= "F25L008A",
+		.bustype	= CHIP_BUSTYPE_SPI,
+		.manufacture_id	= EMST_ID,
+		.model_id	= EMST_F25L008A,
+		.total_size	= 1024,
+		.page_size	= 256,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 256} },
+				.block_erase = spi_block_erase_20,
+			}, {
+				.eraseblocks = { {64 * 1024, 16} },
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { {1024 * 1024, 1} },
+				.block_erase = spi_block_erase_60,
+			}, {
+				.eraseblocks = { {1024 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
+		},
+		.write		= spi_aai_write,
+		.read		= read_memmapped,
+	},
+
+	{
 		.vendor		= "Eon",
 		.name		= "EN25B05",
 		.bustype	= CHIP_BUSTYPE_SPI,
