@@ -151,6 +151,7 @@
 #define CATALYST_ID		0x31	/* Catalyst */
 
 #define EMST_ID			0x8C	/* EMST / EFST Elite Flash Storage */
+#define EMST_F25L008A		0x2014
 #define EMST_F49B002UA		0x00
 
 /*
