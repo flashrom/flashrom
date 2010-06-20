@@ -1012,15 +1012,44 @@ int spi_chip_write_1(struct flashchip *flash, uint8_t *buf)
 
 int spi_aai_write(struct flashchip *flash, uint8_t *buf)
 {
-	uint32_t pos = 2, size = flash->total_size * 1024;
-	unsigned char w[6] = {0xad, 0, 0, 0, buf[0], buf[1]};
+	uint32_t addr = 0;
+	uint32_t len = flash->total_size * 1024;
+	uint32_t pos = addr;
 	int result;
+	unsigned char cmd[JEDEC_AAI_WORD_PROGRAM_CONT_OUTSIZE] = {
+		JEDEC_AAI_WORD_PROGRAM,
+	};
+	struct spi_command cmds[] = {
+	{
+		.writecnt	= JEDEC_WREN_OUTSIZE,
+		.writearr	= (const unsigned char[]){ JEDEC_WREN },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= JEDEC_AAI_WORD_PROGRAM_OUTSIZE,
+		.writearr	= (const unsigned char[]){
+					JEDEC_AAI_WORD_PROGRAM,
+					(pos >> 16) & 0xff,
+					(pos >> 8) & 0xff,
+					(pos & 0xff),
+					buf[0],
+					buf[1]
+				},
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= 0,
+		.writearr	= NULL,
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}};
 
 	switch (spi_controller) {
 #if CONFIG_INTERNAL == 1
 #if defined(__i386__) || defined(__x86_64__)
+	case SPI_CONTROLLER_IT87XX:
 	case SPI_CONTROLLER_WBSIO:
-		msg_cerr("%s: impossible with Winbond SPI masters,"
+		msg_cerr("%s: impossible with this SPI controller,"
 				" degrading to byte program\n", __func__);
 		return spi_chip_write_1(flash, buf);
 #endif
@@ -1028,24 +1057,46 @@ int spi_aai_write(struct flashchip *flash, uint8_t *buf)
 	default:
 		break;
 	}
+
+	/* The data sheet requires a start address with the low bit cleared. */
+	if (addr % 2) {
+		msg_cerr("%s: start address not even! Please report a bug at "
+			 "flashrom@flashrom.org\n", __func__);
+		return SPI_GENERIC_ERROR;
+	}
+	/* The data sheet requires total AAI write length to be even. */
+	if (len % 2) {
+		msg_cerr("%s: total write length not even! Please report a "
+			 "bug at flashrom@flashrom.org\n", __func__);
+		return SPI_GENERIC_ERROR;
+	}
+
 	if (erase_flash(flash)) {
 		msg_cerr("ERASE FAILED!\n");
 		return -1;
 	}
-	/* FIXME: This will fail on ICH/VIA SPI. */
-	result = spi_write_enable();
-	if (result)
+
+	result = spi_send_multicommand(cmds);
+	if (result) {
+		msg_cerr("%s failed during start command execution\n",
+			 __func__);
 		return result;
-	spi_send_command(6, 0, w, NULL);
-	while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
-		programmer_delay(5); /* SST25VF040B Tbp is max 10us */
-	while (pos < size) {
-		w[1] = buf[pos++];
-		w[2] = buf[pos++];
-		spi_send_command(3, 0, w, NULL);
-		while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
-			programmer_delay(5); /* SST25VF040B Tbp is max 10us */
 	}
+	while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
+		programmer_delay(10);
+
+	/* We already wrote 2 bytes in the multicommand step. */
+	pos += 2;
+
+	while (pos < addr + len) {
+		cmd[1] = buf[pos++];
+		cmd[2] = buf[pos++];
+		spi_send_command(JEDEC_AAI_WORD_PROGRAM_CONT_OUTSIZE, 0, cmd, NULL);
+		while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
+			programmer_delay(10);
+	}
+
+	/* Use WRDI to exit AAI mode. */
 	spi_write_disable();
 	return 0;
 }
