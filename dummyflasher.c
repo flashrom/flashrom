@@ -23,6 +23,7 @@
 #include <ctype.h>
 #include <sys/types.h>
 #include "flash.h"
+#include "chipdrivers.h"
 
 int dummy_init(void)
 {
@@ -157,3 +158,10 @@ int dummy_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	msg_pspew("\n");
 	return 0;
 }
+
+int dummy_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
+{
+	/* Maximum read length is unlimited, use 64kB. */
+	return spi_read_chunked(flash, buf, start, len, 64 * 1024);
+}
+

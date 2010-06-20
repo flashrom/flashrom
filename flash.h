@@ -454,6 +454,7 @@ uint32_t dummy_chip_readl(const chipaddr addr);
 void dummy_chip_readn(uint8_t *buf, const chipaddr addr, size_t len);
 int dummy_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		      const unsigned char *writearr, unsigned char *readarr);
+int dummy_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
 #endif
 
 /* nic3com.c */
