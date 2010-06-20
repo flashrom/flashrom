@@ -646,29 +646,6 @@ int spi_block_erase_d7(struct flashchip *flash, unsigned int addr, unsigned int 
 	return 0;
 }
 
-int spi_chip_erase_d8(struct flashchip *flash)
-{
-	int i, rc = 0;
-	int total_size = flash->total_size * 1024;
-	int erase_size = 64 * 1024;
-
-	spi_disable_blockprotect();
-
-	msg_cinfo("Erasing chip: \n");
-
-	for (i = 0; i < total_size / erase_size; i++) {
-		rc = spi_block_erase_d8(flash, i * erase_size, erase_size);
-		if (rc) {
-			msg_cerr("Error erasing block at 0x%x\n", i);
-			break;
-		}
-	}
-
-	msg_cinfo("\n");
-
-	return rc;
-}
-
 /* Sector size is usually 4k, though Macronix eliteflash has 64k */
 int spi_block_erase_20(struct flashchip *flash, unsigned int addr, unsigned int blocklen)
 {

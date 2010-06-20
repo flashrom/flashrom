@@ -35,8 +35,6 @@ int spi_write_enable(void);
 int spi_write_disable(void);
 int spi_chip_erase_60(struct flashchip *flash);
 int spi_chip_erase_c7(struct flashchip *flash);
-int spi_chip_erase_60_c7(struct flashchip *flash);
-int spi_chip_erase_d8(struct flashchip *flash);
 int spi_block_erase_20(struct flashchip *flash, unsigned int addr, unsigned int blocklen);
 int spi_block_erase_52(struct flashchip *flash, unsigned int addr, unsigned int blocklen);
 int spi_block_erase_d7(struct flashchip *flash, unsigned int addr, unsigned int blocklen);
