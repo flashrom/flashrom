@@ -288,6 +288,7 @@ static int enable_flash_ich_4e(struct pci_dev *dev, const char *name)
 	 * FWH_DEC_EN1, but they are called FB_SEL1, FB_SEL2, FB_DEC_EN1 and
 	 * FB_DEC_EN2.
 	 */
+	buses_supported = CHIP_BUSTYPE_FWH;
 	return enable_flash_ich(dev, name, 0x4e);
 }
 
@@ -401,6 +402,7 @@ static int enable_flash_poulsbo(struct pci_dev *dev, const char *name)
        if (new != old)
                pci_write_byte(dev, 0xd9, new);
 
+	buses_supported = CHIP_BUSTYPE_FWH;
        return 0;
 }
 
