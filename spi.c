@@ -99,7 +99,7 @@ const struct spi_programmer spi_programmer[] = {
 	{ /* SPI_CONTROLLER_DUMMY */
 		.command = dummy_spi_send_command,
 		.multicommand = default_spi_send_multicommand,
-		.read = NULL,
+		.read = dummy_spi_read,
 		.write_256 = NULL,
 	},
 #endif
