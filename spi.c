@@ -132,7 +132,8 @@ int spi_send_command(unsigned int writecnt, unsigned int readcnt,
 {
 	if (!spi_programmer[spi_controller].command) {
 		msg_perr("%s called, but SPI is unsupported on this "
-			"hardware. Please report a bug.\n", __func__);
+			 "hardware. Please report a bug at "
+			 "flashrom@flashrom.org\n", __func__);
 		return 1;
 	}
 
@@ -144,7 +145,8 @@ int spi_send_multicommand(struct spi_command *cmds)
 {
 	if (!spi_programmer[spi_controller].multicommand) {
 		msg_perr("%s called, but SPI is unsupported on this "
-			"hardware. Please report a bug.\n", __func__);
+			 "hardware. Please report a bug at "
+			 "flashrom@flashrom.org\n", __func__);
 		return 1;
 	}
 
@@ -183,8 +185,9 @@ int default_spi_send_multicommand(struct spi_command *cmds)
 int spi_chip_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
 	if (!spi_programmer[spi_controller].read) {
-		msg_perr("%s called, but SPI read is unsupported on this"
-			" hardware. Please report a bug.\n", __func__);
+		msg_perr("%s called, but SPI read is unsupported on this "
+			 "hardware. Please report a bug at "
+			 "flashrom@flashrom.org\n", __func__);
 		return 1;
 	}
 
@@ -198,8 +201,9 @@ int spi_chip_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 int spi_chip_write_256(struct flashchip *flash, uint8_t *buf)
 {
 	if (!spi_programmer[spi_controller].write_256) {
-		msg_perr("%s called, but SPI page write is unsupported "
-			" on this hardware. Please report a bug.\n", __func__);
+		msg_perr("%s called, but SPI page write is unsupported on this "
+			 "hardware. Please report a bug at "
+			 "flashrom@flashrom.org\n", __func__);
 		return 1;
 	}
 
