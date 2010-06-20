@@ -72,6 +72,7 @@ static int spi_res(unsigned char *readarr, int bytes)
 	unsigned char cmd[JEDEC_RES_OUTSIZE] = { JEDEC_RES, 0, 0, 0 };
 	uint32_t readaddr;
 	int ret;
+	int i;
 
 	ret = spi_send_command(sizeof(cmd), bytes, cmd, readarr);
 	if (ret == SPI_INVALID_ADDRESS) {
@@ -84,7 +85,10 @@ static int spi_res(unsigned char *readarr, int bytes)
 	}
 	if (ret)
 		return ret;
-	msg_cspew("RES returned %02x. ", readarr[0]);
+	msg_cspew("RES returned");
+	for (i = 0; i < bytes; i++)
+		msg_cspew(" 0x%02x", readarr[i]);
+	msg_cspew(". ");
 	return 0;
 }
 
@@ -122,7 +126,9 @@ static int probe_spi_rdid_generic(struct flashchip *flash, int bytes)
 	if (!oddparity(readarr[0]))
 		msg_cdbg("RDID byte 0 parity violation. ");
 
-	/* Check if this is a continuation vendor ID */
+	/* Check if this is a continuation vendor ID.
+	 * FIXME: Handle continuation device IDs.
+	 */
 	if (readarr[0] == 0x7f) {
 		if (!oddparity(readarr[1]))
 			msg_cdbg("RDID byte 1 parity violation. ");
@@ -166,35 +172,23 @@ int probe_spi_rdid(struct flashchip *flash)
 	return probe_spi_rdid_generic(flash, 3);
 }
 
-/* support 4 bytes flash ID */
 int probe_spi_rdid4(struct flashchip *flash)
 {
-	/* only some SPI chipsets support 4 bytes commands */
+	/* Some SPI controllers do not support commands with writecnt=1 and
+	 * readcnt=4.
+	 */
 	switch (spi_controller) {
 #if CONFIG_INTERNAL == 1
 #if defined(__i386__) || defined(__x86_64__)
-	case SPI_CONTROLLER_ICH7:
-	case SPI_CONTROLLER_ICH9:
-	case SPI_CONTROLLER_VIA:
-	case SPI_CONTROLLER_SB600:
+	case SPI_CONTROLLER_IT87XX:
 	case SPI_CONTROLLER_WBSIO:
+		msg_cinfo("4 byte RDID not supported on this SPI controller\n");
+		return 0;
+		break;
 #endif
 #endif
-#if CONFIG_FT2232_SPI == 1
-	case SPI_CONTROLLER_FT2232:
-#endif
-#if CONFIG_DUMMY == 1
-	case SPI_CONTROLLER_DUMMY:
-#endif
-#if CONFIG_BUSPIRATE_SPI == 1
-	case SPI_CONTROLLER_BUSPIRATE:
-#endif
-#if CONFIG_DEDIPROG == 1
-	case SPI_CONTROLLER_DEDIPROG:
-#endif
-		return probe_spi_rdid_generic(flash, 4);
 	default:
-		msg_cinfo("4b ID not supported on this SPI controller\n");
+		return probe_spi_rdid_generic(flash, 4);
 	}
 
 	return 0;
