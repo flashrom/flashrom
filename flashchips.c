@@ -2363,6 +2363,68 @@ struct flashchip flashchips[] = {
 	},
 
 	{
+		.vendor		= "Hyundai",
+		.name		= "HY29F002T",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= HYUNDAI_ID,
+		.model_id	= HY_29F002T,
+		.total_size	= 256,
+		.page_size	= 256 * 1024,
+		.feature_bits	= FEATURE_EITHER_RESET, /* Some revisions may need FEATURE_ADDR_2AA */
+		.tested		= TEST_OK_PREW,
+		.probe		= probe_jedec,
+		.probe_timing	= TIMING_ZERO, /* Datasheet has no timing info specified */
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = {
+					{64 * 1024, 3},
+					{32 * 1024, 1},
+					{8 * 1024, 2},
+					{16 * 1024, 1},
+				},
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {256 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			},
+		},
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "Hyundai",
+		.name		= "HY29F002B",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= HYUNDAI_ID,
+		.model_id	= HY_29F002B,
+		.total_size	= 256,
+		.page_size	= 256 * 1024,
+		.feature_bits	= FEATURE_EITHER_RESET, /* Some revisions may need FEATURE_ADDR_2AA */
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_jedec,
+		.probe_timing	= TIMING_ZERO, /* Datasheet has no timing info specified */
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = {
+					{16 * 1024, 1},
+					{8 * 1024, 2},
+					{32 * 1024, 1},
+					{64 * 1024, 3},
+				},
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {256 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			},
+		},
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+	},
+
+	{
 		.vendor		= "Intel",
 		.name		= "28F001BX-B",
 		.bustype	= CHIP_BUSTYPE_PARALLEL,

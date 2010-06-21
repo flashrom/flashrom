@@ -242,7 +242,8 @@
 #define HY_29LV800B		0x5B
 #define HY_29F040A		0xA4
 #define HY_29F400B		0xAB	/* Same as HY_29F400AB */
-#define HY_29F002		0xB0
+#define HY_29F002B		0x34
+#define HY_29F002T		0xB0
 #define HY_29LV400T		0xB9
 #define HY_29LV400B		0xBA
 #define HY_29F080		0xD5
