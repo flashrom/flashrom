@@ -27,12 +27,10 @@
 
 #define _LARGEFILE64_SOURCE
 
-#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
+#include <unistd.h>
 #include "flash.h"
 
 #if defined(__i386__) || defined(__x86_64__)
