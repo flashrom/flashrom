@@ -23,12 +23,16 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
 #include "flash.h"
+
+/* Do we need any file access or ioctl for physmap or MSR? */
+#if !defined(__DJGPP__)
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <errno.h>
+#endif
 
 #ifdef __DJGPP__
 #include <dpmi.h>

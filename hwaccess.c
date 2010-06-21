@@ -21,10 +21,12 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+#include <sys/types.h>
+#if !defined (__DJGPP__)
 #include <unistd.h>
 #include <fcntl.h>
-#include <sys/types.h>
 #include <errno.h>
+#endif
 #include "flash.h"
 
 #if defined(__i386__) || defined(__x86_64__)
@@ -42,12 +44,14 @@ int io_fd;
 
 void get_io_perms(void)
 {
+#if defined(__DJGPP__)
+	/* We have full permissions by default. */
+	return;
+#else
 #if defined (__sun) && (defined(__i386) || defined(__amd64))
 	if (sysi86(SI86V86, V86SC_IOPL, PS_IOPL) != 0) {
 #elif defined(__FreeBSD__) || defined (__DragonFly__)
 	if ((io_fd = open("/dev/io", O_RDWR)) < 0) {
-#elif __DJGPP__
-	if (0) {
 #else 
 	if (iopl(3) != 0) {
 #endif
@@ -55,6 +59,7 @@ void get_io_perms(void)
 			"You need to be root.\n", strerror(errno));
 		exit(1);
 	}
+#endif
 }
 
 void release_io_perms(void)
