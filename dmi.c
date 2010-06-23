@@ -24,6 +24,26 @@
 
 #include "flash.h"
 
+int has_dmi_support = 0;
+
+#if STANDALONE
+
+/* Stub to indicate missing DMI functionality.
+ * has_dmi_support is 0 by default, so nothing to do here.
+ * Because dmidecode is not available on all systems, the goal is to implement
+ * the DMI subset we need directly in this file.
+ */
+void dmi_init(void)
+{
+}
+
+int dmi_match(const char *pattern)
+{
+	return 0;
+}
+
+#else /* STANDALONE */
+
 const char *dmidecode_names[] = {
 	"system-manufacturer",
 	"system-product-name",
@@ -36,7 +56,6 @@ const char *dmidecode_names[] = {
 #define DMI_COMMAND_LEN_MAX 260
 const char *dmidecode_command = "dmidecode";
 
-int has_dmi_support = 0;
 char *dmistrings[ARRAY_SIZE(dmidecode_names)];
 
 /* Strings longer than 4096 in DMI are just insane. */
@@ -172,3 +191,5 @@ int dmi_match(const char *pattern)
 
 	return 0;
 }
+
+#endif /* STANDALONE */
