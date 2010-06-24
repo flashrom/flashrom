@@ -512,6 +512,7 @@
 #define W_25Q80			0x4014
 #define W_25Q16			0x4015
 #define W_25Q32			0x4016
+#define W_25Q64			0x4017
 #define W_29C011		0xC1
 #define W_29C020C		0x45	/* Same as W29C020 and ASD AE29F2008 */
 #define W_29C040P		0x46	/* Same as W29C040 */
