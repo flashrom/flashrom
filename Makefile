@@ -310,7 +310,9 @@ compiler: featuresavailable
 ifeq ($(CHECK_LIBPCI), yes)
 pciutils: compiler
 	@printf "Checking for libpci headers... "
-	@$(shell ( echo "#include <pci/pci.h>";		   \
+	@# Avoid a failing test due to libpci header symbol shadowing breakage
+	@$(shell ( echo "#define index shadow_workaround_index"; \
+		   echo "#include <pci/pci.h>";		   \
 		   echo "struct pci_access *pacc;";	   \
 		   echo "int main(int argc, char **argv)"; \
 		   echo "{ pacc = pci_alloc(); return 0; }"; ) > .test.c )
