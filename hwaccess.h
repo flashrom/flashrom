@@ -31,7 +31,14 @@
 #endif
 
 #if NEED_PCI == 1
+/*
+ * libpci headers use the variable name "index" which triggers shadowing
+ * warnings on systems which have the index() function in a default #include
+ * or as builtin.
+ */
+#define index shadow_workaround_index
 #include <pci/pci.h>
+#undef index
 #endif
 
 #if defined (__i386__) || defined (__x86_64__)
