@@ -159,6 +159,7 @@ struct winbond_chip {
 
 enum winbond_id {
 	WINBOND_W83627HF_ID = 0x52,
+	WINBOND_W83627EHF_ID = 0x88,
 	WINBOND_W83627THF_ID = 0x82,
 };
 
@@ -176,6 +177,26 @@ static const struct winbond_mux w83627hf_port2_mux[8] = {
 static const struct winbond_port w83627hf[3] = {
 	UNIMPLEMENTED_PORT,
 	{w83627hf_port2_mux, 0x08, 0, 0xF0},
+	UNIMPLEMENTED_PORT
+};
+
+static const struct winbond_mux w83627ehf_port2_mux[8] = {
+	{0x29, 0x06, 0x02},	/* or MIDI */
+	{0x29, 0x06, 0x02},
+	{0x24, 0x02, 0x00},	/* or SPI ROM interface */
+	{0x24, 0x02, 0x00},
+	{0x2A, 0x01, 0x01},	/* or keyboard/mouse interface */
+	{0x2A, 0x01, 0x01},
+	{0x2A, 0x01, 0x01},
+	{0x2A, 0x01, 0x01}
+};
+
+static const struct winbond_port w83627ehf[6] = {
+	UNIMPLEMENTED_PORT,
+	{w83627ehf_port2_mux, 0x09, 0, 0xE3},
+	UNIMPLEMENTED_PORT,
+	UNIMPLEMENTED_PORT,
+	UNIMPLEMENTED_PORT,
 	UNIMPLEMENTED_PORT
 };
 
@@ -200,6 +221,7 @@ static const struct winbond_port w83627thf[5] = {
 
 static const struct winbond_chip winbond_chips[] = {
 	{WINBOND_W83627HF_ID,  ARRAY_SIZE(w83627hf),  w83627hf },
+	{WINBOND_W83627EHF_ID, ARRAY_SIZE(w83627ehf), w83627ehf},
 	{WINBOND_W83627THF_ID, ARRAY_SIZE(w83627thf), w83627thf},
 };
 
@@ -288,6 +310,17 @@ static int winbond_gpio_set(uint16_t base, enum winbond_id chipid,
 static int w83627hf_gpio24_raise_2e()
 {
 	return winbond_gpio_set(0x2e, WINBOND_W83627HF_ID, 24, 1);
+}
+
+/**
+ * Winbond W83627EHF: Raise GPIO24.
+ *
+ * Suited for:
+ *  - Asus A8N VM CSM
+ */
+static int w83627ehf_gpio24_raise_2e()
+{
+	return winbond_gpio_set(0x2e, WINBOND_W83627EHF_ID, 24, 1);
 }
 
 /**
@@ -1549,6 +1582,7 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x8086, 0x27A0, 0x1043, 0x1287,  0x8086, 0x27DF, 0x1043, 0x1287, "^A8J",        NULL,         NULL,          "ASUS",        "A8JM",                  0,   NT, intel_ich_gpio34_raise},
 	{0x10DE, 0x0260, 0x103c, 0x2a3e,  0x10DE, 0x0264, 0x103c, 0x2a3e, "NAGAMI",      NULL,         NULL,          "ASUS",        "A8N-LA",                0,   NT, nvidia_mcp_gpio0_raise},
 	{0x10DE, 0x005E, 0x1043, 0x815A,  0x10DE, 0x0054, 0x1043, 0x815A, NULL,          NULL,         NULL,          "ASUS",        "A8N",                   0,   NT, board_shuttle_fn25},
+	{0x10DE, 0x005E, 0x1043, 0x815A,  0x10DE, 0x0054, 0x1043, 0x815A, NULL,          NULL,         NULL,          "ASUS",        "A8N-VM CSM",            0,   OK, w83627ehf_gpio24_raise_2e},
 	{0x10DE, 0x0264, 0x1043, 0x81C0,  0x10DE, 0x0260, 0x1043, 0x81C0, NULL,          NULL,         NULL,          "ASUS",        "M2NBP-VM CSM",          0,   OK, nvidia_mcp_gpio0_raise},
 	{0x1106, 0x1336, 0x1043, 0x80ed,  0x1106, 0x3288, 0x1043, 0x8249, NULL,          NULL,         NULL,          "ASUS",        "M2V-MX",                0,   OK, via_vt823x_gpio5_raise},
 	{0x8086, 0x1A30, 0x1043, 0x8025,  0x8086, 0x244B, 0x104D, 0x80F0, NULL,          NULL,         NULL,          "ASUS",        "P4B266-LM",             0,   OK, intel_ich_gpio21_raise},
