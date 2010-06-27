@@ -134,6 +134,150 @@ static int fdc37b787_gpio50_raise_3f0(void)
 	return fdc37b787_gpio50_raise(0x3f0);
 }
 
+struct winbond_mux {
+	uint8_t reg;		/* 0 if the corresponding pin is not muxed */
+	uint8_t data;		/* reg/data/mask may be directly ... */
+	uint8_t mask;		/* ... passed to sio_mask */
+};
+
+struct winbond_port {
+	const struct winbond_mux *mux; /* NULL or pointer to mux info for the 8 bits */
+	uint8_t ldn;		/* LDN this GPIO register is located in */
+	uint8_t enable_bit;	/* bit in 0x30 of that LDN to enable 
+	                           the GPIO port */
+	uint8_t base;		/* base register in that LDN for the port */
+};
+
+struct winbond_chip {
+	uint8_t device_id;	/* reg 0x20 of the expected w83626x */
+	uint8_t gpio_port_count;
+	const struct winbond_port *port;
+};
+
+
+#define UNIMPLEMENTED_PORT {NULL, 0, 0, 0}
+
+enum winbond_id {
+	WINBOND_W83627HF_ID = 0x52,
+	WINBOND_W83627THF_ID = 0x82,
+};
+
+static const struct winbond_mux w83627hf_port2_mux[8] = {
+	{0x2A, 0x01, 0x01},	/* or MIDI */
+	{0x2B, 0x80, 0x80},	/* or SPI */
+	{0x2B, 0x40, 0x40},	/* or SPI */
+	{0x2B, 0x20, 0x20},	/* or power LED */
+	{0x2B, 0x10, 0x10},	/* or watchdog */
+	{0x2B, 0x08, 0x08},	/* or infra red */
+	{0x2B, 0x04, 0x04},	/* or infra red */
+	{0x2B, 0x03, 0x03}	/* or IRQ1 input */
+};
+
+static const struct winbond_port w83627hf[3] = {
+	UNIMPLEMENTED_PORT,
+	{w83627hf_port2_mux, 0x08, 0, 0xF0},
+	UNIMPLEMENTED_PORT
+};
+
+static const struct winbond_mux w83627thf_port4_mux[8] = {
+	{0x2D, 0x01, 0x01},	/* or watchdog or VID level strap */
+	{0x2D, 0x02, 0x02},	/* or resume reset */
+	{0x2D, 0x04, 0x04},	/* or S3 input */
+	{0x2D, 0x08, 0x08},	/* or PSON# */
+	{0x2D, 0x10, 0x10},	/* or PWROK */
+	{0x2D, 0x20, 0x20},	/* or suspend LED */
+	{0x2D, 0x40, 0x40},	/* or panel switch input */
+	{0x2D, 0x80, 0x80}	/* or panel switch output */
+};
+
+static const struct winbond_port w83627thf[5] = {
+	UNIMPLEMENTED_PORT,	/* GPIO1 */
+	UNIMPLEMENTED_PORT,	/* GPIO2 */
+	UNIMPLEMENTED_PORT,	/* GPIO3 */
+	{w83627thf_port4_mux, 0x09, 1, 0xF4},
+	UNIMPLEMENTED_PORT	/* GPIO5 */
+};
+
+static const struct winbond_chip winbond_chips[] = {
+	{WINBOND_W83627HF_ID,  ARRAY_SIZE(w83627hf),  w83627hf },
+	{WINBOND_W83627THF_ID, ARRAY_SIZE(w83627thf), w83627thf},
+};
+
+/* Detects which Winbond Super I/O is responding at the given base
+   address, but takes no effort to make sure the chip is really a
+   Winbond Super I/O */
+
+static const struct winbond_chip * winbond_superio_detect(uint16_t base)
+{
+	uint8_t chipid;
+	const struct winbond_chip * chip = NULL;
+	int i;
+
+	w836xx_ext_enter(base);
+	chipid = sio_read(base, 0x20);
+	for (i = 0; i < ARRAY_SIZE(winbond_chips); i++)
+		if (winbond_chips[i].device_id == chipid)
+		{
+			chip = &winbond_chips[i];
+			break;
+		}
+	
+	w836xx_ext_leave(base);
+	return chip;
+}
+
+/* The chipid parameter goes away as soon as we have Super I/O matching in the
+   board enable table. The call to winbond_superio_detect goes away as
+   soon as we have generic Super I/O detection code. */
+static int winbond_gpio_set(uint16_t base, enum winbond_id chipid,
+                            int pin, int raise)
+{
+	const struct winbond_chip * chip = NULL;
+	const struct winbond_port * gpio;
+	int port = pin / 10;
+	int bit = pin % 10;
+
+	chip = winbond_superio_detect(base);
+	if (!chip) {
+		msg_perr("\nERROR: No supported Winbond Super I/O found\n");
+		return -1;
+	}
+	if (bit >= 8 || port == 0 || port > chip->gpio_port_count) {
+		msg_perr("\nERROR: winbond_gpio_set: Invalid GPIO number %d\n",
+		         pin);
+		return -1;
+	}
+
+	gpio = &chip->port[port - 1];
+
+	if (gpio->ldn == 0) {
+		msg_perr("\nERROR: GPIO%d is not supported yet on this"
+		          " winbond chip\n", port);
+		return -1;
+	}
+
+	w836xx_ext_enter(base);
+
+	/* Select logical device */
+	sio_write(base, 0x07, gpio->ldn);
+
+	/* Activate logical device. */
+	sio_mask(base, 0x30, 1 << gpio->enable_bit, 1 << gpio->enable_bit);
+
+	/* Select GPIO function of that pin */
+	if (gpio->mux && gpio->mux[bit].reg)
+		sio_mask(base, gpio->mux[bit].reg,
+		         gpio->mux[bit].data, gpio->mux[bit].mask);
+
+	sio_mask(base, gpio->base + 0, 0, 1 << bit);	/* make pin output */
+	sio_mask(base, gpio->base + 2, 0, 1 << bit);	/* Clear inversion */
+	sio_mask(base, gpio->base + 1, raise << bit, 1 << bit);
+
+	w836xx_ext_leave(base);
+
+	return 0;
+}
+
 /**
  * Winbond W83627HF: Raise GPIO24.
  *
@@ -141,79 +285,31 @@ static int fdc37b787_gpio50_raise_3f0(void)
  *  - Agami Aruma
  *  - IWILL DK8-HTX
  */
-static int w83627hf_gpio24_raise(uint16_t port)
+static int w83627hf_gpio24_raise_2e()
 {
-	w836xx_ext_enter(port);
-
-	/* Is this the W83627HF? */
-	if (sio_read(port, 0x20) != 0x52) {	/* Super I/O device ID reg. */
-		msg_perr("\nERROR: W83627HF: Wrong ID: 0x%02X.\n",
-			 sio_read(port, 0x20));
-		w836xx_ext_leave(port);
-		return -1;
-	}
-
-	/* PIN89S: WDTO/GP24 multiplex -> GPIO24 */
-	sio_mask(port, 0x2B, 0x10, 0x10);
-
-	/* Select logical device 8: GPIO port 2 */
-	sio_write(port, 0x07, 0x08);
-
-	sio_mask(port, 0x30, 0x01, 0x01);	/* Activate logical device. */
-	sio_mask(port, 0xF0, 0x00, 0x10);	/* GPIO24 -> output */
-	sio_mask(port, 0xF2, 0x00, 0x10);	/* Clear GPIO24 inversion */
-	sio_mask(port, 0xF1, 0x10, 0x10);	/* Raise GPIO24 */
-
-	w836xx_ext_leave(port);
-
-	return 0;
-}
-
-static int w83627hf_gpio24_raise_2e(void)
-{
-	return w83627hf_gpio24_raise(0x2e);
+	return winbond_gpio_set(0x2e, WINBOND_W83627HF_ID, 24, 1);
 }
 
 /**
- * Winbond W83627THF: GPIO 4, bit 4
+ * Winbond W83627THF: Raise GPIO 44.
  *
  * Suited for:
  *  - MSI K8T Neo2-F
- *  - MSI K8N-NEO3
  */
-static int w83627thf_gpio4_4_raise(uint16_t port)
+static int w83627thf_gpio44_raise_2e()
 {
-	w836xx_ext_enter(port);
-
-	/* Is this the W83627THF? */
-	if (sio_read(port, 0x20) != 0x82) {	/* Super I/O device ID reg. */
-		msg_perr("\nERROR: W83627THF: Wrong ID: 0x%02X.\n",
-			 sio_read(port, 0x20));
-		w836xx_ext_leave(port);
-		return -1;
-	}
-
-	/* PINxxxxS: GPIO4/bit 4 multiplex -> GPIOXXX */
-
-	sio_write(port, 0x07, 0x09);      /* Select LDN 9: GPIO port 4 */
-	sio_mask(port, 0x30, 0x02, 0x02); /* Activate logical device. */
-	sio_mask(port, 0xF4, 0x00, 0x10); /* GPIO4 bit 4 -> output */
-	sio_mask(port, 0xF6, 0x00, 0x10); /* Clear GPIO4 bit 4 inversion */
-	sio_mask(port, 0xF5, 0x10, 0x10); /* Raise GPIO4 bit 4 */
-
-	w836xx_ext_leave(port);
-
-	return 0;
+	return winbond_gpio_set(0x2e, WINBOND_W83627THF_ID, 44, 1);
 }
 
-static int w83627thf_gpio4_4_raise_2e(void)
+/**
+ * Winbond W83627THF: Raise GPIO 44.
+ *
+ * Suited for:
+ *  - MSI K8N Neo3
+ */
+static int w83627thf_gpio44_raise_4e()
 {
-	return w83627thf_gpio4_4_raise(0x2e);
-}
-
-static int w83627thf_gpio4_4_raise_4e(void)
-{
-	return w83627thf_gpio4_4_raise(0x4e);
+	return winbond_gpio_set(0x4e, WINBOND_W83627THF_ID, 44, 1);
 }
 
 /**
@@ -1485,12 +1581,12 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x8086, 0x2411, 0x8086, 0x2411,  0x8086, 0x7125, 0x0e11, 0xb165, NULL,          NULL,         NULL,          "Mitac",       "6513WU",                0,   OK, board_mitac_6513wu},
 	{0x10DE, 0x005E, 0x1462, 0x7125,  0x10DE, 0x0052, 0x1462, 0x7125, NULL,          NULL,         NULL,          "MSI",         "K8N Neo4-F",            0,   OK, nvidia_mcp_gpio2_raise},
 	{0x13f6, 0x0111, 0x1462, 0x5900,  0x1106, 0x3177, 0x1106,      0, NULL,          NULL,         NULL,          "MSI",         "MS-6590 (KT4 Ultra)",   0,   OK, board_msi_kt4v},
-	{0x1106, 0x3149, 0x1462, 0x7094,  0x10ec, 0x8167, 0x1462, 0x094c, NULL,          NULL,         NULL,          "MSI",         "MS-6702E (K8T Neo2-F)", 0,   OK, w83627thf_gpio4_4_raise_2e},
+	{0x1106, 0x3149, 0x1462, 0x7094,  0x10ec, 0x8167, 0x1462, 0x094c, NULL,          NULL,         NULL,          "MSI",         "MS-6702E (K8T Neo2-F)", 0,   OK, w83627thf_gpio44_raise_2e},
 	{0x1106, 0x0571, 0x1462, 0x7120,  0x1106, 0x3065, 0x1462, 0x7120, NULL,          NULL,         NULL,          "MSI",         "MS-6712 (KT4V)",        0,   OK, board_msi_kt4v},
 	{0x1039, 0x7012, 0x1462, 0x0050,  0x1039, 0x6325, 0x1462, 0x0058, NULL,          NULL,         NULL,          "MSI",         "MS-7005 (651M-L)",      0,   OK, board_msi_651ml},
 	{0x10DE, 0x00E0, 0x1462, 0x0250,  0x10DE, 0x00E1, 0x1462, 0x0250, NULL,          NULL,         NULL,          "MSI",         "MS-7025 (K8N Neo2 Platinum)", 0,   OK, nvidia_mcp_gpio0c_raise},
 	{0x8086, 0x2658, 0x1462, 0x7046,  0x1106, 0x3044, 0x1462, 0x046d, NULL,          NULL,         NULL,          "MSI",         "MS-7046",               0,   OK, intel_ich_gpio19_raise},
-	{0x10DE, 0x005E, 0x1462, 0x7135,  0x10DE, 0x0050, 0x1462, 0x7135, NULL,          "msi",        "k8n-neo3",    "MSI",         "MS-7135 (K8N Neo3)",    0,   OK, w83627thf_gpio4_4_raise_4e},
+	{0x10DE, 0x005E, 0x1462, 0x7135,  0x10DE, 0x0050, 0x1462, 0x7135, NULL,          "msi",        "k8n-neo3",    "MSI",         "MS-7135 (K8N Neo3)",    0,   OK, w83627thf_gpio44_raise_4e},
 	{0x10DE, 0x0270, 0x1462, 0x7207,  0x10DE, 0x0264, 0x1462, 0x7207, NULL,          NULL,         NULL,          "MSI",         "MS-7207 (K8N GM2-L)",   0,   NT, nvidia_mcp_gpio2_raise},
 	{0x1011, 0x0019, 0xaa55, 0xaa55,  0x8086, 0x7190,      0,      0, NULL,          NULL,         NULL,          "Nokia",       "IP530",                 0,   OK, fdc37b787_gpio50_raise_3f0},
 	{0x1106, 0x3099,      0,      0,  0x1106, 0x3074,      0,      0, NULL,          "shuttle",    "ak31",        "Shuttle",     "AK31",                  0,   OK, w836xx_memw_enable_2e},
