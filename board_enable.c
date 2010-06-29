@@ -264,6 +264,11 @@ static int winbond_gpio_set(uint16_t base, enum winbond_id chipid,
 		msg_perr("\nERROR: No supported Winbond Super I/O found\n");
 		return -1;
 	}
+	if (chip->device_id != chipid) {
+		msg_perr("\nERROR: Found Winbond chip with ID 0x%x, "
+		         "expected %x\n", chip->device_id, chipid);
+		return -1;
+	}
 	if (bit >= 8 || port == 0 || port > chip->gpio_port_count) {
 		msg_perr("\nERROR: winbond_gpio_set: Invalid GPIO number %d\n",
 		         pin);
