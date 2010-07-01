@@ -430,6 +430,44 @@ static int enable_flash_vt8237s_spi(struct pci_dev *dev, const char *name)
 	return 0;
 }
 
+#define ICH_BMWAG(x) ((x >> 24) & 0xff)
+#define ICH_BMRAG(x) ((x >> 16) & 0xff)
+#define ICH_BRWA(x)  ((x >>  8) & 0xff)
+#define ICH_BRRA(x)  ((x >>  0) & 0xff)
+
+#define ICH_FREG_BASE(x)  ((x >>  0) & 0x1fff)
+#define ICH_FREG_LIMIT(x) ((x >> 16) & 0x1fff)
+
+static void do_ich9_spi_frap(uint32_t frap, int i)
+{
+	const char *access_names[4] = {
+		"locked", "read-only", "write-only", "read-write"
+	};
+	const char *region_names[5] = {
+		"Flash Descriptor", "BIOS", "Management Engine",
+		"Gigabit Ethernet", "Platform Data"
+	};
+	int rwperms = ((ICH_BRWA(frap) & (1 << i)) << 1) |
+		      ((ICH_BRRA(frap) & (1 << i)) << 0);
+	int offset = 0x54 + i * 4;
+	uint32_t freg = mmio_readl(spibar + offset), base, limit;
+
+	msg_pdbg("0x%02X: 0x%08x (FREG%i: %s)\n",
+		     offset, freg, i, region_names[i]);
+
+	base  = ICH_FREG_BASE(freg);
+	limit = ICH_FREG_LIMIT(freg);
+	if (base == 0x1fff && limit == 0) {
+		/* this FREG is disabled */
+		msg_pdbg("%s region is unused.\n", region_names[i]);
+		return;
+	}
+
+	msg_pdbg("0x%08x-0x%08x is %s\n",
+		    (base << 12), (limit << 12) | 0x0fff,
+		    access_names[rwperms]);
+}
+
 static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
 				   int ich_generation)
 {
@@ -554,21 +592,15 @@ static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
 
 		tmp = mmio_readl(spibar + 0x50);
 		msg_pdbg("0x50: 0x%08x (FRAP)\n", tmp);
-		msg_pdbg("BMWAG %i, ", (tmp >> 24) & 0xff);
-		msg_pdbg("BMRAG %i, ", (tmp >> 16) & 0xff);
-		msg_pdbg("BRWA %i, ", (tmp >> 8) & 0xff);
-		msg_pdbg("BRRA %i\n", (tmp >> 0) & 0xff);
+		msg_pdbg("BMWAG 0x%02x, ", ICH_BMWAG(tmp));
+		msg_pdbg("BMRAG 0x%02x, ", ICH_BMRAG(tmp));
+		msg_pdbg("BRWA 0x%02x, ", ICH_BRWA(tmp));
+		msg_pdbg("BRRA 0x%02x\n", ICH_BRRA(tmp));
 
-		msg_pdbg("0x54: 0x%08x (FREG0)\n",
-			     mmio_readl(spibar + 0x54));
-		msg_pdbg("0x58: 0x%08x (FREG1)\n",
-			     mmio_readl(spibar + 0x58));
-		msg_pdbg("0x5C: 0x%08x (FREG2)\n",
-			     mmio_readl(spibar + 0x5C));
-		msg_pdbg("0x60: 0x%08x (FREG3)\n",
-			     mmio_readl(spibar + 0x60));
-		msg_pdbg("0x64: 0x%08x (FREG4)\n",
-			     mmio_readl(spibar + 0x64));
+		/* print out the FREGx registers along with FRAP access bits */
+		for(i = 0; i < 5; i++)
+			do_ich9_spi_frap(tmp, i);
+
 		msg_pdbg("0x74: 0x%08x (PR0)\n",
 			     mmio_readl(spibar + 0x74));
 		msg_pdbg("0x78: 0x%08x (PR1)\n",
