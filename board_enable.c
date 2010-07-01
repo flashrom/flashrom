@@ -648,6 +648,20 @@ static int board_hp_dl145_g3_enable(void)
 	return 0;
 }
 
+/*
+ * Set GPIO lines in the Broadcom HT-1000 southbridge.
+ *
+ *  It's not a Super I/O but it uses the same index/data port method.
+ */
+static int board_hp_dl165_g6_enable(void)
+{
+	/* Variant of DL145, with slightly different pin placement. */
+	sio_mask(0xcd6, 0x44, 0x80, 0x80); /* TBL# */
+	sio_mask(0xcd6, 0x46, 0x04, 0x04); /* WP# */
+
+	return 0;
+}
+
 static int board_ibm_x3455(void)
 {
 	/* raise gpio13 */
@@ -1607,7 +1621,8 @@ struct board_pciid_enable board_pciid_enables[] = {
 	{0x1106, 0x3227, 0x1458, 0x5001,  0x10ec, 0x8139, 0x1458, 0xe000, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-7VT600",             0,   OK, it8705f_write_enable_2e},
 	{0x1106, 0x0686, 0x1106, 0x0686,  0x1106, 0x3058, 0x1458, 0xa000, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-7ZM",                512, OK, NULL},
 	{0x10DE, 0x0050, 0x1458, 0x0C11,  0x10DE, 0x005e, 0x1458, 0x5000, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-K8N-SLI",            0,   OK, nvidia_mcp_gpio21_raise},
-	{0x1166, 0x0223, 0x103c, 0x320d,  0x102b, 0x0522, 0x103c, 0x31fa, NULL,          "hp",         "dl145_g3",    "HP",          "DL145 G3",              0,   OK, board_hp_dl145_g3_enable},
+	{0x1166, 0x0223, 0x103c, 0x320d,  0x14e4, 0x1678, 0x103c, 0x703e, NULL,          "hp",         "dl145_g3",    "HP",          "DL145 G3",              0,   OK, board_hp_dl145_g3_enable},
+	{0x1166, 0x0223, 0x103c, 0x320d,  0x14e4, 0x1648, 0x103c, 0x310f, NULL,          "hp",         "dl165_g6",    "HP",          "DL165 G6",              0,   OK, board_hp_dl165_g6_enable},
 	{0x8086, 0x2415, 0x103c, 0x1249,  0x10b7, 0x9200, 0x103c, 0x1246, NULL,          NULL,         NULL,          "HP",          "Vectra VL400",          0,   OK, board_hp_vl400}, 
 	{0x8086, 0x1a30, 0x103c, 0x1a30,  0x8086, 0x2443, 0x103c, 0x2440, "^VL420$",     NULL,         NULL,          "HP",          "VL420 SFF",             0,   OK, intel_ich_gpio22_raise},
 	{0x10de, 0x0369, 0x103c, 0x12fe,  0x10de, 0x0364, 0x103c, 0x12fe, NULL,          NULL,         NULL,          "HP",          "xw9400",                0,   OK, nvidia_mcp_gpio5_raise},
