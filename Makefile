@@ -48,6 +48,10 @@ ifeq ($(OS_ARCH), FreeBSD)
 CPPFLAGS += -I/usr/local/include
 LDFLAGS += -L/usr/local/lib
 endif
+ifeq ($(OS_ARCH), OpenBSD)
+CPPFLAGS += -I/usr/local/include
+LDFLAGS += -L/usr/local/lib
+endif
 ifeq ($(OS_ARCH), DOS)
 EXEC_SUFFIX := .exe
 CPPFLAGS += -I../libgetopt -I../libpci/include
@@ -259,6 +263,10 @@ ifeq ($(OS_ARCH), DOS)
 LIBS += ../libpci/lib/libpci.a
 else
 LIBS += -lpci
+ifeq ($(OS_ARCH), OpenBSD)
+# For (i386|amd64)_iopl(2).
+LIBS += -l$(shell uname -m)
+endif
 endif
 endif
 endif

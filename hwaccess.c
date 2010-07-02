@@ -57,6 +57,11 @@ void get_io_perms(void)
 #endif
 		msg_perr("ERROR: Could not get I/O privileges (%s).\n"
 			"You need to be root.\n", strerror(errno));
+#if defined (__OpenBSD__)
+		msg_perr("Please set securelevel=-1 in /etc/rc.securelevel "
+			   "and reboot, or reboot into \n");
+		msg_perr("single user mode.\n");
+#endif
 		exit(1);
 	}
 #endif

@@ -229,6 +229,10 @@ void *physmap_common(const char *descr, unsigned long phys_addr, size_t len, int
 			msg_perr("You can override CONFIG_X86_PAT at boot with the nopat kernel parameter but\n");
 			msg_perr("disabling the other option unfortunately requires a kernel recompile. Sorry!\n");
 		}
+#elif defined (__OpenBSD__)
+		msg_perr("Please set securelevel=-1 in /etc/rc.securelevel "
+			   "and reboot, or reboot into \n");
+		msg_perr("single user mode.\n");
 #endif
 		if (!mayfail)
 			exit(3);
