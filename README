@@ -55,6 +55,11 @@ On FreeBSD, you need the following ports:
  * devel/gmake
  * devel/libpci
 
+On OpenBSD, you need the following ports:
+
+ * devel/gmake
+ * sysutils/pciutils
+
 To compile on Linux, use:
 
  make
@@ -75,6 +80,10 @@ To compile on NetBSD or DragonFly BSD, use:
 
  ln -s /usr/pkg/include/pciutils pci
  gmake CPPFLAGS=-I. LDFLAGS="-L/usr/pkg/lib -Wl,-rpath-link,/usr/pkg/lib"
+
+To compile on OpenBSD, use:
+
+ gmake
 
 To compile and run on Darwin/Mac OS X:
 
