@@ -306,7 +306,7 @@ can be any comma-separated combination of
 Example:
 .B "flashrom \-p dummy:lpc,fwh"
 .TP
-.BR "nic3com" , " nicrealtek" , " nicsmc1211" , " gfxnvidia" , " satasii\
+.BR "nic3com" , " nicrealtek" , " nicsmc1211" , " gfxnvidia" , " satasii \
 " and " atahpt " programmers
 These programmers have an option to specify the PCI address of the card
 your want to use, which must be specified if more than one card supported
@@ -391,6 +391,51 @@ can be any of
 .SH EXIT STATUS
 flashrom exits with 0 on success, 1 on most failures but with 2 if /dev/mem
 (/dev/xsvc on Solaris) can not be opened and with 3 if a call to mmap() fails.
+.SH REQUIREMENTS
+flashrom needs different access permissions for different programmers.
+.sp
+.B internal
+needs raw memory access, PCI configuration space access, raw I/O port
+access (x86) and MSR access (x86).
+.sp
+.B it87spi
+needs raw I/O port access (x86).
+.sp
+.BR nic3com ", " nicrealtek ", " nicsmc1211 " and " nicnatsemi "
+need PCI configuration space read access and raw I/O port access.
+.sp
+.B atahpt
+needs PCI configuration space access and raw I/O port access.
+.sp
+.BR gfxnvidia " and " drkaiser
+need PCI configuration space access and raw memory access.
+.sp
+.B satasii
+needs PCI configuration space read access and raw memory access.
+.sp
+.B serprog
+needs TCP access to the network or userspace access to a serial port.
+.sp
+.B buspirate_spi
+needs userspace access to a serial port.
+.sp
+.BR dediprog " and " ft2232_spi
+need access to the USB device via libusb.
+.sp
+.B dummy
+needs no access permissions at all.
+.sp
+.BR internal ", " it87spi ", " nic3com ", " nicrealtek ", " nicsmc1211 ", "
+.BR nicnatsemi ", " "gfxnvidia" ", " drkaiser ", " satasii " and " atahpt
+have to be run as superuser/root, and need additional raw access permission.
+.sp
+.BR serprog ", " buspirate_spi ", " dediprog " and " ft2232_spi
+can be run as normal user on most operating systems if appropriate device
+permissions are set.
+.sp
+On OpenBSD, you can obtain raw access permission by setting
+securelevel=-1 in /etc/rc.securelevel and rebooting, or rebooting into single
+user mode.
 .SH BUGS
 Please report any bugs at
 .sp
