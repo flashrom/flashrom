@@ -112,7 +112,7 @@ extern const struct programmer_entry programmer_table[];
 
 int register_shutdown(void (*function) (void *data), void *data);
 
-int programmer_init(void);
+int programmer_init(char *param);
 int programmer_shutdown(void);
 void *programmer_map_flash_region(const char *descr, unsigned long phys_addr,
 				  size_t len);
@@ -300,7 +300,7 @@ struct board_pciid_enable {
 	int (*enable) (void);
 };
 
-extern struct board_pciid_enable board_pciid_enables[];
+extern const struct board_pciid_enable board_pciid_enables[];
 
 struct board_info {
 	const char *vendor;
@@ -335,15 +335,15 @@ struct pcidev_status {
 	const char *vendor_name;
 	const char *device_name;
 };
-uint32_t pcidev_validate(struct pci_dev *dev, uint32_t bar, struct pcidev_status *devs);
-uint32_t pcidev_init(uint16_t vendor_id, uint32_t bar, struct pcidev_status *devs, char *pcidev_bdf);
+uint32_t pcidev_validate(struct pci_dev *dev, uint32_t bar, const struct pcidev_status *devs);
+uint32_t pcidev_init(uint16_t vendor_id, uint32_t bar, const struct pcidev_status *devs, char *pcidev_bdf);
 #endif
 
 /* print.c */
 char *flashbuses_to_text(enum chipbustype bustype);
 void print_supported(void);
 #if CONFIG_NIC3COM+CONFIG_NICREALTEK+CONFIG_NICNATSEMI+CONFIG_GFXNVIDIA+CONFIG_DRKAISER+CONFIG_SATASII+CONFIG_ATAHPT >= 1
-void print_supported_pcidevs(struct pcidev_status *devs);
+void print_supported_pcidevs(const struct pcidev_status *devs);
 #endif
 void print_supported_wiki(void);
 
@@ -463,7 +463,7 @@ int nic3com_init(void);
 int nic3com_shutdown(void);
 void nic3com_chip_writeb(uint8_t val, chipaddr addr);
 uint8_t nic3com_chip_readb(const chipaddr addr);
-extern struct pcidev_status nics_3com[];
+extern const struct pcidev_status nics_3com[];
 #endif
 
 /* gfxnvidia.c */
@@ -472,7 +472,7 @@ int gfxnvidia_init(void);
 int gfxnvidia_shutdown(void);
 void gfxnvidia_chip_writeb(uint8_t val, chipaddr addr);
 uint8_t gfxnvidia_chip_readb(const chipaddr addr);
-extern struct pcidev_status gfx_nvidia[];
+extern const struct pcidev_status gfx_nvidia[];
 #endif
 
 /* drkaiser.c */
@@ -481,7 +481,7 @@ int drkaiser_init(void);
 int drkaiser_shutdown(void);
 void drkaiser_chip_writeb(uint8_t val, chipaddr addr);
 uint8_t drkaiser_chip_readb(const chipaddr addr);
-extern struct pcidev_status drkaiser_pcidev[];
+extern const struct pcidev_status drkaiser_pcidev[];
 #endif
 
 /* nicrealtek.c */
@@ -491,8 +491,8 @@ int nicsmc1211_init(void);
 int nicrealtek_shutdown(void);
 void nicrealtek_chip_writeb(uint8_t val, chipaddr addr);
 uint8_t nicrealtek_chip_readb(const chipaddr addr);
-extern struct pcidev_status nics_realtek[];
-extern struct pcidev_status nics_realteksmc1211[];
+extern const struct pcidev_status nics_realtek[];
+extern const struct pcidev_status nics_realteksmc1211[];
 #endif
 
 /* nicnatsemi.c */
@@ -501,7 +501,7 @@ int nicnatsemi_init(void);
 int nicnatsemi_shutdown(void);
 void nicnatsemi_chip_writeb(uint8_t val, chipaddr addr);
 uint8_t nicnatsemi_chip_readb(const chipaddr addr);
-extern struct pcidev_status nics_natsemi[];
+extern const struct pcidev_status nics_natsemi[];
 #endif
 
 /* satasii.c */
@@ -510,7 +510,7 @@ int satasii_init(void);
 int satasii_shutdown(void);
 void satasii_chip_writeb(uint8_t val, chipaddr addr);
 uint8_t satasii_chip_readb(const chipaddr addr);
-extern struct pcidev_status satas_sii[];
+extern const struct pcidev_status satas_sii[];
 #endif
 
 /* atahpt.c */
@@ -519,7 +519,7 @@ int atahpt_init(void);
 int atahpt_shutdown(void);
 void atahpt_chip_writeb(uint8_t val, chipaddr addr);
 uint8_t atahpt_chip_readb(const chipaddr addr);
-extern struct pcidev_status ata_hpt[];
+extern const struct pcidev_status ata_hpt[];
 #endif
 
 /* ft2232_spi.c */
@@ -572,7 +572,7 @@ extern struct decode_sizes max_rom_decode;
 extern char *programmer_param;
 extern unsigned long flashbase;
 extern int verbose;
-extern const char *flashrom_version;
+extern const char * const flashrom_version;
 extern char *chip_to_probe;
 void map_flash_registers(struct flashchip *flash);
 int read_memmapped(struct flashchip *flash, uint8_t *buf, int start, int len);
@@ -671,7 +671,6 @@ struct spi_programmer {
 
 extern enum spi_controller spi_controller;
 extern const struct spi_programmer spi_programmer[];
-extern void *spibar;
 int spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		const unsigned char *writearr, unsigned char *readarr);
 int spi_send_multicommand(struct spi_command *cmds);
@@ -683,6 +682,7 @@ uint32_t spi_get_valid_read_addr(void);
 /* ichspi.c */
 extern int ichspi_lock;
 extern uint32_t ichspi_bbar;
+extern void *ich_spibar;
 int ich_init_opcodes(void);
 int ich_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		    const unsigned char *writearr, unsigned char *readarr);

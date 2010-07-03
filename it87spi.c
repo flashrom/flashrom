@@ -36,7 +36,7 @@
 
 uint16_t it8716f_flashport = 0;
 /* use fast 33MHz SPI (<>0) or slow 16MHz (0) */
-int fast_spi = 1;
+static int fast_spi = 1;
 
 /* Helper functions for most recent ITE IT87xx Super I/O chips */
 #define CHIP_ID_BYTE1_REG	0x20

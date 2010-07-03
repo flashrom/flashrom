@@ -105,6 +105,8 @@ int ichspi_lock = 0;
 
 uint32_t ichspi_bbar = 0;
 
+void *ich_spibar = NULL;
+
 typedef struct _OPCODE {
 	uint8_t opcode;		//This commands spi opcode
 	uint8_t spi_type;	//This commands spi type
@@ -134,17 +136,17 @@ static OPCODES *curopcodes = NULL;
 /* HW access functions */
 static uint32_t REGREAD32(int X)
 {
-	return mmio_readl(spibar + X);
+	return mmio_readl(ich_spibar + X);
 }
 
 static uint16_t REGREAD16(int X)
 {
-	return mmio_readw(spibar + X);
+	return mmio_readw(ich_spibar + X);
 }
 
-#define REGWRITE32(X,Y) mmio_writel(Y, spibar+X)
-#define REGWRITE16(X,Y) mmio_writew(Y, spibar+X)
-#define REGWRITE8(X,Y)  mmio_writeb(Y, spibar+X)
+#define REGWRITE32(X,Y) mmio_writel(Y, ich_spibar+X)
+#define REGWRITE16(X,Y) mmio_writew(Y, ich_spibar+X)
+#define REGWRITE8(X,Y)  mmio_writeb(Y, ich_spibar+X)
 
 /* Common SPI functions */
 static int find_opcode(OPCODES *op, uint8_t opcode);
@@ -161,7 +163,7 @@ struct preop_opcode_pair {
 };
 
 /* List of opcodes which need preopcodes and matching preopcodes. Unused. */
-struct preop_opcode_pair pops[] = {
+const struct preop_opcode_pair pops[] = {
 	{JEDEC_WREN, JEDEC_BYTE_PROGRAM},
 	{JEDEC_WREN, JEDEC_SE}, /* sector erase */
 	{JEDEC_WREN, JEDEC_BE_52}, /* block erase */
@@ -177,7 +179,7 @@ struct preop_opcode_pair pops[] = {
 /* Reasonable default configuration. Needs ad-hoc modifications if we
  * encounter unlisted opcodes. Fun.
  */
-OPCODES O_ST_M25P = {
+static OPCODES O_ST_M25P = {
 	{
 	 JEDEC_WREN,
 	 JEDEC_EWSR,
@@ -194,7 +196,7 @@ OPCODES O_ST_M25P = {
 	}
 };
 
-OPCODES O_EXISTING = {};
+static OPCODES O_EXISTING = {};
 
 static int find_opcode(OPCODES *op, uint8_t opcode)
 {
@@ -337,15 +339,15 @@ void ich_set_bbar(uint32_t minaddr)
 {
 	switch (spi_controller) {
 	case SPI_CONTROLLER_ICH7:
-		mmio_writel(minaddr, spibar + 0x50);
-		ichspi_bbar = mmio_readl(spibar + 0x50);
+		mmio_writel(minaddr, ich_spibar + 0x50);
+		ichspi_bbar = mmio_readl(ich_spibar + 0x50);
 		/* We don't have any option except complaining. */
 		if (ichspi_bbar != minaddr)
 			msg_perr("Setting BBAR failed!\n");
 		break;
 	case SPI_CONTROLLER_ICH9:
-		mmio_writel(minaddr, spibar + 0xA0);
-		ichspi_bbar = mmio_readl(spibar + 0xA0);
+		mmio_writel(minaddr, ich_spibar + 0xA0);
+		ichspi_bbar = mmio_readl(ich_spibar + 0xA0);
 		/* We don't have any option except complaining. */
 		if (ichspi_bbar != minaddr)
 			msg_perr("Setting BBAR failed!\n");

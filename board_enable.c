@@ -1577,7 +1577,7 @@ static int it8712f_gpio3_1_raise(void)
  */
 
 /* Please keep this list alphabetically ordered by vendor/board name. */
-struct board_pciid_enable board_pciid_enables[] = {
+const struct board_pciid_enable board_pciid_enables[] = {
 
 	/* first pci-id set [4],          second pci-id set [4],          dmi identifier coreboot id [2],             vendor name    board name       max_rom_...  OK? flash enable */
 #if defined(__i386__) || defined(__x86_64__)
@@ -1661,11 +1661,11 @@ struct board_pciid_enable board_pciid_enables[] = {
  * Match boards on coreboot table gathered vendor and part name.
  * Require main PCI IDs to match too as extra safety.
  */
-static struct board_pciid_enable *board_match_coreboot_name(const char *vendor,
+static const struct board_pciid_enable *board_match_coreboot_name(const char *vendor,
 							    const char *part)
 {
-	struct board_pciid_enable *board = board_pciid_enables;
-	struct board_pciid_enable *partmatch = NULL;
+	const struct board_pciid_enable *board = board_pciid_enables;
+	const struct board_pciid_enable *partmatch = NULL;
 
 	for (; board->vendor_name; board++) {
 		if (vendor && (!board->lb_vendor
@@ -1714,9 +1714,9 @@ static struct board_pciid_enable *board_match_coreboot_name(const char *vendor,
  * Match boards on PCI IDs and subsystem IDs.
  * Second set of IDs can be main only or missing completely.
  */
-static struct board_pciid_enable *board_match_pci_card_ids(void)
+const static struct board_pciid_enable *board_match_pci_card_ids(void)
 {
-	struct board_pciid_enable *board = board_pciid_enables;
+	const struct board_pciid_enable *board = board_pciid_enables;
 
 	for (; board->vendor_name; board++) {
 		if ((!board->first_card_vendor || !board->first_card_device) &&
@@ -1762,7 +1762,7 @@ static struct board_pciid_enable *board_match_pci_card_ids(void)
 
 int board_flash_enable(const char *vendor, const char *part)
 {
-	struct board_pciid_enable *board = NULL;
+	const struct board_pciid_enable *board = NULL;
 	int ret = 0;
 
 	if (part)

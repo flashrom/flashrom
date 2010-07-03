@@ -26,7 +26,7 @@
 #include "flash.h"
 
 /* loops per microsecond */
-unsigned long micro = 1;
+static unsigned long micro = 1;
 
 __attribute__ ((noinline)) void myusec_delay(int usecs)
 {
@@ -37,7 +37,7 @@ __attribute__ ((noinline)) void myusec_delay(int usecs)
 	}
 }
 
-unsigned long measure_os_delay_resolution(void)
+static unsigned long measure_os_delay_resolution(void)
 {
 	unsigned long timeusec;
 	struct timeval start, end;
@@ -61,7 +61,7 @@ unsigned long measure_os_delay_resolution(void)
 	return timeusec;
 }
 
-unsigned long measure_delay(int usecs)
+static unsigned long measure_delay(int usecs)
 {
 	unsigned long timeusec;
 	struct timeval start, end;
