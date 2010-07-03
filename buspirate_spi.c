@@ -30,7 +30,7 @@
 #undef FAKE_COMMUNICATION
 
 #ifndef FAKE_COMMUNICATION
-int buspirate_serialport_setup(char *dev)
+static int buspirate_serialport_setup(char *dev)
 {
 	/* 115200bps, 8 databits, no parity, 1 stopbit */
 	sp_fd = sp_openserport(dev, 115200);
@@ -44,7 +44,7 @@ int buspirate_serialport_setup(char *dev)
 #define sp_flush_incoming(...) 0
 #endif
 
-int buspirate_sendrecv(unsigned char *buf, unsigned int writecnt, unsigned int readcnt)
+static int buspirate_sendrecv(unsigned char *buf, unsigned int writecnt, unsigned int readcnt)
 {
 	int i, ret = 0;
 

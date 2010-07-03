@@ -47,7 +47,7 @@
 
 static struct ftdi_context ftdic_context;
 
-int send_buf(struct ftdi_context *ftdic, const unsigned char *buf, int size)
+static int send_buf(struct ftdi_context *ftdic, const unsigned char *buf, int size)
 {
 	int r;
 	r = ftdi_write_data(ftdic, (unsigned char *) buf, size);
@@ -59,7 +59,7 @@ int send_buf(struct ftdi_context *ftdic, const unsigned char *buf, int size)
 	return 0;
 }
 
-int get_buf(struct ftdi_context *ftdic, const unsigned char *buf, int size)
+static int get_buf(struct ftdi_context *ftdic, const unsigned char *buf, int size)
 {
 	int r;
 	r = ftdi_read_data(ftdic, (unsigned char *) buf, size);

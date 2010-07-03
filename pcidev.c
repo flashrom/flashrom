@@ -25,11 +25,10 @@
 
 uint32_t io_base_addr;
 struct pci_access *pacc;
-struct pci_filter filter;
 struct pci_dev *pcidev_dev = NULL;
 
 uint32_t pcidev_validate(struct pci_dev *dev, uint32_t bar,
-			 struct pcidev_status *devs)
+			 const struct pcidev_status *devs)
 {
 	int i;
 	/* FIXME: 64 bit memory BARs need a 64 bit addr. */
@@ -79,9 +78,10 @@ uint32_t pcidev_validate(struct pci_dev *dev, uint32_t bar,
 }
 
 uint32_t pcidev_init(uint16_t vendor_id, uint32_t bar,
-		     struct pcidev_status *devs, char *pcidev_bdf)
+		     const struct pcidev_status *devs, char *pcidev_bdf)
 {
 	struct pci_dev *dev;
+	struct pci_filter filter;
 	char *msg = NULL;
 	int found = 0;
 	uint32_t addr = 0, curaddr = 0;
@@ -125,7 +125,7 @@ uint32_t pcidev_init(uint16_t vendor_id, uint32_t bar,
 	return curaddr;
 }
 
-void print_supported_pcidevs(struct pcidev_status *devs)
+void print_supported_pcidevs(const struct pcidev_status *devs)
 {
 	int i;
 

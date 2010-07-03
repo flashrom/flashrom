@@ -24,19 +24,21 @@
 #include "spi.h"
 
 #define DEFAULT_TIMEOUT 3000
-usb_dev_handle *dediprog_handle;
+static usb_dev_handle *dediprog_handle;
 
-int dediprog_do_stuff(void);
-
-void print_hex(void *buf, size_t len)
+#if 0
+/* Might be useful for other pieces of code as well. */
+static void print_hex(void *buf, size_t len)
 {
 	size_t i;
 
 	for (i = 0; i < len; i++)
 		msg_pdbg(" %02x", ((uint8_t *)buf)[i]);
 }
+#endif
 
-struct usb_device *get_device_by_vid_pid(uint16_t vid, uint16_t pid)
+/* Might be useful for other USB devices as well. static for now. */
+static struct usb_device *get_device_by_vid_pid(uint16_t vid, uint16_t pid)
 {
 	struct usb_bus *bus;
 	struct usb_device *dev;
@@ -52,7 +54,7 @@ struct usb_device *get_device_by_vid_pid(uint16_t vid, uint16_t pid)
 
 //int usb_control_msg(usb_dev_handle *dev, int requesttype, int request, int value, int index, char *bytes, int size, int timeout);
 
-int dediprog_set_spi_voltage(uint16_t voltage)
+static int dediprog_set_spi_voltage(uint16_t voltage)
 {
 	int ret;
 	unsigned int mv;
@@ -85,6 +87,7 @@ int dediprog_set_spi_voltage(uint16_t voltage)
 	return 0;
 }
 
+#if 0
 /* After dediprog_set_spi_speed, the original app always calls
  * dediprog_set_spi_voltage(0) and then
  * dediprog_check_devicestring() four times in a row.
@@ -92,7 +95,7 @@ int dediprog_set_spi_voltage(uint16_t voltage)
  * This looks suspiciously like the microprocessor in the SF100 has to be
  * restarted/reinitialized in case the speed changes.
  */
-int dediprog_set_spi_speed(uint16_t speed)
+static int dediprog_set_spi_speed(uint16_t speed)
 {
 	int ret;
 	unsigned int khz;
@@ -140,6 +143,7 @@ int dediprog_set_spi_speed(uint16_t speed)
 	}
 	return 0;
 }
+#endif
 
 int dediprog_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
@@ -183,7 +187,7 @@ int dediprog_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	return 0;
 }
 
-int dediprog_check_devicestring(void)
+static int dediprog_check_devicestring(void)
 {
 	int ret;
 	char buf[0x11];
@@ -223,7 +227,7 @@ int dediprog_check_devicestring(void)
  * dediprog_check_devicestring (often) or Command A (often) or
  * Command F (once).
  */
-int dediprog_command_a(void)
+static int dediprog_command_a(void)
 {
 	int ret;
 	char buf[0x1];
@@ -242,7 +246,7 @@ int dediprog_command_a(void)
  * dediprog_command_a(); dediprog_check_devicestring() sequence in each session.
  * I'm tempted to call this one start_SPI_engine or finish_init.
  */
-int dediprog_command_c(void)
+static int dediprog_command_c(void)
 {
 	int ret;
 
@@ -254,11 +258,12 @@ int dediprog_command_c(void)
 	return 0;
 }
 
+#if 0
 /* Very strange. Seems to be a programmer keepalive or somesuch.
  * Wait unsuccessfully for timeout ms to read one byte.
  * Is usually called after setting voltage to 0.
  */
-int dediprog_command_f(int timeout)
+static int dediprog_command_f(int timeout)
 {
 	int ret;
 	char buf[0x1];
@@ -271,6 +276,7 @@ int dediprog_command_f(int timeout)
 	}
 	return 0;
 }
+#endif
 
 /* URB numbers refer to the first log ever captured. */
 int dediprog_init(void)
@@ -323,10 +329,11 @@ int dediprog_init(void)
 	return 0;
 }
 
+#if 0
 /* Leftovers from reverse engineering. Keep for documentation purposes until
  * completely understood.
  */
-int dediprog_do_stuff(void)
+static int dediprog_do_stuff(void)
 {
 	char buf[0x4];
 	/* SPI command processing starts here. */
@@ -341,7 +348,6 @@ int dediprog_do_stuff(void)
 		return 1;
 	msg_pdbg("Receiving response: ");
 	print_hex(buf, JEDEC_RDID_INSIZE);
-#if 0
 	/* URB 14-27 are more SPI commands. */
 	/* URB 28. Command Set SPI Voltage. */
 	if (dediprog_set_spi_voltage(0x0))
@@ -369,12 +375,10 @@ int dediprog_do_stuff(void)
 	/* Command I is probably Start Bulk Read. Data is u16 blockcount, u16 blocksize. */
 	/* Command J is probably Start Bulk Write. Data is u16 blockcount, u16 blocksize. */
 	/* Bulk transfer sizes for Command I/J are always 512 bytes, rest is filled with 0xff. */
-#endif	
 
-	msg_pinfo("All probes will fail because this driver is not hooked up "
-		  "to the SPI infrastructure yet.");
 	return 0;
 }
+#endif	
 
 int dediprog_shutdown(void)
 {

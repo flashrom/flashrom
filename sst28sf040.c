@@ -69,7 +69,7 @@ int erase_sector_28sf040(struct flashchip *flash, unsigned int address, unsigned
 	return 0;
 }
 
-int write_sector_28sf040(chipaddr bios, uint8_t *src, chipaddr dst,
+static int write_sector_28sf040(chipaddr bios, uint8_t *src, chipaddr dst,
 				unsigned int page_size)
 {
 	int i;
@@ -92,7 +92,7 @@ int write_sector_28sf040(chipaddr bios, uint8_t *src, chipaddr dst,
 	return 0;
 }
 
-int erase_28sf040(struct flashchip *flash)
+static int erase_28sf040(struct flashchip *flash)
 {
 	chipaddr bios = flash->virtual_memory;
 

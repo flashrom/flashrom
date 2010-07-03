@@ -417,10 +417,10 @@ static int enable_flash_vt8237s_spi(struct pci_dev *dev, const char *name)
 	/* Do we really need no write enable? */
 	mmio_base = (pci_read_long(dev, 0xbc)) << 8;
 	msg_pdbg("MMIO base at = 0x%x\n", mmio_base);
-	spibar = physmap("VT8237S MMIO registers", mmio_base, 0x70);
+	ich_spibar = physmap("VT8237S MMIO registers", mmio_base, 0x70);
 
 	msg_pdbg("0x6c: 0x%04x     (CLOCK/DEBUG)\n",
-		     mmio_readw(spibar + 0x6c));
+		     mmio_readw(ich_spibar + 0x6c));
 
 	/* Not sure if it speaks all these bus protocols. */
 	buses_supported = CHIP_BUSTYPE_LPC | CHIP_BUSTYPE_FWH | CHIP_BUSTYPE_SPI;
@@ -450,7 +450,7 @@ static void do_ich9_spi_frap(uint32_t frap, int i)
 	int rwperms = ((ICH_BRWA(frap) & (1 << i)) << 1) |
 		      ((ICH_BRRA(frap) & (1 << i)) << 0);
 	int offset = 0x54 + i * 4;
-	uint32_t freg = mmio_readl(spibar + offset), base, limit;
+	uint32_t freg = mmio_readl(ich_spibar + offset), base, limit;
 
 	msg_pdbg("0x%02X: 0x%08x (FREG%i: %s)\n",
 		     offset, freg, i, region_names[i]);
@@ -536,50 +536,50 @@ static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
 	msg_pdbg("SPIBAR = 0x%x + 0x%04x\n", tmp, spibar_offset);
 
 	/* Assign Virtual Address */
-	spibar = rcrb + spibar_offset;
+	ich_spibar = rcrb + spibar_offset;
 
 	switch (spi_controller) {
 	case SPI_CONTROLLER_ICH7:
 		msg_pdbg("0x00: 0x%04x     (SPIS)\n",
-			     mmio_readw(spibar + 0));
+			     mmio_readw(ich_spibar + 0));
 		msg_pdbg("0x02: 0x%04x     (SPIC)\n",
-			     mmio_readw(spibar + 2));
+			     mmio_readw(ich_spibar + 2));
 		msg_pdbg("0x04: 0x%08x (SPIA)\n",
-			     mmio_readl(spibar + 4));
+			     mmio_readl(ich_spibar + 4));
 		for (i = 0; i < 8; i++) {
 			int offs;
 			offs = 8 + (i * 8);
 			msg_pdbg("0x%02x: 0x%08x (SPID%d)\n", offs,
-				     mmio_readl(spibar + offs), i);
+				     mmio_readl(ich_spibar + offs), i);
 			msg_pdbg("0x%02x: 0x%08x (SPID%d+4)\n", offs + 4,
-				     mmio_readl(spibar + offs + 4), i);
+				     mmio_readl(ich_spibar + offs + 4), i);
 		}
-		ichspi_bbar = mmio_readl(spibar + 0x50);
+		ichspi_bbar = mmio_readl(ich_spibar + 0x50);
 		msg_pdbg("0x50: 0x%08x (BBAR)\n",
 			     ichspi_bbar);
 		msg_pdbg("0x54: 0x%04x     (PREOP)\n",
-			     mmio_readw(spibar + 0x54));
+			     mmio_readw(ich_spibar + 0x54));
 		msg_pdbg("0x56: 0x%04x     (OPTYPE)\n",
-			     mmio_readw(spibar + 0x56));
+			     mmio_readw(ich_spibar + 0x56));
 		msg_pdbg("0x58: 0x%08x (OPMENU)\n",
-			     mmio_readl(spibar + 0x58));
+			     mmio_readl(ich_spibar + 0x58));
 		msg_pdbg("0x5c: 0x%08x (OPMENU+4)\n",
-			     mmio_readl(spibar + 0x5c));
+			     mmio_readl(ich_spibar + 0x5c));
 		for (i = 0; i < 4; i++) {
 			int offs;
 			offs = 0x60 + (i * 4);
 			msg_pdbg("0x%02x: 0x%08x (PBR%d)\n", offs,
-				     mmio_readl(spibar + offs), i);
+				     mmio_readl(ich_spibar + offs), i);
 		}
 		msg_pdbg("\n");
-		if (mmio_readw(spibar) & (1 << 15)) {
+		if (mmio_readw(ich_spibar) & (1 << 15)) {
 			msg_pinfo("WARNING: SPI Configuration Lockdown activated.\n");
 			ichspi_lock = 1;
 		}
 		ich_init_opcodes();
 		break;
 	case SPI_CONTROLLER_ICH9:
-		tmp2 = mmio_readw(spibar + 4);
+		tmp2 = mmio_readw(ich_spibar + 4);
 		msg_pdbg("0x04: 0x%04x (HSFS)\n", tmp2);
 		msg_pdbg("FLOCKDN %i, ", (tmp2 >> 15 & 1));
 		msg_pdbg("FDV %i, ", (tmp2 >> 14) & 1);
@@ -590,7 +590,7 @@ static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
 		msg_pdbg("FCERR %i, ", (tmp2 >> 1) & 1);
 		msg_pdbg("FDONE %i\n", (tmp2 >> 0) & 1);
 
-		tmp = mmio_readl(spibar + 0x50);
+		tmp = mmio_readl(ich_spibar + 0x50);
 		msg_pdbg("0x50: 0x%08x (FRAP)\n", tmp);
 		msg_pdbg("BMWAG 0x%02x, ", ICH_BMWAG(tmp));
 		msg_pdbg("BMRAG 0x%02x, ", ICH_BMRAG(tmp));
@@ -602,30 +602,30 @@ static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
 			do_ich9_spi_frap(tmp, i);
 
 		msg_pdbg("0x74: 0x%08x (PR0)\n",
-			     mmio_readl(spibar + 0x74));
+			     mmio_readl(ich_spibar + 0x74));
 		msg_pdbg("0x78: 0x%08x (PR1)\n",
-			     mmio_readl(spibar + 0x78));
+			     mmio_readl(ich_spibar + 0x78));
 		msg_pdbg("0x7C: 0x%08x (PR2)\n",
-			     mmio_readl(spibar + 0x7C));
+			     mmio_readl(ich_spibar + 0x7C));
 		msg_pdbg("0x80: 0x%08x (PR3)\n",
-			     mmio_readl(spibar + 0x80));
+			     mmio_readl(ich_spibar + 0x80));
 		msg_pdbg("0x84: 0x%08x (PR4)\n",
-			     mmio_readl(spibar + 0x84));
+			     mmio_readl(ich_spibar + 0x84));
 		msg_pdbg("0x90: 0x%08x (SSFS, SSFC)\n",
-			     mmio_readl(spibar + 0x90));
+			     mmio_readl(ich_spibar + 0x90));
 		msg_pdbg("0x94: 0x%04x     (PREOP)\n",
-			     mmio_readw(spibar + 0x94));
+			     mmio_readw(ich_spibar + 0x94));
 		msg_pdbg("0x96: 0x%04x     (OPTYPE)\n",
-			     mmio_readw(spibar + 0x96));
+			     mmio_readw(ich_spibar + 0x96));
 		msg_pdbg("0x98: 0x%08x (OPMENU)\n",
-			     mmio_readl(spibar + 0x98));
+			     mmio_readl(ich_spibar + 0x98));
 		msg_pdbg("0x9C: 0x%08x (OPMENU+4)\n",
-			     mmio_readl(spibar + 0x9C));
-		ichspi_bbar = mmio_readl(spibar + 0xA0);
+			     mmio_readl(ich_spibar + 0x9C));
+		ichspi_bbar = mmio_readl(ich_spibar + 0xA0);
 		msg_pdbg("0xA0: 0x%08x (BBAR)\n",
 			     ichspi_bbar);
 		msg_pdbg("0xB0: 0x%08x (FDOC)\n",
-			     mmio_readl(spibar + 0xB0));
+			     mmio_readl(ich_spibar + 0xB0));
 		if (tmp2 & (1 << 15)) {
 			msg_pinfo("WARNING: SPI Configuration Lockdown activated.\n");
 			ichspi_lock = 1;

@@ -23,7 +23,7 @@
 #include "flash.h"
 #include "chipdrivers.h"
 
-int unlock_block_49lfxxxc(struct flashchip *flash, unsigned long address, unsigned char bits)
+static int write_lockbits_block_49lfxxxc(struct flashchip *flash, unsigned long address, unsigned char bits)
 {
 	unsigned long lock = flash->virtual_registers + address + 2;
 	msg_cdbg("lockbits at address=0x%08lx is 0x%01x\n", lock, chip_readb(lock));
@@ -40,31 +40,16 @@ static int write_lockbits_49lfxxxc(struct flashchip *flash, unsigned char bits)
 
 	msg_cdbg("\nbios=0x%08lx\n", registers);
 	for (i = 0; left > 65536; i++, left -= 65536) {
-		msg_cdbg("lockbits at address=0x%08lx is 0x%01x\n",
-			     registers + (i * 65536) + 2,
-			     chip_readb(registers + (i * 65536) + 2));
-		chip_writeb(bits, registers + (i * 65536) + 2);
+		write_lockbits_block_49lfxxxc(flash, i * 65536, bits);
 	}
 	address = i * 65536;
-	msg_cdbg("lockbits at address=0x%08lx is 0x%01x\n",
-		     registers + address + 2,
-		     chip_readb(registers + address + 2));
-	chip_writeb(bits, registers + address + 2);
+	write_lockbits_block_49lfxxxc(flash, address, bits);
 	address += 32768;
-	msg_cdbg("lockbits at address=0x%08lx is 0x%01x\n",
-		     registers + address + 2,
-		     chip_readb(registers + address + 2));
-	chip_writeb(bits, registers + address + 2);
+	write_lockbits_block_49lfxxxc(flash, address, bits);
 	address += 8192;
-	msg_cdbg("lockbits at address=0x%08lx is 0x%01x\n",
-		     registers + address + 2,
-		     chip_readb(registers + address + 2));
-	chip_writeb(bits, registers + address + 2);
+	write_lockbits_block_49lfxxxc(flash, address, bits);
 	address += 8192;
-	msg_cdbg("lockbits at address=0x%08lx is 0x%01x\n",
-		     registers + address + 2,
-		     chip_readb(registers + address + 2));
-	chip_writeb(bits, registers + address + 2);
+	write_lockbits_block_49lfxxxc(flash, address, bits);
 
 	return 0;
 }

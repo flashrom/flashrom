@@ -73,7 +73,7 @@ static int digits(int n)
 	return i;
 }
 
-void print_supported_chips(void)
+static void print_supported_chips(void)
 {
 	int okcol = 0, pos = 0, i, chipcount = 0;
 	struct flashchip *f;
@@ -146,7 +146,7 @@ void print_supported_chips(void)
 }
 
 #if CONFIG_INTERNAL == 1
-void print_supported_chipsets(void)
+static void print_supported_chipsets(void)
 {
 	int i, j, chipsetcount = 0;
 	const struct penable *c = chipset_enables;
@@ -169,11 +169,11 @@ void print_supported_chipsets(void)
 	}
 }
 
-void print_supported_boards_helper(const struct board_info *boards,
+static void print_supported_boards_helper(const struct board_info *boards,
 				   const char *devicetype)
 {
 	int i, j, boardcount_good = 0, boardcount_bad = 0;
-	struct board_pciid_enable *b = board_pciid_enables;
+	const struct board_pciid_enable *b = board_pciid_enables;
 
 	for (i = 0; boards[i].vendor != NULL; i++) {
 		if (boards[i].working)

@@ -25,7 +25,7 @@
 #include "flash.h"
 #include "chipdrivers.h"
 
-int check_sst_fwhub_block_lock(struct flashchip *flash, int offset)
+static int check_sst_fwhub_block_lock(struct flashchip *flash, int offset)
 {
 	chipaddr registers = flash->virtual_registers;
 	uint8_t blockstatus;
@@ -51,7 +51,7 @@ int check_sst_fwhub_block_lock(struct flashchip *flash, int offset)
 	return blockstatus & 0x1;
 }
 
-int clear_sst_fwhub_block_lock(struct flashchip *flash, int offset)
+static int clear_sst_fwhub_block_lock(struct flashchip *flash, int offset)
 {
 	chipaddr registers = flash->virtual_registers;
 	uint8_t blockstatus;

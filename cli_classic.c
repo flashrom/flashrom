@@ -31,7 +31,7 @@
 #include "flash.h"
 #include "flashchips.h"
 
-void cli_classic_usage(const char *name)
+static void cli_classic_usage(const char *name)
 {
 	const char *pname;
 	int pnamelen;
@@ -118,7 +118,7 @@ void cli_classic_usage(const char *name)
 	         "flash chips.\n\n");
 }
 
-void cli_classic_abort_usage(void)
+static void cli_classic_abort_usage(void)
 {
 	printf("Please run \"flashrom --help\" for usage info.\n");
 	exit(1);
@@ -166,6 +166,7 @@ int cli_classic(int argc, char *argv[])
 	char *filename = NULL;
 
 	char *tempstr = NULL;
+	char *pparam = NULL;
 
 	print_version();
 	print_banner();
@@ -287,10 +288,10 @@ int cli_classic(int argc, char *argv[])
 				if (strncmp(optarg, name, namelen) == 0) {
 					switch (optarg[namelen]) {
 					case ':':
-						programmer_param = strdup(optarg + namelen + 1);
-						if (!strlen(programmer_param)) {
-							free(programmer_param);
-							programmer_param = NULL;
+						pparam = strdup(optarg + namelen + 1);
+						if (!strlen(pparam)) {
+							free(pparam);
+							pparam = NULL;
 						}
 						break;
 					case '\0':
@@ -381,9 +382,7 @@ int cli_classic(int argc, char *argv[])
 	/* FIXME: Delay calibration should happen in programmer code. */
 	myusec_calibrate_delay();
 
-	msg_pdbg("Initializing %s programmer\n",
-		 programmer_table[programmer].name);
-	if (programmer_init()) {
+	if (programmer_init(pparam)) {
 		fprintf(stderr, "Error: Programmer initialization failed.\n");
 		exit(1);
 	}

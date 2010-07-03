@@ -28,7 +28,6 @@
 #include "spi.h"
 
 enum spi_controller spi_controller = SPI_CONTROLLER_NONE;
-void *spibar = NULL;
 
 void spi_prettyprint_status_register(struct flashchip *flash);
 

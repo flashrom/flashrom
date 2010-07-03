@@ -28,7 +28,7 @@
 #define BOOT_ROM_ADDR		0x50
 #define BOOT_ROM_DATA		0x54
 
-struct pcidev_status nics_natsemi[] = {
+const struct pcidev_status nics_natsemi[] = {
 	{0x100b, 0x0020, NT, "National Semiconductor", "DP83815/DP83816"},
 	{0x100b, 0x0022, NT, "National Semiconductor", "DP83820"},
 	{},

@@ -44,7 +44,7 @@ int dmi_match(const char *pattern)
 
 #else /* STANDALONE */
 
-const char *dmidecode_names[] = {
+static const char *dmidecode_names[] = {
 	"system-manufacturer",
 	"system-product-name",
 	"system-version",
@@ -54,9 +54,9 @@ const char *dmidecode_names[] = {
 };
 
 #define DMI_COMMAND_LEN_MAX 260
-const char *dmidecode_command = "dmidecode";
+static const char *dmidecode_command = "dmidecode";
 
-char *dmistrings[ARRAY_SIZE(dmidecode_names)];
+static char *dmistrings[ARRAY_SIZE(dmidecode_names)];
 
 /* Strings longer than 4096 in DMI are just insane. */
 #define DMI_MAX_ANSWER_LEN 4096

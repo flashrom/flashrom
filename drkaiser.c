@@ -26,12 +26,12 @@
 #define PCI_MAGIC_DRKAISER_ADDR		0x50
 #define PCI_MAGIC_DRKAISER_VALUE	0xa971
 
-struct pcidev_status drkaiser_pcidev[] = {
+const struct pcidev_status drkaiser_pcidev[] = {
 	{0x1803, 0x5057, OK, "Dr. Kaiser", "PC-Waechter (Actel FPGA)"},
 	{},
 };
 
-uint8_t *drkaiser_bar;
+static uint8_t *drkaiser_bar;
 
 int drkaiser_init(void)
 {
