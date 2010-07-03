@@ -36,7 +36,7 @@
  * The ST M50FLW080B and STM50FLW080B chips have to be unlocked,
  * before you can erase them or write to them.
  */
-int unlock_block_stm50flw0x0x(struct flashchip *flash, int offset)
+static int unlock_block_stm50flw0x0x(struct flashchip *flash, int offset)
 {
 	chipaddr wrprotect = flash->virtual_registers + 2;
 	const uint8_t unlock_sector = 0x00;

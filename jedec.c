@@ -38,7 +38,7 @@ uint8_t oddparity(uint8_t val)
 	return (val ^ (val >> 1)) & 0x1;
 }
 
-void toggle_ready_jedec_common(chipaddr dst, int delay)
+static void toggle_ready_jedec_common(chipaddr dst, int delay)
 {
 	unsigned int i = 0;
 	uint8_t tmp1, tmp2;
@@ -70,7 +70,7 @@ void toggle_ready_jedec(chipaddr dst)
  * Given that erase is slow on all chips, it is recommended to use 
  * toggle_ready_jedec_slow in erase functions.
  */
-void toggle_ready_jedec_slow(chipaddr dst)
+static void toggle_ready_jedec_slow(chipaddr dst)
 {
 	toggle_ready_jedec_common(dst, 8 * 1000);
 }
@@ -92,7 +92,7 @@ void data_polling_jedec(chipaddr dst, uint8_t data)
 		msg_cdbg("%s: excessive loops, i=0x%x\n", __func__, i);
 }
 
-void start_program_jedec_common(struct flashchip *flash, unsigned int mask)
+static void start_program_jedec_common(struct flashchip *flash, unsigned int mask)
 {
 	chipaddr bios = flash->virtual_memory;
 	chip_writeb(0xAA, bios + (0x5555 & mask));
@@ -100,7 +100,7 @@ void start_program_jedec_common(struct flashchip *flash, unsigned int mask)
 	chip_writeb(0xA0, bios + (0x5555 & mask));
 }
 
-int probe_jedec_common(struct flashchip *flash, unsigned int mask)
+static int probe_jedec_common(struct flashchip *flash, unsigned int mask)
 {
 	chipaddr bios = flash->virtual_memory;
 	uint8_t id1, id2;
@@ -199,7 +199,7 @@ int probe_jedec_common(struct flashchip *flash, unsigned int mask)
 	return 1;
 }
 
-int erase_sector_jedec_common(struct flashchip *flash, unsigned int page,
+static int erase_sector_jedec_common(struct flashchip *flash, unsigned int page,
 			      unsigned int pagesize, unsigned int mask)
 {
 	chipaddr bios = flash->virtual_memory;
@@ -229,7 +229,7 @@ int erase_sector_jedec_common(struct flashchip *flash, unsigned int page,
 	return 0;
 }
 
-int erase_block_jedec_common(struct flashchip *flash, unsigned int block,
+static int erase_block_jedec_common(struct flashchip *flash, unsigned int block,
 			     unsigned int blocksize, unsigned int mask)
 {
 	chipaddr bios = flash->virtual_memory;
@@ -259,7 +259,7 @@ int erase_block_jedec_common(struct flashchip *flash, unsigned int block,
 	return 0;
 }
 
-int erase_chip_jedec_common(struct flashchip *flash, unsigned int mask)
+static int erase_chip_jedec_common(struct flashchip *flash, unsigned int mask)
 {
 	int total_size = flash->total_size * 1024;
 	chipaddr bios = flash->virtual_memory;
@@ -288,7 +288,7 @@ int erase_chip_jedec_common(struct flashchip *flash, unsigned int mask)
 	return 0;
 }
 
-int write_byte_program_jedec_common(struct flashchip *flash, uint8_t *src,
+static int write_byte_program_jedec_common(struct flashchip *flash, uint8_t *src,
 			     chipaddr dst, unsigned int mask)
 {
 	int tried = 0, failed = 0;
@@ -335,7 +335,7 @@ int write_sector_jedec_common(struct flashchip *flash, uint8_t *src,
 	return failed;
 }
 
-int write_page_write_jedec_common(struct flashchip *flash, uint8_t *src,
+static int write_page_write_jedec_common(struct flashchip *flash, uint8_t *src,
 			   int start, int page_size, unsigned int mask)
 {
 	int i, tried = 0, failed;
@@ -374,7 +374,7 @@ retry:
 	return failed;
 }
 
-int getaddrmask(struct flashchip *flash)
+static int getaddrmask(struct flashchip *flash)
 {
 	switch (flash->feature_bits & FEATURE_ADDR_MASK) {
 	case FEATURE_ADDR_FULL:

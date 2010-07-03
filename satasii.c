@@ -26,9 +26,9 @@
 #define PCI_VENDOR_ID_SII	0x1095
 
 uint8_t *sii_bar;
-uint16_t id;
+static uint16_t id;
 
-struct pcidev_status satas_sii[] = {
+const struct pcidev_status satas_sii[] = {
 	{0x1095, 0x0680, OK, "Silicon Image", "PCI0680 Ultra ATA-133 Host Ctrl"},
 	{0x1095, 0x3112, OK, "Silicon Image", "SiI 3112 [SATALink/SATARaid] SATA Ctrl"},
 	{0x1095, 0x3114, OK, "Silicon Image", "SiI 3114 [SATALink/SATARaid] SATA Ctrl"},

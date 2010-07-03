@@ -34,7 +34,7 @@
 #include "flash.h"
 #include "flashchips.h"
 
-const char *flashrom_version = FLASHROM_VERSION;
+const char * const flashrom_version = FLASHROM_VERSION;
 char *chip_to_probe = NULL;
 int verbose = 0;
 
@@ -91,23 +91,17 @@ enum programmer programmer =
 
 char *programmer_param = NULL;
 
-/**
- * flashrom defaults to Parallel/LPC/FWH flash devices. If a known host
- * controller is found, the init routine sets the buses_supported bitfield to
- * contain the supported buses for that controller.
- */
-enum chipbustype buses_supported = CHIP_BUSTYPE_NONSPI;
+/* Supported buses for the current programmer. */
+enum chipbustype buses_supported;
 
 /**
  * Programmers supporting multiple buses can have differing size limits on
  * each bus. Store the limits for each bus in a common struct.
  */
-struct decode_sizes max_rom_decode = {
-	.parallel	= 0xffffffff,
-	.lpc		= 0xffffffff,
-	.fwh		= 0xffffffff,
-	.spi		= 0xffffffff
-};
+struct decode_sizes max_rom_decode;
+
+/* If nonzero, used as the start address of bottom-aligned flash. */
+unsigned long flashbase;
 
 const struct programmer_entry programmer_table[] = {
 #if CONFIG_INTERNAL == 1
@@ -402,7 +396,11 @@ static int shutdown_fn_count = 0;
 struct shutdown_func_data {
 	void (*func) (void *data);
 	void *data;
-} shutdown_fn[SHUTDOWN_MAXFN];
+} static shutdown_fn[SHUTDOWN_MAXFN];
+/* Initialize to 0 to make sure nobody registers a shutdown function before
+ * programmer init.
+ */
+static int may_register_shutdown = 0;
 
 /* Register a function to be executed on programmer shutdown.
  * The advantage over atexit() is that you can supply a void pointer which will
@@ -419,6 +417,11 @@ int register_shutdown(void (*function) (void *data), void *data)
 			 SHUTDOWN_MAXFN);
 		return 1;
 	}
+	if (!may_register_shutdown) {
+		msg_perr("Tried to register a shutdown function before "
+			 "programmer init.\n");
+		return 1;
+	}
 	shutdown_fn[shutdown_fn_count].func = function;
 	shutdown_fn[shutdown_fn_count].data = data;
 	shutdown_fn_count++;
@@ -426,17 +429,39 @@ int register_shutdown(void (*function) (void *data), void *data)
 	return 0;
 }
 
-int programmer_init(void)
+int programmer_init(char *param)
 {
+	/* Initialize all programmer specific data. */
+	/* Default to unlimited decode sizes. */
+	max_rom_decode = (const struct decode_sizes) {
+		.parallel	= 0xffffffff,
+		.lpc		= 0xffffffff,
+		.fwh		= 0xffffffff,
+		.spi		= 0xffffffff
+	};
+	/* Default to Parallel/LPC/FWH flash devices. If a known host controller
+	 * is found, the init routine sets the buses_supported bitfield.
+	 */
+	buses_supported = CHIP_BUSTYPE_NONSPI;
+	/* Default to top aligned flash at 4 GB. */
+	flashbase = 0;
+	/* Registering shutdown functions is now allowed. */
+	may_register_shutdown = 1;
+
+	programmer_param = param;
+	msg_pdbg("Initializing %s programmer\n",
+		 programmer_table[programmer].name);
 	return programmer_table[programmer].init();
 }
 
 int programmer_shutdown(void)
 {
-	int i;
-
-	for (i = shutdown_fn_count - 1; i >= 0; i--)
+	/* Registering shutdown functions is no longer allowed. */
+	may_register_shutdown = 0;
+	while (shutdown_fn_count > 0) {
+		int i = --shutdown_fn_count;
 		shutdown_fn[i].func(shutdown_fn[i].data);
+	}
 	return programmer_table[programmer].shutdown();
 }
 
@@ -511,8 +536,6 @@ int read_memmapped(struct flashchip *flash, uint8_t *buf, int start, int len)
 		
 	return 0;
 }
-
-unsigned long flashbase = 0;
 
 int min(int a, int b)
 {
@@ -1059,7 +1082,7 @@ int read_flash(struct flashchip *flash, char *filename)
 /* This function shares a lot of its structure with erase_flash().
  * Even if an error is found, the function will keep going and check the rest.
  */
-int selfcheck_eraseblocks(struct flashchip *flash)
+static int selfcheck_eraseblocks(struct flashchip *flash)
 {
 	int i, j, k;
 	int ret = 0;
