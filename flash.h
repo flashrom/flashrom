@@ -569,6 +569,7 @@ struct decode_sizes {
 	uint32_t spi;
 };
 extern struct decode_sizes max_rom_decode;
+extern int programmer_may_write;
 extern char *programmer_param;
 extern unsigned long flashbase;
 extern int verbose;
