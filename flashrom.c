@@ -103,6 +103,9 @@ struct decode_sizes max_rom_decode;
 /* If nonzero, used as the start address of bottom-aligned flash. */
 unsigned long flashbase;
 
+/* Is writing allowed with this programmer? */
+int programmer_may_write;
+
 const struct programmer_entry programmer_table[] = {
 #if CONFIG_INTERNAL == 1
 	{
@@ -447,6 +450,8 @@ int programmer_init(char *param)
 	flashbase = 0;
 	/* Registering shutdown functions is now allowed. */
 	may_register_shutdown = 1;
+	/* Default to allowing writes. Broken programmers set this to 0. */
+	programmer_may_write = 1;
 
 	programmer_param = param;
 	msg_pdbg("Initializing %s programmer\n",
@@ -1382,6 +1387,21 @@ int doit(struct flashchip *flash, int force, char *filename, int read_it, int wr
 
 	size = flash->total_size * 1024;
 	buf = (uint8_t *) calloc(size, sizeof(char));
+
+	if (!programmer_may_write && (write_it || erase_it)) {
+		msg_perr("Write/erase is not working yet on your programmer in "
+			 "its current configuration.\n");
+		/* --force is the wrong approach, but it's the best we can do
+		 * until the generic programmer parameter parser is merged.
+		 */
+		if (!force) {
+			msg_perr("Aborting.\n");
+			programmer_shutdown();
+			return 1;
+		} else {
+			msg_cerr("Continuing anyway.\n");
+		}
+	}
 
 	if (erase_it) {
 		if (flash->tested & TEST_BAD_ERASE) {
