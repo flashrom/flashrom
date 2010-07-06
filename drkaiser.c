@@ -38,8 +38,9 @@ int drkaiser_init(void)
 	uint32_t addr;
 
 	get_io_perms();
+
 	pcidev_init(PCI_VENDOR_ID_DRKAISER, PCI_BASE_ADDRESS_2,
-		    drkaiser_pcidev, programmer_param);
+		    drkaiser_pcidev);
 
 	/* Write magic register to enable flash write. */
 	pci_write_word(pcidev_dev, PCI_MAGIC_DRKAISER_ADDR,
@@ -53,6 +54,7 @@ int drkaiser_init(void)
 			       addr, 128 * 1024);
 
 	buses_supported = CHIP_BUSTYPE_PARALLEL;
+
 	return 0;
 }
 
@@ -60,7 +62,6 @@ int drkaiser_shutdown(void)
 {
 	/* Write protect the flash again. */
 	pci_write_word(pcidev_dev, PCI_MAGIC_DRKAISER_ADDR, 0);
-	free(programmer_param);
 	pci_cleanup(pacc);
 	release_io_perms();
 	return 0;

@@ -39,7 +39,7 @@ int nicnatsemi_init(void)
 	get_io_perms();
 
 	io_base_addr = pcidev_init(PCI_VENDOR_ID_NATSEMI, PCI_BASE_ADDRESS_0,
-				   nics_natsemi, programmer_param);
+				   nics_natsemi);
 
 	buses_supported = CHIP_BUSTYPE_PARALLEL;
 
@@ -48,7 +48,6 @@ int nicnatsemi_init(void)
 
 int nicnatsemi_shutdown(void)
 {
-	free(programmer_param);
 	pci_cleanup(pacc);
 	release_io_perms();
 	return 0;

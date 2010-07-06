@@ -121,36 +121,45 @@ int internal_init(void)
 	int force_laptop = 0;
 	char *arg;
 
-	arg = extract_param(&programmer_param, "boardenable=", ",:");
+	arg = extract_param(&programmer_param, "boardenable", ",:");
 	if (arg && !strcmp(arg,"force")) {
 		force_boardenable = 1;
 	} else if (arg && !strlen(arg)) {
 		msg_perr("Missing argument for boardenable.\n");
+		free(arg);
+		return 1;
 	} else if (arg) {
 		msg_perr("Unknown argument for boardenable: %s\n", arg);
-		exit(1);
+		free(arg);
+		return 1;
 	}
 	free(arg);
 
-	arg = extract_param(&programmer_param, "boardmismatch=", ",:");
+	arg = extract_param(&programmer_param, "boardmismatch", ",:");
 	if (arg && !strcmp(arg,"force")) {
 		force_boardmismatch = 1;
 	} else if (arg && !strlen(arg)) {
 		msg_perr("Missing argument for boardmismatch.\n");
+		free(arg);
+		return 1;
 	} else if (arg) {
 		msg_perr("Unknown argument for boardmismatch: %s\n", arg);
-		exit(1);
+		free(arg);
+		return 1;
 	}
 	free(arg);
 
-	arg = extract_param(&programmer_param, "laptop=", ",:");
+	arg = extract_param(&programmer_param, "laptop", ",:");
 	if (arg && !strcmp(arg,"force_I_want_a_brick")) {
 		force_laptop = 1;
 	} else if (arg && !strlen(arg)) {
 		msg_perr("Missing argument for laptop.\n");
+		free(arg);
+		return 1;
 	} else if (arg) {
 		msg_perr("Unknown argument for laptop: %s\n", arg);
-		exit(1);
+		free(arg);
+		return 1;
 	}
 	free(arg);
 

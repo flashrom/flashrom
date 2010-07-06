@@ -101,24 +101,14 @@ int buspirate_spi_init(void)
 	char *speed = NULL;
 	int spispeed = 0x7;
 
-	if (programmer_param && !strlen(programmer_param)) {
-		free(programmer_param);
-		programmer_param = NULL;
-	}
-	if (programmer_param) {
-		dev = extract_param(&programmer_param, "dev=", ",:");
-		speed = extract_param(&programmer_param, "spispeed=", ",:");
-		if (strlen(programmer_param))
-			msg_perr("Unhandled programmer parameters: %s\n",
-				programmer_param);
-		free(programmer_param);
-		programmer_param = NULL;
-	}
-	if (!dev) {
+	dev = extract_param(&programmer_param, "dev", ",:");
+	if (!dev || !strlen(dev)) {
 		msg_perr("No serial device given. Use flashrom -p "
 			"buspirate_spi:dev=/dev/ttyUSB0\n");
 		return 1;
 	}
+
+	speed = extract_param(&programmer_param, "spispeed", ",:");
 	if (speed) {
 		for (i = 0; spispeeds[i].name; i++)
 			if (!strncasecmp(spispeeds[i].name, speed,
@@ -129,12 +119,15 @@ int buspirate_spi_init(void)
 		if (!spispeeds[i].name)
 			msg_perr("Invalid SPI speed, using default.\n");
 	}
+	free(speed);
+
 	/* This works because speeds numbering starts at 0 and is contiguous. */
 	msg_pdbg("SPI speed is %sHz\n", spispeeds[spispeed].name);
 
 	ret = buspirate_serialport_setup(dev);
 	if (ret)
 		return ret;
+	free(dev);
 
 	/* This is the brute force version, but it should work. */
 	for (i = 0; i < 19; i++) {

@@ -434,6 +434,7 @@ int register_shutdown(void (*function) (void *data), void *data)
 
 int programmer_init(char *param)
 {
+	int ret;
 	/* Initialize all programmer specific data. */
 	/* Default to unlimited decode sizes. */
 	max_rom_decode = (const struct decode_sizes) {
@@ -456,7 +457,13 @@ int programmer_init(char *param)
 	programmer_param = param;
 	msg_pdbg("Initializing %s programmer\n",
 		 programmer_table[programmer].name);
-	return programmer_table[programmer].init();
+	ret = programmer_table[programmer].init();
+	if (programmer_param && strlen(programmer_param)) {
+		msg_perr("Unhandled programmer parameters: %s\n",
+			 programmer_param);
+		/* Do not error out here, the init itself was successful. */
+	}
+	return ret;
 }
 
 int programmer_shutdown(void)
@@ -564,22 +571,24 @@ int bitcount(unsigned long a)
 char *strcat_realloc(char *dest, const char *src)
 {
 	dest = realloc(dest, strlen(dest) + strlen(src) + 1);
-	if (!dest)
+	if (!dest) {
+		msg_gerr("Out of memory!\n");
 		return NULL;
+	}
 	strcat(dest, src);
 	return dest;
 }
 
 /* This is a somewhat hacked function similar in some ways to strtok().
- * It will look for needle in haystack, return a copy of needle and remove
- * everything from the first occurrence of needle to the next delimiter
- * from haystack.
+ * It will look for needle with a subsequent '=' in haystack, return a copy of
+ * needle and remove everything from the first occurrence of needle to the next
+ * delimiter from haystack.
  */
 char *extract_param(char **haystack, char *needle, char *delim)
 {
-	char *param_pos, *rest, *tmp;
-	char *dev = NULL;
-	int devlen;
+	char *param_pos, *opt_pos, *rest;
+	char *opt = NULL;
+	int optlen;
 	int needlelen;
 
 	needlelen = strlen(needle);
@@ -595,43 +604,41 @@ char *extract_param(char **haystack, char *needle, char *delim)
 	do {
 		if (!param_pos)
 			return NULL;
-		/* Beginning of the string? */
-		if (param_pos == *haystack)
-			break;
-		/* After a delimiter? */
-		if (strchr(delim, *(param_pos - 1)))
-			break;
+		/* Needle followed by '='? */
+		if (param_pos[needlelen] == '=') {
+			
+			/* Beginning of the string? */
+			if (param_pos == *haystack)
+				break;
+			/* After a delimiter? */
+			if (strchr(delim, *(param_pos - 1)))
+				break;
+		}
 		/* Continue searching. */
 		param_pos++;
 		param_pos = strstr(param_pos, needle);
 	} while (1);
-		
+	
 	if (param_pos) {
-		param_pos += strlen(needle);
-		devlen = strcspn(param_pos, delim);
-		if (devlen) {
-			dev = malloc(devlen + 1);
-			if (!dev) {
-				msg_gerr("Out of memory!\n");
-				exit(1);
-			}
-			strncpy(dev, param_pos, devlen);
-			dev[devlen] = '\0';
-		}
-		rest = param_pos + devlen;
-		rest += strspn(rest, delim);
-		param_pos -= strlen(needle);
-		memmove(param_pos, rest, strlen(rest) + 1);
-		tmp = realloc(*haystack, strlen(*haystack) + 1);
-		if (!tmp) {
+		/* Get the string after needle and '='. */
+		opt_pos = param_pos + needlelen + 1;
+		optlen = strcspn(opt_pos, delim);
+		/* Return an empty string if the parameter was empty. */
+		opt = malloc(optlen + 1);
+		if (!opt) {
 			msg_gerr("Out of memory!\n");
 			exit(1);
 		}
-		*haystack = tmp;
+		strncpy(opt, opt_pos, optlen);
+		opt[optlen] = '\0';
+		rest = opt_pos + optlen;
+		/* Skip all delimiters after the current parameter. */
+		rest += strspn(rest, delim);
+		memmove(param_pos, rest, strlen(rest) + 1);
+		/* We could shrink haystack, but the effort is not worth it. */
 	}
-	
 
-	return dev;
+	return opt;
 }
 
 /* start is an offset to the base address of the flash chip */

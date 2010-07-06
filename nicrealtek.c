@@ -44,7 +44,7 @@ int nicrealtek_init(void)
 	get_io_perms();
 
 	io_base_addr = pcidev_init(PCI_VENDOR_ID_REALTEK, PCI_BASE_ADDRESS_0,
-				   nics_realtek, programmer_param);
+				   nics_realtek);
 
 	buses_supported = CHIP_BUSTYPE_PARALLEL;
 
@@ -56,7 +56,7 @@ int nicsmc1211_init(void)
 	get_io_perms();
 
 	io_base_addr = pcidev_init(PCI_VENDOR_ID_SMC1211, PCI_BASE_ADDRESS_0,
-				   nics_realteksmc1211, programmer_param);
+				   nics_realteksmc1211);
 
 	buses_supported = CHIP_BUSTYPE_PARALLEL;
 
@@ -66,7 +66,6 @@ int nicsmc1211_init(void)
 int nicrealtek_shutdown(void)
 {
 	/* FIXME: We forgot to disable software access again. */
-	free(programmer_param);
 	pci_cleanup(pacc);
 	release_io_perms();
 	return 0;

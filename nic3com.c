@@ -59,7 +59,8 @@ int nic3com_init(void)
 	get_io_perms();
 
 	io_base_addr = pcidev_init(PCI_VENDOR_ID_3COM, PCI_BASE_ADDRESS_0,
-				   nics_3com, programmer_param);
+				   nics_3com);
+
 	id = pcidev_dev->device_id;
 
 	/* 3COM 3C90xB cards need a special fixup. */
@@ -96,7 +97,6 @@ int nic3com_shutdown(void)
 		OUTL(internal_conf, io_base_addr + INTERNAL_CONFIG);
 	}
 
-	free(programmer_param);
 	pci_cleanup(pacc);
 	release_io_perms();
 	return 0;
