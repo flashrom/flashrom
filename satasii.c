@@ -46,8 +46,8 @@ int satasii_init(void)
 
 	get_io_perms();
 
-	pcidev_init(PCI_VENDOR_ID_SII, PCI_BASE_ADDRESS_0, satas_sii,
-		    programmer_param);
+	pcidev_init(PCI_VENDOR_ID_SII, PCI_BASE_ADDRESS_0, satas_sii);
+
 	id = pcidev_dev->device_id;
 
 	if ((id == 0x3132) || (id == 0x3124)) {
@@ -71,7 +71,6 @@ int satasii_init(void)
 
 int satasii_shutdown(void)
 {
-	free(programmer_param);
 	pci_cleanup(pacc);
 	release_io_perms();
 	return 0;

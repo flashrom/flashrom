@@ -142,22 +142,24 @@ static uint16_t find_ite_spi_flash_port(uint16_t port, uint16_t id)
 		flashport = sio_read(port, 0x64) << 8;
 		flashport |= sio_read(port, 0x65);
 		msg_pdbg("Serial flash port 0x%04x\n", flashport);
-		if (programmer_param && !strlen(programmer_param)) {
-			free(programmer_param);
-			programmer_param = NULL;
+		/* Non-default port requested? */
+		portpos = extract_param(&programmer_param, "it87spiport", ",:");
+		if (portpos && strlen(portpos)) {
+			flashport = strtol(portpos, (char **)NULL, 0);
+			msg_pinfo("Forcing serial flash port 0x%04x\n",
+				  flashport);
+			sio_write(port, 0x64, (flashport >> 8));
+			sio_write(port, 0x65, (flashport & 0xff));
+		} else if (portpos) {
+			msg_perr("Error: it87spiport specified, but no port "
+				 "given.\n");
+			free(portpos);
+			/* FIXME: Return failure here once it87spi_common_init()
+			 * can handle the return value sanely.
+			 */
+			exit(1);
 		}
-		if (programmer_param) {
-			portpos = extract_param(&programmer_param,
-						"it87spiport=", ",:");
-			if (portpos) {
-				flashport = strtol(portpos, (char **)NULL, 0);
-				msg_pinfo("Forcing serial flash port 0x%04x\n",
-					  flashport);
-				sio_write(port, 0x64, (flashport >> 8));
-				sio_write(port, 0x65, (flashport & 0xff));
-				free(portpos);
-			}
-		}
+		free(portpos);
 		exit_conf_mode_ite(port);
 		break;
 	/* TODO: Handle more IT87xx if they support flash translation */

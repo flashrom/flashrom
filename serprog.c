@@ -298,43 +298,80 @@ static int sp_stream_buffer_op(uint8_t cmd, uint32_t parmlen, uint8_t * parms)
 int serprog_init(void)
 {
 	uint16_t iface;
-	int len;
 	unsigned char pgmname[17];
 	unsigned char rbuf[3];
 	unsigned char c;
-	char *num;
-	char *dev;
-	msg_pspew("%s\n", __func__);
-	/* the parameter is either of format "/dev/device:baud" or "ip:port" */
-	if ((!programmer_param) || (!strlen(programmer_param))) {
-		nodevice:
-		msg_perr("Error: No device/host given for the serial programmer driver.\n"
-			"Use flashrom -p serprog=/dev/device:baud or flashrom -p serprog=ip:port\n");
-		exit(1);
-	}
-	num = strstr(programmer_param, ":");
-	len = num - programmer_param;
-	if (!len) goto nodevice;
-	if (!num) {
-		msg_perr("Error: No port or baudrate specified to serial programmer driver.\n"
-			"Use flashrom -p serprog=/dev/device:baud or flashrom -p serprog=ip:port\n");
-		exit(1);
-	}
-	len = num - programmer_param;
-	dev = malloc(len + 1);
-	if (!dev) sp_die("Error: memory allocation failure");
-	memcpy(dev, programmer_param, len);
-	dev[len] = 0;
-	num = strdup(num + 1);
-	if (!num) sp_die("Error: memory allocation failure");
-	free(programmer_param);
-	programmer_param = NULL;
+	char *device;
+	char *baudport;
+	int have_device = 0;
 
-	if (dev[0] == '/') sp_fd = sp_openserport(dev, atoi(num));
-	else sp_fd = sp_opensocket(dev, atoi(num));
+	/* the parameter is either of format "dev=/dev/device:baud" or "ip=ip:port" */
+	device = extract_param(&programmer_param, "dev", ",");
+	if (device && strlen(device)) {
+		baudport = strstr(device, ":");
+		if (baudport) {
+			/* Split device from baudrate. */
+			*baudport = '\0';
+			baudport++;
+		}
+		if (!baudport || !strlen(baudport)) {
+			msg_perr("Error: No baudrate specified.\n"
+				 "Use flashrom -p serprog:dev=/dev/device:baud\n");
+			free(device);
+			return 1;		
+		}
+		if (strlen(device)) {
+			sp_fd = sp_openserport(device, atoi(baudport));
+			have_device++;
+		}
+	}
+	if (device && !strlen(device)) {
+		msg_perr("Error: No device specified.\n"
+			 "Use flashrom -p serprog:dev=/dev/device:baud\n");
+		free(device);
+		return 1;
+	}
+	free(device);
 
-	free(dev); dev = NULL;
-	free(num); num = NULL;
+	device = extract_param(&programmer_param, "ip", ",");
+	if (have_device && device) {
+		msg_perr("Error: Both host and device specified.\n"
+			 "Please use either dev= or ip= but not both.\n");
+		free(device);
+		return 1;
+	}
+	if (device && strlen(device)) {
+		baudport = strstr(device, ":");
+		if (baudport) {
+			/* Split host from port. */
+			*baudport = '\0';
+			baudport++;
+		}
+		if (!baudport || !strlen(baudport)) {
+			msg_perr("Error: No port specified.\n"
+				 "Use flashrom -p serprog:ip=ipaddr:port\n");
+			free(device);
+			return 1;		
+		}
+		if (strlen(device)) {
+			sp_fd = sp_opensocket(device, atoi(baudport));
+			have_device++;
+		}
+	}
+	if (device && !strlen(device)) {
+		msg_perr("Error: No host specified.\n"
+			 "Use flashrom -p serprog:ip=ipaddr:port\n");
+		free(device);
+		return 1;
+	}
+	free(device);
+
+	if (!have_device) {
+		msg_perr("Error: Neither host nor device specified.\n"
+			 "Use flashrom -p serprog:dev=/dev/device:baud or "
+			 "flashrom -p serprog:ip=ipaddr:port\n");
+		return 1;
+	}
 
 	msg_pdbg(MSGHEADER "connected - attempting to synchronize\n");
 

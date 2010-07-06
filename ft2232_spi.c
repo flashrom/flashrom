@@ -76,45 +76,48 @@ int ft2232_spi_init(void)
 	int f;
 	struct ftdi_context *ftdic = &ftdic_context;
 	unsigned char buf[512];
-	char *portpos = NULL;
 	int ft2232_type = FTDI_FT4232H;
 	enum ftdi_interface ft2232_interface = INTERFACE_B;
+	char *arg;
+
+	arg = extract_param(&programmer_param, "type", ",:");
+	if (arg) {
+		if (!strcasecmp(arg, "2232H"))
+			ft2232_type = FTDI_FT2232H;
+		else if (!strcasecmp(arg, "4232H"))
+			ft2232_type = FTDI_FT4232H;
+		else {
+			msg_perr("Error: Invalid device type specified.\n");
+			free(arg);
+			return 1;
+		}
+	}
+	free(arg);
+	arg = extract_param(&programmer_param, "port", ",:");
+	if (arg) {
+		switch (toupper(*arg)) {
+		case 'A':
+			ft2232_interface = INTERFACE_A;
+			break;
+		case 'B':
+			ft2232_interface = INTERFACE_B;
+			break;
+		default:
+			msg_perr("Error: Invalid port/interface specified.\n");
+			free(arg);
+			return 1;
+		}
+	}
+	free(arg);
+	msg_pdbg("Using device type %s ",
+		     (ft2232_type == FTDI_FT2232H) ? "2232H" : "4232H");
+	msg_pdbg("interface %s\n",
+		     (ft2232_interface == INTERFACE_A) ? "A" : "B");
 
 	if (ftdi_init(ftdic) < 0) {
 		msg_perr("ftdi_init failed\n");
 		return EXIT_FAILURE; // TODO
 	}
-
-	if (programmer_param && !strlen(programmer_param)) {
-		free(programmer_param);
-		programmer_param = NULL;
-	}
-	if (programmer_param) {
-		if (strstr(programmer_param, "2232"))
-			ft2232_type = FTDI_FT2232H;
-		if (strstr(programmer_param, "4232"))
-			ft2232_type = FTDI_FT4232H;
-		portpos = strstr(programmer_param, "port=");
-		if (portpos) {
-			portpos += 5;
-			switch (toupper(*portpos)) {
-			case 'A':
-				ft2232_interface = INTERFACE_A;
-				break;
-			case 'B':
-				ft2232_interface = INTERFACE_B;
-				break;
-			default:
-				msg_perr("Invalid interface specified, "
-					"using default.\n");
-			}
-		}
-		free(programmer_param);
-	}
-	msg_pdbg("Using device type %s ",
-		     (ft2232_type == FTDI_FT2232H) ? "2232H" : "4232H");
-	msg_pdbg("interface %s\n",
-		     (ft2232_interface == INTERFACE_A) ? "A" : "B");
 
 	f = ftdi_usb_open(ftdic, 0x0403, ft2232_type);
 

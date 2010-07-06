@@ -183,7 +183,7 @@ translation unit)"
 .BR "* ft2232_spi" " (for SPI flash ROMs attached to a FT2232H/FT4232H based\
 USB SPI programmer)"
 .sp
-.BR "* serprog" " (for flash ROMs attached to Urja's AVR programmer)"
+.BR "* serprog" " (for flash ROMs attached to a programmer speaking serprog)"
 .sp
 .BR "* buspirate_spi" " (for SPI flash ROMs attached to a Bus Pirate)"
 .sp
@@ -296,22 +296,23 @@ dumb idea.
 .BR "dummy " programmer
 An optional parameter specifies the bus types it
 should support. For that you have to use the
-.B "flashrom \-p dummy:type"
+.B "flashrom \-p dummy:bus=[type[+type[+type]]]"
 syntax where
 .B type
-can be any comma-separated combination of
-.BR parallel ", " lpc ", " fwh ", " spi ", or " all
-(in any order).
+can be any of
+.BR parallel ", " lpc ", " fwh ", " spi
+in any order. If you specify bus without type, all buses will be disabled.
+If you do not specify bus, all buses will be enabled.
 .sp
 Example:
-.B "flashrom \-p dummy:lpc,fwh"
+.B "flashrom \-p dummy:bus=lpc+fwh"
 .TP
 .BR "nic3com" , " nicrealtek" , " nicsmc1211" , " gfxnvidia" , " satasii \
 " and " atahpt " programmers
 These programmers have an option to specify the PCI address of the card
 your want to use, which must be specified if more than one card supported
 by the selected programmer is installed in your system. The syntax is
-.BR "flashrom \-p xxxx:bb:dd.f" ,
+.BR "flashrom \-p xxxx:pci=bb:dd.f" ,
 where
 .B xxxx
 is the name of the programmer
@@ -323,7 +324,7 @@ is the PCI device number, and
 is the PCI function number of the desired device.
 .sp
 Example:
-.B "flashrom \-p nic3com:05:04.0"
+.B "flashrom \-p nic3com:pci=05:04.0"
 .TP
 .BR "it87spi " programmer
 An optional
@@ -342,7 +343,7 @@ is an I/O port number which must be a multiple of 8.
 An optional parameter specifies the controller
 type and interface/port it should support. For that you have to use the
 .sp
-.B "  flashrom \-p ft2232_spi:model,port=interface"
+.B "  flashrom \-p ft2232_spi:type=model,port=interface"
 .sp
 syntax where
 .B model
@@ -363,11 +364,11 @@ device/baud combination or an IP/port combination for communication with the
 programmer. In the device/baud combination, the device has to start with a
 slash. For serial, you have to use the
 .sp
-.B "  flashrom \-p serprog:/dev/device:baud"
+.B "  flashrom \-p serprog:dev=/dev/device:baud"
 .sp
 syntax and for IP, you have to use
 .sp
-.B "  flashrom \-p serprog:ip:port"
+.B "  flashrom \-p serprog:ip=ipaddr:port"
 .sp
 instead. More information about serprog is available in
 .B serprog-protocol.txt

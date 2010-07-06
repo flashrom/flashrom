@@ -336,7 +336,7 @@ struct pcidev_status {
 	const char *device_name;
 };
 uint32_t pcidev_validate(struct pci_dev *dev, uint32_t bar, const struct pcidev_status *devs);
-uint32_t pcidev_init(uint16_t vendor_id, uint32_t bar, const struct pcidev_status *devs, char *pcidev_bdf);
+uint32_t pcidev_init(uint16_t vendor_id, uint32_t bar, const struct pcidev_status *devs);
 #endif
 
 /* print.c */
