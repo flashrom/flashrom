@@ -300,11 +300,8 @@ static int enable_flash_ich_dc(struct pci_dev *dev, const char *name)
 	int max_decode_fwh_decode = 0;
 	int contiguous = 1;
 
-	if (programmer_param)
-		idsel = strstr(programmer_param, "fwh_idsel=");
-
-	if (idsel) {
-		idsel += strlen("fwh_idsel=");
+	idsel = extract_param(&programmer_param, "fwh_idsel", ",:");
+	if (idsel && strlen(idsel)) {
 		fwh_conf = (uint32_t)strtoul(idsel, NULL, 0);
 
 		/* FIXME: Need to undo this on shutdown. */
@@ -312,7 +309,15 @@ static int enable_flash_ich_dc(struct pci_dev *dev, const char *name)
 		pci_write_long(dev, 0xd0, fwh_conf);
 		pci_write_word(dev, 0xd4, fwh_conf);
 		/* FIXME: Decode settings are not changed. */
+	} else if (idsel) {
+		msg_perr("Error: idsel= specified, but no number given.\n");
+		free(idsel);
+		/* FIXME: Return failure here once internal_init() starts
+		 * to care about the return value of the chipset enable.
+		 */
+		exit(1);
 	}
+	free(idsel);
 
 	/* Ignore all legacy ranges below 1 MB.
 	 * We currently only support flashing the chip which responds to

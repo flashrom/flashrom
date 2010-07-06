@@ -25,44 +25,46 @@
 #include "flash.h"
 #include "chipdrivers.h"
 
+static void tolower_string(char *str)
+{
+	for (; *str != '\0'; str++)
+		*str = (char)tolower((unsigned char)*str);
+}
+
 int dummy_init(void)
 {
-	int i;
+	char *bustext = NULL;
+
 	msg_pspew("%s\n", __func__);
 
-	/* "all" is equivalent to specifying no type. */
-	if (programmer_param && (!strcmp(programmer_param, "all"))) {
-		free(programmer_param);
-		programmer_param = NULL;
-	}
-	if (!programmer_param)
-		programmer_param = strdup("parallel,lpc,fwh,spi");
+	bustext = extract_param(&programmer_param, "bus", ",:");
+	msg_pdbg("Requested buses are: %s\n", bustext ? bustext : "default");
+	if (!bustext)
+		bustext = strdup("parallel+lpc+fwh+spi");
 	/* Convert the parameters to lowercase. */
-	for (i = 0; programmer_param[i] != '\0'; i++)
-		programmer_param[i] =
-		    (char)tolower((unsigned char)programmer_param[i]);
+	tolower_string(bustext);
 
 	buses_supported = CHIP_BUSTYPE_NONE;
-	if (strstr(programmer_param, "parallel")) {
+	if (strstr(bustext, "parallel")) {
 		buses_supported |= CHIP_BUSTYPE_PARALLEL;
 		msg_pdbg("Enabling support for %s flash.\n", "parallel");
 	}
-	if (strstr(programmer_param, "lpc")) {
+	if (strstr(bustext, "lpc")) {
 		buses_supported |= CHIP_BUSTYPE_LPC;
 		msg_pdbg("Enabling support for %s flash.\n", "LPC");
 	}
-	if (strstr(programmer_param, "fwh")) {
+	if (strstr(bustext, "fwh")) {
 		buses_supported |= CHIP_BUSTYPE_FWH;
 		msg_pdbg("Enabling support for %s flash.\n", "FWH");
 	}
-	if (strstr(programmer_param, "spi")) {
+	if (strstr(bustext, "spi")) {
 		buses_supported |= CHIP_BUSTYPE_SPI;
 		spi_controller = SPI_CONTROLLER_DUMMY;
 		msg_pdbg("Enabling support for %s flash.\n", "SPI");
 	}
 	if (buses_supported == CHIP_BUSTYPE_NONE)
 		msg_pdbg("Support for all flash bus types disabled.\n");
-	free(programmer_param);
+	free(bustext);
 	return 0;
 }
 

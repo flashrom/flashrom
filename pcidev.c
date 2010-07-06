@@ -78,10 +78,11 @@ uint32_t pcidev_validate(struct pci_dev *dev, uint32_t bar,
 }
 
 uint32_t pcidev_init(uint16_t vendor_id, uint32_t bar,
-		     const struct pcidev_status *devs, char *pcidev_bdf)
+		     const struct pcidev_status *devs)
 {
 	struct pci_dev *dev;
 	struct pci_filter filter;
+	char *pcidev_bdf;
 	char *msg = NULL;
 	int found = 0;
 	uint32_t addr = 0, curaddr = 0;
@@ -93,12 +94,14 @@ uint32_t pcidev_init(uint16_t vendor_id, uint32_t bar,
 
 	/* Filter by vendor and also bb:dd.f (if supplied by the user). */
 	filter.vendor = vendor_id;
+	pcidev_bdf = extract_param(&programmer_param, "pci", ",");
 	if (pcidev_bdf != NULL) {
 		if ((msg = pci_filter_parse_slot(&filter, pcidev_bdf))) {
 			msg_perr("Error: %s\n", msg);
 			exit(1);
 		}
 	}
+	free(pcidev_bdf);
 
 	for (dev = pacc->devices; dev; dev = dev->next) {
 		if (pci_filter_match(&filter, dev)) {
