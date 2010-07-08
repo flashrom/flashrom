@@ -101,14 +101,14 @@ int buspirate_spi_init(void)
 	char *speed = NULL;
 	int spispeed = 0x7;
 
-	dev = extract_param(&programmer_param, "dev", ",:");
+	dev = extract_programmer_param("dev");
 	if (!dev || !strlen(dev)) {
 		msg_perr("No serial device given. Use flashrom -p "
 			"buspirate_spi:dev=/dev/ttyUSB0\n");
 		return 1;
 	}
 
-	speed = extract_param(&programmer_param, "spispeed", ",:");
+	speed = extract_programmer_param("spispeed");
 	if (speed) {
 		for (i = 0; spispeeds[i].name; i++)
 			if (!strncasecmp(spispeeds[i].name, speed,

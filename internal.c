@@ -121,7 +121,7 @@ int internal_init(void)
 	int force_laptop = 0;
 	char *arg;
 
-	arg = extract_param(&programmer_param, "boardenable", ",:");
+	arg = extract_programmer_param("boardenable");
 	if (arg && !strcmp(arg,"force")) {
 		force_boardenable = 1;
 	} else if (arg && !strlen(arg)) {
@@ -135,7 +135,7 @@ int internal_init(void)
 	}
 	free(arg);
 
-	arg = extract_param(&programmer_param, "boardmismatch", ",:");
+	arg = extract_programmer_param("boardmismatch");
 	if (arg && !strcmp(arg,"force")) {
 		force_boardmismatch = 1;
 	} else if (arg && !strlen(arg)) {
@@ -149,7 +149,7 @@ int internal_init(void)
 	}
 	free(arg);
 
-	arg = extract_param(&programmer_param, "laptop", ",:");
+	arg = extract_programmer_param("laptop");
 	if (arg && !strcmp(arg,"force_I_want_a_brick")) {
 		force_laptop = 1;
 	} else if (arg && !strlen(arg)) {

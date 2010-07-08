@@ -94,7 +94,7 @@ uint32_t pcidev_init(uint16_t vendor_id, uint32_t bar,
 
 	/* Filter by vendor and also bb:dd.f (if supplied by the user). */
 	filter.vendor = vendor_id;
-	pcidev_bdf = extract_param(&programmer_param, "pci", ",");
+	pcidev_bdf = extract_programmer_param("pci");
 	if (pcidev_bdf != NULL) {
 		if ((msg = pci_filter_parse_slot(&filter, pcidev_bdf))) {
 			msg_perr("Error: %s\n", msg);

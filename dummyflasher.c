@@ -37,7 +37,7 @@ int dummy_init(void)
 
 	msg_pspew("%s\n", __func__);
 
-	bustext = extract_param(&programmer_param, "bus", ",:");
+	bustext = extract_programmer_param("bus");
 	msg_pdbg("Requested buses are: %s\n", bustext ? bustext : "default");
 	if (!bustext)
 		bustext = strdup("parallel+lpc+fwh+spi");
