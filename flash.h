@@ -570,7 +570,6 @@ struct decode_sizes {
 };
 extern struct decode_sizes max_rom_decode;
 extern int programmer_may_write;
-extern char *programmer_param;
 extern unsigned long flashbase;
 extern int verbose;
 extern const char * const flashrom_version;
@@ -585,6 +584,7 @@ int check_max_decode(enum chipbustype buses, uint32_t size);
 int min(int a, int b);
 int max(int a, int b);
 char *extract_param(char **haystack, char *needle, char *delim);
+char *extract_programmer_param(char *param_name);
 int check_erased_range(struct flashchip *flash, int start, int len);
 int verify_range(struct flashchip *flash, uint8_t *cmpbuf, int start, int len, char *message);
 int need_erase(uint8_t *have, uint8_t *want, int len, enum write_granularity gran);

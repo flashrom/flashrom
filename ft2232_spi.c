@@ -80,7 +80,7 @@ int ft2232_spi_init(void)
 	enum ftdi_interface ft2232_interface = INTERFACE_B;
 	char *arg;
 
-	arg = extract_param(&programmer_param, "type", ",:");
+	arg = extract_programmer_param("type");
 	if (arg) {
 		if (!strcasecmp(arg, "2232H"))
 			ft2232_type = FTDI_FT2232H;
@@ -93,7 +93,7 @@ int ft2232_spi_init(void)
 		}
 	}
 	free(arg);
-	arg = extract_param(&programmer_param, "port", ",:");
+	arg = extract_programmer_param("port");
 	if (arg) {
 		switch (toupper(*arg)) {
 		case 'A':

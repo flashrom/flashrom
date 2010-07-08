@@ -89,7 +89,7 @@ enum programmer programmer =
 ;
 #endif
 
-char *programmer_param = NULL;
+static char *programmer_param = NULL;
 
 /* Supported buses for the current programmer. */
 enum chipbustype buses_supported;
@@ -639,6 +639,11 @@ char *extract_param(char **haystack, char *needle, char *delim)
 	}
 
 	return opt;
+}
+
+char *extract_programmer_param(char *param_name)
+{
+	return extract_param(&programmer_param, param_name, ",");
 }
 
 /* start is an offset to the base address of the flash chip */
