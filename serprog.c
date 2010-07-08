@@ -306,7 +306,7 @@ int serprog_init(void)
 	int have_device = 0;
 
 	/* the parameter is either of format "dev=/dev/device:baud" or "ip=ip:port" */
-	device = extract_param(&programmer_param, "dev", ",");
+	device = extract_programmer_param("dev");
 	if (device && strlen(device)) {
 		baudport = strstr(device, ":");
 		if (baudport) {
@@ -333,7 +333,7 @@ int serprog_init(void)
 	}
 	free(device);
 
-	device = extract_param(&programmer_param, "ip", ",");
+	device = extract_programmer_param("ip");
 	if (have_device && device) {
 		msg_perr("Error: Both host and device specified.\n"
 			 "Please use either dev= or ip= but not both.\n");

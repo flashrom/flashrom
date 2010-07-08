@@ -300,7 +300,7 @@ static int enable_flash_ich_dc(struct pci_dev *dev, const char *name)
 	int max_decode_fwh_decode = 0;
 	int contiguous = 1;
 
-	idsel = extract_param(&programmer_param, "fwh_idsel", ",:");
+	idsel = extract_programmer_param("fwh_idsel");
 	if (idsel && strlen(idsel)) {
 		fwh_conf = (uint32_t)strtoul(idsel, NULL, 0);
 

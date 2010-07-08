@@ -143,7 +143,7 @@ static uint16_t find_ite_spi_flash_port(uint16_t port, uint16_t id)
 		flashport |= sio_read(port, 0x65);
 		msg_pdbg("Serial flash port 0x%04x\n", flashport);
 		/* Non-default port requested? */
-		portpos = extract_param(&programmer_param, "it87spiport", ",:");
+		portpos = extract_programmer_param("it87spiport");
 		if (portpos && strlen(portpos)) {
 			flashport = strtol(portpos, (char **)NULL, 0);
 			msg_pinfo("Forcing serial flash port 0x%04x\n",
