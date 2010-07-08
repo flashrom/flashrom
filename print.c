@@ -288,6 +288,7 @@ const struct board_info boards_known[] = {
 	B("ASUS",	"A8N-E",		1, "http://www.asus.com/product.aspx?P_ID=DzbA8hgqchMBOVRz", NULL),
 	B("ASUS",	"A8N-SLI",		1, "http://www.asus.com/product.aspx?P_ID=J9FKa8z2xVId3pDK", NULL),
 	B("ASUS",	"A8N-SLI Premium",	1, "http://www.asus.com/product.aspx?P_ID=nbulqxniNmzf0mH1", NULL),
+	B("ASUS",	"A8N-VM CSM",		1, "http://www.asus.com/product.aspx?P_ID=JBqqlpj4cspbSa3s", NULL),
 	B("ASUS",	"A8NE-FM/S",		1, "http://www.hardwareschotte.de/hardware/preise/proid_1266090/preis_ASUS+A8NE-FM", NULL),
 	B("ASUS",	"A8V Deluxe",		1, "http://www.asus.com/product.aspx?P_ID=tvpdgPNCPaABZRVU", NULL),
 	B("ASUS",	"A8V-E Deluxe",		1, "http://www.asus.com/product.aspx?P_ID=hQBPIJWEZnnGAZEh", NULL),
