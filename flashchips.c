@@ -1393,7 +1393,7 @@ struct flashchip flashchips[] = {
 			}
 		},
 		.write		= spi_aai_write,
-		.read		= read_memmapped,
+		.read		= spi_chip_read,
 	},
 
 	{
