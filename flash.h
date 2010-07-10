@@ -350,6 +350,7 @@ void print_supported_wiki(void);
 /* board_enable.c */
 void w836xx_ext_enter(uint16_t port);
 void w836xx_ext_leave(uint16_t port);
+int it8705f_write_enable(uint8_t port);
 uint8_t sio_read(uint16_t port, uint8_t reg);
 void sio_write(uint16_t port, uint8_t reg, uint8_t data);
 void sio_mask(uint16_t port, uint8_t reg, uint8_t data, uint8_t mask);
@@ -692,12 +693,11 @@ int ich_spi_write_256(struct flashchip *flash, uint8_t * buf);
 int ich_spi_send_multicommand(struct spi_command *cmds);
 
 /* it87spi.c */
-extern uint16_t it8716f_flashport;
 void enter_conf_mode_ite(uint16_t port);
 void exit_conf_mode_ite(uint16_t port);
 struct superio probe_superio_ite(void);
+int init_superio_ite(void);
 int it87spi_init(void);
-int it87xx_probe_spi_flash(const char *name);
 int it8716f_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 			const unsigned char *writearr, unsigned char *readarr);
 int it8716f_spi_chip_read(struct flashchip *flash, uint8_t *buf, int start, int len);
