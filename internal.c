@@ -229,8 +229,10 @@ int internal_init(void)
 	}
 
 #if defined(__i386__) || defined(__x86_64__)
-	/* Probe for IT87* LPC->SPI translation unconditionally. */
-	it87xx_probe_spi_flash(NULL);
+	/* Probe unconditionally for IT87* LPC->SPI translation and for
+	 * IT87* Parallel write enable.
+	 */
+	init_superio_ite();
 #endif
 
 	board_flash_enable(lb_vendor, lb_part);

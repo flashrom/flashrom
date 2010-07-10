@@ -390,31 +390,92 @@ static int w836xx_memw_enable_4e(void)
 }
 
 /**
- *
+ * Suited for all boards with ITE IT8705F.
+ * The SIS950 Super I/O probably requires a similar flash write enable.
  */
-static int it8705f_write_enable(uint8_t port)
+int it8705f_write_enable(uint8_t port)
 {
+	uint8_t tmp;
+	int ret = 0;
+
 	enter_conf_mode_ite(port);
-	sio_mask(port, 0x24, 0x04, 0x04); /* Flash ROM I/F Writes Enable */
+	tmp = sio_read(port, 0x24);
+	/* Check if at least one flash segment is enabled. */
+	if (tmp & 0xf0) {
+		/* The IT8705F will respond to LPC cycles and translate them. */
+		buses_supported = CHIP_BUSTYPE_PARALLEL;
+		/* Flash ROM I/F Writes Enable */
+		tmp |= 0x04;
+		msg_pdbg("Enabling IT8705F flash ROM interface write.\n");
+		if (tmp & 0x02) {
+			/* The data sheet contradicts itself about max size. */
+			max_rom_decode.parallel = 1024 * 1024;
+			msg_pinfo("IT8705F with very unusual settings. Please "
+				  "send the output of \"flashrom -V\" to \n"
+				  "flashrom@flashrom.org to help us finish "
+				  "support for your Super I/O. Thanks.\n");
+			ret = 1;
+		} else if (tmp & 0x08) {
+			max_rom_decode.parallel = 512 * 1024;
+		} else {
+			max_rom_decode.parallel = 256 * 1024;
+		}
+		/* Safety checks. The data sheet is unclear here: Segments 1+3
+		 * overlap, no segment seems to cover top - 1MB to top - 512kB.
+		 * We assume that certain combinations make no sense.
+		 */
+		if (((tmp & 0x02) && !(tmp & 0x08)) || /* 1 MB en, 512 kB dis */
+		    (!(tmp & 0x10)) || /* 128 kB dis */
+		    (!(tmp & 0x40))) { /*  256/512 kB dis */
+			msg_perr("Inconsistent IT8705F decode size!\n");
+			ret = 1;
+		}
+		if (sio_read(port, 0x25) != 0) {
+			msg_perr("IT8705F flash data pins disabled!\n");
+			ret = 1;
+		}
+		if (sio_read(port, 0x26) != 0) {
+			msg_perr("IT8705F flash address pins 0-7 disabled!\n");
+			ret = 1;
+		}
+		if (sio_read(port, 0x27) != 0) {
+			msg_perr("IT8705F flash address pins 8-15 disabled!\n");
+			ret = 1;
+		}
+		if ((sio_read(port, 0x29) & 0x10) != 0) {
+			msg_perr("IT8705F flash write enable pin disabled!\n");
+			ret = 1;
+		}
+		if ((sio_read(port, 0x29) & 0x08) != 0) {
+			msg_perr("IT8705F flash chip select pin disabled!\n");
+			ret = 1;
+		}
+		if ((sio_read(port, 0x29) & 0x04) != 0) {
+			msg_perr("IT8705F flash read strobe pin disabled!\n");
+			ret = 1;
+		}
+		if ((sio_read(port, 0x29) & 0x03) != 0) {
+			msg_perr("IT8705F flash address pins 16-17 disabled!\n");
+			/* Not really an error if you use flash chips smaller
+			 * than 256 kByte, but such a configuration is unlikely.
+			 */
+			ret = 1;
+		}
+		msg_pdbg("Maximum IT8705F parallel flash decode size is %u.\n",
+			max_rom_decode.parallel);
+		if (ret) {
+			msg_pinfo("Not enabling IT8705F flash write.\n");
+		} else {
+			sio_write(port, 0x24, tmp);
+		}
+	} else {
+		msg_pdbg("No IT8705F flash segment enabled.\n");
+		/* Not sure if this is an error or not. */
+		ret = 0;
+	}
 	exit_conf_mode_ite(port);
 
-	return 0;
-}
-
-/**
- * Suited for:
- *  - AOpen vKM400Am-S: VIA KM400 + VT8237 + IT8705F.
- *  - Biostar P4M80-M4: VIA P4M800 + VT8237 + IT8705AF
- *  - Elitegroup K7S6A: SiS745 + ITE IT8705F
- *  - Elitegroup K7VTA3: VIA Apollo KT266/A/333 + VIA VT8235 + ITE IT8705F
- *  - GIGABYTE GA-7VT600: VIA KT600 + VT8237 + IT8705
- *  - Shuttle AK38N: VIA KT333CF + VIA VT8235 + ITE IT8705F
- *
- * The SIS950 Super I/O probably requires the same flash write enable.
- */
-static int it8705f_write_enable_2e(void)
-{
-	return it8705f_write_enable(0x2e);
+	return ret;
 }
 
 static int pc87360_gpio_set(uint8_t gpio, int raise)
@@ -1590,7 +1651,6 @@ const struct board_pciid_enable board_pciid_enables[] = {
 	{0x105a, 0x0d30, 0x105a, 0x4d33,  0x8086, 0x1130, 0x8086,      0, NULL,          NULL,         NULL,          "Acorp",       "6A815EPD",              0,   OK, board_acorp_6a815epd},
 	{0x1022, 0x746B,      0,      0,       0,      0,      0,      0, NULL,          "AGAMI",      "ARUMA",       "agami",       "Aruma",                 0,   OK, w83627hf_gpio24_raise_2e},
 	{0x1106, 0x3177, 0x17F2, 0x3177,  0x1106, 0x3148, 0x17F2, 0x3148, NULL,          NULL,         NULL,          "Albatron",    "PM266A Pro",            0,   OK, w836xx_memw_enable_2e},
-	{0x1106, 0x3205, 0x1106, 0x3205,  0x10EC, 0x8139, 0xA0A0, 0x0477, NULL,          NULL,         NULL,          "AOpen",       "vKM400Am-S",            0,   OK, it8705f_write_enable_2e},
 	{0x1022, 0x2090,      0,      0,  0x1022, 0x2080,      0,      0, NULL,          "artecgroup", "dbe61",       "Artec Group", "DBE61",                 0,   OK, board_artecgroup_dbe6x},
 	{0x1022, 0x2090,      0,      0,  0x1022, 0x2080,      0,      0, NULL,          "artecgroup", "dbe62",       "Artec Group", "DBE62",                 0,   OK, board_artecgroup_dbe6x},
 	{0x8086, 0x24D4, 0x1849, 0x24D0,  0x8086, 0x24D5, 0x1849, 0x9739, NULL,          NULL,         NULL,          "ASRock",      "P4i65GV",               0,   OK, intel_ich_gpio23_raise},
@@ -1611,14 +1671,11 @@ const struct board_pciid_enable board_pciid_enables[] = {
 	{0x8086, 0x2570, 0x1043, 0x80F2,  0x105A, 0x3373, 0x1043, 0x80F5, NULL,          NULL,         NULL,          "ASUS",        "P4P800-E Deluxe",       0,   OK, intel_ich_gpio21_raise},
 	{0x10B9, 0x1541,      0,      0,  0x10B9, 0x1533,      0,      0, "^P5A$",       "asus",       "p5a",         "ASUS",        "P5A",                   0,   OK, board_asus_p5a},
 	{0x10DE, 0x0030, 0x1043, 0x818a,  0x8086, 0x100E, 0x1043, 0x80EE, NULL,          NULL,         NULL,          "ASUS",        "P5ND2-SLI Deluxe",      0,   OK, nvidia_mcp_gpio10_raise},
-	{0x1106, 0x3149, 0x1565, 0x3206,  0x1106, 0x3344, 0x1565, 0x1202, NULL,          NULL,         NULL,          "Biostar",     "P4M80-M4",              0,   OK, it8705f_write_enable_2e},
 	{0x8086, 0x3590, 0x1028, 0x016c,  0x1000, 0x0030, 0x1028, 0x016c, NULL,          NULL,         NULL,          "Dell",        "PowerEdge 1850",        0,   OK, intel_ich_gpio23_raise},
-	{0x1039, 0x5513, 0x1019, 0x0A41,  0x1039, 0x0018,      0,      0, NULL,          NULL,         NULL,          "Elitegroup",  "K7S6A",                 0,   OK, it8705f_write_enable_2e},
-	{0x1106, 0x3038, 0x1019, 0x0996,  0x1106, 0x3177, 0x1019, 0x0996, NULL,          NULL,         NULL,          "Elitegroup",  "K7VTA3",                256, OK, it8705f_write_enable_2e},
+	{0x1106, 0x3038, 0x1019, 0x0996,  0x1106, 0x3177, 0x1019, 0x0996, NULL,          NULL,         NULL,          "Elitegroup",  "K7VTA3",                256, OK, NULL},
 	{0x1106, 0x3177, 0x1106, 0x3177,  0x1106, 0x3059, 0x1695, 0x3005, NULL,          NULL,         NULL,          "EPoX",        "EP-8K5A2",              0,   OK, w836xx_memw_enable_2e},
 	{0x10EC, 0x8139, 0x1695, 0x9001,  0x11C1, 0x5811, 0x1695, 0x9015, NULL,          NULL,         NULL,          "EPoX",        "EP-8RDA3+",             0,   OK, nvidia_mcp_gpio31_raise},
 	{0x8086, 0x7110,      0,      0,  0x8086, 0x7190,      0,      0, NULL,          "epox",       "ep-bx3",      "EPoX",        "EP-BX3",                0,   OK, board_epox_ep_bx3},
-	{0x1106, 0x3227, 0x1458, 0x5001,  0x10ec, 0x8139, 0x1458, 0xe000, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-7VT600",             0,   OK, it8705f_write_enable_2e},
 	{0x1106, 0x0686, 0x1106, 0x0686,  0x1106, 0x3058, 0x1458, 0xa000, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-7ZM",                512, OK, NULL},
 	{0x10DE, 0x0050, 0x1458, 0x0C11,  0x10DE, 0x005e, 0x1458, 0x5000, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-K8N-SLI",            0,   OK, nvidia_mcp_gpio21_raise},
 	{0x1166, 0x0223, 0x103c, 0x320d,  0x14e4, 0x1678, 0x103c, 0x703e, NULL,          "hp",         "dl145_g3",    "HP",          "DL145 G3",              0,   OK, board_hp_dl145_g3_enable},
@@ -1644,7 +1701,7 @@ const struct board_pciid_enable board_pciid_enables[] = {
 	{0x10DE, 0x0270, 0x1462, 0x7207,  0x10DE, 0x0264, 0x1462, 0x7207, NULL,          NULL,         NULL,          "MSI",         "MS-7207 (K8N GM2-L)",   0,   NT, nvidia_mcp_gpio2_raise},
 	{0x1011, 0x0019, 0xaa55, 0xaa55,  0x8086, 0x7190,      0,      0, NULL,          NULL,         NULL,          "Nokia",       "IP530",                 0,   OK, fdc37b787_gpio50_raise_3f0},
 	{0x1106, 0x3099,      0,      0,  0x1106, 0x3074,      0,      0, NULL,          "shuttle",    "ak31",        "Shuttle",     "AK31",                  0,   OK, w836xx_memw_enable_2e},
-	{0x1106, 0x3104, 0x1297, 0xa238,  0x1106, 0x3059, 0x1297, 0xc063, NULL,          NULL,         NULL,          "Shuttle",     "AK38N",                 256, OK, it8705f_write_enable_2e},
+	{0x1106, 0x3104, 0x1297, 0xa238,  0x1106, 0x3059, 0x1297, 0xc063, NULL,          NULL,         NULL,          "Shuttle",     "AK38N",                 256, OK, NULL},
 	{0x10DE, 0x0050, 0x1297, 0x5036,  0x1412, 0x1724, 0x1297, 0x5036, NULL,          NULL,         NULL,          "Shuttle",     "FN25",                  0,   OK, board_shuttle_fn25},
 	{0x1106, 0x3038, 0x0925, 0x1234,  0x1106, 0x3058, 0x15DD, 0x7609, NULL,          NULL,         NULL,          "Soyo",        "SY-7VCA",               0,   OK, via_apollo_gpo0_lower},
 	{0x1106, 0x3038, 0x0925, 0x1234,  0x1106, 0x0596, 0x1106,      0, NULL,          NULL,         NULL,          "Tekram",      "P6Pro-A5",              256, OK, NULL},
