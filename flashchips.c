@@ -1221,6 +1221,37 @@ struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "AMIC",
+		.name		= "A25L80P",
+		.bustype	= CHIP_BUSTYPE_SPI,
+		.manufacture_id	= AMIC_ID,
+		.model_id	= AMIC_A25L80P,
+		.total_size	= 1024,
+		.page_size	= 256,
+		.tested		= TEST_OK_PREW,
+		.probe		= probe_spi_rdid4,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = {
+					{4 * 1024, 2},
+					{8 * 1024, 1},
+					{16 * 1024, 1},
+					{32 * 1024, 1},
+					{64 * 1024, 15},
+				},
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { {1024 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
+		},
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read,
+	},
+
+	{
+		.vendor		= "AMIC",
 		.name		= "A29002B",
 		.bustype	= CHIP_BUSTYPE_PARALLEL,
 		.manufacture_id	= AMIC_ID_NOPREFIX,

@@ -76,6 +76,7 @@
 #define AMIC_ID			0x7F37	/* AMIC */
 #define AMIC_ID_NOPREFIX	0x37	/* AMIC */
 #define AMIC_A25L40P		0x2013
+#define AMIC_A25L80P		0x2014
 #define AMIC_A29002B		0x0d
 #define AMIC_A29002T		0x8C	/* Same as A290021T */
 #define AMIC_A29040B		0x86
