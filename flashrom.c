@@ -1164,14 +1164,34 @@ static int selfcheck_eraseblocks(struct flashchip *flash)
 	return ret;
 }
 
+static int walk_eraseregions(struct flashchip *flash, int erasefunction, int (*do_something) (struct flashchip *flash, unsigned int addr, unsigned int len))
+{
+	int i, j;
+	unsigned int start = 0;
+	unsigned int len;
+	struct block_eraser eraser = flash->block_erasers[erasefunction];
+	for (i = 0; i < NUM_ERASEREGIONS; i++) {
+		/* count==0 for all automatically initialized array
+		 * members so the loop below won't be executed for them.
+		 */
+		len = eraser.eraseblocks[i].size;
+		for (j = 0; j < eraser.eraseblocks[i].count; j++) {
+			msg_cdbg("0x%06x-0x%06x, ", start,
+				     start + len - 1);
+			if (do_something(flash, start, len))
+				return 1;
+			start += len;
+		}
+	}
+	return 0;
+}
+
 int erase_flash(struct flashchip *flash)
 {
-	int i, j, k, ret = 0, found = 0;
-	unsigned int start, len;
+	int k, ret = 0, found = 0;
 
 	msg_cinfo("Erasing flash chip... ");
 	for (k = 0; k < NUM_ERASEFUNCTIONS; k++) {
-		unsigned int done = 0;
 		struct block_eraser eraser = flash->block_erasers[k];
 
 		msg_cdbg("Looking at blockwise erase function %i... ", k);
@@ -1194,24 +1214,7 @@ int erase_flash(struct flashchip *flash)
 		}
 		found = 1;
 		msg_cdbg("trying... ");
-		for (i = 0; i < NUM_ERASEREGIONS; i++) {
-			/* count==0 for all automatically initialized array
-			 * members so the loop below won't be executed for them.
-			 */
-			for (j = 0; j < eraser.eraseblocks[i].count; j++) {
-				start = done + eraser.eraseblocks[i].size * j;
-				len = eraser.eraseblocks[i].size;
-				msg_cdbg("0x%06x-0x%06x, ", start,
-					     start + len - 1);
-				ret = eraser.block_erase(flash, start, len);
-				if (ret)
-					break;
-			}
-			if (ret)
-				break;
-			done += eraser.eraseblocks[i].count *
-				eraser.eraseblocks[i].size;
-		}
+		ret = walk_eraseregions(flash, k, eraser.block_erase);
 		msg_cdbg("\n");
 		/* If everything is OK, don't try another erase function. */
 		if (!ret)
