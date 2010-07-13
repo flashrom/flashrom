@@ -713,7 +713,12 @@ int verify_range(struct flashchip *flash, uint8_t *cmpbuf, int start, int len, c
 		starthere = max(start, i * page_size);
 		/* Length of bytes in the range in this page. */
 		lenhere = min(start + len, (i + 1) * page_size) - starthere;
-		flash->read(flash, readbuf, starthere, lenhere);
+		ret = flash->read(flash, readbuf, starthere, lenhere);
+		if (ret) {
+			msg_gerr("Verification impossible because read failed "
+				 "at 0x%x (len 0x%x)\n", starthere, lenhere);
+			break;
+		}
 		for (j = 0; j < lenhere; j++) {
 			if (cmpbuf[starthere - start + j] != readbuf[j]) {
 				/* Only print the first failure. */
@@ -1064,36 +1069,58 @@ int verify_flash(struct flashchip *flash, uint8_t *buf)
 	return ret;
 }
 
-int read_flash(struct flashchip *flash, char *filename)
+int write_buf_to_file(unsigned char *buf, unsigned long size, char *filename)
 {
 	unsigned long numbytes;
 	FILE *image;
-	unsigned long size = flash->total_size * 1024;
-	unsigned char *buf = calloc(size, sizeof(char));
 
 	if (!filename) {
-		msg_gerr("Error: No filename specified.\n");
+		msg_gerr("No filename specified.\n");
 		return 1;
 	}
 	if ((image = fopen(filename, "wb")) == NULL) {
 		perror(filename);
-		exit(1);
-	}
-	msg_cinfo("Reading flash... ");
-	if (!flash->read) {
-		msg_cinfo("FAILED!\n");
-		msg_cerr("ERROR: flashrom has no read function for this flash chip.\n");
 		return 1;
-	} else
-		flash->read(flash, buf, 0, size);
+	}
 
 	numbytes = fwrite(buf, 1, size, image);
 	fclose(image);
-	free(buf);
-	msg_cinfo("%s.\n", numbytes == size ? "done" : "FAILED");
-	if (numbytes != size)
+	if (numbytes != size) {
+		msg_gerr("File %s could not be written completely.\n",
+			 filename);
 		return 1;
+	}
 	return 0;
+}
+
+int read_flash_to_file(struct flashchip *flash, char *filename)
+{
+	unsigned long size = flash->total_size * 1024;
+	unsigned char *buf = calloc(size, sizeof(char));
+	int ret = 0;
+
+	msg_cinfo("Reading flash... ");
+	if (!buf) {
+		msg_gerr("Memory allocation failed!\n");
+		msg_cinfo("FAILED.\n");
+		return 1;
+	}
+	if (!flash->read) {
+		msg_cerr("No read function available for this flash chip.\n");
+		ret = 1;
+		goto out_free;
+	}
+	if (flash->read(flash, buf, 0, size)) {
+		msg_cerr("Read operation failed!\n");
+		ret = 1;
+		goto out_free;
+	}
+
+	ret = write_buf_to_file(buf, flash->total_size * 1024, filename);
+out_free:
+	free(buf);
+	msg_cinfo("%s.\n", ret ? "FAILED" : "done");
+	return ret;
 }
 
 /* This function shares a lot of its structure with erase_flash().
@@ -1444,7 +1471,7 @@ int doit(struct flashchip *flash, int force, char *filename, int read_it, int wr
 		if (flash->unlock)
 			flash->unlock(flash);
 
-		if (read_flash(flash, filename)) {
+		if (read_flash_to_file(flash, filename)) {
 			programmer_shutdown();
 			return 1;
 		}
