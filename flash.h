@@ -579,7 +579,7 @@ void map_flash_registers(struct flashchip *flash);
 int read_memmapped(struct flashchip *flash, uint8_t *buf, int start, int len);
 int erase_flash(struct flashchip *flash);
 struct flashchip *probe_flash(struct flashchip *first_flash, int force);
-int read_flash(struct flashchip *flash, char *filename);
+int read_flash_to_file(struct flashchip *flash, char *filename);
 void check_chip_supported(struct flashchip *flash);
 int check_max_decode(enum chipbustype buses, uint32_t size);
 int min(int a, int b);

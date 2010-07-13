@@ -417,7 +417,7 @@ int cli_classic(int argc, char *argv[])
 				exit(1);
 			}
 			printf("Please note that forced reads most likely contain garbage.\n");
-			return read_flash(flashes[0], filename);
+			return read_flash_to_file(flashes[0], filename);
 		}
 		// FIXME: flash writes stay enabled!
 		programmer_shutdown();
