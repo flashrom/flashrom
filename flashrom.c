@@ -1164,7 +1164,10 @@ static int selfcheck_eraseblocks(struct flashchip *flash)
 	return ret;
 }
 
-static int walk_eraseregions(struct flashchip *flash, int erasefunction, int (*do_something) (struct flashchip *flash, unsigned int addr, unsigned int len))
+static int walk_eraseregions(struct flashchip *flash, int erasefunction,
+			     int (*do_something) (struct flashchip *flash,
+						  unsigned int addr,
+						  unsigned int len))
 {
 	int i, j;
 	unsigned int start = 0;
