@@ -452,10 +452,11 @@ static void do_ich9_spi_frap(uint32_t frap, int i)
 		"Flash Descriptor", "BIOS", "Management Engine",
 		"Gigabit Ethernet", "Platform Data"
 	};
-	int rwperms = ((ICH_BRWA(frap) & (1 << i)) << 1) |
-		      ((ICH_BRRA(frap) & (1 << i)) << 0);
+	uint32_t base, limit;
+	int rwperms = (((ICH_BRWA(frap) >> i) & 1) << 1) |
+		      (((ICH_BRRA(frap) >> i) & 1) << 0);
 	int offset = 0x54 + i * 4;
-	uint32_t freg = mmio_readl(ich_spibar + offset), base, limit;
+	uint32_t freg = mmio_readl(ich_spibar + offset);
 
 	msg_pdbg("0x%02X: 0x%08x (FREG%i: %s)\n",
 		     offset, freg, i, region_names[i]);
