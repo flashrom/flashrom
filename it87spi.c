@@ -344,7 +344,6 @@ int it8716f_spi_chip_write_256(struct flashchip *flash, uint8_t *buf, int start,
 		spi_chip_write_1_new(flash, buf, start, len);
 	} else {
 		int lenhere;
-		spi_disable_blockprotect();
 
 		if (start % 256) {
 			/* start to the end of the page or start + len,

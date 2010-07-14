@@ -690,7 +690,6 @@ int ich_spi_write_256(struct flashchip *flash, uint8_t * buf, int start, int len
 	if (spi_controller == SPI_CONTROLLER_VIA)
 		maxdata = 16;
 
-	spi_disable_blockprotect();
 	return spi_write_chunked(flash, buf, start, len, maxdata);
 }
 
