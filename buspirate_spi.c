@@ -309,18 +309,8 @@ int buspirate_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len
 	return spi_read_chunked(flash, buf, start, len, 12);
 }
 
-int buspirate_spi_write_256(struct flashchip *flash, uint8_t *buf)
+int buspirate_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
-	int total_size = 1024 * flash->total_size;
-
 	spi_disable_blockprotect();
-	/* Erase first. */
-	msg_pinfo("Erasing flash before programming... ");
-	if (erase_flash(flash)) {
-		msg_perr("ERASE FAILED!\n");
-		return -1;
-	}
-	msg_pinfo("done.\n");
-
-	return spi_write_chunked(flash, buf, 0, total_size, 12);
+	return spi_write_chunked(flash, buf, start, len, 12);
 }

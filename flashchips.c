@@ -1423,7 +1423,7 @@ struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.write		= spi_aai_write,
+		.write		= spi_chip_write_1,
 		.read		= spi_chip_read,
 	},
 
