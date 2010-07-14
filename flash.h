@@ -456,6 +456,7 @@ void dummy_chip_readn(uint8_t *buf, const chipaddr addr, size_t len);
 int dummy_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		      const unsigned char *writearr, unsigned char *readarr);
 int dummy_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
+int dummy_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len);
 #endif
 
 /* nic3com.c */
@@ -529,7 +530,7 @@ extern const struct pcidev_status ata_hpt[];
 int ft2232_spi_init(void);
 int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr);
 int ft2232_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
-int ft2232_spi_write_256(struct flashchip *flash, uint8_t *buf);
+int ft2232_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len);
 
 /* bitbang_spi.c */
 extern int bitbang_spi_half_period;
@@ -537,7 +538,7 @@ extern const struct bitbang_spi_master_entry bitbang_spi_master_table[];
 int bitbang_spi_init(void);
 int bitbang_spi_send_command(unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr);
 int bitbang_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
-int bitbang_spi_write_256(struct flashchip *flash, uint8_t *buf);
+int bitbang_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len);
 
 /* buspirate_spi.c */
 struct buspirate_spispeeds {
@@ -548,7 +549,7 @@ int buspirate_spi_init(void);
 int buspirate_spi_shutdown(void);
 int buspirate_spi_send_command(unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr);
 int buspirate_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
-int buspirate_spi_write_256(struct flashchip *flash, uint8_t *buf);
+int buspirate_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len);
 
 /* dediprog.c */
 int dediprog_init(void);
@@ -668,7 +669,7 @@ struct spi_programmer {
 
 	/* Optimized functions for this programmer */
 	int (*read)(struct flashchip *flash, uint8_t *buf, int start, int len);
-	int (*write_256)(struct flashchip *flash, uint8_t *buf);
+	int (*write_256)(struct flashchip *flash, uint8_t *buf, int start, int len);
 };
 
 extern enum spi_controller spi_controller;
@@ -689,7 +690,7 @@ int ich_init_opcodes(void);
 int ich_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		    const unsigned char *writearr, unsigned char *readarr);
 int ich_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
-int ich_spi_write_256(struct flashchip *flash, uint8_t * buf);
+int ich_spi_write_256(struct flashchip *flash, uint8_t * buf, int start, int len);
 int ich_spi_send_multicommand(struct spi_command *cmds);
 
 /* it87spi.c */
@@ -701,13 +702,13 @@ int it87spi_init(void);
 int it8716f_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 			const unsigned char *writearr, unsigned char *readarr);
 int it8716f_spi_chip_read(struct flashchip *flash, uint8_t *buf, int start, int len);
-int it8716f_spi_chip_write_256(struct flashchip *flash, uint8_t *buf);
+int it8716f_spi_chip_write_256(struct flashchip *flash, uint8_t *buf, int start, int len);
 
 /* sb600spi.c */
 int sb600_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		      const unsigned char *writearr, unsigned char *readarr);
 int sb600_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
-int sb600_spi_write_1(struct flashchip *flash, uint8_t *buf);
+int sb600_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len);
 extern uint8_t *sb600_spibar;
 
 /* wbsio_spi.c */
@@ -715,7 +716,7 @@ int wbsio_check_for_spi(void);
 int wbsio_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		      const unsigned char *writearr, unsigned char *readarr);
 int wbsio_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
-int wbsio_spi_write_1(struct flashchip *flash, uint8_t *buf);
+int wbsio_spi_write_1(struct flashchip *flash, uint8_t *buf, int start, int len);
 
 /* serprog.c */
 int serprog_init(void);

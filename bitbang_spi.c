@@ -139,10 +139,8 @@ int bitbang_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 	return spi_read_chunked(flash, buf, start, len, 64 * 1024);
 }
 
-int bitbang_spi_write_256(struct flashchip *flash, uint8_t *buf)
+int bitbang_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
-	int total_size = 1024 * flash->total_size;
-
-	msg_pdbg("total_size is %d\n", total_size);
-	return spi_write_chunked(flash, buf, 0, total_size, 256);
+	spi_disable_blockprotect();
+	return spi_write_chunked(flash, buf, start, len, 256);
 }

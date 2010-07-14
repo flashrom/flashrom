@@ -167,3 +167,12 @@ int dummy_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 	return spi_read_chunked(flash, buf, start, len, 64 * 1024);
 }
 
+/* Is is impossible to trigger this code path because dummyflasher probing will
+ * never be successful, and the current frontend refuses to write in that case.
+ * Other frontends may allow writing even for non-detected chips, though.
+ */
+int dummy_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len)
+{
+	spi_disable_blockprotect();
+	return spi_write_chunked(flash, buf, start, len, 256);
+}
