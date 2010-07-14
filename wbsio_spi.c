@@ -69,6 +69,9 @@ int wbsio_check_for_spi(void)
 
 	buses_supported |= CHIP_BUSTYPE_SPI;
 	spi_controller = SPI_CONTROLLER_WBSIO;
+	msg_pdbg("%s: Winbond saved on 4 register bits so max chip size is "
+		 "1024 KB!\n", __func__);
+	max_rom_decode.spi = 1024 * 1024;
 
 	return 0;
 }
@@ -179,24 +182,7 @@ int wbsio_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 
 int wbsio_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
-	int size = flash->total_size * 1024;
-
-	if (size > 1024 * 1024) {
-		msg_perr("%s: Winbond saved on 4 register bits so max chip size is 1024 KB!\n", __func__);
-		return 1;
-	}
-
 	return read_memmapped(flash, buf, start, len);
-}
-
-int wbsio_spi_write_1(struct flashchip *flash, uint8_t *buf, int start, int len)
-{
-	if (flash->total_size * 1024 > 1024 * 1024) {
-		msg_perr("%s: Winbond saved on 4 register bits so max chip size is 1024 KB!\n", __func__);
-		return 1;
-	}
-
-	return spi_chip_write_1_new(flash, buf, start, len);
 }
 
 #endif

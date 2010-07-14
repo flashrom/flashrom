@@ -80,7 +80,7 @@ const struct spi_programmer spi_programmer[] = {
 		.command = wbsio_spi_send_command,
 		.multicommand = default_spi_send_multicommand,
 		.read = wbsio_spi_read,
-		.write_256 = wbsio_spi_write_1,
+		.write_256 = spi_chip_write_1_new,
 	},
 #endif
 #endif
