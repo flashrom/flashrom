@@ -716,7 +716,6 @@ int wbsio_check_for_spi(void);
 int wbsio_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		      const unsigned char *writearr, unsigned char *readarr);
 int wbsio_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
-int wbsio_spi_write_1(struct flashchip *flash, uint8_t *buf, int start, int len);
 
 /* serprog.c */
 int serprog_init(void);
