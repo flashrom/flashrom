@@ -189,16 +189,14 @@ int wbsio_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 	return read_memmapped(flash, buf, start, len);
 }
 
-int wbsio_spi_write_1(struct flashchip *flash, uint8_t *buf)
+int wbsio_spi_write_1(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
-	int size = flash->total_size * 1024;
-
-	if (size > 1024 * 1024) {
+	if (flash->total_size * 1024 > 1024 * 1024) {
 		msg_perr("%s: Winbond saved on 4 register bits so max chip size is 1024 KB!\n", __func__);
 		return 1;
 	}
 
-	return spi_chip_write_1(flash, buf);
+	return spi_chip_write_1_new(flash, buf, start, len);
 }
 
 #endif

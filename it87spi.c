@@ -292,7 +292,7 @@ int it8716f_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 }
 
 /* Page size is usually 256 bytes */
-static int it8716f_spi_page_program(struct flashchip *flash, int block, uint8_t *buf)
+static int it8716f_spi_page_program(struct flashchip *flash, uint8_t *buf, int start)
 {
 	int i;
 	int result;
@@ -305,7 +305,7 @@ static int it8716f_spi_page_program(struct flashchip *flash, int block, uint8_t 
 	OUTB(0x06, it8716f_flashport + 1);
 	OUTB(((2 + (fast_spi ? 1 : 0)) << 4), it8716f_flashport);
 	for (i = 0; i < 256; i++) {
-		chip_writeb(buf[256 * block + i], bios + 256 * block + i);
+		chip_writeb(buf[i], bios + start + i);
 	}
 	OUTB(0, it8716f_flashport);
 	/* Wait until the Write-In-Progress bit is cleared.
@@ -334,29 +334,39 @@ int it8716f_spi_chip_read(struct flashchip *flash, uint8_t *buf, int start, int 
 	return 0;
 }
 
-int it8716f_spi_chip_write_256(struct flashchip *flash, uint8_t *buf)
+int it8716f_spi_chip_write_256(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
-	int total_size = 1024 * flash->total_size;
-	int i;
-
 	/*
 	 * IT8716F only allows maximum of 512 kb SPI chip size for memory
 	 * mapped access.
 	 */
-	if ((programmer == PROGRAMMER_IT87SPI) || (total_size > 512 * 1024)) {
-		spi_chip_write_1(flash, buf);
+	if ((programmer == PROGRAMMER_IT87SPI) || (flash->total_size * 1024 > 512 * 1024)) {
+		spi_chip_write_1_new(flash, buf, start, len);
 	} else {
+		int lenhere;
 		spi_disable_blockprotect();
-		/* Erase first */
-		msg_pinfo("Erasing flash before programming... ");
-		if (erase_flash(flash)) {
-			msg_perr("ERASE FAILED!\n");
-			return -1;
+
+		if (start % 256) {
+			/* start to the end of the page or start + len,
+			 * whichever is smaller. Page length is hardcoded to
+			 * 256 bytes (IT87 SPI hardware limitation).
+			 */
+			lenhere = min(len, (start | 0xff) - start + 1);
+			spi_chip_write_1_new(flash, buf, start, lenhere);
+			start += lenhere;
+			len -= lenhere;
+			buf += lenhere;
 		}
-		msg_pinfo("done.\n");
-		for (i = 0; i < total_size / 256; i++) {
-			it8716f_spi_page_program(flash, i, buf);
+
+		/* FIXME: Handle chips which have max writechunk size >1 and <256. */
+		while (len >= 256) {
+			it8716f_spi_page_program(flash, buf, start);
+			start += 256;
+			len -= 256;
+			buf += 256;
 		}
+		if (len)
+			spi_chip_write_1_new(flash, buf, start, len);
 	}
 
 	return 0;

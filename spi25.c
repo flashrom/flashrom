@@ -874,6 +874,7 @@ int spi_nbyte_read(int address, uint8_t *bytes, int len)
 
 /*
  * Read a part of the flash chip.
+ * FIXME: Use the chunk code from Michael Karcher instead.
  * Each page is read separately in chunks with a maximum size of chunksize.
  */
 int spi_read_chunked(struct flashchip *flash, uint8_t *buf, int start, int len, int chunksize)
@@ -913,6 +914,7 @@ int spi_read_chunked(struct flashchip *flash, uint8_t *buf, int start, int len, 
 
 /*
  * Write a part of the flash chip.
+ * FIXME: Use the chunk code from Michael Karcher instead.
  * Each page is written separately in chunks with a maximum size of chunksize.
  */
 int spi_write_chunked(struct flashchip *flash, uint8_t *buf, int start, int len, int chunksize)
@@ -963,20 +965,13 @@ int spi_write_chunked(struct flashchip *flash, uint8_t *buf, int start, int len,
  * and for chips where memory mapped programming is impossible
  * (e.g. due to size constraints in IT87* for over 512 kB)
  */
-int spi_chip_write_1(struct flashchip *flash, uint8_t *buf)
+/* real chunksize is 1, logical chunksize is 1 */
+int spi_chip_write_1_new(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
-	int total_size = 1024 * flash->total_size;
 	int i, result = 0;
 
 	spi_disable_blockprotect();
-	/* Erase first */
-	msg_cinfo("Erasing flash before programming... ");
-	if (erase_flash(flash)) {
-		msg_cerr("ERASE FAILED!\n");
-		return -1;
-	}
-	msg_cinfo("done.\n");
-	for (i = 0; i < total_size; i++) {
+	for (i = start; i < start + len; i++) {
 		result = spi_byte_program(i, buf[i]);
 		if (result)
 			return 1;
@@ -987,11 +982,23 @@ int spi_chip_write_1(struct flashchip *flash, uint8_t *buf)
 	return 0;
 }
 
-int spi_aai_write(struct flashchip *flash, uint8_t *buf)
+int spi_chip_write_1(struct flashchip *flash, uint8_t *buf)
 {
-	uint32_t addr = 0;
-	uint32_t len = flash->total_size * 1024;
-	uint32_t pos = addr;
+	spi_disable_blockprotect();
+	/* Erase first */
+	msg_cinfo("Erasing flash before programming... ");
+	if (erase_flash(flash)) {
+		msg_cerr("ERASE FAILED!\n");
+		return -1;
+	}
+	msg_cinfo("done.\n");
+
+	return spi_chip_write_1_new(flash, buf, 0, flash->total_size * 1024);
+}
+
+int spi_aai_write(struct flashchip *flash, uint8_t *buf, int start, int len)
+{
+	uint32_t pos = start;
 	int result;
 	unsigned char cmd[JEDEC_AAI_WORD_PROGRAM_CONT_OUTSIZE] = {
 		JEDEC_AAI_WORD_PROGRAM,
@@ -1006,9 +1013,9 @@ int spi_aai_write(struct flashchip *flash, uint8_t *buf)
 		.writecnt	= JEDEC_AAI_WORD_PROGRAM_OUTSIZE,
 		.writearr	= (const unsigned char[]){
 					JEDEC_AAI_WORD_PROGRAM,
-					(pos >> 16) & 0xff,
-					(pos >> 8) & 0xff,
-					(pos & 0xff),
+					(start >> 16) & 0xff,
+					(start >> 8) & 0xff,
+					(start & 0xff),
 					buf[0],
 					buf[1]
 				},
@@ -1026,17 +1033,21 @@ int spi_aai_write(struct flashchip *flash, uint8_t *buf)
 #if defined(__i386__) || defined(__x86_64__)
 	case SPI_CONTROLLER_IT87XX:
 	case SPI_CONTROLLER_WBSIO:
-		msg_cerr("%s: impossible with this SPI controller,"
+		msg_perr("%s: impossible with this SPI controller,"
 				" degrading to byte program\n", __func__);
-		return spi_chip_write_1(flash, buf);
+		return spi_chip_write_1_new(flash, buf, start, len);
 #endif
 #endif
 	default:
 		break;
 	}
 
+	/* The even start address and even length requirements can be either
+	 * honored outside this function, or we can call spi_byte_program
+	 * for the first and/or last byte and use AAI for the rest.
+	 */
 	/* The data sheet requires a start address with the low bit cleared. */
-	if (addr % 2) {
+	if (start % 2) {
 		msg_cerr("%s: start address not even! Please report a bug at "
 			 "flashrom@flashrom.org\n", __func__);
 		return SPI_GENERIC_ERROR;
@@ -1048,15 +1059,14 @@ int spi_aai_write(struct flashchip *flash, uint8_t *buf)
 		return SPI_GENERIC_ERROR;
 	}
 
-	if (erase_flash(flash)) {
-		msg_cerr("ERASE FAILED!\n");
-		return -1;
-	}
 
 	result = spi_send_multicommand(cmds);
 	if (result) {
 		msg_cerr("%s failed during start command execution\n",
 			 __func__);
+		/* FIXME: Should we send WRDI here as well to make sure the chip
+		 * is not in AAI mode?
+		 */
 		return result;
 	}
 	while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
@@ -1065,7 +1075,7 @@ int spi_aai_write(struct flashchip *flash, uint8_t *buf)
 	/* We already wrote 2 bytes in the multicommand step. */
 	pos += 2;
 
-	while (pos < addr + len) {
+	while (pos < start + len) {
 		cmd[1] = buf[pos++];
 		cmd[2] = buf[pos++];
 		spi_send_command(JEDEC_AAI_WORD_PROGRAM_CONT_OUTSIZE, 0, cmd, NULL);

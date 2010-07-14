@@ -683,36 +683,15 @@ int ich_spi_read(struct flashchip *flash, uint8_t * buf, int start, int len)
 	return spi_read_chunked(flash, buf, start, len, maxdata);
 }
 
-int ich_spi_write_256(struct flashchip *flash, uint8_t * buf)
+int ich_spi_write_256(struct flashchip *flash, uint8_t * buf, int start, int len)
 {
-	int i, ret = 0;
-	int total_size = flash->total_size * 1024;
-	int erase_size = 64 * 1024;
 	int maxdata = 64;
 
 	if (spi_controller == SPI_CONTROLLER_VIA)
 		maxdata = 16;
 
 	spi_disable_blockprotect();
-	/* Erase first */
-	msg_pinfo("Erasing flash before programming... ");
-	if (erase_flash(flash)) {
-		msg_perr("ERASE FAILED!\n");
-		return -1;
-	}
-	msg_pinfo("done.\n");
-
-	msg_pinfo("Programming page: \n");
-	for (i = 0; i < total_size / erase_size; i++) {
-		ret = spi_write_chunked(flash, buf + (i * erase_size),
-					i * erase_size, erase_size, maxdata);
-		if (ret)
-			break;
-	}
-
-	msg_pinfo("\n");
-
-	return ret;
+	return spi_write_chunked(flash, buf, start, len, maxdata);
 }
 
 int ich_spi_send_command(unsigned int writecnt, unsigned int readcnt,
