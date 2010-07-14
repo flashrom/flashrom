@@ -217,7 +217,6 @@ int spi_chip_write_256(struct flashchip *flash, uint8_t *buf)
 {
 	int ret;
 
-	spi_disable_blockprotect();
 	msg_pinfo("Erasing flash before programming... ");
 	if (erase_flash(flash)) {
 		msg_perr("ERASE FAILED!\n");

@@ -436,12 +436,6 @@ int spi_chip_erase_60(struct flashchip *flash)
 		.readarr	= NULL,
 	}};
 	
-	result = spi_disable_blockprotect();
-	if (result) {
-		msg_cerr("spi_disable_blockprotect failed\n");
-		return result;
-	}
-	
 	result = spi_send_multicommand(cmds);
 	if (result) {
 		msg_cerr("%s failed during command execution\n",
@@ -481,12 +475,6 @@ int spi_chip_erase_c7(struct flashchip *flash)
 		.readcnt	= 0,
 		.readarr	= NULL,
 	}};
-
-	result = spi_disable_blockprotect();
-	if (result) {
-		msg_cerr("spi_disable_blockprotect failed\n");
-		return result;
-	}
 
 	result = spi_send_multicommand(cmds);
 	if (result) {
@@ -841,7 +829,7 @@ int spi_nbyte_program(int addr, uint8_t *bytes, int len)
 	return result;
 }
 
-int spi_disable_blockprotect(void)
+int spi_disable_blockprotect(struct flashchip *flash)
 {
 	uint8_t status;
 	int result;
@@ -854,6 +842,11 @@ int spi_disable_blockprotect(void)
 		if (result) {
 			msg_cerr("spi_write_status_register failed\n");
 			return result;
+		}
+		status = spi_read_status_register();
+		if ((status & 0x3c) != 0) {
+			msg_cerr("Block protection could not be disabled!\n");
+			return 1;
 		}
 	}
 	return 0;
@@ -970,7 +963,6 @@ int spi_chip_write_1_new(struct flashchip *flash, uint8_t *buf, int start, int l
 {
 	int i, result = 0;
 
-	spi_disable_blockprotect();
 	for (i = start; i < start + len; i++) {
 		result = spi_byte_program(i, buf[i]);
 		if (result)
@@ -984,7 +976,6 @@ int spi_chip_write_1_new(struct flashchip *flash, uint8_t *buf, int start, int l
 
 int spi_chip_write_1(struct flashchip *flash, uint8_t *buf)
 {
-	spi_disable_blockprotect();
 	/* Erase first */
 	msg_cinfo("Erasing flash before programming... ");
 	if (erase_flash(flash)) {

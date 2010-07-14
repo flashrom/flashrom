@@ -290,7 +290,6 @@ int ft2232_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 
 int ft2232_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
-	spi_disable_blockprotect();
 	return spi_write_chunked(flash, buf, start, len, 256);
 }
 
