@@ -87,7 +87,6 @@ int erase_m29f400bt(struct flashchip *flash);
 int block_erase_m29f400bt(struct flashchip *flash, unsigned int start, unsigned int len);
 int block_erase_chip_m29f400bt(struct flashchip *flash, unsigned int start, unsigned int len);
 int write_m29f400bt(struct flashchip *flash, uint8_t *buf);
-int write_coreboot_m29f400bt(struct flashchip *flash, uint8_t *buf);
 void protect_m29f400bt(chipaddr bios);
 void write_page_m29f400bt(chipaddr bios, uint8_t *src,
 			  chipaddr dst, int page_size);
