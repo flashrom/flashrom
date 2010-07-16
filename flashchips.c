@@ -2382,7 +2382,7 @@ struct flashchip flashchips[] = {
 		.total_size	= 512,
 		.page_size	= 64 * 1024,
 		.feature_bits	= FEATURE_ADDR_SHIFTED | FEATURE_EITHER_RESET,
-		.tested		= TEST_UNTESTED,
+		.tested		= TEST_BAD_WRITE, /* Implicit eraseblock layout in write_m29f400bt is broken. */
 		.probe		= probe_m29f400bt,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (m29f400bt.c) */
 		.block_erasers	=
@@ -2400,7 +2400,7 @@ struct flashchip flashchips[] = {
 				.block_erase = block_erase_chip_m29f400bt,
 			},
 		},
-		.write		= write_coreboot_m29f400bt,
+		.write		= NULL,
 		.read		= read_memmapped,
 	},
 
@@ -2431,7 +2431,7 @@ struct flashchip flashchips[] = {
 				.block_erase = block_erase_chip_m29f400bt,
 			},
 		},
-		.write		= write_coreboot_m29f400bt,
+		.write		= write_m29f400bt,
 		.read		= read_memmapped,
 	},
 
@@ -5278,7 +5278,7 @@ struct flashchip flashchips[] = {
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_EITHER_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
-		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (am29f040b.c) */
+		.probe_timing	= TIMING_IGNORED, /* routine doesn't use probe_timing (am29f040b.c) */
 		.block_erasers	=
 		{
 			{
@@ -5293,6 +5293,37 @@ struct flashchip flashchips[] = {
 		.read		= read_memmapped,
 	},
 
+	{
+		/* FIXME: this has WORD/BYTE sequences; 2AA for word, 555 for byte */
+		.vendor		= "ST",
+		.name		= "M29F400BB",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= ST_ID,
+		.model_id	= ST_M29F400BB,
+		.total_size	= 512,
+		.page_size	= 64 * 1024,
+		.feature_bits	= FEATURE_ADDR_SHIFTED | FEATURE_EITHER_RESET,
+		.tested		= TEST_BAD_WRITE, /* Implicit eraseblock layout in write_m29f400bt is broken. */
+		.probe		= probe_m29f400bt,
+		.probe_timing	= TIMING_IGNORED, /* routine doesn't use probe_timing (m29f400bt.c) */
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = {
+					{16 * 1024, 1},
+					{8 * 1024, 2},
+					{32 * 1024, 1},
+					{64 * 1024, 7},
+				},
+				.block_erase = block_erase_m29f400bt,
+			}, {
+				.eraseblocks = { {512 * 1024, 1} },
+				.block_erase = block_erase_chip_m29f400bt,
+			}
+		},
+		.write		= NULL,
+		.read		= read_memmapped,
+	},
 	{
 		/* FIXME: this has WORD/BYTE sequences; 2AA for word, 555 for byte */
 		.vendor		= "ST",
@@ -5321,7 +5352,7 @@ struct flashchip flashchips[] = {
 				.block_erase = block_erase_chip_m29f400bt,
 			}
 		},
-		.write		= write_coreboot_m29f400bt,
+		.write		= write_m29f400bt,
 		.read		= read_memmapped,
 	},
 
