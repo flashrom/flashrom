@@ -176,6 +176,10 @@ cpu_to_be(64)
 #define __DARWIN__
 #endif
 
+/* Clarification about OUTB/OUTW/OUTL argument order:
+ * OUT[BWL](val, port)
+ */
+
 #if defined(__FreeBSD__) || defined(__DragonFly__)
   #include <machine/cpufunc.h>
   #define off64_t off_t
