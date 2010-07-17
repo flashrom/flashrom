@@ -26,46 +26,55 @@
 #include "chipdrivers.h"
 #include "spi.h"
 
-/* Length of half a clock period in usecs */
-int bitbang_spi_half_period = 0;
+/* Length of half a clock period in usecs. */
+static int bitbang_spi_half_period;
 
-enum bitbang_spi_master bitbang_spi_master = BITBANG_SPI_INVALID;
+static enum bitbang_spi_master bitbang_spi_master = BITBANG_SPI_INVALID;
 
-const struct bitbang_spi_master_entry bitbang_spi_master_table[] = {
+static const struct bitbang_spi_master_entry bitbang_spi_master_table[] = {
 	{}, /* This entry corresponds to BITBANG_SPI_INVALID. */
 };
 
 const int bitbang_spi_master_count = ARRAY_SIZE(bitbang_spi_master_table);
 
-void bitbang_spi_set_cs(int val)
+/* Note that CS# is active low, so val=0 means the chip is active. */
+static void bitbang_spi_set_cs(int val)
 {
 	bitbang_spi_master_table[bitbang_spi_master].set_cs(val);
 }
 
-void bitbang_spi_set_sck(int val)
+static void bitbang_spi_set_sck(int val)
 {
 	bitbang_spi_master_table[bitbang_spi_master].set_sck(val);
 }
 
-void bitbang_spi_set_mosi(int val)
+static void bitbang_spi_set_mosi(int val)
 {
 	bitbang_spi_master_table[bitbang_spi_master].set_mosi(val);
 }
 
-int bitbang_spi_get_miso(void)
+static int bitbang_spi_get_miso(void)
 {
 	return bitbang_spi_master_table[bitbang_spi_master].get_miso();
 }
 
-int bitbang_spi_init(void)
+int bitbang_spi_init(enum bitbang_spi_master master, int halfperiod)
 {
+	bitbang_spi_master = master;
+	bitbang_spi_half_period = halfperiod;
+
+	if (bitbang_spi_master == BITBANG_SPI_INVALID) {
+		msg_perr("Invalid bitbang SPI master. \n"
+			 "Please report a bug at flashrom@flashrom.org\n");
+		return 1;
+	}
 	bitbang_spi_set_cs(1);
 	bitbang_spi_set_sck(0);
-	buses_supported = CHIP_BUSTYPE_SPI;
+	bitbang_spi_set_mosi(0);
 	return 0;
 }
 
-uint8_t bitbang_spi_readwrite_byte(uint8_t val)
+static uint8_t bitbang_spi_readwrite_byte(uint8_t val)
 {
 	uint8_t ret = 0;
 	int i;
