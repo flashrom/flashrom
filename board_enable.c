@@ -785,7 +785,15 @@ static int nvidia_mcp_gpio_set(int gpio, int raise)
 			return -1;
 		}
 
+#if PCI_LIB_VERSION >= 0x020200
 		dev = pci_get_dev(pacc, dev->domain, dev->bus, dev->dev, 1);
+#else
+		/* pciutils/libpci before version 2.2 is too old to support
+		 * PCI domains. Such old machines usually don't have domains
+		 * besides domain 0, so this is not a problem.
+		 */
+		dev = pci_get_dev(pacc, dev->bus, dev->dev, 1);
+#endif
 		if (!dev) {
 			msg_perr("MCP SMBus controller could not be found\n");
 			return -1;
