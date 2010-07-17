@@ -6505,6 +6505,29 @@ struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Winbond",
+		.name		= "W49F020",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= WINBOND_ID,
+		.model_id	= W_49F020,
+		.total_size	= 256,
+		.page_size	= 128,
+		.feature_bits	= FEATURE_EITHER_RESET,
+		.tested		= TEST_OK_PROBE,
+		.probe		= probe_jedec,
+		.probe_timing	= 10,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {256 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			}
+		},
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "Winbond",
 		.name		= "W49V002A",
 		.bustype	= CHIP_BUSTYPE_LPC,
 		.manufacture_id	= WINBOND_ID,
