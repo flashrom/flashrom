@@ -76,26 +76,33 @@ static int digits(int n)
 static void print_supported_chips(void)
 {
 	int okcol = 0, pos = 0, i, chipcount = 0;
+	int maxchiplen = 0, maxvendorlen = 0;
 	struct flashchip *f;
 
 	for (f = flashchips; f->name != NULL; f++) {
-		if (GENERIC_DEVICE_ID == f->model_id)
+		/* Ignore "unknown XXXX SPI chip" entries. */
+		if (!strncmp(f->name, "unknown", 7))
 			continue;
-		okcol = max(okcol, strlen(f->vendor) + 1 + strlen(f->name));
-	}
-	okcol = (okcol + 7) & ~7;
-
-	for (f = flashchips; f->name != NULL; f++)
 		chipcount++;
+		maxvendorlen = max(maxvendorlen, strlen(f->vendor));
+		maxchiplen = max(maxchiplen, strlen(f->name));
+	}
+	maxvendorlen++;
+	maxchiplen++;
+	okcol = maxvendorlen + maxchiplen;
 
 	printf("\nSupported flash chips (total: %d):\n\n", chipcount);
-	POS_PRINT("Vendor:   Device:");
-	while (pos < okcol) {
-		printf("\t");
-		pos += 8 - (pos % 8);
-	}
+	printf("Vendor");
+	for (i = strlen("Vendor"); i < maxvendorlen; i++)
+		printf(" ");
+	printf("Device");
+	for (i = strlen("Device"); i < maxchiplen; i++)
+		printf(" ");
 
-	printf("Tested OK:\tKnown BAD:  Size/KB:  Type:\n\n");
+	printf("Tested   Known    Size/KB:  Type:\n");
+	for (i = 0; i < okcol; i++)
+		printf(" ");
+	printf("OK       Broken\n\n");
 	printf("(P = PROBE, R = READ, E = ERASE, W = WRITE)\n\n");
 
 	for (f = flashchips; f->name != NULL; f++) {
@@ -104,15 +111,13 @@ static void print_supported_chips(void)
 			continue;
 
 		printf("%s", f->vendor);
-		for (i = 0; i < 10 - strlen(f->vendor); i++)
+		for (i = strlen(f->vendor); i < maxvendorlen; i++)
 			printf(" ");
 		printf("%s", f->name);
+		for (i = strlen(f->name); i < maxchiplen; i++)
+			printf(" ");
 
-		pos = 10 + strlen(f->name);
-		while (pos < okcol) {
-			printf("\t");
-			pos += 8 - (pos % 8);
-		}
+		pos = maxvendorlen + maxchiplen;
 		if ((f->tested & TEST_OK_MASK)) {
 			if ((f->tested & TEST_OK_PROBE))
 				POS_PRINT("P ");
@@ -124,21 +129,25 @@ static void print_supported_chips(void)
 				POS_PRINT("W ");
 		}
 		while (pos < okcol + 9) {
-			printf("\t");
-			pos += 8 - (pos % 8);
+			printf(" ");
+			pos++;
 		}
 		if ((f->tested & TEST_BAD_MASK)) {
 			if ((f->tested & TEST_BAD_PROBE))
-				printf("P ");
+				POS_PRINT("P ");
 			if ((f->tested & TEST_BAD_READ))
-				printf("R ");
+				POS_PRINT("R ");
 			if ((f->tested & TEST_BAD_ERASE))
-				printf("E ");
+				POS_PRINT("E ");
 			if ((f->tested & TEST_BAD_WRITE))
-				printf("W ");
+				POS_PRINT("W ");
 		}
 
-		printf("\t    %d", f->total_size);
+		while (pos < okcol + 18) {
+			printf(" ");
+			pos++;
+		}
+		printf("%d", f->total_size);
 		for (i = 0; i < 10 - digits(f->total_size); i++)
 			printf(" ");
 		printf("%s\n", flashbuses_to_text(f->bustype));
