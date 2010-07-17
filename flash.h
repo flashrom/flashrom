@@ -127,13 +127,14 @@ uint32_t chip_readl(const chipaddr addr);
 void chip_readn(uint8_t *buf, const chipaddr addr, size_t len);
 void programmer_delay(int usecs);
 
-enum bitbang_spi_master {
-	BITBANG_SPI_INVALID /* This must always be the last entry. */
+enum bitbang_spi_master_type {
+	BITBANG_SPI_DUMMY	/* remove as soon as there is a real entry */
 };
 
-extern const int bitbang_spi_master_count;
+struct bitbang_spi_master {
+	enum bitbang_spi_master_type type;
 
-struct bitbang_spi_master_entry {
+	/* Note that CS# is active low, so val=0 means the chip is active. */
 	void (*set_cs) (int val);
 	void (*set_sck) (int val);
 	void (*set_mosi) (int val);
@@ -531,7 +532,7 @@ int ft2232_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
 int ft2232_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len);
 
 /* bitbang_spi.c */
-int bitbang_spi_init(enum bitbang_spi_master master, int halfperiod);
+int bitbang_spi_init(const struct bitbang_spi_master *master, int halfperiod);
 int bitbang_spi_send_command(unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr);
 int bitbang_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
 int bitbang_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len);
