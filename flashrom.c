@@ -1358,12 +1358,6 @@ int selfcheck(void)
 		msg_gerr("SPI programmer table miscompilation!\n");
 		ret = 1;
 	}
-#if CONFIG_BITBANG_SPI == 1
-	if (bitbang_spi_master_count - 1 != BITBANG_SPI_INVALID) {
-		msg_gerr("Bitbanging SPI master table miscompilation!\n");
-		ret = 1;
-	}
-#endif
 	for (flash = flashchips; flash && flash->name; flash++)
 		if (selfcheck_eraseblocks(flash))
 			ret = 1;
