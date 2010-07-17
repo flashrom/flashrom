@@ -85,50 +85,17 @@ uint8_t bitbang_spi_readwrite_byte(uint8_t val)
 int bitbang_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		const unsigned char *writearr, unsigned char *readarr)
 {
-	static unsigned char *bufout = NULL;
-	static unsigned char *bufin = NULL;
-	static int oldbufsize = 0;
-	int bufsize;
 	int i;
 
-	/* Arbitrary size limitation here. We're only constrained by memory. */
-	if (writecnt > 65536 || readcnt > 65536)
-		return SPI_INVALID_LENGTH;
-
-	bufsize = max(writecnt + readcnt, 260);
-	/* Never shrink. realloc() calls are expensive. */
-	if (bufsize > oldbufsize) {
-		bufout = realloc(bufout, bufsize);
-		if (!bufout) {
-			msg_perr("Out of memory!\n");
-			if (bufin)
-				free(bufin);
-			exit(1);
-		}
-		bufin = realloc(bufout, bufsize);
-		if (!bufin) {
-			msg_perr("Out of memory!\n");
-			if (bufout)
-				free(bufout);
-			exit(1);
-		}
-		oldbufsize = bufsize;
-	}
-		
-	memcpy(bufout, writearr, writecnt);
-	/* Shift out 0x00 while reading data. */
-	memset(bufout + writecnt, 0x00, readcnt);
-	/* Make sure any non-read data is 0xff. */
-	memset(bufin + writecnt, 0xff, readcnt);
-
 	bitbang_spi_set_cs(0);
-	for (i = 0; i < readcnt + writecnt; i++) {
-		bufin[i] = bitbang_spi_readwrite_byte(bufout[i]);
-	}
+	for (i = 0; i < writecnt; i++)
+		bitbang_spi_readwrite_byte(writearr[i]);
+	for (i = 0; i < readcnt; i++)
+		readarr[i] = bitbang_spi_readwrite_byte(0);
+
 	programmer_delay(bitbang_spi_half_period);
 	bitbang_spi_set_cs(1);
 	programmer_delay(bitbang_spi_half_period);
-	memcpy(readarr, bufin + writecnt, readcnt);
 
 	return 0;
 }
