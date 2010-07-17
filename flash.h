@@ -133,8 +133,6 @@ enum bitbang_spi_master {
 
 extern const int bitbang_spi_master_count;
 
-extern enum bitbang_spi_master bitbang_spi_master;
-
 struct bitbang_spi_master_entry {
 	void (*set_cs) (int val);
 	void (*set_sck) (int val);
@@ -533,9 +531,7 @@ int ft2232_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
 int ft2232_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len);
 
 /* bitbang_spi.c */
-extern int bitbang_spi_half_period;
-extern const struct bitbang_spi_master_entry bitbang_spi_master_table[];
-int bitbang_spi_init(void);
+int bitbang_spi_init(enum bitbang_spi_master master, int halfperiod);
 int bitbang_spi_send_command(unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr);
 int bitbang_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
 int bitbang_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len);
