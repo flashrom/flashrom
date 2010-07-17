@@ -26,6 +26,9 @@
 #define PCI_MAGIC_DRKAISER_ADDR		0x50
 #define PCI_MAGIC_DRKAISER_VALUE	0xa971
 
+/* Mask to restrict flash accesses to the 128kB memory window. */
+#define DRKAISER_MEMMAP_MASK		((1 << 17) - 1)
+
 const struct pcidev_status drkaiser_pcidev[] = {
 	{0x1803, 0x5057, OK, "Dr. Kaiser", "PC-Waechter (Actel FPGA)"},
 	{},
@@ -39,15 +42,12 @@ int drkaiser_init(void)
 
 	get_io_perms();
 
-	pcidev_init(PCI_VENDOR_ID_DRKAISER, PCI_BASE_ADDRESS_2,
-		    drkaiser_pcidev);
+	addr = pcidev_init(PCI_VENDOR_ID_DRKAISER, PCI_BASE_ADDRESS_2,
+			   drkaiser_pcidev);
 
 	/* Write magic register to enable flash write. */
 	pci_write_word(pcidev_dev, PCI_MAGIC_DRKAISER_ADDR,
 		       PCI_MAGIC_DRKAISER_VALUE);
-
-	/* TODO: Mask lower bits? How many? 3? 7? */
-	addr = pci_read_long(pcidev_dev, PCI_BASE_ADDRESS_2) & ~0x03;
 
 	/* Map 128KB flash memory window. */
 	drkaiser_bar = physmap("Dr. Kaiser PC-Waechter flash memory",
@@ -69,10 +69,10 @@ int drkaiser_shutdown(void)
 
 void drkaiser_chip_writeb(uint8_t val, chipaddr addr)
 {
-	mmio_writeb(val, drkaiser_bar + addr);
+	mmio_writeb(val, drkaiser_bar + (addr & DRKAISER_MEMMAP_MASK));
 }
 
 uint8_t drkaiser_chip_readb(const chipaddr addr)
 {
-	return mmio_readb(drkaiser_bar + addr);
+	return mmio_readb(drkaiser_bar + (addr & DRKAISER_MEMMAP_MASK));
 }
