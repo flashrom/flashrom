@@ -1305,7 +1305,12 @@ void print_sysinfo(void)
 #endif
 #endif
 #ifdef __clang__
-	msg_ginfo(" LLVM %i/clang %i, ", __llvm__, __clang__);
+	msg_ginfo(" LLVM Clang");
+#ifdef __clang_version__
+	msg_ginfo(" %s,", __clang_version__);
+#else
+	msg_ginfo(" unknown version (before r102686),");
+#endif
 #elif defined(__GNUC__)
 	msg_ginfo(" GCC");
 #ifdef __VERSION__
