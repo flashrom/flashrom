@@ -25,6 +25,11 @@
 
 #define PCI_VENDOR_ID_NVIDIA	0x10de
 
+/* Mask to restrict flash accesses to a 128kB memory window.
+ * FIXME: Is this size a one-fits-all or card dependent?
+ */
+#define GFXNVIDIA_MEMMAP_MASK		((1 << 17) - 1)
+
 uint8_t *nvidia_bar;
 
 const struct pcidev_status gfx_nvidia[] = {
@@ -95,10 +100,10 @@ int gfxnvidia_shutdown(void)
 
 void gfxnvidia_chip_writeb(uint8_t val, chipaddr addr)
 {
-	mmio_writeb(val, nvidia_bar + addr);
+	mmio_writeb(val, nvidia_bar + (addr & GFXNVIDIA_MEMMAP_MASK));
 }
 
 uint8_t gfxnvidia_chip_readb(const chipaddr addr)
 {
-	return mmio_readb(nvidia_bar + addr);
+	return mmio_readb(nvidia_bar + (addr & GFXNVIDIA_MEMMAP_MASK));
 }
