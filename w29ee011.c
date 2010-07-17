@@ -26,7 +26,6 @@ int probe_w29ee011(struct flashchip *flash)
 {
 	chipaddr bios = flash->virtual_memory;
 	uint8_t id1, id2;
-	extern char *chip_to_probe;
 
 	if (!chip_to_probe || strcmp(chip_to_probe, "W29EE011")) {
 		msg_cdbg("Probing disabled for Winbond W29EE011 because "
