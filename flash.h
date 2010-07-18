@@ -128,7 +128,7 @@ void chip_readn(uint8_t *buf, const chipaddr addr, size_t len);
 void programmer_delay(int usecs);
 
 enum bitbang_spi_master_type {
-	BITBANG_SPI_DUMMY	/* remove as soon as there is a real entry */
+	BITBANG_SPI_INVALID	= 0, /* This must always be the first entry. */
 };
 
 struct bitbang_spi_master {
