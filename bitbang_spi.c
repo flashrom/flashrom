@@ -54,6 +54,16 @@ static int bitbang_spi_get_miso(void)
 
 int bitbang_spi_init(const struct bitbang_spi_master *master, int halfperiod)
 {
+	/* BITBANG_SPI_INVALID is 0, so if someone forgot to initialize ->type,
+	 * we catch it here. Same goes for missing initialization of bitbanging
+	 * functions.
+	 */
+	if (!master || master->type == BITBANG_SPI_INVALID || !master->set_cs ||
+	    !master->set_sck || !master->set_mosi || !master->get_miso) {
+		msg_perr("Incomplete bitbanging SPI master setting! Please "
+			 "report a bug at flashrom@flashrom.org\n");
+		return 1;
+	}
 	bitbang_spi_master = master;
 	bitbang_spi_half_period = halfperiod;
 
