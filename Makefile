@@ -111,8 +111,15 @@ CONFIG_INTERNAL ?= yes
 # Always enable serprog for now. Needs to be disabled on Windows.
 CONFIG_SERPROG ?= yes
 
-# Bitbanging SPI infrastructure is not used yet.
+# RayeR SPIPGM hardware support
+CONFIG_RAYER_SPI ?= yes
+
+# Bitbanging SPI infrastructure, default off unless needed.
+ifeq ($(CONFIG_RAYER_SPI), yes)
+override CONFIG_BITBANG_SPI = yes
+else
 CONFIG_BITBANG_SPI ?= no
+endif
 
 # Always enable 3Com NICs for now.
 CONFIG_NIC3COM ?= yes
@@ -164,6 +171,13 @@ FEATURE_CFLAGS += -D'CONFIG_SERPROG=1'
 PROGRAMMER_OBJS += serprog.o
 NEED_SERIAL := yes
 NEED_NET := yes
+endif
+
+ifeq ($(CONFIG_RAYER_SPI), yes)
+FEATURE_CFLAGS += -D'CONFIG_RAYER_SPI=1'
+PROGRAMMER_OBJS += rayer_spi.o
+# Actually, NEED_PCI is wrong. NEED_IOPORT_ACCESS would be more correct.
+NEED_PCI := yes
 endif
 
 ifeq ($(CONFIG_BITBANG_SPI), yes)

@@ -187,6 +187,9 @@ USB SPI programmer)"
 .sp
 .BR "* buspirate_spi" " (for SPI flash ROMs attached to a Bus Pirate)"
 .sp
+.BR "* rayer_spi" " (for SPI flash ROMs attached to a RayeR parport \
+based programmer)"
+.sp
 Some programmers have optional or mandatory parameters which are described
 in detail in the
 .B PROGRAMMER SPECIFIC INFO
@@ -389,6 +392,10 @@ where
 can be any of
 .BR 30k ", " 125k ", " 250k ", " 1M ", " 2M ", " 2.6M ", " 4M ", " 8M
 (in Hz). The default is the maximum frequency of 8 MHz.
+.TP
+.BR "rayer_spi " programmer
+No parameters defined yet. More information about the hardware is available at
+http://rayer.ic.cz/elektro/spipgm.htm
 .SH EXIT STATUS
 flashrom exits with 0 on success, 1 on most failures but with 2 if /dev/mem
 (/dev/xsvc on Solaris) can not be opened and with 3 if a call to mmap() fails.
@@ -410,6 +417,9 @@ needs PCI configuration space access and raw I/O port access.
 .sp
 .BR gfxnvidia " and " drkaiser
 need PCI configuration space access and raw memory access.
+.sp
+.B rayer_spi
+needs raw I/O port access.
 .sp
 .B satasii
 needs PCI configuration space read access and raw memory access.
