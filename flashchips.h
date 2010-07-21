@@ -400,6 +400,7 @@
 #define SST_25VF016B		0x2541
 #define SST_25VF032B		0x254A
 #define SST_25VF032B_REMS	0x4A	/* REMS or RES opcode */
+#define SST_25VF064C		0x254B
 #define SST_26VF016		0x2601
 #define SST_26VF032		0x2602
 #define SST_27SF512		0xA4
