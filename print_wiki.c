@@ -280,6 +280,9 @@ void print_supported_wiki(void)
 	print_supported_pcidevs_wiki(nics_realtek);
 	print_supported_pcidevs_wiki(nics_realteksmc1211);
 #endif
+#if CONFIG_NICNATSEMI == 1
+	print_supported_pcidevs_wiki(nics_natsemi);
+#endif
 #if CONFIG_GFXNVIDIA == 1
 	print_supported_pcidevs_wiki(gfx_nvidia);
 #endif

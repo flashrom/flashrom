@@ -43,6 +43,14 @@ int nicnatsemi_init(void)
 
 	buses_supported = CHIP_BUSTYPE_PARALLEL;
 
+	/* The datasheet shows address lines MA0-MA16 in one place and MA0-MA15
+	 * in another. My NIC has MA16 connected to A16 on the boot ROM socket
+	 * so I'm assuming it is accessible. If not then next line wants to be
+	 * max_rom_decode.parallel = 65536; and the mask in the read/write
+	 * functions below wants to be 0x0000FFFF.
+	 */
+	max_rom_decode.parallel = 131072;
+
 	return 0;
 }
 
@@ -55,7 +63,7 @@ int nicnatsemi_shutdown(void)
 
 void nicnatsemi_chip_writeb(uint8_t val, chipaddr addr)
 {
-	OUTL((uint32_t)addr & 0x0000FFFF, io_base_addr + BOOT_ROM_ADDR);
+	OUTL((uint32_t)addr & 0x0001FFFF, io_base_addr + BOOT_ROM_ADDR);
 	/*
 	 * The datasheet requires 32 bit accesses to this register, but it seems
 	 * that requirement might only apply if the register is memory mapped.
@@ -69,7 +77,7 @@ void nicnatsemi_chip_writeb(uint8_t val, chipaddr addr)
 
 uint8_t nicnatsemi_chip_readb(const chipaddr addr)
 {
-	OUTL(((uint32_t)addr & 0x0000FFFF), io_base_addr + BOOT_ROM_ADDR);
+	OUTL(((uint32_t)addr & 0x0001FFFF), io_base_addr + BOOT_ROM_ADDR);
 	/*
 	 * The datasheet requires 32 bit accesses to this register, but it seems
 	 * that requirement might only apply if the register is memory mapped.
