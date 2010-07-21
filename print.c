@@ -228,7 +228,7 @@ void print_supported(void)
 		print_supported_boards_helper(boards_known, "boards");
 		print_supported_boards_helper(laptops_known, "laptops");
 #endif
-#if CONFIG_NIC3COM+CONFIG_NICREALTEK+CONFIG_GFXNVIDIA+CONFIG_DRKAISER+CONFIG_SATASII+CONFIG_ATAHPT >= 1
+#if CONFIG_NIC3COM+CONFIG_NICREALTEK+CONFIG_NICNATSEMI+CONFIG_GFXNVIDIA+CONFIG_DRKAISER+CONFIG_SATASII+CONFIG_ATAHPT >= 1
 		printf("\nSupported PCI devices flashrom can use "
 		       "as programmer:\n\n");
 #endif
@@ -238,6 +238,9 @@ void print_supported(void)
 #if CONFIG_NICREALTEK == 1
 		print_supported_pcidevs(nics_realtek);
 		print_supported_pcidevs(nics_realteksmc1211);
+#endif
+#if CONFIG_NICNATSEMI == 1
+		print_supported_pcidevs(nics_natsemi);
 #endif
 #if CONFIG_GFXNVIDIA == 1
 		print_supported_pcidevs(gfx_nvidia);
