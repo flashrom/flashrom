@@ -81,6 +81,9 @@ enum programmer {
 #if CONFIG_DEDIPROG == 1
 	PROGRAMMER_DEDIPROG,
 #endif
+#if CONFIG_RAYER_SPI == 1
+	PROGRAMMER_RAYER_SPI,
+#endif
 	PROGRAMMER_INVALID /* This must always be the last entry. */
 };
 
@@ -129,6 +132,9 @@ void programmer_delay(int usecs);
 
 enum bitbang_spi_master_type {
 	BITBANG_SPI_INVALID	= 0, /* This must always be the first entry. */
+#if CONFIG_RAYER_SPI == 1
+	BITBANG_SPI_MASTER_RAYER,
+#endif
 };
 
 struct bitbang_spi_master {
@@ -531,6 +537,11 @@ int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt, const u
 int ft2232_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
 int ft2232_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len);
 
+/* rayer_spi.c */
+#if CONFIG_RAYER_SPI == 1
+int rayer_spi_init(void);
+#endif
+
 /* bitbang_spi.c */
 int bitbang_spi_init(const struct bitbang_spi_master *master, int halfperiod);
 int bitbang_spi_send_command(unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr);
@@ -649,6 +660,9 @@ enum spi_controller {
 #endif
 #if CONFIG_DEDIPROG == 1
 	SPI_CONTROLLER_DEDIPROG,
+#endif
+#if CONFIG_RAYER_SPI == 1
+	SPI_CONTROLLER_RAYER,
 #endif
 	SPI_CONTROLLER_INVALID /* This must always be the last entry. */
 };
