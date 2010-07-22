@@ -693,10 +693,9 @@ static int enable_flash_amd8111(struct pci_dev *dev, const char *name)
 
 static int enable_flash_sb600(struct pci_dev *dev, const char *name)
 {
-	uint32_t tmp, prot;
+	uint32_t prot;
 	uint8_t reg;
-	struct pci_dev *smbus_dev;
-	int has_spi = 1;
+	int ret;
 
 	/* Clear ROM protect 0-3. */
 	for (reg = 0x50; reg < 0x60; reg += 4) {
@@ -720,80 +719,9 @@ static int enable_flash_sb600(struct pci_dev *dev, const char *name)
 				(prot & 0xfffffc00) + ((prot & 0x3ff) << 8));
 	}
 
-	/* Read SPI_BaseAddr */
-	tmp = pci_read_long(dev, 0xa0);
-	tmp &= 0xffffffe0;	/* remove bits 4-0 (reserved) */
-	msg_pdbg("SPI base address is at 0x%x\n", tmp);
-
-	/* If the BAR has address 0, it is unlikely SPI is used. */
-	if (!tmp)
-		has_spi = 0;
-
-	if (has_spi) {
-		/* Physical memory has to be mapped at page (4k) boundaries. */
-		sb600_spibar = physmap("SB600 SPI registers", tmp & 0xfffff000,
-				       0x1000);
-		/* The low bits of the SPI base address are used as offset into
-		 * the mapped page.
-		 */
-		sb600_spibar += tmp & 0xfff;
-
-		tmp = pci_read_long(dev, 0xa0);
-		msg_pdbg("AltSpiCSEnable=%i, SpiRomEnable=%i, "
-			     "AbortEnable=%i\n", tmp & 0x1, (tmp & 0x2) >> 1,
-			     (tmp & 0x4) >> 2);
-		tmp = (pci_read_byte(dev, 0xba) & 0x4) >> 2;
-		msg_pdbg("PrefetchEnSPIFromIMC=%i, ", tmp);
-
-		tmp = pci_read_byte(dev, 0xbb);
-		msg_pdbg("PrefetchEnSPIFromHost=%i, SpiOpEnInLpcMode=%i\n",
-			     tmp & 0x1, (tmp & 0x20) >> 5);
-		tmp = mmio_readl(sb600_spibar);
-		msg_pdbg("SpiArbEnable=%i, SpiAccessMacRomEn=%i, "
-			     "SpiHostAccessRomEn=%i, ArbWaitCount=%i, "
-			     "SpiBridgeDisable=%i, DropOneClkOnRd=%i\n",
-			     (tmp >> 19) & 0x1, (tmp >> 22) & 0x1,
-			     (tmp >> 23) & 0x1, (tmp >> 24) & 0x7,
-			     (tmp >> 27) & 0x1, (tmp >> 28) & 0x1);
-	}
-
-	/* Look for the SMBus device. */
-	smbus_dev = pci_dev_find(0x1002, 0x4385);
-
-	if (has_spi && !smbus_dev) {
-		msg_perr("ERROR: SMBus device not found. Not enabling SPI.\n");
-		has_spi = 0;
-	}
-	if (has_spi) {
-		/* Note about the bit tests below: If a bit is zero, the GPIO is SPI. */
-		/* GPIO11/SPI_DO and GPIO12/SPI_DI status */
-		reg = pci_read_byte(smbus_dev, 0xAB);
-		reg &= 0xC0;
-		msg_pdbg("GPIO11 used for %s\n", (reg & (1 << 6)) ? "GPIO" : "SPI_DO");
-		msg_pdbg("GPIO12 used for %s\n", (reg & (1 << 7)) ? "GPIO" : "SPI_DI");
-		if (reg != 0x00)
-			has_spi = 0;
-		/* GPIO31/SPI_HOLD and GPIO32/SPI_CS status */
-		reg = pci_read_byte(smbus_dev, 0x83);
-		reg &= 0xC0;
-		msg_pdbg("GPIO31 used for %s\n", (reg & (1 << 6)) ? "GPIO" : "SPI_HOLD");
-		msg_pdbg("GPIO32 used for %s\n", (reg & (1 << 7)) ? "GPIO" : "SPI_CS");
-		/* SPI_HOLD is not used on all boards, filter it out. */
-		if ((reg & 0x80) != 0x00)
-			has_spi = 0;
-		/* GPIO47/SPI_CLK status */
-		reg = pci_read_byte(smbus_dev, 0xA7);
-		reg &= 0x40;
-		msg_pdbg("GPIO47 used for %s\n", (reg & (1 << 6)) ? "GPIO" : "SPI_CLK");
-		if (reg != 0x00)
-			has_spi = 0;
-	}
-
 	buses_supported = CHIP_BUSTYPE_LPC | CHIP_BUSTYPE_FWH;
-	if (has_spi) {
-		buses_supported |= CHIP_BUSTYPE_SPI;
-		spi_controller = SPI_CONTROLLER_SB600;
-	}
+
+	ret = sb600_probe_spi(dev);
 
 	/* Read ROM strap override register. */
 	OUTB(0x8f, 0xcd6);
@@ -830,7 +758,7 @@ static int enable_flash_sb600(struct pci_dev *dev, const char *name)
 	OUTB(0x0e, 0xcd7);
 	*/
 
-	return 0;
+	return ret;
 }
 
 static int enable_flash_nvidia_nforce2(struct pci_dev *dev, const char *name)

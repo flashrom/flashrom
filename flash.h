@@ -719,11 +719,11 @@ int it8716f_spi_chip_read(struct flashchip *flash, uint8_t *buf, int start, int 
 int it8716f_spi_chip_write_256(struct flashchip *flash, uint8_t *buf, int start, int len);
 
 /* sb600spi.c */
+int sb600_probe_spi(struct pci_dev *dev);
 int sb600_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		      const unsigned char *writearr, unsigned char *readarr);
 int sb600_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
 int sb600_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len);
-extern uint8_t *sb600_spibar;
 
 /* wbsio_spi.c */
 int wbsio_check_for_spi(void);
