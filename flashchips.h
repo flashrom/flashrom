@@ -75,8 +75,19 @@
 
 #define AMIC_ID			0x7F37	/* AMIC */
 #define AMIC_ID_NOPREFIX	0x37	/* AMIC */
-#define AMIC_A25L40P		0x2013
-#define AMIC_A25L80P		0x2014
+#define AMIC_A25L05PT		0x2020
+#define AMIC_A25L05PU		0x2010
+#define AMIC_A25L10PT		0x2021
+#define AMIC_A25L10PU		0x2011
+#define AMIC_A25L20PT		0x2022
+#define AMIC_A25L20PU		0x2012
+#define AMIC_A25L40PT		0x2013	/* Datasheet says T and U have
+					   same device ID. Confirmed by
+					   hardware testing. */
+#define AMIC_A25L40PU		0x2013
+#define AMIC_A25L80P		0x2014	/* Seems that no A25L80PT exists */
+#define AMIC_A25L16PT		0x2025
+#define AMIC_A25L16PU		0x2015
 #define AMIC_A29002B		0x0d
 #define AMIC_A29002T		0x8C	/* Same as A290021T */
 #define AMIC_A29040B		0x86
