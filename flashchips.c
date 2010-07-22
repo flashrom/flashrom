@@ -2814,6 +2814,33 @@ struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Intel",
+		.name		= "28F002BC-T",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= INTEL_ID,
+		.model_id	= P28F002BC,
+		.total_size	= 256,
+		.page_size	= 256 * 1024,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_82802ab,
+		.probe_timing	= TIMING_ZERO, /* Datasheet has no timing info specified */
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = {
+					{128 * 1024, 1},
+					{96 * 1024, 1},
+					{8 * 1024, 2},
+					{16 * 1024, 1},
+				},
+				.block_erase = erase_block_82802ab,
+			},
+		},
+		.write		= write_82802ab,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "Intel",
 		.name		= "28F004S5",
 		.bustype	= CHIP_BUSTYPE_PARALLEL,
 		.manufacture_id	= INTEL_ID,

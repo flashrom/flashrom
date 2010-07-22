@@ -274,6 +274,7 @@
 #define E_28F016S5		0xAA
 #define P28F001BXT		0x94	/* 28F001BX-T */
 #define P28F001BXB		0x95	/* 28F001BX-B */
+#define P28F002BC		0x7C	/* 28F002BC-T */
 #define P28F004BT		0x78	/* 28F004BV/BE-T */
 #define P28F004BB		0x79	/* 28F004BV/BE-B */
 #define P28F400BT		0x70	/* 28F400BV/CV/CE-T */
