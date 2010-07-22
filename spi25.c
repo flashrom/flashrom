@@ -328,6 +328,16 @@ void spi_prettyprint_status_register_common(uint8_t status)
 }
 
 /* Prettyprint the status register. Works for
+ * AMIC A25L series
+ */
+void spi_prettyprint_status_register_amic_a25l(uint8_t status)
+{
+	msg_cdbg("Chip status register: Status Register Write Disable "
+		     "(SRWD) is %sset\n", (status & (1 << 7)) ? "" : "not ");
+	spi_prettyprint_status_register_common(status);
+}
+
+/* Prettyprint the status register. Works for
  * ST M25P series
  * MX MX25L series
  */
@@ -389,6 +399,10 @@ void spi_prettyprint_status_register(struct flashchip *flash)
 	status = spi_read_status_register();
 	msg_cdbg("Chip status register is %02x\n", status);
 	switch (flash->manufacture_id) {
+	case AMIC_ID:
+		if ((flash->model_id & 0xff00) == 0x2000)
+		    spi_prettyprint_status_register_amic_a25l(status);
+		break;
 	case ST_ID:
 		if (((flash->model_id & 0xff00) == 0x2000) ||
 		    ((flash->model_id & 0xff00) == 0x2500))
