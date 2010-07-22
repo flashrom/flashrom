@@ -607,6 +607,9 @@ int doit(struct flashchip *flash, int force, char *filename, int read_it, int wr
 #define OK 0
 #define NT 1    /* Not tested */
 
+/* Something happened that shouldn't happen, but we can go on */
+#define ERROR_NONFATAL 0x100
+
 /* cli_output.c */
 /* Let gcc and clang check for correct printf-style format strings. */
 int print(int type, const char *fmt, ...) __attribute__((format(printf, 2, 3)));
@@ -694,10 +697,10 @@ int default_spi_send_multicommand(struct spi_command *cmds);
 uint32_t spi_get_valid_read_addr(void);
 
 /* ichspi.c */
-extern int ichspi_lock;
 extern uint32_t ichspi_bbar;
-extern void *ich_spibar;
-int ich_init_opcodes(void);
+int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
+		    int ich_generation);
+int via_init_spi(struct pci_dev *dev);
 int ich_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		    const unsigned char *writearr, unsigned char *readarr);
 int ich_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);

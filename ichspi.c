@@ -101,11 +101,11 @@
 #define ICH7_REG_OPMENU                0x58	/* 64 Bits */
 
 /* ICH SPI configuration lock-down. May be set during chipset enabling. */
-int ichspi_lock = 0;
+static int ichspi_lock = 0;
 
 uint32_t ichspi_bbar = 0;
 
-void *ich_spibar = NULL;
+static void *ich_spibar = NULL;
 
 typedef struct _OPCODE {
 	uint8_t opcode;		//This commands spi opcode
@@ -364,7 +364,7 @@ void ich_set_bbar(uint32_t minaddr)
  *
  * It should be called before ICH sends any spi command.
  */
-int ich_init_opcodes(void)
+static int ich_init_opcodes(void)
 {
 	int rc = 0;
 	OPCODES *curopcodes_done;
@@ -861,6 +861,213 @@ int ich_spi_send_multicommand(struct spi_command *cmds)
 			curopcodes->opcode[i].atomic = 0;
 	}
 	return ret;
+}
+
+#define ICH_BMWAG(x) ((x >> 24) & 0xff)
+#define ICH_BMRAG(x) ((x >> 16) & 0xff)
+#define ICH_BRWA(x)  ((x >>  8) & 0xff)
+#define ICH_BRRA(x)  ((x >>  0) & 0xff)
+
+#define ICH_FREG_BASE(x)  ((x >>  0) & 0x1fff)
+#define ICH_FREG_LIMIT(x) ((x >> 16) & 0x1fff)
+
+static void do_ich9_spi_frap(uint32_t frap, int i)
+{
+	const char *access_names[4] = {
+		"locked", "read-only", "write-only", "read-write"
+	};
+	const char *region_names[5] = {
+		"Flash Descriptor", "BIOS", "Management Engine",
+		"Gigabit Ethernet", "Platform Data"
+	};
+	uint32_t base, limit;
+	int rwperms = (((ICH_BRWA(frap) >> i) & 1) << 1) |
+		      (((ICH_BRRA(frap) >> i) & 1) << 0);
+	int offset = 0x54 + i * 4;
+	uint32_t freg = mmio_readl(ich_spibar + offset);
+
+	msg_pdbg("0x%02X: 0x%08x (FREG%i: %s)\n",
+		     offset, freg, i, region_names[i]);
+
+	base  = ICH_FREG_BASE(freg);
+	limit = ICH_FREG_LIMIT(freg);
+	if (base == 0x1fff && limit == 0) {
+		/* this FREG is disabled */
+		msg_pdbg("%s region is unused.\n", region_names[i]);
+		return;
+	}
+
+	msg_pdbg("0x%08x-0x%08x is %s\n",
+		    (base << 12), (limit << 12) | 0x0fff,
+		    access_names[rwperms]);
+}
+
+int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
+			int ich_generation)
+{
+	int i;
+	uint8_t old, new;
+	uint16_t spibar_offset, tmp2;
+	uint32_t tmp;
+
+	buses_supported |= CHIP_BUSTYPE_SPI;
+	switch (ich_generation) {
+	case 7:
+		spi_controller = SPI_CONTROLLER_ICH7;
+		spibar_offset = 0x3020;
+		break;
+	case 8:
+		spi_controller = SPI_CONTROLLER_ICH9;
+		spibar_offset = 0x3020;
+		break;
+	case 9:
+	case 10:
+	default:		/* Future version might behave the same */
+		spi_controller = SPI_CONTROLLER_ICH9;
+		spibar_offset = 0x3800;
+		break;
+	}
+
+	/* SPIBAR is at RCRB+0x3020 for ICH[78] and RCRB+0x3800 for ICH9. */
+	msg_pdbg("SPIBAR = 0x%x + 0x%04x\n", base, spibar_offset);
+
+	/* Assign Virtual Address */
+	ich_spibar = rcrb + spibar_offset;
+
+	switch (spi_controller) {
+	case SPI_CONTROLLER_ICH7:
+		msg_pdbg("0x00: 0x%04x     (SPIS)\n",
+			     mmio_readw(ich_spibar + 0));
+		msg_pdbg("0x02: 0x%04x     (SPIC)\n",
+			     mmio_readw(ich_spibar + 2));
+		msg_pdbg("0x04: 0x%08x (SPIA)\n",
+			     mmio_readl(ich_spibar + 4));
+		for (i = 0; i < 8; i++) {
+			int offs;
+			offs = 8 + (i * 8);
+			msg_pdbg("0x%02x: 0x%08x (SPID%d)\n", offs,
+				     mmio_readl(ich_spibar + offs), i);
+			msg_pdbg("0x%02x: 0x%08x (SPID%d+4)\n", offs + 4,
+				     mmio_readl(ich_spibar + offs + 4), i);
+		}
+		ichspi_bbar = mmio_readl(ich_spibar + 0x50);
+		msg_pdbg("0x50: 0x%08x (BBAR)\n",
+			     ichspi_bbar);
+		msg_pdbg("0x54: 0x%04x     (PREOP)\n",
+			     mmio_readw(ich_spibar + 0x54));
+		msg_pdbg("0x56: 0x%04x     (OPTYPE)\n",
+			     mmio_readw(ich_spibar + 0x56));
+		msg_pdbg("0x58: 0x%08x (OPMENU)\n",
+			     mmio_readl(ich_spibar + 0x58));
+		msg_pdbg("0x5c: 0x%08x (OPMENU+4)\n",
+			     mmio_readl(ich_spibar + 0x5c));
+		for (i = 0; i < 4; i++) {
+			int offs;
+			offs = 0x60 + (i * 4);
+			msg_pdbg("0x%02x: 0x%08x (PBR%d)\n", offs,
+				     mmio_readl(ich_spibar + offs), i);
+		}
+		msg_pdbg("\n");
+		if (mmio_readw(ich_spibar) & (1 << 15)) {
+			msg_pinfo("WARNING: SPI Configuration Lockdown activated.\n");
+			ichspi_lock = 1;
+		}
+		ich_init_opcodes();
+		break;
+	case SPI_CONTROLLER_ICH9:
+		tmp2 = mmio_readw(ich_spibar + 4);
+		msg_pdbg("0x04: 0x%04x (HSFS)\n", tmp2);
+		msg_pdbg("FLOCKDN %i, ", (tmp2 >> 15 & 1));
+		msg_pdbg("FDV %i, ", (tmp2 >> 14) & 1);
+		msg_pdbg("FDOPSS %i, ", (tmp2 >> 13) & 1);
+		msg_pdbg("SCIP %i, ", (tmp2 >> 5) & 1);
+		msg_pdbg("BERASE %i, ", (tmp2 >> 3) & 3);
+		msg_pdbg("AEL %i, ", (tmp2 >> 2) & 1);
+		msg_pdbg("FCERR %i, ", (tmp2 >> 1) & 1);
+		msg_pdbg("FDONE %i\n", (tmp2 >> 0) & 1);
+
+		tmp = mmio_readl(ich_spibar + 0x50);
+		msg_pdbg("0x50: 0x%08x (FRAP)\n", tmp);
+		msg_pdbg("BMWAG 0x%02x, ", ICH_BMWAG(tmp));
+		msg_pdbg("BMRAG 0x%02x, ", ICH_BMRAG(tmp));
+		msg_pdbg("BRWA 0x%02x, ", ICH_BRWA(tmp));
+		msg_pdbg("BRRA 0x%02x\n", ICH_BRRA(tmp));
+
+		/* print out the FREGx registers along with FRAP access bits */
+		for(i = 0; i < 5; i++)
+			do_ich9_spi_frap(tmp, i);
+
+		msg_pdbg("0x74: 0x%08x (PR0)\n",
+			     mmio_readl(ich_spibar + 0x74));
+		msg_pdbg("0x78: 0x%08x (PR1)\n",
+			     mmio_readl(ich_spibar + 0x78));
+		msg_pdbg("0x7C: 0x%08x (PR2)\n",
+			     mmio_readl(ich_spibar + 0x7C));
+		msg_pdbg("0x80: 0x%08x (PR3)\n",
+			     mmio_readl(ich_spibar + 0x80));
+		msg_pdbg("0x84: 0x%08x (PR4)\n",
+			     mmio_readl(ich_spibar + 0x84));
+		msg_pdbg("0x90: 0x%08x (SSFS, SSFC)\n",
+			     mmio_readl(ich_spibar + 0x90));
+		msg_pdbg("0x94: 0x%04x     (PREOP)\n",
+			     mmio_readw(ich_spibar + 0x94));
+		msg_pdbg("0x96: 0x%04x     (OPTYPE)\n",
+			     mmio_readw(ich_spibar + 0x96));
+		msg_pdbg("0x98: 0x%08x (OPMENU)\n",
+			     mmio_readl(ich_spibar + 0x98));
+		msg_pdbg("0x9C: 0x%08x (OPMENU+4)\n",
+			     mmio_readl(ich_spibar + 0x9C));
+		ichspi_bbar = mmio_readl(ich_spibar + 0xA0);
+		msg_pdbg("0xA0: 0x%08x (BBAR)\n",
+			     ichspi_bbar);
+		msg_pdbg("0xB0: 0x%08x (FDOC)\n",
+			     mmio_readl(ich_spibar + 0xB0));
+		if (tmp2 & (1 << 15)) {
+			msg_pinfo("WARNING: SPI Configuration Lockdown activated.\n");
+			ichspi_lock = 1;
+		}
+		ich_init_opcodes();
+		break;
+	default:
+		/* Nothing */
+		break;
+	}
+
+	old = pci_read_byte(dev, 0xdc);
+	msg_pdbg("SPI Read Configuration: ");
+	new = (old >> 2) & 0x3;
+	switch (new) {
+	case 0:
+	case 1:
+	case 2:
+		msg_pdbg("prefetching %sabled, caching %sabled, ",
+			     (new & 0x2) ? "en" : "dis",
+			     (new & 0x1) ? "dis" : "en");
+		break;
+	default:
+		msg_pdbg("invalid prefetching/caching settings, ");
+		break;
+	}
+	return 0;
+}
+
+int via_init_spi(struct pci_dev *dev)
+{
+	uint32_t mmio_base;
+
+	mmio_base = (pci_read_long(dev, 0xbc)) << 8;
+	msg_pdbg("MMIO base at = 0x%x\n", mmio_base);
+	ich_spibar = physmap("VT8237S MMIO registers", mmio_base, 0x70);
+
+	msg_pdbg("0x6c: 0x%04x     (CLOCK/DEBUG)\n",
+		     mmio_readw(ich_spibar + 0x6c));
+
+	/* Not sure if it speaks all these bus protocols. */
+	buses_supported = CHIP_BUSTYPE_LPC | CHIP_BUSTYPE_FWH | CHIP_BUSTYPE_SPI;
+	spi_controller = SPI_CONTROLLER_VIA;
+	ich_init_opcodes();
+
+	return 0;
 }
 
 #endif
