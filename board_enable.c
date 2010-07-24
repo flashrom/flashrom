@@ -1238,6 +1238,14 @@ static int intel_ich_gpio16_raise(void)
 }
 
 /**
+ * Suited for HP Puffer2-UL8E (ASUS PTGD-LA OEM): LGA775 + 915 + ICH6.
+ */
+static int intel_ich_gpio18_raise(void)
+{
+	return intel_ich_gpio_set(18, 1);
+}
+
+/**
  * Suited for ASUS A8JM: Intel 945 + ICH7
  */
 static int intel_ich_gpio34_raise(void)
@@ -1699,6 +1707,7 @@ const struct board_pciid_enable board_pciid_enables[] = {
 	{0x10DE, 0x0050, 0x1458, 0x0C11,  0x10DE, 0x005e, 0x1458, 0x5000, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-K8N-SLI",            0,   OK, nvidia_mcp_gpio21_raise},
 	{0x1166, 0x0223, 0x103c, 0x320d,  0x14e4, 0x1678, 0x103c, 0x703e, NULL,          "hp",         "dl145_g3",    "HP",          "DL145 G3",              0,   OK, board_hp_dl145_g3_enable},
 	{0x1166, 0x0223, 0x103c, 0x320d,  0x14e4, 0x1648, 0x103c, 0x310f, NULL,          "hp",         "dl165_g6",    "HP",          "DL165 G6",              0,   OK, board_hp_dl165_g6_enable},
+	{0x8086, 0x2580, 0x103c, 0x2a08,  0x8086, 0x2640, 0x103c, 0x2a0a, NULL,          NULL,         NULL,          "HP",          "Puffer2-UL8E",          0,   OK, intel_ich_gpio18_raise},
 	{0x8086, 0x2415, 0x103c, 0x1249,  0x10b7, 0x9200, 0x103c, 0x1246, NULL,          NULL,         NULL,          "HP",          "Vectra VL400",          0,   OK, board_hp_vl400}, 
 	{0x8086, 0x1a30, 0x103c, 0x1a30,  0x8086, 0x2443, 0x103c, 0x2440, "^VL420$",     NULL,         NULL,          "HP",          "VL420 SFF",             0,   OK, intel_ich_gpio22_raise},
 	{0x10de, 0x0369, 0x103c, 0x12fe,  0x10de, 0x0364, 0x103c, 0x12fe, NULL,          NULL,         NULL,          "HP",          "xw9400",                0,   OK, nvidia_mcp_gpio5_raise},
