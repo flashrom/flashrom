@@ -416,6 +416,7 @@ const struct board_info boards_known[] = {
 	B("PC Engines",	"Alix.3d3",		1, "http://pcengines.ch/alix3d3.htm", NULL),
 	B("PC Engines",	"WRAP.2E",		1, "http://pcengines.ch/wrap2e1.htm", NULL),
 	B("RCA",	"RM4100",		1, "http://www.settoplinux.org/index.php?title=RCA_RM4100", NULL),
+	B("Samsung",	"Polaris 32",		1, "", NULL),
 	B("Shuttle",	"AK31",			1, "http://www.motherboard.cz/mb/shuttle/AK31.htm", NULL),
 	B("Shuttle",	"AK38N",		1, "http://eu.shuttle.com/en/desktopdefault.aspx/tabid-36/558_read-9889/", NULL),
 	B("Shuttle",	"FD37",			1, "http://www.shuttle.eu/products/discontinued/barebones/sd37p2/", NULL),
