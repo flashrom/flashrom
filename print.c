@@ -334,6 +334,7 @@ const struct board_info boards_known[] = {
 	B("ASUS",	"P5KC",			1, "http://www.asus.com/product.aspx?P_ID=fFZ8oUIGmLpwNMjj", NULL),
 	B("ASUS",	"P5L-MX",		1, "http://www.asus.com/product.aspx?P_ID=X70d3NCzH2DE9vWH", NULL),
 	B("ASUS",	"P5ND2-SLI Deluxe",	1, "http://www.asus.com/product.aspx?P_ID=WY7XroDuUImVbgp5", NULL),
+	B("ASUS",	"P5PE-VM",		1, "http://www.asus.com/product.aspx?P_ID=k3h0ZFVu9Lo1dUvk", NULL),
 	B("ASUS",	"P6T Deluxe",		1, "http://www.asus.com/product.aspx?P_ID=vXixf82co6Q5v0BZ", NULL),
 	B("ASUS",	"P6T Deluxe V2",	1, "http://www.asus.com/product.aspx?P_ID=iRlP8RG9han6saZx", NULL),
 	B("BCOM",	"WinNET100",		1, "http://www.coreboot.org/BCOM_WINNET100", "Used in the IGEL-316 thin client."),
