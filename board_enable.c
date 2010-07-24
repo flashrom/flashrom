@@ -1320,7 +1320,7 @@ static int intel_ich_gpio26_raise(void)
 /**
  * Suited for P4SD-LA (HP OEM): i865 + ICH5
  */
-static int intel_ich_gpio32_raise(const char *name)
+static int intel_ich_gpio32_raise(void)
 {
 	return intel_ich_gpio_set(32, 1);
 }
