@@ -1678,7 +1678,7 @@ const struct board_pciid_enable board_pciid_enables[] = {
 #if defined(__i386__) || defined(__x86_64__)
 	{0x10DE, 0x0547, 0x147B, 0x1C2F,  0x10DE, 0x0548, 0x147B, 0x1C2F, NULL,          NULL,         NULL,          "Abit",        "AN-M2",                 0,   NT, nvidia_mcp_gpio2_raise},
 	{0x8086, 0x24d3, 0x147b, 0x1014,  0x8086, 0x2578, 0x147b, 0x1014, NULL,          NULL,         NULL,          "Abit",        "IC7",                   0,   NT, intel_ich_gpio23_raise},
-	{0x8086, 0x2926, 0x147b, 0x1084,  0x11ab, 0x4364, 0x147b, 0x1084, NULL,          NULL,         NULL,          "Abit",        "IP35",                  0,   OK, intel_ich_gpio16_raise},
+	{0x8086, 0x2930, 0x147b, 0x1084,  0x11ab, 0x4364, 0x147b, 0x1084, NULL,          NULL,         NULL,          "Abit",        "IP35",                  0,   OK, intel_ich_gpio16_raise},
 	{0x8086, 0x2930, 0x147b, 0x1083,  0x10ec, 0x8167, 0x147b, 0x1083, NULL,          NULL,         NULL,          "Abit",        "IP35 Pro",              0,   OK, intel_ich_gpio16_raise},
 	{0x10de, 0x0050, 0x147b, 0x1c1a,       0,      0,      0,      0, NULL,          NULL,         NULL,          "Abit",        "KN8 Ultra",             0,   NT, nvidia_mcp_gpio2_lower},
 	{0x10de, 0x01e0, 0x147b, 0x1c00,  0x10de, 0x0060, 0x147B, 0x1c00, NULL,          NULL,         NULL,          "Abit",        "NF7-S",                 0,   OK, nvidia_mcp_gpio8_raise},
