@@ -697,6 +697,7 @@ int default_spi_send_multicommand(struct spi_command *cmds);
 uint32_t spi_get_valid_read_addr(void);
 
 /* ichspi.c */
+#if CONFIG_INTERNAL == 1
 extern uint32_t ichspi_bbar;
 int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 		    int ich_generation);
@@ -706,6 +707,7 @@ int ich_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 int ich_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
 int ich_spi_write_256(struct flashchip *flash, uint8_t * buf, int start, int len);
 int ich_spi_send_multicommand(struct spi_command *cmds);
+#endif
 
 /* it87spi.c */
 void enter_conf_mode_ite(uint16_t port);
@@ -719,17 +721,21 @@ int it8716f_spi_chip_read(struct flashchip *flash, uint8_t *buf, int start, int 
 int it8716f_spi_chip_write_256(struct flashchip *flash, uint8_t *buf, int start, int len);
 
 /* sb600spi.c */
+#if CONFIG_INTERNAL == 1
 int sb600_probe_spi(struct pci_dev *dev);
 int sb600_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		      const unsigned char *writearr, unsigned char *readarr);
 int sb600_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
 int sb600_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len);
+#endif
 
 /* wbsio_spi.c */
+#if CONFIG_INTERNAL == 1
 int wbsio_check_for_spi(void);
 int wbsio_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		      const unsigned char *writearr, unsigned char *readarr);
 int wbsio_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
+#endif
 
 /* serprog.c */
 int serprog_init(void);
