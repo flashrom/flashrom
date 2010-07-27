@@ -25,6 +25,7 @@
 #include <time.h>
 #include "flash.h"
 #include "flashchips.h"
+#include "programmer.h"
 
 static const char * const wiki_header = "= Supported devices =\n\n\
 <div style=\"margin-top:0.5em; padding:0.5em 0.5em 0.5em 0.5em; \

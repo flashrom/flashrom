@@ -31,6 +31,7 @@
 #if defined(__i386__) || defined(__x86_64__)
 
 #include "flash.h"
+#include "programmer.h"
 
 /* We have two sets of pins, out and in. The numbers for both sets are
  * independent and are bitshift values, not real pin numbers.

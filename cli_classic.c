@@ -30,6 +30,7 @@
 #include <getopt.h>
 #include "flash.h"
 #include "flashchips.h"
+#include "programmer.h"
 
 static void cli_classic_usage(const char *name)
 {

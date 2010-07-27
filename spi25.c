@@ -26,6 +26,7 @@
 #include "flash.h"
 #include "flashchips.h"
 #include "chipdrivers.h"
+#include "programmer.h"
 #include "spi.h"
 
 void spi_prettyprint_status_register(struct flashchip *flash);

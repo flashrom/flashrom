@@ -28,6 +28,7 @@
 #include <sys/types.h>
 #include <string.h>
 #include "flash.h"
+#include "programmer.h"
 #include "coreboot_tables.h"
 
 char *lb_part = NULL, *lb_vendor = NULL;

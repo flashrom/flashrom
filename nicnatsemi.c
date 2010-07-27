@@ -22,6 +22,7 @@
 
 #include <stdlib.h>
 #include "flash.h"
+#include "programmer.h"
 
 #define PCI_VENDOR_ID_NATSEMI	0x100b
 

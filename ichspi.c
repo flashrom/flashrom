@@ -38,6 +38,7 @@
 #include <string.h>
 #include "flash.h"
 #include "chipdrivers.h"
+#include "programmer.h"
 #include "spi.h"
 
 /* ICH9 controller register definition */

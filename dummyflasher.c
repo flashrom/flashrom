@@ -24,6 +24,7 @@
 #include <sys/types.h>
 #include "flash.h"
 #include "chipdrivers.h"
+#include "programmer.h"
 
 static void tolower_string(char *str)
 {

@@ -22,6 +22,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include "flash.h"
+#include "programmer.h"
 
 #define PCI_VENDOR_ID_NVIDIA	0x10de
 
