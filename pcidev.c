@@ -22,6 +22,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include "flash.h"
+#include "programmer.h"
 
 uint32_t io_base_addr;
 struct pci_access *pacc;

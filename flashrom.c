@@ -33,6 +33,7 @@
 #endif
 #include "flash.h"
 #include "flashchips.h"
+#include "programmer.h"
 
 const char * const flashrom_version = FLASHROM_VERSION;
 char *chip_to_probe = NULL;

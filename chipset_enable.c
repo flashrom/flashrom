@@ -32,6 +32,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include "flash.h"
+#include "programmer.h"
 
 #define NOT_DONE_YET 1
 

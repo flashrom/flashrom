@@ -22,7 +22,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "flash.h"
 #include <string.h>
 #include <ctype.h>
 #include <fcntl.h>
@@ -35,6 +34,8 @@
 #else
 #include <termios.h>
 #endif
+#include "flash.h"
+#include "programmer.h"
 
 fdtype sp_fd;
 

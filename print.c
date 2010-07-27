@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include "flash.h"
 #include "flashchips.h"
+#include "programmer.h"
 
 /*
  * Return a string corresponding to the bustype parameter.

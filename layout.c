@@ -23,6 +23,7 @@
 #include <string.h>
 #include <ctype.h>
 #include "flash.h"
+#include "programmer.h"
 
 #if CONFIG_INTERNAL == 1
 char *mainboard_vendor = NULL;
