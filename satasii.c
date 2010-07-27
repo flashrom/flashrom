@@ -61,7 +61,7 @@ int satasii_init(void)
 	sii_bar = physmap("SATA SIL registers", addr, 0x100) + reg_offset;
 
 	/* Check if ROM cycle are OK. */
-	if ((id != 0x0680) && (!(mmio_readl(sii_bar) & (1 << 26))))
+	if ((id != 0x0680) && (!(pci_mmio_readl(sii_bar) & (1 << 26))))
 		msg_pinfo("Warning: Flash seems unconnected.\n");
 
 	buses_supported = CHIP_BUSTYPE_PARALLEL;
@@ -80,32 +80,32 @@ void satasii_chip_writeb(uint8_t val, chipaddr addr)
 {
 	uint32_t ctrl_reg, data_reg;
 
-	while ((ctrl_reg = mmio_readl(sii_bar)) & (1 << 25)) ;
+	while ((ctrl_reg = pci_mmio_readl(sii_bar)) & (1 << 25)) ;
 
 	/* Mask out unused/reserved bits, set writes and start transaction. */
 	ctrl_reg &= 0xfcf80000;
 	ctrl_reg |= (1 << 25) | (0 << 24) | ((uint32_t) addr & 0x7ffff);
 
-	data_reg = (mmio_readl((sii_bar + 4)) & ~0xff) | val;
-	mmio_writel(data_reg, (sii_bar + 4));
-	mmio_writel(ctrl_reg, sii_bar);
+	data_reg = (pci_mmio_readl((sii_bar + 4)) & ~0xff) | val;
+	pci_mmio_writel(data_reg, (sii_bar + 4));
+	pci_mmio_writel(ctrl_reg, sii_bar);
 
-	while (mmio_readl(sii_bar) & (1 << 25)) ;
+	while (pci_mmio_readl(sii_bar) & (1 << 25)) ;
 }
 
 uint8_t satasii_chip_readb(const chipaddr addr)
 {
 	uint32_t ctrl_reg;
 
-	while ((ctrl_reg = mmio_readl(sii_bar)) & (1 << 25)) ;
+	while ((ctrl_reg = pci_mmio_readl(sii_bar)) & (1 << 25)) ;
 
 	/* Mask out unused/reserved bits, set reads and start transaction. */
 	ctrl_reg &= 0xfcf80000;
 	ctrl_reg |= (1 << 25) | (1 << 24) | ((uint32_t) addr & 0x7ffff);
 
-	mmio_writel(ctrl_reg, sii_bar);
+	pci_mmio_writel(ctrl_reg, sii_bar);
 
-	while (mmio_readl(sii_bar) & (1 << 25)) ;
+	while (pci_mmio_readl(sii_bar) & (1 << 25)) ;
 
-	return (mmio_readl(sii_bar + 4)) & 0xff;
+	return (pci_mmio_readl(sii_bar + 4)) & 0xff;
 }

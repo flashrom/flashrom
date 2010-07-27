@@ -69,10 +69,10 @@ int drkaiser_shutdown(void)
 
 void drkaiser_chip_writeb(uint8_t val, chipaddr addr)
 {
-	mmio_writeb(val, drkaiser_bar + (addr & DRKAISER_MEMMAP_MASK));
+	pci_mmio_writeb(val, drkaiser_bar + (addr & DRKAISER_MEMMAP_MASK));
 }
 
 uint8_t drkaiser_chip_readb(const chipaddr addr)
 {
-	return mmio_readb(drkaiser_bar + (addr & DRKAISER_MEMMAP_MASK));
+	return pci_mmio_readb(drkaiser_bar + (addr & DRKAISER_MEMMAP_MASK));
 }
