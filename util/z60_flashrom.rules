@@ -1,0 +1,55 @@
+##
+## This file is part of the flashrom project.
+##
+## Copyright (C) 2010 Uwe Hermann <uwe@hermann-uwe.de>
+##
+## This program is free software; you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation; either version 2 of the License, or
+## (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program; if not, write to the Free Software
+## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+##
+
+##
+## Please keep this list sorted alphabetically by vendor/device name.
+##
+
+##
+## This is tested on udev version 154, other versions may need small fixes.
+##
+## Note that you might want to change the "plugdev" group to whatever is
+## suitable for your respective distribution.
+##
+
+ACTION!="add|change", GOTO="flashrom_rules_end"
+SUBSYSTEM!="usb|usb_device", GOTO="flashrom_rules_end"
+
+# Amontec JTAGkey(2)
+# http://www.amontec.com/jtagkey.shtml
+ATTRS{idVendor}=="0403", ATTRS{idProduct}=="cff8", MODE="664", GROUP="plugdev"
+
+# Buspirate
+# http://dangerousprototypes.com/2009/10/08/bus-pirate-raw-spi-mode/
+ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", MODE="664", GROUP="plugdev"
+
+# Dediprog SF100
+# http://www.dediprog.com/SPI-flash-in-circuit-programming/SF100
+ATTRS{idVendor}=="0483", ATTRS{idProduct}=="dada", MODE="664", GROUP="plugdev"
+
+# DLP Design DLP-USB1232H
+# http://www.dlpdesign.com/usb/usb1232h.shtml
+ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6010", MODE="664", GROUP="plugdev"
+
+# FTDI FT4232H Mini-Module
+# http://www.ftdichip.com/Products/EvaluationKits/FT4232H_MiniModule.htm
+ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6011", MODE="664", GROUP="plugdev"
+
+LABEL="flashrom_rules_end"
