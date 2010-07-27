@@ -418,6 +418,8 @@ uint16_t internal_chip_readw(const chipaddr addr);
 uint32_t internal_chip_readl(const chipaddr addr);
 void internal_chip_readn(uint8_t *buf, const chipaddr addr, size_t len);
 #endif
+
+/* hwaccess.c */
 void mmio_writeb(uint8_t val, void *addr);
 void mmio_writew(uint16_t val, void *addr);
 void mmio_writel(uint32_t val, void *addr);
@@ -430,6 +432,12 @@ void mmio_le_writel(uint32_t val, void *addr);
 uint8_t mmio_le_readb(void *addr);
 uint16_t mmio_le_readw(void *addr);
 uint32_t mmio_le_readl(void *addr);
+#define pci_mmio_writeb mmio_le_writeb
+#define pci_mmio_writew mmio_le_writew
+#define pci_mmio_writel mmio_le_writel
+#define pci_mmio_readb mmio_le_readb
+#define pci_mmio_readw mmio_le_readw
+#define pci_mmio_readl mmio_le_readl
 
 /* programmer.c */
 int noop_shutdown(void);
