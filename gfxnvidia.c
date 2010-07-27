@@ -100,10 +100,10 @@ int gfxnvidia_shutdown(void)
 
 void gfxnvidia_chip_writeb(uint8_t val, chipaddr addr)
 {
-	mmio_writeb(val, nvidia_bar + (addr & GFXNVIDIA_MEMMAP_MASK));
+	pci_mmio_writeb(val, nvidia_bar + (addr & GFXNVIDIA_MEMMAP_MASK));
 }
 
 uint8_t gfxnvidia_chip_readb(const chipaddr addr)
 {
-	return mmio_readb(nvidia_bar + (addr & GFXNVIDIA_MEMMAP_MASK));
+	return pci_mmio_readb(nvidia_bar + (addr & GFXNVIDIA_MEMMAP_MASK));
 }

@@ -33,9 +33,9 @@
 #include <unistd.h>
 #include "flash.h"
 
-#if defined(__i386__) || defined(__x86_64__)
-
 #define NOT_DONE_YET 1
+
+#if defined(__i386__) || defined(__x86_64__)
 
 static int enable_flash_ali_m1533(struct pci_dev *dev, const char *name)
 {
