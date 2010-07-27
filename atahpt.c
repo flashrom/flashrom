@@ -22,6 +22,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include "flash.h"
+#include "programmer.h"
 
 #define BIOS_ROM_ADDR		0x90
 #define BIOS_ROM_DATA		0x94

@@ -22,6 +22,7 @@
 
 #include <stdlib.h>
 #include "flash.h"
+#include "programmer.h"
 
 #define PCI_VENDOR_ID_SII	0x1095
 

@@ -22,7 +22,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "flash.h"
 #include <string.h>
 #include <ctype.h>
 #include <fcntl.h>
@@ -36,6 +35,8 @@
 #include <errno.h>
 #include <inttypes.h>
 #include <termios.h>
+#include "flash.h"
+#include "programmer.h"
 
 #define MSGHEADER "serprog:"
 

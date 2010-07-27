@@ -23,6 +23,7 @@
 #include <stdlib.h>
 
 #include "flash.h"
+#include "programmer.h"
 
 int has_dmi_support = 0;
 
