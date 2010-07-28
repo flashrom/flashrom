@@ -868,18 +868,16 @@ static int enable_flash_mcp55(struct pci_dev *dev, const char *name)
 	return 0;
 }
 
-/* This is a shot in the dark. Even if the code is totally bogus for some
- * chipsets, users will at least start to send in reports.
+/**
+ * The MCP6x/MCP7x code is based on cleanroom reverse engineering.
+ * It is assumed that LPC chips need the MCP55 code and SPI chips need the
+ * code provided in enable_flash_mcp6x_7x_common.
  */
-static int enable_flash_mcp6x_7x_common(struct pci_dev *dev, const char *name)
+static int enable_flash_mcp6x_7x(struct pci_dev *dev, const char *name)
 {
 	int ret = 0;
+	int want_spi = 0;
 	uint8_t val;
-	uint16_t status;
-	char *busname;
-	uint32_t mcp_spibaraddr;
-	void *mcp_spibar;
-	struct pci_dev *smbusdev;
 
 	msg_pinfo("This chipset is not really supported yet. Guesswork...\n");
 
@@ -887,20 +885,31 @@ static int enable_flash_mcp6x_7x_common(struct pci_dev *dev, const char *name)
 	val = pci_read_byte(dev, 0x8a);
 	msg_pdbg("ISA/LPC bridge reg 0x8a contents: 0x%02x, bit 6 is %i, bit 5 "
 		 "is %i\n", val, (val >> 6) & 0x1, (val >> 5) & 0x1);
+
 	switch ((val >> 5) & 0x3) {
 	case 0x0:
+		ret = enable_flash_mcp55(dev, name);
 		buses_supported = CHIP_BUSTYPE_LPC;
+		msg_pdbg("Flash bus type is LPC\n");
 		break;
 	case 0x2:
-		buses_supported = CHIP_BUSTYPE_SPI;
+		want_spi = 1;
+		/* SPI is added in mcp6x_spi_init if it works.
+		 * Do we really want to disable LPC in this case?
+		 */
+		buses_supported = CHIP_BUSTYPE_NONE;
+		msg_pdbg("Flash bus type is SPI\n");
+		msg_perr("SPI on this chipset is WIP. Write is unsupported!\n");
+		programmer_may_write = 0;
 		break;
 	default:
-		buses_supported = CHIP_BUSTYPE_UNKNOWN;
+		/* Should not happen. */
+		buses_supported = CHIP_BUSTYPE_NONE;
+		msg_pdbg("Flash bus type is unknown (none)\n");
+		msg_pinfo("Something went wrong with bus type detection.\n");
+		goto out_msg;
 		break;
 	}
-	busname = flashbuses_to_text(buses_supported);
-	msg_pdbg("Guessed flash bus type is %s\n", busname);
-	free(busname);
 
 	/* Force enable SPI and disable LPC? Not a good idea. */
 #if 0
@@ -909,62 +918,8 @@ static int enable_flash_mcp6x_7x_common(struct pci_dev *dev, const char *name)
 	pci_write_byte(dev, 0x8a, val);
 #endif
 
-	/* Look for the SMBus device (SMBus PCI class) */
-	smbusdev = pci_dev_find_vendorclass(0x10de, 0x0c05);
-	if (!smbusdev) {
-		if (buses_supported & CHIP_BUSTYPE_SPI) {
-			msg_perr("ERROR: SMBus device not found. Not enabling "
-				 "SPI.\n");
-			buses_supported &= ~CHIP_BUSTYPE_SPI;
-			ret = 1;
-		} else {
-			msg_pinfo("Odd. SMBus device not found.\n");
-		}
-		goto out_msg;
-	}
-	msg_pdbg("Found SMBus device %04x:%04x at %02x:%02x:%01x\n",
-		smbusdev->vendor_id, smbusdev->device_id,
-		smbusdev->bus, smbusdev->dev, smbusdev->func);
-
-	/* Locate the BAR where the SPI interface lives. */
-	mcp_spibaraddr = pci_read_long(smbusdev, 0x74);
-	msg_pdbg("SPI BAR is at 0x%08x, ", mcp_spibaraddr);
-	/* We hope this has native alignment. We know the SPI interface (well,
-	 * a set of GPIOs that is connected to SPI flash) is at offset 0x530,
-	 * so we expect a size of at least 0x800. Clear the lower bits.
-	 * It is entirely possible that the BAR is 64k big and the low bits are
-	 * reserved for an entirely different purpose.
-	 */
-	mcp_spibaraddr &= ~0x7ff;
-	msg_pdbg("after clearing low bits BAR is at 0x%08x\n", mcp_spibaraddr);
-
-	/* Accessing a NULL pointer BAR is evil. Don't do it. */
-	if (mcp_spibaraddr && (buses_supported == CHIP_BUSTYPE_SPI)) {
-		/* Map the BAR. Bytewise/wordwise access at 0x530 and 0x540. */
-		mcp_spibar = physmap("MCP67 SPI", mcp_spibaraddr, 0x544);
-
-/* Guessed. If this is correct, migrate to a separate MCP67 SPI driver. */
-#define MCP67_SPI_CS		(1 << 1)
-#define MCP67_SPI_SCK		(1 << 2)
-#define MCP67_SPI_MOSI		(1 << 3)
-#define MCP67_SPI_MISO		(1 << 4)
-#define MCP67_SPI_ENABLE	(1 << 0)
-#define MCP67_SPI_IDLE		(1 << 8)
-
-		status = mmio_readw(mcp_spibar + 0x530);
-		msg_pdbg("SPI control is 0x%04x, enable=%i, idle=%i\n",
-			 status, status & 0x1, (status >> 8) & 0x1);
-		/* FIXME: Remove the physunmap once the SPI driver exists. */
-		physunmap(mcp_spibar, 0x544);
-	} else if (!mcp_spibaraddr && (buses_supported & CHIP_BUSTYPE_SPI)) {
-		msg_pdbg("Strange. MCP SPI BAR is invalid.\n");
-		buses_supported &= ~CHIP_BUSTYPE_SPI;
+	if (mcp6x_spi_init(want_spi)) {
 		ret = 1;
-	} else if (mcp_spibaraddr && !(buses_supported & CHIP_BUSTYPE_SPI)) {
-		msg_pdbg("Strange. MCP SPI BAR is valid, but chipset apparently"
-			 " doesn't have SPI enabled.\n");
-	} else {
-		msg_pdbg("MCP SPI is not used.\n");
 	}
 out_msg:
 	msg_pinfo("Please send the output of \"flashrom -V\" to "
@@ -972,68 +927,6 @@ out_msg:
 		  "chipset. Thanks.\n");
 
 	return ret;
-}
-
-/**
- * The MCP61/MCP67 code is guesswork based on cleanroom reverse engineering.
- * Due to that, it only reads info and doesn't change any settings.
- * It is assumed that LPC chips need the MCP55 code and SPI chips need the
- * code provided in enable_flash_mcp6x_7x_common. Until we know for sure, call
- * enable_flash_mcp55 from this function only if enable_flash_mcp6x_7x_common
- * indicates the flash chip is LPC. Warning: enable_flash_mcp55
- * might make SPI flash inaccessible. The same caveat applies to SPI init
- * for LPC flash.
- */
-static int enable_flash_mcp67(struct pci_dev *dev, const char *name)
-{
-	int result = 0;
-
-	result = enable_flash_mcp6x_7x_common(dev, name);
-	if (result)
-		return result;
-
-	/* Not sure if this is correct. No docs as usual. */
-	switch (buses_supported) {
-	case CHIP_BUSTYPE_LPC:
-		result = enable_flash_mcp55(dev, name);
-		break;
-	case CHIP_BUSTYPE_SPI:
-		msg_pinfo("SPI on this chipset is not supported yet.\n");
-		buses_supported = CHIP_BUSTYPE_NONE;
-		break;
-	default:
-		msg_pinfo("Something went wrong with bus type detection.\n");
-		buses_supported = CHIP_BUSTYPE_NONE;
-		break;
-	}
-
-	return result;
-}
-
-static int enable_flash_mcp7x(struct pci_dev *dev, const char *name)
-{
-	int result = 0;
-
-	result = enable_flash_mcp6x_7x_common(dev, name);
-	if (result)
-		return result;
-
-	/* Not sure if this is correct. No docs as usual. */
-	switch (buses_supported) {
-	case CHIP_BUSTYPE_LPC:
-		msg_pinfo("LPC on this chipset is not supported yet.\n");
-		break;
-	case CHIP_BUSTYPE_SPI:
-		msg_pinfo("SPI on this chipset is not supported yet.\n");
-		buses_supported = CHIP_BUSTYPE_NONE;
-		break;
-	default:
-		msg_pinfo("Something went wrong with bus type detection.\n");
-		buses_supported = CHIP_BUSTYPE_NONE;
-		break;
-	}
-
-	return result;
 }
 
 static int enable_flash_ht1000(struct pci_dev *dev, const char *name)
@@ -1187,22 +1080,22 @@ const struct penable chipset_enables[] = {
 	{0x10de, 0x0365, OK, "NVIDIA", "MCP55",		enable_flash_mcp55}, /* LPC */
 	{0x10de, 0x0366, OK, "NVIDIA", "MCP55",		enable_flash_mcp55}, /* LPC */
 	{0x10de, 0x0367, OK, "NVIDIA", "MCP55",		enable_flash_mcp55}, /* Pro */
-	{0x10de, 0x03e0, NT, "NVIDIA", "MCP61",		enable_flash_mcp67},
-	{0x10de, 0x03e1, NT, "NVIDIA", "MCP61",		enable_flash_mcp67},
-	{0x10de, 0x03e2, NT, "NVIDIA", "MCP61",		enable_flash_mcp67},
-	{0x10de, 0x03e3, NT, "NVIDIA", "MCP61",		enable_flash_mcp67},
-	{0x10de, 0x0440, NT, "NVIDIA", "MCP65",		enable_flash_mcp7x},
-	{0x10de, 0x0441, NT, "NVIDIA", "MCP65",		enable_flash_mcp7x},
-	{0x10de, 0x0442, NT, "NVIDIA", "MCP65",		enable_flash_mcp7x},
-	{0x10de, 0x0443, NT, "NVIDIA", "MCP65",		enable_flash_mcp7x},
-	{0x10de, 0x0548, OK, "NVIDIA", "MCP67",		enable_flash_mcp67},
-	{0x10de, 0x075c, NT, "NVIDIA", "MCP78S",	enable_flash_mcp7x},
-	{0x10de, 0x075d, NT, "NVIDIA", "MCP78S",	enable_flash_mcp7x},
-	{0x10de, 0x07d7, NT, "NVIDIA", "MCP73",		enable_flash_mcp7x},
-	{0x10de, 0x0aac, NT, "NVIDIA", "MCP79",		enable_flash_mcp7x},
-	{0x10de, 0x0aad, NT, "NVIDIA", "MCP79",		enable_flash_mcp7x},
-	{0x10de, 0x0aae, NT, "NVIDIA", "MCP79",		enable_flash_mcp7x},
-	{0x10de, 0x0aaf, NT, "NVIDIA", "MCP79",		enable_flash_mcp7x},
+	{0x10de, 0x03e0, NT, "NVIDIA", "MCP61",		enable_flash_mcp6x_7x},
+	{0x10de, 0x03e1, NT, "NVIDIA", "MCP61",		enable_flash_mcp6x_7x},
+	{0x10de, 0x03e2, NT, "NVIDIA", "MCP61",		enable_flash_mcp6x_7x},
+	{0x10de, 0x03e3, NT, "NVIDIA", "MCP61",		enable_flash_mcp6x_7x},
+	{0x10de, 0x0440, NT, "NVIDIA", "MCP65",		enable_flash_mcp6x_7x},
+	{0x10de, 0x0441, NT, "NVIDIA", "MCP65",		enable_flash_mcp6x_7x},
+	{0x10de, 0x0442, NT, "NVIDIA", "MCP65",		enable_flash_mcp6x_7x},
+	{0x10de, 0x0443, NT, "NVIDIA", "MCP65",		enable_flash_mcp6x_7x},
+	{0x10de, 0x0548, OK, "NVIDIA", "MCP67",		enable_flash_mcp6x_7x},
+	{0x10de, 0x075c, NT, "NVIDIA", "MCP78S",	enable_flash_mcp6x_7x},
+	{0x10de, 0x075d, NT, "NVIDIA", "MCP78S",	enable_flash_mcp6x_7x},
+	{0x10de, 0x07d7, NT, "NVIDIA", "MCP73",		enable_flash_mcp6x_7x},
+	{0x10de, 0x0aac, NT, "NVIDIA", "MCP79",		enable_flash_mcp6x_7x},
+	{0x10de, 0x0aad, NT, "NVIDIA", "MCP79",		enable_flash_mcp6x_7x},
+	{0x10de, 0x0aae, NT, "NVIDIA", "MCP79",		enable_flash_mcp6x_7x},
+	{0x10de, 0x0aaf, NT, "NVIDIA", "MCP79",		enable_flash_mcp6x_7x},
 	{0x1039, 0x0496, NT, "SiS", "85C496+497",	enable_flash_sis85c496},
 	{0x1039, 0x0406, NT, "SiS", "501/5101/5501",	enable_flash_sis501},
 	{0x1039, 0x5511, NT, "SiS", "5511",		enable_flash_sis5511},
