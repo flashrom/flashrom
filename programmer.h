@@ -110,6 +110,11 @@ enum bitbang_spi_master_type {
 #if CONFIG_RAYER_SPI == 1
 	BITBANG_SPI_MASTER_RAYER,
 #endif
+#if CONFIG_INTERNAL == 1
+#if defined(__i386__) || defined(__x86_64__)
+	BITBANG_SPI_MASTER_MCP,
+#endif
+#endif
 };
 
 struct bitbang_spi_master {
@@ -404,6 +409,13 @@ int ft2232_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int l
 int rayer_spi_init(void);
 #endif
 
+/* mcp6x_spi.c */
+#if CONFIG_INTERNAL == 1
+#if defined(__i386__) || defined(__x86_64__)
+int mcp6x_spi_init(int want_spi);
+#endif
+#endif
+
 /* bitbang_spi.c */
 int bitbang_spi_init(const struct bitbang_spi_master *master, int halfperiod);
 int bitbang_spi_send_command(unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr);
@@ -455,6 +467,7 @@ enum spi_controller {
 	SPI_CONTROLLER_SB600,
 	SPI_CONTROLLER_VIA,
 	SPI_CONTROLLER_WBSIO,
+	SPI_CONTROLLER_MCP6X_BITBANG,
 #endif
 #endif
 #if CONFIG_FT2232_SPI == 1

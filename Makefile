@@ -118,7 +118,11 @@ CONFIG_RAYER_SPI ?= yes
 ifeq ($(CONFIG_RAYER_SPI), yes)
 override CONFIG_BITBANG_SPI = yes
 else
+ifeq ($(CONFIG_INTERNAL), yes)
+override CONFIG_BITBANG_SPI = yes
+else
 CONFIG_BITBANG_SPI ?= no
+endif
 endif
 
 # Always enable 3Com NICs for now.
@@ -162,7 +166,7 @@ ifeq ($(CONFIG_INTERNAL), yes)
 FEATURE_CFLAGS += -D'CONFIG_INTERNAL=1'
 PROGRAMMER_OBJS += processor_enable.o chipset_enable.o board_enable.o cbtable.o dmi.o internal.o
 # FIXME: The PROGRAMMER_OBJS below should only be included on x86.
-PROGRAMMER_OBJS += it87spi.o ichspi.o sb600spi.o wbsio_spi.o
+PROGRAMMER_OBJS += it87spi.o ichspi.o sb600spi.o wbsio_spi.o mcp6x_spi.o
 NEED_PCI := yes
 endif
 
