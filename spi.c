@@ -83,6 +83,13 @@ const struct spi_programmer spi_programmer[] = {
 		.read = wbsio_spi_read,
 		.write_256 = spi_chip_write_1_new,
 	},
+
+	{ /* SPI_CONTROLLER_MCP6X_BITBANG */
+		.command = bitbang_spi_send_command,
+		.multicommand = default_spi_send_multicommand,
+		.read = bitbang_spi_read,
+		.write_256 = bitbang_spi_write_256,
+	},
 #endif
 #endif
 
