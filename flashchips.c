@@ -275,6 +275,482 @@ struct flashchip flashchips[] = {
 	},
 
 	{
+		.vendor		= "AMIC",
+		.name		= "A25L05PT",
+		.bustype	= CHIP_BUSTYPE_SPI,
+		.manufacture_id	= AMIC_ID,
+		.model_id	= AMIC_A25L05PT,
+		.total_size	= 64,
+		.page_size	= 256,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_rdid4,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = {
+					{32 * 1024, 1},
+					{16 * 1024, 1},
+					{8 * 1024, 1},
+					{4 * 1024, 2},
+				},
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { {64 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
+		},
+		.unlock		= spi_disable_blockprotect,
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read,
+	},
+
+	{
+		.vendor		= "AMIC",
+		.name		= "A25L05PU",
+		.bustype	= CHIP_BUSTYPE_SPI,
+		.manufacture_id	= AMIC_ID,
+		.model_id	= AMIC_A25L05PU,
+		.total_size	= 64,
+		.page_size	= 256,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_rdid4,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = {
+					{4 * 1024, 2},
+					{8 * 1024, 1},
+					{16 * 1024, 1},
+					{32 * 1024, 1},
+				},
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { {64 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
+		},
+		.unlock		= spi_disable_blockprotect,
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read,
+	},
+
+	{
+		.vendor		= "AMIC",
+		.name		= "A25L10PT",
+		.bustype	= CHIP_BUSTYPE_SPI,
+		.manufacture_id	= AMIC_ID,
+		.model_id	= AMIC_A25L10PT,
+		.total_size	= 128,
+		.page_size	= 256,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_rdid4,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = {
+					{64 * 1024, 1},
+					{32 * 1024, 1},
+					{16 * 1024, 1},
+					{8 * 1024, 1},
+					{4 * 1024, 2},
+				},
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { {128 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
+		},
+		.unlock		= spi_disable_blockprotect,
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read,
+	},
+
+	{
+		.vendor		= "AMIC",
+		.name		= "A25L10PU",
+		.bustype	= CHIP_BUSTYPE_SPI,
+		.manufacture_id	= AMIC_ID,
+		.model_id	= AMIC_A25L10PU,
+		.total_size	= 128,
+		.page_size	= 256,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_rdid4,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = {
+					{4 * 1024, 2},
+					{8 * 1024, 1},
+					{16 * 1024, 1},
+					{32 * 1024, 1},
+					{64 * 1024, 1},
+				},
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { {128 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
+		},
+		.unlock		= spi_disable_blockprotect,
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read,
+	},
+
+	{
+		.vendor		= "AMIC",
+		.name		= "A25L20PT",
+		.bustype	= CHIP_BUSTYPE_SPI,
+		.manufacture_id	= AMIC_ID,
+		.model_id	= AMIC_A25L20PT,
+		.total_size	= 256,
+		.page_size	= 256,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_rdid4,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = {
+					{64 * 1024, 3},
+					{32 * 1024, 1},
+					{16 * 1024, 1},
+					{8 * 1024, 1},
+					{4 * 1024, 2},
+				},
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { {256 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
+		},
+		.unlock		= spi_disable_blockprotect,
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read,
+	},
+
+	{
+		.vendor		= "AMIC",
+		.name		= "A25L20PU",
+		.bustype	= CHIP_BUSTYPE_SPI,
+		.manufacture_id	= AMIC_ID,
+		.model_id	= AMIC_A25L20PU,
+		.total_size	= 256,
+		.page_size	= 256,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_rdid4,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = {
+					{4 * 1024, 2},
+					{8 * 1024, 1},
+					{16 * 1024, 1},
+					{32 * 1024, 1},
+					{64 * 1024, 3},
+				},
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { {256 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
+		},
+		.unlock		= spi_disable_blockprotect,
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read,
+	},
+
+	/* The A25L40P{T,U} chips are distinguished by their
+	 * erase block layouts, but without any distinction in RDID.
+	 * This inexplicable quirk was verified by Rudolf Marek
+	 * and discussed on the flashrom mailing list on 2010-07-12.
+	 */
+	{
+		.vendor		= "AMIC",
+		.name		= "A25L40PT",
+		.bustype	= CHIP_BUSTYPE_SPI,
+		.manufacture_id	= AMIC_ID,
+		.model_id	= AMIC_A25L40PT,
+		.total_size	= 512,
+		.page_size	= 256,
+		.tested		= TEST_OK_PRW,
+		.probe		= probe_spi_rdid4,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = {
+					{64 * 1024, 7},
+					{32 * 1024, 1},
+					{16 * 1024, 1},
+					{8 * 1024, 1},
+					{4 * 1024, 2},
+				},
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { {512 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
+		},
+		.unlock		= spi_disable_blockprotect,
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read,
+	},
+
+	{
+		.vendor		= "AMIC",
+		.name		= "A25L40PU",
+		.bustype	= CHIP_BUSTYPE_SPI,
+		.manufacture_id	= AMIC_ID,
+		.model_id	= AMIC_A25L40PU,
+		.total_size	= 512,
+		.page_size	= 256,
+		.tested		= TEST_OK_PRW,
+		.probe		= probe_spi_rdid4,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = {
+					{4 * 1024, 2},
+					{8 * 1024, 1},
+					{16 * 1024, 1},
+					{32 * 1024, 1},
+					{64 * 1024, 7},
+				},
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { {512 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
+		},
+		.unlock		= spi_disable_blockprotect,
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read,
+	},
+
+	{
+		.vendor		= "AMIC",
+		.name		= "A25L80P",
+		.bustype	= CHIP_BUSTYPE_SPI,
+		.manufacture_id	= AMIC_ID,
+		.model_id	= AMIC_A25L80P,
+		.total_size	= 1024,
+		.page_size	= 256,
+		.tested		= TEST_OK_PREW,
+		.probe		= probe_spi_rdid4,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = {
+					{4 * 1024, 2},
+					{8 * 1024, 1},
+					{16 * 1024, 1},
+					{32 * 1024, 1},
+					{64 * 1024, 15},
+				},
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { {1024 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
+		},
+		.unlock		= spi_disable_blockprotect,
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read,
+	},
+
+	{
+		.vendor		= "AMIC",
+		.name		= "A25L16PT",
+		.bustype	= CHIP_BUSTYPE_SPI,
+		.manufacture_id	= AMIC_ID,
+		.model_id	= AMIC_A25L16PT,
+		.total_size	= 2048,
+		.page_size	= 256,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_rdid4,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = {
+					{64 * 1024, 31},
+					{32 * 1024, 1},
+					{16 * 1024, 1},
+					{8 * 1024, 1},
+					{4 * 1024, 2},
+				},
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { {2048 * 1024, 1} },
+				.block_erase = spi_block_erase_60,
+			}, {
+				.eraseblocks = { {2048 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
+		},
+		.unlock		= spi_disable_blockprotect,
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read,
+	},
+
+	{
+		.vendor		= "AMIC",
+		.name		= "A25L16PU",
+		.bustype	= CHIP_BUSTYPE_SPI,
+		.manufacture_id	= AMIC_ID,
+		.model_id	= AMIC_A25L16PU,
+		.total_size	= 2048,
+		.page_size	= 256,
+		.tested		= TEST_OK_PRW,
+		.probe		= probe_spi_rdid4,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = {
+					{4 * 1024, 2},
+					{8 * 1024, 1},
+					{16 * 1024, 1},
+					{32 * 1024, 1},
+					{64 * 1024, 31},
+				},
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { {2048 * 1024, 1} },
+				.block_erase = spi_block_erase_60,
+			}, {
+				.eraseblocks = { {2048 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
+		},
+		.unlock		= spi_disable_blockprotect,
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read,
+	},
+
+	{
+		.vendor		= "AMIC",
+		.name		= "A29002B",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= AMIC_ID_NOPREFIX,
+		.model_id	= AMIC_A29002B,
+		.total_size	= 256,
+		.page_size	= 64 * 1024,
+		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_jedec,
+		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (mx29f002.c) */
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { 
+					{16 * 1024, 1},
+					{8 * 1024, 2},
+					{32 * 1024, 1},
+					{64 * 1024, 3},
+				},
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {256 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			},
+		},
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "AMIC",
+		.name		= "A29002T",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= AMIC_ID_NOPREFIX,
+		.model_id	= AMIC_A29002T,
+		.total_size	= 256,
+		.page_size	= 64 * 1024,
+		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
+		.tested		= TEST_OK_PRW,
+		.probe		= probe_jedec,
+		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (mx29f002.c) */
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { 
+					{64 * 1024, 3},
+					{32 * 1024, 1},
+					{8 * 1024, 2},
+					{16 * 1024, 1},
+				},
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {256 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			},
+		},
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "AMIC",
+		.name		= "A29040B",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= AMIC_ID_NOPREFIX,
+		.model_id	= AMIC_A29040B,
+		.total_size	= 512,
+		.page_size	= 64 * 1024,
+		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_jedec,
+		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (am29f040b.c) */
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {64 * 1024, 8} },
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {512 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			},
+		},
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "AMIC",
+		.name		= "A49LF040A",
+		.bustype	= CHIP_BUSTYPE_LPC,
+		.manufacture_id	= AMIC_ID_NOPREFIX,
+		.model_id	= AMIC_A49LF040A,
+		.total_size	= 512,
+		.page_size	= 64 * 1024,
+		.feature_bits	= FEATURE_REGISTERMAP | FEATURE_EITHER_RESET,
+		.tested		= TEST_OK_PREW,
+		.probe		= probe_jedec,
+		.probe_timing	= TIMING_ZERO,	/* routine is wrapper to probe_jedec (pm49fl00x.c) */
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {64 * 1024, 8} },
+				.block_erase = erase_block_jedec,
+			}, {
+				.eraseblocks = { {512 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			}
+		},
+		.unlock		= unlock_49fl00x,
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+	},
+
+	{
 		.vendor		= "ASD",
 		.name		= "AE49F2008",
 		.bustype	= CHIP_BUSTYPE_PARALLEL,
@@ -1170,482 +1646,6 @@ struct flashchip flashchips[] = {
 	},
 
 	{
-		.vendor		= "AMIC",
-		.name		= "A25L05PT",
-		.bustype	= CHIP_BUSTYPE_SPI,
-		.manufacture_id	= AMIC_ID,
-		.model_id	= AMIC_A25L05PT,
-		.total_size	= 64,
-		.page_size	= 256,
-		.tested		= TEST_UNTESTED,
-		.probe		= probe_spi_rdid4,
-		.probe_timing	= TIMING_ZERO,
-		.block_erasers	=
-		{
-			{
-				.eraseblocks = {
-					{32 * 1024, 1},
-					{16 * 1024, 1},
-					{8 * 1024, 1},
-					{4 * 1024, 2},
-				},
-				.block_erase = spi_block_erase_d8,
-			}, {
-				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
-			}
-		},
-		.unlock		= spi_disable_blockprotect,
-		.write		= spi_chip_write_256,
-		.read		= spi_chip_read,
-	},
-
-	{
-		.vendor		= "AMIC",
-		.name		= "A25L05PU",
-		.bustype	= CHIP_BUSTYPE_SPI,
-		.manufacture_id	= AMIC_ID,
-		.model_id	= AMIC_A25L05PU,
-		.total_size	= 64,
-		.page_size	= 256,
-		.tested		= TEST_UNTESTED,
-		.probe		= probe_spi_rdid4,
-		.probe_timing	= TIMING_ZERO,
-		.block_erasers	=
-		{
-			{
-				.eraseblocks = {
-					{4 * 1024, 2},
-					{8 * 1024, 1},
-					{16 * 1024, 1},
-					{32 * 1024, 1},
-				},
-				.block_erase = spi_block_erase_d8,
-			}, {
-				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
-			}
-		},
-		.unlock		= spi_disable_blockprotect,
-		.write		= spi_chip_write_256,
-		.read		= spi_chip_read,
-	},
-
-	{
-		.vendor		= "AMIC",
-		.name		= "A25L10PT",
-		.bustype	= CHIP_BUSTYPE_SPI,
-		.manufacture_id	= AMIC_ID,
-		.model_id	= AMIC_A25L10PT,
-		.total_size	= 128,
-		.page_size	= 256,
-		.tested		= TEST_UNTESTED,
-		.probe		= probe_spi_rdid4,
-		.probe_timing	= TIMING_ZERO,
-		.block_erasers	=
-		{
-			{
-				.eraseblocks = {
-					{64 * 1024, 1},
-					{32 * 1024, 1},
-					{16 * 1024, 1},
-					{8 * 1024, 1},
-					{4 * 1024, 2},
-				},
-				.block_erase = spi_block_erase_d8,
-			}, {
-				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
-			}
-		},
-		.unlock		= spi_disable_blockprotect,
-		.write		= spi_chip_write_256,
-		.read		= spi_chip_read,
-	},
-
-	{
-		.vendor		= "AMIC",
-		.name		= "A25L10PU",
-		.bustype	= CHIP_BUSTYPE_SPI,
-		.manufacture_id	= AMIC_ID,
-		.model_id	= AMIC_A25L10PU,
-		.total_size	= 128,
-		.page_size	= 256,
-		.tested		= TEST_UNTESTED,
-		.probe		= probe_spi_rdid4,
-		.probe_timing	= TIMING_ZERO,
-		.block_erasers	=
-		{
-			{
-				.eraseblocks = {
-					{4 * 1024, 2},
-					{8 * 1024, 1},
-					{16 * 1024, 1},
-					{32 * 1024, 1},
-					{64 * 1024, 1},
-				},
-				.block_erase = spi_block_erase_d8,
-			}, {
-				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
-			}
-		},
-		.unlock		= spi_disable_blockprotect,
-		.write		= spi_chip_write_256,
-		.read		= spi_chip_read,
-	},
-
-	{
-		.vendor		= "AMIC",
-		.name		= "A25L20PT",
-		.bustype	= CHIP_BUSTYPE_SPI,
-		.manufacture_id	= AMIC_ID,
-		.model_id	= AMIC_A25L20PT,
-		.total_size	= 256,
-		.page_size	= 256,
-		.tested		= TEST_UNTESTED,
-		.probe		= probe_spi_rdid4,
-		.probe_timing	= TIMING_ZERO,
-		.block_erasers	=
-		{
-			{
-				.eraseblocks = {
-					{64 * 1024, 3},
-					{32 * 1024, 1},
-					{16 * 1024, 1},
-					{8 * 1024, 1},
-					{4 * 1024, 2},
-				},
-				.block_erase = spi_block_erase_d8,
-			}, {
-				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
-			}
-		},
-		.unlock		= spi_disable_blockprotect,
-		.write		= spi_chip_write_256,
-		.read		= spi_chip_read,
-	},
-
-	{
-		.vendor		= "AMIC",
-		.name		= "A25L20PU",
-		.bustype	= CHIP_BUSTYPE_SPI,
-		.manufacture_id	= AMIC_ID,
-		.model_id	= AMIC_A25L20PU,
-		.total_size	= 256,
-		.page_size	= 256,
-		.tested		= TEST_UNTESTED,
-		.probe		= probe_spi_rdid4,
-		.probe_timing	= TIMING_ZERO,
-		.block_erasers	=
-		{
-			{
-				.eraseblocks = {
-					{4 * 1024, 2},
-					{8 * 1024, 1},
-					{16 * 1024, 1},
-					{32 * 1024, 1},
-					{64 * 1024, 3},
-				},
-				.block_erase = spi_block_erase_d8,
-			}, {
-				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
-			}
-		},
-		.unlock		= spi_disable_blockprotect,
-		.write		= spi_chip_write_256,
-		.read		= spi_chip_read,
-	},
-
-	/* The A25L40P{T,U} chips are distinguished by their
-	 * erase block layouts, but without any distinction in RDID.
-	 * This inexplicable quirk was verified by Rudolf Marek
-	 * and discussed on the flashrom mailing list on 2010-07-12.
-	 */
-	{
-		.vendor		= "AMIC",
-		.name		= "A25L40PT",
-		.bustype	= CHIP_BUSTYPE_SPI,
-		.manufacture_id	= AMIC_ID,
-		.model_id	= AMIC_A25L40PT,
-		.total_size	= 512,
-		.page_size	= 256,
-		.tested		= TEST_OK_PRW,
-		.probe		= probe_spi_rdid4,
-		.probe_timing	= TIMING_ZERO,
-		.block_erasers	=
-		{
-			{
-				.eraseblocks = {
-					{64 * 1024, 7},
-					{32 * 1024, 1},
-					{16 * 1024, 1},
-					{8 * 1024, 1},
-					{4 * 1024, 2},
-				},
-				.block_erase = spi_block_erase_d8,
-			}, {
-				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
-			}
-		},
-		.unlock		= spi_disable_blockprotect,
-		.write		= spi_chip_write_256,
-		.read		= spi_chip_read,
-	},
-
-	{
-		.vendor		= "AMIC",
-		.name		= "A25L40PU",
-		.bustype	= CHIP_BUSTYPE_SPI,
-		.manufacture_id	= AMIC_ID,
-		.model_id	= AMIC_A25L40PU,
-		.total_size	= 512,
-		.page_size	= 256,
-		.tested		= TEST_OK_PRW,
-		.probe		= probe_spi_rdid4,
-		.probe_timing	= TIMING_ZERO,
-		.block_erasers	=
-		{
-			{
-				.eraseblocks = {
-					{4 * 1024, 2},
-					{8 * 1024, 1},
-					{16 * 1024, 1},
-					{32 * 1024, 1},
-					{64 * 1024, 7},
-				},
-				.block_erase = spi_block_erase_d8,
-			}, {
-				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
-			}
-		},
-		.unlock		= spi_disable_blockprotect,
-		.write		= spi_chip_write_256,
-		.read		= spi_chip_read,
-	},
-
-	{
-		.vendor		= "AMIC",
-		.name		= "A25L80P",
-		.bustype	= CHIP_BUSTYPE_SPI,
-		.manufacture_id	= AMIC_ID,
-		.model_id	= AMIC_A25L80P,
-		.total_size	= 1024,
-		.page_size	= 256,
-		.tested		= TEST_OK_PREW,
-		.probe		= probe_spi_rdid4,
-		.probe_timing	= TIMING_ZERO,
-		.block_erasers	=
-		{
-			{
-				.eraseblocks = {
-					{4 * 1024, 2},
-					{8 * 1024, 1},
-					{16 * 1024, 1},
-					{32 * 1024, 1},
-					{64 * 1024, 15},
-				},
-				.block_erase = spi_block_erase_d8,
-			}, {
-				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
-			}
-		},
-		.unlock		= spi_disable_blockprotect,
-		.write		= spi_chip_write_256,
-		.read		= spi_chip_read,
-	},
-
-	{
-		.vendor		= "AMIC",
-		.name		= "A25L16PT",
-		.bustype	= CHIP_BUSTYPE_SPI,
-		.manufacture_id	= AMIC_ID,
-		.model_id	= AMIC_A25L16PT,
-		.total_size	= 2048,
-		.page_size	= 256,
-		.tested		= TEST_UNTESTED,
-		.probe		= probe_spi_rdid4,
-		.probe_timing	= TIMING_ZERO,
-		.block_erasers	=
-		{
-			{
-				.eraseblocks = {
-					{64 * 1024, 31},
-					{32 * 1024, 1},
-					{16 * 1024, 1},
-					{8 * 1024, 1},
-					{4 * 1024, 2},
-				},
-				.block_erase = spi_block_erase_d8,
-			}, {
-				.eraseblocks = { {2048 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
-			}, {
-				.eraseblocks = { {2048 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
-			}
-		},
-		.unlock		= spi_disable_blockprotect,
-		.write		= spi_chip_write_256,
-		.read		= spi_chip_read,
-	},
-
-	{
-		.vendor		= "AMIC",
-		.name		= "A25L16PU",
-		.bustype	= CHIP_BUSTYPE_SPI,
-		.manufacture_id	= AMIC_ID,
-		.model_id	= AMIC_A25L16PU,
-		.total_size	= 2048,
-		.page_size	= 256,
-		.tested		= TEST_OK_PRW,
-		.probe		= probe_spi_rdid4,
-		.probe_timing	= TIMING_ZERO,
-		.block_erasers	=
-		{
-			{
-				.eraseblocks = {
-					{4 * 1024, 2},
-					{8 * 1024, 1},
-					{16 * 1024, 1},
-					{32 * 1024, 1},
-					{64 * 1024, 31},
-				},
-				.block_erase = spi_block_erase_d8,
-			}, {
-				.eraseblocks = { {2048 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
-			}, {
-				.eraseblocks = { {2048 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
-			}
-		},
-		.unlock		= spi_disable_blockprotect,
-		.write		= spi_chip_write_256,
-		.read		= spi_chip_read,
-	},
-
-	{
-		.vendor		= "AMIC",
-		.name		= "A29002B",
-		.bustype	= CHIP_BUSTYPE_PARALLEL,
-		.manufacture_id	= AMIC_ID_NOPREFIX,
-		.model_id	= AMIC_A29002B,
-		.total_size	= 256,
-		.page_size	= 64 * 1024,
-		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
-		.tested		= TEST_UNTESTED,
-		.probe		= probe_jedec,
-		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (mx29f002.c) */
-		.block_erasers	=
-		{
-			{
-				.eraseblocks = { 
-					{16 * 1024, 1},
-					{8 * 1024, 2},
-					{32 * 1024, 1},
-					{64 * 1024, 3},
-				},
-				.block_erase = erase_sector_jedec,
-			}, {
-				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
-			},
-		},
-		.write		= write_jedec_1,
-		.read		= read_memmapped,
-	},
-
-	{
-		.vendor		= "AMIC",
-		.name		= "A29002T",
-		.bustype	= CHIP_BUSTYPE_PARALLEL,
-		.manufacture_id	= AMIC_ID_NOPREFIX,
-		.model_id	= AMIC_A29002T,
-		.total_size	= 256,
-		.page_size	= 64 * 1024,
-		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
-		.tested		= TEST_OK_PRW,
-		.probe		= probe_jedec,
-		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (mx29f002.c) */
-		.block_erasers	=
-		{
-			{
-				.eraseblocks = { 
-					{64 * 1024, 3},
-					{32 * 1024, 1},
-					{8 * 1024, 2},
-					{16 * 1024, 1},
-				},
-				.block_erase = erase_sector_jedec,
-			}, {
-				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
-			},
-		},
-		.write		= write_jedec_1,
-		.read		= read_memmapped,
-	},
-
-	{
-		.vendor		= "AMIC",
-		.name		= "A29040B",
-		.bustype	= CHIP_BUSTYPE_PARALLEL,
-		.manufacture_id	= AMIC_ID_NOPREFIX,
-		.model_id	= AMIC_A29040B,
-		.total_size	= 512,
-		.page_size	= 64 * 1024,
-		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
-		.tested		= TEST_UNTESTED,
-		.probe		= probe_jedec,
-		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (am29f040b.c) */
-		.block_erasers	=
-		{
-			{
-				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = erase_sector_jedec,
-			}, {
-				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
-			},
-		},
-		.write		= write_jedec_1,
-		.read		= read_memmapped,
-	},
-
-	{
-		.vendor		= "AMIC",
-		.name		= "A49LF040A",
-		.bustype	= CHIP_BUSTYPE_LPC,
-		.manufacture_id	= AMIC_ID_NOPREFIX,
-		.model_id	= AMIC_A49LF040A,
-		.total_size	= 512,
-		.page_size	= 64 * 1024,
-		.feature_bits	= FEATURE_REGISTERMAP | FEATURE_EITHER_RESET,
-		.tested		= TEST_OK_PREW,
-		.probe		= probe_jedec,
-		.probe_timing	= TIMING_ZERO,	/* routine is wrapper to probe_jedec (pm49fl00x.c) */
-		.block_erasers	=
-		{
-			{
-				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = erase_block_jedec,
-			}, {
-				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
-			}
-		},
-		.unlock		= unlock_49fl00x,
-		.write		= write_jedec_1,
-		.read		= read_memmapped,
-	},
-
-	{
 		.vendor		= "EMST",
 		.name		= "F49B002UA",
 		.bustype	= CHIP_BUSTYPE_PARALLEL,
@@ -2512,7 +2512,7 @@ struct flashchip flashchips[] = {
 	},
 
 	{
-		.vendor		= "EON",
+		.vendor		= "Eon",
 		.name		= "EN29F002(A)(N)B",
 		.bustype	= CHIP_BUSTYPE_PARALLEL,
 		.manufacture_id	= EON_ID,
@@ -2543,7 +2543,7 @@ struct flashchip flashchips[] = {
 	},
 
 	{
-		.vendor		= "EON",
+		.vendor		= "Eon",
 		.name		= "EN29F002(A)(N)T",
 		.bustype	= CHIP_BUSTYPE_PARALLEL,
 		.manufacture_id	= EON_ID,
@@ -6998,8 +6998,8 @@ struct flashchip flashchips[] = {
 	},
 
 	{
-		.vendor		= "EON",
-		.name		= "unknown EON SPI chip",
+		.vendor		= "Eon",
+		.name		= "unknown Eon SPI chip",
 		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= EON_ID_NOPREFIX,
 		.model_id	= GENERIC_DEVICE_ID,
