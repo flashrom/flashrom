@@ -3879,6 +3879,188 @@ struct flashchip flashchips[] = {
 	},
 
 	{
+		.vendor		= "MoselVitelic",
+		.name		= "V29C51000B",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= SYNCMOS_MVC_ID,
+		.model_id	= MVC_V29C51000B,
+		.total_size	= 64,
+		.page_size	= 512,
+		.feature_bits	= FEATURE_EITHER_RESET,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_jedec,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {512, 128} },
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {64 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			},
+		},
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "MoselVitelic",
+		.name		= "V29C51000T",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= SYNCMOS_MVC_ID,
+		.model_id	= MVC_V29C51000T,
+		.total_size	= 64,
+		.page_size	= 512,
+		.feature_bits	= FEATURE_EITHER_RESET,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_jedec,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {512, 128} },
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {64 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			},
+		},
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "MoselVitelic",
+		.name		= "V29C51400B",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= SYNCMOS_MVC_ID,
+		.model_id	= MVC_V29C51400B,
+		.total_size	= 512,
+		.page_size	= 1024,
+		.feature_bits	= FEATURE_EITHER_RESET,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_jedec,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {1024, 512} },
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {512 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			},
+		},
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "MoselVitelic",
+		.name		= "V29C51400T",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= SYNCMOS_MVC_ID,
+		.model_id	= MVC_V29C51400T,
+		.total_size	= 512,
+		.page_size	= 1024,
+		.feature_bits	= FEATURE_EITHER_RESET,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_jedec,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {1024, 512} },
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {512 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			},
+		},
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "MoselVitelic",
+		.name		= "V29LC51000",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= SYNCMOS_MVC_ID,
+		.model_id	= MVC_V29LC51000,
+		.total_size	= 64,
+		.page_size	= 512,
+		.feature_bits	= FEATURE_EITHER_RESET,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_jedec,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {512, 128} },
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {64 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			},
+		},
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "MoselVitelic",
+		.name		= "V29LC51001",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= SYNCMOS_MVC_ID,
+		.model_id	= MVC_V29LC51001,
+		.total_size	= 128,
+		.page_size	= 512,
+		.feature_bits	= FEATURE_EITHER_RESET,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_jedec,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {512, 256} },
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {128 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			},
+		},
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "MoselVitelic",
+		.name		= "V29LC51002",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= SYNCMOS_MVC_ID,
+		.model_id	= MVC_V29LC51002,
+		.total_size	= 256,
+		.page_size	= 512,
+		.feature_bits	= FEATURE_EITHER_RESET,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_jedec,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {512, 512} },
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {256 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			},
+		},
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+	},
+
+	{
 		.vendor		= "Numonyx",
 		.name		= "M25PE10",
 		.bustype	= CHIP_BUSTYPE_SPI,
@@ -6382,39 +6564,13 @@ struct flashchip flashchips[] = {
 	},
 
 	{
-		.vendor		= "SyncMOS",
-		.name		= "S29C31004T",
+		.vendor		= "SyncMOS/MoselVitelic",
+		.name		= "{F,S,V}29C51001B",
 		.bustype	= CHIP_BUSTYPE_PARALLEL,
-		.manufacture_id	= SYNCMOS_ID,
-		.model_id	= S29C31004T,
-		.total_size	= 512,
-		.page_size	= 128,
-		.feature_bits	= FEATURE_EITHER_RESET,
-		.tested		= TEST_UNTESTED,
-		.probe		= probe_jedec,
-		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
-		.block_erasers	=
-		{
-			{
-				.eraseblocks = { {1 * 1024, 512} },
-				.block_erase = erase_sector_jedec,
-			}, {
-				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
-			},
-		},
-		.write		= write_jedec_1,
-		.read		= read_memmapped,
-	},
-
-	{
-		.vendor		= "SyncMOS",
-		.name		= "S29C51001T",
-		.bustype	= CHIP_BUSTYPE_PARALLEL,
-		.manufacture_id	= SYNCMOS_ID,
-		.model_id	= S29C51001T,
+		.manufacture_id	= SYNCMOS_MVC_ID,
+		.model_id	= SM_MVC_29C51001B,
 		.total_size	= 128,
-		.page_size	= 128,
+		.page_size	= 512,
 		.feature_bits	= FEATURE_EITHER_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
@@ -6434,15 +6590,41 @@ struct flashchip flashchips[] = {
 	},
 
 	{
-		.vendor		= "SyncMOS",
-		.name		= "S29C51002T",
+		.vendor		= "SyncMOS/MoselVitelic",
+		.name		= "{F,S,V}29C51001T",
 		.bustype	= CHIP_BUSTYPE_PARALLEL,
-		.manufacture_id	= SYNCMOS_ID,
-		.model_id	= S29C51002T,
-		.total_size	= 256,
-		.page_size	= 128,
+		.manufacture_id	= SYNCMOS_MVC_ID,
+		.model_id	= SM_MVC_29C51001T,
+		.total_size	= 128,
+		.page_size	= 512,
 		.feature_bits	= FEATURE_EITHER_RESET,
-		.tested		= TEST_OK_PRW,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_jedec,
+		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {512, 256} },
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {128 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			},
+		},
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "SyncMOS/MoselVitelic",
+		.name		= "{F,S,V}29C51002B",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= SYNCMOS_MVC_ID,
+		.model_id	= SM_MVC_29C51002B,
+		.total_size	= 256,
+		.page_size	= 512,
+		.feature_bits	= FEATURE_EITHER_RESET,
+		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
 		.block_erasers	=
@@ -6460,13 +6642,39 @@ struct flashchip flashchips[] = {
 	},
 
 	{
-		.vendor		= "SyncMOS",
-		.name		= "S29C51004T",
+		.vendor		= "SyncMOS/MoselVitelic",
+		.name		= "{F,S,V}29C51002T",
 		.bustype	= CHIP_BUSTYPE_PARALLEL,
-		.manufacture_id	= SYNCMOS_ID,
-		.model_id	= S29C51004T,
+		.manufacture_id	= SYNCMOS_MVC_ID,
+		.model_id	= SM_MVC_29C51002T,
+		.total_size	= 256,
+		.page_size	= 512,
+		.feature_bits	= FEATURE_EITHER_RESET,
+		.tested		= TEST_OK_PR,
+		.probe		= probe_jedec,
+		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {512, 512} },
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {256 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			},
+		},
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "SyncMOS/MoselVitelic",
+		.name		= "{F,S,V}29C51004B",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= SYNCMOS_MVC_ID,
+		.model_id	= SM_MVC_29C51004B,
 		.total_size	= 512,
-		.page_size	= 128,
+		.page_size	= 1024,
 		.feature_bits	= FEATURE_EITHER_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
@@ -6474,7 +6682,85 @@ struct flashchip flashchips[] = {
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {1 * 1024, 512} },
+				.eraseblocks = { {1024, 512} },
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {512 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			},
+		},
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "SyncMOS/MoselVitelic",
+		.name		= "{F,S,V}29C51004T",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= SYNCMOS_MVC_ID,
+		.model_id	= SM_MVC_29C51004T,
+		.total_size	= 512,
+		.page_size	= 1024,
+		.feature_bits	= FEATURE_EITHER_RESET,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_jedec,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {1024, 512} },
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {512 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			},
+		},
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "SyncMOS/MoselVitelic",
+		.name		= "{S,V}29C31004B",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= SYNCMOS_MVC_ID,
+		.model_id	= SM_MVC_29C31004B,
+		.total_size	= 512,
+		.page_size	= 1024,
+		.feature_bits	= FEATURE_EITHER_RESET,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_jedec,
+		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {1024, 512} },
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {512 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			},
+		},
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "SyncMOS/MoselVitelic",
+		.name		= "{S,V}29C31004T",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= SYNCMOS_MVC_ID,
+		.model_id	= SM_MVC_29C31004T,
+		.total_size	= 512,
+		.page_size	= 1024,
+		.feature_bits	= FEATURE_EITHER_RESET,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_jedec,
+		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {1024, 512} },
 				.block_erase = erase_sector_jedec,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
