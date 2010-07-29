@@ -637,6 +637,250 @@ struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "AMIC",
+		.name		= "A25L512",
+		.bustype	= CHIP_BUSTYPE_SPI,
+		.manufacture_id	= AMIC_ID_NOPREFIX,
+		.model_id	= AMIC_A25L512,
+		.total_size	= 64,
+		.page_size	= 256,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { { 4 * 1024, 16 } },
+				.block_erase = spi_block_erase_20,
+			}, {
+				.eraseblocks = { { 64 * 1024, 1 } },
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { { 64 * 1024, 1 } },
+				.block_erase = spi_block_erase_c7,
+			}			
+		},
+		.unlock		= spi_disable_blockprotect,
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read,
+	},
+
+	{
+		.vendor		= "AMIC",
+		.name		= "A25L010",
+		.bustype	= CHIP_BUSTYPE_SPI,
+		.manufacture_id	= AMIC_ID_NOPREFIX,
+		.model_id	= AMIC_A25L010,
+		.total_size	= 128,
+		.page_size	= 256,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { { 4 * 1024, 32 } },
+				.block_erase = spi_block_erase_20,
+			}, {
+				.eraseblocks = { { 64 * 1024, 2 } },
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { { 128 * 1024, 1 } },
+				.block_erase = spi_block_erase_c7,
+			}			
+		},
+		.unlock		= spi_disable_blockprotect,
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read,
+	},
+
+	{
+		.vendor		= "AMIC",
+		.name		= "A25L020",
+		.bustype	= CHIP_BUSTYPE_SPI,
+		.manufacture_id	= AMIC_ID_NOPREFIX,
+		.model_id	= AMIC_A25L020,
+		.total_size	= 256,
+		.page_size	= 256,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { { 4 * 1024, 64 } },
+				.block_erase = spi_block_erase_20,
+			}, {
+				.eraseblocks = { { 64 * 1024, 4 } },
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { { 256 * 1024, 1 } },
+				.block_erase = spi_block_erase_c7,
+			}			
+		},
+		.unlock		= spi_disable_blockprotect,
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read,
+	},
+
+	{
+		.vendor		= "AMIC",
+		.name		= "A25L040",
+		.bustype	= CHIP_BUSTYPE_SPI,
+		.manufacture_id	= AMIC_ID_NOPREFIX,
+		.model_id	= AMIC_A25L040,
+		.total_size	= 512,
+		.page_size	= 256,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { { 4 * 1024, 128 } },
+				.block_erase = spi_block_erase_20,
+			}, {
+				.eraseblocks = { { 64 * 1024, 8 } },
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { { 512 * 1024, 1 } },
+				.block_erase = spi_block_erase_c7,
+			}			
+		},
+		.unlock		= spi_disable_blockprotect,
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read,
+	},
+
+	{
+		.vendor		= "AMIC",
+		.name		= "A25L080",
+		.bustype	= CHIP_BUSTYPE_SPI,
+		.manufacture_id	= AMIC_ID_NOPREFIX,
+		.model_id	= AMIC_A25L080,
+		.total_size	= 1024,
+		.page_size	= 256,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { { 4 * 1024, 256 } },
+				.block_erase = spi_block_erase_20,
+			}, {
+				.eraseblocks = { { 64 * 1024, 16 } },
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { { 1024 * 1024, 1 } },
+				.block_erase = spi_block_erase_c7,
+			}			
+		},
+		.unlock		= spi_disable_blockprotect,
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read,
+	},
+
+	{
+		.vendor		= "AMIC",
+		.name		= "A25L016",
+		.bustype	= CHIP_BUSTYPE_SPI,
+		.manufacture_id	= AMIC_ID_NOPREFIX,
+		.model_id	= AMIC_A25L016,
+		.total_size	= 2048,
+		.page_size	= 256,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { { 4 * 1024, 512 } },
+				.block_erase = spi_block_erase_20,
+			}, {
+				.eraseblocks = { { 64 * 1024, 32 } },
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { { 2048 * 1024, 1 } },
+				.block_erase = spi_block_erase_c7,
+			}			
+		},
+		.unlock		= spi_disable_blockprotect,
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read,
+	},
+
+	{
+		.vendor		= "AMIC",
+		.name		= "A25L032",
+		.bustype	= CHIP_BUSTYPE_SPI,
+		.manufacture_id	= AMIC_ID_NOPREFIX,
+		.model_id	= AMIC_A25L032,
+		.total_size	= 4096,
+		.page_size	= 256,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { { 4 * 1024, 1024 } },
+				.block_erase = spi_block_erase_20,
+			}, {
+				.eraseblocks = { { 64 * 1024, 64 } },
+				.block_erase = spi_block_erase_52,
+			}, {
+				.eraseblocks = { { 64 * 1024, 64 } },
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { { 4096 * 1024, 1 } },
+				.block_erase = spi_block_erase_60,
+			}, {
+				.eraseblocks = { { 4096 * 1024, 1 } },
+				.block_erase = spi_block_erase_c7,
+			}			
+		},
+		.unlock		= NULL, /* Two status reg bytes (read with 0x35 and 0x05) */
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read,
+	},
+
+	{
+		.vendor		= "AMIC",
+		.name		= "A25LQ032",
+		.bustype	= CHIP_BUSTYPE_SPI,
+		.manufacture_id	= AMIC_ID_NOPREFIX,
+		.model_id	= AMIC_A25LQ032,
+		.total_size	= 4096,
+		.page_size	= 256,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { { 4 * 1024, 1024 } },
+				.block_erase = spi_block_erase_20,
+			}, {
+				.eraseblocks = { { 64 * 1024, 64 } },
+				.block_erase = spi_block_erase_52,
+			}, {
+				.eraseblocks = { { 64 * 1024, 64 } },
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { { 4096 * 1024, 1 } },
+				.block_erase = spi_block_erase_60,
+			}, {
+				.eraseblocks = { { 4096 * 1024, 1 } },
+				.block_erase = spi_block_erase_c7,
+			}			
+		},
+		.unlock		= NULL, /* Two status reg bytes (read with 0x35 and 0x05) */
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read,
+	},
+
+	{
+		.vendor		= "AMIC",
 		.name		= "A29002B",
 		.bustype	= CHIP_BUSTYPE_PARALLEL,
 		.manufacture_id	= AMIC_ID_NOPREFIX,
