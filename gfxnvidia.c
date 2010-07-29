@@ -82,6 +82,9 @@ int gfxnvidia_init(void)
 
 	buses_supported = CHIP_BUSTYPE_PARALLEL;
 
+	/* Write/erase doesn't work. */
+	programmer_may_write = 0;
+
 	return 0;
 }
 
