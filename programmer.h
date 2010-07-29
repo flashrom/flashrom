@@ -397,12 +397,21 @@ extern const struct pcidev_status ata_hpt[];
 #endif
 
 /* ft2232_spi.c */
-#define FTDI_FT2232H 0x6010
-#define FTDI_FT4232H 0x6011
+#if CONFIG_FT2232_SPI == 1
+struct usbdev_status {
+uint16_t vendor_id;
+        uint16_t device_id;
+        int status;
+        const char *vendor_name;
+        const char *device_name;
+};
 int ft2232_spi_init(void);
 int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr);
 int ft2232_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
 int ft2232_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len);
+extern const struct usbdev_status devs_ft2232spi[];
+void print_supported_usbdevs(const struct usbdev_status *devs);
+#endif
 
 /* rayer_spi.c */
 #if CONFIG_RAYER_SPI == 1
