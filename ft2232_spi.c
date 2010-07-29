@@ -31,17 +31,16 @@
 #include "spi.h"
 #include <ftdi.h>
 
-
-#define FTDI_VID         0x0403
-#define FTDI_FT2232H_PID 0x6010
-#define FTDI_FT4232H_PID 0x6011
-#define AMONTEC_JTAGKEY_PID  0xCFF8
+#define FTDI_VID		0x0403
+#define FTDI_FT2232H_PID	0x6010
+#define FTDI_FT4232H_PID	0x6011
+#define AMONTEC_JTAGKEY_PID	0xCFF8
 
 const struct usbdev_status devs_ft2232spi[] = {
-        {FTDI_VID, FTDI_FT2232H_PID, OK, "FTDI", "FT2232H"},
-        {FTDI_VID, FTDI_FT4232H_PID, OK, "FTDI", "FT4232H"},
-        {FTDI_VID, AMONTEC_JTAGKEY_PID, OK, "Amontec", "JTAGkey"},
-        {},
+	{FTDI_VID, FTDI_FT2232H_PID, OK, "FTDI", "FT2232H"},
+	{FTDI_VID, FTDI_FT4232H_PID, OK, "FTDI", "FT4232H"},
+	{FTDI_VID, AMONTEC_JTAGKEY_PID, OK, "Amontec", "JTAGkey"},
+	{},
 };
 
 /*
@@ -66,16 +65,15 @@ const struct usbdev_status devs_ft2232spi[] = {
  * JTAGkey(2) needs to enable its output via Bit4 / GPIOL0
  *  value: 0x18  OE=high, CS=high, DI=low, DO=low, SK=low
  *    dir: 0x1b  OE=output, CS=output, DI=input, DO=output, SK=output
- *
  */
-static unsigned char cs_bits = 0x08;
-static unsigned char pindir = 0x0b;
+static uint8_t cs_bits = 0x08;
+static uint8_t pindir = 0x0b;
 static struct ftdi_context ftdic_context;
 
 static const char *get_ft2232_devicename(int ft2232_vid, int ft2232_type)
 {
 	int i;
-	for (i=0; devs_ft2232spi[i].vendor_name != NULL; i ++) {
+	for (i = 0; devs_ft2232spi[i].vendor_name != NULL; i++) {
 		if ((devs_ft2232spi[i].device_id == ft2232_type)
 			&& (devs_ft2232spi[i].vendor_id == ft2232_vid))
 				return devs_ft2232spi[i].device_name;
@@ -86,17 +84,16 @@ static const char *get_ft2232_devicename(int ft2232_vid, int ft2232_type)
 static const char *get_ft2232_vendorname(int ft2232_vid, int ft2232_type)
 {
 	int i;
-        for (i=0; devs_ft2232spi[i].vendor_name != NULL; i ++) {
-                if ((devs_ft2232spi[i].device_id == ft2232_type)
-                        && (devs_ft2232spi[i].vendor_id == ft2232_vid))
-                        	return devs_ft2232spi[i].vendor_name;
-        }
-        return "unknown vendor";
+	for (i = 0; devs_ft2232spi[i].vendor_name != NULL; i++) {
+		if ((devs_ft2232spi[i].device_id == ft2232_type)
+			&& (devs_ft2232spi[i].vendor_id == ft2232_vid))
+				return devs_ft2232spi[i].vendor_name;
+	}
+	return "unknown vendor";
 }
 
-
-
-static int send_buf(struct ftdi_context *ftdic, const unsigned char *buf, int size)
+static int send_buf(struct ftdi_context *ftdic, const unsigned char *buf,
+		    int size)
 {
 	int r;
 	r = ftdi_write_data(ftdic, (unsigned char *) buf, size);
@@ -108,7 +105,8 @@ static int send_buf(struct ftdi_context *ftdic, const unsigned char *buf, int si
 	return 0;
 }
 
-static int get_buf(struct ftdi_context *ftdic, const unsigned char *buf, int size)
+static int get_buf(struct ftdi_context *ftdic, const unsigned char *buf,
+		   int size)
 {
 	int r;
 	r = ftdi_read_data(ftdic, (unsigned char *) buf, size);
@@ -140,7 +138,7 @@ int ft2232_spi_init(void)
 			ft2232_type = AMONTEC_JTAGKEY_PID;
 			ft2232_interface = INTERFACE_A;
 			cs_bits = 0x18;
-			pindir	= 0x1b;
+			pindir = 0x1b;
 		}
 		else {
 			msg_perr("Error: Invalid device type specified.\n");
@@ -166,10 +164,10 @@ int ft2232_spi_init(void)
 	}
 	free(arg);
 	msg_pdbg("Using device type %s %s ",
-		get_ft2232_vendorname(ft2232_vid,ft2232_type),
-		get_ft2232_devicename(ft2232_vid,ft2232_type));
+		 get_ft2232_vendorname(ft2232_vid, ft2232_type),
+		 get_ft2232_devicename(ft2232_vid, ft2232_type));
 	msg_pdbg("interface %s\n",
-		     (ft2232_interface == INTERFACE_A) ? "A" : "B");
+		 (ft2232_interface == INTERFACE_A) ? "A" : "B");
 
 	if (ftdi_init(ftdic) < 0) {
 		msg_perr("ftdi_init failed\n");
@@ -226,7 +224,7 @@ int ft2232_spi_init(void)
 		return -1;
 
 	msg_pdbg("SPI clock is %fMHz\n",
-	       (double)(MPSSE_CLK / (((DIVIDE_BY - 1) + 1) * 2)));
+		 (double)(MPSSE_CLK / (((DIVIDE_BY - 1) + 1) * 2)));
 
 	/* Disconnect TDI/DO to TDO/DI for loopback. */
 	msg_pdbg("No loopback of TDI/DO TDO/DI\n");
@@ -347,16 +345,14 @@ int ft2232_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int l
 
 void print_supported_usbdevs(const struct usbdev_status *devs)
 {
-        int i;
+	int i;
 
-        for (i = 0; devs[i].vendor_name != NULL; i++) {
-                msg_pinfo("%s %s [%02x:%02x]%s\n", devs[i].vendor_name,
-                       devs[i].device_name, devs[i].vendor_id,
-                       devs[i].device_id,
-                       (devs[i].status == NT) ? " (untested)" : "");
-        }
+	for (i = 0; devs[i].vendor_name != NULL; i++) {
+		msg_pinfo("%s %s [%04x:%04x]%s\n", devs[i].vendor_name,
+			  devs[i].device_name, devs[i].vendor_id,
+			  devs[i].device_id,
+			  (devs[i].status == NT) ? " (untested)" : "");
+	}
 }
-
-
 
 #endif
