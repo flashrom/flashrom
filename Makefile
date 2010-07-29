@@ -128,8 +128,8 @@ endif
 # Always enable 3Com NICs for now.
 CONFIG_NIC3COM ?= yes
 
-# Disable NVIDIA graphics cards for now, write/erase don't work properly.
-CONFIG_GFXNVIDIA ?= no
+# Enable NVIDIA graphics cards. Note: write and erase do not work properly.
+CONFIG_GFXNVIDIA ?= yes
 
 # Always enable SiI SATA controllers for now.
 CONFIG_SATASII ?= yes
