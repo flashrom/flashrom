@@ -514,11 +514,22 @@
 #define ST_M29W040B		0xE3
 #define ST_M29W512B		0x27
 
-#define SYNCMOS_ID		0x40	/* SyncMOS and Mosel Vitelic */
-#define S29C51001T		0x01
-#define S29C51002T		0x02
-#define S29C51004T		0x03
-#define S29C31004T		0x63
+#define SYNCMOS_MVC_ID		0x40	/* SyncMOS (SM) and Mosel Vitelic Corporation (MVC) */
+#define MVC_V29C51000T		0x00
+#define MVC_V29C51400T		0x13
+#define MVC_V29LC51000		0x20
+#define MVC_V29LC51001		0x60
+#define MVC_V29LC51002		0x82
+#define MVC_V29C51000B		0xA0
+#define MVC_V29C51400B		0xB3
+#define SM_MVC_29C51001T	0x01	/* Identical chips: {F,S,V}29C51001T */
+#define SM_MVC_29C51002T	0x02	/* Identical chips: {F,S,V}29C51002T */
+#define SM_MVC_29C51004T	0x03	/* Identical chips: {F,S,V}29C51004T */
+#define SM_MVC_29C31004T	0x63	/* Identical chips: {S,V}29C31004T */
+#define SM_MVC_29C31004B	0x73	/* Identical chips: {S,V}29C31004B */
+#define SM_MVC_29C51001B	0xA1	/* Identical chips: {F,S,V}29C51001B */
+#define SM_MVC_29C51002B	0xA2	/* Identical chips: {F,S,V}29C51002B */
+#define SM_MVC_29C51004B	0xA3	/* Identical chips: {F,S,V}29C51004B */
 
 #define TI_ID			0x97	/* Texas Instruments */
 #define TI_OLD_ID		0x01	/* TI chips from last century */
