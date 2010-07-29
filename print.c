@@ -255,6 +255,15 @@ void print_supported(void)
 #if CONFIG_ATAHPT == 1
 		print_supported_pcidevs(ata_hpt);
 #endif
+
+#if CONFIG_FT2232_SPI+CONFIG_DEDIPROG >= 1
+                printf("\nSupported USB devices flashrom can use "
+                       "as programmer:\n\n");
+#endif
+
+#if CONFIG_FT2232_SPI == 1
+		print_supported_usbdevs(devs_ft2232spi);
+#endif 
 }
 
 #if CONFIG_INTERNAL == 1

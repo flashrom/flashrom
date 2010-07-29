@@ -31,6 +31,19 @@
 #include "spi.h"
 #include <ftdi.h>
 
+
+#define FTDI_VID         0x0403
+#define FTDI_FT2232H_PID 0x6010
+#define FTDI_FT4232H_PID 0x6011
+#define AMONTEC_JTAGKEY_PID  0xCFF8
+
+const struct usbdev_status devs_ft2232spi[] = {
+        {FTDI_VID, FTDI_FT2232H_PID, OK, "FTDI", "FT2232H"},
+        {FTDI_VID, FTDI_FT4232H_PID, OK, "FTDI", "FT4232H"},
+        {FTDI_VID, AMONTEC_JTAGKEY_PID, OK, "Amontec", "JTAGkey"},
+        {},
+};
+
 /*
  * The 'H' chips can run internally at either 12MHz or 60MHz.
  * The non-H chips can only run at 12MHz.
@@ -46,7 +59,42 @@
 #define BITMODE_BITBANG_NORMAL	1
 #define BITMODE_BITBANG_SPI	2
 
+/* Set data bits low-byte command:
+ *  value: 0x08  CS=high, DI=low, DO=low, SK=low
+ *    dir: 0x0b  CS=output, DI=input, DO=output, SK=output
+ *
+ * JTAGkey(2) needs to enable its output via Bit4 / GPIOL0
+ *  value: 0x18  OE=high, CS=high, DI=low, DO=low, SK=low
+ *    dir: 0x1b  OE=output, CS=output, DI=input, DO=output, SK=output
+ *
+ */
+static unsigned char cs_bits = 0x08;
+static unsigned char pindir = 0x0b;
 static struct ftdi_context ftdic_context;
+
+static const char *get_ft2232_devicename(int ft2232_vid, int ft2232_type)
+{
+	int i;
+	for (i=0; devs_ft2232spi[i].vendor_name != NULL; i ++) {
+		if ((devs_ft2232spi[i].device_id == ft2232_type)
+			&& (devs_ft2232spi[i].vendor_id == ft2232_vid))
+				return devs_ft2232spi[i].device_name;
+	}
+	return "unknown device";
+}
+
+static const char *get_ft2232_vendorname(int ft2232_vid, int ft2232_type)
+{
+	int i;
+        for (i=0; devs_ft2232spi[i].vendor_name != NULL; i ++) {
+                if ((devs_ft2232spi[i].device_id == ft2232_type)
+                        && (devs_ft2232spi[i].vendor_id == ft2232_vid))
+                        	return devs_ft2232spi[i].vendor_name;
+        }
+        return "unknown vendor";
+}
+
+
 
 static int send_buf(struct ftdi_context *ftdic, const unsigned char *buf, int size)
 {
@@ -77,16 +125,23 @@ int ft2232_spi_init(void)
 	int f;
 	struct ftdi_context *ftdic = &ftdic_context;
 	unsigned char buf[512];
-	int ft2232_type = FTDI_FT4232H;
+	int ft2232_vid = FTDI_VID;
+	int ft2232_type = FTDI_FT4232H_PID;
 	enum ftdi_interface ft2232_interface = INTERFACE_B;
 	char *arg;
 
 	arg = extract_programmer_param("type");
 	if (arg) {
 		if (!strcasecmp(arg, "2232H"))
-			ft2232_type = FTDI_FT2232H;
+			ft2232_type = FTDI_FT2232H_PID;
 		else if (!strcasecmp(arg, "4232H"))
-			ft2232_type = FTDI_FT4232H;
+			ft2232_type = FTDI_FT4232H_PID;
+		else if (!strcasecmp(arg, "jtagkey")) {
+			ft2232_type = AMONTEC_JTAGKEY_PID;
+			ft2232_interface = INTERFACE_A;
+			cs_bits = 0x18;
+			pindir	= 0x1b;
+		}
 		else {
 			msg_perr("Error: Invalid device type specified.\n");
 			free(arg);
@@ -110,8 +165,9 @@ int ft2232_spi_init(void)
 		}
 	}
 	free(arg);
-	msg_pdbg("Using device type %s ",
-		     (ft2232_type == FTDI_FT2232H) ? "2232H" : "4232H");
+	msg_pdbg("Using device type %s %s ",
+		get_ft2232_vendorname(ft2232_vid,ft2232_type),
+		get_ft2232_devicename(ft2232_vid,ft2232_type));
 	msg_pdbg("interface %s\n",
 		     (ft2232_interface == INTERFACE_A) ? "A" : "B");
 
@@ -120,7 +176,7 @@ int ft2232_spi_init(void)
 		return EXIT_FAILURE; // TODO
 	}
 
-	f = ftdi_usb_open(ftdic, 0x0403, ft2232_type);
+	f = ftdi_usb_open(ftdic, FTDI_VID, ft2232_type);
 
 	if (f < 0 && f != -5) {
 		msg_perr("Unable to open FTDI device: %d (%s)\n", f,
@@ -179,14 +235,9 @@ int ft2232_spi_init(void)
 		return -1;
 
 	msg_pdbg("Set data bits\n");
-	/* Set data bits low-byte command:
-	 *  value: 0x08  CS=high, DI=low, DO=low, SK=low
-	 *    dir: 0x0b  CS=output, DI=input, DO=output, SK=output
-	 */
-#define CS_BIT 0x08
 	buf[0] = SET_BITS_LOW;
-	buf[1] = CS_BIT;
-	buf[2] = 0x0b;
+	buf[1] = cs_bits;
+	buf[2] = pindir;
 	if (send_buf(ftdic, buf, 3))
 		return -1;
 
@@ -231,8 +282,8 @@ int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	 */
 	msg_pspew("Assert CS#\n");
 	buf[i++] = SET_BITS_LOW;
-	buf[i++] = 0 & ~CS_BIT; /* assertive */
-	buf[i++] = 0x0b;
+	buf[i++] = 0 & ~cs_bits; /* assertive */
+	buf[i++] = pindir;
 
 	if (writecnt) {
 		buf[i++] = 0x11;
@@ -273,8 +324,8 @@ int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 
 	msg_pspew("De-assert CS#\n");
 	buf[i++] = SET_BITS_LOW;
-	buf[i++] = CS_BIT;
-	buf[i++] = 0x0b;
+	buf[i++] = cs_bits;
+	buf[i++] = pindir;
 	ret = send_buf(ftdic, buf, i);
 	failed |= ret;
 	if (ret)
@@ -293,5 +344,19 @@ int ft2232_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int l
 {
 	return spi_write_chunked(flash, buf, start, len, 256);
 }
+
+void print_supported_usbdevs(const struct usbdev_status *devs)
+{
+        int i;
+
+        for (i = 0; devs[i].vendor_name != NULL; i++) {
+                msg_pinfo("%s %s [%02x:%02x]%s\n", devs[i].vendor_name,
+                       devs[i].device_name, devs[i].vendor_id,
+                       devs[i].device_id,
+                       (devs[i].status == NT) ? " (untested)" : "");
+        }
+}
+
+
 
 #endif
