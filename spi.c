@@ -30,8 +30,6 @@
 
 enum spi_controller spi_controller = SPI_CONTROLLER_NONE;
 
-void spi_prettyprint_status_register(struct flashchip *flash);
-
 const struct spi_programmer spi_programmer[] = {
 	{ /* SPI_CONTROLLER_NONE */
 		.command = NULL,
