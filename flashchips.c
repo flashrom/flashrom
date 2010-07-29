@@ -789,6 +789,7 @@ struct flashchip flashchips[] = {
 		.model_id	= AT_25DF021,
 		.total_size	= 256,
 		.page_size	= 256,
+		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
@@ -811,7 +812,8 @@ struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.unlock		= spi_disable_blockprotect,
+		.printlock	= spi_prettyprint_status_register_at25df,
+		.unlock		= spi_disable_blockprotect_at25df,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
 	},
@@ -824,6 +826,7 @@ struct flashchip flashchips[] = {
 		.model_id	= AT_25DF041A,
 		.total_size	= 512,
 		.page_size	= 256,
+		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
@@ -846,7 +849,8 @@ struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.unlock		= spi_disable_blockprotect,
+		.printlock	= spi_prettyprint_status_register_at25df,
+		.unlock		= spi_disable_blockprotect_at25df,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
 	},
@@ -859,6 +863,7 @@ struct flashchip flashchips[] = {
 		.model_id	= AT_25DF081,
 		.total_size	= 1024,
 		.page_size	= 256,
+		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
@@ -881,7 +886,45 @@ struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.unlock		= spi_disable_blockprotect,
+		.printlock	= spi_prettyprint_status_register_at25df,
+		.unlock		= spi_disable_blockprotect_at25df,
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read,
+	},
+
+	{
+		.vendor		= "Atmel",
+		.name		= "AT25DF081A",
+		.bustype	= CHIP_BUSTYPE_SPI,
+		.manufacture_id	= ATMEL_ID,
+		.model_id	= AT_25DF081A,
+		.total_size	= 1024,
+		.page_size	= 256,
+		.feature_bits	= FEATURE_WRSR_WREN,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 256} },
+				.block_erase = spi_block_erase_20,
+			}, {
+				.eraseblocks = { {32 * 1024, 32} },
+				.block_erase = spi_block_erase_52,
+			}, {
+				.eraseblocks = { {64 * 1024, 16} },
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { {1024 * 1024, 1} },
+				.block_erase = spi_block_erase_60,
+			}, {
+				.eraseblocks = { {1024 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
+		},
+		.printlock	= spi_prettyprint_status_register_at25df_sec,
+		.unlock		= spi_disable_blockprotect_at25df_sec,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
 	},
@@ -894,6 +937,7 @@ struct flashchip flashchips[] = {
 		.model_id	= AT_25DF161,
 		.total_size	= 2048,
 		.page_size	= 256,
+		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
@@ -916,7 +960,8 @@ struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.unlock		= spi_disable_blockprotect,
+		.printlock	= spi_prettyprint_status_register_at25df_sec,
+		.unlock		= spi_disable_blockprotect_at25df_sec,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
 	},
@@ -929,6 +974,7 @@ struct flashchip flashchips[] = {
 		.model_id	= AT_25DF321,
 		.total_size	= 4096,
 		.page_size	= 256,
+		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PRW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
@@ -951,7 +997,8 @@ struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.unlock		= spi_disable_blockprotect,
+		.printlock	= spi_prettyprint_status_register_at25df,
+		.unlock		= spi_disable_blockprotect_at25df,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
 	},
@@ -964,6 +1011,7 @@ struct flashchip flashchips[] = {
 		.model_id	= AT_25DF321A,
 		.total_size	= 4096,
 		.page_size	= 256,
+		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
@@ -986,7 +1034,8 @@ struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.unlock		= spi_disable_blockprotect,
+		.printlock	= spi_prettyprint_status_register_at25df_sec,
+		.unlock		= spi_disable_blockprotect_at25df_sec,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
 	},
@@ -999,6 +1048,7 @@ struct flashchip flashchips[] = {
 		.model_id	= AT_25DF641,
 		.total_size	= 8192,
 		.page_size	= 256,
+		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
@@ -1021,7 +1071,45 @@ struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.unlock		= spi_disable_blockprotect,
+		.printlock	= spi_prettyprint_status_register_at25df_sec,
+		.unlock		= spi_disable_blockprotect_at25df_sec,
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read,
+	},
+
+	{
+		.vendor		= "Atmel",
+		.name		= "AT25DQ161",
+		.bustype	= CHIP_BUSTYPE_SPI,
+		.manufacture_id	= ATMEL_ID,
+		.model_id	= AT_25DQ161,
+		.total_size	= 2048,
+		.page_size	= 256,
+		.feature_bits	= FEATURE_WRSR_WREN,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 512} },
+				.block_erase = spi_block_erase_20,
+			}, {
+				.eraseblocks = { {32 * 1024, 64} },
+				.block_erase = spi_block_erase_52,
+			}, {
+				.eraseblocks = { {64 * 1024, 32} },
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { {2 * 1024 * 1024, 1} },
+				.block_erase = spi_block_erase_60,
+			}, {
+				.eraseblocks = { {2 * 1024 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
+		},
+		.printlock	= spi_prettyprint_status_register_at25df_sec,
+		.unlock		= spi_disable_blockprotect_at25df_sec,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
 	},
@@ -1034,6 +1122,7 @@ struct flashchip flashchips[] = {
 		.model_id	= AT_25F512B,
 		.total_size	= 64,
 		.page_size	= 256,
+		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
@@ -1056,7 +1145,8 @@ struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.unlock		= spi_disable_blockprotect,
+		.printlock	= spi_prettyprint_status_register_at25f,
+		.unlock		= spi_disable_blockprotect_at25f,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
 	},
@@ -1078,6 +1168,9 @@ struct flashchip flashchips[] = {
 				.eraseblocks = { {4 * 1024, 32} },
 				.block_erase = spi_block_erase_20,
 			}, {
+				.eraseblocks = { {4 * 1024, 32} },
+				.block_erase = spi_block_erase_d7,
+			}, {
 				.eraseblocks = { {32 * 1024, 4} },
 				.block_erase = spi_block_erase_52,
 			}, {
@@ -1091,7 +1184,8 @@ struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.unlock		= spi_disable_blockprotect,
+		.printlock	= spi_prettyprint_status_register_at25fs010,
+		.unlock		= spi_disable_blockprotect_at25fs010,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
 	},
@@ -1126,7 +1220,8 @@ struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.unlock		= spi_disable_blockprotect,
+		.printlock	= spi_prettyprint_status_register_at25fs040,
+		.unlock		= spi_disable_blockprotect_at25fs040,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
 	},
