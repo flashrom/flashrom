@@ -388,6 +388,7 @@ const struct board_info boards_known[] = {
 	B("GIGABYTE",	"GA-M57SLI-S4",		1, "http://www.gigabyte.com/products/product-page.aspx?pid=2287", NULL),
 	B("GIGABYTE",	"GA-M61P-S3",		1, "http://www.gigabyte.com/products/product-page.aspx?pid=2434", NULL),
 	B("GIGABYTE",	"GA-MA69VM-S2",		1, "http://www.gigabyte.com/products/product-page.aspx?pid=2500", NULL),
+	B("GIGABYTE",	"GA-MA74GM-S2H (rev. 3.0)", 1, "http://www.gigabyte.com/products/product-page.aspx?pid=3152", NULL),
 	B("GIGABYTE",	"GA-MA770T-UD3P",	1, "http://www.gigabyte.com/products/product-page.aspx?pid=3096", NULL),
 	B("GIGABYTE",	"GA-MA78G-DS3H",	1, "http://www.gigabyte.com/products/product-page.aspx?pid=2800", NULL), /* TODO: Rev 1.x or 2.x? */
 	B("GIGABYTE",	"GA-MA78GM-S2H",	1, "http://www.gigabyte.com/products/product-page.aspx?pid=2758", NULL), /* TODO: Rev. 1.0, 1.1, or 2.x? */
