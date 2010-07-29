@@ -110,12 +110,19 @@
 #define AT_25DF021		0x4300
 #define AT_25DF041A		0x4401
 #define AT_25DF081		0x4502
+#define AT_25DF081A		0x4501	/* Yes, 81A has a lower number than 81 */
 #define AT_25DF161		0x4602
 #define AT_25DF321		0x4700	/* Same as 26DF321 */
 #define AT_25DF321A		0x4701
 #define AT_25DF641		0x4800
-#define AT_25F512A		0x65 /* Needs special RDID. AT25F512A_RDID 15 1d */
+#define AT_25DQ161		0x8600
+#define AT25F512		/* No device ID found in datasheet. Vendor ID
+				 * can be read with AT25F512A_RDID */
+#define AT_25F512A		0x65 /* Needs AT25F512A_RDID */
 #define AT_25F512B		0x6500
+#define AT25F1024		/* No device ID found in datasheet. Vendor ID
+				 * can be read with AT25F512A_RDID */
+#define AT_25F1024A		0x60 /* Needs AT25F512A_RDID */
 #define AT_25FS010		0x6601
 #define AT_25FS040		0x6604
 #define AT_26DF041		0x4400

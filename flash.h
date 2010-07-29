@@ -69,8 +69,9 @@ enum chipbustype {
 
 /*
  * How many different erase functions do we have per chip?
+ * Atmel AT25FS010 has 6 different functions.
  */
-#define NUM_ERASEFUNCTIONS 5
+#define NUM_ERASEFUNCTIONS 6
 
 #define FEATURE_REGISTERMAP	(1 << 0)
 #define FEATURE_BYTEWRITES	(1 << 1)
@@ -82,6 +83,9 @@ enum chipbustype {
 #define FEATURE_ADDR_2AA	(1 << 2)
 #define FEATURE_ADDR_AAA	(2 << 2)
 #define FEATURE_ADDR_SHIFTED	(1 << 5)
+#define FEATURE_WRSR_EWSR	(1 << 6)
+#define FEATURE_WRSR_WREN	(1 << 7)
+#define FEATURE_WRSR_EITHER	(FEATURE_WRSR_EWSR | FEATURE_WRSR_WREN)
 
 struct flashchip {
 	const char *vendor;

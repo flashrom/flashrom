@@ -31,7 +31,7 @@
 #define JEDEC_RDID_INSIZE	0x03
 
 /* AT25F512A has bit 3 as don't care bit in commands */
-#define AT25F512A_RDID		0x15
+#define AT25F512A_RDID		0x15	/* 0x15 or 0x1d */
 #define AT25F512A_RDID_OUTSIZE	0x01
 #define AT25F512A_RDID_INSIZE	0x02
 
@@ -123,5 +123,6 @@
 #define SPI_INVALID_OPCODE	-2
 #define SPI_INVALID_ADDRESS	-3
 #define SPI_INVALID_LENGTH	-4
+#define SPI_FLASHROM_BUG	-5
 
 #endif		/* !__SPI_H__ */

@@ -312,7 +312,16 @@ uint8_t spi_read_status_register(void)
 }
 
 /* Prettyprint the status register. Common definitions. */
-void spi_prettyprint_status_register_common(uint8_t status)
+static void spi_prettyprint_status_register_welwip(uint8_t status)
+{
+	msg_cdbg("Chip status register: Write Enable Latch (WEL) is "
+		     "%sset\n", (status & (1 << 1)) ? "" : "not ");
+	msg_cdbg("Chip status register: Write In Progress (WIP/BUSY) is "
+		     "%sset\n", (status & (1 << 0)) ? "" : "not ");
+}
+
+/* Prettyprint the status register. Common definitions. */
+static void spi_prettyprint_status_register_common(uint8_t status)
 {
 	msg_cdbg("Chip status register: Bit 5 / Block Protect 3 (BP3) is "
 		     "%sset\n", (status & (1 << 5)) ? "" : "not ");
@@ -322,10 +331,7 @@ void spi_prettyprint_status_register_common(uint8_t status)
 		     "%sset\n", (status & (1 << 3)) ? "" : "not ");
 	msg_cdbg("Chip status register: Bit 2 / Block Protect 0 (BP0) is "
 		     "%sset\n", (status & (1 << 2)) ? "" : "not ");
-	msg_cdbg("Chip status register: Write Enable Latch (WEL) is "
-		     "%sset\n", (status & (1 << 1)) ? "" : "not ");
-	msg_cdbg("Chip status register: Write In Progress (WIP/BUSY) is "
-		     "%sset\n", (status & (1 << 0)) ? "" : "not ");
+	spi_prettyprint_status_register_welwip(status);
 }
 
 /* Prettyprint the status register. Works for
@@ -336,6 +342,121 @@ void spi_prettyprint_status_register_amic_a25l(uint8_t status)
 	msg_cdbg("Chip status register: Status Register Write Disable "
 		     "(SRWD) is %sset\n", (status & (1 << 7)) ? "" : "not ");
 	spi_prettyprint_status_register_common(status);
+}
+
+/* Prettyprint the status register. Common definitions. */
+static void spi_prettyprint_status_register_at25_srplepewpp(uint8_t status)
+{
+	msg_cdbg("Chip status register: Sector Protection Register Lock (SRPL) "
+		 "is %sset\n", (status & (1 << 7)) ? "" : "not ");
+	msg_cdbg("Chip status register: Bit 6 "
+		 "is %sset\n", (status & (1 << 6)) ? "" : "not ");
+	msg_cdbg("Chip status register: Erase/Program Error (EPE) "
+		 "is %sset\n", (status & (1 << 5)) ? "" : "not ");
+	msg_cdbg("Chip status register: WP# pin (WPP) "
+		 "is %sactive\n", (status & (1 << 4)) ? "not " : "");
+}
+
+int spi_prettyprint_status_register_at25df(struct flashchip *flash)
+{
+	uint8_t status;
+
+	status = spi_read_status_register();
+	msg_cdbg("Chip status register is %02x\n", status);
+
+	spi_prettyprint_status_register_at25_srplepewpp(status);
+	msg_cdbg("Chip status register: Software Protection Status (SWP): ");
+	switch (status & (3 << 2)) {
+	case 0x0 << 2:
+		msg_cdbg("no sectors are protected\n");
+		break;
+	case 0x1 << 2:
+		msg_cdbg("some sectors are protected\n");
+		/* FIXME: Read individual Sector Protection Registers. */
+		break;
+	case 0x3 << 2:
+		msg_cdbg("all sectors are protected\n");
+		break;
+	default:
+		msg_cdbg("reserved for future use\n");
+		break;
+	}
+	spi_prettyprint_status_register_welwip(status);
+	return 0;
+}
+
+int spi_prettyprint_status_register_at25df_sec(struct flashchip *flash)
+{
+	/* FIXME: We should check the security lockdown. */
+	msg_cdbg("Ignoring security lockdown (if present)\n");
+	msg_cdbg("Ignoring status register byte 2\n");
+	return spi_prettyprint_status_register_at25df(flash);
+}
+
+int spi_prettyprint_status_register_at25f(struct flashchip *flash)
+{
+	uint8_t status;
+
+	status = spi_read_status_register();
+	msg_cdbg("Chip status register is %02x\n", status);
+
+	spi_prettyprint_status_register_at25_srplepewpp(status);
+	msg_cdbg("Chip status register: Bit 3 "
+		 "is %sset\n", (status & (1 << 3)) ? "" : "not ");
+	msg_cdbg("Chip status register: Block Protect 0 (BP0) is "
+		 "%sset, %s sectors are protected\n",
+		 (status & (1 << 2)) ? "" : "not ",
+		 (status & (1 << 2)) ? "all" : "no");
+	spi_prettyprint_status_register_welwip(status);
+	return 0;
+}
+
+int spi_prettyprint_status_register_at25fs010(struct flashchip *flash)
+{
+	uint8_t status;
+
+	status = spi_read_status_register();
+	msg_cdbg("Chip status register is %02x\n", status);
+
+	msg_cdbg("Chip status register: Status Register Write Protect (WPEN) "
+		 "is %sset\n", (status & (1 << 7)) ? "" : "not ");
+	msg_cdbg("Chip status register: Bit 6 / Block Protect 4 (BP4) is "
+		 "%sset\n", (status & (1 << 6)) ? "" : "not ");
+	msg_cdbg("Chip status register: Bit 5 / Block Protect 3 (BP3) is "
+		 "%sset\n", (status & (1 << 5)) ? "" : "not ");
+	msg_cdbg("Chip status register: Bit 4 is "
+		 "%sset\n", (status & (1 << 4)) ? "" : "not ");
+	msg_cdbg("Chip status register: Bit 3 / Block Protect 1 (BP1) is "
+		 "%sset\n", (status & (1 << 3)) ? "" : "not ");
+	msg_cdbg("Chip status register: Bit 2 / Block Protect 0 (BP0) is "
+		 "%sset\n", (status & (1 << 2)) ? "" : "not ");
+	/* FIXME: Pretty-print detailed sector protection status. */
+	spi_prettyprint_status_register_welwip(status);
+	return 0;
+}
+
+int spi_prettyprint_status_register_at25fs040(struct flashchip *flash)
+{
+	uint8_t status;
+
+	status = spi_read_status_register();
+	msg_cdbg("Chip status register is %02x\n", status);
+
+	msg_cdbg("Chip status register: Status Register Write Protect (WPEN) "
+		 "is %sset\n", (status & (1 << 7)) ? "" : "not ");
+	msg_cdbg("Chip status register: Bit 6 / Block Protect 4 (BP4) is "
+		 "%sset\n", (status & (1 << 6)) ? "" : "not ");
+	msg_cdbg("Chip status register: Bit 5 / Block Protect 3 (BP3) is "
+		 "%sset\n", (status & (1 << 5)) ? "" : "not ");
+	msg_cdbg("Chip status register: Bit 4 / Block Protect 2 (BP2) is "
+		 "%sset\n", (status & (1 << 4)) ? "" : "not ");
+	msg_cdbg("Chip status register: Bit 3 / Block Protect 1 (BP1) is "
+		 "%sset\n", (status & (1 << 3)) ? "" : "not ");
+	msg_cdbg("Chip status register: Bit 2 / Block Protect 0 (BP0) is "
+		 "%sset\n", (status & (1 << 2)) ? "" : "not ");
+	/* FIXME: Pretty-print detailed sector protection status. */
+	spi_prettyprint_status_register_welwip(status);
+	return 0;
 }
 
 /* Prettyprint the status register. Works for
@@ -732,12 +853,12 @@ int spi_write_status_enable(void)
  * This is according the SST25VF016 datasheet, who knows it is more
  * generic that this...
  */
-int spi_write_status_register(int status)
+static int spi_write_status_register_ewsr(struct flashchip *flash, int status)
 {
 	int result;
 	struct spi_command cmds[] = {
 	{
-	/* FIXME: WRSR requires either EWSR or WREN depending on chip type. */
+	/* WRSR requires either EWSR or WREN depending on chip type. */
 		.writecnt	= JEDEC_EWSR_OUTSIZE,
 		.writearr	= (const unsigned char[]){ JEDEC_EWSR },
 		.readcnt	= 0,
@@ -759,7 +880,57 @@ int spi_write_status_register(int status)
 		msg_cerr("%s failed during command execution\n",
 			__func__);
 	}
+	/* WRSR performs a self-timed erase before the changes take effect. */
+	programmer_delay(100 * 1000);
 	return result;
+}
+
+static int spi_write_status_register_wren(struct flashchip *flash, int status)
+{
+	int result;
+	struct spi_command cmds[] = {
+	{
+	/* WRSR requires either EWSR or WREN depending on chip type. */
+		.writecnt	= JEDEC_WREN_OUTSIZE,
+		.writearr	= (const unsigned char[]){ JEDEC_WREN },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= JEDEC_WRSR_OUTSIZE,
+		.writearr	= (const unsigned char[]){ JEDEC_WRSR, (unsigned char) status },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= 0,
+		.writearr	= NULL,
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}};
+
+	result = spi_send_multicommand(cmds);
+	if (result) {
+		msg_cerr("%s failed during command execution\n",
+			__func__);
+	}
+	/* WRSR performs a self-timed erase before the changes take effect. */
+	programmer_delay(100 * 1000);
+	return result;
+}
+
+static int spi_write_status_register(struct flashchip *flash, int status)
+{
+	int ret = 1;
+
+	if (!(flash->feature_bits & (FEATURE_WRSR_WREN | FEATURE_WRSR_EWSR))) {
+		msg_cdbg("Missing status register write definition, assuming "
+			 "EWSR is needed\n");
+		flash->feature_bits |= FEATURE_WRSR_EWSR;
+	}
+	if (flash->feature_bits & FEATURE_WRSR_WREN)
+		ret = spi_write_status_register_wren(flash, status);
+	if (ret && (flash->feature_bits & FEATURE_WRSR_EWSR))
+		ret = spi_write_status_register_ewsr(flash, status);
+	return ret;
 }
 
 int spi_byte_program(int addr, uint8_t databyte)
@@ -844,25 +1015,152 @@ int spi_nbyte_program(int addr, uint8_t *bytes, int len)
 	return result;
 }
 
+/* A generic brute-force block protection disable works like this:
+ * Write 0x00 to the status register. Check if any locks are still set (that
+ * part is chip specific). Repeat once.
+ */
 int spi_disable_blockprotect(struct flashchip *flash)
 {
 	uint8_t status;
 	int result;
 
 	status = spi_read_status_register();
-	/* If there is block protection in effect, unprotect it first. */
+	/* If block protection is disabled, stop here. */
+	if ((status & 0x3c) == 0)
+		return 0;
+
+	msg_cdbg("Some block protection in effect, disabling\n");
+	result = spi_write_status_register(flash, status & ~0x3c);
+	if (result) {
+		msg_cerr("spi_write_status_register failed\n");
+		return result;
+	}
+	status = spi_read_status_register();
 	if ((status & 0x3c) != 0) {
-		msg_cdbg("Some block protection in effect, disabling\n");
-		result = spi_write_status_register(status & ~0x3c);
+		msg_cerr("Block protection could not be disabled!\n");
+		return 1;
+	}
+	return 0;
+}
+
+int spi_disable_blockprotect_at25df(struct flashchip *flash)
+{
+	uint8_t status;
+	int result;
+
+	status = spi_read_status_register();
+	/* If block protection is disabled, stop here. */
+	if ((status & (3 << 2)) == 0)
+		return 0;
+
+	msg_cdbg("Some block protection in effect, disabling\n");
+	if (status & (1 << 7)) {
+		msg_cdbg("Need to disable Sector Protection Register Lock\n");
+		if ((status & (1 << 4)) == 0) {
+			msg_cerr("WP# pin is active, disabling "
+				 "write protection is impossible.\n");
+			return 1;
+		}
+		/* All bits except bit 7 (SPRL) are readonly. */
+		result = spi_write_status_register(flash, status & ~(1 << 7));
 		if (result) {
 			msg_cerr("spi_write_status_register failed\n");
 			return result;
 		}
-		status = spi_read_status_register();
-		if ((status & 0x3c) != 0) {
-			msg_cerr("Block protection could not be disabled!\n");
-			return 1;
+		
+	}
+	/* Global unprotect. Make sure to mask SPRL as well. */
+	result = spi_write_status_register(flash, status & ~0xbc);
+	if (result) {
+		msg_cerr("spi_write_status_register failed\n");
+		return result;
+	}
+	status = spi_read_status_register();
+	if ((status & (3 << 2)) != 0) {
+		msg_cerr("Block protection could not be disabled!\n");
+		return 1;
+	}
+	return 0;
+}
+
+int spi_disable_blockprotect_at25df_sec(struct flashchip *flash)
+{
+	/* FIXME: We should check the security lockdown. */
+	msg_cinfo("Ignoring security lockdown (if present)\n");
+	return spi_disable_blockprotect_at25df(flash);
+}
+
+int spi_disable_blockprotect_at25f(struct flashchip *flash)
+{
+	/* spi_disable_blockprotect_at25df is not really the right way to do
+	 * this, but the side effects of said function work here as well.
+	 */
+	return spi_disable_blockprotect_at25df(flash);
+}
+
+int spi_disable_blockprotect_at25fs010(struct flashchip *flash)
+{
+	uint8_t status;
+	int result;
+
+	status = spi_read_status_register();
+	/* If block protection is disabled, stop here. */
+	if ((status & 0x6c) == 0)
+		return 0;
+
+	msg_cdbg("Some block protection in effect, disabling\n");
+	if (status & (1 << 7)) {
+		msg_cdbg("Need to disable Status Register Write Protect\n");
+		/* Clear bit 7 (WPEN). */
+		result = spi_write_status_register(flash, status & ~(1 << 7));
+		if (result) {
+			msg_cerr("spi_write_status_register failed\n");
+			return result;
 		}
+	}
+	/* Global unprotect. Make sure to mask WPEN as well. */
+	result = spi_write_status_register(flash, status & ~0xec);
+	if (result) {
+		msg_cerr("spi_write_status_register failed\n");
+		return result;
+	}
+	status = spi_read_status_register();
+	if ((status & 0x6c) != 0) {
+		msg_cerr("Block protection could not be disabled!\n");
+		return 1;
+	}
+	return 0;
+}
+int spi_disable_blockprotect_at25fs040(struct flashchip *flash)
+{
+	uint8_t status;
+	int result;
+
+	status = spi_read_status_register();
+	/* If block protection is disabled, stop here. */
+	if ((status & 0x7c) == 0)
+		return 0;
+
+	msg_cdbg("Some block protection in effect, disabling\n");
+	if (status & (1 << 7)) {
+		msg_cdbg("Need to disable Status Register Write Protect\n");
+		/* Clear bit 7 (WPEN). */
+		result = spi_write_status_register(flash, status & ~(1 << 7));
+		if (result) {
+			msg_cerr("spi_write_status_register failed\n");
+			return result;
+		}
+	}
+	/* Global unprotect. Make sure to mask WPEN as well. */
+	result = spi_write_status_register(flash, status & ~0xfc);
+	if (result) {
+		msg_cerr("spi_write_status_register failed\n");
+		return result;
+	}
+	status = spi_read_status_register();
+	if ((status & 0x7c) != 0) {
+		msg_cerr("Block protection could not be disabled!\n");
+		return 1;
 	}
 	return 0;
 }
