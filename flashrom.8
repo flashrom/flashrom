@@ -177,11 +177,11 @@ Specify the programmer device. Currently supported are:
 .sp
 .BR "* atahpt" " (for flash ROMs on Highpoint ATA/RAID controllers)"
 .sp
-.BR "* it87spi" " (for flash ROMs behind an ITE IT87xx Super I/O LPC/SPI\
+.BR "* it87spi" " (for flash ROMs behind an ITE IT87xx Super I/O LPC/SPI \
 translation unit)"
 .sp
-.BR "* ft2232_spi" " (for SPI flash ROMs attached to a FT2232H/FT4232H based\
-USB SPI programmer)"
+.BR "* ft2232_spi" " (for SPI flash ROMs attached to a FT2232H/FT4232H/JTAGkey \
+based USB SPI programmer)"
 .sp
 .BR "* serprog" " (for flash ROMs attached to a programmer speaking serprog)"
 .sp
@@ -351,7 +351,7 @@ type and interface/port it should support. For that you have to use the
 syntax where
 .B model
 can be any of
-.BR 2232H ", or " 4232H
+.BR 2232H ", "JTAGkey ", or " 4232H
 and
 .B interface
 can be any of
