@@ -260,8 +260,8 @@ int buspirate_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	if (writecnt > 16 || readcnt > 16 || (readcnt + writecnt) > 16)
 		return SPI_INVALID_LENGTH;
 
-	/* +2 is pretty arbitrary. */
-	buf = realloc(buf, writecnt + readcnt + 2);
+	/* 3 bytes extra for CS#, len, CS#. */
+	buf = realloc(buf, writecnt + readcnt + 3);
 	if (!buf) {
 		msg_perr("Out of memory!\n");
 		exit(1); // -1
@@ -269,38 +269,40 @@ int buspirate_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 
 	/* Assert CS# */
 	buf[i++] = 0x02;
-	ret = buspirate_sendrecv(buf, 1, 1);
-	if (ret)
+
+	buf[i++] = 0x10 | (writecnt + readcnt - 1);
+	memcpy(buf + i, writearr, writecnt);
+	i += writecnt;
+	memset(buf + i, 0, readcnt);
+
+	i += readcnt;
+	/* De-assert CS# */
+	buf[i++] = 0x03;
+
+	ret = buspirate_sendrecv(buf, i, i);
+
+	if (ret) {
+		msg_perr("Bus Pirate communication error!\n");
 		return SPI_GENERIC_ERROR;
+	}
+
 	if (buf[0] != 0x01) {
 		msg_perr("Protocol error while lowering CS#!\n");
 		return SPI_GENERIC_ERROR;
 	}
 
-	i = 0;
-	buf[i++] = 0x10 | (writecnt + readcnt - 1);
-	memcpy(buf + i, writearr, writecnt);
-	i += writecnt;
-	memset(buf + i, 0, readcnt);
-	ret = buspirate_sendrecv(buf, i + readcnt, i + readcnt);
-	if (ret)
-		return SPI_GENERIC_ERROR;
-	if (buf[0] != 0x01) {
+	if (buf[1] != 0x01) {
 		msg_perr("Protocol error while reading/writing SPI!\n");
 		return SPI_GENERIC_ERROR;
 	}
-	memcpy(readarr, buf + i, readcnt);
 
-	i = 0;
-	/* De-assert CS# */
-	buf[i++] = 0x03;
-	ret = buspirate_sendrecv(buf, 1, 1);
-	if (ret)
-		return SPI_GENERIC_ERROR;
-	if (buf[0] != 0x01) {
+	if (buf[i - 1] != 0x01) {
 		msg_perr("Protocol error while raising CS#!\n");
 		return SPI_GENERIC_ERROR;
 	}
+
+	/* Skip CS#, length, writearr. */
+	memcpy(readarr, buf + 2 + writecnt, readcnt);
 
 	return ret;
 }
