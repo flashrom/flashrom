@@ -327,6 +327,7 @@ const struct board_info boards_known[] = {
 	B("ASUS",	"M2NBP-VM CSM",		1, "http://www.asus.com/product.aspx?P_ID=MnOfzTGd2KkwG0rF", NULL),
 	B("ASUS",	"M2V",			1, "http://www.asus.com/product.aspx?P_ID=OqYlEDFfF6ZqZGvp", NULL),
 	B("ASUS",	"M2V-MX",		1, "http://www.asus.com/product.aspx?P_ID=7grf8Ci4yxnqzt3z", NULL),
+	B("ASUS",	"M3A76-CM",		1, NULL, NULL),
 	B("ASUS",	"M3A78-EM",		1, "http://www.asus.com/product.aspx?P_ID=KjpYqzmAd9vsTM2D", NULL),
 	B("ASUS",	"M4A79T Deluxe",	1, "http://www.asus.com/product.aspx?P_ID=lhJiLTN5huPfCVkW", NULL),
 	B("ASUS",	"M4A87TD/USB3",		1, "http://www.asus.com/product.aspx?P_ID=nlWYrI9wlNIYHAaa", NULL),
