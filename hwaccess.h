@@ -160,6 +160,7 @@ cpu_to_be(64)
 #define le_to_cpu32 cpu_to_le32
 #define le_to_cpu64 cpu_to_le64
 
+#if NEED_PCI == 1
 #if defined (__i386__) || defined (__x86_64__)
 
 #define __FLASHROM_HAVE_OUTB__ 1
@@ -319,6 +320,7 @@ int freebsd_wrmsr(int addr, msr_t msr);
 
 #error Unknown architecture, please check if it supports PCI port IO.
 
+#endif
 #endif
 
 #endif /* !__HWACCESS_H__ */
