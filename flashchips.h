@@ -88,6 +88,14 @@
 #define AMIC_A25L80P		0x2014	/* Seems that no A25L80PT exists */
 #define AMIC_A25L16PT		0x2025
 #define AMIC_A25L16PU		0x2015
+#define AMIC_A25L512		0x3010
+#define AMIC_A25L010		0x3011
+#define AMIC_A25L020		0x3012
+#define AMIC_A25L040		0x3013
+#define AMIC_A25L080		0x3014
+#define AMIC_A25L016		0x3015
+#define AMIC_A25L032		0x3016
+#define AMIC_A25LQ032		0x4016
 #define AMIC_A29002B		0x0d
 #define AMIC_A29002T		0x8C	/* Same as A290021T */
 #define AMIC_A29040B		0x86
