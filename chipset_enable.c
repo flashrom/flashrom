@@ -1116,6 +1116,7 @@ const struct penable chipset_enables[] = {
 	{0x1039, 0x0650, NT, "SiS", "650",		enable_flash_sis540},
 	{0x1039, 0x0651, NT, "SiS", "651",		enable_flash_sis540},
 	{0x1039, 0x0655, NT, "SiS", "655",		enable_flash_sis540},
+	{0x1039, 0x0661, OK, "SiS", "661",		enable_flash_sis540},
 	{0x1039, 0x0730, NT, "SiS", "730",		enable_flash_sis540},
 	{0x1039, 0x0733, NT, "SiS", "733",		enable_flash_sis540},
 	{0x1039, 0x0735, OK, "SiS", "735",		enable_flash_sis540},
