@@ -319,6 +319,17 @@ static int w83627hf_gpio24_raise_2e()
 }
 
 /**
+ * Winbond W83627HF: Raise GPIO25.
+ *
+ * Suited for:
+ *  - MSI MS-6577
+ */
+static int w83627hf_gpio25_raise_2e()
+{
+	return winbond_gpio_set(0x2e, WINBOND_W83627HF_ID, 25, 1);
+}
+
+/**
  * Winbond W83627EHF: Raise GPIO24.
  *
  * Suited for:
@@ -1743,6 +1754,7 @@ const struct board_pciid_enable board_pciid_enables[] = {
 	{0x8086, 0x27A0, 0x8086, 0x27a0,  0x8086, 0x27b8, 0x8086, 0x27b8, NULL,          "kontron",    "986lcd-m",    "Kontron",     "986LCD-M",              0,   OK, board_kontron_986lcd_m},
 	{0x8086, 0x2411, 0x8086, 0x2411,  0x8086, 0x7125, 0x0e11, 0xb165, NULL,          NULL,         NULL,          "Mitac",       "6513WU",                0,   OK, board_mitac_6513wu},
 	{0x10DE, 0x005E, 0x1462, 0x7125,  0x10DE, 0x0052, 0x1462, 0x7125, NULL,          NULL,         NULL,          "MSI",         "K8N Neo4-F",            0,   OK, nvidia_mcp_gpio2_raise},
+	{0x8086, 0x2560, 0x1462, 0x5770,  0x8086, 0x2562, 0x1462, 0x5778, NULL,          NULL,         NULL,          "MSI",         "MS-6577",               0,   OK, w83627hf_gpio25_raise_2e},
 	{0x13f6, 0x0111, 0x1462, 0x5900,  0x1106, 0x3177, 0x1106,      0, NULL,          NULL,         NULL,          "MSI",         "MS-6590 (KT4 Ultra)",   0,   OK, board_msi_kt4v},
 	{0x1106, 0x3149, 0x1462, 0x7094,  0x10ec, 0x8167, 0x1462, 0x094c, NULL,          NULL,         NULL,          "MSI",         "MS-6702E (K8T Neo2-F)", 0,   OK, w83627thf_gpio44_raise_2e},
 	{0x1106, 0x0571, 0x1462, 0x7120,  0x1106, 0x3065, 0x1462, 0x7120, NULL,          NULL,         NULL,          "MSI",         "MS-6712 (KT4V)",        0,   OK, board_msi_kt4v},
