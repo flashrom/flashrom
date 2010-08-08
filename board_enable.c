@@ -1746,7 +1746,7 @@ const struct board_pciid_enable board_pciid_enables[] = {
 	{0x8086, 0x2415, 0x103c, 0x1249,  0x10b7, 0x9200, 0x103c, 0x1246, NULL,          NULL,         NULL,          "HP",          "Vectra VL400",          0,   OK, board_hp_vl400}, 
 	{0x8086, 0x1a30, 0x103c, 0x1a30,  0x8086, 0x2443, 0x103c, 0x2440, "^VL420$",     NULL,         NULL,          "HP",          "VL420 SFF",             0,   OK, intel_ich_gpio22_raise},
 	{0x10de, 0x0369, 0x103c, 0x12fe,  0x10de, 0x0364, 0x103c, 0x12fe, NULL,          NULL,         NULL,          "HP",          "xw9400",                0,   OK, nvidia_mcp_gpio5_raise},
-	{0x8086, 0x27A0,      0,      0,  0x8086, 0x27B9,      0,      0, NULL,          "ibase",      "mb899",       "iBASE",       "MB899",                 0,   NT, intel_ich_gpio26_raise},
+	{0x8086, 0x27A0,      0,      0,  0x8086, 0x27B9,      0,      0, NULL,          "ibase",      "mb899",       "iBASE",       "MB899",                 0,   OK, intel_ich_gpio26_raise},
 	{0x1166, 0x0205, 0x1014, 0x0347,  0x1002, 0x515E, 0x1014, 0x0325, NULL,          NULL,         NULL,          "IBM",         "x3455",                 0,   OK, board_ibm_x3455},
 	{0x1039, 0x5513, 0x8086, 0xd61f,  0x1039, 0x6330, 0x8086, 0xd61f, NULL,          NULL,         NULL,          "Intel",       "D201GLY",               0,   OK, wbsio_check_for_spi},
 	{0x8086, 0x7190,      0,      0,  0x8086, 0x7110,      0,      0, "^SE440BX-2$", NULL,         NULL,          "Intel",       "SE440BX-2",             0,   NT, intel_piix4_gpo27_lower},
