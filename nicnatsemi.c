@@ -68,8 +68,8 @@ void nicnatsemi_chip_writeb(uint8_t val, chipaddr addr)
 	/*
 	 * The datasheet requires 32 bit accesses to this register, but it seems
 	 * that requirement might only apply if the register is memory mapped.
-	 * Bit 8-31 of this register are apparently don't care, and if this
-	 * register is I/O port mapped 8 bit accesses to the lowest byte of the
+	 * Bits 8-31 of this register are apparently don't care, and if this
+	 * register is I/O port mapped, 8 bit accesses to the lowest byte of the
 	 * register seem to work fine. Due to that, we ignore the advice in the
 	 * data sheet.
 	 */
@@ -82,8 +82,8 @@ uint8_t nicnatsemi_chip_readb(const chipaddr addr)
 	/*
 	 * The datasheet requires 32 bit accesses to this register, but it seems
 	 * that requirement might only apply if the register is memory mapped.
-	 * Bit 8-31 of this register are apparently don't care, and if this
-	 * register is I/O port mapped 8 bit accesses to the lowest byte of the
+	 * Bits 8-31 of this register are apparently don't care, and if this
+	 * register is I/O port mapped, 8 bit accesses to the lowest byte of the
 	 * register seem to work fine. Due to that, we ignore the advice in the
 	 * data sheet.
 	 */
