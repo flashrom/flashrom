@@ -609,7 +609,7 @@ static int enable_flash_cs5530(struct pci_dev *dev, const char *name)
 	return 0;
 }
 
-/**
+/*
  * Geode systems write protect the BIOS via RCONFs (cache settings similar
  * to MTRRs). To unlock, change MSR 0x1808 top byte to 0x22. 
  *
@@ -868,7 +868,7 @@ static int enable_flash_mcp55(struct pci_dev *dev, const char *name)
 	return 0;
 }
 
-/**
+/*
  * The MCP6x/MCP7x code is based on cleanroom reverse engineering.
  * It is assumed that LPC chips need the MCP55 code and SPI chips need the
  * code provided in enable_flash_mcp6x_7x_common.
@@ -945,7 +945,7 @@ static int enable_flash_ht1000(struct pci_dev *dev, const char *name)
 	return 0;
 }
 
-/**
+/*
  * Usually on the x86 architectures (and on other PC-like platforms like some
  * Alphas or Itanium) the system flash is mapped right below 4G. On the AMD
  * Elan SC520 only a small piece of the system flash is mapped there, but the
