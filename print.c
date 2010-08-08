@@ -295,6 +295,7 @@ const struct board_info boards_known[] = {
 	B("Artec Group","DBE61",		1, "http://wiki.thincan.org/DBE61", NULL),
 	B("Artec Group","DBE62",		1, "http://wiki.thincan.org/DBE62", NULL),
 	B("ASI",	"MB-5BLMP",		1, "http://www.hojerteknik.com/winnet.htm", "Used in the IGEL WinNET III thin client."),
+	B("ASRock",	"775i65G",		1, "http://www.asrock.com/mb/overview.asp?Model=775i65G", NULL),
 	B("ASRock",	"939A785GMH/128M",	1, "http://www.asrock.com/mb/overview.asp?Model=939A785GMH/128M&s=939", NULL),
 	B("ASRock",	"A770CrossFire",	1, "http://www.asrock.com/mb/overview.asp?Model=A770CrossFire&s=AM2\%2b", NULL),
 	B("ASRock",	"ALiveNF6G-DVI",	1, "http://www.asrock.com/mb/overview.asp?Model=ALiveNF6G-DVI", NULL),
