@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-/* Driver for the Nvidia MCP6x/MCP7x MCP6X_SPI controller.
+/* Driver for the NVIDIA MCP6x/MCP7x MCP6X_SPI controller.
  * Based on clean room reverse engineered docs from
  * http://www.flashrom.org/pipermail/flashrom/2009-December/001180.html
  * created by Michael Karcher.
@@ -165,7 +165,7 @@ int mcp6x_spi_init(int want_spi)
 		return 0;
 	}
 	/* Map the BAR. Bytewise/wordwise access at 0x530 and 0x540. */
-	mcp6x_spibar = physmap("Nvidia MCP6x SPI", mcp6x_spibaraddr, 0x544);
+	mcp6x_spibar = physmap("NVIDIA MCP6x SPI", mcp6x_spibaraddr, 0x544);
 
 #if 0
 	/* FIXME: Run the physunmap in a shutdown function. */

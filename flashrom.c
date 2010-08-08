@@ -98,7 +98,7 @@ static char *programmer_param = NULL;
 /* Supported buses for the current programmer. */
 enum chipbustype buses_supported;
 
-/**
+/*
  * Programmers supporting multiple buses can have differing size limits on
  * each bus. Store the limits for each bus in a common struct.
  */
@@ -685,7 +685,7 @@ int check_erased_range(struct flashchip *flash, int start, int len)
 	return ret;
 }
 
-/**
+/*
  * @cmpbuf	buffer to compare against, cmpbuf[0] is expected to match the
 		flash content at location start
  * @start	offset to the base address of the flash chip
@@ -765,7 +765,7 @@ out_free:
 	return ret;
 }
 
-/**
+/*
  * Check if the buffer @have can be programmed to the content of @want without
  * erasing. This is only possible if all chunks of size @gran are either kept
  * as-is or changed from an all-ones state to any other state.

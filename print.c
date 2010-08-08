@@ -257,13 +257,13 @@ void print_supported(void)
 #endif
 
 #if CONFIG_FT2232_SPI+CONFIG_DEDIPROG >= 1
-                printf("\nSupported USB devices flashrom can use "
-                       "as programmer:\n\n");
+		printf("\nSupported USB devices flashrom can use "
+		       "as programmer:\n\n");
 #endif
 
 #if CONFIG_FT2232_SPI == 1
 		print_supported_usbdevs(devs_ft2232spi);
-#endif 
+#endif
 }
 
 #if CONFIG_INTERNAL == 1
@@ -278,15 +278,15 @@ void print_supported(void)
 const struct board_info boards_known[] = {
 #if defined(__i386__) || defined(__x86_64__)
 	B("A-Trend",	"ATC-6220",		1, "http://www.motherboard.cz/mb/atrend/atc6220.htm", NULL),
-	B("Abit",	"AX8",			1, "http://www.abit.com.tw/page/en/motherboard/motherboard_detail.php?DEFTITLE=Y&fMTYPE=Socket%20939&pMODEL_NAME=AX8", NULL),
-	B("Abit",	"Fatal1ty F-I90HD",	1, "http://www.abit.com.tw/page/de/motherboard/motherboard_detail.php?pMODEL_NAME=Fatal1ty+F-I90HD&fMTYPE=LGA775", NULL),
-	B("Abit",	"IC7",			1, "http://www.abit.com.tw/page/en/motherboard/motherboard_detail.php?pMODEL_NAME=IC7&fMTYPE=Socket%20478", NULL),
-	B("Abit",	"IP35",			1, "http://www.abit.com.tw/page/en/motherboard/motherboard_detail.php?fMTYPE=LGA775&pMODEL_NAME=IP35", NULL),
-	B("Abit",	"IP35 Pro",		1, "http://www.abit.com.tw/page/de/motherboard/motherboard_detail.php?fMTYPE=LGA775&pMODEL_NAME=IP35%20Pro", NULL),
-	B("Abit",	"IS-10",		0, "http://www.abit.com.tw/page/en/motherboard/motherboard_detail.php?pMODEL_NAME=IS-10&fMTYPE=Socket+478", NULL),
-	B("Abit",	"NF-M2 nView",		1, "http://www.abit.com.tw/page/en/motherboard/motherboard_detail.php?fMTYPE=Socket%20AM2&pMODEL_NAME=NF-M2%20nView", NULL),
-	B("Abit",	"NF7-S",		1, "http://www.abit.com.tw/page/en/motherboard/motherboard_detail.php?fMTYPE=Socket%20A&pMODEL_NAME=NF7-S", NULL),
-	B("Abit",	"VT6X4",		1, "http://www.abit.com.tw/page/en/motherboard/motherboard_detail.php?fMTYPE=Slot%201&pMODEL_NAME=VT6X4", NULL),
+	B("abit",	"AX8",			1, "http://www.abit.com.tw/page/en/motherboard/motherboard_detail.php?DEFTITLE=Y&fMTYPE=Socket%20939&pMODEL_NAME=AX8", NULL),
+	B("abit",	"Fatal1ty F-I90HD",	1, "http://www.abit.com.tw/page/de/motherboard/motherboard_detail.php?pMODEL_NAME=Fatal1ty+F-I90HD&fMTYPE=LGA775", NULL),
+	B("abit",	"IC7",			1, "http://www.abit.com.tw/page/en/motherboard/motherboard_detail.php?pMODEL_NAME=IC7&fMTYPE=Socket%20478", NULL),
+	B("abit",	"IP35",			1, "http://www.abit.com.tw/page/en/motherboard/motherboard_detail.php?fMTYPE=LGA775&pMODEL_NAME=IP35", NULL),
+	B("abit",	"IP35 Pro",		1, "http://www.abit.com.tw/page/de/motherboard/motherboard_detail.php?fMTYPE=LGA775&pMODEL_NAME=IP35%20Pro", NULL),
+	B("abit",	"IS-10",		0, "http://www.abit.com.tw/page/en/motherboard/motherboard_detail.php?pMODEL_NAME=IS-10&fMTYPE=Socket+478", NULL),
+	B("abit",	"NF-M2 nView",		1, "http://www.abit.com.tw/page/en/motherboard/motherboard_detail.php?fMTYPE=Socket%20AM2&pMODEL_NAME=NF-M2%20nView", NULL),
+	B("abit",	"NF7-S",		1, "http://www.abit.com.tw/page/en/motherboard/motherboard_detail.php?fMTYPE=Socket%20A&pMODEL_NAME=NF7-S", NULL),
+	B("abit",	"VT6X4",		1, "http://www.abit.com.tw/page/en/motherboard/motherboard_detail.php?fMTYPE=Slot%201&pMODEL_NAME=VT6X4", NULL),
 	B("Acorp",	"6A815EPD",		1, "http://web.archive.org/web/20021206163652/www.acorp.com.tw/English/default.asp", NULL),
 	B("Advantech",	"PCM-5820",		1, "http://www.emacinc.com/sbc_pc_compatible/pcm_5820.htm", NULL),
 	B("agami",	"Aruma",		1, "http://web.archive.org/web/20080212111524/http://www.agami.com/site/ais-6000-series", NULL),

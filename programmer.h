@@ -399,11 +399,11 @@ extern const struct pcidev_status ata_hpt[];
 /* ft2232_spi.c */
 #if CONFIG_FT2232_SPI == 1
 struct usbdev_status {
-uint16_t vendor_id;
-        uint16_t device_id;
-        int status;
-        const char *vendor_name;
-        const char *device_name;
+	uint16_t vendor_id;
+	uint16_t device_id;
+	int status;
+	const char *vendor_name;
+	const char *device_name;
 };
 int ft2232_spi_init(void);
 int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr);
