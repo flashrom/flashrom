@@ -76,15 +76,24 @@ static char *get_dmi_string(const char *string_name)
 		msg_perr("DMI pipe open error\n");
 		return NULL;
 	}
-	if (!fgets(answerbuf, DMI_MAX_ANSWER_LEN, dmidecode_pipe)) {
-		if(ferror(dmidecode_pipe)) {
-			msg_perr("DMI pipe read error\n");
-			pclose(dmidecode_pipe);
-			return NULL;
-		} else {
-			answerbuf[0] = 0;	/* Hit EOF */
+
+	/* Kill lines starting with '#', as recent dmidecode versions
+	   have the quirk to emit a "# SMBIOS implementations newer..."
+	   message even on "-s" if the SMBIOS declares a
+	   newer-than-supported version number, while it *should* only print
+	   the requested string. */
+	do {
+		if (!fgets(answerbuf, DMI_MAX_ANSWER_LEN, dmidecode_pipe)) {
+			if(ferror(dmidecode_pipe)) {
+				msg_perr("DMI pipe read error\n");
+				pclose(dmidecode_pipe);
+				return NULL;
+			} else {
+				answerbuf[0] = 0;	/* Hit EOF */
+			}
 		}
-	}
+	} while(answerbuf[0] == '#');
+
 	/* Toss all output above DMI_MAX_ANSWER_LEN away to prevent
 	   deadlock on pclose. */
 	while (!feof(dmidecode_pipe))
