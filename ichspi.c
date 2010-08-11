@@ -560,7 +560,9 @@ static int ich9_run_opcode(OPCODE op, uint32_t offset,
 	}
 
 	/* Assemble SSFS + SSFC */
-	temp32 = 0;
+	/* keep reserved bits (23-19,7,0) */
+	temp32 = REGREAD32(ICH9_REG_SSFS);
+	temp32 &= 0xF8008100;
 
 	/* clear error status registers */
 	temp32 |= (SSFS_CDS + SSFS_FCERR);
