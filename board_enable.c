@@ -1489,6 +1489,7 @@ static int via_apollo_gpo_set(int gpio, int raise)
 /*
  * Suited for:
  *  - abit VT6X4: Pro133x + VT82C686A
+ *  - abit VA6: Pro133x + VT82C686A
  */
 static int via_apollo_gpo4_lower(void)
 {
@@ -1759,6 +1760,7 @@ const struct board_pciid_enable board_pciid_enables[] = {
 	{0x10de, 0x0050, 0x147b, 0x1c1a,       0,      0,      0,      0, NULL,          NULL,         NULL,          "abit",        "KN8 Ultra",             0,   NT, nvidia_mcp_gpio2_lower},
 	{0x10de, 0x01e0, 0x147b, 0x1c00,  0x10de, 0x0060, 0x147B, 0x1c00, NULL,          NULL,         NULL,          "abit",        "NF7-S",                 0,   OK, nvidia_mcp_gpio8_raise},
 	{0x10de, 0x02f0, 0x147b, 0x1c26,  0x10de, 0x0240, 0x10de, 0x0222, NULL,          NULL,         NULL,          "abit",        "NF-M2 nView",           0,   NT, nvidia_mcp_gpio4_lower},
+	{0x1106, 0x0691,      0,      0,  0x1106, 0x3057,      0,      0, "(VA6)$",      NULL,         NULL,          "abit",        "VA6",                   0,   OK, via_apollo_gpo4_lower},
 	{0x1106, 0x0691,      0,      0,  0x1106, 0x3057,      0,      0, NULL,          "abit",       "vt6x4",       "abit",        "VT6X4",                 0,   OK, via_apollo_gpo4_lower},
 	{0x105a, 0x0d30, 0x105a, 0x4d33,  0x8086, 0x1130, 0x8086,      0, NULL,          NULL,         NULL,          "Acorp",       "6A815EPD",              0,   OK, board_acorp_6a815epd},
 	{0x1022, 0x746B,      0,      0,       0,      0,      0,      0, NULL,          "AGAMI",      "ARUMA",       "agami",       "Aruma",                 0,   OK, w83627hf_gpio24_raise_2e},
