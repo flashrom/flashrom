@@ -997,6 +997,43 @@ static int intel_piix4_gpo_set(unsigned int gpo, int raise)
 	struct pci_dev *dev;
 	uint32_t tmp, base;
 
+	static const uint32_t nonmuxed_gpos  = 0x58000101; /* GPPO {0,8,27,28,30} are always available */
+
+	static const struct {unsigned int reg, mask, value; } piix4_gpo[] = {
+	  {0},
+	  {0xB0, 0x0001, 0x0000},        /* GPO1... */
+	  {0xB0, 0x0001, 0x0000},
+	  {0xB0, 0x0001, 0x0000},
+	  {0xB0, 0x0001, 0x0000},
+	  {0xB0, 0x0001, 0x0000},
+	  {0xB0, 0x0001, 0x0000},
+	  {0xB0, 0x0001, 0x0000},        /* ...GPO7: GENCFG bit 0 */
+	  {0},
+	  {0xB0, 0x0100, 0x0000},        /* GPO9:  GENCFG bit 8 */
+	  {0xB0, 0x0200, 0x0000},        /* GPO10: GENCFG bit 9 */
+	  {0xB0, 0x0400, 0x0000},        /* GPO11: GENCFG bit 10 */
+	  {0x4E, 0x0100, 0x0000},        /* GPO12... */
+	  {0x4E, 0x0100, 0x0000},
+	  {0x4E, 0x0100, 0x0000},        /* ...GPO14: XBCS bit 8 */
+	  {0xB2, 0x0002, 0x0002},        /* GPO15... */
+	  {0xB2, 0x0002, 0x0002},        /* ...GPO16: GENCFG bit 17 */
+	  {0xB2, 0x0004, 0x0004},        /* GPO17: GENCFG bit 18 */
+	  {0xB2, 0x0008, 0x0008},        /* GPO18: GENCFG bit 19 */
+	  {0xB2, 0x0010, 0x0010},        /* GPO19: GENCFG bit 20 */
+	  {0xB2, 0x0020, 0x0020},        /* GPO20: GENCFG bit 21 */
+	  {0xB2, 0x0040, 0x0040},        /* GPO21: GENCFG bit 22 */
+	  {0xB2, 0x1000, 0x1000},        /* GPO22... */
+	  {0xB2, 0x1000, 0x1000},        /* ...GPO23: GENCFG bit 28 */
+	  {0xB2, 0x2000, 0x2000},        /* GPO24: GENCFG bit 29 */
+	  {0xB2, 0x4000, 0x4000},        /* GPO25: GENCFG bit 30 */
+	  {0xB2, 0x8000, 0x8000},        /* GPO26: GENCFG bit 31 */
+	  {0},
+	  {0},
+	  {0x4E, 0x0100, 0x0000},        /* ...GPO29: XBCS bit 8 */
+	  {0}
+	};
+
+
 	dev = pci_dev_find(0x8086, 0x7110);	/* Intel PIIX4 ISA bridge */
 	if (!dev) {
 		msg_perr("\nERROR: Intel PIIX4 ISA bridge not found.\n");
@@ -1009,35 +1046,11 @@ static int intel_piix4_gpo_set(unsigned int gpo, int raise)
 		return -1;
 	}
 
-	/* These are dual function pins which are most likely in use already. */
-	if (((gpo >= 1) && (gpo <= 7)) ||
-	    ((gpo >= 9) && (gpo <= 21)) || (gpo == 29)) {
-		msg_perr("\nERROR: Unsupported PIIX4 GPO%d.\n", gpo);
-		return -1;
+	if ( (((1 << gpo) & nonmuxed_gpos) == 0) &&
+	     (pci_read_word(dev, piix4_gpo[gpo].reg) & piix4_gpo[gpo].mask) != piix4_gpo[gpo].value ) {
+	  msg_perr("\nERROR: PIIX4 GPO\%d not programmed for output.\n", gpo);
+	  return -1;
 	}
-
-	/* Dual function that need special enable. */
-	if ((gpo >= 22) && (gpo <= 26)) {
-		tmp = pci_read_long(dev, 0xB0); /* GENCFG */
-		switch (gpo) {
-		case 22: /* XBUS: XDIR#/GPO22 */
-		case 23: /* XBUS: XOE#/GPO23 */
-			tmp |= 1 << 28;
-			break;
-		case 24: /* RTCSS#/GPO24 */
-			tmp |= 1 << 29;
-			break;
-		case 25: /* RTCALE/GPO25 */
-			tmp |= 1 << 30;
-			break;
-		case 26: /* KBCSS#/GPO26 */
-			tmp |= 1 << 31;
-			break;
-		}
-		pci_write_long(dev, 0xB0, tmp);
-	}
-
-	/* GPO {0,8,27,28,30} are always available. */
 
 	dev = pci_dev_find(0x8086, 0x7113);	/* Intel PIIX4 PM */
 	if (!dev) {
@@ -1064,7 +1077,7 @@ static int intel_piix4_gpo_set(unsigned int gpo, int raise)
  * Suited for:
  *  - EPoX EP-BX3
  */
-static int board_epox_ep_bx3(void)
+static int intel_piix4_gpo22_raise(void)
 {
 	return intel_piix4_gpo_set(22, 1);
 }
@@ -1778,7 +1791,7 @@ const struct board_pciid_enable board_pciid_enables[] = {
 	{0x1106, 0x3038, 0x1019, 0x0996,  0x1106, 0x3177, 0x1019, 0x0996, NULL,          NULL,         NULL,          "Elitegroup",  "K7VTA3",                256, OK, NULL},
 	{0x1106, 0x3177, 0x1106, 0x3177,  0x1106, 0x3059, 0x1695, 0x3005, NULL,          NULL,         NULL,          "EPoX",        "EP-8K5A2",              0,   OK, w836xx_memw_enable_2e},
 	{0x10EC, 0x8139, 0x1695, 0x9001,  0x11C1, 0x5811, 0x1695, 0x9015, NULL,          NULL,         NULL,          "EPoX",        "EP-8RDA3+",             0,   OK, nvidia_mcp_gpio31_raise},
-	{0x8086, 0x7110,      0,      0,  0x8086, 0x7190,      0,      0, NULL,          "epox",       "ep-bx3",      "EPoX",        "EP-BX3",                0,   OK, board_epox_ep_bx3},
+	{0x8086, 0x7110,      0,      0,  0x8086, 0x7190,      0,      0, NULL,          "epox",       "ep-bx3",      "EPoX",        "EP-BX3",                0,   NT, intel_piix4_gpo22_raise},
 	{0x1106, 0x0686, 0x1106, 0x0686,  0x1106, 0x3058, 0x1458, 0xa000, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-7ZM",                512, OK, NULL},
 	{0x8086, 0x244b, 0x8086, 0x2442,  0x8086, 0x2445, 0x1458, 0xa002, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-8IRML",              0,   OK, intel_ich_gpio25_raise},
 	{0x8086, 0x24c3, 0x1458, 0x24c2,  0x8086, 0x24cd, 0x1458, 0x5004, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-8PE667 Ultra 2",     0,   OK, intel_ich_gpio32_raise},
