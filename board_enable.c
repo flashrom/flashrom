@@ -867,8 +867,8 @@ static int nvidia_mcp_gpio2_lower(void)
 
 /*
  * Suited for:
- *  - MSI K8N Neo4: NVIDIA CK804
- *  - MSI K8N GM2-L: NVIDIA MCP51
+ *  - MSI K8N Neo4: NVIDIA CK804. TODO: Should probably be K8N Neo4 Platinum, see http://www.coreboot.org/pipermail/flashrom/2010-August/004362.html.
+ *  - MSI K8NGM2-L: NVIDIA MCP51
  */
 static int nvidia_mcp_gpio2_raise(void)
 {
@@ -1295,7 +1295,7 @@ static int intel_ich_gpio18_raise(void)
 
 /*
  * Suited for:
- *  - ASUS A8JM: Intel 945 + ICH7
+ *  - ASUS A8Jm (laptop): Intel 945 + ICH7
  */
 static int intel_ich_gpio34_raise(void)
 {
@@ -1758,9 +1758,9 @@ const struct board_pciid_enable board_pciid_enables[] = {
 	{0x1106, 0x3177, 0x1043, 0x80A1,  0x1106, 0x3205, 0x1043, 0x8118, NULL,          NULL,         NULL,          "ASUS",        "A7V8X-MX SE",           0,   OK, w836xx_memw_enable_2e},
 	{0x1106, 0x3189, 0x1043, 0x807F,  0x1106, 0x3177, 0x1043, 0x808C, NULL,          NULL,         NULL,          "ASUS",        "A7V8X",                 0,   OK, board_asus_a7v8x},
 	{0x1106, 0x3189, 0x1043, 0x807F,  0x1106, 0x3177, 0x1043, 0x80A1, NULL,          NULL,         NULL,          "ASUS",        "A7V8X-X",               0,   OK, it8712f_gpio3_1_raise},
-	{0x8086, 0x27A0, 0x1043, 0x1287,  0x8086, 0x27DF, 0x1043, 0x1287, "^A8J",        NULL,         NULL,          "ASUS",        "A8JM",                  0,   NT, intel_ich_gpio34_raise},
+	{0x8086, 0x27A0, 0x1043, 0x1287,  0x8086, 0x27DF, 0x1043, 0x1287, "^A8J",        NULL,         NULL,          "ASUS",        "A8Jm",                  0,   NT, intel_ich_gpio34_raise},
 	{0x10DE, 0x0260, 0x103c, 0x2a3e,  0x10DE, 0x0264, 0x103c, 0x2a3e, "NAGAMI2L",    NULL,         NULL,          "ASUS",        "A8N-LA (Nagami-GL8E)",  0,   OK, nvidia_mcp_gpio0_raise},
-	{0x10DE, 0x005E, 0x1043, 0x815A,  0x10DE, 0x0054, 0x1043, 0x815A, NULL,          NULL,         NULL,          "ASUS",        "A8N",                   0,   NT, board_shuttle_fn25},
+	{0x10DE, 0x005E, 0x1043, 0x815A,  0x10DE, 0x0054, 0x1043, 0x815A, NULL,          NULL,         NULL,          "ASUS",        "A8N",                   0,   NT, board_shuttle_fn25}, /* TODO: This should probably be A8N-SLI Deluxe, see http://www.coreboot.org/pipermail/flashrom/2009-November/000878.html. */
 	{0x10de, 0x0264, 0x1043, 0x81bc,  0x10de, 0x02f0, 0x1043, 0x81cd, NULL,          NULL,         NULL,          "ASUS",        "A8N-VM CSM",            0,   NT, w83627ehf_gpio24_raise_2e},
 	{0x10DE, 0x0264, 0x1043, 0x81C0,  0x10DE, 0x0260, 0x1043, 0x81C0, NULL,          NULL,         NULL,          "ASUS",        "M2NBP-VM CSM",          0,   OK, nvidia_mcp_gpio0_raise},
 	{0x1106, 0x1336, 0x1043, 0x80ed,  0x1106, 0x3288, 0x1043, 0x8249, NULL,          NULL,         NULL,          "ASUS",        "M2V-MX",                0,   OK, via_vt823x_gpio5_raise},
@@ -1783,11 +1783,11 @@ const struct board_pciid_enable board_pciid_enables[] = {
 	{0x8086, 0x244b, 0x8086, 0x2442,  0x8086, 0x2445, 0x1458, 0xa002, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-8IRML",              0,   OK, intel_ich_gpio25_raise},
 	{0x8086, 0x24c3, 0x1458, 0x24c2,  0x8086, 0x24cd, 0x1458, 0x5004, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-8PE667 Ultra 2",     0,   OK, intel_ich_gpio32_raise},
 	{0x10DE, 0x0050, 0x1458, 0x0C11,  0x10DE, 0x005e, 0x1458, 0x5000, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-K8N-SLI",            0,   OK, nvidia_mcp_gpio21_raise},
-	{0x1166, 0x0223, 0x103c, 0x320d,  0x14e4, 0x1678, 0x103c, 0x703e, NULL,          "hp",         "dl145_g3",    "HP",          "DL145 G3",              0,   OK, board_hp_dl145_g3_enable},
-	{0x1166, 0x0223, 0x103c, 0x320d,  0x14e4, 0x1648, 0x103c, 0x310f, NULL,          "hp",         "dl165_g6",    "HP",          "DL165 G6",              0,   OK, board_hp_dl165_g6_enable},
+	{0x1166, 0x0223, 0x103c, 0x320d,  0x14e4, 0x1678, 0x103c, 0x703e, NULL,          "hp",         "dl145_g3",    "HP",          "ProLiant DL145 G3",     0,   OK, board_hp_dl145_g3_enable},
+	{0x1166, 0x0223, 0x103c, 0x320d,  0x14e4, 0x1648, 0x103c, 0x310f, NULL,          "hp",         "dl165_g6",    "HP",          "ProLiant DL165 G6",     0,   OK, board_hp_dl165_g6_enable},
 	{0x8086, 0x2580, 0x103c, 0x2a08,  0x8086, 0x2640, 0x103c, 0x2a0a, NULL,          NULL,         NULL,          "HP",          "Puffer2-UL8E",          0,   OK, intel_ich_gpio18_raise},
 	{0x8086, 0x2415, 0x103c, 0x1249,  0x10b7, 0x9200, 0x103c, 0x1246, NULL,          NULL,         NULL,          "HP",          "Vectra VL400",          0,   OK, board_hp_vl400}, 
-	{0x8086, 0x1a30, 0x103c, 0x1a30,  0x8086, 0x2443, 0x103c, 0x2440, "^VL420$",     NULL,         NULL,          "HP",          "VL420 SFF",             0,   OK, intel_ich_gpio22_raise},
+	{0x8086, 0x1a30, 0x103c, 0x1a30,  0x8086, 0x2443, 0x103c, 0x2440, "^VL420$",     NULL,         NULL,          "HP",          "Vectra VL420 SFF",      0,   OK, intel_ich_gpio22_raise},
 	{0x10de, 0x0369, 0x103c, 0x12fe,  0x10de, 0x0364, 0x103c, 0x12fe, NULL,          NULL,         NULL,          "HP",          "xw9400",                0,   OK, nvidia_mcp_gpio5_raise},
 	{0x8086, 0x27A0,      0,      0,  0x8086, 0x27B9,      0,      0, NULL,          "ibase",      "mb899",       "IBASE",       "MB899",                 0,   OK, intel_ich_gpio26_raise},
 	{0x1166, 0x0205, 0x1014, 0x0347,  0x1002, 0x515E, 0x1014, 0x0325, NULL,          NULL,         NULL,          "IBM",         "x3455",                 0,   OK, board_ibm_x3455},
@@ -1796,8 +1796,8 @@ const struct board_pciid_enable board_pciid_enables[] = {
 	{0x1022, 0x7468,      0,      0,       0,      0,      0,      0, NULL,          "iwill",      "dk8_htx",     "IWILL",       "DK8-HTX",               0,   OK, w83627hf_gpio24_raise_2e},
 	{0x8086, 0x27A0, 0x8086, 0x27a0,  0x8086, 0x27b8, 0x8086, 0x27b8, NULL,          "kontron",    "986lcd-m",    "Kontron",     "986LCD-M",              0,   OK, board_kontron_986lcd_m},
 	{0x8086, 0x2411, 0x8086, 0x2411,  0x8086, 0x7125, 0x0e11, 0xb165, NULL,          NULL,         NULL,          "Mitac",       "6513WU",                0,   OK, board_mitac_6513wu},
-	{0x10DE, 0x005E, 0x1462, 0x7125,  0x10DE, 0x0052, 0x1462, 0x7125, NULL,          NULL,         NULL,          "MSI",         "K8N Neo4-F",            0,   OK, nvidia_mcp_gpio2_raise},
-	{0x8086, 0x2560, 0x1462, 0x5770,  0x8086, 0x2562, 0x1462, 0x5778, NULL,          NULL,         NULL,          "MSI",         "MS-6577",               0,   OK, w83627hf_gpio25_raise_2e},
+	{0x10DE, 0x005E, 0x1462, 0x7125,  0x10DE, 0x0052, 0x1462, 0x7125, NULL,          NULL,         NULL,          "MSI",         "K8N Neo4-F",            0,   OK, nvidia_mcp_gpio2_raise}, /* TODO: Should probably be K8N Neo4 Platinum, see http://www.coreboot.org/pipermail/flashrom/2010-August/004362.html. */
+	{0x8086, 0x2560, 0x1462, 0x5770,  0x8086, 0x2562, 0x1462, 0x5778, NULL,          NULL,         NULL,          "MSI",         "MS-6577 (Xenon)",       0,   OK, w83627hf_gpio25_raise_2e},
 	{0x13f6, 0x0111, 0x1462, 0x5900,  0x1106, 0x3177, 0x1106,      0, NULL,          NULL,         NULL,          "MSI",         "MS-6590 (KT4 Ultra)",   0,   OK, board_msi_kt4v},
 	{0x1106, 0x3149, 0x1462, 0x7094,  0x10ec, 0x8167, 0x1462, 0x094c, NULL,          NULL,         NULL,          "MSI",         "MS-6702E (K8T Neo2-F)", 0,   OK, w83627thf_gpio44_raise_2e},
 	{0x1106, 0x0571, 0x1462, 0x7120,  0x1106, 0x3065, 0x1462, 0x7120, NULL,          NULL,         NULL,          "MSI",         "MS-6712 (KT4V)",        0,   OK, board_msi_kt4v},
@@ -1806,7 +1806,7 @@ const struct board_pciid_enable board_pciid_enables[] = {
 	{0x8086, 0x2658, 0x1462, 0x7046,  0x1106, 0x3044, 0x1462, 0x046d, NULL,          NULL,         NULL,          "MSI",         "MS-7046",               0,   OK, intel_ich_gpio19_raise},
 	{0x1106, 0x3149, 0x1462, 0x7061,  0x1106, 0x3227,      0,      0, NULL,          NULL,         NULL,          "MSI",         "MS-7061 (KM4M-V/KM4AM-V)", 0,   OK, w836xx_memw_enable_2e},
 	{0x10DE, 0x005E, 0x1462, 0x7135,  0x10DE, 0x0050, 0x1462, 0x7135, NULL,          "msi",        "k8n-neo3",    "MSI",         "MS-7135 (K8N Neo3)",    0,   OK, w83627thf_gpio44_raise_4e},
-	{0x10DE, 0x0270, 0x1462, 0x7207,  0x10DE, 0x0264, 0x1462, 0x7207, NULL,          NULL,         NULL,          "MSI",         "MS-7207 (K8N GM2-L)",   0,   NT, nvidia_mcp_gpio2_raise},
+	{0x10DE, 0x0270, 0x1462, 0x7207,  0x10DE, 0x0264, 0x1462, 0x7207, NULL,          NULL,         NULL,          "MSI",         "MS-7207 (K8NGM2-L)",    0,   NT, nvidia_mcp_gpio2_raise},
 	{0x1011, 0x0019, 0xaa55, 0xaa55,  0x8086, 0x7190,      0,      0, NULL,          NULL,         NULL,          "Nokia",       "IP530",                 0,   OK, fdc37b787_gpio50_raise_3f0},
 	{0x8086, 0x24d3, 0x144d, 0xb025,  0x8086, 0x1050, 0x144d, 0xb025, NULL,          NULL,         NULL,          "Samsung",     "Polaris 32",            0,   OK, intel_ich_gpio21_raise},
 	{0x1106, 0x3099,      0,      0,  0x1106, 0x3074,      0,      0, NULL,          "shuttle",    "ak31",        "Shuttle",     "AK31",                  0,   OK, w836xx_memw_enable_2e},
