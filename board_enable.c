@@ -387,6 +387,7 @@ static void w836xx_memw_enable(uint16_t port)
  *  - Shuttle AK31 (all versions): VIA KT266 + VT8233
  *  - ASUS A7V8X-MX SE and A7V400-MX: AMD K7 + VIA KM400A + VT8235
  *  - Tyan S2498 (Tomcat K7M): AMD Geode NX + VIA KM400 + VT8237
+ *  - MSI KM4M-V and KM4AM-V: VIA KM400/KM400A + VT8237
  */
 static int w836xx_memw_enable_2e(void)
 {
@@ -1803,6 +1804,7 @@ const struct board_pciid_enable board_pciid_enables[] = {
 	{0x1039, 0x7012, 0x1462, 0x0050,  0x1039, 0x6325, 0x1462, 0x0058, NULL,          NULL,         NULL,          "MSI",         "MS-7005 (651M-L)",      0,   OK, board_msi_651ml},
 	{0x10DE, 0x00E0, 0x1462, 0x0250,  0x10DE, 0x00E1, 0x1462, 0x0250, NULL,          NULL,         NULL,          "MSI",         "MS-7025 (K8N Neo2 Platinum)", 0,   OK, nvidia_mcp_gpio0c_raise},
 	{0x8086, 0x2658, 0x1462, 0x7046,  0x1106, 0x3044, 0x1462, 0x046d, NULL,          NULL,         NULL,          "MSI",         "MS-7046",               0,   OK, intel_ich_gpio19_raise},
+	{0x1106, 0x3149, 0x1462, 0x7061,  0x1106, 0x3227,      0,      0, NULL,          NULL,         NULL,          "MSI",         "MS-7061 (KM4M-V/KM4AM-V)", 0,   OK, w836xx_memw_enable_2e},
 	{0x10DE, 0x005E, 0x1462, 0x7135,  0x10DE, 0x0050, 0x1462, 0x7135, NULL,          "msi",        "k8n-neo3",    "MSI",         "MS-7135 (K8N Neo3)",    0,   OK, w83627thf_gpio44_raise_4e},
 	{0x10DE, 0x0270, 0x1462, 0x7207,  0x10DE, 0x0264, 0x1462, 0x7207, NULL,          NULL,         NULL,          "MSI",         "MS-7207 (K8N GM2-L)",   0,   NT, nvidia_mcp_gpio2_raise},
 	{0x1011, 0x0019, 0xaa55, 0xaa55,  0x8086, 0x7190,      0,      0, NULL,          NULL,         NULL,          "Nokia",       "IP530",                 0,   OK, fdc37b787_gpio50_raise_3f0},
