@@ -5651,8 +5651,8 @@ struct flashchip flashchips[] = {
 		.model_id	= SST_49LF040B,
 		.total_size	= 512,
 		.page_size	= 64 * 1024,
-		.feature_bits	= FEATURE_EITHER_RESET,
-		.tested		= TEST_OK_PR,
+		.feature_bits	= FEATURE_EITHER_RESET | FEATURE_REGISTERMAP,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_jedec,
 		.probe_timing	= 1,		/* 150ns */
 		.block_erasers	=
@@ -5668,6 +5668,7 @@ struct flashchip flashchips[] = {
 				.block_erase = NULL,
 			}
 		},
+		.unlock		= unlock_82802ab,
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
 	},
