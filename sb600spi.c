@@ -58,8 +58,38 @@ static void reset_internal_fifo_pointer(void)
 {
 	mmio_writeb(mmio_readb(sb600_spibar + 2) | 0x10, sb600_spibar + 2);
 
+	/* FIXME: This loop makes no sense at all. */
 	while (mmio_readb(sb600_spibar + 0xD) & 0x7)
 		msg_pspew("reset\n");
+}
+
+static int compare_internal_fifo_pointer(uint8_t want)
+{
+	uint8_t tmp;
+
+	tmp = mmio_readb(sb600_spibar + 0xd) & 0x07;
+	want &= 0x7;
+	if (want != tmp) {
+		msg_perr("SB600 FIFO pointer corruption! Pointer is %d, wanted "
+			 "%d\n", tmp, want);
+		msg_perr("Something else is accessing the flash chip and "
+			 "causes random corruption.\nPlease stop all "
+			 "applications and drivers and IPMI which access the "
+			 "flash chip.\n");
+		return 1;
+	} else {
+		msg_pspew("SB600 FIFO pointer is %d, wanted %d\n", tmp, want);
+		return 0;
+	}
+}
+
+static int reset_compare_internal_fifo_pointer(uint8_t want)
+{
+	int ret;
+
+	ret = compare_internal_fifo_pointer(want);
+	reset_internal_fifo_pointer();
+	return ret;
 }
 
 static void execute_command(void)
@@ -77,6 +107,7 @@ int sb600_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	/* First byte is cmd which can not being sent through FIFO. */
 	unsigned char cmd = *writearr++;
 	unsigned int readoffby1;
+	unsigned char readwrite;
 
 	writecnt--;
 
@@ -102,15 +133,17 @@ int sb600_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	 * It is unclear if the CS# line is set high too early as well.
 	 */
 	readoffby1 = (writecnt) ? 0 : 1;
-	mmio_writeb((readcnt + readoffby1) << 4 | (writecnt), sb600_spibar + 1);
+	readwrite = (readcnt + readoffby1) << 4 | (writecnt);
+	mmio_writeb(readwrite, sb600_spibar + 1);
 	mmio_writeb(cmd, sb600_spibar + 0);
 
 	/* Before we use the FIFO, reset it first. */
 	reset_internal_fifo_pointer();
 
 	/* Send the write byte to FIFO. */
+	msg_pspew("Writing: ");
 	for (count = 0; count < writecnt; count++, writearr++) {
-		msg_pspew(" [%x]", *writearr);
+		msg_pspew("[%02x]", *writearr);
 		mmio_writeb(*writearr, sb600_spibar + 0xC);
 	}
 	msg_pspew("\n");
@@ -119,8 +152,10 @@ int sb600_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	 * We should send the data by sequence, which means we need to reset
 	 * the FIFO pointer to the first byte we want to send.
 	 */
-	reset_internal_fifo_pointer();
+	if (reset_compare_internal_fifo_pointer(writecnt))
+		return SPI_PROGRAMMER_ERROR;
 
+	msg_pspew("Executing: \n");
 	execute_command();
 
 	/*
@@ -134,21 +169,36 @@ int sb600_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	 * the opcode, the FIFO already stores the response from the chip.
 	 * Usually, the chip will respond with 0x00 or 0xff.
 	 */
-	reset_internal_fifo_pointer();
+	if (reset_compare_internal_fifo_pointer(writecnt + readcnt))
+		return SPI_PROGRAMMER_ERROR;
 
 	/* Skip the bytes we sent. */
+	msg_pspew("Skipping: ");
 	for (count = 0; count < writecnt; count++) {
 		cmd = mmio_readb(sb600_spibar + 0xC);
-		msg_pspew("[ %2x]", cmd);
+		msg_pspew("[%02x]", cmd);
 	}
+	msg_pspew("\n");
+	if (compare_internal_fifo_pointer(writecnt))
+		return SPI_PROGRAMMER_ERROR;
 
-	msg_pspew("The FIFO pointer after skipping is %d.\n",
-		  mmio_readb(sb600_spibar + 0xd) & 0x07);
+	msg_pspew("Reading: ");
 	for (count = 0; count < readcnt; count++, readarr++) {
 		*readarr = mmio_readb(sb600_spibar + 0xC);
 		msg_pspew("[%02x]", *readarr);
 	}
 	msg_pspew("\n");
+	if (reset_compare_internal_fifo_pointer(readcnt + writecnt))
+		return SPI_PROGRAMMER_ERROR;
+
+	if (mmio_readb(sb600_spibar + 1) != readwrite) {
+		msg_perr("Unexpected change in SB600 read/write count!\n");
+		msg_perr("Something else is accessing the flash chip and "
+			 "causes random corruption.\nPlease stop all "
+			 "applications and drivers and IPMI which access the "
+			 "flash chip.\n");
+		return SPI_PROGRAMMER_ERROR;
+	}
 
 	return 0;
 }
@@ -158,6 +208,10 @@ int sb600_probe_spi(struct pci_dev *dev)
 	struct pci_dev *smbus_dev;
 	uint32_t tmp;
 	uint8_t reg;
+	const char *speed_names[4] = {
+		"Reserved", "33", "22", "16.5"
+	};
+
 	/* Read SPI_BaseAddr */
 	tmp = pci_read_long(dev, 0xa0);
 	tmp &= 0xffffffe0;	/* remove bits 4-0 (reserved) */
@@ -183,15 +237,25 @@ int sb600_probe_spi(struct pci_dev *dev)
 	msg_pdbg("PrefetchEnSPIFromIMC=%i, ", tmp);
 
 	tmp = pci_read_byte(dev, 0xbb);
+	/* FIXME: Set bit 3,6,7 if not already set.
+	 * Set bit 5, otherwise SPI accesses are pointless in LPC mode.
+	 * See doc 42413 AMD SB700/710/750 RPR.
+	 */
 	msg_pdbg("PrefetchEnSPIFromHost=%i, SpiOpEnInLpcMode=%i\n",
 		     tmp & 0x1, (tmp & 0x20) >> 5);
 	tmp = mmio_readl(sb600_spibar);
+	/* FIXME: If SpiAccessMacRomEn or SpiHostAccessRomEn are zero on
+	 * SB700 or later, reads and writes will be corrupted. Abort in this
+	 * case. Make sure to avoid this check on SB600.
+	 */
 	msg_pdbg("SpiArbEnable=%i, SpiAccessMacRomEn=%i, "
 		     "SpiHostAccessRomEn=%i, ArbWaitCount=%i, "
 		     "SpiBridgeDisable=%i, DropOneClkOnRd=%i\n",
 		     (tmp >> 19) & 0x1, (tmp >> 22) & 0x1,
 		     (tmp >> 23) & 0x1, (tmp >> 24) & 0x7,
 		     (tmp >> 27) & 0x1, (tmp >> 28) & 0x1);
+	tmp = (mmio_readb(sb600_spibar + 0xd) >> 4) & 0x3;
+	msg_pdbg("NormSpeed is %s MHz\n", speed_names[tmp]);
 
 	/* Look for the SMBus device. */
 	smbus_dev = pci_dev_find(0x1002, 0x4385);
@@ -229,6 +293,9 @@ int sb600_probe_spi(struct pci_dev *dev)
 		msg_pdbg("Not enabling SPI");
 		return 0;
 	}
+
+	/* Bring the FIFO to a clean state. */
+	reset_internal_fifo_pointer();
 
 	buses_supported |= CHIP_BUSTYPE_SPI;
 	spi_controller = SPI_CONTROLLER_SB600;
