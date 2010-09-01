@@ -1075,6 +1075,15 @@ static int intel_piix4_gpo_set(unsigned int gpo, int raise)
 
 /*
  * Suited for:
+ *  - ASUS P2B-N
+ */
+static int intel_piix4_gpo18_lower(void)
+{
+	return intel_piix4_gpo_set(18, 0);
+}
+
+/*
+ * Suited for:
  *  - EPoX EP-BX3
  */
 static int intel_piix4_gpo22_raise(void)
@@ -1779,6 +1788,7 @@ const struct board_pciid_enable board_pciid_enables[] = {
 	{0x10de, 0x0264, 0x1043, 0x81bc,  0x10de, 0x02f0, 0x1043, 0x81cd, NULL,          NULL,         NULL,          "ASUS",        "A8N-VM CSM",            0,   NT, w83627ehf_gpio24_raise_2e},
 	{0x10DE, 0x0264, 0x1043, 0x81C0,  0x10DE, 0x0260, 0x1043, 0x81C0, NULL,          NULL,         NULL,          "ASUS",        "M2NBP-VM CSM",          0,   OK, nvidia_mcp_gpio0_raise},
 	{0x1106, 0x1336, 0x1043, 0x80ed,  0x1106, 0x3288, 0x1043, 0x8249, NULL,          NULL,         NULL,          "ASUS",        "M2V-MX",                0,   OK, via_vt823x_gpio5_raise},
+	{0x8086, 0x7190,      0,      0,  0x8086, 0x7110,      0,      0, "^P2B-N$",     NULL,         NULL,          "ASUS",        "P2B-N",                 0,   OK, intel_piix4_gpo18_lower},
 	{0x8086, 0x1A30, 0x1043, 0x8025,  0x8086, 0x244B, 0x104D, 0x80F0, NULL,          NULL,         NULL,          "ASUS",        "P4B266-LM",             0,   OK, intel_ich_gpio21_raise},
 	{0x8086, 0x1a30, 0x1043, 0x8070,  0x8086, 0x244b, 0x1043, 0x8028, NULL,          NULL,         NULL,          "ASUS",        "P4B266",                0,   OK, intel_ich_gpio22_raise},
 	{0x8086, 0x1A30, 0x1043, 0x8088,  0x8086, 0x24C3, 0x1043, 0x8089, NULL,          NULL,         NULL,          "ASUS",        "P4B533-E",              0,   NT, intel_ich_gpio22_raise},

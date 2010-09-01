@@ -348,6 +348,7 @@ const struct board_info boards_known[] = {
 	B("ASUS",	"P2B-D",		1, "ftp://ftp.asus.com.tw/pub/ASUS/mb/slot1/440bx/p2b-d/", NULL),
 	B("ASUS",	"P2B-DS",		1, "ftp://ftp.asus.com.tw/pub/ASUS/mb/slot1/440bx/p2b-ds/", NULL),
 	B("ASUS",	"P2B-F",		1, "ftp://ftp.asus.com.tw/pub/ASUS/mb/slot1/440bx/p2b-d/", NULL),
+	B("ASUS",	"P2B-N",		1, "ftp://ftp.asus.com.tw/pub/ASUS/mb/slot1/440bx/p2b-n/", NULL),
 	B("ASUS",	"P2E-M",		1, "ftp://ftp.asus.com.tw/pub/ASUS/mb/slot1/440ex/p2e-m/", NULL),
 	B("ASUS",	"P2L97-S",		1, "ftp://ftp.asus.com.tw/pub/ASUS/mb/slot1/440lx/p2l97-s/", NULL),
 	B("ASUS",	"P3B-F",		0, "ftp://ftp.asus.com.tw/pub/ASUS/mb/slot1/440bx/p3b-f/", NULL),
