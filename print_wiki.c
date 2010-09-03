@@ -296,6 +296,9 @@ void print_supported_wiki(void)
 #if CONFIG_ATAHPT == 1
 	print_supported_pcidevs_wiki(ata_hpt);
 #endif
+#if CONFIG_NICINTEL_SPI == 1
+	print_supported_pcidevs_wiki(nics_intel_spi);
+#endif
 	printf("\n|}\n");
 }
 
