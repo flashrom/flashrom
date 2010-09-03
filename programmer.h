@@ -37,10 +37,10 @@ enum programmer {
 #if CONFIG_NICREALTEK == 1
 	PROGRAMMER_NICREALTEK,
 	PROGRAMMER_NICREALTEK2,
-#endif	
+#endif
 #if CONFIG_NICNATSEMI == 1
 	PROGRAMMER_NICNATSEMI,
-#endif	
+#endif
 #if CONFIG_GFXNVIDIA == 1
 	PROGRAMMER_GFXNVIDIA,
 #endif
@@ -72,6 +72,9 @@ enum programmer {
 #endif
 #if CONFIG_RAYER_SPI == 1
 	PROGRAMMER_RAYER_SPI,
+#endif
+#if CONFIG_NICINTEL_SPI == 1
+	PROGRAMMER_NICINTEL_SPI,
 #endif
 	PROGRAMMER_INVALID /* This must always be the last entry. */
 };
@@ -109,6 +112,9 @@ enum bitbang_spi_master_type {
 	BITBANG_SPI_INVALID	= 0, /* This must always be the first entry. */
 #if CONFIG_RAYER_SPI == 1
 	BITBANG_SPI_MASTER_RAYER,
+#endif
+#if CONFIG_NICINTEL_SPI == 1
+	BITBANG_SPI_MASTER_NICINTEL,
 #endif
 #if CONFIG_INTERNAL == 1
 #if defined(__i386__) || defined(__x86_64__)
@@ -207,7 +213,7 @@ uint32_t pcidev_init(uint16_t vendor_id, uint32_t bar, const struct pcidev_statu
 #endif
 
 /* print.c */
-#if CONFIG_NIC3COM+CONFIG_NICREALTEK+CONFIG_NICNATSEMI+CONFIG_GFXNVIDIA+CONFIG_DRKAISER+CONFIG_SATASII+CONFIG_ATAHPT >= 1
+#if CONFIG_NIC3COM+CONFIG_NICREALTEK+CONFIG_NICNATSEMI+CONFIG_GFXNVIDIA+CONFIG_DRKAISER+CONFIG_SATASII+CONFIG_ATAHPT+CONFIG_NICINTEL_SPI >= 1
 void print_supported_pcidevs(const struct pcidev_status *devs);
 #endif
 
@@ -378,6 +384,16 @@ uint8_t nicnatsemi_chip_readb(const chipaddr addr);
 extern const struct pcidev_status nics_natsemi[];
 #endif
 
+/* nicintel_spi.c */
+#if CONFIG_NICINTEL_SPI == 1
+int nicintel_spi_init(void);
+int nicintel_spi_shutdown(void);
+int nicintel_spi_send_command(unsigned int writecnt, unsigned int readcnt,
+	const unsigned char *writearr, unsigned char *readarr);
+void nicintel_spi_chip_writeb(uint8_t val, chipaddr addr);
+extern const struct pcidev_status nics_intel_spi[];
+#endif
+
 /* satasii.c */
 #if CONFIG_SATASII == 1
 int satasii_init(void);
@@ -493,6 +509,9 @@ enum spi_controller {
 #endif
 #if CONFIG_RAYER_SPI == 1
 	SPI_CONTROLLER_RAYER,
+#endif
+#if CONFIG_NICINTEL_SPI == 1
+	SPI_CONTROLLER_NICINTEL,
 #endif
 	SPI_CONTROLLER_INVALID /* This must always be the last entry. */
 };

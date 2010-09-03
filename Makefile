@@ -121,7 +121,11 @@ else
 ifeq ($(CONFIG_INTERNAL), yes)
 override CONFIG_BITBANG_SPI = yes
 else
+ifeq ($(CONFIG_NICINTEL_SPI), yes)
+override CONFIG_BITBANG_SPI = yes
+else
 CONFIG_BITBANG_SPI ?= no
+endif
 endif
 endif
 
@@ -152,6 +156,9 @@ CONFIG_NICREALTEK ?= yes
 
 # Disable National Semiconductor NICs until support is complete and tested.
 CONFIG_NICNATSEMI ?= no
+
+# Always enable SPI on Intel NICs for now.
+CONFIG_NICINTEL_SPI ?= yes
 
 # Always enable Bus Pirate SPI for now.
 CONFIG_BUSPIRATE_SPI ?= yes
@@ -241,6 +248,12 @@ endif
 ifeq ($(CONFIG_NICNATSEMI), yes)
 FEATURE_CFLAGS += -D'CONFIG_NICNATSEMI=1'
 PROGRAMMER_OBJS += nicnatsemi.o
+NEED_PCI := yes
+endif
+
+ifeq ($(CONFIG_NICINTEL_SPI), yes)
+FEATURE_CFLAGS += -D'CONFIG_NICINTEL_SPI=1'
+PROGRAMMER_OBJS += nicintel_spi.o
 NEED_PCI := yes
 endif
 

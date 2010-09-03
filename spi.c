@@ -136,6 +136,15 @@ const struct spi_programmer spi_programmer[] = {
 	},
 #endif
 
+#if CONFIG_NICINTEL_SPI == 1
+	{ /* SPI_CONTROLLER_NICINTEL */
+		.command = bitbang_spi_send_command,
+		.multicommand = default_spi_send_multicommand,
+		.read = bitbang_spi_read,
+		.write_256 = bitbang_spi_write_256,
+	},
+#endif
+
 	{}, /* This entry corresponds to SPI_CONTROLLER_INVALID. */
 };
 
