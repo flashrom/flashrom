@@ -84,8 +84,8 @@ struct superio probe_superio_ite(void)
 		case 0x82:
 		case 0x86:
 		case 0x87:
-			msg_pinfo("Found ITE Super I/O, id %04hx\n",
-				     ret.model);
+			msg_pinfo("Found ITE Super I/O, ID 0x%04hx.\n",
+				  ret.model);
 			return ret;
 		}
 	}
