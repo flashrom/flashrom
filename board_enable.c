@@ -948,6 +948,15 @@ static int nvidia_mcp_gpio31_raise(void)
 
 /*
  * Suited for:
+ *  - GIGABYTE GA-K8N51GMF-9
+ */
+static int nvidia_mcp_gpio3b_raise(void)
+{
+	return nvidia_mcp_gpio_set(0x3b, 1);
+}
+
+/*
+ * Suited for:
  *  - Artec Group DBE61 and DBE62
  */
 static int board_artecgroup_dbe6x(void)
@@ -1807,6 +1816,7 @@ const struct board_pciid_enable board_pciid_enables[] = {
 	{0x1106, 0x0686, 0x1106, 0x0686,  0x1106, 0x3058, 0x1458, 0xa000, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-7ZM",                512, OK, NULL},
 	{0x8086, 0x244b, 0x8086, 0x2442,  0x8086, 0x2445, 0x1458, 0xa002, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-8IRML",              0,   OK, intel_ich_gpio25_raise},
 	{0x8086, 0x24c3, 0x1458, 0x24c2,  0x8086, 0x24cd, 0x1458, 0x5004, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-8PE667 Ultra 2",     0,   OK, intel_ich_gpio32_raise},
+	{0x10DE, 0x026C, 0x1458, 0xA102,  0x10DE, 0x0260, 0x1458, 0x5001, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-K8N51GMF-9",         0,   OK, nvidia_mcp_gpio3b_raise},
 	{0x10DE, 0x0050, 0x1458, 0x0C11,  0x10DE, 0x005e, 0x1458, 0x5000, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-K8N-SLI",            0,   OK, nvidia_mcp_gpio21_raise},
 	{0x1166, 0x0223, 0x103c, 0x320d,  0x14e4, 0x1678, 0x103c, 0x703e, NULL,          "hp",         "dl145_g3",    "HP",          "ProLiant DL145 G3",     0,   OK, board_hp_dl145_g3_enable},
 	{0x1166, 0x0223, 0x103c, 0x320d,  0x14e4, 0x1648, 0x103c, 0x310f, NULL,          "hp",         "dl165_g6",    "HP",          "ProLiant DL165 G6",     0,   OK, board_hp_dl165_g6_enable},
