@@ -371,6 +371,7 @@ const struct board_info boards_known[] = {
 	B("ASUS",	"P5GC-MX/1333",		1, "http://www.asus.com/product.aspx?P_ID=PYvbfOokwxUzJky3", NULL),
 	B("ASUS",	"P5KC",			1, "http://www.asus.com/product.aspx?P_ID=fFZ8oUIGmLpwNMjj", NULL),
 	B("ASUS",	"P5L-MX",		1, "http://www.asus.com/product.aspx?P_ID=X70d3NCzH2DE9vWH", NULL),
+	B("ASUS",	"P5GD1 Pro",		1, "http://www.asus.com/product.aspx?P_ID=50M49xQh71EZOeM1", NULL),
 	B("ASUS",	"P5ND2-SLI Deluxe",	1, "http://www.asus.com/product.aspx?P_ID=WY7XroDuUImVbgp5", NULL),
 	B("ASUS",	"P5PE-VM",		1, "http://www.asus.com/product.aspx?P_ID=k3h0ZFVu9Lo1dUvk", NULL),
 	B("ASUS",	"P6T SE",		1, "http://www.asus.com/product.aspx?P_ID=t4yhK6y9W9o7iQ9E", NULL),
