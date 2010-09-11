@@ -447,6 +447,7 @@ const struct board_info boards_known[] = {
 	B("MSI",	"MS-6156",		1, "http://uk.ts.fujitsu.com/rl/servicesupport/techsupport/boards/Motherboards/MicroStar/Ms6156/MS6156.htm", NULL),
 	B("MSI",	"MS-6178",		0, "http://www.msi.com/index.php?func=proddesc&maincat_no=1&prod_no=343", "Immediately powers off if you try to hot-plug the chip. However, this does '''not''' happen if you use coreboot. Owned by Uwe Hermann <uwe@hermann-uwe.de>."),
 	B("MSI",	"MS-6330 (K7T Turbo)",	1, "http://www.msi.com/index.php?func=proddesc&maincat_no=1&prod_no=327", NULL),
+	B("MSI",	"MS-6561 (745 Ultra)",	1, "http://www.msi.com/index.php?func=proddesc&maincat_no=1&prod_no=274", NULL),
 	B("MSI",	"MS-6570 (K7N2)",	1, "http://www.msi.com/index.php?func=proddesc&maincat_no=1&prod_no=519", NULL),
 	B("MSI",	"MS-6577 (Xenon)",	1, "http://h10025.www1.hp.com/ewfrf/wc/document?product=90390&lc=en&cc=us&dlc=en&docname=bph07843", "This is an OEM board from HP, the HP name is Xenon."),
 	B("MSI",	"MS-6590 (KT4 Ultra)",	1, "http://www.msi.com/index.php?func=proddesc&maincat_no=1&prod_no=502", NULL),
