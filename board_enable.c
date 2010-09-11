@@ -388,6 +388,7 @@ static void w836xx_memw_enable(uint16_t port)
  *  - ASUS A7V8X-MX SE and A7V400-MX: AMD K7 + VIA KM400A + VT8235
  *  - Tyan S2498 (Tomcat K7M): AMD Geode NX + VIA KM400 + VT8237
  *  - MSI KM4M-V and KM4AM-V: VIA KM400/KM400A + VT8237
+ *  - MSI MS-6561 (745 Ultra): SiS 745 + W83697HF
  *  - MSI MS-6787 (P4MAM-V/P4MAM-L): VIA P4M266 + VT8235
  */
 static int w836xx_memw_enable_2e(void)
@@ -1837,6 +1838,7 @@ const struct board_pciid_enable board_pciid_enables[] = {
 	{0x8086, 0x27A0, 0x8086, 0x27a0,  0x8086, 0x27b8, 0x8086, 0x27b8, NULL,          "kontron",    "986lcd-m",    "Kontron",     "986LCD-M",              0,   OK, board_kontron_986lcd_m},
 	{0x8086, 0x2411, 0x8086, 0x2411,  0x8086, 0x7125, 0x0e11, 0xb165, NULL,          NULL,         NULL,          "Mitac",       "6513WU",                0,   OK, board_mitac_6513wu},
 	{0x10DE, 0x005E, 0x1462, 0x7125,  0x10DE, 0x0052, 0x1462, 0x7125, NULL,          NULL,         NULL,          "MSI",         "K8N Neo4-F",            0,   OK, nvidia_mcp_gpio2_raise}, /* TODO: Should probably be K8N Neo4 Platinum, see http://www.coreboot.org/pipermail/flashrom/2010-August/004362.html. */
+	{0x1039, 0x0745,      0,      0,  0x1039, 0x0018,      0,      0, "^MS-6561",    NULL,         NULL,          "MSI",         "MS-6561 (745 Ultra)",   0,   OK, w836xx_memw_enable_2e},
 	{0x8086, 0x2560, 0x1462, 0x5770,  0x8086, 0x2562, 0x1462, 0x5778, NULL,          NULL,         NULL,          "MSI",         "MS-6577 (Xenon)",       0,   OK, w83627hf_gpio25_raise_2e},
 	{0x13f6, 0x0111, 0x1462, 0x5900,  0x1106, 0x3177, 0x1106,      0, NULL,          NULL,         NULL,          "MSI",         "MS-6590 (KT4 Ultra)",   0,   OK, board_msi_kt4v},
 	{0x1106, 0x3149, 0x1462, 0x7094,  0x10ec, 0x8167, 0x1462, 0x094c, NULL,          NULL,         NULL,          "MSI",         "MS-6702E (K8T Neo2-F)", 0,   OK, w83627thf_gpio44_raise_2e},
