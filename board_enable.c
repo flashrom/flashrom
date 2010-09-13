@@ -1155,6 +1155,15 @@ static int intel_piix4_gpo22_raise(void)
 
 /*
  * Suited for:
+ *  - abit BM6
+ */
+static int intel_piix4_gpo26_lower(void)
+{
+	return intel_piix4_gpo_set(26, 0);
+}
+
+/*
+ * Suited for:
  *  - Intel SE440BX-2
  */
 static int intel_piix4_gpo27_lower(void)
@@ -1828,6 +1837,7 @@ const struct board_pciid_enable board_pciid_enables[] = {
 	/* first pci-id set [4],          second pci-id set [4],          dmi identifier coreboot id [2],             vendor name    board name       max_rom_...  OK? flash enable */
 #if defined(__i386__) || defined(__x86_64__)
 	{0x10DE, 0x0547, 0x147B, 0x1C2F,  0x10DE, 0x0548, 0x147B, 0x1C2F, NULL,          NULL,         NULL,          "abit",        "AN-M2",                 0,   NT, nvidia_mcp_gpio2_raise},
+	{0x8086, 0x7190,      0,      0,  0x8086, 0x7110,      0,      0, "^i440BX-W977 (BM6)$", NULL, NULL,          "abit",        "BM6",                   0,   OK, intel_piix4_gpo26_lower},
 	{0x8086, 0x24d3, 0x147b, 0x1014,  0x8086, 0x2578, 0x147b, 0x1014, NULL,          NULL,         NULL,          "abit",        "IC7",                   0,   NT, intel_ich_gpio23_raise},
 	{0x8086, 0x2930, 0x147b, 0x1084,  0x11ab, 0x4364, 0x147b, 0x1084, NULL,          NULL,         NULL,          "abit",        "IP35",                  0,   OK, intel_ich_gpio16_raise},
 	{0x8086, 0x2930, 0x147b, 0x1083,  0x10ec, 0x8167, 0x147b, 0x1083, NULL,          NULL,         NULL,          "abit",        "IP35 Pro",              0,   OK, intel_ich_gpio16_raise},
