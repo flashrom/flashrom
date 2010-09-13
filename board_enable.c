@@ -498,6 +498,48 @@ int it8705f_write_enable(uint8_t port)
 	return ret;
 }
 
+/*
+ * The ITE IT8707F is a custom chip made by ITE exclusively for ASUS.
+ * It uses the Winbond command sequence to enter extended configuration
+ * mode and the ITE sequence to exit.
+ *
+ * Registers seems similar to the ones on ITE IT8710F.
+ */
+static int it8707f_write_enable(uint8_t port)
+{
+	uint8_t tmp;
+
+	w836xx_ext_enter(port);
+
+	/* Set bit 3 (GLB_REG_WE) of reg 0x23: Makes reg 0x24-0x2A rw */
+	tmp = sio_read(port, 0x23);
+	tmp |= (1 << 3);
+	sio_write(port, 0x23, tmp);
+
+	/* Set bit 2 (FLASH_WE) and bit 3 (FLASH_IF_EN) of reg 0x24 */
+	tmp = sio_read(port, 0x24);
+	tmp |= (1 << 2) | (1 << 3);
+	sio_write(port, 0x24, tmp);
+
+	/* Clear bit 3 (GLB_REG_WE) of reg 0x23: Makes reg 0x24-0x2A ro */
+	tmp = sio_read(port, 0x23);
+	tmp &= ~(1 << 3);
+	sio_write(port, 0x23, tmp);
+
+	exit_conf_mode_ite(port);
+
+	return 0;
+}
+
+/*
+ * Suited for:
+ *  - ASUS P4SC-E: SiS 651 + 962 + ITE IT8707F
+ */
+static int it8707f_write_enable_2e(void)
+{
+	return it8707f_write_enable(0x2e);
+}
+
 static int pc87360_gpio_set(uint8_t gpio, int raise)
 {
 	static const int bankbase[] = {0, 4, 8, 10, 12};
@@ -1818,6 +1860,7 @@ const struct board_pciid_enable board_pciid_enables[] = {
 	{0x8086, 0x24D3, 0x1043, 0x80A6,  0x8086, 0x2578, 0x1043, 0x80F6, NULL,          NULL,         NULL,          "ASUS",        "P4C800-E Deluxe",       0,   OK, intel_ich_gpio21_raise},
 	{0x8086, 0x2570, 0x1043, 0x80F2,  0x8086, 0x24D5, 0x1043, 0x80F3, NULL,          NULL,         NULL,          "ASUS",        "P4P800",                0,   NT, intel_ich_gpio21_raise},
 	{0x8086, 0x2570, 0x1043, 0x80F2,  0x105A, 0x3373, 0x1043, 0x80F5, NULL,          NULL,         NULL,          "ASUS",        "P4P800-E Deluxe",       0,   OK, intel_ich_gpio21_raise},
+	{0x1039, 0x0651, 0x1043, 0x8081,  0x1039, 0x0962,      0,      0, NULL,          NULL,         NULL,          "ASUS",        "P4SC-E",                0,   OK, it8707f_write_enable_2e},
 	{0x8086, 0x2570, 0x1043, 0x80A5,  0x105A, 0x24D3, 0x1043, 0x80A6, NULL,          NULL,         NULL,          "ASUS",        "P4SD-LA",               0,   NT, intel_ich_gpio32_raise},
 	{0x1039, 0x0661, 0x1043, 0x8113,  0x1039, 0x5513, 0x1043, 0x8087, NULL,          NULL,         NULL,          "ASUS",        "P4S800-MX",             512, OK, w836xx_memw_enable_2e},
 	{0x10B9, 0x1541,      0,      0,  0x10B9, 0x1533,      0,      0, "^P5A$",       "asus",       "p5a",         "ASUS",        "P5A",                   0,   OK, board_asus_p5a},
