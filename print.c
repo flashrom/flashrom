@@ -446,6 +446,7 @@ const struct board_info boards_known[] = {
 	B("Mitac",	"6513WU",		1, "http://web.archive.org/web/20050313054828/http://www.mitac.com/micweb/products/tyan/6513wu/6513wu.htm", NULL),
 	B("MSI",	"MS-6153",		1, "http://www.msi.com/index.php?func=proddesc&maincat_no=1&prod_no=336", NULL),
 	B("MSI",	"MS-6156",		1, "http://uk.ts.fujitsu.com/rl/servicesupport/techsupport/boards/Motherboards/MicroStar/Ms6156/MS6156.htm", NULL),
+	B("MSI",	"MS-6163 (MS-6163 Pro)",1, "http://www.msi.com/index.php?func=proddesc&prod_no=340", NULL),
 	B("MSI",	"MS-6178",		0, "http://www.msi.com/index.php?func=proddesc&maincat_no=1&prod_no=343", "Immediately powers off if you try to hot-plug the chip. However, this does '''not''' happen if you use coreboot. Owned by Uwe Hermann <uwe@hermann-uwe.de>."),
 	B("MSI",	"MS-6330 (K7T Turbo)",	1, "http://www.msi.com/index.php?func=proddesc&maincat_no=1&prod_no=327", NULL),
 	B("MSI",	"MS-6561 (745 Ultra)",	1, "http://www.msi.com/index.php?func=proddesc&maincat_no=1&prod_no=274", NULL),
