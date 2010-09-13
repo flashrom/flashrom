@@ -363,6 +363,7 @@ const struct board_info boards_known[] = {
 	B("ASUS",	"P4C800-E Deluxe",	1, "http://www.asus.com/product.aspx?P_ID=cFuVCr9bXXCckmcK", NULL),
 	B("ASUS",	"P4P800",		1, "http://www.asus.com/product.aspx?P_ID=DYt1Et9MlBChqzLb", NULL),
 	B("ASUS",	"P4P800-E Deluxe",	1, "http://www.asus.com/product.aspx?P_ID=INIJUvLlif7LHp3g", NULL),
+	B("ASUS",	"P4SC-E",		1, "ftp://ftp.asus.com.tw/pub/ASUS/mb/sock478/p4sc-e/", "Part of ASUS Terminator P4 533 barebone system"),
 	B("ASUS",	"P4SD-LA",		1, "http://h10025.www1.hp.com/ewfrf/wc/document?docname=c00022505", NULL),
 	B("ASUS",	"P4S800-MX",		1, "http://www.asus.com/product.aspx?P_ID=Bb57zoJhmO1Qkcrh", NULL),
 	B("ASUS",	"P5A",			1, "ftp://ftp.asus.com.tw/pub/ASUS/mb/sock7/ali/p5a/", NULL),
