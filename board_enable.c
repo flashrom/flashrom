@@ -1351,6 +1351,7 @@ static int intel_ich_gpio19_raise(void)
  *  - ASUS P4P800: Intel socket478 + 865PE + ICH5R
  *  - ASUS P4P800-E Deluxe: Intel socket478 + 865PE + ICH5R
  *  - ASUS P5GD1 Pro: Intel LGA 775 + 915P + ICH6R
+ *  - ASUS P5GDC Deluxe: Intel socket775 + 915P + ICH6R
  *  - ASUS P5PE-VM: Intel LGA775 + 865G + ICH5
  *  - Samsung Polaris 32: socket478 + 865P + ICH5
  */
@@ -1812,6 +1813,7 @@ const struct board_pciid_enable board_pciid_enables[] = {
 	{0x1039, 0x0661, 0x1043, 0x8113,  0x1039, 0x5513, 0x1043, 0x8087, NULL,          NULL,         NULL,          "ASUS",        "P4S800-MX",             512, OK, w836xx_memw_enable_2e},
 	{0x10B9, 0x1541,      0,      0,  0x10B9, 0x1533,      0,      0, "^P5A$",       "asus",       "p5a",         "ASUS",        "P5A",                   0,   OK, board_asus_p5a},
 	{0x8086, 0x266a, 0x1043, 0x80a6,  0x8086, 0x2668, 0x1043, 0x814e, NULL,          NULL,         NULL,          "ASUS",        "P5GD1 Pro",             0,   OK, intel_ich_gpio21_raise},
+	{0x8086, 0x266a, 0x1043, 0x80a6,  0x8086, 0x2668, 0x1043, 0x813d, NULL,          NULL,         NULL,          "ASUS",        "P5GDC Deluxe",          0,   OK, intel_ich_gpio21_raise},
 	{0x10DE, 0x0030, 0x1043, 0x818a,  0x8086, 0x100E, 0x1043, 0x80EE, NULL,          NULL,         NULL,          "ASUS",        "P5ND2-SLI Deluxe",      0,   OK, nvidia_mcp_gpio10_raise},
 	{0x8086, 0x24dd, 0x1043, 0x80a6,  0x8086, 0x2570, 0x1043, 0x8157, NULL,          NULL,         NULL,          "ASUS",        "P5PE-VM",               0,   OK, intel_ich_gpio21_raise},
 	{0x8086, 0x3590, 0x1028, 0x016c,  0x1000, 0x0030, 0x1028, 0x016c, NULL,          NULL,         NULL,          "Dell",        "PowerEdge 1850",        0,   OK, intel_ich_gpio23_raise},
