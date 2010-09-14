@@ -487,6 +487,8 @@
 #define ST_M25P32		0x2016
 #define ST_M25P64		0x2017
 #define ST_M25P128		0x2018
+#define ST_M25PX32		0x7116
+#define ST_M25PX64		0x7117
 #define ST_M25PE10		0x8011
 #define ST_M25PE20		0x8012
 #define ST_M25PE40		0x8013
