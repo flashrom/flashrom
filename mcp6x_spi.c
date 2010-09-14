@@ -42,41 +42,39 @@
 
 void *mcp6x_spibar = NULL;
 
+/* Cached value of last GPIO state. */
+static uint8_t mcp_gpiostate;
+
 static void mcp6x_request_spibus(void)
 {
-	uint8_t tmp;
-
-	tmp = mmio_readb(mcp6x_spibar + 0x530);
-	tmp |= 1 << MCP6X_SPI_REQUEST;
-	mmio_writeb(tmp, mcp6x_spibar + 0x530);
+	mcp_gpiostate = mmio_readb(mcp6x_spibar + 0x530);
+	mcp_gpiostate |= 1 << MCP6X_SPI_REQUEST;
+	mmio_writeb(mcp_gpiostate, mcp6x_spibar + 0x530);
 
 	/* Wait until we are allowed to use the SPI bus. */
 	while (!(mmio_readw(mcp6x_spibar + 0x530) & (1 << MCP6X_SPI_GRANT))) ;
+
+	/* Update the cache. */
+	mcp_gpiostate = mmio_readb(mcp6x_spibar + 0x530);
 }
 
 static void mcp6x_release_spibus(void)
 {
-	uint8_t tmp;
-
-	tmp = mmio_readb(mcp6x_spibar + 0x530);
-	tmp &= ~(1 << MCP6X_SPI_REQUEST);
-	mmio_writeb(tmp, mcp6x_spibar + 0x530);
+	mcp_gpiostate &= ~(1 << MCP6X_SPI_REQUEST);
+	mmio_writeb(mcp_gpiostate, mcp6x_spibar + 0x530);
 }
 
 static void mcp6x_bitbang_set_cs(int val)
 {
-	uint8_t tmp;
-
 	/* Requesting and releasing the SPI bus is handled in here to allow the
 	 * chipset to use its own SPI engine for native reads.
 	 */
 	if (val == 0)
 		mcp6x_request_spibus();
 
-	tmp = mmio_readb(mcp6x_spibar + 0x530);
-	tmp &= ~(1 << MCP6X_SPI_CS);
-	tmp |= (val << MCP6X_SPI_CS);
-	mmio_writeb(tmp, mcp6x_spibar + 0x530);
+	mcp_gpiostate &= ~(1 << MCP6X_SPI_CS);
+	mcp_gpiostate |= (val << MCP6X_SPI_CS);
+	mmio_writeb(mcp_gpiostate, mcp6x_spibar + 0x530);
 
 	if (val == 1)
 		mcp6x_release_spibus();
@@ -84,31 +82,22 @@ static void mcp6x_bitbang_set_cs(int val)
 
 static void mcp6x_bitbang_set_sck(int val)
 {
-	uint8_t tmp;
-
-	tmp = mmio_readb(mcp6x_spibar + 0x530);
-	tmp &= ~(1 << MCP6X_SPI_SCK);
-	tmp |= (val << MCP6X_SPI_SCK);
-	mmio_writeb(tmp, mcp6x_spibar + 0x530);
+	mcp_gpiostate &= ~(1 << MCP6X_SPI_SCK);
+	mcp_gpiostate |= (val << MCP6X_SPI_SCK);
+	mmio_writeb(mcp_gpiostate, mcp6x_spibar + 0x530);
 }
 
 static void mcp6x_bitbang_set_mosi(int val)
 {
-	uint8_t tmp;
-
-	tmp = mmio_readb(mcp6x_spibar + 0x530);
-	tmp &= ~(1 << MCP6X_SPI_MOSI);
-	tmp |= (val << MCP6X_SPI_MOSI);
-	mmio_writeb(tmp, mcp6x_spibar + 0x530);
+	mcp_gpiostate &= ~(1 << MCP6X_SPI_MOSI);
+	mcp_gpiostate |= (val << MCP6X_SPI_MOSI);
+	mmio_writeb(mcp_gpiostate, mcp6x_spibar + 0x530);
 }
 
 static int mcp6x_bitbang_get_miso(void)
 {
-	uint8_t tmp;
-
-	tmp = mmio_readb(mcp6x_spibar + 0x530);
-	tmp = (tmp >> MCP6X_SPI_MISO) & 0x1;
-	return tmp;
+	mcp_gpiostate = mmio_readb(mcp6x_spibar + 0x530);
+	return (mcp_gpiostate >> MCP6X_SPI_MISO) & 0x1;
 }
 
 static const struct bitbang_spi_master bitbang_spi_master_mcp6x = {
@@ -176,9 +165,10 @@ int mcp6x_spi_init(int want_spi)
 	msg_pdbg("SPI control is 0x%04x, req=%i, gnt=%i\n",
 		 status, (status >> MCP6X_SPI_REQUEST) & 0x1,
 		 (status >> MCP6X_SPI_GRANT) & 0x1);
+	mcp_gpiostate = status & 0xff;
 
-	/* 1 usec halfperiod delay for now. */
-	if (bitbang_spi_init(&bitbang_spi_master_mcp6x, 1)) {
+	/* Zero halfperiod delay. */
+	if (bitbang_spi_init(&bitbang_spi_master_mcp6x, 0)) {
 		/* This should never happen. */
 		msg_perr("MCP6X bitbang SPI master init failed!\n");
 		return 1;
