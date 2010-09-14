@@ -1689,9 +1689,10 @@ static int board_mitac_6513wu(void)
 
 /*
  * Suited for:
+ *  - ASUS A7V333: VIA KT333 + VT8233A + IT8703F
  *  - ASUS A7V8X: VIA KT400 + VT8235 + IT8703F
  */
-static int board_asus_a7v8x(void)
+static int it8703f_gpio51_raise(void)
 {
 	uint16_t id, base;
 	uint8_t tmp;
@@ -1855,7 +1856,8 @@ const struct board_pciid_enable board_pciid_enables[] = {
 	{0x8086, 0x2570, 0x1849, 0x2570,  0x8086, 0x24d3, 0x1849, 0x24d0, NULL,          NULL,         NULL,          "ASRock",      "775i65G",               0,   OK, intel_ich_gpio23_raise},
 	{0x1106, 0x3189, 0x1043, 0x807F,  0x1106, 0x3065, 0x1043, 0x80ED, NULL,          NULL,         NULL,          "ASUS",        "A7V600-X",              0,   OK, it8712f_gpio3_1_raise},
 	{0x1106, 0x3177, 0x1043, 0x80A1,  0x1106, 0x3205, 0x1043, 0x8118, NULL,          NULL,         NULL,          "ASUS",        "A7V8X-MX SE",           0,   OK, w836xx_memw_enable_2e},
-	{0x1106, 0x3189, 0x1043, 0x807F,  0x1106, 0x3177, 0x1043, 0x808C, NULL,          NULL,         NULL,          "ASUS",        "A7V8X",                 0,   OK, board_asus_a7v8x},
+	{0x1106, 0x3189, 0x1043, 0x807F,  0x1106, 0x3177, 0x1043, 0x808C, NULL,          NULL,         NULL,          "ASUS",        "A7V8X",                 0,   OK, it8703f_gpio51_raise},
+	{0x1106, 0x3099, 0x1043, 0x807F,  0x1106, 0x3147, 0x1043, 0x808C, NULL,          NULL,         NULL,          "ASUS",        "A7V333",                0,   OK, it8703f_gpio51_raise},
 	{0x1106, 0x3189, 0x1043, 0x807F,  0x1106, 0x3177, 0x1043, 0x80A1, NULL,          NULL,         NULL,          "ASUS",        "A7V8X-X",               0,   OK, it8712f_gpio3_1_raise},
 	{0x8086, 0x27A0, 0x1043, 0x1287,  0x8086, 0x27DF, 0x1043, 0x1287, "^A8J",        NULL,         NULL,          "ASUS",        "A8Jm",                  0,   NT, intel_ich_gpio34_raise},
 	{0x10DE, 0x0260, 0x103c, 0x2a3e,  0x10DE, 0x0264, 0x103c, 0x2a3e, "NAGAMI2L",    NULL,         NULL,          "ASUS",        "A8N-LA (Nagami-GL8E)",  0,   OK, nvidia_mcp_gpio0_raise},
