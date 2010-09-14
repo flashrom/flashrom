@@ -110,10 +110,6 @@
 #define AMIC_A29L040		0x92
 #define AMIC_A49LF040A		0x9d
 
-/* This chip vendor/device ID is probably a misinterpreted LHA header. */
-#define ASD_ID			0x25	/* ASD, not listed in JEP106W */
-#define ASD_AE49F2008		0x52
-
 #define ATMEL_ID		0x1F	/* Atmel */
 #define AT_25DF021		0x4300
 #define AT_25DF041A		0x4401
@@ -543,35 +539,52 @@
  * W25X chips are SPI, first byte of device ID is memory type, second
  * byte of device ID is related to log(bitsize).
  */
-#define WINBOND_ID		0xDA	/* Winbond */
 #define WINBOND_NEX_ID		0xEF	/* Winbond (ex Nexcom) serial flashes */
-#define W_25X10			0x3011
-#define W_25X20			0x3012
-#define W_25X40			0x3013
-#define W_25X80			0x3014
-#define W_25X16			0x3015
-#define W_25X32			0x3016
-#define W_25X64			0x3017
-#define W_25Q80			0x4014
-#define W_25Q16			0x4015
-#define W_25Q32			0x4016
-#define W_25Q64			0x4017
-#define W_29C011		0xC1
-#define W_29C020C		0x45	/* Same as W29C020 and ASD AE29F2008 */
-#define W_29C040P		0x46	/* Same as W29C040 */
-#define W_29EE011		0xC1
-#define W_39L020		0xB5
-#define W_39L040		0xB6
-#define W_39V040FA		0x34
-#define W_39V040A		0x3D
-#define W_39V040B		0x54
-#define W_39V040C		0x50
-#define W_39V080A		0xD0
-#define W_39V080FA		0xD3
-#define W_39V080FA_DM		0x93
-#define W_49F002U		0x0B
-#define W_49F020		0x8C
-#define W_49V002A		0xB0
-#define W_49V002FA		0x32
+#define WINBOND_NEX_W25X10	0x3011
+#define WINBOND_NEX_W25X20	0x3012
+#define WINBOND_NEX_W25X40	0x3013
+#define WINBOND_NEX_W25X80	0x3014
+#define WINBOND_NEX_W25X16	0x3015
+#define WINBOND_NEX_W25X32	0x3016
+#define WINBOND_NEX_W25X64	0x3017
+#define WINBOND_NEX_W25Q40	0x4013
+#define WINBOND_NEX_W25Q80	0x4014
+#define WINBOND_NEX_W25Q16	0x4015
+#define WINBOND_NEX_W25Q32	0x4016
+#define WINBOND_NEX_W25Q64	0x4017
+#define WINBOND_NEX_W25Q128	0x4018
+
+#define WINBOND_ID		0xDA	/* Winbond */
+#define WINBOND_W19B160BB	0x49
+#define WINBOND_W19B160BT	0xC4
+#define WINBOND_W19B320SB	0x2A    /* Same as W19L320SB */
+#define WINBOND_W19B320ST	0xBA    /* Same as W19L320ST */
+#define WINBOND_W19B322MB	0x92
+#define WINBOND_W19B322MT	0x10
+#define WINBOND_W19B323MB	0x94
+#define WINBOND_W19B323MT	0x13
+#define WINBOND_W19B324MB	0x97
+#define WINBOND_W19B324MT	0x16
+#define WINBOND_W29C010		0xC1    /* Same as W29C010M, W29C011A, W29EE011, W29EE012, and ASD AE29F1008 */
+#define WINBOND_W29C020		0x45    /* Same as W29C020C, W29C022 and ASD AE29F2008 */
+#define WINBOND_W29C040		0x46    /* Same as W29C040P */
+#define WINBOND_W29C512A	0xC8    /* Same as W29EE512 */
+#define WINBOND_W39L010		0x31
+#define WINBOND_W39L020		0xB5
+#define WINBOND_W39L040		0xB6
+#define WINBOND_W39L040A	0xD6
+#define WINBOND_W39L512		0x38
+#define WINBOND_W39V040A	0x3D
+#define WINBOND_W39V040FA	0x34
+#define WINBOND_W39V040B	0x54    /* Same as W39V040FB */
+#define WINBOND_W39V040C	0x50    /* Same as W39V040FC */
+#define WINBOND_W39V080A	0xD0
+#define WINBOND_W39V080FA	0xD3
+#define WINBOND_W39V080FA_DM	0x93    /* W39V080FA dual mode */
+#define WINBOND_W49F002		0x25    /* Same as W49F002B */
+#define WINBOND_W49F002U	0x0B    /* Same as W49F002N and ASD AE49F2008 */
+#define WINBOND_W49F020		0x8C
+#define WINBOND_W49V002A	0xB0
+#define WINBOND_W49V002FA	0x32
 
 #endif /* !FLASHCHIPS_H */
