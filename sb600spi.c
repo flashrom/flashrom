@@ -294,6 +294,24 @@ int sb600_probe_spi(struct pci_dev *dev)
 		return 0;
 	}
 
+	reg = pci_read_byte(dev, 0x40);
+	msg_pdbg("SB700 IMC is %sactive.\n", (reg & (1 << 7)) ? "" : "not ");
+	if (reg & (1 << 7)) {
+		/* If we touch any region used by the IMC, the IMC and the SPI
+		 * interface will lock up, and the only way to recover is a
+		 * hard reset, but that is a bad choice for a half-erased or
+		 * half-written flash chip.
+		 * There appears to be an undocumented register which can freeze
+		 * or disable the IMC, but for now we want to play it safe.
+		 */
+		msg_perr("The SB700 IMC is active and may interfere with SPI "
+			 "commands. Disabling write.\n");
+		/* FIXME: Should we only disable SPI writes, or will the lockup
+		 * affect LPC/FWH chips as well?
+		 */
+		programmer_may_write = 0;
+	}
+
 	/* Bring the FIFO to a clean state. */
 	reset_internal_fifo_pointer();
 
