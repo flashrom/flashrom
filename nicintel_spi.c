@@ -91,20 +91,10 @@ static void nicintel_bitbang_set_cs(int val)
 {
 	uint32_t tmp;
 
-	/*
-	 * Requesting and releasing the SPI bus is handled in here to allow
-	 * the chipset to use its own SPI engine for native reads.
-	 */
-	if (val == 0)
-		nicintel_request_spibus();
-
 	tmp = pci_mmio_readl(nicintel_spibar + FLA);
 	tmp &= ~(1 << FL_CS);
 	tmp |= (val << FL_CS);
 	pci_mmio_writel(tmp,  nicintel_spibar + FLA);
-
-	if (val == 1)
-		nicintel_release_spibus();
 }
 
 static void nicintel_bitbang_set_sck(int val)
@@ -142,6 +132,8 @@ static const struct bitbang_spi_master bitbang_spi_master_nicintel = {
 	.set_sck = nicintel_bitbang_set_sck,
 	.set_mosi = nicintel_bitbang_set_mosi,
 	.get_miso = nicintel_bitbang_get_miso,
+	.request_bus = nicintel_request_spibus,
+	.release_bus = nicintel_release_spibus,
 };
 
 int nicintel_spi_init(void)

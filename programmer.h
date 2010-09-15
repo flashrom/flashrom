@@ -131,6 +131,8 @@ struct bitbang_spi_master {
 	void (*set_sck) (int val);
 	void (*set_mosi) (int val);
 	int (*get_miso) (void);
+	void (*request_bus) (void);
+	void (*release_bus) (void);
 };
 
 #if CONFIG_INTERNAL == 1
@@ -443,6 +445,7 @@ int mcp6x_spi_init(int want_spi);
 
 /* bitbang_spi.c */
 int bitbang_spi_init(const struct bitbang_spi_master *master, int halfperiod);
+int bitbang_spi_shutdown(const struct bitbang_spi_master *master);
 int bitbang_spi_send_command(unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr);
 int bitbang_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
 int bitbang_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len);
