@@ -66,18 +66,9 @@ static void mcp6x_release_spibus(void)
 
 static void mcp6x_bitbang_set_cs(int val)
 {
-	/* Requesting and releasing the SPI bus is handled in here to allow the
-	 * chipset to use its own SPI engine for native reads.
-	 */
-	if (val == 0)
-		mcp6x_request_spibus();
-
 	mcp_gpiostate &= ~(1 << MCP6X_SPI_CS);
 	mcp_gpiostate |= (val << MCP6X_SPI_CS);
 	mmio_writeb(mcp_gpiostate, mcp6x_spibar + 0x530);
-
-	if (val == 1)
-		mcp6x_release_spibus();
 }
 
 static void mcp6x_bitbang_set_sck(int val)
@@ -106,6 +97,8 @@ static const struct bitbang_spi_master bitbang_spi_master_mcp6x = {
 	.set_sck = mcp6x_bitbang_set_sck,
 	.set_mosi = mcp6x_bitbang_set_mosi,
 	.get_miso = mcp6x_bitbang_get_miso,
+	.request_bus = mcp6x_request_spibus,
+	.release_bus = mcp6x_release_spibus,
 };
 
 int mcp6x_spi_init(int want_spi)

@@ -53,6 +53,18 @@ static int bitbang_spi_get_miso(void)
 	return bitbang_spi_master->get_miso();
 }
 
+static void bitbang_spi_request_bus(void)
+{
+	if (bitbang_spi_master->request_bus)
+		bitbang_spi_master->request_bus();
+}
+
+static void bitbang_spi_release_bus(void)
+{
+	if (bitbang_spi_master->release_bus)
+		bitbang_spi_master->release_bus();
+}
+
 int bitbang_spi_init(const struct bitbang_spi_master *master, int halfperiod)
 {
 	/* BITBANG_SPI_INVALID is 0, so if someone forgot to initialize ->type,
@@ -61,16 +73,41 @@ int bitbang_spi_init(const struct bitbang_spi_master *master, int halfperiod)
 	 */
 	if (!master || master->type == BITBANG_SPI_INVALID || !master->set_cs ||
 	    !master->set_sck || !master->set_mosi || !master->get_miso) {
-		msg_perr("Incomplete bitbanging SPI master setting! Please "
-			 "report a bug at flashrom@flashrom.org\n");
+		msg_perr("Incomplete SPI bitbang master setting!\n"
+			 "Please report a bug at flashrom@flashrom.org\n");
 		return 1;
 	}
+	if (bitbang_spi_master) {
+		msg_perr("SPI bitbang master already initialized!\n"
+			 "Please report a bug at flashrom@flashrom.org\n");
+		return 1;
+	}
+
 	bitbang_spi_master = master;
 	bitbang_spi_half_period = halfperiod;
 
+	/* FIXME: Run bitbang_spi_request_bus here or in programmer init? */
 	bitbang_spi_set_cs(1);
 	bitbang_spi_set_sck(0);
 	bitbang_spi_set_mosi(0);
+	return 0;
+}
+
+int bitbang_spi_shutdown(const struct bitbang_spi_master *master)
+{
+	if (!bitbang_spi_master) {
+		msg_perr("Shutting down an uninitialized SPI bitbang master!\n"
+			 "Please report a bug at flashrom@flashrom.org\n");
+		return 1;
+	}
+	if (master != bitbang_spi_master) {
+		msg_perr("Shutting down a mismatched SPI bitbang master!\n"
+			 "Please report a bug at flashrom@flashrom.org\n");
+		return 1;
+	}
+
+	/* FIXME: Run bitbang_spi_release_bus here or per command? */
+	bitbang_spi_master = NULL;
 	return 0;
 }
 
@@ -96,6 +133,11 @@ int bitbang_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 {
 	int i;
 
+	/* FIXME: Run bitbang_spi_request_bus here or in programmer init?
+	 * Requesting and releasing the SPI bus is handled in here to allow the
+	 * programmer to use its own SPI engine for native accesses.
+	 */
+	bitbang_spi_request_bus();
 	bitbang_spi_set_cs(0);
 	for (i = 0; i < writecnt; i++)
 		bitbang_spi_readwrite_byte(writearr[i]);
@@ -105,6 +147,8 @@ int bitbang_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	programmer_delay(bitbang_spi_half_period);
 	bitbang_spi_set_cs(1);
 	programmer_delay(bitbang_spi_half_period);
+	/* FIXME: Run bitbang_spi_release_bus here or in programmer init? */
+	bitbang_spi_release_bus();
 
 	return 0;
 }
