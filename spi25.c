@@ -530,7 +530,7 @@ void spi_prettyprint_status_register(struct flashchip *flash)
 		    ((flash->model_id & 0xff00) == 0x2500))
 			spi_prettyprint_status_register_st_m25p(status);
 		break;
-	case MX_ID:
+	case MACRONIX_ID:
 		if ((flash->model_id & 0xff00) == 0x2000)
 			spi_prettyprint_status_register_st_m25p(status);
 		break;
