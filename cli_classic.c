@@ -456,5 +456,10 @@ int cli_classic(int argc, char *argv[])
 	if (write_it && !dont_verify_it)
 		verify_it = 1;
 
+	/* FIXME: We should issue an unconditional chip reset here. This can be
+	 * done once we have a .reset function in struct flashchip.
+	 * Give the chip time to settle.
+	 */
+	programmer_delay(100000);
 	return doit(flash, force, filename, read_it, write_it, erase_it, verify_it);
 }
