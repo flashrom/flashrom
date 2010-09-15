@@ -22,6 +22,7 @@
  * Contains the generic SPI framework
  */
 
+#include <string.h>
 #include "flash.h"
 #include "flashchips.h"
 #include "chipdrivers.h"
@@ -207,6 +208,7 @@ int default_spi_send_multicommand(struct spi_command *cmds)
 
 int spi_chip_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
+	int addrbase = 0;
 	if (!spi_programmer[spi_controller].read) {
 		msg_perr("%s called, but SPI read is unsupported on this "
 			 "hardware. Please report a bug at "
@@ -214,7 +216,26 @@ int spi_chip_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 		return 1;
 	}
 
-	return spi_programmer[spi_controller].read(flash, buf, start, len);
+	/* Check if the chip fits between lowest valid and highest possible
+	 * address. Highest possible address with the current SPI implementation
+	 * means 0xffffff, the highest unsigned 24bit number.
+	 */
+	addrbase = spi_get_valid_read_addr();
+	if (addrbase + flash->total_size * 1024 > (1 << 24)) {
+		msg_perr("Flash chip size exceeds the allowed access window. ");
+		msg_perr("Read will probably fail.\n");
+		/* Try to get the best alignment subject to constraints. */
+		addrbase = (1 << 24) - flash->total_size * 1024;
+	}
+	/* Check if alignment is native (at least the largest power of two which
+	 * is a factor of the mapped size of the chip).
+	 */
+	if (ffs(flash->total_size * 1024) > (ffs(addrbase) ? : 33)) {
+		msg_perr("Flash chip is not aligned natively in the allowed "
+			 "access window.\n");
+		msg_perr("Read will probably return garbage.\n");
+	}
+	return spi_programmer[spi_controller].read(flash, buf, addrbase + start, len);
 }
 
 /*
