@@ -802,6 +802,23 @@ static int enable_flash_ck804(struct pci_dev *dev, const char *name)
 	return 0;
 }
 
+static int enable_flash_osb4(struct pci_dev *dev, const char *name)
+{
+	uint8_t tmp;
+
+	buses_supported = CHIP_BUSTYPE_PARALLEL;
+
+	tmp = INB(0xc06);
+	tmp |= 0x1;
+	OUTB(tmp, 0xc06);
+
+	tmp = INB(0xc6f);
+	tmp |= 0x40;
+	OUTB(tmp, 0xc6f);
+
+	return 0;
+}
+
 /* ATI Technologies Inc IXP SB400 PCI-ISA Bridge (rev 80) */
 static int enable_flash_sb400(struct pci_dev *dev, const char *name)
 {
@@ -1008,6 +1025,7 @@ const struct penable chipset_enables[] = {
 	{0x1002, 0x439d, OK, "AMD", "SB700/SB710/SB750", enable_flash_sb600},
 	{0x100b, 0x0510, NT, "AMD", "SC1100",		enable_flash_sc1100},
 	{0x1002, 0x4377, OK, "ATI", "SB400",		enable_flash_sb400},
+	{0x1166, 0x0200, OK, "Broadcom", "OSB4",	enable_flash_osb4},
 	{0x1166, 0x0205, OK, "Broadcom", "HT-1000",	enable_flash_ht1000},
 	{0x8086, 0x3b00, NT, "Intel", "3400 Desktop",	enable_flash_ich10},
 	{0x8086, 0x3b01, NT, "Intel", "3400 Mobile",	enable_flash_ich10},
