@@ -393,6 +393,7 @@ const struct board_info boards_known[] = {
 	B("Dell",	"PowerEdge 1850",	1, "http://support.dell.com/support/edocs/systems/pe1850/en/index.htm", NULL),
 	B("DFI",	"855GME-MGF",		0, "http://www.dfi.com.tw/portal/CM/cmproduct/XX_cmproddetail/XX_WbProdsWindow?action=e&downloadType=&windowstate=normal&mode=view&downloadFlag=false&itemId=433", "Probably needs a board enable. http://www.coreboot.org/pipermail/coreboot/2009-May/048549.html"),
 	B("DFI",	"Blood-Iron P35 T2RL",	1, "http://lp.lanparty.com.tw/portal/CM/cmproduct/XX_cmproddetail/XX_WbProdsWindow?itemId=516&downloadFlag=false&action=1", NULL),
+	B("Elitegroup",	"GeForce6100SM-M ",	1, "http://www.ecs.com.tw/ECSWebSite/Product/Product_Detail.aspx?DetailID=685&MenuID=24", NULL),
 	B("Elitegroup",	"K7S5A",		1, "http://www.ecs.com.tw/ECSWebSite/Products/ProductsDetail.aspx?detailid=279&CategoryID=1&DetailName=Specification&MenuID=1&LanID=0", NULL),
 	B("Elitegroup",	"K7S6A",		1, "http://www.ecs.com.tw/ECSWebSite/Products/ProductsDetail.aspx?detailid=77&CategoryID=1&DetailName=Specification&MenuID=52&LanID=0", NULL),
 	B("Elitegroup",	"K7VTA3",		1, "http://www.ecs.com.tw/ECSWebSite/Products/ProductsDetail.aspx?detailid=264&CategoryID=1&DetailName=Specification&MenuID=52&LanID=0", NULL),
