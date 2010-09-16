@@ -200,8 +200,10 @@ int serialport_write(unsigned char *buf, unsigned int writecnt)
 #else
 		tmp = write(sp_fd, buf, writecnt);
 #endif
-		if (tmp == -1)
+		if (tmp == -1) {
+			msg_perr("Serial port write error!\n");
 			return 1;
+		}
 		if (!tmp)
 			msg_pdbg("Empty write\n");
 		writecnt -= tmp; 
@@ -221,8 +223,10 @@ int serialport_read(unsigned char *buf, unsigned int readcnt)
 #else
 		tmp = read(sp_fd, buf, readcnt);
 #endif
-		if (tmp == -1)
+		if (tmp == -1) {
+			msg_perr("Serial port read error!\n");
 			return 1;
+		}
 		if (!tmp)
 			msg_pdbg("Empty read\n");
 		readcnt -= tmp;

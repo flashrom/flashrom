@@ -22,6 +22,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <unistd.h>
 #include "flash.h"
 #include "chipdrivers.h"
 #include "programmer.h"
@@ -141,6 +142,20 @@ int buspirate_spi_init(void)
 		/* Read any response and discard it. */
 		sp_flush_incoming();
 	}
+	/* USB is slow. The Bus Pirate is even slower. Apparently the flush
+	 * action above is too fast or too early. Some stuff still remains in
+	 * the pipe after the flush above, and one additional flush is not
+	 * sufficient either. Use a 1.5 ms delay inside the loop to make
+	 * mostly sure that at least one USB frame had time to arrive.
+	 * Looping only 5 times is not sufficient and causes the
+	 * ocassional failure.
+	 * Folding the delay into the loop above is not reliable either.
+	 */
+	for (i = 0; i < 10; i++) {
+		usleep(1500);
+		/* Read any response and discard it. */
+		sp_flush_incoming();
+	}
 	/* Enter raw bitbang mode */
 	buf[0] = 0x00;
 	ret = buspirate_sendrecv(buf, 1, 5);
@@ -148,6 +163,8 @@ int buspirate_spi_init(void)
 		return ret;
 	if (memcmp(buf, "BBIO", 4)) {
 		msg_perr("Entering raw bitbang mode failed!\n");
+		msg_pdbg("Got %02x%02x%02x%02x%02x\n",
+			 buf[0], buf[1], buf[2], buf[3], buf[4]);
 		return 1;
 	}
 	msg_pdbg("Raw bitbang mode version %c\n", buf[4]);
@@ -159,8 +176,12 @@ int buspirate_spi_init(void)
 	/* Enter raw SPI mode */
 	buf[0] = 0x01;
 	ret = buspirate_sendrecv(buf, 1, 4);
+	if (ret)
+		return ret;
 	if (memcmp(buf, "SPI", 3)) {
 		msg_perr("Entering raw SPI mode failed!\n");
+		msg_pdbg("Got %02x%02x%02x%02x\n",
+			 buf[0], buf[1], buf[2], buf[3]);
 		return 1;
 	}
 	msg_pdbg("Raw SPI mode version %c\n", buf[3]);
