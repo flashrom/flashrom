@@ -1962,6 +1962,32 @@ struct flashchip flashchips[] = {
 	},
 
 	{
+		.vendor		= "Bright",
+		.name		= "BM29F040",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= BRIGHT_ID,
+		.model_id	= BRIGHT_BM29F040,
+		.total_size	= 512,
+		.page_size	= 64 * 1024,
+		.feature_bits	= FEATURE_EITHER_RESET,
+		.tested		= TEST_OK_PR,
+		.probe		= probe_jedec,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {64 * 1024, 8} },
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {512 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			},
+		},
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+	},
+
+	{
 		.vendor		= "EMST",
 		.name		= "F49B002UA",
 		.bustype	= CHIP_BUSTYPE_PARALLEL,
@@ -3085,6 +3111,32 @@ struct flashchip flashchips[] = {
 	},
 
 	{
+		.vendor		= "Hyundai",
+		.name		= "HY29F040A",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= HYUNDAI_ID,
+		.model_id	= HYUNDAI_HY29F040A,
+		.total_size	= 512,
+		.page_size	= 64 * 1024,
+		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_EITHER_RESET,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_jedec,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {64 * 1024, 8} },
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {512 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			},
+		},
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+	},
+
+	{
 		.vendor		= "Intel",
 		.name		= "28F001BX-B",
 		.bustype	= CHIP_BUSTYPE_PARALLEL,
@@ -3874,6 +3926,32 @@ struct flashchip flashchips[] = {
 				.block_erase = erase_sector_jedec,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			},
+		},
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "Macronix",
+		.name		= "MX29F040",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= MACRONIX_ID,
+		.model_id	= MACRONIX_MX29F040,
+		.total_size	= 512,
+		.page_size	= 64 * 1024,
+		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_jedec,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {64 * 1024, 8} },
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {512 * 1024, 1} },
 				.block_erase = erase_chip_block_jedec,
 			},
 		},

@@ -171,6 +171,12 @@
 #define ATMEL_AT49F002N		0x07	/* for AT49F002(N)  */
 #define ATMEL_AT49F002NT		0x08	/* for AT49F002(N)T */
 
+/* Bright Microelectronics has the same manufacturer ID as Hyundai... */
+#define BRIGHT_ID		0xAD	/* Bright Microelectronics */
+#define BRIGHT_BM29F040		0x40
+#define BRIGHT_BM29F400B	0xAB
+#define BRIGHT_BM29F400T	0xAD
+
 #define CATALYST_ID		0x31	/* Catalyst */
 
 #define EMST_ID			0x8C	/* EMST / EFST Elite Flash Storage */
