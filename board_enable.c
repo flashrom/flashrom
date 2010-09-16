@@ -818,6 +818,29 @@ static int board_shuttle_fn25(void)
 }
 
 /*
+ * Suited for:
+ * - Elitegroup GeForce6100SM-M: NVIDIA MCP61 + ITE IT8726F
+ */
+
+static int board_ecs_geforce6100sm_m(void)
+{
+	struct pci_dev *dev;
+	uint32_t tmp;
+
+	dev = pci_dev_find(0x10DE, 0x03EB);     /* NVIDIA MCP61 SMBus. */
+	if (!dev) {
+		msg_perr("\nERROR: NVIDIA MCP61 SMBus not found.\n");
+		return -1;
+	}
+
+	tmp = pci_read_byte(dev, 0xE0);
+	tmp &= ~(1 << 3);
+	pci_write_byte(dev, 0xE0, tmp);
+
+	return 0;
+}
+
+/*
  * Very similar to AMD 8111 IO Hub.
  */
 static int nvidia_mcp_gpio_set(int gpio, int raise)
@@ -1881,6 +1904,7 @@ const struct board_pciid_enable board_pciid_enables[] = {
 	{0x10DE, 0x0030, 0x1043, 0x818a,  0x8086, 0x100E, 0x1043, 0x80EE, NULL,          NULL,         NULL,          "ASUS",        "P5ND2-SLI Deluxe",      0,   OK, nvidia_mcp_gpio10_raise},
 	{0x8086, 0x24dd, 0x1043, 0x80a6,  0x8086, 0x2570, 0x1043, 0x8157, NULL,          NULL,         NULL,          "ASUS",        "P5PE-VM",               0,   OK, intel_ich_gpio21_raise},
 	{0x8086, 0x3590, 0x1028, 0x016c,  0x1000, 0x0030, 0x1028, 0x016c, NULL,          NULL,         NULL,          "Dell",        "PowerEdge 1850",        0,   OK, intel_ich_gpio23_raise},
+	{0x10de, 0x03ea, 0x1019, 0x2602,  0x10de, 0x03e0, 0x1019, 0x2602, NULL,          NULL,         NULL,          "Elitegroup",  "GeForce6100SM-M",       0,   OK, board_ecs_geforce6100sm_m},
 	{0x1106, 0x3038, 0x1019, 0x0996,  0x1106, 0x3177, 0x1019, 0x0996, NULL,          NULL,         NULL,          "Elitegroup",  "K7VTA3",                256, OK, NULL},
 	{0x1106, 0x3177, 0x1106, 0x3177,  0x1106, 0x3059, 0x1695, 0x3005, NULL,          NULL,         NULL,          "EPoX",        "EP-8K5A2",              0,   OK, w836xx_memw_enable_2e},
 	{0x10EC, 0x8139, 0x1695, 0x9001,  0x11C1, 0x5811, 0x1695, 0x9015, NULL,          NULL,         NULL,          "EPoX",        "EP-8RDA3+",             0,   OK, nvidia_mcp_gpio31_raise},
