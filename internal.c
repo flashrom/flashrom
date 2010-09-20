@@ -118,7 +118,9 @@ int is_laptop = 0;
 
 int internal_init(void)
 {
+#if __FLASHROM_LITTLE_ENDIAN__
 	int ret = 0;
+#endif
 	int force_laptop = 0;
 	char *arg;
 
