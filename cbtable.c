@@ -212,7 +212,7 @@ int coreboot_init(void)
 	start = 0x0;
 #endif
 	table_area = physmap_try_ro("low megabyte", start, BYTES_TO_MAP - start);
-	if (!table_area) {
+	if (ERROR_PTR == table_area) {
 		msg_perr("Failed getting access to coreboot low tables.\n");
 		return -1;
 	}
@@ -228,7 +228,7 @@ int coreboot_init(void)
 			start &= ~(getpagesize() - 1);
 			physunmap(table_area, BYTES_TO_MAP);
 			table_area = physmap_try_ro("high tables", start, BYTES_TO_MAP);
-			if (!table_area) {
+			if (ERROR_PTR == table_area) {
 				msg_perr("Failed getting access to coreboot "
 					 "high tables.\n");
 				return -1;

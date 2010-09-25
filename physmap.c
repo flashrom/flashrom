@@ -52,11 +52,11 @@ static void *map_first_meg(unsigned long phys_addr, size_t len)
 	realmem_map = valloc(1024 * 1024);
 
 	if (!realmem_map) {
-		return NULL;
+		return ERROR_PTR;
 	}
 
 	if (__djgpp_map_physical_memory(realmem_map, (1024 * 1024), 0)) {
-		return NULL;
+		return ERROR_PTR;
 	}
 
 	return realmem_map + phys_addr;
@@ -69,7 +69,7 @@ static void *sys_physmap(unsigned long phys_addr, size_t len)
 
 	/* enable 4GB limit on DS descriptor */
 	if (!__djgpp_nearptr_enable()) {
-		return NULL;
+		return ERROR_PTR;
 	}
 
 	if ((phys_addr + len - 1) < (1024 * 1024)) {
@@ -82,7 +82,7 @@ static void *sys_physmap(unsigned long phys_addr, size_t len)
 	ret =  __dpmi_physical_address_mapping (&mi);
 
 	if (ret != 0) {
-		return NULL;
+		return ERROR_PTR;
 	}
 
 	return (void *) mi.address + __djgpp_conventional_base;
@@ -112,7 +112,12 @@ void physunmap(void *virt_addr, size_t len)
 
 static void *sys_physmap(unsigned long phys_addr, size_t len)
 {
-	return map_physical(phys_addr, len);
+	/* The short form of ?: is a GNU extension.
+	 * FIXME: map_physical returns NULL both for errors and for success
+	 * if the region is mapped at virtual address zero. If in doubt, report
+	 * an error until a better interface exists.
+	 */
+	return map_physical(phys_addr, len) ? : ERROR_PTR;
 }
 
 /* The OS X driver does not differentiate between mapping types. */
@@ -151,7 +156,7 @@ static void *sys_physmap_rw_uncached(unsigned long phys_addr, size_t len)
 
 	virt_addr = mmap(0, len, PROT_WRITE | PROT_READ, MAP_SHARED,
 			 fd_mem, (off_t)phys_addr);
-	return MAP_FAILED == virt_addr ? NULL : virt_addr;
+	return MAP_FAILED == virt_addr ? ERROR_PTR : virt_addr;
 }
 
 /* For reading DMI/coreboot/whatever tables. We should never write, and we
@@ -171,7 +176,7 @@ static void *sys_physmap_ro_cached(unsigned long phys_addr, size_t len)
 
 	virt_addr = mmap(0, len, PROT_READ, MAP_SHARED,
 			 fd_mem_cached, (off_t)phys_addr);
-	return MAP_FAILED == virt_addr ? NULL : virt_addr;
+	return MAP_FAILED == virt_addr ? ERROR_PTR : virt_addr;
 }
 
 void physunmap(void *virt_addr, size_t len)
@@ -197,7 +202,7 @@ static void *physmap_common(const char *descr, unsigned long phys_addr, size_t l
 	if (len == 0) {
 		msg_pspew("Not mapping %s, zero size at 0x%08lx.\n",
 			     descr, phys_addr);
-		return NULL;
+		return ERROR_PTR;
 	}
 		
 	if ((getpagesize() - 1) & len) {
@@ -216,7 +221,7 @@ static void *physmap_common(const char *descr, unsigned long phys_addr, size_t l
 		virt_addr = sys_physmap_rw_uncached(phys_addr, len);
 	}
 
-	if (NULL == virt_addr) {
+	if (ERROR_PTR == virt_addr) {
 		if (NULL == descr)
 			descr = "memory";
 		msg_perr("Error accessing %s, 0x%lx bytes at 0x%08lx\n", descr, (unsigned long)len, phys_addr);
