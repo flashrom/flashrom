@@ -33,6 +33,8 @@
 #undef max
 #endif
 
+#define ERROR_PTR ((void*)-1)
+
 typedef unsigned long chipaddr;
 
 int register_shutdown(void (*function) (void *data), void *data);
