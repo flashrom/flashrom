@@ -244,7 +244,7 @@ int internal_init(void)
 	 * The error code might have been a warning only.
 	 * Besides that, we don't check the board enable return code either.
 	 */
-#if defined(__i386__) || defined(__x86_64__)
+#if defined(__i386__) || defined(__x86_64__) || defined (__mips)
 	return 0;
 #else
 	msg_perr("Your platform is not supported yet for the internal "
