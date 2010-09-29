@@ -37,8 +37,59 @@ int processor_flash_enable(void)
 
 #else
 
+#if defined (__MIPSEL__) && defined (__linux)
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+static int is_loongson(void)
+{
+	FILE *cpuinfo;
+	cpuinfo = fopen("/proc/cpuinfo", "rb");
+	if (!cpuinfo)
+		return 0;
+	while (!feof(cpuinfo)) {
+		char line[512], *ptr;
+		if (fgets(line, sizeof(line), cpuinfo) == NULL)
+			break;
+		ptr = line;
+		while (*ptr && isspace(*ptr))
+			ptr++;
+		/* "cpu" part appears only with some Linux versions.  */
+		if (strncmp(ptr, "cpu", sizeof("cpu") - 1) == 0)
+			ptr += sizeof("cpu") - 1;
+		while (*ptr && isspace(*ptr))
+			ptr++;
+		if (strncmp(ptr, "model", sizeof("model") - 1) != 0)
+			continue;
+		ptr += sizeof("model") - 1;
+		while (*ptr && isspace(*ptr))
+			ptr++;
+		if (*ptr != ':')
+			continue;
+		ptr++;
+		while (*ptr && isspace(*ptr))
+			ptr++;
+		fclose(cpuinfo);
+		return (strncmp(ptr, "ICT Loongson-2 V0.3",
+				sizeof("ICT Loongson-2 V0.3") - 1) == 0)
+		    || (strncmp(ptr, "Godson2 V0.3  FPU V0.1",
+				sizeof("Godson2 V0.3  FPU V0.1") - 1) == 0);
+	}
+	fclose(cpuinfo);
+	return 0;
+}
+#endif
+
 int processor_flash_enable(void)
 {
+	/* FIXME: detect loongson on FreeBSD and OpenBSD as well.  */
+#if defined (__MIPSEL__) && defined (__linux)
+	if (is_loongson()) {
+		flashbase = 0x1fc00000;
+		return 0;
+	}
+#endif
 	/* Not implemented yet. Oh well. */
 	return 1;
 }
