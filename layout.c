@@ -134,6 +134,7 @@ int show_id(uint8_t *bios, int size, int force)
 }
 #endif
 
+#ifndef __LIBPAYLOAD__
 int read_romlayout(char *name)
 {
 	FILE *romlayout;
@@ -181,6 +182,7 @@ int read_romlayout(char *name)
 
 	return 0;
 }
+#endif
 
 int find_romentry(char *name)
 {

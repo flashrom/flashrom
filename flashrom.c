@@ -22,9 +22,11 @@
  */
 
 #include <stdio.h>
-#include <fcntl.h>
 #include <sys/types.h>
+#ifndef __LIBPAYLOAD__
+#include <fcntl.h>
 #include <sys/stat.h>
+#endif
 #include <string.h>
 #include <stdlib.h>
 #include <getopt.h>
