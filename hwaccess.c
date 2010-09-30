@@ -22,9 +22,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <sys/types.h>
-#if !defined (__DJGPP__)
+#if !defined (__DJGPP__) && !defined(__LIBPAYLOAD__)
 #include <unistd.h>
 #include <fcntl.h>
+#endif
+#if !defined (__DJGPP__)
 #include <errno.h>
 #endif
 #include "flash.h"
@@ -44,7 +46,7 @@ int io_fd;
 
 void get_io_perms(void)
 {
-#if defined(__DJGPP__)
+#if defined(__DJGPP__) || defined(__LIBPAYLOAD__)
 	/* We have full permissions by default. */
 	return;
 #else

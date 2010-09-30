@@ -28,7 +28,7 @@
 #include "flash.h"
 
 /* Do we need any file access or ioctl for physmap or MSR? */
-#if !defined(__DJGPP__)
+#if !defined(__DJGPP__) && !defined(__LIBPAYLOAD__)
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -104,6 +104,31 @@ void physunmap(void *virt_addr, size_t len)
 	__dpmi_free_physical_address_mapping(&mi);
 }
 
+#elif defined(__LIBPAYLOAD__)
+#include <arch/virtual.h>
+
+#define MEM_DEV ""
+
+void *sys_physmap(unsigned long phys_addr, size_t len)
+{
+	return (void*)phys_to_virt(phys_addr);
+}
+
+#define sys_physmap_rw_uncached	sys_physmap
+#define sys_physmap_ro_cached	sys_physmap
+
+void physunmap(void *virt_addr, size_t len)
+{
+}
+
+int setup_cpu_msr(int cpu)
+{
+	return 0;
+}
+
+void cleanup_cpu_msr(void)
+{
+}
 #elif defined(__DARWIN__)
 
 #include <DirectIO/darwinio.h>
@@ -452,6 +477,20 @@ int setup_cpu_msr(int cpu)
 void cleanup_cpu_msr(void)
 {
 	// Nothing, yet.
+}
+#elif defined(__LIBPAYLOAD__)
+msr_t libpayload_rdmsr(int addr)
+{
+	msr_t msr;
+	unsigned long long val = _rdmsr(addr);
+	msr.lo = val & 0xffffffff;
+	msr.hi = val >> 32;
+	return msr;
+}
+
+int libpayload_wrmsr(int addr, msr_t msr)
+{
+	_wrmsr(addr, msr.lo | ((unsigned long long)msr.hi << 32));
 }
 #else
 msr_t rdmsr(int addr)
