@@ -19,6 +19,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#ifndef __LIBPAYLOAD__
+
 #include <unistd.h>
 #include <sys/time.h>
 #include <stdlib.h>
@@ -179,3 +181,15 @@ void internal_delay(int usecs)
 	}
 }
 
+#else 
+
+void myusec_calibrate_delay(void)
+{
+	get_cpu_speed();
+}
+
+void internal_delay(int usecs)
+{
+	udelay(usecs);
+}
+#endif
