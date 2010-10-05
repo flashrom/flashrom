@@ -4860,7 +4860,7 @@ struct flashchip flashchips[] = {
 		.model_id	= SST_SST25VF032B,
 		.total_size	= 4096,
 		.page_size	= 256,
-		.tested		= TEST_OK_PRW,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
@@ -4883,7 +4883,7 @@ struct flashchip flashchips[] = {
 			},
 		},
 		.unlock		= spi_disable_blockprotect,
-		.write		= spi_chip_write_1,
+		.write		= spi_aai_write,
 		.read		= spi_chip_read,
 	},
 
@@ -4918,7 +4918,7 @@ struct flashchip flashchips[] = {
 			},
 		},
 		.unlock		= spi_disable_blockprotect,
-		.write		= spi_chip_write_1,
+		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
 	},
 
