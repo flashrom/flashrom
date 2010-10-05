@@ -56,6 +56,8 @@ static void *map_first_meg(unsigned long phys_addr, size_t len)
 	}
 
 	if (__djgpp_map_physical_memory(realmem_map, (1024 * 1024), 0)) {
+		free(realmem_map);
+		realmem_map = NULL;
 		return ERROR_PTR;
 	}
 
@@ -95,7 +97,9 @@ void physunmap(void *virt_addr, size_t len)
 {
 	__dpmi_meminfo mi;
 
-	/* we ignore unmaps for our first 1MB */
+	/* There is no known way to unmap the first 1 MB. The DPMI server will
+	 * do this for us on exit.
+	 */
 	if ((virt_addr >= realmem_map) && ((virt_addr + len) <= (realmem_map + (1024 * 1024)))) {
 		return;
 	}
