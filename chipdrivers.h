@@ -63,7 +63,8 @@ int spi_nbyte_program(int addr, uint8_t *bytes, int len);
 int spi_nbyte_read(int addr, uint8_t *bytes, int len);
 int spi_read_chunked(struct flashchip *flash, uint8_t *buf, int start, int len, int chunksize);
 int spi_write_chunked(struct flashchip *flash, uint8_t *buf, int start, int len, int chunksize);
-int spi_aai_write(struct flashchip *flash, uint8_t *buf, int start, int len);
+int spi_aai_write_new(struct flashchip *flash, uint8_t *buf, int start, int len);
+int spi_aai_write(struct flashchip *flash, uint8_t *buf);
 
 /* 82802ab.c */
 uint8_t wait_82802ab(chipaddr bios);

@@ -1300,7 +1300,7 @@ int spi_chip_write_1(struct flashchip *flash, uint8_t *buf)
 	return spi_chip_write_1_new(flash, buf, 0, flash->total_size * 1024);
 }
 
-int spi_aai_write(struct flashchip *flash, uint8_t *buf, int start, int len)
+int spi_aai_write_new(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
 	uint32_t pos = start;
 	int result;
@@ -1391,3 +1391,17 @@ int spi_aai_write(struct flashchip *flash, uint8_t *buf, int start, int len)
 	spi_write_disable();
 	return 0;
 }
+
+int spi_aai_write(struct flashchip *flash, uint8_t *buf)
+{
+	/* Erase first */
+	msg_cinfo("Erasing flash before programming... ");
+	if (erase_flash(flash)) {
+		msg_cerr("ERASE FAILED!\n");
+		return -1;
+	}
+	msg_cinfo("done.\n");
+
+	return spi_aai_write_new(flash, buf, 0, flash->total_size * 1024);
+}
+
