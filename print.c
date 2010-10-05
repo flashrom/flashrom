@@ -410,6 +410,7 @@ const struct board_info boards_known[] = {
 	B("GIGABYTE",	"GA-2761GXDK",		1, "http://www.computerbase.de/news/hardware/mainboards/amd-systeme/2007/mai/gigabyte_dtx-mainboard/", NULL),
 	B("GIGABYTE",	"GA-6BXC",		1, "http://www.gigabyte.com/products/product-page.aspx?pid=1445", NULL),
 	B("GIGABYTE",	"GA-6BXDU",		1, "http://www.gigabyte.com/products/product-page.aspx?pid=1429", NULL),
+	B("GIGABYTE",	"GA-6IEM",		1, "http://www.gigabyte.com/products/product-page.aspx?pid=1379", NULL),
 	B("GIGABYTE",	"GA-6ZMA",		1, "http://www.gigabyte.com/products/product-page.aspx?pid=1541", NULL),
 	B("GIGABYTE",	"GA-MA785GMT-UD2H",	1, "http://www.gigabyte.de/Products/Motherboard/Products_Overview.aspx?ProductID=4525", NULL),
 	B("GIGABYTE",	"GA-770TA-UD3",		1, "http://www.gigabyte.com/products/product-page.aspx?pid=3272#ov", NULL),
