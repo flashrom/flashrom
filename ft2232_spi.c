@@ -195,7 +195,7 @@ int ft2232_spi_init(void)
 		msg_perr("Unable to set latency timer\n");
 	}
 
-	if (ftdi_write_data_set_chunksize(ftdic, 512)) {
+	if (ftdi_write_data_set_chunksize(ftdic, 256)) {
 		msg_perr("Unable to set chunk size\n");
 	}
 
