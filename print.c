@@ -390,6 +390,7 @@ const struct board_info boards_known[] = {
 	B("Biostar",	"TA780G M2+",		1, "http://www.biostar.com.tw/app/en/t-series/content.php?S_ID=344", NULL),
 	B("Boser",	"HS-6637",		0, "http://www.boser.com.tw/manual/HS-62376637v3.4.pdf", "Reported by Mark Robinson <mark@zl2tod.net> to flashrom@coreboot.org, no public archive. Missing board enable and/or F29C51002T unlocking. May work now."),
 	B("Congatec",	"conga-X852",		1, "http://www.congatec.com/single_news+M57715f6263d.html?&L=1", NULL),
+	B("Dell",	"OptiPlex GX1",		1, "http://support.dell.com/support/edocs/systems/ban_gx1/en/index.htm", NULL),
 	B("Dell",	"PowerEdge 1850",	1, "http://support.dell.com/support/edocs/systems/pe1850/en/index.htm", NULL),
 	B("DFI",	"855GME-MGF",		0, "http://www.dfi.com.tw/portal/CM/cmproduct/XX_cmproddetail/XX_WbProdsWindow?action=e&downloadType=&windowstate=normal&mode=view&downloadFlag=false&itemId=433", "Probably needs a board enable. http://www.coreboot.org/pipermail/coreboot/2009-May/048549.html"),
 	B("DFI",	"Blood-Iron P35 T2RL",	1, "http://lp.lanparty.com.tw/portal/CM/cmproduct/XX_cmproddetail/XX_WbProdsWindow?itemId=516&downloadFlag=false&action=1", NULL),

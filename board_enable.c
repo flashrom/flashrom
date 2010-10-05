@@ -1195,6 +1195,15 @@ static int intel_piix4_gpo27_lower(void)
 }
 
 /*
+ * Suited for:
+ *  - Dell OptiPlex GX1
+ */
+static int intel_piix4_gpo30_lower(void)
+{
+	return intel_piix4_gpo_set(30, 0);
+}
+
+/*
  * Set a GPIO line on a given Intel ICH LPC controller.
  */
 static int intel_ich_gpio_set(int gpio, int raise)
@@ -1904,6 +1913,7 @@ const struct board_pciid_enable board_pciid_enables[] = {
 	{0x8086, 0x266a, 0x1043, 0x80a6,  0x8086, 0x2668, 0x1043, 0x813d, NULL,          NULL,         NULL,          "ASUS",        "P5GDC Deluxe",          0,   OK, intel_ich_gpio21_raise},
 	{0x10DE, 0x0030, 0x1043, 0x818a,  0x8086, 0x100E, 0x1043, 0x80EE, NULL,          NULL,         NULL,          "ASUS",        "P5ND2-SLI Deluxe",      0,   OK, nvidia_mcp_gpio10_raise},
 	{0x8086, 0x24dd, 0x1043, 0x80a6,  0x8086, 0x2570, 0x1043, 0x8157, NULL,          NULL,         NULL,          "ASUS",        "P5PE-VM",               0,   OK, intel_ich_gpio21_raise},
+	{0x10b7, 0x9055, 0x1028, 0x0082,  0x8086, 0x7190,      0,      0, NULL,          NULL,         NULL,          "Dell",        "OptiPlex GX1",          0,   OK, intel_piix4_gpo30_lower},
 	{0x8086, 0x3590, 0x1028, 0x016c,  0x1000, 0x0030, 0x1028, 0x016c, NULL,          NULL,         NULL,          "Dell",        "PowerEdge 1850",        0,   OK, intel_ich_gpio23_raise},
 	{0x10de, 0x03ea, 0x1019, 0x2602,  0x10de, 0x03e0, 0x1019, 0x2602, NULL,          NULL,         NULL,          "Elitegroup",  "GeForce6100SM-M",       0,   OK, board_ecs_geforce6100sm_m},
 	{0x1106, 0x3038, 0x1019, 0x0996,  0x1106, 0x3177, 0x1019, 0x0996, NULL,          NULL,         NULL,          "Elitegroup",  "K7VTA3",                256, OK, NULL},
