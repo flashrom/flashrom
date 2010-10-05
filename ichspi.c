@@ -30,6 +30,7 @@
  * ST M25P32 already tested
  * ST M25P64
  * AT 25DF321 already tested
+ * ... and many more SPI flash devices
  *
  */
 
@@ -197,7 +198,75 @@ static OPCODES O_ST_M25P = {
 	}
 };
 
+/* List of opcodes with their corresponding spi_type
+ * It is used to reprogram the chipset OPCODE table on-the-fly if an opcode
+ * is needed which is currently not in the chipset OPCODE table
+ */
+static OPCODE POSSIBLE_OPCODES[] = {
+	 {JEDEC_BYTE_PROGRAM, SPI_OPCODE_TYPE_WRITE_WITH_ADDRESS, 0},	// Write Byte
+	 {JEDEC_READ, SPI_OPCODE_TYPE_READ_WITH_ADDRESS, 0},	// Read Data
+	 {JEDEC_BE_D8, SPI_OPCODE_TYPE_WRITE_WITH_ADDRESS, 0},	// Erase Sector
+	 {JEDEC_RDSR, SPI_OPCODE_TYPE_READ_NO_ADDRESS, 0},	// Read Device Status Reg
+	 {JEDEC_REMS, SPI_OPCODE_TYPE_READ_WITH_ADDRESS, 0},	// Read Electronic Manufacturer Signature
+	 {JEDEC_WRSR, SPI_OPCODE_TYPE_WRITE_NO_ADDRESS, 0},	// Write Status Register
+	 {JEDEC_RDID, SPI_OPCODE_TYPE_READ_NO_ADDRESS, 0},	// Read JDEC ID
+	 {JEDEC_CE_C7, SPI_OPCODE_TYPE_WRITE_NO_ADDRESS, 0},	// Bulk erase
+	 {JEDEC_SE, SPI_OPCODE_TYPE_WRITE_WITH_ADDRESS, 0},	// Sector erase
+	 {JEDEC_BE_52, SPI_OPCODE_TYPE_WRITE_WITH_ADDRESS, 0},	// Block erase
+	 {JEDEC_AAI_WORD_PROGRAM, SPI_OPCODE_TYPE_WRITE_NO_ADDRESS, 0},	// Auto Address Increment
+};
+
 static OPCODES O_EXISTING = {};
+
+static uint8_t lookup_spi_type(uint8_t opcode)
+{
+	int a;
+
+	for (a = 0; a < sizeof(POSSIBLE_OPCODES)/sizeof(POSSIBLE_OPCODES[0]); a++) {
+		if (POSSIBLE_OPCODES[a].opcode == opcode)
+			return POSSIBLE_OPCODES[a].spi_type;
+	}
+
+	return 0xFF;
+}
+
+static int reprogram_opcode_on_the_fly(uint8_t opcode, unsigned int writecnt, unsigned int readcnt)
+{
+	uint8_t spi_type;
+
+	spi_type = lookup_spi_type(opcode);
+	if (spi_type > 3) {
+		/* Try to guess spi type from read/write sizes.
+		 * The following valid writecnt/readcnt combinations exist:
+		 * writecnt  = 4, readcnt >= 0
+		 * writecnt  = 1, readcnt >= 0
+		 * writecnt >= 4, readcnt  = 0
+		 * writecnt >= 1, readcnt  = 0
+		 * writecnt >= 1 is guaranteed for all commands.
+		 */
+		if (readcnt == 0)
+			/* if readcnt=0 and writecount >= 4, we don't know if it is WRITE_NO_ADDRESS
+			 * or WRITE_WITH_ADDRESS. But if we use WRITE_NO_ADDRESS and the first 3 data
+			 * bytes are actual the address, they go to the bus anyhow
+			 */
+			spi_type = SPI_OPCODE_TYPE_WRITE_NO_ADDRESS;
+		else if (writecnt == 1) // and readcnt is > 0
+			spi_type = SPI_OPCODE_TYPE_READ_NO_ADDRESS;
+		else if (writecnt == 4) // and readcnt is > 0
+			spi_type = SPI_OPCODE_TYPE_READ_WITH_ADDRESS;
+		// else we have an invalid case, will be handled below
+	}
+	if (spi_type <= 3) {
+		int oppos=2;	// use original JEDEC_BE_D8 offset
+		curopcodes->opcode[oppos].opcode = opcode;
+		curopcodes->opcode[oppos].spi_type = spi_type;
+		program_opcodes(curopcodes);
+		oppos = find_opcode(curopcodes, opcode);
+		msg_pdbg ("on-the-fly OPCODE (0x%02X) re-programmed, op-pos=%d\n", opcode, oppos);
+		return oppos;
+	}
+	return -1;
+}
 
 static int find_opcode(OPCODES *op, uint8_t opcode)
 {
@@ -710,11 +779,12 @@ int ich_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	/* find cmd in opcodes-table */
 	opcode_index = find_opcode(curopcodes, cmd);
 	if (opcode_index == -1) {
-		/* FIXME: Reprogram opcodes if possible. Autodetect type of
-		 * opcode by checking readcnt/writecnt.
-		 */
-		msg_pdbg("Invalid OPCODE 0x%02x\n", cmd);
-		return SPI_INVALID_OPCODE;
+		if (!ichspi_lock)
+			opcode_index = reprogram_opcode_on_the_fly(cmd, writecnt, readcnt);
+		if (opcode_index == -1) {
+			msg_pdbg("Invalid OPCODE 0x%02x\n", cmd);
+			return SPI_INVALID_OPCODE;
+		}
 	}
 
 	opcode = &(curopcodes->opcode[opcode_index]);
@@ -827,21 +897,10 @@ int ich_spi_send_multicommand(struct spi_command *cmds)
 				 * No need to bother with fixups.
 				 */
 				if (!ichspi_lock) {
-					msg_pdbg("%s: FIXME: Add on-the-fly"
-						     " reprogramming of the "
-						     "chipset opcode list.\n",
-						     __func__);
-				 	/* FIXME: Reprogram opcode menu.
-					 * Find a less-useful opcode, replace it
-					 * with the wanted opcode, detect optype
-					 * and reprogram the opcode menu.
-					 * Update oppos so the next if-statement
-					 * can do something useful.
-					 */
-					//curopcodes.opcode[lessusefulindex] = (cmds + 1)->writearr[0]);
-					//update_optypes(curopcodes);
-					//program_opcodes(curopcodes);
-					//oppos = find_opcode(curopcodes, (cmds + 1)->writearr[0]);
+					oppos = reprogram_opcode_on_the_fly((cmds + 1)->writearr[0], (cmds + 1)->writecnt, (cmds + 1)->readcnt);
+					if (oppos == -1)
+						continue;
+					curopcodes->opcode[oppos].atomic = preoppos + 1;
 					continue;
 				}
 			}
