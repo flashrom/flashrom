@@ -3138,10 +3138,10 @@ struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Intel",
-		.name		= "28F001BX-B",
+		.name		= "28F001BN/BX-B",
 		.bustype	= CHIP_BUSTYPE_PARALLEL,
 		.manufacture_id	= INTEL_ID,
-		.model_id	= P28F001BXB,
+		.model_id	= INTEL_28F001B,
 		.total_size	= 128,
 		.page_size	= 128 * 1024, /* 8k + 2x4k + 112k */
 		.tested		= TEST_UNTESTED,
@@ -3164,10 +3164,10 @@ struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Intel",
-		.name		= "28F001BX-T",
+		.name		= "28F001BN/BX-T",
 		.bustype	= CHIP_BUSTYPE_PARALLEL,
 		.manufacture_id	= INTEL_ID,
-		.model_id	= P28F001BXT,
+		.model_id	= INTEL_28F001T,
 		.total_size	= 128,
 		.page_size	= 128 * 1024, /* 112k + 2x4k + 8k */
 		.tested		= TEST_UNTESTED,
@@ -3190,10 +3190,10 @@ struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Intel",
-		.name		= "28F002BC-T",
+		.name		= "28F002BC/BL/BV/BX-T",
 		.bustype	= CHIP_BUSTYPE_PARALLEL,
 		.manufacture_id	= INTEL_ID,
-		.model_id	= P28F002BC,
+		.model_id	= INTEL_28F002T,
 		.total_size	= 256,
 		.page_size	= 256 * 1024,
 		.tested		= TEST_UNTESTED,
@@ -3217,10 +3217,10 @@ struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Intel",
-		.name		= "28F004S5",
+		.name		= "28F008S3/S5/SC",
 		.bustype	= CHIP_BUSTYPE_PARALLEL,
 		.manufacture_id	= INTEL_ID,
-		.model_id	= E_28F004S5,
+		.model_id	= INTEL_28F004S3,
 		.total_size	= 512,
 		.page_size	= 256,
 		.tested		= TEST_UNTESTED,
@@ -3240,10 +3240,10 @@ struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Intel",
-		.name		= "28F004BV/BE-B",
+		.name		= "28F004B5/BE/BV/BX-B",
 		.bustype	= CHIP_BUSTYPE_PARALLEL,
 		.manufacture_id	= INTEL_ID,
-		.model_id	= P28F004BB,
+		.model_id	= INTEL_28F004B,
 		.total_size	= 512,
 		.page_size	= 128 * 1024, /* maximal block size */
 		.tested		= TEST_UNTESTED,
@@ -3267,10 +3267,10 @@ struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Intel",
-		.name		= "28F004BV/BE-T",
+		.name		= "28F004B5/BE/BV/BX-T",
 		.bustype	= CHIP_BUSTYPE_PARALLEL,
 		.manufacture_id	= INTEL_ID,
-		.model_id	= P28F004BT,
+		.model_id	= INTEL_28F004T,
 		.total_size	= 512,
 		.page_size	= 128 * 1024, /* maximal block size */
 		.tested		= TEST_UNTESTED,
@@ -3294,10 +3294,10 @@ struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Intel",
-		.name		= "28F400BV/CV/CE-B",
+		.name		= "28F400BV/BX/CE/CV-B",
 		.bustype	= CHIP_BUSTYPE_PARALLEL,
 		.manufacture_id	= INTEL_ID,
-		.model_id	= P28F400BB,
+		.model_id	= INTEL_28F400B,
 		.total_size	= 512,
 		.page_size	= 128 * 1024, /* maximal block size */
 		.feature_bits	= FEATURE_ADDR_SHIFTED,
@@ -3322,10 +3322,10 @@ struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Intel",
-		.name		= "28F400BV/CV/CE-T",
+		.name		= "28F400BV/BX/CE/CV-T",
 		.bustype	= CHIP_BUSTYPE_PARALLEL,
 		.manufacture_id	= INTEL_ID,
-		.model_id	= P28F400BT,
+		.model_id	= INTEL_28F400T,
 		.total_size	= 512,
 		.page_size	= 128 * 1024, /* maximal block size */
 		.feature_bits	= FEATURE_ADDR_SHIFTED,
@@ -3353,7 +3353,7 @@ struct flashchip flashchips[] = {
 		.name		= "82802AB",
 		.bustype	= CHIP_BUSTYPE_FWH,
 		.manufacture_id	= INTEL_ID,
-		.model_id	= I_82802AB,
+		.model_id	= INTEL_82802AB,
 		.total_size	= 512,
 		.page_size	= 64 * 1024,
 		.feature_bits	= FEATURE_REGISTERMAP,
@@ -3377,7 +3377,7 @@ struct flashchip flashchips[] = {
 		.name		= "82802AC",
 		.bustype	= CHIP_BUSTYPE_FWH,
 		.manufacture_id	= INTEL_ID,
-		.model_id	= I_82802AC,
+		.model_id	= INTEL_82802AC,
 		.total_size	= 1024,
 		.page_size	= 64 * 1024,
 		.feature_bits	= FEATURE_REGISTERMAP,
