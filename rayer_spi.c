@@ -30,6 +30,7 @@
  */
 #if defined(__i386__) || defined(__x86_64__)
 
+#include <stdlib.h>
 #include "flash.h"
 #include "programmer.h"
 
@@ -43,45 +44,33 @@
 /* Pins for slave->master direction */
 #define SPI_MISO_PIN 6
 
-static int lpt_iobase;
+static uint16_t lpt_iobase;
 
-/* FIXME: All rayer_bitbang_set_* functions could use caching of the value
- * stored at port lpt_iobase to avoid unnecessary INB. In theory, only one
- * INB(lpt_iobase) would be needed on programmer init to get the initial
- * value.
- */
+/* Cached value of last byte sent. */
+static uint8_t lpt_outbyte;
 
-void rayer_bitbang_set_cs(int val)
+static void rayer_bitbang_set_cs(int val)
 {
-	uint8_t tmp;
-
-	tmp = INB(lpt_iobase);
-	tmp &= ~(1 << SPI_CS_PIN);
-	tmp |= (val << SPI_CS_PIN);
-	OUTB(tmp, lpt_iobase);
+	lpt_outbyte &= ~(1 << SPI_CS_PIN);
+	lpt_outbyte |= (val << SPI_CS_PIN);
+	OUTB(lpt_outbyte, lpt_iobase);
 }
 
-void rayer_bitbang_set_sck(int val)
+static void rayer_bitbang_set_sck(int val)
 {
-	uint8_t tmp;
-
-	tmp = INB(lpt_iobase);
-	tmp &= ~(1 << SPI_SCK_PIN);
-	tmp |= (val << SPI_SCK_PIN);
-	OUTB(tmp, lpt_iobase);
+	lpt_outbyte &= ~(1 << SPI_SCK_PIN);
+	lpt_outbyte |= (val << SPI_SCK_PIN);
+	OUTB(lpt_outbyte, lpt_iobase);
 }
 
-void rayer_bitbang_set_mosi(int val)
+static void rayer_bitbang_set_mosi(int val)
 {
-	uint8_t tmp;
-
-	tmp = INB(lpt_iobase);
-	tmp &= ~(1 << SPI_MOSI_PIN);
-	tmp |= (val << SPI_MOSI_PIN);
-	OUTB(tmp, lpt_iobase);
+	lpt_outbyte &= ~(1 << SPI_MOSI_PIN);
+	lpt_outbyte |= (val << SPI_MOSI_PIN);
+	OUTB(lpt_outbyte, lpt_iobase);
 }
 
-int rayer_bitbang_get_miso(void)
+static int rayer_bitbang_get_miso(void)
 {
 	uint8_t tmp;
 
@@ -100,16 +89,49 @@ static const struct bitbang_spi_master bitbang_spi_master_rayer = {
 
 int rayer_spi_init(void)
 {
-	/* Pick a default value for now. */
-	lpt_iobase = 0x378;
+	char *portpos = NULL;
 
-	msg_pdbg("Using port 0x%x as I/O base for parallel port access.\n",
+	/* Non-default port requested? */
+	portpos = extract_programmer_param("iobase");
+	if (portpos) {
+		char *endptr = NULL;
+		unsigned long tmp;
+		tmp = strtoul(portpos, &endptr, 0);
+		/* Port 0, port >0x10000, unaligned ports and garbage strings
+		 * are rejected.
+		 */
+		if (!tmp || (tmp >= 0x10000) || (tmp & 0x3) ||
+		    (*endptr != '\0')) {
+			/* Using ports below 0x100 is a really bad idea, and
+			 * should only be done if no port between 0x100 and
+			 * 0xfffc works due to routing issues.
+			 */
+			msg_perr("Error: iobase= specified, but the I/O base "
+				 "given was invalid.\nIt must be a multiple of "
+				 "0x4 and lie between 0x100 and 0xfffc.\n");
+			free(portpos);
+			return 1;
+		} else {
+			lpt_iobase = (uint16_t)tmp;
+			msg_pinfo("Non-default I/O base requested. This will "
+				  "not change the hardware settings.\n");
+		}
+	} else {
+		/* Pick a default value for the I/O base. */
+		lpt_iobase = 0x378;
+	}
+	free(portpos);
+	
+	msg_pdbg("Using address 0x%x as I/O base for parallel port access.\n",
 		 lpt_iobase);
 
 	get_io_perms();
 
-	/* 1 usec halfperiod delay for now. */
-	if (bitbang_spi_init(&bitbang_spi_master_rayer, 1))
+	/* Get the initial value before writing to any line. */
+	lpt_outbyte = INB(lpt_iobase);
+
+	/* Zero halfperiod delay. */
+	if (bitbang_spi_init(&bitbang_spi_master_rayer, 0))
 		return 1;
 
 	buses_supported = CHIP_BUSTYPE_SPI;

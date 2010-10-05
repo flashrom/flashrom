@@ -397,7 +397,19 @@ can be any of
 (in Hz). The default is the maximum frequency of 8 MHz.
 .TP
 .BR "rayer_spi " programmer
-No parameters defined yet. More information about the hardware is available at
+The default I/O base address used for the parallel port is 0x378 and you can use
+the optional
+.B iobase
+parameter to specify an alternate base I/O address with the
+.sp
+.B "  flashrom \-p rayer_spi:iobase=baseaddr"
+.sp
+syntax where
+.B baseaddr
+is base I/O port address of the parallel port, which must be a multiple of
+four. Make sure to not forget the "0x" prefix for hexadecimal port addresses.
+.sp
+More information about the hardware is available at
 http://rayer.ic.cz/elektro/spipgm.htm
 .SH EXIT STATUS
 flashrom exits with 0 on success, 1 on most failures but with 2 if /dev/mem
