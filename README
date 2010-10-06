@@ -87,8 +87,8 @@ To compile on OpenBSD, use:
 
 To compile and run on Darwin/Mac OS X:
 
- Install DirectIO from coresystems GmbH.
- DirectIO is available at http://www.coresystems.de/en/directio.
+ Install DirectHW from coresystems GmbH.
+ DirectHW is available at http://www.coresystems.de/en/directhw .
 
 To cross-compile on Linux for DOS:
 
