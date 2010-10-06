@@ -33,11 +33,6 @@
 
 static void cli_classic_usage(const char *name)
 {
-	const char *pname;
-	int pnamelen;
-	int remaining = 0;
-	enum programmer p;
-
 	printf("Usage: flashrom [-n] [-V] [-f] [-h|-R|-L|"
 #if CONFIG_PRINT_WIKI == 1
 	         "-z|"
@@ -83,32 +78,9 @@ static void cli_classic_usage(const char *name)
 	         "in wiki syntax\n"
 #endif
 	       "   -p | --programmer <name>[:<param>] specify the programmer "
-	         "device");
+	         "device\n");
 
-	for (p = 0; p < PROGRAMMER_INVALID; p++) {
-		pname = programmer_table[p].name;
-		pnamelen = strlen(pname);
-		if (remaining - pnamelen - 2 < 0) {
-			printf("\n                                     ");
-			remaining = 43;
-		} else {
-			printf(" ");
-			remaining--;
-		}
-		if (p == 0) {
-			printf("(");
-			remaining--;
-		}
-		printf("%s", pname);
-		remaining -= pnamelen;
-		if (p < PROGRAMMER_INVALID - 1) {
-			printf(",");
-			remaining--;
-		} else {
-			printf(")\n");
-		}
-	}
-
+	list_programmers_linebreak(37, 80, 1);
 	printf("\nYou can specify one of -h, -R, -L, "
 #if CONFIG_PRINT_WIKI == 1
 	         "-z, "

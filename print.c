@@ -223,49 +223,89 @@ static void print_supported_boards_helper(const struct board_info *boards,
 
 void print_supported(void)
 {
-		print_supported_chips();
+	print_supported_chips();
+
+	printf("\nSupported programmers:\n");
+	list_programmers_linebreak(0, 80, 0);
 #if CONFIG_INTERNAL == 1
-		print_supported_chipsets();
-		print_supported_boards_helper(boards_known, "boards");
-		print_supported_boards_helper(laptops_known, "laptops");
+	printf("\nSupported devices for the %s programmer:\n",
+	       programmer_table[PROGRAMMER_INTERNAL].name);
+	print_supported_chipsets();
+	print_supported_boards_helper(boards_known, "boards");
+	print_supported_boards_helper(laptops_known, "laptops");
 #endif
-#if CONFIG_NIC3COM+CONFIG_NICREALTEK+CONFIG_NICNATSEMI+CONFIG_GFXNVIDIA+CONFIG_DRKAISER+CONFIG_SATASII+CONFIG_ATAHPT >= 1
-		printf("\nSupported PCI devices flashrom can use "
-		       "as programmer:\n\n");
+#if CONFIG_DUMMY == 1
+	printf("\nSupported devices for the %s programmer:\n",
+	       programmer_table[PROGRAMMER_DUMMY].name);
+	/* FIXME */
 #endif
 #if CONFIG_NIC3COM == 1
-		print_supported_pcidevs(nics_3com);
+	printf("\nSupported devices for the %s programmer:\n",
+	       programmer_table[PROGRAMMER_NIC3COM].name);
+	print_supported_pcidevs(nics_3com);
 #endif
 #if CONFIG_NICREALTEK == 1
-		print_supported_pcidevs(nics_realtek);
-		print_supported_pcidevs(nics_realteksmc1211);
+	printf("\nSupported devices for the %s programmer:\n",
+	       programmer_table[PROGRAMMER_NICREALTEK].name);
+	print_supported_pcidevs(nics_realtek);
+	printf("\nSupported devices for the %s programmer:\n",
+	       programmer_table[PROGRAMMER_NICREALTEK2].name);
+	print_supported_pcidevs(nics_realteksmc1211);
 #endif
 #if CONFIG_NICNATSEMI == 1
-		print_supported_pcidevs(nics_natsemi);
+	printf("\nSupported devices for the %s programmer:\n",
+	       programmer_table[PROGRAMMER_NICNATSEMI].name);
+	print_supported_pcidevs(nics_natsemi);
 #endif
 #if CONFIG_GFXNVIDIA == 1
-		print_supported_pcidevs(gfx_nvidia);
+	printf("\nSupported devices for the %s programmer:\n",
+	       programmer_table[PROGRAMMER_GFXNVIDIA].name);
+	print_supported_pcidevs(gfx_nvidia);
 #endif
 #if CONFIG_DRKAISER == 1
-		print_supported_pcidevs(drkaiser_pcidev);
+	printf("\nSupported devices for the %s programmer:\n",
+	       programmer_table[PROGRAMMER_DRKAISER].name);
+	print_supported_pcidevs(drkaiser_pcidev);
 #endif
 #if CONFIG_SATASII == 1
-		print_supported_pcidevs(satas_sii);
+	printf("\nSupported devices for the %s programmer:\n",
+	       programmer_table[PROGRAMMER_SATASII].name);
+	print_supported_pcidevs(satas_sii);
 #endif
 #if CONFIG_ATAHPT == 1
-		print_supported_pcidevs(ata_hpt);
+	printf("\nSupported devices for the %s programmer:\n",
+	       programmer_table[PROGRAMMER_ATAHPT].name);
+	print_supported_pcidevs(ata_hpt);
+#endif
+#if CONFIG_FT2232_SPI == 1
+	printf("\nSupported devices for the %s programmer:\n",
+	       programmer_table[PROGRAMMER_FT2232_SPI].name);
+	print_supported_usbdevs(devs_ft2232spi);
+#endif
+#if CONFIG_SERPROG == 1
+	printf("\nSupported devices for the %s programmer:\n",
+	       programmer_table[PROGRAMMER_SERPROG].name);
+	/* FIXME */
+#endif
+#if CONFIG_BUSPIRATE_SPI == 1
+	printf("\nSupported devices for the %s programmer:\n",
+	       programmer_table[PROGRAMMER_BUSPIRATE_SPI].name);
+	/* FIXME */
+#endif
+#if CONFIG_DEDIPROG == 1
+	printf("\nSupported devices for the %s programmer:\n",
+	       programmer_table[PROGRAMMER_DEDIPROG].name);
+	/* FIXME */
+#endif
+#if CONFIG_RAYER_SPI == 1
+	printf("\nSupported devices for the %s programmer:\n",
+	       programmer_table[PROGRAMMER_RAYER_SPI].name);
+	/* FIXME */
 #endif
 #if CONFIG_NICINTEL_SPI == 1
-		print_supported_pcidevs(nics_intel_spi);
-#endif
-
-#if CONFIG_FT2232_SPI+CONFIG_DEDIPROG >= 1
-		printf("\nSupported USB devices flashrom can use "
-		       "as programmer:\n\n");
-#endif
-
-#if CONFIG_FT2232_SPI == 1
-		print_supported_usbdevs(devs_ft2232spi);
+	printf("\nSupported devices for the %s programmer:\n",
+	       programmer_table[PROGRAMMER_NICINTEL_SPI].name);
+	print_supported_pcidevs(nics_intel_spi);
 #endif
 }
 
