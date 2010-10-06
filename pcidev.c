@@ -119,7 +119,7 @@ uint32_t pcidev_init(uint16_t vendor_id, uint32_t bar,
 		exit(1);
 	} else if (found > 1) {
 		msg_perr("Error: Multiple supported PCI devices found. "
-			"Use 'flashrom -p xxxx:bb:dd.f' \n"
+			"Use 'flashrom -p xxxx:pci=bb:dd.f' \n"
 			"to explicitly select the card with the given BDF "
 			"(PCI bus, device, function).\n");
 		exit(1);
