@@ -97,7 +97,7 @@ Force one or more of the following actions:
 .sp
 * Force chip read and pretend the chip is there.
 .sp
-* Force chip access even if the chip is bigger than the maximum supported\
+* Force chip access even if the chip is bigger than the maximum supported \
 size for the flash bus.
 .sp
 * Force erase even if erase is known bad.
@@ -169,6 +169,9 @@ Specify the programmer device. Currently supported are:
 .sp
 .BR "* nicsmc1211" " (for flash ROMs on RTL8139-compatible SMC2 network cards)"
 .sp
+.BR "* nicnatsemi" " (for flash ROMs on National Semiconductor DP838* network \
+cards)"
+.sp
 .BR "* gfxnvidia" " (for flash ROMs on NVIDIA graphics cards)"
 .sp
 .BR "* drkaiser" " (for flash ROMs on Dr. Kaiser PC-Waechter PCI cards)"
@@ -186,6 +189,8 @@ based USB SPI programmer)"
 .BR "* serprog" " (for flash ROMs attached to a programmer speaking serprog)"
 .sp
 .BR "* buspirate_spi" " (for SPI flash ROMs attached to a Bus Pirate)"
+.sp
+.BR "* dediprog" " (for SPI flash ROMs attached to a Dediprog SF100)"
 .sp
 .BR "* rayer_spi" " (for SPI flash ROMs attached to a RayeR parport \
 based programmer)"
@@ -313,8 +318,8 @@ If you do not specify bus, all buses will be enabled.
 Example:
 .B "flashrom \-p dummy:bus=lpc+fwh"
 .TP
-.BR "nic3com" , " nicrealtek" , " nicsmc1211" , " gfxnvidia" , " satasii \
-" and " atahpt " programmers
+.BR "nic3com" , " nicrealtek" , " nicsmc1211" , " nicnatsemi" , " gfxnvidia\
+" , " satasii " and " atahpt " programmers
 These programmers have an option to specify the PCI address of the card
 your want to use, which must be specified if more than one card supported
 by the selected programmer is installed in your system. The syntax is
@@ -395,6 +400,9 @@ where
 can be any of
 .BR 30k ", " 125k ", " 250k ", " 1M ", " 2M ", " 2.6M ", " 4M ", " 8M
 (in Hz). The default is the maximum frequency of 8 MHz.
+.TP
+.BR "dediprog " programmer
+No parameters defined yet.
 .TP
 .BR "rayer_spi " programmer
 The default I/O base address used for the parallel port is 0x378 and you can use
@@ -484,9 +492,15 @@ additionally available under the GPL (version 2, or any later version).
 .br
 Please see the individual files.
 .SH AUTHORS
+Andrew Morgan <ziltro@ziltro.com>
+.br
 Carl-Daniel Hailfinger
 .br
 Claus Gindhart <claus.gindhart@kontron.com>
+.br
+David Borg <borg.db@gmail.com>
+.br
+David Hendricks <dhendrix@google.com>
 .br
 Dominik Geyer <dominik.geyer@kontron.com>
 .br
@@ -494,7 +508,15 @@ Eric Biederman
 .br
 Giampiero Giancipoli <gianci@email.it>
 .br
+Helge Wagner <helge.wagner@ge.com>
+.br
+Idwer Vollering <vidwer+flashrom@gmail.com>
+.br
 Joe Bao <Zheng.Bao@amd.com>
+.br
+Jörg Fischer <turboj@gmx.de>
+.br
+Joshua Roys <roysjosh@gmail.com>
 .br
 Luc Verhaegen <libv@skynet.be>
 .br
@@ -502,9 +524,15 @@ Li-Ta Lo
 .br
 Markus Boas <ryven@ryven.de>
 .br
+Mattias Mattsson <vitplister@gmail.com>
+.br
 Michael Karcher <flashrom@mkarcher.dialup.fu-berlin.de>
 .br
 Nikolay Petukhov <nikolay.petukhov@gmail.com>
+.br
+Patrick Georgi <patrick.georgi@coresystems.de>
+.br
+Peter Lemenkov <lemenkov@gmail.com>
 .br
 Peter Stuge <peter@stuge.se>
 .br
@@ -519,6 +547,8 @@ Sean Nelson <audiohacked@gmail.com>
 Stefan Reinauer <stepan@coresystems.de>
 .br
 Stefan Wildemann <stefan.wildemann@kontron.com>
+.br
+Stephan Guilloux <stephan.guilloux@free.fr>
 .br
 Steven James <pyro@linuxlabs.com>
 .br
