@@ -193,6 +193,7 @@ cpu_to_be(64)
   #define INL(x) __extension__ ({ u_int inl_tmp = (x); inl(inl_tmp); })
 #else
 #if defined(__DARWIN__)
+    /* Header is part of the DirectHW library. */
     #include <DirectIO/darwinio.h>
     #define off64_t off_t
     #define lseek64 lseek
