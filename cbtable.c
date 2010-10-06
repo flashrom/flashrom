@@ -203,7 +203,7 @@ int coreboot_init(void)
 	struct lb_record *rec, *last;
 
 #ifdef __DARWIN__
-	/* This is a hack. DirectIO fails to map physical address 0x00000000.
+	/* This is a hack. DirectHW fails to map physical address 0x00000000.
 	 * Why?
 	 */
 	start = 0x400;
