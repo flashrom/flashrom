@@ -252,7 +252,6 @@ cpu_to_be(64)
       #define iopl amd64_iopl
     #endif
 #endif
-  #include <stdint.h>
 
 static inline void outb(uint8_t value, uint16_t port)
 {

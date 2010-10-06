@@ -22,7 +22,6 @@
 
 #include <unistd.h>
 #include <stdio.h>
-#include <sys/types.h>
 #include <stdlib.h>
 #include <string.h>
 #include "flash.h"
@@ -134,8 +133,6 @@ void cleanup_cpu_msr(void)
 {
 }
 #elif defined(__DARWIN__)
-
-#include <DirectIO/darwinio.h>
 
 #define MEM_DEV "DirectIO"
 
