@@ -1332,6 +1332,47 @@ void list_programmers(char *delim)
 	msg_ginfo("\n");	
 }
 
+void list_programmers_linebreak(int startcol, int cols, int paren)
+{
+	const char *pname;
+	int pnamelen;
+	int remaining = 0;
+	int firstline = 1;
+	enum programmer p;
+	int i;
+
+	for (p = 0; p < PROGRAMMER_INVALID; p++) {
+		pname = programmer_table[p].name;
+		pnamelen = strlen(pname);
+		if (remaining - pnamelen - 2 < 0) {
+			if (firstline)
+				firstline = 0;
+			else
+				printf("\n");
+			for (i = 0; i < startcol; i++)
+				printf(" ");
+			remaining = cols - startcol;
+		} else {
+			printf(" ");
+			remaining--;
+		}
+		if (paren && (p == 0)) {
+			printf("(");
+			remaining--;
+		}
+		printf("%s", pname);
+		remaining -= pnamelen;
+		if (p < PROGRAMMER_INVALID - 1) {
+			printf(",");
+			remaining--;
+		} else {
+			if (paren)
+				printf(")");
+			printf("\n");
+		}
+	}
+}
+
 void print_sysinfo(void)
 {
 #if HAVE_UTSNAME == 1
