@@ -21,7 +21,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include <sys/types.h>
 #include "flash.h"
 #include "chipdrivers.h"
 #include "programmer.h"

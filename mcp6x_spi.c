@@ -25,7 +25,6 @@
 
 #if defined(__i386__) || defined(__x86_64__)
 
-#include <stdint.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include "flash.h"

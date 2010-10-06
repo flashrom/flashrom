@@ -20,7 +20,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
 #include "flash.h"
 #include "programmer.h"
 
