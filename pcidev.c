@@ -134,7 +134,7 @@ void print_supported_pcidevs(const struct pcidev_status *devs)
 
 	msg_pinfo("PCI devices:\n");
 	for (i = 0; devs[i].vendor_name != NULL; i++) {
-		msg_pinfo("%s %s [%02x:%02x]%s\n", devs[i].vendor_name,
+		msg_pinfo("%s %s [%04x:%04x]%s\n", devs[i].vendor_name,
 		       devs[i].device_name, devs[i].vendor_id,
 		       devs[i].device_id,
 		       (devs[i].status == NT) ? " (untested)" : "");
