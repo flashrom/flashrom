@@ -238,6 +238,7 @@ void print_supported(void)
 	printf("\nSupported devices for the %s programmer:\n",
 	       programmer_table[PROGRAMMER_DUMMY].name);
 	/* FIXME */
+	printf("Dummy device, does nothing and logs all accesses\n");
 #endif
 #if CONFIG_NIC3COM == 1
 	printf("\nSupported devices for the %s programmer:\n",
@@ -286,21 +287,25 @@ void print_supported(void)
 	printf("\nSupported devices for the %s programmer:\n",
 	       programmer_table[PROGRAMMER_SERPROG].name);
 	/* FIXME */
+	printf("All programmer devices speaking the serprog protocol\n");
 #endif
 #if CONFIG_BUSPIRATE_SPI == 1
 	printf("\nSupported devices for the %s programmer:\n",
 	       programmer_table[PROGRAMMER_BUSPIRATE_SPI].name);
 	/* FIXME */
+	printf("Dangerous Prototypes Bus Pirate\n");
 #endif
 #if CONFIG_DEDIPROG == 1
 	printf("\nSupported devices for the %s programmer:\n",
 	       programmer_table[PROGRAMMER_DEDIPROG].name);
 	/* FIXME */
+	printf("Dediprog SF100\n");
 #endif
 #if CONFIG_RAYER_SPI == 1
 	printf("\nSupported devices for the %s programmer:\n",
 	       programmer_table[PROGRAMMER_RAYER_SPI].name);
 	/* FIXME */
+	printf("RayeR parallel port programmer\n");
 #endif
 #if CONFIG_NICINTEL_SPI == 1
 	printf("\nSupported devices for the %s programmer:\n",
