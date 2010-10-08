@@ -402,11 +402,6 @@ int write_jedec(struct flashchip *flash, uint8_t *buf)
 
 	mask = getaddrmask(flash);
 
-	if (erase_chip_jedec(flash)) {
-		msg_cerr("ERASE FAILED!\n");
-		return -1;
-	}
-	
 	msg_cinfo("Programming page: ");
 	for (i = 0; i < total_size / page_size; i++) {
 		msg_cinfo("%04d at address: 0x%08x", i, i * page_size);
@@ -428,12 +423,6 @@ int write_jedec_1(struct flashchip *flash, uint8_t * buf)
 	int mask;
 
 	mask = getaddrmask(flash);
-
-	programmer_delay(10);
-	if (erase_flash(flash)) {
-		msg_cerr("ERASE FAILED!\n");
-		return -1;
-	}
 
 	msg_cinfo("Programming page: ");
 	for (i = 0; i < flash->total_size; i++) {
