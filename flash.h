@@ -35,6 +35,9 @@
 
 #define ERROR_PTR ((void*)-1)
 
+/* Error codes */
+#define TIMEOUT_ERROR	-101
+
 typedef unsigned long chipaddr;
 
 int register_shutdown(void (*function) (void *data), void *data);
