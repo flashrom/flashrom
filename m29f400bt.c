@@ -143,7 +143,6 @@ int write_m29f400bt(struct flashchip *flash, uint8_t *buf)
 	int page_size = flash->page_size;
 	chipaddr bios = flash->virtual_memory;
 
-	//erase_m29f400bt (flash);
 	msg_cinfo("Programming page:\n ");
 	/*********************************
 	*Pages for M29F400BT:
@@ -163,41 +162,21 @@ int write_m29f400bt(struct flashchip *flash, uint8_t *buf)
 	msg_cinfo("total_size/page_size = %d\n", total_size / page_size);
 	for (i = 0; i < (total_size / page_size) - 1; i++) {
 		msg_cinfo("%04d at address: 0x%08x\n", i, i * page_size);
-		if (block_erase_m29f400bt(flash, i * page_size, page_size)) {
-			msg_cerr("ERASE FAILED!\n");
-			return -1;
-		}
 		write_page_m29f400bt(bios, buf + i * page_size,
 				     bios + i * page_size, page_size);
 		msg_cinfo("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
 	}
 
 	msg_cinfo("%04d at address: 0x%08x\n", 7, 0x70000);
-	if (block_erase_m29f400bt(flash, 0x70000, 32 * 1024)) {
-		msg_cerr("ERASE FAILED!\n");
-		return -1;
-	}
 	write_page_m29f400bt(bios, buf + 0x70000, bios + 0x70000, 32 * 1024);
 
 	msg_cinfo("%04d at address: 0x%08x\n", 8, 0x78000);
-	if (block_erase_m29f400bt(flash, 0x78000, 8 * 1024)) {
-		msg_cerr("ERASE FAILED!\n");
-		return -1;
-	}
 	write_page_m29f400bt(bios, buf + 0x78000, bios + 0x78000, 8 * 1024);
 
 	msg_cinfo("%04d at address: 0x%08x\n", 9, 0x7a000);
-	if (block_erase_m29f400bt(flash, 0x7a000, 8 * 1024)) {
-		msg_cerr("ERASE FAILED!\n");
-		return -1;
-	}
 	write_page_m29f400bt(bios, buf + 0x7a000, bios + 0x7a000, 8 * 1024);
 
 	msg_cinfo("%04d at address: 0x%08x\n", 10, 0x7c000);
-	if (block_erase_m29f400bt(flash, 0x7c000, 16 * 1024)) {
-		msg_cerr("ERASE FAILED!\n");
-		return -1;
-	}
 	write_page_m29f400bt(bios, buf + 0x7c000, bios + 0x7c000, 16 * 1024);
 
 	msg_cinfo("\n");
