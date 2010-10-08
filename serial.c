@@ -106,8 +106,9 @@ fdtype sp_openserport(char *dev, unsigned int baud)
 #ifdef _WIN32
 	HANDLE fd;
 	char *dev2 = dev;
-	if ((strlen(dev) > 3) && (tolower(dev[0]) == 'c')
-	    && (tolower(dev[1]) == 'o') && (tolower(dev[2]) == 'm')) {
+	if ((strlen(dev) > 3) && (tolower((unsigned char)dev[0]) == 'c') &&
+	    (tolower((unsigned char)dev[1]) == 'o') &&
+	    (tolower((unsigned char)dev[2]) == 'm')) {
 		dev2 = malloc(strlen(dev) + 5);
 		strcpy(dev2, "\\\\.\\");
 		strcpy(dev2 + 4, dev);
