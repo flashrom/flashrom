@@ -939,7 +939,9 @@ static int enable_flash_mcp6x_7x(struct pci_dev *dev, const char *name)
 	}
 out_msg:
 	msg_pinfo("Please send the output of \"flashrom -V\" to "
-		  "flashrom@flashrom.org to help us finish support for your "
+		  "flashrom@flashrom.org with\n"
+		  "your board name: flashrom -V as the subject to help us "
+		  "finish support for your\n"
 		  "chipset. Thanks.\n");
 
 	return ret;
@@ -1195,8 +1197,11 @@ int chipset_flash_enable(void)
 			continue;
 		if (ret != -2) {
 			msg_pinfo("WARNING: unexpected second chipset match: "
-			       "\"%s %s\"\nignoring, please report lspci and "
-			       "board URL to flashrom@flashrom.org!\n",
+				    "\"%s %s\"\n"
+				  "ignoring, please report lspci and board URL "
+				    "to flashrom@flashrom.org\n"
+				  "with 2CHIPSET: your board name in the "
+				    "subject line.\n",
 				chipset_enables[i].vendor_name,
 					chipset_enables[i].device_name);
 			continue;

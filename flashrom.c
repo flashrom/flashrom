@@ -1314,7 +1314,8 @@ void emergency_help_message(void)
 {
 	msg_gerr("Your flash chip is in an unknown state.\n"
 		"Get help on IRC at irc.freenode.net (channel #flashrom) or\n"
-		"mail flashrom@flashrom.org!\n"
+		"mail flashrom@flashrom.org with FAILED: your board name in "
+		  "the subject line!\n"
 		"-------------------------------------------------------------"
 		  "------------------\n"
 		"DO NOT REBOOT OR POWEROFF!\n");
@@ -1496,8 +1497,8 @@ void check_chip_supported(struct flashchip *flash)
 			    "operations you tested (-V, -Vr,\n"
 			  "-Vw, -VE), and mention which mainboard or "
 			    "programmer you tested.\n"
-			  "Thanks for your help!\n"
-			  "===\n");
+			  "Please mention your board in the subject line. "
+			    "Thanks for your help!\n");
 	}
 }
 

@@ -66,9 +66,11 @@ uint32_t pcidev_validate(struct pci_dev *dev, uint32_t bar,
 
 		if (devs[i].status == NT) {
 			msg_pinfo("===\nThis PCI device is UNTESTED. Please "
-			       "report the 'flashrom -p xxxx' output \n"
-			       "to flashrom@flashrom.org if it works "
-			       "for you. Thank you for your help!\n===\n");
+				  "report the 'flashrom -p xxxx' output \n"
+				  "to flashrom@flashrom.org if it works "
+				  "for you. Please add the name of your\n"
+				  "PCI device to the subject. Thank you for "
+				  "your help!\n===\n");
 		}
 
 		return addr;
