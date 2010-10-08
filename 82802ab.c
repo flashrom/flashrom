@@ -139,7 +139,6 @@ int erase_block_82802ab(struct flashchip *flash, unsigned int page, unsigned int
 		msg_cerr("ERASE FAILED!\n");
 		return -1;
 	}
-	msg_cinfo("DONE BLOCK 0x%x\n", page);
 
 	return 0;
 }
@@ -162,18 +161,10 @@ int write_82802ab(struct flashchip *flash, uint8_t *buf)
 	int i;
 	chipaddr bios = flash->virtual_memory;
 
-	msg_cinfo("Programming at: ");
 	for (i = 0; i < flash->total_size; i++) {
-		if ((i & 0x3) == 0)
-			msg_cinfo("address: 0x%08lx", (unsigned long)i * 1024);
-
                 write_page_82802ab(bios, buf + i * 1024, bios + i * 1024, 1024);
-
-		if ((i & 0x3) == 0)
-			msg_cinfo("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
 	}
 
-	msg_cinfo("DONE!\n");
 	return 0;
 }
 

@@ -402,15 +402,11 @@ int write_jedec(struct flashchip *flash, uint8_t *buf)
 
 	mask = getaddrmask(flash);
 
-	msg_cinfo("Programming page: ");
 	for (i = 0; i < total_size / page_size; i++) {
-		msg_cinfo("%04d at address: 0x%08x", i, i * page_size);
 		if (write_page_write_jedec_common(flash, buf + i * page_size,
 					   i * page_size, page_size, mask))
 			failed = 1;
-		msg_cinfo("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
 	}
-	msg_cinfo("DONE!\n");
 
 	return failed;
 }
@@ -424,18 +420,10 @@ int write_jedec_1(struct flashchip *flash, uint8_t * buf)
 
 	mask = getaddrmask(flash);
 
-	msg_cinfo("Programming page: ");
 	for (i = 0; i < flash->total_size; i++) {
-		if ((i & 0x3) == 0)
-			msg_cinfo("address: 0x%08lx", (unsigned long)i * 1024);
-
                 write_sector_jedec_common(flash, buf + i * 1024, dst + i * 1024, 1024, mask);
-
-		if ((i & 0x3) == 0)
-			msg_cinfo("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
 	}
 
-	msg_cinfo("DONE!\n");
 	return 0;
 }
 

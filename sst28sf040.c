@@ -120,15 +120,11 @@ int write_28sf040(struct flashchip *flash, uint8_t *buf)
 
 	unprotect_28sf040(bios);
 
-	msg_cinfo("Programming page: ");
 	for (i = 0; i < total_size / page_size; i++) {
 		/* write to the sector */
-		msg_cinfo("%04d at address: 0x%08x", i, i * page_size);
 		write_sector_28sf040(bios, buf + i * page_size,
 				     bios + i * page_size, page_size);
-		msg_cinfo("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
 	}
-	msg_cinfo("\n");
 
 	protect_28sf040(bios);
 

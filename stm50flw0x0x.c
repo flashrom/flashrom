@@ -100,7 +100,6 @@ int erase_sector_stm50flw0x0x(struct flashchip *flash, unsigned int sector, unsi
 
 	// clear status register
 	chip_writeb(0x50, bios);
-	msg_cdbg("Erase at 0x%lx\n", bios);
 	// now start it
 	chip_writeb(0x32, bios);
 	chip_writeb(0xd0, bios);
@@ -112,7 +111,6 @@ int erase_sector_stm50flw0x0x(struct flashchip *flash, unsigned int sector, unsi
 		msg_cerr("ERASE FAILED!\n");
 		return -1;
 	}
-	msg_cinfo("DONE BLOCK 0x%x\n", sector);
 
 	return 0;
 }
@@ -130,10 +128,7 @@ int erase_chip_stm50flw0x0x(struct flashchip *flash, unsigned int addr, unsigned
 		return -1;
 	}
 
-	msg_cinfo("Erasing page:\n");
 	for (i = 0; i < total_size / page_size; i++) {
-		msg_cinfo("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
-		msg_cinfo("%04d at address: 0x%08x ", i, i * page_size);
 		//if (unlock_block_stm50flw0x0x(flash, i * page_size)) {
 		//	msg_cerr("UNLOCK FAILED!\n");
 		//	return -1;
@@ -143,7 +138,6 @@ int erase_chip_stm50flw0x0x(struct flashchip *flash, unsigned int addr, unsigned
 			return -1;
 		}
 	}
-	msg_cinfo("\n");
 
 	return 0;
 }
