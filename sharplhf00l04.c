@@ -65,10 +65,6 @@ int write_lhf00l04(struct flashchip *flash, uint8_t *buf)
 	int page_size = flash->page_size;
 	chipaddr bios = flash->virtual_memory;
 
-	if (erase_flash(flash)) {
-		msg_cerr("ERASE FAILED!\n");
-		return -1;
-	}
 	msg_cinfo("Programming page: ");
 	for (i = 0; i < total_size / page_size; i++) {
 		msg_cinfo("%04d at address: 0x%08x", i, i * page_size);

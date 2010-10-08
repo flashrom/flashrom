@@ -144,23 +144,6 @@ int erase_block_82802ab(struct flashchip *flash, unsigned int page, unsigned int
 	return 0;
 }
 
-int erase_82802ab(struct flashchip *flash)
-{
-	int i;
-	unsigned int total_size = flash->total_size * 1024;
-
-	msg_cspew("total_size is %d; flash->page_size is %d\n",
-	       total_size, flash->page_size);
-	for (i = 0; i < total_size; i += flash->page_size)
-		if (erase_block_82802ab(flash, i, flash->page_size)) {
-			msg_cerr("ERASE FAILED!\n");
-			return -1;
-		}
-	msg_cinfo("DONE ERASE\n");
-
-	return 0;
-}
-
 void write_page_82802ab(chipaddr bios, uint8_t *src,
 			chipaddr dst, int page_size)
 {
@@ -178,11 +161,6 @@ int write_82802ab(struct flashchip *flash, uint8_t *buf)
 {
 	int i;
 	chipaddr bios = flash->virtual_memory;
-
-	if (erase_flash(flash)) {
-		msg_cerr("ERASE FAILED!\n");
-		return -1;
-	}
 
 	msg_cinfo("Programming at: ");
 	for (i = 0; i < flash->total_size; i++) {

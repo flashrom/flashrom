@@ -262,12 +262,6 @@ int spi_chip_write_256(struct flashchip *flash, uint8_t *buf)
 {
 	int ret;
 
-	msg_pinfo("Erasing flash before programming... ");
-	if (erase_flash(flash)) {
-		msg_perr("ERASE FAILED!\n");
-		return -1;
-	}
-	msg_pinfo("done.\n");
 	msg_pinfo("Programming flash... ");
 	ret = spi_chip_write_256_new(flash, buf, 0, flash->total_size * 1024);
 	if (!ret)

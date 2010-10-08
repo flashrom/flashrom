@@ -33,8 +33,6 @@ int probe_spi_res1(struct flashchip *flash);
 int probe_spi_res2(struct flashchip *flash);
 int spi_write_enable(void);
 int spi_write_disable(void);
-int spi_chip_erase_60(struct flashchip *flash);
-int spi_chip_erase_c7(struct flashchip *flash);
 int spi_block_erase_20(struct flashchip *flash, unsigned int addr, unsigned int blocklen);
 int spi_block_erase_52(struct flashchip *flash, unsigned int addr, unsigned int blocklen);
 int spi_block_erase_d7(struct flashchip *flash, unsigned int addr, unsigned int blocklen);
@@ -69,7 +67,6 @@ int spi_aai_write(struct flashchip *flash, uint8_t *buf);
 /* 82802ab.c */
 uint8_t wait_82802ab(chipaddr bios);
 int probe_82802ab(struct flashchip *flash);
-int erase_82802ab(struct flashchip *flash);
 int erase_block_82802ab(struct flashchip *flash, unsigned int page, unsigned int pagesize);
 int write_82802ab(struct flashchip *flash, uint8_t *buf);
 void print_status_82802ab(uint8_t status);
@@ -84,7 +81,6 @@ void data_polling_jedec(chipaddr dst, uint8_t data);
 int write_byte_program_jedec(chipaddr bios, uint8_t *src,
 			     chipaddr dst);
 int probe_jedec(struct flashchip *flash);
-int erase_chip_jedec(struct flashchip *flash);
 int write_jedec(struct flashchip *flash, uint8_t *buf);
 int write_jedec_1(struct flashchip *flash, uint8_t *buf);
 int erase_sector_jedec(struct flashchip *flash, unsigned int page, unsigned int pagesize);
@@ -94,7 +90,6 @@ int write_sector_jedec_common(struct flashchip *flash, uint8_t *src, chipaddr ds
 
 /* m29f400bt.c */
 int probe_m29f400bt(struct flashchip *flash);
-int erase_m29f400bt(struct flashchip *flash);
 int block_erase_m29f400bt(struct flashchip *flash, unsigned int start, unsigned int len);
 int block_erase_chip_m29f400bt(struct flashchip *flash, unsigned int start, unsigned int len);
 int write_m29f400bt(struct flashchip *flash, uint8_t *buf);

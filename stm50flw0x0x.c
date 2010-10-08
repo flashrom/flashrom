@@ -93,6 +93,7 @@ int unlock_stm50flw0x0x(struct flashchip *flash)
 	return 0;
 }
 
+/* This function is unused. */
 int erase_sector_stm50flw0x0x(struct flashchip *flash, unsigned int sector, unsigned int sectorsize)
 {
 	chipaddr bios = flash->virtual_memory + sector;
@@ -116,6 +117,7 @@ int erase_sector_stm50flw0x0x(struct flashchip *flash, unsigned int sector, unsi
 	return 0;
 }
 
+/* FIXME: This function is not a real chip erase function. */
 int erase_chip_stm50flw0x0x(struct flashchip *flash, unsigned int addr, unsigned int blocklen)
 {
 	int i;
