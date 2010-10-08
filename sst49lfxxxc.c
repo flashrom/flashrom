@@ -84,16 +84,11 @@ int write_49lfxxxc(struct flashchip *flash, uint8_t *buf)
 	chipaddr bios = flash->virtual_memory;
 
 	write_lockbits_49lfxxxc(flash, 0);
-	msg_cinfo("Programming page: ");
 	for (i = 0; i < total_size / page_size; i++) {
-
 		/* write to the sector */
-		msg_cinfo("%04d at address: 0x%08x", i, i * page_size);
 		write_page_82802ab(bios, buf + i * page_size,
 				      bios + i * page_size, page_size);
-		msg_cinfo("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
 	}
-	msg_cinfo("\n");
 
 	chip_writeb(0xFF, bios);
 
