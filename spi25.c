@@ -856,6 +856,7 @@ int spi_write_status_enable(void)
 static int spi_write_status_register_ewsr(struct flashchip *flash, int status)
 {
 	int result;
+	int i = 0;
 	struct spi_command cmds[] = {
 	{
 	/* WRSR requires either EWSR or WREN depending on chip type. */
@@ -879,15 +880,31 @@ static int spi_write_status_register_ewsr(struct flashchip *flash, int status)
 	if (result) {
 		msg_cerr("%s failed during command execution\n",
 			__func__);
+		/* No point in waiting for the command to complete if execution
+		 * failed.
+		 */
+		return result;
 	}
-	/* WRSR performs a self-timed erase before the changes take effect. */
+	/* WRSR performs a self-timed erase before the changes take effect.
+	 * This may take 50-85 ms in most cases, and some chips apparently
+	 * allow running RDSR only once. Therefore pick an initial delay of
+	 * 100 ms, then wait in 10 ms steps until a total of 5 s have elapsed.
+	 */
 	programmer_delay(100 * 1000);
-	return result;
+	while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP) {
+		if (++i > 490) {
+			msg_cerr("Error: WIP bit after WRSR never cleared\n");
+			return TIMEOUT_ERROR;
+		}
+		programmer_delay(10 * 1000);
+	}
+	return 0;
 }
 
 static int spi_write_status_register_wren(struct flashchip *flash, int status)
 {
 	int result;
+	int i = 0;
 	struct spi_command cmds[] = {
 	{
 	/* WRSR requires either EWSR or WREN depending on chip type. */
@@ -911,10 +928,25 @@ static int spi_write_status_register_wren(struct flashchip *flash, int status)
 	if (result) {
 		msg_cerr("%s failed during command execution\n",
 			__func__);
+		/* No point in waiting for the command to complete if execution
+		 * failed.
+		 */
+		return result;
 	}
-	/* WRSR performs a self-timed erase before the changes take effect. */
+	/* WRSR performs a self-timed erase before the changes take effect.
+	 * This may take 50-85 ms in most cases, and some chips apparently
+	 * allow running RDSR only once. Therefore pick an initial delay of
+	 * 100 ms, then wait in 10 ms steps until a total of 5 s have elapsed.
+	 */
 	programmer_delay(100 * 1000);
-	return result;
+	while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP) {
+		if (++i > 490) {
+			msg_cerr("Error: WIP bit after WRSR never cleared\n");
+			return TIMEOUT_ERROR;
+		}
+		programmer_delay(10 * 1000);
+	}
+	return 0;
 }
 
 static int spi_write_status_register(struct flashchip *flash, int status)
