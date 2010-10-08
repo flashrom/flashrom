@@ -53,22 +53,22 @@ static int is_loongson(void)
 		if (fgets(line, sizeof(line), cpuinfo) == NULL)
 			break;
 		ptr = line;
-		while (*ptr && isspace(*ptr))
+		while (*ptr && isspace((unsigned char)*ptr))
 			ptr++;
 		/* "cpu" part appears only with some Linux versions.  */
 		if (strncmp(ptr, "cpu", sizeof("cpu") - 1) == 0)
 			ptr += sizeof("cpu") - 1;
-		while (*ptr && isspace(*ptr))
+		while (*ptr && isspace((unsigned char)*ptr))
 			ptr++;
 		if (strncmp(ptr, "model", sizeof("model") - 1) != 0)
 			continue;
 		ptr += sizeof("model") - 1;
-		while (*ptr && isspace(*ptr))
+		while (*ptr && isspace((unsigned char)*ptr))
 			ptr++;
 		if (*ptr != ':')
 			continue;
 		ptr++;
-		while (*ptr && isspace(*ptr))
+		while (*ptr && isspace((unsigned char)*ptr))
 			ptr++;
 		fclose(cpuinfo);
 		return (strncmp(ptr, "ICT Loongson-2 V0.3",

@@ -148,7 +148,7 @@ int ft2232_spi_init(void)
 	free(arg);
 	arg = extract_programmer_param("port");
 	if (arg) {
-		switch (toupper(*arg)) {
+		switch (toupper((unsigned char)*arg)) {
 		case 'A':
 			ft2232_interface = INTERFACE_A;
 			break;
