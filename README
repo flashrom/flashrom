@@ -42,7 +42,11 @@ processing.
 Build Instructions
 ------------------
 
-To build flashrom you need to install the following packages or ports:
+To build flashrom you need to install the following software:
+
+ * pciutils+libpci (if you want support for mainboard or PCI device flashing)
+ * libusb (if you want FT2232 or Dediprog support)
+ * libftdi (if you want FT2232 support)
 
 Linux et al:
 
@@ -110,6 +114,18 @@ To cross-compile on Linux for DOS:
  To run flashrom.exe, download and unpack
  http://homer.rice.edu/~sandmann/cwsdpmi/csdpmi7b.zip and make sure
  CWSDPMI.EXE is in the current directory.
+
+Processor architecture dependent features:
+
+ On non-x86 architectures you have to disable a few programmers because they
+ use port-based I/O which is not directly available on non-x86. Please add
+ CONFIG_RAYER_SPI=no CONFIG_NIC3COM=no CONFIG_ATAHPT=no CONFIG_NICREALTEK=no \
+ CONFIG_NICNATSEMI=no
+ as parameters to the "make" invocation.
+ Besides that, the internal programmer is only supported on x86 and MIPS. On
+ other architectures, please add
+ CONFIG_INTERNAL=no
+ as parameter to the "make" invocation.
 
 Installation
 ------------

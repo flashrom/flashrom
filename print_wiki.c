@@ -268,8 +268,8 @@ void print_supported_wiki(void)
 	time_t t = time(NULL);
 
 	printf(wiki_header, ctime(&t), flashrom_version);
-#if CONFIG_INTERNAL == 1
 	print_supported_chips_wiki(2);
+#if CONFIG_INTERNAL == 1
 	print_supported_chipsets_wiki(3);
 	print_supported_boards_wiki();
 #endif

@@ -115,21 +115,6 @@ CONFIG_SERPROG ?= yes
 # RayeR SPIPGM hardware support
 CONFIG_RAYER_SPI ?= yes
 
-# Bitbanging SPI infrastructure, default off unless needed.
-ifeq ($(CONFIG_RAYER_SPI), yes)
-override CONFIG_BITBANG_SPI = yes
-else
-ifeq ($(CONFIG_INTERNAL), yes)
-override CONFIG_BITBANG_SPI = yes
-else
-ifeq ($(CONFIG_NICINTEL_SPI), yes)
-override CONFIG_BITBANG_SPI = yes
-else
-CONFIG_BITBANG_SPI ?= no
-endif
-endif
-endif
-
 # Always enable 3Com NICs for now.
 CONFIG_NIC3COM ?= yes
 
@@ -169,6 +154,21 @@ CONFIG_DEDIPROG ?= no
 
 # Disable wiki printing by default. It is only useful if you have wiki access.
 CONFIG_PRINT_WIKI ?= no
+
+# Bitbanging SPI infrastructure, default off unless needed.
+ifeq ($(CONFIG_RAYER_SPI), yes)
+override CONFIG_BITBANG_SPI = yes
+else
+ifeq ($(CONFIG_INTERNAL), yes)
+override CONFIG_BITBANG_SPI = yes
+else
+ifeq ($(CONFIG_NICINTEL_SPI), yes)
+override CONFIG_BITBANG_SPI = yes
+else
+CONFIG_BITBANG_SPI ?= no
+endif
+endif
+endif
 
 ifeq ($(CONFIG_INTERNAL), yes)
 FEATURE_CFLAGS += -D'CONFIG_INTERNAL=1'
