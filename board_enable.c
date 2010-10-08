@@ -433,7 +433,9 @@ int it8705f_write_enable(uint8_t port)
 			max_rom_decode.parallel = 1024 * 1024;
 			msg_pinfo("IT8705F with very unusual settings. Please "
 				  "send the output of \"flashrom -V\" to \n"
-				  "flashrom@flashrom.org to help us finish "
+				  "flashrom@flashrom.org with "
+				  "IT8705: your board name: flashrom -V\n"
+				  "as the subject to help us finish "
 				  "support for your Super I/O. Thanks.\n");
 			ret = 1;
 		} else if (tmp & 0x08) {
@@ -2097,7 +2099,8 @@ int board_flash_enable(const char *vendor, const char *part)
 		board = NULL;
 		} else {
 		        msg_pinfo("NOTE: Running an untested board enable procedure.\n"
-		               "Please report success/failure to flashrom@flashrom.org.\n");
+		               "Please report success/failure to flashrom@flashrom.org\n"
+		               "with your board name and SUCCESS or FAILURE in the subject.\n");
 		}
         }
 
