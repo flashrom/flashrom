@@ -27,12 +27,13 @@
    0x555 instead of 0x2AA. Do *not* blindly replace with standard JEDEC
    functions. */
 
-void write_page_m29f400bt(chipaddr bios, uint8_t *src,
-			  chipaddr dst, int page_size)
+int write_page_m29f400bt(struct flashchip *flash, uint8_t *src, int start, int len)
 {
 	int i;
+	chipaddr bios = flash->virtual_memory;
+	chipaddr dst = flash->virtual_memory + start;
 
-	for (i = 0; i < page_size; i++) {
+	for (i = 0; i < len; i++) {
 		chip_writeb(0xAA, bios + 0xAAA);
 		chip_writeb(0x55, bios + 0x555);
 		chip_writeb(0xA0, bios + 0xAAA);
@@ -40,11 +41,17 @@ void write_page_m29f400bt(chipaddr bios, uint8_t *src,
 		/* transfer data from source to destination */
 		chip_writeb(*src, dst);
 		toggle_ready_jedec(dst);
+#if 0
+		/* We only want to print something in the error case. */
 		msg_cerr("Value in the flash at address 0x%lx = %#x, want %#x\n",
 		     (dst - bios), chip_readb(dst), *src);
+#endif
 		dst++;
 		src++;
 	}
+
+	/* FIXME: Ignore errors for now. */
+	return 0;
 }
 
 int probe_m29f400bt(struct flashchip *flash)
@@ -138,20 +145,15 @@ int write_m29f400bt(struct flashchip *flash, uint8_t *buf)
 	int i;
 	int total_size = flash->total_size * 1024;
 	int page_size = flash->page_size;
-	chipaddr bios = flash->virtual_memory;
 
 	for (i = 0; i < (total_size / page_size) - 1; i++) {
-		write_page_m29f400bt(bios, buf + i * page_size,
-				     bios + i * page_size, page_size);
+		write_page_m29f400bt(flash, buf + i * page_size, i * page_size, page_size);
 	}
 
-	write_page_m29f400bt(bios, buf + 0x70000, bios + 0x70000, 32 * 1024);
-
-	write_page_m29f400bt(bios, buf + 0x78000, bios + 0x78000, 8 * 1024);
-
-	write_page_m29f400bt(bios, buf + 0x7a000, bios + 0x7a000, 8 * 1024);
-
-	write_page_m29f400bt(bios, buf + 0x7c000, bios + 0x7c000, 16 * 1024);
+	write_page_m29f400bt(flash, buf + 0x70000, 0x70000, 32 * 1024);
+	write_page_m29f400bt(flash, buf + 0x78000, 0x78000, 8 * 1024);
+	write_page_m29f400bt(flash, buf + 0x7a000, 0x7a000, 8 * 1024);
+	write_page_m29f400bt(flash, buf + 0x7c000, 0x7c000, 16 * 1024);
 
 	return 0;
 }

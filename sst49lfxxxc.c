@@ -67,7 +67,7 @@ int erase_sector_49lfxxxc(struct flashchip *flash, unsigned int address, unsigne
 	chip_writeb(0x30, bios);
 	chip_writeb(0xD0, bios + address);
 
-	status = wait_82802ab(bios);
+	status = wait_82802ab(flash);
 
 	if (check_erased_range(flash, address, sector_size)) {
 		msg_cerr("ERASE FAILED!\n");
@@ -85,9 +85,7 @@ int write_49lfxxxc(struct flashchip *flash, uint8_t *buf)
 
 	write_lockbits_49lfxxxc(flash, 0);
 	for (i = 0; i < total_size / page_size; i++) {
-		/* write to the sector */
-		write_page_82802ab(bios, buf + i * page_size,
-				      bios + i * page_size, page_size);
+		write_page_82802ab(flash, buf + i * page_size, i * page_size, page_size);
 	}
 
 	chip_writeb(0xFF, bios);

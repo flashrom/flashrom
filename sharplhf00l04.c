@@ -23,6 +23,7 @@
 
 /* FIXME: The datasheet is unclear whether we should use toggle_ready_jedec
  * or wait_82802ab.
+ * FIXME: This file is unused.
  */
 
 int erase_lhf00l04_block(struct flashchip *flash, unsigned int blockaddr, unsigned int blocklen)
@@ -33,7 +34,7 @@ int erase_lhf00l04_block(struct flashchip *flash, unsigned int blockaddr, unsign
 
 	// clear status register
 	chip_writeb(0x50, bios);
-	status = wait_82802ab(flash->virtual_memory);
+	status = wait_82802ab(flash);
 	print_status_82802ab(status);
 	// clear write protect
 	msg_cspew("write protect is at 0x%lx\n", (wrprotect));
@@ -46,7 +47,7 @@ int erase_lhf00l04_block(struct flashchip *flash, unsigned int blockaddr, unsign
 	chip_writeb(0xd0, bios);
 	programmer_delay(10);
 	// now let's see what the register is
-	status = wait_82802ab(flash->virtual_memory);
+	status = wait_82802ab(flash);
 	print_status_82802ab(status);
 
 	if (check_erased_range(flash, blockaddr, blocklen)) {
@@ -61,11 +62,9 @@ int write_lhf00l04(struct flashchip *flash, uint8_t *buf)
 	int i;
 	int total_size = flash->total_size * 1024;
 	int page_size = flash->page_size;
-	chipaddr bios = flash->virtual_memory;
 
 	for (i = 0; i < total_size / page_size; i++) {
-		write_page_82802ab(bios, buf + i * page_size,
-				    bios + i * page_size, page_size);
+		write_page_82802ab(flash, buf + i * page_size, i * page_size, page_size);
 	}
 
 	return 0;

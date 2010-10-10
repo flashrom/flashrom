@@ -317,14 +317,14 @@ retry:
 	return failed;
 }
 
-int write_sector_jedec_common(struct flashchip *flash, uint8_t *src,
-		       chipaddr dst, unsigned int page_size, unsigned int mask)
+int write_sector_jedec_common(struct flashchip *flash, uint8_t *src, int start, int len, unsigned int mask)
 {
 	int i, failed = 0;
+	chipaddr dst = flash->virtual_memory + start;
 	chipaddr olddst;
 
 	olddst = dst;
-	for (i = 0; i < page_size; i++) {
+	for (i = 0; i < len; i++) {
 		if (write_byte_program_jedec_common(flash, src, dst, mask))
 			failed = 1;
 		dst++, src++;
@@ -335,8 +335,7 @@ int write_sector_jedec_common(struct flashchip *flash, uint8_t *src,
 	return failed;
 }
 
-static int write_page_write_jedec_common(struct flashchip *flash, uint8_t *src,
-			   int start, int page_size, unsigned int mask)
+int write_page_write_jedec_common(struct flashchip *flash, uint8_t *src, int start, int page_size, unsigned int mask)
 {
 	int i, tried = 0, failed;
 	uint8_t *s = src;
@@ -403,8 +402,7 @@ int write_jedec(struct flashchip *flash, uint8_t *buf)
 	mask = getaddrmask(flash);
 
 	for (i = 0; i < total_size / page_size; i++) {
-		if (write_page_write_jedec_common(flash, buf + i * page_size,
-					   i * page_size, page_size, mask))
+		if (write_page_write_jedec_common(flash, buf + i * page_size, i * page_size, page_size, mask))
 			failed = 1;
 	}
 
@@ -414,14 +412,12 @@ int write_jedec(struct flashchip *flash, uint8_t *buf)
 int write_jedec_1(struct flashchip *flash, uint8_t * buf)
 {
 	int i;
-	chipaddr bios = flash->virtual_memory;
-	chipaddr dst = bios;
 	int mask;
 
 	mask = getaddrmask(flash);
 
 	for (i = 0; i < flash->total_size; i++) {
-                write_sector_jedec_common(flash, buf + i * 1024, dst + i * 1024, 1024, mask);
+		write_sector_jedec_common(flash, buf + i * 1024, i * 1024, 1024, mask);
 	}
 
 	return 0;
