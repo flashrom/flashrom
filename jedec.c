@@ -411,16 +411,11 @@ int write_jedec(struct flashchip *flash, uint8_t *buf)
 
 int write_jedec_1(struct flashchip *flash, uint8_t * buf)
 {
-	int i;
 	int mask;
 
 	mask = getaddrmask(flash);
 
-	for (i = 0; i < flash->total_size; i++) {
-		write_sector_jedec_common(flash, buf + i * 1024, i * 1024, 1024, mask);
-	}
-
-	return 0;
+	return write_sector_jedec_common(flash, buf, 0, flash->total_size * 1024, mask);
 }
 
 /* erase chip with block_erase() prototype */

@@ -142,18 +142,5 @@ int block_erase_chip_m29f400bt(struct flashchip *flash, unsigned int address, un
 
 int write_m29f400bt(struct flashchip *flash, uint8_t *buf)
 {
-	int i;
-	int total_size = flash->total_size * 1024;
-	int page_size = flash->page_size;
-
-	for (i = 0; i < (total_size / page_size) - 1; i++) {
-		write_page_m29f400bt(flash, buf + i * page_size, i * page_size, page_size);
-	}
-
-	write_page_m29f400bt(flash, buf + 0x70000, 0x70000, 32 * 1024);
-	write_page_m29f400bt(flash, buf + 0x78000, 0x78000, 8 * 1024);
-	write_page_m29f400bt(flash, buf + 0x7a000, 0x7a000, 8 * 1024);
-	write_page_m29f400bt(flash, buf + 0x7c000, 0x7c000, 16 * 1024);
-
-	return 0;
+	return write_page_m29f400bt(flash, buf, 0, flash->total_size * 1024);
 }
