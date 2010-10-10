@@ -162,13 +162,7 @@ int write_page_82802ab(struct flashchip *flash, uint8_t *src, int start, int len
 
 int write_82802ab(struct flashchip *flash, uint8_t *buf)
 {
-	int i;
-
-	for (i = 0; i < flash->total_size; i++) {
-                write_page_82802ab(flash, buf + i * 1024, i * 1024, 1024);
-	}
-
-	return 0;
+	return write_page_82802ab(flash, buf, 0, flash->total_size * 1024);
 }
 
 int unlock_28f004s5(struct flashchip *flash)
