@@ -78,15 +78,10 @@ int erase_sector_49lfxxxc(struct flashchip *flash, unsigned int address, unsigne
 
 int write_49lfxxxc(struct flashchip *flash, uint8_t *buf)
 {
-	int i;
-	int total_size = flash->total_size * 1024;
-	int page_size = flash->page_size;
 	chipaddr bios = flash->virtual_memory;
 
 	write_lockbits_49lfxxxc(flash, 0);
-	for (i = 0; i < total_size / page_size; i++) {
-		write_page_82802ab(flash, buf + i * page_size, i * page_size, page_size);
-	}
+	write_page_82802ab(flash, buf, 0, flash->total_size * 1024);
 
 	chip_writeb(0xFF, bios);
 

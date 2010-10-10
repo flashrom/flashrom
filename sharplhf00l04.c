@@ -56,16 +56,3 @@ int erase_lhf00l04_block(struct flashchip *flash, unsigned int blockaddr, unsign
 	}
 	return 0;
 }
-
-int write_lhf00l04(struct flashchip *flash, uint8_t *buf)
-{
-	int i;
-	int total_size = flash->total_size * 1024;
-	int page_size = flash->page_size;
-
-	for (i = 0; i < total_size / page_size; i++) {
-		write_page_82802ab(flash, buf + i * page_size, i * page_size, page_size);
-	}
-
-	return 0;
-}

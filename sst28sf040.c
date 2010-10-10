@@ -118,15 +118,9 @@ static int erase_28sf040(struct flashchip *flash)
 
 int write_28sf040(struct flashchip *flash, uint8_t *buf)
 {
-	int i;
-	int total_size = flash->total_size * 1024;
-	int page_size = flash->page_size;
-
 	unprotect_28sf040(flash);
 
-	for (i = 0; i < total_size / page_size; i++) {
-		write_sector_28sf040(flash, buf + i * page_size, i * page_size, page_size);
-	}
+	write_sector_28sf040(flash, buf, 0, flash->total_size * 1024);
 
 	protect_28sf040(flash);
 
