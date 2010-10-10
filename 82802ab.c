@@ -88,9 +88,10 @@ int probe_82802ab(struct flashchip *flash)
 	return 1;
 }
 
-uint8_t wait_82802ab(chipaddr bios)
+uint8_t wait_82802ab(struct flashchip *flash)
 {
 	uint8_t status;
+	chipaddr bios = flash->virtual_memory;
 
 	chip_writeb(0x70, bios);
 	if ((chip_readb(bios) & 0x80) == 0) {	// it's busy
@@ -132,7 +133,7 @@ int erase_block_82802ab(struct flashchip *flash, unsigned int page, unsigned int
 	programmer_delay(10);
 
 	// now let's see what the register is
-	status = wait_82802ab(bios);
+	status = wait_82802ab(flash);
 	print_status_82802ab(status);
 
 	if (check_erased_range(flash, page, pagesize)) {
@@ -143,26 +144,28 @@ int erase_block_82802ab(struct flashchip *flash, unsigned int page, unsigned int
 	return 0;
 }
 
-void write_page_82802ab(chipaddr bios, uint8_t *src,
-			chipaddr dst, int page_size)
+int write_page_82802ab(struct flashchip *flash, uint8_t *src, int start, int len)
 {
 	int i;
+	chipaddr dst = flash->virtual_memory + start;
 
-	for (i = 0; i < page_size; i++) {
+	for (i = 0; i < len; i++) {
 		/* transfer data from source to destination */
 		chip_writeb(0x40, dst);
 		chip_writeb(*src++, dst++);
-		wait_82802ab(bios);
+		wait_82802ab(flash);
 	}
+
+	/* FIXME: Ignore errors for now. */
+	return 0;
 }
 
 int write_82802ab(struct flashchip *flash, uint8_t *buf)
 {
 	int i;
-	chipaddr bios = flash->virtual_memory;
 
 	for (i = 0; i < flash->total_size; i++) {
-                write_page_82802ab(bios, buf + i * 1024, bios + i * 1024, 1024);
+                write_page_82802ab(flash, buf + i * 1024, i * 1024, 1024);
 	}
 
 	return 0;

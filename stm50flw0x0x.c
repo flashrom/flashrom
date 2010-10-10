@@ -105,7 +105,7 @@ int erase_sector_stm50flw0x0x(struct flashchip *flash, unsigned int sector, unsi
 	chip_writeb(0xd0, bios);
 	programmer_delay(10);
 
-	wait_82802ab(flash->virtual_memory);
+	wait_82802ab(flash);
 
 	if (check_erased_range(flash, sector, sectorsize)) {
 		msg_cerr("ERASE FAILED!\n");

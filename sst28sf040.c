@@ -30,8 +30,10 @@
 #define RESET			0xFF
 #define READ_ID			0x90
 
-static void protect_28sf040(chipaddr bios)
+static void protect_28sf040(struct flashchip *flash)
 {
+	chipaddr bios = flash->virtual_memory;
+
 	chip_readb(bios + 0x1823);
 	chip_readb(bios + 0x1820);
 	chip_readb(bios + 0x1822);
@@ -41,8 +43,10 @@ static void protect_28sf040(chipaddr bios)
 	chip_readb(bios + 0x040A);
 }
 
-static void unprotect_28sf040(chipaddr bios)
+static void unprotect_28sf040(struct flashchip *flash)
 {
+	chipaddr bios = flash->virtual_memory;
+
 	chip_readb(bios + 0x1823);
 	chip_readb(bios + 0x1820);
 	chip_readb(bios + 0x1822);
@@ -59,7 +63,7 @@ int erase_sector_28sf040(struct flashchip *flash, unsigned int address, unsigned
 	chip_writeb(AUTO_PG_ERASE1, bios);
 	chip_writeb(AUTO_PG_ERASE2, bios + address);
 
-	/* wait for Toggle bit ready         */
+	/* wait for Toggle bit ready */
 	toggle_ready_jedec(bios);
 
 	if (check_erased_range(flash, address, sector_size)) {
@@ -69,12 +73,13 @@ int erase_sector_28sf040(struct flashchip *flash, unsigned int address, unsigned
 	return 0;
 }
 
-static int write_sector_28sf040(chipaddr bios, uint8_t *src, chipaddr dst,
-				unsigned int page_size)
+int write_sector_28sf040(struct flashchip *flash, uint8_t *src, int start, int len)
 {
 	int i;
+	chipaddr bios = flash->virtual_memory;
+	chipaddr dst = flash->virtual_memory + start;
 
-	for (i = 0; i < page_size; i++) {
+	for (i = 0; i < len; i++) {
 		/* transfer data from source to destination */
 		if (*src == 0xFF) {
 			dst++, src++;
@@ -96,10 +101,10 @@ static int erase_28sf040(struct flashchip *flash)
 {
 	chipaddr bios = flash->virtual_memory;
 
-	unprotect_28sf040(bios);
+	unprotect_28sf040(flash);
 	chip_writeb(CHIP_ERASE, bios);
 	chip_writeb(CHIP_ERASE, bios);
-	protect_28sf040(bios);
+	protect_28sf040(flash);
 
 	programmer_delay(10);
 	toggle_ready_jedec(bios);
@@ -116,17 +121,14 @@ int write_28sf040(struct flashchip *flash, uint8_t *buf)
 	int i;
 	int total_size = flash->total_size * 1024;
 	int page_size = flash->page_size;
-	chipaddr bios = flash->virtual_memory;
 
-	unprotect_28sf040(bios);
+	unprotect_28sf040(flash);
 
 	for (i = 0; i < total_size / page_size; i++) {
-		/* write to the sector */
-		write_sector_28sf040(bios, buf + i * page_size,
-				     bios + i * page_size, page_size);
+		write_sector_28sf040(flash, buf + i * page_size, i * page_size, page_size);
 	}
 
-	protect_28sf040(bios);
+	protect_28sf040(flash);
 
 	return 0;
 }
