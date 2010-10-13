@@ -305,7 +305,7 @@ static int it8716f_spi_page_program(struct flashchip *flash, uint8_t *buf, int s
 	/* FIXME: The command below seems to be redundant or wrong. */
 	OUTB(0x06, it8716f_flashport + 1);
 	OUTB(((2 + (fast_spi ? 1 : 0)) << 4), it8716f_flashport);
-	for (i = 0; i < 256; i++) {
+	for (i = 0; i < flash->page_size; i++) {
 		chip_writeb(buf[i], bios + start + i);
 	}
 	OUTB(0, it8716f_flashport);
@@ -339,34 +339,36 @@ int it8716f_spi_chip_write_256(struct flashchip *flash, uint8_t *buf, int start,
 {
 	/*
 	 * IT8716F only allows maximum of 512 kb SPI chip size for memory
-	 * mapped access.
+	 * mapped access. It also can't write more than 1+3+256 bytes at once.
 	 */
-	if ((programmer == PROGRAMMER_IT87SPI) || (flash->total_size * 1024 > 512 * 1024)) {
-		spi_chip_write_1_new(flash, buf, start, len);
+	if ((programmer == PROGRAMMER_IT87SPI) ||
+	    (flash->total_size * 1024 > 512 * 1024) ||
+	    (flash->page_size > 256)) {
+		spi_chip_write_1(flash, buf, start, len);
 	} else {
 		int lenhere;
 
-		if (start % 256) {
+		if (start % flash->page_size) {
 			/* start to the end of the page or start + len,
 			 * whichever is smaller. Page length is hardcoded to
 			 * 256 bytes (IT87 SPI hardware limitation).
 			 */
-			lenhere = min(len, (start | 0xff) - start + 1);
-			spi_chip_write_1_new(flash, buf, start, lenhere);
+			lenhere = min(len, flash->page_size - start % flash->page_size);
+			spi_chip_write_1(flash, buf, start, lenhere);
 			start += lenhere;
 			len -= lenhere;
 			buf += lenhere;
 		}
 
 		/* FIXME: Handle chips which have max writechunk size >1 and <256. */
-		while (len >= 256) {
+		while (len >= flash->page_size) {
 			it8716f_spi_page_program(flash, buf, start);
-			start += 256;
-			len -= 256;
-			buf += 256;
+			start += flash->page_size;
+			len -= flash->page_size;
+			buf += flash->page_size;
 		}
 		if (len)
-			spi_chip_write_1_new(flash, buf, start, len);
+			spi_chip_write_1(flash, buf, start, len);
 	}
 
 	return 0;

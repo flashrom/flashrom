@@ -80,7 +80,7 @@ const struct spi_programmer spi_programmer[] = {
 		.command = wbsio_spi_send_command,
 		.multicommand = default_spi_send_multicommand,
 		.read = wbsio_spi_read,
-		.write_256 = spi_chip_write_1_new,
+		.write_256 = spi_chip_write_1,
 	},
 
 	{ /* SPI_CONTROLLER_MCP6X_BITBANG */
@@ -124,7 +124,7 @@ const struct spi_programmer spi_programmer[] = {
 		.command = dediprog_spi_send_command,
 		.multicommand = default_spi_send_multicommand,
 		.read = dediprog_spi_read,
-		.write_256 = spi_chip_write_1_new,
+		.write_256 = spi_chip_write_1,
 	},
 #endif
 
@@ -245,7 +245,7 @@ int spi_chip_read(struct flashchip *flash, uint8_t *buf, int start, int len)
  * .write_256 = spi_chip_write_1
  */
 /* real chunksize is up to 256, logical chunksize is 256 */
-int spi_chip_write_256_new(struct flashchip *flash, uint8_t *buf, int start, int len)
+int spi_chip_write_256(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
 	if (!spi_programmer[spi_controller].write_256) {
 		msg_perr("%s called, but SPI page write is unsupported on this "
@@ -255,20 +255,6 @@ int spi_chip_write_256_new(struct flashchip *flash, uint8_t *buf, int start, int
 	}
 
 	return spi_programmer[spi_controller].write_256(flash, buf, start, len);
-}
-
-/* Wrapper function until the generic code is converted to partial writes. */
-int spi_chip_write_256(struct flashchip *flash, uint8_t *buf)
-{
-	int ret;
-
-	msg_pinfo("Programming flash... ");
-	ret = spi_chip_write_256_new(flash, buf, 0, flash->total_size * 1024);
-	if (!ret)
-		msg_pinfo("done.\n");
-	else
-		msg_pinfo("\n");
-	return ret;
 }
 
 /*
