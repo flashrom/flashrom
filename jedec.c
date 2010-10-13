@@ -92,6 +92,25 @@ void data_polling_jedec(chipaddr dst, uint8_t data)
 		msg_cdbg("%s: excessive loops, i=0x%x\n", __func__, i);
 }
 
+static int getaddrmask(struct flashchip *flash)
+{
+	switch (flash->feature_bits & FEATURE_ADDR_MASK) {
+	case FEATURE_ADDR_FULL:
+		return MASK_FULL;
+		break;
+	case FEATURE_ADDR_2AA:
+		return MASK_2AA;
+		break;
+	case FEATURE_ADDR_AAA:
+		return MASK_AAA;
+		break;
+	default:
+		msg_cerr("%s called with unknown mask\n", __func__);
+		return 0;
+		break;
+	}
+}
+
 static void start_program_jedec_common(struct flashchip *flash, unsigned int mask)
 {
 	chipaddr bios = flash->virtual_memory;
@@ -317,11 +336,14 @@ retry:
 	return failed;
 }
 
-int write_sector_jedec_common(struct flashchip *flash, uint8_t *src, int start, int len, unsigned int mask)
+int write_sector_jedec_common(struct flashchip *flash, uint8_t *src, int start, int len)
 {
 	int i, failed = 0;
 	chipaddr dst = flash->virtual_memory + start;
 	chipaddr olddst;
+	int mask;
+
+	mask = getaddrmask(flash);
 
 	olddst = dst;
 	for (i = 0; i < len; i++) {
@@ -335,13 +357,16 @@ int write_sector_jedec_common(struct flashchip *flash, uint8_t *src, int start, 
 	return failed;
 }
 
-int write_page_write_jedec_common(struct flashchip *flash, uint8_t *src, int start, int page_size, unsigned int mask)
+int write_page_write_jedec_common(struct flashchip *flash, uint8_t *src, int start, int page_size)
 {
 	int i, tried = 0, failed;
 	uint8_t *s = src;
 	chipaddr bios = flash->virtual_memory;
 	chipaddr dst = bios + start;
 	chipaddr d = dst;
+	int mask;
+
+	mask = getaddrmask(flash);
 
 retry:
 	/* Issue JEDEC Start Program command */
@@ -373,49 +398,55 @@ retry:
 	return failed;
 }
 
-static int getaddrmask(struct flashchip *flash)
+/*
+ * Write a part of the flash chip.
+ * FIXME: Use the chunk code from Michael Karcher instead.
+ * This function is a slightly modified copy of spi_write_chunked.
+ * Each page is written separately in chunks with a maximum size of chunksize.
+ */
+int write_jedec_pages(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
-	switch (flash->feature_bits & FEATURE_ADDR_MASK) {
-	case FEATURE_ADDR_FULL:
-		return MASK_FULL;
-		break;
-	case FEATURE_ADDR_2AA:
-		return MASK_2AA;
-		break;
-	case FEATURE_ADDR_AAA:
-		return MASK_AAA;
-		break;
-	default:
-		msg_cerr("%s called with unknown mask\n", __func__);
-		return 0;
-		break;
-	}
-}
-
-int write_jedec(struct flashchip *flash, uint8_t *buf)
-{
-	int mask;
-	int i, failed = 0;
-	int total_size = flash->total_size * 1024;
+	int i, starthere, lenhere;
+	/* FIXME: page_size is the wrong variable. We need max_writechunk_size
+	 * in struct flashchip to do this properly. All chips using
+	 * write_jedec have page_size set to max_writechunk_size, so
+	 * we're OK for now.
+	 */
 	int page_size = flash->page_size;
 
-	mask = getaddrmask(flash);
+	/* Warning: This loop has a very unusual condition and body.
+	 * The loop needs to go through each page with at least one affected
+	 * byte. The lowest page number is (start / page_size) since that
+	 * division rounds down. The highest page number we want is the page
+	 * where the last byte of the range lives. That last byte has the
+	 * address (start + len - 1), thus the highest page number is
+	 * (start + len - 1) / page_size. Since we want to include that last
+	 * page as well, the loop condition uses <=.
+	 */
+	for (i = start / page_size; i <= (start + len - 1) / page_size; i++) {
+		/* Byte position of the first byte in the range in this page. */
+		/* starthere is an offset to the base address of the chip. */
+		starthere = max(start, i * page_size);
+		/* Length of bytes in the range in this page. */
+		lenhere = min(start + len, (i + 1) * page_size) - starthere;
 
-	for (i = 0; i < total_size / page_size; i++) {
-		if (write_page_write_jedec_common(flash, buf + i * page_size, i * page_size, page_size, mask))
-			failed = 1;
+		if (write_page_write_jedec_common(flash, buf + starthere - start, starthere, lenhere))
+			return 1;
 	}
 
-	return failed;
+	return 0;
 }
 
+/* chunksize is page_size */
+int write_jedec(struct flashchip *flash, uint8_t *buf)
+{
+	return write_jedec_pages(flash, buf, 0, flash->total_size * 1024);
+}
+
+/* chunksize is 1 */
 int write_jedec_1(struct flashchip *flash, uint8_t * buf)
 {
-	int mask;
-
-	mask = getaddrmask(flash);
-
-	return write_sector_jedec_common(flash, buf, 0, flash->total_size * 1024, mask);
+	return write_sector_jedec_common(flash, buf, 0, flash->total_size * 1024);
 }
 
 /* erase chip with block_erase() prototype */
