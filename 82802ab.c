@@ -160,6 +160,7 @@ int write_page_82802ab(struct flashchip *flash, uint8_t *src, int start, int len
 	return 0;
 }
 
+/* chunksize is 1 */
 int write_82802ab(struct flashchip *flash, uint8_t *buf)
 {
 	return write_page_82802ab(flash, buf, 0, flash->total_size * 1024);

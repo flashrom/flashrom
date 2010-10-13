@@ -2995,7 +2995,7 @@ struct flashchip flashchips[] = {
 		.total_size	= 512,
 		.page_size	= 64 * 1024,
 		.feature_bits	= FEATURE_ADDR_SHIFTED | FEATURE_EITHER_RESET,
-		.tested		= TEST_BAD_WRITE, /* Implicit eraseblock layout in write_m29f400bt is broken. */
+		.tested		= TEST_UNTESTED,
 		.probe		= probe_m29f400bt,
 		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (m29f400bt.c) */
 		.block_erasers	=
@@ -3013,7 +3013,7 @@ struct flashchip flashchips[] = {
 				.block_erase = block_erase_chip_m29f400bt,
 			},
 		},
-		.write		= NULL,
+		.write		= write_m29f400bt,
 		.read		= read_memmapped,
 	},
 
@@ -5107,6 +5107,7 @@ struct flashchip flashchips[] = {
 				.block_erase = erase_chip_28sf040,
 			}
 		},
+		.unlock		= unprotect_28sf040,
 		.write		= write_28sf040,
 		.read		= read_memmapped,
 	},
@@ -5564,7 +5565,7 @@ struct flashchip flashchips[] = {
 			}
 		},
 		.unlock		= unlock_49lfxxxc,
-		.write		= write_49lfxxxc,
+		.write		= write_82802ab,
 		.read		= read_memmapped,
 	},
 
@@ -5627,7 +5628,7 @@ struct flashchip flashchips[] = {
 			}
 		},
 		.unlock		= unlock_49lfxxxc,
-		.write		= write_49lfxxxc,
+		.write		= write_82802ab,
 		.read		= read_memmapped,
 	},
 
@@ -5659,7 +5660,7 @@ struct flashchip flashchips[] = {
 			}
 		},
 		.unlock		= unlock_49lfxxxc,
-		.write		= write_49lfxxxc,
+		.write		= write_82802ab,
 		.read		= read_memmapped,
 	},
 
@@ -5837,7 +5838,7 @@ struct flashchip flashchips[] = {
 			}
 		},
 		.unlock		= unlock_49lfxxxc,
-		.write		= write_49lfxxxc,
+		.write		= write_82802ab,
 		.read		= read_memmapped,
 	},
 
@@ -6315,7 +6316,7 @@ struct flashchip flashchips[] = {
 		.total_size	= 512,
 		.page_size	= 64 * 1024,
 		.feature_bits	= FEATURE_ADDR_SHIFTED | FEATURE_EITHER_RESET,
-		.tested		= TEST_BAD_WRITE, /* Implicit eraseblock layout in write_m29f400bt is broken. */
+		.tested		= TEST_UNTESTED,
 		.probe		= probe_m29f400bt,
 		.probe_timing	= TIMING_IGNORED, /* routine doesn't use probe_timing (m29f400bt.c) */
 		.block_erasers	=
@@ -6333,7 +6334,7 @@ struct flashchip flashchips[] = {
 				.block_erase = block_erase_chip_m29f400bt,
 			}
 		},
-		.write		= NULL,
+		.write		= write_m29f400bt,
 		.read		= read_memmapped,
 	},
 	{

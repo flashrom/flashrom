@@ -75,15 +75,3 @@ int erase_sector_49lfxxxc(struct flashchip *flash, unsigned int address, unsigne
 	}
 	return 0;
 }
-
-int write_49lfxxxc(struct flashchip *flash, uint8_t *buf)
-{
-	chipaddr bios = flash->virtual_memory;
-
-	write_lockbits_49lfxxxc(flash, 0);
-	write_page_82802ab(flash, buf, 0, flash->total_size * 1024);
-
-	chip_writeb(0xFF, bios);
-
-	return 0;
-}

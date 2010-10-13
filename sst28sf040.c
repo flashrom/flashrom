@@ -30,7 +30,7 @@
 #define RESET			0xFF
 #define READ_ID			0x90
 
-static void protect_28sf040(struct flashchip *flash)
+int protect_28sf040(struct flashchip *flash)
 {
 	chipaddr bios = flash->virtual_memory;
 
@@ -41,9 +41,11 @@ static void protect_28sf040(struct flashchip *flash)
 	chip_readb(bios + 0x041B);
 	chip_readb(bios + 0x0419);
 	chip_readb(bios + 0x040A);
+
+	return 0;
 }
 
-static void unprotect_28sf040(struct flashchip *flash)
+int unprotect_28sf040(struct flashchip *flash)
 {
 	chipaddr bios = flash->virtual_memory;
 
@@ -54,12 +56,15 @@ static void unprotect_28sf040(struct flashchip *flash)
 	chip_readb(bios + 0x041B);
 	chip_readb(bios + 0x0419);
 	chip_readb(bios + 0x041A);
+
+	return 0;
 }
 
 int erase_sector_28sf040(struct flashchip *flash, unsigned int address, unsigned int sector_size)
 {
 	chipaddr bios = flash->virtual_memory;
 
+	/* This command sequence is very similar to erase_block_82802ab. */
 	chip_writeb(AUTO_PG_ERASE1, bios);
 	chip_writeb(AUTO_PG_ERASE2, bios + address);
 
@@ -101,10 +106,8 @@ static int erase_28sf040(struct flashchip *flash)
 {
 	chipaddr bios = flash->virtual_memory;
 
-	unprotect_28sf040(flash);
 	chip_writeb(CHIP_ERASE, bios);
 	chip_writeb(CHIP_ERASE, bios);
-	protect_28sf040(flash);
 
 	programmer_delay(10);
 	toggle_ready_jedec(bios);
@@ -116,15 +119,10 @@ static int erase_28sf040(struct flashchip *flash)
 	return 0;
 }
 
+/* chunksize is 1 */
 int write_28sf040(struct flashchip *flash, uint8_t *buf)
 {
-	unprotect_28sf040(flash);
-
-	write_sector_28sf040(flash, buf, 0, flash->total_size * 1024);
-
-	protect_28sf040(flash);
-
-	return 0;
+	return write_sector_28sf040(flash, buf, 0, flash->total_size * 1024);
 }
 
 int erase_chip_28sf040(struct flashchip *flash, unsigned int addr, unsigned int blocklen)
