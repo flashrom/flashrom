@@ -86,8 +86,8 @@ int write_jedec_1(struct flashchip *flash, uint8_t *buf);
 int erase_sector_jedec(struct flashchip *flash, unsigned int page, unsigned int pagesize);
 int erase_block_jedec(struct flashchip *flash, unsigned int page, unsigned int blocksize);
 int erase_chip_block_jedec(struct flashchip *flash, unsigned int page, unsigned int blocksize);
-int write_sector_jedec_common(struct flashchip *flash, uint8_t *src, int start, int len, unsigned int mask);
-int write_page_write_jedec_common(struct flashchip *flash, uint8_t *src, int start, int page_size, unsigned int mask);
+int write_sector_jedec_common(struct flashchip *flash, uint8_t *src, int start, int len);
+int write_page_write_jedec_common(struct flashchip *flash, uint8_t *src, int start, int page_size);
 
 /* m29f400bt.c */
 int probe_m29f400bt(struct flashchip *flash);
@@ -106,10 +106,11 @@ int erase_chip_28sf040(struct flashchip *flash, unsigned int addr, unsigned int 
 int erase_sector_28sf040(struct flashchip *flash, unsigned int address, unsigned int sector_size);
 int write_28sf040(struct flashchip *flash, uint8_t *buf);
 int write_sector_28sf040(struct flashchip *flash, uint8_t *src, int start, int len);
+int unprotect_28sf040(struct flashchip *flash);
+int protect_28sf040(struct flashchip *flash);
 
 /* sst49lfxxxc.c */
 int erase_sector_49lfxxxc(struct flashchip *flash, unsigned int address, unsigned int sector_size);
-int write_49lfxxxc(struct flashchip *flash, uint8_t *buf);
 int unlock_49lfxxxc(struct flashchip *flash);
 
 /* sst_fwhub.c */

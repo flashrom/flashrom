@@ -140,6 +140,7 @@ int block_erase_chip_m29f400bt(struct flashchip *flash, unsigned int address, un
 	return erase_m29f400bt(flash);
 }
 
+/* chunksize is 1 */
 int write_m29f400bt(struct flashchip *flash, uint8_t *buf)
 {
 	return write_page_m29f400bt(flash, buf, 0, flash->total_size * 1024);
