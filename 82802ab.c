@@ -144,7 +144,8 @@ int erase_block_82802ab(struct flashchip *flash, unsigned int page, unsigned int
 	return 0;
 }
 
-int write_page_82802ab(struct flashchip *flash, uint8_t *src, int start, int len)
+/* chunksize is 1 */
+int write_82802ab(struct flashchip *flash, uint8_t *src, int start, int len)
 {
 	int i;
 	chipaddr dst = flash->virtual_memory + start;
@@ -158,12 +159,6 @@ int write_page_82802ab(struct flashchip *flash, uint8_t *src, int start, int len
 
 	/* FIXME: Ignore errors for now. */
 	return 0;
-}
-
-/* chunksize is 1 */
-int write_82802ab(struct flashchip *flash, uint8_t *buf)
-{
-	return write_page_82802ab(flash, buf, 0, flash->total_size * 1024);
 }
 
 int unlock_28f004s5(struct flashchip *flash)

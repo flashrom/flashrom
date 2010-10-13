@@ -336,7 +336,8 @@ retry:
 	return failed;
 }
 
-int write_sector_jedec_common(struct flashchip *flash, uint8_t *src, int start, int len)
+/* chunksize is 1 */
+int write_jedec_1(struct flashchip *flash, uint8_t *src, int start, int len)
 {
 	int i, failed = 0;
 	chipaddr dst = flash->virtual_memory + start;
@@ -398,13 +399,14 @@ retry:
 	return failed;
 }
 
+/* chunksize is page_size */
 /*
  * Write a part of the flash chip.
  * FIXME: Use the chunk code from Michael Karcher instead.
  * This function is a slightly modified copy of spi_write_chunked.
  * Each page is written separately in chunks with a maximum size of chunksize.
  */
-int write_jedec_pages(struct flashchip *flash, uint8_t *buf, int start, int len)
+int write_jedec(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
 	int i, starthere, lenhere;
 	/* FIXME: page_size is the wrong variable. We need max_writechunk_size
@@ -435,18 +437,6 @@ int write_jedec_pages(struct flashchip *flash, uint8_t *buf, int start, int len)
 	}
 
 	return 0;
-}
-
-/* chunksize is page_size */
-int write_jedec(struct flashchip *flash, uint8_t *buf)
-{
-	return write_jedec_pages(flash, buf, 0, flash->total_size * 1024);
-}
-
-/* chunksize is 1 */
-int write_jedec_1(struct flashchip *flash, uint8_t * buf)
-{
-	return write_sector_jedec_common(flash, buf, 0, flash->total_size * 1024);
 }
 
 /* erase chip with block_erase() prototype */

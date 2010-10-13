@@ -1304,7 +1304,7 @@ int spi_write_chunked(struct flashchip *flash, uint8_t *buf, int start, int len,
  * (e.g. due to size constraints in IT87* for over 512 kB)
  */
 /* real chunksize is 1, logical chunksize is 1 */
-int spi_chip_write_1_new(struct flashchip *flash, uint8_t *buf, int start, int len)
+int spi_chip_write_1(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
 	int i, result = 0;
 
@@ -1319,12 +1319,7 @@ int spi_chip_write_1_new(struct flashchip *flash, uint8_t *buf, int start, int l
 	return 0;
 }
 
-int spi_chip_write_1(struct flashchip *flash, uint8_t *buf)
-{
-	return spi_chip_write_1_new(flash, buf, 0, flash->total_size * 1024);
-}
-
-int spi_aai_write_new(struct flashchip *flash, uint8_t *buf, int start, int len)
+int spi_aai_write(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
 	uint32_t pos = start;
 	int result;
@@ -1363,7 +1358,7 @@ int spi_aai_write_new(struct flashchip *flash, uint8_t *buf, int start, int len)
 	case SPI_CONTROLLER_WBSIO:
 		msg_perr("%s: impossible with this SPI controller,"
 				" degrading to byte program\n", __func__);
-		return spi_chip_write_1_new(flash, buf, start, len);
+		return spi_chip_write_1(flash, buf, start, len);
 #endif
 #endif
 	default:
@@ -1373,18 +1368,24 @@ int spi_aai_write_new(struct flashchip *flash, uint8_t *buf, int start, int len)
 	/* The even start address and even length requirements can be either
 	 * honored outside this function, or we can call spi_byte_program
 	 * for the first and/or last byte and use AAI for the rest.
+	 * FIXME: Move this to generic code.
 	 */
 	/* The data sheet requires a start address with the low bit cleared. */
 	if (start % 2) {
 		msg_cerr("%s: start address not even! Please report a bug at "
 			 "flashrom@flashrom.org\n", __func__);
-		return SPI_GENERIC_ERROR;
+		if (spi_chip_write_1(flash, buf, start, start % 2))
+			return SPI_GENERIC_ERROR;
+		pos += start % 2;
+		/* Do not return an error for now. */
+		//return SPI_GENERIC_ERROR;
 	}
 	/* The data sheet requires total AAI write length to be even. */
 	if (len % 2) {
 		msg_cerr("%s: total write length not even! Please report a "
 			 "bug at flashrom@flashrom.org\n", __func__);
-		return SPI_GENERIC_ERROR;
+		/* Do not return an error for now. */
+		//return SPI_GENERIC_ERROR;
 	}
 
 
@@ -1403,7 +1404,8 @@ int spi_aai_write_new(struct flashchip *flash, uint8_t *buf, int start, int len)
 	/* We already wrote 2 bytes in the multicommand step. */
 	pos += 2;
 
-	while (pos < start + len) {
+	/* Are there at least two more bytes to write? */
+	while (pos < start + len - 1) {
 		cmd[1] = buf[pos++];
 		cmd[2] = buf[pos++];
 		spi_send_command(JEDEC_AAI_WORD_PROGRAM_CONT_OUTSIZE, 0, cmd, NULL);
@@ -1411,13 +1413,17 @@ int spi_aai_write_new(struct flashchip *flash, uint8_t *buf, int start, int len)
 			programmer_delay(10);
 	}
 
-	/* Use WRDI to exit AAI mode. */
+	/* Use WRDI to exit AAI mode. This needs to be done before issuing any
+	 * other non-AAI command.
+	 */
 	spi_write_disable();
+
+	/* Write remaining byte (if any). */
+	if (pos < start + len) {
+		if (spi_chip_write_1(flash, buf + pos, pos, pos % 2))
+			return SPI_GENERIC_ERROR;
+		pos += pos % 2;
+	}
+
 	return 0;
 }
-
-int spi_aai_write(struct flashchip *flash, uint8_t *buf)
-{
-	return spi_aai_write_new(flash, buf, 0, flash->total_size * 1024);
-}
-

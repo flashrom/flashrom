@@ -135,7 +135,7 @@ struct flashchip {
 
 	int (*printlock) (struct flashchip *flash);
 	int (*unlock) (struct flashchip *flash);
-	int (*write) (struct flashchip *flash, uint8_t *buf);
+	int (*write) (struct flashchip *flash, uint8_t *buf, int start, int len);
 	int (*read) (struct flashchip *flash, uint8_t *buf, int start, int len);
 
 	/* Some flash devices have an additional register space. */
