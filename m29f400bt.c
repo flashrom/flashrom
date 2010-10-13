@@ -27,7 +27,8 @@
    0x555 instead of 0x2AA. Do *not* blindly replace with standard JEDEC
    functions. */
 
-int write_page_m29f400bt(struct flashchip *flash, uint8_t *src, int start, int len)
+/* chunksize is 1 */
+int write_m29f400bt(struct flashchip *flash, uint8_t *src, int start, int len)
 {
 	int i;
 	chipaddr bios = flash->virtual_memory;
@@ -138,10 +139,4 @@ int block_erase_chip_m29f400bt(struct flashchip *flash, unsigned int address, un
 		return -1;
 	}
 	return erase_m29f400bt(flash);
-}
-
-/* chunksize is 1 */
-int write_m29f400bt(struct flashchip *flash, uint8_t *buf)
-{
-	return write_page_m29f400bt(flash, buf, 0, flash->total_size * 1024);
 }

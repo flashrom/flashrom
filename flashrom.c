@@ -1639,7 +1639,7 @@ int doit(struct flashchip *flash, int force, char *filename, int read_it, int wr
 			return 1;
 		}
 		msg_cinfo("Writing flash chip... ");
-		ret = flash->write(flash, buf);
+		ret = flash->write(flash, buf, 0, flash->total_size * 1024);
 		if (ret) {
 			msg_cerr("FAILED!\n");
 			emergency_help_message();
