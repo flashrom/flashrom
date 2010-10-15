@@ -1116,6 +1116,39 @@ int verify_flash(struct flashchip *flash, uint8_t *buf)
 	return ret;
 }
 
+int read_buf_from_file(unsigned char *buf, unsigned long size, char *filename)
+{
+	unsigned long numbytes;
+	FILE *image;
+	struct stat image_stat;
+
+	if ((image = fopen(filename, "rb")) == NULL) {
+		perror(filename);
+		return 1;
+	}
+	if (fstat(fileno(image), &image_stat) != 0) {
+		perror(filename);
+		fclose(image);
+		return 1;
+	}
+	if (image_stat.st_size != size) {
+		msg_gerr("Error: Image size doesn't match\n");
+		fclose(image);
+		return 1;
+	}
+	numbytes = fread(buf, 1, size, image);
+	if (fclose(image)) {
+		perror(filename);
+		return 1;
+	}
+	if (numbytes != size) {
+		msg_gerr("Error: Failed to read complete file. Got %ld bytes, "
+			 "wanted %ld!\n", numbytes, size);
+		return 1;
+	}
+	return 0;
+}
+
 int write_buf_to_file(unsigned char *buf, unsigned long size, char *filename)
 {
 	unsigned long numbytes;
@@ -1507,6 +1540,62 @@ int main(int argc, char *argv[])
 	return cli_classic(argc, argv);
 }
 
+/* FIXME: This function signature needs to be improved once doit() has a better
+ * function signature.
+ */
+int chip_safety_check(struct flashchip *flash, int force, char *filename, int read_it, int write_it, int erase_it, int verify_it)
+{
+	if (!programmer_may_write && (write_it || erase_it)) {
+		msg_perr("Write/erase is not working yet on your programmer in "
+			 "its current configuration.\n");
+		/* --force is the wrong approach, but it's the best we can do
+		 * until the generic programmer parameter parser is merged.
+		 */
+		if (!force)
+			return 1;
+		msg_cerr("Continuing anyway.\n");
+	}
+
+	if (read_it || erase_it || write_it || verify_it) {
+		/* Everything needs read. */
+		if (flash->tested & TEST_BAD_READ) {
+			msg_cerr("Read is not working on this chip. ");
+			if (!force)
+				return 1;
+			msg_cerr("Continuing anyway.\n");
+		}
+		if (!flash->read) {
+			msg_cerr("flashrom has no read function for this "
+				 "flash chip.\n");
+			return 1;
+		}
+	}
+	if (erase_it || write_it) {
+		/* Write needs erase. */
+		if (flash->tested & TEST_BAD_ERASE) {
+			msg_cerr("Erase is not working on this chip. ");
+			if (!force)
+				return 1;
+			msg_cerr("Continuing anyway.\n");
+		}
+		/* FIXME: Check if at least one erase function exists. */
+	}
+	if (write_it) {
+		if (flash->tested & TEST_BAD_WRITE) {
+			msg_cerr("Write is not working on this chip. ");
+			if (!force)
+				return 1;
+			msg_cerr("Continuing anyway.\n");
+		}
+		if (!flash->write) {
+			msg_cerr("flashrom has no write function for this "
+				 "flash chip.\n");
+			return 1;
+		}
+	}
+	return 0;
+}
+
 /* This function signature is horrible. We need to design a better interface,
  * but right now it allows us to split off the CLI code.
  * Besides that, the function itself is a textbook example of abysmal code flow.
@@ -1514,116 +1603,46 @@ int main(int argc, char *argv[])
 int doit(struct flashchip *flash, int force, char *filename, int read_it, int write_it, int erase_it, int verify_it)
 {
 	uint8_t *buf;
-	unsigned long numbytes;
-	FILE *image;
 	int ret = 0;
 	unsigned long size;
+
+	if (chip_safety_check(flash, force, filename, read_it, write_it, erase_it, verify_it)) {
+		msg_cerr("Aborting.\n");
+		programmer_shutdown();
+		return 1;
+	}
 
 	size = flash->total_size * 1024;
 	buf = (uint8_t *) calloc(size, sizeof(char));
 
-	if (!programmer_may_write && (write_it || erase_it)) {
-		msg_perr("Write/erase is not working yet on your programmer in "
-			 "its current configuration.\n");
-		/* --force is the wrong approach, but it's the best we can do
-		 * until the generic programmer parameter parser is merged.
-		 */
-		if (!force) {
-			msg_perr("Aborting.\n");
-			programmer_shutdown();
-			return 1;
-		} else {
-			msg_cerr("Continuing anyway.\n");
-		}
+	/* Given the existence of read locks, we want to unlock for read,
+	 * erase and write.
+	 */
+	if (flash->unlock)
+		flash->unlock(flash);
+
+	if (read_it) {
+		ret = read_flash_to_file(flash, filename);
+		programmer_shutdown();
+		return ret;
 	}
-
 	if (erase_it) {
-		if (flash->tested & TEST_BAD_ERASE) {
-			msg_cerr("Erase is not working on this chip. ");
-			if (!force) {
-				msg_cerr("Aborting.\n");
-				programmer_shutdown();
-				return 1;
-			} else {
-				msg_cerr("Continuing anyway.\n");
-			}
-		}
-		if (flash->unlock)
-			flash->unlock(flash);
-
 		if (erase_flash(flash)) {
 			emergency_help_message();
 			programmer_shutdown();
 			return 1;
 		}
-	} else if (read_it) {
-		if (flash->unlock)
-			flash->unlock(flash);
-
-		if (read_flash_to_file(flash, filename)) {
-			programmer_shutdown();
-			return 1;
-		}
-	} else if (write_it) {
-		if (flash->tested & TEST_BAD_ERASE) {
-			msg_cerr("Erase is not working on this chip "
-				"and erase is needed for write. ");
-			if (!force) {
-				msg_cerr("Aborting.\n");
-				programmer_shutdown();
-				return 1;
-			} else {
-				msg_cerr("Continuing anyway.\n");
-			}
-		}
-		if (flash->tested & TEST_BAD_WRITE) {
-			msg_cerr("Write is not working on this chip. ");
-			if (!force) {
-				msg_cerr("Aborting.\n");
-				programmer_shutdown();
-				return 1;
-			} else {
-				msg_cerr("Continuing anyway.\n");
-			}
-		}
-		if (!flash->write) {
-			msg_cerr("Error: flashrom has no write function for this flash chip.\n");
-			programmer_shutdown();
-			return 1;
-		}
-		if (flash->unlock)
-			flash->unlock(flash);
-
 	}
+
 	if (write_it || verify_it) {
-		struct stat image_stat;
-
-		if ((image = fopen(filename, "rb")) == NULL) {
-			perror(filename);
+		if (read_buf_from_file(buf, flash->total_size * 1024, filename)) {
 			programmer_shutdown();
-			exit(1);
-		}
-		if (fstat(fileno(image), &image_stat) != 0) {
-			perror(filename);
-			programmer_shutdown();
-			exit(1);
-		}
-		if (image_stat.st_size != flash->total_size * 1024) {
-			msg_gerr("Error: Image size doesn't match\n");
-			programmer_shutdown();
-			exit(1);
+			return 1;
 		}
 
-		numbytes = fread(buf, 1, size, image);
 #if CONFIG_INTERNAL == 1
 		show_id(buf, size, force);
 #endif
-		fclose(image);
-		if (numbytes != size) {
-			msg_gerr("Error: Failed to read file. Got %ld bytes, wanted %ld!\n", numbytes, size);
-			programmer_shutdown();
-			return 1;
-		}
 	}
 
 	// This should be moved into each flash part's code to do it 
