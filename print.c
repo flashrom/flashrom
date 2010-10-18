@@ -449,7 +449,7 @@ const struct board_info boards_known[] = {
 	B("Elitegroup", "RS485M-M",		1, "http://www.ecs.com.tw/ECSWebSite_2007/Products/ProductsDetail.aspx?CategoryID=1&DetailID=654&DetailName=Feature&MenuID=1&LanID=0", NULL),
 	B("Emerson",	"ATCA-7360",		1, "http://www.emerson.com/sites/Network_Power/en-US/Products/Product_Detail/Product1/Pages/EmbCompATCA-7360.aspx", NULL),
 	B("EPoX",	"EP-8K5A2",		1, "http://www.epox.com/product.asp?ID=EP-8K5A2", NULL),
-	B("EPoX",	"EP-8NPAI",		1, NULL, NULL),
+	B("EPoX",	"EP-8NPA7I",		1, "http://epox.com/product.asp?ID=EP-8NPA7I", NULL),
 	B("EPoX",	"EP-8RDA3+",		1, "http://www.epox.com/product.asp?ID=EP-8RDA3plus", NULL),
 	B("EPoX",	"EP-BX3",		1, "http://www.epox.com/product.asp?ID=EP-BX3", NULL),
 	B("FIC",	"VA-502",		0, "ftp://ftp.fic.com.tw/motherboard/manual/socket7/va-502/", "No public report found. Owned by Uwe Hermann <uwe@hermann-uwe.de>. Seems the PCI subsystem IDs are identical with the Tekram P6Pro-A5. May work now."),
