@@ -824,7 +824,6 @@ static int board_shuttle_fn25(void)
  * Suited for:
  * - Elitegroup GeForce6100SM-M: NVIDIA MCP61 + ITE IT8726F
  */
-
 static int board_ecs_geforce6100sm_m(void)
 {
 	struct pci_dev *dev;
@@ -947,7 +946,7 @@ static int nvidia_mcp_gpio2_raise(void)
 
 /*
  * Suited for:
- *  - EPoX EP-8NPAI: NVIDIA nForce4 4X
+ *  - EPoX EP-8NPA7I: Socket 754 + NVIDIA nForce4 4X
  */
 static int nvidia_mcp_gpio4_raise(void)
 {
@@ -1931,7 +1930,7 @@ const struct board_pciid_enable board_pciid_enables[] = {
 	{0x10de, 0x03ea, 0x1019, 0x2602,  0x10de, 0x03e0, 0x1019, 0x2602, NULL,          NULL,         NULL,          "Elitegroup",  "GeForce6100SM-M",       0,   OK, board_ecs_geforce6100sm_m},
 	{0x1106, 0x3038, 0x1019, 0x0996,  0x1106, 0x3177, 0x1019, 0x0996, NULL,          NULL,         NULL,          "Elitegroup",  "K7VTA3",                256, OK, NULL},
 	{0x1106, 0x3177, 0x1106, 0x3177,  0x1106, 0x3059, 0x1695, 0x3005, NULL,          NULL,         NULL,          "EPoX",        "EP-8K5A2",              0,   OK, w836xx_memw_enable_2e},
-	{0x10DE, 0x005E, 0x1695, 0x1010,  0x10DE, 0x0050, 0x1695, 0x1010, NULL,          NULL,         NULL,          "EPoX",        "EP-8NPAI",              0,   OK, nvidia_mcp_gpio4_raise},
+	{0x10DE, 0x005E, 0x1695, 0x1010,  0x10DE, 0x0050, 0x1695, 0x1010, NULL,          NULL,         NULL,          "EPoX",        "EP-8NPA7I",             0,   OK, nvidia_mcp_gpio4_raise},
 	{0x10EC, 0x8139, 0x1695, 0x9001,  0x11C1, 0x5811, 0x1695, 0x9015, NULL,          NULL,         NULL,          "EPoX",        "EP-8RDA3+",             0,   OK, nvidia_mcp_gpio31_raise},
 	{0x8086, 0x7110,      0,      0,  0x8086, 0x7190,      0,      0, NULL,          "epox",       "ep-bx3",      "EPoX",        "EP-BX3",                0,   NT, intel_piix4_gpo22_raise},
 	{0x8086, 0x2443, 0x8086, 0x2442,  0x8086, 0x1130, 0x8086, 0x1130, "^6IEM ",      NULL,         NULL,          "GIGABYTE",    "GA-6IEM",               0,   NT, intel_ich_gpio25_raise},
