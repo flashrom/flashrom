@@ -1343,6 +1343,19 @@ int erase_flash(struct flashchip *flash)
 	return ret;
 }
 
+void nonfatal_help_message(void)
+{
+	msg_gerr("Writing to the flash chip apparently didn't do anything.\n"
+		"This means we have to add special support for your board, "
+		  "programmer or flash chip.\n"
+		"Please report this on IRC at irc.freenode.net (channel "
+		  "#flashrom) or\n"
+		"mail flashrom@flashrom.org!\n"
+		"-------------------------------------------------------------"
+		  "------------------\n"
+		"You may now reboot or simply leave the machine running.\n");
+}
+
 void emergency_help_message(void)
 {
 	msg_gerr("Your flash chip is in an unknown state.\n"
@@ -1602,18 +1615,16 @@ int chip_safety_check(struct flashchip *flash, int force, char *filename, int re
  */
 int doit(struct flashchip *flash, int force, char *filename, int read_it, int write_it, int erase_it, int verify_it)
 {
-	uint8_t *buf;
+	uint8_t *oldcontents;
+	uint8_t *newcontents;
 	int ret = 0;
-	unsigned long size;
+	unsigned long size = flash->total_size * 1024;
 
 	if (chip_safety_check(flash, force, filename, read_it, write_it, erase_it, verify_it)) {
 		msg_cerr("Aborting.\n");
 		programmer_shutdown();
 		return 1;
 	}
-
-	size = flash->total_size * 1024;
-	buf = (uint8_t *) calloc(size, sizeof(char));
 
 	/* Given the existence of read locks, we want to unlock for read,
 	 * erase and write.
@@ -1627,6 +1638,12 @@ int doit(struct flashchip *flash, int force, char *filename, int read_it, int wr
 		return ret;
 	}
 	if (erase_it) {
+		/* FIXME: Do we really want the scary warning if erase failed?
+		 * After all, after erase the chip is either blank or partially
+		 * blank or it has the old contents. A blank chip won't boot,
+		 * so if the user wanted erase and reboots afterwards, the user
+		 * knows very well that booting won't work.
+		 */
 		if (erase_flash(flash)) {
 			emergency_help_message();
 			programmer_shutdown();
@@ -1634,33 +1651,71 @@ int doit(struct flashchip *flash, int force, char *filename, int read_it, int wr
 		}
 	}
 
+	newcontents = (uint8_t *) calloc(size, sizeof(char));
+
 	if (write_it || verify_it) {
-		if (read_buf_from_file(buf, flash->total_size * 1024, filename)) {
+		if (read_buf_from_file(newcontents, size, filename)) {
 			programmer_shutdown();
 			return 1;
 		}
 
 #if CONFIG_INTERNAL == 1
-		show_id(buf, size, force);
+		if (programmer == PROGRAMMER_INTERNAL)
+			show_id(newcontents, size, force);
 #endif
+	}
+
+	oldcontents = (uint8_t *) calloc(size, sizeof(char));
+
+	/* Read the whole chip to be able to check whether regions need to be
+	 * erased and to give better diagnostics in case write fails.
+	 * The alternative would be to read only the regions which are to be
+	 * preserved, but in that case we might perform unneeded erase which
+	 * takes time as well.
+	 */
+	msg_cdbg("Reading old flash chip contents...\n");
+	if (flash->read(flash, oldcontents, 0, size)) {
+		programmer_shutdown();
+		return 1;
 	}
 
 	// This should be moved into each flash part's code to do it 
 	// cleanly. This does the job.
-	handle_romentries(buf, flash);
+	handle_romentries(flash, oldcontents, newcontents);
 
 	// ////////////////////////////////////////////////////////////
 
 	if (write_it) {
 		if (erase_flash(flash)) {
+			msg_cerr("Uh oh. Erase failed. Checking if anything "
+				 "changed.\n");
+			if (!flash->read(flash, newcontents, 0, size)) {
+				if (!memcmp(oldcontents, newcontents, size)) {
+					msg_cinfo("Good. It seems nothing was "
+						  "changed.\n");
+					nonfatal_help_message();
+					programmer_shutdown();
+					return 1;
+				}
+			}
 			emergency_help_message();
 			programmer_shutdown();
 			return 1;
 		}
 		msg_cinfo("Writing flash chip... ");
-		ret = flash->write(flash, buf, 0, flash->total_size * 1024);
+		ret = flash->write(flash, newcontents, 0, size);
 		if (ret) {
-			msg_cerr("FAILED!\n");
+			msg_cerr("Uh oh. Write failed. Checking if anything "
+				 "changed.\n");
+			if (!flash->read(flash, newcontents, 0, size)) {
+				if (!memcmp(oldcontents, newcontents, size)) {
+					msg_cinfo("Good. It seems nothing was "
+						  "changed.\n");
+					nonfatal_help_message();
+					programmer_shutdown();
+					return 1;
+				}
+			}
 			emergency_help_message();
 			programmer_shutdown();
 			return 1;
@@ -1673,7 +1728,7 @@ int doit(struct flashchip *flash, int force, char *filename, int read_it, int wr
 		/* Work around chips which need some time to calm down. */
 		if (write_it)
 			programmer_delay(1000*1000);
-		ret = verify_flash(flash, buf);
+		ret = verify_flash(flash, newcontents);
 		/* If we tried to write, and verification now fails, we
 		 * might have an emergency situation.
 		 */
