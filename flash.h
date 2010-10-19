@@ -239,7 +239,7 @@ int cli_classic(int argc, char *argv[]);
 /* layout.c */
 int read_romlayout(char *name);
 int find_romentry(char *name);
-int handle_romentries(uint8_t *buffer, struct flashchip *flash);
+int handle_romentries(struct flashchip *flash, uint8_t *oldcontents, uint8_t *newcontents);
 
 /* spi.c */
 struct spi_command {
