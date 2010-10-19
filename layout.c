@@ -205,7 +205,7 @@ int find_romentry(char *name)
 	return -1;
 }
 
-int handle_romentries(uint8_t *buffer, struct flashchip *flash)
+int handle_romentries(struct flashchip *flash, uint8_t *oldcontents, uint8_t *newcontents)
 {
 	int i;
 
@@ -225,13 +225,12 @@ int handle_romentries(uint8_t *buffer, struct flashchip *flash)
 	// normal will be updated and the rest will be kept.
 
 	for (i = 0; i < romimages; i++) {
-
 		if (rom_entries[i].included)
 			continue;
 
-		flash->read(flash, buffer + rom_entries[i].start,
-			    rom_entries[i].start,
-			    rom_entries[i].end - rom_entries[i].start + 1);
+		memcpy(newcontents + rom_entries[i].start, 
+		       oldcontents + rom_entries[i].start,
+		       rom_entries[i].end - rom_entries[i].start + 1);
 	}
 
 	return 0;
