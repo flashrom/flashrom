@@ -142,6 +142,26 @@ static int probe_jedec_common(struct flashchip *flash, unsigned int mask)
 		return 0;
 	}
 
+	/* Earlier probes might have been too fast for the chip to enter ID
+	 * mode completely. Allow the chip to finish this before seeing a
+	 * reset command.
+	 */
+	if (probe_timing_enter)
+		programmer_delay(probe_timing_enter);
+	/* Reset chip to a clean slate */
+	if ((flash->feature_bits & FEATURE_RESET_MASK) == FEATURE_LONG_RESET)
+	{
+		chip_writeb(0xAA, bios + (0x5555 & mask));
+		if (probe_timing_exit)
+			programmer_delay(10);
+		chip_writeb(0x55, bios + (0x2AAA & mask));
+		if (probe_timing_exit)
+			programmer_delay(10);
+	}
+	chip_writeb(0xF0, bios + (0x5555 & mask));
+	if (probe_timing_exit)
+		programmer_delay(probe_timing_exit);
+
 	/* Issue JEDEC Product ID Entry command */
 	chip_writeb(0xAA, bios + (0x5555 & mask));
 	if (probe_timing_enter)
@@ -172,7 +192,7 @@ static int probe_jedec_common(struct flashchip *flash, unsigned int mask)
 	}
 
 	/* Issue JEDEC Product ID Exit command */
-	if ((flash->feature_bits & FEATURE_SHORT_RESET) == FEATURE_LONG_RESET)
+	if ((flash->feature_bits & FEATURE_RESET_MASK) == FEATURE_LONG_RESET)
 	{
 		chip_writeb(0xAA, bios + (0x5555 & mask));
 		if (probe_timing_exit)
