@@ -1309,7 +1309,7 @@ int spi_chip_write_1(struct flashchip *flash, uint8_t *buf, int start, int len)
 	int i, result = 0;
 
 	for (i = start; i < start + len; i++) {
-		result = spi_byte_program(i, buf[i]);
+		result = spi_byte_program(i, buf[i - start]);
 		if (result)
 			return 1;
 		while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
@@ -1377,6 +1377,14 @@ int spi_aai_write(struct flashchip *flash, uint8_t *buf, int start, int len)
 		if (spi_chip_write_1(flash, buf, start, start % 2))
 			return SPI_GENERIC_ERROR;
 		pos += start % 2;
+		cmds[1].writearr = (const unsigned char[]){
+					JEDEC_AAI_WORD_PROGRAM,
+					(pos >> 16) & 0xff,
+					(pos >> 8) & 0xff,
+					(pos & 0xff),
+					buf[pos - start],
+					buf[pos - start + 1]
+				};
 		/* Do not return an error for now. */
 		//return SPI_GENERIC_ERROR;
 	}
@@ -1406,8 +1414,8 @@ int spi_aai_write(struct flashchip *flash, uint8_t *buf, int start, int len)
 
 	/* Are there at least two more bytes to write? */
 	while (pos < start + len - 1) {
-		cmd[1] = buf[pos++];
-		cmd[2] = buf[pos++];
+		cmd[1] = buf[pos++ - start];
+		cmd[2] = buf[pos++ - start];
 		spi_send_command(JEDEC_AAI_WORD_PROGRAM_CONT_OUTSIZE, 0, cmd, NULL);
 		while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
 			programmer_delay(10);
@@ -1420,7 +1428,7 @@ int spi_aai_write(struct flashchip *flash, uint8_t *buf, int start, int len)
 
 	/* Write remaining byte (if any). */
 	if (pos < start + len) {
-		if (spi_chip_write_1(flash, buf + pos, pos, pos % 2))
+		if (spi_chip_write_1(flash, buf + pos - start, pos, pos % 2))
 			return SPI_GENERIC_ERROR;
 		pos += pos % 2;
 	}
