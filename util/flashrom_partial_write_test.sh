@@ -81,13 +81,13 @@ echo "00h pattern written in ${ZERO_4K}"
 
 echo "Reading BIOS image"
 BIOS="bios.bin"
-flashrom "$FLASHROM_PARAM" -r "$BIOS" > /dev/null
+flashrom ${FLASHROM_PARAM} -r "$BIOS" > /dev/null
 echo "Original image saved as ${BIOS}"
 
 # $1: exit code
 do_exit() {
 	echo "restoring original bios image using system's flashrom"
-	flashrom "$FLASHROM_PARAM" -w "$BIOS"
+	flashrom ${FLASHROM_PARAM} -w "$BIOS"
 	echo "test files remain in ${TMPDIR}"
 	cd "$OLDDIR"
 	exit "$1"
@@ -157,7 +157,7 @@ while [ $i -lt $NUM_REGIONS ] ; do
 	dd if=${ZERO_4K} of=${TESTFILE} bs=1 conv=notrunc seek=${offset} 2> /dev/null
 	dd if=${FF_4K} of=${TESTFILE} bs=1 conv=notrunc seek=$((${offset} + 4096)) 2> /dev/null
 
-	./flashrom "$FLASHROM_PARAM" -l layout_4k_aligned.txt -i 00_${i} -i ff_${i} -w "$TESTFILE" > /dev/null
+	./flashrom ${FLASHROM_PARAM} -l layout_4k_aligned.txt -i 00_${i} -i ff_${i} -w "$TESTFILE" > /dev/null
 	if [ "$?" != "0" ] ; then
 		echo "partial flash failed on iteration ${i}"
 		echo "Result: FAIL"
@@ -166,7 +166,7 @@ while [ $i -lt $NUM_REGIONS ] ; do
 
 	# download the entire ROM image and use diff to compare to ensure
 	# flashrom logic does not violate user-specified regions
-	flashrom "$FLASHROM_PARAM" -r difftest.bin > /dev/null
+	flashrom ${FLASHROM_PARAM} -r difftest.bin > /dev/null
 	diff -q difftest.bin "$TESTFILE"
 	if [ "$?" != "0" ] ; then
 		echo "diff test failed on iteration ${i}"
@@ -239,7 +239,7 @@ echo "
 " > layout_unaligned.txt
 
 # reset the test file and ROM to the original state
-flashrom "$FLASHROM_PARAM" -w "$BIOS"
+flashrom ${FLASHROM_PARAM} -w "$BIOS"
 cp "$BIOS" "$TESTFILE"
 
 i=0
@@ -256,7 +256,7 @@ while [ $i -lt $NUM_REGIONS ] ; do
 	dd if=${ZERO_4K} of=${TESTFILE} bs=1 conv=notrunc seek=${offset} 2> /dev/null
 	dd if=${FF_4K} of=${TESTFILE} bs=1 conv=notrunc seek=$((${offset} + 4096)) count=writelen 2> /dev/null
 
-	./flashrom "$FLASHROM_PARAM" -l layout_unaligned.txt -i 00_${i} -i ff_${i} -w "$TESTFILE" > /dev/null
+	./flashrom ${FLASHROM_PARAM} -l layout_unaligned.txt -i 00_${i} -i ff_${i} -w "$TESTFILE" > /dev/null
 	if [ "$?" != "0" ] ; then
 		echo "partial flash failed on iteration ${i}"
 		echo "Result: FAIL"
@@ -265,7 +265,7 @@ while [ $i -lt $NUM_REGIONS ] ; do
 
 	# download the entire ROM image and use diff to compare to ensure
 	# flashrom logic does not violate user-specified regions
-	flashrom "$FLASHROM_PARAM" -r difftest.bin > /dev/null
+	flashrom ${FLASHROM_PARAM} -r difftest.bin > /dev/null
 	diff -q difftest.bin "$TESTFILE"
 	if [ "$?" != "0" ] ; then
 		echo "diff test failed on iteration ${i}"
