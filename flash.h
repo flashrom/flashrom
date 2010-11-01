@@ -207,6 +207,8 @@ void print_banner(void);
 void list_programmers_linebreak(int startcol, int cols, int paren);
 int selfcheck(void);
 int doit(struct flashchip *flash, int force, char *filename, int read_it, int write_it, int erase_it, int verify_it);
+int read_buf_from_file(unsigned char *buf, unsigned long size, char *filename);
+int write_buf_to_file(unsigned char *buf, unsigned long size, char *filename);
 
 #define OK 0
 #define NT 1    /* Not tested */
