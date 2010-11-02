@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <limits.h>
 #include "flash.h"
 #include "programmer.h"
 
@@ -205,33 +206,62 @@ int find_romentry(char *name)
 	return -1;
 }
 
-int handle_romentries(struct flashchip *flash, uint8_t *oldcontents, uint8_t *newcontents)
+int find_next_included_romentry(unsigned int start)
 {
 	int i;
+	unsigned int best_start = UINT_MAX;
+	int best_entry = -1;
 
-	// This function does not save flash write cycles.
-	// 
-	// Also it does not cope with overlapping rom layout
-	// sections. 
-	// example:
-	// 00000000:00008fff gfxrom
-	// 00009000:0003ffff normal
-	// 00040000:0007ffff fallback
-	// 00000000:0007ffff all
-	//
-	// If you'd specify -i all the included flag of all other
-	// sections is still 0, so no changes will be made to the
-	// flash. Same thing if you specify -i normal -i all only 
-	// normal will be updated and the rest will be kept.
-
+	/* First come, first serve for overlapping regions. */
 	for (i = 0; i < romimages; i++) {
-		if (rom_entries[i].included)
+		if (!rom_entries[i].included)
 			continue;
-
-		memcpy(newcontents + rom_entries[i].start, 
-		       oldcontents + rom_entries[i].start,
-		       rom_entries[i].end - rom_entries[i].start + 1);
+		/* Already past the current entry? */
+		if (start > rom_entries[i].end)
+			continue;
+		/* Inside the current entry? */
+		if (start >= rom_entries[i].start)
+			return i;
+		/* Entry begins after start. */
+		if (best_start > rom_entries[i].start) {
+			best_start = rom_entries[i].start;
+			best_entry = i;
+		}
 	}
+	return best_entry;
+}
 
+int handle_romentries(struct flashchip *flash, uint8_t *oldcontents, uint8_t *newcontents)
+{
+	unsigned int start = 0;
+	int entry;
+	unsigned int size = flash->total_size * 1024;
+
+	/* If no layout file was specified or the layout file was empty, assume
+	 * that the user wants to flash the complete new image.
+	 */
+	if (!romimages)
+		return 0;
+	/* Non-included romentries are ignored.
+	 * The union of all included romentries is used from the new image.
+	 */
+	while (start < size) {
+		entry = find_next_included_romentry(start);
+		/* No more romentries for remaining region? */
+		if (entry < 0) {
+			memcpy(newcontents + start, oldcontents + start,
+			       size - start);
+			break;
+		}
+		if (rom_entries[entry].start > start)
+			memcpy(newcontents + start, oldcontents + start,
+			       rom_entries[entry].start - start);
+		/* Skip to location after current romentry. */
+		start = rom_entries[entry].end + 1;
+		/* Catch overflow. */
+		if (!start)
+			break;
+	}
+			
 	return 0;
 }
