@@ -92,6 +92,12 @@ echo "Original image saved as ${BIOS}"
 
 # $1: exit code
 do_exit() {
+	if [ ${1} -eq ${EXIT_FAILURE} ] ; then
+		echo "Result: FAILED"
+	else
+		echo "Result: PASSED"
+	fi
+
 	echo "restoring original bios image using system's flashrom"
 	flashrom ${FLASHROM_PARAM} -w "$BIOS"
 	echo "test files remain in ${TMPDIR}"
@@ -159,14 +165,14 @@ echo "
 cp "$BIOS" "$TESTFILE"
 i=0
 while [ $i -lt $NUM_REGIONS ] ; do
+	echo -n "aligned region ${i} test: "
 	offset=$((${i} * 8192))
 	dd if=${ZERO_4K} of=${TESTFILE} bs=1 conv=notrunc seek=${offset} 2> /dev/null
 	dd if=${FF_4K} of=${TESTFILE} bs=1 conv=notrunc seek=$((${offset} + 4096)) 2> /dev/null
 
 	./flashrom ${FLASHROM_PARAM} -l layout_4k_aligned.txt -i 00_${i} -i ff_${i} -w "$TESTFILE" > /dev/null
 	if [ "$?" != "0" ] ; then
-		echo "partial flash failed on iteration ${i}"
-		echo "Result: FAIL"
+		echo "failed to flash region"
 		do_exit "$EXIT_FAILURE"
 	fi
 
@@ -175,13 +181,13 @@ while [ $i -lt $NUM_REGIONS ] ; do
 	flashrom ${FLASHROM_PARAM} -r difftest.bin > /dev/null
 	diff -q difftest.bin "$TESTFILE"
 	if [ "$?" != "0" ] ; then
-		echo "diff test failed on iteration ${i}"
-		echo "Result: FAIL"
+		echo "failed diff test"
 		do_exit "$EXIT_FAILURE"
 	fi
 	rm -f difftest.bin
 
 	i=$((${i} + 1))
+	echo "passed"
 done
 
 # Make a layout - 4K regions on 4.5K boundaries. This will help find problems
@@ -245,11 +251,13 @@ echo "
 " > layout_unaligned.txt
 
 # reset the test file and ROM to the original state
-flashrom ${FLASHROM_PARAM} -w "$BIOS"
+flashrom ${FLASHROM_PARAM} -w "$BIOS" > /dev/null
 cp "$BIOS" "$TESTFILE"
 
 i=0
 while [ $i -lt $NUM_REGIONS ] ; do
+	echo -n "unaligned region ${i} test: "
+
 	offset=$(($((${i} * 8192)) + 2048))
 	# Protect against too long write
 	writelen=4096
@@ -264,8 +272,7 @@ while [ $i -lt $NUM_REGIONS ] ; do
 
 	./flashrom ${FLASHROM_PARAM} -l layout_unaligned.txt -i 00_${i} -i ff_${i} -w "$TESTFILE" > /dev/null
 	if [ "$?" != "0" ] ; then
-		echo "partial flash failed on iteration ${i}"
-		echo "Result: FAIL"
+		echo "failed to flash region"
 		do_exit "$EXIT_FAILURE"
 	fi
 
@@ -274,14 +281,13 @@ while [ $i -lt $NUM_REGIONS ] ; do
 	flashrom ${FLASHROM_PARAM} -r difftest.bin > /dev/null
 	diff -q difftest.bin "$TESTFILE"
 	if [ "$?" != "0" ] ; then
-		echo "diff test failed on iteration ${i}"
-		echo "Result: FAIL"
+		echo "failed diff test"
 		do_exit "$EXIT_FAILURE"
 	fi
 	rm -f difftest.bin
 
 	i=$((${i} + 1))
+	echo "passed"
 done
 
-echo "Result: PASS"
 do_exit "$EXIT_SUCCESS"
