@@ -34,8 +34,12 @@ fi
 echo "testing flashrom binary: ${FLASHROM}"
 
 OLDDIR=$(pwd)
-if [ -z "$TMPDIR" ]; then
-	TMPDIR=$(mktemp -d)	# test data location
+
+# test data location
+TMPDIR=$(mktemp -d -t flashrom_test.XXXXXXXXXX)
+if [ "$?" != "0" ] ; then
+	echo "Could not create temporary directory"
+	exit $EXIT_FAILURE
 fi
 
 ZERO_4K="00_4k.bin"
@@ -65,8 +69,10 @@ echo "Running test in ${TMPDIR}"
 
 # Make 4k worth of 0xff bytes
 echo "begin 640 $FF_4K" > "$FF_4K_TEXT"
-for i in `seq 0 90` ; do
+i=0
+while [ $i -le 90 ] ; do
 	echo "M____________________________________________________________" >> "$FF_4K_TEXT"
+	i=$((${i} + 1))
 done
 echo "!_P``" >> "$FF_4K_TEXT"
 echo "\`" >> "$FF_4K_TEXT"
