@@ -793,6 +793,7 @@ out_free:
  * Check if the buffer @have can be programmed to the content of @want without
  * erasing. This is only possible if all chunks of size @gran are either kept
  * as-is or changed from an all-ones state to any other state.
+ *
  * The following write granularities (enum @gran) are known:
  * - 1 bit. Each bit can be cleared individually.
  * - 1 byte. A byte can be written once. Further writes to an already written
@@ -803,10 +804,12 @@ out_free:
  *   this function.
  * - 256 bytes. If less than 256 bytes are written, the contents of the
  *   unwritten bytes are undefined.
+ * Warning: This function assumes that @have and @want point to naturally
+ * aligned regions.
  *
  * @have        buffer with current content
  * @want        buffer with desired content
- * @len         length of the verified area
+ * @len		length of the checked area
  * @gran	write granularity (enum, not count)
  * @return      0 if no erase is needed, 1 otherwise
  */
@@ -838,7 +841,7 @@ int need_erase(uint8_t *have, uint8_t *want, int len, enum write_granularity gra
 				continue;
 			/* have needs to be in erased state. */
 			for (i = 0; i < limit; i++)
-				if (have[i] != 0xff) {
+				if (have[j * 256 + i] != 0xff) {
 					result = 1;
 					break;
 				}
@@ -846,7 +849,100 @@ int need_erase(uint8_t *have, uint8_t *want, int len, enum write_granularity gra
 				break;
 		}
 		break;
+	default:
+		msg_cerr("%s: Unsupported granularity! Please report a bug at "
+			 "flashrom@flashrom.org\n", __func__);
 	}
+	return result;
+}
+
+/**
+ * Check if the buffer @have needs to be programmed to get the content of @want.
+ * If yes, return 1 and fill in first_start with the start address of the
+ * write operation and first_len with the length of the first to-be-written
+ * chunk. If not, return 0 and leave first_start and first_len undefined.
+ *
+ * Warning: This function assumes that @have and @want point to naturally
+ * aligned regions.
+ *
+ * @have	buffer with current content
+ * @want	buffer with desired content
+ * @len		length of the checked area
+ * @gran	write granularity (enum, not count)
+ * @return	0 if no write is needed, 1 otherwise
+ * @first_start	offset of the first byte which needs to be written
+ * @first_len	length of the first contiguous area which needs to be written
+ *
+ * FIXME: This function needs a parameter which tells it about coalescing
+ * in relation to the max write length of the programmer and the max write
+ * length of the chip.
+ */
+static int get_next_write(uint8_t *have, uint8_t *want, int len,
+			  int *first_start, int *first_len,
+			  enum write_granularity gran)
+{
+	int result = 0, rel_start = 0;
+	int i, limit;
+
+	/* The passed in variable might be uninitialized. */
+	*first_len = 0;
+	switch (gran) {
+	case write_gran_1bit:
+	case write_gran_1byte:
+		for (i = 0; i < len; i++) {
+			if (have[i] != want[i]) {
+				if (!result) {
+					/* First location where have and want
+					 * differ.
+					 */
+					result = 1;
+					rel_start = i;
+				}
+			} else {
+				if (result) {
+					/* First location where have and want
+					 * do not differ anymore.
+					 */
+					*first_len = i - rel_start;
+					break;
+				}
+			}
+		}
+		/* Did the loop terminate without setting first_len? */
+		if (result && ! *first_len)
+			*first_len = i - rel_start;
+		break;
+	case write_gran_256bytes:
+		for (i = 0; i < len / 256; i++) {
+			limit = min(256, len - i * 256);
+			/* Are 'have' and 'want' identical? */
+			if (memcmp(have + i * 256, want + i * 256, limit)) {
+				if (!result) {
+					/* First location where have and want
+					 * differ.
+					 */
+					result = 1;
+					rel_start = i * 256;
+				}
+			} else {
+				if (result) {
+					/* First location where have and want
+					 * do not differ anymore.
+					 */
+					*first_len = i * 256 - rel_start;
+					break;
+				}
+			}
+		}
+		/* Did the loop terminate without setting first_len? */
+		if (result && ! *first_len)
+			*first_len = min(i * 256 - rel_start, len);
+		break;
+	default:
+		msg_cerr("%s: Unsupported granularity! Please report a bug at "
+			 "flashrom@flashrom.org\n", __func__);
+	}
+	*first_start += rel_start;
 	return result;
 }
 
@@ -1203,7 +1299,8 @@ out_free:
 	return ret;
 }
 
-/* This function shares a lot of its structure with erase_flash().
+/* This function shares a lot of its structure with erase_and_write_flash() and
+ * walk_eraseregions().
  * Even if an error is found, the function will keep going and check the rest.
  */
 static int selfcheck_eraseblocks(struct flashchip *flash)
@@ -1271,10 +1368,67 @@ static int selfcheck_eraseblocks(struct flashchip *flash)
 	return ret;
 }
 
+static int erase_and_write_block_helper(struct flashchip *flash,
+					unsigned int start, unsigned int len,
+					uint8_t *oldcontents,
+					uint8_t *newcontents,
+					int (*erasefn) (struct flashchip *flash,
+							unsigned int addr,
+							unsigned int len))
+{
+	int starthere = 0;
+	int lenhere = 0;
+	int ret = 0;
+	int skip = 1;
+	int writecount = 0;
+	enum write_granularity gran = write_gran_256bytes; /* FIXME */
+
+	/* oldcontents and newcontents are opaque to walk_eraseregions, and
+	 * need to be adjusted here to keep the impression of proper abstraction
+	 */
+	oldcontents += start;
+	newcontents += start;
+	msg_cdbg(":");
+	/* FIXME: Assume 256 byte granularity for now to play it safe. */
+	if (need_erase(oldcontents, newcontents, len, gran)) {
+		msg_cdbg("E");
+		ret = erasefn(flash, start, len);
+		if (ret)
+			return ret;
+		/* Erase was successful. Adjust oldcontents. */
+		memset(oldcontents, 0xff, len);
+		skip = 0;
+	}
+	while (get_next_write(oldcontents + starthere,
+			      newcontents + starthere,
+			      len - starthere, &starthere,
+			      &lenhere, gran)) {
+		if (!writecount++)
+			msg_cdbg("W");
+		/* Needs the partial write function signature. */
+		ret = flash->write(flash, newcontents + starthere,
+				   start + starthere, lenhere);
+		if (ret)
+			return ret;
+		starthere += lenhere;
+		skip = 0;
+	}
+	if (skip)
+		msg_cdbg("S");
+	return ret;
+}
+
 static int walk_eraseregions(struct flashchip *flash, int erasefunction,
 			     int (*do_something) (struct flashchip *flash,
 						  unsigned int addr,
-						  unsigned int len))
+						  unsigned int len,
+						  uint8_t *param1,
+						  uint8_t *param2,
+						  int (*erasefn) (
+							struct flashchip *flash,
+							unsigned int addr,
+							unsigned int len)),
+			     void *param1, void *param2)
 {
 	int i, j;
 	unsigned int start = 0;
@@ -1286,21 +1440,34 @@ static int walk_eraseregions(struct flashchip *flash, int erasefunction,
 		 */
 		len = eraser.eraseblocks[i].size;
 		for (j = 0; j < eraser.eraseblocks[i].count; j++) {
-			msg_cdbg("0x%06x-0x%06x, ", start,
+			/* Print this for every block except the first one. */
+			if (i || j)
+				msg_cdbg(", ");
+			msg_cdbg("0x%06x-0x%06x", start,
 				     start + len - 1);
-			if (do_something(flash, start, len))
+			if (do_something(flash, start, len, param1, param2,
+					 eraser.block_erase)) {
+				msg_cdbg("\n");
 				return 1;
+			}
 			start += len;
 		}
 	}
+	msg_cdbg("\n");
 	return 0;
 }
 
-int erase_flash(struct flashchip *flash)
+int erase_and_write_flash(struct flashchip *flash, uint8_t *oldcontents, uint8_t *newcontents)
 {
 	int k, ret = 0, found = 0;
+	uint8_t *curcontents;
+	unsigned long size = flash->total_size * 1024;
 
-	msg_cinfo("Erasing flash chip... ");
+	curcontents = (uint8_t *) malloc(size);
+	/* Copy oldcontents to curcontents to avoid clobbering oldcontents. */
+	memcpy(curcontents, oldcontents, size);
+
+	msg_cinfo("Erasing and writing flash chip... ");
 	for (k = 0; k < NUM_ERASEFUNCTIONS; k++) {
 		struct block_eraser eraser = flash->block_erasers[k];
 
@@ -1324,12 +1491,19 @@ int erase_flash(struct flashchip *flash)
 		}
 		found = 1;
 		msg_cdbg("trying... ");
-		ret = walk_eraseregions(flash, k, eraser.block_erase);
+		ret = walk_eraseregions(flash, k, &erase_and_write_block_helper, curcontents, newcontents);
 		msg_cdbg("\n");
 		/* If everything is OK, don't try another erase function. */
 		if (!ret)
 			break;
+		/* FIXME: Reread the whole chip here so we know the current
+		 * chip contents? curcontents might be up to date, but this
+		 * code is only reached if something failed, and then we don't
+		 * know exactly what failed, and how.
+		 */
 	}
+	/* Free the scratchpad. */
+	free(curcontents);
 	if (!found) {
 		msg_cerr("ERROR: flashrom has no erase function for this flash chip.\n");
 		return 1;
@@ -1338,7 +1512,7 @@ int erase_flash(struct flashchip *flash)
 	if (ret) {
 		msg_cerr("FAILED!\n");
 	} else {
-		msg_cinfo("SUCCESS.\n");
+		msg_cinfo("Done.\n");
 	}
 	return ret;
 }
@@ -1637,6 +1811,19 @@ int doit(struct flashchip *flash, int force, char *filename, int read_it, int wr
 		programmer_shutdown();
 		return ret;
 	}
+
+	oldcontents = (uint8_t *) malloc(size);
+	/* Assume worst case: All bits are 0. */
+	memset(oldcontents, 0x00, size);
+	newcontents = (uint8_t *) malloc(size);
+	/* Assume best case: All bits should be 1. */
+	memset(newcontents, 0xff, size);
+	/* Side effect of the assumptions above: Default write action is erase
+	 * because newcontents looks like a completely erased chip, and
+	 * oldcontents being completely 0x00 means we have to erase everything
+	 * before we can write.
+	 */
+
 	if (erase_it) {
 		/* FIXME: Do we really want the scary warning if erase failed?
 		 * After all, after erase the chip is either blank or partially
@@ -1644,14 +1831,13 @@ int doit(struct flashchip *flash, int force, char *filename, int read_it, int wr
 		 * so if the user wanted erase and reboots afterwards, the user
 		 * knows very well that booting won't work.
 		 */
-		if (erase_flash(flash)) {
+		if (erase_and_write_flash(flash, oldcontents, newcontents)) {
 			emergency_help_message();
-			programmer_shutdown();
-			return 1;
+			ret = 1;
 		}
+		programmer_shutdown();
+		return ret;
 	}
-
-	newcontents = (uint8_t *) calloc(size, sizeof(char));
 
 	if (write_it || verify_it) {
 		if (read_buf_from_file(newcontents, size, filename)) {
@@ -1664,8 +1850,6 @@ int doit(struct flashchip *flash, int force, char *filename, int read_it, int wr
 			show_id(newcontents, size, force);
 #endif
 	}
-
-	oldcontents = (uint8_t *) calloc(size, sizeof(char));
 
 	/* Read the whole chip to be able to check whether regions need to be
 	 * erased and to give better diagnostics in case write fails.
@@ -1686,9 +1870,9 @@ int doit(struct flashchip *flash, int force, char *filename, int read_it, int wr
 	// ////////////////////////////////////////////////////////////
 
 	if (write_it) {
-		if (erase_flash(flash)) {
-			msg_cerr("Uh oh. Erase failed. Checking if anything "
-				 "changed.\n");
+		if (erase_and_write_flash(flash, oldcontents, newcontents)) {
+			msg_cerr("Uh oh. Erase/write failed. Checking if "
+				 "anything changed.\n");
 			if (!flash->read(flash, newcontents, 0, size)) {
 				if (!memcmp(oldcontents, newcontents, size)) {
 					msg_cinfo("Good. It seems nothing was "
@@ -1701,26 +1885,6 @@ int doit(struct flashchip *flash, int force, char *filename, int read_it, int wr
 			emergency_help_message();
 			programmer_shutdown();
 			return 1;
-		}
-		msg_cinfo("Writing flash chip... ");
-		ret = flash->write(flash, newcontents, 0, size);
-		if (ret) {
-			msg_cerr("Uh oh. Write failed. Checking if anything "
-				 "changed.\n");
-			if (!flash->read(flash, newcontents, 0, size)) {
-				if (!memcmp(oldcontents, newcontents, size)) {
-					msg_cinfo("Good. It seems nothing was "
-						  "changed.\n");
-					nonfatal_help_message();
-					programmer_shutdown();
-					return 1;
-				}
-			}
-			emergency_help_message();
-			programmer_shutdown();
-			return 1;
-		} else {
-			msg_cinfo("COMPLETE.\n");
 		}
 	}
 
