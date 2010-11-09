@@ -55,34 +55,35 @@ static struct usb_device *get_device_by_vid_pid(uint16_t vid, uint16_t pid)
 
 //int usb_control_msg(usb_dev_handle *dev, int requesttype, int request, int value, int index, char *bytes, int size, int timeout);
 
-static int dediprog_set_spi_voltage(uint16_t voltage)
+static int dediprog_set_spi_voltage(int millivolt)
 {
 	int ret;
-	unsigned int mv;
+	uint16_t voltage_selector;
 
-	switch (voltage) {
-	case 0x0:
+	switch (millivolt) {
+	case 0:
 		/* Admittedly this one is an assumption. */
-		mv = 0;
+		voltage_selector = 0x0;
 		break;
-	case 0x12:
-		mv = 1800;
+	case 1800:
+		voltage_selector = 0x12;
 		break;
-	case 0x11:
-		mv = 2500;
+	case 2500:
+		voltage_selector = 0x11;
 		break;
-	case 0x10:
-		mv = 3500;
+	case 3500:
+		voltage_selector = 0x10;
 		break;
 	default:
-		msg_perr("Unknown voltage selector 0x%x! Aborting.\n", voltage);
+		msg_perr("Unknown voltage %i mV! Aborting.\n", millivolt);
 		return 1;
 	}
-	msg_pdbg("Setting SPI voltage to %u.%03u V\n", mv / 1000, mv % 1000);
+	msg_pdbg("Setting SPI voltage to %u.%03u V\n", millivolt / 1000,
+		 millivolt % 1000);
 
-	ret = usb_control_msg(dediprog_handle, 0x42, 0x9, voltage, 0xff, NULL, 0x0, DEFAULT_TIMEOUT);
+	ret = usb_control_msg(dediprog_handle, 0x42, 0x9, voltage_selector, 0xff, NULL, 0x0, DEFAULT_TIMEOUT);
 	if (ret != 0x0) {
-		msg_perr("Command Set SPI Voltage 0x%x failed!\n", voltage);
+		msg_perr("Command Set SPI Voltage 0x%x failed!\n", voltage_selector);
 		return 1;
 	}
 	return 0;
@@ -279,12 +280,73 @@ static int dediprog_command_f(int timeout)
 }
 #endif
 
+static int parse_voltage(char *voltage)
+{
+	char *tmp = NULL;
+	int i;
+	int millivolt;
+	int fraction = 0;
+
+	if (!voltage || !strlen(voltage)) {
+		msg_perr("Empty voltage= specified.\n");
+		return -1;
+	}
+	millivolt = (int)strtol(voltage, &tmp, 0);
+	voltage = tmp;
+	/* Handle "," and "." as decimal point. Everything after it is assumed
+	 * to be in decimal notation.
+	 */
+	if ((*voltage == '.') || (*voltage == ',')) {
+		voltage++;
+		for (i = 0; i < 3; i++) {
+			fraction *= 10;
+			/* Don't advance if the current character is invalid,
+			 * but continue multiplying.
+			 */
+			if ((*voltage < '0') || (*voltage > '9'))
+				continue;
+			fraction += *voltage - '0';
+			voltage++;
+		}
+		/* Throw away remaining digits. */
+		voltage += strspn(voltage, "0123456789");
+	}
+	/* The remaining string must be empty or "mV" or "V". */
+	tolower_string(voltage);
+
+	/* No unit or "V". */
+	if ((*voltage == '\0') || !strncmp(voltage, "v", 1)) {
+		millivolt *= 1000;
+		millivolt += fraction;
+	} else if (!strncmp(voltage, "mv", 2) ||
+		   !strncmp(voltage, "milliv", 6)) {
+		/* No adjustment. fraction is discarded. */
+	} else {
+		/* Garbage at the end of the string. */
+		msg_perr("Garbage voltage= specified.\n");
+		return -1;
+	}
+	return millivolt;
+}
+
 /* URB numbers refer to the first log ever captured. */
 int dediprog_init(void)
 {
 	struct usb_device *dev;
+	char *voltage;
+	int millivolt = 3500;
 
 	msg_pspew("%s\n", __func__);
+
+	voltage = extract_programmer_param("voltage");
+	if (voltage) {
+		millivolt = parse_voltage(voltage);
+		free(voltage);
+		if (millivolt < 0) {
+			return 1;
+		}
+		msg_pinfo("Setting voltage to %i mV\n", millivolt);
+	}
 
 	/* Here comes the USB stuff. */
 	usb_init();
@@ -315,7 +377,7 @@ int dediprog_init(void)
 	if (dediprog_command_c())
 		return 1;
 	/* URB 11. Command Set SPI Voltage. */
-	if (dediprog_set_spi_voltage(0x10))
+	if (dediprog_set_spi_voltage(millivolt))
 		return 1;
 
 	buses_supported = CHIP_BUSTYPE_SPI;

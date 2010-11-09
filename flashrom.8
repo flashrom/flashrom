@@ -402,7 +402,20 @@ can be any of
 (in Hz). The default is the maximum frequency of 8 MHz.
 .TP
 .BR "dediprog " programmer
-No parameters defined yet.
+An optional
+.B voltage
+parameter specifies the voltage the Dediprog should use. The default unit is
+Volt if no unit is specified. You can use
+.BR mV ", " milliVolt ", " V " or " Volt
+as unit specifier. Syntax is
+.sp
+.B "flashrom \-p dediprog:voltage=value"
+.sp
+where
+.B value
+can be any of
+.BR 0V ", " 1.8V ", " 2.5V ", " 3.5V
+or the equivalent in mV.
 .TP
 .BR "rayer_spi " programmer
 The default I/O base address used for the parallel port is 0x378 and you can use
