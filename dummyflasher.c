@@ -19,7 +19,6 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include <ctype.h>
 #include "flash.h"
 #include "chipdrivers.h"
 #include "programmer.h"
@@ -60,12 +59,6 @@ static int emu_jedec_ce_c7_size = 0;
 #endif
 
 static int spi_write_256_chunksize = 256;
-
-static void tolower_string(char *str)
-{
-	for (; *str != '\0'; str++)
-		*str = (char)tolower((unsigned char)*str);
-}
 
 int dummy_init(void)
 {
