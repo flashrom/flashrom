@@ -17,6 +17,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#include <stdio.h>
 #include <string.h>
 #include <usb.h>
 #include "flash.h"
@@ -192,6 +193,7 @@ int dediprog_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 static int dediprog_check_devicestring(void)
 {
 	int ret;
+	int fw[3];
 	char buf[0x11];
 
 	/* Command Prepare Receive Device String. */
@@ -216,10 +218,14 @@ static int dediprog_check_devicestring(void)
 		msg_perr("Device not a SF100!\n");
 		return 1;
 	}
+	if (sscanf(buf, "SF100 V:%d.%d.%d ", &fw[0], &fw[1], &fw[2]) != 3) {
+		msg_perr("Unexpected firmware version string!\n");
+		return 1;
+	}
 	/* Only these versions were tested. */
-	if (memcmp(buf, "SF100   V:2.1.1 ", 0x10) &&
-	    memcmp(buf, "SF100   V:3.1.8 ", 0x10)) {
-		msg_perr("Unexpected firmware version!\n");
+	if (fw[0] < 2 || fw[0] > 5) {
+		msg_perr("Unexpected firmware version %d.%d.%d!\n", fw[0],
+			 fw[1], fw[2]);
 		return 1;
 	}
 	return 0;
@@ -236,6 +242,10 @@ static int dediprog_command_a(void)
 
 	memset(buf, 0, sizeof(buf));
 	ret = usb_control_msg(dediprog_handle, 0xc3, 0xb, 0x0, 0x0, buf, 0x1, DEFAULT_TIMEOUT);
+	if (ret < 0) {
+		msg_perr("Command A failed (%s)!\n", usb_strerror());
+		return 1;
+	}
 	if ((ret != 0x1) || (buf[0] != 0x6f)) {
 		msg_perr("Unexpected response to Command A!\n");
 		return 1;
