@@ -29,6 +29,7 @@
 #endif
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include <getopt.h>
 #if HAVE_UTSNAME == 1
 #include <sys/utsname.h>
@@ -613,6 +614,12 @@ int bitcount(unsigned long a)
 		if (a & 1)
 			i++;
 	return i;
+}
+
+void tolower_string(char *str)
+{
+	for (; *str != '\0'; str++)
+		*str = (char)tolower((unsigned char)*str);
 }
 
 char *strcat_realloc(char *dest, const char *src)

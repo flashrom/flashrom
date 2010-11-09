@@ -197,6 +197,7 @@ struct flashchip *probe_flash(struct flashchip *first_flash, int force);
 int read_flash_to_file(struct flashchip *flash, char *filename);
 int min(int a, int b);
 int max(int a, int b);
+void tolower_string(char *str);
 char *extract_param(char **haystack, char *needle, char *delim);
 int check_erased_range(struct flashchip *flash, int start, int len);
 int verify_range(struct flashchip *flash, uint8_t *cmpbuf, int start, int len, char *message);
