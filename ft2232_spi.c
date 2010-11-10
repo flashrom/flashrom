@@ -108,11 +108,16 @@ static int get_buf(struct ftdi_context *ftdic, const unsigned char *buf,
 		   int size)
 {
 	int r;
-	r = ftdi_read_data(ftdic, (unsigned char *) buf, size);
-	if (r < 0) {
-		msg_perr("ftdi_read_data: %d, %s\n", r,
-				ftdi_get_error_string(ftdic));
-		return 1;
+
+	while (size > 0) {
+		r = ftdi_read_data(ftdic, (unsigned char *) buf, size);
+		if (r < 0) {
+			msg_perr("ftdi_read_data: %d, %s\n", r,
+					ftdi_get_error_string(ftdic));
+			return 1;
+		}
+		buf += r;
+		size -= r;
 	}
 	return 0;
 }
