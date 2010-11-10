@@ -50,7 +50,7 @@ int atahpt_init(void)
 	/* Enable flash access. */
 	reg32 = pci_read_long(pcidev_dev, REG_FLASH_ACCESS);
 	reg32 |= (1 << 24);
-	pci_write_long(pcidev_dev, REG_FLASH_ACCESS, reg32);
+	rpci_write_long(pcidev_dev, REG_FLASH_ACCESS, reg32);
 
 	buses_supported = CHIP_BUSTYPE_PARALLEL;
 
@@ -59,13 +59,7 @@ int atahpt_init(void)
 
 int atahpt_shutdown(void)
 {
-	uint32_t reg32;
-
-	/* Disable flash access again. */
-	reg32 = pci_read_long(pcidev_dev, REG_FLASH_ACCESS);
-	reg32 &= ~(1 << 24);
-	pci_write_long(pcidev_dev, REG_FLASH_ACCESS, reg32);
-
+	/* Flash access is disabled automatically by PCI restore. */
 	pci_cleanup(pacc);
 	release_io_perms();
 	return 0;

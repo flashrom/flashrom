@@ -142,3 +142,73 @@ void print_supported_pcidevs(const struct pcidev_status *devs)
 		       (devs[i].status == NT) ? " (untested)" : "");
 	}
 }
+
+enum pci_write_type {
+	pci_write_type_byte,
+	pci_write_type_word,
+	pci_write_type_long,
+};
+
+struct undo_pci_write_data {
+	struct pci_dev dev;
+	int reg;
+	enum pci_write_type type;
+	union {
+		uint8_t bytedata;
+		uint16_t worddata;
+		uint32_t longdata;
+	};
+};
+
+void undo_pci_write(void *p)
+{
+	struct undo_pci_write_data *data = p;
+	msg_pdbg("Restoring PCI config space for %02x:%02x:%01x reg 0x%02x\n",
+		 data->dev.bus, data->dev.dev, data->dev.func, data->reg);
+	switch (data->type) {
+	case pci_write_type_byte:
+		pci_write_byte(&data->dev, data->reg, data->bytedata);
+		break;
+	case pci_write_type_word:
+		pci_write_word(&data->dev, data->reg, data->worddata);
+		break;
+	case pci_write_type_long:
+		pci_write_long(&data->dev, data->reg, data->longdata);
+		break;
+	}
+	/* p was allocated in register_undo_pci_write. */
+	free(p);
+}
+
+#define register_undo_pci_write(a, b, c) 				\
+{									\
+	struct undo_pci_write_data *undo_pci_write_data;		\
+	undo_pci_write_data = malloc(sizeof(struct undo_pci_write_data)); \
+	undo_pci_write_data->dev = *a;					\
+	undo_pci_write_data->reg = b;					\
+	undo_pci_write_data->type = pci_write_type_##c;			\
+	undo_pci_write_data->c##data = pci_read_##c(dev, reg);		\
+	register_shutdown(undo_pci_write, undo_pci_write_data);		\
+}
+
+#define register_undo_pci_write_byte(a, b) register_undo_pci_write(a, b, byte)
+#define register_undo_pci_write_word(a, b) register_undo_pci_write(a, b, word)
+#define register_undo_pci_write_long(a, b) register_undo_pci_write(a, b, long)
+
+int rpci_write_byte(struct pci_dev *dev, int reg, uint8_t data)
+{
+	register_undo_pci_write_byte(dev, reg);
+	return pci_write_byte(dev, reg, data);
+}
+ 
+int rpci_write_word(struct pci_dev *dev, int reg, uint16_t data)
+{
+	register_undo_pci_write_word(dev, reg);
+	return pci_write_word(dev, reg, data);
+}
+ 
+int rpci_write_long(struct pci_dev *dev, int reg, uint32_t data)
+{
+	register_undo_pci_write_long(dev, reg);
+	return pci_write_long(dev, reg, data);
+}
