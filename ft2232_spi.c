@@ -179,7 +179,7 @@ int ft2232_spi_init(void)
 		return EXIT_FAILURE; // TODO
 	}
 
-	f = ftdi_usb_open(ftdic, FTDI_VID, ft2232_type);
+	f = ftdi_usb_open(ftdic, ft2232_vid, ft2232_type);
 
 	if (f < 0 && f != -5) {
 		msg_perr("Unable to open FTDI device: %d (%s)\n", f,
