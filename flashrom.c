@@ -442,7 +442,7 @@ const struct programmer_entry programmer_table[] = {
 	{}, /* This entry corresponds to PROGRAMMER_INVALID. */
 };
 
-#define SHUTDOWN_MAXFN 4
+#define SHUTDOWN_MAXFN 32
 static int shutdown_fn_count = 0;
 struct shutdown_func_data {
 	void (*func) (void *data);
