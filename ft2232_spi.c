@@ -35,10 +35,16 @@
 #define FTDI_FT4232H_PID	0x6011
 #define AMONTEC_JTAGKEY_PID	0xCFF8
 
+#define FIC_VID			0x1457
+#define OPENMOKO_DBGBOARD_PID	0x5118
+
 const struct usbdev_status devs_ft2232spi[] = {
 	{FTDI_VID, FTDI_FT2232H_PID, OK, "FTDI", "FT2232H"},
 	{FTDI_VID, FTDI_FT4232H_PID, OK, "FTDI", "FT4232H"},
 	{FTDI_VID, AMONTEC_JTAGKEY_PID, OK, "Amontec", "JTAGkey"},
+	{FIC_VID, OPENMOKO_DBGBOARD_PID, OK,
+		"First International Computer, Inc.",
+		"OpenMoko Neo1973 Debug board (V2+)"},
 	{},
 };
 
@@ -144,8 +150,11 @@ int ft2232_spi_init(void)
 			ft2232_interface = INTERFACE_A;
 			cs_bits = 0x18;
 			pindir = 0x1b;
-		}
-		else {
+		} else if (!strcasecmp(arg, "openmoko")) {
+			ft2232_vid = FIC_VID;
+			ft2232_type = OPENMOKO_DBGBOARD_PID;
+			ft2232_interface = INTERFACE_A;
+		} else {
 			msg_perr("Error: Invalid device type specified.\n");
 			free(arg);
 			return 1;
