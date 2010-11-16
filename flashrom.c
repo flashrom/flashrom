@@ -726,9 +726,8 @@ int check_erased_range(struct flashchip *flash, int start, int len)
  */
 int verify_range(struct flashchip *flash, uint8_t *cmpbuf, int start, int len, char *message)
 {
-	int i, j, starthere, lenhere, ret = 0;
-	int page_size = flash->page_size;
-	uint8_t *readbuf = malloc(page_size);
+	int i, ret = 0;
+	uint8_t *readbuf = malloc(len);
 	int failcount = 0;
 
 	if (!len)
@@ -753,36 +752,21 @@ int verify_range(struct flashchip *flash, uint8_t *cmpbuf, int start, int len, c
 	if (!message)
 		message = "VERIFY";
 	
-	/* Warning: This loop has a very unusual condition and body.
-	 * The loop needs to go through each page with at least one affected
-	 * byte. The lowest page number is (start / page_size) since that
-	 * division rounds down. The highest page number we want is the page
-	 * where the last byte of the range lives. That last byte has the
-	 * address (start + len - 1), thus the highest page number is
-	 * (start + len - 1) / page_size. Since we want to include that last
-	 * page as well, the loop condition uses <=.
-	 */
-	for (i = start / page_size; i <= (start + len - 1) / page_size; i++) {
-		/* Byte position of the first byte in the range in this page. */
-		starthere = max(start, i * page_size);
-		/* Length of bytes in the range in this page. */
-		lenhere = min(start + len, (i + 1) * page_size) - starthere;
-		ret = flash->read(flash, readbuf, starthere, lenhere);
-		if (ret) {
-			msg_gerr("Verification impossible because read failed "
-				 "at 0x%x (len 0x%x)\n", starthere, lenhere);
-			break;
-		}
-		for (j = 0; j < lenhere; j++) {
-			if (cmpbuf[starthere - start + j] != readbuf[j]) {
-				/* Only print the first failure. */
-				if (!failcount++)
-					msg_cerr("%s FAILED at 0x%08x! "
-						"Expected=0x%02x, Read=0x%02x,",
-						message, starthere + j,
-						cmpbuf[starthere - start + j],
-						readbuf[j]);
-			}
+	ret = flash->read(flash, readbuf, start, len);
+	if (ret) {
+		msg_gerr("Verification impossible because read failed "
+			 "at 0x%x (len 0x%x)\n", start, len);
+		return ret;
+	}
+
+	for (i = 0; i < len; i++) {
+		if (cmpbuf[i] != readbuf[i]) {
+			/* Only print the first failure. */
+			if (!failcount++)
+				msg_cerr("%s FAILED at 0x%08x! "
+					 "Expected=0x%02x, Read=0x%02x,",
+					 message, start + i, cmpbuf[i],
+					 readbuf[i]);
 		}
 	}
 	if (failcount) {
