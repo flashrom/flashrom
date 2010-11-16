@@ -27,6 +27,7 @@
 
 #define DEFAULT_TIMEOUT 3000
 static usb_dev_handle *dediprog_handle;
+static int dediprog_endpoint;
 
 #if 0
 /* Might be useful for other pieces of code as well. */
@@ -148,11 +149,93 @@ static int dediprog_set_spi_speed(uint16_t speed)
 }
 #endif
 
+/* Bulk read interface, will read multiple 512 byte chunks aligned to 512 bytes.
+ * @start	start address
+ * @len		length
+ * @return	0 on success, 1 on failure
+ */
+static int dediprog_spi_bulk_read(struct flashchip *flash, uint8_t *buf,
+				  int start, int len)
+{
+	int ret;
+	int i;
+	/* chunksize must be 512, other sizes will NOT work at all. */
+	const int chunksize = 0x200;
+	const int count = len / chunksize;
+	const char count_and_chunk[] = {count & 0xff,
+					(count >> 8) & 0xff,
+					chunksize & 0xff,
+					(chunksize >> 8) & 0xff};
+
+	if ((start % chunksize) || (len % chunksize)) {
+		msg_perr("%s: Unaligned start=%i, len=%i! Please report a bug "
+			 "at flashrom@flashrom.org\n", __func__, start, len);
+		return 1;
+	}
+
+	/* No idea if the hardware can handle empty reads, so chicken out. */
+	if (!len)
+		return 0;
+	/* Command Read SPI Bulk. No idea which read command is used on the
+	 * SPI side.
+	 */
+	ret = usb_control_msg(dediprog_handle, 0x42, 0x20, start % 0x10000,
+			      start / 0x10000, (char *)count_and_chunk,
+			      sizeof(count_and_chunk), DEFAULT_TIMEOUT);
+	if (ret != sizeof(count_and_chunk)) {
+		msg_perr("Command Read SPI Bulk failed, %i %s!\n", ret,
+			 usb_strerror());
+		return 1;
+	}
+
+	for (i = 0; i < count; i++) {
+		ret = usb_bulk_read(dediprog_handle, 0x80 | dediprog_endpoint,
+				    (char *)buf + i * chunksize, chunksize,
+				    DEFAULT_TIMEOUT);
+		if (ret != chunksize) {
+			msg_perr("SPI bulk read %i failed, expected %i, got %i "
+				 "%s!\n", i, chunksize, ret, usb_strerror());
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
 int dediprog_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
-	msg_pspew("%s, start=0x%x, len=0x%x\n", __func__, start, len);
-	/* Chosen read length is 16 bytes for now. */
-	return spi_read_chunked(flash, buf, start, len, 16);
+	int ret;
+	/* chunksize must be 512, other sizes will NOT work at all. */
+	const int chunksize = 0x200;
+	int residue = start % chunksize ? chunksize - start % chunksize : 0;
+	int bulklen;
+
+	if (residue) {
+		msg_pdbg("Slow read for partial block from 0x%x, length 0x%x\n",
+			 start, residue);
+		ret = spi_read_chunked(flash, buf, start, residue, 16);
+		if (ret)
+			return ret;
+	}
+
+	/* Round down. */
+	bulklen = (len - residue) / chunksize * chunksize;
+	ret = dediprog_spi_bulk_read(flash, buf + residue, start + residue,
+				     bulklen);
+	if (ret)
+		return ret;
+
+	len -= residue + bulklen;
+	if (len) {
+		msg_pdbg("Slow read for partial block from 0x%x, length 0x%x\n",
+			 start, len);
+		ret = spi_read_chunked(flash, buf + residue + bulklen,
+				       start + residue + bulklen, len, 16);
+		if (ret)
+			return ret;
+	}
+
+	return 0;
 }
 
 int dediprog_spi_send_command(unsigned int writecnt, unsigned int readcnt,
@@ -345,6 +428,7 @@ int dediprog_init(void)
 	struct usb_device *dev;
 	char *voltage;
 	int millivolt = 3500;
+	int ret;
 
 	msg_pspew("%s\n", __func__);
 
@@ -371,8 +455,23 @@ int dediprog_init(void)
 		 dev->descriptor.idVendor,
 		 dev->descriptor.idProduct);
 	dediprog_handle = usb_open(dev);
-	usb_set_configuration(dediprog_handle, 1);
-	usb_claim_interface(dediprog_handle, 0);
+	ret = usb_set_configuration(dediprog_handle, 1);
+	if (ret < 0) {
+		msg_perr("Could not set USB device configuration: %i %s\n",
+			 ret, usb_strerror());
+		if (usb_close(dediprog_handle))
+			msg_perr("Could not close USB device!\n");
+		return 1;
+	}
+	ret = usb_claim_interface(dediprog_handle, 0);
+	if (ret < 0) {
+		msg_perr("Could not claim USB device interface %i: %i %s\n",
+			 0, ret, usb_strerror());
+		if (usb_close(dediprog_handle))
+			msg_perr("Could not close USB device!\n");
+		return 1;
+	}
+	dediprog_endpoint = 2;
 	/* URB 6. Command A. */
 	if (dediprog_command_a())
 		return 1;
@@ -461,8 +560,12 @@ int dediprog_shutdown(void)
 	if (dediprog_set_spi_voltage(0x0))
 		return 1;
 
+	if (usb_release_interface(dediprog_handle, 0)) {
+		msg_perr("Could not release USB interface!\n");
+		return 1;
+	}
 	if (usb_close(dediprog_handle)) {
-		msg_perr("Couldn't close USB device!\n");
+		msg_perr("Could not close USB device!\n");
 		return 1;
 	}
 	return 0;
