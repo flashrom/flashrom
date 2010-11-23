@@ -124,7 +124,7 @@ const struct spi_programmer spi_programmer[] = {
 		.command = dediprog_spi_send_command,
 		.multicommand = default_spi_send_multicommand,
 		.read = dediprog_spi_read,
-		.write_256 = spi_chip_write_1,
+		.write_256 = dediprog_spi_write_256,
 	},
 #endif
 
