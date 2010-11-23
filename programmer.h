@@ -472,6 +472,7 @@ int dediprog_init(void);
 int dediprog_shutdown(void);
 int dediprog_spi_send_command(unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr);
 int dediprog_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
+int dediprog_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len);
 
 /* flashrom.c */
 struct decode_sizes {

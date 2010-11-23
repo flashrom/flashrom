@@ -238,6 +238,12 @@ int dediprog_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 	return 0;
 }
 
+int dediprog_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len)
+{
+	/* No idea about the real limit. Maybe 12, maybe more, maybe less. */
+	return spi_write_chunked(flash, buf, start, len, 12);
+}
+
 int dediprog_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 			const unsigned char *writearr, unsigned char *readarr)
 {
@@ -245,7 +251,7 @@ int dediprog_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 
 	msg_pspew("%s, writecnt=%i, readcnt=%i\n", __func__, writecnt, readcnt);
 	/* Paranoid, but I don't want to be blamed if anything explodes. */
-	if (writecnt > 5) {
+	if (writecnt > 16) {
 		msg_perr("Untested writecnt=%i, aborting.\n", writecnt);
 		return 1;
 	}
