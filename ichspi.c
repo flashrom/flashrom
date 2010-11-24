@@ -407,24 +407,36 @@ int program_opcodes(OPCODES * op)
  */
 void ich_set_bbar(uint32_t minaddr)
 {
+#define BBAR_MASK	0x00ffff00
+	minaddr &= BBAR_MASK;
 	switch (spi_controller) {
 	case SPI_CONTROLLER_ICH7:
-		mmio_writel(minaddr, ich_spibar + 0x50);
+	case SPI_CONTROLLER_VIA:
+		ichspi_bbar = mmio_readl(ich_spibar + 0x50) & ~BBAR_MASK;
+		if (ichspi_bbar)
+			msg_pdbg("Reserved bits in BBAR not zero: 0x%04x",
+				 ichspi_bbar);
+		ichspi_bbar |= minaddr;
+		mmio_writel(ichspi_bbar, ich_spibar + 0x50);
 		ichspi_bbar = mmio_readl(ich_spibar + 0x50);
 		/* We don't have any option except complaining. */
 		if (ichspi_bbar != minaddr)
 			msg_perr("Setting BBAR failed!\n");
 		break;
 	case SPI_CONTROLLER_ICH9:
-		mmio_writel(minaddr, ich_spibar + 0xA0);
+		ichspi_bbar = mmio_readl(ich_spibar + 0xA0) & ~BBAR_MASK;
+		if (ichspi_bbar)
+			msg_pdbg("Reserved bits in BBAR not zero: 0x%04x",
+				 ichspi_bbar);
+		ichspi_bbar |= minaddr;
+		mmio_writel(ichspi_bbar, ich_spibar + 0xA0);
 		ichspi_bbar = mmio_readl(ich_spibar + 0xA0);
 		/* We don't have any option except complaining. */
 		if (ichspi_bbar != minaddr)
 			msg_perr("Setting BBAR failed!\n");
 		break;
 	default:
-		/* Not sure if BBAR actually exists on VIA. */
-		msg_pdbg("Setting BBAR is not implemented for VIA yet.\n");
+		msg_perr("Unknown chipset for BBAR setting!\n");
 		break;
 	}
 }
@@ -833,6 +845,7 @@ int ich_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		    (writearr[2] << 8) | (writearr[3] << 0);
 		switch (spi_controller) {
 		case SPI_CONTROLLER_ICH7:
+		case SPI_CONTROLLER_VIA:
 		case SPI_CONTROLLER_ICH9:
 			if (addr < ichspi_bbar) {
 				msg_perr("%s: Address 0x%06x below allowed "
@@ -1116,17 +1129,46 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 int via_init_spi(struct pci_dev *dev)
 {
 	uint32_t mmio_base;
+	int i;
 
 	mmio_base = (pci_read_long(dev, 0xbc)) << 8;
 	msg_pdbg("MMIO base at = 0x%x\n", mmio_base);
 	ich_spibar = physmap("VT8237S MMIO registers", mmio_base, 0x70);
 
-	msg_pdbg("0x6c: 0x%04x     (CLOCK/DEBUG)\n",
-		     mmio_readw(ich_spibar + 0x6c));
-
 	/* Not sure if it speaks all these bus protocols. */
 	buses_supported = CHIP_BUSTYPE_LPC | CHIP_BUSTYPE_FWH | CHIP_BUSTYPE_SPI;
 	spi_controller = SPI_CONTROLLER_VIA;
+
+	msg_pdbg("0x00: 0x%04x     (SPIS)\n", mmio_readw(ich_spibar + 0));
+	msg_pdbg("0x02: 0x%04x     (SPIC)\n", mmio_readw(ich_spibar + 2));
+	msg_pdbg("0x04: 0x%08x (SPIA)\n", mmio_readl(ich_spibar + 4));
+	for (i = 0; i < 2; i++) {
+		int offs;
+		offs = 8 + (i * 8);
+		msg_pdbg("0x%02x: 0x%08x (SPID%d)\n", offs,
+			 mmio_readl(ich_spibar + offs), i);
+		msg_pdbg("0x%02x: 0x%08x (SPID%d+4)\n", offs + 4,
+			 mmio_readl(ich_spibar + offs + 4), i);
+	}
+	ichspi_bbar = mmio_readl(ich_spibar + 0x50);
+	msg_pdbg("0x50: 0x%08x (BBAR)\n", ichspi_bbar);
+	msg_pdbg("0x54: 0x%04x     (PREOP)\n", mmio_readw(ich_spibar + 0x54));
+	msg_pdbg("0x56: 0x%04x     (OPTYPE)\n", mmio_readw(ich_spibar + 0x56));
+	msg_pdbg("0x58: 0x%08x (OPMENU)\n", mmio_readl(ich_spibar + 0x58));
+	msg_pdbg("0x5c: 0x%08x (OPMENU+4)\n", mmio_readl(ich_spibar + 0x5c));
+	for (i = 0; i < 3; i++) {
+		int offs;
+		offs = 0x60 + (i * 4);
+		msg_pdbg("0x%02x: 0x%08x (PBR%d)\n", offs,
+			 mmio_readl(ich_spibar + offs), i);
+	}
+	msg_pdbg("0x6c: 0x%04x     (CLOCK/DEBUG)\n",
+		 mmio_readw(ich_spibar + 0x6c));
+	if (mmio_readw(ich_spibar) & (1 << 15)) {
+		msg_pinfo("WARNING: SPI Configuration Lockdown activated.\n");
+		ichspi_lock = 1;
+	}
+
 	ich_init_opcodes();
 
 	return 0;
