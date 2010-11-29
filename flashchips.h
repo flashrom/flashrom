@@ -445,8 +445,11 @@
  * the second device ID byte is memory capacity.
  */
 #define SPANSION_ID		0x01	/* Spansion, same ID as AMD */
+#define SPANSION_S25FL004A	0x0212
 #define SPANSION_S25FL008A	0x0213
 #define SPANSION_S25FL016A	0x0214
+#define SPANSION_S25FL032A	0x0215
+#define SPANSION_S25FL064A	0x0216
 
 /*
  * SST25 chips are SPI, first byte of device ID is memory type, second
