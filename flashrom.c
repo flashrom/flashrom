@@ -1468,11 +1468,20 @@ int erase_and_write_flash(struct flashchip *flash, uint8_t *oldcontents, uint8_t
 		/* If everything is OK, don't try another erase function. */
 		if (!ret)
 			break;
-		/* FIXME: Reread the whole chip here so we know the current
-		 * chip contents? curcontents might be up to date, but this
-		 * code is only reached if something failed, and then we don't
-		 * know exactly what failed, and how.
+		/* Write/erase failed, so try to find out what the current chip
+		 * contents are. If no usable erase functions remain, we could
+		 * abort the loop instead of continuing, the effect is the same.
+		 * The only difference is whether the reason for other unusable
+		 * functions is printed or not. If in doubt, verbosity wins.
 		 */
+		if (flash->read(flash, curcontents, 0, size)) {
+			/* Now we are truly screwed. Read failed as well. */
+			msg_cerr("Can't read anymore!\n");
+			/* We have no idea about the flash chip contents, so
+			 * retrying with another erase function is pointless.
+			 */
+			break;
+		}
 	}
 	/* Free the scratchpad. */
 	free(curcontents);
