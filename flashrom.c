@@ -1163,8 +1163,12 @@ notfound:
 	       flash->vendor, flash->name, flash->total_size,
 	       flashbuses_to_text(flash->bustype), base);
 
-	if (flash->printlock)
-		flash->printlock(flash);
+	/* Flash registers will not be mapped if the chip was forced. Lock info
+	 * may be stored in registers, so avoid lock info printing.
+	 */
+	if (!force)
+		if (flash->printlock)
+			flash->printlock(flash);
 
 	return flash;
 }
