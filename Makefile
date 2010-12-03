@@ -146,6 +146,9 @@ CONFIG_NICNATSEMI ?= no
 # Always enable SPI on Intel NICs for now.
 CONFIG_NICINTEL_SPI ?= yes
 
+# Always enable SPI on OGP cards for now.
+CONFIG_OGP_SPI ?= yes
+
 # Always enable Bus Pirate SPI for now.
 CONFIG_BUSPIRATE_SPI ?= yes
 
@@ -165,7 +168,11 @@ else
 ifeq ($(CONFIG_NICINTEL_SPI), yes)
 override CONFIG_BITBANG_SPI = yes
 else
+ifeq ($(CONFIG_OGP_SPI), yes)
+override CONFIG_BITBANG_SPI = yes
+else
 CONFIG_BITBANG_SPI ?= no
+endif
 endif
 endif
 endif
@@ -255,6 +262,12 @@ endif
 ifeq ($(CONFIG_NICINTEL_SPI), yes)
 FEATURE_CFLAGS += -D'CONFIG_NICINTEL_SPI=1'
 PROGRAMMER_OBJS += nicintel_spi.o
+NEED_PCI := yes
+endif
+
+ifeq ($(CONFIG_OGP_SPI), yes)
+FEATURE_CFLAGS += -D'CONFIG_OGP_SPI=1'
+PROGRAMMER_OBJS += ogp_spi.o
 NEED_PCI := yes
 endif
 

@@ -312,6 +312,11 @@ void print_supported(void)
 	       programmer_table[PROGRAMMER_NICINTEL_SPI].name);
 	print_supported_pcidevs(nics_intel_spi);
 #endif
+#if CONFIG_OGP_SPI == 1
+	printf("\nSupported devices for the %s programmer:\n",
+	       programmer_table[PROGRAMMER_OGP_SPI].name);
+	print_supported_pcidevs(ogp_spi);
+#endif
 }
 
 #if CONFIG_INTERNAL == 1

@@ -198,6 +198,9 @@ based programmer)"
 .BR "* nicintel_spi" " (for SPI flash ROMs attached to an Intel Gigabit \
 network cards)"
 .sp
+.BR "* ogp_spi" " (for SPI flash ROMs attached to an Open Graphics Project \
+graphics card)"
+.sp
 Some programmers have optional or mandatory parameters which are described
 in detail in the
 .B PROGRAMMER SPECIFIC INFO
@@ -432,6 +435,34 @@ four. Make sure to not forget the "0x" prefix for hexadecimal port addresses.
 .sp
 More information about the hardware is available at
 http://rayer.ic.cz/elektro/spipgm.htm
+.TP
+.BR "ogp_spi " programmer
+The FLASH ROM chip to access must be specified with the 
+.B rom
+parameter.
+.sp
+.B "  flashrom \-p ogp_spi:rom=name"
+.sp
+Where
+.B name
+is either
+.B cprom
+or
+.B s3
+for the configuration ROM and 
+.B bprom
+or
+.B bios
+for the BIOS ROM.  If more than one card supported by the ogp_spi programmer
+is installed in your system, you have to specify the PCI address of the card
+you want to use with the
+.B pci=
+parameter as explained in the
+.B nic3com
+section above.
+.sp
+More information about the hardware is available at
+http://wiki.opengraphics.org
 .SH EXIT STATUS
 flashrom exits with 0 on success, 1 on most failures but with 2 if /dev/mem
 (/dev/xsvc on Solaris) can not be opened and with 3 if a call to mmap() fails.
@@ -479,6 +510,9 @@ have to be run as superuser/root, and need additional raw access permission.
 .BR serprog ", " buspirate_spi ", " dediprog " and " ft2232_spi
 can be run as normal user on most operating systems if appropriate device
 permissions are set.
+.sp
+.B ogp
+needs PCI configuration space read access and raw memory access.
 .sp
 On OpenBSD, you can obtain raw access permission by setting
 securelevel=-1 in /etc/rc.securelevel and rebooting, or rebooting into single
@@ -537,6 +571,8 @@ Joshua Roys
 Luc Verhaegen
 .br
 Li-Ta Lo
+.br
+Mark Marshall
 .br
 Markus Boas
 .br

@@ -299,6 +299,9 @@ void print_supported_wiki(void)
 #if CONFIG_NICINTEL_SPI == 1
 	print_supported_pcidevs_wiki(nics_intel_spi);
 #endif
+#if CONFIG_OGP_SPI == 1
+	print_supported_pcidevs_wiki(ogp_spi);
+#endif
 	printf("\n|}\n");
 }
 
