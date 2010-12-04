@@ -155,7 +155,7 @@ struct flashchip flashchips[] = {
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
-		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (am29f040b.c) */
+		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
 		{
 			{
@@ -181,7 +181,7 @@ struct flashchip flashchips[] = {
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
-		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (am29f040b.c) */
+		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
 		{
 			{
@@ -233,7 +233,7 @@ struct flashchip flashchips[] = {
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_OK_PRE,
 		.probe		= probe_jedec,
-		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (am29f040b.c) */
+		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
 		{
 			{
@@ -256,10 +256,10 @@ struct flashchip flashchips[] = {
 		.model_id	= AMD_AM29LV080B,
 		.total_size	= 1024,
 		.page_size	= 64 * 1024,
-		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
+		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET, /* datasheet specifies address as don't care */
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
-		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (am29f040b.c) */
+		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
 		{
 			{
@@ -898,7 +898,7 @@ struct flashchip flashchips[] = {
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
-		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (mx29f002.c) */
+		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
 		{
 			{
@@ -929,7 +929,7 @@ struct flashchip flashchips[] = {
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_OK_PR,
 		.probe		= probe_jedec,
-		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (mx29f002.c) */
+		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
 		{
 			{
@@ -960,7 +960,7 @@ struct flashchip flashchips[] = {
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
-		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (am29f040b.c) */
+		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
 		{
 			{
@@ -3818,7 +3818,7 @@ struct flashchip flashchips[] = {
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
-		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (mx29f002.c) */
+		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
 		{
 			{
@@ -3850,7 +3850,7 @@ struct flashchip flashchips[] = {
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
-		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (mx29f002.c) */
+		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
 		{
 			{
@@ -3882,7 +3882,7 @@ struct flashchip flashchips[] = {
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
-		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (mx29f002.c) */
+		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
 		{
 			{
@@ -3913,7 +3913,7 @@ struct flashchip flashchips[] = {
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_OK_PR,
 		.probe		= probe_jedec,
-		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (mx29f002.c) */
+		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
 		{
 			{
@@ -3970,7 +3970,7 @@ struct flashchip flashchips[] = {
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
-		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (mx29f002.c) */
+		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
 		{
 			{
@@ -6398,7 +6398,7 @@ struct flashchip flashchips[] = {
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_EITHER_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
-		.probe_timing	= TIMING_IGNORED, /* routine doesn't use probe_timing (am29f040b.c) */
+		.probe_timing	= TIMING_ZERO, /* datasheet specifies no timing */
 		.block_erasers	=
 		{
 			{
