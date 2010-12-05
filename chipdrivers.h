@@ -109,11 +109,17 @@ int unlock_49lfxxxc(struct flashchip *flash);
 int printlock_sst_fwhub(struct flashchip *flash);
 int unlock_sst_fwhub(struct flashchip *flash);
 
-/* w39v040c.c */
+/* w39.c */
+int printlock_w39v040a(struct flashchip *flash);
+int printlock_w39v040b(struct flashchip *flash);
 int printlock_w39v040c(struct flashchip *flash);
-
-/* w39V080fa.c */
-int unlock_winbond_fwhub(struct flashchip *flash);
+int printlock_w39v040fa(struct flashchip *flash);
+int printlock_w39v040fb(struct flashchip *flash);
+int printlock_w39v040fc(struct flashchip *flash);
+int printlock_w39v080a(struct flashchip *flash);
+int printlock_w39v080fa(struct flashchip *flash);
+int printlock_w39v080fa_dual(struct flashchip *flash);
+int unlock_w39v080fa(struct flashchip *flash);
 
 /* w29ee011.c */
 int probe_w29ee011(struct flashchip *flash);
