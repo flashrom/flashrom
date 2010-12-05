@@ -1455,39 +1455,58 @@ static int walk_eraseregions(struct flashchip *flash, int erasefunction,
 	return 0;
 }
 
+static int check_block_eraser(struct flashchip *flash, int k, int log)
+{
+	struct block_eraser eraser = flash->block_erasers[k];
+
+	if (!eraser.block_erase && !eraser.eraseblocks[0].count) {
+		if (log)
+			msg_cdbg("not defined. ");
+		return 1;
+	}
+	if (!eraser.block_erase && eraser.eraseblocks[0].count) {
+		if (log)
+			msg_cdbg("eraseblock layout is known, but matching "
+				"block erase function is not implemented. ");
+		return 1;
+	}
+	if (eraser.block_erase && !eraser.eraseblocks[0].count) {
+		if (log)
+			msg_cdbg("block erase function found, but "
+				"eraseblock layout is not defined. ");
+		return 1;
+	}
+	return 0;
+}
+
 int erase_and_write_flash(struct flashchip *flash, uint8_t *oldcontents, uint8_t *newcontents)
 {
-	int k, ret = 0, found = 0;
+	int k, ret = 0;
 	uint8_t *curcontents;
 	unsigned long size = flash->total_size * 1024;
+	int usable_erasefunctions = 0;
+
+	for (k = 0; k < NUM_ERASEFUNCTIONS; k++)
+		if (!check_block_eraser(flash, k, 0))
+			usable_erasefunctions++;
+	msg_cinfo("Erasing and writing flash chip... ");
+	if (!usable_erasefunctions) {
+		msg_cerr("ERROR: flashrom has no erase function for this flash "
+			 "chip.\n");
+		return 1;
+	}
 
 	curcontents = (uint8_t *) malloc(size);
 	/* Copy oldcontents to curcontents to avoid clobbering oldcontents. */
 	memcpy(curcontents, oldcontents, size);
 
-	msg_cinfo("Erasing and writing flash chip... ");
 	for (k = 0; k < NUM_ERASEFUNCTIONS; k++) {
-		struct block_eraser eraser = flash->block_erasers[k];
-
 		msg_cdbg("Looking at blockwise erase function %i... ", k);
-		if (!eraser.block_erase && !eraser.eraseblocks[0].count) {
-			msg_cdbg("not defined. "
-				"Looking for another erase function.\n");
+		if (check_block_eraser(flash, k, 1) && usable_erasefunctions) {
+			msg_cdbg("Looking for another erase function.\n");
 			continue;
 		}
-		if (!eraser.block_erase && eraser.eraseblocks[0].count) {
-			msg_cdbg("eraseblock layout is known, but no "
-				"matching block erase function found. "
-				"Looking for another erase function.\n");
-			continue;
-		}
-		if (eraser.block_erase && !eraser.eraseblocks[0].count) {
-			msg_cdbg("block erase function found, but "
-				"eraseblock layout is unknown. "
-				"Looking for another erase function.\n");
-			continue;
-		}
-		found = 1;
+		usable_erasefunctions--;
 		msg_cdbg("trying... ");
 		ret = walk_eraseregions(flash, k, &erase_and_write_block_helper, curcontents, newcontents);
 		msg_cdbg("\n");
@@ -1500,6 +1519,8 @@ int erase_and_write_flash(struct flashchip *flash, uint8_t *oldcontents, uint8_t
 		 * The only difference is whether the reason for other unusable
 		 * functions is printed or not. If in doubt, verbosity wins.
 		 */
+		if (!usable_erasefunctions)
+			continue;
 		if (flash->read(flash, curcontents, 0, size)) {
 			/* Now we are truly screwed. Read failed as well. */
 			msg_cerr("Can't read anymore!\n");
@@ -1511,10 +1532,6 @@ int erase_and_write_flash(struct flashchip *flash, uint8_t *oldcontents, uint8_t
 	}
 	/* Free the scratchpad. */
 	free(curcontents);
-	if (!found) {
-		msg_cerr("ERROR: flashrom has no erase function for this flash chip.\n");
-		return 1;
-	}
 
 	if (ret) {
 		msg_cerr("FAILED!\n");
