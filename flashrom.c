@@ -928,13 +928,11 @@ static int get_next_write(uint8_t *have, uint8_t *want, int len,
 				/* First location where have and want
 				 * do not differ anymore.
 				 */
-				first_len = i * stride - rel_start;
 				break;
 			}
 		}
 	}
-	/* Did the loop terminate without setting first_len? */
-	if (need_write && ! first_len)
+	if (need_write)
 		first_len = min(i * stride - rel_start, len);
 	*first_start += rel_start;
 	return first_len;
