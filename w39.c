@@ -244,6 +244,16 @@ int printlock_w39v080fa_dual(struct flashchip *flash)
 	return -1;
 }
 
+int unlock_w39v040fb(struct flashchip *flash)
+{
+	if (unlock_w39_fwh(flash))
+		return -1;
+	if (printlock_w39_common(flash, 0x7fff2))
+		return -1;
+
+	return 0;
+}
+
 int unlock_w39v080fa(struct flashchip *flash)
 {
 	if (unlock_w39_fwh(flash))
