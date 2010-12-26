@@ -7706,6 +7706,7 @@ struct flashchip flashchips[] = {
 			}
 		},
 		.printlock	= printlock_w39v040fb,
+		.unlock		= unlock_w39v040fb,
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
 	},
