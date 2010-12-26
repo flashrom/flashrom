@@ -119,6 +119,7 @@ int printlock_w39v040fc(struct flashchip *flash);
 int printlock_w39v080a(struct flashchip *flash);
 int printlock_w39v080fa(struct flashchip *flash);
 int printlock_w39v080fa_dual(struct flashchip *flash);
+int unlock_w39v040fb(struct flashchip *flash);
 int unlock_w39v080fa(struct flashchip *flash);
 
 /* w29ee011.c */
