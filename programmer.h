@@ -221,9 +221,9 @@ uint32_t pcidev_init(uint16_t vendor_id, uint32_t bar, const struct pcidev_statu
 /* rpci_write_* are reversible writes. The original PCI config space register
  * contents will be restored on shutdown.
  */
-int rpci_write_byte(struct pci_dev *dev, int reg, u8 data);
-int rpci_write_word(struct pci_dev *dev, int reg, u16 data);
-int rpci_write_long(struct pci_dev *dev, int reg, u32 data);
+int rpci_write_byte(struct pci_dev *dev, int reg, uint8_t data);
+int rpci_write_word(struct pci_dev *dev, int reg, uint16_t data);
+int rpci_write_long(struct pci_dev *dev, int reg, uint32_t data);
 #endif
 
 /* print.c */
