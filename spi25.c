@@ -33,7 +33,7 @@ void spi_prettyprint_status_register(struct flashchip *flash);
 
 static int spi_rdid(unsigned char *readarr, int bytes)
 {
-	const unsigned char cmd[JEDEC_RDID_OUTSIZE] = { JEDEC_RDID };
+	static const unsigned char cmd[JEDEC_RDID_OUTSIZE] = { JEDEC_RDID };
 	int ret;
 	int i;
 
@@ -95,7 +95,7 @@ static int spi_res(unsigned char *readarr, int bytes)
 
 int spi_write_enable(void)
 {
-	const unsigned char cmd[JEDEC_WREN_OUTSIZE] = { JEDEC_WREN };
+	static const unsigned char cmd[JEDEC_WREN_OUTSIZE] = { JEDEC_WREN };
 	int result;
 
 	/* Send WREN (Write Enable) */
@@ -109,7 +109,7 @@ int spi_write_enable(void)
 
 int spi_write_disable(void)
 {
-	const unsigned char cmd[JEDEC_WRDI_OUTSIZE] = { JEDEC_WRDI };
+	static const unsigned char cmd[JEDEC_WRDI_OUTSIZE] = { JEDEC_WRDI };
 
 	/* Send WRDI (Write Disable) */
 	return spi_send_command(sizeof(cmd), 0, cmd, NULL);
@@ -232,10 +232,10 @@ int probe_spi_rems(struct flashchip *flash)
 
 int probe_spi_res1(struct flashchip *flash)
 {
+	static const unsigned char allff[] = {0xff, 0xff, 0xff};
+	static const unsigned char all00[] = {0x00, 0x00, 0x00};
 	unsigned char readarr[3];
 	uint32_t id2;
-	const unsigned char allff[] = {0xff, 0xff, 0xff};
-	const unsigned char all00[] = {0x00, 0x00, 0x00};
 
 	/* We only want one-byte RES if RDID and REMS are unusable. */
 
@@ -298,7 +298,7 @@ int probe_spi_res2(struct flashchip *flash)
 
 uint8_t spi_read_status_register(void)
 {
-	const unsigned char cmd[JEDEC_RDSR_OUTSIZE] = { JEDEC_RDSR };
+	static const unsigned char cmd[JEDEC_RDSR_OUTSIZE] = { JEDEC_RDSR };
 	/* FIXME: No workarounds for driver/hardware bugs in generic code. */
 	unsigned char readarr[2]; /* JEDEC_RDSR_INSIZE=1 but wbsio needs 2 */
 	int ret;
@@ -486,7 +486,7 @@ void spi_prettyprint_status_register_sst25(uint8_t status)
  */
 void spi_prettyprint_status_register_sst25vf016(uint8_t status)
 {
-	const char *bpt[] = {
+	static const char *const bpt[] = {
 		"none",
 		"1F0000H-1FFFFFH",
 		"1E0000H-1FFFFFH",
@@ -502,7 +502,7 @@ void spi_prettyprint_status_register_sst25vf016(uint8_t status)
 
 void spi_prettyprint_status_register_sst25vf040b(uint8_t status)
 {
-	const char *bpt[] = {
+	static const char *const bpt[] = {
 		"none",
 		"0x70000-0x7ffff",
 		"0x60000-0x7ffff",
@@ -837,7 +837,7 @@ int spi_block_erase_c7(struct flashchip *flash, unsigned int addr, unsigned int 
 
 int spi_write_status_enable(void)
 {
-	const unsigned char cmd[JEDEC_EWSR_OUTSIZE] = { JEDEC_EWSR };
+	static const unsigned char cmd[JEDEC_EWSR_OUTSIZE] = { JEDEC_EWSR };
 	int result;
 
 	/* Send EWSR (Enable Write Status Register). */
