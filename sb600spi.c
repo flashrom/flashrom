@@ -208,7 +208,7 @@ int sb600_probe_spi(struct pci_dev *dev)
 	struct pci_dev *smbus_dev;
 	uint32_t tmp;
 	uint8_t reg;
-	const char *speed_names[4] = {
+	static const char *const speed_names[4] = {
 		"Reserved", "33", "22", "16.5"
 	};
 

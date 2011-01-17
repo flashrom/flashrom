@@ -948,10 +948,10 @@ int ich_spi_send_multicommand(struct spi_command *cmds)
 
 static void do_ich9_spi_frap(uint32_t frap, int i)
 {
-	const char *access_names[4] = {
+	static const char *const access_names[4] = {
 		"locked", "read-only", "write-only", "read-write"
 	};
-	const char *region_names[5] = {
+	static const char *const region_names[5] = {
 		"Flash Descriptor", "BIOS", "Management Engine",
 		"Gigabit Ethernet", "Platform Data"
 	};
