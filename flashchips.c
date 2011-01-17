@@ -1477,7 +1477,8 @@ struct flashchip flashchips[] = {
 		.model_id	= ATMEL_AT26DF081A,
 		.total_size	= 1024,
 		.page_size	= 256,
-		.tested		= TEST_OK_PR,
+		.feature_bits	= FEATURE_WRSR_WREN,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
@@ -1499,7 +1500,7 @@ struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.unlock		= spi_disable_blockprotect,
+		.unlock		= spi_disable_blockprotect_at25df,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
 	},
