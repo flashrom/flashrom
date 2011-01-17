@@ -114,8 +114,8 @@ int cli_classic(int argc, char *argv[])
 	int operation_specified = 0;
 	int i;
 
-	const char *optstring = "r:Rw:v:nVEfc:m:l:i:p:Lzh";
-	static struct option long_options[] = {
+	static const char optstring[] = "r:Rw:v:nVEfc:m:l:i:p:Lzh";
+	static const struct option long_options[] = {
 		{"read", 1, 0, 'r'},
 		{"write", 1, 0, 'w'},
 		{"erase", 0, 0, 'E'},
