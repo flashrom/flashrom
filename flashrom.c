@@ -1127,6 +1127,7 @@ struct flashchip *probe_flash(struct flashchip *first_flash, int force)
 {
 	struct flashchip *flash;
 	unsigned long base = 0;
+	char location[64];
 	uint32_t size;
 	enum chipbustype buses_common;
 	char *tmp;
@@ -1178,10 +1179,16 @@ notfound:
 	if (!flash || !flash->name)
 		return NULL;
 
-	msg_cinfo("%s chip \"%s %s\" (%d KB, %s) at physical address 0x%lx.\n",
+	if (programmer_table[programmer].map_flash_region == physmap) {
+		snprintf(location, sizeof(location), "at physical address 0x%lx", base);
+	} else { 
+		snprintf(location, sizeof(location), "on %s", programmer_table[programmer].name);
+	}
+
+	msg_cinfo("%s chip \"%s %s\" (%d KB, %s) %s.\n",
 	       force ? "Assuming" : "Found",
 	       flash->vendor, flash->name, flash->total_size,
-	       flashbuses_to_text(flash->bustype), base);
+	       flashbuses_to_text(flash->bustype), location);
 
 	/* Flash registers will not be mapped if the chip was forced. Lock info
 	 * may be stored in registers, so avoid lock info printing.
