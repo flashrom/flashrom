@@ -27,6 +27,7 @@
 
 #define DEFAULT_TIMEOUT 3000
 static usb_dev_handle *dediprog_handle;
+static int dediprog_firmwareversion;
 static int dediprog_endpoint;
 
 #if 0
@@ -317,6 +318,7 @@ static int dediprog_check_devicestring(void)
 			 fw[1], fw[2]);
 		return 1;
 	}
+	dediprog_firmwareversion = fw[0];
 	return 0;
 }
 
@@ -342,6 +344,32 @@ static int dediprog_command_a(void)
 	return 0;
 }
 
+#if 0
+/* Something.
+ * Present in eng_detect_blink.log with firmware 3.1.8
+ * Always preceded by Command Receive Device String
+ */
+static int dediprog_command_b(void)
+{
+	int ret;
+	char buf[0x3];
+
+	memset(buf, 0, sizeof(buf));
+	ret = usb_control_msg(dediprog_handle, 0xc3, 0x7, 0x0, 0xef00, buf, 0x3, DEFAULT_TIMEOUT);
+	if (ret < 0) {
+		msg_perr("Command B failed (%s)!\n", usb_strerror());
+		return 1;
+	}
+	if ((ret != 0x3) || (buf[0] != 0xff) || (buf[1] != 0xff) ||
+	    (buf[2] != 0xff)) {
+		msg_perr("Unexpected response to Command B!\n");
+		return 1;
+	}
+
+	return 0;
+}
+#endif
+
 /* Command C is only sent after dediprog_check_devicestring, but not after every
  * invocation of dediprog_check_devicestring. It is only sent after the first
  * dediprog_command_a(); dediprog_check_devicestring() sequence in each session.
@@ -353,7 +381,7 @@ static int dediprog_command_c(void)
 
 	ret = usb_control_msg(dediprog_handle, 0x42, 0x4, 0x0, 0x0, NULL, 0x0, DEFAULT_TIMEOUT);
 	if (ret != 0x0) {
-		msg_perr("Unexpected response to Command C!\n");
+		msg_perr("Command C failed (%s)!\n", usb_strerror());
 		return 1;
 	}
 	return 0;
@@ -363,6 +391,7 @@ static int dediprog_command_c(void)
 /* Very strange. Seems to be a programmer keepalive or somesuch.
  * Wait unsuccessfully for timeout ms to read one byte.
  * Is usually called after setting voltage to 0.
+ * Present in all logs with Firmware 2.1.1 and 3.1.8
  */
 static int dediprog_command_f(int timeout)
 {
@@ -371,8 +400,85 @@ static int dediprog_command_f(int timeout)
 
 	memset(buf, 0, sizeof(buf));
 	ret = usb_control_msg(dediprog_handle, 0xc2, 0x11, 0xff, 0xff, buf, 0x1, timeout);
+	/* This check is most probably wrong. Command F always causes a timeout
+	 * in the logs, so we should check for timeout instead of checking for
+	 * success.
+	 */
+	if (ret != 0x1) {
+		msg_perr("Command F failed (%s)!\n", usb_strerror());
+		return 1;
+	}
+	return 0;
+}
+
+/* Start/stop blinking?
+ * Present in eng_detect_blink.log with firmware 3.1.8
+ * Preceded by Command J
+ */
+static int dediprog_command_g(void)
+{
+	int ret;
+
+	ret = usb_control_msg(dediprog_handle, 0x42, 0x07, 0x09, 0x03, NULL, 0x0, DEFAULT_TIMEOUT);
 	if (ret != 0x0) {
-		msg_perr("Unexpected response to Command F!\n");
+		msg_perr("Command G failed (%s)!\n", usb_strerror());
+		return 1;
+	}
+	return 0;
+}
+
+/* Something.
+ * Present in all logs with firmware 5.1.5
+ * Always preceded by Command Receive Device String
+ * Always followed by Command Set SPI Voltage nonzero
+ */
+static int dediprog_command_h(void)
+{
+	int ret;
+
+	ret = usb_control_msg(dediprog_handle, 0x42, 0x07, 0x09, 0x05, NULL, 0x0, DEFAULT_TIMEOUT);
+	if (ret != 0x0) {
+		msg_perr("Command H failed (%s)!\n", usb_strerror());
+		return 1;
+	}
+	return 0;
+}
+#endif
+
+/* Shutdown for firmware 5.x?
+ * This command swithces the "Pass" LED on.
+ * Present in all logs with firmware 5.1.5
+ * Often preceded by a SPI operation (Command Read SPI Bulk or Receive SPI)
+ * Always followed by Command Set SPI Voltage 0x0000
+ */
+static int dediprog_command_i(void)
+{
+	int ret;
+
+	ret = usb_control_msg(dediprog_handle, 0x42, 0x07, 0x09, 0x06, NULL, 0x0, DEFAULT_TIMEOUT);
+	if (ret != 0x0) {
+		msg_perr("Command I failed (%s)!\n", usb_strerror());
+		return 1;
+	}
+	return 0;
+}
+
+#if 0
+/* Start/stop blinking?
+ * Present in all logs with firmware 5.1.5
+ * Always preceded by Command Receive Device String on 5.1.5
+ * Always followed by Command Set SPI Voltage nonzero on 5.1.5
+ * Present in eng_detect_blink.log with firmware 3.1.8
+ * Preceded by Command B in eng_detect_blink.log
+ * Followed by Command G in eng_detect_blink.log
+ */
+static int dediprog_command_j(void)
+{
+	int ret;
+
+	ret = usb_control_msg(dediprog_handle, 0x42, 0x07, 0x09, 0x07, NULL, 0x0, DEFAULT_TIMEOUT);
+	if (ret != 0x0) {
+		msg_perr("Command J failed (%s)!\n", usb_strerror());
 		return 1;
 	}
 	return 0;
@@ -550,9 +656,11 @@ static int dediprog_do_stuff(void)
 	/* URB 136 is just URB 9. */
 	/* URB 137 is just URB 11. */
 
-	/* Command I is probably Start Bulk Read. Data is u16 blockcount, u16 blocksize. */
-	/* Command J is probably Start Bulk Write. Data is u16 blockcount, u16 blocksize. */
-	/* Bulk transfer sizes for Command I/J are always 512 bytes, rest is filled with 0xff. */
+	/* Command Start Bulk Read. Data is u16 blockcount, u16 blocksize. */
+	/* Command Start Bulk Write. Data is u16 blockcount, u16 blocksize. */
+	/* Bulk transfer sizes for Command Start Bulk Read/Write are always
+	 * 512 bytes, rest is filled with 0xff.
+	 */
 
 	return 0;
 }
@@ -562,6 +670,10 @@ int dediprog_shutdown(void)
 {
 	msg_pspew("%s\n", __func__);
 
+	/* Shutdown on firmware 5.x */
+	if (dediprog_firmwareversion == 5)
+		if (dediprog_command_i())
+			return 1;
 	/* URB 28. Command Set SPI Voltage to 0. */
 	if (dediprog_set_spi_voltage(0x0))
 		return 1;
