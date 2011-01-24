@@ -45,11 +45,11 @@ static unsigned long measure_os_delay_resolution(void)
 	struct timeval start, end;
 	unsigned long counter = 0;
 	
-	gettimeofday(&start, 0);
+	gettimeofday(&start, NULL);
 	timeusec = 0;
 	
 	while (!timeusec && (++counter < 1000000000)) {
-		gettimeofday(&end, 0);
+		gettimeofday(&end, NULL);
 		timeusec = 1000000 * (end.tv_sec - start.tv_sec) +
 			   (end.tv_usec - start.tv_usec);
 		/* Protect against time going forward too much. */
@@ -68,9 +68,9 @@ static unsigned long measure_delay(int usecs)
 	unsigned long timeusec;
 	struct timeval start, end;
 	
-	gettimeofday(&start, 0);
+	gettimeofday(&start, NULL);
 	myusec_delay(usecs);
-	gettimeofday(&end, 0);
+	gettimeofday(&end, NULL);
 	timeusec = 1000000 * (end.tv_sec - start.tv_sec) +
 		   (end.tv_usec - start.tv_usec);
 	/* Protect against time going forward too much. */

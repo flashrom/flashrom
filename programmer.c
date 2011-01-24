@@ -30,7 +30,7 @@ int noop_shutdown(void)
 void *fallback_map(const char *descr, unsigned long phys_addr, size_t len)
 {
 	/* FIXME: Should return phys_addr. */
-	return 0;
+	return NULL;
 }
 
 /* No-op/fallback unmap() for programmers which don't need special handling */

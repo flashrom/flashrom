@@ -1173,7 +1173,7 @@ const struct penable chipset_enables[] = {
 
 int chipset_flash_enable(void)
 {
-	struct pci_dev *dev = 0;
+	struct pci_dev *dev = NULL;
 	int ret = -2;		/* Nothing! */
 	int i;
 

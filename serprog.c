@@ -541,7 +541,7 @@ static void sp_execute_opbuf_noflush(void)
 {
 	if ((sp_max_write_n) && (sp_write_n_bytes))
 		sp_pass_writen();
-	sp_stream_buffer_op(S_CMD_O_EXEC, 0, 0);
+	sp_stream_buffer_op(S_CMD_O_EXEC, 0, NULL);
 	msg_pspew(MSGHEADER "Executed operation buffer of %d bytes\n",
 		     sp_opbuf_usage);
 	sp_opbuf_usage = 0;
