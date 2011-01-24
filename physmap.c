@@ -180,7 +180,7 @@ static void *sys_physmap_rw_uncached(unsigned long phys_addr, size_t len)
 		}
 	}
 
-	virt_addr = mmap(0, len, PROT_WRITE | PROT_READ, MAP_SHARED,
+	virt_addr = mmap(NULL, len, PROT_WRITE | PROT_READ, MAP_SHARED,
 			 fd_mem, (off_t)phys_addr);
 	return MAP_FAILED == virt_addr ? ERROR_PTR : virt_addr;
 }
@@ -200,7 +200,7 @@ static void *sys_physmap_ro_cached(unsigned long phys_addr, size_t len)
 		}
 	}
 
-	virt_addr = mmap(0, len, PROT_READ, MAP_SHARED,
+	virt_addr = mmap(NULL, len, PROT_READ, MAP_SHARED,
 			 fd_mem_cached, (off_t)phys_addr);
 	return MAP_FAILED == virt_addr ? ERROR_PTR : virt_addr;
 }
