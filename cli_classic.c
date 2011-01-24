@@ -116,23 +116,23 @@ int cli_classic(int argc, char *argv[])
 
 	static const char optstring[] = "r:Rw:v:nVEfc:m:l:i:p:Lzh";
 	static const struct option long_options[] = {
-		{"read", 1, 0, 'r'},
-		{"write", 1, 0, 'w'},
-		{"erase", 0, 0, 'E'},
-		{"verify", 1, 0, 'v'},
-		{"noverify", 0, 0, 'n'},
-		{"chip", 1, 0, 'c'},
-		{"mainboard", 1, 0, 'm'},
-		{"verbose", 0, 0, 'V'},
-		{"force", 0, 0, 'f'},
-		{"layout", 1, 0, 'l'},
-		{"image", 1, 0, 'i'},
-		{"list-supported", 0, 0, 'L'},
-		{"list-supported-wiki", 0, 0, 'z'},
-		{"programmer", 1, 0, 'p'},
-		{"help", 0, 0, 'h'},
-		{"version", 0, 0, 'R'},
-		{0, 0, 0, 0}
+		{"read", 1, NULL, 'r'},
+		{"write", 1, NULL, 'w'},
+		{"erase", 0, NULL, 'E'},
+		{"verify", 1, NULL, 'v'},
+		{"noverify", 0, NULL, 'n'},
+		{"chip", 1, NULL, 'c'},
+		{"mainboard", 1, NULL, 'm'},
+		{"verbose", 0, NULL, 'V'},
+		{"force", 0, NULL, 'f'},
+		{"layout", 1, NULL, 'l'},
+		{"image", 1, NULL, 'i'},
+		{"list-supported", 0, NULL, 'L'},
+		{"list-supported-wiki", 0, NULL, 'z'},
+		{"programmer", 1, NULL, 'p'},
+		{"help", 0, NULL, 'h'},
+		{"version", 0, NULL, 'R'},
+		{NULL, 0, NULL, 0}
 	};
 
 	char *filename = NULL;

@@ -141,7 +141,7 @@ static struct lb_header *find_lb_table(void *base, unsigned long start,
 
 	};
 
-	return 0;
+	return NULL;
 }
 
 static void find_mainboard(struct lb_record *ptr, unsigned long addr)
