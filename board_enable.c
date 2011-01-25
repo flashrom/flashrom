@@ -1135,7 +1135,7 @@ static int intel_piix4_gpo_set(unsigned int gpo, int raise)
 
 	if ( (((1 << gpo) & nonmuxed_gpos) == 0) &&
 	     (pci_read_word(dev, piix4_gpo[gpo].reg) & piix4_gpo[gpo].mask) != piix4_gpo[gpo].value ) {
-	  msg_perr("\nERROR: PIIX4 GPO\%d not programmed for output.\n", gpo);
+	  msg_perr("\nERROR: PIIX4 GPO%d not programmed for output.\n", gpo);
 	  return -1;
 	}
 
