@@ -25,6 +25,7 @@
 #include "programmer.h"
 #include "spi.h"
 
+#define FIRMWARE_VERSION(x,y,z) ((x << 16) | (y << 8) | z)
 #define DEFAULT_TIMEOUT 3000
 static usb_dev_handle *dediprog_handle;
 static int dediprog_firmwareversion;
@@ -57,6 +58,50 @@ static struct usb_device *get_device_by_vid_pid(uint16_t vid, uint16_t pid)
 }
 
 //int usb_control_msg(usb_dev_handle *dev, int requesttype, int request, int value, int index, char *bytes, int size, int timeout);
+
+/* Set/clear LEDs on dediprog */
+#define PASS_ON		(0 << 0)
+#define PASS_OFF	(1 << 0)
+#define BUSY_ON		(0 << 1)
+#define BUSY_OFF	(1 << 1)
+#define ERROR_ON	(0 << 2)
+#define ERROR_OFF	(1 << 2)
+static int current_led_status = -1;
+
+static int dediprog_set_leds(int leds)
+{
+	int ret, target_leds;
+	
+	if (leds < 0 || leds > 7)
+		leds = 0; // Bogus value, enable all LEDs
+
+	if (leds == current_led_status)
+		return 0;
+
+	/* Older Dediprogs with 2.x.x and 3.x.x firmware only had
+	 * two LEDs, and they were reversed. So map them around if 
+	 * we have an old device. On those devices the LEDs map as
+	 * follows:
+	 *   bit 2 == 0: green light is on.
+	 *   bit 0 == 0: red light is on. 
+	 */
+	if (dediprog_firmwareversion < FIRMWARE_VERSION(5,0,0)) {
+		target_leds = ((leds & ERROR_OFF) >> 2) | 
+			((leds & PASS_OFF) << 2);
+	} else {
+		target_leds = leds;
+	}
+
+	ret = usb_control_msg(dediprog_handle, 0x42, 0x07, 0x09, target_leds, NULL, 0x0, DEFAULT_TIMEOUT);
+	if (ret != 0x0) {
+		msg_perr("Command Set LED 0x%x failed (%s)!\n", leds, usb_strerror());
+		return 1;
+	}
+
+	current_led_status = leds;
+
+	return 0;
+}
 
 static int dediprog_set_spi_voltage(int millivolt)
 {
@@ -211,20 +256,26 @@ int dediprog_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 	int residue = start % chunksize ? chunksize - start % chunksize : 0;
 	int bulklen;
 
+	dediprog_set_leds(PASS_OFF|BUSY_ON|ERROR_OFF);
+
 	if (residue) {
 		msg_pdbg("Slow read for partial block from 0x%x, length 0x%x\n",
 			 start, residue);
 		ret = spi_read_chunked(flash, buf, start, residue, 16);
-		if (ret)
+		if (ret) {
+			dediprog_set_leds(PASS_OFF|BUSY_OFF|ERROR_ON);
 			return ret;
+		}
 	}
 
 	/* Round down. */
 	bulklen = (len - residue) / chunksize * chunksize;
 	ret = dediprog_spi_bulk_read(flash, buf + residue, start + residue,
 				     bulklen);
-	if (ret)
+	if (ret) {
+		dediprog_set_leds(PASS_OFF|BUSY_OFF|ERROR_ON);
 		return ret;
+	}
 
 	len -= residue + bulklen;
 	if (len) {
@@ -232,17 +283,31 @@ int dediprog_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 			 start, len);
 		ret = spi_read_chunked(flash, buf + residue + bulklen,
 				       start + residue + bulklen, len, 16);
-		if (ret)
+		if (ret) {
+			dediprog_set_leds(PASS_OFF|BUSY_OFF|ERROR_ON);
 			return ret;
+		}
 	}
 
+	dediprog_set_leds(PASS_ON|BUSY_OFF|ERROR_OFF);
 	return 0;
 }
 
 int dediprog_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
+	int ret;
+
+	dediprog_set_leds(PASS_OFF|BUSY_ON|ERROR_OFF);
+
 	/* No idea about the real limit. Maybe 12, maybe more, maybe less. */
-	return spi_write_chunked(flash, buf, start, len, 12);
+	ret = spi_write_chunked(flash, buf, start, len, 12);
+
+	if (ret)
+		dediprog_set_leds(PASS_OFF|BUSY_OFF|ERROR_ON);
+	else
+		dediprog_set_leds(PASS_ON|BUSY_OFF|ERROR_OFF);
+
+	return ret;
 }
 
 int dediprog_spi_send_command(unsigned int writecnt, unsigned int readcnt,
@@ -318,7 +383,7 @@ static int dediprog_check_devicestring(void)
 			 fw[1], fw[2]);
 		return 1;
 	}
-	dediprog_firmwareversion = fw[0];
+	dediprog_firmwareversion = FIRMWARE_VERSION(fw[0], fw[1], fw[2]);
 	return 0;
 }
 
@@ -406,79 +471,6 @@ static int dediprog_command_f(int timeout)
 	 */
 	if (ret != 0x1) {
 		msg_perr("Command F failed (%s)!\n", usb_strerror());
-		return 1;
-	}
-	return 0;
-}
-
-/* Start/stop blinking?
- * Present in eng_detect_blink.log with firmware 3.1.8
- * Preceded by Command J
- */
-static int dediprog_command_g(void)
-{
-	int ret;
-
-	ret = usb_control_msg(dediprog_handle, 0x42, 0x07, 0x09, 0x03, NULL, 0x0, DEFAULT_TIMEOUT);
-	if (ret != 0x0) {
-		msg_perr("Command G failed (%s)!\n", usb_strerror());
-		return 1;
-	}
-	return 0;
-}
-
-/* Something.
- * Present in all logs with firmware 5.1.5
- * Always preceded by Command Receive Device String
- * Always followed by Command Set SPI Voltage nonzero
- */
-static int dediprog_command_h(void)
-{
-	int ret;
-
-	ret = usb_control_msg(dediprog_handle, 0x42, 0x07, 0x09, 0x05, NULL, 0x0, DEFAULT_TIMEOUT);
-	if (ret != 0x0) {
-		msg_perr("Command H failed (%s)!\n", usb_strerror());
-		return 1;
-	}
-	return 0;
-}
-#endif
-
-/* Shutdown for firmware 5.x?
- * This command swithces the "Pass" LED on.
- * Present in all logs with firmware 5.1.5
- * Often preceded by a SPI operation (Command Read SPI Bulk or Receive SPI)
- * Always followed by Command Set SPI Voltage 0x0000
- */
-static int dediprog_command_i(void)
-{
-	int ret;
-
-	ret = usb_control_msg(dediprog_handle, 0x42, 0x07, 0x09, 0x06, NULL, 0x0, DEFAULT_TIMEOUT);
-	if (ret != 0x0) {
-		msg_perr("Command I failed (%s)!\n", usb_strerror());
-		return 1;
-	}
-	return 0;
-}
-
-#if 0
-/* Start/stop blinking?
- * Present in all logs with firmware 5.1.5
- * Always preceded by Command Receive Device String on 5.1.5
- * Always followed by Command Set SPI Voltage nonzero on 5.1.5
- * Present in eng_detect_blink.log with firmware 3.1.8
- * Preceded by Command B in eng_detect_blink.log
- * Followed by Command G in eng_detect_blink.log
- */
-static int dediprog_command_j(void)
-{
-	int ret;
-
-	ret = usb_control_msg(dediprog_handle, 0x42, 0x07, 0x09, 0x07, NULL, 0x0, DEFAULT_TIMEOUT);
-	if (ret != 0x0) {
-		msg_perr("Command J failed (%s)!\n", usb_strerror());
 		return 1;
 	}
 	return 0;
@@ -584,22 +576,35 @@ int dediprog_init(void)
 		return 1;
 	}
 	dediprog_endpoint = 2;
+	
+	dediprog_set_leds(PASS_ON|BUSY_ON|ERROR_ON);
+
 	/* URB 6. Command A. */
-	if (dediprog_command_a())
+	if (dediprog_command_a()) {
+		dediprog_set_leds(PASS_OFF|BUSY_OFF|ERROR_ON);
 		return 1;
+	}
 	/* URB 7. Command A. */
-	if (dediprog_command_a())
+	if (dediprog_command_a()) {
+		dediprog_set_leds(PASS_OFF|BUSY_OFF|ERROR_ON);
 		return 1;
+	}
 	/* URB 8. Command Prepare Receive Device String. */
 	/* URB 9. Command Receive Device String. */
-	if (dediprog_check_devicestring())
+	if (dediprog_check_devicestring()) {
+		dediprog_set_leds(PASS_OFF|BUSY_OFF|ERROR_ON);
 		return 1;
+	}
 	/* URB 10. Command C. */
-	if (dediprog_command_c())
+	if (dediprog_command_c()) {
+		dediprog_set_leds(PASS_OFF|BUSY_OFF|ERROR_ON);
 		return 1;
+	}
 	/* URB 11. Command Set SPI Voltage. */
-	if (dediprog_set_spi_voltage(millivolt))
+	if (dediprog_set_spi_voltage(millivolt)) {
+		dediprog_set_leds(PASS_OFF|BUSY_OFF|ERROR_ON);
 		return 1;
+	}
 
 	buses_supported = CHIP_BUSTYPE_SPI;
 	spi_controller = SPI_CONTROLLER_DEDIPROG;
@@ -609,6 +614,8 @@ int dediprog_init(void)
 	/* Execute RDID by hand if you want to test it. */
 	dediprog_do_stuff();
 #endif
+
+	dediprog_set_leds(PASS_OFF|BUSY_OFF|ERROR_OFF);
 
 	return 0;
 }
@@ -670,10 +677,6 @@ int dediprog_shutdown(void)
 {
 	msg_pspew("%s\n", __func__);
 
-	/* Shutdown on firmware 5.x */
-	if (dediprog_firmwareversion == 5)
-		if (dediprog_command_i())
-			return 1;
 	/* URB 28. Command Set SPI Voltage to 0. */
 	if (dediprog_set_spi_voltage(0x0))
 		return 1;
