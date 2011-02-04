@@ -395,7 +395,7 @@ static int emulate_spi_chip_response(unsigned int writecnt, unsigned int readcnt
 		}
 		offs = writearr[1] << 16 | writearr[2] << 8 | writearr[3];
 		if (offs & (emu_jedec_se_size - 1))
-			msg_pdbg("Unaligned SECTOR ERASE 0x20\n");
+			msg_pdbg("Unaligned SECTOR ERASE 0x20: 0x%x\n", offs);
 		offs &= ~(emu_jedec_se_size - 1);
 		memset(flashchip_contents + offs, 0xff, emu_jedec_se_size);
 		break;
@@ -412,7 +412,7 @@ static int emulate_spi_chip_response(unsigned int writecnt, unsigned int readcnt
 		}
 		offs = writearr[1] << 16 | writearr[2] << 8 | writearr[3];
 		if (offs & (emu_jedec_be_52_size - 1))
-			msg_pdbg("Unaligned BLOCK ERASE 0x52\n");
+			msg_pdbg("Unaligned BLOCK ERASE 0x52: 0x%x\n", offs);
 		offs &= ~(emu_jedec_be_52_size - 1);
 		memset(flashchip_contents + offs, 0xff, emu_jedec_be_52_size);
 		break;
@@ -429,7 +429,7 @@ static int emulate_spi_chip_response(unsigned int writecnt, unsigned int readcnt
 		}
 		offs = writearr[1] << 16 | writearr[2] << 8 | writearr[3];
 		if (offs & (emu_jedec_be_d8_size - 1))
-			msg_pdbg("Unaligned BLOCK ERASE 0xd8\n");
+			msg_pdbg("Unaligned BLOCK ERASE 0xd8: 0x%x\n", offs);
 		offs &= ~(emu_jedec_be_d8_size - 1);
 		memset(flashchip_contents + offs, 0xff, emu_jedec_be_d8_size);
 		break;
@@ -444,12 +444,9 @@ static int emulate_spi_chip_response(unsigned int writecnt, unsigned int readcnt
 			msg_perr("CHIP ERASE 0x60 insize invalid!\n");
 			return 1;
 		}
-		offs = writearr[1] << 16 | writearr[2] << 8 | writearr[3];
-		if (offs & (emu_jedec_ce_60_size - 1))
-			msg_pdbg("Unaligned CHIP ERASE 0x60\n");
-		offs &= ~(emu_jedec_ce_60_size - 1);
+		/* JEDEC_CE_60_OUTSIZE is 1 (no address) -> no offset. */
 		/* emu_jedec_ce_60_size is emu_chip_size. */
-		memset(flashchip_contents + offs, 0xff, emu_jedec_ce_60_size);
+		memset(flashchip_contents, 0xff, emu_jedec_ce_60_size);
 		break;
 	case JEDEC_CE_C7:
 		if (!emu_jedec_ce_c7_size)
@@ -462,10 +459,7 @@ static int emulate_spi_chip_response(unsigned int writecnt, unsigned int readcnt
 			msg_perr("CHIP ERASE 0xc7 insize invalid!\n");
 			return 1;
 		}
-		offs = writearr[1] << 16 | writearr[2] << 8 | writearr[3];
-		if (offs & (emu_jedec_ce_c7_size - 1))
-			msg_pdbg("Unaligned CHIP ERASE 0xc7\n");
-		offs &= ~(emu_jedec_ce_c7_size - 1);
+		/* JEDEC_CE_C7_OUTSIZE is 1 (no address) -> no offset. */
 		/* emu_jedec_ce_c7_size is emu_chip_size. */
 		memset(flashchip_contents, 0xff, emu_jedec_ce_c7_size);
 		break;
