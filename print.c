@@ -317,6 +317,11 @@ void print_supported(void)
 	       programmer_table[PROGRAMMER_OGP_SPI].name);
 	print_supported_pcidevs(ogp_spi);
 #endif
+#if CONFIG_SATAMV == 1
+	printf("\nSupported devices for the %s programmer:\n",
+	       programmer_table[PROGRAMMER_SATAMV].name);
+	print_supported_pcidevs(satas_mv);
+#endif
 }
 
 #if CONFIG_INTERNAL == 1
