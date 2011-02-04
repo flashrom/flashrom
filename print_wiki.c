@@ -302,6 +302,9 @@ void print_supported_wiki(void)
 #if CONFIG_OGP_SPI == 1
 	print_supported_pcidevs_wiki(ogp_spi);
 #endif
+#if CONFIG_SATAMV == 1
+	print_supported_pcidevs_wiki(satas_mv);
+#endif
 	printf("\n|}\n");
 }
 
