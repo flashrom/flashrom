@@ -155,6 +155,9 @@ CONFIG_BUSPIRATE_SPI ?= yes
 # Disable Dediprog SF100 until support is complete and tested.
 CONFIG_DEDIPROG ?= no
 
+# Always enable Marvell SATA controllers for now.
+CONFIG_SATAMV ?= yes
+
 # Disable wiki printing by default. It is only useful if you have wiki access.
 CONFIG_PRINT_WIKI ?= no
 
@@ -281,6 +284,12 @@ ifeq ($(CONFIG_DEDIPROG), yes)
 FEATURE_CFLAGS += -D'CONFIG_DEDIPROG=1'
 FEATURE_LIBS += -lusb
 PROGRAMMER_OBJS += dediprog.o
+endif
+
+ifeq ($(CONFIG_SATAMV), yes)
+FEATURE_CFLAGS += -D'CONFIG_SATAMV=1'
+PROGRAMMER_OBJS += satamv.o
+NEED_PCI := yes
 endif
 
 ifeq ($(NEED_SERIAL), yes)

@@ -79,6 +79,9 @@ enum programmer {
 #if CONFIG_OGP_SPI == 1
 	PROGRAMMER_OGP_SPI,
 #endif
+#if CONFIG_SATAMV == 1
+	PROGRAMMER_SATAMV,
+#endif
 	PROGRAMMER_INVALID /* This must always be the last entry. */
 };
 
@@ -413,6 +416,15 @@ extern const struct pcidev_status nics_intel_spi[];
 int ogp_spi_init(void);
 int ogp_spi_shutdown(void);
 extern const struct pcidev_status ogp_spi[];
+#endif
+
+/* satamv.c */
+#if CONFIG_SATAMV == 1
+int satamv_init(void);
+int satamv_shutdown(void);
+void satamv_chip_writeb(uint8_t val, chipaddr addr);
+uint8_t satamv_chip_readb(const chipaddr addr);
+extern const struct pcidev_status satas_mv[];
 #endif
 
 /* satasii.c */
