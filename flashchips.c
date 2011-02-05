@@ -224,6 +224,252 @@ struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "AMD",
+		.name		= "Am29LV001BB",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= AMD_ID,
+		.model_id	= AMD_AM29LV001BB,
+		.total_size	= 128,
+		.page_size	= 64 * 1024, /* unused */
+		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
+		.tested		= TEST_OK_PREW,
+		.probe		= probe_jedec,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = {
+					{8 * 1024, 1},
+					{4 * 1024, 2},
+					{16 * 1024, 7},
+				},
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {128 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			},
+		},
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "AMD",
+		.name		= "Am29LV001BT",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= AMD_ID,
+		.model_id	= AMD_AM29LV001BT,
+		.total_size	= 128,
+		.page_size	= 64 * 1024, /* unused */
+		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_jedec,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = {
+					{16 * 1024, 7},
+					{4 * 1024, 2},
+					{8 * 1024, 1},
+				},
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {128 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			},
+		},
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "AMD",
+		.name		= "Am29LV002BB",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= AMD_ID,
+		.model_id	= AMD_AM29LV002BB,
+		.total_size	= 256,
+		.page_size	= 64 * 1024, /* unused */
+		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_jedec,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = {
+					{16 * 1024, 1},
+					{8 * 1024, 2},
+					{32 * 1024, 1},
+					{64 * 1024, 3},
+				},
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {256 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			},
+		},
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "AMD",
+		.name		= "Am29LV002BT",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= AMD_ID,
+		.model_id	= AMD_AM29LV002BT,
+		.total_size	= 256,
+		.page_size	= 64 * 1024, /* unused */
+		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_jedec,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = {
+					{64 * 1024, 3},
+					{32 * 1024, 1},
+					{8 * 1024, 2},
+					{16 * 1024, 1},
+				},
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {256 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			},
+		},
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "AMD",
+		.name		= "Am29LV004BB",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= AMD_ID,
+		.model_id	= AMD_AM29LV004BB,
+		.total_size	= 512,
+		.page_size	= 64 * 1024, /* unused */
+		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_jedec,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = {
+					{16 * 1024, 1},
+					{8 * 1024, 2},
+					{32 * 1024, 1},
+					{64 * 1024, 7},
+				},
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {512 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			},
+		},
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "AMD",
+		.name		= "Am29LV004BT",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= AMD_ID,
+		.model_id	= AMD_AM29LV004BT,
+		.total_size	= 512,
+		.page_size	= 64 * 1024, /* unused */
+		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_jedec,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = {
+					{64 * 1024, 7},
+					{32 * 1024, 1},
+					{8 * 1024, 2},
+					{16 * 1024, 1},
+				},
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {512 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			},
+		},
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "AMD",
+		.name		= "Am29LV008BB",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= AMD_ID,
+		.model_id	= AMD_AM29LV008BB,
+		.total_size	= 1024,
+		.page_size	= 64 * 1024, /* unused */
+		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_jedec,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = {
+					{16 * 1024, 1},
+					{8 * 1024, 2},
+					{32 * 1024, 1},
+					{64 * 1024, 15},
+				},
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {1024 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			},
+		},
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "AMD",
+		.name		= "Am29LV008BT",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= AMD_ID,
+		.model_id	= AMD_AM29LV008BT,
+		.total_size	= 1024,
+		.page_size	= 64 * 1024, /* unused */
+		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_SHORT_RESET,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_jedec,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = {
+					{64 * 1024, 15},
+					{32 * 1024, 1},
+					{8 * 1024, 2},
+					{16 * 1024, 1},
+				},
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {1024 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			},
+		},
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "AMD",
 		.name		= "Am29LV040B",
 		.bustype	= CHIP_BUSTYPE_PARALLEL,
 		.manufacture_id	= AMD_ID,
