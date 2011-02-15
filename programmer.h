@@ -219,8 +219,8 @@ struct pcidev_status {
 	const char *vendor_name;
 	const char *device_name;
 };
-uint32_t pcidev_validate(struct pci_dev *dev, uint32_t bar, const struct pcidev_status *devs);
-uint32_t pcidev_init(uint16_t vendor_id, uint32_t bar, const struct pcidev_status *devs);
+uintptr_t pcidev_validate(struct pci_dev *dev, int bar, const struct pcidev_status *devs);
+uintptr_t pcidev_init(uint16_t vendor_id, int bar, const struct pcidev_status *devs);
 /* rpci_write_* are reversible writes. The original PCI config space register
  * contents will be restored on shutdown.
  */
