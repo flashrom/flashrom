@@ -2,6 +2,7 @@
  * This file is part of the flashrom project.
  *
  * Copyright (C) 2009 Uwe Hermann <uwe@hermann-uwe.de>
+ * Copyright (C) 2010, 2011 Carl-Daniel Hailfinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,43 +28,151 @@ uint32_t io_base_addr;
 struct pci_access *pacc;
 struct pci_dev *pcidev_dev = NULL;
 
-uint32_t pcidev_validate(struct pci_dev *dev, uint32_t bar,
+enum pci_bartype {
+	TYPE_MEMBAR,
+	TYPE_IOBAR,
+	TYPE_ROMBAR,
+	TYPE_UNKNOWN
+};
+
+uintptr_t pcidev_validate(struct pci_dev *dev, int bar,
 			 const struct pcidev_status *devs)
 {
 	int i;
-	/* FIXME: 64 bit memory BARs need a 64 bit addr. */
-	uint32_t addr;
+	uint64_t addr;
+	uint32_t upperaddr;
+	uint8_t headertype;
+	uint16_t supported_cycles;
+	enum pci_bartype bartype = TYPE_UNKNOWN;
 
 	for (i = 0; devs[i].device_name != NULL; i++) {
 		if (dev->device_id != devs[i].device_id)
 			continue;
+
+		msg_pinfo("Found \"%s %s\" (%04x:%04x, BDF %02x:%02x.%x).\n",
+		       devs[i].vendor_name, devs[i].device_name,
+		       dev->vendor_id, dev->device_id, dev->bus, dev->dev,
+		       dev->func);
+
+		headertype = pci_read_byte(dev, PCI_HEADER_TYPE) & 0x7f;
+		msg_pspew("PCI header type 0x%02x\n", headertype);
 
 		/*
 		 * Don't use dev->base_addr[x] (as value for 'bar'), won't
 		 * work on older libpci.
 		 */
 		addr = pci_read_long(dev, bar);
-		
-		msg_pinfo("Found \"%s %s\" (%04x:%04x, BDF %02x:%02x.%x).\n",
-		       devs[i].vendor_name, devs[i].device_name,
-		       dev->vendor_id, dev->device_id, dev->bus, dev->dev,
-		       dev->func);
-		msg_pdbg("Requested BAR is %s", (addr & 0x1) ? "IO" : "MEM");
-		if (addr & 0x1) {
-			/* Mask off IO space indicator and reserved bit. */
-			msg_pdbg("\n");
-			addr &= ~0x3;
-		} else {
+
+		/* Sanity checks. */
+		switch (headertype) {
+		case PCI_HEADER_TYPE_NORMAL:
+			switch (bar) {
+			case PCI_BASE_ADDRESS_0:
+			case PCI_BASE_ADDRESS_1:
+			case PCI_BASE_ADDRESS_2:
+			case PCI_BASE_ADDRESS_3:
+			case PCI_BASE_ADDRESS_4:
+			case PCI_BASE_ADDRESS_5:
+				if ((addr & PCI_BASE_ADDRESS_SPACE) ==
+				    PCI_BASE_ADDRESS_SPACE_IO)
+					bartype = TYPE_IOBAR;
+				else
+					bartype = TYPE_MEMBAR;
+				break;
+			case PCI_ROM_ADDRESS:
+				bartype = TYPE_ROMBAR;
+				break;
+			}
+			break;
+		case PCI_HEADER_TYPE_BRIDGE:
+			switch (bar) {
+			case PCI_BASE_ADDRESS_0:
+			case PCI_BASE_ADDRESS_1:
+				if ((addr & PCI_BASE_ADDRESS_SPACE) ==
+				    PCI_BASE_ADDRESS_SPACE_IO)
+					bartype = TYPE_IOBAR;
+				else
+					bartype = TYPE_MEMBAR;
+				break;
+			case PCI_ROM_ADDRESS1:
+				bartype = TYPE_ROMBAR;
+				break;
+			}
+			break;
+		case PCI_HEADER_TYPE_CARDBUS:
+			break;
+		default:
+			msg_perr("Unknown PCI header type 0x%02x, BAR type "
+				 "cannot be determined reliably.\n", headertype);
+			break;
+		}
+
+		supported_cycles = pci_read_word(dev, PCI_COMMAND);
+
+		msg_pdbg("Requested BAR is ");
+		switch (bartype) {
+		case TYPE_MEMBAR:
+			msg_pdbg("MEM");
+			if (!(supported_cycles & PCI_COMMAND_MEMORY)) {
+				msg_perr("MEM BAR access requested, but device "
+					 "has MEM space accesses disabled.\n");
+				/* TODO: Abort here? */
+			}
 			msg_pdbg(", %sbit, %sprefetchable\n",
 				 ((addr & 0x6) == 0x0) ? "32" :
 				 (((addr & 0x6) == 0x4) ? "64" : "reserved"),
 				 (addr & 0x8) ? "" : "not ");
-			/* Mask off Mem space indicator, 32/64bit type indicator
-			 * and Prefetchable indicator.
-			 */
-			addr &= ~0xf;
+			if ((addr & 0x6) == 0x4) {
+				/* The spec says that a 64-bit register consumes
+				 * two subsequent dword locations.
+				 */
+				upperaddr = pci_read_long(dev, bar + 4);
+				if (upperaddr != 0x00000000) {
+					/* Fun! A real 64-bit resource. */
+					if (sizeof(uintptr_t) != sizeof(uint64_t)) {
+						msg_perr("BAR unreachable!");
+						/* TODO: Really abort here? If
+						 * multiple PCI devices match,
+						 * we might never tell the user
+						 * about the other devices.
+						 */
+						return 0;
+					}
+					addr |= (uint64_t)upperaddr << 32;
+				}
+			}
+			addr &= PCI_BASE_ADDRESS_MEM_MASK;
+			break;
+		case TYPE_IOBAR:
+			msg_pdbg("I/O\n");
+#if __FLASHROM_HAVE_OUTB__
+			if (!(supported_cycles & PCI_COMMAND_IO)) {
+				msg_perr("I/O BAR access requested, but device "
+					 "has I/O space accesses disabled.\n");
+				/* TODO: Abort here? */
+			}
+#else
+			msg_perr("I/O BAR access requested, but flashrom does "
+				 "not support I/O BAR access on this platform "
+				 "(yet).\n");
+#endif
+			addr &= PCI_BASE_ADDRESS_IO_MASK;
+			break;
+		case TYPE_ROMBAR:
+			msg_pdbg("ROM\n");
+			/* Not sure if this check is needed. */
+			if (!(supported_cycles & PCI_COMMAND_MEMORY)) {
+				msg_perr("MEM BAR access requested, but device "
+					 "has MEM space accesses disabled.\n");
+				/* TODO: Abort here? */
+			}
+			addr &= PCI_ROM_ADDRESS_MASK;
+			break;
+		case TYPE_UNKNOWN:
+			msg_perr("BAR type unknown, please report a bug at "
+				 "flashrom@flashrom.org\n");
 		}
-
+		
 		if (devs[i].status == NT) {
 			msg_pinfo("===\nThis PCI device is UNTESTED. Please "
 				  "report the 'flashrom -p xxxx' output \n"
@@ -73,13 +182,13 @@ uint32_t pcidev_validate(struct pci_dev *dev, uint32_t bar,
 				  "your help!\n===\n");
 		}
 
-		return addr;
+		return (uintptr_t)addr;
 	}
 
 	return 0;
 }
 
-uint32_t pcidev_init(uint16_t vendor_id, uint32_t bar,
+uintptr_t pcidev_init(uint16_t vendor_id, int bar,
 		     const struct pcidev_status *devs)
 {
 	struct pci_dev *dev;
@@ -87,7 +196,7 @@ uint32_t pcidev_init(uint16_t vendor_id, uint32_t bar,
 	char *pcidev_bdf;
 	char *msg = NULL;
 	int found = 0;
-	uint32_t addr = 0, curaddr = 0;
+	uintptr_t addr = 0, curaddr = 0;
 
 	pacc = pci_alloc();     /* Get the pci_access structure */
 	pci_init(pacc);         /* Initialize the PCI library */
