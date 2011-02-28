@@ -27,18 +27,23 @@
 #if defined(__i386__) || defined(__x86_64__)
 
 #include <string.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include "flash.h"
 #include "chipdrivers.h"
 #include "spi.h"
 #include "programmer.h"
 
+#define MAX_TIMEOUT 100000
+#define MAX_TRY 5
+
 /* Constans for I/O ports */
 #define ITE_SUPERIO_PORT1	0x2e
 #define ITE_SUPERIO_PORT2	0x4e
 
 /* Legacy I/O */
-#define LEGACY_KBC_PORT		0x64
+#define LEGACY_KBC_PORT_DATA	0x60
+#define LEGACY_KBC_PORT_CMD	0x64
 
 /* Constants for Logical Device registers */
 #define LDNSEL			0x07
@@ -49,6 +54,13 @@
 /* These are standard Super I/O 16-bit base address registers */
 #define SHM_IO_BAD0		0x60  /* big-endian, this is high bits */
 #define SHM_IO_BAD1		0x61
+
+/* 8042 keyboard controller uses an input buffer and an output buffer to
+ * communicate with host CPU. Both buffers are 1-byte depth. That means the
+ * IBF is set to 1 when host CPU sends a command to input buffer (standing on
+ * the EC side). IBF is cleared to 0 once the command is read by EC. */
+#define KB_IBF 			(1 << 1)  /* Input Buffer Full */
+#define KB_OBF 			(1 << 0)  /* Output Buffer Full */
 
 /* IT8502 supports two access modes:
  *   LPC_MEMORY: through the memory window in 0xFFFFFxxx (follow mode)
@@ -95,11 +107,11 @@ struct superio probe_superio_ite85xx(void)
 		ret.model = probe_id_ite85(ret.port);
 		switch (ret.model >> 8) {
 		case 0x85:
-			msg_pinfo("Found EC: ITE85xx (Vendor:0x%02x,ID:0x%02x,"
-			          "Rev:0x%02x) on sio_port:0x%x.\n",
-			          ret.model >> 8, ret.model & 0xff,
-			          sio_read(ret.port, CHIP_CHIP_VER_REG),
-			          ret.port);
+			msg_pdbg("Found EC: ITE85xx (Vendor:0x%02x,ID:0x%02x,"
+			         "Rev:0x%02x) on sio_port:0x%x.\n",
+			         ret.model >> 8, ret.model & 0xff,
+			         sio_read(ret.port, CHIP_CHIP_VER_REG),
+			         ret.port);
 			return ret;
 		}
 	}
@@ -111,20 +123,147 @@ struct superio probe_superio_ite85xx(void)
 	return ret;
 }
 
-/* IT8502 employs a scratch rom when flash is updating. Call the following two
- * functions before/after flash erase/program. */
+/* This function will poll the keyboard status register until either
+ *   an expected value shows up, or
+ *   timeout reaches.
+ *
+ * Returns: 0 -- the expected value has shown.
+ *          1 -- timeout reached.
+ */
+static int wait_for(
+		const unsigned int mask,
+		const unsigned int expected_value,
+		const int timeout,  /* in usec */
+		const char* error_message,
+		const char* function_name,
+		const int lineno
+) {
+	int time_passed;
+
+	for (time_passed = 0;; ++time_passed) {
+		if ((INB(LEGACY_KBC_PORT_CMD) & mask) == expected_value)
+			return 0;
+		if (time_passed >= timeout)
+			break;
+		programmer_delay(1);
+	}
+	if (error_message)
+		msg_perr("%s():%d %s", function_name, lineno, error_message);
+	return 1;
+}
+
+/* IT8502 employs a scratch ram when flash is being updated. Call the following
+ * two functions before/after flash erase/program. */
 void it85xx_enter_scratch_rom()
 {
+	int ret;
+	int tries;
+
+	msg_pdbg("%s():%d was called ...\n", __FUNCTION__, __LINE__);
 	if (it85xx_scratch_rom_reenter > 0) return;
-	it85xx_scratch_rom_reenter++;
-	OUTB(0xb4, LEGACY_KBC_PORT);
+
+#if 0
+	/* FIXME: this a workaround for the bug that SMBus signal would
+	 *        interfere the EC firmware update. Should be removed if
+	 *        we find out the root cause. */
+	ret = system("stop powerd >&2");
+	if (ret) {
+		msg_perr("Cannot stop powerd.\n");
+	}
+#endif
+
+	for (tries = 0; tries < MAX_TRY; ++tries) {
+		/* Wait until IBF (input buffer) is not full. */
+		if (wait_for(KB_IBF, 0, MAX_TIMEOUT,
+		             "* timeout at waiting for IBF==0.\n",
+		             __FUNCTION__, __LINE__))
+			continue;
+
+		/* Copy EC firmware to SRAM. */
+		OUTB(0xb4, LEGACY_KBC_PORT_CMD);
+
+		/* Confirm EC has taken away the command. */
+		if (wait_for(KB_IBF, 0, MAX_TIMEOUT,
+		             "* timeout at taking command.\n",
+		             __FUNCTION__, __LINE__))
+			continue;
+
+		/* Waiting for OBF (output buffer) has data.
+		 * Note sometimes the replied command might be stolen by kernel
+		 * ISR so that it is okay as long as the command is 0xFA. */
+		if (wait_for(KB_OBF, KB_OBF, MAX_TIMEOUT, NULL, NULL, 0))
+			msg_pdbg("%s():%d * timeout at waiting for OBF.\n",
+			         __FUNCTION__, __LINE__);
+		if ((ret = INB(LEGACY_KBC_PORT_DATA)) == 0xFA) {
+			break;
+		} else {
+			msg_perr("%s():%d * not run on SRAM ret=%d\n",
+			         __FUNCTION__, __LINE__, ret);
+			continue;
+		}
+	}
+
+	if (tries < MAX_TRY) {
+		/* EC already runs on SRAM */
+		it85xx_scratch_rom_reenter++;
+		msg_pdbg("%s():%d * SUCCESS.\n", __FUNCTION__, __LINE__);
+	} else {
+		msg_perr("%s():%d * Max try reached.\n",
+		         __FUNCTION__, __LINE__);
+	}
 }
 
 void it85xx_exit_scratch_rom()
 {
+#if 0
+	int ret;
+#endif
+	int tries;
+
+	msg_pdbg("%s():%d was called ...\n", __FUNCTION__, __LINE__);
 	if (it85xx_scratch_rom_reenter <= 0) return;
-	it85xx_scratch_rom_reenter = 0;
-	OUTB(0xfe, LEGACY_KBC_PORT);
+
+	for (tries = 0; tries < MAX_TRY; ++tries) {
+		/* Wait until IBF (input buffer) is not full. */
+		if (wait_for(KB_IBF, 0, MAX_TIMEOUT,
+		             "* timeout at waiting for IBF==0.\n",
+		             __FUNCTION__, __LINE__))
+			continue;
+
+		/* Exit SRAM. Run on flash. */
+		OUTB(0xFE, LEGACY_KBC_PORT_CMD);
+
+		/* Confirm EC has taken away the command. */
+		if (wait_for(KB_IBF, 0, MAX_TIMEOUT,
+		             "* timeout at taking command.\n",
+		             __FUNCTION__, __LINE__)) {
+			/* We cannot ensure if EC has exited update mode.
+			 * If EC is in normal mode already, a further 0xFE
+			 * command will reboot system. So, exit loop here. */
+			tries = MAX_TRY;
+			break;
+		}
+
+		break;
+	}
+
+	if (tries < MAX_TRY) {
+		it85xx_scratch_rom_reenter = 0;
+		msg_pdbg("%s():%d * SUCCESS.\n", __FUNCTION__, __LINE__);
+	} else {
+		msg_perr("%s():%d * Max try reached.\n",
+		         __FUNCTION__, __LINE__);
+	}
+
+#if 0
+	/* FIXME: this a workaround for the bug that SMBus signal would
+	 *        interfere the EC firmware update. Should be removed if
+	 *        we find out the root cause. */
+	ret = system("start powerd >&2");
+	if (ret) {
+		msg_perr("Cannot start powerd again.\n");
+	}
+#endif
 }
 
 int it85xx_spi_common_init(void)
@@ -256,6 +395,14 @@ int it85xx_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		readarr[i] = *ce_low;
 #endif
 	}
+#ifdef LPC_IO
+	INDIRECT_A1(shm_io_base, (((unsigned long int)ce_high) >> 8) & 0xff);
+	INDIRECT_WRITE(shm_io_base, 0xFF);  /* Write anything to this address.*/
+#endif
+#ifdef LPC_MEMORY
+	*ce_high = 0;
+#endif
+
 	return 0;
 }
 
