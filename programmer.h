@@ -523,6 +523,7 @@ enum spi_controller {
 #if defined(__i386__) || defined(__x86_64__)
 	SPI_CONTROLLER_ICH7,
 	SPI_CONTROLLER_ICH9,
+	SPI_CONTROLLER_IT85XX,
 	SPI_CONTROLLER_IT87XX,
 	SPI_CONTROLLER_SB600,
 	SPI_CONTROLLER_VIA,
@@ -582,6 +583,14 @@ int ich_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
 int ich_spi_write_256(struct flashchip *flash, uint8_t * buf, int start, int len);
 int ich_spi_send_multicommand(struct spi_command *cmds);
 #endif
+
+/* it85spi.c */
+struct superio probe_superio_ite85xx(void);
+int it85xx_spi_init(void);
+int it85xx_shutdown(void);
+int it85xx_probe_spi_flash(const char *name);
+int it85xx_spi_send_command(unsigned int writecnt, unsigned int readcnt,
+			const unsigned char *writearr, unsigned char *readarr);
 
 /* it87spi.c */
 void enter_conf_mode_ite(uint16_t port);
