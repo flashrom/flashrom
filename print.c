@@ -358,6 +358,7 @@ const struct board_info boards_known[] = {
 	B("Artec Group","DBE62",		1, "http://wiki.thincan.org/DBE62", NULL),
 	B("ASI",	"MB-5BLMP",		1, "http://www.hojerteknik.com/winnet.htm", "Used in the IGEL WinNET III thin client."),
 	B("ASRock",	"775i65G",		1, "http://www.asrock.com/mb/overview.asp?Model=775i65G", NULL),
+	B("ASRock",	"890GX Extreme3",	1, "http://www.asrock.com/mb/overview.asp?Model=890GX%20Extreme3", NULL),
 	B("ASRock",	"939A785GMH/128M",	1, "http://www.asrock.com/mb/overview.asp?Model=939A785GMH/128M&s=939", NULL),
 	B("ASRock",	"A330GC",		1, "http://www.asrock.com/mb/overview.asp?Model=A330GC", NULL),
 	B("ASRock",	"A770CrossFire",	1, "http://www.asrock.com/mb/overview.asp?Model=A770CrossFire&s=AM2%%2b", NULL),
@@ -487,7 +488,7 @@ const struct board_info boards_known[] = {
 	B("GIGABYTE",	"GA-MA69VM-S2",		1, "http://www.gigabyte.com/products/product-page.aspx?pid=2500", NULL),
 	B("GIGABYTE",	"GA-MA74GM-S2H (rev. 3.0)", 1, "http://www.gigabyte.com/products/product-page.aspx?pid=3152", NULL),
 	B("GIGABYTE",	"GA-MA770T-UD3P",	1, "http://www.gigabyte.com/products/product-page.aspx?pid=3096", NULL),
-	B("GIGABYTE",	"GA-MA78G-DS3H",	1, "http://www.gigabyte.com/products/product-page.aspx?pid=2800", NULL), /* TODO: Rev 1.x or 2.x? */
+	B("GIGABYTE",	"GA-MA78G-DS3H (rev. 1.0)", 1, "http://www.gigabyte.com/products/product-page.aspx?pid=2800", NULL),
 	B("GIGABYTE",	"GA-MA78GM-S2H",	1, "http://www.gigabyte.com/products/product-page.aspx?pid=2758", NULL), /* TODO: Rev. 1.0, 1.1, or 2.x? */
 	B("GIGABYTE",	"GA-MA78GPM-DS2H",	1, "http://www.gigabyte.com/products/product-page.aspx?pid=2859", NULL),
 	B("GIGABYTE",	"GA-MA790FX-DQ6",	1, "http://www.gigabyte.com/products/product-page.aspx?pid=2690", NULL),
@@ -541,6 +542,7 @@ const struct board_info boards_known[] = {
 	B("MSI",	"MS-7345 (P35 Neo2-FIR)", 1, "http://www.msi.com/index.php?func=proddesc&maincat_no=1&prod_no=1261", NULL),
 	B("MSI",	"MS-7368 (K9AG Neo2-Digital)", 1, "http://www.msi.com/index.php?func=proddesc&maincat_no=1&prod_no=1241", NULL),
 	B("MSI",	"MS-7376 (K9A2 Platinum)", 1, "http://www.msi.com/index.php?func=proddesc&maincat_no=1&prod_no=1332", NULL),
+	B("MSI",	"MS-7596 (785GM-E51)",  1, "http://eu.msi.com/index.php?func=proddesc&maincat_no=1&prod_no=1866", NULL),
 	B("MSI",	"MS-7642 (890GXM-G65)",	1, "http://www.msi.com/index.php?func=proddesc&maincat_no=1&prod_no=2012", NULL),
 	B("NEC",	"PowerMate 2000",	1, "http://support.necam.com/mobilesolutions/hardware/Desktops/pm2000/celeron/", NULL),
 	B("Nokia",	"IP530",		1, NULL, NULL),
