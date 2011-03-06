@@ -543,7 +543,10 @@ static int it8707f_write_enable_2e(void)
 	return it8707f_write_enable(0x2e);
 }
 
-static int pc87360_gpio_set(uint8_t gpio, int raise)
+#define PC87360_ID 0xE1
+#define PC87364_ID 0xE4
+
+static int pc8736x_gpio_set(uint8_t chipid, uint8_t gpio, int raise)
 {
 	static const int bankbase[] = {0, 4, 8, 10, 12};
 	int gpio_bank = gpio / 8;
@@ -552,13 +555,13 @@ static int pc87360_gpio_set(uint8_t gpio, int raise)
 	uint8_t id, val;
 
 	if (gpio_bank > 4) {
-		msg_perr("PC87360: Invalid GPIO %d\n", gpio);
+		msg_perr("PC8736x: Invalid GPIO %d\n", gpio);
 		return -1;
 	}
 
 	id = sio_read(0x2E, 0x20);
-	if (id != 0xE1) {
-		msg_perr("PC87360: unexpected ID %02x\n", id);
+	if (id != chipid) {
+		msg_perr("PC8736x: unexpected ID %02x (expected %02x)\n", id, chipid);
 		return -1;
 	}
 
@@ -1483,9 +1486,22 @@ static int board_hp_vl400(void)
 	int ret;
 	ret = intel_ich_gpio_set(25, 1);	/* Master write enable ? */
 	if (!ret)
-		ret = pc87360_gpio_set(0x09, 1);	/* #WP ? */
+		ret = pc8736x_gpio_set(PC87360_ID, 0x09, 1);	/* #WP ? */
 	if (!ret)
-		ret = pc87360_gpio_set(0x27, 1);	/* #TBL */
+		ret = pc8736x_gpio_set(PC87360_ID, 0x27, 1);	/* #TBL */
+	return ret;
+}
+
+/*
+ * Suited for:
+ *  - HP e-Vectra P2706T: 810E + ICH + PC87364
+ */
+static int board_hp_p2706t(void)
+{
+	int ret;
+	ret = pc8736x_gpio_set(PC87364_ID, 0x25, 1);
+	if (!ret)
+		ret = pc8736x_gpio_set(PC87364_ID, 0x26, 1);
 	return ret;
 }
 
@@ -1940,6 +1956,7 @@ const struct board_pciid_enable board_pciid_enables[] = {
 	{0x8086, 0x24c3, 0x1458, 0x24c2,  0x8086, 0x24cd, 0x1458, 0x5004, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-8PE667 Ultra 2",     0,   OK, intel_ich_gpio32_raise},
 	{0x10DE, 0x026C, 0x1458, 0xA102,  0x10DE, 0x0260, 0x1458, 0x5001, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-K8N51GMF-9",         0,   OK, nvidia_mcp_gpio3b_raise},
 	{0x10DE, 0x0050, 0x1458, 0x0C11,  0x10DE, 0x005e, 0x1458, 0x5000, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-K8N-SLI",            0,   OK, nvidia_mcp_gpio21_raise},
+	{0x8086, 0x2415, 0x103c, 0x1250,  0x10b7, 0x9200, 0x103c, 0x1247, NULL,          NULL,         NULL,          "HP",          "e-Vectra P2706T",       0,   OK, board_hp_p2706t}, 
 	{0x1166, 0x0223, 0x103c, 0x320d,  0x14e4, 0x1678, 0x103c, 0x703e, NULL,          "hp",         "dl145_g3",    "HP",          "ProLiant DL145 G3",     0,   OK, board_hp_dl145_g3_enable},
 	{0x1166, 0x0223, 0x103c, 0x320d,  0x14e4, 0x1648, 0x103c, 0x310f, NULL,          "hp",         "dl165_g6",    "HP",          "ProLiant DL165 G6",     0,   OK, board_hp_dl165_g6_enable},
 	{0x8086, 0x2580, 0x103c, 0x2a08,  0x8086, 0x2640, 0x103c, 0x2a0a, NULL,          NULL,         NULL,          "HP",          "Puffer2-UL8E",          0,   OK, intel_ich_gpio18_raise},
