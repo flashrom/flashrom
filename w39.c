@@ -161,6 +161,22 @@ static int unlock_w39_fwh(struct flashchip *flash)
 	return 0;
 }
 
+int printlock_w39l040(struct flashchip * flash)
+{
+	uint8_t lock;
+	int ret;
+
+	lock = w39_idmode_readb(flash, 0x00002);
+	msg_cdbg("Bottom boot block:\n");
+	ret = printlock_w39_bootblock_64k16k(lock);
+
+	lock = w39_idmode_readb(flash, 0x7fff2);
+	msg_cdbg("Top boot block:\n");
+	ret |= printlock_w39_bootblock_64k16k(lock);
+
+	return ret;
+}
+
 int printlock_w39v040a(struct flashchip *flash)
 {
 	uint8_t lock;
