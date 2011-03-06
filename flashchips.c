@@ -7820,6 +7820,36 @@ struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Winbond",
+		.name		= "W39L040",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= WINBOND_ID,
+		.model_id	= WINBOND_W39L040,
+		.total_size	= 512,
+		.page_size	= 64 * 1024,
+		.feature_bits	= FEATURE_EITHER_RESET,
+		.tested		= TEST_OK_PR,
+		.probe		= probe_jedec,
+		.probe_timing	= 10,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 128} },
+				.block_erase = erase_block_jedec,
+			}, {
+				.eraseblocks = { {64 * 1024, 8} },
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {512 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			}
+		},
+		.printlock	= printlock_w39l040,
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+	},
+
+	{
+		.vendor		= "Winbond",
 		.name		= "W39V040A",
 		.bustype	= CHIP_BUSTYPE_LPC,
 		.manufacture_id	= WINBOND_ID,
