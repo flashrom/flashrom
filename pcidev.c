@@ -188,8 +188,7 @@ uintptr_t pcidev_validate(struct pci_dev *dev, int bar,
 	return 0;
 }
 
-uintptr_t pcidev_init(uint16_t vendor_id, int bar,
-		     const struct pcidev_status *devs)
+uintptr_t pcidev_init(int bar, const struct pcidev_status *devs)
 {
 	struct pci_dev *dev;
 	struct pci_filter filter;
@@ -203,8 +202,7 @@ uintptr_t pcidev_init(uint16_t vendor_id, int bar,
 	pci_scan_bus(pacc);     /* We want to get the list of devices */
 	pci_filter_init(pacc, &filter);
 
-	/* Filter by vendor and also bb:dd.f (if supplied by the user). */
-	filter.vendor = vendor_id;
+	/* Filter by bb:dd.f (if supplied by the user). */
 	pcidev_bdf = extract_programmer_param("pci");
 	if (pcidev_bdf != NULL) {
 		if ((msg = pci_filter_parse_slot(&filter, pcidev_bdf))) {
@@ -216,6 +214,9 @@ uintptr_t pcidev_init(uint16_t vendor_id, int bar,
 
 	for (dev = pacc->devices; dev; dev = dev->next) {
 		if (pci_filter_match(&filter, dev)) {
+			/* FIXME: We should count all matching devices, not
+			 * just those with a valid BAR.
+			 */
 			if ((addr = pcidev_validate(dev, bar, devs)) != 0) {
 				curaddr = addr;
 				pcidev_dev = dev;

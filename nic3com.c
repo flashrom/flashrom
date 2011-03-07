@@ -59,8 +59,7 @@ int nic3com_init(void)
 {
 	get_io_perms();
 
-	io_base_addr = pcidev_init(PCI_VENDOR_ID_3COM, PCI_BASE_ADDRESS_0,
-				   nics_3com);
+	io_base_addr = pcidev_init(PCI_BASE_ADDRESS_0, nics_3com);
 
 	id = pcidev_dev->device_id;
 
