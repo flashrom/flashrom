@@ -61,7 +61,6 @@ enum programmer programmer =
 #endif
 #if CONFIG_NICREALTEK == 1
 	PROGRAMMER_NICREALTEK
-	PROGRAMMER_NICREALTEK2
 #endif
 #if CONFIG_NICNATSEMI == 1
 	PROGRAMMER_NICNATSEMI
@@ -182,24 +181,10 @@ const struct programmer_entry programmer_table[] = {
 
 #if CONFIG_NICREALTEK == 1
 	{
+		/* This programmer works for Realtek RTL8139 and SMC 1211. */
 		.name                   = "nicrealtek",
+		//.name                   = "nicsmc1211",
 		.init                   = nicrealtek_init,
-		.shutdown               = nicrealtek_shutdown,
-		.map_flash_region       = fallback_map,
-		.unmap_flash_region     = fallback_unmap,
-		.chip_readb             = nicrealtek_chip_readb,
-		.chip_readw             = fallback_chip_readw,
-		.chip_readl             = fallback_chip_readl,
-		.chip_readn             = fallback_chip_readn,
-		.chip_writeb            = nicrealtek_chip_writeb,
-		.chip_writew            = fallback_chip_writew,
-		.chip_writel            = fallback_chip_writel,
-		.chip_writen            = fallback_chip_writen,
-		.delay                  = internal_delay,
-	},
-	{
-		.name                   = "nicsmc1211",
-		.init                   = nicsmc1211_init,
 		.shutdown               = nicrealtek_shutdown,
 		.map_flash_region       = fallback_map,
 		.unmap_flash_region     = fallback_unmap,

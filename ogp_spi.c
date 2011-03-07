@@ -120,8 +120,7 @@ int ogp_spi_init(void)
 
 	get_io_perms();
 
-	io_base_addr = pcidev_init(PCI_VENDOR_ID_OGP, PCI_BASE_ADDRESS_0,
-				   ogp_spi);
+	io_base_addr = pcidev_init(PCI_BASE_ADDRESS_0, ogp_spi);
 
 	ogp_spibar = physmap("OGP registers", io_base_addr, 4096);
 

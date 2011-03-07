@@ -279,7 +279,6 @@ void print_supported_wiki(void)
 #endif
 #if CONFIG_NICREALTEK == 1
 	print_supported_pcidevs_wiki(nics_realtek);
-	print_supported_pcidevs_wiki(nics_realteksmc1211);
 #endif
 #if CONFIG_NICNATSEMI == 1
 	print_supported_pcidevs_wiki(nics_natsemi);
