@@ -36,7 +36,6 @@ enum programmer {
 #endif
 #if CONFIG_NICREALTEK == 1
 	PROGRAMMER_NICREALTEK,
-	PROGRAMMER_NICREALTEK2,
 #endif
 #if CONFIG_NICNATSEMI == 1
 	PROGRAMMER_NICNATSEMI,
@@ -220,7 +219,7 @@ struct pcidev_status {
 	const char *device_name;
 };
 uintptr_t pcidev_validate(struct pci_dev *dev, int bar, const struct pcidev_status *devs);
-uintptr_t pcidev_init(uint16_t vendor_id, int bar, const struct pcidev_status *devs);
+uintptr_t pcidev_init(int bar, const struct pcidev_status *devs);
 /* rpci_write_* are reversible writes. The original PCI config space register
  * contents will be restored on shutdown.
  */
@@ -384,12 +383,10 @@ extern const struct pcidev_status drkaiser_pcidev[];
 /* nicrealtek.c */
 #if CONFIG_NICREALTEK == 1
 int nicrealtek_init(void);
-int nicsmc1211_init(void);
 int nicrealtek_shutdown(void);
 void nicrealtek_chip_writeb(uint8_t val, chipaddr addr);
 uint8_t nicrealtek_chip_readb(const chipaddr addr);
 extern const struct pcidev_status nics_realtek[];
-extern const struct pcidev_status nics_realteksmc1211[];
 #endif
 
 /* nicnatsemi.c */

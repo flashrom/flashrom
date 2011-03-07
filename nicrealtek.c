@@ -32,10 +32,6 @@
 
 const struct pcidev_status nics_realtek[] = {
 	{0x10ec, 0x8139, OK, "Realtek", "RTL8139/8139C/8139C+"},
-	{},
-};
-
-const struct pcidev_status nics_realteksmc1211[] = {
 	{0x1113, 0x1211, OK, "SMC2", "1211TX"}, /* RTL8139 clone */
 	{},
 };
@@ -44,20 +40,7 @@ int nicrealtek_init(void)
 {
 	get_io_perms();
 
-	io_base_addr = pcidev_init(PCI_VENDOR_ID_REALTEK, PCI_BASE_ADDRESS_0,
-				   nics_realtek);
-
-	buses_supported = CHIP_BUSTYPE_PARALLEL;
-
-	return 0;
-}
-
-int nicsmc1211_init(void)
-{
-	get_io_perms();
-
-	io_base_addr = pcidev_init(PCI_VENDOR_ID_SMC1211, PCI_BASE_ADDRESS_0,
-				   nics_realteksmc1211);
+	io_base_addr = pcidev_init(PCI_BASE_ADDRESS_0, nics_realtek);
 
 	buses_supported = CHIP_BUSTYPE_PARALLEL;
 

@@ -249,9 +249,6 @@ void print_supported(void)
 	printf("\nSupported devices for the %s programmer:\n",
 	       programmer_table[PROGRAMMER_NICREALTEK].name);
 	print_supported_pcidevs(nics_realtek);
-	printf("\nSupported devices for the %s programmer:\n",
-	       programmer_table[PROGRAMMER_NICREALTEK2].name);
-	print_supported_pcidevs(nics_realteksmc1211);
 #endif
 #if CONFIG_NICNATSEMI == 1
 	printf("\nSupported devices for the %s programmer:\n",

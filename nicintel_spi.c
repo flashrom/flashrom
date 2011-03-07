@@ -144,8 +144,7 @@ int nicintel_spi_init(void)
 
 	get_io_perms();
 
-	io_base_addr = pcidev_init(PCI_VENDOR_ID_INTEL, PCI_BASE_ADDRESS_0,
-				   nics_intel_spi);
+	io_base_addr = pcidev_init(PCI_BASE_ADDRESS_0, nics_intel_spi);
 
 	nicintel_spibar = physmap("Intel Gigabit NIC w/ SPI flash",
 				  io_base_addr, 4096);
