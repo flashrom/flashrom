@@ -37,7 +37,7 @@
 #define MAX_TIMEOUT 100000
 #define MAX_TRY 5
 
-/* Constans for I/O ports */
+/* Constants for I/O ports */
 #define ITE_SUPERIO_PORT1	0x2e
 #define ITE_SUPERIO_PORT2	0x4e
 
@@ -52,13 +52,14 @@
 #define CHIP_CHIP_VER_REG	0x22
 
 /* These are standard Super I/O 16-bit base address registers */
-#define SHM_IO_BAD0		0x60  /* big-endian, this is high bits */
-#define SHM_IO_BAD1		0x61
+#define SHM_IO_BAR0		0x60  /* big-endian, this is high bits */
+#define SHM_IO_BAR1		0x61
 
-/* 8042 keyboard controller uses an input buffer and an output buffer to
- * communicate with host CPU. Both buffers are 1-byte depth. That means the
- * IBF is set to 1 when host CPU sends a command to input buffer (standing on
- * the EC side). IBF is cleared to 0 once the command is read by EC. */
+/* The 8042 keyboard controller uses an input buffer and an output buffer to
+ * communicate with the host CPU. Both buffers are 1-byte depth. That means
+ * IBF is set to 1 when the host CPU sends a command to the input buffer 
+ * of the EC. IBF is cleared to 0 once the command is read by the EC.
+ */
 #define KB_IBF 			(1 << 1)  /* Input Buffer Full */
 #define KB_OBF 			(1 << 0)  /* Output Buffer Full */
 
@@ -278,8 +279,8 @@ int it85xx_spi_common_init(void)
 #ifdef LPC_IO
 	/* Get LPCPNP of SHM. That's big-endian */
 	sio_write(superio.port, LDNSEL, 0x0F); /* Set LDN to SHM (0x0F) */
-	shm_io_base = (sio_read(superio.port, SHM_IO_BAD0) << 8) +
-	              sio_read(superio.port, SHM_IO_BAD1);
+	shm_io_base = (sio_read(superio.port, SHM_IO_BAR0) << 8) +
+	              sio_read(superio.port, SHM_IO_BAR1);
 	msg_pdbg("%s():%d shm_io_base=0x%04x\n", __func__, __LINE__,
 	         shm_io_base);
 
@@ -296,8 +297,8 @@ int it85xx_spi_common_init(void)
 	INDIRECT_A3(shm_io_base, (base >> 24));
 #endif
 #ifdef LPC_MEMORY
-	base = (chipaddr)programmer_map_flash_region("flash base", 0xFFFFF000,
-	                                             0x1000);
+	base = (chipaddr)programmer_map_flash_region("it85 communication",
+						     0xFFFFF000, 0x1000);
 	msg_pdbg("%s():%d base=0x%08x\n", __func__, __LINE__,
 	         (unsigned int)base);
 	ce_high = (unsigned char*)(base + 0xE00);  /* 0xFFFFFE00 */
@@ -328,7 +329,7 @@ int it85xx_spi_init(void)
 }
 
 /* Called by internal_init() */
-int it85xx_probe_spi_flash(const char *name)
+int it85xx_probe_spi_flash(void)
 {
 	int ret;
 
@@ -377,14 +378,14 @@ int it85xx_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	INDIRECT_A1(shm_io_base, (((unsigned long int)ce_low) >> 8) & 0xff);
 #endif
 #ifdef LPC_MEMORY
-	*ce_high = 0;
+	mmio_writeb(0, ce_high);
 #endif
 	for (i = 0; i < writecnt; ++i) {
 #ifdef LPC_IO
 		INDIRECT_WRITE(shm_io_base, writearr[i]);
 #endif
 #ifdef LPC_MEMORY
-		*ce_low = writearr[i];
+		mmio_writeb(writearr[i], ce_low);
 #endif
 	}
 	for (i = 0; i < readcnt; ++i) {
@@ -392,7 +393,7 @@ int it85xx_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		readarr[i] = INDIRECT_READ(shm_io_base);
 #endif
 #ifdef LPC_MEMORY
-		readarr[i] = *ce_low;
+		readarr[i] = mmio_readb(ce_low);
 #endif
 	}
 #ifdef LPC_IO
@@ -400,10 +401,20 @@ int it85xx_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	INDIRECT_WRITE(shm_io_base, 0xFF);  /* Write anything to this address.*/
 #endif
 #ifdef LPC_MEMORY
-	*ce_high = 0;
+	mmio_writeb(0, ce_high);
 #endif
 
 	return 0;
+}
+
+int it85_spi_read(struct flashchip *flash, uint8_t * buf, int start, int len)
+{
+	return spi_read_chunked(flash, buf, start, len, 64);
+}
+
+int it85_spi_write_256(struct flashchip *flash, uint8_t * buf, int start, int len)
+{
+	return spi_write_chunked(flash, buf, start, len, 64);
 }
 
 #endif

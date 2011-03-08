@@ -585,9 +585,11 @@ int ich_spi_send_multicommand(struct spi_command *cmds);
 struct superio probe_superio_ite85xx(void);
 int it85xx_spi_init(void);
 int it85xx_shutdown(void);
-int it85xx_probe_spi_flash(const char *name);
+int it85xx_probe_spi_flash(void);
 int it85xx_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 			const unsigned char *writearr, unsigned char *readarr);
+int it85_spi_read(struct flashchip *flash, uint8_t * buf, int start, int len);
+int it85_spi_write_256(struct flashchip *flash, uint8_t * buf, int start, int len);
 
 /* it87spi.c */
 void enter_conf_mode_ite(uint16_t port);
