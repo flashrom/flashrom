@@ -182,6 +182,7 @@ void internal_delay(int usecs)
 }
 
 #else 
+#include <libpayload.h>
 
 void myusec_calibrate_delay(void)
 {
