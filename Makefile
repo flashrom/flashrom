@@ -28,6 +28,8 @@ PREFIX  ?= /usr/local
 MANDIR  ?= $(PREFIX)/share/man
 CFLAGS  ?= -Os -Wall -Wshadow
 EXPORTDIR ?= .
+AR      ?= ar
+RANLIB  ?= ranlib
 
 WARNERROR ?= yes
 
@@ -70,6 +72,39 @@ else
 override CONFIG_SERPROG = no
 endif
 # Dediprog and FT2232 are not supported under DOS (missing USB support).
+ifeq ($(CONFIG_DEDIPROG), yes)
+UNSUPPORTED_FEATURES += CONFIG_DEDIPROG=yes
+else
+override CONFIG_DEDIPROG = no
+endif
+ifeq ($(CONFIG_FT2232_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_FT2232_SPI=yes
+else
+override CONFIG_FT2232_SPI = no
+endif
+endif
+
+ifeq ($(OS_ARCH), libpayload)
+CC:=CC=i386-elf-gcc lpgcc
+AR:=i386-elf-ar
+RANLIB:=i386-elf-ranlib
+CPPFLAGS += -DSTANDALONE
+ifeq ($(CONFIG_DUMMY), yes)
+UNSUPPORTED_FEATURES += CONFIG_DUMMY=yes
+else
+override CONFIG_DUMMY = no
+endif
+ifeq ($(CONFIG_BUSPIRATE_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_BUSPIRATE_SPI=yes
+else
+override CONFIG_BUSPIRATE_SPI = no
+endif
+ifeq ($(CONFIG_SERPROG), yes)
+UNSUPPORTED_FEATURES += CONFIG_SERPROG=yes
+else
+override CONFIG_SERPROG = no
+endif
+# Dediprog and FT2232 are not supported with libpayload (missing libusb support)
 ifeq ($(CONFIG_DEDIPROG), yes)
 UNSUPPORTED_FEATURES += CONFIG_DEDIPROG=yes
 else
@@ -335,10 +370,15 @@ FEATURE_CFLAGS += $(shell LC_ALL=C grep -q "UTSNAME := yes" .features && printf 
 # We could use PULLED_IN_LIBS, but that would be ugly.
 FEATURE_LIBS += $(shell LC_ALL=C grep -q "NEEDLIBZ := yes" .libdeps && printf "%s" "-lz")
 
-OBJS = $(CHIP_OBJS) $(CLI_OBJS) $(PROGRAMMER_OBJS) $(LIB_OBJS)
+LIBFLASHROM_OBJS = $(CHIP_OBJS) $(PROGRAMMER_OBJS) $(LIB_OBJS)
+OBJS = $(CLI_OBJS) $(LIBFLASHROM_OBJS) 
 
 $(PROGRAM)$(EXEC_SUFFIX): $(OBJS)
 	$(CC) $(LDFLAGS) -o $(PROGRAM)$(EXEC_SUFFIX) $(OBJS) $(FEATURE_LIBS) $(LIBS)
+
+libflashrom.a: $(LIBFLASHROM_OBJS)
+	$(AR) rcs $@ $^
+	$(RANLIB) $@
 
 # TAROPTIONS reduces information leakage from the packager's system.
 # If other tar programs support command line arguments for setting uid/gid of
@@ -352,7 +392,7 @@ TAROPTIONS = $(shell LC_ALL=C tar --version|grep -q GNU && echo "--owner=root --
 # This includes all frontends and libflashrom.
 # We don't use EXEC_SUFFIX here because we want to clean everything.
 clean:
-	rm -f $(PROGRAM) $(PROGRAM).exe *.o *.d
+	rm -f $(PROGRAM) $(PROGRAM).exe libflashrom.a *.o *.d
 
 distclean: clean
 	rm -f .features .libdeps

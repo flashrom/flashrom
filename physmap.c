@@ -492,6 +492,7 @@ msr_t libpayload_rdmsr(int addr)
 int libpayload_wrmsr(int addr, msr_t msr)
 {
 	_wrmsr(addr, msr.lo | ((unsigned long long)msr.hi << 32));
+	return 0;
 }
 #else
 msr_t rdmsr(int addr)
