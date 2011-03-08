@@ -1186,11 +1186,12 @@ notfound:
 	if (!flash || !flash->name)
 		return NULL;
 
-	if (programmer_table[programmer].map_flash_region == physmap) {
+#if CONFIG_INTERNAL == 1
+	if (programmer_table[programmer].map_flash_region == physmap)
 		snprintf(location, sizeof(location), "at physical address 0x%lx", base);
-	} else { 
+	else
+#endif
 		snprintf(location, sizeof(location), "on %s", programmer_table[programmer].name);
-	}
 
 	msg_cinfo("%s chip \"%s %s\" (%d KB, %s) %s.\n",
 	       force ? "Assuming" : "Found",
