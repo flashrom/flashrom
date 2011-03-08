@@ -58,8 +58,8 @@ const struct spi_programmer spi_programmer[] = {
 	{ /* SPI_CONTROLLER_IT85XX */
 		.command = it85xx_spi_send_command,
 		.multicommand = default_spi_send_multicommand,
-		.read = ich_spi_read,
-		.write_256 = ich_spi_write_256,
+		.read = it85_spi_read,
+		.write_256 = it85_spi_write_256,
 	},
 
 	{ /* SPI_CONTROLLER_IT87XX */
