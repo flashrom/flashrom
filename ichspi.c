@@ -51,6 +51,7 @@
 #define SSFS_CDS		0x00000004
 #define SSFS_FCERR		0x00000008
 #define SSFS_AEL		0x00000010
+#define SSFS_RESERVED_MASK	0x000000e2
 
 #define ICH9_REG_SSFC          0x91	/* 24 Bits */
 #define SSFC_SCGO		0x00000200
@@ -63,6 +64,7 @@
 #define SSFC_SCF		0x01000000
 #define SSFC_SCF_20MHZ 0x00000000
 #define SSFC_SCF_33MHZ 0x01000000
+#define SSFC_RESERVED_MASK	0xf8008100
 
 #define ICH9_REG_PREOP         0x94	/* 16 Bits */
 #define ICH9_REG_OPTYPE                0x96	/* 16 Bits */
@@ -76,9 +78,11 @@
 
 // ICH7 registers
 #define ICH7_REG_SPIS          0x00	/* 16 Bits */
-#define SPIS_SCIP              0x00000001
-#define SPIS_CDS               0x00000004
-#define SPIS_FCERR             0x00000008
+#define SPIS_SCIP		0x0001
+#define SPIS_GRANT		0x0002
+#define SPIS_CDS		0x0004
+#define SPIS_FCERR		0x0008
+#define SPIS_RESERVED_MASK	0x7ff0
 
 /* VIA SPI is compatible with ICH7, but maxdata
    to transfer is 16 bytes.
@@ -144,6 +148,11 @@ static uint32_t REGREAD32(int X)
 static uint16_t REGREAD16(int X)
 {
 	return mmio_readw(ich_spibar + X);
+}
+
+static uint16_t REGREAD8(int X)
+{
+	return mmio_readb(ich_spibar + X);
 }
 
 #define REGWRITE32(X,Y) mmio_writel(Y, ich_spibar+X)
@@ -497,6 +506,15 @@ static int ich7_run_opcode(OPCODE op, uint32_t offset,
 		write_cmd = 1;
 	}
 
+	timeout = 100 * 60;	/* 60 ms are 9.6 million cycles at 16 MHz. */
+	while ((REGREAD16(ICH7_REG_SPIS) & SPIS_SCIP) && --timeout) {
+		programmer_delay(10);
+	}
+	if (!timeout) {
+		msg_perr("Error: SCIP never cleared!\n");
+		return 1;
+	}
+
 	/* Programm Offset in Flash into FADDR */
 	REGWRITE32(ICH7_REG_SPIA, (offset & 0x00FFFFFF));	/* SPI addresses are 24 BIT only */
 
@@ -523,7 +541,9 @@ static int ich7_run_opcode(OPCODE op, uint32_t offset,
 	}
 
 	/* Assemble SPIS */
-	temp16 = 0;
+	temp16 = REGREAD16(ICH7_REG_SPIS);
+	/* keep reserved bits */
+	temp16 &= SPIS_RESERVED_MASK;
 	/* clear error status registers */
 	temp16 |= (SPIS_CDS + SPIS_FCERR);
 	REGWRITE16(ICH7_REG_SPIS, temp16);
@@ -570,18 +590,26 @@ static int ich7_run_opcode(OPCODE op, uint32_t offset,
 	/* write it */
 	REGWRITE16(ICH7_REG_SPIC, temp16);
 
-	/* wait for cycle complete */
-	timeout = 100 * 1000 * 60;	// 60s is a looong timeout.
-	while (((REGREAD16(ICH7_REG_SPIS) & SPIS_CDS) == 0) && --timeout) {
+	/* Wait for Cycle Done Status or Flash Cycle Error. */
+	timeout = 100 * 60;	/* 60 ms are 9.6 million cycles at 16 MHz. */
+	while (((REGREAD16(ICH7_REG_SPIS) & (SPIS_CDS | SPIS_FCERR)) == 0) &&
+	       --timeout) {
 		programmer_delay(10);
 	}
 	if (!timeout) {
-		msg_perr("timeout\n");
+		msg_perr("timeout, ICH7_REG_SPIS=0x%04x\n",
+			 REGREAD16(ICH7_REG_SPIS));
+		return 1;
 	}
 
 	/* FIXME: make sure we do not needlessly cause transaction errors. */
-	if ((REGREAD16(ICH7_REG_SPIS) & SPIS_FCERR) != 0) {
-		msg_pdbg("Transaction error!\n");
+	temp16 = REGREAD16(ICH7_REG_SPIS);
+	if (temp16 & SPIS_FCERR) {
+		msg_perr("Transaction error for opcode 0x%02x!\n",
+			 op.opcode);
+		/* keep reserved bits */
+		temp16 &= SPIS_RESERVED_MASK;
+		REGWRITE16(ICH7_REG_SPIS, temp16 | SPIS_FCERR);
 		return 1;
 	}
 
@@ -616,6 +644,15 @@ static int ich9_run_opcode(OPCODE op, uint32_t offset,
 		write_cmd = 1;
 	}
 
+	timeout = 100 * 60;	/* 60 ms are 9.6 million cycles at 16 MHz. */
+	while ((REGREAD8(ICH9_REG_SSFS) & SSFS_SCIP) && --timeout) {
+		programmer_delay(10);
+	}
+	if (!timeout) {
+		msg_perr("Error: SCIP never cleared!\n");
+		return 1;
+	}
+
 	/* Programm Offset in Flash into FADDR */
 	REGWRITE32(ICH9_REG_FADDR, (offset & 0x00FFFFFF));	/* SPI addresses are 24 BIT only */
 
@@ -641,12 +678,13 @@ static int ich9_run_opcode(OPCODE op, uint32_t offset,
 	}
 
 	/* Assemble SSFS + SSFC */
-	/* keep reserved bits (23-19,7,0) */
 	temp32 = REGREAD32(ICH9_REG_SSFS);
-	temp32 &= 0xF8008100;
-
+	/* keep reserved bits */
+	temp32 &= SSFS_RESERVED_MASK | SSFC_RESERVED_MASK;
 	/* clear error status registers */
 	temp32 |= (SSFS_CDS + SSFS_FCERR);
+	REGWRITE32(ICH9_REG_SSFS, temp32);
+
 	/* Use 20 MHz */
 	temp32 |= SSFC_SCF_20MHZ;
 
@@ -691,18 +729,27 @@ static int ich9_run_opcode(OPCODE op, uint32_t offset,
 	/* write it */
 	REGWRITE32(ICH9_REG_SSFS, temp32);
 
-	/*wait for cycle complete */
-	timeout = 100 * 1000 * 60;	// 60s is a looong timeout.
-	while (((REGREAD32(ICH9_REG_SSFS) & SSFS_CDS) == 0) && --timeout) {
+	/* Wait for Cycle Done Status or Flash Cycle Error. */
+	timeout = 100 * 60;	/* 60 ms are 9.6 million cycles at 16 MHz. */
+	while (((REGREAD32(ICH9_REG_SSFS) & (SSFS_CDS | SSFS_FCERR)) == 0) &&
+	       --timeout) {
 		programmer_delay(10);
 	}
 	if (!timeout) {
-		msg_perr("timeout\n");
+		msg_perr("timeout, ICH9_REG_SSFS=0x%08x\n",
+			 REGREAD32(ICH9_REG_SSFS));
+		return 1;
 	}
 
 	/* FIXME make sure we do not needlessly cause transaction errors. */
-	if ((REGREAD32(ICH9_REG_SSFS) & SSFS_FCERR) != 0) {
-		msg_pdbg("Transaction error!\n");
+	temp32 = REGREAD32(ICH9_REG_SSFS);
+	if (temp32 & SSFS_FCERR) {
+		msg_perr("Transaction error for opcode 0x%02x!\n",
+			 op.opcode);
+		/* keep reserved bits */
+		temp32 &= SSFS_RESERVED_MASK | SSFC_RESERVED_MASK;
+		/* Clear the transaction error. */
+		REGWRITE32(ICH9_REG_SSFS, temp32 | SSFS_FCERR);
 		return 1;
 	}
 
@@ -1042,7 +1089,6 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 			msg_pdbg("0x%02x: 0x%08x (PBR%d)\n", offs,
 				     mmio_readl(ich_spibar + offs), i);
 		}
-		msg_pdbg("\n");
 		if (mmio_readw(ich_spibar) & (1 << 15)) {
 			msg_pinfo("WARNING: SPI Configuration Lockdown activated.\n");
 			ichspi_lock = 1;
@@ -1082,8 +1128,20 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 			     mmio_readl(ich_spibar + 0x80));
 		msg_pdbg("0x84: 0x%08x (PR4)\n",
 			     mmio_readl(ich_spibar + 0x84));
-		msg_pdbg("0x90: 0x%08x (SSFS, SSFC)\n",
-			     mmio_readl(ich_spibar + 0x90));
+
+		tmp = mmio_readl(ich_spibar + 0x90);
+		msg_pdbg("0x90: 0x%02x (SSFS)\n", tmp & 0xff);
+		msg_pdbg("AEL %i, ", (tmp >> 4) & 1);
+		msg_pdbg("FCERR %i, ", (tmp >> 3) & 1);
+		msg_pdbg("FDONE %i, ", (tmp >> 2) & 1);
+		msg_pdbg("SCIP %i\n", (tmp >> 0) & 1);
+		if (tmp & (1 << 3)) {
+			msg_pdbg("Clearing SSFS.FCERR\n");
+			mmio_writeb(1 << 3, ich_spibar + 0x90);
+		}
+		tmp >>= 8;
+		msg_pdbg("0x91: 0x%06x (SSFC)\n", tmp);
+
 		msg_pdbg("0x94: 0x%04x     (PREOP)\n",
 			     mmio_readw(ich_spibar + 0x94));
 		msg_pdbg("0x96: 0x%04x     (OPTYPE)\n",
