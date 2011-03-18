@@ -194,7 +194,7 @@ cpu_to_be(64)
 #else
 #if defined(__DARWIN__)
     /* Header is part of the DirectHW library. */
-    #include <DirectIO/darwinio.h>
+    #include <DirectHW/DirectHW.h>
     #define off64_t off_t
     #define lseek64 lseek
 #endif
