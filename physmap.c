@@ -134,7 +134,7 @@ void cleanup_cpu_msr(void)
 }
 #elif defined(__DARWIN__)
 
-#define MEM_DEV "DirectIO"
+#define MEM_DEV "DirectHW"
 
 static void *sys_physmap(unsigned long phys_addr, size_t len)
 {
