@@ -44,8 +44,8 @@ STRIP_ARGS = -s
 endif
 ifeq ($(OS_ARCH), Darwin)
 CPPFLAGS += -I/opt/local/include -I/usr/local/include
-# DirectIO framework can be found in the DirectHW library.
-LDFLAGS += -framework IOKit -framework DirectIO -L/opt/local/lib -L/usr/local/lib
+# DirectHW framework can be found in the DirectHW library.
+LDFLAGS += -framework IOKit -framework DirectHW -L/opt/local/lib -L/usr/local/lib
 endif
 ifeq ($(OS_ARCH), FreeBSD)
 CPPFLAGS += -I/usr/local/include
