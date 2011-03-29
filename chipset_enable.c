@@ -1188,7 +1188,7 @@ int chipset_flash_enable(void)
 				    "\"%s %s\"\n"
 				  "ignoring, please report lspci and board URL "
 				    "to flashrom@flashrom.org\n"
-				  "with 2CHIPSET: your board name in the "
+				  "with \'CHIPSET: your board name\' in the "
 				    "subject line.\n",
 				chipset_enables[i].vendor_name,
 					chipset_enables[i].device_name);
