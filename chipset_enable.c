@@ -1011,7 +1011,7 @@ const struct penable chipset_enables[] = {
 	{0x1022, 0x2090, OK, "AMD", "CS5536",		enable_flash_cs5536},
 	{0x1022, 0x3000, OK, "AMD", "Elan SC520",	get_flashbase_sc520},
 	{0x1002, 0x438D, OK, "AMD", "SB600",		enable_flash_sb600},
-	{0x1002, 0x439d, OK, "AMD", "SB700/SB710/SB750", enable_flash_sb600},
+	{0x1002, 0x439d, OK, "AMD", "SB700/SB710/SB750/SB850", enable_flash_sb600},
 	{0x100b, 0x0510, NT, "AMD", "SC1100",		enable_flash_sc1100},
 	{0x1002, 0x4377, OK, "ATI", "SB400",		enable_flash_sb400},
 	{0x1166, 0x0200, OK, "Broadcom", "OSB4",	enable_flash_osb4},
