@@ -940,6 +940,7 @@ static int nvidia_mcp_gpio2_lower(void)
 
 /*
  * Suited for:
+ *  - Foxconn 6150K8MD-8EKRSH: Socket 939 + NVIDIA MCP51
  *  - MSI K8N Neo4: NVIDIA CK804. TODO: Should probably be K8N Neo4 Platinum, see http://www.coreboot.org/pipermail/flashrom/2010-August/004362.html.
  *  - MSI K8NGM2-L: NVIDIA MCP51
  */
@@ -1954,6 +1955,7 @@ const struct board_pciid_enable board_pciid_enables[] = {
 	{0x10DE, 0x005E, 0x1695, 0x1010,  0x10DE, 0x0050, 0x1695, 0x1010, NULL,          NULL,         NULL,          "EPoX",        "EP-8NPA7I",             0,   OK, nvidia_mcp_gpio4_raise},
 	{0x10EC, 0x8139, 0x1695, 0x9001,  0x11C1, 0x5811, 0x1695, 0x9015, NULL,          NULL,         NULL,          "EPoX",        "EP-8RDA3+",             0,   OK, nvidia_mcp_gpio31_raise},
 	{0x8086, 0x7110,      0,      0,  0x8086, 0x7190,      0,      0, NULL,          "epox",       "ep-bx3",      "EPoX",        "EP-BX3",                0,   NT, intel_piix4_gpo22_raise},
+	{0x10de, 0x02f0, 0x105b, 0x0d01,  0x10de, 0x0264, 0x105b, 0x0d01, NULL,          NULL,         NULL,          "Foxconn",     "6150K8MD-8EKRSH",       0,   NT, nvidia_mcp_gpio2_raise},
 	{0x8086, 0x2443, 0x8086, 0x2442,  0x8086, 0x1130, 0x8086, 0x1130, "^6IEM ",      NULL,         NULL,          "GIGABYTE",    "GA-6IEM",               0,   NT, intel_ich_gpio25_raise},
 	{0x1106, 0x0686, 0x1106, 0x0686,  0x1106, 0x3058, 0x1458, 0xa000, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-7ZM",                512, OK, NULL},
 	{0x8086, 0x244b, 0x8086, 0x2442,  0x8086, 0x2445, 0x1458, 0xa002, NULL,          NULL,         NULL,          "GIGABYTE",    "GA-8IRML",              0,   OK, intel_ich_gpio25_raise},
