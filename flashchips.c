@@ -6852,9 +6852,6 @@ struct flashchip flashchips[] = {
 			}, {
 				.eraseblocks = { {64 * 1024, 8}, },
 				.block_erase = erase_block_82802ab,
-			}, {
-				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_stm50flw0x0x,
 			}
 		},
 		.unlock		= unlock_stm50flw0x0x,
@@ -6887,9 +6884,6 @@ struct flashchip flashchips[] = {
 			}, {
 				.eraseblocks = { {64 * 1024, 8}, },
 				.block_erase = erase_block_82802ab,
-			}, {
-				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_stm50flw0x0x,
 			}
 		},
 		.unlock		= unlock_stm50flw0x0x,
@@ -6922,9 +6916,6 @@ struct flashchip flashchips[] = {
 			}, {
 				.eraseblocks = { {64 * 1024, 16}, },
 				.block_erase = erase_block_82802ab,
-			}, {
-				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = erase_chip_stm50flw0x0x,
 			}
 		},
 		.unlock		= unlock_stm50flw0x0x,
@@ -6957,9 +6948,6 @@ struct flashchip flashchips[] = {
 			}, {
 				.eraseblocks = { {64 * 1024, 16}, },
 				.block_erase = erase_block_82802ab,
-			}, {
-				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = erase_chip_stm50flw0x0x,
 			}
 		},
 		.unlock		= unlock_stm50flw0x0x,
@@ -6989,9 +6977,6 @@ struct flashchip flashchips[] = {
 					{16 * 1024, 1},
 				},
 				.block_erase = erase_block_82802ab,
-			}, {
-				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_stm50flw0x0x,
 			}
 		},
 		.unlock		= unlock_stm50flw0x0x,
@@ -7016,9 +7001,6 @@ struct flashchip flashchips[] = {
 			{
 				.eraseblocks = { {64 * 1024, 32}, },
 				.block_erase = erase_block_82802ab,
-			}, {
-				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = erase_chip_stm50flw0x0x,
 			}
 		},
 		.unlock		= unlock_stm50flw0x0x,
@@ -7043,9 +7025,6 @@ struct flashchip flashchips[] = {
 			{
 				.eraseblocks = { {64 * 1024, 8}, },
 				.block_erase = erase_block_82802ab,
-			}, {
-				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_stm50flw0x0x,
 			}
 		},
 		.unlock		= unlock_stm50flw0x0x,
@@ -7070,9 +7049,6 @@ struct flashchip flashchips[] = {
 			{
 				.eraseblocks = { {64 * 1024, 16}, },
 				.block_erase = erase_block_82802ab,
-			}, {
-				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = erase_chip_stm50flw0x0x,
 			}
 		},
 		.unlock		= unlock_stm50flw0x0x,
@@ -7103,9 +7079,6 @@ struct flashchip flashchips[] = {
 					{16 * 1024, 1},
 				},
 				.block_erase = erase_block_82802ab,
-			}, {
-				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = erase_chip_stm50flw0x0x,
 			}
 		},
 		.unlock		= unlock_stm50flw0x0x,

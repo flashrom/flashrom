@@ -128,7 +128,6 @@ int probe_w29ee011(struct flashchip *flash);
 
 /* stm50flw0x0x.c */
 int erase_sector_stm50flw0x0x(struct flashchip *flash, unsigned int block, unsigned int blocksize);
-int erase_chip_stm50flw0x0x(struct flashchip *flash, unsigned int addr, unsigned int blocklen);
 int unlock_stm50flw0x0x(struct flashchip *flash);
 
 #endif /* !__CHIPDRIVERS_H__ */
