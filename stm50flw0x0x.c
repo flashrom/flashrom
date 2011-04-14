@@ -114,30 +114,3 @@ int erase_sector_stm50flw0x0x(struct flashchip *flash, unsigned int sector, unsi
 
 	return 0;
 }
-
-/* FIXME: This function is not a real chip erase function. */
-int erase_chip_stm50flw0x0x(struct flashchip *flash, unsigned int addr, unsigned int blocklen)
-{
-	int i;
-	int total_size = flash->total_size * 1024;
-	int page_size = flash->page_size;
-
-	if ((addr != 0) || (blocklen != flash->total_size * 1024)) {
-		msg_cerr("%s called with incorrect arguments\n",
-			__func__);
-		return -1;
-	}
-
-	for (i = 0; i < total_size / page_size; i++) {
-		//if (unlock_block_stm50flw0x0x(flash, i * page_size)) {
-		//	msg_cerr("UNLOCK FAILED!\n");
-		//	return -1;
-		//}
-		if (erase_block_82802ab(flash, i * page_size, page_size)) {
-			msg_cerr("ERASE FAILED!\n");
-			return -1;
-		}
-	}
-
-	return 0;
-}
