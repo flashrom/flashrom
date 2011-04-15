@@ -242,21 +242,24 @@ static int erase_sector_jedec_common(struct flashchip *flash, unsigned int page,
 			      unsigned int pagesize, unsigned int mask)
 {
 	chipaddr bios = flash->virtual_memory;
+	int delay_us = 0;
+	if(flash->probe_timing != TIMING_ZERO)
+	        delay_us = 10;
 
 	/*  Issue the Sector Erase command   */
 	chip_writeb(0xAA, bios + (0x5555 & mask));
-	programmer_delay(10);
+	programmer_delay(delay_us);
 	chip_writeb(0x55, bios + (0x2AAA & mask));
-	programmer_delay(10);
+	programmer_delay(delay_us);
 	chip_writeb(0x80, bios + (0x5555 & mask));
-	programmer_delay(10);
+	programmer_delay(delay_us);
 
 	chip_writeb(0xAA, bios + (0x5555 & mask));
-	programmer_delay(10);
+	programmer_delay(delay_us);
 	chip_writeb(0x55, bios + (0x2AAA & mask));
-	programmer_delay(10);
+	programmer_delay(delay_us);
 	chip_writeb(0x30, bios + page);
-	programmer_delay(10);
+	programmer_delay(delay_us);
 
 	/* wait for Toggle bit ready         */
 	toggle_ready_jedec_slow(bios);
@@ -272,21 +275,24 @@ static int erase_block_jedec_common(struct flashchip *flash, unsigned int block,
 			     unsigned int blocksize, unsigned int mask)
 {
 	chipaddr bios = flash->virtual_memory;
+	int delay_us = 0;
+	if(flash->probe_timing != TIMING_ZERO)
+	        delay_us = 10;
 
 	/*  Issue the Sector Erase command   */
 	chip_writeb(0xAA, bios + (0x5555 & mask));
-	programmer_delay(10);
+	programmer_delay(delay_us);
 	chip_writeb(0x55, bios + (0x2AAA & mask));
-	programmer_delay(10);
+	programmer_delay(delay_us);
 	chip_writeb(0x80, bios + (0x5555 & mask));
-	programmer_delay(10);
+	programmer_delay(delay_us);
 
 	chip_writeb(0xAA, bios + (0x5555 & mask));
-	programmer_delay(10);
+	programmer_delay(delay_us);
 	chip_writeb(0x55, bios + (0x2AAA & mask));
-	programmer_delay(10);
+	programmer_delay(delay_us);
 	chip_writeb(0x50, bios + block);
-	programmer_delay(10);
+	programmer_delay(delay_us);
 
 	/* wait for Toggle bit ready         */
 	toggle_ready_jedec_slow(bios);
@@ -302,21 +308,24 @@ static int erase_chip_jedec_common(struct flashchip *flash, unsigned int mask)
 {
 	int total_size = flash->total_size * 1024;
 	chipaddr bios = flash->virtual_memory;
+	int delay_us = 0;
+	if(flash->probe_timing != TIMING_ZERO)
+	        delay_us = 10;
 
 	/*  Issue the JEDEC Chip Erase command   */
 	chip_writeb(0xAA, bios + (0x5555 & mask));
-	programmer_delay(10);
+	programmer_delay(delay_us);
 	chip_writeb(0x55, bios + (0x2AAA & mask));
-	programmer_delay(10);
+	programmer_delay(delay_us);
 	chip_writeb(0x80, bios + (0x5555 & mask));
-	programmer_delay(10);
+	programmer_delay(delay_us);
 
 	chip_writeb(0xAA, bios + (0x5555 & mask));
-	programmer_delay(10);
+	programmer_delay(delay_us);
 	chip_writeb(0x55, bios + (0x2AAA & mask));
-	programmer_delay(10);
+	programmer_delay(delay_us);
 	chip_writeb(0x10, bios + (0x5555 & mask));
-	programmer_delay(10);
+	programmer_delay(delay_us);
 
 	toggle_ready_jedec_slow(bios);
 
