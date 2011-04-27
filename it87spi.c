@@ -42,6 +42,7 @@ static int fast_spi = 1;
 /* Helper functions for most recent ITE IT87xx Super I/O chips */
 #define CHIP_ID_BYTE1_REG	0x20
 #define CHIP_ID_BYTE2_REG	0x21
+#define CHIP_VER_REG		0x22
 void enter_conf_mode_ite(uint16_t port)
 {
 	OUTB(0x87, port);
@@ -70,31 +71,37 @@ uint16_t probe_id_ite(uint16_t port)
 	return id;
 }
 
-struct superio probe_superio_ite(void)
+void probe_superio_ite(void)
 {
-	struct superio ret = {};
+	struct superio s = {};
 	uint16_t ite_ports[] = {ITE_SUPERIO_PORT1, ITE_SUPERIO_PORT2, 0};
 	uint16_t *i = ite_ports;
 
-	ret.vendor = SUPERIO_VENDOR_ITE;
+	s.vendor = SUPERIO_VENDOR_ITE;
 	for (; *i; i++) {
-		ret.port = *i;
-		ret.model = probe_id_ite(ret.port);
-		switch (ret.model >> 8) {
+		s.port = *i;
+		s.model = probe_id_ite(s.port);
+		switch (s.model >> 8) {
 		case 0x82:
 		case 0x86:
 		case 0x87:
-			msg_pinfo("Found ITE Super I/O, ID 0x%04hx.\n",
-				  ret.model);
-			return ret;
+			/* FIXME: Print revision for all models? */
+			msg_pdbg("Found ITE Super I/O, ID 0x%04hx on port "
+				 "0x%x\n", s.model, s.port);
+			register_superio(s);
+			break;
+		case 0x85:
+			msg_pdbg("Found ITE EC, ID 0x%04hx,"
+			         "Rev 0x%02x on port 0x%x.\n",
+			         s.model,
+			         sio_read(s.port, CHIP_VER_REG),
+			         s.port);
+			register_superio(s);
+			break;
 		}
 	}
 
-	/* No good ID found. */
-	ret.vendor = SUPERIO_VENDOR_NONE;
-	ret.port = 0;
-	ret.model = 0;
-	return ret;
+	return;
 }
 
 static uint16_t it87spi_probe(uint16_t port)
@@ -113,7 +120,7 @@ static uint16_t it87spi_probe(uint16_t port)
 		msg_pdbg("No IT87* serial flash segment enabled.\n");
 		exit_conf_mode_ite(port);
 		/* Nothing to do. */
-		return 1;
+		return 0;
 	}
 	msg_pdbg("Serial flash segment 0x%08x-0x%08x %sabled\n",
 		 0xFFFE0000, 0xFFFFFFFF, (tmp & 1 << 1) ? "en" : "dis");
@@ -159,10 +166,7 @@ static uint16_t it87spi_probe(uint16_t port)
 				 "port specified.\nPort must be a multiple of "
 				 "0x8 and lie between 0x100 and 0xff8.\n");
 			free(portpos);
-			/* FIXME: Return failure here once it87spi_common_init()
-			 * can handle the return value sanely.
-			 */
-			exit(1);
+			return 1;
 		} else {
 			flashport = (uint16_t)forced_flashport;
 			msg_pinfo("Forcing serial flash port 0x%04x\n",
@@ -177,44 +181,46 @@ static uint16_t it87spi_probe(uint16_t port)
 	if (buses_supported & CHIP_BUSTYPE_SPI)
 		msg_pdbg("Overriding chipset SPI with IT87 SPI.\n");
 	spi_controller = SPI_CONTROLLER_IT87XX;
+	/* FIXME: Add the SPI bus or replace the other buses with it? */
 	buses_supported |= CHIP_BUSTYPE_SPI;
 	return 0;
 }
 
 int init_superio_ite(void)
 {
-	if (superio.vendor != SUPERIO_VENDOR_ITE)
-		return 1;
+	int i;
+	int ret = 0;
 
-	switch (superio.model) {
-	case 0x8705:
-		return it8705f_write_enable(superio.port);
-		break;
-	case 0x8716:
-	case 0x8718:
-	case 0x8720:
-		return it87spi_probe(superio.port);
-		break;
-	default:
-		msg_pdbg("Super I/O ID 0x%04hx is not on the list of flash "
-			 "capable controllers.\n", superio.model);
-	}
-	return 1;
-}
+	for (i = 0; i < superio_count; i++) {
+		if (superios[i].vendor != SUPERIO_VENDOR_ITE)
+			continue;
 
-
-int it87spi_init(void)
-{
-	int ret;
-
-	get_io_perms();
-	/* Probe for the Super I/O chip and fill global struct superio. */
-	probe_superio();
-	ret = init_superio_ite();
-	if (!ret) {
-		buses_supported = CHIP_BUSTYPE_SPI;
-	} else {
-		buses_supported = CHIP_BUSTYPE_NONE;
+		switch (superios[i].model) {
+		case 0x8500:
+		case 0x8502:
+		case 0x8510:
+		case 0x8511:
+		case 0x8512:
+			/* FIXME: This should be enabled, but we need a check
+			 * for laptop whitelisting due to the amount of things
+			 * which can go wrong if the EC firmware does not
+			 * implement the interface we want.
+			 */
+			//it85xx_spi_init(superios[i]);
+			break;
+		case 0x8705:
+			ret |= it8705f_write_enable(superios[i].port);
+			break;
+		case 0x8716:
+		case 0x8718:
+		case 0x8720:
+			ret |= it87spi_probe(superios[i].port);
+			break;
+		default:
+			msg_pdbg("Super I/O ID 0x%04hx is not on the list of "
+				 "flash capable controllers.\n",
+				 superios[i].model);
+		}
 	}
 	return ret;
 }
@@ -323,10 +329,13 @@ static int it8716f_spi_page_program(struct flashchip *flash, uint8_t *buf, int s
  */
 int it8716f_spi_chip_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
-	int total_size = 1024 * flash->total_size;
 	fast_spi = 0;
 
-	if ((programmer == PROGRAMMER_IT87SPI) || (total_size > 512 * 1024)) {
+	/* FIXME: Check if someone explicitly requested to use IT87 SPI although
+	 * the mainboard does not use IT87 SPI translation. This should be done
+	 * via a programmer parameter for the internal programmer.
+	 */
+	if ((flash->total_size * 1024 > 512 * 1024)) {
 		spi_read_chunked(flash, buf, start, len, 3);
 	} else {
 		read_memmapped(flash, buf, start, len);
@@ -343,9 +352,11 @@ int it8716f_spi_chip_write_256(struct flashchip *flash, uint8_t *buf, int start,
 	 * so page_size > 256 bytes needs a fallback.
 	 * FIXME: Split too big page writes into chunks IT87* can handle instead
 	 * of degrading to single-byte program.
+	 * FIXME: Check if someone explicitly requested to use IT87 SPI although
+	 * the mainboard does not use IT87 SPI translation. This should be done
+	 * via a programmer parameter for the internal programmer.
 	 */
-	if ((programmer == PROGRAMMER_IT87SPI) ||
-	    (flash->total_size * 1024 > 512 * 1024) ||
+	if ((flash->total_size * 1024 > 512 * 1024) ||
 	    (flash->page_size > 256)) {
 		spi_chip_write_1(flash, buf, start, len);
 	} else {
