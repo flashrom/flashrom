@@ -295,27 +295,6 @@ const struct programmer_entry programmer_table[] = {
 	},
 #endif
 
-#if CONFIG_INTERNAL == 1
-#if defined(__i386__) || defined(__x86_64__)
-	{
-		.name			= "it87spi",
-		.init			= it87spi_init,
-		.shutdown		= noop_shutdown,
-		.map_flash_region	= fallback_map,
-		.unmap_flash_region	= fallback_unmap,
-		.chip_readb		= noop_chip_readb,
-		.chip_readw		= fallback_chip_readw,
-		.chip_readl		= fallback_chip_readl,
-		.chip_readn		= fallback_chip_readn,
-		.chip_writeb		= noop_chip_writeb,
-		.chip_writew		= fallback_chip_writew,
-		.chip_writel		= fallback_chip_writel,
-		.chip_writen		= fallback_chip_writen,
-		.delay			= internal_delay,
-	},
-#endif
-#endif
-
 #if CONFIG_FT2232_SPI == 1
 	{
 		.name			= "ft2232_spi",
