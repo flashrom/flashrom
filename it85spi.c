@@ -47,9 +47,6 @@
 
 /* Constants for Logical Device registers */
 #define LDNSEL			0x07
-#define CHIP_ID_BYTE1_REG	0x20
-#define CHIP_ID_BYTE2_REG	0x21
-#define CHIP_CHIP_VER_REG	0x22
 
 /* These are standard Super I/O 16-bit base address registers */
 #define SHM_IO_BAR0		0x60  /* big-endian, this is high bits */
@@ -85,44 +82,6 @@ unsigned int shm_io_base;
 #endif
 unsigned char *ce_high, *ce_low;
 static int it85xx_scratch_rom_reenter = 0;
-
-uint16_t probe_id_ite85(uint16_t port)
-{
-	uint16_t id;
-
-	id = sio_read(port, CHIP_ID_BYTE1_REG) << 8 |
-	     sio_read(port, CHIP_ID_BYTE2_REG);
-
-	return id;
-}
-
-struct superio probe_superio_ite85xx(void)
-{
-	struct superio ret = {};
-	uint16_t ite_ports[] = {ITE_SUPERIO_PORT1, ITE_SUPERIO_PORT2, 0};
-	uint16_t *i = ite_ports;
-
-	ret.vendor = SUPERIO_VENDOR_ITE;
-	for (; *i; i++) {
-		ret.port = *i;
-		ret.model = probe_id_ite85(ret.port);
-		switch (ret.model >> 8) {
-		case 0x85:
-			msg_pdbg("Found EC: ITE85xx (Vendor:0x%02x,ID:0x%02x,"
-			         "Rev:0x%02x) on sio_port:0x%x.\n",
-			         ret.model >> 8, ret.model & 0xff,
-			         sio_read(ret.port, CHIP_CHIP_VER_REG),
-			         ret.port);
-			return ret;
-		}
-	}
-
-	/* No good ID found. */
-	ret.vendor = SUPERIO_VENDOR_NONE;
-	ret.port = 0;
-	ret.model = 0;
-	return ret;
-}
 
 /* This function will poll the keyboard status register until either
  *   an expected value shows up, or
@@ -267,20 +226,18 @@ void it85xx_exit_scratch_rom()
 #endif
 }
 
-int it85xx_spi_common_init(void)
+static int it85xx_spi_common_init(struct superio s)
 {
 	chipaddr base;
 
 	msg_pdbg("%s():%d superio.vendor=0x%02x\n", __func__, __LINE__,
-	         superio.vendor);
-	if (superio.vendor != SUPERIO_VENDOR_ITE)
-		return 1;
+	         s.vendor);
 
 #ifdef LPC_IO
 	/* Get LPCPNP of SHM. That's big-endian */
-	sio_write(superio.port, LDNSEL, 0x0F); /* Set LDN to SHM (0x0F) */
-	shm_io_base = (sio_read(superio.port, SHM_IO_BAR0) << 8) +
-	              sio_read(superio.port, SHM_IO_BAR1);
+	sio_write(s.port, LDNSEL, 0x0F); /* Set LDN to SHM (0x0F) */
+	shm_io_base = (sio_read(s.port, SHM_IO_BAR0) << 8) +
+	              sio_read(s.port, SHM_IO_BAR1);
 	msg_pdbg("%s():%d shm_io_base=0x%04x\n", __func__, __LINE__,
 	         shm_io_base);
 
@@ -311,25 +268,7 @@ int it85xx_spi_common_init(void)
 	return 0;
 }
 
-/* Called by programmer_entry .init */
-int it85xx_spi_init(void)
-{
-	int ret;
-
-	get_io_perms();
-	/* Probe for the Super I/O chip and fill global struct superio. */
-	probe_superio();
-	ret = it85xx_spi_common_init();
-	if (!ret) {
-		buses_supported = CHIP_BUSTYPE_SPI;
-	} else {
-		buses_supported = CHIP_BUSTYPE_NONE;
-	}
-	return ret;
-}
-
-/* Called by internal_init() */
-int it85xx_probe_spi_flash(void)
+int it85xx_spi_init(struct superio s)
 {
 	int ret;
 
@@ -337,13 +276,14 @@ int it85xx_probe_spi_flash(void)
 		msg_pdbg("%s():%d buses not support FWH\n", __func__, __LINE__);
 		return 1;
 	}
-	ret = it85xx_spi_common_init();
+	ret = it85xx_spi_common_init(s);
 	msg_pdbg("FWH: %s():%d ret=%d\n", __func__, __LINE__, ret);
 	if (!ret) {
 		msg_pdbg("%s():%d buses_supported=0x%x\n", __func__, __LINE__,
 		          buses_supported);
 		if (buses_supported & CHIP_BUSTYPE_FWH)
 			msg_pdbg("Overriding chipset SPI with IT85 FWH|SPI.\n");
+		/* Really leave FWH enabled? */
 		buses_supported |= CHIP_BUSTYPE_FWH | CHIP_BUSTYPE_SPI;
 	}
 	return ret;

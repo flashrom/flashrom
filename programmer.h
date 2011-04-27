@@ -52,11 +52,6 @@ enum programmer {
 #if CONFIG_ATAHPT == 1
 	PROGRAMMER_ATAHPT,
 #endif
-#if CONFIG_INTERNAL == 1
-#if defined(__i386__) || defined(__x86_64__)
-	PROGRAMMER_IT87SPI,
-#endif
-#endif
 #if CONFIG_FT2232_SPI == 1
 	PROGRAMMER_FT2232_SPI,
 #endif
@@ -273,7 +268,8 @@ struct superio {
 	uint16_t port;
 	uint16_t model;
 };
-extern struct superio superio;
+extern struct superio superios[];
+extern int superio_count;
 #define SUPERIO_VENDOR_NONE	0x0
 #define SUPERIO_VENDOR_ITE	0x1
 struct pci_dev *pci_dev_find_filter(struct pci_filter filter);
@@ -289,6 +285,7 @@ extern int is_laptop;
 extern int force_boardenable;
 extern int force_boardmismatch;
 void probe_superio(void);
+int register_superio(struct superio s);
 int internal_init(void);
 int internal_shutdown(void);
 void internal_chip_writeb(uint8_t val, chipaddr addr);
@@ -582,10 +579,8 @@ int ich_spi_send_multicommand(struct spi_command *cmds);
 #endif
 
 /* it85spi.c */
-struct superio probe_superio_ite85xx(void);
-int it85xx_spi_init(void);
+int it85xx_spi_init(struct superio s);
 int it85xx_shutdown(void);
-int it85xx_probe_spi_flash(void);
 int it85xx_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 			const unsigned char *writearr, unsigned char *readarr);
 int it85_spi_read(struct flashchip *flash, uint8_t * buf, int start, int len);
@@ -594,9 +589,8 @@ int it85_spi_write_256(struct flashchip *flash, uint8_t * buf, int start, int le
 /* it87spi.c */
 void enter_conf_mode_ite(uint16_t port);
 void exit_conf_mode_ite(uint16_t port);
-struct superio probe_superio_ite(void);
+void probe_superio_ite(void);
 int init_superio_ite(void);
-int it87spi_init(void);
 int it8716f_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 			const unsigned char *writearr, unsigned char *readarr);
 int it8716f_spi_chip_read(struct flashchip *flash, uint8_t *buf, int start, int len);

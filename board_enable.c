@@ -493,7 +493,6 @@ int it8705f_write_enable(uint8_t port)
 		}
 	} else {
 		msg_pdbg("No IT8705F flash segment enabled.\n");
-		/* Not sure if this is an error or not. */
 		ret = 0;
 	}
 	exit_conf_mode_ite(port);

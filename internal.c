@@ -99,17 +99,29 @@ int force_boardenable = 0;
 int force_boardmismatch = 0;
 
 #if defined(__i386__) || defined(__x86_64__)
-struct superio superio = {};
-
 void probe_superio(void)
 {
-	superio = probe_superio_ite();
+	probe_superio_ite();
 #if 0
 	/* Winbond Super I/O code is not yet available. */
 	if (superio.vendor == SUPERIO_VENDOR_NONE)
 		superio = probe_superio_winbond();
 #endif
 }
+
+int superio_count = 0;
+#define SUPERIO_MAX_COUNT 3
+
+struct superio superios[SUPERIO_MAX_COUNT];
+
+int register_superio(struct superio s)
+{
+	if (superio_count == SUPERIO_MAX_COUNT)
+		return 1;
+	superios[superio_count++] = s;
+	return 0;
+}
+
 #endif
 
 int is_laptop = 0;
