@@ -612,8 +612,7 @@ static int ich7_run_opcode(OPCODE op, uint32_t offset,
 	/* FIXME: make sure we do not needlessly cause transaction errors. */
 	temp16 = REGREAD16(ICH7_REG_SPIS);
 	if (temp16 & SPIS_FCERR) {
-		msg_perr("Transaction error for opcode 0x%02x!\n",
-			 op.opcode);
+		msg_perr("Transaction error!\n");
 		/* keep reserved bits */
 		temp16 &= SPIS_RESERVED_MASK;
 		REGWRITE16(ICH7_REG_SPIS, temp16 | SPIS_FCERR);
@@ -758,8 +757,7 @@ static int ich9_run_opcode(OPCODE op, uint32_t offset,
 	/* FIXME make sure we do not needlessly cause transaction errors. */
 	temp32 = REGREAD32(ICH9_REG_SSFS);
 	if (temp32 & SSFS_FCERR) {
-		msg_perr("Transaction error for opcode 0x%02x!\n",
-			 op.opcode);
+		msg_perr("Transaction error!\n");
 		/* keep reserved bits */
 		temp32 &= SSFS_RESERVED_MASK | SSFC_RESERVED_MASK;
 		/* Clear the transaction error. */
@@ -934,7 +932,24 @@ int ich_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 
 	result = run_opcode(*opcode, addr, count, data);
 	if (result) {
-		msg_pdbg("run OPCODE 0x%02x failed\n", opcode->opcode);
+		msg_pdbg("Running OPCODE 0x%02x failed ", opcode->opcode);
+		if ((opcode->spi_type == SPI_OPCODE_TYPE_WRITE_WITH_ADDRESS) ||
+		    (opcode->spi_type == SPI_OPCODE_TYPE_READ_WITH_ADDRESS)) {
+			msg_pdbg("at address 0x%06x ", addr);
+		}
+		msg_pdbg("(payload length was %d).\n", count);
+
+		/* Print out the data array if it contains data to write.
+		 * Errors are detected before the received data is read back into
+		 * the array so it won't make sense to print it then. */
+		if ((opcode->spi_type == SPI_OPCODE_TYPE_WRITE_WITH_ADDRESS) ||
+		    (opcode->spi_type == SPI_OPCODE_TYPE_WRITE_NO_ADDRESS)) {
+			int i;
+			msg_pspew("The data was:\n");
+			for(i=0; i<count; i++){
+				msg_pspew("%3d: 0x%02x\n", i, data[i]);
+			}
+		}
 	}
 
 	return result;
