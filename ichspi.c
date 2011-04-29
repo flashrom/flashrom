@@ -572,7 +572,14 @@ static int ich7_run_opcode(OPCODE op, uint32_t offset,
 	}
 	temp16 |= ((uint16_t) (opcode_index & 0x07)) << 4;
 
-	/* Handle Atomic */
+	timeout = 100 * 60;	/* 60 ms are 9.6 million cycles at 16 MHz. */
+	/* Handle Atomic. Atomic commands include three steps:
+	    - sending the preop (mainly EWSR or WREN)
+	    - sending the main command
+	    - waiting for the busy bit (WIP) to be cleared
+	   This means the timeout must be sufficient for chip erase
+	   of slow high-capacity chips.
+         */
 	switch (op.atomic) {
 	case 2:
 		/* Select second preop. */
@@ -581,6 +588,7 @@ static int ich7_run_opcode(OPCODE op, uint32_t offset,
 	case 1:
 		/* Atomic command (preop+op) */
 		temp16 |= SPIC_ACS;
+		timeout = 100 * 1000 * 60;	/* 60 seconds */
 		break;
 	}
 
@@ -591,7 +599,6 @@ static int ich7_run_opcode(OPCODE op, uint32_t offset,
 	REGWRITE16(ICH7_REG_SPIC, temp16);
 
 	/* Wait for Cycle Done Status or Flash Cycle Error. */
-	timeout = 100 * 60;	/* 60 ms are 9.6 million cycles at 16 MHz. */
 	while (((REGREAD16(ICH7_REG_SPIS) & (SPIS_CDS | SPIS_FCERR)) == 0) &&
 	       --timeout) {
 		programmer_delay(10);
@@ -711,7 +718,14 @@ static int ich9_run_opcode(OPCODE op, uint32_t offset,
 	}
 	temp32 |= ((uint32_t) (opcode_index & 0x07)) << (8 + 4);
 
-	/* Handle Atomic */
+	timeout = 100 * 60;	/* 60 ms are 9.6 million cycles at 16 MHz. */
+	/* Handle Atomic. Atomic commands include three steps:
+	    - sending the preop (mainly EWSR or WREN)
+	    - sending the main command
+	    - waiting for the busy bit (WIP) to be cleared
+	   This means the timeout must be sufficient for chip erase
+	   of slow high-capacity chips.
+         */
 	switch (op.atomic) {
 	case 2:
 		/* Select second preop. */
@@ -720,6 +734,7 @@ static int ich9_run_opcode(OPCODE op, uint32_t offset,
 	case 1:
 		/* Atomic command (preop+op) */
 		temp32 |= SSFC_ACS;
+		timeout = 100 * 1000 * 60;	/* 60 seconds */
 		break;
 	}
 
@@ -730,7 +745,6 @@ static int ich9_run_opcode(OPCODE op, uint32_t offset,
 	REGWRITE32(ICH9_REG_SSFS, temp32);
 
 	/* Wait for Cycle Done Status or Flash Cycle Error. */
-	timeout = 100 * 60;	/* 60 ms are 9.6 million cycles at 16 MHz. */
 	while (((REGREAD32(ICH9_REG_SSFS) & (SSFS_CDS | SSFS_FCERR)) == 0) &&
 	       --timeout) {
 		programmer_delay(10);
