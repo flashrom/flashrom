@@ -184,3 +184,104 @@ uint32_t mmio_le_readl(void *addr)
 {
 	return le_to_cpu32(mmio_readl(addr));
 }
+
+enum mmio_write_type {
+	mmio_write_type_b,
+	mmio_write_type_w,
+	mmio_write_type_l,
+};
+
+struct undo_mmio_write_data {
+	void *addr;
+	int reg;
+	enum mmio_write_type type;
+	union {
+		uint8_t bdata;
+		uint16_t wdata;
+		uint32_t ldata;
+	};
+};
+
+void undo_mmio_write(void *p)
+{
+	struct undo_mmio_write_data *data = p;
+	msg_pdbg("Restoring MMIO space at %p\n", data->addr);
+	switch (data->type) {
+	case mmio_write_type_b:
+		mmio_writeb(data->bdata, data->addr);
+		break;
+	case mmio_write_type_w:
+		mmio_writew(data->wdata, data->addr);
+		break;
+	case mmio_write_type_l:
+		mmio_writel(data->ldata, data->addr);
+		break;
+	}
+	/* p was allocated in register_undo_mmio_write. */
+	free(p);
+}
+
+#define register_undo_mmio_write(a, c)					\
+{									\
+	struct undo_mmio_write_data *undo_mmio_write_data;		\
+	undo_mmio_write_data = malloc(sizeof(struct undo_mmio_write_data)); \
+	undo_mmio_write_data->addr = a;					\
+	undo_mmio_write_data->type = mmio_write_type_##c;		\
+	undo_mmio_write_data->c##data = mmio_read##c(a);		\
+	register_shutdown(undo_mmio_write, undo_mmio_write_data);	\
+}
+
+#define register_undo_mmio_writeb(a) register_undo_mmio_write(a, b)
+#define register_undo_mmio_writew(a) register_undo_mmio_write(a, w)
+#define register_undo_mmio_writel(a) register_undo_mmio_write(a, l)
+
+void rmmio_writeb(uint8_t val, void *addr)
+{
+	register_undo_mmio_writeb(addr);
+	mmio_writeb(val, addr);
+}
+
+void rmmio_writew(uint16_t val, void *addr)
+{
+	register_undo_mmio_writew(addr);
+	mmio_writew(val, addr);
+}
+
+void rmmio_writel(uint32_t val, void *addr)
+{
+	register_undo_mmio_writel(addr);
+	mmio_writel(val, addr);
+}
+
+void rmmio_le_writeb(uint8_t val, void *addr)
+{
+	register_undo_mmio_writeb(addr);
+	mmio_le_writeb(val, addr);
+}
+
+void rmmio_le_writew(uint16_t val, void *addr)
+{
+	register_undo_mmio_writew(addr);
+	mmio_le_writew(val, addr);
+}
+
+void rmmio_le_writel(uint32_t val, void *addr)
+{
+	register_undo_mmio_writel(addr);
+	mmio_le_writel(val, addr);
+}
+
+void rmmio_valb(void *addr)
+{
+	register_undo_mmio_writeb(addr);
+}
+
+void rmmio_valw(void *addr)
+{
+	register_undo_mmio_writew(addr);
+}
+
+void rmmio_vall(void *addr)
+{
+	register_undo_mmio_writel(addr);
+}

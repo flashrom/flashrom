@@ -316,6 +316,18 @@ uint32_t mmio_le_readl(void *addr);
 #define pci_mmio_readb mmio_le_readb
 #define pci_mmio_readw mmio_le_readw
 #define pci_mmio_readl mmio_le_readl
+void rmmio_writeb(uint8_t val, void *addr);
+void rmmio_writew(uint16_t val, void *addr);
+void rmmio_writel(uint32_t val, void *addr);
+void rmmio_le_writeb(uint8_t val, void *addr);
+void rmmio_le_writew(uint16_t val, void *addr);
+void rmmio_le_writel(uint32_t val, void *addr);
+#define pci_rmmio_writeb rmmio_le_writeb
+#define pci_rmmio_writew rmmio_le_writew
+#define pci_rmmio_writel rmmio_le_writel
+void rmmio_valb(void *addr);
+void rmmio_valw(void *addr);
+void rmmio_vall(void *addr);
 
 /* programmer.c */
 int noop_shutdown(void);
