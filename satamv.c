@@ -102,8 +102,7 @@ int satamv_init(void)
 	msg_pspew("BAR2Sz=0x%01x\n", (tmp >> 19) & 0x7);
 	tmp &= 0xffffffc0;
 	tmp |= 0x0000001f;
-	/* FIXME: This needs to be an auto-reversible write. */
-	pci_mmio_writel(tmp, mv_bar + PCI_BAR2_CONTROL);
+	pci_rmmio_writel(tmp, mv_bar + PCI_BAR2_CONTROL);
 
 	/* Enable flash: GPIO Port Control Register 0x104f0 */
 	tmp = pci_mmio_readl(mv_bar + GPIO_PORT_CONTROL);
@@ -114,8 +113,7 @@ int satamv_init(void)
 			  "values!\n");
 	tmp &= 0xfffffffc;
 	tmp |= 0x2;
-	/* FIXME: This needs to be an auto-reversible write. */
-	pci_mmio_writel(tmp, mv_bar + GPIO_PORT_CONTROL);
+	pci_rmmio_writel(tmp, mv_bar + GPIO_PORT_CONTROL);
 
 	/* Get I/O BAR location. */
 	tmp = pci_read_long(pcidev_dev, PCI_BASE_ADDRESS_2) &
