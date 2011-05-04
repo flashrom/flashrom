@@ -32,7 +32,7 @@
  * Please keep the list sorted by vendor name and chip name, so that
  * the output of 'flashrom -L' is alphabetically sorted.
  */
-struct flashchip flashchips[] = {
+const struct flashchip flashchips[] = {
 
 	/*
 	 * .vendor		= Vendor name

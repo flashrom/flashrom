@@ -100,7 +100,11 @@ int cli_classic(int argc, char *argv[])
 {
 	unsigned long size;
 	/* Probe for up to three flash chips. */
-	struct flashchip *flash, *flashes[3];
+	const struct flashchip *flash;
+	struct flashchip flashes[3];
+	struct flashchip *fill_flash;
+	int startchip = 0;
+	int chipcount = 0;
 	const char *name;
 	int namelen;
 	int opt;
@@ -359,49 +363,47 @@ int cli_classic(int argc, char *argv[])
 		exit(1);
 	}
 
-	/* FIXME: Delay calibration should happen in programmer code. */
 	for (i = 0; i < ARRAY_SIZE(flashes); i++) {
-		flashes[i] =
-		    probe_flash(i ? flashes[i - 1] + 1 : flashchips, 0);
-		if (!flashes[i])
-			for (i++; i < ARRAY_SIZE(flashes); i++)
-				flashes[i] = NULL;
+		startchip = probe_flash(startchip, &flashes[i], 0);
+		if (startchip == -1)
+			break;
+		chipcount++;
 	}
 
-	if (flashes[1]) {
+	if (chipcount > 1) {
 		printf("Multiple flash chips were detected:");
-		for (i = 0; i < ARRAY_SIZE(flashes) && flashes[i]; i++)
-			printf(" %s", flashes[i]->name);
+		for (i = 0; i < chipcount; i++)
+			printf(" %s", flashes[i].name);
 		printf("\nPlease specify which chip to use with the -c <chipname> option.\n");
 		programmer_shutdown();
 		exit(1);
-	} else if (!flashes[0]) {
+	} else if (!chipcount) {
 		printf("No EEPROM/flash device found.\n");
 		if (!force || !chip_to_probe) {
 			printf("Note: flashrom can never write if the flash chip isn't found automatically.\n");
 		}
 		if (force && read_it && chip_to_probe) {
 			printf("Force read (-f -r -c) requested, pretending the chip is there:\n");
-			flashes[0] = probe_flash(flashchips, 1);
-			if (!flashes[0]) {
+			startchip = probe_flash(0, &flashes[0], 1);
+			if (startchip == -1) {
 				printf("Probing for flash chip '%s' failed.\n", chip_to_probe);
 				programmer_shutdown();
 				exit(1);
 			}
 			printf("Please note that forced reads most likely contain garbage.\n");
-			return read_flash_to_file(flashes[0], filename);
+			return read_flash_to_file(&flashes[0], filename);
 		}
 		// FIXME: flash writes stay enabled!
 		programmer_shutdown();
 		exit(1);
 	}
 
-	flash = flashes[0];
+	fill_flash = &flashes[0];
 
-	check_chip_supported(flash);
+	check_chip_supported(fill_flash);
 
-	size = flash->total_size * 1024;
-	if (check_max_decode((buses_supported & flash->bustype), size) &&
+	size = fill_flash->total_size * 1024;
+	if (check_max_decode((buses_supported & fill_flash->bustype), size) &&
 	    (!force)) {
 		fprintf(stderr, "Chip is too big for this programmer "
 			"(-V gives details). Use --force to override.\n");
@@ -432,5 +434,5 @@ int cli_classic(int argc, char *argv[])
 	 * Give the chip time to settle.
 	 */
 	programmer_delay(100000);
-	return doit(flash, force, filename, read_it, write_it, erase_it, verify_it);
+	return doit(fill_flash, force, filename, read_it, write_it, erase_it, verify_it);
 }

@@ -173,7 +173,7 @@ struct flashchip {
 #define TIMING_IGNORED	-1
 #define TIMING_ZERO	-2
 
-extern struct flashchip flashchips[];
+extern const struct flashchip flashchips[];
 
 /* print.c */
 char *flashbuses_to_text(enum chipbustype bustype);
@@ -193,7 +193,7 @@ extern char *chip_to_probe;
 void map_flash_registers(struct flashchip *flash);
 int read_memmapped(struct flashchip *flash, uint8_t *buf, int start, int len);
 int erase_flash(struct flashchip *flash);
-struct flashchip *probe_flash(struct flashchip *first_flash, int force);
+int probe_flash(int startchip, struct flashchip *fill_flash, int force);
 int read_flash_to_file(struct flashchip *flash, char *filename);
 int min(int a, int b);
 int max(int a, int b);

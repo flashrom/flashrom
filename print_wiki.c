@@ -201,7 +201,7 @@ static void print_supported_boards_wiki(void)
 static void print_supported_chips_wiki(int cols)
 {
 	int i = 0, c = 1, chipcount = 0;
-	struct flashchip *f, *old = NULL;
+	const struct flashchip *f, *old = NULL;
 	uint32_t t;
 
 	for (f = flashchips; f->name != NULL; f++)
