@@ -78,7 +78,7 @@ static void print_supported_chips(void)
 {
 	int okcol = 0, pos = 0, i, chipcount = 0;
 	int maxchiplen = 0, maxvendorlen = 0;
-	struct flashchip *f;
+	const struct flashchip *f;
 
 	for (f = flashchips; f->name != NULL; f++) {
 		/* Ignore "unknown XXXX SPI chip" entries. */

@@ -1109,16 +1109,16 @@ int check_max_decode(enum chipbustype buses, uint32_t size)
 	return 1;
 }
 
-struct flashchip *probe_flash(struct flashchip *first_flash, int force)
+int probe_flash(int startchip, struct flashchip *fill_flash, int force)
 {
-	struct flashchip *flash;
+	const struct flashchip *flash;
 	unsigned long base = 0;
 	char location[64];
 	uint32_t size;
 	enum chipbustype buses_common;
 	char *tmp;
 
-	for (flash = first_flash; flash && flash->name; flash++) {
+	for (flash = flashchips + startchip; flash && flash->name; flash++) {
 		if (chip_to_probe && strcmp(flash->name, chip_to_probe) != 0)
 			continue;
 		msg_gdbg("Probing for %s %s, %d KB: ",
@@ -1145,25 +1145,35 @@ struct flashchip *probe_flash(struct flashchip *first_flash, int force)
 		size = flash->total_size * 1024;
 		check_max_decode(buses_common, size);
 
+		/* Start filling in the dynamic data. */
+		*fill_flash = *flash;
+
 		base = flashbase ? flashbase : (0xffffffff - size + 1);
-		flash->virtual_memory = (chipaddr)programmer_map_flash_region("flash chip", base, size);
+		fill_flash->virtual_memory = (chipaddr)programmer_map_flash_region("flash chip", base, size);
 
 		if (force)
 			break;
 
-		if (flash->probe(flash) != 1)
+		if (fill_flash->probe(fill_flash) != 1)
 			goto notfound;
 
-		if (first_flash == flashchips
-		    || flash->model_id != GENERIC_DEVICE_ID)
+		/* If this is the first chip found, accept it.
+		 * If this is not the first chip found, accept it only if it is
+		 * a non-generic match.
+		 * We could either make chipcount global or provide it as
+		 * parameter, or we assume that startchip==0 means this call to
+		 * probe_flash() is the first one and thus no chip has been
+		 * found before.
+		 */
+		if (startchip == 0 || fill_flash->model_id != GENERIC_DEVICE_ID)
 			break;
 
 notfound:
-		programmer_unmap_flash_region((void *)flash->virtual_memory, size);
+		programmer_unmap_flash_region((void *)fill_flash->virtual_memory, size);
 	}
 
 	if (!flash || !flash->name)
-		return NULL;
+		return -1;
 
 #if CONFIG_INTERNAL == 1
 	if (programmer_table[programmer].map_flash_region == physmap)
@@ -1181,10 +1191,11 @@ notfound:
 	 * may be stored in registers, so avoid lock info printing.
 	 */
 	if (!force)
-		if (flash->printlock)
-			flash->printlock(flash);
+		if (fill_flash->printlock)
+			fill_flash->printlock(fill_flash);
 
-	return flash;
+	/* Return position of matching chip. */
+	return flash - flashchips;
 }
 
 int verify_flash(struct flashchip *flash, uint8_t *buf)
@@ -1293,7 +1304,7 @@ out_free:
  * walk_eraseregions().
  * Even if an error is found, the function will keep going and check the rest.
  */
-static int selfcheck_eraseblocks(struct flashchip *flash)
+static int selfcheck_eraseblocks(const struct flashchip *flash)
 {
 	int i, j, k;
 	int ret = 0;
@@ -1670,7 +1681,7 @@ void print_banner(void)
 int selfcheck(void)
 {
 	int ret = 0;
-	struct flashchip *flash;
+	const struct flashchip *flash;
 
 	/* Safety check. Instead of aborting after the first error, check
 	 * if more errors exist.
@@ -1689,7 +1700,7 @@ int selfcheck(void)
 	return ret;
 }
 
-void check_chip_supported(struct flashchip *flash)
+void check_chip_supported(const struct flashchip *flash)
 {
 	if (TEST_OK_MASK != (flash->tested & TEST_OK_MASK)) {
 		msg_cinfo("===\n");
