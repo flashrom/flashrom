@@ -150,6 +150,12 @@ struct penable {
 
 extern const struct penable chipset_enables[];
 
+enum board_match_phase {
+	P1,
+	P2,
+	P3
+};
+
 struct board_pciid_enable {
 	/* Any device, but make it sensible, like the ISA bridge. */
 	uint16_t first_vendor;
@@ -171,6 +177,8 @@ struct board_pciid_enable {
 	/* The vendor / part name from the coreboot table. */
 	const char *lb_vendor;
 	const char *lb_part;
+
+	enum board_match_phase phase;
 
 	const char *vendor_name;
 	const char *board_name;
@@ -228,6 +236,7 @@ int rpci_write_long(struct pci_dev *dev, int reg, uint32_t data);
 void print_supported_pcidevs(const struct pcidev_status *devs);
 #endif
 
+#if CONFIG_INTERNAL
 /* board_enable.c */
 void w836xx_ext_enter(uint16_t port);
 void w836xx_ext_leave(uint16_t port);
@@ -235,6 +244,8 @@ int it8705f_write_enable(uint8_t port);
 uint8_t sio_read(uint16_t port, uint8_t reg);
 void sio_write(uint16_t port, uint8_t reg, uint8_t data);
 void sio_mask(uint16_t port, uint8_t reg, uint8_t data, uint8_t mask);
+void board_handle_before_superio(void);
+void board_handle_before_laptop(void);
 int board_flash_enable(const char *vendor, const char *part);
 
 /* chipset_enable.c */
@@ -242,6 +253,7 @@ int chipset_flash_enable(void);
 
 /* processor_enable.c */
 int processor_flash_enable(void);
+#endif
 
 /* physmap.c */
 void *physmap(const char *descr, unsigned long phys_addr, size_t len);
@@ -282,6 +294,7 @@ void get_io_perms(void);
 void release_io_perms(void);
 #if CONFIG_INTERNAL == 1
 extern int is_laptop;
+extern int laptop_ok;
 extern int force_boardenable;
 extern int force_boardmismatch;
 void probe_superio(void);
