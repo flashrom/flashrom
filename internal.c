@@ -125,6 +125,7 @@ int register_superio(struct superio s)
 #endif
 
 int is_laptop = 0;
+int laptop_ok = 0;
 
 int internal_init(void)
 {
@@ -198,6 +199,9 @@ int internal_init(void)
 
 	dmi_init();
 
+	/* In case Super I/O probing would cause pretty explosions. */
+	board_handle_before_superio();
+
 	/* Probe for the Super I/O chip and fill global struct superio. */
 	probe_superio();
 #else
@@ -208,10 +212,13 @@ int internal_init(void)
 	 */
 #endif
 
-	/* Warn if a laptop is detected. */
-	if (is_laptop) {
+	/* Check laptop whitelist. */
+	board_handle_before_laptop();
+
+	/* Warn if a non-whitelisted laptop is detected. */
+	if (is_laptop && !laptop_ok) {
 		msg_perr("========================================================================\n"
-			 "WARNING! You seem to be running flashrom on a laptop.\n"
+			 "WARNING! You seem to be running flashrom on an unsupported laptop.\n"
 			 "Laptops, notebooks and netbooks are difficult to support and we recommend\n"
 			 "to use the vendor flashing utility. The embedded controller (EC) in these\n"
 			 "machines often interacts badly with flashing.\n"
