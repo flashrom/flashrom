@@ -368,6 +368,7 @@ int cli_classic(int argc, char *argv[])
 		if (startchip == -1)
 			break;
 		chipcount++;
+		startchip++;
 	}
 
 	if (chipcount > 1) {
