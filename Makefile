@@ -178,6 +178,9 @@ CONFIG_NICREALTEK ?= yes
 # Disable National Semiconductor NICs until support is complete and tested.
 CONFIG_NICNATSEMI ?= no
 
+# Always enable Intel NICs for now.
+CONFIG_NICINTEL ?= yes
+
 # Always enable SPI on Intel NICs for now.
 CONFIG_NICINTEL_SPI ?= yes
 
@@ -294,6 +297,12 @@ endif
 ifeq ($(CONFIG_NICNATSEMI), yes)
 FEATURE_CFLAGS += -D'CONFIG_NICNATSEMI=1'
 PROGRAMMER_OBJS += nicnatsemi.o
+NEED_PCI := yes
+endif
+
+ifeq ($(CONFIG_NICINTEL), yes)
+FEATURE_CFLAGS += -D'CONFIG_NICINTEL=1'
+PROGRAMMER_OBJS += nicintel.o
 NEED_PCI := yes
 endif
 

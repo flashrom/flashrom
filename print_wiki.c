@@ -247,7 +247,7 @@ static void print_supported_chips_wiki(int cols)
 }
 
 /* Not needed for CONFIG_INTERNAL, but for all other PCI-based programmers. */
-#if CONFIG_NIC3COM+CONFIG_NICREALTEK+CONFIG_NICNATSEMI+CONFIG_GFXNVIDIA+CONFIG_DRKAISER+CONFIG_SATASII+CONFIG_ATAHPT+CONFIG_NICINTEL_SPI+CONFIG_OGP_SPI+CONFIG_SATAMV >= 1
+#if CONFIG_NIC3COM+CONFIG_NICREALTEK+CONFIG_NICNATSEMI+CONFIG_GFXNVIDIA+CONFIG_DRKAISER+CONFIG_SATASII+CONFIG_ATAHPT+CONFIG_NICINTEL+CONFIG_NICINTEL_SPI+CONFIG_OGP_SPI+CONFIG_SATAMV >= 1
 static void print_supported_pcidevs_wiki(const struct pcidev_status *devs)
 {
 	int i = 0;
@@ -297,6 +297,9 @@ void print_supported_wiki(void)
 #endif
 #if CONFIG_ATAHPT == 1
 	print_supported_pcidevs_wiki(ata_hpt);
+#endif
+#if CONFIG_NICINTEL == 1
+	print_supported_pcidevs_wiki(nics_intel);
 #endif
 #if CONFIG_NICINTEL_SPI == 1
 	print_supported_pcidevs_wiki(nics_intel_spi);
