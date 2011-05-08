@@ -67,6 +67,9 @@ enum programmer {
 #if CONFIG_RAYER_SPI == 1
 	PROGRAMMER_RAYER_SPI,
 #endif
+#if CONFIG_NICINTEL == 1
+	PROGRAMMER_NICINTEL,
+#endif
 #if CONFIG_NICINTEL_SPI == 1
 	PROGRAMMER_NICINTEL_SPI,
 #endif
@@ -232,7 +235,7 @@ int rpci_write_long(struct pci_dev *dev, int reg, uint32_t data);
 #endif
 
 /* print.c */
-#if CONFIG_NIC3COM+CONFIG_NICREALTEK+CONFIG_NICNATSEMI+CONFIG_GFXNVIDIA+CONFIG_DRKAISER+CONFIG_SATASII+CONFIG_ATAHPT+CONFIG_NICINTEL_SPI+CONFIG_OGP_SPI+CONFIG_SATAMV >= 1
+#if CONFIG_NIC3COM+CONFIG_NICREALTEK+CONFIG_NICNATSEMI+CONFIG_GFXNVIDIA+CONFIG_DRKAISER+CONFIG_SATASII+CONFIG_ATAHPT+CONFIG_NICINTEL+CONFIG_NICINTEL_SPI+CONFIG_OGP_SPI+CONFIG_SATAMV >= 1
 void print_supported_pcidevs(const struct pcidev_status *devs);
 #endif
 
@@ -418,6 +421,15 @@ int nicnatsemi_shutdown(void);
 void nicnatsemi_chip_writeb(uint8_t val, chipaddr addr);
 uint8_t nicnatsemi_chip_readb(const chipaddr addr);
 extern const struct pcidev_status nics_natsemi[];
+#endif
+
+/* nicintel.c */
+#if CONFIG_NICINTEL == 1
+int nicintel_init(void);
+int nicintel_shutdown(void);
+void nicintel_chip_writeb(uint8_t val, chipaddr addr);
+uint8_t nicintel_chip_readb(const chipaddr addr);
+extern const struct pcidev_status nics_intel[];
 #endif
 
 /* nicintel_spi.c */

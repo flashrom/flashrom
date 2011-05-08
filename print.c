@@ -304,6 +304,11 @@ void print_supported(void)
 	/* FIXME */
 	printf("RayeR parallel port programmer\n");
 #endif
+#if CONFIG_NICINTEL == 1
+	printf("\nSupported devices for the %s programmer:\n",
+	       programmer_table[PROGRAMMER_NICINTEL].name);
+	print_supported_pcidevs(nics_intel);
+#endif
 #if CONFIG_NICINTEL_SPI == 1
 	printf("\nSupported devices for the %s programmer:\n",
 	       programmer_table[PROGRAMMER_NICINTEL_SPI].name);
