@@ -89,7 +89,7 @@ static void execute_command(void)
 		;
 }
 
-int sb600_spi_send_command(unsigned int writecnt, unsigned int readcnt,
+static int sb600_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		      const unsigned char *writearr, unsigned char *readarr)
 {
 	int count;
@@ -191,6 +191,16 @@ int sb600_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 
 	return 0;
 }
+
+static const struct spi_programmer spi_programmer_sb600 = {
+	.type = SPI_CONTROLLER_SB600,
+	.max_data_read = 8,
+	.max_data_write = 5,
+	.command = sb600_spi_send_command,
+	.multicommand = default_spi_send_multicommand,
+	.read = default_spi_read,
+	.write_256 = default_spi_write_256,
+};
 
 int sb600_probe_spi(struct pci_dev *dev)
 {
@@ -304,8 +314,7 @@ int sb600_probe_spi(struct pci_dev *dev)
 	/* Bring the FIFO to a clean state. */
 	reset_internal_fifo_pointer();
 
-	buses_supported |= CHIP_BUSTYPE_SPI;
-	spi_controller = SPI_CONTROLLER_SB600;
+	register_spi_programmer(&spi_programmer_sb600);
 	return 0;
 }
 

@@ -262,11 +262,21 @@ static int it85xx_spi_common_init(struct superio s)
 	ce_low = (unsigned char*)(base + 0xD00);  /* 0xFFFFFD00 */
 #endif
 
-	/* Set this as spi controller. */
-	spi_controller = SPI_CONTROLLER_IT85XX;
-
 	return 0;
 }
+
+static int it85xx_spi_send_command(unsigned int writecnt, unsigned int readcnt,
+			const unsigned char *writearr, unsigned char *readarr);
+
+static const struct spi_programmer spi_programmer_it85xx = {
+	.type = SPI_CONTROLLER_IT85XX,
+	.max_data_read = 64,
+	.max_data_write = 64,
+	.command = it85xx_spi_send_command,
+	.multicommand = default_spi_send_multicommand,
+	.read = default_spi_read,
+	.write_256 = default_spi_write_256,
+};
 
 int it85xx_spi_init(struct superio s)
 {
@@ -284,7 +294,8 @@ int it85xx_spi_init(struct superio s)
 		if (buses_supported & CHIP_BUSTYPE_FWH)
 			msg_pdbg("Overriding chipset SPI with IT85 FWH|SPI.\n");
 		/* Really leave FWH enabled? */
-		buses_supported |= CHIP_BUSTYPE_FWH | CHIP_BUSTYPE_SPI;
+		/* Set this as spi controller. */
+		register_spi_programmer(&spi_programmer_it85xx);
 	}
 	return ret;
 }
@@ -303,7 +314,7 @@ int it85xx_shutdown(void)
  *   3. read date from LPC/FWH address 0xffff_fdxxh (drive CE# low and get
  *      data from MISO)
  */
-int it85xx_spi_send_command(unsigned int writecnt, unsigned int readcnt,
+static int it85xx_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 			const unsigned char *writearr, unsigned char *readarr)
 {
 	int i;

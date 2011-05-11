@@ -60,6 +60,19 @@ static int emu_jedec_ce_c7_size = 0;
 
 static int spi_write_256_chunksize = 256;
 
+static int dummy_spi_send_command(unsigned int writecnt, unsigned int readcnt,
+		      const unsigned char *writearr, unsigned char *readarr);
+static int dummy_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len);
+
+static const struct spi_programmer spi_programmer_dummyflasher = {
+	.type = SPI_CONTROLLER_DUMMY,
+	.max_data_read = MAX_DATA_READ_UNLIMITED,
+	.max_data_write = MAX_DATA_UNSPECIFIED,
+	.command = dummy_spi_send_command,
+	.multicommand = default_spi_send_multicommand,
+	.read = default_spi_read,
+	.write_256 = dummy_spi_write_256,
+};
 int dummy_init(void)
 {
 	char *bustext = NULL;
@@ -91,8 +104,7 @@ int dummy_init(void)
 		msg_pdbg("Enabling support for %s flash.\n", "FWH");
 	}
 	if (strstr(bustext, "spi")) {
-		buses_supported |= CHIP_BUSTYPE_SPI;
-		spi_controller = SPI_CONTROLLER_DUMMY;
+		register_spi_programmer(&spi_programmer_dummyflasher);
 		msg_pdbg("Enabling support for %s flash.\n", "SPI");
 	}
 	if (buses_supported == CHIP_BUSTYPE_NONE)
@@ -471,7 +483,7 @@ static int emulate_spi_chip_response(unsigned int writecnt, unsigned int readcnt
 }
 #endif
 
-int dummy_spi_send_command(unsigned int writecnt, unsigned int readcnt,
+static int dummy_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		      const unsigned char *writearr, unsigned char *readarr)
 {
 	int i;
@@ -507,7 +519,7 @@ int dummy_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	return 0;
 }
 
-int dummy_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len)
+static int dummy_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
 	return spi_write_chunked(flash, buf, start, len,
 				 spi_write_256_chunksize);

@@ -30,200 +30,42 @@
 #include "programmer.h"
 #include "spi.h"
 
-enum spi_controller spi_controller = SPI_CONTROLLER_NONE;
-
-const struct spi_programmer spi_programmer[] = {
-	{ /* SPI_CONTROLLER_NONE */
-		.max_data_read = MAX_DATA_UNSPECIFIED,
-		.max_data_write = MAX_DATA_UNSPECIFIED,
-		.command = NULL,
-		.multicommand = NULL,
-		.read = NULL,
-		.write_256 = NULL,
-	},
-
-#if CONFIG_INTERNAL == 1
-#if defined(__i386__) || defined(__x86_64__)
-	{ /* SPI_CONTROLLER_ICH7 */
-		.max_data_read = 64,
-		.max_data_write = 64,
-		.command = ich_spi_send_command,
-		.multicommand = ich_spi_send_multicommand,
-		.read = default_spi_read,
-		.write_256 = default_spi_write_256,
-	},
-
-	{ /* SPI_CONTROLLER_ICH9 */
-		.max_data_read = 64,
-		.max_data_write = 64,
-		.command = ich_spi_send_command,
-		.multicommand = ich_spi_send_multicommand,
-		.read = default_spi_read,
-		.write_256 = default_spi_write_256,
-	},
-
-	{ /* SPI_CONTROLLER_IT85XX */
-		.max_data_read = 64,
-		.max_data_write = 64,
-		.command = it85xx_spi_send_command,
-		.multicommand = default_spi_send_multicommand,
-		.read = default_spi_read,
-		.write_256 = default_spi_write_256,
-	},
-
-	{ /* SPI_CONTROLLER_IT87XX */
-		.max_data_read = MAX_DATA_UNSPECIFIED,
-		.max_data_write = MAX_DATA_UNSPECIFIED,
-		.command = it8716f_spi_send_command,
-		.multicommand = default_spi_send_multicommand,
-		.read = it8716f_spi_chip_read,
-		.write_256 = it8716f_spi_chip_write_256,
-	},
-
-	{ /* SPI_CONTROLLER_SB600 */
-		.max_data_read = 8,
-		.max_data_write = 5,
-		.command = sb600_spi_send_command,
-		.multicommand = default_spi_send_multicommand,
-		.read = default_spi_read,
-		.write_256 = default_spi_write_256,
-	},
-
-	{ /* SPI_CONTROLLER_VIA */
-		.max_data_read = 16,
-		.max_data_write = 16,
-		.command = ich_spi_send_command,
-		.multicommand = ich_spi_send_multicommand,
-		.read = default_spi_read,
-		.write_256 = default_spi_write_256,
-	},
-
-	{ /* SPI_CONTROLLER_WBSIO */
-		.max_data_read = MAX_DATA_UNSPECIFIED,
-		.max_data_write = MAX_DATA_UNSPECIFIED,
-		.command = wbsio_spi_send_command,
-		.multicommand = default_spi_send_multicommand,
-		.read = wbsio_spi_read,
-		.write_256 = spi_chip_write_1,
-	},
-
-	{ /* SPI_CONTROLLER_MCP6X_BITBANG */
-		.max_data_read = MAX_DATA_READ_UNLIMITED,
-		.max_data_write = MAX_DATA_WRITE_UNLIMITED,
-		.command = bitbang_spi_send_command,
-		.multicommand = default_spi_send_multicommand,
-		.read = default_spi_read,
-		.write_256 = default_spi_write_256,
-	},
-#endif
-#endif
-
-#if CONFIG_FT2232_SPI == 1
-	{ /* SPI_CONTROLLER_FT2232 */
-		.max_data_read = 64 * 1024,
-		.max_data_write = 256,
-		.command = ft2232_spi_send_command,
-		.multicommand = default_spi_send_multicommand,
-		.read = default_spi_read,
-		.write_256 = default_spi_write_256,
-	},
-#endif
-
-#if CONFIG_DUMMY == 1
-	{ /* SPI_CONTROLLER_DUMMY */
-		.max_data_read = MAX_DATA_READ_UNLIMITED,
-		.max_data_write = MAX_DATA_UNSPECIFIED,
-		.command = dummy_spi_send_command,
-		.multicommand = default_spi_send_multicommand,
-		.read = default_spi_read,
-		.write_256 = dummy_spi_write_256,
-	},
-#endif
-
-#if CONFIG_BUSPIRATE_SPI == 1
-	{ /* SPI_CONTROLLER_BUSPIRATE */
-		.max_data_read = 12,
-		.max_data_write = 12,
-		.command = buspirate_spi_send_command,
-		.multicommand = default_spi_send_multicommand,
-		.read = default_spi_read,
-		.write_256 = default_spi_write_256,
-	},
-#endif
-
-#if CONFIG_DEDIPROG == 1
-	{ /* SPI_CONTROLLER_DEDIPROG */
-		.max_data_read = MAX_DATA_UNSPECIFIED,
-		.max_data_write = MAX_DATA_UNSPECIFIED,
-		.command = dediprog_spi_send_command,
-		.multicommand = default_spi_send_multicommand,
-		.read = dediprog_spi_read,
-		.write_256 = dediprog_spi_write_256,
-	},
-#endif
-
-#if CONFIG_RAYER_SPI == 1
-	{ /* SPI_CONTROLLER_RAYER */
-		.max_data_read = MAX_DATA_READ_UNLIMITED,
-		.max_data_write = MAX_DATA_WRITE_UNLIMITED,
-		.command = bitbang_spi_send_command,
-		.multicommand = default_spi_send_multicommand,
-		.read = default_spi_read,
-		.write_256 = default_spi_write_256,
-	},
-#endif
-
-#if CONFIG_NICINTEL_SPI == 1
-	{ /* SPI_CONTROLLER_NICINTEL */
-		.max_data_read = MAX_DATA_READ_UNLIMITED,
-		.max_data_write = MAX_DATA_WRITE_UNLIMITED,
-		.command = bitbang_spi_send_command,
-		.multicommand = default_spi_send_multicommand,
-		.read = default_spi_read,
-		.write_256 = default_spi_write_256,
-	},
-#endif
-
-#if CONFIG_OGP_SPI == 1
-	{ /* SPI_CONTROLLER_OGP */
-		.max_data_read = MAX_DATA_READ_UNLIMITED,
-		.max_data_write = MAX_DATA_WRITE_UNLIMITED,
-		.command = bitbang_spi_send_command,
-		.multicommand = default_spi_send_multicommand,
-		.read = default_spi_read,
-		.write_256 = default_spi_write_256,
-	},
-#endif
-
-	{}, /* This entry corresponds to SPI_CONTROLLER_INVALID. */
+const struct spi_programmer spi_programmer_none = {
+	.type = SPI_CONTROLLER_NONE,
+	.max_data_read = MAX_DATA_UNSPECIFIED,
+	.max_data_write = MAX_DATA_UNSPECIFIED,
+	.command = NULL,
+	.multicommand = NULL,
+	.read = NULL,
+	.write_256 = NULL,
 };
 
-const int spi_programmer_count = ARRAY_SIZE(spi_programmer);
+const struct spi_programmer *spi_programmer = &spi_programmer_none;
 
 int spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		const unsigned char *writearr, unsigned char *readarr)
 {
-	if (!spi_programmer[spi_controller].command) {
+	if (!spi_programmer->command) {
 		msg_perr("%s called, but SPI is unsupported on this "
 			 "hardware. Please report a bug at "
 			 "flashrom@flashrom.org\n", __func__);
 		return 1;
 	}
 
-	return spi_programmer[spi_controller].command(writecnt, readcnt,
+	return spi_programmer->command(writecnt, readcnt,
 						      writearr, readarr);
 }
 
 int spi_send_multicommand(struct spi_command *cmds)
 {
-	if (!spi_programmer[spi_controller].multicommand) {
+	if (!spi_programmer->multicommand) {
 		msg_perr("%s called, but SPI is unsupported on this "
 			 "hardware. Please report a bug at "
 			 "flashrom@flashrom.org\n", __func__);
 		return 1;
 	}
 
-	return spi_programmer[spi_controller].multicommand(cmds);
+	return spi_programmer->multicommand(cmds);
 }
 
 int default_spi_send_command(unsigned int writecnt, unsigned int readcnt,
@@ -257,7 +99,7 @@ int default_spi_send_multicommand(struct spi_command *cmds)
 
 int default_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
-	int max_data = spi_programmer[spi_controller].max_data_read;
+	int max_data = spi_programmer->max_data_read;
 	if (max_data == MAX_DATA_UNSPECIFIED) {
 		msg_perr("%s called, but SPI read chunk size not defined "
 			 "on this hardware. Please report a bug at "
@@ -269,7 +111,7 @@ int default_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 
 int default_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
-	int max_data = spi_programmer[spi_controller].max_data_write;
+	int max_data = spi_programmer->max_data_write;
 	if (max_data == MAX_DATA_UNSPECIFIED) {
 		msg_perr("%s called, but SPI write chunk size not defined "
 			 "on this hardware. Please report a bug at "
@@ -282,7 +124,7 @@ int default_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int 
 int spi_chip_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
 	int addrbase = 0;
-	if (!spi_programmer[spi_controller].read) {
+	if (!spi_programmer->read) {
 		msg_perr("%s called, but SPI read is unsupported on this "
 			 "hardware. Please report a bug at "
 			 "flashrom@flashrom.org\n", __func__);
@@ -308,7 +150,7 @@ int spi_chip_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 			 "access window.\n");
 		msg_perr("Read will probably return garbage.\n");
 	}
-	return spi_programmer[spi_controller].read(flash, buf, addrbase + start, len);
+	return spi_programmer->read(flash, buf, addrbase + start, len);
 }
 
 /*
@@ -320,14 +162,14 @@ int spi_chip_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 /* real chunksize is up to 256, logical chunksize is 256 */
 int spi_chip_write_256(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
-	if (!spi_programmer[spi_controller].write_256) {
+	if (!spi_programmer->write_256) {
 		msg_perr("%s called, but SPI page write is unsupported on this "
 			 "hardware. Please report a bug at "
 			 "flashrom@flashrom.org\n", __func__);
 		return 1;
 	}
 
-	return spi_programmer[spi_controller].write_256(flash, buf, start, len);
+	return spi_programmer->write_256(flash, buf, start, len);
 }
 
 /*
@@ -337,7 +179,7 @@ int spi_chip_write_256(struct flashchip *flash, uint8_t *buf, int start, int len
  */
 uint32_t spi_get_valid_read_addr(void)
 {
-	switch (spi_controller) {
+	switch (spi_programmer->type) {
 #if CONFIG_INTERNAL == 1
 #if defined(__i386__) || defined(__x86_64__)
 	case SPI_CONTROLLER_ICH7:
@@ -348,4 +190,10 @@ uint32_t spi_get_valid_read_addr(void)
 	default:
 		return 0;
 	}
+}
+
+void register_spi_programmer(const struct spi_programmer *pgm)
+{
+	spi_programmer = pgm;
+	buses_supported |= CHIP_BUSTYPE_SPI;
 }

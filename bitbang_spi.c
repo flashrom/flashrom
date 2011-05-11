@@ -64,6 +64,19 @@ static void bitbang_spi_release_bus(void)
 		bitbang_spi_master->release_bus();
 }
 
+static int bitbang_spi_send_command(unsigned int writecnt, unsigned int readcnt,
+		const unsigned char *writearr, unsigned char *readarr);
+
+static const struct spi_programmer spi_programmer_bitbang = {
+	.type = SPI_CONTROLLER_BITBANG,
+	.max_data_read = MAX_DATA_READ_UNLIMITED,
+	.max_data_write = MAX_DATA_WRITE_UNLIMITED,
+	.command = bitbang_spi_send_command,
+	.multicommand = default_spi_send_multicommand,
+	.read = default_spi_read,
+	.write_256 = default_spi_write_256,
+};
+
 int bitbang_spi_init(const struct bitbang_spi_master *master, int halfperiod)
 {
 	/* BITBANG_SPI_INVALID is 0, so if someone forgot to initialize ->type,
@@ -84,6 +97,8 @@ int bitbang_spi_init(const struct bitbang_spi_master *master, int halfperiod)
 
 	bitbang_spi_master = master;
 	bitbang_spi_half_period = halfperiod;
+
+	register_spi_programmer(&spi_programmer_bitbang);
 
 	/* FIXME: Run bitbang_spi_request_bus here or in programmer init? */
 	bitbang_spi_set_cs(1);
@@ -127,7 +142,7 @@ static uint8_t bitbang_spi_readwrite_byte(uint8_t val)
 	return ret;
 }
 
-int bitbang_spi_send_command(unsigned int writecnt, unsigned int readcnt,
+static int bitbang_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		const unsigned char *writearr, unsigned char *readarr)
 {
 	int i;

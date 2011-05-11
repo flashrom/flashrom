@@ -128,9 +128,6 @@ int ogp_spi_init(void)
 	if (bitbang_spi_init(&bitbang_spi_master_ogp, 0))
 		return 1;
 
-	buses_supported = CHIP_BUSTYPE_SPI;
-	spi_controller = SPI_CONTROLLER_OGP;
-
 	return 0;
 }
 

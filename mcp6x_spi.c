@@ -166,9 +166,6 @@ int mcp6x_spi_init(int want_spi)
 		return 1;
 	}
 
-	buses_supported |= CHIP_BUSTYPE_SPI;
-	spi_controller = SPI_CONTROLLER_MCP6X_BITBANG;
-
 	return 0;
 }
 
