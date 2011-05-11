@@ -374,7 +374,6 @@ uint32_t dummy_chip_readl(const chipaddr addr);
 void dummy_chip_readn(uint8_t *buf, const chipaddr addr, size_t len);
 int dummy_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		      const unsigned char *writearr, unsigned char *readarr);
-int dummy_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
 int dummy_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len);
 #endif
 
@@ -487,8 +486,6 @@ struct usbdev_status {
 };
 int ft2232_spi_init(void);
 int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr);
-int ft2232_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
-int ft2232_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len);
 extern const struct usbdev_status devs_ft2232spi[];
 void print_supported_usbdevs(const struct usbdev_status *devs);
 #endif
@@ -509,8 +506,6 @@ int mcp6x_spi_init(int want_spi);
 int bitbang_spi_init(const struct bitbang_spi_master *master, int halfperiod);
 int bitbang_spi_shutdown(const struct bitbang_spi_master *master);
 int bitbang_spi_send_command(unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr);
-int bitbang_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
-int bitbang_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len);
 
 /* buspirate_spi.c */
 struct buspirate_spispeeds {
@@ -520,8 +515,6 @@ struct buspirate_spispeeds {
 int buspirate_spi_init(void);
 int buspirate_spi_shutdown(void);
 int buspirate_spi_send_command(unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr);
-int buspirate_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
-int buspirate_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len);
 
 /* dediprog.c */
 int dediprog_init(void);
@@ -586,7 +579,13 @@ enum spi_controller {
 	SPI_CONTROLLER_INVALID /* This must always be the last entry. */
 };
 extern const int spi_programmer_count;
+
+#define MAX_DATA_UNSPECIFIED 0
+#define MAX_DATA_READ_UNLIMITED 64 * 1024
+#define MAX_DATA_WRITE_UNLIMITED 256
 struct spi_programmer {
+	int max_data_read;
+	int max_data_write;
 	int (*command)(unsigned int writecnt, unsigned int readcnt,
 		   const unsigned char *writearr, unsigned char *readarr);
 	int (*multicommand)(struct spi_command *cmds);
@@ -601,6 +600,8 @@ extern const struct spi_programmer spi_programmer[];
 int default_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 			     const unsigned char *writearr, unsigned char *readarr);
 int default_spi_send_multicommand(struct spi_command *cmds);
+int default_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
+int default_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len);
 
 /* ichspi.c */
 #if CONFIG_INTERNAL == 1
@@ -610,8 +611,6 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 int via_init_spi(struct pci_dev *dev);
 int ich_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		    const unsigned char *writearr, unsigned char *readarr);
-int ich_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
-int ich_spi_write_256(struct flashchip *flash, uint8_t * buf, int start, int len);
 int ich_spi_send_multicommand(struct spi_command *cmds);
 #endif
 
@@ -620,8 +619,6 @@ int it85xx_spi_init(struct superio s);
 int it85xx_shutdown(void);
 int it85xx_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 			const unsigned char *writearr, unsigned char *readarr);
-int it85_spi_read(struct flashchip *flash, uint8_t * buf, int start, int len);
-int it85_spi_write_256(struct flashchip *flash, uint8_t * buf, int start, int len);
 
 /* it87spi.c */
 void enter_conf_mode_ite(uint16_t port);
@@ -638,8 +635,6 @@ int it8716f_spi_chip_write_256(struct flashchip *flash, uint8_t *buf, int start,
 int sb600_probe_spi(struct pci_dev *dev);
 int sb600_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		      const unsigned char *writearr, unsigned char *readarr);
-int sb600_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
-int sb600_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len);
 #endif
 
 /* wbsio_spi.c */

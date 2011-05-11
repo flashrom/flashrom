@@ -43,17 +43,6 @@
 
 static uint8_t *sb600_spibar = NULL;
 
-int sb600_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
-{
-	/* Maximum read length is 8 bytes. */
-	return spi_read_chunked(flash, buf, start, len, 8);
-}
-
-int sb600_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len)
-{
-	return spi_write_chunked(flash, buf, start, len, 5);
-}
-
 static void reset_internal_fifo_pointer(void)
 {
 	mmio_writeb(mmio_readb(sb600_spibar + 2) | 0x10, sb600_spibar + 2);

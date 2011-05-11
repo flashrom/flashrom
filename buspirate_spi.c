@@ -326,13 +326,3 @@ int buspirate_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 
 	return ret;
 }
-
-int buspirate_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
-{
-	return spi_read_chunked(flash, buf, start, len, 12);
-}
-
-int buspirate_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len)
-{
-	return spi_write_chunked(flash, buf, start, len, 12);
-}

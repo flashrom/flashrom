@@ -347,14 +347,4 @@ int it85xx_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	return 0;
 }
 
-int it85_spi_read(struct flashchip *flash, uint8_t * buf, int start, int len)
-{
-	return spi_read_chunked(flash, buf, start, len, 64);
-}
-
-int it85_spi_write_256(struct flashchip *flash, uint8_t * buf, int start, int len)
-{
-	return spi_write_chunked(flash, buf, start, len, 64);
-}
-
 #endif

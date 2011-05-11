@@ -352,17 +352,6 @@ int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	return failed ? -1 : 0;
 }
 
-int ft2232_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
-{
-	/* Maximum read length is 64k bytes. */
-	return spi_read_chunked(flash, buf, start, len, 64 * 1024);
-}
-
-int ft2232_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len)
-{
-	return spi_write_chunked(flash, buf, start, len, 256);
-}
-
 void print_supported_usbdevs(const struct usbdev_status *devs)
 {
 	int i;

@@ -34,6 +34,8 @@ enum spi_controller spi_controller = SPI_CONTROLLER_NONE;
 
 const struct spi_programmer spi_programmer[] = {
 	{ /* SPI_CONTROLLER_NONE */
+		.max_data_read = MAX_DATA_UNSPECIFIED,
+		.max_data_write = MAX_DATA_UNSPECIFIED,
 		.command = NULL,
 		.multicommand = NULL,
 		.read = NULL,
@@ -43,27 +45,35 @@ const struct spi_programmer spi_programmer[] = {
 #if CONFIG_INTERNAL == 1
 #if defined(__i386__) || defined(__x86_64__)
 	{ /* SPI_CONTROLLER_ICH7 */
+		.max_data_read = 64,
+		.max_data_write = 64,
 		.command = ich_spi_send_command,
 		.multicommand = ich_spi_send_multicommand,
-		.read = ich_spi_read,
-		.write_256 = ich_spi_write_256,
+		.read = default_spi_read,
+		.write_256 = default_spi_write_256,
 	},
 
 	{ /* SPI_CONTROLLER_ICH9 */
+		.max_data_read = 64,
+		.max_data_write = 64,
 		.command = ich_spi_send_command,
 		.multicommand = ich_spi_send_multicommand,
-		.read = ich_spi_read,
-		.write_256 = ich_spi_write_256,
+		.read = default_spi_read,
+		.write_256 = default_spi_write_256,
 	},
 
 	{ /* SPI_CONTROLLER_IT85XX */
+		.max_data_read = 64,
+		.max_data_write = 64,
 		.command = it85xx_spi_send_command,
 		.multicommand = default_spi_send_multicommand,
-		.read = it85_spi_read,
-		.write_256 = it85_spi_write_256,
+		.read = default_spi_read,
+		.write_256 = default_spi_write_256,
 	},
 
 	{ /* SPI_CONTROLLER_IT87XX */
+		.max_data_read = MAX_DATA_UNSPECIFIED,
+		.max_data_write = MAX_DATA_UNSPECIFIED,
 		.command = it8716f_spi_send_command,
 		.multicommand = default_spi_send_multicommand,
 		.read = it8716f_spi_chip_read,
@@ -71,20 +81,26 @@ const struct spi_programmer spi_programmer[] = {
 	},
 
 	{ /* SPI_CONTROLLER_SB600 */
+		.max_data_read = 8,
+		.max_data_write = 5,
 		.command = sb600_spi_send_command,
 		.multicommand = default_spi_send_multicommand,
-		.read = sb600_spi_read,
-		.write_256 = sb600_spi_write_256,
+		.read = default_spi_read,
+		.write_256 = default_spi_write_256,
 	},
 
 	{ /* SPI_CONTROLLER_VIA */
+		.max_data_read = 16,
+		.max_data_write = 16,
 		.command = ich_spi_send_command,
 		.multicommand = ich_spi_send_multicommand,
-		.read = ich_spi_read,
-		.write_256 = ich_spi_write_256,
+		.read = default_spi_read,
+		.write_256 = default_spi_write_256,
 	},
 
 	{ /* SPI_CONTROLLER_WBSIO */
+		.max_data_read = MAX_DATA_UNSPECIFIED,
+		.max_data_write = MAX_DATA_UNSPECIFIED,
 		.command = wbsio_spi_send_command,
 		.multicommand = default_spi_send_multicommand,
 		.read = wbsio_spi_read,
@@ -92,43 +108,53 @@ const struct spi_programmer spi_programmer[] = {
 	},
 
 	{ /* SPI_CONTROLLER_MCP6X_BITBANG */
+		.max_data_read = MAX_DATA_READ_UNLIMITED,
+		.max_data_write = MAX_DATA_WRITE_UNLIMITED,
 		.command = bitbang_spi_send_command,
 		.multicommand = default_spi_send_multicommand,
-		.read = bitbang_spi_read,
-		.write_256 = bitbang_spi_write_256,
+		.read = default_spi_read,
+		.write_256 = default_spi_write_256,
 	},
 #endif
 #endif
 
 #if CONFIG_FT2232_SPI == 1
 	{ /* SPI_CONTROLLER_FT2232 */
+		.max_data_read = 64 * 1024,
+		.max_data_write = 256,
 		.command = ft2232_spi_send_command,
 		.multicommand = default_spi_send_multicommand,
-		.read = ft2232_spi_read,
-		.write_256 = ft2232_spi_write_256,
+		.read = default_spi_read,
+		.write_256 = default_spi_write_256,
 	},
 #endif
 
 #if CONFIG_DUMMY == 1
 	{ /* SPI_CONTROLLER_DUMMY */
+		.max_data_read = MAX_DATA_READ_UNLIMITED,
+		.max_data_write = MAX_DATA_UNSPECIFIED,
 		.command = dummy_spi_send_command,
 		.multicommand = default_spi_send_multicommand,
-		.read = dummy_spi_read,
+		.read = default_spi_read,
 		.write_256 = dummy_spi_write_256,
 	},
 #endif
 
 #if CONFIG_BUSPIRATE_SPI == 1
 	{ /* SPI_CONTROLLER_BUSPIRATE */
+		.max_data_read = 12,
+		.max_data_write = 12,
 		.command = buspirate_spi_send_command,
 		.multicommand = default_spi_send_multicommand,
-		.read = buspirate_spi_read,
-		.write_256 = buspirate_spi_write_256,
+		.read = default_spi_read,
+		.write_256 = default_spi_write_256,
 	},
 #endif
 
 #if CONFIG_DEDIPROG == 1
 	{ /* SPI_CONTROLLER_DEDIPROG */
+		.max_data_read = MAX_DATA_UNSPECIFIED,
+		.max_data_write = MAX_DATA_UNSPECIFIED,
 		.command = dediprog_spi_send_command,
 		.multicommand = default_spi_send_multicommand,
 		.read = dediprog_spi_read,
@@ -138,28 +164,34 @@ const struct spi_programmer spi_programmer[] = {
 
 #if CONFIG_RAYER_SPI == 1
 	{ /* SPI_CONTROLLER_RAYER */
+		.max_data_read = MAX_DATA_READ_UNLIMITED,
+		.max_data_write = MAX_DATA_WRITE_UNLIMITED,
 		.command = bitbang_spi_send_command,
 		.multicommand = default_spi_send_multicommand,
-		.read = bitbang_spi_read,
-		.write_256 = bitbang_spi_write_256,
+		.read = default_spi_read,
+		.write_256 = default_spi_write_256,
 	},
 #endif
 
 #if CONFIG_NICINTEL_SPI == 1
 	{ /* SPI_CONTROLLER_NICINTEL */
+		.max_data_read = MAX_DATA_READ_UNLIMITED,
+		.max_data_write = MAX_DATA_WRITE_UNLIMITED,
 		.command = bitbang_spi_send_command,
 		.multicommand = default_spi_send_multicommand,
-		.read = bitbang_spi_read,
-		.write_256 = bitbang_spi_write_256,
+		.read = default_spi_read,
+		.write_256 = default_spi_write_256,
 	},
 #endif
 
 #if CONFIG_OGP_SPI == 1
 	{ /* SPI_CONTROLLER_OGP */
+		.max_data_read = MAX_DATA_READ_UNLIMITED,
+		.max_data_write = MAX_DATA_WRITE_UNLIMITED,
 		.command = bitbang_spi_send_command,
 		.multicommand = default_spi_send_multicommand,
-		.read = bitbang_spi_read,
-		.write_256 = bitbang_spi_write_256,
+		.read = default_spi_read,
+		.write_256 = default_spi_write_256,
 	},
 #endif
 
@@ -221,6 +253,30 @@ int default_spi_send_multicommand(struct spi_command *cmds)
 					  cmds->writearr, cmds->readarr);
 	}
 	return result;
+}
+
+int default_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
+{
+	int max_data = spi_programmer[spi_controller].max_data_read;
+	if (max_data == MAX_DATA_UNSPECIFIED) {
+		msg_perr("%s called, but SPI read chunk size not defined "
+			 "on this hardware. Please report a bug at "
+			 "flashrom@flashrom.org\n", __func__);
+		return 1;
+	}
+	return spi_read_chunked(flash, buf, start, len, max_data);
+}
+
+int default_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len)
+{
+	int max_data = spi_programmer[spi_controller].max_data_write;
+	if (max_data == MAX_DATA_UNSPECIFIED) {
+		msg_perr("%s called, but SPI write chunk size not defined "
+			 "on this hardware. Please report a bug at "
+			 "flashrom@flashrom.org\n", __func__);
+		return 1;
+	}
+	return spi_write_chunked(flash, buf, start, len, max_data);
 }
 
 int spi_chip_read(struct flashchip *flash, uint8_t *buf, int start, int len)
