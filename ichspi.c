@@ -834,26 +834,6 @@ static int run_opcode(OPCODE op, uint32_t offset,
 	return -1;
 }
 
-int ich_spi_read(struct flashchip *flash, uint8_t * buf, int start, int len)
-{
-	int maxdata = 64;
-
-	if (spi_controller == SPI_CONTROLLER_VIA)
-		maxdata = 16;
-
-	return spi_read_chunked(flash, buf, start, len, maxdata);
-}
-
-int ich_spi_write_256(struct flashchip *flash, uint8_t * buf, int start, int len)
-{
-	int maxdata = 64;
-
-	if (spi_controller == SPI_CONTROLLER_VIA)
-		maxdata = 16;
-
-	return spi_write_chunked(flash, buf, start, len, maxdata);
-}
-
 int ich_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		    const unsigned char *writearr, unsigned char *readarr)
 {
