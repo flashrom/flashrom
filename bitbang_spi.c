@@ -151,14 +151,3 @@ int bitbang_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 
 	return 0;
 }
-
-int bitbang_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
-{
-	/* Maximum read length is unlimited, use 64k bytes. */
-	return spi_read_chunked(flash, buf, start, len, 64 * 1024);
-}
-
-int bitbang_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len)
-{
-	return spi_write_chunked(flash, buf, start, len, 256);
-}
