@@ -521,10 +521,7 @@ int programmer_init(char *param)
 		.fwh		= 0xffffffff,
 		.spi		= 0xffffffff
 	};
-	/* Default to Parallel/LPC/FWH flash devices. If a known host controller
-	 * is found, the init routine sets the buses_supported bitfield.
-	 */
-	buses_supported = CHIP_BUSTYPE_NONSPI;
+	buses_supported = CHIP_BUSTYPE_NONE;
 	/* Default to top aligned flash at 4 GB. */
 	flashbase = 0;
 	/* Registering shutdown functions is now allowed. */
@@ -1710,10 +1707,6 @@ int selfcheck(void)
 	 */
 	if (ARRAY_SIZE(programmer_table) - 1 != PROGRAMMER_INVALID) {
 		msg_gerr("Programmer table miscompilation!\n");
-		ret = 1;
-	}
-	if (spi_programmer_count - 1 != SPI_CONTROLLER_INVALID) {
-		msg_gerr("SPI programmer table miscompilation!\n");
 		ret = 1;
 	}
 	for (flash = flashchips; flash && flash->name; flash++)

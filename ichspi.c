@@ -313,7 +313,7 @@ static int generate_opcodes(OPCODES * op)
 		return -1;
 	}
 
-	switch (spi_controller) {
+	switch (spi_programmer->type) {
 	case SPI_CONTROLLER_ICH7:
 	case SPI_CONTROLLER_VIA:
 		preop = REGREAD16(ICH7_REG_PREOP);
@@ -388,7 +388,7 @@ static int program_opcodes(OPCODES *op, int enable_undo)
 	}
 
 	msg_pdbg("\n%s: preop=%04x optype=%04x opmenu=%08x%08x\n", __func__, preop, optype, opmenu[0], opmenu[1]);
-	switch (spi_controller) {
+	switch (spi_programmer->type) {
 	case SPI_CONTROLLER_ICH7:
 	case SPI_CONTROLLER_VIA:
 		/* Register undo only for enable_undo=1, i.e. first call. */
@@ -432,7 +432,7 @@ void ich_set_bbar(uint32_t minaddr)
 {
 #define BBAR_MASK	0x00ffff00
 	minaddr &= BBAR_MASK;
-	switch (spi_controller) {
+	switch (spi_programmer->type) {
 	case SPI_CONTROLLER_ICH7:
 	case SPI_CONTROLLER_VIA:
 		ichspi_bbar = mmio_readl(ich_spibar + 0x50) & ~BBAR_MASK;
@@ -801,7 +801,7 @@ static int ich9_run_opcode(OPCODE op, uint32_t offset,
 static int run_opcode(OPCODE op, uint32_t offset,
 		      uint8_t datalength, uint8_t * data)
 {
-	switch (spi_controller) {
+	switch (spi_programmer->type) {
 	case SPI_CONTROLLER_VIA:
 		if (datalength > 16) {
 			msg_perr("%s: Internal command size error for "
@@ -834,7 +834,7 @@ static int run_opcode(OPCODE op, uint32_t offset,
 	return -1;
 }
 
-int ich_spi_send_command(unsigned int writecnt, unsigned int readcnt,
+static int ich_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		    const unsigned char *writearr, unsigned char *readarr)
 {
 	int result;
@@ -900,7 +900,7 @@ int ich_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	    opcode->spi_type == SPI_OPCODE_TYPE_WRITE_WITH_ADDRESS) {
 		addr = (writearr[1] << 16) |
 		    (writearr[2] << 8) | (writearr[3] << 0);
-		switch (spi_controller) {
+		switch (spi_programmer->type) {
 		case SPI_CONTROLLER_ICH7:
 		case SPI_CONTROLLER_VIA:
 		case SPI_CONTROLLER_ICH9:
@@ -953,7 +953,7 @@ int ich_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	return result;
 }
 
-int ich_spi_send_multicommand(struct spi_command *cmds)
+static int ich_spi_send_multicommand(struct spi_command *cmds)
 {
 	int ret = 0;
 	int i;
@@ -1051,6 +1051,26 @@ static void do_ich9_spi_frap(uint32_t frap, int i)
 		    access_names[rwperms]);
 }
 
+static const struct spi_programmer spi_programmer_ich7 = {
+	.type = SPI_CONTROLLER_ICH7,
+	.max_data_read = 64,
+	.max_data_write = 64,
+	.command = ich_spi_send_command,
+	.multicommand = ich_spi_send_multicommand,
+	.read = default_spi_read,
+	.write_256 = default_spi_write_256,
+};
+
+static const struct spi_programmer spi_programmer_ich9 = {
+	.type = SPI_CONTROLLER_ICH9,
+	.max_data_read = 64,
+	.max_data_write = 64,
+	.command = ich_spi_send_command,
+	.multicommand = ich_spi_send_multicommand,
+	.read = default_spi_read,
+	.write_256 = default_spi_write_256,
+};
+
 int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 			int ich_generation)
 {
@@ -1059,20 +1079,19 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 	uint16_t spibar_offset, tmp2;
 	uint32_t tmp;
 
-	buses_supported |= CHIP_BUSTYPE_SPI;
 	switch (ich_generation) {
 	case 7:
-		spi_controller = SPI_CONTROLLER_ICH7;
+		register_spi_programmer(&spi_programmer_ich7);
 		spibar_offset = 0x3020;
 		break;
 	case 8:
-		spi_controller = SPI_CONTROLLER_ICH9;
+		register_spi_programmer(&spi_programmer_ich9);
 		spibar_offset = 0x3020;
 		break;
 	case 9:
 	case 10:
 	default:		/* Future version might behave the same */
-		spi_controller = SPI_CONTROLLER_ICH9;
+		register_spi_programmer(&spi_programmer_ich9);
 		spibar_offset = 0x3800;
 		break;
 	}
@@ -1083,7 +1102,7 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 	/* Assign Virtual Address */
 	ich_spibar = rcrb + spibar_offset;
 
-	switch (spi_controller) {
+	switch (spi_programmer->type) {
 	case SPI_CONTROLLER_ICH7:
 		msg_pdbg("0x00: 0x%04x     (SPIS)\n",
 			     mmio_readw(ich_spibar + 0));
@@ -1211,6 +1230,16 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 	return 0;
 }
 
+static const struct spi_programmer spi_programmer_via = {
+	.type = SPI_CONTROLLER_VIA,
+	.max_data_read = 16,
+	.max_data_write = 16,
+	.command = ich_spi_send_command,
+	.multicommand = ich_spi_send_multicommand,
+	.read = default_spi_read,
+	.write_256 = default_spi_write_256,
+};
+
 int via_init_spi(struct pci_dev *dev)
 {
 	uint32_t mmio_base;
@@ -1221,8 +1250,8 @@ int via_init_spi(struct pci_dev *dev)
 	ich_spibar = physmap("VT8237S MMIO registers", mmio_base, 0x70);
 
 	/* Not sure if it speaks all these bus protocols. */
-	buses_supported = CHIP_BUSTYPE_LPC | CHIP_BUSTYPE_FWH | CHIP_BUSTYPE_SPI;
-	spi_controller = SPI_CONTROLLER_VIA;
+	buses_supported = CHIP_BUSTYPE_LPC | CHIP_BUSTYPE_FWH;
+	register_spi_programmer(&spi_programmer_via);
 
 	msg_pdbg("0x00: 0x%04x     (SPIS)\n", mmio_readw(ich_spibar + 0));
 	msg_pdbg("0x02: 0x%04x     (SPIC)\n", mmio_readw(ich_spibar + 2));

@@ -104,6 +104,21 @@ void probe_superio_ite(void)
 	return;
 }
 
+static int it8716f_spi_send_command(unsigned int writecnt, unsigned int readcnt,
+			const unsigned char *writearr, unsigned char *readarr);
+static int it8716f_spi_chip_read(struct flashchip *flash, uint8_t *buf, int start, int len);
+static int it8716f_spi_chip_write_256(struct flashchip *flash, uint8_t *buf, int start, int len);
+
+static const struct spi_programmer spi_programmer_it87xx = {
+	.type = SPI_CONTROLLER_IT87XX,
+	.max_data_read = MAX_DATA_UNSPECIFIED,
+	.max_data_write = MAX_DATA_UNSPECIFIED,
+	.command = it8716f_spi_send_command,
+	.multicommand = default_spi_send_multicommand,
+	.read = it8716f_spi_chip_read,
+	.write_256 = it8716f_spi_chip_write_256,
+};
+
 static uint16_t it87spi_probe(uint16_t port)
 {
 	uint8_t tmp = 0;
@@ -180,9 +195,8 @@ static uint16_t it87spi_probe(uint16_t port)
 	it8716f_flashport = flashport;
 	if (buses_supported & CHIP_BUSTYPE_SPI)
 		msg_pdbg("Overriding chipset SPI with IT87 SPI.\n");
-	spi_controller = SPI_CONTROLLER_IT87XX;
 	/* FIXME: Add the SPI bus or replace the other buses with it? */
-	buses_supported |= CHIP_BUSTYPE_SPI;
+	register_spi_programmer(&spi_programmer_it87xx);
 	return 0;
 }
 
@@ -234,7 +248,7 @@ int init_superio_ite(void)
  * commands with the address in inverse wire order. That's why the register
  * ordering in case 4 and 5 may seem strange.
  */
-int it8716f_spi_send_command(unsigned int writecnt, unsigned int readcnt,
+static int it8716f_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 			const unsigned char *writearr, unsigned char *readarr)
 {
 	uint8_t busy, writeenc;
@@ -327,7 +341,7 @@ static int it8716f_spi_page_program(struct flashchip *flash, uint8_t *buf, int s
  * IT8716F only allows maximum of 512 kb SPI mapped to LPC memory cycles
  * Need to read this big flash using firmware cycles 3 byte at a time.
  */
-int it8716f_spi_chip_read(struct flashchip *flash, uint8_t *buf, int start, int len)
+static int it8716f_spi_chip_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
 	fast_spi = 0;
 
@@ -344,7 +358,7 @@ int it8716f_spi_chip_read(struct flashchip *flash, uint8_t *buf, int start, int 
 	return 0;
 }
 
-int it8716f_spi_chip_write_256(struct flashchip *flash, uint8_t *buf, int start, int len)
+static int it8716f_spi_chip_write_256(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
 	/*
 	 * IT8716F only allows maximum of 512 kb SPI chip size for memory

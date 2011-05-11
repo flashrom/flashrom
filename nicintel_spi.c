@@ -162,9 +162,6 @@ int nicintel_spi_init(void)
 	if (bitbang_spi_init(&bitbang_spi_master_nicintel, 1))
 		return 1;
 
-	buses_supported = CHIP_BUSTYPE_SPI;
-	spi_controller = SPI_CONTROLLER_NICINTEL;
-
 	return 0;
 }
 

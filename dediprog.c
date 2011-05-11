@@ -248,7 +248,7 @@ static int dediprog_spi_bulk_read(struct flashchip *flash, uint8_t *buf,
 	return 0;
 }
 
-int dediprog_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
+static int dediprog_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
 	int ret;
 	/* chunksize must be 512, other sizes will NOT work at all. */
@@ -293,7 +293,7 @@ int dediprog_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 	return 0;
 }
 
-int dediprog_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len)
+static int dediprog_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
 	int ret;
 
@@ -310,7 +310,7 @@ int dediprog_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int
 	return ret;
 }
 
-int dediprog_spi_send_command(unsigned int writecnt, unsigned int readcnt,
+static int dediprog_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 			const unsigned char *writearr, unsigned char *readarr)
 {
 	int ret;
@@ -526,6 +526,16 @@ static int parse_voltage(char *voltage)
 	return millivolt;
 }
 
+static const struct spi_programmer spi_programmer_dediprog = {
+	.type = SPI_CONTROLLER_DEDIPROG,
+	.max_data_read = MAX_DATA_UNSPECIFIED,
+	.max_data_write = MAX_DATA_UNSPECIFIED,
+	.command = dediprog_spi_send_command,
+	.multicommand = default_spi_send_multicommand,
+	.read = dediprog_spi_read,
+	.write_256 = dediprog_spi_write_256,
+};
+
 /* URB numbers refer to the first log ever captured. */
 int dediprog_init(void)
 {
@@ -606,8 +616,7 @@ int dediprog_init(void)
 		return 1;
 	}
 
-	buses_supported = CHIP_BUSTYPE_SPI;
-	spi_controller = SPI_CONTROLLER_DEDIPROG;
+	register_spi_programmer(&spi_programmer_dediprog);
 
 	/* RE leftover, leave in until the driver is complete. */
 #if 0
