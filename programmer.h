@@ -372,9 +372,6 @@ uint8_t dummy_chip_readb(const chipaddr addr);
 uint16_t dummy_chip_readw(const chipaddr addr);
 uint32_t dummy_chip_readl(const chipaddr addr);
 void dummy_chip_readn(uint8_t *buf, const chipaddr addr, size_t len);
-int dummy_spi_send_command(unsigned int writecnt, unsigned int readcnt,
-		      const unsigned char *writearr, unsigned char *readarr);
-int dummy_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len);
 #endif
 
 /* nic3com.c */
@@ -485,7 +482,6 @@ struct usbdev_status {
 	const char *device_name;
 };
 int ft2232_spi_init(void);
-int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr);
 extern const struct usbdev_status devs_ft2232spi[];
 void print_supported_usbdevs(const struct usbdev_status *devs);
 #endif
@@ -505,7 +501,6 @@ int mcp6x_spi_init(int want_spi);
 /* bitbang_spi.c */
 int bitbang_spi_init(const struct bitbang_spi_master *master, int halfperiod);
 int bitbang_spi_shutdown(const struct bitbang_spi_master *master);
-int bitbang_spi_send_command(unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr);
 
 /* buspirate_spi.c */
 struct buspirate_spispeeds {
@@ -514,14 +509,10 @@ struct buspirate_spispeeds {
 };
 int buspirate_spi_init(void);
 int buspirate_spi_shutdown(void);
-int buspirate_spi_send_command(unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr);
 
 /* dediprog.c */
 int dediprog_init(void);
 int dediprog_shutdown(void);
-int dediprog_spi_send_command(unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr);
-int dediprog_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
-int dediprog_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len);
 
 /* flashrom.c */
 struct decode_sizes {
@@ -552,7 +543,6 @@ enum spi_controller {
 	SPI_CONTROLLER_SB600,
 	SPI_CONTROLLER_VIA,
 	SPI_CONTROLLER_WBSIO,
-	SPI_CONTROLLER_MCP6X_BITBANG,
 #endif
 #endif
 #if CONFIG_FT2232_SPI == 1
@@ -567,16 +557,9 @@ enum spi_controller {
 #if CONFIG_DEDIPROG == 1
 	SPI_CONTROLLER_DEDIPROG,
 #endif
-#if CONFIG_RAYER_SPI == 1
-	SPI_CONTROLLER_RAYER,
+#if CONFIG_OGP_SPI == 1 || CONFIG_NICINTEL_SPI == 1 || CONFIG_RAYER_SPI == 1 || (CONFIG_INTERNAL == 1 && (defined(__i386__) || defined(__x86_64__)))
+	SPI_CONTROLLER_BITBANG,
 #endif
-#if CONFIG_NICINTEL_SPI == 1
-	SPI_CONTROLLER_NICINTEL,
-#endif
-#if CONFIG_OGP_SPI == 1
-	SPI_CONTROLLER_OGP,
-#endif
-	SPI_CONTROLLER_INVALID /* This must always be the last entry. */
 };
 extern const int spi_programmer_count;
 
@@ -584,6 +567,7 @@ extern const int spi_programmer_count;
 #define MAX_DATA_READ_UNLIMITED 64 * 1024
 #define MAX_DATA_WRITE_UNLIMITED 256
 struct spi_programmer {
+	enum spi_controller type;
 	int max_data_read;
 	int max_data_write;
 	int (*command)(unsigned int writecnt, unsigned int readcnt,
@@ -595,13 +579,13 @@ struct spi_programmer {
 	int (*write_256)(struct flashchip *flash, uint8_t *buf, int start, int len);
 };
 
-extern enum spi_controller spi_controller;
-extern const struct spi_programmer spi_programmer[];
+extern const struct spi_programmer *spi_programmer;
 int default_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 			     const unsigned char *writearr, unsigned char *readarr);
 int default_spi_send_multicommand(struct spi_command *cmds);
 int default_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
 int default_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len);
+void register_spi_programmer(const struct spi_programmer *programmer);
 
 /* ichspi.c */
 #if CONFIG_INTERNAL == 1
@@ -609,40 +593,26 @@ extern uint32_t ichspi_bbar;
 int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 		    int ich_generation);
 int via_init_spi(struct pci_dev *dev);
-int ich_spi_send_command(unsigned int writecnt, unsigned int readcnt,
-		    const unsigned char *writearr, unsigned char *readarr);
-int ich_spi_send_multicommand(struct spi_command *cmds);
 #endif
 
 /* it85spi.c */
 int it85xx_spi_init(struct superio s);
 int it85xx_shutdown(void);
-int it85xx_spi_send_command(unsigned int writecnt, unsigned int readcnt,
-			const unsigned char *writearr, unsigned char *readarr);
 
 /* it87spi.c */
 void enter_conf_mode_ite(uint16_t port);
 void exit_conf_mode_ite(uint16_t port);
 void probe_superio_ite(void);
 int init_superio_ite(void);
-int it8716f_spi_send_command(unsigned int writecnt, unsigned int readcnt,
-			const unsigned char *writearr, unsigned char *readarr);
-int it8716f_spi_chip_read(struct flashchip *flash, uint8_t *buf, int start, int len);
-int it8716f_spi_chip_write_256(struct flashchip *flash, uint8_t *buf, int start, int len);
 
 /* sb600spi.c */
 #if CONFIG_INTERNAL == 1
 int sb600_probe_spi(struct pci_dev *dev);
-int sb600_spi_send_command(unsigned int writecnt, unsigned int readcnt,
-		      const unsigned char *writearr, unsigned char *readarr);
 #endif
 
 /* wbsio_spi.c */
 #if CONFIG_INTERNAL == 1
 int wbsio_check_for_spi(void);
-int wbsio_spi_send_command(unsigned int writecnt, unsigned int readcnt,
-		      const unsigned char *writearr, unsigned char *readarr);
-int wbsio_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
 #endif
 
 /* serprog.c */

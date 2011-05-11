@@ -81,6 +81,19 @@ static int buspirate_sendrecv(unsigned char *buf, unsigned int writecnt, unsigne
 	return 0;
 }
 
+static int buspirate_spi_send_command(unsigned int writecnt, unsigned int readcnt,
+		const unsigned char *writearr, unsigned char *readarr);
+
+static const struct spi_programmer spi_programmer_buspirate = {
+	.type = SPI_CONTROLLER_BUSPIRATE,
+	.max_data_read = 12,
+	.max_data_write = 12,
+	.command = buspirate_spi_send_command,
+	.multicommand = default_spi_send_multicommand,
+	.read = default_spi_read,
+	.write_256 = default_spi_write_256,
+};
+
 static const struct buspirate_spispeeds spispeeds[] = {
 	{"30k",		0x0},
 	{"125k",	0x1},
@@ -230,8 +243,7 @@ int buspirate_spi_init(void)
 		return 1;
 	}
 
-	buses_supported = CHIP_BUSTYPE_SPI;
-	spi_controller = SPI_CONTROLLER_BUSPIRATE;
+	register_spi_programmer(&spi_programmer_buspirate);
 
 	return 0;
 }
@@ -271,7 +283,7 @@ int buspirate_spi_shutdown(void)
 	return 0;
 }
 
-int buspirate_spi_send_command(unsigned int writecnt, unsigned int readcnt,
+static int buspirate_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		const unsigned char *writearr, unsigned char *readarr)
 {
 	static unsigned char *buf = NULL;

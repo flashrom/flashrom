@@ -60,6 +60,20 @@ done:
 	return flashport;
 }
 
+static int wbsio_spi_send_command(unsigned int writecnt, unsigned int readcnt,
+		      const unsigned char *writearr, unsigned char *readarr);
+static int wbsio_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
+
+static const struct spi_programmer spi_programmer_wbsio = {
+	.type = SPI_CONTROLLER_WBSIO,
+	.max_data_read = MAX_DATA_UNSPECIFIED,
+	.max_data_write = MAX_DATA_UNSPECIFIED,
+	.command = wbsio_spi_send_command,
+	.multicommand = default_spi_send_multicommand,
+	.read = wbsio_spi_read,
+	.write_256 = spi_chip_write_1,
+};
+
 int wbsio_check_for_spi(void)
 {
 	if (0 == (wbsio_spibase = wbsio_get_spibase(WBSIO_PORT1)))
@@ -68,8 +82,7 @@ int wbsio_check_for_spi(void)
 
 	msg_pspew("\nwbsio_spibase = 0x%x\n", wbsio_spibase);
 
-	buses_supported |= CHIP_BUSTYPE_SPI;
-	spi_controller = SPI_CONTROLLER_WBSIO;
+	register_spi_programmer(&spi_programmer_wbsio);
 	msg_pdbg("%s: Winbond saved on 4 register bits so max chip size is "
 		 "1024 KB!\n", __func__);
 	max_rom_decode.spi = 1024 * 1024;
@@ -97,7 +110,7 @@ int wbsio_check_for_spi(void)
  * Would one more byte of RAM in the chip (to get all 24 bits) really make
  * such a big difference?
  */
-int wbsio_spi_send_command(unsigned int writecnt, unsigned int readcnt,
+static int wbsio_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		      const unsigned char *writearr, unsigned char *readarr)
 {
 	int i;
@@ -181,7 +194,7 @@ int wbsio_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	return 0;
 }
 
-int wbsio_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
+static int wbsio_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
 	return read_memmapped(flash, buf, start, len);
 }

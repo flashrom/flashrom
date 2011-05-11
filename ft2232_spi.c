@@ -128,6 +128,19 @@ static int get_buf(struct ftdi_context *ftdic, const unsigned char *buf,
 	return 0;
 }
 
+static int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt,
+		const unsigned char *writearr, unsigned char *readarr);
+
+static const struct spi_programmer spi_programmer_ft2232 = {
+	.type = SPI_CONTROLLER_FT2232,
+	.max_data_read = 64 * 1024,
+	.max_data_write = 256,
+	.command = ft2232_spi_send_command,
+	.multicommand = default_spi_send_multicommand,
+	.read = default_spi_read,
+	.write_256 = default_spi_write_256,
+};
+
 int ft2232_spi_init(void)
 {
 	int f;
@@ -261,13 +274,12 @@ int ft2232_spi_init(void)
 
 	// msg_pdbg("\nft2232 chosen\n");
 
-	buses_supported = CHIP_BUSTYPE_SPI;
-	spi_controller = SPI_CONTROLLER_FT2232;
+	register_spi_programmer(&spi_programmer_ft2232);
 
 	return 0;
 }
 
-int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt,
+static int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		const unsigned char *writearr, unsigned char *readarr)
 {
 	struct ftdi_context *ftdic = &ftdic_context;
