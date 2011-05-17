@@ -1081,6 +1081,35 @@ static int board_artecgroup_dbe6x(void)
 }
 
 /*
+ * Suited for:
+ *  - Asus A8AE-LE (Codename AmberineM; used in Compaq Presario 061)
+ * Datasheet(s) used:
+ *  - AMD document 43009 "AMD SB700/710/750 Register Reference Guide" rev. 1.00
+ */
+static int amd_sbxxx_gpio9_raise(void)
+{
+	struct pci_dev *dev;
+	uint32_t reg;
+
+	dev = pci_dev_find(0x1002, 0x4372); /* AMD SMBus Controller */
+	if (!dev) {
+		msg_perr("\nERROR: AMD SMBus Controller (0x4372) not found.\n");
+		return -1;
+	}
+
+	reg = pci_read_long(dev, 0xA8); /* GPIO_12_to_4_Cntrl CI_Reg: A8h-ABh */
+	/* enable output (0: enable, 1: tristate):
+	   GPIO9 output enable is at bit 5 in 0xA9 */
+	reg &= ~((uint32_t)1<<(8+5));
+	/* raise:
+	   GPIO9 output register is at bit 5 in 0xA8 */
+	reg |= (1<<5);
+	pci_write_long(dev, 0xA8, reg);
+
+	return 0;
+}
+
+/*
  * Helper function to raise/drop a given gpo line on Intel PIIX4{,E,M}.
  */
 static int intel_piix4_gpo_set(unsigned int gpo, int raise)
@@ -1924,6 +1953,7 @@ const struct board_pciid_enable board_pciid_enables[] = {
 	{0x1106, 0x3189, 0x1043, 0x807F,  0x1106, 0x3177, 0x1043, 0x808C, NULL,         NULL, NULL,           P3, "ASUS",        "A7V8X",                 0,   OK, it8703f_gpio51_raise},
 	{0x1106, 0x3099, 0x1043, 0x807F,  0x1106, 0x3147, 0x1043, 0x808C, NULL,         NULL, NULL,           P3, "ASUS",        "A7V333",                0,   OK, it8703f_gpio51_raise},
 	{0x1106, 0x3189, 0x1043, 0x807F,  0x1106, 0x3177, 0x1043, 0x80A1, NULL,         NULL, NULL,           P3, "ASUS",        "A7V8X-X",               0,   OK, it8712f_gpio3_1_raise},
+	{0x1002, 0x4372, 0x103c, 0x2a26,  0x1002, 0x4377, 0x103c, 0x2a26, NULL,         NULL, NULL,           P3, "ASUS",        "A8AE-LE",               0,   OK, amd_sbxxx_gpio9_raise},
 	{0x8086, 0x27A0, 0x1043, 0x1287,  0x8086, 0x27DF, 0x1043, 0x1287, "^A8J",       NULL, NULL,           P3, "ASUS",        "A8Jm",                  0,   NT, intel_ich_gpio34_raise},
 	{0x10DE, 0x0260, 0x103c, 0x2a3e,  0x10DE, 0x0264, 0x103c, 0x2a3e, "NAGAMI2L",   NULL, NULL,           P3, "ASUS",        "A8N-LA (Nagami-GL8E)",  0,   OK, nvidia_mcp_gpio0_raise},
 	{0x10DE, 0x005E, 0x1043, 0x815A,  0x10DE, 0x0054, 0x1043, 0x815A, NULL,         NULL, NULL,           P3, "ASUS",        "A8N",                   0,   NT, board_shuttle_fn25}, /* TODO: This should probably be A8N-SLI Deluxe, see http://www.coreboot.org/pipermail/flashrom/2009-November/000878.html. */
