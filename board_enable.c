@@ -2152,7 +2152,7 @@ static int unsafe_board_handler(const struct board_pciid_enable *board)
 
 	if (!force_boardenable) {
 		msg_pinfo("WARNING: Your mainboard is %s %s, but the mainboard-specific\n"
-		       "code has not been tested, and thus will not not be executed by default.\n"
+		       "code has not been tested, and thus will not be executed by default.\n"
 		       "Depending on your hardware environment, erasing, writing or even probing\n"
 		       "can fail without running the board specific code.\n\n"
 		       "Please see the man page (section PROGRAMMER SPECIFIC INFO, subsection\n"
