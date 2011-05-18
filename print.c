@@ -581,6 +581,7 @@ const struct board_info boards_known[] = {
 	B("Sun",	"Fire x4540",		0, "http://www.sun.com/servers/x64/x4540/", "No public report found. May work now."),
 	B("Sun",	"Fire x4600",		0, "http://www.sun.com/servers/x64/x4600/", "No public report found. May work now."),
 	B("Supermicro",	"H8QC8",		1, "http://www.supermicro.com/Aplus/motherboard/Opteron/nforce/H8QC8.cfm", NULL),
+	B("Supermicro", "X8DTH-6F",		1, "http://www.supermicro.com/products/motherboard/QPI/5500/X8DTH-6F.cfm", NULL),
 	B("Supermicro",	"X8DTT-F",		1, "http://www.supermicro.com/products/motherboard/QPI/5500/X8DTT-F.cfm", NULL),
 	B("T-Online",	"S-100",		1, "http://wiki.freifunk-hannover.de/T-Online_S_100", NULL),
 	B("Tekram",	"P6Pro-A5",		1, "http://www.motherboard.cz/mb/tekram/P6Pro-A5.htm", NULL),
