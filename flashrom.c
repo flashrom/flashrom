@@ -1772,7 +1772,7 @@ int main(int argc, char *argv[])
 /* FIXME: This function signature needs to be improved once doit() has a better
  * function signature.
  */
-int chip_safety_check(struct flashchip *flash, int force, char *filename, int read_it, int write_it, int erase_it, int verify_it)
+int chip_safety_check(struct flashchip *flash, int force, int read_it, int write_it, int erase_it, int verify_it)
 {
 	if (!programmer_may_write && (write_it || erase_it)) {
 		msg_perr("Write/erase is not working yet on your programmer in "
@@ -1836,7 +1836,7 @@ int doit(struct flashchip *flash, int force, char *filename, int read_it, int wr
 	int ret = 0;
 	unsigned long size = flash->total_size * 1024;
 
-	if (chip_safety_check(flash, force, filename, read_it, write_it, erase_it, verify_it)) {
+	if (chip_safety_check(flash, force, read_it, write_it, erase_it, verify_it)) {
 		msg_cerr("Aborting.\n");
 		ret = 1;
 		goto out_nofree;
