@@ -551,6 +551,7 @@ const struct board_info boards_known[] = {
 	B("MSI",	"MS-7368 (K9AG Neo2-Digital)", 1, "http://www.msi.com/index.php?func=proddesc&maincat_no=1&prod_no=1241", NULL),
 	B("MSI",	"MS-7376 (K9A2 Platinum)", 1, "http://www.msi.com/index.php?func=proddesc&maincat_no=1&prod_no=1332", NULL),
 	B("MSI",	"MS-7596 (785GM-E51)",  1, "http://eu.msi.com/index.php?func=proddesc&maincat_no=1&prod_no=1866", NULL),
+	B("MSI",	"MS-7640 (890FXA-GD70)",1, "http://www.msi.com/product/mb/890FXA-GD70.html", "Reported by \"Linux User #330250\" http://flashrom.org/pipermail/flashrom/2011-March/006072.html"),
 	B("MSI",	"MS-7642 (890GXM-G65)",	1, "http://www.msi.com/index.php?func=proddesc&maincat_no=1&prod_no=2012", NULL),
 	B("NEC",	"PowerMate 2000",	1, "http://support.necam.com/mobilesolutions/hardware/Desktops/pm2000/celeron/", NULL),
 	B("Nokia",	"IP530",		1, NULL, NULL),
