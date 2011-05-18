@@ -510,6 +510,7 @@ const struct board_info boards_known[] = {
 	B("IBM",	"x3455",		1, "http://www-03.ibm.com/systems/x/hardware/rack/x3455/index.html", NULL),
 	B("IEI",	"PICOe-9452",		1, "http://www.ieiworld.com/product_groups/industrial/content.aspx?keyword=WSB&gid=00001000010000000001&cid=08125380291060861658&id=08142308605814597144", NULL),
 	B("Intel",	"D201GLY",		1, "http://www.intel.com/support/motherboards/desktop/d201gly/index.htm", NULL),
+	B("Intel",	"DG45ID",		0, "http://www.intel.com/products/desktop/motherboards/dg45id/dg45id-overview.htm", "Probing works (Winbond W25x32, 4096 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME is locked."),
 	B("Intel",	"EP80759",		1, NULL, NULL),
 	B("Intel",	"Foxhollow",		1, NULL, "Intel reference board."),
 	B("Intel",	"Greencity",		1, NULL, "Intel reference board."),
@@ -638,6 +639,7 @@ const struct board_info laptops_known[] = {
 	B("HP/Compaq",	"nx9005",		0, "http://h18000.www1.hp.com/products/quickspecs/11602_na/11602_na.HTML", "Shuts down when probing for a chip. http://www.flashrom.org/pipermail/flashrom/2010-May/003321.html"),
 	B("HP/Compaq",	"nx9010",		0, "http://h20000.www2.hp.com/bizsupport/TechSupport/Document.jsp?lang=en&cc=us&objectID=c00348514", "Hangs upon '''flashrom -V''' (needs hard power-cycle then)."),
 	B("IBM/Lenovo",	"Thinkpad T40p",	0, "http://www.thinkwiki.org/wiki/Category:T40p", NULL),
+	B("IBM/Lenovo",	"Thinkpad T410s",	0, "http://www.thinkwiki.org/wiki/Category:T410s", "Probing works (Winbond W25x64, 8192 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME and platform are locked."),
 	B("IBM/Lenovo",	"240",			0, "http://www.stanford.edu/~bresnan//tp240.html", "Seems to (partially) work at first, but one block/sector cannot be written which then leaves you with a bricked laptop. Maybe this can be investigated and fixed in software later."),
 	B("Lenovo",	"3000 V100 TF05Cxx",	1, "http://www5.pc.ibm.com/europe/products.nsf/products?openagent&brand=Lenovo3000Notebook&series=Lenovo+3000+V+Series#viewallmodelstop", NULL),
 #endif
