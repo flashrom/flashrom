@@ -499,6 +499,7 @@ const struct board_info boards_known[] = {
 	B("GIGABYTE",	"GA-MA78GPM-DS2H",	1, "http://www.gigabyte.com/products/product-page.aspx?pid=2859", NULL),
 	B("GIGABYTE",	"GA-MA790FX-DQ6",	1, "http://www.gigabyte.com/products/product-page.aspx?pid=2690", NULL),
 	B("GIGABYTE",	"GA-MA790GP-DS4H",	1, "http://www.gigabyte.com/products/product-page.aspx?pid=2887", NULL),
+	B("GIGABYTE",	"GA-MA790XT-UD4P (rev. 1.0)", 1, "http://www.gigabyte.com/products/product-page.aspx?pid=3010", NULL),
 	B("HP",		"e-Vectra P2706T",	1, "http://h20000.www2.hp.com/bizsupport/TechSupport/Home.jsp?lang=en&cc=us&prodSeriesId=77515&prodTypeId=12454", NULL),
 	B("HP",		"ProLiant DL145 G3",	1, "http://h20000.www2.hp.com/bizsupport/TechSupport/Document.jsp?objectID=c00816835&lang=en&cc=us&taskId=101&prodSeriesId=3219755&prodTypeId=15351", NULL),
 	B("HP",		"ProLiant DL165 G6",	1, "http://h10010.www1.hp.com/wwpc/us/en/sm/WF05a/15351-15351-3328412-241644-3328421-3955644.html", NULL),
