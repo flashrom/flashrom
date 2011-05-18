@@ -76,7 +76,8 @@ int show_id(uint8_t *bios, int size, int force)
 	mb_vendor_offset = *(walk - 2);
 	if ((*walk) == 0 || ((*walk) & 0x3ff) != 0 || (*walk) > size ||
 	    mb_part_offset > size || mb_vendor_offset > size) {
-		msg_pinfo("Flash image seems to be a legacy BIOS. Disabling checks.\n");
+		msg_pinfo("Flash image seems to be a legacy BIOS. "
+		          "Disabling coreboot-related checks.\n");
 		return 0;
 	}
 
