@@ -466,6 +466,7 @@ const struct board_info boards_known[] = {
 	B("EPoX",	"EP-8RDA3+",		1, "http://www.epox.com/product.asp?ID=EP-8RDA3plus", NULL),
 	B("EPoX",	"EP-BX3",		1, "http://www.epox.com/product.asp?ID=EP-BX3", NULL),
 	B("EVGA",	"132-CK-NF78",		1, "http://http://www.evga.com/articles/385.asp", NULL),
+	B("EVGA",	"270-WS-W555-A2 (Classified SR-2)", 1, "http://www.evga.com/products/moreInfo.asp?pn=270-WS-W555-A2", NULL),
 	B("FIC",	"VA-502",		0, "ftp://ftp.fic.com.tw/motherboard/manual/socket7/va-502/", "No public report found. Owned by Uwe Hermann <uwe@hermann-uwe.de>. Seems the PCI subsystem IDs are identical with the Tekram P6Pro-A5. May work now."),
 	B("Foxconn",	"6150K8MD-8EKRSH",	1, "http://www.foxconnchannel.com/product/motherboards/detail_overview.aspx?id=en-us0000157", NULL),
 	B("Foxconn",	"A6VMX",		1, "http://www.foxconnchannel.com/product/motherboards/detail_overview.aspx?id=en-us0000346", NULL),
