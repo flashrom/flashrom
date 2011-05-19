@@ -43,23 +43,37 @@ int spi_chip_write_1(struct flashchip *flash, uint8_t *buf, int start, int len);
 int spi_chip_write_256(struct flashchip *flash, uint8_t *buf, int start, int len);
 int spi_chip_read(struct flashchip *flash, uint8_t *buf, int start, int len);
 uint8_t spi_read_status_register(void);
-int spi_prettyprint_status_register_at25df(struct flashchip *flash);
-int spi_prettyprint_status_register_at25df_sec(struct flashchip *flash);
-int spi_prettyprint_status_register_at25f(struct flashchip *flash);
-int spi_prettyprint_status_register_at25fs010(struct flashchip *flash);
-int spi_prettyprint_status_register_at25fs040(struct flashchip *flash);
+int spi_write_status_register(struct flashchip *flash, int status);
+void spi_prettyprint_status_register_bit(uint8_t status, int bit);
+void spi_prettyprint_status_register_bp3210(uint8_t status, int bp);
+void spi_prettyprint_status_register_welwip(uint8_t status);
+int spi_prettyprint_status_register(struct flashchip *flash);
 int spi_disable_blockprotect(struct flashchip *flash);
-int spi_disable_blockprotect_at25df(struct flashchip *flash);
-int spi_disable_blockprotect_at25df_sec(struct flashchip *flash);
-int spi_disable_blockprotect_at25f(struct flashchip *flash);
-int spi_disable_blockprotect_at25fs010(struct flashchip *flash);
-int spi_disable_blockprotect_at25fs040(struct flashchip *flash);
 int spi_byte_program(int addr, uint8_t databyte);
 int spi_nbyte_program(int addr, uint8_t *bytes, int len);
 int spi_nbyte_read(int addr, uint8_t *bytes, int len);
 int spi_read_chunked(struct flashchip *flash, uint8_t *buf, int start, int len, int chunksize);
 int spi_write_chunked(struct flashchip *flash, uint8_t *buf, int start, int len, int chunksize);
 int spi_aai_write(struct flashchip *flash, uint8_t *buf, int start, int len);
+
+/* a25.c */
+int spi_prettyprint_status_register_amic_a25l05p(struct flashchip *flash);
+int spi_prettyprint_status_register_amic_a25l40p(struct flashchip *flash);
+int spi_prettyprint_status_register_amic_a25l032(struct flashchip *flash);
+int spi_prettyprint_status_register_amic_a25lq032(struct flashchip *flash);
+
+/* at25.c */
+int spi_prettyprint_status_register_at25df(struct flashchip *flash);
+int spi_prettyprint_status_register_at25df_sec(struct flashchip *flash);
+int spi_prettyprint_status_register_at25f(struct flashchip *flash);
+int spi_prettyprint_status_register_at25fs010(struct flashchip *flash);
+int spi_prettyprint_status_register_at25fs040(struct flashchip *flash);
+int spi_prettyprint_status_register_atmel_at26df081a(struct flashchip *flash);
+int spi_disable_blockprotect_at25df(struct flashchip *flash);
+int spi_disable_blockprotect_at25df_sec(struct flashchip *flash);
+int spi_disable_blockprotect_at25f(struct flashchip *flash);
+int spi_disable_blockprotect_at25fs010(struct flashchip *flash);
+int spi_disable_blockprotect_at25fs040(struct flashchip *flash);
 
 /* 82802ab.c */
 uint8_t wait_82802ab(struct flashchip *flash);
