@@ -43,17 +43,18 @@
 #include "spi.h"
 
 /* ICH9 controller register definition */
-#define ICH9_REG_FADDR         0x08	/* 32 Bits */
-#define ICH9_REG_FDATA0                0x10	/* 64 Bytes */
+#define ICH9_REG_FADDR		0x08	/* 32 Bits */
+#define ICH9_REG_FDATA0		0x10	/* 64 Bytes */
 
-#define ICH9_REG_SSFS          0x90	/* 08 Bits */
+#define ICH9_REG_SSFS		0x90	/* 08 Bits */
 #define SSFS_SCIP		0x00000001
 #define SSFS_CDS		0x00000004
 #define SSFS_FCERR		0x00000008
 #define SSFS_AEL		0x00000010
+/* The following bits are reserved in SSFS: 1,5-7. */
 #define SSFS_RESERVED_MASK	0x000000e2
 
-#define ICH9_REG_SSFC          0x91	/* 24 Bits */
+#define ICH9_REG_SSFC		0x91	/* 24 Bits */
 #define SSFC_SCGO		0x00000200
 #define SSFC_ACS		0x00000400
 #define SSFC_SPOP		0x00000800
@@ -64,20 +65,23 @@
 #define SSFC_SCF		0x01000000
 #define SSFC_SCF_20MHZ 0x00000000
 #define SSFC_SCF_33MHZ 0x01000000
+/* We combine SSFS and SSFC to one 32-bit word,
+ * therefore SSFC bits are off by 8.
+ * The following bits are reserved in SSFC: 23-19,7,0. */
 #define SSFC_RESERVED_MASK	0xf8008100
 
-#define ICH9_REG_PREOP         0x94	/* 16 Bits */
-#define ICH9_REG_OPTYPE                0x96	/* 16 Bits */
-#define ICH9_REG_OPMENU                0x98	/* 64 Bits */
+#define ICH9_REG_PREOP		0x94	/* 16 Bits */
+#define ICH9_REG_OPTYPE		0x96	/* 16 Bits */
+#define ICH9_REG_OPMENU		0x98	/* 64 Bits */
 
 // ICH9R SPI commands
-#define SPI_OPCODE_TYPE_READ_NO_ADDRESS     0
-#define SPI_OPCODE_TYPE_WRITE_NO_ADDRESS    1
-#define SPI_OPCODE_TYPE_READ_WITH_ADDRESS   2
-#define SPI_OPCODE_TYPE_WRITE_WITH_ADDRESS  3
+#define SPI_OPCODE_TYPE_READ_NO_ADDRESS		0
+#define SPI_OPCODE_TYPE_WRITE_NO_ADDRESS	1
+#define SPI_OPCODE_TYPE_READ_WITH_ADDRESS	2
+#define SPI_OPCODE_TYPE_WRITE_WITH_ADDRESS	3
 
 // ICH7 registers
-#define ICH7_REG_SPIS          0x00	/* 16 Bits */
+#define ICH7_REG_SPIS		0x00	/* 16 Bits */
 #define SPIS_SCIP		0x0001
 #define SPIS_GRANT		0x0002
 #define SPIS_CDS		0x0004
@@ -94,17 +98,17 @@
    bit 7  is used with fast read and one shot controls CS de-assert?
 */
 
-#define ICH7_REG_SPIC          0x02	/* 16 Bits */
-#define SPIC_SCGO              0x0002
-#define SPIC_ACS               0x0004
-#define SPIC_SPOP              0x0008
-#define SPIC_DS                0x4000
+#define ICH7_REG_SPIC		0x02	/* 16 Bits */
+#define SPIC_SCGO		0x0002
+#define SPIC_ACS		0x0004
+#define SPIC_SPOP		0x0008
+#define SPIC_DS			0x4000
 
-#define ICH7_REG_SPIA          0x04	/* 32 Bits */
-#define ICH7_REG_SPID0         0x08	/* 64 Bytes */
-#define ICH7_REG_PREOP         0x54	/* 16 Bits */
-#define ICH7_REG_OPTYPE                0x56	/* 16 Bits */
-#define ICH7_REG_OPMENU                0x58	/* 64 Bits */
+#define ICH7_REG_SPIA		0x04	/* 32 Bits */
+#define ICH7_REG_SPID0		0x08	/* 64 Bytes */
+#define ICH7_REG_PREOP		0x54	/* 16 Bits */
+#define ICH7_REG_OPTYPE		0x56	/* 16 Bits */
+#define ICH7_REG_OPMENU		0x58	/* 64 Bits */
 
 /* ICH SPI configuration lock-down. May be set during chipset enabling. */
 static int ichspi_lock = 0;
@@ -597,7 +601,7 @@ static int ich7_run_opcode(OPCODE op, uint32_t offset,
 	    - waiting for the busy bit (WIP) to be cleared
 	   This means the timeout must be sufficient for chip erase
 	   of slow high-capacity chips.
-         */
+	 */
 	switch (op.atomic) {
 	case 2:
 		/* Select second preop. */
@@ -703,7 +707,7 @@ static int ich9_run_opcode(OPCODE op, uint32_t offset,
 
 	/* Assemble SSFS + SSFC */
 	temp32 = REGREAD32(ICH9_REG_SSFS);
-	/* keep reserved bits */
+	/* Keep reserved bits only */
 	temp32 &= SSFS_RESERVED_MASK | SSFC_RESERVED_MASK;
 	/* clear error status registers */
 	temp32 |= (SSFS_CDS + SSFS_FCERR);
@@ -712,6 +716,7 @@ static int ich9_run_opcode(OPCODE op, uint32_t offset,
 	/* Use 20 MHz */
 	temp32 |= SSFC_SCF_20MHZ;
 
+	/* Set data byte count (DBC) and data cycle bit (DS) */
 	if (datalength != 0) {
 		uint32_t datatemp;
 		temp32 |= SSFC_DS;
@@ -742,7 +747,7 @@ static int ich9_run_opcode(OPCODE op, uint32_t offset,
 	    - waiting for the busy bit (WIP) to be cleared
 	   This means the timeout must be sufficient for chip erase
 	   of slow high-capacity chips.
-         */
+	 */
 	switch (op.atomic) {
 	case 2:
 		/* Select second preop. */

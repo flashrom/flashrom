@@ -18,8 +18,8 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 #
 # This script attempts to test Flashrom partial write capability by writing
-# patterns of 0xff and 0x00 bytes to the lowest 128KB of flash. 128KB is chosen
-# since 64KB is usually the largest possible block size, so we will try to
+# patterns of 0xff and 0x00 bytes to the lowest 128kB of flash. 128kB is chosen
+# since 64kB is usually the largest possible block size, so we will try to
 # cover at least two blocks with this test.
 
 EXIT_SUCCESS=0
@@ -197,7 +197,7 @@ done
 # 2. The old content must be restored at unspecified offsets.
 # 3. The new content must be written at specified offsets.
 #
-# Note: The last chunk of 0xff bytes is only 2K as to avoid overrunning a 128KB
+# Note: The last chunk of 0xff bytes is only 2k as to avoid overrunning a 128kB
 # test image.
 #
 echo "

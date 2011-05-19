@@ -49,7 +49,7 @@ int drkaiser_init(void)
 	rpci_write_word(pcidev_dev, PCI_MAGIC_DRKAISER_ADDR,
 		       PCI_MAGIC_DRKAISER_VALUE);
 
-	/* Map 128KB flash memory window. */
+	/* Map 128kB flash memory window. */
 	drkaiser_bar = physmap("Dr. Kaiser PC-Waechter flash memory",
 			       addr, 128 * 1024);
 

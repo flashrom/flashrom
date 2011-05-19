@@ -107,7 +107,9 @@ struct flashchip {
 	uint32_t manufacture_id;
 	uint32_t model_id;
 
+	/* Total chip size in kilobytes */
 	int total_size;
+	/* Chip page size in bytes */
 	int page_size;
 	int feature_bits;
 
@@ -125,6 +127,9 @@ struct flashchip {
 	/*
 	 * Erase blocks and associated erase function. Any chip erase function
 	 * is stored as chip-sized virtual block together with said function.
+	 * The first one that fits will be chosen. There is currently no way to
+	 * influence that behaviour. For testing just comment out the other
+	 * elements or set the function pointer to NULL.
 	 */
 	struct block_eraser {
 		struct eraseblock{

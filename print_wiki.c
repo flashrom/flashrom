@@ -59,7 +59,7 @@ mainboards on the [[Mailinglist|mailing list]].\n";
 
 static const char chip_th[] = "{| border=\"0\" style=\"font-size: smaller\" \
 valign=\"top\"\n|- bgcolor=\"#6699dd\"\n! align=\"left\" | Vendor\n\
-! align=\"left\" | Device\n! align=\"left\" | Size / KB\n\
+! align=\"left\" | Device\n! align=\"left\" | Size / kB\n\
 ! align=\"left\" | Type\n! align=\"left\" colspan=\"4\" | Status\n\n\
 |- bgcolor=\"#6699ff\"\n| colspan=\"4\" | &nbsp;\n\
 | Probe\n| Read\n| Erase\n| Write\n\n";
