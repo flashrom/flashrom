@@ -558,8 +558,8 @@ static int enable_flash_cs5530(struct pci_dev *dev, const char *name)
 #define CS5530_ENABLE_SA20		(1 << 6)
 
 	buses_supported = CHIP_BUSTYPE_PARALLEL;
-	/* Decode 0x000E0000-0x000FFFFF (128 KB), not just 64 KB, and
-	 * decode 0xFF000000-0xFFFFFFFF (16 MB), not just 256 KB.
+	/* Decode 0x000E0000-0x000FFFFF (128 kB), not just 64 kB, and
+	 * decode 0xFF000000-0xFFFFFFFF (16 MB), not just 256 kB.
 	 * FIXME: Should we really touch the low mapping below 1 MB? Flashrom
 	 * ignores that region completely.
 	 * Make the configured ROM areas writable.
