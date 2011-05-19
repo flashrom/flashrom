@@ -1140,7 +1140,7 @@ int probe_flash(int startchip, struct flashchip *fill_flash, int force)
 	for (flash = flashchips + startchip; flash && flash->name; flash++) {
 		if (chip_to_probe && strcmp(flash->name, chip_to_probe) != 0)
 			continue;
-		msg_gdbg("Probing for %s %s, %d KB: ",
+		msg_gdbg("Probing for %s %s, %d kB: ",
 			     flash->vendor, flash->name, flash->total_size);
 		if (!flash->probe && !force) {
 			msg_gdbg("failed! flashrom has no probe function for "
@@ -1201,7 +1201,7 @@ notfound:
 #endif
 		snprintf(location, sizeof(location), "on %s", programmer_table[programmer].name);
 
-	msg_cinfo("%s chip \"%s %s\" (%d KB, %s) %s.\n",
+	msg_cinfo("%s chip \"%s %s\" (%d kB, %s) %s.\n",
 	       force ? "Assuming" : "Found",
 	       flash->vendor, flash->name, flash->total_size,
 	       flashbuses_to_text(flash->bustype), location);

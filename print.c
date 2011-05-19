@@ -100,7 +100,7 @@ static void print_supported_chips(void)
 	for (i = strlen("Device"); i < maxchiplen; i++)
 		printf(" ");
 
-	printf("Tested   Known    Size/KB:  Type:\n");
+	printf("Tested   Known    Size/kB:  Type:\n");
 	for (i = 0; i < okcol; i++)
 		printf(" ");
 	printf("OK       Broken\n\n");
