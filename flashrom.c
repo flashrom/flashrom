@@ -1709,9 +1709,37 @@ int selfcheck(void)
 		msg_gerr("Programmer table miscompilation!\n");
 		ret = 1;
 	}
+	/* It would be favorable if we could also check for correct terminaion
+	 * of the follwing arrays, but we don't know their size in here...
+	 * For 'flashchips' we check the first element to be non-null. In the
+	 * other cases there exist use cases where the first element can be
+	 * null. */
+	if (flashchips == NULL || flashchips[0].vendor == NULL) {
+		msg_gerr("Flashchips table miscompilation!\n");
+		ret = 1;
+	}
 	for (flash = flashchips; flash && flash->name; flash++)
 		if (selfcheck_eraseblocks(flash))
 			ret = 1;
+
+#if CONFIG_INTERNAL == 1
+	if (chipset_enables == NULL) {
+		msg_gerr("Chipset enables table does not exist!\n");
+		ret = 1;
+	}
+	if (board_pciid_enables == NULL) {
+		msg_gerr("Board enables table does not exist!\n");
+		ret = 1;
+	}
+	if (boards_known == NULL) {
+		msg_gerr("Known boards table does not exist!\n");
+		ret = 1;
+	}
+	if (laptops_known == NULL) {
+		msg_gerr("Known laptops table does not exist!\n");
+		ret = 1;
+	}
+#endif // CONFIG_INTERNAL == 1
 	return ret;
 }
 

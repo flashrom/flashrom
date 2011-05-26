@@ -145,7 +145,7 @@ struct bitbang_spi_master {
 struct penable {
 	uint16_t vendor_id;
 	uint16_t device_id;
-	int status;
+	int status; /* OK=0 and NT=1 are defines only. Beware! */
 	const char *vendor_name;
 	const char *device_name;
 	int (*doit) (struct pci_dev *dev, const char *name);
@@ -174,10 +174,10 @@ struct board_pciid_enable {
 	uint16_t second_card_vendor;
 	uint16_t second_card_device;
 
-	/* Pattern to match DMI entries */
+	/* Pattern to match DMI entries. May be NULL. */
 	const char *dmi_pattern;
 
-	/* The vendor / part name from the coreboot table. */
+	/* The vendor / part name from the coreboot table. May be NULL. */
 	const char *lb_vendor;
 	const char *lb_part;
 
@@ -188,7 +188,7 @@ struct board_pciid_enable {
 
 	int max_rom_decode_parallel;
 	int status;
-	int (*enable) (void);
+	int (*enable) (void); /* May be NULL. */
 };
 
 extern const struct board_pciid_enable board_pciid_enables[];
