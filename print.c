@@ -77,7 +77,8 @@ static int digits(int n)
 static void print_supported_chips(void)
 {
 	int okcol = 0, pos = 0, i, chipcount = 0;
-	int maxchiplen = 0, maxvendorlen = 0;
+	int maxvendorlen = strlen("Vendor") + 1;
+	int maxchiplen = strlen("Device") + 1;
 	const struct flashchip *f;
 
 	for (f = flashchips; f->name != NULL; f++) {
@@ -92,7 +93,7 @@ static void print_supported_chips(void)
 	maxchiplen++;
 	okcol = maxvendorlen + maxchiplen;
 
-	printf("\nSupported flash chips (total: %d):\n\n", chipcount);
+	printf("Supported flash chips (total: %d):\n\n", chipcount);
 	printf("Vendor");
 	for (i = strlen("Vendor"); i < maxvendorlen; i++)
 		printf(" ");
@@ -158,63 +159,94 @@ static void print_supported_chips(void)
 #if CONFIG_INTERNAL == 1
 static void print_supported_chipsets(void)
 {
-	int i, j, chipsetcount = 0;
+	int i, chipsetcount = 0;
 	const struct penable *c = chipset_enables;
+	int maxvendorlen = strlen("Vendor") + 1;
+	int maxchipsetlen = strlen("Chipset") + 1;
 
-	for (i = 0; c[i].vendor_name != NULL; i++)
+	for (c = chipset_enables; c->vendor_name != NULL; c++) {
 		chipsetcount++;
+		maxvendorlen = max(maxvendorlen, strlen(c->vendor_name));
+		maxchipsetlen = max(maxchipsetlen, strlen(c->device_name));
+	}
+	maxvendorlen++;
+	maxchipsetlen++;
 
-	printf("\nSupported chipsets (total: %d):\n\nVendor:                  "
-	       "Chipset:                 PCI IDs:\n\n", chipsetcount);
+	printf("Supported chipsets (total: %d):\n\n", chipsetcount);
 
-	for (i = 0; c[i].vendor_name != NULL; i++) {
-		printf("%s", c[i].vendor_name);
-		for (j = 0; j < 25 - strlen(c[i].vendor_name); j++)
+	printf("Vendor");
+	for (i = strlen("Vendor"); i < maxvendorlen; i++)
+		printf(" ");
+
+	printf("Chipset");
+	for (i = strlen("Chipset"); i < maxchipsetlen; i++)
+		printf(" ");
+
+	printf("PCI IDs   State\n\n");
+
+	for (c = chipset_enables; c->vendor_name != NULL; c++) {
+		printf("%s", c->vendor_name);
+		for (i = 0; i < maxvendorlen - strlen(c->vendor_name); i++)
 			printf(" ");
-		printf("%s", c[i].device_name);
-		for (j = 0; j < 25 - strlen(c[i].device_name); j++)
+		printf("%s", c->device_name);
+		for (i = 0; i < maxchipsetlen - strlen(c->device_name); i++)
 			printf(" ");
-		printf("%04x:%04x%s\n", c[i].vendor_id, c[i].device_id,
-		       (c[i].status == OK) ? "" : " (untested)");
+		printf("%04x:%04x%s\n", c->vendor_id, c->device_id,
+		       (c->status == OK) ? "" : " (untested)");
 	}
 }
 
 static void print_supported_boards_helper(const struct board_info *boards,
 				   const char *devicetype)
 {
-	int i, j, boardcount_good = 0, boardcount_bad = 0;
-	const struct board_pciid_enable *b = board_pciid_enables;
+	int i, boardcount_good = 0, boardcount_bad = 0;
+	const struct board_pciid_enable *e = board_pciid_enables;
+	const struct board_info *b = boards;
+	int maxvendorlen = strlen("Vendor") + 1;
+	int maxboardlen = strlen("Board") + 1;
 
-	for (i = 0; boards[i].vendor != NULL; i++) {
-		if (boards[i].working)
+	for (b = boards; b->vendor != NULL; b++) {
+		maxvendorlen = max(maxvendorlen, strlen(b->vendor));
+		maxboardlen = max(maxboardlen, strlen(b->name));
+		if (b->working)
 			boardcount_good++;
 		else
 			boardcount_bad++;
 	}
+	maxvendorlen++;
+	maxboardlen++;
 
-	printf("\nKnown %s (good: %d, bad: %d):"
-	       "\n\nVendor:                  Board:                      "
-	       "Status: Required option:"
-	       "\n\n", devicetype, boardcount_good, boardcount_bad);
+	printf("Known %s (good: %d, bad: %d):\n\n",
+	       devicetype, boardcount_good, boardcount_bad);
 
-	for (i = 0; boards[i].vendor != NULL; i++) {
-		printf("%s", boards[i].vendor);
-		for (j = 0; j < 25 - strlen(boards[i].vendor); j++)
+	printf("Vendor");
+	for (i = strlen("Vendor"); i < maxvendorlen; i++)
+		printf(" ");
+
+	printf("Board");
+	for (i = strlen("Board"); i < maxboardlen; i++)
+		printf(" ");
+
+	printf("Status  Required option\n\n");
+
+	for (b = boards; b->vendor != NULL; b++) {
+		printf("%s", b->vendor);
+		for (i = 0; i < maxvendorlen - strlen(b->vendor); i++)
 			printf(" ");
-		printf("%s", boards[i].name);
-		for (j = 0; j < 28 - strlen(boards[i].name); j++)
+		printf("%s", b->name);
+		for (i = 0; i < maxboardlen - strlen(b->name); i++)
 			printf(" ");
-		printf((boards[i].working) ? "OK      " : "BAD     ");
+		printf((b->working) ? "OK      " : "BAD     ");
 
-		for (j = 0; b[j].vendor_name != NULL; j++) {
-			if (strcmp(b[j].vendor_name, boards[i].vendor)
-			    || strcmp(b[j].board_name, boards[i].name))
+		for (e = board_pciid_enables; e->vendor_name != NULL; e++) {
+			if (strcmp(e->vendor_name, b->vendor)
+			    || strcmp(e->board_name, b->name))
 				continue;
-			if (b[j].lb_vendor == NULL)
+			if (e->lb_vendor == NULL)
 				printf("(autodetected)");
 			else
-				printf("-m %s:%s", b[j].lb_vendor,
-						   b[j].lb_part);
+				printf("-m %s:%s", e->lb_vendor,
+						   e->lb_part);
 		}
 		printf("\n");
 	}
@@ -228,10 +260,12 @@ void print_supported(void)
 	printf("\nSupported programmers:\n");
 	list_programmers_linebreak(0, 80, 0);
 #if CONFIG_INTERNAL == 1
-	printf("\nSupported devices for the %s programmer:\n",
+	printf("\nSupported devices for the %s programmer:\n\n",
 	       programmer_table[PROGRAMMER_INTERNAL].name);
 	print_supported_chipsets();
+	printf("\n");
 	print_supported_boards_helper(boards_known, "boards");
+	printf("\n");
 	print_supported_boards_helper(laptops_known, "laptops");
 #endif
 #if CONFIG_DUMMY == 1
