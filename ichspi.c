@@ -1045,7 +1045,7 @@ static void do_ich9_spi_frap(uint32_t frap, int i)
 
 	base  = ICH_FREG_BASE(freg);
 	limit = ICH_FREG_LIMIT(freg);
-	if (base == 0x1fff && limit == 0) {
+	if (base > limit) {
 		/* this FREG is disabled */
 		msg_pdbg("%s region is unused.\n", region_names[i]);
 		return;
