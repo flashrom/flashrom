@@ -43,18 +43,18 @@ char *flashbuses_to_text(enum chipbustype bustype)
 		ret = strcat_realloc(ret, "Non-SPI,");
 	} else {
 		if (bustype & CHIP_BUSTYPE_PARALLEL)
-			ret = strcat_realloc(ret, "Parallel,");
+			ret = strcat_realloc(ret, "Parallel, ");
 		if (bustype & CHIP_BUSTYPE_LPC)
-			ret = strcat_realloc(ret, "LPC,");
+			ret = strcat_realloc(ret, "LPC, ");
 		if (bustype & CHIP_BUSTYPE_FWH)
-			ret = strcat_realloc(ret, "FWH,");
+			ret = strcat_realloc(ret, "FWH, ");
 		if (bustype & CHIP_BUSTYPE_SPI)
-			ret = strcat_realloc(ret, "SPI,");
+			ret = strcat_realloc(ret, "SPI, ");
 		if (bustype == CHIP_BUSTYPE_NONE)
-			ret = strcat_realloc(ret, "None,");
+			ret = strcat_realloc(ret, "None, ");
 	}
 	/* Kill last comma. */
-	ret[strlen(ret) - 1] = '\0';
+	ret[strlen(ret) - 2] = '\0';
 	ret = realloc(ret, strlen(ret) + 1);
 	return ret;
 }

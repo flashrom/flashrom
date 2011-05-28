@@ -136,6 +136,8 @@ struct flashchip {
 			unsigned int size; /* Eraseblock size */
 			unsigned int count; /* Number of contiguous blocks with that size */
 		} eraseblocks[NUM_ERASEREGIONS];
+		/* a block_erase function should try to erase one block of size
+		 * 'blocklen' at address 'blockaddr' and return 0 on success. */
 		int (*block_erase) (struct flashchip *flash, unsigned int blockaddr, unsigned int blocklen);
 	} block_erasers[NUM_ERASEFUNCTIONS];
 

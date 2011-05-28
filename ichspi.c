@@ -159,9 +159,9 @@ static uint16_t REGREAD8(int X)
 	return mmio_readb(ich_spibar + X);
 }
 
-#define REGWRITE32(X,Y) mmio_writel(Y, ich_spibar+X)
-#define REGWRITE16(X,Y) mmio_writew(Y, ich_spibar+X)
-#define REGWRITE8(X,Y)  mmio_writeb(Y, ich_spibar+X)
+#define REGWRITE32(off,val) mmio_writel(val, ich_spibar+off)
+#define REGWRITE16(off,val) mmio_writew(val, ich_spibar+off)
+#define REGWRITE8(off,val)  mmio_writeb(val, ich_spibar+off)
 
 /* Common SPI functions */
 static int find_opcode(OPCODES *op, uint8_t opcode);
@@ -856,7 +856,8 @@ static int ich_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		if (!ichspi_lock)
 			opcode_index = reprogram_opcode_on_the_fly(cmd, writecnt, readcnt);
 		if (opcode_index == -1) {
-			msg_pdbg("Invalid OPCODE 0x%02x\n", cmd);
+			msg_pdbg("Invalid OPCODE 0x%02x, will not execute.\n",
+				 cmd);
 			return SPI_INVALID_OPCODE;
 		}
 	}
