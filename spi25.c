@@ -119,8 +119,10 @@ static int probe_spi_rdid_generic(struct flashchip *flash, int bytes)
 	uint32_t id1;
 	uint32_t id2;
 
-	if (spi_rdid(readarr, bytes))
+	if (spi_rdid(readarr, bytes)) {
+		msg_cdbg("\n");
 		return 0;
+	}
 
 	if (!oddparity(readarr[0]))
 		msg_cdbg("RDID byte 0 parity violation. ");
@@ -198,8 +200,10 @@ int probe_spi_rems(struct flashchip *flash)
 	unsigned char readarr[JEDEC_REMS_INSIZE];
 	uint32_t id1, id2;
 
-	if (spi_rems(readarr))
+	if (spi_rems(readarr)) {
+		msg_cdbg("\n");
 		return 0;
+	}
 
 	id1 = readarr[0];
 	id2 = readarr[1];
@@ -254,15 +258,19 @@ int probe_spi_res1(struct flashchip *flash)
 		return 0;
 	}
 
-	if (spi_res(readarr, 1))
+	if (spi_res(readarr, 1)) {
+		msg_cdbg("\n");
 		return 0;
+	}
 
 	id2 = readarr[0];
 
 	msg_cdbg("%s: id 0x%x\n", __func__, id2);
 
-	if (id2 != flash->model_id)
+	if (id2 != flash->model_id) {
+		msg_cdbg("\n");
 		return 0;
+	}
 
 	/* Print the status register to tell the
 	 * user about possible write protection.
@@ -276,8 +284,10 @@ int probe_spi_res2(struct flashchip *flash)
 	unsigned char readarr[2];
 	uint32_t id1, id2;
 
-	if (spi_res(readarr, 2))
+	if (spi_res(readarr, 2)) {
+		msg_cdbg("\n");
 		return 0;
+	}
 
 	id1 = readarr[0];
 	id2 = readarr[1];

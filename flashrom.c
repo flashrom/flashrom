@@ -1312,7 +1312,7 @@ int read_flash_to_file(struct flashchip *flash, char *filename)
 		goto out_free;
 	}
 
-	ret = write_buf_to_file(buf, flash->total_size * 1024, filename);
+	ret = write_buf_to_file(buf, size, filename);
 out_free:
 	free(buf);
 	msg_cinfo("%s.\n", ret ? "FAILED" : "done");
@@ -1489,13 +1489,13 @@ static int check_block_eraser(struct flashchip *flash, int k, int log)
 	if (!eraser.block_erase && eraser.eraseblocks[0].count) {
 		if (log)
 			msg_cdbg("eraseblock layout is known, but matching "
-				"block erase function is not implemented. ");
+				 "block erase function is not implemented. ");
 		return 1;
 	}
 	if (eraser.block_erase && !eraser.eraseblocks[0].count) {
 		if (log)
 			msg_cdbg("block erase function found, but "
-				"eraseblock layout is not defined. ");
+				 "eraseblock layout is not defined. ");
 		return 1;
 	}
 	return 0;
