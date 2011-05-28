@@ -267,10 +267,8 @@ int probe_spi_res1(struct flashchip *flash)
 
 	msg_cdbg("%s: id 0x%x\n", __func__, id2);
 
-	if (id2 != flash->model_id) {
-		msg_cdbg("\n");
+	if (id2 != flash->model_id)
 		return 0;
-	}
 
 	/* Print the status register to tell the
 	 * user about possible write protection.
