@@ -145,6 +145,10 @@ struct flashchip {
 	int (*unlock) (struct flashchip *flash);
 	int (*write) (struct flashchip *flash, uint8_t *buf, int start, int len);
 	int (*read) (struct flashchip *flash, uint8_t *buf, int start, int len);
+	struct {
+		uint16_t min;
+		uint16_t max;
+	} voltage;
 
 	/* Some flash devices have an additional register space. */
 	chipaddr virtual_memory;
