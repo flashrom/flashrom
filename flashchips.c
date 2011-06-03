@@ -54,6 +54,7 @@ const struct flashchip flashchips[] = {
 	 * .unlock		= Chip unlock function
 	 * .write		= Chip write function
 	 * .read		= Chip read function
+	 * .voltage		= Voltage range in millivolt
 	 */
 
 	{
@@ -80,6 +81,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -111,6 +113,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4750, 5250}, /* -55 speed is +-5%, all others +-10% */
 	},
 
 	{
@@ -168,6 +171,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -194,6 +198,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -220,6 +225,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -492,6 +498,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -518,6 +525,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -550,6 +558,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -615,6 +624,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -648,6 +658,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -681,6 +692,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -714,6 +726,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	/* The A25L40P{T,U} chips are distinguished by their
@@ -752,6 +765,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -785,6 +799,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -818,6 +833,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -854,6 +870,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -890,6 +907,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -921,6 +939,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -952,6 +971,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -983,6 +1003,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -1014,6 +1035,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -1045,6 +1067,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -1076,6 +1099,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -1113,6 +1137,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= NULL, /* Two status reg bytes (read with 0x35 and 0x05) */
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -1150,6 +1175,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= NULL, /* Two status reg bytes (read with 0x35 and 0x05) */
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -1181,6 +1207,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -1212,6 +1239,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -1238,6 +1266,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -1265,6 +1294,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= unlock_49fl00x,
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600},
 	},
 
 	{
@@ -1302,6 +1332,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect_at25df,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2300, 3600}, /* Datasheet says 2.3-3.6V or 2.7-3.6V */
 	},
 
 	{
@@ -1339,6 +1370,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect_at25df,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2300, 3600}, /* Datasheet says 2.3-3.6V or 2.7-3.6V */
 	},
 
 	{
@@ -1376,6 +1408,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect_at25df,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {1600, 2000}, /* Datasheet says range is 1.65-1.95 V */
 	},
 
 	{
@@ -1450,6 +1483,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect_at25df_sec,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -1487,6 +1521,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect_at25df,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -1524,6 +1559,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect_at25df_sec,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -1561,6 +1597,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect_at25df_sec,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -1598,6 +1635,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect_at25df_sec,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -1635,6 +1673,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect_at25f,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -1674,6 +1713,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect_at25fs010,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -1710,6 +1750,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect_at25fs040,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -1732,6 +1773,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= NULL /* Incompatible Page write */,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600}, /* Datasheet says 3.0-3.6 V or 2.7-3.6 V */
 	},
 
 	{
@@ -1769,6 +1811,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect_at25df,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -1805,6 +1848,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -1841,6 +1885,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	/*The AT26DF321 has the same ID as the AT25DF321. */
@@ -1893,6 +1938,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= NULL /* Incompatible Page write */,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -1916,7 +1962,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec,
 		.read		= read_memmapped,
-
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -1940,6 +1986,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec,	/* FIXME */
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -1963,6 +2010,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -1986,6 +2034,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -2001,6 +2050,7 @@ const struct flashchip flashchips[] = {
 		.probe_timing	= TIMING_ZERO,
 		.write		= NULL /* Incompatible Page write */,
 		.read		= NULL /* Incompatible read */,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -2016,6 +2066,7 @@ const struct flashchip flashchips[] = {
 		.probe_timing	= TIMING_ZERO,
 		.write		= NULL,
 		.read		= NULL,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -2031,6 +2082,7 @@ const struct flashchip flashchips[] = {
 		.probe_timing	= TIMING_ZERO,
 		.write		= NULL,
 		.read		= NULL,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -2046,6 +2098,7 @@ const struct flashchip flashchips[] = {
 		.probe_timing	= TIMING_ZERO,
 		.write		= NULL,
 		.read		= NULL,
+		.voltage	= {2500, 3600}, /* Datasheet says 2.5-3.6 V or 2.7-3.6 V */
 	},
 
 	{
@@ -2061,6 +2114,7 @@ const struct flashchip flashchips[] = {
 		.probe_timing	= TIMING_ZERO,
 		.write		= NULL,
 		.read		= NULL,
+		.voltage	= {2500, 3600}, /* Datasheet says 2.5-3.6 V or 2.7-3.6 V */
 	},
 
 	{
@@ -2076,6 +2130,7 @@ const struct flashchip flashchips[] = {
 		.probe_timing	= TIMING_ZERO,
 		.write		= NULL,
 		.read		= NULL,
+		.voltage	= {2500, 3600}, /* Datasheet says 2.5-3.6 V or 2.7-3.6 V */
 	},
 
 	{
@@ -2091,6 +2146,7 @@ const struct flashchip flashchips[] = {
 		.probe_timing	= TIMING_ZERO,
 		.write		= NULL,
 		.read		= NULL /* Incompatible read */,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -2106,6 +2162,7 @@ const struct flashchip flashchips[] = {
 		.probe_timing	= TIMING_ZERO,
 		.write		= NULL,
 		.read		= NULL,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -2121,6 +2178,7 @@ const struct flashchip flashchips[] = {
 		.probe_timing	= TIMING_ZERO,
 		.write		= NULL,
 		.read		= NULL,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -2144,6 +2202,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -2167,6 +2226,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -2198,6 +2258,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -2229,6 +2290,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -2286,6 +2348,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -2318,6 +2381,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_1,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -2349,6 +2413,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -2380,6 +2445,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -2411,6 +2477,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -2442,6 +2509,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -2474,6 +2542,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -2506,6 +2575,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -2538,6 +2608,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -2570,6 +2641,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -2602,6 +2674,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -2634,6 +2707,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -2666,6 +2740,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -2698,6 +2773,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -2730,6 +2806,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -2762,6 +2839,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -2795,6 +2873,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -2827,6 +2906,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -2862,6 +2942,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -2898,6 +2979,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -2934,6 +3016,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -2970,6 +3053,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -3003,6 +3087,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -3036,6 +3121,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -3069,6 +3155,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -3102,6 +3189,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -3129,6 +3217,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -3160,6 +3249,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -3191,6 +3281,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -3222,6 +3313,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= NULL,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -3253,6 +3345,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= NULL,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -3285,6 +3378,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_m29f400bt,
 		.read		= read_memmapped,
+		.voltage	= {4750, 5250}, /* 5.0V +-5% for -55 model, +-10% for rest */
 	},
 
 	{
@@ -3316,6 +3410,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_m29f400bt,
 		.read		= read_memmapped,
+		.voltage	= {4750, 5250}, /* 5.0V +-5% for -55 model, +-10% for rest */
 	},
 
 	{
@@ -3347,6 +3442,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4750, 5250}, /* 5.0V +-5% for -45 model, +-10% for rest */
 	},
 
 	{
@@ -3378,6 +3474,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4750, 5250}, /* 5.0V +-5% for -45 model, +-10% for rest */
 	},
 
 	{
@@ -3430,6 +3527,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_82802ab,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -3456,6 +3554,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_82802ab,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -3483,6 +3582,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_82802ab,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500}, /* 5.0V +-10% read, 12V fast program & erase- +-5% standard, +-10% option */
 	},
 
 	{
@@ -3640,6 +3740,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= unlock_82802ab,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600},
 	},
 
 	{
@@ -3664,6 +3765,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= unlock_82802ab,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600},
 	},
 
 	{
@@ -3700,6 +3802,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -3733,6 +3836,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -3769,6 +3873,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -3805,6 +3910,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -3841,6 +3947,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -3877,6 +3984,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -3910,6 +4018,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -3976,6 +4085,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -4009,6 +4119,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -4042,6 +4153,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -4075,6 +4187,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -4107,6 +4220,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -4139,6 +4253,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -4170,6 +4285,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -4201,6 +4317,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -4253,6 +4370,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -4279,6 +4397,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -4305,6 +4424,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -4331,6 +4451,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -4357,6 +4478,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -4383,6 +4505,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -4409,6 +4532,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -4435,6 +4559,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -4464,6 +4589,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -4493,6 +4619,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -4522,6 +4649,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -4551,6 +4679,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -4580,6 +4709,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -4609,6 +4739,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -4673,6 +4804,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -4702,6 +4834,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -4737,6 +4870,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -4797,6 +4931,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -4828,6 +4963,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -4857,6 +4993,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -4886,6 +5023,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -4915,6 +5053,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {2700, 3600},
 	},
 	
 	{
@@ -4945,6 +5084,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= unlock_49fl00x,
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600},
 	},
 
 	{
@@ -4975,6 +5115,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= unlock_49fl00x,
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600},
 	},
 
 	{
@@ -5033,6 +5174,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= unlock_82802ab,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600},
 	},
 
 	{
@@ -5085,6 +5227,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -5111,6 +5254,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -5227,6 +5371,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_1,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -5262,6 +5407,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_aai_write,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -5297,6 +5443,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -5361,6 +5508,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_1,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -5460,6 +5608,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_1,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -5487,6 +5636,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= unprotect_28sf040,
 		.write		= write_28sf040,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -5510,6 +5660,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -5533,6 +5684,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600},
 	},
 
 	{
@@ -5556,6 +5708,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -5579,6 +5732,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600},
 	},
 
 	{
@@ -5605,6 +5759,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -5631,6 +5786,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -5657,6 +5813,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -5683,6 +5840,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -5709,6 +5867,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -5735,6 +5894,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -5761,6 +5921,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -5787,6 +5948,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -5816,6 +5978,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -5847,6 +6010,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= unlock_sst_fwhub,
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600},
 	},
 
 	{
@@ -5878,6 +6042,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= unlock_sst_fwhub,
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600},
 	},
 
 	{
@@ -5912,6 +6077,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= unlock_sst_fwhub,
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600},
 	},
 
 	{
@@ -5944,6 +6110,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= unlock_49lfxxxc,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600},
 	},
 
 	{
@@ -5975,6 +6142,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= unlock_sst_fwhub,
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600},
 	},
 
 	{
@@ -6007,6 +6175,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= unlock_49lfxxxc,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600},
 	},
 
 	{
@@ -6039,6 +6208,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= unlock_49lfxxxc,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600},
 	},
 
 	{
@@ -6068,6 +6238,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600},
 	},
 
 	{
@@ -6097,6 +6268,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600},
 	},
 
 	{
@@ -6126,6 +6298,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600},
 	},
 
 	{
@@ -6156,6 +6329,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= unlock_82802ab,
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600},
 	},
 
 	{
@@ -6185,6 +6359,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600},
 	},
 
 	{
@@ -6217,6 +6392,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= unlock_49lfxxxc,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600},
 	},
 
 	{
@@ -6243,6 +6419,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	/* The ST M25P05 is a bit of a problem. It has the same ID as the
@@ -6274,6 +6451,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_1, /* 128 */
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -6300,6 +6478,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	/* The ST M25P10 has the same problem as the M25P05. */
@@ -6327,6 +6506,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_1, /* 128 */
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -6353,6 +6533,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -6379,6 +6560,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -6431,6 +6613,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -6457,6 +6640,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -6483,6 +6667,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -6509,6 +6694,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -6535,6 +6721,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -6653,6 +6840,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4750, 5250}, /* Datasheet says some are only 4.75-5.25 V */
 	},
 
 	{
@@ -6684,6 +6872,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4750, 5250}, /* Datasheet says some are only 4.75-5.25 V */
 	},
 
 	{
@@ -6710,6 +6899,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -6742,6 +6932,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_m29f400bt,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 	{
 		/* FIXME: this has WORD/BYTE sequences; 2AA for word, 555 for byte */
@@ -6773,6 +6964,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_m29f400bt,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -6799,6 +6991,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -6825,6 +7018,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {2700, 3600},
 	},
 
         {
@@ -6848,6 +7042,7 @@ const struct flashchip flashchips[] = {
                 },
                 .write          = write_jedec_1,
                 .read           = read_memmapped,
+		.voltage	= {2700, 3600},
         },
 
 	{
@@ -6880,6 +7075,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= unlock_stm50flw0x0x,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
 	},
 
 	{
@@ -6912,6 +7108,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= unlock_stm50flw0x0x,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
 	},
 
 	{
@@ -6944,6 +7141,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= unlock_stm50flw0x0x,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
 	},
 
 	{
@@ -6976,6 +7174,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= unlock_stm50flw0x0x,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
 	},
 
 	{
@@ -7005,6 +7204,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= unlock_stm50flw0x0x,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
 	},
 
 	{
@@ -7029,6 +7229,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= unlock_stm50flw0x0x,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
 	},
 
 	{
@@ -7053,6 +7254,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= unlock_stm50flw0x0x,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
 	},
 
 	{
@@ -7077,6 +7279,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= unlock_stm50flw0x0x,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
 	},
 
 	{
@@ -7107,6 +7310,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= unlock_stm50flw0x0x,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
 	},
 
 	{
@@ -7133,6 +7337,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -7159,6 +7364,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -7237,6 +7443,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -7263,6 +7470,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -7289,6 +7497,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600},
 	},
 
 	{
@@ -7315,6 +7524,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600},
 	},
 
 	{
@@ -7346,6 +7556,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -7377,6 +7588,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -7413,6 +7625,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -7449,6 +7662,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -7485,6 +7699,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -7587,6 +7802,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -7617,6 +7833,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -7647,6 +7864,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -7677,6 +7895,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -7713,6 +7932,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -7749,6 +7969,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -7785,6 +8006,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -7831,6 +8053,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -7854,6 +8077,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -7934,6 +8158,7 @@ const struct flashchip flashchips[] = {
 		.printlock	= printlock_w39v040a,
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600},
 	},
 
 	{
@@ -7961,6 +8186,7 @@ const struct flashchip flashchips[] = {
 		.printlock	= printlock_w39v040b,
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600},
 	},
 
 	{
@@ -7988,6 +8214,7 @@ const struct flashchip flashchips[] = {
 		.printlock	= printlock_w39v040c,
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600},
 	},
 
 	{
@@ -8019,6 +8246,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= unlock_sst_fwhub,
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600},
 	},
 
 	{
@@ -8101,6 +8329,7 @@ const struct flashchip flashchips[] = {
 		.printlock	= printlock_w39v080a,
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600},
 	},
 
 	{
@@ -8132,6 +8361,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -8155,6 +8385,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -8186,6 +8417,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600},
 	},
 
 	{
@@ -8217,6 +8449,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600},
 	},
 
 	{
@@ -8245,6 +8478,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= unlock_w39v080fa,
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
+		.voltage	= {3000, 3600}, /* 12 V fast program mode */
 	},
 
 	{
