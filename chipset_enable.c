@@ -1028,7 +1028,7 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x3b0b, NT, "Intel", "HM57",		enable_flash_ich10},
 	{0x8086, 0x3b0d, NT, "Intel", "3400 Mobile SFF", enable_flash_ich10},
 	{0x8086, 0x3b0e, NT, "Intel", "B55",		enable_flash_ich10},
-	{0x8086, 0x3b0f, NT, "Intel", "QS57",		enable_flash_ich10},
+	{0x8086, 0x3b0f, OK, "Intel", "QS57",		enable_flash_ich10},
 	{0x8086, 0x3b12, NT, "Intel", "3400",		enable_flash_ich10},
 	{0x8086, 0x3b14, NT, "Intel", "3420",		enable_flash_ich10},
 	{0x8086, 0x3b16, NT, "Intel", "3450",		enable_flash_ich10},
