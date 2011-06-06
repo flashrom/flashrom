@@ -588,6 +588,7 @@ const struct board_info boards_known[] = {
 	B("MSI",	"MS-7368 (K9AG Neo2-Digital)", 1, "http://www.msi.com/index.php?func=proddesc&maincat_no=1&prod_no=1241", NULL),
 	B("MSI",	"MS-7376 (K9A2 Platinum)", 1, "http://www.msi.com/index.php?func=proddesc&maincat_no=1&prod_no=1332", NULL),
 	B("MSI",	"MS-7529 (G31M3-L(S) V2)", 1, "http://www.msi.com/product/mb/G31M3-L-V2---G31M3-LS-V2.html", NULL),
+	B("MSI",	"MS-7529 (G31TM-P21)",  1, "http://msi.com/product/mb/G31TM-P21.html", NULL),
 	B("MSI",	"MS-7596 (785GM-E51)",  1, "http://eu.msi.com/index.php?func=proddesc&maincat_no=1&prod_no=1866", NULL),
 	B("MSI",	"MS-7599 (870-C45)",    1, "http://www.msi.com/product/mb/870-C45.html", NULL),
 	B("MSI",	"MS-7640 (890FXA-GD70)",1, "http://www.msi.com/product/mb/890FXA-GD70.html", "Reported by \"Linux User #330250\" http://flashrom.org/pipermail/flashrom/2011-March/006072.html"),
