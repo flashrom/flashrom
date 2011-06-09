@@ -30,6 +30,11 @@
 /* Change this to #define if you want to test without a serial implementation */
 #undef FAKE_COMMUNICATION
 
+struct buspirate_spispeeds {
+	const char *name;
+	const int speed;
+};
+
 #ifndef FAKE_COMMUNICATION
 static int buspirate_serialport_setup(char *dev)
 {
