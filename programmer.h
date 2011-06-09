@@ -239,7 +239,7 @@ int rpci_write_long(struct pci_dev *dev, int reg, uint32_t data);
 void print_supported_pcidevs(const struct pcidev_status *devs);
 #endif
 
-#if CONFIG_INTERNAL
+#if CONFIG_INTERNAL == 1
 /* board_enable.c */
 void w836xx_ext_enter(uint16_t port);
 void w836xx_ext_leave(uint16_t port);
@@ -262,6 +262,7 @@ int processor_flash_enable(void);
 void *physmap(const char *descr, unsigned long phys_addr, size_t len);
 void *physmap_try_ro(const char *descr, unsigned long phys_addr, size_t len);
 void physunmap(void *virt_addr, size_t len);
+#if CONFIG_INTERNAL == 1
 int setup_cpu_msr(int cpu);
 void cleanup_cpu_msr(void);
 
@@ -277,7 +278,6 @@ void dmi_init(void);
 int dmi_match(const char *pattern);
 
 /* internal.c */
-#if NEED_PCI == 1
 struct superio {
 	uint16_t vendor;
 	uint16_t port;
@@ -287,6 +287,8 @@ extern struct superio superios[];
 extern int superio_count;
 #define SUPERIO_VENDOR_NONE	0x0
 #define SUPERIO_VENDOR_ITE	0x1
+#endif
+#if NEED_PCI == 1
 struct pci_dev *pci_dev_find_filter(struct pci_filter filter);
 struct pci_dev *pci_dev_find_vendorclass(uint16_t vendor, uint16_t class);
 struct pci_dev *pci_dev_find(uint16_t vendor, uint16_t device);
@@ -491,28 +493,21 @@ void print_supported_usbdevs(const struct usbdev_status *devs);
 int rayer_spi_init(void);
 #endif
 
-/* mcp6x_spi.c */
-#if CONFIG_INTERNAL == 1
-#if defined(__i386__) || defined(__x86_64__)
-int mcp6x_spi_init(int want_spi);
-#endif
-#endif
-
 /* bitbang_spi.c */
 int bitbang_spi_init(const struct bitbang_spi_master *master, int halfperiod);
 int bitbang_spi_shutdown(const struct bitbang_spi_master *master);
 
 /* buspirate_spi.c */
-struct buspirate_spispeeds {
-	const char *name;
-	const int speed;
-};
+#if CONFIG_BUSPIRATE_SPI == 1
 int buspirate_spi_init(void);
 int buspirate_spi_shutdown(void);
+#endif
 
 /* dediprog.c */
+#if CONFIG_DEDIPROG == 1
 int dediprog_init(void);
 int dediprog_shutdown(void);
+#endif
 
 /* flashrom.c */
 struct decode_sizes {
@@ -593,7 +588,6 @@ extern uint32_t ichspi_bbar;
 int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 		    int ich_generation);
 int via_init_spi(struct pci_dev *dev);
-#endif
 
 /* it85spi.c */
 int it85xx_spi_init(struct superio s);
@@ -605,23 +599,25 @@ void exit_conf_mode_ite(uint16_t port);
 void probe_superio_ite(void);
 int init_superio_ite(void);
 
+/* mcp6x_spi.c */
+int mcp6x_spi_init(int want_spi);
+
 /* sb600spi.c */
-#if CONFIG_INTERNAL == 1
 int sb600_probe_spi(struct pci_dev *dev);
-#endif
 
 /* wbsio_spi.c */
-#if CONFIG_INTERNAL == 1
 int wbsio_check_for_spi(void);
 #endif
 
 /* serprog.c */
+#if CONFIG_SERPROG == 1
 int serprog_init(void);
 int serprog_shutdown(void);
 void serprog_chip_writeb(uint8_t val, chipaddr addr);
 uint8_t serprog_chip_readb(const chipaddr addr);
 void serprog_chip_readn(uint8_t *buf, const chipaddr addr, size_t len);
 void serprog_delay(int delay);
+#endif
 
 /* serial.c */
 #if _WIN32
