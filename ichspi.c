@@ -47,27 +47,41 @@
 #define ICH9_REG_FDATA0		0x10	/* 64 Bytes */
 
 #define ICH9_REG_SSFS		0x90	/* 08 Bits */
-#define SSFS_SCIP		0x00000001
-#define SSFS_CDS		0x00000004
-#define SSFS_FCERR		0x00000008
-#define SSFS_AEL		0x00000010
+#define SSFS_SCIP_OFF		0	/* SPI Cycle In Progress */
+#define SSFS_SCIP		(0x1 << SSFS_SCIP_OFF)
+#define SSFS_FDONE_OFF		2	/* Cycle Done Status */
+#define SSFS_FDONE		(0x1 << SSFS_FDONE_OFF)
+#define SSFS_FCERR_OFF		3	/* Flash Cycle Error */
+#define SSFS_FCERR		(0x1 << SSFS_FCERR_OFF)
+#define SSFS_AEL_OFF		4	/* Access Error Log */
+#define SSFS_AEL		(0x1 << SSFS_AEL_OFF)
 /* The following bits are reserved in SSFS: 1,5-7. */
 #define SSFS_RESERVED_MASK	0x000000e2
 
 #define ICH9_REG_SSFC		0x91	/* 24 Bits */
-#define SSFC_SCGO		0x00000200
-#define SSFC_ACS		0x00000400
-#define SSFC_SPOP		0x00000800
-#define SSFC_COP		0x00001000
-#define SSFC_DBC		0x00010000
-#define SSFC_DS			0x00400000
-#define SSFC_SME		0x00800000
-#define SSFC_SCF		0x01000000
-#define SSFC_SCF_20MHZ 0x00000000
-#define SSFC_SCF_33MHZ 0x01000000
 /* We combine SSFS and SSFC to one 32-bit word,
- * therefore SSFC bits are off by 8.
- * The following bits are reserved in SSFC: 23-19,7,0. */
+ * therefore SSFC bits are off by 8. */
+						/* 0: reserved */
+#define SSFC_SCGO_OFF		(1 + 8)		/* 1: SPI Cycle Go */
+#define SSFC_SCGO		(0x1 << SSFC_SCGO_OFF)
+#define SSFC_ACS_OFF		(2 + 8)		/* 2: Atomic Cycle Sequence */
+#define SSFC_ACS		(0x1 << SSFC_ACS_OFF)
+#define SSFC_SPOP_OFF		(3 + 8)		/* 3: Sequence Prefix Opcode Pointer */
+#define SSFC_SPOP		(0x1 << SSFC_SPOP_OFF)
+#define SSFC_COP_OFF		(4 + 8)		/* 4-6: Cycle Opcode Pointer */
+#define SSFC_COP		(0x7 << SSFC_COP_OFF)
+						/* 7: reserved */
+#define SSFC_DBC_OFF		(8 + 8)		/* 8-13: Data Byte Count */
+#define SSFC_DBC		(0x3f << SSFC_DBC_OFF)
+#define SSFC_DS_OFF		(14 + 8)	/* 14: Data Cycle */
+#define SSFC_DS			(0x1 << SSFC_DS_OFF)
+#define SSFC_SME_OFF		(15 + 8)	/* 15: SPI SMI# Enable */
+#define SSFC_SME		(0x1 << SSFC_SME_OFF)
+#define SSFC_SCF_OFF		(16 + 8)	/* 16-18: SPI Cycle Frequency */
+#define SSFC_SCF		(0x7 << SSFC_SCF_OFF)
+#define SSFC_SCF_20MHZ		0x00000000
+#define SSFC_SCF_33MHZ		0x01000000
+						/* 19-23: reserved */
 #define SSFC_RESERVED_MASK	0xf8008100
 
 #define ICH9_REG_PREOP		0x94	/* 16 Bits */
@@ -567,7 +581,7 @@ static int ich7_run_opcode(OPCODE op, uint32_t offset,
 	/* keep reserved bits */
 	temp16 &= SPIS_RESERVED_MASK;
 	/* clear error status registers */
-	temp16 |= (SPIS_CDS + SPIS_FCERR);
+	temp16 |= (SPIS_CDS | SPIS_FCERR);
 	REGWRITE16(ICH7_REG_SPIS, temp16);
 
 	/* Assemble SPIC */
@@ -709,8 +723,8 @@ static int ich9_run_opcode(OPCODE op, uint32_t offset,
 	temp32 = REGREAD32(ICH9_REG_SSFS);
 	/* Keep reserved bits only */
 	temp32 &= SSFS_RESERVED_MASK | SSFC_RESERVED_MASK;
-	/* clear error status registers */
-	temp32 |= (SSFS_CDS + SSFS_FCERR);
+	/* Clear cycle done and cycle error status registers */
+	temp32 |= (SSFS_FDONE | SSFS_FCERR);
 	REGWRITE32(ICH9_REG_SSFS, temp32);
 
 	/* Use 20 MHz */
@@ -720,7 +734,8 @@ static int ich9_run_opcode(OPCODE op, uint32_t offset,
 	if (datalength != 0) {
 		uint32_t datatemp;
 		temp32 |= SSFC_DS;
-		datatemp = ((uint32_t) ((datalength - 1) & 0x3f)) << (8 + 8);
+		datatemp = ((((uint32_t)datalength - 1) << SSFC_DBC_OFF) &
+			    SSFC_DBC);
 		temp32 |= datatemp;
 	}
 
@@ -767,7 +782,7 @@ static int ich9_run_opcode(OPCODE op, uint32_t offset,
 	REGWRITE32(ICH9_REG_SSFS, temp32);
 
 	/* Wait for Cycle Done Status or Flash Cycle Error. */
-	while (((REGREAD32(ICH9_REG_SSFS) & (SSFS_CDS | SSFS_FCERR)) == 0) &&
+	while (((REGREAD32(ICH9_REG_SSFS) & (SSFS_FDONE | SSFS_FCERR)) == 0) &&
 	       --timeout) {
 		programmer_delay(10);
 	}
