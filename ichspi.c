@@ -43,6 +43,37 @@
 #include "spi.h"
 
 /* ICH9 controller register definition */
+#define ICH9_REG_HSFS		0x04	/* 16 Bits Hardware Sequencing Flash Status */
+#define HSFS_FDONE_OFF		0	/* 0: Flash Cycle Done */
+#define HSFS_FDONE		(0x1 << HSFS_FDONE_OFF)
+#define HSFS_FCERR_OFF		1	/* 1: Flash Cycle Error */
+#define HSFS_FCERR		(0x1 << HSFS_FCERR_OFF)
+#define HSFS_AEL_OFF		2	/* 2: Access Error Log */
+#define HSFS_AEL		(0x1 << HSFS_AEL_OFF)
+#define HSFS_BERASE_OFF		3	/* 3-4: Block/Sector Erase Size */
+#define HSFS_BERASE		(0x3 << HSFS_BERASE_OFF)
+#define HSFS_SCIP_OFF		5	/* 5: SPI Cycle In Progress */
+#define HSFS_SCIP		(0x1 << HSFS_SCIP_OFF)
+					/* 6-12: reserved */
+#define HSFS_FDOPSS_OFF		13	/* 13: Flash Descriptor Override Pin-Strap Status */
+#define HSFS_FDOPSS		(0x1 << HSFS_FDOPSS_OFF)
+#define HSFS_FDV_OFF		14	/* 14: Flash Descriptor Valid */
+#define HSFS_FDV		(0x1 << HSFS_FDV_OFF)
+#define HSFS_FLOCKDN_OFF	15	/* 15: Flash Configuration Lock-Down */
+#define HSFS_FLOCKDN		(0x1 << HSFS_FLOCKDN_OFF)
+
+#define ICH9_REG_HSFC		0x06	/* 16 Bits Hardware Sequencing Flash Control */
+#define HSFC_FGO_OFF		0	/* 0: Flash Cycle Go */
+#define HSFC_FGO		(0x1 << HSFC_FGO_OFF)
+#define HSFC_FCYCLE_OFF		1	/* 1-2: FLASH Cycle */
+#define HSFC_FCYCLE		(0x3 << HSFC_FCYCLE_OFF)
+					/* 3-7: reserved */
+#define HSFC_FDBC_OFF		8	/* 8-13: Flash Data Byte Count */
+#define HSFC_FDBC		(0x3f << HSFC_FDBC_OFF)
+					/* 14: reserved */
+#define HSFC_SME_OFF		15	/* 15: SPI SMI# Enable */
+#define HSFC_SME		(0x1 << HSFC_SME_OFF)
+
 #define ICH9_REG_FADDR		0x08	/* 32 Bits */
 #define ICH9_REG_FDATA0		0x10	/* 64 Bytes */
 
@@ -267,6 +298,28 @@ static void pretty_print_opcodes(OPCODES *ops)
 }
 
 #define pprint_reg(reg, bit, val, sep) msg_pdbg("%s=%d" sep, #bit, (val & reg##_##bit)>>reg##_##bit##_OFF)
+
+static void prettyprint_ich9_reg_hsfs(uint16_t reg_val)
+{
+	msg_pdbg("HSFS: ");
+	pprint_reg(HSFS, FDONE, reg_val, ", ");
+	pprint_reg(HSFS, FCERR, reg_val, ", ");
+	pprint_reg(HSFS, AEL, reg_val, ", ");
+	pprint_reg(HSFS, BERASE, reg_val, ", ");
+	pprint_reg(HSFS, SCIP, reg_val, ", ");
+	pprint_reg(HSFS, FDOPSS, reg_val, ", ");
+	pprint_reg(HSFS, FDV, reg_val, ", ");
+	pprint_reg(HSFS, FLOCKDN, reg_val, "\n");
+}
+
+static void prettyprint_ich9_reg_hsfc(uint16_t reg_val)
+{
+	msg_pdbg("HSFC: ");
+	pprint_reg(HSFC, FGO, reg_val, ", ");
+	pprint_reg(HSFC, FCYCLE, reg_val, ", ");
+	pprint_reg(HSFC, FDBC, reg_val, ", ");
+	pprint_reg(HSFC, SME, reg_val, "\n");
+}
 
 static void prettyprint_ich9_reg_ssfs(uint32_t reg_val)
 {
@@ -1213,14 +1266,15 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 	case SPI_CONTROLLER_ICH9:
 		tmp2 = mmio_readw(ich_spibar + 4);
 		msg_pdbg("0x04: 0x%04x (HSFS)\n", tmp2);
-		msg_pdbg("FLOCKDN %i, ", (tmp2 >> 15 & 1));
-		msg_pdbg("FDV %i, ", (tmp2 >> 14) & 1);
-		msg_pdbg("FDOPSS %i, ", (tmp2 >> 13) & 1);
-		msg_pdbg("SCIP %i, ", (tmp2 >> 5) & 1);
-		msg_pdbg("BERASE %i, ", (tmp2 >> 3) & 3);
-		msg_pdbg("AEL %i, ", (tmp2 >> 2) & 1);
-		msg_pdbg("FCERR %i, ", (tmp2 >> 1) & 1);
-		msg_pdbg("FDONE %i\n", (tmp2 >> 0) & 1);
+		prettyprint_ich9_reg_hsfs(tmp2);
+		if (tmp2 & (1 << 15)) {
+			msg_pinfo("WARNING: SPI Configuration Lockdown activated.\n");
+			ichspi_lock = 1;
+		}
+
+		tmp2 = mmio_readw(ich_spibar + 6);
+		msg_pdbg("0x06: 0x%04x (HSFC)\n", tmp2);
+		prettyprint_ich9_reg_hsfc(tmp2);
 
 		tmp = mmio_readl(ich_spibar + 0x50);
 		msg_pdbg("0x50: 0x%08x (FRAP)\n", tmp);
@@ -1267,10 +1321,6 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 			     ichspi_bbar);
 		msg_pdbg("0xB0: 0x%08x (FDOC)\n",
 			     mmio_readl(ich_spibar + 0xB0));
-		if (tmp2 & (1 << 15)) {
-			msg_pinfo("WARNING: SPI Configuration Lockdown activated.\n");
-			ichspi_lock = 1;
-		}
 		ich_init_opcodes();
 		break;
 	default:
