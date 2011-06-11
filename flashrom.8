@@ -183,7 +183,7 @@ cards)"
 .BR "* it87spi" " (for flash ROMs behind an ITE IT87xx Super I/O LPC/SPI \
 translation unit)"
 .sp
-.BR "* ft2232_spi" " (for SPI flash ROMs attached to a FT2232H/FT4232H/JTAGkey \
+.BR "* ft2232_spi" " (for SPI flash ROMs attached to an FT2232/FT4232H family \
 based USB SPI programmer)"
 .sp
 .BR "* serprog" " (for flash ROMs attached to a programmer speaking serprog)"
@@ -361,8 +361,9 @@ type and interface/port it should support. For that you have to use the
 .sp
 syntax where
 .B model
-can be any of
-.BR 2232H ", " JTAGkey ", or " 4232H
+can be one of
+.BR 2232H ", " 4232H ", " jtagkey ", " openmoko ", " arm-usb-tiny ", " \
+arm-usb-tiny-h ", " arm-usb-ocd " or " arm-usb-ocd-h
 and
 .B interface
 can be any of
