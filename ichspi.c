@@ -245,6 +245,50 @@ static OPCODE POSSIBLE_OPCODES[] = {
 
 static OPCODES O_EXISTING = {};
 
+/* pretty printing functions */
+static void pretty_print_opcodes(OPCODES *ops)
+{
+	if(ops == NULL)
+		return;
+
+	msg_pdbg("preop0=0x%02x, preop1=0x%02x\n", ops->preop[0],
+		 ops->preop[1]);
+
+	OPCODE oc;
+	uint8_t i;
+	for (i = 0; i < 8; i++) {
+		oc = ops->opcode[i];
+		msg_pdbg("op[%d]=0x%02x, %d, %d\n",
+			 i,
+			 oc.opcode,
+			 oc.spi_type,
+			 oc.atomic);
+	}
+}
+
+#define pprint_reg(reg, bit, val, sep) msg_pdbg("%s=%d" sep, #bit, (val & reg##_##bit)>>reg##_##bit##_OFF)
+
+static void prettyprint_ich9_reg_ssfs(uint32_t reg_val)
+{
+	msg_pdbg("SSFS: ");
+	pprint_reg(SSFS, SCIP, reg_val, ", ");
+	pprint_reg(SSFS, FDONE, reg_val, ", ");
+	pprint_reg(SSFS, FCERR, reg_val, ", ");
+	pprint_reg(SSFS, AEL, reg_val, "\n");
+}
+
+static void prettyprint_ich9_reg_ssfc(uint32_t reg_val)
+{
+	msg_pdbg("SSFC: ");
+	pprint_reg(SSFC, SCGO, reg_val, ", ");
+	pprint_reg(SSFC, ACS, reg_val, ", ");
+	pprint_reg(SSFC, SPOP, reg_val, ", ");
+	pprint_reg(SSFC, COP, reg_val, ", ");
+	pprint_reg(SSFC, DBC, reg_val, ", ");
+	pprint_reg(SSFC, SME, reg_val, ", ");
+	pprint_reg(SSFC, SCF, reg_val, "\n");
+}
+
 static uint8_t lookup_spi_type(uint8_t opcode)
 {
 	int a;
@@ -521,6 +565,8 @@ static int ich_init_opcodes(void)
 	} else {
 		curopcodes = curopcodes_done;
 		msg_pdbg("done\n");
+		pretty_print_opcodes(curopcodes);
+		msg_pdbg("\n");
 		return 0;
 	}
 }
@@ -796,6 +842,8 @@ static int ich9_run_opcode(OPCODE op, uint32_t offset,
 	temp32 = REGREAD32(ICH9_REG_SSFS);
 	if (temp32 & SSFS_FCERR) {
 		msg_perr("Transaction error!\n");
+		prettyprint_ich9_reg_ssfs(temp32);
+		prettyprint_ich9_reg_ssfc(temp32);
 		/* keep reserved bits */
 		temp32 &= SSFS_RESERVED_MASK | SSFC_RESERVED_MASK;
 		/* Clear the transaction error. */
@@ -1198,16 +1246,13 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 
 		tmp = mmio_readl(ich_spibar + 0x90);
 		msg_pdbg("0x90: 0x%02x (SSFS)\n", tmp & 0xff);
-		msg_pdbg("AEL %i, ", (tmp >> 4) & 1);
-		msg_pdbg("FCERR %i, ", (tmp >> 3) & 1);
-		msg_pdbg("FDONE %i, ", (tmp >> 2) & 1);
-		msg_pdbg("SCIP %i\n", (tmp >> 0) & 1);
+		prettyprint_ich9_reg_ssfs(tmp);
 		if (tmp & (1 << 3)) {
 			msg_pdbg("Clearing SSFS.FCERR\n");
 			mmio_writeb(1 << 3, ich_spibar + 0x90);
 		}
-		tmp >>= 8;
-		msg_pdbg("0x91: 0x%06x (SSFC)\n", tmp);
+		msg_pdbg("0x91: 0x%06x (SSFC)\n", tmp >> 8);
+		prettyprint_ich9_reg_ssfc(tmp);
 
 		msg_pdbg("0x94: 0x%04x     (PREOP)\n",
 			     mmio_readw(ich_spibar + 0x94));
