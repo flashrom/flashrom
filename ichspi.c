@@ -922,37 +922,31 @@ static int ich9_run_opcode(OPCODE op, uint32_t offset,
 static int run_opcode(OPCODE op, uint32_t offset,
 		      uint8_t datalength, uint8_t * data)
 {
-	switch (spi_programmer->type) {
-	case SPI_CONTROLLER_VIA:
-		if (datalength > 16) {
-			msg_perr("%s: Internal command size error for "
-				"opcode 0x%02x, got datalength=%i, want <=16\n",
-				__func__, op.opcode, datalength);
-			return SPI_INVALID_LENGTH;
-		}
-		return ich7_run_opcode(op, offset, datalength, data, 16);
-	case SPI_CONTROLLER_ICH7:
-		if (datalength > 64) {
-			msg_perr("%s: Internal command size error for "
-				"opcode 0x%02x, got datalength=%i, want <=16\n",
-				__func__, op.opcode, datalength);
-			return SPI_INVALID_LENGTH;
-		}
-		return ich7_run_opcode(op, offset, datalength, data, 64);
-	case SPI_CONTROLLER_ICH9:
-		if (datalength > 64) {
-			msg_perr("%s: Internal command size error for "
-				"opcode 0x%02x, got datalength=%i, want <=16\n",
-				__func__, op.opcode, datalength);
-			return SPI_INVALID_LENGTH;
-		}
-		return ich9_run_opcode(op, offset, datalength, data);
-	default:
+	/* max_data_read == max_data_write for all Intel/VIA SPI masters */
+	uint8_t maxlength = spi_programmer->max_data_read;
+
+	if (spi_programmer->type == SPI_CONTROLLER_NONE) {
 		msg_perr("%s: unsupported chipset\n", __func__);
+		return -1;
 	}
 
-	/* If we ever get here, something really weird happened */
-	return -1;
+	if (datalength > maxlength) {
+		msg_perr("%s: Internal command size error for "
+			"opcode 0x%02x, got datalength=%i, want <=%i\n",
+			__func__, op.opcode, datalength, maxlength);
+		return SPI_INVALID_LENGTH;
+	}
+
+	switch (spi_programmer->type) {
+	case SPI_CONTROLLER_VIA:
+	case SPI_CONTROLLER_ICH7:
+		return ich7_run_opcode(op, offset, datalength, data, maxlength);
+	case SPI_CONTROLLER_ICH9:
+		return ich9_run_opcode(op, offset, datalength, data);
+	default:
+		/* If we ever get here, something really weird happened */
+		return -1;
+	}
 }
 
 static int ich_spi_send_command(unsigned int writecnt, unsigned int readcnt,
@@ -1038,7 +1032,13 @@ static int ich_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		}
 	}
 
-	/* translate read/write array/count */
+	/* Translate read/write array/count.
+	 * The maximum data length is identical for the maximum read length and
+	 * for the maximum write length excluding opcode and address. Opcode and
+	 * address are stored in separate registers, not in the data registers
+	 * and are thus not counted towards data length. The only exception
+	 * applies if the opcode definition (un)intentionally classifies said
+	 * opcode incorrectly as non-address opcode or vice versa. */
 	if (opcode->spi_type == SPI_OPCODE_TYPE_WRITE_NO_ADDRESS) {
 		data = (uint8_t *) (writearr + 1);
 		count = writecnt - 1;
