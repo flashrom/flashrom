@@ -38,13 +38,22 @@
 #define FIC_VID			0x1457
 #define OPENMOKO_DBGBOARD_PID	0x5118
 
+#define OLIMEX_VID		0x15BA
+#define OLIMEX_ARM_OCD_PID	0x0003
+#define OLIMEX_ARM_TINY_PID	0x0004
+#define OLIMEX_ARM_OCD_H_PID	0x002B
+#define OLIMEX_ARM_TINY_H_PID	0x002A
+
 const struct usbdev_status devs_ft2232spi[] = {
 	{FTDI_VID, FTDI_FT2232H_PID, OK, "FTDI", "FT2232H"},
 	{FTDI_VID, FTDI_FT4232H_PID, OK, "FTDI", "FT4232H"},
 	{FTDI_VID, AMONTEC_JTAGKEY_PID, OK, "Amontec", "JTAGkey"},
-	{FIC_VID, OPENMOKO_DBGBOARD_PID, OK,
-		"First International Computer, Inc.",
+	{FIC_VID, OPENMOKO_DBGBOARD_PID, OK, "FIC",
 		"OpenMoko Neo1973 Debug board (V2+)"},
+	{OLIMEX_VID, OLIMEX_ARM_OCD_PID, NT, "Olimex", "ARM-USB-OCD"},
+	{OLIMEX_VID, OLIMEX_ARM_TINY_PID, OK, "Olimex", "ARM-USB-TINY"},
+	{OLIMEX_VID, OLIMEX_ARM_OCD_H_PID, NT, "Olimex", "ARM-USB-OCD-H"},
+	{OLIMEX_VID, OLIMEX_ARM_TINY_H_PID, NT, "Olimex", "ARM-USB-TINY-H"},
 	{},
 };
 
@@ -166,6 +175,22 @@ int ft2232_spi_init(void)
 		} else if (!strcasecmp(arg, "openmoko")) {
 			ft2232_vid = FIC_VID;
 			ft2232_type = OPENMOKO_DBGBOARD_PID;
+			ft2232_interface = INTERFACE_A;
+		} else if (!strcasecmp(arg, "arm-usb-ocd")) {
+			ft2232_vid = OLIMEX_VID;
+			ft2232_type = OLIMEX_ARM_OCD_PID;
+			ft2232_interface = INTERFACE_A;
+		} else if (!strcasecmp(arg, "arm-usb-tiny")) {
+			ft2232_vid = OLIMEX_VID;
+			ft2232_type = OLIMEX_ARM_TINY_PID;
+			ft2232_interface = INTERFACE_A;
+		} else if (!strcasecmp(arg, "arm-usb-ocd-h")) {
+			ft2232_vid = OLIMEX_VID;
+			ft2232_type = OLIMEX_ARM_OCD_H_PID;
+			ft2232_interface = INTERFACE_A;
+		} else if (!strcasecmp(arg, "arm-usb-tiny-h")) {
+			ft2232_vid = OLIMEX_VID;
+			ft2232_type = OLIMEX_ARM_TINY_H_PID;
 			ft2232_interface = INTERFACE_A;
 		} else {
 			msg_perr("Error: Invalid device type specified.\n");
