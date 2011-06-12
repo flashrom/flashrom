@@ -1082,12 +1082,12 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x7000, OK, "Intel", "PIIX3",		enable_flash_piix4},
 	{0x8086, 0x7110, OK, "Intel", "PIIX4/4E/4M",	enable_flash_piix4},
 	{0x8086, 0x122e, OK, "Intel", "PIIX",		enable_flash_piix4},
-	{0x8086, 0x8119, OK, "Intel", "Poulsbo",        enable_flash_poulsbo},
-	{0x10de, 0x0030, OK, "NVIDIA", "nForce4/MCP4",  enable_flash_nvidia_nforce2},
+	{0x8086, 0x8119, OK, "Intel", "Poulsbo",	enable_flash_poulsbo},
+	{0x10de, 0x0030, OK, "NVIDIA", "nForce4/MCP4",	enable_flash_nvidia_nforce2},
 	{0x10de, 0x0050, OK, "NVIDIA", "CK804",		enable_flash_ck804}, /* LPC */
 	{0x10de, 0x0051, OK, "NVIDIA", "CK804",		enable_flash_ck804}, /* Pro */
-	{0x10de, 0x0060, OK, "NVIDIA", "NForce2",       enable_flash_nvidia_nforce2},
-	{0x10de, 0x00e0, OK, "NVIDIA", "NForce3",       enable_flash_nvidia_nforce2},
+	{0x10de, 0x0060, OK, "NVIDIA", "NForce2",	enable_flash_nvidia_nforce2},
+	{0x10de, 0x00e0, OK, "NVIDIA", "NForce3",	enable_flash_nvidia_nforce2},
 	/* Slave, should not be here, to fix known bug for A01. */
 	{0x10de, 0x00d3, OK, "NVIDIA", "CK804",		enable_flash_ck804},
 	{0x10de, 0x0260, NT, "NVIDIA", "MCP51",		enable_flash_ck804},

@@ -133,7 +133,7 @@ struct flashchip {
 	 */
 	struct block_eraser {
 		struct eraseblock{
-			unsigned int size; /* Eraseblock size */
+			unsigned int size; /* Eraseblock size in bytes */
 			unsigned int count; /* Number of contiguous blocks with that size */
 		} eraseblocks[NUM_ERASEREGIONS];
 		/* a block_erase function should try to erase one block of size
