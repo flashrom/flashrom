@@ -523,6 +523,7 @@ const struct board_info boards_known[] = {
 	B("GIGABYTE",	"GA-K8N-SLI",		1, "http://www.gigabyte.com/products/product-page.aspx?pid=1928", NULL),
 	B("GIGABYTE",	"GA-K8N51GMF",		1, "http://www.gigabyte.com/products/product-page.aspx?pid=1950", NULL),
 	B("GIGABYTE",	"GA-K8N51GMF-9",	1, "http://www.gigabyte.com/products/product-page.aspx?pid=1939", NULL),
+	B("GIGABYTE",	"GA-K8NS Ultra-939",	0, "http://www.gigabyte.com/products/product-page.aspx?pid=1839", "Untested board enable."),
 	B("GIGABYTE",	"GA-M57SLI-S4",		1, "http://www.gigabyte.com/products/product-page.aspx?pid=2287", NULL),
 	B("GIGABYTE",	"GA-M61P-S3",		1, "http://www.gigabyte.com/products/product-page.aspx?pid=2434", NULL),
 	B("GIGABYTE",	"GA-MA69VM-S2",		1, "http://www.gigabyte.com/products/product-page.aspx?pid=2500", NULL),
