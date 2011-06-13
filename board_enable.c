@@ -1580,6 +1580,7 @@ static int intel_ich_gpio26_raise(void)
 /*
  * Suited for:
  *  - P4SD-LA (HP OEM): i865 + ICH5
+ *  - GIGABYTE GA-8IP775: 865P + ICH5
  *  - GIGABYTE GA-8PE667 Ultra 2: socket 478 + i845PE + ICH4
  *  - MSI MS-6788-40 (aka 848P Neo-V)
  */
@@ -2020,6 +2021,7 @@ const struct board_pciid_enable board_pciid_enables[] = {
 	{0x10de, 0x02f0, 0x105b, 0x0d01,  0x10de, 0x0264, 0x105b, 0x0d01, NULL,         NULL, NULL,           P3, "Foxconn",     "6150K8MD-8EKRSH",       0,   NT, nvidia_mcp_gpio2_raise},
 	{0x8086, 0x2443, 0x8086, 0x2442,  0x8086, 0x1130, 0x8086, 0x1130, "^6IEM ",     NULL, NULL,           P3, "GIGABYTE",    "GA-6IEM",               0,   NT, intel_ich_gpio25_raise},
 	{0x1106, 0x0686, 0x1106, 0x0686,  0x1106, 0x3058, 0x1458, 0xa000, NULL,         NULL, NULL,           P3, "GIGABYTE",    "GA-7ZM",                512, OK, NULL},
+	{0x8086, 0x2570, 0x1458, 0x2570,  0x8086, 0x24d0,      0,      0, "^8IP775/-G$",NULL, NULL,           P3, "GIGABYTE",    "GA-8IP775",             0,   OK, intel_ich_gpio32_raise},
 	{0x8086, 0x244b, 0x8086, 0x2442,  0x8086, 0x2445, 0x1458, 0xa002, NULL,         NULL, NULL,           P3, "GIGABYTE",    "GA-8IRML",              0,   OK, intel_ich_gpio25_raise},
 	{0x8086, 0x24c3, 0x1458, 0x24c2,  0x8086, 0x24cd, 0x1458, 0x5004, NULL,         NULL, NULL,           P3, "GIGABYTE",    "GA-8PE667 Ultra 2",     0,   OK, intel_ich_gpio32_raise},
 	{0x10DE, 0x02F1, 0x1458, 0x5000,  0x10DE, 0x0261, 0x1458, 0x5001, NULL,         NULL, NULL,           P3, "GIGABYTE",    "GA-K8N51GMF",           0,   OK, nvidia_mcp_gpio3b_raise},

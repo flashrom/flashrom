@@ -515,6 +515,7 @@ const struct board_info boards_known[] = {
 	B("GIGABYTE",	"GA-7DXR",		1, "http://www.gigabyte.de/Products/Motherboard/Products_Spec.aspx?ProductID=1302", NULL),
 	B("GIGABYTE",	"GA-7VT600",		1, "http://www.gigabyte.com/products/product-page.aspx?pid=1666", NULL),
 	B("GIGABYTE",	"GA-7ZM",		1, "http://www.gigabyte.com/products/product-page.aspx?pid=1366", "Works fine if you remove jumper JP9 on the board and disable the flash protection BIOS option."),
+	B("GIGABYTE",	"GA-8IP775",		1, "http://www.gigabyte.com/products/product-page.aspx?pid=1830", NULL),
 	B("GIGABYTE",	"GA-8IRML",		1, "http://www.gigabyte.com/products/product-page.aspx?pid=1343", NULL),
 	B("GIGABYTE",	"GA-8PE667 Ultra 2",	1, "http://www.gigabyte.com/products/product-page.aspx?pid=1607", NULL),
 	B("GIGABYTE",	"GA-965P-DS4",		1, "http://www.gigabyte.com/products/product-page.aspx?pid=2288", NULL),
