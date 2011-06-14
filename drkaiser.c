@@ -27,6 +27,8 @@
 #define PCI_MAGIC_DRKAISER_ADDR		0x50
 #define PCI_MAGIC_DRKAISER_VALUE	0xa971
 
+#define DRKAISER_MEMMAP_SIZE           (1024 * 128)
+
 /* Mask to restrict flash accesses to the 128kB memory window. */
 #define DRKAISER_MEMMAP_MASK		((1 << 17) - 1)
 
@@ -36,6 +38,15 @@ const struct pcidev_status drkaiser_pcidev[] = {
 };
 
 static uint8_t *drkaiser_bar;
+
+static int drkaiser_shutdown(void *data)
+{
+	physunmap(drkaiser_bar, DRKAISER_MEMMAP_SIZE);
+	/* Flash write is disabled automatically by PCI restore. */
+	pci_cleanup(pacc);
+	release_io_perms();
+	return 0;
+};
 
 int drkaiser_init(void)
 {
@@ -51,20 +62,14 @@ int drkaiser_init(void)
 
 	/* Map 128kB flash memory window. */
 	drkaiser_bar = physmap("Dr. Kaiser PC-Waechter flash memory",
-			       addr, 128 * 1024);
+			       addr, DRKAISER_MEMMAP_SIZE);
 
 	buses_supported = CHIP_BUSTYPE_PARALLEL;
 
+	if (register_shutdown(drkaiser_shutdown, NULL))
+		return 1;
 	return 0;
 }
-
-int drkaiser_shutdown(void)
-{
-	/* Flash write is disabled automatically by PCI restore. */
-	pci_cleanup(pacc);
-	release_io_perms();
-	return 0;
-};
 
 void drkaiser_chip_writeb(uint8_t val, chipaddr addr)
 {

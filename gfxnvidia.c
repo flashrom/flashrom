@@ -29,6 +29,7 @@
  * FIXME: Is this size a one-fits-all or card dependent?
  */
 #define GFXNVIDIA_MEMMAP_MASK		((1 << 17) - 1)
+#define GFXNVIDIA_MEMMAP_SIZE		(16 * 1024 * 1024)
 
 uint8_t *nvidia_bar;
 
@@ -60,6 +61,17 @@ const struct pcidev_status gfx_nvidia[] = {
 	{},
 };
 
+static int gfxnvidia_shutdown(void *data)
+{
+	physunmap(nvidia_bar, GFXNVIDIA_MEMMAP_SIZE);
+	/* Flash interface access is disabled (and screen enabled) automatically
+	 * by PCI restore.
+	 */
+	pci_cleanup(pacc);
+	release_io_perms();
+	return 0;
+}
+
 int gfxnvidia_init(void)
 {
 	uint32_t reg32;
@@ -71,28 +83,22 @@ int gfxnvidia_init(void)
 	io_base_addr += 0x300000;
 	msg_pinfo("Detected NVIDIA I/O base address: 0x%x.\n", io_base_addr);
 
+	nvidia_bar = physmap("NVIDIA", io_base_addr, GFXNVIDIA_MEMMAP_SIZE);
+
+	/* must be done before rpci calls */
+	if (register_shutdown(gfxnvidia_shutdown, NULL))
+		return 1;
+
 	/* Allow access to flash interface (will disable screen). */
 	reg32 = pci_read_long(pcidev_dev, 0x50);
 	reg32 &= ~(1 << 0);
 	rpci_write_long(pcidev_dev, 0x50, reg32);
-
-	nvidia_bar = physmap("NVIDIA", io_base_addr, 16 * 1024 * 1024);
 
 	buses_supported = CHIP_BUSTYPE_PARALLEL;
 
 	/* Write/erase doesn't work. */
 	programmer_may_write = 0;
 
-	return 0;
-}
-
-int gfxnvidia_shutdown(void)
-{
-	/* Flash interface access is disabled (and screen enabled) automatically
-	 * by PCI restore.
-	 */
-	pci_cleanup(pacc);
-	release_io_perms();
 	return 0;
 }
 

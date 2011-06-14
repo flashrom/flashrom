@@ -89,7 +89,6 @@ struct programmer_entry {
 	const char *name;
 
 	int (*init) (void);
-	int (*shutdown) (void);
 
 	void * (*map_flash_region) (const char *descr, unsigned long phys_addr,
 				    size_t len);
@@ -305,7 +304,6 @@ extern int force_boardmismatch;
 void probe_superio(void);
 int register_superio(struct superio s);
 int internal_init(void);
-int internal_shutdown(void);
 void internal_chip_writeb(uint8_t val, chipaddr addr);
 void internal_chip_writew(uint16_t val, chipaddr addr);
 void internal_chip_writel(uint32_t val, chipaddr addr);
@@ -363,7 +361,6 @@ void fallback_chip_readn(uint8_t *buf, const chipaddr addr, size_t len);
 /* dummyflasher.c */
 #if CONFIG_DUMMY == 1
 int dummy_init(void);
-int dummy_shutdown(void);
 void *dummy_map(const char *descr, unsigned long phys_addr, size_t len);
 void dummy_unmap(void *virt_addr, size_t len);
 void dummy_chip_writeb(uint8_t val, chipaddr addr);
@@ -379,7 +376,6 @@ void dummy_chip_readn(uint8_t *buf, const chipaddr addr, size_t len);
 /* nic3com.c */
 #if CONFIG_NIC3COM == 1
 int nic3com_init(void);
-int nic3com_shutdown(void);
 void nic3com_chip_writeb(uint8_t val, chipaddr addr);
 uint8_t nic3com_chip_readb(const chipaddr addr);
 extern const struct pcidev_status nics_3com[];
@@ -388,7 +384,6 @@ extern const struct pcidev_status nics_3com[];
 /* gfxnvidia.c */
 #if CONFIG_GFXNVIDIA == 1
 int gfxnvidia_init(void);
-int gfxnvidia_shutdown(void);
 void gfxnvidia_chip_writeb(uint8_t val, chipaddr addr);
 uint8_t gfxnvidia_chip_readb(const chipaddr addr);
 extern const struct pcidev_status gfx_nvidia[];
@@ -397,7 +392,6 @@ extern const struct pcidev_status gfx_nvidia[];
 /* drkaiser.c */
 #if CONFIG_DRKAISER == 1
 int drkaiser_init(void);
-int drkaiser_shutdown(void);
 void drkaiser_chip_writeb(uint8_t val, chipaddr addr);
 uint8_t drkaiser_chip_readb(const chipaddr addr);
 extern const struct pcidev_status drkaiser_pcidev[];
@@ -406,7 +400,6 @@ extern const struct pcidev_status drkaiser_pcidev[];
 /* nicrealtek.c */
 #if CONFIG_NICREALTEK == 1
 int nicrealtek_init(void);
-int nicrealtek_shutdown(void);
 void nicrealtek_chip_writeb(uint8_t val, chipaddr addr);
 uint8_t nicrealtek_chip_readb(const chipaddr addr);
 extern const struct pcidev_status nics_realtek[];
@@ -415,7 +408,6 @@ extern const struct pcidev_status nics_realtek[];
 /* nicnatsemi.c */
 #if CONFIG_NICNATSEMI == 1
 int nicnatsemi_init(void);
-int nicnatsemi_shutdown(void);
 void nicnatsemi_chip_writeb(uint8_t val, chipaddr addr);
 uint8_t nicnatsemi_chip_readb(const chipaddr addr);
 extern const struct pcidev_status nics_natsemi[];
@@ -424,7 +416,6 @@ extern const struct pcidev_status nics_natsemi[];
 /* nicintel.c */
 #if CONFIG_NICINTEL == 1
 int nicintel_init(void);
-int nicintel_shutdown(void);
 void nicintel_chip_writeb(uint8_t val, chipaddr addr);
 uint8_t nicintel_chip_readb(const chipaddr addr);
 extern const struct pcidev_status nics_intel[];
@@ -433,7 +424,6 @@ extern const struct pcidev_status nics_intel[];
 /* nicintel_spi.c */
 #if CONFIG_NICINTEL_SPI == 1
 int nicintel_spi_init(void);
-int nicintel_spi_shutdown(void);
 int nicintel_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	const unsigned char *writearr, unsigned char *readarr);
 void nicintel_spi_chip_writeb(uint8_t val, chipaddr addr);
@@ -443,14 +433,12 @@ extern const struct pcidev_status nics_intel_spi[];
 /* ogp_spi.c */
 #if CONFIG_OGP_SPI == 1
 int ogp_spi_init(void);
-int ogp_spi_shutdown(void);
 extern const struct pcidev_status ogp_spi[];
 #endif
 
 /* satamv.c */
 #if CONFIG_SATAMV == 1
 int satamv_init(void);
-int satamv_shutdown(void);
 void satamv_chip_writeb(uint8_t val, chipaddr addr);
 uint8_t satamv_chip_readb(const chipaddr addr);
 extern const struct pcidev_status satas_mv[];
@@ -459,7 +447,6 @@ extern const struct pcidev_status satas_mv[];
 /* satasii.c */
 #if CONFIG_SATASII == 1
 int satasii_init(void);
-int satasii_shutdown(void);
 void satasii_chip_writeb(uint8_t val, chipaddr addr);
 uint8_t satasii_chip_readb(const chipaddr addr);
 extern const struct pcidev_status satas_sii[];
@@ -468,7 +455,6 @@ extern const struct pcidev_status satas_sii[];
 /* atahpt.c */
 #if CONFIG_ATAHPT == 1
 int atahpt_init(void);
-int atahpt_shutdown(void);
 void atahpt_chip_writeb(uint8_t val, chipaddr addr);
 uint8_t atahpt_chip_readb(const chipaddr addr);
 extern const struct pcidev_status ata_hpt[];
@@ -500,13 +486,11 @@ int bitbang_spi_shutdown(const struct bitbang_spi_master *master);
 /* buspirate_spi.c */
 #if CONFIG_BUSPIRATE_SPI == 1
 int buspirate_spi_init(void);
-int buspirate_spi_shutdown(void);
 #endif
 
 /* dediprog.c */
 #if CONFIG_DEDIPROG == 1
 int dediprog_init(void);
-int dediprog_shutdown(void);
 #endif
 
 /* flashrom.c */
@@ -591,7 +575,6 @@ int via_init_spi(struct pci_dev *dev);
 
 /* it85spi.c */
 int it85xx_spi_init(struct superio s);
-int it85xx_shutdown(void);
 
 /* it87spi.c */
 void enter_conf_mode_ite(uint16_t port);
@@ -612,7 +595,6 @@ int wbsio_check_for_spi(void);
 /* serprog.c */
 #if CONFIG_SERPROG == 1
 int serprog_init(void);
-int serprog_shutdown(void);
 void serprog_chip_writeb(uint8_t val, chipaddr addr);
 uint8_t serprog_chip_readb(const chipaddr addr);
 void serprog_chip_readn(uint8_t *buf, const chipaddr addr, size_t len);
@@ -630,7 +612,8 @@ void sp_flush_incoming(void);
 fdtype sp_openserport(char *dev, unsigned int baud);
 void __attribute__((noreturn)) sp_die(char *msg);
 extern fdtype sp_fd;
-int serialport_shutdown(void);
+/* expose serialport_shutdown as it's currently used by buspirate */
+int serialport_shutdown(void *data);
 int serialport_write(unsigned char *buf, unsigned int writecnt);
 int serialport_read(unsigned char *buf, unsigned int readcnt);
 

@@ -26,6 +26,8 @@
 
 #define PCI_VENDOR_ID_SII	0x1095
 
+#define SATASII_MEMMAP_SIZE	0x100
+
 uint8_t *sii_bar;
 static uint16_t id;
 
@@ -39,6 +41,14 @@ const struct pcidev_status satas_sii[] = {
 
 	{},
 };
+
+static int satasii_shutdown(void *data)
+{
+	physunmap(sii_bar, SATASII_MEMMAP_SIZE);
+	pci_cleanup(pacc);
+	release_io_perms();
+	return 0;
+}
 
 int satasii_init(void)
 {
@@ -59,7 +69,8 @@ int satasii_init(void)
 		reg_offset = 0x50;
 	}
 
-	sii_bar = physmap("SATA SIL registers", addr, 0x100) + reg_offset;
+	sii_bar = physmap("SATA SIL registers", addr, SATASII_MEMMAP_SIZE) +
+		  reg_offset;
 
 	/* Check if ROM cycle are OK. */
 	if ((id != 0x0680) && (!(pci_mmio_readl(sii_bar) & (1 << 26))))
@@ -67,13 +78,8 @@ int satasii_init(void)
 
 	buses_supported = CHIP_BUSTYPE_PARALLEL;
 
-	return 0;
-}
-
-int satasii_shutdown(void)
-{
-	pci_cleanup(pacc);
-	release_io_perms();
+	if (register_shutdown(satasii_shutdown, NULL))
+		return 1;
 	return 0;
 }
 

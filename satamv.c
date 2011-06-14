@@ -40,6 +40,14 @@ const struct pcidev_status satas_mv[] = {
 #define PCI_BAR2_CONTROL		0x00c08
 #define GPIO_PORT_CONTROL		0x104f0
 
+static int satamv_shutdown(void *data)
+{
+	physunmap(mv_bar, 0x20000);
+	pci_cleanup(pacc);
+	release_io_perms();
+	return 0;
+}
+
 /*
  * Random notes:
  * FCE#		Flash Chip Enable
@@ -72,6 +80,9 @@ int satamv_init(void)
 	mv_bar = physmap("Marvell 88SX7042 registers", addr, 0x20000);
 	if (mv_bar == ERROR_PTR)
 		goto error_out;
+
+	if (register_shutdown(satamv_shutdown, NULL))
+		return 1;
 
 	tmp = pci_mmio_readl(mv_bar + FLASH_PARAM);
 	msg_pspew("Flash Parameters:\n");
@@ -137,14 +148,6 @@ error_out:
 	pci_cleanup(pacc);
 	release_io_perms();
 	return 1;
-}
-
-int satamv_shutdown(void)
-{
-	physunmap(mv_bar, 0x20000);
-	pci_cleanup(pacc);
-	release_io_perms();
-	return 0;
 }
 
 /* BAR2 (MEM) can map NVRAM and flash. We set it to flash in the init function.
