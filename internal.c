@@ -127,6 +127,12 @@ int register_superio(struct superio s)
 int is_laptop = 0;
 int laptop_ok = 0;
 
+static int internal_shutdown(void *data)
+{
+	release_io_perms();
+	return 0;
+}
+
 int internal_init(void)
 {
 #if __FLASHROM_LITTLE_ENDIAN__
@@ -178,6 +184,8 @@ int internal_init(void)
 	free(arg);
 
 	get_io_perms();
+	if (register_shutdown(internal_shutdown, NULL))
+		return 1;
 
 	/* Default to Parallel/LPC/FWH flash devices. If a known host controller
 	 * is found, the init routine sets the buses_supported bitfield.
@@ -286,13 +294,6 @@ int internal_init(void)
 		 "Aborting.\n");
 	return 1;
 #endif
-}
-
-int internal_shutdown(void)
-{
-	release_io_perms();
-
-	return 0;
 }
 #endif
 

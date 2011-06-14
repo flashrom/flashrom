@@ -536,6 +536,25 @@ static const struct spi_programmer spi_programmer_dediprog = {
 	.write_256 = dediprog_spi_write_256,
 };
 
+static int dediprog_shutdown(void *data)
+{
+	msg_pspew("%s\n", __func__);
+
+	/* URB 28. Command Set SPI Voltage to 0. */
+	if (dediprog_set_spi_voltage(0x0))
+		return 1;
+
+	if (usb_release_interface(dediprog_handle, 0)) {
+		msg_perr("Could not release USB interface!\n");
+		return 1;
+	}
+	if (usb_close(dediprog_handle)) {
+		msg_perr("Could not close USB device!\n");
+		return 1;
+	}
+	return 0;
+}
+
 /* URB numbers refer to the first log ever captured. */
 int dediprog_init(void)
 {
@@ -587,6 +606,9 @@ int dediprog_init(void)
 	}
 	dediprog_endpoint = 2;
 	
+	if (register_shutdown(dediprog_shutdown, NULL))
+		return 1;
+
 	dediprog_set_leds(PASS_ON|BUSY_ON|ERROR_ON);
 
 	/* URB 6. Command A. */
@@ -681,22 +703,3 @@ static int dediprog_do_stuff(void)
 	return 0;
 }
 #endif	
-
-int dediprog_shutdown(void)
-{
-	msg_pspew("%s\n", __func__);
-
-	/* URB 28. Command Set SPI Voltage to 0. */
-	if (dediprog_set_spi_voltage(0x0))
-		return 1;
-
-	if (usb_release_interface(dediprog_handle, 0)) {
-		msg_perr("Could not release USB interface!\n");
-		return 1;
-	}
-	if (usb_close(dediprog_handle)) {
-		msg_perr("Could not close USB device!\n");
-		return 1;
-	}
-	return 0;
-}

@@ -180,7 +180,7 @@ void sp_flush_incoming(void)
 	return;
 }
 
-int serialport_shutdown(void)
+int serialport_shutdown(void *data)
 {
 #ifdef _WIN32
 	CloseHandle(sp_fd);

@@ -73,6 +73,23 @@ static const struct spi_programmer spi_programmer_dummyflasher = {
 	.read = default_spi_read,
 	.write_256 = dummy_spi_write_256,
 };
+
+static int dummy_shutdown(void *data)
+{
+	msg_pspew("%s\n", __func__);
+#if EMULATE_CHIP
+	if (emu_chip != EMULATE_NONE) {
+		if (emu_persistent_image) {
+			msg_pdbg("Writing %s\n", emu_persistent_image);
+			write_buf_to_file(flashchip_contents, emu_chip_size,
+					  emu_persistent_image);
+		}
+		free(flashchip_contents);
+	}
+#endif
+	return 0;
+}
+
 int dummy_init(void)
 {
 	char *bustext = NULL;
@@ -126,7 +143,7 @@ int dummy_init(void)
 	if (!tmp) {
 		msg_pdbg("Not emulating any flash chip.\n");
 		/* Nothing else to do. */
-		return 0;
+		goto dummy_init_out;
 	}
 #if EMULATE_SPI_CHIP
 	if (!strcmp(tmp, "M25P10.RES")) {
@@ -180,13 +197,14 @@ int dummy_init(void)
 		msg_perr("Out of memory!\n");
 		return 1;
 	}
+
 	msg_pdbg("Filling fake flash chip with 0xff, size %i\n", emu_chip_size);
 	memset(flashchip_contents, 0xff, emu_chip_size);
 
 	emu_persistent_image = extract_programmer_param("image");
 	if (!emu_persistent_image) {
 		/* Nothing else to do. */
-		return 0;
+		goto dummy_init_out;
 	}
 	if (!stat(emu_persistent_image, &image_stat)) {
 		msg_pdbg("Found persistent image %s, size %li ",
@@ -201,22 +219,12 @@ int dummy_init(void)
 		}
 	}
 #endif
-	return 0;
-}
 
-int dummy_shutdown(void)
-{
-	msg_pspew("%s\n", __func__);
-#if EMULATE_CHIP
-	if (emu_chip != EMULATE_NONE) {
-		if (emu_persistent_image) {
-			msg_pdbg("Writing %s\n", emu_persistent_image);
-			write_buf_to_file(flashchip_contents, emu_chip_size,
-					  emu_persistent_image);
-		}
+dummy_init_out:
+	if (register_shutdown(dummy_shutdown, NULL)) {
 		free(flashchip_contents);
+		return 1;
 	}
-#endif
 	return 0;
 }
 

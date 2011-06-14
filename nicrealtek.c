@@ -36,6 +36,14 @@ const struct pcidev_status nics_realtek[] = {
 	{},
 };
 
+static int nicrealtek_shutdown(void *data)
+{
+	/* FIXME: We forgot to disable software access again. */
+	pci_cleanup(pacc);
+	release_io_perms();
+	return 0;
+}
+
 int nicrealtek_init(void)
 {
 	get_io_perms();
@@ -44,14 +52,8 @@ int nicrealtek_init(void)
 
 	buses_supported = CHIP_BUSTYPE_PARALLEL;
 
-	return 0;
-}
-
-int nicrealtek_shutdown(void)
-{
-	/* FIXME: We forgot to disable software access again. */
-	pci_cleanup(pacc);
-	release_io_perms();
+	if (register_shutdown(nicrealtek_shutdown, NULL))
+		return 1;
 	return 0;
 }
 

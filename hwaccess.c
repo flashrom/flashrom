@@ -202,7 +202,7 @@ struct undo_mmio_write_data {
 	};
 };
 
-void undo_mmio_write(void *p)
+int undo_mmio_write(void *p)
 {
 	struct undo_mmio_write_data *data = p;
 	msg_pdbg("Restoring MMIO space at %p\n", data->addr);
@@ -219,6 +219,7 @@ void undo_mmio_write(void *p)
 	}
 	/* p was allocated in register_undo_mmio_write. */
 	free(p);
+	return 0;
 }
 
 #define register_undo_mmio_write(a, c)					\

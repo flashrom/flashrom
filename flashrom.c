@@ -129,7 +129,6 @@ const struct programmer_entry programmer_table[] = {
 	{
 		.name			= "internal",
 		.init			= internal_init,
-		.shutdown		= internal_shutdown,
 		.map_flash_region	= physmap,
 		.unmap_flash_region	= physunmap,
 		.chip_readb		= internal_chip_readb,
@@ -148,7 +147,6 @@ const struct programmer_entry programmer_table[] = {
 	{
 		.name			= "dummy",
 		.init			= dummy_init,
-		.shutdown		= dummy_shutdown,
 		.map_flash_region	= dummy_map,
 		.unmap_flash_region	= dummy_unmap,
 		.chip_readb		= dummy_chip_readb,
@@ -167,7 +165,6 @@ const struct programmer_entry programmer_table[] = {
 	{
 		.name			= "nic3com",
 		.init			= nic3com_init,
-		.shutdown		= nic3com_shutdown,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
 		.chip_readb		= nic3com_chip_readb,
@@ -188,7 +185,6 @@ const struct programmer_entry programmer_table[] = {
 		.name                   = "nicrealtek",
 		//.name                   = "nicsmc1211",
 		.init                   = nicrealtek_init,
-		.shutdown               = nicrealtek_shutdown,
 		.map_flash_region       = fallback_map,
 		.unmap_flash_region     = fallback_unmap,
 		.chip_readb             = nicrealtek_chip_readb,
@@ -207,7 +203,6 @@ const struct programmer_entry programmer_table[] = {
 	{
 		.name                   = "nicnatsemi",
 		.init                   = nicnatsemi_init,
-		.shutdown               = nicnatsemi_shutdown,
 		.map_flash_region       = fallback_map,
 		.unmap_flash_region     = fallback_unmap,
 		.chip_readb             = nicnatsemi_chip_readb,
@@ -226,7 +221,6 @@ const struct programmer_entry programmer_table[] = {
 	{
 		.name			= "gfxnvidia",
 		.init			= gfxnvidia_init,
-		.shutdown		= gfxnvidia_shutdown,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
 		.chip_readb		= gfxnvidia_chip_readb,
@@ -245,7 +239,6 @@ const struct programmer_entry programmer_table[] = {
 	{
 		.name			= "drkaiser",
 		.init			= drkaiser_init,
-		.shutdown		= drkaiser_shutdown,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
 		.chip_readb		= drkaiser_chip_readb,
@@ -264,7 +257,6 @@ const struct programmer_entry programmer_table[] = {
 	{
 		.name			= "satasii",
 		.init			= satasii_init,
-		.shutdown		= satasii_shutdown,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
 		.chip_readb		= satasii_chip_readb,
@@ -283,7 +275,6 @@ const struct programmer_entry programmer_table[] = {
 	{
 		.name			= "atahpt",
 		.init			= atahpt_init,
-		.shutdown		= atahpt_shutdown,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
 		.chip_readb		= atahpt_chip_readb,
@@ -302,7 +293,6 @@ const struct programmer_entry programmer_table[] = {
 	{
 		.name			= "ft2232_spi",
 		.init			= ft2232_spi_init,
-		.shutdown		= noop_shutdown, /* Missing shutdown */
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
 		.chip_readb		= noop_chip_readb,
@@ -321,7 +311,6 @@ const struct programmer_entry programmer_table[] = {
 	{
 		.name			= "serprog",
 		.init			= serprog_init,
-		.shutdown		= serprog_shutdown,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
 		.chip_readb		= serprog_chip_readb,
@@ -340,7 +329,6 @@ const struct programmer_entry programmer_table[] = {
 	{
 		.name			= "buspirate_spi",
 		.init			= buspirate_spi_init,
-		.shutdown		= buspirate_spi_shutdown,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
 		.chip_readb		= noop_chip_readb,
@@ -359,7 +347,6 @@ const struct programmer_entry programmer_table[] = {
 	{
 		.name			= "dediprog",
 		.init			= dediprog_init,
-		.shutdown		= dediprog_shutdown,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
 		.chip_readb		= noop_chip_readb,
@@ -378,7 +365,6 @@ const struct programmer_entry programmer_table[] = {
 	{
 		.name			= "rayer_spi",
 		.init			= rayer_spi_init,
-		.shutdown		= noop_shutdown,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
 		.chip_readb		= noop_chip_readb,
@@ -397,7 +383,6 @@ const struct programmer_entry programmer_table[] = {
 	{
 		.name			= "nicintel",
 		.init			= nicintel_init,
-		.shutdown		= nicintel_shutdown,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
 		.chip_readb		= nicintel_chip_readb,
@@ -416,7 +401,6 @@ const struct programmer_entry programmer_table[] = {
 	{
 		.name = "nicintel_spi",
 		.init = nicintel_spi_init,
-		.shutdown = nicintel_spi_shutdown,
 		.map_flash_region = fallback_map,
 		.unmap_flash_region = fallback_unmap,
 		.chip_readb = noop_chip_readb,
@@ -435,7 +419,6 @@ const struct programmer_entry programmer_table[] = {
 	{
 		.name = "ogp_spi",
 		.init = ogp_spi_init,
-		.shutdown = ogp_spi_shutdown,
 		.map_flash_region = fallback_map,
 		.unmap_flash_region = fallback_unmap,
 		.chip_readb = noop_chip_readb,
@@ -454,7 +437,6 @@ const struct programmer_entry programmer_table[] = {
 	{
 		.name			= "satamv",
 		.init			= satamv_init,
-		.shutdown		= satamv_shutdown,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
 		.chip_readb		= satamv_chip_readb,
@@ -475,7 +457,7 @@ const struct programmer_entry programmer_table[] = {
 #define SHUTDOWN_MAXFN 32
 static int shutdown_fn_count = 0;
 struct shutdown_func_data {
-	void (*func) (void *data);
+	int (*func) (void *data);
 	void *data;
 } static shutdown_fn[SHUTDOWN_MAXFN];
 /* Initialize to 0 to make sure nobody registers a shutdown function before
@@ -491,7 +473,7 @@ static int may_register_shutdown = 0;
  * Please note that the first (void *data) belongs to the function signature of
  * the function passed as first parameter.
  */
-int register_shutdown(void (*function) (void *data), void *data)
+int register_shutdown(int (*function) (void *data), void *data)
 {
 	if (shutdown_fn_count >= SHUTDOWN_MAXFN) {
 		msg_perr("Tried to register more than %i shutdown functions.\n",
@@ -543,13 +525,15 @@ int programmer_init(char *param)
 
 int programmer_shutdown(void)
 {
+	int ret = 0;
+
 	/* Registering shutdown functions is no longer allowed. */
 	may_register_shutdown = 0;
 	while (shutdown_fn_count > 0) {
 		int i = --shutdown_fn_count;
-		shutdown_fn[i].func(shutdown_fn[i].data);
+		ret |= shutdown_fn[i].func(shutdown_fn[i].data);
 	}
-	return programmer_table[programmer].shutdown();
+	return ret;
 }
 
 void *programmer_map_flash_region(const char *descr, unsigned long phys_addr,

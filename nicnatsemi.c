@@ -35,6 +35,13 @@ const struct pcidev_status nics_natsemi[] = {
 	{},
 };
 
+static int nicnatsemi_shutdown(void *data)
+{
+	pci_cleanup(pacc);
+	release_io_perms();
+	return 0;
+}
+
 int nicnatsemi_init(void)
 {
 	get_io_perms();
@@ -51,13 +58,8 @@ int nicnatsemi_init(void)
 	 */
 	max_rom_decode.parallel = 131072;
 
-	return 0;
-}
-
-int nicnatsemi_shutdown(void)
-{
-	pci_cleanup(pacc);
-	release_io_perms();
+	if (register_shutdown(nicnatsemi_shutdown, NULL))
+		return 1;
 	return 0;
 }
 

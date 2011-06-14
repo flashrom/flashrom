@@ -55,6 +55,21 @@ const struct pcidev_status nics_3com[] = {
 	{},
 };
 
+static int nic3com_shutdown(void *data)
+{
+	/* 3COM 3C90xB cards need a special fixup. */
+	if (id == 0x9055 || id == 0x9001 || id == 0x9004 || id == 0x9005
+	    || id == 0x9006 || id == 0x900a || id == 0x905a || id == 0x9058) {
+		/* Select register window 3 and restore the receiver status. */
+		OUTW(SELECT_REG_WINDOW + 3, io_base_addr + INT_STATUS);
+		OUTL(internal_conf, io_base_addr + INTERNAL_CONFIG);
+	}
+
+	pci_cleanup(pacc);
+	release_io_perms();
+	return 0;
+}
+
 int nic3com_init(void)
 {
 	get_io_perms();
@@ -84,21 +99,8 @@ int nic3com_init(void)
 	buses_supported = CHIP_BUSTYPE_PARALLEL;
 	max_rom_decode.parallel = 128 * 1024;
 
-	return 0;
-}
-
-int nic3com_shutdown(void)
-{
-	/* 3COM 3C90xB cards need a special fixup. */
-	if (id == 0x9055 || id == 0x9001 || id == 0x9004 || id == 0x9005
-	    || id == 0x9006 || id == 0x900a || id == 0x905a || id == 0x9058) {
-		/* Select register window 3 and restore the receiver status. */
-		OUTW(SELECT_REG_WINDOW + 3, io_base_addr + INT_STATUS);
-		OUTL(internal_conf, io_base_addr + INTERNAL_CONFIG);
-	}
-
-	pci_cleanup(pacc);
-	release_io_perms();
+	if (register_shutdown(nic3com_shutdown, NULL))
+		return 1;
 	return 0;
 }
 
