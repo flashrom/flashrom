@@ -360,6 +360,7 @@ int cli_classic(int argc, char *argv[])
 
 	if (programmer_init(pparam)) {
 		fprintf(stderr, "Error: Programmer initialization failed.\n");
+		programmer_shutdown();
 		exit(1);
 	}
 

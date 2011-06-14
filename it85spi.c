@@ -226,12 +226,23 @@ void it85xx_exit_scratch_rom()
 #endif
 }
 
+static int it85xx_shutdown(void *data)
+{
+	msg_pdbg("%s():%d\n", __func__, __LINE__);
+	it85xx_exit_scratch_rom();
+
+	return 0;	/* FIXME: Should probably return something meaningful */
+}
+
 static int it85xx_spi_common_init(struct superio s)
 {
 	chipaddr base;
 
 	msg_pdbg("%s():%d superio.vendor=0x%02x\n", __func__, __LINE__,
 	         s.vendor);
+
+	if (register_shutdown(it85xx_shutdown, NULL))
+		return 1;
 
 #ifdef LPC_IO
 	/* Get LPCPNP of SHM. That's big-endian */
@@ -298,13 +309,6 @@ int it85xx_spi_init(struct superio s)
 		register_spi_programmer(&spi_programmer_it85xx);
 	}
 	return ret;
-}
-
-int it85xx_shutdown(void)
-{
-	msg_pdbg("%s():%d\n", __func__, __LINE__);
-	it85xx_exit_scratch_rom();
-	return 0;
 }
 
 /* According to ITE 8502 document, the procedure to follow mode is following:

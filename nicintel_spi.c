@@ -139,6 +139,25 @@ static const struct bitbang_spi_master bitbang_spi_master_nicintel = {
 	.release_bus = nicintel_release_spibus,
 };
 
+static int nicintel_spi_shutdown(void *data)
+{
+	uint32_t tmp;
+
+	/* Disable writes manually. See the comment about EECD in
+	 * nicintel_spi_init() for details.
+	 */
+	tmp = pci_mmio_readl(nicintel_spibar + EECD);
+	tmp &= ~FLASH_WRITES_ENABLED;
+	tmp |= FLASH_WRITES_DISABLED;
+	pci_mmio_writel(tmp, nicintel_spibar + EECD);
+
+	physunmap(nicintel_spibar, 4096);
+	pci_cleanup(pacc);
+	release_io_perms();
+
+	return 0;
+}
+
 int nicintel_spi_init(void)
 {
 	uint32_t tmp;
@@ -159,28 +178,12 @@ int nicintel_spi_init(void)
 	tmp |= FLASH_WRITES_ENABLED;
 	pci_mmio_writel(tmp, nicintel_spibar + EECD);
 
+	if (register_shutdown(nicintel_spi_shutdown, NULL))
+		return 1;
+
 	/* 1 usec halfperiod delay for now. */
 	if (bitbang_spi_init(&bitbang_spi_master_nicintel, 1))
 		return 1;
-
-	return 0;
-}
-
-int nicintel_spi_shutdown(void)
-{
-	uint32_t tmp;
-
-	/* Disable writes manually. See the comment about EECD in
-	 * nicintel_spi_init() for details.
-	 */
-	tmp = pci_mmio_readl(nicintel_spibar + EECD);
-	tmp &= ~FLASH_WRITES_ENABLED;
-	tmp |= FLASH_WRITES_DISABLED;
-	pci_mmio_writel(tmp, nicintel_spibar + EECD);
-
-	physunmap(nicintel_spibar, 4096);
-	pci_cleanup(pacc);
-	release_io_perms();
 
 	return 0;
 }

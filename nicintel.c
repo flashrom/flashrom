@@ -39,7 +39,18 @@ const struct pcidev_status nics_intel[] = {
 #define NICINTEL_MEMMAP_SIZE (128 * 1024)
 #define NICINTEL_MEMMAP_MASK (NICINTEL_MEMMAP_SIZE - 1)
 
+#define NICINTEL_CONTROL_MEMMAP_SIZE	0x10 
+
 #define CSR_FCR 0x0c
+
+static int nicintel_shutdown(void *data)
+{
+	physunmap(nicintel_control_bar, NICINTEL_CONTROL_MEMMAP_SIZE);
+	physunmap(nicintel_bar, NICINTEL_MEMMAP_SIZE);
+	pci_cleanup(pacc);
+	release_io_perms();
+	return 0;
+}
 
 int nicintel_init(void)
 {
@@ -58,14 +69,18 @@ int nicintel_init(void)
 
 	nicintel_bar = physmap("Intel NIC flash", addr, NICINTEL_MEMMAP_SIZE);
 	if (nicintel_bar == ERROR_PTR)
-		goto error_out;
+		goto error_out_unmap;
 
 	/* FIXME: Using pcidev_dev _will_ cause pretty explosions in the future. */
 	addr = pcidev_validate(pcidev_dev, PCI_BASE_ADDRESS_0, nics_intel);
 	/* FIXME: This is not an aligned mapping. Use 4k? */
-	nicintel_control_bar = physmap("Intel NIC control/status reg", addr, 0x10);
+	nicintel_control_bar = physmap("Intel NIC control/status reg",
+	                               addr, NICINTEL_CONTROL_MEMMAP_SIZE);
 	if (nicintel_control_bar == ERROR_PTR)
 		goto error_out;
+
+	if (register_shutdown(nicintel_shutdown, NULL))
+		return 1;
 
 	/* FIXME: This register is pretty undocumented in all publicly available
 	 * documentation from Intel. Let me quote the complete info we have:
@@ -84,18 +99,12 @@ int nicintel_init(void)
 
 	return 0;
 
+error_out_unmap:
+	physunmap(nicintel_bar, NICINTEL_MEMMAP_SIZE);
 error_out:
 	pci_cleanup(pacc);
 	release_io_perms();
 	return 1;
-}
-
-int nicintel_shutdown(void)
-{
-	physunmap(nicintel_bar, NICINTEL_MEMMAP_SIZE);
-	pci_cleanup(pacc);
-	release_io_perms();
-	return 0;
 }
 
 void nicintel_chip_writeb(uint8_t val, chipaddr addr)

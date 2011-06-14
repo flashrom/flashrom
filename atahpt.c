@@ -38,6 +38,14 @@ const struct pcidev_status ata_hpt[] = {
 	{},
 };
 
+static int atahpt_shutdown(void *data)
+{
+	/* Flash access is disabled automatically by PCI restore. */
+	pci_cleanup(pacc);
+	release_io_perms();
+	return 0;
+}
+
 int atahpt_init(void)
 {
 	uint32_t reg32;
@@ -53,14 +61,8 @@ int atahpt_init(void)
 
 	buses_supported = CHIP_BUSTYPE_PARALLEL;
 
-	return 0;
-}
-
-int atahpt_shutdown(void)
-{
-	/* Flash access is disabled automatically by PCI restore. */
-	pci_cleanup(pacc);
-	release_io_perms();
+	if (register_shutdown(atahpt_shutdown, NULL))
+		return 1;
 	return 0;
 }
 

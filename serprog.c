@@ -39,6 +39,13 @@
 
 #define MSGHEADER "serprog:"
 
+/*
+ * FIXME: This prototype was added to help reduce diffs for the shutdown
+ * registration patch, which shifted many lines of code to place
+ * serprog_shutdown() before serprog_init(). It should be removed soon.
+ */
+static int serprog_shutdown(void *data);
+
 #define S_ACK 0x06
 #define S_NAK 0x15
 #define S_CMD_NOP		0x00	/* No operation                                 */
@@ -373,6 +380,9 @@ int serprog_init(void)
 		return 1;
 	}
 
+	if (register_shutdown(serprog_shutdown, NULL))
+		return 1;
+
 	msg_pdbg(MSGHEADER "connected - attempting to synchronize\n");
 
 	sp_check_avail_automatic = 0;
@@ -555,7 +565,7 @@ static void sp_execute_opbuf(void)
 	sp_flush_stream();
 }
 
-int serprog_shutdown(void)
+static int serprog_shutdown(void *data)
 {
 	msg_pspew("%s\n", __func__);
 	if ((sp_opbuf_usage) || (sp_max_write_n && sp_write_n_bytes))

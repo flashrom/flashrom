@@ -93,6 +93,15 @@ static const struct bitbang_spi_master bitbang_spi_master_ogp = {
 	.release_bus = ogp_release_spibus,
 };
 
+static int ogp_spi_shutdown(void *data)
+{
+	physunmap(ogp_spibar, 4096);
+	pci_cleanup(pacc);
+	release_io_perms();
+
+	return 0;
+}
+
 int ogp_spi_init(void)
 {
 	char *type;
@@ -124,18 +133,12 @@ int ogp_spi_init(void)
 
 	ogp_spibar = physmap("OGP registers", io_base_addr, 4096);
 
+	if (register_shutdown(ogp_spi_shutdown, NULL))
+		return 1;
+
 	/* no delay for now. */
 	if (bitbang_spi_init(&bitbang_spi_master_ogp, 0))
 		return 1;
-
-	return 0;
-}
-
-int ogp_spi_shutdown(void)
-{
-	physunmap(ogp_spibar, 4096);
-	pci_cleanup(pacc);
-	release_io_perms();
 
 	return 0;
 }
