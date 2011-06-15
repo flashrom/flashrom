@@ -1,4 +1,4 @@
-.TH FLASHROM 8 "Jun 06, 2010"
+.TH FLASHROM 8 "Jun 14, 2011"
 .SH NAME
 flashrom \- detect, read, write, verify and erase flash chips
 .SH SYNOPSIS
@@ -172,11 +172,16 @@ Specify the programmer device. Currently supported are:
 .BR "* nicnatsemi" " (for flash ROMs on National Semiconductor DP838* network \
 cards)"
 .sp
+.BR "* nicintel" " (for parallel flash ROMs attached to Intel 10/100Mbit \
+network cards)
+.sp
 .BR "* gfxnvidia" " (for flash ROMs on NVIDIA graphics cards)"
 .sp
 .BR "* drkaiser" " (for flash ROMs on Dr. Kaiser PC-Waechter PCI cards)"
 .sp
 .BR "* satasii" " (for flash ROMs on Silicon Image SATA/IDE controllers)"
+.sp
+.BR "* satamv" " (for flash ROMs on Marvell SATA controllers)"
 .sp
 .BR "* atahpt" " (for flash ROMs on Highpoint ATA/RAID controllers)"
 .sp
@@ -313,7 +318,7 @@ should support. For that you have to use the
 .B "flashrom \-p dummy:bus=[type[+type[+type]]]"
 syntax where
 .B type
-can be any of
+can be
 .BR parallel ", " lpc ", " fwh ", " spi
 in any order. If you specify bus without type, all buses will be disabled.
 If you do not specify bus, all buses will be enabled.
@@ -321,8 +326,9 @@ If you do not specify bus, all buses will be enabled.
 Example:
 .B "flashrom \-p dummy:bus=lpc+fwh"
 .TP
-.BR "nic3com" , " nicrealtek" , " nicsmc1211" , " nicnatsemi" , " gfxnvidia\
-" , " satasii " and " atahpt " programmers
+.BR "nic3com" , " nicrealtek" , " nicsmc1211" , " nicnatsemi" , " nicintel\
+" , " nicintel_spi" , " gfxnvidia" , " ogp_spi" , " drkaiser" , " satasii\
+" , " satamv" ", and " atahpt " programmers
 These programmers have an option to specify the PCI address of the card
 your want to use, which must be specified if more than one card supported
 by the selected programmer is installed in your system. The syntax is
@@ -361,12 +367,12 @@ type and interface/port it should support. For that you have to use the
 .sp
 syntax where
 .B model
-can be one of
+can be
 .BR 2232H ", " 4232H ", " jtagkey ", " openmoko ", " arm-usb-tiny ", " \
 arm-usb-tiny-h ", " arm-usb-ocd " or " arm-usb-ocd-h
 and
 .B interface
-can be any of
+can be
 .BR A ", or " B .
 The default model is
 .B 4232H
@@ -397,12 +403,12 @@ parameter specifies the Bus Pirate device node and an optional
 parameter specifies the frequency of the SPI bus. The parameter
 delimiter is a comma. Syntax is
 .sp
-.B "flashrom \-p buspirate_spi:dev=/dev/device,spispeed=frequency"
+.B "  flashrom \-p buspirate_spi:dev=/dev/device,spispeed=frequency"
 .sp
 where
 .B frequency
-can be any of
-.BR 30k ", " 125k ", " 250k ", " 1M ", " 2M ", " 2.6M ", " 4M ", " 8M
+can be
+.BR 30k ", " 125k ", " 250k ", " 1M ", " 2M ", " 2.6M ", " 4M " or " 8M
 (in Hz). The default is the maximum frequency of 8 MHz.
 .TP
 .BR "dediprog " programmer
@@ -413,11 +419,11 @@ Volt if no unit is specified. You can use
 .BR mV ", " milliVolt ", " V " or " Volt
 as unit specifier. Syntax is
 .sp
-.B "flashrom \-p dediprog:voltage=value"
+.B "  flashrom \-p dediprog:voltage=value"
 .sp
 where
 .B value
-can be any of
+can be
 .BR 0V ", " 1.8V ", " 2.5V ", " 3.5V
 or the equivalent in mV.
 .TP
@@ -438,7 +444,7 @@ More information about the hardware is available at
 http://rayer.ic.cz/elektro/spipgm.htm
 .TP
 .BR "ogp_spi " programmer
-The FLASH ROM chip to access must be specified with the 
+The flash ROM chip to access must be specified with the 
 .B rom
 parameter.
 .sp
@@ -454,7 +460,7 @@ for the configuration ROM and
 .B bprom
 or
 .B bios
-for the BIOS ROM.  If more than one card supported by the ogp_spi programmer
+for the BIOS ROM. If more than one card supported by the ogp_spi programmer
 is installed in your system, you have to specify the PCI address of the card
 you want to use with the
 .B pci=
@@ -599,6 +605,8 @@ Sean Nelson
 .br
 Stefan Reinauer
 .br
+Stefan Tauner
+.br
 Stefan Wildemann
 .br
 Stephan Guilloux
@@ -613,7 +621,7 @@ Yinghai Lu
 .br
 some others, please see the flashrom svn changelog for details.
 .br
-All authors can be reached via e-mail at <flashrom@flashrom.org>.
+All authors can be reached via email at <flashrom@flashrom.org>.
 .PP
 This manual page was written by Uwe Hermann <uwe@hermann-uwe.de>
 and Carl-Daniel Hailfinger.
