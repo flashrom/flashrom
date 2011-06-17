@@ -1124,24 +1124,25 @@ int probe_flash(int startchip, struct flashchip *fill_flash, int force)
 	for (flash = flashchips + startchip; flash && flash->name; flash++) {
 		if (chip_to_probe && strcmp(flash->name, chip_to_probe) != 0)
 			continue;
-		msg_gdbg("Probing for %s %s, %d kB: ",
-			     flash->vendor, flash->name, flash->total_size);
-		if (!flash->probe && !force) {
-			msg_gdbg("failed! flashrom has no probe function for "
-				 "this flash chip.\n");
-			continue;
-		}
 		buses_common = buses_supported & flash->bustype;
 		if (!buses_common) {
+			msg_gspew("Probing for %s %s, %d kB: skipped. ",
+			         flash->vendor, flash->name, flash->total_size);
 			tmp = flashbuses_to_text(buses_supported);
-			msg_gdbg("skipped.");
-			msg_gspew(" Host bus type %s ", tmp);
+			msg_gspew("Host bus type %s ", tmp);
 			free(tmp);
 			tmp = flashbuses_to_text(flash->bustype);
 			msg_gspew("and chip bus type %s are incompatible.",
 				  tmp);
 			free(tmp);
-			msg_gdbg("\n");
+			msg_gspew("\n");
+			continue;
+		}
+		msg_gdbg("Probing for %s %s, %d kB: ",
+			     flash->vendor, flash->name, flash->total_size);
+		if (!flash->probe && !force) {
+			msg_gdbg("failed! flashrom has no probe function for "
+				 "this flash chip.\n");
 			continue;
 		}
 
