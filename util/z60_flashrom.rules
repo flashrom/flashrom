@@ -48,8 +48,28 @@ ATTRS{idVendor}=="0483", ATTRS{idProduct}=="dada", MODE="664", GROUP="plugdev"
 # http://www.dlpdesign.com/usb/usb1232h.shtml
 ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6010", MODE="664", GROUP="plugdev"
 
+# FIC OpenMoko Neo1973 Debug board (V2+)
+# http://wiki.openmoko.org/wiki/Neo1973_Debug_Board_v2
+ATTRS{idVendor}=="1457", ATTRS{idProduct}=="5118", MODE="664", GROUP="plugdev"
+
 # FTDI FT4232H Mini-Module
 # http://www.ftdichip.com/Products/EvaluationKits/FT4232H_MiniModule.htm
 ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6011", MODE="664", GROUP="plugdev"
+
+# Olimex ARM-USB-OCD
+# http://olimex.com/dev/arm-usb-ocd.html
+ATTRS{idVendor}=="15ba", ATTRS{idProduct}=="0003", MODE="664", GROUP="plugdev"
+
+# Olimex ARM-USB-OCD-H
+# http://olimex.com/dev/arm-usb-ocd-h.html
+ATTRS{idVendor}=="15ba", ATTRS{idProduct}=="002b", MODE="664", GROUP="plugdev"
+
+# Olimex ARM-USB-TINY
+# http://olimex.com/dev/arm-usb-tiny.html
+ATTRS{idVendor}=="15ba", ATTRS{idProduct}=="0004", MODE="664", GROUP="plugdev"
+
+# Olimex ARM-USB-TINY-H
+# http://olimex.com/dev/arm-usb-tiny-h.html
+ATTRS{idVendor}=="15ba", ATTRS{idProduct}=="002a", MODE="664", GROUP="plugdev"
 
 LABEL="flashrom_rules_end"
