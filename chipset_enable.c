@@ -1013,7 +1013,7 @@ static int get_flashbase_sc520(struct pci_dev *dev, const char *name)
 const struct penable chipset_enables[] = {
 #if defined(__i386__) || defined(__x86_64__)
 	{0x1002, 0x4377, OK, "ATI", "SB400",		enable_flash_sb400},
-	{0x1002, 0x438D, OK, "AMD", "SB600",		enable_flash_sb600},
+	{0x1002, 0x438d, OK, "AMD", "SB600",		enable_flash_sb600},
 	{0x1002, 0x439d, OK, "AMD", "SB700/SB710/SB750/SB850", enable_flash_sb600},
 	{0x100b, 0x0510, NT, "AMD", "SC1100",		enable_flash_sc1100},
 	{0x1022, 0x2080, OK, "AMD", "CS5536",		enable_flash_cs5536},
@@ -1052,7 +1052,7 @@ const struct penable chipset_enables[] = {
 	{0x1039, 0x5597, NT, "SiS", "5597/5598/5581/5120", enable_flash_sis530},
 	{0x1039, 0x5600, NT, "SiS", "600",		enable_flash_sis530},
 	{0x1078, 0x0100, OK, "AMD", "CS5530(A)",	enable_flash_cs5530},
-	{0x10B9, 0x1533, OK, "ALi", "M1533",		enable_flash_ali_m1533},
+	{0x10b9, 0x1533, OK, "ALi", "M1533",		enable_flash_ali_m1533},
 	{0x10de, 0x0030, OK, "NVIDIA", "nForce4/MCP4",	enable_flash_nvidia_nforce2},
 	{0x10de, 0x0050, OK, "NVIDIA", "CK804",		enable_flash_ck804}, /* LPC */
 	{0x10de, 0x0051, OK, "NVIDIA", "CK804",		enable_flash_ck804}, /* Pro */
@@ -1115,8 +1115,8 @@ const struct penable chipset_enables[] = {
 	{0x1106, 0x3372, OK, "VIA", "VT8237S",		enable_flash_vt8237s_spi},
 	{0x1106, 0x8231, NT, "VIA", "VT8231",		enable_flash_vt823x},
 	{0x1106, 0x8324, OK, "VIA", "CX700",		enable_flash_vt823x},
-	{0x1106, 0x8353, OK, "VIA", "VX800",		enable_flash_vt8237s_spi},
-	{0x1106, 0x8409, OK, "VIA", "VX855",		enable_flash_vt823x},
+	{0x1106, 0x8353, OK, "VIA", "VX800/VX820",	enable_flash_vt8237s_spi},
+	{0x1106, 0x8409, OK, "VIA", "VX855/VX875",	enable_flash_vt823x},
 	{0x1166, 0x0200, OK, "Broadcom", "OSB4",	enable_flash_osb4},
 	{0x1166, 0x0205, OK, "Broadcom", "HT-1000",	enable_flash_ht1000},
 	{0x8086, 0x122e, OK, "Intel", "PIIX",		enable_flash_piix4},
@@ -1125,6 +1125,7 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x2420, OK, "Intel", "ICH0",		enable_flash_ich_4e},
 	{0x8086, 0x2440, OK, "Intel", "ICH2",		enable_flash_ich_4e},
 	{0x8086, 0x244c, OK, "Intel", "ICH2-M",		enable_flash_ich_4e},
+	{0x8086, 0x2450, NT, "Intel", "C-ICH",		enable_flash_ich_4e},
 	{0x8086, 0x2480, OK, "Intel", "ICH3-S",		enable_flash_ich_4e},
 	{0x8086, 0x248c, OK, "Intel", "ICH3-M",		enable_flash_ich_4e},
 	{0x8086, 0x24c0, OK, "Intel", "ICH4/ICH4-L",	enable_flash_ich_4e},
@@ -1133,6 +1134,7 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x25a1, OK, "Intel", "6300ESB",	enable_flash_ich_4e},
 	{0x8086, 0x2640, OK, "Intel", "ICH6/ICH6R",	enable_flash_ich_dc},
 	{0x8086, 0x2641, OK, "Intel", "ICH6-M",		enable_flash_ich_dc},
+	{0x8086, 0x2642, NT, "Intel", "ICH6W/ICH6RW",	enable_flash_ich_dc},
 	{0x8086, 0x2670, OK, "Intel", "631xESB/632xESB/3100", enable_flash_ich_dc},
 	{0x8086, 0x27b0, OK, "Intel", "ICH7DH",		enable_flash_ich7},
 	{0x8086, 0x27b8, OK, "Intel", "ICH7/ICH7R",	enable_flash_ich7},
@@ -1151,10 +1153,12 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x2917, OK, "Intel", "ICH9M-E",	enable_flash_ich9},
 	{0x8086, 0x2918, OK, "Intel", "ICH9",		enable_flash_ich9},
 	{0x8086, 0x2919, OK, "Intel", "ICH9M",		enable_flash_ich9},
+	{0x8086, 0x3a10, NT, "Intel", "ICH10R Engineering Sample", enable_flash_ich10},
 	{0x8086, 0x3a14, OK, "Intel", "ICH10DO",	enable_flash_ich10},
 	{0x8086, 0x3a16, OK, "Intel", "ICH10R",		enable_flash_ich10},
 	{0x8086, 0x3a18, OK, "Intel", "ICH10",		enable_flash_ich10},
 	{0x8086, 0x3a1a, OK, "Intel", "ICH10D",		enable_flash_ich10},
+	{0x8086, 0x3a1e, NT, "Intel", "ICH10 Engineering Sample", enable_flash_ich10},
 	{0x8086, 0x3b00, NT, "Intel", "3400 Desktop",	enable_flash_ich10},
 	{0x8086, 0x3b01, NT, "Intel", "3400 Mobile",	enable_flash_ich10},
 	{0x8086, 0x3b02, NT, "Intel", "P55",		enable_flash_ich10},
@@ -1176,7 +1180,8 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x7000, OK, "Intel", "PIIX3",		enable_flash_piix4},
 	{0x8086, 0x7110, OK, "Intel", "PIIX4/4E/4M",	enable_flash_piix4},
 	{0x8086, 0x7198, OK, "Intel", "440MX",		enable_flash_piix4},
-	{0x8086, 0x8119, OK, "Intel", "Poulsbo",	enable_flash_poulsbo},
+	{0x8086, 0x8119, OK, "Intel", "SCH Poulsbo",	enable_flash_poulsbo},
+	{0x8086, 0x8186, NT, "Intel", "Atom E6xx(T)/Tunnel Creek", enable_flash_poulsbo},
 #endif
 	{},
 };
