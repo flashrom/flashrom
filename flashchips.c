@@ -3360,7 +3360,7 @@ const struct flashchip flashchips[] = {
 		.feature_bits	= FEATURE_ADDR_SHIFTED | FEATURE_EITHER_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_m29f400bt,
-		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (m29f400bt.c) */
+		.probe_timing	= TIMING_IGNORED, /* routine doesn't use probe_timing (m29f400bt.c) */
 		.block_erasers	=
 		{
 			{
@@ -3392,7 +3392,7 @@ const struct flashchip flashchips[] = {
 		.feature_bits	= FEATURE_ADDR_SHIFTED | FEATURE_EITHER_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_m29f400bt,
-		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (m29f400bt.c) */
+		.probe_timing	= TIMING_IGNORED, /* routine doesn't use probe_timing (m29f400bt.c) */
 		.block_erasers	=
 		{
 			{
@@ -5622,7 +5622,7 @@ const struct flashchip flashchips[] = {
 		.feature_bits	= 0,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_82802ab,
-		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (sst28sf040.c) */
+		.probe_timing	= TIMING_IGNORED, /* routine doesn't use probe_timing (sst28sf040.c) */
 		.block_erasers	=
 		{
 			{
@@ -6091,7 +6091,7 @@ const struct flashchip flashchips[] = {
 		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_82802ab,
-		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (sst49lfxxxc.c) */
+		.probe_timing	= TIMING_IGNORED, /* routine doesn't use probe_timing (sst49lfxxxc.c) */
 		.block_erasers	=
 		{
 			{
@@ -6156,7 +6156,7 @@ const struct flashchip flashchips[] = {
 		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_82802ab,
-		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (sst49lfxxxc.c) */
+		.probe_timing	= TIMING_IGNORED, /* routine doesn't use probe_timing (sst49lfxxxc.c) */
 		.block_erasers	=
 		{
 			{
@@ -6189,7 +6189,7 @@ const struct flashchip flashchips[] = {
 		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_OK_PR,
 		.probe		= probe_82802ab,
-		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (sst49lfxxxc.c) */
+		.probe_timing	= TIMING_IGNORED, /* routine doesn't use probe_timing (sst49lfxxxc.c) */
 		.block_erasers	=
 		{
 			{
@@ -6373,7 +6373,7 @@ const struct flashchip flashchips[] = {
 		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_OK_PRE,
 		.probe		= probe_82802ab,
-		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (sst49lfxxxc.c) */
+		.probe_timing	= TIMING_IGNORED, /* routine doesn't use probe_timing (sst49lfxxxc.c) */
 		.block_erasers	=
 		{
 			{
@@ -6946,7 +6946,7 @@ const struct flashchip flashchips[] = {
 		.feature_bits	= FEATURE_ADDR_SHIFTED | FEATURE_EITHER_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_m29f400bt,
-		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (m29f400bt.c) */
+		.probe_timing	= TIMING_IGNORED, /* routine doesn't use probe_timing (m29f400bt.c) */
 		.block_erasers	=
 		{
 			{
@@ -7188,7 +7188,7 @@ const struct flashchip flashchips[] = {
 		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_82802ab,
-		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (sst49lfxxxc.c) */
+		.probe_timing	= TIMING_IGNORED, /* routine doesn't use probe_timing (sst49lfxxxc.c) */
 		.block_erasers	=
 		{
 			{
@@ -7218,7 +7218,7 @@ const struct flashchip flashchips[] = {
 		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_82802ab,
-		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (82802ab.c) */
+		.probe_timing	= TIMING_IGNORED, /* routine doesn't use probe_timing (82802ab.c) */
 		.block_erasers	=
 		{
 			{
@@ -7243,7 +7243,7 @@ const struct flashchip flashchips[] = {
 		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_OK_PR,
 		.probe		= probe_82802ab,
-		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (82802ab.c) */
+		.probe_timing	= TIMING_IGNORED, /* routine doesn't use probe_timing (82802ab.c) */
 		.block_erasers	=
 		{
 			{
@@ -7268,7 +7268,7 @@ const struct flashchip flashchips[] = {
 		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_82802ab,
-		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (82802ab.c) */
+		.probe_timing	= TIMING_IGNORED, /* routine doesn't use probe_timing (82802ab.c) */
 		.block_erasers	=
 		{
 			{
@@ -8091,7 +8091,7 @@ const struct flashchip flashchips[] = {
 		.feature_bits	= FEATURE_LONG_RESET,
 		.tested		= TEST_OK_PRE,
 		.probe		= probe_w29ee011,
-		.probe_timing	= TIMING_IGNORED, /* routine don't use probe_timing (w29ee011.c) */
+		.probe_timing	= TIMING_IGNORED, /* routine doesn't use probe_timing (w29ee011.c) */
 		.block_erasers	=
 		{
 			{
