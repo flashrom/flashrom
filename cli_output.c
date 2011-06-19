@@ -47,5 +47,6 @@ int print(int type, const char *fmt, ...)
 	va_start(ap, fmt);
 	ret = vfprintf(output_type, fmt, ap);
 	va_end(ap);
+	fflush(output_type);
 	return ret;
 }
