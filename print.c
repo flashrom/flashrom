@@ -400,6 +400,7 @@ const struct board_info boards_known[] = {
 	B("ASRock",	"A770CrossFire",	1, "http://www.asrock.com/mb/overview.asp?Model=A770CrossFire&s=AM2%%2b", NULL),
 	B("ASRock",	"ALiveNF6G-DVI",	1, "http://www.asrock.com/mb/overview.asp?Model=ALiveNF6G-DVI", NULL),
 	B("ASRock",	"K7S41",		1, "http://www.asrock.com/mb/overview.asp?Model=K7S41", NULL),
+	B("ASRock",	"K7S41GX",		1, "http://www.asrock.com/mb/overview.asp?Model=K7S41GX", NULL),
 	B("ASRock",	"K7VT4A+",		0, "http://www.asrock.com/mb/overview.asp?Model=K7VT4A%%2b&s=", "No chip found, probably due to flash translation. http://www.flashrom.org/pipermail/flashrom/2009-August/000393.html"),
 	B("ASRock",	"K8S8X",		1, "http://www.asrock.com/mb/overview.asp?Model=K8S8X", NULL),
 	B("ASRock",	"M3A790GXH/128M",	1, "http://www.asrock.com/MB/overview.asp?Model=M3A790GXH/128M", NULL),
