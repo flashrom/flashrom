@@ -68,6 +68,7 @@ int erase_sector_49lfxxxc(struct flashchip *flash, unsigned int address, unsigne
 	chip_writeb(0xD0, bios + address);
 
 	status = wait_82802ab(flash);
+	print_status_82802ab(status);
 
 	if (check_erased_range(flash, address, sector_size)) {
 		msg_cerr("ERASE FAILED!\n");
