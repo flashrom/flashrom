@@ -59,7 +59,7 @@ char *flashbuses_to_text(enum chipbustype bustype)
 	return ret;
 }
 
-#define POS_PRINT(x) do { pos += strlen(x); printf(x); } while (0)
+#define POS_PRINT(x) do { pos += strlen(x); msg_ginfo(x); } while (0)
 
 static int digits(int n)
 {
@@ -93,31 +93,31 @@ static void print_supported_chips(void)
 	maxchiplen++;
 	okcol = maxvendorlen + maxchiplen;
 
-	printf("Supported flash chips (total: %d):\n\n", chipcount);
-	printf("Vendor");
+	msg_ginfo("Supported flash chips (total: %d):\n\n", chipcount);
+	msg_ginfo("Vendor");
 	for (i = strlen("Vendor"); i < maxvendorlen; i++)
-		printf(" ");
-	printf("Device");
+		msg_ginfo(" ");
+	msg_ginfo("Device");
 	for (i = strlen("Device"); i < maxchiplen; i++)
-		printf(" ");
+		msg_ginfo(" ");
 
-	printf("Tested   Known    Size/kB:  Type:\n");
+	msg_ginfo("Tested   Known    Size/kB:  Type:\n");
 	for (i = 0; i < okcol; i++)
-		printf(" ");
-	printf("OK       Broken\n\n");
-	printf("(P = PROBE, R = READ, E = ERASE, W = WRITE)\n\n");
+		msg_ginfo(" ");
+	msg_ginfo("OK       Broken\n\n");
+	msg_ginfo("(P = PROBE, R = READ, E = ERASE, W = WRITE)\n\n");
 
 	for (f = flashchips; f->name != NULL; f++) {
 		/* Don't print "unknown XXXX SPI chip" entries. */
 		if (!strncmp(f->name, "unknown", 7))
 			continue;
 
-		printf("%s", f->vendor);
+		msg_ginfo("%s", f->vendor);
 		for (i = strlen(f->vendor); i < maxvendorlen; i++)
-			printf(" ");
-		printf("%s", f->name);
+			msg_ginfo(" ");
+		msg_ginfo("%s", f->name);
 		for (i = strlen(f->name); i < maxchiplen; i++)
-			printf(" ");
+			msg_ginfo(" ");
 
 		pos = maxvendorlen + maxchiplen;
 		if ((f->tested & TEST_OK_MASK)) {
@@ -131,7 +131,7 @@ static void print_supported_chips(void)
 				POS_PRINT("W ");
 		}
 		while (pos < okcol + 9) {
-			printf(" ");
+			msg_ginfo(" ");
 			pos++;
 		}
 		if ((f->tested & TEST_BAD_MASK)) {
@@ -146,13 +146,13 @@ static void print_supported_chips(void)
 		}
 
 		while (pos < okcol + 18) {
-			printf(" ");
+			msg_ginfo(" ");
 			pos++;
 		}
-		printf("%d", f->total_size);
+		msg_ginfo("%d", f->total_size);
 		for (i = 0; i < 10 - digits(f->total_size); i++)
-			printf(" ");
-		printf("%s\n", flashbuses_to_text(f->bustype));
+			msg_ginfo(" ");
+		msg_ginfo("%s\n", flashbuses_to_text(f->bustype));
 	}
 }
 
@@ -172,26 +172,26 @@ static void print_supported_chipsets(void)
 	maxvendorlen++;
 	maxchipsetlen++;
 
-	printf("Supported chipsets (total: %d):\n\n", chipsetcount);
+	msg_ginfo("Supported chipsets (total: %d):\n\n", chipsetcount);
 
-	printf("Vendor");
+	msg_ginfo("Vendor");
 	for (i = strlen("Vendor"); i < maxvendorlen; i++)
-		printf(" ");
+		msg_ginfo(" ");
 
-	printf("Chipset");
+	msg_ginfo("Chipset");
 	for (i = strlen("Chipset"); i < maxchipsetlen; i++)
-		printf(" ");
+		msg_ginfo(" ");
 
-	printf("PCI IDs   State\n\n");
+	msg_ginfo("PCI IDs   State\n\n");
 
 	for (c = chipset_enables; c->vendor_name != NULL; c++) {
-		printf("%s", c->vendor_name);
+		msg_ginfo("%s", c->vendor_name);
 		for (i = 0; i < maxvendorlen - strlen(c->vendor_name); i++)
-			printf(" ");
-		printf("%s", c->device_name);
+			msg_ginfo(" ");
+		msg_ginfo("%s", c->device_name);
 		for (i = 0; i < maxchipsetlen - strlen(c->device_name); i++)
-			printf(" ");
-		printf("%04x:%04x%s\n", c->vendor_id, c->device_id,
+			msg_ginfo(" ");
+		msg_ginfo("%04x:%04x%s\n", c->vendor_id, c->device_id,
 		       (c->status == OK) ? "" : " (untested)");
 	}
 }
@@ -216,39 +216,39 @@ static void print_supported_boards_helper(const struct board_info *boards,
 	maxvendorlen++;
 	maxboardlen++;
 
-	printf("Known %s (good: %d, bad: %d):\n\n",
+	msg_ginfo("Known %s (good: %d, bad: %d):\n\n",
 	       devicetype, boardcount_good, boardcount_bad);
 
-	printf("Vendor");
+	msg_ginfo("Vendor");
 	for (i = strlen("Vendor"); i < maxvendorlen; i++)
-		printf(" ");
+		msg_ginfo(" ");
 
-	printf("Board");
+	msg_ginfo("Board");
 	for (i = strlen("Board"); i < maxboardlen; i++)
-		printf(" ");
+		msg_ginfo(" ");
 
-	printf("Status  Required option\n\n");
+	msg_ginfo("Status  Required option\n\n");
 
 	for (b = boards; b->vendor != NULL; b++) {
-		printf("%s", b->vendor);
+		msg_ginfo("%s", b->vendor);
 		for (i = 0; i < maxvendorlen - strlen(b->vendor); i++)
-			printf(" ");
-		printf("%s", b->name);
+			msg_ginfo(" ");
+		msg_ginfo("%s", b->name);
 		for (i = 0; i < maxboardlen - strlen(b->name); i++)
-			printf(" ");
-		printf((b->working) ? "OK      " : "BAD     ");
+			msg_ginfo(" ");
+		msg_ginfo((b->working) ? "OK      " : "BAD     ");
 
 		for (e = board_pciid_enables; e->vendor_name != NULL; e++) {
 			if (strcmp(e->vendor_name, b->vendor)
 			    || strcmp(e->board_name, b->name))
 				continue;
 			if (e->lb_vendor == NULL)
-				printf("(autodetected)");
+				msg_ginfo("(autodetected)");
 			else
-				printf("-m %s:%s", e->lb_vendor,
+				msg_ginfo("-m %s:%s", e->lb_vendor,
 						   e->lb_part);
 		}
-		printf("\n");
+		msg_ginfo("\n");
 	}
 }
 #endif
@@ -257,104 +257,104 @@ void print_supported(void)
 {
 	print_supported_chips();
 
-	printf("\nSupported programmers:\n");
+	msg_ginfo("\nSupported programmers:\n");
 	list_programmers_linebreak(0, 80, 0);
 #if CONFIG_INTERNAL == 1
-	printf("\nSupported devices for the %s programmer:\n\n",
+	msg_ginfo("\nSupported devices for the %s programmer:\n\n",
 	       programmer_table[PROGRAMMER_INTERNAL].name);
 	print_supported_chipsets();
-	printf("\n");
+	msg_ginfo("\n");
 	print_supported_boards_helper(boards_known, "boards");
-	printf("\n");
+	msg_ginfo("\n");
 	print_supported_boards_helper(laptops_known, "laptops");
 #endif
 #if CONFIG_DUMMY == 1
-	printf("\nSupported devices for the %s programmer:\n",
+	msg_ginfo("\nSupported devices for the %s programmer:\n",
 	       programmer_table[PROGRAMMER_DUMMY].name);
 	/* FIXME */
-	printf("Dummy device, does nothing and logs all accesses\n");
+	msg_ginfo("Dummy device, does nothing and logs all accesses\n");
 #endif
 #if CONFIG_NIC3COM == 1
-	printf("\nSupported devices for the %s programmer:\n",
+	msg_ginfo("\nSupported devices for the %s programmer:\n",
 	       programmer_table[PROGRAMMER_NIC3COM].name);
 	print_supported_pcidevs(nics_3com);
 #endif
 #if CONFIG_NICREALTEK == 1
-	printf("\nSupported devices for the %s programmer:\n",
+	msg_ginfo("\nSupported devices for the %s programmer:\n",
 	       programmer_table[PROGRAMMER_NICREALTEK].name);
 	print_supported_pcidevs(nics_realtek);
 #endif
 #if CONFIG_NICNATSEMI == 1
-	printf("\nSupported devices for the %s programmer:\n",
+	msg_ginfo("\nSupported devices for the %s programmer:\n",
 	       programmer_table[PROGRAMMER_NICNATSEMI].name);
 	print_supported_pcidevs(nics_natsemi);
 #endif
 #if CONFIG_GFXNVIDIA == 1
-	printf("\nSupported devices for the %s programmer:\n",
+	msg_ginfo("\nSupported devices for the %s programmer:\n",
 	       programmer_table[PROGRAMMER_GFXNVIDIA].name);
 	print_supported_pcidevs(gfx_nvidia);
 #endif
 #if CONFIG_DRKAISER == 1
-	printf("\nSupported devices for the %s programmer:\n",
+	msg_ginfo("\nSupported devices for the %s programmer:\n",
 	       programmer_table[PROGRAMMER_DRKAISER].name);
 	print_supported_pcidevs(drkaiser_pcidev);
 #endif
 #if CONFIG_SATASII == 1
-	printf("\nSupported devices for the %s programmer:\n",
+	msg_ginfo("\nSupported devices for the %s programmer:\n",
 	       programmer_table[PROGRAMMER_SATASII].name);
 	print_supported_pcidevs(satas_sii);
 #endif
 #if CONFIG_ATAHPT == 1
-	printf("\nSupported devices for the %s programmer:\n",
+	msg_ginfo("\nSupported devices for the %s programmer:\n",
 	       programmer_table[PROGRAMMER_ATAHPT].name);
 	print_supported_pcidevs(ata_hpt);
 #endif
 #if CONFIG_FT2232_SPI == 1
-	printf("\nSupported devices for the %s programmer:\n",
+	msg_ginfo("\nSupported devices for the %s programmer:\n",
 	       programmer_table[PROGRAMMER_FT2232_SPI].name);
 	print_supported_usbdevs(devs_ft2232spi);
 #endif
 #if CONFIG_SERPROG == 1
-	printf("\nSupported devices for the %s programmer:\n",
+	msg_ginfo("\nSupported devices for the %s programmer:\n",
 	       programmer_table[PROGRAMMER_SERPROG].name);
 	/* FIXME */
-	printf("All programmer devices speaking the serprog protocol\n");
+	msg_ginfo("All programmer devices speaking the serprog protocol\n");
 #endif
 #if CONFIG_BUSPIRATE_SPI == 1
-	printf("\nSupported devices for the %s programmer:\n",
+	msg_ginfo("\nSupported devices for the %s programmer:\n",
 	       programmer_table[PROGRAMMER_BUSPIRATE_SPI].name);
 	/* FIXME */
-	printf("Dangerous Prototypes Bus Pirate\n");
+	msg_ginfo("Dangerous Prototypes Bus Pirate\n");
 #endif
 #if CONFIG_DEDIPROG == 1
-	printf("\nSupported devices for the %s programmer:\n",
+	msg_ginfo("\nSupported devices for the %s programmer:\n",
 	       programmer_table[PROGRAMMER_DEDIPROG].name);
 	/* FIXME */
-	printf("Dediprog SF100\n");
+	msg_ginfo("Dediprog SF100\n");
 #endif
 #if CONFIG_RAYER_SPI == 1
-	printf("\nSupported devices for the %s programmer:\n",
+	msg_ginfo("\nSupported devices for the %s programmer:\n",
 	       programmer_table[PROGRAMMER_RAYER_SPI].name);
 	/* FIXME */
-	printf("RayeR parallel port programmer\n");
+	msg_ginfo("RayeR parallel port programmer\n");
 #endif
 #if CONFIG_NICINTEL == 1
-	printf("\nSupported devices for the %s programmer:\n",
+	msg_ginfo("\nSupported devices for the %s programmer:\n",
 	       programmer_table[PROGRAMMER_NICINTEL].name);
 	print_supported_pcidevs(nics_intel);
 #endif
 #if CONFIG_NICINTEL_SPI == 1
-	printf("\nSupported devices for the %s programmer:\n",
+	msg_ginfo("\nSupported devices for the %s programmer:\n",
 	       programmer_table[PROGRAMMER_NICINTEL_SPI].name);
 	print_supported_pcidevs(nics_intel_spi);
 #endif
 #if CONFIG_OGP_SPI == 1
-	printf("\nSupported devices for the %s programmer:\n",
+	msg_ginfo("\nSupported devices for the %s programmer:\n",
 	       programmer_table[PROGRAMMER_OGP_SPI].name);
 	print_supported_pcidevs(ogp_spi);
 #endif
 #if CONFIG_SATAMV == 1
-	printf("\nSupported devices for the %s programmer:\n",
+	msg_ginfo("\nSupported devices for the %s programmer:\n",
 	       programmer_table[PROGRAMMER_SATAMV].name);
 	print_supported_pcidevs(satas_mv);
 #endif
