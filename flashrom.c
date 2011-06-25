@@ -1188,8 +1188,8 @@ notfound:
 
 	msg_cinfo("%s chip \"%s %s\" (%d kB, %s) %s.\n",
 	       force ? "Assuming" : "Found",
-	       flash->vendor, flash->name, flash->total_size,
-	       flashbuses_to_text(flash->bustype), location);
+	       fill_flash->vendor, fill_flash->name, fill_flash->total_size,
+	       flashbuses_to_text(fill_flash->bustype), location);
 
 	/* Flash registers will not be mapped if the chip was forced. Lock info
 	 * may be stored in registers, so avoid lock info printing.
