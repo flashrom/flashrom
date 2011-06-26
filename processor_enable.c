@@ -56,13 +56,13 @@ static int is_loongson(void)
 		while (*ptr && isspace((unsigned char)*ptr))
 			ptr++;
 		/* "cpu" part appears only with some Linux versions.  */
-		if (strncmp(ptr, "cpu", sizeof("cpu") - 1) == 0)
-			ptr += sizeof("cpu") - 1;
+		if (strncmp(ptr, "cpu", strlen("cpu")) == 0)
+			ptr += strlen("cpu");
 		while (*ptr && isspace((unsigned char)*ptr))
 			ptr++;
-		if (strncmp(ptr, "model", sizeof("model") - 1) != 0)
+		if (strncmp(ptr, "model", strlen("model")) != 0)
 			continue;
-		ptr += sizeof("model") - 1;
+		ptr += strlen("model");
 		while (*ptr && isspace((unsigned char)*ptr))
 			ptr++;
 		if (*ptr != ':')
@@ -72,9 +72,9 @@ static int is_loongson(void)
 			ptr++;
 		fclose(cpuinfo);
 		return (strncmp(ptr, "ICT Loongson-2 V0.3",
-				sizeof("ICT Loongson-2 V0.3") - 1) == 0)
+				strlen("ICT Loongson-2 V0.3")) == 0)
 		    || (strncmp(ptr, "Godson2 V0.3  FPU V0.1",
-				sizeof("Godson2 V0.3  FPU V0.1") - 1) == 0);
+				strlen("Godson2 V0.3  FPU V0.1")) == 0);
 	}
 	fclose(cpuinfo);
 	return 0;
