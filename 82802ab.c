@@ -136,11 +136,7 @@ int erase_block_82802ab(struct flashchip *flash, unsigned int page, unsigned int
 	status = wait_82802ab(flash);
 	print_status_82802ab(status);
 
-	if (check_erased_range(flash, page, pagesize)) {
-		msg_cerr("ERASE FAILED!\n");
-		return -1;
-	}
-
+	/* FIXME: Check the status register for errors. */
 	return 0;
 }
 

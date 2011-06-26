@@ -481,10 +481,7 @@ int spi_chip_erase_60(struct flashchip *flash)
 	/* FIXME: We assume spi_read_status_register will never fail. */
 	while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
 		programmer_delay(1000 * 1000);
-	if (check_erased_range(flash, 0, flash->total_size * 1024)) {
-		msg_cerr("ERASE FAILED!\n");
-		return -1;
-	}
+	/* FIXME: Check the status register for errors. */
 	return 0;
 }
 
@@ -520,10 +517,7 @@ int spi_chip_erase_c7(struct flashchip *flash)
 	/* FIXME: We assume spi_read_status_register will never fail. */
 	while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
 		programmer_delay(1000 * 1000);
-	if (check_erased_range(flash, 0, flash->total_size * 1024)) {
-		msg_cerr("ERASE FAILED!\n");
-		return -1;
-	}
+	/* FIXME: Check the status register for errors. */
 	return 0;
 }
 
@@ -564,10 +558,7 @@ int spi_block_erase_52(struct flashchip *flash, unsigned int addr, unsigned int 
 	 */
 	while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
 		programmer_delay(100 * 1000);
-	if (check_erased_range(flash, addr, blocklen)) {
-		msg_cerr("ERASE FAILED!\n");
-		return -1;
-	}
+	/* FIXME: Check the status register for errors. */
 	return 0;
 }
 
@@ -613,10 +604,7 @@ int spi_block_erase_d8(struct flashchip *flash, unsigned int addr, unsigned int 
 	 */
 	while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
 		programmer_delay(100 * 1000);
-	if (check_erased_range(flash, addr, blocklen)) {
-		msg_cerr("ERASE FAILED!\n");
-		return -1;
-	}
+	/* FIXME: Check the status register for errors. */
 	return 0;
 }
 
@@ -660,10 +648,7 @@ int spi_block_erase_d7(struct flashchip *flash, unsigned int addr, unsigned int 
 	 */
 	while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
 		programmer_delay(100 * 1000);
-	if (check_erased_range(flash, addr, blocklen)) {
-		msg_cerr("ERASE FAILED!\n");
-		return -1;
-	}
+	/* FIXME: Check the status register for errors. */
 	return 0;
 }
 
@@ -705,10 +690,7 @@ int spi_block_erase_20(struct flashchip *flash, unsigned int addr, unsigned int 
 	 */
 	while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
 		programmer_delay(10 * 1000);
-	if (check_erased_range(flash, addr, blocklen)) {
-		msg_cerr("ERASE FAILED!\n");
-		return -1;
-	}
+	/* FIXME: Check the status register for errors. */
 	return 0;
 }
 
