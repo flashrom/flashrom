@@ -413,7 +413,7 @@ strip: $(PROGRAM)$(EXEC_SUFFIX)
 compiler: featuresavailable
 	@printf "Checking for a C compiler... "
 	@$(shell ( echo "int main(int argc, char **argv)"; \
-		   echo "{ return 0; }"; ) > .test.c )
+		   echo "{ (void) argc; (void) argv; return 0; }"; ) > .test.c )
 	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .test.c -o .test$(EXEC_SUFFIX) >/dev/null &&	\
 		echo "found." || ( echo "not found."; \
 		rm -f .test.c .test$(EXEC_SUFFIX); exit 1)
@@ -427,7 +427,7 @@ pciutils: compiler
 		   echo "#include <pci/pci.h>";		   \
 		   echo "struct pci_access *pacc;";	   \
 		   echo "int main(int argc, char **argv)"; \
-		   echo "{ pacc = pci_alloc(); return 0; }"; ) > .test.c )
+		   echo "{ (void) argc; (void) argv; pacc = pci_alloc(); return 0; }"; ) > .test.c )
 	@$(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o >/dev/null 2>&1 &&		\
 		echo "found." || ( echo "not found."; echo;			\
 		echo "Please install libpci headers (package pciutils-devel).";	\
@@ -469,7 +469,7 @@ features: compiler
 	@$(shell ( echo "#include <ftdi.h>";		   \
 		   echo "struct ftdi_context *ftdic = NULL;";	   \
 		   echo "int main(int argc, char **argv)"; \
-		   echo "{ return ftdi_init(ftdic); }"; ) > .featuretest.c )
+		   echo "{ (void) argc; (void) argv; return ftdi_init(ftdic); }"; ) > .featuretest.c )
 	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) $(FTDILIBS) $(LIBS) >/dev/null 2>&1 &&	\
 		( echo "found."; echo "FTDISUPPORT := yes" >> .features.tmp ) ||	\
 		( echo "not found."; echo "FTDISUPPORT := no" >> .features.tmp )
@@ -477,7 +477,7 @@ features: compiler
 	@$(shell ( echo "#include <sys/utsname.h>";		   \
 		   echo "struct utsname osinfo;";	   \
 		   echo "int main(int argc, char **argv)"; \
-		   echo "{ uname (&osinfo); return 0; }"; ) > .featuretest.c )
+		   echo "{ (void) argc; (void) argv; uname (&osinfo); return 0; }"; ) > .featuretest.c )
 	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) >/dev/null 2>&1 &&	\
 		( echo "found."; echo "UTSNAME := yes" >> .features.tmp ) ||	\
 		( echo "not found."; echo "UTSNAME := no" >> .features.tmp )
@@ -490,7 +490,7 @@ features: compiler
 	@$(shell ( echo "#include <sys/utsname.h>";		   \
 		   echo "struct utsname osinfo;";	   \
 		   echo "int main(int argc, char **argv)"; \
-		   echo "{ uname (&osinfo); return 0; }"; ) > .featuretest.c )
+		   echo "{ (void) argc; (void) argv; uname (&osinfo); return 0; }"; ) > .featuretest.c )
 	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) >/dev/null 2>&1 &&	\
 		( echo "found."; echo "UTSNAME := yes" >> .features.tmp ) ||	\
 		( echo "not found."; echo "UTSNAME := no" >> .features.tmp )
