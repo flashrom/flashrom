@@ -205,21 +205,21 @@ void map_flash_registers(struct flashchip *flash);
 int read_memmapped(struct flashchip *flash, uint8_t *buf, int start, int len);
 int erase_flash(struct flashchip *flash);
 int probe_flash(int startchip, struct flashchip *fill_flash, int force);
-int read_flash_to_file(struct flashchip *flash, char *filename);
+int read_flash_to_file(struct flashchip *flash, const char *filename);
 int min(int a, int b);
 int max(int a, int b);
 void tolower_string(char *str);
-char *extract_param(char **haystack, char *needle, char *delim);
-int verify_range(struct flashchip *flash, uint8_t *cmpbuf, int start, int len, char *message);
+char *extract_param(char **haystack, const char *needle, const char *delim);
+int verify_range(struct flashchip *flash, uint8_t *cmpbuf, int start, int len, const char *message);
 int need_erase(uint8_t *have, uint8_t *want, int len, enum write_granularity gran);
 char *strcat_realloc(char *dest, const char *src);
 void print_version(void);
 void print_banner(void);
 void list_programmers_linebreak(int startcol, int cols, int paren);
 int selfcheck(void);
-int doit(struct flashchip *flash, int force, char *filename, int read_it, int write_it, int erase_it, int verify_it);
-int read_buf_from_file(unsigned char *buf, unsigned long size, char *filename);
-int write_buf_to_file(unsigned char *buf, unsigned long size, char *filename);
+int doit(struct flashchip *flash, int force, const char *filename, int read_it, int write_it, int erase_it, int verify_it);
+int read_buf_from_file(unsigned char *buf, unsigned long size, const char *filename);
+int write_buf_to_file(unsigned char *buf, unsigned long size, const char *filename);
 
 #define OK 0
 #define NT 1    /* Not tested */
