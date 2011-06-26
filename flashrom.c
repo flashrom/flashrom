@@ -1914,11 +1914,13 @@ int doit(struct flashchip *flash, int force, const char *filename, int read_it, 
 	 * preserved, but in that case we might perform unneeded erase which
 	 * takes time as well.
 	 */
-	msg_cdbg("Reading old flash chip contents...\n");
+	msg_cdbg("Reading old flash chip contents... ");
 	if (flash->read(flash, oldcontents, 0, size)) {
 		ret = 1;
+		msg_cdbg("FAILED.\n");
 		goto out;
 	}
+	msg_cdbg("done.\n");
 
 	// This should be moved into each flash part's code to do it 
 	// cleanly. This does the job.
