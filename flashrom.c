@@ -649,7 +649,7 @@ char *strcat_realloc(char *dest, const char *src)
  * needle and remove everything from the first occurrence of needle to the next
  * delimiter from haystack.
  */
-char *extract_param(char **haystack, char *needle, char *delim)
+char *extract_param(char **haystack, const char *needle, const char *delim)
 {
 	char *param_pos, *opt_pos, *rest;
 	char *opt = NULL;
@@ -706,7 +706,7 @@ char *extract_param(char **haystack, char *needle, char *delim)
 	return opt;
 }
 
-char *extract_programmer_param(char *param_name)
+char *extract_programmer_param(const char *param_name)
 {
 	return extract_param(&programmer_param, param_name, ",");
 }
@@ -735,7 +735,7 @@ int check_erased_range(struct flashchip *flash, int start, int len)
  * @message	string to print in the "FAILED" message
  * @return	0 for success, -1 for failure
  */
-int verify_range(struct flashchip *flash, uint8_t *cmpbuf, int start, int len, char *message)
+int verify_range(struct flashchip *flash, uint8_t *cmpbuf, int start, int len, const char *message)
 {
 	int i, ret = 0;
 	uint8_t *readbuf = malloc(len);
@@ -1217,7 +1217,7 @@ int verify_flash(struct flashchip *flash, uint8_t *buf)
 	return ret;
 }
 
-int read_buf_from_file(unsigned char *buf, unsigned long size, char *filename)
+int read_buf_from_file(unsigned char *buf, unsigned long size, const char *filename)
 {
 	unsigned long numbytes;
 	FILE *image;
@@ -1250,7 +1250,7 @@ int read_buf_from_file(unsigned char *buf, unsigned long size, char *filename)
 	return 0;
 }
 
-int write_buf_to_file(unsigned char *buf, unsigned long size, char *filename)
+int write_buf_to_file(unsigned char *buf, unsigned long size, const char *filename)
 {
 	unsigned long numbytes;
 	FILE *image;
@@ -1274,7 +1274,7 @@ int write_buf_to_file(unsigned char *buf, unsigned long size, char *filename)
 	return 0;
 }
 
-int read_flash_to_file(struct flashchip *flash, char *filename)
+int read_flash_to_file(struct flashchip *flash, const char *filename)
 {
 	unsigned long size = flash->total_size * 1024;
 	unsigned char *buf = calloc(size, sizeof(char));
@@ -1577,7 +1577,7 @@ void emergency_help_message(void)
 }
 
 /* The way to go if you want a delimited list of programmers*/
-void list_programmers(char *delim)
+void list_programmers(const char *delim)
 {
 	enum programmer p;
 	for (p = 0; p < PROGRAMMER_INVALID; p++) {
@@ -1846,7 +1846,7 @@ int chip_safety_check(struct flashchip *flash, int force, int read_it, int write
  * but right now it allows us to split off the CLI code.
  * Besides that, the function itself is a textbook example of abysmal code flow.
  */
-int doit(struct flashchip *flash, int force, char *filename, int read_it, int write_it, int erase_it, int verify_it)
+int doit(struct flashchip *flash, int force, const char *filename, int read_it, int write_it, int erase_it, int verify_it)
 {
 	uint8_t *oldcontents;
 	uint8_t *newcontents;
