@@ -1206,6 +1206,7 @@ int chipset_flash_enable(void)
 	struct pci_dev *dev = NULL;
 	int ret = -2;		/* Nothing! */
 	int i;
+	char *s;
 
 	/* Now let's try to find the chipset we have... */
 	for (i = 0; chipset_enables[i].vendor_name != NULL; i++) {
@@ -1244,8 +1245,9 @@ int chipset_flash_enable(void)
 			msg_pinfo("PROBLEMS, continuing anyway\n");
 	}
 
-	msg_pinfo("This chipset supports the following protocols: %s.\n",
-	       flashbuses_to_text(buses_supported));
+	s = flashbuses_to_text(buses_supported);
+	msg_pinfo("This chipset supports the following protocols: %s.\n", s);
+	free(s);
 
 	return ret;
 }

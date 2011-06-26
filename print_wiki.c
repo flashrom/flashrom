@@ -203,6 +203,7 @@ static void print_supported_chips_wiki(int cols)
 	int i = 0, c = 1, chipcount = 0;
 	const struct flashchip *f, *old = NULL;
 	uint32_t t;
+	char *s;
 
 	for (f = flashchips; f->name != NULL; f++)
 		chipcount++;
@@ -221,10 +222,11 @@ static void print_supported_chips_wiki(int cols)
 			c = !c;
 
 		t = f->tested;
+		s = flashbuses_to_text(f->bustype);
 		printf("|- bgcolor=\"#%s\"\n| %s || %s || %d "
 		       "|| %s || {{%s}} || {{%s}} || {{%s}} || {{%s}}\n",
 		       (c == 1) ? "eeeeee" : "dddddd", f->vendor, f->name,
-		       f->total_size, flashbuses_to_text(f->bustype),
+		       f->total_size, s,
 		       (t & TEST_OK_PROBE) ? "OK" :
 		       (t & TEST_BAD_PROBE) ? "No" : "?3",
 		       (t & TEST_OK_READ) ? "OK" :
@@ -233,6 +235,7 @@ static void print_supported_chips_wiki(int cols)
 		       (t & TEST_BAD_ERASE) ? "No" : "?3",
 		       (t & TEST_OK_WRITE) ? "OK" :
 		       (t & TEST_BAD_WRITE) ? "No" : "?3");
+		free(s);
 
 		/* Split table into 'cols' columns. */
 		if (i >= (chipcount / cols + 1)) {
