@@ -50,9 +50,6 @@ int erase_lhf00l04_block(struct flashchip *flash, unsigned int blockaddr, unsign
 	status = wait_82802ab(flash);
 	print_status_82802ab(status);
 
-	if (check_erased_range(flash, blockaddr, blocklen)) {
-		msg_cerr("ERASE FAILED!\n");
-		return -1;
-	}
+	/* FIXME: Check the status register for errors. */
 	return 0;
 }

@@ -101,10 +101,7 @@ int erase_m29f400bt(struct flashchip *flash)
 	programmer_delay(10);
 	toggle_ready_jedec(bios);
 
-	if (check_erased_range(flash, 0, flash->total_size * 1024)) {
-		msg_cerr("ERASE FAILED!\n");
-		return -1;
-	}
+	/* FIXME: Check the status register for errors. */
 	return 0;
 }
 
@@ -124,10 +121,7 @@ int block_erase_m29f400bt(struct flashchip *flash, unsigned int start, unsigned 
 	programmer_delay(10);
 	toggle_ready_jedec(bios);
 
-	if (check_erased_range(flash, start, len)) {
-		msg_cerr("ERASE FAILED!\n");
-		return -1;
-	}
+	/* FIXME: Check the status register for errors. */
 	return 0;
 }
 

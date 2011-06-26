@@ -1400,6 +1400,10 @@ static int erase_and_write_block_helper(struct flashchip *flash,
 		ret = erasefn(flash, start, len);
 		if (ret)
 			return ret;
+		if (check_erased_range(flash, start, len)) {
+			msg_cerr("ERASE FAILED!\n");
+			return -1;
+		}
 		/* Erase was successful. Adjust curcontents. */
 		memset(curcontents, 0xff, len);
 		skip = 0;
