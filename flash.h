@@ -210,7 +210,6 @@ int min(int a, int b);
 int max(int a, int b);
 void tolower_string(char *str);
 char *extract_param(char **haystack, char *needle, char *delim);
-int check_erased_range(struct flashchip *flash, int start, int len);
 int verify_range(struct flashchip *flash, uint8_t *cmpbuf, int start, int len, char *message);
 int need_erase(uint8_t *have, uint8_t *want, int len, enum write_granularity gran);
 char *strcat_realloc(char *dest, const char *src);

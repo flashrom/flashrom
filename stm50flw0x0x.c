@@ -107,10 +107,6 @@ int erase_sector_stm50flw0x0x(struct flashchip *flash, unsigned int sector, unsi
 
 	wait_82802ab(flash);
 
-	if (check_erased_range(flash, sector, sectorsize)) {
-		msg_cerr("ERASE FAILED!\n");
-		return -1;
-	}
-
+	/* FIXME: Check the status register for errors. */
 	return 0;
 }

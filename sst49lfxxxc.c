@@ -70,9 +70,6 @@ int erase_sector_49lfxxxc(struct flashchip *flash, unsigned int address, unsigne
 	status = wait_82802ab(flash);
 	print_status_82802ab(status);
 
-	if (check_erased_range(flash, address, sector_size)) {
-		msg_cerr("ERASE FAILED!\n");
-		return -1;
-	}
+	/* FIXME: Check the status register for errors. */
 	return 0;
 }

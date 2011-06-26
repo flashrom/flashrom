@@ -71,10 +71,7 @@ int erase_sector_28sf040(struct flashchip *flash, unsigned int address, unsigned
 	/* wait for Toggle bit ready */
 	toggle_ready_jedec(bios);
 
-	if (check_erased_range(flash, address, sector_size)) {
-		msg_cerr("ERASE FAILED!\n");
-		return -1;
-	}
+	/* FIXME: Check the status register for errors. */
 	return 0;
 }
 
@@ -113,10 +110,7 @@ static int erase_28sf040(struct flashchip *flash)
 	programmer_delay(10);
 	toggle_ready_jedec(bios);
 
-	if (check_erased_range(flash, 0, flash->total_size * 1024)) {
-		msg_cerr("ERASE FAILED!\n");
-		return -1;
-	}
+	/* FIXME: Check the status register for errors. */
 	return 0;
 }
 

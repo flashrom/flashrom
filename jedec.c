@@ -264,10 +264,7 @@ static int erase_sector_jedec_common(struct flashchip *flash, unsigned int page,
 	/* wait for Toggle bit ready         */
 	toggle_ready_jedec_slow(bios);
 
-	if (check_erased_range(flash, page, pagesize)) {
-		msg_cerr("ERASE FAILED!\n");
-		return -1;
-	}
+	/* FIXME: Check the status register for errors. */
 	return 0;
 }
 
@@ -297,16 +294,12 @@ static int erase_block_jedec_common(struct flashchip *flash, unsigned int block,
 	/* wait for Toggle bit ready         */
 	toggle_ready_jedec_slow(bios);
 
-	if (check_erased_range(flash, block, blocksize)) {
-		msg_cerr("ERASE FAILED!\n");
-		return -1;
-	}
+	/* FIXME: Check the status register for errors. */
 	return 0;
 }
 
 static int erase_chip_jedec_common(struct flashchip *flash, unsigned int mask)
 {
-	int total_size = flash->total_size * 1024;
 	chipaddr bios = flash->virtual_memory;
 	int delay_us = 0;
 	if(flash->probe_timing != TIMING_ZERO)
@@ -329,10 +322,7 @@ static int erase_chip_jedec_common(struct flashchip *flash, unsigned int mask)
 
 	toggle_ready_jedec_slow(bios);
 
-	if (check_erased_range(flash, 0, total_size)) {
-		msg_cerr("ERASE FAILED!\n");
-		return -1;
-	}
+	/* FIXME: Check the status register for errors. */
 	return 0;
 }
 
