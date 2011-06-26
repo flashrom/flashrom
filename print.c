@@ -28,7 +28,7 @@
 
 /*
  * Return a string corresponding to the bustype parameter.
- * Memory is obtained with malloc() and can be freed with free().
+ * Memory is obtained with malloc() and must be freed with free() by the caller.
  */
 char *flashbuses_to_text(enum chipbustype bustype)
 {
@@ -80,6 +80,7 @@ static void print_supported_chips(void)
 	int maxvendorlen = strlen("Vendor") + 1;
 	int maxchiplen = strlen("Device") + 1;
 	const struct flashchip *f;
+	char *s;
 
 	for (f = flashchips; f->name != NULL; f++) {
 		/* Ignore "unknown XXXX SPI chip" entries. */
@@ -152,7 +153,10 @@ static void print_supported_chips(void)
 		msg_ginfo("%d", f->total_size);
 		for (i = 0; i < 10 - digits(f->total_size); i++)
 			msg_ginfo(" ");
-		msg_ginfo("%s\n", flashbuses_to_text(f->bustype));
+
+		s = flashbuses_to_text(f->bustype);
+		msg_ginfo("%s\n", s);
+		free(s);
 	}
 }
 
