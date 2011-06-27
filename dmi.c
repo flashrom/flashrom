@@ -34,6 +34,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "platform.h"
 #include "flash.h"
 #include "programmer.h"
 
@@ -292,7 +293,11 @@ out:
 #else /* CONFIG_INTERNAL_DMI */
 
 #define DMI_COMMAND_LEN_MAX 300
-static const char *dmidecode_command = "dmidecode";
+#if IS_WINDOWS
+static const char *dmidecode_command = "dmidecode.exe 2>NUL";
+#else
+static const char *dmidecode_command = "dmidecode 2>/dev/null";
+#endif
 
 static char *get_dmi_string(const char *string_name)
 {
