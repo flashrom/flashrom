@@ -659,10 +659,11 @@ static int ich7_run_opcode(OPCODE op, uint32_t offset,
 		return 1;
 	}
 
-	/* Programm Offset in Flash into FADDR */
-	REGWRITE32(ICH7_REG_SPIA, (offset & 0x00FFFFFF));	/* SPI addresses are 24 BIT only */
+	/* Program offset in flash into SPIA while preserving reserved bits. */
+	temp32 = REGREAD32(ICH7_REG_SPIA) & ~0x00FFFFFF;
+	REGWRITE32(ICH7_REG_SPIA, (offset & 0x00FFFFFF) | temp32);
 
-	/* Program data into FDATA0 to N */
+	/* Program data into SPID0 to N */
 	if (write_cmd && (datalength != 0)) {
 		temp32 = 0;
 		for (a = 0; a < datalength; a++) {
@@ -803,8 +804,10 @@ static int ich9_run_opcode(OPCODE op, uint32_t offset,
 		return 1;
 	}
 
-	/* Programm Offset in Flash into FADDR */
-	REGWRITE32(ICH9_REG_FADDR, (offset & 0x00FFFFFF));	/* SPI addresses are 24 BIT only */
+	/* Program offset in flash into FADDR while preserve the reserved bits
+	 * and clearing the 25. address bit which is only useable in hwseq. */
+	temp32 = REGREAD32(ICH9_REG_FADDR) & ~0x01FFFFFF;
+	REGWRITE32(ICH9_REG_FADDR, (offset & 0x00FFFFFF) | temp32);
 
 	/* Program data into FDATA0 to N */
 	if (write_cmd && (datalength != 0)) {
