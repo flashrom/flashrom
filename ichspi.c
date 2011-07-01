@@ -555,43 +555,37 @@ static int program_opcodes(OPCODES *op, int enable_undo)
  * Try to set BBAR (BIOS Base Address Register), but read back the value in case
  * it didn't stick.
  */
-void ich_set_bbar(uint32_t minaddr)
+static void ich_set_bbar(uint32_t min_addr)
 {
-	minaddr &= BBAR_MASK;
+	int bbar_off;
 	switch (spi_programmer->type) {
 	case SPI_CONTROLLER_ICH7:
 	case SPI_CONTROLLER_VIA:
-		ichspi_bbar = mmio_readl(ich_spibar + 0x50) & ~BBAR_MASK;
-		if (ichspi_bbar)
-			msg_pdbg("Reserved bits in BBAR not zero: 0x%04x",
-				 ichspi_bbar);
-		ichspi_bbar |= minaddr;
-		rmmio_writel(ichspi_bbar, ich_spibar + 0x50);
-		ichspi_bbar = mmio_readl(ich_spibar + 0x50);
-		/* We don't have any option except complaining. And if the write
-		 * failed, the restore will fail as well, so no problem there.
-		 */
-		if (ichspi_bbar != minaddr)
-			msg_perr("Setting BBAR failed!\n");
+		bbar_off = 0x50;
 		break;
 	case SPI_CONTROLLER_ICH9:
-		ichspi_bbar = mmio_readl(ich_spibar + ICH9_REG_BBAR) & ~BBAR_MASK;
-		if (ichspi_bbar)
-			msg_pdbg("Reserved bits in BBAR not zero: 0x%04x",
-				 ichspi_bbar);
-		ichspi_bbar |= minaddr;
-		rmmio_writel(ichspi_bbar, ich_spibar + ICH9_REG_BBAR);
-		ichspi_bbar = mmio_readl(ich_spibar + ICH9_REG_BBAR);
-		/* We don't have any option except complaining. And if the write
-		 * failed, the restore will fail as well, so no problem there.
-		 */
-		if (ichspi_bbar != minaddr)
-			msg_perr("Setting BBAR failed!\n");
+		bbar_off = ICH9_REG_BBAR;
 		break;
 	default:
 		msg_perr("Unknown chipset for BBAR setting!\n");
-		break;
+		return;
 	}
+	
+	ichspi_bbar = mmio_readl(ich_spibar + bbar_off) & ~BBAR_MASK;
+	if (ichspi_bbar) {
+		msg_pdbg("Reserved bits in BBAR not zero: 0x%08x\n",
+			 ichspi_bbar);
+	}
+	min_addr &= BBAR_MASK;
+	ichspi_bbar |= min_addr;
+	rmmio_writel(ichspi_bbar, ich_spibar + bbar_off);
+	ichspi_bbar = mmio_readl(ich_spibar + bbar_off) & BBAR_MASK;
+
+	/* We don't have any option except complaining. And if the write
+	 * failed, the restore will fail as well, so no problem there.
+	 */
+	if (ichspi_bbar != min_addr)
+		msg_perr("Setting BBAR failed!\n");
 }
 
 /* This function generates OPCODES from or programs OPCODES to ICH according to
