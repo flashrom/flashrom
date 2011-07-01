@@ -216,9 +216,9 @@ static uint16_t REGREAD8(int X)
 	return mmio_readb(ich_spibar + X);
 }
 
-#define REGWRITE32(off,val) mmio_writel(val, ich_spibar+off)
-#define REGWRITE16(off,val) mmio_writew(val, ich_spibar+off)
-#define REGWRITE8(off,val)  mmio_writeb(val, ich_spibar+off)
+#define REGWRITE32(off, val) mmio_writel(val, ich_spibar+(off))
+#define REGWRITE16(off, val) mmio_writew(val, ich_spibar+(off))
+#define REGWRITE8(off, val)  mmio_writeb(val, ich_spibar+(off))
 
 /* Common SPI functions */
 static int find_opcode(OPCODES *op, uint8_t opcode);
