@@ -131,6 +131,10 @@
 #define ICH9_REG_BBAR		0xA0	/* 32 Bits BIOS Base Address Configuration */
 #define BBAR_MASK	0x00ffff00		/* 8-23: Bottom of System Flash */
 
+#define ICH9_REG_FPB		0xD0	/* 32 Bits Flash Partition Boundary */
+#define FPB_FPBA_OFF		0	/* 0-12: Block/Sector Erase Size */
+#define FPB_FPBA			(0x1FFF << FPB_FPBA_OFF)
+
 // ICH9R SPI commands
 #define SPI_OPCODE_TYPE_READ_NO_ADDRESS		0
 #define SPI_OPCODE_TYPE_WRITE_NO_ADDRESS	1
@@ -1324,6 +1328,9 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 		ichspi_bbar = mmio_readl(ich_spibar + ICH9_REG_BBAR);
 		msg_pdbg("0xA0: 0x%08x (BBAR)\n",
 			     ichspi_bbar);
+		tmp = mmio_readl(ich_spibar + ICH9_REG_FPB);
+		msg_pdbg("0xD0: 0x%08x (FPB)\n", tmp);
+
 		ich_init_opcodes();
 		break;
 	default:
