@@ -84,6 +84,88 @@ override CONFIG_FT2232_SPI = no
 endif
 endif
 
+ifeq ($(OS_ARCH), MINGW32_NT-5.1)
+# Explicitly set CC = gcc on MinGW, otherwise: "cc: command not found".
+CC = gcc
+# MinGW doesn't have the ffs() function, but we can use gcc's __builtin_ffs().
+CFLAGS += -Dffs=__builtin_ffs
+# libusb-win32/libftdi stuff is usually installed in /usr/local.
+CPPFLAGS += -I/usr/local/include
+LDFLAGS += -L/usr/local/lib
+# Serprog is not supported under Windows/MinGW (missing sockets support).
+ifeq ($(CONFIG_SERPROG), yes)
+UNSUPPORTED_FEATURES += CONFIG_SERPROG=yes
+else
+override CONFIG_SERPROG = no
+endif
+# For now we disable all PCI-based programmers on Windows/MinGW (no libpci).
+ifeq ($(CONFIG_INTERNAL), yes)
+UNSUPPORTED_FEATURES += CONFIG_INTERNAL=yes
+else
+override CONFIG_INTERNAL = no
+endif
+ifeq ($(CONFIG_RAYER_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_RAYER_SPI=yes
+else
+override CONFIG_RAYER_SPI = no
+endif
+ifeq ($(CONFIG_NIC3COM), yes)
+UNSUPPORTED_FEATURES += CONFIG_NIC3COM=yes
+else
+override CONFIG_NIC3COM = no
+endif
+ifeq ($(CONFIG_GFXNVIDIA), yes)
+UNSUPPORTED_FEATURES += CONFIG_GFXNVIDIA=yes
+else
+override CONFIG_GFXNVIDIA = no
+endif
+ifeq ($(CONFIG_SATASII), yes)
+UNSUPPORTED_FEATURES += CONFIG_SATASII=yes
+else
+override CONFIG_SATASII = no
+endif
+ifeq ($(CONFIG_ATAHPT), yes)
+UNSUPPORTED_FEATURES += CONFIG_ATAHPT=yes
+else
+override CONFIG_ATAHPT = no
+endif
+ifeq ($(CONFIG_DRKAISER), yes)
+UNSUPPORTED_FEATURES += CONFIG_DRKAISER=yes
+else
+override CONFIG_DRKAISER = no
+endif
+ifeq ($(CONFIG_NICREALTEK), yes)
+UNSUPPORTED_FEATURES += CONFIG_NICREALTEK=yes
+else
+override CONFIG_NICREALTEK = no
+endif
+ifeq ($(CONFIG_NICNATSEMI), yes)
+UNSUPPORTED_FEATURES += CONFIG_NICNATSEMI=yes
+else
+override CONFIG_NICNATSEMI = no
+endif
+ifeq ($(CONFIG_NICINTEL), yes)
+UNSUPPORTED_FEATURES += CONFIG_NICINTEL=yes
+else
+override CONFIG_NICINTEL = no
+endif
+ifeq ($(CONFIG_NICINTEL_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_NICINTEL_SPI=yes
+else
+override CONFIG_NICINTEL_SPI = no
+endif
+ifeq ($(CONFIG_OGP_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_OGP_SPI=yes
+else
+override CONFIG_OGP_SPI = no
+endif
+ifeq ($(CONFIG_SATAMV), yes)
+UNSUPPORTED_FEATURES += CONFIG_SATAMV=yes
+else
+override CONFIG_SATAMV = no
+endif
+endif
+
 ifeq ($(OS_ARCH), libpayload)
 CC:=CC=i386-elf-gcc lpgcc
 AR:=i386-elf-ar
