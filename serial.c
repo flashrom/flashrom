@@ -192,7 +192,11 @@ int serialport_shutdown(void *data)
 
 int serialport_write(unsigned char *buf, unsigned int writecnt)
 {
-	long tmp = 0;
+#ifdef _WIN32
+	DWORD tmp = 0;
+#else
+	ssize_t tmp = 0;
+#endif
 
 	while (writecnt > 0) {
 #ifdef _WIN32
@@ -215,7 +219,11 @@ int serialport_write(unsigned char *buf, unsigned int writecnt)
 
 int serialport_read(unsigned char *buf, unsigned int readcnt)
 {
-	long tmp = 0;
+#ifdef _WIN32
+	DWORD tmp = 0;
+#else
+	ssize_t tmp = 0;
+#endif
 
 	while (readcnt > 0) {
 #ifdef _WIN32
