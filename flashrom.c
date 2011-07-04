@@ -713,9 +713,8 @@ char *extract_programmer_param(const char *param_name)
 	return extract_param(&programmer_param, param_name, ",");
 }
 
-/* Returns the number of well-defined erasers for a chip.
- * The log parameter controls output. */
-static unsigned int count_usable_erasers(const struct flashchip *flash, int log)
+/* Returns the number of well-defined erasers for a chip. */
+static unsigned int count_usable_erasers(const struct flashchip *flash)
 {
 	unsigned int usable_erasefunctions = 0;
 	int k;
@@ -1511,7 +1510,7 @@ int erase_and_write_flash(struct flashchip *flash, uint8_t *oldcontents, uint8_t
 	int k, ret = 0;
 	uint8_t *curcontents;
 	unsigned long size = flash->total_size * 1024;
-	unsigned int usable_erasefunctions = count_usable_erasers(flash, 0);
+	unsigned int usable_erasefunctions = count_usable_erasers(flash);
 
 	msg_cinfo("Erasing and writing flash chip... ");
 	curcontents = (uint8_t *) malloc(size);
@@ -1831,7 +1830,7 @@ int chip_safety_check(struct flashchip *flash, int force, int read_it, int write
 				return 1;
 			msg_cerr("Continuing anyway.\n");
 		}
-		if(count_usable_erasers(flash, 0) == 0) {
+		if(count_usable_erasers(flash) == 0) {
 			msg_cerr("flashrom has no erase function for this "
 				 "flash chip.\n");
 			return 1;
