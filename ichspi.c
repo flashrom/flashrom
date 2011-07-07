@@ -1288,6 +1288,8 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 		msg_pdbg("0x06: 0x%04x (HSFC)\n", tmp2);
 		prettyprint_ich9_reg_hsfc(tmp2);
 
+		tmp = mmio_readl(ich_spibar + ICH9_REG_FADDR);
+		msg_pdbg("0x08: 0x%08x (FADDR)\n", tmp);
 		tmp = mmio_readl(ich_spibar + ICH9_REG_FRAP);
 		msg_pdbg("0x50: 0x%08x (FRAP)\n", tmp);
 		msg_pdbg("BMWAG 0x%02x, ", ICH_BMWAG(tmp));
