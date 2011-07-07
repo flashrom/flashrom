@@ -37,7 +37,10 @@ ifeq ($(WARNERROR), yes)
 CFLAGS += -Werror
 endif
 
-# FIXME We have to differentiate between host and target arch.
+# Determine the destination processor architecture
+override ARCH = $(strip $(shell LC_ALL=C $(CC) -E arch.h|grep -v '^\#'))
+
+# FIXME We have to differentiate between host and target OS architecture.
 OS_ARCH	?= $(shell uname)
 ifneq ($(OS_ARCH), SunOS)
 STRIP_ARGS = -s
@@ -304,8 +307,10 @@ endif
 ifeq ($(CONFIG_INTERNAL), yes)
 FEATURE_CFLAGS += -D'CONFIG_INTERNAL=1'
 PROGRAMMER_OBJS += processor_enable.o chipset_enable.o board_enable.o cbtable.o dmi.o internal.o
-# FIXME: The PROGRAMMER_OBJS below should only be included on x86.
+ifeq ($(ARCH),"x86")
 PROGRAMMER_OBJS += it87spi.o it85spi.o ichspi.o sb600spi.o wbsio_spi.o mcp6x_spi.o
+else
+endif
 NEED_PCI := yes
 endif
 
@@ -500,6 +505,11 @@ compiler: featuresavailable
 		echo "found." || ( echo "not found."; \
 		rm -f .test.c .test$(EXEC_SUFFIX); exit 1)
 	@rm -f .test.c .test$(EXEC_SUFFIX)
+	@printf "ARCH is "
+	@# FreeBSD wc will output extraneous whitespace.
+	@echo $(ARCH)|wc -l|grep -q '^[[:blank:]]*1[[:blank:]]*$$' ||	\
+		( echo "unknown. Aborting."; exit 1)
+	@printf "%s\n" '$(ARCH)'
 
 ifeq ($(CHECK_LIBPCI), yes)
 pciutils: compiler
