@@ -34,13 +34,13 @@ char *flashbuses_to_text(enum chipbustype bustype)
 {
 	char *ret = calloc(1, 1);
 	if (bustype == CHIP_BUSTYPE_UNKNOWN) {
-		ret = strcat_realloc(ret, "Unknown,");
+		ret = strcat_realloc(ret, "Unknown, ");
 	/*
 	 * FIXME: Once all chipsets and flash chips have been updated, NONSPI
 	 * will cease to exist and should be eliminated here as well.
 	 */
 	} else if (bustype == CHIP_BUSTYPE_NONSPI) {
-		ret = strcat_realloc(ret, "Non-SPI,");
+		ret = strcat_realloc(ret, "Non-SPI, ");
 	} else {
 		if (bustype & CHIP_BUSTYPE_PARALLEL)
 			ret = strcat_realloc(ret, "Parallel, ");
@@ -431,6 +431,7 @@ const struct board_info boards_known[] = {
 	B("ASUS",	"A8V Deluxe",		1, "http://www.asus.com/product.aspx?P_ID=tvpdgPNCPaABZRVU", NULL),
 	B("ASUS",	"A8V-E Deluxe",		1, "http://www.asus.com/product.aspx?P_ID=hQBPIJWEZnnGAZEh", NULL),
 	B("ASUS",	"A8V-E SE",		1, "http://www.asus.com/product.aspx?P_ID=VMfiJJRYTHM4gXIi", "See http://www.coreboot.org/pipermail/coreboot/2007-October/026496.html"),
+	B("ASUS",	"E35M1-I DELUXE",	1, "http://www.asus.com/product.aspx?P_ID=9BmKhMwWCwqyl1lz", NULL),
 	B("ASUS",	"K8V",			1, "http://www.asus.com/product.aspx?P_ID=fG2KZOWF7v6MRFRm", NULL),
 	B("ASUS",	"K8V SE Deluxe",	1, "http://www.asus.com/product.aspx?P_ID=65HeDI8XM1u6Uy6o", NULL),
 	B("ASUS",	"K8V-X SE",		1, "http://www.asus.com/product.aspx?P_ID=lzDXlbBVHkdckHVr", NULL),
@@ -443,7 +444,8 @@ const struct board_info boards_known[] = {
 	B("ASUS",	"M2NPV-VM",		1, "http://www.asus.com/product.aspx?P_ID=HGTVnGv5nGahCYgK", NULL),
 	B("ASUS",	"M2V",			1, "http://www.asus.com/product.aspx?P_ID=OqYlEDFfF6ZqZGvp", NULL),
 	B("ASUS",	"M2V-MX",		1, "http://www.asus.com/product.aspx?P_ID=7grf8Ci4yxnqzt3z", NULL),
-	B("ASUS",	"M3A76-CM",		1, NULL, NULL),
+	B("ASUS",	"M3A",			1, "http://www.asus.com/product.aspx?P_ID=P48rppKk4jrc9pNd", NULL),
+	B("ASUS",	"M3A76-CM",		1, "http://www.asus.com/product.aspx?P_ID=aU8effdifLvraVze", NULL),
 	B("ASUS",	"M3A78-EM",		1, "http://www.asus.com/product.aspx?P_ID=KjpYqzmAd9vsTM2D", NULL),
 	B("ASUS",	"M4A78-EM",		1, "http://www.asus.com/product.aspx?P_ID=0KyowHKUFAQqH2DO", NULL),
 	B("ASUS",	"M4A785TD-M EVO",	1, "http://www.asus.com/product.aspx?P_ID=QHbvGVB1mXmmD8qQ", NULL),
@@ -514,6 +516,7 @@ const struct board_info boards_known[] = {
 	B("FIC",	"VA-502",		0, "ftp://ftp.fic.com.tw/motherboard/manual/socket7/va-502/", "No public report found. Owned by Uwe Hermann <uwe@hermann-uwe.de>. Seems the PCI subsystem IDs are identical with the Tekram P6Pro-A5. May work now."),
 	B("Foxconn",	"6150K8MD-8EKRSH",	1, "http://www.foxconnchannel.com/product/motherboards/detail_overview.aspx?id=en-us0000157", NULL),
 	B("Foxconn",	"A6VMX",		1, "http://www.foxconnchannel.com/product/motherboards/detail_overview.aspx?id=en-us0000346", NULL),
+	B("Freetech",	"P6F91i",		1, "http://web.archive.org/web/20010417035034/http://www.freetech.com/prod/P6F91i.html", NULL),
 	B("Fujitsu-Siemens", "ESPRIMO P5915",	1, "http://uk.ts.fujitsu.com/rl/servicesupport/techsupport/professionalpc/ESPRIMO/P/EsprimoP5915-6.htm", "Mainboard model is D2312-A2."),
 	B("GIGABYTE",	"GA-2761GXDK",		1, "http://www.computerbase.de/news/hardware/mainboards/amd-systeme/2007/mai/gigabyte_dtx-mainboard/", NULL),
 	B("GIGABYTE",	"GA-6BXC",		1, "http://www.gigabyte.com/products/product-page.aspx?pid=1445", NULL),
@@ -529,17 +532,20 @@ const struct board_info boards_known[] = {
 	B("GIGABYTE",	"GA-8IP775",		1, "http://www.gigabyte.com/products/product-page.aspx?pid=1830", NULL),
 	B("GIGABYTE",	"GA-8IRML",		1, "http://www.gigabyte.com/products/product-page.aspx?pid=1343", NULL),
 	B("GIGABYTE",	"GA-8PE667 Ultra 2",	1, "http://www.gigabyte.com/products/product-page.aspx?pid=1607", NULL),
+	B("GIGABYTE",	"GA-965GM-S2 (rev. 2.0)", 1, "http://www.gigabyte.com/products/product-page.aspx?pid=2617", NULL),
 	B("GIGABYTE",	"GA-965P-DS4",		1, "http://www.gigabyte.com/products/product-page.aspx?pid=2288", NULL),
 	B("GIGABYTE",	"GA-EP35-DS3L",		1, "http://www.gigabyte.com/products/product-page.aspx?pid=2778", NULL),
 	B("GIGABYTE",	"GA-EX58-UD4P",		1, "http://www.gigabyte.com/products/product-page.aspx?pid=2986", NULL),
 	B("GIGABYTE",	"GA-K8N-SLI",		1, "http://www.gigabyte.com/products/product-page.aspx?pid=1928", NULL),
 	B("GIGABYTE",	"GA-K8N51GMF",		1, "http://www.gigabyte.com/products/product-page.aspx?pid=1950", NULL),
 	B("GIGABYTE",	"GA-K8N51GMF-9",	1, "http://www.gigabyte.com/products/product-page.aspx?pid=1939", NULL),
-	B("GIGABYTE",	"GA-K8NS Ultra-939",	0, "http://www.gigabyte.com/products/product-page.aspx?pid=1839", "Untested board enable."),
+	B("GIGABYTE",	"GA-K8NS Pro-939",	0, "http://www.gigabyte.com/products/product-page.aspx?pid=1875", "Untested board enable."),
 	B("GIGABYTE",	"GA-M57SLI-S4",		1, "http://www.gigabyte.com/products/product-page.aspx?pid=2287", NULL),
 	B("GIGABYTE",	"GA-M61P-S3",		1, "http://www.gigabyte.com/products/product-page.aspx?pid=2434", NULL),
+	B("GIGABYTE",	"GA-M720-US3",		1, "http://www.gigabyte.com/products/product-page.aspx?pid=3006", NULL),
 	B("GIGABYTE",	"GA-MA69VM-S2",		1, "http://www.gigabyte.com/products/product-page.aspx?pid=2500", NULL),
 	B("GIGABYTE",	"GA-MA74GM-S2H (rev. 3.0)", 1, "http://www.gigabyte.com/products/product-page.aspx?pid=3152", NULL),
+	B("GIGABYTE",	"GA-MA770-UD3 (rev. 2.1)", 1, "http://www.gigabyte.com/products/product-page.aspx?pid=3302", NULL),
 	B("GIGABYTE",	"GA-MA770T-UD3P",	1, "http://www.gigabyte.com/products/product-page.aspx?pid=3096", NULL),
 	B("GIGABYTE",	"GA-MA780G-UD3H",	1, "http://www.gigabyte.com/products/product-page.aspx?pid=3004", NULL),
 	B("GIGABYTE",	"GA-MA78G-DS3H (rev. 1.0)", 1, "http://www.gigabyte.com/products/product-page.aspx?pid=2800", NULL),
@@ -555,7 +561,8 @@ const struct board_info boards_known[] = {
 	B("HP",		"Puffer2-UL8E",		1, "http://h10025.www1.hp.com/ewfrf/wc/document?docname=c00300023", NULL),
 	B("HP",		"Vectra VL400",		1, "http://h20000.www2.hp.com/bizsupport/TechSupport/Document.jsp?objectID=c00060658&lang=en&cc=us", NULL),
 	B("HP",		"Vectra VL420 SFF",	1, "http://h20000.www2.hp.com/bizsupport/TechSupport/Document.jsp?objectID=c00060661&lang=en&cc=us", NULL),
-	B("HP",		"xw9400",		1, "http://h20000.www2.hp.com/bizsupport/TechSupport/Home.jsp?lang=en&cc=us&prodSeriesId=3211286&prodTypeId=12454", "Boot block is write protected unless the solder points next to F2 are shorted." ),
+	B("HP",		"xw4400 (0A68h)",	0, "http://h20000.www2.hp.com/bizsupport/TechSupport/Document.jsp?objectID=c00775230", "ICH7 with SPI lock down, BIOS lock, flash block detection (SST25VF080B); see http://paste.flashrom.org/view.php?id=686"),
+	B("HP",		"xw9400",		1, "http://h20000.www2.hp.com/bizsupport/TechSupport/Home.jsp?lang=en&cc=us&prodSeriesId=3211286&prodTypeId=12454", "Boot block is write protected unless the solder points next to F2 are shorted."),
 	B("IBASE",	"MB899",		1, "http://www.ibase-i.com.tw/2009/mb899.html", NULL),
 	B("IBM",	"x3455",		1, "http://www-03.ibm.com/systems/x/hardware/rack/x3455/index.html", NULL),
 	B("IEI",	"PICOe-9452",		1, "http://www.ieiworld.com/product_groups/industrial/content.aspx?keyword=WSB&gid=00001000010000000001&cid=08125380291060861658&id=08142308605814597144", NULL),
@@ -578,6 +585,7 @@ const struct board_info boards_known[] = {
 	B("MSI",	"MS-6330 (K7T Turbo)",	1, "http://www.msi.com/index.php?func=proddesc&maincat_no=1&prod_no=327", NULL),
 	B("MSI",	"MS-6391 (845 Pro4)",	1, "http://www.msi.com/index.php?func=proddesc&maincat_no=1&prod_no=293", NULL),
 	B("MSI",	"MS-6561 (745 Ultra)",	1, "http://www.msi.com/index.php?func=proddesc&maincat_no=1&prod_no=274", NULL),
+	B("MSI",	"MS-6566 (845 Ultra-C)",1, "http://www.msi.com/product/mb/845-Ultra-C.html", NULL),
 	B("MSI",	"MS-6570 (K7N2)",	1, "http://www.msi.com/index.php?func=proddesc&maincat_no=1&prod_no=519", NULL),
 	B("MSI",	"MS-6577 (Xenon)",	1, "http://h10025.www1.hp.com/ewfrf/wc/document?product=90390&lc=en&cc=us&dlc=en&docname=bph07843", "This is an OEM board from HP, the HP name is Xenon."),
 	B("MSI",	"MS-6590 (KT4 Ultra)",	1, "http://www.msi.com/index.php?func=proddesc&maincat_no=1&prod_no=502", NULL),
@@ -607,8 +615,10 @@ const struct board_info boards_known[] = {
 	B("MSI",	"MS-7599 (870-C45)",    1, "http://www.msi.com/product/mb/870-C45.html", NULL),
 	B("MSI",	"MS-7640 (890FXA-GD70)",1, "http://www.msi.com/product/mb/890FXA-GD70.html", "Reported by \"Linux User #330250\" http://flashrom.org/pipermail/flashrom/2011-March/006072.html"),
 	B("MSI",	"MS-7642 (890GXM-G65)",	1, "http://www.msi.com/index.php?func=proddesc&maincat_no=1&prod_no=2012", NULL),
+	B("MSI",	"MS-7698 (E350IA-E45)",	1, "http://www.msi.com/product/mb/E350IA-E45.html", NULL),
 	B("NEC",	"PowerMate 2000",	1, "http://support.necam.com/mobilesolutions/hardware/Desktops/pm2000/celeron/", NULL),
 	B("Nokia",	"IP530",		1, NULL, NULL),
+	B("PCCHIPS ",	"M863G (V5.1A)",	1, "http://www.pcchips.com.tw/PCCWebSite/Products/ProductsDetail.aspx?CategoryID=1&DetailID=343&DetailName=Feature&MenuID=1&LanID=0", NULL),
 	B("PC Engines",	"Alix.1c",		1, "http://pcengines.ch/alix1c.htm", NULL),
 	B("PC Engines",	"Alix.2c2",		1, "http://pcengines.ch/alix2c2.htm", NULL),
 	B("PC Engines",	"Alix.2c3",		1, "http://pcengines.ch/alix2c3.htm", NULL),
@@ -639,7 +649,7 @@ const struct board_info boards_known[] = {
 	B("Supermicro", "X8DTH-6F",		1, "http://www.supermicro.com/products/motherboard/QPI/5500/X8DTH-6F.cfm", NULL),
 	B("Supermicro",	"X8DTT-F",		1, "http://www.supermicro.com/products/motherboard/QPI/5500/X8DTT-F.cfm", NULL),
 	B("Supermicro",	"X8DTU-F",		1, "http://www.supermicro.com/products/motherboard/QPI/5500/X8DTU-F.cfm", NULL),
-	B("Supermicro",	"X8SIE",		0, "http://www.supermicro.com/products/motherboard/Xeon3000/3400/X8SIE.cfm?IPMI=N&TYP=LN2", "Does not work with 0.9.2; see http://www.flashrom.org/pipermail/flashrom/2011-May/006554.html May work now, but please consult us before trying."),
+	B("Supermicro",	"X8SIE(-F)",		0, "http://www.supermicro.com/products/motherboard/Xeon3000/3400/X8SIE.cfm?IPMI=N&TYP=LN2", "Requires unlocking the ME although the registers are set up correctly by the descriptor/BIOS already (tested with swseq and hwseq)."),
 	B("Supermicro",	"X8STi",		1, "http://www.supermicro.com/products/motherboard/Xeon3000/X58/X8STi.cfm", NULL),
 	B("T-Online",	"S-100",		1, "http://wiki.freifunk-hannover.de/T-Online_S_100", NULL),
 	B("Tekram",	"P6Pro-A5",		1, "http://www.motherboard.cz/mb/tekram/P6Pro-A5.htm", NULL),

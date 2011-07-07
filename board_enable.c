@@ -986,7 +986,7 @@ static int nvidia_mcp_gpio8_raise(void)
 
 /*
  * Suited for:
- *  - Gigabyte GA-K8NS Pro-939: Socket 939 + NVIDIA nForce3  + CK8
+ *  - GIGABYTE GA-K8NS Pro-939: Socket 939 + NVIDIA nForce3  + CK8
  */
 static int nvidia_mcp_gpio0a_raise(void)
 {
