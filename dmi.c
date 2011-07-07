@@ -119,7 +119,7 @@ static char *get_dmi_string(const char *string_name)
 	while (!feof(dmidecode_pipe))
 		getc(dmidecode_pipe);
 	if (pclose(dmidecode_pipe) != 0) {
-		msg_pinfo("dmidecode execution unsucessfull - continuing "
+		msg_pinfo("dmidecode execution unsuccessful - continuing "
 			"without DMI info\n");
 		return NULL;
 	}

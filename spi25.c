@@ -62,7 +62,7 @@ static int spi_rems(unsigned char *readarr)
 	}
 	if (ret)
 		return ret;
-	msg_cspew("REMS returned %02x %02x. ", readarr[0], readarr[1]);
+	msg_cspew("REMS returned 0x%02x 0x%02x. ", readarr[0], readarr[1]);
 	return 0;
 }
 
