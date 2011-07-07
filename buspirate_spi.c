@@ -203,7 +203,7 @@ int buspirate_spi_init(void)
 	 * sufficient either. Use a 1.5 ms delay inside the loop to make
 	 * mostly sure that at least one USB frame had time to arrive.
 	 * Looping only 5 times is not sufficient and causes the
-	 * ocassional failure.
+	 * occasional failure.
 	 * Folding the delay into the loop above is not reliable either.
 	 */
 	for (i = 0; i < 10; i++) {

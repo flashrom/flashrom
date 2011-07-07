@@ -5771,7 +5771,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 128,
 		.page_size	= 4096,
 		.feature_bits	= FEATURE_EITHER_RESET,
-		.tested		= TEST_OK_PR,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_jedec,
 		.probe_timing	= 1,			/* 150 ns */
 		.block_erasers	=
@@ -6705,7 +6705,7 @@ const struct flashchip flashchips[] = {
 		.model_id	= ST_M25P128,
 		.total_size	= 16384,
 		.page_size	= 256,
-		.tested		= TEST_UNTESTED,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
@@ -7776,7 +7776,7 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Winbond",
-		.name		= "W25x10",
+		.name		= "W25X10",
 		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= WINBOND_NEX_ID,
 		.model_id	= WINBOND_NEX_W25X10,
@@ -7807,7 +7807,7 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Winbond",
-		.name		= "W25x20",
+		.name		= "W25X20",
 		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= WINBOND_NEX_ID,
 		.model_id	= WINBOND_NEX_W25X20,
@@ -7838,7 +7838,7 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Winbond",
-		.name		= "W25x40",
+		.name		= "W25X40",
 		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= WINBOND_NEX_ID,
 		.model_id	= WINBOND_NEX_W25X40,
@@ -7869,7 +7869,7 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Winbond",
-		.name		= "W25x80",
+		.name		= "W25X80",
 		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= WINBOND_NEX_ID,
 		.model_id	= WINBOND_NEX_W25X80,
@@ -7900,7 +7900,7 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Winbond",
-		.name		= "W25x16",
+		.name		= "W25X16",
 		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= WINBOND_NEX_ID,
 		.model_id	= WINBOND_NEX_W25X16,
@@ -7937,7 +7937,7 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Winbond",
-		.name		= "W25x32",
+		.name		= "W25X32",
 		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= WINBOND_NEX_ID,
 		.model_id	= WINBOND_NEX_W25X32,
@@ -7974,7 +7974,7 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Winbond",
-		.name		= "W25x64",
+		.name		= "W25X64",
 		.bustype	= CHIP_BUSTYPE_SPI,
 		.manufacture_id	= WINBOND_NEX_ID,
 		.model_id	= WINBOND_NEX_W25X64,
@@ -8041,9 +8041,9 @@ const struct flashchip flashchips[] = {
 		.total_size	= 256,
 		.page_size	= 128,
 		.feature_bits	= FEATURE_LONG_RESET,
-		.tested		= TEST_OK_PRE,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_jedec,
-		.probe_timing	= 10, 
+		.probe_timing	= 10,
 		.block_erasers	=
 		{
 			{
@@ -8397,9 +8397,9 @@ const struct flashchip flashchips[] = {
 		.total_size	= 256,
 		.page_size	= 128,
 		.feature_bits	= FEATURE_EITHER_RESET,
-		.tested		= TEST_OK_PRE,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_jedec,
-		.probe_timing	= 10, 
+		.probe_timing	= 10,
 		.block_erasers	=
 		{
 			{
