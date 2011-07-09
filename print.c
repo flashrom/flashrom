@@ -451,6 +451,7 @@ const struct board_info boards_known[] = {
 	B("ASUS",	"M4A785TD-M EVO",	1, "http://www.asus.com/product.aspx?P_ID=QHbvGVB1mXmmD8qQ", NULL),
 	B("ASUS",	"M4A79T Deluxe",	1, "http://www.asus.com/product.aspx?P_ID=lhJiLTN5huPfCVkW", NULL),
 	B("ASUS",	"M4A87TD/USB3",		1, "http://www.asus.com/product.aspx?P_ID=nlWYrI9wlNIYHAaa", NULL),
+	B("ASUS",	"M6Ne",			0, "http://www.asus.com/Product.aspx?P_ID=IbqN4JCxeRiep4WN", "Untested board enable."),
 	B("ASUS",	"MEW-AM",		0, "ftp://ftp.asus.com.tw/pub/ASUS/mb/sock370/810/mew-am/", "No public report found. Owned by Uwe Hermann <uwe@hermann-uwe.de>. May work now."),
 	B("ASUS",	"MEW-VM",		0, "http://www.elhvb.com/mboards/OEM/HP/manual/ASUS%20MEW-VM.htm", "No public report found. Owned by Uwe Hermann <uwe@hermann-uwe.de>. May work now."),
 	B("ASUS",	"P2B",			1, "ftp://ftp.asus.com.tw/pub/ASUS/mb/slot1/440bx/p2b/", NULL),
