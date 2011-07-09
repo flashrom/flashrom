@@ -1521,6 +1521,15 @@ static int intel_ich_gpio22_raise(void)
 
 /*
  * Suited for:
+ *  - ASUS M6Ne (laptop): socket 479M (guessed) + Intel 855PM + ICH4-M
+ */
+static int intel_ich_gpio43_raise(void)
+{
+	return intel_ich_gpio_set(43, 1);
+}
+
+/*
+ * Suited for:
  *  - HP Vectra VL400: 815 + ICH + PC87360
  */
 static int board_hp_vl400(void)
@@ -1996,6 +2005,7 @@ const struct board_pciid_enable board_pciid_enables[] = {
 	{0x10de, 0x0264, 0x1043, 0x81bc,  0x10de, 0x02f0, 0x1043, 0x81cd, NULL,         NULL, NULL,           P3, "ASUS",        "A8N-VM CSM",            0,   NT, w83627ehf_gpio24_raise_2e},
 	{0x10DE, 0x0264, 0x1043, 0x81C0,  0x10DE, 0x0260, 0x1043, 0x81C0, NULL,         NULL, NULL,           P3, "ASUS",        "M2NBP-VM CSM",          0,   OK, nvidia_mcp_gpio0_raise},
 	{0x1106, 0x1336, 0x1043, 0x80ed,  0x1106, 0x3288, 0x1043, 0x8249, NULL,         NULL, NULL,           P3, "ASUS",        "M2V-MX",                0,   OK, via_vt823x_gpio5_raise},
+	{0x8086, 0x24cc,      0,      0,  0x8086, 0x24c3, 0x1043, 0x1869, "^M6Ne$",     NULL, NULL,           P3, "ASUS",        "M6Ne",                  0,   NT, intel_ich_gpio43_raise},
 	{0x8086, 0x7190,      0,      0,  0x8086, 0x7110,      0,      0, "^P2B-N$",    NULL, NULL,           P3, "ASUS",        "P2B-N",                 0,   OK, intel_piix4_gpo18_lower},
 	{0x8086, 0x1A30, 0x1043, 0x8025,  0x8086, 0x244B, 0x104D, 0x80F0, NULL,         NULL, NULL,           P3, "ASUS",        "P4B266-LM",             0,   OK, intel_ich_gpio21_raise},
 	{0x8086, 0x1a30, 0x1043, 0x8070,  0x8086, 0x244b, 0x1043, 0x8028, NULL,         NULL, NULL,           P3, "ASUS",        "P4B266",                0,   OK, intel_ich_gpio22_raise},
