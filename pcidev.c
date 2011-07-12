@@ -295,6 +295,10 @@ int undo_pci_write(void *p)
 {									\
 	struct undo_pci_write_data *undo_pci_write_data;		\
 	undo_pci_write_data = malloc(sizeof(struct undo_pci_write_data)); \
+	if (!undo_pci_write_data) {					\
+		msg_gerr("Out of memory!\n");				\
+		exit(1);						\
+	}								\
 	undo_pci_write_data->dev = *a;					\
 	undo_pci_write_data->reg = b;					\
 	undo_pci_write_data->type = pci_write_type_##c;			\

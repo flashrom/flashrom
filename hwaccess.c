@@ -226,6 +226,10 @@ int undo_mmio_write(void *p)
 {									\
 	struct undo_mmio_write_data *undo_mmio_write_data;		\
 	undo_mmio_write_data = malloc(sizeof(struct undo_mmio_write_data)); \
+	if (!undo_mmio_write_data) {					\
+		msg_gerr("Out of memory!\n");				\
+		exit(1);						\
+	}								\
 	undo_mmio_write_data->addr = a;					\
 	undo_mmio_write_data->type = mmio_write_type_##c;		\
 	undo_mmio_write_data->c##data = mmio_read##c(a);		\
