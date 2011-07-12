@@ -110,6 +110,8 @@ fdtype sp_openserport(char *dev, unsigned int baud)
 	    (tolower((unsigned char)dev[1]) == 'o') &&
 	    (tolower((unsigned char)dev[2]) == 'm')) {
 		dev2 = malloc(strlen(dev) + 5);
+		if (!dev2)
+			sp_die("Error: Out of memory");
 		strcpy(dev2, "\\\\.\\");
 		strcpy(dev2 + 4, dev);
 	}

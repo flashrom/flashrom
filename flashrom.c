@@ -1513,7 +1513,11 @@ int erase_and_write_flash(struct flashchip *flash, uint8_t *oldcontents, uint8_t
 	unsigned int usable_erasefunctions = count_usable_erasers(flash);
 
 	msg_cinfo("Erasing and writing flash chip... ");
-	curcontents = (uint8_t *) malloc(size);
+	curcontents = malloc(size);
+	if (!curcontents) {
+		msg_gerr("Out of memory!\n");
+		exit(1);
+	}
 	/* Copy oldcontents to curcontents to avoid clobbering oldcontents. */
 	memcpy(curcontents, oldcontents, size);
 
@@ -1880,10 +1884,18 @@ int doit(struct flashchip *flash, int force, const char *filename, int read_it, 
 		goto out_nofree;
 	}
 
-	oldcontents = (uint8_t *) malloc(size);
+	oldcontents = malloc(size);
+	if (!oldcontents) {
+		msg_gerr("Out of memory!\n");
+		exit(1);
+	}
 	/* Assume worst case: All bits are 0. */
 	memset(oldcontents, 0x00, size);
-	newcontents = (uint8_t *) malloc(size);
+	newcontents = malloc(size);
+	if (!newcontents) {
+		msg_gerr("Out of memory!\n");
+		exit(1);
+	}
 	/* Assume best case: All bits should be 1. */
 	memset(newcontents, 0xff, size);
 	/* Side effect of the assumptions above: Default write action is erase
