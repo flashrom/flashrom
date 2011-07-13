@@ -912,8 +912,9 @@ static int enable_flash_mcp6x_7x(struct pci_dev *dev, const char *name)
 		 */
 		buses_supported = CHIP_BUSTYPE_NONE;
 		msg_pdbg("Flash bus type is SPI\n");
-		msg_perr("SPI on this chipset is WIP. Write is unsupported!\n");
-		programmer_may_write = 0;
+		msg_pinfo("SPI on this chipset is WIP. Please report any "
+			  "success or failure by mailing us the verbose "
+			  "output to flashrom@flashrom.org, thanks!\n");
 		break;
 	default:
 		/* Should not happen. */
