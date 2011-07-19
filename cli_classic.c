@@ -235,7 +235,7 @@ int cli_classic(int argc, char *argv[])
 		case 'i':
 			/* FIXME: -l has to be specified before -i. */
 			tempstr = strdup(optarg);
-			if (find_romentry(tempstr)) {
+			if (find_romentry(tempstr) < 0) {
 				fprintf(stderr, "Error: image %s not found in "
 					"layout file or -i specified before "
 					"-l\n", tempstr);
