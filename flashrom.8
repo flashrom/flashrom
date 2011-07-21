@@ -45,6 +45,13 @@ Write
 into flash ROM. This will first automatically
 .B erase
 the chip, then write to it.
+.sp
+In the process the chip is also read several times. First an in-memory backup
+is made for disaster recovery and to be able to skip regions that are
+already equal to the image file. This copy is updated along with the write
+operation. In case of erase errors it is even re-read completely. After
+writing has finished and if verification is enabled, the whole flash chip is
+read out and compared with the input image.
 .TP
 .B "\-n, \-\-noverify"
 Skip the automatic verification of flash ROM contents after writing. Using this
@@ -541,7 +548,7 @@ unusable unless you can desolder the flash chip and have a full flash chip
 backup. This is caused by the embedded controller (EC) present in many laptops,
 which interacts badly with any flash attempts. This is a hardware limitation
 and flashrom will attempt to detect it and abort immediately for safety reasons.
-.SH LICENCE
+.SH LICENSE
 .B flashrom
 is covered by the GNU General Public License (GPL), version 2. Some files are
 additionally available under the GPL (version 2, or any later version).
@@ -623,6 +630,6 @@ some others, please see the flashrom svn changelog for details.
 .br
 All authors can be reached via email at <flashrom@flashrom.org>.
 .PP
-This manual page was written by Uwe Hermann <uwe@hermann-uwe.de>
-and Carl-Daniel Hailfinger.
+This manual page was written by Uwe Hermann <uwe@hermann-uwe.de>,
+Carl-Daniel Hailfinger and others.
 It is licensed under the terms of the GNU GPL (version 2 or later).
