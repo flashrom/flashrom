@@ -1226,13 +1226,22 @@ int chipset_flash_enable(void)
 					chipset_enables[i].device_name);
 			continue;
 		}
-		msg_pinfo("Found chipset \"%s %s\", enabling flash write... ",
-		       chipset_enables[i].vendor_name,
-		       chipset_enables[i].device_name);
-		msg_pdbg("chipset PCI ID is %04x:%04x, ",
+		msg_pinfo("Found chipset \"%s %s\"",
+			  chipset_enables[i].vendor_name,
+			  chipset_enables[i].device_name);
+		msg_pdbg("with PCI ID %04x:%04x",
 			 chipset_enables[i].vendor_id,
 			 chipset_enables[i].device_id);
+		msg_pinfo(". ");
 
+		if (chipset_enables[i].status == NT) {
+			msg_pinfo("\nThis chipset is marked as untested. If "
+				  "you are using an up-to-date version\nof "
+				  "flashrom please email a report to "
+				  "flashrom@flashrom.org including a\nverbose "
+				  "(-V) log. Thank you!\n");
+		}
+		msg_pinfo("Enabling flash write... ");
 		ret = chipset_enables[i].doit(dev,
 					      chipset_enables[i].device_name);
 		if (ret == NOT_DONE_YET) {
