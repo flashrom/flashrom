@@ -1507,7 +1507,7 @@ static int check_block_eraser(const struct flashchip *flash, int k, int log)
 
 int erase_and_write_flash(struct flashchip *flash, uint8_t *oldcontents, uint8_t *newcontents)
 {
-	int k, ret = 0;
+	int k, ret = 1;
 	uint8_t *curcontents;
 	unsigned long size = flash->total_size * 1024;
 	unsigned int usable_erasefunctions = count_usable_erasers(flash);
@@ -1522,8 +1522,12 @@ int erase_and_write_flash(struct flashchip *flash, uint8_t *oldcontents, uint8_t
 	memcpy(curcontents, oldcontents, size);
 
 	for (k = 0; k < NUM_ERASEFUNCTIONS; k++) {
+		if (!usable_erasefunctions) {
+			msg_cdbg("No usable erase functions left.\n");
+			break;
+		}
 		msg_cdbg("Looking at blockwise erase function %i... ", k);
-		if (check_block_eraser(flash, k, 1) && usable_erasefunctions) {
+		if (check_block_eraser(flash, k, 1)) {
 			msg_cdbg("Looking for another erase function.\n");
 			continue;
 		}
@@ -1535,10 +1539,8 @@ int erase_and_write_flash(struct flashchip *flash, uint8_t *oldcontents, uint8_t
 		if (!ret)
 			break;
 		/* Write/erase failed, so try to find out what the current chip
-		 * contents are. If no usable erase functions remain, we could
-		 * abort the loop instead of continuing, the effect is the same.
-		 * The only difference is whether the reason for other unusable
-		 * functions is printed or not. If in doubt, verbosity wins.
+		 * contents are. If no usable erase functions remain, we can
+		 * skip this: the next iteration will break immediately anyway.
 		 */
 		if (!usable_erasefunctions)
 			continue;
