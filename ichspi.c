@@ -1263,7 +1263,7 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 			     mmio_readl(ich_spibar + 0x58));
 		msg_pdbg("0x5c: 0x%08x (OPMENU+4)\n",
 			     mmio_readl(ich_spibar + 0x5c));
-		for (i = 0; i < 4; i++) {
+		for (i = 0; i < 3; i++) {
 			int offs;
 			offs = 0x60 + (i * 4);
 			msg_pdbg("0x%02x: 0x%08x (PBR%d)\n", offs,
