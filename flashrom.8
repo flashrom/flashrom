@@ -168,7 +168,7 @@ Specify the programmer device. Currently supported are:
 .sp
 .BR "* internal" " (default, for in-system flashing in the mainboard)"
 .sp
-.BR "* dummy" " (just prints all operations and accesses)"
+.BR "* dummy" " (virtual programmer for testing flashrom)"
 .sp
 .BR "* nic3com" " (for flash ROMs on 3COM network cards)"
 .sp
@@ -191,9 +191,6 @@ network cards)
 .BR "* satamv" " (for flash ROMs on Marvell SATA controllers)"
 .sp
 .BR "* atahpt" " (for flash ROMs on Highpoint ATA/RAID controllers)"
-.sp
-.BR "* it87spi" " (for flash ROMs behind an ITE IT87xx Super I/O LPC/SPI \
-translation unit)"
 .sp
 .BR "* ft2232_spi" " (for SPI flash ROMs attached to an FT2232/FT4232H family \
 based USB SPI programmer)"
@@ -286,17 +283,17 @@ do not match, it will refuse to write the image unless you specify
 .B "  flashrom \-p internal:boardmismatch=force"
 .sp
 If your mainboard uses an ITE IT87 series Super I/O for LPC<->SPI flash bus
-translation, flashrom should autodetect that configuration. You can use the
+translation, flashrom should autodetect that configuration. If you want to
+set the I/O base port of the IT87 series SPI controller manually instead of
+using the value provided by the BIOS, use the 
 .sp
 .B "  flashrom \-p internal:it87spiport=portnum"
 .sp
-syntax as explained in the
-.B it87spi
-programmer section to use a non-default port for controlling the IT87 series
-Super I/O. In the unlikely case flashrom doesn't detect an active
-IT87 LPC<->SPI bridge, you can try to force recognition by using the
-.B it87spi
-programmer.
+syntax where
+.B portnum
+is the I/O port number (must be a multiple of 8). In the unlikely case
+flashrom doesn't detect an active IT87 LPC<->SPI bridge, please send a bug
+report so we can diagnose the problem.
 .sp
 Using flashrom on laptops is dangerous and may easily make your hardware
 unusable (see also the
@@ -320,9 +317,18 @@ We will not help you if you force flashing on a laptop because this is a really
 dumb idea.
 .TP
 .BR "dummy " programmer
+The dummy programmer operates on a buffer in memory only. It provides a safe
+and fast way to test various aspects of flashrom and is mainly used in
+development and while debugging.
+.sp
+It is able to emulate some chips to a certain degree (basic
+identify/read/erase/write operations work).
+.sp
 An optional parameter specifies the bus types it
 should support. For that you have to use the
-.B "flashrom \-p dummy:bus=[type[+type[+type]]]"
+.sp
+.B "  flashrom \-p dummy:bus=[type[+type[+type]]]"
+.sp
 syntax where
 .B type
 can be
@@ -332,6 +338,52 @@ If you do not specify bus, all buses will be enabled.
 .sp
 Example:
 .B "flashrom \-p dummy:bus=lpc+fwh"
+.sp
+The dummy programmer supports flash chip emulation for automated self-tests
+without hardware access. If you want to emulate a flash chip, use the
+.sp
+.B "  flashrom \-p dummy:emulate=chip"
+.sp
+syntax where
+.B chip
+is one of the following chips (please specify only the chip name, not the
+vendor):
+.sp
+.RB "* ST " M25P10.RES " SPI flash chip (RES, page write)"
+.sp
+.RB "* SST " SST25VF040.REMS " SPI flash chip (REMS, byte write)"
+.sp
+.RB "* SST " SST25VF032B " SPI flash chip (RDID, AAI write)"
+.sp
+Example:
+.B "flashrom -p dummy:emulate=SST25VF040.REMS"
+.sp
+If you use flash chip emulation, flash image persistence is available as well
+by using the
+.sp
+.B "  flashrom \-p dummy:emulate=chip,image=image.rom"
+.sp
+syntax where
+.B image.rom
+is the file where the simulated chip contents are read on flashrom startup and
+where the chip contents on flashrom shutdown are written to.
+.sp
+Example:
+.B "flashrom -p dummy:emulate=M25P10.RES,image=dummy.bin"
+.sp
+If you use SPI flash chip emulation for a chip which supports SPI page write
+with the default opcode, you can set the maximum allowed write chunk size with
+the
+.sp
+.B "  flashrom \-p dummy:emulate=chip,spi_write_256_chunksize=size"
+.sp
+syntax where
+.B size
+is the number of bytes (min. 1, max. 256).
+.sp
+Example:
+.sp
+.B "  flashrom -p dummy:emulate=M25P10.RES,spi_write_256_chunksize=5"
 .TP
 .BR "nic3com" , " nicrealtek" , " nicsmc1211" , " nicnatsemi" , " nicintel\
 " , " nicintel_spi" , " gfxnvidia" , " ogp_spi" , " drkaiser" , " satasii\
@@ -339,7 +391,9 @@ Example:
 These programmers have an option to specify the PCI address of the card
 your want to use, which must be specified if more than one card supported
 by the selected programmer is installed in your system. The syntax is
-.BR "flashrom \-p xxxx:pci=bb:dd.f" ,
+.sp
+.BR "  flashrom \-p xxxx:pci=bb:dd.f" ,
+.sp
 where
 .B xxxx
 is the name of the programmer
@@ -352,19 +406,6 @@ is the PCI function number of the desired device.
 .sp
 Example:
 .B "flashrom \-p nic3com:pci=05:04.0"
-.TP
-.BR "it87spi " programmer
-An optional
-.B it87spiport
-parameter sets the I/O base port of the IT87 series SPI controller
-interface to the port specified in the parameter instead of using the port
-address set by the BIOS. For that you have to use the
-.sp
-.B "  flashrom \-p it87spi:it87spiport=portnum"
-.sp
-syntax where
-.B portnum
-is an I/O port number which must be a multiple of 8.
 .TP
 .BR "ft2232_spi " programmer
 An optional parameter specifies the controller
@@ -487,9 +528,6 @@ flashrom needs different access permissions for different programmers.
 needs raw memory access, PCI configuration space access, raw I/O port
 access (x86) and MSR access (x86).
 .sp
-.B it87spi
-needs raw I/O port access (x86).
-.sp
 .BR nic3com ", " nicrealtek ", " nicsmc1211 " and " nicnatsemi "
 need PCI configuration space read access and raw I/O port access.
 .sp
@@ -505,6 +543,10 @@ needs raw I/O port access.
 .B satasii
 needs PCI configuration space read access and raw memory access.
 .sp
+.B satamv
+needs PCI configuration space read access, raw I/O port access and raw memory
+access.
+.sp
 .B serprog
 needs TCP access to the network or userspace access to a serial port.
 .sp
@@ -517,8 +559,8 @@ need access to the USB device via libusb.
 .B dummy
 needs no access permissions at all.
 .sp
-.BR internal ", " it87spi ", " nic3com ", " nicrealtek ", " nicsmc1211 ", "
-.BR nicnatsemi ", " "gfxnvidia" ", " drkaiser ", " satasii " and " atahpt
+.BR internal ", " nic3com ", " nicrealtek ", " nicsmc1211 ", " nicnatsemi ", "
+.BR gfxnvidia ", " drkaiser ", " satasii ", " satamv " and " atahpt
 have to be run as superuser/root, and need additional raw access permission.
 .sp
 .BR serprog ", " buspirate_spi ", " dediprog " and " ft2232_spi
