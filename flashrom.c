@@ -1201,7 +1201,7 @@ notfound:
 		snprintf(location, sizeof(location), "on %s", programmer_table[programmer].name);
 
 	tmp = flashbuses_to_text(flash->bustype);
-	msg_cinfo("%s chip \"%s %s\" (%d kB, %s) %s.\n",
+	msg_cinfo("%s %s flash chip \"%s\" (%d kB, %s) %s.\n",
 		  force ? "Assuming" : "Found", fill_flash->vendor,
 		  fill_flash->name, fill_flash->total_size, tmp, location);
 	free(tmp);
@@ -1711,7 +1711,7 @@ int selfcheck(void)
 		ret = 1;
 	}
 	/* It would be favorable if we could also check for correct terminaion
-	 * of the follwing arrays, but we don't know their size in here...
+	 * of the following arrays, but we don't know their sizes in here...
 	 * For 'flashchips' we check the first element to be non-null. In the
 	 * other cases there exist use cases where the first element can be
 	 * null. */
