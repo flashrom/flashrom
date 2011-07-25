@@ -30,6 +30,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <inttypes.h>
+#include <errno.h>
 #include "flash.h"
 #include "programmer.h"
 
@@ -311,15 +313,33 @@ static int enable_flash_ich_dc(struct pci_dev *dev, const char *name)
 
 	idsel = extract_programmer_param("fwh_idsel");
 	if (idsel && strlen(idsel)) {
-		fwh_conf = (uint32_t)strtoul(idsel, NULL, 0);
-
-		/* FIXME: Need to undo this on shutdown. */
-		msg_pinfo("\nSetting IDSEL=0x%x for top 16 MB", fwh_conf);
-		rpci_write_long(dev, 0xd0, fwh_conf);
-		rpci_write_word(dev, 0xd4, fwh_conf);
+		uint64_t fwh_idsel_old;
+		uint64_t fwh_idsel;
+		errno = 0;
+		/* Base 16, nothing else makes sense. */
+		fwh_idsel = (uint64_t)strtoull(idsel, NULL, 16);
+		if (errno) {
+			msg_perr("Error: fwh_idsel= specified, but value could "
+				 "not be converted.\n");
+			goto idsel_garbage_out;
+		}
+		if (fwh_idsel & 0xffff000000000000ULL) {
+			msg_perr("Error: fwh_idsel= specified, but value had "
+				 "unusued bits set.\n");
+			goto idsel_garbage_out;
+		}
+		fwh_idsel_old = pci_read_long(dev, 0xd0);
+		fwh_idsel_old <<= 16;
+		fwh_idsel_old |= pci_read_word(dev, 0xd4);
+		msg_pdbg("\nSetting IDSEL from 0x%012" PRIx64 " to "
+			 "0x%012" PRIx64 " for top 16 MB.", fwh_idsel_old,
+			 fwh_idsel);
+		rpci_write_long(dev, 0xd0, (fwh_idsel >> 16) & 0xffffffff);
+		rpci_write_word(dev, 0xd4, fwh_idsel & 0xffff);
 		/* FIXME: Decode settings are not changed. */
 	} else if (idsel) {
-		msg_perr("Error: idsel= specified, but no number given.\n");
+		msg_perr("Error: fwh_idsel= specified, but no value given.\n");
+idsel_garbage_out:	
 		free(idsel);
 		/* FIXME: Return failure here once internal_init() starts
 		 * to care about the return value of the chipset enable.
