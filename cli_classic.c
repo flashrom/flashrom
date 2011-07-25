@@ -380,9 +380,10 @@ int cli_classic(int argc, char *argv[])
 	}
 
 	if (chipcount > 1) {
-		printf("Multiple flash chips were detected:");
-		for (i = 0; i < chipcount; i++)
-			printf(" %s", flashes[i].name);
+		printf("Multiple flash chips were detected: \"%s\"",
+			flashes[0].name);
+		for (i = 1; i < chipcount; i++)
+			printf(", \"%s\"", flashes[i].name);
 		printf("\nPlease specify which chip to use with the -c <chipname> option.\n");
 		ret = 1;
 		goto out_shutdown;

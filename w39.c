@@ -70,10 +70,10 @@ static int unlock_w39_fwh_block(struct flashchip *flash, int offset)
 	if (locking & ((1 << 2) | (1 << 0))) {
 		/* Lockdown active? */
 		if (locking & (1 << 1)) {
-			msg_cerr("Can't unlock block at 0x%x!\n", offset);
+			msg_cerr("Can't unlock block at 0x%08x!\n", offset);
 			return -1;
 		} else {
-			msg_cdbg("Unlocking block at 0x%x\n", offset);
+			msg_cdbg("Unlocking block at 0x%08x\n", offset);
 			chip_writeb(0, wrprotect);
 		}
 	}
