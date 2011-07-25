@@ -1031,10 +1031,10 @@ const struct penable chipset_enables[] = {
 	{0x1039, 0x0635, NT, "SiS", "635",		enable_flash_sis540},
 	{0x1039, 0x0640, NT, "SiS", "640",		enable_flash_sis540},
 	{0x1039, 0x0645, NT, "SiS", "645",		enable_flash_sis540},
-	{0x1039, 0x0646, NT, "SiS", "645DX",		enable_flash_sis540},
+	{0x1039, 0x0646, OK, "SiS", "645DX",		enable_flash_sis540},
 	{0x1039, 0x0648, NT, "SiS", "648",		enable_flash_sis540},
 	{0x1039, 0x0650, NT, "SiS", "650",		enable_flash_sis540},
-	{0x1039, 0x0651, NT, "SiS", "651",		enable_flash_sis540},
+	{0x1039, 0x0651, OK, "SiS", "651",		enable_flash_sis540},
 	{0x1039, 0x0655, NT, "SiS", "655",		enable_flash_sis540},
 	{0x1039, 0x0661, OK, "SiS", "661",		enable_flash_sis540},
 	{0x1039, 0x0730, NT, "SiS", "730",		enable_flash_sis540},
@@ -1229,7 +1229,7 @@ int chipset_flash_enable(void)
 		msg_pinfo("Found chipset \"%s %s\"",
 			  chipset_enables[i].vendor_name,
 			  chipset_enables[i].device_name);
-		msg_pdbg("with PCI ID %04x:%04x",
+		msg_pdbg(" with PCI ID %04x:%04x",
 			 chipset_enables[i].vendor_id,
 			 chipset_enables[i].device_id);
 		msg_pinfo(". ");
