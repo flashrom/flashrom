@@ -299,6 +299,23 @@ is the I/O port number (must be a multiple of 8). In the unlikely case
 flashrom doesn't detect an active IT87 LPC<->SPI bridge, please send a bug
 report so we can diagnose the problem.
 .sp
+If you have an Intel chipset with an ICH6 or later southbridge and if you want
+to set specific IDSEL values for a non-default flash chip or an embedded
+controller (EC), you can use the
+.sp
+.B "  flashrom \-p internal:fwh_idsel=value"
+.sp
+syntax where value is the 48-bit hexadecimal raw value to be written in the
+IDSEL registers of the Intel southbridge. The upper 32 bits use one hex digit
+each per 512 kB range between 0xffc00000 and 0xffffffff, and the lower 16 bits
+use one hex digit each per 1024 kB range between 0xff400000 and 0xff7fffff.
+The rightmost hex digit corresponds with the lowest address range. All address
+ranges have a corresponding sister range 4 MB below with identical IDSEL
+settings. The default value for ICH7 is given in the example below.
+.sp
+Example:
+.B "flashrom \-p internal:fwh_idsel=0x001122334567"
+.sp
 Using flashrom on laptops is dangerous and may easily make your hardware
 unusable (see also the
 .B BUGS
