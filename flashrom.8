@@ -1,4 +1,4 @@
-.TH FLASHROM 8 "Jun 14, 2011"
+.TH FLASHROM 8 "Jul 25, 2011"
 .SH NAME
 flashrom \- detect, read, write, verify and erase flash chips
 .SH SYNOPSIS
@@ -12,13 +12,14 @@ flashrom \- detect, read, write, verify and erase flash chips
 .B flashrom
 is a utility for detecting, reading, writing, verifying and erasing flash
 chips. It's often used to flash BIOS/EFI/coreboot/firmware images in-system
-using a supported mainboard, but it also supports flashing of network cards
-(NICs), SATA controller cards, and other external devices which can program
-flash chips.
+using a supported mainboard. However, it also supports various external
+PCI/USB/parallel-port/serial-port based devices which can program flash chips,
+including some network cards (NICs), SATA/IDE controller cards, graphics cards,
+the Bus Pirate device, various FTDI FT2232/FT4232H based USB devices, and more.
 .PP
 It supports a wide range of DIP32, PLCC32, DIP8, SO8/SOIC8, TSOP32, TSOP40,
-and TSOP48 chips, which use various protocols such as LPC, FWH, parallel flash,
-or SPI.
+TSOP48, and BGA chips, which use various protocols such as LPC, FWH,
+parallel flash, or SPI.
 .SH OPTIONS
 .B IMPORTANT:
 Please note that the command line interface for flashrom will change before
@@ -30,7 +31,7 @@ You can specify one of
 or no operation.
 If no operation is specified, flashrom will only probe for flash chips. It is
 recommended that if you try flashrom the first time on a system, you run it
-in probe only mode and check the output. Also you are advised to make a
+in probe-only mode and check the output. Also you are advised to make a
 backup of your current ROM contents with
 .B \-r
 before you try to write a new image.
@@ -38,6 +39,7 @@ before you try to write a new image.
 .B "\-r, \-\-read <file>"
 Read flash ROM contents and save them into the given
 .BR <file> .
+If the file already exists, it will be overwritten.
 .TP
 .B "\-w, \-\-write <file>"
 Write
@@ -144,7 +146,8 @@ Only flash image
 from flash layout.
 .TP
 .B "\-L, \-\-list\-supported"
-List the flash chips, chipsets, mainboards, and PCI card "programmers"
+List the flash chips, chipsets, mainboards, and external programmers
+(including PCI, USB, parallel port, and serial port based devices)
 supported by flashrom.
 .sp
 There are many unlisted boards which will work out of the box, without
@@ -160,8 +163,9 @@ if you have proper means to recover from failure!
 Same as
 .BR \-\-list\-supported ,
 but outputs the supported hardware in MediaWiki syntax, so that it can be
-easily pasted into the wiki page at http://www.flashrom.org/. Please note
-that MediaWiki output is not compiled in by default.
+easily pasted into the wiki page at
+.BR http://www.flashrom.org/ .
+Please note that MediaWiki output is not compiled in by default.
 .TP
 .B "\-p, \-\-programmer <name>[:parameter[,parameter[,parameter]]]"
 Specify the programmer device. Currently supported are:
@@ -489,7 +493,7 @@ is base I/O port address of the parallel port, which must be a multiple of
 four. Make sure to not forget the "0x" prefix for hexadecimal port addresses.
 .sp
 More information about the hardware is available at
-http://rayer.ic.cz/elektro/spipgm.htm
+.BR http://rayer.ic.cz/elektro/spipgm.htm .
 .TP
 .BR "ogp_spi " programmer
 The flash ROM chip to access must be specified with the 
@@ -517,7 +521,7 @@ parameter as explained in the
 section above.
 .sp
 More information about the hardware is available at
-http://wiki.opengraphics.org
+.BR http://wiki.opengraphics.org .
 .SH EXIT STATUS
 flashrom exits with 0 on success, 1 on most failures but with 2 if /dev/mem
 (/dev/xsvc on Solaris) can not be opened and with 3 if a call to mmap() fails.
@@ -571,8 +575,10 @@ permissions are set.
 needs PCI configuration space read access and raw memory access.
 .sp
 On OpenBSD, you can obtain raw access permission by setting
-securelevel=-1 in /etc/rc.securelevel and rebooting, or rebooting into single
-user mode.
+.B "securelevel=-1"
+in
+.B "/etc/rc.securelevel"
+and rebooting, or rebooting into single user mode.
 .SH BUGS
 Please report any bugs at
 .sp
@@ -590,6 +596,10 @@ unusable unless you can desolder the flash chip and have a full flash chip
 backup. This is caused by the embedded controller (EC) present in many laptops,
 which interacts badly with any flash attempts. This is a hardware limitation
 and flashrom will attempt to detect it and abort immediately for safety reasons.
+.sp
+More information about flashrom on laptops is available from
+.sp
+.B "  http://www.flashrom.org/Laptops"
 .SH LICENSE
 .B flashrom
 is covered by the GNU General Public License (GPL), version 2. Some files are
