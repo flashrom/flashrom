@@ -205,8 +205,12 @@ static void print_supported_chips_wiki(int cols)
 	uint32_t t;
 	char *s;
 
-	for (f = flashchips; f->name != NULL; f++)
+	for (f = flashchips; f->name != NULL; f++) {
+		/* Don't count "unknown XXXX SPI chip" entries. */
+		if (!strncmp(f->name, "unknown", 7))
+			continue;
 		chipcount++;
+	}
 
 	printf("\n== Supported chips ==\n\nTotal amount of supported "
 	       "chips: '''%d'''\n\n{| border=\"0\" valign=\"top\"\n"
