@@ -230,11 +230,19 @@ int internal_init(void)
 
 	/* Warn if a non-whitelisted laptop is detected. */
 	if (is_laptop && !laptop_ok) {
-		msg_perr("========================================================================\n"
-			 "WARNING! You seem to be running flashrom on an unsupported laptop.\n"
-			 "Laptops, notebooks and netbooks are difficult to support and we recommend\n"
-			 "to use the vendor flashing utility. The embedded controller (EC) in these\n"
-			 "machines often interacts badly with flashing.\n"
+		msg_perr("========================================================================\n");
+		if (is_laptop == 1) {
+			msg_perr("WARNING! You seem to be running flashrom on an unsupported laptop.\n");
+		} else {
+			msg_perr("WARNING! You may be running flashrom on an unsupported laptop. We could\n"
+				 "not detect this for sure because your vendor has not setup the SMBIOS\n"
+				 "tables correctly. You can enforce execution by adding\n"
+				 "'-p internal:laptop=force_I_want_a_brick' to the command line, but\n"
+				 "please read the following warning if you are not sure.\n\n");
+		}
+		msg_perr("Laptops, notebooks and netbooks are difficult to support and we\n"
+			 "recommend to use the vendor flashing utility. The embedded controller\n"
+			 "(EC) in these machines often interacts badly with flashing.\n"
 			 "See http://www.flashrom.org/Laptops for details.\n\n"
 			 "If flash is shared with the EC, erase is guaranteed to brick your laptop\n"
 			 "and write may brick your laptop.\n"
@@ -242,6 +250,7 @@ int internal_init(void)
 			 "failure and sudden poweroff.\n"
 			 "You have been warned.\n"
 			 "========================================================================\n");
+
 		if (force_laptop) {
 			msg_perr("Proceeding anyway because user specified "
 				 "laptop=force_I_want_a_brick\n");
