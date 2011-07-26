@@ -22,16 +22,19 @@
 #include "flash.h"
 #include "chipdrivers.h"
 
+/* According to the Winbond W29EE011, W29EE012, W29C010M, W29C011A
+ * datasheets this is the only valid probe function for those chips.
+ */
 int probe_w29ee011(struct flashchip *flash)
 {
 	chipaddr bios = flash->virtual_memory;
 	uint8_t id1, id2;
 
-	if (!chip_to_probe || strcmp(chip_to_probe, "W29EE011")) {
-		msg_cdbg("Probing disabled for Winbond W29EE011 because "
-			     "the probing sequence puts the AMIC A49LF040A in "
-			     "a funky state. Use 'flashrom -c W29EE011' if you "
-			     "have a board with this chip.\n");
+	if (!chip_to_probe || strcmp(chip_to_probe, flash->name)) {
+		msg_cdbg("Old Winbond W29* probe method disabled because "
+			 "the probing sequence puts the AMIC A49LF040A in "
+			 "a funky state. Use 'flashrom -c %s' if you "
+			 "have a board with such a chip.\n", flash->name);
 		return 0;
 	}
 
