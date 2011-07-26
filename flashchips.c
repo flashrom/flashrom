@@ -8252,6 +8252,29 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Winbond",
+		.name		= "W29C010(M)/W29C011A/W29EE011/W29EE012-old",
+		.bustype	= CHIP_BUSTYPE_PARALLEL,
+		.manufacture_id	= WINBOND_ID,
+		.model_id	= WINBOND_W29C010,
+		.total_size	= 128,
+		.page_size	= 128,
+		.feature_bits	= FEATURE_LONG_RESET,
+		.tested		= TEST_OK_PRE,
+		.probe		= probe_w29ee011,
+		.probe_timing	= TIMING_IGNORED, /* routine doesn't use probe_timing (w29ee011.c) */
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {128 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			}
+		},
+		.write		= write_jedec,
+		.read		= read_memmapped,
+	},
+
+	{/* W29EE011, W29EE012, W29C010M, W29C011A do not support probe_jedec according to the datasheet, but it works for newer(?) steppings. */
+		.vendor		= "Winbond",
 		.name		= "W29C010(M)/W29C011A/W29EE011/W29EE012",
 		.bustype	= CHIP_BUSTYPE_PARALLEL,
 		.manufacture_id	= WINBOND_ID,
@@ -8319,29 +8342,6 @@ const struct flashchip flashchips[] = {
 		.write		= write_jedec,
 		.read		= read_memmapped,
 		.voltage	= {4500, 5500},
-	},
-
-	{
-		.vendor		= "Winbond",
-		.name		= "W29C010(M)/W29C011A/W29EE011/W29EE012",
-		.bustype	= CHIP_BUSTYPE_PARALLEL,
-		.manufacture_id	= WINBOND_ID,
-		.model_id	= WINBOND_W29C010,
-		.total_size	= 128,
-		.page_size	= 128,
-		.feature_bits	= FEATURE_LONG_RESET,
-		.tested		= TEST_OK_PRE,
-		.probe		= probe_w29ee011,
-		.probe_timing	= TIMING_IGNORED, /* routine doesn't use probe_timing (w29ee011.c) */
-		.block_erasers	=
-		{
-			{
-				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
-			}
-		},
-		.write		= write_jedec,
-		.read		= read_memmapped,
 	},
 
 	{
