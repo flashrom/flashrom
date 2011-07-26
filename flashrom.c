@@ -1713,7 +1713,7 @@ int selfcheck(void)
 		msg_gerr("Programmer table miscompilation!\n");
 		ret = 1;
 	}
-	/* It would be favorable if we could also check for correct terminaion
+	/* It would be favorable if we could also check for correct termination
 	 * of the following arrays, but we don't know their sizes in here...
 	 * For 'flashchips' we check the first element to be non-null. In the
 	 * other cases there exist use cases where the first element can be
