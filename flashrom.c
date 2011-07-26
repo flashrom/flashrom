@@ -1471,7 +1471,6 @@ static int walk_eraseregions(struct flashchip *flash, int erasefunction,
 				     start + len - 1);
 			if (do_something(flash, start, len, param1, param2,
 					 eraser.block_erase)) {
-				msg_cdbg("\n");
 				return 1;
 			}
 			start += len;
@@ -1522,19 +1521,18 @@ int erase_and_write_flash(struct flashchip *flash, uint8_t *oldcontents, uint8_t
 	memcpy(curcontents, oldcontents, size);
 
 	for (k = 0; k < NUM_ERASEFUNCTIONS; k++) {
+		if (k != 0)
+			msg_cdbg("Looking for another erase function.\n");
 		if (!usable_erasefunctions) {
 			msg_cdbg("No usable erase functions left.\n");
 			break;
 		}
-		msg_cdbg("Looking at blockwise erase function %i... ", k);
-		if (check_block_eraser(flash, k, 1)) {
-			msg_cdbg("Looking for another erase function.\n");
+		msg_cdbg("Trying erase function %i... ", k);
+		if (check_block_eraser(flash, k, 1))
 			continue;
-		}
 		usable_erasefunctions--;
-		msg_cdbg("trying... ");
-		ret = walk_eraseregions(flash, k, &erase_and_write_block_helper, curcontents, newcontents);
-		msg_cdbg("\n");
+		ret = walk_eraseregions(flash, k, &erase_and_write_block_helper,
+					curcontents, newcontents);
 		/* If everything is OK, don't try another erase function. */
 		if (!ret)
 			break;
@@ -1544,14 +1542,19 @@ int erase_and_write_flash(struct flashchip *flash, uint8_t *oldcontents, uint8_t
 		 */
 		if (!usable_erasefunctions)
 			continue;
+		/* Reading the whole chip may take a while, inform the user even
+		 * in non-verbose mode.
+		 */
+		msg_cinfo("Reading current flash chip contents... ");
 		if (flash->read(flash, curcontents, 0, size)) {
 			/* Now we are truly screwed. Read failed as well. */
-			msg_cerr("Can't read anymore!\n");
+			msg_cerr("Can't read anymore! Aborting.\n");
 			/* We have no idea about the flash chip contents, so
 			 * retrying with another erase function is pointless.
 			 */
 			break;
 		}
+		msg_cinfo("done. ");
 	}
 	/* Free the scratchpad. */
 	free(curcontents);
@@ -1559,7 +1562,7 @@ int erase_and_write_flash(struct flashchip *flash, uint8_t *oldcontents, uint8_t
 	if (ret) {
 		msg_cerr("FAILED!\n");
 	} else {
-		msg_cinfo("Done.\n");
+		msg_cinfo("Erase/write done.\n");
 	}
 	return ret;
 }
@@ -1938,13 +1941,13 @@ int doit(struct flashchip *flash, int force, const char *filename, int read_it, 
 	 * preserved, but in that case we might perform unneeded erase which
 	 * takes time as well.
 	 */
-	msg_cdbg("Reading old flash chip contents... ");
+	msg_cinfo("Reading old flash chip contents... ");
 	if (flash->read(flash, oldcontents, 0, size)) {
 		ret = 1;
-		msg_cdbg("FAILED.\n");
+		msg_cinfo("FAILED.\n");
 		goto out;
 	}
-	msg_cdbg("done.\n");
+	msg_cinfo("done.\n");
 
 	// This should be moved into each flash part's code to do it 
 	// cleanly. This does the job.
