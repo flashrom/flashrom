@@ -293,7 +293,7 @@ int it85xx_spi_init(struct superio s)
 {
 	int ret;
 
-	if (!(buses_supported & CHIP_BUSTYPE_FWH)) {
+	if (!(buses_supported & BUS_FWH)) {
 		msg_pdbg("%s():%d buses not support FWH\n", __func__, __LINE__);
 		return 1;
 	}
@@ -302,7 +302,7 @@ int it85xx_spi_init(struct superio s)
 	if (!ret) {
 		msg_pdbg("%s():%d buses_supported=0x%x\n", __func__, __LINE__,
 		          buses_supported);
-		if (buses_supported & CHIP_BUSTYPE_FWH)
+		if (buses_supported & BUS_FWH)
 			msg_pdbg("Overriding chipset SPI with IT85 FWH|SPI.\n");
 		/* Really leave FWH enabled? */
 		/* Set this as spi controller. */

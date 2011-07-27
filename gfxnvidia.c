@@ -94,7 +94,7 @@ int gfxnvidia_init(void)
 	reg32 &= ~(1 << 0);
 	rpci_write_long(pcidev_dev, 0x50, reg32);
 
-	buses_supported = CHIP_BUSTYPE_PARALLEL;
+	buses_supported = BUS_PARALLEL;
 
 	/* Write/erase doesn't work. */
 	programmer_may_write = 0;

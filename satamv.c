@@ -137,7 +137,7 @@ int satamv_init(void)
 	mv_iobar = tmp & 0xffff;
 	msg_pspew("Activating I/O BAR at 0x%04x\n", mv_iobar);
 
-	buses_supported = CHIP_BUSTYPE_PARALLEL;
+	buses_supported = BUS_PARALLEL;
 
 	/* 512 kByte with two 8-bit latches, and
 	 * 4 MByte with additional 3-bit latch. */
