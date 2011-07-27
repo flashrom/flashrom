@@ -195,5 +195,5 @@ uint32_t spi_get_valid_read_addr(void)
 void register_spi_programmer(const struct spi_programmer *pgm)
 {
 	spi_programmer = pgm;
-	buses_supported |= CHIP_BUSTYPE_SPI;
+	buses_supported |= BUS_SPI;
 }

@@ -48,7 +48,7 @@ int nicnatsemi_init(void)
 
 	io_base_addr = pcidev_init(PCI_BASE_ADDRESS_0, nics_natsemi);
 
-	buses_supported = CHIP_BUSTYPE_PARALLEL;
+	buses_supported = BUS_PARALLEL;
 
 	/* The datasheet shows address lines MA0-MA16 in one place and MA0-MA15
 	 * in another. My NIC has MA16 connected to A16 on the boot ROM socket

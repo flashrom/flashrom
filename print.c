@@ -33,24 +33,24 @@
 char *flashbuses_to_text(enum chipbustype bustype)
 {
 	char *ret = calloc(1, 1);
-	if (bustype == CHIP_BUSTYPE_UNKNOWN) {
+	if (bustype == BUS_UNKNOWN) {
 		ret = strcat_realloc(ret, "Unknown, ");
 	/*
 	 * FIXME: Once all chipsets and flash chips have been updated, NONSPI
 	 * will cease to exist and should be eliminated here as well.
 	 */
-	} else if (bustype == CHIP_BUSTYPE_NONSPI) {
+	} else if (bustype == BUS_NONSPI) {
 		ret = strcat_realloc(ret, "Non-SPI, ");
 	} else {
-		if (bustype & CHIP_BUSTYPE_PARALLEL)
+		if (bustype & BUS_PARALLEL)
 			ret = strcat_realloc(ret, "Parallel, ");
-		if (bustype & CHIP_BUSTYPE_LPC)
+		if (bustype & BUS_LPC)
 			ret = strcat_realloc(ret, "LPC, ");
-		if (bustype & CHIP_BUSTYPE_FWH)
+		if (bustype & BUS_FWH)
 			ret = strcat_realloc(ret, "FWH, ");
-		if (bustype & CHIP_BUSTYPE_SPI)
+		if (bustype & BUS_SPI)
 			ret = strcat_realloc(ret, "SPI, ");
-		if (bustype == CHIP_BUSTYPE_NONE)
+		if (bustype == BUS_NONE)
 			ret = strcat_realloc(ret, "None, ");
 	}
 	/* Kill last comma. */

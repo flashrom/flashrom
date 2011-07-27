@@ -505,7 +505,7 @@ int programmer_init(char *param)
 		.fwh		= 0xffffffff,
 		.spi		= 0xffffffff
 	};
-	buses_supported = CHIP_BUSTYPE_NONE;
+	buses_supported = BUS_NONE;
 	/* Default to top aligned flash at 4 GB. */
 	flashbase = 0;
 	/* Registering shutdown functions is now allowed. */
@@ -1080,7 +1080,7 @@ int generate_testpattern(uint8_t *buf, uint32_t size, int variant)
 int check_max_decode(enum chipbustype buses, uint32_t size)
 {
 	int limitexceeded = 0;
-	if ((buses & CHIP_BUSTYPE_PARALLEL) &&
+	if ((buses & BUS_PARALLEL) &&
 	    (max_rom_decode.parallel < size)) {
 		limitexceeded++;
 		msg_pdbg("Chip size %u kB is bigger than supported "
@@ -1089,7 +1089,7 @@ int check_max_decode(enum chipbustype buses, uint32_t size)
 			     "probe/read/erase/write may fail. ", size / 1024,
 			     max_rom_decode.parallel / 1024, "Parallel");
 	}
-	if ((buses & CHIP_BUSTYPE_LPC) && (max_rom_decode.lpc < size)) {
+	if ((buses & BUS_LPC) && (max_rom_decode.lpc < size)) {
 		limitexceeded++;
 		msg_pdbg("Chip size %u kB is bigger than supported "
 			     "size %u kB of chipset/board/programmer "
@@ -1097,7 +1097,7 @@ int check_max_decode(enum chipbustype buses, uint32_t size)
 			     "probe/read/erase/write may fail. ", size / 1024,
 			     max_rom_decode.lpc / 1024, "LPC");
 	}
-	if ((buses & CHIP_BUSTYPE_FWH) && (max_rom_decode.fwh < size)) {
+	if ((buses & BUS_FWH) && (max_rom_decode.fwh < size)) {
 		limitexceeded++;
 		msg_pdbg("Chip size %u kB is bigger than supported "
 			     "size %u kB of chipset/board/programmer "
@@ -1105,7 +1105,7 @@ int check_max_decode(enum chipbustype buses, uint32_t size)
 			     "probe/read/erase/write may fail. ", size / 1024,
 			     max_rom_decode.fwh / 1024, "FWH");
 	}
-	if ((buses & CHIP_BUSTYPE_SPI) && (max_rom_decode.spi < size)) {
+	if ((buses & BUS_SPI) && (max_rom_decode.spi < size)) {
 		limitexceeded++;
 		msg_pdbg("Chip size %u kB is bigger than supported "
 			     "size %u kB of chipset/board/programmer "

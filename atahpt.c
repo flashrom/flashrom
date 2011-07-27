@@ -61,7 +61,7 @@ int atahpt_init(void)
 	reg32 |= (1 << 24);
 	rpci_write_long(pcidev_dev, REG_FLASH_ACCESS, reg32);
 
-	buses_supported = CHIP_BUSTYPE_PARALLEL;
+	buses_supported = BUS_PARALLEL;
 
 	if (register_shutdown(atahpt_shutdown, NULL))
 		return 1;

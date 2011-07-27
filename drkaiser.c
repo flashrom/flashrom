@@ -64,7 +64,7 @@ int drkaiser_init(void)
 	drkaiser_bar = physmap("Dr. Kaiser PC-Waechter flash memory",
 			       addr, DRKAISER_MEMMAP_SIZE);
 
-	buses_supported = CHIP_BUSTYPE_PARALLEL;
+	buses_supported = BUS_PARALLEL;
 
 	if (register_shutdown(drkaiser_shutdown, NULL))
 		return 1;

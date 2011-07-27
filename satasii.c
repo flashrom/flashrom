@@ -76,7 +76,7 @@ int satasii_init(void)
 	if ((id != 0x0680) && (!(pci_mmio_readl(sii_bar) & (1 << 26))))
 		msg_pinfo("Warning: Flash seems unconnected.\n");
 
-	buses_supported = CHIP_BUSTYPE_PARALLEL;
+	buses_supported = BUS_PARALLEL;
 
 	if (register_shutdown(satasii_shutdown, NULL))
 		return 1;
