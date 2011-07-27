@@ -462,7 +462,7 @@ int serprog_init(void)
 
 	if (sp_docommand(S_CMD_Q_BUSTYPE, 0, NULL, 1, &c)) {
 		msg_perr("Warning: NAK to query supported buses\n");
-		c = CHIP_BUSTYPE_NONSPI;	/* A reasonable default for now. */
+		c = BUS_NONSPI;	/* A reasonable default for now. */
 	}
 	buses_supported = c;
 

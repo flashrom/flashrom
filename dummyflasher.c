@@ -107,24 +107,24 @@ int dummy_init(void)
 	/* Convert the parameters to lowercase. */
 	tolower_string(bustext);
 
-	buses_supported = CHIP_BUSTYPE_NONE;
+	buses_supported = BUS_NONE;
 	if (strstr(bustext, "parallel")) {
-		buses_supported |= CHIP_BUSTYPE_PARALLEL;
+		buses_supported |= BUS_PARALLEL;
 		msg_pdbg("Enabling support for %s flash.\n", "parallel");
 	}
 	if (strstr(bustext, "lpc")) {
-		buses_supported |= CHIP_BUSTYPE_LPC;
+		buses_supported |= BUS_LPC;
 		msg_pdbg("Enabling support for %s flash.\n", "LPC");
 	}
 	if (strstr(bustext, "fwh")) {
-		buses_supported |= CHIP_BUSTYPE_FWH;
+		buses_supported |= BUS_FWH;
 		msg_pdbg("Enabling support for %s flash.\n", "FWH");
 	}
 	if (strstr(bustext, "spi")) {
 		register_spi_programmer(&spi_programmer_dummyflasher);
 		msg_pdbg("Enabling support for %s flash.\n", "SPI");
 	}
-	if (buses_supported == CHIP_BUSTYPE_NONE)
+	if (buses_supported == BUS_NONE)
 		msg_pdbg("Support for all flash bus types disabled.\n");
 	free(bustext);
 

@@ -50,7 +50,7 @@ int nicrealtek_init(void)
 
 	io_base_addr = pcidev_init(PCI_BASE_ADDRESS_0, nics_realtek);
 
-	buses_supported = CHIP_BUSTYPE_PARALLEL;
+	buses_supported = BUS_PARALLEL;
 
 	if (register_shutdown(nicrealtek_shutdown, NULL))
 		return 1;

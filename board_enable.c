@@ -425,7 +425,7 @@ int it8705f_write_enable(uint8_t port)
 	/* Check if at least one flash segment is enabled. */
 	if (tmp & 0xf0) {
 		/* The IT8705F will respond to LPC cycles and translate them. */
-		buses_supported = CHIP_BUSTYPE_PARALLEL;
+		buses_supported = BUS_PARALLEL;
 		/* Flash ROM I/F Writes Enable */
 		tmp |= 0x04;
 		msg_pdbg("Enabling IT8705F flash ROM interface write.\n");

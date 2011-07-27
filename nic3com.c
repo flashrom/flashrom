@@ -96,7 +96,7 @@ int nic3com_init(void)
 	 */
 	OUTW(SELECT_REG_WINDOW + 0, io_base_addr + INT_STATUS);
 
-	buses_supported = CHIP_BUSTYPE_PARALLEL;
+	buses_supported = BUS_PARALLEL;
 	max_rom_decode.parallel = 128 * 1024;
 
 	if (register_shutdown(nic3com_shutdown, NULL))

@@ -93,7 +93,7 @@ int nicintel_init(void)
 	 */
 	pci_rmmio_writew(0x0001, nicintel_control_bar + CSR_FCR);
 
-	buses_supported = CHIP_BUSTYPE_PARALLEL;
+	buses_supported = BUS_PARALLEL;
 
 	max_rom_decode.parallel = NICINTEL_MEMMAP_SIZE;
 

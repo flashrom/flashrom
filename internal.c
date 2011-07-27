@@ -190,7 +190,7 @@ int internal_init(void)
 	/* Default to Parallel/LPC/FWH flash devices. If a known host controller
 	 * is found, the init routine sets the buses_supported bitfield.
 	 */
-	buses_supported = CHIP_BUSTYPE_NONSPI;
+	buses_supported = BUS_NONSPI;
 
 	/* Initialize PCI access for flash enables */
 	pacc = pci_alloc();	/* Get the pci_access structure */
