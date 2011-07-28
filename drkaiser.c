@@ -58,7 +58,7 @@ int drkaiser_init(void)
 
 	/* Write magic register to enable flash write. */
 	rpci_write_word(pcidev_dev, PCI_MAGIC_DRKAISER_ADDR,
-		       PCI_MAGIC_DRKAISER_VALUE);
+			PCI_MAGIC_DRKAISER_VALUE);
 
 	/* Map 128kB flash memory window. */
 	drkaiser_bar = physmap("Dr. Kaiser PC-Waechter flash memory",

@@ -68,13 +68,13 @@ static int bitbang_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		const unsigned char *writearr, unsigned char *readarr);
 
 static const struct spi_programmer spi_programmer_bitbang = {
-	.type = SPI_CONTROLLER_BITBANG,
-	.max_data_read = MAX_DATA_READ_UNLIMITED,
-	.max_data_write = MAX_DATA_WRITE_UNLIMITED,
-	.command = bitbang_spi_send_command,
-	.multicommand = default_spi_send_multicommand,
-	.read = default_spi_read,
-	.write_256 = default_spi_write_256,
+	.type		= SPI_CONTROLLER_BITBANG,
+	.max_data_read	= MAX_DATA_READ_UNLIMITED,
+	.max_data_write	= MAX_DATA_WRITE_UNLIMITED,
+	.command	= bitbang_spi_send_command,
+	.multicommand	= default_spi_send_multicommand,
+	.read		= default_spi_read,
+	.write_256	= default_spi_write_256,
 };
 
 int bitbang_spi_init(const struct bitbang_spi_master *master, int halfperiod)

@@ -220,7 +220,7 @@ cpu_to_be(64)
   #define INW  inportw
   #define INL  inportl
 
-#else 
+#else
 
   #define OUTB outb
   #define OUTW outw

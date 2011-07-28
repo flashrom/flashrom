@@ -103,45 +103,37 @@ int cli_classic(int argc, char *argv[])
 	const struct flashchip *flash;
 	struct flashchip flashes[3];
 	struct flashchip *fill_flash;
-	int startchip = 0;
-	int chipcount = 0;
 	const char *name;
-	int namelen;
-	int opt;
-	int option_index = 0;
-	int force = 0;
+	int startchip = 0, chipcount = 0, namelen, opt, option_index = 0;
 	int read_it = 0, write_it = 0, erase_it = 0, verify_it = 0;
-	int dont_verify_it = 0, list_supported = 0;
+	int dont_verify_it = 0, list_supported = 0, force = 0;
 #if CONFIG_PRINT_WIKI == 1
 	int list_supported_wiki = 0;
 #endif
-	int operation_specified = 0;
-	int i;
-	int ret = 0;
+	int operation_specified = 0, i, ret = 0;
 
 	static const char optstring[] = "r:Rw:v:nVEfc:m:l:i:p:Lzh";
 	static const struct option long_options[] = {
-		{"read", 1, NULL, 'r'},
-		{"write", 1, NULL, 'w'},
-		{"erase", 0, NULL, 'E'},
-		{"verify", 1, NULL, 'v'},
-		{"noverify", 0, NULL, 'n'},
-		{"chip", 1, NULL, 'c'},
-		{"mainboard", 1, NULL, 'm'},
-		{"verbose", 0, NULL, 'V'},
-		{"force", 0, NULL, 'f'},
-		{"layout", 1, NULL, 'l'},
-		{"image", 1, NULL, 'i'},
-		{"list-supported", 0, NULL, 'L'},
-		{"list-supported-wiki", 0, NULL, 'z'},
-		{"programmer", 1, NULL, 'p'},
-		{"help", 0, NULL, 'h'},
-		{"version", 0, NULL, 'R'},
-		{NULL, 0, NULL, 0}
+		{"read",		1, NULL, 'r'},
+		{"write",		1, NULL, 'w'},
+		{"erase",		0, NULL, 'E'},
+		{"verify",		1, NULL, 'v'},
+		{"noverify",		0, NULL, 'n'},
+		{"chip",		1, NULL, 'c'},
+		{"mainboard",		1, NULL, 'm'},
+		{"verbose",		0, NULL, 'V'},
+		{"force",		0, NULL, 'f'},
+		{"layout",		1, NULL, 'l'},
+		{"image",		1, NULL, 'i'},
+		{"list-supported",	0, NULL, 'L'},
+		{"list-supported-wiki",	0, NULL, 'z'},
+		{"programmer",		1, NULL, 'p'},
+		{"help",		0, NULL, 'h'},
+		{"version",		0, NULL, 'R'},
+		{NULL,			0, NULL, 0},
 	};
 
 	char *filename = NULL;
-
 	char *tempstr = NULL;
 	char *pparam = NULL;
 
@@ -355,7 +347,7 @@ int cli_classic(int argc, char *argv[])
 			fprintf(stderr, "Error: Unknown chip '%s' specified.\n",
 				chip_to_probe);
 			printf("Run flashrom -L to view the hardware supported "
-				"in this flashrom version.\n");
+			       "in this flashrom version.\n");
 			exit(1);
 		}
 		/* Clean up after the check. */
@@ -384,23 +376,28 @@ int cli_classic(int argc, char *argv[])
 			flashes[0].name);
 		for (i = 1; i < chipcount; i++)
 			printf(", \"%s\"", flashes[i].name);
-		printf("\nPlease specify which chip to use with the -c <chipname> option.\n");
+		printf("\nPlease specify which chip to use with the "
+		       "-c <chipname> option.\n");
 		ret = 1;
 		goto out_shutdown;
 	} else if (!chipcount) {
 		printf("No EEPROM/flash device found.\n");
 		if (!force || !chip_to_probe) {
-			printf("Note: flashrom can never write if the flash chip isn't found automatically.\n");
+			printf("Note: flashrom can never write if the flash "
+			       "chip isn't found automatically.\n");
 		}
 		if (force && read_it && chip_to_probe) {
-			printf("Force read (-f -r -c) requested, pretending the chip is there:\n");
+			printf("Force read (-f -r -c) requested, pretending "
+			       "the chip is there:\n");
 			startchip = probe_flash(0, &flashes[0], 1);
 			if (startchip == -1) {
-				printf("Probing for flash chip '%s' failed.\n", chip_to_probe);
+				printf("Probing for flash chip '%s' failed.\n",
+				       chip_to_probe);
 				ret = 1;
 				goto out_shutdown;
 			}
-			printf("Please note that forced reads most likely contain garbage.\n");
+			printf("Please note that forced reads most likely "
+			       "contain garbage.\n");
 			return read_flash_to_file(&flashes[0], filename);
 		}
 		ret = 1;
