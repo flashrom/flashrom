@@ -43,16 +43,13 @@ static void *realmem_map;
 
 static void *map_first_meg(unsigned long phys_addr, size_t len)
 {
-
-	if (realmem_map) {
+	if (realmem_map)
 		return realmem_map + phys_addr;
-	}
 
 	realmem_map = valloc(1024 * 1024);
 
-	if (!realmem_map) {
+	if (!realmem_map)
 		return ERROR_PTR;
-	}
 
 	if (__djgpp_map_physical_memory(realmem_map, (1024 * 1024), 0)) {
 		free(realmem_map);
@@ -68,23 +65,21 @@ static void *sys_physmap(unsigned long phys_addr, size_t len)
 	int ret;
 	__dpmi_meminfo mi;
 
-	/* enable 4GB limit on DS descriptor */
-	if (!__djgpp_nearptr_enable()) {
+	/* Enable 4GB limit on DS descriptor. */
+	if (!__djgpp_nearptr_enable())
 		return ERROR_PTR;
-	}
 
 	if ((phys_addr + len - 1) < (1024 * 1024)) {
-	/* we need to use another method to map first 1MB */
+		/* We need to use another method to map first 1MB. */
 		return map_first_meg(phys_addr, len);
 	}
 
 	mi.address = phys_addr;
 	mi.size = len;
-	ret =  __dpmi_physical_address_mapping (&mi);
+	ret = __dpmi_physical_address_mapping (&mi);
 
-	if (ret != 0) {
+	if (ret != 0)
 		return ERROR_PTR;
-	}
 
 	return (void *) mi.address + __djgpp_conventional_base;
 }
@@ -99,7 +94,8 @@ void physunmap(void *virt_addr, size_t len)
 	/* There is no known way to unmap the first 1 MB. The DPMI server will
 	 * do this for us on exit.
 	 */
-	if ((virt_addr >= realmem_map) && ((virt_addr + len) <= (realmem_map + (1024 * 1024)))) {
+	if ((virt_addr >= realmem_map) &&
+	    ((virt_addr + len) <= (realmem_map + (1024 * 1024)))) {
 		return;
 	}
 
@@ -114,7 +110,7 @@ void physunmap(void *virt_addr, size_t len)
 
 void *sys_physmap(unsigned long phys_addr, size_t len)
 {
-	return (void*)phys_to_virt(phys_addr);
+	return (void *)phys_to_virt(phys_addr);
 }
 
 #define sys_physmap_rw_uncached	sys_physmap
@@ -195,7 +191,8 @@ static void *sys_physmap_ro_cached(unsigned long phys_addr, size_t len)
 	if (-1 == fd_mem_cached) {
 		/* Open the memory device CACHED. */
 		if (-1 == (fd_mem_cached = open(MEM_DEV, O_RDWR))) {
-			msg_perr("Critical error: open(" MEM_DEV "): %s", strerror(errno));
+			msg_perr("Critical error: open(" MEM_DEV "): %s",
+				 strerror(errno));
 			exit(2);
 		}
 	}
@@ -221,36 +218,37 @@ void physunmap(void *virt_addr, size_t len)
 #define PHYSMAP_RW	0
 #define PHYSMAP_RO	1
 
-static void *physmap_common(const char *descr, unsigned long phys_addr, size_t len, int mayfail, int readonly)
+static void *physmap_common(const char *descr, unsigned long phys_addr,
+			    size_t len, int mayfail, int readonly)
 {
 	void *virt_addr;
 
 	if (len == 0) {
 		msg_pspew("Not mapping %s, zero size at 0x%08lx.\n",
-			     descr, phys_addr);
+			  descr, phys_addr);
 		return ERROR_PTR;
 	}
-		
+
 	if ((getpagesize() - 1) & len) {
 		msg_perr("Mapping %s at 0x%08lx, unaligned size 0x%lx.\n",
-			descr, phys_addr, (unsigned long)len);
+			 descr, phys_addr, (unsigned long)len);
 	}
 
 	if ((getpagesize() - 1) & phys_addr) {
 		msg_perr("Mapping %s, 0x%lx bytes at unaligned 0x%08lx.\n",
-			descr, (unsigned long)len, phys_addr);
+			 descr, (unsigned long)len, phys_addr);
 	}
 
-	if (readonly) {
+	if (readonly)
 		virt_addr = sys_physmap_ro_cached(phys_addr, len);
-	} else {
+	else
 		virt_addr = sys_physmap_rw_uncached(phys_addr, len);
-	}
 
 	if (ERROR_PTR == virt_addr) {
 		if (NULL == descr)
 			descr = "memory";
-		msg_perr("Error accessing %s, 0x%lx bytes at 0x%08lx\n", descr, (unsigned long)len, phys_addr);
+		msg_perr("Error accessing %s, 0x%lx bytes at 0x%08lx\n", descr,
+			 (unsigned long)len, phys_addr);
 		perror(MEM_DEV " mmap failed");
 #ifdef __linux__
 		if (EINVAL == errno) {
@@ -262,8 +260,8 @@ static void *physmap_common(const char *descr, unsigned long phys_addr, size_t l
 		}
 #elif defined (__OpenBSD__)
 		msg_perr("Please set securelevel=-1 in /etc/rc.securelevel "
-			   "and reboot, or reboot into \n");
-		msg_perr("single user mode.\n");
+			 "and reboot, or reboot into\n"
+			 "single user mode.\n");
 #endif
 		if (!mayfail)
 			exit(3);
@@ -274,12 +272,14 @@ static void *physmap_common(const char *descr, unsigned long phys_addr, size_t l
 
 void *physmap(const char *descr, unsigned long phys_addr, size_t len)
 {
-	return physmap_common(descr, phys_addr, len, PHYSMAP_NOFAIL, PHYSMAP_RW);
+	return physmap_common(descr, phys_addr, len, PHYSMAP_NOFAIL,
+			      PHYSMAP_RW);
 }
 
 void *physmap_try_ro(const char *descr, unsigned long phys_addr, size_t len)
 {
-	return physmap_common(descr, phys_addr, len, PHYSMAP_MAYFAIL, PHYSMAP_RO);
+	return physmap_common(descr, phys_addr, len, PHYSMAP_MAYFAIL,
+			      PHYSMAP_RO);
 }
 
 #if defined(__i386__) || defined(__x86_64__)
@@ -288,7 +288,7 @@ void *physmap_try_ro(const char *descr, unsigned long phys_addr, size_t len)
 /*
  * Reading and writing to MSRs, however requires instructions rdmsr/wrmsr,
  * which are ring0 privileged instructions so only the kernel can do the
- * read/write.  This function, therefore, requires that the msr kernel module
+ * read/write. This function, therefore, requires that the msr kernel module
  * be loaded to access these instructions from user space using device
  * /dev/cpu/0/msr.
  */
@@ -309,7 +309,6 @@ msr_t rdmsr(int addr)
 	if (read(fd_msr, buf, 8) == 8) {
 		msr.lo = buf[0];
 		msr.hi = buf[1];
-
 		return msr;
 	}
 
@@ -341,7 +340,7 @@ int wrmsr(int addr, msr_t msr)
 		exit(1);
 	}
 
-	/* some MSRs must not be written */
+	/* Some MSRs must not be written. */
 	if (errno == EIO)
 		return -1;
 
@@ -379,7 +378,7 @@ void cleanup_cpu_msr(void)
 
 	close(fd_msr);
 
-	/* Clear MSR file descriptor */
+	/* Clear MSR file descriptor. */
 	fd_msr = -1;
 }
 #else
@@ -462,7 +461,7 @@ void cleanup_cpu_msr(void)
 
 	close(fd_msr);
 
-	/* Clear MSR file descriptor */
+	/* Clear MSR file descriptor. */
 	fd_msr = -1;
 }
 

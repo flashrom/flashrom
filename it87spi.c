@@ -93,8 +93,7 @@ void probe_superio_ite(void)
 		case 0x85:
 			msg_pdbg("Found ITE EC, ID 0x%04hx,"
 			         "Rev 0x%02x on port 0x%x.\n",
-			         s.model,
-			         sio_read(s.port, CHIP_VER_REG),
+			         s.model, sio_read(s.port, CHIP_VER_REG),
 			         s.port);
 			register_superio(s);
 			break;
@@ -106,17 +105,19 @@ void probe_superio_ite(void)
 
 static int it8716f_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 			const unsigned char *writearr, unsigned char *readarr);
-static int it8716f_spi_chip_read(struct flashchip *flash, uint8_t *buf, int start, int len);
-static int it8716f_spi_chip_write_256(struct flashchip *flash, uint8_t *buf, int start, int len);
+static int it8716f_spi_chip_read(struct flashchip *flash, uint8_t *buf,
+				 int start, int len);
+static int it8716f_spi_chip_write_256(struct flashchip *flash, uint8_t *buf,
+				      int start, int len);
 
 static const struct spi_programmer spi_programmer_it87xx = {
-	.type = SPI_CONTROLLER_IT87XX,
-	.max_data_read = MAX_DATA_UNSPECIFIED,
-	.max_data_write = MAX_DATA_UNSPECIFIED,
-	.command = it8716f_spi_send_command,
-	.multicommand = default_spi_send_multicommand,
-	.read = it8716f_spi_chip_read,
-	.write_256 = it8716f_spi_chip_write_256,
+	.type		= SPI_CONTROLLER_IT87XX,
+	.max_data_read	= MAX_DATA_UNSPECIFIED,
+	.max_data_write	= MAX_DATA_UNSPECIFIED,
+	.command	= it8716f_spi_send_command,
+	.multicommand	= default_spi_send_multicommand,
+	.read		= it8716f_spi_chip_read,
+	.write_256	= it8716f_spi_chip_write_256,
 };
 
 static uint16_t it87spi_probe(uint16_t port)
@@ -202,8 +203,7 @@ static uint16_t it87spi_probe(uint16_t port)
 
 int init_superio_ite(void)
 {
-	int i;
-	int ret = 0;
+	int i, ret = 0;
 
 	for (i = 0; i < superio_count; i++) {
 		if (superios[i].vendor != SUPERIO_VENDOR_ITE)
@@ -259,7 +259,7 @@ static int it8716f_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	} while (busy);
 	if (readcnt > 3) {
 		msg_pinfo("%s called with unsupported readcnt %i.\n",
-		       __func__, readcnt);
+			  __func__, readcnt);
 		return SPI_INVALID_LENGTH;
 	}
 	switch (writecnt) {
@@ -289,7 +289,7 @@ static int it8716f_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		break;
 	default:
 		msg_pinfo("%s called with unsupported writecnt %i.\n",
-		       __func__, writecnt);
+			  __func__, writecnt);
 		return SPI_INVALID_LENGTH;
 	}
 	/*
@@ -313,10 +313,10 @@ static int it8716f_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 }
 
 /* Page size is usually 256 bytes */
-static int it8716f_spi_page_program(struct flashchip *flash, uint8_t *buf, int start)
+static int it8716f_spi_page_program(struct flashchip *flash, uint8_t *buf,
+				    int start)
 {
-	int i;
-	int result;
+	int i, result;
 	chipaddr bios = flash->virtual_memory;
 
 	result = spi_write_enable();
@@ -325,9 +325,8 @@ static int it8716f_spi_page_program(struct flashchip *flash, uint8_t *buf, int s
 	/* FIXME: The command below seems to be redundant or wrong. */
 	OUTB(0x06, it8716f_flashport + 1);
 	OUTB(((2 + (fast_spi ? 1 : 0)) << 4), it8716f_flashport);
-	for (i = 0; i < flash->page_size; i++) {
+	for (i = 0; i < flash->page_size; i++)
 		chip_writeb(buf[i], bios + start + i);
-	}
 	OUTB(0, it8716f_flashport);
 	/* Wait until the Write-In-Progress bit is cleared.
 	 * This usually takes 1-10 ms, so wait in 1 ms steps.
@@ -341,7 +340,8 @@ static int it8716f_spi_page_program(struct flashchip *flash, uint8_t *buf, int s
  * IT8716F only allows maximum of 512 kb SPI mapped to LPC memory cycles
  * Need to read this big flash using firmware cycles 3 byte at a time.
  */
-static int it8716f_spi_chip_read(struct flashchip *flash, uint8_t *buf, int start, int len)
+static int it8716f_spi_chip_read(struct flashchip *flash, uint8_t *buf,
+				 int start, int len)
 {
 	fast_spi = 0;
 
@@ -358,7 +358,8 @@ static int it8716f_spi_chip_read(struct flashchip *flash, uint8_t *buf, int star
 	return 0;
 }
 
-static int it8716f_spi_chip_write_256(struct flashchip *flash, uint8_t *buf, int start, int len)
+static int it8716f_spi_chip_write_256(struct flashchip *flash, uint8_t *buf,
+				      int start, int len)
 {
 	/*
 	 * IT8716F only allows maximum of 512 kb SPI chip size for memory

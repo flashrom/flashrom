@@ -179,7 +179,7 @@ static const struct winbond_mux w83627hf_port2_mux[8] = {
 static const struct winbond_port w83627hf[3] = {
 	UNIMPLEMENTED_PORT,
 	{w83627hf_port2_mux, 0x08, 0, 0xF0},
-	UNIMPLEMENTED_PORT
+	UNIMPLEMENTED_PORT,
 };
 
 static const struct winbond_mux w83627ehf_port2_mux[8] = {
@@ -190,7 +190,7 @@ static const struct winbond_mux w83627ehf_port2_mux[8] = {
 	{0x2A, 0x01, 0x01},	/* or keyboard/mouse interface */
 	{0x2A, 0x01, 0x01},
 	{0x2A, 0x01, 0x01},
-	{0x2A, 0x01, 0x01}
+	{0x2A, 0x01, 0x01},
 };
 
 static const struct winbond_port w83627ehf[6] = {
@@ -199,7 +199,7 @@ static const struct winbond_port w83627ehf[6] = {
 	UNIMPLEMENTED_PORT,
 	UNIMPLEMENTED_PORT,
 	UNIMPLEMENTED_PORT,
-	UNIMPLEMENTED_PORT
+	UNIMPLEMENTED_PORT,
 };
 
 static const struct winbond_mux w83627thf_port4_mux[8] = {
@@ -210,7 +210,7 @@ static const struct winbond_mux w83627thf_port4_mux[8] = {
 	{0x2D, 0x10, 0x10},	/* or PWROK */
 	{0x2D, 0x20, 0x20},	/* or suspend LED */
 	{0x2D, 0x40, 0x40},	/* or panel switch input */
-	{0x2D, 0x80, 0x80}	/* or panel switch output */
+	{0x2D, 0x80, 0x80},	/* or panel switch output */
 };
 
 static const struct winbond_port w83627thf[5] = {
@@ -218,7 +218,7 @@ static const struct winbond_port w83627thf[5] = {
 	UNIMPLEMENTED_PORT,	/* GPIO2 */
 	UNIMPLEMENTED_PORT,	/* GPIO3 */
 	{w83627thf_port4_mux, 0x09, 1, 0xF4},
-	UNIMPLEMENTED_PORT	/* GPIO5 */
+	UNIMPLEMENTED_PORT,	/* GPIO5 */
 };
 
 static const struct winbond_chip winbond_chips[] = {
@@ -561,7 +561,8 @@ static int pc8736x_gpio_set(uint8_t chipid, uint8_t gpio, int raise)
 
 	id = sio_read(0x2E, 0x20);
 	if (id != chipid) {
-		msg_perr("PC8736x: unexpected ID %02x (expected %02x)\n", id, chipid);
+		msg_perr("PC8736x: unexpected ID %02x (expected %02x)\n",
+			 id, chipid);
 		return -1;
 	}
 
@@ -811,13 +812,13 @@ static int board_shuttle_fn25(void)
 {
 	struct pci_dev *dev;
 
-	dev = pci_dev_find(0x10DE, 0x0050);	/* NVIDIA CK804 ISA Bridge. */
+	dev = pci_dev_find(0x10DE, 0x0050);	/* NVIDIA CK804 ISA bridge. */
 	if (!dev) {
 		msg_perr("\nERROR: NVIDIA nForce4 ISA bridge not found.\n");
 		return -1;
 	}
 
-	/* one of those bits seems to be connected to TBL#, but -ENOINFO. */
+	/* One of those bits seems to be connected to TBL#, but -ENOINFO. */
 	pci_write_byte(dev, 0x92, 0);
 
 	return 0;
@@ -851,8 +852,7 @@ static int board_ecs_geforce6100sm_m(void)
 static int nvidia_mcp_gpio_set(int gpio, int raise)
 {
 	struct pci_dev *dev;
-	uint16_t base;
-	uint16_t devclass;
+	uint16_t base, devclass;
 	uint8_t tmp;
 
 	if ((gpio < 0) || (gpio >= 0x40)) {
@@ -860,7 +860,7 @@ static int nvidia_mcp_gpio_set(int gpio, int raise)
 		return -1;
 	}
 
-	/* First, check the ISA Bridge */
+	/* First, check the ISA bridge */
 	dev = pci_dev_find_vendorclass(0x10DE, 0x0601);
 	switch (dev->device_id) {
 	case 0x0030: /* CK804 */
@@ -1092,7 +1092,7 @@ static int board_artecgroup_dbe6x(void)
 
 /*
  * Suited for:
- *  - Asus A8AE-LE (Codename AmberineM; used in Compaq Presario 061)
+ *  - ASUS A8AE-LE (Codename AmberineM; used in Compaq Presario 061)
  * Datasheet(s) used:
  *  - AMD document 43009 "AMD SB700/710/750 Register Reference Guide" rev. 1.00
  */
@@ -1101,7 +1101,7 @@ static int amd_sbxxx_gpio9_raise(void)
 	struct pci_dev *dev;
 	uint32_t reg;
 
-	dev = pci_dev_find(0x1002, 0x4372); /* AMD SMBus Controller */
+	dev = pci_dev_find(0x1002, 0x4372); /* AMD SMBus controller */
 	if (!dev) {
 		msg_perr("\nERROR: AMD SMBus Controller (0x4372) not found.\n");
 		return -1;
@@ -1128,42 +1128,42 @@ static int intel_piix4_gpo_set(unsigned int gpo, int raise)
 	struct pci_dev *dev;
 	uint32_t tmp, base;
 
-	static const uint32_t nonmuxed_gpos  = 0x58000101; /* GPPO {0,8,27,28,30} are always available */
+	/* GPPO {0,8,27,28,30} are always available */
+	static const uint32_t nonmuxed_gpos  = 0x58000101;
 
 	static const struct {unsigned int reg, mask, value; } piix4_gpo[] = {
-	  {0},
-	  {0xB0, 0x0001, 0x0000},        /* GPO1... */
-	  {0xB0, 0x0001, 0x0000},
-	  {0xB0, 0x0001, 0x0000},
-	  {0xB0, 0x0001, 0x0000},
-	  {0xB0, 0x0001, 0x0000},
-	  {0xB0, 0x0001, 0x0000},
-	  {0xB0, 0x0001, 0x0000},        /* ...GPO7: GENCFG bit 0 */
-	  {0},
-	  {0xB0, 0x0100, 0x0000},        /* GPO9:  GENCFG bit 8 */
-	  {0xB0, 0x0200, 0x0000},        /* GPO10: GENCFG bit 9 */
-	  {0xB0, 0x0400, 0x0000},        /* GPO11: GENCFG bit 10 */
-	  {0x4E, 0x0100, 0x0000},        /* GPO12... */
-	  {0x4E, 0x0100, 0x0000},
-	  {0x4E, 0x0100, 0x0000},        /* ...GPO14: XBCS bit 8 */
-	  {0xB2, 0x0002, 0x0002},        /* GPO15... */
-	  {0xB2, 0x0002, 0x0002},        /* ...GPO16: GENCFG bit 17 */
-	  {0xB2, 0x0004, 0x0004},        /* GPO17: GENCFG bit 18 */
-	  {0xB2, 0x0008, 0x0008},        /* GPO18: GENCFG bit 19 */
-	  {0xB2, 0x0010, 0x0010},        /* GPO19: GENCFG bit 20 */
-	  {0xB2, 0x0020, 0x0020},        /* GPO20: GENCFG bit 21 */
-	  {0xB2, 0x0040, 0x0040},        /* GPO21: GENCFG bit 22 */
-	  {0xB2, 0x1000, 0x1000},        /* GPO22... */
-	  {0xB2, 0x1000, 0x1000},        /* ...GPO23: GENCFG bit 28 */
-	  {0xB2, 0x2000, 0x2000},        /* GPO24: GENCFG bit 29 */
-	  {0xB2, 0x4000, 0x4000},        /* GPO25: GENCFG bit 30 */
-	  {0xB2, 0x8000, 0x8000},        /* GPO26: GENCFG bit 31 */
-	  {0},
-	  {0},
-	  {0x4E, 0x0100, 0x0000},        /* ...GPO29: XBCS bit 8 */
-	  {0}
+		{0},
+		{0xB0, 0x0001, 0x0000},        /* GPO1... */
+		{0xB0, 0x0001, 0x0000},
+		{0xB0, 0x0001, 0x0000},
+		{0xB0, 0x0001, 0x0000},
+		{0xB0, 0x0001, 0x0000},
+		{0xB0, 0x0001, 0x0000},
+		{0xB0, 0x0001, 0x0000},        /* ...GPO7: GENCFG bit 0 */
+		{0},
+		{0xB0, 0x0100, 0x0000},        /* GPO9:  GENCFG bit 8 */
+		{0xB0, 0x0200, 0x0000},        /* GPO10: GENCFG bit 9 */
+		{0xB0, 0x0400, 0x0000},        /* GPO11: GENCFG bit 10 */
+		{0x4E, 0x0100, 0x0000},        /* GPO12... */
+		{0x4E, 0x0100, 0x0000},
+		{0x4E, 0x0100, 0x0000},        /* ...GPO14: XBCS bit 8 */
+		{0xB2, 0x0002, 0x0002},        /* GPO15... */
+		{0xB2, 0x0002, 0x0002},        /* ...GPO16: GENCFG bit 17 */
+		{0xB2, 0x0004, 0x0004},        /* GPO17: GENCFG bit 18 */
+		{0xB2, 0x0008, 0x0008},        /* GPO18: GENCFG bit 19 */
+		{0xB2, 0x0010, 0x0010},        /* GPO19: GENCFG bit 20 */
+		{0xB2, 0x0020, 0x0020},        /* GPO20: GENCFG bit 21 */
+		{0xB2, 0x0040, 0x0040},        /* GPO21: GENCFG bit 22 */
+		{0xB2, 0x1000, 0x1000},        /* GPO22... */
+		{0xB2, 0x1000, 0x1000},        /* ...GPO23: GENCFG bit 28 */
+		{0xB2, 0x2000, 0x2000},        /* GPO24: GENCFG bit 29 */
+		{0xB2, 0x4000, 0x4000},        /* GPO25: GENCFG bit 30 */
+		{0xB2, 0x8000, 0x8000},        /* GPO26: GENCFG bit 31 */
+		{0},
+		{0},
+		{0x4E, 0x0100, 0x0000},        /* ...GPO29: XBCS bit 8 */
+		{0}
 	};
-
 
 	dev = pci_dev_find(0x8086, 0x7110);	/* Intel PIIX4 ISA bridge */
 	if (!dev) {
@@ -1177,10 +1177,12 @@ static int intel_piix4_gpo_set(unsigned int gpo, int raise)
 		return -1;
 	}
 
-	if ( (((1 << gpo) & nonmuxed_gpos) == 0) &&
-	     (pci_read_word(dev, piix4_gpo[gpo].reg) & piix4_gpo[gpo].mask) != piix4_gpo[gpo].value ) {
-	  msg_perr("\nERROR: PIIX4 GPO%d not programmed for output.\n", gpo);
-	  return -1;
+	if ((((1 << gpo) & nonmuxed_gpos) == 0) &&
+	     (pci_read_word(dev, piix4_gpo[gpo].reg)
+	     & piix4_gpo[gpo].mask) != piix4_gpo[gpo].value) {
+		msg_perr("\nERROR: PIIX4 GPO%d not programmed for output.\n",
+			 gpo);
+		return -1;
 	}
 
 	dev = pci_dev_find(0x8086, 0x7113);	/* Intel PIIX4 PM */
@@ -1315,7 +1317,7 @@ static int intel_ich_gpio_set(int gpio, int raise)
 		/* libpci before version 2.2.4 does not store class info. */
 		device_class = pci_read_word(dev, PCI_CLASS_DEVICE);
 		if ((dev->vendor_id == 0x8086) &&
-		    (device_class == 0x0601)) { /* ISA Bridge */
+		    (device_class == 0x0601)) { /* ISA bridge */
 			/* Is this device in our list? */
 			for (i = 0; intel_ich_gpio_table[i].id; i++)
 				if (dev->device_id == intel_ich_gpio_table[i].id)
@@ -1327,7 +1329,7 @@ static int intel_ich_gpio_set(int gpio, int raise)
 	}
 
 	if (!dev) {
-		msg_perr("\nERROR: No Known Intel LPC Bridge found.\n");
+		msg_perr("\nERROR: No known Intel LPC bridge found.\n");
 		return -1;
 	}
 
@@ -1347,13 +1349,13 @@ static int intel_ich_gpio_set(int gpio, int raise)
 		allowed = (intel_ich_gpio_table[i].bank2 >> (gpio - 64)) & 0x01;
 
 	if (!allowed) {
-		msg_perr("\nERROR: This Intel LPC Bridge does not allow"
-			" setting GPIO%02d\n", gpio);
+		msg_perr("\nERROR: This Intel LPC bridge does not allow"
+			 " setting GPIO%02d\n", gpio);
 		return -1;
 	}
 
-	msg_pdbg("\nIntel ICH LPC Bridge: %sing GPIO%02d.\n",
-	       raise ? "Rais" : "Dropp", gpio);
+	msg_pdbg("\nIntel ICH LPC bridge: %sing GPIO%02d.\n",
+		 raise ? "Rais" : "Dropp", gpio);
 
 	if (gpio < 32) {
 		/* Set line to GPIO. */
@@ -1371,7 +1373,7 @@ static int intel_ich_gpio_set(int gpio, int raise)
 		if (dev->device_id > 0x2800) {
 			tmp = INL(base);
 			if (!(tmp & (1 << gpio))) {
-				msg_perr("\nERROR: This Intel LPC Bridge"
+				msg_perr("\nERROR: This Intel LPC bridge"
 					" does not allow setting GPIO%02d\n",
 					gpio);
 				return -1;
@@ -1403,7 +1405,7 @@ static int intel_ich_gpio_set(int gpio, int raise)
 		if (dev->device_id > 0x2800) {
 			tmp = INL(base + 30);
 			if (!(tmp & (1 << gpio))) {
-				msg_perr("\nERROR: This Intel LPC Bridge"
+				msg_perr("\nERROR: This Intel LPC bridge"
 					" does not allow setting GPIO%02d\n",
 					gpio + 32);
 				return -1;
@@ -1432,7 +1434,7 @@ static int intel_ich_gpio_set(int gpio, int raise)
 
 		tmp = INL(base + 40);
 		if (!(tmp & (1 << gpio))) {
-			msg_perr("\nERROR: This Intel LPC Bridge does "
+			msg_perr("\nERROR: This Intel LPC bridge does "
 				"not allow setting GPIO%02d\n", gpio + 64);
 			return -1;
 		}
@@ -1607,10 +1609,10 @@ static int board_aopen_i975xa_ydg(void)
 {
 	int ret;
 
-	/* vendor BIOS ends up in LDN6... maybe the board enable is wrong,
+	/* Vendor BIOS ends up in LDN6... maybe the board enable is wrong,
 	 * or perhaps it's not needed at all?
-	 * the regs it tries to touch are 0xF0, 0xF1, 0xF2 which means if it
-	 * were in the right LDN, it would have to be GPIO1 or GPIO3
+	 * The regs it tries to touch are 0xF0, 0xF1, 0xF2 which means if it
+	 * were in the right LDN, it would have to be GPIO1 or GPIO3.
 	 */
 /*
 	ret = winbond_gpio_set(0x2e, WINBOND_W83627EHF_ID, x, 0)
@@ -1659,10 +1661,9 @@ static int board_kontron_986lcd_m(void)
 static int via_apollo_gpo_set(int gpio, int raise)
 {
 	struct pci_dev *dev;
-	uint32_t base;
-	uint32_t tmp;
+	uint32_t base, tmp;
 
-	/* VT82C686 Power management */
+	/* VT82C686 power management */
 	dev = pci_dev_find(0x1106, 0x3057);
 	if (!dev) {
 		msg_perr("\nERROR: VT82C686 PM device not found.\n");
@@ -1670,24 +1671,23 @@ static int via_apollo_gpo_set(int gpio, int raise)
 	}
 
 	msg_pdbg("\nVIA Apollo ACPI: %sing GPIO%02d.\n",
-	       raise ? "Rais" : "Dropp", gpio);
+		 raise ? "Rais" : "Dropp", gpio);
 
-	/* select GPO function on multiplexed pins */
+	/* Select GPO function on multiplexed pins. */
 	tmp = pci_read_byte(dev, 0x54);
-	switch(gpio)
-	{
-		case 0:
-			tmp &= ~0x03;
-			break;
-		case 1:
-			tmp |= 0x04;
-			break;
-		case 2:
-			tmp |= 0x08;
-			break;
-		case 3:
-			tmp |= 0x10;
-			break;
+	switch (gpio) {
+	case 0:
+		tmp &= ~0x03;
+		break;
+	case 1:
+		tmp |= 0x04;
+		break;
+	case 2:
+		tmp |= 0x08;
+		break;
+	case 3:
+		tmp |= 0x10;
+		break;
 	}
 	pci_write_byte(dev, 0x54, tmp);
 
@@ -1880,8 +1880,8 @@ static int it8712f_gpio_set(unsigned int line, int raise)
 	/* Check line */
 	if ((port > 4) || /* also catches unsigned -1 */
 	    ((port < 4) && (line > 7)) || ((port == 4) && (line > 5))) {
-	    msg_perr("\nERROR: Unsupported IT8712F GPIO line %02d.\n", line);
-	    return -1;
+		msg_perr("\nERROR: Unsupported IT8712F GPIO line %02d.\n", line);
+		return -1;
 	}
 
 	/* Find the IT8712F. */
@@ -1906,7 +1906,7 @@ static int it8712f_gpio_set(unsigned int line, int raise)
 		return -1;
 	}
 
-	/* set GPIO. */
+	/* Set GPIO. */
 	tmp = INB(base + port);
 	if (raise)
 	    tmp |= 1 << line;
@@ -2091,8 +2091,8 @@ const struct board_pciid_enable board_pciid_enables[] = {
  * Match boards on coreboot table gathered vendor and part name.
  * Require main PCI IDs to match too as extra safety.
  */
-static const struct board_pciid_enable *board_match_coreboot_name(const char *vendor,
-							    const char *part)
+static const struct board_pciid_enable *board_match_coreboot_name(
+					const char *vendor, const char *part)
 {
 	const struct board_pciid_enable *board = board_pciid_enables;
 	const struct board_pciid_enable *partmatch = NULL;
@@ -2119,7 +2119,7 @@ static const struct board_pciid_enable *board_match_coreboot_name(const char *ve
 			/* a second entry has a matching part name */
 			msg_pinfo("AMBIGUOUS BOARD NAME: %s\n", part);
 			msg_pinfo("At least vendors '%s' and '%s' match.\n",
-			       partmatch->lb_vendor, board->lb_vendor);
+				  partmatch->lb_vendor, board->lb_vendor);
 			msg_perr("Please use the full -m vendor:part syntax.\n");
 			return NULL;
 		}
@@ -2135,7 +2135,7 @@ static const struct board_pciid_enable *board_match_coreboot_name(const char *ve
 		 * expected to fix flashrom, too.
 		 */
 		msg_perr("\nUnknown vendor:board from -m option: %s:%s\n\n",
-		       vendor, part);
+			 vendor, part);
 	}
 	return NULL;
 }
@@ -2144,7 +2144,8 @@ static const struct board_pciid_enable *board_match_coreboot_name(const char *ve
  * Match boards on PCI IDs and subsystem IDs.
  * Second set of IDs can be main only or missing completely.
  */
-const static struct board_pciid_enable *board_match_pci_card_ids(enum board_match_phase phase)
+const static struct board_pciid_enable *board_match_pci_card_ids(
+						enum board_match_phase phase)
 {
 	const struct board_pciid_enable *board = board_pciid_enables;
 
@@ -2177,8 +2178,8 @@ const static struct board_pciid_enable *board_match_pci_card_ids(enum board_matc
 		if (board->dmi_pattern) {
 			if (!has_dmi_support) {
 				msg_perr("WARNING: Can't autodetect %s %s,"
-				       " DMI info unavailable.\n",
-				       board->vendor_name, board->board_name);
+					 " DMI info unavailable.\n",
+					 board->vendor_name, board->board_name);
 				continue;
 			} else {
 				if (!dmi_match(board->dmi_pattern))
@@ -2202,12 +2203,12 @@ static int unsafe_board_handler(const struct board_pciid_enable *board)
 
 	if (!force_boardenable) {
 		msg_pinfo("WARNING: Your mainboard is %s %s, but the mainboard-specific\n"
-		       "code has not been tested, and thus will not be executed by default.\n"
-		       "Depending on your hardware environment, erasing, writing or even probing\n"
-		       "can fail without running the board specific code.\n\n"
-		       "Please see the man page (section PROGRAMMER SPECIFIC INFO, subsection\n"
-		       "\"internal programmer\") for details.\n",
-		       board->vendor_name, board->board_name);
+			  "code has not been tested, and thus will not be executed by default.\n"
+			  "Depending on your hardware environment, erasing, writing or even probing\n"
+			  "can fail without running the board specific code.\n\n"
+			  "Please see the man page (section PROGRAMMER SPECIFIC INFO, subsection\n"
+			  "\"internal programmer\") for details.\n",
+			  board->vendor_name, board->board_name);
 		return 1;
 	}
 	msg_pinfo("NOTE: Running an untested board enable procedure.\n"

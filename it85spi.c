@@ -90,14 +90,10 @@ static int it85xx_scratch_rom_reenter = 0;
  * Returns: 0 -- the expected value has shown.
  *          1 -- timeout reached.
  */
-static int wait_for(
-		const unsigned int mask,
-		const unsigned int expected_value,
-		const int timeout,  /* in usec */
-		const char* error_message,
-		const char* function_name,
-		const int lineno
-) {
+static int wait_for(const unsigned int mask, const unsigned int expected_value,
+		const int timeout /* in usec */, const char *error_message,
+		const char *function_name, const int lineno)
+{
 	int time_passed;
 
 	for (time_passed = 0;; ++time_passed) {
@@ -112,24 +108,23 @@ static int wait_for(
 	return 1;
 }
 
-/* IT8502 employs a scratch ram when flash is being updated. Call the following
+/* IT8502 employs a scratch RAM when flash is being updated. Call the following
  * two functions before/after flash erase/program. */
-void it85xx_enter_scratch_rom()
+void it85xx_enter_scratch_rom(void)
 {
-	int ret;
-	int tries;
+	int ret, tries;
 
 	msg_pdbg("%s():%d was called ...\n", __FUNCTION__, __LINE__);
-	if (it85xx_scratch_rom_reenter > 0) return;
+	if (it85xx_scratch_rom_reenter > 0)
+		return;
 
 #if 0
 	/* FIXME: this a workaround for the bug that SMBus signal would
 	 *        interfere the EC firmware update. Should be removed if
 	 *        we find out the root cause. */
 	ret = system("stop powerd >&2");
-	if (ret) {
+	if (ret)
 		msg_perr("Cannot stop powerd.\n");
-	}
 #endif
 
 	for (tries = 0; tries < MAX_TRY; ++tries) {
@@ -173,7 +168,7 @@ void it85xx_enter_scratch_rom()
 	}
 }
 
-void it85xx_exit_scratch_rom()
+void it85xx_exit_scratch_rom(void)
 {
 #if 0
 	int ret;
@@ -181,7 +176,8 @@ void it85xx_exit_scratch_rom()
 	int tries;
 
 	msg_pdbg("%s():%d was called ...\n", __FUNCTION__, __LINE__);
-	if (it85xx_scratch_rom_reenter <= 0) return;
+	if (it85xx_scratch_rom_reenter <= 0)
+		return;
 
 	for (tries = 0; tries < MAX_TRY; ++tries) {
 		/* Wait until IBF (input buffer) is not full. */
@@ -220,9 +216,8 @@ void it85xx_exit_scratch_rom()
 	 *        interfere the EC firmware update. Should be removed if
 	 *        we find out the root cause. */
 	ret = system("start powerd >&2");
-	if (ret) {
+	if (ret)
 		msg_perr("Cannot start powerd again.\n");
-	}
 #endif
 }
 
@@ -245,7 +240,7 @@ static int it85xx_spi_common_init(struct superio s)
 		return 1;
 
 #ifdef LPC_IO
-	/* Get LPCPNP of SHM. That's big-endian */
+	/* Get LPCPNP of SHM. That's big-endian. */
 	sio_write(s.port, LDNSEL, 0x0F); /* Set LDN to SHM (0x0F) */
 	shm_io_base = (sio_read(s.port, SHM_IO_BAR0) << 8) +
 	              sio_read(s.port, SHM_IO_BAR1);
@@ -255,8 +250,8 @@ static int it85xx_spi_common_init(struct superio s)
 	/* These pointers are not used directly. They will be send to EC's
 	 * register for indirect access. */
 	base = 0xFFFFF000;
-	ce_high = ((unsigned char*)base) + 0xE00;  /* 0xFFFFFE00 */
-	ce_low = ((unsigned char*)base) + 0xD00;  /* 0xFFFFFD00 */
+	ce_high = ((unsigned char *)base) + 0xE00;  /* 0xFFFFFE00 */
+	ce_low = ((unsigned char *)base) + 0xD00;  /* 0xFFFFFD00 */
 
 	/* pre-set indirect-access registers since in most of cases they are
 	 * 0xFFFFxx00. */
@@ -269,8 +264,8 @@ static int it85xx_spi_common_init(struct superio s)
 						     0xFFFFF000, 0x1000);
 	msg_pdbg("%s():%d base=0x%08x\n", __func__, __LINE__,
 	         (unsigned int)base);
-	ce_high = (unsigned char*)(base + 0xE00);  /* 0xFFFFFE00 */
-	ce_low = (unsigned char*)(base + 0xD00);  /* 0xFFFFFD00 */
+	ce_high = (unsigned char *)(base + 0xE00);  /* 0xFFFFFE00 */
+	ce_low = (unsigned char *)(base + 0xD00);  /* 0xFFFFFD00 */
 #endif
 
 	return 0;
@@ -280,13 +275,13 @@ static int it85xx_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 			const unsigned char *writearr, unsigned char *readarr);
 
 static const struct spi_programmer spi_programmer_it85xx = {
-	.type = SPI_CONTROLLER_IT85XX,
-	.max_data_read = 64,
-	.max_data_write = 64,
-	.command = it85xx_spi_send_command,
-	.multicommand = default_spi_send_multicommand,
-	.read = default_spi_read,
-	.write_256 = default_spi_write_256,
+	.type		= SPI_CONTROLLER_IT85XX,
+	.max_data_read	= 64,
+	.max_data_write	= 64,
+	.command	= it85xx_spi_send_command,
+	.multicommand	= default_spi_send_multicommand,
+	.read		= default_spi_read,
+	.write_256	= default_spi_write_256,
 };
 
 int it85xx_spi_init(struct superio s)
@@ -305,7 +300,7 @@ int it85xx_spi_init(struct superio s)
 		if (buses_supported & BUS_FWH)
 			msg_pdbg("Overriding chipset SPI with IT85 FWH|SPI.\n");
 		/* Really leave FWH enabled? */
-		/* Set this as spi controller. */
+		/* Set this as SPI controller. */
 		register_spi_programmer(&spi_programmer_it85xx);
 	}
 	return ret;
@@ -324,7 +319,7 @@ static int it85xx_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	int i;
 
 	it85xx_enter_scratch_rom();
-	/* exit scratch rom ONLY when programmer shuts down. Otherwise, the
+	/* exit scratch ROM ONLY when programmer shuts down. Otherwise, the
 	 * temporary flash state may halt EC. */
 
 #ifdef LPC_IO
