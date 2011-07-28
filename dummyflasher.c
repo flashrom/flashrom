@@ -62,16 +62,17 @@ static int spi_write_256_chunksize = 256;
 
 static int dummy_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		      const unsigned char *writearr, unsigned char *readarr);
-static int dummy_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len);
+static int dummy_spi_write_256(struct flashchip *flash, uint8_t *buf,
+			       int start, int len);
 
 static const struct spi_programmer spi_programmer_dummyflasher = {
-	.type = SPI_CONTROLLER_DUMMY,
-	.max_data_read = MAX_DATA_READ_UNLIMITED,
-	.max_data_write = MAX_DATA_UNSPECIFIED,
-	.command = dummy_spi_send_command,
-	.multicommand = default_spi_send_multicommand,
-	.read = default_spi_read,
-	.write_256 = dummy_spi_write_256,
+	.type		= SPI_CONTROLLER_DUMMY,
+	.max_data_read	= MAX_DATA_READ_UNLIMITED,
+	.max_data_write	= MAX_DATA_UNSPECIFIED,
+	.command	= dummy_spi_send_command,
+	.multicommand	= default_spi_send_multicommand,
+	.read		= default_spi_read,
+	.write_256	= dummy_spi_write_256,
 };
 
 static int dummy_shutdown(void *data)
@@ -520,14 +521,14 @@ static int dummy_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	}
 #endif
 	msg_pspew(" reading %u bytes:", readcnt);
-	for (i = 0; i < readcnt; i++) {
+	for (i = 0; i < readcnt; i++)
 		msg_pspew(" 0x%02x", readarr[i]);
-	}
 	msg_pspew("\n");
 	return 0;
 }
 
-static int dummy_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len)
+static int dummy_spi_write_256(struct flashchip *flash, uint8_t *buf,
+			       int start, int len)
 {
 	return spi_write_chunked(flash, buf, start, len,
 				 spi_write_256_chunksize);

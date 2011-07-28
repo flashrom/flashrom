@@ -362,7 +362,7 @@ static uint8_t lookup_spi_type(uint8_t opcode)
 {
 	int a;
 
-	for (a = 0; a < sizeof(POSSIBLE_OPCODES)/sizeof(POSSIBLE_OPCODES[0]); a++) {
+	for (a = 0; a < ARRAY_SIZE(POSSIBLE_OPCODES); a++) {
 		if (POSSIBLE_OPCODES[a].opcode == opcode)
 			return POSSIBLE_OPCODES[a].spi_type;
 	}

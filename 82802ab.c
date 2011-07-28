@@ -29,7 +29,6 @@
 #include "flash.h"
 #include "chipdrivers.h"
 
-// I need that Berkeley bit-map printer
 void print_status_82802ab(uint8_t status)
 {
 	msg_cdbg("%s", status & 0x80 ? "Ready:" : "Busy:");
@@ -44,8 +43,7 @@ void print_status_82802ab(uint8_t status)
 int probe_82802ab(struct flashchip *flash)
 {
 	chipaddr bios = flash->virtual_memory;
-	uint8_t id1, id2;
-	uint8_t flashcontent1, flashcontent2;
+	uint8_t id1, id2, flashcontent1, flashcontent2;
 	int shifted = (flash->feature_bits & FEATURE_ADDR_SHIFTED) != 0;
 
 	/* Reset to get a clean state */
@@ -69,7 +67,10 @@ int probe_82802ab(struct flashchip *flash)
 	if (!oddparity(id1))
 		msg_cdbg(", id1 parity violation");
 
-	/* Read the product ID location again. We should now see normal flash contents. */
+	/*
+	 * Read the product ID location again. We should now see normal
+	 * flash contents.
+	 */
 	flashcontent1 = chip_readb(bios + (0x00 << shifted));
 	flashcontent2 = chip_readb(bios + (0x01 << shifted));
 
@@ -112,14 +113,13 @@ int unlock_82802ab(struct flashchip *flash)
 	//chipaddr wrprotect = flash->virtual_registers + page + 2;
 
 	for (i = 0; i < flash->total_size * 1024; i+= flash->page_size)
-	{
 		chip_writeb(0, flash->virtual_registers + i + 2);
-	}
 
 	return 0;
 }
 
-int erase_block_82802ab(struct flashchip *flash, unsigned int page, unsigned int pagesize)
+int erase_block_82802ab(struct flashchip *flash, unsigned int page,
+			unsigned int pagesize)
 {
 	chipaddr bios = flash->virtual_memory;
 	uint8_t status;
@@ -178,7 +178,7 @@ int unlock_28f004s5(struct flashchip *flash)
 		msg_cdbg("unlocked!\n");
 		can_unlock = 1;
 	}
-	
+
 	/* Read block lock-bits */
 	for (i = 0; i < flash->total_size * 1024; i+= (64 * 1024)) {
 		bcfg = chip_readb(bios + i + 2); // read block lock config

@@ -71,7 +71,7 @@ static int current_led_status = -1;
 static int dediprog_set_leds(int leds)
 {
 	int ret, target_leds;
-	
+
 	if (leds < 0 || leds > 7)
 		leds = 0; // Bogus value, enable all LEDs
 
@@ -92,9 +92,11 @@ static int dediprog_set_leds(int leds)
 		target_leds = leds;
 	}
 
-	ret = usb_control_msg(dediprog_handle, 0x42, 0x07, 0x09, target_leds, NULL, 0x0, DEFAULT_TIMEOUT);
+	ret = usb_control_msg(dediprog_handle, 0x42, 0x07, 0x09, target_leds,
+			      NULL, 0x0, DEFAULT_TIMEOUT);
 	if (ret != 0x0) {
-		msg_perr("Command Set LED 0x%x failed (%s)!\n", leds, usb_strerror());
+		msg_perr("Command Set LED 0x%x failed (%s)!\n",
+			 leds, usb_strerror());
 		return 1;
 	}
 
@@ -129,9 +131,11 @@ static int dediprog_set_spi_voltage(int millivolt)
 	msg_pdbg("Setting SPI voltage to %u.%03u V\n", millivolt / 1000,
 		 millivolt % 1000);
 
-	ret = usb_control_msg(dediprog_handle, 0x42, 0x9, voltage_selector, 0xff, NULL, 0x0, DEFAULT_TIMEOUT);
+	ret = usb_control_msg(dediprog_handle, 0x42, 0x9, voltage_selector,
+			      0xff, NULL, 0x0, DEFAULT_TIMEOUT);
 	if (ret != 0x0) {
-		msg_perr("Command Set SPI Voltage 0x%x failed!\n", voltage_selector);
+		msg_perr("Command Set SPI Voltage 0x%x failed!\n",
+			 voltage_selector);
 		return 1;
 	}
 	return 0;
@@ -186,7 +190,8 @@ static int dediprog_set_spi_speed(uint16_t speed)
 	}
 	msg_pdbg("Setting SPI speed to %u kHz\n", khz);
 
-	ret = usb_control_msg(dediprog_handle, 0x42, 0x61, speed, 0xff, NULL, 0x0, DEFAULT_TIMEOUT);
+	ret = usb_control_msg(dediprog_handle, 0x42, 0x61, speed, 0xff, NULL,
+			      0x0, DEFAULT_TIMEOUT);
 	if (ret != 0x0) {
 		msg_perr("Command Set SPI Speed 0x%x failed!\n", speed);
 		return 1;
@@ -248,7 +253,8 @@ static int dediprog_spi_bulk_read(struct flashchip *flash, uint8_t *buf,
 	return 0;
 }
 
-static int dediprog_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
+static int dediprog_spi_read(struct flashchip *flash, uint8_t *buf, int start,
+			     int len)
 {
 	int ret;
 	/* chunksize must be 512, other sizes will NOT work at all. */
@@ -293,7 +299,8 @@ static int dediprog_spi_read(struct flashchip *flash, uint8_t *buf, int start, i
 	return 0;
 }
 
-static int dediprog_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len)
+static int dediprog_spi_write_256(struct flashchip *flash, uint8_t *buf,
+				  int start, int len)
 {
 	int ret;
 
@@ -327,7 +334,9 @@ static int dediprog_spi_send_command(unsigned int writecnt, unsigned int readcnt
 		return 1;
 	}
 	
-	ret = usb_control_msg(dediprog_handle, 0x42, 0x1, 0xff, readcnt ? 0x1 : 0x0, (char *)writearr, writecnt, DEFAULT_TIMEOUT);
+	ret = usb_control_msg(dediprog_handle, 0x42, 0x1, 0xff,
+			      readcnt ? 0x1 : 0x0, (char *)writearr, writecnt,
+			      DEFAULT_TIMEOUT);
 	if (ret != writecnt) {
 		msg_perr("Send SPI failed, expected %i, got %i %s!\n",
 			 writecnt, ret, usb_strerror());
@@ -336,7 +345,8 @@ static int dediprog_spi_send_command(unsigned int writecnt, unsigned int readcnt
 	if (!readcnt)
 		return 0;
 	memset(readarr, 0, readcnt);
-	ret = usb_control_msg(dediprog_handle, 0xc2, 0x01, 0xbb8, 0x0000, (char *)readarr, readcnt, DEFAULT_TIMEOUT);
+	ret = usb_control_msg(dediprog_handle, 0xc2, 0x01, 0xbb8, 0x0000,
+			     (char *)readarr, readcnt, DEFAULT_TIMEOUT);
 	if (ret != readcnt) {
 		msg_perr("Receive SPI failed, expected %i, got %i %s!\n",
 			 readcnt, ret, usb_strerror());
@@ -353,7 +363,8 @@ static int dediprog_check_devicestring(void)
 
 	/* Command Prepare Receive Device String. */
 	memset(buf, 0, sizeof(buf));
-	ret = usb_control_msg(dediprog_handle, 0xc3, 0x7, 0x0, 0xef03, buf, 0x1, DEFAULT_TIMEOUT);
+	ret = usb_control_msg(dediprog_handle, 0xc3, 0x7, 0x0, 0xef03, buf,
+			      0x1, DEFAULT_TIMEOUT);
 	/* The char casting is needed to stop gcc complaining about an always true comparison. */
 	if ((ret != 0x1) || (buf[0] != (char)0xff)) {
 		msg_perr("Unexpected response to Command Prepare Receive Device"
@@ -362,7 +373,8 @@ static int dediprog_check_devicestring(void)
 	}
 	/* Command Receive Device String. */
 	memset(buf, 0, sizeof(buf));
-	ret = usb_control_msg(dediprog_handle, 0xc2, 0x8, 0xff, 0xff, buf, 0x10, DEFAULT_TIMEOUT);
+	ret = usb_control_msg(dediprog_handle, 0xc2, 0x8, 0xff, 0xff, buf,
+			      0x10, DEFAULT_TIMEOUT);
 	if (ret != 0x10) {
 		msg_perr("Incomplete/failed Command Receive Device String!\n");
 		return 1;
@@ -397,7 +409,8 @@ static int dediprog_command_a(void)
 	char buf[0x1];
 
 	memset(buf, 0, sizeof(buf));
-	ret = usb_control_msg(dediprog_handle, 0xc3, 0xb, 0x0, 0x0, buf, 0x1, DEFAULT_TIMEOUT);
+	ret = usb_control_msg(dediprog_handle, 0xc3, 0xb, 0x0, 0x0, buf,
+			      0x1, DEFAULT_TIMEOUT);
 	if (ret < 0) {
 		msg_perr("Command A failed (%s)!\n", usb_strerror());
 		return 1;
@@ -420,7 +433,8 @@ static int dediprog_command_b(void)
 	char buf[0x3];
 
 	memset(buf, 0, sizeof(buf));
-	ret = usb_control_msg(dediprog_handle, 0xc3, 0x7, 0x0, 0xef00, buf, 0x3, DEFAULT_TIMEOUT);
+	ret = usb_control_msg(dediprog_handle, 0xc3, 0x7, 0x0, 0xef00, buf,
+			      0x3, DEFAULT_TIMEOUT);
 	if (ret < 0) {
 		msg_perr("Command B failed (%s)!\n", usb_strerror());
 		return 1;
@@ -444,7 +458,8 @@ static int dediprog_command_c(void)
 {
 	int ret;
 
-	ret = usb_control_msg(dediprog_handle, 0x42, 0x4, 0x0, 0x0, NULL, 0x0, DEFAULT_TIMEOUT);
+	ret = usb_control_msg(dediprog_handle, 0x42, 0x4, 0x0, 0x0, NULL,
+			      0x0, DEFAULT_TIMEOUT);
 	if (ret != 0x0) {
 		msg_perr("Command C failed (%s)!\n", usb_strerror());
 		return 1;
@@ -464,7 +479,8 @@ static int dediprog_command_f(int timeout)
 	char buf[0x1];
 
 	memset(buf, 0, sizeof(buf));
-	ret = usb_control_msg(dediprog_handle, 0xc2, 0x11, 0xff, 0xff, buf, 0x1, timeout);
+	ret = usb_control_msg(dediprog_handle, 0xc2, 0x11, 0xff, 0xff, buf,
+			      0x1, timeout);
 	/* This check is most probably wrong. Command F always causes a timeout
 	 * in the logs, so we should check for timeout instead of checking for
 	 * success.
@@ -480,9 +496,7 @@ static int dediprog_command_f(int timeout)
 static int parse_voltage(char *voltage)
 {
 	char *tmp = NULL;
-	int i;
-	int millivolt;
-	int fraction = 0;
+	int i, millivolt, fraction = 0;
 
 	if (!voltage || !strlen(voltage)) {
 		msg_perr("Empty voltage= specified.\n");
@@ -527,13 +541,13 @@ static int parse_voltage(char *voltage)
 }
 
 static const struct spi_programmer spi_programmer_dediprog = {
-	.type = SPI_CONTROLLER_DEDIPROG,
-	.max_data_read = MAX_DATA_UNSPECIFIED,
-	.max_data_write = MAX_DATA_UNSPECIFIED,
-	.command = dediprog_spi_send_command,
-	.multicommand = default_spi_send_multicommand,
-	.read = dediprog_spi_read,
-	.write_256 = dediprog_spi_write_256,
+	.type		= SPI_CONTROLLER_DEDIPROG,
+	.max_data_read	= MAX_DATA_UNSPECIFIED,
+	.max_data_write	= MAX_DATA_UNSPECIFIED,
+	.command	= dediprog_spi_send_command,
+	.multicommand	= default_spi_send_multicommand,
+	.read		= dediprog_spi_read,
+	.write_256	= dediprog_spi_write_256,
 };
 
 static int dediprog_shutdown(void *data)
@@ -560,8 +574,7 @@ int dediprog_init(void)
 {
 	struct usb_device *dev;
 	char *voltage;
-	int millivolt = 3500;
-	int ret;
+	int millivolt = 3500, ret;
 
 	msg_pspew("%s\n", __func__);
 
@@ -569,9 +582,8 @@ int dediprog_init(void)
 	if (voltage) {
 		millivolt = parse_voltage(voltage);
 		free(voltage);
-		if (millivolt < 0) {
+		if (millivolt < 0)
 			return 1;
-		}
 		msg_pinfo("Setting voltage to %i mV\n", millivolt);
 	}
 
@@ -585,8 +597,7 @@ int dediprog_init(void)
 		return 1;
 	}
 	msg_pdbg("Found USB device (%04x:%04x).\n",
-		 dev->descriptor.idVendor,
-		 dev->descriptor.idProduct);
+		 dev->descriptor.idVendor, dev->descriptor.idProduct);
 	dediprog_handle = usb_open(dev);
 	ret = usb_set_configuration(dediprog_handle, 1);
 	if (ret < 0) {
@@ -666,7 +677,8 @@ static int dediprog_do_stuff(void)
 	/* JEDEC RDID */
 	msg_pdbg("Sending RDID\n");
 	buf[0] = JEDEC_RDID;
-	if (dediprog_spi_send_command(JEDEC_RDID_OUTSIZE, JEDEC_RDID_INSIZE, (unsigned char *)buf, (unsigned char *)buf))
+	if (dediprog_spi_send_command(JEDEC_RDID_OUTSIZE, JEDEC_RDID_INSIZE,
+				(unsigned char *)buf, (unsigned char *)buf))
 		return 1;
 	msg_pdbg("Receiving response: ");
 	print_hex(buf, JEDEC_RDID_INSIZE);

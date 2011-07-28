@@ -141,13 +141,13 @@ static int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		const unsigned char *writearr, unsigned char *readarr);
 
 static const struct spi_programmer spi_programmer_ft2232 = {
-	.type = SPI_CONTROLLER_FT2232,
-	.max_data_read = 64 * 1024,
-	.max_data_write = 256,
-	.command = ft2232_spi_send_command,
-	.multicommand = default_spi_send_multicommand,
-	.read = default_spi_read,
-	.write_256 = default_spi_write_256,
+	.type		= SPI_CONTROLLER_FT2232,
+	.max_data_read	= 64 * 1024,
+	.max_data_write	= 256,
+	.command	= ft2232_spi_send_command,
+	.multicommand	= default_spi_send_multicommand,
+	.read		= default_spi_read,
+	.write_256	= default_spi_write_256,
 };
 
 /* Returns 0 upon success, a negative number upon errors. */
@@ -246,21 +246,17 @@ int ft2232_spi_init(void)
 				ftdic->error_str);
 	}
 
-	if (ftdi_usb_reset(ftdic) < 0) {
+	if (ftdi_usb_reset(ftdic) < 0)
 		msg_perr("Unable to reset FTDI device\n");
-	}
 
-	if (ftdi_set_latency_timer(ftdic, 2) < 0) {
+	if (ftdi_set_latency_timer(ftdic, 2) < 0)
 		msg_perr("Unable to set latency timer\n");
-	}
 
-	if (ftdi_write_data_set_chunksize(ftdic, 256)) {
+	if (ftdi_write_data_set_chunksize(ftdic, 256))
 		msg_perr("Unable to set chunk size\n");
-	}
 
-	if (ftdi_set_bitmode(ftdic, 0x00, BITMODE_BITBANG_SPI) < 0) {
+	if (ftdi_set_bitmode(ftdic, 0x00, BITMODE_BITBANG_SPI) < 0)
 		msg_perr("Unable to set bitmode to SPI\n");
-	}
 
 	if (clock_5x) {
 		msg_pdbg("Disable divide-by-5 front stage\n");
@@ -285,8 +281,7 @@ int ft2232_spi_init(void)
 	}
 
 	msg_pdbg("MPSSE clock: %f MHz divisor: %d "
-		 "SPI clock: %f MHz\n",
-		 mpsse_clk, DIVIDE_BY,
+		 "SPI clock: %f MHz\n", mpsse_clk, DIVIDE_BY,
 		 (double)(mpsse_clk / (((DIVIDE_BY - 1) + 1) * 2)));
 
 	/* Disconnect TDI/DO to TDO/DI for loopback. */
@@ -328,8 +323,7 @@ static int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	struct ftdi_context *ftdic = &ftdic_context;
 	static unsigned char *buf = NULL;
 	/* failed is special. We use bitwise ops, but it is essentially bool. */
-	int i = 0, ret = 0, failed = 0;
-	int bufsize;
+	int i = 0, ret = 0, failed = 0, bufsize;
 	static int oldbufsize = 0;
 
 	if (writecnt > 65536 || readcnt > 65536)
@@ -379,8 +373,7 @@ static int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		failed = ret;
 		/* We can't abort here, we still have to deassert CS#. */
 		if (ret)
-			msg_perr("send_buf failed before read: %i\n",
-				ret);
+			msg_perr("send_buf failed before read: %i\n", ret);
 		i = 0;
 		if (ret == 0) {
 			/*

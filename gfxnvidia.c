@@ -85,7 +85,7 @@ int gfxnvidia_init(void)
 
 	nvidia_bar = physmap("NVIDIA", io_base_addr, GFXNVIDIA_MEMMAP_SIZE);
 
-	/* must be done before rpci calls */
+	/* Must be done before rpci calls. */
 	if (register_shutdown(gfxnvidia_shutdown, NULL))
 		return 1;
 
