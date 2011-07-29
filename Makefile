@@ -202,6 +202,40 @@ override CONFIG_FT2232_SPI = no
 endif
 endif
 
+ifeq ($(ARCH), "ppc")
+# There's no PCI port I/O support on PPC/PowerPC, yet.
+ifeq ($(CONFIG_NIC3COM), yes)
+UNSUPPORTED_FEATURES += CONFIG_NIC3COM=yes
+else
+override CONFIG_NIC3COM = no
+endif
+ifeq ($(CONFIG_NICREALTEK), yes)
+UNSUPPORTED_FEATURES += CONFIG_NICREALTEK=yes
+else
+override CONFIG_NICREALTEK = no
+endif
+ifeq ($(CONFIG_NICNATSEMI), yes)
+UNSUPPORTED_FEATURES += CONFIG_NICNATSEMI=yes
+else
+override CONFIG_NICNATSEMI = no
+endif
+ifeq ($(CONFIG_RAYER_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_RAYER_SPI=yes
+else
+override CONFIG_RAYER_SPI = no
+endif
+ifeq ($(CONFIG_ATAHPT), yes)
+UNSUPPORTED_FEATURES += CONFIG_ATAHPT=yes
+else
+override CONFIG_ATAHPT = no
+endif
+ifeq ($(CONFIG_SATAMV), yes)
+UNSUPPORTED_FEATURES += CONFIG_SATAMV=yes
+else
+override CONFIG_SATAMV = no
+endif
+endif
+
 CHIP_OBJS = jedec.o stm50flw0x0x.o w39.o w29ee011.o \
 	sst28sf040.o m29f400bt.o 82802ab.o pm49fl00x.o \
 	sst49lfxxxc.o sst_fwhub.o flashchips.o spi.o spi25.o sharplhf00l04.o \
