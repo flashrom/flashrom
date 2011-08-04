@@ -233,7 +233,8 @@ int print(int type, const char *fmt, ...) __attribute__((format(printf, 2, 3)));
 #define MSG_ERROR	0
 #define MSG_INFO	1
 #define MSG_DEBUG	2
-#define MSG_BARF	3
+#define MSG_DEBUG2	3
+#define MSG_BARF	4
 #define msg_gerr(...)	print(MSG_ERROR, __VA_ARGS__)	/* general errors */
 #define msg_perr(...)	print(MSG_ERROR, __VA_ARGS__)	/* programmer errors */
 #define msg_cerr(...)	print(MSG_ERROR, __VA_ARGS__)	/* chip errors */
@@ -243,6 +244,9 @@ int print(int type, const char *fmt, ...) __attribute__((format(printf, 2, 3)));
 #define msg_gdbg(...)	print(MSG_DEBUG, __VA_ARGS__)	/* general debug */
 #define msg_pdbg(...)	print(MSG_DEBUG, __VA_ARGS__)	/* programmer debug */
 #define msg_cdbg(...)	print(MSG_DEBUG, __VA_ARGS__)	/* chip debug */
+#define msg_gdbg2(...)	print(MSG_DEBUG2, __VA_ARGS__)	/* general debug2 */
+#define msg_pdbg2(...)	print(MSG_DEBUG2, __VA_ARGS__)	/* programmer debug2 */
+#define msg_cdbg2(...)	print(MSG_DEBUG2, __VA_ARGS__)	/* chip debug2 */
 #define msg_gspew(...)	print(MSG_BARF, __VA_ARGS__)	/* general debug barf  */
 #define msg_pspew(...)	print(MSG_BARF, __VA_ARGS__)	/* programmer debug barf  */
 #define msg_cspew(...)	print(MSG_BARF, __VA_ARGS__)	/* chip debug barf  */

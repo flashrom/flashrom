@@ -33,6 +33,9 @@ int print(int type, const char *fmt, ...)
 		output_type = stderr;
 		break;
 	case MSG_BARF:
+		if (verbose < 3)
+			return 0;
+	case MSG_DEBUG2:
 		if (verbose < 2)
 			return 0;
 	case MSG_DEBUG:
