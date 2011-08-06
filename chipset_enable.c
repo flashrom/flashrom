@@ -801,6 +801,12 @@ static int enable_flash_ck804(struct pci_dev *dev, const char *name)
 {
 	uint8_t old, new;
 
+	pci_write_byte(dev, 0x92, 0x00);
+	if (pci_read_byte(dev, 0x92) != 0x00) {
+		msg_pinfo("Setting register 0x%x to 0x%x on %s failed "
+			  "(WARNING ONLY).\n", 0x92, 0x00, name);
+	}
+
 	old = pci_read_byte(dev, 0x88);
 	new = old | 0xc0;
 	if (new != old) {
