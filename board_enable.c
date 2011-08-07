@@ -921,6 +921,7 @@ static int nvidia_mcp_gpio_set(int gpio, int raise)
 
 /*
  * Suited for:
+ *  - ASUS A8M2N-LA (HP OEM "NodusM3-GL8E"): NVIDIA MCP51
  *  - ASUS A8N-LA (HP OEM "Nagami-GL8E"): NVIDIA MCP51
  *  - ASUS M2NBP-VM CSM: NVIDIA MCP51
  */
@@ -2000,6 +2001,7 @@ const struct board_pciid_enable board_pciid_enables[] = {
 	{0x1106, 0x3189, 0x1043, 0x807F,  0x1106, 0x3177, 0x1043, 0x80A1, NULL,         NULL, NULL,           P3, "ASUS",        "A7V8X-X",               0,   OK, it8712f_gpio3_1_raise},
 	{0x1002, 0x4372, 0x103c, 0x2a26,  0x1002, 0x4377, 0x103c, 0x2a26, NULL,         NULL, NULL,           P3, "ASUS",        "A8AE-LE",               0,   OK, amd_sbxxx_gpio9_raise},
 	{0x8086, 0x27A0, 0x1043, 0x1287,  0x8086, 0x27DF, 0x1043, 0x1287, "^A8J",       NULL, NULL,           P3, "ASUS",        "A8Jm",                  0,   NT, intel_ich_gpio34_raise},
+	{0x10DE, 0x0260, 0x103C, 0x2A34,  0x10DE, 0x0264, 0x103C, 0x2A34, "NODUSM3",    NULL, NULL,           P3, "ASUS",        "A8M2N-LA (NodusM3-GL8E)",  0,   OK, nvidia_mcp_gpio0_raise},
 	{0x10DE, 0x0260, 0x103c, 0x2a3e,  0x10DE, 0x0264, 0x103c, 0x2a3e, "NAGAMI2L",   NULL, NULL,           P3, "ASUS",        "A8N-LA (Nagami-GL8E)",  0,   OK, nvidia_mcp_gpio0_raise},
 	{0x10DE, 0x005E, 0x1043, 0x815A,  0x10DE, 0x0054, 0x1043, 0x815A, "^A8N-SLI DELUXE", NULL, NULL,      P3, "ASUS",        "A8N-SLI Deluxe",        0,   NT, board_shuttle_fn25},
 	{0x10de, 0x0264, 0x1043, 0x81bc,  0x10de, 0x02f0, 0x1043, 0x81cd, NULL,         NULL, NULL,           P3, "ASUS",        "A8N-VM CSM",            0,   OK, w83627ehf_gpio22_raise_2e},

@@ -420,6 +420,7 @@ const struct board_info boards_known[] = {
 	B("ASUS",	"A7V8X-MX SE",		1, "http://www.asus.com/product.aspx?P_ID=1guVBT1qV5oqhHyZ", NULL),
 	B("ASUS",	"A7V8X-X",		1, "http://www.asus.com/product.aspx?P_ID=YcXfRrWHZ9RKoVmw", NULL),
 	B("ASUS",	"A8Jm",			1, "http://www.asus.com/product.aspx?P_ID=VztICtOgiU6drx4m", NULL),
+	B("ASUS",	"A8M2N-LA (NodusM3-GL8E)",	1, "http://h10010.www1.hp.com/ewfrf/wc/document?docname=c00757531&cc=us&dlc=en&lc=en", "This is an OEM board from HP, the HP name is NodusM3-GL8E."),
 	B("ASUS",	"A8N-E",		1, "http://www.asus.com/product.aspx?P_ID=DzbA8hgqchMBOVRz", NULL),
 	B("ASUS",	"A8N-LA (Nagami-GL8E)",	1, "http://h10025.www1.hp.com/ewfrf/wc/document?lc=en&cc=us&docname=c00647121&dlc=en", "This is an OEM board from HP, the HP name is Nagami-GL8E."),
 	B("ASUS",	"A8N-SLI",		1, "http://www.asus.com/product.aspx?P_ID=J9FKa8z2xVId3pDK", NULL),
