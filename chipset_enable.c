@@ -1096,7 +1096,7 @@ const struct penable chipset_enables[] = {
 	{0x10de, 0x00e0, OK, "NVIDIA", "NForce3",	enable_flash_nvidia_nforce2},
 	/* Slave, should not be here, to fix known bug for A01. */
 	{0x10de, 0x00d3, OK, "NVIDIA", "CK804",		enable_flash_ck804},
-	{0x10de, 0x0260, NT, "NVIDIA", "MCP51",		enable_flash_ck804},
+	{0x10de, 0x0260, OK, "NVIDIA", "MCP51",		enable_flash_ck804},
 	{0x10de, 0x0261, NT, "NVIDIA", "MCP51",		enable_flash_ck804},
 	{0x10de, 0x0262, NT, "NVIDIA", "MCP51",		enable_flash_ck804},
 	{0x10de, 0x0263, NT, "NVIDIA", "MCP51",		enable_flash_ck804},
