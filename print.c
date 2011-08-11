@@ -482,6 +482,7 @@ const struct board_info boards_known[] = {
 	B("ASUS",	"P5GDC Deluxe",		1, "http://www.asus.com/product.aspx?P_ID=AbeoopyNpI2TZixg", NULL),
 	B("ASUS",	"P5KC",			1, "http://www.asus.com/product.aspx?P_ID=fFZ8oUIGmLpwNMjj", NULL),
 	B("ASUS",	"P5L-MX",		1, "http://www.asus.com/product.aspx?P_ID=X70d3NCzH2DE9vWH", NULL),
+	B("ASUS",	"P5LD2",		0, NULL, "Untested board enable."),
 	B("ASUS",	"P5GD1 Pro",		1, "http://www.asus.com/product.aspx?P_ID=50M49xQh71EZOeM1", NULL),
 	B("ASUS",	"P5N-E SLI",		0, "http://www.asus.com/product.aspx?P_ID=KyHOsOKWujC2QguJ", "Needs a board enable (http://patchwork.coreboot.org/patch/3298/)."),
 	B("ASUS",	"P5N32-E SLI",		1, "http://www.asus.com/product.aspx?P_ID=vBZLIBtPzYB2bLcb", NULL),
