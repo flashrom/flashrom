@@ -479,6 +479,7 @@ const struct board_info boards_known[] = {
 	B("ASUS",	"P5B-Deluxe",		1, "http://www.asus.com/product.aspx?P_ID=bswT66IBSb2rEWNa", NULL),
 	B("ASUS",	"P5BV-M",		0, "ftp://ftp.asus.com.tw/pub/ASUS/mb/socket775/P5B-VM/", "Reported by Bernhard M. Wiedemann <bernhard@uml12d.zq1.de> to flashrom@coreboot.org, no public archive. Missing board enable and/or SST49LF008A unlocking. May work now."),
 	B("ASUS",	"P5GC-MX/1333",		1, "http://www.asus.com/product.aspx?P_ID=PYvbfOokwxUzJky3", NULL),
+	B("ASUS",	"P5GD2 Premium",	1, "http://www.asus.it/product.aspx?P_ID=lRKaz1Rb6Xb0OFM7", NULL),
 	B("ASUS",	"P5GDC Deluxe",		1, "http://www.asus.com/product.aspx?P_ID=AbeoopyNpI2TZixg", NULL),
 	B("ASUS",	"P5KC",			1, "http://www.asus.com/product.aspx?P_ID=fFZ8oUIGmLpwNMjj", NULL),
 	B("ASUS",	"P5L-MX",		1, "http://www.asus.com/product.aspx?P_ID=X70d3NCzH2DE9vWH", NULL),
