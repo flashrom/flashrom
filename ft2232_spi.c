@@ -173,6 +173,12 @@ int ft2232_spi_init(void)
 			ft2232_interface = INTERFACE_A;
 			cs_bits = 0x18;
 			pindir = 0x1b;
+		} else if (!strcasecmp(arg, "busblaster")) {
+			/* In its default configuration it is a jtagkey clone */
+			ft2232_type = FTDI_FT2232H_PID;
+			ft2232_interface = INTERFACE_A;
+			cs_bits = 0x18;
+			pindir = 0x1b;
 		} else if (!strcasecmp(arg, "openmoko")) {
 			ft2232_vid = FIC_VID;
 			ft2232_type = OPENMOKO_DBGBOARD_PID;
