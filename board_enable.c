@@ -860,7 +860,7 @@ static int nvidia_mcp_gpio_set(int gpio, int raise)
 		return -1;
 	}
 
-	/* First, check the ISA bridge */
+	/* Check for the ISA bridge first. */
 	dev = pci_dev_find_vendorclass(0x10DE, 0x0601);
 	switch (dev->device_id) {
 	case 0x0030: /* CK804 */
@@ -1129,8 +1129,8 @@ static int intel_piix4_gpo_set(unsigned int gpo, int raise)
 	struct pci_dev *dev;
 	uint32_t tmp, base;
 
-	/* GPPO {0,8,27,28,30} are always available */
-	static const uint32_t nonmuxed_gpos  = 0x58000101;
+	/* GPO{0,8,27,28,30} are always available. */
+	static const uint32_t nonmuxed_gpos = 0x58000101;
 
 	static const struct {unsigned int reg, mask, value; } piix4_gpo[] = {
 		{0},
@@ -1179,10 +1179,9 @@ static int intel_piix4_gpo_set(unsigned int gpo, int raise)
 	}
 
 	if ((((1 << gpo) & nonmuxed_gpos) == 0) &&
-	     (pci_read_word(dev, piix4_gpo[gpo].reg)
-	     & piix4_gpo[gpo].mask) != piix4_gpo[gpo].value) {
-		msg_perr("\nERROR: PIIX4 GPO%d not programmed for output.\n",
-			 gpo);
+	    ((pci_read_word(dev, piix4_gpo[gpo].reg) & piix4_gpo[gpo].mask) !=
+	     piix4_gpo[gpo].value)) {
+		msg_perr("\nERROR: PIIX4 GPO%d not programmed for output.\n", gpo);
 		return -1;
 	}
 
