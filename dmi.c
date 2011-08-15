@@ -196,7 +196,8 @@ void dmi_init(void)
  */
 static int dmi_compare(const char *value, const char *pattern)
 {
-	int anchored = 0, patternlen;
+	int anchored = 0;
+	int patternlen;
 
 	msg_pspew("matching %s against %s\n", value, pattern);
 	/* The empty string is part of all strings! */
