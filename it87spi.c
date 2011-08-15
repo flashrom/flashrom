@@ -203,7 +203,8 @@ static uint16_t it87spi_probe(uint16_t port)
 
 int init_superio_ite(void)
 {
-	int i, ret = 0;
+	int i;
+	int ret = 0;
 
 	for (i = 0; i < superio_count; i++) {
 		if (superios[i].vendor != SUPERIO_VENDOR_ITE)

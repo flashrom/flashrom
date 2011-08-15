@@ -252,17 +252,21 @@ int ft2232_spi_init(void)
 				ftdic->error_str);
 	}
 
-	if (ftdi_usb_reset(ftdic) < 0)
+	if (ftdi_usb_reset(ftdic) < 0) {
 		msg_perr("Unable to reset FTDI device\n");
+	}
 
-	if (ftdi_set_latency_timer(ftdic, 2) < 0)
+	if (ftdi_set_latency_timer(ftdic, 2) < 0) {
 		msg_perr("Unable to set latency timer\n");
+	}
 
-	if (ftdi_write_data_set_chunksize(ftdic, 256))
+	if (ftdi_write_data_set_chunksize(ftdic, 256)) {
 		msg_perr("Unable to set chunk size\n");
+	}
 
-	if (ftdi_set_bitmode(ftdic, 0x00, BITMODE_BITBANG_SPI) < 0)
+	if (ftdi_set_bitmode(ftdic, 0x00, BITMODE_BITBANG_SPI) < 0) {
 		msg_perr("Unable to set bitmode to SPI\n");
+	}
 
 	if (clock_5x) {
 		msg_pdbg("Disable divide-by-5 front stage\n");
@@ -329,7 +333,8 @@ static int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	struct ftdi_context *ftdic = &ftdic_context;
 	static unsigned char *buf = NULL;
 	/* failed is special. We use bitwise ops, but it is essentially bool. */
-	int i = 0, ret = 0, failed = 0, bufsize;
+	int i = 0, ret = 0, failed = 0;
+	int bufsize;
 	static int oldbufsize = 0;
 
 	if (writecnt > 65536 || readcnt > 65536)

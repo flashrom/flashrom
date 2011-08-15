@@ -496,7 +496,8 @@ static int dediprog_command_f(int timeout)
 static int parse_voltage(char *voltage)
 {
 	char *tmp = NULL;
-	int i, millivolt, fraction = 0;
+	int i;
+	int millivolt = 0, fraction = 0;
 
 	if (!voltage || !strlen(voltage)) {
 		msg_perr("Empty voltage= specified.\n");
@@ -574,7 +575,8 @@ int dediprog_init(void)
 {
 	struct usb_device *dev;
 	char *voltage;
-	int millivolt = 3500, ret;
+	int millivolt = 3500;
+	int ret;
 
 	msg_pspew("%s\n", __func__);
 

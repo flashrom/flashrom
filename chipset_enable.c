@@ -309,8 +309,9 @@ static int enable_flash_ich_4e(struct pci_dev *dev, const char *name)
 static int enable_flash_ich_dc(struct pci_dev *dev, const char *name)
 {
 	uint32_t fwh_conf;
+	int i, tmp;
 	char *idsel = NULL;
-	int i, tmp, max_decode_fwh_idsel = 0, max_decode_fwh_decode = 0;
+	int max_decode_fwh_idsel = 0, max_decode_fwh_decode = 0;
 	int contiguous = 1;
 
 	idsel = extract_programmer_param("fwh_idsel");
@@ -1035,7 +1036,7 @@ static int get_flashbase_sc520(struct pci_dev *dev, const char *name)
 		}
 	} else {
 		msg_pinfo("AMD Elan SC520 detected, but no BOOTCS. "
-			  "Assuming flash at 4G\n");
+			  "Assuming flash at 4G.\n");
 	}
 
 	/* 4. Clean up */

@@ -600,8 +600,7 @@ void map_flash_registers(struct flashchip *flash)
 	size_t size = flash->total_size * 1024;
 	/* Flash registers live 4 MByte below the flash. */
 	/* FIXME: This is incorrect for nonstandard flashbase. */
-	flash->virtual_registers = (chipaddr)programmer_map_flash_region(
-	    "flash chip registers", (0xFFFFFFFF - 0x400000 - size + 1), size);
+	flash->virtual_registers = (chipaddr)programmer_map_flash_region("flash chip registers", (0xFFFFFFFF - 0x400000 - size + 1), size);
 }
 
 int read_memmapped(struct flashchip *flash, uint8_t *buf, int start, int len)
@@ -753,8 +752,9 @@ int check_erased_range(struct flashchip *flash, int start, int len)
 int verify_range(struct flashchip *flash, uint8_t *cmpbuf, int start, int len,
 		 const char *message)
 {
-	int i, ret = 0, failcount = 0;
+	int i;
 	uint8_t *readbuf = malloc(len);
+	int ret = 0, failcount = 0;
 
 	if (!len)
 		goto out_free;
@@ -832,7 +832,8 @@ out_free:
  */
 int need_erase(uint8_t *have, uint8_t *want, int len, enum write_granularity gran)
 {
-	int result = 0, i, j, limit;
+	int result = 0;
+	int i, j, limit;
 
 	switch (gran) {
 	case write_gran_1bit:
@@ -898,7 +899,8 @@ int need_erase(uint8_t *have, uint8_t *want, int len, enum write_granularity gra
 static int get_next_write(uint8_t *have, uint8_t *want, int len,
 			  int *first_start, enum write_granularity gran)
 {
-	int need_write = 0, rel_start = 0, first_len = 0, i, limit, stride;
+	int need_write = 0, rel_start = 0, first_len = 0;
+	int i, limit, stride;
 
 	switch (gran) {
 	case write_gran_1bit:
@@ -1326,7 +1328,8 @@ out_free:
  */
 static int selfcheck_eraseblocks(const struct flashchip *flash)
 {
-	int i, j, k, ret = 0;
+	int i, j, k;
+	int ret = 0;
 
 	for (k = 0; k < NUM_ERASEFUNCTIONS; k++) {
 		unsigned int done = 0;
@@ -1451,7 +1454,8 @@ static int walk_eraseregions(struct flashchip *flash, int erasefunction,
 			     void *param1, void *param2)
 {
 	int i, j;
-	unsigned int start = 0, len;
+	unsigned int start = 0;
+	unsigned int len;
 	struct block_eraser eraser = flash->block_erasers[erasefunction];
 
 	for (i = 0; i < NUM_ERASEREGIONS; i++) {
@@ -1603,8 +1607,10 @@ void list_programmers(const char *delim)
 void list_programmers_linebreak(int startcol, int cols, int paren)
 {
 	const char *pname;
-	int pnamelen, remaining = 0, firstline = 1, i;
+	int pnamelen;
+	int remaining = 0, firstline = 1;
 	enum programmer p;
+	int i;
 
 	for (p = 0; p < PROGRAMMER_INVALID; p++) {
 		pname = programmer_table[p].name;

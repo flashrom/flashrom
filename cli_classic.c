@@ -104,13 +104,14 @@ int cli_classic(int argc, char *argv[])
 	struct flashchip flashes[3];
 	struct flashchip *fill_flash;
 	const char *name;
-	int startchip = 0, chipcount = 0, namelen, opt, option_index = 0;
-	int read_it = 0, write_it = 0, erase_it = 0, verify_it = 0;
-	int dont_verify_it = 0, list_supported = 0, force = 0;
+	int namelen, opt, i;
+	int startchip = 0, chipcount = 0, option_index = 0, force = 0;
 #if CONFIG_PRINT_WIKI == 1
 	int list_supported_wiki = 0;
 #endif
-	int operation_specified = 0, i, ret = 0;
+	int read_it = 0, write_it = 0, erase_it = 0, verify_it = 0;
+	int dont_verify_it = 0, list_supported = 0, operation_specified = 0;
+	int ret = 0;
 
 	static const char optstring[] = "r:Rw:v:nVEfc:m:l:i:p:Lzh";
 	static const struct option long_options[] = {

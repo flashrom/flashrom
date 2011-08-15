@@ -84,15 +84,15 @@ unsigned char *ce_high, *ce_low;
 static int it85xx_scratch_rom_reenter = 0;
 
 /* This function will poll the keyboard status register until either
- *   an expected value shows up, or
- *   timeout reaches.
+ * an expected value shows up, or the timeout is reached.
+ * timeout is in usec.
  *
- * Returns: 0 -- the expected value has shown.
- *          1 -- timeout reached.
+ * Returns: 0 -- the expected value showed up.
+ *          1 -- timeout.
  */
 static int wait_for(const unsigned int mask, const unsigned int expected_value,
-		const int timeout /* in usec */, const char *error_message,
-		const char *function_name, const int lineno)
+		    const int timeout, const char * error_message,
+		    const char * function_name, const int lineno)
 {
 	int time_passed;
 
@@ -317,8 +317,9 @@ static int it85xx_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	int i;
 
 	it85xx_enter_scratch_rom();
-	/* exit scratch ROM ONLY when programmer shuts down. Otherwise, the
-	 * temporary flash state may halt EC. */
+	/* Exit scratch ROM ONLY when programmer shuts down. Otherwise, the
+	 * temporary flash state may halt the EC.
+	 */
 
 #ifdef LPC_IO
 	INDIRECT_A1(shm_io_base, (((unsigned long int)ce_high) >> 8) & 0xff);

@@ -76,7 +76,7 @@ static void *sys_physmap(unsigned long phys_addr, size_t len)
 
 	mi.address = phys_addr;
 	mi.size = len;
-	ret = __dpmi_physical_address_mapping (&mi);
+	ret = __dpmi_physical_address_mapping(&mi);
 
 	if (ret != 0)
 		return ERROR_PTR;

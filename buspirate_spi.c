@@ -150,9 +150,11 @@ static int buspirate_spi_shutdown(void *data)
 int buspirate_spi_init(void)
 {
 	unsigned char buf[512];
-	int ret = 0, i, spispeed = 0x7;
 	char *dev = NULL;
 	char *speed = NULL;
+	int spispeed = 0x7;
+	int ret = 0;
+	int i;
 
 	dev = extract_programmer_param("dev");
 	if (!dev || !strlen(dev)) {
