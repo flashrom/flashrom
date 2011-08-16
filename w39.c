@@ -20,7 +20,6 @@
  */
 
 #include "flash.h"
-#include "chipdrivers.h"
 
 static int printlock_w39_fwh_block(struct flashchip *flash, int offset)
 {
