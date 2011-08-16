@@ -30,7 +30,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "flash.h"
-#include "chipdrivers.h"
 #include "spi.h"
 #include "programmer.h"
 

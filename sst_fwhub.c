@@ -23,7 +23,6 @@
 /* Adapted from the Intel FW hub stuff for 82802ax parts. */
 
 #include "flash.h"
-#include "chipdrivers.h"
 
 static int check_sst_fwhub_block_lock(struct flashchip *flash, int offset)
 {

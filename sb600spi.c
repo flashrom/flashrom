@@ -24,7 +24,6 @@
 #if defined(__i386__) || defined(__x86_64__)
 
 #include "flash.h"
-#include "chipdrivers.h"
 #include "programmer.h"
 #include "spi.h"
 
