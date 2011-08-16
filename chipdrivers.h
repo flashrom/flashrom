@@ -25,6 +25,8 @@
 #ifndef __CHIPDRIVERS_H__
 #define __CHIPDRIVERS_H__ 1
 
+#include "flash.h"	/* for chipaddr and flashchip */
+
 /* spi.c, should probably be in spi_chip.c */
 int probe_spi_rdid(struct flashchip *flash);
 int probe_spi_rdid4(struct flashchip *flash);
