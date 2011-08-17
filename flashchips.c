@@ -5547,6 +5547,66 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "SST",
+		.name		= "SST25LF040A",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= SST_ID,
+		.model_id	= SST_SST25VF040_REMS,
+		.total_size	= 512,
+		.page_size	= 256,
+		.tested		= TEST_OK_PROBE,
+		.probe		= probe_spi_res2,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 128} },
+				.block_erase = spi_block_erase_20,
+			}, {
+				.eraseblocks = { {32 * 1024, 16} },
+				.block_erase = spi_block_erase_52,
+			}, {
+				.eraseblocks = { {512 * 1024, 1} },
+				.block_erase = spi_block_erase_60,
+			},
+		},
+		.unlock		= spi_disable_blockprotect,
+		.write		= spi_chip_write_1, /* AAI supported, but opcode is 0xAF */
+		.read		= spi_chip_read,
+		.voltage	= {3000, 3600},
+	},
+
+	{
+		.vendor		= "SST",
+		.name		= "SST25LF080A",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= SST_ID,
+		.model_id	= SST_SST25VF080_REMS,
+		.total_size	= 1024,
+		.page_size	= 256,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_res2,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 256} },
+				.block_erase = spi_block_erase_20,
+			}, {
+				.eraseblocks = { {32 * 1024, 32} },
+				.block_erase = spi_block_erase_52,
+			}, {
+				.eraseblocks = { {1024 * 1024, 1} },
+				.block_erase = spi_block_erase_60,
+			},
+		},
+		.unlock		= spi_disable_blockprotect,
+		.write		= spi_chip_write_1, /* AAI supported, but opcode is 0xAF */
+		.read		= spi_chip_read,
+		.voltage	= {3000, 3600},
+	},
+
+	{
+		.vendor		= "SST",
 		.name		= "SST25VF010.REMS",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= SST_ID,
@@ -5747,36 +5807,6 @@ const struct flashchip flashchips[] = {
 		.write		= spi_aai_write,
 		.read		= spi_chip_read,
 		.voltage	= {2700, 3600},
-	},
-
-	{
-		.vendor		= "SST",
-		.name		= "SST25LF040A.RES",
-		.bustype	= BUS_SPI,
-		.manufacture_id	= SST_ID,
-		.model_id	= SST_SST25VF040_REMS,
-		.total_size	= 512,
-		.page_size	= 256,
-		.tested		= TEST_OK_PROBE,
-		.probe		= probe_spi_res2,
-		.probe_timing	= TIMING_ZERO,
-		.block_erasers	=
-		{
-			{
-				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_20,
-			}, {
-				.eraseblocks = { {32 * 1024, 16} },
-				.block_erase = spi_block_erase_52,
-			}, {
-				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
-			},
-		},
-		.unlock		= spi_disable_blockprotect,
-		.write		= spi_chip_write_1, /* AAI supported, but opcode is 0xAF */
-		.read		= spi_chip_read,
-		.voltage	= {3000, 3600},
 	},
 
 	{
