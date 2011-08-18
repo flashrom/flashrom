@@ -38,7 +38,7 @@ CFLAGS += -Werror
 endif
 
 # Determine the destination processor architecture
-override ARCH = $(strip $(shell LC_ALL=C $(CC) -E arch.h|grep -v '^\#'))
+override ARCH := $(strip $(shell LC_ALL=C $(CC) -E arch.h|grep -v '^\#'))
 
 # FIXME We have to differentiate between host and target OS architecture.
 OS_ARCH	?= $(shell uname)
@@ -531,11 +531,23 @@ distclean: clean
 strip: $(PROGRAM)$(EXEC_SUFFIX)
 	$(STRIP) $(STRIP_ARGS) $(PROGRAM)$(EXEC_SUFFIX)
 
+# to define test programs we use verbatim variables, which get exported
+# to environment variables and are referenced with $$<varname> later
+
+define COMPILER_TEST
+int main(int argc, char **argv)
+{
+	(void) argc;
+	(void) argv;
+	return 0;
+}
+endef
+export COMPILER_TEST
+
 compiler: featuresavailable
 	@printf "Checking for a C compiler... "
-	@$(shell ( echo "int main(int argc, char **argv)"; \
-		   echo "{ (void) argc; (void) argv; return 0; }"; ) > .test.c )
-	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .test.c -o .test$(EXEC_SUFFIX) >/dev/null &&	\
+	@echo "$$COMPILER_TEST" > .test.c
+	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .test.c -o .test$(EXEC_SUFFIX) >/dev/null 2>&1 &&	\
 		echo "found." || ( echo "not found."; \
 		rm -f .test.c .test$(EXEC_SUFFIX); exit 1)
 	@rm -f .test.c .test$(EXEC_SUFFIX)
@@ -545,15 +557,25 @@ compiler: featuresavailable
 		( echo "unknown. Aborting."; exit 1)
 	@printf "%s\n" '$(ARCH)'
 
+define LIBPCI_TEST
+/* Avoid a failing test due to libpci header symbol shadowing breakage */
+#define index shadow_workaround_index
+#include <pci/pci.h>
+struct pci_access *pacc;
+int main(int argc, char **argv)
+{
+	(void) argc;
+	(void) argv;
+	pacc = pci_alloc();
+	return 0;
+}
+endef
+export LIBPCI_TEST
+
 ifeq ($(CHECK_LIBPCI), yes)
 pciutils: compiler
 	@printf "Checking for libpci headers... "
-	@# Avoid a failing test due to libpci header symbol shadowing breakage
-	@$(shell ( echo "#define index shadow_workaround_index"; \
-		   echo "#include <pci/pci.h>";		   \
-		   echo "struct pci_access *pacc;";	   \
-		   echo "int main(int argc, char **argv)"; \
-		   echo "{ (void) argc; (void) argv; pacc = pci_alloc(); return 0; }"; ) > .test.c )
+	@echo "$$LIBPCI_TEST" > .test.c
 	@$(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o >/dev/null 2>&1 &&		\
 		echo "found." || ( echo "not found."; echo;			\
 		echo "Please install libpci headers (package pciutils-devel).";	\
@@ -588,41 +610,47 @@ featuresavailable:
 	@false
 endif
 
-ifeq ($(CONFIG_FT2232_SPI), yes)
+define FTDI_TEST
+#include <ftdi.h>
+struct ftdi_context *ftdic = NULL;
+int main(int argc, char **argv)
+{
+	(void) argc;
+	(void) argv;
+	return ftdi_init(ftdic);
+}
+endef
+export FTDI_TEST
+
+define UTSNAME_TEST
+#include <sys/utsname.h>
+struct utsname osinfo;
+int main(int argc, char **argv)
+{
+	(void) argc;
+	(void) argv;
+	uname (&osinfo);
+	return 0;
+}
+endef
+export UTSNAME_TEST
+
 features: compiler
 	@echo "FEATURES := yes" > .features.tmp
+ifeq ($(CONFIG_FT2232_SPI), yes)
 	@printf "Checking for FTDI support... "
-	@$(shell ( echo "#include <ftdi.h>";		   \
-		   echo "struct ftdi_context *ftdic = NULL;";	   \
-		   echo "int main(int argc, char **argv)"; \
-		   echo "{ (void) argc; (void) argv; return ftdi_init(ftdic); }"; ) > .featuretest.c )
+	@echo "$$FTDI_TEST" > .featuretest.c
 	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) $(FTDILIBS) $(LIBS) >/dev/null 2>&1 &&	\
 		( echo "found."; echo "FTDISUPPORT := yes" >> .features.tmp ) ||	\
 		( echo "not found."; echo "FTDISUPPORT := no" >> .features.tmp )
-	@printf "Checking for utsname support... "
-	@$(shell ( echo "#include <sys/utsname.h>";		   \
-		   echo "struct utsname osinfo;";	   \
-		   echo "int main(int argc, char **argv)"; \
-		   echo "{ (void) argc; (void) argv; uname (&osinfo); return 0; }"; ) > .featuretest.c )
-	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) >/dev/null 2>&1 &&	\
-		( echo "found."; echo "UTSNAME := yes" >> .features.tmp ) ||	\
-		( echo "not found."; echo "UTSNAME := no" >> .features.tmp )
-	@$(DIFF) -q .features.tmp .features >/dev/null 2>&1 && rm .features.tmp || mv .features.tmp .features
-	@rm -f .featuretest.c .featuretest$(EXEC_SUFFIX)
-else
-features: compiler
-	@echo "FEATURES := yes" > .features.tmp
-	@printf "Checking for utsname support... "
-	@$(shell ( echo "#include <sys/utsname.h>";		   \
-		   echo "struct utsname osinfo;";	   \
-		   echo "int main(int argc, char **argv)"; \
-		   echo "{ (void) argc; (void) argv; uname (&osinfo); return 0; }"; ) > .featuretest.c )
-	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) >/dev/null 2>&1 &&	\
-		( echo "found."; echo "UTSNAME := yes" >> .features.tmp ) ||	\
-		( echo "not found."; echo "UTSNAME := no" >> .features.tmp )
-	@$(DIFF) -q .features.tmp .features >/dev/null 2>&1 && rm .features.tmp || mv .features.tmp .features
-	@rm -f .featuretest.c .featuretest$(EXEC_SUFFIX)
 endif
+	@printf "Checking for utsname support... "
+	@echo "$$UTSNAME_TEST" > .featuretest.c
+	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) >/dev/null 2>&1 &&	\
+		( echo "found."; echo "UTSNAME := yes" >> .features.tmp ) ||	\
+		( echo "not found."; echo "UTSNAME := no" >> .features.tmp )
+	@$(DIFF) -q .features.tmp .features >/dev/null 2>&1 && rm .features.tmp || mv .features.tmp .features
+	@rm -f .featuretest.c .featuretest$(EXEC_SUFFIX)
 
 install: $(PROGRAM)$(EXEC_SUFFIX)
 	mkdir -p $(DESTDIR)$(PREFIX)/sbin
