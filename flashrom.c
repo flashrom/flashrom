@@ -1248,6 +1248,34 @@ notfound:
 	return chip - flashchips;
 }
 
+int verify_flash(struct flashctx *flash, uint8_t *buf)
+{
+	unsigned int total_size = flash->chip->total_size * 1024;
+	int ret = 0;
+	romlayout_t *l;
+
+	msg_cinfo("Verifying... ");
+
+	l = get_next_included_romentry(0);
+	/* No included rom entries. Assume complete verify wanted. */
+	if (l == NULL)
+		ret = verify_range(flash, buf, 0, total_size);
+	else do {
+		unsigned int len = l->end - l->start + 1;
+		msg_gdbg2("Verifying \"%s\" 0x%08x - 0x%08x (%uB)... ", l->name,
+			  l->start, l->end, len);
+		if(verify_range(flash, buf + l->start, l->start, len)) {
+			return 1;
+		}
+		msg_gdbg2("done. ");
+		l = get_next_included_romentry(l->end + 1);
+	} while (l != NULL);
+
+	if (ret == 0)
+		msg_cinfo("VERIFIED.\n");
+	return ret;
+}
+
 int read_buf_from_file(unsigned char *buf, unsigned long size, const char *filename, const char *size_msg)
 {
 #ifdef __LIBPAYLOAD__
