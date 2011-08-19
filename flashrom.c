@@ -1252,7 +1252,7 @@ int verify_flash(struct flashctx *flash, uint8_t *buf)
 {
 	unsigned int total_size = flash->chip->total_size * 1024;
 	int ret = 0;
-	romlayout_t *l;
+	romentry_t *l;
 
 	msg_cinfo("Verifying... ");
 
@@ -2079,7 +2079,7 @@ int doit(struct flashctx *flash, int force, const char *filename, int read_it,
 		goto out;
 	}
 
-	if (write_it || verify_it) {
+	if (write_it || verify_it) { /* always true: erase and read already goto'ed */
 		if (read_buf_from_file(newcontents, size, filename, "the flash chip's size")) {
 			ret = 1;
 			goto out;
@@ -2105,7 +2105,7 @@ int doit(struct flashctx *flash, int force, const char *filename, int read_it,
 	 * preserved, but in that case we might perform unneeded erase which
 	 * takes time as well.
 	 */
-	if (read_all_first) {
+	if (read_all_first && write_it) {
 		msg_cinfo("Reading old flash chip contents... ");
 		if (flash->chip->read(flash, oldcontents, 0, size)) {
 			ret = 1;
@@ -2116,10 +2116,12 @@ int doit(struct flashctx *flash, int force, const char *filename, int read_it,
 	msg_cinfo("done.\n");
 
 	/* Build a new image taking the given layout into account. */
-	if (build_new_image(flash, read_all_first, oldcontents, newcontents)) {
-		msg_gerr("Could not prepare the data to be written, aborting.\n");
-		ret = 1;
-		goto out;
+	if (write_it) {
+		if (build_new_image(flash, read_all_first, oldcontents, newcontents)) {
+			msg_gerr("Could not prepare the data to be written, aborting.\n");
+			ret = 1;
+			goto out;
+		}
 	}
 
 	// ////////////////////////////////////////////////////////////
