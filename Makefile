@@ -37,9 +37,6 @@ ifeq ($(WARNERROR), yes)
 CFLAGS += -Werror
 endif
 
-# Determine the destination processor architecture
-override ARCH := $(strip $(shell LC_ALL=C $(CC) -E arch.h|grep -v '^\#'))
-
 # FIXME We have to differentiate between host and target OS architecture.
 OS_ARCH	?= $(shell uname)
 ifneq ($(OS_ARCH), SunOS)
@@ -201,6 +198,12 @@ else
 override CONFIG_FT2232_SPI = no
 endif
 endif
+
+# Determine the destination processor architecture.
+# IMPORTANT: The following line must be placed before ARCH is ever used
+# (of course), but should come after any lines setting CC because the line
+# below uses CC itself. In some cases we set CC based on OS_ARCH, see above.
+override ARCH := $(strip $(shell LC_ALL=C $(CC) -E arch.h 2>/dev/null | grep -v '^\#'))
 
 ifeq ($(ARCH), "ppc")
 # There's no PCI port I/O support on PPC/PowerPC, yet.
