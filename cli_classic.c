@@ -96,7 +96,7 @@ static void cli_classic_abort_usage(void)
 	exit(1);
 }
 
-int cli_classic(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
 	unsigned long size;
 	/* Probe for up to three flash chips. */
