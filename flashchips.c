@@ -5379,6 +5379,36 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Sharp",
+		.name		= "LH28F008BJT-BTLZ1",
+		.bustype	= BUS_PARALLEL,
+		.manufacture_id	= SHARP_ID,
+		.model_id	= SHARP_LH28F008BJxxPB,
+		.total_size	= 1024,
+		.page_size	= 64 * 1024,
+		.tested		= TEST_OK_PREW,
+		.probe		= probe_82802ab,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = {
+					{8 * 1024, 8},
+					{64 * 1024, 15}
+				 },
+				.block_erase = erase_block_82802ab,
+			}, {
+				.eraseblocks = { {1024 * 1024, 1} },
+				.block_erase = erase_sector_49lfxxxc,
+			}
+		},
+		.unlock		= unlock_lh28f008bjt,
+		.write		= write_82802ab,
+		.read		= read_memmapped,
+		.voltage	= {2700, 3600},
+	},
+
+	{
+		.vendor		= "Sharp",
 		.name		= "LHF00L04",
 		.bustype	= BUS_FWH, /* A/A Mux */
 		.manufacture_id	= SHARP_ID,
