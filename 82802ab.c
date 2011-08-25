@@ -208,3 +208,58 @@ int unlock_28f004s5(struct flashchip *flash)
 
 	return 0;
 }
+
+int unlock_lh28f008bjt(struct flashchip *flash)
+{
+	chipaddr bios = flash->virtual_memory;
+	uint8_t mcfg, bcfg;
+	uint8_t need_unlock = 0, can_unlock = 0;
+	int i;
+
+	/* Wait if chip is busy */
+	wait_82802ab(flash);
+
+	/* Read identifier codes */
+	chip_writeb(0x90, bios);
+
+	/* Read master lock-bit */
+	mcfg = chip_readb(bios + 0x3);
+	msg_cdbg("master lock is ");
+	if (mcfg) {
+		msg_cdbg("locked!\n");
+	} else {
+		msg_cdbg("unlocked!\n");
+		can_unlock = 1;
+	}
+
+	/* Read block lock-bits, 8 * 8 KB + 15 * 64 KB */
+	for (i = 0; i < flash->total_size * 1024;
+	     i += (i >= (64 * 1024) ? 64 * 1024 : 8 * 1024)) {
+		bcfg = chip_readb(bios + i + 2); /* read block lock config */
+		msg_cdbg("block lock at %06x is %slocked!\n", i,
+			 bcfg ? "" : "un");
+		if (bcfg)
+			need_unlock = 1;
+	}
+
+	/* Reset chip */
+	chip_writeb(0xFF, bios);
+
+	/* Unlock: clear block lock-bits, if needed */
+	if (can_unlock && need_unlock) {
+		msg_cdbg("Unlock: ");
+		chip_writeb(0x60, bios);
+		chip_writeb(0xD0, bios);
+		chip_writeb(0xFF, bios);
+		wait_82802ab(flash);
+		msg_cdbg("Done!\n");
+	}
+
+	/* Error: master locked or a block is locked */
+	if (!can_unlock && need_unlock) {
+		msg_cerr("At least one block is locked and lockdown is active!\n");
+		return -1;
+	}
+
+	return 0;
+}
