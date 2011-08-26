@@ -259,8 +259,11 @@ int sb600_probe_spi(struct pci_dev *dev)
 	smbus_dev = pci_dev_find(0x1002, 0x4385);
 
 	if (!smbus_dev) {
-		msg_perr("ERROR: SMBus device not found. Not enabling SPI.\n");
-		return ERROR_NONFATAL;
+		smbus_dev = pci_dev_find(0x1022, 0x780b); /* AMD Hudson */
+		if (!smbus_dev) {
+			msg_perr("ERROR: SMBus device not found. Not enabling SPI.\n");
+			return ERROR_NONFATAL;
+		}
 	}
 
 	/* Note about the bit tests below: If a bit is zero, the GPIO is SPI. */
