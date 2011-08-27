@@ -440,11 +440,6 @@ static int enable_flash_poulsbo(struct pci_dev *dev, const char *name)
 	return 0;
 }
 
-#define ICH_STRAP_RSVD 0x00
-#define ICH_STRAP_SPI  0x01
-#define ICH_STRAP_PCI  0x02
-#define ICH_STRAP_LPC  0x03
-
 static int enable_flash_vt8237s_spi(struct pci_dev *dev, const char *name)
 {
 	/* Do we really need no write enable? */
@@ -458,13 +453,39 @@ static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
 	uint8_t bbs, buc;
 	uint32_t tmp, gcs;
 	void *rcrb;
+	const char *const *straps_names;
 
-	/*
-	 * TODO: These names are incorrect for EP80579. For that, the solution
-	 * would look like the commented line below.
-	 */
-	// static const char *straps_names[] = {"SPI", "reserved", "reserved", "LPC" };
-	static const char *straps_names[] = { "reserved", "SPI", "PCI", "LPC" };
+	static const char *const straps_names_EP80579[] = { "SPI", "reserved", "reserved", "LPC" };
+	static const char *const straps_names_ich7_nm10[] = { "reserved", "SPI", "PCI", "LPC" };
+	static const char *const straps_names_ich8910[] = { "SPI", "SPI", "PCI", "LPC" };
+	static const char *const straps_names_pch56[] = { "LPC", "reserved", "PCI", "SPI" };
+	static const char *const straps_names_unknown[] = { "unknown", "unknown", "unknown", "unknown" };
+
+	switch (ich_generation) {
+	case 7:
+		/* EP80579 may need further changes, but this is the least
+		 * intrusive way to get correct BOOT Strap printing without
+		 * changing the rest of its code path). */
+		if (strcmp(name, "EP80579") == 0)
+			straps_names = straps_names_EP80579;
+		else
+			straps_names = straps_names_ich7_nm10;
+		break;
+	case 8:
+	case 9:
+	case 10:
+		straps_names = straps_names_ich8910;
+		break;
+	case 11:
+	case 12:
+		straps_names = straps_names_pch56;
+		break;
+	default:
+		msg_gerr("%s: unknown ICH generation. Please report!\n",
+			 __func__);
+		straps_names = straps_names_unknown;
+		break;
+	}
 
 	/* Enable Flash Writes */
 	ret = enable_flash_ich_dc(dev, name);
@@ -481,7 +502,7 @@ static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
 	msg_pdbg("BIOS Interface Lock-Down: %sabled, ",
 		 (gcs & 0x1) ? "en" : "dis");
 	bbs = (gcs >> 10) & 0x3;
-	msg_pdbg("BOOT BIOS Straps: 0x%x (%s)\n", bbs, straps_names[bbs]);
+	msg_pdbg("Boot BIOS Straps: 0x%x (%s)\n", bbs, straps_names[bbs]);
 
 	buc = mmio_readb(rcrb + 0x3414);
 	msg_pdbg("Top Swap : %s\n",
@@ -491,11 +512,11 @@ static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
 	 * time. At least not with our current code. So we prevent searching
 	 * on ICH7 when the southbridge is strapped to LPC
 	 */
-
 	buses_supported = BUS_FWH;
 	if (ich_generation == 7) {
-		if (bbs == ICH_STRAP_LPC) {
-			/* No further SPI initialization required */
+		if (bbs == 0x03) {
+			/* If strapped to LPC, no further SPI initialization is
+			 * required. */
 			return ret;
 		} else {
 			/* Disable LPC/FWH if strapped to PCI or SPI */
@@ -530,6 +551,18 @@ static int enable_flash_ich9(struct pci_dev *dev, const char *name)
 static int enable_flash_ich10(struct pci_dev *dev, const char *name)
 {
 	return enable_flash_ich_dc_spi(dev, name, 10);
+}
+
+/* Ibex Peak aka. 5 series & 3400 series */
+static int enable_flash_pch5(struct pci_dev *dev, const char *name)
+{
+	return enable_flash_ich_dc_spi(dev, name, 11);
+}
+
+/* Cougar Point aka. 6 series & c200 series */
+static int enable_flash_pch6(struct pci_dev *dev, const char *name)
+{
+	return enable_flash_ich_dc_spi(dev, name, 12);
 }
 
 static int via_no_byte_merge(struct pci_dev *dev, const char *name)
@@ -1159,21 +1192,21 @@ const struct penable chipset_enables[] = {
 	{0x1166, 0x0205, OK, "Broadcom", "HT-1000",	enable_flash_ht1000},
 	{0x8086, 0x122e, OK, "Intel", "PIIX",		enable_flash_piix4},
 	{0x8086, 0x1234, NT, "Intel", "MPIIX",		enable_flash_piix4},
-	{0x8086, 0x1c44, NT, "Intel", "Z68",		enable_flash_ich10},
-	{0x8086, 0x1c46, NT, "Intel", "P67",		enable_flash_ich10},
-	{0x8086, 0x1c47, NT, "Intel", "UM67",		enable_flash_ich10},
-	{0x8086, 0x1c49, NT, "Intel", "HM65",		enable_flash_ich10},
-	{0x8086, 0x1c4a, NT, "Intel", "H67",		enable_flash_ich10},
-	{0x8086, 0x1c4b, NT, "Intel", "HM67",		enable_flash_ich10},
-	{0x8086, 0x1c4c, NT, "Intel", "Q65",		enable_flash_ich10},
-	{0x8086, 0x1c4d, NT, "Intel", "QS67",		enable_flash_ich10},
-	{0x8086, 0x1c4e, NT, "Intel", "Q67",		enable_flash_ich10},
-	{0x8086, 0x1c4f, NT, "Intel", "QM67",		enable_flash_ich10},
-	{0x8086, 0x1c50, NT, "Intel", "B65",		enable_flash_ich10},
-	{0x8086, 0x1c52, NT, "Intel", "C202",		enable_flash_ich10},
-	{0x8086, 0x1c54, NT, "Intel", "C204",		enable_flash_ich10},
-	{0x8086, 0x1c56, NT, "Intel", "C206",		enable_flash_ich10},
-	{0x8086, 0x1c5c, NT, "Intel", "H61",		enable_flash_ich10},
+	{0x8086, 0x1c44, NT, "Intel", "Z68",		enable_flash_pch6},
+	{0x8086, 0x1c46, NT, "Intel", "P67",		enable_flash_pch6},
+	{0x8086, 0x1c47, NT, "Intel", "UM67",		enable_flash_pch6},
+	{0x8086, 0x1c49, NT, "Intel", "HM65",		enable_flash_pch6},
+	{0x8086, 0x1c4a, NT, "Intel", "H67",		enable_flash_pch6},
+	{0x8086, 0x1c4b, NT, "Intel", "HM67",		enable_flash_pch6},
+	{0x8086, 0x1c4c, NT, "Intel", "Q65",		enable_flash_pch6},
+	{0x8086, 0x1c4d, NT, "Intel", "QS67",		enable_flash_pch6},
+	{0x8086, 0x1c4e, NT, "Intel", "Q67",		enable_flash_pch6},
+	{0x8086, 0x1c4f, NT, "Intel", "QM67",		enable_flash_pch6},
+	{0x8086, 0x1c50, NT, "Intel", "B65",		enable_flash_pch6},
+	{0x8086, 0x1c52, NT, "Intel", "C202",		enable_flash_pch6},
+	{0x8086, 0x1c54, NT, "Intel", "C204",		enable_flash_pch6},
+	{0x8086, 0x1c56, NT, "Intel", "C206",		enable_flash_pch6},
+	{0x8086, 0x1c5c, NT, "Intel", "H61",		enable_flash_pch6},
 	{0x8086, 0x2410, OK, "Intel", "ICH",		enable_flash_ich_4e},
 	{0x8086, 0x2420, OK, "Intel", "ICH0",		enable_flash_ich_4e},
 	{0x8086, 0x2440, OK, "Intel", "ICH2",		enable_flash_ich_4e},
@@ -1212,23 +1245,23 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x3a18, OK, "Intel", "ICH10",		enable_flash_ich10},
 	{0x8086, 0x3a1a, OK, "Intel", "ICH10D",		enable_flash_ich10},
 	{0x8086, 0x3a1e, NT, "Intel", "ICH10 Engineering Sample", enable_flash_ich10},
-	{0x8086, 0x3b00, NT, "Intel", "3400 Desktop",	enable_flash_ich10},
-	{0x8086, 0x3b01, NT, "Intel", "3400 Mobile",	enable_flash_ich10},
-	{0x8086, 0x3b02, NT, "Intel", "P55",		enable_flash_ich10},
-	{0x8086, 0x3b03, NT, "Intel", "PM55",		enable_flash_ich10},
-	{0x8086, 0x3b06, NT, "Intel", "H55",		enable_flash_ich10},
-	{0x8086, 0x3b07, OK, "Intel", "QM57",		enable_flash_ich10},
-	{0x8086, 0x3b08, NT, "Intel", "H57",		enable_flash_ich10},
-	{0x8086, 0x3b09, NT, "Intel", "HM55",		enable_flash_ich10},
-	{0x8086, 0x3b0a, NT, "Intel", "Q57",		enable_flash_ich10},
-	{0x8086, 0x3b0b, NT, "Intel", "HM57",		enable_flash_ich10},
-	{0x8086, 0x3b0d, NT, "Intel", "3400 Mobile SFF", enable_flash_ich10},
-	{0x8086, 0x3b0e, NT, "Intel", "B55",		enable_flash_ich10},
-	{0x8086, 0x3b0f, OK, "Intel", "QS57",		enable_flash_ich10},
-	{0x8086, 0x3b12, NT, "Intel", "3400",		enable_flash_ich10},
-	{0x8086, 0x3b14, NT, "Intel", "3420",		enable_flash_ich10},
-	{0x8086, 0x3b16, NT, "Intel", "3450",		enable_flash_ich10},
-	{0x8086, 0x3b1e, NT, "Intel", "B55",		enable_flash_ich10},
+	{0x8086, 0x3b00, NT, "Intel", "3400 Desktop",	enable_flash_pch5},
+	{0x8086, 0x3b01, NT, "Intel", "3400 Mobile",	enable_flash_pch5},
+	{0x8086, 0x3b02, NT, "Intel", "P55",		enable_flash_pch5},
+	{0x8086, 0x3b03, NT, "Intel", "PM55",		enable_flash_pch5},
+	{0x8086, 0x3b06, NT, "Intel", "H55",		enable_flash_pch5},
+	{0x8086, 0x3b07, OK, "Intel", "QM57",		enable_flash_pch5},
+	{0x8086, 0x3b08, NT, "Intel", "H57",		enable_flash_pch5},
+	{0x8086, 0x3b09, NT, "Intel", "HM55",		enable_flash_pch5},
+	{0x8086, 0x3b0a, NT, "Intel", "Q57",		enable_flash_pch5},
+	{0x8086, 0x3b0b, NT, "Intel", "HM57",		enable_flash_pch5},
+	{0x8086, 0x3b0d, NT, "Intel", "3400 Mobile SFF", enable_flash_pch5},
+	{0x8086, 0x3b0e, NT, "Intel", "B55",		enable_flash_pch5},
+	{0x8086, 0x3b0f, OK, "Intel", "QS57",		enable_flash_pch5},
+	{0x8086, 0x3b12, NT, "Intel", "3400",		enable_flash_pch5},
+	{0x8086, 0x3b14, NT, "Intel", "3420",		enable_flash_pch5},
+	{0x8086, 0x3b16, NT, "Intel", "3450",		enable_flash_pch5},
+	{0x8086, 0x3b1e, NT, "Intel", "B55",		enable_flash_pch5},
 	{0x8086, 0x5031, OK, "Intel", "EP80579",	enable_flash_ich7},
 	{0x8086, 0x7000, OK, "Intel", "PIIX3",		enable_flash_piix4},
 	{0x8086, 0x7110, OK, "Intel", "PIIX4/4E/4M",	enable_flash_piix4},
