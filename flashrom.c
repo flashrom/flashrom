@@ -1731,7 +1731,7 @@ int selfcheck(void)
 		msg_gerr("Chipset enables table does not exist!\n");
 		ret = 1;
 	}
-	if (board_pciid_enables == NULL) {
+	if (board_matches == NULL) {
 		msg_gerr("Board enables table does not exist!\n");
 		ret = 1;
 	}
