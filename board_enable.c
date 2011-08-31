@@ -1974,7 +1974,7 @@ static int it8712f_gpio3_1_raise(void)
  */
 
 /* Please keep this list alphabetically ordered by vendor/board name. */
-const struct board_pciid_enable board_pciid_enables[] = {
+const struct board_match board_matches[] = {
 
 	/* first pci-id set [4],          second pci-id set [4],          dmi identifier, coreboot id [2],  phase, vendor name,  board name       max_rom_...  OK? flash enable */
 #if defined(__i386__) || defined(__x86_64__)
@@ -2102,11 +2102,11 @@ const struct board_pciid_enable board_pciid_enables[] = {
  * Match boards on coreboot table gathered vendor and part name.
  * Require main PCI IDs to match too as extra safety.
  */
-static const struct board_pciid_enable *board_match_coreboot_name(
-					const char *vendor, const char *part)
+static const struct board_match *board_match_cbname(const char *vendor,
+						    const char *part)
 {
-	const struct board_pciid_enable *board = board_pciid_enables;
-	const struct board_pciid_enable *partmatch = NULL;
+	const struct board_match *board = board_matches;
+	const struct board_match *partmatch = NULL;
 
 	for (; board->vendor_name; board++) {
 		if (vendor && (!board->lb_vendor
@@ -2153,12 +2153,11 @@ static const struct board_pciid_enable *board_match_coreboot_name(
 
 /*
  * Match boards on PCI IDs and subsystem IDs.
- * Second set of IDs can be main only or missing completely.
+ * Second set of IDs can be either main+subsystem IDs, main IDs or no IDs.
  */
-const static struct board_pciid_enable *board_match_pci_card_ids(
-						enum board_match_phase phase)
+const static struct board_match *board_match_pci_ids(enum board_match_phase phase)
 {
-	const struct board_pciid_enable *board = board_pciid_enables;
+	const struct board_match *board = board_matches;
 
 	for (; board->vendor_name; board++) {
 		if ((!board->first_card_vendor || !board->first_card_device) &&
@@ -2204,7 +2203,7 @@ const static struct board_pciid_enable *board_match_pci_card_ids(
 	return NULL;
 }
 
-static int unsafe_board_handler(const struct board_pciid_enable *board)
+static int unsafe_board_handler(const struct board_match *board)
 {
 	if (!board)
 		return 1;
@@ -2231,9 +2230,9 @@ static int unsafe_board_handler(const struct board_pciid_enable *board)
 /* FIXME: Should this be identical to board_flash_enable? */
 static int board_handle_phase(enum board_match_phase phase)
 {
-	const struct board_pciid_enable *board = NULL;
+	const struct board_match *board = NULL;
 
-	board = board_match_pci_card_ids(phase);
+	board = board_match_pci_ids(phase);
 
 	if (unsafe_board_handler(board))
 		board = NULL;
@@ -2262,14 +2261,14 @@ void board_handle_before_laptop(void)
 
 int board_flash_enable(const char *vendor, const char *part)
 {
-	const struct board_pciid_enable *board = NULL;
+	const struct board_match *board = NULL;
 	int ret = 0;
 
 	if (part)
-		board = board_match_coreboot_name(vendor, part);
+		board = board_match_cbname(vendor, part);
 
 	if (!board)
-		board = board_match_pci_card_ids(P3);
+		board = board_match_pci_ids(P3);
 
 	if (unsafe_board_handler(board))
 		board = NULL;

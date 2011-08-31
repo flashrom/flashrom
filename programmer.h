@@ -158,7 +158,7 @@ enum board_match_phase {
 	P3
 };
 
-struct board_pciid_enable {
+struct board_match {
 	/* Any device, but make it sensible, like the ISA bridge. */
 	uint16_t first_vendor;
 	uint16_t first_device;
@@ -190,7 +190,7 @@ struct board_pciid_enable {
 	int (*enable) (void); /* May be NULL. */
 };
 
-extern const struct board_pciid_enable board_pciid_enables[];
+extern const struct board_match board_matches[];
 
 struct board_info {
 	const char *vendor;
