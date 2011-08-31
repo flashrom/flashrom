@@ -203,7 +203,7 @@ static void print_supported_boards_helper(const struct board_info *boards,
 				   const char *devicetype)
 {
 	int i, boardcount_good = 0, boardcount_bad = 0;
-	const struct board_pciid_enable *e = board_pciid_enables;
+	const struct board_match *e = board_matches;
 	const struct board_info *b = boards;
 	int maxvendorlen = strlen("Vendor") + 1;
 	int maxboardlen = strlen("Board") + 1;
@@ -241,7 +241,7 @@ static void print_supported_boards_helper(const struct board_info *boards,
 			msg_ginfo(" ");
 		msg_ginfo((b->working) ? "OK      " : "BAD     ");
 
-		for (e = board_pciid_enables; e->vendor_name != NULL; e++) {
+		for (e = board_matches; e->vendor_name != NULL; e++) {
 			if (strcmp(e->vendor_name, b->vendor)
 			    || strcmp(e->board_name, b->name))
 				continue;

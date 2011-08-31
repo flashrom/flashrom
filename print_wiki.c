@@ -125,7 +125,7 @@ static void wiki_helper(const char *devicetype, int cols,
 	int num_notes = 0;
 	char *notes = calloc(1, 1);
 	char tmp[900 + 1];
-	const struct board_pciid_enable *b = board_pciid_enables;
+	const struct board_match *b = board_matches;
 
 	for (i = 0; boards[i].vendor != NULL; i++) {
 		if (boards[i].working)
