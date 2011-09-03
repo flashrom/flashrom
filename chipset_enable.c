@@ -327,7 +327,7 @@ static int enable_flash_ich_dc(struct pci_dev *dev, const char *name)
 		}
 		if (fwh_idsel & 0xffff000000000000ULL) {
 			msg_perr("Error: fwh_idsel= specified, but value had "
-				 "unusued bits set.\n");
+				 "unused bits set.\n");
 			goto idsel_garbage_out;
 		}
 		fwh_idsel_old = pci_read_long(dev, 0xd0);
@@ -341,7 +341,7 @@ static int enable_flash_ich_dc(struct pci_dev *dev, const char *name)
 		/* FIXME: Decode settings are not changed. */
 	} else if (idsel) {
 		msg_perr("Error: fwh_idsel= specified, but no value given.\n");
-idsel_garbage_out:	
+idsel_garbage_out:
 		free(idsel);
 		/* FIXME: Return failure here once internal_init() starts
 		 * to care about the return value of the chipset enable.
@@ -846,8 +846,8 @@ static int enable_flash_ck804(struct pci_dev *dev, const char *name)
 	if (new != old) {
 		rpci_write_byte(dev, 0x88, new);
 		if (pci_read_byte(dev, 0x88) != new) {
-			msg_pinfo("Setting register to set 0x%x to 0x%x on %s "
-				  "failed (WARNING ONLY).\n", 0x88, new, name);
+			msg_pinfo("Setting register 0x%x to 0x%x on %s failed "
+				  "(WARNING ONLY).\n", 0x88, new, name);
 		}
 	}
 
@@ -1152,7 +1152,7 @@ const struct penable chipset_enables[] = {
 	{0x10de, 0x0366, OK, "NVIDIA", "MCP55",		enable_flash_mcp55}, /* LPC */
 	{0x10de, 0x0367, OK, "NVIDIA", "MCP55",		enable_flash_mcp55}, /* Pro */
 	{0x10de, 0x03e0, NT, "NVIDIA", "MCP61",		enable_flash_mcp6x_7x},
-	{0x10de, 0x03e1, NT, "NVIDIA", "MCP61",		enable_flash_mcp6x_7x},
+	{0x10de, 0x03e1, OK, "NVIDIA", "MCP61",		enable_flash_mcp6x_7x},
 	{0x10de, 0x03e2, NT, "NVIDIA", "MCP61",		enable_flash_mcp6x_7x},
 	{0x10de, 0x03e3, NT, "NVIDIA", "MCP61",		enable_flash_mcp6x_7x},
 	{0x10de, 0x0440, NT, "NVIDIA", "MCP65",		enable_flash_mcp6x_7x},
@@ -1196,7 +1196,7 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x1c46, NT, "Intel", "P67",		enable_flash_pch6},
 	{0x8086, 0x1c47, NT, "Intel", "UM67",		enable_flash_pch6},
 	{0x8086, 0x1c49, NT, "Intel", "HM65",		enable_flash_pch6},
-	{0x8086, 0x1c4a, NT, "Intel", "H67",		enable_flash_pch6},
+	{0x8086, 0x1c4a, OK, "Intel", "H67",		enable_flash_pch6},
 	{0x8086, 0x1c4b, NT, "Intel", "HM67",		enable_flash_pch6},
 	{0x8086, 0x1c4c, NT, "Intel", "Q65",		enable_flash_pch6},
 	{0x8086, 0x1c4d, NT, "Intel", "QS67",		enable_flash_pch6},
@@ -1207,6 +1207,8 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x1c54, NT, "Intel", "C204",		enable_flash_pch6},
 	{0x8086, 0x1c56, NT, "Intel", "C206",		enable_flash_pch6},
 	{0x8086, 0x1c5c, NT, "Intel", "H61",		enable_flash_pch6},
+	{0x8086, 0x1d40, OK, "Intel", "X79",		enable_flash_ich10}, /* FIXME: when datasheet is available */
+	{0x8086, 0x1d41, NT, "Intel", "X79",		enable_flash_ich10}, /* FIXME: when datasheet is available */
 	{0x8086, 0x2410, OK, "Intel", "ICH",		enable_flash_ich_4e},
 	{0x8086, 0x2420, OK, "Intel", "ICH0",		enable_flash_ich_4e},
 	{0x8086, 0x2440, OK, "Intel", "ICH2",		enable_flash_ich_4e},
@@ -1249,7 +1251,7 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x3b01, NT, "Intel", "3400 Mobile",	enable_flash_pch5},
 	{0x8086, 0x3b02, NT, "Intel", "P55",		enable_flash_pch5},
 	{0x8086, 0x3b03, NT, "Intel", "PM55",		enable_flash_pch5},
-	{0x8086, 0x3b06, NT, "Intel", "H55",		enable_flash_pch5},
+	{0x8086, 0x3b06, OK, "Intel", "H55",		enable_flash_pch5},
 	{0x8086, 0x3b07, OK, "Intel", "QM57",		enable_flash_pch5},
 	{0x8086, 0x3b08, NT, "Intel", "H57",		enable_flash_pch5},
 	{0x8086, 0x3b09, NT, "Intel", "HM55",		enable_flash_pch5},

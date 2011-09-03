@@ -81,6 +81,7 @@ static const struct {
 	{0x0e, 1, "Sub Notebook"},
 	{0x11, 0, "Main Server Chassis"},
 	{0x17, 0, "Rack Mount Chassis"},
+	{0x18, 0, "Sealed-case PC"}, /* used by Supermicro (X8SIE) */
 };
 
 #define DMI_COMMAND_LEN_MAX 260

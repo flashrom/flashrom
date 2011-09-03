@@ -424,9 +424,6 @@ extern const struct pcidev_status nics_intel[];
 /* nicintel_spi.c */
 #if CONFIG_NICINTEL_SPI == 1
 int nicintel_spi_init(void);
-int nicintel_spi_send_command(unsigned int writecnt, unsigned int readcnt,
-	const unsigned char *writearr, unsigned char *readarr);
-void nicintel_spi_chip_writeb(uint8_t val, chipaddr addr);
 extern const struct pcidev_status nics_intel_spi[];
 #endif
 

@@ -1544,7 +1544,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 4096,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
-		.tested		= TEST_UNTESTED,
+		.tested		= TEST_OK_PROBE,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
@@ -3768,13 +3768,13 @@ const struct flashchip flashchips[] = {
 		.model_id	= INTEL_28F001T,
 		.total_size	= 128,
 		.page_size	= 128 * 1024, /* 112k + 2x4k + 8k */
-		.tested		= TEST_UNTESTED,
+		.tested		= TEST_OK_PR,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { 
+				.eraseblocks = {
 					{112 * 1024, 1},
 					{4 * 1024, 2},
 					{8 * 1024, 1},
@@ -4488,7 +4488,7 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Macronix",
-		.name		= "MX29F002B",
+		.name		= "MX29F002(N)B",
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX29F002B,
@@ -4520,7 +4520,7 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Macronix",
-		.name		= "MX29F002T",
+		.name		= "MX29F002(N)T",
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX29F002T,
@@ -5637,7 +5637,7 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "SST",
-		.name		= "SST25VF010.REMS",
+		.name		= "SST25VF010",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= SST_ID,
 		.model_id	= SST_SST25VF010_REMS,
@@ -5775,7 +5775,7 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "SST",
-		.name		= "SST25VF040.REMS",
+		.name		= "SST25VF040",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= SST_ID,
 		.model_id	= SST_SST25VF040_REMS,
@@ -6125,7 +6125,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 512,
 		.page_size	= 4096,
 		.feature_bits	= FEATURE_EITHER_RESET,
-		.tested		= TEST_OK_PRE,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_jedec,
 		.probe_timing	= 1,			/* 150 ns */
 		.block_erasers	=
@@ -6610,7 +6610,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 512,
 		.page_size	= 64 * 1024,
 		.feature_bits	= FEATURE_EITHER_RESET | FEATURE_REGISTERMAP,
-		.tested		= TEST_OK_PRE,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_jedec,
 		.probe_timing	= 1,		/* 150ns */
 		.block_erasers	=
@@ -6729,7 +6729,7 @@ const struct flashchip flashchips[] = {
 	 */
 	{
 		.vendor		= "ST",
-		.name		= "M25P05.RES",
+		.name		= "M25P05",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= 0, /* Not used. */
 		.model_id	= ST_M25P05_RES,
@@ -6784,7 +6784,7 @@ const struct flashchip flashchips[] = {
 	/* The ST M25P10 has the same problem as the M25P05. */
 	{
 		.vendor		= "ST",
-		.name		= "M25P10.RES",
+		.name		= "M25P10",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= 0, /* Not used. */
 		.model_id	= ST_M25P10_RES,
@@ -6837,7 +6837,7 @@ const struct flashchip flashchips[] = {
 	},
 
 	{
-		.vendor		= "ST",
+		.vendor		= "ST", /* Numonyx */
 		.name		= "M25P40",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
