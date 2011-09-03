@@ -369,8 +369,8 @@
 #define MACRONIX_MX25L3235D	0x5E16	/* MX25L3225D/MX25L3235D/MX25L3237D */
 #define MACRONIX_MX29F001B	0x19
 #define MACRONIX_MX29F001T	0x18
-#define MACRONIX_MX29F002B	0x34	/* Same as MX29F002NB */
-#define MACRONIX_MX29F002T	0xB0	/* Same as MX29F002NT */
+#define MACRONIX_MX29F002B	0x34	/* Same as MX29F002NB; N has reset pin n/c. */
+#define MACRONIX_MX29F002T	0xB0	/* Same as MX29F002NT; N has reset pin n/c. */
 #define MACRONIX_MX29F004B	0x46
 #define MACRONIX_MX29F004T	0x45
 #define MACRONIX_MX29F022T	0x36	/* Same as MX29F022NT */
@@ -474,7 +474,7 @@
 #define SST_SST25VF040_REMS	0x44	/* REMS or RES opcode, same as SST25LF040A */
 #define SST_SST25VF040B		0x258D
 #define SST_SST25VF040B_REMS	0x8D	/* REMS or RES opcode */
-#define SST_SST25VF080_REMS	0x80	/* REMS or RES opcode */
+#define SST_SST25VF080_REMS	0x80	/* REMS or RES opcode, same as SST25LF080A */
 #define SST_SST25VF080B		0x258E
 #define SST_SST25VF080B_REMS	0x8E	/* REMS or RES opcode */
 #define SST_SST25VF016B		0x2541
@@ -526,7 +526,7 @@
  * ST25P chips are SPI, first byte of device ID is memory type, second
  * byte of device ID is related to log(bitsize) at least for some chips.
  */
-#define ST_ID			0x20	/* ST / SGS/Thomson */
+#define ST_ID			0x20	/* ST / SGS/Thomson / Numonyx (later acquired by Micron) */
 #define ST_M25P05A		0x2010
 #define ST_M25P05_RES		0x10	/* Same code as M25P10. */
 #define ST_M25P10A		0x2011

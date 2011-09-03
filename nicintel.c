@@ -28,7 +28,7 @@ uint8_t *nicintel_control_bar;
 
 const struct pcidev_status nics_intel[] = {
 	{PCI_VENDOR_ID_INTEL, 0x1209, NT, "Intel", "8255xER/82551IT Fast Ethernet Controller"},
-	{PCI_VENDOR_ID_INTEL, 0x1229, NT, "Intel", "82557/8/9/0/1 Ethernet Pro 100"},
+	{PCI_VENDOR_ID_INTEL, 0x1229, OK, "Intel", "82557/8/9/0/1 Ethernet Pro 100"},
 
 	{},
 };
