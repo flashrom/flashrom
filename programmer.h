@@ -79,6 +79,9 @@ enum programmer {
 #if CONFIG_SATAMV == 1
 	PROGRAMMER_SATAMV,
 #endif
+#if CONFIG_LINUX_SPI == 1
+	PROGRAMMER_LINUX_SPI,
+#endif
 	PROGRAMMER_INVALID /* This must always be the last entry. */
 };
 
@@ -485,6 +488,11 @@ int bitbang_spi_shutdown(const struct bitbang_spi_master *master);
 int buspirate_spi_init(void);
 #endif
 
+/* linux_spi.c */
+#if CONFIG_LINUX_SPI == 1
+int linux_spi_init(void);
+#endif
+
 /* dediprog.c */
 #if CONFIG_DEDIPROG == 1
 int dediprog_init(void);
@@ -535,6 +543,9 @@ enum spi_controller {
 #endif
 #if CONFIG_OGP_SPI == 1 || CONFIG_NICINTEL_SPI == 1 || CONFIG_RAYER_SPI == 1 || (CONFIG_INTERNAL == 1 && (defined(__i386__) || defined(__x86_64__)))
 	SPI_CONTROLLER_BITBANG,
+#endif
+#if CONFIG_LINUX_SPI == 1
+	SPI_CONTROLLER_LINUX,
 #endif
 };
 extern const int spi_programmer_count;
