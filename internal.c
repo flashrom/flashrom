@@ -268,7 +268,8 @@ int internal_init(void)
 	if (ret == -2) {
 		msg_perr("WARNING: No chipset found. Flash detection "
 			 "will most likely fail.\n");
-	}
+	} else if (ret == ERROR_FATAL)
+		return ret;
 
 #if defined(__i386__) || defined(__x86_64__)
 	/* Probe unconditionally for IT87* LPC->SPI translation and for
