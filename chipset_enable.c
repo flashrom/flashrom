@@ -1325,6 +1325,10 @@ int chipset_flash_enable(void)
 			msg_pinfo("OK.\n");
 		else if (ret == ERROR_NONFATAL)
 			msg_pinfo("PROBLEMS, continuing anyway\n");
+		if (ret == ERROR_FATAL) {
+			msg_perr("FATAL ERROR!\n");
+			return ret;
+		}
 	}
 
 	s = flashbuses_to_text(buses_supported);

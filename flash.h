@@ -224,8 +224,11 @@ int write_buf_to_file(unsigned char *buf, unsigned long size, const char *filena
 #define OK 0
 #define NT 1    /* Not tested */
 
-/* Something happened that shouldn't happen, but we can go on */
+/* Something happened that shouldn't happen, but we can go on. */
 #define ERROR_NONFATAL 0x100
+
+/* Something happened that shouldn't happen, we'll abort. */
+#define ERROR_FATAL -0xee
 
 /* cli_output.c */
 /* Let gcc and clang check for correct printf-style format strings. */
