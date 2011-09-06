@@ -343,10 +343,7 @@ static int enable_flash_ich_dc(struct pci_dev *dev, const char *name)
 		msg_perr("Error: fwh_idsel= specified, but no value given.\n");
 idsel_garbage_out:
 		free(idsel);
-		/* FIXME: Return failure here once internal_init() starts
-		 * to care about the return value of the chipset enable.
-		 */
-		exit(1);
+		return ERROR_FATAL;
 	}
 	free(idsel);
 
@@ -489,6 +486,8 @@ static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
 
 	/* Enable Flash Writes */
 	ret = enable_flash_ich_dc(dev, name);
+	if (ret == ERROR_FATAL)
+		return ret;
 
 	/* Get physical address of Root Complex Register Block */
 	tmp = pci_read_long(dev, 0xf0) & 0xffffc000;
@@ -894,7 +893,7 @@ static int enable_flash_sb400(struct pci_dev *dev, const char *name)
 
 	if (!smbusdev) {
 		msg_perr("ERROR: SMBus device not found. Aborting.\n");
-		exit(1);
+		return ERROR_FATAL;
 	}
 
 	/* Enable some SMBus stuff. */
