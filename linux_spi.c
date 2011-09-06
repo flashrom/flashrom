@@ -107,11 +107,11 @@ static int linux_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 {
 	struct spi_ioc_transfer msg[2] = {
 		{
-			.tx_buf = (uint64_t)txbuf,
+			.tx_buf = (uint64_t)(ptrdiff_t)txbuf,
 			.len = writecnt,
 		},
 		{
-			.rx_buf = (uint64_t)rxbuf,
+			.rx_buf = (uint64_t)(ptrdiff_t)rxbuf,
 			.len = readcnt,
 		},
 	};
