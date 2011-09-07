@@ -437,6 +437,50 @@ static int enable_flash_poulsbo(struct pci_dev *dev, const char *name)
 	return 0;
 }
 
+static int enable_flash_tunnelcreek(struct pci_dev *dev, const char *name)
+{
+	uint16_t old, new;
+	uint32_t tmp, bnt;
+	void *rcrb;
+	int ret;
+
+	/* Enable Flash Writes */
+	ret = enable_flash_ich(dev, name, 0xd8);
+	if (ret == ERROR_FATAL)
+		return ret;
+
+	/* Make sure BIOS prefetch mechanism is disabled */
+	old = pci_read_byte(dev, 0xd9);
+	msg_pdbg("BIOS Prefetch Enable: %sabled, ", (old & 1) ? "en" : "dis");
+	new = old & ~1;
+	if (new != old)
+		rpci_write_byte(dev, 0xd9, new);
+
+	/* Get physical address of Root Complex Register Block */
+	tmp = pci_read_long(dev, 0xf0) & 0xffffc000;
+	msg_pdbg("\nRoot Complex Register Block address = 0x%x\n", tmp);
+
+	/* Map RCBA to virtual memory */
+	rcrb = physmap("ICH RCRB", tmp, 0x4000);
+
+	/* Test Boot BIOS Strap Status */
+	bnt = mmio_readl(rcrb + 0x3410);
+	if (bnt & 0x02) {
+		/* If strapped to LPC, no SPI initialization is required */
+		buses_supported = BUS_FWH;
+		return 0;
+	}
+
+	/* This adds BUS_SPI */
+	buses_supported = BUS_SPI;
+	if (ich_init_spi(dev, tmp, rcrb, 7) != 0) {
+		if (!ret)
+			ret = ERROR_NONFATAL;
+	}
+
+	return ret;
+}
+
 static int enable_flash_vt8237s_spi(struct pci_dev *dev, const char *name)
 {
 	/* Do we really need no write enable? */
@@ -1268,7 +1312,7 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x7110, OK, "Intel", "PIIX4/4E/4M",	enable_flash_piix4},
 	{0x8086, 0x7198, OK, "Intel", "440MX",		enable_flash_piix4},
 	{0x8086, 0x8119, OK, "Intel", "SCH Poulsbo",	enable_flash_poulsbo},
-	{0x8086, 0x8186, NT, "Intel", "Atom E6xx(T)/Tunnel Creek", enable_flash_poulsbo},
+	{0x8086, 0x8186, OK, "Intel", "Atom E6xx(T)/Tunnel Creek", enable_flash_tunnelcreek},
 #endif
 	{},
 };
