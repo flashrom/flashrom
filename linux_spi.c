@@ -54,7 +54,7 @@ static const struct spi_programmer spi_programmer_linux = {
 int linux_spi_init(void)
 {
 	char *p, *endp, *dev;
-	int speed = 0;
+	uint32_t speed = 0;
 
 	dev = extract_programmer_param("dev");
 	if (!dev || !strlen(dev)) {
@@ -65,24 +65,29 @@ int linux_spi_init(void)
 
 	p = extract_programmer_param("speed");
 	if (p && strlen(p)) {
-		speed = strtoul(p, &endp, 10) * 1024;
+		speed = (uint32_t)strtoul(p, &endp, 10) * 1024;
 		if (p == endp) {
 			msg_perr("%s: invalid clock: %s kHz\n", __func__, p);
 			return 1;
 		}
 	}
 
+	msg_pdbg("Using device %s\n", dev);
 	if ((fd = open(dev, O_RDWR)) == -1) {
 		msg_perr("%s: failed to open %s: %s\n", __func__,
 			 dev, strerror(errno));
 		return 1;
 	}
 
-	if (speed > 0 && ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &speed) == -1) {
-		msg_perr("%s: failed to set speed %dHz: %s\n",
-			 __func__, speed, strerror(errno));
-		close(fd);
-		return 1;
+	if (speed > 0) {
+		if (ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &speed) == -1) {
+			msg_perr("%s: failed to set speed %dHz: %s\n",
+				 __func__, speed, strerror(errno));
+			close(fd);
+			return 1;
+		}
+
+		msg_pdbg("Using %d kHz clock\n", speed);
 	}
 
 	if (register_shutdown(linux_spi_shutdown, NULL))
