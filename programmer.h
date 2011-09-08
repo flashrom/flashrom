@@ -85,8 +85,6 @@ enum programmer {
 	PROGRAMMER_INVALID /* This must always be the last entry. */
 };
 
-extern enum programmer programmer;
-
 struct programmer_entry {
 	const char *vendor;
 	const char *name;
@@ -110,7 +108,7 @@ struct programmer_entry {
 
 extern const struct programmer_entry programmer_table[];
 
-int programmer_init(char *param);
+int programmer_init(enum programmer prog, char *param);
 int programmer_shutdown(void);
 
 enum bitbang_spi_master_type {
