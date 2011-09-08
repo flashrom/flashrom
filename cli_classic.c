@@ -31,6 +31,74 @@
 #include "flashchips.h"
 #include "programmer.h"
 
+#if CONFIG_INTERNAL == 1
+static enum programmer default_programmer = PROGRAMMER_INTERNAL;
+#elif CONFIG_DUMMY == 1
+static enum programmer default_programmer = PROGRAMMER_DUMMY;
+#else
+/* If neither internal nor dummy are selected, we must pick a sensible default.
+ * Since there is no reason to prefer a particular external programmer, we fail
+ * if more than one of them is selected. If only one is selected, it is clear
+ * that the user wants that one to become the default.
+ */
+#if CONFIG_NIC3COM+CONFIG_NICREALTEK+CONFIG_NICNATSEMI+CONFIG_GFXNVIDIA+CONFIG_DRKAISER+CONFIG_SATASII+CONFIG_ATAHPT+CONFIG_FT2232_SPI+CONFIG_SERPROG+CONFIG_BUSPIRATE_SPI+CONFIG_DEDIPROG+CONFIG_RAYER_SPI+CONFIG_NICINTEL+CONFIG_NICINTEL_SPI+CONFIG_OGP_SPI+CONFIG_SATAMV > 1
+#error Please enable either CONFIG_DUMMY or CONFIG_INTERNAL or disable support for all programmers except one.
+#endif
+static enum programmer default_programmer =
+#if CONFIG_NIC3COM == 1
+	PROGRAMMER_NIC3COM
+#endif
+#if CONFIG_NICREALTEK == 1
+	PROGRAMMER_NICREALTEK
+#endif
+#if CONFIG_NICNATSEMI == 1
+	PROGRAMMER_NICNATSEMI
+#endif
+#if CONFIG_GFXNVIDIA == 1
+	PROGRAMMER_GFXNVIDIA
+#endif
+#if CONFIG_DRKAISER == 1
+	PROGRAMMER_DRKAISER
+#endif
+#if CONFIG_SATASII == 1
+	PROGRAMMER_SATASII
+#endif
+#if CONFIG_ATAHPT == 1
+	PROGRAMMER_ATAHPT
+#endif
+#if CONFIG_FT2232_SPI == 1
+	PROGRAMMER_FT2232_SPI
+#endif
+#if CONFIG_SERPROG == 1
+	PROGRAMMER_SERPROG
+#endif
+#if CONFIG_BUSPIRATE_SPI == 1
+	PROGRAMMER_BUSPIRATE_SPI
+#endif
+#if CONFIG_DEDIPROG == 1
+	PROGRAMMER_DEDIPROG
+#endif
+#if CONFIG_RAYER_SPI == 1
+	PROGRAMMER_RAYER_SPI
+#endif
+#if CONFIG_NICINTEL == 1
+	PROGRAMMER_NICINTEL
+#endif
+#if CONFIG_NICINTEL_SPI == 1
+	PROGRAMMER_NICINTEL_SPI
+#endif
+#if CONFIG_OGP_SPI == 1
+	PROGRAMMER_OGP_SPI
+#endif
+#if CONFIG_SATAMV == 1
+	PROGRAMMER_SATAMV
+#endif
+#if CONFIG_LINUX_SPI == 1
+	PROGRAMMER_LINUX_SPI
+#endif
+;
+#endif
+
 static void cli_classic_usage(const char *name)
 {
 	printf("Usage: flashrom [-n] [-V] [-f] [-h|-R|-L|"
@@ -111,6 +179,7 @@ int main(int argc, char *argv[])
 #endif
 	int read_it = 0, write_it = 0, erase_it = 0, verify_it = 0;
 	int dont_verify_it = 0, list_supported = 0, operation_specified = 0;
+	enum programmer prog = PROGRAMMER_INVALID;
 	int ret = 0;
 
 	static const char optstring[] = "r:Rw:v:nVEfc:m:l:i:p:Lzh";
@@ -258,8 +327,16 @@ int main(int argc, char *argv[])
 #endif
 			break;
 		case 'p':
-			for (programmer = 0; programmer < PROGRAMMER_INVALID; programmer++) {
-				name = programmer_table[programmer].name;
+			if (prog != PROGRAMMER_INVALID) {
+				fprintf(stderr, "Error: --programmer specified "
+					"more than once. You can separate "
+					"multiple\nparameters for a programmer "
+					"with \",\". Please see the man page "
+					"for details.\n");
+				cli_classic_abort_usage();
+			}
+			for (prog = 0; prog < PROGRAMMER_INVALID; prog++) {
+				name = programmer_table[prog].name;
 				namelen = strlen(name);
 				if (strncmp(optarg, name, namelen) == 0) {
 					switch (optarg[namelen]) {
@@ -283,7 +360,7 @@ int main(int argc, char *argv[])
 					break;
 				}
 			}
-			if (programmer == PROGRAMMER_INVALID) {
+			if (prog == PROGRAMMER_INVALID) {
 				fprintf(stderr, "Error: Unknown programmer "
 					"%s.\n", optarg);
 				cli_classic_abort_usage();
@@ -332,14 +409,6 @@ int main(int argc, char *argv[])
 	}
 #endif
 
-#if CONFIG_INTERNAL == 1
-	if ((programmer != PROGRAMMER_INTERNAL) && (lb_part || lb_vendor)) {
-		fprintf(stderr, "Error: --mainboard requires the internal "
-				"programmer. Aborting.\n");
-		cli_classic_abort_usage();
-	}
-#endif
-
 	if (chip_to_probe) {
 		for (flash = flashchips; flash && flash->name; flash++)
 			if (!strcmp(flash->name, chip_to_probe))
@@ -355,10 +424,21 @@ int main(int argc, char *argv[])
 		flash = NULL;
 	}
 
+	if (prog == PROGRAMMER_INVALID)
+		prog = default_programmer;
+
+#if CONFIG_INTERNAL == 1
+	if ((prog != PROGRAMMER_INTERNAL) && (lb_part || lb_vendor)) {
+		fprintf(stderr, "Error: --mainboard requires the internal "
+				"programmer. Aborting.\n");
+		cli_classic_abort_usage();
+	}
+#endif
+
 	/* FIXME: Delay calibration should happen in programmer code. */
 	myusec_calibrate_delay();
 
-	if (programmer_init(pparam)) {
+	if (programmer_init(prog, pparam)) {
 		fprintf(stderr, "Error: Programmer initialization failed.\n");
 		ret = 1;
 		goto out_shutdown;

@@ -42,73 +42,7 @@ const char flashrom_version[] = FLASHROM_VERSION;
 char *chip_to_probe = NULL;
 int verbose = 0;
 
-#if CONFIG_INTERNAL == 1
-enum programmer programmer = PROGRAMMER_INTERNAL;
-#elif CONFIG_DUMMY == 1
-enum programmer programmer = PROGRAMMER_DUMMY;
-#else
-/* If neither internal nor dummy are selected, we must pick a sensible default.
- * Since there is no reason to prefer a particular external programmer, we fail
- * if more than one of them is selected. If only one is selected, it is clear
- * that the user wants that one to become the default.
- */
-#if CONFIG_NIC3COM+CONFIG_NICREALTEK+CONFIG_NICNATSEMI+CONFIG_GFXNVIDIA+CONFIG_DRKAISER+CONFIG_SATASII+CONFIG_ATAHPT+CONFIG_FT2232_SPI+CONFIG_SERPROG+CONFIG_BUSPIRATE_SPI+CONFIG_DEDIPROG+CONFIG_RAYER_SPI+CONFIG_NICINTEL+CONFIG_NICINTEL_SPI+CONFIG_OGP_SPI+CONFIG_SATAMV > 1
-#error Please enable either CONFIG_DUMMY or CONFIG_INTERNAL or disable support for all programmers except one.
-#endif
-enum programmer programmer =
-#if CONFIG_NIC3COM == 1
-	PROGRAMMER_NIC3COM
-#endif
-#if CONFIG_NICREALTEK == 1
-	PROGRAMMER_NICREALTEK
-#endif
-#if CONFIG_NICNATSEMI == 1
-	PROGRAMMER_NICNATSEMI
-#endif
-#if CONFIG_GFXNVIDIA == 1
-	PROGRAMMER_GFXNVIDIA
-#endif
-#if CONFIG_DRKAISER == 1
-	PROGRAMMER_DRKAISER
-#endif
-#if CONFIG_SATASII == 1
-	PROGRAMMER_SATASII
-#endif
-#if CONFIG_ATAHPT == 1
-	PROGRAMMER_ATAHPT
-#endif
-#if CONFIG_FT2232_SPI == 1
-	PROGRAMMER_FT2232_SPI
-#endif
-#if CONFIG_SERPROG == 1
-	PROGRAMMER_SERPROG
-#endif
-#if CONFIG_BUSPIRATE_SPI == 1
-	PROGRAMMER_BUSPIRATE_SPI
-#endif
-#if CONFIG_DEDIPROG == 1
-	PROGRAMMER_DEDIPROG
-#endif
-#if CONFIG_RAYER_SPI == 1
-	PROGRAMMER_RAYER_SPI
-#endif
-#if CONFIG_NICINTEL == 1
-	PROGRAMMER_NICINTEL
-#endif
-#if CONFIG_NICINTEL_SPI == 1
-	PROGRAMMER_NICINTEL_SPI
-#endif
-#if CONFIG_OGP_SPI == 1
-	PROGRAMMER_OGP_SPI
-#endif
-#if CONFIG_SATAMV == 1
-	PROGRAMMER_SATAMV
-#endif
-#if CONFIG_LINUX_SPI == 1
-	PROGRAMMER_LINUX_SPI
-#endif
-;
-#endif
+static enum programmer programmer = PROGRAMMER_INVALID;
 
 static char *programmer_param = NULL;
 
@@ -515,9 +449,15 @@ int register_shutdown(int (*function) (void *data), void *data)
 	return 0;
 }
 
-int programmer_init(char *param)
+int programmer_init(enum programmer prog, char *param)
 {
 	int ret;
+
+	if (prog >= PROGRAMMER_INVALID) {
+		msg_perr("Invalid programmer specified!\n");
+		return -1;
+	}
+	programmer = prog;
 	/* Initialize all programmer specific data. */
 	/* Default to unlimited decode sizes. */
 	max_rom_decode = (const struct decode_sizes) {
