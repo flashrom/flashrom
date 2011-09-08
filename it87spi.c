@@ -129,10 +129,8 @@ static uint16_t it87spi_probe(uint16_t port)
 	enter_conf_mode_ite(port);
 	/* NOLDN, reg 0x24, mask out lowest bit (suspend) */
 	tmp = sio_read(port, 0x24) & 0xFE;
-	/* If IT87SPI was not explicitly selected, we want to check
-	 * quickly if LPC->SPI translation is active.
-	 */
-	if ((programmer == PROGRAMMER_INTERNAL) && !(tmp & (0x0E))) {
+	/* Check if LPC->SPI translation is active. */
+	if (!(tmp & 0x0e)) {
 		msg_pdbg("No IT87* serial flash segment enabled.\n");
 		exit_conf_mode_ite(port);
 		/* Nothing to do. */
