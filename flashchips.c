@@ -2305,6 +2305,42 @@ const struct flashchip flashchips[] = {
 	},
 
 	{
+		.vendor		= "Atmel",
+		.name		= "AT49LH002",
+		.bustype	= BUS_LPC | BUS_FWH, /* A/A Mux */
+		.manufacture_id	= ATMEL_ID,
+		.model_id	= ATMEL_AT49LH002,
+		.total_size	= 256,
+		.page_size	= 0, /* unused */
+		.feature_bits	= FEATURE_REGISTERMAP, /* TODO: LPC OK too? */
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_82802ab, /* TODO: 0xff cmd not documented? */
+		.probe_timing	= TIMING_FIXME,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = {
+					{64 * 1024, 3},
+					{32 * 1024, 1},
+					{8 * 1024, 2},
+					{16 * 1024, 1},
+				},
+				.block_erase = erase_block_82802ab,
+			}, {
+				.eraseblocks = {
+					{64 * 1024, 4},
+				},
+				.block_erase = NULL, /* TODO: Implement. */
+			},
+		},
+		.printlock	= NULL, /* TODO */
+		.unlock		= NULL, /* unlock_82802ab() not correct(?) */
+		.write		= write_82802ab,
+		.read		= read_memmapped,
+		.voltage	= {3000, 3600},
+	},
+
+	{
 		.vendor		= "Bright",
 		.name		= "BM29F040",
 		.bustype	= BUS_PARALLEL,
