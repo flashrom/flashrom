@@ -256,7 +256,7 @@ static int enable_flash_piix4(struct pci_dev *dev, const char *name)
 static int enable_flash_ich(struct pci_dev *dev, const char *name,
 			    int bios_cntl)
 {
-	uint8_t old, new;
+	uint8_t old, new, wanted;
 
 	/*
 	 * Note: the ICH0-ICH5 BIOS_CNTL register is actually 16 bit wide, but
@@ -280,15 +280,16 @@ static int enable_flash_ich(struct pci_dev *dev, const char *name,
 	if (old & (1 << 5))
 		msg_pinfo("WARNING: BIOS region SMM protection is enabled!\n");
 
-	new = old | 1;
-	if (new == old)
+	wanted = old | 1;
+	if (wanted == old)
 		return 0;
 
-	rpci_write_byte(dev, bios_cntl, new);
+	rpci_write_byte(dev, bios_cntl, wanted);
 
-	if (pci_read_byte(dev, bios_cntl) != new) {
-		msg_pinfo("Setting register 0x%x to 0x%x on %s failed "
-			  "(WARNING ONLY).\n", bios_cntl, new, name);
+	if ((new = pci_read_byte(dev, bios_cntl)) != wanted) {
+		msg_pinfo("WARNING: Setting 0x%x from 0x%x to 0x%x on %s "
+			  "failed. New value is 0x%x.\n",
+			  bios_cntl, old, wanted, name, new);
 		return -1;
 	}
 
