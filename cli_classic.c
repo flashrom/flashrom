@@ -483,6 +483,13 @@ int main(int argc, char *argv[])
 		}
 		ret = 1;
 		goto out_shutdown;
+	} else if (!chip_to_probe) {
+		/* repeat for convenience when looking at foreign logs */
+		tempstr = flashbuses_to_text(flashes[0].bustype);
+		msg_gdbg("Found %s flash chip \"%s\" (%d kB, %s).\n",
+			 flashes[0].vendor, flashes[0].name,
+			 flashes[0].total_size, tempstr);
+		free(tempstr);
 	}
 
 	fill_flash = &flashes[0];
