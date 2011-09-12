@@ -31,18 +31,25 @@
 #if defined(__i386__) || defined(__x86_64__)
 
 #include <stdlib.h>
+#include <string.h>
 #include "flash.h"
 #include "programmer.h"
 
+enum rayer_type {
+	TYPE_RAYER,
+	TYPE_XILINX_DLC5,
+};
+
 /* We have two sets of pins, out and in. The numbers for both sets are
  * independent and are bitshift values, not real pin numbers.
+ * Default settings are for the the RayeR hardware.
  */
 /* Pins for master->slave direction */
-#define SPI_CS_PIN 5
-#define SPI_SCK_PIN 6
-#define SPI_MOSI_PIN 7
+static int rayer_cs_bit = 5;
+static int rayer_sck_bit = 6;
+static int rayer_mosi_bit = 7;
 /* Pins for slave->master direction */
-#define SPI_MISO_PIN 6
+static int rayer_miso_bit = 6;
 
 static uint16_t lpt_iobase;
 
@@ -51,22 +58,22 @@ static uint8_t lpt_outbyte;
 
 static void rayer_bitbang_set_cs(int val)
 {
-	lpt_outbyte &= ~(1 << SPI_CS_PIN);
-	lpt_outbyte |= (val << SPI_CS_PIN);
+	lpt_outbyte &= ~(1 << rayer_cs_bit);
+	lpt_outbyte |= (val << rayer_cs_bit);
 	OUTB(lpt_outbyte, lpt_iobase);
 }
 
 static void rayer_bitbang_set_sck(int val)
 {
-	lpt_outbyte &= ~(1 << SPI_SCK_PIN);
-	lpt_outbyte |= (val << SPI_SCK_PIN);
+	lpt_outbyte &= ~(1 << rayer_sck_bit);
+	lpt_outbyte |= (val << rayer_sck_bit);
 	OUTB(lpt_outbyte, lpt_iobase);
 }
 
 static void rayer_bitbang_set_mosi(int val)
 {
-	lpt_outbyte &= ~(1 << SPI_MOSI_PIN);
-	lpt_outbyte |= (val << SPI_MOSI_PIN);
+	lpt_outbyte &= ~(1 << rayer_mosi_bit);
+	lpt_outbyte |= (val << rayer_mosi_bit);
 	OUTB(lpt_outbyte, lpt_iobase);
 }
 
@@ -75,7 +82,7 @@ static int rayer_bitbang_get_miso(void)
 	uint8_t tmp;
 
 	tmp = INB(lpt_iobase + 1);
-	tmp = (tmp >> SPI_MISO_PIN) & 0x1;
+	tmp = (tmp >> rayer_miso_bit) & 0x1;
 	return tmp;
 }
 
@@ -89,14 +96,15 @@ static const struct bitbang_spi_master bitbang_spi_master_rayer = {
 
 int rayer_spi_init(void)
 {
-	char *portpos = NULL;
+	char *arg = NULL;
+	enum rayer_type rayer_type = TYPE_RAYER;
 
 	/* Non-default port requested? */
-	portpos = extract_programmer_param("iobase");
-	if (portpos) {
+	arg = extract_programmer_param("iobase");
+	if (arg) {
 		char *endptr = NULL;
 		unsigned long tmp;
-		tmp = strtoul(portpos, &endptr, 0);
+		tmp = strtoul(arg, &endptr, 0);
 		/* Port 0, port >0x10000, unaligned ports and garbage strings
 		 * are rejected.
 		 */
@@ -109,7 +117,7 @@ int rayer_spi_init(void)
 			msg_perr("Error: iobase= specified, but the I/O base "
 				 "given was invalid.\nIt must be a multiple of "
 				 "0x4 and lie between 0x100 and 0xfffc.\n");
-			free(portpos);
+			free(arg);
 			return 1;
 		} else {
 			lpt_iobase = (uint16_t)tmp;
@@ -120,10 +128,43 @@ int rayer_spi_init(void)
 		/* Pick a default value for the I/O base. */
 		lpt_iobase = 0x378;
 	}
-	free(portpos);
+	free(arg);
 	
 	msg_pdbg("Using address 0x%x as I/O base for parallel port access.\n",
 		 lpt_iobase);
+
+	arg = extract_programmer_param("type");
+	if (arg) {
+		if (!strcasecmp(arg, "rayer")) {
+			rayer_type = TYPE_RAYER;
+		} else if (!strcasecmp(arg, "xilinx")) {
+			rayer_type = TYPE_XILINX_DLC5;
+		} else {
+			msg_perr("Error: Invalid device type specified.\n");
+			free(arg);
+			return 1;
+		}
+	}
+	free(arg);
+	switch (rayer_type) {
+	case TYPE_RAYER:
+		msg_pdbg("Using RayeR SPIPGM pinout.\n");
+		/* Bits for master->slave direction */
+		rayer_cs_bit = 5;
+		rayer_sck_bit = 6;
+		rayer_mosi_bit = 7;
+		/* Bits for slave->master direction */
+		rayer_miso_bit = 6;
+		break;
+	case TYPE_XILINX_DLC5:
+		msg_pdbg("Using Xilinx Parallel Cable III (DLC 5) pinout.\n");
+		/* Bits for master->slave direction */
+		rayer_cs_bit = 2;
+		rayer_sck_bit = 1;
+		rayer_mosi_bit = 0;
+		/* Bits for slave->master direction */
+		rayer_miso_bit = 4;
+	}
 
 	get_io_perms();
 
