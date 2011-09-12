@@ -58,40 +58,68 @@ char *flashbuses_to_text(enum chipbustype bustype)
 	return ret;
 }
 
-#define POS_PRINT(x) do { pos += strlen(x); msg_ginfo(x); } while (0)
-
-static int digits(int n)
-{
-	int i;
-
-	if (!n)
-		return 1;
-
-	for (i = 0; n; ++i)
-		n /= 10;
-
-	return i;
-}
-
 static void print_supported_chips(void)
 {
-	int okcol = 0, pos = 0, i, chipcount = 0;
+	const char *delim = "/";
+	const int mintoklen = 5;
+	const int border = 2;
+	int i, chipcount = 0;
 	int maxvendorlen = strlen("Vendor") + 1;
 	int maxchiplen = strlen("Device") + 1;
+	int maxtypelen = strlen("Type") + 1;
 	const struct flashchip *f;
 	char *s;
+	char *tmpven, *tmpdev;
+	int tmpvenlen, tmpdevlen, curvenlen, curdevlen;
 
+	/* calculate maximum column widths and by iterating over all chips */
 	for (f = flashchips; f->name != NULL; f++) {
 		/* Ignore "unknown XXXX SPI chip" entries. */
 		if (!strncmp(f->name, "unknown", 7))
 			continue;
 		chipcount++;
-		maxvendorlen = max(maxvendorlen, strlen(f->vendor));
-		maxchiplen = max(maxchiplen, strlen(f->name));
+
+		/* Find maximum vendor length (respecting line splitting). */
+		tmpven = (char *)f->vendor;
+		do {
+			/* and take minimum token lengths into account */
+			tmpvenlen = 0;
+			do {
+				tmpvenlen += strcspn(tmpven, delim);
+				/* skip to the address after the first token */
+				tmpven += tmpvenlen;
+				if (tmpven[0] == '\0')
+					break;
+				tmpven++;
+			} while (tmpvenlen < mintoklen);
+			maxvendorlen = max(maxvendorlen, tmpvenlen);
+			if (tmpven[0] == '\0')
+				break;
+		} while (1);
+
+		/* same for device name */
+		tmpdev = (char *)f->name;
+		do {
+			tmpdevlen = 0;
+			do {
+				tmpdevlen += strcspn(tmpdev, delim);
+				tmpdev += tmpdevlen;
+				if (tmpdev[0] == '\0')
+					break;
+				tmpdev++;
+			} while (tmpdevlen < mintoklen);
+			maxchiplen = max(maxchiplen, tmpdevlen);
+			if (tmpdev[0] == '\0')
+				break;
+		} while (1);
+
+		s = flashbuses_to_text(f->bustype);
+		maxtypelen = max(maxtypelen, strlen(s));
+		free(s);
 	}
-	maxvendorlen++;
-	maxchiplen++;
-	okcol = maxvendorlen + maxchiplen;
+	maxvendorlen += border;
+	maxchiplen += border;
+	maxtypelen += border;
 
 	msg_ginfo("Supported flash chips (total: %d):\n\n", chipcount);
 	msg_ginfo("Vendor");
@@ -101,10 +129,35 @@ static void print_supported_chips(void)
 	for (i = strlen("Device"); i < maxchiplen; i++)
 		msg_ginfo(" ");
 
-	msg_ginfo("Tested   Known    Size/kB:  Type:\n");
-	for (i = 0; i < okcol; i++)
+	msg_ginfo("Test");
+	for (i = 0; i < border; i++)
 		msg_ginfo(" ");
-	msg_ginfo("OK       Broken\n\n");
+	msg_ginfo("Known");
+	for (i = 0; i < border; i++)
+		msg_ginfo(" ");
+	msg_ginfo(" Size");
+	for (i = 0; i < border; i++)
+		msg_ginfo(" ");
+
+	msg_ginfo("Type");
+	for (i = strlen("Type"); i < maxtypelen; i++)
+		msg_ginfo(" ");
+	msg_gdbg("Voltage");
+	msg_ginfo("\n");
+
+	for (i = 0; i < maxvendorlen + maxchiplen; i++)
+		msg_ginfo(" ");
+	msg_ginfo("OK  ");
+	for (i = 0; i < border; i++)
+		msg_ginfo(" ");
+	msg_ginfo("Broken");
+	for (i = 0; i < border; i++)
+		msg_ginfo(" ");
+	msg_ginfo("[kB]");
+	for (i = 0; i < border + maxtypelen; i++)
+		msg_ginfo(" ");
+	msg_gdbg("range [V]");
+	msg_ginfo("\n\n");
 	msg_ginfo("(P = PROBE, R = READ, E = ERASE, W = WRITE)\n\n");
 
 	for (f = flashchips; f->name != NULL; f++) {
@@ -112,50 +165,156 @@ static void print_supported_chips(void)
 		if (!strncmp(f->name, "unknown", 7))
 			continue;
 
-		msg_ginfo("%s", f->vendor);
-		for (i = strlen(f->vendor); i < maxvendorlen; i++)
-			msg_ginfo(" ");
-		msg_ginfo("%s", f->name);
-		for (i = strlen(f->name); i < maxchiplen; i++)
-			msg_ginfo(" ");
+		/* support for multiline vendor names:
+		 * - make a copy of the original vendor name
+		 * - use strok to put the first token in tmpven
+		 * - keep track of the length of all tokens on the current line
+		 *   for ' '-padding in curvenlen
+		 * - check if additional tokens should be printed on the current
+		 *   line
+		 * - after all other values are printed print the surplus tokens
+		 *   on fresh lines
+		 */
+		tmpven = malloc(strlen(f->vendor) + 1);
+		if (tmpven == NULL) {
+			msg_gerr("Out of memory!\n");
+			exit(1);
+		}
+		strcpy(tmpven, f->vendor);
 
-		pos = maxvendorlen + maxchiplen;
-		if ((f->tested & TEST_OK_MASK)) {
-			if ((f->tested & TEST_OK_PROBE))
-				POS_PRINT("P ");
-			if ((f->tested & TEST_OK_READ))
-				POS_PRINT("R ");
-			if ((f->tested & TEST_OK_ERASE))
-				POS_PRINT("E ");
-			if ((f->tested & TEST_OK_WRITE))
-				POS_PRINT("W ");
-		}
-		while (pos < okcol + 9) {
-			msg_ginfo(" ");
-			pos++;
-		}
-		if ((f->tested & TEST_BAD_MASK)) {
-			if ((f->tested & TEST_BAD_PROBE))
-				POS_PRINT("P ");
-			if ((f->tested & TEST_BAD_READ))
-				POS_PRINT("R ");
-			if ((f->tested & TEST_BAD_ERASE))
-				POS_PRINT("E ");
-			if ((f->tested & TEST_BAD_WRITE))
-				POS_PRINT("W ");
+		tmpven = strtok(tmpven, delim);
+		msg_ginfo("%s", tmpven);
+		curvenlen = strlen(tmpven);
+		while ((tmpven = strtok(NULL, delim)) != NULL) {
+			msg_ginfo("%s", delim);
+			curvenlen++;
+			tmpvenlen = strlen(tmpven);
+			if (tmpvenlen >= mintoklen)
+				break; /* big enough to be on its own line */
+			msg_ginfo("%s", tmpven);
+			curvenlen += tmpvenlen;
 		}
 
-		while (pos < okcol + 18) {
+		for (i = curvenlen; i < maxvendorlen; i++)
 			msg_ginfo(" ");
-			pos++;
+
+		/* support for multiline device names as above */
+		tmpdev = malloc(strlen(f->name) + 1);
+		if (tmpdev == NULL) {
+			msg_gerr("Out of memory!\n");
+			exit(1);
 		}
-		msg_ginfo("%d", f->total_size);
-		for (i = 0; i < 10 - digits(f->total_size); i++)
+		strcpy(tmpdev, f->name);
+
+		tmpdev = strtok(tmpdev, delim);
+		msg_ginfo("%s", tmpdev);
+		curdevlen = strlen(tmpdev);
+		while ((tmpdev = strtok(NULL, delim)) != NULL) {
+			msg_ginfo("%s", delim);
+			curdevlen++;
+			tmpdevlen = strlen(tmpdev);
+			if (tmpdevlen >= mintoklen)
+				break; /* big enough to be on its own line */
+			msg_ginfo("%s", tmpdev);
+			curdevlen += tmpdevlen;
+		}
+
+		for (i = curdevlen; i < maxchiplen; i++)
+			msg_ginfo(" ");
+
+		if ((f->tested & TEST_OK_PROBE))
+			msg_ginfo("P");
+		else
+			msg_ginfo(" ");
+		if ((f->tested & TEST_OK_READ))
+			msg_ginfo("R");
+		else
+			msg_ginfo(" ");
+		if ((f->tested & TEST_OK_ERASE))
+			msg_ginfo("E");
+		else
+			msg_ginfo(" ");
+		if ((f->tested & TEST_OK_WRITE))
+			msg_ginfo("W");
+		else
+			msg_ginfo(" ");
+		for (i = 0; i < border; i++)
+			msg_ginfo(" ");
+
+		if ((f->tested & TEST_BAD_PROBE))
+			msg_ginfo("P");
+		else
+			msg_ginfo(" ");
+		if ((f->tested & TEST_BAD_READ))
+			msg_ginfo("R");
+		else
+			msg_ginfo(" ");
+		if ((f->tested & TEST_BAD_ERASE))
+			msg_ginfo("E");
+		else
+			msg_ginfo(" ");
+		if ((f->tested & TEST_BAD_WRITE))
+			msg_ginfo("W");
+		else
+			msg_ginfo(" ");
+		for (i = 0; i < border + 1; i++)
+			msg_ginfo(" ");
+
+		msg_ginfo("%5d", f->total_size);
+		for (i = 0; i < border; i++)
 			msg_ginfo(" ");
 
 		s = flashbuses_to_text(f->bustype);
-		msg_ginfo("%s\n", s);
+		msg_ginfo("%s", s);
+		for (i = strlen(s); i < maxtypelen; i++)
+			msg_ginfo(" ");
 		free(s);
+
+		if (f->voltage.min == 0 && f->voltage.max == 0)
+			msg_gdbg("no info");
+		else
+			msg_gdbg("%0.02f;%0.02f",
+				 f->voltage.min/(double)1000,
+				 f->voltage.max/(double)1000);
+
+		/* print surplus vendor and device name tokens */
+		while (tmpven != NULL || tmpdev != NULL) {
+			msg_ginfo("\n");
+			if (tmpven != NULL){
+				msg_ginfo("%s", tmpven);
+				curvenlen = strlen(tmpven);
+				while ((tmpven = strtok(NULL, delim)) != NULL) {
+					msg_ginfo("%s", delim);
+					curvenlen++;
+					tmpvenlen = strlen(tmpven);
+					/* big enough to be on its own line */
+					if (tmpvenlen >= mintoklen)
+						break;
+					msg_ginfo("%s", tmpven);
+					curvenlen += tmpvenlen;
+				}
+			} else
+				curvenlen = 0;
+
+			for (i = curvenlen; i < maxvendorlen; i++)
+				msg_ginfo(" ");
+
+			if (tmpdev != NULL){
+				msg_ginfo("%s", tmpdev);
+				curdevlen = strlen(tmpdev);
+				while ((tmpdev = strtok(NULL, delim)) != NULL) {
+					msg_ginfo("%s", delim);
+					curdevlen++;
+					tmpdevlen = strlen(tmpdev);
+					/* big enough to be on its own line */
+					if (tmpdevlen >= mintoklen)
+						break;
+					msg_ginfo("%s", tmpdev);
+					curdevlen += tmpdevlen;
+				}
+			}
+		}
+		msg_ginfo("\n");
 	}
 }
 
