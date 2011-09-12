@@ -210,8 +210,8 @@ atmegaXXu2-flasher by Stefan Tauner."
 .sp
 .BR "* dediprog" " (for SPI flash ROMs attached to a Dediprog SF100)"
 .sp
-.BR "* rayer_spi" " (for SPI flash ROMs attached to a RayeR parport \
-based programmer)"
+.BR "* rayer_spi" " (for SPI flash ROMs attached to a RayeR parport "
+or Xilinx DLC5 compatible cable)
 .sp
 .BR "* nicintel_spi" " (for SPI flash ROMs on Intel Gigabit network cards)"
 .sp
@@ -512,8 +512,22 @@ syntax where
 is base I/O port address of the parallel port, which must be a multiple of
 four. Make sure to not forget the "0x" prefix for hexadecimal port addresses.
 .sp
-More information about the hardware is available at
-.BR http://rayer.ic.cz/elektro/spipgm.htm .
+The default cable type is the RayeR cable. You can use the optional
+.B type
+parameter to specify the cable type with the
+.sp
+.B "  flashrom \-p rayer_spi:type=model"
+.sp
+syntax where
+.B model
+can be
+.BR rayer " for the RayeR cable or " xilinx " for the Xilinx Parallel Cable III
+(DLC 5).
+.sp
+More information about the RayeR hardware is available at
+.BR "http://rayer.ic.cz/elektro/spipgm.htm " .
+The schematic of the Xilinx DLC 5 was published at
+.BR "http://www.xilinx.com/itp/xilinx4/data/docs/pac/appendixb.html " .
 .TP
 .BR "ogp_spi " programmer
 The flash ROM chip to access must be specified with the 
