@@ -139,6 +139,7 @@ int internal_init(void)
 	int ret = 0;
 #endif
 	int force_laptop = 0;
+	int not_a_laptop = 0;
 	char *arg;
 
 	arg = extract_programmer_param("boardenable");
@@ -170,9 +171,11 @@ int internal_init(void)
 	free(arg);
 
 	arg = extract_programmer_param("laptop");
-	if (arg && !strcmp(arg,"force_I_want_a_brick")) {
+	if (arg && !strcmp(arg, "force_I_want_a_brick"))
 		force_laptop = 1;
-	} else if (arg && !strlen(arg)) {
+	else if (arg && !strcmp(arg, "this_is_not_a_laptop"))
+		not_a_laptop = 1;
+	else if (arg && !strlen(arg)) {
 		msg_perr("Missing argument for laptop.\n");
 		free(arg);
 		return 1;
@@ -237,7 +240,7 @@ int internal_init(void)
 			msg_perr("WARNING! You may be running flashrom on an unsupported laptop. We could\n"
 				 "not detect this for sure because your vendor has not setup the SMBIOS\n"
 				 "tables correctly. You can enforce execution by adding\n"
-				 "'-p internal:laptop=force_I_want_a_brick' to the command line, but\n"
+				 "'-p internal:laptop=this_is_not_a_laptop' to the command line, but\n"
 				 "please read the following warning if you are not sure.\n\n");
 		}
 		msg_perr("Laptops, notebooks and netbooks are difficult to support and we\n"
@@ -251,9 +254,8 @@ int internal_init(void)
 			 "You have been warned.\n"
 			 "========================================================================\n");
 
-		if (force_laptop) {
-			msg_perr("Proceeding anyway because user specified "
-				 "laptop=force_I_want_a_brick\n");
+		if (force_laptop || (not_a_laptop && (is_laptop == 2))) {
+			msg_perr("Proceeding anyway because user forced us to.\n");
 		} else {
 			msg_perr("Aborting.\n");
 			exit(1);
