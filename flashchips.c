@@ -2341,6 +2341,30 @@ const struct flashchip flashchips[] = {
 	},
 
 	{
+		.vendor		= "Catalyst",
+		.name		= "CAT28F512",
+		.bustype	= BUS_PARALLEL,
+		.manufacture_id	= CATALYST_ID,
+		.model_id	= CATALYST_CAT28F512,
+		.total_size	= 64,
+		.page_size	= 0, /* unused */
+		.feature_bits	= 0,
+		.tested		= TEST_OK_PR,
+		.probe		= probe_jedec, /* FIXME! */
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {64 * 1024, 1} },
+				.block_erase = NULL, /* TODO */
+			},
+		},
+		.write		= NULL, /* TODO */
+		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
+	},
+
+	{
 		.vendor		= "Bright",
 		.name		= "BM29F040",
 		.bustype	= BUS_PARALLEL,
