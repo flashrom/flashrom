@@ -29,6 +29,7 @@
 #include "flash.h"
 #include "programmer.h"
 #include "spi.h"
+#include "ich_descriptors.h"
 
 /* ICH9 controller register definition */
 #define ICH9_REG_HSFS		0x04	/* 16 Bits Hardware Sequencing Flash Status */
@@ -118,6 +119,16 @@
 
 #define ICH9_REG_BBAR		0xA0	/* 32 Bits BIOS Base Address Configuration */
 #define BBAR_MASK	0x00ffff00		/* 8-23: Bottom of System Flash */
+
+#define ICH8_REG_VSCC		0xC1	/* 32 Bits Vendor Specific Component Capabilities */
+#define ICH9_REG_LVSCC		0xC4	/* 32 Bits Host Lower Vendor Specific Component Capabilities */
+#define ICH9_REG_UVSCC		0xC8	/* 32 Bits Host Upper Vendor Specific Component Capabilities */
+/* The individual fields of the VSCC registers are defined in the file
+ * ich_descriptors.h. The reason is that the same layout is also used in the
+ * flash descriptor to define the properties of the different flash chips
+ * supported. The BIOS (or the ME?) is responsible to populate the ICH registers
+ * with the information from the descriptor on startup depending on the actual
+ * chip(s) detected. */
 
 #define ICH9_REG_FPB		0xD0	/* 32 Bits Flash Partition Boundary */
 #define FPB_FPBA_OFF		0	/* 0-12: Block/Sector Erase Size */
@@ -1129,9 +1140,6 @@ static int ich_spi_send_multicommand(struct spi_command *cmds)
 #define ICH_BRWA(x)  ((x >>  8) & 0xff)
 #define ICH_BRRA(x)  ((x >>  0) & 0xff)
 
-#define ICH_FREG_BASE(x)  ((x >>  0) & 0x1fff)
-#define ICH_FREG_LIMIT(x) ((x >> 16) & 0x1fff)
-
 static void do_ich9_spi_frap(uint32_t frap, int i)
 {
 	static const char *const access_names[4] = {
@@ -1158,9 +1166,8 @@ static void do_ich9_spi_frap(uint32_t frap, int i)
 		return;
 	}
 
-	msg_pdbg("0x%08x-0x%08x is %s\n",
-		    (base << 12), (limit << 12) | 0x0fff,
-		    access_names[rwperms]);
+	msg_pdbg("0x%08x-0x%08x is %s\n", base, (limit | 0x0fff),
+		 access_names[rwperms]);
 }
 
 static const struct spi_programmer spi_programmer_ich7 = {
@@ -1190,6 +1197,7 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 	uint8_t old, new;
 	uint16_t spibar_offset, tmp2;
 	uint32_t tmp;
+	int ichspi_desc = 0;
 
 	switch (ich_generation) {
 	case 7:
@@ -1261,6 +1269,8 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 			msg_pinfo("WARNING: SPI Configuration Lockdown activated.\n");
 			ichspi_lock = 1;
 		}
+		if (tmp2 & HSFS_FDV)
+			ichspi_desc = 1;
 
 		tmp2 = mmio_readw(ich_spibar + ICH9_REG_HSFC);
 		msg_pdbg("0x06: 0x%04x (HSFC)\n", tmp2);
@@ -1308,12 +1318,38 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 			     mmio_readl(ich_spibar + ICH9_REG_OPMENU));
 		msg_pdbg("0x9C: 0x%08x (OPMENU+4)\n",
 			     mmio_readl(ich_spibar + ICH9_REG_OPMENU + 4));
-		ichspi_bbar = mmio_readl(ich_spibar + ICH9_REG_BBAR);
-		msg_pdbg("0xA0: 0x%08x (BBAR)\n",
-			     ichspi_bbar);
-		tmp = mmio_readl(ich_spibar + ICH9_REG_FPB);
-		msg_pdbg("0xD0: 0x%08x (FPB)\n", tmp);
+		if (ich_generation == 8) {
+			tmp = mmio_readl(ich_spibar + ICH8_REG_VSCC);
+			msg_pdbg("0xC1: 0x%08x (VSCC)\n", tmp);
+			msg_pdbg("VSCC: ");
+			prettyprint_ich_reg_vscc(tmp, MSG_DEBUG);
+		} else {
+			ichspi_bbar = mmio_readl(ich_spibar + ICH9_REG_BBAR);
+			msg_pdbg("0xA0: 0x%08x (BBAR)\n",
+				     ichspi_bbar);
 
+			tmp = mmio_readl(ich_spibar + ICH9_REG_LVSCC);
+			msg_pdbg("0xC4: 0x%08x (LVSCC)\n", tmp);
+			msg_pdbg("LVSCC: ");
+			prettyprint_ich_reg_vscc(tmp, MSG_DEBUG);
+
+			tmp = mmio_readl(ich_spibar + ICH9_REG_UVSCC);
+			msg_pdbg("0xC8: 0x%08x (UVSCC)\n", tmp);
+			msg_pdbg("UVSCC: ");
+			prettyprint_ich_reg_vscc(tmp, MSG_DEBUG);
+
+			tmp = mmio_readl(ich_spibar + ICH9_REG_FPB);
+			msg_pdbg("0xD0: 0x%08x (FPB)\n", tmp);
+		}
+
+		msg_pdbg("\n");
+		if (ichspi_desc) {
+			struct ich_descriptors desc = {{ 0 }};
+			if (read_ich_descriptors_via_fdo(ich_spibar, &desc) ==
+			    ICH_RET_OK)
+				prettyprint_ich_descriptors(CHIPSET_ICH_UNKNOWN,
+							    &desc);
+		}
 		ich_init_opcodes();
 		break;
 	default:
