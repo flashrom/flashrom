@@ -31,6 +31,8 @@ COMMAND	Description			Parameters			Return Value
 0x10	Sync NOP			none				NAK + ACK (for synchronization)
 0x11	Query maximum read-n length	none				ACK + 24-bit length (0==2^24) / NAK
 0x12	Set used bustype		8-bit flags (as with 0x05)	ACK / NAK
+0x13	Perform SPI operation		24-bit slen + 24-bit rlen	ACK + rlen bytes of data / NAK
+					 + slen bytes of data
 0x??	unimplemented command - invalid.
 
 
@@ -50,7 +52,7 @@ Additional information of the above commands:
 		it should return a big bogus value - eg 0xFFFF.
 	0x05 (Q_BUSTYPE):
 		The bit's are defined as follows:
-		bit 0: PARALLEL, bit 1: LPC, bit 2: FWH, bit 3: SPI (if ever supported).
+		bit 0: PARALLEL, bit 1: LPC, bit 2: FWH, bit 3: SPI.
 	0x06 (Q_CHIPSIZE):
 		Only applicable to parallel programmers.
 		An LPC/FWH/SPI-programmer can report this as not supported in the command bitmap.
@@ -66,6 +68,11 @@ Additional information of the above commands:
 		Set's the used bustype if the programmer can support more than one flash protocol.
 		Sending a byte with more than 1 bit set will make the programmer decide among them
 		on it's own. Bit values as with Q_BUSTYPE.
+	0x13 (O_SPIOP):
+		Send and receive bytes via SPI.
+		Maximum slen is Q_WRNMAXLEN in case Q_BUSTYPE returns SPI only or S_BUSTYPE was used
+		to set SPI exclusively before. Same for rlen and Q_RDNMAXLEN.
+		This operation is immediate, meaning it doesnt use the operation buffer.
 	About mandatory commands:
 		The only truly mandatory commands for any device are 0x00, 0x01, 0x02 and 0x10,
 		but one can't really do anything with these commands.
@@ -99,3 +106,4 @@ This define listing should help C coders - (it's here to be the single source fo
 #define S_CMD_SYNCNOP		0x10		/* Special no-operation that returns NAK+ACK	*/
 #define S_CMD_Q_RDNMAXLEN	0x11		/* Query read-n maximum length			*/
 #define S_CMD_S_BUSTYPE		0x12		/* Set used bustype(s).				*/
+#define S_CMD_O_SPIOP		0x13		/* Perform SPI operation.			*/
