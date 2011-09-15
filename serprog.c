@@ -1,7 +1,7 @@
 /*
  * This file is part of the flashrom project.
  *
- * Copyright (C) 2009 Urja Rannikko <urjaman@gmail.com>
+ * Copyright (C) 2009, 2011 Urja Rannikko <urjaman@gmail.com>
  * Copyright (C) 2009 Carl-Daniel Hailfinger
  *
  * This program is free software; you can redistribute it and/or modify
@@ -36,6 +36,7 @@
 #include <termios.h>
 #include "flash.h"
 #include "programmer.h"
+#include "chipdrivers.h"
 
 #define MSGHEADER "serprog:"
 
@@ -67,6 +68,7 @@ static int serprog_shutdown(void *data);
 #define S_CMD_SYNCNOP		0x10	/* Special no-operation that returns NAK+ACK    */
 #define S_CMD_Q_RDNMAXLEN	0x11	/* Query read-n maximum length			*/
 #define S_CMD_S_BUSTYPE		0x12	/* Set used bustype(s).				*/
+#define S_CMD_O_SPIOP		0x13	/* Perform SPI operation.			*/
 
 static uint16_t sp_device_serbuf_size = 16;
 static uint16_t sp_device_opbuf_size = 300;
@@ -302,6 +304,16 @@ static int sp_stream_buffer_op(uint8_t cmd, uint32_t parmlen, uint8_t * parms)
 	return 0;
 }
 
+static struct spi_programmer spi_programmer_serprog = {
+	.type		= SPI_CONTROLLER_SERPROG,
+	.max_data_read	= MAX_DATA_READ_UNLIMITED,
+	.max_data_write	= MAX_DATA_WRITE_UNLIMITED,
+	.command	= serprog_spi_send_command,
+	.multicommand	= default_spi_send_multicommand,
+	.read		= serprog_spi_read,
+	.write_256	= default_spi_write_256,
+};
+
 int serprog_init(void)
 {
 	uint16_t iface;
@@ -325,7 +337,7 @@ int serprog_init(void)
 			msg_perr("Error: No baudrate specified.\n"
 				 "Use flashrom -p serprog:dev=/dev/device:baud\n");
 			free(device);
-			return 1;		
+			return 1;
 		}
 		if (strlen(device)) {
 			sp_fd = sp_openserport(device, atoi(baudport));
@@ -358,7 +370,7 @@ int serprog_init(void)
 			msg_perr("Error: No port specified.\n"
 				 "Use flashrom -p serprog:ip=ipaddr:port\n");
 			free(device);
-			return 1;		
+			return 1;
 		}
 		if (strlen(device)) {
 			sp_fd = sp_opensocket(device, atoi(baudport));
@@ -410,35 +422,115 @@ int serprog_init(void)
 
 	sp_check_avail_automatic = 1;
 
-	/* Check for the minimum operational set of commands */
-	if (sp_check_commandavail(S_CMD_R_BYTE) == 0) {
-		msg_perr("Error: Single byte read not supported\n");
-		exit(1);
+
+	if (sp_docommand(S_CMD_Q_BUSTYPE, 0, NULL, 1, &c)) {
+		msg_perr("Warning: NAK to query supported buses\n");
+		c = BUS_NONSPI;	/* A reasonable default for now. */
 	}
-	/* This could be translated to single byte reads (if missing),	*
-	 * but now we dont support that.				*/
-	if (sp_check_commandavail(S_CMD_R_NBYTES) == 0) {
-		msg_perr("Error: Read n bytes not supported\n");
-		exit(1);
+	buses_supported = c;
+	/* Check for the minimum operational set of commands. */
+	if (buses_supported & BUS_SPI) {
+		uint8_t bt = BUS_SPI;
+		if (sp_check_commandavail(S_CMD_O_SPIOP) == 0) {
+			msg_perr("Error: SPI operation not supported while the "
+				 "bustype is SPI\n");
+			exit(1);
+		}
+		/* Success of any of these commands is optional. We don't need
+		   the programmer to tell us its limits, but if it doesn't, we
+		   will assume stuff, so it's in the programmers best interest
+		   to tell us. */
+		sp_docommand(S_CMD_S_BUSTYPE, 1, &bt, 0, NULL);
+		if (!sp_docommand(S_CMD_Q_WRNMAXLEN, 0, NULL, 3, rbuf)) {
+			uint32_t v;
+			v = ((unsigned int)(rbuf[0]) << 0);
+			v |= ((unsigned int)(rbuf[1]) << 8);
+			v |= ((unsigned int)(rbuf[2]) << 16);
+			if (v == 0)
+				v = (1 << 24) - 1; /* SPI-op maximum. */
+			spi_programmer_serprog.max_data_write = v;
+			msg_pdbg(MSGHEADER "Maximum write-n length is %d\n", v);
+		}
+		if (!sp_docommand(S_CMD_Q_RDNMAXLEN, 0, NULL, 3, rbuf)) {
+			uint32_t v;
+			v = ((unsigned int)(rbuf[0]) << 0);
+			v |= ((unsigned int)(rbuf[1]) << 8);
+			v |= ((unsigned int)(rbuf[2]) << 16);
+			if (v == 0)
+				v = (1 << 24) - 1; /* SPI-op maximum. */
+			spi_programmer_serprog.max_data_read = v;
+			msg_pdbg(MSGHEADER "Maximum read-n length is %d\n", v);
+		}
+		bt = buses_supported;
+		sp_docommand(S_CMD_S_BUSTYPE, 1, &bt, 0, NULL);
+		register_spi_programmer(&spi_programmer_serprog);
 	}
-	/* In the future one could switch to read-only mode if these	*
-	 * are not available.						*/
-	if (sp_check_commandavail(S_CMD_O_INIT) == 0) {
-		msg_perr("Error: Initialize operation buffer not supported\n");
-		exit(1);
-	}
-	if (sp_check_commandavail(S_CMD_O_WRITEB) == 0) {
-		msg_perr("Error: Write to opbuf: write byte not supported\n");
-		exit(1);
-	}
-	if (sp_check_commandavail(S_CMD_O_DELAY) == 0) {
-		msg_perr("Error: Write to opbuf: delay not supported\n");
-		exit(1);
-	}
-	if (sp_check_commandavail(S_CMD_O_EXEC) == 0) {
-		msg_perr(
-			"Error: Execute operation buffer not supported\n");
-		exit(1);
+
+	if (buses_supported & BUS_NONSPI) {
+		if (sp_check_commandavail(S_CMD_O_INIT) == 0) {
+			msg_perr("Error: Initialize operation buffer "
+				 "not supported\n");
+			exit(1);
+		}
+
+		if (sp_check_commandavail(S_CMD_O_DELAY) == 0) {
+			msg_perr("Error: Write to opbuf: "
+				 "delay not supported\n");
+			exit(1);
+		}
+
+		/* S_CMD_O_EXEC availability checked later. */
+
+		if (sp_check_commandavail(S_CMD_R_BYTE) == 0) {
+			msg_perr("Error: Single byte read not supported\n");
+			exit(1);
+		}
+		/* This could be translated to single byte reads (if missing),
+		 * but now we don't support that. */
+		if (sp_check_commandavail(S_CMD_R_NBYTES) == 0) {
+			msg_perr("Error: Read n bytes not supported\n");
+			exit(1);
+		}
+		if (sp_check_commandavail(S_CMD_O_WRITEB) == 0) {
+			msg_perr("Error: Write to opbuf: "
+				 "write byte not supported\n");
+			exit(1);
+		}
+
+		if (sp_docommand(S_CMD_Q_WRNMAXLEN, 0, NULL, 3, rbuf)) {
+			msg_pdbg(MSGHEADER "Write-n not supported");
+			sp_max_write_n = 0;
+		} else {
+			sp_max_write_n = ((unsigned int)(rbuf[0]) << 0);
+			sp_max_write_n |= ((unsigned int)(rbuf[1]) << 8);
+			sp_max_write_n |= ((unsigned int)(rbuf[2]) << 16);
+			if (!sp_max_write_n) {
+				sp_max_write_n = (1 << 24);
+			}
+			msg_pdbg(MSGHEADER "Maximum write-n length is %d\n",
+				 sp_max_write_n);
+			sp_write_n_buf = malloc(sp_max_write_n);
+			if (!sp_write_n_buf) {
+				msg_perr("Error: cannot allocate memory for "
+					 "Write-n buffer\n");
+				exit(1);
+			}
+			sp_write_n_bytes = 0;
+		}
+
+		if (sp_check_commandavail(S_CMD_Q_RDNMAXLEN) &&
+		    (sp_docommand(S_CMD_Q_RDNMAXLEN, 0, NULL, 3, rbuf) == 0)) {
+			sp_max_read_n = ((unsigned int)(rbuf[0]) << 0);
+			sp_max_read_n |= ((unsigned int)(rbuf[1]) << 8);
+			sp_max_read_n |= ((unsigned int)(rbuf[2]) << 16);
+			msg_pdbg(MSGHEADER "Maximum read-n length is %d\n",
+				 sp_max_read_n ? sp_max_read_n : (1 << 24));
+		} else {
+			msg_pdbg(MSGHEADER "Maximum read-n length "
+				 "not reported\n");
+			sp_max_read_n = 0;
+		}
+
 	}
 
 	if (sp_docommand(S_CMD_Q_PGMNAME, 0, NULL, 16, pgmname)) {
@@ -454,51 +546,27 @@ int serprog_init(void)
 	msg_pdbg(MSGHEADER "serial buffer size %d\n",
 		     sp_device_serbuf_size);
 
-	if (sp_docommand(S_CMD_Q_OPBUF, 0, NULL, 2, &sp_device_opbuf_size)) {
-		msg_perr("Warning: NAK to query operation buffer size\n");
-	}
-	msg_pdbg(MSGHEADER "operation buffer size %d\n",
-		     sp_device_opbuf_size);
-
-	if (sp_docommand(S_CMD_Q_BUSTYPE, 0, NULL, 1, &c)) {
-		msg_perr("Warning: NAK to query supported buses\n");
-		c = BUS_NONSPI;	/* A reasonable default for now. */
-	}
-	buses_supported = c;
-
-	if (sp_docommand(S_CMD_O_INIT, 0, NULL, 0, NULL)) {
-		msg_perr("Error: NAK to initialize operation buffer\n");
-		exit(1);
-	}
-
-	if (sp_docommand(S_CMD_Q_WRNMAXLEN, 0, NULL, 3, rbuf)) {
-		msg_pdbg(MSGHEADER "Write-n not supported");
-		sp_max_write_n = 0;
-	} else {
-		sp_max_write_n = ((unsigned int)(rbuf[0]) << 0);
-		sp_max_write_n |= ((unsigned int)(rbuf[1]) << 8);
-		sp_max_write_n |= ((unsigned int)(rbuf[2]) << 16);
-		msg_pdbg(MSGHEADER "Maximum write-n length %d\n",
-			     sp_max_write_n);
-		sp_write_n_buf = malloc(sp_max_write_n);
-		if (!sp_write_n_buf) {
-			msg_perr("Error: cannot allocate memory for Write-n buffer\n");
+	if (sp_check_commandavail(S_CMD_O_INIT)) {
+		/* This would be inconsistent. */
+		if (sp_check_commandavail(S_CMD_O_EXEC) == 0) {
+			msg_perr("Error: Execute operation buffer not "
+				 "supported\n");
 			exit(1);
 		}
-		sp_write_n_bytes = 0;
-	}
-	
-	if ((sp_check_commandavail(S_CMD_Q_RDNMAXLEN))
-		&&((sp_docommand(S_CMD_Q_RDNMAXLEN,0,NULL, 3, rbuf) == 0))) {
-		sp_max_read_n = ((unsigned int)(rbuf[0]) << 0);
-		sp_max_read_n |= ((unsigned int)(rbuf[1]) << 8);
-		sp_max_read_n |= ((unsigned int)(rbuf[2]) << 16);
-		msg_pdbg(MSGHEADER "Maximum read-n length %d\n",
-			sp_max_read_n ? sp_max_read_n : (1<<24));
-	} else {
-		msg_pdbg(MSGHEADER "Maximum read-n length not reported\n");
-		sp_max_read_n = 0;
-	}
+
+		if (sp_docommand(S_CMD_O_INIT, 0, NULL, 0, NULL)) {
+			msg_perr("Error: NAK to initialize operation buffer\n");
+			exit(1);
+		}
+
+		if (sp_docommand(S_CMD_Q_OPBUF, 0, NULL, 2,
+		    &sp_device_opbuf_size)) {
+			msg_perr("Warning: NAK to query operation buffer "
+				 "size\n");
+		}
+		msg_pdbg(MSGHEADER "operation buffer size %d\n",
+			 sp_device_opbuf_size);
+  	}
 
 	sp_prev_was_write = 0;
 	sp_streamed_transmit_ops = 0;
@@ -679,6 +747,12 @@ void serprog_delay(int delay)
 {
 	unsigned char buf[4];
 	msg_pspew("%s\n", __func__);
+	if (!sp_check_commandavail(S_CMD_O_DELAY)) {
+		internal_delay(delay);
+		msg_pdbg("Note: serprog_delay used, but the programmer doesn't "
+			 "support delay\n");
+		return;
+	}
 	if ((sp_max_write_n) && (sp_write_n_bytes))
 		sp_pass_writen();
 	sp_check_opbuf_usage(5);
@@ -689,4 +763,49 @@ void serprog_delay(int delay)
 	sp_stream_buffer_op(S_CMD_O_DELAY, 4, buf);
 	sp_opbuf_usage += 5;
 	sp_prev_was_write = 0;
+}
+
+int serprog_spi_send_command(unsigned int writecnt, unsigned int readcnt,
+			     const unsigned char *writearr,
+			     unsigned char *readarr)
+{
+	unsigned char *parmbuf;
+	int ret;
+	msg_pspew("%s, writecnt=%i, readcnt=%i\n", __func__, writecnt, readcnt);
+	if ((sp_opbuf_usage) || (sp_max_write_n && sp_write_n_bytes))
+		sp_execute_opbuf();
+	parmbuf = malloc(writecnt + 6);
+	if (!parmbuf)
+		sp_die("Error: cannot malloc SPI send param buffer");
+	parmbuf[0] = (writecnt >> 0) & 0xFF;
+	parmbuf[1] = (writecnt >> 8) & 0xFF;
+	parmbuf[2] = (writecnt >> 16) & 0xFF;
+	parmbuf[3] = (readcnt >> 0) & 0xFF;
+	parmbuf[4] = (readcnt >> 8) & 0xFF;
+	parmbuf[5] = (readcnt >> 16) & 0xFF;
+	memcpy(parmbuf + 6, writearr, writecnt);
+	ret = sp_docommand(S_CMD_O_SPIOP, writecnt + 6, parmbuf, readcnt,
+			   readarr);
+	free(parmbuf);
+	return ret;
+}
+
+/* FIXME: This function is optimized so that it does not split each transaction
+ * into chip page_size long blocks unnecessarily like spi_read_chunked. This has
+ * the advantage that it is much faster for most chips, but breaks those with
+ * non-contiguous address space (like AT45DB161D). When spi_read_chunked is
+ * fixed this method can be removed. */
+int serprog_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
+{
+	int i;
+	int cur_len;
+	const int max_read = spi_programmer_serprog.max_data_read;
+	for (i = 0; i < len; i += cur_len) {
+		int ret;
+		cur_len = min(max_read, (len - i));
+		ret = spi_nbyte_read(start + i, buf + i, cur_len);
+		if (ret)
+			return ret;
+	}
+	return 0;
 }
