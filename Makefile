@@ -349,7 +349,8 @@ ifeq ($(CONFIG_INTERNAL), yes)
 FEATURE_CFLAGS += -D'CONFIG_INTERNAL=1'
 PROGRAMMER_OBJS += processor_enable.o chipset_enable.o board_enable.o cbtable.o dmi.o internal.o
 ifeq ($(ARCH),"x86")
-PROGRAMMER_OBJS += it87spi.o it85spi.o ichspi.o sb600spi.o wbsio_spi.o mcp6x_spi.o
+PROGRAMMER_OBJS += it87spi.o it85spi.o sb600spi.o wbsio_spi.o mcp6x_spi.o
+PROGRAMMER_OBJS += ichspi.o ich_descriptors.o
 else
 endif
 NEED_PCI := yes
