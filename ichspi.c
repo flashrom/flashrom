@@ -1200,6 +1200,29 @@ static void prettyprint_ich9_reg_pr(int i)
 		msg_pdbg2(", unused)\n");
 }
 
+/* Set/Clear the read and write protection enable bits of PR register @i
+ * according to @read_prot and @write_prot. */
+static void ich9_set_pr(int i, int read_prot, int write_prot)
+{
+	void *addr = ich_spibar + ICH9_REG_PR0 + (i * 4);
+	uint32_t old = mmio_readl(addr);
+	uint32_t new;
+
+	msg_gspew("PR%u is 0x%08x", i, old);
+	new = old & ~((1 << PR_RP_OFF) | (1 << PR_WP_OFF));
+	if (read_prot)
+		new |= (1 << PR_RP_OFF);
+	if (write_prot)
+		new |= (1 << PR_WP_OFF);
+	if (old == new) {
+		msg_gspew(" already.\n");
+		return;
+	}
+	msg_gspew(", trying to set it to 0x%08x ", new);
+	rmmio_writel(new, addr);
+	msg_gspew("resulted in 0x%08x.\n", mmio_readl(addr));
+}
+
 static const struct spi_programmer spi_programmer_ich7 = {
 	.type = SPI_CONTROLLER_ICH7,
 	.max_data_read = 64,
@@ -1320,6 +1343,10 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 		for(i = 0; i < 5; i++)
 			do_ich9_spi_frap(tmp, i);
 
+		/* try to disable PR locks before printing them */
+		if (!ichspi_lock)
+			for(i = 0; i < 5; i++)
+				ich9_set_pr(i, 0, 0);
 		for(i = 0; i < 5; i++)
 			prettyprint_ich9_reg_pr(i);
 
