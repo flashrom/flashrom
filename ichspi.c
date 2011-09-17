@@ -294,22 +294,34 @@ static OPCODES O_EXISTING = {};
 /* pretty printing functions */
 static void prettyprint_opcodes(OPCODES *ops)
 {
-	if(ops == NULL)
+	OPCODE oc;
+	const char *t;
+	const char *a;
+	uint8_t i;
+	static const char *const spi_type[4] = {
+		"read  w/o addr",
+		"write w/o addr",
+		"read  w/  addr",
+		"write w/  addr"
+	};
+	static const char *const atomic_type[3] = {
+		"none",
+		" 0  ",
+		" 1  "
+	};
+
+	if (ops == NULL)
 		return;
 
-	msg_pdbg("preop0=0x%02x, preop1=0x%02x\n", ops->preop[0],
-		 ops->preop[1]);
-
-	OPCODE oc;
-	uint8_t i;
+	msg_pdbg2("        OP        Type      Pre-OP\n");
 	for (i = 0; i < 8; i++) {
 		oc = ops->opcode[i];
-		msg_pdbg("op[%d]=0x%02x, %d, %d\n",
-			 i,
-			 oc.opcode,
-			 oc.spi_type,
-			 oc.atomic);
+		t = (oc.spi_type > 3) ? "invalid" : spi_type[oc.spi_type];
+		a = (oc.atomic > 2) ? "invalid" : atomic_type[oc.atomic];
+		msg_pdbg2("op[%d]: 0x%02x, %s, %s\n", i, oc.opcode, t, a);
 	}
+	msg_pdbg2("Pre-OP 0: 0x%02x, Pre-OP 1: 0x%02x\n", ops->preop[0],
+		 ops->preop[1]);
 }
 
 #define pprint_reg(reg, bit, val, sep) msg_pdbg("%s=%d" sep, #bit, (val & reg##_##bit)>>reg##_##bit##_OFF)
@@ -672,7 +684,6 @@ static int ich_init_opcodes(void)
 		curopcodes = curopcodes_done;
 		msg_pdbg("done\n");
 		prettyprint_opcodes(curopcodes);
-		msg_pdbg("\n");
 		return 0;
 	}
 }
