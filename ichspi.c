@@ -70,10 +70,8 @@
 #define ICH9_REG_FREG0		0x54	/* 32 Bytes Flash Region 0 */
 
 #define ICH9_REG_PR0		0x74	/* 32 Bytes Protected Range 0 */
-#define ICH9_REG_PR1		0x78	/* 32 Bytes Protected Range 1 */
-#define ICH9_REG_PR2		0x7c	/* 32 Bytes Protected Range 2 */
-#define ICH9_REG_PR3		0x80	/* 32 Bytes Protected Range 3 */
-#define ICH9_REG_PR4		0x84	/* 32 Bytes Protected Range 4 */
+#define PR_WP_OFF		31	/* 31: write protection enable */
+#define PR_RP_OFF		15	/* 15: read protection enable */
 
 #define ICH9_REG_SSFS		0x90	/* 08 Bits */
 #define SSFS_SCIP_OFF		0	/* SPI Cycle In Progress */
@@ -1176,6 +1174,32 @@ static void do_ich9_spi_frap(uint32_t frap, int i)
 		 access_names[rwperms]);
 }
 
+	/* In contrast to FRAP and the master section of the descriptor the bits
+	 * in the PR registers have an inverted meaning. The bits in FRAP
+	 * indicate read and write access _grant_. Here they indicate read
+	 * and write _protection_ respectively. If both bits are 0 the address
+	 * bits are ignored.
+	 */
+#define ICH_PR_PERMS(pr)	(((~((pr) >> PR_RP_OFF) & 1) << 0) | \
+				 ((~((pr) >> PR_WP_OFF) & 1) << 1))
+
+static void prettyprint_ich9_reg_pr(int i)
+{
+	static const char *const access_names[4] = {
+		"locked", "read-only", "write-only", "read-write"
+	};
+	uint8_t off = ICH9_REG_PR0 + (i * 4);
+	uint32_t pr = mmio_readl(ich_spibar + off);
+	int rwperms = ICH_PR_PERMS(pr);
+
+	msg_pdbg2("0x%02X: 0x%08x (PR%u", off, pr, i);
+	if (rwperms != 0x3)
+		msg_pdbg2(")\n0x%08x-0x%08x is %s\n", ICH_FREG_BASE(pr),
+			 ICH_FREG_LIMIT(pr) | 0x0fff, access_names[rwperms]);
+	else
+		msg_pdbg2(", unused)\n");
+}
+
 static const struct spi_programmer spi_programmer_ich7 = {
 	.type = SPI_CONTROLLER_ICH7,
 	.max_data_read = 64,
@@ -1296,16 +1320,8 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 		for(i = 0; i < 5; i++)
 			do_ich9_spi_frap(tmp, i);
 
-		msg_pdbg("0x74: 0x%08x (PR0)\n",
-			     mmio_readl(ich_spibar + ICH9_REG_PR0));
-		msg_pdbg("0x78: 0x%08x (PR1)\n",
-			     mmio_readl(ich_spibar + ICH9_REG_PR1));
-		msg_pdbg("0x7C: 0x%08x (PR2)\n",
-			     mmio_readl(ich_spibar + ICH9_REG_PR2));
-		msg_pdbg("0x80: 0x%08x (PR3)\n",
-			     mmio_readl(ich_spibar + ICH9_REG_PR3));
-		msg_pdbg("0x84: 0x%08x (PR4)\n",
-			     mmio_readl(ich_spibar + ICH9_REG_PR4));
+		for(i = 0; i < 5; i++)
+			prettyprint_ich9_reg_pr(i);
 
 		tmp = mmio_readl(ich_spibar + ICH9_REG_SSFS);
 		msg_pdbg("0x90: 0x%02x (SSFS)\n", tmp & 0xff);
