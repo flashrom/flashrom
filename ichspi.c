@@ -570,20 +570,19 @@ static int program_opcodes(OPCODES *op, int enable_undo)
  * Try to set BBAR (BIOS Base Address Register), but read back the value in case
  * it didn't stick.
  */
-static void ich_set_bbar(uint32_t min_addr)
+static void ich_set_bbar(int ich_generation, uint32_t min_addr)
 {
 	int bbar_off;
-	switch (spi_programmer->type) {
-	case SPI_CONTROLLER_ICH7:
-	case SPI_CONTROLLER_VIA:
+	switch (ich_generation) {
+	case 7:
 		bbar_off = 0x50;
 		break;
-	case SPI_CONTROLLER_ICH9:
+	case 8:
+		msg_perr("BBAR offset is unknown on ICH8!\n");
+		return;
+	default:		/* Future version might behave the same */
 		bbar_off = ICH9_REG_BBAR;
 		break;
-	default:
-		msg_perr("Unknown chipset for BBAR setting!\n");
-		return;
 	}
 	
 	ichspi_bbar = mmio_readl(ich_spibar + bbar_off) & ~BBAR_MASK;
@@ -600,7 +599,8 @@ static void ich_set_bbar(uint32_t min_addr)
 	 * failed, the restore will fail as well, so no problem there.
 	 */
 	if (ichspi_bbar != min_addr)
-		msg_perr("Setting BBAR failed!\n");
+		msg_perr("Setting BBAR to 0x%08x failed! New value: 0x%08x.\n",
+			 min_addr, ichspi_bbar);
 }
 
 /* Read len bytes from the fdata/spid register into the data array.
@@ -669,11 +669,6 @@ static int ich_init_opcodes(void)
 		msg_pdbg("Programming OPCODES... ");
 		curopcodes_done = &O_ST_M25P;
 		rc = program_opcodes(curopcodes_done, 1);
-		/* Technically not part of opcode init, but it allows opcodes
-		 * to run without transaction errors by setting the lowest
-		 * allowed address to zero.
-		 */
-		ich_set_bbar(0);
 	}
 
 	if (rc) {
@@ -1270,6 +1265,7 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 			msg_pinfo("WARNING: SPI Configuration Lockdown activated.\n");
 			ichspi_lock = 1;
 		}
+		ich_set_bbar(ich_generation, 0);
 		ich_init_opcodes();
 		break;
 	case SPI_CONTROLLER_ICH9:
@@ -1351,6 +1347,7 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 
 			tmp = mmio_readl(ich_spibar + ICH9_REG_FPB);
 			msg_pdbg("0xD0: 0x%08x (FPB)\n", tmp);
+			ich_set_bbar(ich_generation, 0);
 		}
 
 		msg_pdbg("\n");
@@ -1439,6 +1436,7 @@ int via_init_spi(struct pci_dev *dev)
 		ichspi_lock = 1;
 	}
 
+	ich_set_bbar(7, 0);
 	ich_init_opcodes();
 
 	return 0;
