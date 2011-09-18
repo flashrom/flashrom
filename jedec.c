@@ -355,7 +355,7 @@ retry:
 }
 
 /* chunksize is 1 */
-int write_jedec_1(struct flashchip *flash, uint8_t *src, int start, int len)
+int write_jedec_1(struct flashchip *flash, uint8_t *src, unsigned int start, unsigned int len)
 {
 	int i, failed = 0;
 	chipaddr dst = flash->virtual_memory + start;
@@ -376,7 +376,7 @@ int write_jedec_1(struct flashchip *flash, uint8_t *src, int start, int len)
 	return failed;
 }
 
-int write_page_write_jedec_common(struct flashchip *flash, uint8_t *src, int start, int page_size)
+int write_page_write_jedec_common(struct flashchip *flash, uint8_t *src, unsigned int start, unsigned int page_size)
 {
 	int i, tried = 0, failed;
 	uint8_t *s = src;
@@ -424,7 +424,7 @@ retry:
  * This function is a slightly modified copy of spi_write_chunked.
  * Each page is written separately in chunks with a maximum size of chunksize.
  */
-int write_jedec(struct flashchip *flash, uint8_t *buf, int start, int len)
+int write_jedec(struct flashchip *flash, uint8_t *buf, unsigned int start, int unsigned len)
 {
 	int i, starthere, lenhere;
 	/* FIXME: page_size is the wrong variable. We need max_writechunk_size
