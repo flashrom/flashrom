@@ -1325,6 +1325,12 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 		}
 		if (tmp2 & HSFS_FDV)
 			ichspi_desc = 1;
+		if (!(tmp2 & HSFS_FDOPSS) && ichspi_desc)
+			msg_pinfo("The Flash Descriptor Security Override "
+				  "Strap-Pin is set. Restrictions implied\n"
+				  "by the FRAP and FREG registers are NOT in "
+				  "effect. Please note that Protected\n"
+				  "Range (PR) restrictions still apply.\n");
 
 		tmp2 = mmio_readw(ich_spibar + ICH9_REG_HSFC);
 		msg_pdbg("0x06: 0x%04x (HSFC)\n", tmp2);
