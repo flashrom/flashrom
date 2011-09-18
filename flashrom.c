@@ -564,7 +564,7 @@ void map_flash_registers(struct flashchip *flash)
 	flash->virtual_registers = (chipaddr)programmer_map_flash_region("flash chip registers", (0xFFFFFFFF - 0x400000 - size + 1), size);
 }
 
-int read_memmapped(struct flashchip *flash, uint8_t *buf, unsigned int start, int unsigned len)
+int read_memmapped(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
 	chip_readn(buf, flash->virtual_memory + start, len);
 
@@ -710,7 +710,7 @@ int check_erased_range(struct flashchip *flash, int start, int len)
  * @message	string to print in the "FAILED" message
  * @return	0 for success, -1 for failure
  */
-int verify_range(struct flashchip *flash, uint8_t *cmpbuf, unsigned int start, unsigned int len,
+int verify_range(struct flashchip *flash, uint8_t *cmpbuf, int start, int len,
 		 const char *message)
 {
 	int i;

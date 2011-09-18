@@ -62,7 +62,7 @@ done:
 
 static int wbsio_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		      const unsigned char *writearr, unsigned char *readarr);
-static int wbsio_spi_read(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len);
+static int wbsio_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
 
 static const struct spi_programmer spi_programmer_wbsio = {
 	.type = SPI_CONTROLLER_WBSIO,
@@ -194,7 +194,7 @@ static int wbsio_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	return 0;
 }
 
-static int wbsio_spi_read(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len)
+static int wbsio_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
 	return read_memmapped(flash, buf, start, len);
 }
