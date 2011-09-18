@@ -844,7 +844,7 @@ int spi_write_status_register(struct flashchip *flash, int status)
 	return ret;
 }
 
-int spi_byte_program(unsigned int addr, uint8_t databyte)
+int spi_byte_program(int addr, uint8_t databyte)
 {
 	int result;
 	struct spi_command cmds[] = {
@@ -879,7 +879,7 @@ int spi_byte_program(unsigned int addr, uint8_t databyte)
 	return result;
 }
 
-int spi_nbyte_program(unsigned int addr, uint8_t *bytes, unsigned int len)
+int spi_nbyte_program(int addr, uint8_t *bytes, int len)
 {
 	int result;
 	/* FIXME: Switch to malloc based on len unless that kills speed. */
@@ -954,7 +954,7 @@ int spi_disable_blockprotect(struct flashchip *flash)
 	return 0;
 }
 
-int spi_nbyte_read(unsigned int address, uint8_t *bytes, unsigned int len)
+int spi_nbyte_read(int address, uint8_t *bytes, int len)
 {
 	const unsigned char cmd[JEDEC_READ_OUTSIZE] = {
 		JEDEC_READ,
@@ -972,7 +972,7 @@ int spi_nbyte_read(unsigned int address, uint8_t *bytes, unsigned int len)
  * FIXME: Use the chunk code from Michael Karcher instead.
  * Each page is read separately in chunks with a maximum size of chunksize.
  */
-int spi_read_chunked(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len, unsigned int chunksize)
+int spi_read_chunked(struct flashchip *flash, uint8_t *buf, int start, int len, int chunksize)
 {
 	int rc = 0;
 	int i, j, starthere, lenhere;
@@ -1012,7 +1012,7 @@ int spi_read_chunked(struct flashchip *flash, uint8_t *buf, unsigned int start, 
  * FIXME: Use the chunk code from Michael Karcher instead.
  * Each page is written separately in chunks with a maximum size of chunksize.
  */
-int spi_write_chunked(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len, unsigned int chunksize)
+int spi_write_chunked(struct flashchip *flash, uint8_t *buf, int start, int len, int chunksize)
 {
 	int rc = 0;
 	int i, j, starthere, lenhere;
@@ -1061,7 +1061,7 @@ int spi_write_chunked(struct flashchip *flash, uint8_t *buf, unsigned int start,
  * (e.g. due to size constraints in IT87* for over 512 kB)
  */
 /* real chunksize is 1, logical chunksize is 1 */
-int spi_chip_write_1(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len)
+int spi_chip_write_1(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
 	int i, result = 0;
 
@@ -1076,7 +1076,7 @@ int spi_chip_write_1(struct flashchip *flash, uint8_t *buf, unsigned int start, 
 	return 0;
 }
 
-int spi_aai_write(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len)
+int spi_aai_write(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
 	uint32_t pos = start;
 	int result;
