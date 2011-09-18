@@ -106,9 +106,9 @@ void probe_superio_ite(void)
 static int it8716f_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 			const unsigned char *writearr, unsigned char *readarr);
 static int it8716f_spi_chip_read(struct flashchip *flash, uint8_t *buf,
-				 int start, int len);
+				 unsigned int start, unsigned int len);
 static int it8716f_spi_chip_write_256(struct flashchip *flash, uint8_t *buf,
-				      int start, int len);
+				      unsigned int start, unsigned int len);
 
 static const struct spi_programmer spi_programmer_it87xx = {
 	.type		= SPI_CONTROLLER_IT87XX,
@@ -340,7 +340,7 @@ static int it8716f_spi_page_program(struct flashchip *flash, uint8_t *buf,
  * Need to read this big flash using firmware cycles 3 byte at a time.
  */
 static int it8716f_spi_chip_read(struct flashchip *flash, uint8_t *buf,
-				 int start, int len)
+				 unsigned int start, unsigned int len)
 {
 	fast_spi = 0;
 
@@ -358,7 +358,7 @@ static int it8716f_spi_chip_read(struct flashchip *flash, uint8_t *buf,
 }
 
 static int it8716f_spi_chip_write_256(struct flashchip *flash, uint8_t *buf,
-				      int start, int len)
+				      unsigned int start, unsigned int len)
 {
 	/*
 	 * IT8716F only allows maximum of 512 kb SPI chip size for memory
