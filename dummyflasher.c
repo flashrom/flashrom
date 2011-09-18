@@ -63,7 +63,7 @@ static int spi_write_256_chunksize = 256;
 static int dummy_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		      const unsigned char *writearr, unsigned char *readarr);
 static int dummy_spi_write_256(struct flashchip *flash, uint8_t *buf,
-			       int start, int len);
+			       unsigned int start, unsigned int len);
 
 static const struct spi_programmer spi_programmer_dummyflasher = {
 	.type		= SPI_CONTROLLER_DUMMY,
@@ -528,7 +528,7 @@ static int dummy_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 }
 
 static int dummy_spi_write_256(struct flashchip *flash, uint8_t *buf,
-			       int start, int len)
+			       unsigned int start, unsigned int len)
 {
 	return spi_write_chunked(flash, buf, start, len,
 				 spi_write_256_chunksize);

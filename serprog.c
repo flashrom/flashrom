@@ -795,7 +795,7 @@ int serprog_spi_send_command(unsigned int writecnt, unsigned int readcnt,
  * the advantage that it is much faster for most chips, but breaks those with
  * non-contiguous address space (like AT45DB161D). When spi_read_chunked is
  * fixed this method can be removed. */
-int serprog_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
+int serprog_spi_read(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len)
 {
 	int i;
 	int cur_len;
