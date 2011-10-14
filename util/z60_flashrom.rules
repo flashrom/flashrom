@@ -72,4 +72,8 @@ ATTRS{idVendor}=="15ba", ATTRS{idProduct}=="0004", MODE="664", GROUP="plugdev"
 # http://olimex.com/dev/arm-usb-tiny-h.html
 ATTRS{idVendor}=="15ba", ATTRS{idProduct}=="002a", MODE="664", GROUP="plugdev"
 
+# TIAO/DIYGADGET USB Multi-Protocol Adapter (TUMPA)
+# http://www.diygadget.com/tiao-usb-multi-protocol-adapter-jtag-spi-i2c-serial.html
+ATTRS{idVendor}=="0403", ATTRS{idProduct}=="8a98", MODE="664", GROUP="plugdev"
+
 LABEL="flashrom_rules_end"
