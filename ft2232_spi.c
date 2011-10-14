@@ -29,9 +29,12 @@
 #include "spi.h"
 #include <ftdi.h>
 
+/* Please keep sorted by vendor ID, then device ID. */
+
 #define FTDI_VID		0x0403
 #define FTDI_FT2232H_PID	0x6010
 #define FTDI_FT4232H_PID	0x6011
+#define TIAO_TUMPA_PID		0x8a98
 #define AMONTEC_JTAGKEY_PID	0xCFF8
 
 #define FIC_VID			0x1457
@@ -46,6 +49,7 @@
 const struct usbdev_status devs_ft2232spi[] = {
 	{FTDI_VID, FTDI_FT2232H_PID, OK, "FTDI", "FT2232H"},
 	{FTDI_VID, FTDI_FT4232H_PID, OK, "FTDI", "FT4232H"},
+	{FTDI_VID, TIAO_TUMPA_PID, OK, "TIAO", "USB Multi-Protocol Adapter"},
 	{FTDI_VID, AMONTEC_JTAGKEY_PID, OK, "Amontec", "JTAGkey"},
 	{FIC_VID, OPENMOKO_DBGBOARD_PID, OK, "FIC",
 		"OpenMoko Neo1973 Debug board (V2+)"},
@@ -172,6 +176,10 @@ int ft2232_spi_init(void)
 			ft2232_interface = INTERFACE_A;
 			cs_bits = 0x18;
 			pindir = 0x1b;
+		} else if (!strcasecmp(arg, "tumpa")) {
+			/* Interface A is SPI1, B is SPI2. */
+			ft2232_type = TIAO_TUMPA_PID;
+			ft2232_interface = INTERFACE_A;
 		} else if (!strcasecmp(arg, "busblaster")) {
 			/* In its default configuration it is a jtagkey clone */
 			ft2232_type = FTDI_FT2232H_PID;
