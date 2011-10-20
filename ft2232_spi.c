@@ -37,6 +37,9 @@
 #define TIAO_TUMPA_PID		0x8a98
 #define AMONTEC_JTAGKEY_PID	0xCFF8
 
+#define GOEPEL_VID		0x096C
+#define GOEPEL_PICOTAP_PID	0x1449
+
 #define FIC_VID			0x1457
 #define OPENMOKO_DBGBOARD_PID	0x5118
 
@@ -51,6 +54,7 @@ const struct usbdev_status devs_ft2232spi[] = {
 	{FTDI_VID, FTDI_FT4232H_PID, OK, "FTDI", "FT4232H"},
 	{FTDI_VID, TIAO_TUMPA_PID, OK, "TIAO", "USB Multi-Protocol Adapter"},
 	{FTDI_VID, AMONTEC_JTAGKEY_PID, OK, "Amontec", "JTAGkey"},
+	{GOEPEL_VID, GOEPEL_PICOTAP_PID, OK, "GOEPEL", "PicoTAP"},
 	{FIC_VID, OPENMOKO_DBGBOARD_PID, OK, "FIC",
 		"OpenMoko Neo1973 Debug board (V2+)"},
 	{OLIMEX_VID, OLIMEX_ARM_OCD_PID, NT, "Olimex", "ARM-USB-OCD"},
@@ -176,6 +180,10 @@ int ft2232_spi_init(void)
 			ft2232_interface = INTERFACE_A;
 			cs_bits = 0x18;
 			pindir = 0x1b;
+		} else if (!strcasecmp(arg, "picotap")) {
+			ft2232_vid = GOEPEL_VID;
+			ft2232_type = GOEPEL_PICOTAP_PID;
+			ft2232_interface = INTERFACE_A;
 		} else if (!strcasecmp(arg, "tumpa")) {
 			/* Interface A is SPI1, B is SPI2. */
 			ft2232_type = TIAO_TUMPA_PID;
