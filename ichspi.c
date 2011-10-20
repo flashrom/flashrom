@@ -26,6 +26,7 @@
 #if defined(__i386__) || defined(__x86_64__)
 
 #include <string.h>
+#include <stdlib.h>
 #include "flash.h"
 #include "programmer.h"
 #include "spi.h"
@@ -1080,6 +1081,77 @@ static int ich_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	return result;
 }
 
+#if 0
+/* Sets FLA in FADDR to (addr & 0x01FFFFFF) without touching other bits. */
+static void ich_hwseq_set_addr(uint32_t addr)
+{
+	uint32_t addr_old = REGREAD32(ICH9_REG_FADDR) & ~0x01FFFFFF;
+	REGWRITE32(ICH9_REG_FADDR, (addr & 0x01FFFFFF) | addr_old);
+}
+
+/* Sets FADDR.FLA to 'addr' and returns the erase block size in bytes
+ * of the block containing this address. May return nonsense if the address is
+ * not valid. The erase block size for a specific address depends on the flash
+ * partition layout as specified by FPB and the partition properties as defined
+ * by UVSCC and LVSCC respectively. An alternative to implement this method
+ * would be by querying FPB and the respective VSCC register directly.
+ */
+static uint32_t ich_hwseq_get_erase_block_size(unsigned int addr)
+{
+	uint8_t enc_berase;
+	static const uint32_t const dec_berase[4] = {
+		256,
+		4 * 1024,
+		8 * 1024,
+		64 * 1024
+	};
+
+	ich_hwseq_set_addr(addr);
+	enc_berase = (REGREAD16(ICH9_REG_HSFS) & HSFS_BERASE) >>
+		     HSFS_BERASE_OFF;
+	return dec_berase[enc_berase];
+}
+
+/* Polls for Cycle Done Status, Flash Cycle Error or timeout in 8 us intervals.
+   Resets all error flags in HSFS.
+   Returns 0 if the cycle completes successfully without errors within
+   timeout us, 1 on errors. */
+static int ich_hwseq_wait_for_cycle_complete(unsigned int timeout,
+					     unsigned int len)
+{
+	uint16_t hsfs;
+	uint32_t addr;
+
+	timeout /= 8; /* scale timeout duration to counter */
+	while ((((hsfs = REGREAD16(ICH9_REG_HSFS)) &
+		 (HSFS_FDONE | HSFS_FCERR)) == 0) &&
+	       --timeout) {
+		programmer_delay(8);
+	}
+	REGWRITE16(ICH9_REG_HSFS, REGREAD16(ICH9_REG_HSFS));
+	if (!timeout) {
+		addr = REGREAD32(ICH9_REG_FADDR) & 0x01FFFFFF;
+		msg_perr("Timeout error between offset 0x%08x and "
+			 "0x%08x + %d (=0x%08x)!\n",
+			 addr, addr, len - 1, addr + len - 1);
+		prettyprint_ich9_reg_hsfs(hsfs);
+		prettyprint_ich9_reg_hsfc(REGREAD16(ICH9_REG_HSFC));
+		return 1;
+	}
+
+	if (hsfs & HSFS_FCERR) {
+		addr = REGREAD32(ICH9_REG_FADDR) & 0x01FFFFFF;
+		msg_perr("Transaction error between offset 0x%08x and "
+			 "0x%08x (=0x%08x + %d)!\n",
+			 addr, addr + len - 1, addr, len - 1);
+		prettyprint_ich9_reg_hsfs(hsfs);
+		prettyprint_ich9_reg_hsfc(REGREAD16(ICH9_REG_HSFC));
+		return 1;
+	}
+	return 0;
+}
+#endif
+
 static int ich_spi_send_multicommand(struct spi_command *cmds)
 {
 	int ret = 0;
@@ -1250,21 +1322,18 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 	uint8_t old, new;
 	uint16_t spibar_offset, tmp2;
 	uint32_t tmp;
-	int ichspi_desc = 0;
+	int desc_valid = 0;
 
 	switch (ich_generation) {
 	case 7:
-		register_spi_programmer(&spi_programmer_ich7);
 		spibar_offset = 0x3020;
 		break;
 	case 8:
-		register_spi_programmer(&spi_programmer_ich9);
 		spibar_offset = 0x3020;
 		break;
 	case 9:
 	case 10:
 	default:		/* Future version might behave the same */
-		register_spi_programmer(&spi_programmer_ich9);
 		spibar_offset = 0x3800;
 		break;
 	}
@@ -1275,8 +1344,8 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 	/* Assign Virtual Address */
 	ich_spibar = rcrb + spibar_offset;
 
-	switch (spi_programmer->type) {
-	case SPI_CONTROLLER_ICH7:
+	switch (ich_generation) {
+	case 7:
 		msg_pdbg("0x00: 0x%04x     (SPIS)\n",
 			     mmio_readw(ich_spibar + 0));
 		msg_pdbg("0x02: 0x%04x     (SPIC)\n",
@@ -1313,9 +1382,13 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 			ichspi_lock = 1;
 		}
 		ich_set_bbar(ich_generation, 0);
+		register_spi_programmer(&spi_programmer_ich7);
 		ich_init_opcodes();
 		break;
-	case SPI_CONTROLLER_ICH9:
+	case 8:
+	case 9:
+	case 10:
+	default:		/* Future version might behave the same */
 		tmp2 = mmio_readw(ich_spibar + ICH9_REG_HSFS);
 		msg_pdbg("0x04: 0x%04x (HSFS)\n", tmp2);
 		prettyprint_ich9_reg_hsfs(tmp2);
@@ -1324,8 +1397,8 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 			ichspi_lock = 1;
 		}
 		if (tmp2 & HSFS_FDV)
-			ichspi_desc = 1;
-		if (!(tmp2 & HSFS_FDOPSS) && ichspi_desc)
+			desc_valid = 1;
+		if (!(tmp2 & HSFS_FDOPSS) && desc_valid)
 			msg_pinfo("The Flash Descriptor Security Override "
 				  "Strap-Pin is set. Restrictions implied\n"
 				  "by the FRAP and FREG registers are NOT in "
@@ -1400,17 +1473,15 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 		}
 
 		msg_pdbg("\n");
-		if (ichspi_desc) {
+		if (desc_valid) {
 			struct ich_descriptors desc = {{ 0 }};
 			if (read_ich_descriptors_via_fdo(ich_spibar, &desc) ==
 			    ICH_RET_OK)
 				prettyprint_ich_descriptors(CHIPSET_ICH_UNKNOWN,
 							    &desc);
 		}
+		register_spi_programmer(&spi_programmer_ich9);
 		ich_init_opcodes();
-		break;
-	default:
-		/* Nothing */
 		break;
 	}
 

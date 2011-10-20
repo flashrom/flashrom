@@ -213,6 +213,34 @@ void prettyprint_ich_descriptor_master(const struct ich_desc_master *mstr)
 	msg_pdbg2("\n");
 }
 
+/** Returns the integer representation of the component density with index
+idx in bytes or 0 if a correct size can not be determined. */
+int getFCBA_component_density(const struct ich_descriptors *desc, uint8_t idx)
+{
+	uint8_t size_enc;
+	
+	switch(idx) {
+	case 0:
+		size_enc = desc->component.comp1_density;
+		break;
+	case 1:
+		if (desc->content.NC == 0)
+			return 0;
+		size_enc = desc->component.comp2_density;
+		break;
+	default:
+		msg_perr("Only ICH SPI component index 0 or 1 are supported "
+			 "yet.\n");
+		return 0;
+	}
+	if (size_enc > 5) {
+		msg_perr("Density of ICH SPI component with index %d is "
+			 "invalid. Encoded density is 0x%x.\n", idx, size_enc);
+		return 0;
+	}
+	return (1 << (19 + size_enc));
+}
+
 static uint32_t read_descriptor_reg(uint8_t section, uint16_t offset, void *spibar)
 {
 	uint32_t control = 0;
