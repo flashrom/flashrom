@@ -255,6 +255,7 @@ void prettyprint_ich_descriptor_region(const struct ich_descriptors *desc);
 void prettyprint_ich_descriptor_master(const struct ich_desc_master *master);
 
 int read_ich_descriptors_via_fdo(void *spibar, struct ich_descriptors *desc);
+int getFCBA_component_density(const struct ich_descriptors *desc, uint8_t idx);
 
 #endif /* __ICH_DESCRIPTORS_H__ */
 #endif /* defined(__i386__) || defined(__x86_64__) */
