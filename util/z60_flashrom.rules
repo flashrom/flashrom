@@ -56,6 +56,10 @@ ATTRS{idVendor}=="1457", ATTRS{idProduct}=="5118", MODE="664", GROUP="plugdev"
 # http://www.ftdichip.com/Products/EvaluationKits/FT4232H_MiniModule.htm
 ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6011", MODE="664", GROUP="plugdev"
 
+# GOEPEL PicoTAP
+# http://www.goepel.com/jtagboundary-scan/hardware/picotap.html
+ATTRS{idVendor}=="096c", ATTRS{idProduct}=="1449", MODE="664", GROUP="plugdev"
+
 # Olimex ARM-USB-OCD
 # http://olimex.com/dev/arm-usb-ocd.html
 ATTRS{idVendor}=="15ba", ATTRS{idProduct}=="0003", MODE="664", GROUP="plugdev"
