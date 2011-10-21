@@ -42,7 +42,7 @@ enum rayer_type {
 
 /* We have two sets of pins, out and in. The numbers for both sets are
  * independent and are bitshift values, not real pin numbers.
- * Default settings are for the the RayeR hardware.
+ * Default settings are for the RayeR hardware.
  */
 /* Pins for master->slave direction */
 static int rayer_cs_bit = 5;
