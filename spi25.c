@@ -120,7 +120,6 @@ static int probe_spi_rdid_generic(struct flashchip *flash, int bytes)
 	uint32_t id2;
 
 	if (spi_rdid(readarr, bytes)) {
-		msg_cdbg("\n");
 		return 0;
 	}
 
@@ -201,7 +200,6 @@ int probe_spi_rems(struct flashchip *flash)
 	uint32_t id1, id2;
 
 	if (spi_rems(readarr)) {
-		msg_cdbg("\n");
 		return 0;
 	}
 
@@ -259,7 +257,6 @@ int probe_spi_res1(struct flashchip *flash)
 	}
 
 	if (spi_res(readarr, 1)) {
-		msg_cdbg("\n");
 		return 0;
 	}
 
@@ -283,7 +280,6 @@ int probe_spi_res2(struct flashchip *flash)
 	uint32_t id1, id2;
 
 	if (spi_res(readarr, 2)) {
-		msg_cdbg("\n");
 		return 0;
 	}
 

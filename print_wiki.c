@@ -70,7 +70,7 @@ static const char chip_th[] = "{\
 ! align=\"center\" colspan=\"2\" | Voltage [V]\n\n\
 |- bgcolor=\"#6699ff\"\n| colspan=\"4\" | &nbsp;\n\
 | Probe\n| Read\n| Erase\n| Write\n\
-| align=\"center\" | min \n| align=\"center\" | max\n\n";
+| align=\"center\" | Min \n| align=\"center\" | Max\n\n";
 
 static const char programmer_section[] = "\
 \n== Supported programmers ==\n\nThis is a list \

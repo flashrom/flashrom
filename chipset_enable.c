@@ -536,7 +536,7 @@ static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
 
 	/* Get physical address of Root Complex Register Block */
 	tmp = pci_read_long(dev, 0xf0) & 0xffffc000;
-	msg_pdbg("\nRoot Complex Register Block address = 0x%x\n", tmp);
+	msg_pdbg("Root Complex Register Block address = 0x%x\n", tmp);
 
 	/* Map RCBA to virtual memory */
 	rcrb = physmap("ICH RCRB", tmp, 0x4000);
@@ -1138,7 +1138,7 @@ const struct penable chipset_enables[] = {
 	{0x1022, 0x780e, OK, "AMD", "Hudson",		enable_flash_sb600},
 	{0x1039, 0x0406, NT, "SiS", "501/5101/5501",	enable_flash_sis501},
 	{0x1039, 0x0496, NT, "SiS", "85C496+497",	enable_flash_sis85c496},
-	{0x1039, 0x0530, NT, "SiS", "530",		enable_flash_sis530},
+	{0x1039, 0x0530, OK, "SiS", "530",		enable_flash_sis530},
 	{0x1039, 0x0540, NT, "SiS", "540",		enable_flash_sis540},
 	{0x1039, 0x0620, NT, "SiS", "620",		enable_flash_sis530},
 	{0x1039, 0x0630, NT, "SiS", "630",		enable_flash_sis540},
@@ -1205,7 +1205,7 @@ const struct penable chipset_enables[] = {
 	{0x10de, 0x0443, NT, "NVIDIA", "MCP65",		enable_flash_mcp6x_7x},
 	{0x10de, 0x0548, OK, "NVIDIA", "MCP67",		enable_flash_mcp6x_7x},
 	{0x10de, 0x075c, NT, "NVIDIA", "MCP78S",	enable_flash_mcp6x_7x},
-	{0x10de, 0x075d, NT, "NVIDIA", "MCP78S",	enable_flash_mcp6x_7x},
+	{0x10de, 0x075d, OK, "NVIDIA", "MCP78S",	enable_flash_mcp6x_7x},
 	{0x10de, 0x07d7, NT, "NVIDIA", "MCP73",		enable_flash_mcp6x_7x},
 	{0x10de, 0x0aac, NT, "NVIDIA", "MCP79",		enable_flash_mcp6x_7x},
 	{0x10de, 0x0aad, NT, "NVIDIA", "MCP79",		enable_flash_mcp6x_7x},
@@ -1222,7 +1222,7 @@ const struct penable chipset_enables[] = {
 	{0x1106, 0x0586, OK, "VIA", "VT82C586A/B",	enable_flash_amd8111},
 	{0x1106, 0x0596, OK, "VIA", "VT82C596",		enable_flash_amd8111},
 	{0x1106, 0x0686, NT, "VIA", "VT82C686A/B",	enable_flash_amd8111},
-	{0x1106, 0x3074, NT, "VIA", "VT8233",		enable_flash_vt823x},
+	{0x1106, 0x3074, OK, "VIA", "VT8233",		enable_flash_vt823x},
 	{0x1106, 0x3147, OK, "VIA", "VT8233A",		enable_flash_vt823x},
 	{0x1106, 0x3177, OK, "VIA", "VT8235",		enable_flash_vt823x},
 	{0x1106, 0x3227, OK, "VIA", "VT8237",		enable_flash_vt823x},
@@ -1236,8 +1236,8 @@ const struct penable chipset_enables[] = {
 	{0x1166, 0x0205, OK, "Broadcom", "HT-1000",	enable_flash_ht1000},
 	{0x8086, 0x122e, OK, "Intel", "PIIX",		enable_flash_piix4},
 	{0x8086, 0x1234, NT, "Intel", "MPIIX",		enable_flash_piix4},
-	{0x8086, 0x1c44, NT, "Intel", "Z68",		enable_flash_pch6},
-	{0x8086, 0x1c46, NT, "Intel", "P67",		enable_flash_pch6},
+	{0x8086, 0x1c44, OK, "Intel", "Z68",		enable_flash_pch6},
+	{0x8086, 0x1c46, OK, "Intel", "P67",		enable_flash_pch6},
 	{0x8086, 0x1c47, NT, "Intel", "UM67",		enable_flash_pch6},
 	{0x8086, 0x1c49, NT, "Intel", "HM65",		enable_flash_pch6},
 	{0x8086, 0x1c4a, OK, "Intel", "H67",		enable_flash_pch6},
