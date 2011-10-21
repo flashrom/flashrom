@@ -535,6 +535,7 @@ const struct board_info boards_known[] = {
 #if defined(__i386__) || defined(__x86_64__)
 	B("A-Trend",	"ATC-6220",		1, "http://www.motherboard.cz/mb/atrend/atc6220.htm", NULL),
 	B("abit",	"AN-M2",		1, "http://www.abit.com.tw/page/en/motherboard/motherboard_detail.php?DEFTITLE=Y&fMTYPE=Socket%20AM2&pMODEL_NAME=AN-M2", NULL),
+	B("abit",	"AV8",			1, "http://www.abit.com.tw/page/en/motherboard/motherboard_detail.php?DEFTITLE=Y&fMTYPE=Socket%20939&pMODEL_NAME=AV8", NULL),
 	B("abit",	"AX8",			1, "http://www.abit.com.tw/page/en/motherboard/motherboard_detail.php?DEFTITLE=Y&fMTYPE=Socket%20939&pMODEL_NAME=AX8", NULL),
 	B("abit",	"BM6",			1, "http://www.abit.com.tw/page/en/motherboard/motherboard_detail.php?pMODEL_NAME=BM6&fMTYPE=Socket%20370", NULL),
 	B("abit",	"Fatal1ty F-I90HD",	1, "http://www.abit.com.tw/page/en/motherboard/motherboard_detail.php?pMODEL_NAME=Fatal1ty+F-I90HD&fMTYPE=LGA775", NULL),
