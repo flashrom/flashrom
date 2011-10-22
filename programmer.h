@@ -607,9 +607,10 @@ int serprog_init(void);
 void serprog_chip_writeb(uint8_t val, chipaddr addr);
 uint8_t serprog_chip_readb(const chipaddr addr);
 void serprog_chip_readn(uint8_t *buf, const chipaddr addr, size_t len);
-void serprog_delay(int delay);
+void serprog_delay(int usecs);
 int serprog_spi_send_command(unsigned int writecnt, unsigned int readcnt,
-			const unsigned char *writearr, unsigned char *readarr);
+			     const unsigned char *writearr,
+			     unsigned char *readarr);
 int serprog_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
 #endif
 
