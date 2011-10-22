@@ -38,7 +38,7 @@
 #include "programmer.h"
 #include "chipdrivers.h"
 
-#define MSGHEADER "serprog:"
+#define MSGHEADER "serprog: "
 
 /*
  * FIXME: This prototype was added to help reduce diffs for the shutdown
@@ -204,7 +204,7 @@ static void sp_synchronize(void)
 			return;
 		}
 	}
-	msg_perr("Error: cannot synchronize protocol\n"
+	msg_perr("Error: cannot synchronize protocol "
 		"- check communications and reset device?\n");
 	exit(1);
 }
@@ -220,32 +220,27 @@ static int sp_check_commandavail(uint8_t command)
 static int sp_automatic_cmdcheck(uint8_t cmd)
 {
 	if ((sp_check_avail_automatic) && (sp_check_commandavail(cmd) == 0)) {
-		msg_pdbg("Warning: Automatic command availability check"
-				" failed for cmd %d - wont execute cmd\n",cmd);
+		msg_pdbg("Warning: Automatic command availability check failed "
+			 "for cmd 0x%x - won't execute cmd\n", cmd);
 		return 1;
 		}
 	return 0;
 }
 
 static int sp_docommand(uint8_t command, uint32_t parmlen,
-			     uint8_t * params, uint32_t retlen, void *retparms)
+			uint8_t *params, uint32_t retlen, void *retparms)
 {
-	unsigned char *sendpacket;
 	unsigned char c;
 	if (sp_automatic_cmdcheck(command))
 		return 1;
-	sendpacket = malloc(1 + parmlen);
-	if (!sendpacket)
-		sp_die("Error: cannot malloc command buffer");
-	sendpacket[0] = command;
-	memcpy(&(sendpacket[1]), params, parmlen);
-	if (write(sp_fd, sendpacket, 1 + parmlen) != (1 + parmlen)) {
-		sp_die("Error: cannot write command");
-	}
-	free(sendpacket);
+	if (write(sp_fd, &command, 1) != 1)
+		sp_die("Error: cannot write op code");
+	if (write(sp_fd, params, parmlen) != (parmlen))
+		sp_die("Error: cannot write parameters");
 	if (read(sp_fd, &c, 1) != 1)
 		sp_die("Error: cannot read from device");
-	if (c == S_NAK) return 1;
+	if (c == S_NAK)
+		return 1;
 	if (c != S_ACK) {
 		msg_perr("Error: invalid response 0x%02X from device\n",c);
 		exit(1);
@@ -256,8 +251,8 @@ static int sp_docommand(uint8_t command, uint32_t parmlen,
 			int r;
 			r = read(sp_fd, retparms + rd_bytes,
 				 retlen - rd_bytes);
-			if (r <= 0) sp_die
-				    ("Error: cannot read return parameters");
+			if (r <= 0)
+				sp_die("Error: cannot read return parameters");
 			rd_bytes += r;
 		} while (rd_bytes != retlen);
 	}
@@ -404,12 +399,12 @@ int serprog_init(void)
 	msg_pdbg(MSGHEADER "Synchronized\n");
 
 	if (sp_docommand(S_CMD_Q_IFACE, 0, NULL, 2, &iface)) {
-		msg_perr("Error: NAK to Query Interface version\n");
+		msg_perr("Error: NAK to query interface version\n");
 		exit(1);
 	}
 
 	if (iface != 1) {
-		msg_perr("Error: Unknown interface version %d\n", iface);
+		msg_perr("Error: Unknown interface version: %d\n", iface);
 		exit(1);
 	}
 
@@ -428,6 +423,11 @@ int serprog_init(void)
 		c = BUS_NONSPI;	/* A reasonable default for now. */
 	}
 	buses_supported = c;
+	msg_pdbg(MSGHEADER "Bus support: parallel=%s, LPC=%s, FWH=%s, SPI=%s\n",
+		 (c & BUS_PARALLEL) ? "on" : "off",
+		 (c & BUS_LPC) ? "on" : "off",
+		 (c & BUS_FWH) ? "on" : "off",
+		 (c & BUS_SPI) ? "on" : "off");
 	/* Check for the minimum operational set of commands. */
 	if (buses_supported & BUS_SPI) {
 		uint8_t bt = BUS_SPI;
@@ -538,12 +538,12 @@ int serprog_init(void)
 		strcpy((char *)pgmname, "(unknown)");
 	}
 	pgmname[16] = 0;
-	msg_pinfo(MSGHEADER "Programmer name \"%s\"\n", pgmname);
+	msg_pinfo(MSGHEADER "Programmer name is \"%s\"\n", pgmname);
 
 	if (sp_docommand(S_CMD_Q_SERBUF, 0, NULL, 2, &sp_device_serbuf_size)) {
 		msg_perr("Warning: NAK to query serial buffer size\n");
 	}
-	msg_pdbg(MSGHEADER "serial buffer size %d\n",
+	msg_pdbg(MSGHEADER "Serial buffer size is %d\n",
 		     sp_device_serbuf_size);
 
 	if (sp_check_commandavail(S_CMD_O_INIT)) {
@@ -564,7 +564,7 @@ int serprog_init(void)
 			msg_perr("Warning: NAK to query operation buffer "
 				 "size\n");
 		}
-		msg_pdbg(MSGHEADER "operation buffer size %d\n",
+		msg_pdbg(MSGHEADER "operation buffer size is %d\n",
 			 sp_device_opbuf_size);
   	}
 
@@ -581,7 +581,7 @@ static void sp_pass_writen(void)
 {
 	unsigned char header[7];
 	msg_pspew(MSGHEADER "Passing write-n bytes=%d addr=0x%x\n",
-		     sp_write_n_bytes, sp_write_n_addr);
+		  sp_write_n_bytes, sp_write_n_addr);
 	if (sp_streamed_transmit_bytes >=
 	    (7 + sp_write_n_bytes + sp_device_serbuf_size))
 		sp_flush_stream();
@@ -735,31 +735,32 @@ void serprog_chip_readn(uint8_t * buf, const chipaddr addr, size_t len)
 {
 	size_t lenm = len;
 	chipaddr addrm = addr;
-	while ((sp_max_read_n)&&(lenm > sp_max_read_n)) {
-		sp_do_read_n(&(buf[addrm-addr]),addrm,sp_max_read_n);
+	while ((sp_max_read_n != 0) && (lenm > sp_max_read_n)) {
+		sp_do_read_n(&(buf[addrm-addr]), addrm, sp_max_read_n);
 		addrm += sp_max_read_n;
 		lenm -= sp_max_read_n;
 	}
-	if (lenm) sp_do_read_n(&(buf[addrm-addr]),addrm,lenm);
+	if (lenm)
+		sp_do_read_n(&(buf[addrm-addr]), addrm, lenm);
 }
 
-void serprog_delay(int delay)
+void serprog_delay(int usecs)
 {
 	unsigned char buf[4];
-	msg_pspew("%s\n", __func__);
+	msg_pspew("%s usecs=%d\n", __func__, usecs);
 	if (!sp_check_commandavail(S_CMD_O_DELAY)) {
-		internal_delay(delay);
 		msg_pdbg("Note: serprog_delay used, but the programmer doesn't "
 			 "support delay\n");
+		internal_delay(usecs);
 		return;
 	}
 	if ((sp_max_write_n) && (sp_write_n_bytes))
 		sp_pass_writen();
 	sp_check_opbuf_usage(5);
-	buf[0] = ((delay >> 0) & 0xFF);
-	buf[1] = ((delay >> 8) & 0xFF);
-	buf[2] = ((delay >> 16) & 0xFF);
-	buf[3] = ((delay >> 24) & 0xFF);
+	buf[0] = ((usecs >> 0) & 0xFF);
+	buf[1] = ((usecs >> 8) & 0xFF);
+	buf[2] = ((usecs >> 16) & 0xFF);
+	buf[3] = ((usecs >> 24) & 0xFF);
 	sp_stream_buffer_op(S_CMD_O_DELAY, 4, buf);
 	sp_opbuf_usage += 5;
 	sp_prev_was_write = 0;

@@ -19,7 +19,7 @@ COMMAND	Description			Parameters			Return Value
 0x05	Query supported bustypes	none				ACK + 8-bit flags (as per flashrom) / NAK
 0x06	Query connected address lines	none				ACK + 8bit line count / NAK
 0x07	Query operation buffer size	none				ACK + 16bit size / NAK
-0x08	Query write-n maximum data len	none				ACK + 24bit maximum length / NAK
+0x08	Query maximum write-n length	none				ACK + 24bit length (0==2^24) / NAK
 0x09	Read byte			24-bit addr			ACK + BYTE / NAK
 0x0A	Read n bytes			24-bit addr + 24-bit length	ACK + length bytes / NAK
 0x0B	Initialize operation buffer	none				ACK / NAK
