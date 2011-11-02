@@ -1051,6 +1051,38 @@ static int nvidia_mcp_gpio3b_raise(void)
 
 /*
  * Suited for:
+ *  - Sun Ultra 40 M2: Dual Socket F (1207) + MCP55
+ */
+static int board_sun_ultra_40_m2(void)
+{
+	int ret;
+	uint8_t reg;
+	uint16_t base;
+	struct pci_dev *dev;
+
+	ret = nvidia_mcp_gpio4_lower();
+	if (ret)
+		return ret;
+
+	dev = pci_dev_find(0x10de, 0x0364); /* NVIDIA MCP55 LPC bridge */
+	if (!dev) {
+		msg_perr("\nERROR: NVIDIA MCP55 LPC bridge not found.\n");
+		return -1;
+	}
+
+	base = pci_read_word(dev, 0xb4); /* some IO BAR? */
+	if (!base)
+		return -1;
+
+	reg = INB(base + 0x4b);
+	reg |= 0x10;
+	OUTB(reg, base + 0x4b);
+
+	return 0;
+}
+
+/*
+ * Suited for:
  *  - Artec Group DBE61 and DBE62
  */
 static int board_artecgroup_dbe6x(void)
@@ -2109,6 +2141,7 @@ const struct board_match board_matches[] = {
 	{0x1106, 0x3104, 0x1297, 0xa238,  0x1106, 0x3059, 0x1297, 0xc063, NULL,         NULL, NULL,           P3, "Shuttle",     "AK38N",                 256, OK, NULL},
 	{0x10DE, 0x0050, 0x1297, 0x5036,  0x1412, 0x1724, 0x1297, 0x5036, NULL,         NULL, NULL,           P3, "Shuttle",     "FN25",                  0,   OK, board_shuttle_fn25},
 	{0x1106, 0x3038, 0x0925, 0x1234,  0x1106, 0x3058, 0x15DD, 0x7609, NULL,         NULL, NULL,           P3, "Soyo",        "SY-7VCA",               0,   OK, via_apollo_gpo0_lower},
+	{0x10de, 0x0364, 0x108e, 0x6676,  0x10de, 0x0369, 0x108e, 0x6676, "^Sun Ultra 40 M2", NULL, NULL,     P3, "Sun",         "Ultra 40 M2",           0,   OK, board_sun_ultra_40_m2},
 	{0x1106, 0x3038, 0x0925, 0x1234,  0x1106, 0x0596, 0x1106,      0, NULL,         NULL, NULL,           P3, "Tekram",      "P6Pro-A5",              256, OK, NULL},
 	{0x1106, 0x3123, 0x1106, 0x3123,  0x1106, 0x3059, 0x1106, 0x4161, NULL,         NULL, NULL,           P3, "Termtek",     "TK-3370 (Rev:2.5B)",    0,   OK, w836xx_memw_enable_4e},
 	{0x8086, 0x1076, 0x8086, 0x1176,  0x1106, 0x3059, 0x10f1, 0x2498, NULL,         NULL, NULL,           P3, "Tyan",        "S2498 (Tomcat K7M)",    0,   OK, w836xx_memw_enable_2e},
