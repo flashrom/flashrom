@@ -24,6 +24,8 @@
 #ifndef __PROGRAMMER_H__
 #define __PROGRAMMER_H__ 1
 
+#include "flash.h"	/* for chipaddr and flashchip */
+
 enum programmer {
 #if CONFIG_INTERNAL == 1
 	PROGRAMMER_INTERNAL,
@@ -600,6 +602,19 @@ int sb600_probe_spi(struct pci_dev *dev);
 /* wbsio_spi.c */
 int wbsio_check_for_spi(void);
 #endif
+
+/* opaque.c */
+struct opaque_programmer {
+	int max_data_read;
+	int max_data_write;
+	/* Specific functions for this programmer */
+	int (*probe) (struct flashchip *flash);
+	int (*read) (struct flashchip *flash, uint8_t *buf, int start, int len);
+	int (*write) (struct flashchip *flash, uint8_t *buf, int start, int len);
+	int (*erase) (struct flashchip *flash, unsigned int blockaddr, unsigned int blocklen);
+};
+extern const struct opaque_programmer *opaque_programmer;
+void register_opaque_programmer(const struct opaque_programmer *pgm);
 
 /* serprog.c */
 #if CONFIG_SERPROG == 1
