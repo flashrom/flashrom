@@ -58,6 +58,12 @@ int spi_read_chunked(struct flashchip *flash, uint8_t *buf, int start, int len, 
 int spi_write_chunked(struct flashchip *flash, uint8_t *buf, int start, int len, int chunksize);
 int spi_aai_write(struct flashchip *flash, uint8_t *buf, int start, int len);
 
+/* opaque.c */
+int probe_opaque(struct flashchip *flash);
+int read_opaque(struct flashchip *flash, uint8_t *buf, int start, int len);
+int write_opaque(struct flashchip *flash, uint8_t *buf, int start, int len);
+int erase_opaque(struct flashchip *flash, unsigned int blockaddr, unsigned int blocklen);
+
 /* a25.c */
 int spi_prettyprint_status_register_amic_a25l05p(struct flashchip *flash);
 int spi_prettyprint_status_register_amic_a25l40p(struct flashchip *flash);
