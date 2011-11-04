@@ -8874,6 +8874,28 @@ const struct flashchip flashchips[] = {
 	},
 
 	{
+		.vendor		= "Programmer",
+		.name		= "Opaque flash chip",
+		.bustype	= BUS_PROG,
+		.manufacture_id	= PROGMANUF_ID,
+		.model_id	= PROGDEV_ID,
+		.total_size	= 0,
+		.page_size	= 256,
+		/* probe is assumed to work, rest will be filled in by probe */
+		.tested		= TEST_OK_PROBE,
+		.probe		= probe_opaque,
+		/* eraseblock sizes will be set by the probing function */
+		.block_erasers	=
+		{
+			{
+				.block_erase = erase_opaque,
+			}
+		},
+		.write		= write_opaque,
+		.read		= read_opaque,
+	},
+
+	{
 		.vendor		= "AMIC",
 		.name		= "unknown AMIC SPI chip",
 		.bustype	= BUS_SPI,

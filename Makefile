@@ -242,7 +242,7 @@ endif
 CHIP_OBJS = jedec.o stm50flw0x0x.o w39.o w29ee011.o \
 	sst28sf040.o m29f400bt.o 82802ab.o pm49fl00x.o \
 	sst49lfxxxc.o sst_fwhub.o flashchips.o spi.o spi25.o sharplhf00l04.o \
-	a25.o at25.o
+	a25.o at25.o opaque.o
 
 LIB_OBJS = layout.o
 

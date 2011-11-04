@@ -646,4 +646,7 @@
 #define WINBOND_W49V002A	0xB0
 #define WINBOND_W49V002FA	0x32
 
+#define PROGMANUF_ID		0xFFFE	/* dummy ID for opaque chips behind a programmer */
+#define PROGDEV_ID		0x01	/* dummy ID for opaque chips behind a programmer */
+
 #endif /* !FLASHCHIPS_H */

@@ -62,8 +62,8 @@ enum chipbustype {
 	BUS_LPC		= 1 << 1,
 	BUS_FWH		= 1 << 2,
 	BUS_SPI		= 1 << 3,
+	BUS_PROG	= 1 << 4,
 	BUS_NONSPI	= BUS_PARALLEL | BUS_LPC | BUS_FWH,
-	BUS_UNKNOWN	= BUS_PARALLEL | BUS_LPC | BUS_FWH | BUS_SPI,
 };
 
 /*
