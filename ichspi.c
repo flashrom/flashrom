@@ -172,6 +172,7 @@
 /* ICH SPI configuration lock-down. May be set during chipset enabling. */
 static int ichspi_lock = 0;
 
+static enum ich_chipset ich_generation = CHIPSET_ICH_UNKNOWN;
 uint32_t ichspi_bbar = 0;
 
 static void *ich_spibar = NULL;
@@ -454,23 +455,20 @@ static int generate_opcodes(OPCODES * op)
 		return -1;
 	}
 
-	switch (spi_programmer->type) {
-	case SPI_CONTROLLER_ICH7:
-	case SPI_CONTROLLER_VIA:
+	switch (ich_generation) {
+	case CHIPSET_ICH7:
 		preop = REGREAD16(ICH7_REG_PREOP);
 		optype = REGREAD16(ICH7_REG_OPTYPE);
 		opmenu[0] = REGREAD32(ICH7_REG_OPMENU);
 		opmenu[1] = REGREAD32(ICH7_REG_OPMENU + 4);
 		break;
-	case SPI_CONTROLLER_ICH9:
+	case CHIPSET_ICH8:
+	default:		/* Future version might behave the same */
 		preop = REGREAD16(ICH9_REG_PREOP);
 		optype = REGREAD16(ICH9_REG_OPTYPE);
 		opmenu[0] = REGREAD32(ICH9_REG_OPMENU);
 		opmenu[1] = REGREAD32(ICH9_REG_OPMENU + 4);
 		break;
-	default:
-		msg_perr("%s: unsupported chipset\n", __func__);
-		return -1;
 	}
 
 	op->preop[0] = (uint8_t) preop;
@@ -529,9 +527,8 @@ static int program_opcodes(OPCODES *op, int enable_undo)
 	}
 
 	msg_pdbg("\n%s: preop=%04x optype=%04x opmenu=%08x%08x\n", __func__, preop, optype, opmenu[0], opmenu[1]);
-	switch (spi_programmer->type) {
-	case SPI_CONTROLLER_ICH7:
-	case SPI_CONTROLLER_VIA:
+	switch (ich_generation) {
+	case CHIPSET_ICH7:
 		/* Register undo only for enable_undo=1, i.e. first call. */
 		if (enable_undo) {
 			rmmio_valw(ich_spibar + ICH7_REG_PREOP);
@@ -544,7 +541,8 @@ static int program_opcodes(OPCODES *op, int enable_undo)
 		mmio_writel(opmenu[0], ich_spibar + ICH7_REG_OPMENU);
 		mmio_writel(opmenu[1], ich_spibar + ICH7_REG_OPMENU + 4);
 		break;
-	case SPI_CONTROLLER_ICH9:
+	case CHIPSET_ICH8:
+	default:		/* Future version might behave the same */
 		/* Register undo only for enable_undo=1, i.e. first call. */
 		if (enable_undo) {
 			rmmio_valw(ich_spibar + ICH9_REG_PREOP);
@@ -557,9 +555,6 @@ static int program_opcodes(OPCODES *op, int enable_undo)
 		mmio_writel(opmenu[0], ich_spibar + ICH9_REG_OPMENU);
 		mmio_writel(opmenu[1], ich_spibar + ICH9_REG_OPMENU + 4);
 		break;
-	default:
-		msg_perr("%s: unsupported chipset\n", __func__);
-		return -1;
 	}
 
 	return 0;
@@ -569,16 +564,17 @@ static int program_opcodes(OPCODES *op, int enable_undo)
  * Try to set BBAR (BIOS Base Address Register), but read back the value in case
  * it didn't stick.
  */
-static void ich_set_bbar(int ich_generation, uint32_t min_addr)
+static void ich_set_bbar(uint32_t min_addr)
 {
 	int bbar_off;
 	switch (ich_generation) {
-	case 7:
+	case CHIPSET_ICH7:
 		bbar_off = 0x50;
 		break;
-	case 8:
+	case CHIPSET_ICH8:
 		msg_perr("BBAR offset is unknown on ICH8!\n");
 		return;
+	case CHIPSET_ICH9:
 	default:		/* Future version might behave the same */
 		bbar_off = ICH9_REG_BBAR;
 		break;
@@ -943,15 +939,12 @@ static int run_opcode(OPCODE op, uint32_t offset,
 		return SPI_INVALID_LENGTH;
 	}
 
-	switch (spi_programmer->type) {
-	case SPI_CONTROLLER_VIA:
-	case SPI_CONTROLLER_ICH7:
+	switch (ich_generation) {
+	case CHIPSET_ICH7:
 		return ich7_run_opcode(op, offset, datalength, data, maxlength);
-	case SPI_CONTROLLER_ICH9:
+	case CHIPSET_ICH8:
+	default:		/* Future version might behave the same */
 		return ich9_run_opcode(op, offset, datalength, data);
-	default:
-		/* If we ever get here, something really weird happened */
-		return -1;
 	}
 }
 
@@ -1022,19 +1015,11 @@ static int ich_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	    opcode->spi_type == SPI_OPCODE_TYPE_WRITE_WITH_ADDRESS) {
 		addr = (writearr[1] << 16) |
 		    (writearr[2] << 8) | (writearr[3] << 0);
-		switch (spi_programmer->type) {
-		case SPI_CONTROLLER_ICH7:
-		case SPI_CONTROLLER_VIA:
-		case SPI_CONTROLLER_ICH9:
-			if (addr < ichspi_bbar) {
-				msg_perr("%s: Address 0x%06x below allowed "
-					 "range 0x%06x-0xffffff\n", __func__,
-					 addr, ichspi_bbar);
-				return SPI_INVALID_ADDRESS;
-			}
-			break;
-		default:
-			break;
+		if (addr < ichspi_bbar) {
+			msg_perr("%s: Address 0x%06x below allowed "
+				 "range 0x%06x-0xffffff\n", __func__,
+				 addr, ichspi_bbar);
+			return SPI_INVALID_ADDRESS;
 		}
 	}
 
@@ -1316,7 +1301,7 @@ static const struct spi_programmer spi_programmer_ich9 = {
 };
 
 int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
-			int ich_generation)
+		 enum ich_chipset ich_gen)
 {
 	int i;
 	uint8_t old, new;
@@ -1324,15 +1309,16 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 	uint32_t tmp;
 	int desc_valid = 0;
 
+	ich_generation = ich_gen;
+
 	switch (ich_generation) {
-	case 7:
+	case CHIPSET_ICH_UNKNOWN:
+		return -1;
+	case CHIPSET_ICH7:
+	case CHIPSET_ICH8:
 		spibar_offset = 0x3020;
 		break;
-	case 8:
-		spibar_offset = 0x3020;
-		break;
-	case 9:
-	case 10:
+	case CHIPSET_ICH9:
 	default:		/* Future version might behave the same */
 		spibar_offset = 0x3800;
 		break;
@@ -1345,7 +1331,7 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 	ich_spibar = rcrb + spibar_offset;
 
 	switch (ich_generation) {
-	case 7:
+	case CHIPSET_ICH7:
 		msg_pdbg("0x00: 0x%04x     (SPIS)\n",
 			     mmio_readw(ich_spibar + 0));
 		msg_pdbg("0x02: 0x%04x     (SPIC)\n",
@@ -1381,13 +1367,11 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 			msg_pinfo("WARNING: SPI Configuration Lockdown activated.\n");
 			ichspi_lock = 1;
 		}
-		ich_set_bbar(ich_generation, 0);
+		ich_set_bbar(0);
 		register_spi_programmer(&spi_programmer_ich7);
 		ich_init_opcodes();
 		break;
-	case 8:
-	case 9:
-	case 10:
+	case CHIPSET_ICH8:
 	default:		/* Future version might behave the same */
 		tmp2 = mmio_readw(ich_spibar + ICH9_REG_HSFS);
 		msg_pdbg("0x04: 0x%04x (HSFS)\n", tmp2);
@@ -1447,7 +1431,7 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 			     mmio_readl(ich_spibar + ICH9_REG_OPMENU));
 		msg_pdbg("0x9C: 0x%08x (OPMENU+4)\n",
 			     mmio_readl(ich_spibar + ICH9_REG_OPMENU + 4));
-		if (ich_generation == 8) {
+		if (ich_generation == CHIPSET_ICH8) {
 			tmp = mmio_readl(ich_spibar + ICH8_REG_VSCC);
 			msg_pdbg("0xC1: 0x%08x (VSCC)\n", tmp);
 			msg_pdbg("VSCC: ");
@@ -1469,7 +1453,7 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 
 			tmp = mmio_readl(ich_spibar + ICH9_REG_FPB);
 			msg_pdbg("0xD0: 0x%08x (FPB)\n", tmp);
-			ich_set_bbar(ich_generation, 0);
+			ich_set_bbar(0);
 		}
 
 		msg_pdbg("\n");
@@ -1524,6 +1508,7 @@ int via_init_spi(struct pci_dev *dev)
 
 	/* Not sure if it speaks all these bus protocols. */
 	buses_supported = BUS_LPC | BUS_FWH;
+	ich_generation = CHIPSET_ICH7;
 	register_spi_programmer(&spi_programmer_via);
 
 	msg_pdbg("0x00: 0x%04x     (SPIS)\n", mmio_readw(ich_spibar + 0));
@@ -1556,7 +1541,7 @@ int via_init_spi(struct pci_dev *dev)
 		ichspi_lock = 1;
 	}
 
-	ich_set_bbar(7, 0);
+	ich_set_bbar(0);
 	ich_init_opcodes();
 
 	return 0;

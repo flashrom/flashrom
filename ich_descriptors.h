@@ -24,6 +24,7 @@
 #define __ICH_DESCRIPTORS_H__ 1
 
 #include <stdint.h>
+#include "programmer.h" /* for enum ich_chipset */
 
 /* FIXME: Replace with generic return codes */
 #define ICH_RET_OK	0
@@ -62,20 +63,6 @@
 
 #define ICH_FREG_BASE(flreg)  (((flreg) << 12) & 0x01fff000)
 #define ICH_FREG_LIMIT(flreg) (((flreg) >>  4) & 0x01fff000)
-
-/* Used to select the right descriptor printing function.
- * Currently only ICH8 and Ibex Peak are supported.
- */
-enum ich_chipset {
-	CHIPSET_ICH_UNKNOWN,
-	CHIPSET_ICH7 = 7,
-	CHIPSET_ICH8,
-	CHIPSET_ICH9,
-	CHIPSET_ICH10,
-	CHIPSET_5_SERIES_IBEX_PEAK,
-	CHIPSET_6_SERIES_COUGAR_POINT,
-	CHIPSET_7_SERIES_PANTHER_POINT
-};
 
 void prettyprint_ich_reg_vscc(uint32_t reg_val, int verbosity);
 

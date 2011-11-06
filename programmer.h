@@ -579,9 +579,20 @@ void register_spi_programmer(const struct spi_programmer *programmer);
 
 /* ichspi.c */
 #if CONFIG_INTERNAL == 1
+enum ich_chipset {
+	CHIPSET_ICH_UNKNOWN,
+	CHIPSET_ICH7 = 7,
+	CHIPSET_ICH8,
+	CHIPSET_ICH9,
+	CHIPSET_ICH10,
+	CHIPSET_5_SERIES_IBEX_PEAK,
+	CHIPSET_6_SERIES_COUGAR_POINT,
+	CHIPSET_7_SERIES_PANTHER_POINT
+};
+
 extern uint32_t ichspi_bbar;
 int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
-		    int ich_generation);
+		 enum ich_chipset ich_generation);
 int via_init_spi(struct pci_dev *dev);
 
 /* it85spi.c */
