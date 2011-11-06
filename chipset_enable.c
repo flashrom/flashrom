@@ -489,7 +489,7 @@ static int enable_flash_vt8237s_spi(struct pci_dev *dev, const char *name)
 }
 
 static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
-				   int ich_generation)
+				   enum ich_chipset ich_generation)
 {
 	int ret;
 	uint8_t bbs, buc;
@@ -504,7 +504,7 @@ static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
 	static const char *const straps_names_unknown[] = { "unknown", "unknown", "unknown", "unknown" };
 
 	switch (ich_generation) {
-	case 7:
+	case CHIPSET_ICH7:
 		/* EP80579 may need further changes, but this is the least
 		 * intrusive way to get correct BOOT Strap printing without
 		 * changing the rest of its code path). */
@@ -513,13 +513,13 @@ static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
 		else
 			straps_names = straps_names_ich7_nm10;
 		break;
-	case 8:
-	case 9:
-	case 10:
+	case CHIPSET_ICH8:
+	case CHIPSET_ICH9:
+	case CHIPSET_ICH10:
 		straps_names = straps_names_ich8910;
 		break;
-	case 11:
-	case 12:
+	case CHIPSET_5_SERIES_IBEX_PEAK:
+	case CHIPSET_6_SERIES_COUGAR_POINT:
 		straps_names = straps_names_pch56;
 		break;
 	default:
@@ -557,7 +557,7 @@ static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
 	 * on ICH7 when the southbridge is strapped to LPC
 	 */
 	buses_supported = BUS_FWH;
-	if (ich_generation == 7) {
+	if (ich_generation == CHIPSET_ICH7) {
 		if (bbs == 0x03) {
 			/* If strapped to LPC, no further SPI initialization is
 			 * required. */
@@ -579,34 +579,34 @@ static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
 
 static int enable_flash_ich7(struct pci_dev *dev, const char *name)
 {
-	return enable_flash_ich_dc_spi(dev, name, 7);
+	return enable_flash_ich_dc_spi(dev, name, CHIPSET_ICH7);
 }
 
 static int enable_flash_ich8(struct pci_dev *dev, const char *name)
 {
-	return enable_flash_ich_dc_spi(dev, name, 8);
+	return enable_flash_ich_dc_spi(dev, name, CHIPSET_ICH8);
 }
 
 static int enable_flash_ich9(struct pci_dev *dev, const char *name)
 {
-	return enable_flash_ich_dc_spi(dev, name, 9);
+	return enable_flash_ich_dc_spi(dev, name, CHIPSET_ICH9);
 }
 
 static int enable_flash_ich10(struct pci_dev *dev, const char *name)
 {
-	return enable_flash_ich_dc_spi(dev, name, 10);
+	return enable_flash_ich_dc_spi(dev, name, CHIPSET_ICH10);
 }
 
 /* Ibex Peak aka. 5 series & 3400 series */
 static int enable_flash_pch5(struct pci_dev *dev, const char *name)
 {
-	return enable_flash_ich_dc_spi(dev, name, 11);
+	return enable_flash_ich_dc_spi(dev, name, CHIPSET_5_SERIES_IBEX_PEAK);
 }
 
 /* Cougar Point aka. 6 series & c200 series */
 static int enable_flash_pch6(struct pci_dev *dev, const char *name)
 {
-	return enable_flash_ich_dc_spi(dev, name, 12);
+	return enable_flash_ich_dc_spi(dev, name, CHIPSET_6_SERIES_COUGAR_POINT);
 }
 
 static int via_no_byte_merge(struct pci_dev *dev, const char *name)
