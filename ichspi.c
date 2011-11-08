@@ -423,6 +423,11 @@ static int find_opcode(OPCODES *op, uint8_t opcode)
 {
 	int a;
 
+	if (op == NULL) {
+		msg_perr("\n%s: null OPCODES pointer!\n", __func__);
+		return -1;
+	}
+
 	for (a = 0; a < 8; a++) {
 		if (op->opcode[a].opcode == opcode)
 			return a;
@@ -434,6 +439,11 @@ static int find_opcode(OPCODES *op, uint8_t opcode)
 static int find_preop(OPCODES *op, uint8_t preop)
 {
 	int a;
+
+	if (op == NULL) {
+		msg_perr("\n%s: null OPCODES pointer!\n", __func__);
+		return -1;
+	}
 
 	for (a = 0; a < 2; a++) {
 		if (op->preop[a] == preop)
@@ -557,6 +567,31 @@ static int program_opcodes(OPCODES *op, int enable_undo)
 		break;
 	}
 
+	return 0;
+}
+
+/*
+ * Returns -1 if at least one mandatory opcode is inaccessible, 0 otherwise.
+ * FIXME: this should also check for
+ *   - at least one probing opcode (RDID (incl. AT25F variants?), REMS, RES?)
+ *   - at least one erasing opcode (lots.)
+ *   - at least one program opcode (BYTE_PROGRAM, AAI_WORD_PROGRAM, ...?)
+ *   - necessary preops? (EWSR, WREN, ...?)
+ */
+static int ich_missing_opcodes()
+{
+	uint8_t ops[] = {
+		JEDEC_READ,
+		JEDEC_RDSR,
+		0
+	};
+	int i = 0;
+	while (ops[i] != 0) {
+		msg_pspew("checking for opcode 0x%02x\n", ops[i]);
+		if (find_opcode(curopcodes, ops[i]) == -1)
+			return -1;
+		i++;
+	}
 	return 0;
 }
 
@@ -1066,7 +1101,11 @@ static int ich_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	return result;
 }
 
-#if 0
+static struct hwseq_data {
+	uint32_t size_comp0;
+	uint32_t size_comp1;
+} hwseq_data;
+
 /* Sets FLA in FADDR to (addr & 0x01FFFFFF) without touching other bits. */
 static void ich_hwseq_set_addr(uint32_t addr)
 {
@@ -1117,8 +1156,8 @@ static int ich_hwseq_wait_for_cycle_complete(unsigned int timeout,
 	if (!timeout) {
 		addr = REGREAD32(ICH9_REG_FADDR) & 0x01FFFFFF;
 		msg_perr("Timeout error between offset 0x%08x and "
-			 "0x%08x + %d (=0x%08x)!\n",
-			 addr, addr, len - 1, addr + len - 1);
+			 "0x%08x (= 0x%08x + %d)!\n",
+			 addr, addr + len - 1, addr, len - 1);
 		prettyprint_ich9_reg_hsfs(hsfs);
 		prettyprint_ich9_reg_hsfc(REGREAD16(ICH9_REG_HSFC));
 		return 1;
@@ -1127,7 +1166,7 @@ static int ich_hwseq_wait_for_cycle_complete(unsigned int timeout,
 	if (hsfs & HSFS_FCERR) {
 		addr = REGREAD32(ICH9_REG_FADDR) & 0x01FFFFFF;
 		msg_perr("Transaction error between offset 0x%08x and "
-			 "0x%08x (=0x%08x + %d)!\n",
+			 "0x%08x (= 0x%08x + %d)!\n",
 			 addr, addr + len - 1, addr, len - 1);
 		prettyprint_ich9_reg_hsfs(hsfs);
 		prettyprint_ich9_reg_hsfc(REGREAD16(ICH9_REG_HSFC));
@@ -1135,7 +1174,184 @@ static int ich_hwseq_wait_for_cycle_complete(unsigned int timeout,
 	}
 	return 0;
 }
-#endif
+
+int ich_hwseq_probe(struct flashchip *flash)
+{
+	uint32_t total_size, boundary;
+	uint32_t erase_size_low, size_low, erase_size_high, size_high;
+	struct block_eraser *eraser;
+
+	total_size = hwseq_data.size_comp0 + hwseq_data.size_comp1;
+	msg_cdbg("Found %d attached SPI flash chip",
+		 (hwseq_data.size_comp1 != 0) ? 2 : 1);
+	if (hwseq_data.size_comp1 != 0)
+		msg_cdbg("s with a combined");
+	else
+		msg_cdbg(" with a");
+	msg_cdbg(" density of %d kB.\n", total_size / 1024);
+	flash->total_size = total_size / 1024;
+
+	eraser = &(flash->block_erasers[0]);
+	boundary = (REGREAD32(ICH9_REG_FPB) & FPB_FPBA) << 12;
+	size_high = total_size - boundary;
+	erase_size_high = ich_hwseq_get_erase_block_size(boundary);
+
+	if (boundary == 0) {
+		msg_cdbg("There is only one partition containing the whole "
+			 "address space (0x%06x - 0x%06x).\n", 0, size_high-1);
+		eraser->eraseblocks[0].size = erase_size_high;
+		eraser->eraseblocks[0].count = size_high / erase_size_high;
+		msg_cdbg("There are %d erase blocks with %d B each.\n",
+			 size_high / erase_size_high, erase_size_high);
+	} else {
+		msg_cdbg("The flash address space (0x%06x - 0x%06x) is divided "
+			 "at address 0x%06x in two partitions.\n",
+			 0, size_high-1, boundary);
+		size_low = total_size - size_high;
+		erase_size_low = ich_hwseq_get_erase_block_size(0);
+
+		eraser->eraseblocks[0].size = erase_size_low;
+		eraser->eraseblocks[0].count = size_low / erase_size_low;
+		msg_cdbg("The first partition ranges from 0x%06x to 0x%06x.\n",
+			 0, size_low-1);
+		msg_cdbg("In that range are %d erase blocks with %d B each.\n",
+			 size_low / erase_size_low, erase_size_low);
+
+		eraser->eraseblocks[1].size = erase_size_high;
+		eraser->eraseblocks[1].count = size_high / erase_size_high;
+		msg_cdbg("The second partition ranges from 0x%06x to 0x%06x.\n",
+			 boundary, size_high-1);
+		msg_cdbg("In that range are %d erase blocks with %d B each.\n",
+			 size_high / erase_size_high, erase_size_high);
+	}
+	flash->tested = TEST_OK_PREW;
+	return 1;
+}
+
+int ich_hwseq_block_erase(struct flashchip *flash,
+			  unsigned int addr,
+			  unsigned int len)
+{
+	uint32_t erase_block;
+	uint16_t hsfc;
+	uint32_t timeout = 5000 * 1000; /* 5 s for max 64 kB */
+
+	erase_block = ich_hwseq_get_erase_block_size(addr);
+	if (len != erase_block) {
+		msg_cerr("Erase block size for address 0x%06x is %d B, "
+			 "but requested erase block size is %d B. "
+			 "Not erasing anything.\n", addr, erase_block, len);
+		return -1;
+	}
+
+	/* Although the hardware supports this (it would erase the whole block
+	 * containing the address) we play safe here. */
+	if (addr % erase_block != 0) {
+		msg_cerr("Erase address 0x%06x is not aligned to the erase "
+			 "block boundary (any multiple of %d). "
+			 "Not erasing anything.\n", addr, erase_block);
+		return -1;
+	}
+
+	if (addr + len > flash->total_size * 1024) {
+		msg_perr("Request to erase some inaccessible memory address(es)"
+			 " (addr=0x%x, len=%d). "
+			 "Not erasing anything.\n", addr, len);
+		return -1;
+	}
+
+	msg_pdbg("Erasing %d bytes starting at 0x%06x.\n", len, addr);
+
+	/* make sure FDONE, FCERR, AEL are cleared by writing 1 to them */
+	REGWRITE16(ICH9_REG_HSFS, REGREAD16(ICH9_REG_HSFS));
+
+	hsfc = REGREAD16(ICH9_REG_HSFC);
+	hsfc &= ~HSFC_FCYCLE; /* clear operation */
+	hsfc |= (0x3 << HSFC_FCYCLE_OFF); /* set erase operation */
+	hsfc |= HSFC_FGO; /* start */
+	msg_pdbg("HSFC used for block erasing: ");
+	prettyprint_ich9_reg_hsfc(hsfc);
+	REGWRITE16(ICH9_REG_HSFC, hsfc);
+
+	if (ich_hwseq_wait_for_cycle_complete(timeout, len))
+		return -1;
+	return 0;
+}
+
+int ich_hwseq_read(struct flashchip *flash, uint8_t *buf, int addr, int len)
+{
+	uint16_t hsfc;
+	uint16_t timeout = 100 * 60;
+	uint8_t block_len;
+
+	if (addr < 0 || addr + len > flash->total_size * 1024) {
+		msg_perr("Request to read from an inaccessible memory address "
+			 "(addr=0x%x, len=%d).\n", addr, len);
+		return -1;
+	}
+
+	msg_pdbg("Reading %d bytes starting at 0x%06x.\n", len, addr);
+	/* clear FDONE, FCERR, AEL by writing 1 to them (if they are set) */
+	REGWRITE16(ICH9_REG_HSFS, REGREAD16(ICH9_REG_HSFS));
+
+	while (len > 0) {
+		block_len = min(len, opaque_programmer->max_data_read);
+		ich_hwseq_set_addr(addr);
+		hsfc = REGREAD16(ICH9_REG_HSFC);
+		hsfc &= ~HSFC_FCYCLE; /* set read operation */
+		hsfc &= ~HSFC_FDBC; /* clear byte count */
+		/* set byte count */
+		hsfc |= (((block_len - 1) << HSFC_FDBC_OFF) & HSFC_FDBC);
+		hsfc |= HSFC_FGO; /* start */
+		REGWRITE16(ICH9_REG_HSFC, hsfc);
+
+		if (ich_hwseq_wait_for_cycle_complete(timeout, block_len))
+			return 1;
+		ich_read_data(buf, block_len, ICH9_REG_FDATA0);
+		addr += block_len;
+		buf += block_len;
+		len -= block_len;
+	}
+	return 0;
+}
+
+int ich_hwseq_write(struct flashchip *flash, uint8_t *buf, int addr, int len)
+{
+	uint16_t hsfc;
+	uint16_t timeout = 100 * 60;
+	uint8_t block_len;
+
+	if (addr < 0 || addr + len > flash->total_size * 1024) {
+		msg_perr("Request to write to an inaccessible memory address "
+			 "(addr=0x%x, len=%d).\n", addr, len);
+		return -1;
+	}
+
+	msg_pdbg("Writing %d bytes starting at 0x%06x.\n", len, addr);
+	/* clear FDONE, FCERR, AEL by writing 1 to them (if they are set) */
+	REGWRITE16(ICH9_REG_HSFS, REGREAD16(ICH9_REG_HSFS));
+
+	while (len > 0) {
+		ich_hwseq_set_addr(addr);
+		block_len = min(len, opaque_programmer->max_data_write);
+		ich_fill_data(buf, block_len, ICH9_REG_FDATA0);
+		hsfc = REGREAD16(ICH9_REG_HSFC);
+		hsfc &= ~HSFC_FCYCLE; /* clear operation */
+		hsfc |= (0x2 << HSFC_FCYCLE_OFF); /* set write operation */
+		hsfc &= ~HSFC_FDBC; /* clear byte count */
+		/* set byte count */
+		hsfc |= (((block_len - 1) << HSFC_FDBC_OFF) & HSFC_FDBC);
+		hsfc |= HSFC_FGO; /* start */
+		REGWRITE16(ICH9_REG_HSFC, hsfc);
+
+		if (ich_hwseq_wait_for_cycle_complete(timeout, block_len))
+			return -1;
+		addr += block_len;
+		buf += block_len;
+		len -= block_len;
+	}
+	return 0;
+}
 
 static int ich_spi_send_multicommand(struct spi_command *cmds)
 {
@@ -1300,6 +1516,15 @@ static const struct spi_programmer spi_programmer_ich9 = {
 	.write_256 = default_spi_write_256,
 };
 
+static const struct opaque_programmer opaque_programmer_ich_hwseq = {
+	.max_data_read = 64,
+	.max_data_write = 64,
+	.probe = ich_hwseq_probe,
+	.read = ich_hwseq_read,
+	.write = ich_hwseq_write,
+	.erase = ich_hwseq_block_erase,
+};
+
 int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 		 enum ich_chipset ich_gen)
 {
@@ -1307,13 +1532,20 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 	uint8_t old, new;
 	uint16_t spibar_offset, tmp2;
 	uint32_t tmp;
+	char *arg;
 	int desc_valid = 0;
+	struct ich_descriptors desc = {{ 0 }};
+	enum ich_spi_mode {
+		ich_auto,
+		ich_hwseq,
+		ich_swseq
+	} ich_spi_mode = ich_auto;
 
 	ich_generation = ich_gen;
 
 	switch (ich_generation) {
 	case CHIPSET_ICH_UNKNOWN:
-		return -1;
+		return ERROR_FATAL;
 	case CHIPSET_ICH7:
 	case CHIPSET_ICH8:
 		spibar_offset = 0x3020;
@@ -1329,6 +1561,8 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 
 	/* Assign Virtual Address */
 	ich_spibar = rcrb + spibar_offset;
+
+	ich_init_opcodes();
 
 	switch (ich_generation) {
 	case CHIPSET_ICH7:
@@ -1369,10 +1603,31 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 		}
 		ich_set_bbar(0);
 		register_spi_programmer(&spi_programmer_ich7);
-		ich_init_opcodes();
 		break;
 	case CHIPSET_ICH8:
 	default:		/* Future version might behave the same */
+		arg = extract_programmer_param("ich_spi_mode");
+		if (arg && !strcmp(arg, "hwseq")) {
+			ich_spi_mode = ich_hwseq;
+			msg_pspew("user selected hwseq\n");
+		} else if (arg && !strcmp(arg, "swseq")) {
+			ich_spi_mode = ich_swseq;
+			msg_pspew("user selected swseq\n");
+		} else if (arg && !strcmp(arg, "auto")) {
+			msg_pspew("user selected auto\n");
+			ich_spi_mode = ich_auto;
+		} else if (arg && !strlen(arg)) {
+			msg_perr("Missing argument for ich_spi_mode.\n");
+			free(arg);
+			return ERROR_FATAL;
+		} else if (arg) {
+			msg_perr("Unknown argument for ich_spi_mode: %s\n",
+				 arg);
+			free(arg);
+			return ERROR_FATAL;
+		}
+		free(arg);
+
 		tmp2 = mmio_readw(ich_spibar + ICH9_REG_HSFS);
 		msg_pdbg("0x04: 0x%04x (HSFS)\n", tmp2);
 		prettyprint_ich9_reg_hsfs(tmp2);
@@ -1458,14 +1713,41 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 
 		msg_pdbg("\n");
 		if (desc_valid) {
-			struct ich_descriptors desc = {{ 0 }};
 			if (read_ich_descriptors_via_fdo(ich_spibar, &desc) ==
 			    ICH_RET_OK)
 				prettyprint_ich_descriptors(CHIPSET_ICH_UNKNOWN,
 							    &desc);
+			/* If the descriptor is valid and indicates multiple
+			 * flash devices we need to use hwseq to be able to
+			 * access the second flash device.
+			 */
+			if (ich_spi_mode == ich_auto && desc.content.NC != 0) {
+				msg_pinfo("Enabling hardware sequencing due to "
+					  "multiple flash chips detected.\n");
+				ich_spi_mode = ich_hwseq;
+			}
 		}
-		register_spi_programmer(&spi_programmer_ich9);
-		ich_init_opcodes();
+
+		if (ich_spi_mode == ich_auto && ichspi_lock &&
+		    ich_missing_opcodes()) {
+			msg_pinfo("Enabling hardware sequencing because "
+				  "some important opcode is locked.\n");
+			ich_spi_mode = ich_hwseq;
+		}
+
+		if (ich_spi_mode == ich_hwseq) {
+			if (!desc_valid) {
+				msg_perr("Hardware sequencing was requested "
+					 "but the flash descriptor is not "
+					 "valid. Aborting.\n");
+				return ERROR_FATAL;
+			}
+			hwseq_data.size_comp0 = getFCBA_component_density(&desc, 0);
+			hwseq_data.size_comp1 = getFCBA_component_density(&desc, 1);
+			register_opaque_programmer(&opaque_programmer_ich_hwseq);
+		} else {
+			register_spi_programmer(&spi_programmer_ich9);
+		}
 		break;
 	}
 

@@ -303,6 +303,26 @@ is the I/O port number (must be a multiple of 8). In the unlikely case
 flashrom doesn't detect an active IT87 LPC<->SPI bridge, please send a bug
 report so we can diagnose the problem.
 .sp
+If you have an Intel chipset with an ICH8 or later southbridge with SPI flash
+attached, and if a valid descriptor was written to it (e.g. by the vendor), the
+chipset provides an alternative way to access the flash chip(s) named
+.BR "Hardware Sequencing" .
+It is much simpler than the normal access method (called
+.BR "Software Sequencing" "),"
+but does not allow the software to choose the SPI commands to be sent.
+You can use the
+.sp
+.B "  flashrom \-p internal:ich_spi_mode=value"
+.sp
+syntax where value can be
+.BR auto ", " swseq " or " hwseq .
+By default
+.RB "(or when setting " ich_spi_mode=auto )
+the module tries to use swseq and only activates hwseq if need be (e.g. if
+important opcodes are inaccessible due to lockdown; or if more than one flash
+chip is attached). The other options (swseq, hwseq) select the respective mode
+(if possible).
+.sp
 If you have an Intel chipset with an ICH6 or later southbridge and if you want
 to set specific IDSEL values for a non-default flash chip or an embedded
 controller (EC), you can use the
