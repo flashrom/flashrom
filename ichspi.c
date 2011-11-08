@@ -1092,7 +1092,7 @@ static int ich_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		    (opcode->spi_type == SPI_OPCODE_TYPE_WRITE_NO_ADDRESS)) {
 			int i;
 			msg_pspew("The data was:\n");
-			for(i=0; i<count; i++){
+			for (i = 0; i < count; i++){
 				msg_pspew("%3d: 0x%02x\n", i, data[i]);
 			}
 		}
@@ -1644,28 +1644,33 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 				  "effect. Please note that Protected\n"
 				  "Range (PR) restrictions still apply.\n");
 
-		tmp2 = mmio_readw(ich_spibar + ICH9_REG_HSFC);
-		msg_pdbg("0x06: 0x%04x (HSFC)\n", tmp2);
-		prettyprint_ich9_reg_hsfc(tmp2);
+		if (desc_valid) {
+			tmp2 = mmio_readw(ich_spibar + ICH9_REG_HSFC);
+			msg_pdbg("0x06: 0x%04x (HSFC)\n", tmp2);
+			prettyprint_ich9_reg_hsfc(tmp2);
+		}
 
 		tmp = mmio_readl(ich_spibar + ICH9_REG_FADDR);
 		msg_pdbg("0x08: 0x%08x (FADDR)\n", tmp);
-		tmp = mmio_readl(ich_spibar + ICH9_REG_FRAP);
-		msg_pdbg("0x50: 0x%08x (FRAP)\n", tmp);
-		msg_pdbg("BMWAG 0x%02x, ", ICH_BMWAG(tmp));
-		msg_pdbg("BMRAG 0x%02x, ", ICH_BMRAG(tmp));
-		msg_pdbg("BRWA 0x%02x, ", ICH_BRWA(tmp));
-		msg_pdbg("BRRA 0x%02x\n", ICH_BRRA(tmp));
 
-		/* print out the FREGx registers along with FRAP access bits */
-		for(i = 0; i < 5; i++)
-			do_ich9_spi_frap(tmp, i);
+		if (desc_valid) {
+			tmp = mmio_readl(ich_spibar + ICH9_REG_FRAP);
+			msg_pdbg("0x50: 0x%08x (FRAP)\n", tmp);
+			msg_pdbg("BMWAG 0x%02x, ", ICH_BMWAG(tmp));
+			msg_pdbg("BMRAG 0x%02x, ", ICH_BMRAG(tmp));
+			msg_pdbg("BRWA 0x%02x, ", ICH_BRWA(tmp));
+			msg_pdbg("BRRA 0x%02x\n", ICH_BRRA(tmp));
+
+			/* Decode and print FREGx and FRAP registers */
+			for (i = 0; i < 5; i++)
+				do_ich9_spi_frap(tmp, i);
+		}
 
 		/* try to disable PR locks before printing them */
 		if (!ichspi_lock)
-			for(i = 0; i < 5; i++)
+			for (i = 0; i < 5; i++)
 				ich9_set_pr(i, 0, 0);
-		for(i = 0; i < 5; i++)
+		for (i = 0; i < 5; i++)
 			prettyprint_ich9_reg_pr(i);
 
 		tmp = mmio_readl(ich_spibar + ICH9_REG_SSFS);
@@ -1686,7 +1691,7 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 			     mmio_readl(ich_spibar + ICH9_REG_OPMENU));
 		msg_pdbg("0x9C: 0x%08x (OPMENU+4)\n",
 			     mmio_readl(ich_spibar + ICH9_REG_OPMENU + 4));
-		if (ich_generation == CHIPSET_ICH8) {
+		if (ich_generation == CHIPSET_ICH8 && desc_valid) {
 			tmp = mmio_readl(ich_spibar + ICH8_REG_VSCC);
 			msg_pdbg("0xC1: 0x%08x (VSCC)\n", tmp);
 			msg_pdbg("VSCC: ");
@@ -1696,18 +1701,20 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 			msg_pdbg("0xA0: 0x%08x (BBAR)\n",
 				     ichspi_bbar);
 
-			tmp = mmio_readl(ich_spibar + ICH9_REG_LVSCC);
-			msg_pdbg("0xC4: 0x%08x (LVSCC)\n", tmp);
-			msg_pdbg("LVSCC: ");
-			prettyprint_ich_reg_vscc(tmp, MSG_DEBUG);
+			if (desc_valid) {
+				tmp = mmio_readl(ich_spibar + ICH9_REG_LVSCC);
+				msg_pdbg("0xC4: 0x%08x (LVSCC)\n", tmp);
+				msg_pdbg("LVSCC: ");
+				prettyprint_ich_reg_vscc(tmp, MSG_DEBUG);
 
-			tmp = mmio_readl(ich_spibar + ICH9_REG_UVSCC);
-			msg_pdbg("0xC8: 0x%08x (UVSCC)\n", tmp);
-			msg_pdbg("UVSCC: ");
-			prettyprint_ich_reg_vscc(tmp, MSG_DEBUG);
+				tmp = mmio_readl(ich_spibar + ICH9_REG_UVSCC);
+				msg_pdbg("0xC8: 0x%08x (UVSCC)\n", tmp);
+				msg_pdbg("UVSCC: ");
+				prettyprint_ich_reg_vscc(tmp, MSG_DEBUG);
 
-			tmp = mmio_readl(ich_spibar + ICH9_REG_FPB);
-			msg_pdbg("0xD0: 0x%08x (FPB)\n", tmp);
+				tmp = mmio_readl(ich_spibar + ICH9_REG_FPB);
+				msg_pdbg("0xD0: 0x%08x (FPB)\n", tmp);
+			}
 			ich_set_bbar(0);
 		}
 
