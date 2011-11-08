@@ -491,7 +491,7 @@ static int enable_flash_vt8237s_spi(struct pci_dev *dev, const char *name)
 static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
 				   enum ich_chipset ich_generation)
 {
-	int ret;
+	int ret, ret_spi;
 	uint8_t bbs, buc;
 	uint32_t tmp, gcs;
 	void *rcrb;
@@ -569,10 +569,12 @@ static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
 	}
 
 	/* This adds BUS_SPI */
-	if (ich_init_spi(dev, tmp, rcrb, ich_generation) != 0) {
-		if (!ret)
-			ret = ERROR_NONFATAL;
-	}
+	ret_spi = ich_init_spi(dev, tmp, rcrb, ich_generation);
+	if (ret_spi == ERROR_FATAL)
+		return ret_spi;
+	
+	if (ret || ret_spi)
+		ret = ERROR_NONFATAL;
 
 	return ret;
 }
