@@ -127,6 +127,19 @@ int register_superio(struct superio s)
 int is_laptop = 0;
 int laptop_ok = 0;
 
+static const struct par_programmer par_programmer_internal = {
+		.chip_readb		= internal_chip_readb,
+		.chip_readw		= internal_chip_readw,
+		.chip_readl		= internal_chip_readl,
+		.chip_readn		= internal_chip_readn,
+		.chip_writeb		= internal_chip_writeb,
+		.chip_writew		= internal_chip_writew,
+		.chip_writel		= internal_chip_writel,
+		.chip_writen		= fallback_chip_writen,
+};
+
+enum chipbustype internal_buses_supported = BUS_NONE;
+
 static int internal_shutdown(void *data)
 {
 	release_io_perms();
@@ -191,9 +204,10 @@ int internal_init(void)
 		return 1;
 
 	/* Default to Parallel/LPC/FWH flash devices. If a known host controller
-	 * is found, the init routine sets the buses_supported bitfield.
+	 * is found, the host controller init routine sets the
+	 * internal_buses_supported bitfield.
 	 */
-	buses_supported = BUS_NONSPI;
+	internal_buses_supported = BUS_NONSPI;
 
 	/* Initialize PCI access for flash enables */
 	pacc = pci_alloc();	/* Get the pci_access structure */
@@ -287,6 +301,7 @@ int internal_init(void)
 	 * Besides that, we don't check the board enable return code either.
 	 */
 #if defined(__i386__) || defined(__x86_64__) || defined (__mips)
+	register_par_programmer(&par_programmer_internal, internal_buses_supported);
 	return 0;
 #else
 	msg_perr("Your platform is not supported yet for the internal "

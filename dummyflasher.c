@@ -75,6 +75,19 @@ static const struct spi_programmer spi_programmer_dummyflasher = {
 	.write_256	= dummy_spi_write_256,
 };
 
+static const struct par_programmer par_programmer_dummy = {
+		.chip_readb		= dummy_chip_readb,
+		.chip_readw		= dummy_chip_readw,
+		.chip_readl		= dummy_chip_readl,
+		.chip_readn		= dummy_chip_readn,
+		.chip_writeb		= dummy_chip_writeb,
+		.chip_writew		= dummy_chip_writew,
+		.chip_writel		= dummy_chip_writel,
+		.chip_writen		= dummy_chip_writen,
+};
+
+enum chipbustype dummy_buses_supported = BUS_NONE;
+
 static int dummy_shutdown(void *data)
 {
 	msg_pspew("%s\n", __func__);
@@ -108,24 +121,24 @@ int dummy_init(void)
 	/* Convert the parameters to lowercase. */
 	tolower_string(bustext);
 
-	buses_supported = BUS_NONE;
+	dummy_buses_supported = BUS_NONE;
 	if (strstr(bustext, "parallel")) {
-		buses_supported |= BUS_PARALLEL;
+		dummy_buses_supported |= BUS_PARALLEL;
 		msg_pdbg("Enabling support for %s flash.\n", "parallel");
 	}
 	if (strstr(bustext, "lpc")) {
-		buses_supported |= BUS_LPC;
+		dummy_buses_supported |= BUS_LPC;
 		msg_pdbg("Enabling support for %s flash.\n", "LPC");
 	}
 	if (strstr(bustext, "fwh")) {
-		buses_supported |= BUS_FWH;
+		dummy_buses_supported |= BUS_FWH;
 		msg_pdbg("Enabling support for %s flash.\n", "FWH");
 	}
 	if (strstr(bustext, "spi")) {
-		register_spi_programmer(&spi_programmer_dummyflasher);
+		dummy_buses_supported |= BUS_SPI;
 		msg_pdbg("Enabling support for %s flash.\n", "SPI");
 	}
-	if (buses_supported == BUS_NONE)
+	if (dummy_buses_supported == BUS_NONE)
 		msg_pdbg("Support for all flash bus types disabled.\n");
 	free(bustext);
 
@@ -226,6 +239,14 @@ dummy_init_out:
 		free(flashchip_contents);
 		return 1;
 	}
+	if (dummy_buses_supported & (BUS_PARALLEL | BUS_LPC | BUS_FWH))
+		register_par_programmer(&par_programmer_dummy,
+					dummy_buses_supported &
+						(BUS_PARALLEL | BUS_LPC |
+						 BUS_FWH));
+	if (dummy_buses_supported & BUS_SPI)
+		register_spi_programmer(&spi_programmer_dummyflasher);
+
 	return 0;
 }
 

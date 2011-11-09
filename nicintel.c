@@ -43,6 +43,17 @@ const struct pcidev_status nics_intel[] = {
 
 #define CSR_FCR 0x0c
 
+static const struct par_programmer par_programmer_nicintel = {
+		.chip_readb		= nicintel_chip_readb,
+		.chip_readw		= fallback_chip_readw,
+		.chip_readl		= fallback_chip_readl,
+		.chip_readn		= fallback_chip_readn,
+		.chip_writeb		= nicintel_chip_writeb,
+		.chip_writew		= fallback_chip_writew,
+		.chip_writel		= fallback_chip_writel,
+		.chip_writen		= fallback_chip_writen,
+};
+
 static int nicintel_shutdown(void *data)
 {
 	physunmap(nicintel_control_bar, NICINTEL_CONTROL_MEMMAP_SIZE);
@@ -93,9 +104,8 @@ int nicintel_init(void)
 	 */
 	pci_rmmio_writew(0x0001, nicintel_control_bar + CSR_FCR);
 
-	buses_supported = BUS_PARALLEL;
-
 	max_rom_decode.parallel = NICINTEL_MEMMAP_SIZE;
+	register_par_programmer(&par_programmer_nicintel, BUS_PARALLEL);
 
 	return 0;
 

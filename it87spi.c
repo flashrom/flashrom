@@ -192,7 +192,7 @@ static uint16_t it87spi_probe(uint16_t port)
 	free(portpos);
 	exit_conf_mode_ite(port);
 	it8716f_flashport = flashport;
-	if (buses_supported & BUS_SPI)
+	if (internal_buses_supported & BUS_SPI)
 		msg_pdbg("Overriding chipset SPI with IT87 SPI.\n");
 	/* FIXME: Add the SPI bus or replace the other buses with it? */
 	register_spi_programmer(&spi_programmer_it87xx);
