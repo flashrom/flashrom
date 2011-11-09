@@ -55,6 +55,17 @@ const struct pcidev_status nics_3com[] = {
 	{},
 };
 
+static const struct par_programmer par_programmer_nic3com = {
+		.chip_readb		= nic3com_chip_readb,
+		.chip_readw		= fallback_chip_readw,
+		.chip_readl		= fallback_chip_readl,
+		.chip_readn		= fallback_chip_readn,
+		.chip_writeb		= nic3com_chip_writeb,
+		.chip_writew		= fallback_chip_writew,
+		.chip_writel		= fallback_chip_writel,
+		.chip_writen		= fallback_chip_writen,
+};
+
 static int nic3com_shutdown(void *data)
 {
 	/* 3COM 3C90xB cards need a special fixup. */
@@ -96,11 +107,12 @@ int nic3com_init(void)
 	 */
 	OUTW(SELECT_REG_WINDOW + 0, io_base_addr + INT_STATUS);
 
-	buses_supported = BUS_PARALLEL;
-	max_rom_decode.parallel = 128 * 1024;
-
 	if (register_shutdown(nic3com_shutdown, NULL))
 		return 1;
+
+	max_rom_decode.parallel = 128 * 1024;
+	register_par_programmer(&par_programmer_nic3com, BUS_PARALLEL);
+
 	return 0;
 }
 

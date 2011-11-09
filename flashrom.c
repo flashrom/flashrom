@@ -68,14 +68,6 @@ const struct programmer_entry programmer_table[] = {
 		.init			= internal_init,
 		.map_flash_region	= physmap,
 		.unmap_flash_region	= physunmap,
-		.chip_readb		= internal_chip_readb,
-		.chip_readw		= internal_chip_readw,
-		.chip_readl		= internal_chip_readl,
-		.chip_readn		= internal_chip_readn,
-		.chip_writeb		= internal_chip_writeb,
-		.chip_writew		= internal_chip_writew,
-		.chip_writel		= internal_chip_writel,
-		.chip_writen		= fallback_chip_writen,
 		.delay			= internal_delay,
 	},
 #endif
@@ -86,14 +78,6 @@ const struct programmer_entry programmer_table[] = {
 		.init			= dummy_init,
 		.map_flash_region	= dummy_map,
 		.unmap_flash_region	= dummy_unmap,
-		.chip_readb		= dummy_chip_readb,
-		.chip_readw		= dummy_chip_readw,
-		.chip_readl		= dummy_chip_readl,
-		.chip_readn		= dummy_chip_readn,
-		.chip_writeb		= dummy_chip_writeb,
-		.chip_writew		= dummy_chip_writew,
-		.chip_writel		= dummy_chip_writel,
-		.chip_writen		= dummy_chip_writen,
 		.delay			= internal_delay,
 	},
 #endif
@@ -104,14 +88,6 @@ const struct programmer_entry programmer_table[] = {
 		.init			= nic3com_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
-		.chip_readb		= nic3com_chip_readb,
-		.chip_readw		= fallback_chip_readw,
-		.chip_readl		= fallback_chip_readl,
-		.chip_readn		= fallback_chip_readn,
-		.chip_writeb		= nic3com_chip_writeb,
-		.chip_writew		= fallback_chip_writew,
-		.chip_writel		= fallback_chip_writel,
-		.chip_writen		= fallback_chip_writen,
 		.delay			= internal_delay,
 	},
 #endif
@@ -124,14 +100,6 @@ const struct programmer_entry programmer_table[] = {
 		.init			= nicrealtek_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
-		.chip_readb		= nicrealtek_chip_readb,
-		.chip_readw		= fallback_chip_readw,
-		.chip_readl		= fallback_chip_readl,
-		.chip_readn		= fallback_chip_readn,
-		.chip_writeb		= nicrealtek_chip_writeb,
-		.chip_writew		= fallback_chip_writew,
-		.chip_writel		= fallback_chip_writel,
-		.chip_writen		= fallback_chip_writen,
 		.delay			= internal_delay,
 	},
 #endif
@@ -142,14 +110,6 @@ const struct programmer_entry programmer_table[] = {
 		.init			= nicnatsemi_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
-		.chip_readb		= nicnatsemi_chip_readb,
-		.chip_readw		= fallback_chip_readw,
-		.chip_readl		= fallback_chip_readl,
-		.chip_readn		= fallback_chip_readn,
-		.chip_writeb		= nicnatsemi_chip_writeb,
-		.chip_writew		= fallback_chip_writew,
-		.chip_writel		= fallback_chip_writel,
-		.chip_writen		= fallback_chip_writen,
 		.delay			= internal_delay,
 	},
 #endif
@@ -160,14 +120,6 @@ const struct programmer_entry programmer_table[] = {
 		.init			= gfxnvidia_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
-		.chip_readb		= gfxnvidia_chip_readb,
-		.chip_readw		= fallback_chip_readw,
-		.chip_readl		= fallback_chip_readl,
-		.chip_readn		= fallback_chip_readn,
-		.chip_writeb		= gfxnvidia_chip_writeb,
-		.chip_writew		= fallback_chip_writew,
-		.chip_writel		= fallback_chip_writel,
-		.chip_writen		= fallback_chip_writen,
 		.delay			= internal_delay,
 	},
 #endif
@@ -178,14 +130,6 @@ const struct programmer_entry programmer_table[] = {
 		.init			= drkaiser_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
-		.chip_readb		= drkaiser_chip_readb,
-		.chip_readw		= fallback_chip_readw,
-		.chip_readl		= fallback_chip_readl,
-		.chip_readn		= fallback_chip_readn,
-		.chip_writeb		= drkaiser_chip_writeb,
-		.chip_writew		= fallback_chip_writew,
-		.chip_writel		= fallback_chip_writel,
-		.chip_writen		= fallback_chip_writen,
 		.delay			= internal_delay,
 	},
 #endif
@@ -196,14 +140,6 @@ const struct programmer_entry programmer_table[] = {
 		.init			= satasii_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
-		.chip_readb		= satasii_chip_readb,
-		.chip_readw		= fallback_chip_readw,
-		.chip_readl		= fallback_chip_readl,
-		.chip_readn		= fallback_chip_readn,
-		.chip_writeb		= satasii_chip_writeb,
-		.chip_writew		= fallback_chip_writew,
-		.chip_writel		= fallback_chip_writel,
-		.chip_writen		= fallback_chip_writen,
 		.delay			= internal_delay,
 	},
 #endif
@@ -214,14 +150,6 @@ const struct programmer_entry programmer_table[] = {
 		.init			= atahpt_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
-		.chip_readb		= atahpt_chip_readb,
-		.chip_readw		= fallback_chip_readw,
-		.chip_readl		= fallback_chip_readl,
-		.chip_readn		= fallback_chip_readn,
-		.chip_writeb		= atahpt_chip_writeb,
-		.chip_writew		= fallback_chip_writew,
-		.chip_writel		= fallback_chip_writel,
-		.chip_writen		= fallback_chip_writen,
 		.delay			= internal_delay,
 	},
 #endif
@@ -232,14 +160,6 @@ const struct programmer_entry programmer_table[] = {
 		.init			= ft2232_spi_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
-		.chip_readb		= noop_chip_readb,
-		.chip_readw		= fallback_chip_readw,
-		.chip_readl		= fallback_chip_readl,
-		.chip_readn		= fallback_chip_readn,
-		.chip_writeb		= noop_chip_writeb,
-		.chip_writew		= fallback_chip_writew,
-		.chip_writel		= fallback_chip_writel,
-		.chip_writen		= fallback_chip_writen,
 		.delay			= internal_delay,
 	},
 #endif
@@ -250,14 +170,6 @@ const struct programmer_entry programmer_table[] = {
 		.init			= serprog_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
-		.chip_readb		= serprog_chip_readb,
-		.chip_readw		= fallback_chip_readw,
-		.chip_readl		= fallback_chip_readl,
-		.chip_readn		= serprog_chip_readn,
-		.chip_writeb		= serprog_chip_writeb,
-		.chip_writew		= fallback_chip_writew,
-		.chip_writel		= fallback_chip_writel,
-		.chip_writen		= fallback_chip_writen,
 		.delay			= serprog_delay,
 	},
 #endif
@@ -268,14 +180,6 @@ const struct programmer_entry programmer_table[] = {
 		.init			= buspirate_spi_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
-		.chip_readb		= noop_chip_readb,
-		.chip_readw		= fallback_chip_readw,
-		.chip_readl		= fallback_chip_readl,
-		.chip_readn		= fallback_chip_readn,
-		.chip_writeb		= noop_chip_writeb,
-		.chip_writew		= fallback_chip_writew,
-		.chip_writel		= fallback_chip_writel,
-		.chip_writen		= fallback_chip_writen,
 		.delay			= internal_delay,
 	},
 #endif
@@ -286,14 +190,6 @@ const struct programmer_entry programmer_table[] = {
 		.init			= dediprog_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
-		.chip_readb		= noop_chip_readb,
-		.chip_readw		= fallback_chip_readw,
-		.chip_readl		= fallback_chip_readl,
-		.chip_readn		= fallback_chip_readn,
-		.chip_writeb		= noop_chip_writeb,
-		.chip_writew		= fallback_chip_writew,
-		.chip_writel		= fallback_chip_writel,
-		.chip_writen		= fallback_chip_writen,
 		.delay			= internal_delay,
 	},
 #endif
@@ -304,14 +200,6 @@ const struct programmer_entry programmer_table[] = {
 		.init			= rayer_spi_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
-		.chip_readb		= noop_chip_readb,
-		.chip_readw		= fallback_chip_readw,
-		.chip_readl		= fallback_chip_readl,
-		.chip_readn		= fallback_chip_readn,
-		.chip_writeb		= noop_chip_writeb,
-		.chip_writew		= fallback_chip_writew,
-		.chip_writel		= fallback_chip_writel,
-		.chip_writen		= fallback_chip_writen,
 		.delay			= internal_delay,
 	},
 #endif
@@ -322,14 +210,6 @@ const struct programmer_entry programmer_table[] = {
 		.init			= nicintel_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
-		.chip_readb		= nicintel_chip_readb,
-		.chip_readw		= fallback_chip_readw,
-		.chip_readl		= fallback_chip_readl,
-		.chip_readn		= fallback_chip_readn,
-		.chip_writeb		= nicintel_chip_writeb,
-		.chip_writew		= fallback_chip_writew,
-		.chip_writel		= fallback_chip_writel,
-		.chip_writen		= fallback_chip_writen,
 		.delay			= internal_delay,
 	},
 #endif
@@ -340,14 +220,6 @@ const struct programmer_entry programmer_table[] = {
 		.init			= nicintel_spi_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
-		.chip_readb		= noop_chip_readb,
-		.chip_readw		= fallback_chip_readw,
-		.chip_readl		= fallback_chip_readl,
-		.chip_readn		= fallback_chip_readn,
-		.chip_writeb		= noop_chip_writeb,
-		.chip_writew		= fallback_chip_writew,
-		.chip_writel		= fallback_chip_writel,
-		.chip_writen		= fallback_chip_writen,
 		.delay			= internal_delay,
 	},
 #endif
@@ -358,14 +230,6 @@ const struct programmer_entry programmer_table[] = {
 		.init			= ogp_spi_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
-		.chip_readb		= noop_chip_readb,
-		.chip_readw		= fallback_chip_readw,
-		.chip_readl		= fallback_chip_readl,
-		.chip_readn		= fallback_chip_readn,
-		.chip_writeb		= noop_chip_writeb,
-		.chip_writew		= fallback_chip_writew,
-		.chip_writel		= fallback_chip_writel,
-		.chip_writen		= fallback_chip_writen,
 		.delay			= internal_delay,
 	},
 #endif
@@ -376,14 +240,6 @@ const struct programmer_entry programmer_table[] = {
 		.init			= satamv_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
-		.chip_readb		= satamv_chip_readb,
-		.chip_readw		= fallback_chip_readw,
-		.chip_readl		= fallback_chip_readl,
-		.chip_readn		= fallback_chip_readn,
-		.chip_writeb		= satamv_chip_writeb,
-		.chip_writew		= fallback_chip_writew,
-		.chip_writel		= fallback_chip_writel,
-		.chip_writen		= fallback_chip_writen,
 		.delay			= internal_delay,
 	},
 #endif
@@ -394,14 +250,6 @@ const struct programmer_entry programmer_table[] = {
 		.init			= linux_spi_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
-		.chip_readb		= noop_chip_readb,
-		.chip_readw		= fallback_chip_readw,
-		.chip_readl		= fallback_chip_readl,
-		.chip_readn		= fallback_chip_readn,
-		.chip_writeb		= noop_chip_writeb,
-		.chip_writew		= fallback_chip_writew,
-		.chip_writel		= fallback_chip_writel,
-		.chip_writen		= fallback_chip_writen,
 		.delay			= internal_delay,
 	},
 #endif
@@ -513,42 +361,42 @@ void programmer_unmap_flash_region(void *virt_addr, size_t len)
 
 void chip_writeb(uint8_t val, chipaddr addr)
 {
-	programmer_table[programmer].chip_writeb(val, addr);
+	par_programmer->chip_writeb(val, addr);
 }
 
 void chip_writew(uint16_t val, chipaddr addr)
 {
-	programmer_table[programmer].chip_writew(val, addr);
+	par_programmer->chip_writew(val, addr);
 }
 
 void chip_writel(uint32_t val, chipaddr addr)
 {
-	programmer_table[programmer].chip_writel(val, addr);
+	par_programmer->chip_writel(val, addr);
 }
 
 void chip_writen(uint8_t *buf, chipaddr addr, size_t len)
 {
-	programmer_table[programmer].chip_writen(buf, addr, len);
+	par_programmer->chip_writen(buf, addr, len);
 }
 
 uint8_t chip_readb(const chipaddr addr)
 {
-	return programmer_table[programmer].chip_readb(addr);
+	return par_programmer->chip_readb(addr);
 }
 
 uint16_t chip_readw(const chipaddr addr)
 {
-	return programmer_table[programmer].chip_readw(addr);
+	return par_programmer->chip_readw(addr);
 }
 
 uint32_t chip_readl(const chipaddr addr)
 {
-	return programmer_table[programmer].chip_readl(addr);
+	return par_programmer->chip_readl(addr);
 }
 
 void chip_readn(uint8_t *buf, chipaddr addr, size_t len)
 {
-	programmer_table[programmer].chip_readn(buf, addr, len);
+	par_programmer->chip_readn(buf, addr, len);
 }
 
 void programmer_delay(int usecs)

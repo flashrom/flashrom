@@ -35,6 +35,17 @@ const struct pcidev_status nics_natsemi[] = {
 	{},
 };
 
+static const struct par_programmer par_programmer_nicnatsemi = {
+		.chip_readb		= nicnatsemi_chip_readb,
+		.chip_readw		= fallback_chip_readw,
+		.chip_readl		= fallback_chip_readl,
+		.chip_readn		= fallback_chip_readn,
+		.chip_writeb		= nicnatsemi_chip_writeb,
+		.chip_writew		= fallback_chip_writew,
+		.chip_writel		= fallback_chip_writel,
+		.chip_writen		= fallback_chip_writen,
+};
+
 static int nicnatsemi_shutdown(void *data)
 {
 	pci_cleanup(pacc);
@@ -48,7 +59,8 @@ int nicnatsemi_init(void)
 
 	io_base_addr = pcidev_init(PCI_BASE_ADDRESS_0, nics_natsemi);
 
-	buses_supported = BUS_PARALLEL;
+	if (register_shutdown(nicnatsemi_shutdown, NULL))
+		return 1;
 
 	/* The datasheet shows address lines MA0-MA16 in one place and MA0-MA15
 	 * in another. My NIC has MA16 connected to A16 on the boot ROM socket
@@ -57,9 +69,8 @@ int nicnatsemi_init(void)
 	 * functions below wants to be 0x0000FFFF.
 	 */
 	max_rom_decode.parallel = 131072;
+	register_par_programmer(&par_programmer_nicnatsemi, BUS_PARALLEL);
 
-	if (register_shutdown(nicnatsemi_shutdown, NULL))
-		return 1;
 	return 0;
 }
 

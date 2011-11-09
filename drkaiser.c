@@ -39,6 +39,17 @@ const struct pcidev_status drkaiser_pcidev[] = {
 
 static uint8_t *drkaiser_bar;
 
+static const struct par_programmer par_programmer_drkaiser = {
+		.chip_readb		= drkaiser_chip_readb,
+		.chip_readw		= fallback_chip_readw,
+		.chip_readl		= fallback_chip_readl,
+		.chip_readn		= fallback_chip_readn,
+		.chip_writeb		= drkaiser_chip_writeb,
+		.chip_writew		= fallback_chip_writew,
+		.chip_writel		= fallback_chip_writel,
+		.chip_writen		= fallback_chip_writen,
+};
+
 static int drkaiser_shutdown(void *data)
 {
 	physunmap(drkaiser_bar, DRKAISER_MEMMAP_SIZE);
@@ -64,10 +75,12 @@ int drkaiser_init(void)
 	drkaiser_bar = physmap("Dr. Kaiser PC-Waechter flash memory",
 			       addr, DRKAISER_MEMMAP_SIZE);
 
-	buses_supported = BUS_PARALLEL;
-
 	if (register_shutdown(drkaiser_shutdown, NULL))
 		return 1;
+
+	max_rom_decode.parallel = 128 * 1024;
+	register_par_programmer(&par_programmer_drkaiser, BUS_PARALLEL);
+
 	return 0;
 }
 

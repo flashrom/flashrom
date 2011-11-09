@@ -443,6 +443,10 @@ int main(int argc, char *argv[])
 		ret = 1;
 		goto out_shutdown;
 	}
+	tempstr = flashbuses_to_text(buses_supported);
+	msg_pdbg("This programmer supports the following protocols: %s.\n",
+		 tempstr);
+	free(tempstr);
 
 	for (i = 0; i < ARRAY_SIZE(flashes); i++) {
 		startchip = probe_flash(startchip, &flashes[i], 0);

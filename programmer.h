@@ -97,14 +97,6 @@ struct programmer_entry {
 				    size_t len);
 	void (*unmap_flash_region) (void *virt_addr, size_t len);
 
-	void (*chip_writeb) (uint8_t val, chipaddr addr);
-	void (*chip_writew) (uint16_t val, chipaddr addr);
-	void (*chip_writel) (uint32_t val, chipaddr addr);
-	void (*chip_writen) (uint8_t *buf, chipaddr addr, size_t len);
-	uint8_t (*chip_readb) (const chipaddr addr);
-	uint16_t (*chip_readw) (const chipaddr addr);
-	uint32_t (*chip_readl) (const chipaddr addr);
-	void (*chip_readn) (uint8_t *buf, const chipaddr addr, size_t len);
 	void (*delay) (int usecs);
 };
 
@@ -306,6 +298,7 @@ extern int force_boardenable;
 extern int force_boardmismatch;
 void probe_superio(void);
 int register_superio(struct superio s);
+extern enum chipbustype internal_buses_supported;
 int internal_init(void);
 void internal_chip_writeb(uint8_t val, chipaddr addr);
 void internal_chip_writew(uint16_t val, chipaddr addr);
@@ -360,6 +353,18 @@ void fallback_chip_writen(uint8_t *buf, chipaddr addr, size_t len);
 uint16_t fallback_chip_readw(const chipaddr addr);
 uint32_t fallback_chip_readl(const chipaddr addr);
 void fallback_chip_readn(uint8_t *buf, const chipaddr addr, size_t len);
+struct par_programmer {
+	void (*chip_writeb) (uint8_t val, chipaddr addr);
+	void (*chip_writew) (uint16_t val, chipaddr addr);
+	void (*chip_writel) (uint32_t val, chipaddr addr);
+	void (*chip_writen) (uint8_t *buf, chipaddr addr, size_t len);
+	uint8_t (*chip_readb) (const chipaddr addr);
+	uint16_t (*chip_readw) (const chipaddr addr);
+	uint32_t (*chip_readl) (const chipaddr addr);
+	void (*chip_readn) (uint8_t *buf, const chipaddr addr, size_t len);
+};
+extern const struct par_programmer *par_programmer;
+void register_par_programmer(const struct par_programmer *pgm, const enum chipbustype buses);
 
 /* dummyflasher.c */
 #if CONFIG_DUMMY == 1
@@ -634,10 +639,6 @@ void serprog_chip_writeb(uint8_t val, chipaddr addr);
 uint8_t serprog_chip_readb(const chipaddr addr);
 void serprog_chip_readn(uint8_t *buf, const chipaddr addr, size_t len);
 void serprog_delay(int usecs);
-int serprog_spi_send_command(unsigned int writecnt, unsigned int readcnt,
-			     const unsigned char *writearr,
-			     unsigned char *readarr);
-int serprog_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
 #endif
 
 /* serial.c */
