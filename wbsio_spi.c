@@ -82,10 +82,10 @@ int wbsio_check_for_spi(void)
 
 	msg_pspew("\nwbsio_spibase = 0x%x\n", wbsio_spibase);
 
-	register_spi_programmer(&spi_programmer_wbsio);
 	msg_pdbg("%s: Winbond saved on 4 register bits so max chip size is "
 		 "1024 kB!\n", __func__);
 	max_rom_decode.spi = 1024 * 1024;
+	register_spi_programmer(&spi_programmer_wbsio);
 
 	return 0;
 }

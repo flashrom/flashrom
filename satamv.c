@@ -41,6 +41,17 @@ const struct pcidev_status satas_mv[] = {
 #define PCI_BAR2_CONTROL		0x00c08
 #define GPIO_PORT_CONTROL		0x104f0
 
+static const struct par_programmer par_programmer_satamv = {
+		.chip_readb		= satamv_chip_readb,
+		.chip_readw		= fallback_chip_readw,
+		.chip_readl		= fallback_chip_readl,
+		.chip_readn		= fallback_chip_readn,
+		.chip_writeb		= satamv_chip_writeb,
+		.chip_writew		= fallback_chip_writew,
+		.chip_writel		= fallback_chip_writel,
+		.chip_writen		= fallback_chip_writen,
+};
+
 static int satamv_shutdown(void *data)
 {
 	physunmap(mv_bar, 0x20000);
@@ -137,11 +148,10 @@ int satamv_init(void)
 	mv_iobar = tmp & 0xffff;
 	msg_pspew("Activating I/O BAR at 0x%04x\n", mv_iobar);
 
-	buses_supported = BUS_PARALLEL;
-
 	/* 512 kByte with two 8-bit latches, and
 	 * 4 MByte with additional 3-bit latch. */
 	max_rom_decode.parallel = 4 * 1024 * 1024;
+	register_par_programmer(&par_programmer_satamv, BUS_PARALLEL);
 
 	return 0;
 

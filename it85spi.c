@@ -257,8 +257,10 @@ static int it85xx_spi_common_init(struct superio s)
 	INDIRECT_A3(shm_io_base, (base >> 24));
 #endif
 #ifdef LPC_MEMORY
-	base = (chipaddr)programmer_map_flash_region("it85 communication",
-						     0xFFFFF000, 0x1000);
+	/* FIXME: We should block accessing that region for anything else.
+	 * Major TODO here, and it will be a lot of work.
+	 */
+	base = (chipaddr)physmap("it85 communication", 0xFFFFF000, 0x1000);
 	msg_pdbg("%s():%d base=0x%08x\n", __func__, __LINE__,
 	         (unsigned int)base);
 	ce_high = (unsigned char *)(base + 0xE00);  /* 0xFFFFFE00 */
@@ -285,18 +287,26 @@ int it85xx_spi_init(struct superio s)
 {
 	int ret;
 
-	if (!(buses_supported & BUS_FWH)) {
+	if (!(internal_buses_supported & BUS_FWH)) {
 		msg_pdbg("%s():%d buses not support FWH\n", __func__, __LINE__);
 		return 1;
 	}
 	ret = it85xx_spi_common_init(s);
 	msg_pdbg("FWH: %s():%d ret=%d\n", __func__, __LINE__, ret);
 	if (!ret) {
-		msg_pdbg("%s():%d buses_supported=0x%x\n", __func__, __LINE__,
-		          buses_supported);
-		if (buses_supported & BUS_FWH)
-			msg_pdbg("Overriding chipset SPI with IT85 FWH|SPI.\n");
-		/* Really leave FWH enabled? */
+		msg_pdbg("%s: internal_buses_supported=0x%x\n", __func__,
+		          internal_buses_supported);
+		/* Check for FWH because IT85 listens to FWH cycles.
+		 * FIXME: The big question is whether FWH cycles are necessary
+		 * for communication even if LPC_IO is defined.
+		 */
+		if (internal_buses_supported & BUS_FWH)
+			msg_pdbg("Registering IT85 SPI.\n");
+		/* FIXME: Really leave FWH enabled? We can't use this region
+		 * anymore since accessing it would mess up IT85 communication.
+		 * If we decide to disable FWH for this region, we should print
+		 * a debug message about it.
+		 */
 		/* Set this as SPI controller. */
 		register_spi_programmer(&spi_programmer_it85xx);
 	}

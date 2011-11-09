@@ -42,6 +42,17 @@ const struct pcidev_status satas_sii[] = {
 	{},
 };
 
+static const struct par_programmer par_programmer_satasii = {
+		.chip_readb		= satasii_chip_readb,
+		.chip_readw		= fallback_chip_readw,
+		.chip_readl		= fallback_chip_readl,
+		.chip_readn		= fallback_chip_readn,
+		.chip_writeb		= satasii_chip_writeb,
+		.chip_writew		= fallback_chip_writew,
+		.chip_writel		= fallback_chip_writel,
+		.chip_writen		= fallback_chip_writen,
+};
+
 static int satasii_shutdown(void *data)
 {
 	physunmap(sii_bar, SATASII_MEMMAP_SIZE);
@@ -76,10 +87,11 @@ int satasii_init(void)
 	if ((id != 0x0680) && (!(pci_mmio_readl(sii_bar) & (1 << 26))))
 		msg_pinfo("Warning: Flash seems unconnected.\n");
 
-	buses_supported = BUS_PARALLEL;
-
 	if (register_shutdown(satasii_shutdown, NULL))
 		return 1;
+
+	register_par_programmer(&par_programmer_satasii, BUS_PARALLEL);
+
 	return 0;
 }
 

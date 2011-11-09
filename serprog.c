@@ -299,6 +299,11 @@ static int sp_stream_buffer_op(uint8_t cmd, uint32_t parmlen, uint8_t * parms)
 	return 0;
 }
 
+static int serprog_spi_send_command(unsigned int writecnt, unsigned int readcnt,
+				    const unsigned char *writearr,
+				    unsigned char *readarr);
+static int serprog_spi_read(struct flashchip *flash, uint8_t *buf, int start,
+			    int len);
 static struct spi_programmer spi_programmer_serprog = {
 	.type		= SPI_CONTROLLER_SERPROG,
 	.max_data_read	= MAX_DATA_READ_UNLIMITED,
@@ -308,6 +313,19 @@ static struct spi_programmer spi_programmer_serprog = {
 	.read		= serprog_spi_read,
 	.write_256	= default_spi_write_256,
 };
+
+static const struct par_programmer par_programmer_serprog = {
+		.chip_readb		= serprog_chip_readb,
+		.chip_readw		= fallback_chip_readw,
+		.chip_readl		= fallback_chip_readl,
+		.chip_readn		= serprog_chip_readn,
+		.chip_writeb		= serprog_chip_writeb,
+		.chip_writew		= fallback_chip_writew,
+		.chip_writel		= fallback_chip_writel,
+		.chip_writen		= fallback_chip_writen,
+};
+
+static enum chipbustype serprog_buses_supported = BUS_NONE;
 
 int serprog_init(void)
 {
@@ -400,41 +418,45 @@ int serprog_init(void)
 
 	if (sp_docommand(S_CMD_Q_IFACE, 0, NULL, 2, &iface)) {
 		msg_perr("Error: NAK to query interface version\n");
-		exit(1);
+		return 1;
 	}
 
 	if (iface != 1) {
 		msg_perr("Error: Unknown interface version: %d\n", iface);
-		exit(1);
+		return 1;
 	}
 
 	msg_pdbg(MSGHEADER "Interface version ok.\n");
 
 	if (sp_docommand(S_CMD_Q_CMDMAP, 0, NULL, 32, sp_cmdmap)) {
 		msg_perr("Error: query command map not supported\n");
-		exit(1);
+		return 1;
 	}
 
 	sp_check_avail_automatic = 1;
 
-
+	/* FIXME: This assumes that serprog device bustypes are always
+	 * identical with flashrom bustype enums and that they all fit
+	 * in a single byte.
+	 */
 	if (sp_docommand(S_CMD_Q_BUSTYPE, 0, NULL, 1, &c)) {
 		msg_perr("Warning: NAK to query supported buses\n");
 		c = BUS_NONSPI;	/* A reasonable default for now. */
 	}
-	buses_supported = c;
+	serprog_buses_supported = c;
+
 	msg_pdbg(MSGHEADER "Bus support: parallel=%s, LPC=%s, FWH=%s, SPI=%s\n",
 		 (c & BUS_PARALLEL) ? "on" : "off",
 		 (c & BUS_LPC) ? "on" : "off",
 		 (c & BUS_FWH) ? "on" : "off",
 		 (c & BUS_SPI) ? "on" : "off");
 	/* Check for the minimum operational set of commands. */
-	if (buses_supported & BUS_SPI) {
+	if (serprog_buses_supported & BUS_SPI) {
 		uint8_t bt = BUS_SPI;
 		if (sp_check_commandavail(S_CMD_O_SPIOP) == 0) {
 			msg_perr("Error: SPI operation not supported while the "
 				 "bustype is SPI\n");
-			exit(1);
+			return 1;
 		}
 		/* Success of any of these commands is optional. We don't need
 		   the programmer to tell us its limits, but if it doesn't, we
@@ -461,40 +483,39 @@ int serprog_init(void)
 			spi_programmer_serprog.max_data_read = v;
 			msg_pdbg(MSGHEADER "Maximum read-n length is %d\n", v);
 		}
-		bt = buses_supported;
+		bt = serprog_buses_supported;
 		sp_docommand(S_CMD_S_BUSTYPE, 1, &bt, 0, NULL);
-		register_spi_programmer(&spi_programmer_serprog);
 	}
 
-	if (buses_supported & BUS_NONSPI) {
+	if (serprog_buses_supported & BUS_NONSPI) {
 		if (sp_check_commandavail(S_CMD_O_INIT) == 0) {
 			msg_perr("Error: Initialize operation buffer "
 				 "not supported\n");
-			exit(1);
+			return 1;
 		}
 
 		if (sp_check_commandavail(S_CMD_O_DELAY) == 0) {
 			msg_perr("Error: Write to opbuf: "
 				 "delay not supported\n");
-			exit(1);
+			return 1;
 		}
 
 		/* S_CMD_O_EXEC availability checked later. */
 
 		if (sp_check_commandavail(S_CMD_R_BYTE) == 0) {
 			msg_perr("Error: Single byte read not supported\n");
-			exit(1);
+			return 1;
 		}
 		/* This could be translated to single byte reads (if missing),
 		 * but now we don't support that. */
 		if (sp_check_commandavail(S_CMD_R_NBYTES) == 0) {
 			msg_perr("Error: Read n bytes not supported\n");
-			exit(1);
+			return 1;
 		}
 		if (sp_check_commandavail(S_CMD_O_WRITEB) == 0) {
 			msg_perr("Error: Write to opbuf: "
 				 "write byte not supported\n");
-			exit(1);
+			return 1;
 		}
 
 		if (sp_docommand(S_CMD_Q_WRNMAXLEN, 0, NULL, 3, rbuf)) {
@@ -513,7 +534,7 @@ int serprog_init(void)
 			if (!sp_write_n_buf) {
 				msg_perr("Error: cannot allocate memory for "
 					 "Write-n buffer\n");
-				exit(1);
+				return 1;
 			}
 			sp_write_n_bytes = 0;
 		}
@@ -551,12 +572,12 @@ int serprog_init(void)
 		if (sp_check_commandavail(S_CMD_O_EXEC) == 0) {
 			msg_perr("Error: Execute operation buffer not "
 				 "supported\n");
-			exit(1);
+			return 1;
 		}
 
 		if (sp_docommand(S_CMD_O_INIT, 0, NULL, 0, NULL)) {
 			msg_perr("Error: NAK to initialize operation buffer\n");
-			exit(1);
+			return 1;
 		}
 
 		if (sp_docommand(S_CMD_Q_OPBUF, 0, NULL, 2,
@@ -572,6 +593,11 @@ int serprog_init(void)
 	sp_streamed_transmit_ops = 0;
 	sp_streamed_transmit_bytes = 0;
 	sp_opbuf_usage = 0;
+	if (serprog_buses_supported & BUS_SPI)
+		register_spi_programmer(&spi_programmer_serprog);
+	if (serprog_buses_supported & BUS_NONSPI)
+		register_par_programmer(&par_programmer_serprog,
+					serprog_buses_supported & BUS_NONSPI);
 	return 0;
 }
 
@@ -766,7 +792,7 @@ void serprog_delay(int usecs)
 	sp_prev_was_write = 0;
 }
 
-int serprog_spi_send_command(unsigned int writecnt, unsigned int readcnt,
+static int serprog_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 			     const unsigned char *writearr,
 			     unsigned char *readarr)
 {
@@ -796,7 +822,7 @@ int serprog_spi_send_command(unsigned int writecnt, unsigned int readcnt,
  * the advantage that it is much faster for most chips, but breaks those with
  * non-contiguous address space (like AT45DB161D). When spi_read_chunked is
  * fixed this method can be removed. */
-int serprog_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
+static int serprog_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
 {
 	int i;
 	int cur_len;

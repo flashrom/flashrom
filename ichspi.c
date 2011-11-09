@@ -1796,7 +1796,7 @@ int via_init_spi(struct pci_dev *dev)
 	ich_spibar = physmap("VT8237S MMIO registers", mmio_base, 0x70);
 
 	/* Not sure if it speaks all these bus protocols. */
-	buses_supported = BUS_LPC | BUS_FWH;
+	internal_buses_supported = BUS_LPC | BUS_FWH;
 	ich_generation = CHIPSET_ICH7;
 	register_spi_programmer(&spi_programmer_via);
 

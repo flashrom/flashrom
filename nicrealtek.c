@@ -36,6 +36,17 @@ const struct pcidev_status nics_realtek[] = {
 	{},
 };
 
+static const struct par_programmer par_programmer_nicrealtek = {
+		.chip_readb		= nicrealtek_chip_readb,
+		.chip_readw		= fallback_chip_readw,
+		.chip_readl		= fallback_chip_readl,
+		.chip_readn		= fallback_chip_readn,
+		.chip_writeb		= nicrealtek_chip_writeb,
+		.chip_writew		= fallback_chip_writew,
+		.chip_writel		= fallback_chip_writel,
+		.chip_writen		= fallback_chip_writen,
+};
+
 static int nicrealtek_shutdown(void *data)
 {
 	/* FIXME: We forgot to disable software access again. */
@@ -50,10 +61,11 @@ int nicrealtek_init(void)
 
 	io_base_addr = pcidev_init(PCI_BASE_ADDRESS_0, nics_realtek);
 
-	buses_supported = BUS_PARALLEL;
-
 	if (register_shutdown(nicrealtek_shutdown, NULL))
 		return 1;
+
+	register_par_programmer(&par_programmer_nicrealtek, BUS_PARALLEL);
+
 	return 0;
 }
 
