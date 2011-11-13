@@ -1,0 +1,18 @@
+= BBAR on ICH8 =
+ There is no sign of BBAR (BIOS Base Address Configuration Register) in the
+ public datasheet (or specification update) of the ICH8. Also, the offset of
+ that register has changed between ICH7 (SPIBAR + 50h) and ICH9 (SPIBAR +
+ A0h), so we have no clue if or where it is on ICH8. Out current policy is to
+ not touch it at all and assume/hope it is 0.
+
+= Accesses beyond region bounds in descriptor mode =
+ Intel's flash image tool will always expand the last region so that it covers
+ the whole flash chip, but some boards ship with a different configuration.
+ It seems that in descriptor mode all addresses outside the used regions can not
+ be accessed whatsoever. This is not specified anywhere publicly as far as we
+ could tell. flashrom does not handle this explicitly yet. It will just fail
+ when trying to touch an address outside of any region.
+ See also http://www.flashrom.org/pipermail/flashrom/2011-August/007606.html
+
+= Unlocking the ME region =
+TODO
