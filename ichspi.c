@@ -1562,8 +1562,6 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 	/* Assign Virtual Address */
 	ich_spibar = rcrb + spibar_offset;
 
-	ich_init_opcodes();
-
 	switch (ich_generation) {
 	case CHIPSET_ICH7:
 		msg_pdbg("0x00: 0x%04x     (SPIS)\n",
@@ -1601,6 +1599,7 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 			msg_pinfo("WARNING: SPI Configuration Lockdown activated.\n");
 			ichspi_lock = 1;
 		}
+		ich_init_opcodes();
 		ich_set_bbar(0);
 		register_spi_programmer(&spi_programmer_ich7);
 		break;
@@ -1643,6 +1642,7 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 				  "by the FRAP and FREG registers are NOT in "
 				  "effect. Please note that Protected\n"
 				  "Range (PR) restrictions still apply.\n");
+		ich_init_opcodes();
 
 		if (desc_valid) {
 			tmp2 = mmio_readw(ich_spibar + ICH9_REG_HSFC);
