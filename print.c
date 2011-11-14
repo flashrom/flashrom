@@ -661,6 +661,8 @@ const struct board_info boards_known[] = {
 	B("ASUS",	"P5LP-LE (Epson OEM)",	1, NULL, "This is an OEM board from Epson (e.g. Endeavor MT7700)."),
 	B("ASUS",	"P5LP-LE",		0, NULL, "This designation is used for OEM boards from HP, Epson and maybe others. The HP names vary and not all of them have been tested yet. Please report any success or failure, thanks."),
 	B("ASUS",	"P5N-E SLI",		0, "http://www.asus.com/product.aspx?P_ID=KyHOsOKWujC2QguJ", "Needs a board enable (http://patchwork.coreboot.org/patch/3298/)."),
+	B("ASUS",	"P5N-D",		1, "http://www.asus.com/Motherboards/Intel_Socket_775/P5ND/", NULL),
+	B("ASUS",	"P5N-E SLI",		0, "http://www.asus.com/Motherboards/Intel_Socket_775/P5NE_SLI/", "Untested board enable."),
 	B("ASUS",	"P5N32-E SLI",		1, "http://www.asus.com/product.aspx?P_ID=vBZLIBtPzYB2bLcb", NULL),
 	B("ASUS",	"P5ND2-SLI Deluxe",	1, "http://www.asus.com/product.aspx?P_ID=WY7XroDuUImVbgp5", NULL),
 	B("ASUS",	"P5PE-VM",		1, "http://www.asus.com/product.aspx?P_ID=k3h0ZFVu9Lo1dUvk", NULL),

@@ -1917,54 +1917,90 @@ static int it8703f_gpio51_raise(void)
 }
 
 /*
- * General routine for raising/dropping GPIO lines on the ITE IT8712F.
- * There is only some limited checking on the port numbers.
+ * General routine for raising/dropping GPIO lines on the ITE IT87xx.
  */
-static int it8712f_gpio_set(unsigned int line, int raise)
+static int it87_gpio_set(unsigned int gpio, int raise)
 {
+	int allowed, sio;
 	unsigned int port;
-	uint16_t id, base;
+	uint16_t base, sioport;
 	uint8_t tmp;
 
-	port = line / 10;
-	port--;
-	line %= 10;
+	/* IT87 GPIO configuration table */
+	static const struct it87cfg {
+		uint16_t id;
+		uint8_t base_reg;
+		uint32_t bank0;
+		uint32_t bank1;
+		uint32_t bank2;
+	} it87_gpio_table[] = {
+		{0x8712, 0x62, 0xCFF3FC00, 0x00FCFF3F,          0},
+		{0x8718, 0x62, 0xCFF37C00, 0xF3FCDF3F, 0x0000000F},
+		{0, 0, 0, 0, 0} /* end marker */
+	};
+	const struct it87cfg *cfg = NULL;
 
-	/* Check line */
-	if ((port > 4) || /* also catches unsigned -1 */
-	    ((port < 4) && (line > 7)) || ((port == 4) && (line > 5))) {
-		msg_perr("\nERROR: Unsupported IT8712F GPIO line %02d.\n", line);
+	/* Find the Super I/O in the probed list */
+	for (sio = 0; sio < superio_count; sio++) {
+		int i;
+		if (superios[sio].vendor != SUPERIO_VENDOR_ITE)
+			continue;
+
+		/* Is this device in our list? */
+		for (i = 0; it87_gpio_table[i].id; i++)
+			if (superios[sio].model == it87_gpio_table[i].id) {
+				cfg = &it87_gpio_table[i];
+				goto found;
+			}
+	}
+
+	if (cfg == NULL) {
+		msg_perr("\nERROR: No IT87 Super I/O GPIO configuration "
+			 "found.\n");
 		return -1;
 	}
 
-	/* Find the IT8712F. */
-	enter_conf_mode_ite(0x2E);
-	id = (sio_read(0x2E, 0x20) << 8) | sio_read(0x2E, 0x21);
-	exit_conf_mode_ite(0x2E);
+found:
+	/* Check whether the gpio is allowed. */
+	if (gpio < 32)
+		allowed = (cfg->bank0 >> gpio) & 0x01;
+	else if (gpio < 64)
+		allowed = (cfg->bank1 >> (gpio - 32)) & 0x01;
+	else if (gpio < 96)
+		allowed = (cfg->bank2 >> (gpio - 64)) & 0x01;
+	else
+		allowed = 0;
 
-	if (id != 0x8712) {
-		msg_perr("\nERROR: IT8712F Super I/O not found.\n");
+	if (!allowed) {
+		msg_perr("\nERROR: IT%02X does not allow setting GPIO%02u.\n",
+			 cfg->id, gpio);
 		return -1;
 	}
 
-	/* Get the GPIO base */
-	enter_conf_mode_ite(0x2E);
-	sio_write(0x2E, 0x07, 0x07);
-	base = (sio_read(0x2E, 0x62) << 8) | sio_read(0x2E, 0x63);
-	exit_conf_mode_ite(0x2E);
+	/* Read the Simple I/O Base Address Register */
+	sioport = superios[sio].port;
+	enter_conf_mode_ite(sioport);
+	sio_write(sioport, 0x07, 0x07);
+	base = (sio_read(sioport, cfg->base_reg) << 8) |
+		sio_read(sioport, cfg->base_reg + 1);
+	exit_conf_mode_ite(sioport);
 
 	if (!base) {
-		msg_perr("\nERROR: Failed to read IT8712F Super I/O GPIO"
-			" Base.\n");
+		msg_perr("\nERROR: Failed to read IT87 Super I/O GPIO Base.\n");
 		return -1;
 	}
 
-	/* Set GPIO. */
+	msg_pdbg("Using IT87 GPIO base 0x%04x\n", base);
+
+	port = gpio / 10 - 1;
+	gpio %= 10;
+
+	/* set GPIO. */
 	tmp = INB(base + port);
 	if (raise)
-	    tmp |= 1 << line;
+		tmp |= 1 << gpio;
 	else
-	    tmp &= ~(1 << line);
+		tmp &= ~(1 << gpio);
 	OUTB(tmp, base + port);
 
 	return 0;
@@ -1975,9 +2011,19 @@ static int it8712f_gpio_set(unsigned int line, int raise)
  * - ASUS A7V600-X: VIA KT600 + VT8237 + IT8712F
  * - ASUS A7V8X-X: VIA KT400 + VT8235 + IT8712F
  */
-static int it8712f_gpio3_1_raise(void)
+static int it8712f_gpio31_raise(void)
 {
-	return it8712f_gpio_set(32, 1);
+	return it87_gpio_set(32, 1);
+}
+
+/*
+ * Suited for:
+ * - ASUS P5N-D: NVIDIA MCP51 + IT8718F
+ * - ASUS P5N-E SLI: NVIDIA MCP51 + IT8718F
+ */
+static int it8718f_gpio63_raise(void)
+{
+	return it87_gpio_set(63, 1);
 }
 
 #endif
@@ -2047,11 +2093,11 @@ const struct board_match board_matches[] = {
 	{0x1039, 0x0741, 0x1849, 0x0741,  0x1039, 0x5513, 0x1849, 0x5513, "^K7S41GX$",  NULL, NULL,           P3, "ASRock",      "K7S41GX",               0,   OK, w836xx_memw_enable_2e},
 	{0x8086, 0x24D4, 0x1849, 0x24D0,  0x8086, 0x24D5, 0x1849, 0x9739, NULL,         NULL, NULL,           P3, "ASRock",      "P4i65GV",               0,   OK, intel_ich_gpio23_raise},
 	{0x8086, 0x2570, 0x1849, 0x2570,  0x8086, 0x24d3, 0x1849, 0x24d0, NULL,         NULL, NULL,           P3, "ASRock",      "775i65G",               0,   OK, intel_ich_gpio23_raise},
-	{0x1106, 0x3189, 0x1043, 0x807F,  0x1106, 0x3065, 0x1043, 0x80ED, NULL,         NULL, NULL,           P3, "ASUS",        "A7V600-X",              0,   OK, it8712f_gpio3_1_raise},
+	{0x1106, 0x3189, 0x1043, 0x807F,  0x1106, 0x3065, 0x1043, 0x80ED, NULL,         NULL, NULL,           P3, "ASUS",        "A7V600-X",              0,   OK, it8712f_gpio31_raise},
 	{0x1106, 0x3177, 0x1043, 0x80A1,  0x1106, 0x3205, 0x1043, 0x8118, NULL,         NULL, NULL,           P3, "ASUS",        "A7V8X-MX SE",           0,   OK, w836xx_memw_enable_2e},
 	{0x1106, 0x3189, 0x1043, 0x807F,  0x1106, 0x3177, 0x1043, 0x808C, NULL,         NULL, NULL,           P3, "ASUS",        "A7V8X",                 0,   OK, it8703f_gpio51_raise},
 	{0x1106, 0x3099, 0x1043, 0x807F,  0x1106, 0x3147, 0x1043, 0x808C, NULL,         NULL, NULL,           P3, "ASUS",        "A7V333",                0,   OK, it8703f_gpio51_raise},
-	{0x1106, 0x3189, 0x1043, 0x807F,  0x1106, 0x3177, 0x1043, 0x80A1, NULL,         NULL, NULL,           P3, "ASUS",        "A7V8X-X",               0,   OK, it8712f_gpio3_1_raise},
+	{0x1106, 0x3189, 0x1043, 0x807F,  0x1106, 0x3177, 0x1043, 0x80A1, NULL,         NULL, NULL,           P3, "ASUS",        "A7V8X-X",               0,   OK, it8712f_gpio31_raise},
 	{0x1002, 0x4372, 0x103c, 0x2a26,  0x1002, 0x4377, 0x103c, 0x2a26, NULL,         NULL, NULL,           P3, "ASUS",        "A8AE-LE",               0,   OK, amd_sbxxx_gpio9_raise},
 	{0x8086, 0x27A0, 0x1043, 0x1287,  0x8086, 0x27DF, 0x1043, 0x1287, "^A8J",       NULL, NULL,           P3, "ASUS",        "A8Jm",                  0,   NT, intel_ich_gpio34_raise},
 	{0x10DE, 0x0260, 0x103C, 0x2A34,  0x10DE, 0x0264, 0x103C, 0x2A34, "NODUSM3",    NULL, NULL,           P3, "ASUS",        "A8M2N-LA (NodusM3-GL8E)",  0,   OK, nvidia_mcp_gpio0_raise},
@@ -2084,6 +2130,8 @@ const struct board_match board_matches[] = {
 	{0x8086, 0x27b8, 0x1043, 0x2a22,  0x8086, 0x2770, 0x1043, 0x2a22, "^P5LP-LE$",  NULL, NULL,           P3, "ASUS",        "P5LP-LE (Epson OEM)",   0,   OK, intel_ich_gpio34_raise},
 	{0x8086, 0x27da, 0x1043, 0x8179,  0x8086, 0x27b8, 0x1043, 0x8179, "^P5LD2$",    NULL, NULL,           P3, "ASUS",        "P5LD2",                 0,   NT, intel_ich_gpio16_raise},
 	{0x10DE, 0x0030, 0x1043, 0x818a,  0x8086, 0x100E, 0x1043, 0x80EE, NULL,         NULL, NULL,           P3, "ASUS",        "P5ND2-SLI Deluxe",      0,   OK, nvidia_mcp_gpio10_raise},
+	{0x10DE, 0x0260, 0x1043, 0x81BC,  0x10DE, 0x026C, 0x1043, 0x829E, "^P5N-D$",    NULL, NULL,           P3, "ASUS",        "P5N-D",                 0,   OK, it8718f_gpio63_raise},
+	{0x10DE, 0x0260, 0x1043, 0x81BC,  0x10DE, 0x026C, 0x1043, 0x8249, "^P5N-E SLI$",NULL, NULL,           P3, "ASUS",        "P5N-E SLI",             0,   NT, it8718f_gpio63_raise},
 	{0x8086, 0x24dd, 0x1043, 0x80a6,  0x8086, 0x2570, 0x1043, 0x8157, NULL,         NULL, NULL,           P3, "ASUS",        "P5PE-VM",               0,   OK, intel_ich_gpio21_raise},
 	{0x10b7, 0x9055, 0x1028, 0x0082,  0x8086, 0x7190,      0,      0, NULL,         NULL, NULL,           P3, "Dell",        "OptiPlex GX1",          0,   OK, intel_piix4_gpo30_lower},
 	{0x8086, 0x3590, 0x1028, 0x016c,  0x1000, 0x0030, 0x1028, 0x016c, NULL,         NULL, NULL,           P3, "Dell",        "PowerEdge 1850",        0,   OK, intel_ich_gpio23_raise},
