@@ -2111,6 +2111,7 @@ const struct board_match board_matches[] = {
 	{0x8086, 0x1A30, 0x1043, 0x8025,  0x8086, 0x244B, 0x104D, 0x80F0, NULL,         NULL, NULL,           P3, "ASUS",        "P4B266-LM",             0,   OK, intel_ich_gpio21_raise},
 	{0x8086, 0x1a30, 0x1043, 0x8070,  0x8086, 0x244b, 0x1043, 0x8028, NULL,         NULL, NULL,           P3, "ASUS",        "P4B266",                0,   OK, intel_ich_gpio22_raise},
 	{0x8086, 0x1A30, 0x1043, 0x8088,  0x8086, 0x24C3, 0x1043, 0x8089, NULL,         NULL, NULL,           P3, "ASUS",        "P4B533-E",              0,   NT, intel_ich_gpio22_raise},
+	{0x8086, 0x2560, 0x103C, 0x2A00,  0x8086, 0x24C3, 0x103C, 0x2A01, "^Guppy",     NULL, NULL,           P3, "ASUS",        "P4GV-LA (Guppy)",       0,   OK, intel_ich_gpio21_raise},
 	{0x8086, 0x24D3, 0x1043, 0x80A6,  0x8086, 0x2578, 0x1043, 0x80F6, NULL,         NULL, NULL,           P3, "ASUS",        "P4C800-E Deluxe",       0,   OK, intel_ich_gpio21_raise},
 	{0x8086, 0x2570, 0x1043, 0x80F2,  0x8086, 0x24D5, 0x1043, 0x80F3, NULL,         NULL, NULL,           P3, "ASUS",        "P4P800",                0,   NT, intel_ich_gpio21_raise},
 	{0x8086, 0x2570, 0x1043, 0x80F2,  0x8086, 0x24D3, 0x1043, 0x80A6, "^P4P800-E$", NULL, NULL,           P3, "ASUS",        "P4P800-E Deluxe",       0,   OK, intel_ich_gpio21_raise},

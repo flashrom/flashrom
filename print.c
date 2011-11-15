@@ -635,6 +635,7 @@ const struct board_info boards_known[] = {
 	B("ASUS",	"P4B266-LM",		1, "http://esupport.sony.com/US/perl/swu-list.pl?mdl=PCVRX650", NULL),
 	B("ASUS",	"P4B533-E",		1, "ftp://ftp.asus.com.tw/pub/ASUS/mb/sock478/p4b533-e/", NULL),
 	B("ASUS",	"P4C800-E Deluxe",	1, "http://www.asus.com/product.aspx?P_ID=cFuVCr9bXXCckmcK", NULL),
+	B("ASUS",	"P4GV-LA (Guppy)",	1, NULL, NULL),
 	B("ASUS",	"P4P800",		1, "http://www.asus.com/product.aspx?P_ID=DYt1Et9MlBChqzLb", NULL),
 	B("ASUS",	"P4P800-E Deluxe",	1, "http://www.asus.com/product.aspx?P_ID=INIJUvLlif7LHp3g", NULL),
 	B("ASUS",	"P4P800-VM",		1, NULL, NULL),
