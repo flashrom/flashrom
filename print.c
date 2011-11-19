@@ -571,6 +571,7 @@ const struct board_info boards_known[] = {
 	B("ASRock",	"P4i65GV",		1, "http://www.asrock.com/mb/overview.asp?Model=P4i65GV", NULL),
 	B("ASUS",	"A7N8X Deluxe",		1, "http://www.asus.com/product.aspx?P_ID=wAsRYm41KTp78MFC", NULL),
 	B("ASUS",	"A7N8X-E Deluxe",	1, "http://www.asus.com/product.aspx?P_ID=TmQtPJv4jIxmL9C2", NULL),
+	B("ASUS",	"A7N8X-VM/400",		1, "http://www.asus.com/Motherboards/AMD_Socket_A/A7N8XVM400/", NULL),
 	B("ASUS",	"A7V133",		1, "ftp://ftp.asus.com.tw/pub/ASUS/mb/socka/kt133a/a7v133/", NULL),
 	B("ASUS",	"A7V333",		1, "ftp://ftp.asus.com.tw/pub/asus/mb/socka/kt333/a7v333/", NULL),
 	B("ASUS",	"A7V400-MX",		1, "http://www.asus.com/product.aspx?P_ID=hORgEHRBDLMfwAwx", NULL),
