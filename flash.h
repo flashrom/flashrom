@@ -108,9 +108,9 @@ struct flashchip {
 	uint32_t model_id;
 
 	/* Total chip size in kilobytes */
-	int total_size;
+	unsigned int total_size;
 	/* Chip page size in bytes */
-	int page_size;
+	unsigned int page_size;
 	int feature_bits;
 
 	/*
@@ -121,8 +121,10 @@ struct flashchip {
 
 	int (*probe) (struct flashchip *flash);
 
-	/* Delay after "enter/exit ID mode" commands in microseconds. */
-	int probe_timing;
+	/* Delay after "enter/exit ID mode" commands in microseconds.
+	 * NB: negative values have special meanings, see TIMING_* below.
+	 */
+	signed int probe_timing;
 
 	/*
 	 * Erase blocks and associated erase function. Any chip erase function
@@ -143,8 +145,8 @@ struct flashchip {
 
 	int (*printlock) (struct flashchip *flash);
 	int (*unlock) (struct flashchip *flash);
-	int (*write) (struct flashchip *flash, uint8_t *buf, int start, int len);
-	int (*read) (struct flashchip *flash, uint8_t *buf, int start, int len);
+	int (*write) (struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len);
+	int (*read) (struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len);
 	struct {
 		uint16_t min;
 		uint16_t max;
@@ -202,7 +204,7 @@ extern int verbose;
 extern const char flashrom_version[];
 extern char *chip_to_probe;
 void map_flash_registers(struct flashchip *flash);
-int read_memmapped(struct flashchip *flash, uint8_t *buf, int start, int len);
+int read_memmapped(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len);
 int erase_flash(struct flashchip *flash);
 int probe_flash(int startchip, struct flashchip *fill_flash, int force);
 int read_flash_to_file(struct flashchip *flash, const char *filename);
@@ -210,8 +212,8 @@ int min(int a, int b);
 int max(int a, int b);
 void tolower_string(char *str);
 char *extract_param(char **haystack, const char *needle, const char *delim);
-int verify_range(struct flashchip *flash, uint8_t *cmpbuf, int start, int len, const char *message);
-int need_erase(uint8_t *have, uint8_t *want, int len, enum write_granularity gran);
+int verify_range(struct flashchip *flash, uint8_t *cmpbuf, unsigned int start, unsigned int len, const char *message);
+int need_erase(uint8_t *have, uint8_t *want, unsigned int len, enum write_granularity gran);
 char *strcat_realloc(char *dest, const char *src);
 void print_version(void);
 void print_banner(void);

@@ -106,9 +106,9 @@ void probe_superio_ite(void)
 static int it8716f_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 			const unsigned char *writearr, unsigned char *readarr);
 static int it8716f_spi_chip_read(struct flashchip *flash, uint8_t *buf,
-				 int start, int len);
+				 unsigned int start, unsigned int len);
 static int it8716f_spi_chip_write_256(struct flashchip *flash, uint8_t *buf,
-				      int start, int len);
+				      unsigned int start, unsigned int len);
 
 static const struct spi_programmer spi_programmer_it87xx = {
 	.type		= SPI_CONTROLLER_IT87XX,
@@ -313,9 +313,10 @@ static int it8716f_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 
 /* Page size is usually 256 bytes */
 static int it8716f_spi_page_program(struct flashchip *flash, uint8_t *buf,
-				    int start)
+				    unsigned int start)
 {
-	int i, result;
+	unsigned int i;
+	int result;
 	chipaddr bios = flash->virtual_memory;
 
 	result = spi_write_enable();
@@ -340,7 +341,7 @@ static int it8716f_spi_page_program(struct flashchip *flash, uint8_t *buf,
  * Need to read this big flash using firmware cycles 3 byte at a time.
  */
 static int it8716f_spi_chip_read(struct flashchip *flash, uint8_t *buf,
-				 int start, int len)
+				 unsigned int start, unsigned int len)
 {
 	fast_spi = 0;
 
@@ -358,7 +359,7 @@ static int it8716f_spi_chip_read(struct flashchip *flash, uint8_t *buf,
 }
 
 static int it8716f_spi_chip_write_256(struct flashchip *flash, uint8_t *buf,
-				      int start, int len)
+				      unsigned int start, unsigned int len)
 {
 	/*
 	 * IT8716F only allows maximum of 512 kb SPI chip size for memory
@@ -374,7 +375,7 @@ static int it8716f_spi_chip_write_256(struct flashchip *flash, uint8_t *buf,
 	    (flash->page_size > 256)) {
 		spi_chip_write_1(flash, buf, start, len);
 	} else {
-		int lenhere;
+		unsigned int lenhere;
 
 		if (start % flash->page_size) {
 			/* start to the end of the page or to start + len,
