@@ -412,7 +412,7 @@ void map_flash_registers(struct flashchip *flash)
 	flash->virtual_registers = (chipaddr)programmer_map_flash_region("flash chip registers", (0xFFFFFFFF - 0x400000 - size + 1), size);
 }
 
-int read_memmapped(struct flashchip *flash, uint8_t *buf, int start, int len)
+int read_memmapped(struct flashchip *flash, uint8_t *buf, unsigned int start, int unsigned len)
 {
 	chip_readn(buf, flash->virtual_memory + start, len);
 
@@ -535,7 +535,7 @@ static unsigned int count_usable_erasers(const struct flashchip *flash)
 }
 
 /* start is an offset to the base address of the flash chip */
-int check_erased_range(struct flashchip *flash, int start, int len)
+int check_erased_range(struct flashchip *flash, unsigned int start, unsigned int len)
 {
 	int ret;
 	uint8_t *cmpbuf = malloc(len);
@@ -558,10 +558,10 @@ int check_erased_range(struct flashchip *flash, int start, int len)
  * @message	string to print in the "FAILED" message
  * @return	0 for success, -1 for failure
  */
-int verify_range(struct flashchip *flash, uint8_t *cmpbuf, int start, int len,
+int verify_range(struct flashchip *flash, uint8_t *cmpbuf, unsigned int start, unsigned int len,
 		 const char *message)
 {
-	int i;
+	unsigned int i;
 	uint8_t *readbuf = malloc(len);
 	int ret = 0, failcount = 0;
 
@@ -639,10 +639,10 @@ out_free:
  * @gran	write granularity (enum, not count)
  * @return      0 if no erase is needed, 1 otherwise
  */
-int need_erase(uint8_t *have, uint8_t *want, int len, enum write_granularity gran)
+int need_erase(uint8_t *have, uint8_t *want, unsigned int len, enum write_granularity gran)
 {
 	int result = 0;
-	int i, j, limit;
+	unsigned int i, j, limit;
 
 	switch (gran) {
 	case write_gran_1bit:
@@ -705,11 +705,13 @@ int need_erase(uint8_t *have, uint8_t *want, int len, enum write_granularity gra
  * in relation to the max write length of the programmer and the max write
  * length of the chip.
  */
-static int get_next_write(uint8_t *have, uint8_t *want, int len,
-			  int *first_start, enum write_granularity gran)
+static unsigned int get_next_write(uint8_t *have, uint8_t *want, unsigned int len,
+			  unsigned int *first_start,
+			  enum write_granularity gran)
 {
-	int need_write = 0, rel_start = 0, first_len = 0;
-	int i, limit, stride;
+	int need_write = 0;
+	unsigned int rel_start = 0, first_len = 0;
+	unsigned int i, limit, stride;
 
 	switch (gran) {
 	case write_gran_1bit:
@@ -1030,7 +1032,7 @@ notfound:
 int verify_flash(struct flashchip *flash, uint8_t *buf)
 {
 	int ret;
-	int total_size = flash->total_size * 1024;
+	unsigned int total_size = flash->total_size * 1024;
 
 	msg_cinfo("Verifying flash... ");
 
@@ -1208,7 +1210,8 @@ static int erase_and_write_block_helper(struct flashchip *flash,
 							unsigned int addr,
 							unsigned int len))
 {
-	int starthere = 0, lenhere = 0, ret = 0, skip = 1, writecount = 0;
+	unsigned int starthere = 0, lenhere = 0;
+	int ret = 0, skip = 1, writecount = 0;
 	enum write_granularity gran = write_gran_256bytes; /* FIXME */
 
 	/* curcontents and newcontents are opaque to walk_eraseregions, and

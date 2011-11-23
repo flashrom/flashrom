@@ -563,23 +563,23 @@ extern const int spi_programmer_count;
 #define MAX_DATA_WRITE_UNLIMITED 256
 struct spi_programmer {
 	enum spi_controller type;
-	int max_data_read;
-	int max_data_write;
+	unsigned int max_data_read;
+	unsigned int max_data_write;
 	int (*command)(unsigned int writecnt, unsigned int readcnt,
 		   const unsigned char *writearr, unsigned char *readarr);
 	int (*multicommand)(struct spi_command *cmds);
 
 	/* Optimized functions for this programmer */
-	int (*read)(struct flashchip *flash, uint8_t *buf, int start, int len);
-	int (*write_256)(struct flashchip *flash, uint8_t *buf, int start, int len);
+	int (*read)(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len);
+	int (*write_256)(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len);
 };
 
 extern const struct spi_programmer *spi_programmer;
 int default_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 			     const unsigned char *writearr, unsigned char *readarr);
 int default_spi_send_multicommand(struct spi_command *cmds);
-int default_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len);
-int default_spi_write_256(struct flashchip *flash, uint8_t *buf, int start, int len);
+int default_spi_read(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len);
+int default_spi_write_256(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len);
 void register_spi_programmer(const struct spi_programmer *programmer);
 
 /* ichspi.c */
@@ -625,8 +625,8 @@ struct opaque_programmer {
 	int max_data_write;
 	/* Specific functions for this programmer */
 	int (*probe) (struct flashchip *flash);
-	int (*read) (struct flashchip *flash, uint8_t *buf, int start, int len);
-	int (*write) (struct flashchip *flash, uint8_t *buf, int start, int len);
+	int (*read) (struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len);
+	int (*write) (struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len);
 	int (*erase) (struct flashchip *flash, unsigned int blockaddr, unsigned int blocklen);
 };
 extern const struct opaque_programmer *opaque_programmer;

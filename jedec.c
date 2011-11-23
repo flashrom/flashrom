@@ -91,7 +91,7 @@ void data_polling_jedec(chipaddr dst, uint8_t data)
 		msg_cdbg("%s: excessive loops, i=0x%x\n", __func__, i);
 }
 
-static int getaddrmask(struct flashchip *flash)
+static unsigned int getaddrmask(struct flashchip *flash)
 {
 	switch (flash->feature_bits & FEATURE_ADDR_MASK) {
 	case FEATURE_ADDR_FULL:
@@ -355,12 +355,12 @@ retry:
 }
 
 /* chunksize is 1 */
-int write_jedec_1(struct flashchip *flash, uint8_t *src, int start, int len)
+int write_jedec_1(struct flashchip *flash, uint8_t *src, unsigned int start, unsigned int len)
 {
 	int i, failed = 0;
 	chipaddr dst = flash->virtual_memory + start;
 	chipaddr olddst;
-	int mask;
+	unsigned int mask;
 
 	mask = getaddrmask(flash);
 
@@ -376,14 +376,14 @@ int write_jedec_1(struct flashchip *flash, uint8_t *src, int start, int len)
 	return failed;
 }
 
-int write_page_write_jedec_common(struct flashchip *flash, uint8_t *src, int start, int page_size)
+int write_page_write_jedec_common(struct flashchip *flash, uint8_t *src, unsigned int start, unsigned int page_size)
 {
 	int i, tried = 0, failed;
 	uint8_t *s = src;
 	chipaddr bios = flash->virtual_memory;
 	chipaddr dst = bios + start;
 	chipaddr d = dst;
-	int mask;
+	unsigned int mask;
 
 	mask = getaddrmask(flash);
 
@@ -424,15 +424,15 @@ retry:
  * This function is a slightly modified copy of spi_write_chunked.
  * Each page is written separately in chunks with a maximum size of chunksize.
  */
-int write_jedec(struct flashchip *flash, uint8_t *buf, int start, int len)
+int write_jedec(struct flashchip *flash, uint8_t *buf, unsigned int start, int unsigned len)
 {
-	int i, starthere, lenhere;
+	unsigned int i, starthere, lenhere;
 	/* FIXME: page_size is the wrong variable. We need max_writechunk_size
 	 * in struct flashchip to do this properly. All chips using
 	 * write_jedec have page_size set to max_writechunk_size, so
 	 * we're OK for now.
 	 */
-	int page_size = flash->page_size;
+	unsigned int page_size = flash->page_size;
 
 	/* Warning: This loop has a very unusual condition and body.
 	 * The loop needs to go through each page with at least one affected
@@ -461,7 +461,7 @@ int write_jedec(struct flashchip *flash, uint8_t *buf, int start, int len)
 int erase_chip_block_jedec(struct flashchip *flash, unsigned int addr,
 			   unsigned int blocksize)
 {
-	int mask;
+	unsigned int mask;
 
 	mask = getaddrmask(flash);
 	if ((addr != 0) || (blocksize != flash->total_size * 1024)) {
@@ -474,7 +474,7 @@ int erase_chip_block_jedec(struct flashchip *flash, unsigned int addr,
 
 int probe_jedec(struct flashchip *flash)
 {
-	int mask;
+	unsigned int mask;
 
 	mask = getaddrmask(flash);
 	return probe_jedec_common(flash, mask);
@@ -482,7 +482,7 @@ int probe_jedec(struct flashchip *flash)
 
 int erase_sector_jedec(struct flashchip *flash, unsigned int page, unsigned int size)
 {
-	int mask;
+	unsigned int mask;
 
 	mask = getaddrmask(flash);
 	return erase_sector_jedec_common(flash, page, size, mask);
@@ -490,7 +490,7 @@ int erase_sector_jedec(struct flashchip *flash, unsigned int page, unsigned int 
 
 int erase_block_jedec(struct flashchip *flash, unsigned int page, unsigned int size)
 {
-	int mask;
+	unsigned int mask;
 
 	mask = getaddrmask(flash);
 	return erase_block_jedec_common(flash, page, size, mask);
@@ -498,7 +498,7 @@ int erase_block_jedec(struct flashchip *flash, unsigned int page, unsigned int s
 
 int erase_chip_jedec(struct flashchip *flash)
 {
-	int mask;
+	unsigned int mask;
 
 	mask = getaddrmask(flash);
 	return erase_chip_jedec_common(flash, mask);

@@ -1278,7 +1278,8 @@ int ich_hwseq_block_erase(struct flashchip *flash,
 	return 0;
 }
 
-int ich_hwseq_read(struct flashchip *flash, uint8_t *buf, int addr, int len)
+int ich_hwseq_read(struct flashchip *flash, uint8_t *buf, unsigned int addr,
+		   unsigned int len)
 {
 	uint16_t hsfc;
 	uint16_t timeout = 100 * 60;
@@ -1315,7 +1316,8 @@ int ich_hwseq_read(struct flashchip *flash, uint8_t *buf, int addr, int len)
 	return 0;
 }
 
-int ich_hwseq_write(struct flashchip *flash, uint8_t *buf, int addr, int len)
+int ich_hwseq_write(struct flashchip *flash, uint8_t *buf, unsigned int addr,
+		    unsigned int len)
 {
 	uint16_t hsfc;
 	uint16_t timeout = 100 * 60;

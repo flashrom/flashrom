@@ -35,7 +35,7 @@ static int write_lockbits_block_49lfxxxc(struct flashchip *flash, unsigned long 
 static int write_lockbits_49lfxxxc(struct flashchip *flash, unsigned char bits)
 {
 	chipaddr registers = flash->virtual_registers;
-	int i, left = flash->total_size * 1024;
+	unsigned int i, left = flash->total_size * 1024;
 	unsigned long address;
 
 	msg_cdbg("\nbios=0x%08lx\n", registers);

@@ -76,7 +76,7 @@ int erase_sector_28sf040(struct flashchip *flash, unsigned int address, unsigned
 }
 
 /* chunksize is 1 */
-int write_28sf040(struct flashchip *flash, uint8_t *src, int start, int len)
+int write_28sf040(struct flashchip *flash, uint8_t *src, unsigned int start, unsigned int len)
 {
 	int i;
 	chipaddr bios = flash->virtual_memory;

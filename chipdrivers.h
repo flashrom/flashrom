@@ -41,9 +41,9 @@ int spi_block_erase_d7(struct flashchip *flash, unsigned int addr, unsigned int 
 int spi_block_erase_d8(struct flashchip *flash, unsigned int addr, unsigned int blocklen);
 int spi_block_erase_60(struct flashchip *flash, unsigned int addr, unsigned int blocklen);
 int spi_block_erase_c7(struct flashchip *flash, unsigned int addr, unsigned int blocklen);
-int spi_chip_write_1(struct flashchip *flash, uint8_t *buf, int start, int len);
-int spi_chip_write_256(struct flashchip *flash, uint8_t *buf, int start, int len);
-int spi_chip_read(struct flashchip *flash, uint8_t *buf, int start, int len);
+int spi_chip_write_1(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len);
+int spi_chip_write_256(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len);
+int spi_chip_read(struct flashchip *flash, uint8_t *buf, unsigned int start, int unsigned len);
 uint8_t spi_read_status_register(void);
 int spi_write_status_register(struct flashchip *flash, int status);
 void spi_prettyprint_status_register_bit(uint8_t status, int bit);
@@ -51,17 +51,17 @@ void spi_prettyprint_status_register_bp3210(uint8_t status, int bp);
 void spi_prettyprint_status_register_welwip(uint8_t status);
 int spi_prettyprint_status_register(struct flashchip *flash);
 int spi_disable_blockprotect(struct flashchip *flash);
-int spi_byte_program(int addr, uint8_t databyte);
-int spi_nbyte_program(int addr, uint8_t *bytes, int len);
-int spi_nbyte_read(int addr, uint8_t *bytes, int len);
-int spi_read_chunked(struct flashchip *flash, uint8_t *buf, int start, int len, int chunksize);
-int spi_write_chunked(struct flashchip *flash, uint8_t *buf, int start, int len, int chunksize);
-int spi_aai_write(struct flashchip *flash, uint8_t *buf, int start, int len);
+int spi_byte_program(unsigned int addr, uint8_t databyte);
+int spi_nbyte_program(unsigned int addr, uint8_t *bytes, unsigned int len);
+int spi_nbyte_read(unsigned int addr, uint8_t *bytes, unsigned int len);
+int spi_read_chunked(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len, unsigned int chunksize);
+int spi_write_chunked(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len, unsigned int chunksize);
+int spi_aai_write(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len);
 
 /* opaque.c */
 int probe_opaque(struct flashchip *flash);
-int read_opaque(struct flashchip *flash, uint8_t *buf, int start, int len);
-int write_opaque(struct flashchip *flash, uint8_t *buf, int start, int len);
+int read_opaque(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len);
+int write_opaque(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len);
 int erase_opaque(struct flashchip *flash, unsigned int blockaddr, unsigned int blocklen);
 
 /* a25.c */
@@ -87,7 +87,7 @@ int spi_disable_blockprotect_at25fs040(struct flashchip *flash);
 uint8_t wait_82802ab(struct flashchip *flash);
 int probe_82802ab(struct flashchip *flash);
 int erase_block_82802ab(struct flashchip *flash, unsigned int page, unsigned int pagesize);
-int write_82802ab(struct flashchip *flash, uint8_t *buf, int start, int len);
+int write_82802ab(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len);
 void print_status_82802ab(uint8_t status);
 int unlock_82802ab(struct flashchip *flash);
 int unlock_28f004s5(struct flashchip *flash);
@@ -100,8 +100,8 @@ void data_polling_jedec(chipaddr dst, uint8_t data);
 int write_byte_program_jedec(chipaddr bios, uint8_t *src,
 			     chipaddr dst);
 int probe_jedec(struct flashchip *flash);
-int write_jedec(struct flashchip *flash, uint8_t *buf, int start, int len);
-int write_jedec_1(struct flashchip *flash, uint8_t *buf, int start, int len);
+int write_jedec(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len);
+int write_jedec_1(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len);
 int erase_sector_jedec(struct flashchip *flash, unsigned int page, unsigned int pagesize);
 int erase_block_jedec(struct flashchip *flash, unsigned int page, unsigned int blocksize);
 int erase_chip_block_jedec(struct flashchip *flash, unsigned int page, unsigned int blocksize);
@@ -110,7 +110,7 @@ int erase_chip_block_jedec(struct flashchip *flash, unsigned int page, unsigned 
 int probe_m29f400bt(struct flashchip *flash);
 int block_erase_m29f400bt(struct flashchip *flash, unsigned int start, unsigned int len);
 int block_erase_chip_m29f400bt(struct flashchip *flash, unsigned int start, unsigned int len);
-int write_m29f400bt(struct flashchip *flash, uint8_t *buf, int start, int len);
+int write_m29f400bt(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len);
 void protect_m29f400bt(chipaddr bios);
 
 /* pm49fl00x.c */
@@ -120,7 +120,7 @@ int lock_49fl00x(struct flashchip *flash);
 /* sst28sf040.c */
 int erase_chip_28sf040(struct flashchip *flash, unsigned int addr, unsigned int blocklen);
 int erase_sector_28sf040(struct flashchip *flash, unsigned int address, unsigned int sector_size);
-int write_28sf040(struct flashchip *flash, uint8_t *buf, int start, int len);
+int write_28sf040(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len);
 int unprotect_28sf040(struct flashchip *flash);
 int protect_28sf040(struct flashchip *flash);
 

@@ -22,10 +22,10 @@
 
 #include "flash.h"
 
-static void write_lockbits_49fl00x(chipaddr bios, int size,
-			    unsigned char bits, int block_size)
+static void write_lockbits_49fl00x(chipaddr bios, unsigned int size,
+			    unsigned char bits, unsigned int block_size)
 {
-	int i, left = size;
+	unsigned int i, left = size;
 
 	for (i = 0; left >= block_size; i++, left -= block_size) {
 		/* pm49fl002 */
