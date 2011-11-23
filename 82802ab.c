@@ -141,7 +141,7 @@ int erase_block_82802ab(struct flashchip *flash, unsigned int page,
 }
 
 /* chunksize is 1 */
-int write_82802ab(struct flashchip *flash, uint8_t *src, int start, int len)
+int write_82802ab(struct flashchip *flash, uint8_t *src, unsigned int start, unsigned int len)
 {
 	int i;
 	chipaddr dst = flash->virtual_memory + start;

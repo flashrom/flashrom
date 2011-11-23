@@ -295,7 +295,8 @@ static int buspirate_spi_send_command(unsigned int writecnt, unsigned int readcn
 		const unsigned char *writearr, unsigned char *readarr)
 {
 	static unsigned char *buf = NULL;
-	int i = 0, ret = 0;
+	unsigned int i = 0;
+	int ret = 0;
 
 	if (writecnt > 16 || readcnt > 16 || (readcnt + writecnt) > 16)
 		return SPI_INVALID_LENGTH;

@@ -28,7 +28,7 @@
    functions. */
 
 /* chunksize is 1 */
-int write_m29f400bt(struct flashchip *flash, uint8_t *src, int start, int len)
+int write_m29f400bt(struct flashchip *flash, uint8_t *src, unsigned int start, unsigned int len)
 {
 	int i;
 	chipaddr bios = flash->virtual_memory;

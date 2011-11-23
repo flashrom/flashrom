@@ -206,13 +206,13 @@ static int dediprog_set_spi_speed(uint16_t speed)
  * @return	0 on success, 1 on failure
  */
 static int dediprog_spi_bulk_read(struct flashchip *flash, uint8_t *buf,
-				  int start, int len)
+				  unsigned int start, unsigned int len)
 {
 	int ret;
-	int i;
+	unsigned int i;
 	/* chunksize must be 512, other sizes will NOT work at all. */
-	const int chunksize = 0x200;
-	const int count = len / chunksize;
+	const unsigned int chunksize = 0x200;
+	const unsigned int count = len / chunksize;
 	const char count_and_chunk[] = {count & 0xff,
 					(count >> 8) & 0xff,
 					chunksize & 0xff,
@@ -253,14 +253,14 @@ static int dediprog_spi_bulk_read(struct flashchip *flash, uint8_t *buf,
 	return 0;
 }
 
-static int dediprog_spi_read(struct flashchip *flash, uint8_t *buf, int start,
-			     int len)
+static int dediprog_spi_read(struct flashchip *flash, uint8_t *buf,
+			     unsigned int start, unsigned int len)
 {
 	int ret;
 	/* chunksize must be 512, other sizes will NOT work at all. */
-	const int chunksize = 0x200;
-	int residue = start % chunksize ? chunksize - start % chunksize : 0;
-	int bulklen;
+	const unsigned int chunksize = 0x200;
+	unsigned int residue = start % chunksize ? chunksize - start % chunksize : 0;
+	unsigned int bulklen;
 
 	dediprog_set_leds(PASS_OFF|BUSY_ON|ERROR_OFF);
 
@@ -300,7 +300,7 @@ static int dediprog_spi_read(struct flashchip *flash, uint8_t *buf, int start,
 }
 
 static int dediprog_spi_write_256(struct flashchip *flash, uint8_t *buf,
-				  int start, int len)
+				  unsigned int start, unsigned int len)
 {
 	int ret;
 

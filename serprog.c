@@ -302,8 +302,8 @@ static int sp_stream_buffer_op(uint8_t cmd, uint32_t parmlen, uint8_t * parms)
 static int serprog_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 				    const unsigned char *writearr,
 				    unsigned char *readarr);
-static int serprog_spi_read(struct flashchip *flash, uint8_t *buf, int start,
-			    int len);
+static int serprog_spi_read(struct flashchip *flash, uint8_t *buf,
+			    unsigned int start, unsigned int len);
 static struct spi_programmer spi_programmer_serprog = {
 	.type		= SPI_CONTROLLER_SERPROG,
 	.max_data_read	= MAX_DATA_READ_UNLIMITED,
@@ -822,11 +822,10 @@ static int serprog_spi_send_command(unsigned int writecnt, unsigned int readcnt,
  * the advantage that it is much faster for most chips, but breaks those with
  * non-contiguous address space (like AT45DB161D). When spi_read_chunked is
  * fixed this method can be removed. */
-static int serprog_spi_read(struct flashchip *flash, uint8_t *buf, int start, int len)
+static int serprog_spi_read(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len)
 {
-	int i;
-	int cur_len;
-	const int max_read = spi_programmer_serprog.max_data_read;
+	unsigned int i, cur_len;
+	const unsigned int max_read = spi_programmer_serprog.max_data_read;
 	for (i = 0; i < len; i += cur_len) {
 		int ret;
 		cur_len = min(max_read, (len - i));

@@ -46,24 +46,24 @@ enum emu_chip {
 };
 static enum emu_chip emu_chip = EMULATE_NONE;
 static char *emu_persistent_image = NULL;
-static int emu_chip_size = 0;
+static unsigned int emu_chip_size = 0;
 #if EMULATE_SPI_CHIP
-static int emu_max_byteprogram_size = 0;
-static int emu_max_aai_size = 0;
-static int emu_jedec_se_size = 0;
-static int emu_jedec_be_52_size = 0;
-static int emu_jedec_be_d8_size = 0;
-static int emu_jedec_ce_60_size = 0;
-static int emu_jedec_ce_c7_size = 0;
+static unsigned int emu_max_byteprogram_size = 0;
+static unsigned int emu_max_aai_size = 0;
+static unsigned int emu_jedec_se_size = 0;
+static unsigned int emu_jedec_be_52_size = 0;
+static unsigned int emu_jedec_be_d8_size = 0;
+static unsigned int emu_jedec_ce_60_size = 0;
+static unsigned int emu_jedec_ce_c7_size = 0;
 #endif
 #endif
 
-static int spi_write_256_chunksize = 256;
+static unsigned int spi_write_256_chunksize = 256;
 
 static int dummy_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		      const unsigned char *writearr, unsigned char *readarr);
 static int dummy_spi_write_256(struct flashchip *flash, uint8_t *buf,
-			       int start, int len);
+			       unsigned int start, unsigned int len);
 
 static const struct spi_programmer spi_programmer_dummyflasher = {
 	.type		= SPI_CONTROLLER_DUMMY,
@@ -320,8 +320,8 @@ void dummy_chip_readn(uint8_t *buf, const chipaddr addr, size_t len)
 static int emulate_spi_chip_response(unsigned int writecnt, unsigned int readcnt,
 		      const unsigned char *writearr, unsigned char *readarr)
 {
-	int offs;
-	static int aai_offs;
+	unsigned int offs;
+	static int unsigned aai_offs;
 	static int aai_active = 0;
 
 	if (writecnt == 0) {
@@ -549,7 +549,7 @@ static int dummy_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 }
 
 static int dummy_spi_write_256(struct flashchip *flash, uint8_t *buf,
-			       int start, int len)
+			       unsigned int start, unsigned int len)
 {
 	return spi_write_chunked(flash, buf, start, len,
 				 spi_write_256_chunksize);

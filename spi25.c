@@ -840,7 +840,7 @@ int spi_write_status_register(struct flashchip *flash, int status)
 	return ret;
 }
 
-int spi_byte_program(int addr, uint8_t databyte)
+int spi_byte_program(unsigned int addr, uint8_t databyte)
 {
 	int result;
 	struct spi_command cmds[] = {
@@ -875,7 +875,7 @@ int spi_byte_program(int addr, uint8_t databyte)
 	return result;
 }
 
-int spi_nbyte_program(int addr, uint8_t *bytes, int len)
+int spi_nbyte_program(unsigned int addr, uint8_t *bytes, unsigned int len)
 {
 	int result;
 	/* FIXME: Switch to malloc based on len unless that kills speed. */
@@ -950,7 +950,7 @@ int spi_disable_blockprotect(struct flashchip *flash)
 	return 0;
 }
 
-int spi_nbyte_read(int address, uint8_t *bytes, int len)
+int spi_nbyte_read(unsigned int address, uint8_t *bytes, unsigned int len)
 {
 	const unsigned char cmd[JEDEC_READ_OUTSIZE] = {
 		JEDEC_READ,
@@ -968,12 +968,11 @@ int spi_nbyte_read(int address, uint8_t *bytes, int len)
  * FIXME: Use the chunk code from Michael Karcher instead.
  * Each page is read separately in chunks with a maximum size of chunksize.
  */
-int spi_read_chunked(struct flashchip *flash, uint8_t *buf, int start, int len, int chunksize)
+int spi_read_chunked(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len, unsigned int chunksize)
 {
 	int rc = 0;
-	int i, j, starthere, lenhere;
-	int page_size = flash->page_size;
-	int toread;
+	unsigned int i, j, starthere, lenhere, toread;
+	unsigned int page_size = flash->page_size;
 
 	/* Warning: This loop has a very unusual condition and body.
 	 * The loop needs to go through each page with at least one affected
@@ -1008,17 +1007,16 @@ int spi_read_chunked(struct flashchip *flash, uint8_t *buf, int start, int len, 
  * FIXME: Use the chunk code from Michael Karcher instead.
  * Each page is written separately in chunks with a maximum size of chunksize.
  */
-int spi_write_chunked(struct flashchip *flash, uint8_t *buf, int start, int len, int chunksize)
+int spi_write_chunked(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len, unsigned int chunksize)
 {
 	int rc = 0;
-	int i, j, starthere, lenhere;
+	unsigned int i, j, starthere, lenhere, towrite;
 	/* FIXME: page_size is the wrong variable. We need max_writechunk_size
 	 * in struct flashchip to do this properly. All chips using
 	 * spi_chip_write_256 have page_size set to max_writechunk_size, so
 	 * we're OK for now.
 	 */
-	int page_size = flash->page_size;
-	int towrite;
+	unsigned int page_size = flash->page_size;
 
 	/* Warning: This loop has a very unusual condition and body.
 	 * The loop needs to go through each page with at least one affected
@@ -1057,9 +1055,10 @@ int spi_write_chunked(struct flashchip *flash, uint8_t *buf, int start, int len,
  * (e.g. due to size constraints in IT87* for over 512 kB)
  */
 /* real chunksize is 1, logical chunksize is 1 */
-int spi_chip_write_1(struct flashchip *flash, uint8_t *buf, int start, int len)
+int spi_chip_write_1(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len)
 {
-	int i, result = 0;
+	unsigned int i;
+	int result = 0;
 
 	for (i = start; i < start + len; i++) {
 		result = spi_byte_program(i, buf[i - start]);
@@ -1072,7 +1071,7 @@ int spi_chip_write_1(struct flashchip *flash, uint8_t *buf, int start, int len)
 	return 0;
 }
 
-int spi_aai_write(struct flashchip *flash, uint8_t *buf, int start, int len)
+int spi_aai_write(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len)
 {
 	uint32_t pos = start;
 	int result;
