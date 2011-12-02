@@ -1288,7 +1288,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 512,
 		.page_size	= 64 * 1024,
 		.feature_bits	= FEATURE_REGISTERMAP | FEATURE_EITHER_RESET,
-		.tested		= TEST_OK_PRE,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,	/* routine is wrapper to probe_jedec (pm49fl00x.c) */
 		.block_erasers	=
@@ -5204,9 +5204,9 @@ const struct flashchip flashchips[] = {
 		.total_size	= 256,
 		.page_size	= 8 * 1024,
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_EITHER_RESET,
-		.tested		= TEST_OK_PRE,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_jedec,
-		.probe_timing	= TIMING_FIXME, 
+		.probe_timing	= TIMING_FIXME,
 		.block_erasers	=
 		{
 			{
@@ -8649,7 +8649,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 512,
 		.page_size	= 64 * 1024,
 		.feature_bits	= FEATURE_REGISTERMAP | FEATURE_EITHER_RESET,
-		.tested		= TEST_UNTESTED,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_jedec,
 		.probe_timing	= 10,
 		.block_erasers	=
@@ -9027,6 +9027,7 @@ const struct flashchip flashchips[] = {
 		.probe		= probe_spi_rdid,
 		.write		= NULL,
 	},
+
 	{
 		.vendor		= "Generic",
 		.name		= "unknown SPI chip (REMS)",
