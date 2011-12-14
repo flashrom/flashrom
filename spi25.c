@@ -113,7 +113,7 @@ int spi_write_disable(void)
 	return spi_send_command(sizeof(cmd), 0, cmd, NULL);
 }
 
-static int probe_spi_rdid_generic(struct flashchip *flash, int bytes)
+static int probe_spi_rdid_generic(struct flashctx *flash, int bytes)
 {
 	unsigned char readarr[4];
 	uint32_t id1;
@@ -167,12 +167,12 @@ static int probe_spi_rdid_generic(struct flashchip *flash, int bytes)
 	return 0;
 }
 
-int probe_spi_rdid(struct flashchip *flash)
+int probe_spi_rdid(struct flashctx *flash)
 {
 	return probe_spi_rdid_generic(flash, 3);
 }
 
-int probe_spi_rdid4(struct flashchip *flash)
+int probe_spi_rdid4(struct flashctx *flash)
 {
 	/* Some SPI controllers do not support commands with writecnt=1 and
 	 * readcnt=4.
@@ -194,7 +194,7 @@ int probe_spi_rdid4(struct flashchip *flash)
 	return 0;
 }
 
-int probe_spi_rems(struct flashchip *flash)
+int probe_spi_rems(struct flashctx *flash)
 {
 	unsigned char readarr[JEDEC_REMS_INSIZE];
 	uint32_t id1, id2;
@@ -230,7 +230,7 @@ int probe_spi_rems(struct flashchip *flash)
 	return 0;
 }
 
-int probe_spi_res1(struct flashchip *flash)
+int probe_spi_res1(struct flashctx *flash)
 {
 	static const unsigned char allff[] = {0xff, 0xff, 0xff};
 	static const unsigned char all00[] = {0x00, 0x00, 0x00};
@@ -274,7 +274,7 @@ int probe_spi_res1(struct flashchip *flash)
 	return 1;
 }
 
-int probe_spi_res2(struct flashchip *flash)
+int probe_spi_res2(struct flashctx *flash)
 {
 	unsigned char readarr[2];
 	uint32_t id1, id2;
@@ -410,7 +410,7 @@ void spi_prettyprint_status_register_sst25vf040b(uint8_t status)
 		bpt[(status & 0x1c) >> 2]);
 }
 
-int spi_prettyprint_status_register(struct flashchip *flash)
+int spi_prettyprint_status_register(struct flashctx *flash)
 {
 	uint8_t status;
 
@@ -444,7 +444,7 @@ int spi_prettyprint_status_register(struct flashchip *flash)
 	return 0;
 }
 
-int spi_chip_erase_60(struct flashchip *flash)
+int spi_chip_erase_60(struct flashctx *flash)
 {
 	int result;
 	struct spi_command cmds[] = {
@@ -481,7 +481,7 @@ int spi_chip_erase_60(struct flashchip *flash)
 	return 0;
 }
 
-int spi_chip_erase_c7(struct flashchip *flash)
+int spi_chip_erase_c7(struct flashctx *flash)
 {
 	int result;
 	struct spi_command cmds[] = {
@@ -517,7 +517,7 @@ int spi_chip_erase_c7(struct flashchip *flash)
 	return 0;
 }
 
-int spi_block_erase_52(struct flashchip *flash, unsigned int addr, unsigned int blocklen)
+int spi_block_erase_52(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
 {
 	int result;
 	struct spi_command cmds[] = {
@@ -563,7 +563,7 @@ int spi_block_erase_52(struct flashchip *flash, unsigned int addr, unsigned int 
  * 32k for SST
  * 4-32k non-uniform for EON
  */
-int spi_block_erase_d8(struct flashchip *flash, unsigned int addr, unsigned int blocklen)
+int spi_block_erase_d8(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
 {
 	int result;
 	struct spi_command cmds[] = {
@@ -607,7 +607,7 @@ int spi_block_erase_d8(struct flashchip *flash, unsigned int addr, unsigned int 
 /* Block size is usually
  * 4k for PMC
  */
-int spi_block_erase_d7(struct flashchip *flash, unsigned int addr, unsigned int blocklen)
+int spi_block_erase_d7(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
 {
 	int result;
 	struct spi_command cmds[] = {
@@ -649,7 +649,7 @@ int spi_block_erase_d7(struct flashchip *flash, unsigned int addr, unsigned int 
 }
 
 /* Sector size is usually 4k, though Macronix eliteflash has 64k */
-int spi_block_erase_20(struct flashchip *flash, unsigned int addr, unsigned int blocklen)
+int spi_block_erase_20(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
 {
 	int result;
 	struct spi_command cmds[] = {
@@ -690,7 +690,7 @@ int spi_block_erase_20(struct flashchip *flash, unsigned int addr, unsigned int 
 	return 0;
 }
 
-int spi_block_erase_60(struct flashchip *flash, unsigned int addr, unsigned int blocklen)
+int spi_block_erase_60(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
 {
 	if ((addr != 0) || (blocklen != flash->total_size * 1024)) {
 		msg_cerr("%s called with incorrect arguments\n",
@@ -700,7 +700,7 @@ int spi_block_erase_60(struct flashchip *flash, unsigned int addr, unsigned int 
 	return spi_chip_erase_60(flash);
 }
 
-int spi_block_erase_c7(struct flashchip *flash, unsigned int addr, unsigned int blocklen)
+int spi_block_erase_c7(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
 {
 	if ((addr != 0) || (blocklen != flash->total_size * 1024)) {
 		msg_cerr("%s called with incorrect arguments\n",
@@ -728,7 +728,7 @@ int spi_write_status_enable(void)
  * This is according the SST25VF016 datasheet, who knows it is more
  * generic that this...
  */
-static int spi_write_status_register_ewsr(struct flashchip *flash, int status)
+static int spi_write_status_register_ewsr(struct flashctx *flash, int status)
 {
 	int result;
 	int i = 0;
@@ -776,7 +776,7 @@ static int spi_write_status_register_ewsr(struct flashchip *flash, int status)
 	return 0;
 }
 
-static int spi_write_status_register_wren(struct flashchip *flash, int status)
+static int spi_write_status_register_wren(struct flashctx *flash, int status)
 {
 	int result;
 	int i = 0;
@@ -824,7 +824,7 @@ static int spi_write_status_register_wren(struct flashchip *flash, int status)
 	return 0;
 }
 
-int spi_write_status_register(struct flashchip *flash, int status)
+int spi_write_status_register(struct flashctx *flash, int status)
 {
 	int ret = 1;
 
@@ -926,7 +926,7 @@ int spi_nbyte_program(unsigned int addr, uint8_t *bytes, unsigned int len)
  * Write 0x00 to the status register. Check if any locks are still set (that
  * part is chip specific). Repeat once.
  */
-int spi_disable_blockprotect(struct flashchip *flash)
+int spi_disable_blockprotect(struct flashctx *flash)
 {
 	uint8_t status;
 	int result;
@@ -968,7 +968,7 @@ int spi_nbyte_read(unsigned int address, uint8_t *bytes, unsigned int len)
  * FIXME: Use the chunk code from Michael Karcher instead.
  * Each page is read separately in chunks with a maximum size of chunksize.
  */
-int spi_read_chunked(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len, unsigned int chunksize)
+int spi_read_chunked(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len, unsigned int chunksize)
 {
 	int rc = 0;
 	unsigned int i, j, starthere, lenhere, toread;
@@ -1007,12 +1007,12 @@ int spi_read_chunked(struct flashchip *flash, uint8_t *buf, unsigned int start, 
  * FIXME: Use the chunk code from Michael Karcher instead.
  * Each page is written separately in chunks with a maximum size of chunksize.
  */
-int spi_write_chunked(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len, unsigned int chunksize)
+int spi_write_chunked(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len, unsigned int chunksize)
 {
 	int rc = 0;
 	unsigned int i, j, starthere, lenhere, towrite;
 	/* FIXME: page_size is the wrong variable. We need max_writechunk_size
-	 * in struct flashchip to do this properly. All chips using
+	 * in struct flashctx to do this properly. All chips using
 	 * spi_chip_write_256 have page_size set to max_writechunk_size, so
 	 * we're OK for now.
 	 */
@@ -1055,7 +1055,7 @@ int spi_write_chunked(struct flashchip *flash, uint8_t *buf, unsigned int start,
  * (e.g. due to size constraints in IT87* for over 512 kB)
  */
 /* real chunksize is 1, logical chunksize is 1 */
-int spi_chip_write_1(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len)
+int spi_chip_write_1(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len)
 {
 	unsigned int i;
 	int result = 0;
@@ -1071,7 +1071,7 @@ int spi_chip_write_1(struct flashchip *flash, uint8_t *buf, unsigned int start, 
 	return 0;
 }
 
-int spi_aai_write(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len)
+int spi_aai_write(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len)
 {
 	uint32_t pos = start;
 	int result;

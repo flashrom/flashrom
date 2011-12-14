@@ -268,7 +268,7 @@ struct shutdown_func_data {
  */
 static int may_register_shutdown = 0;
 
-static int check_block_eraser(const struct flashchip *flash, int k, int log);
+static int check_block_eraser(const struct flashctx *flash, int k, int log);
 
 /* Register a function to be executed on programmer shutdown.
  * The advantage over atexit() is that you can supply a void pointer which will
@@ -404,7 +404,7 @@ void programmer_delay(int usecs)
 	programmer_table[programmer].delay(usecs);
 }
 
-void map_flash_registers(struct flashchip *flash)
+void map_flash_registers(struct flashctx *flash)
 {
 	size_t size = flash->total_size * 1024;
 	/* Flash registers live 4 MByte below the flash. */
@@ -412,7 +412,7 @@ void map_flash_registers(struct flashchip *flash)
 	flash->virtual_registers = (chipaddr)programmer_map_flash_region("flash chip registers", (0xFFFFFFFF - 0x400000 - size + 1), size);
 }
 
-int read_memmapped(struct flashchip *flash, uint8_t *buf, unsigned int start, int unsigned len)
+int read_memmapped(struct flashctx *flash, uint8_t *buf, unsigned int start, int unsigned len)
 {
 	chip_readn(buf, flash->virtual_memory + start, len);
 
@@ -523,7 +523,7 @@ char *extract_programmer_param(const char *param_name)
 }
 
 /* Returns the number of well-defined erasers for a chip. */
-static unsigned int count_usable_erasers(const struct flashchip *flash)
+static unsigned int count_usable_erasers(const struct flashctx *flash)
 {
 	unsigned int usable_erasefunctions = 0;
 	int k;
@@ -535,7 +535,7 @@ static unsigned int count_usable_erasers(const struct flashchip *flash)
 }
 
 /* start is an offset to the base address of the flash chip */
-int check_erased_range(struct flashchip *flash, unsigned int start, unsigned int len)
+int check_erased_range(struct flashctx *flash, unsigned int start, unsigned int len)
 {
 	int ret;
 	uint8_t *cmpbuf = malloc(len);
@@ -558,7 +558,7 @@ int check_erased_range(struct flashchip *flash, unsigned int start, unsigned int
  * @message	string to print in the "FAILED" message
  * @return	0 for success, -1 for failure
  */
-int verify_range(struct flashchip *flash, uint8_t *cmpbuf, unsigned int start, unsigned int len,
+int verify_range(struct flashctx *flash, uint8_t *cmpbuf, unsigned int start, unsigned int len,
 		 const char *message)
 {
 	unsigned int i;
@@ -938,7 +938,7 @@ int check_max_decode(enum chipbustype buses, uint32_t size)
 	return 1;
 }
 
-int probe_flash(int startchip, struct flashchip *fill_flash, int force)
+int probe_flash(int startchip, struct flashctx *fill_flash, int force)
 {
 	const struct flashchip *flash;
 	unsigned long base = 0;
@@ -976,7 +976,7 @@ int probe_flash(int startchip, struct flashchip *fill_flash, int force)
 		check_max_decode(buses_common, size);
 
 		/* Start filling in the dynamic data. */
-		*fill_flash = *flash;
+		memcpy(fill_flash, flash, sizeof(struct flashchip));
 
 		base = flashbase ? flashbase : (0xffffffff - size + 1);
 		fill_flash->virtual_memory = (chipaddr)programmer_map_flash_region("flash chip", base, size);
@@ -1029,7 +1029,7 @@ notfound:
 	return flash - flashchips;
 }
 
-int verify_flash(struct flashchip *flash, uint8_t *buf)
+int verify_flash(struct flashctx *flash, uint8_t *buf)
 {
 	int ret;
 	unsigned int total_size = flash->total_size * 1024;
@@ -1103,7 +1103,7 @@ int write_buf_to_file(unsigned char *buf, unsigned long size,
 	return 0;
 }
 
-int read_flash_to_file(struct flashchip *flash, const char *filename)
+int read_flash_to_file(struct flashctx *flash, const char *filename)
 {
 	unsigned long size = flash->total_size * 1024;
 	unsigned char *buf = calloc(size, sizeof(char));
@@ -1202,11 +1202,11 @@ static int selfcheck_eraseblocks(const struct flashchip *flash)
 	return ret;
 }
 
-static int erase_and_write_block_helper(struct flashchip *flash,
+static int erase_and_write_block_helper(struct flashctx *flash,
 					unsigned int start, unsigned int len,
 					uint8_t *curcontents,
 					uint8_t *newcontents,
-					int (*erasefn) (struct flashchip *flash,
+					int (*erasefn) (struct flashctx *flash,
 							unsigned int addr,
 							unsigned int len))
 {
@@ -1253,14 +1253,14 @@ static int erase_and_write_block_helper(struct flashchip *flash,
 	return ret;
 }
 
-static int walk_eraseregions(struct flashchip *flash, int erasefunction,
-			     int (*do_something) (struct flashchip *flash,
+static int walk_eraseregions(struct flashctx *flash, int erasefunction,
+			     int (*do_something) (struct flashctx *flash,
 						  unsigned int addr,
 						  unsigned int len,
 						  uint8_t *param1,
 						  uint8_t *param2,
 						  int (*erasefn) (
-							struct flashchip *flash,
+							struct flashctx *flash,
 							unsigned int addr,
 							unsigned int len)),
 			     void *param1, void *param2)
@@ -1292,7 +1292,7 @@ static int walk_eraseregions(struct flashchip *flash, int erasefunction,
 	return 0;
 }
 
-static int check_block_eraser(const struct flashchip *flash, int k, int log)
+static int check_block_eraser(const struct flashctx *flash, int k, int log)
 {
 	struct block_eraser eraser = flash->block_erasers[k];
 
@@ -1316,7 +1316,7 @@ static int check_block_eraser(const struct flashchip *flash, int k, int log)
 	return 0;
 }
 
-int erase_and_write_flash(struct flashchip *flash, uint8_t *oldcontents,
+int erase_and_write_flash(struct flashctx *flash, uint8_t *oldcontents,
 			  uint8_t *newcontents)
 {
 	int k, ret = 1;
@@ -1534,6 +1534,13 @@ int selfcheck(void)
 		msg_gerr("Flashchips table miscompilation!\n");
 		ret = 1;
 	}
+	/* Check that virtual_memory in struct flashctx is placed directly
+	 * after the members copied from struct flashchip.
+	 */
+	if (sizeof(struct flashchip) != offsetof(struct flashctx, virtual_memory)) {
+		msg_gerr("struct flashctx broken!\n");
+		ret = 1;
+	}
 	for (flash = flashchips; flash && flash->name; flash++)
 		if (selfcheck_eraseblocks(flash))
 			ret = 1;
@@ -1559,7 +1566,7 @@ int selfcheck(void)
 	return ret;
 }
 
-void check_chip_supported(const struct flashchip *flash)
+void check_chip_supported(const struct flashctx *flash)
 {
 	if (TEST_OK_MASK != (flash->tested & TEST_OK_MASK)) {
 		msg_cinfo("===\n");
@@ -1611,7 +1618,7 @@ void check_chip_supported(const struct flashchip *flash)
 /* FIXME: This function signature needs to be improved once doit() has a better
  * function signature.
  */
-int chip_safety_check(struct flashchip *flash, int force, int read_it, int write_it, int erase_it, int verify_it)
+int chip_safety_check(struct flashctx *flash, int force, int read_it, int write_it, int erase_it, int verify_it)
 {
 	if (!programmer_may_write && (write_it || erase_it)) {
 		msg_perr("Write/erase is not working yet on your programmer in "
@@ -1672,7 +1679,7 @@ int chip_safety_check(struct flashchip *flash, int force, int read_it, int write
  * but right now it allows us to split off the CLI code.
  * Besides that, the function itself is a textbook example of abysmal code flow.
  */
-int doit(struct flashchip *flash, int force, const char *filename, int read_it, int write_it, int erase_it, int verify_it)
+int doit(struct flashctx *flash, int force, const char *filename, int read_it, int write_it, int erase_it, int verify_it)
 {
 	uint8_t *oldcontents;
 	uint8_t *newcontents;

@@ -93,6 +93,8 @@ enum chipbustype {
 #define FEATURE_WRSR_WREN	(1 << 7)
 #define FEATURE_WRSR_EITHER	(FEATURE_WRSR_EWSR | FEATURE_WRSR_WREN)
 
+struct flashctx;
+
 struct flashchip {
 	const char *vendor;
 	const char *name;
@@ -119,7 +121,7 @@ struct flashchip {
 	 */
 	uint32_t tested;
 
-	int (*probe) (struct flashchip *flash);
+	int (*probe) (struct flashctx *flash);
 
 	/* Delay after "enter/exit ID mode" commands in microseconds.
 	 * NB: negative values have special meanings, see TIMING_* below.
@@ -140,20 +142,42 @@ struct flashchip {
 		} eraseblocks[NUM_ERASEREGIONS];
 		/* a block_erase function should try to erase one block of size
 		 * 'blocklen' at address 'blockaddr' and return 0 on success. */
-		int (*block_erase) (struct flashchip *flash, unsigned int blockaddr, unsigned int blocklen);
+		int (*block_erase) (struct flashctx *flash, unsigned int blockaddr, unsigned int blocklen);
 	} block_erasers[NUM_ERASEFUNCTIONS];
 
-	int (*printlock) (struct flashchip *flash);
-	int (*unlock) (struct flashchip *flash);
-	int (*write) (struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len);
-	int (*read) (struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len);
-	struct {
+	int (*printlock) (struct flashctx *flash);
+	int (*unlock) (struct flashctx *flash);
+	int (*write) (struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
+	int (*read) (struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
+	struct voltage {
 		uint16_t min;
 		uint16_t max;
 	} voltage;
+};
 
-	/* Some flash devices have an additional register space. */
+/* struct flashctx must always contain struct flashchip at the beginning. */
+struct flashctx {
+	const char *vendor;
+	const char *name;
+	enum chipbustype bustype;
+	uint32_t manufacture_id;
+	uint32_t model_id;
+	int total_size;
+	int page_size;
+	int feature_bits;
+	uint32_t tested;
+	int (*probe) (struct flashctx *flash);
+	int probe_timing;
+	struct block_eraser block_erasers[NUM_ERASEFUNCTIONS];
+	int (*printlock) (struct flashctx *flash);
+	int (*unlock) (struct flashctx *flash);
+	int (*write) (struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
+	int (*read) (struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
+	struct voltage voltage;
+	/* struct flashchip ends here. */
+	
 	chipaddr virtual_memory;
+	/* Some flash devices have an additional register space. */
 	chipaddr virtual_registers;
 };
 
@@ -203,23 +227,23 @@ extern enum chipbustype buses_supported;
 extern int verbose;
 extern const char flashrom_version[];
 extern char *chip_to_probe;
-void map_flash_registers(struct flashchip *flash);
-int read_memmapped(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len);
-int erase_flash(struct flashchip *flash);
-int probe_flash(int startchip, struct flashchip *fill_flash, int force);
-int read_flash_to_file(struct flashchip *flash, const char *filename);
+void map_flash_registers(struct flashctx *flash);
+int read_memmapped(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
+int erase_flash(struct flashctx *flash);
+int probe_flash(int startchip, struct flashctx *fill_flash, int force);
+int read_flash_to_file(struct flashctx *flash, const char *filename);
 int min(int a, int b);
 int max(int a, int b);
 void tolower_string(char *str);
 char *extract_param(char **haystack, const char *needle, const char *delim);
-int verify_range(struct flashchip *flash, uint8_t *cmpbuf, unsigned int start, unsigned int len, const char *message);
+int verify_range(struct flashctx *flash, uint8_t *cmpbuf, unsigned int start, unsigned int len, const char *message);
 int need_erase(uint8_t *have, uint8_t *want, unsigned int len, enum write_granularity gran);
 char *strcat_realloc(char *dest, const char *src);
 void print_version(void);
 void print_banner(void);
 void list_programmers_linebreak(int startcol, int cols, int paren);
 int selfcheck(void);
-int doit(struct flashchip *flash, int force, const char *filename, int read_it, int write_it, int erase_it, int verify_it);
+int doit(struct flashctx *flash, int force, const char *filename, int read_it, int write_it, int erase_it, int verify_it);
 int read_buf_from_file(unsigned char *buf, unsigned long size, const char *filename);
 int write_buf_to_file(unsigned char *buf, unsigned long size, const char *filename);
 
@@ -259,7 +283,7 @@ int print(int type, const char *fmt, ...) __attribute__((format(printf, 2, 3)));
 /* layout.c */
 int read_romlayout(char *name);
 int find_romentry(char *name);
-int handle_romentries(struct flashchip *flash, uint8_t *oldcontents, uint8_t *newcontents);
+int handle_romentries(struct flashctx *flash, uint8_t *oldcontents, uint8_t *newcontents);
 
 /* spi.c */
 struct spi_command {
