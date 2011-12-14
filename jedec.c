@@ -91,7 +91,7 @@ void data_polling_jedec(chipaddr dst, uint8_t data)
 		msg_cdbg("%s: excessive loops, i=0x%x\n", __func__, i);
 }
 
-static unsigned int getaddrmask(struct flashchip *flash)
+static unsigned int getaddrmask(struct flashctx *flash)
 {
 	switch (flash->feature_bits & FEATURE_ADDR_MASK) {
 	case FEATURE_ADDR_FULL:
@@ -110,7 +110,7 @@ static unsigned int getaddrmask(struct flashchip *flash)
 	}
 }
 
-static void start_program_jedec_common(struct flashchip *flash, unsigned int mask)
+static void start_program_jedec_common(struct flashctx *flash, unsigned int mask)
 {
 	chipaddr bios = flash->virtual_memory;
 	chip_writeb(0xAA, bios + (0x5555 & mask));
@@ -118,7 +118,7 @@ static void start_program_jedec_common(struct flashchip *flash, unsigned int mas
 	chip_writeb(0xA0, bios + (0x5555 & mask));
 }
 
-static int probe_jedec_common(struct flashchip *flash, unsigned int mask)
+static int probe_jedec_common(struct flashctx *flash, unsigned int mask)
 {
 	chipaddr bios = flash->virtual_memory;
 	uint8_t id1, id2;
@@ -237,7 +237,7 @@ static int probe_jedec_common(struct flashchip *flash, unsigned int mask)
 	return 1;
 }
 
-static int erase_sector_jedec_common(struct flashchip *flash, unsigned int page,
+static int erase_sector_jedec_common(struct flashctx *flash, unsigned int page,
 			      unsigned int pagesize, unsigned int mask)
 {
 	chipaddr bios = flash->virtual_memory;
@@ -267,7 +267,7 @@ static int erase_sector_jedec_common(struct flashchip *flash, unsigned int page,
 	return 0;
 }
 
-static int erase_block_jedec_common(struct flashchip *flash, unsigned int block,
+static int erase_block_jedec_common(struct flashctx *flash, unsigned int block,
 			     unsigned int blocksize, unsigned int mask)
 {
 	chipaddr bios = flash->virtual_memory;
@@ -297,7 +297,7 @@ static int erase_block_jedec_common(struct flashchip *flash, unsigned int block,
 	return 0;
 }
 
-static int erase_chip_jedec_common(struct flashchip *flash, unsigned int mask)
+static int erase_chip_jedec_common(struct flashctx *flash, unsigned int mask)
 {
 	chipaddr bios = flash->virtual_memory;
 	int delay_us = 0;
@@ -325,7 +325,7 @@ static int erase_chip_jedec_common(struct flashchip *flash, unsigned int mask)
 	return 0;
 }
 
-static int write_byte_program_jedec_common(struct flashchip *flash, uint8_t *src,
+static int write_byte_program_jedec_common(struct flashctx *flash, uint8_t *src,
 			     chipaddr dst, unsigned int mask)
 {
 	int tried = 0, failed = 0;
@@ -355,7 +355,7 @@ retry:
 }
 
 /* chunksize is 1 */
-int write_jedec_1(struct flashchip *flash, uint8_t *src, unsigned int start, unsigned int len)
+int write_jedec_1(struct flashctx *flash, uint8_t *src, unsigned int start, unsigned int len)
 {
 	int i, failed = 0;
 	chipaddr dst = flash->virtual_memory + start;
@@ -376,7 +376,7 @@ int write_jedec_1(struct flashchip *flash, uint8_t *src, unsigned int start, uns
 	return failed;
 }
 
-int write_page_write_jedec_common(struct flashchip *flash, uint8_t *src, unsigned int start, unsigned int page_size)
+int write_page_write_jedec_common(struct flashctx *flash, uint8_t *src, unsigned int start, unsigned int page_size)
 {
 	int i, tried = 0, failed;
 	uint8_t *s = src;
@@ -424,11 +424,11 @@ retry:
  * This function is a slightly modified copy of spi_write_chunked.
  * Each page is written separately in chunks with a maximum size of chunksize.
  */
-int write_jedec(struct flashchip *flash, uint8_t *buf, unsigned int start, int unsigned len)
+int write_jedec(struct flashctx *flash, uint8_t *buf, unsigned int start, int unsigned len)
 {
 	unsigned int i, starthere, lenhere;
 	/* FIXME: page_size is the wrong variable. We need max_writechunk_size
-	 * in struct flashchip to do this properly. All chips using
+	 * in struct flashctx to do this properly. All chips using
 	 * write_jedec have page_size set to max_writechunk_size, so
 	 * we're OK for now.
 	 */
@@ -458,7 +458,7 @@ int write_jedec(struct flashchip *flash, uint8_t *buf, unsigned int start, int u
 }
 
 /* erase chip with block_erase() prototype */
-int erase_chip_block_jedec(struct flashchip *flash, unsigned int addr,
+int erase_chip_block_jedec(struct flashctx *flash, unsigned int addr,
 			   unsigned int blocksize)
 {
 	unsigned int mask;
@@ -472,7 +472,7 @@ int erase_chip_block_jedec(struct flashchip *flash, unsigned int addr,
 	return erase_chip_jedec_common(flash, mask);
 }
 
-int probe_jedec(struct flashchip *flash)
+int probe_jedec(struct flashctx *flash)
 {
 	unsigned int mask;
 
@@ -480,7 +480,7 @@ int probe_jedec(struct flashchip *flash)
 	return probe_jedec_common(flash, mask);
 }
 
-int erase_sector_jedec(struct flashchip *flash, unsigned int page, unsigned int size)
+int erase_sector_jedec(struct flashctx *flash, unsigned int page, unsigned int size)
 {
 	unsigned int mask;
 
@@ -488,7 +488,7 @@ int erase_sector_jedec(struct flashchip *flash, unsigned int page, unsigned int 
 	return erase_sector_jedec_common(flash, page, size, mask);
 }
 
-int erase_block_jedec(struct flashchip *flash, unsigned int page, unsigned int size)
+int erase_block_jedec(struct flashctx *flash, unsigned int page, unsigned int size)
 {
 	unsigned int mask;
 
@@ -496,7 +496,7 @@ int erase_block_jedec(struct flashchip *flash, unsigned int page, unsigned int s
 	return erase_block_jedec_common(flash, page, size, mask);
 }
 
-int erase_chip_jedec(struct flashchip *flash)
+int erase_chip_jedec(struct flashctx *flash)
 {
 	unsigned int mask;
 

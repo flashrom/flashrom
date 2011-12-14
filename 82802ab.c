@@ -40,7 +40,7 @@ void print_status_82802ab(uint8_t status)
 	msg_cdbg("%s", status & 0x2 ? "WP|TBL#|WP#,ABORT:" : "UNLOCK:");
 }
 
-int probe_82802ab(struct flashchip *flash)
+int probe_82802ab(struct flashctx *flash)
 {
 	chipaddr bios = flash->virtual_memory;
 	uint8_t id1, id2, flashcontent1, flashcontent2;
@@ -89,7 +89,7 @@ int probe_82802ab(struct flashchip *flash)
 	return 1;
 }
 
-uint8_t wait_82802ab(struct flashchip *flash)
+uint8_t wait_82802ab(struct flashctx *flash)
 {
 	uint8_t status;
 	chipaddr bios = flash->virtual_memory;
@@ -107,7 +107,7 @@ uint8_t wait_82802ab(struct flashchip *flash)
 	return status;
 }
 
-int unlock_82802ab(struct flashchip *flash)
+int unlock_82802ab(struct flashctx *flash)
 {
 	int i;
 	//chipaddr wrprotect = flash->virtual_registers + page + 2;
@@ -118,7 +118,7 @@ int unlock_82802ab(struct flashchip *flash)
 	return 0;
 }
 
-int erase_block_82802ab(struct flashchip *flash, unsigned int page,
+int erase_block_82802ab(struct flashctx *flash, unsigned int page,
 			unsigned int pagesize)
 {
 	chipaddr bios = flash->virtual_memory;
@@ -141,7 +141,7 @@ int erase_block_82802ab(struct flashchip *flash, unsigned int page,
 }
 
 /* chunksize is 1 */
-int write_82802ab(struct flashchip *flash, uint8_t *src, unsigned int start, unsigned int len)
+int write_82802ab(struct flashctx *flash, uint8_t *src, unsigned int start, unsigned int len)
 {
 	int i;
 	chipaddr dst = flash->virtual_memory + start;
@@ -157,7 +157,7 @@ int write_82802ab(struct flashchip *flash, uint8_t *src, unsigned int start, uns
 	return 0;
 }
 
-int unlock_28f004s5(struct flashchip *flash)
+int unlock_28f004s5(struct flashctx *flash)
 {
 	chipaddr bios = flash->virtual_memory;
 	uint8_t mcfg, bcfg, need_unlock = 0, can_unlock = 0;
@@ -209,7 +209,7 @@ int unlock_28f004s5(struct flashchip *flash)
 	return 0;
 }
 
-int unlock_lh28f008bjt(struct flashchip *flash)
+int unlock_lh28f008bjt(struct flashctx *flash)
 {
 	chipaddr bios = flash->virtual_memory;
 	uint8_t mcfg, bcfg;

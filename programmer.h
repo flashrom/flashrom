@@ -24,7 +24,7 @@
 #ifndef __PROGRAMMER_H__
 #define __PROGRAMMER_H__ 1
 
-#include "flash.h"	/* for chipaddr and flashchip */
+#include "flash.h"	/* for chipaddr and flashctx */
 
 enum programmer {
 #if CONFIG_INTERNAL == 1
@@ -513,7 +513,7 @@ struct decode_sizes {
 extern struct decode_sizes max_rom_decode;
 extern int programmer_may_write;
 extern unsigned long flashbase;
-void check_chip_supported(const struct flashchip *flash);
+void check_chip_supported(const struct flashctx *flash);
 int check_max_decode(enum chipbustype buses, uint32_t size);
 char *extract_programmer_param(const char *param_name);
 
@@ -570,16 +570,16 @@ struct spi_programmer {
 	int (*multicommand)(struct spi_command *cmds);
 
 	/* Optimized functions for this programmer */
-	int (*read)(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len);
-	int (*write_256)(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len);
+	int (*read)(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
+	int (*write_256)(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 };
 
 extern const struct spi_programmer *spi_programmer;
 int default_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 			     const unsigned char *writearr, unsigned char *readarr);
 int default_spi_send_multicommand(struct spi_command *cmds);
-int default_spi_read(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len);
-int default_spi_write_256(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len);
+int default_spi_read(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
+int default_spi_write_256(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 void register_spi_programmer(const struct spi_programmer *programmer);
 
 /* ichspi.c */
@@ -624,10 +624,10 @@ struct opaque_programmer {
 	int max_data_read;
 	int max_data_write;
 	/* Specific functions for this programmer */
-	int (*probe) (struct flashchip *flash);
-	int (*read) (struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len);
-	int (*write) (struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len);
-	int (*erase) (struct flashchip *flash, unsigned int blockaddr, unsigned int blocklen);
+	int (*probe) (struct flashctx *flash);
+	int (*read) (struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
+	int (*write) (struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
+	int (*erase) (struct flashctx *flash, unsigned int blockaddr, unsigned int blocklen);
 };
 extern const struct opaque_programmer *opaque_programmer;
 void register_opaque_programmer(const struct opaque_programmer *pgm);

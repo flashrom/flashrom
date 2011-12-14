@@ -205,7 +205,7 @@ static int dediprog_set_spi_speed(uint16_t speed)
  * @len		length
  * @return	0 on success, 1 on failure
  */
-static int dediprog_spi_bulk_read(struct flashchip *flash, uint8_t *buf,
+static int dediprog_spi_bulk_read(struct flashctx *flash, uint8_t *buf,
 				  unsigned int start, unsigned int len)
 {
 	int ret;
@@ -253,7 +253,7 @@ static int dediprog_spi_bulk_read(struct flashchip *flash, uint8_t *buf,
 	return 0;
 }
 
-static int dediprog_spi_read(struct flashchip *flash, uint8_t *buf,
+static int dediprog_spi_read(struct flashctx *flash, uint8_t *buf,
 			     unsigned int start, unsigned int len)
 {
 	int ret;
@@ -299,7 +299,7 @@ static int dediprog_spi_read(struct flashchip *flash, uint8_t *buf,
 	return 0;
 }
 
-static int dediprog_spi_write_256(struct flashchip *flash, uint8_t *buf,
+static int dediprog_spi_write_256(struct flashctx *flash, uint8_t *buf,
 				  unsigned int start, unsigned int len)
 {
 	int ret;

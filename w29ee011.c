@@ -24,7 +24,7 @@
 /* According to the Winbond W29EE011, W29EE012, W29C010M, W29C011A
  * datasheets this is the only valid probe function for those chips.
  */
-int probe_w29ee011(struct flashchip *flash)
+int probe_w29ee011(struct flashctx *flash)
 {
 	chipaddr bios = flash->virtual_memory;
 	uint8_t id1, id2;

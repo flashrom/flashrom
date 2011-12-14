@@ -23,7 +23,7 @@
 #include "flash.h"
 #include "chipdrivers.h"
 
-static int write_lockbits_block_49lfxxxc(struct flashchip *flash, unsigned long address, unsigned char bits)
+static int write_lockbits_block_49lfxxxc(struct flashctx *flash, unsigned long address, unsigned char bits)
 {
 	unsigned long lock = flash->virtual_registers + address + 2;
 	msg_cdbg("lockbits at address=0x%08lx is 0x%01x\n", lock, chip_readb(lock));
@@ -32,7 +32,7 @@ static int write_lockbits_block_49lfxxxc(struct flashchip *flash, unsigned long 
 	return 0;
 }
 
-static int write_lockbits_49lfxxxc(struct flashchip *flash, unsigned char bits)
+static int write_lockbits_49lfxxxc(struct flashctx *flash, unsigned char bits)
 {
 	chipaddr registers = flash->virtual_registers;
 	unsigned int i, left = flash->total_size * 1024;
@@ -54,12 +54,12 @@ static int write_lockbits_49lfxxxc(struct flashchip *flash, unsigned char bits)
 	return 0;
 }
 
-int unlock_49lfxxxc(struct flashchip *flash)
+int unlock_49lfxxxc(struct flashctx *flash)
 {
 	return write_lockbits_49lfxxxc(flash, 0);
 }
 
-int erase_sector_49lfxxxc(struct flashchip *flash, unsigned int address, unsigned int sector_size)
+int erase_sector_49lfxxxc(struct flashctx *flash, unsigned int address, unsigned int sector_size)
 {
 	uint8_t status;
 	chipaddr bios = flash->virtual_memory;

@@ -1175,7 +1175,7 @@ static int ich_hwseq_wait_for_cycle_complete(unsigned int timeout,
 	return 0;
 }
 
-int ich_hwseq_probe(struct flashchip *flash)
+int ich_hwseq_probe(struct flashctx *flash)
 {
 	uint32_t total_size, boundary;
 	uint32_t erase_size_low, size_low, erase_size_high, size_high;
@@ -1228,7 +1228,7 @@ int ich_hwseq_probe(struct flashchip *flash)
 	return 1;
 }
 
-int ich_hwseq_block_erase(struct flashchip *flash,
+int ich_hwseq_block_erase(struct flashctx *flash,
 			  unsigned int addr,
 			  unsigned int len)
 {
@@ -1278,7 +1278,7 @@ int ich_hwseq_block_erase(struct flashchip *flash,
 	return 0;
 }
 
-int ich_hwseq_read(struct flashchip *flash, uint8_t *buf, unsigned int addr,
+int ich_hwseq_read(struct flashctx *flash, uint8_t *buf, unsigned int addr,
 		   unsigned int len)
 {
 	uint16_t hsfc;
@@ -1316,7 +1316,7 @@ int ich_hwseq_read(struct flashchip *flash, uint8_t *buf, unsigned int addr,
 	return 0;
 }
 
-int ich_hwseq_write(struct flashchip *flash, uint8_t *buf, unsigned int addr,
+int ich_hwseq_write(struct flashctx *flash, uint8_t *buf, unsigned int addr,
 		    unsigned int len)
 {
 	uint16_t hsfc;

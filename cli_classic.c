@@ -169,8 +169,8 @@ int main(int argc, char *argv[])
 	unsigned long size;
 	/* Probe for up to three flash chips. */
 	const struct flashchip *flash;
-	struct flashchip flashes[3];
-	struct flashchip *fill_flash;
+	struct flashctx flashes[3];
+	struct flashctx *fill_flash;
 	const char *name;
 	int namelen, opt, i;
 	int startchip = 0, chipcount = 0, option_index = 0, force = 0;
@@ -409,6 +409,7 @@ int main(int argc, char *argv[])
 	}
 #endif
 
+	/* Does a chip with the requested name exist in the flashchips array? */
 	if (chip_to_probe) {
 		for (flash = flashchips; flash && flash->name; flash++)
 			if (!strcmp(flash->name, chip_to_probe))
