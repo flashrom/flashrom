@@ -36,9 +36,9 @@ static int fd = -1;
 static int linux_spi_shutdown(void *data);
 static int linux_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 			const unsigned char *txbuf, unsigned char *rxbuf);
-static int linux_spi_read(struct flashchip *flash, uint8_t *buf,
+static int linux_spi_read(struct flashctx *flash, uint8_t *buf,
 			  unsigned int start, unsigned int len);
-static int linux_spi_write_256(struct flashchip *flash, uint8_t *buf,
+static int linux_spi_write_256(struct flashctx *flash, uint8_t *buf,
 			       unsigned int start, unsigned int len);
 
 static const struct spi_programmer spi_programmer_linux = {
@@ -131,13 +131,13 @@ static int linux_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 	return 0;
 }
 
-static int linux_spi_read(struct flashchip *flash, uint8_t *buf,
+static int linux_spi_read(struct flashctx *flash, uint8_t *buf,
 			  unsigned int start, unsigned int len)
 {
 	return spi_read_chunked(flash, buf, start, len, (unsigned)getpagesize());
 }
 
-static int linux_spi_write_256(struct flashchip *flash, uint8_t *buf,
+static int linux_spi_write_256(struct flashctx *flash, uint8_t *buf,
 			       unsigned int start, unsigned int len)
 {
 	return spi_write_chunked(flash, buf, start, len, ((unsigned)getpagesize()) - 4);

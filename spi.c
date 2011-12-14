@@ -97,7 +97,7 @@ int default_spi_send_multicommand(struct spi_command *cmds)
 	return result;
 }
 
-int default_spi_read(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len)
+int default_spi_read(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len)
 {
 	unsigned int max_data = spi_programmer->max_data_read;
 	if (max_data == MAX_DATA_UNSPECIFIED) {
@@ -109,7 +109,7 @@ int default_spi_read(struct flashchip *flash, uint8_t *buf, unsigned int start, 
 	return spi_read_chunked(flash, buf, start, len, max_data);
 }
 
-int default_spi_write_256(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len)
+int default_spi_write_256(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len)
 {
 	unsigned int max_data = spi_programmer->max_data_write;
 	if (max_data == MAX_DATA_UNSPECIFIED) {
@@ -121,7 +121,7 @@ int default_spi_write_256(struct flashchip *flash, uint8_t *buf, unsigned int st
 	return spi_write_chunked(flash, buf, start, len, max_data);
 }
 
-int spi_chip_read(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len)
+int spi_chip_read(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len)
 {
 	unsigned int addrbase = 0;
 	if (!spi_programmer->read) {
@@ -160,7 +160,7 @@ int spi_chip_read(struct flashchip *flash, uint8_t *buf, unsigned int start, uns
  * .write_256 = spi_chip_write_1
  */
 /* real chunksize is up to 256, logical chunksize is 256 */
-int spi_chip_write_256(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len)
+int spi_chip_write_256(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len)
 {
 	if (!spi_programmer->write_256) {
 		msg_perr("%s called, but SPI page write is unsupported on this "

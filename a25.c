@@ -29,7 +29,7 @@ static void spi_prettyprint_status_register_amic_a25_srwd(uint8_t status)
 		     "(SRWD) is %sset\n", (status & (1 << 7)) ? "" : "not ");
 }
 
-int spi_prettyprint_status_register_amic_a25l05p(struct flashchip *flash)
+int spi_prettyprint_status_register_amic_a25l05p(struct flashctx *flash)
 {
 	uint8_t status;
 
@@ -45,7 +45,7 @@ int spi_prettyprint_status_register_amic_a25l05p(struct flashchip *flash)
 	return 0;
 }
 
-int spi_prettyprint_status_register_amic_a25l40p(struct flashchip *flash)
+int spi_prettyprint_status_register_amic_a25l40p(struct flashctx *flash)
 {
 	uint8_t status;
 
@@ -60,7 +60,7 @@ int spi_prettyprint_status_register_amic_a25l40p(struct flashchip *flash)
 	return 0;
 }
 
-int spi_prettyprint_status_register_amic_a25l032(struct flashchip *flash)
+int spi_prettyprint_status_register_amic_a25l032(struct flashctx *flash)
 {
 	uint8_t status;
 
@@ -78,7 +78,7 @@ int spi_prettyprint_status_register_amic_a25l032(struct flashchip *flash)
 	return 0;
 }
 
-int spi_prettyprint_status_register_amic_a25lq032(struct flashchip *flash)
+int spi_prettyprint_status_register_amic_a25lq032(struct flashctx *flash)
 {
 	uint8_t status;
 

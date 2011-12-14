@@ -240,7 +240,7 @@ int find_next_included_romentry(unsigned int start)
 	return best_entry;
 }
 
-int handle_romentries(struct flashchip *flash, uint8_t *oldcontents, uint8_t *newcontents)
+int handle_romentries(struct flashctx *flash, uint8_t *oldcontents, uint8_t *newcontents)
 {
 	unsigned int start = 0;
 	int entry;

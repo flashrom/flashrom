@@ -28,7 +28,7 @@
    functions. */
 
 /* chunksize is 1 */
-int write_m29f400bt(struct flashchip *flash, uint8_t *src, unsigned int start, unsigned int len)
+int write_m29f400bt(struct flashctx *flash, uint8_t *src, unsigned int start, unsigned int len)
 {
 	int i;
 	chipaddr bios = flash->virtual_memory;
@@ -55,7 +55,7 @@ int write_m29f400bt(struct flashchip *flash, uint8_t *src, unsigned int start, u
 	return 0;
 }
 
-int probe_m29f400bt(struct flashchip *flash)
+int probe_m29f400bt(struct flashctx *flash)
 {
 	chipaddr bios = flash->virtual_memory;
 	uint8_t id1, id2;
@@ -86,7 +86,7 @@ int probe_m29f400bt(struct flashchip *flash)
 	return 0;
 }
 
-int erase_m29f400bt(struct flashchip *flash)
+int erase_m29f400bt(struct flashctx *flash)
 {
 	chipaddr bios = flash->virtual_memory;
 
@@ -105,7 +105,7 @@ int erase_m29f400bt(struct flashchip *flash)
 	return 0;
 }
 
-int block_erase_m29f400bt(struct flashchip *flash, unsigned int start, unsigned int len)
+int block_erase_m29f400bt(struct flashctx *flash, unsigned int start, unsigned int len)
 {
 	chipaddr bios = flash->virtual_memory;
 	chipaddr dst = bios + start;
@@ -125,7 +125,7 @@ int block_erase_m29f400bt(struct flashchip *flash, unsigned int start, unsigned 
 	return 0;
 }
 
-int block_erase_chip_m29f400bt(struct flashchip *flash, unsigned int address, unsigned int blocklen)
+int block_erase_chip_m29f400bt(struct flashctx *flash, unsigned int address, unsigned int blocklen)
 {
 	if ((address != 0) || (blocklen != flash->total_size * 1024)) {
 		msg_cerr("%s called with incorrect arguments\n",

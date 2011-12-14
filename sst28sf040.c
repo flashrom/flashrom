@@ -30,7 +30,7 @@
 #define RESET			0xFF
 #define READ_ID			0x90
 
-int protect_28sf040(struct flashchip *flash)
+int protect_28sf040(struct flashctx *flash)
 {
 	chipaddr bios = flash->virtual_memory;
 
@@ -45,7 +45,7 @@ int protect_28sf040(struct flashchip *flash)
 	return 0;
 }
 
-int unprotect_28sf040(struct flashchip *flash)
+int unprotect_28sf040(struct flashctx *flash)
 {
 	chipaddr bios = flash->virtual_memory;
 
@@ -60,7 +60,7 @@ int unprotect_28sf040(struct flashchip *flash)
 	return 0;
 }
 
-int erase_sector_28sf040(struct flashchip *flash, unsigned int address, unsigned int sector_size)
+int erase_sector_28sf040(struct flashctx *flash, unsigned int address, unsigned int sector_size)
 {
 	chipaddr bios = flash->virtual_memory;
 
@@ -76,7 +76,7 @@ int erase_sector_28sf040(struct flashchip *flash, unsigned int address, unsigned
 }
 
 /* chunksize is 1 */
-int write_28sf040(struct flashchip *flash, uint8_t *src, unsigned int start, unsigned int len)
+int write_28sf040(struct flashctx *flash, uint8_t *src, unsigned int start, unsigned int len)
 {
 	int i;
 	chipaddr bios = flash->virtual_memory;
@@ -100,7 +100,7 @@ int write_28sf040(struct flashchip *flash, uint8_t *src, unsigned int start, uns
 	return 0;
 }
 
-static int erase_28sf040(struct flashchip *flash)
+static int erase_28sf040(struct flashctx *flash)
 {
 	chipaddr bios = flash->virtual_memory;
 
@@ -114,7 +114,7 @@ static int erase_28sf040(struct flashchip *flash)
 	return 0;
 }
 
-int erase_chip_28sf040(struct flashchip *flash, unsigned int addr, unsigned int blocklen)
+int erase_chip_28sf040(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
 {
 	if ((addr != 0) || (blocklen != flash->total_size * 1024)) {
 		msg_cerr("%s called with incorrect arguments\n",

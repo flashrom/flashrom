@@ -41,7 +41,7 @@ const struct opaque_programmer opaque_programmer_none = {
 
 const struct opaque_programmer *opaque_programmer = &opaque_programmer_none;
 
-int probe_opaque(struct flashchip *flash)
+int probe_opaque(struct flashctx *flash)
 {
 	if (!opaque_programmer->probe) {
 		msg_perr("%s called before register_opaque_programmer. "
@@ -53,7 +53,7 @@ int probe_opaque(struct flashchip *flash)
 	return opaque_programmer->probe(flash);
 }
 
-int read_opaque(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len)
+int read_opaque(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len)
 {
 	if (!opaque_programmer->read) {
 		msg_perr("%s called before register_opaque_programmer. "
@@ -64,7 +64,7 @@ int read_opaque(struct flashchip *flash, uint8_t *buf, unsigned int start, unsig
 	return opaque_programmer->read(flash, buf, start, len);
 }
 
-int write_opaque(struct flashchip *flash, uint8_t *buf, unsigned int start, unsigned int len)
+int write_opaque(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len)
 {
 	if (!opaque_programmer->write) {
 		msg_perr("%s called before register_opaque_programmer. "
@@ -75,7 +75,7 @@ int write_opaque(struct flashchip *flash, uint8_t *buf, unsigned int start, unsi
 	return opaque_programmer->write(flash, buf, start, len);
 }
 
-int erase_opaque(struct flashchip *flash, unsigned int blockaddr, unsigned int blocklen)
+int erase_opaque(struct flashctx *flash, unsigned int blockaddr, unsigned int blocklen)
 {
 	if (!opaque_programmer->erase) {
 		msg_perr("%s called before register_opaque_programmer. "

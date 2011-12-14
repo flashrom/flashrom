@@ -36,7 +36,7 @@
  * The ST M50FLW080B and STM50FLW080B chips have to be unlocked,
  * before you can erase them or write to them.
  */
-static int unlock_block_stm50flw0x0x(struct flashchip *flash, int offset)
+static int unlock_block_stm50flw0x0x(struct flashctx *flash, int offset)
 {
 	chipaddr wrprotect = flash->virtual_registers + 2;
 	static const uint8_t unlock_sector = 0x00;
@@ -79,7 +79,7 @@ static int unlock_block_stm50flw0x0x(struct flashchip *flash, int offset)
 	return 0;
 }
 
-int unlock_stm50flw0x0x(struct flashchip *flash)
+int unlock_stm50flw0x0x(struct flashctx *flash)
 {
 	int i;
 
@@ -94,7 +94,7 @@ int unlock_stm50flw0x0x(struct flashchip *flash)
 }
 
 /* This function is unused. */
-int erase_sector_stm50flw0x0x(struct flashchip *flash, unsigned int sector, unsigned int sectorsize)
+int erase_sector_stm50flw0x0x(struct flashctx *flash, unsigned int sector, unsigned int sectorsize)
 {
 	chipaddr bios = flash->virtual_memory + sector;
 

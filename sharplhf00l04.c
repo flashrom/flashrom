@@ -26,7 +26,7 @@
  * FIXME: This file is unused.
  */
 
-int erase_lhf00l04_block(struct flashchip *flash, unsigned int blockaddr, unsigned int blocklen)
+int erase_lhf00l04_block(struct flashctx *flash, unsigned int blockaddr, unsigned int blocklen)
 {
 	chipaddr bios = flash->virtual_memory + blockaddr;
 	chipaddr wrprotect = flash->virtual_registers + blockaddr + 2;

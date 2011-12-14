@@ -36,13 +36,13 @@ static void write_lockbits_49fl00x(chipaddr bios, unsigned int size,
 	}
 }
 
-int unlock_49fl00x(struct flashchip *flash)
+int unlock_49fl00x(struct flashctx *flash)
 {
 	write_lockbits_49fl00x(flash->virtual_registers, flash->total_size * 1024, 0, flash->page_size);
 	return 0;
 }
 
-int lock_49fl00x(struct flashchip *flash)
+int lock_49fl00x(struct flashctx *flash)
 {
 	write_lockbits_49fl00x(flash->virtual_registers, flash->total_size * 1024, 1, flash->page_size);
 	return 0;
