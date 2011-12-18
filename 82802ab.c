@@ -47,18 +47,18 @@ int probe_82802ab(struct flashctx *flash)
 	int shifted = (flash->feature_bits & FEATURE_ADDR_SHIFTED) != 0;
 
 	/* Reset to get a clean state */
-	chip_writeb(0xFF, bios);
+	chip_writeb(flash, 0xFF, bios);
 	programmer_delay(10);
 
 	/* Enter ID mode */
-	chip_writeb(0x90, bios);
+	chip_writeb(flash, 0x90, bios);
 	programmer_delay(10);
 
-	id1 = chip_readb(bios + (0x00 << shifted));
-	id2 = chip_readb(bios + (0x01 << shifted));
+	id1 = chip_readb(flash, bios + (0x00 << shifted));
+	id2 = chip_readb(flash, bios + (0x01 << shifted));
 
 	/* Leave ID mode */
-	chip_writeb(0xFF, bios);
+	chip_writeb(flash, 0xFF, bios);
 
 	programmer_delay(10);
 
@@ -71,8 +71,8 @@ int probe_82802ab(struct flashctx *flash)
 	 * Read the product ID location again. We should now see normal
 	 * flash contents.
 	 */
-	flashcontent1 = chip_readb(bios + (0x00 << shifted));
-	flashcontent2 = chip_readb(bios + (0x01 << shifted));
+	flashcontent1 = chip_readb(flash, bios + (0x00 << shifted));
+	flashcontent2 = chip_readb(flash, bios + (0x01 << shifted));
 
 	if (id1 == flashcontent1)
 		msg_cdbg(", id1 is normal flash content");
@@ -94,15 +94,15 @@ uint8_t wait_82802ab(struct flashctx *flash)
 	uint8_t status;
 	chipaddr bios = flash->virtual_memory;
 
-	chip_writeb(0x70, bios);
-	if ((chip_readb(bios) & 0x80) == 0) {	// it's busy
-		while ((chip_readb(bios) & 0x80) == 0) ;
+	chip_writeb(flash, 0x70, bios);
+	if ((chip_readb(flash, bios) & 0x80) == 0) {	// it's busy
+		while ((chip_readb(flash, bios) & 0x80) == 0) ;
 	}
 
-	status = chip_readb(bios);
+	status = chip_readb(flash, bios);
 
 	/* Reset to get a clean state */
-	chip_writeb(0xFF, bios);
+	chip_writeb(flash, 0xFF, bios);
 
 	return status;
 }
@@ -113,7 +113,7 @@ int unlock_82802ab(struct flashctx *flash)
 	//chipaddr wrprotect = flash->virtual_registers + page + 2;
 
 	for (i = 0; i < flash->total_size * 1024; i+= flash->page_size)
-		chip_writeb(0, flash->virtual_registers + i + 2);
+		chip_writeb(flash, 0, flash->virtual_registers + i + 2);
 
 	return 0;
 }
@@ -125,11 +125,11 @@ int erase_block_82802ab(struct flashctx *flash, unsigned int page,
 	uint8_t status;
 
 	// clear status register
-	chip_writeb(0x50, bios + page);
+	chip_writeb(flash, 0x50, bios + page);
 
 	// now start it
-	chip_writeb(0x20, bios + page);
-	chip_writeb(0xd0, bios + page);
+	chip_writeb(flash, 0x20, bios + page);
+	chip_writeb(flash, 0xd0, bios + page);
 	programmer_delay(10);
 
 	// now let's see what the register is
@@ -141,15 +141,16 @@ int erase_block_82802ab(struct flashctx *flash, unsigned int page,
 }
 
 /* chunksize is 1 */
-int write_82802ab(struct flashctx *flash, uint8_t *src, unsigned int start, unsigned int len)
+int write_82802ab(struct flashctx *flash, uint8_t *src, unsigned int start,
+		  unsigned int len)
 {
 	int i;
 	chipaddr dst = flash->virtual_memory + start;
 
 	for (i = 0; i < len; i++) {
 		/* transfer data from source to destination */
-		chip_writeb(0x40, dst);
-		chip_writeb(*src++, dst++);
+		chip_writeb(flash, 0x40, dst);
+		chip_writeb(flash, *src++, dst++);
 		wait_82802ab(flash);
 	}
 
@@ -164,13 +165,13 @@ int unlock_28f004s5(struct flashctx *flash)
 	int i;
 
 	/* Clear status register */
-	chip_writeb(0x50, bios);
+	chip_writeb(flash, 0x50, bios);
 
 	/* Read identifier codes */
-	chip_writeb(0x90, bios);
+	chip_writeb(flash, 0x90, bios);
 
 	/* Read master lock-bit */
-	mcfg = chip_readb(bios + 0x3);
+	mcfg = chip_readb(flash, bios + 0x3);
 	msg_cdbg("master lock is ");
 	if (mcfg) {
 		msg_cdbg("locked!\n");
@@ -181,7 +182,7 @@ int unlock_28f004s5(struct flashctx *flash)
 
 	/* Read block lock-bits */
 	for (i = 0; i < flash->total_size * 1024; i+= (64 * 1024)) {
-		bcfg = chip_readb(bios + i + 2); // read block lock config
+		bcfg = chip_readb(flash, bios + i + 2); // read block lock config
 		msg_cdbg("block lock at %06x is %slocked!\n", i, bcfg ? "" : "un");
 		if (bcfg) {
 			need_unlock = 1;
@@ -189,14 +190,14 @@ int unlock_28f004s5(struct flashctx *flash)
 	}
 
 	/* Reset chip */
-	chip_writeb(0xFF, bios);
+	chip_writeb(flash, 0xFF, bios);
 
 	/* Unlock: clear block lock-bits, if needed */
 	if (can_unlock && need_unlock) {
 		msg_cdbg("Unlock: ");
-		chip_writeb(0x60, bios);
-		chip_writeb(0xD0, bios);
-		chip_writeb(0xFF, bios);
+		chip_writeb(flash, 0x60, bios);
+		chip_writeb(flash, 0xD0, bios);
+		chip_writeb(flash, 0xFF, bios);
 		msg_cdbg("Done!\n");
 	}
 
@@ -220,10 +221,10 @@ int unlock_lh28f008bjt(struct flashctx *flash)
 	wait_82802ab(flash);
 
 	/* Read identifier codes */
-	chip_writeb(0x90, bios);
+	chip_writeb(flash, 0x90, bios);
 
 	/* Read master lock-bit */
-	mcfg = chip_readb(bios + 0x3);
+	mcfg = chip_readb(flash, bios + 0x3);
 	msg_cdbg("master lock is ");
 	if (mcfg) {
 		msg_cdbg("locked!\n");
@@ -235,7 +236,7 @@ int unlock_lh28f008bjt(struct flashctx *flash)
 	/* Read block lock-bits, 8 * 8 KB + 15 * 64 KB */
 	for (i = 0; i < flash->total_size * 1024;
 	     i += (i >= (64 * 1024) ? 64 * 1024 : 8 * 1024)) {
-		bcfg = chip_readb(bios + i + 2); /* read block lock config */
+		bcfg = chip_readb(flash, bios + i + 2); /* read block lock config */
 		msg_cdbg("block lock at %06x is %slocked!\n", i,
 			 bcfg ? "" : "un");
 		if (bcfg)
@@ -243,14 +244,14 @@ int unlock_lh28f008bjt(struct flashctx *flash)
 	}
 
 	/* Reset chip */
-	chip_writeb(0xFF, bios);
+	chip_writeb(flash, 0xFF, bios);
 
 	/* Unlock: clear block lock-bits, if needed */
 	if (can_unlock && need_unlock) {
 		msg_cdbg("Unlock: ");
-		chip_writeb(0x60, bios);
-		chip_writeb(0xD0, bios);
-		chip_writeb(0xFF, bios);
+		chip_writeb(flash, 0x60, bios);
+		chip_writeb(flash, 0xD0, bios);
+		chip_writeb(flash, 0xFF, bios);
 		wait_82802ab(flash);
 		msg_cdbg("Done!\n");
 	}

@@ -60,10 +60,28 @@ static unsigned int emu_jedec_ce_c7_size = 0;
 
 static unsigned int spi_write_256_chunksize = 256;
 
-static int dummy_spi_send_command(unsigned int writecnt, unsigned int readcnt,
-		      const unsigned char *writearr, unsigned char *readarr);
+static int dummy_spi_send_command(struct flashctx *flash, unsigned int writecnt,
+				  unsigned int readcnt,
+				  const unsigned char *writearr,
+				  unsigned char *readarr);
 static int dummy_spi_write_256(struct flashctx *flash, uint8_t *buf,
 			       unsigned int start, unsigned int len);
+static void dummy_chip_writeb(const struct flashctx *flash, uint8_t val,
+			      chipaddr addr);
+static void dummy_chip_writew(const struct flashctx *flash, uint16_t val,
+			      chipaddr addr);
+static void dummy_chip_writel(const struct flashctx *flash, uint32_t val,
+			      chipaddr addr);
+static void dummy_chip_writen(const struct flashctx *flash, uint8_t *buf,
+			      chipaddr addr, size_t len);
+static uint8_t dummy_chip_readb(const struct flashctx *flash,
+				const chipaddr addr);
+static uint16_t dummy_chip_readw(const struct flashctx *flash,
+				 const chipaddr addr);
+static uint32_t dummy_chip_readl(const struct flashctx *flash,
+				 const chipaddr addr);
+static void dummy_chip_readn(const struct flashctx *flash, uint8_t *buf,
+			     const chipaddr addr, size_t len);
 
 static const struct spi_programmer spi_programmer_dummyflasher = {
 	.type		= SPI_CONTROLLER_DUMMY,
@@ -263,22 +281,26 @@ void dummy_unmap(void *virt_addr, size_t len)
 		  __func__, (unsigned long)len, virt_addr);
 }
 
-void dummy_chip_writeb(uint8_t val, chipaddr addr)
+static void dummy_chip_writeb(const struct flashctx *flash, uint8_t val,
+			      chipaddr addr)
 {
 	msg_pspew("%s: addr=0x%lx, val=0x%02x\n", __func__, addr, val);
 }
 
-void dummy_chip_writew(uint16_t val, chipaddr addr)
+static void dummy_chip_writew(const struct flashctx *flash, uint16_t val,
+			      chipaddr addr)
 {
 	msg_pspew("%s: addr=0x%lx, val=0x%04x\n", __func__, addr, val);
 }
 
-void dummy_chip_writel(uint32_t val, chipaddr addr)
+static void dummy_chip_writel(const struct flashctx *flash, uint32_t val,
+			      chipaddr addr)
 {
 	msg_pspew("%s: addr=0x%lx, val=0x%08x\n", __func__, addr, val);
 }
 
-void dummy_chip_writen(uint8_t *buf, chipaddr addr, size_t len)
+static void dummy_chip_writen(const struct flashctx *flash, uint8_t *buf,
+			      chipaddr addr, size_t len)
 {
 	size_t i;
 	msg_pspew("%s: addr=0x%lx, len=0x%08lx, writing data (hex):",
@@ -290,25 +312,29 @@ void dummy_chip_writen(uint8_t *buf, chipaddr addr, size_t len)
 	}
 }
 
-uint8_t dummy_chip_readb(const chipaddr addr)
+static uint8_t dummy_chip_readb(const struct flashctx *flash,
+				const chipaddr addr)
 {
 	msg_pspew("%s:  addr=0x%lx, returning 0xff\n", __func__, addr);
 	return 0xff;
 }
 
-uint16_t dummy_chip_readw(const chipaddr addr)
+static uint16_t dummy_chip_readw(const struct flashctx *flash,
+				 const chipaddr addr)
 {
 	msg_pspew("%s:  addr=0x%lx, returning 0xffff\n", __func__, addr);
 	return 0xffff;
 }
 
-uint32_t dummy_chip_readl(const chipaddr addr)
+static uint32_t dummy_chip_readl(const struct flashctx *flash,
+				 const chipaddr addr)
 {
 	msg_pspew("%s:  addr=0x%lx, returning 0xffffffff\n", __func__, addr);
 	return 0xffffffff;
 }
 
-void dummy_chip_readn(uint8_t *buf, const chipaddr addr, size_t len)
+static void dummy_chip_readn(const struct flashctx *flash, uint8_t *buf,
+			     const chipaddr addr, size_t len)
 {
 	msg_pspew("%s:  addr=0x%lx, len=0x%lx, returning array of 0xff\n",
 		  __func__, addr, (unsigned long)len);
@@ -317,8 +343,10 @@ void dummy_chip_readn(uint8_t *buf, const chipaddr addr, size_t len)
 }
 
 #if EMULATE_SPI_CHIP
-static int emulate_spi_chip_response(unsigned int writecnt, unsigned int readcnt,
-		      const unsigned char *writearr, unsigned char *readarr)
+static int emulate_spi_chip_response(unsigned int writecnt,
+				     unsigned int readcnt,
+				     const unsigned char *writearr,
+				     unsigned char *readarr)
 {
 	unsigned int offs;
 	static int unsigned aai_offs;
@@ -513,8 +541,10 @@ static int emulate_spi_chip_response(unsigned int writecnt, unsigned int readcnt
 }
 #endif
 
-static int dummy_spi_send_command(unsigned int writecnt, unsigned int readcnt,
-		      const unsigned char *writearr, unsigned char *readarr)
+static int dummy_spi_send_command(struct flashctx *flash, unsigned int writecnt,
+				  unsigned int readcnt,
+				  const unsigned char *writearr,
+				  unsigned char *readarr)
 {
 	int i;
 

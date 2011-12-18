@@ -29,13 +29,13 @@
 #include "programmer.h"
 #include "spi.h"
 
-static int spi_rdid(unsigned char *readarr, int bytes)
+static int spi_rdid(struct flashctx *flash, unsigned char *readarr, int bytes)
 {
 	static const unsigned char cmd[JEDEC_RDID_OUTSIZE] = { JEDEC_RDID };
 	int ret;
 	int i;
 
-	ret = spi_send_command(sizeof(cmd), bytes, cmd, readarr);
+	ret = spi_send_command(flash, sizeof(cmd), bytes, cmd, readarr);
 	if (ret)
 		return ret;
 	msg_cspew("RDID returned");
@@ -45,20 +45,22 @@ static int spi_rdid(unsigned char *readarr, int bytes)
 	return 0;
 }
 
-static int spi_rems(unsigned char *readarr)
+static int spi_rems(struct flashctx *flash, unsigned char *readarr)
 {
 	unsigned char cmd[JEDEC_REMS_OUTSIZE] = { JEDEC_REMS, 0, 0, 0 };
 	uint32_t readaddr;
 	int ret;
 
-	ret = spi_send_command(sizeof(cmd), JEDEC_REMS_INSIZE, cmd, readarr);
+	ret = spi_send_command(flash, sizeof(cmd), JEDEC_REMS_INSIZE, cmd,
+			       readarr);
 	if (ret == SPI_INVALID_ADDRESS) {
 		/* Find the lowest even address allowed for reads. */
-		readaddr = (spi_get_valid_read_addr() + 1) & ~1;
+		readaddr = (spi_get_valid_read_addr(flash) + 1) & ~1;
 		cmd[1] = (readaddr >> 16) & 0xff,
 		cmd[2] = (readaddr >> 8) & 0xff,
 		cmd[3] = (readaddr >> 0) & 0xff,
-		ret = spi_send_command(sizeof(cmd), JEDEC_REMS_INSIZE, cmd, readarr);
+		ret = spi_send_command(flash, sizeof(cmd), JEDEC_REMS_INSIZE,
+				       cmd, readarr);
 	}
 	if (ret)
 		return ret;
@@ -66,21 +68,21 @@ static int spi_rems(unsigned char *readarr)
 	return 0;
 }
 
-static int spi_res(unsigned char *readarr, int bytes)
+static int spi_res(struct flashctx *flash, unsigned char *readarr, int bytes)
 {
 	unsigned char cmd[JEDEC_RES_OUTSIZE] = { JEDEC_RES, 0, 0, 0 };
 	uint32_t readaddr;
 	int ret;
 	int i;
 
-	ret = spi_send_command(sizeof(cmd), bytes, cmd, readarr);
+	ret = spi_send_command(flash, sizeof(cmd), bytes, cmd, readarr);
 	if (ret == SPI_INVALID_ADDRESS) {
 		/* Find the lowest even address allowed for reads. */
-		readaddr = (spi_get_valid_read_addr() + 1) & ~1;
+		readaddr = (spi_get_valid_read_addr(flash) + 1) & ~1;
 		cmd[1] = (readaddr >> 16) & 0xff,
 		cmd[2] = (readaddr >> 8) & 0xff,
 		cmd[3] = (readaddr >> 0) & 0xff,
-		ret = spi_send_command(sizeof(cmd), bytes, cmd, readarr);
+		ret = spi_send_command(flash, sizeof(cmd), bytes, cmd, readarr);
 	}
 	if (ret)
 		return ret;
@@ -91,13 +93,13 @@ static int spi_res(unsigned char *readarr, int bytes)
 	return 0;
 }
 
-int spi_write_enable(void)
+int spi_write_enable(struct flashctx *flash)
 {
 	static const unsigned char cmd[JEDEC_WREN_OUTSIZE] = { JEDEC_WREN };
 	int result;
 
 	/* Send WREN (Write Enable) */
-	result = spi_send_command(sizeof(cmd), 0, cmd, NULL);
+	result = spi_send_command(flash, sizeof(cmd), 0, cmd, NULL);
 
 	if (result)
 		msg_cerr("%s failed\n", __func__);
@@ -105,12 +107,12 @@ int spi_write_enable(void)
 	return result;
 }
 
-int spi_write_disable(void)
+int spi_write_disable(struct flashctx *flash)
 {
 	static const unsigned char cmd[JEDEC_WRDI_OUTSIZE] = { JEDEC_WRDI };
 
 	/* Send WRDI (Write Disable) */
-	return spi_send_command(sizeof(cmd), 0, cmd, NULL);
+	return spi_send_command(flash, sizeof(cmd), 0, cmd, NULL);
 }
 
 static int probe_spi_rdid_generic(struct flashctx *flash, int bytes)
@@ -119,7 +121,7 @@ static int probe_spi_rdid_generic(struct flashctx *flash, int bytes)
 	uint32_t id1;
 	uint32_t id2;
 
-	if (spi_rdid(readarr, bytes)) {
+	if (spi_rdid(flash, readarr, bytes)) {
 		return 0;
 	}
 
@@ -199,7 +201,7 @@ int probe_spi_rems(struct flashctx *flash)
 	unsigned char readarr[JEDEC_REMS_INSIZE];
 	uint32_t id1, id2;
 
-	if (spi_rems(readarr)) {
+	if (spi_rems(flash, readarr)) {
 		return 0;
 	}
 
@@ -242,7 +244,7 @@ int probe_spi_res1(struct flashctx *flash)
 	/* Check if RDID is usable and does not return 0xff 0xff 0xff or
 	 * 0x00 0x00 0x00. In that case, RES is pointless.
 	 */
-	if (!spi_rdid(readarr, 3) && memcmp(readarr, allff, 3) &&
+	if (!spi_rdid(flash, readarr, 3) && memcmp(readarr, allff, 3) &&
 	    memcmp(readarr, all00, 3)) {
 		msg_cdbg("Ignoring RES in favour of RDID.\n");
 		return 0;
@@ -250,13 +252,14 @@ int probe_spi_res1(struct flashctx *flash)
 	/* Check if REMS is usable and does not return 0xff 0xff or
 	 * 0x00 0x00. In that case, RES is pointless.
 	 */
-	if (!spi_rems(readarr) && memcmp(readarr, allff, JEDEC_REMS_INSIZE) &&
+	if (!spi_rems(flash, readarr) &&
+	    memcmp(readarr, allff, JEDEC_REMS_INSIZE) &&
 	    memcmp(readarr, all00, JEDEC_REMS_INSIZE)) {
 		msg_cdbg("Ignoring RES in favour of REMS.\n");
 		return 0;
 	}
 
-	if (spi_res(readarr, 1)) {
+	if (spi_res(flash, readarr, 1)) {
 		return 0;
 	}
 
@@ -279,7 +282,7 @@ int probe_spi_res2(struct flashctx *flash)
 	unsigned char readarr[2];
 	uint32_t id1, id2;
 
-	if (spi_res(readarr, 2)) {
+	if (spi_res(flash, readarr, 2)) {
 		return 0;
 	}
 
@@ -298,7 +301,7 @@ int probe_spi_res2(struct flashctx *flash)
 	return 1;
 }
 
-uint8_t spi_read_status_register(void)
+uint8_t spi_read_status_register(struct flashctx *flash)
 {
 	static const unsigned char cmd[JEDEC_RDSR_OUTSIZE] = { JEDEC_RDSR };
 	/* FIXME: No workarounds for driver/hardware bugs in generic code. */
@@ -306,7 +309,8 @@ uint8_t spi_read_status_register(void)
 	int ret;
 
 	/* Read Status Register */
-	ret = spi_send_command(sizeof(cmd), sizeof(readarr), cmd, readarr);
+	ret = spi_send_command(flash, sizeof(cmd), sizeof(readarr), cmd,
+			       readarr);
 	if (ret)
 		msg_cerr("RDSR failed!\n");
 
@@ -414,7 +418,7 @@ int spi_prettyprint_status_register(struct flashctx *flash)
 {
 	uint8_t status;
 
-	status = spi_read_status_register();
+	status = spi_read_status_register(flash);
 	msg_cdbg("Chip status register is %02x\n", status);
 	switch (flash->manufacture_id) {
 	case ST_ID:
@@ -465,7 +469,7 @@ int spi_chip_erase_60(struct flashctx *flash)
 		.readarr	= NULL,
 	}};
 	
-	result = spi_send_multicommand(cmds);
+	result = spi_send_multicommand(flash, cmds);
 	if (result) {
 		msg_cerr("%s failed during command execution\n",
 			__func__);
@@ -475,7 +479,7 @@ int spi_chip_erase_60(struct flashctx *flash)
 	 * This usually takes 1-85 s, so wait in 1 s steps.
 	 */
 	/* FIXME: We assume spi_read_status_register will never fail. */
-	while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
+	while (spi_read_status_register(flash) & JEDEC_RDSR_BIT_WIP)
 		programmer_delay(1000 * 1000);
 	/* FIXME: Check the status register for errors. */
 	return 0;
@@ -502,7 +506,7 @@ int spi_chip_erase_c7(struct flashctx *flash)
 		.readarr	= NULL,
 	}};
 
-	result = spi_send_multicommand(cmds);
+	result = spi_send_multicommand(flash, cmds);
 	if (result) {
 		msg_cerr("%s failed during command execution\n", __func__);
 		return result;
@@ -511,13 +515,14 @@ int spi_chip_erase_c7(struct flashctx *flash)
 	 * This usually takes 1-85 s, so wait in 1 s steps.
 	 */
 	/* FIXME: We assume spi_read_status_register will never fail. */
-	while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
+	while (spi_read_status_register(flash) & JEDEC_RDSR_BIT_WIP)
 		programmer_delay(1000 * 1000);
 	/* FIXME: Check the status register for errors. */
 	return 0;
 }
 
-int spi_block_erase_52(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
+int spi_block_erase_52(struct flashctx *flash, unsigned int addr,
+		       unsigned int blocklen)
 {
 	int result;
 	struct spi_command cmds[] = {
@@ -543,7 +548,7 @@ int spi_block_erase_52(struct flashctx *flash, unsigned int addr, unsigned int b
 		.readarr	= NULL,
 	}};
 
-	result = spi_send_multicommand(cmds);
+	result = spi_send_multicommand(flash, cmds);
 	if (result) {
 		msg_cerr("%s failed during command execution at address 0x%x\n",
 			__func__, addr);
@@ -552,7 +557,7 @@ int spi_block_erase_52(struct flashctx *flash, unsigned int addr, unsigned int b
 	/* Wait until the Write-In-Progress bit is cleared.
 	 * This usually takes 100-4000 ms, so wait in 100 ms steps.
 	 */
-	while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
+	while (spi_read_status_register(flash) & JEDEC_RDSR_BIT_WIP)
 		programmer_delay(100 * 1000);
 	/* FIXME: Check the status register for errors. */
 	return 0;
@@ -563,7 +568,8 @@ int spi_block_erase_52(struct flashctx *flash, unsigned int addr, unsigned int b
  * 32k for SST
  * 4-32k non-uniform for EON
  */
-int spi_block_erase_d8(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
+int spi_block_erase_d8(struct flashctx *flash, unsigned int addr,
+		       unsigned int blocklen)
 {
 	int result;
 	struct spi_command cmds[] = {
@@ -589,7 +595,7 @@ int spi_block_erase_d8(struct flashctx *flash, unsigned int addr, unsigned int b
 		.readarr	= NULL,
 	}};
 
-	result = spi_send_multicommand(cmds);
+	result = spi_send_multicommand(flash, cmds);
 	if (result) {
 		msg_cerr("%s failed during command execution at address 0x%x\n",
 			__func__, addr);
@@ -598,7 +604,7 @@ int spi_block_erase_d8(struct flashctx *flash, unsigned int addr, unsigned int b
 	/* Wait until the Write-In-Progress bit is cleared.
 	 * This usually takes 100-4000 ms, so wait in 100 ms steps.
 	 */
-	while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
+	while (spi_read_status_register(flash) & JEDEC_RDSR_BIT_WIP)
 		programmer_delay(100 * 1000);
 	/* FIXME: Check the status register for errors. */
 	return 0;
@@ -607,7 +613,8 @@ int spi_block_erase_d8(struct flashctx *flash, unsigned int addr, unsigned int b
 /* Block size is usually
  * 4k for PMC
  */
-int spi_block_erase_d7(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
+int spi_block_erase_d7(struct flashctx *flash, unsigned int addr,
+		       unsigned int blocklen)
 {
 	int result;
 	struct spi_command cmds[] = {
@@ -633,7 +640,7 @@ int spi_block_erase_d7(struct flashctx *flash, unsigned int addr, unsigned int b
 		.readarr	= NULL,
 	}};
 
-	result = spi_send_multicommand(cmds);
+	result = spi_send_multicommand(flash, cmds);
 	if (result) {
 		msg_cerr("%s failed during command execution at address 0x%x\n",
 			__func__, addr);
@@ -642,14 +649,15 @@ int spi_block_erase_d7(struct flashctx *flash, unsigned int addr, unsigned int b
 	/* Wait until the Write-In-Progress bit is cleared.
 	 * This usually takes 100-4000 ms, so wait in 100 ms steps.
 	 */
-	while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
+	while (spi_read_status_register(flash) & JEDEC_RDSR_BIT_WIP)
 		programmer_delay(100 * 1000);
 	/* FIXME: Check the status register for errors. */
 	return 0;
 }
 
 /* Sector size is usually 4k, though Macronix eliteflash has 64k */
-int spi_block_erase_20(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
+int spi_block_erase_20(struct flashctx *flash, unsigned int addr,
+		       unsigned int blocklen)
 {
 	int result;
 	struct spi_command cmds[] = {
@@ -675,7 +683,7 @@ int spi_block_erase_20(struct flashctx *flash, unsigned int addr, unsigned int b
 		.readarr	= NULL,
 	}};
 
-	result = spi_send_multicommand(cmds);
+	result = spi_send_multicommand(flash, cmds);
 	if (result) {
 		msg_cerr("%s failed during command execution at address 0x%x\n",
 			__func__, addr);
@@ -684,13 +692,14 @@ int spi_block_erase_20(struct flashctx *flash, unsigned int addr, unsigned int b
 	/* Wait until the Write-In-Progress bit is cleared.
 	 * This usually takes 15-800 ms, so wait in 10 ms steps.
 	 */
-	while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
+	while (spi_read_status_register(flash) & JEDEC_RDSR_BIT_WIP)
 		programmer_delay(10 * 1000);
 	/* FIXME: Check the status register for errors. */
 	return 0;
 }
 
-int spi_block_erase_60(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
+int spi_block_erase_60(struct flashctx *flash, unsigned int addr,
+		       unsigned int blocklen)
 {
 	if ((addr != 0) || (blocklen != flash->total_size * 1024)) {
 		msg_cerr("%s called with incorrect arguments\n",
@@ -700,7 +709,8 @@ int spi_block_erase_60(struct flashctx *flash, unsigned int addr, unsigned int b
 	return spi_chip_erase_60(flash);
 }
 
-int spi_block_erase_c7(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
+int spi_block_erase_c7(struct flashctx *flash, unsigned int addr,
+		       unsigned int blocklen)
 {
 	if ((addr != 0) || (blocklen != flash->total_size * 1024)) {
 		msg_cerr("%s called with incorrect arguments\n",
@@ -710,13 +720,13 @@ int spi_block_erase_c7(struct flashctx *flash, unsigned int addr, unsigned int b
 	return spi_chip_erase_c7(flash);
 }
 
-int spi_write_status_enable(void)
+int spi_write_status_enable(struct flashctx *flash)
 {
 	static const unsigned char cmd[JEDEC_EWSR_OUTSIZE] = { JEDEC_EWSR };
 	int result;
 
 	/* Send EWSR (Enable Write Status Register). */
-	result = spi_send_command(sizeof(cmd), JEDEC_EWSR_INSIZE, cmd, NULL);
+	result = spi_send_command(flash, sizeof(cmd), JEDEC_EWSR_INSIZE, cmd, NULL);
 
 	if (result)
 		msg_cerr("%s failed\n", __func__);
@@ -751,7 +761,7 @@ static int spi_write_status_register_ewsr(struct flashctx *flash, int status)
 		.readarr	= NULL,
 	}};
 
-	result = spi_send_multicommand(cmds);
+	result = spi_send_multicommand(flash, cmds);
 	if (result) {
 		msg_cerr("%s failed during command execution\n",
 			__func__);
@@ -766,7 +776,7 @@ static int spi_write_status_register_ewsr(struct flashctx *flash, int status)
 	 * 100 ms, then wait in 10 ms steps until a total of 5 s have elapsed.
 	 */
 	programmer_delay(100 * 1000);
-	while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP) {
+	while (spi_read_status_register(flash) & JEDEC_RDSR_BIT_WIP) {
 		if (++i > 490) {
 			msg_cerr("Error: WIP bit after WRSR never cleared\n");
 			return TIMEOUT_ERROR;
@@ -799,7 +809,7 @@ static int spi_write_status_register_wren(struct flashctx *flash, int status)
 		.readarr	= NULL,
 	}};
 
-	result = spi_send_multicommand(cmds);
+	result = spi_send_multicommand(flash, cmds);
 	if (result) {
 		msg_cerr("%s failed during command execution\n",
 			__func__);
@@ -814,7 +824,7 @@ static int spi_write_status_register_wren(struct flashctx *flash, int status)
 	 * 100 ms, then wait in 10 ms steps until a total of 5 s have elapsed.
 	 */
 	programmer_delay(100 * 1000);
-	while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP) {
+	while (spi_read_status_register(flash) & JEDEC_RDSR_BIT_WIP) {
 		if (++i > 490) {
 			msg_cerr("Error: WIP bit after WRSR never cleared\n");
 			return TIMEOUT_ERROR;
@@ -840,7 +850,8 @@ int spi_write_status_register(struct flashctx *flash, int status)
 	return ret;
 }
 
-int spi_byte_program(unsigned int addr, uint8_t databyte)
+int spi_byte_program(struct flashctx *flash, unsigned int addr,
+		     uint8_t databyte)
 {
 	int result;
 	struct spi_command cmds[] = {
@@ -867,7 +878,7 @@ int spi_byte_program(unsigned int addr, uint8_t databyte)
 		.readarr	= NULL,
 	}};
 
-	result = spi_send_multicommand(cmds);
+	result = spi_send_multicommand(flash, cmds);
 	if (result) {
 		msg_cerr("%s failed during command execution at address 0x%x\n",
 			__func__, addr);
@@ -875,7 +886,8 @@ int spi_byte_program(unsigned int addr, uint8_t databyte)
 	return result;
 }
 
-int spi_nbyte_program(unsigned int addr, uint8_t *bytes, unsigned int len)
+int spi_nbyte_program(struct flashctx *flash, unsigned int addr, uint8_t *bytes,
+		      unsigned int len)
 {
 	int result;
 	/* FIXME: Switch to malloc based on len unless that kills speed. */
@@ -914,7 +926,7 @@ int spi_nbyte_program(unsigned int addr, uint8_t *bytes, unsigned int len)
 
 	memcpy(&cmd[4], bytes, len);
 
-	result = spi_send_multicommand(cmds);
+	result = spi_send_multicommand(flash, cmds);
 	if (result) {
 		msg_cerr("%s failed during command execution at address 0x%x\n",
 			__func__, addr);
@@ -931,7 +943,7 @@ int spi_disable_blockprotect(struct flashctx *flash)
 	uint8_t status;
 	int result;
 
-	status = spi_read_status_register();
+	status = spi_read_status_register(flash);
 	/* If block protection is disabled, stop here. */
 	if ((status & 0x3c) == 0)
 		return 0;
@@ -942,7 +954,7 @@ int spi_disable_blockprotect(struct flashctx *flash)
 		msg_cerr("spi_write_status_register failed\n");
 		return result;
 	}
-	status = spi_read_status_register();
+	status = spi_read_status_register(flash);
 	if ((status & 0x3c) != 0) {
 		msg_cerr("Block protection could not be disabled!\n");
 		return 1;
@@ -950,7 +962,8 @@ int spi_disable_blockprotect(struct flashctx *flash)
 	return 0;
 }
 
-int spi_nbyte_read(unsigned int address, uint8_t *bytes, unsigned int len)
+int spi_nbyte_read(struct flashctx *flash, unsigned int address, uint8_t *bytes,
+		   unsigned int len)
 {
 	const unsigned char cmd[JEDEC_READ_OUTSIZE] = {
 		JEDEC_READ,
@@ -960,7 +973,7 @@ int spi_nbyte_read(unsigned int address, uint8_t *bytes, unsigned int len)
 	};
 
 	/* Send Read */
-	return spi_send_command(sizeof(cmd), len, cmd, bytes);
+	return spi_send_command(flash, sizeof(cmd), len, cmd, bytes);
 }
 
 /*
@@ -968,7 +981,8 @@ int spi_nbyte_read(unsigned int address, uint8_t *bytes, unsigned int len)
  * FIXME: Use the chunk code from Michael Karcher instead.
  * Each page is read separately in chunks with a maximum size of chunksize.
  */
-int spi_read_chunked(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len, unsigned int chunksize)
+int spi_read_chunked(struct flashctx *flash, uint8_t *buf, unsigned int start,
+		     unsigned int len, unsigned int chunksize)
 {
 	int rc = 0;
 	unsigned int i, j, starthere, lenhere, toread;
@@ -991,7 +1005,7 @@ int spi_read_chunked(struct flashctx *flash, uint8_t *buf, unsigned int start, u
 		lenhere = min(start + len, (i + 1) * page_size) - starthere;
 		for (j = 0; j < lenhere; j += chunksize) {
 			toread = min(chunksize, lenhere - j);
-			rc = spi_nbyte_read(starthere + j, buf + starthere - start + j, toread);
+			rc = spi_nbyte_read(flash, starthere + j, buf + starthere - start + j, toread);
 			if (rc)
 				break;
 		}
@@ -1007,7 +1021,8 @@ int spi_read_chunked(struct flashctx *flash, uint8_t *buf, unsigned int start, u
  * FIXME: Use the chunk code from Michael Karcher instead.
  * Each page is written separately in chunks with a maximum size of chunksize.
  */
-int spi_write_chunked(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len, unsigned int chunksize)
+int spi_write_chunked(struct flashctx *flash, uint8_t *buf, unsigned int start,
+		      unsigned int len, unsigned int chunksize)
 {
 	int rc = 0;
 	unsigned int i, j, starthere, lenhere, towrite;
@@ -1035,10 +1050,10 @@ int spi_write_chunked(struct flashctx *flash, uint8_t *buf, unsigned int start, 
 		lenhere = min(start + len, (i + 1) * page_size) - starthere;
 		for (j = 0; j < lenhere; j += chunksize) {
 			towrite = min(chunksize, lenhere - j);
-			rc = spi_nbyte_program(starthere + j, buf + starthere - start + j, towrite);
+			rc = spi_nbyte_program(flash, starthere + j, buf + starthere - start + j, towrite);
 			if (rc)
 				break;
-			while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
+			while (spi_read_status_register(flash) & JEDEC_RDSR_BIT_WIP)
 				programmer_delay(10);
 		}
 		if (rc)
@@ -1055,23 +1070,25 @@ int spi_write_chunked(struct flashctx *flash, uint8_t *buf, unsigned int start, 
  * (e.g. due to size constraints in IT87* for over 512 kB)
  */
 /* real chunksize is 1, logical chunksize is 1 */
-int spi_chip_write_1(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len)
+int spi_chip_write_1(struct flashctx *flash, uint8_t *buf, unsigned int start,
+		     unsigned int len)
 {
 	unsigned int i;
 	int result = 0;
 
 	for (i = start; i < start + len; i++) {
-		result = spi_byte_program(i, buf[i - start]);
+		result = spi_byte_program(flash, i, buf[i - start]);
 		if (result)
 			return 1;
-		while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
+		while (spi_read_status_register(flash) & JEDEC_RDSR_BIT_WIP)
 			programmer_delay(10);
 	}
 
 	return 0;
 }
 
-int spi_aai_write(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len)
+int spi_aai_write(struct flashctx *flash, uint8_t *buf, unsigned int start,
+		  unsigned int len)
 {
 	uint32_t pos = start;
 	int result;
@@ -1149,7 +1166,7 @@ int spi_aai_write(struct flashctx *flash, uint8_t *buf, unsigned int start, unsi
 	}
 
 
-	result = spi_send_multicommand(cmds);
+	result = spi_send_multicommand(flash, cmds);
 	if (result) {
 		msg_cerr("%s failed during start command execution\n",
 			 __func__);
@@ -1158,7 +1175,7 @@ int spi_aai_write(struct flashctx *flash, uint8_t *buf, unsigned int start, unsi
 		 */
 		return result;
 	}
-	while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
+	while (spi_read_status_register(flash) & JEDEC_RDSR_BIT_WIP)
 		programmer_delay(10);
 
 	/* We already wrote 2 bytes in the multicommand step. */
@@ -1168,15 +1185,16 @@ int spi_aai_write(struct flashctx *flash, uint8_t *buf, unsigned int start, unsi
 	while (pos < start + len - 1) {
 		cmd[1] = buf[pos++ - start];
 		cmd[2] = buf[pos++ - start];
-		spi_send_command(JEDEC_AAI_WORD_PROGRAM_CONT_OUTSIZE, 0, cmd, NULL);
-		while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
+		spi_send_command(flash, JEDEC_AAI_WORD_PROGRAM_CONT_OUTSIZE, 0,
+				 cmd, NULL);
+		while (spi_read_status_register(flash) & JEDEC_RDSR_BIT_WIP)
 			programmer_delay(10);
 	}
 
 	/* Use WRDI to exit AAI mode. This needs to be done before issuing any
 	 * other non-AAI command.
 	 */
-	spi_write_disable();
+	spi_write_disable(flash);
 
 	/* Write remaining byte (if any). */
 	if (pos < start + len) {

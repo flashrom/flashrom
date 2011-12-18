@@ -40,6 +40,10 @@ const struct pcidev_status ata_hpt[] = {
 	{},
 };
 
+static void atahpt_chip_writeb(const struct flashctx *flash, uint8_t val,
+			       chipaddr addr);
+static uint8_t atahpt_chip_readb(const struct flashctx *flash,
+				 const chipaddr addr);
 static const struct par_programmer par_programmer_atahpt = {
 		.chip_readb		= atahpt_chip_readb,
 		.chip_readw		= fallback_chip_readw,
@@ -80,13 +84,15 @@ int atahpt_init(void)
 	return 0;
 }
 
-void atahpt_chip_writeb(uint8_t val, chipaddr addr)
+static void atahpt_chip_writeb(const struct flashctx *flash, uint8_t val,
+			       chipaddr addr)
 {
 	OUTL((uint32_t)addr, io_base_addr + BIOS_ROM_ADDR);
 	OUTB(val, io_base_addr + BIOS_ROM_DATA);
 }
 
-uint8_t atahpt_chip_readb(const chipaddr addr)
+static uint8_t atahpt_chip_readb(const struct flashctx *flash,
+				 const chipaddr addr)
 {
 	OUTL((uint32_t)addr, io_base_addr + BIOS_ROM_ADDR);
 	return INB(io_base_addr + BIOS_ROM_DATA);

@@ -44,14 +44,6 @@ int register_shutdown(int (*function) (void *data), void *data);
 void *programmer_map_flash_region(const char *descr, unsigned long phys_addr,
 				  size_t len);
 void programmer_unmap_flash_region(void *virt_addr, size_t len);
-void chip_writeb(uint8_t val, chipaddr addr);
-void chip_writew(uint16_t val, chipaddr addr);
-void chip_writel(uint32_t val, chipaddr addr);
-void chip_writen(uint8_t *buf, chipaddr addr, size_t len);
-uint8_t chip_readb(const chipaddr addr);
-uint16_t chip_readw(const chipaddr addr);
-uint32_t chip_readl(const chipaddr addr);
-void chip_readn(uint8_t *buf, const chipaddr addr, size_t len);
 void programmer_delay(int usecs);
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
@@ -212,6 +204,15 @@ struct flashctx {
 
 extern const struct flashchip flashchips[];
 
+void chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr);
+void chip_writew(const struct flashctx *flash, uint16_t val, chipaddr addr);
+void chip_writel(const struct flashctx *flash, uint32_t val, chipaddr addr);
+void chip_writen(const struct flashctx *flash, uint8_t *buf, chipaddr addr, size_t len);
+uint8_t chip_readb(const struct flashctx *flash, const chipaddr addr);
+uint16_t chip_readw(const struct flashctx *flash, const chipaddr addr);
+uint32_t chip_readl(const struct flashctx *flash, const chipaddr addr);
+void chip_readn(const struct flashctx *flash, uint8_t *buf, const chipaddr addr, size_t len);
+
 /* print.c */
 char *flashbuses_to_text(enum chipbustype bustype);
 void print_supported(void);
@@ -292,9 +293,8 @@ struct spi_command {
 	const unsigned char *writearr;
 	unsigned char *readarr;
 };
-int spi_send_command(unsigned int writecnt, unsigned int readcnt,
-		const unsigned char *writearr, unsigned char *readarr);
-int spi_send_multicommand(struct spi_command *cmds);
-uint32_t spi_get_valid_read_addr(void);
+int spi_send_command(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr);
+int spi_send_multicommand(struct flashctx *flash, struct spi_command *cmds);
+uint32_t spi_get_valid_read_addr(struct flashctx *flash);
 
 #endif				/* !__FLASH_H__ */

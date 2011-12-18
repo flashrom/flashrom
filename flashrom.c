@@ -359,44 +359,46 @@ void programmer_unmap_flash_region(void *virt_addr, size_t len)
 	programmer_table[programmer].unmap_flash_region(virt_addr, len);
 }
 
-void chip_writeb(uint8_t val, chipaddr addr)
+void chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr)
 {
-	par_programmer->chip_writeb(val, addr);
+	par_programmer->chip_writeb(flash, val, addr);
 }
 
-void chip_writew(uint16_t val, chipaddr addr)
+void chip_writew(const struct flashctx *flash, uint16_t val, chipaddr addr)
 {
-	par_programmer->chip_writew(val, addr);
+	par_programmer->chip_writew(flash, val, addr);
 }
 
-void chip_writel(uint32_t val, chipaddr addr)
+void chip_writel(const struct flashctx *flash, uint32_t val, chipaddr addr)
 {
-	par_programmer->chip_writel(val, addr);
+	par_programmer->chip_writel(flash, val, addr);
 }
 
-void chip_writen(uint8_t *buf, chipaddr addr, size_t len)
+void chip_writen(const struct flashctx *flash, uint8_t *buf, chipaddr addr,
+		 size_t len)
 {
-	par_programmer->chip_writen(buf, addr, len);
+	par_programmer->chip_writen(flash, buf, addr, len);
 }
 
-uint8_t chip_readb(const chipaddr addr)
+uint8_t chip_readb(const struct flashctx *flash, const chipaddr addr)
 {
-	return par_programmer->chip_readb(addr);
+	return par_programmer->chip_readb(flash, addr);
 }
 
-uint16_t chip_readw(const chipaddr addr)
+uint16_t chip_readw(const struct flashctx *flash, const chipaddr addr)
 {
-	return par_programmer->chip_readw(addr);
+	return par_programmer->chip_readw(flash, addr);
 }
 
-uint32_t chip_readl(const chipaddr addr)
+uint32_t chip_readl(const struct flashctx *flash, const chipaddr addr)
 {
-	return par_programmer->chip_readl(addr);
+	return par_programmer->chip_readl(flash, addr);
 }
 
-void chip_readn(uint8_t *buf, chipaddr addr, size_t len)
+void chip_readn(const struct flashctx *flash, uint8_t *buf, chipaddr addr,
+		size_t len)
 {
-	par_programmer->chip_readn(buf, addr, len);
+	par_programmer->chip_readn(flash, buf, addr, len);
 }
 
 void programmer_delay(int usecs)
@@ -412,9 +414,10 @@ void map_flash_registers(struct flashctx *flash)
 	flash->virtual_registers = (chipaddr)programmer_map_flash_region("flash chip registers", (0xFFFFFFFF - 0x400000 - size + 1), size);
 }
 
-int read_memmapped(struct flashctx *flash, uint8_t *buf, unsigned int start, int unsigned len)
+int read_memmapped(struct flashctx *flash, uint8_t *buf, unsigned int start,
+		   int unsigned len)
 {
-	chip_readn(buf, flash->virtual_memory + start, len);
+	chip_readn(flash, buf, flash->virtual_memory + start, len);
 
 	return 0;
 }
@@ -535,7 +538,8 @@ static unsigned int count_usable_erasers(const struct flashctx *flash)
 }
 
 /* start is an offset to the base address of the flash chip */
-int check_erased_range(struct flashctx *flash, unsigned int start, unsigned int len)
+int check_erased_range(struct flashctx *flash, unsigned int start,
+		       unsigned int len)
 {
 	int ret;
 	uint8_t *cmpbuf = malloc(len);
@@ -558,8 +562,8 @@ int check_erased_range(struct flashctx *flash, unsigned int start, unsigned int 
  * @message	string to print in the "FAILED" message
  * @return	0 for success, -1 for failure
  */
-int verify_range(struct flashctx *flash, uint8_t *cmpbuf, unsigned int start, unsigned int len,
-		 const char *message)
+int verify_range(struct flashctx *flash, uint8_t *cmpbuf, unsigned int start,
+		 unsigned int len, const char *message)
 {
 	unsigned int i;
 	uint8_t *readbuf = malloc(len);
@@ -1537,7 +1541,8 @@ int selfcheck(void)
 	/* Check that virtual_memory in struct flashctx is placed directly
 	 * after the members copied from struct flashchip.
 	 */
-	if (sizeof(struct flashchip) != offsetof(struct flashctx, virtual_memory)) {
+	if (sizeof(struct flashchip) !=
+	    offsetof(struct flashctx, virtual_memory)) {
 		msg_gerr("struct flashctx broken!\n");
 		ret = 1;
 	}
@@ -1618,7 +1623,8 @@ void check_chip_supported(const struct flashctx *flash)
 /* FIXME: This function signature needs to be improved once doit() has a better
  * function signature.
  */
-int chip_safety_check(struct flashctx *flash, int force, int read_it, int write_it, int erase_it, int verify_it)
+int chip_safety_check(struct flashctx *flash, int force, int read_it,
+		      int write_it, int erase_it, int verify_it)
 {
 	if (!programmer_may_write && (write_it || erase_it)) {
 		msg_perr("Write/erase is not working yet on your programmer in "
@@ -1679,7 +1685,8 @@ int chip_safety_check(struct flashctx *flash, int force, int read_it, int write_
  * but right now it allows us to split off the CLI code.
  * Besides that, the function itself is a textbook example of abysmal code flow.
  */
-int doit(struct flashctx *flash, int force, const char *filename, int read_it, int write_it, int erase_it, int verify_it)
+int doit(struct flashctx *flash, int force, const char *filename, int read_it,
+	 int write_it, int erase_it, int verify_it)
 {
 	uint8_t *oldcontents;
 	uint8_t *newcontents;

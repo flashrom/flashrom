@@ -39,6 +39,10 @@ const struct pcidev_status drkaiser_pcidev[] = {
 
 static uint8_t *drkaiser_bar;
 
+static void drkaiser_chip_writeb(const struct flashctx *flash, uint8_t val,
+				 chipaddr addr);
+static uint8_t drkaiser_chip_readb(const struct flashctx *flash,
+				   const chipaddr addr);
 static const struct par_programmer par_programmer_drkaiser = {
 		.chip_readb		= drkaiser_chip_readb,
 		.chip_readw		= fallback_chip_readw,
@@ -84,12 +88,14 @@ int drkaiser_init(void)
 	return 0;
 }
 
-void drkaiser_chip_writeb(uint8_t val, chipaddr addr)
+static void drkaiser_chip_writeb(const struct flashctx *flash, uint8_t val,
+				 chipaddr addr)
 {
 	pci_mmio_writeb(val, drkaiser_bar + (addr & DRKAISER_MEMMAP_MASK));
 }
 
-uint8_t drkaiser_chip_readb(const chipaddr addr)
+static uint8_t drkaiser_chip_readb(const struct flashctx *flash,
+				   const chipaddr addr)
 {
 	return pci_mmio_readb(drkaiser_bar + (addr & DRKAISER_MEMMAP_MASK));
 }

@@ -60,8 +60,10 @@ static int unlock_block_stm50flw0x0x(struct flashctx *flash, int offset)
 		// unlock each 4k-sector
 		for (j = 0; j < 0x10000; j += 0x1000) {
 			msg_cdbg("unlocking at 0x%x\n", offset + j);
-			chip_writeb(unlock_sector, wrprotect + offset + j);
-			if (chip_readb(wrprotect + offset + j) != unlock_sector) {
+			chip_writeb(flash, unlock_sector,
+				    wrprotect + offset + j);
+			if (chip_readb(flash, wrprotect + offset + j) !=
+			    unlock_sector) {
 				msg_cerr("Cannot unlock sector @ 0x%x\n",
 				       offset + j);
 				return -1;
@@ -69,8 +71,8 @@ static int unlock_block_stm50flw0x0x(struct flashctx *flash, int offset)
 		}
 	} else {
 		msg_cdbg("unlocking at 0x%x\n", offset);
-		chip_writeb(unlock_sector, wrprotect + offset);
-		if (chip_readb(wrprotect + offset) != unlock_sector) {
+		chip_writeb(flash, unlock_sector, wrprotect + offset);
+		if (chip_readb(flash, wrprotect + offset) != unlock_sector) {
 			msg_cerr("Cannot unlock sector @ 0x%x\n", offset);
 			return -1;
 		}
@@ -94,15 +96,16 @@ int unlock_stm50flw0x0x(struct flashctx *flash)
 }
 
 /* This function is unused. */
-int erase_sector_stm50flw0x0x(struct flashctx *flash, unsigned int sector, unsigned int sectorsize)
+int erase_sector_stm50flw0x0x(struct flashctx *flash, unsigned int sector,
+			      unsigned int sectorsize)
 {
 	chipaddr bios = flash->virtual_memory + sector;
 
 	// clear status register
-	chip_writeb(0x50, bios);
+	chip_writeb(flash, 0x50, bios);
 	// now start it
-	chip_writeb(0x32, bios);
-	chip_writeb(0xd0, bios);
+	chip_writeb(flash, 0x32, bios);
+	chip_writeb(flash, 0xd0, bios);
 	programmer_delay(10);
 
 	wait_82802ab(flash);

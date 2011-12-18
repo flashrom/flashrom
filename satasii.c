@@ -42,6 +42,10 @@ const struct pcidev_status satas_sii[] = {
 	{},
 };
 
+static void satasii_chip_writeb(const struct flashctx *flash, uint8_t val,
+				chipaddr addr);
+static uint8_t satasii_chip_readb(const struct flashctx *flash,
+				  const chipaddr addr);
 static const struct par_programmer par_programmer_satasii = {
 		.chip_readb		= satasii_chip_readb,
 		.chip_readw		= fallback_chip_readw,
@@ -95,7 +99,8 @@ int satasii_init(void)
 	return 0;
 }
 
-void satasii_chip_writeb(uint8_t val, chipaddr addr)
+static void satasii_chip_writeb(const struct flashctx *flash, uint8_t val,
+				chipaddr addr)
 {
 	uint32_t ctrl_reg, data_reg;
 
@@ -112,7 +117,8 @@ void satasii_chip_writeb(uint8_t val, chipaddr addr)
 	while (pci_mmio_readl(sii_bar) & (1 << 25)) ;
 }
 
-uint8_t satasii_chip_readb(const chipaddr addr)
+static uint8_t satasii_chip_readb(const struct flashctx *flash,
+				  const chipaddr addr)
 {
 	uint32_t ctrl_reg;
 

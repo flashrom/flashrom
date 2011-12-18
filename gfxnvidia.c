@@ -61,6 +61,10 @@ const struct pcidev_status gfx_nvidia[] = {
 	{},
 };
 
+static void gfxnvidia_chip_writeb(const struct flashctx *flash, uint8_t val,
+				  chipaddr addr);
+static uint8_t gfxnvidia_chip_readb(const struct flashctx *flash,
+				    const chipaddr addr);
 static const struct par_programmer par_programmer_gfxnvidia = {
 		.chip_readb		= gfxnvidia_chip_readb,
 		.chip_readw		= fallback_chip_readw,
@@ -112,12 +116,14 @@ int gfxnvidia_init(void)
 	return 0;
 }
 
-void gfxnvidia_chip_writeb(uint8_t val, chipaddr addr)
+static void gfxnvidia_chip_writeb(const struct flashctx *flash, uint8_t val,
+				  chipaddr addr)
 {
 	pci_mmio_writeb(val, nvidia_bar + (addr & GFXNVIDIA_MEMMAP_MASK));
 }
 
-uint8_t gfxnvidia_chip_readb(const chipaddr addr)
+static uint8_t gfxnvidia_chip_readb(const struct flashctx *flash,
+				    const chipaddr addr)
 {
 	return pci_mmio_readb(nvidia_bar + (addr & GFXNVIDIA_MEMMAP_MASK));
 }

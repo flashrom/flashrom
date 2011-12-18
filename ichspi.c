@@ -228,7 +228,7 @@ static int find_opcode(OPCODES *op, uint8_t opcode);
 static int find_preop(OPCODES *op, uint8_t preop);
 static int generate_opcodes(OPCODES * op);
 static int program_opcodes(OPCODES *op, int enable_undo);
-static int run_opcode(OPCODE op, uint32_t offset,
+static int run_opcode(const struct flashctx *flash, OPCODE op, uint32_t offset,
 		      uint8_t datalength, uint8_t * data);
 
 /* for pairing opcodes with their required preop */
@@ -638,7 +638,7 @@ static void ich_set_bbar(uint32_t min_addr)
  * Note that using len > spi_programmer->max_data_read will return garbage or
  * may even crash.
  */
- static void ich_read_data(uint8_t *data, int len, int reg0_off)
+static void ich_read_data(uint8_t *data, int len, int reg0_off)
  {
 	int i;
 	uint32_t temp32 = 0;
@@ -956,7 +956,7 @@ static int ich9_run_opcode(OPCODE op, uint32_t offset,
 	return 0;
 }
 
-static int run_opcode(OPCODE op, uint32_t offset,
+static int run_opcode(const struct flashctx *flash, OPCODE op, uint32_t offset,
 		      uint8_t datalength, uint8_t * data)
 {
 	/* max_data_read == max_data_write for all Intel/VIA SPI masters */
@@ -983,8 +983,10 @@ static int run_opcode(OPCODE op, uint32_t offset,
 	}
 }
 
-static int ich_spi_send_command(unsigned int writecnt, unsigned int readcnt,
-		    const unsigned char *writearr, unsigned char *readarr)
+static int ich_spi_send_command(struct flashctx *flash, unsigned int writecnt,
+				unsigned int readcnt,
+				const unsigned char *writearr,
+				unsigned char *readarr)
 {
 	int result;
 	int opcode_index = -1;
@@ -1076,7 +1078,7 @@ static int ich_spi_send_command(unsigned int writecnt, unsigned int readcnt,
 		count = readcnt;
 	}
 
-	result = run_opcode(*opcode, addr, count, data);
+	result = run_opcode(flash, *opcode, addr, count, data);
 	if (result) {
 		msg_pdbg("Running OPCODE 0x%02x failed ", opcode->opcode);
 		if ((opcode->spi_type == SPI_OPCODE_TYPE_WRITE_WITH_ADDRESS) ||
@@ -1175,7 +1177,7 @@ static int ich_hwseq_wait_for_cycle_complete(unsigned int timeout,
 	return 0;
 }
 
-int ich_hwseq_probe(struct flashctx *flash)
+static int ich_hwseq_probe(struct flashctx *flash)
 {
 	uint32_t total_size, boundary;
 	uint32_t erase_size_low, size_low, erase_size_high, size_high;
@@ -1228,9 +1230,8 @@ int ich_hwseq_probe(struct flashctx *flash)
 	return 1;
 }
 
-int ich_hwseq_block_erase(struct flashctx *flash,
-			  unsigned int addr,
-			  unsigned int len)
+static int ich_hwseq_block_erase(struct flashctx *flash, unsigned int addr,
+				 unsigned int len)
 {
 	uint32_t erase_block;
 	uint16_t hsfc;
@@ -1278,8 +1279,8 @@ int ich_hwseq_block_erase(struct flashctx *flash,
 	return 0;
 }
 
-int ich_hwseq_read(struct flashctx *flash, uint8_t *buf, unsigned int addr,
-		   unsigned int len)
+static int ich_hwseq_read(struct flashctx *flash, uint8_t *buf,
+			  unsigned int addr, unsigned int len)
 {
 	uint16_t hsfc;
 	uint16_t timeout = 100 * 60;
@@ -1316,8 +1317,8 @@ int ich_hwseq_read(struct flashctx *flash, uint8_t *buf, unsigned int addr,
 	return 0;
 }
 
-int ich_hwseq_write(struct flashctx *flash, uint8_t *buf, unsigned int addr,
-		    unsigned int len)
+static int ich_hwseq_write(struct flashctx *flash, uint8_t *buf,
+			   unsigned int addr, unsigned int len)
 {
 	uint16_t hsfc;
 	uint16_t timeout = 100 * 60;
@@ -1355,7 +1356,8 @@ int ich_hwseq_write(struct flashctx *flash, uint8_t *buf, unsigned int addr,
 	return 0;
 }
 
-static int ich_spi_send_multicommand(struct spi_command *cmds)
+static int ich_spi_send_multicommand(struct flashctx *flash,
+				     struct spi_command *cmds)
 {
 	int ret = 0;
 	int i;
@@ -1405,7 +1407,7 @@ static int ich_spi_send_multicommand(struct spi_command *cmds)
 			 * preoppos matched, this is a normal opcode.
 			 */
 		}
-		ret = ich_spi_send_command(cmds->writecnt, cmds->readcnt,
+		ret = ich_spi_send_command(flash, cmds->writecnt, cmds->readcnt,
 					   cmds->writearr, cmds->readarr);
 		/* Reset the type of all opcodes to non-atomic. */
 		for (i = 0; i < 8; i++)
