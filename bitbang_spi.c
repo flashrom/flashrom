@@ -63,8 +63,10 @@ static void bitbang_spi_release_bus(void)
 		bitbang_spi_master->release_bus();
 }
 
-static int bitbang_spi_send_command(unsigned int writecnt, unsigned int readcnt,
-		const unsigned char *writearr, unsigned char *readarr);
+static int bitbang_spi_send_command(struct flashctx *flash,
+				    unsigned int writecnt, unsigned int readcnt,
+				    const unsigned char *writearr,
+				    unsigned char *readarr);
 
 static const struct spi_programmer spi_programmer_bitbang = {
 	.type		= SPI_CONTROLLER_BITBANG,
@@ -141,8 +143,10 @@ static uint8_t bitbang_spi_readwrite_byte(uint8_t val)
 	return ret;
 }
 
-static int bitbang_spi_send_command(unsigned int writecnt, unsigned int readcnt,
-		const unsigned char *writearr, unsigned char *readarr)
+static int bitbang_spi_send_command(struct flashctx *flash,
+				    unsigned int writecnt, unsigned int readcnt,
+				    const unsigned char *writearr,
+				    unsigned char *readarr)
 {
 	int i;
 

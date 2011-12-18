@@ -317,8 +317,11 @@ static int dediprog_spi_write_256(struct flashctx *flash, uint8_t *buf,
 	return ret;
 }
 
-static int dediprog_spi_send_command(unsigned int writecnt, unsigned int readcnt,
-			const unsigned char *writearr, unsigned char *readarr)
+static int dediprog_spi_send_command(struct flashctx *flash,
+				     unsigned int writecnt,
+				     unsigned int readcnt,
+				     const unsigned char *writearr,
+				     unsigned char *readarr)
 {
 	int ret;
 

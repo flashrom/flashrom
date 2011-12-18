@@ -88,8 +88,10 @@ static void execute_command(void)
 		;
 }
 
-static int sb600_spi_send_command(unsigned int writecnt, unsigned int readcnt,
-		      const unsigned char *writearr, unsigned char *readarr)
+static int sb600_spi_send_command(struct flashctx *flash, unsigned int writecnt,
+				  unsigned int readcnt,
+				  const unsigned char *writearr,
+				  unsigned char *readarr)
 {
 	int count;
 	/* First byte is cmd which can not being sent through FIFO. */

@@ -36,6 +36,10 @@ const struct pcidev_status nics_realtek[] = {
 	{},
 };
 
+static void nicrealtek_chip_writeb(const struct flashctx *flash, uint8_t val,
+				   chipaddr addr);
+static uint8_t nicrealtek_chip_readb(const struct flashctx *flash,
+				     const chipaddr addr);
 static const struct par_programmer par_programmer_nicrealtek = {
 		.chip_readb		= nicrealtek_chip_readb,
 		.chip_readw		= fallback_chip_readw,
@@ -69,7 +73,8 @@ int nicrealtek_init(void)
 	return 0;
 }
 
-void nicrealtek_chip_writeb(uint8_t val, chipaddr addr)
+static void nicrealtek_chip_writeb(const struct flashctx *flash, uint8_t val,
+				   chipaddr addr)
 {
 	/* Output addr and data, set WE to 0, set OE to 1, set CS to 0,
 	 * enable software access.
@@ -83,7 +88,8 @@ void nicrealtek_chip_writeb(uint8_t val, chipaddr addr)
 	     io_base_addr + BIOS_ROM_ADDR);
 }
 
-uint8_t nicrealtek_chip_readb(const chipaddr addr)
+static uint8_t nicrealtek_chip_readb(const struct flashctx *flash,
+				     const chipaddr addr)
 {
 	uint8_t val;
 

@@ -144,8 +144,10 @@ static int get_buf(struct ftdi_context *ftdic, const unsigned char *buf,
 	return 0;
 }
 
-static int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt,
-		const unsigned char *writearr, unsigned char *readarr);
+static int ft2232_spi_send_command(struct flashctx *flash,
+				   unsigned int writecnt, unsigned int readcnt,
+				   const unsigned char *writearr,
+				   unsigned char *readarr);
 
 static const struct spi_programmer spi_programmer_ft2232 = {
 	.type		= SPI_CONTROLLER_FT2232,
@@ -342,8 +344,10 @@ ftdi_err:
 }
 
 /* Returns 0 upon success, a negative number upon errors. */
-static int ft2232_spi_send_command(unsigned int writecnt, unsigned int readcnt,
-		const unsigned char *writearr, unsigned char *readarr)
+static int ft2232_spi_send_command(struct flashctx *flash,
+				   unsigned int writecnt, unsigned int readcnt,
+				   const unsigned char *writearr,
+				   unsigned char *readarr)
 {
 	struct ftdi_context *ftdic = &ftdic_context;
 	static unsigned char *buf = NULL;

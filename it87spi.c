@@ -103,8 +103,10 @@ void probe_superio_ite(void)
 	return;
 }
 
-static int it8716f_spi_send_command(unsigned int writecnt, unsigned int readcnt,
-			const unsigned char *writearr, unsigned char *readarr);
+static int it8716f_spi_send_command(struct flashctx *flash,
+				    unsigned int writecnt, unsigned int readcnt,
+				    const unsigned char *writearr,
+				    unsigned char *readarr);
 static int it8716f_spi_chip_read(struct flashctx *flash, uint8_t *buf,
 				 unsigned int start, unsigned int len);
 static int it8716f_spi_chip_write_256(struct flashctx *flash, uint8_t *buf,
@@ -247,8 +249,10 @@ int init_superio_ite(void)
  * commands with the address in inverse wire order. That's why the register
  * ordering in case 4 and 5 may seem strange.
  */
-static int it8716f_spi_send_command(unsigned int writecnt, unsigned int readcnt,
-			const unsigned char *writearr, unsigned char *readarr)
+static int it8716f_spi_send_command(struct flashctx *flash,
+				    unsigned int writecnt, unsigned int readcnt,
+				    const unsigned char *writearr,
+				    unsigned char *readarr)
 {
 	uint8_t busy, writeenc;
 	int i;
@@ -319,19 +323,19 @@ static int it8716f_spi_page_program(struct flashctx *flash, uint8_t *buf,
 	int result;
 	chipaddr bios = flash->virtual_memory;
 
-	result = spi_write_enable();
+	result = spi_write_enable(flash);
 	if (result)
 		return result;
 	/* FIXME: The command below seems to be redundant or wrong. */
 	OUTB(0x06, it8716f_flashport + 1);
 	OUTB(((2 + (fast_spi ? 1 : 0)) << 4), it8716f_flashport);
 	for (i = 0; i < flash->page_size; i++)
-		chip_writeb(buf[i], bios + start + i);
+		chip_writeb(flash, buf[i], bios + start + i);
 	OUTB(0, it8716f_flashport);
 	/* Wait until the Write-In-Progress bit is cleared.
 	 * This usually takes 1-10 ms, so wait in 1 ms steps.
 	 */
-	while (spi_read_status_register() & JEDEC_RDSR_BIT_WIP)
+	while (spi_read_status_register(flash) & JEDEC_RDSR_BIT_WIP)
 		programmer_delay(1000);
 	return 0;
 }

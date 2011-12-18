@@ -26,25 +26,26 @@
  * FIXME: This file is unused.
  */
 
-int erase_lhf00l04_block(struct flashctx *flash, unsigned int blockaddr, unsigned int blocklen)
+int erase_lhf00l04_block(struct flashctx *flash, unsigned int blockaddr,
+			 unsigned int blocklen)
 {
 	chipaddr bios = flash->virtual_memory + blockaddr;
 	chipaddr wrprotect = flash->virtual_registers + blockaddr + 2;
 	uint8_t status;
 
 	// clear status register
-	chip_writeb(0x50, bios);
+	chip_writeb(flash, 0x50, bios);
 	status = wait_82802ab(flash);
 	print_status_82802ab(status);
 	// clear write protect
 	msg_cspew("write protect is at 0x%lx\n", (wrprotect));
-	msg_cspew("write protect is 0x%x\n", chip_readb(wrprotect));
-	chip_writeb(0, wrprotect);
-	msg_cspew("write protect is 0x%x\n", chip_readb(wrprotect));
+	msg_cspew("write protect is 0x%x\n", chip_readb(flash, wrprotect));
+	chip_writeb(flash, 0, wrprotect);
+	msg_cspew("write protect is 0x%x\n", chip_readb(flash, wrprotect));
 
 	// now start it
-	chip_writeb(0x20, bios);
-	chip_writeb(0xd0, bios);
+	chip_writeb(flash, 0x20, bios);
+	chip_writeb(flash, 0xd0, bios);
 	programmer_delay(10);
 	// now let's see what the register is
 	status = wait_82802ab(flash);
