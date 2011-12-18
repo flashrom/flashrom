@@ -33,7 +33,7 @@ int spi_prettyprint_status_register_amic_a25l05p(struct flashctx *flash)
 {
 	uint8_t status;
 
-	status = spi_read_status_register();
+	status = spi_read_status_register(flash);
 	msg_cdbg("Chip status register is %02x\n", status);
 
 	spi_prettyprint_status_register_amic_a25_srwd(status);
@@ -49,7 +49,7 @@ int spi_prettyprint_status_register_amic_a25l40p(struct flashctx *flash)
 {
 	uint8_t status;
 
-	status = spi_read_status_register();
+	status = spi_read_status_register(flash);
 	msg_cdbg("Chip status register is %02x\n", status);
 
 	spi_prettyprint_status_register_amic_a25_srwd(status);
@@ -64,7 +64,7 @@ int spi_prettyprint_status_register_amic_a25l032(struct flashctx *flash)
 {
 	uint8_t status;
 
-	status = spi_read_status_register();
+	status = spi_read_status_register(flash);
 	msg_cdbg("Chip status register is %02x\n", status);
 
 	spi_prettyprint_status_register_amic_a25_srwd(status);
@@ -82,7 +82,7 @@ int spi_prettyprint_status_register_amic_a25lq032(struct flashctx *flash)
 {
 	uint8_t status;
 
-	status = spi_read_status_register();
+	status = spi_read_status_register(flash);
 	msg_cdbg("Chip status register is %02x\n", status);
 
 	spi_prettyprint_status_register_amic_a25_srwd(status);

@@ -26,7 +26,7 @@ static int printlock_w39_fwh_block(struct flashctx *flash, unsigned int offset)
 	chipaddr wrprotect = flash->virtual_registers + offset + 2;
 	uint8_t locking;
 
-	locking = chip_readb(wrprotect);
+	locking = chip_readb(flash, wrprotect);
 	msg_cdbg("Lock status of block at 0x%08x is ", offset);
 	switch (locking & 0x7) {
 	case 0:
@@ -64,7 +64,7 @@ static int unlock_w39_fwh_block(struct flashctx *flash, unsigned int offset)
 	chipaddr wrprotect = flash->virtual_registers + offset + 2;
 	uint8_t locking;
 
-	locking = chip_readb(wrprotect);
+	locking = chip_readb(flash, wrprotect);
 	/* Read or write lock present? */
 	if (locking & ((1 << 2) | (1 << 0))) {
 		/* Lockdown active? */
@@ -73,7 +73,7 @@ static int unlock_w39_fwh_block(struct flashctx *flash, unsigned int offset)
 			return -1;
 		} else {
 			msg_cdbg("Unlocking block at 0x%08x\n", offset);
-			chip_writeb(0, wrprotect);
+			chip_writeb(flash, 0, wrprotect);
 		}
 	}
 
@@ -86,18 +86,18 @@ static uint8_t w39_idmode_readb(struct flashctx *flash, unsigned int offset)
 	uint8_t val;
 
 	/* Product Identification Entry */
-	chip_writeb(0xAA, bios + 0x5555);
-	chip_writeb(0x55, bios + 0x2AAA);
-	chip_writeb(0x90, bios + 0x5555);
+	chip_writeb(flash, 0xAA, bios + 0x5555);
+	chip_writeb(flash, 0x55, bios + 0x2AAA);
+	chip_writeb(flash, 0x90, bios + 0x5555);
 	programmer_delay(10);
 
 	/* Read something, maybe hardware lock bits */
-	val = chip_readb(bios + offset);
+	val = chip_readb(flash, bios + offset);
 
 	/* Product Identification Exit */
-	chip_writeb(0xAA, bios + 0x5555);
-	chip_writeb(0x55, bios + 0x2AAA);
-	chip_writeb(0xF0, bios + 0x5555);
+	chip_writeb(flash, 0xAA, bios + 0x5555);
+	chip_writeb(flash, 0x55, bios + 0x2AAA);
+	chip_writeb(flash, 0xF0, bios + 0x5555);
 	programmer_delay(10);
 
 	return val;
@@ -160,7 +160,7 @@ static int unlock_w39_fwh(struct flashctx *flash)
 	return 0;
 }
 
-int printlock_w39l040(struct flashctx * flash)
+int printlock_w39l040(struct flashctx *flash)
 {
 	uint8_t lock;
 	int ret;

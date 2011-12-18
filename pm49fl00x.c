@@ -22,28 +22,32 @@
 
 #include "flash.h"
 
-static void write_lockbits_49fl00x(chipaddr bios, unsigned int size,
-			    unsigned char bits, unsigned int block_size)
+static void write_lockbits_49fl00x(const struct flashctx *flash,
+				   unsigned int size, unsigned char bits,
+				   unsigned int block_size)
 {
 	unsigned int i, left = size;
+	chipaddr bios = flash->virtual_registers;
 
 	for (i = 0; left >= block_size; i++, left -= block_size) {
 		/* pm49fl002 */
 		if (block_size == 16384 && i % 2)
 			continue;
 
-		chip_writeb(bits, bios + (i * block_size) + 2);
+		chip_writeb(flash, bits, bios + (i * block_size) + 2);
 	}
 }
 
 int unlock_49fl00x(struct flashctx *flash)
 {
-	write_lockbits_49fl00x(flash->virtual_registers, flash->total_size * 1024, 0, flash->page_size);
+	write_lockbits_49fl00x(flash, flash->total_size * 1024, 0,
+			       flash->page_size);
 	return 0;
 }
 
 int lock_49fl00x(struct flashctx *flash)
 {
-	write_lockbits_49fl00x(flash->virtual_registers, flash->total_size * 1024, 1, flash->page_size);
+	write_lockbits_49fl00x(flash, flash->total_size * 1024, 1,
+			       flash->page_size);
 	return 0;
 }

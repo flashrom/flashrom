@@ -34,13 +34,13 @@ int protect_28sf040(struct flashctx *flash)
 {
 	chipaddr bios = flash->virtual_memory;
 
-	chip_readb(bios + 0x1823);
-	chip_readb(bios + 0x1820);
-	chip_readb(bios + 0x1822);
-	chip_readb(bios + 0x0418);
-	chip_readb(bios + 0x041B);
-	chip_readb(bios + 0x0419);
-	chip_readb(bios + 0x040A);
+	chip_readb(flash, bios + 0x1823);
+	chip_readb(flash, bios + 0x1820);
+	chip_readb(flash, bios + 0x1822);
+	chip_readb(flash, bios + 0x0418);
+	chip_readb(flash, bios + 0x041B);
+	chip_readb(flash, bios + 0x0419);
+	chip_readb(flash, bios + 0x040A);
 
 	return 0;
 }
@@ -49,34 +49,36 @@ int unprotect_28sf040(struct flashctx *flash)
 {
 	chipaddr bios = flash->virtual_memory;
 
-	chip_readb(bios + 0x1823);
-	chip_readb(bios + 0x1820);
-	chip_readb(bios + 0x1822);
-	chip_readb(bios + 0x0418);
-	chip_readb(bios + 0x041B);
-	chip_readb(bios + 0x0419);
-	chip_readb(bios + 0x041A);
+	chip_readb(flash, bios + 0x1823);
+	chip_readb(flash, bios + 0x1820);
+	chip_readb(flash, bios + 0x1822);
+	chip_readb(flash, bios + 0x0418);
+	chip_readb(flash, bios + 0x041B);
+	chip_readb(flash, bios + 0x0419);
+	chip_readb(flash, bios + 0x041A);
 
 	return 0;
 }
 
-int erase_sector_28sf040(struct flashctx *flash, unsigned int address, unsigned int sector_size)
+int erase_sector_28sf040(struct flashctx *flash, unsigned int address,
+			 unsigned int sector_size)
 {
 	chipaddr bios = flash->virtual_memory;
 
 	/* This command sequence is very similar to erase_block_82802ab. */
-	chip_writeb(AUTO_PG_ERASE1, bios);
-	chip_writeb(AUTO_PG_ERASE2, bios + address);
+	chip_writeb(flash, AUTO_PG_ERASE1, bios);
+	chip_writeb(flash, AUTO_PG_ERASE2, bios + address);
 
 	/* wait for Toggle bit ready */
-	toggle_ready_jedec(bios);
+	toggle_ready_jedec(flash, bios);
 
 	/* FIXME: Check the status register for errors. */
 	return 0;
 }
 
 /* chunksize is 1 */
-int write_28sf040(struct flashctx *flash, uint8_t *src, unsigned int start, unsigned int len)
+int write_28sf040(struct flashctx *flash, uint8_t *src, unsigned int start,
+		  unsigned int len)
 {
 	int i;
 	chipaddr bios = flash->virtual_memory;
@@ -90,11 +92,11 @@ int write_28sf040(struct flashctx *flash, uint8_t *src, unsigned int start, unsi
 			continue;
 		}
 		/*issue AUTO PROGRAM command */
-		chip_writeb(AUTO_PGRM, dst);
-		chip_writeb(*src++, dst++);
+		chip_writeb(flash, AUTO_PGRM, dst);
+		chip_writeb(flash, *src++, dst++);
 
 		/* wait for Toggle bit ready */
-		toggle_ready_jedec(bios);
+		toggle_ready_jedec(flash, bios);
 	}
 
 	return 0;
@@ -104,17 +106,18 @@ static int erase_28sf040(struct flashctx *flash)
 {
 	chipaddr bios = flash->virtual_memory;
 
-	chip_writeb(CHIP_ERASE, bios);
-	chip_writeb(CHIP_ERASE, bios);
+	chip_writeb(flash, CHIP_ERASE, bios);
+	chip_writeb(flash, CHIP_ERASE, bios);
 
 	programmer_delay(10);
-	toggle_ready_jedec(bios);
+	toggle_ready_jedec(flash, bios);
 
 	/* FIXME: Check the status register for errors. */
 	return 0;
 }
 
-int erase_chip_28sf040(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
+int erase_chip_28sf040(struct flashctx *flash, unsigned int addr,
+		       unsigned int blocklen)
 {
 	if ((addr != 0) || (blocklen != flash->total_size * 1024)) {
 		msg_cerr("%s called with incorrect arguments\n",

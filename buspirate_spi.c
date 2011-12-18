@@ -86,8 +86,11 @@ static int buspirate_sendrecv(unsigned char *buf, unsigned int writecnt,
 	return 0;
 }
 
-static int buspirate_spi_send_command(unsigned int writecnt, unsigned int readcnt,
-		const unsigned char *writearr, unsigned char *readarr);
+static int buspirate_spi_send_command(struct flashctx *flash,
+				      unsigned int writecnt,
+				      unsigned int readcnt,
+				      const unsigned char *writearr,
+				      unsigned char *readarr);
 
 static const struct spi_programmer spi_programmer_buspirate = {
 	.type		= SPI_CONTROLLER_BUSPIRATE,
@@ -291,8 +294,11 @@ int buspirate_spi_init(void)
 	return 0;
 }
 
-static int buspirate_spi_send_command(unsigned int writecnt, unsigned int readcnt,
-		const unsigned char *writearr, unsigned char *readarr)
+static int buspirate_spi_send_command(struct flashctx *flash,
+				      unsigned int writecnt,
+				      unsigned int readcnt,
+				      const unsigned char *writearr,
+				      unsigned char *readarr)
 {
 	static unsigned char *buf = NULL;
 	unsigned int i = 0;
