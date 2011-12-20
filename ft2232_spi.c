@@ -204,6 +204,8 @@ int ft2232_spi_init(void)
 			ft2232_vid = OLIMEX_VID;
 			ft2232_type = OLIMEX_ARM_OCD_PID;
 			ft2232_interface = INTERFACE_A;
+			cs_bits = 0x08;
+			pindir = 0x1b;
 		} else if (!strcasecmp(arg, "arm-usb-tiny")) {
 			ft2232_vid = OLIMEX_VID;
 			ft2232_type = OLIMEX_ARM_TINY_PID;
@@ -212,6 +214,8 @@ int ft2232_spi_init(void)
 			ft2232_vid = OLIMEX_VID;
 			ft2232_type = OLIMEX_ARM_OCD_H_PID;
 			ft2232_interface = INTERFACE_A;
+			cs_bits = 0x08;
+			pindir = 0x1b;
 		} else if (!strcasecmp(arg, "arm-usb-tiny-h")) {
 			ft2232_vid = OLIMEX_VID;
 			ft2232_type = OLIMEX_ARM_TINY_H_PID;
