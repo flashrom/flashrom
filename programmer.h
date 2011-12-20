@@ -133,6 +133,8 @@ struct bitbang_spi_master {
 	int (*get_miso) (void);
 	void (*request_bus) (void);
 	void (*release_bus) (void);
+	/* Length of half a clock period in usecs. */
+	unsigned int half_period;
 };
 
 #if CONFIG_INTERNAL == 1
@@ -208,6 +210,7 @@ void internal_delay(int usecs);
 
 #if NEED_PCI == 1
 /* pcidev.c */
+// FIXME: These need to be local, not global
 extern uint32_t io_base_addr;
 extern struct pci_access *pacc;
 extern struct pci_dev *pcidev_dev;
@@ -427,8 +430,7 @@ int rayer_spi_init(void);
 #endif
 
 /* bitbang_spi.c */
-int bitbang_spi_init(const struct bitbang_spi_master *master, int halfperiod);
-int bitbang_spi_shutdown(const struct bitbang_spi_master *master);
+int bitbang_spi_init(const struct bitbang_spi_master *master);
 
 /* buspirate_spi.c */
 #if CONFIG_BUSPIRATE_SPI == 1
@@ -452,6 +454,7 @@ struct decode_sizes {
 	uint32_t fwh;
 	uint32_t spi;
 };
+// FIXME: These need to be local, not global
 extern struct decode_sizes max_rom_decode;
 extern int programmer_may_write;
 extern unsigned long flashbase;
@@ -498,7 +501,6 @@ enum spi_controller {
 	SPI_CONTROLLER_SERPROG,
 #endif
 };
-extern const int spi_programmer_count;
 
 #define MAX_DATA_UNSPECIFIED 0
 #define MAX_DATA_READ_UNLIMITED 64 * 1024
@@ -514,15 +516,15 @@ struct spi_programmer {
 	/* Optimized functions for this programmer */
 	int (*read)(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 	int (*write_256)(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
+	const void *data;
 };
 
-extern const struct spi_programmer *spi_programmer;
 int default_spi_send_command(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
 			     const unsigned char *writearr, unsigned char *readarr);
 int default_spi_send_multicommand(struct flashctx *flash, struct spi_command *cmds);
 int default_spi_read(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 int default_spi_write_256(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
-void register_spi_programmer(const struct spi_programmer *programmer);
+int register_spi_programmer(const struct spi_programmer *programmer);
 
 /* ichspi.c */
 #if CONFIG_INTERNAL == 1
@@ -570,15 +572,14 @@ struct opaque_programmer {
 	int (*read) (struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 	int (*write) (struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 	int (*erase) (struct flashctx *flash, unsigned int blockaddr, unsigned int blocklen);
+	const void *data;
 };
-extern const struct opaque_programmer *opaque_programmer;
-void register_opaque_programmer(const struct opaque_programmer *pgm);
+int register_opaque_programmer(const struct opaque_programmer *pgm);
 
 /* programmer.c */
 int noop_shutdown(void);
 void *fallback_map(const char *descr, unsigned long phys_addr, size_t len);
 void fallback_unmap(void *virt_addr, size_t len);
-uint8_t noop_chip_readb(const struct flashctx *flash, const chipaddr addr);
 void noop_chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr);
 void fallback_chip_writew(const struct flashctx *flash, uint16_t val, chipaddr addr);
 void fallback_chip_writel(const struct flashctx *flash, uint32_t val, chipaddr addr);
@@ -595,9 +596,20 @@ struct par_programmer {
 	uint16_t (*chip_readw) (const struct flashctx *flash, const chipaddr addr);
 	uint32_t (*chip_readl) (const struct flashctx *flash, const chipaddr addr);
 	void (*chip_readn) (const struct flashctx *flash, uint8_t *buf, const chipaddr addr, size_t len);
+	const void *data;
 };
-extern const struct par_programmer *par_programmer;
-void register_par_programmer(const struct par_programmer *pgm, const enum chipbustype buses);
+int register_par_programmer(const struct par_programmer *pgm, const enum chipbustype buses);
+struct registered_programmer {
+	enum chipbustype buses_supported;
+	union {
+		struct par_programmer par;
+		struct spi_programmer spi;
+		struct opaque_programmer opaque;
+	};
+};
+extern struct registered_programmer registered_programmers[];
+extern int registered_programmer_count;
+int register_programmer(struct registered_programmer *pgm);
 
 /* serprog.c */
 #if CONFIG_SERPROG == 1

@@ -98,6 +98,7 @@ static const struct bitbang_spi_master bitbang_spi_master_mcp6x = {
 	.get_miso = mcp6x_bitbang_get_miso,
 	.request_bus = mcp6x_request_spibus,
 	.release_bus = mcp6x_release_spibus,
+	.half_period = 0,
 };
 
 int mcp6x_spi_init(int want_spi)
@@ -159,8 +160,7 @@ int mcp6x_spi_init(int want_spi)
 		 (status >> MCP6X_SPI_GRANT) & 0x1);
 	mcp_gpiostate = status & 0xff;
 
-	/* Zero halfperiod delay. */
-	if (bitbang_spi_init(&bitbang_spi_master_mcp6x, 0)) {
+	if (bitbang_spi_init(&bitbang_spi_master_mcp6x)) {
 		/* This should never happen. */
 		msg_perr("MCP6X bitbang SPI master init failed!\n");
 		return 1;
