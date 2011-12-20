@@ -299,22 +299,109 @@ static int dediprog_spi_read(struct flashctx *flash, uint8_t *buf,
 	return 0;
 }
 
+/* Bulk write interface, will read multiple page_size byte chunks aligned to page_size bytes.
+ * @start	start address
+ * @len		length
+ * @return	0 on success, 1 on failure
+ */
+static int dediprog_spi_bulk_write(struct flashctx *flash, uint8_t *buf,
+				   unsigned int start, unsigned int len)
+{
+	int ret;
+	unsigned int i;
+	/* USB transfer size must be 512, other sizes will NOT work at all.
+	 * chunksize is the real data size per USB bulk transfer. The remaining
+	 * space in a USB bulk transfer must be filled with 0xff padding.
+	 */
+	const unsigned int chunksize = flash->page_size;
+	const unsigned int count = len / chunksize;
+	const char count_and_chunk[] = {count & 0xff,
+					(count >> 8) & 0xff,
+					chunksize & 0xff,
+					(chunksize >> 8) & 0xff};
+	char usbbuf[512];
+
+	if ((start % chunksize) || (len % chunksize)) {
+		msg_perr("%s: Unaligned start=%i, len=%i! Please report a bug "
+			 "at flashrom@flashrom.org\n", __func__, start, len);
+		return 1;
+	}
+
+	/* No idea if the hardware can handle empty writes, so chicken out. */
+	if (!len)
+		return 0;
+	/* Command Write SPI Bulk. No idea which write command is used on the
+	 * SPI side.
+	 */
+	ret = usb_control_msg(dediprog_handle, 0x42, 0x30, start % 0x10000,
+			      start / 0x10000, (char *)count_and_chunk,
+			      sizeof(count_and_chunk), DEFAULT_TIMEOUT);
+	if (ret != sizeof(count_and_chunk)) {
+		msg_perr("Command Write SPI Bulk failed, %i %s!\n", ret,
+			 usb_strerror());
+		return 1;
+	}
+
+	for (i = 0; i < count; i++) {
+		memset(usbbuf, 0xff, sizeof(usbbuf));
+		memcpy(usbbuf, buf + i * chunksize, chunksize);
+		ret = usb_bulk_write(dediprog_handle, dediprog_endpoint,
+				    usbbuf, 512,
+				    DEFAULT_TIMEOUT);
+		if (ret != 512) {
+			msg_perr("SPI bulk write failed, expected %i, got %i "
+				 "%s!\n", 512, ret, usb_strerror());
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
 static int dediprog_spi_write_256(struct flashctx *flash, uint8_t *buf,
 				  unsigned int start, unsigned int len)
 {
 	int ret;
+	const unsigned int chunksize = flash->page_size;
+	unsigned int residue = start % chunksize ? chunksize - start % chunksize : 0;
+	unsigned int bulklen;
 
 	dediprog_set_leds(PASS_OFF|BUSY_ON|ERROR_OFF);
 
-	/* No idea about the real limit. Maybe 12, maybe more, maybe less. */
-	ret = spi_write_chunked(flash, buf, start, len, 12);
+	if (residue) {
+		msg_pdbg("Slow write for partial block from 0x%x, length 0x%x\n",
+			 start, residue);
+		/* No idea about the real limit. Maybe 12, maybe more. */
+		ret = spi_write_chunked(flash, buf, start, residue, 12);
+		if (ret) {
+			dediprog_set_leds(PASS_OFF|BUSY_OFF|ERROR_ON);
+			return ret;
+		}
+	}
 
-	if (ret)
+	/* Round down. */
+	bulklen = (len - residue) / chunksize * chunksize;
+	ret = dediprog_spi_bulk_write(flash, buf + residue, start + residue,
+				     bulklen);
+	if (ret) {
 		dediprog_set_leds(PASS_OFF|BUSY_OFF|ERROR_ON);
-	else
-		dediprog_set_leds(PASS_ON|BUSY_OFF|ERROR_OFF);
+		return ret;
+	}
 
-	return ret;
+	len -= residue + bulklen;
+	if (len) {
+		msg_pdbg("Slow write for partial block from 0x%x, length 0x%x\n",
+			 start, len);
+		ret = spi_write_chunked(flash, buf + residue + bulklen,
+				        start + residue + bulklen, len, 12);
+		if (ret) {
+			dediprog_set_leds(PASS_OFF|BUSY_OFF|ERROR_ON);
+			return ret;
+		}
+	}
+
+	dediprog_set_leds(PASS_ON|BUSY_OFF|ERROR_OFF);
+	return 0;
 }
 
 static int dediprog_spi_send_command(struct flashctx *flash,
@@ -494,6 +581,76 @@ static int dediprog_command_f(int timeout)
 	}
 	return 0;
 }
+
+/* Start/stop blinking?
+ * Present in eng_detect_blink.log with firmware 3.1.8
+ * Preceded by Command J
+ */
+static int dediprog_command_g(void)
+{
+	int ret;
+
+	ret = usb_control_msg(dediprog_handle, 0x42, 0x07, 0x09, 0x03, NULL, 0x0, DEFAULT_TIMEOUT);
+	if (ret != 0x0) {
+		msg_perr("Command G failed (%s)!\n", usb_strerror());
+		return 1;
+	}
+	return 0;
+}
+
+/* Something.
+ * Present in all logs with firmware 5.1.5
+ * Always preceded by Command Receive Device String
+ * Always followed by Command Set SPI Voltage nonzero
+ */
+static int dediprog_command_h(void)
+{
+	int ret;
+
+	ret = usb_control_msg(dediprog_handle, 0x42, 0x07, 0x09, 0x05, NULL, 0x0, DEFAULT_TIMEOUT);
+	if (ret != 0x0) {
+		msg_perr("Command H failed (%s)!\n", usb_strerror());
+		return 1;
+	}
+	return 0;
+}
+
+/* Shutdown for firmware 5.x?
+ * Present in all logs with firmware 5.1.5
+ * Often preceded by a SPI operation (Command Read SPI Bulk or Receive SPI)
+ * Always followed by Command Set SPI Voltage 0x0000
+ */
+static int dediprog_command_i(void)
+{
+	int ret;
+
+	ret = usb_control_msg(dediprog_handle, 0x42, 0x07, 0x09, 0x06, NULL, 0x0, DEFAULT_TIMEOUT);
+	if (ret != 0x0) {
+		msg_perr("Command I failed (%s)!\n", usb_strerror());
+		return 1;
+	}
+	return 0;
+}
+
+/* Start/stop blinking?
+ * Present in all logs with firmware 5.1.5
+ * Always preceded by Command Receive Device String on 5.1.5
+ * Always followed by Command Set SPI Voltage nonzero on 5.1.5
+ * Present in eng_detect_blink.log with firmware 3.1.8
+ * Preceded by Command B in eng_detect_blink.log
+ * Followed by Command G in eng_detect_blink.log
+ */
+static int dediprog_command_j(void)
+{
+	int ret;
+
+	ret = usb_control_msg(dediprog_handle, 0x42, 0x07, 0x09, 0x07, NULL, 0x0, DEFAULT_TIMEOUT);
+	if (ret != 0x0) {
+		msg_perr("Command J failed (%s)!\n", usb_strerror());
+		return 1;
+	}
+	return 0;
+}
 #endif
 
 static int parse_voltage(char *voltage)
@@ -557,6 +714,13 @@ static const struct spi_programmer spi_programmer_dediprog = {
 static int dediprog_shutdown(void *data)
 {
 	msg_pspew("%s\n", __func__);
+
+#if 0
+	/* Shutdown on firmware 5.x */
+	if (dediprog_firmwareversion == 5)
+		if (dediprog_command_i())
+			return 1;
+#endif
 
 	/* URB 28. Command Set SPI Voltage to 0. */
 	if (dediprog_set_spi_voltage(0x0))
