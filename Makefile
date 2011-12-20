@@ -37,27 +37,40 @@ ifeq ($(WARNERROR), yes)
 CFLAGS += -Werror
 endif
 
-# FIXME We have to differentiate between host and target OS architecture.
-OS_ARCH	?= $(shell uname)
-ifneq ($(OS_ARCH), SunOS)
+# HOST_OS is only used to work around local toolchain issues.
+HOST_OS	?= $(shell uname)
+ifeq ($(HOST_OS), MINGW32_NT-5.1)
+# Explicitly set CC = gcc on MinGW, otherwise: "cc: command not found".
+CC = gcc
+endif
+ifneq ($(HOST_OS), SunOS)
 STRIP_ARGS = -s
 endif
-ifeq ($(OS_ARCH), Darwin)
+
+# Determine the destination processor architecture.
+# IMPORTANT: The following line must be placed before TARGET_OS is ever used
+# (of course), but should come after any lines setting CC because the line
+# below uses CC itself.
+override TARGET_OS := $(strip $(shell LC_ALL=C $(CC) $(CPPFLAGS) -E os.h 2>/dev/null | grep -v '^\#' | grep '"' | cut -f 2 -d'"'))
+
+ifeq ($(TARGET_OS), Darwin)
 CPPFLAGS += -I/opt/local/include -I/usr/local/include
 # DirectHW framework can be found in the DirectHW library.
 LDFLAGS += -framework IOKit -framework DirectHW -L/opt/local/lib -L/usr/local/lib
 endif
-ifeq ($(OS_ARCH), FreeBSD)
+ifeq ($(TARGET_OS), FreeBSD)
 CPPFLAGS += -I/usr/local/include
 LDFLAGS += -L/usr/local/lib
 endif
-ifeq ($(OS_ARCH), OpenBSD)
+ifeq ($(TARGET_OS), OpenBSD)
 CPPFLAGS += -I/usr/local/include
 LDFLAGS += -L/usr/local/lib
 endif
-ifeq ($(OS_ARCH), DOS)
+ifeq ($(TARGET_OS), DOS)
 EXEC_SUFFIX := .exe
 CPPFLAGS += -I../libgetopt -I../libpci/include
+# DJGPP has odd uint*_t definitions which cause lots of format string warnings.
+CPPFLAGS += -Wno-format
 # FIXME Check if we can achieve the same effect with -L../libgetopt -lgetopt
 LIBS += ../libgetopt/libgetopt.a
 # Bus Pirate and Serprog are not supported under DOS (missing serial support).
@@ -84,9 +97,9 @@ override CONFIG_FT2232_SPI = no
 endif
 endif
 
-ifeq ($(OS_ARCH), MINGW32_NT-5.1)
-# Explicitly set CC = gcc on MinGW, otherwise: "cc: command not found".
-CC = gcc
+# FIXME: Should we check for Cygwin/MSVC as well?
+ifeq ($(TARGET_OS), MinGW)
+EXEC_SUFFIX := .exe
 # MinGW doesn't have the ffs() function, but we can use gcc's __builtin_ffs().
 CFLAGS += -Dffs=__builtin_ffs
 # libusb-win32/libftdi stuff is usually installed in /usr/local.
@@ -166,10 +179,7 @@ override CONFIG_SATAMV = no
 endif
 endif
 
-ifeq ($(OS_ARCH), libpayload)
-CC:=CC=i386-elf-gcc lpgcc
-AR:=i386-elf-ar
-RANLIB:=i386-elf-ranlib
+ifeq ($(TARGET_OS), libpayload)
 CPPFLAGS += -DSTANDALONE
 ifeq ($(CONFIG_DUMMY), yes)
 UNSUPPORTED_FEATURES += CONFIG_DUMMY=yes
@@ -202,10 +212,10 @@ endif
 # Determine the destination processor architecture.
 # IMPORTANT: The following line must be placed before ARCH is ever used
 # (of course), but should come after any lines setting CC because the line
-# below uses CC itself. In some cases we set CC based on OS_ARCH, see above.
-override ARCH := $(strip $(shell LC_ALL=C $(CC) -E arch.h 2>/dev/null | grep -v '^\#'))
+# below uses CC itself.
+override ARCH := $(strip $(shell LC_ALL=C $(CC) $(CPPFLAGS) -E arch.h 2>/dev/null | grep -v '^\#' | grep '"' | cut -f 2 -d'"'))
 
-ifeq ($(ARCH), "ppc")
+ifeq ($(ARCH), ppc)
 # There's no PCI port I/O support on PPC/PowerPC, yet.
 ifeq ($(CONFIG_NIC3COM), yes)
 UNSUPPORTED_FEATURES += CONFIG_NIC3COM=yes
@@ -348,7 +358,7 @@ endif
 ifeq ($(CONFIG_INTERNAL), yes)
 FEATURE_CFLAGS += -D'CONFIG_INTERNAL=1'
 PROGRAMMER_OBJS += processor_enable.o chipset_enable.o board_enable.o cbtable.o dmi.o internal.o
-ifeq ($(ARCH),"x86")
+ifeq ($(ARCH), x86)
 PROGRAMMER_OBJS += it87spi.o it85spi.o sb600spi.o wbsio_spi.o mcp6x_spi.o
 PROGRAMMER_OBJS += ichspi.o ich_descriptors.o
 else
@@ -476,7 +486,7 @@ LIB_OBJS += serial.o
 endif
 
 ifeq ($(NEED_NET), yes)
-ifeq ($(OS_ARCH), SunOS)
+ifeq ($(TARGET_OS), SunOS)
 LIBS += -lsocket
 endif
 endif
@@ -485,18 +495,18 @@ ifeq ($(NEED_PCI), yes)
 CHECK_LIBPCI = yes
 FEATURE_CFLAGS += -D'NEED_PCI=1'
 PROGRAMMER_OBJS += pcidev.o physmap.o hwaccess.o
-ifeq ($(OS_ARCH), NetBSD)
+ifeq ($(TARGET_OS), NetBSD)
 # The libpci we want is called libpciutils on NetBSD and needs NetBSD libpci.
 LIBS += -lpciutils -lpci
 # For (i386|x86_64)_iopl(2).
 LIBS += -l$(shell uname -p)
 else
-ifeq ($(OS_ARCH), DOS)
+ifeq ($(TARGET_OS), DOS)
 # FIXME There needs to be a better way to do this
 LIBS += ../libpci/lib/libpci.a
 else
 LIBS += -lpci
-ifeq ($(OS_ARCH), OpenBSD)
+ifeq ($(TARGET_OS), OpenBSD)
 # For (i386|amd64)_iopl(2).
 LIBS += -l$(shell uname -m)
 endif
@@ -564,11 +574,16 @@ compiler: featuresavailable
 		echo "found." || ( echo "not found."; \
 		rm -f .test.c .test$(EXEC_SUFFIX); exit 1)
 	@rm -f .test.c .test$(EXEC_SUFFIX)
-	@printf "ARCH is "
+	@printf "Target arch is "
 	@# FreeBSD wc will output extraneous whitespace.
-	@echo $(ARCH)|wc -l|grep -q '^[[:blank:]]*1[[:blank:]]*$$' ||	\
+	@echo $(ARCH)|wc -w|grep -q '^[[:blank:]]*1[[:blank:]]*$$' ||	\
 		( echo "unknown. Aborting."; exit 1)
 	@printf "%s\n" '$(ARCH)'
+	@printf "Target OS is "
+	@# FreeBSD wc will output extraneous whitespace.
+	@echo $(TARGET_OS)|wc -w|grep -q '^[[:blank:]]*1[[:blank:]]*$$' ||	\
+		( echo "unknown. Aborting."; exit 1)
+	@printf "%s\n" '$(TARGET_OS)'
 
 define LIBPCI_TEST
 /* Avoid a failing test due to libpci header symbol shadowing breakage */
@@ -684,7 +699,9 @@ tarball: export
 	@echo Created $(EXPORTDIR)/flashrom-$(RELEASENAME).tar.bz2
 
 djgpp-dos: clean
-	make CC=i586-pc-msdosdjgpp-gcc STRIP=i586-pc-msdosdjgpp-strip WARNERROR=no OS_ARCH=DOS
+	make CC=i586-pc-msdosdjgpp-gcc STRIP=i586-pc-msdosdjgpp-strip
+libpayload: clean
+	make CC="CC=i386-elf-gcc lpgcc" AR=i386-elf-ar RANLIB=i386-elf-ranlib
 
 .PHONY: all clean distclean compiler pciutils features export tarball dos featuresavailable
 
