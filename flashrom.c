@@ -46,9 +46,6 @@ static enum programmer programmer = PROGRAMMER_INVALID;
 
 static char *programmer_param = NULL;
 
-/* Supported buses for the current programmer. */
-enum chipbustype buses_supported;
-
 /*
  * Programmers supporting multiple buses can have differing size limits on
  * each bus. Store the limits for each bus in a common struct.
@@ -314,7 +311,6 @@ int programmer_init(enum programmer prog, char *param)
 		.fwh		= 0xffffffff,
 		.spi		= 0xffffffff,
 	};
-	buses_supported = BUS_NONE;
 	/* Default to top aligned flash at 4 GB. */
 	flashbase = 0;
 	/* Registering shutdown functions is now allowed. */
@@ -361,44 +357,44 @@ void programmer_unmap_flash_region(void *virt_addr, size_t len)
 
 void chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr)
 {
-	par_programmer->chip_writeb(flash, val, addr);
+	flash->pgm->par.chip_writeb(flash, val, addr);
 }
 
 void chip_writew(const struct flashctx *flash, uint16_t val, chipaddr addr)
 {
-	par_programmer->chip_writew(flash, val, addr);
+	flash->pgm->par.chip_writew(flash, val, addr);
 }
 
 void chip_writel(const struct flashctx *flash, uint32_t val, chipaddr addr)
 {
-	par_programmer->chip_writel(flash, val, addr);
+	flash->pgm->par.chip_writel(flash, val, addr);
 }
 
 void chip_writen(const struct flashctx *flash, uint8_t *buf, chipaddr addr,
 		 size_t len)
 {
-	par_programmer->chip_writen(flash, buf, addr, len);
+	flash->pgm->par.chip_writen(flash, buf, addr, len);
 }
 
 uint8_t chip_readb(const struct flashctx *flash, const chipaddr addr)
 {
-	return par_programmer->chip_readb(flash, addr);
+	return flash->pgm->par.chip_readb(flash, addr);
 }
 
 uint16_t chip_readw(const struct flashctx *flash, const chipaddr addr)
 {
-	return par_programmer->chip_readw(flash, addr);
+	return flash->pgm->par.chip_readw(flash, addr);
 }
 
 uint32_t chip_readl(const struct flashctx *flash, const chipaddr addr)
 {
-	return par_programmer->chip_readl(flash, addr);
+	return flash->pgm->par.chip_readl(flash, addr);
 }
 
 void chip_readn(const struct flashctx *flash, uint8_t *buf, chipaddr addr,
 		size_t len)
 {
-	par_programmer->chip_readn(flash, buf, addr, len);
+	flash->pgm->par.chip_readn(flash, buf, addr, len);
 }
 
 void programmer_delay(int usecs)
@@ -942,7 +938,8 @@ int check_max_decode(enum chipbustype buses, uint32_t size)
 	return 1;
 }
 
-int probe_flash(int startchip, struct flashctx *fill_flash, int force)
+int probe_flash(struct registered_programmer *pgm, int startchip,
+		struct flashctx *fill_flash, int force)
 {
 	const struct flashchip *flash;
 	unsigned long base = 0;
@@ -954,20 +951,9 @@ int probe_flash(int startchip, struct flashctx *fill_flash, int force)
 	for (flash = flashchips + startchip; flash && flash->name; flash++) {
 		if (chip_to_probe && strcmp(flash->name, chip_to_probe) != 0)
 			continue;
-		buses_common = buses_supported & flash->bustype;
-		if (!buses_common) {
-			msg_gspew("Probing for %s %s, %d kB: skipped. ",
-			         flash->vendor, flash->name, flash->total_size);
-			tmp = flashbuses_to_text(buses_supported);
-			msg_gspew("Host bus type %s ", tmp);
-			free(tmp);
-			tmp = flashbuses_to_text(flash->bustype);
-			msg_gspew("and chip bus type %s are incompatible.",
-				  tmp);
-			free(tmp);
-			msg_gspew("\n");
+		buses_common = pgm->buses_supported & flash->bustype;
+		if (!buses_common)
 			continue;
-		}
 		msg_gdbg("Probing for %s %s, %d kB: ",
 			     flash->vendor, flash->name, flash->total_size);
 		if (!flash->probe && !force) {
@@ -981,6 +967,7 @@ int probe_flash(int startchip, struct flashctx *fill_flash, int force)
 
 		/* Start filling in the dynamic data. */
 		memcpy(fill_flash, flash, sizeof(struct flashchip));
+		fill_flash->pgm = pgm;
 
 		base = flashbase ? flashbase : (0xffffffff - size + 1);
 		fill_flash->virtual_memory = (chipaddr)programmer_map_flash_region("flash chip", base, size);

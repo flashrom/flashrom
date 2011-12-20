@@ -179,7 +179,7 @@ int probe_spi_rdid4(struct flashctx *flash)
 	/* Some SPI controllers do not support commands with writecnt=1 and
 	 * readcnt=4.
 	 */
-	switch (spi_programmer->type) {
+	switch (flash->pgm->spi.type) {
 #if CONFIG_INTERNAL == 1
 #if defined(__i386__) || defined(__x86_64__)
 	case SPI_CONTROLLER_IT87XX:
@@ -1120,7 +1120,7 @@ int spi_aai_write(struct flashctx *flash, uint8_t *buf, unsigned int start,
 		.readarr	= NULL,
 	}};
 
-	switch (spi_programmer->type) {
+	switch (flash->pgm->spi.type) {
 #if CONFIG_INTERNAL == 1
 #if defined(__i386__) || defined(__x86_64__)
 	case SPI_CONTROLLER_IT87XX:

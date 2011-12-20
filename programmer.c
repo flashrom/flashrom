@@ -21,19 +21,6 @@
 #include "flash.h"
 #include "programmer.h"
 
-static const struct par_programmer par_programmer_none = {
-		.chip_readb		= noop_chip_readb,
-		.chip_readw		= fallback_chip_readw,
-		.chip_readl		= fallback_chip_readl,
-		.chip_readn		= fallback_chip_readn,
-		.chip_writeb		= noop_chip_writeb,
-		.chip_writew		= fallback_chip_writew,
-		.chip_writel		= fallback_chip_writel,
-		.chip_writen		= fallback_chip_writen,
-};
-
-const struct par_programmer *par_programmer = &par_programmer_none;
-
 /* No-op shutdown() for programmers which don't need special handling */
 int noop_shutdown(void)
 {
@@ -52,13 +39,7 @@ void fallback_unmap(void *virt_addr, size_t len)
 {
 }
 
-/* No-op chip_writeb() for drivers not supporting addr/data pair accesses */
-uint8_t noop_chip_readb(const struct flashctx *flash, const chipaddr addr)
-{
-	return 0xff;
-}
-
-/* No-op chip_writeb() for drivers not supporting addr/data pair accesses */
+/* No-op chip_writeb() for parallel style drivers not supporting writes */
 void noop_chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr)
 {
 }
@@ -115,8 +96,50 @@ void fallback_chip_readn(const struct flashctx *flash, uint8_t *buf,
 	return;
 }
 
-void register_par_programmer(const struct par_programmer *pgm, const enum chipbustype buses)
+int register_par_programmer(const struct par_programmer *pgm,
+			    const enum chipbustype buses)
 {
-	par_programmer = pgm;
-	buses_supported |= buses;
+	struct registered_programmer rpgm;
+	if (!pgm->chip_writeb || !pgm->chip_writew || !pgm->chip_writel ||
+	    !pgm->chip_writen || !pgm->chip_readb || !pgm->chip_readw ||
+	    !pgm->chip_readl || !pgm->chip_readn) {
+		msg_perr("%s called with incomplete programmer definition. "
+			 "Please report a bug at flashrom@flashrom.org\n",
+			 __func__);
+		return ERROR_FLASHROM_BUG;
+	}
+
+	rpgm.buses_supported = buses;
+	rpgm.par = *pgm;
+	return register_programmer(&rpgm);
+}
+
+/* The limit of 4 is totally arbitrary. */
+#define PROGRAMMERS_MAX 4
+struct registered_programmer registered_programmers[PROGRAMMERS_MAX];
+int registered_programmer_count = 0;
+
+/* This function copies the struct registered_programmer parameter. */
+int register_programmer(struct registered_programmer *pgm)
+{
+	if (registered_programmer_count >= PROGRAMMERS_MAX) {
+		msg_perr("Tried to register more than %i programmer "
+			 "interfaces.\n", PROGRAMMERS_MAX);
+		return ERROR_FLASHROM_LIMIT;
+	}
+	registered_programmers[registered_programmer_count] = *pgm;
+	registered_programmer_count++;
+
+	return 0;
+}
+
+enum chipbustype get_buses_supported(void)
+{
+	int i;
+	enum chipbustype ret = BUS_NONE;
+
+	for (i = 0; i < registered_programmer_count; i++)
+		ret |= registered_programmers[i].buses_supported;
+
+	return ret;
 }
