@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
 	struct flashctx flashes[3];
 	struct flashctx *fill_flash;
 	const char *name;
-	int namelen, opt, i;
+	int namelen, opt, i, j;
 	int startchip = 0, chipcount = 0, option_index = 0, force = 0;
 #if CONFIG_PRINT_WIKI == 1
 	int list_supported_wiki = 0;
@@ -444,17 +444,21 @@ int main(int argc, char *argv[])
 		ret = 1;
 		goto out_shutdown;
 	}
-	tempstr = flashbuses_to_text(buses_supported);
-	msg_pdbg("This programmer supports the following protocols: %s.\n",
+	tempstr = flashbuses_to_text(get_buses_supported());
+	msg_pdbg("The following protocols are supported: %s.\n",
 		 tempstr);
 	free(tempstr);
 
-	for (i = 0; i < ARRAY_SIZE(flashes); i++) {
-		startchip = probe_flash(startchip, &flashes[i], 0);
-		if (startchip == -1)
-			break;
-		chipcount++;
-		startchip++;
+	for (j = 0; j < registered_programmer_count; j++) {
+		startchip = 0;
+		for (i = 0; i < ARRAY_SIZE(flashes); i++) {
+			startchip = probe_flash(&registered_programmers[j],
+						startchip, &flashes[i], 0);
+			if (startchip == -1)
+				break;
+			chipcount++;
+			startchip++;
+		}
 	}
 
 	if (chipcount > 1) {
@@ -472,6 +476,7 @@ int main(int argc, char *argv[])
 			printf("Note: flashrom can never write if the flash "
 			       "chip isn't found automatically.\n");
 		}
+#if 0 // FIXME: What happens for a forced chip read if multiple compatible programmers are registered?
 		if (force && read_it && chip_to_probe) {
 			printf("Force read (-f -r -c) requested, pretending "
 			       "the chip is there:\n");
@@ -486,6 +491,7 @@ int main(int argc, char *argv[])
 			       "contain garbage.\n");
 			return read_flash_to_file(&flashes[0], filename);
 		}
+#endif
 		ret = 1;
 		goto out_shutdown;
 	} else if (!chip_to_probe) {
@@ -502,7 +508,7 @@ int main(int argc, char *argv[])
 	check_chip_supported(fill_flash);
 
 	size = fill_flash->total_size * 1024;
-	if (check_max_decode((buses_supported & fill_flash->bustype), size) &&
+	if (check_max_decode(fill_flash->pgm->buses_supported & fill_flash->bustype, size) &&
 	    (!force)) {
 		fprintf(stderr, "Chip is too big for this programmer "
 			"(-V gives details). Use --force to override.\n");
