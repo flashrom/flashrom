@@ -451,9 +451,10 @@ int main(int argc, char *argv[])
 
 	for (j = 0; j < registered_programmer_count; j++) {
 		startchip = 0;
-		for (i = 0; i < ARRAY_SIZE(flashes); i++) {
+		while (chipcount < ARRAY_SIZE(flashes)) {
 			startchip = probe_flash(&registered_programmers[j],
-						startchip, &flashes[i], 0);
+						startchip, 
+						&flashes[chipcount], 0);
 			if (startchip == -1)
 				break;
 			chipcount++;
