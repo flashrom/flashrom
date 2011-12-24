@@ -1,0 +1,10 @@
+- reverse the path: assemble a descriptormode image from various
+  blobs (BIOS, GbE, ME, OEM) and a description (xml? custom config?
+  sane defaults and cmd-line switches?)
+- dump 256 OEM bytes
+- deal with the various possible locations of mac address(es?)
+	/* mazzoo said: from what I've seen, the MAC address is the 1st or
+	 * 2nd 6 bytes in the GbE region. It seems the PXE-OpROM and/or the
+	 * intel EEUPDATE-tool copies the MAC address to the 2nd part.
+	 */
+- add descriptions for the missing chipsets
