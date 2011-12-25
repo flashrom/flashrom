@@ -289,8 +289,9 @@ int print(int type, const char *fmt, ...) __attribute__((format(printf, 2, 3)));
 #define msg_cspew(...)	print(MSG_BARF, __VA_ARGS__)	/* chip debug barf  */
 
 /* layout.c */
+int register_include_arg(char *name);
+int process_include_args(void);
 int read_romlayout(char *name);
-int find_romentry(char *name);
 int handle_romentries(struct flashctx *flash, uint8_t *oldcontents, uint8_t *newcontents);
 
 /* spi.c */
