@@ -215,26 +215,28 @@ int find_romentry(char *name)
 	return -1;
 }
 
-int find_next_included_romentry(unsigned int start)
+romlayout_t *get_next_included_romentry(unsigned int start)
 {
 	int i;
 	unsigned int best_start = UINT_MAX;
-	int best_entry = -1;
+	romlayout_t *best_entry = NULL;
+	romlayout_t *cur;
 
 	/* First come, first serve for overlapping regions. */
 	for (i = 0; i < romimages; i++) {
-		if (!rom_entries[i].included)
+		cur = &rom_entries[i];
+		if (!cur->included)
 			continue;
 		/* Already past the current entry? */
-		if (start > rom_entries[i].end)
+		if (start > cur->end)
 			continue;
 		/* Inside the current entry? */
-		if (start >= rom_entries[i].start)
-			return i;
+		if (start >= cur->start)
+			return cur;
 		/* Entry begins after start. */
-		if (best_start > rom_entries[i].start) {
-			best_start = rom_entries[i].start;
-			best_entry = i;
+		if (best_start > cur->start) {
+			best_start = cur->start;
+			best_entry = cur;
 		}
 	}
 	return best_entry;
@@ -243,7 +245,7 @@ int find_next_included_romentry(unsigned int start)
 int handle_romentries(struct flashctx *flash, uint8_t *oldcontents, uint8_t *newcontents)
 {
 	unsigned int start = 0;
-	int entry;
+	romlayout_t *entry;
 	unsigned int size = flash->total_size * 1024;
 
 	/* If no layout file was specified or the layout file was empty, assume
@@ -255,22 +257,21 @@ int handle_romentries(struct flashctx *flash, uint8_t *oldcontents, uint8_t *new
 	 * The union of all included romentries is used from the new image.
 	 */
 	while (start < size) {
-		entry = find_next_included_romentry(start);
+		entry = get_next_included_romentry(start);
 		/* No more romentries for remaining region? */
-		if (entry < 0) {
+		if (!entry) {
 			memcpy(newcontents + start, oldcontents + start,
 			       size - start);
 			break;
 		}
-		if (rom_entries[entry].start > start)
+		if (entry->start > start)
 			memcpy(newcontents + start, oldcontents + start,
-			       rom_entries[entry].start - start);
+			       entry->start - start);
 		/* Skip to location after current romentry. */
-		start = rom_entries[entry].end + 1;
+		start = entry->end + 1;
 		/* Catch overflow. */
 		if (!start)
 			break;
 	}
-			
 	return 0;
 }
