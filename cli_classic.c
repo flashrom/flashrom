@@ -295,14 +295,9 @@ int main(int argc, char *argv[])
 				cli_classic_abort_usage();
 			break;
 		case 'i':
-			/* FIXME: -l has to be specified before -i. */
 			tempstr = strdup(optarg);
-			if (find_romentry(tempstr) < 0) {
-				fprintf(stderr, "Error: image %s not found in "
-					"layout file or -i specified before "
-					"-l\n", tempstr);
+			if (register_include_arg(tempstr))
 				cli_classic_abort_usage();
-			}
 			break;
 		case 'L':
 			if (++operation_specified > 1) {
@@ -394,6 +389,9 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "Error: Extra parameter found.\n");
 		cli_classic_abort_usage();
 	}
+
+	if (process_include_args())
+		cli_classic_abort_usage();
 
 	/* FIXME: Print the actions flashrom will take. */
 
