@@ -39,16 +39,6 @@
 #define INCLUDE_INSTR "source"
 #define MAX_NESTING_LVL 5
 
-typedef struct {
-	chipoff_t start;
-	chipoff_t end;
-	bool start_topalign;
-	bool end_topalign;
-	bool included;
-	char *name;
-	char *file;
-} romentry_t;
-
 /* rom_entries store the entries specified in a layout file and associated run-time data */
 static romentry_t rom_entries[MAX_ROMLAYOUT];
 static int num_rom_entries = 0; /* the number of successfully parsed rom_entries */

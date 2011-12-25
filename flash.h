@@ -55,6 +55,16 @@ typedef uint32_t chipsize_t; /* Able to store the number of bytes of any support
 #define PRIxCHIPOFF "06"PRIx32
 #define PRIuCHIPSIZE PRIu32
 
+typedef struct {
+	chipoff_t start;
+	chipoff_t end;
+	bool start_topalign;
+	bool end_topalign;
+	bool included;
+	char *name;
+	char *file;
+} romentry_t;
+
 int register_shutdown(int (*function) (void *data), void *data);
 int shutdown_free(void *data);
 void *programmer_map_flash_region(const char *descr, uintptr_t phys_addr, size_t len);
@@ -285,6 +295,7 @@ int selfcheck(void);
 int doit(struct flashctx *flash, int force, const char *filename, int read_it, int write_it, int erase_it, int verify_it);
 int read_buf_from_file(unsigned char *buf, unsigned long size, const char *filename, const char *size_msg);
 int write_buf_to_file(const unsigned char *buf, unsigned long size, const char *filename);
+int write_image_to_file(const unsigned char *buf, unsigned long size, const char *filename);
 
 /* Something happened that shouldn't happen, but we can go on. */
 #define ERROR_NONFATAL 0x100
@@ -352,6 +363,7 @@ int read_romlayout(const char *name);
 int normalize_romentries(const struct flashctx *flash);
 int build_new_image(struct flashctx *flash, bool oldcontents_valid, uint8_t *oldcontents, uint8_t *newcontents);
 void layout_cleanup(void);
+romentry_t *get_next_included_romentry(unsigned int start);
 
 /* spi.c */
 struct spi_command {

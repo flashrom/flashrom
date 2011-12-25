@@ -1289,6 +1289,7 @@ int read_buf_from_file(unsigned char *buf, unsigned long size, const char *filen
 #endif
 }
 
+/** Simply dumps \a buf to file \a filename. */
 int write_buf_to_file(const unsigned char *buf, unsigned long size, const char *filename)
 {
 #ifdef __LIBPAYLOAD__
@@ -1299,52 +1300,108 @@ int write_buf_to_file(const unsigned char *buf, unsigned long size, const char *
 	FILE *image;
 
 	if (!filename) {
-		msg_gerr("No filename specified.\n");
+		msg_gerr("Error: No filename specified.\n");
 		return 1;
 	}
 	if ((image = fopen(filename, "wb")) == NULL) {
-		msg_gerr("Error: opening file \"%s\" failed: %s\n", filename, strerror(errno));
+		msg_gerr("Error: Opening file \"%s\" failed: %s\n", filename, strerror(errno));
 		return 1;
 	}
 
 	numbytes = fwrite(buf, 1, size, image);
 	fclose(image);
 	if (numbytes != size) {
-		msg_gerr("File %s could not be written completely.\n",
-			 filename);
+		msg_gerr("Error: File %s could not be written completely.\n", filename);
 		return 1;
 	}
 	return 0;
 #endif
 }
 
+/** Writes the complete \a buf to \a filename and all included regions to separate files. */
+int write_image_to_file(const unsigned char *buf, unsigned long size, const char *filename)
+{
+	romentry_t *l;
+
+	int ret = write_buf_to_file(buf, size, filename);
+	if (ret)
+		return ret;
+
+	l = get_next_included_romentry(0);
+
+	while (l != NULL) {
+		const char* name = (l->file[0] == '\0') ? l->name : l->file;
+		unsigned int len = l->end - l->start + 1;
+		msg_gdbg2("Writing \"%s\" to \"%s\" 0x%08x - 0x%08x (%uB)... ",
+			  l->name, l->file, l->start, l->end, len);
+		if (write_buf_to_file(buf + l->start, len, name) != 0) {
+			msg_gdbg2("failed.\n");
+			return 1;
+		}
+		msg_gdbg2("done.\n");
+		l = get_next_included_romentry(l->end + 1);
+	}
+
+	return 0;
+}
+
+/* Reads the flash chip taking the layout into account. If no layout is given, the complete chip is read, else
+ * only the included regions are read. */
+int read_flash_to_buf(struct flashctx *flash, uint8_t *buf)
+{
+	romentry_t *e;
+	const struct flashchip *chip = flash->chip;
+
+	if (!chip->read) {
+		msg_cerr("No read function available for this flash chip.\n");
+		return 1;
+	}
+
+	e = get_next_included_romentry(0);
+	/* No rom entries included, reading the complete chip. */
+	if (e == NULL)
+		return chip->read(flash, buf, 0, chip->total_size * 1024);
+
+	do {
+		unsigned int len = e->end - e->start + 1;
+		msg_gdbg2("Reading region \"%s\" 0x%08x - 0x%08x (%uB)... ", e->name, e->start, e->end, len);
+		if (chip->read(flash, buf + e->start, e->start, len)) {
+			msg_gdbg2("failed. ");
+			return 1;
+		}
+		msg_gdbg2("done. ");
+		e = get_next_included_romentry(e->end + 1);
+	} while (e != NULL);
+
+	return 0;
+}
+
+/* Reads the chip taking the layout file into account and saves the result accordingly. */
 int read_flash_to_file(struct flashctx *flash, const char *filename)
 {
 	unsigned long size = flash->chip->total_size * 1024;
-	unsigned char *buf = calloc(size, sizeof(char));
 	int ret = 0;
+	uint8_t *buf;
 
-	msg_cinfo("Reading flash... ");
-	if (!buf) {
+	msg_ginfo("Reading flash... ");
+
+	buf = calloc(size, sizeof(uint8_t));
+	if (buf == NULL) {
 		msg_gerr("Memory allocation failed!\n");
-		msg_cinfo("FAILED.\n");
+		msg_ginfo("FAILED.\n");
 		return 1;
 	}
-	if (!flash->chip->read) {
-		msg_cerr("No read function available for this flash chip.\n");
-		ret = 1;
-		goto out_free;
-	}
-	if (flash->chip->read(flash, buf, 0, size)) {
-		msg_cerr("Read operation failed!\n");
-		ret = 1;
+	ret = read_flash_to_buf(flash, buf);
+	if (ret != 0) {
+		msg_gerr("Read operation failed!\n");
+		msg_cinfo("FAILED.\n");
 		goto out_free;
 	}
 
-	ret = write_buf_to_file(buf, size, filename);
+	ret = write_image_to_file(buf, size, filename);
+	msg_ginfo("done.\n");
 out_free:
 	free(buf);
-	msg_cinfo("%s.\n", ret ? "FAILED" : "done");
 	return ret;
 }
 
