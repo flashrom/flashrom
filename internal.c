@@ -213,6 +213,16 @@ int internal_init(void)
 	}
 	free(arg);
 
+	arg = extract_programmer_param("mainboard");
+	if (arg && strlen(arg)) {
+		lb_vendor_dev_from_string(arg);
+	} else if (arg && !strlen(arg)) {
+		msg_perr("Missing argument for mainboard.\n");
+		free(arg);
+		return 1;
+	}
+	free(arg);
+
 	get_io_perms();
 	if (register_shutdown(internal_shutdown, NULL))
 		return 1;

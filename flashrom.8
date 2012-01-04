@@ -5,7 +5,7 @@ flashrom \- detect, read, write, verify and erase flash chips
 .B flashrom \fR[\fB\-n\fR] [\fB\-V\fR] [\fB\-f\fR] [\fB\-h\fR|\fB\-R\fR|\
 \fB\-L\fR|\fB\-z\fR|\fB\-E\fR|\fB\-r\fR <file>|\fB\-w\fR <file>|\
 \fB\-v\fR <file>]
-         [\fB\-c\fR <chipname>] [\fB\-m\fR [<vendor>:]<board>] \
+         [\fB\-c\fR <chipname>] \
 [\fB\-l\fR <file>]
          [\fB\-i\fR <image>] [\fB\-p\fR <programmername>[:<parameters>]]
 .SH DESCRIPTION
@@ -87,19 +87,6 @@ printed by
 .B "flashrom \-L"
 without the vendor name as parameter. Please note that the chip name is
 case sensitive.
-.TP
-.B "\-m, \-\-mainboard" [<vendor>:]<board>
-Override mainboard settings.
-.sp
-flashrom reads the coreboot table to determine the current mainboard. If no
-coreboot table could be read or if you want to override these values, you can
-specify \-m, e.g.:
-.sp
-.B "  flashrom \-\-mainboard AGAMI:ARUMA \-w agami_aruma.rom"
-.sp
-See the 'Known boards' or 'Known laptops' section in the output
-of 'flashrom \-L' for a list of boards which require the specification of
-the board name, if no coreboot table is found.
 .TP
 .B "\-f, \-\-force"
 Force one or more of the following actions:
@@ -245,10 +232,15 @@ autodetected using one of the following mechanisms: If your system is
 running coreboot, the mainboard type is determined from the coreboot table.
 Otherwise, the mainboard is detected by examining the onboard PCI devices
 and possibly DMI info. If PCI and DMI do not contain information to uniquely
-identify the mainboard (which is the exception), it might be necessary to
-specify the mainboard using the
-.B \-m
-switch (see above).
+identify the mainboard (which is the exception), or if you want to override
+the detected mainboard model, you can specify the mainboard using the
+.sp
+.B "  flashrom \-p internal:mainboard=[<vendor>:]<board>"
+syntax.
+.sp
+See the 'Known boards' or 'Known laptops' section in the output
+of 'flashrom \-L' for a list of boards which require the specification of
+the board name, if no coreboot table is found.
 .sp
 Some of these board-specific flash enabling functions (called
 .BR "board enables" )
