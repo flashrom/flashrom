@@ -2070,7 +2070,8 @@ static int it8718f_gpio63_raise(void)
  * The coreboot ids are used two fold. When running with a coreboot firmware,
  * the ids uniquely matches the coreboot board identification string. When a
  * legacy bios is installed and when autodetection is not possible, these ids
- * can be used to identify the board through the -m command line argument.
+ * can be used to identify the board through the -p internal:mainboard=
+ * programmer parameter.
  *
  * When a board is identified through its coreboot ids (in both cases), the
  * main pci ids are still required to match, as a safeguard.
@@ -2245,7 +2246,8 @@ static const struct board_match *board_match_cbname(const char *vendor,
 			msg_pinfo("AMBIGUOUS BOARD NAME: %s\n", part);
 			msg_pinfo("At least vendors '%s' and '%s' match.\n",
 				  partmatch->lb_vendor, board->lb_vendor);
-			msg_perr("Please use the full -m vendor:part syntax.\n");
+			msg_perr("Please use the full -p internal:mainboard="
+				 "vendor:part syntax.\n");
 			return NULL;
 		}
 		partmatch = board;
@@ -2259,7 +2261,8 @@ static const struct board_match *board_match_cbname(const char *vendor,
 		 * coreboot table. If it was, the coreboot implementor is
 		 * expected to fix flashrom, too.
 		 */
-		msg_perr("\nUnknown vendor:board from -m option: %s:%s\n\n",
+		msg_perr("\nUnknown vendor:board from -p internal:mainboard="
+			 " programmer parameter:\n%s:%s\n\n",
 			 vendor, part);
 	}
 	return NULL;

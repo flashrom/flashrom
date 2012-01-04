@@ -106,11 +106,11 @@ int show_id(uint8_t *bios, int size, int force)
 
 	/*
 	 * If lb_vendor is not set, the coreboot table was
-	 * not found. Nor was -m VENDOR:PART specified.
+	 * not found. Nor was -p internal:mainboard=VENDOR:PART specified.
 	 */
 	if (!lb_vendor || !lb_part) {
-		msg_pinfo("Note: If the following flash access fails, "
-		       "try -m <vendor>:<mainboard>.\n");
+		msg_pinfo("Note: If the following flash access fails, try "
+			  "-p internal:mainboard=<vendor>:<mainboard>.\n");
 		return 0;
 	}
 
@@ -126,14 +126,17 @@ int show_id(uint8_t *bios, int size, int force)
 			       "seem to fit to this machine - forcing it.\n");
 		} else {
 			msg_pinfo("ERROR: Your firmware image (%s:%s) does not "
-			       "appear to\n       be correct for the detected "
-			       "mainboard (%s:%s)\n\nOverride with -p internal:"
-			       "boardmismatch=force if you are absolutely sure "
-			       "that\nyou are using a correct "
-			       "image for this mainboard or override\nthe detected "
-			       "values with --mainboard <vendor>:<mainboard>.\n\n",
-			       mainboard_vendor, mainboard_part, lb_vendor,
-			       lb_part);
+				  "appear to\n"
+				  "       be correct for the detected "
+				  "mainboard (%s:%s)\n\n"
+				  "Override with -p internal:boardmismatch="
+				  "force to ignore the board name in the\n"
+				  "firmware image or override the detected "
+				  "mainboard with\n"
+				  "-p internal:mainboard=<vendor>:<mainboard>."
+				  "\n\n",
+				  mainboard_vendor, mainboard_part, lb_vendor,
+				  lb_part);
 			exit(1);
 		}
 	}

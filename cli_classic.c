@@ -106,7 +106,7 @@ static void cli_classic_usage(const char *name)
 	         "-z|"
 #endif
 	         "-E|-r <file>|-w <file>|-v <file>]\n"
-	       "       [-c <chipname>] [-m [<vendor>:]<part>] [-l <file>]\n"
+	       "       [-c <chipname>] [-l <file>]\n"
 	       "       [-i <image>] [-p <programmername>[:<parameters>]]\n\n");
 
 	printf("Please note that the command line interface for flashrom has "
@@ -128,11 +128,6 @@ static void cli_classic_usage(const char *name)
 	       "   -V | --verbose                    more verbose output\n"
 	       "   -c | --chip <chipname>            probe only for specified "
 	         "flash chip\n"
-#if CONFIG_INTERNAL == 1
-	       /* FIXME: --mainboard should be a programmer parameter */
-	       "   -m | --mainboard <[vendor:]part>  override mainboard "
-	         "detection\n"
-#endif
 	       "   -f | --force                      force specific operations "
 	         "(see man page)\n"
 	       "   -n | --noverify                   don't auto-verify\n"
@@ -190,7 +185,6 @@ int main(int argc, char *argv[])
 		{"verify",		1, NULL, 'v'},
 		{"noverify",		0, NULL, 'n'},
 		{"chip",		1, NULL, 'c'},
-		{"mainboard",		1, NULL, 'm'},
 		{"verbose",		0, NULL, 'V'},
 		{"force",		0, NULL, 'f'},
 		{"layout",		1, NULL, 'l'},
@@ -274,17 +268,6 @@ int main(int argc, char *argv[])
 				cli_classic_abort_usage();
 			}
 			erase_it = 1;
-			break;
-		case 'm':
-#if CONFIG_INTERNAL == 1
-			tempstr = strdup(optarg);
-			lb_vendor_dev_from_string(tempstr);
-#else
-			fprintf(stderr, "Error: Internal programmer support "
-				"was not compiled in and --mainboard only\n"
-				"applies to the internal programmer. Aborting.\n");
-			cli_classic_abort_usage();
-#endif
 			break;
 		case 'f':
 			force = 1;
@@ -425,14 +408,6 @@ int main(int argc, char *argv[])
 
 	if (prog == PROGRAMMER_INVALID)
 		prog = default_programmer;
-
-#if CONFIG_INTERNAL == 1
-	if ((prog != PROGRAMMER_INTERNAL) && (lb_part || lb_vendor)) {
-		fprintf(stderr, "Error: --mainboard requires the internal "
-				"programmer. Aborting.\n");
-		cli_classic_abort_usage();
-	}
-#endif
 
 	/* FIXME: Delay calibration should happen in programmer code. */
 	myusec_calibrate_delay();
