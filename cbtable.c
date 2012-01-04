@@ -33,18 +33,27 @@
 char *lb_part = NULL, *lb_vendor = NULL;
 int partvendor_from_cbtable = 0;
 
-void lb_vendor_dev_from_string(char *boardstring)
+/* Parse the [<vendor>:]<board> string specified by the user as part of
+ * -p internal:mainboard=[<vendor>:]<board> and set lb_vendor and lb_part
+ * to the extracted values.
+ * Note: strtok modifies the original string, so we work on a copy and allocate
+ * memory for lb_vendor and lb_part with strdup.
+ */
+void lb_vendor_dev_from_string(const char *boardstring)
 {
+	/* strtok may modify the original string. */
+	char *tempstr = strdup(boardstring);
 	char *tempstr2 = NULL;
-	strtok(boardstring, ":");
+	strtok(tempstr, ":");
 	tempstr2 = strtok(NULL, ":");
 	if (tempstr2) {
-		lb_vendor = boardstring;
-		lb_part = tempstr2;
+		lb_vendor = strdup(tempstr);
+		lb_part = strdup(tempstr2);
 	} else {
 		lb_vendor = NULL;
-		lb_part = boardstring;
+		lb_part = strdup(tempstr);
 	}
+	free(tempstr);
 }
 
 static unsigned long compute_checksum(void *addr, unsigned long length)

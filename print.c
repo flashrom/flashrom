@@ -389,7 +389,10 @@ static void print_supported_boards_helper(const struct board_info *boards,
 	for (i = strlen("Board"); i < maxboardlen; i++)
 		msg_ginfo(" ");
 
-	msg_ginfo("Status  Required option\n\n");
+	msg_ginfo("Status  Required value for\n");
+	for (i = 0; i < maxvendorlen + maxboardlen + strlen("Status  "); i++)
+		msg_ginfo(" ");
+	msg_ginfo("-p internal:mainboard=\n");
 
 	for (b = boards; b->vendor != NULL; b++) {
 		msg_ginfo("%s", b->vendor);
@@ -407,7 +410,7 @@ static void print_supported_boards_helper(const struct board_info *boards,
 			if (e->lb_vendor == NULL)
 				msg_ginfo("(autodetected)");
 			else
-				msg_ginfo("-m %s:%s", e->lb_vendor,
+				msg_ginfo("%s:%s", e->lb_vendor,
 						   e->lb_part);
 		}
 		msg_ginfo("\n");
