@@ -177,7 +177,7 @@ int main(int argc, char *argv[])
 	enum programmer prog = PROGRAMMER_INVALID;
 	int ret = 0;
 
-	static const char optstring[] = "r:Rw:v:nVEfc:m:l:i:p:Lzh";
+	static const char optstring[] = "r:Rw:v:nVEfc:l:i:p:Lzh";
 	static const struct option long_options[] = {
 		{"read",		1, NULL, 'r'},
 		{"write",		1, NULL, 'w'},
@@ -198,6 +198,7 @@ int main(int argc, char *argv[])
 	};
 
 	char *filename = NULL;
+	char *layoutfile = NULL;
 	char *tempstr = NULL;
 	char *pparam = NULL;
 
@@ -273,9 +274,12 @@ int main(int argc, char *argv[])
 			force = 1;
 			break;
 		case 'l':
-			tempstr = strdup(optarg);
-			if (read_romlayout(tempstr))
+			if (layoutfile) {
+				fprintf(stderr, "Error: --layout specified "
+					"more than once. Aborting.\n");
 				cli_classic_abort_usage();
+			}
+			layoutfile = strdup(optarg);
 			break;
 		case 'i':
 			tempstr = strdup(optarg);
@@ -373,9 +377,6 @@ int main(int argc, char *argv[])
 		cli_classic_abort_usage();
 	}
 
-	if (process_include_args())
-		cli_classic_abort_usage();
-
 	/* FIXME: Print the actions flashrom will take. */
 
 	if (list_supported) {
@@ -389,6 +390,11 @@ int main(int argc, char *argv[])
 		exit(0);
 	}
 #endif
+
+	if (layoutfile && read_romlayout(layoutfile))
+		cli_classic_abort_usage();
+	if (process_include_args())
+		cli_classic_abort_usage();
 
 	/* Does a chip with the requested name exist in the flashchips array? */
 	if (chip_to_probe) {
