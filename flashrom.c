@@ -1600,7 +1600,7 @@ void check_chip_supported(const struct flashctx *flash)
 			    "include the flashrom\n"
 			  "output with the additional -V option for all "
 			    "operations you tested (-V, -Vr,\n"
-			  "-Vw, -VE), and mention which mainboard or "
+			  "-VE, -Vw), and mention which mainboard or "
 			    "programmer you tested.\n"
 			  "Please mention your board in the subject line. "
 			    "Thanks for your help!\n");
