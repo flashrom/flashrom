@@ -556,6 +556,7 @@ const struct board_info boards_known[] = {
 	B("Advantech",	"PCM-5820",		1, "http://www.emacinc.com/sbc_pc_compatible/pcm_5820.htm", NULL),
 	B("agami",	"Aruma",		1, "http://web.archive.org/web/20080212111524/http://www.agami.com/site/ais-6000-series", NULL),
 	B("Albatron",	"PM266A Pro",		1, "http://www.albatron.com.tw/English/Product/MB/pro_detail.asp?rlink=Overview&no=56", NULL), /* FIXME */
+	B("AOpen",	"i945GMx-VFX",		1, NULL, "This is (also?) an OEM board from FCS (used in e.g. ESPRIMO Q5010 with designation D2544-B1)."),
 	B("AOpen",	"vKM400Am-S",		1, "http://usa.aopen.com/products_detail.aspx?Auno=824", NULL),
 	B("Artec Group","DBE61",		1, "http://wiki.thincan.org/DBE61", NULL),
 	B("Artec Group","DBE62",		1, "http://wiki.thincan.org/DBE62", NULL),

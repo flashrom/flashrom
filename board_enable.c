@@ -1560,6 +1560,16 @@ static int intel_ich_gpio34_raise(void)
 
 /*
  * Suited for:
+ *  - AOpen i945GMx-VFX: Intel 945GM + ICH7-M used in ...
+ *    - FCS ESPRIMO Q5010 (SMBIOS: D2544-B1)
+ */
+static int intel_ich_gpio38_raise(void)
+{
+	return intel_ich_gpio_set(38, 1);
+}
+
+/*
+ * Suited for:
  *  - ASUS M6Ne (laptop): socket 479M (guessed) + Intel 855PM + ICH4-M
  */
 static int intel_ich_gpio43_raise(void)
@@ -2098,6 +2108,7 @@ const struct board_match board_matches[] = {
 	{0x1106, 0x3177, 0x17F2, 0x3177,  0x1106, 0x3148, 0x17F2, 0x3148, NULL,         NULL, NULL,           P3, "Albatron",    "PM266A Pro",            0,   OK, w836xx_memw_enable_2e},
 	{0x1022, 0x2090,      0,      0,  0x1022, 0x2080,      0,      0, NULL,        "artecgroup", "dbe61", P3, "Artec Group", "DBE61",                 0,   OK, board_artecgroup_dbe6x},
 	{0x1022, 0x2090,      0,      0,  0x1022, 0x2080,      0,      0, NULL,        "artecgroup", "dbe62", P3, "Artec Group", "DBE62",                 0,   OK, board_artecgroup_dbe6x},
+	{0x8086, 0x27b9, 0xa0a0, 0x0632,  0x8086, 0x27da, 0xa0a0, 0x0632, NULL,         NULL, NULL,           P3, "AOpen",       "i945GMx-VFX",           0,   OK, intel_ich_gpio38_raise},
 	{0x8086, 0x277c, 0xa0a0, 0x060b,  0x8086, 0x27da, 0xa0a0, 0x060b, NULL,         NULL, NULL,           P3, "AOpen",       "i975Xa-YDG",            0,   OK, board_aopen_i975xa_ydg},
 	{0x8086, 0x27b8, 0x1849, 0x27b8,  0x8086, 0x27da, 0x1849, 0x27da, "^ConRoeXFire-eSATA2", NULL, NULL,  P3, "ASRock",      "ConRoeXFire-eSATA2",    0,   OK, intel_ich_gpio16_raise},
 	{0x1039, 0x0741, 0x1849, 0x0741,  0x1039, 0x5513, 0x1849, 0x5513, "^K7S41 $",   NULL, NULL,           P3, "ASRock",      "K7S41",                 0,   OK, w836xx_memw_enable_2e},
