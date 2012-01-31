@@ -791,6 +791,7 @@ const struct board_info boards_known[] = {
 	B("Lanner",	"EM-8510C",		1, NULL, NULL),
 	B("Lex",	"CV700A",		1, "http://www.lex.com.tw/product/CV700A-spec.htm", NULL),
 	B("Mitac",	"6513WU",		1, "http://web.archive.org/web/20050313054828/http://www.mitac.com/micweb/products/tyan/6513wu/6513wu.htm", NULL),
+	B("MSC",	"Q7-TCTC",		1, "http://www.msc-ge.com/en/produkte/com/moduls/overview/5779-www.html", NULL),
 	B("MSI",	"MS-6153",		1, "http://www.msi.com/product/mb/MS-6153.html", NULL),
 	B("MSI",	"MS-6156",		1, "http://uk.ts.fujitsu.com/rl/servicesupport/techsupport/boards/Motherboards/MicroStar/Ms6156/MS6156.htm", NULL),
 	B("MSI",	"MS-6163 (MS-6163 Pro)",1, "http://www.msi.com/product/mb/MS-6163-Pro.html", NULL),
