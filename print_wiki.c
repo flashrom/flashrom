@@ -216,9 +216,10 @@ static void print_supported_chips_wiki(int cols)
 	char vmin[6];
 
 	for (f = flashchips; f->name != NULL; f++) {
-		/* Don't count "unknown XXXX SPI chip" entries. */
-		if (!strncmp(f->name, "unknown", 7))
-			continue;
+		/* Don't count generic entries. */
+		if (!strncmp(f->vendor, "Unknown", 7) ||
+		    !strncmp(f->vendor, "Programmer", 10) ||
+		    !strncmp(f->name, "unknown", 7))
 		chipcount++;
 	}
 
@@ -227,8 +228,10 @@ static void print_supported_chips_wiki(int cols)
 		"| valign=\"top\"|\n\n%s", chipcount, chip_th);
 
 	for (f = flashchips; f->name != NULL; f++, i++) {
-		/* Don't print "unknown XXXX SPI chip" entries. */
-		if (!strncmp(f->name, "unknown", 7))
+		/* Don't print generic entries. */
+		if (!strncmp(f->vendor, "Unknown", 7) ||
+		    !strncmp(f->vendor, "Programmer", 10) ||
+		    !strncmp(f->name, "unknown", 7))
 			continue;
 
 		/* Alternate colors if the vendor changes. */
