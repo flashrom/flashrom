@@ -692,6 +692,7 @@ const struct board_info boards_known[] = {
 	B("ASUS",	"Z8NA-D6C",		1, "http://www.asus.com/Server_Workstation/Server_Motherboards/Z8NAD6C/", NULL),
 	B("ASUS",	"Z8PE-D12",		1, "http://www.asus.com/Server_Workstation/Server_Motherboards/Z8PED12/", NULL),
 	B("BCOM",	"WinNET100",		1, "http://www.coreboot.org/BCOM_WINNET100", "Used in the IGEL-316 thin client."),
+	B("Bifferos",	"Bifferboard",		1, "http://bifferos.co.uk/", NULL),
 	B("Biostar",	"N68S3+",		1, NULL, NULL),
 	B("Biostar",	"M6TBA",		0, "ftp://ftp.biostar-usa.com/manuals/M6TBA/", "No public report found. Owned by Uwe Hermann <uwe@hermann-uwe.de>. May work now."),
 	B("Biostar",	"M7NCD Pro",		1, "http://www.biostar.com.tw/app/en/mb/content.php?S_ID=260", NULL),

@@ -54,6 +54,32 @@ static int enable_flash_ali_m1533(struct pci_dev *dev, const char *name)
 	return 0;
 }
 
+static int enable_flash_rdc_r8610(struct pci_dev *dev, const char *name)
+{
+	uint8_t tmp;
+
+	/* enable ROMCS for writes */
+	tmp = pci_read_byte(dev, 0x43);
+	tmp |= 0x80;
+	pci_write_byte(dev, 0x43, tmp);
+
+	/* read the bootstrapping register */
+	tmp = pci_read_byte(dev, 0x40) & 0x3;
+	switch (tmp) {
+	case 3:
+		internal_buses_supported = BUS_FWH;
+		break;
+	case 2:
+		internal_buses_supported = BUS_LPC;
+		break;
+	default:
+		internal_buses_supported = BUS_PARALLEL;
+		break;
+	}
+
+	return 0;
+}
+
 static int enable_flash_sis85c496(struct pci_dev *dev, const char *name)
 {
 	uint8_t tmp;
@@ -1235,6 +1261,7 @@ const struct penable chipset_enables[] = {
 	{0x1106, 0x8409, OK, "VIA", "VX855/VX875",	enable_flash_vt823x},
 	{0x1166, 0x0200, OK, "Broadcom", "OSB4",	enable_flash_osb4},
 	{0x1166, 0x0205, OK, "Broadcom", "HT-1000",	enable_flash_ht1000},
+	{0x17f3, 0x6030, OK, "RDC", "R8610/R3210",	enable_flash_rdc_r8610},
 	{0x8086, 0x122e, OK, "Intel", "PIIX",		enable_flash_piix4},
 	{0x8086, 0x1234, NT, "Intel", "MPIIX",		enable_flash_piix4},
 	{0x8086, 0x1c44, OK, "Intel", "Z68",		enable_flash_pch6},
