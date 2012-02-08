@@ -421,6 +421,28 @@ is the number of bytes (min. 1, max. 256).
 Example:
 .sp
 .B "  flashrom -p dummy:emulate=M25P10.RES,spi_write_256_chunksize=5"
+.sp
+To simulate a programmer which refuses to send certain SPI commands to the
+flash chip, you can specify a blacklist of SPI commands with the
+.sp
+.B "  flashrom -p dummy:spi_blacklist=commandlist"
+.sp
+syntax where commandlist is a list of two-digit hexadecimal representations of
+SPI commands. If commandlist is e.g. 0302, flashrom will behave as if the SPI
+controller refuses to run command 0x03 (READ) and command 0x02 (WRITE).
+commandlist may be up to 512 characters (256 commands) long.
+Implementation note: flashrom will detect an error during command execution.
+.sp
+To simulate a flash chip which ignores (doesn't support) certain SPI commands,
+you can specify an ignorelist of SPI commands with the
+.sp
+.B "  flashrom -p dummy:spi_ignorelist=commandlist"
+.sp
+syntax where commandlist is a list of two-digit hexadecimal representations of
+SPI commands. If commandlist is e.g. 0302, the emulated flash chip will ignore
+command 0x03 (READ) and command 0x02 (WRITE).  commandlist may be up to 512
+characters (256 commands) long.
+Implementation note: flashrom won't detect an error during command execution.
 .TP
 .BR "nic3com" , " nicrealtek" , " nicsmc1211" , " nicnatsemi" , " nicintel\
 " , " nicintel_spi" , " gfxnvidia" , " ogp_spi" , " drkaiser" , " satasii\
