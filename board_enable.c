@@ -1540,6 +1540,7 @@ static int intel_ich_gpio21_raise(void)
  *  - ASUS P4B266: socket478 + Intel 845D + ICH2
  *  - ASUS P4B533-E: socket478 + 845E + ICH4
  *  - ASUS P4B-MX variant in HP Vectra VL420 SFF: socket478 + 845D + ICH2
+ *  - TriGem Anaheim-3: socket370 + Intel 810 + ICH
  */
 static int intel_ich_gpio22_raise(void)
 {
@@ -2230,6 +2231,7 @@ const struct board_match board_matches[] = {
 	{0x10de, 0x0364, 0x108e, 0x6676,  0x10de, 0x0369, 0x108e, 0x6676, "^Sun Ultra 40 M2", NULL, NULL,     P3, "Sun",         "Ultra 40 M2",           0,   OK, board_sun_ultra_40_m2},
 	{0x1106, 0x3038, 0x0925, 0x1234,  0x1106, 0x0596, 0x1106,      0, NULL,         NULL, NULL,           P3, "Tekram",      "P6Pro-A5",              256, OK, NULL},
 	{0x1106, 0x3123, 0x1106, 0x3123,  0x1106, 0x3059, 0x1106, 0x4161, NULL,         NULL, NULL,           P3, "Termtek",     "TK-3370 (Rev:2.5B)",    0,   OK, w836xx_memw_enable_4e},
+	{0x8086, 0x7120, 0x109f, 0x3157,  0x8086, 0x2410,      0,      0, NULL,         NULL, NULL,           P3, "TriGem",      "Anaheim-3",             0,   OK, intel_ich_gpio22_raise},
 	{0x8086, 0x1076, 0x8086, 0x1176,  0x1106, 0x3059, 0x10f1, 0x2498, NULL,         NULL, NULL,           P3, "Tyan",        "S2498 (Tomcat K7M)",    0,   OK, w836xx_memw_enable_2e},
 	{0x1106, 0x0259, 0x1106, 0xAA07,  0x1106, 0x3227, 0x1106, 0xAA07, NULL,         NULL, NULL,           P3, "VIA",         "EPIA EK",               0,   NT, via_vt823x_gpio9_raise},
 	{0x1106, 0x3177, 0x1106, 0xAA01,  0x1106, 0x3123, 0x1106, 0xAA01, NULL,         NULL, NULL,           P3, "VIA",         "EPIA M/MII/...",        0,   OK, via_vt823x_gpio15_raise},
