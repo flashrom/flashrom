@@ -886,6 +886,7 @@ const struct board_info boards_known[] = {
 	B("Tekram",	"P6Pro-A5",		1, "http://www.motherboard.cz/mb/tekram/P6Pro-A5.htm", NULL),
 	B("Termtek",	"TK-3370 (Rev:2.5B)",	1, NULL, NULL),
 	B("Thomson",	"IP1000",		1, "http://www.settoplinux.org/index.php?title=Thomson_IP1000", NULL),
+	B("TriGem",	"Anaheim-3",		1, "http://www.e4allupgraders.info/dir1/motherboards/socket370/anaheim3.shtml", NULL),
 	B("TriGem",	"Lomita",		1, "http://www.e4allupgraders.info/dir1/motherboards/socket370/lomita.shtml", NULL),
 	B("Tyan",	"S5375-1U (Tempest i5100X)", 1, "http://www.tyan.com/product_board_detail.aspx?pid=610", NULL),
 	B("Tyan",	"S1846 (Tsunami ATX)",	1, "http://www.tyan.com/archive/products/html/tsunamiatx.html", NULL),
