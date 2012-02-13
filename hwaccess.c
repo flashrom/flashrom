@@ -116,6 +116,20 @@ void release_io_perms(void)
 {
 }
 
+#elif defined (__arm__)
+
+static inline void sync_primitive(void)
+{
+}
+
+void get_io_perms(void)
+{
+}
+
+void release_io_perms(void)
+{
+}
+
 #else
 
 #error Unknown architecture

@@ -27,5 +27,7 @@
 #define __FLASHROM_ARCH__ "mips"
 #elif defined(__powerpc__) || defined(__powerpc64__) || defined(__ppc__) || defined(__ppc64__)
 #define __FLASHROM_ARCH__ "ppc"
+#elif defined(__arm__)
+#define __FLASHROM_ARCH__ "arm"
 #endif
 __FLASHROM_ARCH__
