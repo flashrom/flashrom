@@ -1560,6 +1560,13 @@ int selfcheck(void)
 
 void check_chip_supported(const struct flashctx *flash)
 {
+	if (flash->feature_bits & FEATURE_OTP) {
+		msg_cdbg("This chip may contain one-time programmable memory. "
+			 "flashrom cannot read\nand may never be able to write "
+			 "it, hence it may not be able to completely\n"
+			 "clone the contents of this chip (see man page for "
+			 "details).\n");
+	}
 	if (TEST_OK_MASK != (flash->tested & TEST_OK_MASK)) {
 		msg_cinfo("===\n");
 		if (flash->tested & TEST_BAD_MASK) {
