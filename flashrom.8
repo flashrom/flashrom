@@ -670,6 +670,19 @@ and flashrom will attempt to detect it and abort immediately for safety reasons.
 More information about flashrom on laptops is available from
 .sp
 .B "  http://www.flashrom.org/Laptops"
+.SS
+One-time programmable (OTP) memory and unique IDs
+.sp
+Some flash chips contain OTP memory often denoted as "security registers".
+They usually have a capacity in the range of some bytes to a few hundred
+bytes and can be used to give devices unique IDs etc. flashrom is not able
+to read or write these memories and may therefore not be able to duplicate a
+chip completely. For chip types known to include OTP memories a warning is
+printed when they are detected.
+.sp
+Similar to OTP memories are unique, factory programmed, unforgeable IDs.
+They are not modifiable by the user at all.
+.RE
 .SH LICENSE
 .B flashrom
 is covered by the GNU General Public License (GPL), version 2. Some files are
