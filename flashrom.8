@@ -1,4 +1,4 @@
-.TH FLASHROM 8 "Jul 25, 2011"
+.TH FLASHROM 8 "Feb 15, 2012"
 .SH NAME
 flashrom \- detect, read, write, verify and erase flash chips
 .SH SYNOPSIS
@@ -223,8 +223,11 @@ parameters. These parameters are separated from the programmer name by a
 colon. While some programmers take arguments at fixed positions, other
 programmers use a key/value interface in which the key and value is separated
 by an equal sign and different pairs are separated by a comma or a colon.
-.TP
+.SS
 .BR "internal " programmer
+.TP
+.B Board Enables
+.sp
 Some mainboards require to run mainboard specific code to enable flash erase
 and write support (and probe support on old systems with parallel flash).
 The mainboard brand and model (if it requires specific code) is usually
@@ -275,17 +278,22 @@ has been written because it is known that writing/erasing without the board
 enable is going to fail. In any case (success or failure), please report to
 the flashrom mailing list, see below.
 .sp
+.TP
+.B Coreboot
+.sp
 On systems running coreboot, flashrom checks whether the desired image matches
 your mainboard. This needs some special board ID to be present in the image.
 If flashrom detects that the image you want to write and the current board
 do not match, it will refuse to write the image unless you specify
 .sp
 .B "  flashrom \-p internal:boardmismatch=force"
+.TP
+.B ITE IT87 Super I/O
 .sp
 If your mainboard uses an ITE IT87 series Super I/O for LPC<->SPI flash bus
 translation, flashrom should autodetect that configuration. If you want to
 set the I/O base port of the IT87 series SPI controller manually instead of
-using the value provided by the BIOS, use the 
+using the value provided by the BIOS, use the
 .sp
 .B "  flashrom \-p internal:it87spiport=portnum"
 .sp
@@ -294,6 +302,9 @@ syntax where
 is the I/O port number (must be a multiple of 8). In the unlikely case
 flashrom doesn't detect an active IT87 LPC<->SPI bridge, please send a bug
 report so we can diagnose the problem.
+.sp
+.TP
+.B Intel chipsets
 .sp
 If you have an Intel chipset with an ICH8 or later southbridge with SPI flash
 attached, and if a valid descriptor was written to it (e.g. by the vendor), the
@@ -346,6 +357,8 @@ settings. The default value for ICH7 is given in the example below.
 .sp
 Example:
 .B "flashrom \-p internal:fwh_idsel=0x001122334567"
+.TP
+.B Laptops
 .sp
 Using flashrom on laptops is dangerous and may easily make your hardware
 unusable (see also the
@@ -353,21 +366,31 @@ unusable (see also the
 section). The embedded controller (EC) in these
 machines often interacts badly with flashing.
 .B http://www.flashrom.org/Laptops
-has more information. If flash is shared with the EC, erase is guaranteed to
-brick your laptop and write is very likely to brick your laptop.
-Chip read and probe may irritate your EC and cause fan failure, backlight
-failure, sudden poweroff, and other nasty effects.
-flashrom will attempt to detect laptops and abort immediately for safety
-reasons.
-If you want to proceed anyway at your own risk, use
+has more information. For example the EC firmware sometimes resides on the same
+flash chip as the host firmware. While flashrom tries to change the contents of
+that memory the EC might need to fetch new instructions or data from it and
+could stop working correctly. Probing for and reading from the chip may also
+irritate your EC and cause fan failure, backlight failure, sudden poweroff, and
+other nasty effects. flashrom will attempt to detect if it is running on a
+laptop and abort immediately for safety reasons if it clearly identifies the
+host computer as one. If you want to proceed anyway at your own risk, use
 .sp
 .B "  flashrom \-p internal:laptop=force_I_want_a_brick"
 .sp
-You have been warned.
-.sp
 We will not help you if you force flashing on a laptop because this is a really
 dumb idea.
-.TP
+.sp
+You have been warned.
+.sp
+Currently we rely on the chassis type encoded in the DMI/SMBIOS data to detect
+laptops. Some vendors did not implement those bits correctly or set them to
+generic and/or dummy values. flashrom will then issue a warning and bail out
+like above. In this case you can use
+.sp
+.B "  flashrom \-p internal:laptop=this_is_not_a_laptop"
+.sp
+to tell flashrom (at your own risk) that it does not running on a laptop.
+.SS
 .BR "dummy " programmer
 The dummy programmer operates on a buffer in memory only. It provides a safe
 and fast way to test various aspects of flashrom and is mainly used in
@@ -409,6 +432,8 @@ vendor):
 .sp
 Example:
 .B "flashrom -p dummy:emulate=SST25VF040.REMS"
+.TP
+.B Persistent images
 .sp
 If you use flash chip emulation, flash image persistence is available as well
 by using the
@@ -422,6 +447,8 @@ where the chip contents on flashrom shutdown are written to.
 .sp
 Example:
 .B "flashrom -p dummy:emulate=M25P10.RES,image=dummy.bin"
+.TP
+.B SPI write chunk size
 .sp
 If you use SPI flash chip emulation for a chip which supports SPI page write
 with the default opcode, you can set the maximum allowed write chunk size with
@@ -436,6 +463,8 @@ is the number of bytes (min. 1, max. 256).
 Example:
 .sp
 .B "  flashrom -p dummy:emulate=M25P10.RES,spi_write_256_chunksize=5"
+.TP
+.B SPI blacklist
 .sp
 To simulate a programmer which refuses to send certain SPI commands to the
 flash chip, you can specify a blacklist of SPI commands with the
@@ -448,6 +477,9 @@ controller refuses to run command 0x03 (READ) and command 0x02 (WRITE).
 commandlist may be up to 512 characters (256 commands) long.
 Implementation note: flashrom will detect an error during command execution.
 .sp
+.TP
+.B SPI ignorelist
+.sp
 To simulate a flash chip which ignores (doesn't support) certain SPI commands,
 you can specify an ignorelist of SPI commands with the
 .sp
@@ -458,7 +490,7 @@ SPI commands. If commandlist is e.g. 0302, the emulated flash chip will ignore
 command 0x03 (READ) and command 0x02 (WRITE).  commandlist may be up to 512
 characters (256 commands) long.
 Implementation note: flashrom won't detect an error during command execution.
-.TP
+.SS
 .BR "nic3com" , " nicrealtek" , " nicsmc1211" , " nicnatsemi" , " nicintel\
 " , " nicintel_spi" , " gfxnvidia" , " ogp_spi" , " drkaiser" , " satasii\
 " , " satamv" ", and " atahpt " programmers
@@ -480,7 +512,7 @@ is the PCI function number of the desired device.
 .sp
 Example:
 .B "flashrom \-p nic3com:pci=05:04.0"
-.TP
+.SS
 .BR "ft2232_spi " programmer
 An optional parameter specifies the controller
 type and interface/port it should support. For that you have to use the
@@ -501,7 +533,7 @@ The default model is
 .B 4232H
 and the default interface is
 .BR B .
-.TP
+.SS
 .BR "serprog " programmer
 A mandatory parameter specifies either a serial
 device/baud combination or an IP/port combination for communication with the
@@ -517,7 +549,7 @@ syntax and for IP, you have to use
 instead. More information about serprog is available in
 .B serprog-protocol.txt
 in the source distribution.
-.TP
+.SS
 .BR "buspirate_spi " programmer
 A required
 .B dev
@@ -533,7 +565,7 @@ where
 can be
 .BR 30k ", " 125k ", " 250k ", " 1M ", " 2M ", " 2.6M ", " 4M " or " 8M
 (in Hz). The default is the maximum frequency of 8 MHz.
-.TP
+.SS
 .BR "dediprog " programmer
 An optional
 .B voltage
@@ -549,7 +581,7 @@ where
 can be
 .BR 0V ", " 1.8V ", " 2.5V ", " 3.5V
 or the equivalent in mV.
-.TP
+.SS
 .BR "rayer_spi " programmer
 The default I/O base address used for the parallel port is 0x378 and you can use
 the optional
@@ -579,9 +611,9 @@ More information about the RayeR hardware is available at
 .BR "http://rayer.ic.cz/elektro/spipgm.htm " .
 The schematic of the Xilinx DLC 5 was published at
 .BR "http://www.xilinx.com/itp/xilinx4/data/docs/pac/appendixb.html " .
-.TP
+.SS
 .BR "ogp_spi " programmer
-The flash ROM chip to access must be specified with the 
+The flash ROM chip to access must be specified with the
 .B rom
 parameter.
 .sp
@@ -665,25 +697,37 @@ in
 .B "/etc/rc.securelevel"
 and rebooting, or rebooting into single user mode.
 .SH BUGS
-Please report any bugs at
-.sp
-.B "  http://www.flashrom.org/trac/flashrom/newticket"
-.sp
-or on the flashrom mailing list at
+Please report any bugs to the flashrom mailing list at
 .B "<flashrom@flashrom.org>"
 .sp
 We recommend to subscribe first at
 .sp
 .B "  http://www.flashrom.org/mailman/listinfo/flashrom"
 .sp
+Many of the developers communicate via the
+.B "#flashrom"
+IRC channel on
+.BR chat.freenode.net .
+You are welcome to join and ask questions, send us bug and success reports there
+too. Please provide a way to contact you later (e.g. a mail address) and be
+patient if there is no immediate reaction. Also, we provide a pastebin service
+at
+.B http://paste.flashrom.org
+that is very useful when you want to share logs etc. without spamming the
+channel.
+.SS
+.B Laptops
+.sp
 Using flashrom on laptops is dangerous and may easily make your hardware
-unusable unless you can desolder the flash chip and have a full flash chip
-backup. This is caused by the embedded controller (EC) present in many laptops,
-which interacts badly with any flash attempts. This is a hardware limitation
-and flashrom will attempt to detect it and abort immediately for safety reasons.
-.sp
-More information about flashrom on laptops is available from
-.sp
+unusable. flashrom will attempt to detect if it is running on a laptop and abort
+immediately for safety reasons. Please see the detailed discussion of this topic
+and associated flashrom options in the
+.B Laptops
+paragraph in the
+.B internal programmer
+subsection of the
+.B PROGRAMMER SPECIFIC INFO
+section.
 .B "  http://www.flashrom.org/Laptops"
 .SS
 One-time programmable (OTP) memory and unique IDs
@@ -697,7 +741,6 @@ printed when they are detected.
 .sp
 Similar to OTP memories are unique, factory programmed, unforgeable IDs.
 They are not modifiable by the user at all.
-.RE
 .SH LICENSE
 .B flashrom
 is covered by the GNU General Public License (GPL), version 2. Some files are
