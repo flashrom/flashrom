@@ -1155,7 +1155,7 @@ const struct penable chipset_enables[] = {
 #if defined(__i386__) || defined(__x86_64__)
 	{0x1002, 0x4377, OK, "ATI", "SB400",		enable_flash_sb400},
 	{0x1002, 0x438d, OK, "AMD", "SB600",		enable_flash_sb600},
-	{0x1002, 0x439d, OK, "AMD", "SB700/SB710/SB750/SB850", enable_flash_sb600},
+	{0x1002, 0x439d, OK, "AMD", "SB7x0/SB8x0/SB9x0", enable_flash_sb600},
 	{0x100b, 0x0510, NT, "AMD", "SC1100",		enable_flash_sc1100},
 	{0x1022, 0x2080, OK, "AMD", "CS5536",		enable_flash_cs5536},
 	{0x1022, 0x2090, OK, "AMD", "CS5536",		enable_flash_cs5536},
@@ -1178,7 +1178,7 @@ const struct penable chipset_enables[] = {
 	{0x1039, 0x0651, OK, "SiS", "651",		enable_flash_sis540},
 	{0x1039, 0x0655, NT, "SiS", "655",		enable_flash_sis540},
 	{0x1039, 0x0661, OK, "SiS", "661",		enable_flash_sis540},
-	{0x1039, 0x0730, NT, "SiS", "730",		enable_flash_sis540},
+	{0x1039, 0x0730, OK, "SiS", "730",		enable_flash_sis540},
 	{0x1039, 0x0733, NT, "SiS", "733",		enable_flash_sis540},
 	{0x1039, 0x0735, OK, "SiS", "735",		enable_flash_sis540},
 	{0x1039, 0x0740, NT, "SiS", "740",		enable_flash_sis540},
@@ -1222,7 +1222,7 @@ const struct penable chipset_enables[] = {
 	{0x10de, 0x0365, OK, "NVIDIA", "MCP55",		enable_flash_mcp55}, /* LPC */
 	{0x10de, 0x0366, OK, "NVIDIA", "MCP55",		enable_flash_mcp55}, /* LPC */
 	{0x10de, 0x0367, OK, "NVIDIA", "MCP55",		enable_flash_mcp55}, /* Pro */
-	{0x10de, 0x03e0, NT, "NVIDIA", "MCP61",		enable_flash_mcp6x_7x},
+	{0x10de, 0x03e0, OK, "NVIDIA", "MCP61",		enable_flash_mcp6x_7x},
 	{0x10de, 0x03e1, OK, "NVIDIA", "MCP61",		enable_flash_mcp6x_7x},
 	{0x10de, 0x03e2, NT, "NVIDIA", "MCP61",		enable_flash_mcp6x_7x},
 	{0x10de, 0x03e3, NT, "NVIDIA", "MCP61",		enable_flash_mcp6x_7x},
@@ -1233,8 +1233,8 @@ const struct penable chipset_enables[] = {
 	{0x10de, 0x0548, OK, "NVIDIA", "MCP67",		enable_flash_mcp6x_7x},
 	{0x10de, 0x075c, NT, "NVIDIA", "MCP78S",	enable_flash_mcp6x_7x},
 	{0x10de, 0x075d, OK, "NVIDIA", "MCP78S",	enable_flash_mcp6x_7x},
-	{0x10de, 0x07d7, NT, "NVIDIA", "MCP73",		enable_flash_mcp6x_7x},
-	{0x10de, 0x0aac, NT, "NVIDIA", "MCP79",		enable_flash_mcp6x_7x},
+	{0x10de, 0x07d7, OK, "NVIDIA", "MCP73",		enable_flash_mcp6x_7x},
+	{0x10de, 0x0aac, OK, "NVIDIA", "MCP79",		enable_flash_mcp6x_7x},
 	{0x10de, 0x0aad, NT, "NVIDIA", "MCP79",		enable_flash_mcp6x_7x},
 	{0x10de, 0x0aae, NT, "NVIDIA", "MCP79",		enable_flash_mcp6x_7x},
 	{0x10de, 0x0aaf, NT, "NVIDIA", "MCP79",		enable_flash_mcp6x_7x},
@@ -1243,12 +1243,12 @@ const struct penable chipset_enables[] = {
 	{0x1106, 0x0595, NT, "VIA", "VT82C595",		via_no_byte_merge},
 	{0x1106, 0x0597, NT, "VIA", "VT82C597",		via_no_byte_merge},
 	{0x1106, 0x0601, NT, "VIA", "VT8601/VT8601A",	via_no_byte_merge},
-	{0x1106, 0x0691, NT, "VIA", "VT82C69x",		via_no_byte_merge}, /* 691, 693a, 694t, 694x checked */
+	{0x1106, 0x0691, OK, "VIA", "VT82C69x",		via_no_byte_merge},
 	{0x1106, 0x8601, NT, "VIA", "VT8601T",		via_no_byte_merge},
 	/* VIA southbridges */
 	{0x1106, 0x0586, OK, "VIA", "VT82C586A/B",	enable_flash_amd8111},
 	{0x1106, 0x0596, OK, "VIA", "VT82C596",		enable_flash_amd8111},
-	{0x1106, 0x0686, NT, "VIA", "VT82C686A/B",	enable_flash_amd8111},
+	{0x1106, 0x0686, OK, "VIA", "VT82C686A/B",	enable_flash_amd8111},
 	{0x1106, 0x3074, OK, "VIA", "VT8233",		enable_flash_vt823x},
 	{0x1106, 0x3147, OK, "VIA", "VT8233A",		enable_flash_vt823x},
 	{0x1106, 0x3177, OK, "VIA", "VT8235",		enable_flash_vt823x},
@@ -1279,8 +1279,8 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x1c54, NT, "Intel", "C204",		enable_flash_pch6},
 	{0x8086, 0x1c56, NT, "Intel", "C206",		enable_flash_pch6},
 	{0x8086, 0x1c5c, NT, "Intel", "H61",		enable_flash_pch6},
-	{0x8086, 0x1d40, OK, "Intel", "X79",		enable_flash_ich10}, /* FIXME: when datasheet is available */
-	{0x8086, 0x1d41, NT, "Intel", "X79",		enable_flash_ich10}, /* FIXME: when datasheet is available */
+	{0x8086, 0x1d40, OK, "Intel", "X79",		enable_flash_pch6},
+	{0x8086, 0x1d41, NT, "Intel", "X79",		enable_flash_pch6},
 	{0x8086, 0x2410, OK, "Intel", "ICH",		enable_flash_ich_4e},
 	{0x8086, 0x2420, OK, "Intel", "ICH0",		enable_flash_ich_4e},
 	{0x8086, 0x2440, OK, "Intel", "ICH2",		enable_flash_ich_4e},
