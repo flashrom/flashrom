@@ -435,7 +435,7 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 		msg_perr("No command sent to the chip!\n");
 		return 1;
 	}
-	/* spi_blacklist has precedence before spi_ignorelist. */
+	/* spi_blacklist has precedence over spi_ignorelist. */
 	for (i = 0; i < spi_blacklist_size; i++) {
 		if (writearr[0] == spi_blacklist[i]) {
 			msg_pdbg("Refusing blacklisted SPI command 0x%02x\n",

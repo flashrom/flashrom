@@ -1286,7 +1286,7 @@ static int ich_hwseq_read(struct flashctx *flash, uint8_t *buf,
 	uint16_t timeout = 100 * 60;
 	uint8_t block_len;
 
-	if (addr < 0 || addr + len > flash->total_size * 1024) {
+	if (addr + len > flash->total_size * 1024) {
 		msg_perr("Request to read from an inaccessible memory address "
 			 "(addr=0x%x, len=%d).\n", addr, len);
 		return -1;
@@ -1324,7 +1324,7 @@ static int ich_hwseq_write(struct flashctx *flash, uint8_t *buf,
 	uint16_t timeout = 100 * 60;
 	uint8_t block_len;
 
-	if (addr < 0 || addr + len > flash->total_size * 1024) {
+	if (addr + len > flash->total_size * 1024) {
 		msg_perr("Request to write to an inaccessible memory address "
 			 "(addr=0x%x, len=%d).\n", addr, len);
 		return -1;

@@ -1579,7 +1579,7 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Atmel",
-		.name		= "AT25DF641",
+		.name		= "AT25DF641(A)",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT25DF641,
@@ -1967,7 +1967,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 64,
 		.page_size	= 128,
 		.feature_bits	= FEATURE_LONG_RESET,
-		.tested		= TEST_UNTESTED,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_jedec,
 		.probe_timing	= 10000, /* 10mS, Enter=Exec */
 		.block_erasers	=
@@ -4427,7 +4427,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 8192,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
-		.tested		= TEST_OK_PROBE,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
@@ -4957,7 +4957,7 @@ const struct flashchip flashchips[] = {
 		.model_id	= ST_M25PE80,
 		.total_size	= 1024,
 		.page_size	= 256,
-		.tested		= TEST_OK_PRE,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
@@ -6910,7 +6910,7 @@ const struct flashchip flashchips[] = {
 		.model_id	= ST_M25P40,
 		.total_size	= 512,
 		.page_size	= 256,
-		.tested		= TEST_OK_PR,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
@@ -8690,9 +8690,9 @@ const struct flashchip flashchips[] = {
 		.total_size	= 1024,
 		.page_size	= 64 * 1024,
 		.feature_bits	= FEATURE_EITHER_RESET,
-		.tested		= TEST_UNTESTED,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_jedec,
-		.probe_timing	= 10, 
+		.probe_timing	= 10,
 		.block_erasers	=
 		{
 			{
