@@ -527,6 +527,11 @@ void print_supported(void)
 	       programmer_table[PROGRAMMER_SATAMV].name);
 	print_supported_pcidevs(satas_mv);
 #endif
+#if CONFIG_LINUX_SPI == 1
+	msg_ginfo("\nSupported devices for the %s programmer:\n",
+	       programmer_table[PROGRAMMER_LINUX_SPI].name);
+	msg_ginfo("Device files /dev/spidev*.*\n");
+#endif
 }
 
 #if CONFIG_INTERNAL == 1

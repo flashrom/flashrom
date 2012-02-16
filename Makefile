@@ -209,6 +209,14 @@ override CONFIG_FT2232_SPI = no
 endif
 endif
 
+ifneq ($(TARGET_OS), Linux)
+ifeq ($(CONFIG_LINUX_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_LINUX_SPI=yes
+else
+override CONFIG_LINUX_SPI = no
+endif
+endif
+
 # Determine the destination processor architecture.
 # IMPORTANT: The following line must be placed before ARCH is ever used
 # (of course), but should come after any lines setting CC because the line
@@ -324,15 +332,14 @@ CONFIG_OGP_SPI ?= yes
 # Always enable Bus Pirate SPI for now.
 CONFIG_BUSPIRATE_SPI ?= yes
 
-# Disable Linux spidev interface support for now, until we check for a Linux
-# device (not host, as DOS binaries for example are built on a Linux host).
-CONFIG_LINUX_SPI ?= no
-
 # Disable Dediprog SF100 until support is complete and tested.
 CONFIG_DEDIPROG ?= no
 
 # Always enable Marvell SATA controllers for now.
 CONFIG_SATAMV ?= yes
+
+# Enable Linux spidev interface by default. We disable it on non-Linux targets.
+CONFIG_LINUX_SPI ?= yes
 
 # Disable wiki printing by default. It is only useful if you have wiki access.
 CONFIG_PRINT_WIKI ?= no
@@ -465,11 +472,6 @@ PROGRAMMER_OBJS += buspirate_spi.o
 NEED_SERIAL := yes
 endif
 
-ifeq ($(CONFIG_LINUX_SPI), yes)
-FEATURE_CFLAGS += -D'CONFIG_LINUX_SPI=1'
-PROGRAMMER_OBJS += linux_spi.o
-endif
-
 ifeq ($(CONFIG_DEDIPROG), yes)
 FEATURE_CFLAGS += -D'CONFIG_DEDIPROG=1'
 FEATURE_LIBS += -lusb
@@ -480,6 +482,11 @@ ifeq ($(CONFIG_SATAMV), yes)
 FEATURE_CFLAGS += -D'CONFIG_SATAMV=1'
 PROGRAMMER_OBJS += satamv.o
 NEED_PCI := yes
+endif
+
+ifeq ($(CONFIG_LINUX_SPI), yes)
+FEATURE_CFLAGS += -D'CONFIG_LINUX_SPI=1'
+PROGRAMMER_OBJS += linux_spi.o
 endif
 
 ifeq ($(NEED_SERIAL), yes)
