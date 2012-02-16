@@ -168,7 +168,7 @@ int main(int argc, char *argv[])
 	struct flashctx *fill_flash;
 	const char *name;
 	int namelen, opt, i, j;
-	int startchip = 0, chipcount = 0, option_index = 0, force = 0;
+	int startchip = -1, chipcount = 0, option_index = 0, force = 0;
 #if CONFIG_PRINT_WIKI == 1
 	int list_supported_wiki = 0;
 #endif
@@ -456,11 +456,27 @@ int main(int argc, char *argv[])
 			printf("Note: flashrom can never write if the flash "
 			       "chip isn't found automatically.\n");
 		}
-#if 0 // FIXME: What happens for a forced chip read if multiple compatible programmers are registered?
 		if (force && read_it && chip_to_probe) {
+			struct registered_programmer *pgm;
+			int compatible_programmers = 0;
 			printf("Force read (-f -r -c) requested, pretending "
 			       "the chip is there:\n");
-			startchip = probe_flash(0, &flashes[0], 1);
+			/* This loop just counts compatible controllers. */
+			for (j = 0; j < registered_programmer_count; j++) {
+				pgm = &registered_programmers[j];
+				if (pgm->buses_supported & flashes[0].bustype)
+					compatible_programmers++;
+			}
+			if (compatible_programmers > 1)
+				printf("More than one compatible controller "
+				       "found for the requested flash chip, "
+				       "using the first one.\n");
+			for (j = 0; j < registered_programmer_count; j++) {
+				pgm = &registered_programmers[j];
+				startchip = probe_flash(pgm, 0, &flashes[0], 1);
+				if (startchip != -1)
+					break;
+			}
 			if (startchip == -1) {
 				printf("Probing for flash chip '%s' failed.\n",
 				       chip_to_probe);
@@ -471,7 +487,6 @@ int main(int argc, char *argv[])
 			       "contain garbage.\n");
 			return read_flash_to_file(&flashes[0], filename);
 		}
-#endif
 		ret = 1;
 		goto out_shutdown;
 	} else if (!chip_to_probe) {
