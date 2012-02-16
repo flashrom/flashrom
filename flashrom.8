@@ -315,6 +315,21 @@ important opcodes are inaccessible due to lockdown; or if more than one flash
 chip is attached). The other options (swseq, hwseq) select the respective mode
 (if possible).
 .sp
+ICH8 and later southbridges may also have locked address ranges of different
+kinds if a valid descriptor was written to it. The flash address space is then
+partitioned in multiple so called "Flash Regions" containing the host firmware,
+the ME firmware and so on respectively. The flash descriptor can also specify up
+to 5 so called "Protected Regions", which are freely chosen address ranges
+independent from the aforementioned "Flash Regions". All of them can be write
+and/or read protected individually. If flashrom detects such a lock it will
+disable write support unless the user forces it with the
+.sp
+.B "  flashrom \-p internal:ich_spi_force=yes"
+.sp
+syntax. If this leads to erase or write accesses to the flash it would most
+probably bring it into an inconsistent and unbootable state and we will not
+provide any support in such a case.
+.sp
 If you have an Intel chipset with an ICH6 or later southbridge and if you want
 to set specific IDSEL values for a non-default flash chip or an embedded
 controller (EC), you can use the

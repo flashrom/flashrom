@@ -1421,7 +1421,8 @@ static int ich_spi_send_multicommand(struct flashctx *flash,
 #define ICH_BRWA(x)  ((x >>  8) & 0xff)
 #define ICH_BRRA(x)  ((x >>  0) & 0xff)
 
-static void do_ich9_spi_frap(uint32_t frap, int i)
+/* returns 0 if region is unused or r/w */
+static int ich9_handle_frap(uint32_t frap, int i)
 {
 	static const char *const access_names[4] = {
 		"locked", "read-only", "write-only", "read-write"
@@ -1436,19 +1437,26 @@ static void do_ich9_spi_frap(uint32_t frap, int i)
 	int offset = ICH9_REG_FREG0 + i * 4;
 	uint32_t freg = mmio_readl(ich_spibar + offset);
 
-	msg_pdbg("0x%02X: 0x%08x (FREG%i: %s)\n",
-		     offset, freg, i, region_names[i]);
-
 	base  = ICH_FREG_BASE(freg);
 	limit = ICH_FREG_LIMIT(freg);
 	if (base > limit) {
 		/* this FREG is disabled */
-		msg_pdbg("%s region is unused.\n", region_names[i]);
-		return;
+		msg_pdbg2("0x%02X: 0x%08x FREG%i: %s region is unused.\n",
+			  offset, freg, i, region_names[i]);
+		return 0;
+	}
+	msg_pdbg("0x%02X: 0x%08x ", offset, freg);
+	if (rwperms == 0x3) {
+		msg_pdbg("FREG%i: %s region (0x%08x-0x%08x) is %s.\n", i,
+			 region_names[i], base, (limit | 0x0fff),
+			 access_names[rwperms]);
+		return 0;
 	}
 
-	msg_pdbg("0x%08x-0x%08x is %s\n", base, (limit | 0x0fff),
-		 access_names[rwperms]);
+	msg_pinfo("FREG%i: WARNING: %s region (0x%08x-0x%08x) is %s.\n", i,
+		  region_names[i], base, (limit | 0x0fff),
+		  access_names[rwperms]);
+	return 1;
 }
 
 	/* In contrast to FRAP and the master section of the descriptor the bits
@@ -1460,21 +1468,25 @@ static void do_ich9_spi_frap(uint32_t frap, int i)
 #define ICH_PR_PERMS(pr)	(((~((pr) >> PR_RP_OFF) & 1) << 0) | \
 				 ((~((pr) >> PR_WP_OFF) & 1) << 1))
 
-static void prettyprint_ich9_reg_pr(int i)
+/* returns 0 if range is unused (i.e. r/w) */
+static int ich9_handle_pr(int i)
 {
-	static const char *const access_names[4] = {
-		"locked", "read-only", "write-only", "read-write"
+	static const char *const access_names[3] = {
+		"locked", "read-only", "write-only"
 	};
 	uint8_t off = ICH9_REG_PR0 + (i * 4);
 	uint32_t pr = mmio_readl(ich_spibar + off);
-	int rwperms = ICH_PR_PERMS(pr);
+	unsigned int rwperms = ICH_PR_PERMS(pr);
 
-	msg_pdbg2("0x%02X: 0x%08x (PR%u", off, pr, i);
-	if (rwperms != 0x3)
-		msg_pdbg2(")\n0x%08x-0x%08x is %s\n", ICH_FREG_BASE(pr),
-			 ICH_FREG_LIMIT(pr) | 0x0fff, access_names[rwperms]);
-	else
-		msg_pdbg2(", unused)\n");
+	if (rwperms == 0x3) {
+		msg_pdbg2("0x%02X: 0x%08x (PR%u is unused)\n", off, pr, i);
+		return 0;
+	}
+
+	msg_pdbg("0x%02X: 0x%08x ", off, pr);
+	msg_pinfo("PR%u: WARNING: 0x%08x-0x%08x is %s.\n", i, ICH_FREG_BASE(pr),
+		  ICH_FREG_LIMIT(pr) | 0x0fff, access_names[rwperms]);
+	return 1;
 }
 
 /* Set/Clear the read and write protection enable bits of PR register @i
@@ -1537,6 +1549,8 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 	uint16_t spibar_offset, tmp2;
 	uint32_t tmp;
 	char *arg;
+	int ich_spi_force = 0;
+	int ich_spi_rw_restricted = 0;
 	int desc_valid = 0;
 	struct ich_descriptors desc = {{ 0 }};
 	enum ich_spi_mode {
@@ -1631,6 +1645,22 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 		}
 		free(arg);
 
+		arg = extract_programmer_param("ich_spi_force");
+		if (arg && !strcmp(arg, "yes")) {
+			ich_spi_force = 1;
+			msg_pspew("ich_spi_force enabled.\n");
+		} else if (arg && !strlen(arg)) {
+			msg_perr("Missing argument for ich_spi_force.\n");
+			free(arg);
+			return ERROR_FATAL;
+		} else if (arg) {
+			msg_perr("Unknown argument for ich_spi_force: \"%s\" "
+				 "(not \"yes\").\n", arg);
+			free(arg);
+			return ERROR_FATAL;
+		}
+		free(arg);
+
 		tmp2 = mmio_readw(ich_spibar + ICH9_REG_HSFS);
 		msg_pdbg("0x04: 0x%04x (HSFS)\n", tmp2);
 		prettyprint_ich9_reg_hsfs(tmp2);
@@ -1665,17 +1695,36 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 			msg_pdbg("BRWA 0x%02x, ", ICH_BRWA(tmp));
 			msg_pdbg("BRRA 0x%02x\n", ICH_BRRA(tmp));
 
-			/* Decode and print FREGx and FRAP registers */
+			/* Handle FREGx and FRAP registers */
 			for (i = 0; i < 5; i++)
-				do_ich9_spi_frap(tmp, i);
+				ich_spi_rw_restricted |= ich9_handle_frap(tmp, i);
 		}
 
-		/* try to disable PR locks before printing them */
-		if (!ichspi_lock)
-			for (i = 0; i < 5; i++)
+		for (i = 0; i < 5; i++) {
+			/* if not locked down try to disable PR locks first */
+			if (!ichspi_lock)
 				ich9_set_pr(i, 0, 0);
-		for (i = 0; i < 5; i++)
-			prettyprint_ich9_reg_pr(i);
+			ich_spi_rw_restricted |= ich9_handle_pr(i);
+		}
+
+		if (ich_spi_rw_restricted) {
+			msg_pinfo("Please send a verbose log to "
+				  "flashrom@flashrom.org if this board is not "
+				  "listed on\n"
+				  "http://flashrom.org/Supported_hardware#Supported_mainboards "
+				  "yet.\n");
+			if (!ich_spi_force)
+				programmer_may_write = 0;
+			msg_pinfo("Writes have been disabled. You can enforce "
+				  "write support with the\nich_spi_force "
+				  "programmer option, but it will most likely "
+				  "harm your hardware!\nIf you force flashrom "
+				  "you will get no support if something "
+				  "breaks.\n");
+			if (ich_spi_force)
+				msg_pinfo("Continuing with write support "
+					  "because the user forced us to!\n");
+		}
 
 		tmp = mmio_readl(ich_spibar + ICH9_REG_SSFS);
 		msg_pdbg("0x90: 0x%02x (SSFS)\n", tmp & 0xff);
