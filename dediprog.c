@@ -299,7 +299,7 @@ static int dediprog_spi_read(struct flashctx *flash, uint8_t *buf,
 	return 0;
 }
 
-/* Bulk write interface, will read multiple page_size byte chunks aligned to page_size bytes.
+/* Bulk write interface, will write multiple page_size byte chunks aligned to page_size bytes.
  * @start	start address
  * @len		length
  * @return	0 on success, 1 on failure
