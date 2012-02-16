@@ -199,7 +199,12 @@ int dummy_init(void)
 			}
 		}
 		for (i = 0; i < spi_blacklist_size; i++) {
-			sscanf(tmp + i * 2, "%2hhx", &spi_blacklist[i]);
+			unsigned int tmp2;
+			/* SCNx8 is apparently not supported by MSVC (and thus
+			 * MinGW), so work around it with an extra variable
+			 */
+			sscanf(tmp + i * 2, "%2x", &tmp2);
+			spi_blacklist[i] = (uint8_t)tmp2;
 		}
 		msg_pdbg("SPI blacklist is ");
 		for (i = 0; i < spi_blacklist_size; i++)
@@ -230,7 +235,12 @@ int dummy_init(void)
 			}
 		}
 		for (i = 0; i < spi_ignorelist_size; i++) {
-			sscanf(tmp + i * 2, "%2hhx", &spi_ignorelist[i]);
+			unsigned int tmp2;
+			/* SCNx8 is apparently not supported by MSVC (and thus
+			 * MinGW), so work around it with an extra variable
+			 */
+			sscanf(tmp + i * 2, "%2x", &tmp2);
+			spi_ignorelist[i] = (uint8_t)tmp2;
 		}
 		msg_pdbg("SPI ignorelist is ");
 		for (i = 0; i < spi_ignorelist_size; i++)
