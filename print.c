@@ -642,6 +642,7 @@ const struct board_info boards_known[] = {
 	B("ASUS",	"M5A99X EVO",		1, "http://www.asus.com/Motherboards/AMD_AM3Plus/M5A99X_EVO/", NULL),
 	B("ASUS",	"MEW-AM",		0, "ftp://ftp.asus.com.tw/pub/ASUS/mb/sock370/810/mew-am/", "No public report found. Owned by Uwe Hermann <uwe@hermann-uwe.de>. May work now."),
 	B("ASUS",	"MEW-VM",		0, "http://www.elhvb.com/mboards/OEM/HP/manual/ASUS%20MEW-VM.htm", "No public report found. Owned by Uwe Hermann <uwe@hermann-uwe.de>. May work now."),
+	B("ASUS",	"OPLX-M",		0, NULL, "Untested board enable."),
 	B("ASUS",	"P2B",			1, "ftp://ftp.asus.com.tw/pub/ASUS/mb/slot1/440bx/p2b/", NULL),
 	B("ASUS",	"P2B-D",		1, "ftp://ftp.asus.com.tw/pub/ASUS/mb/slot1/440bx/p2b-d/", NULL),
 	B("ASUS",	"P2B-DS",		1, "ftp://ftp.asus.com.tw/pub/ASUS/mb/slot1/440bx/p2b-ds/", NULL),
