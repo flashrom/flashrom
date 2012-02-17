@@ -175,6 +175,8 @@ struct flashctx {
 	struct registered_programmer *pgm;
 };
 
+typedef int (erasefunc_t)(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
+
 #define TEST_UNTESTED	0
 
 #define TEST_OK_PROBE	(1 << 0)

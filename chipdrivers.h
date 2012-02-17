@@ -41,6 +41,7 @@ int spi_block_erase_d7(struct flashctx *flash, unsigned int addr, unsigned int b
 int spi_block_erase_d8(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 int spi_block_erase_60(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 int spi_block_erase_c7(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
+erasefunc_t *spi_get_erasefn_from_opcode(uint8_t opcode);
 int spi_chip_write_1(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 int spi_chip_write_256(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 int spi_chip_read(struct flashctx *flash, uint8_t *buf, unsigned int start, int unsigned len);
@@ -57,6 +58,9 @@ int spi_nbyte_read(struct flashctx *flash, unsigned int addr, uint8_t *bytes, un
 int spi_read_chunked(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len, unsigned int chunksize);
 int spi_write_chunked(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len, unsigned int chunksize);
 int spi_aai_write(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
+
+/* sfdp.c */
+int probe_spi_sfdp(struct flashctx *flash);
 
 /* opaque.c */
 int probe_opaque(struct flashctx *flash);
