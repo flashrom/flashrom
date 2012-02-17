@@ -71,7 +71,8 @@ static const struct {
 } dmi_chassis_types[] = {
 	{0x01, 2, "Other"},
 	{0x02, 2, "Unknown"},
-	{0x03, 0, "Desktop",},
+	{0x03, 0, "Desktop"},
+	{0x04, 0, "Low Profile Desktop"},
 	{0x06, 0, "Mini Tower"},
 	{0x07, 0, "Tower"},
 	{0x08, 1, "Portable"},
