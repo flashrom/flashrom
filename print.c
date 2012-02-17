@@ -798,6 +798,7 @@ const struct board_info boards_known[] = {
 	B("HP",		"ProLiant DL165 G6",	1, "http://h10010.www1.hp.com/wwpc/us/en/sm/WF05a/15351-15351-3328412-241644-3328421-3955644.html", NULL),
 	B("HP",		"ProLiant N40L",	1, NULL, NULL),
 	B("HP",		"Puffer2-UL8E",		1, "http://h10025.www1.hp.com/ewfrf/wc/document?docname=c00300023", NULL),
+	B("HP",		"dc7800",		0, "http://h10010.www1.hp.com/wwpc/us/en/sm/WF06a/12454-12454-64287-321860-3328898-3459241.html?dnr=1", "ICH9DO with SPI lock down, BIOS lock, PR, read-only descriptor, locked ME region."),
 	B("HP",		"Vectra VL400",		1, "http://h20000.www2.hp.com/bizsupport/TechSupport/Document.jsp?objectID=c00060658&lang=en&cc=us", NULL),
 	B("HP",		"Vectra VL420 SFF",	1, "http://h20000.www2.hp.com/bizsupport/TechSupport/Document.jsp?objectID=c00060661&lang=en&cc=us", NULL),
 	B("HP",		"xw4400 (0A68h)",	0, "http://h20000.www2.hp.com/bizsupport/TechSupport/Document.jsp?objectID=c00775230", "ICH7 with SPI lock down, BIOS lock, flash block detection (SST25VF080B); see http://paste.flashrom.org/view.php?id=686"),

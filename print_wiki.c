@@ -220,6 +220,7 @@ static void print_supported_chips_wiki(int cols)
 		if (!strncmp(f->vendor, "Unknown", 7) ||
 		    !strncmp(f->vendor, "Programmer", 10) ||
 		    !strncmp(f->name, "unknown", 7))
+			continue;
 		chipcount++;
 	}
 
