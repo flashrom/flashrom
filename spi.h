@@ -40,6 +40,11 @@
 #define JEDEC_REMS_OUTSIZE	0x04
 #define JEDEC_REMS_INSIZE	0x02
 
+/* Read Serial Flash Discoverable Parameters (SFDP) */
+#define JEDEC_SFDP		0x5a
+#define JEDEC_SFDP_OUTSIZE	0x05	/* 8b op, 24b addr, 8b dummy */
+/*      JEDEC_SFDP_INSIZE : any length */
+
 /* Read Electronic Signature */
 #define JEDEC_RES		0xab
 #define JEDEC_RES_OUTSIZE	0x04

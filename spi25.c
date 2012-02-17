@@ -720,6 +720,32 @@ int spi_block_erase_c7(struct flashctx *flash, unsigned int addr,
 	return spi_chip_erase_c7(flash);
 }
 
+erasefunc_t *spi_get_erasefn_from_opcode(uint8_t opcode)
+{
+	switch(opcode){
+	case 0xff:
+	case 0x00:
+		/* Not specified, assuming "not supported". */
+		return NULL;
+	case 0x20:
+		return &spi_block_erase_20;
+	case 0x52:
+		return &spi_block_erase_52;
+	case 0x60:
+		return &spi_block_erase_60;
+	case 0xc7:
+		return &spi_block_erase_c7;
+	case 0xd7:
+		return &spi_block_erase_d7;
+	case 0xd8:
+		return &spi_block_erase_d8;
+	default:
+		msg_cinfo("%s: unknown erase opcode (0x%02x). Please report "
+			  "this at flashrom@flashrom.org\n", __func__, opcode);
+		return NULL;
+	}
+}
+
 int spi_write_status_enable(struct flashctx *flash)
 {
 	static const unsigned char cmd[JEDEC_EWSR_OUTSIZE] = { JEDEC_EWSR };

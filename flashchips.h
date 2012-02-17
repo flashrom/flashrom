@@ -34,8 +34,11 @@
  * SPI parts have 16-bit device IDs if they support RDID.
  */
 
-#define GENERIC_MANUF_ID	0xffff	/* Check if there is a vendor ID */
-#define GENERIC_DEVICE_ID	0xffff	/* Only match the vendor ID */
+#define GENERIC_MANUF_ID	0xFFFF	/* Check if there is a vendor ID */
+#define GENERIC_DEVICE_ID	0xFFFF	/* Only match the vendor ID */
+#define SFDP_DEVICE_ID		0xFFFE
+#define PROGMANUF_ID		0xFFFE	/* dummy ID for opaque chips behind a programmer */
+#define PROGDEV_ID		0x01	/* dummy ID for opaque chips behind a programmer */
 
 #define ALLIANCE_ID		0x52	/* Alliance Semiconductor */
 #define ALLIANCE_AS29F002B	0x34
@@ -645,8 +648,5 @@
 #define WINBOND_W49F020		0x8C
 #define WINBOND_W49V002A	0xB0
 #define WINBOND_W49V002FA	0x32
-
-#define PROGMANUF_ID		0xFFFE	/* dummy ID for opaque chips behind a programmer */
-#define PROGDEV_ID		0x01	/* dummy ID for opaque chips behind a programmer */
 
 #endif /* !FLASHCHIPS_H */
