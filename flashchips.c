@@ -8885,6 +8885,29 @@ const struct flashchip flashchips[] = {
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600}, /* Also has 12V fast program */
 	},
+	
+	{
+		.vendor		= "Unknown",
+		.name		= "SFDP-capable chip",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= GENERIC_MANUF_ID,
+		.model_id	= SFDP_DEVICE_ID,
+		/* We present our own "report this" text hence we do not
+		 * want the default "This flash part has status UNTESTED..."
+		 * text to be printed. */
+		.tested		= TEST_OK_PREW,
+		.probe		= probe_spi_sfdp,
+		.unlock		= spi_disable_blockprotect, /* is this safe? */
+		.read		= spi_chip_read,
+		/* FIXME: some vendor extensions define this */
+		.voltage	= {},
+		 /* Everything below will be set by the probing function. */
+		.write		= NULL,
+		.total_size	= 0,
+		.page_size	= 0,
+		.feature_bits	= 0,
+		.block_erasers	= {},
+	},
 
 	{
 		.vendor		= "Programmer",

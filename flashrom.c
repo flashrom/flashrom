@@ -980,13 +980,38 @@ int probe_flash(struct registered_programmer *pgm, int startchip,
 
 		/* If this is the first chip found, accept it.
 		 * If this is not the first chip found, accept it only if it is
-		 * a non-generic match.
-		 * We could either make chipcount global or provide it as
-		 * parameter, or we assume that startchip==0 means this call to
-		 * probe_flash() is the first one and thus no chip has been
-		 * found before.
+		 * a non-generic match. SFDP and CFI are generic matches.
+		 * startchip==0 means this call to probe_flash() is the first
+		 * one for this programmer interface and thus no other chip has
+		 * been found on this interface.
 		 */
-		if (startchip == 0 || fill_flash->model_id != GENERIC_DEVICE_ID)
+		if (startchip == 0 && fill_flash->model_id == SFDP_DEVICE_ID) {
+			msg_cinfo("===\n"
+				  "SFDP has autodetected a flash chip which is "
+				  "not natively supported by flashrom yet.\n");
+			if (count_usable_erasers(fill_flash) == 0)
+				msg_cinfo("The standard operations read and "
+					  "verify should work, but to support "
+					  "erase, write and all other "
+					  "possible features");
+			else
+				msg_cinfo("All standard operations (read, "
+					  "verify, erase and write) should "
+					  "work, but to support all possible "
+					  "features");
+
+			msg_cinfo(" we need to add them manually.\nYou "
+				  "can help us by mailing us the output of "
+				  "the following command to flashrom@flashrom."
+				  "org: \n'flashrom -VV [plus the "
+				  "-p/--programmer parameter (if needed)]"
+				  "'\nThanks for your help!\n"
+				  "===\n");
+		}
+
+		if (startchip == 0 ||
+		    ((fill_flash->model_id != GENERIC_DEVICE_ID) &&
+		     (fill_flash->model_id != SFDP_DEVICE_ID)))
 			break;
 
 notfound:
