@@ -78,8 +78,10 @@ static int sfdp_add_uniform_eraser(struct flashctx *flash, uint8_t opcode, uint3
 	uint32_t total_size = flash->total_size * 1024;
 	erasefunc_t *erasefn = spi_get_erasefn_from_opcode(opcode);
 
-	if (erasefn == NULL || block_size == 0 || total_size % block_size != 0) {
-		msg_cdbg("%s: invalid input\n", __func__);
+	if (erasefn == NULL || total_size == 0 || block_size == 0 ||
+	    total_size % block_size != 0) {
+		msg_cdbg("%s: invalid input, please report to "
+			 "flashrom@flashrom.org\n", __func__);
 		return 1;
 	}
 
@@ -89,11 +91,12 @@ static int sfdp_add_uniform_eraser(struct flashctx *flash, uint8_t opcode, uint3
 		if (eraser->eraseblocks[0].size == block_size &&
 		    eraser->block_erase == erasefn) {
 			msg_cdbg2("  Tried to add a duplicate block eraser: "
-				  "%d x %d B with opcode 0x%02x\n",
+				  "%d x %d B with opcode 0x%02x.\n",
 				  total_size/block_size, block_size, opcode);
 			return 1;
 		}
-		if (eraser->eraseblocks[0].size != 0 || !eraser->block_erase) {
+		if (eraser->eraseblocks[0].size != 0 ||
+		    eraser->block_erase != NULL) {
 			msg_cspew("  Block Eraser %d is already occupied.\n",
 				  i);
 			continue;
@@ -115,11 +118,12 @@ static int sfdp_add_uniform_eraser(struct flashctx *flash, uint8_t opcode, uint3
 
 static int sfdp_fill_flash(struct flashctx *flash, uint8_t *buf, uint16_t len)
 {
+	uint8_t opcode_4k_erase = 0xFF;
 	uint32_t tmp32;
 	uint8_t tmp8;
 	uint32_t total_size; /* in bytes */
 	uint32_t block_size;
-	int dw, j;
+	int j;
 
 	msg_cdbg("Parsing JEDEC flash parameter table... ");
 	if (len != 9 * 4 && len != 4 * 4) {
@@ -129,11 +133,10 @@ static int sfdp_fill_flash(struct flashctx *flash, uint8_t *buf, uint16_t len)
 	msg_cdbg2("\n");
 	
 	/* 1. double word */
-	dw = 0;
-	tmp32 = buf[(4 * dw) + 0];
-	tmp32 |= ((unsigned int)buf[(4 * dw) + 1]) << 8;
-	tmp32 |= ((unsigned int)buf[(4 * dw) + 2]) << 16;
-	tmp32 |= ((unsigned int)buf[(4 * dw) + 3]) << 24;
+	tmp32 =  ((unsigned int)buf[(4 * 0) + 0]);
+	tmp32 |= ((unsigned int)buf[(4 * 0) + 1]) << 8;
+	tmp32 |= ((unsigned int)buf[(4 * 0) + 2]) << 16;
+	tmp32 |= ((unsigned int)buf[(4 * 0) + 3]) << 24;
 
 	tmp8 = (tmp32 >> 17) & 0x3;
 	switch (tmp8) {
@@ -181,15 +184,17 @@ static int sfdp_fill_flash(struct flashctx *flash, uint8_t *buf, uint16_t len)
 	}
 
 	if ((tmp32 & 0x3) == 0x1) {
-		sfdp_add_uniform_eraser(flash, (tmp32 >> 8) & 0xFF, 4 * 1024);
-	}
+		opcode_4k_erase = (tmp32 >> 8) & 0xFF;
+		msg_cspew("  4kB erase opcode is 0x%02x.\n", opcode_4k_erase);
+		/* add the eraser later, because we don't know total_size yet */
+	} else
+		msg_cspew("  4kB erase opcode is not defined.\n");
 
 	/* 2. double word */
-	dw = 1;
-	tmp32 = buf[(4 * dw) + 0];
-	tmp32 |= ((unsigned int)buf[(4 * dw) + 1]) << 8;
-	tmp32 |= ((unsigned int)buf[(4 * dw) + 2]) << 16;
-	tmp32 |= ((unsigned int)buf[(4 * dw) + 3]) << 24;
+	tmp32 =  ((unsigned int)buf[(4 * 1) + 0]);
+	tmp32 |= ((unsigned int)buf[(4 * 1) + 1]) << 8;
+	tmp32 |= ((unsigned int)buf[(4 * 1) + 2]) << 16;
+	tmp32 |= ((unsigned int)buf[(4 * 1) + 3]) << 24;
 
 	if (tmp32 & (1 << 31)) {
 		msg_cdbg("Flash chip size >= 4 Gb/512 MB not supported.\n");
@@ -204,31 +209,38 @@ static int sfdp_fill_flash(struct flashctx *flash, uint8_t *buf, uint16_t len)
 		return 1;
 	}
 
+	if (opcode_4k_erase != 0xFF)
+		sfdp_add_uniform_eraser(flash, opcode_4k_erase, 4 * 1024);
+
 	/* FIXME: double words 3-7 contain unused fast read information */
 
 	if (len == 4 * 4) {
-		msg_cdbg("It seems like this chip supports the preliminary "
+		msg_cdbg("  It seems like this chip supports the preliminary "
 			 "Intel version of SFDP, skipping processing of double "
 			 "words 3-9.\n");
 		goto done;
 	}
 
-	dw = 8;
+	/* 8. double word */
 	for (j = 0; j < 4; j++) {
-		/* 8 double words from the start + 2 words for every eraser */
-		tmp8 = buf[(4 * dw) + (2 * j)];
+		/* 7 double words from the start + 2 bytes for every eraser */
+		tmp8 = buf[(4 * 7) + (j * 2)];
+		msg_cspew("   Erase Sector Type %d Size: 0x%02x\n", j + 1,
+			  tmp8);
 		if (tmp8 == 0) {
-			msg_cdbg2("  Block eraser %d is unused.\n", j);
+			msg_cspew("  Erase Sector Type %d is unused.\n", j);
 			continue;
 		}
 		if (tmp8 >= 31) {
-			msg_cdbg2("  Block size of eraser %d (2^%d) is too big "
-				  "for flashrom.\n", j, tmp8);
+			msg_cdbg2("  Block size of erase Sector Type %d (2^%d) "
+				 "is too big for flashrom.\n", j, tmp8);
 			continue;
 		}
 		block_size = 1 << (tmp8); /* block_size = 2 ^ field */
 
-		tmp8 = buf[(4 * dw) + (2 * j) + 1];
+		tmp8 = buf[(4 * 7) + (j * 2) + 1];
+		msg_cspew("   Erase Sector Type %d Opcode: 0x%02x\n", j + 1,
+			  tmp8);
 		sfdp_add_uniform_eraser(flash, tmp8, block_size);
 	}
 
@@ -332,7 +344,7 @@ int probe_spi_sfdp(struct flashctx *flash)
 			if ((tmp32 % 8) == 0) {
 				msg_cspew("    0x%04x: ", tmp32);
 			}
-			msg_cspew(" %02x", buf[tmp32]);
+			msg_cspew(" %02x", tbuf[tmp32]);
 			if ((tmp32 % 8) == 7) {
 				msg_cspew("\n");
 				continue;
@@ -342,6 +354,7 @@ int probe_spi_sfdp(struct flashctx *flash)
 				continue;
 			}
 		}
+		msg_cspew("\n");
 
 		if (i == 0) { /* Mandatory JEDEC SFDP parameter table */
 			if (hdrs[i].id != 0)
