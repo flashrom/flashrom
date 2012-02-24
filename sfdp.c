@@ -19,6 +19,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 #include "flash.h"
 #include "spi.h"
 #include "chipdrivers.h"
@@ -26,31 +27,39 @@
 static int spi_sfdp_read_sfdp_chunk(struct flashctx *flash, uint32_t address, uint8_t *buf, int len)
 {
 	int i, ret;
+	uint8_t *newbuf;
 	const unsigned char cmd[JEDEC_SFDP_OUTSIZE] = {
 		JEDEC_SFDP,
 		(address >> 16) & 0xff,
 		(address >> 8) & 0xff,
 		(address >> 0) & 0xff,
 		/* FIXME: the following dummy byte explodes on some programmers.
-		 * One possible workaround would be to read the dummy byte
+		 * One workaround is to read the dummy byte
 		 * instead and discard its value.
 		 */
 		0
 	};
 	msg_cspew("%s: addr=0x%x, len=%d, data:\n", __func__, address, len);
-	ret = spi_send_command(flash, sizeof(cmd), len, cmd, buf);
+	newbuf = malloc(len + 1);
+	if (!newbuf)
+		return SPI_PROGRAMMER_ERROR;
+	ret = spi_send_command(flash, sizeof(cmd) - 1, len + 1, cmd, newbuf);
+	memmove(buf, newbuf + 1, len);
+	free(newbuf);
+	if (ret)
+		return ret;
 	for (i = 0; i < len; i++)
 		msg_cspew(" 0x%02x", buf[i]);
 	msg_cspew("\n");
-	return ret;
+	return 0;
 }
 
 static int spi_sfdp_read_sfdp(struct flashctx *flash, uint32_t address, uint8_t *buf, int len)
 {
-	/* FIXME: this is wrong. There are different upper bounds for the number
-	 * of bytes to read on the various programmers (even depending on the
-	 * rest of the structure of the transaction).*/
-	int maxstep = 8;
+	/* FIXME: There are different upper bounds for the number of bytes to
+	 * read on the various programmers (even depending on the rest of the
+	 * structure of the transaction). 2 is a safe bet. */
+	int maxstep = 2;
 	int ret = 0;
 	while (len > 0) {
 		int step = min(len, maxstep);
