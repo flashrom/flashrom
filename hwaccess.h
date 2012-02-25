@@ -189,6 +189,10 @@ cpu_to_be(64)
  */
 
 #if defined(__FreeBSD__) || defined(__DragonFly__)
+  /* Note that Debian/kFreeBSD (FreeBSD kernel with glibc) has conflicting
+   * out[bwl] definitions in machine/cpufunc.h and sys/io.h at least in some
+   * versions. Use machine/cpufunc.h only for plain FreeBSD/DragonFlyBSD.
+   */
   #include <machine/cpufunc.h>
   #define off64_t off_t
   #define lseek64 lseek
@@ -228,7 +232,7 @@ cpu_to_be(64)
   #define INL  inportl
 
 #else
-
+  /* This is the usual glibc interface. */
   #define OUTB outb
   #define OUTW outw
   #define OUTL outl
@@ -299,12 +303,12 @@ static inline uint32_t inl(uint16_t port)
   #endif
 #endif
 
-#if !defined(__DARWIN__) && !defined(__FreeBSD__) && !defined(__DragonFly__) && !defined(__LIBPAYLOAD__)
+#if !defined(__DARWIN__) && !defined(__FreeBSD__) && !defined(__FreeBSD_kernel__) && !defined(__DragonFly__) && !defined(__LIBPAYLOAD__)
 typedef struct { uint32_t hi, lo; } msr_t;
 msr_t rdmsr(int addr);
 int wrmsr(int addr, msr_t msr);
 #endif
-#if defined(__FreeBSD__) || defined(__DragonFly__)
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__DragonFly__)
 /* FreeBSD already has conflicting definitions for wrmsr/rdmsr. */
 #undef rdmsr
 #undef wrmsr
