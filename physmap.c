@@ -382,7 +382,7 @@ void cleanup_cpu_msr(void)
 	fd_msr = -1;
 }
 #else
-#if defined(__FreeBSD__) || defined(__DragonFly__)
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__DragonFly__)
 #include <sys/ioctl.h>
 
 typedef struct {

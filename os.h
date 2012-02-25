@@ -30,6 +30,9 @@
 // FreeBSD
 #elif defined(__FreeBSD__)
 #define __FLASHROM_OS__ "FreeBSD"
+// FreeBSD with glibc-based userspace (e.g. Debian/kFreeBSD)
+#elif defined(__FreeBSD_kernel__) && defined(__GLIBC__)
+#define __FLASHROM_OS__ "FreeBSD-glibc"
 // DragonFlyBSD
 #elif defined(__DragonFly__)
 #define __FLASHROM_OS__ "DragonFlyBSD"
