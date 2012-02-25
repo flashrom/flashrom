@@ -40,7 +40,7 @@ static inline void sync_primitive(void)
 {
 }
 
-#if defined(__FreeBSD__) || defined(__DragonFly__)
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__DragonFly__)
 int io_fd;
 #endif
 
@@ -52,7 +52,7 @@ void get_io_perms(void)
 #else
 #if defined (__sun) && (defined(__i386) || defined(__amd64))
 	if (sysi86(SI86V86, V86SC_IOPL, PS_IOPL) != 0) {
-#elif defined(__FreeBSD__) || defined (__DragonFly__)
+#elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined (__DragonFly__)
 	if ((io_fd = open("/dev/io", O_RDWR)) < 0) {
 #else 
 	if (iopl(3) != 0) {
@@ -71,7 +71,7 @@ void get_io_perms(void)
 
 void release_io_perms(void)
 {
-#if defined(__FreeBSD__) || defined(__DragonFly__)
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__DragonFly__)
 	close(io_fd);
 #endif
 }
