@@ -31,12 +31,15 @@
 
 #define PCI_VENDOR_ID_INTEL 0x8086
 
+/* EEPROM/Flash Control & Data Register */
 #define EECD	0x10
+/* Flash Access Register */
 #define FLA	0x1c
 
 /*
  * Register bits of EECD.
- * 
+ * Table 13-6
+ *
  * Bit 04, 05: FWE (Flash Write Enable Control)
  * 00b = not allowed
  * 01b = flash writes disabled
@@ -46,8 +49,9 @@
 #define FLASH_WRITES_DISABLED	0x10 /* FWE: 10000b */
 #define FLASH_WRITES_ENABLED	0x20 /* FWE: 100000b */
 
-/* Flash Access register bits */
-/* Table 13-9 */
+/* Flash Access register bits
+ * Table 13-9
+ */
 #define FL_SCK	0
 #define FL_CS	1
 #define FL_SI	2
@@ -178,6 +182,13 @@ int nicintel_spi_init(void)
 	tmp &= ~FLASH_WRITES_DISABLED;
 	tmp |= FLASH_WRITES_ENABLED;
 	pci_mmio_writel(tmp, nicintel_spibar + EECD);
+
+	/* test if FWE is really set to allow writes */
+	tmp = pci_mmio_readl(nicintel_spibar + EECD);
+	if ( (tmp & FLASH_WRITES_DISABLED) || !(tmp & FLASH_WRITES_ENABLED) ) {
+		msg_perr("Enabling flash write access failed.\n");
+		return 1;
+	}
 
 	if (register_shutdown(nicintel_spi_shutdown, NULL))
 		return 1;
