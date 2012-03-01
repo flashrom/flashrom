@@ -169,6 +169,12 @@ uint32_t mmio_readl(void *addr)
 	return *(volatile uint32_t *) addr;
 }
 
+void mmio_readn(void *addr, uint8_t *buf, size_t len)
+{
+	memcpy(buf, addr, len);
+	return;
+}
+
 void mmio_le_writeb(uint8_t val, void *addr)
 {
 	mmio_writeb(cpu_to_le8(val), addr);
