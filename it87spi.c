@@ -330,7 +330,7 @@ static int it8716f_spi_page_program(struct flashctx *flash, uint8_t *buf,
 	OUTB(0x06, it8716f_flashport + 1);
 	OUTB(((2 + (fast_spi ? 1 : 0)) << 4), it8716f_flashport);
 	for (i = 0; i < flash->page_size; i++)
-		chip_writeb(flash, buf[i], bios + start + i);
+		mmio_writeb(buf[i], (void *)(bios + start + i));
 	OUTB(0, it8716f_flashport);
 	/* Wait until the Write-In-Progress bit is cleared.
 	 * This usually takes 1-10 ms, so wait in 1 ms steps.
@@ -356,7 +356,7 @@ static int it8716f_spi_chip_read(struct flashctx *flash, uint8_t *buf,
 	if ((flash->total_size * 1024 > 512 * 1024)) {
 		spi_read_chunked(flash, buf, start, len, 3);
 	} else {
-		read_memmapped(flash, buf, start, len);
+		mmio_readn((void *)(flash->virtual_memory + start), buf, len);
 	}
 
 	return 0;
