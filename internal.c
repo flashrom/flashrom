@@ -387,6 +387,6 @@ static uint32_t internal_chip_readl(const struct flashctx *flash,
 static void internal_chip_readn(const struct flashctx *flash, uint8_t *buf,
 				const chipaddr addr, size_t len)
 {
-	memcpy(buf, (void *)addr, len);
+	mmio_readn((void *)addr, buf, len);
 	return;
 }

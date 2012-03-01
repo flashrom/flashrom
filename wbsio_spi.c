@@ -202,7 +202,8 @@ static int wbsio_spi_send_command(struct flashctx *flash, unsigned int writecnt,
 static int wbsio_spi_read(struct flashctx *flash, uint8_t *buf,
 			  unsigned int start, unsigned int len)
 {
-	return read_memmapped(flash, buf, start, len);
+	mmio_readn((void *)(flash->virtual_memory + start), buf, len);
+	return 0;
 }
 
 #endif

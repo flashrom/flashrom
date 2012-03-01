@@ -312,6 +312,7 @@ void mmio_writel(uint32_t val, void *addr);
 uint8_t mmio_readb(void *addr);
 uint16_t mmio_readw(void *addr);
 uint32_t mmio_readl(void *addr);
+void mmio_readn(void *addr, uint8_t *buf, size_t len);
 void mmio_le_writeb(uint8_t val, void *addr);
 void mmio_le_writew(uint16_t val, void *addr);
 void mmio_le_writel(uint32_t val, void *addr);
