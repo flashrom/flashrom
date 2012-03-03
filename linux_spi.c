@@ -57,6 +57,10 @@ int linux_spi_init(void)
 {
 	char *p, *endp, *dev;
 	uint32_t speed = 0;
+	/* FIXME: make the following configurable by CLI options. */
+	/* SPI mode 0 (beware this also includes: MSB first, CS active low and others */
+	const uint8_t mode = SPI_MODE_0;
+	const uint8_t bits = 8;
 
 	dev = extract_programmer_param("dev");
 	if (!dev || !strlen(dev)) {
@@ -81,19 +85,31 @@ int linux_spi_init(void)
 		return 1;
 	}
 
+	if (register_shutdown(linux_spi_shutdown, NULL))
+		return 1;
+	/* We rely on the shutdown function for cleanup from here on. */
+
 	if (speed > 0) {
 		if (ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &speed) == -1) {
-			msg_perr("%s: failed to set speed %dHz: %s\n",
+			msg_perr("%s: failed to set speed to %d Hz: %s\n",
 				 __func__, speed, strerror(errno));
-			close(fd);
 			return 1;
 		}
 
 		msg_pdbg("Using %d kHz clock\n", speed);
 	}
 
-	if (register_shutdown(linux_spi_shutdown, NULL))
+	if (ioctl(fd, SPI_IOC_WR_MODE, &mode) == -1) {
+		msg_perr("%s: failed to set SPI mode to 0x%02x: %s\n",
+			 __func__, mode, strerror(errno));
 		return 1;
+	}
+
+	if (ioctl(fd, SPI_IOC_WR_BITS_PER_WORD, &bits) == -1) {
+		msg_perr("%s: failed to set the number of bits per SPI word to %u: %s\n",
+			 __func__, bits == 0 ? 8 : bits, strerror(errno));
+		return 1;
+	}
 
 	register_spi_programmer(&spi_programmer_linux);
 
