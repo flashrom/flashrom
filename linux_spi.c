@@ -130,6 +130,7 @@ static int linux_spi_send_command(struct flashctx *flash, unsigned int writecnt,
 				  const unsigned char *txbuf,
 				  unsigned char *rxbuf)
 {
+	int iocontrol_code;
 	struct spi_ioc_transfer msg[2] = {
 		{
 			.tx_buf = (uint64_t)(ptrdiff_t)txbuf,
@@ -143,8 +144,19 @@ static int linux_spi_send_command(struct flashctx *flash, unsigned int writecnt,
 
 	if (fd == -1)
 		return -1;
+	/* The implementation currently does not support requests that
+	   don't start with sending a command. */
+	if (writecnt == 0)
+		return SPI_INVALID_LENGTH;
 
-	if (ioctl(fd, SPI_IOC_MESSAGE(2), msg) == -1) {
+	/* Just submit the first (write) request in case there is nothing
+	   to read. Otherwise submit both requests. */
+	if (readcnt == 0)
+		iocontrol_code = SPI_IOC_MESSAGE(1);
+	else
+		iocontrol_code = SPI_IOC_MESSAGE(2);
+
+	if (ioctl(fd, iocontrol_code, msg) == -1) {
 		msg_cerr("%s: ioctl: %s\n", __func__, strerror(errno));
 		return -1;
 	}
