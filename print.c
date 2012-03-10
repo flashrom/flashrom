@@ -706,6 +706,7 @@ const struct board_info boards_known[] = {
 	B("ASUS",	"P8H67-M PRO",		0, NULL, "Probing works (Macronix MX25L3205, 4096 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME region is locked."),
 	B("ASUS",	"P8P67 (rev. 3.1)",	0, NULL, "Probing works (Macronix MX25L3205, 4096 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME region is locked."),
 	B("ASUS",	"P8Z68-V PRO",		0, NULL, "Probing works (Winbond W25Q64, 8192 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME region is locked."),
+	B("ASUS",	"TUSL2-C",		0, "http://support.asus.com/download.aspx?SLanguage=en&p=1&s=4&m=TUSL2-C&os=&hashedid=n/a", "Untested board enable."),
 	B("ASUS",	"Z8NA-D6C",		1, "http://www.asus.com/Server_Workstation/Server_Motherboards/Z8NAD6C/", NULL),
 	B("ASUS",	"Z8PE-D12",		1, "http://www.asus.com/Server_Workstation/Server_Motherboards/Z8PED12/", NULL),
 	B("BCOM",	"WinNET100",		1, "http://www.coreboot.org/BCOM_WINNET100", "Used in the IGEL-316 thin client."),
