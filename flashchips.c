@@ -3530,7 +3530,7 @@ const struct flashchip flashchips[] = {
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { 
+				.eraseblocks = {
 					{16 * 1024, 1},
 					{8 * 1024, 2},
 					{32 * 1024, 1},
@@ -3562,7 +3562,7 @@ const struct flashchip flashchips[] = {
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { 
+				.eraseblocks = {
 					{64 * 1024, 3},
 					{32 * 1024, 1},
 					{8 * 1024, 2},
@@ -3577,6 +3577,36 @@ const struct flashchip flashchips[] = {
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
 		.voltage	= {4500, 5500},
+	},
+
+	{
+		.vendor		= "Eon",
+		.name		= "EN29LV640B",
+		.bustype	= BUS_PARALLEL,
+		.manufacture_id	= EON_ID,
+		.model_id	= EON_EN29LV640B,
+		.total_size	= 8192,
+		.page_size	= 8192,
+		.feature_bits	= 0,
+		.tested		= TEST_OK_PREW,
+		.probe		= probe_en29lv640b,
+		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = {
+					{8 * 1024, 8},
+					{64 * 1024, 127},
+				},
+				.block_erase = block_erase_en29lv640b,
+			}, {
+				.eraseblocks = { {8 * 1024 * 1024, 1} },
+				.block_erase = block_erase_chip_en29lv640b,
+			},
+		},
+		.write		= write_en29lv640b,
+		.read		= read_memmapped,
+		.voltage	= {2700, 3600},
 	},
 
 	{
