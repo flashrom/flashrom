@@ -201,6 +201,17 @@ int read_romlayout(char *name)
 }
 #endif
 
+/* returns the index of the entry (or a negative value if it is not found) */
+int find_include_arg(const char *const name)
+{
+	unsigned int i;
+	for (i = 0; i < num_include_args; i++) {
+		if (!strcmp(include_args[i], name))
+			return i;
+	}
+	return -1;
+}
+
 /* register an include argument (-i) for later processing */
 int register_include_arg(char *name)
 {
@@ -211,6 +222,11 @@ int register_include_arg(char *name)
 
 	if (name == NULL) {
 		msg_gerr("<NULL> is a bad region name.\n");
+		return 1;
+	}
+
+	if (find_include_arg(name) != -1) {
+		msg_gerr("Duplicate region name: \"%s\".\n", name);
 		return 1;
 	}
 
@@ -250,17 +266,17 @@ int process_include_args(void)
 	if (num_include_args == 0)
 		return 0;
 
-	for (i = 0; i < num_include_args; i++) {
-		/* User has specified an area, but no layout file is loaded. */
-		if (!romimages) {
-			msg_gerr("Region requested (with -i \"%s\"), "
-				 "but no layout data is available.\n",
-				 include_args[i]);
-			return 1;
-		}
+	/* User has specified an area, but no layout file is loaded. */
+	if (!romimages) {
+		msg_gerr("Region requested (with -i \"%s\"), "
+			 "but no layout data is available.\n",
+			 include_args[0]);
+		return 1;
+	}
 
+	for (i = 0; i < num_include_args; i++) {
 		if (find_romentry(include_args[i]) < 0) {
-			msg_gerr("Invalid region specified: \"%s\"\n",
+			msg_gerr("Invalid region specified: \"%s\".\n",
 				 include_args[i]);
 			return 1;
 		}
