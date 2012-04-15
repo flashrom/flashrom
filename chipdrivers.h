@@ -149,6 +149,7 @@ int printlock_w39v080fa(struct flashctx *flash);
 int printlock_w39v080fa_dual(struct flashctx *flash);
 int unlock_w39v040fb(struct flashctx *flash);
 int unlock_w39v080fa(struct flashctx *flash);
+int printlock_at49f(struct flashctx *flash);
 
 /* w29ee011.c */
 int probe_w29ee011(struct flashctx *flash);
