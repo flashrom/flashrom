@@ -278,3 +278,11 @@ int unlock_w39v080fa(struct flashctx *flash)
 
 	return 0;
 }
+
+int printlock_at49f(struct flashctx *flash)
+{
+	uint8_t lock = w39_idmode_readb(flash, 0x00002);
+	msg_cdbg("Hardware bootblock lockout is %sactive.\n",
+		 (lock & 0x01) ? "" : "not ");
+	return 0;
+}
