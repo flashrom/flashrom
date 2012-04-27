@@ -193,7 +193,7 @@ void prettyprint_ich_descriptor_region(const struct ich_descriptors *desc)
 	uint8_t i;
 	uint8_t nr = desc->content.NR + 1;
 	msg_pdbg2("=== Region Section ===\n");
-	if (nr >= 5) {
+	if (nr > 5) {
 		msg_pdbg2("%s: number of regions too high (%d).\n", __func__,
 			 nr);
 		return;
@@ -819,7 +819,7 @@ int read_ich_descriptors_via_fdo(void *spibar, struct ich_descriptors *desc)
 
 	/* region section */
 	nr = desc->content.NR + 1;
-	if (nr >= 5) {
+	if (nr > 5) {
 		msg_pdbg2("%s: number of regions too high (%d) - failed\n",
 			  __func__, nr);
 		return ICH_RET_ERR;
