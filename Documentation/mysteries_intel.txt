@@ -15,4 +15,83 @@
  See also http://www.flashrom.org/pipermail/flashrom/2011-August/007606.html
 
 = Unlocking the ME region =
-TODO
+ If the ME region is locked by the FRAP register in descriptor mode, the host
+ software is not allowed to read or write any address inside that region. There
+ are different ways to unlock access:
+
+ - A pin strap: Flash Descriptor Security Override Strap (as indicated by the
+   Flash Descriptor Override Pin Strap Status (FDOPSS) in HSFS. That pin is
+   probably not accessible to end users on consumer boards (every Intel doc i
+   have seen stresses that this is for debugging in manufacturing only and
+   should not be available for end users).
+   The ME indicates this in bits [19:16] (Operation Mode) in the HFS register of
+   the HECI/MEI PCI device by setting them to 4 (SECOVR_JMPR) [MODE_CTRL].
+
+ - Intel Management Engine BIOS Extension (MEBx) Disable
+   This option may be available to end users on some boards usually accessible
+   by hitting ctrl+p after BIOS POST. Quote: "'Disabling' the Intel ME does not
+   really disable it: it causes the Intel ME code to be halted at an early stage
+   of the Intel ME's booting so that the system has no traffic originating from
+   the Intel ME on any of the buses." [MEBX] The ME indicates this in
+   bits [19:16] (Operation Mode) in the HFS register of the HECI/MEI PCI device
+   by setting them to 3 (Soft Temporary Disable) [MODE_CTRL].
+
+ - Previous to Ibex Peak/5 Series chipsets removing the DIMM from slot (or
+   channel?) #0 disables the ME completely, which may give the host access to
+   the ME region.
+
+ - HMRFPO (Host ME Region Flash Protection Override) Enable MEI command
+   This is the most interesting one because it allows to temporarily disable
+   the ME region protection by software. The ME indicates this in bits [19:16]
+   (Operation Mode) in the HFS register of the HECI/MEI PCI device by setting
+   them to 5 (SECOVER_MEI_MSG) [MODE_CTRL].
+
+== MEI/HECI ==
+ Communication between the host software and the different services provided by
+ the ME is done via a packet-based protocol that uses MMIO transfers to one or
+ more virtual PCI devices. Upon this layer there exist various services that can
+ be used to read out hardware management values (e.g. temperatures, fan speeds
+ etc.). The lower levels of that protocol are well documented:
+ The locations/offsets of the PCI MMIO registers are noted in the chipset
+ datasheets. The actually communication is documented in a whitepaper [DCMI] and
+ an outdated as well as a current Linux kernel implementation (currently in
+ staging/ exist [KERNEL]. There exists a patch that re-implements this in user
+ space (as part of flashrom).
+ 
+== Problems ==
+ The problem is that only very few higher level protocols are documented publicly,
+ especially the bunch of messages that contain the HMRFPO commands is probably
+ well protected and only documented in ME-specific docs and the BIOS writer's
+ guides. We are aware of a few leaked documents though that give us a few hints
+ about it, but nothing substantial regarding its implementation.
+ 
+ The documents are somewhat contradicting each other in various points which
+ might be due to factual changes in process of time or due to the different
+ capabilities of the ME firmwares, example:
+ 
+ Intel's Flash Programming Tool (FPT) "automatically stops ME writing to SPI
+ ME Region, to prevent both writing at the same time, causing data corruption." [ME8]
+ 
+ "FPT is not HMRFPO-capable, so needs [the help of the FDOPS pin] HDA_SDO if
+ used to update the ME Region." [SPS]
+ 
+ When looking at the various ME firmware editions (and different chipsets), things
+ get very unclear. Some docs say that HMRFPO needs to be sent before End-of-POST
+ (EOP), others say that the ME region can be updated in the field or that some
+ vendor tools use it for updates. This needs to be investigated further before
+ drawing any conclusion.
+
+[MODE_CTRL] Client Platform Enabling Tour: Platform Software
+            Document Number: 439167, Revision 1.2, page 52
+[MEBX]      Intel Management Engine BIOS Extension (MEBX) User's Guide
+            Revision 1.2, Section 3.1 and 3.5
+[DCMI]      DCMI Host Interface Specification
+            Revision 1.0
+[KERNEL]    http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=tree;f=drivers/staging/mei;hb=HEAD
+[SPI_PROG]  Ibex Peak SPI Programming Guide
+            Document Number: 403598, Revision 1.3, page 79
+[ME8]       Manufacturing with Intel Management Engine (ME) Firmware 8.X on Intel 7 Series
+            Revision 2.0, page 59
+[SPS]       Manufacturing with Intel Management Engine (ME) on Intel C600 Series Chipset 1
+            for Romley Server 2 Platforms using Server Platform Services (SPS) Firmware
+            Revision 2.2, page 51

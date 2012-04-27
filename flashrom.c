@@ -1412,9 +1412,9 @@ void nonfatal_help_message(void)
 void emergency_help_message(void)
 {
 	msg_gerr("Your flash chip is in an unknown state.\n"
-		"Get help on IRC at irc.freenode.net (channel #flashrom) or\n"
-		"mail flashrom@flashrom.org with FAILED: your board name in "
-		  "the subject line!\n"
+		"Get help on IRC at chat.freenode.net (channel #flashrom) or\n"
+		"mail flashrom@flashrom.org with the subject "
+		"\"FAILED: <your board name>\"!\n"
 		"-------------------------------------------------------------"
 		  "------------------\n"
 		"DO NOT REBOOT OR POWEROFF!\n");
