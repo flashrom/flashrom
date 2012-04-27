@@ -636,6 +636,18 @@ static int enable_flash_pch6(struct pci_dev *dev, const char *name)
 	return enable_flash_ich_dc_spi(dev, name, CHIPSET_6_SERIES_COUGAR_POINT);
 }
 
+/* Panther Point aka. 7 series */
+static int enable_flash_pch7(struct pci_dev *dev, const char *name)
+{
+	return enable_flash_ich_dc_spi(dev, name, CHIPSET_7_SERIES_PANTHER_POINT);
+}
+
+/* Lynx Point aka. 8 series */
+static int enable_flash_pch8(struct pci_dev *dev, const char *name)
+{
+	return enable_flash_ich_dc_spi(dev, name, CHIPSET_8_SERIES_LYNX_POINT);
+}
+
 static int via_no_byte_merge(struct pci_dev *dev, const char *name)
 {
 	uint8_t val;
@@ -1186,7 +1198,7 @@ const struct penable chipset_enables[] = {
 	{0x1039, 0x0745, OK, "SiS", "745",		enable_flash_sis540},
 	{0x1039, 0x0746, NT, "SiS", "746",		enable_flash_sis540},
 	{0x1039, 0x0748, NT, "SiS", "748",		enable_flash_sis540},
-	{0x1039, 0x0755, NT, "SiS", "755",		enable_flash_sis540},
+	{0x1039, 0x0755, OK, "SiS", "755",		enable_flash_sis540},
 	{0x1039, 0x5511, NT, "SiS", "5511",		enable_flash_sis5511},
 	{0x1039, 0x5571, NT, "SiS", "5571",		enable_flash_sis530},
 	{0x1039, 0x5591, NT, "SiS", "5591/5592",	enable_flash_sis530},
@@ -1278,9 +1290,19 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x1c52, NT, "Intel", "C202",		enable_flash_pch6},
 	{0x8086, 0x1c54, NT, "Intel", "C204",		enable_flash_pch6},
 	{0x8086, 0x1c56, NT, "Intel", "C206",		enable_flash_pch6},
-	{0x8086, 0x1c5c, NT, "Intel", "H61",		enable_flash_pch6},
+	{0x8086, 0x1c5c, OK, "Intel", "H61",		enable_flash_pch6},
 	{0x8086, 0x1d40, OK, "Intel", "X79",		enable_flash_pch6},
 	{0x8086, 0x1d41, NT, "Intel", "X79",		enable_flash_pch6},
+	{0x8086, 0x1e44, NT, "Intel", "Z77",		enable_flash_pch7},
+	{0x8086, 0x1e46, NT, "Intel", "Z75",		enable_flash_pch7},
+	{0x8086, 0x1e49, NT, "Intel", "B75",		enable_flash_pch7},
+	{0x8086, 0x1e4a, NT, "Intel", "H77",		enable_flash_pch7},
+	{0x8086, 0x1e57, NT, "Intel", "HM77",		enable_flash_pch7},
+	{0x8086, 0x1e58, NT, "Intel", "UM77",		enable_flash_pch7},
+	{0x8086, 0x1e59, NT, "Intel", "HM76",		enable_flash_pch7},
+	{0x8086, 0x1e5d, NT, "Intel", "HM75",		enable_flash_pch7},
+	{0x8086, 0x1e5e, NT, "Intel", "HM70",		enable_flash_pch7},
+	{0x8086, 0x2310, NT, "Intel", "DH89xxCC",	enable_flash_pch7},
 	{0x8086, 0x2410, OK, "Intel", "ICH",		enable_flash_ich_4e},
 	{0x8086, 0x2420, OK, "Intel", "ICH0",		enable_flash_ich_4e},
 	{0x8086, 0x2440, OK, "Intel", "ICH2",		enable_flash_ich_4e},
@@ -1342,6 +1364,38 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x7198, OK, "Intel", "440MX",		enable_flash_piix4},
 	{0x8086, 0x8119, OK, "Intel", "SCH Poulsbo",	enable_flash_poulsbo},
 	{0x8086, 0x8186, OK, "Intel", "Atom E6xx(T)/Tunnel Creek", enable_flash_tunnelcreek},
+	{0x8086, 0x8c40, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c41, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c42, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c43, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c44, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c45, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c46, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c47, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c48, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c49, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c4a, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c4b, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c4c, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c4d, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c4e, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c4f, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c50, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c51, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c52, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c53, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c54, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c55, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c56, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c57, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c58, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c59, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c5a, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c5b, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c5c, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c5d, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c5e, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c5f, NT, "Intel", "Lynx Point",	enable_flash_pch8},
 #endif
 	{},
 };
@@ -1380,9 +1434,11 @@ int chipset_flash_enable(void)
 		if (chipset_enables[i].status == NT) {
 			msg_pinfo("\nThis chipset is marked as untested. If "
 				  "you are using an up-to-date version\nof "
-				  "flashrom please email a report to "
-				  "flashrom@flashrom.org including a\nverbose "
-				  "(-V) log. Thank you!\n");
+				  "flashrom *and* were (not) able to "
+				  "successfully update your firmware with it,\n"
+				  "then please email a report to "
+				  "flashrom@flashrom.org including a verbose "
+				  "(-V) log.\nThank you!\n");
 		}
 		msg_pinfo("Enabling flash write... ");
 		ret = chipset_enables[i].doit(dev,
