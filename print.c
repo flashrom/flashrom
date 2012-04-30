@@ -507,6 +507,12 @@ void print_supported(void)
 	/* FIXME */
 	msg_ginfo("RayeR parallel port programmer\n");
 #endif
+#if CONFIG_PONY_SPI == 1
+	msg_ginfo("\nSupported devices for the %s programmer:\n",
+	       programmer_table[PROGRAMMER_PONY_SPI].name);
+	/* FIXME */
+	msg_ginfo("SI-Prog and SERBANG serial port programmer\n");
+#endif
 #if CONFIG_NICINTEL == 1
 	msg_ginfo("\nSupported devices for the %s programmer:\n",
 	       programmer_table[PROGRAMMER_NICINTEL].name);

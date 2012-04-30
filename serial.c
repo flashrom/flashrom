@@ -32,6 +32,9 @@
 #include <conio.h>
 #else
 #include <termios.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/ioctl.h>
 #endif
 #include "flash.h"
 #include "programmer.h"
@@ -170,6 +173,58 @@ fdtype sp_openserport(char *dev, unsigned int baud)
 	tcsetattr(fd, TCSANOW, &options);
 	return fd;
 #endif
+}
+
+void sp_set_pin(enum SP_PIN pin, int val) {
+#ifdef _WIN32
+	DWORD ctl;
+
+	if(pin == PIN_TXD) {
+		ctl = val ? SETBREAK: CLRBREAK;
+	}
+	else if(pin == PIN_DTR) {
+		ctl = val ? SETDTR: CLRDTR;
+	}
+	else {
+		ctl = val ? SETRTS: CLRRTS;
+	}
+	EscapeCommFunction(sp_fd, ctl);
+#else
+	int ctl, s;
+
+	if(pin == PIN_TXD) {
+		ioctl(sp_fd, val ? TIOCSBRK : TIOCCBRK, 0);
+	}
+	else {
+		s = (pin == PIN_DTR) ? TIOCM_DTR : TIOCM_RTS;
+		ioctl(sp_fd, TIOCMGET, &ctl);
+
+		if (val) {
+			ctl |= s;
+		}
+		else {
+			ctl &= ~s;
+		}
+		ioctl(sp_fd, TIOCMSET, &ctl);
+	}
+#endif
+}
+
+int sp_get_pin(enum SP_PIN pin) {
+	int s;
+#ifdef _WIN32
+	DWORD ctl;
+
+	s = (pin == PIN_CTS) ? MS_CTS_ON : MS_DSR_ON;
+	GetCommModemStatus(sp_fd, &ctl);
+#else
+	int ctl;
+	s = (pin == PIN_CTS) ? TIOCM_CTS : TIOCM_DSR;
+	ioctl(sp_fd, TIOCMGET, &ctl);
+#endif
+
+	return ((ctl & s) ? 1 : 0);
+
 }
 
 void sp_flush_incoming(void)

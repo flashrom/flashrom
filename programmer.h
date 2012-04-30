@@ -69,6 +69,9 @@ enum programmer {
 #if CONFIG_RAYER_SPI == 1
 	PROGRAMMER_RAYER_SPI,
 #endif
+#if CONFIG_PONY_SPI == 1
+	PROGRAMMER_PONY_SPI,
+#endif
 #if CONFIG_NICINTEL == 1
 	PROGRAMMER_NICINTEL,
 #endif
@@ -109,6 +112,9 @@ enum bitbang_spi_master_type {
 	BITBANG_SPI_INVALID	= 0, /* This must always be the first entry. */
 #if CONFIG_RAYER_SPI == 1
 	BITBANG_SPI_MASTER_RAYER,
+#endif
+#if CONFIG_PONY_SPI == 1
+	BITBANG_SPI_MASTER_PONY,
 #endif
 #if CONFIG_NICINTEL_SPI == 1
 	BITBANG_SPI_MASTER_NICINTEL,
@@ -430,6 +436,11 @@ void print_supported_usbdevs(const struct usbdev_status *devs);
 int rayer_spi_init(void);
 #endif
 
+/* pony_spi.c */
+#if CONFIG_PONY_SPI == 1
+int pony_spi_init(void);
+#endif
+
 /* bitbang_spi.c */
 int bitbang_spi_init(const struct bitbang_spi_master *master);
 
@@ -492,7 +503,7 @@ enum spi_controller {
 #if CONFIG_DEDIPROG == 1
 	SPI_CONTROLLER_DEDIPROG,
 #endif
-#if CONFIG_OGP_SPI == 1 || CONFIG_NICINTEL_SPI == 1 || CONFIG_RAYER_SPI == 1 || (CONFIG_INTERNAL == 1 && (defined(__i386__) || defined(__x86_64__)))
+#if CONFIG_OGP_SPI == 1 || CONFIG_NICINTEL_SPI == 1 || CONFIG_RAYER_SPI == 1 || CONFIG_PONY_SPI == 1 || (CONFIG_INTERNAL == 1 && (defined(__i386__) || defined(__x86_64__)))
 	SPI_CONTROLLER_BITBANG,
 #endif
 #if CONFIG_LINUX_SPI == 1
@@ -635,5 +646,32 @@ extern fdtype sp_fd;
 int serialport_shutdown(void *data);
 int serialport_write(unsigned char *buf, unsigned int writecnt);
 int serialport_read(unsigned char *buf, unsigned int readcnt);
+
+/* Serial port/pin mapping:
+
+  1	CD	<-
+  2	RXD	<-
+  3	TXD	->
+  4	DTR	->
+  5	GND     --
+  6	DSR	<-
+  7	RTS	->
+  8	CTS	<-
+  9	RI	<-
+*/
+enum SP_PIN {
+	PIN_CD = 1,
+	PIN_RXD,
+	PIN_TXD,
+	PIN_DTR,
+	PIN_GND,
+	PIN_DSR,
+	PIN_RTS,
+	PIN_CTS,
+	PIN_RI,
+};
+
+void sp_set_pin(enum SP_PIN pin, int val);
+int sp_get_pin(enum SP_PIN pin);
 
 #endif				/* !__PROGRAMMER_H__ */
