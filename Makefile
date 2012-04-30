@@ -292,6 +292,9 @@ CONFIG_SERPROG ?= yes
 # RayeR SPIPGM hardware support
 CONFIG_RAYER_SPI ?= yes
 
+# PonyProg2000 SPI hardware support
+CONFIG_PONY_SPI ?= yes
+
 # Always enable 3Com NICs for now.
 CONFIG_NIC3COM ?= yes
 
@@ -348,6 +351,9 @@ CONFIG_PRINT_WIKI ?= no
 ifeq ($(CONFIG_RAYER_SPI), yes)
 override CONFIG_BITBANG_SPI = yes
 else
+ifeq ($(CONFIG_PONY_SPI), yes)
+override CONFIG_BITBANG_SPI = yes
+else
 ifeq ($(CONFIG_INTERNAL), yes)
 override CONFIG_BITBANG_SPI = yes
 else
@@ -358,6 +364,7 @@ ifeq ($(CONFIG_OGP_SPI), yes)
 override CONFIG_BITBANG_SPI = yes
 else
 CONFIG_BITBANG_SPI ?= no
+endif
 endif
 endif
 endif
@@ -386,6 +393,12 @@ FEATURE_CFLAGS += -D'CONFIG_RAYER_SPI=1'
 PROGRAMMER_OBJS += rayer_spi.o
 # Actually, NEED_PCI is wrong. NEED_IOPORT_ACCESS would be more correct.
 NEED_PCI := yes
+endif
+
+ifeq ($(CONFIG_PONY_SPI), yes)
+FEATURE_CFLAGS += -D'CONFIG_PONY_SPI=1'
+PROGRAMMER_OBJS += pony_spi.o
+NEED_SERIAL := yes
 endif
 
 ifeq ($(CONFIG_BITBANG_SPI), yes)

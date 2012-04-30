@@ -201,6 +201,16 @@ const struct programmer_entry programmer_table[] = {
 	},
 #endif
 
+#if CONFIG_PONY_SPI == 1
+	{
+		.name			= "pony_spi",
+		.init			= pony_spi_init,
+		.map_flash_region	= fallback_map,
+		.unmap_flash_region	= fallback_unmap,
+		.delay			= internal_delay,
+},
+#endif
+
 #if CONFIG_NICINTEL == 1
 	{
 		.name			= "nicintel",
