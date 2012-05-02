@@ -676,6 +676,7 @@ const struct board_info boards_known[] = {
 	B("ASUS",	"P5B",			1, "ftp://ftp.asus.com.tw/pub/ASUS/mb/socket775/P5B/", NULL),
 	B("ASUS",	"P5B-Deluxe",		1, "http://www.asus.com/Motherboards/Intel_Socket_775/P5B_Deluxe/", NULL),
 	B("ASUS",	"P5BV-M",		0, "ftp://ftp.asus.com.tw/pub/ASUS/mb/socket775/P5B-VM/", "Reported by Bernhard M. Wiedemann <bernhard@uml12d.zq1.de> to flashrom@coreboot.org, no public archive. Missing board enable and/or SST49LF008A unlocking. May work now."),
+	B("ASUS",	"P5BV-R",		1, "http://www.asus.com/Server_Workstation/Servers/RS120E5PA2/", "Used in RS120-E5/PA2 servers."),
 	B("ASUS",	"P5GC-MX/1333",		1, "http://www.asus.com/Motherboards/Intel_Socket_775/P5GCMX1333/", NULL),
 	B("ASUS",	"P5GD1 Pro",		1, "http://www.asus.com/Motherboards/Intel_Socket_775/P5GD1_PRO/", NULL),
 	B("ASUS",	"P5GD1-VM/S",		1, NULL, "This is an OEM board from FSC. Although flashrom supports it and can probably not distinguish it from the P5GD1-VM, please note that the P5GD1-VM BIOS does not support the FSC variants completely."),

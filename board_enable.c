@@ -1520,6 +1520,15 @@ static int intel_ich_gpio19_raise(void)
 
 /*
  * Suited for:
+ *  - ASUS P5BV-R: LGA775 + 3200 + ICH7
+ */
+static int intel_ich_gpio20_raise(void)
+{
+	return intel_ich_gpio_set(20, 1);
+}
+
+/*
+ * Suited for:
  *  - ASUS P4B266LM (Sony Vaio PCV-RX650): socket478 + 845D + ICH2
  *  - ASUS P4C800-E Deluxe: socket478 + 875P + ICH5
  *  - ASUS P4P800: Intel socket478 + 865PE + ICH5R
@@ -2160,6 +2169,7 @@ const struct board_match board_matches[] = {
 	{0x8086, 0x2570, 0x1043, 0x80A5,  0x105A, 0x24D3, 0x1043, 0x80A6, NULL,         NULL, NULL,           P3, "ASUS",        "P4SD-LA",               0,   NT, intel_ich_gpio32_raise},
 	{0x1039, 0x0661, 0x1043, 0x8113,  0x1039, 0x5513, 0x1043, 0x8087, NULL,         NULL, NULL,           P3, "ASUS",        "P4S800-MX",             512, OK, w836xx_memw_enable_2e},
 	{0x10B9, 0x1541,      0,      0,  0x10B9, 0x1533,      0,      0, "^P5A$",      "asus", "p5a",        P3, "ASUS",        "P5A",                   0,   OK, board_asus_p5a},
+	{0x8086, 0x27b8, 0x1043, 0x819e,  0x8086, 0x29f0, 0x1043, 0x82a5, "^P5BV-R$",   NULL, NULL,           P3, "ASUS",        "P5BV-R",                0,   OK, intel_ich_gpio20_raise},
 	{0x8086, 0x266a, 0x1043, 0x80a6,  0x8086, 0x2668, 0x1043, 0x814e, "^P5GD1 PRO$", NULL, NULL,          P3, "ASUS",        "P5GD1 Pro",             0,   OK, intel_ich_gpio21_raise},
 	{0x8086, 0x266a, 0x1043, 0x80a6,  0x8086, 0x2668, 0x1043, 0x814e, "^P5GD1-VM$", NULL, NULL,           P3, "ASUS",        "P5GD1-VM/S",            0,   OK, intel_ich_gpio21_raise},
 	{0x8086, 0x266a, 0x1043, 0x80a6,  0x8086, 0x2668, 0x1043, 0x814e, NULL,         NULL, NULL,           P3, "ASUS",        "P5GD1(-VM)",            0,   NT, intel_ich_gpio21_raise},
