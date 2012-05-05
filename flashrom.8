@@ -201,6 +201,9 @@ atmegaXXu2-flasher by Stefan Tauner."
 .BR "* rayer_spi" " (for SPI flash ROMs attached to a RayeR parport "
 or Xilinx DLC5 compatible cable)
 .sp
+.BR "* pony_spi" " (for SPI flash ROMs attached to a SI-Prog serial port "
+bitbanging adapter)
+.sp
 .BR "* nicintel_spi" " (for SPI flash ROMs on Intel Gigabit network cards)"
 .sp
 .BR "* ogp_spi" " (for SPI flash ROMs on Open Graphics Project graphics card)"
@@ -613,6 +616,26 @@ More information about the RayeR hardware is available at
 .BR "http://rayer.ic.cz/elektro/spipgm.htm " .
 The schematic of the Xilinx DLC 5 was published at
 .BR "http://www.xilinx.com/itp/xilinx4/data/docs/pac/appendixb.html " .
+.SS
+.BR "pony_spi " programmer
+The serial port (like /dev/ttyS0, /dev/ttyUSB0 on Linux or COM3 on windows) is
+specified using the mandatory
+.B dev 
+parameter. The adapter type is selectable between SI-Prog (used for
+SPI devices with PonyProg 2000) or a custom made serial bitbanging programmer
+named "serbang". The optional
+.B type 
+parameter accepts the values "si_prog" (default) or "serbang".
+.sp
+Information about the SI-Prog adapter can be found at
+.BR "http://www.lancos.com/siprogsch.html " .
+.sp
+An example call to flashrom is
+.sp
+.B "  flashrom \-p pony_spi:dev=/dev/ttyS0,type=serbang"
+.sp
+Please note that while USB-to-serial adapters work under certain circumstances,
+this slows down operation considerably.
 .SS
 .BR "ogp_spi " programmer
 The flash ROM chip to access must be specified with the
