@@ -380,6 +380,39 @@ static void w836xx_memw_enable(uint16_t port)
 	w836xx_ext_leave(port);
 }
 
+/**
+ * Enable MEMW# and set ROM size to max.
+ * Supported chips:
+ * W83697HF/F/HG, W83697SF/UF/UG
+ */
+void w83697xx_memw_enable(uint16_t port)
+{
+	w836xx_ext_enter(port);
+	if (!(sio_read(port, 0x24) & 0x02)) { /* Flash ROM enabled? */
+		if((sio_read(port, 0x2A) & 0xF0) == 0xF0) {
+
+		/* CR24 Bits 7 & 2 must be set to 0 enable the flash ROM    */
+		/* address segments 000E0000h ~ 000FFFFFh on W83697SF/UF/UG */
+		/* These bits are reserved on W83697HF/F/HG 		    */
+		/* Shouldn't be needed though.			   	    */
+
+		/* CR28 Bit3 must be set to 1 to enable flash access to     */
+		/* FFE80000h ~ FFEFFFFFh on W83697SF/UF/UG.		    */
+		/* This bit is reserved on W83697HF/F/HG which default to 0 */
+			sio_mask(port, 0x28, 0x08, 0x08);
+
+			/* Enable MEMW# and set ROM size select to max. (4M)*/
+			sio_mask(port, 0x24, 0x28, 0x38);
+
+		} else {
+			msg_perr("WARNING: Flash interface in use by GPIO!\n");
+		}
+	} else {
+		msg_pinfo("BIOS ROM is disabled\n");
+ 	}
+ 	w836xx_ext_leave(port);
+}
+
 /*
  * Suited for:
  *  - EPoX EP-8K5A2: VIA KT333 + VT8235
