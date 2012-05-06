@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <errno.h>
 #include "flash.h"
 #include "chipdrivers.h"
 #include "programmer.h"
@@ -61,6 +62,7 @@ unsigned char spi_blacklist[256];
 unsigned char spi_ignorelist[256];
 int spi_blacklist_size = 0;
 int spi_ignorelist_size = 0;
+static uint8_t emu_status = 0;
 #endif
 #endif
 
@@ -133,6 +135,9 @@ int dummy_init(void)
 	char *bustext = NULL;
 	char *tmp = NULL;
 	int i;
+#if EMULATE_SPI_CHIP
+	char *status = NULL;
+#endif
 #if EMULATE_CHIP
 	struct stat image_stat;
 #endif
@@ -309,6 +314,23 @@ int dummy_init(void)
 		return 1;
 	}
 
+#ifdef EMULATE_SPI_CHIP
+	status = extract_programmer_param("spi_status");
+	if (status) {
+		char *endptr;
+		errno = 0;
+		emu_status = strtoul(status, &endptr, 0);
+		free(status);
+		if (errno != 0 || status == endptr) {
+			msg_perr("Error: initial status register specified, "
+				 "but the value could not be converted.\n");
+			return 1;
+		}
+		msg_pdbg("Initial status register is set to 0x%02x.\n",
+			 emu_status);
+	}
+#endif
+
 	msg_pdbg("Filling fake flash chip with 0xff, size %i\n", emu_chip_size);
 	memset(flashchip_contents, 0xff, emu_chip_size);
 
@@ -429,7 +451,6 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 {
 	unsigned int offs, i;
 	static int unsigned aai_offs;
-	static int aai_active = 0;
 
 	if (writecnt == 0) {
 		msg_perr("No command sent to the chip!\n");
@@ -453,6 +474,17 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 			return 0;
 		}
 	}
+
+	if (emu_max_aai_size && (emu_status & SPI_SR_AAI)) {
+		if (writearr[0] != JEDEC_AAI_WORD_PROGRAM &&
+		    writearr[0] != JEDEC_WRDI &&
+		    writearr[0] != JEDEC_RDSR) {
+			msg_perr("Forbidden opcode (0x%02x) attempted during "
+				 "AAI sequence!\n", writearr[0]);
+			return 0;
+		}
+	}
+
 	switch (writearr[0]) {
 	case JEDEC_RES:
 		if (emu_chip != EMULATE_ST_M25P10_RES)
@@ -481,10 +513,23 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 		if (readcnt > 2)
 			readarr[2] = 0x4a;
 		break;
-	case JEDEC_RDSR:
-		memset(readarr, 0, readcnt);
-		if (aai_active)
-			memset(readarr, 1 << 6, readcnt);
+	case JEDEC_RDSR: {
+		memset(readarr, emu_status, readcnt);
+		break;
+	}
+	/* FIXME: this should be chip-specific. */
+	case JEDEC_EWSR:
+	case JEDEC_WREN:
+		emu_status |= SPI_SR_WEL;
+		break;
+	case JEDEC_WRSR:
+		if (!(emu_status & SPI_SR_WEL)) {
+			msg_perr("WRSR attempted, but WEL is 0!\n");
+			break;
+		}
+		/* FIXME: add some reasonable simulation of the busy flag */
+		emu_status = writearr[1] & ~SPI_SR_WIP;
+		msg_pdbg2("WRSR wrote 0x%02x.\n", emu_status);
 		break;
 	case JEDEC_READ:
 		offs = writearr[1] << 16 | writearr[2] << 8 | writearr[3];
@@ -510,7 +555,7 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 	case JEDEC_AAI_WORD_PROGRAM:
 		if (!emu_max_aai_size)
 			break;
-		if (!aai_active) {
+		if (!(emu_status & SPI_SR_AAI)) {
 			if (writecnt < JEDEC_AAI_WORD_PROGRAM_OUTSIZE) {
 				msg_perr("Initial AAI WORD PROGRAM size too "
 					 "short!\n");
@@ -521,7 +566,7 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 					 "long!\n");
 				return 1;
 			}
-			aai_active = 1;
+			emu_status |= SPI_SR_AAI;
 			aai_offs = writearr[1] << 16 | writearr[2] << 8 |
 				   writearr[3];
 			/* Truncate to emu_chip_size. */
@@ -544,9 +589,8 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 		}
 		break;
 	case JEDEC_WRDI:
-		if (!emu_max_aai_size)
-			break;
-		aai_active = 0;
+		if (emu_max_aai_size)
+			emu_status &= ~SPI_SR_AAI;
 		break;
 	case JEDEC_SE:
 		if (!emu_jedec_se_size)
@@ -633,6 +677,8 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 		/* No special response. */
 		break;
 	}
+	if (writearr[0] != JEDEC_WREN && writearr[0] != JEDEC_EWSR)
+		emu_status &= ~SPI_SR_WEL;
 	return 0;
 }
 #endif

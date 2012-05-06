@@ -495,6 +495,15 @@ SPI commands. If commandlist is e.g. 0302, the emulated flash chip will ignore
 command 0x03 (READ) and command 0x02 (WRITE).  commandlist may be up to 512
 characters (256 commands) long.
 Implementation note: flashrom won't detect an error during command execution.
+.sp
+.TP
+.B SPI status register
+.sp
+You can specify the initial content of the chip's status register with the
+.sp
+.B "  flashrom -p dummy:spi_status=content"
+.sp
+syntax where content is an 8-bit hexadecimal value.
 .SS
 .BR "nic3com" , " nicrealtek" , " nicsmc1211" , " nicnatsemi" , " nicintel\
 " , " nicintel_spi" , " gfxnvidia" , " ogp_spi" , " drkaiser" , " satasii\
