@@ -67,6 +67,17 @@ void sio_mask(uint16_t port, uint8_t reg, uint8_t data, uint8_t mask)
 	OUTB(tmp | (data & mask), port + 1);
 }
 
+/* Winbond W83697 documentation indicates that the index register has to be written for each access. */
+void sio_mask_alzheimer(uint16_t port, uint8_t reg, uint8_t data, uint8_t mask)
+{
+	uint8_t tmp;
+
+	OUTB(reg, port);
+	tmp = INB(port + 1) & ~mask;
+	OUTB(reg, port);
+	OUTB(tmp | (data & mask), port + 1);
+}
+
 /* Not used yet. */
 #if 0
 static int enable_flash_decode_superio(void)
@@ -163,6 +174,7 @@ enum winbond_id {
 	WINBOND_W83627HF_ID = 0x52,
 	WINBOND_W83627EHF_ID = 0x88,
 	WINBOND_W83627THF_ID = 0x82,
+	WINBOND_W83697HF_ID = 0x60,
 };
 
 static const struct winbond_mux w83627hf_port2_mux[8] = {
@@ -227,28 +239,154 @@ static const struct winbond_chip winbond_chips[] = {
 	{WINBOND_W83627THF_ID, ARRAY_SIZE(w83627thf), w83627thf},
 };
 
-/*
- * Detects which Winbond Super I/O is responding at the given base address,
- * but takes no effort to make sure the chip is really a Winbond Super I/O.
+#define WINBOND_SUPERIO_PORT1	0x2e
+#define WINBOND_SUPERIO_PORT2	0x4e
+
+/* We don't really care about the hardware monitor, but it offers better (more specific) device ID info than
+ * the simple device ID in the normal configuration registers.
+ * Note: This function expects to be called while the Super I/O is in config mode.
  */
-static const struct winbond_chip *winbond_superio_detect(uint16_t base)
+static uint8_t w836xx_deviceid_hwmon(uint16_t sio_port)
 {
-	uint8_t chipid;
-	const struct winbond_chip *chip = NULL;
-	int i;
+	uint16_t hwmport;
+	uint16_t hwm_vendorid;
+	uint8_t hwm_deviceid;
 
-	w836xx_ext_enter(base);
-	chipid = sio_read(base, 0x20);
+	sio_write(sio_port, 0x07, 0x0b); /* Select LDN 0xb (HWM). */
+	if ((sio_read(sio_port, 0x30) & (1 << 0)) != (1 << 0)) {
+		msg_pinfo("W836xx hardware monitor disabled or does not exist.\n");
+		return 0;
+	}
+	/* Get HWM base address (stored in LDN 0xb, index 0x60/0x61). */
+	hwmport = sio_read(sio_port, 0x60) << 8;
+	hwmport |= sio_read(sio_port, 0x61);
+	/* HWM address register = HWM base address + 5. */
+	hwmport += 5;
+	msg_pdbg2("W836xx Hardware Monitor at port %04x\n", hwmport);
+	/* FIXME: This busy check should happen before each HWM access. */
+	if (INB(hwmport) & 0x80) {
+		msg_pinfo("W836xx hardware monitor busy, ignoring it.\n");
+		return 0;
+	}
+	/* Set HBACS=1. */
+	sio_mask_alzheimer(hwmport, 0x4e, 0x80, 0x80);
+	/* Read upper byte of vendor ID. */
+	hwm_vendorid = sio_read(hwmport, 0x4f) << 8;
+	/* Set HBACS=0. */
+	sio_mask_alzheimer(hwmport, 0x4e, 0x00, 0x80);
+	/* Read lower byte of vendor ID. */
+	hwm_vendorid |= sio_read(hwmport, 0x4f);
+	if (hwm_vendorid != 0x5ca3) {
+		msg_pinfo("W836xx hardware monitor vendor ID weirdness: expected 0x5ca3, got %04x\n",
+			  hwm_vendorid);
+		return 0;
+	}
+	/* Set Bank=0. */
+	sio_mask_alzheimer(hwmport, 0x4e, 0x00, 0x07);
+	/* Read "chip" ID. We call this one the device ID. */
+	hwm_deviceid = sio_read(hwmport, 0x58);
+	return hwm_deviceid;
+}
 
-	for (i = 0; i < ARRAY_SIZE(winbond_chips); i++) {
-		if (winbond_chips[i].device_id == chipid) {
-			chip = &winbond_chips[i];
+void probe_superio_winbond(void)
+{
+	struct superio s = {};
+	uint16_t winbond_ports[] = {WINBOND_SUPERIO_PORT1, WINBOND_SUPERIO_PORT2, 0};
+	uint16_t *i = winbond_ports;
+	uint8_t model;
+	uint8_t tmp;
+
+	s.vendor = SUPERIO_VENDOR_WINBOND;
+	for (; *i; i++) {
+		s.port = *i;
+		/* If we're already in Super I/O config more, the W836xx enter sequence won't hurt. */
+		w836xx_ext_enter(s.port);
+		model = sio_read(s.port, 0x20);
+		/* No response, no point leaving the config mode. */
+		if (model == 0xff)
+			continue;
+		/* Try to leave config mode. If the ID register is still readable, it's not a Winbond chip. */
+		w836xx_ext_leave(s.port);
+		if (model == sio_read(s.port, 0x20)) {
+			msg_pdbg("W836xx enter config mode worked or we were already in config mode. W836xx "
+				 "leave config mode had no effect.\n");
+			if (model == 0x87) {
+				/* ITE IT8707F and IT8710F are special: They need the W837xx enter sequence,
+				 * but they want the ITE exit sequence. Handle them here.
+				 */
+				tmp = sio_read(s.port, 0x21);
+				switch (tmp) {
+				case 0x07:
+				case 0x10:
+					s.vendor = SUPERIO_VENDOR_ITE;
+					s.model = (0x87 << 8) | tmp ;
+					msg_pdbg("Found ITE Super I/O, ID 0x%04hx on port "
+						 "0x%x\n", s.model, s.port);
+					register_superio(s);
+					/* Exit ITE config mode. */
+					exit_conf_mode_ite(s.port);
+					/* Restore vendor for next loop iteration. */
+					s.vendor = SUPERIO_VENDOR_WINBOND;
+					continue;
+				}
+			}
+			msg_pinfo("Active config mode, unknown reg 0x20 ID: %02x.\n", model);
+			msg_pinfo("Please send the output of \"flashrom -V\" to \n"
+				  "flashrom@flashrom.org with W836xx: your board name: flashrom -V\n"
+				  "as the subject to help us finish support for your Super I/O. Thanks.\n");
+			continue;
+		} 
+		/* The Super I/O reacts to W836xx enter and exit config mode, it's probably Winbond. */
+		w836xx_ext_enter(s.port);
+		s.model = sio_read(s.port, 0x20);
+		switch (s.model) {
+		case WINBOND_W83627HF_ID:
+		case WINBOND_W83627EHF_ID:
+		case WINBOND_W83627THF_ID:
+			msg_pdbg("Found Winbond Super I/O, id %02hx\n", s.model);
+			register_superio(s);
+			break;
+		case WINBOND_W83697HF_ID:
+			/* This code is extremely paranoid. */
+			tmp = sio_read(s.port, 0x26) & 0x40;
+			if (((tmp == 0x00) && (s.port != WINBOND_SUPERIO_PORT1)) ||
+			    ((tmp == 0x40) && (s.port != WINBOND_SUPERIO_PORT2))) {
+				msg_pdbg("Winbond Super I/O probe weirdness: Port mismatch for ID "
+					 "%02x at port %04x\n", s.model, s.port);
+				break;
+			}
+			tmp = w836xx_deviceid_hwmon(s.port);
+			/* FIXME: This might be too paranoid... */
+			if (!tmp) {
+				msg_pdbg("Probably not a Winbond Super I/O\n");
+				break;
+			}
+			if (tmp != s.model) {
+				msg_pinfo("W83 series hardware monitor device ID weirdness: expected %02x, "
+					  "got %02x\n", WINBOND_W83697HF_ID, tmp);
+				break;
+			}
+			msg_pinfo("Found Winbond Super I/O, id %02hx\n", s.model);
+			register_superio(s);
 			break;
 		}
+		w836xx_ext_leave(s.port);
 	}
+	return;
+}
 
-	w836xx_ext_leave(base);
-	return chip;
+static const struct winbond_chip *winbond_superio_chipdef(void)
+{
+	int i, j;
+
+	for (i = 0; i < superio_count; i++) {
+		if (superios[i].vendor != SUPERIO_VENDOR_WINBOND)
+			continue;
+		for (j = 0; j < ARRAY_SIZE(winbond_chips); j++)
+			if (winbond_chips[j].device_id == superios[i].model)
+				return &winbond_chips[j];
+	}
+	return NULL;
 }
 
 /*
@@ -264,7 +402,7 @@ static int winbond_gpio_set(uint16_t base, enum winbond_id chipid,
 	int port = pin / 10;
 	int bit = pin % 10;
 
-	chip = winbond_superio_detect(base);
+	chip = winbond_superio_chipdef();
 	if (!chip) {
 		msg_perr("\nERROR: No supported Winbond Super I/O found\n");
 		return -1;
