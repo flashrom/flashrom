@@ -101,12 +101,14 @@ int force_boardmismatch = 0;
 #if defined(__i386__) || defined(__x86_64__)
 void probe_superio(void)
 {
+	probe_superio_winbond();
+	/* ITE probe causes SMSC LPC47N217 to power off the serial UART.
+	 * Always probe for SMSC first, and if a SMSC Super I/O is detected
+	 * at a given I/O port, do _not_ probe that port with the ITE probe.
+	 * This means SMSC probing must be done before ITE probing.
+	 */
+	//probe_superio_smsc();
 	probe_superio_ite();
-#if 0
-	/* Winbond Super I/O code is not yet available. */
-	if (superio.vendor == SUPERIO_VENDOR_NONE)
-		superio = probe_superio_winbond();
-#endif
 }
 
 int superio_count = 0;
