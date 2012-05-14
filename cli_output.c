@@ -22,34 +22,25 @@
 #include <stdarg.h>
 #include "flash.h"
 
-int print(int type, const char *fmt, ...)
+/* Please note that level is the verbosity, not the importance of the message. */
+int print(enum msglevel level, const char *fmt, ...)
 {
 	va_list ap;
-	int ret;
-	FILE *output_type;
+	int ret = 0;
+	FILE *output_type = stdout;
 
-	switch (type) {
-	case MSG_ERROR:
+	if (level == MSG_ERROR)
 		output_type = stderr;
-		break;
-	case MSG_BARF:
-		if (verbose < 3)
-			return 0;
-	case MSG_DEBUG2:
-		if (verbose < 2)
-			return 0;
-	case MSG_DEBUG:
-		if (verbose < 1)
-			return 0;
-	case MSG_INFO:
-	default:
-		output_type = stdout;
-		break;
-	}
 
-	va_start(ap, fmt);
-	ret = vfprintf(output_type, fmt, ap);
-	va_end(ap);
-	fflush(output_type);
+	if (level <= verbose) {
+		va_start(ap, fmt);
+		ret = vfprintf(output_type, fmt, ap);
+		va_end(ap);
+		/* msg_*spew usually happens inside chip accessors in possibly
+		 * time-critical operations. Don't slow them down by flushing.
+		 */
+		if (level != MSG_SPEW)
+			fflush(output_type);
+	}
 	return ret;
 }
