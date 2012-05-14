@@ -159,6 +159,18 @@ static void cli_classic_abort_usage(void)
 	exit(1);
 }
 
+static int check_filename(char *filename, char *type)
+{
+	if (!filename || (filename[0] == '\0')) {
+		fprintf(stderr, "Error: No %s file specified.\n", type);
+		return 1;
+	}
+	/* Not an error, but maybe the user intended to specify a CLI option instead of a file name. */
+	if (filename[0] == '-')
+		fprintf(stderr, "Warning: Supplied %s file name starts with -\n", type);
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
 	unsigned long size;
@@ -377,36 +389,51 @@ int main(int argc, char *argv[])
 		cli_classic_abort_usage();
 	}
 
-	/* FIXME: Print the actions flashrom will take. */
-
-	if (list_supported) {
-		print_supported();
-		exit(0);
+	if ((read_it | write_it | verify_it) && check_filename(filename, "image")) {
+		cli_classic_abort_usage();
+	}
+	if (layoutfile && check_filename(layoutfile, "layout")) {
+		cli_classic_abort_usage();
 	}
 
 #if CONFIG_PRINT_WIKI == 1
 	if (list_supported_wiki) {
 		print_supported_wiki();
-		exit(0);
+		ret = 0;
+		goto out;
 	}
 #endif
 
-	if (layoutfile && read_romlayout(layoutfile))
-		cli_classic_abort_usage();
-	if (process_include_args())
-		cli_classic_abort_usage();
+	if (list_supported) {
+		print_supported();
+		ret = 0;
+		goto out;
+	}
 
+	msg_gdbg("Command line (%i args):", argc - 1);
+	for (i = 0; i < argc; i++) {
+		msg_gdbg(" %s", argv[i]);
+	}
+	msg_gdbg("\n");
+
+	if (layoutfile && read_romlayout(layoutfile)) {
+		ret = 1;
+		goto out;
+	}
+	if (process_include_args()) {
+		ret = 1;
+		goto out;
+	}
 	/* Does a chip with the requested name exist in the flashchips array? */
 	if (chip_to_probe) {
 		for (flash = flashchips; flash && flash->name; flash++)
 			if (!strcmp(flash->name, chip_to_probe))
 				break;
 		if (!flash || !flash->name) {
-			fprintf(stderr, "Error: Unknown chip '%s' specified.\n",
-				chip_to_probe);
-			printf("Run flashrom -L to view the hardware supported "
-			       "in this flashrom version.\n");
-			exit(1);
+			msg_cerr("Error: Unknown chip '%s' specified.\n", chip_to_probe);
+			msg_gerr("Run flashrom -L to view the hardware supported in this flashrom version.\n");
+			ret = 1;
+			goto out;
 		}
 		/* Clean up after the check. */
 		flash = NULL;
@@ -419,7 +446,7 @@ int main(int argc, char *argv[])
 	myusec_calibrate_delay();
 
 	if (programmer_init(prog, pparam)) {
-		fprintf(stderr, "Error: Programmer initialization failed.\n");
+		msg_perr("Error: Programmer initialization failed.\n");
 		ret = 1;
 		goto out_shutdown;
 	}
@@ -442,25 +469,22 @@ int main(int argc, char *argv[])
 	}
 
 	if (chipcount > 1) {
-		printf("Multiple flash chips were detected: \"%s\"",
-			flashes[0].name);
+		msg_cinfo("Multiple flash chips were detected: \"%s\"", flashes[0].name);
 		for (i = 1; i < chipcount; i++)
-			printf(", \"%s\"", flashes[i].name);
-		printf("\nPlease specify which chip to use with the "
-		       "-c <chipname> option.\n");
+			msg_cinfo(", \"%s\"", flashes[i].name);
+		msg_cinfo("\nPlease specify which chip to use with the -c <chipname> option.\n");
 		ret = 1;
 		goto out_shutdown;
 	} else if (!chipcount) {
-		printf("No EEPROM/flash device found.\n");
+		msg_cinfo("No EEPROM/flash device found.\n");
 		if (!force || !chip_to_probe) {
-			printf("Note: flashrom can never write if the flash "
-			       "chip isn't found automatically.\n");
+			msg_cinfo("Note: flashrom can never write if the flash chip isn't found "
+				  "automatically.\n");
 		}
 		if (force && read_it && chip_to_probe) {
 			struct registered_programmer *pgm;
 			int compatible_programmers = 0;
-			printf("Force read (-f -r -c) requested, pretending "
-			       "the chip is there:\n");
+			msg_cinfo("Force read (-f -r -c) requested, pretending the chip is there:\n");
 			/* This loop just counts compatible controllers. */
 			for (j = 0; j < registered_programmer_count; j++) {
 				pgm = &registered_programmers[j];
@@ -468,9 +492,8 @@ int main(int argc, char *argv[])
 					compatible_programmers++;
 			}
 			if (compatible_programmers > 1)
-				printf("More than one compatible controller "
-				       "found for the requested flash chip, "
-				       "using the first one.\n");
+				msg_cinfo("More than one compatible controller found for the requested flash "
+					  "chip, using the first one.\n");
 			for (j = 0; j < registered_programmer_count; j++) {
 				pgm = &registered_programmers[j];
 				startchip = probe_flash(pgm, 0, &flashes[0], 1);
@@ -478,14 +501,13 @@ int main(int argc, char *argv[])
 					break;
 			}
 			if (startchip == -1) {
-				printf("Probing for flash chip '%s' failed.\n",
-				       chip_to_probe);
+				msg_cinfo("Probing for flash chip '%s' failed.\n", chip_to_probe);
 				ret = 1;
 				goto out_shutdown;
 			}
-			printf("Please note that forced reads most likely "
-			       "contain garbage.\n");
-			return read_flash_to_file(&flashes[0], filename);
+			msg_cinfo("Please note that forced reads most likely contain garbage.\n");
+			ret = read_flash_to_file(&flashes[0], filename);
+			goto out_shutdown;
 		}
 		ret = 1;
 		goto out_shutdown;
@@ -503,22 +525,14 @@ int main(int argc, char *argv[])
 	check_chip_supported(fill_flash);
 
 	size = fill_flash->total_size * 1024;
-	if (check_max_decode(fill_flash->pgm->buses_supported & fill_flash->bustype, size) &&
-	    (!force)) {
-		fprintf(stderr, "Chip is too big for this programmer "
-			"(-V gives details). Use --force to override.\n");
+	if (check_max_decode(fill_flash->pgm->buses_supported & fill_flash->bustype, size) && (!force)) {
+		msg_cerr("Chip is too big for this programmer (-V gives details). Use --force to override.\n");
 		ret = 1;
 		goto out_shutdown;
 	}
 
 	if (!(read_it | write_it | verify_it | erase_it)) {
-		printf("No operations were specified.\n");
-		goto out_shutdown;
-	}
-
-	if (!filename && !erase_it) {
-		printf("Error: No filename specified.\n");
-		ret = 1;
+		msg_ginfo("No operations were specified.\n");
 		goto out_shutdown;
 	}
 
@@ -531,9 +545,12 @@ int main(int argc, char *argv[])
 	 * Give the chip time to settle.
 	 */
 	programmer_delay(100000);
-	return doit(fill_flash, force, filename, read_it, write_it, erase_it, verify_it);
+	ret |= doit(fill_flash, force, filename, read_it, write_it, erase_it, verify_it);
+	/* Note: doit() already calls programmer_shutdown(). */
+	goto out;
 
 out_shutdown:
 	programmer_shutdown();
+out:
 	return ret;
 }

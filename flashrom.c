@@ -40,7 +40,7 @@
 
 const char flashrom_version[] = FLASHROM_VERSION;
 char *chip_to_probe = NULL;
-int verbose = 0;
+int verbose = MSG_INFO;
 
 static enum programmer programmer = PROGRAMMER_INVALID;
 
@@ -1457,27 +1457,27 @@ void list_programmers_linebreak(int startcol, int cols, int paren)
 			if (firstline)
 				firstline = 0;
 			else
-				printf("\n");
+				msg_ginfo("\n");
 			for (i = 0; i < startcol; i++)
-				printf(" ");
+				msg_ginfo(" ");
 			remaining = cols - startcol;
 		} else {
-			printf(" ");
+			msg_ginfo(" ");
 			remaining--;
 		}
 		if (paren && (p == 0)) {
-			printf("(");
+			msg_ginfo("(");
 			remaining--;
 		}
-		printf("%s", pname);
+		msg_ginfo("%s", pname);
 		remaining -= pnamelen;
 		if (p < PROGRAMMER_INVALID - 1) {
-			printf(",");
+			msg_ginfo(",");
 			remaining--;
 		} else {
 			if (paren)
-				printf(")");
-			printf("\n");
+				msg_ginfo(")");
+			msg_ginfo("\n");
 		}
 	}
 }
