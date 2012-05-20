@@ -5803,7 +5803,37 @@ const struct flashchip flashchips[] = {
 		.read		= read_memmapped,
 		.voltage	= {2700, 3600},
 	},
-	
+
+	{
+		.vendor		= "PMC",
+		.name		= "Pm39LV512",
+		.bustype	= BUS_PARALLEL,
+		.manufacture_id	= PMC_ID_NOPREFIX,
+		.model_id	= PMC_PM39LV512,
+		.total_size	= 64,
+		.page_size	= 4096,
+		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_EITHER_RESET,
+		.tested		= TEST_OK_PREW,
+		.probe		= probe_jedec,
+		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 16} },
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {64 * 1024, 1} },
+				.block_erase = erase_block_jedec,
+			}, {
+				.eraseblocks = { {64 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			}
+		},
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+		.voltage	= {2700, 3600},
+	},
+
 	{
 		.vendor		= "PMC",
 		.name		= "Pm49FL002",
