@@ -106,7 +106,7 @@ static void cli_classic_usage(const char *name)
 	         "-z|"
 #endif
 	         "-E|-r <file>|-w <file>|-v <file>]\n"
-	       "       [-c <chipname>] [-l <file>]\n"
+	       "       [-c <chipname>] [-l <file>] [-o <file>]\n"
 	       "       [-i <image>] [-p <programmername>[:<parameters>]]\n\n");
 
 	printf("Please note that the command line interface for flashrom has "
@@ -135,6 +135,7 @@ static void cli_classic_usage(const char *name)
 	         "<file>\n"
 	       "   -i | --image <name>               only flash image <name> "
 	         "from flash layout\n"
+	       "   -o | --output <name>              log to file <name>\n"
 	       "   -L | --list-supported             print supported devices\n"
 #if CONFIG_PRINT_WIKI == 1
 	       "   -z | --list-supported-wiki        print supported devices "
@@ -189,7 +190,7 @@ int main(int argc, char *argv[])
 	enum programmer prog = PROGRAMMER_INVALID;
 	int ret = 0;
 
-	static const char optstring[] = "r:Rw:v:nVEfc:l:i:p:Lzh";
+	static const char optstring[] = "r:Rw:v:nVEfc:l:i:p:Lzho:";
 	static const struct option long_options[] = {
 		{"read",		1, NULL, 'r'},
 		{"write",		1, NULL, 'w'},
@@ -206,11 +207,13 @@ int main(int argc, char *argv[])
 		{"programmer",		1, NULL, 'p'},
 		{"help",		0, NULL, 'h'},
 		{"version",		0, NULL, 'R'},
+		{"output",		1, NULL, 'o'},
 		{NULL,			0, NULL, 0},
 	};
 
 	char *filename = NULL;
 	char *layoutfile = NULL;
+	char *logfile = NULL;
 	char *tempstr = NULL;
 	char *pparam = NULL;
 
@@ -272,7 +275,9 @@ int main(int argc, char *argv[])
 			chip_to_probe = strdup(optarg);
 			break;
 		case 'V':
-			verbose++;
+			verbose_screen++;
+			if (verbose_screen > MSG_DEBUG2)
+				verbose_logfile = verbose_screen;
 			break;
 		case 'E':
 			if (++operation_specified > 1) {
@@ -378,6 +383,18 @@ int main(int argc, char *argv[])
 			cli_classic_usage(argv[0]);
 			exit(0);
 			break;
+		case 'o':
+#ifdef STANDALONE
+			fprintf(stderr, "Log file not supported in standalone mode. Aborting.\n");
+			cli_classic_abort_usage();
+#else /* STANDALONE */
+			logfile = strdup(optarg);
+			if (logfile[0] == '\0') {
+				fprintf(stderr, "No log filename specified.\n");
+				cli_classic_abort_usage();
+			}
+#endif /* STANDALONE */
+			break;
 		default:
 			cli_classic_abort_usage();
 			break;
@@ -396,6 +413,13 @@ int main(int argc, char *argv[])
 		cli_classic_abort_usage();
 	}
 
+#ifndef STANDALONE
+	if (logfile && check_filename(logfile, "log"))
+		cli_classic_abort_usage();
+	if (logfile && open_logfile(logfile))
+		return 1;
+#endif /* !STANDALONE */
+
 #if CONFIG_PRINT_WIKI == 1
 	if (list_supported_wiki) {
 		print_supported_wiki();
@@ -410,6 +434,11 @@ int main(int argc, char *argv[])
 		goto out;
 	}
 
+#ifndef STANDALONE
+	start_logging();
+#endif /* !STANDALONE */
+
+	print_buildinfo();
 	msg_gdbg("Command line (%i args):", argc - 1);
 	for (i = 0; i < argc; i++) {
 		msg_gdbg(" %s", argv[i]);
@@ -552,5 +581,8 @@ int main(int argc, char *argv[])
 out_shutdown:
 	programmer_shutdown();
 out:
+#ifndef STANDALONE
+	ret |= close_logfile();
+#endif /* !STANDALONE */
 	return ret;
 }

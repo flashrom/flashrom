@@ -228,7 +228,8 @@ enum write_granularity {
 	write_gran_1byte,
 	write_gran_256bytes,
 };
-extern int verbose;
+extern int verbose_screen;
+extern int verbose_logfile;
 extern const char flashrom_version[];
 extern char *chip_to_probe;
 void map_flash_registers(struct flashctx *flash);
@@ -244,6 +245,7 @@ int verify_range(struct flashctx *flash, uint8_t *cmpbuf, unsigned int start, un
 int need_erase(uint8_t *have, uint8_t *want, unsigned int len, enum write_granularity gran);
 char *strcat_realloc(char *dest, const char *src);
 void print_version(void);
+void print_buildinfo(void);
 void print_banner(void);
 void list_programmers_linebreak(int startcol, int cols, int paren);
 int selfcheck(void);
@@ -268,6 +270,11 @@ int write_buf_to_file(unsigned char *buf, unsigned long size, const char *filena
 #define ERROR_FLASHROM_LIMIT -201
 
 /* cli_output.c */
+#ifndef STANDALONE
+int open_logfile(const char * const filename);
+int close_logfile(void);
+void start_logging(void);
+#endif
 enum msglevel {
 	MSG_ERROR	= 0,
 	MSG_INFO	= 1,
