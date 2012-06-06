@@ -40,7 +40,8 @@
 
 const char flashrom_version[] = FLASHROM_VERSION;
 char *chip_to_probe = NULL;
-int verbose = MSG_INFO;
+int verbose_screen = MSG_INFO;
+int verbose_logfile = MSG_DEBUG2;
 
 static enum programmer programmer = PROGRAMMER_INVALID;
 
@@ -1493,43 +1494,48 @@ void print_sysinfo(void)
 #else
 	msg_ginfo(" on unknown machine");
 #endif
-	msg_ginfo(", built with");
+}
+
+void print_buildinfo(void)
+{
+	msg_gdbg("flashrom was built with");
 #if NEED_PCI == 1
 #ifdef PCILIB_VERSION
-	msg_ginfo(" libpci %s,", PCILIB_VERSION);
+	msg_gdbg(" libpci %s,", PCILIB_VERSION);
 #else
-	msg_ginfo(" unknown PCI library,");
+	msg_gdbg(" unknown PCI library,");
 #endif
 #endif
 #ifdef __clang__
-	msg_ginfo(" LLVM Clang");
+	msg_gdbg(" LLVM Clang");
 #ifdef __clang_version__
-	msg_ginfo(" %s,", __clang_version__);
+	msg_gdbg(" %s,", __clang_version__);
 #else
-	msg_ginfo(" unknown version (before r102686),");
+	msg_gdbg(" unknown version (before r102686),");
 #endif
 #elif defined(__GNUC__)
-	msg_ginfo(" GCC");
+	msg_gdbg(" GCC");
 #ifdef __VERSION__
-	msg_ginfo(" %s,", __VERSION__);
+	msg_gdbg(" %s,", __VERSION__);
 #else
-	msg_ginfo(" unknown version,");
+	msg_gdbg(" unknown version,");
 #endif
 #else
-	msg_ginfo(" unknown compiler,");
+	msg_gdbg(" unknown compiler,");
 #endif
 #if defined (__FLASHROM_LITTLE_ENDIAN__)
-	msg_ginfo(" little endian");
+	msg_gdbg(" little endian");
 #else
-	msg_ginfo(" big endian");
+	msg_gdbg(" big endian");
 #endif
-	msg_ginfo("\n");
+	msg_gdbg("\n");
 }
 
 void print_version(void)
 {
 	msg_ginfo("flashrom v%s", flashrom_version);
 	print_sysinfo();
+	msg_ginfo("\n");
 }
 
 void print_banner(void)
