@@ -39,6 +39,7 @@ static int buspirate_serialport_setup(char *dev)
 {
 	/* 115200bps, 8 databits, no parity, 1 stopbit */
 	sp_fd = sp_openserport(dev, 115200);
+	/* FIXME: Error checking */
 	return 0;
 }
 #else
@@ -48,6 +49,29 @@ static int buspirate_serialport_setup(char *dev)
 #define serialport_read(...) 0
 #define sp_flush_incoming(...) 0
 #endif
+
+static unsigned char *bp_commbuf = NULL;
+static int bp_commbufsize = 0;
+
+static int buspirate_commbuf_grow(int bufsize)
+{
+	unsigned char *tmpbuf;
+
+	/* Never shrink. realloc() calls are expensive. */
+	if (bufsize <= bp_commbufsize)
+		return 0;
+
+	tmpbuf = realloc(bp_commbuf, bufsize);
+	if (!tmpbuf) {
+		/* Keep the existing buffer because memory is already tight. */
+		msg_perr("Out of memory!\n");
+		return ERROR_OOM;
+	}
+
+	bp_commbuf = tmpbuf;
+	bp_commbufsize = bufsize;
+	return 0;
+}
 
 static int buspirate_sendrecv(unsigned char *buf, unsigned int writecnt,
 			      unsigned int readcnt)
@@ -116,42 +140,48 @@ static const struct buspirate_spispeeds spispeeds[] = {
 
 static int buspirate_spi_shutdown(void *data)
 {
-	unsigned char buf[5];
-	int ret = 0;
+	int ret = 0, ret2 = 0;
+	/* No need to allocate a buffer here, we know that bp_commbuf is at least DEFAULT_BUFSIZE big. */
 
 	/* Exit raw SPI mode (enter raw bitbang mode) */
-	buf[0] = 0x00;
-	ret = buspirate_sendrecv(buf, 1, 5);
+	bp_commbuf[0] = 0x00;
+	ret = buspirate_sendrecv(bp_commbuf, 1, 5);
 	if (ret)
-		return ret;
-	if (memcmp(buf, "BBIO", 4)) {
+		goto out_shutdown;
+	if (memcmp(bp_commbuf, "BBIO", 4)) {
 		msg_perr("Entering raw bitbang mode failed!\n");
-		return 1;
+		ret = 1;
+		goto out_shutdown;
 	}
-	msg_pdbg("Raw bitbang mode version %c\n", buf[4]);
-	if (buf[4] != '1') {
-		msg_perr("Can't handle raw bitbang mode version %c!\n",
-			buf[4]);
-		return 1;
+	msg_pdbg("Raw bitbang mode version %c\n", bp_commbuf[4]);
+	if (bp_commbuf[4] != '1') {
+		msg_perr("Can't handle raw bitbang mode version %c!\n", bp_commbuf[4]);
+		ret = 1;
+		goto out_shutdown;
 	}
 	/* Reset Bus Pirate (return to user terminal) */
-	buf[0] = 0x0f;
-	ret = buspirate_sendrecv(buf, 1, 0);
-	if (ret)
-		return ret;
+	bp_commbuf[0] = 0x0f;
+	ret = buspirate_sendrecv(bp_commbuf, 1, 0);
 
+out_shutdown:
 	/* Shut down serial port communication */
-	ret = serialport_shutdown(NULL);
+	ret2 = serialport_shutdown(NULL);
+	/* Keep the oldest error, it is probably the best indicator. */
+	if (ret2 && !ret)
+		ret = ret2;
+	bp_commbufsize = 0;
+	free(bp_commbuf);
+	bp_commbuf = NULL;
 	if (ret)
-		return ret;
-	msg_pdbg("Bus Pirate shutdown completed.\n");
+		msg_pdbg("Bus Pirate shutdown failed.\n");
+	else
+		msg_pdbg("Bus Pirate shutdown completed.\n");
 
-	return 0;
+	return ret;
 }
 
 int buspirate_spi_init(void)
 {
-	unsigned char buf[512];
 	char *dev = NULL;
 	char *speed = NULL;
 	int spispeed = 0x7;
@@ -181,10 +211,24 @@ int buspirate_spi_init(void)
 	/* This works because speeds numbering starts at 0 and is contiguous. */
 	msg_pdbg("SPI speed is %sHz\n", spispeeds[spispeed].name);
 
+	/* Default buffer size is 19: 16 bytes data, 3 bytes control. */
+#define DEFAULT_BUFSIZE (16 + 3)
+	bp_commbuf = malloc(DEFAULT_BUFSIZE);
+	if (!bp_commbuf) {
+		bp_commbufsize = 0;
+		msg_perr("Out of memory!\n");
+		return ERROR_OOM;
+	}
+	bp_commbufsize = DEFAULT_BUFSIZE;
+
 	ret = buspirate_serialport_setup(dev);
-	if (ret)
-		return ret;
 	free(dev);
+	if (ret) {
+		bp_commbufsize = 0;
+		free(bp_commbuf);
+		bp_commbuf = NULL;
+		return ret;
+	}
 
 	if (register_shutdown(buspirate_spi_shutdown, NULL))
 		return 1;
@@ -192,9 +236,9 @@ int buspirate_spi_init(void)
 	/* This is the brute force version, but it should work. */
 	for (i = 0; i < 19; i++) {
 		/* Enter raw bitbang mode */
-		buf[0] = 0x00;
+		bp_commbuf[0] = 0x00;
 		/* Send the command, don't read the response. */
-		ret = buspirate_sendrecv(buf, 1, 0);
+		ret = buspirate_sendrecv(bp_commbuf, 1, 0);
 		if (ret)
 			return ret;
 		/* Read any response and discard it. */
@@ -215,76 +259,78 @@ int buspirate_spi_init(void)
 		sp_flush_incoming();
 	}
 	/* Enter raw bitbang mode */
-	buf[0] = 0x00;
-	ret = buspirate_sendrecv(buf, 1, 5);
+	bp_commbuf[0] = 0x00;
+	ret = buspirate_sendrecv(bp_commbuf, 1, 5);
 	if (ret)
 		return ret;
-	if (memcmp(buf, "BBIO", 4)) {
+	if (memcmp(bp_commbuf, "BBIO", 4)) {
 		msg_perr("Entering raw bitbang mode failed!\n");
 		msg_pdbg("Got %02x%02x%02x%02x%02x\n",
-			 buf[0], buf[1], buf[2], buf[3], buf[4]);
+			 bp_commbuf[0], bp_commbuf[1], bp_commbuf[2],
+			 bp_commbuf[3], bp_commbuf[4]);
 		return 1;
 	}
-	msg_pdbg("Raw bitbang mode version %c\n", buf[4]);
-	if (buf[4] != '1') {
+	msg_pdbg("Raw bitbang mode version %c\n", bp_commbuf[4]);
+	if (bp_commbuf[4] != '1') {
 		msg_perr("Can't handle raw bitbang mode version %c!\n",
-			buf[4]);
+			bp_commbuf[4]);
 		return 1;
 	}
 	/* Enter raw SPI mode */
-	buf[0] = 0x01;
-	ret = buspirate_sendrecv(buf, 1, 4);
+	bp_commbuf[0] = 0x01;
+	ret = buspirate_sendrecv(bp_commbuf, 1, 4);
 	if (ret)
 		return ret;
-	if (memcmp(buf, "SPI", 3)) {
+	if (memcmp(bp_commbuf, "SPI", 3)) {
 		msg_perr("Entering raw SPI mode failed!\n");
 		msg_pdbg("Got %02x%02x%02x%02x\n",
-			 buf[0], buf[1], buf[2], buf[3]);
+			 bp_commbuf[0], bp_commbuf[1], bp_commbuf[2],
+			 bp_commbuf[3]);
 		return 1;
 	}
-	msg_pdbg("Raw SPI mode version %c\n", buf[3]);
-	if (buf[3] != '1') {
+	msg_pdbg("Raw SPI mode version %c\n", bp_commbuf[3]);
+	if (bp_commbuf[3] != '1') {
 		msg_perr("Can't handle raw SPI mode version %c!\n",
-			buf[3]);
+			bp_commbuf[3]);
 		return 1;
 	}
 
 	/* Initial setup (SPI peripherals config): Enable power, CS high, AUX */
-	buf[0] = 0x40 | 0xb;
-	ret = buspirate_sendrecv(buf, 1, 1);
+	bp_commbuf[0] = 0x40 | 0xb;
+	ret = buspirate_sendrecv(bp_commbuf, 1, 1);
 	if (ret)
 		return 1;
-	if (buf[0] != 0x01) {
+	if (bp_commbuf[0] != 0x01) {
 		msg_perr("Protocol error while setting power/CS/AUX!\n");
 		return 1;
 	}
 
 	/* Set SPI speed */
-	buf[0] = 0x60 | spispeed;
-	ret = buspirate_sendrecv(buf, 1, 1);
+	bp_commbuf[0] = 0x60 | spispeed;
+	ret = buspirate_sendrecv(bp_commbuf, 1, 1);
 	if (ret)
 		return 1;
-	if (buf[0] != 0x01) {
+	if (bp_commbuf[0] != 0x01) {
 		msg_perr("Protocol error while setting SPI speed!\n");
 		return 1;
 	}
 	
 	/* Set SPI config: output type, idle, clock edge, sample */
-	buf[0] = 0x80 | 0xa;
-	ret = buspirate_sendrecv(buf, 1, 1);
+	bp_commbuf[0] = 0x80 | 0xa;
+	ret = buspirate_sendrecv(bp_commbuf, 1, 1);
 	if (ret)
 		return 1;
-	if (buf[0] != 0x01) {
+	if (bp_commbuf[0] != 0x01) {
 		msg_perr("Protocol error while setting SPI config!\n");
 		return 1;
 	}
 
 	/* De-assert CS# */
-	buf[0] = 0x03;
-	ret = buspirate_sendrecv(buf, 1, 1);
+	bp_commbuf[0] = 0x03;
+	ret = buspirate_sendrecv(bp_commbuf, 1, 1);
 	if (ret)
 		return 1;
-	if (buf[0] != 0x01) {
+	if (bp_commbuf[0] != 0x01) {
 		msg_perr("Protocol error while raising CS#!\n");
 		return 1;
 	}
@@ -300,7 +346,6 @@ static int buspirate_spi_send_command(struct flashctx *flash,
 				      const unsigned char *writearr,
 				      unsigned char *readarr)
 {
-	static unsigned char *buf = NULL;
 	unsigned int i = 0;
 	int ret = 0;
 
@@ -308,48 +353,45 @@ static int buspirate_spi_send_command(struct flashctx *flash,
 		return SPI_INVALID_LENGTH;
 
 	/* 3 bytes extra for CS#, len, CS#. */
-	buf = realloc(buf, writecnt + readcnt + 3);
-	if (!buf) {
-		msg_perr("Out of memory!\n");
-		exit(1); // -1
-	}
+	if (buspirate_commbuf_grow(writecnt + readcnt + 3))
+		return ERROR_OOM;
 
 	/* Assert CS# */
-	buf[i++] = 0x02;
+	bp_commbuf[i++] = 0x02;
 
-	buf[i++] = 0x10 | (writecnt + readcnt - 1);
-	memcpy(buf + i, writearr, writecnt);
+	bp_commbuf[i++] = 0x10 | (writecnt + readcnt - 1);
+	memcpy(bp_commbuf + i, writearr, writecnt);
 	i += writecnt;
-	memset(buf + i, 0, readcnt);
+	memset(bp_commbuf + i, 0, readcnt);
 
 	i += readcnt;
 	/* De-assert CS# */
-	buf[i++] = 0x03;
+	bp_commbuf[i++] = 0x03;
 
-	ret = buspirate_sendrecv(buf, i, i);
+	ret = buspirate_sendrecv(bp_commbuf, i, i);
 
 	if (ret) {
 		msg_perr("Bus Pirate communication error!\n");
 		return SPI_GENERIC_ERROR;
 	}
 
-	if (buf[0] != 0x01) {
+	if (bp_commbuf[0] != 0x01) {
 		msg_perr("Protocol error while lowering CS#!\n");
 		return SPI_GENERIC_ERROR;
 	}
 
-	if (buf[1] != 0x01) {
+	if (bp_commbuf[1] != 0x01) {
 		msg_perr("Protocol error while reading/writing SPI!\n");
 		return SPI_GENERIC_ERROR;
 	}
 
-	if (buf[i - 1] != 0x01) {
+	if (bp_commbuf[i - 1] != 0x01) {
 		msg_perr("Protocol error while raising CS#!\n");
 		return SPI_GENERIC_ERROR;
 	}
 
 	/* Skip CS#, length, writearr. */
-	memcpy(readarr, buf + 2 + writecnt, readcnt);
+	memcpy(readarr, bp_commbuf + 2 + writecnt, readcnt);
 
 	return ret;
 }
