@@ -36,6 +36,7 @@
 #define ERROR_PTR ((void*)-1)
 
 /* Error codes */
+#define ERROR_OOM	-100
 #define TIMEOUT_ERROR	-101
 
 typedef unsigned long chipaddr;
