@@ -325,12 +325,12 @@ int ft2232_spi_init(void)
 
 	msg_pdbg("Set clock divisor\n");
 	buf[0] = 0x86;		/* command "set divisor" */
+	buf[1] = (divisor / 2 - 1) & 0xff;
+	buf[2] = ((divisor / 2 - 1) >> 8) & 0xff;
 	if (send_buf(ftdic, buf, 3)) {
 		ret = -6;
 		goto ftdi_err;
 	}
-	buf[1] = (divisor / 2 - 1) & 0xff;
-	buf[2] = ((divisor / 2 - 1) >> 8) & 0xff;
 
 	msg_pdbg("MPSSE clock: %f MHz, divisor: %u, SPI clock: %f MHz\n",
 		 mpsse_clk, divisor, (double)(mpsse_clk / divisor));
