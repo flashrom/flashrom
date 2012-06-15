@@ -75,6 +75,7 @@ static const struct spi_programmer spi_programmer_wbsio = {
 	.multicommand = default_spi_send_multicommand,
 	.read = wbsio_spi_read,
 	.write_256 = spi_chip_write_1,
+	.write_aai = default_spi_write_aai,
 };
 
 int wbsio_check_for_spi(void)

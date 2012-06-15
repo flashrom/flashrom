@@ -120,6 +120,7 @@ static const struct spi_programmer spi_programmer_it87xx = {
 	.multicommand	= default_spi_send_multicommand,
 	.read		= it8716f_spi_chip_read,
 	.write_256	= it8716f_spi_chip_write_256,
+	.write_aai	= default_spi_write_aai,
 };
 
 static uint16_t it87spi_probe(uint16_t port)

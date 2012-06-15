@@ -283,6 +283,7 @@ static const struct spi_programmer spi_programmer_it85xx = {
 	.multicommand	= default_spi_send_multicommand,
 	.read		= default_spi_read,
 	.write_256	= default_spi_write_256,
+	.write_aai	= default_spi_write_aai,
 };
 
 int it85xx_spi_init(struct superio s)

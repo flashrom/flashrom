@@ -1521,6 +1521,7 @@ static const struct spi_programmer spi_programmer_ich7 = {
 	.multicommand = ich_spi_send_multicommand,
 	.read = default_spi_read,
 	.write_256 = default_spi_write_256,
+	.write_aai = default_spi_write_aai,
 };
 
 static const struct spi_programmer spi_programmer_ich9 = {
@@ -1531,6 +1532,7 @@ static const struct spi_programmer spi_programmer_ich9 = {
 	.multicommand = ich_spi_send_multicommand,
 	.read = default_spi_read,
 	.write_256 = default_spi_write_256,
+	.write_aai = default_spi_write_aai,
 };
 
 static const struct opaque_programmer opaque_programmer_ich_hwseq = {
@@ -1838,6 +1840,7 @@ static const struct spi_programmer spi_programmer_via = {
 	.multicommand = ich_spi_send_multicommand,
 	.read = default_spi_read,
 	.write_256 = default_spi_write_256,
+	.write_aai = default_spi_write_aai,
 };
 
 int via_init_spi(struct pci_dev *dev)

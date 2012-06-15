@@ -161,11 +161,17 @@ uint32_t spi_get_valid_read_addr(struct flashctx *flash)
 	}
 }
 
+int spi_aai_write(struct flashctx *flash, uint8_t *buf,
+		  unsigned int start, unsigned int len)
+{
+	return flash->pgm->spi.write_aai(flash, buf, start, len);
+}
+
 int register_spi_programmer(const struct spi_programmer *pgm)
 {
 	struct registered_programmer rpgm;
 
-	if (!pgm->write_256 || !pgm->read || !pgm->command ||
+	if (!pgm->write_aai || !pgm->write_256 || !pgm->read || !pgm->command ||
 	    !pgm->multicommand ||
 	    ((pgm->command == default_spi_send_command) &&
 	     (pgm->multicommand == default_spi_send_multicommand))) {

@@ -127,6 +127,7 @@ static const struct spi_programmer spi_programmer_dummyflasher = {
 	.multicommand	= default_spi_send_multicommand,
 	.read		= default_spi_read,
 	.write_256	= dummy_spi_write_256,
+	.write_aai	= default_spi_write_aai,
 };
 
 static const struct par_programmer par_programmer_dummy = {

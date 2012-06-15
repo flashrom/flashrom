@@ -201,6 +201,7 @@ static const struct spi_programmer spi_programmer_sb600 = {
 	.multicommand = default_spi_send_multicommand,
 	.read = default_spi_read,
 	.write_256 = default_spi_write_256,
+	.write_aai = default_spi_write_aai,
 };
 
 int sb600_probe_spi(struct pci_dev *dev)

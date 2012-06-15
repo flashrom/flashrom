@@ -71,6 +71,7 @@ static const struct spi_programmer spi_programmer_bitbang = {
 	.multicommand	= default_spi_send_multicommand,
 	.read		= default_spi_read,
 	.write_256	= default_spi_write_256,
+	.write_aai	= default_spi_write_aai,
 };
 
 #if 0 // until it is needed
