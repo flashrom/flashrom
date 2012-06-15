@@ -1069,8 +1069,7 @@ int spi_chip_write_1(struct flashctx *flash, uint8_t *buf, unsigned int start,
 	return 0;
 }
 
-int spi_aai_write(struct flashctx *flash, uint8_t *buf, unsigned int start,
-		  unsigned int len)
+int default_spi_write_aai(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len)
 {
 	uint32_t pos = start;
 	int result;

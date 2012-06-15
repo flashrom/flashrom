@@ -709,6 +709,7 @@ static const struct spi_programmer spi_programmer_dediprog = {
 	.multicommand	= default_spi_send_multicommand,
 	.read		= dediprog_spi_read,
 	.write_256	= dediprog_spi_write_256,
+	.write_aai	= default_spi_write_aai,
 };
 
 static int dediprog_shutdown(void *data)
