@@ -530,6 +530,7 @@ struct spi_programmer {
 	/* Optimized functions for this programmer */
 	int (*read)(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 	int (*write_256)(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
+	int (*write_aai)(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 	const void *data;
 };
 
@@ -538,6 +539,7 @@ int default_spi_send_command(struct flashctx *flash, unsigned int writecnt, unsi
 int default_spi_send_multicommand(struct flashctx *flash, struct spi_command *cmds);
 int default_spi_read(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 int default_spi_write_256(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
+int default_spi_write_aai(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 int register_spi_programmer(const struct spi_programmer *programmer);
 
 /* The following enum is needed by ich_descriptor_tool and ich* code. */
