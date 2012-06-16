@@ -131,12 +131,20 @@ static int dediprog_set_spi_voltage(int millivolt)
 	msg_pdbg("Setting SPI voltage to %u.%03u V\n", millivolt / 1000,
 		 millivolt % 1000);
 
+	if (voltage_selector == 0) {
+		/* Wait some time as the original driver does. */
+		programmer_delay(200 * 1000);
+	}
 	ret = usb_control_msg(dediprog_handle, 0x42, 0x9, voltage_selector,
 			      0xff, NULL, 0x0, DEFAULT_TIMEOUT);
 	if (ret != 0x0) {
 		msg_perr("Command Set SPI Voltage 0x%x failed!\n",
 			 voltage_selector);
 		return 1;
+	}
+	if (voltage_selector != 0) {
+		/* Wait some time as the original driver does. */
+		programmer_delay(200 * 1000);
 	}
 	return 0;
 }
