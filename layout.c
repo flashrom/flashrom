@@ -137,7 +137,7 @@ int show_id(uint8_t *bios, int size, int force)
 				  "\n\n",
 				  mainboard_vendor, mainboard_part, lb_vendor,
 				  lb_part);
-			exit(1);
+			return 1;
 		}
 	}
 
