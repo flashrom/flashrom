@@ -31,6 +31,9 @@ static usb_dev_handle *dediprog_handle;
 static int dediprog_firmwareversion;
 static int dediprog_endpoint;
 
+#define DEDI_SPI_CMD_PAGEWRITE	0x1
+#define DEDI_SPI_CMD_AAIWRITE	0x4
+
 #if 0
 /* Might be useful for other pieces of code as well. */
 static void print_hex(void *buf, size_t len)
@@ -307,13 +310,15 @@ static int dediprog_spi_read(struct flashctx *flash, uint8_t *buf,
 	return 0;
 }
 
-/* Bulk write interface, will write multiple page_size byte chunks aligned to page_size bytes.
- * @start	start address
- * @len		length
- * @return	0 on success, 1 on failure
+/* Bulk write interface, will write multiple chunksize byte chunks aligned to chunksize bytes.
+ * @chunksize       length of data chunks, only 256 supported by now
+ * @start           start address
+ * @len             length
+ * @dedi_spi_cmd    dediprog specific write command for spi bus
+ * @return          0 on success, 1 on failure
  */
-static int dediprog_spi_bulk_write(struct flashctx *flash, uint8_t *buf,
-				   unsigned int start, unsigned int len)
+static int dediprog_spi_bulk_write(struct flashctx *flash, uint8_t *buf, unsigned int chunksize,
+				   unsigned int start, unsigned int len, uint8_t dedi_spi_cmd)
 {
 	int ret;
 	unsigned int i;
@@ -321,13 +326,20 @@ static int dediprog_spi_bulk_write(struct flashctx *flash, uint8_t *buf,
 	 * chunksize is the real data size per USB bulk transfer. The remaining
 	 * space in a USB bulk transfer must be filled with 0xff padding.
 	 */
-	const unsigned int chunksize = flash->page_size;
 	const unsigned int count = len / chunksize;
-	const char count_and_chunk[] = {count & 0xff,
-					(count >> 8) & 0xff,
-					chunksize & 0xff,
-					(chunksize >> 8) & 0xff};
+	const char count_and_cmd[] = {count & 0xff, (count >> 8) & 0xff, 0x00, dedi_spi_cmd};
 	char usbbuf[512];
+
+	/*
+	 * We should change this check to
+	 *   chunksize > 512
+	 * once we know how to handle different chunk sizes.
+	 */
+	if (chunksize != 256) {
+		msg_perr("%s: Chunk sizes other than 256 bytes are unsupported, chunksize=%u!\n"
+			 "Please report a bug at flashrom@flashrom.org\n", __func__, chunksize);
+		return 1;
+	}
 
 	if ((start % chunksize) || (len % chunksize)) {
 		msg_perr("%s: Unaligned start=%i, len=%i! Please report a bug "
@@ -341,10 +353,9 @@ static int dediprog_spi_bulk_write(struct flashctx *flash, uint8_t *buf,
 	/* Command Write SPI Bulk. No idea which write command is used on the
 	 * SPI side.
 	 */
-	ret = usb_control_msg(dediprog_handle, 0x42, 0x30, start % 0x10000,
-			      start / 0x10000, (char *)count_and_chunk,
-			      sizeof(count_and_chunk), DEFAULT_TIMEOUT);
-	if (ret != sizeof(count_and_chunk)) {
+	ret = usb_control_msg(dediprog_handle, 0x42, 0x30, start % 0x10000, start / 0x10000,
+			      (char *)count_and_cmd, sizeof(count_and_cmd), DEFAULT_TIMEOUT);
+	if (ret != sizeof(count_and_cmd)) {
 		msg_perr("Command Write SPI Bulk failed, %i %s!\n", ret,
 			 usb_strerror());
 		return 1;
@@ -366,8 +377,8 @@ static int dediprog_spi_bulk_write(struct flashctx *flash, uint8_t *buf,
 	return 0;
 }
 
-static int dediprog_spi_write_256(struct flashctx *flash, uint8_t *buf,
-				  unsigned int start, unsigned int len)
+static int dediprog_spi_write(struct flashctx *flash, uint8_t *buf,
+			      unsigned int start, unsigned int len, uint8_t dedi_spi_cmd)
 {
 	int ret;
 	const unsigned int chunksize = flash->page_size;
@@ -375,6 +386,13 @@ static int dediprog_spi_write_256(struct flashctx *flash, uint8_t *buf,
 	unsigned int bulklen;
 
 	dediprog_set_leds(PASS_OFF|BUSY_ON|ERROR_OFF);
+
+	if (chunksize != 256) {
+		msg_pdbg("Page sizes other than 256 bytes are unsupported as "
+			 "we don't know how dediprog\nhandles them.\n");
+		/* Write everything like it was residue. */
+		residue = len;
+	}
 
 	if (residue) {
 		msg_pdbg("Slow write for partial block from 0x%x, length 0x%x\n",
@@ -389,8 +407,7 @@ static int dediprog_spi_write_256(struct flashctx *flash, uint8_t *buf,
 
 	/* Round down. */
 	bulklen = (len - residue) / chunksize * chunksize;
-	ret = dediprog_spi_bulk_write(flash, buf + residue, start + residue,
-				     bulklen);
+	ret = dediprog_spi_bulk_write(flash, buf + residue, chunksize, start + residue, bulklen, dedi_spi_cmd);
 	if (ret) {
 		dediprog_set_leds(PASS_OFF|BUSY_OFF|ERROR_ON);
 		return ret;
@@ -410,6 +427,16 @@ static int dediprog_spi_write_256(struct flashctx *flash, uint8_t *buf,
 
 	dediprog_set_leds(PASS_ON|BUSY_OFF|ERROR_OFF);
 	return 0;
+}
+
+static int dediprog_spi_write_256(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len)
+{
+	return dediprog_spi_write(flash, buf, start, len, DEDI_SPI_CMD_PAGEWRITE);
+}
+
+static int dediprog_spi_write_aai(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len)
+{
+	return dediprog_spi_write(flash, buf, start, len, DEDI_SPI_CMD_AAIWRITE);
 }
 
 static int dediprog_spi_send_command(struct flashctx *flash,
@@ -717,7 +744,7 @@ static const struct spi_programmer spi_programmer_dediprog = {
 	.multicommand	= default_spi_send_multicommand,
 	.read		= dediprog_spi_read,
 	.write_256	= dediprog_spi_write_256,
-	.write_aai	= default_spi_write_aai,
+	.write_aai	= dediprog_spi_write_aai,
 };
 
 static int dediprog_shutdown(void *data)
