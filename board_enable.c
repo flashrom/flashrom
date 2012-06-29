@@ -1041,6 +1041,7 @@ static int nvidia_mcp_gpio_set(int gpio, int raise)
 		break;
 	case 0x0260: /* MCP51 */
 	case 0x0261: /* MCP51 */
+	case 0x0360: /* MCP55 */
 	case 0x0364: /* MCP55 */
 		/* find SMBus controller on *this* southbridge */
 		/* The infamous Tyan S2915-E has two south bridges; they are
@@ -1115,6 +1116,7 @@ static int nvidia_mcp_gpio2_lower(void)
  *  - Foxconn 6150K8MD-8EKRSH: Socket 939 + NVIDIA MCP51
  *  - MSI K8N Neo4: NVIDIA CK804. TODO: Should probably be K8N Neo4 Platinum, see http://www.coreboot.org/pipermail/flashrom/2010-August/004362.html.
  *  - MSI K8NGM2-L: NVIDIA MCP51
+ *  - MSI K9N SLI: NVIDIA MCP55
  */
 static int nvidia_mcp_gpio2_raise(void)
 {
@@ -2407,6 +2409,7 @@ const struct board_match board_matches[] = {
 	{0x1106, 0x3149, 0x1462, 0x7061,  0x1106, 0x3227,      0,      0, NULL,         NULL, NULL,           P3, "MSI",         "MS-7061 (KM4M-V/KM4AM-V)", 0, OK, w836xx_memw_enable_2e},
 	{0x10DE, 0x005E, 0x1462, 0x7135,  0x10DE, 0x0050, 0x1462, 0x7135, NULL,         "msi", "k8n-neo3",    P3, "MSI",         "MS-7135 (K8N Neo3)",    0,   OK, w83627thf_gpio44_raise_4e},
 	{0x10DE, 0x0270, 0x1462, 0x7207,  0x10DE, 0x0264, 0x1462, 0x7207, NULL,         NULL, NULL,           P3, "MSI",         "MS-7207 (K8NGM2-L)",    0,   NT, nvidia_mcp_gpio2_raise},
+	{0x10DE, 0x0360, 0x1462, 0x7250,  0x10DE, 0x0368, 0x1462, 0x7250, NULL,         NULL, NULL,           P3, "MSI",         "MS-7250 (K9N SLI)",     0,   OK, nvidia_mcp_gpio2_raise},
 	{0x1011, 0x0019, 0xaa55, 0xaa55,  0x8086, 0x7190,      0,      0, NULL,         NULL, NULL,           P3, "Nokia",       "IP530",                 0,   OK, fdc37b787_gpio50_raise_3f0},
 	{0x8086, 0x24d3, 0x144d, 0xb025,  0x8086, 0x1050, 0x144d, 0xb025, NULL,         NULL, NULL,           P3, "Samsung",     "Polaris 32",            0,   OK, intel_ich_gpio21_raise},
 	{0x1106, 0x3099,      0,      0,  0x1106, 0x3074,      0,      0, NULL,         "shuttle", "ak31",    P3, "Shuttle",     "AK31",                  0,   OK, w836xx_memw_enable_2e},
