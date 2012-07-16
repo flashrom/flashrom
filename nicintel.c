@@ -87,7 +87,7 @@ int nicintel_init(void)
 		goto error_out_unmap;
 
 	/* FIXME: Using pcidev_dev _will_ cause pretty explosions in the future. */
-	addr = pcidev_validate(pcidev_dev, PCI_BASE_ADDRESS_0, nics_intel);
+	addr = pcidev_readbar(pcidev_dev, PCI_BASE_ADDRESS_0);
 	/* FIXME: This is not an aligned mapping. Use 4k? */
 	nicintel_control_bar = physmap("Intel NIC control/status reg",
 	                               addr, NICINTEL_CONTROL_MEMMAP_SIZE);
