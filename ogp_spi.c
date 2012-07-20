@@ -21,6 +21,7 @@
 #include <string.h>
 #include "flash.h"
 #include "programmer.h"
+#include "hwaccess.h"
 
 #define PCI_VENDOR_ID_OGP 0x1227
 

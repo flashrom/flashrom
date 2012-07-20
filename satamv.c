@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include "flash.h"
 #include "programmer.h"
+#include "hwaccess.h"
 
 uint8_t *mv_bar;
 uint16_t mv_iobar;
