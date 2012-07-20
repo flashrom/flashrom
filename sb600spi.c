@@ -25,6 +25,7 @@
 
 #include "flash.h"
 #include "programmer.h"
+#include "hwaccess.h"
 #include "spi.h"
 
 /* This struct is unused, but helps visualize the SB600 SPI BAR layout.

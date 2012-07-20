@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include "flash.h"
 #include "programmer.h"
+#include "hwaccess.h"
 
 uint8_t *nicintel_bar;
 uint8_t *nicintel_control_bar;

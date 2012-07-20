@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include "flash.h"
 #include "programmer.h"
+#include "hwaccess.h"
 
 #if NEED_PCI == 1
 struct pci_dev *pci_dev_find_filter(struct pci_filter filter)

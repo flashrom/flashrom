@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "flash.h"
+#include "hwaccess.h"
 
 /* Do we need any file access or ioctl for physmap or MSR? */
 #if !defined(__DJGPP__) && !defined(__LIBPAYLOAD__)
