@@ -26,7 +26,6 @@
 
 #include <stdint.h>
 #include <stddef.h>
-#include "hwaccess.h"
 #ifdef _WIN32
 #include <windows.h>
 #undef min

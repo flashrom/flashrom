@@ -29,6 +29,7 @@
 #include <ctype.h>
 #include "flash.h"
 #include "programmer.h"
+#include "hwaccess.h"
 
 /* Bit positions for each pin. */
 
