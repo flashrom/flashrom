@@ -45,11 +45,27 @@ static inline void sync_primitive(void)
 int io_fd;
 #endif
 
-void get_io_perms(void)
+int release_io_perms(void *p)
+{
+#if defined(__DJGPP__) || defined(__LIBPAYLOAD__)
+#else
+#if defined (__sun) && (defined(__i386) || defined(__amd64))
+	sysi86(SI86V86, V86SC_IOPL, 0);
+#elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined (__DragonFly__)
+	close(io_fd);
+#else 
+	iopl(0);
+#endif
+#endif
+	return 0;
+}
+
+/* Get I/O permissions with automatic permission release on shutdown. */
+int rget_io_perms(void)
 {
 #if defined(__DJGPP__) || defined(__LIBPAYLOAD__)
 	/* We have full permissions by default. */
-	return;
+	return 0;
 #else
 #if defined (__sun) && (defined(__i386) || defined(__amd64))
 	if (sysi86(SI86V86, V86SC_IOPL, PS_IOPL) != 0) {
@@ -65,15 +81,11 @@ void get_io_perms(void)
 			   "and reboot, or reboot into \n");
 		msg_perr("single user mode.\n");
 #endif
-		exit(1);
+		return 1;
+	} else {
+		register_shutdown(release_io_perms, NULL);
 	}
-#endif
-}
-
-void release_io_perms(void)
-{
-#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__DragonFly__)
-	close(io_fd);
+	return 0;
 #endif
 }
 
@@ -89,13 +101,9 @@ static inline void sync_primitive(void)
 }
 
 /* PCI port I/O is not yet implemented on PowerPC. */
-void get_io_perms(void)
+int rget_io_perms(void)
 {
-}
-
-/* PCI port I/O is not yet implemented on PowerPC. */
-void release_io_perms(void)
-{
+	return 0;
 }
 
 #elif defined (__mips) || defined (__mips__) || defined (_mips) || defined (mips)
@@ -108,13 +116,9 @@ static inline void sync_primitive(void)
 }
 
 /* PCI port I/O is not yet implemented on MIPS. */
-void get_io_perms(void)
+int rget_io_perms(void)
 {
-}
-
-/* PCI port I/O is not yet implemented on MIPS. */
-void release_io_perms(void)
-{
+	return 0;
 }
 
 #elif defined (__arm__)
@@ -123,12 +127,9 @@ static inline void sync_primitive(void)
 {
 }
 
-void get_io_perms(void)
+int rget_io_perms(void)
 {
-}
-
-void release_io_perms(void)
-{
+	return 0;
 }
 
 #else
