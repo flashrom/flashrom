@@ -8,6 +8,7 @@ flashrom \- detect, read, write, verify and erase flash chips
          [\fB\-c\fR <chipname>] \
 [\fB\-l\fR <file>]
          [\fB\-i\fR <image>] [\fB\-p\fR <programmername>[:<parameters>]]
+         [\fB-o\fR <logfile>]
 .SH DESCRIPTION
 .B flashrom
 is a utility for detecting, reading, writing, verifying and erasing flash
@@ -219,6 +220,13 @@ lists all supported programmers.
 .TP
 .B "\-h, \-\-help"
 Show a help text and exit.
+.TP
+.B "\-o, \-\-output <logfile>"
+Save the full debug log to
+.BR <logfile> .
+If the file already exists, it will be overwritten. This is the recommended
+way to gather logs from flashrom because they will be verbose even if the
+on-screen messages are not verbose.
 .TP
 .B "\-R, \-\-version"
 Show version information and exit.
@@ -697,6 +705,25 @@ syntax where
 is the Linux device node for your SPI controller.
 .sp
 Please note that the linux_spi driver only works on Linux.
+.SH EXAMPLES
+To back up and update your BIOS, run
+.sp
+.B flashrom -p internal -r backup.rom -o backuplog.txt
+.br
+.B flashrom -p internal -w newbios.rom -o writelog.txt
+.sp
+Please make sure to copy backup.rom to some external media before you try
+to write. That makes offline recovery easier.
+.br
+If writing fails and flashrom complains about the chip being in an unknown
+state, you can try to restore the backup by running
+.sp
+.B flashrom -p internal -w backup.rom -o restorelog.txt
+.sp
+If you encounter any problems, please contact us and supply
+backuplog.txt, writelog.txt and restorelog.txt. See section
+.B BUGS
+for contact info.
 .SH EXIT STATUS
 flashrom exits with 0 on success, 1 on most failures but with 2 if /dev/mem
 (/dev/xsvc on Solaris) can not be opened and with 3 if a call to mmap() fails.
