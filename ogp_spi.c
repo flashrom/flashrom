@@ -99,7 +99,6 @@ static int ogp_spi_shutdown(void *data)
 {
 	physunmap(ogp_spibar, 4096);
 	pci_cleanup(pacc);
-	release_io_perms();
 
 	return 0;
 }
@@ -129,7 +128,8 @@ int ogp_spi_init(void)
 		return 1;
 	}
 
-	get_io_perms();
+	if (rget_io_perms())
+		return 1;
 
 	io_base_addr = pcidev_init(PCI_BASE_ADDRESS_0, ogp_spi);
 

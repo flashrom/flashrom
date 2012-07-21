@@ -61,7 +61,6 @@ static int satamv_shutdown(void *data)
 {
 	physunmap(mv_bar, 0x20000);
 	pci_cleanup(pacc);
-	release_io_perms();
 	return 0;
 }
 
@@ -86,7 +85,8 @@ int satamv_init(void)
 	uintptr_t addr;
 	uint32_t tmp;
 
-	get_io_perms();
+	if (rget_io_perms())
+		return 1;
 
 	/* BAR0 has all internal registers memory mapped. */
 	/* No need to check for errors, pcidev_init() will not return in case
@@ -162,7 +162,6 @@ int satamv_init(void)
 
 error_out:
 	pci_cleanup(pacc);
-	release_io_perms();
 	return 1;
 }
 
