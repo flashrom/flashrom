@@ -2,13 +2,12 @@
 .SH NAME
 flashrom \- detect, read, write, verify and erase flash chips
 .SH SYNOPSIS
-.B flashrom \fR[\fB\-n\fR] [\fB\-V\fR] [\fB\-f\fR] [\fB\-h\fR|\fB\-R\fR|\
-\fB\-L\fR|\fB\-z\fR|\fB\-E\fR|\fB\-r\fR <file>|\fB\-w\fR <file>|\
-\fB\-v\fR <file>]
-         [\fB\-c\fR <chipname>] \
-[\fB\-l\fR <file>]
-         [\fB\-i\fR <image>] [\fB\-p\fR <programmername>[:<parameters>]]
-         [\fB-o\fR <logfile>]
+.B flashrom \fR[\fB\-h\fR|\fB\-R\fR|\fB\-L\fR|\fB\-z\fR|\
+\fB\-p\fR <programmername>[:<parameters>]
+               [\fB\-E\fR|\fB\-r\fR <file>|\fB\-w\fR <file>|\fB\-v\fR <file>] \
+[\fB\-c\fR <chipname>]
+               [\fB\-l\fR <file> [\fB\-i\fR <image>]] [\fB\-n\fR] [\fB\-f\fR]]
+         [\fB\-V\fR[\fBV\fR[\fBV\fR]]] [\fB-o\fR <logfile>]
 .SH DESCRIPTION
 .B flashrom
 is a utility for detecting, reading, writing, verifying and erasing flash
@@ -64,7 +63,7 @@ recommended, you should only use it if you know what you are doing and if you
 feel that the time for verification takes too long.
 .sp
 Typical usage is:
-.B "flashrom \-n \-w <file>"
+.B "flashrom \-p prog \-n \-w <file>"
 .sp
 This option is only useful in combination with
 .BR \-\-write .
@@ -106,31 +105,39 @@ Read ROM layout from
 .BR <file> .
 .sp
 flashrom supports ROM layouts. This allows you to flash certain parts of
-the flash chip only. A ROM layout file looks like follows:
+the flash chip only. A ROM layout file contains multiple lines with the
+following syntax:
+.sp
+.B "  startaddr:endaddr imagename"
+.sp
+.BR "startaddr " "and " "endaddr "
+are hexadecimal addresses within the ROM file and do not refer to any
+physical address. Please note that using a 0x prefix for those hexadecimal
+numbers is not necessary, but you can't specify decimal/octal numbers.
+.BR "imagename " "is an arbitrary name for the region/image from"
+.BR " startaddr " "to " "endaddr " "(both addresses included)."
+.sp
+Example:
 .sp
   00000000:00008fff gfxrom
   00009000:0003ffff normal
   00040000:0007ffff fallback
 .sp
-  i.e.:
-  startaddr:endaddr name
+If you only want to update the image named
+.BR "normal " "in a ROM based on the layout above, run"
 .sp
-All addresses are offsets within the file, not absolute addresses!
-If you only want to update the normal image in a ROM you can say:
+.B "  flashrom \-p prog \-\-layout rom.layout \-\-image normal \-w some.rom"
 .sp
-.B "  flashrom \-\-layout rom.layout \-\-image normal \-w agami_aruma.rom"
+To update only the images named 
+.BR "normal " "and " "fallback" ", run:"
 .sp
-To update normal and fallback but leave the VGA BIOS alone, say:
+.B "  flashrom \-p prog \-l rom.layout \-i normal -i fallback \-w some.rom"
 .sp
-.B "  flashrom \-l rom.layout \-i normal \"
-.br
-.B "           \-i fallback \-w agami_aruma.rom"
-.sp
-Currently overlapping sections are not supported.
+Overlapping sections are not supported.
 .TP
-.B "\-i, \-\-image <name>"
-Only flash image
-.B <name>
+.B "\-i, \-\-image <imagename>"
+Only flash region/image
+.B <imagename>
 from flash layout.
 .TP
 .B "\-L, \-\-list\-supported"
@@ -156,7 +163,8 @@ easily pasted into the wiki page at
 Please note that MediaWiki output is not compiled in by default.
 .TP
 .B "\-p, \-\-programmer <name>[:parameter[,parameter[,parameter]]]"
-Specify the programmer device. Currently supported are:
+Specify the programmer device. This is mandatory for all operations
+involving any chip access (probe/read/write/...). Currently supported are:
 .sp
 .BR "* internal" " (default, for in-system flashing in the mainboard)"
 .sp
@@ -330,7 +338,8 @@ You can use the
 .sp
 .B "  flashrom \-p internal:ich_spi_mode=value"
 .sp
-syntax where value can be
+syntax where
+.BR "value " "can be"
 .BR auto ", " swseq " or " hwseq .
 By default
 .RB "(or when setting " ich_spi_mode=auto )
@@ -360,7 +369,9 @@ controller (EC), you can use the
 .sp
 .B "  flashrom \-p internal:fwh_idsel=value"
 .sp
-syntax where value is the 48-bit hexadecimal raw value to be written in the
+syntax where
+.B value
+is the 48-bit hexadecimal raw value to be written in the
 IDSEL registers of the Intel southbridge. The upper 32 bits use one hex digit
 each per 512 kB range between 0xffc00000 and 0xffffffff, and the lower 16 bits
 use one hex digit each per 1024 kB range between 0xff400000 and 0xff7fffff.
@@ -486,7 +497,9 @@ flash chip, you can specify a blacklist of SPI commands with the
 .sp
 .B "  flashrom -p dummy:spi_blacklist=commandlist"
 .sp
-syntax where commandlist is a list of two-digit hexadecimal representations of
+syntax where
+.B commandlist
+is a list of two-digit hexadecimal representations of
 SPI commands. If commandlist is e.g. 0302, flashrom will behave as if the SPI
 controller refuses to run command 0x03 (READ) and command 0x02 (WRITE).
 commandlist may be up to 512 characters (256 commands) long.
@@ -500,7 +513,9 @@ you can specify an ignorelist of SPI commands with the
 .sp
 .B "  flashrom -p dummy:spi_ignorelist=commandlist"
 .sp
-syntax where commandlist is a list of two-digit hexadecimal representations of
+syntax where
+.B commandlist
+is a list of two-digit hexadecimal representations of
 SPI commands. If commandlist is e.g. 0302, the emulated flash chip will ignore
 command 0x03 (READ) and command 0x02 (WRITE).  commandlist may be up to 512
 characters (256 commands) long.
@@ -513,7 +528,9 @@ You can specify the initial content of the chip's status register with the
 .sp
 .B "  flashrom -p dummy:spi_status=content"
 .sp
-syntax where content is an 8-bit hexadecimal value.
+syntax where
+.B content
+is an 8-bit hexadecimal value.
 .SS
 .BR "nic3com" , " nicrealtek" , " nicsmc1211" , " nicnatsemi" , " nicintel\
 " , " nicintel_spi" , " gfxnvidia" , " ogp_spi" , " drkaiser" , " satasii\
