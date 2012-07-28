@@ -129,23 +129,27 @@ static void print_supported_chipsets_wiki(int cols)
 static void wiki_helper(const char *devicetype, int cols,
 			const struct board_info boards[])
 {
-	int i, j, k = 0, boardcount_good = 0, boardcount_bad = 0, color = 1;
-	int num_notes = 0;
+	int i, j, k;
+	unsigned int boardcount_good = 0, boardcount_bad = 0, boardcount_nt = 0;
+	int num_notes = 0, color = 1;
 	char *notes = calloc(1, 1);
 	char tmp[900 + 1];
 	const struct board_match *b = board_matches;
 
 	for (i = 0; boards[i].vendor != NULL; i++) {
-		if (boards[i].working)
+		if (boards[i].working == OK)
 			boardcount_good++;
+		else if (boards[i].working == NT)
+			boardcount_nt++;
 		else
 			boardcount_bad++;
 	}
 
-	printf("\n\nTotal amount of supported %s: '''%d'''. "
-	       "Not yet supported (i.e., known-bad): '''%d'''.\n\n"
+	printf("\n\nTotal amount of known good boards %s: '''%d'''; "
+	       "Untested (e.g. user vanished before testing new code): '''%d'''; "
+	       "Not yet supported (i.e. known-bad): '''%d'''.\n\n"
 	       "{| border=\"0\" valign=\"top\"\n| valign=\"top\"|\n\n%s",
-	       devicetype, boardcount_good, boardcount_bad, board_th);
+	       devicetype, boardcount_good, boardcount_nt, boardcount_bad, board_th);
 
 	for (i = 0, j = 0; boards[i].vendor != NULL; i++, j++) {
 
@@ -171,7 +175,8 @@ static void wiki_helper(const char *devicetype, int cols,
 		       b[k].lb_vendor ? b[k].lb_vendor : "",
 		       b[k].lb_vendor ? ":" : "",
 		       b[k].lb_vendor ? b[k].lb_part : "",
-		       (boards[i].working) ? "OK" : "No");
+		       (boards[i].working == OK) ? "OK" :
+		       (boards[i].working == NT) ? "?3" : "No");
 
 		if (boards[i].note) {
 			printf("<sup>%d</sup>\n", num_notes + 1);

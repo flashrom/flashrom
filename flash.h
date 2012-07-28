@@ -253,8 +253,11 @@ int doit(struct flashctx *flash, int force, const char *filename, int read_it, i
 int read_buf_from_file(unsigned char *buf, unsigned long size, const char *filename);
 int write_buf_to_file(unsigned char *buf, unsigned long size, const char *filename);
 
-#define OK 0
-#define NT 1    /* Not tested */
+enum test_state {
+	OK = 0,
+	NT = 1,	/* Not tested */
+	BAD
+};
 
 /* Something happened that shouldn't happen, but we can go on. */
 #define ERROR_NONFATAL 0x100
