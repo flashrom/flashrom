@@ -414,7 +414,7 @@ static int reprogram_opcode_on_the_fly(uint8_t opcode, unsigned int writecnt, un
 	curopcodes->opcode[oppos].spi_type = spi_type;
 	program_opcodes(curopcodes, 0);
 	oppos = find_opcode(curopcodes, opcode);
-	msg_pdbg ("on-the-fly OPCODE (0x%02X) re-programmed, op-pos=%d\n", opcode, oppos);
+	msg_pdbg2("on-the-fly OPCODE (0x%02X) re-programmed, op-pos=%d\n", opcode, oppos);
 	return oppos;
 }
 
@@ -535,7 +535,7 @@ static int program_opcodes(OPCODES *op, int enable_undo)
 		opmenu[1] |= ((uint32_t) op->opcode[a].opcode) << ((a - 4) * 8);
 	}
 
-	msg_pdbg("\n%s: preop=%04x optype=%04x opmenu=%08x%08x\n", __func__, preop, optype, opmenu[0], opmenu[1]);
+	msg_pdbg2("\n%s: preop=%04x optype=%04x opmenu=%08x%08x\n", __func__, preop, optype, opmenu[0], opmenu[1]);
 	switch (ich_generation) {
 	case CHIPSET_ICH7:
 		/* Register undo only for enable_undo=1, i.e. first call. */

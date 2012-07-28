@@ -14,10 +14,18 @@
  when trying to touch an address outside of any region.
  See also http://www.flashrom.org/pipermail/flashrom/2011-August/007606.html
 
-= Unlocking the ME region =
+= (Un)locking the ME region =
  If the ME region is locked by the FRAP register in descriptor mode, the host
- software is not allowed to read or write any address inside that region. There
- are different ways to unlock access:
+ software is not allowed to read or write any address inside that region.
+ Although the chipset datasheets specify that "[t]he contents of this register
+ are that of the Flash Descriptor" [PANTHER], this is not entirely true.
+ The firmware has to fill at least some of the registers involved. It is not
+ known when they become read-only or any other details, but there is at least
+ one HM67-based board, that provides an user-changeable setting in the firmware
+ user interface to enable ME region updates that lead to a FRAP content that is
+ not equal to the descriptor region bits [NC9B].
+
+ There are different ways to unlock access:
 
  - A pin strap: Flash Descriptor Security Override Strap (as indicated by the
    Flash Descriptor Override Pin Strap Status (FDOPSS) in HSFS. That pin is
@@ -81,6 +89,11 @@
  vendor tools use it for updates. This needs to be investigated further before
  drawing any conclusion.
 
+[PANTHER]   Intel 7 Series Chipset Family Platform Controller Hub (PCH) Datasheet
+            Document Number: 326776, April 2012, page 857
+[NC9B]      Jetway NC9B flashrom v0.9.5.2-r1517 log with ME region unlocked.
+            NB: "FRAP 0e0f" vs. "FLMSTR1 0a0b".
+            http://paste.flashrom.org/view.php?id=1215
 [MODE_CTRL] Client Platform Enabling Tour: Platform Software
             Document Number: 439167, Revision 1.2, page 52
 [MEBX]      Intel Management Engine BIOS Extension (MEBX) User's Guide
