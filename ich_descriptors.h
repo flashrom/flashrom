@@ -242,7 +242,7 @@ struct ich_desc_north_strap {
 
 struct ich_desc_south_strap {
 	union {
-		uint32_t STRPs[16]; /* current maximum: ibex peak */
+		uint32_t STRPs[18]; /* current maximum: cougar point */
 		struct { /* ich8 */
 			struct { /* STRP1 */
 				uint32_t ME_DISABLE		:1,

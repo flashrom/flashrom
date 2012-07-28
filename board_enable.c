@@ -2348,6 +2348,7 @@ const struct board_match board_matches[] = {
 	{0x8086, 0x266a, 0x1043, 0x80a6,  0x8086, 0x2668, 0x1043, 0x814e, "^P5GD1-VM$", NULL, NULL,           P3, "ASUS",        "P5GD1-VM/S",            0,   OK, intel_ich_gpio21_raise},
 	{0x8086, 0x266a, 0x1043, 0x80a6,  0x8086, 0x2668, 0x1043, 0x814e, NULL,         NULL, NULL,           P3, "ASUS",        "P5GD1(-VM)",            0,   NT, intel_ich_gpio21_raise},
 	{0x8086, 0x266a, 0x1043, 0x80a6,  0x8086, 0x2668, 0x1043, 0x813d, "^P5GD2-Premium$", NULL, NULL,      P3, "ASUS",        "P5GD2 Premium",         0,   OK, intel_ich_gpio21_raise},
+	{0x8086, 0x266a, 0x1043, 0x80a6,  0x8086, 0x2668, 0x1043, 0x81a6, "^P5GD2-X$",  NULL, NULL,           P3, "ASUS",        "P5GD2-X",               0,   OK, intel_ich_gpio21_raise},
 	{0x8086, 0x266a, 0x1043, 0x80a6,  0x8086, 0x2668, 0x1043, 0x813d, "^P5GDC-V$",  NULL, NULL,           P3, "ASUS",        "P5GDC-V Deluxe",        0,   OK, intel_ich_gpio21_raise},
 	{0x8086, 0x266a, 0x1043, 0x80a6,  0x8086, 0x2668, 0x1043, 0x813d, "^P5GDC$",    NULL, NULL,           P3, "ASUS",        "P5GDC Deluxe",          0,   OK, intel_ich_gpio21_raise},
 	{0x8086, 0x266a, 0x1043, 0x80a6,  0x8086, 0x2668, 0x1043, 0x813d, NULL,         NULL, NULL,           P3, "ASUS",        "P5GD2/C variants",      0,   NT, intel_ich_gpio21_raise},
