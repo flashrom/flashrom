@@ -110,20 +110,25 @@ static int sp_opensocket(char *ip, unsigned int port)
 	int sock;
 	msg_pdbg(MSGHEADER "IP %s port %d\n", ip, port);
 	sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (sock < 0)
-		sp_die("Error: serprog cannot open socket");
+	if (sock < 0) {
+		msg_perr("Error: serprog cannot open socket: %s\n", strerror(errno));
+		return -1;
+	}
 	hostPtr = gethostbyname(ip);
 	if (NULL == hostPtr) {
 		hostPtr = gethostbyaddr(ip, strlen(ip), AF_INET);
-		if (NULL == hostPtr)
-			sp_die("Error: cannot resolve");
+		if (NULL == hostPtr) {
+			msg_perr("Error: cannot resolve %s\n", ip);
+			return -1;
+		}
 	}
 	sp.si.sin_family = AF_INET;
 	sp.si.sin_port = htons(port);
 	(void)memcpy(&sp.si.sin_addr, hostPtr->h_addr, hostPtr->h_length);
 	if (connect(sock, &sp.s, sizeof(sp.si)) < 0) {
 		close(sock);
-		sp_die("Error: serprog cannot connect");
+		msg_perr("Error: serprog cannot connect: %s\n", strerror(errno));
+		return -1;
 	}
 	/* We are latency limited, and sometimes do write-write-read    *
 	 * (write-n) - so enable TCP_NODELAY.				*/
@@ -233,17 +238,23 @@ static int sp_docommand(uint8_t command, uint32_t parmlen,
 	unsigned char c;
 	if (sp_automatic_cmdcheck(command))
 		return 1;
-	if (write(sp_fd, &command, 1) != 1)
-		sp_die("Error: cannot write op code");
-	if (write(sp_fd, params, parmlen) != (parmlen))
-		sp_die("Error: cannot write parameters");
-	if (read(sp_fd, &c, 1) != 1)
-		sp_die("Error: cannot read from device");
+	if (write(sp_fd, &command, 1) != 1) {
+		msg_perr("Error: cannot write op code: %s\n", strerror(errno));
+		return 1;
+	}
+	if (write(sp_fd, params, parmlen) != (parmlen)) {
+		msg_perr("Error: cannot write parameters: %s\n", strerror(errno));
+		return 1;
+	}
+	if (read(sp_fd, &c, 1) != 1) {
+		msg_perr("Error: cannot read from device: %s\n", strerror(errno));
+		return 1;
+	}
 	if (c == S_NAK)
 		return 1;
 	if (c != S_ACK) {
-		msg_perr("Error: invalid response 0x%02X from device\n",c);
-		exit(1);
+		msg_perr("Error: invalid response 0x%02X from device\n", c);
+		return 1;
 	}
 	if (retlen) {
 		int rd_bytes = 0;
@@ -251,8 +262,10 @@ static int sp_docommand(uint8_t command, uint32_t parmlen,
 			int r;
 			r = read(sp_fd, retparms + rd_bytes,
 				 retlen - rd_bytes);
-			if (r <= 0)
-				sp_die("Error: cannot read return parameters");
+			if (r <= 0) {
+				msg_perr("Error: cannot read return parameters: %s\n", strerror(errno));
+				return 1;
+			}
 			rd_bytes += r;
 		} while (rd_bytes != retlen);
 	}
@@ -362,6 +375,10 @@ int serprog_init(void)
 		}
 		if (strlen(device)) {
 			sp_fd = sp_openserport(device, atoi(baudport));
+			if (sp_fd < 0) {
+				free(device);
+				return 1;
+			}
 			have_device++;
 		}
 	}
@@ -395,6 +412,10 @@ int serprog_init(void)
 		}
 		if (strlen(device)) {
 			sp_fd = sp_opensocket(device, atoi(baudport));
+			if (sp_fd < 0) {
+				free(device);
+				return 1;
+			}
 			have_device++;
 		}
 	}
@@ -466,11 +487,12 @@ int serprog_init(void)
 				 "bustype is SPI\n");
 			return 1;
 		}
+		if (sp_docommand(S_CMD_S_BUSTYPE, 1, &bt, 0, NULL))
+			return 1;
 		/* Success of any of these commands is optional. We don't need
 		   the programmer to tell us its limits, but if it doesn't, we
 		   will assume stuff, so it's in the programmers best interest
 		   to tell us. */
-		sp_docommand(S_CMD_S_BUSTYPE, 1, &bt, 0, NULL);
 		if (!sp_docommand(S_CMD_Q_WRNMAXLEN, 0, NULL, 3, rbuf)) {
 			uint32_t v;
 			v = ((unsigned int)(rbuf[0]) << 0);
@@ -492,7 +514,8 @@ int serprog_init(void)
 			msg_pdbg(MSGHEADER "Maximum read-n length is %d\n", v);
 		}
 		bt = serprog_buses_supported;
-		sp_docommand(S_CMD_S_BUSTYPE, 1, &bt, 0, NULL);
+		if (sp_docommand(S_CMD_S_BUSTYPE, 1, &bt, 0, NULL))
+			return 1;
 	}
 
 	if (serprog_buses_supported & BUS_NONSPI) {
