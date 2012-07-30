@@ -113,8 +113,10 @@ fdtype sp_openserport(char *dev, unsigned int baud)
 	    (tolower((unsigned char)dev[1]) == 'o') &&
 	    (tolower((unsigned char)dev[2]) == 'm')) {
 		dev2 = malloc(strlen(dev) + 5);
-		if (!dev2)
-			sp_die("Error: Out of memory");
+		if (!dev2) {
+			msg_perr("Error: Out of memory: %s\n", strerror(errno));
+			return -1;
+		}
 		strcpy(dev2, "\\\\.\\");
 		strcpy(dev2 + 4, dev);
 	}
@@ -123,11 +125,13 @@ fdtype sp_openserport(char *dev, unsigned int baud)
 	if (dev2 != dev)
 		free(dev2);
 	if (fd == INVALID_HANDLE_VALUE) {
-		sp_die("Error: cannot open serial port");
+		msg_perr("Error: cannot open serial port: %s\n", strerror(errno));
+		return -1;
 	}
 	DCB dcb;
 	if (!GetCommState(fd, &dcb)) {
-		sp_die("Error: Could not fetch serial port configuration");
+		msg_perr("Error: Could not fetch serial port configuration: %s\n", strerror(errno));
+		return -1;
 	}
 	switch (baud) {
 		case 9600: dcb.BaudRate = CBR_9600; break;
@@ -135,29 +139,32 @@ fdtype sp_openserport(char *dev, unsigned int baud)
 		case 38400: dcb.BaudRate = CBR_38400; break;
 		case 57600: dcb.BaudRate = CBR_57600; break;
 		case 115200: dcb.BaudRate = CBR_115200; break;
-		default: sp_die("Error: Could not set baud rate");
+		default: msg_perr("Error: Could not set baud rate: %s\n", strerror(errno));
+			 return -1;
 	}
 	dcb.ByteSize = 8;
 	dcb.Parity = NOPARITY;
 	dcb.StopBits = ONESTOPBIT;
 	if (!SetCommState(fd, &dcb)) {
-		sp_die("Error: Could not change serial port configuration");
+		msg_perr("Error: Could not change serial port configuration: %s\n", strerror(errno));
+		return -1;
 	}
 	return fd;
 #else
 	struct termios options;
 	int fd, i;
 	fd = open(dev, O_RDWR | O_NOCTTY | O_NDELAY);
-	if (fd < 0)
-		sp_die("Error: cannot open serial port");
+	if (fd < 0) {
+		msg_perr("Error: cannot open serial port: %s\n", strerror(errno));
+		return -1;
+	}
 	fcntl(fd, F_SETFL, 0);
 	tcgetattr(fd, &options);
 	for (i = 0;; i++) {
 		if (sp_baudtable[i].baud == 0) {
 			close(fd);
-			msg_perr("Error: cannot configure for baudrate %d\n",
-				 baud);
-			exit(1);
+			msg_perr("Error: cannot configure for baudrate %d\n", baud);
+			return -1;
 		}
 		if (sp_baudtable[i].baud == baud) {
 			cfsetispeed(&options, sp_baudtable[i].flag);

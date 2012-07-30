@@ -299,7 +299,7 @@ int internal_init(void)
 			msg_perr("Proceeding anyway because user forced us to.\n");
 		} else {
 			msg_perr("Aborting.\n");
-			exit(1);
+			return 1;
 		}
 	}
 
