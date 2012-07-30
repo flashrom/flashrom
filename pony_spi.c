@@ -99,6 +99,10 @@ int pony_spi_init(void)
 
 	if (arg && strlen(arg)) {
 		sp_fd = sp_openserport( arg, 9600 );
+		if (sp_fd < 0) {
+			free(arg);
+			return 1;
+		}
 		have_device++;
 	}
 	free(arg);
