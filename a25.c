@@ -40,7 +40,7 @@ int spi_prettyprint_status_register_amic_a25l05p(struct flashctx *flash)
 	spi_prettyprint_status_register_bit(status, 6);
 	spi_prettyprint_status_register_bit(status, 5);
 	spi_prettyprint_status_register_bit(status, 4);
-	spi_prettyprint_status_register_bp3210(status, 1);
+	spi_prettyprint_status_register_bp(status, 1);
 	spi_prettyprint_status_register_welwip(status);
 	return 0;
 }
@@ -55,7 +55,7 @@ int spi_prettyprint_status_register_amic_a25l40p(struct flashctx *flash)
 	spi_prettyprint_status_register_amic_a25_srwd(status);
 	spi_prettyprint_status_register_bit(status, 6);
 	spi_prettyprint_status_register_bit(status, 5);
-	spi_prettyprint_status_register_bp3210(status, 2);
+	spi_prettyprint_status_register_bp(status, 2);
 	spi_prettyprint_status_register_welwip(status);
 	return 0;
 }
@@ -72,7 +72,7 @@ int spi_prettyprint_status_register_amic_a25l032(struct flashctx *flash)
 		 "is %i KB\n", (status & (1 << 6)) ? 4 : 64);
 	msg_cdbg("Chip status register: Top/Bottom (TB) "
 		 "is %s\n", (status & (1 << 5)) ? "bottom" : "top");
-	spi_prettyprint_status_register_bp3210(status, 2);
+	spi_prettyprint_status_register_bp(status, 2);
 	spi_prettyprint_status_register_welwip(status);
 	msg_cdbg("Chip status register 2 is NOT decoded!\n");
 	return 0;
@@ -90,7 +90,7 @@ int spi_prettyprint_status_register_amic_a25lq032(struct flashctx *flash)
 		 "is %i KB\n", (status & (1 << 6)) ? 4 : 64);
 	msg_cdbg("Chip status register: Top/Bottom (TB) "
 		 "is %s\n", (status & (1 << 5)) ? "bottom" : "top");
-	spi_prettyprint_status_register_bp3210(status, 2);
+	spi_prettyprint_status_register_bp(status, 2);
 	spi_prettyprint_status_register_welwip(status);
 	msg_cdbg("Chip status register 2 is NOT decoded!\n");
 	return 0;
