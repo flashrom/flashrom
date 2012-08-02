@@ -327,21 +327,24 @@ void spi_prettyprint_status_register_welwip(uint8_t status)
 }
 
 /* Prettyprint the status register. Common definitions. */
-void spi_prettyprint_status_register_bp3210(uint8_t status, int bp)
+void spi_prettyprint_status_register_bp(uint8_t status, int bp)
 {
 	switch (bp) {
 	/* Fall through. */
+	case 4:
+		msg_cdbg("Chip status register: Block Protect 4 (BP4) "
+			     "is %sset\n", (status & (1 << 5)) ? "" : "not ");
 	case 3:
-		msg_cdbg("Chip status register: Bit 5 / Block Protect 3 (BP3) "
+		msg_cdbg("Chip status register: Block Protect 3 (BP3) "
 			     "is %sset\n", (status & (1 << 5)) ? "" : "not ");
 	case 2:
-		msg_cdbg("Chip status register: Bit 4 / Block Protect 2 (BP2) "
+		msg_cdbg("Chip status register: Block Protect 2 (BP2) "
 			     "is %sset\n", (status & (1 << 4)) ? "" : "not ");
 	case 1:
-		msg_cdbg("Chip status register: Bit 3 / Block Protect 1 (BP1) "
+		msg_cdbg("Chip status register: Block Protect 1 (BP1) "
 			     "is %sset\n", (status & (1 << 3)) ? "" : "not ");
 	case 0:
-		msg_cdbg("Chip status register: Bit 2 / Block Protect 0 (BP0) "
+		msg_cdbg("Chip status register: Block Protect 0 (BP0) "
 			     "is %sset\n", (status & (1 << 2)) ? "" : "not ");
 	}
 }
@@ -355,7 +358,7 @@ void spi_prettyprint_status_register_bit(uint8_t status, int bit)
 
 static void spi_prettyprint_status_register_common(uint8_t status)
 {
-	spi_prettyprint_status_register_bp3210(status, 3);
+	spi_prettyprint_status_register_bp(status, 3);
 	spi_prettyprint_status_register_welwip(status);
 }
 

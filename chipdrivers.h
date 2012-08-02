@@ -48,7 +48,7 @@ int spi_chip_read(struct flashctx *flash, uint8_t *buf, unsigned int start, int 
 uint8_t spi_read_status_register(struct flashctx *flash);
 int spi_write_status_register(struct flashctx *flash, int status);
 void spi_prettyprint_status_register_bit(uint8_t status, int bit);
-void spi_prettyprint_status_register_bp3210(uint8_t status, int bp);
+void spi_prettyprint_status_register_bp(uint8_t status, int bp);
 void spi_prettyprint_status_register_welwip(uint8_t status);
 int spi_prettyprint_status_register(struct flashctx *flash);
 int spi_disable_blockprotect(struct flashctx *flash);
