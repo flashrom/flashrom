@@ -164,7 +164,7 @@ int spi_disable_blockprotect_at25df(struct flashctx *flash)
 	if ((status & (3 << 2)) == 0)
 		return 0;
 
-	msg_cdbg("Some block protection in effect, disabling\n");
+	msg_cdbg("Some block protection in effect, disabling... ");
 	if (status & (1 << 7)) {
 		msg_cdbg("Need to disable Sector Protection Register Lock\n");
 		if ((status & (1 << 4)) == 0) {
@@ -175,7 +175,7 @@ int spi_disable_blockprotect_at25df(struct flashctx *flash)
 		/* All bits except bit 7 (SPRL) are readonly. */
 		result = spi_write_status_register(flash, status & ~(1 << 7));
 		if (result) {
-			msg_cerr("spi_write_status_register failed\n");
+			msg_cerr("spi_write_status_register failed.\n");
 			return result;
 		}
 		
@@ -183,7 +183,7 @@ int spi_disable_blockprotect_at25df(struct flashctx *flash)
 	/* Global unprotect. Make sure to mask SPRL as well. */
 	result = spi_write_status_register(flash, status & ~0xbc);
 	if (result) {
-		msg_cerr("spi_write_status_register failed\n");
+		msg_cerr("spi_write_status_register failed.\n");
 		return result;
 	}
 	status = spi_read_status_register(flash);
@@ -191,6 +191,7 @@ int spi_disable_blockprotect_at25df(struct flashctx *flash)
 		msg_cerr("Block protection could not be disabled!\n");
 		return 1;
 	}
+	msg_cdbg("done.\n");
 	return 0;
 }
 
@@ -219,20 +220,20 @@ int spi_disable_blockprotect_at25fs010(struct flashctx *flash)
 	if ((status & 0x6c) == 0)
 		return 0;
 
-	msg_cdbg("Some block protection in effect, disabling\n");
+	msg_cdbg("Some block protection in effect, disabling... ");
 	if (status & (1 << 7)) {
 		msg_cdbg("Need to disable Status Register Write Protect\n");
 		/* Clear bit 7 (WPEN). */
 		result = spi_write_status_register(flash, status & ~(1 << 7));
 		if (result) {
-			msg_cerr("spi_write_status_register failed\n");
+			msg_cerr("spi_write_status_register failed.\n");
 			return result;
 		}
 	}
 	/* Global unprotect. Make sure to mask WPEN as well. */
 	result = spi_write_status_register(flash, status & ~0xec);
 	if (result) {
-		msg_cerr("spi_write_status_register failed\n");
+		msg_cerr("spi_write_status_register failed.\n");
 		return result;
 	}
 	status = spi_read_status_register(flash);
@@ -240,6 +241,7 @@ int spi_disable_blockprotect_at25fs010(struct flashctx *flash)
 		msg_cerr("Block protection could not be disabled!\n");
 		return 1;
 	}
+	msg_cdbg("done.\n");
 	return 0;
 }
 
@@ -253,20 +255,20 @@ int spi_disable_blockprotect_at25fs040(struct flashctx *flash)
 	if ((status & 0x7c) == 0)
 		return 0;
 
-	msg_cdbg("Some block protection in effect, disabling\n");
+	msg_cdbg("Some block protection in effect, disabling... ");
 	if (status & (1 << 7)) {
 		msg_cdbg("Need to disable Status Register Write Protect\n");
 		/* Clear bit 7 (WPEN). */
 		result = spi_write_status_register(flash, status & ~(1 << 7));
 		if (result) {
-			msg_cerr("spi_write_status_register failed\n");
+			msg_cerr("spi_write_status_register failed.\n");
 			return result;
 		}
 	}
 	/* Global unprotect. Make sure to mask WPEN as well. */
 	result = spi_write_status_register(flash, status & ~0xfc);
 	if (result) {
-		msg_cerr("spi_write_status_register failed\n");
+		msg_cerr("spi_write_status_register failed.\n");
 		return result;
 	}
 	status = spi_read_status_register(flash);
@@ -274,5 +276,6 @@ int spi_disable_blockprotect_at25fs040(struct flashctx *flash)
 		msg_cerr("Block protection could not be disabled!\n");
 		return 1;
 	}
+	msg_cdbg("done.\n");
 	return 0;
 }

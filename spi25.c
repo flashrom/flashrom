@@ -933,10 +933,10 @@ int spi_disable_blockprotect(struct flashctx *flash)
 	if ((status & 0x3c) == 0)
 		return 0;
 
-	msg_cdbg("Some block protection in effect, disabling\n");
+	msg_cdbg("Some block protection in effect, disabling... ");
 	result = spi_write_status_register(flash, status & ~0x3c);
 	if (result) {
-		msg_cerr("spi_write_status_register failed\n");
+		msg_cerr("spi_write_status_register failed.\n");
 		return result;
 	}
 	status = spi_read_status_register(flash);
@@ -944,6 +944,7 @@ int spi_disable_blockprotect(struct flashctx *flash)
 		msg_cerr("Block protection could not be disabled!\n");
 		return 1;
 	}
+	msg_cdbg("done.\n");
 	return 0;
 }
 
