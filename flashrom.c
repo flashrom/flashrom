@@ -37,6 +37,7 @@
 #include "flash.h"
 #include "flashchips.h"
 #include "programmer.h"
+#include "hwaccess.h"
 
 const char flashrom_version[] = FLASHROM_VERSION;
 char *chip_to_probe = NULL;
@@ -1529,8 +1530,10 @@ void print_buildinfo(void)
 #endif
 #if defined (__FLASHROM_LITTLE_ENDIAN__)
 	msg_gdbg(" little endian");
-#else
+#elif defined (__FLASHROM_BIG_ENDIAN__)
 	msg_gdbg(" big endian");
+#else
+#error Endianness could not be determined
 #endif
 	msg_gdbg("\n");
 }
