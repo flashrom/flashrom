@@ -749,7 +749,7 @@ const struct board_info boards_known[] = {
 	B("Biostar",	"H61MU3",		BAD, NULL, "Probing works (Eon EN25Q32(A/B), 4096 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME region is locked."),
 	B("Biostar",	"M6TBA",		BAD, "ftp://ftp.biostar-usa.com/manuals/M6TBA/", "No public report found. Owned by Uwe Hermann <uwe@hermann-uwe.de>. May work now."),
 	B("Biostar",	"M7NCD Pro",		OK, "http://www.biostar.com.tw/app/en/mb/content.php?S_ID=260", NULL),
-	B("Biostar",	"M7VIQ",		BAD, NULL, "Missing board enable (W83697HF/F/HG/G), see http://www.flashrom.org/pipermail/flashrom/2012-February/008863.html"),
+	B("Biostar",	"M7VIQ",		NT, NULL, NULL),
 	B("Biostar",	"N61PB-M2S",		OK, NULL, NULL),
 	B("Biostar",	"N68S3+",		OK, NULL, NULL),
 	B("Biostar",	"P4M80-M4",		OK, "http://www.biostar-usa.com/mbdetails.asp?model=p4m80-m4", NULL),
