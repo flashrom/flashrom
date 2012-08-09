@@ -211,7 +211,7 @@ int coreboot_init(void)
 	struct lb_header *lb_table;
 	struct lb_record *rec, *last;
 
-#ifdef __DARWIN__
+#if defined(__MACH__) && defined(__APPLE__)
 	/* This is a hack. DirectHW fails to map physical address 0x00000000.
 	 * Why?
 	 */

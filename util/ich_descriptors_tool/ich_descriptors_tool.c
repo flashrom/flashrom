@@ -25,7 +25,6 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <sys/mman.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -33,6 +32,13 @@
 #include <string.h>
 #include <errno.h>
 #include "ich_descriptors.h"
+/* Some DJGPP builds define __unix__ although they don't support mmap().
+ * Cygwin defines __unix__ and supports mmap(), but it does not work well.
+ */
+#if !defined(__MSDOS__) && !defined(_WIN32) && (defined(unix) || defined(__unix__) || defined(__unix)) || (defined(__MACH__) && defined(__APPLE__))
+#define HAVE_MMAP 1
+#include <sys/mman.h>
+#endif
 
 static void dump_file(const char *basename, const uint32_t *dump, unsigned int len, struct ich_desc_region *reg, unsigned int i)
 {
@@ -161,16 +167,17 @@ int main(int argc, char *argv[])
 	if (len < 0)
 		usage(argv, "Seeking to the end of the file failed");
 
+#ifdef HAVE_MMAP
 	buf = mmap(NULL, len, PROT_READ, MAP_PRIVATE, fd, 0);
-	if (buf == (void *) -1) {
+	if (buf == (void *) -1)
+#endif
+	{
 		/* fallback for stupid OSes like cygwin */
-		int ret;
 		buf = malloc(len);
 		if (!buf)
 			usage(argv, "Could not allocate memory");
 		lseek(fd, 0, SEEK_SET);
-		ret = read(fd, buf, len);
-		if (ret != len)
+		if (len != read(fd, buf, len))
 			usage(argv, "Seeking to the end of the file failed");
 	}
 	printf("The flash image has a size of %d [0x%x] bytes.\n", len, len);

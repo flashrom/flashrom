@@ -240,6 +240,7 @@ int rpci_write_long(struct pci_dev *dev, int reg, uint32_t data);
 
 /* print.c */
 #if CONFIG_NIC3COM+CONFIG_NICREALTEK+CONFIG_NICNATSEMI+CONFIG_GFXNVIDIA+CONFIG_DRKAISER+CONFIG_SATASII+CONFIG_ATAHPT+CONFIG_NICINTEL+CONFIG_NICINTEL_SPI+CONFIG_OGP_SPI+CONFIG_SATAMV >= 1
+/* Not needed for CONFIG_INTERNAL, but for all other PCI-based programmers. */
 void print_supported_pcidevs(const struct pcidev_status *devs);
 #endif
 
@@ -637,7 +638,7 @@ void serprog_delay(int usecs);
 #endif
 
 /* serial.c */
-#if _WIN32
+#ifdef _WIN32
 typedef HANDLE fdtype;
 #else
 typedef int fdtype;
