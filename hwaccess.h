@@ -180,10 +180,6 @@ cpu_to_be(64)
 #include <asm/sunddi.h>
 #endif
 
-#if (defined(__MACH__) && defined(__APPLE__))
-#define __DARWIN__
-#endif
-
 /* Clarification about OUTB/OUTW/OUTL argument order:
  * OUT[BWL](val, port)
  */
@@ -203,7 +199,7 @@ cpu_to_be(64)
   #define INW(x) __extension__ ({ u_int inw_tmp = (x); inw(inw_tmp); })
   #define INL(x) __extension__ ({ u_int inl_tmp = (x); inl(inl_tmp); })
 #else
-#if defined(__DARWIN__)
+#if defined(__MACH__) && defined(__APPLE__)
     /* Header is part of the DirectHW library. */
     #include <DirectHW/DirectHW.h>
     #define off64_t off_t
@@ -303,7 +299,7 @@ static inline uint32_t inl(uint16_t port)
   #endif
 #endif
 
-#if !defined(__DARWIN__) && !defined(__FreeBSD__) && !defined(__FreeBSD_kernel__) && !defined(__DragonFly__) && !defined(__LIBPAYLOAD__)
+#if !(defined(__MACH__) && defined(__APPLE__)) && !defined(__FreeBSD__) && !defined(__FreeBSD_kernel__) && !defined(__DragonFly__) && !defined(__LIBPAYLOAD__)
 typedef struct { uint32_t hi, lo; } msr_t;
 msr_t rdmsr(int addr);
 int wrmsr(int addr, msr_t msr);

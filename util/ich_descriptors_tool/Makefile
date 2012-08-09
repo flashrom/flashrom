@@ -15,11 +15,16 @@ CFLAGS += -MMD -MP -MF $(DEPPATH)/$(@F).d
 CFLAGS += -D ICH_DESCRIPTORS_FROM_DUMP
 CFLAGS += $(patsubst %,-I%,$(EXTRAINCDIRS))
 
+ifeq ($(TARGET_OS), DOS)
+# DJGPP has odd uint*_t definitions which cause lots of format string warnings.
+CFLAGS += -Wno-format
+endif
+
 OBJ = $(OBJATH)/$(SRC:%.c=%.o)
 
 SHAREDOBJ = $(OBJATH)/$(notdir $(SHAREDSRC:%.c=%.o))
 
-all:$(PROGRAM)
+all:$(PROGRAM)$(EXEC_SUFFIX)
 
 $(OBJ): $(OBJATH)/%.o : %.c
 	$(CC) $(CFLAGS) -o $@ -c $<
@@ -29,11 +34,11 @@ $(OBJ): $(OBJATH)/%.o : %.c
 $(SHAREDOBJ): $(OBJATH)/%.o : $(SHAREDSRCDIR)/%.c
 	$(CC) $(CFLAGS) -o $@ -c $<
 
-$(PROGRAM): $(OBJ) $(SHAREDOBJ)
-	$(CC) -o $(PROGRAM) $(OBJ) $(SHAREDOBJ)
+$(PROGRAM)$(EXEC_SUFFIX): $(OBJ) $(SHAREDOBJ)
+	$(CC) -o $(PROGRAM)$(EXEC_SUFFIX) $(OBJ) $(SHAREDOBJ)
 
 clean:
-	rm -f $(PROGRAM)
+	rm -f $(PROGRAM) $(PROGRAM).exe
 	rm -rf $(DEPPATH) $(OBJATH)
 
 # Include the dependency files.

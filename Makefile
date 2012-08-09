@@ -2,7 +2,7 @@
 # This file is part of the flashrom project.
 #
 # Copyright (C) 2005 coresystems GmbH <stepan@coresystems.de>
-# Copyright (C) 2009,2010 Carl-Daniel Hailfinger
+# Copyright (C) 2009,2010,2012 Carl-Daniel Hailfinger
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,6 +20,12 @@
 
 PROGRAM = flashrom
 
+###############################################################################
+# Defaults for the toolchain.
+
+# If you want to cross-compile, just run e.g.
+# make CC=i586-pc-msdosdjgpp-gcc
+# You may have to specify STRIP/AR/RANLIB as well.
 CC      ?= gcc
 STRIP   ?= strip
 INSTALL = install
@@ -31,11 +37,16 @@ EXPORTDIR ?= .
 AR      ?= ar
 RANLIB  ?= ranlib
 
+# If your compiler spits out excessive warnings, run make WARNERROR=no
+# You shouldn't have to change this flag.
 WARNERROR ?= yes
 
 ifeq ($(WARNERROR), yes)
 CFLAGS += -Werror
 endif
+
+###############################################################################
+# General OS/architecture specific settings.
 
 # HOST_OS is only used to work around local toolchain issues.
 HOST_OS	?= $(shell uname)
@@ -47,7 +58,7 @@ ifneq ($(HOST_OS), SunOS)
 STRIP_ARGS = -s
 endif
 
-# Determine the destination processor architecture.
+# Determine the destination OS.
 # IMPORTANT: The following line must be placed before TARGET_OS is ever used
 # (of course), but should come after any lines setting CC because the line
 # below uses CC itself.
@@ -55,25 +66,27 @@ override TARGET_OS := $(strip $(shell LC_ALL=C $(CC) $(CPPFLAGS) -E os.h 2>/dev/
 
 ifeq ($(TARGET_OS), Darwin)
 CPPFLAGS += -I/opt/local/include -I/usr/local/include
-# DirectHW framework can be found in the DirectHW library.
-LDFLAGS += -framework IOKit -framework DirectHW -L/opt/local/lib -L/usr/local/lib
+LDFLAGS += -L/opt/local/lib -L/usr/local/lib
 endif
+
 ifeq ($(TARGET_OS), FreeBSD)
 CPPFLAGS += -I/usr/local/include
 LDFLAGS += -L/usr/local/lib
 endif
+
 ifeq ($(TARGET_OS), OpenBSD)
 CPPFLAGS += -I/usr/local/include
 LDFLAGS += -L/usr/local/lib
 endif
+
 ifeq ($(TARGET_OS), DOS)
 EXEC_SUFFIX := .exe
-CPPFLAGS += -I../libgetopt -I../libpci/include
+CPPFLAGS += -I../libgetopt
 # DJGPP has odd uint*_t definitions which cause lots of format string warnings.
 CPPFLAGS += -Wno-format
 # FIXME Check if we can achieve the same effect with -L../libgetopt -lgetopt
 LIBS += ../libgetopt/libgetopt.a
-# Bus Pirate, Serprog and Pony-SPI are not supported under DOS (missing serial support).
+# Bus Pirate, Serprog and PonyProg are not supported under DOS (missing serial support).
 ifeq ($(CONFIG_BUSPIRATE_SPI), yes)
 UNSUPPORTED_FEATURES += CONFIG_BUSPIRATE_SPI=yes
 else
@@ -263,18 +276,23 @@ override CONFIG_SATAMV = no
 endif
 endif
 
+###############################################################################
+# Flash chip drivers and bus support infrastructure.
+
 CHIP_OBJS = jedec.o stm50flw0x0x.o w39.o w29ee011.o \
 	sst28sf040.o m29f400bt.o 82802ab.o pm49fl00x.o \
 	sst49lfxxxc.o sst_fwhub.o flashchips.o spi.o spi25.o \
 	a25.o at25.o opaque.o sfdp.o en29lv640b.o
 
-LIB_OBJS = layout.o
+###############################################################################
+# Library code.
 
-CLI_OBJS = flashrom.o cli_classic.o cli_output.o print.o
+LIB_OBJS = layout.o flashrom.o udelay.o programmer.o
 
-PROGRAMMER_OBJS = udelay.o programmer.o
+###############################################################################
+# Frontend related stuff.
 
-all: pciutils features $(PROGRAM)$(EXEC_SUFFIX)
+CLI_OBJS = cli_classic.o cli_output.o print.o
 
 # Set the flashrom version string from the highest revision number
 # of the checked out flashrom files.
@@ -374,6 +392,9 @@ endif
 endif
 endif
 endif
+
+###############################################################################
+# Programmer drivers and programmer support infrastructure.
 
 ifeq ($(CONFIG_INTERNAL), yes)
 FEATURE_CFLAGS += -D'CONFIG_INTERNAL=1'
@@ -530,12 +551,19 @@ LIBS += -l$(shell uname -p)
 else
 ifeq ($(TARGET_OS), DOS)
 # FIXME There needs to be a better way to do this
+CPPFLAGS += -I../libpci/include
 LIBS += ../libpci/lib/libpci.a
 else
 LIBS += -lpci
 ifeq ($(TARGET_OS), OpenBSD)
 # For (i386|amd64)_iopl(2).
 LIBS += -l$(shell uname -m)
+else
+ifeq ($(TARGET_OS), Darwin)
+# DirectHW framework can be found in the DirectHW library.
+LIBS += -framework IOKit -framework DirectHW 
+else
+endif
 endif
 endif
 endif
@@ -553,6 +581,11 @@ FEATURE_LIBS += $(shell LC_ALL=C grep -q "NEEDLIBZ := yes" .libdeps && printf "%
 
 LIBFLASHROM_OBJS = $(CHIP_OBJS) $(PROGRAMMER_OBJS) $(LIB_OBJS)
 OBJS = $(CLI_OBJS) $(LIBFLASHROM_OBJS)
+
+all: pciutils features $(PROGRAM)$(EXEC_SUFFIX)
+ifeq ($(ARCH), x86)
+	@+$(MAKE) -C util/ich_descriptors_tool/ TARGET_OS=$(TARGET_OS) EXEC_SUFFIX=$(EXEC_SUFFIX)
+endif
 
 $(PROGRAM)$(EXEC_SUFFIX): $(OBJS)
 	$(CC) $(LDFLAGS) -o $(PROGRAM)$(EXEC_SUFFIX) $(OBJS) $(FEATURE_LIBS) $(LIBS)
@@ -574,6 +607,7 @@ TAROPTIONS = $(shell LC_ALL=C tar --version|grep -q GNU && echo "--owner=root --
 # We don't use EXEC_SUFFIX here because we want to clean everything.
 clean:
 	rm -f $(PROGRAM) $(PROGRAM).exe libflashrom.a *.o *.d
+	@+$(MAKE) -C util/ich_descriptors_tool/ clean
 
 distclean: clean
 	rm -f .features .libdeps
@@ -597,7 +631,7 @@ export COMPILER_TEST
 compiler: featuresavailable
 	@printf "Checking for a C compiler... "
 	@echo "$$COMPILER_TEST" > .test.c
-	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .test.c -o .test$(EXEC_SUFFIX) >/dev/null 2>&1 &&	\
+	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .test.c -o .test$(EXEC_SUFFIX) >/dev/null &&	\
 		echo "found." || ( echo "not found."; \
 		rm -f .test.c .test$(EXEC_SUFFIX); exit 1)
 	@rm -f .test.c .test$(EXEC_SUFFIX)
@@ -631,17 +665,17 @@ ifeq ($(CHECK_LIBPCI), yes)
 pciutils: compiler
 	@printf "Checking for libpci headers... "
 	@echo "$$LIBPCI_TEST" > .test.c
-	@$(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o >/dev/null 2>&1 &&		\
+	@$(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o >/dev/null &&		\
 		echo "found." || ( echo "not found."; echo;			\
 		echo "Please install libpci headers (package pciutils-devel).";	\
 		echo "See README for more information."; echo;			\
 		rm -f .test.c .test.o; exit 1)
 	@printf "Checking if libpci is present and sufficient... "
 	@printf "" > .libdeps
-	@$(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) >/dev/null 2>&1 &&				\
+	@$(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) >/dev/null &&				\
 		echo "yes." || ( echo "no.";							\
 		printf "Checking if libz+libpci are present and sufficient...";	\
-		$(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) -lz >/dev/null 2>&1 &&		\
+		$(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) -lz >/dev/null &&		\
 		( echo "yes."; echo "NEEDLIBZ := yes" > .libdeps ) || ( echo "no."; echo;	\
 		echo "Please install libpci (package pciutils) and/or libz.";			\
 		echo "See README for more information."; echo;				\
@@ -657,10 +691,13 @@ endif
 # If a user does not explicitly request a non-working feature, we should
 # silently disable it. However, if a non-working (does not compile) feature
 # is explicitly requested, we should bail out with a descriptive error message.
-ifeq ($(UNSUPPORTED_FEATURES), )
+# We also have to check that at least one programmer driver is enabled.
 featuresavailable:
-else
-featuresavailable:
+ifeq ($(PROGRAMMER_OBJS),)
+	@echo "You have to enable at least one programmer driver!"
+	@false
+endif
+ifneq ($(UNSUPPORTED_FEATURES), )
 	@echo "The following features are unavailable on your machine: $(UNSUPPORTED_FEATURES)"
 	@false
 endif
