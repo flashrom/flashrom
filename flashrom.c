@@ -60,10 +60,6 @@ unsigned long flashbase;
 /* Is writing allowed with this programmer? */
 int programmer_may_write;
 
-#if CONFIG_INTERNAL+CONFIG_DUMMY+CONFIG_NIC3COM+CONFIG_NICREALTEK+CONFIG_NICNATSEMI+CONFIG_GFXNVIDIA+CONFIG_DRKAISER+CONFIG_SATASII+CONFIG_ATAHPT+CONFIG_FT2232_SPI+CONFIG_SERPROG+CONFIG_BUSPIRATE_SPI+CONFIG_DEDIPROG+CONFIG_RAYER_SPI+CONFIG_PONY_SPI+CONFIG_NICINTEL+CONFIG_NICINTEL_SPI+CONFIG_OGP_SPI+CONFIG_SATAMV+CONFIG_LINUX_SPI < 1
-#error You have to enable at least one programmer!
-#endif
-
 const struct programmer_entry programmer_table[] = {
 #if CONFIG_INTERNAL == 1
 	{
@@ -1490,10 +1486,35 @@ void list_programmers_linebreak(int startcol, int cols, int paren)
 
 void print_sysinfo(void)
 {
-#if HAVE_UTSNAME == 1
-	struct utsname osinfo;
-	uname(&osinfo);
+#ifdef _WIN32
+	SYSTEM_INFO si;
+	OSVERSIONINFOEX osvi;
 
+	memset(&si, 0, sizeof(SYSTEM_INFO));
+	memset(&osvi, 0, sizeof(OSVERSIONINFOEX));
+	msg_ginfo(" on Windows");
+	/* Tell Windows which version of the structure we want. */
+	osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
+	if (GetVersionEx((OSVERSIONINFO*) &osvi))
+		msg_ginfo(" %lu.%lu", osvi.dwMajorVersion, osvi.dwMinorVersion);
+	else
+		msg_ginfo(" unknown version");
+	GetSystemInfo(&si);
+	switch (si.wProcessorArchitecture) {
+	case PROCESSOR_ARCHITECTURE_AMD64:
+		msg_ginfo(" (x86_64)");
+		break;
+	case PROCESSOR_ARCHITECTURE_INTEL:
+		msg_ginfo(" (x86)");
+		break;
+	default:
+		msg_ginfo(" (unknown arch)");
+		break;
+	}
+#elif HAVE_UTSNAME == 1
+	struct utsname osinfo;
+
+	uname(&osinfo);
 	msg_ginfo(" on %s %s (%s)", osinfo.sysname, osinfo.release,
 		  osinfo.machine);
 #else
