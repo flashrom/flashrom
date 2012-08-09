@@ -24,19 +24,6 @@
 #include "flash.h"
 #include "programmer.h"
 
-#if defined(__i386__) || defined(__x86_64__)
-
-int processor_flash_enable(void)
-{
-	/* On x86, flash access is not processor specific except on
-	 * AMD Elan SC520, AMD Geode and maybe other SoC-style CPUs.
-	 * FIXME: Move enable_flash_cs5536 and get_flashbase_sc520 here.
-	 */
-	return 0;
-}
-
-#else
-
 #if defined (__MIPSEL__) && defined (__linux)
 #include <stdio.h>
 #include <string.h>
@@ -71,10 +58,8 @@ static int is_loongson(void)
 		while (*ptr && isspace((unsigned char)*ptr))
 			ptr++;
 		fclose(cpuinfo);
-		return (strncmp(ptr, "ICT Loongson-2 V0.3",
-				strlen("ICT Loongson-2 V0.3")) == 0)
-		    || (strncmp(ptr, "Godson2 V0.3  FPU V0.1",
-				strlen("Godson2 V0.3  FPU V0.1")) == 0);
+		return (strncmp(ptr, "ICT Loongson-2 V0.3", strlen("ICT Loongson-2 V0.3")) == 0) ||
+		       (strncmp(ptr, "Godson2 V0.3  FPU V0.1", strlen("Godson2 V0.3  FPU V0.1")) == 0);
 	}
 	fclose(cpuinfo);
 	return 0;
@@ -83,15 +68,21 @@ static int is_loongson(void)
 
 int processor_flash_enable(void)
 {
+	/* Default to 1 to catch not implemented architectures. */
+	int ret = 1;
+
 	/* FIXME: detect loongson on FreeBSD and OpenBSD as well.  */
 #if defined (__MIPSEL__) && defined (__linux)
 	if (is_loongson()) {
 		flashbase = 0x1fc00000;
-		return 0;
+		ret = 0;
 	}
+#elif defined(__i386__) || defined(__x86_64__)
+	/* On x86, flash access is not processor specific except on
+	 * AMD Elan SC520, AMD Geode and maybe other SoC-style CPUs.
+	 * FIXME: Move enable_flash_cs5536 and get_flashbase_sc520 here.
+	 */
+	ret = 0;
 #endif
-	/* Not implemented yet. Oh well. */
-	return 1;
+	return ret;
 }
-
-#endif
