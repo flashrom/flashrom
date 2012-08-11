@@ -274,6 +274,7 @@ void cleanup_cpu_msr(void);
 
 /* cbtable.c */
 void lb_vendor_dev_from_string(const char *boardstring);
+int show_id(uint8_t *bios, int size);
 int coreboot_init(void);
 extern char *lb_part, *lb_vendor;
 extern int partvendor_from_cbtable;
@@ -477,9 +478,6 @@ extern unsigned long flashbase;
 void check_chip_supported(const struct flashctx *flash);
 int check_max_decode(enum chipbustype buses, uint32_t size);
 char *extract_programmer_param(const char *param_name);
-
-/* layout.c */
-int show_id(uint8_t *bios, int size, int force);
 
 /* spi.c */
 enum spi_controller {
