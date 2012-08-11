@@ -25,6 +25,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include <string.h>
 #include "flash.h"
 #include "programmer.h"
@@ -32,6 +33,9 @@
 
 char *lb_part = NULL, *lb_vendor = NULL;
 int partvendor_from_cbtable = 0;
+static char *def_name = "DEFAULT";
+static char *mainboard_vendor = NULL;
+static char *mainboard_part = NULL;
 
 /* Parse the [<vendor>:]<board> string specified by the user as part of
  * -p internal:mainboard=[<vendor>:]<board> and set lb_vendor and lb_part
@@ -54,6 +58,82 @@ void lb_vendor_dev_from_string(const char *boardstring)
 		lb_part = strdup(tempstr);
 	}
 	free(tempstr);
+}
+
+int show_id(uint8_t *bios, int size)
+{
+	unsigned int *walk;
+	unsigned int mb_part_offset, mb_vendor_offset;
+	char *mb_part, *mb_vendor;
+
+	mainboard_vendor = def_name;
+	mainboard_part = def_name;
+
+	walk = (unsigned int *)(bios + size - 0x10);
+	walk--;
+
+	if ((*walk) == 0 || ((*walk) & 0x3ff) != 0) {
+		/* We might have an NVIDIA chipset BIOS which stores the ID information somewhere else. */
+		walk = (unsigned int *)(bios + size - 0x80);
+		walk--;
+	}
+
+	/*
+	 * Check if coreboot last image size is 0 or not a multiple of 1k or
+	 * bigger than the chip or if the pointers to vendor ID or mainboard ID
+	 * are outside the image of if the start of ID strings are nonsensical
+	 * (nonprintable and not \0).
+	 */
+	mb_part_offset = *(walk - 1);
+	mb_vendor_offset = *(walk - 2);
+	if ((*walk) == 0 || ((*walk) & 0x3ff) != 0 || (*walk) > size ||
+	    mb_part_offset > size || mb_vendor_offset > size) {
+		msg_pinfo("Flash image seems to be a legacy BIOS. Disabling coreboot-related checks.\n");
+		return 0;
+	}
+
+	mb_part = (char *)(bios + size - mb_part_offset);
+	mb_vendor = (char *)(bios + size - mb_vendor_offset);
+	if (!isprint((unsigned char)*mb_part) ||
+	    !isprint((unsigned char)*mb_vendor)) {
+		msg_pinfo("Flash image seems to have garbage in the ID location. Disabling checks.\n");
+		return 0;
+	}
+
+	msg_pdbg("coreboot last image size (not ROM size) is %d bytes.\n", *walk);
+
+	mainboard_part = strdup(mb_part);
+	mainboard_vendor = strdup(mb_vendor);
+	msg_pdbg("Manufacturer: %s\n", mainboard_vendor);
+	msg_pdbg("Mainboard ID: %s\n", mainboard_part);
+
+	/* If these are not set, the coreboot table was not found. */
+	if (!lb_vendor || !lb_part) {
+		msg_pinfo("Note: If the following flash access fails, try "
+			  "-p internal:mainboard=<vendor>:<mainboard>.\n");
+		return 0;
+	}
+
+	/* These comparisons are case insensitive to make things a little less user^Werror prone. */
+	if (!strcasecmp(mainboard_vendor, lb_vendor) &&
+	    !strcasecmp(mainboard_part, lb_part)) {
+		msg_pdbg("This firmware image matches this mainboard.\n");
+	} else {
+		if (force_boardmismatch) {
+			msg_pinfo("WARNING: This firmware image does not "
+			       "seem to fit to this machine - forcing it.\n");
+		} else {
+			msg_pinfo("ERROR: Your firmware image (%s:%s) does not appear to\n"
+				  "       be correct for the detected mainboard (%s:%s)\n\n"
+				  "Override with -p internal:boardmismatch=force to ignore the board name\n"
+				  "in the firmware image or override the detected mainboard with\n"
+				  "-p internal:mainboard=<vendor>:<mainboard>.\n\n",
+				  mainboard_vendor, mainboard_part, lb_vendor, lb_part);
+			return 1;
+		}
+	}
+
+	return 0;
 }
 
 static unsigned long compute_checksum(void *addr, unsigned long length)

@@ -1815,7 +1815,7 @@ int doit(struct flashctx *flash, int force, const char *filename, int read_it,
 
 #if CONFIG_INTERNAL == 1
 		if (programmer == PROGRAMMER_INTERNAL)
-			if (show_id(newcontents, size, force)) {
+			if (show_id(newcontents, size)) {
 				ret = 1;
 				goto out;
 			}
