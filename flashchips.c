@@ -2317,12 +2317,37 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Atmel",
+		.name		= "AT49(H)F010",
+		.bustype	= BUS_PARALLEL,
+		.manufacture_id	= ATMEL_ID,
+		.model_id	= ATMEL_AT49F010,
+		.total_size	= 128,
+		.page_size	= 0, /* unused */
+		.feature_bits	= FEATURE_EITHER_RESET,
+		.tested		= TEST_OK_PREW,
+		.probe		= probe_jedec,
+		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {128 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			}
+		},
+		.printlock	= printlock_at49f,
+ 		.write		= write_jedec_1,
+		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
+	},
+
+	{
+		.vendor		= "Atmel",
 		.name		= "AT49F020",
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT49F020,
 		.total_size	= 256,
-		.page_size	= 256,
+		.page_size	= 0, /* unused */
 		.feature_bits	= FEATURE_EITHER_RESET,
 		.tested		= TEST_OK_PRE,
 		.probe		= probe_jedec,
@@ -2353,7 +2378,7 @@ const struct flashchip flashchips[] = {
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT49F040,
 		.total_size	= 512,
-		.page_size	= 512,
+		.page_size	= 0, /* unused */
 		.feature_bits	= FEATURE_EITHER_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
@@ -2367,6 +2392,69 @@ const struct flashchip flashchips[] = {
 			/* Chip features an optional permanent write protection
 			 * of the first 16 kB. The erase function is the same as
 			 * above, but 00000H to 03FFFH will not be erased.
+			 * FIXME: add another eraser when partial erasers are
+			 * supported.
+			 */
+		},
+		.printlock	= printlock_at49f,
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
+	},
+
+	{
+		.vendor		= "Atmel",
+		.name		= "AT49F080",
+		.bustype	= BUS_PARALLEL,
+		.manufacture_id	= ATMEL_ID,
+		.model_id	= ATMEL_AT49F080,
+		.total_size	= 1024,
+		.page_size	= 0, /* unused */
+		.feature_bits	= FEATURE_EITHER_RESET,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_jedec,
+		.probe_timing	= TIMING_ZERO,  /* Datasheet has no timing info specified */
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {1024 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			}
+			/* Chip features an optional permanent write protection
+			 * of the first 16 kB. The erase function is the same as
+			 * above, but 00000H to 03FFFH will not be erased.
+			 * FIXME: add another eraser when partial erasers are
+			 * supported.
+			 */
+		},
+		.printlock	= printlock_at49f,
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
+	},
+
+	{
+		/* 'top' version of AT49F080. equal in all aspects but the boot block address */
+		.vendor		= "Atmel",
+		.name		= "AT49F080T",
+		.bustype	= BUS_PARALLEL,
+		.manufacture_id	= ATMEL_ID,
+		.model_id	= ATMEL_AT49F080T,
+		.total_size	= 1024,
+		.page_size	= 0, /* unused */
+		.feature_bits	= FEATURE_EITHER_RESET,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_jedec,
+		.probe_timing	= TIMING_ZERO,  /* Datasheet has no timing info specified */
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {1024 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			}
+			/* Chip features an optional permanent write protection
+			 * of the first 16 kB. The erase function is the same as
+			 * above, but FC000H to FFFFFH will not be erased.
 			 * FIXME: add another eraser when partial erasers are
 			 * supported.
 			 */
