@@ -598,7 +598,17 @@ syntax and for IP, you have to use
 .sp
 .B "  flashrom \-p serprog:ip=ipaddr:port"
 .sp
-instead. More information about serprog is available in
+instead. In case the device supports it, you can set the SPI clock frequency
+with the optional
+.B spispeed
+parameter. The frequency is parsed as Hertz, unless an
+.BR M ", or " k
+suffix is given, then megahertz or kilohertz are used respectively.
+Example that sets the frequency to 2 MHz:
+.sp
+.B "flashrom \-p serprog:dev=/dev/device:baud,spispeed=2M"
+.sp
+More information about serprog is available in
 .B serprog-protocol.txt
 in the source distribution.
 .SS

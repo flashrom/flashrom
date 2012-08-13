@@ -33,6 +33,7 @@ COMMAND	Description			Parameters			Return Value
 0x12	Set used bustype		8-bit flags (as with 0x05)	ACK / NAK
 0x13	Perform SPI operation		24-bit slen + 24-bit rlen	ACK + rlen bytes of data / NAK
 					 + slen bytes of data
+0x14	Set SPI clock frequency in Hz	32-bit requested frequency	ACK + 32-bit set frequency / NAK
 0x??	unimplemented command - invalid.
 
 
@@ -73,6 +74,14 @@ Additional information of the above commands:
 		Maximum slen is Q_WRNMAXLEN in case Q_BUSTYPE returns SPI only or S_BUSTYPE was used
 		to set SPI exclusively before. Same for rlen and Q_RDNMAXLEN.
 		This operation is immediate, meaning it doesnt use the operation buffer.
+	0x14 (S_SPI_FREQ):
+		Set the SPI clock frequency. The 32-bit value indicates the
+		requested frequency in Hertz. Value 0 is reserved and should
+		be NAKed by the programmer. The requested frequency should be
+		mapped by the programmer software to a supported frequency
+		lower than the one requested. If there is no lower frequency
+		available the lowest possible should be used. The value
+		chosen is sent back in the reply with an ACK.
 	About mandatory commands:
 		The only truly mandatory commands for any device are 0x00, 0x01, 0x02 and 0x10,
 		but one can't really do anything with these commands.
@@ -107,3 +116,4 @@ This define listing should help C coders - (it's here to be the single source fo
 #define S_CMD_Q_RDNMAXLEN	0x11		/* Query read-n maximum length			*/
 #define S_CMD_S_BUSTYPE		0x12		/* Set used bustype(s).				*/
 #define S_CMD_O_SPIOP		0x13		/* Perform SPI operation.			*/
+#define S_CMD_S_SPI_FREQ	0x14		/* Set SPI clock frequency */
