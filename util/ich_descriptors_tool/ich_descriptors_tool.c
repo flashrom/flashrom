@@ -40,7 +40,7 @@
 #include <sys/mman.h>
 #endif
 
-static void dump_file(const char *basename, const uint32_t *dump, unsigned int len, struct ich_desc_region *reg, unsigned int i)
+static void dump_file(const char *prefix, const uint32_t *dump, unsigned int len, struct ich_desc_region *reg, unsigned int i)
 {
 	int ret;
 	char *fn;
@@ -54,8 +54,7 @@ static void dump_file(const char *basename, const uint32_t *dump, unsigned int l
 
 	reg_name = region_names[i];
 	if (base > limit) {
-		printf("The %s region is unused and thus not dumped.\n",
-		       reg_name);
+		printf("The %s region is unused and thus not dumped.\n", reg_name);
 		return;
 	}
 
@@ -68,13 +67,13 @@ static void dump_file(const char *basename, const uint32_t *dump, unsigned int l
 		return;
 	}
 
-	fn = malloc(strlen(basename) + strlen(reg_name) + strlen(".bin") + 2);
+	fn = malloc(strlen(prefix) + strlen(reg_name) + strlen(".bin") + 2);
 	if (!fn) {
 		fprintf(stderr, "Out of memory!\n");
 		exit(1);
 	}
-	snprintf(fn, strlen(basename) + strlen(reg_name) + strlen(".bin") + 2,
-		 "%s.%s.bin", basename, reg_name);
+	snprintf(fn, strlen(prefix) + strlen(reg_name) + strlen(".bin") + 2,
+		 "%s.%s.bin", prefix, reg_name);
 	printf("Dumping %u bytes of the %s region from 0x%08x-0x%08x to %s... ",
 	       file_len, region_names[i], base, limit, fn);
 	int fh = open(fn, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR);
@@ -95,12 +94,12 @@ static void dump_file(const char *basename, const uint32_t *dump, unsigned int l
 	close(fh);
 }
 
-void dump_files(const char *n, const uint32_t *buf, unsigned int len, struct ich_desc_region *reg)
+void dump_files(const char *name, const uint32_t *buf, unsigned int len, struct ich_desc_region *reg)
 {
 	unsigned int i;
 	printf("=== Dumping region files ===\n");
 	for (i = 0; i < 5; i++)
-		dump_file(n, buf, len, reg, i);
+		dump_file(name, buf, len, reg, i);
 	printf("\n");
 }
 
@@ -157,8 +156,7 @@ int main(int argc, char *argv[])
 		}
 	}
 	if (fn == NULL)
-		usage(argv,
-		      "Need a file name of a descriptor image to read from.");
+		usage(argv, "Need the file name of a descriptor image to read from.");
 
 	fd = open(fn, O_RDONLY);
 	if (fd < 0)
@@ -209,8 +207,7 @@ int main(int argc, char *argv[])
 		printf("Image not in descriptor mode.\n");
 		exit(1);
 	case ICH_RET_OOB:
-		printf("Tried to access a location out of bounds of the image. "
-		       "- Corrupt image?\n");
+		printf("Tried to access a location out of bounds of the image. - Corrupt image?\n");
 		exit(1);
 	default:
 		printf("Unhandled return value at %s:%u, please report this.\n",
