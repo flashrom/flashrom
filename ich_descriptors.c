@@ -85,26 +85,16 @@ void prettyprint_ich_descriptor_content(const struct ich_desc_content *cont)
 	msg_pdbg2("\n");
 
 	msg_pdbg2("--- Details ---\n");
-	msg_pdbg2("NR          (Number of Regions):                 %5d\n",
-		  cont->NR + 1);
-	msg_pdbg2("FRBA        (Flash Region Base Address):         0x%03x\n",
-		  getFRBA(cont));
-	msg_pdbg2("NC          (Number of Components):              %5d\n",
-		  cont->NC + 1);
-	msg_pdbg2("FCBA        (Flash Component Base Address):      0x%03x\n",
-		  getFCBA(cont));
-	msg_pdbg2("ISL         (ICH/PCH Strap Length):              %5d\n",
-		  cont->ISL);
-	msg_pdbg2("FISBA/FPSBA (Flash ICH/PCH Strap Base Address):  0x%03x\n",
-		  getFISBA(cont));
-	msg_pdbg2("NM          (Number of Masters):                 %5d\n",
-		  cont->NM + 1);
-	msg_pdbg2("FMBA        (Flash Master Base Address):         0x%03x\n",
-		  getFMBA(cont));
-	msg_pdbg2("MSL/PSL     (MCH/PROC Strap Length):             %5d\n",
-		  cont->MSL);
-	msg_pdbg2("FMSBA       (Flash MCH/PROC Strap Base Address): 0x%03x\n",
-		  getFMSBA(cont));
+	msg_pdbg2("NR          (Number of Regions):                 %5d\n",	cont->NR + 1);
+	msg_pdbg2("FRBA        (Flash Region Base Address):         0x%03x\n",	getFRBA(cont));
+	msg_pdbg2("NC          (Number of Components):              %5d\n",	cont->NC + 1);
+	msg_pdbg2("FCBA        (Flash Component Base Address):      0x%03x\n",	getFCBA(cont));
+	msg_pdbg2("ISL         (ICH/PCH Strap Length):              %5d\n",	cont->ISL);
+	msg_pdbg2("FISBA/FPSBA (Flash ICH/PCH Strap Base Address):  0x%03x\n",	getFISBA(cont));
+	msg_pdbg2("NM          (Number of Masters):                 %5d\n",	cont->NM + 1);
+	msg_pdbg2("FMBA        (Flash Master Base Address):         0x%03x\n",	getFMBA(cont));
+	msg_pdbg2("MSL/PSL     (MCH/PROC Strap Length):             %5d\n",	cont->MSL);
+	msg_pdbg2("FMSBA       (Flash MCH/PROC Strap Base Address): 0x%03x\n",	getFMSBA(cont));
 	msg_pdbg2("\n");
 }
 
@@ -520,8 +510,8 @@ void prettyprint_ich_descriptor_straps_cougar(const struct ich_desc_south_strap 
 
 	msg_pdbg2("Integrated Clocking Configuration used: %d\n",
 		  s->cougar.ICC_SEL);
-	msg_pdbg2("PCH Signal CL_RST1# does %sassert when Intel ME performs a "
-		  "reset.\n", s->ibex.MER_CL1 ? "" : "not ");
+	msg_pdbg2("PCH Signal CL_RST1# does %sassert when Intel ME performs a reset.\n",
+		  s->ibex.MER_CL1 ? "" : "not ");
 	msg_pdbg2("ICC Profile is selected by %s.\n",
 		  s->cougar.ICC_PRO_SEL ? "Softstraps" : "BIOS");
 	msg_pdbg2("Deep SX is %ssupported on the platform.\n",
@@ -538,8 +528,7 @@ void prettyprint_ich_descriptor_straps_cougar(const struct ich_desc_south_strap 
 		  s->cougar.IWL_EN ? "en" : "dis");
 	msg_pdbg2("Chipset configuration Softstrap 5: %d\n", s->cougar.cs_ss5);
 	msg_pdbg2("SMLink1 provides temperature from %s.\n",
-		  s->cougar.SMLINK1_THERM_SEL ?
-					 "PCH only" : "the CPU, PCH and DIMMs");
+		  s->cougar.SMLINK1_THERM_SEL ? "PCH only" : "the CPU, PCH and DIMMs");
 	msg_pdbg2("GPIO29 is used as %s.\n", s->cougar.SLP_LAN_GP29_SEL ?
 		  "general purpose output" : "SLP_LAN#");
 
@@ -552,32 +541,32 @@ void prettyprint_ich_descriptor_straps_cougar(const struct ich_desc_south_strap 
 
 void prettyprint_ich_descriptor_straps(enum ich_chipset cs, const struct ich_descriptors *desc)
 {
-	unsigned int i, max;
+	unsigned int i, max_count;
 	msg_pdbg2("=== Softstraps ===\n");
 
 	if (sizeof(desc->north.STRPs) / 4 + 1 < desc->content.MSL) {
-		max = sizeof(desc->north.STRPs) / 4 + 1;
-		msg_pdbg2("MSL (%u) is greater than the current maximum of %u "
-			  "entries.\n", desc->content.MSL, max + 1);
-		msg_pdbg2("Only the first %u entries will be printed.\n", max);
+		max_count = sizeof(desc->north.STRPs) / 4 + 1;
+		msg_pdbg2("MSL (%u) is greater than the current maximum of %u entries.\n",
+			  desc->content.MSL, max_count + 1);
+		msg_pdbg2("Only the first %u entries will be printed.\n", max_count);
 	} else
-		max = desc->content.MSL;
+		max_count = desc->content.MSL;
 
-	msg_pdbg2("--- North/MCH/PROC (%d entries) ---\n", max);
-	for (i = 0; i < max; i++)
+	msg_pdbg2("--- North/MCH/PROC (%d entries) ---\n", max_count);
+	for (i = 0; i < max_count; i++)
 		msg_pdbg2("STRP%-2d = 0x%08x\n", i, desc->north.STRPs[i]);
 	msg_pdbg2("\n");
 
 	if (sizeof(desc->south.STRPs) / 4 < desc->content.ISL) {
-		max = sizeof(desc->south.STRPs) / 4;
-		msg_pdbg2("ISL (%u) is greater than the current maximum of %u "
-			  "entries.\n", desc->content.ISL, max);
-		msg_pdbg2("Only the first %u entries will be printed.\n", max);
+		max_count = sizeof(desc->south.STRPs) / 4;
+		msg_pdbg2("ISL (%u) is greater than the current maximum of %u entries.\n",
+			  desc->content.ISL, max_count);
+		msg_pdbg2("Only the first %u entries will be printed.\n", max_count);
 	} else
-		max = desc->content.ISL;
+		max_count = desc->content.ISL;
 
-	msg_pdbg2("--- South/ICH/PCH (%d entries) ---\n", max);
-	for (i = 0; i < max; i++)
+	msg_pdbg2("--- South/ICH/PCH (%d entries) ---\n", max_count);
+	for (i = 0; i < max_count; i++)
 		msg_pdbg2("STRP%-2d = 0x%08x\n", i, desc->south.STRPs[i]);
 	msg_pdbg2("\n");
 
@@ -608,8 +597,7 @@ void prettyprint_ich_descriptor_straps(enum ich_chipset cs, const struct ich_des
 	case CHIPSET_ICH_UNKNOWN:
 		break;
 	default:
-		msg_pdbg2("The meaning of the descriptor straps are unknown "
-			  "yet.\n\n");
+		msg_pdbg2("The meaning of the descriptor straps are unknown yet.\n\n");
 		break;
 	}
 }
@@ -634,8 +622,7 @@ void prettyprint_ich_descriptor_upper_map(const struct ich_desc_upper_map *umap)
 	msg_pdbg2("\n");
 
 	msg_pdbg2("VSCC Table: %d entries\n", umap->VTL/2);
-	for (i = 0; i < umap->VTL/2; i++)
-	{
+	for (i = 0; i < umap->VTL/2; i++) {
 		uint32_t jid = umap->vscc_table[i].JID;
 		uint32_t vscc = umap->vscc_table[i].VSCC;
 		msg_pdbg2("  JID%d  = 0x%08x\n", i, jid);
@@ -651,7 +638,7 @@ void prettyprint_ich_descriptor_upper_map(const struct ich_desc_upper_map *umap)
 /* len is the length of dump in bytes */
 int read_ich_descriptors_from_dump(const uint32_t *dump, unsigned int len, struct ich_descriptors *desc)
 {
-	unsigned int i, max;
+	unsigned int i, max_count;
 	uint8_t pch_bug_offset = 0;
 
 	if (dump == NULL || desc == NULL)
@@ -708,10 +695,8 @@ int read_ich_descriptors_from_dump(const uint32_t *dump, unsigned int len, struc
 		return ICH_RET_OOB;
 
 	for (i = 0; i < desc->upper.VTL/2; i++) {
-		desc->upper.vscc_table[i].JID  =
-				 dump[(getVTBA(&desc->upper) >> 2) + i * 2 + 0];
-		desc->upper.vscc_table[i].VSCC =
-				 dump[(getVTBA(&desc->upper) >> 2) + i * 2 + 1];
+		desc->upper.vscc_table[i].JID  = dump[(getVTBA(&desc->upper) >> 2) + i * 2 + 0];
+		desc->upper.vscc_table[i].VSCC = dump[(getVTBA(&desc->upper) >> 2) + i * 2 + 1];
 	}
 
 	/* MCH/PROC (aka. North) straps */
@@ -719,20 +704,18 @@ int read_ich_descriptors_from_dump(const uint32_t *dump, unsigned int len, struc
 		return ICH_RET_OOB;
 
 	/* limit the range to be written */
-	max = min(sizeof(desc->north.STRPs) / 4, desc->content.MSL);
-	for (i = 0; i < max; i++)
-			desc->north.STRPs[i] =
-				      dump[(getFMSBA(&desc->content) >> 2) + i];
+	max_count = min(sizeof(desc->north.STRPs) / 4, desc->content.MSL);
+	for (i = 0; i < max_count; i++)
+		desc->north.STRPs[i] = dump[(getFMSBA(&desc->content) >> 2) + i];
 
 	/* ICH/PCH (aka. South) straps */
 	if (len < getFISBA(&desc->content) + desc->content.ISL * 4)
 		return ICH_RET_OOB;
 
 	/* limit the range to be written */
-	max = min(sizeof(desc->south.STRPs) / 4, desc->content.ISL);
-	for (i = 0; i < max; i++)
-			desc->south.STRPs[i] =
-				      dump[(getFISBA(&desc->content) >> 2) + i];
+	max_count = min(sizeof(desc->south.STRPs) / 4, desc->content.ISL);
+	for (i = 0; i < max_count; i++)
+		desc->south.STRPs[i] = dump[(getFISBA(&desc->content) >> 2) + i];
 
 	return ICH_RET_OK;
 }
@@ -755,13 +738,12 @@ int getFCBA_component_density(const struct ich_descriptors *desc, uint8_t idx)
 		size_enc = desc->component.comp2_density;
 		break;
 	default:
-		msg_perr("Only ICH SPI component index 0 or 1 are supported "
-			 "yet.\n");
+		msg_perr("Only ICH SPI component index 0 or 1 are supported yet.\n");
 		return 0;
 	}
 	if (size_enc > 5) {
-		msg_perr("Density of ICH SPI component with index %d is "
-			 "invalid. Encoded density is 0x%x.\n", idx, size_enc);
+		msg_perr("Density of ICH SPI component with index %d is invalid. Encoded density is 0x%x.\n",
+			 idx, size_enc);
 		return 0;
 	}
 	return (1 << (19 + size_enc));
@@ -804,8 +786,7 @@ int read_ich_descriptors_via_fdo(void *spibar, struct ich_descriptors *desc)
 		return ICH_RET_ERR;
 	}
 
-	msg_pdbg2("Reading flash descriptors "
-		 "mapped by the chipset via FDOC/FDOD...");
+	msg_pdbg2("Reading flash descriptors mapped by the chipset via FDOC/FDOD...");
 	/* content section */
 	desc->content.FLVALSIG	= read_descriptor_reg(0, 0, spibar);
 	desc->content.FLMAP0	= read_descriptor_reg(0, 1, spibar);
