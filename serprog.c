@@ -69,6 +69,7 @@ static int serprog_shutdown(void *data);
 #define S_CMD_Q_RDNMAXLEN	0x11	/* Query read-n maximum length			*/
 #define S_CMD_S_BUSTYPE		0x12	/* Set used bustype(s).				*/
 #define S_CMD_O_SPIOP		0x13	/* Perform SPI operation.			*/
+#define S_CMD_S_SPI_FREQ	0x14	/* Set SPI clock frequency			*/
 
 static uint16_t sp_device_serbuf_size = 16;
 static uint16_t sp_device_opbuf_size = 300;
@@ -482,6 +483,7 @@ int serprog_init(void)
 	/* Check for the minimum operational set of commands. */
 	if (serprog_buses_supported & BUS_SPI) {
 		uint8_t bt = BUS_SPI;
+		char *spispeed;
 		if (sp_check_commandavail(S_CMD_O_SPIOP) == 0) {
 			msg_perr("Error: SPI operation not supported while the "
 				 "bustype is SPI\n");
@@ -513,6 +515,51 @@ int serprog_init(void)
 			spi_programmer_serprog.max_data_read = v;
 			msg_pdbg(MSGHEADER "Maximum read-n length is %d\n", v);
 		}
+		spispeed = extract_programmer_param("spispeed");
+		if (spispeed && strlen(spispeed)) {
+			uint32_t f_spi_req, f_spi;
+			uint8_t buf[4];
+			char *f_spi_suffix;
+
+			errno = 0;
+			f_spi_req = strtol(spispeed, &f_spi_suffix, 0);
+			if (errno != 0 || spispeed == f_spi_suffix) {
+				msg_perr("Error: Could not convert 'spispeed'.\n");
+				return 1;
+			}
+			if (strlen(f_spi_suffix) == 1) {
+				if (!strcasecmp(f_spi_suffix, "M"))
+					f_spi_req *= 1000000;
+				else if (!strcasecmp(f_spi_suffix, "k"))
+					f_spi_req *= 1000;
+				else {
+					msg_perr("Error: Garbage following 'spispeed' value.\n");
+					return 1;
+				}
+			} else if (strlen(f_spi_suffix) > 1) {
+				msg_perr("Error: Garbage following 'spispeed' value.\n");
+				return 1;
+			}
+
+			buf[0] = (f_spi_req >> (0 * 8)) & 0xFF;
+			buf[1] = (f_spi_req >> (1 * 8)) & 0xFF;
+			buf[2] = (f_spi_req >> (2 * 8)) & 0xFF;
+			buf[3] = (f_spi_req >> (3 * 8)) & 0xFF;
+
+			if (sp_check_commandavail(S_CMD_S_SPI_FREQ) == 0)
+				msg_perr(MSGHEADER "Warning: Setting the SPI clock rate is not supported!\n");
+			else if (sp_docommand(S_CMD_S_SPI_FREQ, 4, buf, 4, buf)
+				 == 0) {
+				f_spi = buf[0];
+				f_spi |= buf[1] << (1 * 8);
+				f_spi |= buf[2] << (2 * 8);
+				f_spi |= buf[3] << (3 * 8);
+				msg_pdbg(MSGHEADER "Requested to set SPI clock frequency to %u Hz. "
+					 "It was actually set to %u Hz\n", f_spi_req, f_spi);
+			} else
+				msg_pdbg(MSGHEADER "Setting SPI clock rate to %u Hz failed!\n", f_spi_req);
+		}
+		free(spispeed);
 		bt = serprog_buses_supported;
 		if (sp_docommand(S_CMD_S_BUSTYPE, 1, &bt, 0, NULL))
 			return 1;
