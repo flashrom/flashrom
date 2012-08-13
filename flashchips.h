@@ -187,8 +187,11 @@
 #define ATMEL_AT49F002N		0x07	/* for AT49F002(N)  */
 #define ATMEL_AT49LH002		0xE9
 #define ATMEL_AT49F002NT	0x08	/* for AT49F002(N)T */
+#define ATMEL_AT49F010		0x17	/* Same as AT49HF010 */
 #define ATMEL_AT49F020		0x0B
 #define ATMEL_AT49F040		0x13
+#define ATMEL_AT49F080		0x23
+#define ATMEL_AT49F080T		0x27
 
 /* Bright Microelectronics has the same manufacturer ID as Hyundai... */
 #define BRIGHT_ID		0xAD	/* Bright Microelectronics */
