@@ -277,6 +277,10 @@ int ft2232_spi_init(void)
 		return -3;
 	}
 
+	if (ftdi_set_interface(ftdic, ft2232_interface) < 0) {
+		msg_perr("Unable to select interface: %s\n", ftdic->error_str);
+	}
+
 	f = ftdi_usb_open(ftdic, ft2232_vid, ft2232_type);
 
 	if (f < 0 && f != -5) {
@@ -289,11 +293,6 @@ int ft2232_spi_init(void)
 		msg_pdbg("FTDI chip type %d is not high-speed\n",
 			ftdic->type);
 		clock_5x = 0;
-	}
-
-	if (ftdi_set_interface(ftdic, ft2232_interface) < 0) {
-		msg_perr("Unable to select interface: %s\n",
-				ftdic->error_str);
 	}
 
 	if (ftdi_usb_reset(ftdic) < 0) {
