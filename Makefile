@@ -26,6 +26,9 @@ PROGRAM = flashrom
 # If you want to cross-compile, just run e.g.
 # make CC=i586-pc-msdosdjgpp-gcc
 # You may have to specify STRIP/AR/RANLIB as well.
+#
+# Note for anyone editing this Makefile: gnumake will happily ignore any
+# changes in this Makefile to variables set on the command line.
 CC      ?= gcc
 STRIP   ?= strip
 INSTALL = install
@@ -83,7 +86,7 @@ ifeq ($(TARGET_OS), DOS)
 EXEC_SUFFIX := .exe
 CPPFLAGS += -I../libgetopt
 # DJGPP has odd uint*_t definitions which cause lots of format string warnings.
-CPPFLAGS += -Wno-format
+CFLAGS += -Wno-format
 # FIXME Check if we can achieve the same effect with -L../libgetopt -lgetopt
 LIBS += ../libgetopt/libgetopt.a
 # Bus Pirate, Serprog and PonyProg are not supported under DOS (missing serial support).
@@ -119,7 +122,7 @@ endif
 ifeq ($(TARGET_OS), MinGW)
 EXEC_SUFFIX := .exe
 # MinGW doesn't have the ffs() function, but we can use gcc's __builtin_ffs().
-CFLAGS += -Dffs=__builtin_ffs
+CPPFLAGS += -Dffs=__builtin_ffs
 # libusb-win32/libftdi stuff is usually installed in /usr/local.
 CPPFLAGS += -I/usr/local/include
 LDFLAGS += -L/usr/local/lib
