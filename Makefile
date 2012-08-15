@@ -122,7 +122,7 @@ endif
 ifeq ($(TARGET_OS), MinGW)
 EXEC_SUFFIX := .exe
 # MinGW doesn't have the ffs() function, but we can use gcc's __builtin_ffs().
-CPPFLAGS += -Dffs=__builtin_ffs
+FLASHROM_CFLAGS += -Dffs=__builtin_ffs
 # libusb-win32/libftdi stuff is usually installed in /usr/local.
 CPPFLAGS += -I/usr/local/include
 LDFLAGS += -L/usr/local/lib
@@ -201,7 +201,7 @@ endif
 endif
 
 ifeq ($(TARGET_OS), libpayload)
-CPPFLAGS += -DSTANDALONE
+FLASHROM_CFLAGS += -DSTANDALONE
 ifeq ($(CONFIG_DUMMY), yes)
 UNSUPPORTED_FEATURES += CONFIG_DUMMY=yes
 else
@@ -603,7 +603,7 @@ libflashrom.a: $(LIBFLASHROM_OBJS)
 TAROPTIONS = $(shell LC_ALL=C tar --version|grep -q GNU && echo "--owner=root --group=root")
 
 %.o: %.c .features
-	$(CC) -MMD $(CFLAGS) $(CPPFLAGS) $(FEATURE_CFLAGS) $(SVNDEF) -o $@ -c $<
+	$(CC) -MMD $(CFLAGS) $(CPPFLAGS) $(FLASHROM_CFLAGS) $(FEATURE_CFLAGS) $(SVNDEF) -o $@ -c $<
 
 # Make sure to add all names of generated binaries here.
 # This includes all frontends and libflashrom.
