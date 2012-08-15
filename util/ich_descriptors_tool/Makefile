@@ -30,10 +30,10 @@ CFLAGS += -Werror
 endif
 
 
-CPPFLAGS += -MMD -MP -MF $(DEPPATH)/$(@F).d
+FLASHROM_CFLAGS += -MMD -MP -MF $(DEPPATH)/$(@F).d
 # enables functions that populate the descriptor structs from plain binary dumps
-CPPFLAGS += -D ICH_DESCRIPTORS_FROM_DUMP
-CPPFLAGS += $(patsubst %,-I%,$(EXTRAINCDIRS))
+FLASHROM_CFLAGS += -D ICH_DESCRIPTORS_FROM_DUMP
+FLASHROM_CFLAGS += $(patsubst %,-I%,$(EXTRAINCDIRS))
 
 OBJ = $(OBJATH)/$(SRC:%.c=%.o)
 
@@ -42,15 +42,15 @@ SHAREDOBJ = $(OBJATH)/$(notdir $(SHAREDSRC:%.c=%.o))
 all:$(PROGRAM)$(EXEC_SUFFIX)
 
 $(OBJ): $(OBJATH)/%.o : %.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) -o $@ -c $<
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(FLASHROM_CFLAGS) -o $@ -c $<
 
 # this enables us to share source files without simultaneously sharing .o files
 # with flashrom, which would lead to unexpected results (w/o running make clean)
 $(SHAREDOBJ): $(OBJATH)/%.o : $(SHAREDSRCDIR)/%.c
-	$(CC) $(CFLAGS) $(CPPFLAGS) -o $@ -c $<
+	$(CC) $(CFLAGS) $(CPPFLAGS) $(FLASHROM_CFLAGS) -o $@ -c $<
 
 $(PROGRAM)$(EXEC_SUFFIX): $(OBJ) $(SHAREDOBJ)
-	$(CC) -o $(PROGRAM)$(EXEC_SUFFIX) $(OBJ) $(SHAREDOBJ)
+	$(CC) $(LDFLAGS) -o $(PROGRAM)$(EXEC_SUFFIX) $(OBJ) $(SHAREDOBJ)
 
 clean:
 	rm -f $(PROGRAM) $(PROGRAM).exe
