@@ -1012,12 +1012,11 @@ int probe_flash(struct registered_programmer *pgm, int startchip,
 					  "work, but to support all possible "
 					  "features");
 
-			msg_cinfo(" we need to add them manually.\nYou "
-				  "can help us by mailing us the output of "
-				  "the following command to flashrom@flashrom."
-				  "org: \n'flashrom -VV [plus the "
-				  "-p/--programmer parameter (if needed)]"
-				  "'\nThanks for your help!\n"
+			msg_cinfo(" we need to add them manually.\n"
+				  "You can help us by mailing us the output of the following command to "
+				  "flashrom@flashrom.org:\n"
+				  "'flashrom -VV [plus the -p/--programmer parameter]'\n"
+				  "Thanks for your help!\n"
 				  "===\n");
 		}
 
@@ -1814,11 +1813,16 @@ int doit(struct flashctx *flash, int force, const char *filename, int read_it,
 		}
 
 #if CONFIG_INTERNAL == 1
-		if (programmer == PROGRAMMER_INTERNAL)
-			if (show_id(newcontents, size)) {
+		if (programmer == PROGRAMMER_INTERNAL && cb_check_image(newcontents, size) < 0) {
+			if (force_boardmismatch) {
+				msg_pinfo("Proceeding anyway because user forced us to.\n");
+			} else {
+				msg_perr("Aborting. You can override this with "
+					 "-p internal:boardmismatch=force.\n");
 				ret = 1;
 				goto out;
 			}
+		}
 #endif
 	}
 

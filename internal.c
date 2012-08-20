@@ -169,6 +169,10 @@ int internal_init(void)
 #endif
 	int force_laptop = 0;
 	int not_a_laptop = 0;
+	const char *board_vendor = NULL;
+	const char *board_model = NULL;
+	const char *cb_vendor = NULL;
+	const char *cb_model = NULL;
 	char *arg;
 
 	arg = extract_programmer_param("boardenable");
@@ -217,7 +221,10 @@ int internal_init(void)
 
 	arg = extract_programmer_param("mainboard");
 	if (arg && strlen(arg)) {
-		lb_vendor_dev_from_string(arg);
+		if (board_parse_parameter(arg, &board_vendor, &board_model)) {
+			free(arg);
+			return 1;
+		}
 	} else if (arg && !strlen(arg)) {
 		msg_perr("Missing argument for mainboard.\n");
 		free(arg);
@@ -249,10 +256,20 @@ int internal_init(void)
 	}
 
 #if defined(__i386__) || defined(__x86_64__)
-	/* We look at the cbtable first to see if we need a
-	 * mainboard specific flash enable sequence.
-	 */
-	coreboot_init();
+	if (cb_parse_table(&cb_vendor, &cb_model) == 0) { /* coreboot IDs valid */
+		/* If no -p internal:mainboard was given but there are valid coreboot IDs then use those. */
+		if (board_vendor == NULL || board_model == NULL) {
+			board_vendor = cb_vendor;
+			board_model = cb_model;
+		} else if (strcasecmp(board_vendor, cb_vendor) || strcasecmp(board_model, cb_model)) {
+			msg_pinfo("WARNING: The mainboard IDs set by -p internal:mainboard (%s:%s) do not\n"
+				  "         match the current coreboot IDs of the mainboard (%s:%s).\n",
+				  board_vendor, board_model, cb_vendor, cb_model);
+			if (!force_boardmismatch)
+				return 1;
+			msg_pinfo("Continuing anyway.\n");
+		}
+	}
 
 	dmi_init();
 
@@ -321,11 +338,13 @@ int internal_init(void)
 	init_superio_ite();
 #endif
 
-	board_flash_enable(lb_vendor, lb_part);
+	if (board_flash_enable(board_vendor, board_model)) {
+		msg_perr("Aborting to be safe.\n");
+		return 1;
+	}
 
 	/* Even if chipset init returns an error code, we don't want to abort.
 	 * The error code might have been a warning only.
-	 * Besides that, we don't check the board enable return code either.
 	 */
 #if defined(__i386__) || defined(__x86_64__) || defined (__mips)
 	register_par_programmer(&par_programmer_internal, internal_buses_supported);

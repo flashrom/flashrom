@@ -246,6 +246,7 @@ void print_supported_pcidevs(const struct pcidev_status *devs);
 
 #if CONFIG_INTERNAL == 1
 /* board_enable.c */
+int board_parse_parameter(const char *boardstring, const char **vendor, const char **model);
 void w836xx_ext_enter(uint16_t port);
 void w836xx_ext_leave(uint16_t port);
 void probe_superio_winbond(void);
@@ -255,7 +256,7 @@ void sio_write(uint16_t port, uint8_t reg, uint8_t data);
 void sio_mask(uint16_t port, uint8_t reg, uint8_t data, uint8_t mask);
 void board_handle_before_superio(void);
 void board_handle_before_laptop(void);
-int board_flash_enable(const char *vendor, const char *part);
+int board_flash_enable(const char *vendor, const char *model);
 
 /* chipset_enable.c */
 int chipset_flash_enable(void);
@@ -273,11 +274,8 @@ int setup_cpu_msr(int cpu);
 void cleanup_cpu_msr(void);
 
 /* cbtable.c */
-void lb_vendor_dev_from_string(const char *boardstring);
-int show_id(uint8_t *bios, int size);
-int coreboot_init(void);
-extern char *lb_part, *lb_vendor;
-extern int partvendor_from_cbtable;
+int cb_parse_table(const char **vendor, const char **model);
+int cb_check_image(uint8_t *bios, int size);
 
 /* dmi.c */
 extern int has_dmi_support;
