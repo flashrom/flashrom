@@ -25,6 +25,7 @@
  */
 
 #include <string.h>
+#include <stdlib.h>
 #include "flash.h"
 #include "programmer.h"
 #include "hwaccess.h"
@@ -2443,41 +2444,64 @@ const struct board_match board_matches[] = {
 	{     0,      0,      0,      0,       0,      0,      0,      0, NULL,         NULL, NULL,           P3, NULL,          NULL,                    0,   NT, NULL}, /* end marker */
 };
 
-/*
- * Match boards on coreboot table gathered vendor and part name.
- * Require main PCI IDs to match too as extra safety.
+/* Parse the <vendor>:<board> string specified by the user as part of -p internal:mainboard=<vendor>:<board>.
+ * Parameters vendor and model will be overwritten. Returns 0 on success.
+ * Note: strtok modifies the original string, so we work on a copy and allocate memory for the results.
  */
-static const struct board_match *board_match_cbname(const char *vendor,
-						    const char *part)
+int board_parse_parameter(const char *boardstring, const char **vendor, const char **model)
+{
+	/* strtok may modify the original string. */
+	char *tempstr = strdup(boardstring);
+	char *tempstr2 = NULL;
+	strtok(tempstr, ":");
+	tempstr2 = strtok(NULL, ":");
+	if (tempstr == NULL || tempstr2 == NULL) {
+		free(tempstr);
+		msg_pinfo("Please supply the board vendor and model name with the "
+			  "-p internal:mainboard=<vendor>:<model> option.\n");
+		return 1;
+	}
+	*vendor = strdup(tempstr);
+	*model = strdup(tempstr2);
+	msg_pspew("-p internal:mainboard: vendor=\"%s\", model=\"%s\"\n", tempstr, tempstr2);
+	free(tempstr);
+	return 0;
+}
+
+/*
+ * Match boards on vendor and model name.
+ * Hint: the parameters can come either from the coreboot table or the command line (i.e. the user).
+ * Require main PCI IDs to match too as extra safety.
+ * vendor and model must be non-NULL!
+ */
+static const struct board_match *board_match_name(const char *vendor, const char *model)
 {
 	const struct board_match *board = board_matches;
 	const struct board_match *partmatch = NULL;
 
 	for (; board->vendor_name; board++) {
-		if (vendor && (!board->lb_vendor
-			       || strcasecmp(board->lb_vendor, vendor)))
+		if (!board->lb_vendor || strcasecmp(board->lb_vendor, vendor))
 			continue;
 
-		if (!board->lb_part || strcasecmp(board->lb_part, part))
+		if (!board->lb_part || strcasecmp(board->lb_part, model))
 			continue;
 
-		if (!pci_dev_find(board->first_vendor, board->first_device))
+		if (!pci_dev_find(board->first_vendor, board->first_device)) {
+			msg_pdbg("Odd. Board name \"%s\":\"%s\" matches, but first PCI device %04x:%04x "
+				 "doesn't.\n", vendor, model, board->first_vendor, board->first_device);
 			continue;
+		}
 
-		if (board->second_vendor &&
-		    !pci_dev_find(board->second_vendor, board->second_device))
+		if (!pci_dev_find(board->second_vendor, board->second_device)) {
+			msg_pdbg("Odd. Board name \"%s\":\"%s\" matches, but second PCI device %04x:%04x "
+				 "doesn't.\n", vendor, model, board->second_vendor, board->second_device);
 			continue;
-
-		if (vendor)
-			return board;
+		}
 
 		if (partmatch) {
-			/* a second entry has a matching part name */
-			msg_pinfo("AMBIGUOUS BOARD NAME: %s\n", part);
-			msg_pinfo("At least vendors '%s' and '%s' match.\n",
-				  partmatch->lb_vendor, board->lb_vendor);
-			msg_perr("Please use the full -p internal:mainboard="
-				 "vendor:part syntax.\n");
+			/* More than one entry has a matching name. */
+			msg_perr("Board name \"%s\":\"%s\" and PCI IDs matched more than one board enable "
+				 "entry. Please report a bug at flashrom@flashrom.org\n", vendor, model);
 			return NULL;
 		}
 		partmatch = board;
@@ -2486,15 +2510,7 @@ static const struct board_match *board_match_cbname(const char *vendor,
 	if (partmatch)
 		return partmatch;
 
-	if (!partvendor_from_cbtable) {
-		/* Only warn if the mainboard type was not gathered from the
-		 * coreboot table. If it was, the coreboot implementor is
-		 * expected to fix flashrom, too.
-		 */
-		msg_perr("\nUnknown vendor:board from -p internal:mainboard="
-			 " programmer parameter:\n%s:%s\n\n",
-			 vendor, part);
-	}
+	msg_perr("No suitable board enable found for vendor=\"%s\", model=\"%s\".\n", vendor, model);
 	return NULL;
 }
 
@@ -2534,9 +2550,10 @@ const static struct board_match *board_match_pci_ids(enum board_match_phase phas
 
 		if (board->dmi_pattern) {
 			if (!has_dmi_support) {
-				msg_perr("WARNING: Can't autodetect %s %s,"
-					 " DMI info unavailable.\n",
+				msg_perr("WARNING: Can't autodetect %s %s, DMI info unavailable.\n",
 					 board->vendor_name, board->board_name);
+				msg_pinfo("Please supply the board vendor and model name with the "
+					  "-p internal:mainboard=<vendor>:<model> option.\n");
 				continue;
 			} else {
 				if (!dmi_match(board->dmi_pattern))
@@ -2550,7 +2567,7 @@ const static struct board_match *board_match_pci_ids(enum board_match_phase phas
 	return NULL;
 }
 
-static int unsafe_board_handler(const struct board_match *board)
+static int board_enable_safetycheck(const struct board_match *board)
 {
 	if (!board)
 		return 1;
@@ -2559,18 +2576,15 @@ static int unsafe_board_handler(const struct board_match *board)
 		return 0;
 
 	if (!force_boardenable) {
-		msg_pinfo("WARNING: Your mainboard is %s %s, but the mainboard-specific\n"
-			  "code has not been tested, and thus will not be executed by default.\n"
-			  "Depending on your hardware environment, erasing, writing or even probing\n"
-			  "can fail without running the board specific code.\n\n"
+		msg_pinfo("WARNING: The mainboard-specific code for %s %s has not been tested,\n"
+			  "and thus will not be executed by default. Depending on your hardware,\n"
+			  "erasing, writing or even probing can fail without running this code.\n\n"
 			  "Please see the man page (section PROGRAMMER SPECIFIC INFO, subsection\n"
-			  "\"internal programmer\") for details.\n",
-			  board->vendor_name, board->board_name);
+			  "\"internal programmer\") for details.\n", board->vendor_name, board->board_name);
 		return 1;
 	}
 	msg_pinfo("NOTE: Running an untested board enable procedure.\n"
-		  "Please report success/failure to flashrom@flashrom.org\n"
-		  "with your board name and SUCCESS or FAILURE in the subject.\n");
+		  "Please report success/failure to flashrom@flashrom.org.\n");
 	return 0;
 }
 
@@ -2581,10 +2595,10 @@ static int board_handle_phase(enum board_match_phase phase)
 
 	board = board_match_pci_ids(phase);
 
-	if (unsafe_board_handler(board))
-		board = NULL;
-
 	if (!board)
+		return 0;
+
+	if (board_enable_safetycheck(board))
 		return 0;
 
 	if (!board->enable) {
@@ -2606,36 +2620,37 @@ void board_handle_before_laptop(void)
 	board_handle_phase(P2);
 }
 
-int board_flash_enable(const char *vendor, const char *part)
+int board_flash_enable(const char *vendor, const char *model)
 {
 	const struct board_match *board = NULL;
 	int ret = 0;
 
-	if (part)
-		board = board_match_cbname(vendor, part);
-
-	if (!board)
+	if (vendor && model) {
+		board = board_match_name(vendor, model);
+		if (!board) /* if a board was given it has to match, else we abort here. */
+			return 1;
+	} else {
 		board = board_match_pci_ids(P3);
+		if (!board) /* i.e. there is just no board enable available for this board */
+			return 0;
+	}
 
-	if (unsafe_board_handler(board))
-		board = NULL;
+	if (board_enable_safetycheck(board))
+		return 1;
 
-	if (board) {
-		if (board->max_rom_decode_parallel)
-			max_rom_decode.parallel =
-				board->max_rom_decode_parallel * 1024;
+	/* limit the maximum size of the parallel bus */
+	if (board->max_rom_decode_parallel)
+		max_rom_decode.parallel = board->max_rom_decode_parallel * 1024;
 
-		if (board->enable != NULL) {
-			msg_pinfo("Disabling flash write protection for "
-				  "board \"%s %s\"... ", board->vendor_name,
-				  board->board_name);
+	if (board->enable != NULL) {
+		msg_pinfo("Enabling full flash access for board \"%s %s\"... ",
+			  board->vendor_name, board->board_name);
 
-			ret = board->enable();
-			if (ret)
-				msg_pinfo("FAILED!\n");
-			else
-				msg_pinfo("OK.\n");
-		}
+		ret = board->enable();
+		if (ret)
+			msg_pinfo("FAILED!\n");
+		else
+			msg_pinfo("OK.\n");
 	}
 
 	return ret;
