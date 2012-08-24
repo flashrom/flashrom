@@ -558,7 +558,7 @@ enum ich_chipset {
 extern uint32_t ichspi_bbar;
 int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 		 enum ich_chipset ich_generation);
-int via_init_spi(struct pci_dev *dev);
+int via_init_spi(struct pci_dev *dev, uint32_t mmio_base);
 
 /* it85spi.c */
 int it85xx_spi_init(struct superio s);

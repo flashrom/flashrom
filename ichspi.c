@@ -1844,14 +1844,12 @@ static const struct spi_programmer spi_programmer_via = {
 	.write_aai = default_spi_write_aai,
 };
 
-int via_init_spi(struct pci_dev *dev)
+int via_init_spi(struct pci_dev *dev, uint32_t mmio_base)
 {
-	uint32_t mmio_base;
 	int i;
 
-	mmio_base = (pci_read_long(dev, 0xbc)) << 8;
-	msg_pdbg("MMIO base at = 0x%x\n", mmio_base);
-	ich_spibar = physmap("VT8237S MMIO registers", mmio_base, 0x70);
+	ich_spibar = physmap("VIA SPI MMIO registers", mmio_base, 0x70);
+	/* Do we really need no write enable? Like the LPC one at D17F0 0x40 */
 
 	/* Not sure if it speaks all these bus protocols. */
 	internal_buses_supported = BUS_LPC | BUS_FWH;
