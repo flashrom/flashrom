@@ -6,6 +6,7 @@
  * Copyright (C) 2006 Uwe Hermann <uwe@hermann-uwe.de>
  * Copyright (C) 2007,2008,2009 Carl-Daniel Hailfinger
  * Copyright (C) 2009 Kontron Modular Computers GmbH
+ * Copyright (C) 2011, 2012 Stefan Tauner
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -508,12 +509,6 @@ static int enable_flash_tunnelcreek(struct pci_dev *dev, const char *name)
 	return ret;
 }
 
-static int enable_flash_vt8237s_spi(struct pci_dev *dev, const char *name)
-{
-	/* Do we really need no write enable? */
-	return via_init_spi(dev);
-}
-
 static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
 				   enum ich_chipset ich_generation)
 {
@@ -681,7 +676,7 @@ static int enable_flash_vt823x(struct pci_dev *dev, const char *name)
 		return -1;
 	}
 
-	if (dev->device_id == 0x3227) { /* VT8237R */
+	if (dev->device_id == 0x3227) { /* VT8237/VT8237R */
 		/* All memory cycles, not just ROM ones, go to LPC. */
 		val = pci_read_byte(dev, 0x59);
 		val &= ~0x80;
@@ -689,6 +684,69 @@ static int enable_flash_vt823x(struct pci_dev *dev, const char *name)
 	}
 
 	return 0;
+}
+
+static int enable_flash_vt_vx(struct pci_dev *dev, const char *name)
+{
+	struct pci_dev *south_north = pci_dev_find(0x1106, 0xa353);
+	if (south_north == NULL) {
+		msg_perr("Could not find South-North Module Interface Control device!\n");
+		return ERROR_FATAL;
+	}
+
+	msg_pdbg("Strapped to ");
+	if ((pci_read_byte(south_north, 0x56) & 0x01) == 0) {
+		msg_pdbg("LPC.\n");
+		return enable_flash_vt823x(dev, name);
+	}
+	msg_pdbg("SPI.\n");
+
+	uint32_t mmio_base;
+	void *mmio_base_physmapped;
+	uint32_t spi_cntl;
+	#define SPI_CNTL_LEN 0x08
+	uint32_t spi0_mm_base = 0;
+	switch(dev->device_id) {
+		case 0x8353: /* VX800/VX820 */
+			spi0_mm_base = pci_read_long(dev, 0xbc) << 8;
+			break;
+		case 0x8409: /* VX855/VX875 */
+		case 0x8410: /* VX900 */
+			mmio_base = pci_read_long(dev, 0xbc) << 8;
+			mmio_base_physmapped = physmap("VIA VX MMIO register", mmio_base, SPI_CNTL_LEN);
+			if (mmio_base_physmapped == ERROR_PTR) {
+				physunmap(mmio_base_physmapped, SPI_CNTL_LEN);
+				return ERROR_FATAL;
+			}
+
+			/* Offset 0 - Bit 0 holds SPI Bus0 Enable Bit. */
+			spi_cntl = mmio_readl(mmio_base_physmapped) + 0x00;
+			if ((spi_cntl & 0x01) == 0) {
+				msg_pdbg ("SPI Bus0 disabled!\n");
+				physunmap(mmio_base_physmapped, SPI_CNTL_LEN);
+				return ERROR_FATAL;
+			}
+			/* Offset 1-3 has  SPI Bus Memory Map Base Address: */
+			spi0_mm_base = spi_cntl & 0xFFFFFF00;
+
+			/* Offset 4 - Bit 0 holds SPI Bus1 Enable Bit. */
+			spi_cntl = mmio_readl(mmio_base_physmapped) + 0x04;
+			if ((spi_cntl & 0x01) == 1)
+				msg_pdbg2("SPI Bus1 is enabled too.\n");
+
+			physunmap(mmio_base_physmapped, SPI_CNTL_LEN);
+			break;
+		default:
+			msg_perr("%s: Unsupported chipset %x:%x!\n", __func__, dev->vendor_id, dev->device_id);
+			return ERROR_FATAL;
+	}
+
+	return via_init_spi(dev, spi0_mm_base);
+}
+
+static int enable_flash_vt8237s_spi(struct pci_dev *dev, const char *name)
+{
+	return via_init_spi(dev, pci_read_long(dev, 0xbc) << 8);
 }
 
 static int enable_flash_cs5530(struct pci_dev *dev, const char *name)
@@ -1266,13 +1324,14 @@ const struct penable chipset_enables[] = {
 	{0x1106, 0x3074, OK, "VIA", "VT8233",		enable_flash_vt823x},
 	{0x1106, 0x3147, OK, "VIA", "VT8233A",		enable_flash_vt823x},
 	{0x1106, 0x3177, OK, "VIA", "VT8235",		enable_flash_vt823x},
-	{0x1106, 0x3227, OK, "VIA", "VT8237",		enable_flash_vt823x},
+	{0x1106, 0x3227, OK, "VIA", "VT8237(R)",	enable_flash_vt823x},
 	{0x1106, 0x3337, OK, "VIA", "VT8237A",		enable_flash_vt823x},
 	{0x1106, 0x3372, OK, "VIA", "VT8237S",		enable_flash_vt8237s_spi},
 	{0x1106, 0x8231, NT, "VIA", "VT8231",		enable_flash_vt823x},
 	{0x1106, 0x8324, OK, "VIA", "CX700",		enable_flash_vt823x},
-	{0x1106, 0x8353, OK, "VIA", "VX800/VX820",	enable_flash_vt8237s_spi},
-	{0x1106, 0x8409, OK, "VIA", "VX855/VX875",	enable_flash_vt823x},
+	{0x1106, 0x8353, NT, "VIA", "VX800/VX820",	enable_flash_vt_vx},
+	{0x1106, 0x8409, NT, "VIA", "VX855/VX875",	enable_flash_vt_vx},
+	{0x1106, 0x8410, NT, "VIA", "VX900",		enable_flash_vt_vx},
 	{0x1166, 0x0200, OK, "Broadcom", "OSB4",	enable_flash_osb4},
 	{0x1166, 0x0205, OK, "Broadcom", "HT-1000",	enable_flash_ht1000},
 	{0x17f3, 0x6030, OK, "RDC", "R8610/R3210",	enable_flash_rdc_r8610},
