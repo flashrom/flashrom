@@ -81,10 +81,10 @@ struct sfdp_tbl_hdr {
 	uint32_t ptp; /* 24b pointer */
 };
 
-static int sfdp_add_uniform_eraser(struct flashctx *flash, uint8_t opcode, uint32_t block_size)
+static int sfdp_add_uniform_eraser(struct flashchip *chip, uint8_t opcode, uint32_t block_size)
 {
 	int i;
-	uint32_t total_size = flash->total_size * 1024;
+	uint32_t total_size = chip->total_size * 1024;
 	erasefunc_t *erasefn = spi_get_erasefn_from_opcode(opcode);
 
 	if (erasefn == NULL || total_size == 0 || block_size == 0 ||
@@ -95,7 +95,7 @@ static int sfdp_add_uniform_eraser(struct flashctx *flash, uint8_t opcode, uint3
 	}
 
 	for (i = 0; i < NUM_ERASEFUNCTIONS; i++) {
-		struct block_eraser *eraser = &flash->block_erasers[i];
+		struct block_eraser *eraser = &chip->block_erasers[i];
 		/* Check for duplicates (including (some) non-uniform ones). */
 		if (eraser->eraseblocks[0].size == block_size &&
 		    eraser->block_erase == erasefn) {
@@ -125,7 +125,7 @@ static int sfdp_add_uniform_eraser(struct flashctx *flash, uint8_t opcode, uint3
 	return 1;
 }
 
-static int sfdp_fill_flash(struct flashctx *flash, uint8_t *buf, uint16_t len)
+static int sfdp_fill_flash(struct flashchip *chip, uint8_t *buf, uint16_t len)
 {
 	uint8_t opcode_4k_erase = 0xFF;
 	uint32_t tmp32;
@@ -170,28 +170,28 @@ static int sfdp_fill_flash(struct flashctx *flash, uint8_t *buf, uint16_t len)
 		msg_cdbg2("volatile and writes to the status register have to "
 			  "be enabled with ");
 		if (tmp32 & (1 << 4)) {
-			flash->feature_bits = FEATURE_WRSR_WREN;
+			chip->feature_bits = FEATURE_WRSR_WREN;
 			msg_cdbg2("WREN (0x06).\n");
 		} else {
-			flash->feature_bits = FEATURE_WRSR_EWSR;
+			chip->feature_bits = FEATURE_WRSR_EWSR;
 			msg_cdbg2("EWSR (0x50).\n");
 		}
 	} else {
 		msg_cdbg2("non-volatile and the standard does not allow "
 			  "vendors to tell us whether EWSR/WREN is needed for "
 			  "status register writes - assuming EWSR.\n");
-			flash->feature_bits = FEATURE_WRSR_EWSR;
+			chip->feature_bits = FEATURE_WRSR_EWSR;
 		}
 
 	msg_cdbg2("  Write chunk size is ");
 	if (tmp32 & (1 << 2)) {
 		msg_cdbg2("at least 64 B.\n");
-		flash->page_size = 64;
-		flash->write = spi_chip_write_256;
+		chip->page_size = 64;
+		chip->write = spi_chip_write_256;
 	} else {
 		msg_cdbg2("1 B only.\n");
-		flash->page_size = 256;
-		flash->write = spi_chip_write_1;
+		chip->page_size = 256;
+		chip->write = spi_chip_write_1;
 	}
 
 	if ((tmp32 & 0x3) == 0x1) {
@@ -212,8 +212,8 @@ static int sfdp_fill_flash(struct flashctx *flash, uint8_t *buf, uint16_t len)
 		return 1;
 	}
 	total_size = ((tmp32 & 0x7FFFFFFF) + 1) / 8;
-	flash->total_size = total_size / 1024;
-	msg_cdbg2("  Flash chip size is %d kB.\n", flash->total_size);
+	chip->total_size = total_size / 1024;
+	msg_cdbg2("  Flash chip size is %d kB.\n", chip->total_size);
 	if (total_size > (1 << 24)) {
 		msg_cdbg("Flash chip size is bigger than what 3-Byte addressing "
 			 "can access.\n");
@@ -221,7 +221,7 @@ static int sfdp_fill_flash(struct flashctx *flash, uint8_t *buf, uint16_t len)
 	}
 
 	if (opcode_4k_erase != 0xFF)
-		sfdp_add_uniform_eraser(flash, opcode_4k_erase, 4 * 1024);
+		sfdp_add_uniform_eraser(chip, opcode_4k_erase, 4 * 1024);
 
 	/* FIXME: double words 3-7 contain unused fast read information */
 
@@ -252,7 +252,7 @@ static int sfdp_fill_flash(struct flashctx *flash, uint8_t *buf, uint16_t len)
 		tmp8 = buf[(4 * 7) + (j * 2) + 1];
 		msg_cspew("   Erase Sector Type %d Opcode: 0x%02x\n", j + 1,
 			  tmp8);
-		sfdp_add_uniform_eraser(flash, tmp8, block_size);
+		sfdp_add_uniform_eraser(chip, tmp8, block_size);
 	}
 
 done:
@@ -381,7 +381,7 @@ int probe_spi_sfdp(struct flashctx *flash)
 				msg_cdbg("Length of the mandatory JEDEC SFDP "
 					 "parameter table is wrong (%d B), "
 					 "skipping it.\n", len);
-			} else if (sfdp_fill_flash(flash, tbuf, len) == 0)
+			} else if (sfdp_fill_flash(flash->chip, tbuf, len) == 0)
 				ret = 1;
 		}
 		free(tbuf);

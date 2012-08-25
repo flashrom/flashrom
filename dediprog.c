@@ -381,7 +381,7 @@ static int dediprog_spi_write(struct flashctx *flash, uint8_t *buf,
 			      unsigned int start, unsigned int len, uint8_t dedi_spi_cmd)
 {
 	int ret;
-	const unsigned int chunksize = flash->page_size;
+	const unsigned int chunksize = flash->chip->page_size;
 	unsigned int residue = start % chunksize ? chunksize - start % chunksize : 0;
 	unsigned int bulklen;
 

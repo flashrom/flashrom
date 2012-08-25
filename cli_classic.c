@@ -109,8 +109,8 @@ int main(int argc, char *argv[])
 {
 	unsigned long size;
 	/* Probe for up to three flash chips. */
-	const struct flashchip *flash;
-	struct flashctx flashes[3];
+	const struct flashchip *chip = NULL;
+	struct flashctx flashes[3] = {{0}};
 	struct flashctx *fill_flash;
 	const char *name;
 	int namelen, opt, i, j;
@@ -389,17 +389,16 @@ int main(int argc, char *argv[])
 	}
 	/* Does a chip with the requested name exist in the flashchips array? */
 	if (chip_to_probe) {
-		for (flash = flashchips; flash && flash->name; flash++)
-			if (!strcmp(flash->name, chip_to_probe))
+		for (chip = flashchips; chip && chip->name; chip++)
+			if (!strcmp(chip->name, chip_to_probe))
 				break;
-		if (!flash || !flash->name) {
+		if (!chip || !chip->name) {
 			msg_cerr("Error: Unknown chip '%s' specified.\n", chip_to_probe);
 			msg_gerr("Run flashrom -L to view the hardware supported in this flashrom version.\n");
 			ret = 1;
 			goto out;
 		}
-		/* Clean up after the check. */
-		flash = NULL;
+		/* Keep chip around for later usage in case a forced read is requested. */
 	}
 
 	if (prog == PROGRAMMER_INVALID) {
@@ -419,16 +418,13 @@ int main(int argc, char *argv[])
 		goto out_shutdown;
 	}
 	tempstr = flashbuses_to_text(get_buses_supported());
-	msg_pdbg("The following protocols are supported: %s.\n",
-		 tempstr);
+	msg_pdbg("The following protocols are supported: %s.\n", tempstr);
 	free(tempstr);
 
 	for (j = 0; j < registered_programmer_count; j++) {
 		startchip = 0;
 		while (chipcount < ARRAY_SIZE(flashes)) {
-			startchip = probe_flash(&registered_programmers[j],
-						startchip, 
-						&flashes[chipcount], 0);
+			startchip = probe_flash(&registered_programmers[j], startchip, &flashes[chipcount], 0);
 			if (startchip == -1)
 				break;
 			chipcount++;
@@ -437,9 +433,9 @@ int main(int argc, char *argv[])
 	}
 
 	if (chipcount > 1) {
-		msg_cinfo("Multiple flash chips were detected: \"%s\"", flashes[0].name);
+		msg_cinfo("Multiple flash chips were detected: \"%s\"", flashes[0].chip->name);
 		for (i = 1; i < chipcount; i++)
-			msg_cinfo(", \"%s\"", flashes[i].name);
+			msg_cinfo(", \"%s\"", flashes[i].chip->name);
 		msg_cinfo("\nPlease specify which chip to use with the -c <chipname> option.\n");
 		ret = 1;
 		goto out_shutdown;
@@ -456,8 +452,14 @@ int main(int argc, char *argv[])
 			/* This loop just counts compatible controllers. */
 			for (j = 0; j < registered_programmer_count; j++) {
 				pgm = &registered_programmers[j];
-				if (pgm->buses_supported & flashes[0].bustype)
+				/* chip is still set from the chip_to_probe earlier in this function. */
+				if (pgm->buses_supported & chip->bustype)
 					compatible_programmers++;
+			}
+			if (!compatible_programmers) {
+				msg_cinfo("No compatible controller found for the requested flash chip.\n");
+				ret = 1;
+				goto out_shutdown;
 			}
 			if (compatible_programmers > 1)
 				msg_cinfo("More than one compatible controller found for the requested flash "
@@ -469,6 +471,7 @@ int main(int argc, char *argv[])
 					break;
 			}
 			if (startchip == -1) {
+				// FIXME: This should never happen! Ask for a bug report?
 				msg_cinfo("Probing for flash chip '%s' failed.\n", chip_to_probe);
 				ret = 1;
 				goto out_shutdown;
@@ -481,19 +484,18 @@ int main(int argc, char *argv[])
 		goto out_shutdown;
 	} else if (!chip_to_probe) {
 		/* repeat for convenience when looking at foreign logs */
-		tempstr = flashbuses_to_text(flashes[0].bustype);
+		tempstr = flashbuses_to_text(flashes[0].chip->bustype);
 		msg_gdbg("Found %s flash chip \"%s\" (%d kB, %s).\n",
-			 flashes[0].vendor, flashes[0].name,
-			 flashes[0].total_size, tempstr);
+			 flashes[0].chip->vendor, flashes[0].chip->name, flashes[0].chip->total_size, tempstr);
 		free(tempstr);
 	}
 
 	fill_flash = &flashes[0];
 
-	check_chip_supported(fill_flash);
+	check_chip_supported(fill_flash->chip);
 
-	size = fill_flash->total_size * 1024;
-	if (check_max_decode(fill_flash->pgm->buses_supported & fill_flash->bustype, size) && (!force)) {
+	size = fill_flash->chip->total_size * 1024;
+	if (check_max_decode(fill_flash->pgm->buses_supported & fill_flash->chip->bustype, size) && (!force)) {
 		msg_cerr("Chip is too big for this programmer (-V gives details). Use --force to override.\n");
 		ret = 1;
 		goto out_shutdown;

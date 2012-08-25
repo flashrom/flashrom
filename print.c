@@ -67,22 +67,22 @@ static void print_supported_chips(void)
 	int maxvendorlen = strlen("Vendor") + 1;
 	int maxchiplen = strlen("Device") + 1;
 	int maxtypelen = strlen("Type") + 1;
-	const struct flashchip *f;
+	const struct flashchip *chip;
 	char *s;
 	char *tmpven, *tmpdev;
 	int tmpvenlen, tmpdevlen, curvenlen, curdevlen;
 
 	/* calculate maximum column widths and by iterating over all chips */
-	for (f = flashchips; f->name != NULL; f++) {
+	for (chip = flashchips; chip->name != NULL; chip++) {
 		/* Ignore generic entries. */
-		if (!strncmp(f->vendor, "Unknown", 7) ||
-		    !strncmp(f->vendor, "Programmer", 10) ||
-		    !strncmp(f->name, "unknown", 7))
+		if (!strncmp(chip->vendor, "Unknown", 7) ||
+		    !strncmp(chip->vendor, "Programmer", 10) ||
+		    !strncmp(chip->name, "unknown", 7))
 			continue;
 		chipcount++;
 
 		/* Find maximum vendor length (respecting line splitting). */
-		tmpven = (char *)f->vendor;
+		tmpven = (char *)chip->vendor;
 		do {
 			/* and take minimum token lengths into account */
 			tmpvenlen = 0;
@@ -100,7 +100,7 @@ static void print_supported_chips(void)
 		} while (1);
 
 		/* same for device name */
-		tmpdev = (char *)f->name;
+		tmpdev = (char *)chip->name;
 		do {
 			tmpdevlen = 0;
 			do {
@@ -115,7 +115,7 @@ static void print_supported_chips(void)
 				break;
 		} while (1);
 
-		s = flashbuses_to_text(f->bustype);
+		s = flashbuses_to_text(chip->bustype);
 		maxtypelen = max(maxtypelen, strlen(s));
 		free(s);
 	}
@@ -162,11 +162,11 @@ static void print_supported_chips(void)
 	msg_ginfo("\n\n");
 	msg_ginfo("(P = PROBE, R = READ, E = ERASE, W = WRITE)\n\n");
 
-	for (f = flashchips; f->name != NULL; f++) {
+	for (chip = flashchips; chip->name != NULL; chip++) {
 		/* Don't print generic entries. */
-		if (!strncmp(f->vendor, "Unknown", 7) ||
-		    !strncmp(f->vendor, "Programmer", 10) ||
-		    !strncmp(f->name, "unknown", 7))
+		if (!strncmp(chip->vendor, "Unknown", 7) ||
+		    !strncmp(chip->vendor, "Programmer", 10) ||
+		    !strncmp(chip->name, "unknown", 7))
 			continue;
 
 		/* support for multiline vendor names:
@@ -179,12 +179,12 @@ static void print_supported_chips(void)
 		 * - after all other values are printed print the surplus tokens
 		 *   on fresh lines
 		 */
-		tmpven = malloc(strlen(f->vendor) + 1);
+		tmpven = malloc(strlen(chip->vendor) + 1);
 		if (tmpven == NULL) {
 			msg_gerr("Out of memory!\n");
 			exit(1);
 		}
-		strcpy(tmpven, f->vendor);
+		strcpy(tmpven, chip->vendor);
 
 		tmpven = strtok(tmpven, delim);
 		msg_ginfo("%s", tmpven);
@@ -203,12 +203,12 @@ static void print_supported_chips(void)
 			msg_ginfo(" ");
 
 		/* support for multiline device names as above */
-		tmpdev = malloc(strlen(f->name) + 1);
+		tmpdev = malloc(strlen(chip->name) + 1);
 		if (tmpdev == NULL) {
 			msg_gerr("Out of memory!\n");
 			exit(1);
 		}
-		strcpy(tmpdev, f->name);
+		strcpy(tmpdev, chip->name);
 
 		tmpdev = strtok(tmpdev, delim);
 		msg_ginfo("%s", tmpdev);
@@ -226,60 +226,60 @@ static void print_supported_chips(void)
 		for (i = curdevlen; i < maxchiplen; i++)
 			msg_ginfo(" ");
 
-		if ((f->tested & TEST_OK_PROBE))
+		if ((chip->tested & TEST_OK_PROBE))
 			msg_ginfo("P");
 		else
 			msg_ginfo(" ");
-		if ((f->tested & TEST_OK_READ))
+		if ((chip->tested & TEST_OK_READ))
 			msg_ginfo("R");
 		else
 			msg_ginfo(" ");
-		if ((f->tested & TEST_OK_ERASE))
+		if ((chip->tested & TEST_OK_ERASE))
 			msg_ginfo("E");
 		else
 			msg_ginfo(" ");
-		if ((f->tested & TEST_OK_WRITE))
+		if ((chip->tested & TEST_OK_WRITE))
 			msg_ginfo("W");
 		else
 			msg_ginfo(" ");
 		for (i = 0; i < border; i++)
 			msg_ginfo(" ");
 
-		if ((f->tested & TEST_BAD_PROBE))
+		if ((chip->tested & TEST_BAD_PROBE))
 			msg_ginfo("P");
 		else
 			msg_ginfo(" ");
-		if ((f->tested & TEST_BAD_READ))
+		if ((chip->tested & TEST_BAD_READ))
 			msg_ginfo("R");
 		else
 			msg_ginfo(" ");
-		if ((f->tested & TEST_BAD_ERASE))
+		if ((chip->tested & TEST_BAD_ERASE))
 			msg_ginfo("E");
 		else
 			msg_ginfo(" ");
-		if ((f->tested & TEST_BAD_WRITE))
+		if ((chip->tested & TEST_BAD_WRITE))
 			msg_ginfo("W");
 		else
 			msg_ginfo(" ");
 		for (i = 0; i < border + 1; i++)
 			msg_ginfo(" ");
 
-		msg_ginfo("%5d", f->total_size);
+		msg_ginfo("%5d", chip->total_size);
 		for (i = 0; i < border; i++)
 			msg_ginfo(" ");
 
-		s = flashbuses_to_text(f->bustype);
+		s = flashbuses_to_text(chip->bustype);
 		msg_ginfo("%s", s);
 		for (i = strlen(s); i < maxtypelen; i++)
 			msg_ginfo(" ");
 		free(s);
 
-		if (f->voltage.min == 0 && f->voltage.max == 0)
+		if (chip->voltage.min == 0 && chip->voltage.max == 0)
 			msg_gdbg("no info");
 		else
 			msg_gdbg("%0.02f;%0.02f",
-				 f->voltage.min/(double)1000,
-				 f->voltage.max/(double)1000);
+				 chip->voltage.min/(double)1000,
+				 chip->voltage.max/(double)1000);
 
 		/* print surplus vendor and device name tokens */
 		while (tmpven != NULL || tmpdev != NULL) {

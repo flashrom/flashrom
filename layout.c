@@ -217,11 +217,11 @@ romlayout_t *get_next_included_romentry(unsigned int start)
 	return best_entry;
 }
 
-int handle_romentries(struct flashctx *flash, uint8_t *oldcontents, uint8_t *newcontents)
+int handle_romentries(const struct flashctx *flash, uint8_t *oldcontents, uint8_t *newcontents)
 {
 	unsigned int start = 0;
 	romlayout_t *entry;
-	unsigned int size = flash->total_size * 1024;
+	unsigned int size = flash->chip->total_size * 1024;
 
 	/* If no regions were specified for inclusion, assume
 	 * that the user wants to write the complete new image.
