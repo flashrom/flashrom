@@ -29,11 +29,11 @@ int probe_w29ee011(struct flashctx *flash)
 	chipaddr bios = flash->virtual_memory;
 	uint8_t id1, id2;
 
-	if (!chip_to_probe || strcmp(chip_to_probe, flash->name)) {
+	if (!chip_to_probe || strcmp(chip_to_probe, flash->chip->name)) {
 		msg_cdbg("Old Winbond W29* probe method disabled because "
 			 "the probing sequence puts the AMIC A49LF040A in "
 			 "a funky state. Use 'flashrom -c %s' if you "
-			 "have a board with such a chip.\n", flash->name);
+			 "have a board with such a chip.\n", flash->chip->name);
 		return 0;
 	}
 
@@ -65,7 +65,7 @@ int probe_w29ee011(struct flashctx *flash)
 
 	msg_cdbg("%s: id1 0x%02x, id2 0x%02x\n", __func__, id1, id2);
 
-	if (id1 == flash->manufacture_id && id2 == flash->model_id)
+	if (id1 == flash->chip->manufacture_id && id2 == flash->chip->model_id)
 		return 1;
 
 	return 0;

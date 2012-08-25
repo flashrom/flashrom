@@ -40,14 +40,14 @@ static void write_lockbits_49fl00x(const struct flashctx *flash,
 
 int unlock_49fl00x(struct flashctx *flash)
 {
-	write_lockbits_49fl00x(flash, flash->total_size * 1024, 0,
-			       flash->page_size);
+	write_lockbits_49fl00x(flash, flash->chip->total_size * 1024, 0,
+			       flash->chip->page_size);
 	return 0;
 }
 
 int lock_49fl00x(struct flashctx *flash)
 {
-	write_lockbits_49fl00x(flash, flash->total_size * 1024, 1,
-			       flash->page_size);
+	write_lockbits_49fl00x(flash, flash->chip->total_size * 1024, 1,
+			       flash->chip->page_size);
 	return 0;
 }
