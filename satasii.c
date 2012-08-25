@@ -20,8 +20,6 @@
 
 /* Datasheets can be found on http://www.siliconimage.com. Great thanks! */
 
-#include <stdlib.h>
-#include "flash.h"
 #include "programmer.h"
 #include "hwaccess.h"
 
@@ -29,7 +27,7 @@
 
 #define SATASII_MEMMAP_SIZE	0x100
 
-uint8_t *sii_bar;
+static uint8_t *sii_bar;
 static uint16_t id;
 
 const struct pcidev_status satas_sii[] = {
@@ -43,10 +41,8 @@ const struct pcidev_status satas_sii[] = {
 	{},
 };
 
-static void satasii_chip_writeb(const struct flashctx *flash, uint8_t val,
-				chipaddr addr);
-static uint8_t satasii_chip_readb(const struct flashctx *flash,
-				  const chipaddr addr);
+static void satasii_chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr);
+static uint8_t satasii_chip_readb(const struct flashctx *flash, const chipaddr addr);
 static const struct par_programmer par_programmer_satasii = {
 		.chip_readb		= satasii_chip_readb,
 		.chip_readw		= fallback_chip_readw,
@@ -85,8 +81,7 @@ int satasii_init(void)
 		reg_offset = 0x50;
 	}
 
-	sii_bar = physmap("SATA SIL registers", addr, SATASII_MEMMAP_SIZE) +
-		  reg_offset;
+	sii_bar = physmap("SATA SiI registers", addr, SATASII_MEMMAP_SIZE) + reg_offset;
 
 	/* Check if ROM cycle are OK. */
 	if ((id != 0x0680) && (!(pci_mmio_readl(sii_bar) & (1 << 26))))
@@ -100,8 +95,7 @@ int satasii_init(void)
 	return 0;
 }
 
-static void satasii_chip_writeb(const struct flashctx *flash, uint8_t val,
-				chipaddr addr)
+static void satasii_chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr)
 {
 	uint32_t ctrl_reg, data_reg;
 
@@ -118,8 +112,7 @@ static void satasii_chip_writeb(const struct flashctx *flash, uint8_t val,
 	while (pci_mmio_readl(sii_bar) & (1 << 25)) ;
 }
 
-static uint8_t satasii_chip_readb(const struct flashctx *flash,
-				  const chipaddr addr)
+static uint8_t satasii_chip_readb(const struct flashctx *flash, const chipaddr addr)
 {
 	uint32_t ctrl_reg;
 
