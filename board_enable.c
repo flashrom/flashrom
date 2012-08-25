@@ -567,6 +567,7 @@ static int w83697xx_memw_enable_2e(void)
 
 /*
  * Suited for:
+ *  - DFI AD77: VIA KT400 + VT8235 + W83697HF
  *  - EPoX EP-8K5A2: VIA KT333 + VT8235
  *  - Albatron PM266A Pro: VIA P4M266A + VT8235
  *  - Shuttle AK31 (all versions): VIA KT266 + VT8233
@@ -2376,6 +2377,7 @@ const struct board_match board_matches[] = {
 	{0x1106, 0x3177, 0x1106, 0x3177,  0x1106, 0x3116, 0x1106, 0x3116, "^KM266-8235$", "biostar", "m7viq",         P3, "Biostar",     "M7VIQ",                 0,   NT, w83697xx_memw_enable_2e},
 	{0x10b7, 0x9055, 0x1028, 0x0082,  0x8086, 0x7190,      0,      0, NULL,         NULL, NULL,           P3, "Dell",        "OptiPlex GX1",          0,   OK, intel_piix4_gpo30_lower},
 	{0x8086, 0x3590, 0x1028, 0x016c,  0x1000, 0x0030, 0x1028, 0x016c, NULL,         NULL, NULL,           P3, "Dell",        "PowerEdge 1850",        0,   OK, intel_ich_gpio23_raise},
+	{0x1106, 0x3189, 0x1106, 0x3189,  0x1106, 0x3177, 0x1106, 0x3177, "^AD77",      "dfi", "ad77",        P3, "DFI",         "AD77",                  0,   NT, w836xx_memw_enable_2e},
 	{0x10de, 0x03ea, 0x1019, 0x2602,  0x10de, 0x03e0, 0x1019, 0x2602, NULL,         NULL, NULL,           P3, "Elitegroup",  "GeForce6100SM-M",       0,   OK, board_ecs_geforce6100sm_m},
 	{0x1106, 0x3038, 0x1019, 0x0996,  0x1106, 0x3177, 0x1019, 0x0996, NULL,         NULL, NULL,           P3, "Elitegroup",  "K7VTA3",                256, OK, NULL},
 	{0x1106, 0x3177, 0x1106, 0x3177,  0x1106, 0x3059, 0x1695, 0x3005, NULL,         NULL, NULL,           P3, "EPoX",        "EP-8K5A2",              0,   OK, w836xx_memw_enable_2e},
