@@ -761,6 +761,7 @@ const struct board_info boards_known[] = {
 	B("Dell",	"PowerEdge 1850",	OK, "http://support.dell.com/support/edocs/systems/pe1850/en/index.htm", NULL),
 	B("Dell",	"Vostro 460",		BAD, "http://support.dell.com/support/edocs/systems/vos460/en/index.htm", "Mainboard model is 0Y2MRG. Probing works (Macronix MX25L3205, 4096 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME is locked."),
 	B("DFI",	"855GME-MGF",		BAD, "http://www.dfi.com.tw/portal/CM/cmproduct/XX_cmproddetail/XX_WbProdsWindow?action=e&downloadType=&windowstate=normal&mode=view&downloadFlag=false&itemId=433", "Probably needs a board enable. http://www.coreboot.org/pipermail/coreboot/2009-May/048549.html"),
+	B("DFI",	"AD77",			NT, NULL, "Untested board enable."),
 	B("DFI",	"Blood-Iron P35 T2RL",	OK, "http://lp.lanparty.com.tw/portal/CM/cmproduct/XX_cmproddetail/XX_WbProdsWindow?itemId=516&downloadFlag=false&action=1", NULL),
 	B("Elitegroup",	"GeForce6100SM-M ",	OK, "http://www.ecs.com.tw/ECSWebSite/Product/Product_Detail.aspx?DetailID=685&MenuID=24", NULL),
 	B("Elitegroup", "GF7100PVT-M3 (V1.0)",	OK, "http://www.ecs.com.tw/ECSWebSite/Product/Product_Detail.aspx?DetailID=853&CategoryID=1&DetailName=Specification&MenuID=24&LanID=0", NULL),
