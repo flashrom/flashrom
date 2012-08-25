@@ -119,7 +119,7 @@ static int erase_28sf040(struct flashctx *flash)
 int erase_chip_28sf040(struct flashctx *flash, unsigned int addr,
 		       unsigned int blocklen)
 {
-	if ((addr != 0) || (blocklen != flash->total_size * 1024)) {
+	if ((addr != 0) || (blocklen != flash->chip->total_size * 1024)) {
 		msg_cerr("%s called with incorrect arguments\n",
 			__func__);
 		return -1;

@@ -117,6 +117,7 @@ int spi_write_disable(struct flashctx *flash)
 
 static int probe_spi_rdid_generic(struct flashctx *flash, int bytes)
 {
+	const struct flashchip *chip = flash->chip;
 	unsigned char readarr[4];
 	uint32_t id1;
 	uint32_t id2;
@@ -147,7 +148,7 @@ static int probe_spi_rdid_generic(struct flashctx *flash, int bytes)
 
 	msg_cdbg("%s: id1 0x%02x, id2 0x%02x\n", __func__, id1, id2);
 
-	if (id1 == flash->manufacture_id && id2 == flash->model_id) {
+	if (id1 == chip->manufacture_id && id2 == chip->model_id) {
 		/* Print the status register to tell the
 		 * user about possible write protection.
 		 */
@@ -157,13 +158,11 @@ static int probe_spi_rdid_generic(struct flashctx *flash, int bytes)
 	}
 
 	/* Test if this is a pure vendor match. */
-	if (id1 == flash->manufacture_id &&
-	    GENERIC_DEVICE_ID == flash->model_id)
+	if (id1 == chip->manufacture_id && GENERIC_DEVICE_ID == chip->model_id)
 		return 1;
 
 	/* Test if there is any vendor ID. */
-	if (GENERIC_MANUF_ID == flash->manufacture_id &&
-	    id1 != 0xff)
+	if (GENERIC_MANUF_ID == chip->manufacture_id && id1 != 0xff)
 		return 1;
 
 	return 0;
@@ -198,6 +197,7 @@ int probe_spi_rdid4(struct flashctx *flash)
 
 int probe_spi_rems(struct flashctx *flash)
 {
+	const struct flashchip *chip = flash->chip;
 	unsigned char readarr[JEDEC_REMS_INSIZE];
 	uint32_t id1, id2;
 
@@ -210,7 +210,7 @@ int probe_spi_rems(struct flashctx *flash)
 
 	msg_cdbg("%s: id1 0x%x, id2 0x%x\n", __func__, id1, id2);
 
-	if (id1 == flash->manufacture_id && id2 == flash->model_id) {
+	if (id1 == chip->manufacture_id && id2 == chip->model_id) {
 		/* Print the status register to tell the
 		 * user about possible write protection.
 		 */
@@ -220,13 +220,11 @@ int probe_spi_rems(struct flashctx *flash)
 	}
 
 	/* Test if this is a pure vendor match. */
-	if (id1 == flash->manufacture_id &&
-	    GENERIC_DEVICE_ID == flash->model_id)
+	if (id1 == chip->manufacture_id && GENERIC_DEVICE_ID == chip->model_id)
 		return 1;
 
 	/* Test if there is any vendor ID. */
-	if (GENERIC_MANUF_ID == flash->manufacture_id &&
-	    id1 != 0xff)
+	if (GENERIC_MANUF_ID == chip->manufacture_id && id1 != 0xff)
 		return 1;
 
 	return 0;
@@ -267,7 +265,7 @@ int probe_spi_res1(struct flashctx *flash)
 
 	msg_cdbg("%s: id 0x%x\n", __func__, id2);
 
-	if (id2 != flash->model_id)
+	if (id2 != flash->chip->model_id)
 		return 0;
 
 	/* Print the status register to tell the
@@ -291,7 +289,7 @@ int probe_spi_res2(struct flashctx *flash)
 
 	msg_cdbg("%s: id1 0x%x, id2 0x%x\n", __func__, id1, id2);
 
-	if (id1 != flash->manufacture_id || id2 != flash->model_id)
+	if (id1 != flash->chip->manufacture_id || id2 != flash->chip->model_id)
 		return 0;
 
 	/* Print the status register to tell the
@@ -419,22 +417,23 @@ void spi_prettyprint_status_register_sst25vf040b(uint8_t status)
 
 int spi_prettyprint_status_register(struct flashctx *flash)
 {
+	const struct flashchip *chip = flash->chip;
 	uint8_t status;
 
 	status = spi_read_status_register(flash);
 	msg_cdbg("Chip status register is %02x\n", status);
-	switch (flash->manufacture_id) {
+	switch (chip->manufacture_id) {
 	case ST_ID:
-		if (((flash->model_id & 0xff00) == 0x2000) ||
-		    ((flash->model_id & 0xff00) == 0x2500))
+		if (((chip->model_id & 0xff00) == 0x2000) ||
+		    ((chip->model_id & 0xff00) == 0x2500))
 			spi_prettyprint_status_register_st_m25p(status);
 		break;
 	case MACRONIX_ID:
-		if ((flash->model_id & 0xff00) == 0x2000)
+		if ((chip->model_id & 0xff00) == 0x2000)
 			spi_prettyprint_status_register_st_m25p(status);
 		break;
 	case SST_ID:
-		switch (flash->model_id) {
+		switch (chip->model_id) {
 		case 0x2541:
 			spi_prettyprint_status_register_sst25vf016(status);
 			break;
@@ -704,7 +703,7 @@ int spi_block_erase_20(struct flashctx *flash, unsigned int addr,
 int spi_block_erase_60(struct flashctx *flash, unsigned int addr,
 		       unsigned int blocklen)
 {
-	if ((addr != 0) || (blocklen != flash->total_size * 1024)) {
+	if ((addr != 0) || (blocklen != flash->chip->total_size * 1024)) {
 		msg_cerr("%s called with incorrect arguments\n",
 			__func__);
 		return -1;
@@ -715,7 +714,7 @@ int spi_block_erase_60(struct flashctx *flash, unsigned int addr,
 int spi_block_erase_c7(struct flashctx *flash, unsigned int addr,
 		       unsigned int blocklen)
 {
-	if ((addr != 0) || (blocklen != flash->total_size * 1024)) {
+	if ((addr != 0) || (blocklen != flash->chip->total_size * 1024)) {
 		msg_cerr("%s called with incorrect arguments\n",
 			__func__);
 		return -1;
@@ -820,7 +819,7 @@ static int spi_write_status_register_flag(struct flashctx *flash, int status, co
 
 int spi_write_status_register(struct flashctx *flash, int status)
 {
-	int feature_bits = flash->feature_bits;
+	int feature_bits = flash->chip->feature_bits;
 	int ret = 1;
 
 	if (!(feature_bits & (FEATURE_WRSR_WREN | FEATURE_WRSR_EWSR))) {
@@ -972,7 +971,7 @@ int spi_read_chunked(struct flashctx *flash, uint8_t *buf, unsigned int start,
 {
 	int rc = 0;
 	unsigned int i, j, starthere, lenhere, toread;
-	unsigned int page_size = flash->page_size;
+	unsigned int page_size = flash->chip->page_size;
 
 	/* Warning: This loop has a very unusual condition and body.
 	 * The loop needs to go through each page with at least one affected
@@ -1017,7 +1016,7 @@ int spi_write_chunked(struct flashctx *flash, uint8_t *buf, unsigned int start,
 	 * spi_chip_write_256 have page_size set to max_writechunk_size, so
 	 * we're OK for now.
 	 */
-	unsigned int page_size = flash->page_size;
+	unsigned int page_size = flash->chip->page_size;
 
 	/* Warning: This loop has a very unusual condition and body.
 	 * The loop needs to go through each page with at least one affected

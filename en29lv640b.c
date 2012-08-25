@@ -81,7 +81,7 @@ int probe_en29lv640b(struct flashctx *flash)
 
 	msg_cdbg("%s: id1 0x%04x, id2 0x%04x\n", __func__, id1, id2);
 
-	if (id1 == flash->manufacture_id && id2 == flash->model_id)
+	if (id1 == flash->chip->manufacture_id && id2 == flash->chip->model_id)
 		return 1;
 
 	return 0;
@@ -130,7 +130,7 @@ int block_erase_en29lv640b(struct flashctx *flash, unsigned int start,
 int block_erase_chip_en29lv640b(struct flashctx *flash, unsigned int address,
 			        unsigned int blocklen)
 {
-	if ((address != 0) || (blocklen != flash->total_size * 1024)) {
+	if ((address != 0) || (blocklen != flash->chip->total_size * 1024)) {
 		msg_cerr("%s called with incorrect arguments\n", __func__);
 		return -1;
 	}

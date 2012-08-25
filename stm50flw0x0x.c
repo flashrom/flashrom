@@ -54,7 +54,7 @@ static int unlock_block_stm50flw0x0x(struct flashctx *flash, int offset)
 	/* Check, if it's is a top/bottom-block with 4k-sectors. */
 	/* TODO: What about the other types? */
 	if ((offset == 0) ||
-	    (offset == (flash->model_id == ST_M50FLW080A ? 0xE0000 : 0x10000))
+	    (offset == (flash->chip->model_id == ST_M50FLW080A ? 0xE0000 : 0x10000))
 	    || (offset == 0xF0000)) {
 
 		// unlock each 4k-sector
@@ -85,7 +85,7 @@ int unlock_stm50flw0x0x(struct flashctx *flash)
 {
 	int i;
 
-	for (i = 0; i < flash->total_size * 1024; i+= flash->page_size) {
+	for (i = 0; i < flash->chip->total_size * 1024; i+= flash->chip->page_size) {
 		if(unlock_block_stm50flw0x0x(flash, i)) {
 			msg_cerr("UNLOCK FAILED!\n");
 			return -1;

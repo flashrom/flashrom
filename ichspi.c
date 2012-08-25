@@ -1193,9 +1193,9 @@ static int ich_hwseq_probe(struct flashctx *flash)
 	else
 		msg_cdbg(" with a");
 	msg_cdbg(" density of %d kB.\n", total_size / 1024);
-	flash->total_size = total_size / 1024;
+	flash->chip->total_size = total_size / 1024;
 
-	eraser = &(flash->block_erasers[0]);
+	eraser = &(flash->chip->block_erasers[0]);
 	boundary = (REGREAD32(ICH9_REG_FPB) & FPB_FPBA) << 12;
 	size_high = total_size - boundary;
 	erase_size_high = ich_hwseq_get_erase_block_size(boundary);
@@ -1228,7 +1228,7 @@ static int ich_hwseq_probe(struct flashctx *flash)
 		msg_cdbg("In that range are %d erase blocks with %d B each.\n",
 			 size_high / erase_size_high, erase_size_high);
 	}
-	flash->tested = TEST_OK_PREW;
+	flash->chip->tested = TEST_OK_PREW;
 	return 1;
 }
 
@@ -1256,7 +1256,7 @@ static int ich_hwseq_block_erase(struct flashctx *flash, unsigned int addr,
 		return -1;
 	}
 
-	if (addr + len > flash->total_size * 1024) {
+	if (addr + len > flash->chip->total_size * 1024) {
 		msg_perr("Request to erase some inaccessible memory address(es)"
 			 " (addr=0x%x, len=%d). "
 			 "Not erasing anything.\n", addr, len);
@@ -1288,7 +1288,7 @@ static int ich_hwseq_read(struct flashctx *flash, uint8_t *buf,
 	uint16_t timeout = 100 * 60;
 	uint8_t block_len;
 
-	if (addr + len > flash->total_size * 1024) {
+	if (addr + len > flash->chip->total_size * 1024) {
 		msg_perr("Request to read from an inaccessible memory address "
 			 "(addr=0x%x, len=%d).\n", addr, len);
 		return -1;
@@ -1326,7 +1326,7 @@ static int ich_hwseq_write(struct flashctx *flash, uint8_t *buf,
 	uint16_t timeout = 100 * 60;
 	uint8_t block_len;
 
-	if (addr + len > flash->total_size * 1024) {
+	if (addr + len > flash->chip->total_size * 1024) {
 		msg_perr("Request to write to an inaccessible memory address "
 			 "(addr=0x%x, len=%d).\n", addr, len);
 		return -1;

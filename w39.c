@@ -138,11 +138,11 @@ static int printlock_w39_common(struct flashctx *flash, unsigned int offset)
 
 static int printlock_w39_fwh(struct flashctx *flash)
 {
-	unsigned int i, total_size = flash->total_size * 1024;
+	unsigned int i, total_size = flash->chip->total_size * 1024;
 	int ret = 0;
 	
 	/* Print lock status of the complete chip */
-	for (i = 0; i < total_size; i += flash->page_size)
+	for (i = 0; i < total_size; i += flash->chip->page_size)
 		ret |= printlock_w39_fwh_block(flash, i);
 
 	return ret;
@@ -150,10 +150,10 @@ static int printlock_w39_fwh(struct flashctx *flash)
 
 static int unlock_w39_fwh(struct flashctx *flash)
 {
-	unsigned int i, total_size = flash->total_size * 1024;
+	unsigned int i, total_size = flash->chip->total_size * 1024;
 	
 	/* Unlock the complete chip */
-	for (i = 0; i < total_size; i += flash->page_size)
+	for (i = 0; i < total_size; i += flash->chip->page_size)
 		if (unlock_w39_fwh_block(flash, i))
 			return -1;
 

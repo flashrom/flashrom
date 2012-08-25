@@ -87,6 +87,7 @@ enum chipbustype {
 #define FEATURE_WRSR_EITHER	(FEATURE_WRSR_EWSR | FEATURE_WRSR_WREN)
 
 struct flashctx;
+typedef int (erasefunc_t)(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 
 struct flashchip {
 	const char *vendor;
@@ -148,34 +149,13 @@ struct flashchip {
 	} voltage;
 };
 
-/* struct flashctx must always contain struct flashchip at the beginning. */
 struct flashctx {
-	const char *vendor;
-	const char *name;
-	enum chipbustype bustype;
-	uint32_t manufacture_id;
-	uint32_t model_id;
-	int total_size;
-	int page_size;
-	int feature_bits;
-	uint32_t tested;
-	int (*probe) (struct flashctx *flash);
-	int probe_timing;
-	struct block_eraser block_erasers[NUM_ERASEFUNCTIONS];
-	int (*printlock) (struct flashctx *flash);
-	int (*unlock) (struct flashctx *flash);
-	int (*write) (struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
-	int (*read) (struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
-	struct voltage voltage;
-	/* struct flashchip ends here. */
-	
+	struct flashchip *chip;
 	chipaddr virtual_memory;
 	/* Some flash devices have an additional register space. */
 	chipaddr virtual_registers;
 	struct registered_programmer *pgm;
 };
-
-typedef int (erasefunc_t)(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 
 #define TEST_UNTESTED	0
 
@@ -307,7 +287,7 @@ int print(enum msglevel level, const char *fmt, ...) __attribute__((format(print
 int register_include_arg(char *name);
 int process_include_args(void);
 int read_romlayout(char *name);
-int handle_romentries(struct flashctx *flash, uint8_t *oldcontents, uint8_t *newcontents);
+int handle_romentries(const struct flashctx *flash, uint8_t *oldcontents, uint8_t *newcontents);
 
 /* spi.c */
 struct spi_command {

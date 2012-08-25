@@ -331,7 +331,7 @@ static int it8716f_spi_page_program(struct flashctx *flash, uint8_t *buf,
 	/* FIXME: The command below seems to be redundant or wrong. */
 	OUTB(0x06, it8716f_flashport + 1);
 	OUTB(((2 + (fast_spi ? 1 : 0)) << 4), it8716f_flashport);
-	for (i = 0; i < flash->page_size; i++)
+	for (i = 0; i < flash->chip->page_size; i++)
 		mmio_writeb(buf[i], (void *)(bios + start + i));
 	OUTB(0, it8716f_flashport);
 	/* Wait until the Write-In-Progress bit is cleared.
@@ -355,7 +355,7 @@ static int it8716f_spi_chip_read(struct flashctx *flash, uint8_t *buf,
 	 * the mainboard does not use IT87 SPI translation. This should be done
 	 * via a programmer parameter for the internal programmer.
 	 */
-	if ((flash->total_size * 1024 > 512 * 1024)) {
+	if ((flash->chip->total_size * 1024 > 512 * 1024)) {
 		spi_read_chunked(flash, buf, start, len, 3);
 	} else {
 		mmio_readn((void *)(flash->virtual_memory + start), buf, len);
@@ -367,6 +367,7 @@ static int it8716f_spi_chip_read(struct flashctx *flash, uint8_t *buf,
 static int it8716f_spi_chip_write_256(struct flashctx *flash, uint8_t *buf,
 				      unsigned int start, unsigned int len)
 {
+	const struct flashchip *chip = flash->chip;
 	/*
 	 * IT8716F only allows maximum of 512 kb SPI chip size for memory
 	 * mapped access. It also can't write more than 1+3+256 bytes at once,
@@ -377,28 +378,27 @@ static int it8716f_spi_chip_write_256(struct flashctx *flash, uint8_t *buf,
 	 * the mainboard does not use IT87 SPI translation. This should be done
 	 * via a programmer parameter for the internal programmer.
 	 */
-	if ((flash->total_size * 1024 > 512 * 1024) ||
-	    (flash->page_size > 256)) {
+	if ((chip->total_size * 1024 > 512 * 1024) || (chip->page_size > 256)) {
 		spi_chip_write_1(flash, buf, start, len);
 	} else {
 		unsigned int lenhere;
 
-		if (start % flash->page_size) {
+		if (start % chip->page_size) {
 			/* start to the end of the page or to start + len,
 			 * whichever is smaller.
 			 */
-			lenhere = min(len, flash->page_size - start % flash->page_size);
+			lenhere = min(len, chip->page_size - start % chip->page_size);
 			spi_chip_write_1(flash, buf, start, lenhere);
 			start += lenhere;
 			len -= lenhere;
 			buf += lenhere;
 		}
 
-		while (len >= flash->page_size) {
+		while (len >= chip->page_size) {
 			it8716f_spi_page_program(flash, buf, start);
-			start += flash->page_size;
-			len -= flash->page_size;
-			buf += flash->page_size;
+			start += chip->page_size;
+			len -= chip->page_size;
+			buf += chip->page_size;
 		}
 		if (len)
 			spi_chip_write_1(flash, buf, start, len);
