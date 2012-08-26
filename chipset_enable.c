@@ -281,22 +281,15 @@ static int enable_flash_piix4(struct pci_dev *dev, const char *name)
  * See ie. page 375 of "Intel I/O Controller Hub 7 (ICH7) Family Datasheet"
  * http://download.intel.com/design/chipsets/datashts/30701303.pdf
  */
-static int enable_flash_ich(struct pci_dev *dev, const char *name,
-			    int bios_cntl)
+static int enable_flash_ich(struct pci_dev *dev, const char *name, uint8_t bios_cntl)
 {
 	uint8_t old, new, wanted;
 
 	/*
-	 * Note: the ICH0-ICH5 BIOS_CNTL register is actually 16 bit wide, but
+	 * Note: the ICH0-ICH5 BIOS_CNTL register is actually 16 bit wide, in Tunnel Creek it is even 32b, but
 	 * just treating it as 8 bit wide seems to work fine in practice.
 	 */
-	old = pci_read_byte(dev, bios_cntl);
-
-	msg_pdbg("\nBIOS Lock Enable: %sabled, ",
-		 (old & (1 << 1)) ? "en" : "dis");
-	msg_pdbg("BIOS Write Enable: %sabled, ",
-		 (old & (1 << 0)) ? "en" : "dis");
-	msg_pdbg("BIOS_CNTL is 0x%x\n", old);
+	wanted = old = pci_read_byte(dev, bios_cntl);
 
 	/*
 	 * Quote from the 6 Series datasheet (Document Number: 324645-004):
@@ -304,22 +297,36 @@ static int enable_flash_ich(struct pci_dev *dev, const char *name,
 	 * 1 = BIOS region SMM protection is enabled.
 	 * The BIOS Region is not writable unless all processors are in SMM."
 	 * In earlier chipsets this bit is reserved.
+	 *
+	 * Try to unset it in any case.
+	 * It won't hurt and makes sense in some cases according to Stefan Reinauer.
 	 */
-	if (old & (1 << 5))
+	wanted &= ~(1 << 5);
+
+	/* Set BIOS Write Enable */
+	wanted |= (1 << 0);
+
+	/* Only write the register if it's necessary */
+	if (wanted != old) {
+		rpci_write_byte(dev, bios_cntl, wanted);
+		new = pci_read_byte(dev, bios_cntl);
+	} else
+		new = old;
+
+	msg_pdbg("\nBIOS_CNTL = 0x%02x: ", new);
+	msg_pdbg("BIOS Lock Enable: %sabled, ", (new & (1 << 1)) ? "en" : "dis");
+	msg_pdbg("BIOS Write Enable: %sabled\n", (new & (1 << 0)) ? "en" : "dis");
+	if (new & (1 << 5))
 		msg_pinfo("WARNING: BIOS region SMM protection is enabled!\n");
 
-	wanted = old | 1;
-	if (wanted == old)
-		return 0;
 
-	rpci_write_byte(dev, bios_cntl, wanted);
+	if (new != wanted)
+		msg_pinfo("WARNING: Setting Bios Control at 0x%x from 0x%02x to 0x%02x on %s failed.\n"
+			  "New value is 0x%02x.\n", bios_cntl, old, wanted, name, new);
 
-	if ((new = pci_read_byte(dev, bios_cntl)) != wanted) {
-		msg_pinfo("WARNING: Setting 0x%x from 0x%x to 0x%x on %s "
-			  "failed. New value is 0x%x.\n",
-			  bios_cntl, old, wanted, name, new);
+	/* Return an error if we could not set the write enable */
+	if (!(new & (1 << 0)))
 		return -1;
-	}
 
 	return 0;
 }
