@@ -1697,8 +1697,8 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.printlock	= spi_prettyprint_status_register_at25f,
-		.unlock		= spi_disable_blockprotect_at25f,
+		.printlock	= spi_prettyprint_status_register_at25f512b,
+		.unlock		= spi_disable_blockprotect_at25f512b,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
 		.voltage	= {2700, 3600},
