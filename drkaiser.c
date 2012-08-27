@@ -35,7 +35,8 @@
 
 const struct pcidev_status drkaiser_pcidev[] = {
 	{0x1803, 0x5057, OK, "Dr. Kaiser", "PC-Waechter (Actel FPGA)"},
-	{},
+
+	{0},
 };
 
 static uint8_t *drkaiser_bar;
@@ -61,7 +62,7 @@ static int drkaiser_shutdown(void *data)
 	/* Flash write is disabled automatically by PCI restore. */
 	pci_cleanup(pacc);
 	return 0;
-};
+}
 
 int drkaiser_init(void)
 {

@@ -21,6 +21,7 @@
 #if CONFIG_FT2232_SPI == 1
 
 #include <stdio.h>
+#include <strings.h>
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -61,7 +62,8 @@ const struct usbdev_status devs_ft2232spi[] = {
 	{OLIMEX_VID, OLIMEX_ARM_TINY_PID, OK, "Olimex", "ARM-USB-TINY"},
 	{OLIMEX_VID, OLIMEX_ARM_OCD_H_PID, NT, "Olimex", "ARM-USB-OCD-H"},
 	{OLIMEX_VID, OLIMEX_ARM_TINY_H_PID, NT, "Olimex", "ARM-USB-TINY-H"},
-	{},
+
+	{0},
 };
 
 

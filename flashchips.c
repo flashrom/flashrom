@@ -9496,7 +9496,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect, /* is this safe? */
 		.read		= spi_chip_read,
 		/* FIXME: some vendor extensions define this */
-		.voltage	= {},
+		.voltage	= {0},
 		 /* Everything below will be set by the probing function. */
 		.write		= NULL,
 		.total_size	= 0,

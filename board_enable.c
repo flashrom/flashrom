@@ -24,6 +24,7 @@
  * Contains the board specific flash enables.
  */
 
+#include <strings.h>
 #include <string.h>
 #include <stdlib.h>
 #include "flash.h"
@@ -292,7 +293,7 @@ static uint8_t w836xx_deviceid_hwmon(uint16_t sio_port)
 
 void probe_superio_winbond(void)
 {
-	struct superio s = {};
+	struct superio s = {0};
 	uint16_t winbond_ports[] = {WINBOND_SUPERIO_PORT1, WINBOND_SUPERIO_PORT2, 0};
 	uint16_t *i = winbond_ports;
 	uint8_t model;

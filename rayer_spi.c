@@ -31,6 +31,7 @@
 #if defined(__i386__) || defined(__x86_64__)
 
 #include <stdlib.h>
+#include <strings.h>
 #include <string.h>
 #include "flash.h"
 #include "programmer.h"

@@ -38,7 +38,7 @@ const struct pcidev_status satas_sii[] = {
 	{0x1095, 0x3132, OK, "Silicon Image", "SiI 3132 SATA Raid II Ctrl"},
 	{0x1095, 0x3512, OK, "Silicon Image", "SiI 3512 [SATALink/SATARaid] SATA Ctrl"},
 
-	{},
+	{0},
 };
 
 static void satasii_chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr);
