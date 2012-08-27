@@ -172,9 +172,7 @@ involving any chip access (probe/read/write/...). Currently supported are:
 .sp
 .BR "* nic3com" " (for flash ROMs on 3COM network cards)"
 .sp
-.BR "* nicrealtek" " (for flash ROMs on Realtek network cards)"
-.sp
-.BR "* nicsmc1211" " (for flash ROMs on RTL8139-compatible SMC2 network cards)"
+.BR "* nicrealtek" " (for flash ROMs on Realtek and SMC 1211 network cards)"
 .sp
 .BR "* nicnatsemi" " (for flash ROMs on National Semiconductor DP838* network \
 cards)"
@@ -532,7 +530,7 @@ syntax where
 .B content
 is an 8-bit hexadecimal value.
 .SS
-.BR "nic3com" , " nicrealtek" , " nicsmc1211" , " nicnatsemi" , " nicintel\
+.BR "nic3com" , " nicrealtek" , " nicnatsemi" , " nicintel\
 " , " nicintel_spi" , " gfxnvidia" , " ogp_spi" , " drkaiser" , " satasii\
 " , " satamv" ", and " atahpt " programmers
 These programmers have an option to specify the PCI address of the card
@@ -761,7 +759,7 @@ flashrom needs different access permissions for different programmers.
 needs raw memory access, PCI configuration space access, raw I/O port
 access (x86) and MSR access (x86).
 .sp
-.BR nic3com ", " nicrealtek ", " nicsmc1211 " and " nicnatsemi "
+.BR nic3com ", " nicrealtek " and " nicnatsemi "
 need PCI configuration space read access and raw I/O port access.
 .sp
 .B atahpt
@@ -792,7 +790,7 @@ need access to the USB device via libusb.
 .B dummy
 needs no access permissions at all.
 .sp
-.BR internal ", " nic3com ", " nicrealtek ", " nicsmc1211 ", " nicnatsemi ", "
+.BR internal ", " nic3com ", " nicrealtek ", " nicnatsemi ", "
 .BR gfxnvidia ", " drkaiser ", " satasii ", " satamv " and " atahpt
 have to be run as superuser/root, and need additional raw access permission.
 .sp
