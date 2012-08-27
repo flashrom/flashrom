@@ -97,7 +97,7 @@ static inline void sync_primitive(void)
 	 * Such reordering and/or merging would break device accesses which
 	 * depend on the exact access order.
 	 */
-	asm("eieio" : : : "memory");
+	___asm___ volatile ("eieio" : : : "memory");
 }
 
 /* PCI port I/O is not yet implemented on PowerPC. */

@@ -1033,7 +1033,7 @@ const struct board_info boards_known[] = {
 	B("ZOTAC",	"ZBOX HD-ID11",		OK, NULL, NULL),
 #endif
 
-	{},
+	{0},
 };
 
 /* Please keep this list alphabetically ordered by vendor/board. */
@@ -1059,6 +1059,6 @@ const struct board_info laptops_known[] = {
 	B("Lenovo",	"3000 V100 TF05Cxx",	OK, "http://www5.pc.ibm.com/europe/products.nsf/products?openagent&brand=Lenovo3000Notebook&series=Lenovo+3000+V+Series#viewallmodelstop", NULL),
 #endif
 
-	{},
+	{0},
 };
 #endif

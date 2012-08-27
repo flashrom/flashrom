@@ -33,7 +33,7 @@ const struct pcidev_status satas_mv[] = {
 	/* 88SX6041 and 88SX6042 are the same according to the datasheet. */
 	{0x11ab, 0x7042, OK, "Marvell", "88SX7042 PCI-e 4-port SATA-II"},
 
-	{},
+	{0},
 };
 
 #define NVRAM_PARAM			0x1045c

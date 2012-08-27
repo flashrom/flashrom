@@ -174,7 +174,6 @@ cpu_to_be(64)
 
 /* for iopl and outb under Solaris */
 #if defined (__sun) && (defined(__i386) || defined(__amd64))
-#include <strings.h>
 #include <sys/sysi86.h>
 #include <sys/psw.h>
 #include <asm/sunddi.h>
@@ -263,37 +262,37 @@ cpu_to_be(64)
 
 static inline void outb(uint8_t value, uint16_t port)
 {
-	asm volatile ("outb %b0,%w1": :"a" (value), "Nd" (port));
+	__asm__ volatile ("outb %b0,%w1": :"a" (value), "Nd" (port));
 }
 
 static inline uint8_t inb(uint16_t port)
 {
 	uint8_t value;
-	asm volatile ("inb %w1,%0":"=a" (value):"Nd" (port));
+	__asm__ volatile ("inb %w1,%0":"=a" (value):"Nd" (port));
 	return value;
 }
 
 static inline void outw(uint16_t value, uint16_t port)
 {
-	asm volatile ("outw %w0,%w1": :"a" (value), "Nd" (port));
+	__asm__ volatile ("outw %w0,%w1": :"a" (value), "Nd" (port));
 }
 
 static inline uint16_t inw(uint16_t port)
 {
 	uint16_t value;
-	asm volatile ("inw %w1,%0":"=a" (value):"Nd" (port));
+	__asm__ volatile ("inw %w1,%0":"=a" (value):"Nd" (port));
 	return value;
 }
 
 static inline void outl(uint32_t value, uint16_t port)
 {
-	asm volatile ("outl %0,%w1": :"a" (value), "Nd" (port));
+	__asm__ volatile ("outl %0,%w1": :"a" (value), "Nd" (port));
 }
 
 static inline uint32_t inl(uint16_t port)
 {
 	uint32_t value;
-	asm volatile ("inl %1,%0":"=a" (value):"Nd" (port));
+	__asm__ volatile ("inl %1,%0":"=a" (value):"Nd" (port));
 	return value;
 }
   #endif

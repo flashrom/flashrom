@@ -74,7 +74,7 @@ uint16_t probe_id_ite(uint16_t port)
 
 void probe_superio_ite(void)
 {
-	struct superio s = {};
+	struct superio s = {0};
 	uint16_t ite_ports[] = {ITE_SUPERIO_PORT1, ITE_SUPERIO_PORT2, 0};
 	uint16_t *i = ite_ports;
 
