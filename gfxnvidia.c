@@ -59,7 +59,7 @@ const struct pcidev_status gfx_nvidia[] = {
 	{0x10de, 0x0202, NT, "NVIDIA", "GeForce 3 nFX Ultra" },
 	{0x10de, 0x0203, NT, "NVIDIA", "Quadro 3 DDC" },
 
-	{},
+	{0},
 };
 
 static void gfxnvidia_chip_writeb(const struct flashctx *flash, uint8_t val,

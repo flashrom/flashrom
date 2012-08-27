@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <strings.h>
 #include <string.h>
 #include <ctype.h>
 #include <fcntl.h>
@@ -125,7 +126,7 @@ static int sp_opensocket(char *ip, unsigned int port)
 	}
 	sp.si.sin_family = AF_INET;
 	sp.si.sin_port = htons(port);
-	(void)memcpy(&sp.si.sin_addr, hostPtr->h_addr, hostPtr->h_length);
+	(void)memcpy(&sp.si.sin_addr, hostPtr->h_addr_list[0], hostPtr->h_length);
 	if (connect(sock, &sp.s, sizeof(sp.si)) < 0) {
 		close(sock);
 		msg_perr("Error: serprog cannot connect: %s\n", strerror(errno));

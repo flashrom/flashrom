@@ -38,7 +38,7 @@ const struct pcidev_status ata_hpt[] = {
 	{0x1103, 0x0005, NT, "Highpoint", "HPT372A/372N"},
 	{0x1103, 0x0006, NT, "Highpoint", "HPT302/302N"},
 
-	{},
+	{0},
 };
 
 static void atahpt_chip_writeb(const struct flashctx *flash, uint8_t val,

@@ -35,7 +35,7 @@ __attribute__ ((noinline)) void myusec_delay(int usecs)
 	unsigned long i;
 	for (i = 0; i < usecs * micro; i++) {
 		/* Make sure the compiler doesn't optimize the loop away. */
-		asm volatile ("" : : "rm" (i) );
+		__asm__ volatile ("" : : "rm" (i) );
 	}
 }
 

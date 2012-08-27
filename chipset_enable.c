@@ -1466,7 +1466,7 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x8c5e, NT, "Intel", "Lynx Point",	enable_flash_pch8},
 	{0x8086, 0x8c5f, NT, "Intel", "Lynx Point",	enable_flash_pch8},
 #endif
-	{},
+	{0},
 };
 
 int chipset_flash_enable(void)
