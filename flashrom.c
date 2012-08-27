@@ -95,7 +95,6 @@ const struct programmer_entry programmer_table[] = {
 	{
 		/* This programmer works for Realtek RTL8139 and SMC 1211. */
 		.name			= "nicrealtek",
-		//.name			= "nicsmc1211",
 		.init			= nicrealtek_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,

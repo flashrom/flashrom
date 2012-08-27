@@ -28,20 +28,18 @@
 #define PCI_VENDOR_ID_REALTEK	0x10ec
 #define PCI_VENDOR_ID_SMC1211	0x1113
 
-#define BIOS_ROM_ADDR		0xD4
-#define BIOS_ROM_DATA		0xD7
+static int bios_rom_addr, bios_rom_data;
 
 const struct pcidev_status nics_realtek[] = {
 	{0x10ec, 0x8139, OK, "Realtek", "RTL8139/8139C/8139C+"},
-	{0x1113, 0x1211, OK, "SMC2", "1211TX"}, /* RTL8139 clone */
+	{0x10ec, 0x8169, NT, "Realtek", "RTL8169"},
+	{0x1113, 0x1211, OK, "SMC", "1211TX"}, /* RTL8139 clone */
 
 	{0},
 };
 
-static void nicrealtek_chip_writeb(const struct flashctx *flash, uint8_t val,
-				   chipaddr addr);
-static uint8_t nicrealtek_chip_readb(const struct flashctx *flash,
-				     const chipaddr addr);
+static void nicrealtek_chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr);
+static uint8_t nicrealtek_chip_readb(const struct flashctx *flash, const chipaddr addr);
 static const struct par_programmer par_programmer_nicrealtek = {
 		.chip_readb		= nicrealtek_chip_readb,
 		.chip_readw		= fallback_chip_readw,
@@ -62,6 +60,20 @@ static int nicrealtek_shutdown(void *data)
 
 int nicrealtek_init(void)
 {
+	/* Beware, this ignores the vendor ID! */
+	switch (pcidev_dev->device_id) {
+	case 0x8139: /* RTL8139 */
+	case 0x1211: /* SMC 1211TX */
+	default:
+		bios_rom_addr = 0xD4;
+		bios_rom_data = 0xD7;
+		break;
+	case 0x8169: /* RTL8169 */
+		bios_rom_addr = 0x30;
+		bios_rom_data = 0x33;
+		break;
+	}
+
 	if (rget_io_perms())
 		return 1;
 
@@ -75,42 +87,40 @@ int nicrealtek_init(void)
 	return 0;
 }
 
-static void nicrealtek_chip_writeb(const struct flashctx *flash, uint8_t val,
-				   chipaddr addr)
+static void nicrealtek_chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr)
 {
 	/* Output addr and data, set WE to 0, set OE to 1, set CS to 0,
 	 * enable software access.
 	 */
 	OUTL(((uint32_t)addr & 0x01FFFF) | 0x0A0000 | (val << 24),
-	     io_base_addr + BIOS_ROM_ADDR);
+	     io_base_addr + bios_rom_addr);
 	/* Output addr and data, set WE to 1, set OE to 1, set CS to 1,
 	 * enable software access.
 	 */
 	OUTL(((uint32_t)addr & 0x01FFFF) | 0x1E0000 | (val << 24),
-	     io_base_addr + BIOS_ROM_ADDR);
+	     io_base_addr + bios_rom_addr);
 }
 
-static uint8_t nicrealtek_chip_readb(const struct flashctx *flash,
-				     const chipaddr addr)
+static uint8_t nicrealtek_chip_readb(const struct flashctx *flash, const chipaddr addr)
 {
 	uint8_t val;
 
 	/* FIXME: Can we skip reading the old data and simply use 0? */
 	/* Read old data. */
-	val = INB(io_base_addr + BIOS_ROM_DATA);
+	val = INB(io_base_addr + bios_rom_data);
 	/* Output new addr and old data, set WE to 1, set OE to 0, set CS to 0,
 	 * enable software access.
 	 */
 	OUTL(((uint32_t)addr & 0x01FFFF) | 0x060000 | (val << 24),
-	     io_base_addr + BIOS_ROM_ADDR);
+	     io_base_addr + bios_rom_addr);
 
 	/* Read new data. */
-	val = INB(io_base_addr + BIOS_ROM_DATA);
+	val = INB(io_base_addr + bios_rom_data);
 	/* Output addr and new data, set WE to 1, set OE to 1, set CS to 1,
 	 * enable software access.
 	 */
 	OUTL(((uint32_t)addr & 0x01FFFF) | 0x1E0000 | (val << 24),
-	     io_base_addr + BIOS_ROM_ADDR);
+	     io_base_addr + bios_rom_addr);
 
 	return val;
 }
