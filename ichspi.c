@@ -1441,7 +1441,7 @@ static int ich9_handle_frap(uint32_t frap, int i)
 
 	base  = ICH_FREG_BASE(freg);
 	limit = ICH_FREG_LIMIT(freg);
-	if (base > limit) {
+	if (base > limit || (freg == 0 && i > 0)) {
 		/* this FREG is disabled */
 		msg_pdbg2("0x%02X: 0x%08x FREG%i: %s region is unused.\n",
 			  offset, freg, i, region_names[i]);
