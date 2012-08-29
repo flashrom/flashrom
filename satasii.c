@@ -61,6 +61,20 @@ static int satasii_shutdown(void *data)
 	return 0;
 }
 
+static uint32_t satasii_wait_done(void)
+{
+	uint32_t ctrl_reg;
+	int i = 0;
+	while ((ctrl_reg = pci_mmio_readl(sii_bar)) & (1 << 25)) {
+		if (++i > 10000) {
+			msg_perr("%s: control register stuck at %08x, ignoring.\n",
+				 __func__, pci_mmio_readl(sii_bar));
+			break;
+		}
+	}
+	return ctrl_reg;
+}
+
 int satasii_init(void)
 {
 	uint32_t addr;
@@ -97,9 +111,8 @@ int satasii_init(void)
 
 static void satasii_chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr)
 {
-	uint32_t ctrl_reg, data_reg;
-
-	while ((ctrl_reg = pci_mmio_readl(sii_bar)) & (1 << 25)) ;
+	uint32_t data_reg;
+	uint32_t ctrl_reg = satasii_wait_done();
 
 	/* Mask out unused/reserved bits, set writes and start transaction. */
 	ctrl_reg &= 0xfcf80000;
@@ -109,14 +122,12 @@ static void satasii_chip_writeb(const struct flashctx *flash, uint8_t val, chipa
 	pci_mmio_writel(data_reg, (sii_bar + 4));
 	pci_mmio_writel(ctrl_reg, sii_bar);
 
-	while (pci_mmio_readl(sii_bar) & (1 << 25)) ;
+	satasii_wait_done();
 }
 
 static uint8_t satasii_chip_readb(const struct flashctx *flash, const chipaddr addr)
 {
-	uint32_t ctrl_reg;
-
-	while ((ctrl_reg = pci_mmio_readl(sii_bar)) & (1 << 25)) ;
+	uint32_t ctrl_reg = satasii_wait_done();
 
 	/* Mask out unused/reserved bits, set reads and start transaction. */
 	ctrl_reg &= 0xfcf80000;
@@ -124,7 +135,7 @@ static uint8_t satasii_chip_readb(const struct flashctx *flash, const chipaddr a
 
 	pci_mmio_writel(ctrl_reg, sii_bar);
 
-	while (pci_mmio_readl(sii_bar) & (1 << 25)) ;
+	satasii_wait_done();
 
 	return (pci_mmio_readl(sii_bar + 4)) & 0xff;
 }
