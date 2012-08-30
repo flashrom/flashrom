@@ -493,6 +493,9 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 {
 	unsigned int offs, i, toread;
 	static int unsigned aai_offs;
+	const unsigned char sst25vf040_rems_response[2] = {0xbf, 0x44};
+	const unsigned char sst25vf032b_rems_response[2] = {0xbf, 0x4a};
+	const unsigned char mx25l6436_rems_response[2] = {0xc2, 0x16};
 
 	if (writecnt == 0) {
 		msg_perr("No command sent to the chip!\n");
@@ -529,20 +532,54 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 
 	switch (writearr[0]) {
 	case JEDEC_RES:
-		if (emu_chip != EMULATE_ST_M25P10_RES)
+		if (writecnt < JEDEC_RES_OUTSIZE)
 			break;
-		/* Respond with ST_M25P10_RES. */
-		if (readcnt > 0)
-			readarr[0] = 0x10;
+		/* offs calculation is only needed for SST chips which treat RES like REMS. */
+		offs = writearr[1] << 16 | writearr[2] << 8 | writearr[3];
+		offs += writecnt - JEDEC_REMS_OUTSIZE;
+		switch (emu_chip) {
+		case EMULATE_ST_M25P10_RES:
+			if (readcnt > 0)
+				memset(readarr, 0x10, readcnt);
+			break;
+		case EMULATE_SST_SST25VF040_REMS:
+			for (i = 0; i < readcnt; i++)
+				readarr[i] = sst25vf040_rems_response[(offs + i) % 2];
+			break;
+		case EMULATE_SST_SST25VF032B:
+			for (i = 0; i < readcnt; i++)
+				readarr[i] = sst25vf032b_rems_response[(offs + i) % 2];
+			break;
+		case EMULATE_MACRONIX_MX25L6436:
+			if (readcnt > 0)
+				memset(readarr, 0x16, readcnt);
+			break;
+		default: /* ignore */
+			break;
+		}
 		break;
 	case JEDEC_REMS:
-		if (emu_chip != EMULATE_SST_SST25VF040_REMS)
+		/* REMS response has wraparound and uses an address parameter. */
+		if (writecnt < JEDEC_REMS_OUTSIZE)
 			break;
-		/* Respond with SST_SST25VF040_REMS. */
-		if (readcnt > 0)
-			readarr[0] = 0xbf;
-		if (readcnt > 1)
-			readarr[1] = 0x44;
+		offs = writearr[1] << 16 | writearr[2] << 8 | writearr[3];
+		offs += writecnt - JEDEC_REMS_OUTSIZE;
+		switch (emu_chip) {
+		case EMULATE_SST_SST25VF040_REMS:
+			for (i = 0; i < readcnt; i++)
+				readarr[i] = sst25vf040_rems_response[(offs + i) % 2];
+			break;
+		case EMULATE_SST_SST25VF032B:
+			for (i = 0; i < readcnt; i++)
+				readarr[i] = sst25vf032b_rems_response[(offs + i) % 2];
+			break;
+		case EMULATE_MACRONIX_MX25L6436:
+			for (i = 0; i < readcnt; i++)
+				readarr[i] = mx25l6436_rems_response[(offs + i) % 2];
+			break;
+		default: /* ignore */
+			break;
+		}
 		break;
 	case JEDEC_RDID:
 		switch (emu_chip) {
