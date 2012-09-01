@@ -17,8 +17,27 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-/* Driver for the SI-Prog like hardware by Lancos.com.
- * See http://www.lancos.com/siprogsch.html for schematics and instructions.
+/* Driver for serial programmers compatible with SI-Prog or AJAWe.
+ *
+ * See http://www.lancos.com/siprogsch.html for SI-Prog schematics and instructions.
+ * See http://www.ajawe.pl/ajawe0208.htm for AJAWe serial programmer documentation.
+ *
+ * Pin layout for SI-Prog-like hardware:
+ *
+ * MOSI <-------< DTR
+ * MISO >-------> CTS
+ * SCK  <---+---< RTS
+ *          +---> DSR
+ * CS#  <-------< TXD
+ *
+ * and for the AJAWe serial programmer:
+ *
+ * MOSI <-------< DTR
+ * MISO >-------> CTS
+ * SCK  <-------< RTS
+ * CS#  <-------< TXD
+ *
+ * DCE  >-------> DSR
  */
 
 #include <stdlib.h>
@@ -28,55 +47,50 @@
 #include "flash.h"
 #include "programmer.h"
 
-/* We have:
-
- MOSI -----> DTR
- MISO -----> CTS
- SCK  --+--> RTS
-        +--> DSR
- CS#  -----> TXD
-
-*/
-
 enum pony_type {
 	TYPE_SI_PROG,
 	TYPE_SERBANG,
+	TYPE_AJAWE
 };
 
-/* The hardware programmer used. */
-static enum pony_type pony_type = TYPE_SI_PROG;
+/* Pins for master->slave direction */
+static int pony_negate_cs = 1;
+static int pony_negate_sck = 0;
+static int pony_negate_mosi = 0;
+/* Pins for slave->master direction */
+static int pony_negate_miso = 0;
 
 static void pony_bitbang_set_cs(int val)
 {
-	if (pony_type == TYPE_SI_PROG)
-	{
-		/* CS# is negated by the SI-Prog programmer. */
+	if (pony_negate_cs)
 		val ^=  1;
-	}
+
 	sp_set_pin(PIN_TXD, val);
 }
 
 static void pony_bitbang_set_sck(int val)
 {
+	if (pony_negate_sck)
+		val ^=  1;
+
 	sp_set_pin(PIN_RTS, val);
 }
 
 static void pony_bitbang_set_mosi(int val)
 {
+	if (pony_negate_mosi)
+		val ^=  1;
+
 	sp_set_pin(PIN_DTR, val);
 }
 
 static int pony_bitbang_get_miso(void)
 {
-	int tmp;
+	int tmp = sp_get_pin(PIN_CTS);
 
-	tmp = sp_get_pin(PIN_CTS);
-
-	if (pony_type == TYPE_SERBANG)
-	{
-		/* MISO is negated by the SERBANG programmer. */
+	if (pony_negate_miso)
 		tmp ^= 1;
-	}
+
 	return tmp;
 }
 
@@ -91,15 +105,17 @@ static const struct bitbang_spi_master bitbang_spi_master_pony = {
 
 int pony_spi_init(void)
 {
+	int i, data_out;
 	char *arg = NULL;
-	int i, data_in, data_out, have_device = 0;
-	int have_prog = 1;
+	enum pony_type type = TYPE_SI_PROG;
+	char *name;
+	int have_device = 0;
+	int have_prog = 0;
 
-	/* The parameter is on format "dev=/dev/device,type=serbang" */
+	/* The parameter is in format "dev=/dev/device,type=serbang" */
 	arg = extract_programmer_param("dev");
-
 	if (arg && strlen(arg)) {
-		sp_fd = sp_openserport( arg, 9600 );
+		sp_fd = sp_openserport(arg, 9600);
 		if (sp_fd < 0) {
 			free(arg);
 			return 1;
@@ -110,51 +126,88 @@ int pony_spi_init(void)
 
 	if (!have_device) {
 		msg_perr("Error: No valid device specified.\n"
-			 "Use flashrom -p pony_spi:dev=/dev/device\n");
+			 "Use flashrom -p pony_spi:dev=/dev/device[,type=name]\n");
+		return 1;
+	}
 
-		return 1;
-	}
-	/* Register the shutdown callback. */
-	if (register_shutdown(serialport_shutdown, NULL)) {
-		return 1;
-	}
 	arg = extract_programmer_param("type");
-
-	if (arg) {
-		if (!strcasecmp( arg, "serbang")) {
-			pony_type = TYPE_SERBANG;
-		} else if (!strcasecmp( arg, "si_prog") ) {
-			pony_type = TYPE_SI_PROG;
-		} else {
-			msg_perr("Error: Invalid programmer type specified.\n");
-			free(arg);
-			return 1;
-		}
+	if (arg && !strcasecmp(arg, "serbang")) {
+		type = TYPE_SERBANG;
+	} else if (arg && !strcasecmp(arg, "si_prog")) {
+		type = TYPE_SI_PROG;
+	} else if (arg && !strcasecmp( arg, "ajawe")) {
+		type = TYPE_AJAWE;
+	} else if (arg && !strlen(arg)) {
+		msg_perr("Error: Missing argument for programmer type.\n");
+		free(arg);
+	} else if (arg){
+		msg_perr("Error: Invalid programmer type specified.\n");
+		free(arg);
+		return 1;
 	}
 	free(arg);
 
-	msg_pdbg("Using the %s programmer.\n", ((pony_type == TYPE_SI_PROG ) ? "SI-Prog" : "SERBANG"));
 	/*
-	 * Detect if there is a SI-Prog compatible programmer connected.
+	 * Configure the serial port pins, depending on the used programmer.
+	 */
+	switch (type) {
+	case TYPE_AJAWE:
+		pony_negate_cs = 1;
+		pony_negate_sck = 1;
+		pony_negate_mosi = 1;
+		pony_negate_miso = 1;
+		name = "AJAWe";
+		break;
+	case TYPE_SERBANG:
+		pony_negate_cs = 0;
+		pony_negate_sck = 0;
+		pony_negate_mosi = 0;
+		pony_negate_miso = 1;
+		name = "serbang";
+		break;
+	default:
+	case TYPE_SI_PROG:
+		pony_negate_cs = 1;
+		pony_negate_sck = 0;
+		pony_negate_mosi = 0;
+		pony_negate_miso = 0;
+		name = "SI-Prog";
+		break;
+	}
+	msg_pdbg("Using %s programmer pinout.\n", name);
+
+	/*
+	 * Detect if there is a compatible hardware programmer connected.
 	 */
 	pony_bitbang_set_cs(1);
+	pony_bitbang_set_sck(1);
 	pony_bitbang_set_mosi(1);
 
-	/* We toggle SCK while we keep MOSI and CS# on. */
-	for (i = 1; i <= 10; ++i) {
-		data_out = i & 1;
-		sp_set_pin(PIN_RTS, data_out);
-		programmer_delay( 1000 );
-		data_in = sp_get_pin(PIN_DSR);
+	switch (type) {
+	case TYPE_AJAWE:
+		have_prog = 1;
+		break;
+	case TYPE_SI_PROG:
+	case TYPE_SERBANG:
+	default:
+		have_prog = 1;
+		/* We toggle RTS/SCK a few times and see if DSR changes too. */
+		for (i = 1; i <= 10; i++) {
+			data_out = i & 1;
+			sp_set_pin(PIN_RTS, data_out);
+			programmer_delay(1000);
 
-		if (data_out != data_in) {
-			have_prog = 0;
-			break;
+			/* If DSR does not change, we are not connected to what we think */
+			if (data_out != sp_get_pin(PIN_DSR)) {
+				have_prog = 0;
+				break;
+			}
 		}
+		break;
 	}
 
 	if (!have_prog) {
-		msg_perr( "No SI-Prog compatible hardware detected.\n" );
+		msg_perr("No programmer compatible with %s detected.\n", name);
 		return 1;
 	}
 

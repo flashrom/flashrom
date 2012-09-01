@@ -520,7 +520,7 @@ void print_supported(void)
 	msg_ginfo("\nSupported devices for the %s programmer:\n",
 	       programmer_table[PROGRAMMER_PONY_SPI].name);
 	/* FIXME */
-	msg_ginfo("SI-Prog and SERBANG serial port programmer\n");
+	msg_ginfo("SI-Prog, serbang and AJAWe serial port programmers\n");
 #endif
 #if CONFIG_NICINTEL == 1
 	msg_ginfo("\nSupported devices for the %s programmer:\n",
