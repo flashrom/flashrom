@@ -115,7 +115,7 @@ fdtype sp_openserport(char *dev, unsigned int baud)
 		dev2 = malloc(strlen(dev) + 5);
 		if (!dev2) {
 			msg_perr("Error: Out of memory: %s\n", strerror(errno));
-			return -1;
+			return SER_INV_FD;
 		}
 		strcpy(dev2, "\\\\.\\");
 		strcpy(dev2 + 4, dev);
@@ -126,12 +126,12 @@ fdtype sp_openserport(char *dev, unsigned int baud)
 		free(dev2);
 	if (fd == INVALID_HANDLE_VALUE) {
 		msg_perr("Error: cannot open serial port: %s\n", strerror(errno));
-		return -1;
+		return SER_INV_FD;
 	}
 	DCB dcb;
 	if (!GetCommState(fd, &dcb)) {
 		msg_perr("Error: Could not fetch serial port configuration: %s\n", strerror(errno));
-		return -1;
+		return SER_INV_FD;
 	}
 	switch (baud) {
 		case 9600: dcb.BaudRate = CBR_9600; break;
@@ -140,14 +140,14 @@ fdtype sp_openserport(char *dev, unsigned int baud)
 		case 57600: dcb.BaudRate = CBR_57600; break;
 		case 115200: dcb.BaudRate = CBR_115200; break;
 		default: msg_perr("Error: Could not set baud rate: %s\n", strerror(errno));
-			 return -1;
+			 return SER_INV_FD;
 	}
 	dcb.ByteSize = 8;
 	dcb.Parity = NOPARITY;
 	dcb.StopBits = ONESTOPBIT;
 	if (!SetCommState(fd, &dcb)) {
 		msg_perr("Error: Could not change serial port configuration: %s\n", strerror(errno));
-		return -1;
+		return SER_INV_FD;
 	}
 	return fd;
 #else
@@ -156,7 +156,7 @@ fdtype sp_openserport(char *dev, unsigned int baud)
 	fd = open(dev, O_RDWR | O_NOCTTY | O_NDELAY);
 	if (fd < 0) {
 		msg_perr("Error: cannot open serial port: %s\n", strerror(errno));
-		return -1;
+		return SER_INV_FD;
 	}
 	fcntl(fd, F_SETFL, 0);
 	tcgetattr(fd, &options);
@@ -164,7 +164,7 @@ fdtype sp_openserport(char *dev, unsigned int baud)
 		if (sp_baudtable[i].baud == 0) {
 			close(fd);
 			msg_perr("Error: cannot configure for baudrate %d\n", baud);
-			return -1;
+			return SER_INV_FD;
 		}
 		if (sp_baudtable[i].baud == baud) {
 			cfsetispeed(&options, sp_baudtable[i].flag);

@@ -636,8 +636,10 @@ void serprog_delay(int usecs);
 /* serial.c */
 #ifdef _WIN32
 typedef HANDLE fdtype;
+#define SER_INV_FD	INVALID_HANDLE_VALUE
 #else
 typedef int fdtype;
+#define SER_INV_FD	-1
 #endif
 
 void sp_flush_incoming(void);
