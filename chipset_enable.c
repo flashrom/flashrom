@@ -968,17 +968,31 @@ static int enable_flash_sb600(struct pci_dev *dev, const char *name)
 	return ret;
 }
 
+/* sets bit 0 in 0x6d */
+static int enable_flash_nvidia_common(struct pci_dev *dev, const char *name)
+{
+	uint8_t old, new;
+
+	old = pci_read_byte(dev, 0x6d);
+	new = old | 0x01;
+	if (new == old)
+		return 0;
+
+	rpci_write_byte(dev, 0x6d, new);
+	if (pci_read_byte(dev, 0x6d) != new) {
+		msg_pinfo("Setting register 0x6d to 0x%02x on %s failed.\n", new, name);
+		return 1;
+	}
+	return 0;
+}
+
 static int enable_flash_nvidia_nforce2(struct pci_dev *dev, const char *name)
 {
-	uint8_t tmp;
-
 	rpci_write_byte(dev, 0x92, 0);
-
-	tmp = pci_read_byte(dev, 0x6d);
-	tmp |= 0x01;
-	rpci_write_byte(dev, 0x6d, tmp);
-
-	return 0;
+	if (enable_flash_nvidia_common(dev, name))
+		return ERROR_NONFATAL;
+	else
+		return 0;
 }
 
 static int enable_flash_ck804(struct pci_dev *dev, const char *name)
@@ -1001,19 +1015,10 @@ static int enable_flash_ck804(struct pci_dev *dev, const char *name)
 		}
 	}
 
-	old = pci_read_byte(dev, 0x6d);
-	new = old | 0x01;
-	if (new == old)
+	if (enable_flash_nvidia_common(dev, name))
+		return ERROR_NONFATAL;
+	else
 		return 0;
-	rpci_write_byte(dev, 0x6d, new);
-
-	if (pci_read_byte(dev, 0x6d) != new) {
-		msg_pinfo("Setting register 0x%x to 0x%x on %s failed "
-			  "(WARNING ONLY).\n", 0x6d, new, name);
-		return -1;
-	}
-
-	return 0;
 }
 
 static int enable_flash_osb4(struct pci_dev *dev, const char *name)
@@ -1071,7 +1076,7 @@ static int enable_flash_sb400(struct pci_dev *dev, const char *name)
 
 static int enable_flash_mcp55(struct pci_dev *dev, const char *name)
 {
-	uint8_t old, new, val;
+	uint8_t val;
 	uint16_t wordval;
 
 	/* Set the 0-16 MB enable bits. */
@@ -1085,19 +1090,10 @@ static int enable_flash_mcp55(struct pci_dev *dev, const char *name)
 	wordval |= 0x7fff;	/* 16M */
 	rpci_write_word(dev, 0x90, wordval);
 
-	old = pci_read_byte(dev, 0x6d);
-	new = old | 0x01;
-	if (new == old)
+	if (enable_flash_nvidia_common(dev, name))
+		return ERROR_NONFATAL;
+	else
 		return 0;
-	rpci_write_byte(dev, 0x6d, new);
-
-	if (pci_read_byte(dev, 0x6d) != new) {
-		msg_pinfo("Setting register 0x%x to 0x%x on %s failed "
-			  "(WARNING ONLY).\n", 0x6d, new, name);
-		return -1;
-	}
-
-	return 0;
 }
 
 /*
