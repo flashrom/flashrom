@@ -997,25 +997,74 @@ static int enable_flash_nvidia_nforce2(struct pci_dev *dev, const char *name)
 
 static int enable_flash_ck804(struct pci_dev *dev, const char *name)
 {
-	uint8_t old, new;
+	uint32_t segctrl;
+	uint8_t reg, old, new;
+	unsigned int err = 0;
 
-	pci_write_byte(dev, 0x92, 0x00);
-	if (pci_read_byte(dev, 0x92) != 0x00) {
-		msg_pinfo("Setting register 0x%x to 0x%x on %s failed "
-			  "(WARNING ONLY).\n", 0x92, 0x00, name);
+	/* 0x8A is special: it is a single byte and only one nibble is touched. */
+	reg = 0x8A;
+	segctrl = pci_read_byte(dev, reg);
+	if ((segctrl & 0x3) != 0x0) {
+		if ((segctrl & 0xC) != 0x0) {
+			msg_pinfo("Can not unlock existing protection in register 0x%02x.\n", reg);
+			err++;
+		} else {
+			msg_pdbg("Unlocking protection in register 0x%02x... ", reg);
+			rpci_write_byte(dev, reg, segctrl & 0xF0);
+
+			segctrl = pci_read_byte(dev, reg);
+			if ((segctrl & 0x3) != 0x0) {
+				msg_pinfo("Could not unlock protection in register 0x%02x (new value: 0x%x).\n",
+					  reg, segctrl);
+				err++;
+			} else
+				msg_pdbg("OK\n");
+		}
 	}
 
-	old = pci_read_byte(dev, 0x88);
-	new = old | 0xc0;
+	for (reg = 0x8C; reg <= 0x94; reg += 4) {
+		segctrl = pci_read_long(dev, reg);
+		if ((segctrl & 0x33333333) == 0x00000000) {
+			/* reads and writes are unlocked */
+			continue;
+		}
+		if ((segctrl & 0xCCCCCCCC) != 0x00000000) {
+			msg_pinfo("Can not unlock existing protection in register 0x%02x.\n", reg);
+			err++;
+			continue;
+		}
+		msg_pdbg("Unlocking protection in register 0x%02x... ", reg);
+		rpci_write_long(dev, reg, 0x00000000);
+
+		segctrl = pci_read_long(dev, reg);
+		if ((segctrl & 0x33333333) != 0x00000000) {
+			msg_pinfo("Could not unlock protection in register 0x%02x (new value: 0x%08x).\n",
+				  reg, segctrl);
+			err++;
+		} else
+			msg_pdbg("OK\n");
+	}
+
+	if (err > 0) {
+		msg_pinfo("%d locks could not be disabled, disabling writes (reads may also fail).\n", err);
+		programmer_may_write = 0;
+	}
+
+	reg = 0x88;
+	old = pci_read_byte(dev, reg);
+	new = old | 0xC0;
 	if (new != old) {
-		rpci_write_byte(dev, 0x88, new);
-		if (pci_read_byte(dev, 0x88) != new) {
-			msg_pinfo("Setting register 0x%x to 0x%x on %s failed "
-				  "(WARNING ONLY).\n", 0x88, new, name);
+		rpci_write_byte(dev, reg, new);
+		if (pci_read_byte(dev, reg) != new) {
+			msg_pinfo("Setting register 0x%02x to 0x%x on %s failed.\n", reg, new, name);
+			err++;
 		}
 	}
 
 	if (enable_flash_nvidia_common(dev, name))
+		err++;
+
+	if (err > 0)
 		return ERROR_NONFATAL;
 	else
 		return 0;

@@ -620,7 +620,7 @@ const struct board_info boards_known[] = {
 	B("ASUS",	"A8N-E",		OK, "http://www.asus.com/Motherboards/AMD_Socket_939/A8NE/", NULL),
 	B("ASUS",	"A8N-LA (Nagami-GL8E)",	OK, "http://h10025.www1.hp.com/ewfrf/wc/document?lc=en&cc=us&docname=c00647121&dlc=en", "This is an OEM board from HP, the HP name is Nagami-GL8E."),
 	B("ASUS",	"A8N-SLI",		OK, "http://www.asus.com/Motherboards/AMD_Socket_939/A8NSLI/", NULL),
-	B("ASUS",	"A8N-SLI Deluxe",	NT, NULL, "Untested board enable."),
+	B("ASUS",	"A8N-SLI Deluxe",	NT, NULL, "Should work out of the box since r1593."),
 	B("ASUS",	"A8N-SLI Premium",	OK, "http://www.asus.com/Motherboards/AMD_Socket_939/A8NSLI_Premium/", NULL),
 	B("ASUS",	"A8N-VM",		OK, "http://www.asus.com/Motherboards/AMD_Socket_939/A8NVM/", NULL),
 	B("ASUS",	"A8N-VM CSM",		OK, "http://www.asus.com/Motherboards/AMD_Socket_939/A8NVM_CSM/", NULL),
