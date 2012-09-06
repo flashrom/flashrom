@@ -248,6 +248,7 @@
 #define EON_EN25F80		0x3114
 #define EON_EN25F16		0x3115
 #define EON_EN25F32		0x3116
+#define EON_EN25F64		0x3117	/* guessed */
 #define EON_EN25Q40		0x3013
 #define EON_EN25Q80		0x3014
 #define EON_EN25Q16		0x3015	/* Same as EN25D16 */
