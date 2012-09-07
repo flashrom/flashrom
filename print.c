@@ -710,6 +710,7 @@ const struct board_info boards_known[] = {
 	B("ASUS",	"P5L-MX",		OK, "http://www.asus.com/Motherboards/Intel_Socket_775/P5LMX/", NULL),
 	B("ASUS",	"P5L-VM 1394",		OK, "http://www.asus.com/Motherboards/Intel_Socket_775/P5LVM_1394/", NULL),
 	B("ASUS",	"P5LD2",		NT, NULL, "Untested board enable."),
+	B("ASUS",	"P5LD2-VM",		NT, "http://www.asus.com/Motherboards/Intel_Socket_775/P5LD2VM/", "Untested board enable."),
 	B("ASUS",	"P5LP-LE (Lithium-UL8E)", OK, "http://h10025.www1.hp.com/ewfrf/wc/document?docname=c00379616&tmp_task=prodinfoCategory&cc=us&dlc=en&lc=en&product=1159887", "This is an OEM board from HP."),
 	B("ASUS",	"P5LP-LE (Epson OEM)",	OK, NULL, "This is an OEM board from Epson (e.g. Endeavor MT7700)."),
 	B("ASUS",	"P5LP-LE",		NT, NULL, "This designation is used for OEM boards from HP, Epson and maybe others. The HP names vary and not all of them have been tested yet. Please report any success or failure, thanks."),
