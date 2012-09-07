@@ -239,6 +239,7 @@ void sp_flush_incoming(void)
 #ifdef _WIN32
 	PurgeComm(sp_fd, PURGE_RXCLEAR);
 #else
+	/* FIXME: error handling */
 	tcflush(sp_fd, TCIFLUSH);
 #endif
 	return;
