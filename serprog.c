@@ -138,20 +138,24 @@ static int sp_opensocket(char *ip, unsigned int port)
 	return sock;
 }
 
-static int sp_sync_read_timeout(int loops)
+/* Returns 0 on success and places the character read into the location pointed to by c.
+ * Returns positive values on temporary errors and negative ones on permanent errors.
+ * An iteration of one loop takes up to 1ms. */
+static int sp_sync_read_timeout(unsigned int loops, unsigned char *c)
 {
 	int i;
-	unsigned char c;
 	for (i = 0; i < loops; i++) {
 		ssize_t rv;
-		rv = read(sp_fd, &c, 1);
+		rv = read(sp_fd, c, 1);
 		if (rv == 1)
-			return c;
-		if ((rv == -1) && (errno != EAGAIN))
-			sp_die("read");
-		usleep(10 * 1000);	/* 10ms units */
+			return 0;
+		if ((rv == -1) && (errno != EAGAIN)) {
+			msg_perr("read: %s\n", strerror(errno));
+			return -1;
+		}
+		usleep(1000);	/* 1ms units */
 	}
-	return -1;
+	return 1;
 }
 
 /* Synchronize: a bit tricky algorithm that tries to (and in my tests has *
@@ -160,7 +164,7 @@ static int sp_sync_read_timeout(int loops)
  * blocking read - TODO: add an alarm() timer for the rest of the app on  *
  * serial operations, though not such a big issue as the first thing to   *
  * do is synchronize (eg. check that device is alive).			  */
-static void sp_synchronize(void)
+static int sp_synchronize(void)
 {
 	int i;
 	int flags = fcntl(sp_fd, F_GETFL);
@@ -171,8 +175,10 @@ static void sp_synchronize(void)
 	 * the device serial parser to get to a sane state, unless if it   *
 	 * is waiting for a real long write-n.                             */
 	memset(buf, S_CMD_NOP, 8);
-	if (write(sp_fd, buf, 8) != 8)
-		sp_die("flush write");
+	if (write(sp_fd, buf, 8) != 8) {
+		msg_perr("flush write: %s\n", strerror(errno));
+		goto err_out;
+	}
 	/* A second should be enough to get all the answers to the buffer */
 	usleep(1000 * 1000);
 	sp_flush_incoming();
@@ -184,36 +190,48 @@ static void sp_synchronize(void)
 	for (i = 0; i < 8; i++) {
 		int n;
 		unsigned char c = S_CMD_SYNCNOP;
-		if (write(sp_fd, &c, 1) != 1)
-			sp_die("sync write");
+		if (write(sp_fd, &c, 1) != 1) {
+			msg_perr("sync write: %s\n", strerror(errno));
+			goto err_out;
+		}
 		msg_pdbg(".");
 		fflush(stdout);
 		for (n = 0; n < 10; n++) {
-			c = sp_sync_read_timeout(5);	/* wait up to 50ms */
-			if (c != S_NAK)
+			int ret = sp_sync_read_timeout(50, &c);
+			if (ret < 0)
+				goto err_out;
+			if (ret > 0 || c != S_NAK)
 				continue;
-			c = sp_sync_read_timeout(2);
-			if (c != S_ACK)
+			ret = sp_sync_read_timeout(20, &c);
+			if (ret < 0)
+				goto err_out;
+			if (ret > 0 || c != S_ACK)
 				continue;
 			c = S_CMD_SYNCNOP;
-			if (write(sp_fd, &c, 1) != 1)
-				sp_die("sync write");
-			c = sp_sync_read_timeout(50);
-			if (c != S_NAK)
+			if (write(sp_fd, &c, 1) != 1) {
+				msg_perr("sync write: %s\n", strerror(errno));
+				return 1;
+			}
+			ret = sp_sync_read_timeout(500, &c);
+			if (ret < 0)
+				goto err_out;
+			if (ret > 0 || c != S_NAK)
 				break;	/* fail */
-			c = sp_sync_read_timeout(10);
+			ret = sp_sync_read_timeout(100, &c);
+			if (ret > 0 || ret < 0)
+				goto err_out;
 			if (c != S_ACK)
 				break;	/* fail */
 			/* Ok, synchronized; back to blocking reads and return. */
 			flags &= ~O_NONBLOCK;
 			fcntl(sp_fd, F_SETFL, flags);
 			msg_pdbg("\n");
-			return;
+			return 0;
 		}
 	}
-	msg_perr("Error: cannot synchronize protocol "
-		"- check communications and reset device?\n");
-	exit(1);
+err_out:
+	msg_perr("Error: cannot synchronize protocol - check communications and reset device?\n");
+	return 1;
 }
 
 static int sp_check_commandavail(uint8_t command)
@@ -443,7 +461,8 @@ int serprog_init(void)
 
 	sp_check_avail_automatic = 0;
 
-	sp_synchronize();
+	if (sp_synchronize())
+		return 1;
 
 	msg_pdbg(MSGHEADER "Synchronized\n");
 
@@ -743,7 +762,8 @@ static int serprog_shutdown(void *data)
 	msg_pspew("%s\n", __func__);
 	if ((sp_opbuf_usage) || (sp_max_write_n && sp_write_n_bytes))
 		sp_execute_opbuf();
-	close(sp_fd);
+	/* FIXME: fix sockets on windows(?), especially closing */
+	serialport_shutdown(&sp_fd);
 	if (sp_max_write_n)
 		free(sp_write_n_buf);
 	return 0;
