@@ -1165,6 +1165,7 @@ static int nvidia_mcp_gpio0a_raise(void)
 
 /*
  * Suited for:
+ *  - MSI K8N Neo Platinum: Socket 754 + nForce3 Ultra + CK8
  *  - MSI K8N Neo2 Platinum: Socket 939 + nForce3 Ultra + CK8
  */
 static int nvidia_mcp_gpio0c_raise(void)
@@ -2404,6 +2405,7 @@ const struct board_match board_matches[] = {
 	{0x8086, 0x24d3, 0x1462, 0x7880,  0x8086, 0x2570,      0,      0, NULL,	        NULL, NULL,           P3, "MSI",         "MS-6788-040 (848P NeoV)", 0, OK, intel_ich_gpio32_raise},
 	{0x1039, 0x7012, 0x1462, 0x0050,  0x1039, 0x6325, 0x1462, 0x0058, NULL,         NULL, NULL,           P3, "MSI",         "MS-7005 (651M-L)",      0,   OK, sis_gpio0_raise_and_w836xx_memw},
 	{0x10DE, 0x00E0, 0x1462, 0x0250,  0x10DE, 0x00E1, 0x1462, 0x0250, NULL,         NULL, NULL,           P3, "MSI",         "MS-7025 (K8N Neo2 Platinum)", 0, OK, nvidia_mcp_gpio0c_raise},
+	{0x10DE, 0x00E0, 0x1462, 0x0300,  0x10DE, 0x00E1, 0x1462, 0x0300, NULL,         NULL, NULL,           P3, "MSI",         "MS-7030 (K8N Neo Platinum)", 0, OK, nvidia_mcp_gpio0c_raise},
 	{0x8086, 0x2658, 0x1462, 0x7046,  0x1106, 0x3044, 0x1462, 0x046d, NULL,         NULL, NULL,           P3, "MSI",         "MS-7046",               0,   OK, intel_ich_gpio19_raise},
 	{0x8086, 0x244b, 0x1462, 0x3910,  0x8086, 0x2442, 0x1462, 0x3910, NULL,         NULL, NULL,           P3, "MSI",         "MS-6391 (845 Pro4)",    0,   OK, intel_ich_gpio23_raise},
 	{0x1106, 0x3149, 0x1462, 0x7061,  0x1106, 0x3227,      0,      0, NULL,         NULL, NULL,           P3, "MSI",         "MS-7061 (KM4M-V/KM4AM-V)", 0, OK, w836xx_memw_enable_2e},
