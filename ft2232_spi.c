@@ -283,7 +283,9 @@ int ft2232_spi_init(void)
 		msg_perr("Unable to select interface: %s\n", ftdic->error_str);
 	}
 
-	f = ftdi_usb_open(ftdic, ft2232_vid, ft2232_type);
+	arg = extract_programmer_param("serial");
+	f = ftdi_usb_open_desc(ftdic, ft2232_vid, ft2232_type, NULL, arg);
+	free(arg);
 
 	if (f < 0 && f != -5) {
 		msg_perr("Unable to open FTDI device: %d (%s)\n", f,

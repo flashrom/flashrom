@@ -573,6 +573,15 @@ The default model is
 and the default interface is
 .BR B .
 .sp
+If there is more than one ft2232_spi-compatible device connected, you can select which one should be used by
+specifying its serial number with the
+.sp
+.B "  flashrom \-p ft2232_spi:serial=number"
+.sp
+syntax where
+.B number
+is the serial number of the device (which can be found for example in the output of lsusb -v).
+.sp
 All models supported by the ft2232_spi driver can configure the SPI clock rate by setting a divisor. The
 expressible divisors are all even numbers between 2 and 2^17 (=131072) resulting in SPI clock frequencies of
 6 MHz down to about 92 Hz for 12 MHz inputs. The default divisor is set to 2, but you can use another one by
