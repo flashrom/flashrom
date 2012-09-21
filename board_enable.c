@@ -346,7 +346,7 @@ void probe_superio_winbond(void)
 		case WINBOND_W83627HF_ID:
 		case WINBOND_W83627EHF_ID:
 		case WINBOND_W83627THF_ID:
-			msg_pdbg("Found Winbond Super I/O, id %02hx\n", s.model);
+			msg_pdbg("Found Winbond Super I/O, id 0x%02hx\n", s.model);
 			register_superio(s);
 			break;
 		case WINBOND_W83697HF_ID:
@@ -355,7 +355,7 @@ void probe_superio_winbond(void)
 			if (((tmp == 0x00) && (s.port != WINBOND_SUPERIO_PORT1)) ||
 			    ((tmp == 0x40) && (s.port != WINBOND_SUPERIO_PORT2))) {
 				msg_pdbg("Winbond Super I/O probe weirdness: Port mismatch for ID "
-					 "%02x at port %04x\n", s.model, s.port);
+					 "0x%02x at port 0x%04x\n", s.model, s.port);
 				break;
 			}
 			tmp = w836xx_deviceid_hwmon(s.port);
@@ -365,11 +365,11 @@ void probe_superio_winbond(void)
 				break;
 			}
 			if (tmp != s.model) {
-				msg_pinfo("W83 series hardware monitor device ID weirdness: expected %02x, "
-					  "got %02x\n", WINBOND_W83697HF_ID, tmp);
+				msg_pinfo("W83 series hardware monitor device ID weirdness: expected 0x%02x, "
+					  "got 0x%02x\n", WINBOND_W83697HF_ID, tmp);
 				break;
 			}
-			msg_pinfo("Found Winbond Super I/O, id %02hx\n", s.model);
+			msg_pinfo("Found Winbond Super I/O, id 0x%02hx\n", s.model);
 			register_superio(s);
 			break;
 		}
@@ -1700,11 +1700,13 @@ static int intel_ich_gpio20_raise(void)
 
 /*
  * Suited for:
+ *  - ASUS CUSL2-C: Intel socket370 + 815 + ICH2
  *  - ASUS P4B266LM (Sony Vaio PCV-RX650): socket478 + 845D + ICH2
  *  - ASUS P4C800-E Deluxe: socket478 + 875P + ICH5
  *  - ASUS P4P800: Intel socket478 + 865PE + ICH5R
  *  - ASUS P4P800-E Deluxe: Intel socket478 + 865PE + ICH5R
  *  - ASUS P4P800-VM: Intel socket478 + 865PE + ICH5R
+ *  - ASUS P4P800-X: Intel socket478 + 865PE + ICH5R
  *  - ASUS P5GD1 Pro: Intel LGA 775 + 915P + ICH6R
  *  - ASUS P5GD2 Premium: Intel LGA775 + 915G + ICH6R
  *  - ASUS P5GDC Deluxe: Intel socket775 + 915P + ICH6R
@@ -2333,8 +2335,9 @@ const struct board_match board_matches[] = {
 	{0x8086, 0x2560, 0x103C, 0x2A00,  0x8086, 0x24C3, 0x103C, 0x2A01, "^Guppy",     NULL, NULL,           P3, "ASUS",        "P4GV-LA (Guppy)",       0,   OK, intel_ich_gpio21_raise},
 	{0x8086, 0x24D3, 0x1043, 0x80A6,  0x8086, 0x2578, 0x1043, 0x80F6, NULL,         NULL, NULL,           P3, "ASUS",        "P4C800-E Deluxe",       0,   OK, intel_ich_gpio21_raise},
 	{0x8086, 0x2570, 0x1043, 0x80F2,  0x8086, 0x24D5, 0x1043, 0x80F3, NULL,         NULL, NULL,           P3, "ASUS",        "P4P800",                0,   NT, intel_ich_gpio21_raise},
-	{0x8086, 0x2570, 0x1043, 0x80F2,  0x8086, 0x24D3, 0x1043, 0x80A6, "^P4P800-E$", NULL, NULL,           P3, "ASUS",        "P4P800-E Deluxe",       0,   OK, intel_ich_gpio21_raise},
-	{0x8086, 0x2570, 0x1043, 0x80A5,  0x8086, 0x24d0,      0,      0, NULL,         NULL, NULL,           P3, "ASUS",        "P4P800-VM",             0,   OK, intel_ich_gpio21_raise},
+	{0x8086, 0x2570, 0x1043, 0x80f2,  0x8086, 0x24d3, 0x1043, 0x80a6, "^P4P800-E$", NULL, NULL,           P3, "ASUS",        "P4P800-E Deluxe",       0,   OK, intel_ich_gpio21_raise},
+	{0x8086, 0x2570, 0x1043, 0x80a5,  0x8086, 0x24d3, 0x1043, 0x80a6, "^P4P800-VM$", NULL, NULL,          P3, "ASUS",        "P4P800-VM",             0,   OK, intel_ich_gpio21_raise},
+	{0x8086, 0x2570, 0x1043, 0x80f2,  0x8086, 0x24d3, 0x1043, 0x80a6, "^P4P800-X$", NULL, NULL,           P3, "ASUS",        "P4P800-X",              0,   OK, intel_ich_gpio21_raise},
 	{0x1039, 0x0651, 0x1043, 0x8081,  0x1039, 0x0962,      0,      0, NULL,         NULL, NULL,           P3, "ASUS",        "P4SC-E",                0,   OK, it8707f_write_enable_2e},
 	{0x8086, 0x2570, 0x1043, 0x80A5,  0x105A, 0x24D3, 0x1043, 0x80A6, NULL,         NULL, NULL,           P3, "ASUS",        "P4SD-LA",               0,   NT, intel_ich_gpio32_raise},
 	{0x1039, 0x0661, 0x1043, 0x8113,  0x1039, 0x5513, 0x1043, 0x8087, NULL,         NULL, NULL,           P3, "ASUS",        "P4S800-MX",             512, OK, w836xx_memw_enable_2e},
@@ -2356,8 +2359,9 @@ const struct board_match board_matches[] = {
 	{0x10DE, 0x0260, 0x1043, 0x81BC,  0x10DE, 0x026C, 0x1043, 0x829E, "^P5N-D$",    NULL, NULL,           P3, "ASUS",        "P5N-D",                 0,   OK, it8718f_gpio63_raise},
 	{0x10DE, 0x0260, 0x1043, 0x81BC,  0x10DE, 0x026C, 0x1043, 0x8249, "^P5N-E SLI$",NULL, NULL,           P3, "ASUS",        "P5N-E SLI",             0,   NT, it8718f_gpio63_raise},
 	{0x8086, 0x24dd, 0x1043, 0x80a6,  0x8086, 0x2570, 0x1043, 0x8157, NULL,         NULL, NULL,           P3, "ASUS",        "P5PE-VM",               0,   OK, intel_ich_gpio21_raise},
-	{0x8086, 0x2443, 0x1043, 0x8027,  0x8086, 0x1130, 0x1043, 0x8027, NULL,         NULL, NULL,           P3, "ASUS",        "TUSL2-C",               0,   NT, intel_ich_gpio21_raise},
-	{0x1106, 0x3177, 0x1106, 0x3177,  0x1106, 0x3116, 0x1106, 0x3116, "^KM266-8235$", "biostar", "m7viq",         P3, "Biostar",     "M7VIQ",                 0,   NT, w83697xx_memw_enable_2e},
+	{0x8086, 0x2443, 0x1043, 0x8027,  0x8086, 0x1130, 0x1043, 0x8027, "^CUSL2-C",   NULL, NULL,           P3, "ASUS",        "CUSL2-C",               0,   OK, intel_ich_gpio21_raise},
+	{0x8086, 0x2443, 0x1043, 0x8027,  0x8086, 0x1130, 0x1043, 0x8027, "^TUSL2-C",   NULL, NULL,           P3, "ASUS",        "TUSL2-C",               0,   NT, intel_ich_gpio21_raise},
+	{0x1106, 0x3177, 0x1106, 0x3177,  0x1106, 0x3116, 0x1106, 0x3116, "^KM266-8235$", "biostar", "m7viq", P3, "Biostar",     "M7VIQ",                 0,   NT, w83697xx_memw_enable_2e},
 	{0x10b7, 0x9055, 0x1028, 0x0082,  0x8086, 0x7190,      0,      0, NULL,         NULL, NULL,           P3, "Dell",        "OptiPlex GX1",          0,   OK, intel_piix4_gpo30_lower},
 	{0x8086, 0x3590, 0x1028, 0x016c,  0x1000, 0x0030, 0x1028, 0x016c, NULL,         NULL, NULL,           P3, "Dell",        "PowerEdge 1850",        0,   OK, intel_ich_gpio23_raise},
 	{0x1106, 0x3189, 0x1106, 0x3189,  0x1106, 0x3177, 0x1106, 0x3177, "^AD77",      "dfi", "ad77",        P3, "DFI",         "AD77",                  0,   NT, w836xx_memw_enable_2e},

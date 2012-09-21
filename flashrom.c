@@ -631,16 +631,6 @@ out_free:
  * erasing. This is only possible if all chunks of size @gran are either kept
  * as-is or changed from an all-ones state to any other state.
  *
- * The following write granularities (enum @gran) are known:
- * - 1 bit. Each bit can be cleared individually.
- * - 1 byte. A byte can be written once. Further writes to an already written
- *   byte cause the contents to be either undefined or to stay unchanged.
- * - 128 bytes. If less than 128 bytes are written, the rest will be
- *   erased. Each write to a 128-byte region will trigger an automatic erase
- *   before anything is written. Very uncommon behaviour and unsupported by
- *   this function.
- * - 256 bytes. If less than 256 bytes are written, the contents of the
- *   unwritten bytes are undefined.
  * Warning: This function assumes that @have and @want point to naturally
  * aligned regions.
  *

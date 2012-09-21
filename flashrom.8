@@ -291,8 +291,9 @@ contents (using
 .BR \-r )
 and store it to a medium outside of your computer, like
 a USB drive or a network share. If you needed to run the board enable code
-already for probing, use it for reading too. Now you can try to write the
-new image. You should enable the board enable code in any case now, as it
+already for probing, use it for reading too.
+If reading succeeds and the contens of the read file look legit you can try to write the new image.
+You should enable the board enable code in any case now, as it
 has been written because it is known that writing/erasing without the board
 enable is going to fail. In any case (success or failure), please report to
 the flashrom mailing list, see below.
@@ -326,7 +327,7 @@ report so we can diagnose the problem.
 .B Intel chipsets
 .sp
 If you have an Intel chipset with an ICH8 or later southbridge with SPI flash
-attached, and if a valid descriptor was written to it (e.g. by the vendor), the
+attached, and if a valid descriptor was written to it (e.g.\& by the vendor), the
 chipset provides an alternative way to access the flash chip(s) named
 .BR "Hardware Sequencing" .
 It is much simpler than the normal access method (called
@@ -341,7 +342,7 @@ syntax where
 .BR auto ", " swseq " or " hwseq .
 By default
 .RB "(or when setting " ich_spi_mode=auto )
-the module tries to use swseq and only activates hwseq if need be (e.g. if
+the module tries to use swseq and only activates hwseq if need be (e.g.\& if
 important opcodes are inaccessible due to lockdown; or if more than one flash
 chip is attached). The other options (swseq, hwseq) select the respective mode
 (if possible).
@@ -482,7 +483,7 @@ the
 .sp
 syntax where
 .B size
-is the number of bytes (min. 1, max. 256).
+is the number of bytes (min.\& 1, max.\& 256).
 .sp
 Example:
 .sp
@@ -498,7 +499,7 @@ flash chip, you can specify a blacklist of SPI commands with the
 syntax where
 .B commandlist
 is a list of two-digit hexadecimal representations of
-SPI commands. If commandlist is e.g. 0302, flashrom will behave as if the SPI
+SPI commands. If commandlist is e.g.\& 0302, flashrom will behave as if the SPI
 controller refuses to run command 0x03 (READ) and command 0x02 (WRITE).
 commandlist may be up to 512 characters (256 commands) long.
 Implementation note: flashrom will detect an error during command execution.
@@ -514,7 +515,7 @@ you can specify an ignorelist of SPI commands with the
 syntax where
 .B commandlist
 is a list of two-digit hexadecimal representations of
-SPI commands. If commandlist is e.g. 0302, the emulated flash chip will ignore
+SPI commands. If commandlist is e.g.\& 0302, the emulated flash chip will ignore
 command 0x03 (READ) and command 0x02 (WRITE).  commandlist may be up to 512
 characters (256 commands) long.
 Implementation note: flashrom won't detect an error during command execution.
@@ -723,7 +724,7 @@ is installed in your system, you have to specify the PCI address of the card
 you want to use with the
 .B pci=
 parameter as explained in the
-.B nic3com
+.B nic3com et al.\& 
 section above.
 .sp
 More information about the hardware is available at
@@ -828,11 +829,11 @@ Many of the developers communicate via the
 IRC channel on
 .BR chat.freenode.net .
 You are welcome to join and ask questions, send us bug and success reports there
-too. Please provide a way to contact you later (e.g. a mail address) and be
+too. Please provide a way to contact you later (e.g.\& a mail address) and be
 patient if there is no immediate reaction. Also, we provide a pastebin service
 at
 .B http://paste.flashrom.org
-that is very useful when you want to share logs etc. without spamming the
+that is very useful when you want to share logs etc.\& without spamming the
 channel.
 .SS
 .B Laptops
@@ -853,7 +854,7 @@ One-time programmable (OTP) memory and unique IDs
 .sp
 Some flash chips contain OTP memory often denoted as "security registers".
 They usually have a capacity in the range of some bytes to a few hundred
-bytes and can be used to give devices unique IDs etc. flashrom is not able
+bytes and can be used to give devices unique IDs etc.  flashrom is not able
 to read or write these memories and may therefore not be able to duplicate a
 chip completely. For chip types known to include OTP memories a warning is
 printed when they are detected.
