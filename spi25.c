@@ -487,6 +487,43 @@ int spi_chip_erase_60(struct flashctx *flash)
 	return 0;
 }
 
+int spi_chip_erase_62(struct flashctx *flash)
+{
+	int result;
+	struct spi_command cmds[] = {
+	{
+		.writecnt	= JEDEC_WREN_OUTSIZE,
+		.writearr	= (const unsigned char[]){ JEDEC_WREN },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= JEDEC_CE_62_OUTSIZE,
+		.writearr	= (const unsigned char[]){ JEDEC_CE_62 },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= 0,
+		.writearr	= NULL,
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}};
+	
+	result = spi_send_multicommand(flash, cmds);
+	if (result) {
+		msg_cerr("%s failed during command execution\n",
+			__func__);
+		return result;
+	}
+	/* Wait until the Write-In-Progress bit is cleared.
+	 * This usually takes 2-5 s, so wait in 100 ms steps.
+	 */
+	/* FIXME: We assume spi_read_status_register will never fail. */
+	while (spi_read_status_register(flash) & SPI_SR_WIP)
+		programmer_delay(100 * 1000);
+	/* FIXME: Check the status register for errors. */
+	return 0;
+}
+
 int spi_chip_erase_c7(struct flashctx *flash)
 {
 	int result;
@@ -709,6 +746,16 @@ int spi_block_erase_60(struct flashctx *flash, unsigned int addr,
 		return -1;
 	}
 	return spi_chip_erase_60(flash);
+}
+
+int spi_block_erase_62(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
+{
+	if ((addr != 0) || (blocklen != flash->chip->total_size * 1024)) {
+		msg_cerr("%s called with incorrect arguments\n",
+			__func__);
+		return -1;
+	}
+	return spi_chip_erase_62(flash);
 }
 
 int spi_block_erase_c7(struct flashctx *flash, unsigned int addr,
