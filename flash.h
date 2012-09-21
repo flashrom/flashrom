@@ -59,6 +59,21 @@ enum chipbustype {
 };
 
 /*
+ * The following write granularities are known:
+ * - 1 bit: Each bit can be cleared individually.
+ * - 1 byte: A byte can be written once. Further writes to an already written byte cause its contents to be
+ *   either undefined or to stay unchanged.
+ * - 128 bytes: If less than 128 bytes are written, the rest will be erased. Each write to a 128-byte region
+ *   will trigger an automatic erase before anything is written. Very uncommon behaviour.
+ * - 256 bytes: If less than 256 bytes are written, the contents of the unwritten bytes are undefined.
+ */
+enum write_granularity {
+	write_gran_1bit,
+	write_gran_1byte,
+	write_gran_256bytes,
+};
+
+/*
  * How many different contiguous runs of erase blocks with one size each do
  * we have for a given erase function?
  */
@@ -203,11 +218,6 @@ void print_supported(void);
 void print_supported_wiki(void);
 
 /* flashrom.c */
-enum write_granularity {
-	write_gran_1bit,
-	write_gran_1byte,
-	write_gran_256bytes,
-};
 extern int verbose_screen;
 extern int verbose_logfile;
 extern const char flashrom_version[];
