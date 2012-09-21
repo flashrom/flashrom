@@ -1689,7 +1689,7 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 		}
 
 		tmp = mmio_readl(ich_spibar + ICH9_REG_FADDR);
-		msg_pdbg("0x08: 0x%08x (FADDR)\n", tmp);
+		msg_pdbg2("0x08: 0x%08x (FADDR)\n", tmp);
 
 		if (desc_valid) {
 			tmp = mmio_readl(ich_spibar + ICH9_REG_FRAP);
@@ -1704,6 +1704,7 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 				ich_spi_rw_restricted |= ich9_handle_frap(tmp, i);
 		}
 
+		/* Handle PR registers */
 		for (i = 0; i < 5; i++) {
 			/* if not locked down try to disable PR locks first */
 			if (!ichspi_lock)

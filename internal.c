@@ -344,9 +344,6 @@ int internal_init(void)
 		return 1;
 	}
 
-	/* Even if chipset init returns an error code, we don't want to abort.
-	 * The error code might have been a warning only.
-	 */
 #if defined(__i386__) || defined(__x86_64__) || defined (__mips)
 	register_par_programmer(&par_programmer_internal, internal_buses_supported);
 	return 0;

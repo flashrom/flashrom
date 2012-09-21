@@ -78,7 +78,7 @@ int read_romlayout(char *name)
 		tstr1 = strtok(tempstr, ":");
 		tstr2 = strtok(NULL, ":");
 		if (!tstr1 || !tstr2) {
-			msg_gerr("Error parsing layout file.\n");
+			msg_gerr("Error parsing layout file. Offending string: \"%s\"\n", tempstr);
 			fclose(romlayout);
 			return 1;
 		}
