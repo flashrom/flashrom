@@ -1695,6 +1695,9 @@ const struct flashchip flashchips[] = {
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
 				.block_erase = spi_block_erase_c7,
+			}, {
+				.eraseblocks = { {64 * 1024, 1} },
+				.block_erase = spi_block_erase_62,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at25f512b,

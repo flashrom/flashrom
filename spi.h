@@ -66,6 +66,11 @@
 #define JEDEC_CE_60_OUTSIZE	0x01
 #define JEDEC_CE_60_INSIZE	0x00
 
+/* Chip Erase 0x62 is supported by Atmel AT25F chips. */
+#define JEDEC_CE_62		0x62
+#define JEDEC_CE_62_OUTSIZE	0x01
+#define JEDEC_CE_62_INSIZE	0x00
+
 /* Chip Erase 0xc7 is supported by SST/ST/EON/Macronix chips. */
 #define JEDEC_CE_C7		0xc7
 #define JEDEC_CE_C7_OUTSIZE	0x01
