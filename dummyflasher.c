@@ -150,8 +150,9 @@ static int dummy_shutdown(void *data)
 	if (emu_chip != EMULATE_NONE) {
 		if (emu_persistent_image) {
 			msg_pdbg("Writing %s\n", emu_persistent_image);
-			write_buf_to_file(flashchip_contents, emu_chip_size,
-					  emu_persistent_image);
+			write_buf_to_file(flashchip_contents, emu_chip_size, emu_persistent_image);
+			free(emu_persistent_image);
+			emu_persistent_image = NULL;
 		}
 		free(flashchip_contents);
 	}
