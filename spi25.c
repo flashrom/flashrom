@@ -315,7 +315,13 @@ uint8_t spi_read_status_register(struct flashctx *flash)
 	return readarr[0];
 }
 
-/* Prettyprint the status register. Common definitions. */
+/* Common highest bit: Status Register Write Disable (SRWD). */
+void spi_prettyprint_status_register_srwd(uint8_t status)
+{
+	msg_cdbg("Chip status register: Status Register Write Disable (SRWD) is %sset\n",
+		 (status & (1 << 7)) ? "" : "not ");
+}
+
 void spi_prettyprint_status_register_welwip(uint8_t status)
 {
 	msg_cdbg("Chip status register: Write Enable Latch (WEL) is "
@@ -366,10 +372,8 @@ static void spi_prettyprint_status_register_common(uint8_t status)
  */
 void spi_prettyprint_status_register_st_m25p(uint8_t status)
 {
-	msg_cdbg("Chip status register: Status Register Write Disable "
-		     "(SRWD) is %sset\n", (status & (1 << 7)) ? "" : "not ");
-	msg_cdbg("Chip status register: Bit 6 is "
-		     "%sset\n", (status & (1 << 6)) ? "" : "not ");
+	spi_prettyprint_status_register_srwd(status);
+	spi_prettyprint_status_register_bit(status, 6);
 	spi_prettyprint_status_register_common(status);
 }
 
