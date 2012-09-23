@@ -144,15 +144,28 @@ static char *get_dmi_string(const char *string_name)
 
 	result = strdup(answerbuf);
 	if (!result)
-		puts("WARNING: Out of memory - DMI support fails");
+		msg_perr("WARNING: Out of memory - DMI support fails");
 
 	return result;
+}
+
+static int dmi_shutdown(void *data)
+{
+	int i;
+	for (i = 0; i < ARRAY_SIZE(dmistrings); i++) {
+		free(dmistrings[i]);
+		dmistrings[i] = NULL;
+	}
+	return 0;
 }
 
 void dmi_init(void)
 {
 	int i;
 	char *chassis_type;
+
+	if (register_shutdown(dmi_shutdown, NULL))
+		return;
 
 	has_dmi_support = 1;
 	for (i = 0; i < ARRAY_SIZE(dmidecode_names); i++) {
