@@ -2499,7 +2499,6 @@ static const struct board_match *board_match_name(const char *vendor, const char
 	if (partmatch)
 		return partmatch;
 
-	msg_perr("No suitable board enable found for vendor=\"%s\", model=\"%s\".\n", vendor, model);
 	return NULL;
 }
 
@@ -2609,16 +2608,27 @@ void board_handle_before_laptop(void)
 	board_handle_phase(P2);
 }
 
-int board_flash_enable(const char *vendor, const char *model)
+int board_flash_enable(const char *vendor, const char *model, const char *cb_vendor, const char *cb_model)
 {
 	const struct board_match *board = NULL;
 	int ret = 0;
 
-	if (vendor && model) {
+	if (vendor != NULL  && model != NULL) {
 		board = board_match_name(vendor, model);
-		if (!board) /* if a board was given it has to match, else we abort here. */
+		if (!board) { /* If a board was given by the user it has to match, else we abort here. */
+			msg_perr("No suitable board enable found for vendor=\"%s\", model=\"%s\".\n",
+				 vendor, model);
 			return 1;
-	} else {
+		}
+	}
+	if (board == NULL && cb_vendor != NULL && cb_model != NULL) {
+		board = board_match_name(cb_vendor, cb_model);
+		if (!board) { /* Failure is an option here, because many cb boards don't require an enable. */
+			msg_pdbg2("No board enable found matching coreboot IDs vendor=\"%s\", model=\"%s\".\n",
+				  cb_vendor, cb_model);
+		}
+	}
+	if (board == NULL) {
 		board = board_match_pci_ids(P3);
 		if (!board) /* i.e. there is just no board enable available for this board */
 			return 0;

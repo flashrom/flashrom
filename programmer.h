@@ -256,7 +256,7 @@ void sio_write(uint16_t port, uint8_t reg, uint8_t data);
 void sio_mask(uint16_t port, uint8_t reg, uint8_t data, uint8_t mask);
 void board_handle_before_superio(void);
 void board_handle_before_laptop(void);
-int board_flash_enable(const char *vendor, const char *model);
+int board_flash_enable(const char *vendor, const char *model, const char *cb_vendor, const char *cb_model);
 
 /* chipset_enable.c */
 int chipset_flash_enable(void);
