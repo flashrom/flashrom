@@ -257,12 +257,8 @@ int internal_init(void)
 	}
 
 #if defined(__i386__) || defined(__x86_64__)
-	if (cb_parse_table(&cb_vendor, &cb_model) == 0) { /* coreboot IDs valid */
-		/* If no -p internal:mainboard was given but there are valid coreboot IDs then use those. */
-		if (board_vendor == NULL || board_model == NULL) {
-			board_vendor = cb_vendor;
-			board_model = cb_model;
-		} else if (strcasecmp(board_vendor, cb_vendor) || strcasecmp(board_model, cb_model)) {
+	if ((cb_parse_table(&cb_vendor, &cb_model) == 0) && (board_vendor != NULL) && (board_model != NULL)) {
+		if (strcasecmp(board_vendor, cb_vendor) || strcasecmp(board_model, cb_model)) {
 			msg_pinfo("WARNING: The mainboard IDs set by -p internal:mainboard (%s:%s) do not\n"
 				  "         match the current coreboot IDs of the mainboard (%s:%s).\n",
 				  board_vendor, board_model, cb_vendor, cb_model);
@@ -339,7 +335,7 @@ int internal_init(void)
 	init_superio_ite();
 #endif
 
-	if (board_flash_enable(board_vendor, board_model)) {
+	if (board_flash_enable(board_vendor, board_model, cb_vendor, cb_model)) {
 		msg_perr("Aborting to be safe.\n");
 		return 1;
 	}
