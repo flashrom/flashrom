@@ -402,11 +402,17 @@ int main(int argc, char *argv[])
 	}
 
 	if (prog == PROGRAMMER_INVALID) {
-		msg_perr("Please select a programmer with the --programmer parameter.\n"
-			 "Valid choices are:\n");
-		list_programmers_linebreak(0, 80, 0);
-		ret = 1;
-		goto out;
+		if (CONFIG_DEFAULT_PROGRAMMER != PROGRAMMER_INVALID) {
+			prog = CONFIG_DEFAULT_PROGRAMMER;
+			msg_pinfo("Using default programmer \"%s\".\n",
+				  programmer_table[CONFIG_DEFAULT_PROGRAMMER].name);
+		} else {
+			msg_perr("Please select a programmer with the --programmer parameter.\n"
+				 "Valid choices are:\n");
+			list_programmers_linebreak(0, 80, 0);
+			ret = 1;
+			goto out;
+		}
 	}
 
 	/* FIXME: Delay calibration should happen in programmer code. */

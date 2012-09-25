@@ -39,6 +39,18 @@ CFLAGS  ?= -Os -Wall -Wshadow
 EXPORTDIR ?= .
 AR      ?= ar
 RANLIB  ?= ranlib
+# The following parameter changes the default programmer that will be used if there is no -p/--programmer
+# argument given when running flashrom. The predefined setting does not enable any default so that every
+# user has to declare the programmer he wants to use on every run. The rationale for this to be not set
+# (to e.g. the internal programmer) is that forgetting to specify this when working with another programmer
+# easily puts the system attached to the default programmer at risk (e.g. you want to flash coreboot to another
+# system attached to an external programmer while the default programmer is set to the internal programmer, and
+# you forget to use the -p parameter. This would (try to) overwrite the existing firmware of the computer
+# running flashrom). Please do not enable this without thinking about the possible consequences. Possible
+# values are those specified in enum programmer in programmer.h (which depend on other CONFIG_* options
+# evaluated below, namely those that enable/disable the various programmers).
+# Compilation will fail for unspecified values.
+CONFIG_DEFAULT_PROGRAMMER ?= PROGRAMMER_INVALID
 
 # If your compiler spits out excessive warnings, run make WARNERROR=no
 # You shouldn't have to change this flag.
@@ -398,6 +410,8 @@ endif
 
 ###############################################################################
 # Programmer drivers and programmer support infrastructure.
+
+FEATURE_CFLAGS += -D'CONFIG_DEFAULT_PROGRAMMER=$(CONFIG_DEFAULT_PROGRAMMER)'
 
 ifeq ($(CONFIG_INTERNAL), yes)
 FEATURE_CFLAGS += -D'CONFIG_INTERNAL=1'
