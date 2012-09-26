@@ -161,7 +161,8 @@ int ft2232_spi_init(void)
 	unsigned char buf[512];
 	int ft2232_vid = FTDI_VID;
 	int ft2232_type = FTDI_FT4232H_PID;
-	enum ftdi_interface ft2232_interface = INTERFACE_B;
+	int channel_count = 4; /* Stores the number of channels of the device. */
+	enum ftdi_interface ft2232_interface = INTERFACE_A;
 	/*
 	 * The 'H' chips can run with an internal clock of either 12 MHz or 60 MHz,
 	 * but the non-H chips can only run at 12 MHz. We enable the divide-by-5
@@ -183,53 +184,55 @@ int ft2232_spi_init(void)
 
 	arg = extract_programmer_param("type");
 	if (arg) {
-		if (!strcasecmp(arg, "2232H"))
+		if (!strcasecmp(arg, "2232H")) {
 			ft2232_type = FTDI_FT2232H_PID;
-		else if (!strcasecmp(arg, "4232H"))
+			channel_count = 2;
+		} else if (!strcasecmp(arg, "4232H")) {
 			ft2232_type = FTDI_FT4232H_PID;
-		else if (!strcasecmp(arg, "jtagkey")) {
+			channel_count = 4;
+		} else if (!strcasecmp(arg, "jtagkey")) {
 			ft2232_type = AMONTEC_JTAGKEY_PID;
-			ft2232_interface = INTERFACE_A;
+			channel_count = 2;
 			cs_bits = 0x18;
 			pindir = 0x1b;
 		} else if (!strcasecmp(arg, "picotap")) {
 			ft2232_vid = GOEPEL_VID;
 			ft2232_type = GOEPEL_PICOTAP_PID;
-			ft2232_interface = INTERFACE_A;
+			channel_count = 2;
 		} else if (!strcasecmp(arg, "tumpa")) {
 			/* Interface A is SPI1, B is SPI2. */
 			ft2232_type = TIAO_TUMPA_PID;
-			ft2232_interface = INTERFACE_A;
+			channel_count = 2;
 		} else if (!strcasecmp(arg, "busblaster")) {
 			/* In its default configuration it is a jtagkey clone */
 			ft2232_type = FTDI_FT2232H_PID;
-			ft2232_interface = INTERFACE_A;
+			channel_count = 2;
 			cs_bits = 0x18;
 			pindir = 0x1b;
 		} else if (!strcasecmp(arg, "openmoko")) {
 			ft2232_vid = FIC_VID;
 			ft2232_type = OPENMOKO_DBGBOARD_PID;
-			ft2232_interface = INTERFACE_A;
+			channel_count = 2;
 		} else if (!strcasecmp(arg, "arm-usb-ocd")) {
 			ft2232_vid = OLIMEX_VID;
 			ft2232_type = OLIMEX_ARM_OCD_PID;
-			ft2232_interface = INTERFACE_A;
+			channel_count = 2;
 			cs_bits = 0x08;
 			pindir = 0x1b;
 		} else if (!strcasecmp(arg, "arm-usb-tiny")) {
 			ft2232_vid = OLIMEX_VID;
 			ft2232_type = OLIMEX_ARM_TINY_PID;
-			ft2232_interface = INTERFACE_A;
+			channel_count = 2;
 		} else if (!strcasecmp(arg, "arm-usb-ocd-h")) {
 			ft2232_vid = OLIMEX_VID;
 			ft2232_type = OLIMEX_ARM_OCD_H_PID;
-			ft2232_interface = INTERFACE_A;
+			channel_count = 2;
 			cs_bits = 0x08;
 			pindir = 0x1b;
 		} else if (!strcasecmp(arg, "arm-usb-tiny-h")) {
 			ft2232_vid = OLIMEX_VID;
 			ft2232_type = OLIMEX_ARM_TINY_H_PID;
-			ft2232_interface = INTERFACE_A;
+			channel_count = 2;
 		} else {
 			msg_perr("Error: Invalid device type specified.\n");
 			free(arg);
@@ -245,14 +248,31 @@ int ft2232_spi_init(void)
 			break;
 		case 'B':
 			ft2232_interface = INTERFACE_B;
+			if (channel_count < 2)
+				channel_count = -1;
+			break;
+		case 'C':
+			ft2232_interface = INTERFACE_C;
+			if (channel_count < 3)
+				channel_count = -1;
+			break;
+		case 'D':
+			ft2232_interface = INTERFACE_D;
+			if (channel_count < 4)
+				channel_count = -1;
 			break;
 		default:
-			msg_perr("Error: Invalid port/interface specified.\n");
-			free(arg);
-			return -2;
+			channel_count = -1;
+			break;
 		}
 	}
+	if (channel_count < 0 || strlen(arg) != 1) {
+		msg_perr("Error: Invalid channel/port/interface specified: \"%s\".\n", arg);
+		free(arg);
+		return -2;
+	}
 	free(arg);
+
 	arg = extract_programmer_param("divisor");
 	if (arg && strlen(arg)) {
 		unsigned int temp = 0;
@@ -271,8 +291,10 @@ int ft2232_spi_init(void)
 	msg_pdbg("Using device type %s %s ",
 		 get_ft2232_vendorname(ft2232_vid, ft2232_type),
 		 get_ft2232_devicename(ft2232_vid, ft2232_type));
-	msg_pdbg("interface %s\n",
-		 (ft2232_interface == INTERFACE_A) ? "A" : "B");
+	msg_pdbg("channel %s\n",
+		 (ft2232_interface == INTERFACE_A) ? "A" :
+		 (ft2232_interface == INTERFACE_B) ? "B" :
+		 (ft2232_interface == INTERFACE_C) ? "C" : "D");
 
 	if (ftdi_init(ftdic) < 0) {
 		msg_perr("ftdi_init failed\n");
@@ -280,7 +302,7 @@ int ft2232_spi_init(void)
 	}
 
 	if (ftdi_set_interface(ftdic, ft2232_interface) < 0) {
-		msg_perr("Unable to select interface: %s\n", ftdic->error_str);
+		msg_perr("Unable to select channel: %s\n", ftdic->error_str);
 	}
 
 	arg = extract_programmer_param("serial");
