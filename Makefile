@@ -477,6 +477,7 @@ ifeq ($(CONFIG_FT2232_SPI), yes)
 FTDILIBS := $(shell pkg-config --libs libftdi 2>/dev/null || printf "%s" "-lftdi -lusb")
 # This is a totally ugly hack.
 FEATURE_CFLAGS += $(shell LC_ALL=C grep -q "FTDISUPPORT := yes" .features && printf "%s" "-D'CONFIG_FT2232_SPI=1'")
+FEATURE_CFLAGS += $(shell LC_ALL=C grep -q "FT232H := yes" .features && printf "%s" "-D'HAVE_FT232H=1'")
 FEATURE_LIBS += $(shell LC_ALL=C grep -q "FTDISUPPORT := yes" .features && printf "%s" "$(FTDILIBS)")
 PROGRAMMER_OBJS += ft2232_spi.o
 endif
@@ -731,6 +732,12 @@ int main(int argc, char **argv)
 endef
 export FTDI_TEST
 
+define FTDI_232H_TEST
+#include <ftdi.h>
+enum ftdi_chip_type type = TYPE_232H;
+endef
+export FTDI_232H_TEST
+
 define UTSNAME_TEST
 #include <sys/utsname.h>
 struct utsname osinfo;
@@ -765,6 +772,11 @@ ifeq ($(CONFIG_FT2232_SPI), yes)
 	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) $(FTDILIBS) $(LIBS) >/dev/null 2>&1 &&	\
 		( echo "found."; echo "FTDISUPPORT := yes" >> .features.tmp ) ||	\
 		( echo "not found."; echo "FTDISUPPORT := no" >> .features.tmp )
+	@printf "Checking for FT232H support in libftdi... "
+	@echo "$$FTDI_232H_TEST" >> .featuretest.c
+	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) $(FTDILIBS) $(LIBS) >/dev/null 2>&1 &&	\
+		( echo "found."; echo "FT232H := yes" >> .features.tmp ) ||	\
+		( echo "not found."; echo "FT232H := no" >> .features.tmp )
 endif
 ifeq ($(CONFIG_LINUX_SPI), yes)
 	@printf "Checking if Linux SPI headers are present... "
