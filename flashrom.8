@@ -15,7 +15,7 @@ chips. It's often used to flash BIOS/EFI/coreboot/firmware images in-system
 using a supported mainboard. However, it also supports various external
 PCI/USB/parallel-port/serial-port based devices which can program flash chips,
 including some network cards (NICs), SATA/IDE controller cards, graphics cards,
-the Bus Pirate device, various FTDI FT2232/FT4232H based USB devices, and more.
+the Bus Pirate device, various FTDI FT2232/FT4232H/FT232H based USB devices, and more.
 .PP
 It supports a wide range of DIP32, PLCC32, DIP8, SO8/SOIC8, TSOP32, TSOP40,
 TSOP48, and BGA chips, which use various protocols such as LPC, FWH,
@@ -189,7 +189,7 @@ cards)"
 .sp
 .BR "* atahpt" " (for flash ROMs on Highpoint ATA/RAID controllers)"
 .sp
-.BR "* ft2232_spi" " (for SPI flash ROMs attached to an FT2232/FT4232H family \
+.BR "* ft2232_spi" " (for SPI flash ROMs attached to an FT2232/FT4232H/FT232H family \
 based USB SPI programmer), including the DLP Design DLP-USB1232H, \
 FTDI FT2232H Mini-Module, FTDI FT4232H Mini-Module, openbiosprog-spi, Amontec \
 JTAGkey/JTAGkey-tiny/JTAGkey-2, Dangerous Prototypes Bus Blaster, \
@@ -562,7 +562,7 @@ type and channel/interface/port it should support. For that you have to use the
 syntax where
 .B model
 can be
-.BR 2232H ", " 4232H ", " jtagkey ", " busblaster ", " openmoko ", " \
+.BR 2232H ", " 4232H ", " 232H ", " jtagkey ", " busblaster ", " openmoko ", " \
 arm-usb-tiny ", " arm-usb-tiny-h ", " arm-usb-ocd ", " arm-usb-ocd-h \
 ", " tumpa ", or " picotap
 and

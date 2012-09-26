@@ -30,11 +30,18 @@
 #include "spi.h"
 #include <ftdi.h>
 
+/* This is not defined in libftdi.h <0.20 (c7e4c09e68cfa6f5e112334aa1b3bb23401c8dc7 to be exact).
+ * Some tests indicate that his is the only change that it is needed to support the FT232H in flashrom. */
+#if !defined(HAVE_FT232H)
+#define TYPE_232H	6
+#endif
+
 /* Please keep sorted by vendor ID, then device ID. */
 
 #define FTDI_VID		0x0403
 #define FTDI_FT2232H_PID	0x6010
 #define FTDI_FT4232H_PID	0x6011
+#define FTDI_FT232H_PID		0x6014
 #define TIAO_TUMPA_PID		0x8a98
 #define AMONTEC_JTAGKEY_PID	0xCFF8
 
@@ -53,6 +60,7 @@
 const struct usbdev_status devs_ft2232spi[] = {
 	{FTDI_VID, FTDI_FT2232H_PID, OK, "FTDI", "FT2232H"},
 	{FTDI_VID, FTDI_FT4232H_PID, OK, "FTDI", "FT4232H"},
+	{FTDI_VID, FTDI_FT232H_PID, OK, "FTDI", "FT232H"},
 	{FTDI_VID, TIAO_TUMPA_PID, OK, "TIAO", "USB Multi-Protocol Adapter"},
 	{FTDI_VID, AMONTEC_JTAGKEY_PID, OK, "Amontec", "JTAGkey"},
 	{GOEPEL_VID, GOEPEL_PICOTAP_PID, OK, "GOEPEL", "PicoTAP"},
@@ -190,6 +198,9 @@ int ft2232_spi_init(void)
 		} else if (!strcasecmp(arg, "4232H")) {
 			ft2232_type = FTDI_FT4232H_PID;
 			channel_count = 4;
+		} else if (!strcasecmp(arg, "232H")) {
+			ft2232_type = FTDI_FT232H_PID;
+			channel_count = 1;
 		} else if (!strcasecmp(arg, "jtagkey")) {
 			ft2232_type = AMONTEC_JTAGKEY_PID;
 			channel_count = 2;
@@ -315,7 +326,7 @@ int ft2232_spi_init(void)
 		return -4;
 	}
 
-	if (ftdic->type != TYPE_2232H && ftdic->type != TYPE_4232H) {
+	if (ftdic->type != TYPE_2232H && ftdic->type != TYPE_4232H && ftdic->type != TYPE_232H) {
 		msg_pdbg("FTDI chip type %d is not high-speed\n",
 			ftdic->type);
 		clock_5x = 0;
