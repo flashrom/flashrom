@@ -555,7 +555,7 @@ Example:
 .SS
 .BR "ft2232_spi " programmer
 An optional parameter specifies the controller
-type and interface/port it should support. For that you have to use the
+type and channel/interface/port it should support. For that you have to use the
 .sp
 .B "  flashrom \-p ft2232_spi:type=model,port=interface"
 .sp
@@ -568,11 +568,11 @@ arm-usb-tiny ", " arm-usb-tiny-h ", " arm-usb-ocd ", " arm-usb-ocd-h \
 and
 .B interface
 can be
-.BR A ", or " B .
+.BR A ", " B ", " C ", or " D .
 The default model is
 .B 4232H
 and the default interface is
-.BR B .
+.BR A .
 .sp
 If there is more than one ft2232_spi-compatible device connected, you can select which one should be used by
 specifying its serial number with the
