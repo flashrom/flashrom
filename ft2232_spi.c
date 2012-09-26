@@ -64,8 +64,7 @@ const struct usbdev_status devs_ft2232spi[] = {
 	{FTDI_VID, TIAO_TUMPA_PID, OK, "TIAO", "USB Multi-Protocol Adapter"},
 	{FTDI_VID, AMONTEC_JTAGKEY_PID, OK, "Amontec", "JTAGkey"},
 	{GOEPEL_VID, GOEPEL_PICOTAP_PID, OK, "GOEPEL", "PicoTAP"},
-	{FIC_VID, OPENMOKO_DBGBOARD_PID, OK, "FIC",
-		"OpenMoko Neo1973 Debug board (V2+)"},
+	{FIC_VID, OPENMOKO_DBGBOARD_PID, OK, "FIC", "OpenMoko Neo1973 Debug board (V2+)"},
 	{OLIMEX_VID, OLIMEX_ARM_OCD_PID, NT, "Olimex", "ARM-USB-OCD"},
 	{OLIMEX_VID, OLIMEX_ARM_TINY_PID, OK, "Olimex", "ARM-USB-TINY"},
 	{OLIMEX_VID, OLIMEX_ARM_OCD_H_PID, NT, "Olimex", "ARM-USB-OCD-H"},
@@ -73,7 +72,6 @@ const struct usbdev_status devs_ft2232spi[] = {
 
 	{0},
 };
-
 
 #define DEFAULT_DIVISOR 2
 
@@ -96,8 +94,7 @@ static const char *get_ft2232_devicename(int ft2232_vid, int ft2232_type)
 {
 	int i;
 	for (i = 0; devs_ft2232spi[i].vendor_name != NULL; i++) {
-		if ((devs_ft2232spi[i].device_id == ft2232_type)
-			&& (devs_ft2232spi[i].vendor_id == ft2232_vid))
+		if ((devs_ft2232spi[i].device_id == ft2232_type) && (devs_ft2232spi[i].vendor_id == ft2232_vid))
 				return devs_ft2232spi[i].device_name;
 	}
 	return "unknown device";
@@ -107,8 +104,7 @@ static const char *get_ft2232_vendorname(int ft2232_vid, int ft2232_type)
 {
 	int i;
 	for (i = 0; devs_ft2232spi[i].vendor_name != NULL; i++) {
-		if ((devs_ft2232spi[i].device_id == ft2232_type)
-			&& (devs_ft2232spi[i].vendor_id == ft2232_vid))
+		if ((devs_ft2232spi[i].device_id == ft2232_type) && (devs_ft2232spi[i].vendor_id == ft2232_vid))
 				return devs_ft2232spi[i].vendor_name;
 	}
 	return "unknown vendor";
@@ -120,8 +116,7 @@ static int send_buf(struct ftdi_context *ftdic, const unsigned char *buf,
 	int r;
 	r = ftdi_write_data(ftdic, (unsigned char *) buf, size);
 	if (r < 0) {
-		msg_perr("ftdi_write_data: %d, %s\n", r,
-				ftdi_get_error_string(ftdic));
+		msg_perr("ftdi_write_data: %d, %s\n", r, ftdi_get_error_string(ftdic));
 		return 1;
 	}
 	return 0;
@@ -135,8 +130,7 @@ static int get_buf(struct ftdi_context *ftdic, const unsigned char *buf,
 	while (size > 0) {
 		r = ftdi_read_data(ftdic, (unsigned char *) buf, size);
 		if (r < 0) {
-			msg_perr("ftdi_read_data: %d, %s\n", r,
-					ftdi_get_error_string(ftdic));
+			msg_perr("ftdi_read_data: %d, %s\n", r, ftdi_get_error_string(ftdic));
 			return 1;
 		}
 		buf += r;
@@ -251,6 +245,7 @@ int ft2232_spi_init(void)
 		}
 	}
 	free(arg);
+
 	arg = extract_programmer_param("port");
 	if (arg) {
 		switch (toupper((unsigned char)*arg)) {
@@ -299,21 +294,22 @@ int ft2232_spi_init(void)
 		}
 	}
 	free(arg);
+
 	msg_pdbg("Using device type %s %s ",
 		 get_ft2232_vendorname(ft2232_vid, ft2232_type),
 		 get_ft2232_devicename(ft2232_vid, ft2232_type));
-	msg_pdbg("channel %s\n",
+	msg_pdbg("channel %s.\n",
 		 (ft2232_interface == INTERFACE_A) ? "A" :
 		 (ft2232_interface == INTERFACE_B) ? "B" :
 		 (ft2232_interface == INTERFACE_C) ? "C" : "D");
 
 	if (ftdi_init(ftdic) < 0) {
-		msg_perr("ftdi_init failed\n");
+		msg_perr("ftdi_init failed.\n");
 		return -3;
 	}
 
 	if (ftdi_set_interface(ftdic, ft2232_interface) < 0) {
-		msg_perr("Unable to select channel: %s\n", ftdic->error_str);
+		msg_perr("Unable to select channel (%s).\n", ftdi_get_error_string(ftdic));
 	}
 
 	arg = extract_programmer_param("serial");
@@ -321,31 +317,29 @@ int ft2232_spi_init(void)
 	free(arg);
 
 	if (f < 0 && f != -5) {
-		msg_perr("Unable to open FTDI device: %d (%s)\n", f,
-				ftdi_get_error_string(ftdic));
+		msg_perr("Unable to open FTDI device: %d (%s).\n", f, ftdi_get_error_string(ftdic));
 		return -4;
 	}
 
 	if (ftdic->type != TYPE_2232H && ftdic->type != TYPE_4232H && ftdic->type != TYPE_232H) {
-		msg_pdbg("FTDI chip type %d is not high-speed\n",
-			ftdic->type);
+		msg_pdbg("FTDI chip type %d is not high-speed.\n", ftdic->type);
 		clock_5x = 0;
 	}
 
 	if (ftdi_usb_reset(ftdic) < 0) {
-		msg_perr("Unable to reset FTDI device\n");
+		msg_perr("Unable to reset FTDI device (%s).\n", ftdi_get_error_string(ftdic));
 	}
 
 	if (ftdi_set_latency_timer(ftdic, 2) < 0) {
-		msg_perr("Unable to set latency timer\n");
+		msg_perr("Unable to set latency timer (%s).\n", ftdi_get_error_string(ftdic));
 	}
 
 	if (ftdi_write_data_set_chunksize(ftdic, 256)) {
-		msg_perr("Unable to set chunk size\n");
+		msg_perr("Unable to set chunk size (%s).\n", ftdi_get_error_string(ftdic));
 	}
 
 	if (ftdi_set_bitmode(ftdic, 0x00, BITMODE_BITBANG_SPI) < 0) {
-		msg_perr("Unable to set bitmode to SPI\n");
+		msg_perr("Unable to set bitmode to SPI (%s).\n", ftdi_get_error_string(ftdic));
 	}
 
 	if (clock_5x) {
@@ -389,18 +383,14 @@ int ft2232_spi_init(void)
 		goto ftdi_err;
 	}
 
-	// msg_pdbg("\nft2232 chosen\n");
-
 	register_spi_programmer(&spi_programmer_ft2232);
 
 	return 0;
 
 ftdi_err:
 	if ((f = ftdi_usb_close(ftdic)) < 0) {
-		msg_perr("Unable to close FTDI device: %d (%s)\n", f,
-		         ftdi_get_error_string(ftdic));
+		msg_perr("Unable to close FTDI device: %d (%s)\n", f, ftdi_get_error_string(ftdic));
 	}
-
 	return ret;
 }
 
