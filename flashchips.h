@@ -591,7 +591,8 @@
 #define ST_M29W010B		0x23
 #define ST_M29W040B		0xE3
 #define ST_M29W512B		0x27
-#define ST_N25Q064		0xBA17
+#define ST_N25Q064__3E		0xBA17  /* N25Q064, 3.0V, 64KB/4KB blocks/sectors */
+#define ST_N25Q064__1E		0xBB17  /* N25Q064, 1.8V, 64KB/4KB blocks/sectors */
 
 #define SYNCMOS_MVC_ID		0x40	/* SyncMOS (SM) and Mosel Vitelic Corporation (MVC) */
 #define MVC_V29C51000T		0x00
