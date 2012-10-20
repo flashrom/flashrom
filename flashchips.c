@@ -954,7 +954,7 @@ const struct flashchip flashchips[] = {
 			}, {
 				.eraseblocks = { { 64 * 1024, 1 } },
 				.block_erase = spi_block_erase_c7,
-			}			
+			}
 		},
 		.printlock	= spi_prettyprint_status_register_amic_a25l40p,
 		.unlock		= spi_disable_blockprotect,
@@ -986,7 +986,7 @@ const struct flashchip flashchips[] = {
 			}, {
 				.eraseblocks = { { 128 * 1024, 1 } },
 				.block_erase = spi_block_erase_c7,
-			}			
+			}
 		},
 		.printlock	= spi_prettyprint_status_register_amic_a25l40p,
 		.unlock		= spi_disable_blockprotect,
@@ -1018,7 +1018,7 @@ const struct flashchip flashchips[] = {
 			}, {
 				.eraseblocks = { { 256 * 1024, 1 } },
 				.block_erase = spi_block_erase_c7,
-			}			
+			}
 		},
 		.printlock	= spi_prettyprint_status_register_amic_a25l40p,
 		.unlock		= spi_disable_blockprotect,
@@ -1050,7 +1050,7 @@ const struct flashchip flashchips[] = {
 			}, {
 				.eraseblocks = { { 512 * 1024, 1 } },
 				.block_erase = spi_block_erase_c7,
-			}			
+			}
 		},
 		.printlock	= spi_prettyprint_status_register_amic_a25l40p,
 		.unlock		= spi_disable_blockprotect,
@@ -1082,7 +1082,7 @@ const struct flashchip flashchips[] = {
 			}, {
 				.eraseblocks = { { 1024 * 1024, 1 } },
 				.block_erase = spi_block_erase_c7,
-			}			
+			}
 		},
 		.printlock	= spi_prettyprint_status_register_amic_a25l40p,
 		.unlock		= spi_disable_blockprotect,
@@ -1114,7 +1114,7 @@ const struct flashchip flashchips[] = {
 			}, {
 				.eraseblocks = { { 2048 * 1024, 1 } },
 				.block_erase = spi_block_erase_c7,
-			}			
+			}
 		},
 		.printlock	= spi_prettyprint_status_register_amic_a25l40p,
 		.unlock		= spi_disable_blockprotect,
@@ -1153,7 +1153,7 @@ const struct flashchip flashchips[] = {
 			}, {
 				.eraseblocks = { { 4096 * 1024, 1 } },
 				.block_erase = spi_block_erase_c7,
-			}			
+			}
 		},
 		.printlock	= spi_prettyprint_status_register_amic_a25l032,
 		.unlock		= NULL, /* Two status reg bytes (read with 0x35 and 0x05) */
@@ -1192,7 +1192,7 @@ const struct flashchip flashchips[] = {
 			}, {
 				.eraseblocks = { { 4096 * 1024, 1 } },
 				.block_erase = spi_block_erase_c7,
-			}			
+			}
 		},
 		.printlock	= spi_prettyprint_status_register_amic_a25lq032,
 		.unlock		= NULL, /* Two status reg bytes (read with 0x35 and 0x05) */
@@ -3413,11 +3413,11 @@ const struct flashchip flashchips[] = {
 		.name		= "EN25F64",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= EON_ID_NOPREFIX,
-		.model_id	= EON_EN25F32,
+		.model_id	= EON_EN25F64,
 		.total_size	= 8192,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
-		.tested		= TEST_UNTESTED,
+		.tested		= TEST_OK_PR,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
@@ -4680,7 +4680,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 128,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
-		.tested		= TEST_UNTESTED,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
@@ -7053,7 +7053,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 64,
 		.page_size	= 4096,
 		.feature_bits	= FEATURE_EITHER_RESET,
-		.tested		= TEST_OK_PRE,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_jedec,
 		.probe_timing	= 1,			/* 150 ns */
 		.block_erasers	=

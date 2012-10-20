@@ -1086,7 +1086,8 @@ int read_buf_from_file(unsigned char *buf, unsigned long size,
 		return 1;
 	}
 	if (image_stat.st_size != size) {
-		msg_gerr("Error: Image size doesn't match\n");
+		msg_gerr("Error: Image size (%ld B) doesn't match the flash chip's size (%ld B)!\n",
+			 image_stat.st_size, size);
 		fclose(image);
 		return 1;
 	}

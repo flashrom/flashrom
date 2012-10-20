@@ -877,8 +877,7 @@ void serprog_delay(int usecs)
 	unsigned char buf[4];
 	msg_pspew("%s usecs=%d\n", __func__, usecs);
 	if (!sp_check_commandavail(S_CMD_O_DELAY)) {
-		msg_pdbg("Note: serprog_delay used, but the programmer doesn't "
-			 "support delay\n");
+		msg_pdbg2("serprog_delay used, but programmer doesn't support delays natively - emulating\n");
 		internal_delay(usecs);
 		return;
 	}

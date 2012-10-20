@@ -60,6 +60,14 @@ static int nicrealtek_shutdown(void *data)
 
 int nicrealtek_init(void)
 {
+	if (rget_io_perms())
+		return 1;
+
+	io_base_addr = pcidev_init(PCI_BASE_ADDRESS_0, nics_realtek);
+
+	if (register_shutdown(nicrealtek_shutdown, NULL))
+		return 1;
+
 	/* Beware, this ignores the vendor ID! */
 	switch (pcidev_dev->device_id) {
 	case 0x8139: /* RTL8139 */
@@ -73,14 +81,6 @@ int nicrealtek_init(void)
 		bios_rom_data = 0x33;
 		break;
 	}
-
-	if (rget_io_perms())
-		return 1;
-
-	io_base_addr = pcidev_init(PCI_BASE_ADDRESS_0, nics_realtek);
-
-	if (register_shutdown(nicrealtek_shutdown, NULL))
-		return 1;
 
 	register_par_programmer(&par_programmer_nicrealtek, BUS_PARALLEL);
 

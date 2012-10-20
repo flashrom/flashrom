@@ -271,11 +271,11 @@ int ft2232_spi_init(void)
 			channel_count = -1;
 			break;
 		}
-	}
-	if (channel_count < 0 || strlen(arg) != 1) {
-		msg_perr("Error: Invalid channel/port/interface specified: \"%s\".\n", arg);
-		free(arg);
-		return -2;
+		if (channel_count < 0 || strlen(arg) != 1) {
+			msg_perr("Error: Invalid channel/port/interface specified: \"%s\".\n", arg);
+			free(arg);
+			return -2;
+		}
 	}
 	free(arg);
 

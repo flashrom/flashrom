@@ -1675,11 +1675,9 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 		if (tmp2 & HSFS_FDV)
 			desc_valid = 1;
 		if (!(tmp2 & HSFS_FDOPSS) && desc_valid)
-			msg_pinfo("The Flash Descriptor Security Override "
-				  "Strap-Pin is set. Restrictions implied\n"
-				  "by the FRAP and FREG registers are NOT in "
-				  "effect. Please note that Protected\n"
-				  "Range (PR) restrictions still apply.\n");
+			msg_pinfo("The Flash Descriptor Override Strap-Pin is set. Restrictions implied by\n"
+				  "the Master Section of the flash descriptor are NOT in effect. Please note\n"
+				  "that Protected Range (PR) restrictions still apply.\n");
 		ich_init_opcodes();
 
 		if (desc_valid) {
@@ -1720,15 +1718,13 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 				  "yet.\n");
 			if (!ich_spi_force)
 				programmer_may_write = 0;
-			msg_pinfo("Writes have been disabled. You can enforce "
-				  "write support with the\nich_spi_force "
-				  "programmer option, but it will most likely "
-				  "harm your hardware!\nIf you force flashrom "
-				  "you will get no support if something "
-				  "breaks.\n");
+			msg_pinfo("Writes have been disabled for safety reasons. You can enforce write\n"
+				  "support with the ich_spi_force programmer option, but you will most likely\n"
+				  "harm your hardware! If you force flashrom you will get no support if\n"
+				  "something breaks. On a few mainboards it is possible to enable write\n"
+				  "access by setting a jumper (see its documentation or the board itself).\n");
 			if (ich_spi_force)
-				msg_pinfo("Continuing with write support "
-					  "because the user forced us to!\n");
+				msg_pinfo("Continuing with write support because the user forced us to!\n");
 		}
 
 		tmp = mmio_readl(ich_spibar + ICH9_REG_SSFS);
