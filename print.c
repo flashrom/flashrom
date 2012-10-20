@@ -795,6 +795,7 @@ const struct board_info boards_known[] = {
 	B("Foxconn",	"6150K8MD-8EKRSH",	OK, "http://www.foxconnchannel.com/ProductDetail.aspx?T=Motherboard&U=en-us0000157", NULL),
 	B("Foxconn",	"A6VMX",		OK, "http://www.foxconnchannel.com/ProductDetail.aspx?T=Motherboard&U=en-us0000346", NULL),
 	B("Foxconn",	"P4M800P7MA-RS2",	OK, "http://www.foxconnchannel.com/ProductDetail.aspx?T=Motherboard&U=en-us0000138", NULL),
+	B("Foxconn",	"P55MX",		OK, "http://www.foxconnchannel.com/ProductDetail.aspx?T=motherboard&U=en-us0000474", "Needs the MFG jumper to be set correctly before flashing to enable the Flash Descriptor Override Strap."),
 	B("Freetech",	"P6F91i",		OK, "http://web.archive.org/web/20010417035034/http://www.freetech.com/prod/P6F91i.html", NULL),
 	B("Foxconn",	"Q45M",			BAD, "http://www.foxconnchannel.com/ProductDetail.aspx?T=Motherboard&U=en-us0000587", "Probing works (Hardware sequencing, 4096 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME is locked."),
 	B("Fujitsu-Siemens", "ESPRIMO P5915",	OK, "http://uk.ts.fujitsu.com/rl/servicesupport/techsupport/professionalpc/ESPRIMO/P/EsprimoP5915-6.htm", "Mainboard model is D2312-A2."),
