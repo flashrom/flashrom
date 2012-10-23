@@ -58,7 +58,7 @@ char *flashbuses_to_text(enum chipbustype bustype)
 	return ret;
 }
 
-static void print_supported_chips(void)
+static int print_supported_chips(void)
 {
 	const char *delim = "/";
 	const int mintoklen = 5;
@@ -182,7 +182,7 @@ static void print_supported_chips(void)
 		tmpven = malloc(strlen(chip->vendor) + 1);
 		if (tmpven == NULL) {
 			msg_gerr("Out of memory!\n");
-			exit(1);
+			return 1;
 		}
 		strcpy(tmpven, chip->vendor);
 
@@ -206,7 +206,7 @@ static void print_supported_chips(void)
 		tmpdev = malloc(strlen(chip->name) + 1);
 		if (tmpdev == NULL) {
 			msg_gerr("Out of memory!\n");
-			exit(1);
+			return 1;
 		}
 		strcpy(tmpdev, chip->name);
 
@@ -320,6 +320,8 @@ static void print_supported_chips(void)
 		}
 		msg_ginfo("\n");
 	}
+
+	return 0;
 }
 
 #if CONFIG_INTERNAL == 1
@@ -431,9 +433,10 @@ static void print_supported_boards_helper(const struct board_info *boards,
 }
 #endif
 
-void print_supported(void)
+int print_supported(void)
 {
-	print_supported_chips();
+	if (print_supported_chips())
+		return 1;
 
 	msg_ginfo("\nSupported programmers:\n");
 	list_programmers_linebreak(0, 80, 0);
@@ -547,6 +550,7 @@ void print_supported(void)
 	       programmer_table[PROGRAMMER_LINUX_SPI].name);
 	msg_ginfo("Device files /dev/spidev*.*\n");
 #endif
+	return 0;
 }
 
 #if CONFIG_INTERNAL == 1
