@@ -214,7 +214,7 @@ void chip_readn(const struct flashctx *flash, uint8_t *buf, const chipaddr addr,
 
 /* print.c */
 char *flashbuses_to_text(enum chipbustype bustype);
-void print_supported(void);
+int print_supported(void);
 void print_supported_wiki(void);
 
 /* flashrom.c */
