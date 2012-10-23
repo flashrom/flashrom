@@ -357,14 +357,13 @@ int main(int argc, char *argv[])
 #if CONFIG_PRINT_WIKI == 1
 	if (list_supported_wiki) {
 		print_supported_wiki();
-		ret = 0;
 		goto out;
 	}
 #endif
 
 	if (list_supported) {
-		print_supported();
-		ret = 0;
+		if (print_supported())
+			ret = 1;
 		goto out;
 	}
 
