@@ -231,7 +231,7 @@ int min(int a, int b);
 int max(int a, int b);
 void tolower_string(char *str);
 char *extract_param(char **haystack, const char *needle, const char *delim);
-int verify_range(struct flashctx *flash, uint8_t *cmpbuf, unsigned int start, unsigned int len, const char *message);
+int verify_range(struct flashctx *flash, uint8_t *cmpbuf, unsigned int start, unsigned int len);
 int need_erase(uint8_t *have, uint8_t *want, unsigned int len, enum write_granularity gran);
 char *strcat_realloc(char *dest, const char *src);
 void print_version(void);

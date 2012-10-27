@@ -544,6 +544,26 @@ static unsigned int count_usable_erasers(const struct flashctx *flash)
 	return usable_erasefunctions;
 }
 
+int compare_range(uint8_t *wantbuf, uint8_t *havebuf, unsigned int start, unsigned int len)
+{
+	int ret = 0, failcount = 0;
+	unsigned int i;
+	for (i = 0; i < len; i++) {
+		if (wantbuf[i] != havebuf[i]) {
+			/* Only print the first failure. */
+			if (!failcount++)
+				msg_cerr("FAILED at 0x%08x! Expected=0x%02x, Found=0x%02x,",
+					 start + i, wantbuf[i], havebuf[i]);
+		}
+	}
+	if (failcount) {
+		msg_cerr(" failed byte count from 0x%08x-0x%08x: 0x%x\n",
+			 start, start + len - 1, failcount);
+		ret = -1;
+	}
+	return ret;
+}
+
 /* start is an offset to the base address of the flash chip */
 int check_erased_range(struct flashctx *flash, unsigned int start,
 		       unsigned int len)
@@ -556,7 +576,7 @@ int check_erased_range(struct flashctx *flash, unsigned int start,
 		exit(1);
 	}
 	memset(cmpbuf, 0xff, len);
-	ret = verify_range(flash, cmpbuf, start, len, "ERASE");
+	ret = verify_range(flash, cmpbuf, start, len);
 	free(cmpbuf);
 	return ret;
 }
@@ -566,15 +586,12 @@ int check_erased_range(struct flashctx *flash, unsigned int start,
  *		flash content at location start
  * @start	offset to the base address of the flash chip
  * @len		length of the verified area
- * @message	string to print in the "FAILED" message
  * @return	0 for success, -1 for failure
  */
-int verify_range(struct flashctx *flash, uint8_t *cmpbuf, unsigned int start,
-		 unsigned int len, const char *message)
+int verify_range(struct flashctx *flash, uint8_t *cmpbuf, unsigned int start, unsigned int len)
 {
-	unsigned int i;
 	uint8_t *readbuf = malloc(len);
-	int ret = 0, failcount = 0;
+	int ret = 0;
 
 	if (!len)
 		goto out_free;
@@ -595,8 +612,6 @@ int verify_range(struct flashctx *flash, uint8_t *cmpbuf, unsigned int start,
 		ret = -1;
 		goto out_free;
 	}
-	if (!message)
-		message = "VERIFY";
 
 	ret = flash->chip->read(flash, readbuf, start, len);
 	if (ret) {
@@ -605,22 +620,7 @@ int verify_range(struct flashctx *flash, uint8_t *cmpbuf, unsigned int start,
 		return ret;
 	}
 
-	for (i = 0; i < len; i++) {
-		if (cmpbuf[i] != readbuf[i]) {
-			/* Only print the first failure. */
-			if (!failcount++)
-				msg_cerr("%s FAILED at 0x%08x! "
-					 "Expected=0x%02x, Read=0x%02x,",
-					 message, start + i, cmpbuf[i],
-					 readbuf[i]);
-		}
-	}
-	if (failcount) {
-		msg_cerr(" failed byte count from 0x%08x-0x%08x: 0x%x\n",
-			 start, start + len - 1, failcount);
-		ret = -1;
-	}
-
+	ret = compare_range(cmpbuf, readbuf, start, len);
 out_free:
 	free(readbuf);
 	return ret;
@@ -1054,21 +1054,6 @@ notfound:
 	return chip - flashchips;
 }
 
-int verify_flash(struct flashctx *flash, uint8_t *buf)
-{
-	int ret;
-	unsigned int total_size = flash->chip->total_size * 1024;
-
-	msg_cinfo("Verifying flash... ");
-
-	ret = verify_range(flash, buf, 0, total_size, NULL);
-
-	if (!ret)
-		msg_cinfo("VERIFIED.          \n");
-
-	return ret;
-}
-
 int read_buf_from_file(unsigned char *buf, unsigned long size,
 		       const char *filename)
 {
@@ -1424,10 +1409,8 @@ void emergency_help_message(void)
 {
 	msg_gerr("Your flash chip is in an unknown state.\n"
 		"Get help on IRC at chat.freenode.net (channel #flashrom) or\n"
-		"mail flashrom@flashrom.org with the subject "
-		"\"FAILED: <your board name>\"!\n"
-		"-------------------------------------------------------------"
-		  "------------------\n"
+		"mail flashrom@flashrom.org with the subject \"FAILED: <your board name>\"!\n"
+		"-------------------------------------------------------------------------------\n"
 		"DO NOT REBOOT OR POWEROFF!\n");
 }
 
@@ -1860,15 +1843,22 @@ int doit(struct flashctx *flash, int force, const char *filename, int read_it,
 	}
 
 	if (verify_it) {
-		/* Work around chips which need some time to calm down. */
-		if (write_it)
+		msg_cinfo("Verifying flash... ");
+
+		if (write_it) {
+			/* Work around chips which need some time to calm down. */
 			programmer_delay(1000*1000);
-		ret = verify_flash(flash, newcontents);
-		/* If we tried to write, and verification now fails, we
-		 * might have an emergency situation.
-		 */
-		if (ret && write_it)
-			emergency_help_message();
+			ret = verify_range(flash, newcontents, 0, size);
+			/* If we tried to write, and verification now fails, we
+			 * might have an emergency situation.
+			 */
+			if (ret)
+				emergency_help_message();
+		} else {
+			ret = compare_range(newcontents, oldcontents, 0, size);
+		}
+		if (!ret)
+			msg_cinfo("VERIFIED.\n");
 	}
 
 out:
