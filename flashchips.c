@@ -1795,18 +1795,24 @@ const struct flashchip flashchips[] = {
 		.total_size	= 512,
 		.page_size	= 256,
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
-		.tested		= TEST_UNTESTED,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
 		{
 			{
+				.eraseblocks = { {256, 2048} },
+				.block_erase = spi_block_erase_81,
+			}, {
+				.eraseblocks = { {2 * 1024, 256} },
+				.block_erase = spi_block_erase_50,
+			}, {
 				.eraseblocks = { {4 * 1024, 128} },
 				.block_erase = spi_block_erase_20,
 			}
-		},
-		.write		= NULL /* Incompatible Page write */,
-		.read		= spi_chip_read,
+		}, /* Supports also an incompatible page write (of exactly 256 B) and an auto-erasing write. */
+		.write		= spi_chip_write_1,
+		.read		= spi_chip_read, /* Fast read (0x0B) supported */
 		.voltage	= {2700, 3600}, /* 3.0-3.6V for higher speed, 2.7-3.6V normal */
 	},
 
