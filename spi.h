@@ -76,10 +76,20 @@
 #define JEDEC_CE_C7_OUTSIZE	0x01
 #define JEDEC_CE_C7_INSIZE	0x00
 
+/* Block Erase 0x50 is supported by Atmel AT26DF chips. */
+#define JEDEC_BE_50		0x50
+#define JEDEC_BE_50_OUTSIZE	0x04
+#define JEDEC_BE_50_INSIZE	0x00
+
 /* Block Erase 0x52 is supported by SST and old Atmel chips. */
 #define JEDEC_BE_52		0x52
 #define JEDEC_BE_52_OUTSIZE	0x04
 #define JEDEC_BE_52_INSIZE	0x00
+
+/* Block Erase 0x81 is supported by Atmel AT26DF chips. */
+#define JEDEC_BE_81		0x81
+#define JEDEC_BE_81_OUTSIZE	0x04
+#define JEDEC_BE_81_INSIZE	0x00
 
 /* Block Erase 0xd8 is supported by EON/Macronix chips. */
 #define JEDEC_BE_D8		0xd8

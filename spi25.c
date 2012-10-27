@@ -741,6 +741,86 @@ int spi_block_erase_20(struct flashctx *flash, unsigned int addr,
 	return 0;
 }
 
+int spi_block_erase_50(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
+{
+	int result;
+	struct spi_command cmds[] = {
+	{
+/*		.writecnt	= JEDEC_WREN_OUTSIZE,
+		.writearr	= (const unsigned char[]){ JEDEC_WREN },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, { */
+		.writecnt	= JEDEC_BE_50_OUTSIZE,
+		.writearr	= (const unsigned char[]){
+					JEDEC_BE_50,
+					(addr >> 16) & 0xff,
+					(addr >> 8) & 0xff,
+					(addr & 0xff)
+				},
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= 0,
+		.writearr	= NULL,
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}};
+
+	result = spi_send_multicommand(flash, cmds);
+	if (result) {
+		msg_cerr("%s failed during command execution at address 0x%x\n", __func__, addr);
+		return result;
+	}
+	/* Wait until the Write-In-Progress bit is cleared.
+	 * This usually takes 10 ms, so wait in 1 ms steps.
+	 */
+	while (spi_read_status_register(flash) & SPI_SR_WIP)
+		programmer_delay(1 * 1000);
+	/* FIXME: Check the status register for errors. */
+	return 0;
+}
+
+int spi_block_erase_81(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
+{
+	int result;
+	struct spi_command cmds[] = {
+	{
+/*		.writecnt	= JEDEC_WREN_OUTSIZE,
+		.writearr	= (const unsigned char[]){ JEDEC_WREN },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, { */
+		.writecnt	= JEDEC_BE_81_OUTSIZE,
+		.writearr	= (const unsigned char[]){
+					JEDEC_BE_81,
+					(addr >> 16) & 0xff,
+					(addr >> 8) & 0xff,
+					(addr & 0xff)
+				},
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= 0,
+		.writearr	= NULL,
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}};
+
+	result = spi_send_multicommand(flash, cmds);
+	if (result) {
+		msg_cerr("%s failed during command execution at address 0x%x\n", __func__, addr);
+		return result;
+	}
+	/* Wait until the Write-In-Progress bit is cleared.
+	 * This usually takes 8 ms, so wait in 1 ms steps.
+	 */
+	while (spi_read_status_register(flash) & SPI_SR_WIP)
+		programmer_delay(1 * 1000);
+	/* FIXME: Check the status register for errors. */
+	return 0;
+}
+
 int spi_block_erase_60(struct flashctx *flash, unsigned int addr,
 		       unsigned int blocklen)
 {
