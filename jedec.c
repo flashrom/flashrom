@@ -410,7 +410,7 @@ retry:
 
 	dst = d;
 	src = s;
-	failed = verify_range(flash, src, start, page_size, NULL);
+	failed = verify_range(flash, src, start, page_size);
 
 	if (failed && tried++ < MAX_REFLASH_TRIES) {
 		msg_cerr("retrying.\n");
