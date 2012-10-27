@@ -664,6 +664,15 @@ int serprog_init(void)
 			 sp_device_opbuf_size);
   	}
 
+	if (sp_check_commandavail(S_CMD_S_PIN_STATE)) {
+		uint8_t en = 1;
+		if (sp_docommand(S_CMD_S_PIN_STATE, 1, &en, 0, NULL) != 0) {
+			msg_perr("Error: could not enable output buffers\n");
+			return 1;
+		} else
+			msg_pdbg(MSGHEADER "Output drivers enabled\n");
+	} else
+		msg_pdbg(MSGHEADER "Warning: Programmer does not support toggling its output drivers\n");
 	sp_prev_was_write = 0;
 	sp_streamed_transmit_ops = 0;
 	sp_streamed_transmit_bytes = 0;
@@ -736,9 +745,15 @@ static void sp_execute_opbuf(void)
 
 static int serprog_shutdown(void *data)
 {
-	msg_pspew("%s\n", __func__);
 	if ((sp_opbuf_usage) || (sp_max_write_n && sp_write_n_bytes))
 		sp_execute_opbuf();
+	if (sp_check_commandavail(S_CMD_S_PIN_STATE)) {
+		uint8_t dis = 0;
+		if (sp_docommand(S_CMD_S_PIN_STATE, 1, &dis, 0, NULL) == 0)
+			msg_pdbg(MSGHEADER "Output drivers disabled\n");
+		else
+			msg_perr(MSGHEADER "%s: Warning: could not disable output buffers\n", __func__);
+	}
 	/* FIXME: fix sockets on windows(?), especially closing */
 	serialport_shutdown(&sp_fd);
 	if (sp_max_write_n)
