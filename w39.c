@@ -115,6 +115,15 @@ static int printlock_w39_tblwp(uint8_t lock)
 	return 0;
 }
 
+static int printlock_w39_single_bootblock(uint8_t lock, uint16_t kB)
+{
+	msg_cdbg("Software %d kB bootblock locking is %sactive.\n", kB, (lock & 0x03) ? "" : "not ");
+	if (lock & 0x03)
+		return -1;
+
+	return 0;
+}
+
 static int printlock_w39_bootblock_64k16k(uint8_t lock)
 {
 	msg_cdbg("Software 64 kB bootblock locking is %sactive.\n",
@@ -158,6 +167,54 @@ static int unlock_w39_fwh(struct flashctx *flash)
 			return -1;
 
 	return 0;
+}
+
+int printlock_w39f010(struct flashctx *flash)
+{
+	uint8_t lock;
+	int ret;
+
+	lock = w39_idmode_readb(flash, 0x00002);
+	msg_cdbg("Bottom boot block:\n");
+	ret = printlock_w39_single_bootblock(lock, 16);
+
+	lock = w39_idmode_readb(flash, 0x1fff2);
+	msg_cdbg("Top boot block:\n");
+	ret |= printlock_w39_single_bootblock(lock, 16);
+
+	return ret;
+}
+
+int printlock_w39l010(struct flashctx *flash)
+{
+	uint8_t lock;
+	int ret;
+
+	lock = w39_idmode_readb(flash, 0x00002);
+	msg_cdbg("Bottom boot block:\n");
+	ret = printlock_w39_single_bootblock(lock, 8);
+
+	lock = w39_idmode_readb(flash, 0x1fff2);
+	msg_cdbg("Top boot block:\n");
+	ret |= printlock_w39_single_bootblock(lock, 8);
+
+	return ret;
+}
+
+int printlock_w39l020(struct flashctx *flash)
+{
+	uint8_t lock;
+	int ret;
+
+	lock = w39_idmode_readb(flash, 0x00002);
+	msg_cdbg("Bottom boot block:\n");
+	ret = printlock_w39_bootblock_64k16k(lock);
+
+	lock = w39_idmode_readb(flash, 0x3fff2);
+	msg_cdbg("Top boot block:\n");
+	ret |= printlock_w39_bootblock_64k16k(lock);
+
+	return ret;
 }
 
 int printlock_w39l040(struct flashctx *flash)
