@@ -143,6 +143,9 @@ int printlock_sst_fwhub(struct flashctx *flash);
 int unlock_sst_fwhub(struct flashctx *flash);
 
 /* w39.c */
+int printlock_w39f010(struct flashctx * flash);
+int printlock_w39l010(struct flashctx * flash);
+int printlock_w39l020(struct flashctx * flash);
 int printlock_w39l040(struct flashctx * flash);
 int printlock_w39v040a(struct flashctx *flash);
 int printlock_w39v040b(struct flashctx *flash);

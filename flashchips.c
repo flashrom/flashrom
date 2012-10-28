@@ -9436,6 +9436,93 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Winbond",
+		.name		= "W39F010",
+		.bustype	= BUS_PARALLEL,
+		.manufacture_id	= WINBOND_ID,
+		.model_id	= WINBOND_W39F010,
+		.total_size	= 128,
+		.page_size	= 4 * 1024,
+		.feature_bits	= FEATURE_EITHER_RESET,
+		.tested		= TEST_OK_PREW,
+		.probe		= probe_jedec,
+		.probe_timing	= 10,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 32} },
+				.block_erase = erase_block_jedec,
+			}, {
+				.eraseblocks = { {128 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			}
+		},
+		.printlock	= printlock_w39f010,
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
+	},
+
+	{
+		.vendor		= "Winbond",
+		.name		= "W39L010",
+		.bustype	= BUS_PARALLEL,
+		.manufacture_id	= WINBOND_ID,
+		.model_id	= WINBOND_W39L010,
+		.total_size	= 128,
+		.page_size	= 4 * 1024,
+		.feature_bits	= FEATURE_EITHER_RESET,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_jedec,
+		.probe_timing	= 10,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 32} },
+				.block_erase = erase_block_jedec,
+			}, {
+				.eraseblocks = { {128 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			}
+		},
+		.printlock	= printlock_w39l010,
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+		.voltage	= {3000, 3600},
+	},
+
+	{
+		.vendor		= "Winbond",
+		.name		= "W39L020",
+		.bustype	= BUS_PARALLEL,
+		.manufacture_id	= WINBOND_ID,
+		.model_id	= WINBOND_W39L020,
+		.total_size	= 256,
+		.page_size	= 4 * 1024,
+		.feature_bits	= FEATURE_EITHER_RESET,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_jedec,
+		.probe_timing	= 10,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 64} },
+				.block_erase = erase_block_jedec,
+			}, {
+				.eraseblocks = { {64 * 1024, 4} },
+				.block_erase = erase_sector_jedec,
+			}, {
+				.eraseblocks = { {256 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			}
+		},
+		.printlock	= printlock_w39l020,
+		.write		= write_jedec_1,
+		.read		= read_memmapped,
+		.voltage	= {3000, 3600},
+	},
+
+	{
+		.vendor		= "Winbond",
 		.name		= "W39L040",
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= WINBOND_ID,
