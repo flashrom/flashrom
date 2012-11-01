@@ -1,7 +1,7 @@
 /*
  * This file is part of the flashrom project.
  *
- * Copyright (C) 2009, 2010 Carl-Daniel Hailfinger
+ * Copyright (C) 2009, 2010, 2011, 2012 Carl-Daniel Hailfinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -129,14 +129,16 @@ static int buspirate_wait_for_string(unsigned char *buf, char *key)
 	return ret;
 }
 
-static int buspirate_spi_send_command(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
-				      const unsigned char *writearr, unsigned char *readarr);
+static int buspirate_spi_send_command_v1(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
+					 const unsigned char *writearr, unsigned char *readarr);
+static int buspirate_spi_send_command_v2(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
+					 const unsigned char *writearr, unsigned char *readarr);
 
-static const struct spi_programmer spi_programmer_buspirate = {
+static struct spi_programmer spi_programmer_buspirate = {
 	.type		= SPI_CONTROLLER_BUSPIRATE,
-	.max_data_read	= 12,
-	.max_data_write	= 12,
-	.command	= buspirate_spi_send_command,
+	.max_data_read	= MAX_DATA_UNSPECIFIED,
+	.max_data_write	= MAX_DATA_UNSPECIFIED,
+	.command	= NULL,
 	.multicommand	= default_spi_send_multicommand,
 	.read		= default_spi_read,
 	.write_256	= default_spi_write_256,
@@ -253,7 +255,11 @@ int buspirate_spi_init(void)
 	if (register_shutdown(buspirate_spi_shutdown, NULL))
 		return 1;
 
-	/* This is the brute force version, but it should work. */
+	/* This is the brute force version, but it should work.
+	 * It is likely to fail if a previous flashrom run was aborted during a write with the new SPI commands
+	 * in firmware v5.5 because that firmware may wait for up to 4096 bytes of input before responding to
+	 * 0x00 again. The obvious workaround (sending 4096 bytes of \0) may cause significant startup delays.
+	 */
 	for (i = 0; i < 20; i++) {
 		/* Enter raw bitbang mode */
 		bp_commbuf[0] = 0x00;
@@ -325,6 +331,27 @@ int buspirate_spi_init(void)
 		msg_pinfo("Bus Pirate firmware 2.3 and older does not support binary SPI access.\n");
 		msg_pinfo("Please upgrade to the latest firmware (at least 2.4).\n");
 		return SPI_PROGRAMMER_ERROR;
+	}
+
+	/* Use fast SPI mode in firmware 5.5 and newer. */
+	if (BP_FWVERSION(fw_version_major, fw_version_minor) >= BP_FWVERSION(5, 5)) {
+		msg_pdbg("Using SPI command set v2.\n"); 
+		/* Sensible default buffer size. */
+		if (buspirate_commbuf_grow(260 + 5))
+			return ERROR_OOM;
+		spi_programmer_buspirate.max_data_read = 2048;
+		spi_programmer_buspirate.max_data_write = 256;
+		spi_programmer_buspirate.command = buspirate_spi_send_command_v2;
+	} else {
+		msg_pinfo("Bus Pirate firmware 5.4 and older does not support fast SPI access.\n");
+		msg_pinfo("Reading/writing a flash chip may take hours.\n");
+		msg_pinfo("It is recommended to upgrade to firmware 5.5 or newer.\n");
+		/* Sensible default buffer size. */
+		if (buspirate_commbuf_grow(16 + 3))
+			return ERROR_OOM;
+		spi_programmer_buspirate.max_data_read = 12;
+		spi_programmer_buspirate.max_data_write = 12;
+		spi_programmer_buspirate.command = buspirate_spi_send_command_v1;
 	}
 
 	/* Workaround for broken speed settings in firmware 6.1 and older. */
@@ -412,11 +439,8 @@ int buspirate_spi_init(void)
 	return 0;
 }
 
-static int buspirate_spi_send_command(struct flashctx *flash,
-				      unsigned int writecnt,
-				      unsigned int readcnt,
-				      const unsigned char *writearr,
-				      unsigned char *readarr)
+static int buspirate_spi_send_command_v1(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
+					 const unsigned char *writearr, unsigned char *readarr)
 {
 	unsigned int i = 0;
 	int ret = 0;
@@ -464,6 +488,46 @@ static int buspirate_spi_send_command(struct flashctx *flash,
 
 	/* Skip CS#, length, writearr. */
 	memcpy(readarr, bp_commbuf + 2 + writecnt, readcnt);
+
+	return ret;
+}
+
+static int buspirate_spi_send_command_v2(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
+					 const unsigned char *writearr, unsigned char *readarr)
+{
+	int i = 0, ret = 0;
+
+	if (writecnt > 4096 || readcnt > 4096 || (readcnt + writecnt) > 4096)
+		return SPI_INVALID_LENGTH;
+
+	/* 5 bytes extra for command, writelen, readlen.
+	 * 1 byte extra for Ack/Nack.
+	 */
+	if (buspirate_commbuf_grow(max(writecnt + 5, readcnt + 1)))
+		return ERROR_OOM;
+
+	/* Combined SPI write/read. */
+	bp_commbuf[i++] = 0x04;
+	bp_commbuf[i++] = (writecnt >> 8) & 0xff;
+	bp_commbuf[i++] = writecnt & 0xff;
+	bp_commbuf[i++] = (readcnt >> 8) & 0xff;
+	bp_commbuf[i++] = readcnt & 0xff;
+	memcpy(bp_commbuf + i, writearr, writecnt);
+	
+	ret = buspirate_sendrecv(bp_commbuf, i + writecnt, 1 + readcnt);
+
+	if (ret) {
+		msg_perr("Bus Pirate communication error!\n");
+		return SPI_GENERIC_ERROR;
+	}
+
+	if (bp_commbuf[0] != 0x01) {
+		msg_perr("Protocol error while sending SPI write/read!\n");
+		return SPI_GENERIC_ERROR;
+	}
+
+	/* Skip Ack. */
+	memcpy(readarr, bp_commbuf + 1, readcnt);
 
 	return ret;
 }
