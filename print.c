@@ -634,6 +634,7 @@ const struct board_info boards_known[] = {
 	B("ASUS",	"A8V-E SE",		OK, "http://www.asus.com/Motherboards/AMD_Socket_939/A8VE_SE/", "See http://www.coreboot.org/pipermail/coreboot/2007-October/026496.html"),
 	B("ASUS",	"Crosshair II Formula",	OK, "http://www.asus.com/Motherboards/AMD_AM2Plus/Crosshair_II_Formula/", NULL),
 	B("ASUS",	"Crosshair IV Extreme",	OK, "http://www.asus.com/Motherboards/AMD_AM3/Crosshair_IV_Extreme/", NULL),
+	B("ASUS",	"DSAN-DX",		NT, "http://www.asus.com/Server_Workstation/Server_Motherboards/DSANDX/", NULL),
 	B("ASUS",	"E35M1-I DELUXE",	OK, "http://www.asus.com/Motherboards/AMD_CPU_on_Board/E35M1I_DELUXE/", NULL),
 	B("ASUS",	"K8N",			OK, "http://www.asus.com/Motherboards/AMD_Socket_754/K8N/", NULL),
 	B("ASUS",	"K8V",			OK, "http://www.asus.com/Motherboards/AMD_Socket_754/K8V/", NULL),
