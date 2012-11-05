@@ -21,12 +21,63 @@
 
 #ifndef __LIBPAYLOAD__
 
+#include <stdbool.h>
 #include <unistd.h>
+#include <errno.h>
 #include <time.h>
 #include <sys/time.h>
 #include <stdlib.h>
 #include <limits.h>
 #include "flash.h"
+
+static bool use_clock_gettime = false;
+
+#if HAVE_CLOCK_GETTIME == 1
+
+#ifdef _POSIX_MONOTONIC_CLOCK
+static clockid_t clock_id = CLOCK_MONOTONIC;
+#else
+static clockid_t clock_id = CLOCK_REALTIME;
+#endif
+
+static void clock_usec_delay(int usecs)
+{
+	struct timespec now;
+	clock_gettime(clock_id, &now);
+
+	const long end_nsec = now.tv_nsec + usecs * 1000L;
+	const struct timespec end = {
+		end_nsec / (1000 * 1000 * 1000) + now.tv_sec,
+		end_nsec % (1000 * 1000 * 1000)
+	};
+	do {
+		clock_gettime(clock_id, &now);
+	} while (now.tv_sec < end.tv_sec || (now.tv_sec == end.tv_sec && now.tv_nsec < end.tv_nsec));
+}
+
+static int clock_check_res(void)
+{
+	struct timespec res;
+	if (!clock_getres(clock_id, &res)) {
+		if (res.tv_sec == 0 && res.tv_nsec <= 100) {
+			msg_pinfo("Using clock_gettime for delay loops (clk_id: %d, resolution: %ldns).\n",
+				  (int)clock_id, res.tv_nsec);
+			use_clock_gettime = true;
+			return 1;
+		}
+	} else if (clock_id != CLOCK_REALTIME && errno == EINVAL) {
+		/* Try again with CLOCK_REALTIME. */
+		clock_id = CLOCK_REALTIME;
+		return clock_check_res();
+	}
+	return 0;
+}
+#else
+
+static inline void clock_usec_delay(int usecs) {}
+static inline int clock_check_res(void) { return 0; }
+
+#endif /* HAVE_CLOCK_GETTIME == 1 */
 
 /* loops per microsecond */
 static unsigned long micro = 1;
@@ -87,6 +138,9 @@ static unsigned long measure_delay(unsigned int usecs)
 
 void myusec_calibrate_delay(void)
 {
+	if (clock_check_res())
+		return;
+
 	unsigned long count = 1000;
 	unsigned long timeusec, resolution;
 	int i, tries = 0;
@@ -189,6 +243,8 @@ void internal_delay(unsigned int usecs)
 	/* If the delay is >1 s, use internal_sleep because timing does not need to be so precise. */
 	if (usecs > 1000000) {
 		internal_sleep(usecs);
+	} else if (use_clock_gettime) {
+		clock_usec_delay(usecs);
 	} else {
 		myusec_delay(usecs);
 	}

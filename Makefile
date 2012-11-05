@@ -1003,6 +1003,9 @@ FEATURE_CFLAGS += $(call debug_shell,grep -q "UTSNAME := yes" .features && print
 # We could use PULLED_IN_LIBS, but that would be ugly.
 FEATURE_LIBS += $(call debug_shell,grep -q "NEEDLIBZ := yes" .libdeps && printf "%s" "-lz")
 
+FEATURE_CFLAGS += $(call debug_shell,grep -q "CLOCK_GETTIME := yes" .features && printf "%s" "-D'HAVE_CLOCK_GETTIME=1'")
+FEATURE_LIBS += $(call debug_shell,grep -q "CLOCK_GETTIME := yes" .features && printf "%s" "-lrt")
+
 LIBFLASHROM_OBJS = $(CHIP_OBJS) $(PROGRAMMER_OBJS) $(LIB_OBJS)
 OBJS = $(CLI_OBJS) $(LIBFLASHROM_OBJS)
 
@@ -1299,6 +1302,18 @@ int main(int argc, char **argv)
 endef
 export LINUX_I2C_TEST
 
+define CLOCK_GETTIME_TEST
+#include <time.h>
+
+int main(int argc, char **argv)
+{
+	struct timespec res;
+	clock_gettime(CLOCK_REALTIME, &res);
+	return 0;
+}
+endef
+export CLOCK_GETTIME_TEST
+
 features: compiler
 	@echo "FEATURES := yes" > .features.tmp
 ifneq ($(NEED_LIBFTDI), )
@@ -1341,6 +1356,13 @@ endif
 	@ { $(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) >&2 && \
 		( echo "found."; echo "UTSNAME := yes" >> .features.tmp ) ||	\
 		( echo "not found."; echo "UTSNAME := no" >> .features.tmp ) } 2>>$(BUILD_DETAILS_FILE) | tee -a $(BUILD_DETAILS_FILE)
+	@printf "Checking for clock_gettime support... " | tee -a $(BUILD_DETAILS_FILE)
+	@echo "$$CLOCK_GETTIME_TEST" >.featuretest.c
+	@printf "\nexec: %s\n" "$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -lrt .featuretest.c -o .featuretest$(EXEC_SUFFIX)" >>$(BUILD_DETAILS_FILE)
+	@ { $(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -lrt .featuretest.c -o .featuretest$(EXEC_SUFFIX) >&2 && \
+		( echo "found."; echo "CLOCK_GETTIME := yes" >>.features.tmp ) || \
+		( echo "not found."; echo "CLOCK_GETTIME := no" >>.features.tmp ) } \
+		2>>$(BUILD_DETAILS_FILE) | tee -a $(BUILD_DETAILS_FILE)
 	@$(DIFF) -q .features.tmp .features >/dev/null 2>&1 && rm .features.tmp || mv .features.tmp .features
 	@rm -f .featuretest.c .featuretest$(EXEC_SUFFIX)
 
