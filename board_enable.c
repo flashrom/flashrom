@@ -1823,6 +1823,7 @@ static int intel_ich_gpio26_raise(void)
 
 /*
  * Suited for:
+ *  - ASUS DSAN-DX
  *  - P4SD-LA (HP OEM): i865 + ICH5
  *  - GIGABYTE GA-8IP775: 865P + ICH5
  *  - GIGABYTE GA-8PE667 Ultra 2: socket 478 + i845PE + ICH4
@@ -2335,6 +2336,7 @@ const struct board_match board_matches[] = {
 	{0x10DE, 0x0260, 0x103C, 0x2A34,  0x10DE, 0x0264, 0x103C, 0x2A34, "NODUSM3",    NULL, NULL,           P3, "ASUS",        "A8M2N-LA (NodusM3-GL8E)",  0,   OK, nvidia_mcp_gpio0_raise},
 	{0x10DE, 0x0260, 0x103c, 0x2a3e,  0x10DE, 0x0264, 0x103c, 0x2a3e, "NAGAMI2L",   NULL, NULL,           P3, "ASUS",        "A8N-LA (Nagami-GL8E)",  0,   OK, nvidia_mcp_gpio0_raise},
 	{0x10de, 0x0264, 0x1043, 0x81bc,  0x10de, 0x02f0, 0x1043, 0x81cd, NULL,         NULL, NULL,           P3, "ASUS",        "A8N-VM CSM",            0,   OK, w83627ehf_gpio22_raise_2e},
+	{0x8086, 0x65c0, 0x1043, 0x8301,  0x8086, 0x2916, 0x1043, 0x82a6, "^DSAN-DX$",  NULL, NULL,           P3, "ASUS",        "DSAN-DX",               0,   NT, intel_ich_gpio32_raise},
 	{0x10DE, 0x0264, 0x1043, 0x81C0,  0x10DE, 0x0260, 0x1043, 0x81C0, NULL,         NULL, NULL,           P3, "ASUS",        "M2NBP-VM CSM",          0,   OK, nvidia_mcp_gpio0_raise},
 	{0x1106, 0x1336, 0x1043, 0x80ed,  0x1106, 0x3288, 0x1043, 0x8249, NULL,         NULL, NULL,           P3, "ASUS",        "M2V-MX",                0,   OK, via_vt823x_gpio5_raise},
 	{0x8086, 0x24cc,      0,      0,  0x8086, 0x24c3, 0x1043, 0x1869, "^M6Ne$",     NULL, NULL,           P3, "ASUS",        "M6Ne",                  0,   NT, intel_ich_gpio43_raise},
