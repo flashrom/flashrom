@@ -480,6 +480,8 @@ FEATURE_CFLAGS += $(shell LC_ALL=C grep -q "FTDISUPPORT := yes" .features && pri
 FEATURE_CFLAGS += $(shell LC_ALL=C grep -q "FT232H := yes" .features && printf "%s" "-D'HAVE_FT232H=1'")
 FEATURE_LIBS += $(shell LC_ALL=C grep -q "FTDISUPPORT := yes" .features && printf "%s" "$(FTDILIBS)")
 PROGRAMMER_OBJS += ft2232_spi.o
+# We can't set NEED_USB here because that would transform libftdi auto-enabling
+# into a hard requirement for libusb, defeating the purpose of auto-enabling.
 endif
 
 ifeq ($(CONFIG_DUMMY), yes)
@@ -531,8 +533,8 @@ endif
 
 ifeq ($(CONFIG_DEDIPROG), yes)
 FEATURE_CFLAGS += -D'CONFIG_DEDIPROG=1'
-FEATURE_LIBS += -lusb
 PROGRAMMER_OBJS += dediprog.o
+NEED_USB := yes
 endif
 
 ifeq ($(CONFIG_SATAMV), yes)
@@ -563,28 +565,34 @@ FEATURE_CFLAGS += -D'NEED_PCI=1'
 PROGRAMMER_OBJS += pcidev.o physmap.o hwaccess.o
 ifeq ($(TARGET_OS), NetBSD)
 # The libpci we want is called libpciutils on NetBSD and needs NetBSD libpci.
-LIBS += -lpciutils -lpci
+PCILIBS += -lpciutils -lpci
 # For (i386|x86_64)_iopl(2).
-LIBS += -l$(shell uname -p)
+PCILIBS += -l$(shell uname -p)
 else
 ifeq ($(TARGET_OS), DOS)
 # FIXME There needs to be a better way to do this
 CPPFLAGS += -I../libpci/include
-LIBS += ../libpci/lib/libpci.a
+PCILIBS += ../libpci/lib/libpci.a
 else
-LIBS += -lpci
+PCILIBS += -lpci
 ifeq ($(TARGET_OS), OpenBSD)
 # For (i386|amd64)_iopl(2).
-LIBS += -l$(shell uname -m)
+PCILIBS += -l$(shell uname -m)
 else
 ifeq ($(TARGET_OS), Darwin)
 # DirectHW framework can be found in the DirectHW library.
-LIBS += -framework IOKit -framework DirectHW 
+PCILIBS += -framework IOKit -framework DirectHW 
 else
 endif
 endif
 endif
 endif
+endif
+
+ifeq ($(NEED_USB), yes)
+CHECK_LIBUSB0 = yes
+FEATURE_CFLAGS += -D'NEED_USB=1'
+USBLIBS := $(shell pkg-config --libs libusb 2>/dev/null || printf "%s" "-lusb")
 endif
 
 ifeq ($(CONFIG_PRINT_WIKI), yes)
@@ -600,13 +608,13 @@ FEATURE_LIBS += $(shell LC_ALL=C grep -q "NEEDLIBZ := yes" .libdeps && printf "%
 LIBFLASHROM_OBJS = $(CHIP_OBJS) $(PROGRAMMER_OBJS) $(LIB_OBJS)
 OBJS = $(CLI_OBJS) $(LIBFLASHROM_OBJS)
 
-all: pciutils features $(PROGRAM)$(EXEC_SUFFIX)
+all: hwlibs features $(PROGRAM)$(EXEC_SUFFIX)
 ifeq ($(ARCH), x86)
 	@+$(MAKE) -C util/ich_descriptors_tool/ TARGET_OS=$(TARGET_OS) EXEC_SUFFIX=$(EXEC_SUFFIX)
 endif
 
 $(PROGRAM)$(EXEC_SUFFIX): $(OBJS)
-	$(CC) $(LDFLAGS) -o $(PROGRAM)$(EXEC_SUFFIX) $(OBJS) $(FEATURE_LIBS) $(LIBS)
+	$(CC) $(LDFLAGS) -o $(PROGRAM)$(EXEC_SUFFIX) $(OBJS) $(FEATURE_LIBS) $(LIBS) $(PCILIBS) $(USBLIBS)
 
 libflashrom.a: $(LIBFLASHROM_OBJS)
 	$(AR) rcs $@ $^
@@ -679,8 +687,21 @@ int main(int argc, char **argv)
 endef
 export LIBPCI_TEST
 
+define LIBUSB0_TEST
+#include <usb.h>
+int main(int argc, char **argv)
+{
+	(void) argc;
+	(void) argv;
+	usb_init();
+	return 0;
+}
+endef
+export LIBUSB0_TEST
+
+hwlibs: compiler
+	@printf "" > .libdeps
 ifeq ($(CHECK_LIBPCI), yes)
-pciutils: compiler
 	@printf "Checking for libpci headers... "
 	@echo "$$LIBPCI_TEST" > .test.c
 	@$(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o >/dev/null &&		\
@@ -689,19 +710,31 @@ pciutils: compiler
 		echo "See README for more information."; echo;			\
 		rm -f .test.c .test.o; exit 1)
 	@printf "Checking if libpci is present and sufficient... "
-	@printf "" > .libdeps
-	@$(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) >/dev/null &&				\
+	@$(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(PCILIBS) >/dev/null &&		\
 		echo "yes." || ( echo "no.";							\
 		printf "Checking if libz+libpci are present and sufficient...";	\
-		$(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) -lz >/dev/null &&		\
+		$(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(PCILIBS) -lz >/dev/null &&	\
 		( echo "yes."; echo "NEEDLIBZ := yes" > .libdeps ) || ( echo "no."; echo;	\
 		echo "Please install libpci (package pciutils) and/or libz.";			\
 		echo "See README for more information."; echo;				\
 		rm -f .test.c .test.o .test$(EXEC_SUFFIX); exit 1) )
 	@rm -f .test.c .test.o .test$(EXEC_SUFFIX)
-else
-pciutils: compiler
-	@printf "" > .libdeps
+endif
+ifeq ($(CHECK_LIBUSB0), yes)
+	@printf "Checking for libusb-0.1/libusb-compat headers... "
+	@echo "$$LIBUSB0_TEST" > .test.c
+	@$(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o >/dev/null &&		\
+		echo "found." || ( echo "not found."; echo;				\
+		echo "Please install libusb-0.1 headers or libusb-compat headers.";	\
+		echo "See README for more information."; echo;				\
+		rm -f .test.c .test.o; exit 1)
+	@printf "Checking if libusb-0.1 is usable... "
+	@$(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(USBLIBS) >/dev/null &&	\
+		echo "yes." || ( echo "no.";						\
+		echo "Please install libusb-0.1 or libusb-compat.";			\
+		echo "See README for more information."; echo;				\
+		rm -f .test.c .test.o .test$(EXEC_SUFFIX); exit 1)
+	@rm -f .test.c .test.o .test$(EXEC_SUFFIX)
 endif
 
 .features: features
@@ -816,6 +849,6 @@ djgpp-dos: clean
 libpayload: clean
 	make CC="CC=i386-elf-gcc lpgcc" AR=i386-elf-ar RANLIB=i386-elf-ranlib
 
-.PHONY: all clean distclean compiler pciutils features export tarball dos featuresavailable
+.PHONY: all clean distclean compiler hwlibs features export tarball dos featuresavailable
 
 -include $(OBJS:.o=.d)
