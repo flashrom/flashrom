@@ -440,6 +440,7 @@ int print_supported(void)
 
 	msg_ginfo("\nSupported programmers:\n");
 	list_programmers_linebreak(0, 80, 0);
+	msg_ginfo("\n");
 #if CONFIG_INTERNAL == 1
 	msg_ginfo("\nSupported devices for the %s programmer:\n\n",
 	       programmer_table[PROGRAMMER_INTERNAL].name);

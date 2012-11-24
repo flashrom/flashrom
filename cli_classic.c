@@ -33,58 +33,42 @@
 
 static void cli_classic_usage(const char *name)
 {
-	printf("Usage: flashrom [-h|-R|-L|"
+	printf("Please note that the command line interface for flashrom has changed between\n"
+	       "0.9.5 and 0.9.6 and will change again before flashrom 1.0.\n\n");
+
+	printf("Usage: %s [-h|-R|-L|"
 #if CONFIG_PRINT_WIKI == 1
-		"-z|"
+	       "-z|"
 #endif
-		"-p <programmername>[:<parameters>]\n"
-	       "                   [-E|-r <file>|-w <file>|-v <file>] [-c <chipname>]\n"
-	       "                   [-l <file> [-i <image>]] [-n] [-f]]\n"
-	       "                [-V[V[V]]] [-o <logfile>]\n\n");
+	       "-p <programmername>[:<parameters>] [-c <chipname>]\n"
+	       "[-E|(-r|-w|-v) <file>] [-l <layoutfile> [-i <imagename>]...] [-n] [-f]]\n"
+	       "[-V[V[V]]] [-o <logfile>]\n\n", name);
 
-	printf("Please note that the command line interface for flashrom has "
-	         "changed between\n"
-	       "0.9.5 and 0.9.6 and will change again before flashrom 1.0.\n"
-	       "Do not use flashrom in scripts or other automated tools "
-	         "without checking\n"
-	       "that your flashrom version won't interpret options in a "
-	         "different way.\n\n");
-
-	printf("   -h | --help                       print this help text\n"
-	       "   -R | --version                    print version (release)\n"
-	       "   -r | --read <file>                read flash and save to "
-	         "<file>\n"
-	       "   -w | --write <file>               write <file> to flash\n"
-	       "   -v | --verify <file>              verify flash against "
-	         "<file>\n"
-	       "   -E | --erase                      erase flash device\n"
-	       "   -V | --verbose                    more verbose output\n"
-	       "   -c | --chip <chipname>            probe only for specified "
-	         "flash chip\n"
-	       "   -f | --force                      force specific operations "
-	         "(see man page)\n"
-	       "   -n | --noverify                   don't auto-verify\n"
-	       "   -l | --layout <file>              read ROM layout from "
-	         "<file>\n"
-	       "   -i | --image <name>               only flash image <name> "
-	         "from flash layout\n"
-	       "   -o | --output <name>              log to file <name>\n"
-	       "   -L | --list-supported             print supported devices\n"
+	printf(" -h | --help                        print this help text\n"
+	       " -R | --version                     print version (release)\n"
+	       " -r | --read <file>                 read flash and save to <file>\n"
+	       " -w | --write <file>                write <file> to flash\n"
+	       " -v | --verify <file>               verify flash against <file>\n"
+	       " -E | --erase                       erase flash memory\n"
+	       " -V | --verbose                     more verbose output\n"
+	       " -c | --chip <chipname>             probe only for specified flash chip\n"
+	       " -f | --force                       force specific operations (see man page)\n"
+	       " -n | --noverify                    don't auto-verify\n"
+	       " -l | --layout <layoutfile>         read ROM layout from <layoutfile>\n"
+	       " -i | --image <name>                only flash image <name> from flash layout\n"
+	       " -o | --output <logfile>            log output to <logfile>\n"
+	       " -L | --list-supported              print supported devices\n"
 #if CONFIG_PRINT_WIKI == 1
-	       "   -z | --list-supported-wiki        print supported devices "
-	         "in wiki syntax\n"
+	       " -z | --list-supported-wiki         print supported devices in wiki syntax\n"
 #endif
-	       "   -p | --programmer <name>[:<param>] specify the programmer "
-	         "device\n");
-
-	list_programmers_linebreak(37, 80, 1);
-	printf("\nYou can specify one of -h, -R, -L, "
+	       " -p | --programmer <name>[:<param>] specify the programmer device. One of\n");
+	list_programmers_linebreak(4, 80, 0);
+	printf(".\n\nYou can specify one of -h, -R, -L, "
 #if CONFIG_PRINT_WIKI == 1
 	         "-z, "
 #endif
 	         "-E, -r, -w, -v or no operation.\n"
-	       "If no operation is specified, flashrom will only probe for "
-	         "flash chips.\n\n");
+	       "If no operation is specified, flashrom will only probe for flash chips.\n");
 }
 
 static void cli_classic_abort_usage(void)
@@ -296,6 +280,7 @@ int main(int argc, char *argv[])
 				fprintf(stderr, "Error: Unknown programmer \"%s\". Valid choices are:\n",
 					optarg);
 				list_programmers_linebreak(0, 80, 0);
+				msg_ginfo(".\n");
 				cli_classic_abort_usage();
 			}
 			break;
@@ -407,8 +392,13 @@ int main(int argc, char *argv[])
 				  programmer_table[CONFIG_DEFAULT_PROGRAMMER].name);
 		} else {
 			msg_perr("Please select a programmer with the --programmer parameter.\n"
+				 "Previously this was not necessary because there was a default set.\n"
+#if CONFIG_INTERNAL == 1
+				 "To choose the mainboard of this computer use 'internal'. "
+#endif
 				 "Valid choices are:\n");
 			list_programmers_linebreak(0, 80, 0);
+			msg_ginfo(".\n");
 			ret = 1;
 			goto out;
 		}
