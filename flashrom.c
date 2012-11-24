@@ -1461,7 +1461,6 @@ void list_programmers_linebreak(int startcol, int cols, int paren)
 		} else {
 			if (paren)
 				msg_ginfo(")");
-			msg_ginfo("\n");
 		}
 	}
 }
