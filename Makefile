@@ -710,10 +710,10 @@ ifeq ($(CHECK_LIBPCI), yes)
 		echo "See README for more information."; echo;			\
 		rm -f .test.c .test.o; exit 1)
 	@printf "Checking if libpci is present and sufficient... "
-	@$(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(PCILIBS) >/dev/null &&		\
+	@$(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) $(PCILIBS) >/dev/null &&		\
 		echo "yes." || ( echo "no.";							\
 		printf "Checking if libz+libpci are present and sufficient...";	\
-		$(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(PCILIBS) -lz >/dev/null &&	\
+		$(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) $(PCILIBS) -lz >/dev/null &&	\
 		( echo "yes."; echo "NEEDLIBZ := yes" > .libdeps ) || ( echo "no."; echo;	\
 		echo "Please install libpci (package pciutils) and/or libz.";			\
 		echo "See README for more information."; echo;				\
@@ -729,7 +729,7 @@ ifeq ($(CHECK_LIBUSB0), yes)
 		echo "See README for more information."; echo;				\
 		rm -f .test.c .test.o; exit 1)
 	@printf "Checking if libusb-0.1 is usable... "
-	@$(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(USBLIBS) >/dev/null &&	\
+	@$(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) $(USBLIBS) >/dev/null &&	\
 		echo "yes." || ( echo "no.";						\
 		echo "Please install libusb-0.1 or libusb-compat.";			\
 		echo "See README for more information."; echo;				\
