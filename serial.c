@@ -262,6 +262,7 @@ int serialport_write(unsigned char *buf, unsigned int writecnt)
 #else
 	ssize_t tmp = 0;
 #endif
+	unsigned int empty_writes = 250; /* results in a ca. 125ms timeout */
 
 	while (writecnt > 0) {
 #ifdef _WIN32
@@ -273,9 +274,16 @@ int serialport_write(unsigned char *buf, unsigned int writecnt)
 			msg_perr("Serial port write error!\n");
 			return 1;
 		}
-		if (!tmp)
-			msg_pdbg("Empty write\n");
-		writecnt -= tmp; 
+		if (!tmp) {
+			msg_pdbg2("Empty write\n");
+			empty_writes--;
+			programmer_delay(500);
+			if (empty_writes == 0) {
+				msg_perr("Serial port is unresponsive!\n");
+				return 1;
+			}
+		}
+		writecnt -= tmp;
 		buf += tmp;
 	}
 
