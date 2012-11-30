@@ -372,7 +372,7 @@ int serprog_init(void)
 		}
 		if (strlen(device)) {
 			sp_fd = sp_openserport(device, atoi(baudport));
-			if (sp_fd < 0) {
+			if (sp_fd == SER_INV_FD) {
 				free(device);
 				return 1;
 			}
