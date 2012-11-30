@@ -116,7 +116,7 @@ int pony_spi_init(void)
 	arg = extract_programmer_param("dev");
 	if (arg && strlen(arg)) {
 		sp_fd = sp_openserport(arg, 9600);
-		if (sp_fd < 0) {
+		if (sp_fd == SER_INV_FD) {
 			free(arg);
 			return 1;
 		}

@@ -40,7 +40,7 @@ static int buspirate_serialport_setup(char *dev)
 {
 	/* 115200bps, 8 databits, no parity, 1 stopbit */
 	sp_fd = sp_openserport(dev, 115200);
- 	if (sp_fd < 0)
+ 	if (sp_fd == SER_INV_FD)
 		return 1;
 	return 0;
 }
