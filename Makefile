@@ -374,7 +374,7 @@ CHIP_OBJS = jedec.o stm50.o w39.o w29ee011.o \
 ###############################################################################
 # Library code.
 
-LIB_OBJS = layout.o flashrom.o udelay.o programmer.o helpers.o
+LIB_OBJS = libflashrom.o layout.o flashrom.o udelay.o programmer.o helpers.o
 
 ###############################################################################
 # Frontend related stuff.
@@ -1062,6 +1062,12 @@ install: $(PROGRAM)$(EXEC_SUFFIX) $(PROGRAM).8
 	mkdir -p $(DESTDIR)$(MANDIR)/man8
 	$(INSTALL) -m 0755 $(PROGRAM)$(EXEC_SUFFIX) $(DESTDIR)$(PREFIX)/sbin
 	$(INSTALL) -m 0644 $(PROGRAM).8 $(DESTDIR)$(MANDIR)/man8
+
+libinstall: libflashrom.a libflashrom.h
+	mkdir -p $(DESTDIR)$(PREFIX)/lib
+	$(INSTALL) -m 0644 libflashrom.a $(DESTDIR)$(PREFIX)/lib
+	mkdir -p $(DESTDIR)$(PREFIX)/include
+	$(INSTALL) -m 0644 libflashrom.h $(DESTDIR)$(PREFIX)/include
 
 export: $(PROGRAM).8
 	@rm -rf $(EXPORTDIR)/flashrom-$(RELEASENAME)
