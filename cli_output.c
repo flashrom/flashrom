@@ -71,19 +71,19 @@ void start_logging(void)
 #endif /* !STANDALONE */
 
 /* Please note that level is the verbosity, not the importance of the message. */
-int print(enum msglevel level, const char *fmt, ...)
+int flashrom_print_cb(enum msglevel level, const char *fmt, va_list ap)
 {
-	va_list ap;
 	int ret = 0;
 	FILE *output_type = stdout;
+
+	va_list logfile_args;
+	va_copy(logfile_args, ap);
 
 	if (level < MSG_INFO)
 		output_type = stderr;
 
 	if (level <= verbose_screen) {
-		va_start(ap, fmt);
 		ret = vfprintf(output_type, fmt, ap);
-		va_end(ap);
 		/* msg_*spew often happens inside chip accessors in possibly
 		 * time-critical operations. Don't slow them down by flushing. */
 		if (level != MSG_SPEW)
@@ -91,12 +91,11 @@ int print(enum msglevel level, const char *fmt, ...)
 	}
 #ifndef STANDALONE
 	if ((level <= verbose_logfile) && logfile) {
-		va_start(ap, fmt);
-		ret = vfprintf(logfile, fmt, ap);
-		va_end(ap);
+		ret = vfprintf(logfile, fmt, logfile_args);
 		if (level != MSG_SPEW)
 			fflush(logfile);
 	}
 #endif /* !STANDALONE */
+	va_end(logfile_args);
 	return ret;
 }
