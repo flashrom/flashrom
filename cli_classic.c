@@ -30,6 +30,7 @@
 #include "flash.h"
 #include "flashchips.h"
 #include "programmer.h"
+#include "libflashrom.h"
 
 static void cli_classic_usage(const char *name)
 {
@@ -135,6 +136,8 @@ int main(int argc, char *argv[])
 #endif /* !STANDALONE */
 	char *tempstr = NULL;
 	char *pparam = NULL;
+
+	fl_set_log_callback((fl_log_callback_t *)&fl_print_cb);
 
 	print_version();
 	print_banner();

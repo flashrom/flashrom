@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stddef.h>
+#include <stdarg.h>
 #include <stdbool.h>
 #if IS_WINDOWS
 #include <windows.h>
@@ -330,6 +331,7 @@ enum msglevel {
 	MSG_DEBUG2	= 4,
 	MSG_SPEW	= 5,
 };
+int fl_print_cb(enum msglevel level, const char *fmt, va_list ap);
 /* Let gcc and clang check for correct printf-style format strings. */
 int print(enum msglevel level, const char *fmt, ...)
 #ifdef __MINGW32__
