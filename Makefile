@@ -1357,6 +1357,12 @@ install: $(PROGRAM)$(EXEC_SUFFIX) $(PROGRAM).8
 	$(INSTALL) -m 0755 $(PROGRAM)$(EXEC_SUFFIX) $(DESTDIR)$(PREFIX)/sbin
 	$(INSTALL) -m 0644 $(PROGRAM).8 $(DESTDIR)$(MANDIR)/man8
 
+libinstall: libflashrom.a libflashrom.h
+	mkdir -p $(DESTDIR)$(PREFIX)/lib
+	$(INSTALL) -m 0644 libflashrom.a $(DESTDIR)$(PREFIX)/lib
+	mkdir -p $(DESTDIR)$(PREFIX)/include
+	$(INSTALL) -m 0644 libflashrom.h $(DESTDIR)$(PREFIX)/include
+
 export: $(PROGRAM).8
 	@rm -rf $(EXPORTDIR)/flashrom-$(RELEASENAME)
 	@svn export -r BASE . $(EXPORTDIR)/flashrom-$(RELEASENAME)

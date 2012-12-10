@@ -138,7 +138,8 @@ enum test_state {
 #define TEST_BAD_PRE	(struct tested){ .probe = BAD, .read = BAD, .erase = BAD, .write = NT }
 #define TEST_BAD_PREW	(struct tested){ .probe = BAD, .read = BAD, .erase = BAD, .write = BAD }
 
-struct flashctx;
+struct flashrom_flashctx;
+#define flashctx flashrom_flashctx /* TODO: Agree on a name and convert all occurences. */
 typedef int (erasefunc_t)(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 
 struct flashchip {
@@ -204,7 +205,7 @@ struct flashchip {
 	enum write_granularity gran;
 };
 
-struct flashctx {
+struct flashrom_flashctx {
 	struct flashchip *chip;
 	/* FIXME: The memory mappings should be saved in a more structured way. */
 	/* The physical_* fields store the respective addresses in the physical address space of the CPU. */
@@ -218,6 +219,12 @@ struct flashctx {
 	struct registered_master *mst;
 	const struct flashrom_layout *layout;
 	struct single_layout fallback_layout;
+	struct {
+		bool force;
+		bool force_boardmismatch;
+		bool verify_after_write;
+		bool verify_whole_chip;
+	} flags;
 };
 
 /* Timing used in probe routines. ZERO is -2 to differentiate between an unset
