@@ -1,4 +1,4 @@
-.TH FLASHROM 8 "Feb 15, 2012"
+.TH FLASHROM 8 "Dec, 2012"
 .SH NAME
 flashrom \- detect, read, write, verify and erase flash chips
 .SH SYNOPSIS
@@ -651,6 +651,15 @@ where
 can be
 .BR 0V ", " 1.8V ", " 2.5V ", " 3.5V
 or the equivalent in mV.
+.sp
+An optional
+.B device
+parameter specifies which of multiple connected Dediprog devices should be used.
+Please be aware that the order depends on libusb's usb_get_busses() function and that the numbering starts
+at 0.
+Usage example to select the second device:
+.sp
+.B "  flashrom \-p dediprog:device=1"
 .SS
 .BR "rayer_spi " programmer
 The default I/O base address used for the parallel port is 0x378 and you can use

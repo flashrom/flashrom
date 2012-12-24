@@ -19,6 +19,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 #include <usb.h>
 #include "flash.h"
 #include "chipdrivers.h"
@@ -46,7 +47,8 @@ static void print_hex(void *buf, size_t len)
 #endif
 
 /* Might be useful for other USB devices as well. static for now. */
-static struct usb_device *get_device_by_vid_pid(uint16_t vid, uint16_t pid)
+/* device parameter allows user to specify one device of multiple installed */
+static struct usb_device *get_device_by_vid_pid(uint16_t vid, uint16_t pid, unsigned int device)
 {
 	struct usb_bus *bus;
 	struct usb_device *dev;
@@ -54,8 +56,11 @@ static struct usb_device *get_device_by_vid_pid(uint16_t vid, uint16_t pid)
 	for (bus = usb_get_busses(); bus; bus = bus->next)
 		for (dev = bus->devices; dev; dev = dev->next)
 			if ((dev->descriptor.idVendor == vid) &&
-			    (dev->descriptor.idProduct == pid))
-				return dev;
+			    (dev->descriptor.idProduct == pid)) {
+				if (device == 0)
+					return dev;
+				device--;
+			}
 
 	return NULL;
 }
@@ -777,8 +782,9 @@ static int dediprog_shutdown(void *data)
 int dediprog_init(void)
 {
 	struct usb_device *dev;
-	char *voltage;
+	char *voltage, *device;
 	int millivolt = 3500;
+	long usedevice = 0;
 	int ret;
 
 	msg_pspew("%s\n", __func__);
@@ -792,11 +798,35 @@ int dediprog_init(void)
 		msg_pinfo("Setting voltage to %i mV\n", millivolt);
 	}
 
+	device = extract_programmer_param("device");
+	if (device) {
+		char *dev_suffix;
+		errno = 0;
+		usedevice = strtol(device, &dev_suffix, 10);
+		if (errno != 0 || device == dev_suffix) {
+			msg_perr("Error: Could not convert 'device'.\n");
+			free(device);
+			return 1;
+		}
+		if (usedevice < 0 || usedevice > UINT_MAX) {
+			msg_perr("Error: Value for 'device' is out of range.\n");
+			free(device);
+			return 1;
+		}
+		if (strlen(dev_suffix) > 0) {
+			msg_perr("Error: Garbage following 'device' value.\n");
+			free(device);
+			return 1;
+		}
+		msg_pinfo("Using device %li.\n", usedevice);
+	}
+	free(device);
+
 	/* Here comes the USB stuff. */
 	usb_init();
 	usb_find_busses();
 	usb_find_devices();
-	dev = get_device_by_vid_pid(0x0483, 0xdada);
+	dev = get_device_by_vid_pid(0x0483, 0xdada, (unsigned int) usedevice);
 	if (!dev) {
 		msg_perr("Could not find a Dediprog SF100 on USB!\n");
 		return 1;
