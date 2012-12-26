@@ -1557,8 +1557,9 @@ void print_banner(void)
 
 int selfcheck(void)
 {
-	int ret = 0;
 	const struct flashchip *chip;
+	int i;
+	int ret = 0;
 
 	/* Safety check. Instead of aborting after the first error, check
 	 * if more errors exist.
@@ -1566,6 +1567,32 @@ int selfcheck(void)
 	if (ARRAY_SIZE(programmer_table) - 1 != PROGRAMMER_INVALID) {
 		msg_gerr("Programmer table miscompilation!\n");
 		ret = 1;
+	}
+	for (i = 0; i < PROGRAMMER_INVALID; i++) {
+		const struct programmer_entry p = programmer_table[i];
+		if (p.name == NULL) {
+			msg_gerr("All programmers need a valid name, but the one with index %d does not!\n", i);
+			ret = 1;
+			/* This might hide other problems with this programmer, but allows for better error
+			 * messages below without jumping through hoops. */
+			continue;
+		}
+		if (p.init == NULL) {
+			msg_gerr("Programmer %s does not have a valid init function!\n", p.name);
+			ret = 1;
+		}
+		if (p.delay == NULL) {
+			msg_gerr("Programmer %s does not have a valid delay function!\n", p.name);
+			ret = 1;
+		}
+		if (p.map_flash_region == NULL) {
+			msg_gerr("Programmer %s does not have a valid map_flash_region function!\n", p.name);
+			ret = 1;
+		}
+		if (p.unmap_flash_region == NULL) {
+			msg_gerr("Programmer %s does not have a valid unmap_flash_region function!\n", p.name);
+			ret = 1;
+		}
 	}
 	/* It would be favorable if we could also check for correct termination
 	 * of the following arrays, but we don't know their sizes in here...
