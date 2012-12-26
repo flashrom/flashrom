@@ -91,13 +91,11 @@ enum programmer {
 };
 
 struct programmer_entry {
-	const char *vendor;
 	const char *name;
 
 	int (*init) (void);
 
-	void *(*map_flash_region) (const char *descr, unsigned long phys_addr,
-				   size_t len);
+	void *(*map_flash_region) (const char *descr, unsigned long phys_addr, size_t len);
 	void (*unmap_flash_region) (void *virt_addr, size_t len);
 
 	void (*delay) (int usecs);
