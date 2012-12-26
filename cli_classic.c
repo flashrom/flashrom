@@ -130,7 +130,9 @@ int main(int argc, char *argv[])
 
 	char *filename = NULL;
 	char *layoutfile = NULL;
+#ifndef STANDALONE
 	char *logfile = NULL;
+#endif /* !STANDALONE */
 	char *tempstr = NULL;
 	char *pparam = NULL;
 
@@ -217,8 +219,12 @@ int main(int argc, char *argv[])
 			break;
 		case 'i':
 			tempstr = strdup(optarg);
-			if (register_include_arg(tempstr))
+			if (register_include_arg(tempstr)) {
+				free(tempstr);
 				cli_classic_abort_usage();
+			}
+			/* FIXME: A pointer to the image name is saved in a static array (of size MAX_ROMLAYOUT)
+			 * by register_include_arg() and needs to be freed after processing them. */
 			break;
 		case 'L':
 			if (++operation_specified > 1) {
@@ -337,6 +343,7 @@ int main(int argc, char *argv[])
 		cli_classic_abort_usage();
 	if (logfile && open_logfile(logfile))
 		return 1;
+	free(logfile);
 #endif /* !STANDALONE */
 
 #if CONFIG_PRINT_WIKI == 1
@@ -473,6 +480,7 @@ int main(int argc, char *argv[])
 			}
 			msg_cinfo("Please note that forced reads most likely contain garbage.\n");
 			ret = read_flash_to_file(&flashes[0], filename);
+			free(flashes[0].chip);
 			goto out_shutdown;
 		}
 		ret = 1;
@@ -517,6 +525,15 @@ int main(int argc, char *argv[])
 out_shutdown:
 	programmer_shutdown();
 out:
+	for (i = 0; i < chipcount; i++)
+		free(flashes[i].chip);
+
+	free(filename);
+	free(layoutfile);
+	free(pparam);
+	/* clean up global variables */
+	free(chip_to_probe);
+	chip_to_probe = NULL;
 #ifndef STANDALONE
 	ret |= close_logfile();
 #endif /* !STANDALONE */
