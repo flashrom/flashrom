@@ -29,7 +29,7 @@
 uint8_t *mv_bar;
 uint16_t mv_iobar;
 
-const struct pcidev_status satas_mv[] = {
+const struct dev_entry satas_mv[] = {
 	/* 88SX6041 and 88SX6042 are the same according to the datasheet. */
 	{0x11ab, 0x7042, OK, "Marvell", "88SX7042 PCI-e 4-port SATA-II"},
 

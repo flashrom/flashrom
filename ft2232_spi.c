@@ -57,7 +57,7 @@
 #define OLIMEX_ARM_OCD_H_PID	0x002B
 #define OLIMEX_ARM_TINY_H_PID	0x002A
 
-const struct usbdev_status devs_ft2232spi[] = {
+const struct dev_entry devs_ft2232spi[] = {
 	{FTDI_VID, FTDI_FT2232H_PID, OK, "FTDI", "FT2232H"},
 	{FTDI_VID, FTDI_FT4232H_PID, OK, "FTDI", "FT4232H"},
 	{FTDI_VID, FTDI_FT232H_PID, OK, "FTDI", "FT232H"},

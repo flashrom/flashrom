@@ -96,12 +96,19 @@ enum programmer_type {
 	OTHER,
 };
 
+struct dev_entry {
+	uint16_t vendor_id;
+	uint16_t device_id;
+	const enum test_state status;
+	const char *vendor_name;
+	const char *device_name;
+};
+
 struct programmer_entry {
 	const char *name;
 	const enum programmer_type type;
 	union {
-		const struct pcidev_status *const pci;
-		const struct usbdev_status *const usb;
+		const struct dev_entry *const dev;
 		const char *const note;
 	} devs;
 
@@ -232,7 +239,7 @@ extern uint32_t io_base_addr;
 extern struct pci_access *pacc;
 extern struct pci_dev *pcidev_dev;
 uintptr_t pcidev_readbar(struct pci_dev *dev, int bar);
-uintptr_t pcidev_init(int bar, const struct pcidev_status *devs);
+uintptr_t pcidev_init(int bar, const struct dev_entry *devs);
 /* rpci_write_* are reversible writes. The original PCI config space register
  * contents will be restored on shutdown.
  */
@@ -240,27 +247,6 @@ int rpci_write_byte(struct pci_dev *dev, int reg, uint8_t data);
 int rpci_write_word(struct pci_dev *dev, int reg, uint16_t data);
 int rpci_write_long(struct pci_dev *dev, int reg, uint32_t data);
 #endif
-
-/* print.c */
-#if CONFIG_NIC3COM+CONFIG_NICREALTEK+CONFIG_NICNATSEMI+CONFIG_GFXNVIDIA+CONFIG_DRKAISER+CONFIG_SATASII+CONFIG_ATAHPT+CONFIG_NICINTEL+CONFIG_NICINTEL_SPI+CONFIG_OGP_SPI+CONFIG_SATAMV >= 1
-/* Not needed for CONFIG_INTERNAL, but for all other PCI-based programmers. */
-void print_supported_pcidevs(const struct pcidev_status *devs);
-#endif
-
-struct usbdev_status {
-	uint16_t vendor_id;
-	uint16_t device_id;
-	const enum test_state status;
-	const char *vendor_name;
-	const char *device_name;
-};
-struct pcidev_status {
-	uint16_t vendor_id;
-	uint16_t device_id;
-	const enum test_state status;
-	const char *vendor_name;
-	const char *device_name;
-};
 
 #if CONFIG_INTERNAL == 1
 /* board_enable.c */
@@ -375,74 +361,73 @@ void dummy_unmap(void *virt_addr, size_t len);
 /* nic3com.c */
 #if CONFIG_NIC3COM == 1
 int nic3com_init(void);
-extern const struct pcidev_status nics_3com[];
+extern const struct dev_entry nics_3com[];
 #endif
 
 /* gfxnvidia.c */
 #if CONFIG_GFXNVIDIA == 1
 int gfxnvidia_init(void);
-extern const struct pcidev_status gfx_nvidia[];
+extern const struct dev_entry gfx_nvidia[];
 #endif
 
 /* drkaiser.c */
 #if CONFIG_DRKAISER == 1
 int drkaiser_init(void);
-extern const struct pcidev_status drkaiser_pcidev[];
+extern const struct dev_entry drkaiser_pcidev[];
 #endif
 
 /* nicrealtek.c */
 #if CONFIG_NICREALTEK == 1
 int nicrealtek_init(void);
-extern const struct pcidev_status nics_realtek[];
+extern const struct dev_entry nics_realtek[];
 #endif
 
 /* nicnatsemi.c */
 #if CONFIG_NICNATSEMI == 1
 int nicnatsemi_init(void);
-extern const struct pcidev_status nics_natsemi[];
+extern const struct dev_entry nics_natsemi[];
 #endif
 
 /* nicintel.c */
 #if CONFIG_NICINTEL == 1
 int nicintel_init(void);
-extern const struct pcidev_status nics_intel[];
+extern const struct dev_entry nics_intel[];
 #endif
 
 /* nicintel_spi.c */
 #if CONFIG_NICINTEL_SPI == 1
 int nicintel_spi_init(void);
-extern const struct pcidev_status nics_intel_spi[];
+extern const struct dev_entry nics_intel_spi[];
 #endif
 
 /* ogp_spi.c */
 #if CONFIG_OGP_SPI == 1
 int ogp_spi_init(void);
-extern const struct pcidev_status ogp_spi[];
+extern const struct dev_entry ogp_spi[];
 #endif
 
 /* satamv.c */
 #if CONFIG_SATAMV == 1
 int satamv_init(void);
-extern const struct pcidev_status satas_mv[];
+extern const struct dev_entry satas_mv[];
 #endif
 
 /* satasii.c */
 #if CONFIG_SATASII == 1
 int satasii_init(void);
-extern const struct pcidev_status satas_sii[];
+extern const struct dev_entry satas_sii[];
 #endif
 
 /* atahpt.c */
 #if CONFIG_ATAHPT == 1
 int atahpt_init(void);
-extern const struct pcidev_status ata_hpt[];
+extern const struct dev_entry ata_hpt[];
 #endif
 
 /* ft2232_spi.c */
 #if CONFIG_FT2232_SPI == 1
 int ft2232_spi_init(void);
-extern const struct usbdev_status devs_ft2232spi[];
-void print_supported_usbdevs(const struct usbdev_status *devs);
+extern const struct dev_entry devs_ft2232spi[];
 #endif
 
 /* rayer_spi.c */

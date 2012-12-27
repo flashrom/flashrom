@@ -90,7 +90,7 @@ const struct programmer_entry programmer_table[] = {
 	{
 		.name			= "nic3com",
 		.type			= PCI,
-		.devs.pci		= nics_3com,
+		.devs.dev		= nics_3com,
 		.init			= nic3com_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
@@ -103,7 +103,7 @@ const struct programmer_entry programmer_table[] = {
 		/* This programmer works for Realtek RTL8139 and SMC 1211. */
 		.name			= "nicrealtek",
 		.type			= PCI,
-		.devs.pci		= nics_realtek,
+		.devs.dev		= nics_realtek,
 		.init			= nicrealtek_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
@@ -115,7 +115,7 @@ const struct programmer_entry programmer_table[] = {
 	{
 		.name			= "nicnatsemi",
 		.type			= PCI,
-		.devs.pci		= nics_natsemi,
+		.devs.dev		= nics_natsemi,
 		.init			= nicnatsemi_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
@@ -127,7 +127,7 @@ const struct programmer_entry programmer_table[] = {
 	{
 		.name			= "gfxnvidia",
 		.type			= PCI,
-		.devs.pci		= gfx_nvidia,
+		.devs.dev		= gfx_nvidia,
 		.init			= gfxnvidia_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
@@ -139,7 +139,7 @@ const struct programmer_entry programmer_table[] = {
 	{
 		.name			= "drkaiser",
 		.type			= PCI,
-		.devs.pci		= drkaiser_pcidev,
+		.devs.dev		= drkaiser_pcidev,
 		.init			= drkaiser_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
@@ -151,7 +151,7 @@ const struct programmer_entry programmer_table[] = {
 	{
 		.name			= "satasii",
 		.type			= PCI,
-		.devs.pci		= satas_sii,
+		.devs.dev		= satas_sii,
 		.init			= satasii_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
@@ -163,7 +163,7 @@ const struct programmer_entry programmer_table[] = {
 	{
 		.name			= "atahpt",
 		.type			= PCI,
-		.devs.pci		= ata_hpt,
+		.devs.dev		= ata_hpt,
 		.init			= atahpt_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
@@ -175,7 +175,7 @@ const struct programmer_entry programmer_table[] = {
 	{
 		.name			= "ft2232_spi",
 		.type			= USB,
-		.devs.usb		= devs_ft2232spi,
+		.devs.dev		= devs_ft2232spi,
 		.init			= ft2232_spi_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
@@ -252,7 +252,7 @@ const struct programmer_entry programmer_table[] = {
 	{
 		.name			= "nicintel",
 		.type			= PCI,
-		.devs.pci		= nics_intel,
+		.devs.dev		= nics_intel,
 		.init			= nicintel_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
@@ -264,7 +264,7 @@ const struct programmer_entry programmer_table[] = {
 	{
 		.name			= "nicintel_spi",
 		.type			= PCI,
-		.devs.pci		= nics_intel_spi,
+		.devs.dev		= nics_intel_spi,
 		.init			= nicintel_spi_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
@@ -276,7 +276,7 @@ const struct programmer_entry programmer_table[] = {
 	{
 		.name			= "ogp_spi",
 		.type			= PCI,
-		.devs.pci		= ogp_spi,
+		.devs.dev		= ogp_spi,
 		.init			= ogp_spi_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
@@ -288,7 +288,7 @@ const struct programmer_entry programmer_table[] = {
 	{
 		.name			= "satamv",
 		.type			= PCI,
-		.devs.pci		= satas_mv,
+		.devs.dev		= satas_mv,
 		.init			= satamv_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
