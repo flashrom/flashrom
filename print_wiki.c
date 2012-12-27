@@ -77,6 +77,7 @@ static const char chip_th[] = "\
 | align=\"center\" | Min \n| align=\"center\" | Max\n\n";
 
 static const char programmer_th[] = "\
+! align=\"left\" | Programmer\n\
 ! align=\"left\" | Vendor\n\
 ! align=\"left\" | Device\n\
 ! align=\"center\" | IDs\n\
@@ -300,51 +301,31 @@ static void print_supported_chips_wiki(int cols)
 
 /* Following functions are not needed when no PCI/USB programmers are compiled in,
  * but since print_wiki code has no size constraints we include it unconditionally. */
-static int count_supported_pcidevs_wiki(const struct pcidev_status *devs)
+static int count_supported_devs_wiki(const struct dev_entry *devs)
 {
 	unsigned int count = 0;
 	unsigned int i = 0;
-	for (i = 0; devs[i].vendor_name != NULL; i++)
+	for (i = 0; devs[i].vendor_id != 0; i++)
 		count++;
 	return count;
 }
 
-static void print_supported_pcidevs_wiki_helper(const struct pcidev_status *devs)
+static void print_supported_devs_wiki_helper(const struct programmer_entry prog)
 {
 	int i = 0;
 	static int c = 0;
+	const struct dev_entry *devs = prog.devs.dev;
+	const unsigned int count = count_supported_devs_wiki(devs);
 
 	/* Alternate colors if the vendor changes. */
 	c = !c;
 
-	for (i = 0; devs[i].vendor_name != NULL; i++) {
-		printf("|- bgcolor=\"#%s\"\n| %s || %s || %04x:%04x || {{%s}}\n", (c) ? "eeeeee" : "dddddd",
-		       devs[i].vendor_name, devs[i].device_name, devs[i].vendor_id, devs[i].device_id,
-		       (devs[i].status == NT) ? "?3" : "OK");
-	}
-}
-
-static int count_supported_usbdevs_wiki(const struct usbdev_status *devs)
-{
-	unsigned int count = 0;
-	unsigned int i = 0;
-	for (i = 0; devs[i].vendor_name != NULL; i++)
-			count++;
-	return count;
-}
-
-static void print_supported_usbdevs_wiki_helper(const struct usbdev_status *devs)
-{
-	int i = 0;
-	static int c = 0;
-
-	/* Alternate colors if the vendor changes. */
-	c = !c;
-
-	for (i = 0; devs[i].vendor_name != NULL; i++) {
-		printf("|- bgcolor=\"#%s\"\n| %s || %s || %04x:%04x || {{%s}}\n", (c) ? "eeeeee" : "dddddd",
-		       devs[i].vendor_name, devs[i].device_name, devs[i].vendor_id, devs[i].device_id,
-		       (devs[i].status == NT) ? "?3" : "OK");
+	for (i = 0; devs[i].vendor_id != 0; i++) {
+		printf("|- bgcolor=\"#%s\"\n", (c) ? "eeeeee" : "dddddd");
+		if (i == 0)
+			printf("| rowspan=\"%u\" | %s |", count, prog.name);
+		printf("| %s || %s || %04x:%04x || {{%s}}\n", devs[i].vendor_name, devs[i].device_name,
+		       devs[i].vendor_id, devs[i].device_id, (devs[i].status == NT) ? "?3" : "OK");
 	}
 }
 
@@ -358,10 +339,10 @@ static void print_supported_devs_wiki()
 		const struct programmer_entry prog = programmer_table[i];
 		switch (prog.type) {
 		case USB:
-			usb_count += count_supported_usbdevs_wiki(prog.devs.usb);
+			usb_count += count_supported_devs_wiki(prog.devs.dev);
 			break;
 		case PCI:
-			pci_count += count_supported_pcidevs_wiki(prog.devs.pci);
+			pci_count += count_supported_devs_wiki(prog.devs.dev);
 			break;
 		case OTHER:
 		default:
@@ -376,7 +357,7 @@ static void print_supported_devs_wiki()
 	for (i = 0; i < PROGRAMMER_INVALID; i++) {
 		const struct programmer_entry prog = programmer_table[i];
 		if (prog.type == PCI) {
-			print_supported_pcidevs_wiki_helper(prog.devs.pci);
+			print_supported_devs_wiki_helper(prog);
 		}
 	}
 	printf("\n|}\n\n|}\n");
@@ -388,7 +369,7 @@ static void print_supported_devs_wiki()
 	for (i = 0; i < PROGRAMMER_INVALID; i++) {
 		const struct programmer_entry prog = programmer_table[i];
 		if (prog.type == USB) {
-			print_supported_usbdevs_wiki_helper(prog.devs.usb);
+			print_supported_devs_wiki_helper(prog);
 		}
 	}
 	printf("\n|}\n\n|}\n");

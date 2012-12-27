@@ -36,7 +36,7 @@
 static uint32_t internal_conf;
 static uint16_t id;
 
-const struct pcidev_status nics_3com[] = {
+const struct dev_entry nics_3com[] = {
 	/* 3C90xB */
 	{0x10b7, 0x9055, OK, "3COM", "3C90xB: PCI 10/100 Mbps; shared 10BASE-T/100BASE-TX"},
 	{0x10b7, 0x9001, NT, "3COM", "3C90xB: PCI 10/100 Mbps; shared 10BASE-T/100BASE-T4" },

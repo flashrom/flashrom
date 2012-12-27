@@ -30,7 +30,7 @@
 
 static int bios_rom_addr, bios_rom_data;
 
-const struct pcidev_status nics_realtek[] = {
+const struct dev_entry nics_realtek[] = {
 	{0x10ec, 0x8139, OK, "Realtek", "RTL8139/8139C/8139C+"},
 	{0x10ec, 0x8169, NT, "Realtek", "RTL8169"},
 	{0x1113, 0x1211, OK, "SMC", "1211TX"}, /* RTL8139 clone */

@@ -154,7 +154,7 @@ uintptr_t pcidev_readbar(struct pci_dev *dev, int bar)
 	return (uintptr_t)addr;
 }
 
-uintptr_t pcidev_init(int bar, const struct pcidev_status *devs)
+uintptr_t pcidev_init(int bar, const struct dev_entry *devs)
 {
 	struct pci_dev *dev;
 	struct pci_filter filter;
