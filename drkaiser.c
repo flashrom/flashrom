@@ -33,7 +33,7 @@
 /* Mask to restrict flash accesses to the 128kB memory window. */
 #define DRKAISER_MEMMAP_MASK		((1 << 17) - 1)
 
-const struct pcidev_status drkaiser_pcidev[] = {
+const struct dev_entry drkaiser_pcidev[] = {
 	{0x1803, 0x5057, OK, "Dr. Kaiser", "PC-Waechter (Actel FPGA)"},
 
 	{0},

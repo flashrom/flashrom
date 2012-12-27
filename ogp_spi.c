@@ -47,7 +47,7 @@ static uint32_t ogp_reg_siso;
 static uint32_t ogp_reg__ce;
 static uint32_t ogp_reg_sck;
 
-const struct pcidev_status ogp_spi[] = {
+const struct dev_entry ogp_spi[] = {
 	{PCI_VENDOR_ID_OGP, 0x0000, OK, "Open Graphics Project", "Development Board OGD1"},
 
 	{0},

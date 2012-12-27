@@ -34,7 +34,7 @@
 
 uint8_t *nvidia_bar;
 
-const struct pcidev_status gfx_nvidia[] = {
+const struct dev_entry gfx_nvidia[] = {
 	{0x10de, 0x0010, NT, "NVIDIA", "Mutara V08 [NV2]" },
 	{0x10de, 0x0018, NT, "NVIDIA", "RIVA 128" },
 	{0x10de, 0x0020, NT, "NVIDIA", "RIVA TNT" },

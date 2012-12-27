@@ -433,28 +433,17 @@ static void print_supported_boards_helper(const struct board_info *boards,
 }
 #endif
 
-void print_supported_usbdevs(const struct usbdev_status *devs)
+void print_supported_devs(const struct programmer_entry prog, const char *const type)
 {
 	int i;
 
-	msg_pinfo("USB devices:\n");
+	const struct dev_entry *const devs = prog.devs.dev;
+	msg_ginfo("\nSupported %s devices for the %s programmer:\n", type, prog.name);
 	for (i = 0; devs[i].vendor_name != NULL; i++) {
 		msg_pinfo("%s %s [%04x:%04x]%s\n", devs[i].vendor_name, devs[i].device_name, devs[i].vendor_id,
 			  devs[i].device_id, (devs[i].status == NT) ? " (untested)" : "");
 	}
 }
-
-#if NEED_PCI == 1
-void print_supported_pcidevs(const struct pcidev_status *devs)
-{
-	int i;
-
-	for (i = 0; devs[i].vendor_name != NULL; i++) {
-		msg_pinfo("%s %s [%04x:%04x]%s\n", devs[i].vendor_name, devs[i].device_name, devs[i].vendor_id,
-		          devs[i].device_id, (devs[i].status == NT) ? " (untested)" : "");
-	}
-}
-#endif
 
 int print_supported(void)
 {
@@ -478,20 +467,18 @@ int print_supported(void)
 		const struct programmer_entry prog = programmer_table[i];
 		switch (prog.type) {
 		case USB:
-			msg_ginfo("\nSupported USB devices for the %s programmer:\n", prog.name);
-			print_supported_usbdevs(prog.devs.usb);
+			print_supported_devs(prog, "USB");
 			break;
 #if NEED_PCI == 1
 		case PCI:
-			msg_ginfo("\nSupported PCI devices for the %s programmer:\n", prog.name);
-			print_supported_pcidevs(prog.devs.pci);
+			print_supported_devs(prog, "PCI");
 			break;
 #endif
 		case OTHER:
-			if (prog.devs.note == NULL)
-				break;
-			msg_ginfo("\nSupported devices for the %s programmer:\n", prog.name);
-			msg_ginfo("%s", prog.devs.note);
+			if (prog.devs.note != NULL) {
+				msg_ginfo("\nSupported devices for the %s programmer:\n", prog.name);
+				msg_ginfo("%s", prog.devs.note);
+			}
 			break;
 		default:
 			msg_gerr("\n%s: %s: Uninitialized programmer type! Please report a bug at "
