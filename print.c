@@ -433,8 +433,32 @@ static void print_supported_boards_helper(const struct board_info *boards,
 }
 #endif
 
+void print_supported_usbdevs(const struct usbdev_status *devs)
+{
+	int i;
+
+	msg_pinfo("USB devices:\n");
+	for (i = 0; devs[i].vendor_name != NULL; i++) {
+		msg_pinfo("%s %s [%04x:%04x]%s\n", devs[i].vendor_name, devs[i].device_name, devs[i].vendor_id,
+			  devs[i].device_id, (devs[i].status == NT) ? " (untested)" : "");
+	}
+}
+
+#if NEED_PCI == 1
+void print_supported_pcidevs(const struct pcidev_status *devs)
+{
+	int i;
+
+	for (i = 0; devs[i].vendor_name != NULL; i++) {
+		msg_pinfo("%s %s [%04x:%04x]%s\n", devs[i].vendor_name, devs[i].device_name, devs[i].vendor_id,
+		          devs[i].device_id, (devs[i].status == NT) ? " (untested)" : "");
+	}
+}
+#endif
+
 int print_supported(void)
 {
+	unsigned int i;
 	if (print_supported_chips())
 		return 1;
 
@@ -450,107 +474,31 @@ int print_supported(void)
 	msg_ginfo("\n");
 	print_supported_boards_helper(laptops_known, "laptops");
 #endif
-#if CONFIG_DUMMY == 1
-	msg_ginfo("\nSupported devices for the %s programmer:\n",
-	       programmer_table[PROGRAMMER_DUMMY].name);
-	/* FIXME */
-	msg_ginfo("Dummy device, does nothing and logs all accesses\n");
+	for (i = 0; i < PROGRAMMER_INVALID; i++) {
+		const struct programmer_entry prog = programmer_table[i];
+		switch (prog.type) {
+		case USB:
+			msg_ginfo("\nSupported USB devices for the %s programmer:\n", prog.name);
+			print_supported_usbdevs(prog.devs.usb);
+			break;
+#if NEED_PCI == 1
+		case PCI:
+			msg_ginfo("\nSupported PCI devices for the %s programmer:\n", prog.name);
+			print_supported_pcidevs(prog.devs.pci);
+			break;
 #endif
-#if CONFIG_NIC3COM == 1
-	msg_ginfo("\nSupported devices for the %s programmer:\n",
-	       programmer_table[PROGRAMMER_NIC3COM].name);
-	print_supported_pcidevs(nics_3com);
-#endif
-#if CONFIG_NICREALTEK == 1
-	msg_ginfo("\nSupported devices for the %s programmer:\n",
-	       programmer_table[PROGRAMMER_NICREALTEK].name);
-	print_supported_pcidevs(nics_realtek);
-#endif
-#if CONFIG_NICNATSEMI == 1
-	msg_ginfo("\nSupported devices for the %s programmer:\n",
-	       programmer_table[PROGRAMMER_NICNATSEMI].name);
-	print_supported_pcidevs(nics_natsemi);
-#endif
-#if CONFIG_GFXNVIDIA == 1
-	msg_ginfo("\nSupported devices for the %s programmer:\n",
-	       programmer_table[PROGRAMMER_GFXNVIDIA].name);
-	print_supported_pcidevs(gfx_nvidia);
-#endif
-#if CONFIG_DRKAISER == 1
-	msg_ginfo("\nSupported devices for the %s programmer:\n",
-	       programmer_table[PROGRAMMER_DRKAISER].name);
-	print_supported_pcidevs(drkaiser_pcidev);
-#endif
-#if CONFIG_SATASII == 1
-	msg_ginfo("\nSupported devices for the %s programmer:\n",
-	       programmer_table[PROGRAMMER_SATASII].name);
-	print_supported_pcidevs(satas_sii);
-#endif
-#if CONFIG_ATAHPT == 1
-	msg_ginfo("\nSupported devices for the %s programmer:\n",
-	       programmer_table[PROGRAMMER_ATAHPT].name);
-	print_supported_pcidevs(ata_hpt);
-#endif
-#if CONFIG_FT2232_SPI == 1
-	msg_ginfo("\nSupported devices for the %s programmer:\n",
-	       programmer_table[PROGRAMMER_FT2232_SPI].name);
-	print_supported_usbdevs(devs_ft2232spi);
-#endif
-#if CONFIG_SERPROG == 1
-	msg_ginfo("\nSupported devices for the %s programmer:\n",
-	       programmer_table[PROGRAMMER_SERPROG].name);
-	/* FIXME */
-	msg_ginfo("All programmer devices speaking the serprog protocol\n");
-#endif
-#if CONFIG_BUSPIRATE_SPI == 1
-	msg_ginfo("\nSupported devices for the %s programmer:\n",
-	       programmer_table[PROGRAMMER_BUSPIRATE_SPI].name);
-	/* FIXME */
-	msg_ginfo("Dangerous Prototypes Bus Pirate\n");
-#endif
-#if CONFIG_DEDIPROG == 1
-	msg_ginfo("\nSupported devices for the %s programmer:\n",
-	       programmer_table[PROGRAMMER_DEDIPROG].name);
-	/* FIXME */
-	msg_ginfo("Dediprog SF100\n");
-#endif
-#if CONFIG_RAYER_SPI == 1
-	msg_ginfo("\nSupported devices for the %s programmer:\n",
-	       programmer_table[PROGRAMMER_RAYER_SPI].name);
-	/* FIXME */
-	msg_ginfo("RayeR parallel port programmer\n");
-#endif
-#if CONFIG_PONY_SPI == 1
-	msg_ginfo("\nSupported devices for the %s programmer:\n",
-	       programmer_table[PROGRAMMER_PONY_SPI].name);
-	/* FIXME */
-	msg_ginfo("SI-Prog, serbang and AJAWe serial port programmers\n");
-#endif
-#if CONFIG_NICINTEL == 1
-	msg_ginfo("\nSupported devices for the %s programmer:\n",
-	       programmer_table[PROGRAMMER_NICINTEL].name);
-	print_supported_pcidevs(nics_intel);
-#endif
-#if CONFIG_NICINTEL_SPI == 1
-	msg_ginfo("\nSupported devices for the %s programmer:\n",
-	       programmer_table[PROGRAMMER_NICINTEL_SPI].name);
-	print_supported_pcidevs(nics_intel_spi);
-#endif
-#if CONFIG_OGP_SPI == 1
-	msg_ginfo("\nSupported devices for the %s programmer:\n",
-	       programmer_table[PROGRAMMER_OGP_SPI].name);
-	print_supported_pcidevs(ogp_spi);
-#endif
-#if CONFIG_SATAMV == 1
-	msg_ginfo("\nSupported devices for the %s programmer:\n",
-	       programmer_table[PROGRAMMER_SATAMV].name);
-	print_supported_pcidevs(satas_mv);
-#endif
-#if CONFIG_LINUX_SPI == 1
-	msg_ginfo("\nSupported devices for the %s programmer:\n",
-	       programmer_table[PROGRAMMER_LINUX_SPI].name);
-	msg_ginfo("Device files /dev/spidev*.*\n");
-#endif
+		case OTHER:
+			if (prog.devs.note == NULL)
+				break;
+			msg_ginfo("\nSupported devices for the %s programmer:\n", prog.name);
+			msg_ginfo("%s", prog.devs.note);
+			break;
+		default:
+			msg_gerr("\n%s: %s: Uninitialized programmer type! Please report a bug at "
+				 "flashrom@flashrom.org\n", __func__, prog.name);
+			break;
+		}
+	}
 	return 0;
 }
 

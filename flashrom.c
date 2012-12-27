@@ -64,6 +64,8 @@ const struct programmer_entry programmer_table[] = {
 #if CONFIG_INTERNAL == 1
 	{
 		.name			= "internal",
+		.type			= OTHER,
+		.devs.note		= NULL,
 		.init			= internal_init,
 		.map_flash_region	= physmap,
 		.unmap_flash_region	= physunmap,
@@ -74,6 +76,9 @@ const struct programmer_entry programmer_table[] = {
 #if CONFIG_DUMMY == 1
 	{
 		.name			= "dummy",
+		.type			= OTHER,
+					/* FIXME */
+		.devs.note		= "Dummy device, does nothing and logs all accesses\n",
 		.init			= dummy_init,
 		.map_flash_region	= dummy_map,
 		.unmap_flash_region	= dummy_unmap,
@@ -84,6 +89,8 @@ const struct programmer_entry programmer_table[] = {
 #if CONFIG_NIC3COM == 1
 	{
 		.name			= "nic3com",
+		.type			= PCI,
+		.devs.pci		= nics_3com,
 		.init			= nic3com_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
@@ -95,6 +102,8 @@ const struct programmer_entry programmer_table[] = {
 	{
 		/* This programmer works for Realtek RTL8139 and SMC 1211. */
 		.name			= "nicrealtek",
+		.type			= PCI,
+		.devs.pci		= nics_realtek,
 		.init			= nicrealtek_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
@@ -105,6 +114,8 @@ const struct programmer_entry programmer_table[] = {
 #if CONFIG_NICNATSEMI == 1
 	{
 		.name			= "nicnatsemi",
+		.type			= PCI,
+		.devs.pci		= nics_natsemi,
 		.init			= nicnatsemi_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
@@ -115,6 +126,8 @@ const struct programmer_entry programmer_table[] = {
 #if CONFIG_GFXNVIDIA == 1
 	{
 		.name			= "gfxnvidia",
+		.type			= PCI,
+		.devs.pci		= gfx_nvidia,
 		.init			= gfxnvidia_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
@@ -125,6 +138,8 @@ const struct programmer_entry programmer_table[] = {
 #if CONFIG_DRKAISER == 1
 	{
 		.name			= "drkaiser",
+		.type			= PCI,
+		.devs.pci		= drkaiser_pcidev,
 		.init			= drkaiser_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
@@ -135,6 +150,8 @@ const struct programmer_entry programmer_table[] = {
 #if CONFIG_SATASII == 1
 	{
 		.name			= "satasii",
+		.type			= PCI,
+		.devs.pci		= satas_sii,
 		.init			= satasii_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
@@ -145,6 +162,8 @@ const struct programmer_entry programmer_table[] = {
 #if CONFIG_ATAHPT == 1
 	{
 		.name			= "atahpt",
+		.type			= PCI,
+		.devs.pci		= ata_hpt,
 		.init			= atahpt_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
@@ -155,6 +174,8 @@ const struct programmer_entry programmer_table[] = {
 #if CONFIG_FT2232_SPI == 1
 	{
 		.name			= "ft2232_spi",
+		.type			= USB,
+		.devs.usb		= devs_ft2232spi,
 		.init			= ft2232_spi_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
@@ -165,6 +186,9 @@ const struct programmer_entry programmer_table[] = {
 #if CONFIG_SERPROG == 1
 	{
 		.name			= "serprog",
+		.type			= OTHER,
+					/* FIXME */
+		.devs.note		= "All programmer devices speaking the serprog protocol\n",
 		.init			= serprog_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
@@ -175,6 +199,9 @@ const struct programmer_entry programmer_table[] = {
 #if CONFIG_BUSPIRATE_SPI == 1
 	{
 		.name			= "buspirate_spi",
+		.type			= OTHER,
+					/* FIXME */
+		.devs.note		= "Dangerous Prototypes Bus Pirate\n",
 		.init			= buspirate_spi_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
@@ -185,6 +212,9 @@ const struct programmer_entry programmer_table[] = {
 #if CONFIG_DEDIPROG == 1
 	{
 		.name			= "dediprog",
+		.type			= OTHER,
+					/* FIXME */
+		.devs.note		= "Dediprog SF100\n",
 		.init			= dediprog_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
@@ -195,6 +225,9 @@ const struct programmer_entry programmer_table[] = {
 #if CONFIG_RAYER_SPI == 1
 	{
 		.name			= "rayer_spi",
+		.type			= OTHER,
+					/* FIXME */
+		.devs.note		= "RayeR parallel port programmer\n",
 		.init			= rayer_spi_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
@@ -205,16 +238,21 @@ const struct programmer_entry programmer_table[] = {
 #if CONFIG_PONY_SPI == 1
 	{
 		.name			= "pony_spi",
+		.type			= OTHER,
+					/* FIXME */
+		.devs.note		= "Programmers compatible with SI-Prog, serbang or AJAWe\n",
 		.init			= pony_spi_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
 		.delay			= internal_delay,
-},
+	},
 #endif
 
 #if CONFIG_NICINTEL == 1
 	{
 		.name			= "nicintel",
+		.type			= PCI,
+		.devs.pci		= nics_intel,
 		.init			= nicintel_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
@@ -225,6 +263,8 @@ const struct programmer_entry programmer_table[] = {
 #if CONFIG_NICINTEL_SPI == 1
 	{
 		.name			= "nicintel_spi",
+		.type			= PCI,
+		.devs.pci		= nics_intel_spi,
 		.init			= nicintel_spi_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
@@ -235,6 +275,8 @@ const struct programmer_entry programmer_table[] = {
 #if CONFIG_OGP_SPI == 1
 	{
 		.name			= "ogp_spi",
+		.type			= PCI,
+		.devs.pci		= ogp_spi,
 		.init			= ogp_spi_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
@@ -245,6 +287,8 @@ const struct programmer_entry programmer_table[] = {
 #if CONFIG_SATAMV == 1
 	{
 		.name			= "satamv",
+		.type			= PCI,
+		.devs.pci		= satas_mv,
 		.init			= satamv_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
@@ -255,6 +299,8 @@ const struct programmer_entry programmer_table[] = {
 #if CONFIG_LINUX_SPI == 1
 	{
 		.name			= "linux_spi",
+		.type			= OTHER,
+		.devs.note		= "Device files /dev/spidev*.*\n",
 		.init			= linux_spi_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
@@ -1576,6 +1622,23 @@ int selfcheck(void)
 			/* This might hide other problems with this programmer, but allows for better error
 			 * messages below without jumping through hoops. */
 			continue;
+		}
+		switch (p.type) {
+		case USB:
+		case PCI:
+		case OTHER:
+			if (p.devs.note == NULL) {
+				if (strcmp("internal", p.name) == 0)
+					break; /* This one has its device list stored separately. */
+				msg_gerr("Programmer %s has neither a device list nor a textual description!\n",
+					 p.name);
+				ret = 1;
+			}
+			break;
+		default:
+			msg_gerr("Programmer %s does not have a valid type set!\n", p.name);
+			ret = 1;
+			break;
 		}
 		if (p.init == NULL) {
 			msg_gerr("Programmer %s does not have a valid init function!\n", p.name);
