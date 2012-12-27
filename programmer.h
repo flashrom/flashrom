@@ -90,8 +90,20 @@ enum programmer {
 	PROGRAMMER_INVALID /* This must always be the last entry. */
 };
 
+enum programmer_type {
+	PCI = 1, /* to detect uninitialized values */
+	USB,
+	OTHER,
+};
+
 struct programmer_entry {
 	const char *name;
+	const enum programmer_type type;
+	union {
+		const struct pcidev_status *const pci;
+		const struct usbdev_status *const usb;
+		const char *const note;
+	} devs;
 
 	int (*init) (void);
 
@@ -219,13 +231,6 @@ void internal_delay(int usecs);
 extern uint32_t io_base_addr;
 extern struct pci_access *pacc;
 extern struct pci_dev *pcidev_dev;
-struct pcidev_status {
-	uint16_t vendor_id;
-	uint16_t device_id;
-	const enum test_state status;
-	const char *vendor_name;
-	const char *device_name;
-};
 uintptr_t pcidev_readbar(struct pci_dev *dev, int bar);
 uintptr_t pcidev_init(int bar, const struct pcidev_status *devs);
 /* rpci_write_* are reversible writes. The original PCI config space register
@@ -241,6 +246,21 @@ int rpci_write_long(struct pci_dev *dev, int reg, uint32_t data);
 /* Not needed for CONFIG_INTERNAL, but for all other PCI-based programmers. */
 void print_supported_pcidevs(const struct pcidev_status *devs);
 #endif
+
+struct usbdev_status {
+	uint16_t vendor_id;
+	uint16_t device_id;
+	const enum test_state status;
+	const char *vendor_name;
+	const char *device_name;
+};
+struct pcidev_status {
+	uint16_t vendor_id;
+	uint16_t device_id;
+	const enum test_state status;
+	const char *vendor_name;
+	const char *device_name;
+};
 
 #if CONFIG_INTERNAL == 1
 /* board_enable.c */
@@ -420,13 +440,6 @@ extern const struct pcidev_status ata_hpt[];
 
 /* ft2232_spi.c */
 #if CONFIG_FT2232_SPI == 1
-struct usbdev_status {
-	uint16_t vendor_id;
-	uint16_t device_id;
-	const enum test_state status;
-	const char *vendor_name;
-	const char *device_name;
-};
 int ft2232_spi_init(void);
 extern const struct usbdev_status devs_ft2232spi[];
 void print_supported_usbdevs(const struct usbdev_status *devs);
