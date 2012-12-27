@@ -373,6 +373,22 @@ static void print_supported_devs_wiki()
 		}
 	}
 	printf("\n|}\n\n|}\n");
+
+	printf("\n== Other programmers ==\n\n"
+	       "{%s", th_start);
+	printf("! align=\"left\" | Programmer\n"
+	       "! align=\"left\" | Note\n\n");
+
+	for (i = 0; i < PROGRAMMER_INVALID; i++) {
+		static int c = 0;
+		const struct programmer_entry prog = programmer_table[i];
+		if (prog.type == OTHER && prog.devs.note != NULL) {
+			c = !c;
+			printf("|- bgcolor=\"#%s\"\n", (c) ? "eeeeee" : "dddddd");
+			printf("| %s || %s", prog.name, prog.devs.note);
+		}
+	}
+	printf("\n|}\n\n|}\n");
 }
 
 void print_supported_wiki(void)
