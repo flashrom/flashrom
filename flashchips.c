@@ -564,7 +564,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.printlock	= spi_prettyprint_status_register_amic_a25l05p,
+		.printlock	= spi_prettyprint_status_register_default_bp1,
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -598,7 +598,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.printlock	= spi_prettyprint_status_register_amic_a25l05p,
+		.printlock	= spi_prettyprint_status_register_default_bp1,
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -633,7 +633,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.printlock	= spi_prettyprint_status_register_amic_a25l05p,
+		.printlock	= spi_prettyprint_status_register_default_bp1,
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -668,7 +668,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.printlock	= spi_prettyprint_status_register_amic_a25l05p,
+		.printlock	= spi_prettyprint_status_register_default_bp1,
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -703,7 +703,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.printlock	= spi_prettyprint_status_register_amic_a25l05p,
+		.printlock	= spi_prettyprint_status_register_default_bp1,
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -738,7 +738,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.printlock	= spi_prettyprint_status_register_amic_a25l05p,
+		.printlock	= spi_prettyprint_status_register_default_bp1,
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -778,7 +778,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.printlock	= spi_prettyprint_status_register_amic_a25l40p,
+		.printlock	= spi_prettyprint_status_register_default_bp2,
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -813,7 +813,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.printlock	= spi_prettyprint_status_register_amic_a25l40p,
+		.printlock	= spi_prettyprint_status_register_default_bp2,
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -848,7 +848,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.printlock	= spi_prettyprint_status_register_amic_a25l40p,
+		.printlock	= spi_prettyprint_status_register_default_bp2,
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -886,7 +886,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.printlock	= spi_prettyprint_status_register_amic_a25l40p,
+		.printlock	= spi_prettyprint_status_register_default_bp2,
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -924,7 +924,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.printlock	= spi_prettyprint_status_register_amic_a25l40p,
+		.printlock	= spi_prettyprint_status_register_default_bp2,
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -956,7 +956,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.printlock	= spi_prettyprint_status_register_amic_a25l40p,
+		.printlock	= spi_prettyprint_status_register_default_bp2,
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -988,7 +988,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.printlock	= spi_prettyprint_status_register_amic_a25l40p,
+		.printlock	= spi_prettyprint_status_register_default_bp2,
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -1020,7 +1020,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.printlock	= spi_prettyprint_status_register_amic_a25l40p,
+		.printlock	= spi_prettyprint_status_register_default_bp2,
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -1052,7 +1052,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.printlock	= spi_prettyprint_status_register_amic_a25l40p,
+		.printlock	= spi_prettyprint_status_register_default_bp2,
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -1084,7 +1084,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.printlock	= spi_prettyprint_status_register_amic_a25l40p,
+		.printlock	= spi_prettyprint_status_register_default_bp2,
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -1116,7 +1116,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.printlock	= spi_prettyprint_status_register_amic_a25l40p,
+		.printlock	= spi_prettyprint_status_register_default_bp2,
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -1194,7 +1194,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.printlock	= spi_prettyprint_status_register_amic_a25lq032,
+		.printlock	= spi_prettyprint_status_register_amic_a25l032,
 		.unlock		= NULL, /* Two status reg bytes (read with 0x35 and 0x05) */
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -1810,7 +1810,9 @@ const struct flashchip flashchips[] = {
 				.eraseblocks = { {4 * 1024, 128} },
 				.block_erase = spi_block_erase_20,
 			}
-		}, /* Supports also an incompatible page write (of exactly 256 B) and an auto-erasing write. */
+		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
+		/* Supports also an incompatible page write (of exactly 256 B) and an auto-erasing write. */
 		.write		= spi_chip_write_1,
 		.read		= spi_chip_read, /* Fast read (0x0B) supported */
 		.voltage	= {2700, 3600}, /* 3.0-3.6V for higher speed, 2.7-3.6V normal */
@@ -1847,7 +1849,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.printlock	= spi_prettyprint_status_register_atmel_at26df081a,
+		.printlock	= spi_prettyprint_status_register_at26df081a,
 		.unlock		= spi_disable_blockprotect_at25df,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -1923,7 +1925,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.printlock	= spi_prettyprint_status_register_atmel_at26df081a,
+		.printlock	= spi_prettyprint_status_register_at26df081a,
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -1943,7 +1945,7 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.printlock	= spi_prettyprint_status_register_atmel_at26df081a,
+		.printlock	= spi_prettyprint_status_register_at26df081a,
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -1957,7 +1959,7 @@ const struct flashchip flashchips[] = {
 		.model_id	= ATMEL_AT26F004,
 		.total_size	= 512,
 		.page_size	= 256,
-		.tested		= TEST_UNTESTED,
+		.tested		= TEST_BAD_WRITE,
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
@@ -1980,6 +1982,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.write		= NULL /* Incompatible Page write */,
 		.read		= spi_chip_read,
 		.voltage	= {2700, 3600},
@@ -2090,7 +2093,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 16896 /* No power of two sizes */,
 		.page_size	= 1056 /* No power of two sizes */,
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
-		.tested		= TEST_BAD_READ,
+		.tested		= TEST_BAD_REW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.write		= NULL /* Incompatible Page write */,
@@ -2107,7 +2110,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 128 /* Size can only be determined from status register */,
 		.page_size	= 256 /* Size can only be determined from status register */,
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
-		.tested		= TEST_BAD_READ,
+		.tested		= TEST_BAD_REW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.write		= NULL,
@@ -2124,7 +2127,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 256 /* Size can only be determined from status register */,
 		.page_size	= 256 /* Size can only be determined from status register */,
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
-		.tested		= TEST_BAD_READ,
+		.tested		= TEST_BAD_REW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.write		= NULL,
@@ -2141,7 +2144,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 512 /* Size can only be determined from status register */,
 		.page_size	= 256 /* Size can only be determined from status register */,
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
-		.tested		= TEST_BAD_READ,
+		.tested		= TEST_BAD_REW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.write		= NULL,
@@ -2158,7 +2161,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 1024 /* Size can only be determined from status register */,
 		.page_size	= 256 /* Size can only be determined from status register */,
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
-		.tested		= TEST_BAD_READ,
+		.tested		= TEST_BAD_REW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.write		= NULL,
@@ -2175,7 +2178,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 2048 /* Size can only be determined from status register */,
 		.page_size	= 512 /* Size can only be determined from status register */,
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
-		.tested		= TEST_BAD_READ,
+		.tested		= TEST_BAD_REW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.write		= NULL,
@@ -2192,7 +2195,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 4224 /* No power of two sizes */,
 		.page_size	= 528 /* No power of two sizes */,
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
-		.tested		= TEST_BAD_READ,
+		.tested		= TEST_BAD_REW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.write		= NULL,
@@ -2211,7 +2214,7 @@ const struct flashchip flashchips[] = {
 		/* OTP: 128B total, 64B pre-programmed; read 0x77; write 0x9B */
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
 		.feature_bits	= FEATURE_OTP,
-		.tested		= TEST_BAD_READ,
+		.tested		= TEST_BAD_REW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.write		= NULL,
@@ -2228,7 +2231,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 8192 /* Size can only be determined from status register */,
 		.page_size	= 1024 /* Size can only be determined from status register */,
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
-		.tested		= TEST_BAD_READ,
+		.tested		= TEST_BAD_REW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.write		= NULL,
@@ -2621,6 +2624,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_1,
 		.read		= spi_chip_read,
@@ -2654,6 +2658,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -2687,6 +2692,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -2720,6 +2726,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -2753,6 +2760,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -2787,6 +2795,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -2821,6 +2830,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -2855,6 +2865,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -2889,6 +2900,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -2923,6 +2935,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -2957,6 +2970,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -2991,6 +3005,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -3025,6 +3040,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -3059,6 +3075,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -3093,6 +3110,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -3127,6 +3145,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -3161,6 +3180,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -3198,6 +3218,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -3235,6 +3256,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -3272,6 +3294,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -3306,6 +3329,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			},
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -3340,6 +3364,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -3374,6 +3399,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -3408,6 +3434,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -3442,6 +3469,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -3477,6 +3505,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -3512,6 +3541,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -3553,6 +3583,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -3588,6 +3619,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -3623,6 +3655,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -3658,6 +3691,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -3693,6 +3727,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -3729,6 +3764,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -4017,6 +4053,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -4054,6 +4091,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -4092,6 +4130,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -4130,6 +4169,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -4168,6 +4208,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -4206,6 +4247,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -4243,6 +4285,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -4279,6 +4322,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -4671,6 +4715,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			},
 		},
+		.printlock	= spi_prettyprint_status_register_default_bp1, /* TODO: check */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -4705,6 +4750,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			},
 		},
+		.printlock	= spi_prettyprint_status_register_default_bp3, /* TODO: check */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -4742,6 +4788,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			},
 		},
+		.printlock	= spi_prettyprint_status_register_default_bp3, /* TODO: check */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -4779,6 +4826,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			},
 		},
+		.printlock	= spi_prettyprint_status_register_default_bp3, /* TODO: check */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -4816,6 +4864,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			},
 		},
+		.printlock	= spi_prettyprint_status_register_default_bp3, /* TODO: check */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -4853,6 +4902,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			},
 		},
+		.printlock	= spi_prettyprint_status_register_default_bp3, /* TODO: check */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -4887,6 +4937,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_default_bp3, /* TODO: check */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -4921,6 +4972,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_default_bp3, /* TODO: check */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -4955,6 +5007,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			},
 		},
+		.printlock	= spi_prettyprint_status_register_default_bp3, /* TODO: check */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -4989,6 +5042,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_default_bp3, /* TODO: check */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -5023,6 +5077,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_default_bp3, /* TODO: check */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -5057,6 +5112,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_default_bp3, /* TODO: check */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -5461,6 +5517,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -5492,6 +5549,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -5523,6 +5581,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -5554,6 +5613,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -5585,6 +5645,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -5753,6 +5814,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read, /* Fast read (0x0B) and multi I/O supported */
@@ -5784,6 +5846,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -5821,6 +5884,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -5852,6 +5916,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -5883,6 +5948,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -5920,6 +5986,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -5951,6 +6018,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -6224,6 +6292,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -6314,6 +6383,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -6342,6 +6412,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -6370,6 +6441,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -6398,6 +6470,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -6426,6 +6499,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -6457,6 +6531,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_60,
 			},
 		},
+		.printlock	= spi_prettyprint_status_register_sst25, /* TODO: check */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_1, /* AAI supported, but opcode is 0xAF */
 		.read		= spi_chip_read,
@@ -6488,6 +6563,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_60,
 			},
 		},
+		.printlock	= spi_prettyprint_status_register_sst25, /* TODO: check */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_1, /* AAI supported, but opcode is 0xAF */
 		.read		= spi_chip_read,
@@ -6519,6 +6595,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_60,
 			},
 		},
+		.printlock	= spi_prettyprint_status_register_sst25, /* TODO: check */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_1,
 		.read		= spi_chip_read,
@@ -6556,6 +6633,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			},
 		},
+		.printlock	= spi_prettyprint_status_register_sst25vf016,
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_aai_write,
 		.read		= spi_chip_read,
@@ -6593,6 +6671,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			},
 		},
+		.printlock	= spi_prettyprint_status_register_sst25, /* TODO: check */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_aai_write,
 		.read		= spi_chip_read,
@@ -6630,6 +6709,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			},
 		},
+		.printlock	= spi_prettyprint_status_register_sst25, /* TODO: check */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -6661,6 +6741,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_60,
 			},
 		},
+		.printlock	= spi_prettyprint_status_register_sst25, /* TODO: check */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_1, /* AAI supported, but opcode is 0xAF */
 		.read		= spi_chip_read,
@@ -6698,6 +6779,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			},
 		},
+		.printlock	= spi_prettyprint_status_register_sst25vf040b,
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_aai_write,
 		.read		= spi_chip_read,
@@ -6735,6 +6817,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			},
 		},
+		.printlock	= spi_prettyprint_status_register_sst25vf040b,
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_aai_write,
 		.read		= spi_chip_read,
@@ -6772,6 +6855,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			},
 		},
+		.printlock	= spi_prettyprint_status_register_sst25, /* TODO: check */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_aai_write,
 		.read		= spi_chip_read,
@@ -7726,6 +7810,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_default_bp3, /* TODO: check */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -7759,6 +7844,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_default_bp3, /* TODO: check */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_1, /* 128 */
 		.read		= spi_chip_read,
@@ -7787,6 +7873,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_default_bp3, /* TODO: check */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -7816,6 +7903,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_default_bp3, /* TODO: check */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_1, /* 128 */
 		.read		= spi_chip_read,
@@ -7844,6 +7932,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_default_bp3, /* TODO: check */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -7872,6 +7961,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_default_bp3, /* TODO: check */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -7900,6 +7990,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_default_bp3, /* TODO: check */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -7927,6 +8018,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_default_bp3, /* TODO: check */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -7955,6 +8047,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_default_bp3, /* TODO: check */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -7983,6 +8076,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_default_bp3, /* TODO: check */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -8011,6 +8105,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_default_bp3, /* TODO: check */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -8039,6 +8134,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_default_bp3, /* TODO: check */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -8071,6 +8167,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -8101,6 +8198,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -8132,6 +8230,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -8949,6 +9048,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -8987,6 +9087,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -9025,6 +9126,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -9063,6 +9165,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -9100,6 +9203,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -9130,6 +9234,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -9161,6 +9266,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -9192,6 +9298,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -9223,6 +9330,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -9260,6 +9368,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -9297,6 +9406,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
@@ -9334,6 +9444,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
