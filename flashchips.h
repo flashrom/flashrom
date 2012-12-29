@@ -137,13 +137,12 @@
 #define ATMEL_AT25DF321A	0x4701
 #define ATMEL_AT25DF641		0x4800
 #define ATMEL_AT25DQ161		0x8600
-#define ATMEL_AT25F512		/* No device ID found in datasheet. Vendor ID
-				 * can be read with AT25F512A_RDID */
-#define ATMEL_AT25F512A		0x65 /* Needs AT25F512A_RDID */
+#define ATMEL_AT25F512		0x65	/* guessed, no device ID in datasheet. Needs AT25F_RDID */
+#define ATMEL_AT25F512A		0x65	/* Needs AT25F_RDID */
 #define ATMEL_AT25F512B		0x6500
-#define ATMEL_AT25F1024		/* No device ID found in datasheet. Vendor ID
-				 * can be read with AT25F512A_RDID */
-#define ATMEL_AT25F1024A		0x60 /* Needs AT25F512A_RDID */
+#define ATMEL_AT25F1024		0x60	/* Needs AT25F_RDID */
+#define ATMEL_AT25F2048		0x63	/* Needs AT25F_RDID */
+#define ATMEL_AT25F4096		0x64	/* Needs AT25F_RDID */
 #define ATMEL_AT25FS010		0x6601
 #define ATMEL_AT25FS040		0x6604
 #define ATMEL_AT26DF041		0x4400

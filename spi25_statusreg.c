@@ -378,6 +378,40 @@ int spi_prettyprint_status_register_at25df_sec(struct flashctx *flash)
 	return spi_prettyprint_status_register_at25df(flash);
 }
 
+/* used for AT25F512, AT25F1024(A), AT25F2048 */
+int spi_prettyprint_status_register_at25f(struct flashctx *flash)
+{
+	uint8_t status;
+
+	status = spi_read_status_register(flash);
+	spi_prettyprint_status_register_hex(status);
+
+	spi_prettyprint_status_register_atmel_at25_wpen(status);
+	spi_prettyprint_status_register_bit(status, 6);
+	spi_prettyprint_status_register_bit(status, 5);
+	spi_prettyprint_status_register_bit(status, 4);
+	spi_prettyprint_status_register_bp(status, 1);
+	spi_prettyprint_status_register_welwip(status);
+	return 0;
+}
+
+int spi_prettyprint_status_register_at25f512a(struct flashctx *flash)
+{
+	uint8_t status;
+
+	status = spi_read_status_register(flash);
+	spi_prettyprint_status_register_hex(status);
+
+	spi_prettyprint_status_register_atmel_at25_wpen(status);
+	spi_prettyprint_status_register_bit(status, 6);
+	spi_prettyprint_status_register_bit(status, 5);
+	spi_prettyprint_status_register_bit(status, 4);
+	spi_prettyprint_status_register_bit(status, 3);
+	spi_prettyprint_status_register_bp(status, 0);
+	spi_prettyprint_status_register_welwip(status);
+	return 0;
+}
+
 int spi_prettyprint_status_register_at25f512b(struct flashctx *flash)
 {
 	uint8_t status = spi_read_status_register(flash);
@@ -388,6 +422,21 @@ int spi_prettyprint_status_register_at25f512b(struct flashctx *flash)
 	spi_prettyprint_status_register_atmel_at25_epewpp(status);
 	spi_prettyprint_status_register_bit(status, 3);
 	spi_prettyprint_status_register_bp(status, 0);
+	spi_prettyprint_status_register_welwip(status);
+	return 0;
+}
+
+int spi_prettyprint_status_register_at25f4096(struct flashctx *flash)
+{
+	uint8_t status;
+
+	status = spi_read_status_register(flash);
+	spi_prettyprint_status_register_hex(status);
+
+	spi_prettyprint_status_register_atmel_at25_wpen(status);
+	spi_prettyprint_status_register_bit(status, 6);
+	spi_prettyprint_status_register_bit(status, 5);
+	spi_prettyprint_status_register_bp(status, 2);
 	spi_prettyprint_status_register_welwip(status);
 	return 0;
 }
@@ -450,12 +499,27 @@ int spi_disable_blockprotect_at25df_sec(struct flashctx *flash)
 	return spi_disable_blockprotect_at25df(flash);
 }
 
+int spi_disable_blockprotect_at25f(struct flashctx *flash)
+{
+	return spi_disable_blockprotect_generic(flash, 0x0C, 1 << 7, 0);
+}
+
+int spi_disable_blockprotect_at25f512a(struct flashctx *flash)
+{
+	return spi_disable_blockprotect_generic(flash, 0x04, 1 << 7, 0);
+}
+
 int spi_disable_blockprotect_at25f512b(struct flashctx *flash)
 {
 	/* spi_disable_blockprotect_at25df is not really the right way to do
 	 * this, but the side effects of said function work here as well.
 	 */
 	return spi_disable_blockprotect_at25df(flash);
+}
+
+int spi_disable_blockprotect_at25f4096(struct flashctx *flash)
+{
+	return spi_disable_blockprotect_generic(flash, 0x1C, 1 << 7, 0);
 }
 
 int spi_disable_blockprotect_at25fs010(struct flashctx *flash)
