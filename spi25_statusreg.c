@@ -123,34 +123,60 @@ uint8_t spi_read_status_register(struct flashctx *flash)
 	return readarr[0];
 }
 
-/* A generic brute-force block protection disable works like this:
- * Write 0x00 to the status register. Check if any locks are still set (that
- * part is chip specific). Repeat once.
+/* A generic block protection disable.
+ * Tests if a protection is enabled with the block protection mask (bp_mask) and returns success otherwise.
+ * Tests if the register bits are locked with the lock_mask (lock_mask).
+ * Tests if a hardware protection is active (i.e. low) with the write protection mask (wp_mask) and bails out
+ * in that case.
+ * Finally tries to disable engaged protections and checks if any locks are still set.
  */
-int spi_disable_blockprotect(struct flashctx *flash)
+static int spi_disable_blockprotect_generic(struct flashctx *flash, uint8_t bp_mask, uint8_t lock_mask, uint8_t wp_mask)
 {
 	uint8_t status;
 	int result;
 
 	status = spi_read_status_register(flash);
-	/* If block protection is disabled, stop here. */
-	if ((status & 0x3c) == 0)
+	if ((status & bp_mask) == 0) {
+		msg_cdbg2("Block protection is disabled.\n");
 		return 0;
+	}
 
 	msg_cdbg("Some block protection in effect, disabling... ");
-	result = spi_write_status_register(flash, status & ~0x3c);
+	if ((status & lock_mask) != 0) {
+		msg_cdbg("\n\tNeed to disable the register lock first... ");
+		if (wp_mask != 0 && (status & wp_mask) == 0) {
+			msg_cerr("Hardware protection is active, disabling write protection is impossible.\n");
+			return 1;
+		}
+		/* All bits except the register lock bit (often called SPRL, SRWD, WPEN) are readonly. */
+		result = spi_write_status_register(flash, status & ~lock_mask);
+		if (result) {
+			msg_cerr("spi_write_status_register failed.\n");
+			return result;
+		}
+		msg_cdbg("done.\n");
+	}
+	/* Global unprotect. Make sure to mask the register lock bit as well. */
+	result = spi_write_status_register(flash, status & ~(bp_mask | lock_mask));
 	if (result) {
 		msg_cerr("spi_write_status_register failed.\n");
 		return result;
 	}
 	status = spi_read_status_register(flash);
-	if ((status & 0x3c) != 0) {
+	if ((status & bp_mask) != 0) {
 		msg_cerr("Block protection could not be disabled!\n");
 		return 1;
 	}
-	msg_cdbg("done.\n");
+	msg_cdbg("disabled.\n");
 	return 0;
 }
+
+/* A common block protection disable that tries to unset the status register bits masked by 0x3C. */
+int spi_disable_blockprotect(struct flashctx *flash)
+{
+	return spi_disable_blockprotect_generic(flash, 0x3C, 0, 0);
+}
+
 
 static void spi_prettyprint_status_register_hex(uint8_t status)
 {
@@ -414,43 +440,7 @@ int spi_prettyprint_status_register_at26df081a(struct flashctx *flash)
 
 int spi_disable_blockprotect_at25df(struct flashctx *flash)
 {
-	uint8_t status;
-	int result;
-
-	status = spi_read_status_register(flash);
-	/* If block protection is disabled, stop here. */
-	if ((status & (3 << 2)) == 0)
-		return 0;
-
-	msg_cdbg("Some block protection in effect, disabling... ");
-	if (status & (1 << 7)) {
-		msg_cdbg("Need to disable Sector Protection Register Lock\n");
-		if ((status & (1 << 4)) == 0) {
-			msg_cerr("WP# pin is active, disabling "
-				 "write protection is impossible.\n");
-			return 1;
-		}
-		/* All bits except bit 7 (SPRL) are readonly. */
-		result = spi_write_status_register(flash, status & ~(1 << 7));
-		if (result) {
-			msg_cerr("spi_write_status_register failed.\n");
-			return result;
-		}
-		
-	}
-	/* Global unprotect. Make sure to mask SPRL as well. */
-	result = spi_write_status_register(flash, status & ~0xbc);
-	if (result) {
-		msg_cerr("spi_write_status_register failed.\n");
-		return result;
-	}
-	status = spi_read_status_register(flash);
-	if ((status & (3 << 2)) != 0) {
-		msg_cerr("Block protection could not be disabled!\n");
-		return 1;
-	}
-	msg_cdbg("done.\n");
-	return 0;
+	return spi_disable_blockprotect_generic(flash, 0x0C, 1 << 7, 1 << 4);
 }
 
 int spi_disable_blockprotect_at25df_sec(struct flashctx *flash)
@@ -470,72 +460,12 @@ int spi_disable_blockprotect_at25f512b(struct flashctx *flash)
 
 int spi_disable_blockprotect_at25fs010(struct flashctx *flash)
 {
-	uint8_t status;
-	int result;
-
-	status = spi_read_status_register(flash);
-	/* If block protection is disabled, stop here. */
-	if ((status & 0x6c) == 0)
-		return 0;
-
-	msg_cdbg("Some block protection in effect, disabling... ");
-	if (status & (1 << 7)) {
-		msg_cdbg("Need to disable Status Register Write Protect\n");
-		/* Clear bit 7 (WPEN). */
-		result = spi_write_status_register(flash, status & ~(1 << 7));
-		if (result) {
-			msg_cerr("spi_write_status_register failed.\n");
-			return result;
-		}
-	}
-	/* Global unprotect. Make sure to mask WPEN as well. */
-	result = spi_write_status_register(flash, status & ~0xec);
-	if (result) {
-		msg_cerr("spi_write_status_register failed.\n");
-		return result;
-	}
-	status = spi_read_status_register(flash);
-	if ((status & 0x6c) != 0) {
-		msg_cerr("Block protection could not be disabled!\n");
-		return 1;
-	}
-	msg_cdbg("done.\n");
-	return 0;
-}
+	return spi_disable_blockprotect_generic(flash, 0x6C, 1 << 7, 0);
+ }
 
 int spi_disable_blockprotect_at25fs040(struct flashctx *flash)
 {
-	uint8_t status;
-	int result;
-
-	status = spi_read_status_register(flash);
-	/* If block protection is disabled, stop here. */
-	if ((status & 0x7c) == 0)
-		return 0;
-
-	msg_cdbg("Some block protection in effect, disabling... ");
-	if (status & (1 << 7)) {
-		msg_cdbg("Need to disable Status Register Write Protect\n");
-		/* Clear bit 7 (WPEN). */
-		result = spi_write_status_register(flash, status & ~(1 << 7));
-		if (result) {
-			msg_cerr("spi_write_status_register failed.\n");
-			return result;
-		}
-	}
-	/* Global unprotect. Make sure to mask WPEN as well. */
-	result = spi_write_status_register(flash, status & ~0xfc);
-	if (result) {
-		msg_cerr("spi_write_status_register failed.\n");
-		return result;
-	}
-	status = spi_read_status_register(flash);
-	if ((status & 0x7c) != 0) {
-		msg_cerr("Block protection could not be disabled!\n");
-		return 1;
-	}
-	msg_cdbg("done.\n");
-	return 0;
+	return spi_disable_blockprotect_generic(flash, 0x7C, 1 << 7, 0);
 }
 
 /* === SST === */
