@@ -468,6 +468,29 @@ int spi_disable_blockprotect_at25fs040(struct flashctx *flash)
 	return spi_disable_blockprotect_generic(flash, 0x7C, 1 << 7, 0);
 }
 
+/* === Intel === */
+
+/* TODO: Clear P_FAIL and E_FAIL with Clear SR Fail Flags Command (30h) here? */
+int spi_disable_blockprotect_s33(struct flashctx *flash)
+{
+	return spi_disable_blockprotect_generic(flash, 0x1C, 1 << 7, 0);
+}
+
+int spi_prettyprint_status_register_s33(struct flashctx *flash)
+{
+	uint8_t status = spi_read_status_register(flash);
+	msg_cdbg("Chip status register is %02x\n", status);
+
+	spi_prettyprint_status_register_srwd(status);
+	msg_cdbg("Chip status register: Program Fail Flag (P_FAIL) is %sset\n",
+		 (status & (1 << 6)) ? "" : "not ");
+	msg_cdbg("Chip status register: Erase Fail Flag (E_FAIL) is %sset\n",
+		 (status & (1 << 5)) ? "" : "not ");
+	spi_prettyprint_status_register_bp(status, 2);
+	spi_prettyprint_status_register_welwip(status);
+	return 0;
+}
+
 /* === SST === */
 
 static void spi_prettyprint_status_register_sst25_common(uint8_t status)
