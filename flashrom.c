@@ -40,13 +40,13 @@
 #include "hwaccess.h"
 
 const char flashrom_version[] = FLASHROM_VERSION;
-char *chip_to_probe = NULL;
+const char *chip_to_probe = NULL;
 int verbose_screen = MSG_INFO;
 int verbose_logfile = MSG_DEBUG2;
 
 static enum programmer programmer = PROGRAMMER_INVALID;
 
-static char *programmer_param = NULL;
+static const char *programmer_param = NULL;
 
 /*
  * Programmers supporting multiple buses can have differing size limits on
@@ -351,7 +351,7 @@ int register_shutdown(int (*function) (void *data), void *data)
 	return 0;
 }
 
-int programmer_init(enum programmer prog, char *param)
+int programmer_init(enum programmer prog, const char *param)
 {
 	int ret;
 
@@ -517,7 +517,7 @@ char *strcat_realloc(char *dest, const char *src)
  * needle and remove everything from the first occurrence of needle to the next
  * delimiter from haystack.
  */
-char *extract_param(char **haystack, const char *needle, const char *delim)
+char *extract_param(const char *const *haystack, const char *needle, const char *delim)
 {
 	char *param_pos, *opt_pos, *rest;
 	char *opt = NULL;
