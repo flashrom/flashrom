@@ -532,7 +532,7 @@ out:
 	free(layoutfile);
 	free(pparam);
 	/* clean up global variables */
-	free(chip_to_probe);
+	free((char *)chip_to_probe); /* Silence! Freeing is not modifying contents. */
 	chip_to_probe = NULL;
 #ifndef STANDALONE
 	ret |= close_logfile();
