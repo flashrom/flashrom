@@ -483,8 +483,8 @@
 #define SPANSION_S25FL004A	0x0212
 #define SPANSION_S25FL008A	0x0213
 #define SPANSION_S25FL016A	0x0214
-#define SPANSION_S25FL032A	0x0215
-#define SPANSION_S25FL064A	0x0216
+#define SPANSION_S25FL032A	0x0215	/* Same as S25FL032P, but the latter supports EDI and CFI */
+#define SPANSION_S25FL064A	0x0216	/* Same as S25FL064P, but the latter supports EDI and CFI */
 
 /*
  * SST25 chips are SPI, first byte of device ID is memory type, second
