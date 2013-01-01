@@ -72,13 +72,13 @@ int atahpt_init(void)
 
 	io_base_addr = pcidev_init(PCI_BASE_ADDRESS_4, ata_hpt);
 
+	if (register_shutdown(atahpt_shutdown, NULL))
+		return 1;
+
 	/* Enable flash access. */
 	reg32 = pci_read_long(pcidev_dev, REG_FLASH_ACCESS);
 	reg32 |= (1 << 24);
 	rpci_write_long(pcidev_dev, REG_FLASH_ACCESS, reg32);
-
-	if (register_shutdown(atahpt_shutdown, NULL))
-		return 1;
 
 	register_par_programmer(&par_programmer_atahpt, BUS_PARALLEL);
 

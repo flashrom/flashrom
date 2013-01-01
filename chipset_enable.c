@@ -95,19 +95,20 @@ static int enable_flash_sis85c496(struct pci_dev *dev, const char *name)
 
 static int enable_flash_sis_mapping(struct pci_dev *dev, const char *name)
 {
+	#define SIS_MAPREG 0x40
 	uint8_t new, newer;
 
 	/* Extended BIOS enable = 1, Lower BIOS Enable = 1 */
 	/* This is 0xFFF8000~0xFFFF0000 decoding on SiS 540/630. */
-	new = pci_read_byte(dev, 0x40);
+	new = pci_read_byte(dev, SIS_MAPREG);
 	new &= (~0x04); /* No idea why we clear bit 2. */
 	new |= 0xb; /* 0x3 for some chipsets, bit 7 seems to be don't care. */
-	rpci_write_byte(dev, 0x40, new);
-	newer = pci_read_byte(dev, 0x40);
-	if (newer != new) {
-		msg_pinfo("Setting register 0x%x to 0x%x on %s failed "
-			  "(WARNING ONLY).\n", 0x40, new, name);
-		msg_pinfo("Stuck at 0x%x\n", newer);
+	rpci_write_byte(dev, SIS_MAPREG, new);
+	newer = pci_read_byte(dev, SIS_MAPREG);
+	if (newer != new) { /* FIXME: share this with other code? */
+		msg_pinfo("Setting register 0x%x to 0x%02x on %s failed (WARNING ONLY).\n",
+			  SIS_MAPREG, new, name);
+		msg_pinfo("Stuck at 0x%02x.\n", newer);
 		return -1;
 	}
 	return 0;
@@ -176,8 +177,9 @@ static int enable_flash_sis5511(struct pci_dev *dev, const char *name)
 	return ret;
 }
 
-static int enable_flash_sis530(struct pci_dev *dev, const char *name)
+static int enable_flash_sis5x0(struct pci_dev *dev, const char *name, uint8_t dis_mask, uint8_t en_mask)
 {
+	#define SIS_REG 0x45
 	uint8_t new, newer;
 	int ret = 0;
 	struct pci_dev *sbdev;
@@ -188,46 +190,28 @@ static int enable_flash_sis530(struct pci_dev *dev, const char *name)
 
 	ret = enable_flash_sis_mapping(sbdev, name);
 
-	new = pci_read_byte(sbdev, 0x45);
-	new &= (~0x20);
-	new |= 0x4;
-	rpci_write_byte(sbdev, 0x45, new);
-	newer = pci_read_byte(sbdev, 0x45);
-	if (newer != new) {
-		msg_pinfo("Setting register 0x%x to 0x%x on %s failed "
-			  "(WARNING ONLY).\n", 0x45, new, name);
-		msg_pinfo("Stuck at 0x%x\n", newer);
+	new = pci_read_byte(sbdev, SIS_REG);
+	new &= (~dis_mask);
+	new |= en_mask;
+	rpci_write_byte(sbdev, SIS_REG, new);
+	newer = pci_read_byte(sbdev, SIS_REG);
+	if (newer != new) { /* FIXME: share this with other code? */
+		msg_pinfo("Setting register 0x%x to 0x%02x on %s failed (WARNING ONLY).\n", SIS_REG, new, name);
+		msg_pinfo("Stuck at 0x%02x\n", newer);
 		ret = -1;
 	}
 
 	return ret;
 }
 
+static int enable_flash_sis530(struct pci_dev *dev, const char *name)
+{
+	return enable_flash_sis5x0(dev, name, 0x20, 0x04);
+}
+
 static int enable_flash_sis540(struct pci_dev *dev, const char *name)
 {
-	uint8_t new, newer;
-	int ret = 0;
-	struct pci_dev *sbdev;
-
-	sbdev = find_southbridge(dev->vendor_id, name);
-	if (!sbdev)
-		return -1;
-
-	ret = enable_flash_sis_mapping(sbdev, name);
-
-	new = pci_read_byte(sbdev, 0x45);
-	new &= (~0x80);
-	new |= 0x40;
-	rpci_write_byte(sbdev, 0x45, new);
-	newer = pci_read_byte(sbdev, 0x45);
-	if (newer != new) {
-		msg_pinfo("Setting register 0x%x to 0x%x on %s failed "
-			  "(WARNING ONLY).\n", 0x45, new, name);
-		msg_pinfo("Stuck at 0x%x\n", newer);
-		ret = -1;
-	}
-
-	return ret;
+	return enable_flash_sis5x0(dev, name, 0x80, 0x40);
 }
 
 /* Datasheet:
@@ -268,9 +252,8 @@ static int enable_flash_piix4(struct pci_dev *dev, const char *name)
 
 	rpci_write_word(dev, xbcs, new);
 
-	if (pci_read_word(dev, xbcs) != new) {
-		msg_pinfo("Setting register 0x%x to 0x%x on %s failed "
-			  "(WARNING ONLY).\n", xbcs, new, name);
+	if (pci_read_word(dev, xbcs) != new) { /* FIXME: share this with other code? */
+		msg_pinfo("Setting register 0x%04x to 0x%04x on %s failed (WARNING ONLY).\n", xbcs, new, name);
 		return -1;
 	}
 
@@ -678,8 +661,7 @@ static int enable_flash_vt823x(struct pci_dev *dev, const char *name)
 	rpci_write_byte(dev, 0x40, val);
 
 	if (pci_read_byte(dev, 0x40) != val) {
-		msg_pinfo("\nWARNING: Failed to enable flash write on \"%s\"\n",
-			  name);
+		msg_pinfo("\nWARNING: Failed to enable flash write on \"%s\"\n", name);
 		return -1;
 	}
 
@@ -851,15 +833,15 @@ static int enable_flash_cs5536(struct pci_dev *dev, const char *name)
 
 static int enable_flash_sc1100(struct pci_dev *dev, const char *name)
 {
+	#define SC_REG 0x52
 	uint8_t new;
 
-	rpci_write_byte(dev, 0x52, 0xee);
+	rpci_write_byte(dev, SC_REG, 0xee);
 
-	new = pci_read_byte(dev, 0x52);
+	new = pci_read_byte(dev, SC_REG);
 
-	if (new != 0xee) {
-		msg_pinfo("Setting register 0x%x to 0x%x on %s failed "
-			  "(WARNING ONLY).\n", 0x52, new, name);
+	if (new != 0xee) { /* FIXME: share this with other code? */
+		msg_pinfo("Setting register 0x%x to 0x%02x on %s failed (WARNING ONLY).\n", SC_REG, new, name);
 		return -1;
 	}
 
@@ -869,29 +851,31 @@ static int enable_flash_sc1100(struct pci_dev *dev, const char *name)
 /* Works for AMD-8111, VIA VT82C586A/B, VIA VT82C686A/B. */
 static int enable_flash_amd8111(struct pci_dev *dev, const char *name)
 {
+	#define AMD_MAPREG 0x43
+	#define AMD_ENREG 0x40
 	uint8_t old, new;
 
 	/* Enable decoding at 0xffb00000 to 0xffffffff. */
-	old = pci_read_byte(dev, 0x43);
+	old = pci_read_byte(dev, AMD_MAPREG);
 	new = old | 0xC0;
 	if (new != old) {
-		rpci_write_byte(dev, 0x43, new);
-		if (pci_read_byte(dev, 0x43) != new) {
-			msg_pinfo("Setting register 0x%x to 0x%x on %s failed "
-				  "(WARNING ONLY).\n", 0x43, new, name);
+		rpci_write_byte(dev, AMD_MAPREG, new);
+		if (pci_read_byte(dev, AMD_MAPREG) != new) {
+			msg_pinfo("Setting register 0x%x to 0x%02x on %s failed (WARNING ONLY).\n",
+				  AMD_MAPREG, new, name);
 		}
 	}
 
 	/* Enable 'ROM write' bit. */
-	old = pci_read_byte(dev, 0x40);
+	old = pci_read_byte(dev, AMD_ENREG);
 	new = old | 0x01;
 	if (new == old)
 		return 0;
-	rpci_write_byte(dev, 0x40, new);
+	rpci_write_byte(dev, AMD_ENREG, new);
 
-	if (pci_read_byte(dev, 0x40) != new) {
-		msg_pinfo("Setting register 0x%x to 0x%x on %s failed "
-			  "(WARNING ONLY).\n", 0x40, new, name);
+	if (pci_read_byte(dev, AMD_ENREG) != new) {
+		msg_pinfo("Setting register 0x%x to 0x%02x on %s failed (WARNING ONLY).\n",
+			  AMD_ENREG, new, name);
 		return -1;
 	}
 
@@ -1055,8 +1039,8 @@ static int enable_flash_ck804(struct pci_dev *dev, const char *name)
 	new = old | 0xC0;
 	if (new != old) {
 		rpci_write_byte(dev, reg, new);
-		if (pci_read_byte(dev, reg) != new) {
-			msg_pinfo("Setting register 0x%02x to 0x%x on %s failed.\n", reg, new, name);
+		if (pci_read_byte(dev, reg) != new) { /* FIXME: share this with other code? */
+			msg_pinfo("Setting register 0x%02x to 0x%02x on %s failed.\n", reg, new, name);
 			err++;
 		}
 	}
@@ -1298,7 +1282,7 @@ const struct penable chipset_enables[] = {
 	{0x1039, 0x0645, NT, "SiS", "645",		enable_flash_sis540},
 	{0x1039, 0x0646, OK, "SiS", "645DX",		enable_flash_sis540},
 	{0x1039, 0x0648, NT, "SiS", "648",		enable_flash_sis540},
-	{0x1039, 0x0650, NT, "SiS", "650",		enable_flash_sis540},
+	{0x1039, 0x0650, OK, "SiS", "650",		enable_flash_sis540},
 	{0x1039, 0x0651, OK, "SiS", "651",		enable_flash_sis540},
 	{0x1039, 0x0655, NT, "SiS", "655",		enable_flash_sis540},
 	{0x1039, 0x0661, OK, "SiS", "661",		enable_flash_sis540},
@@ -1355,7 +1339,7 @@ const struct penable chipset_enables[] = {
 	{0x10de, 0x0442, NT, "NVIDIA", "MCP65",		enable_flash_mcp6x_7x},
 	{0x10de, 0x0443, NT, "NVIDIA", "MCP65",		enable_flash_mcp6x_7x},
 	{0x10de, 0x0548, OK, "NVIDIA", "MCP67",		enable_flash_mcp6x_7x},
-	{0x10de, 0x075c, NT, "NVIDIA", "MCP78S",	enable_flash_mcp6x_7x},
+	{0x10de, 0x075c, OK, "NVIDIA", "MCP78S",	enable_flash_mcp6x_7x},
 	{0x10de, 0x075d, OK, "NVIDIA", "MCP78S",	enable_flash_mcp6x_7x},
 	{0x10de, 0x07d7, OK, "NVIDIA", "MCP73",		enable_flash_mcp6x_7x},
 	{0x10de, 0x0aac, OK, "NVIDIA", "MCP79",		enable_flash_mcp6x_7x},
