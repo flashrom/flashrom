@@ -34,7 +34,9 @@ recommended that if you try flashrom the first time on a system, you run it
 in probe-only mode and check the output. Also you are advised to make a
 backup of your current ROM contents with
 .B \-r
-before you try to write a new image.
+before you try to write a new image. All operations involving any chip access (probe/read/write/...) require the
+.B -p/--programmer
+option to be used (please see below).
 .TP
 .B "\-r, \-\-read <file>"
 Read flash ROM contents and save them into the given
@@ -128,7 +130,7 @@ If you only want to update the image named
 .sp
 .B "  flashrom \-p prog \-\-layout rom.layout \-\-image normal \-w some.rom"
 .sp
-To update only the images named 
+To update only the images named
 .BR "normal " "and " "fallback" ", run:"
 .sp
 .B "  flashrom \-p prog \-l rom.layout \-i normal -i fallback \-w some.rom"
@@ -694,11 +696,11 @@ The schematic of the Xilinx DLC 5 was published at
 .BR "pony_spi " programmer
 The serial port (like /dev/ttyS0, /dev/ttyUSB0 on Linux or COM3 on windows) is
 specified using the mandatory
-.B dev 
+.B dev
 parameter. The adapter type is selectable between SI-Prog (used for
 SPI devices with PonyProg 2000) or a custom made serial bitbanging programmer
 named "serbang". The optional
-.B type 
+.B type
 parameter accepts the values "si_prog" (default) or "serbang".
 .sp
 Information about the SI-Prog adapter can be found at
@@ -724,7 +726,7 @@ is either
 .B cprom
 or
 .B s3
-for the configuration ROM and 
+for the configuration ROM and
 .B bprom
 or
 .B bios
@@ -733,7 +735,7 @@ is installed in your system, you have to specify the PCI address of the card
 you want to use with the
 .B pci=
 parameter as explained in the
-.B nic3com et al.\& 
+.B nic3com et al.\&
 section above.
 .sp
 More information about the hardware is available at

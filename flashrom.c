@@ -397,7 +397,10 @@ int programmer_shutdown(void)
 		int i = --shutdown_fn_count;
 		ret |= shutdown_fn[i].func(shutdown_fn[i].data);
 	}
+
 	programmer_param = NULL;
+	registered_programmer_count = 0;
+
 	return ret;
 }
 

@@ -223,7 +223,7 @@ static int sp_automatic_cmdcheck(uint8_t cmd)
 {
 	if ((sp_check_avail_automatic) && (sp_check_commandavail(cmd) == 0)) {
 		msg_pdbg("Warning: Automatic command availability check failed "
-			 "for cmd 0x%x - won't execute cmd\n", cmd);
+			 "for cmd 0x%02x - won't execute cmd\n", cmd);
 		return 1;
 		}
 	return 0;
@@ -522,6 +522,7 @@ int serprog_init(void)
 			f_spi_req = strtol(spispeed, &f_spi_suffix, 0);
 			if (errno != 0 || spispeed == f_spi_suffix) {
 				msg_perr("Error: Could not convert 'spispeed'.\n");
+				free(spispeed);
 				return 1;
 			}
 			if (strlen(f_spi_suffix) == 1) {
@@ -531,10 +532,12 @@ int serprog_init(void)
 					f_spi_req *= 1000;
 				else {
 					msg_perr("Error: Garbage following 'spispeed' value.\n");
+					free(spispeed);
 					return 1;
 				}
 			} else if (strlen(f_spi_suffix) > 1) {
 				msg_perr("Error: Garbage following 'spispeed' value.\n");
+				free(spispeed);
 				return 1;
 			}
 
