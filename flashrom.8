@@ -637,6 +637,20 @@ where
 can be
 .BR 30k ", " 125k ", " 250k ", " 1M ", " 2M ", " 2.6M ", " 4M " or " 8M
 (in Hz). The default is the maximum frequency of 8 MHz.
+.sp
+An optional pullups parameter specifies the use of the Bus Pirate internal pull-up resistors. This may be
+needed if you are working with a flash ROM chip that you have physically removed from the board. Syntax is
+.sp
+.B "  flashrom -p buspirate_spi:pullups=state"
+.sp
+where
+.B state
+can be
+.BR on " or " off .
+More information about the Bus Pirate pull-up resistors and their purpose is available at
+.nh
+.BR "http://dangerousprototypes.com/docs/Practical_guide_to_Bus_Pirate_pull-up_resistors " .
+Only the external supply voltage (Vpu) is supported as of this writing.
 .SS
 .BR "dediprog " programmer
 An optional
