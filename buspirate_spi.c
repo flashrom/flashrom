@@ -201,14 +201,14 @@ out_shutdown:
 
 int buspirate_spi_init(void)
 {
-	char *dev = NULL;
-	char *speed = NULL;
 	char *tmp;
+	char *dev;
+	int i;
 	unsigned int fw_version_major = 0;
 	unsigned int fw_version_minor = 0;
 	int spispeed = 0x7;
 	int ret = 0;
-	int i;
+	int pullup = 0;
 
 	dev = extract_programmer_param("dev");
 	if (dev && !strlen(dev)) {
@@ -220,18 +220,29 @@ int buspirate_spi_init(void)
 		return 1;
 	}
 
-	speed = extract_programmer_param("spispeed");
-	if (speed) {
-		for (i = 0; spispeeds[i].name; i++)
-			if (!strncasecmp(spispeeds[i].name, speed,
-			    strlen(spispeeds[i].name))) {
+	tmp = extract_programmer_param("spispeed");
+	if (tmp) {
+		for (i = 0; spispeeds[i].name; i++) {
+			if (!strncasecmp(spispeeds[i].name, tmp, strlen(spispeeds[i].name))) {
 				spispeed = spispeeds[i].speed;
 				break;
 			}
+		}
 		if (!spispeeds[i].name)
 			msg_perr("Invalid SPI speed, using default.\n");
 	}
-	free(speed);
+	free(tmp);
+
+	tmp = extract_programmer_param("pullups");
+	if (tmp) {
+		if (strcasecmp("on", tmp) == 0)
+			pullup = 1;
+		else if (strcasecmp("off", tmp) == 0)
+			; // ignore
+		else
+			msg_perr("Invalid pullups state, not using them.\n");
+	}
+	free(tmp);
 
 	/* Default buffer size is 19: 16 bytes data, 3 bytes control. */
 #define DEFAULT_BUFSIZE (16 + 3)
@@ -395,12 +406,16 @@ int buspirate_spi_init(void)
 	}
 
 	/* Initial setup (SPI peripherals config): Enable power, CS high, AUX */
-	bp_commbuf[0] = 0x40 | 0xb;
+	bp_commbuf[0] = 0x40 | 0x0b;
+	if (pullup == 1) {
+		bp_commbuf[0] |= (1 << 2);
+		msg_pdbg("Enabling pull-up resistors.\n");
+	}
 	ret = buspirate_sendrecv(bp_commbuf, 1, 1);
 	if (ret)
 		return 1;
 	if (bp_commbuf[0] != 0x01) {
-		msg_perr("Protocol error while setting power/CS/AUX!\n");
+		msg_perr("Protocol error while setting power/CS/AUX(/Pull-up resistors)!\n");
 		return 1;
 	}
 
