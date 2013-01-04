@@ -56,13 +56,6 @@ static const struct par_programmer par_programmer_atahpt = {
 		.chip_writen		= fallback_chip_writen,
 };
 
-static int atahpt_shutdown(void *data)
-{
-	/* Flash access is disabled automatically by PCI restore. */
-	pci_cleanup(pacc);
-	return 0;
-}
-
 int atahpt_init(void)
 {
 	uint32_t reg32;
@@ -71,9 +64,6 @@ int atahpt_init(void)
 		return 1;
 
 	io_base_addr = pcidev_init(PCI_BASE_ADDRESS_4, ata_hpt);
-
-	if (register_shutdown(atahpt_shutdown, NULL))
-		return 1;
 
 	/* Enable flash access. */
 	reg32 = pci_read_long(pcidev_dev, REG_FLASH_ACCESS);

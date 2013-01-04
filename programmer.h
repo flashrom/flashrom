@@ -238,6 +238,7 @@ void internal_delay(int usecs);
 extern uint32_t io_base_addr;
 extern struct pci_access *pacc;
 extern struct pci_dev *pcidev_dev;
+int pci_init_common(void);
 uintptr_t pcidev_readbar(struct pci_dev *dev, int bar);
 uintptr_t pcidev_init(int bar, const struct dev_entry *devs);
 /* rpci_write_* are reversible writes. The original PCI config space register

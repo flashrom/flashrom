@@ -63,7 +63,6 @@ static int nicintel_shutdown(void *data)
 {
 	physunmap(nicintel_control_bar, NICINTEL_CONTROL_MEMMAP_SIZE);
 	physunmap(nicintel_bar, NICINTEL_MEMMAP_SIZE);
-	pci_cleanup(pacc);
 	return 0;
 }
 
@@ -77,8 +76,7 @@ int nicintel_init(void)
 	if (rget_io_perms())
 		return 1;
 
-	/* No need to check for errors, pcidev_init() will not return in case
-	 * of errors.
+	/* No need to check for errors, pcidev_init() will not return in case of errors.
 	 * FIXME: BAR2 is not available if the device uses the CardBus function.
 	 */
 	addr = pcidev_init(PCI_BASE_ADDRESS_2, nics_intel);
@@ -117,7 +115,6 @@ int nicintel_init(void)
 error_out_unmap:
 	physunmap(nicintel_bar, NICINTEL_MEMMAP_SIZE);
 error_out:
-	pci_cleanup(pacc);
 	return 1;
 }
 

@@ -245,10 +245,8 @@ int internal_init(void)
 	internal_buses_supported = BUS_NONSPI;
 
 	/* Initialize PCI access for flash enables */
-	pacc = pci_alloc();	/* Get the pci_access structure */
-	/* Set all options you want -- here we stick with the defaults */
-	pci_init(pacc);		/* Initialize the PCI library */
-	pci_scan_bus(pacc);	/* We want to get the list of devices */
+	if (pci_init_common() != 0)
+		return 1;
 
 	if (processor_flash_enable()) {
 		msg_perr("Processor detection/init failed.\n"

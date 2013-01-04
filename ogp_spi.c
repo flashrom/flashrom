@@ -100,8 +100,6 @@ static const struct bitbang_spi_master bitbang_spi_master_ogp = {
 static int ogp_spi_shutdown(void *data)
 {
 	physunmap(ogp_spibar, 4096);
-	pci_cleanup(pacc);
-
 	return 0;
 }
 
