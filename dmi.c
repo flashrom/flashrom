@@ -105,7 +105,7 @@ static char *get_dmi_string(const char *string_name)
 		 "%s -s %s", dmidecode_command, string_name);
 	dmidecode_pipe = popen(commandline, "r");
 	if (!dmidecode_pipe) {
-		msg_perr("DMI pipe open error\n");
+		msg_perr("Opening DMI pipe failed!\n");
 		return NULL;
 	}
 
@@ -127,13 +127,11 @@ static char *get_dmi_string(const char *string_name)
 		}
 	} while (answerbuf[0] == '#');
 
-	/* Toss all output above DMI_MAX_ANSWER_LEN away to prevent
-	   deadlock on pclose. */
+	/* Discard all output exceeding DMI_MAX_ANSWER_LEN to prevent deadlock on pclose. */
 	while (!feof(dmidecode_pipe))
 		getc(dmidecode_pipe);
 	if (pclose(dmidecode_pipe) != 0) {
-		msg_pinfo("dmidecode execution unsuccessful - continuing "
-			  "without DMI info\n");
+		msg_pwarn("dmidecode execution unsuccessful - continuing without DMI info\n");
 		return NULL;
 	}
 
@@ -144,7 +142,7 @@ static char *get_dmi_string(const char *string_name)
 
 	result = strdup(answerbuf);
 	if (!result)
-		msg_perr("WARNING: Out of memory - DMI support fails");
+		msg_pwarn("Warning: Out of memory - DMI support fails");
 
 	return result;
 }

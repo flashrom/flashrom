@@ -271,16 +271,20 @@ void start_logging(void);
 #endif
 enum msglevel {
 	MSG_ERROR	= 0,
-	MSG_INFO	= 1,
-	MSG_DEBUG	= 2,
-	MSG_DEBUG2	= 3,
-	MSG_SPEW	= 4,
+	MSG_WARN	= 1,
+	MSG_INFO	= 2,
+	MSG_DEBUG	= 3,
+	MSG_DEBUG2	= 4,
+	MSG_SPEW	= 5,
 };
 /* Let gcc and clang check for correct printf-style format strings. */
 int print(enum msglevel level, const char *fmt, ...) __attribute__((format(printf, 2, 3)));
 #define msg_gerr(...)	print(MSG_ERROR, __VA_ARGS__)	/* general errors */
 #define msg_perr(...)	print(MSG_ERROR, __VA_ARGS__)	/* programmer errors */
 #define msg_cerr(...)	print(MSG_ERROR, __VA_ARGS__)	/* chip errors */
+#define msg_gwarn(...)	print(MSG_WARN, __VA_ARGS__)	/* general warnings */
+#define msg_pwarn(...)	print(MSG_WARN, __VA_ARGS__)	/* programmer warnings */
+#define msg_cwarn(...)	print(MSG_WARN, __VA_ARGS__)	/* chip warnings */
 #define msg_ginfo(...)	print(MSG_INFO, __VA_ARGS__)	/* general info */
 #define msg_pinfo(...)	print(MSG_INFO, __VA_ARGS__)	/* programmer info */
 #define msg_cinfo(...)	print(MSG_INFO, __VA_ARGS__)	/* chip info */

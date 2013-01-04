@@ -98,7 +98,7 @@ int satasii_init(void)
 
 	/* Check if ROM cycle are OK. */
 	if ((id != 0x0680) && (!(pci_mmio_readl(sii_bar) & (1 << 26))))
-		msg_pinfo("Warning: Flash seems unconnected.\n");
+		msg_pwarn("Warning: Flash seems unconnected.\n");
 
 	if (register_shutdown(satasii_shutdown, NULL))
 		return 1;

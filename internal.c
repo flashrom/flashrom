@@ -257,7 +257,7 @@ int internal_init(void)
 #if defined(__i386__) || defined(__x86_64__)
 	if ((cb_parse_table(&cb_vendor, &cb_model) == 0) && (board_vendor != NULL) && (board_model != NULL)) {
 		if (strcasecmp(board_vendor, cb_vendor) || strcasecmp(board_model, cb_model)) {
-			msg_pinfo("WARNING: The mainboard IDs set by -p internal:mainboard (%s:%s) do not\n"
+			msg_pwarn("Warning: The mainboard IDs set by -p internal:mainboard (%s:%s) do not\n"
 				  "         match the current coreboot IDs of the mainboard (%s:%s).\n",
 				  board_vendor, board_model, cb_vendor, cb_model);
 			if (!force_boardmismatch)

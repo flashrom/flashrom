@@ -86,7 +86,7 @@ int unlock_sst_fwhub(struct flashctx *flash)
 	{
 		if (clear_sst_fwhub_block_lock(flash, i))
 		{
-			msg_cdbg("Warning: Unlock Failed for block 0x%06x\n", i);
+			msg_cwarn("Warning: Unlock Failed for block 0x%06x\n", i);
 			ret++;
 		}
 	}

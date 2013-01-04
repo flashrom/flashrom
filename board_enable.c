@@ -546,7 +546,7 @@ void w83697xx_memw_enable(uint16_t port)
 			sio_mask(port, 0x24, 0x28, 0x38);
 
 		} else {
-			msg_perr("WARNING: Flash interface in use by GPIO!\n");
+			msg_pwarn("Warning: Flash interface in use by GPIO!\n");
 		}
 	} else {
 		msg_pinfo("BIOS ROM is disabled\n");
@@ -2556,8 +2556,8 @@ const static struct board_match *board_match_pci_ids(enum board_match_phase phas
 
 		if (board->dmi_pattern) {
 			if (!has_dmi_support) {
-				msg_perr("WARNING: Can't autodetect %s %s, DMI info unavailable.\n",
-					 board->vendor_name, board->board_name);
+				msg_pwarn("Warning: Can't autodetect %s %s, DMI info unavailable.\n",
+					  board->vendor_name, board->board_name);
 				msg_pinfo("Please supply the board vendor and model name with the "
 					  "-p internal:mainboard=<vendor>:<model> option.\n");
 				continue;
@@ -2582,14 +2582,14 @@ static int board_enable_safetycheck(const struct board_match *board)
 		return 0;
 
 	if (!force_boardenable) {
-		msg_pinfo("WARNING: The mainboard-specific code for %s %s has not been tested,\n"
+		msg_pwarn("Warning: The mainboard-specific code for %s %s has not been tested,\n"
 			  "and thus will not be executed by default. Depending on your hardware,\n"
 			  "erasing, writing or even probing can fail without running this code.\n\n"
 			  "Please see the man page (section PROGRAMMER SPECIFIC INFO, subsection\n"
 			  "\"internal programmer\") for details.\n", board->vendor_name, board->board_name);
 		return 1;
 	}
-	msg_pinfo("NOTE: Running an untested board enable procedure.\n"
+	msg_pwarn("NOTE: Running an untested board enable procedure.\n"
 		  "Please report success/failure to flashrom@flashrom.org.\n");
 	return 0;
 }
