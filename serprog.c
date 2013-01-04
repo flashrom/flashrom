@@ -467,7 +467,7 @@ int serprog_init(void)
 	 * in a single byte.
 	 */
 	if (sp_docommand(S_CMD_Q_BUSTYPE, 0, NULL, 1, &c)) {
-		msg_perr("Warning: NAK to query supported buses\n");
+		msg_pwarn("Warning: NAK to query supported buses\n");
 		c = BUS_NONSPI;	/* A reasonable default for now. */
 	}
 	serprog_buses_supported = c;
@@ -547,9 +547,8 @@ int serprog_init(void)
 			buf[3] = (f_spi_req >> (3 * 8)) & 0xFF;
 
 			if (sp_check_commandavail(S_CMD_S_SPI_FREQ) == 0)
-				msg_perr(MSGHEADER "Warning: Setting the SPI clock rate is not supported!\n");
-			else if (sp_docommand(S_CMD_S_SPI_FREQ, 4, buf, 4, buf)
-				 == 0) {
+				msg_pwarn(MSGHEADER "Warning: Setting the SPI clock rate is not supported!\n");
+			else if (sp_docommand(S_CMD_S_SPI_FREQ, 4, buf, 4, buf) == 0) {
 				f_spi = buf[0];
 				f_spi |= buf[1] << (1 * 8);
 				f_spi |= buf[2] << (2 * 8);
@@ -557,7 +556,7 @@ int serprog_init(void)
 				msg_pdbg(MSGHEADER "Requested to set SPI clock frequency to %u Hz. "
 					 "It was actually set to %u Hz\n", f_spi_req, f_spi);
 			} else
-				msg_pdbg(MSGHEADER "Setting SPI clock rate to %u Hz failed!\n", f_spi_req);
+				msg_pwarn(MSGHEADER "Setting SPI clock rate to %u Hz failed!\n", f_spi_req);
 		}
 		free(spispeed);
 		bt = serprog_buses_supported;
@@ -633,14 +632,14 @@ int serprog_init(void)
 	}
 
 	if (sp_docommand(S_CMD_Q_PGMNAME, 0, NULL, 16, pgmname)) {
-		msg_perr("Warning: NAK to query programmer name\n");
+		msg_pwarn("Warning: NAK to query programmer name\n");
 		strcpy((char *)pgmname, "(unknown)");
 	}
 	pgmname[16] = 0;
 	msg_pinfo(MSGHEADER "Programmer name is \"%s\"\n", pgmname);
 
 	if (sp_docommand(S_CMD_Q_SERBUF, 0, NULL, 2, &sp_device_serbuf_size)) {
-		msg_perr("Warning: NAK to query serial buffer size\n");
+		msg_pwarn("Warning: NAK to query serial buffer size\n");
 	}
 	msg_pdbg(MSGHEADER "Serial buffer size is %d\n",
 		     sp_device_serbuf_size);
@@ -660,8 +659,7 @@ int serprog_init(void)
 
 		if (sp_docommand(S_CMD_Q_OPBUF, 0, NULL, 2,
 		    &sp_device_opbuf_size)) {
-			msg_perr("Warning: NAK to query operation buffer "
-				 "size\n");
+			msg_pwarn("Warning: NAK to query operation buffer size\n");
 		}
 		msg_pdbg(MSGHEADER "operation buffer size is %d\n",
 			 sp_device_opbuf_size);
@@ -755,7 +753,7 @@ static int serprog_shutdown(void *data)
 		if (sp_docommand(S_CMD_S_PIN_STATE, 1, &dis, 0, NULL) == 0)
 			msg_pdbg(MSGHEADER "Output drivers disabled\n");
 		else
-			msg_perr(MSGHEADER "%s: Warning: could not disable output buffers\n", __func__);
+			msg_pwarn(MSGHEADER "%s: Warning: could not disable output buffers\n", __func__);
 	}
 	/* FIXME: fix sockets on windows(?), especially closing */
 	serialport_shutdown(&sp_fd);

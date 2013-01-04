@@ -1455,7 +1455,7 @@ static int ich9_handle_frap(uint32_t frap, int i)
 		return 0;
 	}
 
-	msg_pinfo("FREG%i: WARNING: %s region (0x%08x-0x%08x) is %s.\n", i,
+	msg_pwarn("FREG%i: Warning: %s region (0x%08x-0x%08x) is %s.\n", i,
 		  region_names[i], base, (limit | 0x0fff),
 		  access_names[rwperms]);
 	return 1;
@@ -1486,7 +1486,7 @@ static int ich9_handle_pr(int i)
 	}
 
 	msg_pdbg("0x%02X: 0x%08x ", off, pr);
-	msg_pinfo("PR%u: WARNING: 0x%08x-0x%08x is %s.\n", i, ICH_FREG_BASE(pr),
+	msg_pwarn("PR%u: Warning: 0x%08x-0x%08x is %s.\n", i, ICH_FREG_BASE(pr),
 		  ICH_FREG_LIMIT(pr) | 0x0fff, access_names[rwperms]);
 	return 1;
 }
@@ -1618,7 +1618,7 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 				     mmio_readl(ich_spibar + offs), i);
 		}
 		if (mmio_readw(ich_spibar) & (1 << 15)) {
-			msg_pinfo("WARNING: SPI Configuration Lockdown activated.\n");
+			msg_pwarn("WARNING: SPI Configuration Lockdown activated.\n");
 			ichspi_lock = 1;
 		}
 		ich_init_opcodes();
@@ -1669,7 +1669,7 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 		msg_pdbg("0x04: 0x%04x (HSFS)\n", tmp2);
 		prettyprint_ich9_reg_hsfs(tmp2);
 		if (tmp2 & HSFS_FLOCKDN) {
-			msg_pinfo("WARNING: SPI Configuration Lockdown activated.\n");
+			msg_pwarn("Warning: SPI Configuration Lockdown activated.\n");
 			ichspi_lock = 1;
 		}
 		if (tmp2 & HSFS_FDV)
@@ -1879,7 +1879,7 @@ int via_init_spi(struct pci_dev *dev, uint32_t mmio_base)
 	msg_pdbg("0x6c: 0x%04x     (CLOCK/DEBUG)\n",
 		 mmio_readw(ich_spibar + 0x6c));
 	if (mmio_readw(ich_spibar) & (1 << 15)) {
-		msg_pinfo("WARNING: SPI Configuration Lockdown activated.\n");
+		msg_pwarn("Warning: SPI Configuration Lockdown activated.\n");
 		ichspi_lock = 1;
 	}
 

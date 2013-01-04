@@ -300,11 +300,11 @@ static int enable_flash_ich(struct pci_dev *dev, const char *name, uint8_t bios_
 	msg_pdbg("BIOS Lock Enable: %sabled, ", (new & (1 << 1)) ? "en" : "dis");
 	msg_pdbg("BIOS Write Enable: %sabled\n", (new & (1 << 0)) ? "en" : "dis");
 	if (new & (1 << 5))
-		msg_pinfo("WARNING: BIOS region SMM protection is enabled!\n");
+		msg_pwarn("Warning: BIOS region SMM protection is enabled!\n");
 
 
 	if (new != wanted)
-		msg_pinfo("WARNING: Setting Bios Control at 0x%x from 0x%02x to 0x%02x on %s failed.\n"
+		msg_pwarn("Warning: Setting Bios Control at 0x%x from 0x%02x to 0x%02x on %s failed.\n"
 			  "New value is 0x%02x.\n", bios_cntl, old, wanted, name, new);
 
 	/* Return an error if we could not set the write enable */
@@ -661,7 +661,7 @@ static int enable_flash_vt823x(struct pci_dev *dev, const char *name)
 	rpci_write_byte(dev, 0x40, val);
 
 	if (pci_read_byte(dev, 0x40) != val) {
-		msg_pinfo("\nWARNING: Failed to enable flash write on \"%s\"\n", name);
+		msg_pwarn("\nWarning: Failed to enable flash write on \"%s\"\n", name);
 		return -1;
 	}
 
@@ -1516,7 +1516,7 @@ int chipset_flash_enable(void)
 		if (!dev)
 			continue;
 		if (ret != -2) {
-			msg_pinfo("WARNING: unexpected second chipset match: "
+			msg_pwarn("Warning: unexpected second chipset match: "
 				    "\"%s %s\"\n"
 				  "ignoring, please report lspci and board URL "
 				    "to flashrom@flashrom.org\n"

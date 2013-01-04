@@ -96,9 +96,9 @@ int cb_check_image(uint8_t *image, int size)
 	if (!strcasecmp(image_vendor, cb_vendor) && !strcasecmp(image_model, cb_model)) {
 		msg_pdbg2("This coreboot image matches this mainboard.\n");
 	} else {
-		msg_pinfo("WARNING: This coreboot image (%s:%s) does not appear to\n"
-			  "         be correct for the detected mainboard (%s:%s).\n",
-			  image_vendor, image_model, cb_vendor, cb_model);
+		msg_perr("This coreboot image (%s:%s) does not appear to\n"
+			 "be correct for the detected mainboard (%s:%s).\n",
+			 image_vendor, image_model, cb_vendor, cb_model);
 		return -1;
 	}
 
