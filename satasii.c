@@ -57,7 +57,6 @@ static const struct par_programmer par_programmer_satasii = {
 static int satasii_shutdown(void *data)
 {
 	physunmap(sii_bar, SATASII_MEMMAP_SIZE);
-	pci_cleanup(pacc);
 	return 0;
 }
 

@@ -80,10 +80,6 @@ static const struct par_programmer par_programmer_gfxnvidia = {
 static int gfxnvidia_shutdown(void *data)
 {
 	physunmap(nvidia_bar, GFXNVIDIA_MEMMAP_SIZE);
-	/* Flash interface access is disabled (and screen enabled) automatically
-	 * by PCI restore.
-	 */
-	pci_cleanup(pacc);
 	return 0;
 }
 
@@ -94,6 +90,7 @@ int gfxnvidia_init(void)
 	if (rget_io_perms())
 		return 1;
 
+	/* No need to check for errors, pcidev_init() will not return in case of errors. */
 	io_base_addr = pcidev_init(PCI_BASE_ADDRESS_0, gfx_nvidia);
 
 	io_base_addr += 0x300000;
@@ -101,7 +98,6 @@ int gfxnvidia_init(void)
 
 	nvidia_bar = physmap("NVIDIA", io_base_addr, GFXNVIDIA_MEMMAP_SIZE);
 
-	/* Must be done before rpci calls. */
 	if (register_shutdown(gfxnvidia_shutdown, NULL))
 		return 1;
 

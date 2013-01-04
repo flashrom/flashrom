@@ -59,8 +59,6 @@ static const struct par_programmer par_programmer_drkaiser = {
 static int drkaiser_shutdown(void *data)
 {
 	physunmap(drkaiser_bar, DRKAISER_MEMMAP_SIZE);
-	/* Flash write is disabled automatically by PCI restore. */
-	pci_cleanup(pacc);
 	return 0;
 }
 
@@ -71,6 +69,7 @@ int drkaiser_init(void)
 	if (rget_io_perms())
 		return 1;
 
+	/* No need to check for errors, pcidev_init() will not return in case of errors. */
 	addr = pcidev_init(PCI_BASE_ADDRESS_2, drkaiser_pcidev);
 
 	/* Write magic register to enable flash write. */

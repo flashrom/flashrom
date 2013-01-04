@@ -81,7 +81,6 @@ static int nic3com_shutdown(void *data)
 		OUTL(internal_conf, io_base_addr + INTERNAL_CONFIG);
 	}
 
-	pci_cleanup(pacc);
 	return 0;
 }
 
@@ -90,6 +89,7 @@ int nic3com_init(void)
 	if (rget_io_perms())
 		return 1;
 
+	/* No need to check for errors, pcidev_init() will not return in case of errors. */
 	io_base_addr = pcidev_init(PCI_BASE_ADDRESS_0, nics_3com);
 
 	id = pcidev_dev->device_id;
