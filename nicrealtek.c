@@ -54,7 +54,6 @@ static const struct par_programmer par_programmer_nicrealtek = {
 static int nicrealtek_shutdown(void *data)
 {
 	/* FIXME: We forgot to disable software access again. */
-	pci_cleanup(pacc);
 	return 0;
 }
 
@@ -63,8 +62,8 @@ int nicrealtek_init(void)
 	if (rget_io_perms())
 		return 1;
 
+	/* No need to check for errors, pcidev_init() will not return in case of errors. */
 	io_base_addr = pcidev_init(PCI_BASE_ADDRESS_0, nics_realtek);
-
 	if (register_shutdown(nicrealtek_shutdown, NULL))
 		return 1;
 

@@ -60,7 +60,6 @@ static const struct par_programmer par_programmer_satamv = {
 static int satamv_shutdown(void *data)
 {
 	physunmap(mv_bar, 0x20000);
-	pci_cleanup(pacc);
 	return 0;
 }
 
@@ -96,7 +95,7 @@ int satamv_init(void)
 
 	mv_bar = physmap("Marvell 88SX7042 registers", addr, 0x20000);
 	if (mv_bar == ERROR_PTR)
-		goto error_out;
+		return 1;
 
 	if (register_shutdown(satamv_shutdown, NULL))
 		return 1;
@@ -159,10 +158,6 @@ int satamv_init(void)
 	register_par_programmer(&par_programmer_satamv, BUS_PARALLEL);
 
 	return 0;
-
-error_out:
-	pci_cleanup(pacc);
-	return 1;
 }
 
 /* BAR2 (MEM) can map NVRAM and flash. We set it to flash in the init function.

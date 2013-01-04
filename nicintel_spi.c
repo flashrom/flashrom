@@ -160,7 +160,6 @@ static int nicintel_spi_shutdown(void *data)
 	pci_mmio_writel(tmp, nicintel_spibar + EECD);
 
 	physunmap(nicintel_spibar, MEMMAP_SIZE);
-	pci_cleanup(pacc);
 
 	return 0;
 }
@@ -172,6 +171,7 @@ int nicintel_spi_init(void)
 	if (rget_io_perms())
 		return 1;
 
+	/* No need to check for errors, pcidev_init() will not return in case of errors. */
 	io_base_addr = pcidev_init(PCI_BASE_ADDRESS_0, nics_intel_spi);
 
 	nicintel_spibar = physmap("Intel Gigabit NIC w/ SPI flash",
