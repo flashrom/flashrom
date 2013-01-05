@@ -27,7 +27,6 @@
 
 uint32_t io_base_addr;
 struct pci_access *pacc;
-struct pci_dev *pcidev_dev = NULL;
 
 enum pci_bartype {
 	TYPE_MEMBAR,
@@ -156,7 +155,6 @@ uintptr_t pcidev_readbar(struct pci_dev *dev, int bar)
 
 static int pcidev_shutdown(void *data)
 {
-	pcidev_dev = NULL;
 	if (pacc == NULL) {
 		msg_perr("%s: Tried to cleanup an invalid PCI context!\n"
 			 "Please report a bug at flashrom@flashrom.org\n", __func__);
@@ -181,18 +179,24 @@ int pci_init_common(void)
 	return 0;
 }
 
-uintptr_t pcidev_init(int bar, const struct dev_entry *devs)
+/* pcidev_init gets an array of allowed PCI device IDs and returns a pointer to struct pci_dev iff exactly one
+ * match was found. If the "pci=bb:dd.f" programmer parameter was specified, a match is only considered if it
+ * also matches the specified bus:device.function.
+ * For convenience, this function also registers its own undo handlers.
+ */
+struct pci_dev *pcidev_init(const struct dev_entry *devs, int bar)
 {
 	struct pci_dev *dev;
+	struct pci_dev *found_dev = NULL;
 	struct pci_filter filter;
 	char *pcidev_bdf;
 	char *msg = NULL;
 	int found = 0;
 	int i;
-	uintptr_t addr = 0, curaddr = 0;
+	uintptr_t addr = 0;
 
-	if(pci_init_common() != 0)
-		return 1;
+	if (pci_init_common() != 0)
+		return NULL;
 	pci_filter_init(pacc, &filter);
 
 	/* Filter by bb:dd.f (if supplied by the user). */
@@ -200,7 +204,7 @@ uintptr_t pcidev_init(int bar, const struct dev_entry *devs)
 	if (pcidev_bdf != NULL) {
 		if ((msg = pci_filter_parse_slot(&filter, pcidev_bdf))) {
 			msg_perr("Error: %s\n", msg);
-			exit(1);
+			return NULL;
 		}
 	}
 	free(pcidev_bdf);
@@ -230,8 +234,7 @@ uintptr_t pcidev_init(int bar, const struct dev_entry *devs)
 			 * just those with a valid BAR.
 			 */
 			if ((addr = pcidev_readbar(dev, bar)) != 0) {
-				curaddr = addr;
-				pcidev_dev = dev;
+				found_dev = dev;
 				found++;
 			}
 		}
@@ -240,14 +243,14 @@ uintptr_t pcidev_init(int bar, const struct dev_entry *devs)
 	/* Only continue if exactly one supported PCI dev has been found. */
 	if (found == 0) {
 		msg_perr("Error: No supported PCI device found.\n");
-		exit(1);
+		return NULL;
 	} else if (found > 1) {
 		msg_perr("Error: Multiple supported PCI devices found. Use 'flashrom -p xxxx:pci=bb:dd.f' \n"
 			 "to explicitly select the card with the given BDF (PCI bus, device, function).\n");
-		exit(1);
+		return NULL;
 	}
 
-	return curaddr;
+	return found_dev;
 }
 
 enum pci_write_type {

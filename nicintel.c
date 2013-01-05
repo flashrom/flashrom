@@ -68,6 +68,7 @@ static int nicintel_shutdown(void *data)
 
 int nicintel_init(void)
 {
+	struct pci_dev *dev = NULL;
 	uintptr_t addr;
 
 	/* Needed only for PCI accesses on some platforms.
@@ -76,17 +77,17 @@ int nicintel_init(void)
 	if (rget_io_perms())
 		return 1;
 
-	/* No need to check for errors, pcidev_init() will not return in case of errors.
-	 * FIXME: BAR2 is not available if the device uses the CardBus function.
-	 */
-	addr = pcidev_init(PCI_BASE_ADDRESS_2, nics_intel);
+	/* FIXME: BAR2 is not available if the device uses the CardBus function. */
+	dev = pcidev_init(nics_intel, PCI_BASE_ADDRESS_2);
+	if (!dev)
+		return 1;
 
+	addr = pcidev_readbar(dev, PCI_BASE_ADDRESS_2);
 	nicintel_bar = physmap("Intel NIC flash", addr, NICINTEL_MEMMAP_SIZE);
 	if (nicintel_bar == ERROR_PTR)
 		goto error_out_unmap;
 
-	/* FIXME: Using pcidev_dev _will_ cause pretty explosions in the future. */
-	addr = pcidev_readbar(pcidev_dev, PCI_BASE_ADDRESS_0);
+	addr = pcidev_readbar(dev, PCI_BASE_ADDRESS_0);
 	/* FIXME: This is not an aligned mapping. Use 4k? */
 	nicintel_control_bar = physmap("Intel NIC control/status reg",
 	                               addr, NICINTEL_CONTROL_MEMMAP_SIZE);

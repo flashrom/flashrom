@@ -52,21 +52,18 @@ static const struct par_programmer par_programmer_nicnatsemi = {
 		.chip_writen		= fallback_chip_writen,
 };
 
-static int nicnatsemi_shutdown(void *data)
-{
-	pci_cleanup(pacc);
-	return 0;
-}
-
 int nicnatsemi_init(void)
 {
+	struct pci_dev *dev = NULL;
+
 	if (rget_io_perms())
 		return 1;
 
-	io_base_addr = pcidev_init(PCI_BASE_ADDRESS_0, nics_natsemi);
-
-	if (register_shutdown(nicnatsemi_shutdown, NULL))
+	dev = pcidev_init(nics_natsemi, PCI_BASE_ADDRESS_0);
+	if (!dev)
 		return 1;
+
+	io_base_addr = pcidev_readbar(dev, PCI_BASE_ADDRESS_0);
 
 	/* The datasheet shows address lines MA0-MA16 in one place and MA0-MA15
 	 * in another. My NIC has MA16 connected to A16 on the boot ROM socket
