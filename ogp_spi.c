@@ -105,6 +105,7 @@ static int ogp_spi_shutdown(void *data)
 
 int ogp_spi_init(void)
 {
+	struct pci_dev *dev = NULL;
 	char *type;
 
 	type = extract_programmer_param("rom");
@@ -131,8 +132,11 @@ int ogp_spi_init(void)
 	if (rget_io_perms())
 		return 1;
 
-	io_base_addr = pcidev_init(PCI_BASE_ADDRESS_0, ogp_spi);
+	dev = pcidev_init(ogp_spi, PCI_BASE_ADDRESS_0);
+	if (!dev)
+		return 1;
 
+	io_base_addr = pcidev_readbar(dev, PCI_BASE_ADDRESS_0);
 	ogp_spibar = physmap("OGP registers", io_base_addr, 4096);
 
 	if (register_shutdown(ogp_spi_shutdown, NULL))

@@ -64,17 +64,20 @@ static int drkaiser_shutdown(void *data)
 
 int drkaiser_init(void)
 {
+	struct pci_dev *dev = NULL;
 	uint32_t addr;
 
 	if (rget_io_perms())
 		return 1;
 
-	/* No need to check for errors, pcidev_init() will not return in case of errors. */
-	addr = pcidev_init(PCI_BASE_ADDRESS_2, drkaiser_pcidev);
+	dev = pcidev_init(drkaiser_pcidev, PCI_BASE_ADDRESS_2);
+	if (!dev)
+		return 1;
+
+	addr = pcidev_readbar(dev, PCI_BASE_ADDRESS_2);
 
 	/* Write magic register to enable flash write. */
-	rpci_write_word(pcidev_dev, PCI_MAGIC_DRKAISER_ADDR,
-			PCI_MAGIC_DRKAISER_VALUE);
+	rpci_write_word(dev, PCI_MAGIC_DRKAISER_ADDR, PCI_MAGIC_DRKAISER_VALUE);
 
 	/* Map 128kB flash memory window. */
 	drkaiser_bar = physmap("Dr. Kaiser PC-Waechter flash memory",
