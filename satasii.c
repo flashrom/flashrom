@@ -76,21 +76,24 @@ static uint32_t satasii_wait_done(void)
 
 int satasii_init(void)
 {
+	struct pci_dev *dev = NULL;
 	uint32_t addr;
 	uint16_t reg_offset;
 
 	if (rget_io_perms())
 		return 1;
 
-	pcidev_init(PCI_BASE_ADDRESS_0, satas_sii);
+	dev = pcidev_init(satas_sii, PCI_BASE_ADDRESS_0);
+	if (!dev)
+		return 1;
 
-	id = pcidev_dev->device_id;
+	id = dev->device_id;
 
 	if ((id == 0x3132) || (id == 0x3124)) {
-		addr = pci_read_long(pcidev_dev, PCI_BASE_ADDRESS_0) & ~0x07;
+		addr = pcidev_readbar(dev, PCI_BASE_ADDRESS_0);
 		reg_offset = 0x70;
 	} else {
-		addr = pci_read_long(pcidev_dev, PCI_BASE_ADDRESS_5) & ~0x07;
+		addr = pcidev_readbar(dev, PCI_BASE_ADDRESS_5);
 		reg_offset = 0x50;
 	}
 

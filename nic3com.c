@@ -86,13 +86,18 @@ static int nic3com_shutdown(void *data)
 
 int nic3com_init(void)
 {
+	struct pci_dev *dev = NULL;
+
 	if (rget_io_perms())
 		return 1;
 
-	/* No need to check for errors, pcidev_init() will not return in case of errors. */
-	io_base_addr = pcidev_init(PCI_BASE_ADDRESS_0, nics_3com);
+	dev = pcidev_init(nics_3com, PCI_BASE_ADDRESS_0);
+	if (!dev)
+		return 1;
 
-	id = pcidev_dev->device_id;
+	io_base_addr = pcidev_readbar(dev, PCI_BASE_ADDRESS_0);
+
+	id = dev->device_id;
 
 	/* 3COM 3C90xB cards need a special fixup. */
 	if (id == 0x9055 || id == 0x9001 || id == 0x9004 || id == 0x9005
