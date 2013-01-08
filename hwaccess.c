@@ -65,31 +65,25 @@ static inline void sync_primitive(void)
 #endif
 }
 
+#if IS_X86 && !(defined(__DJGPP__) || defined(__LIBPAYLOAD__))
 static int release_io_perms(void *p)
 {
-#if IS_X86
-#if defined(__DJGPP__) || defined(__LIBPAYLOAD__)
-	/* Nothing to release */
-#elif defined (__sun)
+#if defined (__sun)
 	sysi86(SI86V86, V86SC_IOPL, 0);
 #elif IS_BSD
 	close(io_fd);
 #elif IS_LINUX
 	iopl(0);
 #endif
-#else
-/* PCI port I/O support is unimplemented on PPC/MIPS and unavailable on ARM. */
-#endif
 	return 0;
 }
+#endif
 
 /* Get I/O permissions with automatic permission release on shutdown. */
 int rget_io_perms(void)
 {
-#if IS_X86
-#if defined(__DJGPP__) || defined(__LIBPAYLOAD__)
-	/* We have full permissions by default. */
-#elif defined (__sun)
+#if IS_X86 && !(defined(__DJGPP__) || defined(__LIBPAYLOAD__))
+#if defined (__sun)
 	if (sysi86(SI86V86, V86SC_IOPL, PS_IOPL) != 0) {
 #elif IS_BSD
 	if ((io_fd = open("/dev/io", O_RDWR)) < 0) {
@@ -107,7 +101,8 @@ int rget_io_perms(void)
 		register_shutdown(release_io_perms, NULL);
 	}
 #else
-/* PCI port I/O support is unimplemented on PPC/MIPS and unavailable on ARM. */
+	/* DJGPP and libpayload environments have full PCI port I/O permissions by default. */
+	/* PCI port I/O support is unimplemented on PPC/MIPS and unavailable on ARM. */
 #endif
 	return 0;
 }
