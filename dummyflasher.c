@@ -66,7 +66,7 @@ int spi_ignorelist_size = 0;
 static uint8_t emu_status = 0;
 
 /* A legit complete SFDP table based on the MX25L6436E (rev. 1.8) datasheet. */
-static const uint8_t const sfdp_table[] = {
+static const uint8_t sfdp_table[] = {
 	0x53, 0x46, 0x44, 0x50, // @0x00: SFDP signature
 	0x00, 0x01, 0x01, 0xFF, // @0x04: revision 1.0, 2 headers
 	0x00, 0x00, 0x01, 0x09, // @0x08: JEDEC SFDP header rev. 1.0, 9 DW long
