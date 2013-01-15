@@ -1127,7 +1127,7 @@ static void ich_hwseq_set_addr(uint32_t addr)
 static uint32_t ich_hwseq_get_erase_block_size(unsigned int addr)
 {
 	uint8_t enc_berase;
-	static const uint32_t const dec_berase[4] = {
+	static const uint32_t dec_berase[4] = {
 		256,
 		4 * 1024,
 		8 * 1024,

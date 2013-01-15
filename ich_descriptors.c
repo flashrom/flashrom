@@ -335,7 +335,7 @@ void prettyprint_ich_descriptor_pchstraps111213_56(const struct ich_desc_south_s
 
 void prettyprint_ich_descriptor_straps_ibex(const struct ich_desc_south_strap *s)
 {
-	static const uint8_t const dec_t209min[4] = {
+	static const uint8_t dec_t209min[4] = {
 		100,
 		50,
 		5,
