@@ -5068,12 +5068,13 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Macronix",
-		.name		= "MX25L512",
+		.name		= "MX25L512(E)/MX25V512(C)",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L512,
 		.total_size	= 64,
 		.page_size	= 256,
+		/* MX25L512E supports SFDP */
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
@@ -5097,21 +5098,22 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			},
 		},
-		.printlock	= spi_prettyprint_status_register_default_bp1, /* TODO: check */
+		.printlock	= spi_prettyprint_status_register_default_bp1,
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
-		.read		= spi_chip_read,
-		.voltage	= {2700, 3600},
+		.read		= spi_chip_read, /* Fast read (0x0B) supported, MX25L512E supports dual I/O */
+		.voltage	= {2700, 3600}, /* 2.35-3.6V for MX25V512(C) */
 	},
 
 	{
 		.vendor		= "Macronix",
-		.name		= "MX25L1005",
+		.name		= "MX25L1005(C)/MX25L1006E",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L1005,
 		.total_size	= 128,
 		.page_size	= 256,
+		/* MX25L1006E supports SFDP */
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
@@ -5132,16 +5134,16 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			},
 		},
-		.printlock	= spi_prettyprint_status_register_default_bp3, /* TODO: check */
+		.printlock	= spi_prettyprint_status_register_default_bp1,
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
-		.read		= spi_chip_read,
+		.read		= spi_chip_read, /* Fast read (0x0B) supported, MX25L1006E supports dual I/O */
 		.voltage	= {2700, 3600},
 	},
 
 	{
 		.vendor		= "Macronix",
-		.name		= "MX25L2005",
+		.name		= "MX25L2005(C)",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L2005,
@@ -5170,16 +5172,16 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			},
 		},
-		.printlock	= spi_prettyprint_status_register_default_bp3, /* TODO: check */
+		.printlock	= spi_prettyprint_status_register_default_bp1,
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
-		.read		= spi_chip_read,
+		.read		= spi_chip_read, /* Fast read (0x0B) supported */
 		.voltage	= {2700, 3600},
 	},
 
 	{
 		.vendor		= "Macronix",
-		.name		= "MX25L4005",
+		.name		= "MX25L4005(A/C)",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L4005,
@@ -5208,16 +5210,16 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			},
 		},
-		.printlock	= spi_prettyprint_status_register_default_bp3, /* TODO: check */
+		.printlock	= spi_prettyprint_status_register_default_bp2,
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
-		.read		= spi_chip_read,
+		.read		= spi_chip_read, /* Fast read (0x0B) supported */
 		.voltage	= {2700, 3600},
 	},
 
 	{
 		.vendor		= "Macronix",
-		.name		= "MX25L8005",
+		.name		= "MX25L8005/MX25V8005",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L8005,
@@ -5246,11 +5248,11 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			},
 		},
-		.printlock	= spi_prettyprint_status_register_default_bp3, /* TODO: check */
+		.printlock	= spi_prettyprint_status_register_default_bp2,
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
-		.read		= spi_chip_read,
-		.voltage	= {2700, 3600},
+		.read		= spi_chip_read, /* Fast read (0x0B) supported */
+		.voltage	= {2700, 3600}, /* 2.35-3.6V for MX25V8005 */
 	},
 
 	{
