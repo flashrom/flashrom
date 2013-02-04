@@ -28,7 +28,8 @@
 
 #define IS_BSD	(defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__DragonFly__) || defined(__OpenBSD__))
 #define IS_LINUX	(defined(__gnu_linux__) || defined(__linux__))
-#if !(IS_BSD || IS_LINUX || defined(__DJGPP__) || defined(__LIBPAYLOAD__) || defined(__sun))
+#define IS_MACOSX	(defined(__APPLE__) && defined(__MACH__))
+#if !(IS_BSD || IS_LINUX || IS_MACOSX || defined(__DJGPP__) || defined(__LIBPAYLOAD__) || defined(__sun))
 #error "Unknown operating system"
 #endif
 
@@ -72,7 +73,7 @@ static int release_io_perms(void *p)
 	sysi86(SI86V86, V86SC_IOPL, 0);
 #elif IS_BSD
 	close(io_fd);
-#elif IS_LINUX
+#elif IS_LINUX || IS_MACOSX
 	iopl(0);
 #endif
 	return 0;
@@ -87,7 +88,7 @@ int rget_io_perms(void)
 	if (sysi86(SI86V86, V86SC_IOPL, PS_IOPL) != 0) {
 #elif IS_BSD
 	if ((io_fd = open("/dev/io", O_RDWR)) < 0) {
-#elif IS_LINUX
+#elif IS_LINUX || IS_MACOSX
 	if (iopl(3) != 0) {
 #endif
 		msg_perr("ERROR: Could not get I/O privileges (%s).\n"
