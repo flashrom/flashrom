@@ -189,8 +189,6 @@ cpu_to_be(64)
    * versions. Use machine/cpufunc.h only for plain FreeBSD/DragonFlyBSD.
    */
   #include <machine/cpufunc.h>
-  #define off64_t off_t
-  #define lseek64 lseek
   #define OUTB(x, y) do { u_int outb_tmp = (y); outb(outb_tmp, (x)); } while (0)
   #define OUTW(x, y) do { u_int outw_tmp = (y); outw(outw_tmp, (x)); } while (0)
   #define OUTL(x, y) do { u_int outl_tmp = (y); outl(outl_tmp, (x)); } while (0)
@@ -201,8 +199,6 @@ cpu_to_be(64)
 #if defined(__MACH__) && defined(__APPLE__)
     /* Header is part of the DirectHW library. */
     #include <DirectHW/DirectHW.h>
-    #define off64_t off_t
-    #define lseek64 lseek
 #endif
 #if defined (__sun) && (defined(__i386) || defined(__amd64))
   /* Note different order for outb */
@@ -241,8 +237,6 @@ cpu_to_be(64)
 #endif
 
 #if defined(__NetBSD__) || defined (__OpenBSD__)
-  #define off64_t off_t
-  #define lseek64 lseek
   #if defined(__i386__) || defined(__x86_64__)
     #include <sys/types.h>
     #include <machine/sysarch.h>
