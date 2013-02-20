@@ -158,7 +158,23 @@ static int dediprog_set_spi_voltage(int millivolt)
 	return 0;
 }
 
-#if 0
+struct dediprog_spispeeds {
+	const char *const name;
+	const int speed;
+};
+
+static const struct dediprog_spispeeds spispeeds[] = {
+	{ "24M",	0x0 },
+	{ "12M",	0x2 },
+	{ "8M",		0x1 },
+	{ "3M",		0x3 },
+	{ "2.18M",	0x4 },
+	{ "1.5M",	0x5 },
+	{ "750k",	0x6 },
+	{ "375k",	0x7 },
+	{ NULL,		0x0 },
+};
+
 /* After dediprog_set_spi_speed, the original app always calls
  * dediprog_set_spi_voltage(0) and then
  * dediprog_check_devicestring() four times in a row.
@@ -166,56 +182,20 @@ static int dediprog_set_spi_voltage(int millivolt)
  * This looks suspiciously like the microprocessor in the SF100 has to be
  * restarted/reinitialized in case the speed changes.
  */
-static int dediprog_set_spi_speed(uint16_t speed)
+static int dediprog_set_spi_speed(unsigned int spispeed_idx)
 {
 	int ret;
-	unsigned int khz;
 
-	/* Case 1 and 2 are in weird order. Probably an organically "grown"
-	 * interface.
-	 * Base frequency is 24000 kHz, divisors are (in order)
-	 * 1, 3, 2, 8, 11, 16, 32, 64.
-	 */
-	switch (speed) {
-	case 0x0:
-		khz = 24000;
-		break;
-	case 0x1:
-		khz = 8000;
-		break;
-	case 0x2:
-		khz = 12000;
-		break;
-	case 0x3:
-		khz = 3000;
-		break;
-	case 0x4:
-		khz = 2180;
-		break;
-	case 0x5:
-		khz = 1500;
-		break;
-	case 0x6:
-		khz = 750;
-		break;
-	case 0x7:
-		khz = 375;
-		break;
-	default:
-		msg_perr("Unknown frequency selector 0x%x! Aborting.\n", speed);
-		return 1;
-	}
-	msg_pdbg("Setting SPI speed to %u kHz\n", khz);
+	msg_pdbg("SPI speed is %sHz\n", spispeeds[spispeed_idx].name);
 
-	ret = usb_control_msg(dediprog_handle, 0x42, 0x61, speed, 0xff, NULL,
-			      0x0, DEFAULT_TIMEOUT);
+	ret = usb_control_msg(dediprog_handle, 0x42, 0x61, spispeeds[spispeed_idx].speed, 0xff,
+			      NULL, 0x0, DEFAULT_TIMEOUT);
 	if (ret != 0x0) {
-		msg_perr("Command Set SPI Speed 0x%x failed!\n", speed);
+		msg_perr("Command Set SPI Speed 0x%x failed!\n", spispeeds[spispeed_idx].speed);
 		return 1;
 	}
 	return 0;
 }
-#endif
 
 /* Bulk read interface, will read multiple 512 byte chunks aligned to 512 bytes.
  * @start	start address
@@ -742,6 +722,28 @@ static int parse_voltage(char *voltage)
 	return millivolt;
 }
 
+static int dediprog_setup(void)
+{
+	/* URB 6. Command A. */
+	if (dediprog_command_a()) {
+		return 1;
+	}
+	/* URB 7. Command A. */
+	if (dediprog_command_a()) {
+		return 1;
+	}
+	/* URB 8. Command Prepare Receive Device String. */
+	/* URB 9. Command Receive Device String. */
+	if (dediprog_check_devicestring()) {
+		return 1;
+	}
+	/* URB 10. Command C. */
+	if (dediprog_command_c()) {
+		return 1;
+	}
+	return 0;
+}
+
 static const struct spi_programmer spi_programmer_dediprog = {
 	.type		= SPI_CONTROLLER_DEDIPROG,
 	.max_data_read	= MAX_DATA_UNSPECIFIED,
@@ -783,13 +785,29 @@ static int dediprog_shutdown(void *data)
 int dediprog_init(void)
 {
 	struct usb_device *dev;
-	char *voltage, *device;
+	char *voltage, *device, *spispeed;
+	int spispeed_idx = 2;
 	int millivolt = 3500;
 	long usedevice = 0;
-	int ret;
+	int i, ret;
 
 	msg_pspew("%s\n", __func__);
 
+	spispeed = extract_programmer_param("spispeed");
+	if (spispeed) {
+		for (i = 0; spispeeds[i].name; ++i) {
+			if (!strcasecmp(spispeeds[i].name, spispeed)) {
+				spispeed_idx = i;
+				break;
+			}
+		}
+		if (!spispeeds[i].name) {
+			msg_perr("Error: Invalid 'spispeed' value.\n");
+			free(spispeed);
+			return 1;
+		}
+		free(spispeed);
+	}
 	voltage = extract_programmer_param("voltage");
 	if (voltage) {
 		millivolt = parse_voltage(voltage);
@@ -852,33 +870,24 @@ int dediprog_init(void)
 		return 1;
 	}
 	dediprog_endpoint = 2;
-	
+
 	if (register_shutdown(dediprog_shutdown, NULL))
 		return 1;
 
 	dediprog_set_leds(PASS_ON|BUSY_ON|ERROR_ON);
 
-	/* URB 6. Command A. */
-	if (dediprog_command_a()) {
+	/* Perform basic setup. */
+	if (dediprog_setup()) {
 		dediprog_set_leds(PASS_OFF|BUSY_OFF|ERROR_ON);
 		return 1;
 	}
-	/* URB 7. Command A. */
-	if (dediprog_command_a()) {
+
+	/* After setting voltage and speed, perform setup again. */
+	if (dediprog_set_spi_voltage(0) || dediprog_set_spi_speed(spispeed_idx) || dediprog_setup()) {
 		dediprog_set_leds(PASS_OFF|BUSY_OFF|ERROR_ON);
 		return 1;
 	}
-	/* URB 8. Command Prepare Receive Device String. */
-	/* URB 9. Command Receive Device String. */
-	if (dediprog_check_devicestring()) {
-		dediprog_set_leds(PASS_OFF|BUSY_OFF|ERROR_ON);
-		return 1;
-	}
-	/* URB 10. Command C. */
-	if (dediprog_command_c()) {
-		dediprog_set_leds(PASS_OFF|BUSY_OFF|ERROR_ON);
-		return 1;
-	}
+
 	/* URB 11. Command Set SPI Voltage. */
 	if (dediprog_set_spi_voltage(millivolt)) {
 		dediprog_set_leds(PASS_OFF|BUSY_OFF|ERROR_ON);
