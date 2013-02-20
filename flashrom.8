@@ -676,6 +676,18 @@ at 0.
 Usage example to select the second device:
 .sp
 .B "  flashrom \-p dediprog:device=1"
+.sp
+An optional
+.B spispeed
+parameter specifies the frequency of the SPI bus. Syntax is
+.sp
+.B "  flashrom \-p dediprog:spispeed=frequency"
+.sp
+where
+.B frequency
+can be
+.BR 375k ", " 750k ", " 1.5M ", " 2.18M ", " 3M ", " 8M ", " 12M " or " 24M
+(in Hz). The default is a frequency of 12 MHz.
 .SS
 .BR "rayer_spi " programmer
 The default I/O base address used for the parallel port is 0x378 and you can use
