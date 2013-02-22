@@ -209,7 +209,7 @@ static void print_supported_boards_wiki_helper(const char *devicetype, int cols,
 	/* end inner table if it did not fill the last column fully */
 	if (((i % lines_per_col)) > 0)
 		printf("\n|}\n\n");
-	printf("\n\n|}\n");
+	printf("|}\n");
 
 	if (num_notes > 0)
 		printf("\n<small>\n%s</small>\n", notes);

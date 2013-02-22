@@ -2713,11 +2713,11 @@ const struct flashchip flashchips[] = {
 	},
 
 	{
-		.vendor		= "EMST",
+		.vendor		= "ESMT",
 		.name		= "F49B002UA",
 		.bustype	= BUS_PARALLEL,
-		.manufacture_id	= EMST_ID,
-		.model_id	= EMST_F49B002UA,
+		.manufacture_id	= ESMT_ID,
+		.model_id	= ESMT_F49B002UA,
 		.total_size	= 256,
 		.page_size	= 4096,
 		.feature_bits	= FEATURE_EITHER_RESET,
@@ -2745,11 +2745,11 @@ const struct flashchip flashchips[] = {
 	},
 
 	{
-		.vendor		= "EMST",
+		.vendor		= "ESMT",
 		.name		= "F25L008A",
 		.bustype	= BUS_SPI,
-		.manufacture_id	= EMST_ID,
-		.model_id	= EMST_F25L008A,
+		.manufacture_id	= ESMT_ID,
+		.model_id	= ESMT_F25L008A,
 		.total_size	= 1024,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_EITHER,
@@ -3748,7 +3748,7 @@ const struct flashchip flashchips[] = {
 		.page_size	= 256,
 		/* OTP: 512B total; enter 0x3A */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
-		.tested		= TEST_OK_PROBE,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
@@ -3784,7 +3784,7 @@ const struct flashchip flashchips[] = {
 		.page_size	= 256,
 		/* OTP: 512B total; enter 0x3A */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
-		.tested		= TEST_UNTESTED,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
@@ -4248,13 +4248,13 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "GigaDevice",
-		.name		= "GD25Q80",
+		.name		= "GD25Q80(B)",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= GIGADEVICE_ID,
 		.model_id	= GIGADEVICE_GD25Q80,
 		.total_size	= 1024,
 		.page_size	= 256,
-		/* OTP: 1024B total, 256B reserved; read 0x48; write 0x42 */
+		/* OTP: 1024B total, 256B reserved; read 0x48; write 0x42, erase 0x44 (B version only) */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
@@ -4293,7 +4293,7 @@ const struct flashchip flashchips[] = {
 		.model_id	= GIGADEVICE_GD25Q16,
 		.total_size	= 2048,
 		.page_size	= 256,
-		/* OTP: 1024B total, 256B reserved; read 0x48; write 0x42 */
+		/* OTP: 1024B total, 256B reserved; read 0x48; write 0x42, erase 0x44 (B version only) */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
@@ -4326,13 +4326,13 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "GigaDevice",
-		.name		= "GD25Q32",
+		.name		= "GD25Q32(B)",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= GIGADEVICE_ID,
 		.model_id	= GIGADEVICE_GD25Q32,
 		.total_size	= 4096,
 		.page_size	= 256,
-		/* OTP: 1024B total, 256B reserved; read 0x48; write 0x42 */
+		/* OTP: 1024B total, 256B reserved; read 0x48; write 0x42, erase 0x44 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
@@ -4365,13 +4365,13 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "GigaDevice",
-		.name		= "GD25Q64",
+		.name		= "GD25Q64(B)",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= GIGADEVICE_ID,
 		.model_id	= GIGADEVICE_GD25Q64,
 		.total_size	= 8192,
 		.page_size	= 256,
-		/* OTP: 1024B total, 256B reserved; read 0x48; write 0x42 */
+		/* OTP: 1024B total, 256B reserved; read 0x48; write 0x42, erase 0x44 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
@@ -4399,17 +4399,18 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
 		.vendor		= "GigaDevice",
-		.name		= "GD25Q128",
+		.name		= "GD25Q128B",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= GIGADEVICE_ID,
 		.model_id	= GIGADEVICE_GD25Q128,
 		.total_size	= 16384,
 		.page_size	= 256,
-		/* OTP: 1024B total, 256B reserved; read 0x48; write 0x42 */
+		/* OTP: 1024B total, 256B reserved; read 0x48; write 0x42, erase 0x44 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
@@ -4437,6 +4438,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -4447,7 +4449,8 @@ const struct flashchip flashchips[] = {
 		.model_id	= GIGADEVICE_GD25LQ32,
 		.total_size	= 4096,
 		.page_size	= 256,
-		.feature_bits	= FEATURE_WRSR_WREN,
+		/* OTP: 1024B total, 256B reserved; read 0x48; write 0x42, erase 0x44 */
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
@@ -6687,7 +6690,7 @@ const struct flashchip flashchips[] = {
 		.name		= "LH28F008BJT-BTLZ1",
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= SHARP_ID,
-		.model_id	= SHARP_LH28F008BJxxPB,
+		.model_id	= SHARP_LH28F008BJ__PB,
 		.total_size	= 1024,
 		.page_size	= 64 * 1024,
 		.tested		= TEST_OK_PREW,
