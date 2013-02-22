@@ -87,15 +87,12 @@ void probe_superio_ite(void)
 		case 0x86:
 		case 0x87:
 			/* FIXME: Print revision for all models? */
-			msg_pdbg("Found ITE Super I/O, ID 0x%04hx on port "
-				 "0x%x\n", s.model, s.port);
+			msg_pdbg("Found ITE Super I/O, ID 0x%04hx on port 0x%x\n", s.model, s.port);
 			register_superio(s);
 			break;
 		case 0x85:
-			msg_pdbg("Found ITE EC, ID 0x%04hx,"
-			         "Rev 0x%02x on port 0x%x.\n",
-			         s.model, sio_read(s.port, CHIP_VER_REG),
-			         s.port);
+			msg_pdbg("Found ITE EC, ID 0x%04hx, Rev 0x%02x on port 0x%x.\n",
+				 s.model, sio_read(s.port, CHIP_VER_REG), s.port);
 			register_superio(s);
 			break;
 		}

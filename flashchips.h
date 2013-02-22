@@ -201,9 +201,10 @@
 #define CATALYST_ID		0x31	/* Catalyst */
 #define CATALYST_CAT28F512	0xB8
 
-#define EMST_ID			0x8C	/* EMST / EFST Elite Flash Storage */
-#define EMST_F25L008A		0x2014
-#define EMST_F49B002UA		0x00
+#define ESMT_ID			0x8C	/* Elite Semiconductor Memory Technology (ESMT) / EFST Elite Flash Storage */
+#define ESMT_F25L008A		0x2014
+#define ESMT_F25D08QA		0x2534
+#define ESMT_F49B002UA		0x00
 
 /*
  * EN25 chips are SPI, first byte of device ID is memory type,
@@ -265,6 +266,15 @@
 #define EON_EN29F002T		0x7F92	/* Same as EN29F002A */
 #define EON_EN29F002B		0x7F97	/* Same as EN29F002AN */
 
+#define FIDELIX_ID		0xF8	/* Fidelix */
+#define FIDELIX_FM25M16		0x4215
+#define FIDELIX_FM25M32		0x4216
+#define FIDELIX_FM25M64		0x4217
+#define FIDELIX_FM25Q08		0x3214
+#define FIDELIX_FM25Q16		0x3215	/* Same as FM25S16 (which is apparently single I/O only) */
+#define FIDELIX_FM25Q32		0x3216
+#define FIDELIX_FM25Q64		0x3217
+
 #define FUJITSU_ID		0x04	/* Fujitsu */
 #define FUJITSU_MBM29DL400BC	0x0F
 #define FUJITSU_MBM29DL400TC	0x0C
@@ -299,11 +309,11 @@
 #define GIGADEVICE_ID		0xC8	/* GigaDevice */
 #define GIGADEVICE_GD25Q20	0x4012
 #define GIGADEVICE_GD25Q40	0x4013
-#define GIGADEVICE_GD25Q80	0x4014
-#define GIGADEVICE_GD25Q16	0x4015
-#define GIGADEVICE_GD25Q32	0x4016
-#define GIGADEVICE_GD25Q64	0x4017
-#define GIGADEVICE_GD25Q128	0x4018
+#define GIGADEVICE_GD25Q80	0x4014	/* Same as GD25Q80B (which has OTP) */
+#define GIGADEVICE_GD25Q16	0x4015	/* Same as GD25Q16B (which has OTP) */
+#define GIGADEVICE_GD25Q32	0x4016	/* Same as GD25Q32B */
+#define GIGADEVICE_GD25Q64	0x4017	/* Same as GD25Q64B */
+#define GIGADEVICE_GD25Q128	0x4018	/* GD25Q128B only? */
 #define GIGADEVICE_GD25LQ32	0x6016
 
 #define HYUNDAI_ID		0xAD	/* Hyundai */
@@ -451,10 +461,10 @@
 #define PMC_PM25LV016B		0x14
 #define PMC_PM29F002T		0x1D
 #define PMC_PM29F002B		0x2D
-#define PMC_PM39LV512		0x1B
-#define PMC_PM39F010		0x1C	/* Same as Pm39LV010 */
+#define PMC_PM39LV512		0x1B	/* Same as IS39LV512 */
+#define PMC_PM39F010		0x1C	/* Same as Pm39LV010, IS39LV010 */
 #define PMC_PM39LV020		0x3D
-#define PMC_PM39LV040		0x3E
+#define PMC_PM39LV040		0x3E	/* Same as IS39LV040 */
 #define PMC_PM39F020		0x4D
 #define PMC_PM39F040		0x4E
 #define PMC_PM49FL002		0x6D
@@ -469,11 +479,11 @@
 #define SANYO_LE25FW203A	0x1600
 
 #define SHARP_ID		0xB0	/* Sharp */
-#define SHARP_LH28F008BJxxPT	0xEC
-#define SHARP_LH28F008BJxxPB	0xED
-#define SHARP_LH28F800BVxxBTL	0x4B
-#define SHARP_LH28F800BVxxBV	0x4D
-#define SHARP_LH28F800BVxxTV	0x4C
+#define SHARP_LH28F008BJ__PT	0xEC
+#define SHARP_LH28F008BJ__PB	0xED
+#define SHARP_LH28F800BV__BTL	0x4B
+#define SHARP_LH28F800BV__BV	0x4D
+#define SHARP_LH28F800BV__TV	0x4C
 #define SHARP_LHF00L02		0xC9	/* Same as LHF00L06/LHF00L07 */
 #define SHARP_LHF00L04		0xCF	/* Same as LHF00L03/LHF00L05 */
 

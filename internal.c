@@ -299,7 +299,7 @@ int internal_init(void)
 		msg_perr("Laptops, notebooks and netbooks are difficult to support and we\n"
 			 "recommend to use the vendor flashing utility. The embedded controller\n"
 			 "(EC) in these machines often interacts badly with flashing.\n"
-			 "See http://www.flashrom.org/Laptops for details.\n\n"
+			 "See the manpage and http://www.flashrom.org/Laptops for details.\n\n"
 			 "If flash is shared with the EC, erase is guaranteed to brick your laptop\n"
 			 "and write may brick your laptop.\n"
 			 "Read and probe may irritate your EC and cause fan failure, backlight\n"
