@@ -68,9 +68,9 @@ enum chipbustype {
  * - 256 bytes: If less than 256 bytes are written, the contents of the unwritten bytes are undefined.
  */
 enum write_granularity {
+	write_gran_256bytes = 0, /* We assume 256 byte granularity by default. */
 	write_gran_1bit,
 	write_gran_1byte,
-	write_gran_256bytes,
 };
 
 /*
@@ -162,6 +162,7 @@ struct flashchip {
 		uint16_t min;
 		uint16_t max;
 	} voltage;
+	enum write_granularity gran;
 };
 
 struct flashctx {
