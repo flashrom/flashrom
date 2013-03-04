@@ -572,6 +572,7 @@
 #define ST_M25P10A		0x2011
 #define ST_M25P10_RES		0x10	/* Same code as M25P05. */
 #define ST_M25P20		0x2012
+#define ST_M25P20_RES		0x11
 #define ST_M25P40		0x2013
 #define ST_M25P40_RES		0x12
 #define ST_M25P80		0x2014
