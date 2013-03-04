@@ -8298,7 +8298,7 @@ const struct flashchip flashchips[] = {
 	},
 
 	{
-		.vendor		= "ST",
+		.vendor		= "ST", /* Numonyx */
 		.name		= "M25P20",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
@@ -8319,10 +8319,39 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.printlock	= spi_prettyprint_status_register_default_bp3, /* TODO: check */
+		.printlock	= spi_prettyprint_status_register_default_bp1,
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
-		.read		= spi_chip_read,
+		.read		= spi_chip_read, /* Fast read (0x0B) supported */
+		.voltage	= {2700, 3600},
+	},
+
+	{
+		.vendor		= "ST",
+		.name		= "M25P20-old",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= 0, /* Not used. */
+		.model_id	= ST_M25P20_RES,
+		.total_size	= 256,
+		.page_size	= 256,
+		.feature_bits	= FEATURE_WRSR_WREN,
+		.tested		= TEST_OK_PREW,
+		.probe		= probe_spi_res1,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {64 * 1024, 4} },
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { {256 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
+		},
+		.printlock	= spi_prettyprint_status_register_default_bp1,
+		.unlock		= spi_disable_blockprotect,
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read, /* Fast read (0x0B) supported */
 		.voltage	= {2700, 3600},
 	},
 
