@@ -638,6 +638,7 @@ const struct board_info boards_known[] = {
 	B("ASUS",	"P4P800-E Deluxe",	OK, "http://www.asus.com/Motherboards/Intel_Socket_478/P4P800E_Deluxe/", NULL),
 	B("ASUS",	"P4P800-VM",		OK, "http://www.asus.com/Motherboards/Intel_Socket_478/P4P800VM/", NULL),
 	B("ASUS",	"P4P800-X",		OK, "http://www.asus.com/Motherboards/Intel_Socket_478/P4P800X/", NULL),
+	B("ASUS",	"P4PE-X/TE",		NT, "http://www.asus.com/999/html/events/mb/socket478/p4pe-x-te/overview.htm", NULL),
 	B("ASUS",	"P4S533-X",		OK, NULL, NULL),
 	B("ASUS",	"P4S800-MX",		OK, "http://www.asus.com/Motherboards/Intel_Socket_478/P4S800MX/", NULL),
 	B("ASUS",	"P4SC-E",		OK, NULL, "Part of ASUS Terminator P4 533 barebone system"),
