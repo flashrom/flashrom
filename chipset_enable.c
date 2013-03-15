@@ -512,6 +512,8 @@ static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
 	static const char *const straps_names_ich7_nm10[] = { "reserved", "SPI", "PCI", "LPC" };
 	static const char *const straps_names_ich8910[] = { "SPI", "SPI", "PCI", "LPC" };
 	static const char *const straps_names_pch567[] = { "LPC", "reserved", "PCI", "SPI" };
+	static const char *const straps_names_pch8[] = { "LPC", "reserved", "reserved", "SPI" };
+	static const char *const straps_names_pch8_lp[] = { "SPI", "LPC", "unknown", "unknown" };
 	static const char *const straps_names_unknown[] = { "unknown", "unknown", "unknown", "unknown" };
 
 	switch (ich_generation) {
@@ -533,6 +535,15 @@ static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
 	case CHIPSET_6_SERIES_COUGAR_POINT:
 	case CHIPSET_7_SERIES_PANTHER_POINT:
 		straps_names = straps_names_pch567;
+		break;
+	case CHIPSET_8_SERIES_LYNX_POINT:
+		straps_names = straps_names_pch8;
+		break;
+	case CHIPSET_8_SERIES_LYNX_POINT_LP:
+		straps_names = straps_names_pch8_lp;
+		break;
+	case CHIPSET_8_SERIES_WELLSBURG: // FIXME: check datasheet
+		straps_names = straps_names_unknown;
 		break;
 	default:
 		msg_gerr("%s: unknown ICH generation. Please report!\n",
@@ -557,7 +568,18 @@ static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
 	msg_pdbg("GCS = 0x%x: ", gcs);
 	msg_pdbg("BIOS Interface Lock-Down: %sabled, ",
 		 (gcs & 0x1) ? "en" : "dis");
-	bbs = (gcs >> 10) & 0x3;
+
+	switch (ich_generation) {
+	case CHIPSET_8_SERIES_LYNX_POINT_LP:
+	case CHIPSET_8_SERIES_WELLSBURG: // FIXME: check datasheet
+		/* Lynx Point LP uses a single bit for GCS */
+		bbs = (gcs >> 10) & 0x1;
+		break;
+	default:
+		/* Older chipsets use two bits for GCS */
+		bbs = (gcs >> 10) & 0x3;
+		break;
+	}
 	msg_pdbg("Boot BIOS Straps: 0x%x (%s)\n", bbs, straps_names[bbs]);
 
 	buc = mmio_readb(rcrb + 0x3414);
@@ -633,6 +655,18 @@ static int enable_flash_pch7(struct pci_dev *dev, const char *name)
 static int enable_flash_pch8(struct pci_dev *dev, const char *name)
 {
 	return enable_flash_ich_dc_spi(dev, name, CHIPSET_8_SERIES_LYNX_POINT);
+}
+
+/* Lynx Point aka. 8 series low-power */
+static int enable_flash_pch8_lp(struct pci_dev *dev, const char *name)
+{
+	return enable_flash_ich_dc_spi(dev, name, CHIPSET_8_SERIES_LYNX_POINT_LP);
+}
+
+/* Wellsburg (for Haswell-EP Xeons) */
+static int enable_flash_pch8_wb(struct pci_dev *dev, const char *name)
+{
+	return enable_flash_ich_dc_spi(dev, name, CHIPSET_8_SERIES_WELLSBURG);
 }
 
 static int via_no_byte_merge(struct pci_dev *dev, const char *name)
@@ -1468,37 +1502,73 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x8119, OK, "Intel", "SCH Poulsbo",	enable_flash_poulsbo},
 	{0x8086, 0x8186, OK, "Intel", "Atom E6xx(T)/Tunnel Creek", enable_flash_tunnelcreek},
 	{0x8086, 0x8c40, NT, "Intel", "Lynx Point",	enable_flash_pch8},
-	{0x8086, 0x8c41, NT, "Intel", "Lynx Point",	enable_flash_pch8},
-	{0x8086, 0x8c42, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c41, NT, "Intel", "Lynx Point Mobile Engineering Sample", enable_flash_pch8},
+	{0x8086, 0x8c42, NT, "Intel", "Lynx Point Desktop Engineering Sample", enable_flash_pch8},
 	{0x8086, 0x8c43, NT, "Intel", "Lynx Point",	enable_flash_pch8},
-	{0x8086, 0x8c44, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c44, NT, "Intel", "Z87",		enable_flash_pch8},
 	{0x8086, 0x8c45, NT, "Intel", "Lynx Point",	enable_flash_pch8},
-	{0x8086, 0x8c46, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c46, NT, "Intel", "Z85",		enable_flash_pch8},
 	{0x8086, 0x8c47, NT, "Intel", "Lynx Point",	enable_flash_pch8},
 	{0x8086, 0x8c48, NT, "Intel", "Lynx Point",	enable_flash_pch8},
-	{0x8086, 0x8c49, NT, "Intel", "Lynx Point",	enable_flash_pch8},
-	{0x8086, 0x8c4a, NT, "Intel", "Lynx Point",	enable_flash_pch8},
-	{0x8086, 0x8c4b, NT, "Intel", "Lynx Point",	enable_flash_pch8},
-	{0x8086, 0x8c4c, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c49, NT, "Intel", "HM86",		enable_flash_pch8},
+	{0x8086, 0x8c4a, NT, "Intel", "H87",		enable_flash_pch8},
+	{0x8086, 0x8c4b, NT, "Intel", "HM87",		enable_flash_pch8},
+	{0x8086, 0x8c4c, NT, "Intel", "Q85",		enable_flash_pch8},
 	{0x8086, 0x8c4d, NT, "Intel", "Lynx Point",	enable_flash_pch8},
-	{0x8086, 0x8c4e, NT, "Intel", "Lynx Point",	enable_flash_pch8},
-	{0x8086, 0x8c4f, NT, "Intel", "Lynx Point",	enable_flash_pch8},
-	{0x8086, 0x8c50, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c4e, NT, "Intel", "Q87",		enable_flash_pch8},
+	{0x8086, 0x8c4f, NT, "Intel", "QM87",		enable_flash_pch8},
+	{0x8086, 0x8c50, NT, "Intel", "B85",		enable_flash_pch8},
 	{0x8086, 0x8c51, NT, "Intel", "Lynx Point",	enable_flash_pch8},
-	{0x8086, 0x8c52, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c52, NT, "Intel", "C222",		enable_flash_pch8},
 	{0x8086, 0x8c53, NT, "Intel", "Lynx Point",	enable_flash_pch8},
-	{0x8086, 0x8c54, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c54, NT, "Intel", "C224",		enable_flash_pch8},
 	{0x8086, 0x8c55, NT, "Intel", "Lynx Point",	enable_flash_pch8},
-	{0x8086, 0x8c56, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c56, NT, "Intel", "C226",		enable_flash_pch8},
 	{0x8086, 0x8c57, NT, "Intel", "Lynx Point",	enable_flash_pch8},
 	{0x8086, 0x8c58, NT, "Intel", "Lynx Point",	enable_flash_pch8},
 	{0x8086, 0x8c59, NT, "Intel", "Lynx Point",	enable_flash_pch8},
 	{0x8086, 0x8c5a, NT, "Intel", "Lynx Point",	enable_flash_pch8},
 	{0x8086, 0x8c5b, NT, "Intel", "Lynx Point",	enable_flash_pch8},
-	{0x8086, 0x8c5c, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x8c5c, NT, "Intel", "H81",		enable_flash_pch8},
 	{0x8086, 0x8c5d, NT, "Intel", "Lynx Point",	enable_flash_pch8},
 	{0x8086, 0x8c5e, NT, "Intel", "Lynx Point",	enable_flash_pch8},
 	{0x8086, 0x8c5f, NT, "Intel", "Lynx Point",	enable_flash_pch8},
+	{0x8086, 0x9c41, NT, "Intel", "Lynx Point LP Engineering Sample", enable_flash_pch8_lp},
+	{0x8086, 0x9c43, NT, "Intel", "Lynx Point LP Premium", enable_flash_pch8_lp},
+	{0x8086, 0x9c45, NT, "Intel", "Lynx Point LP Mainstream", enable_flash_pch8_lp},
+	{0x8086, 0x9c47, NT, "Intel", "Lynx Point LP Value", enable_flash_pch8_lp},
+ 	{0x8086, 0x8d40, NT, "Intel", "Wellsburg",	enable_flash_pch8_wb},
+ 	{0x8086, 0x8d41, NT, "Intel", "Wellsburg",	enable_flash_pch8_wb},
+ 	{0x8086, 0x8d42, NT, "Intel", "Wellsburg",	enable_flash_pch8_wb},
+ 	{0x8086, 0x8d43, NT, "Intel", "Wellsburg",	enable_flash_pch8_wb},
+ 	{0x8086, 0x8d44, NT, "Intel", "Wellsburg",	enable_flash_pch8_wb},
+ 	{0x8086, 0x8d45, NT, "Intel", "Wellsburg",	enable_flash_pch8_wb},
+ 	{0x8086, 0x8d46, NT, "Intel", "Wellsburg",	enable_flash_pch8_wb},
+ 	{0x8086, 0x8d47, NT, "Intel", "Wellsburg",	enable_flash_pch8_wb},
+ 	{0x8086, 0x8d48, NT, "Intel", "Wellsburg",	enable_flash_pch8_wb},
+ 	{0x8086, 0x8d49, NT, "Intel", "Wellsburg",	enable_flash_pch8_wb},
+ 	{0x8086, 0x8d4a, NT, "Intel", "Wellsburg",	enable_flash_pch8_wb},
+ 	{0x8086, 0x8d4b, NT, "Intel", "Wellsburg",	enable_flash_pch8_wb},
+ 	{0x8086, 0x8d4c, NT, "Intel", "Wellsburg",	enable_flash_pch8_wb},
+ 	{0x8086, 0x8d4d, NT, "Intel", "Wellsburg",	enable_flash_pch8_wb},
+ 	{0x8086, 0x8d4e, NT, "Intel", "Wellsburg",	enable_flash_pch8_wb},
+ 	{0x8086, 0x8d4f, NT, "Intel", "Wellsburg",	enable_flash_pch8_wb},
+ 	{0x8086, 0x8d50, NT, "Intel", "Wellsburg",	enable_flash_pch8_wb},
+ 	{0x8086, 0x8d51, NT, "Intel", "Wellsburg",	enable_flash_pch8_wb},
+ 	{0x8086, 0x8d52, NT, "Intel", "Wellsburg",	enable_flash_pch8_wb},
+ 	{0x8086, 0x8d53, NT, "Intel", "Wellsburg",	enable_flash_pch8_wb},
+ 	{0x8086, 0x8d54, NT, "Intel", "Wellsburg",	enable_flash_pch8_wb},
+ 	{0x8086, 0x8d55, NT, "Intel", "Wellsburg",	enable_flash_pch8_wb},
+ 	{0x8086, 0x8d56, NT, "Intel", "Wellsburg",	enable_flash_pch8_wb},
+ 	{0x8086, 0x8d57, NT, "Intel", "Wellsburg",	enable_flash_pch8_wb},
+ 	{0x8086, 0x8d58, NT, "Intel", "Wellsburg",	enable_flash_pch8_wb},
+ 	{0x8086, 0x8d59, NT, "Intel", "Wellsburg",	enable_flash_pch8_wb},
+ 	{0x8086, 0x8d5a, NT, "Intel", "Wellsburg",	enable_flash_pch8_wb},
+ 	{0x8086, 0x8d5b, NT, "Intel", "Wellsburg",	enable_flash_pch8_wb},
+ 	{0x8086, 0x8d5c, NT, "Intel", "Wellsburg",	enable_flash_pch8_wb},
+ 	{0x8086, 0x8d5d, NT, "Intel", "Wellsburg",	enable_flash_pch8_wb},
+ 	{0x8086, 0x8d5e, NT, "Intel", "Wellsburg",	enable_flash_pch8_wb},
+ 	{0x8086, 0x8d5f, NT, "Intel", "Wellsburg",	enable_flash_pch8_wb},
 #endif
 	{0},
 };
