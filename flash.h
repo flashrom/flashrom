@@ -99,6 +99,7 @@ enum write_granularity {
 #define FEATURE_WRSR_EWSR	(1 << 6)
 #define FEATURE_WRSR_WREN	(1 << 7)
 #define FEATURE_OTP		(1 << 8)
+#define FEATURE_QPI		(1 << 9)
 #define FEATURE_WRSR_EITHER	(FEATURE_WRSR_EWSR | FEATURE_WRSR_WREN)
 
 struct flashctx;
