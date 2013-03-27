@@ -87,6 +87,9 @@ enum programmer {
 #if CONFIG_LINUX_SPI == 1
 	PROGRAMMER_LINUX_SPI,
 #endif
+#if CONFIG_USBBLASTER_SPI == 1
+	PROGRAMMER_USBBLASTER_SPI,
+#endif
 	PROGRAMMER_INVALID /* This must always be the last entry. */
 };
 
@@ -431,6 +434,12 @@ int ft2232_spi_init(void);
 extern const struct dev_entry devs_ft2232spi[];
 #endif
 
+/* usbblaster_spi.c */
+#if CONFIG_USBBLASTER_SPI == 1
+int usbblaster_spi_init(void);
+extern const struct dev_entry devs_usbblasterspi[];
+#endif
+
 /* rayer_spi.c */
 #if CONFIG_RAYER_SPI == 1
 int rayer_spi_init(void);
@@ -508,6 +517,9 @@ enum spi_controller {
 #endif
 #if CONFIG_SERPROG == 1
 	SPI_CONTROLLER_SERPROG,
+#endif
+#if CONFIG_USBBLASTER_SPI == 1
+	SPI_CONTROLLER_USBBLASTER,
 #endif
 };
 

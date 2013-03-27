@@ -220,6 +220,8 @@ bitbanging adapter)
 .sp
 .BR "* linux_spi" " (for SPI flash ROMs accessible via /dev/spidevX.Y on Linux)"
 .sp
+.BR "* usbblaster_spi" " (for SPI flash ROMs attached to an Altera USB-Blaster compatible cable)"
+.sp
 Some programmers have optional or mandatory parameters which are described
 in detail in the
 .B PROGRAMMER SPECIFIC INFO
@@ -837,7 +839,7 @@ needs TCP access to the network or userspace access to a serial port.
 .B buspirate_spi
 needs userspace access to a serial port.
 .sp
-.BR dediprog " and " ft2232_spi
+.BR dediprog ", " ft2232_spi " and " usbblaster_spi
 need access to the USB device via libusb.
 .sp
 .B dummy
@@ -847,7 +849,7 @@ needs no access permissions at all.
 .BR gfxnvidia ", " drkaiser ", " satasii ", " satamv " and " atahpt
 have to be run as superuser/root, and need additional raw access permission.
 .sp
-.BR serprog ", " buspirate_spi ", " dediprog " and " ft2232_spi
+.BR serprog ", " buspirate_spi ", " dediprog ", " usbblaster_spi " and " ft2232_spi
 can be run as normal user on most operating systems if appropriate device
 permissions are set.
 .sp
