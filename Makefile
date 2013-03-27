@@ -128,6 +128,11 @@ UNSUPPORTED_FEATURES += CONFIG_FT2232_SPI=yes
 else
 override CONFIG_FT2232_SPI = no
 endif
+ifeq ($(CONFIG_USBBLASTER_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_USBBLASTER_SPI=yes
+else
+override CONFIG_USBBLASTER_SPI = no
+endif
 endif
 
 # FIXME: Should we check for Cygwin/MSVC as well?
@@ -240,6 +245,11 @@ UNSUPPORTED_FEATURES += CONFIG_FT2232_SPI=yes
 else
 override CONFIG_FT2232_SPI = no
 endif
+ifeq ($(CONFIG_USBBLASTER_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_USBBLASTER_SPI=yes
+else
+override CONFIG_USBBLASTER_SPI = no
+endif
 endif
 
 ifneq ($(TARGET_OS), Linux)
@@ -348,6 +358,9 @@ CONFIG_ATAHPT ?= no
 
 # Always enable FT2232 SPI dongles for now.
 CONFIG_FT2232_SPI ?= yes
+
+# Always enable Altera USB-Blaster dongles for now.
+CONFIG_USBBLASTER_SPI ?= yes
 
 # Always enable dummy tracing for now.
 CONFIG_DUMMY ?= yes
@@ -474,12 +487,23 @@ NEED_PCI := yes
 endif
 
 ifeq ($(CONFIG_FT2232_SPI), yes)
-FTDILIBS := $(shell pkg-config --libs libftdi 2>/dev/null || printf "%s" "-lftdi -lusb")
 # This is a totally ugly hack.
 FEATURE_CFLAGS += $(shell LC_ALL=C grep -q "FTDISUPPORT := yes" .features && printf "%s" "-D'CONFIG_FT2232_SPI=1'")
+NEED_FTDI := yes
+PROGRAMMER_OBJS += ft2232_spi.o
+endif
+
+ifeq ($(CONFIG_USBBLASTER_SPI), yes)
+# This is a totally ugly hack.
+FEATURE_CFLAGS += $(shell LC_ALL=C grep -q "FTDISUPPORT := yes" .features && printf "%s" "-D'CONFIG_USBBLASTER_SPI=1'")
+NEED_FTDI := yes
+PROGRAMMER_OBJS += usbblaster_spi.o
+endif
+
+ifeq ($(NEED_FTDI), yes)
+FTDILIBS := $(shell pkg-config --libs libftdi 2>/dev/null || printf "%s" "-lftdi -lusb")
 FEATURE_CFLAGS += $(shell LC_ALL=C grep -q "FT232H := yes" .features && printf "%s" "-D'HAVE_FT232H=1'")
 FEATURE_LIBS += $(shell LC_ALL=C grep -q "FTDISUPPORT := yes" .features && printf "%s" "$(FTDILIBS)")
-PROGRAMMER_OBJS += ft2232_spi.o
 # We can't set NEED_USB here because that would transform libftdi auto-enabling
 # into a hard requirement for libusb, defeating the purpose of auto-enabling.
 endif
@@ -799,7 +823,7 @@ export LINUX_SPI_TEST
 
 features: compiler
 	@echo "FEATURES := yes" > .features.tmp
-ifeq ($(CONFIG_FT2232_SPI), yes)
+ifeq ($(NEED_FTDI), yes)
 	@printf "Checking for FTDI support... "
 	@echo "$$FTDI_TEST" > .featuretest.c
 	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) $(FTDILIBS) $(LIBS) >/dev/null 2>&1 &&	\
