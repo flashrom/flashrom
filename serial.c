@@ -104,17 +104,39 @@ static const struct baudentry sp_baudtable[] = {
 };
 #endif
 
+/* Uses msg_perr to print the last system error.
+ * Prints "Error: " followed first by \c msg and then by the description of the last error retrieved via
+ * strerror() or FormatMessage() and ending with a linebreak. */
+static void msg_perr_strerror(const char *msg)
+{
+	msg_perr("Error: %s", msg);
+#ifdef _WIN32
+	char *lpMsgBuf;
+	DWORD nErr = GetLastError();
+	FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, nErr,
+		      MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR) &lpMsgBuf, 0, NULL);
+	msg_perr(lpMsgBuf);
+	/* At least some formatted messages contain a line break at the end. Make sure to always print one */
+	if (lpMsgBuf[strlen(lpMsgBuf)-1] != '\n')
+		msg_perr("\n");
+	LocalFree(lpMsgBuf);
+#else
+	msg_perr("%s\n", strerror(errno));
+#endif
+}
+
 fdtype sp_openserport(char *dev, unsigned int baud)
 {
 #ifdef _WIN32
 	HANDLE fd;
 	char *dev2 = dev;
-	if ((strlen(dev) > 3) && (tolower((unsigned char)dev[0]) == 'c') &&
+	if ((strlen(dev) > 3) &&
+	    (tolower((unsigned char)dev[0]) == 'c') &&
 	    (tolower((unsigned char)dev[1]) == 'o') &&
 	    (tolower((unsigned char)dev[2]) == 'm')) {
 		dev2 = malloc(strlen(dev) + 5);
 		if (!dev2) {
-			msg_perr("Error: Out of memory: %s\n", strerror(errno));
+			msg_perr_strerror("Out of memory: ");
 			return SER_INV_FD;
 		}
 		strcpy(dev2, "\\\\.\\");
@@ -125,12 +147,12 @@ fdtype sp_openserport(char *dev, unsigned int baud)
 	if (dev2 != dev)
 		free(dev2);
 	if (fd == INVALID_HANDLE_VALUE) {
-		msg_perr("Error: cannot open serial port: %s\n", strerror(errno));
+		msg_perr_strerror("Cannot open serial port: ");
 		return SER_INV_FD;
 	}
 	DCB dcb;
 	if (!GetCommState(fd, &dcb)) {
-		msg_perr("Error: Could not fetch serial port configuration: %s\n", strerror(errno));
+		msg_perr_strerror("Could not fetch serial port configuration: ");
 		return SER_INV_FD;
 	}
 	switch (baud) {
@@ -146,7 +168,7 @@ fdtype sp_openserport(char *dev, unsigned int baud)
 	dcb.Parity = NOPARITY;
 	dcb.StopBits = ONESTOPBIT;
 	if (!SetCommState(fd, &dcb)) {
-		msg_perr("Error: Could not change serial port configuration: %s\n", strerror(errno));
+		msg_perr_strerror("Could not change serial port configuration: ");
 		return SER_INV_FD;
 	}
 	return fd;
@@ -155,7 +177,7 @@ fdtype sp_openserport(char *dev, unsigned int baud)
 	int fd, i;
 	fd = open(dev, O_RDWR | O_NOCTTY | O_NDELAY);
 	if (fd < 0) {
-		msg_perr("Error: cannot open serial port: %s\n", strerror(errno));
+		msg_perr_strerror("Cannot open serial port: ");
 		return SER_INV_FD;
 	}
 	fcntl(fd, F_SETFL, 0);
