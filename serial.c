@@ -431,3 +431,75 @@ int serialport_read_nonblock(unsigned char *c, unsigned int readcnt, unsigned in
 	}
 	return ret;
 }
+
+/* Tries up to timeout ms to write writecnt characters from the array starting at buf. Returns
+ * 0 on success, positive values on temporary errors (e.g. timeouts) and negative ones on permanent errors.
+ * If really_wrote is not NULL, this function sets its contents to the number of bytes written successfully. */
+int serialport_write_nonblock(unsigned char *buf, unsigned int writecnt, unsigned int timeout, unsigned int *really_wrote)
+{
+	int ret = 1;
+	/* disable blocked i/o and declare platform-specific variables */
+#ifdef _WIN32
+	DWORD rv;
+	COMMTIMEOUTS oldTimeout;
+	COMMTIMEOUTS newTimeout = {
+		.ReadIntervalTimeout = MAXDWORD,
+		.ReadTotalTimeoutMultiplier = 0,
+		.ReadTotalTimeoutConstant = 0,
+		.WriteTotalTimeoutMultiplier = 0,
+		.WriteTotalTimeoutConstant = 0
+	};
+	if(!GetCommTimeouts(sp_fd, &oldTimeout)) {
+		msg_perr_strerror("Could not get serial port timeout settings: ");
+		return -1;
+	}
+	if(!SetCommTimeouts(sp_fd, &newTimeout)) {
+		msg_perr_strerror("Could not set serial port timeout settings: ");
+		return -1;
+	}
+#else
+	ssize_t rv;
+	const int flags = fcntl(sp_fd, F_GETFL);
+	fcntl(sp_fd, F_SETFL, flags | O_NONBLOCK);
+#endif
+
+	int i;
+	int wr_bytes = 0;
+	for (i = 0; i < timeout; i++) {
+		msg_pspew("writecnt %d wr_bytes %d\n", writecnt, wr_bytes);
+#ifdef _WIN32
+		WriteFile(sp_fd, buf + wr_bytes, writecnt - wr_bytes, &rv, NULL);
+		msg_pspew("wrote %lu bytes\n", rv);
+#else
+		rv = write(sp_fd, buf + wr_bytes, writecnt - wr_bytes);
+		msg_pspew("wrote %zd bytes\n", rv);
+#endif
+		if ((rv == -1) && (errno != EAGAIN)) {
+			msg_perr_strerror("Serial port write error: ");
+			ret = -1;
+			break;
+		}
+		if (rv > 0) {
+			wr_bytes += rv;
+			if (wr_bytes == writecnt) {
+				msg_pspew("write successful\n");
+				ret = 0;
+				break;
+			}
+		}
+		internal_delay(1000);	/* 1ms units */
+	}
+	if (really_wrote != NULL)
+		*really_wrote = wr_bytes;
+
+	/* restore original blocking behavior */
+#ifdef _WIN32
+	if (!SetCommTimeouts(sp_fd, &oldTimeout)) {
+		msg_perr_strerror("Could not restore serial port timeout settings: ");
+#else
+	if (fcntl(sp_fd, F_SETFL, flags) != 0) {
+#endif
+		return -1;
+	}
+	return ret;
+}
