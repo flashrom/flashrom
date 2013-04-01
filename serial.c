@@ -354,7 +354,7 @@ int serialport_read(unsigned char *buf, unsigned int readcnt)
 			return 1;
 		}
 		if (!tmp)
-			msg_pdbg("Empty read\n");
+			msg_pdbg2("Empty read\n");
 		readcnt -= tmp;
 		buf += tmp;
 	}
