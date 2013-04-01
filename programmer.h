@@ -661,6 +661,7 @@ extern fdtype sp_fd;
 int serialport_shutdown(void *data);
 int serialport_write(unsigned char *buf, unsigned int writecnt);
 int serialport_read(unsigned char *buf, unsigned int readcnt);
+int serialport_read_nonblock(unsigned char *c, unsigned int readcnt, unsigned int timeout, unsigned int *really_read);
 
 /* Serial port/pin mapping:
 

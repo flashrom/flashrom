@@ -115,26 +115,6 @@ static int sp_opensocket(char *ip, unsigned int port)
 	return sock;
 }
 
-/* Returns 0 on success and places the character read into the location pointed to by c.
- * Returns positive values on temporary errors and negative ones on permanent errors.
- * An iteration of one loop takes up to 1ms. */
-static int sp_sync_read_timeout(unsigned int loops, unsigned char *c)
-{
-	int i;
-	for (i = 0; i < loops; i++) {
-		ssize_t rv;
-		rv = read(sp_fd, c, 1);
-		if (rv == 1)
-			return 0;
-		if ((rv == -1) && (errno != EAGAIN)) {
-			msg_perr("read: %s\n", strerror(errno));
-			return -1;
-		}
-		usleep(1000);	/* 1ms units */
-	}
-	return 1;
-}
-
 /* Synchronize: a bit tricky algorithm that tries to (and in my tests has *
  * always succeeded in) bring the serial protocol to known waiting-for-   *
  * command state - uses nonblocking read - rest of the driver uses	  *
@@ -174,12 +154,12 @@ static int sp_synchronize(void)
 		msg_pdbg(".");
 		fflush(stdout);
 		for (n = 0; n < 10; n++) {
-			int ret = sp_sync_read_timeout(50, &c);
+			int ret = serialport_read_nonblock(&c, 1, 50, NULL);
 			if (ret < 0)
 				goto err_out;
 			if (ret > 0 || c != S_NAK)
 				continue;
-			ret = sp_sync_read_timeout(20, &c);
+			ret = serialport_read_nonblock(&c, 1, 20, NULL);
 			if (ret < 0)
 				goto err_out;
 			if (ret > 0 || c != S_ACK)
@@ -189,12 +169,12 @@ static int sp_synchronize(void)
 				msg_perr("sync write: %s\n", strerror(errno));
 				return 1;
 			}
-			ret = sp_sync_read_timeout(500, &c);
+			ret = serialport_read_nonblock(&c, 1, 500, NULL);
 			if (ret < 0)
 				goto err_out;
 			if (ret > 0 || c != S_NAK)
 				break;	/* fail */
-			ret = sp_sync_read_timeout(100, &c);
+			ret = serialport_read_nonblock(&c, 1, 100, NULL);
 			if (ret > 0 || ret < 0)
 				goto err_out;
 			if (c != S_ACK)
