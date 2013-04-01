@@ -117,23 +117,19 @@ static int sp_opensocket(char *ip, unsigned int port)
 
 /* Synchronize: a bit tricky algorithm that tries to (and in my tests has *
  * always succeeded in) bring the serial protocol to known waiting-for-   *
- * command state - uses nonblocking read - rest of the driver uses	  *
+ * command state - uses nonblocking I/O - rest of the driver uses         *
  * blocking read - TODO: add an alarm() timer for the rest of the app on  *
  * serial operations, though not such a big issue as the first thing to   *
  * do is synchronize (eg. check that device is alive).			  */
 static int sp_synchronize(void)
 {
 	int i;
-	int flags = fcntl(sp_fd, F_GETFL);
 	unsigned char buf[8];
-	flags |= O_NONBLOCK;
-	fcntl(sp_fd, F_SETFL, flags);
 	/* First sends 8 NOPs, then flushes the return data - should cause *
 	 * the device serial parser to get to a sane state, unless if it   *
 	 * is waiting for a real long write-n.                             */
 	memset(buf, S_CMD_NOP, 8);
-	if (write(sp_fd, buf, 8) != 8) {
-		msg_perr("flush write: %s\n", strerror(errno));
+	if (serialport_write_nonblock(buf, 8, 1, NULL) != 0) {
 		goto err_out;
 	}
 	/* A second should be enough to get all the answers to the buffer */
@@ -147,8 +143,7 @@ static int sp_synchronize(void)
 	for (i = 0; i < 8; i++) {
 		int n;
 		unsigned char c = S_CMD_SYNCNOP;
-		if (write(sp_fd, &c, 1) != 1) {
-			msg_perr("sync write: %s\n", strerror(errno));
+		if (serialport_write_nonblock(&c, 1, 1, NULL) != 0) {
 			goto err_out;
 		}
 		msg_pdbg(".");
@@ -165,9 +160,8 @@ static int sp_synchronize(void)
 			if (ret > 0 || c != S_ACK)
 				continue;
 			c = S_CMD_SYNCNOP;
-			if (write(sp_fd, &c, 1) != 1) {
-				msg_perr("sync write: %s\n", strerror(errno));
-				return 1;
+			if (serialport_write_nonblock(&c, 1, 1, NULL) != 0) {
+				goto err_out;
 			}
 			ret = serialport_read_nonblock(&c, 1, 500, NULL);
 			if (ret < 0)
@@ -179,9 +173,6 @@ static int sp_synchronize(void)
 				goto err_out;
 			if (c != S_ACK)
 				break;	/* fail */
-			/* Ok, synchronized; back to blocking reads and return. */
-			flags &= ~O_NONBLOCK;
-			fcntl(sp_fd, F_SETFL, flags);
 			msg_pdbg("\n");
 			return 0;
 		}
