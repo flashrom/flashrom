@@ -688,6 +688,23 @@ out_free:
 	return ret;
 }
 
+/* Helper function for need_erase() that focuses on granularities of gran bytes. */
+static int need_erase_gran_bytes(uint8_t *have, uint8_t *want, unsigned int len, unsigned int gran)
+{
+	unsigned int i, j, limit;
+	for (j = 0; j < len / gran; j++) {
+		limit = min (gran, len - j * gran);
+		/* Are 'have' and 'want' identical? */
+		if (!memcmp(have + j * gran, want + j * gran, limit))
+			continue;
+		/* have needs to be in erased state. */
+		for (i = 0; i < limit; i++)
+			if (have[j * gran + i] != 0xff)
+				return 1;
+	}
+	return 0;
+}
+
 /*
  * Check if the buffer @have can be programmed to the content of @want without
  * erasing. This is only possible if all chunks of size @gran are either kept
@@ -705,7 +722,7 @@ out_free:
 int need_erase(uint8_t *have, uint8_t *want, unsigned int len, enum write_granularity gran)
 {
 	int result = 0;
-	unsigned int i, j, limit;
+	unsigned int i;
 
 	switch (gran) {
 	case write_gran_1bit:
@@ -723,20 +740,22 @@ int need_erase(uint8_t *have, uint8_t *want, unsigned int len, enum write_granul
 			}
 		break;
 	case write_gran_256bytes:
-		for (j = 0; j < len / 256; j++) {
-			limit = min (256, len - j * 256);
-			/* Are 'have' and 'want' identical? */
-			if (!memcmp(have + j * 256, want + j * 256, limit))
-				continue;
-			/* have needs to be in erased state. */
-			for (i = 0; i < limit; i++)
-				if (have[j * 256 + i] != 0xff) {
-					result = 1;
-					break;
-				}
-			if (result)
-				break;
-		}
+		result = need_erase_gran_bytes(have, want, len, 256);
+		break;
+	case write_gran_264bytes:
+		result = need_erase_gran_bytes(have, want, len, 264);
+		break;
+	case write_gran_512bytes:
+		result = need_erase_gran_bytes(have, want, len, 512);
+		break;
+	case write_gran_528bytes:
+		result = need_erase_gran_bytes(have, want, len, 528);
+		break;
+	case write_gran_1024bytes:
+		result = need_erase_gran_bytes(have, want, len, 1024);
+		break;
+	case write_gran_1056bytes:
+		result = need_erase_gran_bytes(have, want, len, 1056);
 		break;
 	default:
 		msg_cerr("%s: Unsupported granularity! Please report a bug at "
@@ -783,6 +802,21 @@ static unsigned int get_next_write(uint8_t *have, uint8_t *want, unsigned int le
 		break;
 	case write_gran_256bytes:
 		stride = 256;
+		break;
+	case write_gran_264bytes:
+		stride = 264;
+		break;
+	case write_gran_512bytes:
+		stride = 512;
+		break;
+	case write_gran_528bytes:
+		stride = 528;
+		break;
+	case write_gran_1024bytes:
+		stride = 1024;
+		break;
+	case write_gran_1056bytes:
+		stride = 1056;
 		break;
 	default:
 		msg_cerr("%s: Unsupported granularity! Please report a bug at "
