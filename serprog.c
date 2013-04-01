@@ -133,7 +133,7 @@ static int sp_synchronize(void)
 		goto err_out;
 	}
 	/* A second should be enough to get all the answers to the buffer */
-	usleep(1000 * 1000);
+	internal_delay(1000 * 1000);
 	sp_flush_incoming();
 
 	/* Then try up to 8 times to send syncnop and get the correct special *
@@ -206,15 +206,15 @@ static int sp_docommand(uint8_t command, uint32_t parmlen,
 	unsigned char c;
 	if (sp_automatic_cmdcheck(command))
 		return 1;
-	if (write(sp_fd, &command, 1) != 1) {
+	if (serialport_write(&command, 1) != 0) {
 		msg_perr("Error: cannot write op code: %s\n", strerror(errno));
 		return 1;
 	}
-	if (write(sp_fd, params, parmlen) != (parmlen)) {
+	if (serialport_write(params, parmlen) != 0) {
 		msg_perr("Error: cannot write parameters: %s\n", strerror(errno));
 		return 1;
 	}
-	if (read(sp_fd, &c, 1) != 1) {
+	if (serialport_read(&c, 1) != 0) {
 		msg_perr("Error: cannot read from device: %s\n", strerror(errno));
 		return 1;
 	}
@@ -225,17 +225,10 @@ static int sp_docommand(uint8_t command, uint32_t parmlen,
 		return 1;
 	}
 	if (retlen) {
-		int rd_bytes = 0;
-		do {
-			int r;
-			r = read(sp_fd, retparms + rd_bytes,
-				 retlen - rd_bytes);
-			if (r <= 0) {
-				msg_perr("Error: cannot read return parameters: %s\n", strerror(errno));
-				return 1;
-			}
-			rd_bytes += r;
-		} while (rd_bytes != retlen);
+		if (serialport_read(retparms, retlen) != 0) {
+			msg_perr("Error: cannot read return parameters: %s\n", strerror(errno));
+			return 1;
+		}
 	}
 	return 0;
 }
@@ -245,7 +238,7 @@ static void sp_flush_stream(void)
 	if (sp_streamed_transmit_ops)
 		do {
 			unsigned char c;
-			if (read(sp_fd, &c, 1) != 1) {
+			if (serialport_read(&c, 1) != 0) {
 				sp_die("Error: cannot read from device (flushing stream)");
 			}
 			if (c == S_NAK) {
@@ -272,7 +265,7 @@ static int sp_stream_buffer_op(uint8_t cmd, uint32_t parmlen, uint8_t * parms)
 	memcpy(&(sp[1]), parms, parmlen);
 	if (sp_streamed_transmit_bytes >= (1 + parmlen + sp_device_serbuf_size))
 		sp_flush_stream();
-	if (write(sp_fd, sp, 1 + parmlen) != (1 + parmlen))
+	if (serialport_write(sp, 1 + parmlen) != 0)
 		sp_die("Error: cannot write command");
 	free(sp);
 	sp_streamed_transmit_ops += 1;
@@ -685,10 +678,9 @@ static void sp_pass_writen(void)
 	header[4] = (sp_write_n_addr >> 0) & 0xFF;
 	header[5] = (sp_write_n_addr >> 8) & 0xFF;
 	header[6] = (sp_write_n_addr >> 16) & 0xFF;
-	if (write(sp_fd, header, 7) != 7)
+	if (serialport_write(header, 7) != 0)
 		sp_die("Error: cannot write write-n command\n");
-	if (write(sp_fd, sp_write_n_buf, sp_write_n_bytes) !=
-	    sp_write_n_bytes)
+	if (serialport_write(sp_write_n_buf, sp_write_n_bytes) != 0)
 		sp_die("Error: cannot write write-n data");
 	sp_streamed_transmit_bytes += 7 + sp_write_n_bytes;
 	sp_streamed_transmit_ops += 1;
@@ -789,7 +781,7 @@ static uint8_t serprog_chip_readb(const struct flashctx *flash,
 	buf[2] = ((addr >> 16) & 0xFF);
 	sp_stream_buffer_op(S_CMD_R_BYTE, 3, buf);
 	sp_flush_stream();
-	if (read(sp_fd, &c, 1) != 1)
+	if (serialport_read(&c, 1) != 0)
 		sp_die("readb byteread");
 	msg_pspew("%s addr=0x%lx returning 0x%02X\n", __func__, addr, c);
 	return c;
@@ -798,7 +790,6 @@ static uint8_t serprog_chip_readb(const struct flashctx *flash,
 /* Local version that really does the job, doesn't care of max_read_n. */
 static void sp_do_read_n(uint8_t * buf, const chipaddr addr, size_t len)
 {
-	int rd_bytes = 0;
 	unsigned char sbuf[6];
 	msg_pspew("%s: addr=0x%lx len=%lu\n", __func__, addr, (unsigned long)len);
 	/* Stream the read-n -- as above. */
@@ -812,12 +803,8 @@ static void sp_do_read_n(uint8_t * buf, const chipaddr addr, size_t len)
 	sbuf[5] = ((len >> 16) & 0xFF);
 	sp_stream_buffer_op(S_CMD_R_NBYTES, 6, sbuf);
 	sp_flush_stream();
-	do {
-		int r = read(sp_fd, buf + rd_bytes, len - rd_bytes);
-		if (r <= 0)
-			sp_die("Error: cannot read read-n data");
-		rd_bytes += r;
-	} while (rd_bytes != len);
+	if (serialport_read(buf, len) != 0)
+		sp_die("Error: cannot read read-n data");
 	return;
 }
 
