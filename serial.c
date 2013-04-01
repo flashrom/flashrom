@@ -361,3 +361,73 @@ int serialport_read(unsigned char *buf, unsigned int readcnt)
 
 	return 0;
 }
+
+/* Tries up to timeout ms to read readcnt characters and places them into the array starting at c. Returns
+ * 0 on success, positive values on temporary errors (e.g. timeouts) and negative ones on permanent errors.
+ * If really_read is not NULL, this function sets its contents to the number of bytes read successfully. */
+int serialport_read_nonblock(unsigned char *c, unsigned int readcnt, unsigned int timeout, unsigned int *really_read)
+{
+	int ret = 1;
+	/* disable blocked i/o and declare platform-specific variables */
+#ifdef _WIN32
+	DWORD rv;
+	COMMTIMEOUTS oldTimeout;
+	COMMTIMEOUTS newTimeout = {
+		.ReadIntervalTimeout = MAXDWORD,
+		.ReadTotalTimeoutMultiplier = 0,
+		.ReadTotalTimeoutConstant = 0,
+		.WriteTotalTimeoutMultiplier = 0,
+		.WriteTotalTimeoutConstant = 0
+	};
+	if(!GetCommTimeouts(sp_fd, &oldTimeout)) {
+		msg_perr_strerror("Could not get serial port timeout settings: ");
+		return -1;
+	}
+	if(!SetCommTimeouts(sp_fd, &newTimeout)) {
+#else
+	ssize_t rv;
+	const int flags = fcntl(sp_fd, F_GETFL);
+	if (fcntl(sp_fd, F_SETFL, flags | O_NONBLOCK) != 0) {
+#endif
+		msg_perr_strerror("Could not set serial port timeout settings %s");
+		return -1;
+	}
+
+	int i;
+	int rd_bytes = 0;
+	for (i = 0; i < timeout; i++) {
+		msg_pspew("readcnt %d rd_bytes %d\n", readcnt, rd_bytes);
+#ifdef _WIN32
+		ReadFile(sp_fd, c + rd_bytes, readcnt - rd_bytes, &rv, NULL);
+		msg_pspew("read %lu bytes\n", rv);
+#else
+		rv = read(sp_fd, c + rd_bytes, readcnt - rd_bytes);
+		msg_pspew("read %zd bytes\n", rv);
+#endif
+		if ((rv == -1) && (errno != EAGAIN)) {
+			msg_perr_strerror("Serial port read error: ");
+			ret = -1;
+			break;
+		}
+		if (rv > 0)
+			rd_bytes += rv;
+		if (rd_bytes == readcnt) {
+			ret = 0;
+			break;
+		}
+		internal_delay(1000);	/* 1ms units */
+	}
+	if (really_read != NULL)
+		*really_read = rd_bytes;
+
+	/* restore original blocking behavior */
+#ifdef _WIN32
+	if (!SetCommTimeouts(sp_fd, &oldTimeout)) {
+#else
+	if (fcntl(sp_fd, F_SETFL, flags) != 0) {
+#endif
+		msg_perr_strerror("Could not restore serial port timeout settings: %s\n");
+		ret = -1;
+	}
+	return ret;
+}
