@@ -47,62 +47,95 @@ void __attribute__((noreturn)) sp_die(char *msg)
 	exit(1);
 }
 
-#ifndef _WIN32
+#ifdef _WIN32
+struct baudentry {
+	DWORD flag;
+	unsigned int baud;
+};
+#define BAUDENTRY(baud) { CBR_##baud, baud },
+#else
 struct baudentry {
 	int flag;
 	unsigned int baud;
 };
-
-/* I'd like if the C preprocessor could have directives in macros */
 #define BAUDENTRY(baud) { B##baud, baud },
+#endif
+
+/* I'd like if the C preprocessor could have directives in macros.
+ * See TERMIOS(3) and http://msdn.microsoft.com/en-us/library/windows/desktop/aa363214(v=vs.85).aspx and
+ * http://git.kernel.org/?p=linux/kernel/git/torvalds/linux.git;a=blob;f=include/uapi/asm-generic/termbits.h */
 static const struct baudentry sp_baudtable[] = {
-	BAUDENTRY(9600)
+	BAUDENTRY(9600) /* unconditional default */
+#if defined(B19200) || defined(CBR_19200)
 	BAUDENTRY(19200)
+#endif
+#if defined(B38400) || defined(CBR_38400)
 	BAUDENTRY(38400)
+#endif
+#if defined(B57600) || defined(CBR_57600)
 	BAUDENTRY(57600)
+#endif
+#if defined(B115200) || defined(CBR_115200)
 	BAUDENTRY(115200)
-#ifdef B230400
+#endif
+#if defined(B230400) || defined(CBR_230400)
 	BAUDENTRY(230400)
 #endif
-#ifdef B460800
+#if defined(B460800) || defined(CBR_460800)
 	BAUDENTRY(460800)
 #endif
-#ifdef B500000
+#if defined(B500000) || defined(CBR_500000)
 	BAUDENTRY(500000)
 #endif
-#ifdef B576000
+#if defined(B576000) || defined(CBR_576000)
 	BAUDENTRY(576000)
 #endif
-#ifdef B921600
+#if defined(B921600) || defined(CBR_921600)
 	BAUDENTRY(921600)
 #endif
-#ifdef B1000000
+#if defined(B1000000) || defined(CBR_1000000)
 	BAUDENTRY(1000000)
 #endif
-#ifdef B1152000
+#if defined(B1152000) || defined(CBR_1152000)
 	BAUDENTRY(1152000)
 #endif
-#ifdef B1500000
+#if defined(B1500000) || defined(CBR_1500000)
 	BAUDENTRY(1500000)
 #endif
-#ifdef B2000000
+#if defined(B2000000) || defined(CBR_2000000)
 	BAUDENTRY(2000000)
 #endif
-#ifdef B2500000
+#if defined(B2500000) || defined(CBR_2500000)
 	BAUDENTRY(2500000)
 #endif
-#ifdef B3000000
+#if defined(B3000000) || defined(CBR_3000000)
 	BAUDENTRY(3000000)
 #endif
-#ifdef B3500000
+#if defined(B3500000) || defined(CBR_3500000)
 	BAUDENTRY(3500000)
 #endif
-#ifdef B4000000
+#if defined(B4000000) || defined(CBR_4000000)
 	BAUDENTRY(4000000)
 #endif
 	{0, 0}			/* Terminator */
 };
-#endif
+
+const struct baudentry *round_baud(unsigned int baud)
+{
+	int i;
+	/* Round baud rate to next lower entry in sp_baudtable if it exists, else use the lowest entry. */
+	for (i = ARRAY_SIZE(sp_baudtable) - 2; i >= 0 ; i--) {
+		if (sp_baudtable[i].baud == baud)
+			return &sp_baudtable[i];
+
+		if (sp_baudtable[i].baud < baud) {
+			msg_pinfo("Warning: given baudrate %d rounded down to %d.\n",
+				  baud, sp_baudtable[i].baud);
+			return &sp_baudtable[i];
+		}
+	}
+	return &sp_baudtable[0];
+}
 
 /* Uses msg_perr to print the last system error.
  * Prints "Error: " followed first by \c msg and then by the description of the last error retrieved via
@@ -155,15 +188,8 @@ fdtype sp_openserport(char *dev, unsigned int baud)
 		msg_perr_strerror("Could not fetch serial port configuration: ");
 		return SER_INV_FD;
 	}
-	switch (baud) {
-		case 9600: dcb.BaudRate = CBR_9600; break;
-		case 19200: dcb.BaudRate = CBR_19200; break;
-		case 38400: dcb.BaudRate = CBR_38400; break;
-		case 57600: dcb.BaudRate = CBR_57600; break;
-		case 115200: dcb.BaudRate = CBR_115200; break;
-		default: msg_perr("Error: Could not set baud rate: %s\n", strerror(errno));
-			 return SER_INV_FD;
-	}
+	const struct baudentry *entry = round_baud(baud);
+	dcb.BaudRate = entry->baud;
 	dcb.ByteSize = 8;
 	dcb.Parity = NOPARITY;
 	dcb.StopBits = ONESTOPBIT;
@@ -171,10 +197,15 @@ fdtype sp_openserport(char *dev, unsigned int baud)
 		msg_perr_strerror("Could not change serial port configuration: ");
 		return SER_INV_FD;
 	}
+	if (!GetCommState(fd, &dcb)) {
+		msg_perr_strerror("Could not fetch serial port configuration: ");
+		return SER_INV_FD;
+	}
+	msg_pdbg("Baud rate is %ld.\n", dcb.BaudRate);
 	return fd;
 #else
 	struct termios options;
-	int fd, i;
+	int fd;
 	fd = open(dev, O_RDWR | O_NOCTTY | O_NDELAY);
 	if (fd < 0) {
 		msg_perr_strerror("Cannot open serial port: ");
@@ -182,18 +213,10 @@ fdtype sp_openserport(char *dev, unsigned int baud)
 	}
 	fcntl(fd, F_SETFL, 0);
 	tcgetattr(fd, &options);
-	for (i = 0;; i++) {
-		if (sp_baudtable[i].baud == 0) {
-			close(fd);
-			msg_perr("Error: cannot configure for baudrate %d\n", baud);
-			return SER_INV_FD;
-		}
-		if (sp_baudtable[i].baud == baud) {
-			cfsetispeed(&options, sp_baudtable[i].flag);
-			cfsetospeed(&options, sp_baudtable[i].flag);
-			break;
-		}
-	}
+	const struct baudentry *entry = round_baud(baud);
+	cfsetispeed(&options, entry->flag);
+	cfsetospeed(&options, entry->flag);
+	msg_pdbg("Setting baud rate to %d.\n", entry->baud);
 	options.c_cflag &= ~(PARENB | CSTOPB | CSIZE | CRTSCTS);
 	options.c_cflag |= (CS8 | CLOCAL | CREAD);
 	options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
