@@ -20,21 +20,23 @@
  */
 
 #include <stdio.h>
+#ifndef _WIN32 /* stuff (presumably) needed for sockets only */
 #include <stdlib.h>
 #include <unistd.h>
-#include <strings.h>
-#include <string.h>
-#include <ctype.h>
 #include <fcntl.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <netdb.h>
-#include <sys/stat.h>
-#include <errno.h>
-#include <inttypes.h>
+#endif
+#ifdef _WIN32
+#include <conio.h>
+#else
 #include <termios.h>
+#endif
+#include <string.h>
+#include <errno.h>
 #include "flash.h"
 #include "programmer.h"
 #include "chipdrivers.h"
@@ -81,6 +83,7 @@ static int sp_opbuf_usage = 0;
 	whether the command is supported before doing it */
 static int sp_check_avail_automatic = 0;
 
+#ifndef WIN32
 static int sp_opensocket(char *ip, unsigned int port)
 {
 	int flag = 1;
@@ -114,6 +117,7 @@ static int sp_opensocket(char *ip, unsigned int port)
 	setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(int));
 	return sock;
 }
+#endif
 
 /* Synchronize: a bit tricky algorithm that tries to (and in my tests has *
  * always succeeded in) bring the serial protocol to known waiting-for-   *
@@ -351,6 +355,7 @@ int serprog_init(void)
 	}
 	free(device);
 
+#ifndef _WIN32
 	device = extract_programmer_param("ip");
 	if (have_device && device) {
 		msg_perr("Error: Both host and device specified.\n"
@@ -394,6 +399,7 @@ int serprog_init(void)
 			 "flashrom -p serprog:ip=ipaddr:port\n");
 		return 1;
 	}
+#endif
 
 	if (register_shutdown(serprog_shutdown, NULL))
 		return 1;
