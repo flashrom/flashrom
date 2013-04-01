@@ -143,12 +143,6 @@ FLASHROM_CFLAGS += -Dffs=__builtin_ffs
 # libusb-win32/libftdi stuff is usually installed in /usr/local.
 CPPFLAGS += -I/usr/local/include
 LDFLAGS += -L/usr/local/lib
-# Serprog is not supported under Windows/MinGW (missing sockets support).
-ifeq ($(CONFIG_SERPROG), yes)
-UNSUPPORTED_FEATURES += CONFIG_SERPROG=yes
-else
-override CONFIG_SERPROG = no
-endif
 # For now we disable all PCI-based programmers on Windows/MinGW (no libpci).
 ifeq ($(CONFIG_INTERNAL), yes)
 UNSUPPORTED_FEATURES += CONFIG_INTERNAL=yes
@@ -334,7 +328,7 @@ SVNDEF := -D'FLASHROM_VERSION="$(VERSION)"'
 # Always enable internal/onboard support for now.
 CONFIG_INTERNAL ?= yes
 
-# Always enable serprog for now. Needs to be disabled on Windows.
+# Always enable serprog for now.
 CONFIG_SERPROG ?= yes
 
 # RayeR SPIPGM hardware support
