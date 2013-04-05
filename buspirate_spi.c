@@ -286,7 +286,7 @@ int buspirate_spi_init(void)
 		/* The Bus Pirate can't handle UART input buffer overflow in BBIO mode, and sending a sequence
 		 * of 0x00 too fast apparently triggers such an UART input buffer overflow.
 		 */
-		usleep(10000);
+		internal_sleep(10000);
 	}
 	/* We know that 20 commands of \0 should elicit at least one BBIO1 response. */
 	if ((ret = buspirate_wait_for_string(bp_commbuf, "BBIO")))
