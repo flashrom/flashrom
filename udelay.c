@@ -169,13 +169,23 @@ recalibrate:
 	msg_pinfo("OK.\n");
 }
 
+/* Not very precise sleep. */
+void internal_sleep(int usecs)
+{
+#ifdef _WIN32
+	Sleep((usecs + 999) / 1000);
+#else
+	sleep(usecs / 1000000);
+	usleep(usecs % 1000000);
+#endif
+}
+
+/* Precise delay. */
 void internal_delay(int usecs)
 {
-	/* If the delay is >1 s, use usleep because timing does not need to
-	 * be so precise.
-	 */
+	/* If the delay is >1 s, use internal_sleep because timing does not need to be so precise. */
 	if (usecs > 1000000) {
-		usleep(usecs);
+		internal_sleep(usecs);
 	} else {
 		myusec_delay(usecs);
 	}

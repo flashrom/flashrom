@@ -250,6 +250,7 @@ extern const struct board_info laptops_known[];
 /* udelay.c */
 void myusec_delay(int usecs);
 void myusec_calibrate_delay(void);
+void internal_sleep(int usecs);
 void internal_delay(int usecs);
 
 #if CONFIG_INTERNAL == 1
