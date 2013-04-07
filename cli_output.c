@@ -50,7 +50,7 @@ int open_logfile(const char * const filename)
 		return 1;
 	}
 	if ((logfile = fopen(filename, "w")) == NULL) {
-		perror(filename);
+		msg_gerr("Error: opening log file \"%s\" failed: %s\n", filename, strerror(errno));
 		return 1;
 	}
 	return 0;
