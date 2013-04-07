@@ -29,6 +29,7 @@
 #endif
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <ctype.h>
 #include <getopt.h>
 #if HAVE_UTSNAME == 1
@@ -1158,11 +1159,11 @@ int read_buf_from_file(unsigned char *buf, unsigned long size,
 	struct stat image_stat;
 
 	if ((image = fopen(filename, "rb")) == NULL) {
-		perror(filename);
+		msg_gerr("Error: opening file \"%s\" failed: %s\n", filename, strerror(errno));
 		return 1;
 	}
 	if (fstat(fileno(image), &image_stat) != 0) {
-		perror(filename);
+		msg_gerr("Error: getting metadata of file \"%s\" failed: %s\n", filename, strerror(errno));
 		fclose(image);
 		return 1;
 	}
@@ -1174,7 +1175,7 @@ int read_buf_from_file(unsigned char *buf, unsigned long size,
 	}
 	numbytes = fread(buf, 1, size, image);
 	if (fclose(image)) {
-		perror(filename);
+		msg_gerr("Error: closing file \"%s\" failed: %s\n", filename, strerror(errno));
 		return 1;
 	}
 	if (numbytes != size) {
@@ -1196,7 +1197,7 @@ int write_buf_to_file(unsigned char *buf, unsigned long size,
 		return 1;
 	}
 	if ((image = fopen(filename, "wb")) == NULL) {
-		perror(filename);
+		msg_gerr("Error: opening file \"%s\" failed: %s\n", filename, strerror(errno));
 		return 1;
 	}
 
