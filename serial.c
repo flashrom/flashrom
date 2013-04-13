@@ -39,7 +39,7 @@
 #include "flash.h"
 #include "programmer.h"
 
-fdtype sp_fd;
+fdtype sp_fd = SER_INV_FD;
 
 void __attribute__((noreturn)) sp_die(char *msg)
 {
@@ -189,7 +189,7 @@ fdtype sp_openserport(char *dev, unsigned int baud)
 		goto out_close;
 	}
 	const struct baudentry *entry = round_baud(baud);
-	dcb.BaudRate = entry->baud;
+	dcb.BaudRate = entry->flag;
 	dcb.ByteSize = 8;
 	dcb.Parity = NOPARITY;
 	dcb.StopBits = ONESTOPBIT;
