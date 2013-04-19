@@ -450,6 +450,7 @@
 /*
  * Programmable Micro Corp is listed in JEP106W in bank 2, so it should
  * have a 0x7F continuation code prefix.
+ * Apparently this name is owned by "Chingis Technology Corporation" http://www.chingistek.com.
  */
 #define PMC_ID			0x7F9D	/* PMC */
 #define PMC_ID_NOPREFIX		0x9D	/* PMC, missing 0x7F prefix */
@@ -460,7 +461,7 @@
 #define PMC_PM25LV512		0x7B	/* Same as Pm25LV512A */
 #define PMC_PM25LV010		0x7C	/* Same as Pm25LV010A, but the former does not support RDID but RES3 only. */
 #define PMC_PM25LV020		0x7D
-#define PMC_PM25LV040		0x7E
+#define PMC_PM25LV040		0x7E	/* Same as PM25LD040(C), but the latter supports more features. */
 #define PMC_PM25LV080B		0x13
 #define PMC_PM25LV016B		0x14
 #define PMC_PM29F002T		0x1D

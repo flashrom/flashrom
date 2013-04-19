@@ -262,6 +262,7 @@ int spi_prettyprint_status_register_default_bp1(struct flashctx *flash)
 
 /* Works for many chips of the
  * AMIC A25L series
+ * PMC Pm25LD series
  */
 int spi_prettyprint_status_register_default_bp2(struct flashctx *flash)
 {
