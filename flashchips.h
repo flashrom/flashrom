@@ -453,8 +453,12 @@
  */
 #define PMC_ID			0x7F9D	/* PMC */
 #define PMC_ID_NOPREFIX		0x9D	/* PMC, missing 0x7F prefix */
-#define PMC_PM25LV512		0x7B
-#define PMC_PM25LV010		0x7C
+#define PMC_PM25LD256C		0x2F
+#define PMC_PM25LD512		0x20	/* Same as Pm25LD512C, but the latter has more locking options. */
+#define PMC_PM25LD010		0x21	/* Same as Pm25LD010C, but the latter has more locking options. */
+#define PMC_PM25LD020		0x22	/* Same as Pm25LD020C, but the latter has more locking options. */
+#define PMC_PM25LV512		0x7B	/* Same as Pm25LV512A */
+#define PMC_PM25LV010		0x7C	/* Same as Pm25LV010A, but the former does not support RDID but RES3 only. */
 #define PMC_PM25LV020		0x7D
 #define PMC_PM25LV040		0x7E
 #define PMC_PM25LV080B		0x13
