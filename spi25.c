@@ -279,6 +279,26 @@ int probe_spi_res2(struct flashctx *flash)
 	return 1;
 }
 
+int probe_spi_res3(struct flashctx *flash)
+{
+	unsigned char readarr[3];
+	uint32_t id1, id2;
+
+	if (spi_res(flash, readarr, 3)) {
+		return 0;
+	}
+
+	id1 = (readarr[0] << 8) | readarr[1];
+	id2 = readarr[2];
+
+	msg_cdbg("%s: id1 0x%x, id2 0x%x\n", __func__, id1, id2);
+
+	if (id1 != flash->chip->manufacture_id || id2 != flash->chip->model_id)
+		return 0;
+
+	return 1;
+}
+
 /* Only used for some Atmel chips. */
 int probe_spi_at25f(struct flashctx *flash)
 {
