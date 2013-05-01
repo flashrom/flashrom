@@ -729,10 +729,16 @@ erasefunc_t *spi_get_erasefn_from_opcode(uint8_t opcode)
 		return NULL;
 	case 0x20:
 		return &spi_block_erase_20;
+	case 0x50:
+		return &spi_block_erase_50;
 	case 0x52:
 		return &spi_block_erase_52;
 	case 0x60:
 		return &spi_block_erase_60;
+	case 0x62:
+		return &spi_block_erase_62;
+	case 0x81:
+		return &spi_block_erase_81;
 	case 0xc7:
 		return &spi_block_erase_c7;
 	case 0xd7:
