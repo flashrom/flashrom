@@ -560,19 +560,22 @@ static int dediprog_command_b(void)
 }
 #endif
 
-/* Command C is only sent after dediprog_check_devicestring, but not after every
+/* Command Chip Select is only sent after dediprog_check_devicestring, but not after every
  * invocation of dediprog_check_devicestring. It is only sent after the first
  * dediprog_command_a(); dediprog_check_devicestring() sequence in each session.
- * I'm tempted to call this one start_SPI_engine or finish_init.
+ * Bit #1 of the value changes the chip select: 0 is target 1, 1 is target 2 and parameter target can be 1 or 2
+ * respectively. We don't know how to encode "3, Socket" and "0, reference card" yet. On SF100 the vendor
+ * software "DpCmd 6.0.4.06" selects target 2 when requesting 3 (which is unavailable on that hardware).
  */
-static int dediprog_command_c(void)
+static int dediprog_chip_select(int target)
 {
 	int ret;
-
-	ret = usb_control_msg(dediprog_handle, 0x42, 0x4, 0x0, 0x0, NULL,
+	uint16_t value = ((target - 1) & 1) << 1;
+	msg_pdbg("Selecting target chip %i\n", target);
+	ret = usb_control_msg(dediprog_handle, 0x42, 0x4, value, 0x0, NULL,
 			      0x0, DEFAULT_TIMEOUT);
 	if (ret != 0x0) {
-		msg_perr("Command C failed (%s)!\n", usb_strerror());
+		msg_perr("Command Chip Select failed (%s)!\n", usb_strerror());
 		return 1;
 	}
 	return 0;
@@ -722,7 +725,7 @@ static int parse_voltage(char *voltage)
 	return millivolt;
 }
 
-static int dediprog_setup(void)
+static int dediprog_setup(long target)
 {
 	/* URB 6. Command A. */
 	if (dediprog_command_a()) {
@@ -737,8 +740,8 @@ static int dediprog_setup(void)
 	if (dediprog_check_devicestring()) {
 		return 1;
 	}
-	/* URB 10. Command C. */
-	if (dediprog_command_c()) {
+	/* URB 10. Command Chip Select */
+	if (dediprog_chip_select(target)) {
 		return 1;
 	}
 	return 0;
@@ -785,10 +788,11 @@ static int dediprog_shutdown(void *data)
 int dediprog_init(void)
 {
 	struct usb_device *dev;
-	char *voltage, *device, *spispeed;
+	char *voltage, *device, *spispeed, *target_str;
 	int spispeed_idx = 2;
 	int millivolt = 3500;
 	long usedevice = 0;
+	long target = 1;
 	int i, ret;
 
 	msg_pspew("%s\n", __func__);
@@ -841,6 +845,30 @@ int dediprog_init(void)
 	}
 	free(device);
 
+	target_str = extract_programmer_param("target");
+	if (target_str) {
+		char *target_suffix;
+		errno = 0;
+		target = strtol(target_str, &target_suffix, 10);
+		if (errno != 0 || target_str == target_suffix) {
+			msg_perr("Error: Could not convert 'target'.\n");
+			free(target_str);
+			return 1;
+		}
+		if (target < 1 || target > 2) {
+			msg_perr("Error: Value for 'target' is out of range.\n");
+			free(target_str);
+			return 1;
+		}
+		if (strlen(target_suffix) > 0) {
+			msg_perr("Error: Garbage following 'target' value.\n");
+			free(target_str);
+			return 1;
+		}
+		msg_pinfo("Using target %li.\n", target);
+	}
+	free(target_str);
+
 	/* Here comes the USB stuff. */
 	usb_init();
 	usb_find_busses();
@@ -877,13 +905,13 @@ int dediprog_init(void)
 	dediprog_set_leds(PASS_ON|BUSY_ON|ERROR_ON);
 
 	/* Perform basic setup. */
-	if (dediprog_setup()) {
+	if (dediprog_setup(target)) {
 		dediprog_set_leds(PASS_OFF|BUSY_OFF|ERROR_ON);
 		return 1;
 	}
 
 	/* After setting voltage and speed, perform setup again. */
-	if (dediprog_set_spi_voltage(0) || dediprog_set_spi_speed(spispeed_idx) || dediprog_setup()) {
+	if (dediprog_set_spi_voltage(0) || dediprog_set_spi_speed(spispeed_idx) || dediprog_setup(target)) {
 		dediprog_set_leds(PASS_OFF|BUSY_OFF|ERROR_ON);
 		return 1;
 	}
