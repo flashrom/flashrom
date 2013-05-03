@@ -692,6 +692,18 @@ where
 can be
 .BR 375k ", " 750k ", " 1.5M ", " 2.18M ", " 3M ", " 8M ", " 12M " or " 24M
 (in Hz). The default is a frequency of 12 MHz.
+.sp
+An optional
+.B target
+parameter specifies which target chip should be used. Syntax is
+.sp
+.B "  flashrom \-p dediprog:target=value"
+.sp
+where
+.B value
+can be
+.BR 1 " or " 2
+to select target chip 1 or 2 repectively. The default is target chip 1.
 .SS
 .BR "rayer_spi " programmer
 The default I/O base address used for the parallel port is 0x378 and you can use
