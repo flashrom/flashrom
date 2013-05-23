@@ -184,12 +184,15 @@ static const struct dediprog_spispeeds spispeeds[] = {
  */
 static int dediprog_set_spi_speed(unsigned int spispeed_idx)
 {
-	int ret;
+	if (dediprog_firmwareversion < FIRMWARE_VERSION(5, 0, 0)) {
+		msg_pwarn("Skipping to set SPI speed because firmware is too old.\n");
+		return 0;
+	}
 
-	msg_pdbg("SPI speed is %sHz\n", spispeeds[spispeed_idx].name);
+	msg_pdbg("SPI speed is %s Hz\n", spispeeds[spispeed_idx].name);
 
-	ret = usb_control_msg(dediprog_handle, 0x42, 0x61, spispeeds[spispeed_idx].speed, 0xff,
-			      NULL, 0x0, DEFAULT_TIMEOUT);
+	int ret = usb_control_msg(dediprog_handle, 0x42, 0x61, spispeeds[spispeed_idx].speed, 0xff,
+				  NULL, 0x0, DEFAULT_TIMEOUT);
 	if (ret != 0x0) {
 		msg_perr("Command Set SPI Speed 0x%x failed!\n", spispeeds[spispeed_idx].speed);
 		return 1;
@@ -789,7 +792,7 @@ int dediprog_init(void)
 {
 	struct usb_device *dev;
 	char *voltage, *device, *spispeed, *target_str;
-	int spispeed_idx = 2;
+	int spispeed_idx = 1;
 	int millivolt = 3500;
 	long usedevice = 0;
 	long target = 1;
@@ -806,7 +809,7 @@ int dediprog_init(void)
 			}
 		}
 		if (!spispeeds[i].name) {
-			msg_perr("Error: Invalid 'spispeed' value.\n");
+			msg_perr("Error: Invalid spispeed value: '%s'.\n", spispeed);
 			free(spispeed);
 			return 1;
 		}
