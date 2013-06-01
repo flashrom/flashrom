@@ -1700,6 +1700,10 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 			/* Handle FREGx and FRAP registers */
 			for (i = 0; i < 5; i++)
 				ich_spi_rw_restricted |= ich9_handle_frap(tmp, i);
+			if (ich_spi_rw_restricted)
+				msg_pwarn("Not all flash regions are freely accessible by flashrom. This is "
+					  "most likely\ndue to an active ME. Please see http://flashrom.org/ME "
+					  "for details.\n");
 		}
 
 		/* Handle PR registers */
@@ -1711,11 +1715,6 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 		}
 
 		if (ich_spi_rw_restricted) {
-			msg_pinfo("Please send a verbose log to "
-				  "flashrom@flashrom.org if this board is not "
-				  "listed on\n"
-				  "http://flashrom.org/Supported_hardware#Supported_mainboards "
-				  "yet.\n");
 			if (!ich_spi_force)
 				programmer_may_write = 0;
 			msg_pinfo("Writes have been disabled for safety reasons. You can enforce write\n"
