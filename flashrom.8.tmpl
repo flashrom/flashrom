@@ -48,8 +48,8 @@ flashrom \- detect, read, write, verify and erase flash chips
 \fB\-p\fR <programmername>[:<parameters>]
                [\fB\-E\fR|\fB\-r\fR <file>|\fB\-w\fR <file>|\fB\-v\fR <file>] \
 [\fB\-c\fR <chipname>]
-               [\fB\-l\fR <file> [\fB\-i\fR <image>]] [\fB\-n\fR] [\fB\-N\fR] \
-[\fB\-f\fR]]
+               [(\fB\-l\fR <file>|\fB\-\-ifd\fR) [\fB\-i\fR <image>]] \
+[\fB\-n\fR] [\fB\-N\fR] [\fB\-f\fR]]
          [\fB\-V\fR[\fBV\fR[\fBV\fR]]] [\fB-o\fR <logfile>]
 .SH DESCRIPTION
 .B flashrom
@@ -194,6 +194,22 @@ To update only the images named
 .B "  flashrom \-p prog \-l rom.layout \-i normal -i fallback \-w some.rom"
 .sp
 Overlapping sections are not supported.
+.TP
+.B "\-\-ifd"
+Read ROM layout from Intel Firmware Descriptor.
+.sp
+flashrom supports ROM layouts given by an Intel Firmware Descriptor
+(IFD). The on-chip descriptor will be read and used to generate the
+layout. If you need to change the layout, you have to update the IFD
+only first.
+.sp
+The following ROM images may be present in an IFD:
+.sp
+  fd    the IFD itself
+  bios  the host firmware aka. BIOS
+  me    Intel Management Engine firmware
+  gbe   gigabit ethernet firmware
+  pd    platform specific data
 .TP
 .B "\-i, \-\-image <imagename>"
 Only flash region/image

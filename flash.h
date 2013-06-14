@@ -287,6 +287,8 @@ void list_programmers_linebreak(int startcol, int cols, int paren);
 int selfcheck(void);
 int read_buf_from_file(unsigned char *buf, unsigned long size, const char *filename);
 int write_buf_to_file(const unsigned char *buf, unsigned long size, const char *filename);
+int prepare_flash_access(struct flashctx *, bool read_it, bool write_it, bool erase_it, bool verify_it);
+void finalize_flash_access(struct flashctx *);
 int do_read(struct flashctx *, const char *filename);
 int do_erase(struct flashctx *);
 int do_write(struct flashctx *, const char *const filename);
@@ -354,7 +356,6 @@ __attribute__((format(printf, 2, 3)));
 
 /* layout.c */
 int register_include_arg(char *name);
-int process_include_args(void);
 int read_romlayout(const char *name);
 int normalize_romentries(const struct flashctx *flash);
 void layout_cleanup(void);

@@ -35,7 +35,7 @@ static struct flashrom_layout layout = { entries, 0 };
 static char *include_args[MAX_ROMLAYOUT];
 static int num_include_args = 0; /* the number of valid include_args. */
 
-const struct flashrom_layout *get_global_layout(void)
+struct flashrom_layout *get_global_layout(void)
 {
 	return &layout;
 }
@@ -132,17 +132,17 @@ int register_include_arg(char *name)
 }
 
 /* returns the index of the entry (or a negative value if it is not found) */
-static int find_romentry(char *name)
+static int find_romentry(struct flashrom_layout *const l, char *name)
 {
 	int i;
 
-	if (layout.num_entries == 0)
+	if (l->num_entries == 0)
 		return -1;
 
 	msg_gspew("Looking for region \"%s\"... ", name);
-	for (i = 0; i < layout.num_entries; i++) {
-		if (!strcmp(layout.entries[i].name, name)) {
-			layout.entries[i].included = 1;
+	for (i = 0; i < l->num_entries; i++) {
+		if (!strcmp(l->entries[i].name, name)) {
+			l->entries[i].included = 1;
 			msg_gspew("found.\n");
 			return i;
 		}
@@ -154,7 +154,7 @@ static int find_romentry(char *name)
 /* process -i arguments
  * returns 0 to indicate success, >0 to indicate failure
  */
-int process_include_args(void)
+int process_include_args(struct flashrom_layout *const l)
 {
 	int i;
 	unsigned int found = 0;
@@ -163,7 +163,7 @@ int process_include_args(void)
 		return 0;
 
 	/* User has specified an area, but no layout file is loaded. */
-	if (layout.num_entries == 0) {
+	if (l->num_entries == 0) {
 		msg_gerr("Region requested (with -i \"%s\"), "
 			 "but no layout data is available.\n",
 			 include_args[0]);
@@ -171,7 +171,7 @@ int process_include_args(void)
 	}
 
 	for (i = 0; i < num_include_args; i++) {
-		if (find_romentry(include_args[i]) < 0) {
+		if (find_romentry(l, include_args[i]) < 0) {
 			msg_gerr("Invalid region specified: \"%s\".\n",
 				 include_args[i]);
 			return 1;

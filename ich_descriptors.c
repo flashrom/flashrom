@@ -23,6 +23,7 @@
 
 #ifdef ICH_DESCRIPTORS_FROM_DUMP_ONLY
 #include <stdio.h>
+#include <string.h>
 #define print(t, ...) printf(__VA_ARGS__)
 #endif
 
@@ -38,7 +39,7 @@
 #include "programmer.h"
 
 #ifndef min
-#define min(a, b) (a < b) ? a : b
+#define min(a, b) (((a) < (b)) ? (a) : (b))
 #endif
 
 void prettyprint_ich_reg_vscc(uint32_t reg_val, int verbosity, bool print_vcl)
@@ -916,4 +917,42 @@ int read_ich_descriptors_via_fdo(void *spibar, struct ich_descriptors *desc)
 	msg_pdbg2(" done.\n");
 	return ICH_RET_OK;
 }
+
+/**
+ * @brief Read a layout from the dump of an Intel ICH descriptor.
+ *
+ * @param layout Pointer where to store the layout.
+ * @param dump   The descriptor dump to read from.
+ * @param len    The length of the descriptor dump.
+ *
+ * @return 0 on success,
+ *	   1 if the descriptor couldn't be parsed.
+ */
+int layout_from_ich_descriptors(struct ich_layout *const layout, const void *const dump, const size_t len)
+{
+	static const char *regions[] = { "fd", "bios", "me", "gbe", "pd" };
+
+	struct ich_descriptors desc;
+	if (read_ich_descriptors_from_dump(dump, len, &desc))
+		return 1;
+
+	memset(layout, 0x00, sizeof(*layout));
+
+	size_t i, j;
+	for (i = 0, j = 0; i < min(desc.content.NR + 1, ARRAY_SIZE(regions)); ++i) {
+		const chipoff_t base = ICH_FREG_BASE(desc.region.FLREGs[i]);
+		const chipoff_t limit = ICH_FREG_LIMIT(desc.region.FLREGs[i]) + 0xfff;
+		if (limit <= base)
+			continue;
+		layout->entries[j].start = base;
+		layout->entries[j].end = limit;
+		layout->entries[j].included = false;
+		snprintf(layout->entries[j].name, sizeof(layout->entries[j].name), "%s", regions[i]);
+		++j;
+	}
+	layout->base.entries = layout->entries;
+	layout->base.num_entries = j;
+	return 0;
+}
+
 #endif /* ICH_DESCRIPTORS_FROM_DUMP_ONLY */

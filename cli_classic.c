@@ -42,7 +42,7 @@ static void cli_classic_usage(const char *name)
 	       "-z|"
 #endif
 	       "-p <programmername>[:<parameters>] [-c <chipname>]\n"
-	       "[-E|(-r|-w|-v) <file>] [-l <layoutfile> [-i <imagename>]...] [-n] [-N] [-f]]\n"
+	       "[-E|(-r|-w|-v) <file>] [(-l <layoutfile>|--ifd) [-i <imagename>]...] [-n] [-N] [-f]]\n"
 	       "[-V[V[V]]] [-o <logfile>]\n\n", name);
 
 	printf(" -h | --help                        print this help text\n"
@@ -57,6 +57,7 @@ static void cli_classic_usage(const char *name)
 	       " -n | --noverify                    don't auto-verify\n"
 	       " -N | --noverify-all                verify included regions only (cf. -i)\n"
 	       " -l | --layout <layoutfile>         read ROM layout from <layoutfile>\n"
+	       "      --ifd                         read layout from an Intel Firmware Descriptor\n"
 	       " -i | --image <name>                only flash image <name> from flash layout\n"
 	       " -o | --output <logfile>            log output to <logfile>\n"
 	       " -L | --list-supported              print supported devices\n"
@@ -99,12 +100,13 @@ int main(int argc, char *argv[])
 	struct flashctx *fill_flash;
 	const char *name;
 	int namelen, opt, i, j;
-	int startchip = -1, chipcount = 0, option_index = 0, force = 0;
+	int startchip = -1, chipcount = 0, option_index = 0, force = 0, ifd = 0;
 #if CONFIG_PRINT_WIKI == 1
 	int list_supported_wiki = 0;
 #endif
 	int read_it = 0, write_it = 0, erase_it = 0, verify_it = 0;
 	int dont_verify_it = 0, dont_verify_all = 0, list_supported = 0, operation_specified = 0;
+	struct flashrom_layout *layout = NULL;
 	enum programmer prog = PROGRAMMER_INVALID;
 	int ret = 0;
 
@@ -120,6 +122,7 @@ int main(int argc, char *argv[])
 		{"verbose",		0, NULL, 'V'},
 		{"force",		0, NULL, 'f'},
 		{"layout",		1, NULL, 'l'},
+		{"ifd",			0, NULL, 0x0100},
 		{"image",		1, NULL, 'i'},
 		{"list-supported",	0, NULL, 'L'},
 		{"list-supported-wiki",	0, NULL, 'z'},
@@ -220,7 +223,18 @@ int main(int argc, char *argv[])
 					"more than once. Aborting.\n");
 				cli_classic_abort_usage();
 			}
+			if (ifd) {
+				fprintf(stderr, "Error: --layout and --ifd both specified. Aborting.\n");
+				cli_classic_abort_usage();
+			}
 			layoutfile = strdup(optarg);
+			break;
+		case 0x0100:
+			if (layoutfile) {
+				fprintf(stderr, "Error: --layout and --ifd both specified. Aborting.\n");
+				cli_classic_abort_usage();
+			}
+			ifd = 1;
 			break;
 		case 'i':
 			tempstr = strdup(optarg);
@@ -376,7 +390,7 @@ int main(int argc, char *argv[])
 		ret = 1;
 		goto out;
 	}
-	if (process_include_args()) {
+	if (!ifd && process_include_args(get_global_layout())) {
 		ret = 1;
 		goto out;
 	}
@@ -529,9 +543,15 @@ int main(int argc, char *argv[])
 		goto out_shutdown;
 	}
 
-	if (layoutfile)
-		flashrom_layout_set(fill_flash, get_global_layout());
+	if (layoutfile) {
+		layout = get_global_layout();
+	} else if (ifd && (flashrom_layout_read_from_ifd(&layout, fill_flash, NULL, 0) ||
+			   process_include_args(layout))) {
+		ret = 1;
+		goto out_shutdown;
+	}
 
+	flashrom_layout_set(fill_flash, layout);
 	flashrom_flag_set(fill_flash, FLASHROM_FLAG_FORCE, !!force);
 	flashrom_flag_set(fill_flash, FLASHROM_FLAG_FORCE_BOARDMISMATCH, !!force_boardmismatch);
 	flashrom_flag_set(fill_flash, FLASHROM_FLAG_VERIFY_AFTER_WRITE, !dont_verify_it);
@@ -550,6 +570,8 @@ int main(int argc, char *argv[])
 		ret = do_write(fill_flash, filename);
 	else if (verify_it)
 		ret = do_verify(fill_flash, filename);
+
+	flashrom_layout_release(layout);
 
 out_shutdown:
 	programmer_shutdown();

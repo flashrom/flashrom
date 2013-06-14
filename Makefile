@@ -519,7 +519,7 @@ CHIP_OBJS = jedec.o stm50.o w39.o w29ee011.o \
 ###############################################################################
 # Library code.
 
-LIB_OBJS = libflashrom.o layout.o flashrom.o udelay.o programmer.o helpers.o
+LIB_OBJS = libflashrom.o layout.o flashrom.o udelay.o programmer.o helpers.o ich_descriptors.o
 
 ###############################################################################
 # Frontend related stuff.
@@ -731,7 +731,7 @@ FEATURE_CFLAGS += -D'CONFIG_INTERNAL=1'
 PROGRAMMER_OBJS += processor_enable.o chipset_enable.o board_enable.o cbtable.o internal.o
 ifeq ($(ARCH), x86)
 PROGRAMMER_OBJS += it87spi.o it85spi.o sb600spi.o amd_imc.o wbsio_spi.o mcp6x_spi.o
-PROGRAMMER_OBJS += ichspi.o ich_descriptors.o dmi.o
+PROGRAMMER_OBJS += ichspi.o dmi.o
 ifeq ($(CONFIG_INTERNAL_DMI), yes)
 FEATURE_CFLAGS += -D'CONFIG_INTERNAL_DMI=1'
 endif
