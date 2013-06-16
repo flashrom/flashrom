@@ -24,6 +24,7 @@
 #ifndef __FLASH_H__
 #define __FLASH_H__ 1
 
+#include <inttypes.h>
 #include <stdint.h>
 #include <stddef.h>
 #ifdef _WIN32

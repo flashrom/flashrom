@@ -211,7 +211,7 @@ int sb600_probe_spi(struct pci_dev *dev)
 	uint32_t tmp;
 	uint8_t reg;
 	static const char *const speed_names[4] = {
-		"Reserved", "33", "22", "16.5"
+		"66/reserved", "33", "22", "16.5"
 	};
 
 	/* Read SPI_BaseAddr */
@@ -250,9 +250,10 @@ int sb600_probe_spi(struct pci_dev *dev)
 	 * SB700 or later, reads and writes will be corrupted. Abort in this
 	 * case. Make sure to avoid this check on SB600.
 	 */
-	msg_pdbg("SpiArbEnable=%i, SpiAccessMacRomEn=%i, "
+	msg_pdbg("(0x%08" PRIx32 ") fastReadEnable=%u, SpiArbEnable=%i, SpiAccessMacRomEn=%i, "
 		     "SpiHostAccessRomEn=%i, ArbWaitCount=%i, "
 		     "SpiBridgeDisable=%i, DropOneClkOnRd=%i\n",
+		     tmp, (tmp >> 18) & 0x1,
 		     (tmp >> 19) & 0x1, (tmp >> 22) & 0x1,
 		     (tmp >> 23) & 0x1, (tmp >> 24) & 0x7,
 		     (tmp >> 27) & 0x1, (tmp >> 28) & 0x1);
