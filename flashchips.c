@@ -1353,7 +1353,7 @@ const struct flashchip flashchips[] = {
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at25df,
-		.unlock		= spi_disable_blockprotect_at25df,
+		.unlock		= spi_disable_blockprotect_at2x_global_unprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
 		.voltage	= {2700, 3600}, /* 2.3-3.6V & 2.7-3.6V models available */
@@ -1391,7 +1391,7 @@ const struct flashchip flashchips[] = {
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at25df,
-		.unlock		= spi_disable_blockprotect_at25df,
+		.unlock		= spi_disable_blockprotect_at2x_global_unprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
 		.voltage	= {2700, 3600}, /* 2.3-3.6V & 2.7-3.6V models available */
@@ -1429,7 +1429,7 @@ const struct flashchip flashchips[] = {
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at25df,
-		.unlock		= spi_disable_blockprotect_at25df,
+		.unlock		= spi_disable_blockprotect_at2x_global_unprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
 		.voltage	= {1600, 2000}, /* Datasheet says range is 1.65-1.95 V */
@@ -1467,7 +1467,7 @@ const struct flashchip flashchips[] = {
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at25df_sec,
-		.unlock		= spi_disable_blockprotect_at25df_sec,
+		.unlock		= spi_disable_blockprotect_at2x_global_unprotect_sec,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
 		.voltage	= {2700, 3600},
@@ -1505,7 +1505,7 @@ const struct flashchip flashchips[] = {
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at25df_sec,
-		.unlock		= spi_disable_blockprotect_at25df_sec,
+		.unlock		= spi_disable_blockprotect_at2x_global_unprotect_sec,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
 		.voltage	= {2700, 3600},
@@ -1543,7 +1543,7 @@ const struct flashchip flashchips[] = {
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at25df,
-		.unlock		= spi_disable_blockprotect_at25df,
+		.unlock		= spi_disable_blockprotect_at2x_global_unprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
 		.voltage	= {2700, 3600},
@@ -1582,7 +1582,7 @@ const struct flashchip flashchips[] = {
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at25df_sec,
-		.unlock		= spi_disable_blockprotect_at25df_sec,
+		.unlock		= spi_disable_blockprotect_at2x_global_unprotect_sec,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
 		.voltage	= {2700, 3600},
@@ -1620,7 +1620,7 @@ const struct flashchip flashchips[] = {
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at25df_sec,
-		.unlock		= spi_disable_blockprotect_at25df_sec,
+		.unlock		= spi_disable_blockprotect_at2x_global_unprotect_sec,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
 		.voltage	= {2700, 3600},
@@ -1659,7 +1659,7 @@ const struct flashchip flashchips[] = {
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at25df_sec,
-		.unlock		= spi_disable_blockprotect_at25df_sec,
+		.unlock		= spi_disable_blockprotect_at2x_global_unprotect_sec,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
 		.voltage	= {2700, 3600},
@@ -1959,7 +1959,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_20,
 			}
 		},
-		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
+		.printlock	= spi_prettyprint_status_register_plain,
 		/* Supports also an incompatible page write (of exactly 256 B) and an auto-erasing write. */
 		.write		= spi_chip_write_1,
 		.read		= spi_chip_read, /* Fast read (0x0B) supported */
@@ -1998,7 +1998,7 @@ const struct flashchip flashchips[] = {
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at26df081a,
-		.unlock		= spi_disable_blockprotect_at25df,
+		.unlock		= spi_disable_blockprotect_at2x_global_unprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
 		.voltage	= {2700, 3600},
@@ -2036,7 +2036,7 @@ const struct flashchip flashchips[] = {
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at25df,
-		.unlock		= spi_disable_blockprotect,
+		.unlock		= spi_disable_blockprotect_at2x_global_unprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
 		.voltage	= {2700, 3600},
@@ -2051,7 +2051,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 2048,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
-		.tested		= TEST_UNTESTED,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
@@ -2074,7 +2074,7 @@ const struct flashchip flashchips[] = {
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at26df081a,
-		.unlock		= spi_disable_blockprotect,
+		.unlock		= spi_disable_blockprotect_at2x_global_unprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
 		.voltage	= {2700, 3600},
