@@ -126,11 +126,24 @@ uint8_t spi_read_status_register(struct flashctx *flash)
 /* A generic block protection disable.
  * Tests if a protection is enabled with the block protection mask (bp_mask) and returns success otherwise.
  * Tests if the register bits are locked with the lock_mask (lock_mask).
- * Tests if a hardware protection is active (i.e. low) with the write protection mask (wp_mask) and bails out
- * in that case.
- * Finally tries to disable engaged protections and checks if any locks are still set.
+ * Tests if a hardware protection is active (i.e. low pin/high bit value) with the write protection mask
+ * (wp_mask) and bails out in that case.
+ * If there are register lock bits set we try to disable them by unsetting those bits of the previous register
+ * contents that are set in the lock_mask. We then check if removing the lock bits has worked and continue as if
+ * they never had been engaged:
+ * If the lock bits are out of the way try to disable engaged protections.
+ * To support uncommon global unprotects (e.g. on most AT2[56]xx1(A)) unprotect_mask can be used to force
+ * bits to 0 additionally to those set in bp_mask and lock_mask. Only bits set in unprotect_mask are potentially
+ * preserved when doing the final unprotect.
+ *
+ * To sum up:
+ * bp_mask: set those bits that correspond to the bits in the status register that indicate an active protection
+ *          (which should be unset after this function returns).
+ * lock_mask: set the bits that correspond to the bits that lock changing the bits above.
+ * wp_mask: set the bits that correspond to bits indicating non-software revocable protections.
+ * unprotect_mask: set the bits that should be preserved if possible when unprotecting.
  */
-static int spi_disable_blockprotect_generic(struct flashctx *flash, uint8_t bp_mask, uint8_t lock_mask, uint8_t wp_mask)
+static int spi_disable_blockprotect_generic(struct flashctx *flash, uint8_t bp_mask, uint8_t lock_mask, uint8_t wp_mask, uint8_t unprotect_mask)
 {
 	uint8_t status;
 	int result;
@@ -154,10 +167,15 @@ static int spi_disable_blockprotect_generic(struct flashctx *flash, uint8_t bp_m
 			msg_cerr("spi_write_status_register failed.\n");
 			return result;
 		}
+		status = spi_read_status_register(flash);
+		if ((status & lock_mask) != 0) {
+			msg_cerr("Unsetting lock bit(s) failed.\n");
+			return 1;
+		}
 		msg_cdbg("done.\n");
 	}
 	/* Global unprotect. Make sure to mask the register lock bit as well. */
-	result = spi_write_status_register(flash, status & ~(bp_mask | lock_mask));
+	result = spi_write_status_register(flash, status & ~(bp_mask | lock_mask) & unprotect_mask);
 	if (result) {
 		msg_cerr("spi_write_status_register failed.\n");
 		return result;
@@ -165,6 +183,7 @@ static int spi_disable_blockprotect_generic(struct flashctx *flash, uint8_t bp_m
 	status = spi_read_status_register(flash);
 	if ((status & bp_mask) != 0) {
 		msg_cerr("Block protection could not be disabled!\n");
+		flash->chip->printlock(flash);
 		return 1;
 	}
 	msg_cdbg("disabled.\n");
@@ -174,7 +193,7 @@ static int spi_disable_blockprotect_generic(struct flashctx *flash, uint8_t bp_m
 /* A common block protection disable that tries to unset the status register bits masked by 0x3C. */
 int spi_disable_blockprotect(struct flashctx *flash)
 {
-	return spi_disable_blockprotect_generic(flash, 0x3C, 0, 0);
+	return spi_disable_blockprotect_generic(flash, 0x3C, 0, 0, 0xFF);
 }
 
 
@@ -488,49 +507,51 @@ int spi_prettyprint_status_register_at26df081a(struct flashctx *flash)
 	return 0;
 }
 
-int spi_disable_blockprotect_at25df(struct flashctx *flash)
+/* Some Atmel DataFlash chips support per sector protection bits and the write protection bits in the status
+ * register do indicate if none, some or all sectors are protected. It is possible to globally (un)lock all
+ * sectors at once by writing 0 not only the protection bits (2 and 3) but also completely unrelated bits (4 and
+ * 5) which normally are not touched.
+ * Affected are all known Atmel chips matched by AT2[56]D[FLQ]..1A? but the AT26DF041. */
+int spi_disable_blockprotect_at2x_global_unprotect(struct flashctx *flash)
 {
-	return spi_disable_blockprotect_generic(flash, 0x0C, 1 << 7, 1 << 4);
+	return spi_disable_blockprotect_generic(flash, 0x0C, 1 << 7, 1 << 4, 0x00);
 }
 
-int spi_disable_blockprotect_at25df_sec(struct flashctx *flash)
+int spi_disable_blockprotect_at2x_global_unprotect_sec(struct flashctx *flash)
 {
 	/* FIXME: We should check the security lockdown. */
 	msg_cinfo("Ignoring security lockdown (if present)\n");
-	return spi_disable_blockprotect_at25df(flash);
+	return spi_disable_blockprotect_at2x_global_unprotect(flash);
 }
 
 int spi_disable_blockprotect_at25f(struct flashctx *flash)
 {
-	return spi_disable_blockprotect_generic(flash, 0x0C, 1 << 7, 0);
+	return spi_disable_blockprotect_generic(flash, 0x0C, 1 << 7, 0, 0xFF);
 }
 
 int spi_disable_blockprotect_at25f512a(struct flashctx *flash)
 {
-	return spi_disable_blockprotect_generic(flash, 0x04, 1 << 7, 0);
+	return spi_disable_blockprotect_generic(flash, 0x04, 1 << 7, 0, 0xFF);
 }
 
 int spi_disable_blockprotect_at25f512b(struct flashctx *flash)
 {
-	/* spi_disable_blockprotect_at25df is not really the right way to do
-	 * this, but the side effects of said function work here as well.
-	 */
-	return spi_disable_blockprotect_at25df(flash);
+	return spi_disable_blockprotect_generic(flash, 0x04, 1 << 7, 1 << 4, 0xFF);
 }
 
 int spi_disable_blockprotect_at25f4096(struct flashctx *flash)
 {
-	return spi_disable_blockprotect_generic(flash, 0x1C, 1 << 7, 0);
+	return spi_disable_blockprotect_generic(flash, 0x1C, 1 << 7, 0, 0xFF);
 }
 
 int spi_disable_blockprotect_at25fs010(struct flashctx *flash)
 {
-	return spi_disable_blockprotect_generic(flash, 0x6C, 1 << 7, 0);
+	return spi_disable_blockprotect_generic(flash, 0x6C, 1 << 7, 0, 0xFF);
  }
 
 int spi_disable_blockprotect_at25fs040(struct flashctx *flash)
 {
-	return spi_disable_blockprotect_generic(flash, 0x7C, 1 << 7, 0);
+	return spi_disable_blockprotect_generic(flash, 0x7C, 1 << 7, 0, 0xFF);
 }
 
 /* === Intel === */
@@ -538,7 +559,7 @@ int spi_disable_blockprotect_at25fs040(struct flashctx *flash)
 /* TODO: Clear P_FAIL and E_FAIL with Clear SR Fail Flags Command (30h) here? */
 int spi_disable_blockprotect_s33(struct flashctx *flash)
 {
-	return spi_disable_blockprotect_generic(flash, 0x1C, 1 << 7, 0);
+	return spi_disable_blockprotect_generic(flash, 0x1C, 1 << 7, 0, 0xFF);
 }
 
 int spi_prettyprint_status_register_s33(struct flashctx *flash)
