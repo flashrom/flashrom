@@ -130,13 +130,15 @@
 #define ATMEL_ID		0x1F	/* Atmel */
 #define ATMEL_AT25DF021		0x4300
 #define ATMEL_AT25DF041A	0x4401
-#define ATMEL_AT25DF081		0x4502
+#define ATMEL_AT25DF081		0x4502	/* EDI 0x00. AT25DL081 has same ID + EDI 0x0100 */
 #define ATMEL_AT25DF081A	0x4501	/* Yes, 81A has a lower number than 81 */
 #define ATMEL_AT25DF161		0x4602
 #define ATMEL_AT25DF321		0x4700	/* Same as 26DF321 */
 #define ATMEL_AT25DF321A	0x4701
 #define ATMEL_AT25DF641		0x4800
-#define ATMEL_AT25DQ161		0x8600
+#define ATMEL_AT25DL161		0x4603	/* EDI 0x0100 */
+#define ATMEL_AT25DQ161		0x8600	/* EDI 0x0100 */
+#define ATMEL_AT25DQ321		0x8700	/* EDI 0x0100 */
 #define ATMEL_AT25F512		0x65	/* guessed, no device ID in datasheet. Needs AT25F_RDID */
 #define ATMEL_AT25F512A		0x65	/* Needs AT25F_RDID */
 #define ATMEL_AT25F512B		0x6500
