@@ -1310,6 +1310,7 @@ static int selfcheck_eraseblocks(const struct flashchip *chip)
 	return ret;
 }
 
+static bool all_skipped = true;
 static int erase_and_write_block_helper(struct flashctx *flash,
 					unsigned int start, unsigned int len,
 					uint8_t *curcontents,
@@ -1357,6 +1358,8 @@ static int erase_and_write_block_helper(struct flashctx *flash,
 	}
 	if (skip)
 		msg_cdbg("S");
+	else
+		all_skipped = false;
 	return ret;
 }
 
@@ -1483,6 +1486,8 @@ int erase_and_write_flash(struct flashctx *flash, uint8_t *oldcontents,
 	if (ret) {
 		msg_cerr("FAILED!\n");
 	} else {
+		if (all_skipped)
+			msg_cinfo("\nWarning: Chip content is identical to the requested image.\n");
 		msg_cinfo("Erase/write done.\n");
 	}
 	return ret;
