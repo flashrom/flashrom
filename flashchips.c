@@ -6699,6 +6699,141 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Numonyx",
+		.name		= "M45PE10",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= ST_ID,
+		.model_id	= ST_M45PE10,
+		.total_size	= 128,
+		.page_size	= 256,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	= {
+			{
+				.eraseblocks = { {256, 512} },
+				.block_erase = spi_block_erase_db,
+			}, {
+				.eraseblocks = { {64 * 1024, 2} },
+				.block_erase = spi_block_erase_d8,
+			}
+		},
+		.printlock	= spi_prettyprint_status_register_default_welwip,
+		.unlock		= NULL, /* #WP pin write-protects lower 64kB. */
+		.write		= spi_chip_write_256, /* Page write (similar to PP but allows 0->1 changes) */
+		.read		= spi_chip_read, /* Fast read (0x0B) supported */
+		.voltage	= {2700, 3600},
+	},
+
+	{
+		.vendor		= "Numonyx",
+		.name		= "M45PE20",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= ST_ID,
+		.model_id	= ST_M45PE20,
+		.total_size	= 256,
+		.page_size	= 256,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	= {
+			{
+				.eraseblocks = { {256, 1024} },
+				.block_erase = spi_block_erase_db,
+			}, {
+				.eraseblocks = { {64 * 1024, 4} },
+				.block_erase = spi_block_erase_d8,
+			}
+		},
+		.printlock	= spi_prettyprint_status_register_default_welwip,
+		.unlock		= NULL, /* #WP pin write-protects lower 64kB. */
+		.write		= spi_chip_write_256, /* Page write (similar to PP but allows 0->1 changes) */
+		.read		= spi_chip_read, /* Fast read (0x0B) supported */
+		.voltage	= {2700, 3600},
+	},
+
+	{
+		.vendor		= "Numonyx",
+		.name		= "M45PE40",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= ST_ID,
+		.model_id	= ST_M45PE40,
+		.total_size	= 512,
+		.page_size	= 256,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	= {
+			{
+				.eraseblocks = { {256, 2048} },
+				.block_erase = spi_block_erase_db,
+			}, {
+				.eraseblocks = { {64 * 1024, 8} },
+				.block_erase = spi_block_erase_d8,
+			}
+		},
+		.printlock	= spi_prettyprint_status_register_default_welwip,
+		.unlock		= NULL, /* #WP pin write-protects lower 64kB. */
+		.write		= spi_chip_write_256, /* Page write (similar to PP but allows 0->1 changes) */
+		.read		= spi_chip_read, /* Fast read (0x0B) supported */
+		.voltage	= {2700, 3600},
+	},
+
+	{
+		.vendor		= "Numonyx",
+		.name		= "M45PE80",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= ST_ID,
+		.model_id	= ST_M45PE80,
+		.total_size	= 1024,
+		.page_size	= 256,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	= {
+			{
+				.eraseblocks = { {256, 4096} },
+				.block_erase = spi_block_erase_db,
+			}, {
+				.eraseblocks = { {64 * 1024, 16} },
+				.block_erase = spi_block_erase_d8,
+			}
+		},
+		.printlock	= spi_prettyprint_status_register_default_welwip,
+		.unlock		= NULL, /* #WP pin write-protects lower 64kB. */
+		.write		= spi_chip_write_256, /* Page write (similar to PP but allows 0->1 changes) */
+		.read		= spi_chip_read, /* Fast read (0x0B) supported */
+		.voltage	= {2700, 3600},
+	},
+
+	{
+		.vendor		= "Numonyx",
+		.name		= "M45PE16",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= ST_ID,
+		.model_id	= ST_M45PE16,
+		.total_size	= 2048,
+		.page_size	= 256,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	= {
+			{
+				.eraseblocks = { {256, 8192} },
+				.block_erase = spi_block_erase_db,
+			}, {
+				.eraseblocks = { {64 * 1024, 32} },
+				.block_erase = spi_block_erase_d8,
+			}
+		},
+		.printlock	= spi_prettyprint_status_register_default_welwip,
+		.unlock		= NULL, /* #WP pin write-protects lower 64kB. */
+		.write		= spi_chip_write_256, /* Page write (similar to PP but allows 0->1 changes) */
+		.read		= spi_chip_read, /* Fast read (0x0B) supported */
+		.voltage	= {2700, 3600},
+	},
+
+	{
+		.vendor		= "Numonyx",
 		.name		= "N25Q016",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
