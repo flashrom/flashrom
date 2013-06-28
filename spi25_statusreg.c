@@ -196,6 +196,27 @@ int spi_disable_blockprotect(struct flashctx *flash)
 	return spi_disable_blockprotect_generic(flash, 0x3C, 0, 0, 0xFF);
 }
 
+/* A common block protection disable that tries to unset the status register bits masked by 0x1C (BP0-2) and
+ * protected/locked by bit #7. Useful when bit #5 is neither a protection bit nor reserved (and hence possibly
+ * non-0). */
+int spi_disable_blockprotect_bp2_srwd(struct flashctx *flash)
+{
+	return spi_disable_blockprotect_generic(flash, 0x1C, 1 << 7, 0, 0xFF);
+}
+
+/* A common block protection disable that tries to unset the status register bits masked by 0x3C (BP0-3) and
+ * protected/locked by bit #7. */
+int spi_disable_blockprotect_bp3_srwd(struct flashctx *flash)
+{
+	return spi_disable_blockprotect_generic(flash, 0x3C, 1 << 7, 0, 0xFF);
+}
+
+/* A common block protection disable that tries to unset the status register bits masked by 0x7C (BP0-4) and
+ * protected/locked by bit #7. */
+int spi_disable_blockprotect_bp4_srwd(struct flashctx *flash)
+{
+	return spi_disable_blockprotect_generic(flash, 0x7C, 1 << 7, 0, 0xFF);
+}
 
 static void spi_prettyprint_status_register_hex(uint8_t status)
 {
@@ -261,6 +282,16 @@ int spi_prettyprint_status_register_plain(struct flashctx *flash)
 	return 0;
 }
 
+/* Print the plain hex value and the welwip bits only. */
+int spi_prettyprint_status_register_default_welwip(struct flashctx *flash)
+{
+	uint8_t status = spi_read_status_register(flash);
+	spi_prettyprint_status_register_hex(status);
+
+	spi_prettyprint_status_register_welwip(status);
+	return 0;
+}
+
 /* Works for many chips of the
  * AMIC A25L series
  * and MX MX25L512
@@ -308,6 +339,17 @@ int spi_prettyprint_status_register_default_bp3(struct flashctx *flash)
 	spi_prettyprint_status_register_srwd(status);
 	spi_prettyprint_status_register_bit(status, 6);
 	spi_prettyprint_status_register_bp(status, 3);
+	spi_prettyprint_status_register_welwip(status);
+	return 0;
+}
+
+int spi_prettyprint_status_register_default_bp4(struct flashctx *flash)
+{
+	uint8_t status = spi_read_status_register(flash);
+	spi_prettyprint_status_register_hex(status);
+
+	spi_prettyprint_status_register_srwd(status);
+	spi_prettyprint_status_register_bp(status, 4);
 	spi_prettyprint_status_register_welwip(status);
 	return 0;
 }
@@ -539,11 +581,6 @@ int spi_disable_blockprotect_at25f512b(struct flashctx *flash)
 	return spi_disable_blockprotect_generic(flash, 0x04, 1 << 7, 1 << 4, 0xFF);
 }
 
-int spi_disable_blockprotect_at25f4096(struct flashctx *flash)
-{
-	return spi_disable_blockprotect_generic(flash, 0x1C, 1 << 7, 0, 0xFF);
-}
-
 int spi_disable_blockprotect_at25fs010(struct flashctx *flash)
 {
 	return spi_disable_blockprotect_generic(flash, 0x6C, 1 << 7, 0, 0xFF);
@@ -559,7 +596,7 @@ int spi_disable_blockprotect_at25fs040(struct flashctx *flash)
 /* TODO: Clear P_FAIL and E_FAIL with Clear SR Fail Flags Command (30h) here? */
 int spi_disable_blockprotect_s33(struct flashctx *flash)
 {
-	return spi_disable_blockprotect_generic(flash, 0x1C, 1 << 7, 0, 0xFF);
+	return spi_disable_blockprotect_bp2_srwd(flash);
 }
 
 int spi_prettyprint_status_register_s33(struct flashctx *flash)
