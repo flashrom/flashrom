@@ -591,6 +591,20 @@ int spi_disable_blockprotect_at25fs040(struct flashctx *flash)
 	return spi_disable_blockprotect_generic(flash, 0x7C, 1 << 7, 0, 0xFF);
 }
 
+/* === Eon === */
+
+int spi_prettyprint_status_register_en25s_wp(struct flashctx *flash)
+{
+	uint8_t status = spi_read_status_register(flash);
+	spi_prettyprint_status_register_hex(status);
+
+	spi_prettyprint_status_register_srwd(status);
+	msg_cdbg("Chip status register: WP# disable (WPDIS) is %sabled\n", (status & (1 << 6)) ? "en " : "dis");
+	spi_prettyprint_status_register_bp(status, 3);
+	spi_prettyprint_status_register_welwip(status);
+	return 0;
+}
+
 /* === Intel === */
 
 /* TODO: Clear P_FAIL and E_FAIL with Clear SR Fail Flags Command (30h) here? */

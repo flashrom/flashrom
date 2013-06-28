@@ -90,6 +90,7 @@ int spi_disable_blockprotect_at25f512a(struct flashctx *flash);
 int spi_disable_blockprotect_at25f512b(struct flashctx *flash);
 int spi_disable_blockprotect_at25fs010(struct flashctx *flash);
 int spi_disable_blockprotect_at25fs040(struct flashctx *flash);
+int spi_prettyprint_status_register_en25s_wp(struct flashctx *flash);
 int spi_prettyprint_status_register_s33(struct flashctx *flash);
 int spi_disable_blockprotect_s33(struct flashctx *flash);
 int spi_prettyprint_status_register_sst25(struct flashctx *flash);
