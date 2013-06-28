@@ -5159,8 +5159,8 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.printlock	= spi_prettyprint_status_register_s33,
-		.unlock		= spi_disable_blockprotect_s33,
+		.printlock	= spi_prettyprint_status_register_bp2_ep_srwd,
+		.unlock		= spi_disable_blockprotect_bp2_ep_srwd,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,	/* also fast read 0x0B */
 		.voltage	= {2700, 3600},
@@ -5198,8 +5198,8 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.printlock	= spi_prettyprint_status_register_s33,
-		.unlock		= spi_disable_blockprotect_s33,
+		.printlock	= spi_prettyprint_status_register_bp2_ep_srwd,
+		.unlock		= spi_disable_blockprotect_bp2_ep_srwd,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,	/* also fast read 0x0B */
 		.voltage	= {2700, 3600},
@@ -5237,8 +5237,8 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.printlock	= spi_prettyprint_status_register_s33,
-		.unlock		= spi_disable_blockprotect_s33,
+		.printlock	= spi_prettyprint_status_register_bp2_ep_srwd,
+		.unlock		= spi_disable_blockprotect_bp2_ep_srwd,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,	/* also fast read 0x0B */
 		.voltage	= {2700, 3600},
@@ -5276,8 +5276,8 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.printlock	= spi_prettyprint_status_register_s33,
-		.unlock		= spi_disable_blockprotect_s33,
+		.printlock	= spi_prettyprint_status_register_bp2_ep_srwd,
+		.unlock		= spi_disable_blockprotect_bp2_ep_srwd,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,	/* also fast read 0x0B */
 		.voltage	= {2700, 3600},
@@ -5315,8 +5315,8 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.printlock	= spi_prettyprint_status_register_s33,
-		.unlock		= spi_disable_blockprotect_s33,
+		.printlock	= spi_prettyprint_status_register_bp2_ep_srwd,
+		.unlock		= spi_disable_blockprotect_bp2_ep_srwd,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,	/* also fast read 0x0B */
 		.voltage	= {2700, 3600},
@@ -5354,8 +5354,8 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.printlock	= spi_prettyprint_status_register_s33,
-		.unlock		= spi_disable_blockprotect_s33,
+		.printlock	= spi_prettyprint_status_register_bp2_ep_srwd,
+		.unlock		= spi_disable_blockprotect_bp2_ep_srwd,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,	/* also fast read 0x0B */
 		.voltage	= {2700, 3600},
@@ -8583,6 +8583,112 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect_bp3_srwd,  /* #WP pin write-protects SRWP bit. */
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read, /* Fast read (0x0B), dual I/O  (0x3B) supported */
+		.voltage	= {2700, 3600},
+	},
+
+	{
+		.vendor		= "Spansion",
+		.name		= "S25FL128S......0", /* uniform 256kB sectors */
+		.bustype	= BUS_SPI,
+		.manufacture_id	= SPANSION_ID,
+		.model_id	= SPANSION_S25FL128,
+		.total_size	= 16384,
+		.page_size	= 256,
+		/* supports 4B addressing */
+		/* OTP: 1024B total, 32B reserved; read 0x4B; write 0x42 */
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	= {
+			{
+				.eraseblocks = { {4 * 1024, 4096} },
+				.block_erase = spi_block_erase_20,
+			}, {
+				.eraseblocks = { {256 * 1024, 64} },
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { { 16384 * 1024, 1} },
+				.block_erase = spi_block_erase_60,
+			}, {
+				.eraseblocks = { { 16384 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
+		},
+		.printlock	= spi_prettyprint_status_register_bp2_ep_srwd, /* TODO: SR2 and many others */
+		.unlock		= spi_disable_blockprotect_bp2_srwd, /* TODO: various other locks */
+		.write		= spi_chip_write_256, /* Multi I/O supported */
+		.read		= spi_chip_read, /* Fast read (0x0B) and multi I/O supported */
+		.voltage	= {2700, 3600},
+	},
+
+	{
+		.vendor		= "Spansion",
+		.name		= "S25FL256S......0", /* uniform 256kB sectors */
+		.bustype	= BUS_SPI,
+		.manufacture_id	= SPANSION_ID,
+		.model_id	= SPANSION_S25FL256,
+		.total_size	= 32768,
+		.page_size	= 256,
+		/* supports 4B addressing */
+		/* OTP: 1024B total, 32B reserved; read 0x4B; write 0x42 */
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
+		.tested		= TEST_BAD_REW,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	= {
+			{
+				.eraseblocks = { {4 * 1024, 8192} },
+				.block_erase = spi_block_erase_20,
+			}, {
+				.eraseblocks = { {256 * 1024, 128} },
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { { 32768 * 1024, 1} },
+				.block_erase = spi_block_erase_60,
+			}, {
+				.eraseblocks = { { 32768 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
+		},
+		.printlock	= spi_prettyprint_status_register_bp2_ep_srwd, /* TODO: SR2 and many others */
+		.unlock		= spi_disable_blockprotect_bp2_srwd, /* TODO: various other locks */
+		.write		= spi_chip_write_256, /* Multi I/O supported */
+		.read		= spi_chip_read, /* Fast read (0x0B) and multi I/O supported */
+		.voltage	= {2700, 3600},
+	},
+
+	{
+		.vendor		= "Spansion",
+		.name		= "S25FL512S",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= SPANSION_ID,
+		.model_id	= SPANSION_S25FL512,
+		.total_size	= 65536,
+		.page_size	= 256,
+		/* supports 4B addressing */
+		/* supports SFDP */
+		/* OTP: 1024B total, 32B reserved; read 0x4B; write 0x42 */
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
+		.tested		= TEST_BAD_REW,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	= {
+			{
+				.eraseblocks = { {256 * 1024, 256} },
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { { 65536 * 1024, 1} },
+				.block_erase = spi_block_erase_60,
+			}, {
+				.eraseblocks = { { 65536 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
+		},
+		.printlock	= spi_prettyprint_status_register_bp2_ep_srwd, /* TODO: SR2 and many others */
+		.unlock		= spi_disable_blockprotect_bp2_srwd, /* TODO: various other locks */
+		.write		= spi_chip_write_256, /* Multi I/O supported */
+		.read		= spi_chip_read, /* Fast read (0x0B) and multi I/O supported */
 		.voltage	= {2700, 3600},
 	},
 

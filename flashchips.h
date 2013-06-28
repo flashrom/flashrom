@@ -540,6 +540,9 @@
 #define SPANSION_S25FL016A	0x0214
 #define SPANSION_S25FL032A	0x0215	/* Same as S25FL032P, but the latter supports EDI and CFI */
 #define SPANSION_S25FL064A	0x0216	/* Same as S25FL064P, but the latter supports EDI and CFI */
+#define SPANSION_S25FL128	0x2018
+#define SPANSION_S25FL256	0x0219
+#define SPANSION_S25FL512	0x0220
 #define SPANSION_S25FL204	0x4013
 #define SPANSION_S25FL208	0x4014
 #define SPANSION_S25FL216	0x4015	/* Same as S25FL216K, but the latter supports OTP, 3 status regs, quad I/O, SFDP etc. */
