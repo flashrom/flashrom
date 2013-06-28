@@ -112,7 +112,9 @@
 #define AMIC_A25L080		0x3014
 #define AMIC_A25L016		0x3015
 #define AMIC_A25L032		0x3016
-#define AMIC_A25LQ032		0x4016
+#define AMIC_A25LQ16		0x4015
+#define AMIC_A25LQ032		0x4016	/* Same as A25LQ32A, but the latter supports SFDP */
+#define AMIC_A25LQ64		0x4017
 #define AMIC_A29002B		0x0d
 #define AMIC_A29002T		0x8C	/* Same as A290021T */
 #define AMIC_A29040B		0x86
