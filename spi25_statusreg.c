@@ -607,6 +607,28 @@ int spi_prettyprint_status_register_en25s_wp(struct flashctx *flash)
 
 /* === Intel/Numonyx/Micron - Spansion === */
 
+int spi_disable_blockprotect_n25q(struct flashctx *flash)
+{
+	return spi_disable_blockprotect_generic(flash, 0x5C, 1 << 7, 0, 0xFF);
+}
+
+int spi_prettyprint_status_register_n25q(struct flashctx *flash)
+{
+	uint8_t status = spi_read_status_register(flash);
+	spi_prettyprint_status_register_hex(status);
+
+	spi_prettyprint_status_register_srwd(status);
+	if (flash->chip->total_size <= 32 / 8 * 1024) /* N25Q16 and N25Q32: reserved */
+		spi_prettyprint_status_register_bit(status, 6);
+	else
+		msg_cdbg("Chip status register: Block Protect 3 (BP3) is %sset\n",
+			 (status & (1 << 6)) ? "" : "not ");
+	msg_cdbg("Chip status register: Top/Bottom (TB) is %s\n", (status & (1 << 5)) ? "bottom" : "top");
+	spi_prettyprint_status_register_bp(status, 2);
+	spi_prettyprint_status_register_welwip(status);
+	return 0;
+}
+
 /* Used by Intel/Numonyx S33 and Spansion S25FL-S chips */
 /* TODO: Clear P_FAIL and E_FAIL with Clear SR Fail Flags Command (30h) here? */
 int spi_disable_blockprotect_bp2_ep_srwd(struct flashctx *flash)

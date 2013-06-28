@@ -663,11 +663,18 @@
 #define ST_M29W010B		0x23
 #define ST_M29W040B		0xE3
 #define ST_M29W512B		0x27
-#define ST_N25Q016__1E		0xBB15		/* N25Q016, 1.8V, (uniform sectors expected) */
-#define ST_N25Q032__3E		0xBA16		/* N25Q032, 3.0V, (uniform sectors expected) */
-#define ST_N25Q032__1E		0xBB16		/* N25Q032, 1.8V, (uniform sectors expected) */
-#define ST_N25Q064__3E		0xBA17		/* N25Q064, 3.0V, (uniform sectors expected) */
-#define ST_N25Q064__1E		0xBB17		/* N25Q064, 1.8V, (uniform sectors expected) */
+#define ST_N25Q016__1E		0xBB15	/* N25Q016, 1.8V, (uniform sectors expected) */
+#define ST_N25Q032__3E		0xBA16	/* N25Q032, 3.0V, (uniform sectors expected) */
+#define ST_N25Q032__1E		0xBB16	/* N25Q032, 1.8V, (uniform sectors expected) */
+#define ST_N25Q064__3E		0xBA17	/* N25Q064, 3.0V, (uniform sectors expected) */
+#define ST_N25Q064__1E		0xBB17	/* N25Q064, 1.8V, (uniform sectors expected) */
+#define ST_N25Q128__3E		0xBA18	/* N25Q128, 3.0V, (uniform sectors expected) */
+#define ST_N25Q128__1E		0xBB18	/* N25Q128, 1.8V, (uniform sectors expected) */
+#define ST_N25Q256__3E		0xBA19	/* N25Q256, 3.0V, (uniform sectors expected) */
+#define ST_N25Q256__1E		0xBB19	/* N25Q256, 1.8V, (uniform sectors expected) */
+#define ST_N25Q512__3E		0xBA20	/* N25Q512, 3.0V, (uniform sectors expected) */
+#define ST_N25Q512__1E		0xBB20	/* N25Q512, 1.8V, (uniform sectors expected) */
+#define ST_N25Q00A__3E		0xBA21	/* N25Q00A, 3.0V, (uniform sectors expected) */
 
 #define SYNCMOS_MVC_ID		0x40	/* SyncMOS (SM) and Mosel Vitelic Corporation (MVC) */
 #define MVC_V29C51000T		0x00

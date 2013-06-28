@@ -474,6 +474,49 @@ int spi_block_erase_52(struct flashctx *flash, unsigned int addr,
 }
 
 /* Block size is usually
+ * 32M (one die) for Micron
+ */
+int spi_block_erase_c4(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
+{
+	int result;
+	struct spi_command cmds[] = {
+	{
+		.writecnt	= JEDEC_WREN_OUTSIZE,
+		.writearr	= (const unsigned char[]){ JEDEC_WREN },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= JEDEC_BE_C4_OUTSIZE,
+		.writearr	= (const unsigned char[]){
+					JEDEC_BE_C4,
+					(addr >> 16) & 0xff,
+					(addr >> 8) & 0xff,
+					(addr & 0xff)
+				},
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= 0,
+		.writearr	= NULL,
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}};
+
+	result = spi_send_multicommand(flash, cmds);
+	if (result) {
+		msg_cerr("%s failed during command execution at address 0x%x\n", __func__, addr);
+		return result;
+	}
+	/* Wait until the Write-In-Progress bit is cleared.
+	 * This usually takes 240-480 s, so wait in 500 ms steps.
+	 */
+	while (spi_read_status_register(flash) & SPI_SR_WIP)
+		programmer_delay(500 * 1000 * 1000);
+	/* FIXME: Check the status register for errors. */
+	return 0;
+}
+
+/* Block size is usually
  * 64k for Macronix
  * 32k for SST
  * 4-32k non-uniform for EON
@@ -780,6 +823,8 @@ erasefunc_t *spi_get_erasefn_from_opcode(uint8_t opcode)
 		return &spi_block_erase_62;
 	case 0x81:
 		return &spi_block_erase_81;
+	case 0xc4:
+		return &spi_block_erase_c4;
 	case 0xc7:
 		return &spi_block_erase_c7;
 	case 0xd7:
