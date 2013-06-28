@@ -1849,7 +1849,8 @@ const struct flashchip flashchips[] = {
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at25f4096,
-		.unlock		= spi_disable_blockprotect_at25f4096,
+		/* "Bits 5-6 are 0s when device is not in an internal write cycle." Better leave them alone: */
+		.unlock		= spi_disable_blockprotect_bp2_srwd,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
 		.voltage	= {2700, 3600},
@@ -4473,7 +4474,8 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
+		.printlock	= spi_prettyprint_status_register_default_bp4,
+		.unlock		= spi_disable_blockprotect_bp4_srwd, /* TODO: 2nd status reg (read with 0x35) */
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
