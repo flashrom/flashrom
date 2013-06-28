@@ -449,6 +449,16 @@
 #define MACRONIX_MX29SL800CB	0x6B	/* Same as MX29SL802CB */
 #define MACRONIX_MX29SL800CT	0xEA	/* Same as MX29SL802CT */
 
+/* Nantronics Semiconductors is listed in JEP106AJ in bank 7, so it should have 6 continuation codes in front
+ * of the manufacturer ID of 0xD5. http://www.nantronicssemi.com */
+#define NANTRONICS_ID			0x7F7F7F7F7F7FD5	/* Nantronics */
+#define NANTRONICS_ID_NOPREFIX		0xD5	/* Nantronics, missing prefix */
+#define NANTRONICS_N25S10		0x3011
+#define NANTRONICS_N25S20		0x3012
+#define NANTRONICS_N25S40		0x3013
+#define NANTRONICS_N25S80		0x3014
+#define NANTRONICS_N25S16		0x3015
+
 /*
  * Programmable Micro Corp is listed in JEP106W in bank 2, so it should
  * have a 0x7F continuation code prefix.

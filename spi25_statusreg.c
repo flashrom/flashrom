@@ -223,10 +223,10 @@ static void spi_prettyprint_status_register_hex(uint8_t status)
 	msg_cdbg("Chip status register is 0x%02x.\n", status);
 }
 
-/* Common highest bit: Status Register Write Disable (SRWD). */
+/* Common highest bit: Status Register Write Disable (SRWD) or Status Register Protect (SRP). */
 static void spi_prettyprint_status_register_srwd(uint8_t status)
 {
-	msg_cdbg("Chip status register: Status Register Write Disable (SRWD) is %sset\n",
+	msg_cdbg("Chip status register: Status Register Write Disable (SRWD, SRP, ...) is %sset\n",
 		 (status & (1 << 7)) ? "" : "not ");
 }
 
