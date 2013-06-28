@@ -494,6 +494,11 @@
  */
 #define SANYO_ID		0x62
 #define SANYO_LE25FW203A	0x1600
+#define SANYO_LE25FW403A	0x1100
+#define SANYO_LE25FW406		0x07	/* RES2 */
+#define SANYO_LE25FW418A	0x10	/* RES2 and some weird 1 byte RDID variant */
+#define SANYO_LE25FW806		0x26	/* RES2 and some weird 1 byte RDID variant */
+#define SANYO_LE25FW808		0x20	/* RES2 and some weird 1 byte RDID variant */
 
 #define SHARP_ID		0xB0	/* Sharp */
 #define SHARP_LH28F008BJ__PT	0xEC
