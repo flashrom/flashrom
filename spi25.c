@@ -565,6 +565,47 @@ int spi_block_erase_d7(struct flashctx *flash, unsigned int addr,
 	return 0;
 }
 
+/* Page erase (usually 256B blocks) */
+int spi_block_erase_db(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
+{
+	int result;
+	struct spi_command cmds[] = {
+	{
+		.writecnt	= JEDEC_WREN_OUTSIZE,
+		.writearr	= (const unsigned char[]){ JEDEC_WREN },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= JEDEC_PE_OUTSIZE,
+		.writearr	= (const unsigned char[]){
+					JEDEC_PE,
+					(addr >> 16) & 0xff,
+					(addr >> 8) & 0xff,
+					(addr & 0xff)
+				},
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= 0,
+		.writearr	= NULL,
+		.readcnt	= 0,
+		.readarr	= NULL,
+	} };
+
+	result = spi_send_multicommand(flash, cmds);
+	if (result) {
+		msg_cerr("%s failed during command execution at address 0x%x\n", __func__, addr);
+		return result;
+	}
+
+	/* Wait until the Write-In-Progress bit is cleared.
+	 * This takes up to 20 ms usually (on worn out devices up to the 0.5s range), so wait in 1 ms steps. */
+	while (spi_read_status_register(flash) & SPI_SR_WIP)
+		programmer_delay(1 * 1000);
+	/* FIXME: Check the status register for errors. */
+	return 0;
+}
+
 /* Sector size is usually 4k, though Macronix eliteflash has 64k */
 int spi_block_erase_20(struct flashctx *flash, unsigned int addr,
 		       unsigned int blocklen)
@@ -745,6 +786,8 @@ erasefunc_t *spi_get_erasefn_from_opcode(uint8_t opcode)
 		return &spi_block_erase_d7;
 	case 0xd8:
 		return &spi_block_erase_d8;
+	case 0xdb:
+		return &spi_block_erase_db;
 	default:
 		msg_cinfo("%s: unknown erase opcode (0x%02x). Please report "
 			  "this at flashrom@flashrom.org\n", __func__, opcode);
