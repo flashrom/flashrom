@@ -106,6 +106,11 @@
 #define JEDEC_SE_OUTSIZE	0x04
 #define JEDEC_SE_INSIZE		0x00
 
+/* Page Erase 0xDB */
+#define JEDEC_PE		0xDB
+#define JEDEC_PE_OUTSIZE	0x04
+#define JEDEC_PE_INSIZE		0x00
+
 /* Read Status Register */
 #define JEDEC_RDSR		0x05
 #define JEDEC_RDSR_OUTSIZE	0x01
