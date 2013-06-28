@@ -91,6 +91,11 @@
 #define JEDEC_BE_81_OUTSIZE	0x04
 #define JEDEC_BE_81_INSIZE	0x00
 
+/* Block Erase 0xc4 is supported by Micron chips. */
+#define JEDEC_BE_C4		0xc4
+#define JEDEC_BE_C4_OUTSIZE	0x04
+#define JEDEC_BE_C4_INSIZE	0x00
+
 /* Block Erase 0xd8 is supported by EON/Macronix chips. */
 #define JEDEC_BE_D8		0xd8
 #define JEDEC_BE_D8_OUTSIZE	0x04

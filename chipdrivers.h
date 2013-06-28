@@ -48,6 +48,7 @@ int spi_block_erase_52(struct flashctx *flash, unsigned int addr, unsigned int b
 int spi_block_erase_60(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 int spi_block_erase_62(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 int spi_block_erase_81(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
+int spi_block_erase_c4(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 int spi_block_erase_c7(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 int spi_block_erase_d7(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 int spi_block_erase_d8(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
@@ -91,6 +92,8 @@ int spi_disable_blockprotect_at25f512b(struct flashctx *flash);
 int spi_disable_blockprotect_at25fs010(struct flashctx *flash);
 int spi_disable_blockprotect_at25fs040(struct flashctx *flash);
 int spi_prettyprint_status_register_en25s_wp(struct flashctx *flash);
+int spi_prettyprint_status_register_n25q(struct flashctx *flash);
+int spi_disable_blockprotect_n25q(struct flashctx *flash);
 int spi_prettyprint_status_register_bp2_ep_srwd(struct flashctx *flash);
 int spi_disable_blockprotect_bp2_ep_srwd(struct flashctx *flash);
 int spi_prettyprint_status_register_sst25(struct flashctx *flash);
