@@ -8484,6 +8484,109 @@ const struct flashchip flashchips[] = {
 	},
 
 	{
+		.vendor		= "Spansion",
+		.name		= "S25FL204K",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= SPANSION_ID,
+		.model_id	= SPANSION_S25FL204,
+		.total_size	= 512,
+		.page_size	= 256,
+		.feature_bits	= FEATURE_WRSR_WREN,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	= {
+			{
+				.eraseblocks = { {4 * 1024, 128} },
+				.block_erase = spi_block_erase_20,
+			}, {
+				.eraseblocks = { {64 * 1024, 8} },
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { { 512 * 1024, 1} },
+				.block_erase = spi_block_erase_60,
+			}, {
+				.eraseblocks = { { 512 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
+		},
+		.printlock	= spi_prettyprint_status_register_default_bp3,
+		.unlock		= spi_disable_blockprotect_bp3_srwd,  /* #WP pin write-protects SRWP bit. */
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read, /* Fast read (0x0B), dual I/O  (0x3B) supported */
+		.voltage	= {2700, 3600},
+	},
+
+	{
+		.vendor		= "Spansion",
+		.name		= "S25FL208K",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= SPANSION_ID,
+		.model_id	= SPANSION_S25FL208,
+		.total_size	= 1024,
+		.page_size	= 256,
+		.feature_bits	= FEATURE_WRSR_WREN,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	= {
+			{
+				.eraseblocks = { {4 * 1024, 256} },
+				.block_erase = spi_block_erase_20,
+			}, {
+				.eraseblocks = { {64 * 1024, 16} },
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { { 1024 * 1024, 1} },
+				.block_erase = spi_block_erase_60,
+			}, {
+				.eraseblocks = { { 1024 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
+		},
+		.printlock	= spi_prettyprint_status_register_default_bp3,
+		.unlock		= spi_disable_blockprotect_bp3_srwd,  /* #WP pin write-protects SRWP bit. */
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read, /* Fast read (0x0B), dual I/O  (0x3B) supported */
+		.voltage	= {2700, 3600},
+	},
+
+	{
+		.vendor		= "Spansion",
+		.name		= "S25FL116K/S25FL216K",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= SPANSION_ID,
+		.model_id	= SPANSION_S25FL216,
+		.total_size	= 2048,
+		.page_size	= 256,
+		/* OTP: 1024B total, 256B reserved; read 0x48; write 0x42, erase 0x44 (S25FL116K only) */
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	= {
+			{
+				.eraseblocks = { {4 * 1024, 512} },
+				.block_erase = spi_block_erase_20,
+			}, {
+				.eraseblocks = { {64 * 1024, 32} },
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { { 2048 * 1024, 1} },
+				.block_erase = spi_block_erase_60,
+			}, {
+				.eraseblocks = { { 2048 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
+		},
+		.printlock	= spi_prettyprint_status_register_default_bp3,
+		.unlock		= spi_disable_blockprotect_bp3_srwd,  /* #WP pin write-protects SRWP bit. */
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read, /* Fast read (0x0B), dual I/O  (0x3B) supported */
+		.voltage	= {2700, 3600},
+	},
+
+	{
 		.vendor		= "SST",
 		.name		= "SST25LF040A",
 		.bustype	= BUS_SPI,
