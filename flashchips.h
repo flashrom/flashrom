@@ -627,6 +627,7 @@
 #define ST_M45PE40		0x4013
 #define ST_M45PE80		0x4014
 #define ST_M45PE16		0x4015
+#define ST_M25PX80		0x7114
 #define ST_M25PX16		0x7115
 #define ST_M25PX32		0x7116
 #define ST_M25PX64		0x7117
