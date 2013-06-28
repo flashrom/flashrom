@@ -605,15 +605,17 @@ int spi_prettyprint_status_register_en25s_wp(struct flashctx *flash)
 	return 0;
 }
 
-/* === Intel === */
+/* === Intel/Numonyx/Micron - Spansion === */
 
+/* Used by Intel/Numonyx S33 and Spansion S25FL-S chips */
 /* TODO: Clear P_FAIL and E_FAIL with Clear SR Fail Flags Command (30h) here? */
-int spi_disable_blockprotect_s33(struct flashctx *flash)
+int spi_disable_blockprotect_bp2_ep_srwd(struct flashctx *flash)
 {
 	return spi_disable_blockprotect_bp2_srwd(flash);
 }
 
-int spi_prettyprint_status_register_s33(struct flashctx *flash)
+/* Used by Intel/Numonyx S33 and Spansion S25FL-S chips */
+int spi_prettyprint_status_register_bp2_ep_srwd(struct flashctx *flash)
 {
 	uint8_t status = spi_read_status_register(flash);
 	msg_cdbg("Chip status register is %02x\n", status);
