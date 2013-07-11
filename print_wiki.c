@@ -76,6 +76,18 @@ static const char chip_th[] = "\
 | Probe\n| Read\n| Erase\n| Write\n\
 | align=\"center\" | Min \n| align=\"center\" | Max\n\n";
 
+static const char chip_intro[] = "\
+\n== Supported flash chips ==\n\n\
+The list below contains all chips that have some kind of explicit support added to flashrom and their last \
+known test status. Newer SPI flash chips might work even without explicit support if they implement SFDP ([\
+http://www.jedec.org/standards-documents/docs/jesd216 Serial Flash Discoverable Parameters - JESD216]). \
+Flashrom will detect this automatically and inform you about it.\n\n\
+The names used below are designed to be as concise as possible and hence contain only the characters \
+describing properties that are relevant to flashrom. Irrelevant characters specify attributes flashrom can not \
+use or even detect by itself (e.g. the physical package) and have no effect on flashrom's operation. They are \
+replaced by dots ('.') functioning as wildcards (like in Regular Expressions) or are completely omitted at the \
+end of a name.\n";
+
 static const char programmer_th[] = "\
 ! align=\"left\" | Programmer\n\
 ! align=\"left\" | Vendor\n\
@@ -159,7 +171,7 @@ static void print_supported_boards_wiki_helper(const char *devicetype, int cols,
 	/* +1 to force the resulting number of columns to be < cols */
 	lines_per_col = boardcount / cols + ((boardcount%cols) > 0 ? 1 : 0);
 
-	printf("\n\nTotal amount of known good boards %s: '''%d'''; "
+	printf("\n\nTotal amount of known good %s: '''%d'''; "
 	       "Untested (e.g. user vanished before testing new code): '''%d'''; "
 	       "Not yet supported (i.e. known-bad): '''%d'''.\n\n"
 	       "{| border=\"0\" valign=\"top\"\n", devicetype, boardcount_good, boardcount_nt, boardcount_bad);
@@ -194,9 +206,17 @@ static void print_supported_boards_wiki_helper(const char *devicetype, int cols,
 		       (boards[i].working == NT) ? "?3" : "No");
 
 		if (boards[i].note) {
-			printf("<sup>%d</sup>\n", num_notes + 1);
-			snprintf(tmp, sizeof(tmp), "<sup>%d</sup> %s<br />\n",
-				 1 + num_notes++, boards[i].note);
+			num_notes++;
+			printf(" <span id=\"%s_ref%d\"><sup>[[#%s_note%d|%d]]</sup></span>\n",
+			       devicetype, num_notes, devicetype, num_notes, num_notes);
+			int ret = snprintf(tmp, sizeof(tmp),
+					   "<span id=\"%s_note%d\">%d. [[#%s_ref%d|&#x2191;]]</span>"
+					   " <nowiki>%s</nowiki><br />\n", devicetype, num_notes, num_notes,
+					   devicetype, num_notes, boards[i].note);
+			if (ret < 0 || ret >= sizeof(tmp)) {
+				fprintf(stderr, "Footnote text #%d of %s truncated (ret=%d, sizeof(tmp)=%zu)\n",
+					num_notes, devicetype, ret, sizeof(tmp));
+			}
 			notes = strcat_realloc(notes, tmp);
 		} else {
 			printf("\n");
@@ -248,7 +268,8 @@ static void print_supported_chips_wiki(int cols)
 	/* +1 to force the resulting number of columns to be < cols */
 	lines_per_col = chipcount / cols + ((chipcount%cols) > 0 ? 1 : 0);
 
-	printf("\n== Supported chips ==\n\nTotal amount of supported chips: '''%d'''\n\n"
+	printf("%s", chip_intro);
+	printf("\nTotal amount of supported chips: '''%d'''\n\n"
 	       "{| border=\"0\" valign=\"top\"\n", chipcount);
 
 	for (f = flashchips; f->name != NULL; f++) {
