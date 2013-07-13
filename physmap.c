@@ -24,14 +24,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 #include "flash.h"
 #include "hwaccess.h"
 
-/* Do we need any file access or ioctl for physmap or MSR? */
 #if !defined(__DJGPP__) && !defined(__LIBPAYLOAD__)
+/* No file access needed/possible to get mmap access permissions or access MSR. */
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <errno.h>
 #endif
 
 #ifdef __DJGPP__
@@ -118,15 +118,6 @@ void *sys_physmap(unsigned long phys_addr, size_t len)
 #define sys_physmap_ro_cached	sys_physmap
 
 void physunmap(void *virt_addr, size_t len)
-{
-}
-
-int setup_cpu_msr(int cpu)
-{
-	return 0;
-}
-
-void cleanup_cpu_msr(void)
 {
 }
 #elif defined(__MACH__) && defined(__APPLE__)
@@ -568,6 +559,15 @@ int libpayload_wrmsr(int addr, msr_t msr)
 {
 	_wrmsr(addr, msr.lo | ((unsigned long long)msr.hi << 32));
 	return 0;
+}
+
+int setup_cpu_msr(int cpu)
+{
+	return 0;
+}
+
+void cleanup_cpu_msr(void)
+{
 }
 #else
 /* default MSR implementation */

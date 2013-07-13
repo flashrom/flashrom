@@ -140,6 +140,9 @@ ifeq ($(TARGET_OS), MinGW)
 EXEC_SUFFIX := .exe
 # MinGW doesn't have the ffs() function, but we can use gcc's __builtin_ffs().
 FLASHROM_CFLAGS += -Dffs=__builtin_ffs
+# Some functions provided by Microsoft do not work as described in C99 specifications. This macro fixes that
+# for MinGW. See http://sourceforge.net/apps/trac/mingw-w64/wiki/printf%20and%20scanf%20family */
+FLASHROM_CFLAGS += -D__USE_MINGW_ANSI_STDIO=1
 # libusb-win32/libftdi stuff is usually installed in /usr/local.
 CPPFLAGS += -I/usr/local/include
 LDFLAGS += -L/usr/local/lib
@@ -218,6 +221,7 @@ UNSUPPORTED_FEATURES += CONFIG_DUMMY=yes
 else
 override CONFIG_DUMMY = no
 endif
+# Bus Pirate, Serprog and PonyProg are not supported with libpayload (missing serial support).
 ifeq ($(CONFIG_BUSPIRATE_SPI), yes)
 UNSUPPORTED_FEATURES += CONFIG_BUSPIRATE_SPI=yes
 else
@@ -227,6 +231,11 @@ ifeq ($(CONFIG_SERPROG), yes)
 UNSUPPORTED_FEATURES += CONFIG_SERPROG=yes
 else
 override CONFIG_SERPROG = no
+endif
+ifeq ($(CONFIG_PONY_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_PONY_SPI=yes
+else
+override CONFIG_PONY_SPI = no
 endif
 # Dediprog and FT2232 are not supported with libpayload (missing libusb support)
 ifeq ($(CONFIG_DEDIPROG), yes)
@@ -632,7 +641,7 @@ ifeq ($(ARCH), x86)
 endif
 
 $(PROGRAM)$(EXEC_SUFFIX): $(OBJS)
-	$(CC) $(LDFLAGS) -o $(PROGRAM)$(EXEC_SUFFIX) $(OBJS) $(FEATURE_LIBS) $(LIBS) $(PCILIBS) $(USBLIBS)
+	$(CC) $(LDFLAGS) -o $(PROGRAM)$(EXEC_SUFFIX) $(OBJS) $(LIBS) $(PCILIBS) $(FEATURE_LIBS) $(USBLIBS)
 
 libflashrom.a: $(LIBFLASHROM_OBJS)
 	$(AR) rcs $@ $^
