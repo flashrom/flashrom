@@ -26,10 +26,9 @@
 #error Unknown architecture
 #endif
 
-#define IS_BSD	(defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__DragonFly__) || defined(__OpenBSD__))
 #define IS_LINUX	(defined(__gnu_linux__) || defined(__linux__))
 #define IS_MACOSX	(defined(__APPLE__) && defined(__MACH__))
-#if !(IS_BSD || IS_LINUX || IS_MACOSX || defined(__DJGPP__) || defined(__LIBPAYLOAD__) || defined(__sun))
+#if !(IS_LINUX || IS_MACOSX || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__DragonFly__) || defined(__DJGPP__) || defined(__LIBPAYLOAD__) || defined(__sun))
 #error "Unknown operating system"
 #endif
 
@@ -47,7 +46,10 @@
 #include "flash.h"
 #include "hwaccess.h"
 
-#if IS_X86 && IS_BSD
+#define USE_IOPL	(IS_LINUX || IS_MACOSX || defined(__NetBSD__) || defined(__OpenBSD__))
+#define USE_DEV_IO	(defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__DragonFly__))
+
+#if IS_X86 && USE_DEV_IO
 int io_fd;
 #endif
 
@@ -71,9 +73,9 @@ static int release_io_perms(void *p)
 {
 #if defined (__sun)
 	sysi86(SI86V86, V86SC_IOPL, 0);
-#elif IS_BSD
+#elif USE_DEV_IO
 	close(io_fd);
-#elif IS_LINUX || IS_MACOSX
+#elif USE_IOPL
 	iopl(0);
 #endif
 	return 0;
@@ -86,16 +88,19 @@ int rget_io_perms(void)
 #if IS_X86 && !(defined(__DJGPP__) || defined(__LIBPAYLOAD__))
 #if defined (__sun)
 	if (sysi86(SI86V86, V86SC_IOPL, PS_IOPL) != 0) {
-#elif IS_BSD
+#elif USE_DEV_IO
 	if ((io_fd = open("/dev/io", O_RDWR)) < 0) {
-#elif IS_LINUX || IS_MACOSX
+#elif USE_IOPL
 	if (iopl(3) != 0) {
 #endif
-		msg_perr("ERROR: Could not get I/O privileges (%s).\n"
-			"You need to be root.\n", strerror(errno));
+		msg_perr("ERROR: Could not get I/O privileges (%s).\n", strerror(errno));
+		msg_perr("You need to be root.\n");
 #if defined (__OpenBSD__)
-		msg_perr("Please set securelevel=-1 in /etc/rc.securelevel and reboot, or reboot into \n");
-		msg_perr("single user mode.\n");
+		msg_perr("If you are root already please set securelevel=-1 in /etc/rc.securelevel and\n"
+			 "reboot, or reboot into single user mode.\n");
+#elif defined(__NetBSD__)
+		msg_perr("If you are root already please reboot into single user mode or make sure\n"
+			 "that your kernel configuration has the option INSECURE enabled.\n");
 #endif
 		return 1;
 	} else {
