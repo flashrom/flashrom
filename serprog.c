@@ -789,7 +789,7 @@ static uint8_t serprog_chip_readb(const struct flashctx *flash,
 	sp_flush_stream();
 	if (serialport_read(&c, 1) != 0)
 		sp_die("readb byteread");
-	msg_pspew("%s addr=0x%lx returning 0x%02X\n", __func__, addr, c);
+	msg_pspew("%s addr=0x%" PRIxPTR " returning 0x%02X\n", __func__, addr, c);
 	return c;
 }
 
@@ -797,7 +797,7 @@ static uint8_t serprog_chip_readb(const struct flashctx *flash,
 static void sp_do_read_n(uint8_t * buf, const chipaddr addr, size_t len)
 {
 	unsigned char sbuf[6];
-	msg_pspew("%s: addr=0x%lx len=%lu\n", __func__, addr, (unsigned long)len);
+	msg_pspew("%s: addr=0x%" PRIxPTR " len=%lu\n", __func__, addr, (unsigned long)len);
 	/* Stream the read-n -- as above. */
 	if ((sp_opbuf_usage) || (sp_max_write_n && sp_write_n_bytes))
 		sp_execute_opbuf_noflush();

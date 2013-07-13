@@ -41,7 +41,7 @@ static int write_lockbits_49lfxxxc(struct flashctx *flash, unsigned char bits)
 	unsigned int i, left = flash->chip->total_size * 1024;
 	unsigned long address;
 
-	msg_cdbg("\nbios=0x%08lx\n", registers);
+	msg_cdbg("\nbios=0x%08" PRIxPTR "\n", registers);
 	for (i = 0; left > 65536; i++, left -= 65536) {
 		write_lockbits_block_49lfxxxc(flash, i * 65536, bits);
 	}
