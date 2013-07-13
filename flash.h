@@ -25,6 +25,7 @@
 #define __FLASH_H__ 1
 
 #include <inttypes.h>
+#include <stdio.h>
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
@@ -286,7 +287,12 @@ enum msglevel {
 	MSG_SPEW	= 5,
 };
 /* Let gcc and clang check for correct printf-style format strings. */
-int print(enum msglevel level, const char *fmt, ...) __attribute__((format(printf, 2, 3)));
+int print(enum msglevel level, const char *fmt, ...)
+#ifdef __MINGW32__
+__attribute__((format(gnu_printf, 2, 3)));
+#else
+__attribute__((format(printf, 2, 3)));
+#endif
 #define msg_gerr(...)	print(MSG_ERROR, __VA_ARGS__)	/* general errors */
 #define msg_perr(...)	print(MSG_ERROR, __VA_ARGS__)	/* programmer errors */
 #define msg_cerr(...)	print(MSG_ERROR, __VA_ARGS__)	/* chip errors */
