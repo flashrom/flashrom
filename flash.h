@@ -41,7 +41,8 @@
 #define ERROR_OOM	-100
 #define TIMEOUT_ERROR	-101
 
-typedef unsigned long chipaddr;
+/* TODO: check using code for correct usage of types */
+typedef uintptr_t chipaddr;
 
 int register_shutdown(int (*function) (void *data), void *data);
 void *programmer_map_flash_region(const char *descr, unsigned long phys_addr,
