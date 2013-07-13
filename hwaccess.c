@@ -35,13 +35,12 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <sys/types.h>
 #if !defined (__DJGPP__) && !defined(__LIBPAYLOAD__)
+/* No file access needed/possible to get hardware access permissions. */
 #include <unistd.h>
 #include <fcntl.h>
-#endif
-#if !defined (__DJGPP__)
-#include <errno.h>
 #endif
 #include "flash.h"
 #include "hwaccess.h"
