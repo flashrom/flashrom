@@ -1493,26 +1493,37 @@ int erase_and_write_flash(struct flashctx *flash, uint8_t *oldcontents,
 	return ret;
 }
 
-void nonfatal_help_message(void)
+static void nonfatal_help_message(void)
 {
-	msg_gerr("Writing to the flash chip apparently didn't do anything.\n"
-		"This means we have to add special support for your board, "
-		  "programmer or flash chip.\n"
-		"Please report this on IRC at irc.freenode.net (channel "
-		  "#flashrom) or\n"
-		"mail flashrom@flashrom.org!\n"
-		"-------------------------------------------------------------"
-		  "------------------\n"
-		"You may now reboot or simply leave the machine running.\n");
+	msg_gerr("Writing to the flash chip apparently didn't do anything.\n");
+#if CONFIG_INTERNAL == 1
+	if (programmer == PROGRAMMER_INTERNAL)
+		msg_gerr("This means we have to add special support for your board, programmer or flash\n"
+			 "chip. Please report this on IRC at chat.freenode.net (channel #flashrom) or\n"
+			 "mail flashrom@flashrom.org, thanks!\n"
+			 "-------------------------------------------------------------------------------\n"
+			 "You may now reboot or simply leave the machine running.\n");
+	else
+#endif
+		msg_gerr("Please check the connections (especially those to write protection pins) between\n"
+			 "the programmer and the flash chip. If you think the error is caused by flashrom\n"
+			 "please report this on IRC at chat.freenode.net (channel #flashrom) or\n"
+			 "mail flashrom@flashrom.org, thanks!\n");
 }
 
-void emergency_help_message(void)
+static void emergency_help_message(void)
 {
-	msg_gerr("Your flash chip is in an unknown state.\n"
-		"Get help on IRC at chat.freenode.net (channel #flashrom) or\n"
-		"mail flashrom@flashrom.org with the subject \"FAILED: <your board name>\"!\n"
-		"-------------------------------------------------------------------------------\n"
-		"DO NOT REBOOT OR POWEROFF!\n");
+	msg_gerr("Your flash chip is in an unknown state.\n");
+#if CONFIG_INTERNAL == 1
+	if (programmer == PROGRAMMER_INTERNAL)
+		msg_gerr("Get help on IRC at chat.freenode.net (channel #flashrom) or\n"
+			"mail flashrom@flashrom.org with the subject \"FAILED: <your board name>\"!\n"
+			"-------------------------------------------------------------------------------\n"
+			"DO NOT REBOOT OR POWEROFF!\n");
+	else
+#endif
+		msg_gerr("Please report this on IRC at chat.freenode.net (channel #flashrom) or\n"
+			 "mail flashrom@flashrom.org, thanks!\n");
 }
 
 /* The way to go if you want a delimited list of programmers */
@@ -1973,8 +1984,7 @@ int doit(struct flashctx *flash, int force, const char *filename, int read_it,
 				 "anything changed.\n");
 			if (!flash->chip->read(flash, newcontents, 0, size)) {
 				if (!memcmp(oldcontents, newcontents, size)) {
-					msg_cinfo("Good. It seems nothing was "
-						  "changed.\n");
+					msg_cinfo("Good. It seems nothing was changed.\n");
 					nonfatal_help_message();
 					ret = 1;
 					goto out;
