@@ -412,10 +412,10 @@ dummy_init_out:
 	return 0;
 }
 
-void *dummy_map(const char *descr, unsigned long phys_addr, size_t len)
+void *dummy_map(const char *descr, uintptr_t phys_addr, size_t len)
 {
-	msg_pspew("%s: Mapping %s, 0x%lx bytes at 0x%08lx\n",
-		  __func__, descr, (unsigned long)len, phys_addr);
+	msg_pspew("%s: Mapping %s, 0x%lx bytes at 0x%*" PRIxPTR "\n",
+		  __func__, descr, (unsigned long)len, PRIxPTR_WIDTH, phys_addr);
 	return (void *)phys_addr;
 }
 
