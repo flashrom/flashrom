@@ -417,8 +417,7 @@ int programmer_shutdown(void)
 	return ret;
 }
 
-void *programmer_map_flash_region(const char *descr, unsigned long phys_addr,
-				  size_t len)
+void *programmer_map_flash_region(const char *descr, uintptr_t phys_addr, size_t len)
 {
 	return programmer_table[programmer].map_flash_region(descr,
 							     phys_addr, len);

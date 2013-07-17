@@ -28,7 +28,7 @@ int noop_shutdown(void)
 }
 
 /* Fallback map() for programmers which don't need special handling */
-void *fallback_map(const char *descr, unsigned long phys_addr, size_t len)
+void *fallback_map(const char *descr, uintptr_t phys_addr, size_t len)
 {
 	/* FIXME: Should return phys_addr. */
 	return NULL;

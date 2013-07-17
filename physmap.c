@@ -42,7 +42,7 @@
 
 static void *realmem_map;
 
-static void *map_first_meg(unsigned long phys_addr, size_t len)
+static void *map_first_meg(uintptr_t phys_addr, size_t len)
 {
 	if (realmem_map)
 		return realmem_map + phys_addr;
@@ -61,7 +61,7 @@ static void *map_first_meg(unsigned long phys_addr, size_t len)
 	return realmem_map + phys_addr;
 }
 
-static void *sys_physmap(unsigned long phys_addr, size_t len)
+static void *sys_physmap(uintptr_t phys_addr, size_t len)
 {
 	int ret;
 	__dpmi_meminfo mi;
@@ -109,7 +109,7 @@ void physunmap(void *virt_addr, size_t len)
 
 #define MEM_DEV ""
 
-void *sys_physmap(unsigned long phys_addr, size_t len)
+void *sys_physmap(uintptr_t phys_addr, size_t len)
 {
 	return (void *)phys_to_virt(phys_addr);
 }
@@ -124,7 +124,7 @@ void physunmap(void *virt_addr, size_t len)
 
 #define MEM_DEV "DirectHW"
 
-static void *sys_physmap(unsigned long phys_addr, size_t len)
+static void *sys_physmap(uintptr_t phys_addr, size_t len)
 {
 	/* The short form of ?: is a GNU extension.
 	 * FIXME: map_physical returns NULL both for errors and for success
@@ -156,7 +156,7 @@ static int fd_mem = -1;
 static int fd_mem_cached = -1;
 
 /* For MMIO access. Must be uncached, doesn't make sense to restrict to ro. */
-static void *sys_physmap_rw_uncached(unsigned long phys_addr, size_t len)
+static void *sys_physmap_rw_uncached(uintptr_t phys_addr, size_t len)
 {
 	void *virt_addr;
 
@@ -176,7 +176,7 @@ static void *sys_physmap_rw_uncached(unsigned long phys_addr, size_t len)
 /* For reading DMI/coreboot/whatever tables. We should never write, and we
  * do not care about caching.
  */
-static void *sys_physmap_ro_cached(unsigned long phys_addr, size_t len)
+static void *sys_physmap_ro_cached(uintptr_t phys_addr, size_t len)
 {
 	void *virt_addr;
 
@@ -209,25 +209,24 @@ void physunmap(void *virt_addr, size_t len)
 #define PHYSMAP_RW	0
 #define PHYSMAP_RO	1
 
-static void *physmap_common(const char *descr, unsigned long phys_addr,
+static void *physmap_common(const char *descr, uintptr_t phys_addr,
 			    size_t len, int mayfail, int readonly)
 {
 	void *virt_addr;
 
 	if (len == 0) {
-		msg_pspew("Not mapping %s, zero size at 0x%08lx.\n",
-			  descr, phys_addr);
+		msg_pspew("Not mapping %s, zero size at 0x%0*" PRIxPTR ".\n", descr, PRIxPTR_WIDTH, phys_addr);
 		return ERROR_PTR;
 	}
 
 	if ((getpagesize() - 1) & len) {
-		msg_perr("Mapping %s at 0x%08lx, unaligned size 0x%lx.\n",
-			 descr, phys_addr, (unsigned long)len);
+		msg_perr("Mapping %s at 0x%0*" PRIxPTR ", unaligned size 0x%lx.\n",
+			 descr, PRIxPTR_WIDTH, phys_addr, (unsigned long)len);
 	}
 
 	if ((getpagesize() - 1) & phys_addr) {
-		msg_perr("Mapping %s, 0x%lx bytes at unaligned 0x%08lx.\n",
-			 descr, (unsigned long)len, phys_addr);
+		msg_perr("Mapping %s, 0x%lx bytes at unaligned 0x%0*" PRIxPTR ".\n",
+			 descr, (unsigned long)len, PRIxPTR_WIDTH, phys_addr);
 	}
 
 	if (readonly)
@@ -238,8 +237,8 @@ static void *physmap_common(const char *descr, unsigned long phys_addr,
 	if (ERROR_PTR == virt_addr) {
 		if (NULL == descr)
 			descr = "memory";
-		msg_perr("Error accessing %s, 0x%lx bytes at 0x%08lx\n", descr,
-			 (unsigned long)len, phys_addr);
+		msg_perr("Error accessing %s, 0x%lx bytes at 0x%0*" PRIxPTR "\n",
+			 descr, (unsigned long)len, PRIxPTR_WIDTH, phys_addr);
 		msg_perr(MEM_DEV " mmap failed: %s\n", strerror(errno));
 #ifdef __linux__
 		if (EINVAL == errno) {
@@ -261,13 +260,13 @@ static void *physmap_common(const char *descr, unsigned long phys_addr,
 	return virt_addr;
 }
 
-void *physmap(const char *descr, unsigned long phys_addr, size_t len)
+void *physmap(const char *descr, uintptr_t phys_addr, size_t len)
 {
 	return physmap_common(descr, phys_addr, len, PHYSMAP_NOFAIL,
 			      PHYSMAP_RW);
 }
 
-void *physmap_try_ro(const char *descr, unsigned long phys_addr, size_t len)
+void *physmap_try_ro(const char *descr, uintptr_t phys_addr, size_t len)
 {
 	return physmap_common(descr, phys_addr, len, PHYSMAP_MAYFAIL,
 			      PHYSMAP_RO);
