@@ -3,6 +3,7 @@
  *
  * Copyright (C) 2009 Uwe Hermann <uwe@hermann-uwe.de>
  * Copyright (C) 2009 Carl-Daniel Hailfinger
+ * Copyright (C) 2011-2013 Stefan Tauner
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +25,27 @@
 #include <stdlib.h>
 #include "flash.h"
 #include "programmer.h"
+
+/* FIXME: Find a better solution for MinGW. Maybe wrap strtok_s (C11) below if it becomes available */
+#ifdef __MINGW32__
+static char* strtok_r(char *str, const char *delim, char **nextp)
+{
+	if (str == NULL)
+		str = *nextp;
+
+	str += strspn(str, delim); /* Skip leading delimiters */
+	if (*str == '\0')
+		return NULL;
+
+	char *ret = str;
+	str += strcspn(str, delim); /* Find end of token */
+	if (*str != '\0')
+		*str++ = '\0';
+
+	*nextp = str;
+	return ret;
+}
+#endif
 
 /*
  * Return a string corresponding to the bustype parameter.
@@ -69,7 +91,8 @@ static int print_supported_chips(void)
 	int maxtypelen = strlen("Type") + 1;
 	const struct flashchip *chip;
 	char *s;
-	char *tmpven, *tmpdev;
+	char *ven, *dev;
+	char *tmpven, *tmpdev, *tmpven_save, *tmpdev_save;
 	int tmpvenlen, tmpdevlen, curvenlen, curdevlen;
 
 	/* calculate maximum column widths and by iterating over all chips */
@@ -179,17 +202,17 @@ static int print_supported_chips(void)
 		 * - after all other values are printed print the surplus tokens
 		 *   on fresh lines
 		 */
-		tmpven = malloc(strlen(chip->vendor) + 1);
-		if (tmpven == NULL) {
+		ven = malloc(strlen(chip->vendor) + 1);
+		if (ven == NULL) {
 			msg_gerr("Out of memory!\n");
 			return 1;
 		}
-		strcpy(tmpven, chip->vendor);
+		strcpy(ven, chip->vendor);
 
-		tmpven = strtok(tmpven, delim);
+		tmpven = strtok_r(ven, delim, &tmpven_save);
 		msg_ginfo("%s", tmpven);
 		curvenlen = strlen(tmpven);
-		while ((tmpven = strtok(NULL, delim)) != NULL) {
+		while ((tmpven = strtok_r(NULL, delim, &tmpven_save)) != NULL) {
 			msg_ginfo("%s", delim);
 			curvenlen++;
 			tmpvenlen = strlen(tmpven);
@@ -203,17 +226,17 @@ static int print_supported_chips(void)
 			msg_ginfo(" ");
 
 		/* support for multiline device names as above */
-		tmpdev = malloc(strlen(chip->name) + 1);
-		if (tmpdev == NULL) {
+		dev = malloc(strlen(chip->name) + 1);
+		if (dev == NULL) {
 			msg_gerr("Out of memory!\n");
 			return 1;
 		}
-		strcpy(tmpdev, chip->name);
+		strcpy(dev, chip->name);
 
-		tmpdev = strtok(tmpdev, delim);
+		tmpdev = strtok_r(dev, delim, &tmpdev_save);
 		msg_ginfo("%s", tmpdev);
 		curdevlen = strlen(tmpdev);
-		while ((tmpdev = strtok(NULL, delim)) != NULL) {
+		while ((tmpdev = strtok_r(NULL, delim, &tmpdev_save)) != NULL) {
 			msg_ginfo("%s", delim);
 			curdevlen++;
 			tmpdevlen = strlen(tmpdev);
@@ -287,7 +310,7 @@ static int print_supported_chips(void)
 			if (tmpven != NULL){
 				msg_ginfo("%s", tmpven);
 				curvenlen = strlen(tmpven);
-				while ((tmpven = strtok(NULL, delim)) != NULL) {
+				while ((tmpven = strtok_r(NULL, delim, &tmpven_save)) != NULL) {
 					msg_ginfo("%s", delim);
 					curvenlen++;
 					tmpvenlen = strlen(tmpven);
@@ -306,7 +329,7 @@ static int print_supported_chips(void)
 			if (tmpdev != NULL){
 				msg_ginfo("%s", tmpdev);
 				curdevlen = strlen(tmpdev);
-				while ((tmpdev = strtok(NULL, delim)) != NULL) {
+				while ((tmpdev = strtok_r(NULL, delim, &tmpdev_save)) != NULL) {
 					msg_ginfo("%s", delim);
 					curdevlen++;
 					tmpdevlen = strlen(tmpdev);
@@ -319,6 +342,8 @@ static int print_supported_chips(void)
 			}
 		}
 		msg_ginfo("\n");
+		free(ven);
+		free(dev);
 	}
 
 	return 0;
