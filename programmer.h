@@ -117,7 +117,7 @@ struct programmer_entry {
 
 	int (*init) (void);
 
-	void *(*map_flash_region) (const char *descr, unsigned long phys_addr, size_t len);
+	void *(*map_flash_region) (const char *descr, uintptr_t phys_addr, size_t len);
 	void (*unmap_flash_region) (void *virt_addr, size_t len);
 
 	void (*delay) (int usecs);
@@ -275,8 +275,8 @@ int processor_flash_enable(void);
 #endif
 
 /* physmap.c */
-void *physmap(const char *descr, unsigned long phys_addr, size_t len);
-void *physmap_try_ro(const char *descr, unsigned long phys_addr, size_t len);
+void *physmap(const char *descr, uintptr_t phys_addr, size_t len);
+void *physmap_try_ro(const char *descr, uintptr_t phys_addr, size_t len);
 void physunmap(void *virt_addr, size_t len);
 #if CONFIG_INTERNAL == 1
 int setup_cpu_msr(int cpu);
@@ -359,7 +359,7 @@ void rmmio_vall(void *addr);
 /* dummyflasher.c */
 #if CONFIG_DUMMY == 1
 int dummy_init(void);
-void *dummy_map(const char *descr, unsigned long phys_addr, size_t len);
+void *dummy_map(const char *descr, uintptr_t phys_addr, size_t len);
 void dummy_unmap(void *virt_addr, size_t len);
 #endif
 
@@ -606,7 +606,7 @@ int register_opaque_programmer(const struct opaque_programmer *pgm);
 
 /* programmer.c */
 int noop_shutdown(void);
-void *fallback_map(const char *descr, unsigned long phys_addr, size_t len);
+void *fallback_map(const char *descr, uintptr_t phys_addr, size_t len);
 void fallback_unmap(void *virt_addr, size_t len);
 void noop_chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr);
 void fallback_chip_writew(const struct flashctx *flash, uint16_t val, chipaddr addr);
