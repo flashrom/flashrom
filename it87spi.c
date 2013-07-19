@@ -128,6 +128,28 @@ static uint16_t it87spi_probe(uint16_t port)
 	uint16_t flashport = 0;
 
 	enter_conf_mode_ite(port);
+	
+	portpos = extract_programmer_param("gbdualindex");
+	if (portpos) {
+		int chip_index = strtol(portpos, (char **)NULL, 0);
+		sio_write(port,0x07,0x07); /* Select GPIO LDN */
+		if ((chip_index!=0) && (chip_index!=1))	{
+			msg_perr("Dual bios: Invalid chip index requested: %d\n",chip_index);
+			flashport=0;
+		} else {
+			tmp=sio_read(port,0xEF);
+			msg_pinfo("Dual bios: Current chip : %d\n",tmp&1);
+			if (chip_index!=(tmp&1)) {
+				sio_write(port,0xEF,(tmp&0xFE)|chip_index);
+				tmp=sio_read(port,0xEF)&1;
+				if (tmp!=chip_index) {
+					msg_perr("Dual bios: Chip selection failed.\n");
+					flashport=0;
+				} else msg_pinfo("Dual bios: Selected chip: %d\n",tmp&1);
+			}
+		}
+		free(portpos);
+	}
 	/* NOLDN, reg 0x24, mask out lowest bit (suspend) */
 	tmp = sio_read(port, 0x24) & 0xFE;
 	/* Check if LPC->SPI translation is active. */
@@ -228,6 +250,7 @@ int init_superio_ite(void)
 		case 0x8716:
 		case 0x8718:
 		case 0x8720:
+		case 0x8728:
 			ret |= it87spi_probe(superios[i].port);
 			break;
 		default:
