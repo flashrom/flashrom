@@ -2415,6 +2415,7 @@ const struct board_match board_matches[] = {
 	{0x8086, 0x27a0, 0x17aa, 0x2015,  0x8086, 0x27b9, 0x17aa, 0x2009, "^ThinkPad T60", NULL, NULL,        P2, "Lenovo",      "T60",                   0,   OK, p2_whitelist_laptop},
 	{0x8086, 0x27a0, 0x17aa, 0x2017,  0x8086, 0x27b9, 0x17aa, 0x2009, "^ThinkPad T60", NULL, NULL,        P2, "Lenovo",      "T60(s)",                0,   OK, p2_whitelist_laptop},
 	{0x8086, 0x27a0, 0x17aa, 0x2017,  0x8086, 0x27b9, 0x17aa, 0x2009, "^ThinkPad X60", NULL, NULL,        P2, "Lenovo",      "X60(s)",                0,   OK, p2_whitelist_laptop},
+	{0x8086, 0x3B07, 0x17AA, 0x2166,  0x8086, 0x3B30, 0x17AA, 0x2167, "^Lenovo X201", NULL, NULL,         P2, "Lenovo",      "X201",                  0,   OK, p2_whitelist_laptop},
 	{0x8086, 0x2411, 0x8086, 0x2411,  0x8086, 0x7125, 0x0e11, 0xb165, NULL,         NULL, NULL,           P3, "Mitac",       "6513WU",                0,   OK, board_mitac_6513wu},
 	{0x8086, 0x8186, 0x8086, 0x8186,  0x8086, 0x8800,      0,      0, "^MSC Vertriebs GmbH$", NULL, NULL, P2, "MSC",         "Q7-TCTC",               0,   OK, p2_not_a_laptop},
 	{0x10DE, 0x005E, 0x1462, 0x7125,  0x10DE, 0x0052, 0x1462, 0x7125, NULL,         NULL, NULL,           P3, "MSI",         "K8N Neo4-F",            0,   OK, nvidia_mcp_gpio2_raise}, /* TODO: Should probably be K8N Neo4 Platinum, see http://www.coreboot.org/pipermail/flashrom/2010-August/004362.html. */

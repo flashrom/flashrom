@@ -188,12 +188,12 @@ void prettyprint_ich_descriptor_region(const struct ich_descriptors *desc)
 			 nr);
 		return;
 	}
-	for (i = 0; i <= nr; i++)
+	for (i = 0; i < 5; i++)
 		msg_pdbg2("FLREG%d   0x%08x\n", i, desc->region.FLREGs[i]);
 	msg_pdbg2("\n");
 
 	msg_pdbg2("--- Details ---\n");
-	for (i = 0; i <= nr; i++)
+	for (i = 0; i < 5; i++)
 		pprint_freg(&desc->region, i);
 	msg_pdbg2("\n");
 }
@@ -805,7 +805,7 @@ int read_ich_descriptors_via_fdo(void *spibar, struct ich_descriptors *desc)
 			  __func__, nr);
 		return ICH_RET_ERR;
 	}
-	for (i = 0; i <= nr; i++)
+	for (i = 0; i < 5; i++)
 		desc->region.FLREGs[i] = read_descriptor_reg(2, i, spibar);
 
 	/* master section */

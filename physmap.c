@@ -220,13 +220,13 @@ static void *physmap_common(const char *descr, uintptr_t phys_addr,
 	}
 
 	if ((getpagesize() - 1) & len) {
-		msg_perr("Mapping %s at 0x%0*" PRIxPTR ", unaligned size 0x%lx.\n",
-			 descr, PRIxPTR_WIDTH, phys_addr, (unsigned long)len);
+		msg_perr("Mapping %s at 0x%0*" PRIxPTR ", unaligned size 0x%zx.\n",
+			 descr, PRIxPTR_WIDTH, phys_addr, len);
 	}
 
 	if ((getpagesize() - 1) & phys_addr) {
-		msg_perr("Mapping %s, 0x%lx bytes at unaligned 0x%0*" PRIxPTR ".\n",
-			 descr, (unsigned long)len, PRIxPTR_WIDTH, phys_addr);
+		msg_perr("Mapping %s, 0x%zx bytes at unaligned 0x%0*" PRIxPTR ".\n",
+			 descr, len, PRIxPTR_WIDTH, phys_addr);
 	}
 
 	if (readonly)
@@ -237,8 +237,8 @@ static void *physmap_common(const char *descr, uintptr_t phys_addr,
 	if (ERROR_PTR == virt_addr) {
 		if (NULL == descr)
 			descr = "memory";
-		msg_perr("Error accessing %s, 0x%lx bytes at 0x%0*" PRIxPTR "\n",
-			 descr, (unsigned long)len, PRIxPTR_WIDTH, phys_addr);
+		msg_perr("Error accessing %s, 0x%zx bytes at 0x%0*" PRIxPTR "\n",
+			 descr, len, PRIxPTR_WIDTH, phys_addr);
 		msg_perr(MEM_DEV " mmap failed: %s\n", strerror(errno));
 #ifdef __linux__
 		if (EINVAL == errno) {

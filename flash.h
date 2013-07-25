@@ -93,6 +93,7 @@ enum write_granularity {
  */
 #define NUM_ERASEFUNCTIONS 6
 
+/* Feature bits used for non-SPI only */
 #define FEATURE_REGISTERMAP	(1 << 0)
 #define FEATURE_BYTEWRITES	(1 << 1)
 #define FEATURE_LONG_RESET	(0 << 4)
@@ -104,11 +105,12 @@ enum write_granularity {
 #define FEATURE_ADDR_2AA	(1 << 2)
 #define FEATURE_ADDR_AAA	(2 << 2)
 #define FEATURE_ADDR_SHIFTED	(1 << 5)
+/* Feature bits used for SPI only */
 #define FEATURE_WRSR_EWSR	(1 << 6)
 #define FEATURE_WRSR_WREN	(1 << 7)
+#define FEATURE_WRSR_EITHER	(FEATURE_WRSR_EWSR | FEATURE_WRSR_WREN)
 #define FEATURE_OTP		(1 << 8)
 #define FEATURE_QPI		(1 << 9)
-#define FEATURE_WRSR_EITHER	(FEATURE_WRSR_EWSR | FEATURE_WRSR_WREN)
 
 struct flashctx;
 typedef int (erasefunc_t)(struct flashctx *flash, unsigned int addr, unsigned int blocklen);

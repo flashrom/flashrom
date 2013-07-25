@@ -240,19 +240,19 @@ cpu_to_be(64)
   #if defined(__i386__) || defined(__x86_64__)
     #include <sys/types.h>
     #include <machine/sysarch.h>
-#if defined(__NetBSD__)
-    #if defined(__i386__)
-      #define iopl i386_iopl
-    #elif defined(__x86_64__)
-      #define iopl x86_64_iopl
+    #if defined(__NetBSD__)
+      #if defined(__i386__)
+        #define iopl i386_iopl
+      #elif defined(__x86_64__)
+        #define iopl x86_64_iopl
+      #endif
+    #elif defined (__OpenBSD__)
+      #if defined(__i386__)
+        #define iopl i386_iopl
+      #elif defined(__amd64__)
+        #define iopl amd64_iopl
+      #endif
     #endif
-#elif defined (__OpenBSD__)
-    #if defined(__i386__)
-      #define iopl i386_iopl
-    #elif defined(__amd64__)
-      #define iopl amd64_iopl
-    #endif
-#endif
 
 static inline void outb(uint8_t value, uint16_t port)
 {

@@ -381,8 +381,8 @@ int write_jedec_1(struct flashctx *flash, uint8_t *src, unsigned int start,
 	return failed;
 }
 
-int write_page_write_jedec_common(struct flashctx *flash, uint8_t *src,
-				  unsigned int start, unsigned int page_size)
+static int write_page_write_jedec_common(struct flashctx *flash, uint8_t *src,
+					 unsigned int start, unsigned int page_size)
 {
 	int i, tried = 0, failed;
 	uint8_t *s = src;

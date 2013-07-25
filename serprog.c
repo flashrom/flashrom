@@ -797,7 +797,7 @@ static uint8_t serprog_chip_readb(const struct flashctx *flash,
 static void sp_do_read_n(uint8_t * buf, const chipaddr addr, size_t len)
 {
 	unsigned char sbuf[6];
-	msg_pspew("%s: addr=0x%" PRIxPTR " len=%lu\n", __func__, addr, (unsigned long)len);
+	msg_pspew("%s: addr=0x%" PRIxPTR " len=%zu\n", __func__, addr, len);
 	/* Stream the read-n -- as above. */
 	if ((sp_opbuf_usage) || (sp_max_write_n && sp_write_n_bytes))
 		sp_execute_opbuf_noflush();
