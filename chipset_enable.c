@@ -1366,7 +1366,6 @@ const struct penable chipset_enables[] = {
 	{0x10de, 0x0367, OK, "NVIDIA", "MCP55",		enable_flash_mcp55}, /* Pro */
 	{0x10de, 0x03e0, OK, "NVIDIA", "MCP61",		enable_flash_mcp6x_7x},
 	{0x10de, 0x03e1, OK, "NVIDIA", "MCP61",		enable_flash_mcp6x_7x},
-	{0x10de, 0x03e2, NT, "NVIDIA", "MCP61",		enable_flash_mcp6x_7x},
 	{0x10de, 0x03e3, NT, "NVIDIA", "MCP61",		enable_flash_mcp6x_7x},
 	{0x10de, 0x0440, NT, "NVIDIA", "MCP65",		enable_flash_mcp6x_7x},
 	{0x10de, 0x0441, NT, "NVIDIA", "MCP65",		enable_flash_mcp6x_7x},
@@ -1380,6 +1379,7 @@ const struct penable chipset_enables[] = {
 	{0x10de, 0x0aad, NT, "NVIDIA", "MCP79",		enable_flash_mcp6x_7x},
 	{0x10de, 0x0aae, NT, "NVIDIA", "MCP79",		enable_flash_mcp6x_7x},
 	{0x10de, 0x0aaf, NT, "NVIDIA", "MCP79",		enable_flash_mcp6x_7x},
+	{0x10de, 0x0d80, NT, "NVIDIA", "MCP89",		enable_flash_mcp6x_7x},
 	/* VIA northbridges */
 	{0x1106, 0x0585, NT, "VIA", "VT82C585VPX",	via_no_byte_merge},
 	{0x1106, 0x0595, NT, "VIA", "VT82C595",		via_no_byte_merge},
@@ -1428,8 +1428,8 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x1e46, NT, "Intel", "Z75",		enable_flash_pch7},
 	{0x8086, 0x1e47, NT, "Intel", "Q77",		enable_flash_pch7},
 	{0x8086, 0x1e48, NT, "Intel", "Q75",		enable_flash_pch7},
-	{0x8086, 0x1e49, NT, "Intel", "B75",		enable_flash_pch7},
-	{0x8086, 0x1e4a, NT, "Intel", "H77",		enable_flash_pch7},
+	{0x8086, 0x1e49, OK, "Intel", "B75",		enable_flash_pch7},
+	{0x8086, 0x1e4a, OK, "Intel", "H77",		enable_flash_pch7},
 	{0x8086, 0x1e53, NT, "Intel", "C216",		enable_flash_pch7},
 	{0x8086, 0x1e55, OK, "Intel", "QM77",		enable_flash_pch7},
 	{0x8086, 0x1e56, NT, "Intel", "QS77",		enable_flash_pch7},

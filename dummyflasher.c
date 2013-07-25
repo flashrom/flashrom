@@ -414,15 +414,14 @@ dummy_init_out:
 
 void *dummy_map(const char *descr, uintptr_t phys_addr, size_t len)
 {
-	msg_pspew("%s: Mapping %s, 0x%lx bytes at 0x%*" PRIxPTR "\n",
-		  __func__, descr, (unsigned long)len, PRIxPTR_WIDTH, phys_addr);
+	msg_pspew("%s: Mapping %s, 0x%zx bytes at 0x%*" PRIxPTR "\n",
+		  __func__, descr, len, PRIxPTR_WIDTH, phys_addr);
 	return (void *)phys_addr;
 }
 
 void dummy_unmap(void *virt_addr, size_t len)
 {
-	msg_pspew("%s: Unmapping 0x%lx bytes at %p\n",
-		  __func__, (unsigned long)len, virt_addr);
+	msg_pspew("%s: Unmapping 0x%zx bytes at %p\n", __func__, len, virt_addr);
 }
 
 static void dummy_chip_writeb(const struct flashctx *flash, uint8_t val,
@@ -447,8 +446,7 @@ static void dummy_chip_writen(const struct flashctx *flash, uint8_t *buf,
 			      chipaddr addr, size_t len)
 {
 	size_t i;
-	msg_pspew("%s: addr=0x%" PRIxPTR ", len=0x%08lx, writing data (hex):",
-		  __func__, addr, (unsigned long)len);
+	msg_pspew("%s: addr=0x%" PRIxPTR ", len=0x%zx, writing data (hex):", __func__, addr, len);
 	for (i = 0; i < len; i++) {
 		if ((i % 16) == 0)
 			msg_pspew("\n");
@@ -480,8 +478,7 @@ static uint32_t dummy_chip_readl(const struct flashctx *flash,
 static void dummy_chip_readn(const struct flashctx *flash, uint8_t *buf,
 			     const chipaddr addr, size_t len)
 {
-	msg_pspew("%s:  addr=0x%" PRIxPTR ", len=0x%lx, returning array of 0xff\n",
-		  __func__, addr, (unsigned long)len);
+	msg_pspew("%s:  addr=0x%" PRIxPTR ", len=0x%zx, returning array of 0xff\n", __func__, addr, len);
 	memset(buf, 0xff, len);
 	return;
 }

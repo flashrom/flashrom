@@ -66,28 +66,33 @@ int linux_spi_init(void)
 	const uint8_t mode = SPI_MODE_0;
 	const uint8_t bits = 8;
 
-	dev = extract_programmer_param("dev");
-	if (!dev || !strlen(dev)) {
-		msg_perr("No SPI device given. Use flashrom -p "
-			 "linux_spi:dev=/dev/spidevX.Y\n");
-		return 1;
-	}
-
-	p = extract_programmer_param("speed");
+	p = extract_programmer_param("spispeed");
 	if (p && strlen(p)) {
 		speed = (uint32_t)strtoul(p, &endp, 10) * 1024;
 		if (p == endp) {
 			msg_perr("%s: invalid clock: %s kHz\n", __func__, p);
+			free(p);
 			return 1;
 		}
+	}
+	free(p);
+
+	dev = extract_programmer_param("dev");
+	if (!dev || !strlen(dev)) {
+		msg_perr("No SPI device given. Use flashrom -p "
+			 "linux_spi:dev=/dev/spidevX.Y\n");
+		free(dev);
+		return 1;
 	}
 
 	msg_pdbg("Using device %s\n", dev);
 	if ((fd = open(dev, O_RDWR)) == -1) {
 		msg_perr("%s: failed to open %s: %s\n", __func__,
 			 dev, strerror(errno));
+		free(dev);
 		return 1;
 	}
+	free(dev);
 
 	if (register_shutdown(linux_spi_shutdown, NULL))
 		return 1;

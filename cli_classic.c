@@ -435,10 +435,11 @@ int main(int argc, char *argv[])
 	}
 
 	if (chipcount > 1) {
-		msg_cinfo("Multiple flash chips were detected: \"%s\"", flashes[0].chip->name);
+		msg_cinfo("Multiple flash chip definitions match the detected chip(s): \"%s\"",
+			  flashes[0].chip->name);
 		for (i = 1; i < chipcount; i++)
 			msg_cinfo(", \"%s\"", flashes[i].chip->name);
-		msg_cinfo("\nPlease specify which chip to use with the -c <chipname> option.\n");
+		msg_cinfo("\nPlease specify which chip definition to use with the -c <chipname> option.\n");
 		ret = 1;
 		goto out_shutdown;
 	} else if (!chipcount) {

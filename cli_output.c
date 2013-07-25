@@ -46,7 +46,7 @@ int close_logfile(void)
 int open_logfile(const char * const filename)
 {
 	if (!filename) {
-		msg_gerr("No filename specified.\n");
+		msg_gerr("No logfile name specified.\n");
 		return 1;
 	}
 	if ((logfile = fopen(filename, "w")) == NULL) {

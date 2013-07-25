@@ -640,7 +640,7 @@ int spi_disable_blockprotect_bp2_ep_srwd(struct flashctx *flash)
 int spi_prettyprint_status_register_bp2_ep_srwd(struct flashctx *flash)
 {
 	uint8_t status = spi_read_status_register(flash);
-	msg_cdbg("Chip status register is %02x\n", status);
+	msg_cdbg("Chip status register is 0x%02x\n", status);
 
 	spi_prettyprint_status_register_srwd(status);
 	msg_cdbg("Chip status register: Program Fail Flag (P_FAIL) is %sset\n",

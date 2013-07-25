@@ -1995,7 +1995,7 @@ int doit(struct flashctx *flash, int force, const char *filename, int read_it,
 		}
 	}
 
-	if (verify_it) {
+	if (verify_it && !all_skipped) {
 		msg_cinfo("Verifying flash... ");
 
 		if (write_it) {

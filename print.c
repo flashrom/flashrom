@@ -160,7 +160,7 @@ static int print_supported_chips(void)
 	msg_ginfo("Known");
 	for (i = 0; i < border; i++)
 		msg_ginfo(" ");
-	msg_ginfo(" Size");
+	msg_ginfo(" Size ");
 	for (i = 0; i < border; i++)
 		msg_ginfo(" ");
 
@@ -178,7 +178,7 @@ static int print_supported_chips(void)
 	msg_ginfo("Broken");
 	for (i = 0; i < border; i++)
 		msg_ginfo(" ");
-	msg_ginfo("[kB]");
+	msg_ginfo("[kB] ");
 	for (i = 0; i < border + maxtypelen; i++)
 		msg_ginfo(" ");
 	msg_gdbg("range [V]");
@@ -287,7 +287,7 @@ static int print_supported_chips(void)
 		for (i = 0; i < border + 1; i++)
 			msg_ginfo(" ");
 
-		msg_ginfo("%5d", chip->total_size);
+		msg_ginfo("%6d", chip->total_size);
 		for (i = 0; i < border; i++)
 			msg_ginfo(" ");
 
@@ -565,9 +565,10 @@ const struct board_info boards_known[] = {
 	B("ASRock",	"A780FullHD",		OK, "http://www.asrock.com/mb/overview.asp?Model=A780FullHD", "While flashrom is working correctly, there might be problems with the firmware images themselves. Please see http://www.flashrom.org/pipermail/flashrom/2012-July/009600.html for details."),
 	B("ASRock",	"ALiveNF6G-DVI",	OK, "http://www.asrock.com/mb/overview.asp?Model=ALiveNF6G-DVI", NULL),
 	B("ASRock",	"AM2NF6G-VSTA",		OK, "http://www.asrock.com/mb/overview.asp?Model=AM2NF6G-VSTA", NULL),
-	B("ASRock",	"E350M1/USB3",		OK, "http://www.asrock.com/mb/overview.asp?model=e350m1/usb3", NULL),
-	B("ASRock",	"G31M-S rev 2.0",	OK, "http://www.asrock.com/mb/overview.asp?model=G31M-S", NULL),
 	B("ASRock",	"ConRoeXFire-eSATA2",	OK, "http://www.asrock.com/mb/overview.asp?model=conroexfire-esata2", NULL),
+	B("ASRock",	"E350M1/USB3",		OK, "http://www.asrock.com/mb/overview.asp?model=e350m1/usb3", NULL),
+	B("ASRock",	"Fatal1ty Z77 Performance", BAD, "http://www.asrock.com/mb/overview.asp?Model=Fatal1ty%20Z77%20Performance", "Probing works (Winbond W25Q64, 8192 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME region is locked."),
+	B("ASRock",	"G31M-S rev 2.0",	OK, "http://www.asrock.com/mb/overview.asp?model=G31M-S", NULL),
 	B("ASRock",	"H61M-ITX",		BAD, "http://www.asrock.com/mb/overview.asp?Model=H61M-ITX", "Probing works (Macronix MX25L3205, 4096 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME region is locked."),
 	B("ASRock",	"H67M",			BAD, "http://www.asrock.com/mb/overview.asp?Model=H67M", "Probing works (Winbond W25Q64, 8192 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME region is locked."),
 	B("ASRock",	"K7S41",		OK, "http://www.asrock.com/mb/overview.asp?Model=K7S41", NULL),
@@ -577,6 +578,7 @@ const struct board_info boards_known[] = {
 	B("ASRock",	"M3A790GXH/128M",	OK, "http://www.asrock.com/mb/overview.asp?Model=M3A790GXH/128M", NULL),
 	B("ASRock",	"N61P-S",		OK, "http://www.asrock.com/mb/overview.asp?Model=N61P-S", NULL),
 	B("ASRock",	"P4i65GV",		OK, "http://www.asrock.com/mb/overview.asp?Model=P4i65GV", NULL),
+	B("ASRock",	"Z68 Extreme4",		BAD, "http://www.asrock.com/mb/overview.asp?Model=Z68%20Extreme4", "Probing works (Winbond W25Q64, 8192 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME region is locked."),
 	B("ASUS",	"A7N8X Deluxe",		OK, "http://www.asus.com/Motherboards/AMD_Socket_A/A7N8X_Deluxe/", NULL),
 	B("ASUS",	"A7N8X-E Deluxe",	OK, "http://www.asus.com/Motherboards/AMD_Socket_A/A7N8XE_Deluxe/", NULL),
 	B("ASUS",	"A7N8X-VM/400",		OK, "http://www.asus.com/Motherboards/AMD_Socket_A/A7N8XVM400/", NULL),
@@ -600,6 +602,7 @@ const struct board_info boards_known[] = {
 	B("ASUS",	"A8V Deluxe",		OK, "http://www.asus.com/Motherboards/AMD_Socket_939/A8V_Deluxe/", NULL),
 	B("ASUS",	"A8V-E Deluxe",		OK, "http://www.asus.com/Motherboards/AMD_Socket_939/A8VE_Deluxe/", NULL),
 	B("ASUS",	"A8V-E SE",		OK, "http://www.asus.com/Motherboards/AMD_Socket_939/A8VE_SE/", "See http://www.coreboot.org/pipermail/coreboot/2007-October/026496.html"),
+	B("ASUS",	"C60M1-I",		OK, "http://www.asus.com/Motherboards/C60M1I/", "The MAC address of the onboard network card is stored in flash."),
 	B("ASUS",	"Crosshair II Formula",	OK, "http://www.asus.com/Motherboards/AMD_AM2Plus/Crosshair_II_Formula/", NULL),
 	B("ASUS",	"Crosshair IV Extreme",	OK, "http://www.asus.com/Motherboards/AMD_AM3/Crosshair_IV_Extreme/", NULL),
 	B("ASUS",	"DSAN-DX",		NT, "http://www.asus.com/Server_Workstation/Server_Motherboards/DSANDX/", NULL),
@@ -711,13 +714,19 @@ const struct board_info boards_known[] = {
 	B("ASUS",	"P7H55-M LX",		BAD, NULL, "flashrom works correctly, but GbE LAN is nonworking (probably due to a missing/bogus MAC address; see http://www.flashrom.org/pipermail/flashrom/2011-July/007432.html and http://ubuntuforums.org/showthread.php?t=1534389 for a possible workaround)"),
 	B("ASUS",	"P8B-E/4L",		BAD, NULL, "Probing works (Winbond W25Q64, 8192 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME region is locked."),
 	B("ASUS",	"P8B WS",		BAD, NULL, "Probing works (Winbond W25Q32, 4096 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME region is locked."),
+	B("ASUS",	"P8B75-M LE",		BAD, NULL, "Probing works (2x 8192 kB via hwseq), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME region is locked."),
 	B("ASUS",	"P8H61 PRO",		BAD, NULL, "Probing works (Winbond W25Q32, 4096 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME region is locked."),
 	B("ASUS",	"P8H61-M LE/USB3",	BAD, NULL, "Probing works (Winbond W25Q32, 4096 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME region is locked."),
 	B("ASUS",	"P8H67-M PRO",		BAD, NULL, "Probing works (Macronix MX25L3205, 4096 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME region is locked."),
+	B("ASUS",	"P8H77-I",		OK, "http://www.asus.com/Motherboards/P8H77I/", NULL),
+	B("ASUS",	"P8H77-M",		OK, "http://www.asus.com/Motherboards/P8H77M/", NULL),
 	B("ASUS",	"P8P67 (rev. 3.1)",	BAD, NULL, "Probing works (Macronix MX25L3205, 4096 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME region is locked."),
-	B("ASUS",	"P8P67 LE",		BAD, NULL, "Probing works (Winbond W25Q32, 4096 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME region is locked."),
+	B("ASUS",	"P8P67 LE (B2)",	OK, NULL, NULL),
+	B("ASUS",	"P8P67 LE (B3)",	BAD, NULL, "Probing works (Winbond W25Q32, 4096 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME region is locked."),
 	B("ASUS",	"P8P67 PRO (rev. 3.0)",	OK, "http://www.asus.com/Motherboards/Intel_Socket_1155/P8P67_PRO/", NULL),
+	B("ASUS",	"P8P67-M PRO",		BAD, NULL, "Probing works (Macronix MX25L3205, 4096 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME region is locked."),
 	B("ASUS",	"P8Z68-V",		OK, "http://www.asus.com/Motherboards/Intel_Socket_1155/P8Z68V/", "Warning: MAC address of LOM is stored at 0x1000 - 0x1005 of the image."),
+	B("ASUS",	"P8Z68-V LE",		BAD, NULL, "Probing works (Winbond W25Q64, 8192 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME region is locked."),
 	B("ASUS",	"P8Z68-V PRO",		BAD, NULL, "Probing works (Winbond W25Q64, 8192 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME region is locked."),
 	B("ASUS",	"P8Z68-V PRO/GEN3",	OK, "http://www.asus.com/Motherboards/Intel_Socket_1155/P8Z68V_PROGEN3/", "Warning: MAC address of LOM is stored at 0x1000 - 0x1005 of the image."),
 	B("ASUS",	"SABERTOOTH 990FX",	OK, "http://www.asus.com/Motherboards/AMD_AM3Plus/SABERTOOTH_990FX/", NULL),
@@ -751,6 +760,7 @@ const struct board_info boards_known[] = {
 	B("DFI",	"AD77",			NT, NULL, "Untested board enable."),
 	B("DFI",	"Blood-Iron P35 T2RL",	OK, "http://lp.lanparty.com.tw/portal/CM/cmproduct/XX_cmproddetail/XX_WbProdsWindow?itemId=516&downloadFlag=false&action=1", NULL),
 	B("Elitegroup",	"848P-A7",		OK, NULL, NULL),
+	B("Elitegroup",	"GeForce6100PM-M2 (V3.0)", OK, NULL, NULL),
 	B("Elitegroup",	"GeForce6100SM-M",	OK, NULL, NULL),
 	B("Elitegroup", "GF7100PVT-M3 (V1.0)",	OK, NULL, NULL),
 	B("Elitegroup", "GF8200A",		OK, NULL, NULL),
@@ -830,6 +840,7 @@ const struct board_info boards_known[] = {
 	B("GIGABYTE",	"GA-MA790GP-DS4H",	OK, "http://www.gigabyte.com/products/product-page.aspx?pid=2887", NULL),
 	B("GIGABYTE",	"GA-MA790XT-UD4P (rev. 1.0)", OK, "http://www.gigabyte.com/products/product-page.aspx?pid=3010", NULL),
 	B("GIGABYTE",	"GA-P55A-UD4 (rev. 1.0)", OK, "http://www.gigabyte.com/products/product-page.aspx?pid=3436", NULL),
+	B("GIGABYTE",	"GA-P55A-UD7"		, OK, "http://www.gigabyte.com/products/product-page.aspx?pid=3324", NULL),
 	B("GIGABYTE",	"GA-P67A-UD3P",		OK, "http://www.gigabyte.com/products/product-page.aspx?pid=3649", NULL),
 	B("GIGABYTE",	"GA-X58A-UD3R (rev. 2.0)", OK, NULL, NULL),
 	B("GIGABYTE",	"GA-X58A-UD7 (rev. 2.0)", OK, NULL, NULL),
@@ -865,6 +876,7 @@ const struct board_info boards_known[] = {
 	B("Intel",	"DH67CF",		BAD, NULL, "H67 with BIOS lock enable and locked ME region, see http://www.flashrom.org/pipermail/flashrom/2011-September/007789.html"),
 	B("Intel",	"DH67CL",		BAD, NULL, "H67 with BIOS lock enable and locked ME region, see http://www.flashrom.org/pipermail/flashrom/2012-November/010112.html"),
 	B("Intel",	"DN2800MT (Marshalltown)", BAD, NULL, "BIOS locked via BIOS_CNTL."),
+	B("Intel",	"DQ77MK",		BAD, NULL, "Q77 with BIOS lock enable and locked ME region, see http://paste.flashrom.org/view.php?id=1603"),
 	B("Intel",	"EP80759",		OK, NULL, NULL),
 	B("Intel",	"Foxhollow",		OK, NULL, "Intel reference board."),
 	B("Intel",	"Greencity",		OK, NULL, "Intel reference board."),
@@ -918,6 +930,7 @@ const struct board_info boards_known[] = {
 	B("MSI",	"MS-7529 (G31M3-L(S) V2)", OK, "http://www.msi.com/product/mb/G31M3-L-V2---G31M3-LS-V2.html", NULL),
 	B("MSI",	"MS-7529 (G31TM-P21)",  OK, "http://www.msi.com/product/mb/G31TM-P21.html", NULL),
 	B("MSI",	"MS-7548 (Aspen-GL8E)", OK, "http://h10025.www1.hp.com/ewfrf/wc/document?docname=c01635688&lc=en&cc=us&dlc=en", NULL),
+	B("MSI",	"MS-7551 (KA780G)",	OK, "http://www.msi.com/product/mb/KA780G.html", NULL),
 	B("MSI",	"MS-7596 (785GM-E51)",  OK, "http://www.msi.com/product/mb/785GM-E51.html", NULL),
 	B("MSI",	"MS-7597 (GF615M-P33)",	BAD, NULL, "Missing board enable/SIO support (Fintek F71889), see http://www.flashrom.org/pipermail/flashrom/2012-March/008956.html"),
 	B("MSI",	"MS-7599 (870-C45)",	OK, "http://www.msi.com/product/mb/870-C45.html", NULL),
@@ -929,7 +942,9 @@ const struct board_info boards_known[] = {
 	B("MSI",	"MS-7676 (Z68MA-G45 (B3))", OK, "http://www.msi.com/product/mb/Z68MA-G45--B3-.html", NULL),
 	B("MSI",	"MS-7696 (A75MA-G55)",	OK, "http://www.msi.com/product/mb/A75MA-G55.html", NULL),
 	B("MSI",	"MS-7698 (E350IA-E45)",	OK, "http://www.msi.com/product/mb/E350IA-E45.html", NULL),
-	B("MSI",	"MS-7740 (H61MA-E35(B3))",	OK, "http://www.msi.com/product/mb/H61MA-E35--B3-.html", NULL),
+	B("MSI",	"MS-7740 (H61MA-E35(B3))", OK, "http://www.msi.com/product/mb/H61MA-E35--B3-.html", NULL),
+	B("MSI",	"MS-7756 (H77MA-G43)",	OK, "http://www.msi.com/product/mb/H77MA-G43.html", NULL),
+	B("MSI",	"MS-7808 (B75MA-E33)",	OK, "http://www.msi.com/product/mb/B75MA-E33.html", NULL),
 	B("NEC",	"PowerMate 2000",	OK, "http://support.necam.com/mobilesolutions/hardware/Desktops/pm2000/celeron/", NULL),
 	B("Nokia",	"IP530",		OK, NULL, NULL),
 	B("Palit",	"N61S",			OK, NULL, NULL),
@@ -946,6 +961,7 @@ const struct board_info boards_known[] = {
 	B("Portwell",	"PEB-4700VLA",		OK, "http://www.portwell.com/products/detail.asp?CUSTCHAR1=PEB-4700VLA", NULL),
 	B("RCA",	"RM4100",		OK, "http://www.settoplinux.org/index.php?title=RCA_RM4100", NULL),
 	B("Samsung",	"Polaris 32",		OK, NULL, NULL),
+	B("SAPPHIRE",	"IPC-E350M1",		OK, "http://www.sapphiretech.com/presentation/product/?pid=1034&lid=1", NULL),
 	B("Shuttle",	"AK31",			OK, "http://www.motherboard.cz/mb/shuttle/AK31.htm", NULL),
 	B("Shuttle",	"AK38N",		OK, "http://eu.shuttle.com/en/desktopdefault.aspx/tabid-36/558_read-9889/", NULL),
 	B("Shuttle",	"AV11V30",		OK, NULL, NULL),
@@ -971,6 +987,7 @@ const struct board_info boards_known[] = {
 	B("Supermicro", "X7SPA-HF",		OK, "http://www.supermicro.com/products/motherboard/ATOM/ICH9/X7SPA.cfm?typ=H&IPMI=Y", NULL),
 	B("Supermicro", "X8DT3",		OK, "http://www.supermicro.com/products/motherboard/QPI/5500/X8DT3.cfm", NULL),
 	B("Supermicro", "X8DTE-F",		OK, "http://www.supermicro.com/products/motherboard/QPI/5500/X8DT6-F.cfm?IPMI=Y&SAS=N", NULL),
+	B("Supermicro", "X8DTG-D",		OK, "http://www.supermicro.com/products/motherboard/qpi/5500/x8dtg-df.cfm", NULL),
 	B("Supermicro", "X8DTH-6F",		OK, "http://www.supermicro.com/products/motherboard/QPI/5500/X8DTH-6F.cfm", NULL),
 	B("Supermicro",	"X8DTT-F",		OK, "http://www.supermicro.com/products/motherboard/QPI/5500/X8DTT-F.cfm", NULL),
 	B("Supermicro",	"X8DTT-HIBQF",		OK, "http://www.supermicro.com/products/motherboard/QPI/5500/X8DTT-H.cfm", NULL),
@@ -979,11 +996,14 @@ const struct board_info boards_known[] = {
 	B("Supermicro",	"X8SIE(-F)",		BAD, "http://www.supermicro.com/products/motherboard/Xeon3000/3400/X8SIE.cfm?IPMI=N&TYP=LN2", "Requires unlocking the ME although the registers are set up correctly by the descriptor/BIOS already (tested with swseq and hwseq)."),
 	B("Supermicro",	"X8STi",		OK, "http://www.supermicro.com/products/motherboard/Xeon3000/X58/X8STi.cfm", NULL),
 	B("Supermicro",	"X9DR3-F",		BAD, "http://www.supermicro.com/products/motherboard/xeon/c600/x9dr3-f.cfm", "Probing works (Numonyx N25Q128 (supported by SFDP only atm), 16384 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME region is locked."),
+	B("Supermicro",	"X9DRD-7LN4F",		BAD, "http://www.supermicro.com/products/motherboard/xeon/c600/x9drd-7ln4f.cfm", "Probing works (Numonyx N25Q128 (supported by SFDP only atm), 16384 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME region is locked."),
 	B("Supermicro",	"X9DRT-HF+",		BAD, NULL, "Probing works (Numonyx N25Q128 (supported by SFDP only atm), 16384 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME region is locked; SMM protection enabled."),
 	B("Supermicro",	"X9DRW",		BAD, NULL, "Probing works (Numonyx N25Q128 (supported by SFDP only atm), 16384 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME region is locked."),
 	B("Supermicro",	"X9QRi-F+",		BAD, "http://www.supermicro.com/products/motherboard/Xeon/C600/X9QRi-F_.cfm", "Probing works (Macronix MX25L12805, 16384 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME region is locked; SMM protection enabled."),
 	B("Supermicro",	"X9SCA-F",		BAD, "http://www.supermicro.com/products/motherboard/Xeon/C202_C204/X9SCA-F.cfm", "Probing works (Winbond W25Q64, 8192 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME region is locked."),
+	B("Supermicro",	"X9SCE-F",		BAD, "http://www.supermicro.com/products/motherboard/Xeon/C202_C204/X9SCE-F.cfm", "Probing works (Winbond W25Q64, 8192 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME region is locked."),
 	B("Supermicro",	"X9SCL",		BAD, "http://www.supermicro.com/products/motherboard/Xeon/C202_C204/X9SCL.cfm", "Probing works (Winbond W25Q64, 8192 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME region is locked."),
+	B("Supermicro",	"X9SCM-F",		BAD, "http://www.supermicro.com/products/motherboard/Xeon/C202_C204/X9SCM-F.cfm", "Probing works (Winbond W25Q64, 8192 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME region is locked."),
 	B("T-Online",	"S-100",		OK, "http://wiki.freifunk-hannover.de/T-Online_S_100", NULL),
 	B("Tekram",	"P6Pro-A5",		OK, "http://www.motherboard.cz/mb/tekram/P6Pro-A5.htm", NULL),
 	B("Termtek",	"TK-3370 (Rev:2.5B)",	OK, NULL, NULL),
@@ -1020,6 +1040,7 @@ const struct board_info boards_known[] = {
 	B("Tyan",	"S5377 (Tempest i5100T)", OK, "http://www.tyan.com/product_SKU_spec.aspx?ProductType=MB&pid=642&SKU=600000017", NULL),
 	B("Tyan",	"S5382 (Tempest i5000PW)", OK, "http://www.tyan.com/product_board_detail.aspx?pid=439", NULL),
 	B("Tyan",	"S5397 (Tempest i5400PW)", OK, "http://www.tyan.com/product_board_detail.aspx?pid=560", NULL),
+	B("Tyan",	"S7066 (S7066WGM3NR)",	BAD, "http://www.tyan.com/product_SKU_spec.aspx?ProductType=MB&pid=790&SKU=600000330", "Probing works (Winbond W25Q64, 8192 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME region is locked."),
 	B("VIA",	"EITX-3000",		OK, "http://www.viaembedded.com/en/products/boards/810/1/EITX-3000.html", NULL),
 	B("VIA",	"EPIA M/MII/...",	OK, "http://www.via.com.tw/en/products/embedded/ProductDetail.jsp?productLine=1&motherboard_id=202", NULL), /* EPIA-MII link for now */
 	B("VIA",	"EPIA SP",		OK, "http://www.via.com.tw/en/products/embedded/ProductDetail.jsp?productLine=1&motherboard_id=261", NULL),

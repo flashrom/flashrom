@@ -29,8 +29,8 @@
 /**
  * List of supported flash chips.
  *
- * Please keep the list sorted by vendor name and chip name, so that
- * the output of 'flashrom -L' is alphabetically sorted.
+ * Please keep the list sorted by vendor name and chip family, so that the output of 'flashrom -L' is roughly
+ * alphabetically sorted. Within families keep them in order of density.
  */
 const struct flashchip flashchips[] = {
 
@@ -1297,7 +1297,7 @@ const struct flashchip flashchips[] = {
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { 
+				.eraseblocks = {
 					{16 * 1024, 1},
 					{8 * 1024, 2},
 					{32 * 1024, 1},
@@ -1329,7 +1329,7 @@ const struct flashchip flashchips[] = {
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { 
+				.eraseblocks = {
 					{64 * 1024, 3},
 					{32 * 1024, 1},
 					{8 * 1024, 2},
@@ -1678,7 +1678,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 8192,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
-		.tested		= TEST_UNTESTED,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
@@ -1755,7 +1755,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 64,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
-		.tested		= TEST_UNTESTED,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_at25f,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
@@ -1784,7 +1784,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 64,
 		.page_size	= 128,
 		.feature_bits	= FEATURE_WRSR_WREN,
-		.tested		= TEST_UNTESTED,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_at25f,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
@@ -2809,7 +2809,7 @@ const struct flashchip flashchips[] = {
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { 
+				.eraseblocks = {
 					{128 * 1024, 1},
 					{96 * 1024, 1},
 					{8 * 1024, 2},
@@ -3426,7 +3426,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 64,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
-		.tested		= TEST_UNTESTED,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
@@ -4503,7 +4503,7 @@ const struct flashchip flashchips[] = {
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { 
+				.eraseblocks = {
 					{16 * 1024, 1},
 					{8 * 1024, 2},
 					{32 * 1024, 1},
@@ -4535,7 +4535,7 @@ const struct flashchip flashchips[] = {
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { 
+				.eraseblocks = {
 					{64 * 1024, 7},
 					{32 * 1024, 1},
 					{8 * 1024, 2},
@@ -4568,7 +4568,7 @@ const struct flashchip flashchips[] = {
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { 
+				.eraseblocks = {
 					{16 * 1024, 1},
 					{8 * 1024, 2},
 					{32 * 1024, 1},
@@ -4600,7 +4600,7 @@ const struct flashchip flashchips[] = {
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { 
+				.eraseblocks = {
 					{64 * 1024, 7},
 					{32 * 1024, 1},
 					{8 * 1024, 2},
@@ -5375,7 +5375,7 @@ const struct flashchip flashchips[] = {
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { 
+				.eraseblocks = {
 					{8 * 1024, 1},
 					{4 * 1024, 2},
 					{112 * 1024, 1},
@@ -5479,7 +5479,7 @@ const struct flashchip flashchips[] = {
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { 
+				.eraseblocks = {
 					{16 * 1024, 1},
 					{8 * 1024, 2},
 					{96 * 1024, 1},
@@ -5506,7 +5506,7 @@ const struct flashchip flashchips[] = {
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { 
+				.eraseblocks = {
 					{128 * 1024, 3},
 					{96 * 1024, 1},
 					{8 * 1024, 2},
@@ -5534,7 +5534,7 @@ const struct flashchip flashchips[] = {
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { 
+				.eraseblocks = {
 					{16 * 1024, 1},
 					{8 * 1024, 2},
 					{96 * 1024, 1},
@@ -5562,7 +5562,7 @@ const struct flashchip flashchips[] = {
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { 
+				.eraseblocks = {
 					{128 * 1024, 3},
 					{96 * 1024, 1},
 					{8 * 1024, 2},
@@ -6263,7 +6263,7 @@ const struct flashchip flashchips[] = {
 		.page_size	= 256,
 		/* MX25L12805D has 64B of OTP; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
-		.tested		= TEST_OK_PROBE,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
@@ -6429,7 +6429,7 @@ const struct flashchip flashchips[] = {
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { 
+				.eraseblocks = {
 					{8 * 1024, 1},
 					{4 * 1024, 2},
 					{8 * 1024, 2},
@@ -6462,7 +6462,7 @@ const struct flashchip flashchips[] = {
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { 
+				.eraseblocks = {
 					{64 * 1024, 1},
 					{32 * 1024, 1},
 					{8 * 1024, 2},
@@ -7360,7 +7360,7 @@ const struct flashchip flashchips[] = {
 		/* supports SFDP */
 		/* OTP: 64B total; read 0x4B, write 0x42 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
-		.tested		= TEST_UNTESTED,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
@@ -7495,7 +7495,7 @@ const struct flashchip flashchips[] = {
 		/* supports SFDP */
 		/* OTP: 64B total; read 0x4B, write 0x42 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
-		.tested		= TEST_UNTESTED,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	= {
@@ -7561,7 +7561,7 @@ const struct flashchip flashchips[] = {
 		/* supports SFDP */
 		/* OTP: 64B total; read 0x4B, write 0x42 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
-		.tested		= TEST_BAD_REW,
+		.tested		= TEST_OK_PROBE | TEST_BAD_REW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	= {
@@ -7621,7 +7621,7 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Numonyx",
-		.name		= "N25Q512..3E", /* ..3E = 3V, uniform 64KB/4KB blocks/sectors */
+		.name		= "N25Q512..3G", /* ..3G = 3V, uniform 64KB/4KB blocks/sectors */
 		.bustype	= BUS_SPI,
 		.manufacture_id = ST_ID,
 		.model_id	= ST_N25Q512__3E,
@@ -7630,7 +7630,7 @@ const struct flashchip flashchips[] = {
 		/* supports SFDP */
 		/* OTP: 64B total; read 0x4B, write 0x42 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
-		.tested		= TEST_BAD_REW,
+		.tested		= TEST_OK_PROBE | TEST_BAD_REW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	= {
@@ -8874,7 +8874,7 @@ const struct flashchip flashchips[] = {
 		/* supports 4B addressing */
 		/* OTP: 1024B total, 32B reserved; read 0x4B; write 0x42 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
-		.tested		= TEST_BAD_REW,
+		.tested		= TEST_OK_PROBE | TEST_BAD_REW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	= {
@@ -8911,7 +8911,7 @@ const struct flashchip flashchips[] = {
 		/* supports SFDP */
 		/* OTP: 1024B total, 32B reserved; read 0x4B; write 0x42 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
-		.tested		= TEST_BAD_REW,
+		.tested		= TEST_OK_PROBE | TEST_BAD_REW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	= {
@@ -9184,7 +9184,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 512,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_EWSR,
-		.tested		= TEST_UNTESTED,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
@@ -9222,7 +9222,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 512,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_EWSR,
-		.tested		= TEST_OK_PR,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rems,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
@@ -9470,7 +9470,7 @@ const struct flashchip flashchips[] = {
 		.feature_bits	= FEATURE_LONG_RESET,
 		.tested		= TEST_OK_PR,
 		.probe		= probe_jedec,
-		.probe_timing	= 10, 
+		.probe_timing	= 10,
 		.block_erasers	=
 		{
 			{
@@ -9494,7 +9494,7 @@ const struct flashchip flashchips[] = {
 		.feature_bits	= FEATURE_LONG_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
-		.probe_timing	= 10, 
+		.probe_timing	= 10,
 		.block_erasers	=
 		{
 			{
@@ -9542,7 +9542,7 @@ const struct flashchip flashchips[] = {
 		.feature_bits	= FEATURE_LONG_RESET,
 		.tested		= TEST_OK_PRE,
 		.probe		= probe_jedec,
-		.probe_timing	= 10, 
+		.probe_timing	= 10,
 		.block_erasers	=
 		{
 			{
@@ -9918,7 +9918,7 @@ const struct flashchip flashchips[] = {
 				.eraseblocks = { {4 * 1024, 128} },
 				.block_erase = erase_sector_49lfxxxc,
 			}, {
-				.eraseblocks = { 
+				.eraseblocks = {
 					{64 * 1024, 7},
 					{32 * 1024, 1},
 					{8 * 1024, 2},
@@ -9983,7 +9983,7 @@ const struct flashchip flashchips[] = {
 				.eraseblocks = { {4 * 1024, 256} },
 				.block_erase = erase_sector_49lfxxxc,
 			}, {
-				.eraseblocks = { 
+				.eraseblocks = {
 					{64 * 1024, 15},
 					{32 * 1024, 1},
 					{8 * 1024, 2},
@@ -10016,7 +10016,7 @@ const struct flashchip flashchips[] = {
 				.eraseblocks = { {4 * 1024, 512} },
 				.block_erase = erase_sector_49lfxxxc,
 			}, {
-				.eraseblocks = { 
+				.eraseblocks = {
 					{64 * 1024, 31},
 					{32 * 1024, 1},
 					{8 * 1024, 2},
@@ -10163,7 +10163,7 @@ const struct flashchip flashchips[] = {
 		.feature_bits	= FEATURE_EITHER_RESET,
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_jedec,
-		.probe_timing	= TIMING_FIXME, 
+		.probe_timing	= TIMING_FIXME,
 		.block_erasers	=
 		{
 			{
@@ -10200,7 +10200,7 @@ const struct flashchip flashchips[] = {
 				.eraseblocks = { {4 * 1024, 512} },
 				.block_erase = erase_sector_49lfxxxc,
 			}, {
-				.eraseblocks = { 
+				.eraseblocks = {
 					{64 * 1024, 31},
 					{32 * 1024, 1},
 					{8 * 1024, 2},
@@ -10224,7 +10224,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 64,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
-		.tested		= TEST_UNTESTED,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
@@ -10607,7 +10607,7 @@ const struct flashchip flashchips[] = {
 		.page_size	= 256,
 		/* OTP: 64B total; read 0x4B, write 0x42 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
-		.tested		= TEST_UNTESTED,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	= {
@@ -10945,7 +10945,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 64,
 		.page_size	= 64 * 1024,
 		.feature_bits	= FEATURE_ADDR_2AA | FEATURE_EITHER_RESET,
-		.tested		= TEST_OK_PRE,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
@@ -11677,7 +11677,7 @@ const struct flashchip flashchips[] = {
 		/* supports SFDP */
 		/* OTP: 1024B total, 256B reserved; read 0x48; write 0x42, erase 0x44, read ID 0x4B */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
-		.tested		= TEST_OK_PROBE,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
@@ -11914,7 +11914,7 @@ const struct flashchip flashchips[] = {
 		/* OTP: 256B total; read 0x48; write 0x42, erase 0x44, read ID 0x4B */
 		/* QPI enable 0x38, disable 0xFF */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI,
-		.tested		= TEST_UNTESTED,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
@@ -11984,7 +11984,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 256,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
-		.tested		= TEST_UNTESTED,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
@@ -12266,7 +12266,7 @@ const struct flashchip flashchips[] = {
 		.feature_bits	= FEATURE_LONG_RESET,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_jedec,
-		.probe_timing	= 10, 
+		.probe_timing	= 10,
 		.block_erasers	=
 		{
 			{
@@ -12524,7 +12524,7 @@ const struct flashchip flashchips[] = {
 		.feature_bits	= FEATURE_REGISTERMAP | FEATURE_EITHER_RESET,
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_jedec,
-		.probe_timing	= 10, 
+		.probe_timing	= 10,
 		.block_erasers	=
 		{
 			{
