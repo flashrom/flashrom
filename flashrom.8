@@ -329,6 +329,23 @@ flashrom doesn't detect an active IT87 LPC<->SPI bridge, please send a bug
 report so we can diagnose the problem.
 .sp
 .TP
+.B AMD chipsets
+.sp
+Beginning with the SB700 chipset there is an integrated microcontroller (IMC) based on the 8051 embedded in
+every AMD southbridge. Its firmware resides in the same flash chip as the host's which makes writing to the
+flash risky if the IMC is active. Flashrom tries to temporarily disable the IMC but even then changing the
+contents of the flash can have unwanted effects: when the IMC continues (at the latest after a reboot) it will
+continue executing code from the flash. If the code was removed or changed in an unfortunate way it is
+unpredictable what the IMC will do. Therefore, if flashrom detects an active IMC it will disable write support
+unless the user forces it with the
+.sp
+.B "  flashrom \-p internal:amd_imc_force=yes"
+.sp
+syntax. The user is responsible for supplying a suitable image or leaving out the IMC region with the help of
+a layout file. This limitation might be removed in the future when we understand the details better and have
+received enough feedback from users. Please report the outcome if you had to use this option to write a chip.
+.sp
+.TP
 .B Intel chipsets
 .sp
 If you have an Intel chipset with an ICH8 or later southbridge with SPI flash
