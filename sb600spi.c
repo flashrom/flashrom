@@ -23,6 +23,8 @@
 
 #if defined(__i386__) || defined(__x86_64__)
 
+#include <string.h>
+#include <stdlib.h>
 #include "flash.h"
 #include "programmer.h"
 #include "hwaccess.h"
@@ -47,7 +49,7 @@ static void reset_internal_fifo_pointer(void)
 {
 	mmio_writeb(mmio_readb(sb600_spibar + 2) | 0x10, sb600_spibar + 2);
 
-	/* FIXME: This loop makes no sense at all. */
+	/* FIXME: This loop needs a timeout and a clearer message. */
 	while (mmio_readb(sb600_spibar + 0xD) & 0x7)
 		msg_pspew("reset\n");
 }
@@ -59,8 +61,7 @@ static int compare_internal_fifo_pointer(uint8_t want)
 	tmp = mmio_readb(sb600_spibar + 0xd) & 0x07;
 	want &= 0x7;
 	if (want != tmp) {
-		msg_perr("SB600 FIFO pointer corruption! Pointer is %d, wanted "
-			 "%d\n", tmp, want);
+		msg_perr("FIFO pointer corruption! Pointer is %d, wanted %d\n", tmp, want);
 		msg_perr("Something else is accessing the flash chip and "
 			 "causes random corruption.\nPlease stop all "
 			 "applications and drivers and IPMI which access the "
@@ -194,6 +195,39 @@ static int sb600_spi_send_command(struct flashctx *flash, unsigned int writecnt,
 	return 0;
 }
 
+static int sb600_handle_imc(struct pci_dev *dev, bool amd_imc_force)
+{
+	/* Handle IMC everywhere but sb600 which does not have one. */
+	if (dev->device_id == 0x438d)
+		return 0;
+
+	/* TODO: we should not only look at IntegratedImcPresent (LPC Dev 20, Func 3, 40h) but also at
+	 * IMCEnable(Strap) and Override EcEnable(Strap) (sb8xx, sb9xx?, a50: Misc_Reg: 80h-87h;
+	 * sb7xx, sp5100: PM_Reg: B0h-B1h) etc. */
+	uint8_t reg = pci_read_byte(dev, 0x40);
+	if ((reg & (1 << 7)) == 0) {
+		msg_pdbg("IMC is not active.\n");
+		return 0;
+	}
+
+	if (!amd_imc_force)
+		programmer_may_write = 0;
+	msg_pinfo("Writes have been disabled for safety reasons because the IMC is active\n"
+		  "and it could interfere with accessing flash memory. Flashrom will try\n"
+		  "to disable it temporarily but even then this might not be safe:\n"
+		  "when it is reenabled and after a reboot it expects to find working code\n"
+		  "in the flash and it is unpredictable what happens if there is none.\n"
+		  "\n"
+		  "To be safe make sure that there is a working IMC firmware at the right\n"
+		  "location in the image you intend to write and do not attempt to erase.\n"
+		  "\n"
+		  "You can enforce write support with the amd_imc_force programmer option.\n");
+	if (amd_imc_force)
+		msg_pinfo("Continuing with write support because the user forced us to!\n");
+
+	return amd_imc_shutdown(dev);
+}
+
 static const struct spi_programmer spi_programmer_sb600 = {
 	.type = SPI_CONTROLLER_SB600,
 	.max_data_read = 8,
@@ -210,9 +244,25 @@ int sb600_probe_spi(struct pci_dev *dev)
 	struct pci_dev *smbus_dev;
 	uint32_t tmp;
 	uint8_t reg;
+	bool amd_imc_force = false;
 	static const char *const speed_names[4] = {
 		"66/reserved", "33", "22", "16.5"
 	};
+
+	char *arg = extract_programmer_param("amd_imc_force");
+	if (arg && !strcmp(arg, "yes")) {
+		amd_imc_force = true;
+		msg_pspew("amd_imc_force enabled.\n");
+	} else if (arg && !strlen(arg)) {
+		msg_perr("Missing argument for amd_imc_force.\n");
+		free(arg);
+		return ERROR_FATAL;
+	} else if (arg) {
+		msg_perr("Unknown argument for amd_imc_force: \"%s\" (not \"yes\").\n", arg);
+		free(arg);
+		return ERROR_FATAL;
+	}
+	free(arg);
 
 	/* Read SPI_BaseAddr */
 	tmp = pci_read_long(dev, 0xa0);
@@ -300,23 +350,8 @@ int sb600_probe_spi(struct pci_dev *dev)
 		return 0;
 	}
 
-	reg = pci_read_byte(dev, 0x40);
-	msg_pdbg("SB700 IMC is %sactive.\n", (reg & (1 << 7)) ? "" : "not ");
-	if (reg & (1 << 7)) {
-		/* If we touch any region used by the IMC, the IMC and the SPI
-		 * interface will lock up, and the only way to recover is a
-		 * hard reset, but that is a bad choice for a half-erased or
-		 * half-written flash chip.
-		 * There appears to be an undocumented register which can freeze
-		 * or disable the IMC, but for now we want to play it safe.
-		 */
-		msg_perr("The SB700 IMC is active and may interfere with SPI "
-			 "commands. Disabling write.\n");
-		/* FIXME: Should we only disable SPI writes, or will the lockup
-		 * affect LPC/FWH chips as well?
-		 */
-		programmer_may_write = 0;
-	}
+	if (sb600_handle_imc(dev, amd_imc_force) != 0)
+		return ERROR_FATAL;
 
 	/* Bring the FIFO to a clean state. */
 	reset_internal_fifo_pointer();
