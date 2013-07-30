@@ -884,6 +884,10 @@ int dediprog_init(void)
 	msg_pdbg("Found USB device (%04x:%04x).\n",
 		 dev->descriptor.idVendor, dev->descriptor.idProduct);
 	dediprog_handle = usb_open(dev);
+	if (!dediprog_handle) {
+		msg_perr("Could not open USB device: %s\n", usb_strerror());
+		return 1;
+	}
 	ret = usb_set_configuration(dediprog_handle, 1);
 	if (ret < 0) {
 		msg_perr("Could not set USB device configuration: %i %s\n",
