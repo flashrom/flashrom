@@ -2234,6 +2234,7 @@ static int it8718f_gpio63_raise(void)
 /*
  * Suited for all boards with ambiguous DMI chassis information, which should be
  * whitelisted because they are known to work:
+ * - ASRock IMB-A180(-H)
  * - MSC Q7 Tunnel Creek Module (Q7-TCTC)
  */
 static int p2_not_a_laptop(void)
@@ -2321,6 +2322,7 @@ const struct board_match board_matches[] = {
 	{0x8086, 0x27b9, 0xa0a0, 0x0632,  0x8086, 0x27da, 0xa0a0, 0x0632, NULL,         NULL, NULL,           P3, "AOpen",       "i945GMx-VFX",           0,   OK, intel_ich_gpio38_raise},
 	{0x8086, 0x277c, 0xa0a0, 0x060b,  0x8086, 0x27da, 0xa0a0, 0x060b, NULL,         NULL, NULL,           P3, "AOpen",       "i975Xa-YDG",            0,   OK, board_aopen_i975xa_ydg},
 	{0x8086, 0x27b8, 0x1849, 0x27b8,  0x8086, 0x27da, 0x1849, 0x27da, "^ConRoeXFire-eSATA2", NULL, NULL,  P3, "ASRock",      "ConRoeXFire-eSATA2",    0,   OK, intel_ich_gpio16_raise},
+	{0x1022, 0x1536, 0x1849, 0x1536,  0x1022, 0x780e, 0x1849, 0x780e, "^Kabini CRB$", NULL, NULL,         P2, "ASRock",      "IMB-A180(-H)",          0,   OK, p2_not_a_laptop},
 	{0x1039, 0x0741, 0x1849, 0x0741,  0x1039, 0x5513, 0x1849, 0x5513, "^K7S41 $",   NULL, NULL,           P3, "ASRock",      "K7S41",                 0,   OK, w836xx_memw_enable_2e},
 	{0x1039, 0x0741, 0x1849, 0x0741,  0x1039, 0x5513, 0x1849, 0x5513, "^K7S41GX$",  NULL, NULL,           P3, "ASRock",      "K7S41GX",               0,   OK, w836xx_memw_enable_2e},
 	{0x8086, 0x24D4, 0x1849, 0x24D0,  0x8086, 0x24D5, 0x1849, 0x9739, NULL,         NULL, NULL,           P3, "ASRock",      "P4i65GV",               0,   OK, intel_ich_gpio23_raise},
