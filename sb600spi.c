@@ -44,6 +44,58 @@
  */
 
 static uint8_t *sb600_spibar = NULL;
+enum amd_chipset {
+	CHIPSET_AMD_UNKNOWN,
+	CHIPSET_SB6XX,
+	CHIPSET_SB7XX, /* SP5100 too */
+	CHIPSET_SB89XX, /* Hudson-1 too */
+	CHIPSET_HUDSON234,
+	CHIPSET_YANGTZE,
+};
+static enum amd_chipset amd_gen = CHIPSET_AMD_UNKNOWN;
+
+static void determine_generation(struct pci_dev *dev)
+{
+	amd_gen = CHIPSET_AMD_UNKNOWN;
+	if (dev->device_id == 0x780e) {
+		/* The PCI ID of the LPC bridge doesn't change between Hudson-2/3/4 and Yangtze (Kabini/Temash)
+		 * although they use different SPI interfaces. */
+#ifdef USE_YANGTZE_HEURISTICS
+		/* This heuristic accesses the SPI interface MMIO BAR at locations beyond those supported by
+		 * Hudson in the hope of getting 0xff readback on older chipsets and non-0xff readback on
+		 * Yangtze (and newer, compatible chipsets). */
+		int i;
+		msg_pdbg("Checking for AMD Yangtze (Kabini/Temash) or later... ");
+		for (i = 0x20; i <= 0x4f; i++) {
+			if (mmio_readb(sb600_spibar + i) != 0xff) {
+				amd_gen = CHIPSET_YANGTZE;
+				msg_pdbg("found.\n");
+				return;
+			}
+		}
+		msg_pdbg("not found. Assuming Hudson.\n");
+		amd_gen = CHIPSET_HUDSON234;
+#else
+		struct pci_dev *smbus_dev = pci_dev_find(0x1022, 0x780B);
+		if (smbus_dev == NULL) {
+			msg_pdbg("No SMBus device with ID 1022:780B found.\n");
+			return;
+		}
+		uint8_t rev = pci_read_byte(smbus_dev, PCI_REVISION_ID);
+		if (rev >= 0x11 && rev <= 0x15) {
+			amd_gen = CHIPSET_HUDSON234;
+			msg_pdbg("Hudson-2/3/4 detected.\n");
+		} else if (rev >= 0x39 && rev <= 0x3A) {
+			amd_gen = CHIPSET_YANGTZE;
+			msg_pdbg("Yangtze detected.\n");
+		} else {
+			msg_pwarn("FCH device found but SMBus revision 0x%02x does not match known values.\n"
+				  "Please report this to flashrom@flashrom.org and include this log and\n"
+				  "the output of lspci -nnvx, thanks!.\n", rev);
+		}
+#endif
+	}
+}
 
 static void reset_internal_fifo_pointer(void)
 {
@@ -212,9 +264,9 @@ static int sb600_handle_imc(struct pci_dev *dev, bool amd_imc_force)
 
 	if (!amd_imc_force)
 		programmer_may_write = 0;
-	msg_pinfo("Writes have been disabled for safety reasons because the IMC is active\n"
-		  "and it could interfere with accessing flash memory. Flashrom will try\n"
-		  "to disable it temporarily but even then this might not be safe:\n"
+	msg_pinfo("Writes have been disabled for safety reasons because the presence of the IMC\n"
+		  "was detected and it could interfere with accessing flash memory. Flashrom will\n"
+		  "try to disable it temporarily but even then this might not be safe:\n"
 		  "when it is reenabled and after a reboot it expects to find working code\n"
 		  "in the flash and it is unpredictable what happens if there is none.\n"
 		  "\n"
@@ -281,6 +333,14 @@ int sb600_probe_spi(struct pci_dev *dev)
 	 */
 	sb600_spibar += tmp & 0xfff;
 
+	determine_generation(dev);
+
+	if (amd_gen == CHIPSET_YANGTZE) {
+		msg_perr("SPI on Kabini/Temash and newer chipsets are not yet supported.\n"
+			 "Please try a newer version of flashrom.\n");
+		return ERROR_NONFATAL;
+	}
+
 	tmp = pci_read_long(dev, 0xa0);
 	msg_pdbg("AltSpiCSEnable=%i, SpiRomEnable=%i, "
 		     "AbortEnable=%i\n", tmp & 0x1, (tmp & 0x2) >> 1,
@@ -312,9 +372,8 @@ int sb600_probe_spi(struct pci_dev *dev)
 
 	/* Look for the SMBus device. */
 	smbus_dev = pci_dev_find(0x1002, 0x4385);
-
 	if (!smbus_dev) {
-		smbus_dev = pci_dev_find(0x1022, 0x780b); /* AMD Hudson */
+		smbus_dev = pci_dev_find(0x1022, 0x780b); /* AMD FCH */
 		if (!smbus_dev) {
 			msg_perr("ERROR: SMBus device not found. Not enabling SPI.\n");
 			return ERROR_NONFATAL;
