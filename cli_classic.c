@@ -175,8 +175,7 @@ int main(int argc, char *argv[])
 				cli_classic_abort_usage();
 			}
 			if (dont_verify_it) {
-				fprintf(stderr, "--verify and --noverify are"
-					"mutually exclusive. Aborting.\n");
+				fprintf(stderr, "--verify and --noverify are mutually exclusive. Aborting.\n");
 				cli_classic_abort_usage();
 			}
 			filename = strdup(optarg);
@@ -184,8 +183,7 @@ int main(int argc, char *argv[])
 			break;
 		case 'n':
 			if (verify_it) {
-				fprintf(stderr, "--verify and --noverify are"
-					"mutually exclusive. Aborting.\n");
+				fprintf(stderr, "--verify and --noverify are mutually exclusive. Aborting.\n");
 				cli_classic_abort_usage();
 			}
 			dont_verify_it = 1;

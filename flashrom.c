@@ -335,6 +335,9 @@ struct shutdown_func_data {
  */
 static int may_register_shutdown = 0;
 
+/* Did we change something or was every erase/write skipped (if any)? */
+static bool all_skipped = true;
+
 static int check_block_eraser(const struct flashctx *flash, int k, int log);
 
 /* Register a function to be executed on programmer shutdown.
@@ -1309,7 +1312,6 @@ static int selfcheck_eraseblocks(const struct flashchip *chip)
 	return ret;
 }
 
-static bool all_skipped = true;
 static int erase_and_write_block_helper(struct flashctx *flash,
 					unsigned int start, unsigned int len,
 					uint8_t *curcontents,
@@ -1995,7 +1997,8 @@ int doit(struct flashctx *flash, int force, const char *filename, int read_it,
 		}
 	}
 
-	if (verify_it && !all_skipped) {
+	/* Verify only if we either did not try to write (verify operation) or actually changed something. */
+	if (verify_it && (!write_it || !all_skipped)) {
 		msg_cinfo("Verifying flash... ");
 
 		if (write_it) {
