@@ -572,7 +572,7 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 		 enum ich_chipset ich_generation);
 int via_init_spi(struct pci_dev *dev, uint32_t mmio_base);
 
-/* imc.c */
+/* amd_imc.c */
 int amd_imc_shutdown(struct pci_dev *dev);
 
 /* it85spi.c */

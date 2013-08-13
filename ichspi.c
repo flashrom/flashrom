@@ -1210,7 +1210,7 @@ static int ich_hwseq_probe(struct flashctx *flash)
 	} else {
 		msg_cdbg("The flash address space (0x%06x - 0x%06x) is divided "
 			 "at address 0x%06x in two partitions.\n",
-			 0, size_high-1, boundary);
+			 0, total_size-1, boundary);
 		size_low = total_size - size_high;
 		erase_size_low = ich_hwseq_get_erase_block_size(0);
 
@@ -1224,7 +1224,7 @@ static int ich_hwseq_probe(struct flashctx *flash)
 		eraser->eraseblocks[1].size = erase_size_high;
 		eraser->eraseblocks[1].count = size_high / erase_size_high;
 		msg_cdbg("The second partition ranges from 0x%06x to 0x%06x.\n",
-			 boundary, size_high-1);
+			 boundary, total_size-1);
 		msg_cdbg("In that range are %d erase blocks with %d B each.\n",
 			 size_high / erase_size_high, erase_size_high);
 	}

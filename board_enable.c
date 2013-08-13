@@ -2235,6 +2235,7 @@ static int it8718f_gpio63_raise(void)
  * Suited for all boards with ambiguous DMI chassis information, which should be
  * whitelisted because they are known to work:
  * - ASRock IMB-A180(-H)
+ * - Intel D945GCNL
  * - MSC Q7 Tunnel Creek Module (Q7-TCTC)
  */
 static int p2_not_a_laptop(void)
