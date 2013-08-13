@@ -392,13 +392,23 @@ int programmer_init(enum programmer prog, const char *param)
 	programmer_may_write = 1;
 
 	programmer_param = param;
-	msg_pdbg("Initializing %s programmer\n",
-		 programmer_table[programmer].name);
+	msg_pdbg("Initializing %s programmer\n", programmer_table[programmer].name);
 	ret = programmer_table[programmer].init();
 	if (programmer_param && strlen(programmer_param)) {
-		msg_perr("Unhandled programmer parameters: %s\n",
-			 programmer_param);
-		/* Do not error out here, the init itself was successful. */
+		if (ret != 0) {
+			/* It is quite possible that any unhandled programmer parameter would have been valid,
+			 * but an error in actual programmer init happened before the parameter was evaluated.
+			 */
+			msg_pwarn("Unhandled programmer parameters (possibly due to another failure): %s\n",
+				  programmer_param);
+		} else {
+			/* Actual programmer init was successful, but the user specified an invalid or unusable
+			 * (for the current programmer configuration) parameter.
+			 */
+			msg_perr("Unhandled programmer parameters: %s\n", programmer_param);
+			msg_perr("Aborting.\n");
+			ret = ERROR_FATAL;
+		}
 	}
 	return ret;
 }
