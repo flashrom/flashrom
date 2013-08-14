@@ -205,12 +205,34 @@ void physunmap(void *virt_addr, size_t len)
 }
 #endif
 
-#define PHYSMAP_NOFAIL		0
-#define PHYSMAP_MAYFAIL		1
-#define PHYSMAP_RW		0
-#define PHYSMAP_RO		1
-#define PHYSMAP_NOCLEANUP	0
-#define PHYSMAP_CLEANUP		1
+#define PHYSM_NOFAIL	0
+#define PHYSM_MAYFAIL	1
+#define PHYSM_RW	0
+#define PHYSM_RO	1
+#define PHYSM_NOCLEANUP	0
+#define PHYSM_CLEANUP	1
+#define PHYSM_EXACT	0
+#define PHYSM_ROUND	1
+
+/* Round start to nearest page boundary below and set len so that the resulting address range ends at the lowest
+ * possible page boundary where the original address range is still entirely contained. It returns the
+ * difference between the rounded start address and the original start address. */
+static uintptr_t round_to_page_boundaries(uintptr_t *start, size_t *len)
+{
+	uintptr_t page_size = getpagesize();
+	uintptr_t page_mask = ~(page_size-1);
+	uintptr_t end = *start + *len;
+	uintptr_t old_start = *start;
+	msg_gspew("page_size=%" PRIxPTR "\n", page_size);
+	msg_gspew("pre-rounding:  start=0x%0*" PRIxPTR ", len=0x%zx, end=0x%0*" PRIxPTR "\n",
+		  PRIxPTR_WIDTH, *start, *len, PRIxPTR_WIDTH, end);
+	*start = *start & page_mask;
+	end = (end + page_size - 1) & page_mask;
+	*len = end - *start;
+	msg_gspew("post-rounding: start=0x%0*" PRIxPTR ", len=0x%zx, end=0x%0*" PRIxPTR "\n",
+		  PRIxPTR_WIDTH, *start, *len, PRIxPTR_WIDTH, *start + *len);
+	return old_start - *start;
+}
 
 struct undo_physmap_data {
 	void *virt_addr;
@@ -230,24 +252,18 @@ static int undo_physmap(void *data)
 }
 
 static void *physmap_common(const char *descr, uintptr_t phys_addr, size_t len, bool mayfail,
-			    bool readonly, bool autocleanup)
+			    bool readonly, bool autocleanup, bool round)
 {
 	void *virt_addr;
+	uintptr_t offset = 0;
 
 	if (len == 0) {
 		msg_pspew("Not mapping %s, zero size at 0x%0*" PRIxPTR ".\n", descr, PRIxPTR_WIDTH, phys_addr);
 		return ERROR_PTR;
 	}
 
-	if ((getpagesize() - 1) & len) {
-		msg_perr("Mapping %s at 0x%0*" PRIxPTR ", unaligned size 0x%zx.\n",
-			 descr, PRIxPTR_WIDTH, phys_addr, len);
-	}
-
-	if ((getpagesize() - 1) & phys_addr) {
-		msg_perr("Mapping %s, 0x%zx bytes at unaligned 0x%0*" PRIxPTR ".\n",
-			 descr, len, PRIxPTR_WIDTH, phys_addr);
-	}
+	if (round)
+		offset = round_to_page_boundaries(&phys_addr, &len);
 
 	if (readonly)
 		virt_addr = sys_physmap_ro_cached(phys_addr, len);
@@ -273,7 +289,9 @@ static void *physmap_common(const char *descr, uintptr_t phys_addr, size_t len, 
 			 "and reboot, or reboot into\n"
 			 "single user mode.\n");
 #endif
-		if (!mayfail)
+		if (mayfail)
+			return ERROR_PTR;
+		else
 			exit(3);
 	}
 
@@ -292,7 +310,7 @@ static void *physmap_common(const char *descr, uintptr_t phys_addr, size_t len, 
 		}
 	}
 
-	return virt_addr;
+	return virt_addr + offset;
 unmap_out:
 	physunmap(virt_addr, len);
 	if (!mayfail)
@@ -302,17 +320,17 @@ unmap_out:
 
 void *physmap(const char *descr, uintptr_t phys_addr, size_t len)
 {
-	return physmap_common(descr, phys_addr, len, PHYSMAP_NOFAIL, PHYSMAP_RW, PHYSMAP_NOCLEANUP);
+	return physmap_common(descr, phys_addr, len, PHYSM_NOFAIL, PHYSM_RW, PHYSM_NOCLEANUP, PHYSM_EXACT);
 }
 
 void *rphysmap(const char *descr, uintptr_t phys_addr, size_t len)
 {
-	return physmap_common(descr, phys_addr, len, PHYSMAP_NOFAIL, PHYSMAP_RW, PHYSMAP_CLEANUP);
+	return physmap_common(descr, phys_addr, len, PHYSM_NOFAIL, PHYSM_RW, PHYSM_CLEANUP, PHYSM_ROUND);
 }
 
 void *physmap_try_ro(const char *descr, uintptr_t phys_addr, size_t len)
 {
-	return physmap_common(descr, phys_addr, len, PHYSMAP_MAYFAIL, PHYSMAP_RO, PHYSMAP_NOCLEANUP);
+	return physmap_common(descr, phys_addr, len, PHYSM_MAYFAIL, PHYSM_RO, PHYSM_NOCLEANUP, PHYSM_EXACT);
 }
 
 /* MSR abstraction implementations for Linux, OpenBSD, FreeBSD/Dragonfly, OSX, libpayload
