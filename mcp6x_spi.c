@@ -135,25 +135,20 @@ int mcp6x_spi_init(int want_spi)
 
 	/* Accessing a NULL pointer BAR is evil. Don't do it. */
 	if (!mcp6x_spibaraddr && want_spi) {
-		msg_perr("Error: Chipset is strapped for SPI, but MCP SPI BAR "
-			 "is invalid.\n");
+		msg_perr("Error: Chipset is strapped for SPI, but MCP SPI BAR is invalid.\n");
 		return 1;
 	} else if (!mcp6x_spibaraddr && !want_spi) {
 		msg_pdbg("MCP SPI is not used.\n");
 		return 0;
 	} else if (mcp6x_spibaraddr && !want_spi) {
-		msg_pdbg("Strange. MCP SPI BAR is valid, but chipset apparently"
-			 " doesn't have SPI enabled.\n");
+		msg_pdbg("Strange. MCP SPI BAR is valid, but chipset apparently doesn't have SPI enabled.\n");
 		/* FIXME: Should we enable SPI anyway? */
 		return 0;
 	}
 	/* Map the BAR. Bytewise/wordwise access at 0x530 and 0x540. */
-	mcp6x_spibar = physmap("NVIDIA MCP6x SPI", mcp6x_spibaraddr, 0x544);
-
-#if 0
-	/* FIXME: Run the physunmap in a shutdown function. */
-	physunmap(mcp6x_spibar, 0x544);
-#endif
+	mcp6x_spibar = rphysmap("NVIDIA MCP6x SPI", mcp6x_spibaraddr, 0x544);
+	if (mcp6x_spibar == ERROR_PTR)
+		return 1;
 
 	status = mmio_readw(mcp6x_spibar + 0x530);
 	msg_pdbg("SPI control is 0x%04x, req=%i, gnt=%i\n",

@@ -262,6 +262,9 @@ static int it85xx_spi_common_init(struct superio s)
 	 * Major TODO here, and it will be a lot of work.
 	 */
 	base = (chipaddr)physmap("it85 communication", 0xFFFFF000, 0x1000);
+	if (base == (chipaddr)ERROR_PTR)
+		return 1;
+
 	msg_pdbg("%s():%d base=0x%08x\n", __func__, __LINE__,
 	         (unsigned int)base);
 	ce_high = (unsigned char *)(base + 0xE00);  /* 0xFFFFFE00 */

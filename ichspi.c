@@ -1844,7 +1844,9 @@ int via_init_spi(struct pci_dev *dev, uint32_t mmio_base)
 {
 	int i;
 
-	ich_spibar = physmap("VIA SPI MMIO registers", mmio_base, 0x70);
+	ich_spibar = rphysmap("VIA SPI MMIO registers", mmio_base, 0x70);
+	if (ich_spibar == ERROR_PTR)
+		return ERROR_FATAL;
 	/* Do we really need no write enable? Like the LPC one at D17F0 0x40 */
 
 	/* Not sure if it speaks all these bus protocols. */

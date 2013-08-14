@@ -151,15 +151,11 @@ static int nicintel_spi_shutdown(void *data)
 {
 	uint32_t tmp;
 
-	/* Disable writes manually. See the comment about EECD in
-	 * nicintel_spi_init() for details.
-	 */
+	/* Disable writes manually. See the comment about EECD in nicintel_spi_init() for details. */
 	tmp = pci_mmio_readl(nicintel_spibar + EECD);
 	tmp &= ~FLASH_WRITES_ENABLED;
 	tmp |= FLASH_WRITES_DISABLED;
 	pci_mmio_writel(tmp, nicintel_spibar + EECD);
-
-	physunmap(nicintel_spibar, MEMMAP_SIZE);
 
 	return 0;
 }
@@ -177,8 +173,7 @@ int nicintel_spi_init(void)
 		return 1;
 
 	io_base_addr = pcidev_readbar(dev, PCI_BASE_ADDRESS_0);
-	nicintel_spibar = physmap("Intel Gigabit NIC w/ SPI flash",
-				  io_base_addr, MEMMAP_SIZE);
+	nicintel_spibar = rphysmap("Intel Gigabit NIC w/ SPI flash", io_base_addr, MEMMAP_SIZE);
 	/* Automatic restore of EECD on shutdown is not possible because EECD
 	 * does not only contain FLASH_WRITES_DISABLED|FLASH_WRITES_ENABLED,
 	 * but other bits with side effects as well. Those other bits must be

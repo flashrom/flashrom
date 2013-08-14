@@ -54,12 +54,6 @@ static const struct par_programmer par_programmer_satasii = {
 		.chip_writen		= fallback_chip_writen,
 };
 
-static int satasii_shutdown(void *data)
-{
-	physunmap(sii_bar, SATASII_MEMMAP_SIZE);
-	return 0;
-}
-
 static uint32_t satasii_wait_done(void)
 {
 	uint32_t ctrl_reg;
@@ -97,14 +91,14 @@ int satasii_init(void)
 		reg_offset = 0x50;
 	}
 
-	sii_bar = physmap("SATA SiI registers", addr, SATASII_MEMMAP_SIZE) + reg_offset;
+	sii_bar = rphysmap("SATA SiI registers", addr, SATASII_MEMMAP_SIZE);
+	if (sii_bar == ERROR_PTR)
+		return 1;
+	sii_bar += reg_offset;
 
 	/* Check if ROM cycle are OK. */
 	if ((id != 0x0680) && (!(pci_mmio_readl(sii_bar) & (1 << 26))))
 		msg_pwarn("Warning: Flash seems unconnected.\n");
-
-	if (register_shutdown(satasii_shutdown, NULL))
-		return 1;
 
 	register_par_programmer(&par_programmer_satasii, BUS_PARALLEL);
 
