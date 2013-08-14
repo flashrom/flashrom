@@ -59,13 +59,6 @@ static const struct par_programmer par_programmer_nicintel = {
 		.chip_writen		= fallback_chip_writen,
 };
 
-static int nicintel_shutdown(void *data)
-{
-	physunmap(nicintel_control_bar, NICINTEL_CONTROL_MEMMAP_SIZE);
-	physunmap(nicintel_bar, NICINTEL_MEMMAP_SIZE);
-	return 0;
-}
-
 int nicintel_init(void)
 {
 	struct pci_dev *dev = NULL;
@@ -83,18 +76,14 @@ int nicintel_init(void)
 		return 1;
 
 	addr = pcidev_readbar(dev, PCI_BASE_ADDRESS_2);
-	nicintel_bar = physmap("Intel NIC flash", addr, NICINTEL_MEMMAP_SIZE);
+	nicintel_bar = rphysmap("Intel NIC flash", addr, NICINTEL_MEMMAP_SIZE);
 	if (nicintel_bar == ERROR_PTR)
-		goto error_out_unmap;
+		return 1;
 
 	addr = pcidev_readbar(dev, PCI_BASE_ADDRESS_0);
 	/* FIXME: This is not an aligned mapping. Use 4k? */
-	nicintel_control_bar = physmap("Intel NIC control/status reg",
-	                               addr, NICINTEL_CONTROL_MEMMAP_SIZE);
+	nicintel_control_bar = rphysmap("Intel NIC control/status reg", addr, NICINTEL_CONTROL_MEMMAP_SIZE);
 	if (nicintel_control_bar == ERROR_PTR)
-		goto error_out;
-
-	if (register_shutdown(nicintel_shutdown, NULL))
 		return 1;
 
 	/* FIXME: This register is pretty undocumented in all publicly available
@@ -112,11 +101,6 @@ int nicintel_init(void)
 	register_par_programmer(&par_programmer_nicintel, BUS_PARALLEL);
 
 	return 0;
-
-error_out_unmap:
-	physunmap(nicintel_bar, NICINTEL_MEMMAP_SIZE);
-error_out:
-	return 1;
 }
 
 static void nicintel_chip_writeb(const struct flashctx *flash, uint8_t val,

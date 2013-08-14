@@ -276,6 +276,7 @@ int processor_flash_enable(void);
 
 /* physmap.c */
 void *physmap(const char *descr, uintptr_t phys_addr, size_t len);
+void *rphysmap(const char *descr, uintptr_t phys_addr, size_t len);
 void *physmap_try_ro(const char *descr, uintptr_t phys_addr, size_t len);
 void physunmap(void *virt_addr, size_t len);
 #if CONFIG_INTERNAL == 1

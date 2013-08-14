@@ -480,7 +480,9 @@ static int enable_flash_tunnelcreek(struct pci_dev *dev, const char *name)
 	msg_pdbg("\nRoot Complex Register Block address = 0x%x\n", tmp);
 
 	/* Map RCBA to virtual memory */
-	rcrb = physmap("ICH RCRB", tmp, 0x4000);
+	rcrb = rphysmap("ICH RCRB", tmp, 0x4000);
+	if (rcrb == ERROR_PTR)
+		return 1;
 
 	/* Test Boot BIOS Strap Status */
 	bnt = mmio_readl(rcrb + 0x3410);
@@ -562,7 +564,9 @@ static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
 	msg_pdbg("Root Complex Register Block address = 0x%x\n", tmp);
 
 	/* Map RCBA to virtual memory */
-	rcrb = physmap("ICH RCRB", tmp, 0x4000);
+	rcrb = rphysmap("ICH RCRB", tmp, 0x4000);
+	if (rcrb == ERROR_PTR)
+		return 1;
 
 	gcs = mmio_readl(rcrb + 0x3410);
 	msg_pdbg("GCS = 0x%x: ", gcs);
@@ -737,10 +741,8 @@ static int enable_flash_vt_vx(struct pci_dev *dev, const char *name)
 		case 0x8410: /* VX900 */
 			mmio_base = pci_read_long(dev, 0xbc) << 8;
 			mmio_base_physmapped = physmap("VIA VX MMIO register", mmio_base, SPI_CNTL_LEN);
-			if (mmio_base_physmapped == ERROR_PTR) {
-				physunmap(mmio_base_physmapped, SPI_CNTL_LEN);
+			if (mmio_base_physmapped == ERROR_PTR)
 				return ERROR_FATAL;
-			}
 
 			/* Offset 0 - Bit 0 holds SPI Bus0 Enable Bit. */
 			spi_cntl = mmio_readl(mmio_base_physmapped) + 0x00;

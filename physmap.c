@@ -21,6 +21,7 @@
  */
 
 #include <unistd.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -204,13 +205,32 @@ void physunmap(void *virt_addr, size_t len)
 }
 #endif
 
-#define PHYSMAP_NOFAIL	0
-#define PHYSMAP_MAYFAIL	1
-#define PHYSMAP_RW	0
-#define PHYSMAP_RO	1
+#define PHYSMAP_NOFAIL		0
+#define PHYSMAP_MAYFAIL		1
+#define PHYSMAP_RW		0
+#define PHYSMAP_RO		1
+#define PHYSMAP_NOCLEANUP	0
+#define PHYSMAP_CLEANUP		1
 
-static void *physmap_common(const char *descr, uintptr_t phys_addr,
-			    size_t len, int mayfail, int readonly)
+struct undo_physmap_data {
+	void *virt_addr;
+	size_t len;
+};
+
+static int undo_physmap(void *data)
+{
+	if (data == NULL) {
+		msg_perr("%s: tried to physunmap without valid data!\n", __func__);
+		return 1;
+	}
+	struct undo_physmap_data *d = data;
+	physunmap(d->virt_addr, d->len);
+	free(data);
+	return 0;
+}
+
+static void *physmap_common(const char *descr, uintptr_t phys_addr, size_t len, bool mayfail,
+			    bool readonly, bool autocleanup)
 {
 	void *virt_addr;
 
@@ -257,19 +277,42 @@ static void *physmap_common(const char *descr, uintptr_t phys_addr,
 			exit(3);
 	}
 
+	if (autocleanup) {
+		struct undo_physmap_data *d = malloc(sizeof(struct undo_physmap_data));
+		if (d == NULL) {
+			msg_perr("%s: Out of memory!\n", __func__);
+			goto unmap_out;
+		}
+
+		d->virt_addr = virt_addr;
+		d->len = len;
+		if (register_shutdown(undo_physmap, d) != 0) {
+			msg_perr("%s: Could not register shutdown function!\n", __func__);
+			goto unmap_out;
+		}
+	}
+
 	return virt_addr;
+unmap_out:
+	physunmap(virt_addr, len);
+	if (!mayfail)
+		exit(3);
+	return ERROR_PTR;
 }
 
 void *physmap(const char *descr, uintptr_t phys_addr, size_t len)
 {
-	return physmap_common(descr, phys_addr, len, PHYSMAP_NOFAIL,
-			      PHYSMAP_RW);
+	return physmap_common(descr, phys_addr, len, PHYSMAP_NOFAIL, PHYSMAP_RW, PHYSMAP_NOCLEANUP);
+}
+
+void *rphysmap(const char *descr, uintptr_t phys_addr, size_t len)
+{
+	return physmap_common(descr, phys_addr, len, PHYSMAP_NOFAIL, PHYSMAP_RW, PHYSMAP_CLEANUP);
 }
 
 void *physmap_try_ro(const char *descr, uintptr_t phys_addr, size_t len)
 {
-	return physmap_common(descr, phys_addr, len, PHYSMAP_MAYFAIL,
-			      PHYSMAP_RO);
+	return physmap_common(descr, phys_addr, len, PHYSMAP_MAYFAIL, PHYSMAP_RO, PHYSMAP_NOCLEANUP);
 }
 
 /* MSR abstraction implementations for Linux, OpenBSD, FreeBSD/Dragonfly, OSX, libpayload
