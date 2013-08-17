@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # This file is part of the flashrom project.
 #
@@ -24,21 +24,24 @@
 EXIT_SUCCESS=0
 EXIT_FAILURE=1
 
+# Make sure we don't get translated output
+export LC_ALL=C
+
 svn_revision() {
-	LC_ALL=C svnversion -cn . 2>/dev/null | \
+	svnversion -cn . 2>/dev/null | \
 		sed -e "s/.*://" -e "s/\([0-9]*\).*/\1/" | \
 		grep "[0-9]" ||
-	LC_ALL=C svn info . 2>/dev/null | \
+	svn info . 2>/dev/null | \
 		awk '/^Revision:/ {print $$2 }' | \
 		grep "[0-9]" ||
-	LC_ALL=C git svn info . 2>/dev/null | \
+	git svn info . 2>/dev/null | \
 		awk '/^Revision:/ {print $$2 }' | \
 		grep "[0-9]" ||
 	echo ''
 }
 
 svn_url() {
-	echo $(LC_ALL=C svn info 2>/dev/null |
+	echo $(svn info 2>/dev/null |
 	       grep URL: |
 		   sed 's/.*URL:[[:blank:]]*//' |
 		   grep ^.
@@ -54,8 +57,7 @@ svn_timestamp() {
 		timestamp=$(date "${date_format} +")
 	else
 		# No local changes, get date of the last log record.
-		local last_commit_date=$(svn info | grep '^Last Changed Date:' | \
-		                         awk '{print $4" "$5" "$6}')
+		local last_commit_date=$(svn info | grep '^Last Changed Date:' | awk '{print $4" "$5" "$6}')
 		timestamp=$(date --utc --date "${last_commit_date}" \
 			        "${date_format} UTC")
 	fi
@@ -108,7 +110,7 @@ git_timestamp() {
 
 git_url() {
 	# Only the first line of `git remote' is considered.
-	echo $(LC_ALL=C git remote show origin 2>/dev/null |
+	echo $(git remote show origin 2>/dev/null |
 	       grep 'Fetch URL:' |
 	       sed 's/.*URL:[[:blank:]]*//' |
 	       grep ^.
