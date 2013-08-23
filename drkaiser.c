@@ -69,6 +69,8 @@ int drkaiser_init(void)
 		return 1;
 
 	addr = pcidev_readbar(dev, PCI_BASE_ADDRESS_2);
+	if (!addr)
+		return 1;
 
 	/* Write magic register to enable flash write. */
 	rpci_write_word(dev, PCI_MAGIC_DRKAISER_ADDR, PCI_MAGIC_DRKAISER_VALUE);

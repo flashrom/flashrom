@@ -94,7 +94,7 @@ uintptr_t pcidev_readbar(struct pci_dev *dev, int bar)
 
 	supported_cycles = pci_read_word(dev, PCI_COMMAND);
 
-	msg_pdbg("Requested BAR is ");
+	msg_pdbg("Requested BAR is of type ");
 	switch (bartype) {
 	case TYPE_MEMBAR:
 		msg_pdbg("MEM");

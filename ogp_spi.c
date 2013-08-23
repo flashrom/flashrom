@@ -131,6 +131,9 @@ int ogp_spi_init(void)
 		return 1;
 
 	io_base_addr = pcidev_readbar(dev, PCI_BASE_ADDRESS_0);
+	if (!io_base_addr)
+		return 1;
+
 	ogp_spibar = rphysmap("OGP registers", io_base_addr, 4096);
 	if (ogp_spibar == ERROR_PTR)
 		return 1;

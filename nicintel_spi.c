@@ -173,6 +173,9 @@ int nicintel_spi_init(void)
 		return 1;
 
 	io_base_addr = pcidev_readbar(dev, PCI_BASE_ADDRESS_0);
+	if (!io_base_addr)
+		return 1;
+
 	nicintel_spibar = rphysmap("Intel Gigabit NIC w/ SPI flash", io_base_addr, MEMMAP_SIZE);
 	/* Automatic restore of EECD on shutdown is not possible because EECD
 	 * does not only contain FLASH_WRITES_DISABLED|FLASH_WRITES_ENABLED,

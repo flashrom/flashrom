@@ -76,12 +76,17 @@ int nicintel_init(void)
 		return 1;
 
 	addr = pcidev_readbar(dev, PCI_BASE_ADDRESS_2);
+	if (!addr)
+		return 1;
+
 	nicintel_bar = rphysmap("Intel NIC flash", addr, NICINTEL_MEMMAP_SIZE);
 	if (nicintel_bar == ERROR_PTR)
 		return 1;
 
 	addr = pcidev_readbar(dev, PCI_BASE_ADDRESS_0);
-	/* FIXME: This is not an aligned mapping. Use 4k? */
+	if (!addr)
+		return 1;
+
 	nicintel_control_bar = rphysmap("Intel NIC control/status reg", addr, NICINTEL_CONTROL_MEMMAP_SIZE);
 	if (nicintel_control_bar == ERROR_PTR)
 		return 1;
