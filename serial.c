@@ -158,10 +158,76 @@ static void msg_perr_strerror(const char *msg)
 #endif
 }
 
+int serialport_config(fdtype fd, unsigned int baud)
+{
+	if (fd == SER_INV_FD) {
+		msg_perr("%s: File descriptor is invalid.\n", __func__);
+		return 1;
+	}
+
+#ifdef _WIN32
+	DCB dcb;
+	if (!GetCommState(fd, &dcb)) {
+		msg_perr_strerror("Could not fetch original serial port configuration: ");
+		return 1;
+	}
+	const struct baudentry *entry = round_baud(baud);
+	dcb.BaudRate = entry->flag;
+	dcb.ByteSize = 8;
+	dcb.Parity = NOPARITY;
+	dcb.StopBits = ONESTOPBIT;
+	if (!SetCommState(fd, &dcb)) {
+		msg_perr_strerror("Could not change serial port configuration: ");
+		return 1;
+	}
+	if (!GetCommState(fd, &dcb)) {
+		msg_perr_strerror("Could not fetch new serial port configuration: ");
+		return 1;
+	}
+	msg_pdbg("Baud rate is %ld.\n", dcb.BaudRate);
+#else
+	struct termios wanted, observed;
+	fcntl(fd, F_SETFL, 0);
+	if (tcgetattr(fd, &observed) != 0) {
+		msg_perr_strerror("Could not fetch original serial port configuration: ");
+		return 1;
+	}
+	wanted = observed;
+	const struct baudentry *entry = round_baud(baud);
+	if (cfsetispeed(&wanted, entry->flag) != 0 || cfsetospeed(&wanted, entry->flag) != 0) {
+		msg_perr_strerror("Could not set serial baud rate: ");
+		return 1;
+	}
+	wanted.c_cflag &= ~(PARENB | CSTOPB | CSIZE | CRTSCTS);
+	wanted.c_cflag |= (CS8 | CLOCAL | CREAD);
+	wanted.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
+	wanted.c_iflag &= ~(IXON | IXOFF | IXANY | ICRNL | IGNCR | INLCR);
+	wanted.c_oflag &= ~OPOST;
+	if (tcsetattr(fd, TCSANOW, &wanted) != 0) {
+		msg_perr_strerror("Could not change serial port configuration: ");
+		return 1;
+	}
+	if (tcgetattr(fd, &observed) != 0) {
+		msg_perr_strerror("Could not fetch new serial port configuration: ");
+		return 1;
+	}
+	if (observed.c_cflag != wanted.c_cflag ||
+	    observed.c_lflag != wanted.c_lflag ||
+	    observed.c_iflag != wanted.c_iflag ||
+	    observed.c_oflag != wanted.c_oflag ||
+	    cfgetispeed(&observed) != cfgetispeed(&wanted)) {
+		msg_perr("%s: Some requested options did not stick.\n", __func__);
+		return 1;
+	}
+	msg_pdbg("Baud rate is %d now.\n", entry->baud);
+#endif
+	return 0;
+}
+
 fdtype sp_openserport(char *dev, unsigned int baud)
 {
+	fdtype fd;
 #ifdef _WIN32
-	HANDLE fd;
 	char *dev2 = dev;
 	if ((strlen(dev) > 3) &&
 	    (tolower((unsigned char)dev[0]) == 'c') &&
@@ -183,75 +249,22 @@ fdtype sp_openserport(char *dev, unsigned int baud)
 		msg_perr_strerror("Cannot open serial port: ");
 		return SER_INV_FD;
 	}
-	DCB dcb;
-	if (!GetCommState(fd, &dcb)) {
-		msg_perr_strerror("Could not fetch original serial port configuration: ");
-		goto out_close;
+	if (serialport_config(fd, baud) != 0) {
+		CloseHandle(fd);
+		return SER_INV_FD;
 	}
-	const struct baudentry *entry = round_baud(baud);
-	dcb.BaudRate = entry->flag;
-	dcb.ByteSize = 8;
-	dcb.Parity = NOPARITY;
-	dcb.StopBits = ONESTOPBIT;
-	if (!SetCommState(fd, &dcb)) {
-		msg_perr_strerror("Could not change serial port configuration: ");
-		goto out_close;
-	}
-	if (!GetCommState(fd, &dcb)) {
-		msg_perr_strerror("Could not fetch new serial port configuration: ");
-		goto out_close;
-	}
-	msg_pdbg("Baud rate is %ld.\n", dcb.BaudRate);
 	return fd;
-out_close:
-	CloseHandle(sp_fd);
-	return SER_INV_FD;
 #else
-	struct termios wanted, observed;
-	int fd;
 	fd = open(dev, O_RDWR | O_NOCTTY | O_NDELAY);
 	if (fd < 0) {
 		msg_perr_strerror("Cannot open serial port: ");
 		return SER_INV_FD;
 	}
-	fcntl(fd, F_SETFL, 0);
-	if (tcgetattr(fd, &observed) != 0) {
-		msg_perr_strerror("Could not fetch original serial port configuration: ");
-		goto out_close;
+	if (serialport_config(fd, baud) != 0) {
+		close(fd);
+		return SER_INV_FD;
 	}
-	wanted = observed;
-	const struct baudentry *entry = round_baud(baud);
-	if (cfsetispeed(&wanted, entry->flag) != 0 || cfsetospeed(&wanted, entry->flag) != 0) {
-		msg_perr_strerror("Could not set serial baud rate: ");
-		goto out_close;
-	}
-	wanted.c_cflag &= ~(PARENB | CSTOPB | CSIZE | CRTSCTS);
-	wanted.c_cflag |= (CS8 | CLOCAL | CREAD);
-	wanted.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
-	wanted.c_iflag &= ~(IXON | IXOFF | IXANY | ICRNL | IGNCR | INLCR);
-	wanted.c_oflag &= ~OPOST;
-	if (tcsetattr(fd, TCSANOW, &wanted) != 0) {
-		msg_perr_strerror("Could not change serial port configuration: ");
-		goto out_close;
-	}
-	if (tcgetattr(fd, &observed) != 0) {
-		msg_perr_strerror("Could not fetch new serial port configuration: ");
-		goto out_close;
-	}
-	if (observed.c_cflag != wanted.c_cflag ||
-	    observed.c_lflag != wanted.c_lflag ||
-	    observed.c_iflag != wanted.c_iflag ||
-	    observed.c_oflag != wanted.c_oflag ||
-	    cfgetispeed(&observed) != cfgetispeed(&wanted)) {
-		msg_perr("%s: Some requested options did not stick.\n", __func__);
-		goto out_close;
-	}
-	msg_pdbg("Baud rate is %d.\n", entry->baud);
 	return fd;
-
-out_close:
-	close(sp_fd);
-	return SER_INV_FD;
 #endif
 }
 
