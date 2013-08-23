@@ -88,6 +88,9 @@ int satamv_init(void)
 		return 1;
 
 	addr = pcidev_readbar(dev, PCI_BASE_ADDRESS_0);
+	if (!addr)
+		return 1;
+
 	mv_bar = rphysmap("Marvell 88SX7042 registers", addr, 0x20000);
 	if (mv_bar == ERROR_PTR)
 		return 1;
@@ -136,6 +139,9 @@ int satamv_init(void)
 
 	/* Get I/O BAR location. */
 	tmp = pcidev_readbar(dev, PCI_BASE_ADDRESS_2);
+	if (!addr)
+		return 1;
+
 	/* Truncate to reachable range.
 	 * FIXME: Check if the I/O BAR is actually reachable.
 	 * This is an arch specific check.

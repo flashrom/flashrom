@@ -85,9 +85,13 @@ int satasii_init(void)
 
 	if ((id == 0x3132) || (id == 0x3124)) {
 		addr = pcidev_readbar(dev, PCI_BASE_ADDRESS_0);
+		if (!addr)
+			return 1;
 		reg_offset = 0x70;
 	} else {
 		addr = pcidev_readbar(dev, PCI_BASE_ADDRESS_5);
+		if (!addr)
+			return 1;
 		reg_offset = 0x50;
 	}
 

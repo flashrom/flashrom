@@ -69,6 +69,8 @@ int nicrealtek_init(void)
 		return 1;
 
 	io_base_addr = pcidev_readbar(dev, PCI_BASE_ADDRESS_0);
+	if (!io_base_addr)
+		return 1;
 
 	/* Beware, this ignores the vendor ID! */
 	switch (dev->device_id) {

@@ -69,6 +69,8 @@ int atahpt_init(void)
 		return 1;
 
 	io_base_addr = pcidev_readbar(dev, PCI_BASE_ADDRESS_4);
+	if (!io_base_addr)
+		return 1;
 
 	/* Enable flash access. */
 	reg32 = pci_read_long(dev, REG_FLASH_ACCESS);
