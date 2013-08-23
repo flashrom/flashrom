@@ -660,6 +660,7 @@ typedef int fdtype;
 
 void sp_flush_incoming(void);
 fdtype sp_openserport(char *dev, unsigned int baud);
+int serialport_config(fdtype fd, unsigned int baud);
 void __attribute__((noreturn)) sp_die(char *msg);
 extern fdtype sp_fd;
 /* expose serialport_shutdown as it's currently used by buspirate */
