@@ -27,6 +27,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
 #include "flash.h"
 #include "chipdrivers.h"
 #include "programmer.h"
@@ -36,7 +37,7 @@
 #define ITE_SUPERIO_PORT1	0x2e
 #define ITE_SUPERIO_PORT2	0x4e
 
-uint16_t it8716f_flashport = 0;
+static uint16_t it8716f_flashport = 0;
 /* use fast 33MHz SPI (<>0) or slow 16MHz (0) */
 static int fast_spi = 1;
 
@@ -124,10 +125,40 @@ static const struct spi_programmer spi_programmer_it87xx = {
 static uint16_t it87spi_probe(uint16_t port)
 {
 	uint8_t tmp = 0;
-	char *portpos = NULL;
 	uint16_t flashport = 0;
 
 	enter_conf_mode_ite(port);
+	
+	char *param = extract_programmer_param("dualbiosindex");
+	if (param != NULL) {
+		sio_write(port, 0x07, 0x07); /* Select GPIO LDN */
+		tmp = sio_read(port, 0xEF);
+		if (*param == '\0') { /* Print current setting only. */
+			free(param);
+		} else {
+			char *dualbiosindex_suffix;
+			errno = 0;
+			long chip_index = strtol(param, &dualbiosindex_suffix, 0);
+			free(param);
+			if (errno != 0 || *dualbiosindex_suffix != '\0' || chip_index < 0 || chip_index > 1) {
+				msg_perr("DualBIOS: Invalid chip index requested - choose 0 or 1.\n");
+				exit_conf_mode_ite(port);
+				return 1;
+			}
+			if (chip_index != (tmp & 1)) {
+				msg_pdbg("DualBIOS: Previous chip index: %d\n", tmp & 1);
+				sio_write(port, 0xEF, (tmp & 0xFE) | chip_index);
+				tmp = sio_read(port, 0xEF);
+				if ((tmp & 1) != chip_index) {
+					msg_perr("DualBIOS: Chip selection failed.\n");
+					exit_conf_mode_ite(port);
+					return 1;
+				}
+			}
+		}
+		msg_pinfo("DualBIOS: Selected chip: %d\n", tmp & 1);
+	}
+
 	/* NOLDN, reg 0x24, mask out lowest bit (suspend) */
 	tmp = sio_read(port, 0x24) & 0xFE;
 	/* Check if LPC->SPI translation is active. */
@@ -163,11 +194,11 @@ static uint16_t it87spi_probe(uint16_t port)
 	flashport |= sio_read(port, 0x65);
 	msg_pdbg("Serial flash port 0x%04x\n", flashport);
 	/* Non-default port requested? */
-	portpos = extract_programmer_param("it87spiport");
-	if (portpos) {
+	param = extract_programmer_param("it87spiport");
+	if (param) {
 		char *endptr = NULL;
 		unsigned long forced_flashport;
-		forced_flashport = strtoul(portpos, &endptr, 0);
+		forced_flashport = strtoul(param, &endptr, 0);
 		/* Port 0, port >0x1000, unaligned ports and garbage strings
 		 * are rejected.
 		 */
@@ -180,7 +211,8 @@ static uint16_t it87spi_probe(uint16_t port)
 			msg_perr("Error: it87spiport specified, but no valid "
 				 "port specified.\nPort must be a multiple of "
 				 "0x8 and lie between 0x100 and 0xff8.\n");
-			free(portpos);
+			exit_conf_mode_ite(port);
+			free(param);
 			return 1;
 		} else {
 			flashport = (uint16_t)forced_flashport;
@@ -190,7 +222,7 @@ static uint16_t it87spi_probe(uint16_t port)
 			sio_write(port, 0x65, (flashport & 0xff));
 		}
 	}
-	free(portpos);
+	free(param);
 	exit_conf_mode_ite(port);
 	it8716f_flashport = flashport;
 	if (internal_buses_supported & BUS_SPI)
@@ -228,6 +260,7 @@ int init_superio_ite(void)
 		case 0x8716:
 		case 0x8718:
 		case 0x8720:
+		case 0x8728:
 			ret |= it87spi_probe(superios[i].port);
 			break;
 		default:
