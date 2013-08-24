@@ -41,12 +41,6 @@
 
 fdtype sp_fd = SER_INV_FD;
 
-void __attribute__((noreturn)) sp_die(char *msg)
-{
-	perror(msg);
-	exit(1);
-}
-
 #ifdef _WIN32
 struct baudentry {
 	DWORD flag;
