@@ -315,6 +315,19 @@ do not match, it will refuse to write the image unless you specify
 .TP
 .B ITE IT87 Super I/O
 .sp
+If your mainboard is manufactured by GIGABYTE and supports DualBIOS it is very likely that it uses an
+ITE IT87 series Super I/O to switch between the two flash chips. Only one of them can be accessed at a time
+and you can manually select which one to use with the
+.sp
+.B "  flashrom \-p internal:dualbiosindex=chip"
+.sp
+syntax where
+.B chip
+is the index of the chip to use (0 = main, 1 = backup). You can check which one is currently selected by
+leaving out the
+.B chip
+parameter.
+.sp
 If your mainboard uses an ITE IT87 series Super I/O for LPC<->SPI flash bus
 translation, flashrom should autodetect that configuration. If you want to
 set the I/O base port of the IT87 series SPI controller manually instead of

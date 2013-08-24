@@ -331,9 +331,8 @@ int internal_init(void)
 		return ret;
 
 #if defined(__i386__) || defined(__x86_64__)
-	/* Probe unconditionally for IT87* LPC->SPI translation and for
-	 * IT87* Parallel write enable.
-	 */
+	/* Probe unconditionally for ITE Super I/O chips. This enables LPC->SPI translation on IT87* and
+	 * parallel writes on IT8705F. Also, this handles the manual chip select for Gigabyte's DualBIOS. */
 	init_superio_ite();
 #endif
 
