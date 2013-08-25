@@ -61,10 +61,13 @@ CFLAGS += -Werror
 endif
 
 ###############################################################################
-# General OS/architecture specific settings.
+# General OS-specific settings.
+# 1. Prepare for later by gathering information about host and target OS
+# 2. Set compiler flags and parameters according to OSes
+# 3. Likewise verify user-supplied CONFIG_* variables.
 
 # HOST_OS is only used to work around local toolchain issues.
-HOST_OS	?= $(shell uname)
+HOST_OS ?= $(shell uname)
 ifeq ($(HOST_OS), MINGW32_NT-5.1)
 # Explicitly set CC = gcc on MinGW, otherwise: "cc: command not found".
 CC = gcc
@@ -263,6 +266,10 @@ override CONFIG_LINUX_SPI = no
 endif
 endif
 
+###############################################################################
+# General architecture-specific settings.
+# Like above for the OS, below we verify user-supplied options depending on the target architecture.
+
 # Determine the destination processor architecture.
 # IMPORTANT: The following line must be placed before ARCH is ever used
 # (of course), but should come after any lines setting CC because the line
@@ -333,6 +340,9 @@ VERSION := $(RELEASE)-r$(SVNVERSION)
 RELEASENAME ?= $(VERSION)
 
 SVNDEF := -D'FLASHROM_VERSION="$(VERSION)"'
+
+###############################################################################
+# Default settings of CONFIG_* variables.
 
 # Always enable internal/onboard support for now.
 CONFIG_INTERNAL ?= yes
@@ -426,6 +436,7 @@ endif
 
 ###############################################################################
 # Programmer drivers and programmer support infrastructure.
+# Depending on the CONFIG_* variables set and verified above we set compiler flags and parameters below.
 
 FEATURE_CFLAGS += -D'CONFIG_DEFAULT_PROGRAMMER=$(CONFIG_DEFAULT_PROGRAMMER)'
 
