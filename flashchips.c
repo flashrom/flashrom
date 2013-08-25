@@ -4580,6 +4580,70 @@ const struct flashchip flashchips[] = {
 	},
 
 	{
+		.vendor		= "Fujitsu",
+		.name		= "MBM29LV160BE",
+		.bustype	= BUS_PARALLEL,
+		.manufacture_id	= FUJITSU_ID,
+		.model_id	= FUJITSU_MBM29LV160BE,
+		.total_size	= 2 * 1024,
+		.page_size	= 0,
+		.feature_bits	= FEATURE_ADDR_SHIFTED | FEATURE_SHORT_RESET,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_m29f400bt,
+		.probe_timing	= TIMING_IGNORED,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = {
+					{16 * 1024, 1},
+					{8 * 1024, 2},
+					{32 * 1024, 1},
+					{64 * 1024, 31},
+				},
+				.block_erase = block_erase_m29f400bt,
+			}, {
+				.eraseblocks = { {2048 * 1024, 1} },
+				.block_erase = block_erase_chip_m29f400bt,
+			},
+		},
+		.write		= write_m29f400bt, /* Supports a fast mode too */
+		.read		= read_memmapped,
+		.voltage	= {3000, 3600}, /* 3.0-3.6V for type -70, others 2.7-3.6V */
+	},
+
+	{
+		.vendor		= "Fujitsu",
+		.name		= "MBM29LV160TE",
+		.bustype	= BUS_PARALLEL,
+		.manufacture_id	= FUJITSU_ID,
+		.model_id	= FUJITSU_MBM29LV160TE,
+		.total_size	= 2 * 1024,
+		.page_size	= 0,
+		.feature_bits	= FEATURE_ADDR_SHIFTED | FEATURE_SHORT_RESET,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_m29f400bt,
+		.probe_timing	= TIMING_IGNORED,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = {
+					{64 * 1024, 31},
+					{32 * 1024, 1},
+					{8 * 1024, 2},
+					{16 * 1024, 1},
+				},
+				.block_erase = block_erase_m29f400bt,
+			}, {
+				.eraseblocks = { {2048 * 1024, 1} },
+				.block_erase = block_erase_chip_m29f400bt,
+			},
+		},
+		.write		= write_m29f400bt, /* Supports a fast mode too */
+		.read		= read_memmapped,
+		.voltage	= {3000, 3600}, /* 3.0-3.6V for type -70, others 2.7-3.6V */
+	},
+
+	{
 		.vendor		= "GigaDevice",
 		.name		= "GD25LQ32",
 		.bustype	= BUS_SPI,
