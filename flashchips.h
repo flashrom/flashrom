@@ -167,24 +167,25 @@
 #define ATMEL_AT45D041A		/* No ID available */
 #define ATMEL_AT45D081A		/* No ID available */
 #define ATMEL_AT45D161		/* No ID available */
-#define ATMEL_AT45DB011		/* No ID available */
-#define ATMEL_AT45DB011B	/* No ID available */
+#define ATMEL_AT45DB011		/* No ID (opcode) available for AT45DB011, AT45DB011B */
 #define ATMEL_AT45DB011D	0x2200
-#define ATMEL_AT45DB021A	/* No ID available */
-#define ATMEL_AT45DB021B	/* No ID available */
+#define ATMEL_AT45DB021		/* No ID (opcode) available for AT45DB021, AT45DB021A, AT45DB021B */
 #define ATMEL_AT45DB021D	0x2300
-#define ATMEL_AT45DB041A	/* No ID available */
+#define ATMEL_AT45DB021E	/* same as above but with EDI 0x0100 */
+#define ATMEL_AT45DB041		/* No ID (opcode) available for AT45DB041, AT45DB041A, AT45DB041B */
 #define ATMEL_AT45DB041D	0x2400
-#define ATMEL_AT45DB081A	/* No ID available */
+#define ATMEL_AT45DB041E	/* same as above but with EDI 0x0100 */
+#define ATMEL_AT45DB081		/* No ID (opcode) available for AT45DB081, AT45DB081A, AT45DB081B */
 #define ATMEL_AT45DB081D	0x2500
-#define ATMEL_AT45DB161		/* No ID available */
-#define ATMEL_AT45DB161B	/* No ID available */
+#define ATMEL_AT45DB081E	/* same as above but with EDI 0x0100 */
+#define ATMEL_AT45DB161		/* No ID (opcode) available for AT45DB161, AT45DB161B */
 #define ATMEL_AT45DB161D	0x2600
-#define ATMEL_AT45DB321		/* No ID available */
-#define ATMEL_AT45DB321B	/* No ID available */
+#define ATMEL_AT45DB161E	/* same as above but with EDI 0x0100 */
+#define ATMEL_AT45DB321		/* No ID (opcode) available for AT45DB321, AT45DB321B */
 #define ATMEL_AT45DB321C	0x2700
+#define ATMEL_AT45DB321E	/* same as above but with EDI 0x0100 */
 #define ATMEL_AT45DB321D	0x2701 /* Buggy data sheet */
-#define ATMEL_AT45DB642		/* No ID available */
+#define ATMEL_AT45DB642		/* No ID (opcode) available for AT45DB642 */
 #define ATMEL_AT45DB642D	0x2800
 #define ATMEL_AT49BV512		0x03
 #define ATMEL_AT49F002N		0x07	/* for AT49F002(N)  */

@@ -64,6 +64,7 @@ int spi_write_chunked(struct flashctx *flash, uint8_t *buf, unsigned int start, 
 /* spi25_statusreg.c */
 uint8_t spi_read_status_register(struct flashctx *flash);
 int spi_write_status_register(struct flashctx *flash, int status);
+void spi_prettyprint_status_register_bit(uint8_t status, int bit);
 int spi_prettyprint_status_register_plain(struct flashctx *flash);
 int spi_prettyprint_status_register_default_welwip(struct flashctx *flash);
 int spi_prettyprint_status_register_default_bp1(struct flashctx *flash);
@@ -108,6 +109,17 @@ int probe_opaque(struct flashctx *flash);
 int read_opaque(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 int write_opaque(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 int erase_opaque(struct flashctx *flash, unsigned int blockaddr, unsigned int blocklen);
+
+/* at45db.c */
+int probe_spi_at45db(struct flashctx *flash);
+int spi_prettyprint_status_register_at45db(struct flashctx *flash);
+int spi_disable_blockprotect_at45db(struct flashctx *flash);
+int spi_read_at45db(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
+int spi_write_at45db(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
+int spi_erase_at45db_page(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
+int spi_erase_at45db_block(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
+int spi_erase_at45db_sector(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
+int spi_erase_at45db_chip(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 
 /* 82802ab.c */
 uint8_t wait_82802ab(struct flashctx *flash);

@@ -922,8 +922,7 @@ static int serprog_spi_send_command(struct flashctx *flash,
 /* FIXME: This function is optimized so that it does not split each transaction
  * into chip page_size long blocks unnecessarily like spi_read_chunked. This has
  * the advantage that it is much faster for most chips, but breaks those with
- * non-contiguous address space (like AT45DB161D). When spi_read_chunked is
- * fixed this method can be removed. */
+ * non-continuous reads. When spi_read_chunked is fixed this method can be removed. */
 static int serprog_spi_read(struct flashctx *flash, uint8_t *buf,
 			    unsigned int start, unsigned int len)
 {

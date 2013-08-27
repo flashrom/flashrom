@@ -270,7 +270,7 @@ static void spi_prettyprint_status_register_bp(uint8_t status, int bp)
 }
 
 /* Unnamed bits. */
-static void spi_prettyprint_status_register_bit(uint8_t status, int bit)
+void spi_prettyprint_status_register_bit(uint8_t status, int bit)
 {
 	msg_cdbg("Chip status register: Bit %i is %sset\n", bit, (status & (1 << bit)) ? "" : "not ");
 }
