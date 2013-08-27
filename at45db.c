@@ -34,6 +34,7 @@
 /* Opcodes */
 #define AT45DB_STATUS 0xD7 /* NB: this is a block erase command on most other chips(!). */
 #define AT45DB_DISABLE_PROTECT 0x3D, 0x2A, 0x7F, 0x9A
+#define AT45DB_READ_ARRAY 0xE8
 #define AT45DB_READ_PROTECT 0x32
 #define AT45DB_READ_LOCKDOWN 0x35
 #define AT45DB_PAGE_ERASE 0x81
@@ -141,6 +142,8 @@ int spi_prettyprint_status_register_at45db(struct flashctx *flash)
 		return 1;
 	}
 
+	/* AT45DB321C does not support lockdown or a page size of a power of 2... */
+	const bool isAT45DB321C = (strcmp(flash->chip->name, "AT45DB321C") == 0);
 	msg_cdbg("Chip status register is 0x%02x\n", status);
 	msg_cdbg("Chip status register: Bit 7 / Ready is %sset\n", (status & AT45DB_READY) ? "" : "not ");
 	msg_cdbg("Chip status register: Bit 6 / Compare match is %sset\n", (status & AT45DB_CMP) ? "" : "not ");
@@ -151,12 +154,18 @@ int spi_prettyprint_status_register_at45db(struct flashctx *flash)
 	const uint8_t dens = (status >> 3) & 0x7; /* Bit 2 is always 1, we use the other bits only */
 	msg_cdbg("Chip status register: Density is %u Mb\n", 1 << (dens - 1));
 	msg_cdbg("Chip status register: Bit 1 / Protection is %sset\n", (status & AT45DB_PROT) ? "" : "not ");
-	msg_cdbg("Chip status register: Bit 0 / \"Power of 2\" is %sset\n",
-		 (status & AT45DB_POWEROF2) ? "" : "not ");
+
+	if (isAT45DB321C)
+		spi_prettyprint_status_register_bit(status, 0);
+	else
+		msg_cdbg("Chip status register: Bit 0 / \"Power of 2\" is %sset\n",
+			 (status & AT45DB_POWEROF2) ? "" : "not ");
+
 	if (status & AT45DB_PROT)
 		at45db_prettyprint_protection_register(flash, AT45DB_READ_PROTECT, "protect");
 
-	at45db_prettyprint_protection_register(flash, AT45DB_READ_LOCKDOWN, "lock");
+	if (!isAT45DB321C)
+		at45db_prettyprint_protection_register(flash, AT45DB_READ_LOCKDOWN, "lock");
 
 	return 0;
 }
@@ -255,6 +264,45 @@ int spi_read_at45db(struct flashctx *flash, uint8_t *buf, unsigned int addr, uns
 		addr += chunk;
 	}
 
+	return 0;
+}
+
+/* Legacy continuous read, used where spi_read_at45db() is not available.
+ * The first 4 (dummy) bytes read need to be discarded. */
+int spi_read_at45db_e8(struct flashctx *flash, uint8_t *buf, unsigned int addr, unsigned int len)
+{
+	const unsigned int page_size = flash->chip->page_size;
+	const unsigned int total_size = flash->chip->total_size * 1024;
+	if ((addr + len) > total_size) {
+		msg_cerr("%s: tried to read beyond flash boundary: addr=%u, len=%u, size=%u\n",
+			 __func__, addr, len, total_size);
+		return 1;
+	}
+
+	/* We have to split this up into chunks to fit within the programmer's read size limit, but those
+	 * chunks can cross page boundaries. */
+	const unsigned int max_data_read = flash->pgm->spi.max_data_read;
+	const unsigned int max_chunk = (max_data_read > 0) ? max_data_read : page_size;
+	while (addr < len) {
+		const unsigned int addr_at45 = at45db_convert_addr(addr, page_size);
+		const unsigned char cmd[] = {
+			AT45DB_READ_ARRAY,
+			(addr_at45 >> 16) & 0xff,
+			(addr_at45 >> 8) & 0xff,
+			(addr_at45 >> 0) & 0xff
+		};
+		/* We need to leave place for 4 dummy bytes and handle them explicitly. */
+		unsigned int chunk = min(max_chunk, len + 4);
+		uint8_t tmp[chunk];
+		int ret = spi_send_command(flash, sizeof(cmd), chunk, cmd, tmp);
+		if (ret) {
+			msg_cerr("%s: error sending read command!\n", __func__);
+			return ret;
+		}
+		/* Copy result without dummy bytes into buf and advance address counter respectively. */
+		memcpy(buf + addr, tmp + 4, chunk - 4);
+		addr += chunk - 4;
+	}
 	return 0;
 }
 

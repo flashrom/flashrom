@@ -115,6 +115,7 @@ int probe_spi_at45db(struct flashctx *flash);
 int spi_prettyprint_status_register_at45db(struct flashctx *flash);
 int spi_disable_blockprotect_at45db(struct flashctx *flash);
 int spi_read_at45db(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
+int spi_read_at45db_e8(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 int spi_write_at45db(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 int spi_erase_at45db_page(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 int spi_erase_at45db_block(struct flashctx *flash, unsigned int addr, unsigned int blocklen);

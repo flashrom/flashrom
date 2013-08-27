@@ -2550,11 +2550,37 @@ const struct flashchip flashchips[] = {
 		.total_size	= 4224 /* No power of two sizes */,
 		.page_size	= 528 /* No power of two sizes */,
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
-		.tested		= TEST_BAD_REW,
+		/* OTP: 128B total, 64B pre-programmed; read 0x77 (4 dummy bytes); write 0x9A (via buffer) */
+		.feature_bits	= FEATURE_OTP,
+		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.write		= NULL,
-		.read		= NULL /* Incompatible read */,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {528, 8192} },
+				.block_erase = spi_erase_at45db_page,
+			}, {
+				.eraseblocks = { {8 * 528, 8192/8} },
+				.block_erase = spi_erase_at45db_block,
+			}, /* Although the datasheets describes sectors (which can be write protected)
+			    * there seems to be no erase functions for them.
+			  {
+				.eraseblocks = {
+					{8 * 528, 1},
+					{120 * 528, 1},
+					{128 * 528, 63},
+				},
+				.block_erase = spi_erase_at45db_sector
+			}, */ {
+				.eraseblocks = { {4224 * 1024, 1} },
+				.block_erase = spi_erase_at45db_chip,
+			}
+		},
+		.printlock	= spi_prettyprint_status_register_at45db, /* Bit 0 is undefined, no lockdown */
+		.gran		= write_gran_528bytes,
+		.write		= spi_write_at45db,
+		.read		= spi_read_at45db_e8, /* 3 address and 4 dummy bytes */
 		.voltage	= {2700, 3600},
 	},
 
