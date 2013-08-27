@@ -2323,11 +2323,26 @@ const struct flashchip flashchips[] = {
 		.total_size	= 16896 /* No power of two sizes */,
 		.page_size	= 1056 /* No power of two sizes */,
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
-		.tested		= TEST_BAD_REW,
+		/* OTP: 128B total, 64B pre-programmed; read 0x77 (4 dummy bytes); write 0x9A (via buffer) */
+		.feature_bits	= FEATURE_OTP,
+		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.write		= NULL /* Incompatible Page write */,
-		.read		= NULL /* Incompatible read */,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = {
+					{8 * 1056, 1},    /* sector 0a:      opcode 50h */
+					{248 * 1056, 1},  /* sector 0b:      opcode 7Ch */
+					{256 * 1056, 63}, /* sectors 1 - 63: opcode 7Ch */
+				},
+				.block_erase = spi_erase_at45cs_sector,
+			}
+		},
+		.printlock	= spi_prettyprint_status_register_plain,
+		.gran		= write_gran_1056bytes,
+		.write		= spi_write_at45db,
+		.read		= spi_read_at45db,
 		.voltage	= {2700, 3600},
 	},
 

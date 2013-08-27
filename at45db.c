@@ -419,6 +419,47 @@ int spi_erase_at45db_chip(struct flashctx *flash, unsigned int addr, unsigned in
 	return at45db_erase(flash, AT45DB_CHIP_ERASE, AT45DB_CHIP_ERASE_ADDR, 500000, 200);
 }
 
+/* This one is really special and works only for AT45CS1282. It uses two different opcodes depending on the
+ * address and has an asymmetric layout. */
+int spi_erase_at45cs_sector(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
+{
+	const unsigned int page_size = flash->chip->page_size;
+	const unsigned int total_size = flash->chip->total_size * 1024;
+	const struct block_eraser be = flash->chip->block_erasers[0];
+	const unsigned int sec_0a_top = be.eraseblocks[0].size;
+	const unsigned int sec_0b_top = be.eraseblocks[0].size + be.eraseblocks[1].size;
+
+	if ((addr + blocklen) > total_size) {
+		msg_cerr("%s: tried to erase a sector beyond flash boundary: addr=%u, blocklen=%u, size=%u\n",
+			 __func__, addr, blocklen, total_size);
+		return 1;
+	}
+
+	bool partial_range = false;
+	uint8_t opcode = 0x7C; /* Used for all but sector 0a. */
+	if (addr < sec_0a_top) {
+		opcode = 0x50;
+		/* One single sector of 8 pages at address 0. */
+		if (addr != 0 || blocklen != (8 * page_size))
+			partial_range = true;
+	} else if (addr < sec_0b_top) {
+		/* One single sector of 248 pages adjacent to the first. */
+		if (addr != sec_0a_top || blocklen != (248 * page_size))
+			partial_range = true;
+	} else {
+		/* The rest is filled by 63 aligned sectors of 256 pages. */
+		if ((addr % (256 * page_size)) != 0 || (blocklen % (256 * page_size)) != 0)
+			partial_range = true;
+	}
+	if (partial_range) {
+		msg_cerr("%s: cannot erase partial sectors: addr=%u, blocklen=%u\n", __func__, addr, blocklen);
+		return 1;
+	}
+
+	/* Needs up to 4 s for completion, so let's wait 20 seconds in 200 ms steps. */
+	return at45db_erase(flash, opcode, at45db_convert_addr(addr, page_size), 200000, 100);
+}
+
 static int at45db_fill_buffer1(struct flashctx *flash, uint8_t *bytes, unsigned int off, unsigned int len)
 {
 	const unsigned int page_size = flash->chip->page_size;
