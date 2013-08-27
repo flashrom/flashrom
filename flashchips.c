@@ -2337,14 +2337,39 @@ const struct flashchip flashchips[] = {
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT45DB011D,
-		.total_size	= 128 /* Size can only be determined from status register */,
-		.page_size	= 256 /* Size can only be determined from status register */,
+		.total_size	= 128 /* or 132, determined from status register */,
+		.page_size	= 256 /* or 264, determined from status register */,
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
-		.tested		= TEST_BAD_REW,
-		.probe		= probe_spi_rdid,
+		/* OTP: 128B total, 64B pre-programmed; read 0x77; write 0x9B */
+		.feature_bits	= FEATURE_OTP,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_at45db,
 		.probe_timing	= TIMING_ZERO,
-		.write		= NULL,
-		.read		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {256, 512} },
+				.block_erase = spi_erase_at45db_page,
+			}, {
+				.eraseblocks = { {8 * 256, 512/8} },
+				.block_erase = spi_erase_at45db_block,
+			}, {
+				.eraseblocks = {
+					{8 * 256, 1},
+					{120 * 256, 1},
+					{128 * 256, 3},
+				},
+				.block_erase = spi_erase_at45db_sector
+			}, {
+				.eraseblocks = { {128 * 1024, 1} },
+				.block_erase = spi_erase_at45db_chip,
+			}
+		},
+		.unlock		= spi_disable_blockprotect_at45db, /* Impossible if locked down or #WP is low */
+		.printlock	= spi_prettyprint_status_register_at45db,
+		/* granularity will be set by the probing function. */
+		.write		= spi_write_at45db,
+		.read		= spi_read_at45db, /* Fast read (0x0B) supported */
 		.voltage	= {2700, 3600},
 	},
 
@@ -2354,14 +2379,39 @@ const struct flashchip flashchips[] = {
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT45DB021D,
-		.total_size	= 256 /* Size can only be determined from status register */,
-		.page_size	= 256 /* Size can only be determined from status register */,
+		.total_size	= 256 /* or 264, determined from status register */,
+		.page_size	= 256 /* or 264, determined from status register */,
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
-		.tested		= TEST_BAD_REW,
-		.probe		= probe_spi_rdid,
+		/* OTP: 128B total, 64B pre-programmed; read 0x77; write 0x9B */
+		.feature_bits	= FEATURE_OTP,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_at45db,
 		.probe_timing	= TIMING_ZERO,
-		.write		= NULL,
-		.read		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {256, 1024} },
+				.block_erase = spi_erase_at45db_page,
+			}, {
+				.eraseblocks = { {8 * 256, 1024/8} },
+				.block_erase = spi_erase_at45db_block,
+			}, {
+				.eraseblocks = {
+					{8 * 256, 1},
+					{120 * 256, 1},
+					{128 * 256, 7},
+				},
+				.block_erase = spi_erase_at45db_sector
+			}, {
+				.eraseblocks = { {256 * 1024, 1} },
+				.block_erase = spi_erase_at45db_chip,
+			}
+		},
+		.unlock		= spi_disable_blockprotect_at45db, /* Impossible if locked down or #WP is low */
+		.printlock	= spi_prettyprint_status_register_at45db,
+		/* granularity will be set by the probing function. */
+		.write		= spi_write_at45db,
+		.read		= spi_read_at45db, /* Fast read (0x0B) supported */
 		.voltage	= {2700, 3600},
 	},
 
@@ -2371,15 +2421,40 @@ const struct flashchip flashchips[] = {
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT45DB041D,
-		.total_size	= 512 /* Size can only be determined from status register */,
-		.page_size	= 256 /* Size can only be determined from status register */,
+		.total_size	= 512 /* or 528, determined from status register */,
+		.page_size	= 256 /* or 264, determined from status register */,
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
-		.tested		= TEST_BAD_REW,
-		.probe		= probe_spi_rdid,
+		/* OTP: 128B total, 64B pre-programmed; read 0x77; write 0x9B */
+		.feature_bits	= FEATURE_OTP,
+		.tested		= TEST_OK_PREW,
+		.probe		= probe_spi_at45db,
 		.probe_timing	= TIMING_ZERO,
-		.write		= NULL,
-		.read		= NULL,
-		.voltage	= {2500, 3600}, /* 2.5-3.6V & 2.7-3.6V models available */
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {256, 2048} },
+				.block_erase = spi_erase_at45db_page,
+			}, {
+				.eraseblocks = { {8 * 256, 2048/8} },
+				.block_erase = spi_erase_at45db_block,
+			}, {
+				.eraseblocks = {
+					{8 * 256, 1},
+					{248 * 256, 1},
+					{256 * 256, 7},
+				},
+				.block_erase = spi_erase_at45db_sector
+			}, {
+				.eraseblocks = { {512 * 1024, 1} },
+				.block_erase = spi_erase_at45db_chip,
+			}
+		},
+		.unlock		= spi_disable_blockprotect_at45db, /* Impossible if locked down or #WP is low */
+		.printlock	= spi_prettyprint_status_register_at45db,
+		/* granularity will be set by the probing function. */
+		.write		= spi_write_at45db,
+		.read		= spi_read_at45db, /* Fast read (0x0B) supported */
+		.voltage	= {2700, 3600}, /* 2.5-3.6V & 2.7-3.6V models available */
 	},
 
 	{
@@ -2388,14 +2463,39 @@ const struct flashchip flashchips[] = {
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT45DB081D,
-		.total_size	= 1024 /* Size can only be determined from status register */,
-		.page_size	= 256 /* Size can only be determined from status register */,
+		.total_size	= 1024 /* or 1056, determined from status register */,
+		.page_size	= 256 /* or 264, determined from status register */,
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
-		.tested		= TEST_BAD_REW,
-		.probe		= probe_spi_rdid,
+		/* OTP: 128B total, 64B pre-programmed; read 0x77; write 0x9B */
+		.feature_bits	= FEATURE_OTP,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_at45db,
 		.probe_timing	= TIMING_ZERO,
-		.write		= NULL,
-		.read		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {256, 4096} },
+				.block_erase = spi_erase_at45db_page,
+			}, {
+				.eraseblocks = { {8 * 256, 4096/8} },
+				.block_erase = spi_erase_at45db_block,
+			}, {
+				.eraseblocks = {
+					{8 * 256, 1},
+					{248 * 256, 1},
+					{256 * 256, 15},
+				},
+				.block_erase = spi_erase_at45db_sector
+			}, {
+				.eraseblocks = { {1024 * 1024, 1} },
+				.block_erase = spi_erase_at45db_chip,
+			}
+		},
+		.unlock		= spi_disable_blockprotect_at45db, /* Impossible if locked down or #WP is low */
+		.printlock	= spi_prettyprint_status_register_at45db,
+		/* granularity will be set by the probing function. */
+		.write		= spi_write_at45db,
+		.read		= spi_read_at45db, /* Fast read (0x0B) supported */
 		.voltage	= {2700, 3600}, /* 2.5-3.6V & 2.7-3.6V models available */
 	},
 
@@ -2405,14 +2505,39 @@ const struct flashchip flashchips[] = {
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT45DB161D,
-		.total_size	= 2048 /* Size can only be determined from status register */,
-		.page_size	= 512 /* Size can only be determined from status register */,
+		.total_size	= 2048 /* or 2112, determined from status register */,
+		.page_size	= 512 /* or 528, determined from status register */,
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
-		.tested		= TEST_BAD_REW,
-		.probe		= probe_spi_rdid,
+		/* OTP: 128B total, 64B pre-programmed; read 0x77; write 0x9B */
+		.feature_bits	= FEATURE_OTP,
+		.tested		= TEST_OK_PREW,
+		.probe		= probe_spi_at45db,
 		.probe_timing	= TIMING_ZERO,
-		.write		= NULL,
-		.read		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {512, 4096} },
+				.block_erase = spi_erase_at45db_page,
+			}, {
+				.eraseblocks = { {8 * 512, 4096/8} },
+				.block_erase = spi_erase_at45db_block,
+			}, {
+				.eraseblocks = {
+					{8 * 512, 1},
+					{248 * 512, 1},
+					{256 * 512, 15},
+				},
+				.block_erase = spi_erase_at45db_sector
+			}, {
+				.eraseblocks = { {2048 * 1024, 1} },
+				.block_erase = spi_erase_at45db_chip,
+			}
+		},
+		.unlock		= spi_disable_blockprotect_at45db, /* Impossible if locked down or #WP is low */
+		.printlock	= spi_prettyprint_status_register_at45db,
+		/* granularity will be set by the probing function. */
+		.write		= spi_write_at45db,
+		.read		= spi_read_at45db, /* Fast read (0x0B) supported */
 		.voltage	= {2700, 3600}, /* 2.5-3.6V & 2.7-3.6V models available */
 	},
 
@@ -2439,17 +2564,82 @@ const struct flashchip flashchips[] = {
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT45DB321D,
-		.total_size	= 4096 /* Size can only be determined from status register */,
-		.page_size	= 512 /* Size can only be determined from status register */,
-		/* OTP: 128B total, 64B pre-programmed; read 0x77; write 0x9B */
+		.total_size	= 4096 /* or 4224, determined from status register */,
+		.page_size	= 512 /* or 528, determined from status register */,
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
+		/* OTP: 128B total, 64B pre-programmed; read 0x77; write 0x9B */
 		.feature_bits	= FEATURE_OTP,
-		.tested		= TEST_BAD_REW,
-		.probe		= probe_spi_rdid,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_at45db,
 		.probe_timing	= TIMING_ZERO,
-		.write		= NULL,
-		.read		= NULL,
-		.voltage	= {2700, 3600},
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {512, 8192} },
+				.block_erase = spi_erase_at45db_page,
+			}, {
+				.eraseblocks = { {8 * 512, 8192/8} },
+				.block_erase = spi_erase_at45db_block,
+			}, {
+				.eraseblocks = {
+					{8 * 512, 1},
+					{120 * 512, 1},
+					{128 * 512, 63},
+				},
+				.block_erase = spi_erase_at45db_sector
+			}, {
+				.eraseblocks = { {4096 * 1024, 1} },
+				.block_erase = spi_erase_at45db_chip,
+			}
+		},
+		.unlock		= spi_disable_blockprotect_at45db, /* Impossible if locked down or #WP is low */
+		.printlock	= spi_prettyprint_status_register_at45db,
+		/* granularity will be set by the probing function. */
+		.write		= spi_write_at45db,
+		.read		= spi_read_at45db, /* Fast read (0x0B) supported */
+		.voltage	= {2700, 3600}, /* 2.5-3.6V & 2.7-3.6V models available */
+	},
+
+	{
+		.vendor		= "Atmel",
+		.name		= "AT45DB321E",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= ATMEL_ID,
+		.model_id	= ATMEL_AT45DB321C,
+		.total_size	= 4096 /* or 4224, determined from status register */,
+		.page_size	= 512 /* or 528, determined from status register */,
+		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
+		/* OTP: 128B total, 64B pre-programmed; read 0x77; write 0x9B */
+		.feature_bits	= FEATURE_OTP,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_at45db,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {512, 8192} },
+				.block_erase = spi_erase_at45db_page,
+			}, {
+				.eraseblocks = { {8 * 512, 8192/8} },
+				.block_erase = spi_erase_at45db_block,
+			}, {
+				.eraseblocks = {
+					{8 * 512, 1},
+					{120 * 512, 1},
+					{128 * 512, 63},
+				},
+				.block_erase = spi_erase_at45db_sector
+			}, {
+				.eraseblocks = { {4096 * 1024, 1} },
+				.block_erase = spi_erase_at45db_chip,
+			}
+		},
+		.unlock		= spi_disable_blockprotect_at45db, /* Impossible if locked down or #WP is low */
+		.printlock	= spi_prettyprint_status_register_at45db, /* has a 2nd status register */
+		/* granularity will be set by the probing function. */
+		.write		= spi_write_at45db,
+		.read		= spi_read_at45db, /* Fast read (0x0B) supported */
+		.voltage	= {2500, 3600}, /* 2.3-3.6V & 2.5-3.6V models available */
 	},
 
 	{
@@ -2458,14 +2648,39 @@ const struct flashchip flashchips[] = {
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT45DB642D,
-		.total_size	= 8192 /* Size can only be determined from status register */,
-		.page_size	= 1024 /* Size can only be determined from status register */,
+		.total_size	= 8192 /* or 8448, determined from status register */,
+		.page_size	= 1024 /* or 1056, determined from status register */,
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
-		.tested		= TEST_BAD_REW,
-		.probe		= probe_spi_rdid,
+		/* OTP: 128B total, 64B pre-programmed; read 0x77; write 0x9B */
+		.feature_bits	= FEATURE_OTP,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_at45db,
 		.probe_timing	= TIMING_ZERO,
-		.write		= NULL,
-		.read		= NULL,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {1024, 8192} },
+				.block_erase = spi_erase_at45db_page,
+			}, {
+				.eraseblocks = { {8 * 1024, 8192/8} },
+				.block_erase = spi_erase_at45db_block,
+			}, {
+				.eraseblocks = {
+					{8 * 1024, 1},
+					{248 * 1024, 1},
+					{256 * 1024, 31},
+				},
+				.block_erase = spi_erase_at45db_sector
+			}, {
+				.eraseblocks = { {8192 * 1024, 1} },
+				.block_erase = spi_erase_at45db_chip,
+			}
+		},
+		.unlock		= spi_disable_blockprotect_at45db, /* Impossible if locked down or #WP is low */
+		.printlock	= spi_prettyprint_status_register_at45db,
+		/* granularity will be set by the probing function. */
+		.write		= spi_write_at45db,
+		.read		= spi_read_at45db, /* Fast read (0x0B) supported */
 		.voltage	= {2700, 3600},
 	},
 

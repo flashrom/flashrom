@@ -317,7 +317,7 @@ endif
 CHIP_OBJS = jedec.o stm50flw0x0x.o w39.o w29ee011.o \
 	sst28sf040.o m29f400bt.o 82802ab.o pm49fl00x.o \
 	sst49lfxxxc.o sst_fwhub.o flashchips.o spi.o spi25.o spi25_statusreg.o \
-	opaque.o sfdp.o en29lv640b.o
+	opaque.o sfdp.o en29lv640b.o at45db.o
 
 ###############################################################################
 # Library code.
