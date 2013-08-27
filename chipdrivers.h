@@ -121,6 +121,7 @@ int spi_erase_at45db_page(struct flashctx *flash, unsigned int addr, unsigned in
 int spi_erase_at45db_block(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 int spi_erase_at45db_sector(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 int spi_erase_at45db_chip(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
+int spi_erase_at45cs_sector(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 
 /* 82802ab.c */
 uint8_t wait_82802ab(struct flashctx *flash);
