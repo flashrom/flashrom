@@ -218,6 +218,10 @@ endif
 endif
 
 ifeq ($(TARGET_OS), libpayload)
+ifeq ($(MAKECMDGOALS),)
+.DEFAULT_GOAL := libflashrom.a
+$(info Setting default goal to libflashrom.a)
+endif
 FLASHROM_CFLAGS += -DSTANDALONE
 ifeq ($(CONFIG_DUMMY), yes)
 UNSUPPORTED_FEATURES += CONFIG_DUMMY=yes
