@@ -25,8 +25,6 @@
 #include "flash.h"
 #include "programmer.h"
 
-static int romimages = 0;
-
 #define MAX_ROMLAYOUT	32
 
 typedef struct {
@@ -36,13 +34,14 @@ typedef struct {
 	char name[256];
 } romlayout_t;
 
-/* include_args lists arguments specified at the command line with -i. They
- * must be processed at some point so that desired regions are marked as
- * "included" in the rom_entries list.
- */
-static char *include_args[MAX_ROMLAYOUT];
-static int num_include_args = 0; /* the number of valid entries. */
+/* rom_entries store the entries specified in a layout file and associated run-time data */
 static romlayout_t rom_entries[MAX_ROMLAYOUT];
+static int num_rom_entries = 0; /* the number of valid rom_entries */
+
+/* include_args holds the arguments specified at the command line with -i. They must be processed at some point
+ * so that desired regions are marked as "included" in the rom_entries list. */
+static char *include_args[MAX_ROMLAYOUT];
+static int num_include_args = 0; /* the number of valid include_args. */
 
 #ifndef __LIBPAYLOAD__
 int read_romlayout(char *name)
@@ -62,12 +61,12 @@ int read_romlayout(char *name)
 	while (!feof(romlayout)) {
 		char *tstr1, *tstr2;
 
-		if (romimages >= MAX_ROMLAYOUT) {
+		if (num_rom_entries >= MAX_ROMLAYOUT) {
 			msg_gerr("Maximum number of ROM images (%i) in layout "
 				 "file reached.\n", MAX_ROMLAYOUT);
 			return 1;
 		}
-		if (2 != fscanf(romlayout, "%s %s\n", tempstr, rom_entries[romimages].name))
+		if (2 != fscanf(romlayout, "%s %s\n", tempstr, rom_entries[num_rom_entries].name))
 			continue;
 #if 0
 		// fscanf does not like arbitrary comments like that :( later
@@ -82,13 +81,13 @@ int read_romlayout(char *name)
 			fclose(romlayout);
 			return 1;
 		}
-		rom_entries[romimages].start = strtol(tstr1, (char **)NULL, 16);
-		rom_entries[romimages].end = strtol(tstr2, (char **)NULL, 16);
-		rom_entries[romimages].included = 0;
-		romimages++;
+		rom_entries[num_rom_entries].start = strtol(tstr1, (char **)NULL, 16);
+		rom_entries[num_rom_entries].end = strtol(tstr2, (char **)NULL, 16);
+		rom_entries[num_rom_entries].included = 0;
+		num_rom_entries++;
 	}
 
-	for (i = 0; i < romimages; i++) {
+	for (i = 0; i < num_rom_entries; i++) {
 		msg_gdbg("romlayout %08x - %08x named %s\n",
 			     rom_entries[i].start,
 			     rom_entries[i].end, rom_entries[i].name);
@@ -139,11 +138,11 @@ static int find_romentry(char *name)
 {
 	int i;
 
-	if (!romimages)
+	if (num_rom_entries == 0)
 		return -1;
 
 	msg_gspew("Looking for region \"%s\"... ", name);
-	for (i = 0; i < romimages; i++) {
+	for (i = 0; i < num_rom_entries; i++) {
 		if (!strcmp(rom_entries[i].name, name)) {
 			rom_entries[i].included = 1;
 			msg_gspew("found.\n");
@@ -166,7 +165,7 @@ int process_include_args(void)
 		return 0;
 
 	/* User has specified an area, but no layout file is loaded. */
-	if (!romimages) {
+	if (num_rom_entries == 0) {
 		msg_gerr("Region requested (with -i \"%s\"), "
 			 "but no layout data is available.\n",
 			 include_args[0]);
@@ -198,7 +197,7 @@ romlayout_t *get_next_included_romentry(unsigned int start)
 	romlayout_t *cur;
 
 	/* First come, first serve for overlapping regions. */
-	for (i = 0; i < romimages; i++) {
+	for (i = 0; i < num_rom_entries; i++) {
 		cur = &rom_entries[i];
 		if (!cur->included)
 			continue;
