@@ -1166,6 +1166,10 @@ notfound:
 int read_buf_from_file(unsigned char *buf, unsigned long size,
 		       const char *filename)
 {
+#ifdef __LIBPAYLOAD__
+	msg_gerr("Error: No file I/O support in libpayload\n");
+	return 1;
+#else
 	unsigned long numbytes;
 	FILE *image;
 	struct stat image_stat;
@@ -1196,11 +1200,16 @@ int read_buf_from_file(unsigned char *buf, unsigned long size,
 		return 1;
 	}
 	return 0;
+#endif
 }
 
 int write_buf_to_file(unsigned char *buf, unsigned long size,
 		      const char *filename)
 {
+#ifdef __LIBPAYLOAD__
+	msg_gerr("Error: No file I/O support in libpayload\n");
+	return 1;
+#else
 	unsigned long numbytes;
 	FILE *image;
 
@@ -1221,6 +1230,7 @@ int write_buf_to_file(unsigned char *buf, unsigned long size,
 		return 1;
 	}
 	return 0;
+#endif
 }
 
 int read_flash_to_file(struct flashctx *flash, const char *filename)
