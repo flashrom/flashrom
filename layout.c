@@ -32,10 +32,10 @@ typedef struct {
 	unsigned int end;
 	unsigned int included;
 	char name[256];
-} romlayout_t;
+} romentry_t;
 
 /* rom_entries store the entries specified in a layout file and associated run-time data */
-static romlayout_t rom_entries[MAX_ROMLAYOUT];
+static romentry_t rom_entries[MAX_ROMLAYOUT];
 static int num_rom_entries = 0; /* the number of valid rom_entries */
 
 /* include_args holds the arguments specified at the command line with -i. They must be processed at some point
@@ -189,12 +189,12 @@ int process_include_args(void)
 	return 0;
 }
 
-romlayout_t *get_next_included_romentry(unsigned int start)
+romentry_t *get_next_included_romentry(unsigned int start)
 {
 	int i;
 	unsigned int best_start = UINT_MAX;
-	romlayout_t *best_entry = NULL;
-	romlayout_t *cur;
+	romentry_t *best_entry = NULL;
+	romentry_t *cur;
 
 	/* First come, first serve for overlapping regions. */
 	for (i = 0; i < num_rom_entries; i++) {
@@ -219,7 +219,7 @@ romlayout_t *get_next_included_romentry(unsigned int start)
 int handle_romentries(const struct flashctx *flash, uint8_t *oldcontents, uint8_t *newcontents)
 {
 	unsigned int start = 0;
-	romlayout_t *entry;
+	romentry_t *entry;
 	unsigned int size = flash->chip->total_size * 1024;
 
 	/* If no regions were specified for inclusion, assume
