@@ -2378,6 +2378,7 @@ const struct board_match board_matches[] = {
 	{0x8086, 0x24dd, 0x1043, 0x80a6,  0x8086, 0x2570, 0x1043, 0x8157, NULL,         NULL, NULL,           P3, "ASUS",        "P5PE-VM",               0,   OK, intel_ich_gpio21_raise},
 	{0x8086, 0x2443, 0x1043, 0x8027,  0x8086, 0x1130, 0x1043, 0x8027, "^CUSL2-C",   NULL, NULL,           P3, "ASUS",        "CUSL2-C",               0,   OK, intel_ich_gpio21_raise},
 	{0x8086, 0x2443, 0x1043, 0x8027,  0x8086, 0x1130, 0x1043, 0x8027, "^TUSL2-C",   NULL, NULL,           P3, "ASUS",        "TUSL2-C",               0,   NT, intel_ich_gpio21_raise},
+	{0x1106, 0x3059, 0x1106, 0x4161,  0x1106, 0x3065, 0x1106, 0x0102, NULL,         NULL, NULL,           P3, "Bcom/Clientron", "WinNET P680",        0,   OK, w836xx_memw_enable_2e},
 	{0x1106, 0x3177, 0x1106, 0x3177,  0x1106, 0x3116, 0x1106, 0x3116, "^KM266-8235$", "biostar", "m7viq", P3, "Biostar",     "M7VIQ",                 0,   NT, w83697xx_memw_enable_2e},
 	{0x10b7, 0x9055, 0x1028, 0x0082,  0x8086, 0x7190,      0,      0, NULL,         NULL, NULL,           P3, "Dell",        "OptiPlex GX1",          0,   OK, intel_piix4_gpo30_lower},
 	{0x8086, 0x3590, 0x1028, 0x016c,  0x1000, 0x0030, 0x1028, 0x016c, NULL,         NULL, NULL,           P3, "Dell",        "PowerEdge 1850",        0,   OK, intel_ich_gpio23_raise},
