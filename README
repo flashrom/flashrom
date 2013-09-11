@@ -105,20 +105,24 @@ To cross-compile on Linux for DOS:
  djcrx-2.04pre_20090725-13ap.i386.rpm
  The cross toolchain packages for your distribution may have slightly different
  names (look for packages named *djgpp*).
- Download pciutils 3.1.5 and apply http://assembler.cz/flashrom/pciutils.patch
- Download and compile http://assembler.cz/flashrom/libgetopt/
+
+ You will need the following library source trees containing their compiled
+ static libraries either in the parent directory of the flashrom source or
+ specify the base folder on compile time with the DOSLIBS_BASE parameter.
+ The default as described above is equal to calling
+   'make djgpp-dos DOSLIBS_BASE=..'
+
+ To get and build said libraries...
+ Download pciutils 3.1.5 and apply http://flashrom.org/File:Pciutils.patch.gz
  Compile pciutils, see README.DJGPP for instructions.
+ Download and compile http://flashrom.org/File:Libgetopt.tar.gz
  Enter the flashrom directory.
- ../libpci should contain pciutils source and binaries.
- ../libgetopt should contain getopt.a from libgetopt.
  Run either (change settings where appropriate)
  make CC=i586-pc-msdosdjgpp-gcc STRIP=i586-pc-msdosdjgpp-strip
  or (above settings hardcoded)
  make djgpp-dos
- You might have to add WARNERROR=no to the make command line.
- To run flashrom.exe, download and unpack
- http://homer.rice.edu/~sandmann/cwsdpmi/csdpmi7b.zip and make sure
- CWSDPMI.EXE is in the current directory.
+ To run flashrom.exe, download http://flashrom.org/File:Csdpmi7b.zip and
+ unpack CWSDPMI.EXE into the current directory or one in PATH.
 
 To cross-compile on Linux for Windows:
 
