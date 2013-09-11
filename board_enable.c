@@ -2560,6 +2560,7 @@ const static struct board_match *board_match_pci_ids(enum board_match_phase phas
 			}
 		}
 
+#if defined(__i386__) || defined(__x86_64__)
 		if (board->dmi_pattern) {
 			if (!has_dmi_support) {
 				msg_pwarn("Warning: Can't autodetect %s %s, DMI info unavailable.\n",
@@ -2572,7 +2573,7 @@ const static struct board_match *board_match_pci_ids(enum board_match_phase phas
 					continue;
 			}
 		}
-
+#endif // defined(__i386__) || defined(__x86_64__)
 		return board;
 	}
 

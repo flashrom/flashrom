@@ -328,6 +328,11 @@ void *rphysmap(const char *descr, uintptr_t phys_addr, size_t len)
 	return physmap_common(descr, phys_addr, len, PHYSM_NOFAIL, PHYSM_RW, PHYSM_CLEANUP, PHYSM_ROUND);
 }
 
+void *physmap_round(const char *descr, uintptr_t phys_addr, size_t len)
+{
+	return physmap_common(descr, phys_addr, len, PHYSM_NOFAIL, PHYSM_RW, PHYSM_NOCLEANUP, PHYSM_ROUND);
+}
+
 void *physmap_try_ro(const char *descr, uintptr_t phys_addr, size_t len)
 {
 	return physmap_common(descr, phys_addr, len, PHYSM_MAYFAIL, PHYSM_RO, PHYSM_NOCLEANUP, PHYSM_EXACT);
