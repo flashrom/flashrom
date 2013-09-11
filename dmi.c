@@ -1,7 +1,10 @@
 /*
  * This file is part of the flashrom project.
  *
+ * Copyright (C) 2000-2002 Alan Cox <alan@redhat.com>
+ * Copyright (C) 2002-2010 Jean Delvare <khali@linux-fr.org>
  * Copyright (C) 2009,2010 Michael Karcher
+ * Copyright (C) 2011-2013 Stefan Tauner
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,33 +29,28 @@
 #include "flash.h"
 #include "programmer.h"
 
+#if defined(__i386__) || defined(__x86_64__)
+
+/* Enable SMBIOS decoding. Currently legacy DMI decoding is enough. */
+#define SM_SUPPORT 0
+
+/* Strings longer than 4096 in DMI are just insane. */
+#define DMI_MAX_ANSWER_LEN 4096
+
 int has_dmi_support = 0;
 
-#if STANDALONE
-
-/* Stub to indicate missing DMI functionality.
- * has_dmi_support is 0 by default, so nothing to do here.
- * Because dmidecode is not available on all systems, the goal is to implement
- * the DMI subset we need directly in this file.
- */
-void dmi_init(void)
-{
-}
-
-int dmi_match(const char *pattern)
-{
-	return 0;
-}
-
-#else /* STANDALONE */
-
-static const char *dmidecode_names[] = {
-	"system-manufacturer",
-	"system-product-name",
-	"system-version",
-	"baseboard-manufacturer",
-	"baseboard-product-name",
-	"baseboard-version",
+static struct {
+	const char *const keyword;
+	const uint8_t type;
+	const uint8_t offset;
+	char *value;
+} dmi_strings[] = {
+	{ "system-manufacturer", 1, 0x04, NULL },
+	{ "system-product-name", 1, 0x05, NULL },
+	{ "system-version", 1, 0x06, NULL },
+	{ "baseboard-manufacturer", 2, 0x04, NULL },
+	{ "baseboard-product-name", 2, 0x05, NULL },
+	{ "baseboard-version", 2, 0x06, NULL },
 };
 
 /* This list is used to identify supposed laptops. The is_laptop field has the
@@ -66,9 +64,9 @@ static const char *dmidecode_names[] = {
  * The types below are the most common ones.
  */
 static const struct {
-	unsigned char type;
-	unsigned char is_laptop;
-	const char *name;
+	uint8_t type;
+	uint8_t is_laptop;
+	char *name;
 } dmi_chassis_types[] = {
 	{0x01, 2, "Other"},
 	{0x02, 2, "Unknown"},
@@ -86,20 +84,206 @@ static const struct {
 	{0x18, 0, "Sealed-case PC"}, /* used by Supermicro (X8SIE) */
 };
 
-#define DMI_COMMAND_LEN_MAX 260
+#if CONFIG_INTERNAL_DMI == 1
+#ifdef __DJGPP__ /* There is no strnlen in DJGPP. FIXME: Move this to a common utility file. */
+size_t strnlen(const char *str, size_t n)
+{
+	size_t i;
+	for (i = 0; i < n && str[i] != '\0'; i++)
+		;
+	return i;
+}
+#endif
+
+static bool dmi_checksum(const uint8_t * const buf, size_t len)
+{
+	uint8_t sum = 0;
+	size_t a;
+
+	for (a = 0; a < len; a++)
+		sum += buf[a];
+	return (sum == 0);
+}
+
+static char *dmi_string(uint8_t *buf, uint8_t string_id, uint8_t *limit)
+{
+	size_t i, len;
+
+	if (string_id == 0)
+		return "Not Specified";
+
+	while (string_id > 1 && string_id--) {
+		if (buf > limit) {
+			msg_perr("DMI table is broken (string portion out of bounds)!\n");
+			return "<OUT OF BOUNDS>";
+		}
+		buf += strnlen((char *)buf, limit - buf) + 1;
+	}
+
+	if (!*buf) /* as long as the current byte we're on isn't null */
+		return "<BAD INDEX>";
+
+	len = strnlen((char *)buf, limit - buf);
+	if (len > DMI_MAX_ANSWER_LEN)
+		len = DMI_MAX_ANSWER_LEN;
+
+	/* fix junk bytes in the string */
+	for (i = 0; i < len; i++)
+		if (buf[i] < 32 || buf[i] >= 127)
+			buf[i] = ' ';
+
+	return (char *)buf;
+}
+
+static void dmi_chassis_type(uint8_t code)
+{
+	int i;
+	code &= 0x7f; /* bits 6:0 are chassis type, 7th bit is the lock bit */
+	is_laptop = 2;
+	for (i = 0; i < ARRAY_SIZE(dmi_chassis_types); i++) {
+		if (code == dmi_chassis_types[i].type) {
+			msg_pdbg("DMI string chassis-type: \"%s\"\n", dmi_chassis_types[i].name);
+			is_laptop = dmi_chassis_types[i].is_laptop;
+			break;
+		}
+	}
+}
+
+static void dmi_table(uint32_t base, uint16_t len, uint16_t num)
+{
+	int i = 0, j = 0;
+
+	uint8_t *dmi_table_mem = physmap_round("DMI Table", base, len);
+	if (dmi_table_mem == NULL) {
+		msg_perr("Unable to access DMI Table\n");
+		return;
+	}
+
+	uint8_t *data = dmi_table_mem;
+	uint8_t *limit = dmi_table_mem + len;
+
+	/* SMBIOS structure header is always 4 B long and contains:
+	 *  - uint8_t type;	// see dmi_chassis_types's type
+	 *  - uint8_t length;	// data section w/ header w/o strings
+	 *  - uint16_t handle;
+	 */
+	while (i < num && data + 4 <= limit) {
+		/* - If a short entry is found (less than 4 bytes), not only it
+		 *   is invalid, but we cannot reliably locate the next entry.
+		 * - If the length value indicates that this structure spreads
+		 *   accross the table border, something is fishy too.
+		 * Better stop at this point, and let the user know his/her
+		 * table is broken.
+		 */
+		if (data[1] < 4 || data + data[1] > limit) {
+			msg_perr("DMI table is broken (bogus header)!\n");
+			break;
+		}
+
+		if(data[0] == 3) {
+			if (data + 5 <= limit)
+				dmi_chassis_type(data[5]);
+			/* else the table is broken, but laptop detection is optional, hence continue. */
+		} else
+			for (j = 0; j < ARRAY_SIZE(dmi_strings); j++) {
+				uint8_t offset = dmi_strings[j].offset;
+				uint8_t type = dmi_strings[j].type;
+
+				if (data[0] != type)
+					continue;
+
+				if (data[1] <= offset || data+offset > limit) {
+					msg_perr("DMI table is broken (offset out of bounds)!\n");
+					goto out;
+				}
+
+				/* Table will be unmapped, hence fill the struct with duplicated strings. */
+				dmi_strings[j].value = strdup(dmi_string(data + data[1], data[offset], limit));
+			}
+		/* Find next structure by skipping data and string sections */
+		data += data[1];
+		while (data + 1 <= limit) {
+			if (data[0] == 0 && data[1] == 0)
+				break;
+			data++;
+		}
+		data += 2;
+		i++;
+	}
+out:
+	physunmap(dmi_table_mem, len);
+}
+
+#if SM_SUPPORT
+static int smbios_decode(uint8_t *buf)
+{
+	/* TODO: other checks mentioned in the conformance guidelines? */
+	if (!dmi_checksum(buf, buf[0x05]) ||
+	    (memcmp(buf + 0x10, "_DMI_", 5) != 0) ||
+	    !dmi_checksum(buf + 0x10, 0x0F))
+			return 0;
+
+	dmi_table(mmio_readl(buf + 0x18), mmio_readw(buf + 0x16), mmio_readw(buf + 0x1C));
+
+	return 1;
+}
+#endif
+
+static int legacy_decode(uint8_t *buf)
+{
+	if (!dmi_checksum(buf, 0x0F))
+		return 1;
+
+	dmi_table(mmio_readl(buf + 0x08), mmio_readw(buf + 0x06), mmio_readw(buf + 0x0C));
+
+	return 0;
+}
+
+int dmi_fill(void)
+{
+	size_t fp;
+	uint8_t *dmi_mem;
+	int ret = 1;
+
+	msg_pdbg("Using Internal DMI decoder.\n");
+	/* There are two ways specified to gain access to the SMBIOS table:
+	 * - EFI's configuration table contains a pointer to the SMBIOS table. On linux it can be obtained from
+	 *   sysfs. EFI's SMBIOS GUID is: {0xeb9d2d31,0x2d88,0x11d3,0x9a,0x16,0x0,0x90,0x27,0x3f,0xc1,0x4d}
+	 * - Scanning physical memory address range 0x000F0000h to 0x000FFFFF for the anchor-string(s). */
+	dmi_mem = physmap_try_ro("DMI", 0xF0000, 0x10000);
+	if (dmi_mem == NULL)
+		return ret;
+
+	for (fp = 0; fp <= 0xFFF0; fp += 16) {
+#if SM_SUPPORT
+		if (memcmp(dmi_mem + fp, "_SM_", 4) == 0 && fp <= 0xFFE0) {
+			if (smbios_decode(dmi_mem + fp)) // FIXME: length check
+				goto out;
+		} else
+#endif
+		if (memcmp(dmi_mem + fp, "_DMI_", 5) == 0)
+			if (legacy_decode(dmi_mem + fp) == 0) {
+				ret = 0;
+				goto out;
+			}
+	}
+	msg_pinfo("No DMI table found.\n");
+out:
+	physunmap(dmi_mem, 0x10000);
+	return ret;
+}
+
+#else /* CONFIG_INTERNAL_DMI */
+
+#define DMI_COMMAND_LEN_MAX 300
 static const char *dmidecode_command = "dmidecode";
-
-static char *dmistrings[ARRAY_SIZE(dmidecode_names)];
-
-/* Strings longer than 4096 in DMI are just insane. */
-#define DMI_MAX_ANSWER_LEN 4096
 
 static char *get_dmi_string(const char *string_name)
 {
 	FILE *dmidecode_pipe;
 	char *result;
 	char answerbuf[DMI_MAX_ANSWER_LEN];
-	char commandline[DMI_COMMAND_LEN_MAX + 40];
+	char commandline[DMI_COMMAND_LEN_MAX];
 
 	snprintf(commandline, sizeof(commandline),
 		 "%s -s %s", dmidecode_command, string_name);
@@ -138,46 +322,31 @@ static char *get_dmi_string(const char *string_name)
 	/* Chomp trailing newline. */
 	if (answerbuf[0] != 0 && answerbuf[strlen(answerbuf) - 1] == '\n')
 		answerbuf[strlen(answerbuf) - 1] = 0;
-	msg_pdbg("DMI string %s: \"%s\"\n", string_name, answerbuf);
 
 	result = strdup(answerbuf);
-	if (!result)
+	if (result == NULL)
 		msg_pwarn("Warning: Out of memory - DMI support fails");
 
 	return result;
 }
 
-static int dmi_shutdown(void *data)
-{
-	int i;
-	for (i = 0; i < ARRAY_SIZE(dmistrings); i++) {
-		free(dmistrings[i]);
-		dmistrings[i] = NULL;
-	}
-	return 0;
-}
-
-void dmi_init(void)
+int dmi_fill(void)
 {
 	int i;
 	char *chassis_type;
 
-	if (register_shutdown(dmi_shutdown, NULL))
-		return;
-
-	has_dmi_support = 1;
-	for (i = 0; i < ARRAY_SIZE(dmidecode_names); i++) {
-		dmistrings[i] = get_dmi_string(dmidecode_names[i]);
-		if (!dmistrings[i]) {
-			has_dmi_support = 0;
-			return;
-		}
+	msg_pdbg("Using External DMI decoder.\n");
+	for (i = 0; i < ARRAY_SIZE(dmi_strings); i++) {
+		dmi_strings[i].value = get_dmi_string(dmi_strings[i].keyword);
+		if (dmi_strings[i].value == NULL)
+			return 1;
 	}
 
 	chassis_type = get_dmi_string("chassis-type");
 	if (chassis_type == NULL)
-		return;
+		return 0; /* chassis-type handling is optional anyway */
 
+	msg_pdbg("DMI string chassis-type: \"%s\"\n", chassis_type);
 	is_laptop = 2;
 	for (i = 0; i < ARRAY_SIZE(dmi_chassis_types); i++) {
 		if (strcasecmp(chassis_type, dmi_chassis_types[i].name) == 0) {
@@ -185,6 +354,33 @@ void dmi_init(void)
 			break;
 		}
 	}
+	free(chassis_type);
+	return 0;
+}
+
+#endif /* CONFIG_INTERNAL_DMI */
+
+static int dmi_shutdown(void *data)
+{
+	int i;
+	for (i = 0; i < ARRAY_SIZE(dmi_strings); i++) {
+		free(dmi_strings[i].value);
+		dmi_strings[i].value = NULL;
+	}
+	return 0;
+}
+
+void dmi_init(void)
+{
+	/* Register shutdown function before we allocate anything. */
+	if (register_shutdown(dmi_shutdown, NULL)) {
+		msg_pwarn("Warning: Could not register DMI shutdown function - continuing without DMI info.\n");
+		return;
+	}
+
+	/* dmi_fill fills the dmi_strings array, and if possible sets the global is_laptop variable. */
+	if (dmi_fill() != 0)
+		return;
 
 	switch (is_laptop) {
 	case 1:
@@ -194,7 +390,13 @@ void dmi_init(void)
 		msg_pdbg("DMI chassis-type is not specific enough.\n");
 		break;
 	}
-	free(chassis_type);
+
+	has_dmi_support = 1;
+	int i;
+	for (i = 0; i < ARRAY_SIZE(dmi_strings); i++) {
+		msg_pdbg("DMI string %s: \"%s\"\n", dmi_strings[i].keyword,
+			 (dmi_strings[i].value == NULL) ? "" : dmi_strings[i].value);
+	}
 }
 
 /**
@@ -252,11 +454,11 @@ int dmi_match(const char *pattern)
 	if (!has_dmi_support)
 		return 0;
 
-	for (i = 0; i < ARRAY_SIZE(dmidecode_names); i++)
-		if (dmi_compare(dmistrings[i], pattern))
+	for (i = 0; i < ARRAY_SIZE(dmi_strings); i++)
+		if (dmi_compare(dmi_strings[i].value, pattern))
 			return 1;
 
 	return 0;
 }
 
-#endif /* STANDALONE */
+#endif // defined(__i386__) || defined(__x86_64__)

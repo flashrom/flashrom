@@ -277,6 +277,7 @@ int processor_flash_enable(void);
 /* physmap.c */
 void *physmap(const char *descr, uintptr_t phys_addr, size_t len);
 void *rphysmap(const char *descr, uintptr_t phys_addr, size_t len);
+void *physmap_round(const char *descr, uintptr_t phys_addr, size_t len);
 void *physmap_try_ro(const char *descr, uintptr_t phys_addr, size_t len);
 void physunmap(void *virt_addr, size_t len);
 #if CONFIG_INTERNAL == 1
@@ -288,9 +289,11 @@ int cb_parse_table(const char **vendor, const char **model);
 int cb_check_image(uint8_t *bios, int size);
 
 /* dmi.c */
+#if defined(__i386__) || defined(__x86_64__)
 extern int has_dmi_support;
 void dmi_init(void);
 int dmi_match(const char *pattern);
+#endif // defined(__i386__) || defined(__x86_64__)
 
 /* internal.c */
 struct superio {
