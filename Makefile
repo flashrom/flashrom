@@ -39,6 +39,7 @@ CFLAGS  ?= -Os -Wall -Wshadow
 EXPORTDIR ?= .
 AR      ?= ar
 RANLIB  ?= ranlib
+DOSLIBS_BASE ?= ..
 # The following parameter changes the default programmer that will be used if there is no -p/--programmer
 # argument given when running flashrom. The predefined setting does not enable any default so that every
 # user has to declare the programmer he wants to use on every run. The rationale for this to be not set
@@ -99,11 +100,12 @@ endif
 
 ifeq ($(TARGET_OS), DOS)
 EXEC_SUFFIX := .exe
-CPPFLAGS += -I../libgetopt
+CPPFLAGS += -I$(DOSLIBS_BASE)/libgetopt
 # DJGPP has odd uint*_t definitions which cause lots of format string warnings.
 CFLAGS += -Wno-format
 # FIXME Check if we can achieve the same effect with -L../libgetopt -lgetopt
-LIBS += ../libgetopt/libgetopt.a
+LIBS += -lgetopt
+LDFLAGS += -L$(DOSLIBS_BASE)/libgetopt/
 # Bus Pirate, Serprog and PonyProg are not supported under DOS (missing serial support).
 ifeq ($(CONFIG_BUSPIRATE_SPI), yes)
 UNSUPPORTED_FEATURES += CONFIG_BUSPIRATE_SPI=yes
@@ -611,9 +613,9 @@ PCILIBS += -lpciutils -lpci
 PCILIBS += -l$(shell uname -p)
 else
 ifeq ($(TARGET_OS), DOS)
-# FIXME There needs to be a better way to do this
-CPPFLAGS += -I../libpci/include
-PCILIBS += ../libpci/lib/libpci.a
+CPPFLAGS += -I$(DOSLIBS_BASE)/libpci/include
+LDFLAGS += -L$(DOSLIBS_BASE)/libpci/lib/
+PCILIBS += -lpci
 else
 PCILIBS += -lpci
 ifeq ($(TARGET_OS), OpenBSD)
