@@ -57,7 +57,28 @@ static enum amd_chipset amd_gen = CHIPSET_AMD_UNKNOWN;
 static void determine_generation(struct pci_dev *dev)
 {
 	amd_gen = CHIPSET_AMD_UNKNOWN;
-	if (dev->device_id == 0x780e) {
+	msg_pdbg2("Trying to determine the generation of the SPI interface... ");
+	if (dev->device_id == 0x438d) {
+		amd_gen = CHIPSET_SB6XX;
+		msg_pdbg("SB6xx detected.\n");
+	} else if (dev->device_id == 0x439d) {
+		struct pci_dev *smbus_dev = pci_dev_find(0x1002, 0x4385);
+		if (smbus_dev == NULL)
+			return;
+		uint8_t rev = pci_read_byte(smbus_dev, PCI_REVISION_ID);
+		if (rev >= 0x39 && rev <= 0x3D) {
+			amd_gen = CHIPSET_SB7XX;
+			msg_pdbg("SB7xx/SP5100 detected.\n");
+		} else if (rev >= 0x40 && rev <= 0x42) {
+			amd_gen = CHIPSET_SB89XX;
+			msg_pdbg("SB8xx/SB9xx/Hudson-1 detected.\n");
+		} else {
+			msg_pwarn("SB device found but SMBus revision 0x%02x does not match known values.\n"
+				  "Assuming SB8xx/SB9xx/Hudson-1. Please send a log to flashrom@flashrom.org\n",
+				   rev);
+			amd_gen = CHIPSET_SB89XX;
+		}
+	} else if (dev->device_id == 0x780e) {
 		/* The PCI ID of the LPC bridge doesn't change between Hudson-2/3/4 and Yangtze (Kabini/Temash)
 		 * although they use different SPI interfaces. */
 #ifdef USE_YANGTZE_HEURISTICS
@@ -94,7 +115,11 @@ static void determine_generation(struct pci_dev *dev)
 				  "the output of lspci -nnvx, thanks!.\n", rev);
 		}
 #endif
-	}
+	} else
+		msg_pwarn("%s: Unknown LPC device %" PRIx16 ":%" PRIx16 ".\n"
+			  "Please report this to flashrom@flashrom.org and include this log and\n"
+			  "the output of lspci -nnvx, thanks!\n",
+			  __func__, dev->vendor_id, dev->device_id);
 }
 
 static void reset_internal_fifo_pointer(void)
@@ -250,7 +275,7 @@ static int sb600_spi_send_command(struct flashctx *flash, unsigned int writecnt,
 static int sb600_handle_imc(struct pci_dev *dev, bool amd_imc_force)
 {
 	/* Handle IMC everywhere but sb600 which does not have one. */
-	if (dev->device_id == 0x438d)
+	if (amd_gen == CHIPSET_SB6XX)
 		return 0;
 
 	/* TODO: we should not only look at IntegratedImcPresent (LPC Dev 20, Func 3, 40h) but also at
@@ -336,6 +361,10 @@ int sb600_probe_spi(struct pci_dev *dev)
 	sb600_spibar += tmp & 0xfff;
 
 	determine_generation(dev);
+	if (amd_gen == CHIPSET_AMD_UNKNOWN) {
+		msg_perr("Could not determine chipset generation.");
+		return ERROR_NONFATAL;
+	}
 
 	if (amd_gen == CHIPSET_YANGTZE) {
 		msg_perr("SPI on Kabini/Temash and newer chipsets are not yet supported.\n"
@@ -343,34 +372,88 @@ int sb600_probe_spi(struct pci_dev *dev)
 		return ERROR_NONFATAL;
 	}
 
-	tmp = pci_read_long(dev, 0xa0);
-	msg_pdbg("AltSpiCSEnable=%i, SpiRomEnable=%i, "
-		     "AbortEnable=%i\n", tmp & 0x1, (tmp & 0x2) >> 1,
-		     (tmp & 0x4) >> 2);
-	tmp = (pci_read_byte(dev, 0xba) & 0x4) >> 2;
-	msg_pdbg("PrefetchEnSPIFromIMC=%i, ", tmp);
+	/* How to read the following table and similar ones in this file:
+	 * "?" means we have no datasheet for this chipset generation or it doesn't have any relevant info.
+	 * "<-" means the bit/register meaning is identical to the next non-"?" chipset to the left. "<-" thus
+	 *      never refers to another "?".
+	 * If a "?" chipset is between two chipsets with identical meaning, we assume the meaning didn't change
+	 * twice in between, i.e. the meaning is unchanged for the "?" chipset. Usually we assume that
+	 * succeeding hardware supports the same functionality as its predecessor unless proven different by
+	 * tests or documentation, hence "?" will often be implemented equally to "<-".
+	 *
+	 * Chipset support matrix for SPI Base_Addr (LPC PCI reg 0xa0)
+	 * bit   6xx         7xx/SP5100       8xx       9xx  hudson1  hudson2+  yangtze
+	 * 3    rsvd         <-               <-        ?    <-       ?         RouteTpm2Spi
+	 * 2    rsvd         AbortEnable      rsvd      ?    <-       ?         <-
+	 * 1    rsvd         SpiRomEnable     <-        ?    <-       ?         <-
+	 * 0    rsvd         AltSpiCSEnable   rsvd      ?    <-       ?         <-
+	 */
+	if (amd_gen >= CHIPSET_SB7XX) {
+		tmp = pci_read_long(dev, 0xa0);
+		msg_pdbg("SpiRomEnable=%i", (tmp >> 1) & 0x1);
+		if (amd_gen == CHIPSET_SB7XX)
+			msg_pdbg(", AltSpiCSEnable=%i, AbortEnable=%i", tmp & 0x1, (tmp >> 2) & 0x1);
 
-	tmp = pci_read_byte(dev, 0xbb);
-	/* FIXME: Set bit 3,6,7 if not already set.
-	 * Set bit 5, otherwise SPI accesses are pointless in LPC mode.
-	 * See doc 42413 AMD SB700/710/750 RPR.
+		tmp = pci_read_byte(dev, 0xba);
+		msg_pdbg(", PrefetchEnSPIFromIMC=%i", (tmp & 0x4) >> 2);
+
+		tmp = pci_read_byte(dev, 0xbb);
+		/* FIXME: Set bit 3,6,7 if not already set.
+		 * Set bit 5, otherwise SPI accesses are pointless in LPC mode.
+		 * See doc 42413 AMD SB700/710/750 RPR.
+		 */
+		if (amd_gen == CHIPSET_SB7XX)
+			msg_pdbg(", SpiOpEnInLpcMode=%i", (tmp >> 5) & 0x1);
+		msg_pdbg(", PrefetchEnSPIFromHost=%i\n", tmp & 0x1);
+	}
+
+	/* Chipset support matrix for SPI_Cntrl0 (spibar + 0x0)
+	 * See the chipset support matrix for SPI Base_Addr above for an explanation of the symbols used.
+	 * bit   6xx                7xx/SP5100      8xx               9xx  hudson1  hudson2+  yangtze
+	 * 17    rsvd               <-              <-                ?    <-       ?         <-
+	 * 18    rsvd               <-              fastReadEnable<1> ?    <-       ?         SpiReadMode[0]
+	 * 19    SpiArbEnable       <-              <-                ?    <-       ?         <-
+	 * 20    (FifoPtrClr)       <-              <-                ?    <-       ?         <-
+	 * 21    (FifoPtrInc)       <-              <-                ?    <-       ?         IllegalAccess
+	 * 22    SpiAccessMacRomEn  <-              <-                ?    <-       ?         <-
+	 * 23    SpiHostAccessRomEn <-              <-                ?    <-       ?         <-
+	 * 24:26 ArbWaitCount       <-              <-                ?    <-       ?         <-
+	 * 27    SpiBridgeDisable   <-              <-                ?    <-       ?         rsvd
+	 * 28    rsvd               DropOneClkOnRd  = SPIClkGate      ?    <-       ?         <-
+	 * 29:30 rsvd               <-              <-                ?    <-       ?         SpiReadMode[2:1]
+	 * 31    rsvd               <-              SpiBusy           ?    <-       ?         <-
 	 */
-	msg_pdbg("PrefetchEnSPIFromHost=%i, SpiOpEnInLpcMode=%i\n",
-		     tmp & 0x1, (tmp & 0x20) >> 5);
-	tmp = mmio_readl(sb600_spibar);
-	/* FIXME: If SpiAccessMacRomEn or SpiHostAccessRomEn are zero on
-	 * SB700 or later, reads and writes will be corrupted. Abort in this
-	 * case. Make sure to avoid this check on SB600.
-	 */
-	msg_pdbg("(0x%08" PRIx32 ") fastReadEnable=%u, SpiArbEnable=%i, SpiAccessMacRomEn=%i, "
-		     "SpiHostAccessRomEn=%i, ArbWaitCount=%i, "
-		     "SpiBridgeDisable=%i, DropOneClkOnRd=%i\n",
-		     tmp, (tmp >> 18) & 0x1,
-		     (tmp >> 19) & 0x1, (tmp >> 22) & 0x1,
-		     (tmp >> 23) & 0x1, (tmp >> 24) & 0x7,
-		     (tmp >> 27) & 0x1, (tmp >> 28) & 0x1);
+	tmp = mmio_readl(sb600_spibar + 0x00);
+	msg_pdbg("(0x%08" PRIx32 ") SpiArbEnable=%i", tmp, (tmp >> 19) & 0x1);
+
+	msg_pdbg(", SpiAccessMacRomEn=%i, SpiHostAccessRomEn=%i, ArbWaitCount=%i",
+		 (tmp >> 22) & 0x1, (tmp >> 23) & 0x1, (tmp >> 24) & 0x7);
+
+	if (amd_gen != CHIPSET_YANGTZE)
+		msg_pdbg(", SpiBridgeDisable=%i", (tmp >> 27) & 0x1);
+
+	switch (amd_gen) {
+	case CHIPSET_SB7XX:
+		msg_pdbg(", DropOneClkOnRd/SpiClkGate=%i", (tmp >> 28) & 0x1);
+	case CHIPSET_SB89XX:
+	case CHIPSET_HUDSON234:
+		msg_pdbg(", SpiBusy=%i", (tmp >> 31) & 0x1);
+	default: break;
+	}
+	msg_pdbg("\n");
+
+	if (((tmp >> 22) & 0x1) == 0 || ((tmp >> 23) & 0x1) == 0) {
+		msg_perr("ERROR: State of SpiAccessMacRomEn or SpiHostAccessRomEn prohibits full access.\n");
+		return ERROR_NONFATAL;
+	}
+
 	tmp = (mmio_readb(sb600_spibar + 0xd) >> 4) & 0x3;
 	msg_pdbg("NormSpeed is %s MHz\n", speed_names[tmp]);
+
+	if (amd_gen >= CHIPSET_SB89XX) {
+		tmp = mmio_readb(sb600_spibar + 0x1D);
+		msg_pdbg("Using SPI_CS%d\n", tmp & 0x3);
+	}
 
 	/* Look for the SMBus device. */
 	smbus_dev = pci_dev_find(0x1002, 0x4385);
