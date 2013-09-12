@@ -884,22 +884,29 @@ static int enable_flash_sc1100(struct pci_dev *dev, const char *name)
 	return 0;
 }
 
-/* Works for AMD-8111, VIA VT82C586A/B, VIA VT82C686A/B. */
-static int enable_flash_amd8111(struct pci_dev *dev, const char *name)
+/* Works for AMD-768, AMD-8111, VIA VT82C586A/B, VIA VT82C596, VIA VT82C686A/B.
+ *
+ * ROM decode control register matrix
+ * 	AMD-768			AMD-8111	VT82C586A/B		VT82C596		VT82C686A/B
+ * 7	FFC0_0000h–FFFF_FFFFh	<-		FFFE0000h-FFFEFFFFh	<-			<-
+ * 6	FFB0_0000h–FFBF_FFFFh	<-		FFF80000h-FFFDFFFFh	<-			<-
+ * 5	00E8...			<-		<-			FFF00000h-FFF7FFFFh	<-
+ */
+static int enable_flash_amd_via(struct pci_dev *dev, const char *name, uint8_t decode_val)
 {
 	#define AMD_MAPREG 0x43
 	#define AMD_ENREG 0x40
 	uint8_t old, new;
 
-	/* Enable decoding at 0xffb00000 to 0xffffffff. */
 	old = pci_read_byte(dev, AMD_MAPREG);
-	new = old | 0xC0;
+	new = old | decode_val;
 	if (new != old) {
 		rpci_write_byte(dev, AMD_MAPREG, new);
 		if (pci_read_byte(dev, AMD_MAPREG) != new) {
-			msg_pinfo("Setting register 0x%x to 0x%02x on %s failed (WARNING ONLY).\n",
+			msg_pwarn("Setting register 0x%x to 0x%02x on %s failed (WARNING ONLY).\n",
 				  AMD_MAPREG, new, name);
-		}
+		} else
+			msg_pdbg("Changed ROM decode range to 0x%02x successfully.\n", new);
 	}
 
 	/* Enable 'ROM write' bit. */
@@ -910,12 +917,35 @@ static int enable_flash_amd8111(struct pci_dev *dev, const char *name)
 	rpci_write_byte(dev, AMD_ENREG, new);
 
 	if (pci_read_byte(dev, AMD_ENREG) != new) {
-		msg_pinfo("Setting register 0x%x to 0x%02x on %s failed (WARNING ONLY).\n",
+		msg_pwarn("Setting register 0x%x to 0x%02x on %s failed (WARNING ONLY).\n",
 			  AMD_ENREG, new, name);
-		return -1;
+		return ERROR_NONFATAL;
 	}
+	msg_pdbg2("Set ROM enable bit successfully.\n");
 
 	return 0;
+}
+
+static int enable_flash_amd_768_8111(struct pci_dev *dev, const char *name)
+{
+	/* Enable decoding of 0xFFB00000 to 0xFFFFFFFF (5 MB). */
+	max_rom_decode.lpc = 5 * 1024 * 1024;
+	return enable_flash_amd_via(dev, name, 0xC0);
+}
+
+static int enable_flash_vt82c586(struct pci_dev *dev, const char *name)
+{
+	/* Enable decoding of 0xFFF80000 to 0xFFFFFFFF. (512 kB) */
+	max_rom_decode.parallel = 512 * 1024;
+	return enable_flash_amd_via(dev, name, 0xC0);
+}
+
+/* Works for VT82C686A/B too. */
+static int enable_flash_vt82c596(struct pci_dev *dev, const char *name)
+{
+	/* Enable decoding of 0xFFF80000 to 0xFFFFFFFF. (1 MB) */
+	max_rom_decode.parallel = 1024 * 1024;
+	return enable_flash_amd_via(dev, name, 0xE0);
 }
 
 static int enable_flash_sb600(struct pci_dev *dev, const char *name)
@@ -1304,8 +1334,8 @@ const struct penable chipset_enables[] = {
 	{0x1022, 0x2080, OK, "AMD", "CS5536",		enable_flash_cs5536},
 	{0x1022, 0x2090, OK, "AMD", "CS5536",		enable_flash_cs5536},
 	{0x1022, 0x3000, OK, "AMD", "Elan SC520",	get_flashbase_sc520},
-	{0x1022, 0x7440, OK, "AMD", "AMD-768",		enable_flash_amd8111},
-	{0x1022, 0x7468, OK, "AMD", "AMD8111",		enable_flash_amd8111},
+	{0x1022, 0x7440, OK, "AMD", "AMD-768",		enable_flash_amd_768_8111},
+	{0x1022, 0x7468, OK, "AMD", "AMD-8111",		enable_flash_amd_768_8111},
 	{0x1022, 0x780e, OK, "AMD", "FCH",		enable_flash_sb600},
 	{0x1039, 0x0406, NT, "SiS", "501/5101/5501",	enable_flash_sis501},
 	{0x1039, 0x0496, NT, "SiS", "85C496+497",	enable_flash_sis85c496},
@@ -1390,9 +1420,9 @@ const struct penable chipset_enables[] = {
 	{0x1106, 0x0691, OK, "VIA", "VT82C69x",		via_no_byte_merge},
 	{0x1106, 0x8601, NT, "VIA", "VT8601T",		via_no_byte_merge},
 	/* VIA southbridges */
-	{0x1106, 0x0586, OK, "VIA", "VT82C586A/B",	enable_flash_amd8111},
-	{0x1106, 0x0596, OK, "VIA", "VT82C596",		enable_flash_amd8111},
-	{0x1106, 0x0686, OK, "VIA", "VT82C686A/B",	enable_flash_amd8111},
+	{0x1106, 0x0586, OK, "VIA", "VT82C586A/B",	enable_flash_vt82c586},
+	{0x1106, 0x0596, OK, "VIA", "VT82C596",		enable_flash_vt82c596},
+	{0x1106, 0x0686, OK, "VIA", "VT82C686A/B",	enable_flash_vt82c596},
 	{0x1106, 0x3074, OK, "VIA", "VT8233",		enable_flash_vt823x},
 	{0x1106, 0x3147, OK, "VIA", "VT8233A",		enable_flash_vt823x},
 	{0x1106, 0x3177, OK, "VIA", "VT8235",		enable_flash_vt823x},
