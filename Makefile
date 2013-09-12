@@ -734,6 +734,11 @@ compiler: featuresavailable
 	@echo $(TARGET_OS)|wc -w|grep -q '^[[:blank:]]*1[[:blank:]]*$$' ||	\
 		( echo "unknown. Aborting."; exit 1)
 	@printf "%s\n" '$(TARGET_OS)'
+ifeq ($(TARGET_OS), libpayload)
+	@$(CC) --version 2>&1 | grep -q coreboot || \
+		( echo "Warning: It seems you are not using coreboot's reference compiler."; \
+		  echo "This might work but usually does not, please beware." )
+endif
 
 define LIBPCI_TEST
 /* Avoid a failing test due to libpci header symbol shadowing breakage */
