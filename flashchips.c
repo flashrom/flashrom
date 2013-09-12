@@ -11022,7 +11022,7 @@ const struct flashchip flashchips[] = {
 					{4 * 1024, 16}, /* sector */
 					{4 * 1024, 16}, /* sector */
 				},
-				.block_erase = NULL,
+				.block_erase = erase_sector_stm50,
 			}, {
 				.eraseblocks = { {64 * 1024, 8}, },
 				.block_erase = erase_block_82802ab,
@@ -11055,7 +11055,7 @@ const struct flashchip flashchips[] = {
 					{64 * 1024, 5}, /* block */
 					{4 * 1024, 16}, /* sector */
 				},
-				.block_erase = NULL,
+				.block_erase = erase_sector_stm50,
 			}, {
 				.eraseblocks = { {64 * 1024, 8}, },
 				.block_erase = erase_block_82802ab,
@@ -11088,7 +11088,7 @@ const struct flashchip flashchips[] = {
 					{4 * 1024, 16}, /* sector */
 					{4 * 1024, 16}, /* sector */
 				},
-				.block_erase = NULL,
+				.block_erase = erase_sector_stm50,
 			}, {
 				.eraseblocks = { {64 * 1024, 16}, },
 				.block_erase = erase_block_82802ab,
@@ -11121,7 +11121,7 @@ const struct flashchip flashchips[] = {
 					{64 * 1024, 13}, /* block */
 					{4 * 1024, 16}, /* sector */
 				},
-				.block_erase = NULL,
+				.block_erase = erase_sector_stm50,
 			}, {
 				.eraseblocks = { {64 * 1024, 16}, },
 				.block_erase = erase_block_82802ab,

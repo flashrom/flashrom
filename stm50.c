@@ -84,10 +84,9 @@ int unlock_stm50_uniform(struct flashctx *flash)
 	return 0;
 }
 
-/* This function is unused. */
-int erase_sector_stm50(struct flashctx *flash, unsigned int sector, unsigned int sectorsize)
+static int stm50_erase_sector(struct flashctx *flash, unsigned int addr)
 {
-	chipaddr bios = flash->virtual_memory + sector;
+	chipaddr bios = flash->virtual_memory + addr;
 
 	// clear status register
 	chip_writeb(flash, 0x50, bios);
@@ -96,8 +95,21 @@ int erase_sector_stm50(struct flashctx *flash, unsigned int sector, unsigned int
 	chip_writeb(flash, 0xd0, bios);
 	programmer_delay(10);
 
-	wait_82802ab(flash);
+	uint8_t status = wait_82802ab(flash);
+	print_status_82802ab(status);
 
-	/* FIXME: Check the status register for errors. */
-	return 0;
+	return status == 0x80;
+}
+
+/* Some ST M50* chips do support erasing of sectors. This function will derive the erase function to use from
+ * the length of the of the block. For calls that apparently do not address a sector (but a block) we just call
+ * the block erase function instead. FIXME: This duplicates the behavior of the remaining erasers for blocks and
+ * might be fixed when flashrom supports multiple functions per eraser or erasers that do erase parts of the
+ * chip only. */
+int erase_sector_stm50(struct flashctx *flash, unsigned int addr, unsigned int len)
+{
+	if (len == 4096)
+		return stm50_erase_sector(flash, addr);
+	else
+		return erase_block_82802ab(flash, addr, len);
 }
