@@ -98,6 +98,16 @@ CPPFLAGS += -I/usr/local/include
 LDFLAGS += -L/usr/local/lib
 endif
 
+ifeq ($(TARGET_OS), NetBSD)
+CPPFLAGS += -I/usr/pkg/include
+LDFLAGS += -L/usr/pkg/lib
+endif
+
+ifeq ($(TARGET_OS), DragonFlyBSD)
+CPPFLAGS += -I/usr/pkg/include
+LDFLAGS += -L/usr/pkg/lib
+endif
+
 ifeq ($(TARGET_OS), DOS)
 EXEC_SUFFIX := .exe
 CPPFLAGS += -I$(DOSLIBS_BASE)/libgetopt
@@ -743,7 +753,11 @@ endif
 define LIBPCI_TEST
 /* Avoid a failing test due to libpci header symbol shadowing breakage */
 #define index shadow_workaround_index
+#if !defined __NetBSD__ && !defined __DragonFly__
 #include <pci/pci.h>
+#else
+#include <pciutils/pci.h>
+#endif
 struct pci_access *pacc;
 int main(int argc, char **argv)
 {

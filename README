@@ -80,11 +80,9 @@ To compile on Solaris, use:
 
  gmake LDFLAGS="-L$pathtolibpci" CC="gcc -I$pathtopciheaders" CFLAGS=-O2
 
-To compile on NetBSD or DragonFly BSD, use:
+To compile on NetBSD or DragonFly BSD (with pciutils, libftdi, libusb installed in /usr/pkg/), use:
 
- ln -s /usr/pkg/include/pciutils pci
- gmake CPPFLAGS="-I. -I/usr/pkg/include" \
-       LDFLAGS="-L/usr/pkg/lib -Wl,-rpath-link,/usr/pkg/lib"
+ gmake
 
 To compile on OpenBSD, use:
 
