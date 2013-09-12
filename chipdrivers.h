@@ -193,9 +193,10 @@ int printlock_at49f(struct flashctx *flash);
 /* w29ee011.c */
 int probe_w29ee011(struct flashctx *flash);
 
-/* stm50flw0x0x.c */
-int erase_sector_stm50flw0x0x(struct flashctx *flash, unsigned int block, unsigned int blocksize);
-int unlock_stm50flw0x0x(struct flashctx *flash);
+/* stm50.c */
+int erase_sector_stm50(struct flashctx *flash, unsigned int block, unsigned int blocksize);
+int unlock_stm50_uniform(struct flashctx *flash);
+int unlock_stm50_nonuniform(struct flashctx *flash);
 
 /* en29lv640b.c */
 int probe_en29lv640b(struct flashctx *flash);

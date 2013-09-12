@@ -11008,7 +11008,7 @@ const struct flashchip flashchips[] = {
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M50FLW040A,
 		.total_size	= 512,
-		.page_size	= 64 * 1024,
+		.page_size	= 0,
 		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_82802ab,
@@ -11028,8 +11028,8 @@ const struct flashchip flashchips[] = {
 				.block_erase = erase_block_82802ab,
 			}
 		},
-		.unlock		= unlock_stm50flw0x0x,
 		.write		= write_82802ab,
+		.unlock		= unlock_stm50_uniform,
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
 	},
@@ -11041,7 +11041,7 @@ const struct flashchip flashchips[] = {
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M50FLW040B,
 		.total_size	= 512,
-		.page_size	= 64 * 1024,
+		.page_size	= 0,
 		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_82802ab,
@@ -11061,8 +11061,8 @@ const struct flashchip flashchips[] = {
 				.block_erase = erase_block_82802ab,
 			}
 		},
-		.unlock		= unlock_stm50flw0x0x,
 		.write		= write_82802ab,
+		.unlock		= unlock_stm50_uniform,
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
 	},
@@ -11074,7 +11074,7 @@ const struct flashchip flashchips[] = {
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M50FLW080A,
 		.total_size	= 1024,
-		.page_size	= 64 * 1024,
+		.page_size	= 0,
 		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_OK_PRE,
 		.probe		= probe_82802ab,
@@ -11094,7 +11094,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = erase_block_82802ab,
 			}
 		},
-		.unlock		= unlock_stm50flw0x0x,
+		.unlock		= unlock_stm50_nonuniform,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
@@ -11107,7 +11107,7 @@ const struct flashchip flashchips[] = {
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M50FLW080B,
 		.total_size	= 1024,
-		.page_size	= 64 * 1024,
+		.page_size	= 0,
 		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_82802ab,
@@ -11127,7 +11127,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = erase_block_82802ab,
 			}
 		},
-		.unlock		= unlock_stm50flw0x0x,
+		.unlock		= unlock_stm50_nonuniform,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
@@ -11140,7 +11140,7 @@ const struct flashchip flashchips[] = {
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M50FW002,
 		.total_size	= 256,
-		.page_size	= 64 * 1024,
+		.page_size	= 0,
 		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_82802ab,
@@ -11157,7 +11157,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = erase_block_82802ab,
 			}
 		},
-		.unlock		= unlock_stm50flw0x0x,
+		.unlock		= unlock_stm50_nonuniform,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
@@ -11170,7 +11170,7 @@ const struct flashchip flashchips[] = {
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M50FW016,
 		.total_size	= 2048,
-		.page_size	= 64 * 1024,
+		.page_size	= 0,
 		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_82802ab,
@@ -11182,7 +11182,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = erase_block_82802ab,
 			}
 		},
-		.unlock		= unlock_stm50flw0x0x,
+		.unlock		= unlock_stm50_uniform,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
@@ -11195,7 +11195,7 @@ const struct flashchip flashchips[] = {
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M50FW040,
 		.total_size	= 512,
-		.page_size	= 64 * 1024,
+		.page_size	= 0,
 		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_OK_PR,
 		.probe		= probe_82802ab,
@@ -11207,7 +11207,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = erase_block_82802ab,
 			}
 		},
-		.unlock		= unlock_stm50flw0x0x,
+		.unlock		= unlock_stm50_uniform,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
@@ -11220,7 +11220,7 @@ const struct flashchip flashchips[] = {
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M50FW080,
 		.total_size	= 1024,
-		.page_size	= 64 * 1024,
+		.page_size	= 0,
 		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_82802ab,
@@ -11232,7 +11232,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = erase_block_82802ab,
 			}
 		},
-		.unlock		= unlock_stm50flw0x0x,
+		.unlock		= unlock_stm50_uniform,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
@@ -11245,7 +11245,7 @@ const struct flashchip flashchips[] = {
 		.manufacture_id	= ST_ID,
 		.model_id	= ST_M50LPW116,
 		.total_size	= 2048,
-		.page_size	= 64 * 1024,
+		.page_size	= 0,
 		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_82802ab,
@@ -11263,7 +11263,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = erase_block_82802ab,
 			}
 		},
-		.unlock		= unlock_stm50flw0x0x,
+		.unlock		= unlock_stm50_nonuniform,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
