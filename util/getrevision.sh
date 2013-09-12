@@ -110,15 +110,33 @@ scm_url() {
 timestamp() {
 	local t
 
+	# date syntaxes are manifold:
+	# gnu		date [-d input]... [+FORMAT]
+	# netbsd	date [-ajnu] [-d date] [-r seconds] [+format] [[[[[[CC]yy]mm]dd]HH]MM[.SS]]
+	# freebsd	date [-jnu]  [-d dst] [-r seconds] [-f fmt date | [[[[[cc]yy]mm]dd]HH]MM[.ss]] [+format] [...]
+	# dragonflybsd	date [-jnu]  [-d dst] [-r seconds] [-f fmt date | [[[[[cc]yy]mm]dd]HH]MM[.ss]] [+format] [...]
+	# openbsd	date [-aju]  [-d dst] [-r seconds] [+format] [[[[[[cc]yy]mm]dd]HH]MM[.SS]] [...]
 	if svn_is_file_tracked "$2" ; then
 		if svn_has_local_changes "$2"; then
 			t=$(date -u "$1")
 		else
-			# No local changes, get date of the last log record.
-			local last_commit_date="$(svn info "$2" | \
-						  grep '^Last Changed Date:' | \
-						  awk '{print $4" "$5" "$6}')"
-			t=$(date -d "${last_commit_date}" -u "$1")
+			# No local changes, get date of the last log record. Subversion provides that in
+			# ISO 8601 format when using the --xml switch. The sed call extracts that ignoring any
+			# fractional parts started by a comma or a dot.
+			local last_commit_date="$(svn info --xml "$2"| \
+						  sed -n -e 's/<date>\([^,\.]*\)\([\.,].*\)*Z<\/date>/\1Z/p')"
+
+			case $(uname) in
+			# Most BSD dates do not support parsing date values from user input with -d but all of
+			# them support parsing the syntax with [[[[[[cc]yy]mm]dd]HH]MM[.ss]]. We have to
+			# transform the ISO8601 date first though.
+			NetBSD|OpenBSD|DragonFly|FreeBSD)
+				last_commit_date="$(echo ${last_commit_date} | \
+				   sed -n -e 's/\(....\)-\(..\)-\(..\)T\(..\):\(..\):\(..\)Z/\1\2\3\4\5\.\6/p')"
+				t=$(date -u -j "${last_commit_date}" "$1" 2>/dev/null);;
+			*)
+				t=$(date -u -d "${last_commit_date}" "$1" 2>/dev/null);;
+			esac
 		fi
 	elif git_is_file_tracked "$2" ; then
 		# are there local changes?
@@ -126,12 +144,22 @@ timestamp() {
 			t=$(date -u "${1}")
 		else
 			# No local changes, get date of the last commit
-			t=$(date -d "$(git log --pretty=format:"%cD" -1 -- "$2")" -u "$1")
+			case $(uname) in
+			# Most BSD dates do not support parsing date values from user input with -d but all of
+			# them support parsing epoch seconds with -r. Thanks to git we can easily use that:
+			NetBSD|OpenBSD|DragonFly|FreeBSD)
+				t=$(date -u -r "$(git log --pretty=format:%ct -1 -- $2)"  "$1" 2>/dev/null);;
+			*)
+				t=$(date -d "$(git log --pretty=format:%cD -1 -- $2)" -u "$1" 2>/dev/null);;
+			esac
 		fi
 	else
 		t=$(date -u "$1")
 	fi
 
+	if [ -z "$t" ]; then
+		echo "Warning: Could not determine timestamp." 2>/dev/null
+	fi
 	echo "${t}"
 }
 

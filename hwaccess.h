@@ -37,7 +37,13 @@
  * or as builtin.
  */
 #define index shadow_workaround_index
+
+#if !defined (__NetBSD__) && !defined (__DragonFly__)
 #include <pci/pci.h>
+#else
+#include <pciutils/pci.h>
+#endif
+
 #undef index
 #endif
 
