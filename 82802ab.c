@@ -89,6 +89,7 @@ int probe_82802ab(struct flashctx *flash)
 	return 1;
 }
 
+/* FIXME: needs timeout */
 uint8_t wait_82802ab(struct flashctx *flash)
 {
 	uint8_t status;
