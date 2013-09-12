@@ -668,6 +668,7 @@
 #define ST_M50FW040		0x2C
 #define ST_M50FW080		0x2D
 #define ST_M50FW016		0x2E
+#define ST_M50LPW080		0x2F
 #define ST_M50LPW116		0x30
 #define ST_M29F002B		0x34	/* Same as M29F002BB */
 #define ST_M29F002T		0xB0	/* Same as M29F002BT/M29F002NT/M29F002BNT */

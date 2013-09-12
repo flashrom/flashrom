@@ -11240,6 +11240,31 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "ST",
+		.name		= "M50LPW080",
+		.bustype	= BUS_LPC, /* A/A Mux */
+		.manufacture_id	= ST_ID,
+		.model_id	= ST_M50LPW080,
+		.total_size	= 1024,
+		.page_size	= 0,
+		.feature_bits	= FEATURE_REGISTERMAP,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_82802ab,
+		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {64 * 1024, 16}, },
+				.block_erase = erase_block_82802ab,
+			}
+		},
+		.unlock		= unlock_stm50_uniform,
+		.write		= write_82802ab,
+		.read		= read_memmapped,
+		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
+	},
+
+	{
+		.vendor		= "ST",
 		.name		= "M50LPW116",
 		.bustype	= BUS_LPC, /* A/A Mux */
 		.manufacture_id	= ST_ID,
