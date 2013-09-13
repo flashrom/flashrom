@@ -432,8 +432,10 @@ int programmer_shutdown(void)
 
 void *programmer_map_flash_region(const char *descr, uintptr_t phys_addr, size_t len)
 {
-	return programmer_table[programmer].map_flash_region(descr,
-							     phys_addr, len);
+	void *ret = programmer_table[programmer].map_flash_region(descr, phys_addr, len);
+	msg_gspew("%s: mapping %s from 0x%0*" PRIxPTR " to 0x%0*" PRIxPTR "\n",
+		  __func__, descr, PRIxPTR_WIDTH, phys_addr, PRIxPTR_WIDTH, (uintptr_t) ret);
+	return ret;
 }
 
 void programmer_unmap_flash_region(void *virt_addr, size_t len)
