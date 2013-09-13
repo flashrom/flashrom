@@ -165,12 +165,11 @@ static void *sys_physmap_rw_uncached(uintptr_t phys_addr, size_t len)
 		/* Open the memory device UNCACHED. Important for MMIO. */
 		if (-1 == (fd_mem = open(MEM_DEV, O_RDWR | O_SYNC))) {
 			msg_perr("Critical error: open(" MEM_DEV "): %s\n", strerror(errno));
-			exit(2);
+			return ERROR_PTR;
 		}
 	}
 
-	virt_addr = mmap(NULL, len, PROT_WRITE | PROT_READ, MAP_SHARED,
-			 fd_mem, (off_t)phys_addr);
+	virt_addr = mmap(NULL, len, PROT_WRITE | PROT_READ, MAP_SHARED, fd_mem, (off_t)phys_addr);
 	return MAP_FAILED == virt_addr ? ERROR_PTR : virt_addr;
 }
 
@@ -185,12 +184,11 @@ static void *sys_physmap_ro_cached(uintptr_t phys_addr, size_t len)
 		/* Open the memory device CACHED. */
 		if (-1 == (fd_mem_cached = open(MEM_DEV, O_RDWR))) {
 			msg_perr("Critical error: open(" MEM_DEV "): %s\n", strerror(errno));
-			exit(2);
+			return ERROR_PTR;
 		}
 	}
 
-	virt_addr = mmap(NULL, len, PROT_READ, MAP_SHARED,
-			 fd_mem_cached, (off_t)phys_addr);
+	virt_addr = mmap(NULL, len, PROT_READ, MAP_SHARED, fd_mem_cached, (off_t)phys_addr);
 	return MAP_FAILED == virt_addr ? ERROR_PTR : virt_addr;
 }
 
@@ -200,7 +198,7 @@ void physunmap(void *virt_addr, size_t len)
 		msg_pspew("Not unmapping zero size at %p\n", virt_addr);
 		return;
 	}
-		
+
 	munmap(virt_addr, len);
 }
 #endif
