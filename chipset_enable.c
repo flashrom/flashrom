@@ -323,7 +323,7 @@ static int enable_flash_ich0(struct pci_dev *dev, const char *name)
 	return enable_flash_ich(dev, name, 0x4e);
 }
 
-static int enable_flash_ich_fwh_decode(struct pci_dev *dev, const char *name)
+static int enable_flash_ich_fwh_decode(struct pci_dev *dev, const char *name, enum ich_chipset ich_generation)
 {
 	uint32_t fwh_conf;
 	uint8_t fwh_sel1, fwh_sel2, fwh_dec_en_lo, fwh_dec_en_hi;
@@ -332,11 +332,20 @@ static int enable_flash_ich_fwh_decode(struct pci_dev *dev, const char *name)
 	int max_decode_fwh_idsel = 0, max_decode_fwh_decode = 0;
 	int contiguous = 1;
 
-	/* Register map from ICH6 onwards. */
-	fwh_sel1 = 0xd0;
-	fwh_sel2 = 0xd4;
-	fwh_dec_en_lo = 0xd8;
-	fwh_dec_en_hi = 0xd9;
+	if (ich_generation >= CHIPSET_ICH6) {
+		fwh_sel1 = 0xd0;
+		fwh_sel2 = 0xd4;
+		fwh_dec_en_lo = 0xd8;
+		fwh_dec_en_hi = 0xd9;
+	} else if (ich_generation >= CHIPSET_ICH2) {
+		fwh_sel1 = 0xe8;
+		fwh_sel2 = 0xee;
+		fwh_dec_en_lo = 0xf0;
+		fwh_dec_en_hi = 0xe3;
+	} else {
+		msg_perr("Error: FWH decode setting not implemented.\n");
+		return ERROR_FATAL;
+	}
 
 	idsel = extract_programmer_param("fwh_idsel");
 	if (idsel && strlen(idsel)) {
@@ -441,11 +450,12 @@ idsel_garbage_out:
 
 static int enable_flash_ich_4e(struct pci_dev *dev, const char *name, enum ich_chipset ich_generation)
 {
-	/*
-	 * Note: ICH5 has registers similar to FWH_SEL1, FWH_SEL2 and
-	 * FWH_DEC_EN1, but they are called FB_SEL1, FB_SEL2, FB_DEC_EN1 and
-	 * FB_DEC_EN2.
-	 */
+	int err;
+
+	/* Configure FWH IDSEL decoder maps. */
+	if ((err = enable_flash_ich_fwh_decode(dev, name, ich_generation)) != 0)
+		return err;
+
 	internal_buses_supported = BUS_FWH;
 	return enable_flash_ich(dev, name, 0x4e);
 }
@@ -475,7 +485,7 @@ static int enable_flash_ich_dc(struct pci_dev *dev, const char *name, enum ich_c
 	int err;
 
 	/* Configure FWH IDSEL decoder maps. */
-	if ((err = enable_flash_ich_fwh_decode(dev, name)) != 0)
+	if ((err = enable_flash_ich_fwh_decode(dev, name, ich_generation)) != 0)
 		return err;
 
 	/* If we're called by enable_flash_ich_dc_spi, it will override
