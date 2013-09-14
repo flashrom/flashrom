@@ -250,8 +250,8 @@ int dmi_fill(void)
 	 * - EFI's configuration table contains a pointer to the SMBIOS table. On linux it can be obtained from
 	 *   sysfs. EFI's SMBIOS GUID is: {0xeb9d2d31,0x2d88,0x11d3,0x9a,0x16,0x0,0x90,0x27,0x3f,0xc1,0x4d}
 	 * - Scanning physical memory address range 0x000F0000h to 0x000FFFFF for the anchor-string(s). */
-	dmi_mem = physmap_try_ro("DMI", 0xF0000, 0x10000);
-	if (dmi_mem == NULL)
+	dmi_mem = physmap_ro("DMI", 0xF0000, 0x10000);
+	if (dmi_mem == ERROR_PTR)
 		return ret;
 
 	for (fp = 0; fp <= 0xFFF0; fp += 16) {

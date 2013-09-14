@@ -353,7 +353,7 @@ int sb600_probe_spi(struct pci_dev *dev)
 	/* Physical memory has to be mapped at page (4k) boundaries. */
 	sb600_spibar = rphysmap("SB600 SPI registers", tmp & 0xfffff000, 0x1000);
 	if (sb600_spibar == ERROR_PTR)
-		return 1;
+		return ERROR_FATAL;
 
 	/* The low bits of the SPI base address are used as offset into
 	 * the mapped page.
