@@ -482,7 +482,7 @@ static int enable_flash_tunnelcreek(struct pci_dev *dev, const char *name)
 	/* Map RCBA to virtual memory */
 	rcrb = rphysmap("ICH RCRB", tmp, 0x4000);
 	if (rcrb == ERROR_PTR)
-		return 1;
+		return ERROR_FATAL;
 
 	/* Test Boot BIOS Strap Status */
 	bnt = mmio_readl(rcrb + 0x3410);
@@ -566,7 +566,7 @@ static int enable_flash_ich_dc_spi(struct pci_dev *dev, const char *name,
 	/* Map RCBA to virtual memory */
 	rcrb = rphysmap("ICH RCRB", tmp, 0x4000);
 	if (rcrb == ERROR_PTR)
-		return 1;
+		return ERROR_FATAL;
 
 	gcs = mmio_readl(rcrb + 0x3410);
 	msg_pdbg("GCS = 0x%x: ", gcs);
@@ -1289,6 +1289,8 @@ static int get_flashbase_sc520(struct pci_dev *dev, const char *name)
 
 	/* 1. Map MMCR */
 	mmcr = physmap("Elan SC520 MMCR", 0xfffef000, getpagesize());
+	if (mmcr == ERROR_PTR)
+		return ERROR_FATAL;
 
 	/* 2. Scan PAR0 (0x88) - PAR15 (0xc4) for
 	 *    BOOTCS region (PARx[31:29] = 100b)e

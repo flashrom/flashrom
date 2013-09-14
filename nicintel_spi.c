@@ -177,6 +177,9 @@ int nicintel_spi_init(void)
 		return 1;
 
 	nicintel_spibar = rphysmap("Intel Gigabit NIC w/ SPI flash", io_base_addr, MEMMAP_SIZE);
+	if (nicintel_spibar == ERROR_PTR)
+		return 1;
+
 	/* Automatic restore of EECD on shutdown is not possible because EECD
 	 * does not only contain FLASH_WRITES_DISABLED|FLASH_WRITES_ENABLED,
 	 * but other bits with side effects as well. Those other bits must be
