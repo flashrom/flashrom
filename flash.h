@@ -320,6 +320,7 @@ int register_include_arg(char *name);
 int process_include_args(void);
 int read_romlayout(char *name);
 int handle_romentries(const struct flashctx *flash, uint8_t *oldcontents, uint8_t *newcontents);
+void layout_cleanup(void);
 
 /* spi.c */
 struct spi_command {

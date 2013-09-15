@@ -221,8 +221,6 @@ int main(int argc, char *argv[])
 				free(tempstr);
 				cli_classic_abort_usage();
 			}
-			/* FIXME: A pointer to the image name is saved in a static array (of size MAX_ROMLAYOUT)
-			 * by register_include_arg() and needs to be freed after processing them. */
 			break;
 		case 'L':
 			if (++operation_specified > 1) {
@@ -527,6 +525,7 @@ out:
 	for (i = 0; i < chipcount; i++)
 		free(flashes[i].chip);
 
+	layout_cleanup();
 	free(filename);
 	free(layoutfile);
 	free(pparam);
