@@ -272,6 +272,62 @@ static int sb600_spi_send_command(struct flashctx *flash, unsigned int writecnt,
 	return 0;
 }
 
+struct spispeed {
+	const char *const name;
+	const uint8_t speed;
+};
+
+static const struct spispeed spispeeds[] = {
+	{ "66 MHz",	0x00 },
+	{ "33 MHz",	0x01 },
+	{ "22 MHz",	0x02 },
+	{ "16.5 MHz",	0x03 },
+};
+
+static int set_speed(struct pci_dev *dev, const struct spispeed *spispeed)
+{
+	bool success = false;
+	uint8_t speed = spispeed->speed;
+
+	msg_pdbg("Setting SPI clock to %s (0x%x).\n", spispeed->name, speed);
+	if (amd_gen != CHIPSET_YANGTZE) {
+		rmmio_writeb((mmio_readb(sb600_spibar + 0xd) & ~(0x3 << 4)) | (speed << 4), sb600_spibar + 0xd);
+		success = (speed == ((mmio_readb(sb600_spibar + 0xd) >> 4) & 0x3));
+	}
+
+	if (!success) {
+		msg_perr("Setting SPI clock failed.\n");
+		return 1;
+	}
+	return 0;
+}
+
+static int handle_speed(struct pci_dev *dev)
+{
+	uint32_t tmp;
+	int8_t spispeed_idx = 3; /* Default to 16.5 MHz */
+
+	/* See the chipset support matrix for SPI Base_Addr below for an explanation of the symbols used.
+	 * bit   6xx   7xx/SP5100  8xx             9xx  hudson1  hudson234  yangtze
+	 * 18    rsvd  <-          fastReadEnable  ?    <-       ?          SpiReadMode[0]
+	 * 29:30 rsvd  <-          <-              ?    <-       ?          SpiReadMode[2:1]
+	 */
+	if (amd_gen != CHIPSET_YANGTZE) {
+		if (amd_gen >= CHIPSET_SB89XX && amd_gen <= CHIPSET_HUDSON234) {
+			bool fast_read = (mmio_readl(sb600_spibar + 0x00) >> 18) & 0x1;
+			msg_pdbg("Fast Reads are %sabled\n", fast_read ? "en" : "dis");
+			if (fast_read) {
+				msg_pdbg("Disabling them temporarily.\n");
+				rmmio_writel(mmio_readl(sb600_spibar + 0x00) & ~(0x1 << 18),
+					     sb600_spibar + 0x00);
+			}
+		}
+		tmp = (mmio_readb(sb600_spibar + 0xd) >> 4) & 0x3;
+		msg_pdbg("NormSpeed is %s\n", spispeeds[tmp].name);
+	}
+	return set_speed(dev, &spispeeds[spispeed_idx]);
+}
+
 static int sb600_handle_imc(struct pci_dev *dev, bool amd_imc_force)
 {
 	/* Handle IMC everywhere but sb600 which does not have one. */
@@ -322,9 +378,6 @@ int sb600_probe_spi(struct pci_dev *dev)
 	uint32_t tmp;
 	uint8_t reg;
 	bool amd_imc_force = false;
-	static const char *const speed_names[4] = {
-		"66/reserved", "33", "22", "16.5"
-	};
 
 	char *arg = extract_programmer_param("amd_imc_force");
 	if (arg && !strcmp(arg, "yes")) {
@@ -411,7 +464,7 @@ int sb600_probe_spi(struct pci_dev *dev)
 	 * See the chipset support matrix for SPI Base_Addr above for an explanation of the symbols used.
 	 * bit   6xx                7xx/SP5100      8xx               9xx  hudson1  hudson2+  yangtze
 	 * 17    rsvd               <-              <-                ?    <-       ?         <-
-	 * 18    rsvd               <-              fastReadEnable<1> ?    <-       ?         SpiReadMode[0]
+	 * 18    rsvd               <-              fastReadEnable<1> ?    <-       ?         SpiReadMode[0]<1>
 	 * 19    SpiArbEnable       <-              <-                ?    <-       ?         <-
 	 * 20    (FifoPtrClr)       <-              <-                ?    <-       ?         <-
 	 * 21    (FifoPtrInc)       <-              <-                ?    <-       ?         IllegalAccess
@@ -420,8 +473,10 @@ int sb600_probe_spi(struct pci_dev *dev)
 	 * 24:26 ArbWaitCount       <-              <-                ?    <-       ?         <-
 	 * 27    SpiBridgeDisable   <-              <-                ?    <-       ?         rsvd
 	 * 28    rsvd               DropOneClkOnRd  = SPIClkGate      ?    <-       ?         <-
-	 * 29:30 rsvd               <-              <-                ?    <-       ?         SpiReadMode[2:1]
+	 * 29:30 rsvd               <-              <-                ?    <-       ?         SpiReadMode[2:1]<1>
 	 * 31    rsvd               <-              SpiBusy           ?    <-       ?         <-
+	 *
+	 *  <1> see handle_speed
 	 */
 	tmp = mmio_readl(sb600_spibar + 0x00);
 	msg_pdbg("(0x%08" PRIx32 ") SpiArbEnable=%i", tmp, (tmp >> 19) & 0x1);
@@ -446,9 +501,6 @@ int sb600_probe_spi(struct pci_dev *dev)
 		msg_perr("ERROR: State of SpiAccessMacRomEn or SpiHostAccessRomEn prohibits full access.\n");
 		return ERROR_NONFATAL;
 	}
-
-	tmp = (mmio_readb(sb600_spibar + 0xd) >> 4) & 0x3;
-	msg_pdbg("NormSpeed is %s MHz\n", speed_names[tmp]);
 
 	if (amd_gen >= CHIPSET_SB89XX) {
 		tmp = mmio_readb(sb600_spibar + 0x1D);
@@ -493,6 +545,9 @@ int sb600_probe_spi(struct pci_dev *dev)
 		msg_pdbg("Not enabling SPI");
 		return 0;
 	}
+
+	if (handle_speed(dev) != 0)
+		return ERROR_FATAL;
 
 	if (sb600_handle_imc(dev, amd_imc_force) != 0)
 		return ERROR_FATAL;
