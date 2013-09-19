@@ -263,10 +263,16 @@ Multiple such include parameters can be used to work on the union of different r
 The optional
 .B regionfile
 parameter specifies the name of a file that is used to map the contents of that very region only.
-The optional file parameter causes the contents of this region to be replaced by the contents of the file
-specified here.
+It can be used with all operation that work on an image file (-w/-r/-v).
+Depending on the operation the optional file parameter causes the contents of this region to be
 .sp
-If you only want to update the regions named
+.BR " * " "replaced by the contents of that file (on writes),"
+.sp
+.BR " * " "written to that file (on reads),"
+.sp
+.BR " * " "compared to the contents of that file (on verifications)."
+.sp
+Example: If you only want to update the regions named
 .BR "normal " "and " "gfx rom " "in a ROM based on the layout mentioned above, run"
 .sp
 .B "  flashrom \-p prog \-l rom.layout \-i normal -i ""gfx rom"" \-w some.rom"
