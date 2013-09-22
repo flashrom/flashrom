@@ -3,10 +3,10 @@
 flashrom \- detect, read, write, verify and erase flash chips
 .SH SYNOPSIS
 .B flashrom \fR[\fB\-h\fR|\fB\-R\fR|\fB\-L\fR|\fB\-z\fR|\
-\fB\-p\fR <programmername>[:<parameters>]
-               [\fB\-E\fR|\fB\-r\fR <file>|\fB\-w\fR <file>|\fB\-v\fR <file>] \
+\fB\-p\fR <programmername>[:<parameter>[,<parameter>]...]]
+               [\fB\-E\fR|\fB\-r\fR <imagefile>|\fB\-w\fR <imagefile>|\fB\-v\fR <imagefile>] \
 [\fB\-c\fR <chipname>]
-               [\fB\-l\fR <file> [\fB\-i\fR <image>]] [\fB\-n\fR] [\fB\-f\fR]]
+               [\fB\-l\fR <layoutfile> [\fB\-i\fR <regionname>[:<regionfile>]]...] [\fB\-n\fR] [\fB\-f\fR]]
          [\fB\-V\fR[\fBV\fR[\fBV\fR]]] [\fB-o\fR <logfile>]
 .SH DESCRIPTION
 .B flashrom
@@ -38,14 +38,14 @@ before you try to write a new image. All operations involving any chip access (p
 .B -p/--programmer
 option to be used (please see below).
 .TP
-.B "\-r, \-\-read <file>"
+.B "\-r, \-\-read <imagefile>"
 Read flash ROM contents and save them into the given
-.BR <file> .
+.BR <imagefile> .
 If the file already exists, it will be overwritten.
 .TP
-.B "\-w, \-\-write <file>"
+.B "\-w, \-\-write <imagefile>"
 Write
-.B <file>
+.B <imagefile>
 into flash ROM. This will first automatically
 .B erase
 the chip, then write to it.
@@ -65,14 +65,14 @@ recommended, you should only use it if you know what you are doing and if you
 feel that the time for verification takes too long.
 .sp
 Typical usage is:
-.B "flashrom \-p prog \-n \-w <file>"
+.B "flashrom \-p prog \-n \-w <imagefile>"
 .sp
 This option is only useful in combination with
 .BR \-\-write .
 .TP
-.B "\-v, \-\-verify <file>"
+.B "\-v, \-\-verify <imagefile>"
 Verify the flash ROM contents against the given
-.BR <file> .
+.BR <imagefile> .
 .TP
 .B "\-E, \-\-erase"
 Erase the flash ROM chip.
@@ -101,46 +101,6 @@ size for the flash bus.
 * Force erase even if erase is known bad.
 .sp
 * Force write even if write is known bad.
-.TP
-.B "\-l, \-\-layout <file>"
-Read ROM layout from
-.BR <file> .
-.sp
-flashrom supports ROM layouts. This allows you to flash certain parts of
-the flash chip only. A ROM layout file contains multiple lines with the
-following syntax:
-.sp
-.B "  startaddr:endaddr imagename"
-.sp
-.BR "startaddr " "and " "endaddr "
-are hexadecimal addresses within the ROM file and do not refer to any
-physical address. Please note that using a 0x prefix for those hexadecimal
-numbers is not necessary, but you can't specify decimal/octal numbers.
-.BR "imagename " "is an arbitrary name for the region/image from"
-.BR " startaddr " "to " "endaddr " "(both addresses included)."
-.sp
-Example:
-.sp
-  00000000:00008fff gfxrom
-  00009000:0003ffff normal
-  00040000:0007ffff fallback
-.sp
-If you only want to update the image named
-.BR "normal " "in a ROM based on the layout above, run"
-.sp
-.B "  flashrom \-p prog \-\-layout rom.layout \-\-image normal \-w some.rom"
-.sp
-To update only the images named
-.BR "normal " "and " "fallback" ", run:"
-.sp
-.B "  flashrom \-p prog \-l rom.layout \-i normal -i fallback \-w some.rom"
-.sp
-Overlapping sections are not supported.
-.TP
-.B "\-i, \-\-image <imagename>"
-Only flash region/image
-.B <imagename>
-from flash layout.
 .TP
 .B "\-L, \-\-list\-supported"
 List the flash chips, chipsets, mainboards, and external programmers
@@ -235,6 +195,76 @@ Some programmers have optional or mandatory parameters which are described
 in detail in the
 .B PROGRAMMER-SPECIFIC INFORMATION
 section. Support for some programmers can be disabled at compile time.
+.TP
+flashrom supports reading/writing/erasing/verifying flash chips in whole (default) or in part. To access only \
+parts of a chip one has to use layout files and respective arguments described below.
+.TP
+.B "\-l, \-\-layout <layoutfile>"
+Read layout entries from
+.BR <layoutfile> .
+.sp
+A layout file can contain comments which are
+started by a pound sign (#) and causes all following characters on the same line to be ignored with one
+exception: Every layout file
+.B must
+start with a comment in the following form to define the version of the file. Example for the current version 2:
+.sp
+.B "  # flashrom layout v2"
+.sp
+Every other line may contain either a command to include another layout file, a layout entry or white space
+(and an optional comment at the end).
+.sp
+To include another file you can use the
+.sp
+.B "  source <path>"
+.sp
+syntax where
+.B path
+specifies the absolute or relative path to the file to be included. Relative paths are interpreted to be
+relative to the file containing the include command. If the path contains spaces it has to be written in double
+quotes, or else only the part before the first space will be recognized.
+.sp
+Each layout entry describes an address region of the flash chip and gives it a name (hereinafter referred to as
+a region). One entry per line is allowed with the following syntax:
+.sp
+.B "  startaddr:endaddr regionname"
+.sp
+.BR "startaddr " "and " "endaddr "
+are addresses within the ROM image representing the flash ROM contents. They are interpreted in the 'usual' form
+i.e.\ a leading 0 means octal, leading 0x or 0X means hexadecimal, everything else is just decimal.
+.BR "regionname " "is the name for the region from " "startaddr " "to " "endaddr " "(both addresses included)."
+If the name contains spaces it has to be written in double quotes, or else only the part before the first space
+will be used.
+.sp
+Example content of file rom.layout:
+.sp
+  # flashrom layout v2
+  source /home/flashrom/include.layout
+  0x00000000:0x00008fff "gfx rom"
+  0x00009000:0x0003ffff normal
+  0x00040000:0x0007ffff fallback
+.sp
+.TP
+.B "\-i, \-\-include <name>[:<regionfile>]"
+Work on the flash region
+.B name
+instead of the full address space if a layout file is given and parsed correctly.
+Multiple such include parameters can be used to work on the union of different regions.
+.sp
+The optional
+.B regionfile
+parameter specifies the name of a file that is used to map the contents of that very region only.
+The optional file parameter causes the contents of this region to be replaced by the contents of the file
+specified here.
+.sp
+If you only want to update the regions named
+.BR "normal " "and " "gfx rom " "in a ROM based on the layout mentioned above, run"
+.sp
+.B "  flashrom \-p prog \-l rom.layout \-i normal -i ""gfx rom"" \-w some.rom"
+.sp
+Overlapping regions are resolved in an implementation-dependent manner (or may even yield an error) - do
+.BR "not " "rely on it."
+.sp
 .B "flashrom \-h"
 lists all supported programmers.
 .TP

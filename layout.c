@@ -22,17 +22,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
+#include <errno.h>
 #include <limits.h>
 #include "flash.h"
 #include "programmer.h"
 
 #define MAX_ROMLAYOUT	32
+#define MAX_ENTRY_LEN	1024
+#define WHITESPACE_CHARS " \t"
+#define INCLUDE_INSTR "source"
+#define MAX_NESTING_LVL 5
 
 typedef struct {
 	chipoff_t start;
 	chipoff_t end;
-	unsigned int included;
-	char name[256];
+	bool included;
+	char *name;
 	char *file;
 } romentry_t;
 
@@ -46,58 +52,288 @@ static char *include_args[MAX_ROMLAYOUT];
 static int num_include_args = 0; /* the number of valid include_args. */
 
 #ifndef __LIBPAYLOAD__
-int read_romlayout(const char *name)
+/* returns the index of the entry (or a negative value if it is not found) */
+static int find_romentry(char *name)
 {
-	FILE *romlayout;
-	char tempstr[256];
 	int i;
+	msg_gspew("Looking for region \"%s\"... ", name);
+	for (i = 0; i < num_rom_entries; i++) {
+		if (strcmp(rom_entries[i].name, name) == 0) {
+			msg_gspew("found.\n");
+			return i;
+		}
+	}
+	msg_gspew("not found.\n");
+	return -1;
+}
 
-	romlayout = fopen(name, "r");
+/* FIXME: While libpayload has no file I/O itself, code using libflashrom could still provide layout information
+ * obtained by other means like user input or by fetching it from somewhere else. Therefore the parsing code
+ * should be separated from the file reading code eventually. */
+/** Parse one line in a layout file.
+ * @param	file_name The name of the file this line originates from.
+ * @param	linecnt Line number the input string originates from.
+ * @param	entry If not NULL fill it with the parsed data, else just detect errors and print diagnostics.
+ * @return	-1 on error,
+ *		0 if the line could be parsed into a layout entry succesfully,
+ *		1 if a file was successfully sourced.
+ */
+static int parse_entry(const char *file_name, unsigned int linecnt, char *buf, romentry_t *entry)
+{
+	msg_gdbg2("String to parse: \"%s\".\n", buf);
 
-	if (!romlayout) {
-		msg_gerr("ERROR: Could not open layout file (%s).\n",
-			name);
+	/* Skip all white space in the beginning. */
+	char *tmp_str = buf + strspn(buf, WHITESPACE_CHARS);
+	char *endptr;
+
+	/* Check for include command. */
+	if (strncmp(tmp_str, INCLUDE_INSTR, strlen(INCLUDE_INSTR)) == 0) {
+		tmp_str += strlen(INCLUDE_INSTR);
+		tmp_str += strspn(tmp_str, WHITESPACE_CHARS);
+		if (unquote_string(&tmp_str, NULL, WHITESPACE_CHARS) != 0) {
+			msg_gerr("Error parsing version 2 layout entry in file \"%s\" at line %d:\n"
+				 "Could not find file name in \"%s\".\n",
+				 file_name, linecnt, buf);
+				return -1;
+		}
+		msg_gspew("Source command found with filename \"%s\".\n", tmp_str);
+
+		static unsigned int nesting_lvl = 0;
+		if (nesting_lvl >= MAX_NESTING_LVL) {
+			msg_gerr("Error: Nesting level exeeded limit of %u.\n", MAX_NESTING_LVL);
+			msg_gerr("Unable to import \"%s\" in layout file \"%s\".\n", tmp_str, file_name);
+			return -1;
+		}
+
+		nesting_lvl++;
+		int ret;
+		/* If a relative path is given, append it to the dirname of the current file. */
+		if (*tmp_str != '/') {
+			/* We need space for: dirname of file_name, '/' , the file name in tmp_strand and '\0'.
+			 * Since the dirname of file_name is shorter than file_name this is more than enough: */
+			char *path = malloc(strlen(file_name) + strlen(tmp_str) + 2);
+			if (path == NULL) {
+				msg_gerr("Out of memory!\n");
+				return -1;
+			}
+			strcpy(path, file_name);
+
+			/* A less insane but incomplete dirname implementation... */
+			endptr = strrchr(path, '/');
+			if (endptr != NULL) {
+				endptr[0] = '/';
+				endptr[1] = '\0';
+			} else {
+				/* This is safe because the original file name was at least one char. */
+				path[0] = '.';
+				path[1] = '/';
+				path[2] = '\0';
+			}
+			strcat(path, tmp_str);
+			ret = read_romlayout(path);
+			free(path);
+		} else
+			ret = read_romlayout(tmp_str);
+		nesting_lvl--;
+		return ret >= 0 ? 1 : -1; /* Only return values < 0 are errors. */
+	}
+
+	/* Parse start address. */
+	errno = 0;
+	long long tmp_addr = strtoll(tmp_str, &endptr, 0);
+	if (errno != 0 || endptr == tmp_str) {
+		msg_gerr("Error parsing version 2 layout entry in file \"%s\" at line %d:\n"
+			 "Could not convert start address in \"%s\".\n", file_name, linecnt, buf);
+		return -1;
+	}
+	if (tmp_addr < 0 || tmp_addr > FL_MAX_CHIPADDR) {
+		msg_gerr("Error parsing version 2 layout entry in file \"%s\" at line %d:\n"
+			 "Start address (%s0x%llx) in \"%s\" is beyond the supported range (max 0x%"
+			 PRIxCHIPADDR ").\n", file_name, linecnt, (tmp_addr < 0) ? "-" : "",
+			 llabs(tmp_addr), buf, FL_MAX_CHIPADDR);
+		return -1;
+	}
+	chipoff_t start = (chipoff_t)tmp_addr;
+
+	tmp_str = endptr + strspn(endptr, WHITESPACE_CHARS);
+	if (*tmp_str != ':') {
+		msg_gerr("Error parsing version 2 layout entry in file \"%s\" at line %d:\n"
+			 "Address separator does not follow start address in \"%s\".\n",
+			 file_name, linecnt, buf);
+		return -1;
+	}
+	tmp_str++;
+
+	/* Parse end address. */
+	errno = 0;
+	tmp_addr = strtoll(tmp_str, &endptr, 0);
+	if (errno != 0 || endptr == tmp_str) {
+		msg_gerr("Error parsing version 2 layout entry in file \"%s\" at line %d:\n"
+			 "Could not convert end address in \"%s\".\n", file_name, linecnt, buf);
+		return -1;
+	}
+	if (tmp_addr < 0 || tmp_addr > FL_MAX_CHIPADDR) {
+		msg_gerr("Error parsing version 2 layout entry in file \"%s\" at line %d:\n"
+			 "End address (%s0x%llx) in \"%s\" is beyond the supported range (max 0x%"
+			 PRIxCHIPADDR ").\n", file_name, linecnt, (tmp_addr < 0) ? "-" : "",
+			 llabs(tmp_addr), buf, FL_MAX_CHIPADDR);
+		return -1;
+	}
+	chipoff_t end = (chipoff_t)tmp_addr;
+
+	size_t skip = strspn(endptr, WHITESPACE_CHARS);
+	if (skip == 0) {
+		msg_gerr("Error parsing version 2 layout entry in file \"%s\" at line %d:\n"
+			 "End address is not followed by white space in \"%s\"\n", file_name, linecnt, buf);
 		return -1;
 	}
 
+	/* Parse region name. */
+	tmp_str = endptr + skip;
+	/* The region name is either enclosed by quotes or ends with the first whitespace. */
+	if (unquote_string(&tmp_str, &endptr, WHITESPACE_CHARS) != 0) {
+		msg_gerr("Error parsing version 2 layout entry in file \"%s\" at line %d:\n"
+			 "Could not find region name in \"%s\".\n", file_name, linecnt, buf);
+		return -1;
+	}
+
+	msg_gdbg2("Parsed entry: 0x%" PRIxCHIPADDR " - 0x%" PRIxCHIPADDR " named \"%s\"\n",
+		  start, end, tmp_str);
+
+	if (start >= end) {
+		msg_gerr("Error parsing version 2 layout entry in file \"%s\" at line %d:\n"
+			 "Length of region \"%s\" is not positive.\n", file_name, linecnt, tmp_str);
+		return -1;
+	}
+
+	if (find_romentry(tmp_str) >= 0) {
+		msg_gerr("Error parsing version 2 layout entry in file \"%s\" at line %d:\n"
+			 "Region name \"%s\" used multiple times.\n", file_name, linecnt, tmp_str);
+		return -1;
+	}
+
+	endptr += strspn(endptr, WHITESPACE_CHARS);
+	if (strlen(endptr) != 0)
+		msg_gwarn("Warning parsing version 2 layout entry in file \"%s\" at line %d:\n"
+			  "Region name \"%s\" is not followed by white space only.\n",
+			  file_name, linecnt, tmp_str);
+
+	if (entry != NULL) {
+		entry->name = strdup(tmp_str);
+		if (entry->name == NULL) {
+			msg_gerr("Out of memory!\n");
+			return -1;
+		}
+
+		entry->start = start;
+		entry->end = end;
+		entry->included = 0;
+		entry->file = NULL;
+	}
+	return 0;
+}
+
+/* Scan the first line for the determinant version comment and parse it, or assume it is version 1. */
+static int detect_layout_version(FILE *romlayout)
+{
+	int c;
+	do { /* Skip white space */
+		c = fgetc(romlayout);
+		if (c == EOF)
+			return -1;
+	} while (isblank(c));
+	ungetc(c, romlayout);
+
+	const char* vcomment = "# flashrom layout v";
+	char buf[strlen(vcomment) + 1]; /* comment + \0 */
+	if (fgets(buf, sizeof(buf), romlayout) == NULL)
+		return -1;
+	if (strcmp(vcomment, buf) != 0)
+		return 1;
+	int version;
+	if (fscanf(romlayout, "%d", &version) != 1)
+		return -1;
+	if (version < 2) {
+		msg_gwarn("Warning: Layout file declares itself to be version %d, but self declaration has\n"
+			  "only been possible since version 2. Continuing anyway.\n", version);
+	}
+	return version;
+}
+
+int read_romlayout(const char *name)
+{
+	FILE *romlayout = fopen(name, "r");
+	if (romlayout == NULL) {
+		msg_gerr("ERROR: Could not open layout file \"%s\".\n", name);
+		return -1;
+	}
+
+	const int version = detect_layout_version(romlayout);
+	if (version < 0) {
+		msg_gerr("Could not determine version of layout file \"%s\".\n", name);
+		fclose(romlayout);
+		return 1;
+	}
+	if (version != 2) {
+		msg_gerr("Layout file version %d is not supported in this version of flashrom.\n", version);
+		fclose(romlayout);
+		return 1;
+	}
+	rewind(romlayout);
+
+	msg_gdbg("Parsing layout file \"%s\" according to version %d.\n", name, version);
+	unsigned int linecnt = 0;
 	while (!feof(romlayout)) {
-		char *tstr1, *tstr2;
+		char buf[MAX_ENTRY_LEN];
+		char *curchar = buf;
 
-		if (num_rom_entries >= MAX_ROMLAYOUT) {
-			msg_gerr("Maximum number of entries (%i) in layout file reached.\n", MAX_ROMLAYOUT);
+		while (true) {
+			/* Make sure that we ignore various newline sequences by checking for \r too.
+			 * NB: This might introduce empty lines. */
+			char c = fgetc(romlayout);
+			if (c == '#') {
+				do { /* Skip characters in comments */
+					c = fgetc(romlayout);
+				} while (c != EOF && c != '\n' && c != '\r');
+				linecnt++;
+				continue;
+			}
+			if (c == EOF || c == '\n' || c == '\r') {
+				*curchar = '\0';
+				linecnt++;
+				break;
+			}
+			if (curchar == &buf[MAX_ENTRY_LEN - 1]) {
+				msg_gerr("Line %d of layout file \"%s\" is longer than the allowed %d chars.\n",
+					 linecnt, name, MAX_ENTRY_LEN);
+				fclose(romlayout);
+				return 1;
+			}
+			*curchar = c;
+			curchar++;
+		}
+		msg_gspew("Parsing line %d of \"%s\".\n", linecnt, name);
+
+		/* Skip all whitespace or empty lines */
+		if (strspn(buf, WHITESPACE_CHARS) == strlen(buf))
+			continue;
+
+		romentry_t *entry = (num_rom_entries >= MAX_ROMLAYOUT) ? NULL : &rom_entries[num_rom_entries];
+		int ret = parse_entry(name, linecnt, buf, entry);
+		if (ret < 0) {
 			fclose(romlayout);
 			return 1;
 		}
-		if (2 != fscanf(romlayout, "%s %s\n", tempstr, rom_entries[num_rom_entries].name))
-			continue;
-#if 0
-		// fscanf does not like arbitrary comments like that :( later
-		if (tempstr[0] == '#') {
-			continue;
-		}
-#endif
-		tstr1 = strtok(tempstr, ":");
-		tstr2 = strtok(NULL, ":");
-		if (!tstr1 || !tstr2) {
-			msg_gerr("Error parsing layout file. Offending string: \"%s\"\n", tempstr);
-			fclose(romlayout);
-			return 1;
-		}
-		rom_entries[num_rom_entries].start = strtol(tstr1, (char **)NULL, 16);
-		rom_entries[num_rom_entries].end = strtol(tstr2, (char **)NULL, 16);
-		rom_entries[num_rom_entries].included = 0;
-		rom_entries[num_rom_entries].file = NULL;
-		num_rom_entries++;
+		/* Only 0 indicates the successfully parsing of an entry, others are errors or imports. */
+		if (ret == 0)
+			num_rom_entries++;
 	}
-
-	for (i = 0; i < num_rom_entries; i++) {
-		msg_gdbg("romlayout %08x - %08x named %s\n",
-			     rom_entries[i].start,
-			     rom_entries[i].end, rom_entries[i].name);
-	}
-
 	fclose(romlayout);
-
+	if (num_rom_entries >= MAX_ROMLAYOUT) {
+		msg_gerr("Found %d entries in layout file which is more than the %i allowed.\n",
+			 num_rom_entries + 1, MAX_ROMLAYOUT);
+		return 1;
+	}
 	return 0;
 }
 #endif
@@ -134,21 +370,6 @@ int register_include_arg(char *name)
 	include_args[num_include_args] = name;
 	num_include_args++;
 	return 0;
-}
-
-/* returns the index of the entry (or a negative value if it is not found) */
-static int find_romentry(char *name)
-{
-	int i;
-	msg_gspew("Looking for region \"%s\"... ", name);
-	for (i = 0; i < num_rom_entries; i++) {
-		if (strcmp(rom_entries[i].name, name) == 0) {
-			msg_gspew("found.\n");
-			return i;
-		}
-	}
-	msg_gspew("not found.\n");
-	return -1;
 }
 
 /* process -i arguments
@@ -231,6 +452,8 @@ void layout_cleanup(void)
 	num_include_args = 0;
 
 	for (i = 0; i < num_rom_entries; i++) {
+		free(rom_entries[i].name);
+		rom_entries[i].name = NULL;
 		free(rom_entries[i].file);
 		rom_entries[i].file = NULL;
 		rom_entries[i].included = 0;
