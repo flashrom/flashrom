@@ -55,7 +55,7 @@ static int num_include_args = 0; /* the number of valid include_args. */
 
 #ifndef __LIBPAYLOAD__
 /* returns the index of the entry (or a negative value if it is not found) */
-static int find_romentry(char *name)
+static int find_romentry(const char *name)
 {
 	int i;
 	msg_gspew("Looking for region \"%s\"... ", name);
@@ -200,10 +200,23 @@ static int parse_entry(const char *file_name, unsigned int linecnt, char *buf, r
 			 "Could not find region name in \"%s\".\n", file_name, linecnt, buf);
 		return -1;
 	}
+	const char *region_name = tmp_str;
+
+	/* Parse flags. */
+	tmp_str = endptr + strspn(endptr, WHITESPACE_CHARS);
+	strtok_r(tmp_str, ",", &endptr);
+	while (tmp_str != NULL && *tmp_str != '\0') {
+		if (strcmp(tmp_str, "rw") != 0) {
+			msg_gerr("Error parsing version 2 layout entry in file \"%s\" at line %d:\n"
+				 "Invalid flag \"%s\" detected.\n", file_name, linecnt, tmp_str);
+			return -1;
+		}
+		tmp_str = strtok_r(NULL, ",", &endptr);
+	}
 
 	msg_gdbg2("Parsed entry: 0x%" PRIxCHIPADDR " (%s) : 0x%" PRIxCHIPADDR " (%s) named \"%s\"\n",
 		  start, start_topalign ? "top-aligned" : "bottom-aligned",
-		  end, end_topalign ? "top-aligned" : "bottom-aligned", tmp_str);
+		  end, end_topalign ? "top-aligned" : "bottom-aligned", region_name);
 
 	/* We can only check address ranges if the chip size is available in case one address is relative to
 	 * the top and the other to the bottom. But if they are both relative to the same end we can without
@@ -211,13 +224,13 @@ static int parse_entry(const char *file_name, unsigned int linecnt, char *buf, r
 	if ((!start_topalign && !end_topalign && start > end) ||
 	    (start_topalign && end_topalign && start < end)) {
 		msg_gerr("Error parsing version 2 layout entry in file \"%s\" at line %d:\n"
-			 "Length of region \"%s\" is not positive.\n", file_name, linecnt, tmp_str);
+			 "Length of region \"%s\" is not positive.\n", file_name, linecnt, region_name);
 		return -1;
 	}
 
-	if (find_romentry(tmp_str) >= 0) {
+	if (find_romentry(region_name) >= 0) {
 		msg_gerr("Error parsing version 2 layout entry in file \"%s\" at line %d:\n"
-			 "Region name \"%s\" used multiple times.\n", file_name, linecnt, tmp_str);
+			 "Region name \"%s\" used multiple times.\n", file_name, linecnt, region_name);
 		return -1;
 	}
 
@@ -225,11 +238,11 @@ static int parse_entry(const char *file_name, unsigned int linecnt, char *buf, r
 	if (strlen(endptr) != 0)
 		msg_gwarn("Warning parsing version 2 layout entry in file \"%s\" at line %d:\n"
 			  "Region name \"%s\" is not followed by white space only.\n",
-			  file_name, linecnt, tmp_str);
+			  file_name, linecnt, region_name);
 
 
 	if (entry != NULL) {
-		entry->name = strdup(tmp_str);
+		entry->name = strdup(region_name);
 		if (entry->name == NULL) {
 			msg_gerr("Out of memory!\n");
 			return -1;
