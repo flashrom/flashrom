@@ -1916,6 +1916,12 @@ int doit(struct flashctx *flash, int force, const char *filename, int read_it,
 		goto out_nofree;
 	}
 
+	if (normalize_romentries(flash)) {
+		msg_cerr("Requested regions can not be handled. Aborting.\n");
+		ret = 1;
+		goto out_nofree;
+	}
+
 	/* Given the existence of read locks, we want to unlock for read,
 	 * erase and write.
 	 */
@@ -1995,9 +2001,8 @@ int doit(struct flashctx *flash, int force, const char *filename, int read_it,
 	}
 	msg_cinfo("done.\n");
 
-	// This should be moved into each flash part's code to do it 
-	// cleanly. This does the job.
-	handle_romentries(flash, oldcontents, newcontents);
+	/* Build a new image taking the given layout into account. */
+	build_new_image(flash, oldcontents, newcontents);
 
 	// ////////////////////////////////////////////////////////////
 
