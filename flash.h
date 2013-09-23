@@ -263,6 +263,7 @@ char* strtok_r(char *str, const char *delim, char **nextp);
 #if defined(__DJGPP__)
 size_t strnlen(const char *str, size_t n);
 #endif
+int unquote_string(char **startp, char **endp, const char *delimiters);
 
 /* flashrom.c */
 extern const char flashrom_version[];
