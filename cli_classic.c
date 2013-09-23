@@ -40,8 +40,8 @@ static void cli_classic_usage(const char *name)
 #if CONFIG_PRINT_WIKI == 1
 	       "-z|"
 #endif
-	       "-p <programmername>[:<parameters>] [-c <chipname>]\n"
-	       "[-E|(-r|-w|-v) <file>] [-l <layoutfile> [-i <imagename>]...] [-n] [-f]]\n"
+	       "-p <programmername>[:<parameter>[,<parameter>]...] [-c <chipname>]\n"
+	       "[-E|(-r|-w|-v) <imagefile>] [-l <layoutfile> [-i <region>[:<regionfile>]...] [-n] [-f]]\n"
 	       "[-V[V[V]]] [-o <logfile>]\n\n", name);
 
 	printf(" -h | --help                        print this help text\n"
@@ -54,8 +54,9 @@ static void cli_classic_usage(const char *name)
 	       " -c | --chip <chipname>             probe only for specified flash chip\n"
 	       " -f | --force                       force specific operations (see man page)\n"
 	       " -n | --noverify                    don't auto-verify\n"
-	       " -l | --layout <layoutfile>         read ROM layout from <layoutfile>\n"
-	       " -i | --image <name>                only flash image <name> from flash layout\n"
+	       " -l | --layout <layoutfile>         read layout from <layoutfile>\n"
+	       " -i | --include <region>[<:file>]   only flash image <region> from layout \n"
+	       "                                    (optionally with data from <file>)\n"
 	       " -o | --output <logfile>            log output to <logfile>\n"
 	       " -L | --list-supported              print supported devices\n"
 #if CONFIG_PRINT_WIKI == 1

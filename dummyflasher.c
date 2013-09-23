@@ -382,7 +382,7 @@ int dummy_init(void)
 			msg_pdbg("matches.\n");
 			msg_pdbg("Reading %s\n", emu_persistent_image);
 			read_buf_from_file(flashchip_contents, emu_chip_size,
-					   emu_persistent_image);
+					   emu_persistent_image, NULL);
 		} else {
 			msg_pdbg("doesn't match.\n");
 		}

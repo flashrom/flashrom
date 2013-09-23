@@ -33,6 +33,7 @@ typedef struct {
 	chipoff_t end;
 	unsigned int included;
 	char name[256];
+	char *file;
 } romentry_t;
 
 /* rom_entries store the entries specified in a layout file and associated run-time data */
@@ -54,7 +55,7 @@ int read_romlayout(const char *name)
 	romlayout = fopen(name, "r");
 
 	if (!romlayout) {
-		msg_gerr("ERROR: Could not open ROM layout (%s).\n",
+		msg_gerr("ERROR: Could not open layout file (%s).\n",
 			name);
 		return -1;
 	}
@@ -63,8 +64,7 @@ int read_romlayout(const char *name)
 		char *tstr1, *tstr2;
 
 		if (num_rom_entries >= MAX_ROMLAYOUT) {
-			msg_gerr("Maximum number of ROM images (%i) in layout "
-				 "file reached.\n", MAX_ROMLAYOUT);
+			msg_gerr("Maximum number of entries (%i) in layout file reached.\n", MAX_ROMLAYOUT);
 			fclose(romlayout);
 			return 1;
 		}
@@ -86,6 +86,7 @@ int read_romlayout(const char *name)
 		rom_entries[num_rom_entries].start = strtol(tstr1, (char **)NULL, 16);
 		rom_entries[num_rom_entries].end = strtol(tstr2, (char **)NULL, 16);
 		rom_entries[num_rom_entries].included = 0;
+		rom_entries[num_rom_entries].file = NULL;
 		num_rom_entries++;
 	}
 
@@ -139,14 +140,9 @@ int register_include_arg(char *name)
 static int find_romentry(char *name)
 {
 	int i;
-
-	if (num_rom_entries == 0)
-		return -1;
-
 	msg_gspew("Looking for region \"%s\"... ", name);
 	for (i = 0; i < num_rom_entries; i++) {
-		if (!strcmp(rom_entries[i].name, name)) {
-			rom_entries[i].included = 1;
+		if (strcmp(rom_entries[i].name, name) == 0) {
 			msg_gspew("found.\n");
 			return i;
 		}
@@ -166,27 +162,61 @@ int process_include_args(void)
 	if (num_include_args == 0)
 		return 0;
 
-	/* User has specified an area, but no layout file is loaded. */
+	/* User has specified an include argument, but no layout file is loaded. */
 	if (num_rom_entries == 0) {
-		msg_gerr("Region requested (with -i \"%s\"), "
-			 "but no layout data is available.\n",
+		msg_gerr("Region requested (with -i/--include \"%s\"),\n"
+			 "but no layout data is available. To include one use the -l/--layout syntax).\n",
 			 include_args[0]);
 		return 1;
 	}
 
 	for (i = 0; i < num_include_args; i++) {
-		if (find_romentry(include_args[i]) < 0) {
-			msg_gerr("Invalid region specified: \"%s\".\n",
-				 include_args[i]);
+		char *file;
+		char *name = include_args[i];
+		int ret = unquote_string(&name, &file, ":"); /* -i <region>[:<file>] */
+		if (ret != 0) {
+			msg_gerr("Invalid include argument specified: \"%s\".\n", name);
 			return 1;
 		}
+		int idx = find_romentry(name);
+		if (idx < 0) {
+			msg_gerr("Invalid region name specified: \"%s\".\n", name);
+			return 1;
+		}
+		rom_entries[idx].included = 1;
 		found++;
+
+		if (file[0] != '\0') {
+			/* The remaining characters are interpreted as possible quoted filename.  */
+			ret = unquote_string(&file, NULL, NULL);
+			if (ret != 0) {
+				msg_gerr("Invalid region file name specified: \"%s\".\n", file);
+				return 1;
+			}
+#ifdef __LIBPAYLOAD__
+			msg_gerr("Error: No file I/O support in libpayload\n");
+			return 1;
+#else
+			file = strdup(file);
+			if (file == NULL) {
+				msg_gerr("Out of memory!\n");
+				return 1;
+			}
+			rom_entries[idx].file = file;
+#endif
+		}
 	}
 
-	msg_ginfo("Using region%s: \"%s\"", num_include_args > 1 ? "s" : "",
-		  include_args[0]);
-	for (i = 1; i < num_include_args; i++)
-		msg_ginfo(", \"%s\"", include_args[i]);
+	msg_ginfo("Using region%s: ", num_rom_entries > 1 ? "s" : "");
+	bool first = true;
+	for (i = 0; i < num_rom_entries; i++)
+		if (rom_entries[i].included) {
+			if (first)
+				first = false;
+			else
+				msg_ginfo(", ");
+			msg_ginfo("\"%s\"", rom_entries[i].name);
+	}
 	msg_ginfo(".\n");
 	return 0;
 }
@@ -201,6 +231,8 @@ void layout_cleanup(void)
 	num_include_args = 0;
 
 	for (i = 0; i < num_rom_entries; i++) {
+		free(rom_entries[i].file);
+		rom_entries[i].file = NULL;
 		rom_entries[i].included = 0;
 	}
 	num_rom_entries = 0;
@@ -305,6 +337,15 @@ int build_new_image(struct flashctx *flash, bool oldcontents_valid, uint8_t *old
 		if (entry->start > start)
 			copy_old_content(flash, oldcontents_valid, oldcontents, newcontents, start,
 					 entry->start - start);
+
+		/* If a file name is specified for this region, read the file contents and
+		 * overwrite @newcontents in the range specified by @entry. */
+		if (entry->file != NULL) {
+			if (read_buf_from_file(newcontents + entry->start, entry->end - entry->start + 1,
+			    entry->file, "the region's size") != 0)
+				return 1;
+		}
+
 		/* Skip to location after current romentry. */
 		start = entry->end + 1;
 		/* Catch overflow. */

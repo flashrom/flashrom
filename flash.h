@@ -283,7 +283,7 @@ void print_banner(void);
 void list_programmers_linebreak(int startcol, int cols, int paren);
 int selfcheck(void);
 int doit(struct flashctx *flash, int force, const char *filename, int read_it, int write_it, int erase_it, int verify_it);
-int read_buf_from_file(unsigned char *buf, unsigned long size, const char *filename);
+int read_buf_from_file(unsigned char *buf, unsigned long size, const char *filename, const char *size_msg);
 int write_buf_to_file(const unsigned char *buf, unsigned long size, const char *filename);
 
 /* Something happened that shouldn't happen, but we can go on. */
