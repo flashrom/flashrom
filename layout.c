@@ -29,15 +29,15 @@
 #define MAX_ROMLAYOUT	32
 
 typedef struct {
-	unsigned int start;
-	unsigned int end;
+	chipoff_t start;
+	chipoff_t end;
 	unsigned int included;
 	char name[256];
 } romentry_t;
 
 /* rom_entries store the entries specified in a layout file and associated run-time data */
 static romentry_t rom_entries[MAX_ROMLAYOUT];
-static int num_rom_entries = 0; /* the number of valid rom_entries */
+static int num_rom_entries = 0; /* the number of successfully parsed rom_entries */
 
 /* include_args holds the arguments specified at the command line with -i. They must be processed at some point
  * so that desired regions are marked as "included" in the rom_entries list. */
@@ -232,7 +232,31 @@ romentry_t *get_next_included_romentry(unsigned int start)
 	return best_entry;
 }
 
-int handle_romentries(const struct flashctx *flash, uint8_t *oldcontents, uint8_t *newcontents)
+/* Validate and - if needed - normalize layout entries. */
+int normalize_romentries(const struct flashctx *flash)
+{
+	chipsize_t total_size = flash->chip->total_size * 1024;
+	int ret = 0;
+
+	int i;
+	for (i = 0; i < num_rom_entries; i++) {
+		if (rom_entries[i].start >= total_size || rom_entries[i].end >= total_size) {
+			msg_gwarn("Warning: Address range of region \"%s\" exceeds the current chip's "
+				  "address space.\n", rom_entries[i].name);
+			if (rom_entries[i].included)
+				ret = 1;
+		}
+		if (rom_entries[i].start > rom_entries[i].end) {
+			msg_gerr("Error: Size of the address range of region \"%s\" is not positive.\n",
+				  rom_entries[i].name);
+			ret = 1;
+		}
+	}
+
+	return ret;
+}
+
+int build_new_image(const struct flashctx *flash, uint8_t *oldcontents, uint8_t *newcontents)
 {
 	unsigned int start = 0;
 	romentry_t *entry;

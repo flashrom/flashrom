@@ -45,6 +45,14 @@
 typedef uintptr_t chipaddr;
 #define PRIxPTR_WIDTH ((int)(sizeof(uintptr_t)*2))
 
+/* Types and macros regarding the maximum flash space size supported by generic code. */
+typedef uint32_t chipoff_t; /* Able to store any addressable offset within a supported flash memory. */
+typedef uint32_t chipsize_t; /* Able to store the number of bytes of any supported flash memory. */
+#define FL_MAX_CHIPADDR_BITS (24)
+#define FL_MAX_CHIPADDR ((chipoff_t)(1ULL<<FL_MAX_CHIPADDR_BITS)-1)
+#define PRIxCHIPADDR "06"PRIx32
+#define PRIuCHIPSIZE PRIu32
+
 int register_shutdown(int (*function) (void *data), void *data);
 void *programmer_map_flash_region(const char *descr, uintptr_t phys_addr, size_t len);
 void programmer_unmap_flash_region(void *virt_addr, size_t len);
@@ -319,7 +327,8 @@ __attribute__((format(printf, 2, 3)));
 int register_include_arg(char *name);
 int process_include_args(void);
 int read_romlayout(char *name);
-int handle_romentries(const struct flashctx *flash, uint8_t *oldcontents, uint8_t *newcontents);
+int normalize_romentries(const struct flashctx *flash);
+int build_new_image(const struct flashctx *flash, uint8_t *oldcontents, uint8_t *newcontents);
 void layout_cleanup(void);
 
 /* spi.c */
