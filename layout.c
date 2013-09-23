@@ -37,6 +37,8 @@
 typedef struct {
 	chipoff_t start;
 	chipoff_t end;
+	bool start_topalign;
+	bool end_topalign;
 	bool included;
 	char *name;
 	char *file;
@@ -146,14 +148,15 @@ static int parse_entry(const char *file_name, unsigned int linecnt, char *buf, r
 			 "Could not convert start address in \"%s\".\n", file_name, linecnt, buf);
 		return -1;
 	}
-	if (tmp_addr < 0 || tmp_addr > FL_MAX_CHIPADDR) {
+	bool start_topalign = (tmp_str[0] == '-');
+	if (llabs(tmp_addr) > FL_MAX_CHIPADDR) {
 		msg_gerr("Error parsing version 2 layout entry in file \"%s\" at line %d:\n"
 			 "Start address (%s0x%llx) in \"%s\" is beyond the supported range (max 0x%"
-			 PRIxCHIPADDR ").\n", file_name, linecnt, (tmp_addr < 0) ? "-" : "",
+			 PRIxCHIPADDR ").\n", file_name, linecnt, start_topalign ? "-" : "",
 			 llabs(tmp_addr), buf, FL_MAX_CHIPADDR);
 		return -1;
 	}
-	chipoff_t start = (chipoff_t)tmp_addr;
+	chipoff_t start = (chipoff_t)llabs(tmp_addr);
 
 	tmp_str = endptr + strspn(endptr, WHITESPACE_CHARS);
 	if (*tmp_str != ':') {
@@ -172,14 +175,15 @@ static int parse_entry(const char *file_name, unsigned int linecnt, char *buf, r
 			 "Could not convert end address in \"%s\".\n", file_name, linecnt, buf);
 		return -1;
 	}
-	if (tmp_addr < 0 || tmp_addr > FL_MAX_CHIPADDR) {
+	bool end_topalign = (tmp_str[0] == '-');
+	if (llabs(tmp_addr) > FL_MAX_CHIPADDR) {
 		msg_gerr("Error parsing version 2 layout entry in file \"%s\" at line %d:\n"
 			 "End address (%s0x%llx) in \"%s\" is beyond the supported range (max 0x%"
-			 PRIxCHIPADDR ").\n", file_name, linecnt, (tmp_addr < 0) ? "-" : "",
+			 PRIxCHIPADDR ").\n", file_name, linecnt, end_topalign ? "-" : "",
 			 llabs(tmp_addr), buf, FL_MAX_CHIPADDR);
 		return -1;
 	}
-	chipoff_t end = (chipoff_t)tmp_addr;
+	chipoff_t end = (chipoff_t)llabs(tmp_addr);
 
 	size_t skip = strspn(endptr, WHITESPACE_CHARS);
 	if (skip == 0) {
@@ -197,10 +201,15 @@ static int parse_entry(const char *file_name, unsigned int linecnt, char *buf, r
 		return -1;
 	}
 
-	msg_gdbg2("Parsed entry: 0x%" PRIxCHIPADDR " - 0x%" PRIxCHIPADDR " named \"%s\"\n",
-		  start, end, tmp_str);
+	msg_gdbg2("Parsed entry: 0x%" PRIxCHIPADDR " (%s) : 0x%" PRIxCHIPADDR " (%s) named \"%s\"\n",
+		  start, start_topalign ? "top-aligned" : "bottom-aligned",
+		  end, end_topalign ? "top-aligned" : "bottom-aligned", tmp_str);
 
-	if (start >= end) {
+	/* We can only check address ranges if the chip size is available in case one address is relative to
+	 * the top and the other to the bottom. But if they are both relative to the same end we can without
+	 * knowing the complete size. This allows us to bail out before probing. */
+	if ((!start_topalign && !end_topalign && start > end) ||
+	    (start_topalign && end_topalign && start < end)) {
 		msg_gerr("Error parsing version 2 layout entry in file \"%s\" at line %d:\n"
 			 "Length of region \"%s\" is not positive.\n", file_name, linecnt, tmp_str);
 		return -1;
@@ -218,6 +227,7 @@ static int parse_entry(const char *file_name, unsigned int linecnt, char *buf, r
 			  "Region name \"%s\" is not followed by white space only.\n",
 			  file_name, linecnt, tmp_str);
 
+
 	if (entry != NULL) {
 		entry->name = strdup(tmp_str);
 		if (entry->name == NULL) {
@@ -228,6 +238,8 @@ static int parse_entry(const char *file_name, unsigned int linecnt, char *buf, r
 		entry->start = start;
 		entry->end = end;
 		entry->included = 0;
+		entry->start_topalign = start_topalign;
+		entry->end_topalign = end_topalign;
 		entry->file = NULL;
 	}
 	return 0;
@@ -496,15 +508,32 @@ int normalize_romentries(const struct flashctx *flash)
 
 	int i;
 	for (i = 0; i < num_rom_entries; i++) {
-		if (rom_entries[i].start >= total_size || rom_entries[i].end >= total_size) {
+		romentry_t *cur = &rom_entries[i];
+		/* Normalize top-aligned address. */
+		if (cur->start_topalign || cur->end_topalign) {
+			if (cur->start_topalign) {
+				cur->start = total_size - cur->start - 1;
+				cur->start_topalign = 0;
+			}
+
+			if (cur->end_topalign) {
+				cur->end = total_size - cur->end - 1;
+				cur->end_topalign = 0;
+			}
+
+			msg_gspew("Normalized entry %d \"%s\": 0x%" PRIxCHIPADDR " - 0x%" PRIxCHIPADDR "\n",
+				  i, cur->name, cur->start, cur->end);
+		}
+
+		if (cur->start >= total_size || cur->end >= total_size) {
 			msg_gwarn("Warning: Address range of region \"%s\" exceeds the current chip's "
-				  "address space.\n", rom_entries[i].name);
-			if (rom_entries[i].included)
+				  "address space.\n", cur->name);
+			if (cur->included)
 				ret = 1;
 		}
-		if (rom_entries[i].start > rom_entries[i].end) {
+		if (cur->start > cur->end) {
 			msg_gerr("Error: Size of the address range of region \"%s\" is not positive.\n",
-				  rom_entries[i].name);
+				  cur->name);
 			ret = 1;
 		}
 	}

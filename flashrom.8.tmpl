@@ -231,7 +231,14 @@ a region). One entry per line is allowed with the following syntax:
 .sp
 .BR "startaddr " "and " "endaddr "
 are addresses within the ROM image representing the flash ROM contents. They are interpreted in the 'usual' form
-i.e.\ a leading 0 means octal, leading 0x or 0X means hexadecimal, everything else is just decimal.
+i.e.\ a leading 0 means octal, leading 0x or 0X means hexadecimal, everything else is just decimal. Negative
+numbers are interpreted as addresses aligned to the top of the current chip's address space, for example
+.sp
+  0:-0 "whole chip"
+.sp
+will always describe the complete flash space no matter which chip is used. This syntax is useful for specifying
+"the top 1MB" (-0x100000:-0) etc.
+.sp
 .BR "regionname " "is the name for the region from " "startaddr " "to " "endaddr " "(both addresses included)."
 If the name contains spaces it has to be written in double quotes, or else only the part before the first space
 will be used.
