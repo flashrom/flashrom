@@ -19,6 +19,11 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#ifndef __LIBPAYLOAD__
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -443,6 +448,25 @@ int process_include_args(void)
 			msg_gerr("Error: No file I/O support in libpayload\n");
 			return 1;
 #else
+			if (access(file, R_OK) != 0) {
+				msg_gerr("Region file name \"%s\" seems to be unreadable: %s\n",
+					 file, strerror(errno));
+				return 1;
+			}
+
+			struct stat file_stat;
+			if (stat((file), &file_stat) != 0) {
+				msg_gerr("Error: getting metadata of file \"%s\" failed: %s\n",
+					 file, strerror(errno));
+				return 1;
+			}
+			chipoff_t size = rom_entries[idx].end - rom_entries[idx].start + 1;
+			if (file_stat.st_size != size) {
+				msg_gerr("Error: Region file size (%jd B) doesn't match the region's size (%"
+					 PRIuCHIPSIZE " B)!\n", (intmax_t)file_stat.st_size, size);
+				return 1;
+			}
+
 			file = strdup(file);
 			if (file == NULL) {
 				msg_gerr("Out of memory!\n");
