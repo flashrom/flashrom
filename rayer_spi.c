@@ -94,11 +94,19 @@ static const struct rayer_pinout atmel_stk200 = {
 	.shutdown = stk200_shutdown,
 };
 
+static const struct rayer_pinout wiggler_lpt = {
+	.cs_bit = 1,
+	.sck_bit = 2,
+	.mosi_bit = 3,
+	.miso_bit = 7,
+};
+
 static const struct rayer_programmer rayer_spi_types[] = {
 	{"rayer",		NT,	"RayeR SPIPGM",					&rayer_spipgm},
 	{"xilinx",		NT,	"Xilinx Parallel Cable III (DLC 5)",		&xilinx_dlc5},
 	{"byteblastermv",	OK,	"Altera ByteBlasterMV",				&altera_byteblastermv},
 	{"stk200",		NT,	"Atmel STK200/300 adapter",			&atmel_stk200},
+	{"wiggler",		OK,	"Wiggler LPT",					&wiggler_lpt},
 	{0},
 };
 
