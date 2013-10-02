@@ -70,9 +70,22 @@ static const struct rayer_pinout xilinx_dlc5 = {
 	.miso_bit = 4,
 };
 
+static void byteblaster_preinit(const void *);
+static int byteblaster_shutdown(void *);
+
+static const struct rayer_pinout altera_byteblastermv = {
+	.cs_bit = 1,
+	.sck_bit = 0,
+	.mosi_bit = 6,
+	.miso_bit = 7,
+	.preinit =  byteblaster_preinit,
+	.shutdown = byteblaster_shutdown,
+};
+
 static const struct rayer_programmer rayer_spi_types[] = {
 	{"rayer",		NT,	"RayeR SPIPGM",					&rayer_spipgm},
 	{"xilinx",		NT,	"Xilinx Parallel Cable III (DLC 5)",		&xilinx_dlc5},
+	{"byteblastermv",	OK,	"Altera ByteBlasterMV",				&altera_byteblastermv},
 	{0},
 };
 
@@ -192,6 +205,19 @@ int rayer_spi_init(void)
 	if (bitbang_spi_init(&bitbang_spi_master_rayer))
 		return 1;
 
+	return 0;
+}
+
+static void byteblaster_preinit(const void *data){
+	msg_pdbg("byteblaster_preinit\n");
+	/* Assert #EN signal. */
+	OUTB(2, lpt_iobase + 2 );
+}
+
+static int byteblaster_shutdown(void *data){
+	msg_pdbg("byteblaster_shutdown\n");
+	/* De-Assert #EN signal. */
+	OUTB(0, lpt_iobase + 2 );
 	return 0;
 }
 
