@@ -63,11 +63,16 @@ static const struct rayer_pinout rayer_spipgm = {
 	.miso_bit = 6,
 };
 
+static void dlc5_preinit(const void *);
+static int dlc5_shutdown(void *);
+
 static const struct rayer_pinout xilinx_dlc5 = {
 	.cs_bit = 2,
 	.sck_bit = 1,
 	.mosi_bit = 0,
 	.miso_bit = 4,
+	.preinit =  dlc5_preinit,
+	.shutdown = dlc5_shutdown,
 };
 
 static void byteblaster_preinit(const void *);
@@ -253,6 +258,21 @@ static int stk200_shutdown(void *data) {
 	msg_pdbg("stk200_shutdown\n");
 	/* Assert #EN signals, clear LED signal. */
 	lpt_outbyte = (1 << 2) | (1 << 3);
+	OUTB(lpt_outbyte, lpt_iobase);
+	return 0;
+}
+
+static void dlc5_preinit(const void *data) {
+	msg_pdbg("dlc5_preinit\n");
+	/* Assert pin 6 to receive MISO. */
+	lpt_outbyte |= (1<<4);
+	OUTB(lpt_outbyte, lpt_iobase);
+}
+
+static int dlc5_shutdown(void *data) {
+	msg_pdbg("dlc5_shutdown\n");
+	/* De-assert pin 6 to force MISO low. */
+	lpt_outbyte &= ~(1<<4);
 	OUTB(lpt_outbyte, lpt_iobase);
 	return 0;
 }
