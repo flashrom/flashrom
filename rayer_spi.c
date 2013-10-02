@@ -82,10 +82,23 @@ static const struct rayer_pinout altera_byteblastermv = {
 	.shutdown = byteblaster_shutdown,
 };
 
+static void stk200_preinit(const void *);
+static int stk200_shutdown(void *);
+
+static const struct rayer_pinout atmel_stk200 = {
+	.cs_bit = 7,
+	.sck_bit = 4,
+	.mosi_bit = 5,
+	.miso_bit = 6,
+	.preinit =  stk200_preinit,
+	.shutdown = stk200_shutdown,
+};
+
 static const struct rayer_programmer rayer_spi_types[] = {
 	{"rayer",		NT,	"RayeR SPIPGM",					&rayer_spipgm},
 	{"xilinx",		NT,	"Xilinx Parallel Cable III (DLC 5)",		&xilinx_dlc5},
 	{"byteblastermv",	OK,	"Altera ByteBlasterMV",				&altera_byteblastermv},
+	{"stk200",		NT,	"Atmel STK200/300 adapter",			&atmel_stk200},
 	{0},
 };
 
@@ -218,6 +231,21 @@ static int byteblaster_shutdown(void *data){
 	msg_pdbg("byteblaster_shutdown\n");
 	/* De-Assert #EN signal. */
 	OUTB(0, lpt_iobase + 2 );
+	return 0;
+}
+
+static void stk200_preinit(const void *data) {
+	msg_pdbg("stk200_init\n");
+	/* Assert #EN signals, set LED signal. */
+	lpt_outbyte = (1 << 6) ;
+	OUTB(lpt_outbyte, lpt_iobase);
+}
+
+static int stk200_shutdown(void *data) {
+	msg_pdbg("stk200_shutdown\n");
+	/* Assert #EN signals, clear LED signal. */
+	lpt_outbyte = (1 << 2) | (1 << 3);
+	OUTB(lpt_outbyte, lpt_iobase);
 	return 0;
 }
 
