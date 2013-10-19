@@ -357,7 +357,7 @@ int serialport_write(unsigned char *buf, unsigned int writecnt)
 		if (!tmp) {
 			msg_pdbg2("Empty write\n");
 			empty_writes--;
-			programmer_delay(500);
+			internal_delay(500);
 			if (empty_writes == 0) {
 				msg_perr("Serial port is unresponsive!\n");
 				return 1;
