@@ -557,11 +557,12 @@ int register_spi_programmer(const struct spi_programmer *programmer);
 /* The following enum is needed by ich_descriptor_tool and ich* code as well as in chipset_enable.c. */
 enum ich_chipset {
 	CHIPSET_ICH_UNKNOWN,
-	CHIPSET_ICH2 = 2,
-	CHIPSET_ICH3,
-	CHIPSET_ICH4,
-	CHIPSET_ICH5,
+	CHIPSET_ICH,
+	CHIPSET_ICH2345,
 	CHIPSET_ICH6,
+	CHIPSET_POULSBO, /* SCH U* */
+	CHIPSET_TUNNEL_CREEK, /* Atom E6xx */
+	CHIPSET_CENTERTON, /* Atom S1220 S1240 S1260 */
 	CHIPSET_ICH7,
 	CHIPSET_ICH8,
 	CHIPSET_ICH9,
@@ -577,8 +578,7 @@ enum ich_chipset {
 /* ichspi.c */
 #if CONFIG_INTERNAL == 1
 extern uint32_t ichspi_bbar;
-int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
-		 enum ich_chipset ich_generation);
+int ich_init_spi(struct pci_dev *dev, void *spibar, enum ich_chipset ich_generation);
 int via_init_spi(struct pci_dev *dev, uint32_t mmio_base);
 
 /* amd_imc.c */

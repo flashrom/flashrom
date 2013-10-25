@@ -466,6 +466,8 @@ static int generate_opcodes(OPCODES * op)
 
 	switch (ich_generation) {
 	case CHIPSET_ICH7:
+	case CHIPSET_TUNNEL_CREEK:
+	case CHIPSET_CENTERTON:
 		preop = REGREAD16(ICH7_REG_PREOP);
 		optype = REGREAD16(ICH7_REG_OPTYPE);
 		opmenu[0] = REGREAD32(ICH7_REG_OPMENU);
@@ -529,7 +531,7 @@ static int program_opcodes(OPCODES *op, int enable_undo)
 		opmenu[0] |= ((uint32_t) op->opcode[a].opcode) << (a * 8);
 	}
 
-	/*Program Allowable Opcodes 4 - 7 */
+	/* Program Allowable Opcodes 4 - 7 */
 	opmenu[1] = 0;
 	for (a = 4; a < 8; a++) {
 		opmenu[1] |= ((uint32_t) op->opcode[a].opcode) << ((a - 4) * 8);
@@ -538,6 +540,8 @@ static int program_opcodes(OPCODES *op, int enable_undo)
 	msg_pdbg2("\n%s: preop=%04x optype=%04x opmenu=%08x%08x\n", __func__, preop, optype, opmenu[0], opmenu[1]);
 	switch (ich_generation) {
 	case CHIPSET_ICH7:
+	case CHIPSET_TUNNEL_CREEK:
+	case CHIPSET_CENTERTON:
 		/* Register undo only for enable_undo=1, i.e. first call. */
 		if (enable_undo) {
 			rmmio_valw(ich_spibar + ICH7_REG_PREOP);
@@ -603,6 +607,8 @@ static void ich_set_bbar(uint32_t min_addr)
 	int bbar_off;
 	switch (ich_generation) {
 	case CHIPSET_ICH7:
+	case CHIPSET_TUNNEL_CREEK:
+	case CHIPSET_CENTERTON:
 		bbar_off = 0x50;
 		break;
 	case CHIPSET_ICH8:
@@ -975,6 +981,8 @@ static int run_opcode(const struct flashctx *flash, OPCODE op, uint32_t offset,
 
 	switch (ich_generation) {
 	case CHIPSET_ICH7:
+	case CHIPSET_TUNNEL_CREEK:
+	case CHIPSET_CENTERTON:
 		return ich7_run_opcode(op, offset, datalength, data, maxlength);
 	case CHIPSET_ICH8:
 	default:		/* Future version might behave the same */
@@ -1545,12 +1553,10 @@ static const struct opaque_programmer opaque_programmer_ich_hwseq = {
 	.erase = ich_hwseq_block_erase,
 };
 
-int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
-		 enum ich_chipset ich_gen)
+int ich_init_spi(struct pci_dev *dev, void *spibar, enum ich_chipset ich_gen)
 {
 	int i;
-	uint8_t old, new;
-	uint16_t spibar_offset, tmp2;
+	uint16_t tmp2;
 	uint32_t tmp;
 	char *arg;
 	int ich_spi_force = 0;
@@ -1564,42 +1570,18 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 	} ich_spi_mode = ich_auto;
 
 	ich_generation = ich_gen;
-
-	switch (ich_generation) {
-	case CHIPSET_ICH_UNKNOWN:
-		return ERROR_FATAL;
-	case CHIPSET_ICH7:
-	case CHIPSET_ICH8:
-		spibar_offset = 0x3020;
-		break;
-	case CHIPSET_ICH9:
-	default:		/* Future version might behave the same */
-		spibar_offset = 0x3800;
-		break;
-	}
-
-	/* SPIBAR is at RCRB+0x3020 for ICH[78] and RCRB+0x3800 for ICH9. */
-	msg_pdbg("SPIBAR = 0x%x + 0x%04x\n", base, spibar_offset);
-
-	/* Assign Virtual Address */
-	ich_spibar = rcrb + spibar_offset;
+	ich_spibar = spibar;
 
 	switch (ich_generation) {
 	case CHIPSET_ICH7:
+	case CHIPSET_TUNNEL_CREEK:
+	case CHIPSET_CENTERTON:
 		msg_pdbg("0x00: 0x%04x     (SPIS)\n",
 			     mmio_readw(ich_spibar + 0));
 		msg_pdbg("0x02: 0x%04x     (SPIC)\n",
 			     mmio_readw(ich_spibar + 2));
 		msg_pdbg("0x04: 0x%08x (SPIA)\n",
 			     mmio_readl(ich_spibar + 4));
-		for (i = 0; i < 8; i++) {
-			int offs;
-			offs = 8 + (i * 8);
-			msg_pdbg("0x%02x: 0x%08x (SPID%d)\n", offs,
-				     mmio_readl(ich_spibar + offs), i);
-			msg_pdbg("0x%02x: 0x%08x (SPID%d+4)\n", offs + 4,
-				     mmio_readl(ich_spibar + offs + 4), i);
-		}
 		ichspi_bbar = mmio_readl(ich_spibar + 0x50);
 		msg_pdbg("0x50: 0x%08x (BBAR)\n",
 			     ichspi_bbar);
@@ -1811,21 +1793,6 @@ int ich_init_spi(struct pci_dev *dev, uint32_t base, void *rcrb,
 		break;
 	}
 
-	old = pci_read_byte(dev, 0xdc);
-	msg_pdbg("SPI Read Configuration: ");
-	new = (old >> 2) & 0x3;
-	switch (new) {
-	case 0:
-	case 1:
-	case 2:
-		msg_pdbg("prefetching %sabled, caching %sabled, ",
-			     (new & 0x2) ? "en" : "dis",
-			     (new & 0x1) ? "dis" : "en");
-		break;
-	default:
-		msg_pdbg("invalid prefetching/caching settings, ");
-		break;
-	}
 	return 0;
 }
 
