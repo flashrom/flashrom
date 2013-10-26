@@ -2266,13 +2266,13 @@ static int p2_whitelist_laptop(void)
  * NOTE: Please add boards that _don't_ need such enables or don't work yet
  *       to the respective tables in print.c. Thanks!
  *
- * We use 2 sets of IDs here, you're free to choose which is which. This
+ * We use 2 sets of PCI IDs here, you're free to choose which is which. This
  * is to provide a very high degree of certainty when matching a board on
  * the basis of subsystem/card IDs. As not every vendor handles
  * subsystem/card IDs in a sane manner.
  *
  * Keep the second set NULLed if it should be ignored. Keep the subsystem IDs
- * NULLed if they don't identify the board fully and if you can't use DMI.
+ * and the dmi identifier NULLed if they don't identify the board fully to disable autodetection.
  * But please take care to provide an as complete set of pci ids as possible;
  * autodetection is the preferred behaviour and we would like to make sure that
  * matches are unique.
@@ -2306,6 +2306,7 @@ const struct board_match board_matches[] = {
 #if defined(__i386__) || defined(__x86_64__)
 	{0x10DE, 0x0547, 0x147B, 0x1C2F,  0x10DE, 0x0548, 0x147B, 0x1C2F, NULL,         NULL, NULL,           P3, "abit",        "AN-M2",                 0,   NT, nvidia_mcp_gpio2_raise},
 	{0x1106, 0x0282, 0x147B, 0x1415,  0x1106, 0x3227, 0x147B, 0x1415, "^AV8 ",      NULL, NULL,           P3, "abit",        "AV8",                   0,   OK, board_abit_av8},
+	{0x8086, 0x7190,      0,      0,  0x8086, 0x7110,      0,      0, NULL /* "^I440BX-W977$" */, "abit", "bf6", P3, "abit", "BF6",                   0,   OK, intel_piix4_gpo26_lower},
 	{0x8086, 0x7190,      0,      0,  0x8086, 0x7110,      0,      0, "^i440BX-W977 (BM6)$", NULL, NULL,  P3, "abit",        "BM6",                   0,   OK, intel_piix4_gpo26_lower},
 	{0x8086, 0x24d3, 0x147b, 0x1014,  0x8086, 0x2578, 0x147b, 0x1014, NULL,         NULL, NULL,           P3, "abit",        "IC7",                   0,   NT, intel_ich_gpio23_raise},
 	{0x8086, 0x2930, 0x147b, 0x1084,  0x11ab, 0x4364, 0x147b, 0x1084, NULL,         NULL, NULL,           P3, "abit",        "IP35",                  0,   OK, intel_ich_gpio16_raise},
