@@ -530,6 +530,7 @@ const struct board_info boards_known[] = {
 	B("abit",	"AN-M2",		OK, NULL, NULL),
 	B("abit",	"AV8",			OK, NULL, NULL),
 	B("abit",	"AX8",			OK, NULL, NULL),
+	B("abit",	"BF6",			OK, NULL, NULL),
 	B("abit",	"BM6",			OK, NULL, NULL),
 	B("abit",	"Fatal1ty F-I90HD",	OK, NULL, NULL),
 	B("abit",	"IC7",			OK, NULL, NULL),
