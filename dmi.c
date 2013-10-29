@@ -406,8 +406,8 @@ void dmi_init(void)
  * at the beginning and '$' at the end. So you can look for "^prefix",
  * "suffix$", "substring" or "^complete string$".
  *
- * @param value The string to check.
- * @param pattern The pattern.
+ * @param value The non-NULL string to check.
+ * @param pattern The non-NULL pattern.
  * @return Nonzero if pattern matches.
  */
 static int dmi_compare(const char *value, const char *pattern)
@@ -454,9 +454,13 @@ int dmi_match(const char *pattern)
 	if (!has_dmi_support)
 		return 0;
 
-	for (i = 0; i < ARRAY_SIZE(dmi_strings); i++)
+	for (i = 0; i < ARRAY_SIZE(dmi_strings); i++) {
+		if (dmi_strings[i].value == NULL)
+			continue;
+
 		if (dmi_compare(dmi_strings[i].value, pattern))
 			return 1;
+	}
 
 	return 0;
 }
