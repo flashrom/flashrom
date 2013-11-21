@@ -1488,6 +1488,7 @@ static int intel_ich_gpio_set(int gpio, int raise)
 		{0x24D0, 0x58, 0x1BFF0000, 0x00030305,          0}, /* 82801EB/ER (ICH5/ICH5R) */
 		{0x2640, 0x48, 0x1BFF0000, 0x00030307,          0}, /* 82801FB/FR (ICH6/ICH6R) */
 		{0x2641, 0x48, 0x1BFF0000, 0x00030307,          0}, /* 82801FBM (ICH6M) */
+		{0x27B0, 0x48, 0xFFFFFFFF, 0x000300FF,          0}, /* 82801GDH (ICH7 DH) */
 		{0x27B8, 0x48, 0xFFFFFFFF, 0x000300FF,          0}, /* 82801GB/GR (ICH7 Family) */
 		{0x27B9, 0x48, 0xFFEBFFFE, 0x000300FE,          0}, /* 82801GBM (ICH7-M) */
 		{0x27BD, 0x48, 0xFFEBFFFE, 0x000300FE,          0}, /* 82801GHM (ICH7-M DH) */
@@ -1665,6 +1666,7 @@ static int intel_ich_gpio_set(int gpio, int raise)
  *  - abit IP35 Pro: Intel P35 + ICH9R
  *  - ASUS P5LD2
  *  - ASUS P5LD2-VM
+ *  - ASUS P5LD2-VM DH
  */
 static int intel_ich_gpio16_raise(void)
 {
@@ -2373,6 +2375,7 @@ const struct board_match board_matches[] = {
 	{0x8086, 0x27b8, 0x1043, 0x2a22,  0x8086, 0x2770, 0x1043, 0x2a22, "^P5LP-LE$",  NULL, NULL,           P3, "ASUS",        "P5LP-LE (Epson OEM)",   0,   OK, intel_ich_gpio34_raise},
 	{0x8086, 0x27da, 0x1043, 0x8179,  0x8086, 0x27b8, 0x1043, 0x8179, "^P5LD2$",    NULL, NULL,           P3, "ASUS",        "P5LD2",                 0,   NT, intel_ich_gpio16_raise},
 	{0x8086, 0x27da, 0x1043, 0x8179,  0x8086, 0x27b8, 0x1043, 0x8179, "^P5LD2-VM$", NULL, NULL,           P3, "ASUS",        "P5LD2-VM",              0,   NT, intel_ich_gpio16_raise},
+	{0x8086, 0x27b0, 0x1043, 0x8179,  0x8086, 0x2770, 0x1043, 0x817a, "^P5LD2-VM DH$", NULL, NULL,        P3, "ASUS",        "P5LD2-VM DH",           0,   OK, intel_ich_gpio16_raise},
 	{0x10DE, 0x0030, 0x1043, 0x818a,  0x8086, 0x100E, 0x1043, 0x80EE, NULL,         NULL, NULL,           P3, "ASUS",        "P5ND2-SLI Deluxe",      0,   OK, nvidia_mcp_gpio10_raise},
 	{0x10DE, 0x0260, 0x1043, 0x81BC,  0x10DE, 0x026C, 0x1043, 0x829E, "^P5N-D$",    NULL, NULL,           P3, "ASUS",        "P5N-D",                 0,   OK, it8718f_gpio63_raise},
 	{0x10DE, 0x0260, 0x1043, 0x81BC,  0x10DE, 0x026C, 0x1043, 0x8249, "^P5N-E SLI$",NULL, NULL,           P3, "ASUS",        "P5N-E SLI",             0,   NT, it8718f_gpio63_raise},
