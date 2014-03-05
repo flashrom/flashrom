@@ -27,6 +27,7 @@
 #include <string.h>
 #include <errno.h>
 #include "flash.h"
+#include "programmer.h"
 #include "hwaccess.h"
 
 #if !defined(__DJGPP__) && !defined(__LIBPAYLOAD__)
@@ -89,7 +90,7 @@ static void *sys_physmap(uintptr_t phys_addr, size_t len)
 #define sys_physmap_rw_uncached	sys_physmap
 #define sys_physmap_ro_cached	sys_physmap
 
-void physunmap(void *virt_addr, size_t len)
+void sys_physunmap_unaligned(void *virt_addr, size_t len)
 {
 	__dpmi_meminfo mi;
 
@@ -118,7 +119,7 @@ void *sys_physmap(uintptr_t phys_addr, size_t len)
 #define sys_physmap_rw_uncached	sys_physmap
 #define sys_physmap_ro_cached	sys_physmap
 
-void physunmap(void *virt_addr, size_t len)
+void sys_physunmap_unaligned(void *virt_addr, size_t len)
 {
 }
 #elif defined(__MACH__) && defined(__APPLE__)
@@ -139,7 +140,7 @@ static void *sys_physmap(uintptr_t phys_addr, size_t len)
 #define sys_physmap_rw_uncached	sys_physmap
 #define sys_physmap_ro_cached	sys_physmap
 
-void physunmap(void *virt_addr, size_t len)
+void sys_physunmap_unaligned(void *virt_addr, size_t len)
 {
 	unmap_physical(virt_addr, len);
 }
@@ -192,13 +193,8 @@ static void *sys_physmap_ro_cached(uintptr_t phys_addr, size_t len)
 	return MAP_FAILED == virt_addr ? ERROR_PTR : virt_addr;
 }
 
-void physunmap(void *virt_addr, size_t len)
+void sys_physunmap_unaligned(void *virt_addr, size_t len)
 {
-	if (len == 0) {
-		msg_pspew("Not unmapping zero size at %p\n", virt_addr);
-		return;
-	}
-
 	munmap(virt_addr, len);
 }
 #endif
@@ -242,7 +238,7 @@ static int undo_physmap(void *data)
 		return 1;
 	}
 	struct undo_physmap_data *d = data;
-	physunmap(d->virt_addr, d->len);
+	physunmap_unaligned(d->virt_addr, d->len);
 	free(data);
 	return 0;
 }
@@ -292,7 +288,7 @@ static void *physmap_common(const char *descr, uintptr_t phys_addr, size_t len, 
 		struct undo_physmap_data *d = malloc(sizeof(struct undo_physmap_data));
 		if (d == NULL) {
 			msg_perr("%s: Out of memory!\n", __func__);
-			physunmap(virt_addr, len);
+			physunmap_unaligned(virt_addr, len);
 			return ERROR_PTR;
 		}
 
@@ -300,7 +296,7 @@ static void *physmap_common(const char *descr, uintptr_t phys_addr, size_t len, 
 		d->len = len;
 		if (register_shutdown(undo_physmap, d) != 0) {
 			msg_perr("%s: Could not register shutdown function!\n", __func__);
-			physunmap(virt_addr, len);
+			physunmap_unaligned(virt_addr, len);
 			return ERROR_PTR;
 		}
 	}
@@ -308,9 +304,41 @@ static void *physmap_common(const char *descr, uintptr_t phys_addr, size_t len, 
 	return virt_addr + offset;
 }
 
+void physunmap_unaligned(void *virt_addr, size_t len)
+{
+	/* No need to check for zero size, such mappings would have yielded ERROR_PTR. */
+	if (virt_addr == ERROR_PTR) {
+		msg_perr("Trying to unmap a nonexisting mapping!\n"
+			 "Please report a bug at flashrom@flashrom.org\n");
+		return;
+	}
+
+	sys_physunmap_unaligned(virt_addr, len);
+}
+
+void physunmap(void *virt_addr, size_t len)
+{
+	uintptr_t tmp;
+
+	/* No need to check for zero size, such mappings would have yielded ERROR_PTR. */
+	if (virt_addr == ERROR_PTR) {
+		msg_perr("Trying to unmap a nonexisting mapping!\n"
+			 "Please report a bug at flashrom@flashrom.org\n");
+		return;
+	}
+	tmp = (uintptr_t)virt_addr;
+	/* We assume that the virtual address of a page-aligned physical address is page-aligned as well. By
+	 * extension, rounding a virtual unaligned address as returned by physmap should yield the same offset
+	 * between rounded and original virtual address as between rounded and original physical address.
+	 */
+	round_to_page_boundaries(&tmp, &len);
+	virt_addr = (void *)tmp;
+	physunmap_unaligned(virt_addr, len);
+}
+
 void *physmap(const char *descr, uintptr_t phys_addr, size_t len)
 {
-	return physmap_common(descr, phys_addr, len, PHYSM_RW, PHYSM_NOCLEANUP, PHYSM_EXACT);
+	return physmap_common(descr, phys_addr, len, PHYSM_RW, PHYSM_NOCLEANUP, PHYSM_ROUND);
 }
 
 void *rphysmap(const char *descr, uintptr_t phys_addr, size_t len)
@@ -318,12 +346,12 @@ void *rphysmap(const char *descr, uintptr_t phys_addr, size_t len)
 	return physmap_common(descr, phys_addr, len, PHYSM_RW, PHYSM_CLEANUP, PHYSM_ROUND);
 }
 
-void *physmap_round(const char *descr, uintptr_t phys_addr, size_t len)
+void *physmap_ro(const char *descr, uintptr_t phys_addr, size_t len)
 {
-	return physmap_common(descr, phys_addr, len, PHYSM_RW, PHYSM_NOCLEANUP, PHYSM_ROUND);
+	return physmap_common(descr, phys_addr, len, PHYSM_RO, PHYSM_NOCLEANUP, PHYSM_ROUND);
 }
 
-void *physmap_ro(const char *descr, uintptr_t phys_addr, size_t len)
+void *physmap_ro_unaligned(const char *descr, uintptr_t phys_addr, size_t len)
 {
 	return physmap_common(descr, phys_addr, len, PHYSM_RO, PHYSM_NOCLEANUP, PHYSM_EXACT);
 }
