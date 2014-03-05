@@ -261,7 +261,7 @@ int cb_parse_table(const char **vendor, const char **model)
 #else
 	start = 0x0;
 #endif
-	table_area = physmap_ro("low megabyte", start, BYTES_TO_MAP - start);
+	table_area = physmap_ro_unaligned("low megabyte", start, BYTES_TO_MAP - start);
 	if (ERROR_PTR == table_area) {
 		msg_perr("Failed getting access to coreboot low tables.\n");
 		return -1;
@@ -276,8 +276,9 @@ int cb_parse_table(const char **vendor, const char **model)
 		if (forward->tag == LB_TAG_FORWARD) {
 			start = forward->forward;
 			start &= ~(getpagesize() - 1);
-			physunmap(table_area, BYTES_TO_MAP);
-			table_area = physmap_ro("high tables", start, BYTES_TO_MAP);
+			physunmap_unaligned(table_area, BYTES_TO_MAP);
+			// FIXME: table_area is never unmapped below, nor is it unmapped above in the no-forward case
+			table_area = physmap_ro_unaligned("high tables", start, BYTES_TO_MAP);
 			if (ERROR_PTR == table_area) {
 				msg_perr("Failed getting access to coreboot high tables.\n");
 				return -1;
