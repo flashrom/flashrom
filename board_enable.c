@@ -2333,6 +2333,7 @@ const struct board_match board_matches[] = {
 	{0x8086, 0x2570, 0x1849, 0x2570,  0x8086, 0x24d3, 0x1849, 0x24d0, NULL,         NULL, NULL,           P3, "ASRock",      "775i65G",               0,   OK, intel_ich_gpio23_raise},
 	{0x10DE, 0x0060, 0x1043, 0x80AD,  0x10DE, 0x01E0, 0x1043, 0x80C0, NULL,         NULL, NULL,           P3, "ASUS",        "A7N8X-VM/400",          0,   OK, it8712f_gpio12_raise},
 	{0x1106, 0x3189, 0x1043, 0x807F,  0x1106, 0x3065, 0x1043, 0x80ED, NULL,         NULL, NULL,           P3, "ASUS",        "A7V600-X",              0,   OK, it8712f_gpio31_raise},
+	{0x1106, 0x3177, 0x1043, 0x80F9,  0x1106, 0x3205, 0x1043, 0x80F9, NULL,         NULL, NULL,           P3, "ASUS",        "A7V8X-MX",              0,   OK, w836xx_memw_enable_2e},
 	{0x1106, 0x3177, 0x1043, 0x80A1,  0x1106, 0x3205, 0x1043, 0x8118, NULL,         NULL, NULL,           P3, "ASUS",        "A7V8X-MX SE",           0,   OK, w836xx_memw_enable_2e},
 	{0x1106, 0x3189, 0x1043, 0x807F,  0x1106, 0x3177, 0x1043, 0x808C, NULL,         NULL, NULL,           P3, "ASUS",        "A7V8X",                 0,   OK, it8703f_gpio51_raise},
 	{0x1106, 0x3099, 0x1043, 0x807F,  0x1106, 0x3147, 0x1043, 0x808C, NULL,         NULL, NULL,           P3, "ASUS",        "A7V333",                0,   OK, it8703f_gpio51_raise},
