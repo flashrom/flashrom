@@ -19,10 +19,16 @@
  */
 
 /*
- * Datasheet:
+ * Datasheets:
  * PCI/PCI-X Family of Gigabit Ethernet Controllers Software Developer's Manual
  * 82540EP/EM, 82541xx, 82544GC/EI, 82545GM/EM, 82546GB/EB, and 82547xx
- * http://download.intel.com/design/network/manuals/8254x_GBe_SDM.pdf
+ * http://www.intel.com/content/www/us/en/ethernet-controllers/pci-pci-x-family-gbe-controllers-software-dev-manual.html
+ *
+ * PCIe GbE Controllers Open Source Software Developer's Manual
+ * http://www.intel.com/content/www/us/en/ethernet-controllers/pcie-gbe-controllers-open-source-manual.html
+ *
+ * Intel 82574 Gigabit Ethernet Controller Family Datasheet
+ * http://www.intel.com/content/www/us/en/ethernet-controllers/82574l-gbe-controller-datasheet.html
  */
 
 #include <stdlib.h>
@@ -72,6 +78,7 @@ const struct dev_entry nics_intel_spi[] = {
 	{PCI_VENDOR_ID_INTEL, 0x1076, OK, "Intel", "82541GI Gigabit Ethernet Controller"},
 	{PCI_VENDOR_ID_INTEL, 0x107c, OK, "Intel", "82541PI Gigabit Ethernet Controller"},
 	{PCI_VENDOR_ID_INTEL, 0x10b9, OK, "Intel", "82572EI Gigabit Ethernet Controller"},
+	{PCI_VENDOR_ID_INTEL, 0x10d3, OK, "Intel", "82574L Gigabit Ethernet Controller"},
 
 	{0},
 };
