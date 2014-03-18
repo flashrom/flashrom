@@ -60,7 +60,7 @@ static const struct spi_programmer spi_programmer_linux = {
 int linux_spi_init(void)
 {
 	char *p, *endp, *dev;
-	uint32_t speed = 0;
+	uint32_t speed_hz = 0;
 	/* FIXME: make the following configurable by CLI options. */
 	/* SPI mode 0 (beware this also includes: MSB first, CS active low and others */
 	const uint8_t mode = SPI_MODE_0;
@@ -68,7 +68,7 @@ int linux_spi_init(void)
 
 	p = extract_programmer_param("spispeed");
 	if (p && strlen(p)) {
-		speed = (uint32_t)strtoul(p, &endp, 10) * 1000;
+		speed_hz = (uint32_t)strtoul(p, &endp, 10) * 1000;
 		if (p == endp) {
 			msg_perr("%s: invalid clock: %s kHz\n", __func__, p);
 			free(p);
@@ -98,14 +98,14 @@ int linux_spi_init(void)
 		return 1;
 	/* We rely on the shutdown function for cleanup from here on. */
 
-	if (speed > 0) {
-		if (ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &speed) == -1) {
+	if (speed_hz > 0) {
+		if (ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &speed_hz) == -1) {
 			msg_perr("%s: failed to set speed to %d Hz: %s\n",
-				 __func__, speed, strerror(errno));
+				 __func__, speed_hz, strerror(errno));
 			return 1;
 		}
 
-		msg_pdbg("Using %d kHz clock\n", speed);
+		msg_pdbg("Using %d kHz clock\n", speed_hz/1000);
 	}
 
 	if (ioctl(fd, SPI_IOC_WR_MODE, &mode) == -1) {
