@@ -68,7 +68,7 @@ int linux_spi_init(void)
 
 	p = extract_programmer_param("spispeed");
 	if (p && strlen(p)) {
-		speed = (uint32_t)strtoul(p, &endp, 10) * 1024;
+		speed = (uint32_t)strtoul(p, &endp, 10) * 1000;
 		if (p == endp) {
 			msg_perr("%s: invalid clock: %s kHz\n", __func__, p);
 			free(p);
