@@ -120,8 +120,10 @@ int ogp_spi_init(void)
 		ogp_reg_sck  = OGA1_XP10_CPROM_SCK;
 	} else {
 		msg_perr("Invalid or missing rom= parameter.\n");
+		free(type);
 		return 1;
 	}
+	free(type);
 
 	if (rget_io_perms())
 		return 1;
