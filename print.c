@@ -436,12 +436,13 @@ static void print_supported_boards_helper(const struct board_info *boards,
 		msg_ginfo("%s", b->name);
 		for (i = 0; i < maxboardlen - strlen(b->name); i++)
 			msg_ginfo(" ");
-			if (b->working == OK)
-				msg_ginfo("OK      ");
-			else if (b->working == NT)
-				msg_ginfo("NT      ");
-			else
-				msg_ginfo("BAD     ");
+
+		if (b->working == OK)
+			msg_ginfo("OK      ");
+		else if (b->working == NT)
+			msg_ginfo("NT      ");
+		else
+			msg_ginfo("BAD     ");
 
 		for (e = board_matches; e->vendor_name != NULL; e++) {
 			if (strcmp(e->vendor_name, b->vendor)
