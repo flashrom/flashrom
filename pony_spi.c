@@ -140,6 +140,7 @@ int pony_spi_init(void)
 	} else if (arg && !strlen(arg)) {
 		msg_perr("Error: Missing argument for programmer type.\n");
 		free(arg);
+		return 1;
 	} else if (arg){
 		msg_perr("Error: Invalid programmer type specified.\n");
 		free(arg);
