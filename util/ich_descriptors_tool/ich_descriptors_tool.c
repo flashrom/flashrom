@@ -77,12 +77,13 @@ static void dump_file(const char *prefix, const uint32_t *dump, unsigned int len
 	printf("Dumping %u bytes of the %s region from 0x%08x-0x%08x to %s... ",
 	       file_len, region_names[i], base, limit, fn);
 	int fh = open(fn, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR);
-	free(fn);
 	if (fh < 0) {
 		fprintf(stderr,
 			"ERROR: couldn't open(%s): %s\n", fn, strerror(errno));
+		free(fn);
 		exit(1);
 	}
+	free(fn);
 
 	ret = write(fh, &dump[base >> 2], file_len);
 	if (ret != file_len) {
