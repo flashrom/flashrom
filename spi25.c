@@ -1128,13 +1128,9 @@ int default_spi_write_aai(struct flashctx *flash, uint8_t *buf, unsigned int sta
 
 
 	result = spi_send_multicommand(flash, cmds);
-	if (result) {
-		msg_cerr("%s failed during start command execution\n",
-			 __func__);
-		/* FIXME: Should we send WRDI here as well to make sure the chip
-		 * is not in AAI mode?
-		 */
-		return result;
+	if (result != 0) {
+		msg_cerr("%s failed during start command execution: %d\n", __func__, result);
+		goto bailout;
 	}
 	while (spi_read_status_register(flash) & SPI_SR_WIP)
 		programmer_delay(10);
@@ -1146,8 +1142,11 @@ int default_spi_write_aai(struct flashctx *flash, uint8_t *buf, unsigned int sta
 	while (pos < start + len - 1) {
 		cmd[1] = buf[pos++ - start];
 		cmd[2] = buf[pos++ - start];
-		spi_send_command(flash, JEDEC_AAI_WORD_PROGRAM_CONT_OUTSIZE, 0,
-				 cmd, NULL);
+		result = spi_send_command(flash, JEDEC_AAI_WORD_PROGRAM_CONT_OUTSIZE, 0, cmd, NULL);
+		if (result != 0) {
+			msg_cerr("%s failed during followup AAI command execution: %d\n", __func__, result);
+			goto bailout;
+		}
 		while (spi_read_status_register(flash) & SPI_SR_WIP)
 			programmer_delay(10);
 	}
@@ -1165,4 +1164,8 @@ int default_spi_write_aai(struct flashctx *flash, uint8_t *buf, unsigned int sta
 	}
 
 	return 0;
+
+bailout:
+	spi_write_disable(flash);
+	return SPI_GENERIC_ERROR;
 }
