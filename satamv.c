@@ -138,7 +138,7 @@ int satamv_init(void)
 	pci_rmmio_writel(tmp, mv_bar + GPIO_PORT_CONTROL);
 
 	/* Get I/O BAR location. */
-	tmp = pcidev_readbar(dev, PCI_BASE_ADDRESS_2);
+	addr = pcidev_readbar(dev, PCI_BASE_ADDRESS_2);
 	if (!addr)
 		return 1;
 
@@ -146,7 +146,7 @@ int satamv_init(void)
 	 * FIXME: Check if the I/O BAR is actually reachable.
 	 * This is an arch specific check.
 	 */
-	mv_iobar = tmp & 0xffff;
+	mv_iobar = addr & 0xffff;
 	msg_pspew("Activating I/O BAR at 0x%04x\n", mv_iobar);
 
 	/* 512 kByte with two 8-bit latches, and
