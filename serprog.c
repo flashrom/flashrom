@@ -100,6 +100,7 @@ static int sp_opensocket(char *ip, unsigned int port)
 	if (NULL == hostPtr) {
 		hostPtr = gethostbyaddr(ip, strlen(ip), AF_INET);
 		if (NULL == hostPtr) {
+			close(sock);
 			msg_perr("Error: cannot resolve %s\n", ip);
 			return -1;
 		}
