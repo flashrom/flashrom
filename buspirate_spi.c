@@ -250,6 +250,7 @@ int buspirate_spi_init(void)
 	if (!bp_commbuf) {
 		bp_commbufsize = 0;
 		msg_perr("Out of memory!\n");
+		free(dev);
 		return ERROR_OOM;
 	}
 	bp_commbufsize = DEFAULT_BUFSIZE;
@@ -263,8 +264,12 @@ int buspirate_spi_init(void)
 		return ret;
 	}
 
-	if (register_shutdown(buspirate_spi_shutdown, NULL))
+	if (register_shutdown(buspirate_spi_shutdown, NULL) != 0) {
+		bp_commbufsize = 0;
+		free(bp_commbuf);
+		bp_commbuf = NULL;
 		return 1;
+	}
 
 	/* This is the brute force version, but it should work.
 	 * It is likely to fail if a previous flashrom run was aborted during a write with the new SPI commands
