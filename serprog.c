@@ -115,7 +115,11 @@ static int sp_opensocket(char *ip, unsigned int port)
 	}
 	/* We are latency limited, and sometimes do write-write-read    *
 	 * (write-n) - so enable TCP_NODELAY.				*/
-	setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(int));
+	if (setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(int))) {
+		close(sock);
+		msg_perr("Error: serprog cannot set socket options: %s\n", strerror(errno));
+		return -1;
+	}
 	return sock;
 }
 #endif
