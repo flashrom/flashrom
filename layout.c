@@ -65,6 +65,7 @@ int read_romlayout(char *name)
 		if (num_rom_entries >= MAX_ROMLAYOUT) {
 			msg_gerr("Maximum number of ROM images (%i) in layout "
 				 "file reached.\n", MAX_ROMLAYOUT);
+			fclose(romlayout);
 			return 1;
 		}
 		if (2 != fscanf(romlayout, "%s %s\n", tempstr, rom_entries[num_rom_entries].name))
