@@ -43,6 +43,7 @@
 #define FTDI_FT4232H_PID	0x6011
 #define FTDI_FT232H_PID		0x6014
 #define TIAO_TUMPA_PID		0x8a98
+#define TIAO_TUMPA_LITE_PID	0x8a99
 #define AMONTEC_JTAGKEY_PID	0xCFF8
 
 #define GOEPEL_VID		0x096C
@@ -62,6 +63,7 @@ const struct dev_entry devs_ft2232spi[] = {
 	{FTDI_VID, FTDI_FT4232H_PID, OK, "FTDI", "FT4232H"},
 	{FTDI_VID, FTDI_FT232H_PID, OK, "FTDI", "FT232H"},
 	{FTDI_VID, TIAO_TUMPA_PID, OK, "TIAO", "USB Multi-Protocol Adapter"},
+	{FTDI_VID, TIAO_TUMPA_LITE_PID, OK, "TIAO", "USB Multi-Protocol Adapter Lite"},
 	{FTDI_VID, AMONTEC_JTAGKEY_PID, OK, "Amontec", "JTAGkey"},
 	{GOEPEL_VID, GOEPEL_PICOTAP_PID, OK, "GOEPEL", "PicoTAP"},
 	{FIC_VID, OPENMOKO_DBGBOARD_PID, OK, "FIC", "OpenMoko Neo1973 Debug board (V2+)"},
@@ -208,6 +210,10 @@ int ft2232_spi_init(void)
 			/* Interface A is SPI1, B is SPI2. */
 			ft2232_type = TIAO_TUMPA_PID;
 			channel_count = 2;
+		} else if (!strcasecmp(arg, "tumpalite")) {
+			/* Only one channel is used on lite edition */
+			ft2232_type = TIAO_TUMPA_LITE_PID;
+			channel_count = 1;
 		} else if (!strcasecmp(arg, "busblaster")) {
 			/* In its default configuration it is a jtagkey clone */
 			ft2232_type = FTDI_FT2232H_PID;
