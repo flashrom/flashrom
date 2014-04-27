@@ -80,4 +80,8 @@ ATTRS{idVendor}=="15ba", ATTRS{idProduct}=="002a", MODE="664", GROUP="plugdev"
 # http://www.diygadget.com/tiao-usb-multi-protocol-adapter-jtag-spi-i2c-serial.html
 ATTRS{idVendor}=="0403", ATTRS{idProduct}=="8a98", MODE="664", GROUP="plugdev"
 
+# TIAO/DIYGADGET USB Multi-Protocol Adapter (TUMPA) Lite
+# http://www.tiaowiki.com/w/TIAO_USB_Multi_Protocol_Adapter_Lite_User's_Manual
+ATTRS{idVendor}=="0403", ATTRS{idProduct}=="8a99", MODE="664", GROUP="plugdev"
+
 LABEL="flashrom_rules_end"
