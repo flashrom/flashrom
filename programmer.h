@@ -120,7 +120,7 @@ struct programmer_entry {
 	void *(*map_flash_region) (const char *descr, uintptr_t phys_addr, size_t len);
 	void (*unmap_flash_region) (void *virt_addr, size_t len);
 
-	void (*delay) (int usecs);
+	void (*delay) (unsigned int usecs);
 };
 
 extern const struct programmer_entry programmer_table[];
@@ -248,10 +248,10 @@ extern const struct board_info laptops_known[];
 #endif
 
 /* udelay.c */
-void myusec_delay(int usecs);
+void myusec_delay(unsigned int usecs);
 void myusec_calibrate_delay(void);
-void internal_sleep(int usecs);
-void internal_delay(int usecs);
+void internal_sleep(unsigned int usecs);
+void internal_delay(unsigned int usecs);
 
 #if CONFIG_INTERNAL == 1
 /* board_enable.c */
@@ -655,7 +655,7 @@ int register_programmer(struct registered_programmer *pgm);
 /* serprog.c */
 #if CONFIG_SERPROG == 1
 int serprog_init(void);
-void serprog_delay(int usecs);
+void serprog_delay(unsigned int usecs);
 #endif
 
 /* serial.c */

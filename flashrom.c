@@ -485,7 +485,7 @@ void chip_readn(const struct flashctx *flash, uint8_t *buf, chipaddr addr,
 	flash->pgm->par.chip_readn(flash, buf, addr, len);
 }
 
-void programmer_delay(int usecs)
+void programmer_delay(unsigned int usecs)
 {
 	if (usecs > 0)
 		programmer_table[programmer].delay(usecs);
