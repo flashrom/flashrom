@@ -870,7 +870,7 @@ static void serprog_chip_readn(const struct flashctx *flash, uint8_t * buf,
 		sp_do_read_n(&(buf[addrm-addr]), addrm, lenm); // FIXME: return error
 }
 
-void serprog_delay(int usecs)
+void serprog_delay(unsigned int usecs)
 {
 	unsigned char buf[4];
 	msg_pspew("%s usecs=%d\n", __func__, usecs);

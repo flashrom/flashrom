@@ -30,7 +30,7 @@
 /* loops per microsecond */
 static unsigned long micro = 1;
 
-__attribute__ ((noinline)) void myusec_delay(int usecs)
+__attribute__ ((noinline)) void myusec_delay(unsigned int usecs)
 {
 	unsigned long i;
 	for (i = 0; i < usecs * micro; i++) {
@@ -63,7 +63,7 @@ static unsigned long measure_os_delay_resolution(void)
 	return timeusec;
 }
 
-static unsigned long measure_delay(int usecs)
+static unsigned long measure_delay(unsigned int usecs)
 {
 	unsigned long timeusec;
 	struct timeval start, end;
@@ -170,7 +170,7 @@ recalibrate:
 }
 
 /* Not very precise sleep. */
-void internal_sleep(int usecs)
+void internal_sleep(unsigned int usecs)
 {
 #ifdef _WIN32
 	Sleep((usecs + 999) / 1000);
@@ -181,7 +181,7 @@ void internal_sleep(int usecs)
 }
 
 /* Precise delay. */
-void internal_delay(int usecs)
+void internal_delay(unsigned int usecs)
 {
 	/* If the delay is >1 s, use internal_sleep because timing does not need to be so precise. */
 	if (usecs > 1000000) {
@@ -199,7 +199,7 @@ void myusec_calibrate_delay(void)
 	get_cpu_speed();
 }
 
-void internal_delay(int usecs)
+void internal_delay(unsigned int usecs)
 {
 	udelay(usecs);
 }
