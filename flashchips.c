@@ -5909,6 +5909,22 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Macronix",
+		.name		= "MX23L3254",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= MACRONIX_ID,
+		.model_id	= MACRONIX_MX23L3254,
+		.total_size	= 4096,
+		.page_size	= 256,
+		.tested		= TEST_OK_PR | TEST_BAD_EW,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.write		= NULL, /* MX23L3254 is a mask ROM, so it is read-only */
+		.read		= spi_chip_read, /* Fast read (0x0B) supported */
+		.voltage	= {3000, 3600},
+	},
+
+	{
+		.vendor		= "Macronix",
 		.name		= "MX25L512(E)/MX25V512(C)",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,

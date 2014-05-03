@@ -423,13 +423,13 @@
 
 #define ISSI_ID			0xD5	/* ISSI Integrated Silicon Solutions */
 
-/*
- * MX25 chips are SPI, first byte of device ID is memory type,
+#define MACRONIX_ID		0xC2	/* Macronix (MX) */
+/* Mask ROMs */
+#define MACRONIX_MX23L3254	0x0516
+/* MX25 chips are SPI, first byte of device ID is memory type,
  * second byte of device ID is log(bitsize)-9.
  * Generalplus SPI chips seem to be compatible with Macronix
- * and use the same set of IDs.
- */
-#define MACRONIX_ID		0xC2	/* Macronix (MX) */
+ * and use the same set of IDs. */
 #define MACRONIX_MX25L512	0x2010	/* Same as MX25L512E, MX25V512, MX25V512C */
 #define MACRONIX_MX25L1005	0x2011	/* Same as MX25L1005C, MX25L1006E */
 #define MACRONIX_MX25L2005	0x2012	/* Same as MX25L2005C */
@@ -448,6 +448,7 @@
 #define MACRONIX_MX25U12835E	0x2538	/* Same as MX25U12835F */
 #define MACRONIX_MX25U25635F	0x2539
 #define MACRONIX_MX25L3235D	0x5E16	/* MX25L3225D/MX25L3235D/MX25L3237D */
+
 #define MACRONIX_MX29F001B	0x19
 #define MACRONIX_MX29F001T	0x18
 #define MACRONIX_MX29F002B	0x34	/* Same as MX29F002NB; N has reset pin n/c. */
