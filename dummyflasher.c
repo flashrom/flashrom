@@ -377,11 +377,14 @@ int dummy_init(void)
 	msg_pdbg("Filling fake flash chip with 0xff, size %i\n", emu_chip_size);
 	memset(flashchip_contents, 0xff, emu_chip_size);
 
+	/* Will be freed by shutdown function if necessary. */
 	emu_persistent_image = extract_programmer_param("image");
 	if (!emu_persistent_image) {
 		/* Nothing else to do. */
 		goto dummy_init_out;
 	}
+	/* We will silently (in default verbosity) ignore the file if it does not exist (yet) or the size does
+	 * not match the emulated chip. */
 	if (!stat(emu_persistent_image, &image_stat)) {
 		msg_pdbg("Found persistent image %s, size %li ",
 			 emu_persistent_image, (long)image_stat.st_size);
@@ -414,7 +417,7 @@ dummy_init_out:
 
 void *dummy_map(const char *descr, uintptr_t phys_addr, size_t len)
 {
-	msg_pspew("%s: Mapping %s, 0x%zx bytes at 0x%*" PRIxPTR "\n",
+	msg_pspew("%s: Mapping %s, 0x%zx bytes at 0x%0*" PRIxPTR "\n",
 		  __func__, descr, len, PRIxPTR_WIDTH, phys_addr);
 	return (void *)phys_addr;
 }

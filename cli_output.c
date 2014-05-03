@@ -36,7 +36,7 @@ int close_logfile(void)
 	if (fclose(logfile)) {
 		/* fclose returned an error. Stop writing to be safe. */
 		logfile = NULL;
-		msg_perr("Closing the log file returned error %s\n", strerror(errno));
+		msg_gerr("Closing the log file returned error %s\n", strerror(errno));
 		return 1;
 	}
 	logfile = NULL;

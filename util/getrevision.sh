@@ -173,7 +173,7 @@ local_revision() {
 	elif git_is_file_tracked "$1" ; then
 		r=$(git_last_commit "$1")
 
-		local svn_base=$(git log --grep git-svn-id -1 --format='%h')
+		local svn_base=$(git log --grep=git-svn-id -1 --format='%h')
 		if [ "$svn_base" != "" ] ; then
 			local diff_to_svn=$(git rev-list --count ${svn_base}..${r})
 			if [ "$diff_to_svn" -gt 0 ] ; then
@@ -204,7 +204,7 @@ upstream_revision() {
 		# If this is a "native" git-svn clone we could use git svn log:
 		# git svn log --oneline -1 | sed 's/^r//;s/[[:blank:]].*//' or even git svn find-rev
 		# but it is easier to just grep for the git-svn-id unconditionally
-		r=$(git log --grep git-svn-id -1 -- "$1" | \
+		r=$(git log --grep=git-svn-id -1 -- "$1" | \
 		    grep git-svn-id | \
 		    sed 's/.*@/r/;s/[[:blank:]].*//')
 	fi
@@ -247,7 +247,7 @@ main() {
 	local query_path=
 	local action=
 
-	# The is the main loop
+	# Argument parser loop
 	while [ $# -gt 0 ];
 	do
 		case ${1} in
@@ -286,7 +286,7 @@ main() {
 				fi
 				query_path=$1
 			else
-				echo "Warning: Ignoring over-abundant paramter: \"${1}\"">&2
+				echo "Warning: Ignoring overabundant parameter: \"${1}\"">&2
 			fi
 			shift;;
 		esac;

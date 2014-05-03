@@ -264,9 +264,8 @@ int init_superio_ite(void)
 			ret |= it87spi_probe(superios[i].port);
 			break;
 		default:
-			msg_pdbg("Super I/O ID 0x%04hx is not on the list of "
-				 "flash capable controllers.\n",
-				 superios[i].model);
+			msg_pdbg2("Super I/O ID 0x%04hx is not on the list of flash-capable controllers.\n",
+				  superios[i].model);
 		}
 	}
 	return ret;
