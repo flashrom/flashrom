@@ -982,7 +982,7 @@ static int enable_flash_vt82c586(struct pci_dev *dev, const char *name)
 /* Works for VT82C686A/B too. */
 static int enable_flash_vt82c596(struct pci_dev *dev, const char *name)
 {
-	/* Enable decoding of 0xFFF80000 to 0xFFFFFFFF. (1 MB) */
+	/* Enable decoding of 0xFFF00000 to 0xFFFFFFFF. (1 MB) */
 	max_rom_decode.parallel = 1024 * 1024;
 	return enable_flash_amd_via(dev, name, 0xE0);
 }
@@ -1288,11 +1288,9 @@ static int enable_flash_mcp6x_7x(struct pci_dev *dev, const char *name)
 		ret = 1;
 
 out_msg:
-	msg_pinfo("Please send the output of \"flashrom -V\" to "
-		  "flashrom@flashrom.org with\n"
-		  "your board name: flashrom -V as the subject to help us "
-		  "finish support for your\n"
-		  "chipset. Thanks.\n");
+	msg_pinfo("Please send the output of \"flashrom -V -p internal\" to flashrom@flashrom.org\n"
+		  "with \"your board name: flashrom -V\" as the subject to help us finish support\n"
+		  "for your chipset. Thanks.\n");
 
 	return ret;
 }
@@ -1388,7 +1386,7 @@ const struct penable chipset_enables[] = {
 	{0x1039, 0x0640, NT, "SiS", "640",		enable_flash_sis540},
 	{0x1039, 0x0645, NT, "SiS", "645",		enable_flash_sis540},
 	{0x1039, 0x0646, OK, "SiS", "645DX",		enable_flash_sis540},
-	{0x1039, 0x0648, NT, "SiS", "648",		enable_flash_sis540},
+	{0x1039, 0x0648, OK, "SiS", "648",		enable_flash_sis540},
 	{0x1039, 0x0650, OK, "SiS", "650",		enable_flash_sis540},
 	{0x1039, 0x0651, OK, "SiS", "651",		enable_flash_sis540},
 	{0x1039, 0x0655, NT, "SiS", "655",		enable_flash_sis540},
@@ -1418,7 +1416,7 @@ const struct penable chipset_enables[] = {
 	/* Slave, should not be here, to fix known bug for A01. */
 	{0x10de, 0x00d3, OK, "NVIDIA", "CK804",		enable_flash_ck804},
 	{0x10de, 0x0260, OK, "NVIDIA", "MCP51",		enable_flash_ck804},
-	{0x10de, 0x0261, NT, "NVIDIA", "MCP51",		enable_flash_ck804},
+	{0x10de, 0x0261, OK, "NVIDIA", "MCP51",		enable_flash_ck804},
 	{0x10de, 0x0262, NT, "NVIDIA", "MCP51",		enable_flash_ck804},
 	{0x10de, 0x0263, NT, "NVIDIA", "MCP51",		enable_flash_ck804},
 	{0x10de, 0x0360, OK, "NVIDIA", "MCP55",		enable_flash_mcp55}, /* M57SLI*/
@@ -1490,14 +1488,14 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x1c4c, NT, "Intel", "Q65",		enable_flash_pch6},
 	{0x8086, 0x1c4d, NT, "Intel", "QS67",		enable_flash_pch6},
 	{0x8086, 0x1c4e, NT, "Intel", "Q67",		enable_flash_pch6},
-	{0x8086, 0x1c4f, NT, "Intel", "QM67",		enable_flash_pch6},
+	{0x8086, 0x1c4f, OK, "Intel", "QM67",		enable_flash_pch6},
 	{0x8086, 0x1c50, NT, "Intel", "B65",		enable_flash_pch6},
 	{0x8086, 0x1c52, NT, "Intel", "C202",		enable_flash_pch6},
-	{0x8086, 0x1c54, NT, "Intel", "C204",		enable_flash_pch6},
+	{0x8086, 0x1c54, OK, "Intel", "C204",		enable_flash_pch6},
 	{0x8086, 0x1c56, NT, "Intel", "C206",		enable_flash_pch6},
 	{0x8086, 0x1c5c, OK, "Intel", "H61",		enable_flash_pch6},
-	{0x8086, 0x1d40, OK, "Intel", "X79",		enable_flash_pch6},
-	{0x8086, 0x1d41, OK, "Intel", "X79",		enable_flash_pch6},
+	{0x8086, 0x1d40, OK, "Intel", "C60x/X79",	enable_flash_pch6},
+	{0x8086, 0x1d41, OK, "Intel", "C60x/X79",	enable_flash_pch6},
 	{0x8086, 0x1e44, OK, "Intel", "Z77",		enable_flash_pch7},
 	{0x8086, 0x1e46, NT, "Intel", "Z75",		enable_flash_pch7},
 	{0x8086, 0x1e47, NT, "Intel", "Q77",		enable_flash_pch7},
@@ -1507,12 +1505,12 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x1e53, NT, "Intel", "C216",		enable_flash_pch7},
 	{0x8086, 0x1e55, OK, "Intel", "QM77",		enable_flash_pch7},
 	{0x8086, 0x1e56, NT, "Intel", "QS77",		enable_flash_pch7},
-	{0x8086, 0x1e57, NT, "Intel", "HM77",		enable_flash_pch7},
+	{0x8086, 0x1e57, OK, "Intel", "HM77",		enable_flash_pch7},
 	{0x8086, 0x1e58, NT, "Intel", "UM77",		enable_flash_pch7},
 	{0x8086, 0x1e59, NT, "Intel", "HM76",		enable_flash_pch7},
 	{0x8086, 0x1e5d, NT, "Intel", "HM75",		enable_flash_pch7},
 	{0x8086, 0x1e5e, NT, "Intel", "HM70",		enable_flash_pch7},
-	{0x8086, 0x1e5f, NT, "Intel", "NM70",		enable_flash_pch7},
+	{0x8086, 0x1e5f, OK, "Intel", "NM70",		enable_flash_pch7},
 	{0x8086, 0x2310, NT, "Intel", "DH89xxCC",	enable_flash_pch7},
 	{0x8086, 0x2390, NT, "Intel", "Coleto Creek",	enable_flash_pch7},
 	{0x8086, 0x2410, OK, "Intel", "ICH",		enable_flash_ich0},
@@ -1580,19 +1578,19 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x8c41, NT, "Intel", "Lynx Point Mobile Engineering Sample", enable_flash_pch8},
 	{0x8086, 0x8c42, NT, "Intel", "Lynx Point Desktop Engineering Sample", enable_flash_pch8},
 	{0x8086, 0x8c43, NT, "Intel", "Lynx Point",	enable_flash_pch8},
-	{0x8086, 0x8c44, NT, "Intel", "Z87",		enable_flash_pch8},
+	{0x8086, 0x8c44, OK, "Intel", "Z87",		enable_flash_pch8},
 	{0x8086, 0x8c45, NT, "Intel", "Lynx Point",	enable_flash_pch8},
 	{0x8086, 0x8c46, NT, "Intel", "Z85",		enable_flash_pch8},
 	{0x8086, 0x8c47, NT, "Intel", "Lynx Point",	enable_flash_pch8},
 	{0x8086, 0x8c48, NT, "Intel", "Lynx Point",	enable_flash_pch8},
 	{0x8086, 0x8c49, NT, "Intel", "HM86",		enable_flash_pch8},
 	{0x8086, 0x8c4a, OK, "Intel", "H87",		enable_flash_pch8},
-	{0x8086, 0x8c4b, NT, "Intel", "HM87",		enable_flash_pch8},
+	{0x8086, 0x8c4b, OK, "Intel", "HM87",		enable_flash_pch8},
 	{0x8086, 0x8c4c, NT, "Intel", "Q85",		enable_flash_pch8},
 	{0x8086, 0x8c4d, NT, "Intel", "Lynx Point",	enable_flash_pch8},
 	{0x8086, 0x8c4e, NT, "Intel", "Q87",		enable_flash_pch8},
 	{0x8086, 0x8c4f, NT, "Intel", "QM87",		enable_flash_pch8},
-	{0x8086, 0x8c50, NT, "Intel", "B85",		enable_flash_pch8},
+	{0x8086, 0x8c50, OK, "Intel", "B85",		enable_flash_pch8},
 	{0x8086, 0x8c51, NT, "Intel", "Lynx Point",	enable_flash_pch8},
 	{0x8086, 0x8c52, NT, "Intel", "C222",		enable_flash_pch8},
 	{0x8086, 0x8c53, NT, "Intel", "Lynx Point",	enable_flash_pch8},

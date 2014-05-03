@@ -334,7 +334,7 @@ void probe_superio_winbond(void)
 				}
 			}
 			msg_pinfo("Active config mode, unknown reg 0x20 ID: %02x.\n", model);
-			msg_pinfo("Please send the output of \"flashrom -V\" to \n"
+			msg_pinfo("Please send the output of \"flashrom -V -p internal\" to \n"
 				  "flashrom@flashrom.org with W836xx: your board name: flashrom -V\n"
 				  "as the subject to help us finish support for your Super I/O. Thanks.\n");
 			continue;
@@ -489,7 +489,7 @@ static int w83627ehf_gpio22_raise_2e(void)
  * Winbond W83627THF: Raise GPIO 44.
  *
  * Suited for:
- *  - MSI K8T Neo2-F
+ *  - MSI K8T Neo2-F V2.0
  */
 static int w83627thf_gpio44_raise_2e(void)
 {
@@ -619,11 +619,9 @@ int it8705f_write_enable(uint8_t port)
 		if (tmp & 0x02) {
 			/* The data sheet contradicts itself about max size. */
 			max_rom_decode.parallel = 1024 * 1024;
-			msg_pinfo("IT8705F with very unusual settings. Please "
-				  "send the output of \"flashrom -V\" to \n"
-				  "flashrom@flashrom.org with "
-				  "IT8705: your board name: flashrom -V\n"
-				  "as the subject to help us finish "
+			msg_pinfo("IT8705F with very unusual settings.\n"
+				  "Please send the output of \"flashrom -V -p internal\" to flashrom@flashrom.org\n"
+				  "with \"IT8705: your board name: flashrom -V\" as the subject to help us finish\n"
 				  "support for your Super I/O. Thanks.\n");
 			ret = 1;
 		} else if (tmp & 0x08) {
@@ -1110,7 +1108,7 @@ static int nvidia_mcp_gpio2_lower(void)
 /*
  * Suited for:
  *  - Foxconn 6150K8MD-8EKRSH: Socket 939 + NVIDIA MCP51
- *  - MSI K8N Neo4: NVIDIA CK804. TODO: Should probably be K8N Neo4 Platinum, see http://www.coreboot.org/pipermail/flashrom/2010-August/004362.html.
+ *  - MSI K8N Neo4(-F/-FI/-FX/Platinum): NVIDIA CK804
  *  - MSI K8NGM2-L: NVIDIA MCP51
  *  - MSI K9N SLI: NVIDIA MCP55
  */
@@ -2325,6 +2323,7 @@ const struct board_match board_matches[] = {
 	{0x1022, 0x2090,      0,      0,  0x1022, 0x2080,      0,      0, NULL,        "artecgroup", "dbe62", P3, "Artec Group", "DBE62",                 0,   OK, board_artecgroup_dbe6x},
 	{0x8086, 0x27b9, 0xa0a0, 0x0632,  0x8086, 0x27da, 0xa0a0, 0x0632, NULL,         NULL, NULL,           P3, "AOpen",       "i945GMx-VFX",           0,   OK, intel_ich_gpio38_raise},
 	{0x8086, 0x277c, 0xa0a0, 0x060b,  0x8086, 0x27da, 0xa0a0, 0x060b, NULL,         NULL, NULL,           P3, "AOpen",       "i975Xa-YDG",            0,   OK, board_aopen_i975xa_ydg},
+	{0x8086, 0x27A0, 0x8086, 0x7270,  0x8086, 0x27B9, 0x8086, 0x7270, "^MacBook2,1$", NULL, NULL,         P2, "Apple",       "MacBook2,1",            0,   OK, p2_whitelist_laptop},
 	{0x8086, 0x27b8, 0x1849, 0x27b8,  0x8086, 0x27da, 0x1849, 0x27da, "^ConRoeXFire-eSATA2", NULL, NULL,  P3, "ASRock",      "ConRoeXFire-eSATA2",    0,   OK, intel_ich_gpio16_raise},
 	{0x1022, 0x1536, 0x1849, 0x1536,  0x1022, 0x780e, 0x1849, 0x780e, "^Kabini CRB$", NULL, NULL,         P2, "ASRock",      "IMB-A180(-H)",          0,   OK, p2_not_a_laptop},
 	{0x1039, 0x0741, 0x1849, 0x0741,  0x1039, 0x5513, 0x1849, 0x5513, "^K7S41 $",   NULL, NULL,           P3, "ASRock",      "K7S41",                 0,   OK, w836xx_memw_enable_2e},
@@ -2425,14 +2424,15 @@ const struct board_match board_matches[] = {
 	{0x8086, 0x27a0, 0x17aa, 0x2017,  0x8086, 0x27b9, 0x17aa, 0x2009, "^ThinkPad T60", NULL, NULL,        P2, "Lenovo",      "T60(s)",                0,   OK, p2_whitelist_laptop},
 	{0x8086, 0x27a0, 0x17aa, 0x2017,  0x8086, 0x27b9, 0x17aa, 0x2009, "^ThinkPad X60", NULL, NULL,        P2, "Lenovo",      "X60(s)",                0,   OK, p2_whitelist_laptop},
 	{0x8086, 0x3B07, 0x17AA, 0x2166,  0x8086, 0x3B30, 0x17AA, 0x2167, "^Lenovo X201", NULL, NULL,         P2, "Lenovo",      "X201",                  0,   OK, p2_whitelist_laptop},
+	{0x8086, 0x1E22, 0x17AA, 0x21FA,  0x8086, 0x1E55, 0x17AA, 0x21FA, "^ThinkPad X230", NULL, NULL,       P2, "Lenovo",      "X230",                  0,   OK, p2_whitelist_laptop},
 	{0x8086, 0x2411, 0x8086, 0x2411,  0x8086, 0x7125, 0x0e11, 0xb165, NULL,         NULL, NULL,           P3, "Mitac",       "6513WU",                0,   OK, board_mitac_6513wu},
 	{0x8086, 0x8186, 0x8086, 0x8186,  0x8086, 0x8800,      0,      0, "^MSC Vertriebs GmbH$", NULL, NULL, P2, "MSC",         "Q7-TCTC",               0,   OK, p2_not_a_laptop},
-	{0x10DE, 0x005E, 0x1462, 0x7125,  0x10DE, 0x0052, 0x1462, 0x7125, NULL,         NULL, NULL,           P3, "MSI",         "K8N Neo4-F",            0,   OK, nvidia_mcp_gpio2_raise}, /* TODO: Should probably be K8N Neo4 Platinum, see http://www.coreboot.org/pipermail/flashrom/2010-August/004362.html. */
 	{0x8086, 0x7190,      0,      0,  0x8086, 0x7110,      0,      0, "^MS-6163 (i440BX)$", NULL, NULL,   P3, "MSI",         "MS-6163 (MS-6163 Pro)", 0,   OK, intel_piix4_gpo14_raise},
+	{0x8086, 0x244b, 0x1462, 0x3910,  0x8086, 0x2442, 0x1462, 0x3910, NULL,         NULL, NULL,           P3, "MSI",         "MS-6391 (845 Pro4)",    0,   OK, intel_ich_gpio23_raise},
 	{0x1039, 0x0745,      0,      0,  0x1039, 0x0018,      0,      0, "^MS-6561",   NULL, NULL,           P3, "MSI",         "MS-6561 (745 Ultra)",   0,   OK, w836xx_memw_enable_2e},
 	{0x8086, 0x2560, 0x1462, 0x5770,  0x8086, 0x2562, 0x1462, 0x5778, NULL,         NULL, NULL,           P3, "MSI",         "MS-6577 (Xenon)",       0,   OK, w83627hf_gpio25_raise_2e},
 	{0x13f6, 0x0111, 0x1462, 0x5900,  0x1106, 0x3177, 0x1106,      0, NULL,         NULL, NULL,           P3, "MSI",         "MS-6590 (KT4 Ultra)",   0,   OK, board_msi_kt4v},
-	{0x1106, 0x3149, 0x1462, 0x7094,  0x10ec, 0x8167, 0x1462, 0x094c, NULL,         NULL, NULL,           P3, "MSI",         "MS-6702E (K8T Neo2-F)", 0,   OK, w83627thf_gpio44_raise_2e},
+	{0x1106, 0x3149, 0x1462, 0x7094,  0x10ec, 0x8167, 0x1462, 0x094c, "^MS-7094$",  NULL, NULL,           P3, "MSI",         "MS-7094 (K8T Neo2-F V2.0)", 0, OK, w83627thf_gpio44_raise_2e},
 	{0x1106, 0x0571, 0x1462, 0x7120,  0x1106, 0x3065, 0x1462, 0x7120, NULL,         NULL, NULL,           P3, "MSI",         "MS-6712 (KT4V)",        0,   OK, board_msi_kt4v},
 	{0x1106, 0x3148, 0     , 0     ,  0x1106, 0x3177, 0     , 0     , NULL,         "msi", "ms6787",      P3, "MSI",         "MS-6787 (P4MAM-V/P4MAM-L)", 0, OK, w836xx_memw_enable_2e},
 	{0x8086, 0x24d3, 0x1462, 0x7880,  0x8086, 0x2570,      0,      0, NULL,	        NULL, NULL,           P3, "MSI",         "MS-6788-040 (848P NeoV)", 0, OK, intel_ich_gpio32_raise},
@@ -2440,12 +2440,13 @@ const struct board_match board_matches[] = {
 	{0x10DE, 0x00E0, 0x1462, 0x0250,  0x10DE, 0x00E1, 0x1462, 0x0250, NULL,         NULL, NULL,           P3, "MSI",         "MS-7025 (K8N Neo2 Platinum)", 0, OK, nvidia_mcp_gpio0c_raise},
 	{0x10DE, 0x00E0, 0x1462, 0x0300,  0x10DE, 0x00E1, 0x1462, 0x0300, NULL,         NULL, NULL,           P3, "MSI",         "MS-7030 (K8N Neo Platinum)", 0, OK, nvidia_mcp_gpio0c_raise},
 	{0x8086, 0x2658, 0x1462, 0x7046,  0x1106, 0x3044, 0x1462, 0x046d, NULL,         NULL, NULL,           P3, "MSI",         "MS-7046",               0,   OK, intel_ich_gpio19_raise},
-	{0x8086, 0x244b, 0x1462, 0x3910,  0x8086, 0x2442, 0x1462, 0x3910, NULL,         NULL, NULL,           P3, "MSI",         "MS-6391 (845 Pro4)",    0,   OK, intel_ich_gpio23_raise},
 	{0x1106, 0x3149, 0x1462, 0x7061,  0x1106, 0x3227,      0,      0, NULL,         NULL, NULL,           P3, "MSI",         "MS-7061 (KM4M-V/KM4AM-V)", 0, OK, w836xx_memw_enable_2e},
+	{0x10DE, 0x005E, 0x1462, 0x7125,  0x10DE, 0x0052, 0x1462, 0x7125, NULL,         NULL, NULL,           P3, "MSI",         "MS-7125 (K8N Neo4(-F/-FI/-FX/Platinum))", 0, OK, nvidia_mcp_gpio2_raise},
 	{0x10DE, 0x005E, 0x1462, 0x7135,  0x10DE, 0x0050, 0x1462, 0x7135, NULL,         "msi", "k8n-neo3",    P3, "MSI",         "MS-7135 (K8N Neo3)",    0,   OK, w83627thf_gpio44_raise_4e},
 	{0x10DE, 0x0270, 0x1462, 0x7207,  0x10DE, 0x0264, 0x1462, 0x7207, NULL,         NULL, NULL,           P3, "MSI",         "MS-7207 (K8NGM2-L)",    0,   NT, nvidia_mcp_gpio2_raise},
 	{0x10DE, 0x0360, 0x1462, 0x7250,  0x10DE, 0x0368, 0x1462, 0x7250, NULL,         NULL, NULL,           P3, "MSI",         "MS-7250 (K9N SLI)",     0,   OK, nvidia_mcp_gpio2_raise},
 	{0x1011, 0x0019, 0xaa55, 0xaa55,  0x8086, 0x7190,      0,      0, NULL,         NULL, NULL,           P3, "Nokia",       "IP530",                 0,   OK, fdc37b787_gpio50_raise_3f0},
+	{0x8086, 0x3B30, 0x1025, 0x0379,  0x8086, 0x3B09, 0x1025, 0x0379, "^EasyNote LM85$", NULL, NULL,      P2, "Packard Bell","EasyNote LM85",         0,   OK, p2_whitelist_laptop},
 	{0x8086, 0x24d3, 0x144d, 0xb025,  0x8086, 0x1050, 0x144d, 0xb025, NULL,         NULL, NULL,           P3, "Samsung",     "Polaris 32",            0,   OK, intel_ich_gpio21_raise},
 	{0x1106, 0x3099,      0,      0,  0x1106, 0x3074,      0,      0, NULL,         "shuttle", "ak31",    P3, "Shuttle",     "AK31",                  0,   OK, w836xx_memw_enable_2e},
 	{0x1106, 0x3104, 0x1297, 0xa238,  0x1106, 0x3059, 0x1297, 0xc063, NULL,         NULL, NULL,           P3, "Shuttle",     "AK38N",                 256, OK, NULL},
