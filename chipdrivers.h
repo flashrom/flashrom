@@ -103,6 +103,7 @@ int spi_disable_blockprotect_bp2_ep_srwd(struct flashctx *flash);
 int spi_prettyprint_status_register_sst25(struct flashctx *flash);
 int spi_prettyprint_status_register_sst25vf016(struct flashctx *flash);
 int spi_prettyprint_status_register_sst25vf040b(struct flashctx *flash);
+int spi_disable_blockprotect_sst26_global_unprotect(struct flashctx *flash);
 
 /* sfdp.c */
 int probe_spi_sfdp(struct flashctx *flash);
