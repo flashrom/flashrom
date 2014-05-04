@@ -566,6 +566,9 @@
 #define SPANSION_S25FL204	0x4013
 #define SPANSION_S25FL208	0x4014
 #define SPANSION_S25FL216	0x4015	/* Same as S25FL216K, but the latter supports OTP, 3 status regs, quad I/O, SFDP etc. */
+#define SPANSION_S25FL132K	0x4016
+#define SPANSION_S25FL164K	0x4017
+
 /*
  * SST25 chips are SPI, first byte of device ID is memory type, second
  * byte of device ID is related to log(bitsize) at least for some chips.
