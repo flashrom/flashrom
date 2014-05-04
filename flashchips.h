@@ -575,6 +575,7 @@
 #define SST_SST25WF010		0x2502
 #define SST_SST25WF020		0x2503
 #define SST_SST25WF040		0x2504
+#define SST_SST25WF080		0x2505
 #define SST_SST25VF512A_REMS	0x48	/* REMS or RES opcode */
 #define SST_SST25VF010_REMS	0x49	/* REMS or RES opcode */
 #define SST_SST25VF020_REMS	0x43	/* REMS or RES opcode */
