@@ -338,8 +338,7 @@ int main(int argc, char *argv[])
 	if (logfile && check_filename(logfile, "log"))
 		cli_classic_abort_usage();
 	if (logfile && open_logfile(logfile))
-		return 1;
-	free(logfile);
+		cli_classic_abort_usage();
 #endif /* !STANDALONE */
 
 #if CONFIG_PRINT_WIKI == 1
@@ -522,8 +521,6 @@ int main(int argc, char *argv[])
 	 */
 	programmer_delay(100000);
 	ret |= doit(fill_flash, force, filename, read_it, write_it, erase_it, verify_it);
-	/* Note: doit() already calls programmer_shutdown(). */
-	goto out;
 
 out_shutdown:
 	programmer_shutdown();
@@ -539,6 +536,7 @@ out:
 	free((char *)chip_to_probe); /* Silence! Freeing is not modifying contents. */
 	chip_to_probe = NULL;
 #ifndef STANDALONE
+	free(logfile);
 	ret |= close_logfile();
 #endif /* !STANDALONE */
 	return ret;
