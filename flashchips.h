@@ -574,6 +574,7 @@
  * byte of device ID is related to log(bitsize) at least for some chips.
  */
 #define SST_ID			0xBF	/* SST */
+#define SST_SST25LF020_REMS	0x43	/* REMS or RES opcode */
 #define SST_SST25WF512		0x2501
 #define SST_SST25WF010		0x2502
 #define SST_SST25WF020		0x2503
@@ -581,7 +582,7 @@
 #define SST_SST25WF080		0x2505
 #define SST_SST25VF512A_REMS	0x48	/* REMS or RES opcode */
 #define SST_SST25VF010_REMS	0x49	/* REMS or RES opcode */
-#define SST_SST25VF020_REMS	0x43	/* REMS or RES opcode */
+#define SST_SST25VF020_REMS	0x43	/* REMS or RES opcode, same as SST25LF020A */
 #define SST_SST25VF020B		0x258C
 #define SST_SST25VF040_REMS	0x44	/* REMS or RES opcode, same as SST25LF040A */
 #define SST_SST25VF040B		0x258D
