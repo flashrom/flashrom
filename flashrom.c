@@ -413,6 +413,11 @@ int programmer_init(enum programmer prog, const char *param)
 	return ret;
 }
 
+/** Calls registered shutdown functions and resets internal programmer-related variables.
+ * Calling it is safe even without previous initialization, but further interactions with programmer support
+ * require a call to programmer_init() (afterwards).
+ *
+ * @return The OR-ed result values of all shutdown functions (i.e. 0 on success). */
 int programmer_shutdown(void)
 {
 	int ret = 0;
@@ -1913,14 +1918,12 @@ int doit(struct flashctx *flash, int force, const char *filename, int read_it,
 
 	if (chip_safety_check(flash, force, read_it, write_it, erase_it, verify_it)) {
 		msg_cerr("Aborting.\n");
-		ret = 1;
-		goto out_nofree;
+		return 1;
 	}
 
 	if (normalize_romentries(flash)) {
 		msg_cerr("Requested regions can not be handled. Aborting.\n");
-		ret = 1;
-		goto out_nofree;
+		return 1;
 	}
 
 	/* Given the existence of read locks, we want to unlock for read,
@@ -1930,8 +1933,7 @@ int doit(struct flashctx *flash, int force, const char *filename, int read_it,
 		flash->chip->unlock(flash);
 
 	if (read_it) {
-		ret = read_flash_to_file(flash, filename);
-		goto out_nofree;
+		return read_flash_to_file(flash, filename);
 	}
 
 	oldcontents = malloc(size);
@@ -2048,7 +2050,5 @@ int doit(struct flashctx *flash, int force, const char *filename, int read_it,
 out:
 	free(oldcontents);
 	free(newcontents);
-out_nofree:
-	programmer_shutdown();
 	return ret;
 }
