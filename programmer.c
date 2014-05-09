@@ -78,8 +78,7 @@ uint32_t fallback_chip_readl(const struct flashctx *flash, const chipaddr addr)
 	return val;
 }
 
-void fallback_chip_writen(const struct flashctx *flash, uint8_t *buf,
-			  chipaddr addr, size_t len)
+void fallback_chip_writen(const struct flashctx *flash, const uint8_t *buf, chipaddr addr, size_t len)
 {
 	size_t i;
 	for (i = 0; i < len; i++)

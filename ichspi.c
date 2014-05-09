@@ -1327,8 +1327,7 @@ static int ich_hwseq_read(struct flashctx *flash, uint8_t *buf,
 	return 0;
 }
 
-static int ich_hwseq_write(struct flashctx *flash, uint8_t *buf,
-			   unsigned int addr, unsigned int len)
+static int ich_hwseq_write(struct flashctx *flash, const uint8_t *buf, unsigned int addr, unsigned int len)
 {
 	uint16_t hsfc;
 	uint16_t timeout = 100 * 60;

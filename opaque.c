@@ -40,7 +40,7 @@ int read_opaque(struct flashctx *flash, uint8_t *buf, unsigned int start, unsign
 	return flash->pgm->opaque.read(flash, buf, start, len);
 }
 
-int write_opaque(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len)
+int write_opaque(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len)
 {
 	return flash->pgm->opaque.write(flash, buf, start, len);
 }

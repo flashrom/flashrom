@@ -335,7 +335,7 @@ int serialport_shutdown(void *data)
 	return 0;
 }
 
-int serialport_write(unsigned char *buf, unsigned int writecnt)
+int serialport_write(const unsigned char *buf, unsigned int writecnt)
 {
 #ifdef _WIN32
 	DWORD tmp = 0;
@@ -470,7 +470,7 @@ int serialport_read_nonblock(unsigned char *c, unsigned int readcnt, unsigned in
 /* Tries up to timeout ms to write writecnt characters from the array starting at buf. Returns
  * 0 on success, positive values on temporary errors (e.g. timeouts) and negative ones on permanent errors.
  * If really_wrote is not NULL, this function sets its contents to the number of bytes written successfully. */
-int serialport_write_nonblock(unsigned char *buf, unsigned int writecnt, unsigned int timeout, unsigned int *really_wrote)
+int serialport_write_nonblock(const unsigned char *buf, unsigned int writecnt, unsigned int timeout, unsigned int *really_wrote)
 {
 	int ret = 1;
 	/* disable blocked i/o and declare platform-specific variables */

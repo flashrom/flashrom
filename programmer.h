@@ -542,8 +542,8 @@ struct spi_programmer {
 
 	/* Optimized functions for this programmer */
 	int (*read)(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
-	int (*write_256)(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
-	int (*write_aai)(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
+	int (*write_256)(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
+	int (*write_aai)(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 	const void *data;
 };
 
@@ -551,8 +551,8 @@ int default_spi_send_command(struct flashctx *flash, unsigned int writecnt, unsi
 			     const unsigned char *writearr, unsigned char *readarr);
 int default_spi_send_multicommand(struct flashctx *flash, struct spi_command *cmds);
 int default_spi_read(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
-int default_spi_write_256(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
-int default_spi_write_aai(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
+int default_spi_write_256(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
+int default_spi_write_aai(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 int register_spi_programmer(const struct spi_programmer *programmer);
 
 /* The following enum is needed by ich_descriptor_tool and ich* code as well as in chipset_enable.c. */
@@ -611,7 +611,7 @@ struct opaque_programmer {
 	/* Specific functions for this programmer */
 	int (*probe) (struct flashctx *flash);
 	int (*read) (struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
-	int (*write) (struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
+	int (*write) (struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 	int (*erase) (struct flashctx *flash, unsigned int blockaddr, unsigned int blocklen);
 	const void *data;
 };
@@ -624,7 +624,7 @@ void fallback_unmap(void *virt_addr, size_t len);
 void noop_chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr);
 void fallback_chip_writew(const struct flashctx *flash, uint16_t val, chipaddr addr);
 void fallback_chip_writel(const struct flashctx *flash, uint32_t val, chipaddr addr);
-void fallback_chip_writen(const struct flashctx *flash, uint8_t *buf, chipaddr addr, size_t len);
+void fallback_chip_writen(const struct flashctx *flash, const uint8_t *buf, chipaddr addr, size_t len);
 uint16_t fallback_chip_readw(const struct flashctx *flash, const chipaddr addr);
 uint32_t fallback_chip_readl(const struct flashctx *flash, const chipaddr addr);
 void fallback_chip_readn(const struct flashctx *flash, uint8_t *buf, const chipaddr addr, size_t len);
@@ -632,7 +632,7 @@ struct par_programmer {
 	void (*chip_writeb) (const struct flashctx *flash, uint8_t val, chipaddr addr);
 	void (*chip_writew) (const struct flashctx *flash, uint16_t val, chipaddr addr);
 	void (*chip_writel) (const struct flashctx *flash, uint32_t val, chipaddr addr);
-	void (*chip_writen) (const struct flashctx *flash, uint8_t *buf, chipaddr addr, size_t len);
+	void (*chip_writen) (const struct flashctx *flash, const uint8_t *buf, chipaddr addr, size_t len);
 	uint8_t (*chip_readb) (const struct flashctx *flash, const chipaddr addr);
 	uint16_t (*chip_readw) (const struct flashctx *flash, const chipaddr addr);
 	uint32_t (*chip_readl) (const struct flashctx *flash, const chipaddr addr);
@@ -673,8 +673,8 @@ int serialport_config(fdtype fd, unsigned int baud);
 extern fdtype sp_fd;
 /* expose serialport_shutdown as it's currently used by buspirate */
 int serialport_shutdown(void *data);
-int serialport_write(unsigned char *buf, unsigned int writecnt);
-int serialport_write_nonblock(unsigned char *buf, unsigned int writecnt, unsigned int timeout, unsigned int *really_wrote);
+int serialport_write(const unsigned char *buf, unsigned int writecnt);
+int serialport_write_nonblock(const unsigned char *buf, unsigned int writecnt, unsigned int timeout, unsigned int *really_wrote);
 int serialport_read(unsigned char *buf, unsigned int readcnt);
 int serialport_read_nonblock(unsigned char *c, unsigned int readcnt, unsigned int timeout, unsigned int *really_read);
 
