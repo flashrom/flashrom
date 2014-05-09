@@ -175,7 +175,7 @@ struct flashchip {
 
 	int (*printlock) (struct flashctx *flash);
 	int (*unlock) (struct flashctx *flash);
-	int (*write) (struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
+	int (*write) (struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 	int (*read) (struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 	struct voltage {
 		uint16_t min;
@@ -228,7 +228,7 @@ extern const struct flashchip flashchips[];
 void chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr);
 void chip_writew(const struct flashctx *flash, uint16_t val, chipaddr addr);
 void chip_writel(const struct flashctx *flash, uint32_t val, chipaddr addr);
-void chip_writen(const struct flashctx *flash, uint8_t *buf, chipaddr addr, size_t len);
+void chip_writen(const struct flashctx *flash, const uint8_t *buf, chipaddr addr, size_t len);
 uint8_t chip_readb(const struct flashctx *flash, const chipaddr addr);
 uint16_t chip_readw(const struct flashctx *flash, const chipaddr addr);
 uint32_t chip_readl(const struct flashctx *flash, const chipaddr addr);
@@ -253,8 +253,8 @@ int min(int a, int b);
 int max(int a, int b);
 void tolower_string(char *str);
 char *extract_param(const char *const *haystack, const char *needle, const char *delim);
-int verify_range(struct flashctx *flash, uint8_t *cmpbuf, unsigned int start, unsigned int len);
-int need_erase(uint8_t *have, uint8_t *want, unsigned int len, enum write_granularity gran);
+int verify_range(struct flashctx *flash, const uint8_t *cmpbuf, unsigned int start, unsigned int len);
+int need_erase(const uint8_t *have, const uint8_t *want, unsigned int len, enum write_granularity gran);
 char *strcat_realloc(char *dest, const char *src);
 void print_version(void);
 void print_buildinfo(void);
@@ -263,7 +263,7 @@ void list_programmers_linebreak(int startcol, int cols, int paren);
 int selfcheck(void);
 int doit(struct flashctx *flash, int force, const char *filename, int read_it, int write_it, int erase_it, int verify_it);
 int read_buf_from_file(unsigned char *buf, unsigned long size, const char *filename);
-int write_buf_to_file(unsigned char *buf, unsigned long size, const char *filename);
+int write_buf_to_file(const unsigned char *buf, unsigned long size, const char *filename);
 
 enum test_state {
 	OK = 0,
@@ -327,7 +327,7 @@ __attribute__((format(printf, 2, 3)));
 /* layout.c */
 int register_include_arg(char *name);
 int process_include_args(void);
-int read_romlayout(char *name);
+int read_romlayout(const char *name);
 int normalize_romentries(const struct flashctx *flash);
 int build_new_image(const struct flashctx *flash, uint8_t *oldcontents, uint8_t *newcontents);
 void layout_cleanup(void);

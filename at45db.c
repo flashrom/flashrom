@@ -460,7 +460,7 @@ int spi_erase_at45cs_sector(struct flashctx *flash, unsigned int addr, unsigned 
 	return at45db_erase(flash, opcode, at45db_convert_addr(addr, page_size), 200000, 100);
 }
 
-static int at45db_fill_buffer1(struct flashctx *flash, uint8_t *bytes, unsigned int off, unsigned int len)
+static int at45db_fill_buffer1(struct flashctx *flash, const uint8_t *bytes, unsigned int off, unsigned int len)
 {
 	const unsigned int page_size = flash->chip->page_size;
 	if ((off + len) > page_size) {
@@ -518,7 +518,7 @@ static int at45db_commit_buffer1(struct flashctx *flash, unsigned int at45db_add
 	return 0;
 }
 
-static int at45db_program_page(struct flashctx *flash, uint8_t *buf, unsigned int at45db_addr)
+static int at45db_program_page(struct flashctx *flash, const uint8_t *buf, unsigned int at45db_addr)
 {
 	int ret = at45db_fill_buffer1(flash, buf, 0, flash->chip->page_size);
 	if (ret != 0) {
@@ -535,7 +535,7 @@ static int at45db_program_page(struct flashctx *flash, uint8_t *buf, unsigned in
 	return 0;
 }
 
-int spi_write_at45db(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len)
+int spi_write_at45db(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len)
 {
 	const unsigned int page_size = flash->chip->page_size;
 	const unsigned int total_size = flash->chip->total_size;

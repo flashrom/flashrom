@@ -88,8 +88,7 @@ int default_spi_read(struct flashctx *flash, uint8_t *buf, unsigned int start,
 	return spi_read_chunked(flash, buf, start, len, max_data);
 }
 
-int default_spi_write_256(struct flashctx *flash, uint8_t *buf,
-			  unsigned int start, unsigned int len)
+int default_spi_write_256(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len)
 {
 	unsigned int max_data = flash->pgm->spi.max_data_write;
 	if (max_data == MAX_DATA_UNSPECIFIED) {
@@ -135,8 +134,7 @@ int spi_chip_read(struct flashctx *flash, uint8_t *buf, unsigned int start,
  * .write_256 = spi_chip_write_1
  */
 /* real chunksize is up to 256, logical chunksize is 256 */
-int spi_chip_write_256(struct flashctx *flash, uint8_t *buf, unsigned int start,
-		       unsigned int len)
+int spi_chip_write_256(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len)
 {
 	return flash->pgm->spi.write_256(flash, buf, start, len);
 }
@@ -162,8 +160,7 @@ uint32_t spi_get_valid_read_addr(struct flashctx *flash)
 	}
 }
 
-int spi_aai_write(struct flashctx *flash, uint8_t *buf,
-		  unsigned int start, unsigned int len)
+int spi_aai_write(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len)
 {
 	return flash->pgm->spi.write_aai(flash, buf, start, len);
 }

@@ -463,8 +463,7 @@ void chip_writel(const struct flashctx *flash, uint32_t val, chipaddr addr)
 	flash->pgm->par.chip_writel(flash, val, addr);
 }
 
-void chip_writen(const struct flashctx *flash, uint8_t *buf, chipaddr addr,
-		 size_t len)
+void chip_writen(const struct flashctx *flash, const uint8_t *buf, chipaddr addr, size_t len)
 {
 	flash->pgm->par.chip_writen(flash, buf, addr, len);
 }
@@ -627,7 +626,7 @@ static unsigned int count_usable_erasers(const struct flashctx *flash)
 	return usable_erasefunctions;
 }
 
-int compare_range(uint8_t *wantbuf, uint8_t *havebuf, unsigned int start, unsigned int len)
+static int compare_range(const uint8_t *wantbuf, const uint8_t *havebuf, unsigned int start, unsigned int len)
 {
 	int ret = 0, failcount = 0;
 	unsigned int i;
@@ -671,7 +670,7 @@ int check_erased_range(struct flashctx *flash, unsigned int start,
  * @len		length of the verified area
  * @return	0 for success, -1 for failure
  */
-int verify_range(struct flashctx *flash, uint8_t *cmpbuf, unsigned int start, unsigned int len)
+int verify_range(struct flashctx *flash, const uint8_t *cmpbuf, unsigned int start, unsigned int len)
 {
 	uint8_t *readbuf = malloc(len);
 	int ret = 0;
@@ -710,7 +709,7 @@ out_free:
 }
 
 /* Helper function for need_erase() that focuses on granularities of gran bytes. */
-static int need_erase_gran_bytes(uint8_t *have, uint8_t *want, unsigned int len, unsigned int gran)
+static int need_erase_gran_bytes(const uint8_t *have, const uint8_t *want, unsigned int len, unsigned int gran)
 {
 	unsigned int i, j, limit;
 	for (j = 0; j < len / gran; j++) {
@@ -740,7 +739,7 @@ static int need_erase_gran_bytes(uint8_t *have, uint8_t *want, unsigned int len,
  * @gran	write granularity (enum, not count)
  * @return      0 if no erase is needed, 1 otherwise
  */
-int need_erase(uint8_t *have, uint8_t *want, unsigned int len, enum write_granularity gran)
+int need_erase(const uint8_t *have, const uint8_t *want, unsigned int len, enum write_granularity gran)
 {
 	int result = 0;
 	unsigned int i;
@@ -808,7 +807,7 @@ int need_erase(uint8_t *have, uint8_t *want, unsigned int len, enum write_granul
  * in relation to the max write length of the programmer and the max write
  * length of the chip.
  */
-static unsigned int get_next_write(uint8_t *have, uint8_t *want, unsigned int len,
+static unsigned int get_next_write(const uint8_t *have, const uint8_t *want, unsigned int len,
 			  unsigned int *first_start,
 			  enum write_granularity gran)
 {
@@ -1211,8 +1210,7 @@ int read_buf_from_file(unsigned char *buf, unsigned long size,
 #endif
 }
 
-int write_buf_to_file(unsigned char *buf, unsigned long size,
-		      const char *filename)
+int write_buf_to_file(const unsigned char *buf, unsigned long size, const char *filename)
 {
 #ifdef __LIBPAYLOAD__
 	msg_gerr("Error: No file I/O support in libpayload\n");
@@ -1456,8 +1454,7 @@ static int check_block_eraser(const struct flashctx *flash, int k, int log)
 	return 0;
 }
 
-int erase_and_write_flash(struct flashctx *flash, uint8_t *oldcontents,
-			  uint8_t *newcontents)
+int erase_and_write_flash(struct flashctx *flash, uint8_t *oldcontents, uint8_t *newcontents)
 {
 	int k, ret = 1;
 	uint8_t *curcontents;

@@ -45,7 +45,7 @@ static char *include_args[MAX_ROMLAYOUT];
 static int num_include_args = 0; /* the number of valid include_args. */
 
 #ifndef __LIBPAYLOAD__
-int read_romlayout(char *name)
+int read_romlayout(const char *name)
 {
 	FILE *romlayout;
 	char tempstr[256];
@@ -102,7 +102,7 @@ int read_romlayout(char *name)
 #endif
 
 /* returns the index of the entry (or a negative value if it is not found) */
-int find_include_arg(const char *const name)
+static int find_include_arg(const char *const name)
 {
 	unsigned int i;
 	for (i = 0; i < num_include_args; i++) {
