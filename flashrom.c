@@ -1521,7 +1521,7 @@ int erase_and_write_flash(struct flashctx *flash, uint8_t *oldcontents, uint8_t 
 
 static void nonfatal_help_message(void)
 {
-	msg_gerr("Writing to the flash chip apparently didn't do anything.\n");
+	msg_gerr("Good, writing to the flash chip apparently didn't do anything.\n");
 #if CONFIG_INTERNAL == 1
 	if (programmer == PROGRAMMER_INTERNAL)
 		msg_gerr("This means we have to add special support for your board, programmer or flash\n"
@@ -2008,16 +2008,18 @@ int doit(struct flashctx *flash, int force, const char *filename, int read_it,
 
 	if (write_it) {
 		if (erase_and_write_flash(flash, oldcontents, newcontents)) {
-			msg_cerr("Uh oh. Erase/write failed. Checking if "
-				 "anything changed.\n");
+			msg_cerr("Uh oh. Erase/write failed. Checking if anything has changed.\n");
+			msg_cinfo("Reading current flash chip contents... ");
 			if (!flash->chip->read(flash, newcontents, 0, size)) {
+				msg_cinfo("done.\n");
 				if (!memcmp(oldcontents, newcontents, size)) {
-					msg_cinfo("Good. It seems nothing was changed.\n");
 					nonfatal_help_message();
 					ret = 1;
 					goto out;
 				}
-			}
+				msg_cerr("Apparently at least some data has changed.\n");
+			} else
+				msg_cerr("Can't even read anymore!\n");
 			emergency_help_message();
 			ret = 1;
 			goto out;
