@@ -4,7 +4,8 @@
  * Copyright (C) 2008 Wang Qingpei <Qingpei.Wang@amd.com>
  * Copyright (C) 2008 Joe Bao <Zheng.Bao@amd.com>
  * Copyright (C) 2008 Advanced Micro Devices, Inc.
- * Copyright (C) 2009, 2010 Carl-Daniel Hailfinger
+ * Copyright (C) 2009, 2010, 2013 Carl-Daniel Hailfinger
+ * Copyright (C) 2013 Stefan Tauner
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,8 +56,11 @@ enum amd_chipset {
 static enum amd_chipset amd_gen = CHIPSET_AMD_UNKNOWN;
 
 #define FIFO_SIZE_OLD		8
+#define FIFO_SIZE_YANGTZE	71
 
 static int sb600_spi_send_command(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
+				  const unsigned char *writearr, unsigned char *readarr);
+static int spi100_spi_send_command(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
 				  const unsigned char *writearr, unsigned char *readarr);
 
 static struct spi_programmer spi_programmer_sb600 = {
@@ -64,6 +68,17 @@ static struct spi_programmer spi_programmer_sb600 = {
 	.max_data_read = FIFO_SIZE_OLD,
 	.max_data_write = FIFO_SIZE_OLD - 3,
 	.command = sb600_spi_send_command,
+	.multicommand = default_spi_send_multicommand,
+	.read = default_spi_read,
+	.write_256 = default_spi_write_256,
+	.write_aai = default_spi_write_aai,
+};
+
+static struct spi_programmer spi_programmer_yangtze = {
+	.type = SPI_CONTROLLER_YANGTZE,
+	.max_data_read = FIFO_SIZE_YANGTZE - 3, /* Apparently the big SPI 100 buffer is not a ring buffer. */
+	.max_data_write = FIFO_SIZE_YANGTZE - 3,
+	.command = spi100_spi_send_command,
 	.multicommand = default_spi_send_multicommand,
 	.read = default_spi_read,
 	.write_256 = default_spi_write_256,
@@ -276,6 +291,45 @@ static int sb600_spi_send_command(struct flashctx *flash, unsigned int writecnt,
 	return 0;
 }
 
+static int spi100_spi_send_command(struct flashctx *flash, unsigned int writecnt,
+				  unsigned int readcnt,
+				  const unsigned char *writearr,
+				  unsigned char *readarr)
+{
+	/* First byte is cmd which can not be sent through the buffer. */
+	unsigned char cmd = *writearr++;
+	writecnt--;
+	msg_pspew("%s, cmd=0x%02x, writecnt=%d, readcnt=%d\n", __func__, cmd, writecnt, readcnt);
+	mmio_writeb(cmd, sb600_spibar + 0);
+
+	int ret = check_readwritecnt(flash, writecnt, readcnt);
+	if (ret != 0)
+		return ret;
+
+	/* Use the extended TxByteCount and RxByteCount registers. */
+	mmio_writeb(writecnt, sb600_spibar + 0x48);
+	mmio_writeb(readcnt, sb600_spibar + 0x4b);
+
+	msg_pspew("Filling buffer: ");
+	int count;
+	for (count = 0; count < writecnt; count++) {
+		msg_pspew("[%02x]", writearr[count]);
+		mmio_writeb(writearr[count], sb600_spibar + 0x80 + count);
+	}
+	msg_pspew("\n");
+
+	execute_command();
+
+	msg_pspew("Reading buffer: ");
+	for (count = 0; count < readcnt; count++) {
+		readarr[count] = mmio_readb(sb600_spibar + 0x80 + (writecnt + count) % FIFO_SIZE_YANGTZE);
+		msg_pspew("[%02x]", readarr[count]);
+	}
+	msg_pspew("\n");
+
+	return 0;
+}
+
 struct spispeed {
 	const char *const name;
 	const uint8_t speed;
@@ -286,6 +340,10 @@ static const struct spispeed spispeeds[] = {
 	{ "33 MHz",	0x01 },
 	{ "22 MHz",	0x02 },
 	{ "16.5 MHz",	0x03 },
+	{ "100 MHz",	0x04 },
+	{ "Reserved",	0x05 },
+	{ "Reserved",	0x06 },
+	{ "800 kHz",	0x07 },
 };
 
 static int set_speed(struct pci_dev *dev, const struct spispeed *spispeed)
@@ -294,7 +352,12 @@ static int set_speed(struct pci_dev *dev, const struct spispeed *spispeed)
 	uint8_t speed = spispeed->speed;
 
 	msg_pdbg("Setting SPI clock to %s (0x%x).\n", spispeed->name, speed);
-	if (amd_gen != CHIPSET_YANGTZE) {
+	if (amd_gen >= CHIPSET_YANGTZE) {
+		rmmio_writew((speed << 12) | (speed << 8) | (speed << 4) | speed, sb600_spibar + 0x22);
+		uint16_t tmp = mmio_readw(sb600_spibar + 0x22);
+		success = (((tmp >> 12) & 0xf) == speed && ((tmp >> 8) & 0xf) == speed &&
+			   ((tmp >> 4) & 0xf) == speed && ((tmp >> 0) & 0xf) == speed);
+	} else {
 		rmmio_writeb((mmio_readb(sb600_spibar + 0xd) & ~(0x3 << 4)) | (speed << 4), sb600_spibar + 0xd);
 		success = (speed == ((mmio_readb(sb600_spibar + 0xd) >> 4) & 0x3));
 	}
@@ -303,6 +366,17 @@ static int set_speed(struct pci_dev *dev, const struct spispeed *spispeed)
 		msg_perr("Setting SPI clock failed.\n");
 		return 1;
 	}
+	return 0;
+}
+
+static int set_mode(struct pci_dev *dev, uint8_t read_mode)
+{
+	uint32_t tmp = mmio_readl(sb600_spibar + 0x00);
+	tmp &= ~(0x6 << 28 | 0x1 << 18); /* Clear mode bits */
+	tmp |= ((read_mode & 0x6) << 28) | ((read_mode & 0x1) << 18);
+	rmmio_writel(tmp, sb600_spibar + 0x00);
+	if (tmp != mmio_readl(sb600_spibar + 0x00))
+		return 1;
 	return 0;
 }
 
@@ -316,7 +390,47 @@ static int handle_speed(struct pci_dev *dev)
 	 * 18    rsvd  <-          fastReadEnable  ?    <-       ?          SpiReadMode[0]
 	 * 29:30 rsvd  <-          <-              ?    <-       ?          SpiReadMode[2:1]
 	 */
-	if (amd_gen != CHIPSET_YANGTZE) {
+	if (amd_gen >= CHIPSET_YANGTZE) {
+		tmp = mmio_readb(sb600_spibar + 0x20);
+		msg_pdbg("UseSpi100 is %sabled\n", (tmp & 0x1) ? "en" : "dis");
+		if ((tmp & 0x1) == 0) {
+			rmmio_writeb(tmp | 0x1, sb600_spibar + 0x20);
+			tmp = mmio_readb(sb600_spibar + 0x20) & 0x1;
+			if (tmp == 0) {
+				msg_perr("Enabling Spi100 failed.\n");
+				return 1;
+			}
+			msg_pdbg("Enabling Spi100 succeeded.\n");
+		}
+
+		static const char *spireadmodes[] = {
+			"Normal (up to 33 MHz)", /* 0 */
+			"Reserved",		 /* 1 */
+			"Dual IO (1-1-2)",	 /* 2 */
+			"Quad IO (1-1-4)",	 /* 3 */
+			"Dual IO (1-2-2)",	 /* 4 */
+			"Quad IO (1-4-4)",	 /* 5 */
+			"Normal (up to 66 MHz)", /* 6 */
+			"Fast Read",		 /* 7 */
+		};
+		tmp = mmio_readl(sb600_spibar + 0x00);
+		uint8_t read_mode = ((tmp >> 28) & 0x6) | ((tmp >> 18) & 0x1);
+		msg_pdbg("SpiReadMode=%s (%i)\n", spireadmodes[read_mode], read_mode);
+		if (read_mode != 6) {
+			read_mode = 6; /* Default to "Normal (up to 66 MHz)" */
+			if (set_mode(dev, read_mode) != 0) {
+				msg_perr("Setting read mode to \"%s\" failed.\n", spireadmodes[read_mode]);
+				return 1;
+			}
+			msg_pdbg("Setting read mode to \"%s\" succeeded.\n", spireadmodes[read_mode]);
+		}
+
+		tmp = mmio_readw(sb600_spibar + 0x22); /* SPI 100 Speed Config */
+		msg_pdbg("NormSpeedNew is %s\n", spispeeds[(tmp >> 12) & 0xf].name);
+		msg_pdbg("FastSpeedNew is %s\n", spispeeds[(tmp >> 8) & 0xf].name);
+		msg_pdbg("AltSpeedNew is %s\n", spispeeds[(tmp >> 4) & 0xf].name);
+		msg_pdbg("TpmSpeedNew is %s\n", spispeeds[(tmp >> 0) & 0xf].name);
+	} else {
 		if (amd_gen >= CHIPSET_SB89XX && amd_gen <= CHIPSET_HUDSON234) {
 			bool fast_read = (mmio_readl(sb600_spibar + 0x00) >> 18) & 0x1;
 			msg_pdbg("Fast Reads are %sabled\n", fast_read ? "en" : "dis");
@@ -412,12 +526,6 @@ int sb600_probe_spi(struct pci_dev *dev)
 		return ERROR_NONFATAL;
 	}
 
-	if (amd_gen == CHIPSET_YANGTZE) {
-		msg_perr("SPI on Kabini/Temash and newer chipsets are not yet supported.\n"
-			 "Please try a newer version of flashrom.\n");
-		return ERROR_NONFATAL;
-	}
-
 	/* How to read the following table and similar ones in this file:
 	 * "?" means we have no datasheet for this chipset generation or it doesn't have any relevant info.
 	 * "<-" means the bit/register meaning is identical to the next non-"?" chipset to the left. "<-" thus
@@ -439,6 +547,8 @@ int sb600_probe_spi(struct pci_dev *dev)
 		msg_pdbg("SpiRomEnable=%i", (tmp >> 1) & 0x1);
 		if (amd_gen == CHIPSET_SB7XX)
 			msg_pdbg(", AltSpiCSEnable=%i, AbortEnable=%i", tmp & 0x1, (tmp >> 2) & 0x1);
+		else if (amd_gen == CHIPSET_YANGTZE)
+			msg_pdbg(", RouteTpm2Sp=%i", (tmp >> 3) & 0x1);
 
 		tmp = pci_read_byte(dev, 0xba);
 		msg_pdbg(", PrefetchEnSPIFromIMC=%i", (tmp & 0x4) >> 2);
@@ -473,6 +583,8 @@ int sb600_probe_spi(struct pci_dev *dev)
 	 */
 	tmp = mmio_readl(sb600_spibar + 0x00);
 	msg_pdbg("(0x%08" PRIx32 ") SpiArbEnable=%i", tmp, (tmp >> 19) & 0x1);
+	if (amd_gen == CHIPSET_YANGTZE)
+		msg_pdbg(", IllegalAccess=%i", (tmp >> 21) & 0x1);
 
 	msg_pdbg(", SpiAccessMacRomEn=%i, SpiHostAccessRomEn=%i, ArbWaitCount=%i",
 		 (tmp >> 22) & 0x1, (tmp >> 23) & 0x1, (tmp >> 24) & 0x7);
@@ -485,6 +597,7 @@ int sb600_probe_spi(struct pci_dev *dev)
 		msg_pdbg(", DropOneClkOnRd/SpiClkGate=%i", (tmp >> 28) & 0x1);
 	case CHIPSET_SB89XX:
 	case CHIPSET_HUDSON234:
+	case CHIPSET_YANGTZE:
 		msg_pdbg(", SpiBusy=%i", (tmp >> 31) & 0x1);
 	default: break;
 	}
@@ -498,6 +611,7 @@ int sb600_probe_spi(struct pci_dev *dev)
 	if (amd_gen >= CHIPSET_SB89XX) {
 		tmp = mmio_readb(sb600_spibar + 0x1D);
 		msg_pdbg("Using SPI_CS%d\n", tmp & 0x3);
+		/* FIXME: Handle SpiProtect* configuration on Yangtze. */
 	}
 
 	/* Look for the SMBus device. */
@@ -545,7 +659,11 @@ int sb600_probe_spi(struct pci_dev *dev)
 	if (handle_imc(dev) != 0)
 		return ERROR_FATAL;
 
-	register_spi_programmer(&spi_programmer_sb600);
+	/* Starting with Yangtze the SPI controller got a different interface with a much bigger buffer. */
+	if (amd_gen != CHIPSET_YANGTZE)
+		register_spi_programmer(&spi_programmer_sb600);
+	else
+		register_spi_programmer(&spi_programmer_yangtze);
 	return 0;
 }
 
