@@ -254,14 +254,16 @@ int spi_read_at45db(struct flashctx *flash, uint8_t *buf, unsigned int addr, uns
 	 * chunks can cross page boundaries. */
 	const unsigned int max_data_read = flash->pgm->spi.max_data_read;
 	const unsigned int max_chunk = (max_data_read > 0) ? max_data_read : page_size;
-	while (addr < len) {
+	while (len > 0) {
 		unsigned int chunk = min(max_chunk, len);
-		int ret = spi_nbyte_read(flash, at45db_convert_addr(addr, page_size), buf + addr, chunk);
+		int ret = spi_nbyte_read(flash, at45db_convert_addr(addr, page_size), buf, chunk);
 		if (ret) {
 			msg_cerr("%s: error sending read command!\n", __func__);
 			return ret;
 		}
 		addr += chunk;
+		buf += chunk;
+		len -= chunk;
 	}
 
 	return 0;
@@ -283,7 +285,7 @@ int spi_read_at45db_e8(struct flashctx *flash, uint8_t *buf, unsigned int addr, 
 	 * chunks can cross page boundaries. */
 	const unsigned int max_data_read = flash->pgm->spi.max_data_read;
 	const unsigned int max_chunk = (max_data_read > 0) ? max_data_read : page_size;
-	while (addr < len) {
+	while (len > 0) {
 		const unsigned int addr_at45 = at45db_convert_addr(addr, page_size);
 		const unsigned char cmd[] = {
 			AT45DB_READ_ARRAY,
@@ -300,8 +302,10 @@ int spi_read_at45db_e8(struct flashctx *flash, uint8_t *buf, unsigned int addr, 
 			return ret;
 		}
 		/* Copy result without dummy bytes into buf and advance address counter respectively. */
-		memcpy(buf + addr, tmp + 4, chunk - 4);
+		memcpy(buf, tmp + 4, chunk - 4);
 		addr += chunk - 4;
+		buf += chunk - 4;
+		len -= chunk - 4;
 	}
 	return 0;
 }
