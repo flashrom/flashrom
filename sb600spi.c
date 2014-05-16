@@ -385,6 +385,29 @@ static int handle_speed(struct pci_dev *dev)
 	uint32_t tmp;
 	int8_t spispeed_idx = 3; /* Default to 16.5 MHz */
 
+	char *spispeed = extract_programmer_param("spispeed");
+	if (spispeed != NULL) {
+		if (strcasecmp(spispeed, "reserved") != 0) {
+			int i;
+			for (i = 0; i < ARRAY_SIZE(spispeeds); i++) {
+				if (strcasecmp(spispeeds[i].name, spispeed) == 0) {
+					spispeed_idx = i;
+					break;
+				}
+			}
+			/* Only Yangtze supports the second half of indices; no 66 MHz before SB8xx. */
+			if ((amd_gen < CHIPSET_YANGTZE && spispeed_idx > 3) ||
+			    (amd_gen < CHIPSET_SB89XX && spispeed_idx == 0))
+				spispeed_idx = -1;
+		}
+		if (spispeed_idx < 0) {
+			msg_perr("Error: Invalid spispeed value: '%s'.\n", spispeed);
+			free(spispeed);
+			return 1;
+		}
+		free(spispeed);
+	}
+
 	/* See the chipset support matrix for SPI Base_Addr below for an explanation of the symbols used.
 	 * bit   6xx   7xx/SP5100  8xx             9xx  hudson1  hudson234  yangtze
 	 * 18    rsvd  <-          fastReadEnable  ?    <-       ?          SpiReadMode[0]

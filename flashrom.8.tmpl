@@ -357,6 +357,27 @@ syntax. The user is responsible for supplying a suitable image or leaving out th
 a layout file. This limitation might be removed in the future when we understand the details better and have
 received enough feedback from users. Please report the outcome if you had to use this option to write a chip.
 .sp
+An optional
+.B spispeed
+parameter specifies the frequency of the SPI bus where applicable (i.e.\& SB600 or later with an SPI flash chip
+directly attached to the chipset).
+Syntax is
+.sp
+.B "  flashrom \-p internal:spispeed=frequency"
+.sp
+where
+.B frequency
+can be
+.BR "'16.5\ MHz'" ", " "'22\ MHz'" ", " "'33\ MHz'" ", " "'66\ MHz'" ", " "'100\ MHZ'" ", or " "'800\ kHz'" "."
+Support of individual frequencies depends on the generation of the chipset:
+.sp
+* SB6xx, SB7xx, SP5xxx: from 16.5 MHz up to and including 33 MHz
+.sp
+* SB8xx, SB9xx, Hudson: from 16.5 MHz up to and including 66 MHz
+.sp
+* Yangtze (with SPI 100 engine as found in Kabini and Tamesh): all of them
+.sp
+The default is to use 16.5 MHz and disable Fast Reads.
 .TP
 .B Intel chipsets
 .sp
