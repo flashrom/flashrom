@@ -54,6 +54,22 @@ enum amd_chipset {
 };
 static enum amd_chipset amd_gen = CHIPSET_AMD_UNKNOWN;
 
+#define FIFO_SIZE_OLD		8
+
+static int sb600_spi_send_command(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
+				  const unsigned char *writearr, unsigned char *readarr);
+
+static struct spi_programmer spi_programmer_sb600 = {
+	.type = SPI_CONTROLLER_SB600,
+	.max_data_read = FIFO_SIZE_OLD,
+	.max_data_write = FIFO_SIZE_OLD - 3,
+	.command = sb600_spi_send_command,
+	.multicommand = default_spi_send_multicommand,
+	.read = default_spi_read,
+	.write_256 = default_spi_write_256,
+	.write_aai = default_spi_write_aai,
+};
+
 static void determine_generation(struct pci_dev *dev)
 {
 	amd_gen = CHIPSET_AMD_UNKNOWN;
@@ -133,38 +149,45 @@ static void reset_internal_fifo_pointer(void)
 
 static int compare_internal_fifo_pointer(uint8_t want)
 {
-	uint8_t tmp;
-
-	tmp = mmio_readb(sb600_spibar + 0xd) & 0x07;
-	want &= 0x7;
-	if (want != tmp) {
-		msg_perr("FIFO pointer corruption! Pointer is %d, wanted %d\n", tmp, want);
-		msg_perr("Something else is accessing the flash chip and "
-			 "causes random corruption.\nPlease stop all "
-			 "applications and drivers and IPMI which access the "
-			 "flash chip.\n");
+	uint8_t have = mmio_readb(sb600_spibar + 0xd) & 0x07;
+	want %= FIFO_SIZE_OLD;
+	if (have != want) {
+		msg_perr("AMD SPI FIFO pointer corruption! Pointer is %d, wanted %d\n", have, want);
+		msg_perr("Something else is accessing the flash chip and causes random corruption.\n"
+			 "Please stop all applications and drivers and IPMI which access the flash chip.\n");
 		return 1;
 	} else {
-		msg_pspew("SB600 FIFO pointer is %d, wanted %d\n", tmp, want);
+		msg_pspew("AMD SPI FIFO pointer is %d, wanted %d\n", have, want);
 		return 0;
 	}
 }
 
-static int reset_compare_internal_fifo_pointer(uint8_t want)
+/* Check the number of bytes to be transmitted and extract opcode. */
+static int check_readwritecnt(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt)
 {
-	int ret;
+	unsigned int maxwritecnt = flash->pgm->spi.max_data_write + 3;
+	if (writecnt > maxwritecnt) {
+		msg_pinfo("%s: SPI controller can not send %d bytes, it is limited to %d bytes\n",
+			  __func__, writecnt, maxwritecnt);
+		return SPI_INVALID_LENGTH;
+	}
 
-	ret = compare_internal_fifo_pointer(want);
-	reset_internal_fifo_pointer();
-	return ret;
+	unsigned int maxreadcnt = flash->pgm->spi.max_data_read + 3;
+	if (readcnt > maxreadcnt) {
+		msg_pinfo("%s: SPI controller can not receive %d bytes, it is limited to %d bytes\n",
+			  __func__, readcnt, maxreadcnt);
+		return SPI_INVALID_LENGTH;
+	}
+	return 0;
 }
 
 static void execute_command(void)
 {
+	msg_pspew("Executing... ");
 	mmio_writeb(mmio_readb(sb600_spibar + 2) | 1, sb600_spibar + 2);
-
 	while (mmio_readb(sb600_spibar + 2) & 1)
 		;
+	msg_pspew("done\n");
 }
 
 static int sb600_spi_send_command(struct flashctx *flash, unsigned int writecnt,
@@ -172,60 +195,45 @@ static int sb600_spi_send_command(struct flashctx *flash, unsigned int writecnt,
 				  const unsigned char *writearr,
 				  unsigned char *readarr)
 {
-	int count;
-	/* First byte is cmd which can not being sent through FIFO. */
+	/* First byte is cmd which can not be sent through the FIFO. */
 	unsigned char cmd = *writearr++;
-	unsigned int readoffby1;
-	unsigned char readwrite;
-
 	writecnt--;
+	msg_pspew("%s, cmd=0x%02x, writecnt=%d, readcnt=%d\n", __func__, cmd, writecnt, readcnt);
+	mmio_writeb(cmd, sb600_spibar + 0);
 
-	msg_pspew("%s, cmd=%x, writecnt=%x, readcnt=%x\n",
-		  __func__, cmd, writecnt, readcnt);
+	int ret = check_readwritecnt(flash, writecnt, readcnt);
+	if (ret != 0)
+		return ret;
 
-	if (readcnt > 8) {
-		msg_pinfo("%s, SB600 SPI controller can not receive %d bytes, "
-		       "it is limited to 8 bytes\n", __func__, readcnt);
-		return SPI_INVALID_LENGTH;
-	}
-
-	if (writecnt > 8) {
-		msg_pinfo("%s, SB600 SPI controller can not send %d bytes, "
-		       "it is limited to 8 bytes\n", __func__, writecnt);
-		return SPI_INVALID_LENGTH;
-	}
-
-	/* This is a workaround for a bug in SB600 and SB700. If we only send
+	/* This is a workaround for a bug in SPI controller. If we only send
 	 * an opcode and no additional data/address, the SPI controller will
 	 * read one byte too few from the chip. Basically, the last byte of
 	 * the chip response is discarded and will not end up in the FIFO.
 	 * It is unclear if the CS# line is set high too early as well.
 	 */
-	readoffby1 = (writecnt) ? 0 : 1;
-	readwrite = (readcnt + readoffby1) << 4 | (writecnt);
+	unsigned int readoffby1 = (writecnt > 0) ? 0 : 1;
+	uint8_t readwrite = (readcnt + readoffby1) << 4 | (writecnt);
 	mmio_writeb(readwrite, sb600_spibar + 1);
-	mmio_writeb(cmd, sb600_spibar + 0);
 
-	/* Before we use the FIFO, reset it first. */
 	reset_internal_fifo_pointer();
-
-	/* Send the write byte to FIFO. */
-	msg_pspew("Writing: ");
-	for (count = 0; count < writecnt; count++, writearr++) {
-		msg_pspew("[%02x]", *writearr);
-		mmio_writeb(*writearr, sb600_spibar + 0xC);
+	msg_pspew("Filling FIFO: ");
+	int count;
+	for (count = 0; count < writecnt; count++) {
+		msg_pspew("[%02x]", writearr[count]);
+		mmio_writeb(writearr[count], sb600_spibar + 0xC);
 	}
 	msg_pspew("\n");
-
-	/*
-	 * We should send the data by sequence, which means we need to reset
-	 * the FIFO pointer to the first byte we want to send.
-	 */
-	if (reset_compare_internal_fifo_pointer(writecnt))
+	if (compare_internal_fifo_pointer(writecnt))
 		return SPI_PROGRAMMER_ERROR;
 
-	msg_pspew("Executing: \n");
+	/*
+	 * We should send the data in sequence, which means we need to reset
+	 * the FIFO pointer to the first byte we want to send.
+	 */
+	reset_internal_fifo_pointer();
 	execute_command();
+	if (compare_internal_fifo_pointer(writecnt + readcnt))
+		return SPI_PROGRAMMER_ERROR;
 
 	/*
 	 * After the command executed, we should find out the index of the
@@ -238,34 +246,30 @@ static int sb600_spi_send_command(struct flashctx *flash, unsigned int writecnt,
 	 * the opcode, the FIFO already stores the response from the chip.
 	 * Usually, the chip will respond with 0x00 or 0xff.
 	 */
-	if (reset_compare_internal_fifo_pointer(writecnt + readcnt))
-		return SPI_PROGRAMMER_ERROR;
+	reset_internal_fifo_pointer();
 
 	/* Skip the bytes we sent. */
 	msg_pspew("Skipping: ");
 	for (count = 0; count < writecnt; count++) {
-		cmd = mmio_readb(sb600_spibar + 0xC);
-		msg_pspew("[%02x]", cmd);
+		msg_pspew("[%02x]", mmio_readb(sb600_spibar + 0xC));
 	}
 	msg_pspew("\n");
 	if (compare_internal_fifo_pointer(writecnt))
 		return SPI_PROGRAMMER_ERROR;
 
-	msg_pspew("Reading: ");
-	for (count = 0; count < readcnt; count++, readarr++) {
-		*readarr = mmio_readb(sb600_spibar + 0xC);
-		msg_pspew("[%02x]", *readarr);
+	msg_pspew("Reading FIFO: ");
+	for (count = 0; count < readcnt; count++) {
+		readarr[count] = mmio_readb(sb600_spibar + 0xC);
+		msg_pspew("[%02x]", readarr[count]);
 	}
 	msg_pspew("\n");
-	if (reset_compare_internal_fifo_pointer(readcnt + writecnt))
+	if (compare_internal_fifo_pointer(writecnt+readcnt))
 		return SPI_PROGRAMMER_ERROR;
 
 	if (mmio_readb(sb600_spibar + 1) != readwrite) {
-		msg_perr("Unexpected change in SB600 read/write count!\n");
-		msg_perr("Something else is accessing the flash chip and "
-			 "causes random corruption.\nPlease stop all "
-			 "applications and drivers and IPMI which access the "
-			 "flash chip.\n");
+		msg_perr("Unexpected change in AMD SPI read/write count!\n");
+		msg_perr("Something else is accessing the flash chip and causes random corruption.\n"
+			 "Please stop all applications and drivers and IPMI which access the flash chip.\n");
 		return SPI_PROGRAMMER_ERROR;
 	}
 
@@ -328,11 +332,27 @@ static int handle_speed(struct pci_dev *dev)
 	return set_speed(dev, &spispeeds[spispeed_idx]);
 }
 
-static int sb600_handle_imc(struct pci_dev *dev, bool amd_imc_force)
+static int handle_imc(struct pci_dev *dev)
 {
 	/* Handle IMC everywhere but sb600 which does not have one. */
 	if (amd_gen == CHIPSET_SB6XX)
 		return 0;
+
+	bool amd_imc_force = false;
+	char *arg = extract_programmer_param("amd_imc_force");
+	if (arg && !strcmp(arg, "yes")) {
+		amd_imc_force = true;
+		msg_pspew("amd_imc_force enabled.\n");
+	} else if (arg && !strlen(arg)) {
+		msg_perr("Missing argument for amd_imc_force.\n");
+		free(arg);
+		return 1;
+	} else if (arg) {
+		msg_perr("Unknown argument for amd_imc_force: \"%s\" (not \"yes\").\n", arg);
+		free(arg);
+		return 1;
+	}
+	free(arg);
 
 	/* TODO: we should not only look at IntegratedImcPresent (LPC Dev 20, Func 3, 40h) but also at
 	 * IMCEnable(Strap) and Override EcEnable(Strap) (sb8xx, sb9xx?, a50: Misc_Reg: 80h-87h;
@@ -361,38 +381,11 @@ static int sb600_handle_imc(struct pci_dev *dev, bool amd_imc_force)
 	return amd_imc_shutdown(dev);
 }
 
-static const struct spi_programmer spi_programmer_sb600 = {
-	.type = SPI_CONTROLLER_SB600,
-	.max_data_read = 8,
-	.max_data_write = 5,
-	.command = sb600_spi_send_command,
-	.multicommand = default_spi_send_multicommand,
-	.read = default_spi_read,
-	.write_256 = default_spi_write_256,
-	.write_aai = default_spi_write_aai,
-};
-
 int sb600_probe_spi(struct pci_dev *dev)
 {
 	struct pci_dev *smbus_dev;
 	uint32_t tmp;
 	uint8_t reg;
-	bool amd_imc_force = false;
-
-	char *arg = extract_programmer_param("amd_imc_force");
-	if (arg && !strcmp(arg, "yes")) {
-		amd_imc_force = true;
-		msg_pspew("amd_imc_force enabled.\n");
-	} else if (arg && !strlen(arg)) {
-		msg_perr("Missing argument for amd_imc_force.\n");
-		free(arg);
-		return ERROR_FATAL;
-	} else if (arg) {
-		msg_perr("Unknown argument for amd_imc_force: \"%s\" (not \"yes\").\n", arg);
-		free(arg);
-		return ERROR_FATAL;
-	}
-	free(arg);
 
 	/* Read SPI_BaseAddr */
 	tmp = pci_read_long(dev, 0xa0);
@@ -549,11 +542,8 @@ int sb600_probe_spi(struct pci_dev *dev)
 	if (handle_speed(dev) != 0)
 		return ERROR_FATAL;
 
-	if (sb600_handle_imc(dev, amd_imc_force) != 0)
+	if (handle_imc(dev) != 0)
 		return ERROR_FATAL;
-
-	/* Bring the FIFO to a clean state. */
-	reset_internal_fifo_pointer();
 
 	register_spi_programmer(&spi_programmer_sb600);
 	return 0;
