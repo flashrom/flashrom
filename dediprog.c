@@ -306,7 +306,7 @@ static int dediprog_spi_read(struct flashctx *flash, uint8_t *buf,
  * @dedi_spi_cmd    dediprog specific write command for spi bus
  * @return          0 on success, 1 on failure
  */
-static int dediprog_spi_bulk_write(struct flashctx *flash, uint8_t *buf, unsigned int chunksize,
+static int dediprog_spi_bulk_write(struct flashctx *flash, const uint8_t *buf, unsigned int chunksize,
 				   unsigned int start, unsigned int len, uint8_t dedi_spi_cmd)
 {
 	int ret;
@@ -366,7 +366,7 @@ static int dediprog_spi_bulk_write(struct flashctx *flash, uint8_t *buf, unsigne
 	return 0;
 }
 
-static int dediprog_spi_write(struct flashctx *flash, uint8_t *buf,
+static int dediprog_spi_write(struct flashctx *flash, const uint8_t *buf,
 			      unsigned int start, unsigned int len, uint8_t dedi_spi_cmd)
 {
 	int ret;
@@ -418,12 +418,12 @@ static int dediprog_spi_write(struct flashctx *flash, uint8_t *buf,
 	return 0;
 }
 
-static int dediprog_spi_write_256(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len)
+static int dediprog_spi_write_256(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len)
 {
 	return dediprog_spi_write(flash, buf, start, len, DEDI_SPI_CMD_PAGEWRITE);
 }
 
-static int dediprog_spi_write_aai(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len)
+static int dediprog_spi_write_aai(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len)
 {
 	return dediprog_spi_write(flash, buf, start, len, DEDI_SPI_CMD_AAIWRITE);
 }
