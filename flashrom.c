@@ -1269,10 +1269,7 @@ out_free:
 	return ret;
 }
 
-/* This function shares a lot of its structure with erase_and_write_flash() and
- * walk_eraseregions().
- * Even if an error is found, the function will keep going and check the rest.
- */
+/* Even if an error is found, the function will keep going and check the rest. */
 static int selfcheck_eraseblocks(const struct flashchip *chip)
 {
 	int i, j, k;
@@ -1694,8 +1691,7 @@ void print_banner(void)
 
 int selfcheck(void)
 {
-	const struct flashchip *chip;
-	int i;
+	unsigned int i;
 	int ret = 0;
 
 	/* Safety check. Instead of aborting after the first error, check
@@ -1748,37 +1744,32 @@ int selfcheck(void)
 			ret = 1;
 		}
 	}
-	/* It would be favorable if we could also check for correct termination
-	 * of the following arrays, but we don't know their sizes in here...
-	 * For 'flashchips' we check the first element to be non-null. In the
-	 * other cases there exist use cases where the first element can be
-	 * null. */
-	if (flashchips == NULL || flashchips[0].vendor == NULL) {
+
+	/* It would be favorable if we could check for the correct layout (especially termination) of various
+	 * constant arrays: flashchips, chipset_enables, board_matches, boards_known, laptops_known.
+	 * They are all defined as externs in this compilation unit so we don't know their sizes which vary
+	 * depending on compiler flags, e.g. the target architecture, and can sometimes be 0.
+	 * For 'flashchips' we export the size explicitly to work around this and to be able to implement the
+	 * checks below. */
+	if (flashchips_size <= 1 || flashchips[flashchips_size-1].name != NULL) {
 		msg_gerr("Flashchips table miscompilation!\n");
 		ret = 1;
+	} else {
+		for (i = 0; i < flashchips_size - 1; i++) {
+			const struct flashchip *chip = &flashchips[i];
+			if (chip->vendor == NULL || chip->name == NULL || chip->bustype == BUS_NONE) {
+				ret = 1;
+				msg_gerr("ERROR: Some field of flash chip #%d (%s) is misconfigured.\n"
+					 "Please report a bug at flashrom@flashrom.org\n", i,
+					 chip->name == NULL ? "unnamed" : chip->name);
+			}
+			if (selfcheck_eraseblocks(chip)) {
+				ret = 1;
+			}
+		}
 	}
-	for (chip = flashchips; chip && chip->name; chip++)
-		if (selfcheck_eraseblocks(chip))
-			ret = 1;
 
-#if CONFIG_INTERNAL == 1
-	if (chipset_enables == NULL) {
-		msg_gerr("Chipset enables table does not exist!\n");
-		ret = 1;
-	}
-	if (board_matches == NULL) {
-		msg_gerr("Board enables table does not exist!\n");
-		ret = 1;
-	}
-	if (boards_known == NULL) {
-		msg_gerr("Known boards table does not exist!\n");
-		ret = 1;
-	}
-	if (laptops_known == NULL) {
-		msg_gerr("Known laptops table does not exist!\n");
-		ret = 1;
-	}
-#endif
+	/* TODO: implement similar sanity checks for other arrays where deemed necessary. */
 	return ret;
 }
 
