@@ -249,38 +249,46 @@ static int print_supported_chips(void)
 		for (i = curdevlen; i < maxchiplen; i++)
 			msg_ginfo(" ");
 
-		if ((chip->tested & TEST_OK_PROBE))
+		if (chip->tested.probe == OK)
 			msg_ginfo("P");
+		else if (chip->tested.probe == NA)
+			msg_ginfo("-");
 		else
 			msg_ginfo(" ");
-		if ((chip->tested & TEST_OK_READ))
+		if (chip->tested.read == OK)
 			msg_ginfo("R");
+		else if (chip->tested.read == NA)
+			msg_ginfo("-");
 		else
 			msg_ginfo(" ");
-		if ((chip->tested & TEST_OK_ERASE))
+		if (chip->tested.erase == OK)
 			msg_ginfo("E");
+		else if (chip->tested.erase == NA)
+			msg_ginfo("-");
 		else
 			msg_ginfo(" ");
-		if ((chip->tested & TEST_OK_WRITE))
+		if (chip->tested.write == OK)
 			msg_ginfo("W");
+		else if (chip->tested.write == NA)
+			msg_ginfo("-");
 		else
 			msg_ginfo(" ");
 		for (i = 0; i < border; i++)
 			msg_ginfo(" ");
 
-		if ((chip->tested & TEST_BAD_PROBE))
+		if (chip->tested.probe == BAD)
 			msg_ginfo("P");
 		else
 			msg_ginfo(" ");
-		if ((chip->tested & TEST_BAD_READ))
+		if (chip->tested.read == BAD)
 			msg_ginfo("R");
 		else
 			msg_ginfo(" ");
-		if ((chip->tested & TEST_BAD_ERASE))
+		if (chip->tested.erase == BAD)
 			msg_ginfo("E");
 		else
 			msg_ginfo(" ");
-		if ((chip->tested & TEST_BAD_WRITE))
+		if (chip->tested.write == BAD)
 			msg_ginfo("W");
 		else
 			msg_ginfo(" ");

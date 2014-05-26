@@ -249,7 +249,6 @@ static void print_supported_boards_wiki(void)
 static void print_supported_chips_wiki(int cols)
 {
 	unsigned int lines_per_col;
-	uint32_t t;
 	char *s;
 	char vmax[6];
 	char vmin[6];
@@ -287,7 +286,35 @@ static void print_supported_chips_wiki(int cols)
 			c = !c;
 
 		old = f;
-		t = f->tested;
+		const char *probe, *read, *write, *erase;
+		switch (f->tested.probe) {
+			case OK: probe = "OK"; break;
+			case BAD: probe = "No"; break;
+			case NA: probe = "NA"; break;
+			case DEP: probe = "Dep"; break;
+			default: probe = "?3"; break;
+		}
+		switch (f->tested.read) {
+			case OK: read = "OK"; break;
+			case BAD: read = "No"; break;
+			case NA: read = "NA"; break;
+			case DEP: read = "Dep"; break;
+			default: read = "?3"; break;
+		}
+		switch (f->tested.erase) {
+			case OK: erase = "OK"; break;
+			case BAD: erase = "No"; break;
+			case NA: erase = "NA"; break;
+			case DEP: erase = "Dep"; break;
+			default: erase = "?3"; break;
+		}
+		switch (f->tested.write) {
+			case OK: write = "OK"; break;
+			case BAD: write = "No"; break;
+			case NA: write = "NA"; break;
+			case DEP: write = "Dep"; break;
+			default: write = "?3"; break;
+		}
 		s = flashbuses_to_text(f->bustype);
 		sprintf(vmin, "%0.03f", f->voltage.min / (double)1000);
 		sprintf(vmax, "%0.03f", f->voltage.max / (double)1000);
@@ -298,16 +325,9 @@ static void print_supported_chips_wiki(int cols)
 		       "|| %s || %s \n",
 		       (c == 1) ? "eeeeee" : "dddddd", f->vendor, f->name,
 		       f->total_size, s,
-		       (t & TEST_OK_PROBE) ? "OK" :
-		       (t & TEST_BAD_PROBE) ? "No" : "?3",
-		       (t & TEST_OK_READ) ? "OK" :
-		       (t & TEST_BAD_READ) ? "No" : "?3",
-		       (t & TEST_OK_ERASE) ? "OK" :
-		       (t & TEST_BAD_ERASE) ? "No" : "?3",
-		       (t & TEST_OK_WRITE) ? "OK" :
-		       (t & TEST_BAD_WRITE) ? "No" : "?3",
-		       f->voltage.min ? vmin : "N/A",
-		       f->voltage.min ? vmax : "N/A");
+		       probe, read, erase, write,
+		       f->voltage.min ? vmin : "?",
+		       f->voltage.max ? vmax : "?");
 		free(s);
 
 		if (((i % lines_per_col) + 1) == lines_per_col)
