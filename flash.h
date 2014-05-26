@@ -225,6 +225,7 @@ struct flashctx {
 #define TIMING_ZERO	-2
 
 extern const struct flashchip flashchips[];
+extern const unsigned int flashchips_size;
 
 void chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr);
 void chip_writew(const struct flashctx *flash, uint16_t val, chipaddr addr);

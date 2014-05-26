@@ -13424,5 +13424,7 @@ const struct flashchip flashchips[] = {
 		.write		= NULL,
 	},
 
-	{ NULL 	}
+	{0}
 };
+
+const unsigned int flashchips_size = ARRAY_SIZE(flashchips);
