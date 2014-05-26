@@ -1791,32 +1791,43 @@ void check_chip_supported(const struct flashchip *chip)
 			 "clone the contents of this chip (see man page for "
 			 "details).\n");
 	}
-	if (TEST_OK_MASK != (chip->tested & TEST_OK_MASK)) {
+
+	if ((chip->tested.erase == NA) && (chip->tested.write == NA)) {
+		msg_cdbg("This chip's main memory can not be erased/written by design.\n");
+	}
+
+	if ((chip->tested.probe == BAD) || (chip->tested.probe == NT) ||
+	    (chip->tested.read == BAD)  || (chip->tested.read == NT) ||
+	    (chip->tested.erase == BAD) || (chip->tested.erase == NT) ||
+	    (chip->tested.write == BAD) || (chip->tested.write == NT)){
 		msg_cinfo("===\n");
-		if (chip->tested & TEST_BAD_MASK) {
+		if ((chip->tested.probe == BAD) ||
+		    (chip->tested.read == BAD) ||
+		    (chip->tested.erase == BAD) ||
+		    (chip->tested.write == BAD)) {
 			msg_cinfo("This flash part has status NOT WORKING for operations:");
-			if (chip->tested & TEST_BAD_PROBE)
+			if (chip->tested.probe == BAD)
 				msg_cinfo(" PROBE");
-			if (chip->tested & TEST_BAD_READ)
+			if (chip->tested.read == BAD)
 				msg_cinfo(" READ");
-			if (chip->tested & TEST_BAD_ERASE)
+			if (chip->tested.erase == BAD)
 				msg_cinfo(" ERASE");
-			if (chip->tested & TEST_BAD_WRITE)
+			if (chip->tested.write == BAD)
 				msg_cinfo(" WRITE");
 			msg_cinfo("\n");
 		}
-		if ((!(chip->tested & TEST_BAD_PROBE) && !(chip->tested & TEST_OK_PROBE)) ||
-		    (!(chip->tested & TEST_BAD_READ) && !(chip->tested & TEST_OK_READ)) ||
-		    (!(chip->tested & TEST_BAD_ERASE) && !(chip->tested & TEST_OK_ERASE)) ||
-		    (!(chip->tested & TEST_BAD_WRITE) && !(chip->tested & TEST_OK_WRITE))) {
+		if ((chip->tested.probe == NT) ||
+		    (chip->tested.read == NT) ||
+		    (chip->tested.erase == NT) ||
+		    (chip->tested.write == NT)) {
 			msg_cinfo("This flash part has status UNTESTED for operations:");
-			if (!(chip->tested & TEST_BAD_PROBE) && !(chip->tested & TEST_OK_PROBE))
+			if (chip->tested.probe == NT)
 				msg_cinfo(" PROBE");
-			if (!(chip->tested & TEST_BAD_READ) && !(chip->tested & TEST_OK_READ))
+			if (chip->tested.read == NT)
 				msg_cinfo(" READ");
-			if (!(chip->tested & TEST_BAD_ERASE) && !(chip->tested & TEST_OK_ERASE))
+			if (chip->tested.erase == NT)
 				msg_cinfo(" ERASE");
-			if (!(chip->tested & TEST_BAD_WRITE) && !(chip->tested & TEST_OK_WRITE))
+			if (chip->tested.write == NT)
 				msg_cinfo(" WRITE");
 			msg_cinfo("\n");
 		}
@@ -1859,7 +1870,7 @@ int chip_safety_check(const struct flashctx *flash, int force, int read_it, int 
 
 	if (read_it || erase_it || write_it || verify_it) {
 		/* Everything needs read. */
-		if (chip->tested & TEST_BAD_READ) {
+		if (chip->tested.read == BAD) {
 			msg_cerr("Read is not working on this chip. ");
 			if (!force)
 				return 1;
@@ -1873,7 +1884,11 @@ int chip_safety_check(const struct flashctx *flash, int force, int read_it, int 
 	}
 	if (erase_it || write_it) {
 		/* Write needs erase. */
-		if (chip->tested & TEST_BAD_ERASE) {
+		if (chip->tested.erase == NA) {
+			msg_cerr("Erase is not possible on this chip.\n");
+			return 1;
+		}
+		if (chip->tested.erase == BAD) {
 			msg_cerr("Erase is not working on this chip. ");
 			if (!force)
 				return 1;
@@ -1886,7 +1901,11 @@ int chip_safety_check(const struct flashctx *flash, int force, int read_it, int 
 		}
 	}
 	if (write_it) {
-		if (chip->tested & TEST_BAD_WRITE) {
+		if (chip->tested.write == NA) {
+			msg_cerr("Write is not possible on this chip.\n");
+			return 1;
+		}
+		if (chip->tested.write == BAD) {
 			msg_cerr("Write is not working on this chip. ");
 			if (!force)
 				return 1;

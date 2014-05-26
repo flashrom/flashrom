@@ -120,6 +120,26 @@ enum write_granularity {
 #define FEATURE_OTP		(1 << 8)
 #define FEATURE_QPI		(1 << 9)
 
+enum test_state {
+	OK = 0,
+	NT = 1,	/* Not tested */
+	BAD,	/* Known to not work */
+	DEP,	/* Support depends on configuration (e.g. Intel flash descriptor) */
+	NA,	/* Not applicable (e.g. write support on ROM chips) */
+};
+
+#define TEST_UNTESTED	(struct tested){ .probe = NT, .read = NT, .erase = NT, .write = NT }
+
+#define TEST_OK_PROBE	(struct tested){ .probe = OK, .read = NT, .erase = NT, .write = NT }
+#define TEST_OK_PR	(struct tested){ .probe = OK, .read = OK, .erase = NT, .write = NT }
+#define TEST_OK_PRE	(struct tested){ .probe = OK, .read = OK, .erase = OK, .write = NT }
+#define TEST_OK_PREW	(struct tested){ .probe = OK, .read = OK, .erase = OK, .write = OK }
+
+#define TEST_BAD_PROBE	(struct tested){ .probe = BAD, .read = NT, .erase = NT, .write = NT }
+#define TEST_BAD_PR	(struct tested){ .probe = BAD, .read = BAD, .erase = NT, .write = NT }
+#define TEST_BAD_PRE	(struct tested){ .probe = BAD, .read = BAD, .erase = BAD, .write = NT }
+#define TEST_BAD_PREW	(struct tested){ .probe = BAD, .read = BAD, .erase = BAD, .write = BAD }
+
 struct flashctx;
 typedef int (erasefunc_t)(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 
@@ -143,11 +163,13 @@ struct flashchip {
 	unsigned int page_size;
 	int feature_bits;
 
-	/*
-	 * Indicate if flashrom has been tested with this flash chip and if
-	 * everything worked correctly.
-	 */
-	uint32_t tested;
+	/* Indicate how well flashrom supports different operations of this flash chip. */
+	struct tested {
+		enum test_state probe;
+		enum test_state read;
+		enum test_state erase;
+		enum test_state write;
+	} tested;
 
 	int (*probe) (struct flashctx *flash);
 
@@ -191,27 +213,6 @@ struct flashctx {
 	chipaddr virtual_registers;
 	struct registered_programmer *pgm;
 };
-
-#define TEST_UNTESTED	0
-
-#define TEST_OK_PROBE	(1 << 0)
-#define TEST_OK_READ	(1 << 1)
-#define TEST_OK_ERASE	(1 << 2)
-#define TEST_OK_WRITE	(1 << 3)
-#define TEST_OK_PR	(TEST_OK_PROBE | TEST_OK_READ)
-#define TEST_OK_PRE	(TEST_OK_PROBE | TEST_OK_READ | TEST_OK_ERASE)
-#define TEST_OK_PRW	(TEST_OK_PROBE | TEST_OK_READ | TEST_OK_WRITE)
-#define TEST_OK_PREW	(TEST_OK_PROBE | TEST_OK_READ | TEST_OK_ERASE | TEST_OK_WRITE)
-#define TEST_OK_MASK	0x0f
-
-#define TEST_BAD_PROBE	(1 << 4)
-#define TEST_BAD_READ	(1 << 5)
-#define TEST_BAD_ERASE	(1 << 6)
-#define TEST_BAD_WRITE	(1 << 7)
-#define TEST_BAD_EW	(TEST_BAD_ERASE | TEST_BAD_WRITE)
-#define TEST_BAD_REW	(TEST_BAD_READ | TEST_BAD_ERASE | TEST_BAD_WRITE)
-#define TEST_BAD_PREW	(TEST_BAD_PROBE | TEST_BAD_READ | TEST_BAD_ERASE | TEST_BAD_WRITE)
-#define TEST_BAD_MASK	0xf0
 
 /* Timing used in probe routines. ZERO is -2 to differentiate between an unset
  * field and zero delay.
@@ -264,12 +265,6 @@ int selfcheck(void);
 int doit(struct flashctx *flash, int force, const char *filename, int read_it, int write_it, int erase_it, int verify_it);
 int read_buf_from_file(unsigned char *buf, unsigned long size, const char *filename);
 int write_buf_to_file(const unsigned char *buf, unsigned long size, const char *filename);
-
-enum test_state {
-	OK = 0,
-	NT = 1,	/* Not tested */
-	BAD
-};
 
 /* Something happened that shouldn't happen, but we can go on. */
 #define ERROR_NONFATAL 0x100

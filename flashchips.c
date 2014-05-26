@@ -2189,7 +2189,7 @@ const struct flashchip flashchips[] = {
 		.model_id	= ATMEL_AT26F004,
 		.total_size	= 512,
 		.page_size	= 256,
-		.tested		= TEST_BAD_WRITE,
+		.tested		= {.probe = NT, .read = NT, .erase = NT, .write = BAD },
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
@@ -5915,7 +5915,7 @@ const struct flashchip flashchips[] = {
 		.model_id	= MACRONIX_MX23L3254,
 		.total_size	= 4096,
 		.page_size	= 256,
-		.tested		= TEST_OK_PR | TEST_BAD_EW,
+		.tested		= {.probe = OK, .read = OK, .erase = NA, .write = NA},
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.write		= NULL, /* MX23L3254 is a mask ROM, so it is read-only */
