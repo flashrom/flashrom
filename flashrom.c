@@ -672,20 +672,20 @@ int check_erased_range(struct flashctx *flash, unsigned int start,
  */
 int verify_range(struct flashctx *flash, const uint8_t *cmpbuf, unsigned int start, unsigned int len)
 {
-	uint8_t *readbuf = malloc(len);
-	int ret = 0;
-
 	if (!len)
-		goto out_free;
+		return -1;
 
 	if (!flash->chip->read) {
 		msg_cerr("ERROR: flashrom has no read function for this flash chip.\n");
-		return 1;
+		return -1;
 	}
+
+	uint8_t *readbuf = malloc(len);
 	if (!readbuf) {
 		msg_gerr("Could not allocate memory!\n");
-		exit(1);
+		return -1;
 	}
+	int ret = 0;
 
 	if (start + len > flash->chip->total_size * 1024) {
 		msg_gerr("Error: %s called with start 0x%x + len 0x%x >"
@@ -699,7 +699,8 @@ int verify_range(struct flashctx *flash, const uint8_t *cmpbuf, unsigned int sta
 	if (ret) {
 		msg_gerr("Verification impossible because read failed "
 			 "at 0x%x (len 0x%x)\n", start, len);
-		return ret;
+		ret = -1;
+		goto out_free;
 	}
 
 	ret = compare_range(cmpbuf, readbuf, start, len);
