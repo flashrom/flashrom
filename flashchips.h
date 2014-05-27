@@ -208,6 +208,7 @@
 
 #define ESMT_ID			0x8C	/* Elite Semiconductor Memory Technology (ESMT) / EFST Elite Flash Storage */
 #define ESMT_F25L008A		0x2014
+#define ESMT_F25L32PA		0x2016
 #define ESMT_F25D08QA		0x2534
 #define ESMT_F25L16QA2S		0x4015
 #define ESMT_F25L32QA		0x4016

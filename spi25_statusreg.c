@@ -354,6 +354,19 @@ int spi_prettyprint_status_register_default_bp4(struct flashctx *flash)
 	return 0;
 }
 
+int spi_prettyprint_status_register_bp2_bpl(struct flashctx *flash)
+{
+	uint8_t status = spi_read_status_register(flash);
+	spi_prettyprint_status_register_hex(status);
+
+	spi_prettyprint_status_register_bpl(status);
+	spi_prettyprint_status_register_bit(status, 6);
+	spi_prettyprint_status_register_bit(status, 5);
+	spi_prettyprint_status_register_bp(status, 2);
+	spi_prettyprint_status_register_welwip(status);
+	return 0;
+}
+
 /* === Amic ===
  * FIXME: spi_disable_blockprotect is incorrect but works fine for chips using
  * spi_prettyprint_status_register_default_bp1 or
