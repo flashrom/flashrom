@@ -296,7 +296,7 @@ int spi_prettyprint_status_register_default_welwip(struct flashctx *flash)
  * AMIC A25L series
  * and MX MX25L512
  */
-int spi_prettyprint_status_register_default_bp1(struct flashctx *flash)
+int spi_prettyprint_status_register_bp1_srwd(struct flashctx *flash)
 {
 	uint8_t status = spi_read_status_register(flash);
 	spi_prettyprint_status_register_hex(status);
@@ -314,7 +314,7 @@ int spi_prettyprint_status_register_default_bp1(struct flashctx *flash)
  * AMIC A25L series
  * PMC Pm25LD series
  */
-int spi_prettyprint_status_register_default_bp2(struct flashctx *flash)
+int spi_prettyprint_status_register_bp2_srwd(struct flashctx *flash)
 {
 	uint8_t status = spi_read_status_register(flash);
 	spi_prettyprint_status_register_hex(status);
@@ -331,7 +331,7 @@ int spi_prettyprint_status_register_default_bp2(struct flashctx *flash)
  * ST M25P series
  * MX MX25L series
  */
-int spi_prettyprint_status_register_default_bp3(struct flashctx *flash)
+int spi_prettyprint_status_register_bp3_srwd(struct flashctx *flash)
 {
 	uint8_t status = spi_read_status_register(flash);
 	spi_prettyprint_status_register_hex(status);
@@ -343,7 +343,7 @@ int spi_prettyprint_status_register_default_bp3(struct flashctx *flash)
 	return 0;
 }
 
-int spi_prettyprint_status_register_default_bp4(struct flashctx *flash)
+int spi_prettyprint_status_register_bp4_srwd(struct flashctx *flash)
 {
 	uint8_t status = spi_read_status_register(flash);
 	spi_prettyprint_status_register_hex(status);
@@ -369,8 +369,8 @@ int spi_prettyprint_status_register_bp2_bpl(struct flashctx *flash)
 
 /* === Amic ===
  * FIXME: spi_disable_blockprotect is incorrect but works fine for chips using
- * spi_prettyprint_status_register_default_bp1 or
- * spi_prettyprint_status_register_default_bp2.
+ * spi_prettyprint_status_register_bp1_srwd or
+ * spi_prettyprint_status_register_bp2_srwd.
  * FIXME: spi_disable_blockprotect is incorrect and will fail for chips using
  * spi_prettyprint_status_register_amic_a25l032 if those have locks controlled
  * by the second status register.
