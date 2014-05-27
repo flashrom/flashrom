@@ -181,7 +181,10 @@ int serialport_config(fdtype fd, unsigned int baud)
 	msg_pdbg("Baud rate is %ld.\n", dcb.BaudRate);
 #else
 	struct termios wanted, observed;
-	fcntl(fd, F_SETFL, 0);
+	if (fcntl(fd, F_SETFL, 0) != 0) {
+		msg_perr_strerror("Could not clear serial port mode: ");
+		return 1;
+	}
 	if (tcgetattr(fd, &observed) != 0) {
 		msg_perr_strerror("Could not fetch original serial port configuration: ");
 		return 1;
@@ -419,14 +422,21 @@ int serialport_read_nonblock(unsigned char *c, unsigned int readcnt, unsigned in
 		return -1;
 	}
 	if(!SetCommTimeouts(sp_fd, &newTimeout)) {
+		msg_perr_strerror("Could not set serial port timeout settings: ");
+		return -1;
+	}
 #else
 	ssize_t rv;
 	const int flags = fcntl(sp_fd, F_GETFL);
-	if (fcntl(sp_fd, F_SETFL, flags | O_NONBLOCK) != 0) {
-#endif
-		msg_perr_strerror("Could not set serial port timeout settings %s");
+	if (flags == -1) {
+		msg_perr_strerror("Could not get serial port mode: ");
 		return -1;
 	}
+	if (fcntl(sp_fd, F_SETFL, flags | O_NONBLOCK) != 0) {
+		msg_perr_strerror("Could not set serial port mode to non-blocking: ");
+		return -1;
+	}
+#endif
 
 	int i;
 	int rd_bytes = 0;
@@ -458,12 +468,15 @@ int serialport_read_nonblock(unsigned char *c, unsigned int readcnt, unsigned in
 	/* restore original blocking behavior */
 #ifdef _WIN32
 	if (!SetCommTimeouts(sp_fd, &oldTimeout)) {
-#else
-	if (fcntl(sp_fd, F_SETFL, flags) != 0) {
-#endif
-		msg_perr_strerror("Could not restore serial port timeout settings: %s\n");
+		msg_perr_strerror("Could not restore serial port timeout settings: ");
 		ret = -1;
 	}
+#else
+	if (fcntl(sp_fd, F_SETFL, flags) != 0) {
+		msg_perr_strerror("Could not restore serial port mode to blocking: ");
+		ret = -1;
+	}
+#endif
 	return ret;
 }
 
@@ -495,7 +508,14 @@ int serialport_write_nonblock(const unsigned char *buf, unsigned int writecnt, u
 #else
 	ssize_t rv;
 	const int flags = fcntl(sp_fd, F_GETFL);
-	fcntl(sp_fd, F_SETFL, flags | O_NONBLOCK);
+	if (flags == -1) {
+		msg_perr_strerror("Could not get serial port mode: ");
+		return -1;
+	}
+	if (fcntl(sp_fd, F_SETFL, flags | O_NONBLOCK) != 0) {
+		msg_perr_strerror("Could not set serial port mode to non-blocking: ");
+		return -1;
+	}
 #endif
 
 	int i;
@@ -531,10 +551,13 @@ int serialport_write_nonblock(const unsigned char *buf, unsigned int writecnt, u
 #ifdef _WIN32
 	if (!SetCommTimeouts(sp_fd, &oldTimeout)) {
 		msg_perr_strerror("Could not restore serial port timeout settings: ");
-#else
-	if (fcntl(sp_fd, F_SETFL, flags) != 0) {
-#endif
 		return -1;
 	}
+#else
+	if (fcntl(sp_fd, F_SETFL, flags) != 0) {
+		msg_perr_strerror("Could not restore serial port blocking behavior: ");
+		return -1;
+	}
+#endif
 	return ret;
 }
