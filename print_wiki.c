@@ -95,6 +95,21 @@ static const char programmer_th[] = "\
 ! align=\"center\" | IDs\n\
 ! align=\"center\" | Status\n\n";
 
+/* The output of this module relies on MediaWiki templates to select special formatting styles for table cells
+ * reflecting the test status of the respective hardware. This functions returns the correct template name for
+ * the supplied enum test_state. */
+static const char *test_state_to_template(enum test_state test_state)
+{
+	switch (test_state) {
+	case OK: return "OK";
+	case BAD: return "No";
+	case NA: return "NA";
+	case DEP: return "Dep";
+	case NT:
+	default: return "?3";
+	}
+}
+
 #if CONFIG_INTERNAL == 1
 static const char laptop_intro[] = "\n== Supported laptops/notebooks ==\n\n\
 In general, flashing laptops is more difficult because laptops\n\n\
@@ -133,10 +148,10 @@ static void print_supported_chipsets_wiki(int cols)
 			color = !color;
 
 		printf("|- bgcolor=\"#%s\"\n| %s || %s "
-		       "|| %04x:%04x || %s\n", (color) ? "eeeeee" : "dddddd",
+		       "|| %04x:%04x || {{%s}}\n", (color) ? "eeeeee" : "dddddd",
 		       e[i].vendor_name, e[i].device_name,
 		       e[i].vendor_id, e[i].device_id,
-		       (e[i].status == OK) ? "{{OK}}" : "{{?3}}");
+		       test_state_to_template(e[i].status));
 
 		if (((i % lines_per_col) + 1) == lines_per_col)
 			printf("\n|}\n\n");
@@ -202,8 +217,7 @@ static void print_supported_boards_wiki_helper(const char *devicetype, int cols,
 		       b[k].lb_vendor ? b[k].lb_vendor : "",
 		       b[k].lb_vendor ? ":" : "",
 		       b[k].lb_vendor ? b[k].lb_part : "",
-		       (boards[i].working == OK) ? "OK" :
-		       (boards[i].working == NT) ? "?3" : "No");
+		       test_state_to_template(boards[i].working));
 
 		if (boards[i].note) {
 			num_notes++;
@@ -286,46 +300,18 @@ static void print_supported_chips_wiki(int cols)
 			c = !c;
 
 		old = f;
-		const char *probe, *read, *write, *erase;
-		switch (f->tested.probe) {
-			case OK: probe = "OK"; break;
-			case BAD: probe = "No"; break;
-			case NA: probe = "NA"; break;
-			case DEP: probe = "Dep"; break;
-			default: probe = "?3"; break;
-		}
-		switch (f->tested.read) {
-			case OK: read = "OK"; break;
-			case BAD: read = "No"; break;
-			case NA: read = "NA"; break;
-			case DEP: read = "Dep"; break;
-			default: read = "?3"; break;
-		}
-		switch (f->tested.erase) {
-			case OK: erase = "OK"; break;
-			case BAD: erase = "No"; break;
-			case NA: erase = "NA"; break;
-			case DEP: erase = "Dep"; break;
-			default: erase = "?3"; break;
-		}
-		switch (f->tested.write) {
-			case OK: write = "OK"; break;
-			case BAD: write = "No"; break;
-			case NA: write = "NA"; break;
-			case DEP: write = "Dep"; break;
-			default: write = "?3"; break;
-		}
 		s = flashbuses_to_text(f->bustype);
 		sprintf(vmin, "%0.03f", f->voltage.min / (double)1000);
 		sprintf(vmax, "%0.03f", f->voltage.max / (double)1000);
-		/* '{{%s}}' is used in combination with 'OK', 'No' and '?3' to
-		 * select special formatting templates for the bg color. */
 		printf("|- bgcolor=\"#%s\"\n| %s || %s || align=\"right\" | %d "
 		       "|| %s || {{%s}} || {{%s}} || {{%s}} || {{%s}}"
 		       "|| %s || %s \n",
 		       (c == 1) ? "eeeeee" : "dddddd", f->vendor, f->name,
 		       f->total_size, s,
-		       probe, read, erase, write,
+		       test_state_to_template(f->tested.probe),
+		       test_state_to_template(f->tested.read),
+		       test_state_to_template(f->tested.erase),
+		       test_state_to_template(f->tested.write),
 		       f->voltage.min ? vmin : "?",
 		       f->voltage.max ? vmax : "?");
 		free(s);
@@ -366,7 +352,7 @@ static void print_supported_devs_wiki_helper(const struct programmer_entry prog)
 		if (i == 0)
 			printf("| rowspan=\"%u\" | %s |", count, prog.name);
 		printf("| %s || %s || %04x:%04x || {{%s}}\n", devs[i].vendor_name, devs[i].device_name,
-		       devs[i].vendor_id, devs[i].device_id, (devs[i].status == NT) ? "?3" : "OK");
+		       devs[i].vendor_id, devs[i].device_id, test_state_to_template(devs[i].status));
 	}
 }
 
