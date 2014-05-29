@@ -136,10 +136,8 @@ int unlock_lh28f008bjt(struct flashctx *flash);
 
 /* jedec.c */
 uint8_t oddparity(uint8_t val);
-void toggle_ready_jedec(struct flashctx *flash, chipaddr dst);
-void data_polling_jedec(struct flashctx *flash, chipaddr dst, uint8_t data);
-int write_byte_program_jedec(struct flashctx *flash, chipaddr bios, uint8_t *src,
-			     chipaddr dst);
+void toggle_ready_jedec(const struct flashctx *flash, chipaddr dst);
+void data_polling_jedec(const struct flashctx *flash, chipaddr dst, uint8_t data);
 int probe_jedec(struct flashctx *flash);
 int write_jedec(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 int write_jedec_1(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
