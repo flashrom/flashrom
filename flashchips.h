@@ -503,7 +503,8 @@
 /*
  * Programmable Micro Corp is listed in JEP106W in bank 2, so it should
  * have a 0x7F continuation code prefix.
- * Apparently this name is owned by "Chingis Technology Corporation" http://www.chingistek.com.
+ * Apparently this name is owned by "Chingis Technology Corporation" http://www.chingistek.com which is now a
+ * subsidiary of ISSI. They continue to use the PMC manufacturer ID nevertheless.
  */
 #define PMC_ID			0x7F9D	/* PMC */
 #define PMC_ID_NOPREFIX		0x9D	/* PMC, missing 0x7F prefix */
