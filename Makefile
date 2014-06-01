@@ -197,6 +197,11 @@ UNSUPPORTED_FEATURES += CONFIG_ATAVIA=yes
 else
 override CONFIG_ATAVIA = no
 endif
+ifeq ($(CONFIG_IT8212), yes)
+UNSUPPORTED_FEATURES += CONFIG_IT8212=yes
+else
+override CONFIG_IT8212 = no
+endif
 ifeq ($(CONFIG_DRKAISER), yes)
 UNSUPPORTED_FEATURES += CONFIG_DRKAISER=yes
 else
@@ -431,6 +436,9 @@ CONFIG_SATAMV ?= yes
 # Enable Linux spidev interface by default. We disable it on non-Linux targets.
 CONFIG_LINUX_SPI ?= yes
 
+# Always enable ITE IT8212F PATA controllers for now.
+CONFIG_IT8212 ?= yes
+
 # Disable wiki printing by default. It is only useful if you have wiki access.
 CONFIG_PRINT_WIKI ?= no
 
@@ -546,6 +554,12 @@ endif
 ifeq ($(CONFIG_ATAVIA), yes)
 FEATURE_CFLAGS += -D'CONFIG_ATAVIA=1'
 PROGRAMMER_OBJS += atavia.o
+NEED_PCI := yes
+endif
+
+ifeq ($(CONFIG_IT8212), yes)
+FEATURE_CFLAGS += -D'CONFIG_IT8212=1'
+PROGRAMMER_OBJS += it8212.o
 NEED_PCI := yes
 endif
 
