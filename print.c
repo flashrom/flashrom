@@ -47,6 +47,18 @@ static char* strtok_r(char *str, const char *delim, char **nextp)
 }
 #endif
 
+static const char *test_state_to_text(enum test_state test_state)
+{
+	switch (test_state) {
+	case OK: return "OK";
+	case BAD: return "Not working";
+	case NA: return "N/A";
+	case DEP: return "Config-dependent";
+	case NT:
+	default: return "Untested";
+	}
+}
+
 /*
  * Return a string corresponding to the bustype parameter.
  * Memory is obtained with malloc() and must be freed with free() by the caller.
@@ -469,13 +481,40 @@ static void print_supported_boards_helper(const struct board_info *boards,
 
 void print_supported_devs(const struct programmer_entry prog, const char *const type)
 {
-	int i;
-
 	const struct dev_entry *const devs = prog.devs.dev;
 	msg_ginfo("\nSupported %s devices for the %s programmer:\n", type, prog.name);
+	unsigned int maxvendorlen = strlen("Vendor") + 1;
+	unsigned int maxdevlen = strlen("Device") + 1;
+
+	unsigned int i;
 	for (i = 0; devs[i].vendor_name != NULL; i++) {
-		msg_pinfo("%s %s [%04x:%04x]%s\n", devs[i].vendor_name, devs[i].device_name, devs[i].vendor_id,
-			  devs[i].device_id, (devs[i].status == NT) ? " (untested)" : "");
+		maxvendorlen = max(maxvendorlen, strlen(devs[i].vendor_name));
+		maxdevlen = max(maxdevlen, strlen(devs[i].device_name));
+	}
+	maxvendorlen++;
+	maxdevlen++;
+
+	msg_ginfo("Vendor");
+	for (i = strlen("Vendor"); i < maxvendorlen; i++)
+		msg_ginfo(" ");
+
+	msg_ginfo("Device");
+	for (i = strlen("Device"); i < maxdevlen; i++)
+		msg_ginfo(" ");
+
+	msg_ginfo(" %s IDs    Status\n", type);
+
+	for (i = 0; devs[i].vendor_name != NULL; i++) {
+		msg_ginfo("%s", devs[i].vendor_name);
+		unsigned int j;
+		for (j = strlen(devs[i].vendor_name); j < maxvendorlen; j++)
+			msg_ginfo(" ");
+		msg_ginfo("%s", devs[i].device_name);
+		for (j = strlen(devs[i].device_name); j < maxdevlen; j++)
+			msg_ginfo(" ");
+
+		msg_pinfo(" %04x:%04x  %s\n", devs[i].vendor_id, devs[i].device_id,
+			  test_state_to_text(devs[i].status));
 	}
 }
 
