@@ -86,7 +86,7 @@ int probe_en29lv640b(struct flashctx *flash)
 	return 0;
 }
 
-int erase_en29lv640b(struct flashctx *flash)
+static int erase_chip_shifted_jedec(struct flashctx *flash)
 {
 	chipaddr bios = flash->virtual_memory;
 
@@ -105,8 +105,7 @@ int erase_en29lv640b(struct flashctx *flash)
 	return 0;
 }
 
-int block_erase_en29lv640b(struct flashctx *flash, unsigned int start,
-			   unsigned int len)
+int erase_block_shifted_jedec(struct flashctx *flash, unsigned int start, unsigned int len)
 {
 	chipaddr bios = flash->virtual_memory;
 	chipaddr dst = bios + start;
@@ -126,12 +125,11 @@ int block_erase_en29lv640b(struct flashctx *flash, unsigned int start,
 	return 0;
 }
 
-int block_erase_chip_en29lv640b(struct flashctx *flash, unsigned int address,
-			        unsigned int blocklen)
+int erase_chip_block_shifted_jedec(struct flashctx *flash, unsigned int address, unsigned int blocklen)
 {
 	if ((address != 0) || (blocklen != flash->chip->total_size * 1024)) {
 		msg_cerr("%s called with incorrect arguments\n", __func__);
 		return -1;
 	}
-	return erase_en29lv640b(flash);
+	return erase_chip_shifted_jedec(flash);
 }

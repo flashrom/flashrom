@@ -147,8 +147,6 @@ int erase_chip_block_jedec(struct flashctx *flash, unsigned int page, unsigned i
 
 /* m29f400bt.c */
 int probe_m29f400bt(struct flashctx *flash);
-int block_erase_m29f400bt(struct flashctx *flash, unsigned int start, unsigned int len);
-int block_erase_chip_m29f400bt(struct flashctx *flash, unsigned int start, unsigned int len);
 int write_m29f400bt(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 void protect_m29f400bt(struct flashctx *flash, chipaddr bios);
 
@@ -199,8 +197,8 @@ int unlock_stm50_nonuniform(struct flashctx *flash);
 
 /* en29lv640b.c */
 int probe_en29lv640b(struct flashctx *flash);
-int block_erase_en29lv640b(struct flashctx *flash, unsigned int start, unsigned int len);
-int block_erase_chip_en29lv640b(struct flashctx *flash, unsigned int start, unsigned int len);
+int erase_block_shifted_jedec(struct flashctx *flash, unsigned int start, unsigned int len);
+int erase_chip_block_shifted_jedec(struct flashctx *flash, unsigned int start, unsigned int len);
 int write_en29lv640b(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 
 #endif /* !__CHIPDRIVERS_H__ */
