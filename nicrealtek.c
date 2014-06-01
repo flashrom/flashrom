@@ -28,6 +28,7 @@
 #define PCI_VENDOR_ID_REALTEK	0x10ec
 #define PCI_VENDOR_ID_SMC1211	0x1113
 
+static uint32_t io_base_addr = 0;
 static int bios_rom_addr, bios_rom_data;
 
 const struct dev_entry nics_realtek[] = {

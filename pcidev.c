@@ -25,7 +25,6 @@
 #include "programmer.h"
 #include "hwaccess.h"
 
-uint32_t io_base_addr;
 struct pci_access *pacc;
 
 enum pci_bartype {

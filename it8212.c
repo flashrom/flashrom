@@ -59,7 +59,7 @@ int it8212_init(void)
 		return 1;
 
 	/* Bit 0 is address decode enable, 17-31 the base address, everything else reserved/zero. */
-	io_base_addr = pcidev_readbar(dev, PCI_ROM_ADDRESS) & 0xFFFFFFFE;
+	uint32_t io_base_addr = pcidev_readbar(dev, PCI_ROM_ADDRESS) & 0xFFFFFFFE;
 	if (!io_base_addr)
 		return 1;
 

@@ -173,8 +173,7 @@ struct bitbang_spi_master {
 struct pci_dev;
 
 /* pcidev.c */
-// FIXME: These need to be local, not global
-extern uint32_t io_base_addr;
+// FIXME: This needs to be local, not global(?)
 extern struct pci_access *pacc;
 int pci_init_common(void);
 uintptr_t pcidev_readbar(struct pci_dev *dev, int bar);

@@ -33,6 +33,8 @@
 
 #define PCI_VENDOR_ID_HPT	0x1103
 
+static uint32_t io_base_addr = 0;
+
 const struct dev_entry ata_hpt[] = {
 	{0x1103, 0x0004, NT, "Highpoint", "HPT366/368/370/370A/372/372N"},
 	{0x1103, 0x0005, NT, "Highpoint", "HPT372A/372N"},

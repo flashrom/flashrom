@@ -33,6 +33,7 @@
 
 #define PCI_VENDOR_ID_3COM	0x10b7
 
+static uint32_t io_base_addr = 0;
 static uint32_t internal_conf;
 static uint16_t id;
 

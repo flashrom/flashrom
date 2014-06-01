@@ -30,6 +30,7 @@
 #define BOOT_ROM_ADDR		0x50
 #define BOOT_ROM_DATA		0x54
 
+static uint32_t io_base_addr = 0;
 const struct dev_entry nics_natsemi[] = {
 	{0x100b, 0x0020, NT, "National Semiconductor", "DP83815/DP83816"},
 	{0x100b, 0x0022, NT, "National Semiconductor", "DP83820"},
