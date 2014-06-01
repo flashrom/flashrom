@@ -54,6 +54,9 @@ enum programmer {
 #if CONFIG_ATAHPT == 1
 	PROGRAMMER_ATAHPT,
 #endif
+#if CONFIG_ATAVIA == 1
+	PROGRAMMER_ATAVIA,
+#endif
 #if CONFIG_FT2232_SPI == 1
 	PROGRAMMER_FT2232_SPI,
 #endif
@@ -432,6 +435,13 @@ extern const struct dev_entry satas_sii[];
 #if CONFIG_ATAHPT == 1
 int atahpt_init(void);
 extern const struct dev_entry ata_hpt[];
+#endif
+
+/* atavia.c */
+#if CONFIG_ATAVIA == 1
+int atavia_init(void);
+void *atavia_map(const char *descr, uintptr_t phys_addr, size_t len);
+extern const struct dev_entry ata_via[];
 #endif
 
 /* ft2232_spi.c */

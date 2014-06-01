@@ -192,6 +192,8 @@ cards)"
 .sp
 .BR "* atahpt" " (for flash ROMs on Highpoint ATA/RAID controllers)"
 .sp
+.BR "* atavia" " (for flash ROMs on VIA VT6421A ATA controllers)"
+.sp
 .BR "* ft2232_spi" " (for SPI flash ROMs attached to an FT2232/FT4232H/FT232H family \
 based USB SPI programmer), including the DLP Design DLP-USB1232H, \
 FTDI FT2232H Mini-Module, FTDI FT4232H Mini-Module, openbiosprog-spi, Amontec \
@@ -587,9 +589,9 @@ syntax where
 .B content
 is an 8-bit hexadecimal value.
 .SS
-.BR "nic3com" , " nicrealtek" , " nicnatsemi" , " nicintel\
-" , " nicintel_spi" , " gfxnvidia" , " ogp_spi" , " drkaiser" , " satasii\
-" , " satamv" ", and " atahpt " programmers
+.BR "nic3com" , " nicrealtek" , " nicnatsemi" , " nicintel"\
+, " nicintel_spi" , " gfxnvidia" , " ogp_spi" , " drkaiser" , " satasii"\
+, " satamv" , " atahpt" ", and " atavia " programmers
 These programmers have an option to specify the PCI address of the card
 your want to use, which must be specified if more than one card supported
 by the selected programmer is installed in your system. The syntax is
@@ -608,6 +610,18 @@ is the PCI function number of the desired device.
 .sp
 Example:
 .B "flashrom \-p nic3com:pci=05:04.0"
+.SS
+.BR "atavia " programmer
+Due to the mysterious address handling of the VIA VT6421A controller the user can specify an offset with the
+.sp
+.B "  flashrom \-p atavia:offset=addr"
+.sp
+syntax where
+.B addr
+will be interpreted as usual (leading 0x (0) for hexadecimal (octal) values, or else decimal).
+For more information please see
+.nh
+.B http://flashrom.org/VT6421A
 .SS
 .BR "ft2232_spi " programmer
 An optional parameter specifies the controller
@@ -891,6 +905,9 @@ flashrom needs different access permissions for different programmers.
 needs raw memory access, PCI configuration space access, raw I/O port
 access (x86) and MSR access (x86).
 .sp
+.B atavia
+needs PCI configuration space access.
+.sp
 .BR nic3com ", " nicrealtek " and " nicnatsemi "
 need PCI configuration space read access and raw I/O port access.
 .sp
@@ -923,7 +940,7 @@ need access to the USB device via libusb.
 needs no access permissions at all.
 .sp
 .BR internal ", " nic3com ", " nicrealtek ", " nicnatsemi ", "
-.BR gfxnvidia ", " drkaiser ", " satasii ", " satamv " and " atahpt
+.BR gfxnvidia ", " drkaiser ", " satasii ", " satamv ", " atahpt" and " atavia
 have to be run as superuser/root, and need additional raw access permission.
 .sp
 .BR serprog ", " buspirate_spi ", " dediprog ", " usbblaster_spi " and " ft2232_spi

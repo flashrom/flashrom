@@ -172,6 +172,18 @@ const struct programmer_entry programmer_table[] = {
 	},
 #endif
 
+#if CONFIG_ATAVIA == 1
+	{
+		.name			= "atavia",
+		.type			= PCI,
+		.devs.dev		= ata_via,
+		.init			= atavia_init,
+		.map_flash_region	= atavia_map,
+		.unmap_flash_region	= fallback_unmap,
+		.delay			= internal_delay,
+	},
+#endif
+
 #if CONFIG_FT2232_SPI == 1
 	{
 		.name			= "ft2232_spi",

@@ -192,6 +192,11 @@ UNSUPPORTED_FEATURES += CONFIG_ATAHPT=yes
 else
 override CONFIG_ATAHPT = no
 endif
+ifeq ($(CONFIG_ATAVIA), yes)
+UNSUPPORTED_FEATURES += CONFIG_ATAVIA=yes
+else
+override CONFIG_ATAVIA = no
+endif
 ifeq ($(CONFIG_DRKAISER), yes)
 UNSUPPORTED_FEATURES += CONFIG_DRKAISER=yes
 else
@@ -320,6 +325,11 @@ UNSUPPORTED_FEATURES += CONFIG_ATAHPT=yes
 else
 override CONFIG_ATAHPT = no
 endif
+ifeq ($(CONFIG_ATAVIA), yes)
+UNSUPPORTED_FEATURES += CONFIG_ATAVIA=yes
+else
+override CONFIG_ATAVIA = no
+endif
 ifeq ($(CONFIG_SATAMV), yes)
 UNSUPPORTED_FEATURES += CONFIG_SATAMV=yes
 else
@@ -383,6 +393,9 @@ CONFIG_SATASII ?= yes
 # Highpoint (HPT) ATA/RAID controller support.
 # IMPORTANT: This code is not yet working!
 CONFIG_ATAHPT ?= no
+
+# VIA VT6421A LPC memory support
+CONFIG_ATAVIA ?= yes
 
 # Always enable FT2232 SPI dongles for now.
 CONFIG_FT2232_SPI ?= yes
@@ -532,6 +545,12 @@ endif
 ifeq ($(CONFIG_ATAHPT), yes)
 FEATURE_CFLAGS += -D'CONFIG_ATAHPT=1'
 PROGRAMMER_OBJS += atahpt.o
+NEED_PCI := yes
+endif
+
+ifeq ($(CONFIG_ATAVIA), yes)
+FEATURE_CFLAGS += -D'CONFIG_ATAVIA=1'
+PROGRAMMER_OBJS += atavia.o
 NEED_PCI := yes
 endif
 
