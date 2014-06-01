@@ -4730,10 +4730,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 8},
 					{64 * 1024, 127},
 				},
-				.block_erase = block_erase_en29lv640b,
+				.block_erase = erase_block_shifted_jedec,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = block_erase_chip_en29lv640b,
+				.block_erase = erase_chip_block_shifted_jedec,
 			},
 		},
 		.write		= write_en29lv640b,
@@ -4827,10 +4827,10 @@ const struct flashchip flashchips[] = {
 					{32 * 1024, 1},
 					{64 * 1024, 7},
 				},
-				.block_erase = block_erase_m29f400bt,
+				.block_erase = erase_block_shifted_jedec,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = block_erase_chip_m29f400bt,
+				.block_erase = erase_chip_block_shifted_jedec,
 			},
 		},
 		.write		= write_m29f400bt,
@@ -4859,10 +4859,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = block_erase_m29f400bt,
+				.block_erase = erase_block_shifted_jedec,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = block_erase_chip_m29f400bt,
+				.block_erase = erase_chip_block_shifted_jedec,
 			},
 		},
 		.write		= write_m29f400bt,
@@ -4891,10 +4891,10 @@ const struct flashchip flashchips[] = {
 					{32 * 1024, 1},
 					{64 * 1024, 31},
 				},
-				.block_erase = block_erase_m29f400bt,
+				.block_erase = erase_block_shifted_jedec,
 			}, {
 				.eraseblocks = { {2048 * 1024, 1} },
-				.block_erase = block_erase_chip_m29f400bt,
+				.block_erase = erase_chip_block_shifted_jedec,
 			},
 		},
 		.write		= write_m29f400bt, /* Supports a fast mode too */
@@ -4923,10 +4923,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = block_erase_m29f400bt,
+				.block_erase = erase_block_shifted_jedec,
 			}, {
 				.eraseblocks = { {2048 * 1024, 1} },
-				.block_erase = block_erase_chip_m29f400bt,
+				.block_erase = erase_chip_block_shifted_jedec,
 			},
 		},
 		.write		= write_m29f400bt, /* Supports a fast mode too */
@@ -11292,10 +11292,10 @@ const struct flashchip flashchips[] = {
 					{32 * 1024, 1},
 					{64 * 1024, 7},
 				},
-				.block_erase = block_erase_m29f400bt,
+				.block_erase = erase_block_shifted_jedec,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = block_erase_chip_m29f400bt,
+				.block_erase = erase_chip_block_shifted_jedec,
 			}
 		},
 		.write		= write_m29f400bt,
@@ -11324,10 +11324,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = block_erase_m29f400bt,
+				.block_erase = erase_block_shifted_jedec,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = block_erase_chip_m29f400bt,
+				.block_erase = erase_chip_block_shifted_jedec,
 			}
 		},
 		.write		= write_m29f400bt,
