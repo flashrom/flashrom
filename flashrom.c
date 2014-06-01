@@ -184,6 +184,18 @@ const struct programmer_entry programmer_table[] = {
 	},
 #endif
 
+#if CONFIG_IT8212 == 1
+	{
+		.name			= "it8212",
+		.type			= PCI,
+		.devs.dev		= devs_it8212,
+		.init			= it8212_init,
+		.map_flash_region	= fallback_map,
+		.unmap_flash_region	= fallback_unmap,
+		.delay			= internal_delay,
+	},
+#endif
+
 #if CONFIG_FT2232_SPI == 1
 	{
 		.name			= "ft2232_spi",

@@ -194,6 +194,8 @@ cards)"
 .sp
 .BR "* atavia" " (for flash ROMs on VIA VT6421A SATA controllers)"
 .sp
+.BR "* it8212" " (for flash ROMs on ITE IT8212F ATA/RAID controller)"
+.sp
 .BR "* ft2232_spi" " (for SPI flash ROMs attached to an FT2232/FT4232H/FT232H family \
 based USB SPI programmer), including the DLP Design DLP-USB1232H, \
 FTDI FT2232H Mini-Module, FTDI FT4232H Mini-Module, openbiosprog-spi, Amontec \
@@ -591,7 +593,7 @@ is an 8-bit hexadecimal value.
 .SS
 .BR "nic3com" , " nicrealtek" , " nicnatsemi" , " nicintel"\
 , " nicintel_spi" , " gfxnvidia" , " ogp_spi" , " drkaiser" , " satasii"\
-, " satamv" , " atahpt" ", and " atavia " programmers
+, " satamv" , " atahpt" ", " atavia " and " it8212 " programmers
 These programmers have an option to specify the PCI address of the card
 your want to use, which must be specified if more than one card supported
 by the selected programmer is installed in your system. The syntax is
@@ -914,7 +916,7 @@ need PCI configuration space read access and raw I/O port access.
 .B atahpt
 needs PCI configuration space access and raw I/O port access.
 .sp
-.BR gfxnvidia " and " drkaiser
+.BR gfxnvidia ", " drkaiser " and " it8212
 need PCI configuration space access and raw memory access.
 .sp
 .B rayer_spi
