@@ -72,7 +72,7 @@ static const struct par_programmer lpc_programmer_atavia = {
 };
 
 static void *atavia_offset = NULL;
-struct pci_dev *dev = NULL;
+static struct pci_dev *dev = NULL;
 
 static void atavia_prettyprint_access(uint8_t access)
 {
@@ -118,7 +118,7 @@ static bool atavia_ready(struct pci_dev *pcidev_dev)
 	return ready;
 }
 
-void *atavia_map(const char *descr, unsigned long phys_addr, size_t len)
+void *atavia_map(const char *descr, uintptr_t phys_addr, size_t len)
 {
 	return (atavia_offset != 0) ? atavia_offset : (void *)phys_addr;
 }
@@ -146,7 +146,6 @@ int atavia_init(void)
 	if (rget_io_perms())
 		return 1;
 
-	/* No need to check for errors, pcidev_init() will not return in case of errors. */
 	dev = pcidev_init(ata_via, PCI_ROM_ADDRESS); /* Acutally no BAR setup needed at all. */
 	if (!dev)
 		return 1;
@@ -172,7 +171,7 @@ int atavia_init(void)
 
 static void atavia_chip_writeb(const struct flashctx *flash, uint8_t val, const chipaddr addr)
 {
-	msg_pspew("%s: 0x%02x to 0x%08lx.\n", __func__, val, addr);
+	msg_pspew("%s: 0x%02x to 0x%*" PRIxPTR ".\n", __func__, val, PRIxPTR_WIDTH, addr);
 	pci_write_long(dev, BROM_ADDR, (addr & ~3));
 	pci_write_long(dev, BROM_DATA, val << BYTE_OFFSET(addr));
 	pci_write_byte(dev, BROM_ACCESS, BROM_TRIGGER | BROM_WRITE | ENABLE_BYTE(addr));
@@ -192,6 +191,6 @@ static uint8_t atavia_chip_readb(const struct flashctx *flash, const chipaddr ad
 	}
 
 	uint8_t val = (pci_read_long(dev, BROM_DATA) >> BYTE_OFFSET(addr)) & 0xff;
-	msg_pspew("%s: 0x%02x from 0x%08lx.\n", __func__, val, addr);
+	msg_pspew("%s: 0x%02x from 0x%*" PRIxPTR ".\n", __func__, val, PRIxPTR_WIDTH, addr);
 	return val;
 }
