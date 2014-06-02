@@ -395,7 +395,7 @@ static void print_supported_chipsets(void)
 	for (i = strlen("Chipset"); i < maxchipsetlen; i++)
 		msg_ginfo(" ");
 
-	msg_ginfo("PCI IDs   State\n\n");
+	msg_ginfo("PCI IDs    Status\n\n");
 
 	for (c = chipset_enables; c->vendor_name != NULL; c++) {
 		msg_ginfo("%s", c->vendor_name);
@@ -404,8 +404,8 @@ static void print_supported_chipsets(void)
 		msg_ginfo("%s", c->device_name);
 		for (i = 0; i < maxchipsetlen - strlen(c->device_name); i++)
 			msg_ginfo(" ");
-		msg_ginfo("%04x:%04x%s\n", c->vendor_id, c->device_id,
-		       (c->status == NT) ? " (untested)" : "");
+		msg_ginfo("%04x:%04x  %s\n", c->vendor_id, c->device_id,
+		       test_state_to_text(c->status));
 	}
 }
 
