@@ -52,6 +52,11 @@ DOSLIBS_BASE ?= ..
 # evaluated below, namely those that enable/disable the various programmers).
 # Compilation will fail for unspecified values.
 CONFIG_DEFAULT_PROGRAMMER ?= PROGRAMMER_INVALID
+# The following adds a default parameter for the default programmer set above (only).
+CONFIG_DEFAULT_PROGRAMMER_ARGS ?= ''
+# Example: compiling with
+#   make CONFIG_DEFAULT_PROGRAMMER=PROGRAMMER_SERPROG CONFIG_DEFAULT_PROGRAMMER_ARGS="dev=/dev/ttyUSB0:1500000"
+# would make executing './flashrom' (almost) equivialent to './flashrom -p serprog:dev=/dev/ttyUSB0:1500000'.
 
 # If your compiler spits out excessive warnings, run make WARNERROR=no
 # You shouldn't have to change this flag.
@@ -487,6 +492,7 @@ CONFIG_INTERNAL_DMI ?= yes
 # Depending on the CONFIG_* variables set and verified above we set compiler flags and parameters below.
 
 FEATURE_CFLAGS += -D'CONFIG_DEFAULT_PROGRAMMER=$(CONFIG_DEFAULT_PROGRAMMER)'
+FEATURE_CFLAGS += -D'CONFIG_DEFAULT_PROGRAMMER_ARGS="$(CONFIG_DEFAULT_PROGRAMMER_ARGS)"'
 
 ifeq ($(CONFIG_INTERNAL), yes)
 FEATURE_CFLAGS += -D'CONFIG_INTERNAL=1'
