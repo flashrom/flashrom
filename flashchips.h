@@ -537,6 +537,7 @@
 #define SANYO_ID		0x62    /* Sanyo */
 #define SANYO_LE25FW203A	0x1600
 #define SANYO_LE25FW403A	0x1100
+#define SANYO_LE25FW106		0x15
 #define SANYO_LE25FW406		0x07	/* RES2 */
 #define SANYO_LE25FW418A	0x10	/* RES2 and some weird 1 byte RDID variant */
 #define SANYO_LE25FW406A	0x1A	/* RES2, no datasheet */
