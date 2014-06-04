@@ -196,6 +196,13 @@ int spi_disable_blockprotect(struct flashctx *flash)
 	return spi_disable_blockprotect_generic(flash, 0x3C, 0, 0, 0xFF);
 }
 
+/* A common block protection disable that tries to unset the status register bits masked by 0x0C (BP0-1) and
+ * protected/locked by bit #7. Useful when bits 4-5 may be non-0). */
+int spi_disable_blockprotect_bp1_srwd(struct flashctx *flash)
+{
+	return spi_disable_blockprotect_generic(flash, 0x0C, 1 << 7, 0, 0xFF);
+}
+
 /* A common block protection disable that tries to unset the status register bits masked by 0x1C (BP0-2) and
  * protected/locked by bit #7. Useful when bit #5 is neither a protection bit nor reserved (and hence possibly
  * non-0). */
