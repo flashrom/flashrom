@@ -241,6 +241,14 @@ char *flashbuses_to_text(enum chipbustype bustype);
 int print_supported(void);
 void print_supported_wiki(void);
 
+/* helpers.c */
+uint32_t address_to_bits(uint32_t addr);
+int bitcount(unsigned long a);
+int max(int a, int b);
+int min(int a, int b);
+char *strcat_realloc(char *dest, const char *src);
+void tolower_string(char *str);
+
 /* flashrom.c */
 extern int verbose_screen;
 extern int verbose_logfile;
@@ -251,13 +259,9 @@ int read_memmapped(struct flashctx *flash, uint8_t *buf, unsigned int start, uns
 int erase_flash(struct flashctx *flash);
 int probe_flash(struct registered_programmer *pgm, int startchip, struct flashctx *fill_flash, int force);
 int read_flash_to_file(struct flashctx *flash, const char *filename);
-int min(int a, int b);
-int max(int a, int b);
-void tolower_string(char *str);
 char *extract_param(const char *const *haystack, const char *needle, const char *delim);
 int verify_range(struct flashctx *flash, const uint8_t *cmpbuf, unsigned int start, unsigned int len);
 int need_erase(const uint8_t *have, const uint8_t *want, unsigned int len, enum write_granularity gran);
-char *strcat_realloc(char *dest, const char *src);
 void print_version(void);
 void print_buildinfo(void);
 void print_banner(void);

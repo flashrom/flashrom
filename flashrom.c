@@ -535,42 +535,6 @@ int read_memmapped(struct flashctx *flash, uint8_t *buf, unsigned int start,
 	return 0;
 }
 
-int min(int a, int b)
-{
-	return (a < b) ? a : b;
-}
-
-int max(int a, int b)
-{
-	return (a > b) ? a : b;
-}
-
-int bitcount(unsigned long a)
-{
-	int i = 0;
-	for (; a != 0; a >>= 1)
-		if (a & 1)
-			i++;
-	return i;
-}
-
-void tolower_string(char *str)
-{
-	for (; *str != '\0'; str++)
-		*str = (char)tolower((unsigned char)*str);
-}
-
-char *strcat_realloc(char *dest, const char *src)
-{
-	dest = realloc(dest, strlen(dest) + strlen(src) + 1);
-	if (!dest) {
-		msg_gerr("Out of memory!\n");
-		return NULL;
-	}
-	strcat(dest, src);
-	return dest;
-}
-
 /* This is a somewhat hacked function similar in some ways to strtok().
  * It will look for needle with a subsequent '=' in haystack, return a copy of
  * needle and remove everything from the first occurrence of needle to the next
