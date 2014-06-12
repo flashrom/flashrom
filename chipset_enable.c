@@ -1244,8 +1244,6 @@ static int enable_flash_mcp6x_7x(struct pci_dev *dev, const char *name)
 	int ret = 0, want_spi = 0;
 	uint8_t val;
 
-	msg_pinfo("This chipset is not really supported yet. Guesswork...\n");
-
 	/* dev is the ISA bridge. No idea what the stuff below does. */
 	val = pci_read_byte(dev, 0x8a);
 	msg_pdbg("ISA/LPC bridge reg 0x8a contents: 0x%02x, bit 6 is %i, bit 5 "
@@ -1264,17 +1262,15 @@ static int enable_flash_mcp6x_7x(struct pci_dev *dev, const char *name)
 		 */
 		internal_buses_supported = BUS_NONE;
 		msg_pdbg("Flash bus type is SPI\n");
-		msg_pinfo("SPI on this chipset is WIP. Please report any "
-			  "success or failure by mailing us the verbose "
-			  "output to flashrom@flashrom.org, thanks!\n");
 		break;
 	default:
 		/* Should not happen. */
 		internal_buses_supported = BUS_NONE;
-		msg_pdbg("Flash bus type is unknown (none)\n");
-		msg_pinfo("Something went wrong with bus type detection.\n");
-		goto out_msg;
-		break;
+		msg_pwarn("Flash bus type is unknown (none)\n");
+		msg_pinfo("Please send the log files created by \"flashrom -p internal -o logfile\" to \n"
+			  "flashrom@flashrom.org with \"your board name: flashrom -V\" as the subject to\n"
+			  "help us finish support for your chipset. Thanks.\n");
+		return ERROR_NONFATAL;
 	}
 
 	/* Force enable SPI and disable LPC? Not a good idea. */
@@ -1286,11 +1282,6 @@ static int enable_flash_mcp6x_7x(struct pci_dev *dev, const char *name)
 
 	if (mcp6x_spi_init(want_spi))
 		ret = 1;
-
-out_msg:
-	msg_pinfo("Please send the output of \"flashrom -V -p internal\" to flashrom@flashrom.org\n"
-		  "with \"your board name: flashrom -V\" as the subject to help us finish support\n"
-		  "for your chipset. Thanks.\n");
 
 	return ret;
 }
