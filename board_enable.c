@@ -2463,6 +2463,36 @@ const struct board_match board_matches[] = {
 	{     0,      0,      0,      0,       0,      0,      0,      0, NULL,         NULL, NULL,           P3, NULL,          NULL,                    0,   NT, NULL}, /* end marker */
 };
 
+int selfcheck_board_enables(void)
+{
+	if (board_matches[ARRAY_SIZE(board_matches) - 1].vendor_name != NULL) {
+		msg_gerr("Board enables table miscompilation!\n");
+		return 1;
+	}
+
+	int ret = 0;
+	unsigned int i;
+	for (i = 0; i < ARRAY_SIZE(board_matches) - 1; i++) {
+		const struct board_match *b = &board_matches[i];
+		if (b->vendor_name == NULL || b->board_name == NULL) {
+			msg_gerr("ERROR: Board enable #%d does not define a vendor and board name.\n"
+				 "Please report a bug at flashrom@flashrom.org\n", i);
+			ret = 1;
+			continue;
+		}
+		if ((b->first_vendor == 0 || b->first_device == 0 ||
+		     b->second_vendor == 0 || b->second_device == 0) ||
+		    ((b->lb_vendor == NULL) ^ (b->lb_part == NULL)) ||
+		    (b->max_rom_decode_parallel == 0 && b->enable == NULL)) {
+			msg_gerr("ERROR: Board enable for %s %s is misdefined.\n"
+				 "Please report a bug at flashrom@flashrom.org\n",
+				 b->vendor_name, b->board_name);
+			ret = 1;
+		}
+	}
+	return ret;
+}
+
 /* Parse the <vendor>:<board> string specified by the user as part of -p internal:mainboard=<vendor>:<board>.
  * Parameters vendor and model will be overwritten. Returns 0 on success.
  * Note: strtok modifies the original string, so we work on a copy and allocate memory for the results.

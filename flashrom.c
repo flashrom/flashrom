@@ -1758,6 +1758,10 @@ int selfcheck(void)
 		}
 	}
 
+#if CONFIG_INTERNAL == 1
+	ret |= selfcheck_board_enables();
+#endif
+
 	/* TODO: implement similar sanity checks for other arrays where deemed necessary. */
 	return ret;
 }
