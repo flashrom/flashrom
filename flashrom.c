@@ -766,6 +766,10 @@ int need_erase(const uint8_t *have, const uint8_t *want, unsigned int len, enum 
 	case write_gran_1056bytes:
 		result = need_erase_gran_bytes(have, want, len, 1056);
 		break;
+	case write_gran_1byte_implicit_erase:
+		/* Do not erase, handle content changes from anything->0xff by writing 0xff. */
+		result = 0;
+		break;
 	default:
 		msg_cerr("%s: Unsupported granularity! Please report a bug at "
 			 "flashrom@flashrom.org\n", __func__);
@@ -807,6 +811,7 @@ static unsigned int get_next_write(const uint8_t *have, const uint8_t *want, uns
 	switch (gran) {
 	case write_gran_1bit:
 	case write_gran_1byte:
+	case write_gran_1byte_implicit_erase:
 		stride = 1;
 		break;
 	case write_gran_256bytes:
