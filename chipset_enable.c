@@ -404,7 +404,7 @@ static int enable_flash_ich_fwh_decode(struct pci_dev *dev, enum ich_chipset ich
 		uint64_t fwh_idsel_old = pci_read_long(dev, fwh_sel1);
 		fwh_idsel_old <<= 16;
 		fwh_idsel_old |= pci_read_word(dev, fwh_sel2);
-		msg_pdbg("\nSetting IDSEL from 0x%012" PRIx64 " to 0x%012" PRIx64 " for top 16 MB.",
+		msg_pdbg("Setting IDSEL from 0x%012" PRIx64 " to 0x%012" PRIx64 " for top 16 MB.\n",
 			 fwh_idsel_old, fwh_idsel);
 		rpci_write_long(dev, fwh_sel1, (fwh_idsel >> 16) & 0xffffffff);
 		rpci_write_word(dev, fwh_sel2, fwh_idsel & 0xffff);
@@ -418,7 +418,7 @@ idsel_garbage_out:
 	free(idsel);
 
 	if (!implemented) {
-		msg_pdbg2("FWH IDSEL handling is not implemented on this chipset.");
+		msg_pdbg2("FWH IDSEL handling is not implemented on this chipset.\n");
 		return 0;
 	}
 
@@ -434,7 +434,7 @@ idsel_garbage_out:
 	/* FWH_SEL1 */
 	for (i = 7; i >= 0; i--) {
 		int tmp = (fwh_conf >> (i * 4)) & 0xf;
-		msg_pdbg("\n0x%08x/0x%08x FWH IDSEL: 0x%x",
+		msg_pdbg("0x%08x/0x%08x FWH IDSEL: 0x%x\n",
 			 (0x1ff8 + i) * 0x80000,
 			 (0x1ff0 + i) * 0x80000,
 			 tmp);
@@ -448,7 +448,7 @@ idsel_garbage_out:
 	fwh_conf = pci_read_word(dev, fwh_sel2);
 	for (i = 3; i >= 0; i--) {
 		int tmp = (fwh_conf >> (i * 4)) & 0xf;
-		msg_pdbg("\n0x%08x/0x%08x FWH IDSEL: 0x%x",
+		msg_pdbg("0x%08x/0x%08x FWH IDSEL: 0x%x\n",
 			 (0xff4 + i) * 0x100000,
 			 (0xff0 + i) * 0x100000,
 			 tmp);
@@ -465,7 +465,7 @@ idsel_garbage_out:
 	fwh_conf |= pci_read_byte(dev, fwh_dec_en_lo);
 	for (i = 7; i >= 0; i--) {
 		int tmp = (fwh_conf >> (i + 0x8)) & 0x1;
-		msg_pdbg("\n0x%08x/0x%08x FWH decode %sabled",
+		msg_pdbg("0x%08x/0x%08x FWH decode %sabled\n",
 			 (0x1ff8 + i) * 0x80000,
 			 (0x1ff0 + i) * 0x80000,
 			 tmp ? "en" : "dis");
@@ -477,7 +477,7 @@ idsel_garbage_out:
 	}
 	for (i = 3; i >= 0; i--) {
 		int tmp = (fwh_conf >> i) & 0x1;
-		msg_pdbg("\n0x%08x/0x%08x FWH decode %sabled",
+		msg_pdbg("0x%08x/0x%08x FWH decode %sabled\n",
 			 (0xff4 + i) * 0x100000,
 			 (0xff0 + i) * 0x100000,
 			 tmp ? "en" : "dis");
@@ -488,7 +488,7 @@ idsel_garbage_out:
 		}
 	}
 	max_rom_decode.fwh = min(max_decode_fwh_idsel, max_decode_fwh_decode);
-	msg_pdbg("\nMaximum FWH chip size: 0x%x bytes", max_rom_decode.fwh);
+	msg_pdbg("Maximum FWH chip size: 0x%x bytes\n", max_rom_decode.fwh);
 
 	return 0;
 }
