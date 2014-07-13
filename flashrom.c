@@ -1463,9 +1463,9 @@ int erase_and_write_flash(struct flashctx *flash, uint8_t *oldcontents, uint8_t 
 
 	for (k = 0; k < NUM_ERASEFUNCTIONS; k++) {
 		if (k != 0)
-			msg_cdbg("Looking for another erase function.\n");
+			msg_cinfo("Looking for another erase function.\n");
 		if (!usable_erasefunctions) {
-			msg_cdbg("No usable erase functions left.\n");
+			msg_cinfo("No usable erase functions left.\n");
 			break;
 		}
 		msg_cdbg("Trying erase function %i... ", k);
