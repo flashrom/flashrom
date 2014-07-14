@@ -1663,6 +1663,7 @@ static int intel_ich_gpio_set(int gpio, int raise)
  *  - abit IP35: Intel P35 + ICH9R
  *  - abit IP35 Pro: Intel P35 + ICH9R
  *  - ASUS P5LD2
+ *  - ASUS P5LD2-MQ
  *  - ASUS P5LD2-VM
  *  - ASUS P5LD2-VM DH
  */
@@ -2374,6 +2375,7 @@ const struct board_match board_matches[] = {
 	{0x8086, 0x27b8, 0x103c, 0x2a22,  0x8086, 0x2770, 0x103c, 0x2a22, "^LITHIUM$",  NULL, NULL,           P3, "ASUS",        "P5LP-LE (Lithium-UL8E)",0,   OK, intel_ich_gpio34_raise},
 	{0x8086, 0x27b8, 0x1043, 0x2a22,  0x8086, 0x2770, 0x1043, 0x2a22, "^P5LP-LE$",  NULL, NULL,           P3, "ASUS",        "P5LP-LE (Epson OEM)",   0,   OK, intel_ich_gpio34_raise},
 	{0x8086, 0x27da, 0x1043, 0x8179,  0x8086, 0x27b8, 0x1043, 0x8179, "^P5LD2$",    NULL, NULL,           P3, "ASUS",        "P5LD2",                 0,   NT, intel_ich_gpio16_raise},
+	{0x8086, 0x27da, 0x1043, 0x8179,  0x8086, 0x27b0, 0x1043, 0x8179, "^P5LD2-MQ$", NULL, NULL,           P3, "ASUS",        "P5LD2-MQ",              0,   OK, intel_ich_gpio16_raise},
 	{0x8086, 0x27da, 0x1043, 0x8179,  0x8086, 0x27b8, 0x1043, 0x8179, "^P5LD2-VM$", NULL, NULL,           P3, "ASUS",        "P5LD2-VM",              0,   NT, intel_ich_gpio16_raise},
 	{0x8086, 0x27b0, 0x1043, 0x8179,  0x8086, 0x2770, 0x1043, 0x817a, "^P5LD2-VM DH$", NULL, NULL,        P3, "ASUS",        "P5LD2-VM DH",           0,   OK, intel_ich_gpio16_raise},
 	{0x10DE, 0x0030, 0x1043, 0x818a,  0x8086, 0x100E, 0x1043, 0x80EE, NULL,         NULL, NULL,           P3, "ASUS",        "P5ND2-SLI Deluxe",      0,   OK, nvidia_mcp_gpio10_raise},
