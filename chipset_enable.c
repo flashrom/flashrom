@@ -999,20 +999,23 @@ static int enable_flash_sb600(struct pci_dev *dev, const char *name)
 		/* No protection flags for this region?*/
 		if ((prot & 0x3) == 0)
 			continue;
-		msg_pinfo("SB600 %s%sprotected from 0x%08x to 0x%08x\n",
-			  (prot & 0x1) ? "write " : "",
+		msg_pdbg("Chipset %s%sprotected flash from 0x%08x to 0x%08x, unlocking...",
 			  (prot & 0x2) ? "read " : "",
+			  (prot & 0x1) ? "write " : "",
 			  (prot & 0xfffff800),
 			  (prot & 0xfffff800) + (((prot & 0x7fc) << 8) | 0x3ff));
 		prot &= 0xfffffffc;
 		rpci_write_byte(dev, reg, prot);
 		prot = pci_read_long(dev, reg);
-		if (prot & 0x3)
-			msg_perr("SB600 %s%sunprotect failed from 0x%08x to 0x%08x\n",
-				 (prot & 0x1) ? "write " : "",
+		if ((prot & 0x3) != 0) {
+			msg_perr("Disabling %s%sprotection of flash addresses from 0x%08x to 0x%08x failed.\n",
 				 (prot & 0x2) ? "read " : "",
+				 (prot & 0x1) ? "write " : "",
 				 (prot & 0xfffff800),
 				 (prot & 0xfffff800) + (((prot & 0x7fc) << 8) | 0x3ff));
+			continue;
+		}
+		msg_pdbg("done.\n");
 	}
 
 	internal_buses_supported = BUS_LPC | BUS_FWH;
