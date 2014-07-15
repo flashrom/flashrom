@@ -51,6 +51,7 @@ enum amd_chipset {
 	CHIPSET_SB7XX, /* SP5100 too */
 	CHIPSET_SB89XX, /* Hudson-1 too */
 	CHIPSET_HUDSON234,
+	CHIPSET_BOLTON,
 	CHIPSET_YANGTZE,
 };
 static enum amd_chipset amd_gen = CHIPSET_AMD_UNKNOWN;
@@ -137,6 +138,9 @@ static void determine_generation(struct pci_dev *dev)
 		if (rev >= 0x11 && rev <= 0x15) {
 			amd_gen = CHIPSET_HUDSON234;
 			msg_pdbg("Hudson-2/3/4 detected.\n");
+		} else if (rev == 0x16) {
+			amd_gen = CHIPSET_BOLTON;
+			msg_pdbg("Bolton detected.\n");
 		} else if (rev >= 0x39 && rev <= 0x3A) {
 			amd_gen = CHIPSET_YANGTZE;
 			msg_pdbg("Yangtze detected.\n");
@@ -409,23 +413,11 @@ static int handle_speed(struct pci_dev *dev)
 	}
 
 	/* See the chipset support matrix for SPI Base_Addr below for an explanation of the symbols used.
-	 * bit   6xx   7xx/SP5100  8xx             9xx  hudson1  hudson234  yangtze
+	 * bit   6xx   7xx/SP5100  8xx             9xx  hudson1  hudson234  bolton/yangtze
 	 * 18    rsvd  <-          fastReadEnable  ?    <-       ?          SpiReadMode[0]
 	 * 29:30 rsvd  <-          <-              ?    <-       ?          SpiReadMode[2:1]
 	 */
-	if (amd_gen >= CHIPSET_YANGTZE) {
-		tmp = mmio_readb(sb600_spibar + 0x20);
-		msg_pdbg("UseSpi100 is %sabled\n", (tmp & 0x1) ? "en" : "dis");
-		if ((tmp & 0x1) == 0) {
-			rmmio_writeb(tmp | 0x1, sb600_spibar + 0x20);
-			tmp = mmio_readb(sb600_spibar + 0x20) & 0x1;
-			if (tmp == 0) {
-				msg_perr("Enabling Spi100 failed.\n");
-				return 1;
-			}
-			msg_pdbg("Enabling Spi100 succeeded.\n");
-		}
-
+	if (amd_gen >= CHIPSET_BOLTON) {
 		static const char *spireadmodes[] = {
 			"Normal (up to 33 MHz)", /* 0 */
 			"Reserved",		 /* 1 */
@@ -434,7 +426,7 @@ static int handle_speed(struct pci_dev *dev)
 			"Dual IO (1-2-2)",	 /* 4 */
 			"Quad IO (1-4-4)",	 /* 5 */
 			"Normal (up to 66 MHz)", /* 6 */
-			"Fast Read",		 /* 7 */
+			"Fast Read",		 /* 7 (Not defined in the Bolton datasheet.) */
 		};
 		tmp = mmio_readl(sb600_spibar + 0x00);
 		uint8_t read_mode = ((tmp >> 28) & 0x6) | ((tmp >> 18) & 0x1);
@@ -448,11 +440,25 @@ static int handle_speed(struct pci_dev *dev)
 			msg_pdbg("Setting read mode to \"%s\" succeeded.\n", spireadmodes[read_mode]);
 		}
 
-		tmp = mmio_readw(sb600_spibar + 0x22); /* SPI 100 Speed Config */
-		msg_pdbg("NormSpeedNew is %s\n", spispeeds[(tmp >> 12) & 0xf].name);
-		msg_pdbg("FastSpeedNew is %s\n", spispeeds[(tmp >> 8) & 0xf].name);
-		msg_pdbg("AltSpeedNew is %s\n", spispeeds[(tmp >> 4) & 0xf].name);
-		msg_pdbg("TpmSpeedNew is %s\n", spispeeds[(tmp >> 0) & 0xf].name);
+		if (amd_gen >= CHIPSET_YANGTZE) {
+			tmp = mmio_readb(sb600_spibar + 0x20);
+			msg_pdbg("UseSpi100 is %sabled\n", (tmp & 0x1) ? "en" : "dis");
+			if ((tmp & 0x1) == 0) {
+				rmmio_writeb(tmp | 0x1, sb600_spibar + 0x20);
+				tmp = mmio_readb(sb600_spibar + 0x20) & 0x1;
+				if (tmp == 0) {
+					msg_perr("Enabling Spi100 failed.\n");
+					return 1;
+				}
+				msg_pdbg("Enabling Spi100 succeeded.\n");
+			}
+
+			tmp = mmio_readw(sb600_spibar + 0x22); /* SPI 100 Speed Config */
+			msg_pdbg("NormSpeedNew is %s\n", spispeeds[(tmp >> 12) & 0xf].name);
+			msg_pdbg("FastSpeedNew is %s\n", spispeeds[(tmp >> 8) & 0xf].name);
+			msg_pdbg("AltSpeedNew is %s\n", spispeeds[(tmp >> 4) & 0xf].name);
+			msg_pdbg("TpmSpeedNew is %s\n", spispeeds[(tmp >> 0) & 0xf].name);
+		}
 	} else {
 		if (amd_gen >= CHIPSET_SB89XX && amd_gen <= CHIPSET_HUDSON234) {
 			bool fast_read = (mmio_readl(sb600_spibar + 0x00) >> 18) & 0x1;
