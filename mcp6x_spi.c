@@ -156,7 +156,7 @@ int mcp6x_spi_init(int want_spi)
 		 (status >> MCP6X_SPI_GRANT) & 0x1);
 	mcp_gpiostate = status & 0xff;
 
-	if (bitbang_spi_init(&bitbang_spi_master_mcp6x)) {
+	if (register_spi_bitbang_master(&bitbang_spi_master_mcp6x)) {
 		/* This should never happen. */
 		msg_perr("MCP6X bitbang SPI master init failed!\n");
 		return 1;

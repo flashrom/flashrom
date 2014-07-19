@@ -43,7 +43,7 @@ const struct dev_entry satas_sii[] = {
 
 static void satasii_chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr);
 static uint8_t satasii_chip_readb(const struct flashctx *flash, const chipaddr addr);
-static const struct par_programmer par_programmer_satasii = {
+static const struct par_master par_master_satasii = {
 		.chip_readb		= satasii_chip_readb,
 		.chip_readw		= fallback_chip_readw,
 		.chip_readl		= fallback_chip_readl,
@@ -104,7 +104,7 @@ int satasii_init(void)
 	if ((id != 0x0680) && (!(pci_mmio_readl(sii_bar) & (1 << 26))))
 		msg_pwarn("Warning: Flash seems unconnected.\n");
 
-	register_par_programmer(&par_programmer_satasii, BUS_PARALLEL);
+	register_par_master(&par_master_satasii, BUS_PARALLEL);
 
 	return 0;
 }

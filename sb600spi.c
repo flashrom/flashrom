@@ -64,7 +64,7 @@ static int sb600_spi_send_command(struct flashctx *flash, unsigned int writecnt,
 static int spi100_spi_send_command(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
 				  const unsigned char *writearr, unsigned char *readarr);
 
-static struct spi_programmer spi_programmer_sb600 = {
+static struct spi_master spi_master_sb600 = {
 	.type = SPI_CONTROLLER_SB600,
 	.max_data_read = FIFO_SIZE_OLD,
 	.max_data_write = FIFO_SIZE_OLD - 3,
@@ -75,7 +75,7 @@ static struct spi_programmer spi_programmer_sb600 = {
 	.write_aai = default_spi_write_aai,
 };
 
-static struct spi_programmer spi_programmer_yangtze = {
+static struct spi_master spi_master_yangtze = {
 	.type = SPI_CONTROLLER_YANGTZE,
 	.max_data_read = FIFO_SIZE_YANGTZE - 3, /* Apparently the big SPI 100 buffer is not a ring buffer. */
 	.max_data_write = FIFO_SIZE_YANGTZE - 3,
@@ -184,14 +184,14 @@ static int compare_internal_fifo_pointer(uint8_t want)
 /* Check the number of bytes to be transmitted and extract opcode. */
 static int check_readwritecnt(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt)
 {
-	unsigned int maxwritecnt = flash->pgm->spi.max_data_write + 3;
+	unsigned int maxwritecnt = flash->mst->spi.max_data_write + 3;
 	if (writecnt > maxwritecnt) {
 		msg_pinfo("%s: SPI controller can not send %d bytes, it is limited to %d bytes\n",
 			  __func__, writecnt, maxwritecnt);
 		return SPI_INVALID_LENGTH;
 	}
 
-	unsigned int maxreadcnt = flash->pgm->spi.max_data_read + 3;
+	unsigned int maxreadcnt = flash->mst->spi.max_data_read + 3;
 	if (readcnt > maxreadcnt) {
 		msg_pinfo("%s: SPI controller can not receive %d bytes, it is limited to %d bytes\n",
 			  __func__, readcnt, maxreadcnt);
@@ -690,9 +690,9 @@ int sb600_probe_spi(struct pci_dev *dev)
 
 	/* Starting with Yangtze the SPI controller got a different interface with a much bigger buffer. */
 	if (amd_gen != CHIPSET_YANGTZE)
-		register_spi_programmer(&spi_programmer_sb600);
+		register_spi_master(&spi_master_sb600);
 	else
-		register_spi_programmer(&spi_programmer_yangtze);
+		register_spi_master(&spi_master_yangtze);
 	return 0;
 }
 

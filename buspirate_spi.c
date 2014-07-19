@@ -134,7 +134,7 @@ static int buspirate_spi_send_command_v1(struct flashctx *flash, unsigned int wr
 static int buspirate_spi_send_command_v2(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
 					 const unsigned char *writearr, unsigned char *readarr);
 
-static struct spi_programmer spi_programmer_buspirate = {
+static struct spi_master spi_master_buspirate = {
 	.type		= SPI_CONTROLLER_BUSPIRATE,
 	.max_data_read	= MAX_DATA_UNSPECIFIED,
 	.max_data_write	= MAX_DATA_UNSPECIFIED,
@@ -355,9 +355,9 @@ int buspirate_spi_init(void)
 		/* Sensible default buffer size. */
 		if (buspirate_commbuf_grow(260 + 5))
 			return ERROR_OOM;
-		spi_programmer_buspirate.max_data_read = 2048;
-		spi_programmer_buspirate.max_data_write = 256;
-		spi_programmer_buspirate.command = buspirate_spi_send_command_v2;
+		spi_master_buspirate.max_data_read = 2048;
+		spi_master_buspirate.max_data_write = 256;
+		spi_master_buspirate.command = buspirate_spi_send_command_v2;
 	} else {
 		msg_pinfo("Bus Pirate firmware 5.4 and older does not support fast SPI access.\n");
 		msg_pinfo("Reading/writing a flash chip may take hours.\n");
@@ -365,9 +365,9 @@ int buspirate_spi_init(void)
 		/* Sensible default buffer size. */
 		if (buspirate_commbuf_grow(16 + 3))
 			return ERROR_OOM;
-		spi_programmer_buspirate.max_data_read = 12;
-		spi_programmer_buspirate.max_data_write = 12;
-		spi_programmer_buspirate.command = buspirate_spi_send_command_v1;
+		spi_master_buspirate.max_data_read = 12;
+		spi_master_buspirate.max_data_write = 12;
+		spi_master_buspirate.command = buspirate_spi_send_command_v1;
 	}
 
 	/* Workaround for broken speed settings in firmware 6.1 and older. */
@@ -454,7 +454,7 @@ int buspirate_spi_init(void)
 		return 1;
 	}
 
-	register_spi_programmer(&spi_programmer_buspirate);
+	register_spi_master(&spi_master_buspirate);
 
 	return 0;
 }

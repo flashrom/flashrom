@@ -426,10 +426,10 @@ int main(int argc, char *argv[])
 	msg_pdbg("The following protocols are supported: %s.\n", tempstr);
 	free(tempstr);
 
-	for (j = 0; j < registered_programmer_count; j++) {
+	for (j = 0; j < registered_master_count; j++) {
 		startchip = 0;
 		while (chipcount < ARRAY_SIZE(flashes)) {
-			startchip = probe_flash(&registered_programmers[j], startchip, &flashes[chipcount], 0);
+			startchip = probe_flash(&registered_masters[j], startchip, &flashes[chipcount], 0);
 			if (startchip == -1)
 				break;
 			chipcount++;
@@ -452,27 +452,27 @@ int main(int argc, char *argv[])
 				  "automatically.\n");
 		}
 		if (force && read_it && chip_to_probe) {
-			struct registered_programmer *pgm;
-			int compatible_programmers = 0;
+			struct registered_master *mst;
+			int compatible_masters = 0;
 			msg_cinfo("Force read (-f -r -c) requested, pretending the chip is there:\n");
 			/* This loop just counts compatible controllers. */
-			for (j = 0; j < registered_programmer_count; j++) {
-				pgm = &registered_programmers[j];
+			for (j = 0; j < registered_master_count; j++) {
+				mst = &registered_masters[j];
 				/* chip is still set from the chip_to_probe earlier in this function. */
-				if (pgm->buses_supported & chip->bustype)
-					compatible_programmers++;
+				if (mst->buses_supported & chip->bustype)
+					compatible_masters++;
 			}
-			if (!compatible_programmers) {
+			if (!compatible_masters) {
 				msg_cinfo("No compatible controller found for the requested flash chip.\n");
 				ret = 1;
 				goto out_shutdown;
 			}
-			if (compatible_programmers > 1)
+			if (compatible_masters > 1)
 				msg_cinfo("More than one compatible controller found for the requested flash "
 					  "chip, using the first one.\n");
-			for (j = 0; j < registered_programmer_count; j++) {
-				pgm = &registered_programmers[j];
-				startchip = probe_flash(pgm, 0, &flashes[0], 1);
+			for (j = 0; j < registered_master_count; j++) {
+				mst = &registered_masters[j];
+				startchip = probe_flash(mst, 0, &flashes[0], 1);
 				if (startchip != -1)
 					break;
 			}
@@ -502,7 +502,7 @@ int main(int argc, char *argv[])
 	check_chip_supported(fill_flash->chip);
 
 	size = fill_flash->chip->total_size * 1024;
-	if (check_max_decode(fill_flash->pgm->buses_supported & fill_flash->chip->bustype, size) && (!force)) {
+	if (check_max_decode(fill_flash->mst->buses_supported & fill_flash->chip->bustype, size) && (!force)) {
 		msg_cerr("Chip is too big for this programmer (-V gives details). Use --force to override.\n");
 		ret = 1;
 		goto out_shutdown;

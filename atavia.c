@@ -60,7 +60,7 @@ const struct dev_entry ata_via[] = {
 
 static void atavia_chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr);
 static uint8_t atavia_chip_readb(const struct flashctx *flash, const chipaddr addr);
-static const struct par_programmer lpc_programmer_atavia = {
+static const struct par_master lpc_master_atavia = {
 		.chip_readb		= atavia_chip_readb,
 		.chip_readw		= fallback_chip_readw,
 		.chip_readl		= fallback_chip_readl,
@@ -164,7 +164,7 @@ int atavia_init(void)
 		return 1;
 	}
 
-	register_par_programmer(&lpc_programmer_atavia, BUS_LPC);
+	register_par_master(&lpc_master_atavia, BUS_LPC);
 
 	return 0;
 }

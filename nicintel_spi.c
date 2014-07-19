@@ -207,7 +207,7 @@ int nicintel_spi_init(void)
 	if (register_shutdown(nicintel_spi_shutdown, NULL))
 		return 1;
 
-	if (bitbang_spi_init(&bitbang_spi_master_nicintel))
+	if (register_spi_bitbang_master(&bitbang_spi_master_nicintel))
 		return 1;
 
 	return 0;

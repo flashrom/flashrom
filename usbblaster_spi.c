@@ -55,7 +55,7 @@ const struct dev_entry devs_usbblasterspi[] = {
 	{}
 };
 
-static const struct spi_programmer spi_programmer_usbblaster;
+static const struct spi_master spi_master_usbblaster;
 
 static struct ftdi_context ftdic;
 
@@ -117,7 +117,7 @@ int usbblaster_spi_init(void)
 		return -1;
 	}
 
-	register_spi_programmer(&spi_programmer_usbblaster);
+	register_spi_master(&spi_master_usbblaster);
 	return 0;
 }
 
@@ -211,7 +211,7 @@ static int usbblaster_spi_send_command(struct flashctx *flash, unsigned int writ
 }
 
 
-static const struct spi_programmer spi_programmer_usbblaster = {
+static const struct spi_master spi_master_usbblaster = {
 	.type		= SPI_CONTROLLER_USBBLASTER,
 	.max_data_read	= 256,
 	.max_data_write	= 256,

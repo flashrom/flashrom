@@ -34,13 +34,13 @@ int spi_send_command(struct flashctx *flash, unsigned int writecnt,
 		     unsigned int readcnt, const unsigned char *writearr,
 		     unsigned char *readarr)
 {
-	return flash->pgm->spi.command(flash, writecnt, readcnt, writearr,
+	return flash->mst->spi.command(flash, writecnt, readcnt, writearr,
 				       readarr);
 }
 
 int spi_send_multicommand(struct flashctx *flash, struct spi_command *cmds)
 {
-	return flash->pgm->spi.multicommand(flash, cmds);
+	return flash->mst->spi.multicommand(flash, cmds);
 }
 
 int default_spi_send_command(struct flashctx *flash, unsigned int writecnt,
@@ -78,7 +78,7 @@ int default_spi_send_multicommand(struct flashctx *flash,
 int default_spi_read(struct flashctx *flash, uint8_t *buf, unsigned int start,
 		     unsigned int len)
 {
-	unsigned int max_data = flash->pgm->spi.max_data_read;
+	unsigned int max_data = flash->mst->spi.max_data_read;
 	if (max_data == MAX_DATA_UNSPECIFIED) {
 		msg_perr("%s called, but SPI read chunk size not defined "
 			 "on this hardware. Please report a bug at "
@@ -90,7 +90,7 @@ int default_spi_read(struct flashctx *flash, uint8_t *buf, unsigned int start,
 
 int default_spi_write_256(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len)
 {
-	unsigned int max_data = flash->pgm->spi.max_data_write;
+	unsigned int max_data = flash->mst->spi.max_data_write;
 	if (max_data == MAX_DATA_UNSPECIFIED) {
 		msg_perr("%s called, but SPI write chunk size not defined "
 			 "on this hardware. Please report a bug at "
@@ -124,7 +124,7 @@ int spi_chip_read(struct flashctx *flash, uint8_t *buf, unsigned int start,
 			 "access window.\n");
 		msg_perr("Read will probably return garbage.\n");
 	}
-	return flash->pgm->spi.read(flash, buf, addrbase + start, len);
+	return flash->mst->spi.read(flash, buf, addrbase + start, len);
 }
 
 /*
@@ -136,17 +136,17 @@ int spi_chip_read(struct flashctx *flash, uint8_t *buf, unsigned int start,
 /* real chunksize is up to 256, logical chunksize is 256 */
 int spi_chip_write_256(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len)
 {
-	return flash->pgm->spi.write_256(flash, buf, start, len);
+	return flash->mst->spi.write_256(flash, buf, start, len);
 }
 
 /*
  * Get the lowest allowed address for read accesses. This often happens to
  * be the lowest allowed address for all commands which take an address.
- * This is a programmer limitation.
+ * This is a master limitation.
  */
 uint32_t spi_get_valid_read_addr(struct flashctx *flash)
 {
-	switch (flash->pgm->spi.type) {
+	switch (flash->mst->spi.type) {
 #if CONFIG_INTERNAL == 1
 #if defined(__i386__) || defined(__x86_64__)
 	case SPI_CONTROLLER_ICH7:
@@ -162,25 +162,25 @@ uint32_t spi_get_valid_read_addr(struct flashctx *flash)
 
 int spi_aai_write(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len)
 {
-	return flash->pgm->spi.write_aai(flash, buf, start, len);
+	return flash->mst->spi.write_aai(flash, buf, start, len);
 }
 
-int register_spi_programmer(const struct spi_programmer *pgm)
+int register_spi_master(const struct spi_master *mst)
 {
-	struct registered_programmer rpgm;
+	struct registered_master rmst;
 
-	if (!pgm->write_aai || !pgm->write_256 || !pgm->read || !pgm->command ||
-	    !pgm->multicommand ||
-	    ((pgm->command == default_spi_send_command) &&
-	     (pgm->multicommand == default_spi_send_multicommand))) {
-		msg_perr("%s called with incomplete programmer definition. "
+	if (!mst->write_aai || !mst->write_256 || !mst->read || !mst->command ||
+	    !mst->multicommand ||
+	    ((mst->command == default_spi_send_command) &&
+	     (mst->multicommand == default_spi_send_multicommand))) {
+		msg_perr("%s called with incomplete master definition. "
 			 "Please report a bug at flashrom@flashrom.org\n",
 			 __func__);
 		return ERROR_FLASHROM_BUG;
 	}
 
 
-	rpgm.buses_supported = BUS_SPI;
-	rpgm.spi = *pgm;
-	return register_programmer(&rpgm);
+	rmst.buses_supported = BUS_SPI;
+	rmst.spi = *mst;
+	return register_master(&rmst);
 }

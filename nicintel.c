@@ -48,7 +48,7 @@ static void nicintel_chip_writeb(const struct flashctx *flash, uint8_t val,
 				 chipaddr addr);
 static uint8_t nicintel_chip_readb(const struct flashctx *flash,
 				   const chipaddr addr);
-static const struct par_programmer par_programmer_nicintel = {
+static const struct par_master par_master_nicintel = {
 		.chip_readb		= nicintel_chip_readb,
 		.chip_readw		= fallback_chip_readw,
 		.chip_readl		= fallback_chip_readl,
@@ -103,7 +103,7 @@ int nicintel_init(void)
 	pci_rmmio_writew(0x0001, nicintel_control_bar + CSR_FCR);
 
 	max_rom_decode.parallel = NICINTEL_MEMMAP_SIZE;
-	register_par_programmer(&par_programmer_nicintel, BUS_PARALLEL);
+	register_par_master(&par_master_nicintel, BUS_PARALLEL);
 
 	return 0;
 }
