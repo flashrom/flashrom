@@ -63,7 +63,7 @@ static int bitbang_spi_send_command(struct flashctx *flash,
 				    const unsigned char *writearr,
 				    unsigned char *readarr);
 
-static const struct spi_programmer spi_programmer_bitbang = {
+static const struct spi_master spi_master_bitbang = {
 	.type		= SPI_CONTROLLER_BITBANG,
 	.max_data_read	= MAX_DATA_READ_UNLIMITED,
 	.max_data_write	= MAX_DATA_WRITE_UNLIMITED,
@@ -82,9 +82,9 @@ static int bitbang_spi_shutdown(const struct bitbang_spi_master *master)
 }
 #endif
 
-int bitbang_spi_init(const struct bitbang_spi_master *master)
+int register_spi_bitbang_master(const struct bitbang_spi_master *master)
 {
-	struct spi_programmer pgm = spi_programmer_bitbang;
+	struct spi_master mst = spi_master_bitbang;
 	/* BITBANG_SPI_INVALID is 0, so if someone forgot to initialize ->type,
 	 * we catch it here. Same goes for missing initialization of bitbanging
 	 * functions.
@@ -98,8 +98,8 @@ int bitbang_spi_init(const struct bitbang_spi_master *master)
 		return ERROR_FLASHROM_BUG;
 	}
 
-	pgm.data = master;
-	register_spi_programmer(&pgm);
+	mst.data = master;
+	register_spi_master(&mst);
 
 	/* Only mess with the bus if we're sure nobody else uses it. */
 	bitbang_spi_request_bus(master);
@@ -137,7 +137,7 @@ static int bitbang_spi_send_command(struct flashctx *flash,
 				    unsigned char *readarr)
 {
 	int i;
-	const struct bitbang_spi_master *master = flash->pgm->spi.data;
+	const struct bitbang_spi_master *master = flash->mst->spi.data;
 
 	/* FIXME: Run bitbang_spi_request_bus here or in programmer init?
 	 * Requesting and releasing the SPI bus is handled in here to allow the

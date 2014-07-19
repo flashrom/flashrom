@@ -476,7 +476,7 @@ int pony_spi_init(void);
 #endif
 
 /* bitbang_spi.c */
-int bitbang_spi_init(const struct bitbang_spi_master *master);
+int register_spi_bitbang_master(const struct bitbang_spi_master *master);
 
 /* buspirate_spi.c */
 #if CONFIG_BUSPIRATE_SPI == 1
@@ -552,7 +552,7 @@ enum spi_controller {
 #define MAX_DATA_UNSPECIFIED 0
 #define MAX_DATA_READ_UNLIMITED 64 * 1024
 #define MAX_DATA_WRITE_UNLIMITED 256
-struct spi_programmer {
+struct spi_master {
 	enum spi_controller type;
 	unsigned int max_data_read;
 	unsigned int max_data_write;
@@ -560,7 +560,7 @@ struct spi_programmer {
 		   const unsigned char *writearr, unsigned char *readarr);
 	int (*multicommand)(struct flashctx *flash, struct spi_command *cmds);
 
-	/* Optimized functions for this programmer */
+	/* Optimized functions for this master */
 	int (*read)(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 	int (*write_256)(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 	int (*write_aai)(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
@@ -573,7 +573,7 @@ int default_spi_send_multicommand(struct flashctx *flash, struct spi_command *cm
 int default_spi_read(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 int default_spi_write_256(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 int default_spi_write_aai(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
-int register_spi_programmer(const struct spi_programmer *programmer);
+int register_spi_master(const struct spi_master *mst);
 
 /* The following enum is needed by ich_descriptor_tool and ich* code as well as in chipset_enable.c. */
 enum ich_chipset {
@@ -625,17 +625,17 @@ int wbsio_check_for_spi(void);
 #endif
 
 /* opaque.c */
-struct opaque_programmer {
+struct opaque_master {
 	int max_data_read;
 	int max_data_write;
-	/* Specific functions for this programmer */
+	/* Specific functions for this master */
 	int (*probe) (struct flashctx *flash);
 	int (*read) (struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 	int (*write) (struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 	int (*erase) (struct flashctx *flash, unsigned int blockaddr, unsigned int blocklen);
 	const void *data;
 };
-int register_opaque_programmer(const struct opaque_programmer *pgm);
+int register_opaque_master(const struct opaque_master *mst);
 
 /* programmer.c */
 int noop_shutdown(void);
@@ -648,7 +648,7 @@ void fallback_chip_writen(const struct flashctx *flash, const uint8_t *buf, chip
 uint16_t fallback_chip_readw(const struct flashctx *flash, const chipaddr addr);
 uint32_t fallback_chip_readl(const struct flashctx *flash, const chipaddr addr);
 void fallback_chip_readn(const struct flashctx *flash, uint8_t *buf, const chipaddr addr, size_t len);
-struct par_programmer {
+struct par_master {
 	void (*chip_writeb) (const struct flashctx *flash, uint8_t val, chipaddr addr);
 	void (*chip_writew) (const struct flashctx *flash, uint16_t val, chipaddr addr);
 	void (*chip_writel) (const struct flashctx *flash, uint32_t val, chipaddr addr);
@@ -659,18 +659,18 @@ struct par_programmer {
 	void (*chip_readn) (const struct flashctx *flash, uint8_t *buf, const chipaddr addr, size_t len);
 	const void *data;
 };
-int register_par_programmer(const struct par_programmer *pgm, const enum chipbustype buses);
-struct registered_programmer {
+int register_par_master(const struct par_master *mst, const enum chipbustype buses);
+struct registered_master {
 	enum chipbustype buses_supported;
 	union {
-		struct par_programmer par;
-		struct spi_programmer spi;
-		struct opaque_programmer opaque;
+		struct par_master par;
+		struct spi_master spi;
+		struct opaque_master opaque;
 	};
 };
-extern struct registered_programmer registered_programmers[];
-extern int registered_programmer_count;
-int register_programmer(struct registered_programmer *pgm);
+extern struct registered_master registered_masters[];
+extern int registered_master_count;
+int register_master(struct registered_master *mst);
 
 /* serprog.c */
 #if CONFIG_SERPROG == 1

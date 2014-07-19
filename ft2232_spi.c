@@ -146,7 +146,7 @@ static int ft2232_spi_send_command(struct flashctx *flash,
 				   const unsigned char *writearr,
 				   unsigned char *readarr);
 
-static const struct spi_programmer spi_programmer_ft2232 = {
+static const struct spi_master spi_master_ft2232 = {
 	.type		= SPI_CONTROLLER_FT2232,
 	.max_data_read	= 64 * 1024,
 	.max_data_write	= 256,
@@ -389,7 +389,7 @@ int ft2232_spi_init(void)
 		goto ftdi_err;
 	}
 
-	register_spi_programmer(&spi_programmer_ft2232);
+	register_spi_master(&spi_master_ft2232);
 
 	return 0;
 

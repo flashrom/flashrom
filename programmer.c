@@ -95,39 +95,39 @@ void fallback_chip_readn(const struct flashctx *flash, uint8_t *buf,
 	return;
 }
 
-int register_par_programmer(const struct par_programmer *pgm,
+int register_par_master(const struct par_master *mst,
 			    const enum chipbustype buses)
 {
-	struct registered_programmer rpgm;
-	if (!pgm->chip_writeb || !pgm->chip_writew || !pgm->chip_writel ||
-	    !pgm->chip_writen || !pgm->chip_readb || !pgm->chip_readw ||
-	    !pgm->chip_readl || !pgm->chip_readn) {
-		msg_perr("%s called with incomplete programmer definition. "
+	struct registered_master rmst;
+	if (!mst->chip_writeb || !mst->chip_writew || !mst->chip_writel ||
+	    !mst->chip_writen || !mst->chip_readb || !mst->chip_readw ||
+	    !mst->chip_readl || !mst->chip_readn) {
+		msg_perr("%s called with incomplete master definition. "
 			 "Please report a bug at flashrom@flashrom.org\n",
 			 __func__);
 		return ERROR_FLASHROM_BUG;
 	}
 
-	rpgm.buses_supported = buses;
-	rpgm.par = *pgm;
-	return register_programmer(&rpgm);
+	rmst.buses_supported = buses;
+	rmst.par = *mst;
+	return register_master(&rmst);
 }
 
 /* The limit of 4 is totally arbitrary. */
-#define PROGRAMMERS_MAX 4
-struct registered_programmer registered_programmers[PROGRAMMERS_MAX];
-int registered_programmer_count = 0;
+#define MASTERS_MAX 4
+struct registered_master registered_masters[MASTERS_MAX];
+int registered_master_count = 0;
 
-/* This function copies the struct registered_programmer parameter. */
-int register_programmer(struct registered_programmer *pgm)
+/* This function copies the struct registered_master parameter. */
+int register_master(struct registered_master *mst)
 {
-	if (registered_programmer_count >= PROGRAMMERS_MAX) {
-		msg_perr("Tried to register more than %i programmer "
-			 "interfaces.\n", PROGRAMMERS_MAX);
+	if (registered_master_count >= MASTERS_MAX) {
+		msg_perr("Tried to register more than %i master "
+			 "interfaces.\n", MASTERS_MAX);
 		return ERROR_FLASHROM_LIMIT;
 	}
-	registered_programmers[registered_programmer_count] = *pgm;
-	registered_programmer_count++;
+	registered_masters[registered_master_count] = *mst;
+	registered_master_count++;
 
 	return 0;
 }
@@ -137,8 +137,8 @@ enum chipbustype get_buses_supported(void)
 	int i;
 	enum chipbustype ret = BUS_NONE;
 
-	for (i = 0; i < registered_programmer_count; i++)
-		ret |= registered_programmers[i].buses_supported;
+	for (i = 0; i < registered_master_count; i++)
+		ret |= registered_masters[i].buses_supported;
 
 	return ret;
 }

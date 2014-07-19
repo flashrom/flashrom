@@ -454,7 +454,7 @@ int programmer_shutdown(void)
 	}
 
 	programmer_param = NULL;
-	registered_programmer_count = 0;
+	registered_master_count = 0;
 
 	return ret;
 }
@@ -474,43 +474,43 @@ void programmer_unmap_flash_region(void *virt_addr, size_t len)
 
 void chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr)
 {
-	flash->pgm->par.chip_writeb(flash, val, addr);
+	flash->mst->par.chip_writeb(flash, val, addr);
 }
 
 void chip_writew(const struct flashctx *flash, uint16_t val, chipaddr addr)
 {
-	flash->pgm->par.chip_writew(flash, val, addr);
+	flash->mst->par.chip_writew(flash, val, addr);
 }
 
 void chip_writel(const struct flashctx *flash, uint32_t val, chipaddr addr)
 {
-	flash->pgm->par.chip_writel(flash, val, addr);
+	flash->mst->par.chip_writel(flash, val, addr);
 }
 
 void chip_writen(const struct flashctx *flash, const uint8_t *buf, chipaddr addr, size_t len)
 {
-	flash->pgm->par.chip_writen(flash, buf, addr, len);
+	flash->mst->par.chip_writen(flash, buf, addr, len);
 }
 
 uint8_t chip_readb(const struct flashctx *flash, const chipaddr addr)
 {
-	return flash->pgm->par.chip_readb(flash, addr);
+	return flash->mst->par.chip_readb(flash, addr);
 }
 
 uint16_t chip_readw(const struct flashctx *flash, const chipaddr addr)
 {
-	return flash->pgm->par.chip_readw(flash, addr);
+	return flash->mst->par.chip_readw(flash, addr);
 }
 
 uint32_t chip_readl(const struct flashctx *flash, const chipaddr addr)
 {
-	return flash->pgm->par.chip_readl(flash, addr);
+	return flash->mst->par.chip_readl(flash, addr);
 }
 
 void chip_readn(const struct flashctx *flash, uint8_t *buf, chipaddr addr,
 		size_t len)
 {
-	flash->pgm->par.chip_readn(flash, buf, addr, len);
+	flash->mst->par.chip_readn(flash, buf, addr, len);
 }
 
 void programmer_delay(unsigned int usecs)
@@ -1049,7 +1049,7 @@ int check_max_decode(enum chipbustype buses, uint32_t size)
 	return 1;
 }
 
-int probe_flash(struct registered_programmer *pgm, int startchip, struct flashctx *flash, int force)
+int probe_flash(struct registered_master *mst, int startchip, struct flashctx *flash, int force)
 {
 	const struct flashchip *chip;
 	unsigned long base = 0;
@@ -1061,7 +1061,7 @@ int probe_flash(struct registered_programmer *pgm, int startchip, struct flashct
 	for (chip = flashchips + startchip; chip && chip->name; chip++) {
 		if (chip_to_probe && strcmp(chip->name, chip_to_probe) != 0)
 			continue;
-		buses_common = pgm->buses_supported & chip->bustype;
+		buses_common = mst->buses_supported & chip->bustype;
 		if (!buses_common)
 			continue;
 		msg_gdbg("Probing for %s %s, %d kB: ", chip->vendor, chip->name, chip->total_size);
@@ -1080,7 +1080,7 @@ int probe_flash(struct registered_programmer *pgm, int startchip, struct flashct
 			exit(1);
 		}
 		memcpy(flash->chip, chip, sizeof(struct flashchip));
-		flash->pgm = pgm;
+		flash->mst = mst;
 
 		base = flashbase ? flashbase : (0xffffffff - size + 1);
 		flash->virtual_memory = (chipaddr)programmer_map_flash_region("flash chip", base, size);
@@ -1098,7 +1098,7 @@ int probe_flash(struct registered_programmer *pgm, int startchip, struct flashct
 		 * If this is not the first chip found, accept it only if it is
 		 * a non-generic match. SFDP and CFI are generic matches.
 		 * startchip==0 means this call to probe_flash() is the first
-		 * one for this programmer interface and thus no other chip has
+		 * one for this programmer interface (master) and thus no other chip has
 		 * been found on this interface.
 		 */
 		if (startchip == 0 && flash->chip->model_id == SFDP_DEVICE_ID) {

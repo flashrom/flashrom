@@ -38,7 +38,7 @@ const struct dev_entry devs_it8212[] = {
 
 static void it8212_chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr);
 static uint8_t it8212_chip_readb(const struct flashctx *flash, const chipaddr addr);
-static const struct par_programmer par_programmer_it8212 = {
+static const struct par_master par_master_it8212 = {
 		.chip_readb		= it8212_chip_readb,
 		.chip_readw		= fallback_chip_readw,
 		.chip_readl		= fallback_chip_readl,
@@ -71,7 +71,7 @@ int it8212_init(void)
 	rpci_write_long(dev, PCI_ROM_ADDRESS, io_base_addr | 0x01);
 
 	max_rom_decode.parallel = IT8212_MEMMAP_SIZE;
-	register_par_programmer(&par_programmer_it8212, BUS_PARALLEL);
+	register_par_master(&par_master_it8212, BUS_PARALLEL);
 	return 0;
 }
 

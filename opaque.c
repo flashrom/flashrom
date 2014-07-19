@@ -1,7 +1,7 @@
 /*
  * This file is part of the flashrom project.
  *
- * Copyright (C) 2011 Carl-Daniel Hailfinger
+ * Copyright (C) 2011,2013,2014 Carl-Daniel Hailfinger
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,10 +18,10 @@
  */
 
 /*
- * Contains the opaque programmer framework.
- * An opaque programmer is a programmer which does not provide direct access
+ * Contains the opaque master framework.
+ * An opaque master is a master which does not provide direct access
  * to the flash chip and which abstracts all flash chip properties into a
- * programmer specific interface.
+ * master specific interface.
  */
 
 #include <stdint.h>
@@ -32,35 +32,35 @@
 
 int probe_opaque(struct flashctx *flash)
 {
-	return flash->pgm->opaque.probe(flash);
+	return flash->mst->opaque.probe(flash);
 }
 
 int read_opaque(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len)
 {
-	return flash->pgm->opaque.read(flash, buf, start, len);
+	return flash->mst->opaque.read(flash, buf, start, len);
 }
 
 int write_opaque(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len)
 {
-	return flash->pgm->opaque.write(flash, buf, start, len);
+	return flash->mst->opaque.write(flash, buf, start, len);
 }
 
 int erase_opaque(struct flashctx *flash, unsigned int blockaddr, unsigned int blocklen)
 {
-	return flash->pgm->opaque.erase(flash, blockaddr, blocklen);
+	return flash->mst->opaque.erase(flash, blockaddr, blocklen);
 }
 
-int register_opaque_programmer(const struct opaque_programmer *pgm)
+int register_opaque_master(const struct opaque_master *mst)
 {
-	struct registered_programmer rpgm;
+	struct registered_master rmst;
 
-	if (!pgm->probe || !pgm->read || !pgm->write || !pgm->erase) {
-		msg_perr("%s called with incomplete programmer definition. "
+	if (!mst->probe || !mst->read || !mst->write || !mst->erase) {
+		msg_perr("%s called with incomplete master definition. "
 			 "Please report a bug at flashrom@flashrom.org\n",
 			 __func__);
 		return ERROR_FLASHROM_BUG;
 	}
-	rpgm.buses_supported = BUS_PROG;
-	rpgm.opaque = *pgm;
-	return register_programmer(&rpgm);
+	rmst.buses_supported = BUS_PROG;
+	rmst.opaque = *mst;
+	return register_master(&rmst);
 }

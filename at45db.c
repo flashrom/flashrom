@@ -241,7 +241,7 @@ int spi_read_at45db(struct flashctx *flash, uint8_t *buf, unsigned int addr, uns
 
 	/* We have to split this up into chunks to fit within the programmer's read size limit, but those
 	 * chunks can cross page boundaries. */
-	const unsigned int max_data_read = flash->pgm->spi.max_data_read;
+	const unsigned int max_data_read = flash->mst->spi.max_data_read;
 	const unsigned int max_chunk = (max_data_read > 0) ? max_data_read : page_size;
 	while (len > 0) {
 		unsigned int chunk = min(max_chunk, len);
@@ -272,7 +272,7 @@ int spi_read_at45db_e8(struct flashctx *flash, uint8_t *buf, unsigned int addr, 
 
 	/* We have to split this up into chunks to fit within the programmer's read size limit, but those
 	 * chunks can cross page boundaries. */
-	const unsigned int max_data_read = flash->pgm->spi.max_data_read;
+	const unsigned int max_data_read = flash->mst->spi.max_data_read;
 	const unsigned int max_chunk = (max_data_read > 0) ? max_data_read : page_size;
 	while (len > 0) {
 		const unsigned int addr_at45 = at45db_convert_addr(addr, page_size);
@@ -463,7 +463,7 @@ static int at45db_fill_buffer1(struct flashctx *flash, const uint8_t *bytes, uns
 	}
 
 	/* Create a suitable buffer to store opcode, address and data chunks for buffer1. */
-	const unsigned int max_data_write = flash->pgm->spi.max_data_write;
+	const unsigned int max_data_write = flash->mst->spi.max_data_write;
 	const unsigned int max_chunk = (max_data_write > 0 && max_data_write <= page_size) ?
 				       max_data_write : page_size;
 	uint8_t buf[4 + max_chunk];

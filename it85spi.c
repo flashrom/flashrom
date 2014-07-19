@@ -279,7 +279,7 @@ static int it85xx_spi_send_command(struct flashctx *flash,
 				   const unsigned char *writearr,
 				   unsigned char *readarr);
 
-static const struct spi_programmer spi_programmer_it85xx = {
+static const struct spi_master spi_master_it85xx = {
 	.type		= SPI_CONTROLLER_IT85XX,
 	.max_data_read	= 64,
 	.max_data_write	= 64,
@@ -315,7 +315,7 @@ int it85xx_spi_init(struct superio s)
 		 * a debug message about it.
 		 */
 		/* Set this as SPI controller. */
-		register_spi_programmer(&spi_programmer_it85xx);
+		register_spi_master(&spi_master_it85xx);
 	}
 	return ret;
 }

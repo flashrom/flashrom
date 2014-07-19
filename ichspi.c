@@ -640,7 +640,7 @@ static void ich_set_bbar(uint32_t min_addr)
 
 /* Read len bytes from the fdata/spid register into the data array.
  *
- * Note that using len > flash->pgm->spi.max_data_read will return garbage or
+ * Note that using len > flash->mst->spi.max_data_read will return garbage or
  * may even crash.
  */
 static void ich_read_data(uint8_t *data, int len, int reg0_off)
@@ -658,7 +658,7 @@ static void ich_read_data(uint8_t *data, int len, int reg0_off)
 
 /* Fill len bytes from the data array into the fdata/spid registers.
  *
- * Note that using len > flash->pgm->spi.max_data_write will trash the registers
+ * Note that using len > flash->mst->spi.max_data_write will trash the registers
  * following the data registers.
  */
 static void ich_fill_data(const uint8_t *data, int len, int reg0_off)
@@ -965,7 +965,7 @@ static int run_opcode(const struct flashctx *flash, OPCODE op, uint32_t offset,
 		      uint8_t datalength, uint8_t * data)
 {
 	/* max_data_read == max_data_write for all Intel/VIA SPI masters */
-	uint8_t maxlength = flash->pgm->spi.max_data_read;
+	uint8_t maxlength = flash->mst->spi.max_data_read;
 
 	if (ich_generation == CHIPSET_ICH_UNKNOWN) {
 		msg_perr("%s: unsupported chipset\n", __func__);
@@ -1307,7 +1307,7 @@ static int ich_hwseq_read(struct flashctx *flash, uint8_t *buf,
 	REGWRITE16(ICH9_REG_HSFS, REGREAD16(ICH9_REG_HSFS));
 
 	while (len > 0) {
-		block_len = min(len, flash->pgm->opaque.max_data_read);
+		block_len = min(len, flash->mst->opaque.max_data_read);
 		ich_hwseq_set_addr(addr);
 		hsfc = REGREAD16(ICH9_REG_HSFC);
 		hsfc &= ~HSFC_FCYCLE; /* set read operation */
@@ -1345,7 +1345,7 @@ static int ich_hwseq_write(struct flashctx *flash, const uint8_t *buf, unsigned 
 
 	while (len > 0) {
 		ich_hwseq_set_addr(addr);
-		block_len = min(len, flash->pgm->opaque.max_data_write);
+		block_len = min(len, flash->mst->opaque.max_data_write);
 		ich_fill_data(buf, block_len, ICH9_REG_FDATA0);
 		hsfc = REGREAD16(ICH9_REG_HSFC);
 		hsfc &= ~HSFC_FCYCLE; /* clear operation */
@@ -1521,7 +1521,7 @@ static void ich9_set_pr(int i, int read_prot, int write_prot)
 	msg_gspew("resulted in 0x%08x.\n", mmio_readl(addr));
 }
 
-static const struct spi_programmer spi_programmer_ich7 = {
+static const struct spi_master spi_master_ich7 = {
 	.type = SPI_CONTROLLER_ICH7,
 	.max_data_read = 64,
 	.max_data_write = 64,
@@ -1532,7 +1532,7 @@ static const struct spi_programmer spi_programmer_ich7 = {
 	.write_aai = default_spi_write_aai,
 };
 
-static const struct spi_programmer spi_programmer_ich9 = {
+static const struct spi_master spi_master_ich9 = {
 	.type = SPI_CONTROLLER_ICH9,
 	.max_data_read = 64,
 	.max_data_write = 64,
@@ -1543,7 +1543,7 @@ static const struct spi_programmer spi_programmer_ich9 = {
 	.write_aai = default_spi_write_aai,
 };
 
-static const struct opaque_programmer opaque_programmer_ich_hwseq = {
+static const struct opaque_master opaque_master_ich_hwseq = {
 	.max_data_read = 64,
 	.max_data_write = 64,
 	.probe = ich_hwseq_probe,
@@ -1604,7 +1604,7 @@ int ich_init_spi(struct pci_dev *dev, void *spibar, enum ich_chipset ich_gen)
 		}
 		ich_init_opcodes();
 		ich_set_bbar(0);
-		register_spi_programmer(&spi_programmer_ich7);
+		register_spi_master(&spi_master_ich7);
 		break;
 	case CHIPSET_ICH8:
 	default:		/* Future version might behave the same */
@@ -1785,9 +1785,9 @@ int ich_init_spi(struct pci_dev *dev, void *spibar, enum ich_chipset ich_gen)
 			}
 			hwseq_data.size_comp0 = getFCBA_component_density(&desc, 0);
 			hwseq_data.size_comp1 = getFCBA_component_density(&desc, 1);
-			register_opaque_programmer(&opaque_programmer_ich_hwseq);
+			register_opaque_master(&opaque_master_ich_hwseq);
 		} else {
-			register_spi_programmer(&spi_programmer_ich9);
+			register_spi_master(&spi_master_ich9);
 		}
 		break;
 	}
@@ -1795,7 +1795,7 @@ int ich_init_spi(struct pci_dev *dev, void *spibar, enum ich_chipset ich_gen)
 	return 0;
 }
 
-static const struct spi_programmer spi_programmer_via = {
+static const struct spi_master spi_master_via = {
 	.type = SPI_CONTROLLER_VIA,
 	.max_data_read = 16,
 	.max_data_write = 16,
@@ -1818,7 +1818,7 @@ int via_init_spi(struct pci_dev *dev, uint32_t mmio_base)
 	/* Not sure if it speaks all these bus protocols. */
 	internal_buses_supported = BUS_LPC | BUS_FWH;
 	ich_generation = CHIPSET_ICH7;
-	register_spi_programmer(&spi_programmer_via);
+	register_spi_master(&spi_master_via);
 
 	msg_pdbg("0x00: 0x%04x     (SPIS)\n", mmio_readw(ich_spibar + 0));
 	msg_pdbg("0x02: 0x%04x     (SPIC)\n", mmio_readw(ich_spibar + 2));

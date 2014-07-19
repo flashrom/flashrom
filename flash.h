@@ -212,7 +212,7 @@ struct flashctx {
 	chipaddr virtual_memory;
 	/* Some flash devices have an additional register space. */
 	chipaddr virtual_registers;
-	struct registered_programmer *pgm;
+	struct registered_master *mst;
 };
 
 /* Timing used in probe routines. ZERO is -2 to differentiate between an unset
@@ -258,7 +258,7 @@ extern const char *chip_to_probe;
 void map_flash_registers(struct flashctx *flash);
 int read_memmapped(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 int erase_flash(struct flashctx *flash);
-int probe_flash(struct registered_programmer *pgm, int startchip, struct flashctx *fill_flash, int force);
+int probe_flash(struct registered_master *mst, int startchip, struct flashctx *fill_flash, int force);
 int read_flash_to_file(struct flashctx *flash, const char *filename);
 char *extract_param(const char *const *haystack, const char *needle, const char *delim);
 int verify_range(struct flashctx *flash, const uint8_t *cmpbuf, unsigned int start, unsigned int len);

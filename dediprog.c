@@ -750,7 +750,7 @@ static int dediprog_setup(long target)
 	return 0;
 }
 
-static const struct spi_programmer spi_programmer_dediprog = {
+static const struct spi_master spi_master_dediprog = {
 	.type		= SPI_CONTROLLER_DEDIPROG,
 	.max_data_read	= MAX_DATA_UNSPECIFIED,
 	.max_data_write	= MAX_DATA_UNSPECIFIED,
@@ -929,7 +929,7 @@ int dediprog_init(void)
 		return 1;
 	}
 
-	register_spi_programmer(&spi_programmer_dediprog);
+	register_spi_master(&spi_master_dediprog);
 
 	/* RE leftover, leave in until the driver is complete. */
 #if 0

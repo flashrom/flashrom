@@ -212,7 +212,7 @@ int pony_spi_init(void)
 		return 1;
 	}
 
-	if (bitbang_spi_init(&bitbang_spi_master_pony)) {
+	if (register_spi_bitbang_master(&bitbang_spi_master_pony)) {
 		return 1;
 	}
 	return 0;

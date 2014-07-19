@@ -303,7 +303,7 @@ static int serprog_spi_send_command(struct flashctx *flash,
 				    unsigned char *readarr);
 static int serprog_spi_read(struct flashctx *flash, uint8_t *buf,
 			    unsigned int start, unsigned int len);
-static struct spi_programmer spi_programmer_serprog = {
+static struct spi_master spi_master_serprog = {
 	.type		= SPI_CONTROLLER_SERPROG,
 	.max_data_read	= MAX_DATA_READ_UNLIMITED,
 	.max_data_write	= MAX_DATA_WRITE_UNLIMITED,
@@ -320,7 +320,7 @@ static uint8_t serprog_chip_readb(const struct flashctx *flash,
 				  const chipaddr addr);
 static void serprog_chip_readn(const struct flashctx *flash, uint8_t *buf,
 			       const chipaddr addr, size_t len);
-static const struct par_programmer par_programmer_serprog = {
+static const struct par_master par_master_serprog = {
 		.chip_readb		= serprog_chip_readb,
 		.chip_readw		= fallback_chip_readw,
 		.chip_readl		= fallback_chip_readl,
@@ -489,7 +489,7 @@ int serprog_init(void)
 			v |= ((unsigned int)(rbuf[2]) << 16);
 			if (v == 0)
 				v = (1 << 24) - 1; /* SPI-op maximum. */
-			spi_programmer_serprog.max_data_write = v;
+			spi_master_serprog.max_data_write = v;
 			msg_pdbg(MSGHEADER "Maximum write-n length is %d\n", v);
 		}
 		if (!sp_docommand(S_CMD_Q_RDNMAXLEN, 0, NULL, 3, rbuf)) {
@@ -499,7 +499,7 @@ int serprog_init(void)
 			v |= ((unsigned int)(rbuf[2]) << 16);
 			if (v == 0)
 				v = (1 << 24) - 1; /* SPI-op maximum. */
-			spi_programmer_serprog.max_data_read = v;
+			spi_master_serprog.max_data_read = v;
 			msg_pdbg(MSGHEADER "Maximum read-n length is %d\n", v);
 		}
 		spispeed = extract_programmer_param("spispeed");
@@ -669,10 +669,9 @@ int serprog_init(void)
 	sp_streamed_transmit_bytes = 0;
 	sp_opbuf_usage = 0;
 	if (serprog_buses_supported & BUS_SPI)
-		register_spi_programmer(&spi_programmer_serprog);
+		register_spi_master(&spi_master_serprog);
 	if (serprog_buses_supported & BUS_NONSPI)
-		register_par_programmer(&par_programmer_serprog,
-					serprog_buses_supported & BUS_NONSPI);
+		register_par_master(&par_master_serprog, serprog_buses_supported & BUS_NONSPI);
 	return 0;
 }
 
@@ -932,7 +931,7 @@ static int serprog_spi_read(struct flashctx *flash, uint8_t *buf,
 			    unsigned int start, unsigned int len)
 {
 	unsigned int i, cur_len;
-	const unsigned int max_read = spi_programmer_serprog.max_data_read;
+	const unsigned int max_read = spi_master_serprog.max_data_read;
 	for (i = 0; i < len; i += cur_len) {
 		int ret;
 		cur_len = min(max_read, (len - i));
