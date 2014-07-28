@@ -84,6 +84,9 @@ enum programmer {
 #if CONFIG_NICINTEL_SPI == 1
 	PROGRAMMER_NICINTEL_SPI,
 #endif
+#if CONFIG_NICINTEL_EEPROM == 1
+	PROGRAMMER_NICINTEL_EEPROM,
+#endif
 #if CONFIG_OGP_SPI == 1
 	PROGRAMMER_OGP_SPI,
 #endif
@@ -414,6 +417,12 @@ extern const struct dev_entry nics_intel[];
 #if CONFIG_NICINTEL_SPI == 1
 int nicintel_spi_init(void);
 extern const struct dev_entry nics_intel_spi[];
+#endif
+
+/* nicintel_eeprom.c */
+#if CONFIG_NICINTEL_EEPROM == 1
+int nicintel_ee_init(void);
+extern const struct dev_entry nics_intel_ee[];
 #endif
 
 /* ogp_spi.c */

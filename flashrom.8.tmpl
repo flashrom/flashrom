@@ -225,6 +225,8 @@ bitbanging adapter)
 .sp
 .BR "* usbblaster_spi" " (for SPI flash ROMs attached to an Altera USB-Blaster compatible cable)"
 .sp
+.BR "* nicintel_eeprom" " (for SPI EEPROMs on Intel Gigabit network cards)"
+.sp
 Some programmers have optional or mandatory parameters which are described
 in detail in the
 .B PROGRAMMER SPECIFIC INFO
@@ -591,7 +593,7 @@ syntax where
 .B content
 is an 8-bit hexadecimal value.
 .SS
-.BR "nic3com" , " nicrealtek" , " nicnatsemi" , " nicintel"\
+.BR "nic3com" , " nicrealtek" , " nicnatsemi" , " nicintel", " nicintel_eeprom"\
 , " nicintel_spi" , " gfxnvidia" , " ogp_spi" , " drkaiser" , " satasii"\
 , " satamv" , " atahpt" ", " atavia " and " it8212 " programmers
 These programmers have an option to specify the PCI address of the card
@@ -624,6 +626,14 @@ will be interpreted as usual (leading 0x (0) for hexadecimal (octal) values, or 
 For more information please see
 .nh
 .B http://flashrom.org/VT6421A
+.SS
+.BR "nicintel_eeprom " programmer
+This is the first programmer module in flashrom that does not provide access to NOR flash chips but EEPROMs
+mounted on gigabit Ethernet cards based on Intel's 82580 NIC. Because EEPROMs normally do not announce their
+size nor allow to be identified, the controller relies on correct size values written to predefined addresses
+within the chip. Flashrom follows this scheme but assumes the minimum size of 16 kB (128 kb) if an unprogrammed
+EEPROM/card is detected. Intel specifies following EEPROMs to be compatible: Atmel AT25128, AT25256, Micron (ST)
+M95128, M95256 and OnSemi (Catalyst) CAT25CS128.
 .SS
 .BR "ft2232_spi " programmer
 An optional parameter specifies the controller
@@ -922,8 +932,8 @@ need PCI configuration space access and raw memory access.
 .B rayer_spi
 needs raw I/O port access.
 .sp
-.B satasii
-needs PCI configuration space read access and raw memory access.
+.BR satasii ", " nicintel ", " nicintel_eeprom " and " nicintel_spi
+need PCI configuration space read access and raw memory access.
 .sp
 .B satamv
 needs PCI configuration space read access, raw I/O port access and raw memory

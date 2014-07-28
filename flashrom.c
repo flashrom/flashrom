@@ -297,6 +297,18 @@ const struct programmer_entry programmer_table[] = {
 	},
 #endif
 
+#if CONFIG_NICINTEL_EEPROM == 1
+	{
+		.name			= "nicintel_eeprom",
+		.type			= PCI,
+		.devs.dev		= nics_intel_ee,
+		.init			= nicintel_ee_init,
+		.map_flash_region	= fallback_map,
+		.unmap_flash_region	= fallback_unmap,
+		.delay			= internal_delay,
+	},
+#endif
+
 #if CONFIG_OGP_SPI == 1
 	{
 		.name			= "ogp_spi",
