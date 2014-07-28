@@ -227,6 +227,11 @@ UNSUPPORTED_FEATURES += CONFIG_NICINTEL=yes
 else
 override CONFIG_NICINTEL = no
 endif
+ifeq ($(CONFIG_NICINTEL_EEPROM), yes)
+UNSUPPORTED_FEATURES += CONFIG_NICINTEL_EEPROM=yes
+else
+override CONFIG_NICINTEL_EEPROM = no
+endif
 ifeq ($(CONFIG_NICINTEL_SPI), yes)
 UNSUPPORTED_FEATURES += CONFIG_NICINTEL_SPI=yes
 else
@@ -426,6 +431,9 @@ CONFIG_NICINTEL ?= yes
 # Always enable SPI on Intel NICs for now.
 CONFIG_NICINTEL_SPI ?= yes
 
+# Always enable EEPROM on Intel NICs for now.
+CONFIG_NICINTEL_EEPROM ?= yes
+
 # Always enable SPI on OGP cards for now.
 CONFIG_OGP_SPI ?= yes
 
@@ -623,6 +631,12 @@ endif
 ifeq ($(CONFIG_NICINTEL_SPI), yes)
 FEATURE_CFLAGS += -D'CONFIG_NICINTEL_SPI=1'
 PROGRAMMER_OBJS += nicintel_spi.o
+NEED_PCI := yes
+endif
+
+ifeq ($(CONFIG_NICINTEL_EEPROM), yes)
+FEATURE_CFLAGS += -D'CONFIG_NICINTEL_EEPROM=1'
+PROGRAMMER_OBJS += nicintel_eeprom.o
 NEED_PCI := yes
 endif
 
