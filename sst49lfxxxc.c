@@ -23,45 +23,6 @@
 #include "flash.h"
 #include "chipdrivers.h"
 
-static int write_lockbits_block_49lfxxxc(struct flashctx *flash,
-					 unsigned long address,
-					 unsigned char bits)
-{
-	unsigned long lock = flash->virtual_registers + address + 2;
-	msg_cdbg("lockbits at address=0x%08lx is 0x%01x\n", lock,
-		 chip_readb(flash, lock));
-	chip_writeb(flash, bits, lock);
-
-	return 0;
-}
-
-static int write_lockbits_49lfxxxc(struct flashctx *flash, unsigned char bits)
-{
-	chipaddr registers = flash->virtual_registers;
-	unsigned int i, left = flash->chip->total_size * 1024;
-	unsigned long address;
-
-	msg_cdbg("\nbios=0x%08" PRIxPTR "\n", registers);
-	for (i = 0; left > 65536; i++, left -= 65536) {
-		write_lockbits_block_49lfxxxc(flash, i * 65536, bits);
-	}
-	address = i * 65536;
-	write_lockbits_block_49lfxxxc(flash, address, bits);
-	address += 32768;
-	write_lockbits_block_49lfxxxc(flash, address, bits);
-	address += 8192;
-	write_lockbits_block_49lfxxxc(flash, address, bits);
-	address += 8192;
-	write_lockbits_block_49lfxxxc(flash, address, bits);
-
-	return 0;
-}
-
-int unlock_49lfxxxc(struct flashctx *flash)
-{
-	return write_lockbits_49lfxxxc(flash, 0);
-}
-
 int erase_sector_49lfxxxc(struct flashctx *flash, unsigned int address,
 			  unsigned int sector_size)
 {

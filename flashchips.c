@@ -1382,7 +1382,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 512,
 		.page_size	= 64 * 1024,
 		.feature_bits	= FEATURE_REGISTERMAP | FEATURE_EITHER_RESET,
-		.tested		= TEST_OK_PREW,
+		.tested		= TEST_OK_PR,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,	/* routine is wrapper to probe_jedec (pm49fl00x.c) */
 		.block_erasers	=
@@ -1395,7 +1395,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = erase_chip_block_jedec,
 			}
 		},
-		.unlock		= unlock_49fl00x,
+		.unlock		= unlock_regspace2_uniform_64k,
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600},
@@ -5979,7 +5979,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 512,
 		.page_size	= 64 * 1024,
 		.feature_bits	= FEATURE_REGISTERMAP,
-		.tested		= TEST_OK_PREW,
+		.tested		= TEST_OK_PR,
 		.probe		= probe_82802ab,
 		.probe_timing	= TIMING_IGNORED, /* routine does not use probe_timing (82802ab.c) */
 		.block_erasers	=
@@ -5989,7 +5989,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = erase_block_82802ab,
 			},
 		},
-		.unlock		= unlock_82802ab,
+		.unlock		= unlock_regspace2_uniform_64k,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600},
@@ -6014,7 +6014,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = erase_block_82802ab,
 			},
 		},
-		.unlock		= unlock_82802ab,
+		.unlock		= unlock_regspace2_uniform_64k,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600},
@@ -9202,7 +9202,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 256,
 		.page_size	= 16 * 1024,
 		.feature_bits	= FEATURE_REGISTERMAP | FEATURE_EITHER_RESET,
-		.tested		= TEST_OK_PREW,
+		.tested		= TEST_OK_PR,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,	/* routine is wrapper to probe_jedec (pm49fl00x.c) */
 		.block_erasers	=
@@ -9218,7 +9218,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = erase_chip_block_jedec,
 			}
 		},
-		.unlock		= unlock_49fl00x,
+		.unlock		= unlock_regspace2_uniform_32k,
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600},
@@ -9233,7 +9233,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 512,
 		.page_size	= 64 * 1024,
 		.feature_bits	= FEATURE_REGISTERMAP | FEATURE_EITHER_RESET,
-		.tested		= TEST_OK_PREW,
+		.tested		= TEST_OK_PR,
 		.probe		= probe_jedec,
 		.probe_timing	= TIMING_ZERO,	/* routine is wrapper to probe_jedec (pm49fl00x.c) */
 		.block_erasers	=
@@ -9249,7 +9249,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = erase_chip_block_jedec,
 			}
 		},
-		.unlock		= unlock_49fl00x,
+		.unlock		= unlock_regspace2_uniform_64k,
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600},
@@ -9562,7 +9562,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = NULL, /* 30 D0, only in A/A mux mode */
 			},
 		},
-		.unlock		= unlock_82802ab,
+		.unlock		= unlock_regspace2_uniform_64k,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600},
@@ -11104,7 +11104,8 @@ const struct flashchip flashchips[] = {
 				.block_erase = erase_block_82802ab,
 			}
 		},
-		.unlock		= unlock_49lfxxxc,
+		.printlock	= printlock_regspace2_block_eraser_1,
+		.unlock		= unlock_regspace2_block_eraser_1,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600},
@@ -11169,7 +11170,8 @@ const struct flashchip flashchips[] = {
 				.block_erase = erase_block_82802ab,
 			}
 		},
-		.unlock		= unlock_49lfxxxc,
+		.printlock	= printlock_regspace2_block_eraser_1,
+		.unlock		= unlock_regspace2_block_eraser_1,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600},
@@ -11184,7 +11186,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 2048,
 		.page_size	= 4 * 1024,
 		.feature_bits	= FEATURE_REGISTERMAP,
-		.tested		= TEST_OK_PREW,
+		.tested		= TEST_OK_PR,
 		.probe		= probe_82802ab,
 		.probe_timing	= TIMING_IGNORED, /* routine doesn't use probe_timing (sst49lfxxxc.c) */
 		.block_erasers	=
@@ -11202,7 +11204,8 @@ const struct flashchip flashchips[] = {
 				.block_erase = erase_block_82802ab,
 			}
 		},
-		.unlock		= unlock_49lfxxxc,
+		.printlock	= printlock_regspace2_block_eraser_1,
+		.unlock		= unlock_regspace2_block_eraser_1,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600},
@@ -11307,7 +11310,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 512,
 		.page_size	= 64 * 1024,
 		.feature_bits	= FEATURE_EITHER_RESET | FEATURE_REGISTERMAP,
-		.tested		= TEST_OK_PREW,
+		.tested		= TEST_OK_PR,
 		.probe		= probe_jedec,
 		.probe_timing	= 1,		/* 150ns */
 		.block_erasers	=
@@ -11323,7 +11326,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = NULL,
 			}
 		},
-		.unlock		= unlock_82802ab,
+		.unlock		= unlock_regspace2_uniform_64k,
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600},
@@ -11368,7 +11371,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 2048,
 		.page_size	= 4 * 1024,
 		.feature_bits	= FEATURE_REGISTERMAP,
-		.tested		= TEST_OK_PRE,
+		.tested		= TEST_OK_PR,
 		.probe		= probe_82802ab,
 		.probe_timing	= TIMING_IGNORED, /* routine doesn't use probe_timing (sst49lfxxxc.c) */
 		.block_erasers	=
@@ -11386,7 +11389,8 @@ const struct flashchip flashchips[] = {
 				.block_erase = erase_block_82802ab,
 			}
 		},
-		.unlock		= unlock_49lfxxxc,
+		.printlock	= printlock_regspace2_block_eraser_1,
+		.unlock		= unlock_regspace2_block_eraser_1,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600},
@@ -11654,7 +11658,7 @@ const struct flashchip flashchips[] = {
 			}
 		},
 		.write		= write_82802ab,
-		.unlock		= unlock_stm50_uniform,
+		.unlock		= unlock_regspace2_uniform_64k,
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
 	},
@@ -11687,7 +11691,7 @@ const struct flashchip flashchips[] = {
 			}
 		},
 		.write		= write_82802ab,
-		.unlock		= unlock_stm50_uniform,
+		.unlock		= unlock_regspace2_uniform_64k,
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
 	},
@@ -11701,7 +11705,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 1024,
 		.page_size	= 0,
 		.feature_bits	= FEATURE_REGISTERMAP,
-		.tested		= TEST_OK_PRE,
+		.tested		= TEST_OK_PR,
 		.probe		= probe_82802ab,
 		.probe_timing	= TIMING_FIXME,
 		.block_erasers	=
@@ -11719,7 +11723,8 @@ const struct flashchip flashchips[] = {
 				.block_erase = erase_block_82802ab,
 			}
 		},
-		.unlock		= unlock_stm50_nonuniform,
+		.printlock	= printlock_regspace2_block_eraser_0,
+		.unlock		= unlock_regspace2_block_eraser_0,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
@@ -11752,7 +11757,8 @@ const struct flashchip flashchips[] = {
 				.block_erase = erase_block_82802ab,
 			}
 		},
-		.unlock		= unlock_stm50_nonuniform,
+		.printlock	= printlock_regspace2_block_eraser_0,
+		.unlock		= unlock_regspace2_block_eraser_0,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
@@ -11767,9 +11773,9 @@ const struct flashchip flashchips[] = {
 		.total_size	= 256,
 		.page_size	= 0,
 		.feature_bits	= FEATURE_REGISTERMAP,
-		.tested		= TEST_UNTESTED,
+		.tested		= TEST_OK_PR,
 		.probe		= probe_82802ab,
-		.probe_timing	= TIMING_IGNORED, /* routine doesn't use probe_timing (sst49lfxxxc.c) */
+		.probe_timing	= TIMING_IGNORED, /* routine doesn't use probe_timing (82802ab.c) */
 		.block_erasers	=
 		{
 			{
@@ -11780,9 +11786,13 @@ const struct flashchip flashchips[] = {
 					{16 * 1024, 1},
 				},
 				.block_erase = erase_block_82802ab,
+			}, {
+				.eraseblocks = { {256 * 1024, 1}, },
+				.block_erase = NULL, /* Only in A/A mux mode */
 			}
 		},
-		.unlock		= unlock_stm50_nonuniform,
+		.printlock	= printlock_regspace2_block_eraser_0,
+		.unlock		= unlock_regspace2_block_eraser_0,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
@@ -11807,7 +11817,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = erase_block_82802ab,
 			}
 		},
-		.unlock		= unlock_stm50_uniform,
+		.unlock		= unlock_regspace2_uniform_64k,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
@@ -11832,7 +11842,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = erase_block_82802ab,
 			}
 		},
-		.unlock		= unlock_stm50_uniform,
+		.unlock		= unlock_regspace2_uniform_64k,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
@@ -11847,7 +11857,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 1024,
 		.page_size	= 0,
 		.feature_bits	= FEATURE_REGISTERMAP,
-		.tested		= TEST_OK_PREW,
+		.tested		= TEST_OK_PR,
 		.probe		= probe_82802ab,
 		.probe_timing	= TIMING_IGNORED, /* routine doesn't use probe_timing (82802ab.c) */
 		.block_erasers	=
@@ -11857,7 +11867,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = erase_block_82802ab,
 			}
 		},
-		.unlock		= unlock_stm50_uniform,
+		.unlock		= unlock_regspace2_uniform_64k,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
@@ -11882,7 +11892,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = erase_block_82802ab,
 			}
 		},
-		.unlock		= unlock_stm50_uniform,
+		.unlock		= unlock_regspace2_uniform_64k,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
@@ -11913,7 +11923,8 @@ const struct flashchip flashchips[] = {
 				.block_erase = erase_block_82802ab,
 			}
 		},
-		.unlock		= unlock_stm50_nonuniform,
+		.printlock	= printlock_regspace2_block_eraser_0,
+		.unlock		= unlock_regspace2_block_eraser_0,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
@@ -13181,7 +13192,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 512,
 		.page_size	= 64 * 1024,
 		.feature_bits	= FEATURE_REGISTERMAP | FEATURE_EITHER_RESET,
-		.tested		= TEST_OK_PREW,
+		.tested		= TEST_OK_PR,
 		.probe		= probe_jedec,
 		.probe_timing	= 10,
 		.block_erasers	=
@@ -13198,7 +13209,7 @@ const struct flashchip flashchips[] = {
 			}
 		},
 		.printlock	= printlock_w39v040fa,
-		.unlock		= unlock_sst_fwhub,
+		.unlock		= unlock_regspace2_uniform_64k,
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600},
@@ -13213,7 +13224,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 512,
 		.page_size	= 64 * 1024,
 		.feature_bits	= FEATURE_REGISTERMAP | FEATURE_EITHER_RESET,
-		.tested		= TEST_OK_PREW,
+		.tested		= TEST_OK_PR,
 		.probe		= probe_jedec,
 		.probe_timing	= 10,
 		.block_erasers	=
@@ -13227,7 +13238,7 @@ const struct flashchip flashchips[] = {
 			}
 		},
 		.printlock	= printlock_w39v040fb,
-		.unlock		= unlock_w39v040fb,
+		.unlock		= unlock_regspace2_uniform_64k,
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600}, /* Also has 12V fast program */
@@ -13418,7 +13429,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 1024,
 		.page_size	= 64 * 1024,
 		.feature_bits	= FEATURE_REGISTERMAP | FEATURE_EITHER_RESET,
-		.tested		= TEST_OK_PREW,
+		.tested		= TEST_OK_PR,
 		.probe		= probe_jedec,
 		.probe_timing	= 10,
 		.block_erasers	=
@@ -13432,7 +13443,7 @@ const struct flashchip flashchips[] = {
 			}
 		},
 		.printlock	= printlock_w39v080fa,
-		.unlock		= unlock_w39v080fa,
+		.unlock		= unlock_regspace2_uniform_64k,
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600}, /* Also has 12V fast program */
