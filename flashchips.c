@@ -3049,10 +3049,10 @@ const struct flashchip flashchips[] = {
 		.model_id	= ATMEL_AT49LH002,
 		.total_size	= 256,
 		.page_size	= 0, /* unused */
-		.feature_bits	= FEATURE_REGISTERMAP, /* TODO: LPC OK too? */
+		.feature_bits	= FEATURE_REGISTERMAP,
 		.tested		= TEST_UNTESTED,
-		.probe		= probe_82802ab, /* TODO: 0xff cmd not documented? */
-		.probe_timing	= TIMING_FIXME,
+		.probe		= probe_82802ab,
+		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
 		{
 			{
@@ -3062,16 +3062,88 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = erase_block_82802ab,
+				.block_erase = NULL, /* TODO: Implement. */
 			}, {
 				.eraseblocks = {
 					{64 * 1024, 4},
 				},
+				.block_erase = erase_block_82802ab,
+			},
+		},
+		.printlock	= printlock_regspace2_block_eraser_0,
+		.unlock		= unlock_regspace2_block_eraser_0,
+		.write		= write_82802ab,
+		.read		= read_memmapped,
+		.voltage	= {3000, 3600},
+	},
+
+	{
+		.vendor		= "Atmel",
+		.name		= "AT49LH00B4",
+		.bustype	= BUS_LPC | BUS_FWH, /* A/A Mux */
+		.manufacture_id	= ATMEL_ID,
+		.model_id	= ATMEL_AT49LH00B4,
+		.total_size	= 512,
+		.page_size	= 0, /* unused */
+		.feature_bits	= FEATURE_REGISTERMAP,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_82802ab,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = {
+					{8 * 1024, 2},
+					{16 * 1024, 1},
+					{32 * 1024, 1},
+					{64 * 1024, 7},
+				},
+				.block_erase = NULL, /* TODO: Implement. */
+			}, {
+				.eraseblocks = {
+					{64 * 1024, 8},
+				},
+				.block_erase = erase_block_82802ab,
+			},
+		},
+		.printlock	= printlock_regspace2_block_eraser_0,
+		.unlock		= unlock_regspace2_block_eraser_0,
+		.write		= write_82802ab,
+		.read		= read_memmapped,
+		.voltage	= {3000, 3600},
+	},
+
+	{
+		.vendor		= "Atmel",
+		.name		= "AT49LH004",
+		.bustype	= BUS_LPC | BUS_FWH, /* A/A Mux */
+		.manufacture_id	= ATMEL_ID,
+		.model_id	= ATMEL_AT49LH004,
+		.total_size	= 512,
+		.page_size	= 0, /* unused */
+		.feature_bits	= FEATURE_REGISTERMAP,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_82802ab,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = {
+					{64 * 1024, 7},
+					{32 * 1024, 1},
+					{8 * 1024, 2},
+					{16 * 1024, 1},
+				},
+				.block_erase = erase_block_82802ab,
+			}, {
+				.eraseblocks = {
+					{64 * 1024, 8},
+				},
 				.block_erase = NULL, /* TODO: Implement. */
 			},
 		},
-		.printlock	= NULL, /* TODO */
-		.unlock		= NULL, /* unlock_82802ab() not correct(?) */
+		.printlock	= printlock_regspace2_block_eraser_0,
+		.unlock		= unlock_regspace2_block_eraser_0,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600},
