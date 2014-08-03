@@ -139,6 +139,7 @@ uint8_t oddparity(uint8_t val);
 void toggle_ready_jedec(const struct flashctx *flash, chipaddr dst);
 void data_polling_jedec(const struct flashctx *flash, chipaddr dst, uint8_t data);
 int probe_jedec(struct flashctx *flash);
+int probe_jedec_29gl(struct flashctx *flash);
 int write_jedec(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 int write_jedec_1(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 int erase_sector_jedec(struct flashctx *flash, unsigned int page, unsigned int pagesize);

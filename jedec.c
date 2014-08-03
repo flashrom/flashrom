@@ -121,6 +121,55 @@ static void start_program_jedec_common(const struct flashctx *flash, unsigned in
 	chip_writeb(flash, 0xA0, bios + (0x5555 & mask));
 }
 
+int probe_jedec_29gl(struct flashctx *flash)
+{
+	unsigned int mask = getaddrmask(flash->chip);
+	chipaddr bios = flash->virtual_memory;
+	const struct flashchip *chip = flash->chip;
+
+	/* Reset chip to a clean slate */
+	chip_writeb(flash, 0xF0, bios + (0x5555 & mask));
+
+	/* Issue JEDEC Product ID Entry command */
+	chip_writeb(flash, 0xAA, bios + (0x5555 & mask));
+	chip_writeb(flash, 0x55, bios + (0x2AAA & mask));
+	chip_writeb(flash, 0x90, bios + (0x5555 & mask));
+
+	/* Read product ID */
+	// FIXME: Continuation loop, second byte is at word 0x100/byte 0x200
+	uint32_t man_id = chip_readb(flash, bios + 0x00);
+	uint32_t dev_id = (chip_readb(flash, bios + 0x01) << 16) |
+			  (chip_readb(flash, bios + 0x0E) <<  8) |
+			  (chip_readb(flash, bios + 0x0F) <<  0);
+
+	/* Issue JEDEC Product ID Exit command */
+	chip_writeb(flash, 0xF0, bios + (0x5555 & mask));
+
+	msg_cdbg("%s: man_id 0x%02x, dev_id 0x%06x", __func__, man_id, dev_id);
+	if (!oddparity(man_id))
+		msg_cdbg(", man_id parity violation");
+
+	/* Read the product ID location again. We should now see normal flash contents. */
+	uint32_t flashcontent1 = chip_readb(flash, bios + 0x00); // FIXME: Continuation loop
+	uint32_t flashcontent2 = (chip_readb(flash, bios + 0x01) << 16) |
+				 (chip_readb(flash, bios + 0x0E) <<  8) |
+				 (chip_readb(flash, bios + 0x0F) <<  0);
+
+	if (man_id == flashcontent1)
+		msg_cdbg(", man_id seems to be normal flash content");
+	if (dev_id == flashcontent2)
+		msg_cdbg(", dev_id seems to be normal flash content");
+
+	msg_cdbg("\n");
+	if (man_id != chip->manufacture_id || dev_id != chip->model_id)
+		return 0;
+
+	if (chip->feature_bits & FEATURE_REGISTERMAP)
+		map_flash_registers(flash);
+
+	return 1;
+}
+
 static int probe_jedec_common(struct flashctx *flash, unsigned int mask)
 {
 	chipaddr bios = flash->virtual_memory;
