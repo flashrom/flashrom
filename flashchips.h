@@ -29,9 +29,9 @@
  * entry of each section should be the manufacturer ID, followed by the
  * list of devices from that manufacturer (sorted by device IDs).
  *
- * All LPC/FWH parts (parallel flash) have 8-bit device IDs if there is no
+ * Most LPC/FWH parts (parallel flash) have 8-bit device IDs if there is no
  * continuation code.
- * SPI parts have 16-bit device IDs if they support RDID.
+ * SPI parts have at least 16-bit device IDs if they support RDID.
  */
 
 #define GENERIC_MANUF_ID	0xFFFF	/* Check if there is a vendor ID */
@@ -290,6 +290,11 @@
 #define EON_EN29LV640B		0xCB
 #define EON_EN29F002T		0x7F92	/* Same as EN29F002A */
 #define EON_EN29F002B		0x7F97	/* Same as EN29F002AN */
+#define EON_EN29GL064HL		0x7E0C01	/* Uniform Sectors, WP protects Top OR Bottom sector */
+#define EON_EN29GL064T		0x7E1001	/* Same ID as EN29GL064AT */
+#define EON_EN29GL064B		0x7E1000	/* Same ID as EN29GL064AB */
+#define EON_EN29GL128HL		0x7F2101	/* Uniform Sectors, WP protects Top OR Bottom sector */
+#define EON_EN29GL256HL		0x7F2201	/* Uniform Sectors, WP protects Top OR Bottom sector */
 
 #define EXCEL_ID		0x7F7F7F7F4A	/* Excel Semiconductor Inc. (ESI) resides in bank 5 */
 #define EXCEL_ID_NOPREFIX	0x4A	/* ESI, missing 0x7F prefix */
@@ -356,6 +361,7 @@
 #define GIGADEVICE_GD25LQ32	0x6016
 #define GIGADEVICE_GD25LQ64	0x6017	/* Same as GD25LQ64B (which is faster) */
 #define GIGADEVICE_GD25LQ128	0x6018
+#define GIGADEVICE_GD29GL064CAB	0x7E0601
 
 #define HYUNDAI_ID		0xAD	/* Hyundai */
 #define HYUNDAI_HY29F400T	0x23	/* Same as HY29F400AT */
@@ -424,7 +430,14 @@
 #define SHARP_LH28F008SA	0xA2	/* Sharp chip, Intel Vendor ID */
 #define SHARP_LH28F008SC	0xA6	/* Sharp chip, Intel Vendor ID */
 
-#define ISSI_ID			0xD5	/* ISSI Integrated Silicon Solutions */
+#define ISSI_ID			0xD5	/* ISSI Integrated Silicon Solutions, see also PMC. */
+#define ISSI_PMC_IS29GL032B	0xF9
+#define ISSI_PMC_IS29GL032T	0xF6
+#define ISSI_PMC_IS29GL064B	0x7E1000
+#define ISSI_PMC_IS29GL064T	0x7E1001
+#define ISSI_PMC_IS29GL064HL	0x7E0C01
+#define ISSI_PMC_IS29GL128HL	0x7E2101
+#define ISSI_PMC_IS29GL256HL	0x7E2201
 
 #define MACRONIX_ID		0xC2	/* Macronix (MX) */
 /* Mask ROMs */
@@ -468,6 +481,16 @@
 #define MACRONIX_MX29F400T	0x23	/* Same as MX29F400CT */
 #define MACRONIX_MX29F800B	0x58
 #define MACRONIX_MX29F800T	0xD6
+#define MACRONIX_MX29GL320EB	0x7E1A00
+#define MACRONIX_MX29GL320ET	0x7E1A01
+#define MACRONIX_MX29GL320EHL	0x7E1D00
+#define MACRONIX_MX29GL640EB	0x7E1000
+#define MACRONIX_MX29GL640ET	0x7E1001
+#define MACRONIX_MX29GL640EHL	0x7E0C01
+#define MACRONIX_MX29GL128F	0x7E2101 /* Same as MX29GL128E */
+#define MACRONIX_MX29GL256F	0x7E2201 /* Same as MX29GL256E */
+#define MACRONIX_MX29GL512F	0x7E2301
+#define MACRONIX_MX68GL1G0F	0x7E2801
 #define MACRONIX_MX29LV002CB	0x5A
 #define MACRONIX_MX29LV002CT	0x59
 #define MACRONIX_MX29LV004B	0xB6	/* Same as MX29LV004CB */
@@ -506,8 +529,9 @@
 /*
  * Programmable Micro Corp is listed in JEP106W in bank 2, so it should
  * have a 0x7F continuation code prefix.
- * Apparently this name is owned by "Chingis Technology Corporation" http://www.chingistek.com which is now a
- * subsidiary of ISSI. They continue to use the PMC manufacturer ID nevertheless.
+ * Apparently PMC was renamed to "Chingis Technology Corporation" http://www.chingistek.com which is now a
+ * subsidiary of ISSI. They continue to use the PMC manufacturer ID (instead of ISSI's) nevertheless, even for
+ * new chips with IS* model numbers.
  */
 #define PMC_ID			0x7F9D	/* PMC */
 #define PMC_ID_NOPREFIX		0x9D	/* PMC, missing 0x7F prefix */
@@ -557,12 +581,10 @@
 #define SHARP_LHF00L02		0xC9	/* Same as LHF00L06/LHF00L07 */
 #define SHARP_LHF00L04		0xCF	/* Same as LHF00L03/LHF00L05 */
 
-/*
- * Spansion was previously a joint venture of AMD and Fujitsu.
- * S25 chips are SPI. The first device ID byte is memory type and
- * the second device ID byte is memory capacity.
- */
+/* Spansion was previously a joint venture of AMD and Fujitsu. */
 #define SPANSION_ID		0x01	/* Spansion, same ID as AMD */
+/* S25 chips are SPI. The first device ID byte is memory type and
+ * the second device ID byte is memory capacity. */
 #define SPANSION_S25FL004A	0x0212
 #define SPANSION_S25FL008A	0x0213
 #define SPANSION_S25FL016A	0x0214
@@ -576,6 +598,40 @@
 #define SPANSION_S25FL216	0x4015	/* Same as S25FL216K, but the latter supports OTP, 3 status regs, quad I/O, SFDP etc. */
 #define SPANSION_S25FL132K	0x4016
 #define SPANSION_S25FL164K	0x4017
+
+/* Spansion 29GL families got a suffix indicating the process technology but share the same 3-Byte IDs. They can
+ * however be differentiated by CFI byte 45h. Some versions exist which have special top or bottom boot sectors
+ * and various WP configurations (not heeded in the table below).
+ *
+ * Suf.  Process Sector Sz  Rd Page  Wr Page  Data Width  OTP Sz   Min Size     Max Size
+ *  A     200 nm    64 kB      8 B     32 B     x8/x16     256 B   16Mb/ 2MB   64Mb/  8MB
+ *  M     230 nm    64 kB      8 B     32 B     x8/x16     256 B   32Mb/ 4MB  256Mb/ 32MB
+ *  N*    110 nm    64 kB     16 B     32 B     x8/x16     256 B   32Mb/ 4MB   64Mb/  8MB
+ *  N*    110 nm   128 kB     16 B     32 B     x8/x16     256 B  128Mb/16MB  256Mb/ 64MB
+ *  P      90 nm   128 kB     16 B     64 B     x8/x16     256 B  128Mb/16MB    2Gb/256MB
+ *  S      65 nm   128 kB     32 B    512 B     x8 only    512 B  128Mb/16MB    2Gb/256MB
+ *
+ * For the N series there are two subgroups: the 4 and 8MB devices (S29GL032N, S29GL064N) have 64 kB erase
+ * sectors while the bigger chips got 128 kB sectors.
+ * Each series includes multiple models varying in speedgrade, boot block configurations etc.
+ */
+#define SPANSION_S29GL016_1	0xC4	/* Top Boot Sector, WP protects Top 2 sectors */
+#define SPANSION_S29GL016_2	0x49	/* Bottom Boot Sector, WP protects Bottom 2 sectors */
+/* Same IDs for S29GL032A, S29GL032M, S29GL032N (variations) */
+#define SPANSION_S29GL032_1289	0x7E1D00	/* Uniform Sectors, WP protects Top OR Bottom sector */
+#define SPANSION_S29GL032_3	0x7E1A01	/* Top Boot Sector, WP protects Top 2 sectors */
+#define SPANSION_S29GL032_4	0x7E1A00	/* Bottom Boot Sector, WP protects Bottom 2 sectors */
+/* Same IDs for S29GL064A, S29GL064M, S29GL064N, S29GL064S (variations) */
+#define SPANSION_S29GL064_1289	0x7E0C01	/* Uniform Sectors, WP protects Top OR Bottom sector */
+#define SPANSION_S29GL064_3	0x7E1001	/* Top Boot Sector, WP protects Top 2 sectors */
+#define SPANSION_S29GL064_4	0x7E1000	/* Bottom Boot Sector, WP protects Bottom 2 sectors */
+#define SPANSION_S29GL064_567	0x7E1301	/* x16 only, Uniform Sectors */
+
+#define SPANSION_S29GL128	0x7E2101	/* Same ID for S29GL128M, S29GL128N, S29GL128P, S29GL128S */
+#define SPANSION_S29GL256	0x7E2201	/* Same ID for S29GL256M, S29GL256N, S29GL256P, S29GL256S */
+#define SPANSION_S29GL512	0x7E2301	/* Same ID for S29GL512P, S29GL512S */
+#define SPANSION_S29GL01G	0x7E2801	/* Same ID for S29GL01GP, S29GL01GS */
+#define SPANSION_S70GL02G	0x7E4801	/* Same ID for S70GL02GP, S70GL02GS; based on two S29GL01G dies respectively */
 
 /*
  * SST25 chips are SPI, first byte of device ID is memory type, second
@@ -776,6 +832,14 @@
 #define WINBOND_W29C020		0x45    /* Same as W29C020C, W29C022 and ASD AE29F2008 */
 #define WINBOND_W29C040		0x46    /* Same as W29C040P */
 #define WINBOND_W29C512A	0xC8    /* Same as W29EE512 */
+#define WINBOND_W29GL032CHL	0x7E1D01	/* Uniform Sectors, WP protects Top OR Bottom sector */
+#define WINBOND_W29GL032CB	0x7E1A00	/* Top Boot Sector, WP protects Top 2 sectors */
+#define WINBOND_W29GL032CT	0x7E1A01	/* Bottom Boot Sector, WP protects Bottom 2 sectors */
+#define WINBOND_W29GL064CHL	0x7E0C01	/* Uniform Sectors, WP protects Top OR Bottom sector */
+#define WINBOND_W29GL064CB	0x7E1000	/* Top Boot Sector, WP protects Top 2 sectors */
+#define WINBOND_W29GL064CT	0x7E1001	/* Bottom Boot Sector, WP protects Bottom 2 sectors */
+#define WINBOND_W29GL128CHL	0x7E2101	/* Uniform Sectors, WP protects Top OR Bottom sector */
+#define WINBOND_W29GL256HL	0x7E2201	/* Same ID for W29GL0256P and W29GL0256S; uniform Sectors, WP protects Top OR Bottom sector */
 #define WINBOND_W39F010		0xA1
 #define WINBOND_W39L010		0x31
 #define WINBOND_W39L020		0xB5
