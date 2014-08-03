@@ -108,17 +108,6 @@ uint8_t wait_82802ab(struct flashctx *flash)
 	return status;
 }
 
-int unlock_82802ab(struct flashctx *flash)
-{
-	int i;
-	//chipaddr wrprotect = flash->virtual_registers + page + 2;
-
-	for (i = 0; i < flash->chip->total_size * 1024; i+= flash->chip->page_size)
-		chip_writeb(flash, 0, flash->virtual_registers + i + 2);
-
-	return 0;
-}
-
 int erase_block_82802ab(struct flashctx *flash, unsigned int page,
 			unsigned int pagesize)
 {

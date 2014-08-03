@@ -131,7 +131,6 @@ int probe_82802ab(struct flashctx *flash);
 int erase_block_82802ab(struct flashctx *flash, unsigned int page, unsigned int pagesize);
 int write_82802ab(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 void print_status_82802ab(uint8_t status);
-int unlock_82802ab(struct flashctx *flash);
 int unlock_28f004s5(struct flashctx *flash);
 int unlock_lh28f008bjt(struct flashctx *flash);
 
@@ -146,14 +145,19 @@ int erase_sector_jedec(struct flashctx *flash, unsigned int page, unsigned int p
 int erase_block_jedec(struct flashctx *flash, unsigned int page, unsigned int blocksize);
 int erase_chip_block_jedec(struct flashctx *flash, unsigned int page, unsigned int blocksize);
 
+int unlock_regspace2_uniform_32k(struct flashctx *flash);
+int unlock_regspace2_uniform_64k(struct flashctx *flash);
+int unlock_regspace2_block_eraser_0(struct flashctx *flash);
+int unlock_regspace2_block_eraser_1(struct flashctx *flash);
+int unlock_regspace2_block(const struct flashctx *flash, chipaddr off);
+int printlock_regspace2_uniform_64k(struct flashctx *flash);
+int printlock_regspace2_block_eraser_0(struct flashctx *flash);
+int printlock_regspace2_block_eraser_1(struct flashctx *flash);
+
 /* m29f400bt.c */
 int probe_m29f400bt(struct flashctx *flash);
 int write_m29f400bt(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 void protect_m29f400bt(struct flashctx *flash, chipaddr bios);
-
-/* pm49fl00x.c */
-int unlock_49fl00x(struct flashctx *flash);
-int lock_49fl00x(struct flashctx *flash);
 
 /* sst28sf040.c */
 int erase_chip_28sf040(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
@@ -164,7 +168,6 @@ int protect_28sf040(struct flashctx *flash);
 
 /* sst49lfxxxc.c */
 int erase_sector_49lfxxxc(struct flashctx *flash, unsigned int address, unsigned int sector_size);
-int unlock_49lfxxxc(struct flashctx *flash);
 
 /* sst_fwhub.c */
 int printlock_sst_fwhub(struct flashctx *flash);
@@ -184,8 +187,6 @@ int printlock_w39v040fc(struct flashctx *flash);
 int printlock_w39v080a(struct flashctx *flash);
 int printlock_w39v080fa(struct flashctx *flash);
 int printlock_w39v080fa_dual(struct flashctx *flash);
-int unlock_w39v040fb(struct flashctx *flash);
-int unlock_w39v080fa(struct flashctx *flash);
 int printlock_at49f(struct flashctx *flash);
 
 /* w29ee011.c */
@@ -193,8 +194,6 @@ int probe_w29ee011(struct flashctx *flash);
 
 /* stm50.c */
 int erase_sector_stm50(struct flashctx *flash, unsigned int block, unsigned int blocksize);
-int unlock_stm50_uniform(struct flashctx *flash);
-int unlock_stm50_nonuniform(struct flashctx *flash);
 
 /* en29lv640b.c */
 int probe_en29lv640b(struct flashctx *flash);
