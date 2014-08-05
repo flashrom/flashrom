@@ -142,11 +142,11 @@ static int linux_spi_send_command(struct flashctx *flash, unsigned int writecnt,
 	int iocontrol_code;
 	struct spi_ioc_transfer msg[2] = {
 		{
-			.tx_buf = (uint64_t)(ptrdiff_t)txbuf,
+			.tx_buf = (uint64_t)(uintptr_t)txbuf,
 			.len = writecnt,
 		},
 		{
-			.rx_buf = (uint64_t)(ptrdiff_t)rxbuf,
+			.rx_buf = (uint64_t)(uintptr_t)rxbuf,
 			.len = readcnt,
 		},
 	};
