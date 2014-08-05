@@ -1272,6 +1272,7 @@ static int ich_hwseq_block_erase(struct flashctx *flash, unsigned int addr,
 	}
 
 	msg_pdbg("Erasing %d bytes starting at 0x%06x.\n", len, addr);
+	ich_hwseq_set_addr(addr);
 
 	/* make sure FDONE, FCERR, AEL are cleared by writing 1 to them */
 	REGWRITE16(ICH9_REG_HSFS, REGREAD16(ICH9_REG_HSFS));
@@ -1307,7 +1308,11 @@ static int ich_hwseq_read(struct flashctx *flash, uint8_t *buf,
 	REGWRITE16(ICH9_REG_HSFS, REGREAD16(ICH9_REG_HSFS));
 
 	while (len > 0) {
+		/* Obey programmer limit... */
 		block_len = min(len, flash->mst->opaque.max_data_read);
+		/* as well as flash chip page borders as demanded in the Intel datasheets. */
+		block_len = min(block_len, 256 - (addr & 0xFF));
+
 		ich_hwseq_set_addr(addr);
 		hsfc = REGREAD16(ICH9_REG_HSFC);
 		hsfc &= ~HSFC_FCYCLE; /* set read operation */
@@ -1345,7 +1350,10 @@ static int ich_hwseq_write(struct flashctx *flash, const uint8_t *buf, unsigned 
 
 	while (len > 0) {
 		ich_hwseq_set_addr(addr);
+		/* Obey programmer limit... */
 		block_len = min(len, flash->mst->opaque.max_data_write);
+		/* as well as flash chip page borders as demanded in the Intel datasheets. */
+		block_len = min(block_len, 256 - (addr & 0xFF));
 		ich_fill_data(buf, block_len, ICH9_REG_FDATA0);
 		hsfc = REGREAD16(ICH9_REG_HSFC);
 		hsfc &= ~HSFC_FCYCLE; /* clear operation */
