@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
 	unsigned long size;
 	/* Probe for up to three flash chips. */
 	const struct flashchip *chip = NULL;
-	struct flashctx flashes[3] = {{0}};
+	struct flashctx flashes[6] = {{0}};
 	struct flashctx *fill_flash;
 	const char *name;
 	int namelen, opt, i, j;
