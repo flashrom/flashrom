@@ -191,7 +191,7 @@ static int check_readwritecnt(struct flashctx *flash, unsigned int writecnt, uns
 		return SPI_INVALID_LENGTH;
 	}
 
-	unsigned int maxreadcnt = flash->mst->spi.max_data_read + 3;
+	unsigned int maxreadcnt = flash->mst->spi.max_data_read;
 	if (readcnt > maxreadcnt) {
 		msg_pinfo("%s: SPI controller can not receive %d bytes, it is limited to %d bytes\n",
 			  __func__, readcnt, maxreadcnt);

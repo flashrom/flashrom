@@ -74,7 +74,7 @@ Additional information of the above commands:
 		Send and receive bytes via SPI.
 		Maximum slen is Q_WRNMAXLEN in case Q_BUSTYPE returns SPI only or S_BUSTYPE was used
 		to set SPI exclusively before. Same for rlen and Q_RDNMAXLEN.
-		This operation is immediate, meaning it doesnt use the operation buffer.
+		This operation is immediate, meaning it doesn't use the operation buffer.
 	0x14 (S_SPI_FREQ):
 		Set the SPI clock frequency. The 32-bit value indicates the
 		requested frequency in Hertz. Value 0 is reserved and should

@@ -1757,7 +1757,7 @@ int selfcheck(void)
 	 * depending on compiler flags, e.g. the target architecture, and can sometimes be 0.
 	 * For 'flashchips' we export the size explicitly to work around this and to be able to implement the
 	 * checks below. */
-	if (flashchips_size <= 1 || flashchips[flashchips_size-1].name != NULL) {
+	if (flashchips_size <= 1 || flashchips[flashchips_size - 1].name != NULL) {
 		msg_gerr("Flashchips table miscompilation!\n");
 		ret = 1;
 	} else {

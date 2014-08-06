@@ -608,7 +608,7 @@ static int enable_flash_ich_spi(struct pci_dev *dev, enum ich_chipset ich_genera
 
 	if (ich_generation != CHIPSET_TUNNEL_CREEK && ich_generation != CHIPSET_CENTERTON) {
 		uint8_t buc = mmio_readb(rcrb + 0x3414);
-		msg_pdbg("Top Swap : %s\n", (buc & 1) ? "enabled (A16(+) inverted)" : "not enabled");
+		msg_pdbg("Top Swap: %s\n", (buc & 1) ? "enabled (A16(+) inverted)" : "not enabled");
 	}
 
 	/* Handle FWH-related parameters and initialization */

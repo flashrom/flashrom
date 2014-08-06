@@ -188,7 +188,7 @@ static void dmi_table(uint32_t base, uint16_t len, uint16_t num)
 		/* - If a short entry is found (less than 4 bytes), not only it
 		 *   is invalid, but we cannot reliably locate the next entry.
 		 * - If the length value indicates that this structure spreads
-		 *   accross the table border, something is fishy too.
+		 *   across the table border, something is fishy too.
 		 * Better stop at this point, and let the user know his/her
 		 * table is broken.
 		 */

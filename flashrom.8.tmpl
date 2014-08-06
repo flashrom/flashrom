@@ -229,7 +229,7 @@ bitbanging adapter)
 .sp
 Some programmers have optional or mandatory parameters which are described
 in detail in the
-.B PROGRAMMER SPECIFIC INFO
+.B PROGRAMMER-SPECIFIC INFORMATION
 section. Support for some programmers can be disabled at compile time.
 .B "flashrom \-h"
 lists all supported programmers.
@@ -242,11 +242,11 @@ Save the full debug log to
 .BR <logfile> .
 If the file already exists, it will be overwritten. This is the recommended
 way to gather logs from flashrom because they will be verbose even if the
-on-screen messages are not verbose.
+on-screen messages are not verbose and don't require output redirection.
 .TP
 .B "\-R, \-\-version"
 Show version information and exit.
-.SH PROGRAMMER SPECIFIC INFO
+.SH PROGRAMMER-SPECIFIC INFORMATION
 Some programmer drivers accept further parameters to set programmer-specific
 parameters. These parameters are separated from the programmer name by a
 colon. While some programmers take arguments at fixed positions, other
@@ -474,7 +474,7 @@ like above. In this case you can use
 .sp
 .B "  flashrom \-p internal:laptop=this_is_not_a_laptop"
 .sp
-to tell flashrom (at your own risk) that it does not running on a laptop.
+to tell flashrom (at your own risk) that it is not running on a laptop.
 .SS
 .BR "dummy " programmer
 The dummy programmer operates on a buffer in memory only. It provides a safe
@@ -595,7 +595,7 @@ is an 8-bit hexadecimal value.
 .SS
 .BR "nic3com" , " nicrealtek" , " nicnatsemi" , " nicintel", " nicintel_eeprom"\
 , " nicintel_spi" , " gfxnvidia" , " ogp_spi" , " drkaiser" , " satasii"\
-, " satamv" , " atahpt" ", " atavia " and " it8212 " programmers
+, " satamv" , " atahpt", " atavia " and " it8212 " programmers
 These programmers have an option to specify the PCI address of the card
 your want to use, which must be specified if more than one card supported
 by the selected programmer is installed in your system. The syntax is
@@ -782,7 +782,7 @@ where
 .B value
 can be
 .BR 1 " or " 2
-to select target chip 1 or 2 repectively. The default is target chip 1.
+to select target chip 1 or 2 respectively. The default is target chip 1.
 .SS
 .BR "rayer_spi " programmer
 The default I/O base address used for the parallel port is 0x378 and you can use
@@ -998,7 +998,7 @@ and associated flashrom options in the
 paragraph in the
 .B internal programmer
 subsection of the
-.B PROGRAMMER SPECIFIC INFO
+.B PROGRAMMER-SPECIFIC INFORMATION
 section and the information in our wiki at
 .BR "http://www.flashrom.org/Laptops " .
 .SS
