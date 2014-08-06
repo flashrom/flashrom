@@ -113,7 +113,7 @@ static bool atavia_ready(struct pci_dev *pcidev_dev)
 	}
 
 	msg_pdbg2("\n%s: %s after %d tries (access=0x%02x, status=0x%02x)\n",
-		  __func__, ready ? "suceeded" : "failed", try, access, status);
+		  __func__, ready ? "succeeded" : "failed", try, access, status);
 	atavia_prettyprint_access(access);
 	return ready;
 }

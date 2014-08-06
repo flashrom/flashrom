@@ -187,7 +187,7 @@ struct flashchip {
 	 * elements or set the function pointer to NULL.
 	 */
 	struct block_eraser {
-		struct eraseblock{
+		struct eraseblock {
 			unsigned int size; /* Eraseblock size in bytes */
 			unsigned int count; /* Number of contiguous blocks with that size */
 		} eraseblocks[NUM_ERASEREGIONS];

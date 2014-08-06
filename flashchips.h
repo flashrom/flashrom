@@ -75,6 +75,7 @@
 #define AMD_AM29F800BT		0xD6
 #define AMD_AM29LV001BB		0x6D
 #define AMD_AM29LV001BT		0xED
+#define AMD_AM29LV010B		0x6E	/* 1Mb, uniform */
 #define AMD_AM29LV002BB		0xC2
 #define AMD_AM29LV002BT		0x40
 #define AMD_AM29LV004BB		0xB6
@@ -156,6 +157,10 @@
 #define ATMEL_AT26DF161A	0x4601
 #define ATMEL_AT26DF321		0x4700	/* Same as 25DF321 */
 #define ATMEL_AT26F004		0x0400
+#define ATMEL_AT29LV512		0x3D
+#define ATMEL_AT29LV010A	0x35	/* Same as AT29BV010A, the latter works down to 2.7V */
+#define ATMEL_AT29LV020		0xBA
+#define ATMEL_AT29BV040A	0xC4
 #define ATMEL_AT29C040A		0xA4
 #define ATMEL_AT29C010A		0xD5
 #define ATMEL_AT29C020		0xDA
@@ -187,13 +192,15 @@
 #define ATMEL_AT45DB321D	0x2701 /* Buggy data sheet */
 #define ATMEL_AT45DB642		/* No ID (opcode) available for AT45DB642 */
 #define ATMEL_AT45DB642D	0x2800
-#define ATMEL_AT49BV512		0x03
+#define ATMEL_AT49BV512		0x03	/* Same as AT49F512 */
+#define ATMEL_AT49F001N		0x05	/* Same as AT49F001 */
+#define ATMEL_AT49F001NT	0x04	/* Same as AT49F001T */
 #define ATMEL_AT49F002N		0x07	/* for AT49F002(N)  */
 #define ATMEL_AT49LH002		0xE9
 #define ATMEL_AT49LH00B4	0xED
 #define ATMEL_AT49LH004		0xEE
 #define ATMEL_AT49F002NT	0x08	/* for AT49F002(N)T */
-#define ATMEL_AT49F010		0x17	/* Same as AT49HF010 */
+#define ATMEL_AT49F010		0x17	/* Same as AT49HF010 (some erroneous datasheets say 0x87), AT49BV010, AT49HBV010, AT49HLV010 */
 #define ATMEL_AT49F020		0x0B
 #define ATMEL_AT49F040		0x13
 #define ATMEL_AT49F080		0x23
@@ -261,7 +268,7 @@
 #define EON_EN25F80		0x3114
 #define EON_EN25F16		0x3115
 #define EON_EN25F32		0x3116
-#define EON_EN25F64		0x3117	/* guessed */
+#define EON_EN25F64		0x3117
 #define EON_EN25Q40		0x3013
 #define EON_EN25Q80		0x3014
 #define EON_EN25Q16		0x3015	/* Same as EN25D16 */
@@ -561,7 +568,7 @@
  * second byte is the device code,
  * third byte is a dummy byte.
  */
-#define SANYO_ID		0x62    /* Sanyo */
+#define SANYO_ID		0x62	/* Sanyo */
 #define SANYO_LE25FW203A	0x1600
 #define SANYO_LE25FW403A	0x1100
 #define SANYO_LE25FW106		0x15
@@ -644,8 +651,13 @@
 #define SST_SST25WF020		0x2503
 #define SST_SST25WF040		0x2504
 #define SST_SST25WF080		0x2505
-#define SST_SST25VF512A_REMS	0x48	/* REMS or RES opcode */
-#define SST_SST25VF010_REMS	0x49	/* REMS or RES opcode */
+/* There exist some successors to members of the SST25WF family with alphabetic suffixes. They have very weird
+ * IDs and were not spotted in the wild yet. Their datasheets show a 4 byte long response w/o a vendor ID. */
+#define SST_SST25WF020A		/* 0x62 0x16 0x12 0x00 */
+#define SST_SST25WF040B		/* 0x62 0x16 0x13 0x00 */
+#define SST_SST25WF080B		/* 0x62 0x16 0x14 0x00 */
+#define SST_SST25VF512_REMS	0x48	/* REMS or RES opcode, same as SST25VF512A */
+#define SST_SST25VF010_REMS	0x49	/* REMS or RES opcode, same as SST25VF010A */
 #define SST_SST25VF020_REMS	0x43	/* REMS or RES opcode, same as SST25LF020A */
 #define SST_SST25VF020B		0x258C
 #define SST_SST25VF040_REMS	0x44	/* REMS or RES opcode, same as SST25LF040A */
@@ -667,6 +679,7 @@
 #define SST_SST27VF010		0xA9
 #define SST_SST27VF020		0xAA
 #define SST_SST28SF040		0x04
+#define SST_SST29LE512		0x3D	/* Same as SST29VE512 */
 #define SST_SST29EE512		0x5D
 #define SST_SST29EE010		0x07
 #define SST_SST29LE010		0x08	/* Same as SST29VE010 */
@@ -685,6 +698,10 @@
 #define SST_SST39VF020		0xD6	/* Same as 39LF020 */
 #define SST_SST39VF040		0xD7	/* Same as 39LF040 */
 #define SST_SST39VF080		0xD8	/* Same as 39LF080/39VF080/39VF088 */
+#define SST_SST45VF512		0x41	/* REMS, read opcode 0xFF */
+#define SST_SST45LF010		0x42	/* REMS, read opcode 0xFF, 'funny' other opcodes */
+#define SST_SST45VF010		0x45	/* REMS, read opcode 0xFF */
+#define SST_SST45VF020		0x43	/* REMS, read opcode 0xFF */
 #define SST_SST49LF040B		0x50
 #define SST_SST49LF040		0x51
 #define SST_SST49LF020		0x61
@@ -785,6 +802,10 @@
 #define SM_MVC_29C51002B	0xA2	/* Identical chips: {F,S,V}29C51002B */
 #define SM_MVC_29C51004B	0xA3	/* Identical chips: {F,S,V}29C51004B */
 
+#define TENX_ID			0x7F7F5E /* Tenx Technologies */
+#define TENX_ID_NOPREFIX	0x5E
+#define TENX_ICE25P05		0x01	/* Maybe? */
+
 #define TI_ID			0x97	/* Texas Instruments */
 #define TI_OLD_ID		0x01	/* TI chips from last century */
 #define TI_TMS29F002RT		0xB0
@@ -820,18 +841,18 @@
 #define WINBOND_ID		0xDA	/* Winbond */
 #define WINBOND_W19B160BB	0x49
 #define WINBOND_W19B160BT	0xC4
-#define WINBOND_W19B320SB	0x2A    /* Same as W19L320SB */
-#define WINBOND_W19B320ST	0xBA    /* Same as W19L320ST */
+#define WINBOND_W19B320SB	0x2A	/* Same as W19L320SB */
+#define WINBOND_W19B320ST	0xBA	/* Same as W19L320ST */
 #define WINBOND_W19B322MB	0x92
 #define WINBOND_W19B322MT	0x10
 #define WINBOND_W19B323MB	0x94
 #define WINBOND_W19B323MT	0x13
 #define WINBOND_W19B324MB	0x97
 #define WINBOND_W19B324MT	0x16
-#define WINBOND_W29C010		0xC1    /* Same as W29C010M, W29C011A, W29EE011, W29EE012, and ASD AE29F1008 */
-#define WINBOND_W29C020		0x45    /* Same as W29C020C, W29C022 and ASD AE29F2008 */
-#define WINBOND_W29C040		0x46    /* Same as W29C040P */
-#define WINBOND_W29C512A	0xC8    /* Same as W29EE512 */
+#define WINBOND_W29C010		0xC1	/* Same as W29C010M, W29C011A, W29EE011, W29EE012, and ASD AE29F1008 */
+#define WINBOND_W29C020		0x45	/* Same as W29C020C, W29C022 and ASD AE29F2008 */
+#define WINBOND_W29C040		0x46	/* Same as W29C040P */
+#define WINBOND_W29C512A	0xC8	/* Same as W29EE512 */
 #define WINBOND_W29GL032CHL	0x7E1D01	/* Uniform Sectors, WP protects Top OR Bottom sector */
 #define WINBOND_W29GL032CB	0x7E1A00	/* Top Boot Sector, WP protects Top 2 sectors */
 #define WINBOND_W29GL032CT	0x7E1A01	/* Bottom Boot Sector, WP protects Bottom 2 sectors */
@@ -848,13 +869,13 @@
 #define WINBOND_W39L512		0x38
 #define WINBOND_W39V040A	0x3D
 #define WINBOND_W39V040FA	0x34
-#define WINBOND_W39V040B	0x54    /* Same as W39V040FB */
-#define WINBOND_W39V040C	0x50    /* Same as W39V040FC */
+#define WINBOND_W39V040B	0x54	/* Same as W39V040FB */
+#define WINBOND_W39V040C	0x50	/* Same as W39V040FC */
 #define WINBOND_W39V080A	0xD0
 #define WINBOND_W39V080FA	0xD3
-#define WINBOND_W39V080FA_DM	0x93    /* W39V080FA dual mode */
-#define WINBOND_W49F002		0x25    /* Same as W49F002B */
-#define WINBOND_W49F002U	0x0B    /* Same as W49F002N and ASD AE49F2008 */
+#define WINBOND_W39V080FA_DM	0x93	/* W39V080FA dual mode */
+#define WINBOND_W49F002		0x25	/* Same as W49F002B */
+#define WINBOND_W49F002U	0x0B	/* Same as W49F002N and ASD AE49F2008 */
 #define WINBOND_W49F020		0x8C
 #define WINBOND_W49V002A	0xB0
 #define WINBOND_W49V002FA	0x32

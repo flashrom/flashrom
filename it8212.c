@@ -28,7 +28,7 @@ static uint8_t *it8212_bar = NULL;
 #define PCI_VENDOR_ID_ITE 0x1283
 
 const struct dev_entry devs_it8212[] = {
-	{PCI_VENDOR_ID_ITE, 0x8212, OK, "ITE", "8212F PATA RAID"},
+	{PCI_VENDOR_ID_ITE, 0x8212, NT, "ITE", "8212F PATA RAID"},
 
 	{},
 };
