@@ -4,7 +4,7 @@
  * Copyright (C) 2000 Silicon Integrated System Corporation
  * Copyright (C) 2006 Giampiero Giancipoli <gianci@email.it>
  * Copyright (C) 2006 coresystems GmbH <info@coresystems.de>
- * Copyright (C) 2007, 2011 Carl-Daniel Hailfinger
+ * Copyright (C) 2007-2012 Carl-Daniel Hailfinger
  * Copyright (C) 2009 Sean Nelson <audiohacked@gmail.com>
  * Copyright (C) 2014 Stefan Tauner
  *
@@ -116,9 +116,11 @@ static unsigned int getaddrmask(const struct flashchip *chip)
 static void start_program_jedec_common(const struct flashctx *flash, unsigned int mask)
 {
 	chipaddr bios = flash->virtual_memory;
-	chip_writeb(flash, 0xAA, bios + (0x5555 & mask));
-	chip_writeb(flash, 0x55, bios + (0x2AAA & mask));
-	chip_writeb(flash, 0xA0, bios + (0x5555 & mask));
+	bool shifted = (flash->chip->feature_bits & FEATURE_ADDR_SHIFTED);
+
+	chip_writeb(flash, 0xAA, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
+	chip_writeb(flash, 0x55, bios + ((shifted ? 0x5555 : 0x2AAA) & mask));
+	chip_writeb(flash, 0xA0, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
 }
 
 int probe_jedec_29gl(struct flashctx *flash)
@@ -174,6 +176,7 @@ static int probe_jedec_common(struct flashctx *flash, unsigned int mask)
 {
 	chipaddr bios = flash->virtual_memory;
 	const struct flashchip *chip = flash->chip;
+	bool shifted = (flash->chip->feature_bits & FEATURE_ADDR_SHIFTED);
 	uint8_t id1, id2;
 	uint32_t largeid1, largeid2;
 	uint32_t flashcontent1, flashcontent2;
@@ -203,31 +206,31 @@ static int probe_jedec_common(struct flashctx *flash, unsigned int mask)
 	/* Reset chip to a clean slate */
 	if ((chip->feature_bits & FEATURE_RESET_MASK) == FEATURE_LONG_RESET)
 	{
-		chip_writeb(flash, 0xAA, bios + (0x5555 & mask));
+		chip_writeb(flash, 0xAA, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
 		if (probe_timing_exit)
 			programmer_delay(10);
-		chip_writeb(flash, 0x55, bios + (0x2AAA & mask));
+		chip_writeb(flash, 0x55, bios + ((shifted ? 0x5555 : 0x2AAA) & mask));
 		if (probe_timing_exit)
 			programmer_delay(10);
 	}
-	chip_writeb(flash, 0xF0, bios + (0x5555 & mask));
+	chip_writeb(flash, 0xF0, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
 	if (probe_timing_exit)
 		programmer_delay(probe_timing_exit);
 
 	/* Issue JEDEC Product ID Entry command */
-	chip_writeb(flash, 0xAA, bios + (0x5555 & mask));
+	chip_writeb(flash, 0xAA, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
 	if (probe_timing_enter)
 		programmer_delay(10);
-	chip_writeb(flash, 0x55, bios + (0x2AAA & mask));
+	chip_writeb(flash, 0x55, bios + ((shifted ? 0x5555 : 0x2AAA) & mask));
 	if (probe_timing_enter)
 		programmer_delay(10);
-	chip_writeb(flash, 0x90, bios + (0x5555 & mask));
+	chip_writeb(flash, 0x90, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
 	if (probe_timing_enter)
 		programmer_delay(probe_timing_enter);
 
 	/* Read product ID */
-	id1 = chip_readb(flash, bios);
-	id2 = chip_readb(flash, bios + 0x01);
+	id1 = chip_readb(flash, bios + (0x00 << shifted));
+	id2 = chip_readb(flash, bios + (0x01 << shifted));
 	largeid1 = id1;
 	largeid2 = id2;
 
@@ -246,14 +249,14 @@ static int probe_jedec_common(struct flashctx *flash, unsigned int mask)
 	/* Issue JEDEC Product ID Exit command */
 	if ((chip->feature_bits & FEATURE_RESET_MASK) == FEATURE_LONG_RESET)
 	{
-		chip_writeb(flash, 0xAA, bios + (0x5555 & mask));
+		chip_writeb(flash, 0xAA, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
 		if (probe_timing_exit)
 			programmer_delay(10);
-		chip_writeb(flash, 0x55, bios + (0x2AAA & mask));
+		chip_writeb(flash, 0x55, bios + ((shifted ? 0x5555 : 0x2AAA) & mask));
 		if (probe_timing_exit)
 			programmer_delay(10);
 	}
-	chip_writeb(flash, 0xF0, bios + (0x5555 & mask));
+	chip_writeb(flash, 0xF0, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
 	if (probe_timing_exit)
 		programmer_delay(probe_timing_exit);
 
@@ -262,8 +265,8 @@ static int probe_jedec_common(struct flashctx *flash, unsigned int mask)
 		msg_cdbg(", id1 parity violation");
 
 	/* Read the product ID location again. We should now see normal flash contents. */
-	flashcontent1 = chip_readb(flash, bios);
-	flashcontent2 = chip_readb(flash, bios + 0x01);
+	flashcontent1 = chip_readb(flash, bios + (0x00 << shifted));
+	flashcontent2 = chip_readb(flash, bios + (0x01 << shifted));
 
 	/* Check if it is a continuation ID, this should be a while loop. */
 	if (flashcontent1 == 0x7F) {
@@ -294,21 +297,23 @@ static int erase_sector_jedec_common(struct flashctx *flash, unsigned int page,
 				     unsigned int pagesize, unsigned int mask)
 {
 	chipaddr bios = flash->virtual_memory;
+	bool shifted = (flash->chip->feature_bits & FEATURE_ADDR_SHIFTED);
 	unsigned int delay_us = 0;
+
 	if(flash->chip->probe_timing != TIMING_ZERO)
 		delay_us = 10;
 
 	/*  Issue the Sector Erase command   */
-	chip_writeb(flash, 0xAA, bios + (0x5555 & mask));
+	chip_writeb(flash, 0xAA, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
 	programmer_delay(delay_us);
-	chip_writeb(flash, 0x55, bios + (0x2AAA & mask));
+	chip_writeb(flash, 0x55, bios + ((shifted ? 0x5555 : 0x2AAA) & mask));
 	programmer_delay(delay_us);
-	chip_writeb(flash, 0x80, bios + (0x5555 & mask));
+	chip_writeb(flash, 0x80, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
 	programmer_delay(delay_us);
 
-	chip_writeb(flash, 0xAA, bios + (0x5555 & mask));
+	chip_writeb(flash, 0xAA, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
 	programmer_delay(delay_us);
-	chip_writeb(flash, 0x55, bios + (0x2AAA & mask));
+	chip_writeb(flash, 0x55, bios + ((shifted ? 0x5555 : 0x2AAA) & mask));
 	programmer_delay(delay_us);
 	chip_writeb(flash, 0x30, bios + page);
 	programmer_delay(delay_us);
@@ -324,21 +329,23 @@ static int erase_block_jedec_common(struct flashctx *flash, unsigned int block,
 				    unsigned int blocksize, unsigned int mask)
 {
 	chipaddr bios = flash->virtual_memory;
+	bool shifted = (flash->chip->feature_bits & FEATURE_ADDR_SHIFTED);
 	unsigned int delay_us = 0;
+
 	if(flash->chip->probe_timing != TIMING_ZERO)
 		delay_us = 10;
 
 	/*  Issue the Sector Erase command   */
-	chip_writeb(flash, 0xAA, bios + (0x5555 & mask));
+	chip_writeb(flash, 0xAA, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
 	programmer_delay(delay_us);
-	chip_writeb(flash, 0x55, bios + (0x2AAA & mask));
+	chip_writeb(flash, 0x55, bios + ((shifted ? 0x5555 : 0x2AAA) & mask));
 	programmer_delay(delay_us);
-	chip_writeb(flash, 0x80, bios + (0x5555 & mask));
+	chip_writeb(flash, 0x80, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
 	programmer_delay(delay_us);
 
-	chip_writeb(flash, 0xAA, bios + (0x5555 & mask));
+	chip_writeb(flash, 0xAA, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
 	programmer_delay(delay_us);
-	chip_writeb(flash, 0x55, bios + (0x2AAA & mask));
+	chip_writeb(flash, 0x55, bios + ((shifted ? 0x5555 : 0x2AAA) & mask));
 	programmer_delay(delay_us);
 	chip_writeb(flash, 0x50, bios + block);
 	programmer_delay(delay_us);
@@ -353,23 +360,25 @@ static int erase_block_jedec_common(struct flashctx *flash, unsigned int block,
 static int erase_chip_jedec_common(struct flashctx *flash, unsigned int mask)
 {
 	chipaddr bios = flash->virtual_memory;
+	bool shifted = (flash->chip->feature_bits & FEATURE_ADDR_SHIFTED);
 	unsigned int delay_us = 0;
+
 	if(flash->chip->probe_timing != TIMING_ZERO)
 		delay_us = 10;
 
 	/*  Issue the JEDEC Chip Erase command   */
-	chip_writeb(flash, 0xAA, bios + (0x5555 & mask));
+	chip_writeb(flash, 0xAA, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
 	programmer_delay(delay_us);
-	chip_writeb(flash, 0x55, bios + (0x2AAA & mask));
+	chip_writeb(flash, 0x55, bios + ((shifted ? 0x5555 : 0x2AAA) & mask));
 	programmer_delay(delay_us);
-	chip_writeb(flash, 0x80, bios + (0x5555 & mask));
+	chip_writeb(flash, 0x80, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
 	programmer_delay(delay_us);
 
-	chip_writeb(flash, 0xAA, bios + (0x5555 & mask));
+	chip_writeb(flash, 0xAA, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
 	programmer_delay(delay_us);
-	chip_writeb(flash, 0x55, bios + (0x2AAA & mask));
+	chip_writeb(flash, 0x55, bios + ((shifted ? 0x5555 : 0x2AAA) & mask));
 	programmer_delay(delay_us);
-	chip_writeb(flash, 0x10, bios + (0x5555 & mask));
+	chip_writeb(flash, 0x10, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
 	programmer_delay(delay_us);
 
 	toggle_ready_jedec_slow(flash, bios);
