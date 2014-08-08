@@ -513,7 +513,6 @@ struct decode_sizes {
 extern struct decode_sizes max_rom_decode;
 extern int programmer_may_write;
 extern unsigned long flashbase;
-void check_chip_supported(const struct flashchip *chip);
 int check_max_decode(enum chipbustype buses, uint32_t size);
 char *extract_programmer_param(const char *param_name);
 

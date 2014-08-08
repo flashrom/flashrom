@@ -42,11 +42,8 @@
 
 const char flashrom_version[] = FLASHROM_VERSION;
 const char *chip_to_probe = NULL;
-int verbose_screen = MSG_INFO;
-int verbose_logfile = MSG_DEBUG2;
 
 static enum programmer programmer = PROGRAMMER_INVALID;
-
 static const char *programmer_param = NULL;
 
 /*
@@ -1781,73 +1778,6 @@ int selfcheck(void)
 
 	/* TODO: implement similar sanity checks for other arrays where deemed necessary. */
 	return ret;
-}
-
-void check_chip_supported(const struct flashchip *chip)
-{
-	if (chip->feature_bits & FEATURE_OTP) {
-		msg_cdbg("This chip may contain one-time programmable memory. "
-			 "flashrom cannot read\nand may never be able to write "
-			 "it, hence it may not be able to completely\n"
-			 "clone the contents of this chip (see man page for "
-			 "details).\n");
-	}
-
-	if ((chip->tested.erase == NA) && (chip->tested.write == NA)) {
-		msg_cdbg("This chip's main memory can not be erased/written by design.\n");
-	}
-
-	if ((chip->tested.probe == BAD) || (chip->tested.probe == NT) ||
-	    (chip->tested.read == BAD)  || (chip->tested.read == NT) ||
-	    (chip->tested.erase == BAD) || (chip->tested.erase == NT) ||
-	    (chip->tested.write == BAD) || (chip->tested.write == NT)){
-		msg_cinfo("===\n");
-		if ((chip->tested.probe == BAD) ||
-		    (chip->tested.read == BAD) ||
-		    (chip->tested.erase == BAD) ||
-		    (chip->tested.write == BAD)) {
-			msg_cinfo("This flash part has status NOT WORKING for operations:");
-			if (chip->tested.probe == BAD)
-				msg_cinfo(" PROBE");
-			if (chip->tested.read == BAD)
-				msg_cinfo(" READ");
-			if (chip->tested.erase == BAD)
-				msg_cinfo(" ERASE");
-			if (chip->tested.write == BAD)
-				msg_cinfo(" WRITE");
-			msg_cinfo("\n");
-		}
-		if ((chip->tested.probe == NT) ||
-		    (chip->tested.read == NT) ||
-		    (chip->tested.erase == NT) ||
-		    (chip->tested.write == NT)) {
-			msg_cinfo("This flash part has status UNTESTED for operations:");
-			if (chip->tested.probe == NT)
-				msg_cinfo(" PROBE");
-			if (chip->tested.read == NT)
-				msg_cinfo(" READ");
-			if (chip->tested.erase == NT)
-				msg_cinfo(" ERASE");
-			if (chip->tested.write == NT)
-				msg_cinfo(" WRITE");
-			msg_cinfo("\n");
-		}
-		/* FIXME: This message is designed towards CLI users. */
-		msg_cinfo("The test status of this chip may have been updated "
-			    "in the latest development\n"
-			  "version of flashrom. If you are running the latest "
-			    "development version,\n"
-			  "please email a report to flashrom@flashrom.org if "
-			    "any of the above operations\n"
-			  "work correctly for you with this flash part. Please "
-			    "include the flashrom\n"
-			  "output with the additional -V option for all "
-			    "operations you tested (-V, -Vr,\n"
-			  "-VE, -Vw), and mention which mainboard or "
-			    "programmer you tested.\n"
-			  "Please mention your board in the subject line. "
-			    "Thanks for your help!\n");
-	}
 }
 
 /* FIXME: This function signature needs to be improved once doit() has a better

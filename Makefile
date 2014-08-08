@@ -363,7 +363,7 @@ LIB_OBJS = layout.o flashrom.o udelay.o programmer.o helpers.o
 ###############################################################################
 # Frontend related stuff.
 
-CLI_OBJS = cli_classic.o cli_output.o print.o
+CLI_OBJS = cli_classic.o cli_output.o cli_common.o print.o
 
 # Set the flashrom version string from the highest revision number of the checked out flashrom files.
 # Note to packagers: Any tree exported with "make export" or "make tarball"

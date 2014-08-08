@@ -59,39 +59,6 @@ static const char *test_state_to_text(enum test_state test_state)
 	}
 }
 
-/*
- * Return a string corresponding to the bustype parameter.
- * Memory is obtained with malloc() and must be freed with free() by the caller.
- */
-char *flashbuses_to_text(enum chipbustype bustype)
-{
-	char *ret = calloc(1, 1);
-	/*
-	 * FIXME: Once all chipsets and flash chips have been updated, NONSPI
-	 * will cease to exist and should be eliminated here as well.
-	 */
-	if (bustype == BUS_NONSPI) {
-		ret = strcat_realloc(ret, "Non-SPI, ");
-	} else {
-		if (bustype & BUS_PARALLEL)
-			ret = strcat_realloc(ret, "Parallel, ");
-		if (bustype & BUS_LPC)
-			ret = strcat_realloc(ret, "LPC, ");
-		if (bustype & BUS_FWH)
-			ret = strcat_realloc(ret, "FWH, ");
-		if (bustype & BUS_SPI)
-			ret = strcat_realloc(ret, "SPI, ");
-		if (bustype & BUS_PROG)
-			ret = strcat_realloc(ret, "Programmer-specific, ");
-		if (bustype == BUS_NONE)
-			ret = strcat_realloc(ret, "None, ");
-	}
-	/* Kill last comma. */
-	ret[strlen(ret) - 2] = '\0';
-	ret = realloc(ret, strlen(ret) + 1);
-	return ret;
-}
-
 static int print_supported_chips(void)
 {
 	const char *delim = "/";
