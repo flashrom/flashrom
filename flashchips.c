@@ -4869,7 +4869,7 @@ const struct flashchip flashchips[] = {
 		.model_id	= EON_EN29LV640B,
 		.total_size	= 8192,
 		.page_size	= 8192,
-		.feature_bits	= 0,
+		.feature_bits	= FEATURE_ADDR_SHIFTED,
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_en29lv640b,
 		.probe_timing	= TIMING_ZERO,	/* Datasheet has no timing info specified */
@@ -4880,10 +4880,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 8},
 					{64 * 1024, 127},
 				},
-				.block_erase = erase_block_shifted_jedec,
+				.block_erase = erase_block_jedec,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = erase_chip_block_shifted_jedec,
+				.block_erase = erase_chip_block_jedec,
 			},
 		},
 		.write		= write_en29lv640b,
@@ -5078,10 +5078,10 @@ const struct flashchip flashchips[] = {
 		.model_id	= FUJITSU_MBM29F400BC,
 		.total_size	= 512,
 		.page_size	= 64 * 1024,
-		.feature_bits	= FEATURE_ADDR_SHIFTED | FEATURE_EITHER_RESET,
+		.feature_bits	= FEATURE_ADDR_SHIFTED | FEATURE_ADDR_2AA | FEATURE_EITHER_RESET,
 		.tested		= TEST_UNTESTED,
-		.probe		= probe_m29f400bt,
-		.probe_timing	= TIMING_IGNORED, /* routine doesn't use probe_timing (m29f400bt.c) */
+		.probe		= probe_jedec,
+		.probe_timing	= 10, // FIXME: check datasheet. Using the 10 us from probe_m29f400bt
 		.block_erasers	=
 		{
 			{
@@ -5091,13 +5091,13 @@ const struct flashchip flashchips[] = {
 					{32 * 1024, 1},
 					{64 * 1024, 7},
 				},
-				.block_erase = erase_block_shifted_jedec,
+				.block_erase = erase_sector_jedec,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_shifted_jedec,
+				.block_erase = erase_chip_block_jedec,
 			},
 		},
-		.write		= write_m29f400bt,
+		.write		= write_jedec_1,
 		.read		= read_memmapped,
 		.voltage	= {4750, 5250}, /* 4.75-5.25V for type -55, others 4.5-5.5V */
 	},
@@ -5110,10 +5110,10 @@ const struct flashchip flashchips[] = {
 		.model_id	= FUJITSU_MBM29F400TC,
 		.total_size	= 512,
 		.page_size	= 64 * 1024,
-		.feature_bits	= FEATURE_ADDR_SHIFTED | FEATURE_EITHER_RESET,
+		.feature_bits	= FEATURE_ADDR_SHIFTED | FEATURE_ADDR_AAA | FEATURE_EITHER_RESET,
 		.tested		= TEST_UNTESTED,
-		.probe		= probe_m29f400bt,
-		.probe_timing	= TIMING_IGNORED, /* routine doesn't use probe_timing (m29f400bt.c) */
+		.probe		= probe_jedec,
+		.probe_timing	= 10, // FIXME: check datasheet. Using the 10 us from probe_m29f400bt
 		.block_erasers	=
 		{
 			{
@@ -5123,13 +5123,13 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = erase_block_shifted_jedec,
+				.block_erase = erase_sector_jedec,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_shifted_jedec,
+				.block_erase = erase_chip_block_jedec,
 			},
 		},
-		.write		= write_m29f400bt,
+		.write		= write_jedec_1,
 		.read		= read_memmapped,
 		.voltage	= {4750, 5250}, /* 4.75-5.25V for type -55, others 4.5-5.5V */
 	},
@@ -5144,8 +5144,8 @@ const struct flashchip flashchips[] = {
 		.page_size	= 0,
 		.feature_bits	= FEATURE_ADDR_SHIFTED | FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,
-		.probe		= probe_m29f400bt,
-		.probe_timing	= TIMING_IGNORED,
+		.probe		= probe_jedec,
+		.probe_timing	= 10, // FIXME: check datasheet. Using the 10 us from probe_m29f400bt
 		.block_erasers	=
 		{
 			{
@@ -5155,13 +5155,13 @@ const struct flashchip flashchips[] = {
 					{32 * 1024, 1},
 					{64 * 1024, 31},
 				},
-				.block_erase = erase_block_shifted_jedec,
+				.block_erase = erase_block_jedec,
 			}, {
 				.eraseblocks = { {2048 * 1024, 1} },
-				.block_erase = erase_chip_block_shifted_jedec,
+				.block_erase = erase_chip_block_jedec,
 			},
 		},
-		.write		= write_m29f400bt, /* Supports a fast mode too */
+		.write		= write_jedec_1, /* Supports a fast mode too */
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600}, /* 3.0-3.6V for type -70, others 2.7-3.6V */
 	},
@@ -5176,8 +5176,8 @@ const struct flashchip flashchips[] = {
 		.page_size	= 0,
 		.feature_bits	= FEATURE_ADDR_SHIFTED | FEATURE_SHORT_RESET,
 		.tested		= TEST_UNTESTED,
-		.probe		= probe_m29f400bt,
-		.probe_timing	= TIMING_IGNORED,
+		.probe		= probe_jedec,
+		.probe_timing	= 10, // FIXME: check datasheet. Using the 10 us from probe_m29f400bt
 		.block_erasers	=
 		{
 			{
@@ -5187,13 +5187,13 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = erase_block_shifted_jedec,
+				.block_erase = erase_block_jedec,
 			}, {
 				.eraseblocks = { {2048 * 1024, 1} },
-				.block_erase = erase_chip_block_shifted_jedec,
+				.block_erase = erase_chip_block_jedec,
 			},
 		},
-		.write		= write_m29f400bt, /* Supports a fast mode too */
+		.write		= write_jedec_1, /* Supports a fast mode too */
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600}, /* 3.0-3.6V for type -70, others 2.7-3.6V */
 	},
@@ -12178,10 +12178,10 @@ const struct flashchip flashchips[] = {
 		.model_id	= ST_M29F400BB,
 		.total_size	= 512,
 		.page_size	= 64 * 1024,
-		.feature_bits	= FEATURE_ADDR_SHIFTED | FEATURE_EITHER_RESET,
+		.feature_bits	= FEATURE_ADDR_SHIFTED | FEATURE_ADDR_2AA | FEATURE_EITHER_RESET,
 		.tested		= TEST_UNTESTED,
-		.probe		= probe_m29f400bt,
-		.probe_timing	= TIMING_IGNORED, /* routine doesn't use probe_timing (m29f400bt.c) */
+		.probe		= probe_jedec,
+		.probe_timing	= 10, // FIXME: check datasheet. Using the 10 us from probe_m29f400bt
 		.block_erasers	=
 		{
 			{
@@ -12191,13 +12191,13 @@ const struct flashchip flashchips[] = {
 					{32 * 1024, 1},
 					{64 * 1024, 7},
 				},
-				.block_erase = erase_block_shifted_jedec,
+				.block_erase = erase_sector_jedec,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_shifted_jedec,
+				.block_erase = erase_chip_block_jedec,
 			}
 		},
-		.write		= write_m29f400bt,
+		.write		= write_jedec_1,
 		.read		= read_memmapped,
 		.voltage	= {4500, 5500},
 	},
@@ -12210,10 +12210,10 @@ const struct flashchip flashchips[] = {
 		.model_id	= ST_M29F400BT,
 		.total_size	= 512,
 		.page_size	= 64 * 1024,
-		.feature_bits	= FEATURE_ADDR_SHIFTED | FEATURE_EITHER_RESET,
+		.feature_bits	= FEATURE_ADDR_SHIFTED | FEATURE_ADDR_2AA | FEATURE_EITHER_RESET,
 		.tested		= TEST_UNTESTED,
-		.probe		= probe_m29f400bt,
-		.probe_timing	= TIMING_IGNORED, /* routine doesn't use probe_timing (m29f400bt.c) */
+		.probe		= probe_jedec,
+		.probe_timing	= 10, // FIXME: check datasheet. Using the 10 us from probe_m29f400bt
 		.block_erasers	=
 		{
 			{
@@ -12223,13 +12223,13 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = erase_block_shifted_jedec,
+				.block_erase = erase_sector_jedec,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_shifted_jedec,
+				.block_erase = erase_chip_block_jedec,
 			}
 		},
-		.write		= write_m29f400bt,
+		.write		= write_jedec_1,
 		.read		= read_memmapped,
 		.voltage	= {4500, 5500},
 	},
