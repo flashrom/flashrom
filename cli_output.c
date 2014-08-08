@@ -25,6 +25,9 @@
 #include <errno.h>
 #include "flash.h"
 
+int verbose_screen = MSG_INFO;
+int verbose_logfile = MSG_DEBUG2;
+
 #ifndef STANDALONE
 static FILE *logfile = NULL;
 

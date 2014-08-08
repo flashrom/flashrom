@@ -238,7 +238,6 @@ uint32_t chip_readl(const struct flashctx *flash, const chipaddr addr);
 void chip_readn(const struct flashctx *flash, uint8_t *buf, const chipaddr addr, size_t len);
 
 /* print.c */
-char *flashbuses_to_text(enum chipbustype bustype);
 int print_supported(void);
 void print_supported_wiki(void);
 
@@ -251,8 +250,6 @@ char *strcat_realloc(char *dest, const char *src);
 void tolower_string(char *str);
 
 /* flashrom.c */
-extern int verbose_screen;
-extern int verbose_logfile;
 extern const char flashrom_version[];
 extern const char *chip_to_probe;
 void map_flash_registers(struct flashctx *flash);
@@ -285,7 +282,13 @@ int write_buf_to_file(const unsigned char *buf, unsigned long size, const char *
  */
 #define ERROR_FLASHROM_LIMIT -201
 
+/* cli_common.c */
+char *flashbuses_to_text(enum chipbustype bustype);
+void print_chip_support_status(const struct flashchip *chip);
+
 /* cli_output.c */
+extern int verbose_screen;
+extern int verbose_logfile;
 #ifndef STANDALONE
 int open_logfile(const char * const filename);
 int close_logfile(void);
