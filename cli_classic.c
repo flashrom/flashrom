@@ -91,7 +91,6 @@ static int check_filename(char *filename, char *type)
 
 int main(int argc, char *argv[])
 {
-	unsigned long size;
 	/* Probe for up to three flash chips. */
 	const struct flashchip *chip = NULL;
 	struct flashctx flashes[6] = {{0}};
@@ -501,9 +500,18 @@ int main(int argc, char *argv[])
 
 	print_chip_support_status(fill_flash->chip);
 
-	size = fill_flash->chip->total_size * 1024;
-	if (check_max_decode(fill_flash->mst->buses_supported & fill_flash->chip->bustype, size) && (!force)) {
-		msg_cerr("Chip is too big for this programmer (-V gives details). Use --force to override.\n");
+	unsigned int limitexceeded = count_max_decode_exceedings(fill_flash);
+	if (limitexceeded > 0 && !force) {
+		enum chipbustype commonbuses = fill_flash->mst->buses_supported & fill_flash->chip->bustype;
+
+		/* Sometimes chip and programmer have more than one bus in common,
+		 * and the limit is not exceeded on all buses. Tell the user. */
+		if ((bitcount(commonbuses) > limitexceeded)) {
+			msg_pdbg("There is at least one interface available which could support the size of\n"
+				 "the selected flash chip.\n");
+		}
+		msg_cerr("This flash chip is too big for this programmer (--verbose/-V gives details).\n"
+			 "Use --force/-f to override at your own risk.\n");
 		ret = 1;
 		goto out_shutdown;
 	}
