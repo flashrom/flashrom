@@ -1009,9 +1009,13 @@ int generate_testpattern(uint8_t *buf, uint32_t size, int variant)
 	return 0;
 }
 
-int check_max_decode(enum chipbustype buses, uint32_t size)
+/* Returns the number of busses commonly supported by the current programmer and flash chip where the latter
+ * can not be completely accessed due to size/address limits of the programmer. */
+unsigned int count_max_decode_exceedings(const struct flashctx *flash)
 {
-	int limitexceeded = 0;
+	unsigned int limitexceeded = 0;
+	uint32_t size = flash->chip->total_size * 1024;
+	enum chipbustype buses = flash->mst->buses_supported & flash->chip->bustype;
 
 	if ((buses & BUS_PARALLEL) && (max_rom_decode.parallel < size)) {
 		limitexceeded++;
@@ -1045,17 +1049,7 @@ int check_max_decode(enum chipbustype buses, uint32_t size)
 			 "probe/read/erase/write may fail. ", size / 1024,
 			 max_rom_decode.spi / 1024, "SPI");
 	}
-	if (!limitexceeded)
-		return 0;
-	/* Sometimes chip and programmer have more than one bus in common,
-	 * and the limit is not exceeded on all buses. Tell the user.
-	 */
-	if (bitcount(buses) > limitexceeded)
-		/* FIXME: This message is designed towards CLI users. */
-		msg_pdbg("There is at least one common chip/programmer "
-			 "interface which can support a chip of this size. "
-			 "You can try --force at your own risk.\n");
-	return 1;
+	return limitexceeded;
 }
 
 int probe_flash(struct registered_master *mst, int startchip, struct flashctx *flash, int force)
@@ -1079,9 +1073,6 @@ int probe_flash(struct registered_master *mst, int startchip, struct flashctx *f
 			continue;
 		}
 
-		size = chip->total_size * 1024;
-		check_max_decode(buses_common, size);
-
 		/* Start filling in the dynamic data. */
 		flash->chip = calloc(1, sizeof(struct flashchip));
 		if (!flash->chip) {
@@ -1091,6 +1082,7 @@ int probe_flash(struct registered_master *mst, int startchip, struct flashctx *f
 		memcpy(flash->chip, chip, sizeof(struct flashchip));
 		flash->mst = mst;
 
+		size = flash->chip->total_size * 1024;
 		base = flashbase ? flashbase : (0xffffffff - size + 1);
 		flash->virtual_memory = (chipaddr)programmer_map_flash_region("flash chip", base, size);
 
