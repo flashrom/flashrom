@@ -117,7 +117,7 @@ struct ich_desc_component {
 		 * Wildcat Point/9:	50		?? (multi I/O)	?	?:?, ?:?
 		 */
 		struct {
-			uint32_t 		:17,
+			uint32_t		:17,
 				 freq_read	:3,
 				 fastread	:1,
 				 freq_fastread	:3,

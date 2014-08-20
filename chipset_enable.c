@@ -594,7 +594,7 @@ static void enable_flash_ich_handle_gcs(struct pci_dev *dev, enum ich_chipset ic
 	static const char *const straps_names_tunnel_creek[] = { "SPI", "LPC" };
 	static const char *const straps_names_ich8910[] = { "SPI", "SPI", "PCI", "LPC" };
 	static const char *const straps_names_pch567[] = { "LPC", "reserved", "PCI", "SPI" };
-	static const char *const straps_names_pch8_baytrail[] = { "LPC", "reserved", "reserved", "SPI" };
+	static const char *const straps_names_pch89_baytrail[] = { "LPC", "reserved", "reserved", "SPI" };
 	static const char *const straps_names_pch8_lp[] = { "SPI", "LPC" };
 	static const char *const straps_names_unknown[] = { "unknown", "unknown", "unknown", "unknown" };
 
@@ -623,8 +623,9 @@ static void enable_flash_ich_handle_gcs(struct pci_dev *dev, enum ich_chipset ic
 		straps_names = straps_names_pch567;
 		break;
 	case CHIPSET_8_SERIES_LYNX_POINT:
+	case CHIPSET_9_SERIES_WILDCAT_POINT:
 	case CHIPSET_BAYTRAIL:
-		straps_names = straps_names_pch8_baytrail;
+		straps_names = straps_names_pch89_baytrail;
 		break;
 	case CHIPSET_8_SERIES_LYNX_POINT_LP:
 		straps_names = straps_names_pch8_lp;
@@ -774,6 +775,12 @@ static int enable_flash_pch8_lp(struct pci_dev *dev, const char *name)
 static int enable_flash_pch8_wb(struct pci_dev *dev, const char *name)
 {
 	return enable_flash_ich_spi(dev, CHIPSET_8_SERIES_WELLSBURG, 0xdc);
+}
+
+/* Wildcat Point */
+static int enable_flash_pch9(struct pci_dev *dev, const char *name)
+{
+	return enable_flash_ich_spi(dev, CHIPSET_9_SERIES_WILDCAT_POINT, 0xdc);
 }
 
 /* Silvermont architecture: Bay Trail(-T/-I), Avoton/Rangeley.
@@ -1759,6 +1766,14 @@ const struct penable chipset_enables[] = {
  	{0x8086, 0x8d5d, NT,  "Intel", "Wellsburg",			enable_flash_pch8_wb},
  	{0x8086, 0x8d5e, NT,  "Intel", "Wellsburg",			enable_flash_pch8_wb},
  	{0x8086, 0x8d5f, NT,  "Intel", "Wellsburg",			enable_flash_pch8_wb},
+	{0x8086, 0x9cc1, NT,  "Intel", "Haswell U Sample",		enable_flash_pch9},
+	{0x8086, 0x9cc2, NT,  "Intel", "Broadwell U Sample",		enable_flash_pch9},
+	{0x8086, 0x9cc3, NT,  "Intel", "Broadwell U Premium",		enable_flash_pch9},
+	{0x8086, 0x9cc5, NT,  "Intel", "Broadwell U Base",		enable_flash_pch9},
+	{0x8086, 0x9cc6, NT,  "Intel", "Broadwell Y Sample",		enable_flash_pch9},
+	{0x8086, 0x9cc7, NT,  "Intel", "Broadwell Y Premium",		enable_flash_pch9},
+	{0x8086, 0x9cc9, NT,  "Intel", "Broadwell Y Base",		enable_flash_pch9},
+	{0x8086, 0x9ccb, NT,  "Intel", "Broadwell H",			enable_flash_pch9},
 #endif
 	{0},
 };
