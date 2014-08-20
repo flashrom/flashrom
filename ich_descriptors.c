@@ -45,14 +45,16 @@
 #define min(a, b) (a < b) ? a : b
 #endif
 
-void prettyprint_ich_reg_vscc(uint32_t reg_val, int verbosity)
+void prettyprint_ich_reg_vscc(uint32_t reg_val, int verbosity, bool print_vcl)
 {
 	print(verbosity, "BES=0x%x, ",	(reg_val & VSCC_BES)  >> VSCC_BES_OFF);
 	print(verbosity, "WG=%d, ",	(reg_val & VSCC_WG)   >> VSCC_WG_OFF);
 	print(verbosity, "WSR=%d, ",	(reg_val & VSCC_WSR)  >> VSCC_WSR_OFF);
 	print(verbosity, "WEWS=%d, ",	(reg_val & VSCC_WEWS) >> VSCC_WEWS_OFF);
-	print(verbosity, "EO=0x%x, ",	(reg_val & VSCC_EO)   >> VSCC_EO_OFF);
-	print(verbosity, "VCL=%d\n",	(reg_val & VSCC_VCL)  >> VSCC_VCL_OFF);
+	print(verbosity, "EO=0x%x",	(reg_val & VSCC_EO)   >> VSCC_EO_OFF);
+	if (print_vcl)
+		print(verbosity, ", VCL=%d", (reg_val & VSCC_VCL)  >> VSCC_VCL_OFF);
+	print(verbosity, "\n");
 }
 
 #define getFCBA(cont)	(((cont)->FLMAP0 <<  4) & 0x00000ff0)
@@ -64,7 +66,7 @@ void prettyprint_ich_reg_vscc(uint32_t reg_val, int verbosity)
 void prettyprint_ich_descriptors(enum ich_chipset cs, const struct ich_descriptors *desc)
 {
 	prettyprint_ich_descriptor_content(&desc->content);
-	prettyprint_ich_descriptor_component(desc);
+	prettyprint_ich_descriptor_component(cs, desc);
 	prettyprint_ich_descriptor_region(desc);
 	prettyprint_ich_descriptor_master(&desc->master);
 #ifdef ICH_DESCRIPTORS_FROM_DUMP
@@ -98,28 +100,97 @@ void prettyprint_ich_descriptor_content(const struct ich_desc_content *cont)
 	msg_pdbg2("\n");
 }
 
-void prettyprint_ich_descriptor_component(const struct ich_descriptors *desc)
+static const char *pprint_density(enum ich_chipset cs, const struct ich_descriptors *desc, uint8_t idx)
+{
+	if (idx > 1) {
+		msg_perr("Only ICH SPI component index 0 or 1 are supported yet.\n");
+		return NULL;
+	}
+
+	if (desc->content.NC == 0 && idx > 0)
+		return "unused";
+
+	static const char * const size_str[] = {
+		"512 kB",	/* 0000 */
+		"1 MB",		/* 0001 */
+		"2 MB",		/* 0010 */
+		"4 MB",		/* 0011 */
+		"8 MB",		/* 0100 */
+		"16 MB",	/* 0101 */ /* Maximum up to Lynx Point (excl.) */
+		"32 MB",	/* 0110 */
+		"64 MB",	/* 0111 */
+	};
+
+	switch (cs) {
+	case CHIPSET_ICH8:
+	case CHIPSET_ICH9:
+	case CHIPSET_ICH10:
+	case CHIPSET_5_SERIES_IBEX_PEAK:
+	case CHIPSET_6_SERIES_COUGAR_POINT:
+	case CHIPSET_7_SERIES_PANTHER_POINT: {
+		uint8_t size_enc;
+		if (idx == 0) {
+			size_enc = desc->component.old.comp1_density;
+		} else {
+			size_enc = desc->component.old.comp2_density;
+		}
+		if (size_enc > 5)
+			return "reserved";
+		return size_str[size_enc];
+	}
+	case CHIPSET_8_SERIES_LYNX_POINT:
+	case CHIPSET_8_SERIES_LYNX_POINT_LP:
+	case CHIPSET_8_SERIES_WELLSBURG: {
+		uint8_t size_enc;
+		if (idx == 0) {
+			size_enc = desc->component.new.comp1_density;
+		} else {
+			size_enc = desc->component.new.comp2_density;
+		}
+		if (size_enc > 7)
+			return "reserved";
+		return size_str[size_enc];
+	}
+	case CHIPSET_ICH_UNKNOWN:
+	default:
+		return "unknown";
+	}
+}
+
+static const char *pprint_freq(enum ich_chipset cs, uint8_t value)
 {
 	static const char * const freq_str[8] = {
 		"20 MHz",	/* 000 */
 		"33 MHz",	/* 001 */
 		"reserved",	/* 010 */
 		"reserved",	/* 011 */
-		"50 MHz",	/* 100 */
+		"50 MHz",	/* 100 */ /* New since Ibex Peak */
 		"reserved",	/* 101 */
 		"reserved",	/* 110 */
 		"reserved"	/* 111 */
 	};
-	static const char * const size_str[8] = {
-		"512 kB",	/* 000 */
-		"  1 MB",	/* 001 */
-		"  2 MB",	/* 010 */
-		"  4 MB",	/* 011 */
-		"  8 MB",	/* 100 */
-		" 16 MB",	/* 101 */
-		"reserved",	/* 110 */
-		"reserved",	/* 111 */
-	};
+
+	switch (cs) {
+	case CHIPSET_ICH8:
+	case CHIPSET_ICH9:
+	case CHIPSET_ICH10:
+		if (value > 1)
+			return "reserved";
+	case CHIPSET_5_SERIES_IBEX_PEAK:
+	case CHIPSET_6_SERIES_COUGAR_POINT:
+	case CHIPSET_7_SERIES_PANTHER_POINT:
+	case CHIPSET_8_SERIES_LYNX_POINT:
+	case CHIPSET_8_SERIES_LYNX_POINT_LP:
+	case CHIPSET_8_SERIES_WELLSBURG:
+		return freq_str[value];
+	case CHIPSET_ICH_UNKNOWN:
+	default:
+		return "unknown";
+	}
+}
+
+void prettyprint_ich_descriptor_component(enum ich_chipset cs, const struct ich_descriptors *desc)
+{
 
 	msg_pdbg2("=== Component Section ===\n");
 	msg_pdbg2("FLCOMP   0x%08x\n", desc->component.FLCOMP);
@@ -127,24 +198,21 @@ void prettyprint_ich_descriptor_component(const struct ich_descriptors *desc)
 	msg_pdbg2("\n");
 
 	msg_pdbg2("--- Details ---\n");
-	msg_pdbg2("Component 1 density:           %s\n",
-		  size_str[desc->component.comp1_density]);
+	msg_pdbg2("Component 1 density:            %s\n", pprint_density(cs, desc, 0));
 	if (desc->content.NC)
-		msg_pdbg2("Component 2 density:           %s\n",
-			  size_str[desc->component.comp2_density]);
+		msg_pdbg2("Component 2 density:            %s\n", pprint_density(cs, desc, 1));
 	else
 		msg_pdbg2("Component 2 is not used.\n");
-	msg_pdbg2("Read Clock Frequency:           %s\n",
-		  freq_str[desc->component.freq_read]);
-	msg_pdbg2("Read ID and Status Clock Freq.: %s\n",
-		  freq_str[desc->component.freq_read_id]);
-	msg_pdbg2("Write and Erase Clock Freq.:    %s\n",
-		  freq_str[desc->component.freq_write]);
-	msg_pdbg2("Fast Read is %ssupported.\n",
-		  desc->component.fastread ? "" : "not ");
-	if (desc->component.fastread)
+	msg_pdbg2("Read Clock Frequency:           %s\n", pprint_freq(cs, desc->component.common.freq_read));
+	msg_pdbg2("Read ID and Status Clock Freq.: %s\n", pprint_freq(cs, desc->component.common.freq_read_id));
+	msg_pdbg2("Write and Erase Clock Freq.:    %s\n", pprint_freq(cs, desc->component.common.freq_write));
+	msg_pdbg2("Fast Read is %ssupported.\n", desc->component.common.fastread ? "" : "not ");
+	if (desc->component.common.fastread)
 		msg_pdbg2("Fast Read Clock Frequency:      %s\n",
-			  freq_str[desc->component.freq_fastread]);
+			  pprint_freq(cs, desc->component.common.freq_fastread));
+	if (cs > CHIPSET_6_SERIES_COUGAR_POINT)
+		msg_pdbg2("Dual Output Fast Read Support:  %sabled\n",
+			  desc->component.new.dual_output ? "dis" : "en");
 	if (desc->component.FLILL == 0)
 		msg_pdbg2("No forbidden opcodes.\n");
 	else {
@@ -273,7 +341,7 @@ static void prettyprint_ich_descriptor_straps_56_pciecs(uint8_t conf, uint8_t of
 	msg_pdbg2("PCI Express Port Configuration Strap %d: ", off+1);
 
 	off *= 4;
-	switch(conf){
+	switch (conf){
 	case 0:
 		msg_pdbg2("4x1 Ports %d-%d (x1)", 1+off, 4+off);
 		break;
@@ -630,7 +698,7 @@ void prettyprint_ich_descriptor_upper_map(const struct ich_desc_upper_map *umap)
 		msg_pdbg2("    "); /* indention */
 		prettyprint_rdid(jid);
 		msg_pdbg2("    "); /* indention */
-		prettyprint_ich_reg_vscc(vscc, 0);
+		prettyprint_ich_reg_vscc(vscc, 0, false);
 	}
 	msg_pdbg2("\n");
 }
@@ -723,29 +791,57 @@ int read_ich_descriptors_from_dump(const uint32_t *dump, unsigned int len, struc
 #else /* ICH_DESCRIPTORS_FROM_DUMP */
 
 /** Returns the integer representation of the component density with index
-idx in bytes or 0 if a correct size can not be determined. */
-int getFCBA_component_density(const struct ich_descriptors *desc, uint8_t idx)
+\em idx in bytes or -1 if the correct size can not be determined. */
+int getFCBA_component_density(enum ich_chipset cs, const struct ich_descriptors *desc, uint8_t idx)
 {
-	uint8_t size_enc;
-	
-	switch(idx) {
-	case 0:
-		size_enc = desc->component.comp1_density;
-		break;
-	case 1:
-		if (desc->content.NC == 0)
-			return 0;
-		size_enc = desc->component.comp2_density;
-		break;
-	default:
+	if (idx > 1) {
 		msg_perr("Only ICH SPI component index 0 or 1 are supported yet.\n");
-		return 0;
+		return -1;
 	}
-	if (size_enc > 5) {
-		msg_perr("Density of ICH SPI component with index %d is invalid. Encoded density is 0x%x.\n",
-			 idx, size_enc);
+
+	if (desc->content.NC == 0 && idx > 0)
 		return 0;
+
+	uint8_t size_enc;
+	uint8_t size_max;
+
+	switch (cs) {
+	case CHIPSET_ICH8:
+	case CHIPSET_ICH9:
+	case CHIPSET_ICH10:
+	case CHIPSET_5_SERIES_IBEX_PEAK:
+	case CHIPSET_6_SERIES_COUGAR_POINT:
+	case CHIPSET_7_SERIES_PANTHER_POINT:
+		if (idx == 0) {
+			size_enc = desc->component.old.comp1_density;
+		} else {
+			size_enc = desc->component.old.comp2_density;
+		}
+		size_max = 5;
+		break;
+	case CHIPSET_8_SERIES_LYNX_POINT:
+	case CHIPSET_8_SERIES_LYNX_POINT_LP:
+	case CHIPSET_8_SERIES_WELLSBURG:
+		if (idx == 0) {
+			size_enc = desc->component.new.comp1_density;
+		} else {
+			size_enc = desc->component.new.comp2_density;
+		}
+		size_max = 7;
+		break;
+	case CHIPSET_ICH_UNKNOWN:
+	default:
+		msg_pwarn("Density encoding is unknown on this chipset.\n");
+		return -1;
 	}
+
+	if (size_enc > size_max) {
+		msg_perr("Density of ICH SPI component with index %d is invalid."
+			 "Encoded density is 0x%x while maximum allowed is 0x%x.\n",
+			 idx, size_enc, size_max);
+		return -1;
+	}
+
 	return (1 << (19 + size_enc));
 }
 
