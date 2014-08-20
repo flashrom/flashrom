@@ -6322,6 +6322,22 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Macronix",
+		.name		= "MX23L1654",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= MACRONIX_ID,
+		.model_id	= MACRONIX_MX23L1654,
+		.total_size	= 2048,
+		.page_size	= 256,
+		.tested		= {.probe = NT, .read = NT, .erase = NA, .write = NA},
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.write		= NULL, /* MX23L1654 is a mask ROM, so it is read-only */
+		.read		= spi_chip_read, /* Fast read (0x0B) supported */
+		.voltage	= {3000, 3600},
+	},
+
+	{
+		.vendor		= "Macronix",
 		.name		= "MX23L3254",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
@@ -6332,6 +6348,38 @@ const struct flashchip flashchips[] = {
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.write		= NULL, /* MX23L3254 is a mask ROM, so it is read-only */
+		.read		= spi_chip_read, /* Fast read (0x0B) supported */
+		.voltage	= {3000, 3600},
+	},
+
+	{
+		.vendor		= "Macronix",
+		.name		= "MX23L6454",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= MACRONIX_ID,
+		.model_id	= MACRONIX_MX23L6454,
+		.total_size	= 8192,
+		.page_size	= 256,
+		.tested		= {.probe = NT, .read = NT, .erase = NA, .write = NA},
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.write		= NULL, /* MX23L6454 is a mask ROM, so it is read-only */
+		.read		= spi_chip_read, /* Fast read (0x0B) supported */
+		.voltage	= {3000, 3600},
+	},
+
+	{
+		.vendor		= "Macronix",
+		.name		= "MX23L12854",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= MACRONIX_ID,
+		.model_id	= MACRONIX_MX23L12854,
+		.total_size	= 16384,
+		.page_size	= 256,
+		.tested		= {.probe = NT, .read = NT, .erase = NA, .write = NA},
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.write		= NULL, /* MX23L12854 is a mask ROM, so it is read-only */
 		.read		= spi_chip_read, /* Fast read (0x0B) supported */
 		.voltage	= {3000, 3600},
 	},

@@ -448,7 +448,10 @@
 
 #define MACRONIX_ID		0xC2	/* Macronix (MX) */
 /* Mask ROMs */
+#define MACRONIX_MX23L1654	0x0515
 #define MACRONIX_MX23L3254	0x0516
+#define MACRONIX_MX23L6454	0x0517
+#define MACRONIX_MX23L12854	0x0518
 /* MX25 chips are SPI, first byte of device ID is memory type,
  * second byte of device ID is log(bitsize)-9.
  * Generalplus SPI chips seem to be compatible with Macronix
