@@ -118,6 +118,7 @@ static void usage(char *argv[], char *error)
 "\t- \"ich8\",\n"
 "\t- \"ich9\",\n"
 "\t- \"ich10\",\n"
+"\t- \"silvermont\" for chipsets from Intel's Silvermont architecture (e.g. Bay Trail),\n"
 "\t- \"5\" or \"ibex\" for Intel's 5 series chipsets,\n"
 "\t- \"6\" or \"cougar\" for Intel's 6 series chipsets,\n"
 "\t- \"7\" or \"panther\" for Intel's 7 series chipsets.\n"
@@ -202,6 +203,8 @@ int main(int argc, char *argv[])
 		else if ((strcmp(csn, "8") == 0) ||
 			 (strcmp(csn, "lynx") == 0))
 			cs = CHIPSET_8_SERIES_LYNX_POINT;
+		else if ((strcmp(csn, "silvermont") == 0))
+			cs = CHIPSET_BAYTRAIL;
 	}
 
 	ret = read_ich_descriptors_from_dump(buf, len, &desc);

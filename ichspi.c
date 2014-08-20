@@ -612,7 +612,8 @@ static void ich_set_bbar(uint32_t min_addr)
 		bbar_off = 0x50;
 		break;
 	case CHIPSET_ICH8:
-		msg_perr("BBAR offset is unknown on ICH8!\n");
+	case CHIPSET_BAYTRAIL:
+		msg_pdbg("BBAR offset is unknown!\n");
 		return;
 	case CHIPSET_ICH9:
 	default:		/* Future version might behave the same */
@@ -1739,9 +1740,12 @@ int ich_init_spi(struct pci_dev *dev, void *spibar, enum ich_chipset ich_gen)
 			msg_pdbg("VSCC: ");
 			prettyprint_ich_reg_vscc(tmp, MSG_DEBUG, true);
 		} else {
-			ichspi_bbar = mmio_readl(ich_spibar + ICH9_REG_BBAR);
-			msg_pdbg("0xA0: 0x%08x (BBAR)\n",
-				     ichspi_bbar);
+			if (ich_generation != CHIPSET_BAYTRAIL && desc_valid) {
+				ichspi_bbar = mmio_readl(ich_spibar + ICH9_REG_BBAR);
+				msg_pdbg("0xA0: 0x%08x (BBAR)\n",
+					     ichspi_bbar);
+				ich_set_bbar(0);
+			}
 
 			if (desc_valid) {
 				tmp = mmio_readl(ich_spibar + ICH9_REG_LVSCC);
@@ -1757,10 +1761,8 @@ int ich_init_spi(struct pci_dev *dev, void *spibar, enum ich_chipset ich_gen)
 				tmp = mmio_readl(ich_spibar + ICH9_REG_FPB);
 				msg_pdbg("0xD0: 0x%08x (FPB)\n", tmp);
 			}
-			ich_set_bbar(0);
 		}
 
-		msg_pdbg("\n");
 		if (desc_valid) {
 			if (read_ich_descriptors_via_fdo(ich_spibar, &desc) == ICH_RET_OK)
 				prettyprint_ich_descriptors(ich_gen, &desc);

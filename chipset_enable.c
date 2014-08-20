@@ -260,9 +260,13 @@ static int enable_flash_piix4(struct pci_dev *dev, const char *name)
 	return 0;
 }
 
-/* Note: the ICH0-ICH5 BIOS_CNTL register is actually 16 bit wide, in Poulsbo, Tunnel Creek and other Atom
+/* Handle BIOS_CNTL (aka. BCR). Disable locks and enable writes. The register can either be in PCI config space
+ * at the offset given by 'bios_cntl' or at the memory-mapped address 'addr'.
+ *
+ * Note: the ICH0-ICH5 BIOS_CNTL register is actually 16 bit wide, in Poulsbo, Tunnel Creek and other Atom
  * chipsets/SoCs it is even 32b, but just treating it as 8 bit wide seems to work fine in practice. */
-static int enable_flash_ich_bios_cntl(struct pci_dev *dev, enum ich_chipset ich_generation, uint8_t bios_cntl)
+static int enable_flash_ich_bios_cntl_common(enum ich_chipset ich_generation, void *addr,
+					     struct pci_dev *dev, uint8_t bios_cntl)
 {
 	uint8_t old, new, wanted;
 
@@ -273,8 +277,8 @@ static int enable_flash_ich_bios_cntl(struct pci_dev *dev, enum ich_chipset ich_
 	case CHIPSET_ICH:
 	case CHIPSET_ICH2345:
 		break;
-	/* Atom chipsets are special: The second byte of BIOS_CNTL (D9h) contains a prefetch bit similar to what
-	 * other SPI-capable chipsets have at DCh.
+	/* Some Atom chipsets are special: The second byte of BIOS_CNTL (D9h) contains a prefetch bit similar to
+	 * what other SPI-capable chipsets have at DCh. Others like Bay Trail use a memmapped register.
 	 * The Tunnel Creek datasheet contains a lot of details about the SPI controller, among other things it
 	 * mentions that the prefetching and caching does only happen for direct memory reads.
 	 * Therefore - at least for Tunnel Creek - it should not matter to flashrom because we use the
@@ -285,9 +289,13 @@ static int enable_flash_ich_bios_cntl(struct pci_dev *dev, enum ich_chipset ich_
 		old = pci_read_byte(dev, bios_cntl + 1);
 		msg_pdbg("BIOS Prefetch Enable: %sabled, ", (old & 1) ? "en" : "dis");
 		break;
+	case CHIPSET_BAYTRAIL:
 	case CHIPSET_ICH7:
 	default: /* Future version might behave the same */
-		old = (pci_read_byte(dev, bios_cntl) >> 2) & 0x3;
+		if (ich_generation == CHIPSET_BAYTRAIL)
+			old = (mmio_readl(addr) >> 2) & 0x3;
+		else
+			old = (pci_read_byte(dev, bios_cntl) >> 2) & 0x3;
 		msg_pdbg("SPI Read Configuration: ");
 		if (old == 3)
 			msg_pdbg("invalid prefetching/caching settings, ");
@@ -297,7 +305,11 @@ static int enable_flash_ich_bios_cntl(struct pci_dev *dev, enum ich_chipset ich_
 				     (old & 0x1) ? "dis" : "en");
 	}
 
-	wanted = old = pci_read_byte(dev, bios_cntl);
+	if (ich_generation == CHIPSET_BAYTRAIL)
+		wanted = old = mmio_readl(addr);
+	else
+		wanted = old = pci_read_byte(dev, bios_cntl);
+
 	/*
 	 * Quote from the 6 Series datasheet (Document Number: 324645-004):
 	 * "Bit 5: SMM BIOS Write Protect Disable (SMM_BWP)
@@ -327,8 +339,13 @@ static int enable_flash_ich_bios_cntl(struct pci_dev *dev, enum ich_chipset ich_
 
 	/* Only write the register if it's necessary */
 	if (wanted != old) {
-		rpci_write_byte(dev, bios_cntl, wanted);
-		new = pci_read_byte(dev, bios_cntl);
+		if (ich_generation == CHIPSET_BAYTRAIL) {
+			rmmio_writel(wanted, addr);
+			new = mmio_readl(addr);
+		} else {
+			rpci_write_byte(dev, bios_cntl, wanted);
+			new = pci_read_byte(dev, bios_cntl);
+		}
 	} else
 		new = old;
 
@@ -349,10 +366,22 @@ static int enable_flash_ich_bios_cntl(struct pci_dev *dev, enum ich_chipset ich_
 	return 0;
 }
 
+static int enable_flash_ich_bios_cntl_config_space(struct pci_dev *dev, enum ich_chipset ich_generation,
+						   uint8_t bios_cntl)
+{
+	return enable_flash_ich_bios_cntl_common(ich_generation, NULL, dev, bios_cntl);
+}
+
+static int enable_flash_ich_bios_cntl_memmapped(enum ich_chipset ich_generation, void *addr)
+{
+	return enable_flash_ich_bios_cntl_common(ich_generation, addr, NULL, 0);
+}
+
 static int enable_flash_ich_fwh_decode(struct pci_dev *dev, enum ich_chipset ich_generation)
 {
 	uint8_t fwh_sel1 = 0, fwh_sel2 = 0, fwh_dec_en_lo = 0, fwh_dec_en_hi = 0; /* silence compilers */
 	bool implemented = 0;
+	void *ilb = NULL; /* Only for Baytrail */
 	switch (ich_generation) {
 	case CHIPSET_ICH:
 		/* FIXME: Unlike later chipsets, ICH and ICH-0 do only support mapping of the top-most 4MB
@@ -373,6 +402,19 @@ static int enable_flash_ich_fwh_decode(struct pci_dev *dev, enum ich_chipset ich
 	case CHIPSET_CENTERTON:
 		/* FIXME: Similar to above FWH_DEC_EN (D4h) and FWH_SEL (D0h). */
 		break;
+	case CHIPSET_BAYTRAIL: {
+		uint32_t ilb_base = pci_read_long(dev, 0x50) & 0xfffffe00; /* bits 31:9 */
+		if (ilb_base == 0) {
+			msg_perr("Error: Invalid ILB_BASE_ADDRESS\n");
+			return ERROR_FATAL;
+		}
+		ilb = rphysmap("BYT IBASE", ilb_base, 512);
+		fwh_sel1 = 0x18;
+		fwh_dec_en_lo = 0xd8;
+		fwh_dec_en_hi = 0xd9;
+		implemented = 1;
+		break;
+	}
 	case CHIPSET_ICH6:
 	case CHIPSET_ICH7:
 	default: /* Future version might behave the same */
@@ -397,17 +439,27 @@ static int enable_flash_ich_fwh_decode(struct pci_dev *dev, enum ich_chipset ich
 			msg_perr("Error: fwh_idsel= specified, but value could not be converted.\n");
 			goto idsel_garbage_out;
 		}
-		if (fwh_idsel & 0xffff000000000000ULL) {
+		uint64_t fwh_mask = 0xffffffff;
+		if (fwh_sel2 > 0)
+			fwh_mask |= (0xffffULL << 32);
+		if (fwh_idsel & ~fwh_mask) {
 			msg_perr("Error: fwh_idsel= specified, but value had unused bits set.\n");
 			goto idsel_garbage_out;
 		}
-		uint64_t fwh_idsel_old = pci_read_long(dev, fwh_sel1);
-		fwh_idsel_old <<= 16;
-		fwh_idsel_old |= pci_read_word(dev, fwh_sel2);
+		uint64_t fwh_idsel_old;
+		if (ich_generation == CHIPSET_BAYTRAIL) {
+			fwh_idsel_old = mmio_readl(ilb + fwh_sel1);
+			rmmio_writel(fwh_idsel, ilb + fwh_sel1);
+		} else {
+			fwh_idsel_old = pci_read_long(dev, fwh_sel1) << 16;
+			rpci_write_long(dev, fwh_sel1, (fwh_idsel >> 16) & 0xffffffff);
+			if (fwh_sel2 > 0) {
+				fwh_idsel_old |= pci_read_word(dev, fwh_sel2);
+				rpci_write_word(dev, fwh_sel2, fwh_idsel & 0xffff);
+			}
+		}
 		msg_pdbg("Setting IDSEL from 0x%012" PRIx64 " to 0x%012" PRIx64 " for top 16 MB.\n",
 			 fwh_idsel_old, fwh_idsel);
-		rpci_write_long(dev, fwh_sel1, (fwh_idsel >> 16) & 0xffffffff);
-		rpci_write_word(dev, fwh_sel2, fwh_idsel & 0xffff);
 		/* FIXME: Decode settings are not changed. */
 	} else if (idsel) {
 		msg_perr("Error: fwh_idsel= specified, but no value given.\n");
@@ -429,7 +481,12 @@ idsel_garbage_out:
 	 */
 	int max_decode_fwh_idsel = 0, max_decode_fwh_decode = 0;
 	bool contiguous = 1;
-	uint32_t fwh_conf = pci_read_long(dev, fwh_sel1);
+	uint32_t fwh_conf;
+	if (ich_generation == CHIPSET_BAYTRAIL)
+		fwh_conf = mmio_readl(ilb + fwh_sel1);
+	else
+		fwh_conf = pci_read_long(dev, fwh_sel1);
+
 	int i;
 	/* FWH_SEL1 */
 	for (i = 7; i >= 0; i--) {
@@ -444,18 +501,20 @@ idsel_garbage_out:
 			contiguous = 0;
 		}
 	}
-	/* FWH_SEL2 */
-	fwh_conf = pci_read_word(dev, fwh_sel2);
-	for (i = 3; i >= 0; i--) {
-		int tmp = (fwh_conf >> (i * 4)) & 0xf;
-		msg_pdbg("0x%08x/0x%08x FWH IDSEL: 0x%x\n",
-			 (0xff4 + i) * 0x100000,
-			 (0xff0 + i) * 0x100000,
-			 tmp);
-		if ((tmp == 0) && contiguous) {
-			max_decode_fwh_idsel = (8 - i) * 0x100000;
-		} else {
-			contiguous = 0;
+	if (fwh_sel2 > 0) {
+		/* FWH_SEL2 */
+		fwh_conf = pci_read_word(dev, fwh_sel2);
+		for (i = 3; i >= 0; i--) {
+			int tmp = (fwh_conf >> (i * 4)) & 0xf;
+			msg_pdbg("0x%08x/0x%08x FWH IDSEL: 0x%x\n",
+				 (0xff4 + i) * 0x100000,
+				 (0xff0 + i) * 0x100000,
+				 tmp);
+			if ((tmp == 0) && contiguous) {
+				max_decode_fwh_idsel = (8 - i) * 0x100000;
+			} else {
+				contiguous = 0;
+			}
 		}
 	}
 	contiguous = 1;
@@ -502,7 +561,7 @@ static int enable_flash_ich_fwh(struct pci_dev *dev, enum ich_chipset ich_genera
 		return err;
 
 	internal_buses_supported = BUS_FWH;
-	return enable_flash_ich_bios_cntl(dev, ich_generation, bios_cntl);
+	return enable_flash_ich_bios_cntl_config_space(dev, ich_generation, bios_cntl);
 }
 
 static int enable_flash_ich0(struct pci_dev *dev, const char *name)
@@ -525,14 +584,17 @@ static int enable_flash_poulsbo(struct pci_dev *dev, const char *name)
 	return enable_flash_ich_fwh(dev, CHIPSET_POULSBO, 0xd8);
 }
 
-static int enable_flash_ich_spi(struct pci_dev *dev, enum ich_chipset ich_generation, uint8_t bios_cntl)
+static void enable_flash_ich_handle_gcs(struct pci_dev *dev, enum ich_chipset ich_generation, uint32_t gcs, bool top_swap)
 {
+	msg_pdbg("GCS = 0x%x: ", gcs);
+	msg_pdbg("BIOS Interface Lock-Down: %sabled, ", (gcs & 0x1) ? "en" : "dis");
+
 	static const char *const straps_names_EP80579[] = { "SPI", "reserved", "reserved", "LPC" };
 	static const char *const straps_names_ich7_nm10[] = { "reserved", "SPI", "PCI", "LPC" };
 	static const char *const straps_names_tunnel_creek[] = { "SPI", "LPC" };
 	static const char *const straps_names_ich8910[] = { "SPI", "SPI", "PCI", "LPC" };
 	static const char *const straps_names_pch567[] = { "LPC", "reserved", "PCI", "SPI" };
-	static const char *const straps_names_pch8[] = { "LPC", "reserved", "reserved", "SPI" };
+	static const char *const straps_names_pch8_baytrail[] = { "LPC", "reserved", "reserved", "SPI" };
 	static const char *const straps_names_pch8_lp[] = { "SPI", "LPC" };
 	static const char *const straps_names_unknown[] = { "unknown", "unknown", "unknown", "unknown" };
 
@@ -561,7 +623,8 @@ static int enable_flash_ich_spi(struct pci_dev *dev, enum ich_chipset ich_genera
 		straps_names = straps_names_pch567;
 		break;
 	case CHIPSET_8_SERIES_LYNX_POINT:
-		straps_names = straps_names_pch8;
+	case CHIPSET_BAYTRAIL:
+		straps_names = straps_names_pch8_baytrail;
 		break;
 	case CHIPSET_8_SERIES_LYNX_POINT_LP:
 		straps_names = straps_names_pch8_lp;
@@ -576,6 +639,30 @@ static int enable_flash_ich_spi(struct pci_dev *dev, enum ich_chipset ich_genera
 		break;
 	}
 
+	uint8_t bbs;
+	switch (ich_generation) {
+	case CHIPSET_TUNNEL_CREEK:
+		bbs = (gcs >> 1) & 0x1;
+		break;
+	case CHIPSET_8_SERIES_LYNX_POINT_LP:
+		/* Lynx Point LP uses a single bit for BBS */
+		bbs = (gcs >> 10) & 0x1;
+		break;
+	default:
+		/* Other chipsets use two bits for BBS */
+		bbs = (gcs >> 10) & 0x3;
+		break;
+	}
+	msg_pdbg("Boot BIOS Straps: 0x%x (%s)\n", bbs, straps_names[bbs]);
+
+	/* Centerton has its TS bit in [GPE0BLK] + 0x30 while the exact location for Tunnel Creek is unknown. */
+	if (ich_generation != CHIPSET_TUNNEL_CREEK && ich_generation != CHIPSET_CENTERTON)
+		msg_pdbg("Top Swap: %s\n", (top_swap) ? "enabled (A16(+) inverted)" : "not enabled");
+}
+
+static int enable_flash_ich_spi(struct pci_dev *dev, enum ich_chipset ich_generation, uint8_t bios_cntl)
+{
+
 	/* Get physical address of Root Complex Register Block */
 	uint32_t rcra = pci_read_long(dev, 0xf0) & 0xffffc000;
 	msg_pdbg("Root Complex Register Block address = 0x%x\n", rcra);
@@ -585,31 +672,7 @@ static int enable_flash_ich_spi(struct pci_dev *dev, enum ich_chipset ich_genera
 	if (rcrb == ERROR_PTR)
 		return ERROR_FATAL;
 
-	uint32_t gcs = mmio_readl(rcrb + 0x3410);
-	msg_pdbg("GCS = 0x%x: ", gcs);
-	msg_pdbg("BIOS Interface Lock-Down: %sabled, ", (gcs & 0x1) ? "en" : "dis");
-
-	uint8_t bbs;
-	switch (ich_generation) {
-	case CHIPSET_TUNNEL_CREEK:
-		bbs = (gcs >> 1) & 0x1;
-		break;
-	case CHIPSET_8_SERIES_LYNX_POINT_LP:
-	case CHIPSET_8_SERIES_WELLSBURG: // FIXME: check datasheet
-		/* Lynx Point LP uses a single bit for GCS */
-		bbs = (gcs >> 10) & 0x1;
-		break;
-	default:
-		/* Older chipsets use two bits for GCS */
-		bbs = (gcs >> 10) & 0x3;
-		break;
-	}
-	msg_pdbg("Boot BIOS Straps: 0x%x (%s)\n", bbs, straps_names[bbs]);
-
-	if (ich_generation != CHIPSET_TUNNEL_CREEK && ich_generation != CHIPSET_CENTERTON) {
-		uint8_t buc = mmio_readb(rcrb + 0x3414);
-		msg_pdbg("Top Swap: %s\n", (buc & 1) ? "enabled (A16(+) inverted)" : "not enabled");
-	}
+	enable_flash_ich_handle_gcs(dev, ich_generation, mmio_readl(rcrb + 0x3410), mmio_readb(rcrb + 0x3414));
 
 	/* Handle FWH-related parameters and initialization */
 	int ret_fwh = enable_flash_ich_fwh(dev, ich_generation, bios_cntl);
@@ -619,6 +682,7 @@ static int enable_flash_ich_spi(struct pci_dev *dev, enum ich_chipset ich_genera
 	/* SPIBAR is at RCRB+0x3020 for ICH[78], Tunnel Creek and Centerton, and RCRB+0x3800 for ICH9. */
 	uint16_t spibar_offset;
 	switch (ich_generation) {
+	case CHIPSET_BAYTRAIL:
 	case CHIPSET_ICH_UNKNOWN:
 		return ERROR_FATAL;
 	case CHIPSET_ICH7:
@@ -710,6 +774,57 @@ static int enable_flash_pch8_lp(struct pci_dev *dev, const char *name)
 static int enable_flash_pch8_wb(struct pci_dev *dev, const char *name)
 {
 	return enable_flash_ich_spi(dev, CHIPSET_8_SERIES_WELLSBURG, 0xdc);
+}
+
+/* Silvermont architecture: Bay Trail(-T/-I), Avoton/Rangeley.
+ * These have a distinctly different behavior compared to other Intel chipsets and hence are handled separately.
+ *
+ * Differences include:
+ *	- RCBA at LPC config 0xF0 too but mapped range is only 4 B long instead of 16 kB.
+ *	- GCS at [RCRB] + 0 (instead of [RCRB] + 0x3410).
+ *	- TS (Top Swap) in GCS (instead of [RCRB] + 0x3414).
+ *	- SPIBAR (coined SBASE) at LPC config 0x54 (instead of [RCRB] + 0x3800).
+ *	- BIOS_CNTL (coined BCR) at [SPIBAR] + 0xFC (instead of LPC config 0xDC).
+ */
+static int enable_flash_silvermont(struct pci_dev *dev, const char *name)
+{
+	enum ich_chipset ich_generation = CHIPSET_BAYTRAIL;
+
+	/* Get physical address of Root Complex Register Block */
+	uint32_t rcba = pci_read_long(dev, 0xf0) & 0xfffffc00;
+	msg_pdbg("Root Complex Register Block address = 0x%x\n", rcba);
+
+	/* Handle GCS (in RCRB) */
+	void *rcrb = physmap("BYT RCRB", rcba, 4);
+	uint32_t gcs = mmio_readl(rcrb + 0);
+	enable_flash_ich_handle_gcs(dev, ich_generation, gcs, gcs & 0x2);
+	physunmap(rcrb, 4);
+
+	/* Handle fwh_idsel parameter */
+	int ret_fwh = enable_flash_ich_fwh_decode(dev, ich_generation);
+	if (ret_fwh == ERROR_FATAL)
+		return ret_fwh;
+
+	internal_buses_supported = BUS_FWH;
+
+	/* Get physical address of SPI Base Address and map it */
+	uint32_t sbase = pci_read_long(dev, 0x54) & 0xfffffe00;
+	msg_pdbg("SPI_BASE_ADDRESS = 0x%x\n", sbase);
+	void *spibar = rphysmap("BYT SBASE", sbase, 512); /* Last defined address on Bay Trail is 0x100 */
+
+	/* Enable Flash Writes.
+	 * Silvermont-based: BCR at SBASE + 0xFC (some bits of BCR are also accessible via BC at IBASE + 0x1C).
+	 */
+	enable_flash_ich_bios_cntl_memmapped(ich_generation, spibar + 0xFC);
+
+	int ret_spi = ich_init_spi(dev, spibar, ich_generation);
+	if (ret_spi == ERROR_FATAL)
+		return ret_spi;
+
+	if (ret_fwh || ret_spi)
+		return ERROR_NONFATAL;
+
+	return 0;
 }
 
 static int via_no_byte_merge(struct pci_dev *dev, const char *name)
@@ -1471,6 +1586,10 @@ const struct penable chipset_enables[] = {
 	{0x1166, 0x0205, OK,  "Broadcom", "HT-1000",			enable_flash_ht1000},
 	{0x17f3, 0x6030, OK,  "RDC", "R8610/R3210",			enable_flash_rdc_r8610},
 	{0x8086, 0x0c60, NT,  "Intel", "S12x0",				enable_flash_s12x0},
+	{0x8086, 0x0f1c, NT,  "Intel", "Bay Trail",			enable_flash_silvermont},
+	{0x8086, 0x0f1d, NT,  "Intel", "Bay Trail",			enable_flash_silvermont},
+	{0x8086, 0x0f1e, NT,  "Intel", "Bay Trail",			enable_flash_silvermont},
+	{0x8086, 0x0f1f, NT,  "Intel", "Bay Trail",			enable_flash_silvermont},
 	{0x8086, 0x122e, OK,  "Intel", "PIIX",				enable_flash_piix4},
 	{0x8086, 0x1234, NT,  "Intel", "MPIIX",				enable_flash_piix4},
 	{0x8086, 0x1c44, DEP, "Intel", "Z68",				enable_flash_pch6},
@@ -1505,7 +1624,11 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x1e5d, NT,  "Intel", "HM75",				enable_flash_pch7},
 	{0x8086, 0x1e5e, NT,  "Intel", "HM70",				enable_flash_pch7},
 	{0x8086, 0x1e5f, DEP, "Intel", "NM70",				enable_flash_pch7},
-	{0x8086, 0x2310, NT,  "Intel", "DH89xxCC",			enable_flash_pch7},
+	{0x8086, 0x1f38, NT,  "Intel", "Avoton/Rangeley",		enable_flash_silvermont},
+	{0x8086, 0x1f39, NT,  "Intel", "Avoton/Rangeley",		enable_flash_silvermont},
+	{0x8086, 0x1f3a, NT,  "Intel", "Avoton/Rangeley",		enable_flash_silvermont},
+	{0x8086, 0x1f3b, NT,  "Intel", "Avoton/Rangeley",		enable_flash_silvermont},
+	{0x8086, 0x2310, NT,  "Intel", "DH89xxCC (Cave Creek)",		enable_flash_pch7},
 	{0x8086, 0x2390, NT,  "Intel", "Coleto Creek",			enable_flash_pch7},
 	{0x8086, 0x2410, OK,  "Intel", "ICH",				enable_flash_ich0},
 	{0x8086, 0x2420, OK,  "Intel", "ICH0",				enable_flash_ich0},
@@ -1567,7 +1690,7 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x7110, OK,  "Intel", "PIIX4/4E/4M",			enable_flash_piix4},
 	{0x8086, 0x7198, OK,  "Intel", "440MX",				enable_flash_piix4},
 	{0x8086, 0x8119, OK,  "Intel", "SCH Poulsbo",			enable_flash_poulsbo},
-	{0x8086, 0x8186, OK,  "Intel", "Atom E6xx(T)/Tunnel Creek",	enable_flash_tunnelcreek},
+	{0x8086, 0x8186, OK,  "Intel", "Atom E6xx(T) (Tunnel Creek)",	enable_flash_tunnelcreek},
 	{0x8086, 0x8c40, NT,  "Intel", "Lynx Point",			enable_flash_pch8},
 	{0x8086, 0x8c41, NT,  "Intel", "Lynx Point Mobile Eng. Sample",	enable_flash_pch8},
 	{0x8086, 0x8c42, NT,  "Intel", "Lynx Point Desktop Eng. Sample",enable_flash_pch8},
