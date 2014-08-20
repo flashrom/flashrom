@@ -113,7 +113,7 @@ static void usage(char *argv[], char *error)
 "where <image file name> points to an image of the contents of the SPI flash.\n"
 "In case the image is really in descriptor mode %s\n"
 "will pretty print some of the contained information.\n"
-"To also print the data stored in the descriptor strap you have to indicate\n"
+"To also print the data stored in the descriptor straps you have to indicate\n"
 "the chipset series with the '-c' parameter and one of the possible arguments:\n"
 "\t- \"ich8\",\n"
 "\t- \"ich9\",\n"
@@ -121,6 +121,7 @@ static void usage(char *argv[], char *error)
 "\t- \"5\" or \"ibex\" for Intel's 5 series chipsets,\n"
 "\t- \"6\" or \"cougar\" for Intel's 6 series chipsets,\n"
 "\t- \"7\" or \"panther\" for Intel's 7 series chipsets.\n"
+"\t- \"8\" or \"lynx\" for Intel's 8 series chipsets.\n"
 "If '-d' is specified some regions such as the BIOS image as seen by the CPU or\n"
 "the GbE blob that is required to initialize the GbE are also dumped to files.\n",
 	argv[0], argv[0]);
@@ -198,6 +199,9 @@ int main(int argc, char *argv[])
 		else if ((strcmp(csn, "7") == 0) ||
 			 (strcmp(csn, "panther") == 0))
 			cs = CHIPSET_7_SERIES_PANTHER_POINT;
+		else if ((strcmp(csn, "8") == 0) ||
+			 (strcmp(csn, "lynx") == 0))
+			cs = CHIPSET_8_SERIES_LYNX_POINT;
 	}
 
 	ret = read_ich_descriptors_from_dump(buf, len, &desc);

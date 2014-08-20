@@ -1737,7 +1737,7 @@ int ich_init_spi(struct pci_dev *dev, void *spibar, enum ich_chipset ich_gen)
 			tmp = mmio_readl(ich_spibar + ICH8_REG_VSCC);
 			msg_pdbg("0xC1: 0x%08x (VSCC)\n", tmp);
 			msg_pdbg("VSCC: ");
-			prettyprint_ich_reg_vscc(tmp, MSG_DEBUG);
+			prettyprint_ich_reg_vscc(tmp, MSG_DEBUG, true);
 		} else {
 			ichspi_bbar = mmio_readl(ich_spibar + ICH9_REG_BBAR);
 			msg_pdbg("0xA0: 0x%08x (BBAR)\n",
@@ -1747,12 +1747,12 @@ int ich_init_spi(struct pci_dev *dev, void *spibar, enum ich_chipset ich_gen)
 				tmp = mmio_readl(ich_spibar + ICH9_REG_LVSCC);
 				msg_pdbg("0xC4: 0x%08x (LVSCC)\n", tmp);
 				msg_pdbg("LVSCC: ");
-				prettyprint_ich_reg_vscc(tmp, MSG_DEBUG);
+				prettyprint_ich_reg_vscc(tmp, MSG_DEBUG, true);
 
 				tmp = mmio_readl(ich_spibar + ICH9_REG_UVSCC);
 				msg_pdbg("0xC8: 0x%08x (UVSCC)\n", tmp);
 				msg_pdbg("UVSCC: ");
-				prettyprint_ich_reg_vscc(tmp, MSG_DEBUG);
+				prettyprint_ich_reg_vscc(tmp, MSG_DEBUG, false);
 
 				tmp = mmio_readl(ich_spibar + ICH9_REG_FPB);
 				msg_pdbg("0xD0: 0x%08x (FPB)\n", tmp);
@@ -1762,10 +1762,9 @@ int ich_init_spi(struct pci_dev *dev, void *spibar, enum ich_chipset ich_gen)
 
 		msg_pdbg("\n");
 		if (desc_valid) {
-			if (read_ich_descriptors_via_fdo(ich_spibar, &desc) ==
-			    ICH_RET_OK)
-				prettyprint_ich_descriptors(CHIPSET_ICH_UNKNOWN,
-							    &desc);
+			if (read_ich_descriptors_via_fdo(ich_spibar, &desc) == ICH_RET_OK)
+				prettyprint_ich_descriptors(ich_gen, &desc);
+
 			/* If the descriptor is valid and indicates multiple
 			 * flash devices we need to use hwseq to be able to
 			 * access the second flash device.
@@ -1791,8 +1790,21 @@ int ich_init_spi(struct pci_dev *dev, void *spibar, enum ich_chipset ich_gen)
 					 "valid. Aborting.\n");
 				return ERROR_FATAL;
 			}
-			hwseq_data.size_comp0 = getFCBA_component_density(&desc, 0);
-			hwseq_data.size_comp1 = getFCBA_component_density(&desc, 1);
+
+			int tmpi = getFCBA_component_density(ich_generation, &desc, 0);
+			if (tmpi < 0) {
+				msg_perr("Could not determine density of flash component %d.\n", 0);
+				return ERROR_FATAL;
+			}
+			hwseq_data.size_comp0 = tmpi;
+
+			tmpi = getFCBA_component_density(ich_generation, &desc, 1);
+			if (tmpi < 0) {
+				msg_perr("Could not determine density of flash component %d.\n", 1);
+				return ERROR_FATAL;
+			}
+			hwseq_data.size_comp1 = tmpi;
+
 			register_opaque_master(&opaque_master_ich_hwseq);
 		} else {
 			register_spi_master(&spi_master_ich9);
