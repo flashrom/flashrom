@@ -141,7 +141,8 @@ static const char *pprint_density(enum ich_chipset cs, const struct ich_descript
 	case CHIPSET_8_SERIES_LYNX_POINT:
 	case CHIPSET_BAYTRAIL:
 	case CHIPSET_8_SERIES_LYNX_POINT_LP:
-	case CHIPSET_8_SERIES_WELLSBURG: {
+	case CHIPSET_8_SERIES_WELLSBURG:
+	case CHIPSET_9_SERIES_WILDCAT_POINT: {
 		uint8_t size_enc;
 		if (idx == 0) {
 			size_enc = desc->component.new.comp1_density;
@@ -184,6 +185,7 @@ static const char *pprint_freq(enum ich_chipset cs, uint8_t value)
 	case CHIPSET_BAYTRAIL:
 	case CHIPSET_8_SERIES_LYNX_POINT_LP:
 	case CHIPSET_8_SERIES_WELLSBURG:
+	case CHIPSET_9_SERIES_WILDCAT_POINT:
 		return freq_str[value];
 	case CHIPSET_ICH_UNKNOWN:
 	default:
@@ -825,6 +827,7 @@ int getFCBA_component_density(enum ich_chipset cs, const struct ich_descriptors 
 	case CHIPSET_BAYTRAIL:
 	case CHIPSET_8_SERIES_LYNX_POINT_LP:
 	case CHIPSET_8_SERIES_WELLSBURG:
+	case CHIPSET_9_SERIES_WILDCAT_POINT:
 		if (idx == 0) {
 			size_enc = desc->component.new.comp1_density;
 		} else {

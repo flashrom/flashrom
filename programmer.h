@@ -603,6 +603,7 @@ enum ich_chipset {
 	CHIPSET_BAYTRAIL, /* Actually all with Silvermont architecture: Bay Trail, Avoton/Rangeley */
 	CHIPSET_8_SERIES_LYNX_POINT_LP,
 	CHIPSET_8_SERIES_WELLSBURG,
+	CHIPSET_9_SERIES_WILDCAT_POINT,
 };
 
 /* ichspi.c */

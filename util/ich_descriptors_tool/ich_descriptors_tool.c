@@ -123,6 +123,7 @@ static void usage(char *argv[], char *error)
 "\t- \"6\" or \"cougar\" for Intel's 6 series chipsets,\n"
 "\t- \"7\" or \"panther\" for Intel's 7 series chipsets.\n"
 "\t- \"8\" or \"lynx\" for Intel's 8 series chipsets.\n"
+"\t- \"9\" or \"wildcat\" for Intel's 9 series chipsets.\n"
 "If '-d' is specified some regions such as the BIOS image as seen by the CPU or\n"
 "the GbE blob that is required to initialize the GbE are also dumped to files.\n",
 	argv[0], argv[0]);
@@ -205,6 +206,9 @@ int main(int argc, char *argv[])
 			cs = CHIPSET_8_SERIES_LYNX_POINT;
 		else if ((strcmp(csn, "silvermont") == 0))
 			cs = CHIPSET_BAYTRAIL;
+		else if ((strcmp(csn, "9") == 0) ||
+			 (strcmp(csn, "wildcat") == 0))
+			cs = CHIPSET_9_SERIES_WILDCAT_POINT;
 	}
 
 	ret = read_ich_descriptors_from_dump(buf, len, &desc);
