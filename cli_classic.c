@@ -481,8 +481,14 @@ int main(int argc, char *argv[])
 				ret = 1;
 				goto out_shutdown;
 			}
+			if (map_flash(&flashes[0]) != 0) {
+				free(flashes[0].chip);
+				ret = 1;
+				goto out_shutdown;
+			}
 			msg_cinfo("Please note that forced reads most likely contain garbage.\n");
 			ret = read_flash_to_file(&flashes[0], filename);
+			unmap_flash(&flashes[0]);
 			free(flashes[0].chip);
 			goto out_shutdown;
 		}
@@ -525,6 +531,12 @@ int main(int argc, char *argv[])
 	if (write_it && !dont_verify_it)
 		verify_it = 1;
 
+	/* Map the selected flash chip again. */
+	if (map_flash(fill_flash) != 0) {
+		ret = 1;
+		goto out_shutdown;
+	}
+
 	/* FIXME: We should issue an unconditional chip reset here. This can be
 	 * done once we have a .reset function in struct flashchip.
 	 * Give the chip time to settle.
@@ -532,6 +544,7 @@ int main(int argc, char *argv[])
 	programmer_delay(100000);
 	ret |= doit(fill_flash, force, filename, read_it, write_it, erase_it, verify_it);
 
+	unmap_flash(fill_flash);
 out_shutdown:
 	programmer_shutdown();
 out:

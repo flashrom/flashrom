@@ -166,9 +166,6 @@ int probe_jedec_29gl(struct flashctx *flash)
 	if (man_id != chip->manufacture_id || dev_id != chip->model_id)
 		return 0;
 
-	if (chip->feature_bits & FEATURE_REGISTERMAP)
-		map_flash_registers(flash);
-
 	return 1;
 }
 
@@ -286,9 +283,6 @@ static int probe_jedec_common(struct flashctx *flash, unsigned int mask)
 	msg_cdbg("\n");
 	if (largeid1 != chip->manufacture_id || largeid2 != chip->model_id)
 		return 0;
-
-	if (chip->feature_bits & FEATURE_REGISTERMAP)
-		map_flash_registers(flash);
 
 	return 1;
 }
