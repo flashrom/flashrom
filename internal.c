@@ -158,11 +158,6 @@ static const struct par_master par_master_internal = {
 
 enum chipbustype internal_buses_supported = BUS_NONE;
 
-static int internal_shutdown(void *data)
-{
-	return 0;
-}
-
 int internal_init(void)
 {
 #if __FLASHROM_LITTLE_ENDIAN__
@@ -236,8 +231,6 @@ int internal_init(void)
 	free(arg);
 
 	if (rget_io_perms())
-		return 1;
-	if (register_shutdown(internal_shutdown, NULL))
 		return 1;
 
 	/* Default to Parallel/LPC/FWH flash devices. If a known host controller

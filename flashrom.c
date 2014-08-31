@@ -373,6 +373,12 @@ static bool all_skipped = true;
 
 static int check_block_eraser(const struct flashctx *flash, int k, int log);
 
+int shutdown_free(void *data)
+{
+	free(data);
+	return 0;
+}
+
 /* Register a function to be executed on programmer shutdown.
  * The advantage over atexit() is that you can supply a void pointer which will
  * be used as parameter to the registered function upon programmer shutdown.

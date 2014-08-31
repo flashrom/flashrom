@@ -54,6 +54,7 @@ typedef uint32_t chipsize_t; /* Able to store the number of bytes of any support
 #define PRIuCHIPSIZE PRIu32
 
 int register_shutdown(int (*function) (void *data), void *data);
+int shutdown_free(void *data);
 void *programmer_map_flash_region(const char *descr, uintptr_t phys_addr, size_t len);
 void programmer_unmap_flash_region(void *virt_addr, size_t len);
 void programmer_delay(unsigned int usecs);
