@@ -120,18 +120,18 @@ static char *dmi_string(const char *buf, uint8_t string_id, const char *limit)
 	size_t i, len;
 
 	if (string_id == 0)
-		return "Not Specified";
+		return strdup("Not Specified");
 
 	while (string_id > 1 && string_id--) {
 		if (buf >= limit) {
 			msg_perr("DMI table is broken (string portion out of bounds)!\n");
-			return "<OUT OF BOUNDS>";
+			return strdup("<OUT OF BOUNDS>");
 		}
 		buf += strnlen(buf, limit - buf) + 1;
 	}
 
 	if (!*buf) /* as long as the current byte we're on isn't null */
-		return "<BAD INDEX>";
+		return strdup("<BAD INDEX>");
 
 	len = strnlen(buf, limit - buf);
 	char *newbuf = malloc(len + 1);
