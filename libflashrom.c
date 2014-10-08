@@ -187,12 +187,12 @@ int fl_flash_probe(fl_flashctx_t **const flashctx, const char *const chip_name)
 		return 1;
 	memset(*flashctx, 0, sizeof(**flashctx));
 
-	for (i = 0; i < registered_programmer_count; ++i) {
+	for (i = 0; i < registered_master_count; ++i) {
 		int flash_idx = -1;
-		if (!ret || (flash_idx = probe_flash(&registered_programmers[i], 0, *flashctx, 0)) != -1) {
+		if (!ret || (flash_idx = probe_flash(&registered_masters[i], 0, *flashctx, 0)) != -1) {
 			ret = 0;
 			/* We found one chip, now check that there is no second match. */
-			if (probe_flash(&registered_programmers[i], flash_idx + 1, &second_flashctx, 0) != -1) {
+			if (probe_flash(&registered_masters[i], flash_idx + 1, &second_flashctx, 0) != -1) {
 				ret = 3;
 				break;
 			}
@@ -370,7 +370,7 @@ int fl_image_write(fl_flashctx_t *const flashctx, void *const buffer, const size
 		goto _free_out;
 	}
 
-	handle_romentries(flashctx, oldcontents, newcontents);
+	build_new_image(flashctx, oldcontents, newcontents);
 
 	if (erase_and_write_flash(flashctx, oldcontents, newcontents)) {
 		msg_cerr("Uh oh. Erase/write failed. Checking if anything changed.\n");
@@ -427,7 +427,7 @@ int fl_image_verify(fl_flashctx_t *const flashctx, void *const buffer, const siz
 		goto _free_out;
 	}
 
-	handle_romentries(flashctx, oldcontents, newcontents);
+	build_new_image(flashctx, oldcontents, newcontents);
 
 	msg_cinfo("Verifying flash... ");
 

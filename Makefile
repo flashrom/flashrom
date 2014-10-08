@@ -772,7 +772,7 @@ FEATURE_CFLAGS += $(shell LC_ALL=C grep -q "UTSNAME := yes" .features && printf 
 # We could use PULLED_IN_LIBS, but that would be ugly.
 FEATURE_LIBS += $(shell LC_ALL=C grep -q "NEEDLIBZ := yes" .libdeps && printf "%s" "-lz")
 
-LIBFLASHROM_OBJS = $(CHIP_OBJS) $(PROGRAMMER_OBJS) $(LIB_OBJS)
+LIBFLASHROM_OBJS = $(CHIP_OBJS) $(PROGRAMMER_OBJS) $(LIB_OBJS) udelay.o
 OBJS = $(CLI_OBJS) $(LIBFLASHROM_OBJS)
 
 all: hwlibs features $(PROGRAM)$(EXEC_SUFFIX) $(PROGRAM).8
