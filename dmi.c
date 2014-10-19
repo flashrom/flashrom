@@ -142,7 +142,7 @@ static char *dmi_string(const char *buf, uint8_t string_id, const char *limit)
 
 	/* fix junk bytes in the string */
 	for (i = 0; i < len && buf[i] != '\0'; i++) {
-		if (isprint(buf[i]))
+		if (isprint((unsigned char)buf[i]))
 			newbuf[i] = buf[i];
 		else
 			newbuf[i] = ' ';
