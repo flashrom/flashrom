@@ -341,7 +341,7 @@ int register_include_arg(char *name);
 int process_include_args(void);
 int read_romlayout(const char *name);
 int normalize_romentries(const struct flashctx *flash);
-int build_new_image(const struct flashctx *flash, uint8_t *oldcontents, uint8_t *newcontents);
+int build_new_image(struct flashctx *flash, bool oldcontents_valid, uint8_t *oldcontents, uint8_t *newcontents);
 void layout_cleanup(void);
 
 /* spi.c */

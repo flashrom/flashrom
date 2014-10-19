@@ -1906,6 +1906,7 @@ int doit(struct flashctx *flash, int force, const char *filename, int read_it,
 	uint8_t *newcontents;
 	int ret = 0;
 	unsigned long size = flash->chip->total_size * 1024;
+	int read_all_first = 1; /* FIXME: Make this configurable. */
 
 	if (chip_safety_check(flash, force, read_it, write_it, erase_it, verify_it)) {
 		msg_cerr("Aborting.\n");
@@ -1983,26 +1984,33 @@ int doit(struct flashctx *flash, int force, const char *filename, int read_it,
 
 	/* Read the whole chip to be able to check whether regions need to be
 	 * erased and to give better diagnostics in case write fails.
-	 * The alternative would be to read only the regions which are to be
+	 * The alternative is to read only the regions which are to be
 	 * preserved, but in that case we might perform unneeded erase which
 	 * takes time as well.
 	 */
-	msg_cinfo("Reading old flash chip contents... ");
-	if (flash->chip->read(flash, oldcontents, 0, size)) {
-		ret = 1;
-		msg_cinfo("FAILED.\n");
-		goto out;
+	if (read_all_first) {
+		msg_cinfo("Reading old flash chip contents... ");
+		if (flash->chip->read(flash, oldcontents, 0, size)) {
+			ret = 1;
+			msg_cinfo("FAILED.\n");
+			goto out;
+		}
 	}
 	msg_cinfo("done.\n");
 
 	/* Build a new image taking the given layout into account. */
-	build_new_image(flash, oldcontents, newcontents);
+	if (build_new_image(flash, read_all_first, oldcontents, newcontents)) {
+		msg_gerr("Could not prepare the data to be written, aborting.\n");
+		ret = 1;
+		goto out;
+	}
 
 	// ////////////////////////////////////////////////////////////
 
-	if (write_it) {
-		if (erase_and_write_flash(flash, oldcontents, newcontents)) {
-			msg_cerr("Uh oh. Erase/write failed. Checking if anything has changed.\n");
+	if (write_it && erase_and_write_flash(flash, oldcontents, newcontents)) {
+		msg_cerr("Uh oh. Erase/write failed.");
+		if (read_all_first) {
+			msg_cerr("Checking if anything has changed.\n");
 			msg_cinfo("Reading current flash chip contents... ");
 			if (!flash->chip->read(flash, newcontents, 0, size)) {
 				msg_cinfo("done.\n");
@@ -2017,7 +2025,11 @@ int doit(struct flashctx *flash, int force, const char *filename, int read_it,
 			emergency_help_message();
 			ret = 1;
 			goto out;
-		}
+		} else
+			msg_cerr("\n");
+		emergency_help_message();
+		ret = 1;
+		goto out;
 	}
 
 	/* Verify only if we either did not try to write (verify operation) or actually changed something. */
