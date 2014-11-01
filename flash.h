@@ -255,6 +255,9 @@ int max(int a, int b);
 int min(int a, int b);
 char *strcat_realloc(char *dest, const char *src);
 void tolower_string(char *str);
+#ifdef __MINGW32__
+char* strtok_r(char *str, const char *delim, char **nextp);
+#endif
 
 /* flashrom.c */
 extern const char flashrom_version[];
