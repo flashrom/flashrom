@@ -40,8 +40,6 @@ static char *cb_vendor = NULL, *cb_model = NULL;
  */
 int cb_check_image(uint8_t *image, int size)
 {
-	const char *image_vendor = NULL;
-	const char *image_model = NULL;
 	unsigned int *walk;
 	unsigned int mb_part_offset, mb_vendor_offset;
 	char *mb_part, *mb_vendor;
@@ -83,22 +81,20 @@ int cb_check_image(uint8_t *image, int size)
 
 	msg_pdbg("coreboot last image size (not ROM size) is %d bytes.\n", *walk);
 
-	image_vendor = strdup(mb_vendor);
-	image_model = strdup(mb_part);
-	msg_pdbg("Manufacturer: %s\n", image_vendor);
-	msg_pdbg("Mainboard ID: %s\n", image_model);
+	msg_pdbg("Manufacturer: %s\n", mb_vendor);
+	msg_pdbg("Mainboard ID: %s\n", mb_part);
 
 	/* If these are not set, the coreboot table was not found. */
 	if (!cb_vendor || !cb_model)
 		return 0;
 
 	/* These comparisons are case insensitive to make things a little less user^Werror prone. */
-	if (!strcasecmp(image_vendor, cb_vendor) && !strcasecmp(image_model, cb_model)) {
+	if (!strcasecmp(mb_vendor, cb_vendor) && !strcasecmp(mb_part, cb_model)) {
 		msg_pdbg2("This coreboot image matches this mainboard.\n");
 	} else {
 		msg_perr("This coreboot image (%s:%s) does not appear to\n"
 			 "be correct for the detected mainboard (%s:%s).\n",
-			 image_vendor, image_model, cb_vendor, cb_model);
+			 mb_vendor, mb_part, cb_vendor, cb_model);
 		return -1;
 	}
 
