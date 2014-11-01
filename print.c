@@ -26,27 +26,6 @@
 #include "flash.h"
 #include "programmer.h"
 
-/* FIXME: Find a better solution for MinGW. Maybe wrap strtok_s (C11) below if it becomes available */
-#ifdef __MINGW32__
-static char* strtok_r(char *str, const char *delim, char **nextp)
-{
-	if (str == NULL)
-		str = *nextp;
-
-	str += strspn(str, delim); /* Skip leading delimiters */
-	if (*str == '\0')
-		return NULL;
-
-	char *ret = str;
-	str += strcspn(str, delim); /* Find end of token */
-	if (*str != '\0')
-		*str++ = '\0';
-
-	*nextp = str;
-	return ret;
-}
-#endif
-
 static const char *test_state_to_text(enum test_state test_state)
 {
 	switch (test_state) {
