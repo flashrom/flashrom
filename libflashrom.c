@@ -350,6 +350,7 @@ void nonfatal_help_message(void);
 int fl_image_write(fl_flashctx_t *const flashctx, void *const buffer, const size_t buffer_len)
 {
 	const size_t flash_size = flashctx->chip->total_size * 1024;
+	int read_all_first = 1; /* FIXME: Make this configurable */
 
 	int ret = 0;
 
@@ -370,7 +371,7 @@ int fl_image_write(fl_flashctx_t *const flashctx, void *const buffer, const size
 		goto _free_out;
 	}
 
-	build_new_image(flashctx, oldcontents, newcontents);
+	build_new_image(flashctx, read_all_first, oldcontents, newcontents);
 
 	if (erase_and_write_flash(flashctx, oldcontents, newcontents)) {
 		msg_cerr("Uh oh. Erase/write failed. Checking if anything changed.\n");
@@ -407,6 +408,7 @@ int compare_range(uint8_t *wantbuf, uint8_t *havebuf, unsigned int start, unsign
 int fl_image_verify(fl_flashctx_t *const flashctx, void *const buffer, const size_t buffer_len)
 {
 	const size_t flash_size = flashctx->chip->total_size * 1024;
+	int read_all_first = 1; /* FIXME: Make this configurable */
 
 	int ret = 0;
 
@@ -427,7 +429,7 @@ int fl_image_verify(fl_flashctx_t *const flashctx, void *const buffer, const siz
 		goto _free_out;
 	}
 
-	build_new_image(flashctx, oldcontents, newcontents);
+	build_new_image(flashctx, read_all_first, oldcontents, newcontents);
 
 	msg_cinfo("Verifying flash... ");
 

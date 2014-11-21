@@ -48,6 +48,27 @@ static int num_rom_entries = 0; /* the number of successfully parsed rom_entries
 static char *include_args[MAX_ROMLAYOUT];
 static int num_include_args = 0; /* the number of valid include_args. */
 
+/* FIXME: Find a better solution for MinGW. Maybe wrap strtok_s (C11) below if it becomes available */
+#ifdef __MINGW32__
+static char* strtok_r(char *str, const char *delim, char **nextp)
+{
+	if (str == NULL)
+		str = *nextp;
+
+	str += strspn(str, delim); /* Skip leading delimiters */
+	if (*str == '\0')
+		return NULL;
+
+	char *ret = str;
+	str += strcspn(str, delim); /* Find end of token */
+	if (*str != '\0')
+		*str++ = '\0';
+
+	*nextp = str;
+	return ret;
+}
+#endif
+
 #ifndef __LIBPAYLOAD__
 /* returns the index of the entry (or a negative value if it is not found) */
 static int find_romentry(const char *name)
@@ -144,11 +165,11 @@ static int parse_entry(const char *file_name, unsigned int linecnt, char *buf, r
 		return -1;
 	}
 	bool start_topalign = (tmp_str[0] == '-');
-	if (llabs(tmp_addr) > FL_MAX_CHIPADDR) {
+	if (llabs(tmp_addr) > FL_MAX_CHIPOFF) {
 		msg_gerr("Error parsing version 2 layout entry in file \"%s\" at line %d:\n"
 			 "Start address (%s0x%llx) in \"%s\" is beyond the supported range (max 0x%"
-			 PRIxCHIPADDR ").\n", file_name, linecnt, start_topalign ? "-" : "",
-			 llabs(tmp_addr), buf, FL_MAX_CHIPADDR);
+			 PRIxCHIPOFF ").\n", file_name, linecnt, start_topalign ? "-" : "",
+			 llabs(tmp_addr), buf, FL_MAX_CHIPOFF);
 		return -1;
 	}
 	chipoff_t start = (chipoff_t)llabs(tmp_addr);
@@ -171,11 +192,11 @@ static int parse_entry(const char *file_name, unsigned int linecnt, char *buf, r
 		return -1;
 	}
 	bool end_topalign = (tmp_str[0] == '-');
-	if (llabs(tmp_addr) > FL_MAX_CHIPADDR) {
+	if (llabs(tmp_addr) > FL_MAX_CHIPOFF) {
 		msg_gerr("Error parsing version 2 layout entry in file \"%s\" at line %d:\n"
 			 "End address (%s0x%llx) in \"%s\" is beyond the supported range (max 0x%"
-			 PRIxCHIPADDR ").\n", file_name, linecnt, end_topalign ? "-" : "",
-			 llabs(tmp_addr), buf, FL_MAX_CHIPADDR);
+			 PRIxCHIPOFF ").\n", file_name, linecnt, end_topalign ? "-" : "",
+			 llabs(tmp_addr), buf, FL_MAX_CHIPOFF);
 		return -1;
 	}
 	chipoff_t end = (chipoff_t)llabs(tmp_addr);
@@ -209,7 +230,7 @@ static int parse_entry(const char *file_name, unsigned int linecnt, char *buf, r
 		tmp_str = strtok_r(NULL, ",", &endptr);
 	}
 
-	msg_gdbg2("Parsed entry: 0x%" PRIxCHIPADDR " (%s) : 0x%" PRIxCHIPADDR " (%s) named \"%s\"\n",
+	msg_gdbg2("Parsed entry: 0x%" PRIxCHIPOFF " (%s) : 0x%" PRIxCHIPOFF " (%s) named \"%s\"\n",
 		  start, start_topalign ? "top-aligned" : "bottom-aligned",
 		  end, end_topalign ? "top-aligned" : "bottom-aligned", region_name);
 
@@ -548,7 +569,7 @@ int normalize_romentries(const struct flashctx *flash)
 				cur->end_topalign = 0;
 			}
 
-			msg_gspew("Normalized entry %d \"%s\": 0x%" PRIxCHIPADDR " - 0x%" PRIxCHIPADDR "\n",
+			msg_gspew("Normalized entry %d \"%s\": 0x%" PRIxCHIPOFF " - 0x%" PRIxCHIPOFF "\n",
 				  i, cur->name, cur->start, cur->end);
 		}
 
