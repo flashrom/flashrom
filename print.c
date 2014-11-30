@@ -818,6 +818,7 @@ const struct board_info boards_known[] = {
 	B("GIGABYTE",	"GA-8IRML",		OK, "http://www.gigabyte.com/products/product-page.aspx?pid=1343", NULL),
 	B("GIGABYTE",	"GA-8PE667 Ultra 2",	OK, "http://www.gigabyte.com/products/product-page.aspx?pid=1607", NULL),
 	B("GIGABYTE",	"GA-8S648",		OK, "http://www.gigabyte.com/products/product-page.aspx?pid=1674", NULL),
+	B("GIGABYTE",	"GA-8SIMLFS 2.0",	OK, NULL, "This is an OEM board used by Fujitsu."),
 	B("GIGABYTE",	"GA-8SIMLH",		OK, "http://www.gigabyte.com/products/product-page.aspx?pid=1399", NULL),
 	B("GIGABYTE",	"GA-945PL-S3P (rev. 6.6)", OK, "http://www.gigabyte.com/products/product-page.aspx?pid=2541", NULL),
 	B("GIGABYTE",	"GA-965GM-S2 (rev. 2.0)", OK, "http://www.gigabyte.com/products/product-page.aspx?pid=2617", NULL),
