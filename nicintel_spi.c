@@ -29,6 +29,9 @@
  *
  * Intel 82574 Gigabit Ethernet Controller Family Datasheet
  * http://www.intel.com/content/www/us/en/ethernet-controllers/82574l-gbe-controller-datasheet.html
+ *
+ * Intel 82599 10 GbE Controller Datasheet (331520)
+ * http://www.intel.com/content/dam/www/public/us/en/documents/datasheets/82599-10-gbe-controller-datasheet.pdf
  */
 
 #include <stdlib.h>
@@ -50,7 +53,7 @@
  * Table 13-6
  *
  * Bit 04, 05: FWE (Flash Write Enable Control)
- * 00b = not allowed
+ * 00b = not allowed (on some cards this sends an erase command if bit 31 (FL_ER) of FLA is set)
  * 01b = flash writes disabled
  * 10b = flash writes enabled
  * 11b = not allowed
@@ -79,6 +82,18 @@ const struct dev_entry nics_intel_spi[] = {
 	{PCI_VENDOR_ID_INTEL, 0x107c, OK, "Intel", "82541PI Gigabit Ethernet Controller"},
 	{PCI_VENDOR_ID_INTEL, 0x10b9, OK, "Intel", "82572EI Gigabit Ethernet Controller"},
 	{PCI_VENDOR_ID_INTEL, 0x10d3, OK, "Intel", "82574L Gigabit Ethernet Controller"},
+
+	{PCI_VENDOR_ID_INTEL, 0x10d8, NT, "Intel", "82599 10 Gigabit Unprogrammed Network Controller"},
+	{PCI_VENDOR_ID_INTEL, 0x10f7, NT, "Intel", "82599 10 Gigabit KX4 Dual Port Network Controller"},
+	{PCI_VENDOR_ID_INTEL, 0x10f8, NT, "Intel", "82599 10 Gigabit Dual Port Backplane Controller"},
+	{PCI_VENDOR_ID_INTEL, 0x10f9, NT, "Intel", "82599 10 Gigabit CX4 Dual Port Network Controller"},
+	{PCI_VENDOR_ID_INTEL, 0x10fb, NT, "Intel", "82599 10-Gigabit SFI/SFP+ Network Controller"},
+	{PCI_VENDOR_ID_INTEL, 0x10fc, OK, "Intel", "82599 10 Gigabit XAUI/BX4 Dual Port Network Controller"},
+	{PCI_VENDOR_ID_INTEL, 0x1517, NT, "Intel", "82599 10 Gigabit KR Network Controller"},
+	{PCI_VENDOR_ID_INTEL, 0x151c, NT, "Intel", "82599 10 Gigabit TN Network Controller"},
+	{PCI_VENDOR_ID_INTEL, 0x1529, NT, "Intel", "82599 10 Gigabit Dual Port Network Controller with FCoE"},
+	{PCI_VENDOR_ID_INTEL, 0x152a, NT, "Intel", "82599 10 Gigabit Dual Port Backplane Controller with FCoE"},
+	{PCI_VENDOR_ID_INTEL, 0x1557, NT, "Intel", "82599 10 Gigabit SFI Network Controller"},
 
 	{0},
 };
@@ -183,7 +198,13 @@ int nicintel_spi_init(void)
 	if (!io_base_addr)
 		return 1;
 
-	nicintel_spibar = rphysmap("Intel Gigabit NIC w/ SPI flash", io_base_addr, MEMMAP_SIZE);
+	if (dev->device_id < 0x10d8) {
+		nicintel_spibar = rphysmap("Intel Gigabit NIC w/ SPI flash", io_base_addr,
+					   MEMMAP_SIZE);
+	} else {
+		nicintel_spibar = rphysmap("Intel 10 Gigabit NIC w/ SPI flash", io_base_addr + 0x10000,
+					   MEMMAP_SIZE);
+	}
 	if (nicintel_spibar == ERROR_PTR)
 		return 1;
 
