@@ -91,9 +91,9 @@ static int check_filename(char *filename, char *type)
 
 int main(int argc, char *argv[])
 {
-	/* Probe for up to three flash chips. */
 	const struct flashchip *chip = NULL;
-	struct flashctx flashes[6] = {{0}};
+	/* Probe for up to eight flash chips. */
+	struct flashctx flashes[8] = {{0}};
 	struct flashctx *fill_flash;
 	const char *name;
 	int namelen, opt, i, j;
