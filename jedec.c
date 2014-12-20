@@ -589,11 +589,10 @@ static int regspace2_walk_unlockblocks(const struct flashctx *flash, const struc
 #define REG2_LOCKDOWN (1 << 1)
 #define REG2_MASK (REG2_RWLOCK | REG2_LOCKDOWN)
 
-static int printlock_regspace2_block(const struct flashctx *flash, chipaddr offset)
+static int printlock_regspace2_block(const struct flashctx *flash, chipaddr lockreg)
 {
-	chipaddr wrprotect = flash->virtual_registers + offset + 2;
-	uint8_t state = chip_readb(flash, wrprotect);
-	msg_cdbg("Lock status of block at 0x%0*" PRIxPTR " is ", PRIxPTR_WIDTH, offset);
+	uint8_t state = chip_readb(flash, lockreg);
+	msg_cdbg("Lock status of block at 0x%0*" PRIxPTR " is ", PRIxPTR_WIDTH, lockreg);
 	switch (state & REG2_MASK) {
 	case 0:
 		msg_cdbg("Full Access.\n");
@@ -656,67 +655,81 @@ int printlock_regspace2_block_eraser_1(struct flashctx *flash)
 	return regspace2_walk_unlockblocks(flash, unlockblocks, &printlock_regspace2_block);
 }
 
-static int changelock_regspace2_block(const struct flashctx *flash, chipaddr offset, uint8_t new_bits)
+/* Try to change the lock register at address lockreg from cur to new.
+ *
+ * - Try to unlock the lock bit if requested and it is currently set (although this is probably futile).
+ * - Try to change the read/write bits if requested.
+ * - Try to set the lockdown bit if requested.
+ * Return an error immediately if any of this fails. */
+static int changelock_regspace2_block(const struct flashctx *flash, chipaddr lockreg, uint8_t cur, uint8_t new)
 {
-	chipaddr wrprotect = flash->virtual_registers + offset + 2;
-	uint8_t old;
-
-	if (new_bits & ~REG2_MASK) {
-		msg_cerr("Invalid locking change 0x%02x requested at 0x%0*" PRIxPTR "! "
+	/* Only allow changes to known read/write/lockdown bits */
+	if (((cur ^ new) & ~REG2_MASK) != 0) {
+		msg_cerr("Invalid lock change from 0x%02x to 0x%02x requested at 0x%0*" PRIxPTR "!\n"
 			 "Please report a bug at flashrom@flashrom.org\n",
-			 new_bits, PRIxPTR_WIDTH, offset);
+			 cur, new, PRIxPTR_WIDTH, lockreg);
 		return -1;
 	}
-	old = chip_readb(flash, wrprotect);
-	/* Early exist if no change (of read/write/lockdown) was requested. */
-	if (((old ^ new_bits) & REG2_MASK) == 0) {
-		msg_cdbg2("Locking status at 0x%0*" PRIxPTR " not changed\n", PRIxPTR_WIDTH, offset);
+
+	/* Exit early if no change (of read/write/lockdown bits) was requested. */
+	if (((cur ^ new) & REG2_MASK) == 0) {
+		msg_cdbg2("Lock bits at 0x%0*" PRIxPTR " not changed.\n", PRIxPTR_WIDTH, lockreg);
 		return 0;
 	}
-	/* Normally lockdowns can not be cleared. Try nevertheless if requested. */
-	if ((old & REG2_LOCKDOWN) && !(new_bits & REG2_LOCKDOWN)) {
-		chip_writeb(flash, old & ~REG2_LOCKDOWN, wrprotect);
-		if (chip_readb(flash, wrprotect) != (old & ~REG2_LOCKDOWN)) {
-			msg_cerr("Lockdown can't be removed at 0x%0*" PRIxPTR "!\n", PRIxPTR_WIDTH, offset);
+
+	/* Normally the lockdown bit can not be cleared. Try nevertheless if requested. */
+	if ((cur & REG2_LOCKDOWN) && !(new & REG2_LOCKDOWN)) {
+		chip_writeb(flash, cur & ~REG2_LOCKDOWN, lockreg);
+		cur = chip_readb(flash, lockreg);
+		if ((cur & REG2_LOCKDOWN) == REG2_LOCKDOWN) {
+			msg_cwarn("Lockdown can't be removed at 0x%0*" PRIxPTR "! New value: 0x%02x.\n",
+				  PRIxPTR_WIDTH, lockreg, cur);
 			return -1;
 		}
 	}
-	/* Change read or write lock? */
-	if ((old ^ new_bits) & REG2_RWLOCK) {
+
+	/* Change read and/or write bit */
+	if ((cur ^ new) & REG2_RWLOCK) {
 		/* Do not lockdown yet. */
-		msg_cdbg("Changing locking status at 0x%0*" PRIxPTR " to 0x%02x\n", PRIxPTR_WIDTH, offset, new_bits & REG2_RWLOCK);
-		chip_writeb(flash, new_bits & REG2_RWLOCK, wrprotect);
-		if (chip_readb(flash, wrprotect) != (new_bits & REG2_RWLOCK)) {
-			msg_cerr("Locking status change FAILED at 0x%0*" PRIxPTR "!\n", PRIxPTR_WIDTH, offset);
+		uint8_t wanted = (cur & ~REG2_RWLOCK) | (new & REG2_RWLOCK);
+		chip_writeb(flash, wanted, lockreg);
+		cur = chip_readb(flash, lockreg);
+		if (cur != wanted) {
+			msg_cerr("Changing lock bits failed at 0x%0*" PRIxPTR "! New value: 0x%02x.\n",
+				 PRIxPTR_WIDTH, lockreg, cur);
 			return -1;
 		}
+		msg_cdbg("Changed lock bits at 0x%0*" PRIxPTR " to 0x%02x.\n",
+			 PRIxPTR_WIDTH, lockreg, cur);
 	}
-	/* Enable lockdown if requested. */
-	if (!(old & REG2_LOCKDOWN) && (new_bits & REG2_LOCKDOWN)) {
-		msg_cdbg("Enabling lockdown at 0x%0*" PRIxPTR "\n", PRIxPTR_WIDTH, offset);
-		chip_writeb(flash, new_bits, wrprotect);
-		if (chip_readb(flash, wrprotect) != new_bits) {
-			msg_cerr("Enabling lockdown FAILED at 0x%0*" PRIxPTR "!\n", PRIxPTR_WIDTH, offset);
+
+	/* Eventually, enable lockdown if requested. */
+	if (!(cur & REG2_LOCKDOWN) && (new & REG2_LOCKDOWN)) {
+		chip_writeb(flash, new, lockreg);
+		cur = chip_readb(flash, lockreg);
+		if (cur != new) {
+			msg_cerr("Enabling lockdown FAILED at 0x%0*" PRIxPTR "! New value: 0x%02x.\n",
+				 PRIxPTR_WIDTH, lockreg, cur);
 			return -1;
 		}
+		msg_cdbg("Enabled lockdown at 0x%0*" PRIxPTR ".\n", PRIxPTR_WIDTH, lockreg);
 	}
 
 	return 0;
 }
 
-int unlock_regspace2_block(const struct flashctx *flash, chipaddr off)
+static int unlock_regspace2_block_generic(const struct flashctx *flash, chipaddr lockreg)
 {
-	chipaddr wrprotect = flash->virtual_registers + off + 2;
-	uint8_t old = chip_readb(flash, wrprotect);
+	uint8_t old = chip_readb(flash, lockreg);
 	/* We don't care for the lockdown bit as long as the RW locks are 0 after we're done */
-	return changelock_regspace2_block(flash, off, old & ~REG2_RWLOCK);
+	return changelock_regspace2_block(flash, lockreg, old, old & ~REG2_RWLOCK);
 }
 
 static int unlock_regspace2_uniform(struct flashctx *flash, unsigned long block_size)
 {
 	const unsigned int elems = flash->chip->total_size * 1024 / block_size;
 	struct unlockblock blocks[2] = {{.size = block_size, .count = elems}};
-	return regspace2_walk_unlockblocks(flash, blocks, &unlock_regspace2_block);
+	return regspace2_walk_unlockblocks(flash, blocks, &unlock_regspace2_block_generic);
 }
 
 int unlock_regspace2_uniform_64k(struct flashctx *flash)
@@ -734,7 +747,7 @@ int unlock_regspace2_block_eraser_0(struct flashctx *flash)
 	// FIXME: this depends on the eraseblocks not to be filled up completely (i.e. to be null-terminated).
 	const struct unlockblock *unlockblocks =
 		(const struct unlockblock *)flash->chip->block_erasers[0].eraseblocks;
-	return regspace2_walk_unlockblocks(flash, unlockblocks, &unlock_regspace2_block);
+	return regspace2_walk_unlockblocks(flash, unlockblocks, &unlock_regspace2_block_generic);
 }
 
 int unlock_regspace2_block_eraser_1(struct flashctx *flash)
@@ -742,6 +755,6 @@ int unlock_regspace2_block_eraser_1(struct flashctx *flash)
 	// FIXME: this depends on the eraseblocks not to be filled up completely (i.e. to be null-terminated).
 	const struct unlockblock *unlockblocks =
 		(const struct unlockblock *)flash->chip->block_erasers[1].eraseblocks;
-	return regspace2_walk_unlockblocks(flash, unlockblocks, &unlock_regspace2_block);
+	return regspace2_walk_unlockblocks(flash, unlockblocks, &unlock_regspace2_block_generic);
 }
 
