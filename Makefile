@@ -300,6 +300,11 @@ UNSUPPORTED_FEATURES += CONFIG_LINUX_SPI=yes
 else
 override CONFIG_LINUX_SPI = no
 endif
+ifeq ($(CONFIG_MSTARDDC_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_MSTARDDC_SPI=yes
+else
+override CONFIG_MSTARDDC_SPI = no
+endif
 endif
 
 ###############################################################################
@@ -412,6 +417,9 @@ CONFIG_FT2232_SPI ?= yes
 
 # Always enable Altera USB-Blaster dongles for now.
 CONFIG_USBBLASTER_SPI ?= yes
+
+# MSTAR DDC support needs more tests/reviews/cleanups.
+CONFIG_MSTARDDC_SPI ?= no
 
 # Always enable dummy tracing for now.
 CONFIG_DUMMY ?= yes
@@ -668,6 +676,13 @@ ifeq ($(CONFIG_LINUX_SPI), yes)
 # This is a totally ugly hack.
 FEATURE_CFLAGS += $(shell LC_ALL=C grep -q "LINUX_SPI_SUPPORT := yes" .features && printf "%s" "-D'CONFIG_LINUX_SPI=1'")
 PROGRAMMER_OBJS += linux_spi.o
+endif
+
+ifeq ($(CONFIG_MSTARDDC_SPI), yes)
+# This is a totally ugly hack.
+FEATURE_CFLAGS += $(shell LC_ALL=C grep -q "LINUX_I2C_SUPPORT := yes" .features && printf "%s" "-D'CONFIG_MSTARDDC_SPI=1'")
+NEED_LINUX_I2C := yes
+PROGRAMMER_OBJS += mstarddc_spi.o
 endif
 
 ifeq ($(NEED_SERIAL), yes)
@@ -927,6 +942,19 @@ int main(int argc, char **argv)
 endef
 export LINUX_SPI_TEST
 
+define LINUX_I2C_TEST
+#include <linux/i2c-dev.h>
+#include <linux/i2c.h>
+
+int main(int argc, char **argv)
+{
+	(void) argc;
+	(void) argv;
+	return 0;
+}
+endef
+export LINUX_I2C_TEST
+
 features: compiler
 	@echo "FEATURES := yes" > .features.tmp
 ifeq ($(NEED_FTDI), yes)
@@ -947,6 +975,13 @@ ifeq ($(CONFIG_LINUX_SPI), yes)
 	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) >/dev/null 2>&1 &&	\
 		( echo "yes."; echo "LINUX_SPI_SUPPORT := yes" >> .features.tmp ) ||	\
 		( echo "no."; echo "LINUX_SPI_SUPPORT := no" >> .features.tmp )
+endif
+ifeq ($(NEED_LINUX_I2C), yes)
+	@printf "Checking if Linux I2C headers are present... "
+	@echo "$$LINUX_I2C_TEST" > .featuretest.c
+	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) >/dev/null 2>&1 &&	\
+		( echo "yes."; echo "LINUX_I2C_SUPPORT := yes" >> .features.tmp ) ||	\
+		( echo "no."; echo "LINUX_I2C_SUPPORT := no" >> .features.tmp )
 endif
 	@printf "Checking for utsname support... "
 	@echo "$$UTSNAME_TEST" > .featuretest.c
