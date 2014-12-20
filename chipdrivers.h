@@ -150,7 +150,6 @@ int unlock_regspace2_uniform_32k(struct flashctx *flash);
 int unlock_regspace2_uniform_64k(struct flashctx *flash);
 int unlock_regspace2_block_eraser_0(struct flashctx *flash);
 int unlock_regspace2_block_eraser_1(struct flashctx *flash);
-int unlock_regspace2_block(const struct flashctx *flash, chipaddr off);
 int printlock_regspace2_uniform_64k(struct flashctx *flash);
 int printlock_regspace2_block_eraser_0(struct flashctx *flash);
 int printlock_regspace2_block_eraser_1(struct flashctx *flash);
