@@ -354,6 +354,18 @@ const struct programmer_entry programmer_table[] = {
 	},
 #endif
 
+#if CONFIG_MSTARDDC_SPI == 1
+	{
+		.name			= "mstarddc_spi",
+		.type			= OTHER,
+		.devs.note		= "MSTAR DDC devices addressable via /dev/i2c-* on Linux.\n",
+		.init			= mstarddc_spi_init,
+		.map_flash_region	= fallback_map,
+		.unmap_flash_region	= fallback_unmap,
+		.delay			= internal_delay,
+	},
+#endif
+
 	{0}, /* This entry corresponds to PROGRAMMER_INVALID. */
 };
 
