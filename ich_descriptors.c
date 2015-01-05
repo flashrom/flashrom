@@ -127,27 +127,27 @@ static const char *pprint_density(enum ich_chipset cs, const struct ich_descript
 	case CHIPSET_ICH10:
 	case CHIPSET_5_SERIES_IBEX_PEAK:
 	case CHIPSET_6_SERIES_COUGAR_POINT:
-	case CHIPSET_7_SERIES_PANTHER_POINT: {
+	case CHIPSET_7_SERIES_PANTHER_POINT:
+	case CHIPSET_BAYTRAIL: {
 		uint8_t size_enc;
 		if (idx == 0) {
-			size_enc = desc->component.old.comp1_density;
+			size_enc = desc->component.dens_old.comp1_density;
 		} else {
-			size_enc = desc->component.old.comp2_density;
+			size_enc = desc->component.dens_old.comp2_density;
 		}
 		if (size_enc > 5)
 			return "reserved";
 		return size_str[size_enc];
 	}
 	case CHIPSET_8_SERIES_LYNX_POINT:
-	case CHIPSET_BAYTRAIL:
 	case CHIPSET_8_SERIES_LYNX_POINT_LP:
 	case CHIPSET_8_SERIES_WELLSBURG:
 	case CHIPSET_9_SERIES_WILDCAT_POINT: {
 		uint8_t size_enc;
 		if (idx == 0) {
-			size_enc = desc->component.new.comp1_density;
+			size_enc = desc->component.dens_new.comp1_density;
 		} else {
-			size_enc = desc->component.new.comp2_density;
+			size_enc = desc->component.dens_new.comp2_density;
 		}
 		if (size_enc > 7)
 			return "reserved";
@@ -207,16 +207,16 @@ void prettyprint_ich_descriptor_component(enum ich_chipset cs, const struct ich_
 		msg_pdbg2("Component 2 density:            %s\n", pprint_density(cs, desc, 1));
 	else
 		msg_pdbg2("Component 2 is not used.\n");
-	msg_pdbg2("Read Clock Frequency:           %s\n", pprint_freq(cs, desc->component.common.freq_read));
-	msg_pdbg2("Read ID and Status Clock Freq.: %s\n", pprint_freq(cs, desc->component.common.freq_read_id));
-	msg_pdbg2("Write and Erase Clock Freq.:    %s\n", pprint_freq(cs, desc->component.common.freq_write));
-	msg_pdbg2("Fast Read is %ssupported.\n", desc->component.common.fastread ? "" : "not ");
-	if (desc->component.common.fastread)
+	msg_pdbg2("Read Clock Frequency:           %s\n", pprint_freq(cs, desc->component.modes.freq_read));
+	msg_pdbg2("Read ID and Status Clock Freq.: %s\n", pprint_freq(cs, desc->component.modes.freq_read_id));
+	msg_pdbg2("Write and Erase Clock Freq.:    %s\n", pprint_freq(cs, desc->component.modes.freq_write));
+	msg_pdbg2("Fast Read is %ssupported.\n", desc->component.modes.fastread ? "" : "not ");
+	if (desc->component.modes.fastread)
 		msg_pdbg2("Fast Read Clock Frequency:      %s\n",
-			  pprint_freq(cs, desc->component.common.freq_fastread));
+			  pprint_freq(cs, desc->component.modes.freq_fastread));
 	if (cs > CHIPSET_6_SERIES_COUGAR_POINT)
 		msg_pdbg2("Dual Output Fast Read Support:  %sabled\n",
-			  desc->component.new.dual_output ? "dis" : "en");
+			  desc->component.modes.dual_output ? "dis" : "en");
 	if (desc->component.FLILL == 0)
 		msg_pdbg2("No forbidden opcodes.\n");
 	else {
@@ -816,22 +816,22 @@ int getFCBA_component_density(enum ich_chipset cs, const struct ich_descriptors 
 	case CHIPSET_5_SERIES_IBEX_PEAK:
 	case CHIPSET_6_SERIES_COUGAR_POINT:
 	case CHIPSET_7_SERIES_PANTHER_POINT:
+	case CHIPSET_BAYTRAIL:
 		if (idx == 0) {
-			size_enc = desc->component.old.comp1_density;
+			size_enc = desc->component.dens_old.comp1_density;
 		} else {
-			size_enc = desc->component.old.comp2_density;
+			size_enc = desc->component.dens_old.comp2_density;
 		}
 		size_max = 5;
 		break;
 	case CHIPSET_8_SERIES_LYNX_POINT:
-	case CHIPSET_BAYTRAIL:
 	case CHIPSET_8_SERIES_LYNX_POINT_LP:
 	case CHIPSET_8_SERIES_WELLSBURG:
 	case CHIPSET_9_SERIES_WILDCAT_POINT:
 		if (idx == 0) {
-			size_enc = desc->component.new.comp1_density;
+			size_enc = desc->component.dens_new.comp1_density;
 		} else {
-			size_enc = desc->component.new.comp2_density;
+			size_enc = desc->component.dens_new.comp2_density;
 		}
 		size_max = 7;
 		break;
@@ -842,7 +842,7 @@ int getFCBA_component_density(enum ich_chipset cs, const struct ich_descriptors 
 	}
 
 	if (size_enc > size_max) {
-		msg_perr("Density of ICH SPI component with index %d is invalid."
+		msg_perr("Density of ICH SPI component with index %d is invalid.\n"
 			 "Encoded density is 0x%x while maximum allowed is 0x%x.\n",
 			 idx, size_enc, size_max);
 		return -1;

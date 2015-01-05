@@ -123,23 +123,19 @@ struct ich_desc_component {
 				 freq_fastread	:3,
 				 freq_write	:3,
 				 freq_read_id	:3,
-						:2;
-		} common;
+				 dual_output	:1, /* new since Cougar Point/6 */
+						:1;
+		} modes;
 		struct {
 			uint32_t comp1_density	:3,
 				 comp2_density	:3,
-						:11,
-						:13,
-						:2;
-		} old;
+						:26;
+		} dens_old;
 		struct {
 			uint32_t comp1_density	:4, /* new since Lynx Point/8 */
 				 comp2_density	:4,
-						:9,
-						:13,
-				 dual_output	:1, /* new since Cougar Point/6 */
-						:1;
-		} new;
+						:24;
+		} dens_new;
 	};
 	union {			/* 0x04 */
 		uint32_t FLILL; /* Flash Invalid Instructions Register */
