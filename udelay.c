@@ -172,7 +172,7 @@ recalibrate:
 /* Not very precise sleep. */
 void internal_sleep(unsigned int usecs)
 {
-#ifdef _WIN32
+#if IS_WINDOWS
 	Sleep((usecs + 999) / 1000);
 #else
 	sleep(usecs / 1000000);

@@ -19,8 +19,10 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#include "platform.h"
+
 #include <stdio.h>
-#ifndef _WIN32 /* stuff (presumably) needed for sockets only */
+#if ! IS_WINDOWS /* stuff (presumably) needed for sockets only */
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -30,7 +32,7 @@
 #include <netinet/tcp.h>
 #include <netdb.h>
 #endif
-#ifdef _WIN32
+#if IS_WINDOWS
 #include <conio.h>
 #else
 #include <termios.h>
@@ -83,7 +85,7 @@ static int sp_opbuf_usage = 0;
 	whether the command is supported before doing it */
 static int sp_check_avail_automatic = 0;
 
-#ifndef WIN32
+#if ! IS_WINDOWS
 static int sp_opensocket(char *ip, unsigned int port)
 {
 	int flag = 1;
@@ -375,7 +377,7 @@ int serprog_init(void)
 	}
 	free(device);
 
-#ifndef _WIN32
+#if !IS_WINDOWS
 	device = extract_programmer_param("ip");
 	if (have_device && device) {
 		msg_perr("Error: Both host and device specified.\n"

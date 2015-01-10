@@ -160,14 +160,14 @@ enum chipbustype internal_buses_supported = BUS_NONE;
 
 int internal_init(void)
 {
-#if __FLASHROM_LITTLE_ENDIAN__
+#if defined __FLASHROM_LITTLE_ENDIAN__
 	int ret = 0;
 #endif
 	int force_laptop = 0;
 	int not_a_laptop = 0;
 	const char *board_vendor = NULL;
 	const char *board_model = NULL;
-#if defined (__i386__) || defined (__x86_64__) || defined (__arm__)
+#if IS_X86 || IS_ARM
 	const char *cb_vendor = NULL;
 	const char *cb_model = NULL;
 #endif
@@ -249,7 +249,7 @@ int internal_init(void)
 		return 1;
 	}
 
-#if defined(__i386__) || defined(__x86_64__) || defined (__arm__)
+#if IS_X86 || IS_ARM
 	if ((cb_parse_table(&cb_vendor, &cb_model) == 0) && (board_vendor != NULL) && (board_model != NULL)) {
 		if (strcasecmp(board_vendor, cb_vendor) || strcasecmp(board_model, cb_model)) {
 			msg_pwarn("Warning: The mainboard IDs set by -p internal:mainboard (%s:%s) do not\n"
@@ -262,7 +262,7 @@ int internal_init(void)
 	}
 #endif
 
-#if defined(__i386__) || defined(__x86_64__)
+#if IS_X86
 	dmi_init();
 
 	/* In case Super I/O probing would cause pretty explosions. */
@@ -312,7 +312,7 @@ int internal_init(void)
 		}
 	}
 
-#if __FLASHROM_LITTLE_ENDIAN__
+#ifdef __FLASHROM_LITTLE_ENDIAN__
 	/* try to enable it. Failure IS an option, since not all motherboards
 	 * really need this to be done, etc., etc.
 	 */
@@ -323,18 +323,18 @@ int internal_init(void)
 	} else if (ret == ERROR_FATAL)
 		return ret;
 
-#if defined(__i386__) || defined(__x86_64__)
+#if IS_X86
 	/* Probe unconditionally for ITE Super I/O chips. This enables LPC->SPI translation on IT87* and
 	 * parallel writes on IT8705F. Also, this handles the manual chip select for Gigabyte's DualBIOS. */
 	init_superio_ite();
-#endif
 
 	if (board_flash_enable(board_vendor, board_model, cb_vendor, cb_model)) {
 		msg_perr("Aborting to be safe.\n");
 		return 1;
 	}
+#endif
 
-#if defined(__i386__) || defined(__x86_64__) || defined (__mips)
+#if IS_X86 || IS_MIPS
 	register_par_master(&par_master_internal, internal_buses_supported);
 	return 0;
 #else

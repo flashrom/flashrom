@@ -316,7 +316,7 @@ endif
 # IMPORTANT: The following line must be placed before ARCH is ever used
 # (of course), but should come after any lines setting CC because the line
 # below uses CC itself.
-override ARCH := $(strip $(shell LC_ALL=C $(CC) $(CPPFLAGS) -E arch.h 2>/dev/null | grep -v '^\#' | grep '"' | cut -f 2 -d'"'))
+override ARCH := $(strip $(shell LC_ALL=C $(CC) $(CPPFLAGS) -E archtest.c 2>/dev/null | grep -v '^\#' | grep '"' | cut -f 2 -d'"'))
 
 # PCI port I/O support is unimplemented on PPC/MIPS and unavailable on ARM.
 # Right now this means the drivers below only work on x86.

@@ -1661,7 +1661,7 @@ void list_programmers_linebreak(int startcol, int cols, int paren)
 
 void print_sysinfo(void)
 {
-#ifdef _WIN32
+#if IS_WINDOWS
 	SYSTEM_INFO si;
 	OSVERSIONINFOEX osvi;
 

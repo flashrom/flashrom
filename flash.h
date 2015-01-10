@@ -24,12 +24,14 @@
 #ifndef __FLASH_H__
 #define __FLASH_H__ 1
 
+#include "platform.h"
+
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
-#ifdef _WIN32
+#if IS_WINDOWS
 #include <windows.h>
 #undef min
 #undef max

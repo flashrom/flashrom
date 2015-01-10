@@ -21,6 +21,8 @@
  * Header file for OS checking.
  */
 
+#include "platform.h"
+
 // Solaris
 #if defined (__sun) && (defined(__i386) || defined(__amd64))
 #define __FLASHROM_OS__ "SunOS"
