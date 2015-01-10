@@ -111,8 +111,8 @@ LDFLAGS += -L/usr/pkg/lib
 endif
 
 ifeq ($(TARGET_OS), DragonFlyBSD)
-CPPFLAGS += -I/usr/pkg/include
-LDFLAGS += -L/usr/pkg/lib
+CPPFLAGS += -I/usr/local/include
+LDFLAGS += -L/usr/local/lib
 endif
 
 ifeq ($(TARGET_OS), DOS)
@@ -815,7 +815,7 @@ endif
 define LIBPCI_TEST
 /* Avoid a failing test due to libpci header symbol shadowing breakage */
 #define index shadow_workaround_index
-#if !defined __NetBSD__ && !defined __DragonFly__
+#if !defined __NetBSD__
 #include <pci/pci.h>
 #else
 #include <pciutils/pci.h>
