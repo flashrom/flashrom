@@ -7280,6 +7280,7 @@ const struct flashchip flashchips[] = {
 	},
 
 	{
+		.vendor		= "Macronix",
 		.name		= "MX25L6495F",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
