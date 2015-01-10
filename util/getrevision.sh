@@ -215,6 +215,10 @@ upstream_revision() {
 	echo "${r}"
 }
 
+is_tracked() {
+	is_file_tracked "$1"
+}
+
 show_help() {
 	echo "Usage:
 	${0} <command> [path]
@@ -222,6 +226,8 @@ show_help() {
 Commands
     -h or --help
         this message
+    -c or --check
+        test if path is under version control at all
     -l or --local
         local revision information including an indicator for uncommitted changes
     -u or --upstream
@@ -273,6 +279,10 @@ main() {
 		-t|--timestamp)
 			check_action $1
 			action="timestamp +%Y-%m-%dT%H:%M:%SZ" # There is only one valid time format! ISO 8601
+			shift;;
+		-c|--check)
+			check_action=$1
+			action="is_tracked"
 			shift;;
 		-*)
 			show_help;
