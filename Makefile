@@ -29,7 +29,6 @@ PROGRAM = flashrom
 #
 # Note for anyone editing this Makefile: gnumake will happily ignore any
 # changes in this Makefile to variables set on the command line.
-CC      ?= gcc
 STRIP   ?= strip
 INSTALL = install
 DIFF    = diff
@@ -37,7 +36,6 @@ PREFIX  ?= /usr/local
 MANDIR  ?= $(PREFIX)/share/man
 CFLAGS  ?= -Os -Wall -Wshadow
 EXPORTDIR ?= .
-AR      ?= ar
 RANLIB  ?= ranlib
 LIBS_BASE ?= ..
 
