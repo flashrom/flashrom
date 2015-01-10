@@ -68,7 +68,7 @@ To compile on Linux, use:
 
  make
 
-To compile on FreeBSD, use:
+To compile on FreeBSD, OpenBSD or DragonFly BSD, use:
 
  gmake
 
@@ -80,11 +80,7 @@ To compile on Solaris, use:
 
  gmake LDFLAGS="-L$pathtolibpci" CC="gcc -I$pathtopciheaders" CFLAGS=-O2
 
-To compile on NetBSD or DragonFly BSD (with pciutils, libftdi, libusb installed in /usr/pkg/), use:
-
- gmake
-
-To compile on OpenBSD, use:
+To compile on NetBSD (with pciutils, libftdi, libusb installed in /usr/pkg/), use:
 
  gmake
 

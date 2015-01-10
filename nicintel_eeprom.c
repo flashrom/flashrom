@@ -57,7 +57,7 @@
 #define EERD_DATA 16
 
 #define BIT(x) (1<<x)
-#define PAGE_MASK 0x3f
+#define EE_PAGE_MASK 0x3f
 
 static uint8_t *nicintel_eebar;
 static struct pci_dev *nicintel_pci;
@@ -94,11 +94,11 @@ static int nicintel_ee_probe(struct flashctx *flash)
 		}
 	}
 
-	flash->chip->page_size = PAGE_MASK + 1;
+	flash->chip->page_size = EE_PAGE_MASK + 1;
 	flash->chip->tested = TEST_OK_PREW;
 	flash->chip->gran = write_gran_1byte_implicit_erase;
-	flash->chip->block_erasers->eraseblocks[0].size = (PAGE_MASK + 1);
-	flash->chip->block_erasers->eraseblocks[0].count = (flash->chip->total_size * 1024) / (PAGE_MASK + 1);
+	flash->chip->block_erasers->eraseblocks[0].size = (EE_PAGE_MASK + 1);
+	flash->chip->block_erasers->eraseblocks[0].count = (flash->chip->total_size * 1024) / (EE_PAGE_MASK + 1);
 
 	return 1;
 }
@@ -249,7 +249,7 @@ static int nicintel_ee_write(struct flashctx *flash, const uint8_t *buf, unsigne
 			nicintel_ee_bitbang((buf) ? *buf++ : 0xff, NULL);
 			len--;
 			addr++;
-			if (!(addr & PAGE_MASK))
+			if (!(addr & EE_PAGE_MASK))
 				break;
 		}
 		nicintel_ee_bitset(EEC, EE_CS, 1);
