@@ -39,7 +39,8 @@ CFLAGS  ?= -Os -Wall -Wshadow
 EXPORTDIR ?= .
 AR      ?= ar
 RANLIB  ?= ranlib
-DOSLIBS_BASE ?= ..
+LIBS_BASE ?= ..
+
 # The following parameter changes the default programmer that will be used if there is no -p/--programmer
 # argument given when running flashrom. The predefined setting does not enable any default so that every
 # user has to declare the programmer he wants to use on every run. The rationale for this to be not set
@@ -65,6 +66,9 @@ WARNERROR ?= yes
 ifeq ($(WARNERROR), yes)
 CFLAGS += -Werror
 endif
+
+CPPFLAGS += -I$(LIBS_BASE)/include
+LDFLAGS += -L$(LIBS_BASE)/lib
 
 ###############################################################################
 # General OS-specific settings.
@@ -115,12 +119,9 @@ endif
 
 ifeq ($(TARGET_OS), DOS)
 EXEC_SUFFIX := .exe
-CPPFLAGS += -I$(DOSLIBS_BASE)/libgetopt
 # DJGPP has odd uint*_t definitions which cause lots of format string warnings.
 CFLAGS += -Wno-format
-# FIXME Check if we can achieve the same effect with -L../libgetopt -lgetopt
 LIBS += -lgetopt
-LDFLAGS += -L$(DOSLIBS_BASE)/libgetopt/
 # Bus Pirate, Serprog and PonyProg are not supported under DOS (missing serial support).
 ifeq ($(CONFIG_BUSPIRATE_SPI), yes)
 UNSUPPORTED_FEATURES += CONFIG_BUSPIRATE_SPI=yes
@@ -710,12 +711,9 @@ PCILIBS += -lpciutils -lpci
 # For (i386|x86_64)_iopl(2).
 PCILIBS += -l$(shell uname -p)
 else
-ifeq ($(TARGET_OS), DOS)
-CPPFLAGS += -I$(DOSLIBS_BASE)/libpci/include
-LDFLAGS += -L$(DOSLIBS_BASE)/libpci/lib/
+
 PCILIBS += -lpci
-else
-PCILIBS += -lpci
+
 ifeq ($(TARGET_OS), OpenBSD)
 # For (i386|amd64)_iopl(2).
 PCILIBS += -l$(shell uname -m)
@@ -723,8 +721,6 @@ else
 ifeq ($(TARGET_OS), Darwin)
 # DirectHW framework can be found in the DirectHW library.
 PCILIBS += -framework IOKit -framework DirectHW
-else
-endif
 endif
 endif
 endif

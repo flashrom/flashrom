@@ -106,9 +106,9 @@ To cross-compile on Linux for DOS:
 
  You will need the following library source trees containing their compiled
  static libraries either in the parent directory of the flashrom source or
- specify the base folder on compile time with the DOSLIBS_BASE parameter.
+ specify the base folder on compile time with the LIBS_BASE parameter.
  The default as described above is equal to calling
-   'make djgpp-dos DOSLIBS_BASE=..'
+   'make djgpp-dos LIBS_BASE=..'
 
  To get and build said libraries...
  Download pciutils 3.1.5 and apply http://flashrom.org/File:Pciutils.patch.gz
