@@ -19,6 +19,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#include "platform.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -28,7 +30,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <inttypes.h>
-#ifdef _WIN32
+#if IS_WINDOWS
 #include <conio.h>
 #else
 #include <termios.h>
@@ -41,7 +43,7 @@
 
 fdtype sp_fd = SER_INV_FD;
 
-#ifdef _WIN32
+#if IS_WINDOWS
 struct baudentry {
 	DWORD flag;
 	unsigned int baud;
@@ -137,7 +139,7 @@ const struct baudentry *round_baud(unsigned int baud)
 static void msg_perr_strerror(const char *msg)
 {
 	msg_perr("Error: %s", msg);
-#ifdef _WIN32
+#if IS_WINDOWS
 	char *lpMsgBuf;
 	DWORD nErr = GetLastError();
 	FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, nErr,
@@ -159,7 +161,7 @@ int serialport_config(fdtype fd, unsigned int baud)
 		return 1;
 	}
 
-#ifdef _WIN32
+#if IS_WINDOWS
 	DCB dcb;
 	if (!GetCommState(fd, &dcb)) {
 		msg_perr_strerror("Could not fetch original serial port configuration: ");
@@ -224,7 +226,7 @@ int serialport_config(fdtype fd, unsigned int baud)
 fdtype sp_openserport(char *dev, unsigned int baud)
 {
 	fdtype fd;
-#ifdef _WIN32
+#if IS_WINDOWS
 	char *dev2 = dev;
 	if ((strlen(dev) > 3) &&
 	    (tolower((unsigned char)dev[0]) == 'c') &&
@@ -266,7 +268,7 @@ fdtype sp_openserport(char *dev, unsigned int baud)
 }
 
 void sp_set_pin(enum SP_PIN pin, int val) {
-#ifdef _WIN32
+#if IS_WINDOWS
 	DWORD ctl;
 
 	if(pin == PIN_TXD) {
@@ -302,7 +304,7 @@ void sp_set_pin(enum SP_PIN pin, int val) {
 
 int sp_get_pin(enum SP_PIN pin) {
 	int s;
-#ifdef _WIN32
+#if IS_WINDOWS
 	DWORD ctl;
 
 	s = (pin == PIN_CTS) ? MS_CTS_ON : MS_DSR_ON;
@@ -319,7 +321,7 @@ int sp_get_pin(enum SP_PIN pin) {
 
 void sp_flush_incoming(void)
 {
-#ifdef _WIN32
+#if IS_WINDOWS
 	PurgeComm(sp_fd, PURGE_RXCLEAR);
 #else
 	/* FIXME: error handling */
@@ -330,7 +332,7 @@ void sp_flush_incoming(void)
 
 int serialport_shutdown(void *data)
 {
-#ifdef _WIN32
+#if IS_WINDOWS
 	CloseHandle(sp_fd);
 #else
 	close(sp_fd);
@@ -340,7 +342,7 @@ int serialport_shutdown(void *data)
 
 int serialport_write(const unsigned char *buf, unsigned int writecnt)
 {
-#ifdef _WIN32
+#if IS_WINDOWS
 	DWORD tmp = 0;
 #else
 	ssize_t tmp = 0;
@@ -348,7 +350,7 @@ int serialport_write(const unsigned char *buf, unsigned int writecnt)
 	unsigned int empty_writes = 250; /* results in a ca. 125ms timeout */
 
 	while (writecnt > 0) {
-#ifdef _WIN32
+#if IS_WINDOWS
 		WriteFile(sp_fd, buf, writecnt, &tmp, NULL);
 #else
 		tmp = write(sp_fd, buf, writecnt);
@@ -375,14 +377,14 @@ int serialport_write(const unsigned char *buf, unsigned int writecnt)
 
 int serialport_read(unsigned char *buf, unsigned int readcnt)
 {
-#ifdef _WIN32
+#if IS_WINDOWS
 	DWORD tmp = 0;
 #else
 	ssize_t tmp = 0;
 #endif
 
 	while (readcnt > 0) {
-#ifdef _WIN32
+#if IS_WINDOWS
 		ReadFile(sp_fd, buf, readcnt, &tmp, NULL);
 #else
 		tmp = read(sp_fd, buf, readcnt);
@@ -407,7 +409,7 @@ int serialport_read_nonblock(unsigned char *c, unsigned int readcnt, unsigned in
 {
 	int ret = 1;
 	/* disable blocked i/o and declare platform-specific variables */
-#ifdef _WIN32
+#if IS_WINDOWS
 	DWORD rv;
 	COMMTIMEOUTS oldTimeout;
 	COMMTIMEOUTS newTimeout = {
@@ -442,7 +444,7 @@ int serialport_read_nonblock(unsigned char *c, unsigned int readcnt, unsigned in
 	int rd_bytes = 0;
 	for (i = 0; i < timeout; i++) {
 		msg_pspew("readcnt %d rd_bytes %d\n", readcnt, rd_bytes);
-#ifdef _WIN32
+#if IS_WINDOWS
 		ReadFile(sp_fd, c + rd_bytes, readcnt - rd_bytes, &rv, NULL);
 		msg_pspew("read %lu bytes\n", rv);
 #else
@@ -466,7 +468,7 @@ int serialport_read_nonblock(unsigned char *c, unsigned int readcnt, unsigned in
 		*really_read = rd_bytes;
 
 	/* restore original blocking behavior */
-#ifdef _WIN32
+#if IS_WINDOWS
 	if (!SetCommTimeouts(sp_fd, &oldTimeout)) {
 		msg_perr_strerror("Could not restore serial port timeout settings: ");
 		ret = -1;
@@ -487,7 +489,7 @@ int serialport_write_nonblock(const unsigned char *buf, unsigned int writecnt, u
 {
 	int ret = 1;
 	/* disable blocked i/o and declare platform-specific variables */
-#ifdef _WIN32
+#if IS_WINDOWS
 	DWORD rv;
 	COMMTIMEOUTS oldTimeout;
 	COMMTIMEOUTS newTimeout = {
@@ -522,7 +524,7 @@ int serialport_write_nonblock(const unsigned char *buf, unsigned int writecnt, u
 	int wr_bytes = 0;
 	for (i = 0; i < timeout; i++) {
 		msg_pspew("writecnt %d wr_bytes %d\n", writecnt, wr_bytes);
-#ifdef _WIN32
+#if IS_WINDOWS
 		WriteFile(sp_fd, buf + wr_bytes, writecnt - wr_bytes, &rv, NULL);
 		msg_pspew("wrote %lu bytes\n", rv);
 #else
@@ -548,7 +550,7 @@ int serialport_write_nonblock(const unsigned char *buf, unsigned int writecnt, u
 		*really_wrote = wr_bytes;
 
 	/* restore original blocking behavior */
-#ifdef _WIN32
+#if IS_WINDOWS
 	if (!SetCommTimeouts(sp_fd, &oldTimeout)) {
 		msg_perr_strerror("Could not restore serial port timeout settings: ");
 		return -1;

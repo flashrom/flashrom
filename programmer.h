@@ -700,7 +700,7 @@ void serprog_delay(unsigned int usecs);
 #endif
 
 /* serial.c */
-#ifdef _WIN32
+#if IS_WINDOWS
 typedef HANDLE fdtype;
 #define SER_INV_FD	INVALID_HANDLE_VALUE
 #else
