@@ -2524,20 +2524,24 @@ int board_parse_parameter(const char *boardstring, const char **vendor, const ch
 
 /*
  * Match boards on vendor and model name.
- * Hint: the parameters can come either from the coreboot table or the command line (i.e. the user).
+ * The string parameters can come either from the coreboot table or the command line (i.e. the user).
+ * The boolean needs to be set accordingly to compare them to the right entries of the board enables table.
  * Require main PCI IDs to match too as extra safety.
- * vendor and model must be non-NULL!
+ * Parameters vendor and model must be non-NULL!
  */
-static const struct board_match *board_match_name(const char *vendor, const char *model)
+static const struct board_match *board_match_name(const char *vendor, const char *model, bool cb)
 {
 	const struct board_match *board = board_matches;
 	const struct board_match *partmatch = NULL;
 
 	for (; board->vendor_name; board++) {
-		if (!board->lb_vendor || strcasecmp(board->lb_vendor, vendor))
+		const char *cur_vendor = cb ? board->lb_vendor : board->vendor_name;
+		const char *cur_model = cb ? board->lb_part : board->board_name;
+
+		if (!cur_vendor || strcasecmp(cur_vendor, vendor))
 			continue;
 
-		if (!board->lb_part || strcasecmp(board->lb_part, model))
+		if (!cur_model || strcasecmp(cur_model, model))
 			continue;
 
 		if (!pci_dev_find(board->first_vendor, board->first_device)) {
@@ -2680,7 +2684,7 @@ int board_flash_enable(const char *vendor, const char *model, const char *cb_ven
 	int ret = 0;
 
 	if (vendor != NULL  && model != NULL) {
-		board = board_match_name(vendor, model);
+		board = board_match_name(vendor, model, false);
 		if (!board) { /* If a board was given by the user it has to match, else we abort here. */
 			msg_perr("No suitable board enable found for vendor=\"%s\", model=\"%s\".\n",
 				 vendor, model);
@@ -2688,7 +2692,7 @@ int board_flash_enable(const char *vendor, const char *model, const char *cb_ven
 		}
 	}
 	if (board == NULL && cb_vendor != NULL && cb_model != NULL) {
-		board = board_match_name(cb_vendor, cb_model);
+		board = board_match_name(cb_vendor, cb_model, true);
 		if (!board) { /* Failure is an option here, because many cb boards don't require an enable. */
 			msg_pdbg2("No board enable found matching coreboot IDs vendor=\"%s\", model=\"%s\".\n",
 				  cb_vendor, cb_model);
