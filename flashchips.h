@@ -237,28 +237,36 @@
  */
 #define EON_ID			0x7F1C	/* EON Silicon Devices */
 #define EON_ID_NOPREFIX		0x1C	/* EON, missing 0x7F prefix */
-#define EON_EN25B05		0x2010	/* Same as P05, 2^19 kbit or 2^16 kByte */
+#define EON_EN25B05		0x2010	/* Same as EN25P05, can be distinguished by RES/REMS: */
+#define EON_EN25P05		0x05
 #define EON_EN25B05T		0x25
 #define EON_EN25B05B		0x95
-#define EON_EN25B10		0x2011	/* Same as P10 */
+#define EON_EN25B10		0x2011	/* Same as EN25P10, can be distinguished by RES/REMS: */
+#define EON_EN25P10		0x10
 #define EON_EN25B10T		0x40
 #define EON_EN25B10B		0x30
-#define EON_EN25B20		0x2012	/* Same as P20 */
+#define EON_EN25B20		0x2012	/* Same as EN25P20, can be distinguished by RES/REMS: */
+#define EON_EN25P20		0x11
 #define EON_EN25B20T		0x41
 #define EON_EN25B20B		0x31
-#define EON_EN25B40		0x2013	/* Same as P40 */
+#define EON_EN25B40		0x2013	/* Same as EN25P40, can be distinguished by RES/REMS: */
+#define EON_EN25P40		0x12
 #define EON_EN25B40T		0x42
 #define EON_EN25B40B		0x32
-#define EON_EN25B80		0x2014	/* Same as P80 */
+#define EON_EN25B80		0x2014	/* Same as EN25P80, can be distinguished by RES/REMS: */
+#define EON_EN25P80		0x13
 #define EON_EN25B80T		0x43
 #define EON_EN25B80B		0x33
-#define EON_EN25B16		0x2015	/* Same as P16 */
+#define EON_EN25B16		0x2015	/* Same as EN25P16, can be distinguished by RES/REMS: */
+#define EON_EN25P16		0x14
 #define EON_EN25B16T		0x44
 #define EON_EN25B16B		0x34
-#define EON_EN25B32		0x2016	/* Same as P32 */
+#define EON_EN25B32		0x2016	/* Same as EN25P32, can be distinguished by RES/REMS: */
+#define EON_EN25P32		0x15
 #define EON_EN25B32T		0x45
 #define EON_EN25B32B		0x35
-#define EON_EN25B64		0x2017	/* Same as P64 */
+#define EON_EN25B64		0x2017	/* Same as EN25P64, can be distinguished by RES/REMS: */
+#define EON_EN25P64		0x16
 #define EON_EN25B64T		0x46
 #define EON_EN25B64B		0x36
 #define EON_EN25F05		0x3110
