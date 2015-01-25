@@ -103,7 +103,7 @@ static int nicintel_ee_probe(struct flashctx *flash)
 	return 1;
 }
 
-static int nicintel_ee_read_word(unsigned int addr, uint16_t *word)
+static int nicintel_ee_read_word(unsigned int addr, uint16_t *data)
 {
 	uint32_t tmp = BIT(EERD_START) | (addr << EERD_ADDR);
 	pci_mmio_writel(tmp, nicintel_eebar + EERD);
@@ -113,7 +113,7 @@ static int nicintel_ee_read_word(unsigned int addr, uint16_t *word)
 	for (i = 0; i < 10000000; i++) {
 		tmp = pci_mmio_readl(nicintel_eebar + EERD);
 		if (tmp & BIT(EERD_DONE)) {
-			*word = (tmp >> EERD_DATA) & 0xffff;
+			*data = (tmp >> EERD_DATA) & 0xffff;
 			return 0;
 		}
 	}
@@ -123,26 +123,26 @@ static int nicintel_ee_read_word(unsigned int addr, uint16_t *word)
 
 static int nicintel_ee_read(struct flashctx *flash, uint8_t *buf, unsigned int addr, unsigned int len)
 {
-	uint16_t word;
+	uint16_t data;
 
 	/* The NIC interface always reads 16 b words so we need to convert the address and handle odd address
 	 * explicitly at the start (and also at the end in the loop below). */
 	if (addr & 1) {
-		if (nicintel_ee_read_word(addr / 2, &word))
+		if (nicintel_ee_read_word(addr / 2, &data))
 			return -1;
-		*buf++ = word & 0xff;
+		*buf++ = data & 0xff;
 		addr++;
 		len--;
 	}
 
 	while (len > 0) {
-		if (nicintel_ee_read_word(addr / 2, &word))
+		if (nicintel_ee_read_word(addr / 2, &data))
 			return -1;
-		*buf++ = word & 0xff;
+		*buf++ = data & 0xff;
 		addr++;
 		len--;
 		if (len > 0) {
-			*buf++ = (word >> 8) & 0xff;
+			*buf++ = (data >> 8) & 0xff;
 			addr++;
 			len--;
 		}
