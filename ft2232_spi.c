@@ -360,7 +360,7 @@ int ft2232_spi_init(void)
 
 	if (clock_5x) {
 		msg_pdbg("Disable divide-by-5 front stage\n");
-		buf[0] = DIS_DIV_5;
+		buf[0] = 0x8a; /* Disable divide-by-5. DIS_DIV_5 in newer libftdi */
 		if (send_buf(ftdic, buf, 1)) {
 			ret = -5;
 			goto ftdi_err;
