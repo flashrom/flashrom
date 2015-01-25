@@ -382,7 +382,9 @@ SVNDEF := -D'FLASHROM_VERSION="$(VERSION)"'
 
 # Inform user if there is no meaningful version string. If there is version information from a VCS print
 # something anyway because $(info...) will print a line break in any case which would look suspicious.
-$(info $(shell ./util/getrevision.sh -c 2>/dev/null || echo "Files don't seem to be under version control." ; \
+# The && between the echos is a workaround for old versions of GNU make that issue the error "unterminated
+# variable reference" if a semicolon is used instead.
+$(info $(shell ./util/getrevision.sh -c 2>/dev/null || echo "Files don't seem to be under version control." && \
 	echo "Replacing all version templates with $(VERSION)." ))
 
 ###############################################################################
