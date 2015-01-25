@@ -80,13 +80,16 @@ const struct dev_entry devs_ft2232spi[] = {
 #define BITMODE_BITBANG_NORMAL	1
 #define BITMODE_BITBANG_SPI	2
 
-/* Set data bits low-byte command:
+/* The variables cs_bits and pindir store the values for the "set data bits low byte" MPSSE command that
+ * sets the initial state and the direction of the I/O pins. The pin offsets are as follows:
+ * SCK is bit 0.
+ * DO  is bit 1.
+ * DI  is bit 2.
+ * CS  is bit 3.
+ *
+ * The default values (set below) are used for most devices:
  *  value: 0x08  CS=high, DI=low, DO=low, SK=low
  *    dir: 0x0b  CS=output, DI=input, DO=output, SK=output
- *
- * JTAGkey(2) needs to enable its output via Bit4 / GPIOL0
- *  value: 0x18  OE=high, CS=high, DI=low, DO=low, SK=low
- *    dir: 0x1b  OE=output, CS=output, DI=input, DO=output, SK=output
  */
 static uint8_t cs_bits = 0x08;
 static uint8_t pindir = 0x0b;
@@ -200,6 +203,9 @@ int ft2232_spi_init(void)
 		} else if (!strcasecmp(arg, "jtagkey")) {
 			ft2232_type = AMONTEC_JTAGKEY_PID;
 			channel_count = 2;
+			/* JTAGkey(2) needs to enable its output via Bit4 / GPIOL0
+			*  value: 0x18  OE=high, CS=high, DI=low, DO=low, SK=low
+			*    dir: 0x1b  OE=output, CS=output, DI=input, DO=output, SK=output */
 			cs_bits = 0x18;
 			pindir = 0x1b;
 		} else if (!strcasecmp(arg, "picotap")) {
@@ -228,6 +234,9 @@ int ft2232_spi_init(void)
 			ft2232_vid = OLIMEX_VID;
 			ft2232_type = OLIMEX_ARM_OCD_PID;
 			channel_count = 2;
+			/* arm-usb-ocd(-h) has an output buffer that needs to be enabled by pulling ADBUS4 low.
+			*  value: 0x08  #OE=low, CS=high, DI=low, DO=low, SK=low
+			*    dir: 0x1b  #OE=output, CS=output, DI=input, DO=output, SK=output */
 			cs_bits = 0x08;
 			pindir = 0x1b;
 		} else if (!strcasecmp(arg, "arm-usb-tiny")) {
@@ -238,6 +247,7 @@ int ft2232_spi_init(void)
 			ft2232_vid = OLIMEX_VID;
 			ft2232_type = OLIMEX_ARM_OCD_H_PID;
 			channel_count = 2;
+			/* See arm-usb-ocd */
 			cs_bits = 0x08;
 			pindir = 0x1b;
 		} else if (!strcasecmp(arg, "arm-usb-tiny-h")) {
@@ -350,7 +360,7 @@ int ft2232_spi_init(void)
 
 	if (clock_5x) {
 		msg_pdbg("Disable divide-by-5 front stage\n");
-		buf[0] = 0x8a;		/* Disable divide-by-5. */
+		buf[0] = DIS_DIV_5;
 		if (send_buf(ftdic, buf, 1)) {
 			ret = -5;
 			goto ftdi_err;
@@ -361,7 +371,7 @@ int ft2232_spi_init(void)
 	}
 
 	msg_pdbg("Set clock divisor\n");
-	buf[0] = 0x86;		/* command "set divisor" */
+	buf[0] = TCK_DIVISOR;
 	buf[1] = (divisor / 2 - 1) & 0xff;
 	buf[2] = ((divisor / 2 - 1) >> 8) & 0xff;
 	if (send_buf(ftdic, buf, 3)) {
@@ -374,7 +384,7 @@ int ft2232_spi_init(void)
 
 	/* Disconnect TDI/DO to TDO/DI for loopback. */
 	msg_pdbg("No loopback of TDI/DO TDO/DI\n");
-	buf[0] = 0x85;
+	buf[0] = LOOPBACK_END;
 	if (send_buf(ftdic, buf, 1)) {
 		ret = -7;
 		goto ftdi_err;
@@ -441,7 +451,7 @@ static int ft2232_spi_send_command(struct flashctx *flash,
 	buf[i++] = pindir;
 
 	if (writecnt) {
-		buf[i++] = 0x11;
+		buf[i++] = MPSSE_DO_WRITE | MPSSE_WRITE_NEG;
 		buf[i++] = (writecnt - 1) & 0xff;
 		buf[i++] = ((writecnt - 1) >> 8) & 0xff;
 		memcpy(buf + i, writearr, writecnt);
@@ -453,7 +463,7 @@ static int ft2232_spi_send_command(struct flashctx *flash,
 	 * read command, then do the fetch of the results.
 	 */
 	if (readcnt) {
-		buf[i++] = 0x20;
+		buf[i++] = MPSSE_DO_READ;
 		buf[i++] = (readcnt - 1) & 0xff;
 		buf[i++] = ((readcnt - 1) >> 8) & 0xff;
 		ret = send_buf(ftdic, buf, i);
