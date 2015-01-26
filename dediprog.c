@@ -17,11 +17,19 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#include "platform.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
 #include <errno.h>
+
+#if IS_WINDOWS
+#include <lusb0_usb.h>
+#else
 #include <usb.h>
+#endif
+
 #include "flash.h"
 #include "chipdrivers.h"
 #include "programmer.h"

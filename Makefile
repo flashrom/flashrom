@@ -843,7 +843,12 @@ endef
 export LIBPCI_TEST
 
 define LIBUSB0_TEST
+#include "platform.h"
+#if IS_WINDOWS
+#include <lusb0_usb.h>
+#else
 #include <usb.h>
+#endif
 int main(int argc, char **argv)
 {
 	(void) argc;
