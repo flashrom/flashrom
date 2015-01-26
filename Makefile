@@ -37,7 +37,6 @@ MANDIR  ?= $(PREFIX)/share/man
 CFLAGS  ?= -Os -Wall -Wshadow
 EXPORTDIR ?= .
 RANLIB  ?= ranlib
-LIBS_BASE ?= ..
 
 # The following parameter changes the default programmer that will be used if there is no -p/--programmer
 # argument given when running flashrom. The predefined setting does not enable any default so that every
@@ -65,8 +64,11 @@ ifeq ($(WARNERROR), yes)
 CFLAGS += -Werror
 endif
 
+ifdef LIBS_BASE
 CPPFLAGS += -I$(LIBS_BASE)/include
-LDFLAGS += -L$(LIBS_BASE)/lib
+LDFLAGS += -L$(LIBS_BASE)/lib -Wl,-rpath -Wl,$(LIBS_BASE)/lib
+PKG_CONFIG_LIBDIR ?= $(LIBS_BASE)/lib/pkgconfig
+endif
 
 ###############################################################################
 # General OS-specific settings.
@@ -613,7 +615,7 @@ PROGRAMMER_OBJS += usbblaster_spi.o
 endif
 
 ifeq ($(NEED_FTDI), yes)
-FTDILIBS := $(shell pkg-config --libs libftdi 2>/dev/null || printf "%s" "-lftdi -lusb")
+FTDILIBS := $(shell ([ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ); pkg-config --libs libftdi || printf "%s" "-lftdi -lusb")
 FEATURE_CFLAGS += $(shell LC_ALL=C grep -q "FT232H := yes" .features && printf "%s" "-D'HAVE_FT232H=1'")
 FEATURE_LIBS += $(shell LC_ALL=C grep -q "FTDISUPPORT := yes" .features && printf "%s" "$(FTDILIBS)")
 # We can't set NEED_USB here because that would transform libftdi auto-enabling
@@ -736,7 +738,7 @@ endif
 ifeq ($(NEED_USB), yes)
 CHECK_LIBUSB0 = yes
 FEATURE_CFLAGS += -D'NEED_USB=1'
-USBLIBS := $(shell pkg-config --libs libusb 2>/dev/null || printf "%s" "-lusb")
+USBLIBS := $(shell ([ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ); pkg-config --libs libusb  || printf "%s" "-lusb")
 endif
 
 ifeq ($(CONFIG_PRINT_WIKI), yes)
