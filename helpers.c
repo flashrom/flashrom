@@ -91,3 +91,13 @@ char* strtok_r(char *str, const char *delim, char **nextp)
 }
 #endif
 
+/* There is no strnlen in DJGPP */
+#if defined(__DJGPP__)
+size_t strnlen(const char *str, size_t n)
+{
+	size_t i;
+	for (i = 0; i < n && str[i] != '\0'; i++)
+		;
+	return i;
+}
+#endif

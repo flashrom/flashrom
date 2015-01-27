@@ -260,6 +260,9 @@ void tolower_string(char *str);
 #ifdef __MINGW32__
 char* strtok_r(char *str, const char *delim, char **nextp);
 #endif
+#if defined(__DJGPP__)
+size_t strnlen(const char *str, size_t n);
+#endif
 
 /* flashrom.c */
 extern const char flashrom_version[];
