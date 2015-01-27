@@ -21,6 +21,13 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+/* strnlen is in POSIX but was a GNU extension up to glibc 2.10 */
+#if (__GLIBC__ == 2 && __GLIBC_MINOR__ < 10) || __GLIBC__ < 2
+#define _GNU_SOURCE
+#else
+#define _POSIX_C_SOURCE 200809L
+#endif
+
 #include <strings.h>
 #include <string.h>
 #include <ctype.h>
@@ -86,16 +93,6 @@ static const struct {
 };
 
 #if CONFIG_INTERNAL_DMI == 1
-#ifdef __DJGPP__ /* There is no strnlen in DJGPP. FIXME: Move this to a common utility file. */
-size_t strnlen(const char *str, size_t n)
-{
-	size_t i;
-	for (i = 0; i < n && str[i] != '\0'; i++)
-		;
-	return i;
-}
-#endif
-
 static bool dmi_checksum(const uint8_t * const buf, size_t len)
 {
 	uint8_t sum = 0;
