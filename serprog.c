@@ -889,13 +889,20 @@ void serprog_delay(unsigned int usecs)
 {
 	unsigned char buf[4];
 	msg_pspew("%s usecs=%d\n", __func__, usecs);
+
+	if ((sp_max_write_n) && (sp_write_n_bytes))
+		sp_pass_writen();
+
+	sp_prev_was_write = 0;
+
 	if (!sp_check_commandavail(S_CMD_O_DELAY)) {
+		if (sp_opbuf_usage)
+			sp_execute_opbuf(); // FIXME: return error (it is already printed though)
 		msg_pdbg2("serprog_delay used, but programmer doesn't support delays natively - emulating\n");
 		internal_delay(usecs);
 		return;
 	}
-	if ((sp_max_write_n) && (sp_write_n_bytes))
-		sp_pass_writen();
+
 	sp_check_opbuf_usage(5);
 	buf[0] = ((usecs >> 0) & 0xFF);
 	buf[1] = ((usecs >> 8) & 0xFF);
@@ -903,7 +910,6 @@ void serprog_delay(unsigned int usecs)
 	buf[3] = ((usecs >> 24) & 0xFF);
 	sp_stream_buffer_op(S_CMD_O_DELAY, 4, buf);
 	sp_opbuf_usage += 5;
-	sp_prev_was_write = 0;
 }
 
 static int serprog_spi_send_command(struct flashctx *flash,
