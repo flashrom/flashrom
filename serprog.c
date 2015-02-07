@@ -322,6 +322,8 @@ static uint8_t serprog_chip_readb(const struct flashctx *flash,
 				  const chipaddr addr);
 static void serprog_chip_readn(const struct flashctx *flash, uint8_t *buf,
 			       const chipaddr addr, size_t len);
+static void serprog_chip_poll(const struct flashctx *flash, const chipaddr addr,
+				uint8_t mask, int data_or_toggle, unsigned int delay);
 static const struct par_master par_master_serprog = {
 		.chip_readb		= serprog_chip_readb,
 		.chip_readw		= fallback_chip_readw,
@@ -331,7 +333,7 @@ static const struct par_master par_master_serprog = {
 		.chip_writew		= fallback_chip_writew,
 		.chip_writel		= fallback_chip_writel,
 		.chip_writen		= fallback_chip_writen,
-		.chip_poll		= fallback_chip_poll,
+		.chip_poll		= serprog_chip_poll,
 };
 
 static enum chipbustype serprog_buses_supported = BUS_NONE;
@@ -882,6 +884,58 @@ static void serprog_chip_readn(const struct flashctx *flash, uint8_t * buf,
 	}
 	if (lenm)
 		sp_do_read_n(&(buf[addrm-addr]), addrm, lenm); // FIXME: return error
+}
+
+static void serprog_chip_poll(const struct flashctx *flash, const chipaddr addr,
+				uint8_t mask, int data_or_toggle, unsigned int delay)
+{
+	uint8_t pbuf[8];
+	uint8_t lmask = mask;
+	int i,shift = -1;
+	for (i=0;i<8;i++) {
+		if (lmask & 1) {
+			if (lmask & 0xFE) break; /* Multi-bit mask not acceleratable */
+			shift = i;
+			break;
+		}
+		lmask = lmask >> 1;
+	}
+
+	if ((sp_check_commandavail(delay ? S_CMD_O_POLL_DLY : S_CMD_O_POLL) == 0) || (shift < 0)) {
+		fallback_chip_poll(flash, addr, mask, data_or_toggle, delay);
+		return;
+	}
+
+	if ((sp_max_write_n) && (sp_write_n_bytes)) {
+		if (sp_pass_writen() != 0) {
+			msg_perr("Error: could not transfer write buffer\n");
+			return;
+		}
+	}
+	if (data_or_toggle > 0) data_or_toggle &= mask;
+
+	pbuf[0] = (data_or_toggle < 0 ? 0x10 : 0) | (data_or_toggle > 0 ? 0x20 : 0) | shift;
+	pbuf[1] = ((addr >> 0) & 0xFF);
+	pbuf[2] = ((addr >> 8) & 0xFF);
+	pbuf[3] = ((addr >> 16) & 0xFF);
+	if (delay) {
+		sp_check_opbuf_usage(9);
+		pbuf[4] = ((delay >> 0) & 0xFF);
+		pbuf[5] = ((delay >> 8) & 0xFF);
+		pbuf[6] = ((delay >> 16) & 0xFF);
+		pbuf[7] = ((delay >> 24) & 0xFF);
+		sp_stream_buffer_op(S_CMD_O_POLL_DLY, 8, pbuf);
+		sp_opbuf_usage += 9;
+	} else {
+		sp_check_opbuf_usage(5);
+		sp_stream_buffer_op(S_CMD_O_POLL, 4, pbuf);
+		sp_opbuf_usage += 5;
+	}
+	/* This used to be (in the fallback) a native exec point, so if
+	 * opbuf more than 1/3 full, do the exec. */
+	if (sp_opbuf_usage >= (sp_device_opbuf_size / 3)) {
+		sp_execute_opbuf_noflush();
+	}
 }
 
 void serprog_delay(unsigned int usecs)

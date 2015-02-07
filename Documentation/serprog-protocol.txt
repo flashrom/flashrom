@@ -35,6 +35,8 @@ COMMAND	Description			Parameters			Return Value
 					 + slen bytes of data
 0x14	Set SPI clock frequency in Hz	32-bit requested frequency	ACK + 32-bit set frequency / NAK
 0x15	Toggle flash chip pin drivers	8-bit (0 disable, else enable)	ACK / NAK
+0x17	Write to opbuf: poll		8-bit flags + 24-bit addr	ACK / NAK
+0x18	Write to opbuf: poll w/ delay	as above + 32-bit usecs		ACK / NAK
 0x??	unimplemented command - invalid.
 
 
@@ -89,6 +91,24 @@ Additional information of the above commands:
 		remain attached to the flash chip even when the board is running. The user is responsible to
 		NOT connect VCC and other permanently externally driven signals to the programmer as needed.
 		If the value is 0, then the drivers should be disabled, otherwise they should be enabled.
+	0x17 and 0x18 (S_CMD_O_POLL and + _DLY):
+		flags: 0b00DT0BBB where T = toggle mode = 1 / data mode = 0, D = data bit in data mode,
+			B = bit to monitor (0-7). Unused bits (0) are not checked on device.
+		Implements algorithm to wait for flash chip to be ready before continuing opbuf
+		execution (pseudocode with C-like operators):
+			i = 0
+			mask = 1 << bit
+			if (toggle mode)
+				tmp1 = flash_read(addr) & mask
+			else
+				tmp1 = data_bit ? mask : 0
+
+			while (i++ < 0xFFFFFFF)  // Device can adjust timeout relative to own speed
+				delay (if _DLY version)
+				tmp2 = flash_read(addr) & mask
+				if (tmp1 == tmp2) break
+				if (toggle mode) tmp1 = tmp2
+
 	About mandatory commands:
 		The only truly mandatory commands for any device are 0x00, 0x01, 0x02 and 0x10,
 		but one can't really do anything with these commands.
