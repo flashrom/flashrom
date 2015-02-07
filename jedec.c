@@ -23,6 +23,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
+#include <stdlib.h>
+#include <string.h>
 #include "flash.h"
 #include "chipdrivers.h"
 
@@ -384,15 +386,8 @@ static int erase_chip_jedec_common(struct flashctx *flash, unsigned int mask)
 static int write_byte_program_jedec_common(const struct flashctx *flash, const uint8_t *src,
 					   chipaddr dst, unsigned int mask)
 {
-	int tried = 0, failed = 0;
 	chipaddr bios = flash->virtual_memory;
 
-	/* If the data is 0xFF, don't program it and don't complain. */
-	if (*src == 0xFF) {
-		return 0;
-	}
-
-retry:
 	/* Issue JEDEC Byte Program command */
 	start_program_jedec_common(flash, mask);
 
@@ -400,35 +395,53 @@ retry:
 	chip_writeb(flash, *src, dst);
 	toggle_ready_jedec(flash, bios);
 
-	if (chip_readb(flash, dst) != *src && tried++ < MAX_REFLASH_TRIES) {
-		goto retry;
-	}
-
-	if (tried >= MAX_REFLASH_TRIES)
-		failed = 1;
-
-	return failed;
+	return 0;
 }
 
 /* chunksize is 1 */
 int write_jedec_1(struct flashctx *flash, const uint8_t *src, unsigned int start,
 		  unsigned int len)
 {
-	int i, failed = 0;
+	int tried = 0;
+	uint8_t *vbuf;
+	int i, wrote, failed = 0;
 	chipaddr dst = flash->virtual_memory + start;
-	chipaddr olddst;
 	unsigned int mask;
 
 	mask = getaddrmask(flash->chip);
 
-	olddst = dst;
-	for (i = 0; i < len; i++) {
-		if (write_byte_program_jedec_common(flash, src, dst, mask))
-			failed = 1;
-		dst++, src++;
+	vbuf = malloc(len);
+	if (!vbuf) {
+		msg_gerr("Could not allocate memory!\n");
+		return -1;
 	}
+	memset(vbuf, 0xFF, len);
+
+	do {
+		wrote = 0;
+		for (i = 0; i < len; i++)
+			if (vbuf[i] != src[i]) {
+				if (src[i] == 0xFF) {
+					/* This is hypothetical case, but still, dont
+					   try to flash not-0xFF to 0xFF. */
+					continue;
+				}
+				write_byte_program_jedec_common(flash, src+i, dst+i, mask);
+				wrote = 1;
+			}
+		if (wrote) {
+			/* Now count even the 1st try, thus changed comparisons to allow *
+			 * one more than before. */
+			tried++;
+			chip_readn(flash, vbuf, dst, len);
+		}
+	} while (wrote && (tried <= MAX_REFLASH_TRIES));
+
+	if (tried > MAX_REFLASH_TRIES) failed = 1;
+	free(vbuf);
+
 	if (failed)
-		msg_cerr(" writing sector at 0x%" PRIxPTR " failed!\n", olddst);
+		msg_cerr(" writing sector at 0x%" PRIxPTR " failed!\n", dst);
 
 	return failed;
 }
