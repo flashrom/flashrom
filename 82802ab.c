@@ -86,16 +86,14 @@ int probe_82802ab(struct flashctx *flash)
 	return 1;
 }
 
-/* FIXME: needs timeout */
 uint8_t wait_82802ab(struct flashctx *flash)
 {
 	uint8_t status;
 	chipaddr bios = flash->virtual_memory;
 
 	chip_writeb(flash, 0x70, bios);
-	if ((chip_readb(flash, bios) & 0x80) == 0) {	// it's busy
-		while ((chip_readb(flash, bios) & 0x80) == 0) ;
-	}
+
+	chip_poll(flash, bios, 0x80, 0, 0);
 
 	status = chip_readb(flash, bios);
 

@@ -154,6 +154,7 @@ static const struct par_master par_master_internal = {
 		.chip_writew		= internal_chip_writew,
 		.chip_writel		= internal_chip_writel,
 		.chip_writen		= fallback_chip_writen,
+		.chip_poll		= fallback_chip_poll,
 };
 
 enum chipbustype internal_buses_supported = BUS_NONE;

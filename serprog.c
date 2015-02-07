@@ -331,6 +331,7 @@ static const struct par_master par_master_serprog = {
 		.chip_writew		= fallback_chip_writew,
 		.chip_writel		= fallback_chip_writel,
 		.chip_writen		= fallback_chip_writen,
+		.chip_poll		= fallback_chip_poll,
 };
 
 static enum chipbustype serprog_buses_supported = BUS_NONE;

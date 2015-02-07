@@ -43,22 +43,7 @@ uint8_t oddparity(uint8_t val)
 
 static void toggle_ready_jedec_common(const struct flashctx *flash, chipaddr dst, unsigned int delay)
 {
-	unsigned int i = 0;
-	uint8_t tmp1, tmp2;
-
-	tmp1 = chip_readb(flash, dst) & 0x40;
-
-	while (i++ < 0xFFFFFFF) {
-		if (delay)
-			programmer_delay(delay);
-		tmp2 = chip_readb(flash, dst) & 0x40;
-		if (tmp1 == tmp2) {
-			break;
-		}
-		tmp1 = tmp2;
-	}
-	if (i > 0x100000)
-		msg_cdbg("%s: excessive loops, i=0x%x\n", __func__, i);
+	chip_poll(flash, dst, 0x40, -1, delay);
 }
 
 void toggle_ready_jedec(const struct flashctx *flash, chipaddr dst)
@@ -81,19 +66,7 @@ static void toggle_ready_jedec_slow(const struct flashctx *flash, chipaddr dst)
 void data_polling_jedec(const struct flashctx *flash, chipaddr dst,
 			uint8_t data)
 {
-	unsigned int i = 0;
-	uint8_t tmp;
-
-	data &= 0x80;
-
-	while (i++ < 0xFFFFFFF) {
-		tmp = chip_readb(flash, dst) & 0x80;
-		if (tmp == data) {
-			break;
-		}
-	}
-	if (i > 0x100000)
-		msg_cdbg("%s: excessive loops, i=0x%x\n", __func__, i);
+	chip_poll(flash, dst, 0x80, data, 0);
 }
 
 static unsigned int getaddrmask(const struct flashchip *chip)
