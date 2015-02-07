@@ -129,6 +129,7 @@ static const struct par_master par_master_dummy = {
 		.chip_writew		= dummy_chip_writew,
 		.chip_writel		= dummy_chip_writel,
 		.chip_writen		= dummy_chip_writen,
+		.chip_poll		= fallback_chip_poll,
 };
 
 enum chipbustype dummy_buses_supported = BUS_NONE;

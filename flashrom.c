@@ -554,6 +554,12 @@ void chip_readn(const struct flashctx *flash, uint8_t *buf, chipaddr addr,
 	flash->mst->par.chip_readn(flash, buf, addr, len);
 }
 
+void chip_poll(const struct flashctx *flash, const  chipaddr addr,
+		uint8_t mask, int data_or_toggle, unsigned int delay)
+{
+	flash->mst->par.chip_poll(flash, addr, mask, data_or_toggle, delay);
+}
+
 void programmer_delay(unsigned int usecs)
 {
 	if (usecs > 0)

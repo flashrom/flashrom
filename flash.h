@@ -245,6 +245,8 @@ uint8_t chip_readb(const struct flashctx *flash, const chipaddr addr);
 uint16_t chip_readw(const struct flashctx *flash, const chipaddr addr);
 uint32_t chip_readl(const struct flashctx *flash, const chipaddr addr);
 void chip_readn(const struct flashctx *flash, uint8_t *buf, const chipaddr addr, size_t len);
+void chip_poll(const struct flashctx *flash, const chipaddr addr, uint8_t mask,
+		int data_or_toggle, unsigned int delay);
 
 /* print.c */
 int print_supported(void);
