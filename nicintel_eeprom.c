@@ -275,7 +275,7 @@ static const struct opaque_master opaque_master_nicintel_ee = {
 	.erase = nicintel_ee_erase,
 };
 
-static int nicintel_spi_shutdown(void *eecp)
+static int nicintel_ee_shutdown(void *eecp)
 {
 	uint32_t old_eec = *(uint32_t *)eecp;
 	/* Request bitbanging and unselect the chip first to be safe. */
@@ -323,7 +323,7 @@ int nicintel_ee_init(void)
 			return 1;
 		*eecp = eec;
 
-		if (register_shutdown(nicintel_spi_shutdown, eecp))
+		if (register_shutdown(nicintel_ee_shutdown, eecp))
 			return 1;
 	}
 

@@ -138,7 +138,7 @@ UNSUPPORTED_FEATURES += CONFIG_PONY_SPI=yes
 else
 override CONFIG_PONY_SPI = no
 endif
-# Dediprog and FT2232 are not supported under DOS (missing USB support).
+# Dediprog, USB-Blaster and FT2232 are not supported under DOS (missing USB support).
 ifeq ($(CONFIG_DEDIPROG), yes)
 UNSUPPORTED_FEATURES += CONFIG_DEDIPROG=yes
 else
@@ -277,7 +277,7 @@ UNSUPPORTED_FEATURES += CONFIG_PONY_SPI=yes
 else
 override CONFIG_PONY_SPI = no
 endif
-# Dediprog and FT2232 are not supported with libpayload (missing libusb support)
+# Dediprog, USB-Blaster and FT2232 are not supported with libpayload (missing libusb support)
 ifeq ($(CONFIG_DEDIPROG), yes)
 UNSUPPORTED_FEATURES += CONFIG_DEDIPROG=yes
 else
@@ -914,6 +914,7 @@ ifneq ($(UNSUPPORTED_FEATURES), )
 endif
 
 define FTDI_TEST
+#include <stdlib.h>
 #include <ftdi.h>
 struct ftdi_context *ftdic = NULL;
 int main(int argc, char **argv)

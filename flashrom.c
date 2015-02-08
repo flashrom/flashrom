@@ -2020,7 +2020,7 @@ int doit(struct flashctx *flash, int force, const char *filename, int read_it,
 	// ////////////////////////////////////////////////////////////
 
 	if (write_it && erase_and_write_flash(flash, oldcontents, newcontents)) {
-		msg_cerr("Uh oh. Erase/write failed.");
+		msg_cerr("Uh oh. Erase/write failed. ");
 		if (read_all_first) {
 			msg_cerr("Checking if anything has changed.\n");
 			msg_cinfo("Reading current flash chip contents... ");

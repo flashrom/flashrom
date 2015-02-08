@@ -141,7 +141,7 @@ static int print_supported_chips(void)
 		msg_ginfo(" ");
 	msg_gdbg("range [V]");
 	msg_ginfo("\n\n");
-	msg_ginfo("(P = PROBE, R = READ, E = ERASE, W = WRITE)\n\n");
+	msg_ginfo("(P = PROBE, R = READ, E = ERASE, W = WRITE, - = N/A)\n\n");
 
 	for (chip = flashchips; chip->name != NULL; chip++) {
 		/* Don't print generic entries. */
@@ -403,12 +403,14 @@ static void print_supported_boards_helper(const struct board_info *boards,
 		for (i = 0; i < maxboardlen - strlen(b->name); i++)
 			msg_ginfo(" ");
 
-		if (b->working == OK)
-			msg_ginfo("OK      ");
-		else if (b->working == NT)
-			msg_ginfo("NT      ");
-		else
-			msg_ginfo("BAD     ");
+		switch (b->working) {
+		case OK:  msg_ginfo("OK      "); break;
+		case NT:  msg_ginfo("NT      "); break;
+		case DEP: msg_ginfo("DEP     "); break;
+		case NA:  msg_ginfo("N/A     "); break;
+		case BAD:
+		default:  msg_ginfo("BAD     "); break;
+		}
 
 		for (e = board_matches; e->vendor_name != NULL; e++) {
 			if (strcmp(e->vendor_name, b->vendor)
@@ -548,7 +550,8 @@ const struct board_info boards_known[] = {
 	B("Albatron",	"PM266A Pro",		OK, "http://www.albatron.com.tw/English/Product/MB/pro_detail.asp?rlink=Overview&no=56", NULL), /* FIXME */
 	B("Alienware",	"Aurora-R2",		BAD, NULL, "Mainboard model is 0RV30W. Probing works (Macronix MX25L3205, 4096 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME region is locked."),
 	B("AOpen",	"i945GMx-VFX",		OK, NULL, "This is (also?) an OEM board from FSC (used in e.g. ESPRIMO Q5010 with designation D2544-B1)."),
-	B("AOpen",	"vKM400Am-S",		OK, "http://usa.aopen.com/products_detail.aspx?Auno=824", NULL),
+	B("AOpen",	"UK79G-1394",		OK, "http://global.aopen.com/products_detail.aspx?auno=9", "Used in EZ18 barebones"),
+	B("AOpen",	"vKM400Am-S",		OK, "http://global.aopen.com/products_detail.aspx?Auno=824", NULL),
 	B("Artec Group","DBE61",		OK, "http://wiki.thincan.org/DBE61", NULL),
 	B("Artec Group","DBE62",		OK, "http://wiki.thincan.org/DBE62", NULL),
 	B("ASI",	"MB-5BLMP",		OK, "http://www.hojerteknik.com/winnet.htm", "Used in the IGEL WinNET III thin client."),
@@ -644,6 +647,7 @@ const struct board_info boards_known[] = {
 	B("ASUS",	"M4A89GTD PRO",		OK, "http://www.asus.com/Motherboards/AMD_AM3/M4A89GTD_PRO/", NULL),
 	B("ASUS",	"M4N68T V2",		OK, "http://www.asus.com/Motherboards/AMD_AM3/M4N68T_V2/", NULL),
 	B("ASUS",	"M4N78 PRO",		OK, "http://www.asus.com/Motherboards/AMD_AM2Plus/M4N78_PRO/", NULL),
+	B("ASUS",	"M4N78 SE",		OK, "http://www.asus.com/Motherboards/AMD_AM2Plus/M4N78_SE/", NULL),
 	B("ASUS",	"M5A78L-M LX",		OK, "http://www.asus.com/Motherboards/AMD_AM3Plus/M5A78LM_LX/", "The MAC address of the onboard LAN NIC is stored in flash, hence overwritten by flashrom; see http://www.flashrom.org/pipermail/flashrom/2012-May/009200.html"),
 	B("ASUS",	"M5A97 (rev. 1.0)",	OK, "http://www.asus.com/Motherboard/M5A97/", NULL),
 	B("ASUS",	"M5A99X EVO",		OK, "http://www.asus.com/Motherboards/AMD_AM3Plus/M5A99X_EVO/", NULL),
@@ -698,7 +702,7 @@ const struct board_info boards_known[] = {
 	B("ASUS",	"P5L-VM 1394",		OK, "http://www.asus.com/Motherboards/Intel_Socket_775/P5LVM_1394/", NULL),
 	B("ASUS",	"P5LD2",		OK, NULL, NULL),
 	B("ASUS",	"P5LD2-MQ",		OK, "http://support.asus.com/download.aspx?SLanguage=en&p=8&s=12&m=Vintage-PH2&os=&hashedid=n/a", "Found in ASUS Vintage-PH2 barebones."),
-	B("ASUS",	"P5LD2-VM",		NT, "http://www.asus.com/Motherboards/Intel_Socket_775/P5LD2VM/", "Untested board enable."),
+	B("ASUS",	"P5LD2-VM",		OK, "http://www.asus.com/Motherboards/Intel_Socket_775/P5LD2VM/", NULL),
 	B("ASUS",	"P5LD2-VM DH",		OK, "http://www.asus.com/Motherboards/Intel_Socket_775/P5LD2VM_DH/", NULL),
 	B("ASUS",	"P5LP-LE (Lithium-UL8E)", OK, "http://h10025.www1.hp.com/ewfrf/wc/document?docname=c00379616&tmp_task=prodinfoCategory&cc=us&dlc=en&lc=en&product=1159887", "This is an OEM board from HP."),
 	B("ASUS",	"P5LP-LE (Epson OEM)",	OK, NULL, "This is an OEM board from Epson (e.g. Endeavor MT7700)."),
@@ -824,6 +828,8 @@ const struct board_info boards_known[] = {
 	B("GIGABYTE",	"GA-965GM-S2 (rev. 2.0)", OK, "http://www.gigabyte.com/products/product-page.aspx?pid=2617", NULL),
 	B("GIGABYTE",	"GA-965P-DS4",		OK, "http://www.gigabyte.com/products/product-page.aspx?pid=2288", NULL),
 	B("GIGABYTE",	"GA-970A-D3P (rev. 1.0)", OK, "http://www.gigabyte.com/products/product-page.aspx?pid=4642", NULL),
+	B("GIGABYTE",	"GA-970A-UD3P (rev. 2.0)", OK, "http://www.gigabyte.com/products/product-page.aspx?pid=5194", "Primary flash chip is a Macronix MX25L3206E."),
+	B("GIGABYTE",	"GA-990FXA-UD3 (rev. 4.0)", OK, "http://www.gigabyte.com/products/product-page.aspx?pid=4672", NULL),
 	B("GIGABYTE",	"GA-A75M-UD2H",		OK, "http://www.gigabyte.com/products/product-page.aspx?pid=3928", NULL),
 	B("GIGABYTE",	"GA-B85M-D3H",		OK, "http://www.gigabyte.com/products/product-page.aspx?pid=4567", NULL),
 	B("GIGABYTE",	"GA-EP31-DS3L (rev. 2.1)", OK, "http://www.gigabyte.com/products/product-page.aspx?pid=2964", NULL),
@@ -833,6 +839,7 @@ const struct board_info boards_known[] = {
 	B("GIGABYTE",	"GA-H61M-D2-B3",	OK, "http://www.gigabyte.com/products/product-page.aspx?pid=3773", NULL),
 	B("GIGABYTE",	"GA-H61M-D2H-USB3",	OK, "http://www.gigabyte.com/products/product-page.aspx?pid=4004", NULL),
 	B("GIGABYTE",	"GA-H77-D3H",		OK, "http://www.gigabyte.com/products/product-page.aspx?pid=4141", "Does only work with -p internal:ich_spi_mode=hwseq due to an evil twin of MX25L6405 and ICH SPI lockdown."),
+	B("GIGABYTE",	"GA-H77-DS3H (rev. 1.1)", OK, "http://www.gigabyte.com/products/product-page.aspx?pid=4318", NULL),
 	B("GIGABYTE",	"GA-H77M-D3H",		OK, "http://www.gigabyte.com/products/product-page.aspx?pid=4388", NULL),
 	B("GIGABYTE",	"GA-K8N51GMF-9",	OK, "http://www.gigabyte.com/products/product-page.aspx?pid=1939", NULL),
 	B("GIGABYTE",	"GA-K8N51GMF",		OK, "http://www.gigabyte.com/products/product-page.aspx?pid=1950", NULL),
@@ -853,6 +860,7 @@ const struct board_info boards_known[] = {
 	B("GIGABYTE",	"GA-MA790FX-DQ6",	OK, "http://www.gigabyte.com/products/product-page.aspx?pid=2690", NULL),
 	B("GIGABYTE",	"GA-MA790GP-DS4H",	OK, "http://www.gigabyte.com/products/product-page.aspx?pid=2887", NULL),
 	B("GIGABYTE",	"GA-MA790XT-UD4P (rev. 1.0)", OK, "http://www.gigabyte.com/products/product-page.aspx?pid=3010", NULL),
+	B("GIGABYTE",	"GA-P55-USB3 (rev. 2.0)", OK, "http://www.gigabyte.com/products/product-page.aspx?pid=3440", NULL),
 	B("GIGABYTE",	"GA-P55A-UD4 (rev. 1.0)", OK, "http://www.gigabyte.com/products/product-page.aspx?pid=3436", NULL),
 	B("GIGABYTE",	"GA-P55A-UD7"		, OK, "http://www.gigabyte.com/products/product-page.aspx?pid=3324", NULL),
 	B("GIGABYTE",	"GA-P67A-UD3P",		OK, "http://www.gigabyte.com/products/product-page.aspx?pid=3649", NULL),
@@ -975,6 +983,7 @@ const struct board_info boards_known[] = {
 	B("MSI",	"MS-7756 (H77MA-G43)",	OK, "http://www.msi.com/product/mb/H77MA-G43.html", NULL),
 	B("MSI",	"MS-7808 (B75MA-E33)",	OK, "http://www.msi.com/product/mb/B75MA-E33.html", NULL),
 	B("MSI",	"MS-7816 (H87-G43)",	OK, "http://www.msi.com/product/mb/H87-G43.html", NULL),
+	B("MSI",	"MS-7817 (H81M-E33)",	OK, "http://www.msi.com/product/mb/H81ME33.html", NULL),
 	B("MSI",	"MS-9830 (IM-945GSE-A, A9830IMS)", OK, "http://www.msi.com/product/ipc/IM-945GSE-A.html", NULL),
 	B("NEC",	"PowerMate 2000",	OK, "http://support.necam.com/mobilesolutions/hardware/Desktops/pm2000/celeron/", NULL),
 	B("Nokia",	"IP530",		OK, NULL, NULL),
@@ -1131,7 +1140,7 @@ const struct board_info laptops_known[] = {
 	B("IBM/Lenovo",	"ThinkPad T420",	BAD, "http://www.thinkwiki.org/wiki/Category:T420", "Probing works (Macronix MX25L6405, 8192 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs) and ME is locked. Also, a Protected Range is locking the top range of the BIOS region (presumably the boot block)."),
 	B("IBM/Lenovo",	"ThinkPad T410s",	BAD, "http://www.thinkwiki.org/wiki/Category:T410s", "Probing works (Winbond W25X64, 8192 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs) and ME is locked. Also, a Protected Range is locking the top range of the BIOS region (presumably the boot block)."),
 	B("IBM/Lenovo",	"ThinkPad X1",		BAD, "http://www.thinkwiki.org/wiki/Category:X1", "Probing works (ST M25PX64, 8192 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs) and ME is locked. Also, a Protected Range is locking the top range of the BIOS region (presumably the boot block)."),
-	B("IBM/Lenovo",	"ThinkPad T530",	OK, "http://www.thinkwiki.org/wiki/Category:T530", "Works fine but only with coreboot (due to locked regions and additional PR restrictions)."),
+	B("IBM/Lenovo",	"ThinkPad T530",	DEP, "http://www.thinkwiki.org/wiki/Category:T530", "Works fine but only with coreboot (due to locked regions and additional PR restrictions)."),
 	B("IBM/Lenovo",	"ThinkPad 240",		BAD, "http://www.stanford.edu/~bresnan//tp240.html", "Seems to (partially) work at first, but one block/sector cannot be written which then leaves you with a bricked laptop. Maybe this can be investigated and fixed in software later."),
 	B("IBM/Lenovo",	"3000 V100 TF05Cxx",	OK, "http://www5.pc.ibm.com/europe/products.nsf/products?openagent&brand=Lenovo3000Notebook&series=Lenovo+3000+V+Series#viewallmodelstop", NULL),
 	//B("MSI",	"GT60-2OD",		OK, "http://www.msi.com/product/nb/GT60_2OD.html", NULL), requires layout patches

@@ -107,7 +107,6 @@ enum write_granularity {
 
 /* Feature bits used for non-SPI only */
 #define FEATURE_REGISTERMAP	(1 << 0)
-#define FEATURE_BYTEWRITES	(1 << 1)
 #define FEATURE_LONG_RESET	(0 << 4)
 #define FEATURE_SHORT_RESET	(1 << 4)
 #define FEATURE_EITHER_RESET	FEATURE_LONG_RESET

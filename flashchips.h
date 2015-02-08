@@ -27,7 +27,7 @@
 /*
  * Please keep this list sorted alphabetically by manufacturer. The first
  * entry of each section should be the manufacturer ID, followed by the
- * list of devices from that manufacturer (sorted by device IDs).
+ * list of devices from that manufacturer (sorted by device ID).
  *
  * Most LPC/FWH parts (parallel flash) have 8-bit device IDs if there is no
  * continuation code.
@@ -303,6 +303,8 @@
 #define EON_EN29LV010		0x7F6E
 #define EON_EN29LV040		0x4F	/* Same as EN29LV040A */
 #define EON_EN29LV640B		0xCB
+#define EON_EN29LV640T		0xC9
+#define EON_EN29LV640U		0x7E
 #define EON_EN29F002T		0x7F92	/* Same as EN29F002A */
 #define EON_EN29F002B		0x7F97	/* Same as EN29F002AN */
 #define EON_EN29GL064HL		0x7E0C01	/* Uniform Sectors, WP protects Top OR Bottom sector */
@@ -466,13 +468,13 @@
  * and use the same set of IDs. */
 #define MACRONIX_MX25L512	0x2010	/* Same as MX25L512E, MX25V512, MX25V512C */
 #define MACRONIX_MX25L1005	0x2011	/* Same as MX25L1005C, MX25L1006E */
-#define MACRONIX_MX25L2005	0x2012	/* Same as MX25L2005C */
-#define MACRONIX_MX25L4005	0x2013	/* Same as MX25L4005A, MX25L4005C */
-#define MACRONIX_MX25L8005	0x2014	/* Same as MX25V8005; FIXME: MX25L8073E (4k 0x20) */
+#define MACRONIX_MX25L2005	0x2012	/* Same as MX25L2005C, MX25L2006E */
+#define MACRONIX_MX25L4005	0x2013	/* Same as MX25L4005A, MX25L4005C, MX25L4006E */
+#define MACRONIX_MX25L8005	0x2014	/* Same as MX25V8005, MX25L8006E, FIXME: MX25L8073E (4k 0x20) */
 #define MACRONIX_MX25L1605	0x2015	/* MX25L1605 (64k 0x20); MX25L1605A/MX25L1606E (4k 0x20, 64k 0x52); MX25L1605D/MX25L1608D/MX25L1673E (4k 0x20) */
 #define MACRONIX_MX25L3205	0x2016	/* MX25L3205, MX25L3205A (64k 0x20); MX25L3205D/MX25L3208D (4k 0x20); MX25L3206E (4k 0x20, 64k 0x52); MX25L3273E (4k 0x20, 32k 0x52) */
-#define MACRONIX_MX25L6405	0x2017	/* MX25L6405, MX25L6405D (64k 0x20); MX25L6406E/MX25L6436E (4k 0x20); MX25L6445E/MX25L6473E (4k 0x20, 32k 0x52) */
-#define MACRONIX_MX25L12805	0x2018	/* Same as MX25L12805D, MX25L12835F, MX25L12845E (the latter two support completely new ID commands) */
+#define MACRONIX_MX25L6405	0x2017	/* MX25L6405, MX25L6405D (64k 0x20); MX25L6406E/MX25L6436E (4k 0x20); MX25L6445E/MX25L6465E/MX25L6473E (4k 0x20, 32k 0x52) */
+#define MACRONIX_MX25L12805D	0x2018	/* MX25L12805D (no 32k); MX25L12865E, MX25L12835F, MX25L12845E (32k 0x52) */
 #define MACRONIX_MX25L25635F	0x2019	/* Same as MX25L25639F, but the latter seems to not support REMS */
 #define MACRONIX_MX25L1635D	0x2415
 #define MACRONIX_MX25L1635E	0x2515	/* MX25L1635{E} */
@@ -784,6 +786,48 @@
 #define ST_M29W010B		0x23
 #define ST_M29W040B		0xE3
 #define ST_M29W512B		0x27
+#define ST_M28W160ECB		0x88CF
+#define ST_M28W160ECT		0x88CE
+#define ST_M28W320FCB		0x88BB
+#define ST_M28W320FCT		0x88BA
+#define ST_M28W640HCB		0x8849
+#define ST_M28W640HCT		0x8848
+#define ST_M29DW127G		0x7E2004
+#define ST_M29W128GH		0x7E2101
+#define ST_M29W128GL		0x7E2100
+#define ST_M29W160EB		0x2249
+#define ST_M29W160ET		0x22C4
+#define ST_M29W256GH		0x7E21xx
+#define ST_M29W256GL		0x7E21xx
+#define ST_M29W320DB		0x88CB
+#define ST_M29W320DT		0x88CA
+#define ST_M29W400FB		0x00EF
+#define ST_M29W400FT		0x00EE
+#define ST_M29W512GH		0x7E2301
+#define ST_M29W640FB		0x22FD
+#define ST_M29W640FT		0x22ED
+#define ST_M29W640GB		0x7E1000
+#define ST_M29W640GH		0x7E0C01
+#define ST_M29W640GL		0x7E0C00
+#define ST_M29W640GT		0x7E1001
+#define ST_M29W800FB		0x225B
+#define ST_M29W800FT		0x22D7
+#define ST_M58BW16FB		0x8839
+#define ST_M58BW16FT		0x883A
+#define ST_M58BW32FB		0x8837
+#define ST_M58BW32FT		0x8838
+#define ST_M58WR016KB		0x8813
+#define ST_M58WR016KT		0x8812
+#define ST_M58WR032KB		0x8815
+#define ST_M58WR032KT		0x8814
+#define ST_M58WR064KB		0x8811
+#define ST_M58WR064KT		0x8810
+#define ST_MT28GU01G___1	0x88B0
+#define ST_MT28GU01G___2	0x88B1
+#define ST_MT28GU256___1	0x8901
+#define ST_MT28GU256___2	0x8904
+#define ST_MT28GU512___1	0x887E
+#define ST_MT28GU512___2	0x8881
 #define ST_N25Q016__1E		0xBB15	/* N25Q016, 1.8V, (uniform sectors expected) */
 #define ST_N25Q032__3E		0xBA16	/* N25Q032, 3.0V, (uniform sectors expected) */
 #define ST_N25Q032__1E		0xBB16	/* N25Q032, 1.8V, (uniform sectors expected) */

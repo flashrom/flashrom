@@ -119,7 +119,7 @@ struct registered_master registered_masters[MASTERS_MAX];
 int registered_master_count = 0;
 
 /* This function copies the struct registered_master parameter. */
-int register_master(struct registered_master *mst)
+int register_master(const struct registered_master *mst)
 {
 	if (registered_master_count >= MASTERS_MAX) {
 		msg_perr("Tried to register more than %i master "
