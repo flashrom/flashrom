@@ -138,7 +138,7 @@ UNSUPPORTED_FEATURES += CONFIG_PONY_SPI=yes
 else
 override CONFIG_PONY_SPI = no
 endif
-# Dediprog, USB-Blaster and FT2232 are not supported under DOS (missing USB support).
+# Dediprog, USB-Blaster, PICkit2 and FT2232 are not supported under DOS (missing USB support).
 ifeq ($(CONFIG_DEDIPROG), yes)
 UNSUPPORTED_FEATURES += CONFIG_DEDIPROG=yes
 else
@@ -153,6 +153,11 @@ ifeq ($(CONFIG_USBBLASTER_SPI), yes)
 UNSUPPORTED_FEATURES += CONFIG_USBBLASTER_SPI=yes
 else
 override CONFIG_USBBLASTER_SPI = no
+endif
+ifeq ($(CONFIG_PICKIT2_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_PICKIT2_SPI=yes
+else
+override CONFIG_PICKIT2_SPI = no
 endif
 endif
 
@@ -277,7 +282,7 @@ UNSUPPORTED_FEATURES += CONFIG_PONY_SPI=yes
 else
 override CONFIG_PONY_SPI = no
 endif
-# Dediprog, USB-Blaster and FT2232 are not supported with libpayload (missing libusb support)
+# Dediprog, USB-Blaster, PICkit2 and FT2232 are not supported with libpayload (missing libusb support)
 ifeq ($(CONFIG_DEDIPROG), yes)
 UNSUPPORTED_FEATURES += CONFIG_DEDIPROG=yes
 else
@@ -292,6 +297,11 @@ ifeq ($(CONFIG_USBBLASTER_SPI), yes)
 UNSUPPORTED_FEATURES += CONFIG_USBBLASTER_SPI=yes
 else
 override CONFIG_USBBLASTER_SPI = no
+endif
+ifeq ($(CONFIG_PICKIT2_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_PICKIT2_SPI=yes
+else
+override CONFIG_PICKIT2_SPI = no
 endif
 endif
 
@@ -428,6 +438,9 @@ CONFIG_USBBLASTER_SPI ?= yes
 
 # MSTAR DDC support needs more tests/reviews/cleanups.
 CONFIG_MSTARDDC_SPI ?= no
+
+# Always enable PICkit2 SPI dongles for now.
+CONFIG_PICKIT2_SPI ?= yes
 
 # Always enable dummy tracing for now.
 CONFIG_DUMMY ?= yes
@@ -612,6 +625,12 @@ ifeq ($(CONFIG_USBBLASTER_SPI), yes)
 FEATURE_CFLAGS += $(shell LC_ALL=C grep -q "FTDISUPPORT := yes" .features && printf "%s" "-D'CONFIG_USBBLASTER_SPI=1'")
 NEED_FTDI := yes
 PROGRAMMER_OBJS += usbblaster_spi.o
+endif
+
+ifeq ($(CONFIG_PICKIT2_SPI), yes)
+FEATURE_CFLAGS += -D'CONFIG_PICKIT2_SPI=1'
+PROGRAMMER_OBJS += pickit2_spi.o
+NEED_USB := yes
 endif
 
 ifeq ($(NEED_FTDI), yes)

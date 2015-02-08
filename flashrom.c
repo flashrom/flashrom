@@ -366,6 +366,19 @@ const struct programmer_entry programmer_table[] = {
 	},
 #endif
 
+#if CONFIG_PICKIT2_SPI == 1
+	{
+		.name			= "pickit2_spi",
+		.type			= OTHER,
+					/* FIXME */
+		.devs.note		= "Microchip PICkit2\n",
+		.init			= pickit2_spi_init,
+		.map_flash_region	= fallback_map,
+		.unmap_flash_region	= fallback_unmap,
+		.delay			= internal_delay,
+	},
+#endif
+
 	{0}, /* This entry corresponds to PROGRAMMER_INVALID. */
 };
 

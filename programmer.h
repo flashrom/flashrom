@@ -102,6 +102,9 @@ enum programmer {
 #if CONFIG_MSTARDDC_SPI == 1
 	PROGRAMMER_MSTARDDC_SPI,
 #endif
+#if CONFIG_PICKIT2_SPI == 1
+	PROGRAMMER_PICKIT2_SPI,
+#endif
 	PROGRAMMER_INVALID /* This must always be the last entry. */
 };
 
@@ -480,6 +483,11 @@ extern const struct dev_entry devs_usbblasterspi[];
 int mstarddc_spi_init(void);
 #endif
 
+/* pickit2_spi.c */
+#if CONFIG_PICKIT2_SPI == 1
+int pickit2_spi_init(void);
+#endif
+
 /* rayer_spi.c */
 #if CONFIG_RAYER_SPI == 1
 int rayer_spi_init(void);
@@ -563,6 +571,9 @@ enum spi_controller {
 #endif
 #if CONFIG_MSTARDDC_SPI == 1
 	SPI_CONTROLLER_MSTARDDC,
+#endif
+#if CONFIG_PICKIT2_SPI == 1
+	SPI_CONTROLLER_PICKIT2,
 #endif
 };
 
