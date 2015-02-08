@@ -713,6 +713,8 @@ endif
 ifeq ($(NEED_PCI), yes)
 CHECK_LIBPCI = yes
 FEATURE_CFLAGS += -D'NEED_PCI=1'
+FEATURE_CFLAGS += $(shell LC_ALL=C grep -q "OLD_PCI_GET_DEV := yes" .libdeps && printf "%s" "-D'OLD_PCI_GET_DEV=1'")
+
 PROGRAMMER_OBJS += pcidev.o physmap.o hwaccess.o
 ifeq ($(TARGET_OS), NetBSD)
 # The libpci we want is called libpciutils on NetBSD and needs NetBSD libpci.
@@ -842,6 +844,27 @@ int main(int argc, char **argv)
 endef
 export LIBPCI_TEST
 
+define PCI_GET_DEV_TEST
+/* Avoid a failing test due to libpci header symbol shadowing breakage */
+#define index shadow_workaround_index
+#if !defined __NetBSD__
+#include <pci/pci.h>
+#else
+#include <pciutils/pci.h>
+#endif
+struct pci_access *pacc;
+struct pci_dev *dev = {0};
+int main(int argc, char **argv)
+{
+	(void) argc;
+	(void) argv;
+	pacc = pci_alloc();
+	dev = pci_get_dev(pacc, dev->domain, dev->bus, dev->dev, 1);
+	return 0;
+}
+endef
+export PCI_GET_DEV_TEST
+
 define LIBUSB0_TEST
 #include "platform.h"
 #if IS_WINDOWS
@@ -869,6 +892,11 @@ ifeq ($(CHECK_LIBPCI), yes)
 		echo "Please install libpci headers (package pciutils-devel).";	\
 		echo "See README for more information."; echo;			\
 		rm -f .test.c .test.o; exit 1)
+	@printf "Checking version of pci_get_dev... "
+	@echo "$$PCI_GET_DEV_TEST" > .test.c
+	@$(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o >/dev/null 2>&1 &&	\
+		( echo "new version (including PCI domain parameter)."; echo "OLD_PCI_GET_DEV := no" >> .libdeps ) ||	\
+		( echo "old version (without PCI domain parameter)."; echo "OLD_PCI_GET_DEV := yes" >> .libdeps )
 	@printf "Checking if libpci is present and sufficient... "
 	@$(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) $(PCILIBS) >/dev/null &&		\
 		echo "yes." || ( echo "no.";							\
