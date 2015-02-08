@@ -260,7 +260,7 @@ static void spi_prettyprint_status_register_bp(uint8_t status, int bp)
 	/* Fall through. */
 	case 4:
 		msg_cdbg("Chip status register: Block Protect 4 (BP4) is %sset\n",
-			 (status & (1 << 5)) ? "" : "not ");
+			 (status & (1 << 6)) ? "" : "not ");
 	case 3:
 		msg_cdbg("Chip status register: Block Protect 3 (BP3) is %sset\n",
 			 (status & (1 << 5)) ? "" : "not ");

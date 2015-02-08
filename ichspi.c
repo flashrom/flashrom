@@ -1195,7 +1195,7 @@ static int ich_hwseq_probe(struct flashctx *flash)
 	struct block_eraser *eraser;
 
 	total_size = hwseq_data.size_comp0 + hwseq_data.size_comp1;
-	msg_cdbg("Found %d attached SPI flash chip",
+	msg_cdbg("Hardware sequencing reports %d attached SPI flash chip",
 		 (hwseq_data.size_comp1 != 0) ? 2 : 1);
 	if (hwseq_data.size_comp1 != 0)
 		msg_cdbg("s with a combined");
@@ -1210,14 +1210,14 @@ static int ich_hwseq_probe(struct flashctx *flash)
 	erase_size_high = ich_hwseq_get_erase_block_size(boundary);
 
 	if (boundary == 0) {
-		msg_cdbg("There is only one partition containing the whole "
+		msg_cdbg2("There is only one partition containing the whole "
 			 "address space (0x%06x - 0x%06x).\n", 0, size_high-1);
 		eraser->eraseblocks[0].size = erase_size_high;
 		eraser->eraseblocks[0].count = size_high / erase_size_high;
-		msg_cdbg("There are %d erase blocks with %d B each.\n",
+		msg_cdbg2("There are %d erase blocks with %d B each.\n",
 			 size_high / erase_size_high, erase_size_high);
 	} else {
-		msg_cdbg("The flash address space (0x%06x - 0x%06x) is divided "
+		msg_cdbg2("The flash address space (0x%06x - 0x%06x) is divided "
 			 "at address 0x%06x in two partitions.\n",
 			 0, total_size-1, boundary);
 		size_low = total_size - size_high;

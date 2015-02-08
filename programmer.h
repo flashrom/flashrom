@@ -321,8 +321,6 @@ extern int superio_count;
 #define SUPERIO_VENDOR_WINBOND	0x2
 #endif
 #if NEED_PCI == 1
-struct pci_filter;
-struct pci_dev *pci_dev_find_filter(struct pci_filter filter);
 struct pci_dev *pci_dev_find_vendorclass(uint16_t vendor, uint16_t devclass);
 struct pci_dev *pci_dev_find(uint16_t vendor, uint16_t device);
 struct pci_dev *pci_card_find(uint16_t vendor, uint16_t device,
@@ -691,7 +689,7 @@ struct registered_master {
 };
 extern struct registered_master registered_masters[];
 extern int registered_master_count;
-int register_master(struct registered_master *mst);
+int register_master(const struct registered_master *mst);
 
 /* serprog.c */
 #if CONFIG_SERPROG == 1

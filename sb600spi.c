@@ -141,7 +141,7 @@ static void determine_generation(struct pci_dev *dev)
 		} else if (rev == 0x16) {
 			amd_gen = CHIPSET_BOLTON;
 			msg_pdbg("Bolton detected.\n");
-		} else if (rev >= 0x39 && rev <= 0x3A) {
+		} else if ((rev >= 0x39 && rev <= 0x3A) || rev == 0x42) {
 			amd_gen = CHIPSET_YANGTZE;
 			msg_pdbg("Yangtze detected.\n");
 		} else {
@@ -498,7 +498,7 @@ static int handle_imc(struct pci_dev *dev)
 	free(arg);
 
 	/* TODO: we should not only look at IntegratedImcPresent (LPC Dev 20, Func 3, 40h) but also at
-	 * IMCEnable(Strap) and Override EcEnable(Strap) (sb8xx, sb9xx?, a50: Misc_Reg: 80h-87h;
+	 * IMCEnable(Strap) and Override EcEnable(Strap) (sb8xx, sb9xx?, a50, Bolton: Misc_Reg: 80h-87h;
 	 * sb7xx, sp5100: PM_Reg: B0h-B1h) etc. */
 	uint8_t reg = pci_read_byte(dev, 0x40);
 	if ((reg & (1 << 7)) == 0) {
