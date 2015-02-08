@@ -229,6 +229,8 @@ bitbanging adapter)
 .sp
 .BR "* mstarddc_spi" " (for SPI flash ROMs accessible through DDC in MSTAR-equipped displays)"
 .sp
+.BR "* pickit2_spi" " (for SPI flash ROMs accessible via Microchip PICkit2)"
+.sp
 Some programmers have optional or mandatory parameters which are described
 in detail in the
 .B PROGRAMMER-SPECIFIC INFORMATION
@@ -736,6 +738,34 @@ More information about the Bus Pirate pull-up resistors and their purpose is ava
 .BR "http://dangerousprototypes.com/docs/Practical_guide_to_Bus_Pirate_pull-up_resistors " .
 Only the external supply voltage (Vpu) is supported as of this writing.
 .SS
+.BR "pickit2_spi " programmer
+An optional
+.B voltage
+parameter specifies the voltage the PICkit2 should use. The default unit is Volt if no unit is specified.
+You can use
+.BR mV ", " millivolt ", " V " or " Volt
+as unit specifier. Syntax is
+.sp
+.B "  flashrom \-p pickit2_spi:voltage=value"
+.sp
+where
+.B value
+can be
+.BR 0V ", " 1.8V ", " 2.5V ", " 3.5V
+or the equivalent in mV.
+.sp
+An optional
+.B spispeed
+parameter specifies the frequency of the SPI bus. Syntax is
+.sp
+.B "  flashrom \-p pickit2_spi:spispeed=frequency"
+.sp
+where
+.B frequency
+can be
+.BR 250k ", " 333k ", " 500k " or " 1M "
+(in Hz). The default is a frequency of 1 MHz.
+.SS
 .BR "dediprog " programmer
 An optional
 .B voltage
@@ -992,7 +1022,7 @@ needs TCP access to the network or userspace access to a serial port.
 .B buspirate_spi
 needs userspace access to a serial port.
 .sp
-.BR dediprog ", " ft2232_spi " and " usbblaster_spi
+.BR dediprog ", " ft2232_spi " and " usbblaster_spi and " pickit2_spi
 need access to the USB device via libusb.
 .sp
 .B dummy
@@ -1002,7 +1032,7 @@ needs no access permissions at all.
 .BR gfxnvidia ", " drkaiser ", " satasii ", " satamv ", " atahpt" and " atavia
 have to be run as superuser/root, and need additional raw access permission.
 .sp
-.BR serprog ", " buspirate_spi ", " dediprog ", " usbblaster_spi " and " ft2232_spi
+.BR serprog ", " buspirate_spi ", " dediprog ", " usbblaster_spi " and " ft2232_spi and " pickit2_spi
 can be run as normal user on most operating systems if appropriate device
 permissions are set.
 .sp
