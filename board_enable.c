@@ -1047,7 +1047,7 @@ static int nvidia_mcp_gpio_set(int gpio, int raise)
 			return -1;
 		}
 
-#if PCI_LIB_VERSION >= 0x020200
+#if !defined(OLD_PCI_GET_DEV)
 		dev = pci_get_dev(pacc, dev->domain, dev->bus, dev->dev, 1);
 #else
 		/* pciutils/libpci before version 2.2 is too old to support
