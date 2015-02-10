@@ -281,7 +281,7 @@ static int sp_stream_buffer_op(uint8_t cmd, uint32_t parmlen, uint8_t *parms)
 	sp[0] = cmd;
 	memcpy(&(sp[1]), parms, parmlen);
 
-	if (sp_streamed_transmit_bytes >= (1 + parmlen + sp_device_serbuf_size)) {
+	if ((sp_streamed_transmit_bytes + 1 + parmlen) >= (sp_device_serbuf_size)) {
 		if (sp_flush_stream() != 0) {
 			free(sp);
 			return 1;
@@ -687,18 +687,21 @@ int serprog_init(void)
 	return 0;
 }
 
+static int sp_check_opbuf_usage(int bytes_to_be_added);
+
 /* Move an in flashrom buffer existing write-n operation to the on-device operation buffer. */
 static int sp_pass_writen(void)
 {
 	unsigned char header[7];
 	msg_pspew(MSGHEADER "Passing write-n bytes=%d addr=0x%x\n", sp_write_n_bytes, sp_write_n_addr);
-	if (sp_streamed_transmit_bytes >= (7 + sp_write_n_bytes + sp_device_serbuf_size)) {
+	if ((7 + sp_write_n_bytes + sp_streamed_transmit_bytes) >= (sp_device_serbuf_size)) {
 		if (sp_flush_stream() != 0) {
 			return 1;
 		}
 	}
 	/* In case it's just a single byte send it as a single write. */
 	if (sp_write_n_bytes == 1) {
+		sp_check_opbuf_usage(5);
 		sp_write_n_bytes = 0;
 		header[0] = (sp_write_n_addr >> 0) & 0xFF;
 		header[1] = (sp_write_n_addr >> 8) & 0xFF;
@@ -709,6 +712,7 @@ static int sp_pass_writen(void)
 		sp_opbuf_usage += 5;
 		return 0;
 	}
+	sp_check_opbuf_usage(7 + sp_write_n_bytes);
 	header[0] = S_CMD_O_WRITEN;
 	header[1] = (sp_write_n_bytes >> 0) & 0xFF;
 	header[2] = (sp_write_n_bytes >> 8) & 0xFF;
@@ -812,7 +816,7 @@ static void serprog_chip_writeb(const struct flashctx *flash, uint8_t val,
 	} else {
 		/* We will have to do single writeb ops. */
 		unsigned char writeb_parm[4];
-		sp_check_opbuf_usage(6);
+		sp_check_opbuf_usage(5);
 		writeb_parm[0] = (addr >> 0) & 0xFF;
 		writeb_parm[1] = (addr >> 8) & 0xFF;
 		writeb_parm[2] = (addr >> 16) & 0xFF;
