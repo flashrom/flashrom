@@ -46,6 +46,7 @@
 
 #define MSGHEADER "serprog: "
 
+
 /*
  * FIXME: This prototype was added to help reduce diffs for the shutdown
  * registration patch, which shifted many lines of code to place
@@ -77,6 +78,41 @@ static uint32_t sp_write_n_bytes = 0;
 /* sp_streamed_* used for flow control checking */
 static int sp_streamed_transmit_ops = 0;
 static int sp_streamed_transmit_bytes = 0;
+
+/* sp_device_serbuf_size of information (size and type) about ops in transit */
+static uint32_t *sp_streamed_ops_info = NULL;
+static uint32_t sp_streamed_ops_woff  = 0;
+static uint32_t sp_streamed_ops_roff = 0;
+
+enum stream_operation_id {
+	OPID_NONE = 0,
+	OPID_WRITEB,
+	OPID_WRITEN,
+	OPID_UDELAY,
+	OPID_READN,
+	OPID_READB,
+	OPID_POLL,
+	OPID_POLLD,
+	OPID_EXEC_OPBUF,
+	OPID_SPIOP
+};
+
+static const char* streamop_name[] = {
+	"None",
+	"Write byte",
+	"Write n bytes",
+	"Delay",
+	"Read n bytes",
+	"Read byte",
+	"Poll for chip ready",
+	"Poll for chip ready w/ delay",
+	"Execute operation buffer",
+	"SPI operation",
+	NULL /* Terminator in case we want to enumerate */
+};
+
+#define STREAMOP_SIZE(x) ((x) & 0x3ffffff)
+#define STREAMOP_TYPE(x) ((enum stream_operation_id)((x) >> 26))
 
 /* sp_opbuf_usage used for counting the amount of
 	on-device operation buffer used */
@@ -244,30 +280,88 @@ static int sp_docommand(uint8_t command, uint32_t parmlen,
 	return 0;
 }
 
-static int sp_flush_stream(void)
+static void sp_streamop_put(enum stream_operation_id id, int len)
 {
-	if (sp_streamed_transmit_ops)
+	uint32_t streamop = (id<<26) | len;
+	if (!sp_streamed_ops_info) {
+		msg_perr("%s: streamed ops info buffer not allocated!\n", __func__);
+		return;
+	}
+	sp_streamed_ops_info[sp_streamed_ops_woff++] = streamop;
+	if (sp_streamed_ops_woff >= sp_device_serbuf_size) sp_streamed_ops_woff = 0;
+
+	sp_streamed_transmit_ops += 1;
+	sp_streamed_transmit_bytes += len;
+
+}
+
+static uint32_t sp_streamop_get(void)
+{
+	uint32_t op;
+	if (!sp_streamed_ops_info) {
+		msg_perr("%s: streamed ops info buffer not allocated!\n", __func__);
+		return 1; /* If return value used as lenght, that is minimum */
+	}
+	if (sp_streamed_ops_roff == sp_streamed_ops_woff) {
+		msg_perr("%s: attempt to get streamop from empty fifo!\n", __func__);
+		return 1;
+	}
+	op = sp_streamed_ops_info[sp_streamed_ops_roff++];
+	if (sp_streamed_ops_roff >= sp_device_serbuf_size) sp_streamed_ops_roff = 0;
+
+	sp_streamed_transmit_ops -= 1;
+	sp_streamed_transmit_bytes -= STREAMOP_SIZE(op);
+	return op;
+}
+
+static int sp_check_stream_free(int len_to_be_sent)
+{
+	int streamed_bytes_target = sp_device_serbuf_size - len_to_be_sent;
+	if (streamed_bytes_target < 0) streamed_bytes_target = 0;
+	if ((streamed_bytes_target < sp_streamed_transmit_bytes)
+		&& (sp_streamed_transmit_ops))
 		do {
+			uint32_t op;
 			unsigned char c;
 			if (serialport_read(&c, 1) != 0) {
 				msg_perr("Error: cannot read from device (flushing stream)");
 				return 1;
 			}
+			op = sp_streamop_get();
 			if (c == S_NAK) {
-				msg_perr("Error: NAK to a stream buffer operation\n");
+				msg_perr("Error: NAK to a stream buffer operation: %s\n",
+					streamop_name[STREAMOP_TYPE(op)]);
 				return 1;
 			}
 			if (c != S_ACK) {
-				msg_perr("Error: Invalid reply 0x%02X from device\n", c);
+				msg_perr("Error: Invalid reply 0x%02X from device as reply to op: %s\n",c,
+					streamop_name[STREAMOP_TYPE(op)]);
 				return 1;
 			}
-		} while (--sp_streamed_transmit_ops);
-	sp_streamed_transmit_ops = 0;
-	sp_streamed_transmit_bytes = 0;
+			if (sp_streamed_transmit_bytes <= streamed_bytes_target)
+				break;
+		} while (sp_streamed_transmit_ops);
+
+	if (sp_streamed_transmit_ops == 0) {
+		if (sp_streamed_transmit_bytes) {
+			msg_perr("%s: streamop accounting error: %d bytes not accounted for\n",__func__,
+				sp_streamed_transmit_bytes);
+		}
+		sp_streamed_transmit_bytes = 0;
+	}
+
 	return 0;
 }
 
-static int sp_stream_buffer_op(uint8_t cmd, uint32_t parmlen, uint8_t *parms)
+static int sp_flush_stream(void)
+{
+	/* This will cause the fn to target 0 bytes in flight => flush */
+	return sp_check_stream_free(sp_device_serbuf_size);
+}
+
+
+
+static int sp_stream_buffer_op(uint8_t cmd, uint32_t parmlen, uint8_t *parms, enum stream_operation_id opid)
 {
 	uint8_t *sp;
 	if (sp_automatic_cmdcheck(cmd))
@@ -281,20 +375,17 @@ static int sp_stream_buffer_op(uint8_t cmd, uint32_t parmlen, uint8_t *parms)
 	sp[0] = cmd;
 	memcpy(&(sp[1]), parms, parmlen);
 
-	if ((sp_streamed_transmit_bytes + 1 + parmlen) >= (sp_device_serbuf_size)) {
-		if (sp_flush_stream() != 0) {
-			free(sp);
-			return 1;
-		}
+	if (sp_check_stream_free(1 + parmlen) != 0) {
+		free(sp);
+		return 1;
 	}
+
 	if (serialport_write(sp, 1 + parmlen) != 0) {
 		msg_perr("Error: cannot write command\n");
 		free(sp);
 		return 1;
 	}
-	sp_streamed_transmit_ops += 1;
-	sp_streamed_transmit_bytes += 1 + parmlen;
-
+	sp_streamop_put(opid, 1+parmlen);
 	free(sp);
 	return 0;
 }
@@ -649,6 +740,12 @@ int serprog_init(void)
 	msg_pdbg(MSGHEADER "Serial buffer size is %d\n",
 		     sp_device_serbuf_size);
 
+	sp_streamed_ops_info = malloc(sizeof(uint32_t) * sp_device_serbuf_size);
+	if (!sp_streamed_ops_info) {
+		msg_perr("Error: cannot allocate memory for streamop info buffer\n");
+		return 1;
+	}
+
 	if (sp_check_commandavail(S_CMD_O_INIT)) {
 		/* This would be inconsistent. */
 		if (sp_check_commandavail(S_CMD_O_EXEC) == 0) {
@@ -697,10 +794,8 @@ static int sp_pass_writen(void)
 {
 	unsigned char header[7];
 	msg_pspew(MSGHEADER "Passing write-n bytes=%d addr=0x%x\n", sp_write_n_bytes, sp_write_n_addr);
-	if ((7 + sp_write_n_bytes + sp_streamed_transmit_bytes) >= (sp_device_serbuf_size)) {
-		if (sp_flush_stream() != 0) {
-			return 1;
-		}
+	if (sp_check_stream_free(7 + sp_write_n_bytes) != 0) {
+		return 1;
 	}
 	/* In case it's just a single byte send it as a single write. */
 	if (sp_write_n_bytes == 1) {
@@ -710,7 +805,7 @@ static int sp_pass_writen(void)
 		header[1] = (sp_write_n_addr >> 8) & 0xFF;
 		header[2] = (sp_write_n_addr >> 16) & 0xFF;
 		header[3] = sp_write_n_buf[0];
-		if (sp_stream_buffer_op(S_CMD_O_WRITEB, 4, header) != 0)
+		if (sp_stream_buffer_op(S_CMD_O_WRITEB, 4, header, OPID_WRITEB) != 0)
 			return 1;
 		sp_opbuf_usage += 5;
 		return 0;
@@ -731,9 +826,9 @@ static int sp_pass_writen(void)
 		msg_perr(MSGHEADER "Error: cannot write write-n data");
 		return 1;
 	}
-	sp_streamed_transmit_bytes += 7 + sp_write_n_bytes;
-	sp_streamed_transmit_ops += 1;
+	sp_streamop_put(OPID_WRITEN, 7 + sp_write_n_bytes);
 	sp_opbuf_usage += 7 + sp_write_n_bytes;
+
 	sp_write_n_bytes = 0;
 	sp_prev_was_write = 0;
 	return 0;
@@ -747,7 +842,7 @@ static int sp_execute_opbuf_noflush(void)
 			return 1;
 		}
 	}
-	if (sp_stream_buffer_op(S_CMD_O_EXEC, 0, NULL) != 0) {
+	if (sp_stream_buffer_op(S_CMD_O_EXEC, 0, NULL, OPID_EXEC_OPBUF) != 0) {
 		msg_perr("Error: could not execute command buffer\n");
 		return 1;
 	}
@@ -779,6 +874,8 @@ static int serprog_shutdown(void *data)
 		else
 			msg_pwarn(MSGHEADER "%s: Warning: could not disable output buffers\n", __func__);
 	}
+	free(sp_streamed_ops_info);
+	sp_streamed_ops_info = NULL;
 	/* FIXME: fix sockets on windows(?), especially closing */
 	serialport_shutdown(&sp_fd);
 	if (sp_max_write_n)
@@ -824,7 +921,7 @@ static void serprog_chip_writeb(const struct flashctx *flash, uint8_t val,
 		writeb_parm[1] = (addr >> 8) & 0xFF;
 		writeb_parm[2] = (addr >> 16) & 0xFF;
 		writeb_parm[3] = val;
-		sp_stream_buffer_op(S_CMD_O_WRITEB, 4, writeb_parm); // FIXME: return error
+		sp_stream_buffer_op(S_CMD_O_WRITEB, 4, writeb_parm, OPID_WRITEB); // FIXME: return error
 		sp_opbuf_usage += 5;
 	}
 }
@@ -841,7 +938,7 @@ static uint8_t serprog_chip_readb(const struct flashctx *flash,
 	buf[0] = ((addr >> 0) & 0xFF);
 	buf[1] = ((addr >> 8) & 0xFF);
 	buf[2] = ((addr >> 16) & 0xFF);
-	sp_stream_buffer_op(S_CMD_R_BYTE, 3, buf); // FIXME: return error
+	sp_stream_buffer_op(S_CMD_R_BYTE, 3, buf, OPID_READB); // FIXME: return error
 	sp_flush_stream(); // FIXME: return error
 	if (serialport_read(&c, 1) != 0)
 		msg_perr(MSGHEADER "readb byteread");  // FIXME: return error
@@ -863,7 +960,7 @@ static int sp_do_read_n(uint8_t * buf, const chipaddr addr, size_t len)
 	sbuf[3] = ((len >> 0) & 0xFF);
 	sbuf[4] = ((len >> 8) & 0xFF);
 	sbuf[5] = ((len >> 16) & 0xFF);
-	sp_stream_buffer_op(S_CMD_R_NBYTES, 6, sbuf);
+	sp_stream_buffer_op(S_CMD_R_NBYTES, 6, sbuf, OPID_READN);
 	if (sp_flush_stream() != 0)
 		return 1;
 	if (serialport_read(buf, len) != 0) {
@@ -926,11 +1023,11 @@ static void serprog_chip_poll(const struct flashctx *flash, const chipaddr addr,
 		pbuf[5] = ((delay >> 8) & 0xFF);
 		pbuf[6] = ((delay >> 16) & 0xFF);
 		pbuf[7] = ((delay >> 24) & 0xFF);
-		sp_stream_buffer_op(S_CMD_O_POLL_DLY, 8, pbuf);
+		sp_stream_buffer_op(S_CMD_O_POLL_DLY, 8, pbuf, OPID_POLLD);
 		sp_opbuf_usage += 9;
 	} else {
 		sp_check_opbuf_usage(5);
-		sp_stream_buffer_op(S_CMD_O_POLL, 4, pbuf);
+		sp_stream_buffer_op(S_CMD_O_POLL, 4, pbuf, OPID_POLL);
 		sp_opbuf_usage += 5;
 	}
 	/* This used to be (in the fallback) a native exec point, so if
@@ -963,7 +1060,7 @@ void serprog_delay(unsigned int usecs)
 	buf[1] = ((usecs >> 8) & 0xFF);
 	buf[2] = ((usecs >> 16) & 0xFF);
 	buf[3] = ((usecs >> 24) & 0xFF);
-	sp_stream_buffer_op(S_CMD_O_DELAY, 4, buf);
+	sp_stream_buffer_op(S_CMD_O_DELAY, 4, buf, OPID_UDELAY);
 	sp_opbuf_usage += 5;
 }
 
@@ -997,7 +1094,7 @@ static int serprog_spi_send_command(struct flashctx *flash,
 	parmbuf[5] = (readcnt >> 16) & 0xFF;
 	memcpy(parmbuf + 6, writearr, writecnt);
 
-	ret = sp_stream_buffer_op(S_CMD_O_SPIOP, writecnt + 6, parmbuf);
+	ret = sp_stream_buffer_op(S_CMD_O_SPIOP, writecnt + 6, parmbuf, OPID_SPIOP);
 	if ((readcnt) && (ret == 0)) {
 		if (sp_flush_stream() != 0) {
 			ret = 1;
