@@ -886,7 +886,7 @@ static int sp_check_opbuf_usage(int bytes_to_be_added)
 	if (sp_device_opbuf_size <= (sp_opbuf_usage + bytes_to_be_added)) {
 		/* If this happens in the middle of a page load the page load will probably fail. */
 		msg_pwarn(MSGHEADER "Warning: executed operation buffer due to size reasons\n");
-		if (sp_execute_opbuf() != 0)
+		if (sp_execute_opbuf_noflush() != 0)
 			return 1;
 	}
 	return 0;
