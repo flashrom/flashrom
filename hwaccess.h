@@ -89,6 +89,10 @@
 #define __FLASHROM_LITTLE_ENDIAN__ 1
 #endif
 
+#elif IS_SPARC
+/* SPARC is big endian in general (but allows to access data in little endian too). */
+#define __FLASHROM_BIG_ENDIAN__ 1
+
 #endif /* IS_? */
 
 #if !defined (__FLASHROM_BIG_ENDIAN__) && !defined (__FLASHROM_LITTLE_ENDIAN__)
@@ -356,6 +360,10 @@ int libpayload_wrmsr(int addr, msr_t msr);
 #elif IS_MIPS
 
 /* PCI port I/O is not yet implemented on MIPS. */
+
+#elif IS_SPARC
+
+/* PCI port I/O is not yet implemented on SPARC. */
 
 #elif IS_ARM
 
