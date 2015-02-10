@@ -328,7 +328,7 @@ endif
 # below uses CC itself.
 override ARCH := $(strip $(shell LC_ALL=C $(CC) $(CPPFLAGS) -E archtest.c 2>/dev/null | grep -v '^\#' | grep '"' | cut -f 2 -d'"'))
 
-# PCI port I/O support is unimplemented on PPC/MIPS and unavailable on ARM.
+# PCI port I/O support is unimplemented on PPC/MIPS/SPARC and unavailable on ARM.
 # Right now this means the drivers below only work on x86.
 ifneq ($(ARCH), x86)
 ifeq ($(CONFIG_NIC3COM), yes)

@@ -45,9 +45,12 @@
       defined(__aarch64__)
 	#define __FLASHROM_ARCH__ "arm"
 	#define IS_ARM 1
+#elif defined (__sparc__) || defined (__sparc)
+	#define __FLASHROM_ARCH__ "sparc"
+	#define IS_SPARC 1
 #endif
 
-#if !(IS_X86 || IS_MIPS || IS_PPC || IS_ARM)
+#if !(IS_X86 || IS_MIPS || IS_PPC || IS_ARM || IS_SPARC)
 #error Unknown architecture
 #endif
 

@@ -49,13 +49,29 @@ int io_fd;
  */
 static inline void sync_primitive(void)
 {
-/* This is needed only on PowerPC because...
- * - x86 uses uncached accesses which have a strongly ordered memory model and
- * - MIPS uses uncached accesses in mode 2 on /dev/mem which has also a strongly ordered memory model
- * - ARM uses a strongly ordered memory model for device memories.
+/* This is not needed for...
+ * - x86: uses uncached accesses which have a strongly ordered memory model.
+ * - MIPS: uses uncached accesses in mode 2 on /dev/mem which has also a strongly ordered memory model.
+ * - ARM: uses a strongly ordered memory model for device memories.
+ *
+ * See also https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/Documentation/memory-barriers.txt
  */
 #if IS_PPC // cf. http://lxr.free-electrons.com/source/arch/powerpc/include/asm/barrier.h
 	asm("eieio" : : : "memory");
+#elif IS_SPARC
+#if defined(__sparc_v9__) || defined(__sparcv9)
+	/* Sparc V9 CPUs support three different memory orderings that range from x86-like TSO to PowerPC-like
+	 * RMO. The modes can be switched at runtime thus to make sure we maintain the right order of access we
+	 * use the strongest hardware memory barriers that exist on Sparc V9. */
+	asm volatile ("membar #Sync" ::: "memory");
+#elif defined(__sparc_v8__) || defined(__sparcv8)
+	/* On SPARC V8 there is no RMO just PSO and that does not apply to I/O accesses... but if V8 code is run
+	 * on V9 CPUs it might apply... or not... we issue a write barrier anyway. That's the most suitable
+	 * operation in the V8 instruction set anyway. If you know better then please tell us. */
+	asm volatile ("stbar");
+#else
+	#error Unknown and/or unsupported SPARC instruction set version detected.
+#endif
 #endif
 }
 
