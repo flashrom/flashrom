@@ -386,7 +386,7 @@ CLI_OBJS = cli_classic.o cli_output.o cli_common.o print.o
 # will not require subversion. The downloadable snapshots are already exported.
 SVNVERSION := $(shell ./util/getrevision.sh -u 2>/dev/null )
 
-RELEASE := 0.9.7
+RELEASE := 0.9.8-rc1
 VERSION := $(RELEASE)-$(SVNVERSION)
 RELEASENAME ?= $(VERSION)
 
