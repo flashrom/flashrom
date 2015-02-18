@@ -74,37 +74,37 @@ static int mstarddc_spi_shutdown(void *data)
 /* Returns 0 upon success, a negative number upon errors. */
 int mstarddc_spi_init(void)
 {
-	char *i2c_device;
-	char *i2c_address;
-	char *noreset;
+	int ret = 0;
 
 	// Get device, address from command-line
-	i2c_device = extract_programmer_param("dev");
-	if (i2c_device && strlen(i2c_device)) {
-		if ((i2c_address = strchr(i2c_device, ':'))) {
+	char *i2c_device = extract_programmer_param("dev");
+	if (i2c_device != NULL && strlen(i2c_device) > 0) {
+		char *i2c_address = strchr(i2c_device, ':');
+		if (i2c_address != NULL) {
 			*i2c_address = '\0';
 			i2c_address++;
 		}
-		if (!i2c_address || !strlen(i2c_address)) {
+		if (i2c_address == NULL || strlen(i2c_address) == 0) {
 			msg_perr("Error: no address specified.\n"
 				 "Use flashrom -p mstarddc_spi:dev=/dev/device:address.\n");
-			return -1;
+			ret = -1;
+			goto out;
 		}
-		mstarddc_addr = strtol(i2c_address, NULL, 16);
+		mstarddc_addr = strtol(i2c_address, NULL, 16); // FIXME: error handling
 	} else {
 		msg_perr("Error: no device specified.\n"
 			 "Use flashrom -p mstarddc_spi:dev=/dev/device:address.\n");
-		return -1;
+		ret = -1;
+		goto out;
 	}
-	msg_pinfo("Info: Will try to use device %s and address 0x%02x.\n",
-		  i2c_device, mstarddc_addr);
+	msg_pinfo("Info: Will try to use device %s and address 0x%02x.\n", i2c_device, mstarddc_addr);
 
 	// Get noreset=1 option from command-line
-	if ((noreset = extract_programmer_param("noreset"))
-	    && noreset[0] == '1')
+	char *noreset = extract_programmer_param("noreset");
+	if (noreset != NULL && noreset[0] == '1')
 		mstarddc_doreset = 0;
-	msg_pinfo("Info: WILL %sreset the device at the end.\n",
-		  mstarddc_doreset ? "" : "NOT ");
+	free(noreset);
+	msg_pinfo("Info: Will %sreset the device at the end.\n", mstarddc_doreset ? "" : "NOT ");
 	// Open device
 	if ((mstarddc_fd = open(i2c_device, O_RDWR)) < 0) {
 		switch (errno) {
@@ -119,16 +119,17 @@ int mstarddc_spi_init(void)
 				 i2c_device);
 			break;
 		default:
-			msg_perr("Error opening %s: errno %d.\n",
-				 i2c_device, errno);
+			msg_perr("Error opening %s: %s.\n", i2c_device, strerror(errno));
 		}
-		return -1;
+		ret = -1;
+		goto out;
 	}
 	// Set slave address
 	if (ioctl(mstarddc_fd, I2C_SLAVE, mstarddc_addr) < 0) {
 		msg_perr("Error setting slave address 0x%02x: errno %d.\n",
 			 mstarddc_addr, errno);
-		return -1;
+		ret = -1;
+		goto out;
 	}
 	// Enable ISP mode
 	uint8_t cmd[5] = { 'M', 'S', 'T', 'A', 'R' };
@@ -141,7 +142,8 @@ int mstarddc_spi_init(void)
 			msg_perr("Error enabling ISP mode: errno %d & %d.\n"
 				 "Please check that device (%s) and address (0x%02x) are correct.\n",
 				 enable_err, errno, i2c_device, mstarddc_addr);
-			return -1;
+			ret = -1;
+			goto out;
 		}
 	}
 	// Register shutdown function
@@ -149,7 +151,9 @@ int mstarddc_spi_init(void)
 
 	// Register programmer
 	register_spi_master(&spi_master_mstarddc);
-	return 0;
+out:
+	free(i2c_device);
+	return ret;
 }
 
 /* Returns 0 upon success, a negative number upon errors. */
@@ -160,9 +164,8 @@ static int mstarddc_spi_send_command(struct flashctx *flash,
 				     unsigned char *readarr)
 {
 	int ret = 0;
-	uint8_t *cmd;
-
-	if ((cmd = malloc((writecnt + 1) * sizeof(uint8_t))) < 0) {
+	uint8_t *cmd = malloc((writecnt + 1) * sizeof(uint8_t));
+	if (cmd == NULL) {
 		msg_perr("Error allocating memory: errno %d.\n", errno);
 		ret = -1;
 	}
