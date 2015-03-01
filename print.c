@@ -480,9 +480,9 @@ int print_supported(void)
 	       programmer_table[PROGRAMMER_INTERNAL].name);
 	print_supported_chipsets();
 	msg_ginfo("\n");
-	print_supported_boards_helper(boards_known, "boards");
+	print_supported_boards_helper(boards_known, "mainboards");
 	msg_ginfo("\n");
-	print_supported_boards_helper(laptops_known, "laptops");
+	print_supported_boards_helper(laptops_known, "mobile devices");
 #endif
 	for (i = 0; i < PROGRAMMER_INVALID; i++) {
 		const struct programmer_entry prog = programmer_table[i];
@@ -535,6 +535,7 @@ const struct board_info boards_known[] = {
 	B("abit",	"IP35 Pro",		OK, NULL, NULL),
 	B("abit",	"IS-10",		BAD, NULL, "Reported by deejkuba@aol.com to flashrom@coreboot.org, no public archive. Missing board enable and/or M50FW040 unlocking. May work now."),
 	B("abit",	"KN8 Ultra",		OK, NULL, NULL),
+	B("abit",	"KN9 Ultra",		OK, NULL, NULL),
 	B("abit",	"NF-M2 nView",		OK, NULL, NULL),
 	B("abit",	"NF-M2S",		OK, NULL, NULL),
 	B("abit",	"NF7-S",		OK, NULL, NULL),
@@ -774,6 +775,7 @@ const struct board_info boards_known[] = {
 	B("Elitegroup",	"GeForce6100PM-M2 (V3.0)", OK, NULL, NULL),
 	B("Elitegroup",	"GeForce6100SM-M",	OK, NULL, NULL),
 	B("Elitegroup",	"GeForce7050M-M (V2.0)", OK, "http://www.ecs.com.tw/ECSWebSite/Product/Product_Detail.aspx?DetailID=865&MenuID=20&LanID=0", NULL),
+	B("Elitegroup",	"GF7050VT-M",		OK, NULL, NULL),
 	B("Elitegroup", "GF7100PVT-M3 (V1.0)",	OK, NULL, NULL),
 	B("Elitegroup", "GF8200A",		OK, NULL, NULL),
 	B("Elitegroup",	"K7S5A",		OK, NULL, NULL),
@@ -803,7 +805,8 @@ const struct board_info boards_known[] = {
 	B("Foxconn",	"P55MX",		OK, "http://www.foxconnchannel.com/ProductDetail.aspx?T=motherboard&U=en-us0000474", "Needs the MFG jumper to be set correctly before flashing to enable the Flash Descriptor Override Strap."),
 	B("Foxconn",	"Q45M",			BAD, "http://www.foxconnchannel.com/ProductDetail.aspx?T=Motherboard&U=en-us0000587", "Probing works (Hardware sequencing, 4096 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME is locked."),
 	B("Freetech",	"P6F91i",		OK, "http://web.archive.org/web/20010417035034/http://www.freetech.com/prod/P6F91i.html", NULL),
-	B("Fujitsu",	"D3041-A1",		OK, NULL, "Used in ESPRIMO P2560, contains an Atmel AT26DF081A."),
+	B("Fujitsu",	"D2724-A1x",		OK, NULL, "Used in ESPRIMO E5625."),
+	B("Fujitsu",	"D3041-A1x",		OK, NULL, "Used in ESPRIMO P2560, contains an Atmel AT26DF081A."),
 	B("Fujitsu-Siemens", "CELSIUS W410",	BAD, "ftp://ftp.ts.fujitsu.com/pub/mainboard-oem-sales/Products/Mainboards/Industrial&ExtendedLifetime/D3061&D3062/", "Mainboard model is D3062-A1. Probing works (Macronix MX25L6405, 8192 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME is locked."),
 	B("Fujitsu-Siemens", "ESPRIMO P5915",	OK, "http://uk.ts.fujitsu.com/rl/servicesupport/techsupport/professionalpc/ESPRIMO/P/EsprimoP5915-6.htm", "Mainboard model is D2312-A2."),
 	B("GIGABYTE",	"GA-2761GXDK",		OK, "http://www.computerbase.de/news/hardware/mainboards/amd-systeme/2007/mai/gigabyte_dtx-mainboard/", NULL),
@@ -1144,6 +1147,7 @@ const struct board_info laptops_known[] = {
 	B("IBM/Lenovo",	"ThinkPad 240",		BAD, "http://www.stanford.edu/~bresnan//tp240.html", "Seems to (partially) work at first, but one block/sector cannot be written which then leaves you with a bricked laptop. Maybe this can be investigated and fixed in software later."),
 	B("IBM/Lenovo",	"3000 V100 TF05Cxx",	OK, "http://www5.pc.ibm.com/europe/products.nsf/products?openagent&brand=Lenovo3000Notebook&series=Lenovo+3000+V+Series#viewallmodelstop", NULL),
 	//B("MSI",	"GT60-2OD",		OK, "http://www.msi.com/product/nb/GT60_2OD.html", NULL), requires layout patches
+	B("Teclast",	"X98 Air 3G",		OK, NULL, NULL),
 #endif
 
 	{0},

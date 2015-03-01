@@ -1081,6 +1081,6 @@ djgpp-dos: clean
 libpayload: clean
 	make CC="CC=i386-elf-gcc lpgcc" AR=i386-elf-ar RANLIB=i386-elf-ranlib
 
-.PHONY: all install clean distclean compiler hwlibs features export tarball dos featuresavailable
+.PHONY: all install clean distclean compiler hwlibs features export tarball djgpp-dos featuresavailable libpayload
 
 -include $(OBJS:.o=.d)
