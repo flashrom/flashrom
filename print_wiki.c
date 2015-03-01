@@ -133,15 +133,15 @@ static const char *test_state_to_template(enum test_state test_state)
 }
 
 #if CONFIG_INTERNAL == 1
-static const char laptop_intro[] = "\n== Supported laptops/notebooks ==\n\n\
-In general, flashing laptops is more difficult because laptops\n\n\
+static const char laptop_intro[] = "\n== Supported mobile devices (laptops, tablets etc.) ==\n\n\
+In general, flashing mobile devices is more difficult because they\n\n\
 * often use the flash chip for stuff besides the BIOS,\n\
 * often have special protection stuff which has to be handled by flashrom,\n\
 * often use flash translation circuits which need drivers in flashrom.\n\n\
 <div style=\"margin-top:0.5em; padding:0.5em 0.5em 0.5em 0.5em; \
 background-color:#ff6666; align:right; border:1px solid #000000;\">\n\
 '''IMPORTANT:''' At this point we recommend to '''not''' use flashrom on \
-untested laptops unless you have a means to recover from a flashing that goes \
+untested mobile devices unless you have a means to recover from a flashing that goes \
 wrong (a working backup flash chip and/or good soldering skills).\n</div>\n";
 
 static void print_supported_chipsets_wiki(int cols)
@@ -275,10 +275,10 @@ static void print_supported_boards_wiki_helper(const char *devicetype, int cols,
 static void print_supported_boards_wiki(void)
 {
 	printf("%s", board_intro);
-	print_supported_boards_wiki_helper("boards", 2, boards_known);
+	print_supported_boards_wiki_helper("mainboards", 2, boards_known);
 
 	printf("%s", laptop_intro);
-	print_supported_boards_wiki_helper("laptops", 1, laptops_known);
+	print_supported_boards_wiki_helper("mobile devices", 1, laptops_known);
 }
 #endif
 

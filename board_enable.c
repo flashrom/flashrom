@@ -1099,6 +1099,7 @@ static int nvidia_mcp_gpio0_raise(void)
 /*
  * Suited for:
  *  - abit KN8 Ultra: NVIDIA CK804
+ *  - abit KN9 Ultra: NVIDIA MCP55
  */
 static int nvidia_mcp_gpio2_lower(void)
 {
@@ -2314,6 +2315,7 @@ const struct board_match board_matches[] = {
 	{0x8086, 0x2930, 0x147b, 0x1084,  0x11ab, 0x4364, 0x147b, 0x1084, NULL,         NULL, NULL,           P3, "abit",        "IP35",                  0,   OK, intel_ich_gpio16_raise},
 	{0x8086, 0x2930, 0x147b, 0x1083,  0x10ec, 0x8167, 0x147b, 0x1083, NULL,         NULL, NULL,           P3, "abit",        "IP35 Pro",              0,   OK, intel_ich_gpio16_raise},
 	{0x10de, 0x0050, 0x147b, 0x1c1a,  0x10de, 0x0052, 0x147b, 0x1c1a, NULL,         NULL, NULL,           P3, "abit",        "KN8 Ultra",             0,   NT, nvidia_mcp_gpio2_lower},
+	{0x10de, 0x0369, 0x147b, 0x1c20,  0x10de, 0x0360, 0x147b, 0x1c20, "^KN9(NF-MCP55 series)$", NULL, NULL, P3, "abit",      "KN9 Ultra",             0,   OK, nvidia_mcp_gpio2_lower},
 	{0x10de, 0x01e0, 0x147b, 0x1c00,  0x10de, 0x0060, 0x147B, 0x1c00, NULL,         NULL, NULL,           P3, "abit",        "NF7-S",                 0,   OK, nvidia_mcp_gpio8_raise},
 	{0x10de, 0x02f0, 0x147b, 0x1c26,  0x10de, 0x0260, 0x147b, 0x1c26, NULL,         NULL, NULL,           P3, "abit",        "NF-M2 nView",           0,   OK, nvidia_mcp_gpio4_lower},
 	{0x1106, 0x0691,      0,      0,  0x1106, 0x3057,      0,      0, "(VA6)$",     NULL, NULL,           P3, "abit",        "VA6",                   0,   OK, via_apollo_gpo4_lower},
