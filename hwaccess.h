@@ -231,11 +231,6 @@ cpu_to_be(64)
   #define INL(x) __extension__ ({ u_int inl_tmp = (x); inl(inl_tmp); })
 #else
 
-#if defined(__MACH__) && defined(__APPLE__)
-    /* Header is part of the DirectHW library. */
-    #include <DirectHW/DirectHW.h>
-#else
-
 #if defined (__sun)
   /* Note different order for outb */
   #define OUTB(x,y) outb(y, x)
@@ -259,6 +254,12 @@ cpu_to_be(64)
   #define INL  inportl
 
 #else
+
+#if defined(__MACH__) && defined(__APPLE__)
+    /* Header is part of the DirectHW library. */
+    #include <DirectHW/DirectHW.h>
+#endif
+
   /* This is the usual glibc interface. */
   #define OUTB outb
   #define OUTW outw
@@ -266,7 +267,6 @@ cpu_to_be(64)
   #define INB  inb
   #define INW  inw
   #define INL  inl
-#endif
 #endif
 #endif
 #endif
