@@ -94,6 +94,9 @@ enum programmer {
 #if CONFIG_SATAMV == 1
 	PROGRAMMER_SATAMV,
 #endif
+#if CONFIG_LINUX_MTD == 1
+	PROGRAMMER_LINUX_MTD,
+#endif
 #if CONFIG_LINUX_SPI == 1
 	PROGRAMMER_LINUX_SPI,
 #endif
@@ -523,6 +526,11 @@ int register_spi_bitbang_master(const struct bitbang_spi_master *master);
 int buspirate_spi_init(void);
 #endif
 
+/* linux_mtd.c */
+#if CONFIG_LINUX_MTD == 1
+int linux_mtd_init(void);
+#endif
+
 /* linux_spi.c */
 #if CONFIG_LINUX_SPI == 1
 int linux_spi_init(void);
@@ -584,6 +592,9 @@ enum spi_controller {
 #endif
 #if CONFIG_OGP_SPI == 1 || CONFIG_NICINTEL_SPI == 1 || CONFIG_RAYER_SPI == 1 || CONFIG_PONY_SPI == 1 || (CONFIG_INTERNAL == 1 && (defined(__i386__) || defined(__x86_64__)))
 	SPI_CONTROLLER_BITBANG,
+#endif
+#if CONFIG_LINUX_MTD == 1
+	SPI_CONTROLLER_LINUX_MTD,
 #endif
 #if CONFIG_LINUX_SPI == 1
 	SPI_CONTROLLER_LINUX,
@@ -677,6 +688,13 @@ void enter_conf_mode_ite(uint16_t port);
 void exit_conf_mode_ite(uint16_t port);
 void probe_superio_ite(void);
 int init_superio_ite(void);
+
+#if CONFIG_LINUX_MTD == 1
+/* trivial wrapper to avoid cluttering internal_init() with #if */
+static inline int try_mtd(void) { return linux_mtd_init(); };
+#else
+static inline int try_mtd(void) { return 1; };
+#endif
 
 /* mcp6x_spi.c */
 int mcp6x_spi_init(int want_spi);

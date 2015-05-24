@@ -131,6 +131,7 @@ enum write_granularity {
  * other flash chips, such as the ENE KB9012 internal flash, work the opposite way.
  */
 #define FEATURE_ERASED_ZERO	(1 << 16)
+#define FEATURE_NO_ERASE	(1 << 17)
 
 #define ERASED_VALUE(flash)	(((flash)->chip->feature_bits & FEATURE_ERASED_ZERO) ? 0x00 : 0xff)
 

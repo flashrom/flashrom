@@ -341,6 +341,18 @@ const struct programmer_entry programmer_table[] = {
 	},
 #endif
 
+#if CONFIG_LINUX_MTD == 1
+	{
+		.name			= "linux_mtd",
+		.type			= OTHER,
+		.devs.note		= "Device files /dev/mtd*\n",
+		.init			= linux_mtd_init,
+		.map_flash_region	= fallback_map,
+		.unmap_flash_region	= fallback_unmap,
+		.delay			= internal_delay,
+	},
+#endif
+
 #if CONFIG_LINUX_SPI == 1
 	{
 		.name			= "linux_spi",
@@ -1772,7 +1784,8 @@ static int read_erase_write_block(struct flashctx *const flashctx,
 	bool skipped = true;
 	uint8_t *const curcontents = info->curcontents + info->erase_start;
 	const uint8_t erased_value = ERASED_VALUE(flashctx);
-	if (need_erase(curcontents, newcontents, erase_len, flashctx->chip->gran, erased_value)) {
+	if (!(flashctx->chip->feature_bits & FEATURE_NO_ERASE) &&
+			need_erase(curcontents, newcontents, erase_len, flashctx->chip->gran, erased_value)) {
 		if (erase_block(flashctx, info, erasefn))
 			goto _free_ret;
 		/* Erase was successful. Adjust curcontents. */

@@ -289,6 +289,8 @@ bitbanging adapter)
 .sp
 .BR "* ogp_spi" " (for SPI flash ROMs on Open Graphics Project graphics card)"
 .sp
+.BR "* linux_mtd" " (for SPI flash ROMs accessible via /dev/mtdX on Linux)"
+.sp
 .BR "* linux_spi" " (for SPI flash ROMs accessible via /dev/spidevX.Y on Linux)"
 .sp
 .BR "* usbblaster_spi" " (for SPI flash ROMs attached to an Altera USB-Blaster compatible cable)"
@@ -1006,6 +1008,19 @@ you want to use with the
 parameter as explained in the
 .B nic3com et al.\&
 section above.
+.SS
+.BR "linux_mtd " programmer
+.IP
+You may specify the MTD device to use with the
+.sp
+.B "  flashrom \-p linux_mtd:dev=/dev/mtdX"
+.sp
+syntax where
+.B /dev/mtdX
+is the Linux device node for your MTD device. If left unspecified the first MTD
+device found (e.g. /dev/mtd0) will be used by default.
+.sp
+Please note that the linux_mtd driver only works on Linux.
 .SS
 .BR "linux_spi " programmer
 .IP

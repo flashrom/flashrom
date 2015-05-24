@@ -230,6 +230,9 @@ int internal_init(void)
 	 */
 	internal_buses_supported = BUS_NONSPI;
 
+	if (try_mtd() == 0)
+		return 0;
+
 	/* Initialize PCI access for flash enables */
 	if (pci_init_common() != 0)
 		return 1;
