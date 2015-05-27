@@ -254,6 +254,13 @@ int ft2232_spi_init(void)
 			ft2232_vid = OLIMEX_VID;
 			ft2232_type = OLIMEX_ARM_TINY_H_PID;
 			channel_count = 2;
+		} else if (!strcasecmp(arg, "icestick")) {
+			// Axelsys iCEstick with Lattice iCE40-HX1K FPGA
+			// and Micron N25Q032A13ESC40F SPI flash
+			ft2232_type = FTDI_FT2232H_PID;
+			channel_count = 2;
+			cs_bits = 0x90;
+			pindir = 0x93;
 		} else {
 			msg_perr("Error: Invalid device type specified.\n");
 			free(arg);
