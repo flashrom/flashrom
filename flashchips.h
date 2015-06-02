@@ -560,6 +560,11 @@
 #define PMC_PM25LD512		0x20	/* Same as Pm25LD512C, but the latter has more locking options. */
 #define PMC_PM25LD010		0x21	/* Same as Pm25LD010C, but the latter has more locking options. */
 #define PMC_PM25LD020		0x22	/* Same as Pm25LD020C, but the latter has more locking options. */
+#define PMC_PM25LQ020		0x42
+#define PMC_PM25LQ040		0x43
+#define PMC_PM25LQ080		0x44
+#define PMC_PM25LQ016		0x45
+#define PMC_PM25LQ032C		0x46
 #define PMC_PM25LV512		0x7B	/* Same as Pm25LV512A */
 #define PMC_PM25LV010		0x7C	/* Same as Pm25LV010A, but the former does not support RDID but RES3 only. */
 #define PMC_PM25LV020		0x7D
