@@ -49,8 +49,8 @@ int fl_flash_erase(fl_flashctx_t *);
 void fl_flash_release(fl_flashctx_t *);
 int fl_load_layout(const fl_flashctx_t *const flashctx, const char* layout_file, char* region_names);
 
-int fl_image_read(fl_flashctx_t *, void *buffer, size_t buffer_len);
-int fl_image_write(fl_flashctx_t *, void *buffer, size_t buffer_len);
-int fl_image_verify(fl_flashctx_t *, void *buffer, size_t buffer_len);
+int fl_image_read(fl_flashctx_t *, void *buffer, size_t buffer_len, romentry_t **structure);
+int fl_image_write(fl_flashctx_t *, void *buffer, size_t buffer_len, romentry_t **structure);
+int fl_image_verify(fl_flashctx_t *, void *buffer, size_t buffer_len, romentry_t **structure);
 
 #endif				/* !__LIBFLASHROM_H__ */

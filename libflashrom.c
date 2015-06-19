@@ -192,6 +192,7 @@ int fl_flash_probe(fl_flashctx_t **const flashctx, const char *const chip_name)
 	for (i = 0; i < registered_master_count; ++i) {
 		int flash_idx = -1;
 		if (!ret || (flash_idx = probe_flash(&registered_masters[i], 0, *flashctx, 0)) != -1) {
+			msg_cinfo("Found one chip!\n");
 			ret = 0;
 			/* We found one chip, now check that there is no second match. */
 			if (probe_flash(&registered_masters[i], flash_idx + 1, &second_flashctx, 0) != -1) {
@@ -200,7 +201,7 @@ int fl_flash_probe(fl_flashctx_t **const flashctx, const char *const chip_name)
 			}
 		}
 	}
-	if (ret) {
+	if ((ret) && (ret != 3)) {
 		free(*flashctx);
 		*flashctx = NULL;
 	}
@@ -224,9 +225,12 @@ size_t fl_flash_getsize(const fl_flashctx_t *const flashctx)
 
 int fl_load_layout(const fl_flashctx_t *const flashctx, const char* layout_file, char* region_names)
 {
+	int result = 0;
+
 	register_include_arg(region_names);
 	read_romlayout(layout_file);
-	return process_include_args();
+	result = process_include_args();
+	return result;
 }
 
 /** @private */
@@ -315,34 +319,28 @@ void fl_flash_release(fl_flashctx_t *const flashctx)
  *         2 if buffer_len is to short for the flash chip's contents,
  *         or 1 on any other failure.
  */
-int fl_image_read(fl_flashctx_t *const flashctx, void *const buffer, const size_t buffer_len)
+int fl_image_read(fl_flashctx_t *const flashctx, void *const buffer, const size_t buffer_len, romentry_t **structure)
 {
-	const size_t flash_size = flashctx->chip->total_size * 1024;
-
 	int ret = 0;
 
 	if (flashctx->chip->unlock)
 		flashctx->chip->unlock(flashctx);
 
 	msg_cinfo("Reading flash... ");
-	if (flash_size > buffer_len) {
-		msg_cerr("Buffer to short for this flash chip (%u < %u).\n",
-			 (unsigned int)buffer_len, (unsigned int)flash_size);
-		ret = 2;
-		goto _out;
-	}
 	if (!flashctx->chip->read) {
 		msg_cerr("No read function available for this flash chip.\n");
 		ret = 1;
 		goto _out;
 	}
-	if (flashctx->chip->read(flashctx, buffer, 0, flash_size)) {
+	if (read_flash_to_buf(flashctx, buffer, structure)) {
 		msg_cerr("Read operation failed!\n");
 		ret = 1;
-		goto _out;
 	}
 _out:
 	msg_cinfo("%s.\n", ret ? "FAILED" : "done");
+	if (*structure == NULL) {
+		msg_perr("WTF, structure is NULL!\n");
+	}
 	return ret;
 }
 
@@ -360,7 +358,7 @@ void nonfatal_help_message(void);
  *         2 if write was tried, but flash contents changed,
  *         or 1 on any other failure.
  */
-int fl_image_write(fl_flashctx_t *const flashctx, void *const buffer, const size_t buffer_len)
+int fl_image_write(fl_flashctx_t *const flashctx, void *const buffer, const size_t buffer_len, romentry_t **structure)
 {
 	const size_t flash_size = flashctx->chip->total_size * 1024;
 	int read_all_first = 1; /* FIXME: Make this configurable */
@@ -375,11 +373,12 @@ int fl_image_write(fl_flashctx_t *const flashctx, void *const buffer, const size
 
 	uint8_t *const newcontents = buffer;
 	uint8_t *const oldcontents = malloc(flash_size);
+
 	if (!oldcontents) {
 		msg_gerr("Out of memory!\n");
 		return 1;
 	}
-	if (fl_image_read(flashctx, oldcontents, flash_size)) {
+	if (fl_image_read(flashctx, oldcontents, flash_size, structure)) {
 		ret = 1;
 		goto _free_out;
 	}
@@ -418,7 +417,7 @@ int compare_range(uint8_t *wantbuf, uint8_t *havebuf, unsigned int start, unsign
  *         2 if buffer_len doesn't match the size of the flash chip,
  *         or 1 on any other failure.
  */
-int fl_image_verify(fl_flashctx_t *const flashctx, void *const buffer, const size_t buffer_len)
+int fl_image_verify(fl_flashctx_t *const flashctx, void *const buffer, const size_t buffer_len, romentry_t **structure)
 {
 	const size_t flash_size = flashctx->chip->total_size * 1024;
 	int read_all_first = 1; /* FIXME: Make this configurable */
@@ -437,7 +436,7 @@ int fl_image_verify(fl_flashctx_t *const flashctx, void *const buffer, const siz
 		msg_gerr("Out of memory!\n");
 		return 1;
 	}
-	if (fl_image_read(flashctx, oldcontents, flash_size)) {
+	if (fl_image_read(flashctx, oldcontents, flash_size, structure)) {
 		ret = 1;
 		goto _free_out;
 	}

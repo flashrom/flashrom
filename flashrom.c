@@ -1241,11 +1241,15 @@ notfound:
 		if (flash->chip->printlock)
 			flash->chip->printlock(flash);
 
+	msg_cinfo("Calling unmap_flash()...\n");
 	/* Get out of the way for later runs. */
 	unmap_flash(flash);
+	msg_cinfo("unmap_flash() done\n");
+	int result = chip - flashchips;
+	msg_cinfo("probe_flash() done, chip - flashchips = %d\n", result);
 
 	/* Return position of matching chip. */
-	return chip - flashchips;
+	return result;
 }
 
 int verify_flash(struct flashctx *flash, uint8_t *buf)
@@ -1375,7 +1379,7 @@ int write_image_to_file(const unsigned char *buf, unsigned long size, const char
 
 /* Reads the flash chip taking the layout into account. If no layout is given, the complete chip is read, else
  * only the included regions are read. */
-int read_flash_to_buf(struct flashctx *flash, uint8_t *buf)
+int read_flash_to_buf(struct flashctx *flash, uint8_t *buf, romentry_t **entries)
 {
 	romentry_t *e;
 	const struct flashchip *chip = flash->chip;
@@ -1398,9 +1402,13 @@ int read_flash_to_buf(struct flashctx *flash, uint8_t *buf)
 			return 1;
 		}
 		msg_gdbg2("done. ");
+		if (entries != NULL) {
+			*entries = e;
+		}
 		e = get_next_included_romentry(e->end + 1);
 	} while (e != NULL);
 
+	msg_pinfo("writing romentries\n");
 	return 0;
 }
 
@@ -1419,7 +1427,7 @@ int read_flash_to_file(struct flashctx *flash, const char *filename)
 		msg_ginfo("FAILED.\n");
 		return 1;
 	}
-	ret = read_flash_to_buf(flash, buf);
+	ret = read_flash_to_buf(flash, buf, NULL);
 	if (ret != 0) {
 		msg_gerr("Read operation failed!\n");
 		msg_cinfo("FAILED.\n");
