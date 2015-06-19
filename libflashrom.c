@@ -182,6 +182,8 @@ int fl_flash_probe(fl_flashctx_t **const flashctx, const char *const chip_name)
 
 	chip_to_probe = chip_name; /* chip_to_probe is global in flashrom.c */
 
+	msg_cinfo("Before starting probing");
+
 	*flashctx = malloc(sizeof(**flashctx));
 	if (!*flashctx)
 		return 1;
@@ -214,6 +216,17 @@ int fl_flash_probe(fl_flashctx_t **const flashctx, const char *const chip_name)
 size_t fl_flash_getsize(const fl_flashctx_t *const flashctx)
 {
 	return flashctx->chip->total_size << 10;
+}
+
+/* process layout,regions
+ * returns 0 to indicate success, >0 to indicate failure
+ */
+
+int fl_load_layout(const fl_flashctx_t *const flashctx, const char* layout_file, char* region_names)
+{
+	register_include_arg(region_names);
+	read_romlayout(layout_file);
+	return process_include_args();
 }
 
 /** @private */
