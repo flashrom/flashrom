@@ -14512,6 +14512,30 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Winbond",
+		.name		= "W29C512A/W29EE512",
+		.bustype	= BUS_PARALLEL,
+		.manufacture_id	= WINBOND_ID,
+		.model_id	= WINBOND_W29C512A,
+		.total_size	= 64,
+		.page_size	= 128,
+		.feature_bits	= FEATURE_LONG_RESET,
+		.tested		= TEST_OK_PREW,
+		.probe		= probe_jedec,
+		.probe_timing	= 10,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {64 * 1024, 1} },
+				.block_erase = erase_chip_block_jedec,
+			}
+		},
+		.write		= write_jedec,
+		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
+	},
+
+	{
+		.vendor		= "Winbond",
 		.name		= "W29C010(M)/W29C011A/W29EE011/W29EE012-old",
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= WINBOND_ID,
