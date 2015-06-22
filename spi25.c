@@ -156,7 +156,7 @@ static int probe_spi_rdid_generic(struct flashctx *flash, int bytes)
 		return 1;
 
 	/* Test if there is any vendor ID. */
-	if (GENERIC_MANUF_ID == chip->manufacture_id && id1 != 0xff)
+	if (GENERIC_MANUF_ID == chip->manufacture_id && id1 != 0xff && id1 != 0x00)
 		return 1;
 
 	return 0;
@@ -212,7 +212,7 @@ int probe_spi_rems(struct flashctx *flash)
 		return 1;
 
 	/* Test if there is any vendor ID. */
-	if (GENERIC_MANUF_ID == chip->manufacture_id && id1 != 0xff)
+	if (GENERIC_MANUF_ID == chip->manufacture_id && id1 != 0xff && id1 != 0x00)
 		return 1;
 
 	return 0;
