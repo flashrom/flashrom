@@ -45,6 +45,15 @@ static int dediprog_endpoint;
 #define DEDI_SPI_CMD_PAGEWRITE	0x1
 #define DEDI_SPI_CMD_AAIWRITE	0x4
 
+enum dediprog_leds {
+	LED_INVALID		= -1,
+	LED_NONE		= 0,
+	LED_PASS		= 1 << 0,
+	LED_BUSY		= 1 << 1,
+	LED_ERROR		= 1 << 2,
+	LED_ALL			= 7,
+};
+
 #if 0
 /* Might be useful for other pieces of code as well. */
 static void print_hex(void *buf, size_t len)
@@ -77,24 +86,11 @@ static struct usb_device *get_device_by_vid_pid(uint16_t vid, uint16_t pid, unsi
 
 //int usb_control_msg(usb_dev_handle *dev, int requesttype, int request, int value, int index, char *bytes, int size, int timeout);
 
-/* Set/clear LEDs on dediprog */
-#define PASS_ON		(0 << 0)
-#define PASS_OFF	(1 << 0)
-#define BUSY_ON		(0 << 1)
-#define BUSY_OFF	(1 << 1)
-#define ERROR_ON	(0 << 2)
-#define ERROR_OFF	(1 << 2)
-static int current_led_status = -1;
-
+/* This function sets the GPIOs connected to the LEDs as well as IO1-IO4. */
 static int dediprog_set_leds(int leds)
 {
-	int ret, target_leds;
-
-	if (leds < 0 || leds > 7)
-		leds = 0; // Bogus value, enable all LEDs
-
-	if (leds == current_led_status)
-		return 0;
+	if (leds < LED_NONE || leds > LED_ALL)
+		leds = LED_ALL;
 
 	/* Older Dediprogs with 2.x.x and 3.x.x firmware only had
 	 * two LEDs, and they were reversed. So map them around if 
@@ -103,22 +99,20 @@ static int dediprog_set_leds(int leds)
 	 *   bit 2 == 0: green light is on.
 	 *   bit 0 == 0: red light is on. 
 	 */
+	int target_leds;
 	if (dediprog_firmwareversion < FIRMWARE_VERSION(5,0,0)) {
-		target_leds = ((leds & ERROR_OFF) >> 2) | 
-			((leds & PASS_OFF) << 2);
+		target_leds = ((leds & LED_ERROR) >> 2) |
+			((leds & LED_PASS) << 2);
 	} else {
 		target_leds = leds;
 	}
 
-	ret = usb_control_msg(dediprog_handle, 0x42, 0x07, 0x09, target_leds,
-			      NULL, 0x0, DEFAULT_TIMEOUT);
+	target_leds ^= 7;
+	int ret = usb_control_msg(dediprog_handle, 0x42, 0x07, 0x09, target_leds, NULL, 0x0, DEFAULT_TIMEOUT);
 	if (ret != 0x0) {
-		msg_perr("Command Set LED 0x%x failed (%s)!\n",
-			 leds, usb_strerror());
+		msg_perr("Command Set LED 0x%x failed (%s)!\n", leds, usb_strerror());
 		return 1;
 	}
-
-	current_led_status = leds;
 
 	return 0;
 }
@@ -271,26 +265,22 @@ static int dediprog_spi_read(struct flashctx *flash, uint8_t *buf,
 	unsigned int residue = start % chunksize ? chunksize - start % chunksize : 0;
 	unsigned int bulklen;
 
-	dediprog_set_leds(PASS_OFF|BUSY_ON|ERROR_OFF);
+	dediprog_set_leds(LED_BUSY);
 
 	if (residue) {
 		msg_pdbg("Slow read for partial block from 0x%x, length 0x%x\n",
 			 start, residue);
 		ret = spi_read_chunked(flash, buf, start, residue, 16);
-		if (ret) {
-			dediprog_set_leds(PASS_OFF|BUSY_OFF|ERROR_ON);
-			return ret;
-		}
+		if (ret)
+			goto err;
 	}
 
 	/* Round down. */
 	bulklen = (len - residue) / chunksize * chunksize;
 	ret = dediprog_spi_bulk_read(flash, buf + residue, start + residue,
 				     bulklen);
-	if (ret) {
-		dediprog_set_leds(PASS_OFF|BUSY_OFF|ERROR_ON);
-		return ret;
-	}
+	if (ret)
+		goto err;
 
 	len -= residue + bulklen;
 	if (len) {
@@ -298,14 +288,15 @@ static int dediprog_spi_read(struct flashctx *flash, uint8_t *buf,
 			 start, len);
 		ret = spi_read_chunked(flash, buf + residue + bulklen,
 				       start + residue + bulklen, len, 16);
-		if (ret) {
-			dediprog_set_leds(PASS_OFF|BUSY_OFF|ERROR_ON);
-			return ret;
-		}
+		if (ret)
+			goto err;
 	}
 
-	dediprog_set_leds(PASS_ON|BUSY_OFF|ERROR_OFF);
+	dediprog_set_leds(LED_PASS);
 	return 0;
+err:
+	dediprog_set_leds(LED_ERROR);
+	return ret;
 }
 
 /* Bulk write interface, will write multiple chunksize byte chunks aligned to chunksize bytes.
@@ -383,7 +374,7 @@ static int dediprog_spi_write(struct flashctx *flash, const uint8_t *buf,
 	unsigned int residue = start % chunksize ? chunksize - start % chunksize : 0;
 	unsigned int bulklen;
 
-	dediprog_set_leds(PASS_OFF|BUSY_ON|ERROR_OFF);
+	dediprog_set_leds(LED_BUSY);
 
 	if (chunksize != 256) {
 		msg_pdbg("Page sizes other than 256 bytes are unsupported as "
@@ -398,7 +389,7 @@ static int dediprog_spi_write(struct flashctx *flash, const uint8_t *buf,
 		/* No idea about the real limit. Maybe 12, maybe more. */
 		ret = spi_write_chunked(flash, buf, start, residue, 12);
 		if (ret) {
-			dediprog_set_leds(PASS_OFF|BUSY_OFF|ERROR_ON);
+			dediprog_set_leds(LED_ERROR);
 			return ret;
 		}
 	}
@@ -407,7 +398,7 @@ static int dediprog_spi_write(struct flashctx *flash, const uint8_t *buf,
 	bulklen = (len - residue) / chunksize * chunksize;
 	ret = dediprog_spi_bulk_write(flash, buf + residue, chunksize, start + residue, bulklen, dedi_spi_cmd);
 	if (ret) {
-		dediprog_set_leds(PASS_OFF|BUSY_OFF|ERROR_ON);
+		dediprog_set_leds(LED_ERROR);
 		return ret;
 	}
 
@@ -418,12 +409,12 @@ static int dediprog_spi_write(struct flashctx *flash, const uint8_t *buf,
 		ret = spi_write_chunked(flash, buf + residue + bulklen,
 				        start + residue + bulklen, len, 12);
 		if (ret) {
-			dediprog_set_leds(PASS_OFF|BUSY_OFF|ERROR_ON);
+			dediprog_set_leds(LED_ERROR);
 			return ret;
 		}
 	}
 
-	dediprog_set_leds(PASS_ON|BUSY_OFF|ERROR_OFF);
+	dediprog_set_leds(LED_PASS);
 	return 0;
 }
 
@@ -918,23 +909,25 @@ int dediprog_init(void)
 	if (register_shutdown(dediprog_shutdown, NULL))
 		return 1;
 
-	dediprog_set_leds(PASS_ON|BUSY_ON|ERROR_ON);
-
 	/* Perform basic setup. */
 	if (dediprog_setup(target)) {
-		dediprog_set_leds(PASS_OFF|BUSY_OFF|ERROR_ON);
 		return 1;
 	}
 
+	/* Set all possible LEDs as soon as possible to indicate activity.
+	 * Because knowing the firmware version is required to set the LEDs correctly we need to this after
+	 * dediprog_setup() has queried the device and set dediprog_firmwareversion. */
+	dediprog_set_leds(LED_ALL);
+
 	/* After setting voltage and speed, perform setup again. */
 	if (dediprog_set_spi_voltage(0) || dediprog_set_spi_speed(spispeed_idx) || dediprog_setup(target)) {
-		dediprog_set_leds(PASS_OFF|BUSY_OFF|ERROR_ON);
+		dediprog_set_leds(LED_ERROR);
 		return 1;
 	}
 
 	/* URB 11. Command Set SPI Voltage. */
 	if (dediprog_set_spi_voltage(millivolt)) {
-		dediprog_set_leds(PASS_OFF|BUSY_OFF|ERROR_ON);
+		dediprog_set_leds(LED_ERROR);
 		return 1;
 	}
 
@@ -946,7 +939,7 @@ int dediprog_init(void)
 	dediprog_do_stuff();
 #endif
 
-	dediprog_set_leds(PASS_OFF|BUSY_OFF|ERROR_OFF);
+	dediprog_set_leds(LED_NONE);
 
 	return 0;
 }
