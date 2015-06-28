@@ -116,7 +116,7 @@ static const struct baudentry sp_baudtable[] = {
 	{0, 0}			/* Terminator */
 };
 
-const struct baudentry *round_baud(unsigned int baud)
+static const struct baudentry *round_baud(unsigned int baud)
 {
 	int i;
 	/* Round baud rate to next lower entry in sp_baudtable if it exists, else use the lowest entry. */
@@ -125,11 +125,12 @@ const struct baudentry *round_baud(unsigned int baud)
 			return &sp_baudtable[i];
 
 		if (sp_baudtable[i].baud < baud) {
-			msg_pinfo("Warning: given baudrate %d rounded down to %d.\n",
+			msg_pwarn("Warning: given baudrate %d rounded down to %d.\n",
 				  baud, sp_baudtable[i].baud);
 			return &sp_baudtable[i];
 		}
 	}
+	msg_pinfo("Using slowest possible baudrate: %d.\n", sp_baudtable[0].baud);
 	return &sp_baudtable[0];
 }
 
@@ -154,7 +155,7 @@ static void msg_perr_strerror(const char *msg)
 #endif
 }
 
-int serialport_config(fdtype fd, unsigned int baud)
+int serialport_config(fdtype fd, int baud)
 {
 	if (fd == SER_INV_FD) {
 		msg_perr("%s: File descriptor is invalid.\n", __func__);
@@ -167,8 +168,10 @@ int serialport_config(fdtype fd, unsigned int baud)
 		msg_perr_strerror("Could not fetch original serial port configuration: ");
 		return 1;
 	}
-	const struct baudentry *entry = round_baud(baud);
-	dcb.BaudRate = entry->flag;
+	if (baud >= 0) {
+		const struct baudentry *entry = round_baud(baud);
+		dcb.BaudRate = entry->flag;
+	}
 	dcb.ByteSize = 8;
 	dcb.Parity = NOPARITY;
 	dcb.StopBits = ONESTOPBIT;
@@ -188,10 +191,12 @@ int serialport_config(fdtype fd, unsigned int baud)
 		return 1;
 	}
 	wanted = observed;
-	const struct baudentry *entry = round_baud(baud);
-	if (cfsetispeed(&wanted, entry->flag) != 0 || cfsetospeed(&wanted, entry->flag) != 0) {
-		msg_perr_strerror("Could not set serial baud rate: ");
-		return 1;
+	if (baud >= 0) {
+		const struct baudentry *entry = round_baud(baud);
+		if (cfsetispeed(&wanted, entry->flag) != 0 || cfsetospeed(&wanted, entry->flag) != 0) {
+			msg_perr_strerror("Could not set serial baud rate: ");
+			return 1;
+		}
 	}
 	wanted.c_cflag &= ~(PARENB | CSTOPB | CSIZE | CRTSCTS);
 	wanted.c_cflag |= (CS8 | CLOCAL | CREAD);
@@ -232,7 +237,7 @@ int serialport_config(fdtype fd, unsigned int baud)
 	return 0;
 }
 
-fdtype sp_openserport(char *dev, unsigned int baud)
+fdtype sp_openserport(char *dev, int baud)
 {
 	fdtype fd;
 #if IS_WINDOWS
