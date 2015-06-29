@@ -706,6 +706,7 @@ int register_master(const struct registered_master *mst);
 #if CONFIG_SERPROG == 1
 int serprog_init(void);
 void serprog_delay(unsigned int usecs);
+void *serprog_map(const char *descr, uintptr_t phys_addr, size_t len);
 #endif
 
 /* serial.c */
