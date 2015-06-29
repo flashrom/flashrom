@@ -943,3 +943,19 @@ static int serprog_spi_read(struct flashctx *flash, uint8_t *buf,
 	}
 	return 0;
 }
+
+void *serprog_map(const char *descr, uintptr_t phys_addr, size_t len)
+{
+	/* Serprog transmits 24 bits only and assumes the underlying implementation handles any remaining bits
+	 * correctly (usually setting them to one either in software (for FWH/LPC) or relying on the fact that
+	 * the hardware observes a subset of the address bits only). Combined with the standard mapping of
+	 * flashrom this creates a 16 MB-wide window just below the 4 GB boundary where serprog can operate (as
+	 * needed for non-SPI chips). Below we make sure that the requested range is within this window. */
+	if ((phys_addr & 0xFF000000) == 0xFF000000) {
+		return (void*)phys_addr;
+	} else {
+		msg_pwarn(MSGHEADER "requested mapping %s is incompatible: 0x%zx bytes at 0x%0*" PRIxPTR ".\n",
+			  descr, len, PRIxPTR_WIDTH, phys_addr);
+		return NULL;
+	}
+}
