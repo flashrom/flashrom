@@ -371,12 +371,15 @@ int serprog_init(void)
 			have_device++;
 		}
 	}
+
+#if !IS_WINDOWS
 	if (device && !strlen(device)) {
 		msg_perr("Error: No device specified.\n"
 			 "Use flashrom -p serprog:dev=/dev/device[:baud]\n");
 		free(device);
 		return 1;
 	}
+#endif
 	free(device);
 
 #if !IS_WINDOWS
@@ -416,14 +419,19 @@ int serprog_init(void)
 		return 1;
 	}
 	free(device);
+#endif
 
 	if (!have_device) {
+#if IS_WINDOWS
+		msg_perr("Error: No device specified.\n"
+			 "Use flashrom -p serprog:dev=comN[:baud]\n");
+#else
 		msg_perr("Error: Neither host nor device specified.\n"
 			 "Use flashrom -p serprog:dev=/dev/device:baud or "
 			 "flashrom -p serprog:ip=ipaddr:port\n");
+#endif
 		return 1;
 	}
-#endif
 
 	if (register_shutdown(serprog_shutdown, NULL))
 		return 1;
