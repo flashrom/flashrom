@@ -2,6 +2,8 @@
  * This file is part of the flashrom project.
  *
  * Copyright (C) 2010 Carl-Daniel Hailfinger
+ * Copyright (C) 2015 Simon Glass
+ * Copyright (C) 2015 Stefan Tauner
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,12 +40,12 @@
 
 #define FIRMWARE_VERSION(x,y,z) ((x << 16) | (y << 8) | z)
 #define DEFAULT_TIMEOUT 3000
+#define REQTYPE_OTHER_OUT (USB_ENDPOINT_IN | USB_TYPE_VENDOR | USB_RECIP_OTHER)		/* 0x43 */
+#define REQTYPE_OTHER_IN (USB_ENDPOINT_IN | USB_TYPE_VENDOR | USB_RECIP_OTHER)		/* 0xC3 */
+#define REQTYPE_EP_OUT (USB_ENDPOINT_OUT | USB_TYPE_VENDOR | USB_RECIP_ENDPOINT)	/* 0x42 */
+#define REQTYPE_EP_IN (USB_ENDPOINT_IN | USB_TYPE_VENDOR | USB_RECIP_ENDPOINT)		/* 0xC2 */
 static usb_dev_handle *dediprog_handle;
-static int dediprog_firmwareversion;
 static int dediprog_endpoint;
-
-#define DEDI_SPI_CMD_PAGEWRITE	0x1
-#define DEDI_SPI_CMD_AAIWRITE	0x4
 
 enum dediprog_leds {
 	LED_INVALID		= -1,
@@ -53,6 +55,80 @@ enum dediprog_leds {
 	LED_ERROR		= 1 << 2,
 	LED_ALL			= 7,
 };
+
+/* IO bits for CMD_SET_IO_LED message */
+enum dediprog_ios {
+	IO1			= 1 << 0,
+	IO2			= 1 << 1,
+	IO3			= 1 << 2,
+	IO4			= 1 << 3,
+};
+
+enum dediprog_cmds {
+	CMD_TRANSCEIVE		= 0x01,
+	CMD_POLL_STATUS_REG	= 0x02,
+	CMD_SET_VPP		= 0x03,
+	CMD_SET_TARGET		= 0x04,
+	CMD_READ_EEPROM		= 0x05,
+	CMD_WRITE_EEPROM	= 0x06,
+	CMD_SET_IO_LED		= 0x07,
+	CMD_READ_PROG_INFO	= 0x08,
+	CMD_SET_VCC		= 0x09,
+	CMD_SET_STANDALONE	= 0x0A,
+	CMD_GET_BUTTON		= 0x11,
+	CMD_GET_UID		= 0x12,
+	CMD_SET_CS		= 0x14,
+	CMD_IO_MODE		= 0x15,
+	CMD_FW_UPDATE		= 0x1A,
+	CMD_FPGA_UPDATE		= 0x1B,
+	CMD_READ_FPGA_VERSION	= 0x1C,
+	CMD_SET_HOLD		= 0x1D,
+	CMD_READ		= 0x20,
+	CMD_WRITE		= 0x30,
+	CMD_WRITE_AT45DB	= 0x31,
+	CMD_NAND_WRITE		= 0x32,
+	CMD_NAND_READ		= 0x33,
+	CMD_SET_SPI_CLK		= 0x61,
+	CMD_CHECK_SOCKET	= 0x62,
+	CMD_DOWNLOAD_PRJ	= 0x63,
+	CMD_READ_PRJ_NAME	= 0x64,
+	// New protocol/firmware only
+	CMD_CHECK_SDCARD	= 0x65,
+	CMD_READ_PRJ		= 0x66,
+};
+
+enum dediprog_target {
+	FLASH_TYPE_APPLICATION_FLASH_1	= 0,
+	FLASH_TYPE_FLASH_CARD,
+	FLASH_TYPE_APPLICATION_FLASH_2,
+	FLASH_TYPE_SOCKET,
+};
+
+enum dediprog_readmode {
+	READ_MODE_STD			= 1,
+	READ_MODE_FAST			= 2,
+	READ_MODE_ATMEL45		= 3,
+	READ_MODE_4B_ADDR_FAST		= 4,
+	READ_MODE_4B_ADDR_FAST_0x0C	= 5, /* New protocol only */
+};
+
+enum dediprog_writemode {
+	WRITE_MODE_PAGE_PGM 			= 1,
+	WRITE_MODE_PAGE_WRITE			= 2,
+	WRITE_MODE_1B_AAI			= 3,
+	WRITE_MODE_2B_AAI			= 4,
+	WRITE_MODE_128B_PAGE			= 5,
+	WRITE_MODE_PAGE_AT26DF041		= 6,
+	WRITE_MODE_SILICON_BLUE_FPGA		= 7,
+	WRITE_MODE_64B_PAGE_NUMONYX_PCM		= 8,	/* unit of length 512 bytes */
+	WRITE_MODE_4B_ADDR_256B_PAGE_PGM	= 9,
+	WRITE_MODE_32B_PAGE_PGM_MXIC_512K	= 10,	/* unit of length 512 bytes */
+	WRITE_MODE_4B_ADDR_256B_PAGE_PGM_0x12	= 11,
+	WRITE_MODE_4B_ADDR_256B_PAGE_PGM_FLAGS	= 12,
+};
+
+
+static int dediprog_firmwareversion = FIRMWARE_VERSION(0, 0, 0);
 
 #if 0
 /* Might be useful for other pieces of code as well. */
@@ -84,8 +160,6 @@ static struct usb_device *get_device_by_vid_pid(uint16_t vid, uint16_t pid, unsi
 	return NULL;
 }
 
-//int usb_control_msg(usb_dev_handle *dev, int requesttype, int request, int value, int index, char *bytes, int size, int timeout);
-
 /* This function sets the GPIOs connected to the LEDs as well as IO1-IO4. */
 static int dediprog_set_leds(int leds)
 {
@@ -108,7 +182,8 @@ static int dediprog_set_leds(int leds)
 	}
 
 	target_leds ^= 7;
-	int ret = usb_control_msg(dediprog_handle, 0x42, 0x07, 0x09, target_leds, NULL, 0x0, DEFAULT_TIMEOUT);
+	int ret = usb_control_msg(dediprog_handle, REQTYPE_EP_OUT, CMD_SET_IO_LED, 0x09, target_leds,
+				  NULL, 0x0, DEFAULT_TIMEOUT);
 	if (ret != 0x0) {
 		msg_perr("Command Set LED 0x%x failed (%s)!\n", leds, usb_strerror());
 		return 1;
@@ -147,8 +222,8 @@ static int dediprog_set_spi_voltage(int millivolt)
 		/* Wait some time as the original driver does. */
 		programmer_delay(200 * 1000);
 	}
-	ret = usb_control_msg(dediprog_handle, 0x42, 0x9, voltage_selector,
-			      0xff, NULL, 0x0, DEFAULT_TIMEOUT);
+	ret = usb_control_msg(dediprog_handle, REQTYPE_EP_OUT, CMD_SET_VCC, voltage_selector, 0,
+			      NULL, 0x0, DEFAULT_TIMEOUT);
 	if (ret != 0x0) {
 		msg_perr("Command Set SPI Voltage 0x%x failed!\n",
 			 voltage_selector);
@@ -178,13 +253,6 @@ static const struct dediprog_spispeeds spispeeds[] = {
 	{ NULL,		0x0 },
 };
 
-/* After dediprog_set_spi_speed, the original app always calls
- * dediprog_set_spi_voltage(0) and then
- * dediprog_check_devicestring() four times in a row.
- * After that, dediprog_command_a() is called.
- * This looks suspiciously like the microprocessor in the SF100 has to be
- * restarted/reinitialized in case the speed changes.
- */
 static int dediprog_set_spi_speed(unsigned int spispeed_idx)
 {
 	if (dediprog_firmwareversion < FIRMWARE_VERSION(5, 0, 0)) {
@@ -192,12 +260,13 @@ static int dediprog_set_spi_speed(unsigned int spispeed_idx)
 		return 0;
 	}
 
-	msg_pdbg("SPI speed is %s Hz\n", spispeeds[spispeed_idx].name);
+	const struct dediprog_spispeeds *spispeed = &spispeeds[spispeed_idx];
+	msg_pdbg("SPI speed is %sHz\n", spispeed->name);
 
-	int ret = usb_control_msg(dediprog_handle, 0x42, 0x61, spispeeds[spispeed_idx].speed, 0xff,
+	int ret = usb_control_msg(dediprog_handle, REQTYPE_EP_OUT, CMD_SET_SPI_CLK, spispeed->speed, 0xff,
 				  NULL, 0x0, DEFAULT_TIMEOUT);
 	if (ret != 0x0) {
-		msg_perr("Command Set SPI Speed 0x%x failed!\n", spispeeds[spispeed_idx].speed);
+		msg_perr("Command Set SPI Speed 0x%x failed!\n", spispeed->speed);
 		return 1;
 	}
 	return 0;
@@ -233,7 +302,7 @@ static int dediprog_spi_bulk_read(struct flashctx *flash, uint8_t *buf,
 	/* Command Read SPI Bulk. No idea which read command is used on the
 	 * SPI side.
 	 */
-	ret = usb_control_msg(dediprog_handle, 0x42, 0x20, start % 0x10000,
+	ret = usb_control_msg(dediprog_handle, REQTYPE_EP_OUT, CMD_READ, start % 0x10000,
 			      start / 0x10000, (char *)count_and_chunk,
 			      sizeof(count_and_chunk), DEFAULT_TIMEOUT);
 	if (ret != sizeof(count_and_chunk)) {
@@ -342,7 +411,7 @@ static int dediprog_spi_bulk_write(struct flashctx *flash, const uint8_t *buf, u
 	/* Command Write SPI Bulk. No idea which write command is used on the
 	 * SPI side.
 	 */
-	ret = usb_control_msg(dediprog_handle, 0x42, 0x30, start % 0x10000, start / 0x10000,
+	ret = usb_control_msg(dediprog_handle, REQTYPE_EP_OUT, CMD_WRITE, start % 0x10000, start / 0x10000,
 			      (char *)count_and_cmd, sizeof(count_and_cmd), DEFAULT_TIMEOUT);
 	if (ret != sizeof(count_and_cmd)) {
 		msg_perr("Command Write SPI Bulk failed, %i %s!\n", ret,
@@ -420,12 +489,12 @@ static int dediprog_spi_write(struct flashctx *flash, const uint8_t *buf,
 
 static int dediprog_spi_write_256(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len)
 {
-	return dediprog_spi_write(flash, buf, start, len, DEDI_SPI_CMD_PAGEWRITE);
+	return dediprog_spi_write(flash, buf, start, len, WRITE_MODE_PAGE_PGM);
 }
 
 static int dediprog_spi_write_aai(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len)
 {
-	return dediprog_spi_write(flash, buf, start, len, DEDI_SPI_CMD_AAIWRITE);
+	return dediprog_spi_write(flash, buf, start, len, WRITE_MODE_2B_AAI);
 }
 
 static int dediprog_spi_send_command(struct flashctx *flash,
@@ -437,29 +506,26 @@ static int dediprog_spi_send_command(struct flashctx *flash,
 	int ret;
 
 	msg_pspew("%s, writecnt=%i, readcnt=%i\n", __func__, writecnt, readcnt);
-	/* Paranoid, but I don't want to be blamed if anything explodes. */
-	if (writecnt > 16) {
-		msg_perr("Untested writecnt=%i, aborting.\n", writecnt);
+	if (writecnt > UINT16_MAX) {
+		msg_perr("Invalid writecnt=%i, aborting.\n", writecnt);
 		return 1;
 	}
-	/* 16 byte reads should work. */
-	if (readcnt > 16) {
-		msg_perr("Untested readcnt=%i, aborting.\n", readcnt);
+	if (readcnt > UINT16_MAX) {
+		msg_perr("Invalid readcnt=%i, aborting.\n", readcnt);
 		return 1;
 	}
 	
-	ret = usb_control_msg(dediprog_handle, 0x42, 0x1, 0xff,
-			      readcnt ? 0x1 : 0x0, (char *)writearr, writecnt,
-			      DEFAULT_TIMEOUT);
+	ret = usb_control_msg(dediprog_handle, REQTYPE_EP_OUT, CMD_TRANSCEIVE, 0, readcnt ? 0x1 : 0x0,
+			      (char *)writearr, writecnt, DEFAULT_TIMEOUT);
 	if (ret != writecnt) {
 		msg_perr("Send SPI failed, expected %i, got %i %s!\n",
 			 writecnt, ret, usb_strerror());
 		return 1;
 	}
-	if (!readcnt)
+	if (readcnt == 0)
 		return 0;
-	memset(readarr, 0, readcnt);
-	ret = usb_control_msg(dediprog_handle, 0xc2, 0x01, 0xbb8, 0x0000,
+
+	ret = usb_control_msg(dediprog_handle, REQTYPE_EP_IN, CMD_TRANSCEIVE, 0, 0,
 			     (char *)readarr, readcnt, DEFAULT_TIMEOUT);
 	if (ret != readcnt) {
 		msg_perr("Receive SPI failed, expected %i, got %i %s!\n",
@@ -475,27 +541,27 @@ static int dediprog_check_devicestring(void)
 	int fw[3];
 	char buf[0x11];
 
+#if 0
 	/* Command Prepare Receive Device String. */
-	memset(buf, 0, sizeof(buf));
-	ret = usb_control_msg(dediprog_handle, 0xc3, 0x7, 0x0, 0xef03, buf,
-			      0x1, DEFAULT_TIMEOUT);
+	ret = usb_control_msg(dediprog_handle, REQTYPE_OTHER_IN, 0x7, 0x0, 0xef03,
+			      buf, 0x1, DEFAULT_TIMEOUT);
 	/* The char casting is needed to stop gcc complaining about an always true comparison. */
 	if ((ret != 0x1) || (buf[0] != (char)0xff)) {
 		msg_perr("Unexpected response to Command Prepare Receive Device"
 			 " String!\n");
 		return 1;
 	}
+#endif
 	/* Command Receive Device String. */
-	memset(buf, 0, sizeof(buf));
-	ret = usb_control_msg(dediprog_handle, 0xc2, 0x8, 0xff, 0xff, buf,
-			      0x10, DEFAULT_TIMEOUT);
+	ret = usb_control_msg(dediprog_handle, REQTYPE_EP_IN, CMD_READ_PROG_INFO, 0, 0,
+			      buf, 0x10, DEFAULT_TIMEOUT);
 	if (ret != 0x10) {
 		msg_perr("Incomplete/failed Command Receive Device String!\n");
 		return 1;
 	}
 	buf[0x10] = '\0';
 	msg_pdbg("Found a %s\n", buf);
-	if (memcmp(buf, "SF100", 0x5)) {
+	if (memcmp(buf, "SF100", 0x5) != 0) {
 		msg_perr("Device not a SF100!\n");
 		return 1;
 	}
@@ -513,24 +579,20 @@ static int dediprog_check_devicestring(void)
 	return 0;
 }
 
-/* Command A seems to be some sort of device init. It is either followed by
- * dediprog_check_devicestring (often) or Command A (often) or
- * Command F (once).
- */
-static int dediprog_command_a(void)
+static int dediprog_device_init(void)
 {
 	int ret;
 	char buf[0x1];
 
 	memset(buf, 0, sizeof(buf));
-	ret = usb_control_msg(dediprog_handle, 0xc3, 0xb, 0x0, 0x0, buf,
-			      0x1, DEFAULT_TIMEOUT);
+	ret = usb_control_msg(dediprog_handle, REQTYPE_OTHER_IN, 0x0B, 0x0, 0x0,
+			      buf, 0x1, DEFAULT_TIMEOUT);
 	if (ret < 0) {
 		msg_perr("Command A failed (%s)!\n", usb_strerror());
 		return 1;
 	}
 	if ((ret != 0x1) || (buf[0] != 0x6f)) {
-		msg_perr("Unexpected response to Command A!\n");
+		msg_perr("Unexpected response to init!\n");
 		return 1;
 	}
 	return 0;
@@ -546,9 +608,8 @@ static int dediprog_command_b(void)
 	int ret;
 	char buf[0x3];
 
-	memset(buf, 0, sizeof(buf));
-	ret = usb_control_msg(dediprog_handle, 0xc3, 0x7, 0x0, 0xef00, buf,
-			      0x3, DEFAULT_TIMEOUT);
+	ret = usb_control_msg(dediprog_handle, REQTYPE_OTHER_IN, 0x7, 0x0, 0xef00,
+			      buf, 0x3, DEFAULT_TIMEOUT);
 	if (ret < 0) {
 		msg_perr("Command B failed (%s)!\n", usb_strerror());
 		return 1;
@@ -563,120 +624,29 @@ static int dediprog_command_b(void)
 }
 #endif
 
-/* Command Chip Select is only sent after dediprog_check_devicestring, but not after every
- * invocation of dediprog_check_devicestring. It is only sent after the first
- * dediprog_command_a(); dediprog_check_devicestring() sequence in each session.
- * Bit #1 of the value changes the chip select: 0 is target 1, 1 is target 2 and parameter target can be 1 or 2
- * respectively. We don't know how to encode "3, Socket" and "0, reference card" yet. On SF100 the vendor
- * software "DpCmd 6.0.4.06" selects target 2 when requesting 3 (which is unavailable on that hardware).
- */
-static int dediprog_chip_select(int target)
+static int set_target_flash(enum dediprog_target target)
 {
-	int ret;
-	uint16_t value = ((target - 1) & 1) << 1;
-	msg_pdbg("Selecting target chip %i\n", target);
-	ret = usb_control_msg(dediprog_handle, 0x42, 0x4, value, 0x0, NULL,
-			      0x0, DEFAULT_TIMEOUT);
-	if (ret != 0x0) {
-		msg_perr("Command Chip Select failed (%s)!\n", usb_strerror());
+	int ret = usb_control_msg(dediprog_handle, REQTYPE_EP_OUT, CMD_SET_TARGET, target, 0,
+			          NULL, 0, DEFAULT_TIMEOUT);
+	if (ret != 0) {
+		msg_perr("set_target_flash failed (%s)!\n", usb_strerror());
 		return 1;
 	}
 	return 0;
 }
 
 #if 0
-/* Very strange. Seems to be a programmer keepalive or somesuch.
- * Wait unsuccessfully for timeout ms to read one byte.
- * Is usually called after setting voltage to 0.
- * Present in all logs with Firmware 2.1.1 and 3.1.8
- */
-static int dediprog_command_f(int timeout)
+/* Returns true if the button is currently pressed. */
+static bool dediprog_get_button(void)
 {
-	int ret;
-	char buf[0x1];
-
-	memset(buf, 0, sizeof(buf));
-	ret = usb_control_msg(dediprog_handle, 0xc2, 0x11, 0xff, 0xff, buf,
-			      0x1, timeout);
-	/* This check is most probably wrong. Command F always causes a timeout
-	 * in the logs, so we should check for timeout instead of checking for
-	 * success.
-	 */
-	if (ret != 0x1) {
-		msg_perr("Command F failed (%s)!\n", usb_strerror());
+	char buf[1];
+	int ret = usb_control_msg(dediprog_handle, REQTYPE_EP_IN, CMD_GET_BUTTON, 0, 0,
+			      buf, 0x1, DEFAULT_TIMEOUT);
+	if (ret != 0) {
+		msg_perr("Could not get button state (%s)!\n", usb_strerror());
 		return 1;
 	}
-	return 0;
-}
-
-/* Start/stop blinking?
- * Present in eng_detect_blink.log with firmware 3.1.8
- * Preceded by Command J
- */
-static int dediprog_command_g(void)
-{
-	int ret;
-
-	ret = usb_control_msg(dediprog_handle, 0x42, 0x07, 0x09, 0x03, NULL, 0x0, DEFAULT_TIMEOUT);
-	if (ret != 0x0) {
-		msg_perr("Command G failed (%s)!\n", usb_strerror());
-		return 1;
-	}
-	return 0;
-}
-
-/* Something.
- * Present in all logs with firmware 5.1.5
- * Always preceded by Command Receive Device String
- * Always followed by Command Set SPI Voltage nonzero
- */
-static int dediprog_command_h(void)
-{
-	int ret;
-
-	ret = usb_control_msg(dediprog_handle, 0x42, 0x07, 0x09, 0x05, NULL, 0x0, DEFAULT_TIMEOUT);
-	if (ret != 0x0) {
-		msg_perr("Command H failed (%s)!\n", usb_strerror());
-		return 1;
-	}
-	return 0;
-}
-
-/* Shutdown for firmware 5.x?
- * Present in all logs with firmware 5.1.5
- * Often preceded by a SPI operation (Command Read SPI Bulk or Receive SPI)
- * Always followed by Command Set SPI Voltage 0x0000
- */
-static int dediprog_command_i(void)
-{
-	int ret;
-
-	ret = usb_control_msg(dediprog_handle, 0x42, 0x07, 0x09, 0x06, NULL, 0x0, DEFAULT_TIMEOUT);
-	if (ret != 0x0) {
-		msg_perr("Command I failed (%s)!\n", usb_strerror());
-		return 1;
-	}
-	return 0;
-}
-
-/* Start/stop blinking?
- * Present in all logs with firmware 5.1.5
- * Always preceded by Command Receive Device String on 5.1.5
- * Always followed by Command Set SPI Voltage nonzero on 5.1.5
- * Present in eng_detect_blink.log with firmware 3.1.8
- * Preceded by Command B in eng_detect_blink.log
- * Followed by Command G in eng_detect_blink.log
- */
-static int dediprog_command_j(void)
-{
-	int ret;
-
-	ret = usb_control_msg(dediprog_handle, 0x42, 0x07, 0x09, 0x07, NULL, 0x0, DEFAULT_TIMEOUT);
-	if (ret != 0x0) {
-		msg_perr("Command J failed (%s)!\n", usb_strerror());
-		return 1;
-	}
-	return 0;
+	return buf[0] != 1;
 }
 #endif
 
@@ -728,28 +698,6 @@ static int parse_voltage(char *voltage)
 	return millivolt;
 }
 
-static int dediprog_setup(long target)
-{
-	/* URB 6. Command A. */
-	if (dediprog_command_a()) {
-		return 1;
-	}
-	/* URB 7. Command A. */
-	if (dediprog_command_a()) {
-		return 1;
-	}
-	/* URB 8. Command Prepare Receive Device String. */
-	/* URB 9. Command Receive Device String. */
-	if (dediprog_check_devicestring()) {
-		return 1;
-	}
-	/* URB 10. Command Chip Select */
-	if (dediprog_chip_select(target)) {
-		return 1;
-	}
-	return 0;
-}
-
 static const struct spi_master spi_master_dediprog = {
 	.type		= SPI_CONTROLLER_DEDIPROG,
 	.max_data_read	= MAX_DATA_UNSPECIFIED,
@@ -765,12 +713,7 @@ static int dediprog_shutdown(void *data)
 {
 	msg_pspew("%s\n", __func__);
 
-#if 0
-	/* Shutdown on firmware 5.x */
-	if (dediprog_firmwareversion == 5)
-		if (dediprog_command_i())
-			return 1;
-#endif
+	dediprog_firmwareversion = FIRMWARE_VERSION(0, 0, 0);
 
 	/* URB 28. Command Set SPI Voltage to 0. */
 	if (dediprog_set_spi_voltage(0x0))
@@ -815,6 +758,7 @@ int dediprog_init(void)
 		}
 		free(spispeed);
 	}
+
 	voltage = extract_programmer_param("voltage");
 	if (voltage) {
 		millivolt = parse_voltage(voltage);
@@ -910,90 +854,28 @@ int dediprog_init(void)
 		return 1;
 
 	/* Perform basic setup. */
-	if (dediprog_setup(target)) {
+	if (dediprog_device_init())
 		return 1;
-	}
+	if (dediprog_check_devicestring())
+		return 1;
 
 	/* Set all possible LEDs as soon as possible to indicate activity.
 	 * Because knowing the firmware version is required to set the LEDs correctly we need to this after
 	 * dediprog_setup() has queried the device and set dediprog_firmwareversion. */
 	dediprog_set_leds(LED_ALL);
 
-	/* After setting voltage and speed, perform setup again. */
-	if (dediprog_set_spi_voltage(0) || dediprog_set_spi_speed(spispeed_idx) || dediprog_setup(target)) {
-		dediprog_set_leds(LED_ERROR);
-		return 1;
-	}
-
-	/* URB 11. Command Set SPI Voltage. */
-	if (dediprog_set_spi_voltage(millivolt)) {
+	/* Select target/socket, frequency and VCC. */
+	if (set_target_flash(FLASH_TYPE_APPLICATION_FLASH_1) ||
+	    dediprog_set_spi_speed(spispeed_idx) ||
+	    dediprog_set_spi_voltage(millivolt)) {
 		dediprog_set_leds(LED_ERROR);
 		return 1;
 	}
 
 	register_spi_master(&spi_master_dediprog);
 
-	/* RE leftover, leave in until the driver is complete. */
-#if 0
-	/* Execute RDID by hand if you want to test it. */
-	dediprog_do_stuff();
-#endif
-
 	dediprog_set_leds(LED_NONE);
 
 	return 0;
 }
 
-#if 0
-/* Leftovers from reverse engineering. Keep for documentation purposes until
- * completely understood.
- */
-static int dediprog_do_stuff(void)
-{
-	char buf[0x4];
-	/* SPI command processing starts here. */
-
-	/* URB 12. Command Send SPI. */
-	/* URB 13. Command Receive SPI. */
-	memset(buf, 0, sizeof(buf));
-	/* JEDEC RDID */
-	msg_pdbg("Sending RDID\n");
-	buf[0] = JEDEC_RDID;
-	if (dediprog_spi_send_command(JEDEC_RDID_OUTSIZE, JEDEC_RDID_INSIZE,
-				(unsigned char *)buf, (unsigned char *)buf))
-		return 1;
-	msg_pdbg("Receiving response: ");
-	print_hex(buf, JEDEC_RDID_INSIZE);
-	/* URB 14-27 are more SPI commands. */
-	/* URB 28. Command Set SPI Voltage. */
-	if (dediprog_set_spi_voltage(0x0))
-		return 1;
-	/* URB 29-38. Command F, unsuccessful wait. */
-	if (dediprog_command_f(544))
-		return 1;
-	/* URB 39. Command Set SPI Voltage. */
-	if (dediprog_set_spi_voltage(0x10))
-		return 1;
-	/* URB 40. Command Set SPI Speed. */
-	if (dediprog_set_spi_speed(0x2))
-		return 1;
-	/* URB 41 is just URB 28. */
-	/* URB 42,44,46,48,51,53 is just URB 8. */
-	/* URB 43,45,47,49,52,54 is just URB 9. */
-	/* URB 50 is just URB 6/7. */
-	/* URB 55-131 is just URB 29-38. (wait unsuccessfully for 4695 (maybe 4751) ms)*/
-	/* URB 132,134 is just URB 6/7. */
-	/* URB 133 is just URB 29-38. */
-	/* URB 135 is just URB 8. */
-	/* URB 136 is just URB 9. */
-	/* URB 137 is just URB 11. */
-
-	/* Command Start Bulk Read. Data is u16 blockcount, u16 blocksize. */
-	/* Command Start Bulk Write. Data is u16 blockcount, u16 blocksize. */
-	/* Bulk transfer sizes for Command Start Bulk Read/Write are always
-	 * 512 bytes, rest is filled with 0xff.
-	 */
-
-	return 0;
-}
-#endif	
