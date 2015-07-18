@@ -481,6 +481,8 @@ CONFIG_LINUX_SPI ?= yes
 # Always enable ITE IT8212F PATA controllers for now.
 CONFIG_IT8212 ?= yes
 
+CONFIG_CH341A_SPI ?= yes
+
 # Disable wiki printing by default. It is only useful if you have wiki access.
 CONFIG_PRINT_WIKI ?= no
 
@@ -719,6 +721,12 @@ NEED_LINUX_I2C := yes
 PROGRAMMER_OBJS += mstarddc_spi.o
 endif
 
+ifeq ($(CONFIG_CH341A_SPI), yes)
+FEATURE_CFLAGS += -D'CONFIG_CH341A_SPI=1'
+PROGRAMMER_OBJS += ch341a_spi.o
+NEED_LIBUSB1 := yes
+endif
+
 ifeq ($(NEED_SERIAL), yes)
 LIB_OBJS += serial.o
 endif
@@ -760,6 +768,12 @@ ifeq ($(NEED_USB), yes)
 CHECK_LIBUSB0 = yes
 FEATURE_CFLAGS += -D'NEED_USB=1'
 USBLIBS := $(shell ([ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ); pkg-config --libs libusb  || printf "%s" "-lusb")
+endif
+
+ifeq ($(NEED_LIBUSB1), yes)
+CHECK_LIBUSB1 = yes
+FEATURE_CFLAGS += -D'NEED_LIBUSB1=1'
+USBLIBS += $(shell ([ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ); pkg-config --libs libusb-1.0  || printf "%s" "-lusb-1.0")
 endif
 
 ifeq ($(CONFIG_PRINT_WIKI), yes)
@@ -901,6 +915,19 @@ int main(int argc, char **argv)
 endef
 export LIBUSB0_TEST
 
+
+define LIBUSB1_TEST
+#include <libusb-1.0/libusb.h>
+int main(int argc, char **argv)
+{
+	(void)argc;
+	(void)argv;
+	libusb_init(NULL);
+	return 0;
+}
+endef
+export LIBUSB1_TEST
+
 hwlibs: compiler
 	@printf "" > .libdeps
 ifeq ($(CHECK_LIBPCI), yes)
@@ -939,6 +966,22 @@ ifeq ($(CHECK_LIBUSB0), yes)
 	@$(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) $(USBLIBS) >/dev/null &&	\
 		echo "yes." || ( echo "no.";						\
 		echo "Please install libusb-0.1 or libusb-compat.";			\
+		echo "See README for more information."; echo;				\
+		rm -f .test.c .test.o .test$(EXEC_SUFFIX); exit 1)
+	@rm -f .test.c .test.o .test$(EXEC_SUFFIX)
+endif
+ifeq ($(CHECK_LIBUSB1), yes)
+	@printf "Checking for libusb-1.0 headers... "
+	@echo "$$LIBUSB1_TEST" > .test.c
+	@$(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o >/dev/null &&		\
+		echo "found." || ( echo "not found."; echo;				\
+		echo "Please install libusb-1.0 headers.";	\
+		echo "See README for more information."; echo;				\
+		rm -f .test.c .test.o; exit 1)
+	@printf "Checking if libusb-1.0 is usable... "
+	@$(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) $(USBLIBS) >/dev/null &&	\
+		echo "yes." || ( echo "no.";						\
+		echo "Please install libusb-1.0.";			\
 		echo "See README for more information."; echo;				\
 		rm -f .test.c .test.o .test$(EXEC_SUFFIX); exit 1)
 	@rm -f .test.c .test.o .test$(EXEC_SUFFIX)

@@ -231,6 +231,8 @@ bitbanging adapter)
 .sp
 .BR "* pickit2_spi" " (for SPI flash ROMs accessible via Microchip PICkit2)"
 .sp
+.BR "* ch341a_spi" " (for SPI flash ROMs attached to WCH CH341A)"
+.sp
 Some programmers have optional or mandatory parameters which are described
 in detail in the
 .B PROGRAMMER-SPECIFIC INFORMATION
@@ -966,6 +968,13 @@ an operation), without the
 parameter, once the flash read/write operation you intended to perform has completed successfully.
 .sp
 Please also note that the mstarddc_spi driver only works on Linux.
+<<<<<<< HEAD
+=======
+.\".SS
+.\".BR "ch341a_spi " programmer
+.\"FIXME
+.\"PLACEHOLDER_NEWPROG_MAN_LONGDESCRIPTION
+>>>>>>> 7d676de... Add support for WCH CH341A as an SPI programmer.
 .SH EXAMPLES
 To back up and update your BIOS, run
 .sp
@@ -1038,6 +1047,9 @@ permissions are set.
 .sp
 .B ogp
 needs PCI configuration space read access and raw memory access.
+.\".sp
+.\".B ch341a_spi
+.\" FIXME
 .sp
 On OpenBSD, you can obtain raw access permission by setting
 .B "securelevel=-1"

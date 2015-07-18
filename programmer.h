@@ -105,6 +105,9 @@ enum programmer {
 #if CONFIG_PICKIT2_SPI == 1
 	PROGRAMMER_PICKIT2_SPI,
 #endif
+#if CONFIG_CH341A_SPI == 1
+	PROGRAMMER_CH341A_SPI,
+#endif
 	PROGRAMMER_INVALID /* This must always be the last entry. */
 };
 
@@ -516,6 +519,12 @@ int linux_spi_init(void);
 int dediprog_init(void);
 #endif
 
+/* ch341a_spi.c */
+#if CONFIG_CH341A_SPI == 1
+int ch341a_spi_init(void);
+extern const struct dev_entry devs_ch341a_spi[];
+#endif
+
 /* flashrom.c */
 struct decode_sizes {
 	uint32_t parallel;
@@ -574,6 +583,9 @@ enum spi_controller {
 #endif
 #if CONFIG_PICKIT2_SPI == 1
 	SPI_CONTROLLER_PICKIT2,
+#endif
+#if CONFIG_CH341A_SPI == 1
+	SPI_CONTROLLER_CH341A_SPI,
 #endif
 };
 
