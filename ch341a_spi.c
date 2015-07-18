@@ -91,15 +91,22 @@ static int32_t usbTransfer(const char *func, uint8_t type, uint8_t *buf, int len
 
 /*   set the i2c bus speed (speed(b1b0): 0 = 20kHz; 1 = 100kHz, 2 = 400kHz, 3 = 750kHz)
  *   set the spi bus data width(speed(b2): 0 = Single, 1 = Double)  */
-static int32_t ch341SetStream(uint32_t speed) {
-    uint8_t buf[3];
+static int32_t ch341SetStream(uint32_t speed)
+{
+	if (devHandle == NULL)
+		return -1;
 
-    if (devHandle == NULL) return -1;
-    buf[0] = CH341A_CMD_I2C_STREAM;
-    buf[1] = CH341A_CMD_I2C_STM_SET | (speed & 0x7);
-    buf[2] = CH341A_CMD_I2C_STM_END;
+	uint8_t buf[] = {
+		CH341A_CMD_I2C_STREAM,
+		CH341A_CMD_I2C_STM_SET | (speed & 0x7),
+		CH341A_CMD_I2C_STM_END
+	};
 
-    return usbTransfer(__func__, BULK_WRITE_ENDPOINT, buf, 3);
+	int32_t ret = usbTransfer(__func__, BULK_WRITE_ENDPOINT, buf, sizeof(buf));
+	if (ret < 0) {
+		msg_perr("Could not set SPI frequency.\n");
+	}
+	return ret;
 }
 
 /* ch341 requres LSB first, swap the bit order before send and after receive */
