@@ -89,6 +89,22 @@ static int32_t usbTransfer(const char *func, uint8_t type, uint8_t *buf, int len
 }
 
 
+static int32_t ch341a_enable_pins(bool enable)
+{
+	uint8_t buf[] = {
+		CH341A_CMD_UIO_STREAM,
+		CH341A_CMD_UIO_STM_OUT | 0x37, // CS high,
+		CH341A_CMD_UIO_STM_DIR | (enable ? 0x3F : 0x3E), // CS output enable
+		CH341A_CMD_UIO_STM_END,
+	};
+
+	int32_t ret = usbTransfer(__func__, BULK_WRITE_ENDPOINT, buf, sizeof(buf));
+	if (ret < 0) {
+		msg_perr("Could not %sable output pins.\n", enable ? "en" : "dis");
+	}
+	return ret;
+}
+	
 /*   set the i2c bus speed (speed(b1b0): 0 = 20kHz; 1 = 100kHz, 2 = 400kHz, 3 = 750kHz)
  *   set the spi bus data width(speed(b2): 0 = Single, 1 = Double)  */
 static int32_t ch341SetStream(uint32_t speed)
@@ -126,7 +142,6 @@ static void ch341SpiCs(uint8_t *ptr, bool selected)
 {
 	*ptr++ = CH341A_CMD_UIO_STREAM;
 	*ptr++ = CH341A_CMD_UIO_STM_OUT | (selected ? 0x36 : 0x37);
-		*ptr++ = CH341A_CMD_UIO_STM_DIR | 0x3F; // pin direction
 	*ptr++ = CH341A_CMD_UIO_STM_END;
 }
 
@@ -178,6 +193,7 @@ static int ch341a_spi_shutdown(void *data)
 {
 	if (devHandle == NULL)
 		return -1;
+	ch341a_enable_pins(false); // disable output pins
 	libusb_release_interface(devHandle, 0);
 	libusb_close(devHandle);
 	libusb_exit(NULL);
@@ -236,11 +252,11 @@ int ch341a_spi_init(void)
 		goto release_interface;
 	}
 	
-	ret = ch341SetStream(CH341A_STM_I2C_100K);
 	msg_pdbg("Device revision is %d.%01d.%01d\n",
 		(desc.bcdDevice >> 8) & 0x00FF,
 		(desc.bcdDevice >> 4) & 0x000F,
 		(desc.bcdDevice >> 0) & 0x000F);
+	ret = ch341SetStream(CH341A_STM_I2C_100K) | ch341a_enable_pins(true);
 	if (ret < 0)
 		goto release_interface;
 
