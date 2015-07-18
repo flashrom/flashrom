@@ -138,11 +138,11 @@ static uint8_t swapByte(uint8_t c)
 }
 
 /* assert or deassert the chip-select pin of the spi device */
-static void ch341SpiCs(uint8_t *ptr, bool selected)
+static void ch341SpiCs(uint8_t **ptr, bool selected)
 {
-	*ptr++ = CH341A_CMD_UIO_STREAM;
-	*ptr++ = CH341A_CMD_UIO_STM_OUT | (selected ? 0x36 : 0x37);
-	*ptr++ = CH341A_CMD_UIO_STM_END;
+	*(*ptr)++ = CH341A_CMD_UIO_STREAM;
+	*(*ptr)++ = CH341A_CMD_UIO_STM_OUT | (selected ? 0x36 : 0x37);
+	*(*ptr)++ = CH341A_CMD_UIO_STM_END;
 }
 
 static int ch341a_spi_spi_send_command(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr)
@@ -156,8 +156,9 @@ static int ch341a_spi_spi_send_command(struct flashctx *flash, unsigned int writ
 	if (writecnt + readcnt > CH341_MAX_PACKET_LEN - CH341_PACKET_LENGTH)
 		return -1;
 
-	ch341SpiCs(buf, true);
-	uint8_t *ptr = buf + CH341_PACKET_LENGTH; // don't care what's after CH341A_CMD_UIO_STM_END
+	uint8_t *ptr = buf;
+	ch341SpiCs(&ptr, true);
+	ptr = buf + CH341_PACKET_LENGTH; // don't care what's after CH341A_CMD_UIO_STM_END
 	*ptr++ = CH341A_CMD_SPI_STREAM;
 	for (int i = 0; i < writecnt; ++i)
 		*ptr++ = swapByte(*writearr++);
@@ -171,7 +172,7 @@ static int ch341a_spi_spi_send_command(struct flashctx *flash, unsigned int writ
 	for (int i = 0; i < ret; i++) { // swap the buffer
 		ptr[i] = swapByte(buf[writecnt + i]);
 	}
-	ch341SpiCs(buf, false);
+	ch341SpiCs(&(uint8_t *){buf}, false);
 	ret = usbTransfer(__func__, BULK_WRITE_ENDPOINT, buf, 3);
 	if (ret < 0)
 		return -1;
