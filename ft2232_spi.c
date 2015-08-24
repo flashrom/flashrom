@@ -60,6 +60,7 @@
 
 #define GOOGLE_VID		0x18D1
 #define GOOGLE_SERVO_PID	0x5001
+#define GOOGLE_SERVO_V2_PID	0x5003
 
 const struct dev_entry devs_ft2232spi[] = {
 	{FTDI_VID, FTDI_FT2232H_PID, OK, "FTDI", "FT2232H"},
@@ -70,6 +71,7 @@ const struct dev_entry devs_ft2232spi[] = {
 	{FTDI_VID, AMONTEC_JTAGKEY_PID, OK, "Amontec", "JTAGkey"},
 	{GOEPEL_VID, GOEPEL_PICOTAP_PID, OK, "GOEPEL", "PicoTAP"},
 	{GOOGLE_VID, GOOGLE_SERVO_PID, OK, "Google", "Servo"},
+	{GOOGLE_VID, GOOGLE_SERVO_V2_PID, OK, "Google", "Servo V2"},
 	{FIC_VID, OPENMOKO_DBGBOARD_PID, OK, "FIC", "OpenMoko Neo1973 Debug board (V2+)"},
 	{OLIMEX_VID, OLIMEX_ARM_OCD_PID, OK, "Olimex", "ARM-USB-OCD"},
 	{OLIMEX_VID, OLIMEX_ARM_TINY_PID, OK, "Olimex", "ARM-USB-TINY"},
@@ -262,6 +264,12 @@ int ft2232_spi_init(void)
 			ft2232_vid = GOOGLE_VID;
 			ft2232_type = GOOGLE_SERVO_PID;
 			ft2232_interface = INTERFACE_A;
+		} else if (!strcasecmp(arg, "google-servo-v2")) {
+			ft2232_vid = GOOGLE_VID;
+			ft2232_type = GOOGLE_SERVO_V2_PID;
+			ft2232_interface = INTERFACE_A;
+			/* Default divisor is too fast, and chip ID fails */
+			divisor = 6;
 		} else {
 			msg_perr("Error: Invalid device type specified.\n");
 			free(arg);
