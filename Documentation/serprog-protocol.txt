@@ -53,7 +53,7 @@ Additional information of the above commands:
 		cmd 8 support: byte 1 bit 0, and so on.
 	0x04 (Q_SERBUF):
 		If the programmer has a guaranteed working flow control,
-		it should return a big bogus value - eg 0xFFFF.
+		it should return a suitable transfer window size for the connection, eg. ~4k for usb-serial.
 	0x05 (Q_BUSTYPE):
 		The bit's are defined as follows:
 		bit 0: PARALLEL, bit 1: LPC, bit 2: FWH, bit 3: SPI.
@@ -118,5 +118,43 @@ Additional information of the above commands:
 		S_CMD_O_DELAY, S_CMD_O_EXEC.
 		In addition, support for these commands is recommended:
 		S_CMD_Q_PGMNAME, S_CMD_Q_BUSTYPE, S_CMD_Q_CHIPSIZE (if parallel).
+
+
+Operation buffer details and rationale
+--------------------------------------
+The operation buffer is an area of memory on the programming device used to hold
+write-related operations so they can be executed in quick succession after
+the whole operation has been transferred to the device.
+This is required (with some non-SPI chips) to be able to perform a page load
+quickly enough if connection is a slow serial, since they have a page load timeout.
+
+The operations in opbuf take the same amount of space/bytes they used on-wire when
+being transferred, but the representation of them in the opbuf is upto the implementation.
+
+Write to opbuf operations should return NAK in case of an attempted buffer overflow,
+but the state of the buffer after such a NAK is unknown and the programmer
+should be reinitialized (atleast S_CMD_O_INIT) if this happens.
+
+S_CMD_O_INIT is meant to be only used when the device is in unknown state,
+meaning once in the beginning of operations. S_CMD_O_EXEC will attempt to execute
+the operation buffer and _always_ clear it after the attempt. It can return NAK
+in the case of a programmer internal error (hw fail/bug), but there are no
+"normal"/expected error conditions except previous overflow attempt
+(which is not a normal operation either).
+
+For SPI-only devices the opbuf support is delays-only (SPIOP is immediate),
+and both of these implementation styles are allowed:
+1:
+O_INIT clears internal delay count
+O_DELAY adds to internal delay count
+O_EXEC "executes" internal delay count
+2:
+O_INIT is a nop
+O_DELAY executes specified delay
+O_EXEC is a nop
+
+Regardless of the implementation style, all 3 opcodes need to be marked as
+supported and return ACK, and reported operation buffer size should be big
+enough to fit atleast 2 delays.
 
 See also serprog.h.
