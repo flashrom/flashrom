@@ -34,7 +34,7 @@ INSTALL = install
 DIFF    = diff
 PREFIX  ?= /usr/local
 MANDIR  ?= $(PREFIX)/share/man
-CFLAGS  ?= -Os -Wall -Wshadow
+CFLAGS  ?= -Os -Wall -Wshadow -g
 EXPORTDIR ?= .
 RANLIB  ?= ranlib
 
