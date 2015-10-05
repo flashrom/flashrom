@@ -310,44 +310,49 @@ static int enable_flash_ich_bios_cntl_common(enum ich_chipset ich_generation, vo
 	else
 		wanted = old = pci_read_byte(dev, bios_cntl);
 
-	/*
-	 * Quote from the 6 Series datasheet (Document Number: 324645-004):
-	 * "Bit 5: SMM BIOS Write Protect Disable (SMM_BWP)
-	 * 1 = BIOS region SMM protection is enabled.
-	 * The BIOS Region is not writable unless all processors are in SMM."
-	 * In earlier chipsets this bit is reserved.
-	 *
-	 * Try to unset it in any case.
-	 * It won't hurt and makes sense in some cases according to Stefan Reinauer.
-	 *
-	 * At least in Centerton aforementioned bit is located at bit 7. It is unspecified in all other Atom
-	 * and Desktop chipsets before Ibex Peak/5 Series, but we reset bit 5 anyway.
-	 */
-	int smm_bwp_bit;
-	if (ich_generation == CHIPSET_CENTERTON)
-		smm_bwp_bit = 7;
-	else
-		smm_bwp_bit = 5;
-	wanted &= ~(1 << smm_bwp_bit);
+	/* Try to change the register, only if it disabling the write */
+	if (old & (1 << 0)) {
+		new = wanted;
+	} else {
+		/*
+		 * Quote from the 6 Series datasheet (Document Number: 324645-004):
+		 * "Bit 5: SMM BIOS Write Protect Disable (SMM_BWP)
+		 * 1 = BIOS region SMM protection is enabled.
+		 * The BIOS Region is not writable unless all processors are in SMM."
+		 * In earlier chipsets this bit is reserved.
+		 *
+		 * Try to unset it in any case.
+		 * It won't hurt and makes sense in some cases according to Stefan Reinauer.
+		 *
+		 * At least in Centerton aforementioned bit is located at bit 7. It is unspecified in all other Atom
+		 * and Desktop chipsets before Ibex Peak/5 Series, but we reset bit 5 anyway.
+		 */
+		 int smm_bwp_bit;
+		 if (ich_generation == CHIPSET_CENTERTON)
+		 	smm_bwp_bit = 7;
+		 else
+		 	smm_bwp_bit = 5;
+		 wanted &= ~(1 << smm_bwp_bit);
 
-	/* Tunnel Creek has a cache disable at bit 2 of the lowest BIOS_CNTL byte. */
-	if (ich_generation == CHIPSET_TUNNEL_CREEK)
-		wanted |= (1 << 2);
+		/* Tunnel Creek has a cache disable at bit 2 of the lowest BIOS_CNTL byte. */
+		if (ich_generation == CHIPSET_TUNNEL_CREEK)
+			wanted |= (1 << 2);
 
-	wanted |= (1 << 0); /* Set BIOS Write Enable */
-	wanted &= ~(1 << 1); /* Disable lock (futile) */
+		wanted |= (1 << 0); /* Set BIOS Write Enable */
+		wanted &= ~(1 << 1); /* Disable lock (futile) */
 
-	/* Only write the register if it's necessary */
-	if (wanted != old) {
-		if (ich_generation == CHIPSET_BAYTRAIL) {
-			rmmio_writel(wanted, addr);
-			new = mmio_readl(addr);
-		} else {
-			rpci_write_byte(dev, bios_cntl, wanted);
-			new = pci_read_byte(dev, bios_cntl);
-		}
-	} else
-		new = old;
+		/* Only write the register if it's necessary */
+		if (wanted != old) {
+			if (ich_generation == CHIPSET_BAYTRAIL) {
+				rmmio_writel(wanted, addr);
+				new = mmio_readl(addr);
+			} else {
+				rpci_write_byte(dev, bios_cntl, wanted);
+				new = pci_read_byte(dev, bios_cntl);
+			}
+		} else
+			new = old;
+	}
 
 	msg_pdbg("\nBIOS_CNTL = 0x%02x: ", new);
 	msg_pdbg("BIOS Lock Enable: %sabled, ", (new & (1 << 1)) ? "en" : "dis");
