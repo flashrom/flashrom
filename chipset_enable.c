@@ -310,6 +310,7 @@ static int enable_flash_ich_bios_cntl_common(enum ich_chipset ich_generation, vo
 	else
 		wanted = old = pci_read_byte(dev, bios_cntl);
 
+	int smm_bwp_bit;
 	/* Try to change the register, only if it disabling the write */
 	if (old & (1 << 0)) {
 		new = wanted;
@@ -327,7 +328,6 @@ static int enable_flash_ich_bios_cntl_common(enum ich_chipset ich_generation, vo
 		 * At least in Centerton aforementioned bit is located at bit 7. It is unspecified in all other Atom
 		 * and Desktop chipsets before Ibex Peak/5 Series, but we reset bit 5 anyway.
 		 */
-		 int smm_bwp_bit;
 		 if (ich_generation == CHIPSET_CENTERTON)
 		 	smm_bwp_bit = 7;
 		 else
