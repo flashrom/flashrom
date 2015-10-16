@@ -781,6 +781,9 @@ int need_erase(const uint8_t *have, const uint8_t *want, unsigned int len, enum 
 				break;
 			}
 		break;
+	case write_gran_128bytes:
+		result = need_erase_gran_bytes(have, want, len, 128);
+		break;
 	case write_gran_256bytes:
 		result = need_erase_gran_bytes(have, want, len, 256);
 		break;
@@ -846,6 +849,9 @@ static unsigned int get_next_write(const uint8_t *have, const uint8_t *want, uns
 	case write_gran_1byte:
 	case write_gran_1byte_implicit_erase:
 		stride = 1;
+		break;
+	case write_gran_128bytes:
+		stride = 128;
 		break;
 	case write_gran_256bytes:
 		stride = 256;
