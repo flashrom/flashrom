@@ -85,6 +85,7 @@ enum write_granularity {
 	write_gran_1bit,	/* Each bit can be cleared individually. */
 	write_gran_1byte,	/* A byte can be written once. Further writes to an already written byte cause
 				 * its contents to be either undefined or to stay unchanged. */
+	write_gran_128bytes,	/* If less than 128 bytes are written, the unwritten bytes are undefined. */
 	write_gran_264bytes,	/* If less than 264 bytes are written, the unwritten bytes are undefined. */
 	write_gran_512bytes,	/* If less than 512 bytes are written, the unwritten bytes are undefined. */
 	write_gran_528bytes,	/* If less than 528 bytes are written, the unwritten bytes are undefined. */
