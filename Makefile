@@ -634,8 +634,9 @@ NEED_USB := yes
 endif
 
 ifeq ($(NEED_FTDI), yes)
-FTDILIBS := $(shell ([ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ); pkg-config --libs libftdi || printf "%s" "-lftdi -lusb")
-FEATURE_CFLAGS += $(shell LC_ALL=C grep -q "FT232H := yes" .features && printf "%s" "-D'HAVE_FT232H=1'")
+FTDILIBS := $(shell ([ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ); pkg-config --libs libftdi1 || printf "%s" "-lftdi -lusb")
+FTDI_INCLUDES := $(shell ([ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ); pkg-config --cflags-only-I libftdi1)
+FEATURE_CFLAGS += $(FTDI_INCLUDES)
 FEATURE_LIBS += $(shell LC_ALL=C grep -q "FTDISUPPORT := yes" .features && printf "%s" "$(FTDILIBS)")
 # We can't set NEED_USB here because that would transform libftdi auto-enabling
 # into a hard requirement for libusb, defeating the purpose of auto-enabling.
@@ -973,12 +974,6 @@ int main(int argc, char **argv)
 endef
 export FTDI_TEST
 
-define FTDI_232H_TEST
-#include <ftdi.h>
-enum ftdi_chip_type type = TYPE_232H;
-endef
-export FTDI_232H_TEST
-
 define UTSNAME_TEST
 #include <sys/utsname.h>
 struct utsname osinfo;
@@ -1023,14 +1018,9 @@ features: compiler
 ifeq ($(NEED_FTDI), yes)
 	@printf "Checking for FTDI support... "
 	@echo "$$FTDI_TEST" > .featuretest.c
-	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) $(FTDILIBS) $(LIBS) >/dev/null 2>&1 &&	\
+	@$(CC) $(CPPFLAGS) $(CFLAGS) $(FTDI_INCLUDES) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) $(FTDILIBS) $(LIBS) >/dev/null 2>&1 &&	\
 		( echo "found."; echo "FTDISUPPORT := yes" >> .features.tmp ) ||	\
 		( echo "not found."; echo "FTDISUPPORT := no" >> .features.tmp )
-	@printf "Checking for FT232H support in libftdi... "
-	@echo "$$FTDI_232H_TEST" >> .featuretest.c
-	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) $(FTDILIBS) $(LIBS) >/dev/null 2>&1 &&	\
-		( echo "found."; echo "FT232H := yes" >> .features.tmp ) ||	\
-		( echo "not found."; echo "FT232H := no" >> .features.tmp )
 endif
 ifeq ($(CONFIG_LINUX_SPI), yes)
 	@printf "Checking if Linux SPI headers are present... "
