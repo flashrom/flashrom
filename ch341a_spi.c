@@ -325,12 +325,15 @@ static uint8_t swapByte(uint8_t x)
 	return x;
 }
 
-/* assert or deassert the chip-select pin of the spi device */
-static void ch341SpiCs(uint8_t **ptr, bool selected)
+/* De-assert and assert CS in one operation. */
+static void ch341pluckCS(uint8_t *ptr)
 {
-	*(*ptr)++ = CH341A_CMD_UIO_STREAM;
-	*(*ptr)++ = CH341A_CMD_UIO_STM_OUT | (selected ? 0x36 : 0x37);
-	*(*ptr)++ = CH341A_CMD_UIO_STM_END;
+	*ptr++ = CH341A_CMD_UIO_STREAM;
+	*ptr++ = CH341A_CMD_UIO_STM_OUT | 0x37; /* deasserted */
+	*ptr++ = CH341A_CMD_UIO_STM_OUT | 0x37; /* "delay" */
+	*ptr++ = CH341A_CMD_UIO_STM_OUT | 0x37;
+	*ptr++ = CH341A_CMD_UIO_STM_OUT | 0x36; /* asserted */
+	*ptr++ = CH341A_CMD_UIO_STM_END;
 }
 
 static int ch341a_spi_spi_send_command(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr)
@@ -343,10 +346,10 @@ static int ch341a_spi_spi_send_command(struct flashctx *flash, unsigned int writ
 
 	uint8_t wbuf[packets+1][CH341_PACKET_LENGTH];
 	uint8_t rbuf[writecnt + readcnt];
-	memset(wbuf[0], 0, CH341_PACKET_LENGTH); // really, we dont want to write stack random to device...
+	memset(wbuf[0], 0, CH341_PACKET_LENGTH); // dont want to write stack random to device...
 
 	uint8_t *ptr = wbuf[0];
-	ch341SpiCs(&ptr, true);
+	ch341pluckCS(ptr);
 	unsigned int write_left = writecnt;
 	unsigned int read_left = readcnt;
 	for (int p = 0; p < packets; p++) {
@@ -369,102 +372,13 @@ static int ch341a_spi_spi_send_command(struct flashctx *flash, unsigned int writ
 	for (unsigned int i = 0; i < readcnt; i++) 
 		*readarr++ = swapByte(rbuf[writecnt + i]);
 
-	ptr = wbuf[0];
-	ch341SpiCs(&ptr, false);
-	ret = usbTransferRW(__func__, 3, 0, wbuf[0], 0);
-	if (ret < 0)
-		return -1;
 	return 0;
 }
 
-	//int (*read)(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
-	//int (*write_256)(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
-
-/* read the content of SPI device to buf, make sure the buf is big enough before call  */
-//int32_t ch341SpiRead(uint8_t *buf, uint32_t add, uint32_t len)
-//{
-    //uint8_t out[CH341_MAX_PACKET_LEN];
-    //uint8_t in[CH341_PACKET_LENGTH];
-//
-    //if (devHandle == NULL) return -1;
-    ///* what subtracted is: 1. first cs package, 2. leading command for every other packages,
-     //* 3. second package contains read flash command and 3 bytes address */
-    //const uint32_t max_payload = CH341_MAX_PACKET_LEN - CH341_PACKET_LENGTH - CH341_MAX_PACKETS + 1 - 4;
-    //uint32_t tmp, pkg_len, pkg_count;
-    //struct libusb_transfer *xferBulkIn, *xferBulkOut;
-    //uint32_t idx = 0;
-    //uint32_t ret;
-    //int32_t old_counter;
-    //struct timeval tv = {0, 100};
-//
-    //memset(out, 0xff, CH341_MAX_PACKET_LEN);
-    //for (int i = 1; i < CH341_MAX_PACKETS; ++i) // fill CH341A_CMD_SPI_STREAM for every packet
-        //out[i * CH341_PACKET_LENGTH] = CH341A_CMD_SPI_STREAM;
-    //memset(in, 0x00, CH341_PACKET_LENGTH);
-    //xferBulkIn  = libusb_alloc_transfer(0);
-    //xferBulkOut = libusb_alloc_transfer(0);
-//
-    //while (len > 0) {
-        //ch341SpiCs(out, true);
-        //idx = CH341_PACKET_LENGTH + 1;
-        //out[idx++] = 0xC0; // byte swapped command for Flash Read
-        //tmp = add;
-        //for (int i = 0; i < 3; ++i) { // starting address of next read
-            //out[idx++] = swapByte((tmp >> 16) & 0xFF);
-            //tmp <<= 8;
-        //}
-        //if (len > max_payload) {
-            //pkg_len = CH341_MAX_PACKET_LEN;
-            //pkg_count = CH341_MAX_PACKETS - 1;
-            //len -= max_payload;
-            //add += max_payload;
-        //} else {
-            //pkg_count = (len + 4) / (CH341_PACKET_LENGTH - 1);
-            //if ((len + 4) % (CH341_PACKET_LENGTH - 1)) pkg_count ++;
-            //pkg_len = (pkg_count) * CH341_PACKET_LENGTH + ((len + 4) % (CH341_PACKET_LENGTH - 1)) + 1;
-            //len = 0;
-        //}
-        //bulkin_count = 0;
-        //libusb_fill_bulk_transfer(xferBulkIn, devHandle, BULK_READ_ENDPOINT, in,
-                //CH341_PACKET_LENGTH, cbBulkIn, buf, DEFAULT_TIMEOUT);
-        //buf += max_payload; // advance user's pointer
-        //libusb_submit_transfer(xferBulkIn);
-        //libusb_fill_bulk_transfer(xferBulkOut, devHandle, BULK_WRITE_ENDPOINT, out,
-                //pkg_len, cbBulkOut, NULL, DEFAULT_TIMEOUT);
-        //libusb_submit_transfer(xferBulkOut);
-        //old_counter = bulkin_count;
-        //while (bulkin_count < pkg_count) {
-            //libusb_handle_events_timeout(NULL, &tv);
-            //if (bulkin_count == -1) { // encountered error
-                //len = 0;
-                //ret = -1;
-                //break;
-            //}
-            //if (old_counter != bulkin_count) { // new package came
-                //if (bulkin_count != pkg_count)
-                    //libusb_submit_transfer(xferBulkIn);  // resubmit bulk in request
-                //old_counter = bulkin_count;
-            //}
-        //}
-        //ch341SpiCs(out, false);
-        //ret = usbTransfer(__func__, BULK_WRITE_ENDPOINT, out, 3);
-        //if (ret < 0) break;
-        //if (force_stop == 1) { // user hit ctrl+C
-            //force_stop = 0;
-            //if (len > 0)
-                //fprintf(stderr, "User hit Ctrl+C, reading unfinished.\n");
-            //break;
-        //}
-    //}
-    //libusb_free_transfer(xferBulkIn);
-    //libusb_free_transfer(xferBulkOut);
-    //return ret;
-//}
-
 static const struct spi_master spi_master_ch341a_spi = {
 	.type		= SPI_CONTROLLER_CH341A_SPI,
-	.max_data_read	= 256, /* Maximum data read size in one go (excluding opcode+address). */
-	.max_data_write	= 256, /* Maximum data write size in one go (excluding opcode+address). */
+	.max_data_read	= 1024, /* Maximum data read size in one go (excluding opcode+address). */
+	.max_data_write	= 1024, /* Maximum data write size in one go (excluding opcode+address). */
 	.command	= ch341a_spi_spi_send_command,
 	.multicommand	= default_spi_send_multicommand,
 	.read		= default_spi_read,
