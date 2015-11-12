@@ -254,15 +254,12 @@ static int32_t ch341SetStream(uint32_t speed)
 }
 
 /* ch341 requres LSB first, swap the bit order before send and after receive */
-static uint8_t swapByte(uint8_t c)
+static uint8_t swapByte(uint8_t x)
 {
-	uint8_t result=0;
-	for (unsigned int i = 0; i < 8; ++i) {
-		result = result << 1;
-		result |= (c & 1);
-		c = c >> 1;
-	}
-	return result;
+	x = ((x >> 1) & 0x55) | ((x << 1) & 0xaa);
+	x = ((x >> 2) & 0x33) | ((x << 2) & 0xcc);
+	x = ((x >> 4) & 0x0f) | ((x << 4) & 0xf0);
+	return x;
 }
 
 /* assert or deassert the chip-select pin of the spi device */
