@@ -774,6 +774,7 @@ ifeq ($(NEED_LIBUSB1), yes)
 CHECK_LIBUSB1 = yes
 FEATURE_CFLAGS += -D'NEED_LIBUSB1=1'
 USBLIBS += $(shell ([ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ); pkg-config --libs libusb-1.0  || printf "%s" "-lusb-1.0")
+CPPFLAGS += $(shell ([ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ); pkg-config --cflags-only-I libusb-1.0  || printf "%s" "-I/usr/include/libusb-1.0")
 endif
 
 ifeq ($(CONFIG_PRINT_WIKI), yes)

@@ -23,7 +23,7 @@
 #include <string.h>
 #include "flash.h"
 #include "programmer.h"
-#include "libusb-1.0/libusb.h"
+#include <libusb.h>
 
 /* Vendor defines
 #define		IOCTL_CH341_COMMAND		( FILE_DEVICE_UNKNOWN << 16 | FILE_ANY_ACCESS << 14 | 0x0f34 << 2 | METHOD_BUFFERED )
