@@ -291,6 +291,8 @@ static int ch341a_spi_spi_send_command(struct flashctx *flash, unsigned int writ
 		return -1;
 
 	uint8_t buf[trans_size];
+	memset(buf, 0, trans_size); // to silence valgrind, and really, we dont want to write stack random to device
+
 	uint8_t *ptr = buf;
 	ch341SpiCs(&ptr, true);
 	ptr = buf + CH341_PACKET_LENGTH; // don't care what's after CH341A_CMD_UIO_STM_END
@@ -303,11 +305,12 @@ static int ch341a_spi_spi_send_command(struct flashctx *flash, unsigned int writ
 	ret = usbTransfer(__func__, BULK_READ_ENDPOINT, buf, writecnt + readcnt);
 	if (ret < 0)
 		return -1;
-	ptr = readarr;
-	for (int i = 0; i < ret; i++) { // swap the buffer
-		ptr[i] = swapByte(buf[writecnt + i]);
+
+	for (int i = 0; i < readcnt; i++) { // swap the buffer
+		readarr[i] = swapByte(buf[writecnt + i]);
 	}
-	ch341SpiCs(&(uint8_t *){buf}, false);
+	ptr = buf;
+	ch341SpiCs(&ptr, false);
 	ret = usbTransfer(__func__, BULK_WRITE_ENDPOINT, buf, 3);
 	if (ret < 0)
 		return -1;
