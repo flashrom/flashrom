@@ -408,51 +408,51 @@ int ch341a_spi_init(void)
 	int pid = devs_ch341a_spi[0].device_id;
 
 	if (devHandle != NULL) {
-		fprintf(stderr, "Call ch341_spi_shutdown before re-configure\n");
+		msg_perr("Call ch341_spi_shutdown before re-configure\n");
 		return -1;
 	}
 	ret = libusb_init(NULL);
 	if (ret < 0) {
-		fprintf(stderr, "Couldnt initialise libusb\n");
+		msg_perr("Couldnt initialise libusb\n");
 		return -1;
 	}
 
 	libusb_set_debug(NULL, 3);
 
 	if (!(devHandle = libusb_open_device_with_vid_pid(NULL, vid, pid))) {
-		fprintf(stderr, "Couldn't open device [%04x:%04x].\n", vid, pid);
+		msg_perr("Couldn't open device [%04x:%04x].\n", vid, pid);
 		return -1;
 	}
 
 	if (!(dev = libusb_get_device(devHandle))) {
-		fprintf(stderr, "Couldn't get bus number and address.\n");
+		msg_perr("Couldn't get bus number and address.\n");
 		goto close_handle;
 	}
 
 	ret = libusb_kernel_driver_active(devHandle, 0);
 	if (ret < 0) {
-			fprintf(stderr, "Failed to detach kernel driver: '%s'\n", libusb_error_name(ret));
+			msg_perr("Failed to detach kernel driver: '%s'\n", libusb_error_name(ret));
 			goto close_handle;
 	} else if (ret == 1) {
 		ret = libusb_detach_kernel_driver(devHandle, 0);
 		if (ret == LIBUSB_ERROR_NOT_SUPPORTED) {
 			msg_pwarn("Could not detach kernel driver. Further accesses will probably fail.\n");
 		} else if (ret != 0) {
-			fprintf(stderr, "Failed to detach kernel driver: '%s'\n", libusb_error_name(ret));
+			msg_perr("Failed to detach kernel driver: '%s'\n", libusb_error_name(ret));
 			goto close_handle;
 		}
 	}
 
 	ret = libusb_claim_interface(devHandle, 0);
 	if (ret != 0) {
-		fprintf(stderr, "Failed to claim interface 0: '%s'\n", libusb_error_name(ret));
+		msg_perr("Failed to claim interface 0: '%s'\n", libusb_error_name(ret));
 		goto close_handle;
 	}
 
 	struct libusb_device_descriptor desc;
 	ret = libusb_get_device_descriptor(dev, &desc);
 	if (ret < 0) {
-		fprintf(stderr, "Failed to get device descriptor: '%s'\n", libusb_error_name(ret));
+		msg_perr("Failed to get device descriptor: '%s'\n", libusb_error_name(ret));
 		goto release_interface;
 	}
 
