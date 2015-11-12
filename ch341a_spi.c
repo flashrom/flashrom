@@ -238,13 +238,21 @@ static int32_t usbTransferRW(const char *func, unsigned int writecnt, unsigned i
 	transfer_out->length = writecnt;
 	transfer_out->user_data = &transferred_out;
 	transfer_in->buffer = readarr;
-	transfer_in->length = readcnt;
+	transfer_in->length = min(CH341_PACKET_LENGTH -1, readcnt);
 	transfer_in->user_data = &transferred_in;
-	if (writecnt) libusb_submit_transfer(transfer_out);
 	if (readcnt) libusb_submit_transfer(transfer_in);
+	if (writecnt) libusb_submit_transfer(transfer_out);
+	unsigned int in_done = 0;
 	do {
 		struct timeval tv = { 0, 100 };
 		libusb_handle_events_timeout(NULL, &tv);
+		if (transferred_in > 0) {
+			in_done += transferred_in;
+			transfer_in->buffer = readarr + in_done;
+			transfer_in->length = min( CH341_PACKET_LENGTH -1, readcnt - in_done );
+			transferred_in = 0;
+			if (in_done < readcnt) libusb_submit_transfer(transfer_in);
+		}
 		if (transferred_out < 0) {
 			ret = -1;
 			break;
@@ -253,7 +261,7 @@ static int32_t usbTransferRW(const char *func, unsigned int writecnt, unsigned i
 			ret = -1;
 			break;
 		}
-	} while ((transferred_out < writecnt)||(transferred_in < readcnt));
+	} while ((transferred_out < writecnt)||(in_done < readcnt));
 	if (ret < 0) {
 		fprintf(stderr, "%s: Failed to %s %d bytes\n",
 			func, (transferred_out < 0) ? "write" : "read", transferred_out < 0 ? writecnt : readcnt);
@@ -330,40 +338,40 @@ static int ch341a_spi_spi_send_command(struct flashctx *flash, unsigned int writ
 	if (devHandle == NULL)
 		return -1;
 
-	/* How many  packets ... */
+	/* How many packets ... */
 	const size_t packets = ((writecnt+readcnt)+(CH341_PACKET_LENGTH-2)) / (CH341_PACKET_LENGTH-1);
 
-	uint8_t buf[CH341_PACKET_LENGTH*2];
-	memset(buf, 0, CH341_PACKET_LENGTH); // to silence valgrind, and really, we dont want to write stack random to device
+	uint8_t wbuf[packets+1][CH341_PACKET_LENGTH];
+	uint8_t rbuf[writecnt + readcnt];
+	memset(wbuf[0], 0, CH341_PACKET_LENGTH); // really, we dont want to write stack random to device...
 
-	uint8_t *ptr = buf;
+	uint8_t *ptr = wbuf[0];
 	ch341SpiCs(&ptr, true);
 	unsigned int write_left = writecnt;
 	unsigned int read_left = readcnt;
-	int32_t ret;
 	for (int p = 0; p < packets; p++) {
 		unsigned int write_now = min( CH341_PACKET_LENGTH-1, write_left );
 		unsigned int read_now = min ( (CH341_PACKET_LENGTH-1) - write_now, read_left );
-		ptr = buf + CH341_PACKET_LENGTH;
+		ptr = wbuf[p+1];
 		*ptr++ = CH341A_CMD_SPI_STREAM;
 		for (unsigned int i = 0; i < write_now; ++i)
 			*ptr++ = swapByte(*writearr++);
-		write_left -= write_now;
-		ret = usbTransferRW(__func__, (!p ? CH341_PACKET_LENGTH : 0 ) + 1 + write_now + read_now, 0,  p ? buf + CH341_PACKET_LENGTH : buf, NULL);
-		if (ret < 0)
-			return -1;
-		ret = usbTransferRW(__func__, 0, write_now + read_now, NULL, buf);
-		if (ret < 0)
-			return -1;
 		if (read_now) {
-			for (unsigned int i = 0; i < read_now; i++)
-				*readarr++ = swapByte(buf[write_now + i]);
+			memset(ptr, 0xFF, read_now);
 			read_left -= read_now;
 		}
+		write_left -= write_now;
 	}
-	ptr = buf;
+
+	int32_t ret = usbTransferRW(__func__, CH341_PACKET_LENGTH + packets + writecnt + readcnt, writecnt + readcnt, wbuf[0], rbuf);
+	if (ret < 0)
+		return -1;
+	for (unsigned int i = 0; i < readcnt; i++) 
+		*readarr++ = swapByte(rbuf[writecnt + i]);
+
+	ptr = wbuf[0];
 	ch341SpiCs(&ptr, false);
-	ret = usbTransferRW(__func__, 3, 0, buf, NULL);
+	ret = usbTransferRW(__func__, 3, 0, wbuf[0], 0);
 	if (ret < 0)
 		return -1;
 	return 0;
@@ -455,7 +463,7 @@ static int ch341a_spi_spi_send_command(struct flashctx *flash, unsigned int writ
 
 static const struct spi_master spi_master_ch341a_spi = {
 	.type		= SPI_CONTROLLER_CH341A_SPI,
-	.max_data_read	= 20, /* Maximum data read size in one go (excluding opcode+address). */
+	.max_data_read	= 256, /* Maximum data read size in one go (excluding opcode+address). */
 	.max_data_write	= 256, /* Maximum data write size in one go (excluding opcode+address). */
 	.command	= ch341a_spi_spi_send_command,
 	.multicommand	= default_spi_send_multicommand,
