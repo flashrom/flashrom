@@ -206,7 +206,7 @@ static void cbBulkOut(struct libusb_transfer *transfer)
 	int *transfer_cnt = (int*)transfer->user_data;
 
 	if (transfer->status != LIBUSB_TRANSFER_COMPLETED) {
-		msg_perr("\ncbBulkOut: error : %s\n", libusb_error_name(transfer->status));
+		msg_perr("\ncbBulkOut: error: %s\n", libusb_error_name(transfer->status));
 		*transfer_cnt = -1;
 	} else {
 		*transfer_cnt += transfer->actual_length;
@@ -219,7 +219,7 @@ static void cbBulkIn(struct libusb_transfer *transfer)
 	int *transfer_cnt = (int*)transfer->user_data;
 
 	if (transfer->status != LIBUSB_TRANSFER_COMPLETED) {
-		msg_perr("\ncbBulkIn: error : %s\n", libusb_error_name(transfer->status));
+		msg_perr("\ncbBulkIn: error: %s\n", libusb_error_name(transfer->status));
 		*transfer_cnt = -1;
 	} else {
 		*transfer_cnt += transfer->actual_length;
