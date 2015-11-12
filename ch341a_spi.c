@@ -285,29 +285,36 @@ static int ch341a_spi_spi_send_command(struct flashctx *flash, unsigned int writ
 	 *  - raw SPI output data
 	 *  - raw SPI input data
 	 */
-	const size_t trans_size = CH341_PACKET_LENGTH + 1 + writecnt + readcnt;
+	/* How many  packets ... */
+	const size_t packets = ((writecnt+readcnt)+(CH341_PACKET_LENGTH-2)) / (CH341_PACKET_LENGTH-1);
 
-	if (trans_size > CH341_MAX_PACKET_LEN)
-		return -1;
-
-	uint8_t buf[trans_size];
-	memset(buf, 0, trans_size); // to silence valgrind, and really, we dont want to write stack random to device
+	uint8_t buf[CH341_PACKET_LENGTH*2];
+	memset(buf, 0, CH341_PACKET_LENGTH); // to silence valgrind, and really, we dont want to write stack random to device
 
 	uint8_t *ptr = buf;
 	ch341SpiCs(&ptr, true);
-	ptr = buf + CH341_PACKET_LENGTH; // don't care what's after CH341A_CMD_UIO_STM_END
-	*ptr++ = CH341A_CMD_SPI_STREAM;
-	for (int i = 0; i < writecnt; ++i)
-		*ptr++ = swapByte(*writearr++);
-	int32_t ret = usbTransfer(__func__, BULK_WRITE_ENDPOINT, buf, CH341_PACKET_LENGTH + 1 + writecnt + readcnt);
-	if (ret < 0)
-		return -1;
-	ret = usbTransfer(__func__, BULK_READ_ENDPOINT, buf, writecnt + readcnt);
-	if (ret < 0)
-		return -1;
-
-	for (int i = 0; i < readcnt; i++) { // swap the buffer
-		readarr[i] = swapByte(buf[writecnt + i]);
+	unsigned int write_left = writecnt;
+	unsigned int read_left = readcnt;
+	int32_t ret;
+	for (int p = 0; p < packets; p++) {
+		unsigned int write_now = min( CH341_PACKET_LENGTH-1, write_left );
+		unsigned int read_now = min ( (CH341_PACKET_LENGTH-1) - write_now, read_left );
+		ptr = buf + CH341_PACKET_LENGTH;
+		*ptr++ = CH341A_CMD_SPI_STREAM;
+		for (unsigned int i = 0; i < write_now; ++i)
+			*ptr++ = swapByte(*writearr++);
+		write_left -= write_now;
+		ret = usbTransfer(__func__, BULK_WRITE_ENDPOINT, p ? buf + CH341_PACKET_LENGTH : buf, (!p ? CH341_PACKET_LENGTH : 0 ) + 1 + write_now + read_now);
+		if (ret < 0)
+			return -1;
+		ret = usbTransfer(__func__, BULK_READ_ENDPOINT, buf, write_now + read_now);
+		if (ret < 0)
+			return -1;
+		if (read_now) {
+			for (unsigned int i = 0; i < read_now; i++)
+				*readarr++ = swapByte(buf[write_now + i]);
+			read_left -= read_now;
+		}
 	}
 	ptr = buf;
 	ch341SpiCs(&ptr, false);
