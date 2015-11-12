@@ -204,8 +204,8 @@ static int32_t usbTransfer(const char *func, uint8_t type, uint8_t *buf, int len
 	if (devHandle == NULL)
 		return -1;
 
-	int transfered;
-	int32_t ret = libusb_bulk_transfer(devHandle, type, buf, len, &transfered, DEFAULT_TIMEOUT);
+	int transferred;
+	int32_t ret = libusb_bulk_transfer(devHandle, type, buf, len, &transferred, DEFAULT_TIMEOUT);
 	if (ret < 0) {
 		fprintf(stderr, "%s: Failed to %s %d bytes '%s'\n",
 			func, (type == BULK_WRITE_ENDPOINT) ? "write" : "read", len, libusb_error_name(ret));
@@ -214,9 +214,8 @@ static int32_t usbTransfer(const char *func, uint8_t type, uint8_t *buf, int len
 	msg_pspew("%s %d bytes:\n", (type == BULK_WRITE_ENDPOINT) ? "Wrote" : "Read", len);
 	print_hex(buf, len);
 	msg_pspew("\n\n");
-	return transfered;
+	return transferred;
 }
-
 
 static int32_t ch341a_enable_pins(bool enable)
 {
@@ -233,7 +232,7 @@ static int32_t ch341a_enable_pins(bool enable)
 	}
 	return ret;
 }
-	
+
 /*   set the i2c bus speed (speed(b1b0): 0 = 20kHz; 1 = 100kHz, 2 = 400kHz, 3 = 750kHz)
  *   set the spi bus data width(speed(b2): 0 = Single, 1 = Double)  */
 static int32_t ch341SetStream(uint32_t speed)
@@ -439,7 +438,7 @@ int ch341a_spi_init(void)
 	int pid = devs_ch341a_spi[0].device_id;
 
 	if (devHandle != NULL) {
-		fprintf(stderr, "Call ch341Release before re-configure\n");
+		fprintf(stderr, "Call ch341_spi_shutdown before re-configure\n");
 		return -1;
 	}
 	ret = libusb_init(NULL);
@@ -449,7 +448,7 @@ int ch341a_spi_init(void)
 	}
 
 	libusb_set_debug(NULL, 3);
-	
+
 	if (!(devHandle = libusb_open_device_with_vid_pid(NULL, vid, pid))) {
 		fprintf(stderr, "Couldn't open device [%04x:%04x].\n", vid, pid);
 		return -1;
@@ -467,13 +466,13 @@ int ch341a_spi_init(void)
 	} else if (ret == 1) {
 		ret = libusb_detach_kernel_driver(devHandle, 0);
 		if (ret == LIBUSB_ERROR_NOT_SUPPORTED) {
-			msg_pwarn("Could not detech kernel driver. Further accesses will probably fail.\n");
+			msg_pwarn("Could not detach kernel driver. Further accesses will probably fail.\n");
 		} else if (ret != 0) {
 			fprintf(stderr, "Failed to detach kernel driver: '%s'\n", libusb_error_name(ret));
 			goto close_handle;
 		}
 	}
-	
+
 	ret = libusb_claim_interface(devHandle, 0);
 	if (ret != 0) {
 		fprintf(stderr, "Failed to claim interface 0: '%s'\n", libusb_error_name(ret));
@@ -486,7 +485,7 @@ int ch341a_spi_init(void)
 		fprintf(stderr, "Failed to get device descriptor: '%s'\n", libusb_error_name(ret));
 		goto release_interface;
 	}
-	
+
 	msg_pdbg("Device revision is %d.%01d.%01d\n",
 		(desc.bcdDevice >> 8) & 0x00FF,
 		(desc.bcdDevice >> 4) & 0x000F,
