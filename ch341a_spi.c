@@ -201,12 +201,12 @@ static void print_hex(const void *buf, size_t len)
 }
 
 /* callback for bulk out async transfer */
-void cbBulkOut(struct libusb_transfer *transfer)
+static void cbBulkOut(struct libusb_transfer *transfer)
 {
 	int *transfer_cnt = (int*)transfer->user_data;
 
 	if (transfer->status != LIBUSB_TRANSFER_COMPLETED) {
-		msg_perr("\ncbBulkOut: error : %d\n", transfer->status);
+		msg_perr("\ncbBulkOut: error : %s\n", libusb_error_name(transfer->status));
 		*transfer_cnt = -1;
 	} else {
 		*transfer_cnt += transfer->actual_length;
@@ -214,12 +214,12 @@ void cbBulkOut(struct libusb_transfer *transfer)
 }
 
 /* callback for bulk in async transfer */
-void cbBulkIn(struct libusb_transfer *transfer)
+static void cbBulkIn(struct libusb_transfer *transfer)
 {
 	int *transfer_cnt = (int*)transfer->user_data;
 
 	if (transfer->status != LIBUSB_TRANSFER_COMPLETED) {
-		msg_perr("\ncbBulkIn: error : %d\n", transfer->status);
+		msg_perr("\ncbBulkIn: error : %s\n", libusb_error_name(transfer->status));
 		*transfer_cnt = -1;
 	} else {
 		*transfer_cnt += transfer->actual_length;
@@ -263,7 +263,7 @@ static int32_t usbTransferRW(const char *func, unsigned int writecnt, unsigned i
 		}
 	} while ((transferred_out < writecnt)||(in_done < readcnt));
 	if (ret < 0) {
-		fprintf(stderr, "%s: Failed to %s %d bytes\n",
+		msg_perr("%s: Failed to %s %d bytes\n",
 			func, (transferred_out < 0) ? "write" : "read", transferred_out < 0 ? writecnt : readcnt);
 		return -1;
 	}
@@ -272,12 +272,12 @@ static int32_t usbTransferRW(const char *func, unsigned int writecnt, unsigned i
 		print_hex(writearr, transferred_out);
 		msg_pspew("\n\n");
 	}
-	if (transferred_in) {
-		msg_pspew("Read %d bytes:\n", transferred_in);
-		print_hex(readarr, transferred_in);
+	if (in_done) {
+		msg_pspew("Read %d bytes:\n", in_done);
+		print_hex(readarr, in_done);
 		msg_pspew("\n\n");
 	}
-	return transferred_out + transferred_in;
+	return transferred_out + in_done;
 }
 
 static int32_t ch341a_enable_pins(bool enable)
@@ -369,7 +369,7 @@ static int ch341a_spi_spi_send_command(struct flashctx *flash, unsigned int writ
 	int32_t ret = usbTransferRW(__func__, CH341_PACKET_LENGTH + packets + writecnt + readcnt, writecnt + readcnt, wbuf[0], rbuf);
 	if (ret < 0)
 		return -1;
-	for (unsigned int i = 0; i < readcnt; i++) 
+	for (unsigned int i = 0; i < readcnt; i++)
 		*readarr++ = swapByte(rbuf[writecnt + i]);
 
 	return 0;
@@ -423,7 +423,7 @@ int ch341a_spi_init(void)
 		fprintf(stderr, "Couldn't open device [%04x:%04x].\n", vid, pid);
 		return -1;
 	}
- 
+
 	if (!(dev = libusb_get_device(devHandle))) {
 		fprintf(stderr, "Couldn't get bus number and address.\n");
 		goto close_handle;
@@ -465,7 +465,7 @@ int ch341a_spi_init(void)
 	transfer_out = libusb_alloc_transfer(0);
 	transfer_in = libusb_alloc_transfer(0);
 	if ((!transfer_out)||(!transfer_in)) {
-		msg_perr("Failed to alloc libusb_transfers\n");
+		msg_perr("Failed to alloc libusb transfers\n");
 		goto release_interface;
 	}
 	/* We use these helpers but dont fill the actual buffer yet. */
