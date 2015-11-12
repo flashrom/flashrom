@@ -179,7 +179,9 @@
 #define	 CH341A_STM_I2C_750K		0x03
 #define	 CH341A_STM_SPI_DBL		0x04
 
-struct libusb_device_handle *devHandle = NULL;
+static struct libusb_device_handle *devHandle = NULL;
+static struct libusb_transfer *transfer_out = NULL;
+static struct libusb_transfer *transfer_in = NULL;
 
 const struct dev_entry devs_ch341a_spi[] = {
 	{0x1A86, 0x5512, OK, "Winchiphead (WCH)", "CH341A"},
@@ -187,7 +189,7 @@ const struct dev_entry devs_ch341a_spi[] = {
 	{0},
 };
 
-static void print_hex(void *buf, size_t len)
+static void print_hex(const void *buf, size_t len)
 {
 	size_t i;
 
@@ -198,23 +200,76 @@ static void print_hex(void *buf, size_t len)
 	}
 }
 
-/* Helper function for libusb_bulk_transfer, display error message with the caller name */
-static int32_t usbTransfer(const char *func, uint8_t type, uint8_t *buf, int len)
+/* callback for bulk out async transfer */
+void cbBulkOut(struct libusb_transfer *transfer)
+{
+	int *transfer_cnt = (int*)transfer->user_data;
+
+	if (transfer->status != LIBUSB_TRANSFER_COMPLETED) {
+		msg_perr("\ncbBulkOut: error : %d\n", transfer->status);
+		*transfer_cnt = -1;
+	} else {
+		*transfer_cnt += transfer->actual_length;
+	}
+}
+
+/* callback for bulk in async transfer */
+void cbBulkIn(struct libusb_transfer *transfer)
+{
+	int *transfer_cnt = (int*)transfer->user_data;
+
+	if (transfer->status != LIBUSB_TRANSFER_COMPLETED) {
+		msg_perr("\ncbBulkIn: error : %d\n", transfer->status);
+		*transfer_cnt = -1;
+	} else {
+		*transfer_cnt += transfer->actual_length;
+	}
+}
+
+static int32_t usbTransferRW(const char *func, unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr)
 {
 	if (devHandle == NULL)
 		return -1;
 
-	int transferred;
-	int32_t ret = libusb_bulk_transfer(devHandle, type, buf, len, &transferred, DEFAULT_TIMEOUT);
+	int32_t ret = 0;
+	int transferred_out = 0;
+	int transferred_in = 0;
+	transfer_out->buffer = (uint8_t*)writearr;
+	transfer_out->length = writecnt;
+	transfer_out->user_data = &transferred_out;
+	transfer_in->buffer = readarr;
+	transfer_in->length = readcnt;
+	transfer_in->user_data = &transferred_in;
+	if (writecnt) libusb_submit_transfer(transfer_out);
+	if (readcnt) libusb_submit_transfer(transfer_in);
+	do {
+		struct timeval tv = { 0, 100 };
+		libusb_handle_events_timeout(NULL, &tv);
+		if (transferred_out < 0) {
+			ret = -1;
+			break;
+		}
+		if (transferred_in < 0) {
+			ret = -1;
+			break;
+		}
+	} while ((transferred_out < writecnt)||(transferred_in < readcnt));
 	if (ret < 0) {
-		fprintf(stderr, "%s: Failed to %s %d bytes '%s'\n",
-			func, (type == BULK_WRITE_ENDPOINT) ? "write" : "read", len, libusb_error_name(ret));
+		fprintf(stderr, "%s: Failed to %s %d bytes\n",
+			func, (transferred_out < 0) ? "write" : "read", transferred_out < 0 ? writecnt : readcnt);
 		return -1;
 	}
-	msg_pspew("%s %d bytes:\n", (type == BULK_WRITE_ENDPOINT) ? "Wrote" : "Read", len);
-	print_hex(buf, len);
-	msg_pspew("\n\n");
-	return transferred;
+	if (transferred_out) {
+		msg_pspew("Wrote %d bytes:\n", transferred_out);
+		print_hex(writearr, transferred_out);
+		msg_pspew("\n\n");
+	}
+	if (transferred_in) {
+		msg_pspew("Read %d bytes:\n", transferred_in);
+		print_hex(readarr, transferred_in);
+		msg_pspew("\n\n");
+	}
+	return transferred_out + transferred_in;
 }
 
 static int32_t ch341a_enable_pins(bool enable)
@@ -226,7 +281,7 @@ static int32_t ch341a_enable_pins(bool enable)
 		CH341A_CMD_UIO_STM_END,
 	};
 
-	int32_t ret = usbTransfer(__func__, BULK_WRITE_ENDPOINT, buf, sizeof(buf));
+	int32_t ret = usbTransferRW(__func__, sizeof(buf), 0, buf, NULL);
 	if (ret < 0) {
 		msg_perr("Could not %sable output pins.\n", enable ? "en" : "dis");
 	}
@@ -246,7 +301,7 @@ static int32_t ch341SetStream(uint32_t speed)
 		CH341A_CMD_I2C_STM_END
 	};
 
-	int32_t ret = usbTransfer(__func__, BULK_WRITE_ENDPOINT, buf, sizeof(buf));
+	int32_t ret = usbTransferRW(__func__, sizeof(buf), 0, buf, NULL);
 	if (ret < 0) {
 		msg_perr("Could not set SPI frequency.\n");
 	}
@@ -275,12 +330,6 @@ static int ch341a_spi_spi_send_command(struct flashctx *flash, unsigned int writ
 	if (devHandle == NULL)
 		return -1;
 
-	/* The transaction size is determined by the data sent out comprising
-	 *  - the CS packet
-	 *  - SPI stream opcode
-	 *  - raw SPI output data
-	 *  - raw SPI input data
-	 */
 	/* How many  packets ... */
 	const size_t packets = ((writecnt+readcnt)+(CH341_PACKET_LENGTH-2)) / (CH341_PACKET_LENGTH-1);
 
@@ -300,10 +349,10 @@ static int ch341a_spi_spi_send_command(struct flashctx *flash, unsigned int writ
 		for (unsigned int i = 0; i < write_now; ++i)
 			*ptr++ = swapByte(*writearr++);
 		write_left -= write_now;
-		ret = usbTransfer(__func__, BULK_WRITE_ENDPOINT, p ? buf + CH341_PACKET_LENGTH : buf, (!p ? CH341_PACKET_LENGTH : 0 ) + 1 + write_now + read_now);
+		ret = usbTransferRW(__func__, (!p ? CH341_PACKET_LENGTH : 0 ) + 1 + write_now + read_now, 0,  p ? buf + CH341_PACKET_LENGTH : buf, NULL);
 		if (ret < 0)
 			return -1;
-		ret = usbTransfer(__func__, BULK_READ_ENDPOINT, buf, write_now + read_now);
+		ret = usbTransferRW(__func__, 0, write_now + read_now, NULL, buf);
 		if (ret < 0)
 			return -1;
 		if (read_now) {
@@ -314,7 +363,7 @@ static int ch341a_spi_spi_send_command(struct flashctx *flash, unsigned int writ
 	}
 	ptr = buf;
 	ch341SpiCs(&ptr, false);
-	ret = usbTransfer(__func__, BULK_WRITE_ENDPOINT, buf, 3);
+	ret = usbTransferRW(__func__, 3, 0, buf, NULL);
 	if (ret < 0)
 		return -1;
 	return 0;
@@ -420,6 +469,8 @@ static int ch341a_spi_shutdown(void *data)
 	if (devHandle == NULL)
 		return -1;
 	ch341a_enable_pins(false); // disable output pins
+	libusb_free_transfer(transfer_out);
+	libusb_free_transfer(transfer_in);
 	libusb_release_interface(devHandle, 0);
 	libusb_close(devHandle);
 	libusb_exit(NULL);
@@ -487,6 +538,18 @@ int ch341a_spi_init(void)
 		(desc.bcdDevice >> 8) & 0x00FF,
 		(desc.bcdDevice >> 4) & 0x000F,
 		(desc.bcdDevice >> 0) & 0x000F);
+
+	/* Allocate and pre-fill transfer structures. */
+	transfer_out = libusb_alloc_transfer(0);
+	transfer_in = libusb_alloc_transfer(0);
+	if ((!transfer_out)||(!transfer_in)) {
+		msg_perr("Failed to alloc libusb_transfers\n");
+		goto release_interface;
+	}
+	/* We use these helpers but dont fill the actual buffer yet. */
+	libusb_fill_bulk_transfer(transfer_out, devHandle, BULK_WRITE_ENDPOINT, 0, 0, cbBulkOut, 0, DEFAULT_TIMEOUT);
+	libusb_fill_bulk_transfer(transfer_in, devHandle, BULK_READ_ENDPOINT, 0, 0, cbBulkIn, 0, DEFAULT_TIMEOUT);
+
 	ret = ch341SetStream(CH341A_STM_I2C_100K) | ch341a_enable_pins(true);
 	if (ret < 0)
 		goto release_interface;
