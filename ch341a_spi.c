@@ -243,7 +243,9 @@ static int32_t usbTransferRW(const char *func, unsigned int writecnt, unsigned i
 	if (readcnt) libusb_submit_transfer(transfer_in);
 	if (writecnt) libusb_submit_transfer(transfer_out);
 	unsigned int in_done = 0;
-	do {
+	do {	/* TODO: This could made to be even more async if the buffers were non-stack and
+		 * state was remembered - atleast by one Out+In transfer in-flight while flashrom runs,
+		 * but only when the command doesnt require a read. */
 		struct timeval tv = { 0, 100 };
 		libusb_handle_events_timeout(NULL, &tv);
 		if (transferred_in > 0) {
@@ -349,6 +351,8 @@ static int ch341a_spi_spi_send_command(struct flashctx *flash, unsigned int writ
 	memset(wbuf[0], 0, CH341_PACKET_LENGTH); // dont want to write stack random to device...
 
 	uint8_t *ptr = wbuf[0];
+	/* CS usage is optimized by doing both transitions in one packet.
+	 * Final transition to deselected is in the pin disable. */
 	ch341pluckCS(ptr);
 	unsigned int write_left = writecnt;
 	unsigned int read_left = readcnt;
@@ -377,6 +381,7 @@ static int ch341a_spi_spi_send_command(struct flashctx *flash, unsigned int writ
 
 static const struct spi_master spi_master_ch341a_spi = {
 	.type		= SPI_CONTROLLER_CH341A_SPI,
+	/* TODO: Flashrom current max is 256. Device was tested on linux to accept atleast 16k  */
 	.max_data_read	= 1024, /* Maximum data read size in one go (excluding opcode+address). */
 	.max_data_write	= 1024, /* Maximum data write size in one go (excluding opcode+address). */
 	.command	= ch341a_spi_spi_send_command,
