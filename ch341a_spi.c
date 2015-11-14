@@ -434,6 +434,7 @@ int ch341a_spi_init(void)
 		goto close_handle;
 	}
 
+#if !IS_WINDOWS
 	ret = libusb_kernel_driver_active(devHandle, 0);
 	if (ret < 0) {
 			msg_perr("Failed to detach kernel driver: '%s'\n", libusb_error_name(ret));
@@ -447,6 +448,7 @@ int ch341a_spi_init(void)
 			goto close_handle;
 		}
 	}
+#endif
 
 	ret = libusb_claim_interface(devHandle, 0);
 	if (ret != 0) {
