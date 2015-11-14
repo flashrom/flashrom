@@ -636,7 +636,7 @@ NEED_USB := yes
 endif
 
 ifeq ($(NEED_FTDI), yes)
-FTDILIBS := $(shell ([ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ); pkg-config --libs libftdi || printf "%s" "-lftdi -lusb")
+FTDILIBS := $(shell [ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ; pkg-config --libs libftdi || printf "%s" "-lftdi -lusb")
 FEATURE_CFLAGS += $(shell LC_ALL=C grep -q "FT232H := yes" .features && printf "%s" "-D'HAVE_FT232H=1'")
 FEATURE_LIBS += $(shell LC_ALL=C grep -q "FTDISUPPORT := yes" .features && printf "%s" "$(FTDILIBS)")
 # We can't set NEED_USB here because that would transform libftdi auto-enabling
@@ -767,14 +767,14 @@ endif
 ifeq ($(NEED_USB), yes)
 CHECK_LIBUSB0 = yes
 FEATURE_CFLAGS += -D'NEED_USB=1'
-USBLIBS := $(shell ([ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ); pkg-config --libs libusb  || printf "%s" "-lusb")
+USBLIBS := $(shell [ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)"; pkg-config --libs libusb  || printf "%s" "-lusb")
 endif
 
 ifeq ($(NEED_LIBUSB1), yes)
 CHECK_LIBUSB1 = yes
 FEATURE_CFLAGS += -D'NEED_LIBUSB1=1'
-USBLIBS += $(shell ([ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ); pkg-config --libs libusb-1.0  || printf "%s" "-lusb-1.0")
-CPPFLAGS += $(shell ([ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ); pkg-config --cflags-only-I libusb-1.0  || printf "%s" "-I/usr/include/libusb-1.0")
+USBLIBS += $(shell [ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)"; pkg-config --libs libusb-1.0  || printf "%s" "-lusb-1.0")
+CPPFLAGS += $(shell [ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)"; pkg-config --cflags-only-I libusb-1.0  || printf "%s" "-I/usr/include/libusb-1.0")
 endif
 
 ifeq ($(CONFIG_PRINT_WIKI), yes)
