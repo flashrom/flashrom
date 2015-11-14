@@ -201,7 +201,7 @@ static void print_hex(const void *buf, size_t len)
 }
 
 /* callback for bulk out async transfer */
-static void cbBulkOut(struct libusb_transfer *transfer)
+static void LIBUSB_CALL cbBulkOut(struct libusb_transfer *transfer)
 {
 	int *transfer_cnt = (int*)transfer->user_data;
 
@@ -214,7 +214,7 @@ static void cbBulkOut(struct libusb_transfer *transfer)
 }
 
 /* callback for bulk in async transfer */
-static void cbBulkIn(struct libusb_transfer *transfer)
+static void LIBUSB_CALL cbBulkIn(struct libusb_transfer *transfer)
 {
 	int *transfer_cnt = (int*)transfer->user_data;
 
