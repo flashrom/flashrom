@@ -22,13 +22,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <sys/fcntl.h>
+#include <fcntl.h>
 #include <errno.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <sys/ioctl.h>
 #include <linux/types.h>
 #include <linux/spi/spidev.h>
-#include <sys/ioctl.h>
+#include <linux/ioctl.h>
 #include "flash.h"
 #include "chipdrivers.h"
 #include "programmer.h"

@@ -26,12 +26,6 @@
 
 #include "platform.h"
 
-#if IS_X86
-#if defined(__GLIBC__)
-#include <sys/io.h>
-#endif
-#endif
-
 #if NEED_PCI == 1
 /*
  * libpci headers use the variable name "index" which triggers shadowing
@@ -115,6 +109,7 @@
 #if !defined (__FLASHROM_BIG_ENDIAN__) && !defined (__FLASHROM_LITTLE_ENDIAN__)
 
 /* Nonstandard libc-specific macros for determining endianness. */
+/* musl provides an endian.h as well... but it can not be detected from within C. */
 #if defined(__GLIBC__)
 #include <endian.h>
 #if BYTE_ORDER == LITTLE_ENDIAN
@@ -203,6 +198,13 @@ cpu_to_be(64)
 
 #if NEED_PCI == 1
 #if IS_X86
+
+/* sys/io.h provides iopl(2) and x86 I/O port access functions (inb, outb etc).
+ * It is included in glibc (thus available also on debian/kFreeBSD) but also in other libcs that mimic glibc,
+ * e.g. musl and uclibc. */
+#if defined(__linux__) || defined(__GLIBC__)
+#include <sys/io.h>
+#endif
 
 #define __FLASHROM_HAVE_OUTB__ 1
 
