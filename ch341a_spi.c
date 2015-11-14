@@ -140,7 +140,7 @@
 #define		mStateBitSDA			0x00800000
 
 */
-#define	 DEFAULT_TIMEOUT		300	// 300ms for USB timeouts
+#define	 DEFAULT_TIMEOUT		1000	// 1000ms for USB timeouts
 #define	 BULK_WRITE_ENDPOINT		0x02
 #define	 BULK_READ_ENDPOINT		0x82
 
@@ -179,9 +179,16 @@
 #define	 CH341A_STM_I2C_750K		0x03
 #define	 CH341A_STM_SPI_DBL		0x04
 
+#define USB_IN_TRANSFERS 32
+/* Need to use many queued transfers for any resemblance of performance (especially on windows)
+ * because USB spec says that transfers end on non-full packet and the device sends the 31 reply
+ * data bytes to each 32-byte packet with command + 31 bytes of data... */
+
 static struct libusb_device_handle *devHandle = NULL;
 static struct libusb_transfer *transfer_out = NULL;
-static struct libusb_transfer *transfer_in = NULL;
+static struct libusb_transfer *transfer_ins[USB_IN_TRANSFERS] = {0};
+
+
 
 const struct dev_entry devs_ch341a_spi[] = {
 	{0x1A86, 0x5512, OK, "Winchiphead (WCH)", "CH341A"},
@@ -233,33 +240,58 @@ static int32_t usbTransferRW(const char *func, unsigned int writecnt, unsigned i
 
 	int32_t ret = 0;
 	int transferred_out = 0;
-	int transferred_in = 0;
+	int transferred_ins[USB_IN_TRANSFERS] = {0};
 	transfer_out->buffer = (uint8_t*)writearr;
 	transfer_out->length = writecnt;
 	transfer_out->user_data = &transferred_out;
-	transfer_in->buffer = readarr;
-	transfer_in->length = min(CH341_PACKET_LENGTH -1, readcnt);
-	transfer_in->user_data = &transferred_in;
-	if (readcnt) libusb_submit_transfer(transfer_in);
+
+	unsigned int read_que_left = readcnt;
+	if (readcnt) {
+		for (int i=0;i<USB_IN_TRANSFERS;i++) {
+			unsigned int read_now = min(CH341_PACKET_LENGTH -1, read_que_left);
+			transfer_ins[i]->buffer = readarr;
+			transfer_ins[i]->length = read_now;
+			transfer_ins[i]->user_data = &transferred_ins[i];
+			readarr += read_now;
+			read_que_left -= read_now;
+			if (read_now) {
+				libusb_submit_transfer(transfer_ins[i]);
+			}
+		}
+	}
 	if (writecnt) libusb_submit_transfer(transfer_out);
+	unsigned int ip = 0; /* The In Packet we expect to be ready next. */
 	unsigned int in_done = 0;
 	do {	/* TODO: This could made to be even more async if the buffers were non-stack and
 		 * state was remembered - atleast by one Out+In transfer in-flight while flashrom runs,
 		 * but only when the command doesnt require a read. */
 		struct timeval tv = { 0, 100 };
 		libusb_handle_events_timeout(NULL, &tv);
-		if (transferred_in > 0) {
-			in_done += transferred_in;
-			transfer_in->buffer = readarr + in_done;
-			transfer_in->length = min( CH341_PACKET_LENGTH -1, readcnt - in_done );
-			transferred_in = 0;
-			if (in_done < readcnt) libusb_submit_transfer(transfer_in);
-		}
+		int work;
+		do {
+			work = 0;
+			if (transferred_ins[ip] < 0) {
+				ret = -1;
+				break;
+			}
+			if (transferred_ins[ip] > 0) {
+				unsigned int read_que_now = min( CH341_PACKET_LENGTH -1, read_que_left );
+				in_done += transferred_ins[ip];
+				transferred_ins[ip] = 0;
+				if (read_que_now) {
+					transfer_ins[ip]->length = read_que_now;
+					transfer_ins[ip]->buffer = readarr;
+					libusb_submit_transfer(transfer_ins[ip]);
+					read_que_left -= read_que_now;
+					readarr += read_que_now;
+				}
+				ip++;
+				if (ip >= USB_IN_TRANSFERS) ip = 0;
+				work = 1;
+			}
+		} while(work);
+		if (ret < 0) break;
 		if (transferred_out < 0) {
-			ret = -1;
-			break;
-		}
-		if (transferred_in < 0) {
 			ret = -1;
 			break;
 		}
@@ -397,7 +429,8 @@ static int ch341a_spi_shutdown(void *data)
 		return -1;
 	ch341a_enable_pins(false); // disable output pins
 	libusb_free_transfer(transfer_out);
-	libusb_free_transfer(transfer_in);
+	for (int i=0;i<USB_IN_TRANSFERS;i++)
+		libusb_free_transfer(transfer_ins[i]);
 	libusb_release_interface(devHandle, 0);
 	libusb_close(devHandle);
 	libusb_exit(NULL);
@@ -470,14 +503,21 @@ int ch341a_spi_init(void)
 
 	/* Allocate and pre-fill transfer structures. */
 	transfer_out = libusb_alloc_transfer(0);
-	transfer_in = libusb_alloc_transfer(0);
-	if ((!transfer_out)||(!transfer_in)) {
+	if (!transfer_out) {
 		msg_perr("Failed to alloc libusb transfers\n");
 		goto release_interface;
 	}
+	for (int i=0;i<USB_IN_TRANSFERS;i++) {
+		transfer_ins[i] = libusb_alloc_transfer(0);
+		if (!transfer_ins[i]) {
+			msg_perr("Failed to alloc libusb transfers\n");
+			goto release_interface;
+		}
+	}
 	/* We use these helpers but dont fill the actual buffer yet. */
 	libusb_fill_bulk_transfer(transfer_out, devHandle, BULK_WRITE_ENDPOINT, 0, 0, cbBulkOut, 0, DEFAULT_TIMEOUT);
-	libusb_fill_bulk_transfer(transfer_in, devHandle, BULK_READ_ENDPOINT, 0, 0, cbBulkIn, 0, DEFAULT_TIMEOUT);
+	for (int i=0;i<USB_IN_TRANSFERS;i++)
+		libusb_fill_bulk_transfer(transfer_ins[i], devHandle, BULK_READ_ENDPOINT, 0, 0, cbBulkIn, 0, DEFAULT_TIMEOUT);
 
 	ret = ch341SetStream(CH341A_STM_I2C_100K) | ch341a_enable_pins(true);
 	if (ret < 0)
