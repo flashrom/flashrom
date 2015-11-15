@@ -247,7 +247,8 @@ static int32_t usbTransferRW(const char *func, unsigned int writecnt, unsigned i
 
 	unsigned int read_que_left = readcnt;
 	if (readcnt) {
-		for (int i=0;i<USB_IN_TRANSFERS;i++) {
+		int i;
+		for (i=0;i<USB_IN_TRANSFERS;i++) {
 			unsigned int read_now = min(CH341_PACKET_LENGTH -1, read_que_left);
 			transfer_ins[i]->buffer = readarr;
 			transfer_ins[i]->length = read_now;
@@ -388,12 +389,14 @@ static int ch341a_spi_spi_send_command(struct flashctx *flash, unsigned int writ
 	ch341pluckCS(ptr);
 	unsigned int write_left = writecnt;
 	unsigned int read_left = readcnt;
-	for (int p = 0; p < packets; p++) {
+	int p;
+	unsigned int i;
+	for (p = 0; p < packets; p++) {
 		unsigned int write_now = min( CH341_PACKET_LENGTH-1, write_left );
 		unsigned int read_now = min ( (CH341_PACKET_LENGTH-1) - write_now, read_left );
 		ptr = wbuf[p+1];
 		*ptr++ = CH341A_CMD_SPI_STREAM;
-		for (unsigned int i = 0; i < write_now; ++i)
+		for (i = 0; i < write_now; ++i)
 			*ptr++ = swapByte(*writearr++);
 		if (read_now) {
 			memset(ptr, 0xFF, read_now);
@@ -405,7 +408,7 @@ static int ch341a_spi_spi_send_command(struct flashctx *flash, unsigned int writ
 	int32_t ret = usbTransferRW(__func__, CH341_PACKET_LENGTH + packets + writecnt + readcnt, writecnt + readcnt, wbuf[0], rbuf);
 	if (ret < 0)
 		return -1;
-	for (unsigned int i = 0; i < readcnt; i++)
+	for (i = 0; i < readcnt; i++)
 		*readarr++ = swapByte(rbuf[writecnt + i]);
 
 	return 0;
@@ -425,11 +428,12 @@ static const struct spi_master spi_master_ch341a_spi = {
 
 static int ch341a_spi_shutdown(void *data)
 {
+	int i;
 	if (devHandle == NULL)
 		return -1;
 	ch341a_enable_pins(false); // disable output pins
 	libusb_free_transfer(transfer_out);
-	for (int i=0;i<USB_IN_TRANSFERS;i++)
+	for (i=0;i<USB_IN_TRANSFERS;i++)
 		libusb_free_transfer(transfer_ins[i]);
 	libusb_release_interface(devHandle, 0);
 	libusb_close(devHandle);
@@ -442,6 +446,7 @@ int ch341a_spi_init(void)
 {
 	struct libusb_device *dev;
 	int32_t ret;
+	int i;
 	int vid = devs_ch341a_spi[0].vendor_id;
 	int pid = devs_ch341a_spi[0].device_id;
 
@@ -507,7 +512,7 @@ int ch341a_spi_init(void)
 		msg_perr("Failed to alloc libusb transfers\n");
 		goto release_interface;
 	}
-	for (int i=0;i<USB_IN_TRANSFERS;i++) {
+	for (i=0;i<USB_IN_TRANSFERS;i++) {
 		transfer_ins[i] = libusb_alloc_transfer(0);
 		if (!transfer_ins[i]) {
 			msg_perr("Failed to alloc libusb transfers\n");
@@ -516,7 +521,7 @@ int ch341a_spi_init(void)
 	}
 	/* We use these helpers but dont fill the actual buffer yet. */
 	libusb_fill_bulk_transfer(transfer_out, devHandle, BULK_WRITE_ENDPOINT, 0, 0, cbBulkOut, 0, DEFAULT_TIMEOUT);
-	for (int i=0;i<USB_IN_TRANSFERS;i++)
+	for (i=0;i<USB_IN_TRANSFERS;i++)
 		libusb_fill_bulk_transfer(transfer_ins[i], devHandle, BULK_READ_ENDPOINT, 0, 0, cbBulkIn, 0, DEFAULT_TIMEOUT);
 
 	ret = ch341SetStream(CH341A_STM_I2C_100K) | ch341a_enable_pins(true);
