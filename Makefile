@@ -929,7 +929,7 @@ export LIBUSB0_TEST
 
 
 define LIBUSB1_TEST
-#include <libusb-1.0/libusb.h>
+#include <libusb.h>
 int main(int argc, char **argv)
 {
 	(void)argc;
