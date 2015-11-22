@@ -374,6 +374,19 @@ int spi_prettyprint_status_register_bp2_bpl(struct flashctx *flash)
 	return 0;
 }
 
+int spi_prettyprint_status_register_bp2_tb_bpl(struct flashctx *flash)
+{
+	uint8_t status = spi_read_status_register(flash);
+	spi_prettyprint_status_register_hex(status);
+
+	spi_prettyprint_status_register_bpl(status);
+	spi_prettyprint_status_register_bit(status, 6);
+	msg_cdbg("Chip status register: Top/Bottom (TB) is %s\n", (status & (1 << 5)) ? "bottom" : "top");
+	spi_prettyprint_status_register_bp(status, 2);
+	spi_prettyprint_status_register_welwip(status);
+	return 0;
+}
+
 /* === Amic ===
  * FIXME: spi_disable_blockprotect is incorrect but works fine for chips using
  * spi_prettyprint_status_register_bp1_srwd or

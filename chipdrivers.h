@@ -72,6 +72,7 @@ int spi_prettyprint_status_register_bp2_srwd(struct flashctx *flash);
 int spi_prettyprint_status_register_bp3_srwd(struct flashctx *flash);
 int spi_prettyprint_status_register_bp4_srwd(struct flashctx *flash);
 int spi_prettyprint_status_register_bp2_bpl(struct flashctx *flash);
+int spi_prettyprint_status_register_bp2_tb_bpl(struct flashctx *flash);
 int spi_disable_blockprotect(struct flashctx *flash);
 int spi_disable_blockprotect_bp1_srwd(struct flashctx *flash);
 int spi_disable_blockprotect_bp2_srwd(struct flashctx *flash);
