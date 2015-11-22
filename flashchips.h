@@ -670,11 +670,12 @@
 #define SST_SST25WF020		0x2503
 #define SST_SST25WF040		0x2504
 #define SST_SST25WF080		0x2505
-/* There exist some successors to members of the SST25WF family with alphabetic suffixes. They have very weird
- * IDs and were not spotted in the wild yet. Their datasheets show a 4 byte long response w/o a vendor ID. */
-#define SST_SST25WF020A		/* 0x62 0x16 0x12 0x00 */
-#define SST_SST25WF040B		/* 0x62 0x16 0x13 0x00 */
-#define SST_SST25WF080B		/* 0x62 0x16 0x14 0x00 */
+/* There exist some successors to members of the SST25WF family with alphabetic suffixes. Their datasheets show
+ * a 4 byte long response w/o a vendor ID. The first byte is 0x62 that is actually Sanyo's and might be due to
+ * a collaboration in the mid 2000ies between Sanyo and SST. */
+#define SST_SST25WF020A		0x1612
+#define SST_SST25WF040B		0x1613
+#define SST_SST25WF080B		0x1614
 #define SST_SST25VF512_REMS	0x48	/* REMS or RES opcode, same as SST25VF512A */
 #define SST_SST25VF010_REMS	0x49	/* REMS or RES opcode, same as SST25VF010A */
 #define SST_SST25VF020_REMS	0x43	/* REMS or RES opcode, same as SST25LF020A */
