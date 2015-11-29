@@ -508,8 +508,11 @@ int ch341a_spi_init(void)
 	for (i=0;i<USB_IN_TRANSFERS;i++) {
 		transfer_ins[i] = libusb_alloc_transfer(0);
 		if (!transfer_ins[i]) {
+			int n;
 			msg_perr("Failed to alloc libusb IN transfer %d\n", i);
-			goto release_interface;
+			for  (n=0;n<i;n++)
+				libusb_free_transfer(transfer_ins[n]);
+			goto dealloc_out;
 		}
 	}
 	/* We use these helpers but dont fill the actual buffer yet. */
@@ -519,13 +522,18 @@ int ch341a_spi_init(void)
 
 	ret = ch341SetStream(CH341A_STM_I2C_100K) | ch341a_enable_pins(true);
 	if (ret < 0)
-		goto release_interface;
+		goto dealloc_ins;
 
 	register_shutdown(ch341a_spi_shutdown, NULL);
 	register_spi_master(&spi_master_ch341a_spi);
 
 	return 0;
 
+dealloc_ins:
+	for (i=0;i<USB_IN_TRANSFERS;i++)
+		libusb_free_transfer(transfer_ins[i]);
+dealloc_out:
+	libusb_free_transfer(transfer_out);
 release_interface:
 	libusb_release_interface(devHandle, 0);
 close_handle:
