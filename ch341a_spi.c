@@ -166,6 +166,12 @@ static void LIBUSB_CALL cbBulkOut(struct libusb_transfer *transfer)
 {
 	int *transfer_cnt = (int*)transfer->user_data;
 
+	if (transfer->status == LIBUSB_TRANSFER_CANCELLED) {
+		/* Silently ACK and exit. */
+		*transfer_cnt = -2;
+		return;
+	}
+
 	if (transfer->status != LIBUSB_TRANSFER_COMPLETED) {
 		msg_perr("\ncbBulkOut: error: %s\n", libusb_error_name(transfer->status));
 		*transfer_cnt = -1;
@@ -178,6 +184,12 @@ static void LIBUSB_CALL cbBulkOut(struct libusb_transfer *transfer)
 static void LIBUSB_CALL cbBulkIn(struct libusb_transfer *transfer)
 {
 	int *transfer_cnt = (int*)transfer->user_data;
+
+	if (transfer->status == LIBUSB_TRANSFER_CANCELLED) {
+		/* Silently ACK and exit. */
+		*transfer_cnt = -2;
+		return;
+	}
 
 	if (transfer->status != LIBUSB_TRANSFER_COMPLETED) {
 		msg_perr("\ncbBulkIn: error: %s\n", libusb_error_name(transfer->status));
@@ -192,6 +204,7 @@ static int32_t usbTransferRW(const char *func, unsigned int writecnt, unsigned i
 	if (devHandle == NULL)
 		return -1;
 
+	int i;
 	int32_t ret = 0;
 	int transferred_out = 0;
 	int transferred_ins[USB_IN_TRANSFERS] = {0};
@@ -201,7 +214,6 @@ static int32_t usbTransferRW(const char *func, unsigned int writecnt, unsigned i
 
 	unsigned int read_que_left = readcnt;
 	if (readcnt) {
-		int i;
 		for (i=0;i<USB_IN_TRANSFERS;i++) {
 			unsigned int read_now = min(CH341_PACKET_LENGTH -1, read_que_left);
 			transfer_ins[i]->buffer = readarr;
@@ -211,6 +223,8 @@ static int32_t usbTransferRW(const char *func, unsigned int writecnt, unsigned i
 			read_que_left -= read_now;
 			if (read_now) {
 				libusb_submit_transfer(transfer_ins[i]);
+			} else {
+				transferred_ins[i] = -2; /* Mark as already "done". */
 			}
 		}
 	}
@@ -223,7 +237,7 @@ static int32_t usbTransferRW(const char *func, unsigned int writecnt, unsigned i
 		struct timeval tv = { 0, 100 };
 		libusb_handle_events_timeout(NULL, &tv);
 		int work;
-		do {
+		if (in_done < readcnt) do {
 			work = 0;
 			if (transferred_ins[ip] < 0) {
 				ret = -1;
@@ -232,13 +246,16 @@ static int32_t usbTransferRW(const char *func, unsigned int writecnt, unsigned i
 			if (transferred_ins[ip] > 0) {
 				unsigned int read_que_now = min( CH341_PACKET_LENGTH -1, read_que_left );
 				in_done += transferred_ins[ip];
-				transferred_ins[ip] = 0;
 				if (read_que_now) {
+					transferred_ins[ip] = 0;
 					transfer_ins[ip]->length = read_que_now;
 					transfer_ins[ip]->buffer = readarr;
 					libusb_submit_transfer(transfer_ins[ip]);
 					read_que_left -= read_que_now;
 					readarr += read_que_now;
+				} else {
+					/* Done with this slot. */
+					transferred_ins[ip] = -2;
 				}
 				ip++;
 				if (ip >= USB_IN_TRANSFERS) ip = 0;
@@ -254,6 +271,23 @@ static int32_t usbTransferRW(const char *func, unsigned int writecnt, unsigned i
 	if (ret < 0) {
 		msg_perr("%s: Failed to %s %d bytes\n",
 			func, (transferred_out < 0) ? "write" : "read", transferred_out < 0 ? writecnt : readcnt);
+		/* We must cancel any ongoing requests and wait for them to be cancelled. */
+		if ((writecnt)&&(transferred_out == 0)) {
+			libusb_cancel_transfer(transfer_out);
+		}
+		for (i=0;i<USB_IN_TRANSFERS;i++) {
+			if (transferred_ins[i] == 0) libusb_cancel_transfer(transfer_ins[i]);
+		}
+		int waiting;
+		do {
+			struct timeval tv = { 0, 100 };
+			libusb_handle_events_timeout(NULL, &tv);
+			waiting = 0;
+			if ((writecnt)&&(transferred_out == 0)) waiting++;
+			for (i=0;i<USB_IN_TRANSFERS;i++) {
+				if (transferred_ins[i] == 0) waiting++;
+			}
+		} while(waiting);
 		return -1;
 	}
 	if (transferred_out) {
