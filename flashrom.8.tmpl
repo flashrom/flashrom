@@ -968,13 +968,9 @@ an operation), without the
 parameter, once the flash read/write operation you intended to perform has completed successfully.
 .sp
 Please also note that the mstarddc_spi driver only works on Linux.
-<<<<<<< HEAD
-=======
-.\".SS
-.\".BR "ch341a_spi " programmer
-.\"FIXME
-.\"PLACEHOLDER_NEWPROG_MAN_LONGDESCRIPTION
->>>>>>> 7d676de... Add support for WCH CH341A as an SPI programmer.
+.SS
+.BR "ch341a_spi " programmer
+The WCH CH341A is supported with no programmer parameters. SPI Speed is fixed at 2Mhz, and CS0 is used as per the device.
 .SH EXAMPLES
 To back up and update your BIOS, run
 .sp
