@@ -496,13 +496,13 @@ int ch341a_spi_init(void)
 	/* Allocate and pre-fill transfer structures. */
 	transfer_out = libusb_alloc_transfer(0);
 	if (!transfer_out) {
-		msg_perr("Failed to alloc libusb transfers\n");
+		msg_perr("Failed to alloc libusb OUT transfer\n");
 		goto release_interface;
 	}
 	for (i=0;i<USB_IN_TRANSFERS;i++) {
 		transfer_ins[i] = libusb_alloc_transfer(0);
 		if (!transfer_ins[i]) {
-			msg_perr("Failed to alloc libusb transfers\n");
+			msg_perr("Failed to alloc libusb IN transfer %d\n", i);
 			goto release_interface;
 		}
 	}
