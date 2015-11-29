@@ -346,6 +346,8 @@ static uint8_t swapByte(uint8_t x)
 /* De-assert and assert CS in one operation. */
 static void ch341pluckCS(uint8_t *ptr)
 {
+	/* This was measured to give 2.25 us deassertion time,
+	 * >20x more than needed (100ns) for most SPI chips. */
 	*ptr++ = CH341A_CMD_UIO_STREAM;
 	*ptr++ = CH341A_CMD_UIO_STM_OUT | 0x37; /* deasserted */
 	*ptr++ = CH341A_CMD_UIO_STM_OUT | 0x37; /* "delay" */
