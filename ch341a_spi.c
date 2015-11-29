@@ -26,18 +26,9 @@
 #include <libusb.h>
 
 /* Vendor defines
-#define		IOCTL_CH341_COMMAND		( FILE_DEVICE_UNKNOWN << 16 | FILE_ANY_ACCESS << 14 | 0x0f34 << 2 | METHOD_BUFFERED )
-#define		mWIN32_COMMAND_HEAD		mOFFSET( mWIN32_COMMAND, mBuffer )
-#define		mCH341_MAX_NUMBER		16
-#define		mMAX_BUFFER_LENGTH		0x1000
-#define		mMAX_COMMAND_LENGTH		( mWIN32_COMMAND_HEAD + mMAX_BUFFER_LENGTH )
-#define		mDEFAULT_BUFFER_LEN		0x0400
-#define		mDEFAULT_COMMAND_LEN	( mWIN32_COMMAND_HEAD + mDEFAULT_BUFFER_LEN )
 
 #define		mCH341_ENDP_INTER_UP	0x81
 #define		mCH341_ENDP_INTER_DOWN	0x01
-#define		mCH341_ENDP_DATA_UP		0x82
-#define		mCH341_ENDP_DATA_DOWN	0x02
 
 #define		mPipeDeviceCtrl			0x00000004
 #define		mPipeInterUp			0x00000005
@@ -62,18 +53,6 @@
 #define		mFuncBufferMode			0x00000020
 #define		mFuncBufferModeDn		0x00000021
 
-#define		mUSB_CLR_FEATURE		0x01
-#define		mUSB_SET_FEATURE		0x03
-#define		mUSB_GET_STATUS			0x00
-#define		mUSB_SET_ADDRESS		0x05
-#define		mUSB_GET_DESCR			0x06
-#define		mUSB_SET_DESCR			0x07
-#define		mUSB_GET_CONFIG			0x08
-#define		mUSB_SET_CONFIG			0x09
-#define		mUSB_GET_INTERF			0x0a
-#define		mUSB_SET_INTERF			0x0b
-#define		mUSB_SYNC_FRAME			0x0c
-
 #define		mCH341_VENDOR_READ		0xC0
 #define		mCH341_VENDOR_WRITE		0x40
 
@@ -86,14 +65,6 @@
 #define		mCH341_PARA_CMD_W0		0xA6
 #define		mCH341_PARA_CMD_W1		0xA7
 #define		mCH341_PARA_CMD_STS		0xA0
-
-#define		mCH341A_CMD_SET_OUTPUT	0xA1
-#define		mCH341A_CMD_IO_ADDR	0xA2
-#define		mCH341A_CMD_PRINT_OUT	0xA3
-#define		mCH341A_CMD_SPI_STREAM	0xA8
-#define		mCH341A_CMD_SIO_STREAM	0xA9
-#define		mCH341A_CMD_I2C_STREAM	0xAA
-#define		mCH341A_CMD_UIO_STREAM	0xAB
 
 #define		mCH341A_BUF_CLEAR		0xB2
 #define		mCH341A_I2C_CMD_X		0x54
