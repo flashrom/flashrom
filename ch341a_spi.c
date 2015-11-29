@@ -260,6 +260,7 @@ static int32_t usbTransferRW(const char *func, unsigned int writecnt, unsigned i
 				}
 				ip++;
 				if (ip >= USB_IN_TRANSFERS) ip = 0;
+				if (in_done >= readcnt) break;
 				work = 1;
 			}
 		} while(work);
@@ -276,7 +277,7 @@ static int32_t usbTransferRW(const char *func, unsigned int writecnt, unsigned i
 		if ((writecnt)&&(transferred_out == 0)) {
 			libusb_cancel_transfer(transfer_out);
 		}
-		for (i=0;i<USB_IN_TRANSFERS;i++) {
+		if (readcnt) for (i=0;i<USB_IN_TRANSFERS;i++) {
 			if (transferred_ins[i] == 0) libusb_cancel_transfer(transfer_ins[i]);
 		}
 		int waiting;
@@ -285,7 +286,7 @@ static int32_t usbTransferRW(const char *func, unsigned int writecnt, unsigned i
 			libusb_handle_events_timeout(NULL, &tv);
 			waiting = 0;
 			if ((writecnt)&&(transferred_out == 0)) waiting++;
-			for (i=0;i<USB_IN_TRANSFERS;i++) {
+			if (readcnt) for (i=0;i<USB_IN_TRANSFERS;i++) {
 				if (transferred_ins[i] == 0) waiting++;
 			}
 		} while(waiting);
