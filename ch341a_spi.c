@@ -1,9 +1,10 @@
 /*
  * This file is part of the flashrom project.
  *
- * Copyright (C) 2011 asbokid <ballymunboy@gmail.com> 
+ * Copyright (C) 2011 asbokid <ballymunboy@gmail.com>
  * Copyright (C) 2014 Pluto Yang <yangyj.ee@gmail.com>
  * Copyright (C) 2015 Stefan Tauner
+ * Copyright (C) 2015 Urja Rannikko <urjaman@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
