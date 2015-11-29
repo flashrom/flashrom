@@ -460,8 +460,10 @@ int ch341a_spi_init(void)
 #if !IS_WINDOWS
 	ret = libusb_kernel_driver_active(devHandle, 0);
 	if (ret < 0) {
+		if (ret != LIBUSB_ERROR_NOT_SUPPORTED) {
 			msg_perr("Failed to detach kernel driver: '%s'\n", libusb_error_name(ret));
 			goto close_handle;
+		}
 	} else if (ret == 1) {
 		ret = libusb_detach_kernel_driver(devHandle, 0);
 		if (ret == LIBUSB_ERROR_NOT_SUPPORTED) {
