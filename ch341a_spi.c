@@ -305,22 +305,6 @@ static int32_t usbTransferRW(const char *func, unsigned int writecnt, unsigned i
 	return transferred_out + in_done;
 }
 
-static int32_t ch341a_enable_pins(bool enable)
-{
-	uint8_t buf[] = {
-		CH341A_CMD_UIO_STREAM,
-		CH341A_CMD_UIO_STM_OUT | 0x37, // CS high,
-		CH341A_CMD_UIO_STM_DIR | (enable ? 0x3F : 0x3E), // CS output enable
-		CH341A_CMD_UIO_STM_END,
-	};
-
-	int32_t ret = usbTransferRW(__func__, sizeof(buf), 0, buf, NULL);
-	if (ret < 0) {
-		msg_perr("Could not %sable output pins.\n", enable ? "en" : "dis");
-	}
-	return ret;
-}
-
 /*   set the i2c bus speed (speed(b1b0): 0 = 20kHz; 1 = 100kHz, 2 = 400kHz, 3 = 750kHz)
  *   set the spi bus data width(speed(b2): 0 = Single, 1 = Double)  */
 static int32_t ch341SetStream(uint32_t speed)
@@ -348,6 +332,36 @@ static uint8_t swapByte(uint8_t x)
 	x = ((x >> 2) & 0x33) | ((x << 2) & 0xcc);
 	x = ((x >> 4) & 0x0f) | ((x << 4) & 0xf0);
 	return x;
+}
+
+/* The assumed map between UIO command bits, pins on CH341A chip and pins on SPI chip:
+ * UIO	CH341A	SPI	CH341A SPI name
+ * 0	D0/15	CS/1 	(CS0)
+ * 1	D1/16	unused	(CS1)
+ * 2	D2/17	unused	(CS2)
+ * 3	D3/18	SCK/6	(DCK)
+ * 4	D4/19	unused	(DOUT2)
+ * 5	D5/20	SI/5	(DOUT)
+ * - The UIO stream commands seem to only have 6 bits of output, and D6/D7 are the SPI inputs,
+ *  mapped as follows:
+ *	D6/21	unused	(DIN2)
+ *	D7/22	SO/2	(DIN)
+ */
+
+static int32_t ch341a_enable_pins(bool enable)
+{
+	uint8_t buf[] = {
+		CH341A_CMD_UIO_STREAM,
+		CH341A_CMD_UIO_STM_OUT | 0x37, // CS high (all of them), SCK=0, DOUT*=1
+		CH341A_CMD_UIO_STM_DIR | (enable ? 0x3F : 0x00), // Interface output enable / disable
+		CH341A_CMD_UIO_STM_END,
+	};
+
+	int32_t ret = usbTransferRW(__func__, sizeof(buf), 0, buf, NULL);
+	if (ret < 0) {
+		msg_perr("Could not %sable output pins.\n", enable ? "en" : "dis");
+	}
+	return ret;
 }
 
 /* De-assert and assert CS in one operation. */
