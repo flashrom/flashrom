@@ -215,6 +215,7 @@ static int32_t usbTransferRW(const char *func, unsigned int writecnt, unsigned i
 
 	unsigned int read_que_left = readcnt;
 	if (readcnt) {
+		int er=0;
 		for (i=0;i<USB_IN_TRANSFERS;i++) {
 			unsigned int read_now = min(CH341_PACKET_LENGTH -1, read_que_left);
 			transfer_ins[i]->buffer = readarr;
@@ -223,16 +224,32 @@ static int32_t usbTransferRW(const char *func, unsigned int writecnt, unsigned i
 			readarr += read_now;
 			read_que_left -= read_now;
 			if (read_now) {
-				libusb_submit_transfer(transfer_ins[i]);
+				er = libusb_submit_transfer(transfer_ins[i]);
+				if (er) {
+					transferred_ins[i] = -2;
+					read_que_left = 0; /* Submit no more. */
+				}
 			} else {
 				transferred_ins[i] = -2; /* Mark as already "done". */
 			}
 		}
+		if (er) {
+			msg_perr("%s: failed to submit IN transfer: %s\n", func, libusb_error_name(er));
+			ret = -1;
+			transferred_out = -2; /* Need to signal the OUT as done for the cleanup. */
+		}
 	}
-	if (writecnt) libusb_submit_transfer(transfer_out);
+	if ((writecnt)&&(!ret)) {
+		int er = libusb_submit_transfer(transfer_out);
+		if (er) {
+			msg_perr("%s: failed to submit OUT transfer: %s\n", func, libusb_error_name(er));
+			transferred_out = -1;
+			ret = -1;
+		}
+	}
 	unsigned int ip = 0; /* The In Packet we expect to be ready next. */
 	unsigned int in_done = 0;
-	do {	/* TODO: This could made to be even more async if the buffers were non-stack and
+	if (!ret) do {	/* TODO: This could made to be even more async if the buffers were non-stack and
 		 * state was remembered - atleast by one Out+In transfer in-flight while flashrom runs,
 		 * but only when the command doesnt require a read. */
 		struct timeval tv = { 0, 100 };
