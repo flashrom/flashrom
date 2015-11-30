@@ -162,8 +162,7 @@ static void print_hex(const void *buf, size_t len)
 	}
 }
 
-/* callback for bulk out async transfer */
-static void LIBUSB_CALL cbBulkOut(struct libusb_transfer *transfer)
+static void cbGeneric(const char *func, struct libusb_transfer *transfer)
 {
 	int *transfer_cnt = (int*)transfer->user_data;
 
@@ -174,30 +173,23 @@ static void LIBUSB_CALL cbBulkOut(struct libusb_transfer *transfer)
 	}
 
 	if (transfer->status != LIBUSB_TRANSFER_COMPLETED) {
-		msg_perr("\ncbBulkOut: error: %s\n", libusb_error_name(transfer->status));
+		msg_perr("\n%s: error: %s\n", func, libusb_error_name(transfer->status));
 		*transfer_cnt = -1;
 	} else {
 		*transfer_cnt += transfer->actual_length;
 	}
 }
 
+/* callback for bulk out async transfer */
+static void LIBUSB_CALL cbBulkOut(struct libusb_transfer *transfer)
+{
+	cbGeneric(__func__, transfer);
+}
+
 /* callback for bulk in async transfer */
 static void LIBUSB_CALL cbBulkIn(struct libusb_transfer *transfer)
 {
-	int *transfer_cnt = (int*)transfer->user_data;
-
-	if (transfer->status == LIBUSB_TRANSFER_CANCELLED) {
-		/* Silently ACK and exit. */
-		*transfer_cnt = -2;
-		return;
-	}
-
-	if (transfer->status != LIBUSB_TRANSFER_COMPLETED) {
-		msg_perr("\ncbBulkIn: error: %s\n", libusb_error_name(transfer->status));
-		*transfer_cnt = -1;
-	} else {
-		*transfer_cnt += transfer->actual_length;
-	}
+	cbGeneric(__func__, transfer);
 }
 
 static int32_t usbTransferRW(const char *func, unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr)
