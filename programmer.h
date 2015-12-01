@@ -522,6 +522,7 @@ int dediprog_init(void);
 /* ch341a_spi.c */
 #if CONFIG_CH341A_SPI == 1
 int ch341a_spi_init(void);
+void ch341a_delay(unsigned int usecs);
 extern const struct dev_entry devs_ch341a_spi[];
 #endif
 

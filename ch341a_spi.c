@@ -142,7 +142,7 @@
 static struct libusb_device_handle *devHandle = NULL;
 static struct libusb_transfer *transfer_out = NULL;
 static struct libusb_transfer *transfer_ins[USB_IN_TRANSFERS] = {0};
-
+static unsigned int stored_delay_us = 0;
 
 
 const struct dev_entry devs_ch341a_spi[] = {
@@ -376,14 +376,32 @@ static int32_t ch341a_enable_pins(bool enable)
 /* De-assert and assert CS in one operation. */
 static void ch341pluckCS(uint8_t *ptr)
 {
+	int i;
 	/* This was measured to give 2.25 us deassertion time,
 	 * >20x more than needed (100ns) for most SPI chips. */
+	int delay_cnt = 2;
+	if (stored_delay_us) {
+		delay_cnt = (stored_delay_us * 4) / 3;
+		stored_delay_us = 0;
+	}
 	*ptr++ = CH341A_CMD_UIO_STREAM;
 	*ptr++ = CH341A_CMD_UIO_STM_OUT | 0x37; /* deasserted */
-	*ptr++ = CH341A_CMD_UIO_STM_OUT | 0x37; /* "delay" */
-	*ptr++ = CH341A_CMD_UIO_STM_OUT | 0x37;
+	for (i=0;i<delay_cnt;i++)
+		*ptr++ = CH341A_CMD_UIO_STM_OUT | 0x37; /* "delay" */
 	*ptr++ = CH341A_CMD_UIO_STM_OUT | 0x36; /* asserted */
 	*ptr++ = CH341A_CMD_UIO_STM_END;
+}
+
+void ch341a_delay(unsigned int usecs)
+{
+	/* Theres space for 28 bytes of 750ns/cycle "delay" in the CS packet, thus max 21us,
+	 * but lets not test the boundary, so lets say 20us. */
+	if ((usecs + stored_delay_us) > 20) {
+		unsigned int inc = 20 - stored_delay_us;
+		internal_delay(usecs - inc);
+		usecs = inc;
+	}
+	stored_delay_us += usecs;
 }
 
 static int ch341a_spi_spi_send_command(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr)
