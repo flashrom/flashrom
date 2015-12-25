@@ -634,8 +634,10 @@ NEED_USB := yes
 endif
 
 ifeq ($(NEED_FTDI), yes)
-FTDILIBS := $(shell ([ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ); pkg-config --libs libftdi || printf "%s" "-lftdi -lusb")
+FTDILIBS := $(shell ([ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ); pkg-config --libs libftdi1 || pkg-config --libs libftdi || printf "%s" "-lftdi -lusb")
 FEATURE_CFLAGS += $(shell LC_ALL=C grep -q "FT232H := yes" .features && printf "%s" "-D'HAVE_FT232H=1'")
+FTDI_INCLUDES := $(shell ([ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ); pkg-config --cflags-only-I libftdi1)
+FEATURE_CFLAGS += $(FTDI_INCLUDES)
 FEATURE_LIBS += $(shell LC_ALL=C grep -q "FTDISUPPORT := yes" .features && printf "%s" "$(FTDILIBS)")
 # We can't set NEED_USB here because that would transform libftdi auto-enabling
 # into a hard requirement for libusb, defeating the purpose of auto-enabling.
@@ -759,7 +761,7 @@ endif
 ifeq ($(NEED_USB), yes)
 CHECK_LIBUSB0 = yes
 FEATURE_CFLAGS += -D'NEED_USB=1'
-USBLIBS := $(shell ([ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ); pkg-config --libs libusb  || printf "%s" "-lusb")
+USBLIBS := $(shell ([ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ); pkg-config --libs libusb || printf "%s" "-lusb")
 endif
 
 ifeq ($(CONFIG_PRINT_WIKI), yes)
@@ -1023,12 +1025,12 @@ features: compiler
 ifeq ($(NEED_FTDI), yes)
 	@printf "Checking for FTDI support... "
 	@echo "$$FTDI_TEST" > .featuretest.c
-	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) $(FTDILIBS) $(LIBS) >/dev/null 2>&1 &&	\
+	@$(CC) $(CPPFLAGS) $(CFLAGS) $(FTDI_INCLUDES) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) $(FTDILIBS) $(LIBS) >/dev/null 2>&1 &&	\
 		( echo "found."; echo "FTDISUPPORT := yes" >> .features.tmp ) ||	\
 		( echo "not found."; echo "FTDISUPPORT := no" >> .features.tmp )
 	@printf "Checking for FT232H support in libftdi... "
 	@echo "$$FTDI_232H_TEST" >> .featuretest.c
-	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) $(FTDILIBS) $(LIBS) >/dev/null 2>&1 &&	\
+	@$(CC) $(CPPFLAGS) $(CFLAGS) $(FTDI_INCLUDES) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) $(FTDILIBS) $(LIBS) >/dev/null 2>&1 &&	\
 		( echo "found."; echo "FT232H := yes" >> .features.tmp ) ||	\
 		( echo "not found."; echo "FT232H := no" >> .features.tmp )
 endif
