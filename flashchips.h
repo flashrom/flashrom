@@ -595,6 +595,7 @@
 #define SANYO_LE25FW418A	0x10	/* RES2 and some weird 1 byte RDID variant */
 #define SANYO_LE25FW406A	0x1A	/* RES2, no datasheet */
 #define SANYO_LE25FU406B	0x1E	/* LE25FW418A without HD_READ mode option variant */
+#define SANYO_LE25FU406C	0x0613	/* Also known as LE25U40CMC apparently */
 #define SANYO_LE25FW806		0x26	/* RES2 and some weird 1 byte RDID variant */
 #define SANYO_LE25FW808		0x20	/* RES2 and some weird 1 byte RDID variant */
 
