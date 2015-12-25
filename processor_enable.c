@@ -57,11 +57,11 @@ static int is_loongson(void)
 		ptr++;
 		while (*ptr && isspace((unsigned char)*ptr))
 			ptr++;
-		fclose(cpuinfo);
+		(void)fclose(cpuinfo);
 		return (strncmp(ptr, "ICT Loongson-2 V0.3", strlen("ICT Loongson-2 V0.3")) == 0) ||
 		       (strncmp(ptr, "Godson2 V0.3  FPU V0.1", strlen("Godson2 V0.3  FPU V0.1")) == 0);
 	}
-	fclose(cpuinfo);
+	(void)fclose(cpuinfo);
 	return 0;
 }
 #endif
