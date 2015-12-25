@@ -65,7 +65,7 @@ int read_romlayout(const char *name)
 		if (num_rom_entries >= MAX_ROMLAYOUT) {
 			msg_gerr("Maximum number of ROM images (%i) in layout "
 				 "file reached.\n", MAX_ROMLAYOUT);
-			fclose(romlayout);
+			(void)fclose(romlayout);
 			return 1;
 		}
 		if (2 != fscanf(romlayout, "%s %s\n", tempstr, rom_entries[num_rom_entries].name))
@@ -80,7 +80,7 @@ int read_romlayout(const char *name)
 		tstr2 = strtok(NULL, ":");
 		if (!tstr1 || !tstr2) {
 			msg_gerr("Error parsing layout file. Offending string: \"%s\"\n", tempstr);
-			fclose(romlayout);
+			(void)fclose(romlayout);
 			return 1;
 		}
 		rom_entries[num_rom_entries].start = strtol(tstr1, (char **)NULL, 16);
@@ -95,7 +95,7 @@ int read_romlayout(const char *name)
 			     rom_entries[i].end, rom_entries[i].name);
 	}
 
-	fclose(romlayout);
+	(void)fclose(romlayout);
 
 	return 0;
 }
