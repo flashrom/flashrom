@@ -51,6 +51,7 @@ static const struct par_master par_master_nicnatsemi = {
 		.chip_writew		= fallback_chip_writew,
 		.chip_writel		= fallback_chip_writel,
 		.chip_writen		= fallback_chip_writen,
+		.chip_poll		= fallback_chip_poll,
 };
 
 int nicnatsemi_init(void)

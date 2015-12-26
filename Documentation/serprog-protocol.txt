@@ -35,6 +35,8 @@ COMMAND	Description			Parameters			Return Value
 					 + slen bytes of data
 0x14	Set SPI clock frequency in Hz	32-bit requested frequency	ACK + 32-bit set frequency / NAK
 0x15	Toggle flash chip pin drivers	8-bit (0 disable, else enable)	ACK / NAK
+0x17	Write to opbuf: poll		8-bit flags + 24-bit addr	ACK / NAK
+0x18	Write to opbuf: poll w/ delay	as above + 32-bit usecs		ACK / NAK
 0x??	unimplemented command - invalid.
 
 
@@ -51,7 +53,7 @@ Additional information of the above commands:
 		cmd 8 support: byte 1 bit 0, and so on.
 	0x04 (Q_SERBUF):
 		If the programmer has a guaranteed working flow control,
-		it should return a big bogus value - eg 0xFFFF.
+		it should return a suitable transfer window size for the connection, eg. ~4k for usb-serial.
 	0x05 (Q_BUSTYPE):
 		The bit's are defined as follows:
 		bit 0: PARALLEL, bit 1: LPC, bit 2: FWH, bit 3: SPI.
@@ -89,6 +91,24 @@ Additional information of the above commands:
 		remain attached to the flash chip even when the board is running. The user is responsible to
 		NOT connect VCC and other permanently externally driven signals to the programmer as needed.
 		If the value is 0, then the drivers should be disabled, otherwise they should be enabled.
+	0x17 and 0x18 (S_CMD_O_POLL and + _DLY):
+		flags: 0b00DT0BBB where T = toggle mode = 1 / data mode = 0, D = data bit in data mode,
+			B = bit to monitor (0-7). Unused bits (0) are not checked on device.
+		Implements algorithm to wait for flash chip to be ready before continuing opbuf
+		execution (pseudocode with C-like operators):
+			i = 0
+			mask = 1 << bit
+			if (toggle mode)
+				tmp1 = flash_read(addr) & mask
+			else
+				tmp1 = data_bit ? mask : 0
+
+			while (i++ < 0xFFFFFFF)  // Device can adjust timeout relative to own speed
+				delay (if _DLY version)
+				tmp2 = flash_read(addr) & mask
+				if (tmp1 == tmp2) break
+				if (toggle mode) tmp1 = tmp2
+
 	About mandatory commands:
 		The only truly mandatory commands for any device are 0x00, 0x01, 0x02 and 0x10,
 		but one can't really do anything with these commands.
@@ -98,5 +118,43 @@ Additional information of the above commands:
 		S_CMD_O_DELAY, S_CMD_O_EXEC.
 		In addition, support for these commands is recommended:
 		S_CMD_Q_PGMNAME, S_CMD_Q_BUSTYPE, S_CMD_Q_CHIPSIZE (if parallel).
+
+
+Operation buffer details and rationale
+--------------------------------------
+The operation buffer is an area of memory on the programming device used to hold
+write-related operations so they can be executed in quick succession after
+the whole operation has been transferred to the device.
+This is required (with some non-SPI chips) to be able to perform a page load
+quickly enough if connection is a slow serial, since they have a page load timeout.
+
+The operations in opbuf take the same amount of space/bytes they used on-wire when
+being transferred, but the representation of them in the opbuf is upto the implementation.
+
+Write to opbuf operations should return NAK in case of an attempted buffer overflow,
+but the state of the buffer after such a NAK is unknown and the programmer
+should be reinitialized (atleast S_CMD_O_INIT) if this happens.
+
+S_CMD_O_INIT is meant to be only used when the device is in unknown state,
+meaning once in the beginning of operations. S_CMD_O_EXEC will attempt to execute
+the operation buffer and _always_ clear it after the attempt. It can return NAK
+in the case of a programmer internal error (hw fail/bug), but there are no
+"normal"/expected error conditions except previous overflow attempt
+(which is not a normal operation either).
+
+For SPI-only devices the opbuf support is delays-only (SPIOP is immediate),
+and both of these implementation styles are allowed:
+1:
+O_INIT clears internal delay count
+O_DELAY adds to internal delay count
+O_EXEC "executes" internal delay count
+2:
+O_INIT is a nop
+O_DELAY executes specified delay
+O_EXEC is a nop
+
+Regardless of the implementation style, all 3 opcodes need to be marked as
+supported and return ACK, and reported operation buffer size should be big
+enough to fit atleast 2 delays.
 
 See also serprog.h.

@@ -43,80 +43,73 @@
 
 fdtype sp_fd = SER_INV_FD;
 
-#if IS_WINDOWS
-struct baudentry {
-	DWORD flag;
-	unsigned int baud;
-};
-#define BAUDENTRY(baud) { CBR_##baud, baud },
-#else
+#if !IS_WINDOWS
 struct baudentry {
 	int flag;
 	unsigned int baud;
 };
 #define BAUDENTRY(baud) { B##baud, baud },
-#endif
 
 /* I'd like if the C preprocessor could have directives in macros.
  * See TERMIOS(3) and http://msdn.microsoft.com/en-us/library/windows/desktop/aa363214(v=vs.85).aspx and
  * http://git.kernel.org/?p=linux/kernel/git/torvalds/linux.git;a=blob;f=include/uapi/asm-generic/termbits.h */
 static const struct baudentry sp_baudtable[] = {
 	BAUDENTRY(9600) /* unconditional default */
-#if defined(B19200) || defined(CBR_19200)
+#ifdef B19200
 	BAUDENTRY(19200)
 #endif
-#if defined(B38400) || defined(CBR_38400)
+#ifdef B38400
 	BAUDENTRY(38400)
 #endif
-#if defined(B57600) || defined(CBR_57600)
+#ifdef B57600
 	BAUDENTRY(57600)
 #endif
-#if defined(B115200) || defined(CBR_115200)
+#ifdef B115200
 	BAUDENTRY(115200)
 #endif
-#if defined(B230400) || defined(CBR_230400)
+#ifdef B230400
 	BAUDENTRY(230400)
 #endif
-#if defined(B460800) || defined(CBR_460800)
+#ifdef B460800
 	BAUDENTRY(460800)
 #endif
-#if defined(B500000) || defined(CBR_500000)
+#ifdef B500000
 	BAUDENTRY(500000)
 #endif
-#if defined(B576000) || defined(CBR_576000)
+#ifdef B576000
 	BAUDENTRY(576000)
 #endif
-#if defined(B921600) || defined(CBR_921600)
+#ifdef B921600
 	BAUDENTRY(921600)
 #endif
-#if defined(B1000000) || defined(CBR_1000000)
+#ifdef B1000000
 	BAUDENTRY(1000000)
 #endif
-#if defined(B1152000) || defined(CBR_1152000)
+#ifdef B1152000
 	BAUDENTRY(1152000)
 #endif
-#if defined(B1500000) || defined(CBR_1500000)
+#ifdef B1500000
 	BAUDENTRY(1500000)
 #endif
-#if defined(B2000000) || defined(CBR_2000000)
+#ifdef B2000000
 	BAUDENTRY(2000000)
 #endif
-#if defined(B2500000) || defined(CBR_2500000)
+#ifdef B2500000
 	BAUDENTRY(2500000)
 #endif
-#if defined(B3000000) || defined(CBR_3000000)
+#ifdef B3000000
 	BAUDENTRY(3000000)
 #endif
-#if defined(B3500000) || defined(CBR_3500000)
+#ifdef B3500000
 	BAUDENTRY(3500000)
 #endif
-#if defined(B4000000) || defined(CBR_4000000)
+#ifdef B4000000
 	BAUDENTRY(4000000)
 #endif
 	{0, 0}			/* Terminator */
 };
 
-const struct baudentry *round_baud(unsigned int baud)
+static const struct baudentry *round_baud(unsigned int baud)
 {
 	int i;
 	/* Round baud rate to next lower entry in sp_baudtable if it exists, else use the lowest entry. */
@@ -125,13 +118,15 @@ const struct baudentry *round_baud(unsigned int baud)
 			return &sp_baudtable[i];
 
 		if (sp_baudtable[i].baud < baud) {
-			msg_pinfo("Warning: given baudrate %d rounded down to %d.\n",
+			msg_pwarn("Warning: given baudrate %d rounded down to %d.\n",
 				  baud, sp_baudtable[i].baud);
 			return &sp_baudtable[i];
 		}
 	}
+	msg_pinfo("Using slowest possible baudrate: %d.\n", sp_baudtable[0].baud);
 	return &sp_baudtable[0];
 }
+#endif 
 
 /* Uses msg_perr to print the last system error.
  * Prints "Error: " followed first by \c msg and then by the description of the last error retrieved via
@@ -154,7 +149,7 @@ static void msg_perr_strerror(const char *msg)
 #endif
 }
 
-int serialport_config(fdtype fd, unsigned int baud)
+int serialport_config(fdtype fd, int baud)
 {
 	if (fd == SER_INV_FD) {
 		msg_perr("%s: File descriptor is invalid.\n", __func__);
@@ -167,8 +162,9 @@ int serialport_config(fdtype fd, unsigned int baud)
 		msg_perr_strerror("Could not fetch original serial port configuration: ");
 		return 1;
 	}
-	const struct baudentry *entry = round_baud(baud);
-	dcb.BaudRate = entry->flag;
+	if (baud >= 0) {
+		dcb.BaudRate = baud;
+	}
 	dcb.ByteSize = 8;
 	dcb.Parity = NOPARITY;
 	dcb.StopBits = ONESTOPBIT;
@@ -183,19 +179,17 @@ int serialport_config(fdtype fd, unsigned int baud)
 	msg_pdbg("Baud rate is %ld.\n", dcb.BaudRate);
 #else
 	struct termios wanted, observed;
-	if (fcntl(fd, F_SETFL, 0) != 0) {
-		msg_perr_strerror("Could not clear serial port mode: ");
-		return 1;
-	}
 	if (tcgetattr(fd, &observed) != 0) {
 		msg_perr_strerror("Could not fetch original serial port configuration: ");
 		return 1;
 	}
 	wanted = observed;
-	const struct baudentry *entry = round_baud(baud);
-	if (cfsetispeed(&wanted, entry->flag) != 0 || cfsetospeed(&wanted, entry->flag) != 0) {
-		msg_perr_strerror("Could not set serial baud rate: ");
-		return 1;
+	if (baud >= 0) {
+		const struct baudentry *entry = round_baud(baud);
+		if (cfsetispeed(&wanted, entry->flag) != 0 || cfsetospeed(&wanted, entry->flag) != 0) {
+			msg_perr_strerror("Could not set serial baud rate: ");
+			return 1;
+		}
 	}
 	wanted.c_cflag &= ~(PARENB | CSTOPB | CSIZE | CRTSCTS);
 	wanted.c_cflag |= (CS8 | CLOCAL | CREAD);
@@ -213,17 +207,30 @@ int serialport_config(fdtype fd, unsigned int baud)
 	if (observed.c_cflag != wanted.c_cflag ||
 	    observed.c_lflag != wanted.c_lflag ||
 	    observed.c_iflag != wanted.c_iflag ||
-	    observed.c_oflag != wanted.c_oflag ||
-	    cfgetispeed(&observed) != cfgetispeed(&wanted)) {
-		msg_perr("%s: Some requested options did not stick.\n", __func__);
-		return 1;
+	    observed.c_oflag != wanted.c_oflag) {
+		msg_pwarn("Some requested serial options did not stick, continuing anyway.\n");
+		msg_pdbg("          observed    wanted\n"
+			 "c_cflag:  0x%08X  0x%08X\n"
+			 "c_lflag:  0x%08X  0x%08X\n"
+			 "c_iflag:  0x%08X  0x%08X\n"
+			 "c_oflag:  0x%08X  0x%08X\n",
+			 observed.c_cflag, wanted.c_cflag,
+			 observed.c_lflag, wanted.c_lflag,
+			 observed.c_iflag, wanted.c_iflag,
+			 observed.c_oflag, wanted.c_oflag
+			);
 	}
-	msg_pdbg("Baud rate is %d now.\n", entry->baud);
+	if (cfgetispeed(&observed) != cfgetispeed(&wanted) ||
+	    cfgetospeed(&observed) != cfgetospeed(&wanted)) {
+		msg_pwarn("Could not set baud rates exactly\n");
+		msg_pdbg("Actual baud flags are: ispeed: 0x%08lX, ospeed: 0x%08lX\n",
+			  (long)cfgetispeed(&observed), (long)cfgetispeed(&wanted));
+	}
 #endif
 	return 0;
 }
 
-fdtype sp_openserport(char *dev, unsigned int baud)
+fdtype sp_openserport(char *dev, int baud)
 {
 	fdtype fd;
 #if IS_WINDOWS
@@ -254,11 +261,23 @@ fdtype sp_openserport(char *dev, unsigned int baud)
 	}
 	return fd;
 #else
-	fd = open(dev, O_RDWR | O_NOCTTY | O_NDELAY);
+	fd = open(dev, O_RDWR | O_NOCTTY | O_NDELAY); // Use O_NDELAY to ignore DCD state
 	if (fd < 0) {
 		msg_perr_strerror("Cannot open serial port: ");
 		return SER_INV_FD;
 	}
+
+	/* Ensure that we use blocking I/O */
+	const int flags = fcntl(fd, F_GETFL);
+	if (flags == -1) {
+		msg_perr_strerror("Could not get serial port mode: ");
+		return SER_INV_FD;
+	}
+	if (fcntl(fd, F_SETFL, flags & ~O_NONBLOCK) != 0) {
+		msg_perr_strerror("Could not set serial port mode to blocking: ");
+		return SER_INV_FD;
+	}
+
 	if (serialport_config(fd, baud) != 0) {
 		close(fd);
 		return SER_INV_FD;

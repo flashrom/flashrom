@@ -678,6 +678,8 @@ void fallback_chip_writen(const struct flashctx *flash, const uint8_t *buf, chip
 uint16_t fallback_chip_readw(const struct flashctx *flash, const chipaddr addr);
 uint32_t fallback_chip_readl(const struct flashctx *flash, const chipaddr addr);
 void fallback_chip_readn(const struct flashctx *flash, uint8_t *buf, const chipaddr addr, size_t len);
+void fallback_chip_poll(const struct flashctx *flash, const chipaddr addr, uint8_t mask,
+			int data_or_toggle, unsigned int delay);
 struct par_master {
 	void (*chip_writeb) (const struct flashctx *flash, uint8_t val, chipaddr addr);
 	void (*chip_writew) (const struct flashctx *flash, uint16_t val, chipaddr addr);
@@ -687,6 +689,8 @@ struct par_master {
 	uint16_t (*chip_readw) (const struct flashctx *flash, const chipaddr addr);
 	uint32_t (*chip_readl) (const struct flashctx *flash, const chipaddr addr);
 	void (*chip_readn) (const struct flashctx *flash, uint8_t *buf, const chipaddr addr, size_t len);
+	void (*chip_poll) (const struct flashctx *flash, const chipaddr addr, uint8_t mask,
+				int data_or_toggle, unsigned int delay);
 	const void *data;
 };
 int register_par_master(const struct par_master *mst, const enum chipbustype buses);
@@ -719,10 +723,8 @@ typedef int fdtype;
 #endif
 
 void sp_flush_incoming(void);
-fdtype sp_openserport(char *dev, unsigned int baud);
-int serialport_config(fdtype fd, unsigned int baud);
+fdtype sp_openserport(char *dev, int baud);
 extern fdtype sp_fd;
-/* expose serialport_shutdown as it's currently used by buspirate */
 int serialport_shutdown(void *data);
 int serialport_write(const unsigned char *buf, unsigned int writecnt);
 int serialport_write_nonblock(const unsigned char *buf, unsigned int writecnt, unsigned int timeout, unsigned int *really_wrote);

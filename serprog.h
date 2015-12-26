@@ -23,3 +23,5 @@
 #define S_CMD_O_SPIOP		0x13	/* Perform SPI operation.			*/
 #define S_CMD_S_SPI_FREQ	0x14	/* Set SPI clock frequency			*/
 #define S_CMD_S_PIN_STATE	0x15	/* Enable/disable output drivers		*/
+#define S_CMD_O_POLL		0x17	/* Write to opbuf: poll				*/
+#define S_CMD_O_POLL_DLY	0x18	/* Write to opbuf: poll w/ delay		*/

@@ -95,6 +95,32 @@ void fallback_chip_readn(const struct flashctx *flash, uint8_t *buf,
 	return;
 }
 
+void fallback_chip_poll(const struct flashctx *flash, const chipaddr dst,
+			uint8_t mask, int data_or_toggle, unsigned int delay)
+{
+	unsigned int i = 0;
+	uint8_t tmp1, tmp2;
+
+	if (data_or_toggle >= 0) {
+		tmp1 = data_or_toggle & mask;
+	} else {
+		tmp1 = chip_readb(flash, dst) & mask;
+	}
+
+	while (i++ < 0xFFFFFFF) {
+		if (delay)
+			programmer_delay(delay);
+		tmp2 = chip_readb(flash, dst) & mask;
+		if (tmp1 == tmp2) {
+			break;
+		}
+		if (data_or_toggle >= 0) tmp1 = tmp2;
+	}
+	if (i > 0x100000)
+		msg_cdbg("%s: excessive loops, i=0x%x\n", __func__, i);
+}
+
+
 int register_par_master(const struct par_master *mst,
 			    const enum chipbustype buses)
 {
