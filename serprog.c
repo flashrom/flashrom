@@ -342,26 +342,28 @@ int serprog_init(void)
 	unsigned char rbuf[3];
 	unsigned char c;
 	char *device;
-	char *baudport;
 	int have_device = 0;
 
-	/* the parameter is either of format "dev=/dev/device:baud" or "ip=ip:port" */
+	/* the parameter is either of format "dev=/dev/device[:baud]" or "ip=ip:port" */
 	device = extract_programmer_param("dev");
 	if (device && strlen(device)) {
-		baudport = strstr(device, ":");
-		if (baudport) {
+		char *baud_str = strstr(device, ":");
+		if (baud_str != NULL) {
 			/* Split device from baudrate. */
-			*baudport = '\0';
-			baudport++;
+			*baud_str = '\0';
+			baud_str++;
 		}
-		if (!baudport || !strlen(baudport)) {
-			msg_perr("Error: No baudrate specified.\n"
-				 "Use flashrom -p serprog:dev=/dev/device:baud\n");
-			free(device);
-			return 1;
-		}
-		if (strlen(device)) {
-			sp_fd = sp_openserport(device, atoi(baudport));
+		int baud;
+		/* Convert baud string to value.
+		 * baud_str is either NULL (if strstr can't find the colon), points to the \0 after the colon
+		 * if no characters where given after the colon, or a string to convert... */
+		if (baud_str == NULL || *baud_str == '\0') {
+			baud = -1;
+			msg_pdbg("No baudrate specified, using the hardware's defaults.\n");
+		} else
+			baud = atoi(baud_str); // FIXME: replace atoi with strtoul
+		if (strlen(device) > 0) {
+			sp_fd = sp_openserport(device, baud);
 			if (sp_fd == SER_INV_FD) {
 				free(device);
 				return 1;
@@ -371,7 +373,7 @@ int serprog_init(void)
 	}
 	if (device && !strlen(device)) {
 		msg_perr("Error: No device specified.\n"
-			 "Use flashrom -p serprog:dev=/dev/device:baud\n");
+			 "Use flashrom -p serprog:dev=/dev/device[:baud]\n");
 		free(device);
 		return 1;
 	}
@@ -386,20 +388,20 @@ int serprog_init(void)
 		return 1;
 	}
 	if (device && strlen(device)) {
-		baudport = strstr(device, ":");
-		if (baudport) {
+		char *port = strstr(device, ":");
+		if (port != NULL) {
 			/* Split host from port. */
-			*baudport = '\0';
-			baudport++;
+			*port = '\0';
+			port++;
 		}
-		if (!baudport || !strlen(baudport)) {
+		if (!port || !strlen(port)) {
 			msg_perr("Error: No port specified.\n"
 				 "Use flashrom -p serprog:ip=ipaddr:port\n");
 			free(device);
 			return 1;
 		}
 		if (strlen(device)) {
-			sp_fd = sp_opensocket(device, atoi(baudport));
+			sp_fd = sp_opensocket(device, atoi(port)); // FIXME: replace atoi with strtoul
 			if (sp_fd < 0) {
 				free(device);
 				return 1;

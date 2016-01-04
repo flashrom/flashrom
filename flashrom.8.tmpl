@@ -203,10 +203,9 @@ JTAGkey/JTAGkey-tiny/JTAGkey-2, Dangerous Prototypes Bus Blaster, \
 Olimex ARM-USB-TINY/-H, Olimex ARM-USB-OCD/-H, TIAO/DIYGADGET USB
 Multi-Protocol Adapter (TUMPA), TUMPA Lite, and GOEPEL PicoTAP.
 .sp
-.BR "* serprog" " (for flash ROMs attached to a programmer speaking serprog), \
-including AVR flasher by Urja Rannikko, AVR flasher by eightdot, \
-Arduino Mega flasher by fritz, InSystemFlasher by Juhana Helovuo, and \
-atmegaXXu2-flasher by Stefan Tauner."
+.BR "* serprog" " (for flash ROMs attached to a programmer speaking serprog, \
+including Arduino-based devices as well as various programmers by Urja Rannikko, \
+Juhana Helovuo, Stefan Tauner and others)."
 .sp
 .BR "* buspirate_spi" " (for SPI flash ROMs attached to a Bus Pirate)"
 .sp
@@ -683,19 +682,22 @@ parameter with the
 syntax.
 .SS
 .BR "serprog " programmer
-A mandatory parameter specifies either a serial
-device/baud combination or an IP/port combination for communication with the
-programmer. In the device/baud combination, the device has to start with a
-slash. For serial, you have to use the
+A mandatory parameter specifies either a serial device (and baud rate) or an IP/port combination for
+communicating with the programmer.
+The device/baud combination has to start with
+.B dev=
+and separate the optional baud rate with a colon.
+For example
 .sp
-.B "  flashrom \-p serprog:dev=/dev/device:baud"
+.B "  flashrom \-p serprog:dev=/dev/ttyS0:115200"
 .sp
-syntax and for IP, you have to use
+If no baud rate is given the default values by the operating system/hardware will be used.
+For IP connections you have to use the
 .sp
 .B "  flashrom \-p serprog:ip=ipaddr:port"
 .sp
-instead. In case the device supports it, you can set the SPI clock frequency
-with the optional
+syntax.
+In case the device supports it, you can set the SPI clock frequency with the optional
 .B spispeed
 parameter. The frequency is parsed as hertz, unless an
 .BR M ", or " k

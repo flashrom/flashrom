@@ -719,10 +719,8 @@ typedef int fdtype;
 #endif
 
 void sp_flush_incoming(void);
-fdtype sp_openserport(char *dev, unsigned int baud);
-int serialport_config(fdtype fd, unsigned int baud);
+fdtype sp_openserport(char *dev, int baud);
 extern fdtype sp_fd;
-/* expose serialport_shutdown as it's currently used by buspirate */
 int serialport_shutdown(void *data);
 int serialport_write(const unsigned char *buf, unsigned int writecnt);
 int serialport_write_nonblock(const unsigned char *buf, unsigned int writecnt, unsigned int timeout, unsigned int *really_wrote);
