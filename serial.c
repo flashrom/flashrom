@@ -43,74 +43,77 @@
 
 fdtype sp_fd = SER_INV_FD;
 
-#if IS_WINDOWS
-struct baudentry {
-	DWORD flag;
-	unsigned int baud;
-};
-#define BAUDENTRY(baud) { CBR_##baud, baud },
-#else
+/* There is no way defined by POSIX to use arbitrary baud rates. It only defines some macros that can be used to
+ * specify respective baud rates and many implementations extend this list with further macros, cf. TERMIOS(3)
+ * and http://git.kernel.org/?p=linux/kernel/git/torvalds/linux.git;a=blob;f=include/uapi/asm-generic/termbits.h
+ * The code below creates a mapping in sp_baudtable between these macros and the numerical baud rates to deal
+ * with numerical user input.
+ *
+ * On Linux there is a non-standard way to use arbitrary baud rates that flashrom does not support (yet), cf.
+ * http://www.downtowndougbrown.com/2013/11/linux-custom-serial-baud-rates/
+ *
+ * On Windows there exist similar macros (starting with CBR_ instead of B) but they are only defined for
+ * backwards compatibility and the API supports arbitrary baud rates in the same manner as the macros, see
+ * http://msdn.microsoft.com/en-us/library/windows/desktop/aa363214(v=vs.85).aspx
+ */
+#if !IS_WINDOWS
 struct baudentry {
 	int flag;
 	unsigned int baud;
 };
 #define BAUDENTRY(baud) { B##baud, baud },
-#endif
 
-/* I'd like if the C preprocessor could have directives in macros.
- * See TERMIOS(3) and http://msdn.microsoft.com/en-us/library/windows/desktop/aa363214(v=vs.85).aspx and
- * http://git.kernel.org/?p=linux/kernel/git/torvalds/linux.git;a=blob;f=include/uapi/asm-generic/termbits.h */
 static const struct baudentry sp_baudtable[] = {
 	BAUDENTRY(9600) /* unconditional default */
-#if defined(B19200) || defined(CBR_19200)
+#ifdef B19200
 	BAUDENTRY(19200)
 #endif
-#if defined(B38400) || defined(CBR_38400)
+#ifdef B38400
 	BAUDENTRY(38400)
 #endif
-#if defined(B57600) || defined(CBR_57600)
+#ifdef B57600
 	BAUDENTRY(57600)
 #endif
-#if defined(B115200) || defined(CBR_115200)
+#ifdef B115200
 	BAUDENTRY(115200)
 #endif
-#if defined(B230400) || defined(CBR_230400)
+#ifdef B230400
 	BAUDENTRY(230400)
 #endif
-#if defined(B460800) || defined(CBR_460800)
+#ifdef B460800
 	BAUDENTRY(460800)
 #endif
-#if defined(B500000) || defined(CBR_500000)
+#ifdef B500000
 	BAUDENTRY(500000)
 #endif
-#if defined(B576000) || defined(CBR_576000)
+#ifdef B576000
 	BAUDENTRY(576000)
 #endif
-#if defined(B921600) || defined(CBR_921600)
+#ifdef B921600
 	BAUDENTRY(921600)
 #endif
-#if defined(B1000000) || defined(CBR_1000000)
+#ifdef B1000000
 	BAUDENTRY(1000000)
 #endif
-#if defined(B1152000) || defined(CBR_1152000)
+#ifdef B1152000
 	BAUDENTRY(1152000)
 #endif
-#if defined(B1500000) || defined(CBR_1500000)
+#ifdef B1500000
 	BAUDENTRY(1500000)
 #endif
-#if defined(B2000000) || defined(CBR_2000000)
+#ifdef B2000000
 	BAUDENTRY(2000000)
 #endif
-#if defined(B2500000) || defined(CBR_2500000)
+#ifdef B2500000
 	BAUDENTRY(2500000)
 #endif
-#if defined(B3000000) || defined(CBR_3000000)
+#ifdef B3000000
 	BAUDENTRY(3000000)
 #endif
-#if defined(B3500000) || defined(CBR_3500000)
+#ifdef B3500000
 	BAUDENTRY(3500000)
 #endif
-#if defined(B4000000) || defined(CBR_4000000)
+#ifdef B4000000
 	BAUDENTRY(4000000)
 #endif
 	{0, 0}			/* Terminator */
@@ -133,6 +136,7 @@ static const struct baudentry *round_baud(unsigned int baud)
 	msg_pinfo("Using slowest possible baudrate: %d.\n", sp_baudtable[0].baud);
 	return &sp_baudtable[0];
 }
+#endif
 
 /* Uses msg_perr to print the last system error.
  * Prints "Error: " followed first by \c msg and then by the description of the last error retrieved via
@@ -169,8 +173,7 @@ int serialport_config(fdtype fd, int baud)
 		return 1;
 	}
 	if (baud >= 0) {
-		const struct baudentry *entry = round_baud(baud);
-		dcb.BaudRate = entry->flag;
+		dcb.BaudRate = baud;
 	}
 	dcb.ByteSize = 8;
 	dcb.Parity = NOPARITY;
@@ -233,6 +236,7 @@ int serialport_config(fdtype fd, int baud)
 		msg_pdbg("Actual baud flags are: ispeed: 0x%08lX, ospeed: 0x%08lX\n",
 			  (long)cfgetispeed(&observed), (long)cfgetospeed(&observed));
 	}
+	// FIXME: display actual baud rate - at least if none was specified by the user.
 #endif
 	return 0;
 }
