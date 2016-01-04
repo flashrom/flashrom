@@ -183,10 +183,6 @@ int serialport_config(fdtype fd, unsigned int baud)
 	msg_pdbg("Baud rate is %ld.\n", dcb.BaudRate);
 #else
 	struct termios wanted, observed;
-	if (fcntl(fd, F_SETFL, 0) != 0) {
-		msg_perr_strerror("Could not clear serial port mode: ");
-		return 1;
-	}
 	if (tcgetattr(fd, &observed) != 0) {
 		msg_perr_strerror("Could not fetch original serial port configuration: ");
 		return 1;
@@ -254,11 +250,23 @@ fdtype sp_openserport(char *dev, unsigned int baud)
 	}
 	return fd;
 #else
-	fd = open(dev, O_RDWR | O_NOCTTY | O_NDELAY);
+	fd = open(dev, O_RDWR | O_NOCTTY | O_NDELAY); // Use O_NDELAY to ignore DCD state
 	if (fd < 0) {
 		msg_perr_strerror("Cannot open serial port: ");
 		return SER_INV_FD;
 	}
+
+	/* Ensure that we use blocking I/O */
+	const int flags = fcntl(fd, F_GETFL);
+	if (flags == -1) {
+		msg_perr_strerror("Could not get serial port mode: ");
+		return SER_INV_FD;
+	}
+	if (fcntl(fd, F_SETFL, flags & ~O_NONBLOCK) != 0) {
+		msg_perr_strerror("Could not set serial port mode to blocking: ");
+		return SER_INV_FD;
+	}
+
 	if (serialport_config(fd, baud) != 0) {
 		close(fd);
 		return SER_INV_FD;
