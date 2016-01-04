@@ -209,12 +209,25 @@ int serialport_config(fdtype fd, unsigned int baud)
 	if (observed.c_cflag != wanted.c_cflag ||
 	    observed.c_lflag != wanted.c_lflag ||
 	    observed.c_iflag != wanted.c_iflag ||
-	    observed.c_oflag != wanted.c_oflag ||
-	    cfgetispeed(&observed) != cfgetispeed(&wanted)) {
-		msg_perr("%s: Some requested options did not stick.\n", __func__);
-		return 1;
+	    observed.c_oflag != wanted.c_oflag) {
+		msg_pwarn("Some requested serial options did not stick, continuing anyway.\n");
+		msg_pdbg("          observed    wanted\n"
+			 "c_cflag:  0x%08lX  0x%08lX\n"
+			 "c_lflag:  0x%08lX  0x%08lX\n"
+			 "c_iflag:  0x%08lX  0x%08lX\n"
+			 "c_oflag:  0x%08lX  0x%08lX\n",
+			 (long)observed.c_cflag, (long)wanted.c_cflag,
+			 (long)observed.c_lflag, (long)wanted.c_lflag,
+			 (long)observed.c_iflag, (long)wanted.c_iflag,
+			 (long)observed.c_oflag, (long)wanted.c_oflag
+			);
 	}
-	msg_pdbg("Baud rate is %d now.\n", entry->baud);
+	if (cfgetispeed(&observed) != cfgetispeed(&wanted) ||
+	    cfgetospeed(&observed) != cfgetospeed(&wanted)) {
+		msg_pwarn("Could not set baud rates exactly.\n");
+		msg_pdbg("Actual baud flags are: ispeed: 0x%08lX, ospeed: 0x%08lX\n",
+			  (long)cfgetispeed(&observed), (long)cfgetospeed(&observed));
+	}
 #endif
 	return 0;
 }
