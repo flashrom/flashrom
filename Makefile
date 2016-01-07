@@ -37,6 +37,8 @@ MANDIR  ?= $(PREFIX)/share/man
 CFLAGS  ?= -Os -Wall -Wshadow
 EXPORTDIR ?= .
 RANLIB  ?= ranlib
+PKG_CONFIG ?= pkg-config
+BUILD_DETAILS_FILE ?= build_details.txt
 
 # The following parameter changes the default programmer that will be used if there is no -p/--programmer
 # argument given when running flashrom. The predefined setting does not enable any default so that every
@@ -70,6 +72,8 @@ LDFLAGS += -L$(LIBS_BASE)/lib -Wl,-rpath -Wl,$(LIBS_BASE)/lib
 PKG_CONFIG_LIBDIR ?= $(LIBS_BASE)/lib/pkgconfig
 endif
 
+dummy_for_make_3_80:=$(shell printf "Build started on %s\n\n" "$$(date)" >$(BUILD_DETAILS_FILE))
+debug_shell = $(shell export LC_ALL=C ; { echo 'exec: export LC_ALL=C ; { $(1) ; }' >&2;  { $(1) ; } | tee -a $(BUILD_DETAILS_FILE) ; echo >&2 ; } 2>>$(BUILD_DETAILS_FILE))
 ###############################################################################
 # General OS-specific settings.
 # 1. Prepare for later by gathering information about host and target OS
@@ -90,7 +94,7 @@ endif
 # IMPORTANT: The following line must be placed before TARGET_OS is ever used
 # (of course), but should come after any lines setting CC because the line
 # below uses CC itself.
-override TARGET_OS := $(strip $(shell LC_ALL=C $(CC) $(CPPFLAGS) -E os.h 2>/dev/null | grep -v '^\#' | grep '"' | cut -f 2 -d'"'))
+override TARGET_OS := $(strip $(call debug_shell,$(CC) $(CPPFLAGS) -E os.h 2>/dev/null | grep -v '^\#' | grep '"' | cut -f 2 -d'"'))
 
 ifeq ($(TARGET_OS), Darwin)
 CPPFLAGS += -I/opt/local/include -I/usr/local/include
@@ -326,7 +330,7 @@ endif
 # IMPORTANT: The following line must be placed before ARCH is ever used
 # (of course), but should come after any lines setting CC because the line
 # below uses CC itself.
-override ARCH := $(strip $(shell LC_ALL=C $(CC) $(CPPFLAGS) -E archtest.c 2>/dev/null | grep -v '^\#' | grep '"' | cut -f 2 -d'"'))
+override ARCH := $(strip $(call debug_shell,$(CC) $(CPPFLAGS) -E archtest.c 2>/dev/null | grep -v '^\#' | grep '"' | cut -f 2 -d'"'))
 
 # PCI port I/O support is unimplemented on PPC/MIPS/SPARC and unavailable on ARM.
 # Right now this means the drivers below only work on x86.
@@ -615,14 +619,14 @@ endif
 
 ifeq ($(CONFIG_FT2232_SPI), yes)
 # This is a totally ugly hack.
-FEATURE_CFLAGS += $(shell LC_ALL=C grep -q "FTDISUPPORT := yes" .features && printf "%s" "-D'CONFIG_FT2232_SPI=1'")
+FEATURE_CFLAGS += $(call debug_shell,grep -q "FTDISUPPORT := yes" .features && printf "%s" "-D'CONFIG_FT2232_SPI=1'")
 NEED_FTDI := yes
 PROGRAMMER_OBJS += ft2232_spi.o
 endif
 
 ifeq ($(CONFIG_USBBLASTER_SPI), yes)
 # This is a totally ugly hack.
-FEATURE_CFLAGS += $(shell LC_ALL=C grep -q "FTDISUPPORT := yes" .features && printf "%s" "-D'CONFIG_USBBLASTER_SPI=1'")
+FEATURE_CFLAGS += $(call debug_shell,grep -q "FTDISUPPORT := yes" .features && printf "%s" "-D'CONFIG_USBBLASTER_SPI=1'")
 NEED_FTDI := yes
 PROGRAMMER_OBJS += usbblaster_spi.o
 endif
@@ -634,11 +638,11 @@ NEED_USB := yes
 endif
 
 ifeq ($(NEED_FTDI), yes)
-FTDILIBS := $(shell [ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ; pkg-config --libs libftdi1 || pkg-config --libs libftdi || printf "%s" "-lftdi -lusb")
-FEATURE_CFLAGS += $(shell LC_ALL=C grep -q "FT232H := yes" .features && printf "%s" "-D'HAVE_FT232H=1'")
-FTDI_INCLUDES := $(shell [ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ; pkg-config --cflags-only-I libftdi1)
+FTDILIBS := $(call debug_shell,[ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ; $(PKG_CONFIG) --libs libftdi1 || $(PKG_CONFIG) --libs libftdi || printf "%s" "-lftdi -lusb")
+FEATURE_CFLAGS += $(call debug_shell,grep -q "FT232H := yes" .features && printf "%s" "-D'HAVE_FT232H=1'")
+FTDI_INCLUDES := $(call debug_shell,[ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ; $(PKG_CONFIG) --cflags-only-I libftdi1)
 FEATURE_CFLAGS += $(FTDI_INCLUDES)
-FEATURE_LIBS += $(shell LC_ALL=C grep -q "FTDISUPPORT := yes" .features && printf "%s" "$(FTDILIBS)")
+FEATURE_LIBS += $(call debug_shell,grep -q "FTDISUPPORT := yes" .features && printf "%s" "$(FTDILIBS)")
 # We can't set NEED_USB here because that would transform libftdi auto-enabling
 # into a hard requirement for libusb, defeating the purpose of auto-enabling.
 endif
@@ -710,13 +714,13 @@ endif
 
 ifeq ($(CONFIG_LINUX_SPI), yes)
 # This is a totally ugly hack.
-FEATURE_CFLAGS += $(shell LC_ALL=C grep -q "LINUX_SPI_SUPPORT := yes" .features && printf "%s" "-D'CONFIG_LINUX_SPI=1'")
+FEATURE_CFLAGS += $(call debug_shell,grep -q "LINUX_SPI_SUPPORT := yes" .features && printf "%s" "-D'CONFIG_LINUX_SPI=1'")
 PROGRAMMER_OBJS += linux_spi.o
 endif
 
 ifeq ($(CONFIG_MSTARDDC_SPI), yes)
 # This is a totally ugly hack.
-FEATURE_CFLAGS += $(shell LC_ALL=C grep -q "LINUX_I2C_SUPPORT := yes" .features && printf "%s" "-D'CONFIG_MSTARDDC_SPI=1'")
+FEATURE_CFLAGS += $(call debug_shell,grep -q "LINUX_I2C_SUPPORT := yes" .features && printf "%s" "-D'CONFIG_MSTARDDC_SPI=1'")
 NEED_LINUX_I2C := yes
 PROGRAMMER_OBJS += mstarddc_spi.o
 endif
@@ -734,7 +738,7 @@ endif
 ifeq ($(NEED_PCI), yes)
 CHECK_LIBPCI = yes
 FEATURE_CFLAGS += -D'NEED_PCI=1'
-FEATURE_CFLAGS += $(shell LC_ALL=C grep -q "OLD_PCI_GET_DEV := yes" .libdeps && printf "%s" "-D'OLD_PCI_GET_DEV=1'")
+FEATURE_CFLAGS += $(call debug_shell,grep -q "OLD_PCI_GET_DEV := yes" .libdeps && printf "%s" "-D'OLD_PCI_GET_DEV=1'")
 
 PROGRAMMER_OBJS += pcidev.o physmap.o hwaccess.o
 ifeq ($(TARGET_OS), NetBSD)
@@ -761,7 +765,7 @@ endif
 ifeq ($(NEED_USB), yes)
 CHECK_LIBUSB0 = yes
 FEATURE_CFLAGS += -D'NEED_USB=1'
-USBLIBS := $(shell [ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ; pkg-config --libs libusb || printf "%s" "-lusb")
+USBLIBS := $(call debug_shell,[ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ; $(PKG_CONFIG) --libs libusb || printf "%s" "-lusb")
 endif
 
 ifeq ($(CONFIG_PRINT_WIKI), yes)
@@ -769,10 +773,10 @@ FEATURE_CFLAGS += -D'CONFIG_PRINT_WIKI=1'
 CLI_OBJS += print_wiki.o
 endif
 
-FEATURE_CFLAGS += $(shell LC_ALL=C grep -q "UTSNAME := yes" .features && printf "%s" "-D'HAVE_UTSNAME=1'")
+FEATURE_CFLAGS += $(call debug_shell,grep -q "UTSNAME := yes" .features && printf "%s" "-D'HAVE_UTSNAME=1'")
 
 # We could use PULLED_IN_LIBS, but that would be ugly.
-FEATURE_LIBS += $(shell LC_ALL=C grep -q "NEEDLIBZ := yes" .libdeps && printf "%s" "-lz")
+FEATURE_LIBS += $(call debug_shell,grep -q "NEEDLIBZ := yes" .libdeps && printf "%s" "-lz")
 
 LIBFLASHROM_OBJS = $(CHIP_OBJS) $(PROGRAMMER_OBJS) $(LIB_OBJS)
 OBJS = $(CLI_OBJS) $(LIBFLASHROM_OBJS)
@@ -801,7 +805,7 @@ TAROPTIONS = $(shell LC_ALL=C tar --version|grep -q GNU && echo "--owner=root --
 # This includes all frontends and libflashrom.
 # We don't use EXEC_SUFFIX here because we want to clean everything.
 clean:
-	rm -f $(PROGRAM) $(PROGRAM).exe libflashrom.a *.o *.d $(PROGRAM).8
+	rm -f $(PROGRAM) $(PROGRAM).exe libflashrom.a *.o *.d $(PROGRAM).8 $(BUILD_DETAILS_FILE)
 	@+$(MAKE) -C util/ich_descriptors_tool/ clean
 
 distclean: clean
@@ -824,11 +828,11 @@ endef
 export COMPILER_TEST
 
 compiler: featuresavailable
-	@printf "Checking for a C compiler... "
+	@printf "Checking for a C compiler... " | tee -a $(BUILD_DETAILS_FILE)
 	@echo "$$COMPILER_TEST" > .test.c
-	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .test.c -o .test$(EXEC_SUFFIX) >/dev/null &&	\
-		echo "found." || ( echo "not found."; \
-		rm -f .test.c .test$(EXEC_SUFFIX); exit 1)
+	@{ { { { { $(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .test.c -o .test$(EXEC_SUFFIX) >&2 && \
+		echo "found." || { echo "not found."; \
+		rm -f .test.c .test$(EXEC_SUFFIX); exit 1; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
 	@rm -f .test.c .test$(EXEC_SUFFIX)
 	@printf "Target arch is "
 	@# FreeBSD wc will output extraneous whitespace.
@@ -906,43 +910,43 @@ export LIBUSB0_TEST
 hwlibs: compiler
 	@printf "" > .libdeps
 ifeq ($(CHECK_LIBPCI), yes)
-	@printf "Checking for libpci headers... "
+	@printf "Checking for libpci headers... " | tee -a $(BUILD_DETAILS_FILE)
 	@echo "$$LIBPCI_TEST" > .test.c
-	@$(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o >/dev/null &&		\
-		echo "found." || ( echo "not found."; echo;			\
-		echo "Please install libpci headers (package pciutils-devel).";	\
+	@{ { { { { $(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o >&2 && \
+		echo "found." || { echo "not found."; echo;			\
+		echo "Please install libpci headers."; \
 		echo "See README for more information."; echo;			\
-		rm -f .test.c .test.o; exit 1)
-	@printf "Checking version of pci_get_dev... "
+		rm -f .test.c .test.o; exit 1; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
+	@printf "Checking version of pci_get_dev... " | tee -a $(BUILD_DETAILS_FILE)
 	@echo "$$PCI_GET_DEV_TEST" > .test.c
-	@$(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o >/dev/null 2>&1 &&	\
+	@ { $(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o >&2 && \
 		( echo "new version (including PCI domain parameter)."; echo "OLD_PCI_GET_DEV := no" >> .libdeps ) ||	\
-		( echo "old version (without PCI domain parameter)."; echo "OLD_PCI_GET_DEV := yes" >> .libdeps )
-	@printf "Checking if libpci is present and sufficient... "
-	@$(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) $(PCILIBS) >/dev/null &&		\
-		echo "yes." || ( echo "no.";							\
-		printf "Checking if libz+libpci are present and sufficient...";	\
-		$(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) $(PCILIBS) -lz >/dev/null &&	\
-		( echo "yes."; echo "NEEDLIBZ := yes" > .libdeps ) || ( echo "no."; echo;	\
+		( echo "old version (without PCI domain parameter)."; echo "OLD_PCI_GET_DEV := yes" >> .libdeps ) } 2>>$(BUILD_DETAILS_FILE) | tee -a $(BUILD_DETAILS_FILE)
+	@printf "Checking if libpci is present and sufficient... " | tee -a $(BUILD_DETAILS_FILE)
+	@{ { { { $(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) $(PCILIBS) 2>>$(BUILD_DETAILS_FILE) >&2 && \
+		echo "yes." || { echo "no.";							\
+		printf "Checking if libz+libpci are present and sufficient..." ; \
+		{ $(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) $(PCILIBS) -lz >&2 && \
+		echo "yes." && echo "NEEDLIBZ := yes" > .libdeps } || { echo "no."; echo;	\
 		echo "Please install libpci (package pciutils) and/or libz.";			\
 		echo "See README for more information."; echo;				\
-		rm -f .test.c .test.o .test$(EXEC_SUFFIX); exit 1) )
+		rm -f .test.c .test.o .test$(EXEC_SUFFIX); exit 1; }; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
 	@rm -f .test.c .test.o .test$(EXEC_SUFFIX)
 endif
 ifeq ($(CHECK_LIBUSB0), yes)
-	@printf "Checking for libusb-0.1/libusb-compat headers... "
+	@printf "Checking for libusb-0.1/libusb-compat headers... " | tee -a $(BUILD_DETAILS_FILE)
 	@echo "$$LIBUSB0_TEST" > .test.c
-	@$(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o >/dev/null &&		\
-		echo "found." || ( echo "not found."; echo;				\
+	@{ { { { { $(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o >&2 && \
+		echo "found." || { echo "not found."; echo;				\
 		echo "Please install libusb-0.1 headers or libusb-compat headers.";	\
 		echo "See README for more information."; echo;				\
-		rm -f .test.c .test.o; exit 1)
-	@printf "Checking if libusb-0.1 is usable... "
-	@$(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) $(USBLIBS) >/dev/null &&	\
-		echo "yes." || ( echo "no.";						\
+		rm -f .test.c .test.o; exit 1; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
+	@printf "Checking if libusb-0.1 is usable... " | tee -a $(BUILD_DETAILS_FILE)
+	@{ { { { { $(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) $(USBLIBS) >&2 && \
+		echo "yes." || { echo "no.";						\
 		echo "Please install libusb-0.1 or libusb-compat.";			\
 		echo "See README for more information."; echo;				\
-		rm -f .test.c .test.o .test$(EXEC_SUFFIX); exit 1)
+		rm -f .test.c .test.o .test$(EXEC_SUFFIX); exit 1; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
 	@rm -f .test.c .test.o .test$(EXEC_SUFFIX)
 endif
 
@@ -1023,36 +1027,40 @@ export LINUX_I2C_TEST
 features: compiler
 	@echo "FEATURES := yes" > .features.tmp
 ifeq ($(NEED_FTDI), yes)
-	@printf "Checking for FTDI support... "
+	@printf "Checking for FTDI support... " | tee -a $(BUILD_DETAILS_FILE)
 	@echo "$$FTDI_TEST" > .featuretest.c
-	@$(CC) $(CPPFLAGS) $(CFLAGS) $(FTDI_INCLUDES) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) $(FTDILIBS) $(LIBS) >/dev/null 2>&1 &&	\
-		( echo "found."; echo "FTDISUPPORT := yes" >> .features.tmp ) ||	\
-		( echo "not found."; echo "FTDISUPPORT := no" >> .features.tmp )
-	@printf "Checking for FT232H support in libftdi... "
-	@echo "$$FTDI_232H_TEST" >> .featuretest.c
-	@$(CC) $(CPPFLAGS) $(CFLAGS) $(FTDI_INCLUDES) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) $(FTDILIBS) $(LIBS) >/dev/null 2>&1 &&	\
-		( echo "found."; echo "FT232H := yes" >> .features.tmp ) ||	\
-		( echo "not found."; echo "FT232H := no" >> .features.tmp )
+	@ { $(CC) $(CPPFLAGS) $(CFLAGS) $(FTDI_INCLUDES) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) $(FTDILIBS) $(LIBS) >&2 && \
+	(	echo "found."; echo "FTDISUPPORT := yes" >> .features.tmp ; \
+		printf "Checking for FT232H support in libftdi... " ; \
+		echo "$$FTDI_232H_TEST" >> .featuretest.c ; \
+		{ $(CC) $(CPPFLAGS) $(CFLAGS) $(FTDI_INCLUDES) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) $(FTDILIBS) $(LIBS) >&2 && \
+			( echo "found."; echo "FT232H := yes" >> .features.tmp ) ||	\
+			( echo "not found."; echo "FT232H := no" >> .features.tmp ) } \
+	) || \
+	( echo "not found."; echo "FTDISUPPORT := no" >> .features.tmp ) } \
+	2>>$(BUILD_DETAILS_FILE) | tee -a $(BUILD_DETAILS_FILE)
 endif
 ifeq ($(CONFIG_LINUX_SPI), yes)
-	@printf "Checking if Linux SPI headers are present... "
+	@printf "Checking if Linux SPI headers are present... " | tee -a $(BUILD_DETAILS_FILE)
 	@echo "$$LINUX_SPI_TEST" > .featuretest.c
-	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) >/dev/null 2>&1 &&	\
+	@ { $(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) >&2 && \
 		( echo "yes."; echo "LINUX_SPI_SUPPORT := yes" >> .features.tmp ) ||	\
-		( echo "no."; echo "LINUX_SPI_SUPPORT := no" >> .features.tmp )
+		( echo "no."; echo "LINUX_SPI_SUPPORT := no" >> .features.tmp ) } \
+		2>>$(BUILD_DETAILS_FILE) | tee -a $(BUILD_DETAILS_FILE)
 endif
 ifeq ($(NEED_LINUX_I2C), yes)
-	@printf "Checking if Linux I2C headers are present... "
+	@printf "Checking if Linux I2C headers are present... " | tee -a $(BUILD_DETAILS_FILE)
 	@echo "$$LINUX_I2C_TEST" > .featuretest.c
-	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) >/dev/null 2>&1 &&	\
+	@ { $(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) >&2 && \
 		( echo "yes."; echo "LINUX_I2C_SUPPORT := yes" >> .features.tmp ) ||	\
-		( echo "no."; echo "LINUX_I2C_SUPPORT := no" >> .features.tmp )
+		( echo "no."; echo "LINUX_I2C_SUPPORT := no" >> .features.tmp ) } \
+		2>>$(BUILD_DETAILS_FILE) | tee -a $(BUILD_DETAILS_FILE)
 endif
-	@printf "Checking for utsname support... "
+	@printf "Checking for utsname support... " | tee -a $(BUILD_DETAILS_FILE)
 	@echo "$$UTSNAME_TEST" > .featuretest.c
-	@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) >/dev/null 2>&1 &&	\
+	@ { $(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) >&2 && \
 		( echo "found."; echo "UTSNAME := yes" >> .features.tmp ) ||	\
-		( echo "not found."; echo "UTSNAME := no" >> .features.tmp )
+		( echo "not found."; echo "UTSNAME := no" >> .features.tmp ) } 2>>$(BUILD_DETAILS_FILE) | tee -a $(BUILD_DETAILS_FILE)
 	@$(DIFF) -q .features.tmp .features >/dev/null 2>&1 && rm .features.tmp || mv .features.tmp .features
 	@rm -f .featuretest.c .featuretest$(EXEC_SUFFIX)
 
