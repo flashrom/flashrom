@@ -72,6 +72,11 @@ LDFLAGS += -L$(LIBS_BASE)/lib -Wl,-rpath -Wl,$(LIBS_BASE)/lib
 PKG_CONFIG_LIBDIR ?= $(LIBS_BASE)/lib/pkgconfig
 endif
 
+ifeq ($(CONFIG_STATIC),yes)
+PKG_CONFIG += --static
+LDFLAGS += -static
+endif
+
 dummy_for_make_3_80:=$(shell printf "Build started on %s\n\n" "$$(date)" >$(BUILD_DETAILS_FILE))
 debug_shell = $(shell export LC_ALL=C ; { echo 'exec: export LC_ALL=C ; { $(1) ; }' >&2;  { $(1) ; } | tee -a $(BUILD_DETAILS_FILE) ; echo >&2 ; } 2>>$(BUILD_DETAILS_FILE))
 ###############################################################################
