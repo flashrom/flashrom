@@ -19,7 +19,7 @@
 
 /* Driver for the NVIDIA MCP6x/MCP7x MCP6X_SPI controller.
  * Based on clean room reverse engineered docs from
- * http://www.flashrom.org/pipermail/flashrom/2009-December/001180.html
+ * https://flashrom.org/pipermail/flashrom/2009-December/001180.html
  * created by Michael Karcher.
  */
 
