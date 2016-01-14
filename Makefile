@@ -77,8 +77,18 @@ PKG_CONFIG += --static
 LDFLAGS += -static
 endif
 
+# Set LC_ALL=C to minimize influences of the locale.
+# However, this won't work for the majority of relevant commands because they use the $(shell) function and
+# GNU make does not relay variables exported within the makefile to their evironment.
+LC_ALL=C
+export LC_ALL
+
 dummy_for_make_3_80:=$(shell printf "Build started on %s\n\n" "$$(date)" >$(BUILD_DETAILS_FILE))
+
+# Provide an easy way to execute a command, print its output to stdout and capture any error message on stderr
+# in the build details file together with the original stdout output.
 debug_shell = $(shell export LC_ALL=C ; { echo 'exec: export LC_ALL=C ; { $(1) ; }' >&2;  { $(1) ; } | tee -a $(BUILD_DETAILS_FILE) ; echo >&2 ; } 2>>$(BUILD_DETAILS_FILE))
+
 ###############################################################################
 # General OS-specific settings.
 # 1. Prepare for later by gathering information about host and target OS
@@ -1087,7 +1097,7 @@ export: $(PROGRAM).8
 	@svn export -r BASE . $(EXPORTDIR)/flashrom-$(RELEASENAME)
 	@sed "s/^SVNVERSION.*/SVNVERSION := $(SVNVERSION)/" Makefile >$(EXPORTDIR)/flashrom-$(RELEASENAME)/Makefile
 	@cp $(PROGRAM).8 "$(EXPORTDIR)/flashrom-$(RELEASENAME)/$(PROGRAM).8"
-	@LC_ALL=C svn log >$(EXPORTDIR)/flashrom-$(RELEASENAME)/ChangeLog
+	@svn log >$(EXPORTDIR)/flashrom-$(RELEASENAME)/ChangeLog
 	@echo Exported $(EXPORTDIR)/flashrom-$(RELEASENAME)/
 
 tarball: export
