@@ -1692,8 +1692,8 @@ int ich_init_spi(struct pci_dev *dev, void *spibar, enum ich_chipset ich_gen)
 				ich_spi_rw_restricted |= ich9_handle_frap(tmp, i);
 			if (ich_spi_rw_restricted)
 				msg_pwarn("Not all flash regions are freely accessible by flashrom. This is "
-					  "most likely\ndue to an active ME. Please see http://flashrom.org/ME "
-					  "for details.\n");
+					  "most likely\ndue to an active ME. Please see "
+					  "https://flashrom.org/ME for details.\n");
 		}
 
 		/* Handle PR registers */

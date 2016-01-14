@@ -810,7 +810,7 @@ TAROPTIONS = $(shell LC_ALL=C tar --version|grep -q GNU && echo "--owner=root --
 # This includes all frontends and libflashrom.
 # We don't use EXEC_SUFFIX here because we want to clean everything.
 clean:
-	rm -f $(PROGRAM) $(PROGRAM).exe libflashrom.a *.o *.d $(PROGRAM).8 $(BUILD_DETAILS_FILE)
+	rm -f $(PROGRAM) $(PROGRAM).exe libflashrom.a *.o *.d $(PROGRAM).8 $(PROGRAM).8.html $(BUILD_DETAILS_FILE)
 	@+$(MAKE) -C util/ich_descriptors_tool/ clean
 
 distclean: clean
@@ -1069,8 +1069,12 @@ endif
 	@$(DIFF) -q .features.tmp .features >/dev/null 2>&1 && rm .features.tmp || mv .features.tmp .features
 	@rm -f .featuretest.c .featuretest$(EXEC_SUFFIX)
 
+$(PROGRAM).8.html: $(PROGRAM).8
+	@groff -mandoc -Thtml $< >$@
+
 $(PROGRAM).8: $(PROGRAM).8.tmpl
-	@sed -e '1 s#".*".*#"$(shell ./util/getrevision.sh -d $(PROGRAM).8.tmpl 2>/dev/null)" "$(VERSION)"#' <$< >$@
+	@# Add the man page change date and version to the man page
+	@sed -e 's#.TH FLASHROM 8 ".*".*#.TH FLASHROM 8 "$(shell ./util/getrevision.sh -d $(PROGRAM).8.tmpl 2>/dev/null)" "$(VERSION)"#' <$< >$@
 
 install: $(PROGRAM)$(EXEC_SUFFIX) $(PROGRAM).8
 	mkdir -p $(DESTDIR)$(PREFIX)/sbin

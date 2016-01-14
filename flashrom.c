@@ -1787,7 +1787,7 @@ void print_version(void)
 void print_banner(void)
 {
 	msg_ginfo("flashrom is free software, get the source code at "
-		  "http://www.flashrom.org\n");
+		  "https://flashrom.org\n");
 	msg_ginfo("\n");
 }
 
