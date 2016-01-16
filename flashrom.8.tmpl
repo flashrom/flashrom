@@ -233,6 +233,8 @@ cards)"
 .sp
 .BR "* atavia" " (for flash ROMs on VIA VT6421A SATA controllers)"
 .sp
+.BR "* atapromise" " (for flash ROMs on Promise PDC2026x ATA/RAID controllers)"
+.sp
 .BR "* it8212" " (for flash ROMs on ITE IT8212F ATA/RAID controller)"
 .sp
 .BR "* ft2232_spi" " (for SPI flash ROMs attached to an FT2232/FT4232H/FT232H family \
@@ -636,7 +638,7 @@ is an 8-bit hexadecimal value.
 .SS
 .BR "nic3com" , " nicrealtek" , " nicnatsemi" , " nicintel", " nicintel_eeprom"\
 , " nicintel_spi" , " gfxnvidia" , " ogp_spi" , " drkaiser" , " satasii"\
-, " satamv" , " atahpt", " atavia " and " it8212 " programmers
+, " satamv" , " atahpt", " atavia ", " atapromise " and " it8212 " programmers
 .IP
 These programmers have an option to specify the PCI address of the card
 your want to use, which must be specified if more than one card supported
@@ -668,6 +670,13 @@ syntax where
 will be interpreted as usual (leading 0x (0) for hexadecimal (octal) values, or else decimal).
 For more information please see
 .URLB https://flashrom.org/VT6421A "its wiki page" .
+.SS
+.BR "atapromise " programmer
+.IP
+This programmer is currently limited to 32 kB, regardless of the actual size of the flash chip. This stems
+from the fact that, on the tested device (a Promise Ultra100), not all of the chip's address lines were
+actually connected. You may use this programmer to flash firmware updates, since these are only 16 kB in
+size (padding to 32 kB is required).
 .SS
 .BR "nicintel_eeprom " programmer
 .IP
@@ -1059,8 +1068,8 @@ needs raw I/O port access.
 .BR satasii ", " nicintel ", " nicintel_eeprom " and " nicintel_spi
 need PCI configuration space read access and raw memory access.
 .sp
-.B satamv
-needs PCI configuration space read access, raw I/O port access and raw memory
+.BR satamv " and " atapromise
+need PCI configuration space read access, raw I/O port access and raw memory
 access.
 .sp
 .B serprog
@@ -1076,7 +1085,7 @@ need access to the USB device via libusb.
 needs no access permissions at all.
 .sp
 .BR internal ", " nic3com ", " nicrealtek ", " nicnatsemi ", "
-.BR gfxnvidia ", " drkaiser ", " satasii ", " satamv ", " atahpt" and " atavia
+.BR gfxnvidia ", " drkaiser ", " satasii ", " satamv ", " atahpt ", " atavia " and " atapromise
 have to be run as superuser/root, and need additional raw access permission.
 .sp
 .BR serprog ", " buspirate_spi ", " dediprog ", " usbblaster_spi ", " ft2232_spi " and " pickit2_spi
