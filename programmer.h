@@ -57,6 +57,9 @@ enum programmer {
 #if CONFIG_ATAVIA == 1
 	PROGRAMMER_ATAVIA,
 #endif
+#if CONFIG_ATAPROMISE == 1
+	PROGRAMMER_ATAPROMISE,
+#endif
 #if CONFIG_IT8212 == 1
 	PROGRAMMER_IT8212,
 #endif
@@ -458,6 +461,13 @@ extern const struct dev_entry ata_hpt[];
 int atavia_init(void);
 void *atavia_map(const char *descr, uintptr_t phys_addr, size_t len);
 extern const struct dev_entry ata_via[];
+#endif
+
+/* atapromise.c */
+#if CONFIG_ATAPROMISE == 1
+int atapromise_init(void);
+void *atapromise_map(const char *descr, uintptr_t phys_addr, size_t len);
+extern const struct dev_entry ata_promise[];
 #endif
 
 /* it8212.c */

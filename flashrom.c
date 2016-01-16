@@ -182,6 +182,18 @@ const struct programmer_entry programmer_table[] = {
 	},
 #endif
 
+#if CONFIG_ATAPROMISE == 1
+	{
+		.name			= "atapromise",
+		.type			= PCI,
+		.devs.dev		= ata_promise,
+		.init			= atapromise_init,
+		.map_flash_region	= atapromise_map,
+		.unmap_flash_region	= fallback_unmap,
+		.delay			= internal_delay,
+	},
+#endif
+
 #if CONFIG_IT8212 == 1
 	{
 		.name			= "it8212",
