@@ -282,18 +282,20 @@ fdtype sp_openserport(char *dev, int baud)
 	const int flags = fcntl(fd, F_GETFL);
 	if (flags == -1) {
 		msg_perr_strerror("Could not get serial port mode: ");
-		return SER_INV_FD;
+		goto err;
 	}
 	if (fcntl(fd, F_SETFL, flags & ~O_NONBLOCK) != 0) {
 		msg_perr_strerror("Could not set serial port mode to blocking: ");
-		return SER_INV_FD;
+		goto err;
 	}
 
 	if (serialport_config(fd, baud) != 0) {
-		close(fd);
-		return SER_INV_FD;
+		goto err;
 	}
 	return fd;
+err:
+	close(fd);
+	return SER_INV_FD;
 #endif
 }
 
