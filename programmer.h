@@ -592,8 +592,8 @@ enum spi_controller {
 #define MAX_DATA_WRITE_UNLIMITED 256
 struct spi_master {
 	enum spi_controller type;
-	unsigned int max_data_read;
-	unsigned int max_data_write;
+	unsigned int max_data_read; // (Ideally,) maximum data read size in one go (excluding opcode+address).
+	unsigned int max_data_write; // (Ideally,) maximum data write size in one go (excluding opcode+address).
 	int (*command)(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
 		   const unsigned char *writearr, unsigned char *readarr);
 	int (*multicommand)(struct flashctx *flash, struct spi_command *cmds);

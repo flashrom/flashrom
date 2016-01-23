@@ -45,7 +45,7 @@
 
 
 /* The next big hunk tries to guess endianess from various preprocessor macros */
-/* First some error checking in case some weird header has defines both.
+/* First some error checking in case some weird header has defined both.
  * NB: OpenBSD always defines _BIG_ENDIAN and _LITTLE_ENDIAN. */
 #if defined (__LITTLE_ENDIAN__) && defined (__BIG_ENDIAN__)
 #error Conflicting endianness #define

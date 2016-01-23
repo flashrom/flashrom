@@ -186,11 +186,8 @@ EXEC_SUFFIX := .exe
 # MinGW doesn't have the ffs() function, but we can use gcc's __builtin_ffs().
 FLASHROM_CFLAGS += -Dffs=__builtin_ffs
 # Some functions provided by Microsoft do not work as described in C99 specifications. This macro fixes that
-# for MinGW. See http://sourceforge.net/apps/trac/mingw-w64/wiki/printf%20and%20scanf%20family */
+# for MinGW. See http://sourceforge.net/p/mingw-w64/wiki2/printf%20and%20scanf%20family/ */
 FLASHROM_CFLAGS += -D__USE_MINGW_ANSI_STDIO=1
-# libusb-win32/libftdi stuff is usually installed in /usr/local.
-CPPFLAGS += -I/usr/local/include
-LDFLAGS += -L/usr/local/lib
 # For now we disable all PCI-based programmers on Windows/MinGW (no libpci).
 ifeq ($(CONFIG_INTERNAL), yes)
 UNSUPPORTED_FEATURES += CONFIG_INTERNAL=yes
@@ -1125,5 +1122,8 @@ libpayload: clean
 	make CC="CC=i386-elf-gcc lpgcc" AR=i386-elf-ar RANLIB=i386-elf-ranlib
 
 .PHONY: all install clean distclean compiler hwlibs features export tarball djgpp-dos featuresavailable libpayload
+
+# Disable implicit suffixes and built-in rules (for performance and profit)
+.SUFFIXES:
 
 -include $(OBJS:.o=.d)

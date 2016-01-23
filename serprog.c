@@ -232,7 +232,7 @@ static int sp_docommand(uint8_t command, uint32_t parmlen,
 	if (c == S_NAK)
 		return 1;
 	if (c != S_ACK) {
-		msg_perr("Error: invalid response 0x%02X from device\n", c);
+		msg_perr("Error: invalid response 0x%02X from device (to command 0x%02X)\n", c, command);
 		return 1;
 	}
 	if (retlen) {

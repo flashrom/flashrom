@@ -847,6 +847,9 @@
 #define ST_N25Q512__3E		0xBA20	/* N25Q512, 3.0V, (uniform sectors expected) */
 #define ST_N25Q512__1E		0xBB20	/* N25Q512, 1.8V, (uniform sectors expected) */
 #define ST_N25Q00A__3E		0xBA21	/* N25Q00A, 3.0V, (uniform sectors expected) */
+#define ST_NP5Q032		0xDA16	/* Phase-change memory (PCM), 3V */
+#define ST_NP5Q064		0xDA17	/* Phase-change memory (PCM), 3V */
+#define ST_NP5Q128		0xDA18	/* Phase-change memory (PCM), 3V */
 
 #define SYNCMOS_MVC_ID		0x40	/* SyncMOS (SM) and Mosel Vitelic Corporation (MVC) */
 #define MVC_V29C51000T		0x00

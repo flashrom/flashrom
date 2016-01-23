@@ -35,6 +35,12 @@
 #include "programmer.h"
 #include "spi.h"
 
+/* Devices known to work with this module (FIXME: export as struct dev_entry):
+ * Beagle Bone Black
+ * Raspberry Pi
+ * HummingBoard
+ */
+
 static int fd = -1;
 
 static int linux_spi_shutdown(void *data);

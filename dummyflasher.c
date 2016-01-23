@@ -376,8 +376,8 @@ int dummy_init(void)
 	/* We will silently (in default verbosity) ignore the file if it does not exist (yet) or the size does
 	 * not match the emulated chip. */
 	if (!stat(emu_persistent_image, &image_stat)) {
-		msg_pdbg("Found persistent image %s, size %li ",
-			 emu_persistent_image, (long)image_stat.st_size);
+		msg_pdbg("Found persistent image %s, %jd B ",
+			 emu_persistent_image, (intmax_t)image_stat.st_size);
 		if (image_stat.st_size == emu_chip_size) {
 			msg_pdbg("matches.\n");
 			msg_pdbg("Reading %s\n", emu_persistent_image);

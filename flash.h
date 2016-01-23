@@ -260,7 +260,7 @@ void tolower_string(char *str);
 #ifdef __MINGW32__
 char* strtok_r(char *str, const char *delim, char **nextp);
 #endif
-#if defined(__DJGPP__)
+#if defined(__DJGPP__) || !defined(HAVE_STRNLEN)
 size_t strnlen(const char *str, size_t n);
 #endif
 
