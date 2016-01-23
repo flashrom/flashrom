@@ -552,13 +552,13 @@ syntax where
 is one of the following chips (please specify only the chip name, not the
 vendor):
 .sp
-.RB "* ST " M25P10.RES " SPI flash chip (RES, page write)"
+.RB "* ST " M25P10.RES " SPI flash chip (128 kB, RES, page write)"
 .sp
-.RB "* SST " SST25VF040.REMS " SPI flash chip (REMS, byte write)"
+.RB "* SST " SST25VF040.REMS " SPI flash chip (512 kB, REMS, byte write)"
 .sp
-.RB "* SST " SST25VF032B " SPI flash chip (RDID, AAI write)"
+.RB "* SST " SST25VF032B " SPI flash chip (4096 kB, RDID, AAI write)"
 .sp
-.RB "* Macronix " MX25L6436 " SPI flash chip (RDID, SFDP)"
+.RB "* Macronix " MX25L6436 " SPI flash chip (8192 kB, RDID, SFDP)"
 .sp
 Example:
 .B "flashrom -p dummy:emulate=SST25VF040.REMS"
@@ -899,6 +899,7 @@ can be
 STK200/300, " wiggler " for the Macraigor Wiggler, or " xilinx " for the Xilinx Parallel Cable III (DLC 5)."
 .sp
 More information about the RayeR hardware is available at
+.nh
 .URLB "http://rayer.g6.cz/elektro/spipgm.htm" "RayeR's website" .
 The Altera ByteBlasterMV datasheet can be obtained from
 .URLB "http://www.altera.co.jp/literature/ds/dsbytemv.pdf" Altera .
@@ -953,10 +954,6 @@ you want to use with the
 parameter as explained in the
 .B nic3com et al.\&
 section above.
-.sp
-More information about the hardware is available at
-.nh
-.BR http://wiki.opengraphics.org .
 .SS
 .BR "linux_spi " programmer
 .IP
@@ -1148,7 +1145,7 @@ They are not modifiable by the user at all.
 .SH LICENSE
 .B flashrom
 is covered by the GNU General Public License (GPL), version 2. Some files are
-additionally available under the GPL (version 2, or any later version).
+additionally available under any later version of the GPL.
 .SH COPYRIGHT
 .br
 Please see the individual files.
@@ -1218,6 +1215,8 @@ Stefan Wildemann
 Stephan Guilloux
 .br
 Steven James
+.br
+Urja Rannikko
 .br
 Uwe Hermann
 .br

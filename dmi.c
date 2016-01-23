@@ -90,6 +90,7 @@ static const struct {
 	{0x11, 0, "Main Server Chassis"},
 	{0x17, 0, "Rack Mount Chassis"},
 	{0x18, 0, "Sealed-case PC"}, /* used by Supermicro (X8SIE) */
+	{0x19, 0, "Multi-system"}, /* used by Supermicro (X7DWT) */
 };
 
 #if CONFIG_INTERNAL_DMI == 1

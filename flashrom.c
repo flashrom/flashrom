@@ -1672,7 +1672,7 @@ void list_programmers(const char *delim)
 		if (p < PROGRAMMER_INVALID - 1)
 			msg_ginfo("%s", delim);
 	}
-	msg_ginfo("\n");	
+	msg_ginfo("\n");
 }
 
 void list_programmers_linebreak(int startcol, int cols, int paren)

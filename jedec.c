@@ -184,13 +184,11 @@ static int probe_jedec_common(struct flashctx *flash, unsigned int mask)
 	else if (chip->probe_timing == TIMING_ZERO) { /* No delay. */
 		probe_timing_enter = probe_timing_exit = 0;
 	} else if (chip->probe_timing == TIMING_FIXME) { /* == _IGNORED */
-		msg_cdbg("Chip lacks correct probe timing information, "
-			     "using default 10mS/40uS. ");
+		msg_cdbg("Chip lacks correct probe timing information, using default 10ms/40us. ");
 		probe_timing_enter = 10000;
 		probe_timing_exit = 40;
 	} else {
-		msg_cerr("Chip has negative value in probe_timing, failing "
-		       "without chip access\n");
+		msg_cerr("Chip has negative value in probe_timing, failing without chip access\n");
 		return 0;
 	}
 

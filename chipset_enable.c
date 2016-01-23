@@ -1632,7 +1632,7 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x1e5d, NT,  "Intel", "HM75",				enable_flash_pch7},
 	{0x8086, 0x1e5e, NT,  "Intel", "HM70",				enable_flash_pch7},
 	{0x8086, 0x1e5f, DEP, "Intel", "NM70",				enable_flash_pch7},
-	{0x8086, 0x1f38, NT,  "Intel", "Avoton/Rangeley",		enable_flash_silvermont},
+	{0x8086, 0x1f38, DEP, "Intel", "Avoton/Rangeley",		enable_flash_silvermont},
 	{0x8086, 0x1f39, NT,  "Intel", "Avoton/Rangeley",		enable_flash_silvermont},
 	{0x8086, 0x1f3a, NT,  "Intel", "Avoton/Rangeley",		enable_flash_silvermont},
 	{0x8086, 0x1f3b, NT,  "Intel", "Avoton/Rangeley",		enable_flash_silvermont},
@@ -1781,6 +1781,10 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x9cc7, NT,  "Intel", "Broadwell Y Premium",		enable_flash_pch9},
 	{0x8086, 0x9cc9, NT,  "Intel", "Broadwell Y Base",		enable_flash_pch9},
 	{0x8086, 0x9ccb, NT,  "Intel", "Broadwell H",			enable_flash_pch9},
+	{0x8086, 0x9d41, BAD, "Intel", "Sunrise Point (Skylake LP Sample)",	NULL},
+	{0x8086, 0x9d43, BAD, "Intel", "Sunrise Point (Skylake-U Base)",	NULL},
+	{0x8086, 0x9d48, BAD, "Intel", "Sunrise Point (Skylake-U Premium)",	NULL},
+	{0x8086, 0x9d46, BAD, "Intel", "Sunrise Point (Skylake-Y Premium)",	NULL},
 #endif
 	{0},
 };
@@ -1816,6 +1820,10 @@ int chipset_flash_enable(void)
 			 chipset_enables[i].device_id);
 		msg_pinfo(".\n");
 
+		if (chipset_enables[i].status == BAD) {
+			msg_perr("ERROR: This chipset is not supported yet.\n");
+			return ERROR_FATAL;
+		}
 		if (chipset_enables[i].status == NT) {
 			msg_pinfo("This chipset is marked as untested. If "
 				  "you are using an up-to-date version\nof "
@@ -1826,8 +1834,7 @@ int chipset_flash_enable(void)
 				  "(-V) log.\nThank you!\n");
 		}
 		msg_pinfo("Enabling flash write... ");
-		ret = chipset_enables[i].doit(dev,
-					      chipset_enables[i].device_name);
+		ret = chipset_enables[i].doit(dev, chipset_enables[i].device_name);
 		if (ret == NOT_DONE_YET) {
 			ret = -2;
 			msg_pinfo("OK - searching further chips.\n");

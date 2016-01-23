@@ -8,12 +8,13 @@ in-system using a supported mainboard, but it also supports flashing of network
 cards (NICs), SATA controller cards, and other external devices which can
 program flash chips.
 
-It supports a wide range of DIP32, PLCC32, DIP8, SO8/SOIC8, TSOP32, and TSOP40
-chips, which use various protocols such as LPC, FWH, parallel flash, or SPI.
+It supports a wide range of flash chips (most commonly found in SOIC8, DIP8,
+SOIC16, WSON8, PLCC32, DIP32, TSOP32, and TSOP40 packages), which use various
+protocols such as LPC, FWH, parallel flash, or SPI.
 
-Do not use flashrom on laptops! The embedded controller (EC) present in many
-laptops interacts badly with any flash attempts and can brick your laptop
-permanently.
+Do not use flashrom on laptops (yet)! The embedded controller (EC) present in
+many laptops might interact badly with any attempts to communicate with the
+flash chip and may brick your laptop.
 
 Please make a backup of your flash chip before writing to it.
 

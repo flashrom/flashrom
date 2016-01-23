@@ -99,6 +99,10 @@ static unsigned int at45db_get_sector_count(struct flashctx *flash)
 static uint8_t at45db_prettyprint_protection_register(struct flashctx *flash, uint8_t opcode, const char *regname)
 {
 	const uint8_t cmd[] = { opcode, 0, 0, 0 };
+	const size_t sec_count = at45db_get_sector_count(flash);
+	if (sec_count < 2)
+		return 0;
+
 	/* The first two sectors share the first result byte. */
 	uint8_t buf[at45db_get_sector_count(flash) - 1];
 
@@ -332,7 +336,7 @@ static int at45db_erase(struct flashctx *flash, uint8_t opcode, unsigned int at4
 	/* Wait for completion. */
 	ret = at45db_wait_ready(flash, stepsize, retries);
 	if (ret != 0)
-		msg_cerr("%s: chip did not became ready again after sending the erase command!\n", __func__);
+		msg_cerr("%s: chip did not become ready again after sending the erase command!\n", __func__);
 
 	return ret;
 }
@@ -463,7 +467,7 @@ static int at45db_fill_buffer1(struct flashctx *flash, const uint8_t *bytes, uns
 	}
 
 	/* Create a suitable buffer to store opcode, address and data chunks for buffer1. */
-	const unsigned int max_data_write = flash->mst->spi.max_data_write;
+	const int max_data_write = flash->mst->spi.max_data_write - 4;
 	const unsigned int max_chunk = (max_data_write > 0 && max_data_write <= page_size) ?
 				       max_data_write : page_size;
 	uint8_t buf[4 + max_chunk];
@@ -504,7 +508,7 @@ static int at45db_commit_buffer1(struct flashctx *flash, unsigned int at45db_add
 	/* Wait for completion (typically a few ms). */
 	ret = at45db_wait_ready(flash, 250, 200); // 50 ms
 	if (ret != 0) {
-		msg_cerr("%s: chip did not became ready again!\n", __func__);
+		msg_cerr("%s: chip did not become ready again!\n", __func__);
 		return ret;
 	}
 
