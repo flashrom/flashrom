@@ -794,6 +794,23 @@ FEATURE_CFLAGS += -D'NEED_USB=1'
 USBLIBS := $(call debug_shell,[ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ; $(PKG_CONFIG) --libs libusb || printf "%s" "-lusb")
 endif
 
+ifeq ($(NEED_LIBUSB1), yes)
+CHECK_LIBUSB1 = yes
+FEATURE_CFLAGS += -D'NEED_LIBUSB1=1'
+# FreeBSD and DragonflyBSD use a reimplementation of libusb-1.0 that is simply called libusb
+ifeq ($(TARGET_OS),$(filter $(TARGET_OS),FreeBSD DragonFlyBSD))
+USB1LIBS += -lusb
+else
+ifeq ($(TARGET_OS),NetBSD)
+CPPFLAGS += -I/usr/pkg/include/libusb-1.0
+USB1LIBS += -lusb-1.0
+else
+USB1LIBS += $(call debug_shell,[ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)"; pkg-config --libs libusb-1.0  || printf "%s" "-lusb-1.0")
+CPPFLAGS += $(call debug_shell,[ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)"; pkg-config --cflags-only-I libusb-1.0  || printf "%s" "-I/usr/include/libusb-1.0")
+endif
+endif
+endif
+
 ifeq ($(CONFIG_PRINT_WIKI), yes)
 FEATURE_CFLAGS += -D'CONFIG_PRINT_WIKI=1'
 CLI_OBJS += print_wiki.o
@@ -813,7 +830,7 @@ ifeq ($(ARCH), x86)
 endif
 
 $(PROGRAM)$(EXEC_SUFFIX): $(OBJS)
-	$(CC) $(LDFLAGS) -o $(PROGRAM)$(EXEC_SUFFIX) $(OBJS) $(LIBS) $(PCILIBS) $(FEATURE_LIBS) $(USBLIBS)
+	$(CC) $(LDFLAGS) -o $(PROGRAM)$(EXEC_SUFFIX) $(OBJS) $(LIBS) $(PCILIBS) $(FEATURE_LIBS) $(USBLIBS) $(USB1LIBS)
 
 libflashrom.a: $(LIBFLASHROM_OBJS)
 	$(AR) rcs $@ $^
@@ -934,6 +951,20 @@ int main(int argc, char **argv)
 endef
 export LIBUSB0_TEST
 
+
+define LIBUSB1_TEST
+#include <stddef.h>
+#include <libusb.h>
+int main(int argc, char **argv)
+{
+	(void)argc;
+	(void)argv;
+	libusb_init(NULL);
+	return 0;
+}
+endef
+export LIBUSB1_TEST
+
 hwlibs: compiler
 	@printf "" > .libdeps
 ifeq ($(CHECK_LIBPCI), yes)
@@ -978,6 +1009,24 @@ ifeq ($(CHECK_LIBUSB0), yes)
 	@{ { { { { $(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) $(USBLIBS) >&2 && \
 		echo "yes." || { echo "no.";						\
 		echo "Please install libusb-0.1 or libusb-compat.";			\
+		echo "See README for more information."; echo;				\
+		rm -f .test.c .test.o .test$(EXEC_SUFFIX); exit 1; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
+	@rm -f .test.c .test.o .test$(EXEC_SUFFIX)
+endif
+ifeq ($(CHECK_LIBUSB1), yes)
+	@printf "Checking for libusb-1.0 headers... " | tee -a $(BUILD_DETAILS_FILE)
+	@echo "$$LIBUSB1_TEST" > .test.c
+	@printf "\nexec: %s\n" "$(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o" >>$(BUILD_DETAILS_FILE)
+	@{ { { { { $(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o >&2 && \
+		echo "found." || { echo "not found."; echo;				\
+		echo "Please install libusb-1.0 headers.";	\
+		echo "See README for more information."; echo;				\
+		rm -f .test.c .test.o; exit 1; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
+	@printf "Checking if libusb-1.0 is usable... " | tee -a $(BUILD_DETAILS_FILE)
+	@printf "\nexec: %s\n" "$(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) $(USB1LIBS)" >>$(BUILD_DETAILS_FILE)
+	@{ { { { { $(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) $(USB1LIBS) >&2 && \
+		echo "yes." || { echo "no.";						\
+		echo "Please install libusb-1.0.";			\
 		echo "See README for more information."; echo;				\
 		rm -f .test.c .test.o .test$(EXEC_SUFFIX); exit 1; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
 	@rm -f .test.c .test.o .test$(EXEC_SUFFIX)
