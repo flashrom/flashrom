@@ -64,9 +64,9 @@
 #define AMD_AM29F004BB		0x7B
 #define AMD_AM29F004BT		0x77
 #define AMD_AM29F016D		0xAD
-#define AMD_AM29F010B		0x20	/* Same as Am29F010A */
-#define AMD_AM29F040B		0xA4
-#define AMD_AM29F080B		0xD5
+#define AMD_AM29F010		0x20	/* Same as Am29F010A and Am29F010B */
+#define AMD_AM29F040		0xA4	/* Same as AM29F040B */
+#define AMD_AM29F080		0xD5	/* Same as Am29F080B */
 #define AMD_AM29F200BB		0x57
 #define AMD_AM29F200BT		0x51
 #define AMD_AM29F400BB		0xAB
