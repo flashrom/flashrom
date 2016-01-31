@@ -271,6 +271,8 @@ bitbanging adapter)
 .sp
 .BR "* pickit2_spi" " (for SPI flash ROMs accessible via Microchip PICkit2)"
 .sp
+.BR "* ch341a_spi" " (for SPI flash ROMs attached to WCH CH341A)"
+.sp
 Some programmers have optional or mandatory parameters which are described
 in detail in the
 .B PROGRAMMER-SPECIFIC INFORMATION
@@ -1019,6 +1021,10 @@ an operation), without the
 parameter, once the flash read/write operation you intended to perform has completed successfully.
 .sp
 Please also note that the mstarddc_spi driver only works on Linux.
+.SS
+.BR "ch341a_spi " programmer
+The WCH CH341A programmer does not support any parameters currently. SPI frequency is fixed at 2 MHz, and CS0 is
+used as per the device.
 .SH EXAMPLES
 To back up and update your BIOS, run
 .sp
@@ -1078,6 +1084,9 @@ needs userspace access to a serial port.
 .BR dediprog ", " ft2232_spi ", " usbblaster_spi " and " pickit2_spi
 need access to the respective USB device via libusb API version 0.1.
 .sp
+.BR ch341a_spi
+needs access to the respective USB device via libusb API version 1.0.
+.sp
 .B dummy
 needs no access permissions at all.
 .sp
@@ -1085,7 +1094,8 @@ needs no access permissions at all.
 .BR gfxnvidia ", " drkaiser ", " satasii ", " satamv ", " atahpt ", " atavia " and " atapromise
 have to be run as superuser/root, and need additional raw access permission.
 .sp
-.BR serprog ", " buspirate_spi ", " dediprog ", " usbblaster_spi ", " ft2232_spi " and " pickit2_spi
+.BR serprog ", " buspirate_spi ", " dediprog ", " usbblaster_spi ", " ft2232_spi ", " pickit2_spi " and " \
+ch341a_spi
 can be run as normal user on most operating systems if appropriate device
 permissions are set.
 .sp
