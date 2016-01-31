@@ -157,7 +157,7 @@ UNSUPPORTED_FEATURES += CONFIG_PONY_SPI=yes
 else
 override CONFIG_PONY_SPI = no
 endif
-# Dediprog, USB-Blaster, PICkit2 and FT2232 are not supported under DOS (missing USB support).
+# Dediprog, USB-Blaster, PICkit2, CH341A and FT2232 are not supported under DOS (missing USB support).
 ifeq ($(CONFIG_DEDIPROG), yes)
 UNSUPPORTED_FEATURES += CONFIG_DEDIPROG=yes
 else
@@ -177,6 +177,11 @@ ifeq ($(CONFIG_PICKIT2_SPI), yes)
 UNSUPPORTED_FEATURES += CONFIG_PICKIT2_SPI=yes
 else
 override CONFIG_PICKIT2_SPI = no
+endif
+ifeq ($(CONFIG_CH341A_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_CH341A_SPI=yes
+else
+override CONFIG_CH341A_SPI = no
 endif
 endif
 
@@ -303,7 +308,7 @@ UNSUPPORTED_FEATURES += CONFIG_PONY_SPI=yes
 else
 override CONFIG_PONY_SPI = no
 endif
-# Dediprog, USB-Blaster, PICkit2 and FT2232 are not supported with libpayload (missing libusb support)
+# Dediprog, USB-Blaster, PICkit2, CH341A and FT2232 are not supported with libpayload (missing libusb support)
 ifeq ($(CONFIG_DEDIPROG), yes)
 UNSUPPORTED_FEATURES += CONFIG_DEDIPROG=yes
 else
@@ -323,6 +328,11 @@ ifeq ($(CONFIG_PICKIT2_SPI), yes)
 UNSUPPORTED_FEATURES += CONFIG_PICKIT2_SPI=yes
 else
 override CONFIG_PICKIT2_SPI = no
+endif
+ifeq ($(CONFIG_CH341A_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_CH341A_SPI=yes
+else
+override CONFIG_CH341A_SPI = no
 endif
 endif
 
@@ -504,6 +514,9 @@ CONFIG_LINUX_SPI ?= yes
 
 # Always enable ITE IT8212F PATA controllers for now.
 CONFIG_IT8212 ?= yes
+
+# Winchiphead CH341A
+CONFIG_CH341A_SPI ?= yes
 
 # Disable wiki printing by default. It is only useful if you have wiki access.
 CONFIG_PRINT_WIKI ?= no
@@ -749,6 +762,12 @@ ifeq ($(CONFIG_MSTARDDC_SPI), yes)
 FEATURE_CFLAGS += $(call debug_shell,grep -q "LINUX_I2C_SUPPORT := yes" .features && printf "%s" "-D'CONFIG_MSTARDDC_SPI=1'")
 NEED_LINUX_I2C := yes
 PROGRAMMER_OBJS += mstarddc_spi.o
+endif
+
+ifeq ($(CONFIG_CH341A_SPI), yes)
+FEATURE_CFLAGS += -D'CONFIG_CH341A_SPI=1'
+PROGRAMMER_OBJS += ch341a_spi.o
+NEED_LIBUSB1 := yes
 endif
 
 ifeq ($(NEED_SERIAL), yes)
