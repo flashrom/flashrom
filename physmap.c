@@ -457,7 +457,7 @@ void cleanup_cpu_msr(void)
 	/* Clear MSR file descriptor. */
 	fd_msr = -1;
 }
-#elif defined(__OpenBSD__) /* This does only work for certain AMD Geode LX systems see amdmsr(4). */
+#elif defined(__OpenBSD__) && defined (__i386__) /* This does only work for certain AMD Geode LX systems see amdmsr(4). */
 #include <sys/ioctl.h>
 #include <machine/amdmsr.h>
 
