@@ -60,6 +60,12 @@ ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6011", MODE="664", GROUP="plugdev"
 # http://www.goepel.com/jtagboundary-scan/hardware/picotap.html
 ATTRS{idVendor}=="096c", ATTRS{idProduct}=="1449", MODE="664", GROUP="plugdev"
 
+# Google servo debug board
+# https://www.chromium.org/chromium-os/servo
+ATTRS{idVendor}=="18d1", ATTRS{idProduct}=="5001", MODE="664", GROUP="plugdev"
+ATTRS{idVendor}=="18d1", ATTRS{idProduct}=="5002", MODE="664", GROUP="plugdev"
+ATTRS{idVendor}=="18d1", ATTRS{idProduct}=="5003", MODE="664", GROUP="plugdev"
+
 # Olimex ARM-USB-OCD
 # http://olimex.com/dev/arm-usb-ocd.html
 ATTRS{idVendor}=="15ba", ATTRS{idProduct}=="0003", MODE="664", GROUP="plugdev"
