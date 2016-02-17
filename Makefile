@@ -586,27 +586,27 @@ FEATURE_CFLAGS += -D'CONFIG_INTERNAL_DMI=1'
 endif
 else
 endif
-NEED_PCI := yes
+NEED_LIBPCI += CONFIG_INTERNAL
 endif
 
 ifeq ($(CONFIG_SERPROG), yes)
 FEATURE_CFLAGS += -D'CONFIG_SERPROG=1'
 PROGRAMMER_OBJS += serprog.o
-NEED_SERIAL := yes
-NEED_NET := yes
+NEED_SERIAL += CONFIG_SERPROG
+NEED_POSIX_SOCKETS += CONFIG_SERPROG
 endif
 
 ifeq ($(CONFIG_RAYER_SPI), yes)
 FEATURE_CFLAGS += -D'CONFIG_RAYER_SPI=1'
 PROGRAMMER_OBJS += rayer_spi.o
-# Actually, NEED_PCI is wrong. NEED_IOPORT_ACCESS would be more correct.
-NEED_PCI := yes
+# Actually, NEED_LIBPCI is wrong. NEED_IOPORT_ACCESS would be more correct.
+NEED_LIBPCI += CONFIG_RAYER_SPI
 endif
 
 ifeq ($(CONFIG_PONY_SPI), yes)
 FEATURE_CFLAGS += -D'CONFIG_PONY_SPI=1'
 PROGRAMMER_OBJS += pony_spi.o
-NEED_SERIAL := yes
+NEED_SERIAL += CONFIG_PONY_SPI
 endif
 
 ifeq ($(CONFIG_BITBANG_SPI), yes)
@@ -617,72 +617,72 @@ endif
 ifeq ($(CONFIG_NIC3COM), yes)
 FEATURE_CFLAGS += -D'CONFIG_NIC3COM=1'
 PROGRAMMER_OBJS += nic3com.o
-NEED_PCI := yes
+NEED_LIBPCI += CONFIG_NIC3COM
 endif
 
 ifeq ($(CONFIG_GFXNVIDIA), yes)
 FEATURE_CFLAGS += -D'CONFIG_GFXNVIDIA=1'
 PROGRAMMER_OBJS += gfxnvidia.o
-NEED_PCI := yes
+NEED_LIBPCI += CONFIG_GFXNVIDIA
 endif
 
 ifeq ($(CONFIG_SATASII), yes)
 FEATURE_CFLAGS += -D'CONFIG_SATASII=1'
 PROGRAMMER_OBJS += satasii.o
-NEED_PCI := yes
+NEED_LIBPCI += CONFIG_SATASII
 endif
 
 ifeq ($(CONFIG_ATAHPT), yes)
 FEATURE_CFLAGS += -D'CONFIG_ATAHPT=1'
 PROGRAMMER_OBJS += atahpt.o
-NEED_PCI := yes
+NEED_LIBPCI += CONFIG_ATAHPT
 endif
 
 ifeq ($(CONFIG_ATAVIA), yes)
 FEATURE_CFLAGS += -D'CONFIG_ATAVIA=1'
 PROGRAMMER_OBJS += atavia.o
-NEED_PCI := yes
+NEED_LIBPCI += CONFIG_ATAVIA
 endif
 
 ifeq ($(CONFIG_ATAPROMISE), yes)
 FEATURE_CFLAGS += -D'CONFIG_ATAPROMISE=1'
 PROGRAMMER_OBJS += atapromise.o
-NEED_PCI := yes
+NEED_LIBPCI += CONFIG_ATAPROMISE
 endif
 
 ifeq ($(CONFIG_IT8212), yes)
 FEATURE_CFLAGS += -D'CONFIG_IT8212=1'
 PROGRAMMER_OBJS += it8212.o
-NEED_PCI := yes
+NEED_LIBPCI += CONFIG_IT8212
 endif
 
 ifeq ($(CONFIG_FT2232_SPI), yes)
 # This is a totally ugly hack.
 FEATURE_CFLAGS += $(call debug_shell,grep -q "FTDISUPPORT := yes" .features && printf "%s" "-D'CONFIG_FT2232_SPI=1'")
-NEED_FTDI := yes
+NEED_LIBFTDI += CONFIG_FT2232_SPI
 PROGRAMMER_OBJS += ft2232_spi.o
 endif
 
 ifeq ($(CONFIG_USBBLASTER_SPI), yes)
 # This is a totally ugly hack.
 FEATURE_CFLAGS += $(call debug_shell,grep -q "FTDISUPPORT := yes" .features && printf "%s" "-D'CONFIG_USBBLASTER_SPI=1'")
-NEED_FTDI := yes
+NEED_LIBFTDI += CONFIG_USBBLASTER_SPI
 PROGRAMMER_OBJS += usbblaster_spi.o
 endif
 
 ifeq ($(CONFIG_PICKIT2_SPI), yes)
 FEATURE_CFLAGS += -D'CONFIG_PICKIT2_SPI=1'
 PROGRAMMER_OBJS += pickit2_spi.o
-NEED_USB := yes
+NEED_LIBUSB0 += CONFIG_PICKIT2_SPI
 endif
 
-ifeq ($(NEED_FTDI), yes)
+ifneq ($(NEED_LIBFTDI), )
 FTDILIBS := $(call debug_shell,[ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ; $(PKG_CONFIG) --libs libftdi1 || $(PKG_CONFIG) --libs libftdi || printf "%s" "-lftdi -lusb")
 FEATURE_CFLAGS += $(call debug_shell,grep -q "FT232H := yes" .features && printf "%s" "-D'HAVE_FT232H=1'")
 FTDI_INCLUDES := $(call debug_shell,[ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ; $(PKG_CONFIG) --cflags-only-I libftdi1)
 FEATURE_CFLAGS += $(FTDI_INCLUDES)
 FEATURE_LIBS += $(call debug_shell,grep -q "FTDISUPPORT := yes" .features && printf "%s" "$(FTDILIBS)")
-# We can't set NEED_USB here because that would transform libftdi auto-enabling
+# We can't set NEED_LIBUSB0 here because that would transform libftdi auto-enabling
 # into a hard requirement for libusb, defeating the purpose of auto-enabling.
 endif
 
@@ -694,61 +694,61 @@ endif
 ifeq ($(CONFIG_DRKAISER), yes)
 FEATURE_CFLAGS += -D'CONFIG_DRKAISER=1'
 PROGRAMMER_OBJS += drkaiser.o
-NEED_PCI := yes
+NEED_LIBPCI += CONFIG_DRKAISER
 endif
 
 ifeq ($(CONFIG_NICREALTEK), yes)
 FEATURE_CFLAGS += -D'CONFIG_NICREALTEK=1'
 PROGRAMMER_OBJS += nicrealtek.o
-NEED_PCI := yes
+NEED_LIBPCI += CONFIG_NICREALTEK
 endif
 
 ifeq ($(CONFIG_NICNATSEMI), yes)
 FEATURE_CFLAGS += -D'CONFIG_NICNATSEMI=1'
 PROGRAMMER_OBJS += nicnatsemi.o
-NEED_PCI := yes
+NEED_LIBPCI += CONFIG_NICNATSEMI
 endif
 
 ifeq ($(CONFIG_NICINTEL), yes)
 FEATURE_CFLAGS += -D'CONFIG_NICINTEL=1'
 PROGRAMMER_OBJS += nicintel.o
-NEED_PCI := yes
+NEED_LIBPCI += CONFIG_NICINTEL
 endif
 
 ifeq ($(CONFIG_NICINTEL_SPI), yes)
 FEATURE_CFLAGS += -D'CONFIG_NICINTEL_SPI=1'
 PROGRAMMER_OBJS += nicintel_spi.o
-NEED_PCI := yes
+NEED_LIBPCI += CONFIG_NICINTEL_SPI
 endif
 
 ifeq ($(CONFIG_NICINTEL_EEPROM), yes)
 FEATURE_CFLAGS += -D'CONFIG_NICINTEL_EEPROM=1'
 PROGRAMMER_OBJS += nicintel_eeprom.o
-NEED_PCI := yes
+NEED_LIBPCI += CONFIG_NICINTEL_EEPROM
 endif
 
 ifeq ($(CONFIG_OGP_SPI), yes)
 FEATURE_CFLAGS += -D'CONFIG_OGP_SPI=1'
 PROGRAMMER_OBJS += ogp_spi.o
-NEED_PCI := yes
+NEED_LIBPCI += CONFIG_OGP_SPI
 endif
 
 ifeq ($(CONFIG_BUSPIRATE_SPI), yes)
 FEATURE_CFLAGS += -D'CONFIG_BUSPIRATE_SPI=1'
 PROGRAMMER_OBJS += buspirate_spi.o
-NEED_SERIAL := yes
+NEED_SERIAL += CONFIG_BUSPIRATE_SPI
 endif
 
 ifeq ($(CONFIG_DEDIPROG), yes)
 FEATURE_CFLAGS += -D'CONFIG_DEDIPROG=1'
 PROGRAMMER_OBJS += dediprog.o
-NEED_USB := yes
+NEED_LIBUSB0 += CONFIG_DEDIPROG
 endif
 
 ifeq ($(CONFIG_SATAMV), yes)
 FEATURE_CFLAGS += -D'CONFIG_SATAMV=1'
 PROGRAMMER_OBJS += satamv.o
-NEED_PCI := yes
+NEED_LIBPCI += CONFIG_SATAMV
 endif
 
 ifeq ($(CONFIG_LINUX_SPI), yes)
@@ -760,27 +760,27 @@ endif
 ifeq ($(CONFIG_MSTARDDC_SPI), yes)
 # This is a totally ugly hack.
 FEATURE_CFLAGS += $(call debug_shell,grep -q "LINUX_I2C_SUPPORT := yes" .features && printf "%s" "-D'CONFIG_MSTARDDC_SPI=1'")
-NEED_LINUX_I2C := yes
+NEED_LINUX_I2C += CONFIG_MSTARDDC_SPI
 PROGRAMMER_OBJS += mstarddc_spi.o
 endif
 
 ifeq ($(CONFIG_CH341A_SPI), yes)
 FEATURE_CFLAGS += -D'CONFIG_CH341A_SPI=1'
 PROGRAMMER_OBJS += ch341a_spi.o
-NEED_LIBUSB1 := yes
+NEED_LIBUSB1 += CONFIG_CH341A_SPI
 endif
 
-ifeq ($(NEED_SERIAL), yes)
+ifneq ($(NEED_SERIAL), )
 LIB_OBJS += serial.o
 endif
 
-ifeq ($(NEED_NET), yes)
+ifneq ($(NEED_POSIX_SOCKETS), )
 ifeq ($(TARGET_OS), SunOS)
 LIBS += -lsocket
 endif
 endif
 
-ifeq ($(NEED_PCI), yes)
+ifneq ($(NEED_LIBPCI), )
 CHECK_LIBPCI = yes
 FEATURE_CFLAGS += -D'NEED_PCI=1'
 FEATURE_CFLAGS += $(call debug_shell,grep -q "OLD_PCI_GET_DEV := yes" .libdeps && printf "%s" "-D'OLD_PCI_GET_DEV=1'")
@@ -807,13 +807,13 @@ endif
 endif
 endif
 
-ifeq ($(NEED_USB), yes)
+ifneq ($(NEED_LIBUSB0), )
 CHECK_LIBUSB0 = yes
-FEATURE_CFLAGS += -D'NEED_USB=1'
+FEATURE_CFLAGS += -D'NEED_LIBUSB0=1'
 USBLIBS := $(call debug_shell,[ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ; $(PKG_CONFIG) --libs libusb || printf "%s" "-lusb")
 endif
 
-ifeq ($(NEED_LIBUSB1), yes)
+ifneq ($(NEED_LIBUSB1), )
 CHECK_LIBUSB1 = yes
 FEATURE_CFLAGS += -D'NEED_LIBUSB1=1'
 # FreeBSD and DragonflyBSD use a reimplementation of libusb-1.0 that is simply called libusb
@@ -970,7 +970,6 @@ int main(int argc, char **argv)
 endef
 export LIBUSB0_TEST
 
-
 define LIBUSB1_TEST
 #include <stddef.h>
 #include <libusb.h>
@@ -992,6 +991,7 @@ ifeq ($(CHECK_LIBPCI), yes)
 	@printf "\nexec: %s\n" "$(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o" >>$(BUILD_DETAILS_FILE)
 	@{ { { { { $(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o >&2 && \
 		echo "found." || { echo "not found."; echo;			\
+		echo "The following features require libpci: $(NEED_LIBPCI).";	\
 		echo "Please install libpci headers."; \
 		echo "See README for more information."; echo;			\
 		rm -f .test.c .test.o; exit 1; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
@@ -1009,6 +1009,7 @@ ifeq ($(CHECK_LIBPCI), yes)
 		{ printf "\nexec: %s\n" "$(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) $(PCILIBS) -lz" >>$(BUILD_DETAILS_FILE) ; \
 		$(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) $(PCILIBS) -lz >&2 && \
 		echo "yes." && echo "NEEDLIBZ := yes" > .libdeps } || { echo "no."; echo;	\
+		echo "The following features require libpci: $(NEED_LIBPCI).";			\
 		echo "Please install libpci (package pciutils) and/or libz.";			\
 		echo "See README for more information."; echo;				\
 		rm -f .test.c .test.o .test$(EXEC_SUFFIX); exit 1; }; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
@@ -1020,6 +1021,7 @@ ifeq ($(CHECK_LIBUSB0), yes)
 	@printf "\nexec: %s\n" "$(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o" >>$(BUILD_DETAILS_FILE)
 	@{ { { { { $(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o >&2 && \
 		echo "found." || { echo "not found."; echo;				\
+		echo "The following features require libusb-0.1/libusb-compat: $(NEED_LIBUSB0)."; \
 		echo "Please install libusb-0.1 headers or libusb-compat headers.";	\
 		echo "See README for more information."; echo;				\
 		rm -f .test.c .test.o; exit 1; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
@@ -1027,6 +1029,7 @@ ifeq ($(CHECK_LIBUSB0), yes)
 	@printf "\nexec: %s\n" "$(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) $(USBLIBS)" >>$(BUILD_DETAILS_FILE)
 	@{ { { { { $(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) $(USBLIBS) >&2 && \
 		echo "yes." || { echo "no.";						\
+		echo "The following features require libusb-0.1/libusb-compat: $(NEED_LIBUSB0)."; \
 		echo "Please install libusb-0.1 or libusb-compat.";			\
 		echo "See README for more information."; echo;				\
 		rm -f .test.c .test.o .test$(EXEC_SUFFIX); exit 1; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
@@ -1038,6 +1041,7 @@ ifeq ($(CHECK_LIBUSB1), yes)
 	@printf "\nexec: %s\n" "$(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o" >>$(BUILD_DETAILS_FILE)
 	@{ { { { { $(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o >&2 && \
 		echo "found." || { echo "not found."; echo;				\
+		echo "The following features require libusb-1.0: $(NEED_LIBUSB1).";	\
 		echo "Please install libusb-1.0 headers.";	\
 		echo "See README for more information."; echo;				\
 		rm -f .test.c .test.o; exit 1; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
@@ -1045,6 +1049,7 @@ ifeq ($(CHECK_LIBUSB1), yes)
 	@printf "\nexec: %s\n" "$(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) $(USB1LIBS)" >>$(BUILD_DETAILS_FILE)
 	@{ { { { { $(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) $(USB1LIBS) >&2 && \
 		echo "yes." || { echo "no.";						\
+		echo "The following features require libusb-1.0: $(NEED_LIBUSB1).";	\
 		echo "Please install libusb-1.0.";			\
 		echo "See README for more information."; echo;				\
 		rm -f .test.c .test.o .test$(EXEC_SUFFIX); exit 1; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
@@ -1127,7 +1132,7 @@ export LINUX_I2C_TEST
 
 features: compiler
 	@echo "FEATURES := yes" > .features.tmp
-ifeq ($(NEED_FTDI), yes)
+ifneq ($(NEED_LIBFTDI), )
 	@printf "Checking for FTDI support... " | tee -a $(BUILD_DETAILS_FILE)
 	@echo "$$FTDI_TEST" > .featuretest.c
 	@printf "\nexec: %s\n" "$(CC) $(CPPFLAGS) $(CFLAGS) $(FTDI_INCLUDES) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) $(FTDILIBS) $(LIBS)" >>$(BUILD_DETAILS_FILE)
@@ -1152,7 +1157,7 @@ ifeq ($(CONFIG_LINUX_SPI), yes)
 		( echo "no."; echo "LINUX_SPI_SUPPORT := no" >> .features.tmp ) } \
 		2>>$(BUILD_DETAILS_FILE) | tee -a $(BUILD_DETAILS_FILE)
 endif
-ifeq ($(NEED_LINUX_I2C), yes)
+ifneq ($(NEED_LINUX_I2C), )
 	@printf "Checking if Linux I2C headers are present... " | tee -a $(BUILD_DETAILS_FILE)
 	@echo "$$LINUX_I2C_TEST" > .featuretest.c
 	@printf "\nexec: %s\n" "$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX)" >>$(BUILD_DETAILS_FILE)
