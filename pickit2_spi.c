@@ -95,9 +95,8 @@ static usb_dev_handle *pickit2_handle;
 #define SCR_VDD_OFF             0xFE
 #define SCR_VDD_ON              0xFF
 
-/* Copied from dediprog.c */
-/* Might be useful for other USB devices as well. static for now. */
-/* device parameter allows user to specify one device of multiple installed */
+/* Might be useful for other USB devices as well. static for now.
+ * device parameter allows user to specify one device of multiple installed */
 static struct usb_device *get_device_by_vid_pid(uint16_t vid, uint16_t pid, unsigned int device)
 {
 	struct usb_bus *bus;

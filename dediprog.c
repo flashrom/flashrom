@@ -26,25 +26,28 @@
 #include <string.h>
 #include <limits.h>
 #include <errno.h>
-
-#if IS_WINDOWS
-#include <lusb0_usb.h>
-#else
-#include <usb.h>
-#endif
-
+#include <libusb.h>
 #include "flash.h"
 #include "chipdrivers.h"
 #include "programmer.h"
 #include "spi.h"
 
+/* LIBUSB_CALL ensures the right calling conventions on libusb callbacks.
+ * However, the macro is not defined everywhere. m(
+ */
+#ifndef LIBUSB_CALL
+#define LIBUSB_CALL
+#endif
+
 #define FIRMWARE_VERSION(x,y,z) ((x << 16) | (y << 8) | z)
 #define DEFAULT_TIMEOUT 3000
-#define REQTYPE_OTHER_OUT (USB_ENDPOINT_OUT | USB_TYPE_VENDOR | USB_RECIP_OTHER)	/* 0x43 */
-#define REQTYPE_OTHER_IN (USB_ENDPOINT_IN | USB_TYPE_VENDOR | USB_RECIP_OTHER)		/* 0xC3 */
-#define REQTYPE_EP_OUT (USB_ENDPOINT_OUT | USB_TYPE_VENDOR | USB_RECIP_ENDPOINT)	/* 0x42 */
-#define REQTYPE_EP_IN (USB_ENDPOINT_IN | USB_TYPE_VENDOR | USB_RECIP_ENDPOINT)		/* 0xC2 */
-static usb_dev_handle *dediprog_handle;
+#define DEDIPROG_ASYNC_TRANSFERS 8 /* at most 8 asynchronous transfers */
+#define REQTYPE_OTHER_OUT (LIBUSB_ENDPOINT_IN | LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_RECIPIENT_OTHER)	/* 0x43 */
+#define REQTYPE_OTHER_IN (LIBUSB_ENDPOINT_IN | LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_RECIPIENT_OTHER)	/* 0xC3 */
+#define REQTYPE_EP_OUT (LIBUSB_ENDPOINT_OUT | LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_RECIPIENT_ENDPOINT)	/* 0x42 */
+#define REQTYPE_EP_IN (LIBUSB_ENDPOINT_IN | LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_RECIPIENT_ENDPOINT)	/* 0xC2 */
+struct libusb_context *usb_ctx;
+static libusb_device_handle *dediprog_handle;
 static int dediprog_in_endpoint;
 static int dediprog_out_endpoint;
 
@@ -144,6 +147,22 @@ enum dediprog_standalone_mode {
 static int dediprog_firmwareversion = FIRMWARE_VERSION(0, 0, 0);
 enum dediprog_devtype dediprog_devicetype = DEV_UNKNOWN;
 
+#if defined(LIBUSB_MAJOR) && defined(LIBUSB_MINOR) && defined(LIBUSB_MICRO) && \
+    LIBUSB_MAJOR <= 1 && LIBUSB_MINOR == 0 && LIBUSB_MICRO < 9
+/* Quick and dirty replacement for missing libusb_error_name in libusb < 1.0.9 */
+const char * LIBUSB_CALL libusb_error_name(int error_code)
+{
+	if (error_code >= INT16_MIN && error_code <= INT16_MAX) {
+		/* 18 chars for text, rest for number (16 b should be enough), sign, nullbyte. */
+		static char my_libusb_error[18 + 5 + 2];
+		sprintf(my_libusb_error, "libusb error code %i", error_code);
+		return my_libusb_error;
+	} else {
+		return "UNKNOWN";
+	}
+}
+#endif
+
 /* Returns true if firmware (and thus hardware) supports the "new" protocol */
 static bool is_new_prot(void)
 {
@@ -157,35 +176,93 @@ static bool is_new_prot(void)
 	}
 }
 
+struct dediprog_transfer_status {
+	int error; /* OK if 0, ERROR else */
+	unsigned int queued_idx;
+	unsigned int finished_idx;
+};
+
+static void LIBUSB_CALL dediprog_bulk_read_cb(struct libusb_transfer *const transfer)
+{
+	struct dediprog_transfer_status *const status = (struct dediprog_transfer_status *)transfer->user_data;
+	if (transfer->status != LIBUSB_TRANSFER_COMPLETED) {
+		status->error = 1;
+		msg_perr("SPI bulk read failed!\n");
+	}
+	++status->finished_idx;
+}
+
+static int dediprog_bulk_read_poll(const struct dediprog_transfer_status *const status, const int finish)
+{
+	if (status->finished_idx >= status->queued_idx)
+		return 0;
+
+	do {
+		struct timeval timeout = { 10, 0 };
+		const int ret = libusb_handle_events_timeout(usb_ctx, &timeout);
+		if (ret < 0) {
+			msg_perr("Polling read events failed: %i %s!\n", ret, libusb_error_name(ret));
+			return 1;
+		}
+	} while (finish && (status->finished_idx < status->queued_idx));
+	return 0;
+}
+
 static int dediprog_read(enum dediprog_cmds cmd, unsigned int value, unsigned int idx, uint8_t *bytes, size_t size)
 {
-	return usb_control_msg(dediprog_handle, REQTYPE_EP_IN, cmd, value, idx,
-			       (char *)bytes, size, DEFAULT_TIMEOUT);
+	return libusb_control_transfer(dediprog_handle, REQTYPE_EP_IN, cmd, value, idx,
+				      (unsigned char *)bytes, size, DEFAULT_TIMEOUT);
 }
 
 static int dediprog_write(enum dediprog_cmds cmd, unsigned int value, unsigned int idx, const uint8_t *bytes, size_t size)
 {
-	return usb_control_msg(dediprog_handle, REQTYPE_EP_OUT, cmd, value, idx,
-			       (char *)bytes, size, DEFAULT_TIMEOUT);
+	return libusb_control_transfer(dediprog_handle, REQTYPE_EP_OUT, cmd, value, idx,
+				      (unsigned char *)bytes, size, DEFAULT_TIMEOUT);
 }
 
-/* Might be useful for other USB devices as well. static for now. */
-/* device parameter allows user to specify one device of multiple installed */
-static struct usb_device *get_device_by_vid_pid(uint16_t vid, uint16_t pid, unsigned int device)
+
+/* Might be useful for other USB devices as well. static for now.
+ * num parameter allows user to specify one device of multiple installed */
+static struct libusb_device_handle *get_device_by_vid_pid_number(uint16_t vid, uint16_t pid, unsigned int num)
 {
-	struct usb_bus *bus;
-	struct usb_device *dev;
+	struct libusb_device **list;
+	ssize_t count = libusb_get_device_list(usb_ctx, &list);
+	if (count < 0) {
+		msg_perr("Getting the USB device list failed (%s)!\n", libusb_error_name(count));
+		return NULL;
+	}
 
-	for (bus = usb_get_busses(); bus; bus = bus->next)
-		for (dev = bus->devices; dev; dev = dev->next)
-			if ((dev->descriptor.idVendor == vid) &&
-			    (dev->descriptor.idProduct == pid)) {
-				if (device == 0)
-					return dev;
-				device--;
+	struct libusb_device_handle *handle = NULL;
+	ssize_t i = 0;
+	for (i = 0; i < count; i++) {
+		struct libusb_device *dev = list[i];
+		struct libusb_device_descriptor desc;
+		int err = libusb_get_device_descriptor(dev, &desc);
+		if (err != 0) {
+			msg_perr("Reading the USB device descriptor failed (%s)!\n", libusb_error_name(err));
+			libusb_free_device_list(list, 1);
+			return NULL;
+		}
+		if ((desc.idVendor == vid) && (desc.idProduct == pid)) {
+			msg_pdbg("Found USB device %04"PRIx16":%04"PRIx16" at address %d-%d.\n",
+				 desc.idVendor, desc.idProduct,
+				 libusb_get_bus_number(dev), libusb_get_device_address(dev));
+			if (num == 0) {
+				err = libusb_open(dev, &handle);
+				if (err != 0) {
+					msg_perr("Opening the USB device failed (%s)!\n",
+						 libusb_error_name(err));
+					libusb_free_device_list(list, 1);
+					return NULL;
+				}
+				break;
 			}
+			num--;
+		}
+	}
+	libusb_free_device_list(list, 1);
 
-	return NULL;
+	return handle;
 }
 
 /* This function sets the GPIOs connected to the LEDs as well as IO1-IO4. */
@@ -219,7 +296,7 @@ static int dediprog_set_leds(int leds)
 	}
 
 	if (ret != 0x0) {
-		msg_perr("Command Set LED 0x%x failed (%s)!\n", leds, usb_strerror());
+		msg_perr("Command Set LED 0x%x failed (%s)!\n", leds, libusb_error_name(ret));
 		return 1;
 	}
 
@@ -332,9 +409,15 @@ static void fill_rw_cmd_payload(uint8_t *data_packet, unsigned int count, uint8_
  */
 static int dediprog_spi_bulk_read(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len)
 {
+	int err = 1;
+
 	/* chunksize must be 512, other sizes will NOT work at all. */
 	const unsigned int chunksize = 512;
 	const unsigned int count = len / chunksize;
+
+	struct dediprog_transfer_status status = { 0, 0, 0 };
+	struct libusb_transfer *transfers[DEDIPROG_ASYNC_TRANSFERS] = { NULL, };
+	struct libusb_transfer *transfer;
 
 	if ((start % chunksize) || (len % chunksize)) {
 		msg_perr("%s: Unaligned start=%i, len=%i! Please report a bug at flashrom@flashrom.org\n",
@@ -352,23 +435,59 @@ static int dediprog_spi_bulk_read(struct flashctx *flash, uint8_t *buf, unsigned
 
 	int ret = dediprog_write(CMD_READ, value, idx, data_packet, sizeof(data_packet));
 	if (ret != sizeof(data_packet)) {
-		msg_perr("Command Read SPI Bulk failed, %i %s!\n", ret, usb_strerror());
+		msg_perr("Command Read SPI Bulk failed, %i %s!\n", ret, libusb_error_name(ret));
 		return 1;
 	}
 
-	unsigned int i;
-	for (i = 0; i < count; i++) {
-		ret = usb_bulk_read(dediprog_handle, 0x80 | dediprog_in_endpoint,
-				    (char *)buf + i * chunksize, chunksize,
-				    DEFAULT_TIMEOUT);
-		if (ret != chunksize) {
-			msg_perr("SPI bulk read %i failed, expected %i, got %i %s!\n",
-				 i, chunksize, ret, usb_strerror());
-			return 1;
-		}
-	}
+	/*
+	 * Ring buffer of bulk transfers.
+	 * Poll until at least one transfer is ready,
+	 * schedule next transfers until buffer is full.
+	 */
 
-	return 0;
+	/* Allocate bulk transfers. */
+	unsigned int i;
+	for (i = 0; i < min(DEDIPROG_ASYNC_TRANSFERS, count); ++i) {
+		transfers[i] = libusb_alloc_transfer(0);
+		if (!transfers[i]) {
+			msg_perr("Allocating libusb transfer %i failed: %s!\n", i, libusb_error_name(ret));
+			goto err_free;
+ 		}
+ 	}
+
+	/* Now transfer requested chunks using libusb's asynchronous interface. */
+	while (!status.error && (status.queued_idx < count)) {
+		while ((status.queued_idx - status.finished_idx) < DEDIPROG_ASYNC_TRANSFERS) {
+			transfer = transfers[status.queued_idx % DEDIPROG_ASYNC_TRANSFERS];
+			libusb_fill_bulk_transfer(transfer, dediprog_handle, 0x80 | dediprog_in_endpoint,
+					(unsigned char *)buf + status.queued_idx * chunksize, chunksize,
+					dediprog_bulk_read_cb, &status, DEFAULT_TIMEOUT);
+			transfer->flags |= LIBUSB_TRANSFER_SHORT_NOT_OK;
+			ret = libusb_submit_transfer(transfer);
+			if (ret < 0) {
+				msg_perr("Submitting SPI bulk read %i failed: %s!\n",
+					 status.queued_idx, libusb_error_name(ret));
+				goto err_free;
+			}
+			++status.queued_idx;
+		}
+		if (dediprog_bulk_read_poll(&status, 0))
+			goto err_free;
+	}
+	/* Wait for transfers to finish. */
+	if (dediprog_bulk_read_poll(&status, 1))
+		goto err_free;
+	/* Check if everything has been transmitted. */
+	if ((status.finished_idx < count) || status.error)
+		goto err_free;
+
+	err = 0;
+
+err_free:
+	dediprog_bulk_read_poll(&status, 1);
+	for (i = 0; i < DEDIPROG_ASYNC_TRANSFERS; ++i)
+		if (transfers[i]) libusb_free_transfer(transfers[i]);
+	return err;
 }
 
 static int dediprog_spi_read(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len)
@@ -455,19 +574,20 @@ static int dediprog_spi_bulk_write(struct flashctx *flash, const uint8_t *buf, u
 	fill_rw_cmd_payload(data_packet, count, dedi_spi_cmd, &value, &idx, start);
 	int ret = dediprog_write(CMD_WRITE, value, idx, data_packet, sizeof(data_packet));
 	if (ret != sizeof(data_packet)) {
-		msg_perr("Command Write SPI Bulk failed, %i %s!\n", ret,
-			 usb_strerror());
+		msg_perr("Command Write SPI Bulk failed, %s!\n", libusb_error_name(ret));
 		return 1;
 	}
 
 	unsigned int i;
 	for (i = 0; i < count; i++) {
-		char usbbuf[512];
+		unsigned char usbbuf[512];
 		memcpy(usbbuf, buf + i * chunksize, chunksize);
 		memset(usbbuf + chunksize, 0xff, sizeof(usbbuf) - chunksize); // fill up with 0xFF
-		ret = usb_bulk_write(dediprog_handle, dediprog_out_endpoint, usbbuf, 512, DEFAULT_TIMEOUT);
-		if (ret != 512) {
-			msg_perr("SPI bulk write failed, expected %i, got %i %s!\n", 512, ret, usb_strerror());
+		int transferred;
+		ret = libusb_bulk_transfer(dediprog_handle, dediprog_out_endpoint, usbbuf, 512, &transferred,
+					   DEFAULT_TIMEOUT);
+		if ((ret < 0) || (transferred != 512)) {
+			msg_perr("SPI bulk write failed, expected %i, got %s!\n", 512, libusb_error_name(ret));
 			return 1;
 		}
 	}
@@ -568,7 +688,7 @@ static int dediprog_spi_send_command(struct flashctx *flash,
 	ret = dediprog_write(CMD_TRANSCEIVE, value, idx, writearr, writecnt);
 	if (ret != writecnt) {
 		msg_perr("Send SPI failed, expected %i, got %i %s!\n",
-			 writecnt, ret, usb_strerror());
+			 writecnt, ret, libusb_error_name(ret));
 		return 1;
 	}
 	if (readcnt == 0) // If we don't require a response, we are done here
@@ -584,7 +704,7 @@ static int dediprog_spi_send_command(struct flashctx *flash,
 	}
 	ret = dediprog_read(CMD_TRANSCEIVE, value, idx, readarr, readcnt);
 	if (ret != readcnt) {
-		msg_perr("Receive SPI failed, expected %i, got %i %s!\n", readcnt, ret, usb_strerror());
+		msg_perr("Receive SPI failed, expected %i, got %i %s!\n", readcnt, ret, libusb_error_name(ret));
 		return 1;
 	}
 	return 0;
@@ -640,11 +760,11 @@ static int dediprog_check_devicestring(void)
  * than V6.0.0. Newer programmers (including all SF600s) do not support it. */
 static int dediprog_set_voltage(void)
 {
-	char buf[1] = {0};
-	int ret = usb_control_msg(dediprog_handle, REQTYPE_OTHER_IN, CMD_SET_VOLTAGE, 0x0, 0x0,
+	unsigned char buf[1] = {0};
+	int ret = libusb_control_transfer(dediprog_handle, REQTYPE_OTHER_IN, CMD_SET_VOLTAGE, 0x0, 0x0,
 			      buf, 0x1, DEFAULT_TIMEOUT);
 	if (ret < 0) {
-		msg_perr("Command Set Voltage failed (%s)!\n", usb_strerror());
+		msg_perr("Command Set Voltage failed (%s)!\n", libusb_error_name(ret));
 		return 1;
 	}
 	if ((ret != 1) || (buf[0] != 0x6f)) {
@@ -665,7 +785,7 @@ static int dediprog_standalone_mode(void)
 	msg_pdbg2("Disabling standalone mode.\n");
 	ret = dediprog_write(CMD_SET_STANDALONE, LEAVE_STANDALONE_MODE, 0, NULL, 0);
 	if (ret) {
-		msg_perr("Failed to disable standalone mode: %s\n", usb_strerror());
+		msg_perr("Failed to disable standalone mode: %s\n", libusb_error_name(ret));
 		return 1;
 	}
 
@@ -685,7 +805,7 @@ static int dediprog_command_b(void)
 	ret = usb_control_msg(dediprog_handle, REQTYPE_OTHER_IN, 0x7, 0x0, 0xef00,
 			      buf, 0x3, DEFAULT_TIMEOUT);
 	if (ret < 0) {
-		msg_perr("Command B failed (%s)!\n", usb_strerror());
+		msg_perr("Command B failed (%s)!\n", libusb_error_name(ret));
 		return 1;
 	}
 	if ((ret != 0x3) || (buf[0] != 0xff) || (buf[1] != 0xff) ||
@@ -700,10 +820,9 @@ static int dediprog_command_b(void)
 
 static int set_target_flash(enum dediprog_target target)
 {
-	int ret = usb_control_msg(dediprog_handle, REQTYPE_EP_OUT, CMD_SET_TARGET, target, 0,
-			          NULL, 0, DEFAULT_TIMEOUT);
+	int ret = dediprog_write(CMD_SET_TARGET, target, 0, NULL, 0);
 	if (ret != 0) {
-		msg_perr("set_target_flash failed (%s)!\n", usb_strerror());
+		msg_perr("set_target_flash failed (%s)!\n", libusb_error_name(ret));
 		return 1;
 	}
 	return 0;
@@ -717,7 +836,7 @@ static bool dediprog_get_button(void)
 	int ret = usb_control_msg(dediprog_handle, REQTYPE_EP_IN, CMD_GET_BUTTON, 0, 0,
 			      buf, 0x1, DEFAULT_TIMEOUT);
 	if (ret != 0) {
-		msg_perr("Could not get button state (%s)!\n", usb_strerror());
+		msg_perr("Could not get button state (%s)!\n", libusb_error_name(ret));
 		return 1;
 	}
 	return buf[0] != 1;
@@ -792,20 +911,18 @@ static int dediprog_shutdown(void *data)
 	if (dediprog_set_spi_voltage(0x0))
 		return 1;
 
-	if (usb_release_interface(dediprog_handle, 0)) {
+	if (libusb_release_interface(dediprog_handle, 0)) {
 		msg_perr("Could not release USB interface!\n");
 		return 1;
 	}
-	if (usb_close(dediprog_handle)) {
-		msg_perr("Could not close USB device!\n");
-		return 1;
-	}
+	libusb_close(dediprog_handle);
+	libusb_exit(usb_ctx);
+
 	return 0;
 }
 
 int dediprog_init(void)
 {
-	struct usb_device *dev;
 	char *voltage, *device, *spispeed, *target_str;
 	int spispeed_idx = 1;
 	int millivolt = 3500;
@@ -887,35 +1004,29 @@ int dediprog_init(void)
 	free(target_str);
 
 	/* Here comes the USB stuff. */
-	usb_init();
-	usb_find_busses();
-	usb_find_devices();
-	dev = get_device_by_vid_pid(0x0483, 0xdada, (unsigned int) usedevice);
-	if (!dev) {
-		msg_perr("Could not find a Dediprog SF100 on USB!\n");
+	libusb_init(&usb_ctx);
+	if (!usb_ctx) {
+		msg_perr("Could not initialize libusb!\n");
 		return 1;
 	}
-	msg_pdbg("Found USB device (%04x:%04x).\n",
-		 dev->descriptor.idVendor, dev->descriptor.idProduct);
-	dediprog_handle = usb_open(dev);
+	dediprog_handle = get_device_by_vid_pid_number(0x0483, 0xdada, (unsigned int) usedevice);
 	if (!dediprog_handle) {
-		msg_perr("Could not find a Dediprog programmer on USB: %s\n", usb_strerror());
+		msg_perr("Could not find a Dediprog programmer on USB.\n");
+		libusb_exit(usb_ctx);
 		return 1;
 	}
-	ret = usb_set_configuration(dediprog_handle, 1);
-	if (ret < 0) {
-		msg_perr("Could not set USB device configuration: %i %s\n",
-			 ret, usb_strerror());
-		if (usb_close(dediprog_handle))
-			msg_perr("Could not close USB device!\n");
+	ret = libusb_set_configuration(dediprog_handle, 1);
+	if (ret != 0) {
+		msg_perr("Could not set USB device configuration: %i %s\n", ret, libusb_error_name(ret));
+		libusb_close(dediprog_handle);
+		libusb_exit(usb_ctx);
 		return 1;
 	}
-	ret = usb_claim_interface(dediprog_handle, 0);
+	ret = libusb_claim_interface(dediprog_handle, 0);
 	if (ret < 0) {
-		msg_perr("Could not claim USB device interface %i: %i %s\n",
-			 0, ret, usb_strerror());
-		if (usb_close(dediprog_handle))
-			msg_perr("Could not close USB device!\n");
+		msg_perr("Could not claim USB device interface %i: %i %s\n", 0, ret, libusb_error_name(ret));
+		libusb_close(dediprog_handle);
+		libusb_exit(usb_ctx);
 		return 1;
 	}
 
@@ -959,4 +1070,3 @@ int dediprog_init(void)
 
 	return 0;
 }
-
