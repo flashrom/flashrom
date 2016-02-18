@@ -45,7 +45,14 @@
 #define REQTYPE_EP_OUT (USB_ENDPOINT_OUT | USB_TYPE_VENDOR | USB_RECIP_ENDPOINT)	/* 0x42 */
 #define REQTYPE_EP_IN (USB_ENDPOINT_IN | USB_TYPE_VENDOR | USB_RECIP_ENDPOINT)		/* 0xC2 */
 static usb_dev_handle *dediprog_handle;
-static int dediprog_endpoint;
+static int dediprog_in_endpoint;
+static int dediprog_out_endpoint;
+
+enum dediprog_devtype {
+	DEV_UNKNOWN		= 0,
+	DEV_SF100		= 100,
+	DEV_SF600		= 600,
+};
 
 enum dediprog_leds {
 	LED_INVALID		= -1,
@@ -127,16 +134,26 @@ enum dediprog_writemode {
 	WRITE_MODE_4B_ADDR_256B_PAGE_PGM_FLAGS	= 12,
 };
 
+enum dediprog_standalone_mode {
+	ENTER_STANDALONE_MODE = 0,
+	LEAVE_STANDALONE_MODE = 1,
+};
+
 
 static int dediprog_firmwareversion = FIRMWARE_VERSION(0, 0, 0);
+enum dediprog_devtype dediprog_devicetype = DEV_UNKNOWN;
 
 /* Returns true if firmware (and thus hardware) supports the "new" protocol */
 static bool is_new_prot(void)
 {
-	/* if (SF100) */
-	return dediprog_firmwareversion >= FIRMWARE_VERSION(5, 5, 0);
-	/* else if (SF600)
-	return dediprog_firmwareversion >= FIRMWARE_VERSION(6, 9, 0); */
+	switch (dediprog_devicetype) {
+	case DEV_SF100:
+		return dediprog_firmwareversion >= FIRMWARE_VERSION(5, 5, 0);
+	case DEV_SF600:
+		return dediprog_firmwareversion >= FIRMWARE_VERSION(6, 9, 0);
+	default:
+		return 0;
+	}
 }
 
 static int dediprog_read(enum dediprog_cmds cmd, unsigned int value, unsigned int idx, uint8_t *bytes, size_t size)
@@ -340,7 +357,7 @@ static int dediprog_spi_bulk_read(struct flashctx *flash, uint8_t *buf, unsigned
 
 	unsigned int i;
 	for (i = 0; i < count; i++) {
-		ret = usb_bulk_read(dediprog_handle, 0x80 | dediprog_endpoint,
+		ret = usb_bulk_read(dediprog_handle, 0x80 | dediprog_in_endpoint,
 				    (char *)buf + i * chunksize, chunksize,
 				    DEFAULT_TIMEOUT);
 		if (ret != chunksize) {
@@ -447,7 +464,7 @@ static int dediprog_spi_bulk_write(struct flashctx *flash, const uint8_t *buf, u
 		char usbbuf[512];
 		memcpy(usbbuf, buf + i * chunksize, chunksize);
 		memset(usbbuf + chunksize, 0xff, sizeof(usbbuf) - chunksize); // fill up with 0xFF
-		ret = usb_bulk_write(dediprog_handle, dediprog_endpoint, usbbuf, 512, DEFAULT_TIMEOUT);
+		ret = usb_bulk_write(dediprog_handle, dediprog_out_endpoint, usbbuf, 512, DEFAULT_TIMEOUT);
 		if (ret != 512) {
 			msg_perr("SPI bulk write failed, expected %i, got %i %s!\n", 512, ret, usb_strerror());
 			return 1;
@@ -575,7 +592,6 @@ static int dediprog_spi_send_command(struct flashctx *flash,
 static int dediprog_check_devicestring(void)
 {
 	int ret;
-	int fw[3];
 	char buf[0x11];
 
 	/* Command Receive Device String. */
@@ -586,16 +602,24 @@ static int dediprog_check_devicestring(void)
 	}
 	buf[0x10] = '\0';
 	msg_pdbg("Found a %s\n", buf);
-	if (memcmp(buf, "SF100", 0x5) != 0) {
-		msg_perr("Device not a SF100!\n");
+	if (memcmp(buf, "SF100", 0x5) == 0)
+		dediprog_devicetype = DEV_SF100;
+	else if (memcmp(buf, "SF600", 0x5) == 0)
+		dediprog_devicetype = DEV_SF600;
+	else {
+		msg_perr("Device not a SF100 or SF600!\n");
 		return 1;
 	}
-	if (sscanf(buf, "SF100 V:%d.%d.%d ", &fw[0], &fw[1], &fw[2]) != 3) {
+
+	int sfnum;
+	int fw[3];
+	if (sscanf(buf, "SF%d V:%d.%d.%d ", &sfnum, &fw[0], &fw[1], &fw[2]) != 4 ||
+	    sfnum != dediprog_devicetype) {
 		msg_perr("Unexpected firmware version string '%s'\n", buf);
 		return 1;
 	}
 	/* Only these major versions were tested. */
-	if (fw[0] < 2 || fw[0] > 6) {
+	if (fw[0] < 2 || fw[0] > 7) {
 		msg_perr("Unexpected firmware version %d.%d.%d!\n", fw[0], fw[1], fw[2]);
 		return 1;
 	}
@@ -620,6 +644,23 @@ static int dediprog_device_init(void)
 		msg_perr("Unexpected response to init!\n");
 		return 1;
 	}
+	return 0;
+}
+
+static int dediprog_standalone_mode(void)
+{
+	int ret;
+
+	if (dediprog_devicetype != DEV_SF600)
+		return 0;
+
+	msg_pdbg2("Disabling standalone mode.\n");
+	ret = dediprog_write(CMD_SET_STANDALONE, LEAVE_STANDALONE_MODE, 0, NULL, 0);
+	if (ret) {
+		msg_perr("Failed to disable standalone mode: %s\n", usb_strerror());
+		return 1;
+	}
+
 	return 0;
 }
 
@@ -737,6 +778,7 @@ static const struct spi_master spi_master_dediprog = {
 static int dediprog_shutdown(void *data)
 {
 	dediprog_firmwareversion = FIRMWARE_VERSION(0, 0, 0);
+	dediprog_devicetype = DEV_UNKNOWN;
 
 	/* URB 28. Command Set SPI Voltage to 0. */
 	if (dediprog_set_spi_voltage(0x0))
@@ -849,7 +891,7 @@ int dediprog_init(void)
 		 dev->descriptor.idVendor, dev->descriptor.idProduct);
 	dediprog_handle = usb_open(dev);
 	if (!dediprog_handle) {
-		msg_perr("Could not open USB device: %s\n", usb_strerror());
+		msg_perr("Could not find a Dediprog programmer on USB: %s\n", usb_strerror());
 		return 1;
 	}
 	ret = usb_set_configuration(dediprog_handle, 1);
@@ -868,7 +910,6 @@ int dediprog_init(void)
 			msg_perr("Could not close USB device!\n");
 		return 1;
 	}
-	dediprog_endpoint = 2;
 
 	if (register_shutdown(dediprog_shutdown, NULL))
 		return 1;
@@ -878,6 +919,13 @@ int dediprog_init(void)
 		return 1;
 	if (dediprog_check_devicestring())
 		return 1;
+
+	/* SF100 only has 1 endpoint for in/out, SF600 uses two separate endpoints instead. */
+	dediprog_in_endpoint = 2;
+	if (dediprog_devicetype == DEV_SF100)
+		dediprog_out_endpoint = 2;
+	else
+		dediprog_out_endpoint = 1;
 
 	/* Set all possible LEDs as soon as possible to indicate activity.
 	 * Because knowing the firmware version is required to set the LEDs correctly we need to this after
@@ -891,6 +939,9 @@ int dediprog_init(void)
 		dediprog_set_leds(LED_ERROR);
 		return 1;
 	}
+
+	if (dediprog_standalone_mode())
+		return 1;
 
 	if (register_spi_master(&spi_master_dediprog) || dediprog_set_leds(LED_NONE))
 		return 1;
