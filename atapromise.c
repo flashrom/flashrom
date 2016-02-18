@@ -79,38 +79,35 @@ void *atapromise_map(const char *descr, uintptr_t phys_addr, size_t len)
 
 static void atapromise_limit_chip(struct flashchip *chip)
 {
-	static uint32_t last_model_id = 0;
 	unsigned int i, size;
-
-	if (chip->model_id == last_model_id)
-		return;
+	unsigned int usable_erasers = 0;
 
 	size = chip->total_size * 1024;
-	if (size > rom_size) {
-		/* Undefine all block_erasers that don't operate on the whole chip,
-		 * and adjust the eraseblock size of the one that does.
-		 */
-		for (i = 0; i < NUM_ERASEFUNCTIONS; ++i) {
-			if (chip->block_erasers[i].eraseblocks[0].size != size) {
-				chip->block_erasers[i].eraseblocks[0].count = 0;
-				chip->block_erasers[i].block_erase = NULL;
-			} else {
-				chip->block_erasers[i].eraseblocks[0].size = rom_size;
-				break;
-			}
-		}
 
-		if (i != NUM_ERASEFUNCTIONS) {
-			chip->total_size = rom_size / 1024;
-			if (chip->page_size > rom_size)
-				chip->page_size = rom_size;
+	/* Chip is small enough or already limited. */
+	if (size <= rom_size)
+		return;
+
+	/* Undefine all block_erasers that don't operate on the whole chip,
+	 * and adjust the eraseblock size of those which do.
+	 */
+	for (i = 0; i < NUM_ERASEFUNCTIONS; ++i) {
+		if (chip->block_erasers[i].eraseblocks[0].size != size) {
+			chip->block_erasers[i].eraseblocks[0].count = 0;
+			chip->block_erasers[i].block_erase = NULL;
 		} else {
-			msg_pdbg("Failed to adjust size of chip \"%s\" (%d kB).\n", chip->name,
-				 chip->total_size);
+			chip->block_erasers[i].eraseblocks[0].size = rom_size;
+			usable_erasers++;
 		}
 	}
 
-	last_model_id = chip->model_id;
+	if (usable_erasers) {
+		chip->total_size = rom_size / 1024;
+		if (chip->page_size > rom_size)
+			chip->page_size = rom_size;
+	} else {
+		msg_pdbg("Failed to adjust size of chip \"%s\" (%d kB).\n", chip->name, chip->total_size);
+	}
 }
 
 int atapromise_init(void)
