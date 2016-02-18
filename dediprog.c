@@ -82,6 +82,7 @@ enum dediprog_cmds {
 	CMD_READ_PROG_INFO	= 0x08,
 	CMD_SET_VCC		= 0x09,
 	CMD_SET_STANDALONE	= 0x0A,
+	CMD_SET_VOLTAGE		= 0x0B,	/* Only in firmware older than 6.0.0 */
 	CMD_GET_BUTTON		= 0x11,
 	CMD_GET_UID		= 0x12,
 	CMD_SET_CS		= 0x14,
@@ -628,22 +629,29 @@ static int dediprog_check_devicestring(void)
 	return 0;
 }
 
-static int dediprog_device_init(void)
-{
-	int ret;
-	char buf[0x1];
+/*
+ * This command presumably sets the voltage for the SF100 itself (not the
+ * SPI flash). Only use this command with firmware older than V6.0.0. Newer
+ * (including all SF600s) do not support it.
+ */
 
-	memset(buf, 0, sizeof(buf));
-	ret = usb_control_msg(dediprog_handle, REQTYPE_OTHER_IN, 0x0B, 0x0, 0x0,
+/* This command presumably sets the voltage for the SF100 itself (not the SPI flash).
+ * Only use dediprog_set_voltage on SF100 programmers with firmware older
+ * than V6.0.0. Newer programmers (including all SF600s) do not support it. */
+static int dediprog_set_voltage(void)
+{
+	char buf[1] = {0};
+	int ret = usb_control_msg(dediprog_handle, REQTYPE_OTHER_IN, CMD_SET_VOLTAGE, 0x0, 0x0,
 			      buf, 0x1, DEFAULT_TIMEOUT);
 	if (ret < 0) {
-		msg_perr("Command A failed (%s)!\n", usb_strerror());
+		msg_perr("Command Set Voltage failed (%s)!\n", usb_strerror());
 		return 1;
 	}
-	if ((ret != 0x1) || (buf[0] != 0x6f)) {
+	if ((ret != 1) || (buf[0] != 0x6f)) {
 		msg_perr("Unexpected response to init!\n");
 		return 1;
 	}
+
 	return 0;
 }
 
@@ -914,11 +922,14 @@ int dediprog_init(void)
 	if (register_shutdown(dediprog_shutdown, NULL))
 		return 1;
 
-	/* Perform basic setup. */
-	if (dediprog_device_init())
-		return 1;
-	if (dediprog_check_devicestring())
-		return 1;
+	/* Try reading the devicestring. If that fails and the device is old (FW < 6.0.0, which we can not know)
+	 * then we need to try the "set voltage" command and then attempt to read the devicestring again. */
+	if (dediprog_check_devicestring()) {
+		if (dediprog_set_voltage())
+			return 1;
+		if (dediprog_check_devicestring())
+			return 1;
+	}
 
 	/* SF100 only has 1 endpoint for in/out, SF600 uses two separate endpoints instead. */
 	dediprog_in_endpoint = 2;
