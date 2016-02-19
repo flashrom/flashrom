@@ -67,14 +67,14 @@ CFLAGS += -Werror
 endif
 
 ifdef LIBS_BASE
-CPPFLAGS += -I$(LIBS_BASE)/include
-LDFLAGS += -L$(LIBS_BASE)/lib -Wl,-rpath -Wl,$(LIBS_BASE)/lib
 PKG_CONFIG_LIBDIR ?= $(LIBS_BASE)/lib/pkgconfig
+override CPPFLAGS += -I$(LIBS_BASE)/include
+override LDFLAGS += -L$(LIBS_BASE)/lib -Wl,-rpath -Wl,$(LIBS_BASE)/lib
 endif
 
 ifeq ($(CONFIG_STATIC),yes)
-PKG_CONFIG += --static
-LDFLAGS += -static
+override PKG_CONFIG += --static
+override LDFLAGS += -static
 endif
 
 # Set LC_ALL=C to minimize influences of the locale.
@@ -112,34 +112,34 @@ endif
 override TARGET_OS := $(strip $(call debug_shell,$(CC) $(CPPFLAGS) -E os.h 2>/dev/null | grep -v '^\#' | grep '"' | cut -f 2 -d'"'))
 
 ifeq ($(TARGET_OS), Darwin)
-CPPFLAGS += -I/opt/local/include -I/usr/local/include
-LDFLAGS += -L/opt/local/lib -L/usr/local/lib
+override CPPFLAGS += -I/opt/local/include -I/usr/local/include
+override LDFLAGS += -L/opt/local/lib -L/usr/local/lib
 endif
 
 ifeq ($(TARGET_OS), FreeBSD)
-CPPFLAGS += -I/usr/local/include
-LDFLAGS += -L/usr/local/lib
+override CPPFLAGS += -I/usr/local/include
+override LDFLAGS += -L/usr/local/lib
 endif
 
 ifeq ($(TARGET_OS), OpenBSD)
-CPPFLAGS += -I/usr/local/include
-LDFLAGS += -L/usr/local/lib
+override CPPFLAGS += -I/usr/local/include
+override LDFLAGS += -L/usr/local/lib
 endif
 
 ifeq ($(TARGET_OS), NetBSD)
-CPPFLAGS += -I/usr/pkg/include
-LDFLAGS += -L/usr/pkg/lib
+override CPPFLAGS += -I/usr/pkg/include
+override LDFLAGS += -L/usr/pkg/lib
 endif
 
 ifeq ($(TARGET_OS), DragonFlyBSD)
-CPPFLAGS += -I/usr/local/include
-LDFLAGS += -L/usr/local/lib
+override CPPFLAGS += -I/usr/local/include
+override LDFLAGS += -L/usr/local/lib
 endif
 
 ifeq ($(TARGET_OS), DOS)
 EXEC_SUFFIX := .exe
 # DJGPP has odd uint*_t definitions which cause lots of format string warnings.
-CFLAGS += -Wno-format
+override CFLAGS += -Wno-format
 LIBS += -lgetopt
 # Bus Pirate, Serprog and PonyProg are not supported under DOS (missing serial support).
 ifeq ($(CONFIG_BUSPIRATE_SPI), yes)
@@ -821,11 +821,11 @@ ifeq ($(TARGET_OS),$(filter $(TARGET_OS),FreeBSD DragonFlyBSD))
 USB1LIBS += -lusb
 else
 ifeq ($(TARGET_OS),NetBSD)
-CPPFLAGS += -I/usr/pkg/include/libusb-1.0
+override CPPFLAGS += -I/usr/pkg/include/libusb-1.0
 USB1LIBS += -lusb-1.0
 else
-USB1LIBS += $(call debug_shell,[ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)"; pkg-config --libs libusb-1.0  || printf "%s" "-lusb-1.0")
-CPPFLAGS += $(call debug_shell,[ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)"; pkg-config --cflags-only-I libusb-1.0  || printf "%s" "-I/usr/include/libusb-1.0")
+USB1LIBS += $(call debug_shell,[ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)"; $(PKG_CONFIG) --libs libusb-1.0  || printf "%s" "-lusb-1.0")
+override CPPFLAGS += $(call debug_shell,[ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)"; $(PKG_CONFIG) --cflags-only-I libusb-1.0  || printf "%s" "-I/usr/include/libusb-1.0")
 endif
 endif
 endif
