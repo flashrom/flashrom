@@ -694,6 +694,14 @@ static int dediprog_spi_send_command(struct flashctx *flash,
 	if (readcnt == 0) // If we don't require a response, we are done here
 		return 0;
 
+	/* The specifications do state the possibility to set a timeout for transceive transactions.
+	 * Apparently the "timeout" is a delay, and you can use long delays to accelerate writing - in case you
+	 * can predict the time needed by the previous command or so (untested). In any case, using this
+	 * "feature" to set sane-looking timouts for the read below will completely trash performance with
+	 * SF600 and/or firmwares >= 6.0 while they seem to be benign on SF100 with firmwares <= 5.5.2. *shrug*
+	 *
+	 * The specification also uses only 0 in its examples, so the lesson to learn here:
+	 * "Never trust the description of an interface in the documentation but use the example code and pray."
 	const uint8_t read_timeout = 10 + readcnt/512;
 	if (is_new_prot()) {
 		idx = 0;
@@ -703,6 +711,8 @@ static int dediprog_spi_send_command(struct flashctx *flash,
 		value = min(read_timeout, 0xFF); // Possibly two bytes but we play safe here
 	}
 	ret = dediprog_read(CMD_TRANSCEIVE, value, idx, readarr, readcnt);
+	*/
+	ret = dediprog_read(CMD_TRANSCEIVE, 0, 0, readarr, readcnt);
 	if (ret != readcnt) {
 		msg_perr("Receive SPI failed, expected %i, got %i %s!\n", readcnt, ret, libusb_error_name(ret));
 		return 1;
