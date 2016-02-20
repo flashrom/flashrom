@@ -542,6 +542,33 @@ $(foreach var, $(filter CONFIG_%, $(.VARIABLES)),\
 		$(eval $(var)=yes)))
 endif
 
+# Disable feature groups
+ifeq ($(CONFIG_ENABLE_LIBUSB0_PROGRAMMERS), no)
+override CONFIG_PICKIT2_SPI = no
+endif
+ifeq ($(CONFIG_ENABLE_LIBUSB1_PROGRAMMERS), no)
+override CONFIG_CH341A_SPI = no
+override CONFIG_DEDIPROG = no
+endif
+ifeq ($(CONFIG_ENABLE_LIBPCI_PROGRAMMERS), no)
+override CONFIG_INTERNAL = no 
+override CONFIG_NIC3COM = no 
+override CONFIG_GFXNVIDIA = no 
+override CONFIG_SATASII = no 
+override CONFIG_ATAHPT = no 
+override CONFIG_ATAVIA = no 
+override CONFIG_ATAPROMISE = no 
+override CONFIG_IT8212 = no 
+override CONFIG_DRKAISER = no 
+override CONFIG_NICREALTEK = no 
+override CONFIG_NICNATSEMI = no 
+override CONFIG_NICINTEL = no 
+override CONFIG_NICINTEL_SPI = no 
+override CONFIG_NICINTEL_EEPROM = no 
+override CONFIG_OGP_SPI = no 
+override CONFIG_SATAMV = no 
+endif
+
 # Bitbanging SPI infrastructure, default off unless needed.
 ifeq ($(CONFIG_RAYER_SPI), yes)
 override CONFIG_BITBANG_SPI = yes
@@ -1018,7 +1045,8 @@ ifeq ($(CHECK_LIBPCI), yes)
 	@{ { { { { $(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o >&2 && \
 		echo "found." || { echo "not found."; echo;			\
 		echo "The following features require libpci: $(NEED_LIBPCI).";	\
-		echo "Please install libpci headers."; \
+		echo "Please install libpci headers or disable all features"; \
+		echo "mentioned above by specifying make CONFIG_ENABLE_LIBPCI_PROGRAMMERS=no"; \
 		echo "See README for more information."; echo;			\
 		rm -f .test.c .test.o; exit 1; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
 	@printf "Checking version of pci_get_dev... " | tee -a $(BUILD_DETAILS_FILE)
@@ -1036,7 +1064,8 @@ ifeq ($(CHECK_LIBPCI), yes)
 		$(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) $(PCILIBS) -lz >&2 && \
 		echo "yes." && echo "NEEDLIBZ := yes" > .libdeps } || { echo "no."; echo;	\
 		echo "The following features require libpci: $(NEED_LIBPCI).";			\
-		echo "Please install libpci (package pciutils) and/or libz.";			\
+		echo "Please install libpci (package pciutils) and/or libz or disable all features"; \
+		echo "mentioned above by specifying make CONFIG_ENABLE_LIBPCI_PROGRAMMERS=no"; \
 		echo "See README for more information."; echo;				\
 		rm -f .test.c .test.o .test$(EXEC_SUFFIX); exit 1; }; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
 	@rm -f .test.c .test.o .test$(EXEC_SUFFIX)
@@ -1048,7 +1077,8 @@ ifeq ($(CHECK_LIBUSB0), yes)
 	@{ { { { { $(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o >&2 && \
 		echo "found." || { echo "not found."; echo;				\
 		echo "The following features require libusb-0.1/libusb-compat: $(NEED_LIBUSB0)."; \
-		echo "Please install libusb-0.1 headers or libusb-compat headers.";	\
+		echo "Please install libusb-0.1 headers or libusb-compat headers or disable all features"; \
+		echo "mentioned above by specifying make CONFIG_ENABLE_LIBUSB0_PROGRAMMERS=no"; \
 		echo "See README for more information."; echo;				\
 		rm -f .test.c .test.o; exit 1; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
 	@printf "Checking if libusb-0.1 is usable... " | tee -a $(BUILD_DETAILS_FILE)
@@ -1056,7 +1086,8 @@ ifeq ($(CHECK_LIBUSB0), yes)
 	@{ { { { { $(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) $(USBLIBS) >&2 && \
 		echo "yes." || { echo "no.";						\
 		echo "The following features require libusb-0.1/libusb-compat: $(NEED_LIBUSB0)."; \
-		echo "Please install libusb-0.1 or libusb-compat.";			\
+		echo "Please install libusb-0.1 or libusb-compat or disable all features"; \
+		echo "mentioned above by specifying make CONFIG_ENABLE_LIBUSB0_PROGRAMMERS=no"; \
 		echo "See README for more information."; echo;				\
 		rm -f .test.c .test.o .test$(EXEC_SUFFIX); exit 1; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
 	@rm -f .test.c .test.o .test$(EXEC_SUFFIX)
@@ -1068,7 +1099,8 @@ ifeq ($(CHECK_LIBUSB1), yes)
 	@{ { { { { $(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o >&2 && \
 		echo "found." || { echo "not found."; echo;				\
 		echo "The following features require libusb-1.0: $(NEED_LIBUSB1).";	\
-		echo "Please install libusb-1.0 headers.";	\
+		echo "Please install libusb-1.0 headers or disable all features"; \
+		echo "mentioned above by specifying make CONFIG_ENABLE_LIBUSB1_PROGRAMMERS=no"; \
 		echo "See README for more information."; echo;				\
 		rm -f .test.c .test.o; exit 1; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
 	@printf "Checking if libusb-1.0 is usable... " | tee -a $(BUILD_DETAILS_FILE)
@@ -1076,7 +1108,8 @@ ifeq ($(CHECK_LIBUSB1), yes)
 	@{ { { { { $(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) $(USB1LIBS) >&2 && \
 		echo "yes." || { echo "no.";						\
 		echo "The following features require libusb-1.0: $(NEED_LIBUSB1).";	\
-		echo "Please install libusb-1.0.";			\
+		echo "Please install libusb-1.0 or disable all features"; \
+		echo "mentioned above by specifying make CONFIG_ENABLE_LIBUSB1_PROGRAMMERS=no"; \
 		echo "See README for more information."; echo;				\
 		rm -f .test.c .test.o .test$(EXEC_SUFFIX); exit 1; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
 	@rm -f .test.c .test.o .test$(EXEC_SUFFIX)
