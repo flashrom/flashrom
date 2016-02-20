@@ -349,6 +349,15 @@ override CONFIG_MSTARDDC_SPI = no
 endif
 endif
 
+ifeq ($(TARGET_OS), Android)
+# Android on x86 (currently) does not provide raw PCI port I/O operations
+ifeq ($(CONFIG_RAYER_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_RAYER_SPI=yes
+else
+override CONFIG_RAYER_SPI = no
+endif
+endif
+
 ###############################################################################
 # General architecture-specific settings.
 # Like above for the OS, below we verify user-supplied options depending on the target architecture.
@@ -599,8 +608,7 @@ endif
 ifeq ($(CONFIG_RAYER_SPI), yes)
 FEATURE_CFLAGS += -D'CONFIG_RAYER_SPI=1'
 PROGRAMMER_OBJS += rayer_spi.o
-# Actually, NEED_LIBPCI is wrong. NEED_IOPORT_ACCESS would be more correct.
-NEED_LIBPCI += CONFIG_RAYER_SPI
+NEED_RAW_ACCESS += CONFIG_RAYER_SPI
 endif
 
 ifeq ($(CONFIG_PONY_SPI), yes)
@@ -782,19 +790,31 @@ endif
 
 ifneq ($(NEED_LIBPCI), )
 CHECK_LIBPCI = yes
+# This is a dirty hack, but it saves us from checking all PCI drivers and all platforms manually.
+# libpci may need raw memory, MSR or PCI port I/O on some platforms.
+# Individual drivers might have the same needs as well.
+NEED_RAW_ACCESS += $(NEED_LIBPCI)
 FEATURE_CFLAGS += -D'NEED_PCI=1'
 FEATURE_CFLAGS += $(call debug_shell,grep -q "OLD_PCI_GET_DEV := yes" .libdeps && printf "%s" "-D'OLD_PCI_GET_DEV=1'")
 
-PROGRAMMER_OBJS += pcidev.o physmap.o hwaccess.o
+PROGRAMMER_OBJS += pcidev.o
 ifeq ($(TARGET_OS), NetBSD)
 # The libpci we want is called libpciutils on NetBSD and needs NetBSD libpci.
 PCILIBS += -lpciutils -lpci
+else
+PCILIBS += -lpci
+endif
+endif
+
+ifneq ($(NEED_RAW_ACCESS), )
+# Raw memory, MSR or PCI port I/O access.
+FEATURE_CFLAGS += -D'NEED_RAW_ACCESS=1'
+PROGRAMMER_OBJS += physmap.o hwaccess.o
+
+ifeq ($(TARGET_OS), NetBSD)
 # For (i386|x86_64)_iopl(2).
 PCILIBS += -l$(shell uname -p)
 else
-
-PCILIBS += -lpci
-
 ifeq ($(TARGET_OS), OpenBSD)
 # For (i386|amd64)_iopl(2).
 PCILIBS += -l$(shell uname -m)
@@ -805,6 +825,7 @@ PCILIBS += -framework IOKit -framework DirectHW
 endif
 endif
 endif
+
 endif
 
 ifneq ($(NEED_LIBUSB0), )

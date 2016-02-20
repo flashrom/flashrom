@@ -196,7 +196,7 @@ cpu_to_be(64)
 #define le_to_cpu32 cpu_to_le32
 #define le_to_cpu64 cpu_to_le64
 
-#if NEED_PCI == 1
+#if NEED_RAW_ACCESS == 1
 #if IS_X86
 
 /* sys/io.h provides iopl(2) and x86 I/O port access functions (inb, outb etc).
@@ -230,6 +230,7 @@ cpu_to_be(64)
    * out[bwl] definitions in machine/cpufunc.h and sys/io.h at least in some
    * versions. Use machine/cpufunc.h only for plain FreeBSD/DragonFlyBSD.
    */
+  #include <sys/types.h>
   #include <machine/cpufunc.h>
   #define OUTB(x, y) do { u_int outb_tmp = (y); outb(outb_tmp, (x)); } while (0)
   #define OUTW(x, y) do { u_int outw_tmp = (y); outw(outw_tmp, (x)); } while (0)
@@ -382,6 +383,6 @@ int libpayload_wrmsr(int addr, msr_t msr);
 #error Unknown architecture, please check if it supports PCI port IO.
 
 #endif /* IS_* */
-#endif /* NEED_PCI == 1 */
+#endif /* NEED_RAW_ACCESS == 1 */
 
 #endif /* !__HWACCESS_H__ */
