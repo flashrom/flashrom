@@ -201,8 +201,14 @@ cpu_to_be(64)
 
 /* sys/io.h provides iopl(2) and x86 I/O port access functions (inb, outb etc).
  * It is included in glibc (thus available also on debian/kFreeBSD) but also in other libcs that mimic glibc,
- * e.g. musl and uclibc. */
-#if defined(__linux__) || defined(__GLIBC__)
+ * e.g. musl and uclibc. Because we cannot detect the libc or existence of the header or of the instructions
+ * themselves safely in here we use some heuristic below:
+ * On Android we don't have the header file and no way for I/O port access at all. However, sys/glibc-syscalls.h
+ * refers to an iopl implementation and we therefore include at least that one for now. On non-Android we assume
+ * that a Linux system's libc has a suitable sys/io.h or (on non-Linux) we depend on glibc to offer it. */
+#if defined(__ANDROID__)
+#include <sys/glibc-syscalls.h>
+#elif defined(__linux__) || defined(__GLIBC__)
 #include <sys/io.h>
 #endif
 
