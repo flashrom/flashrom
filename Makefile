@@ -292,6 +292,12 @@ UNSUPPORTED_FEATURES += CONFIG_DUMMY=yes
 else
 override CONFIG_DUMMY = no
 endif
+# libpayload does not provide the romsize field in struct pci_dev that the atapromise code requires.
+ifeq ($(CONFIG_ATAPROMISE), yes)
+UNSUPPORTED_FEATURES += CONFIG_ATAPROMISE=yes
+else
+override CONFIG_ATAPROMISE = no
+endif
 # Bus Pirate, Serprog and PonyProg are not supported with libpayload (missing serial support).
 ifeq ($(CONFIG_BUSPIRATE_SPI), yes)
 UNSUPPORTED_FEATURES += CONFIG_BUSPIRATE_SPI=yes
