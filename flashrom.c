@@ -247,9 +247,8 @@ const struct programmer_entry programmer_table[] = {
 #if CONFIG_DEDIPROG == 1
 	{
 		.name			= "dediprog",
-		.type			= OTHER,
-					/* FIXME */
-		.devs.note		= "Dediprog SF100\n",
+		.type			= USB,
+		.devs.dev		= devs_dediprog,
 		.init			= dediprog_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,

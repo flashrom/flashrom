@@ -528,6 +528,7 @@ int linux_spi_init(void);
 /* dediprog.c */
 #if CONFIG_DEDIPROG == 1
 int dediprog_init(void);
+extern const struct dev_entry devs_dediprog[];
 #endif
 
 /* ch341a_spi.c */

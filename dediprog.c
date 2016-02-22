@@ -143,6 +143,11 @@ enum dediprog_standalone_mode {
 	LEAVE_STANDALONE_MODE = 1,
 };
 
+const struct dev_entry devs_dediprog[] = {
+	{0x0483, 0xDADA, OK, "Dediprog", "SF100/SF600"},
+
+	{0},
+};
 
 static int dediprog_firmwareversion = FIRMWARE_VERSION(0, 0, 0);
 enum dediprog_devtype dediprog_devicetype = DEV_UNKNOWN;
@@ -1019,7 +1024,10 @@ int dediprog_init(void)
 		msg_perr("Could not initialize libusb!\n");
 		return 1;
 	}
-	dediprog_handle = get_device_by_vid_pid_number(0x0483, 0xdada, (unsigned int) usedevice);
+
+	const uint16_t vid = devs_dediprog[0].vendor_id;
+	const uint16_t pid = devs_dediprog[0].device_id;
+	dediprog_handle = get_device_by_vid_pid_number(vid, pid, (unsigned int) usedevice);
 	if (!dediprog_handle) {
 		msg_perr("Could not find a Dediprog programmer on USB.\n");
 		libusb_exit(usb_ctx);
