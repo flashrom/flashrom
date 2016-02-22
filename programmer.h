@@ -499,6 +499,7 @@ int mstarddc_spi_init(void);
 /* pickit2_spi.c */
 #if CONFIG_PICKIT2_SPI == 1
 int pickit2_spi_init(void);
+extern const struct dev_entry devs_pickit2_spi[];
 #endif
 
 /* rayer_spi.c */

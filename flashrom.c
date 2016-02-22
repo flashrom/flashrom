@@ -382,9 +382,8 @@ const struct programmer_entry programmer_table[] = {
 #if CONFIG_PICKIT2_SPI == 1
 	{
 		.name			= "pickit2_spi",
-		.type			= OTHER,
-					/* FIXME */
-		.devs.note		= "Microchip PICkit2\n",
+		.type			= USB,
+		.devs.dev		= devs_pickit2_spi,
 		.init			= pickit2_spi_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
