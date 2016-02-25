@@ -48,9 +48,24 @@
 #elif defined (__sparc__) || defined (__sparc)
 	#define __FLASHROM_ARCH__ "sparc"
 	#define IS_SPARC 1
+#elif defined (__alpha__)
+	#define __FLASHROM_ARCH__ "alpha"
+	#define IS_ALPHA 1
+#elif defined (__hppa__) || defined (__hppa)
+	#define __FLASHROM_ARCH__ "hppa"
+	#define IS_HPPA 1
+#elif defined (__m68k__)
+	#define __FLASHROM_ARCH__ "m68k"
+	#define IS_M68K 1
+#elif defined (__sh__)
+	#define __FLASHROM_ARCH__ "sh"
+	#define IS_SH 1
+#elif defined(__s390__) || defined(__s390x__) || defined(__zarch__)
+	#define __FLASHROM_ARCH__ "s390"
+	#define IS_S390 1
 #endif
 
-#if !(IS_X86 || IS_MIPS || IS_PPC || IS_ARM || IS_SPARC)
+#if !(IS_X86 || IS_MIPS || IS_PPC || IS_ARM || IS_SPARC || IS_ALPHA || IS_HPPA || IS_M68K || IS_SH || IS_S390)
 #error Unknown architecture
 #endif
 
