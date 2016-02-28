@@ -343,6 +343,8 @@ endif
 endif
 
 ifneq ($(TARGET_OS), Linux)
+# Android is handled internally as separate OS, but it supports CONFIG_LINUX_SPI and CONFIG_MSTARDDC_SPI
+ifneq ($(TARGET_OS), Android)
 ifeq ($(CONFIG_LINUX_SPI), yes)
 UNSUPPORTED_FEATURES += CONFIG_LINUX_SPI=yes
 else
@@ -352,6 +354,7 @@ ifeq ($(CONFIG_MSTARDDC_SPI), yes)
 UNSUPPORTED_FEATURES += CONFIG_MSTARDDC_SPI=yes
 else
 override CONFIG_MSTARDDC_SPI = no
+endif
 endif
 endif
 
@@ -428,11 +431,6 @@ UNSUPPORTED_FEATURES += CONFIG_RAYER_SPI=yes
 else
 override CONFIG_RAYER_SPI = no
 endif
-ifeq ($(CONFIG_PONY_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_PONY_SPI=yes
-else
-override CONFIG_PONY_SPI = no
-endif
 ifeq ($(CONFIG_NIC3COM), yes)
 UNSUPPORTED_FEATURES += CONFIG_NIC3COM=yes
 else
@@ -462,11 +460,6 @@ ifeq ($(CONFIG_ATAPROMISE), yes)
 UNSUPPORTED_FEATURES += CONFIG_ATAPROMISE=yes
 else
 override CONFIG_ATAPROMISE = no
-endif
-ifeq ($(CONFIG_MSTARDDC_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_MSTARDDC_SPI=yes
-else
-override CONFIG_MSTARDDC_SPI = no
 endif
 ifeq ($(CONFIG_DRKAISER), yes)
 UNSUPPORTED_FEATURES += CONFIG_DRKAISER=yes
