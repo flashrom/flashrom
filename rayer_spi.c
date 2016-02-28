@@ -106,12 +106,20 @@ static const struct rayer_pinout wiggler_lpt = {
 	.miso_bit = 7,
 };
 
+static const struct rayer_pinout spi_tt = {
+	.cs_bit = 2,
+	.sck_bit = 0,
+	.mosi_bit = 4,
+	.miso_bit = 7,
+};
+
 static const struct rayer_programmer rayer_spi_types[] = {
 	{"rayer",		NT,	"RayeR SPIPGM",					&rayer_spipgm},
 	{"xilinx",		NT,	"Xilinx Parallel Cable III (DLC 5)",		&xilinx_dlc5},
 	{"byteblastermv",	OK,	"Altera ByteBlasterMV",				&altera_byteblastermv},
 	{"stk200",		NT,	"Atmel STK200/300 adapter",			&atmel_stk200},
 	{"wiggler",		OK,	"Wiggler LPT",					&wiggler_lpt},
+	{"spi_tt",		NT,	"SPI Tiny Tools (SPI_TT LPT)",			&spi_tt},
 	{0},
 };
 
