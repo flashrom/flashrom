@@ -33,12 +33,17 @@
 #include "flash.h"
 #include "hwaccess.h"
 
-#if !(IS_LINUX || IS_MACOSX || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__DragonFly__) || defined(__DJGPP__) || defined(__LIBPAYLOAD__) || defined(__sun))
+#if !(IS_LINUX || IS_MACOSX || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__DragonFly__) || defined(__DJGPP__) || defined(__LIBPAYLOAD__) || defined(__sun) || defined(__gnu_hurd__))
 #error "Unknown operating system"
 #endif
 
 #define USE_IOPL	(IS_LINUX || IS_MACOSX || defined(__NetBSD__) || defined(__OpenBSD__))
 #define USE_DEV_IO	(defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__DragonFly__))
+#define USE_IOPERM	(defined(__gnu_hurd__))
+
+#if USE_IOPERM
+#include <sys/io.h>
+#endif
 
 #if IS_X86 && USE_DEV_IO
 int io_fd;
@@ -82,6 +87,8 @@ static int release_io_perms(void *p)
 	sysi86(SI86V86, V86SC_IOPL, 0);
 #elif USE_DEV_IO
 	close(io_fd);
+#elif USE_IOPERM
+	ioperm(0, 65536, 0);
 #elif USE_IOPL
 	iopl(0);
 #endif
@@ -97,6 +104,8 @@ int rget_io_perms(void)
 	if (sysi86(SI86V86, V86SC_IOPL, PS_IOPL) != 0) {
 #elif USE_DEV_IO
 	if ((io_fd = open("/dev/io", O_RDWR)) < 0) {
+#elif USE_IOPERM
+	if (ioperm(0, 65536, 1) != 0) {
 #elif USE_IOPL
 	if (iopl(3) != 0) {
 #endif

@@ -56,6 +56,9 @@
 // libpayload
 #elif defined(__LIBPAYLOAD__)
 #define __FLASHROM_OS__ "libpayload"
+// GNU Hurd
+#elif defined(__gnu_hurd__)
+#define __FLASHROM_OS__ "Hurd"
 // Linux
 #elif defined(__linux__)
 	// There are various flags in use on Android apparently. __ANDROID__ seems to be the most trustworthy.
