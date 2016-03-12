@@ -387,24 +387,25 @@ static int set_mode(struct pci_dev *dev, uint8_t read_mode)
 static int handle_speed(struct pci_dev *dev)
 {
 	uint32_t tmp;
-	int8_t spispeed_idx = 3; /* Default to 16.5 MHz */
+	uint8_t spispeed_idx = 3; /* Default to 16.5 MHz */
 
 	char *spispeed = extract_programmer_param("spispeed");
 	if (spispeed != NULL) {
-		if (strcasecmp(spispeed, "reserved") != 0) {
-			int i;
-			for (i = 0; i < ARRAY_SIZE(spispeeds); i++) {
-				if (strcasecmp(spispeeds[i].name, spispeed) == 0) {
-					spispeed_idx = i;
-					break;
-				}
+		unsigned int i;
+		for (i = 0; i < ARRAY_SIZE(spispeeds); i++) {
+			if (strcasecmp(spispeeds[i].name, spispeed) == 0) {
+				spispeed_idx = i;
+				break;
 			}
-			/* Only Yangtze supports the second half of indices; no 66 MHz before SB8xx. */
-			if ((amd_gen < CHIPSET_YANGTZE && spispeed_idx > 3) ||
-			    (amd_gen < CHIPSET_SB89XX && spispeed_idx == 0))
-				spispeed_idx = -1;
 		}
-		if (spispeed_idx < 0) {
+		/* "reserved" is not a valid speed.
+		 * Error out on speeds not present in the spispeeds array.
+		 * Only Yangtze supports the second half of indices.
+		 * No 66 MHz before SB8xx. */
+		if ((strcasecmp(spispeed, "reserved") == 0) ||
+		    (i == ARRAY_SIZE(spispeeds)) ||
+		    (amd_gen < CHIPSET_YANGTZE && spispeed_idx > 3) ||
+		    (amd_gen < CHIPSET_SB89XX && spispeed_idx == 0)) {
 			msg_perr("Error: Invalid spispeed value: '%s'.\n", spispeed);
 			free(spispeed);
 			return 1;
