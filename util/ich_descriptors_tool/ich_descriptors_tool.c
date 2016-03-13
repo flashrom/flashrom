@@ -170,7 +170,7 @@ int main(int argc, char *argv[])
 		usage(argv, "Seeking to the end of the file failed");
 
 #ifdef HAVE_MMAP
-	buf = mmap(NULL, len, PROT_READ, MAP_PRIVATE, fd, 0);
+	buf = (uint32_t *)mmap(NULL, len, PROT_READ, MAP_PRIVATE, fd, 0);
 	if (buf == (void *) -1)
 #endif
 	{

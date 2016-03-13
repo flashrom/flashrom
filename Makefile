@@ -926,7 +926,7 @@ endif
 
 ifneq ($(NEED_POSIX_SOCKETS), )
 ifeq ($(TARGET_OS), SunOS)
-LIBS += -lsocket
+LIBS += -lsocket -lnsl
 endif
 endif
 
