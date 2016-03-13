@@ -1,9 +1,11 @@
 .\" Load the www device when using groff; provide a fallback for groff's MTO macro that formats email addresses.
 .ie \n[.g] \
 .  mso www.tmac
-.el \
-.  de MTO \\$2 \(la\\$1 \(ra\\$3
+.el \{
+.  de MTO
+     \\$2 \(la\\$1 \(ra\\$3 \
 .  .
+.\}
 .\" Create wrappers for .MTO and .URL that print only text on systems w/o groff or if not outputting to a HTML
 .\" device. To that end we need to distinguish HTML output on groff from other configurations first.
 .nr groffhtml 0
@@ -208,7 +210,7 @@ Please note that MediaWiki output is not compiled in by default.
 Specify the programmer device. This is mandatory for all operations
 involving any chip access (probe/read/write/...). Currently supported are:
 .sp
-.BR "* internal" " (default, for in-system flashing in the mainboard)"
+.BR "* internal" " (for in-system flashing in the mainboard)"
 .sp
 .BR "* dummy" " (virtual programmer for testing flashrom)"
 .sp
@@ -237,16 +239,10 @@ cards)"
 .sp
 .BR "* it8212" " (for flash ROMs on ITE IT8212F ATA/RAID controller)"
 .sp
-.BR "* ft2232_spi" " (for SPI flash ROMs attached to an FT2232/FT4232H/FT232H family \
-based USB SPI programmer), including the DLP Design DLP-USB1232H, \
-FTDI FT2232H Mini-Module, FTDI FT4232H Mini-Module, openbiosprog-spi, Amontec \
-JTAGkey/JTAGkey-tiny/JTAGkey-2, Dangerous Prototypes Bus Blaster, \
-Olimex ARM-USB-TINY/-H, Olimex ARM-USB-OCD/-H, TIAO/DIYGADGET USB
-Multi-Protocol Adapter (TUMPA), TUMPA Lite, GOEPEL PicoTAP and Google Servo v1/v2.
+.BR "* ft2232_spi" " (for SPI flash ROMs attached to an FT2232/FT4232H/FT232H family based USB SPI programmer).
 .sp
 .BR "* serprog" " (for flash ROMs attached to a programmer speaking serprog, \
-including Arduino-based devices as well as various programmers by Urja Rannikko, \
-Juhana Helovuo, Stefan Tauner and others)."
+including some Arduino-based devices)."
 .sp
 .BR "* buspirate_spi" " (for SPI flash ROMs attached to a Bus Pirate)"
 .sp
@@ -684,13 +680,18 @@ size (padding to 32 kB is required).
 .IP
 This is the first programmer module in flashrom that does not provide access to NOR flash chips but EEPROMs
 mounted on gigabit Ethernet cards based on Intel's 82580 NIC. Because EEPROMs normally do not announce their
-size nor allow to be identified, the controller relies on correct size values written to predefined addresses
-within the chip. Flashrom follows this scheme but assumes the minimum size of 16 kB (128 kb) if an unprogrammed
-EEPROM/card is detected. Intel specifies following EEPROMs to be compatible: Atmel AT25128, AT25256, Micron (ST)
-M95128, M95256 and OnSemi (Catalyst) CAT25CS128.
+size nor allow themselves to be identified, the controller relies on correct size values written to predefined
+addresses within the chip. Flashrom follows this scheme but assumes the minimum size of 16 kB (128 kb) if an
+unprogrammed EEPROM/card is detected. Intel specifies following EEPROMs to be compatible:
+Atmel AT25128, AT25256, Micron (ST) M95128, M95256 and OnSemi (Catalyst) CAT25CS128.
 .SS
 .BR "ft2232_spi " programmer
 .IP
+This module supports various programmers based on FTDI FT2232/FT4232H/FT232H chips including the DLP Design
+DLP-USB1232H, openbiosprog-spi, Amontec JTAGkey/JTAGkey-tiny/JTAGkey-2, Dangerous Prototypes Bus Blaster,
+Olimex ARM-USB-TINY/-H, Olimex ARM-USB-OCD/-H, OpenMoko Neo1973 Debug board (V2+), TIAO/DIYGADGET USB
+Multi-Protocol Adapter (TUMPA), TUMPA Lite, GOEPEL PicoTAP and Google Servo v1/v2.
+.sp
 An optional parameter specifies the controller
 type and channel/interface/port it should support. For that you have to use the
 .sp
@@ -736,6 +737,9 @@ syntax.
 .SS
 .BR "serprog " programmer
 .IP
+This module supports all programmers speaking the serprog protocol. This includes some Arduino-based devices
+as well as various programmers by Urja Rannikko, Juhana Helovuo, Stefan Tauner, Chi Zhang and many others.
+.sp
 A mandatory parameter specifies either a serial device (and baud rate) or an IP/port combination for
 communicating with the programmer.
 The device/baud combination has to start with
@@ -981,7 +985,7 @@ Please note that the linux_spi driver only works on Linux.
 .BR "mstarddc_spi " programmer
 .IP
 The Display Data Channel (DDC) is an I2C bus present on VGA and DVI connectors, that allows exchanging
-informations between a computer and attached displays. Its most common uses are getting display capabilities
+information between a computer and attached displays. Its most common uses are getting display capabilities
 through EDID (at I2C address 0x50) and sending commands to the display using the DDC/CI protocol (at address
 0x37). On displays driven by MSTAR SoCs, it is also possible to access the SoC firmware flash (connected to
 the Soc through another SPI bus) using an In-System Programming (ISP) port, usually at address 0x49.
@@ -1016,7 +1020,7 @@ Example that does not reset the display at the end of the operation:
 .sp
 .B "  flashrom \-p mstarddc_spi:dev=/dev/i2c-1:49,noreset=1
 .sp
-Please note that sending the reset command is also inhibited in the event an error occured during the operation.
+Please note that sending the reset command is also inhibited if an error occurred during the operation.
 To send the reset command afterwards, you can simply run flashrom once more, in chip probe mode (not specifying
 an operation), without the
 .B noreset

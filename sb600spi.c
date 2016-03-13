@@ -512,7 +512,7 @@ static int handle_imc(struct pci_dev *dev)
 	msg_pinfo("Writes have been disabled for safety reasons because the presence of the IMC\n"
 		  "was detected and it could interfere with accessing flash memory. Flashrom will\n"
 		  "try to disable it temporarily but even then this might not be safe:\n"
-		  "when it is reenabled and after a reboot it expects to find working code\n"
+		  "when it is re-enabled and after a reboot it expects to find working code\n"
 		  "in the flash and it is unpredictable what happens if there is none.\n"
 		  "\n"
 		  "To be safe make sure that there is a working IMC firmware at the right\n"

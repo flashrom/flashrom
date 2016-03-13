@@ -490,11 +490,9 @@ int print_supported(void)
 		case USB:
 			print_supported_devs(prog, "USB");
 			break;
-#if NEED_PCI == 1
 		case PCI:
 			print_supported_devs(prog, "PCI");
 			break;
-#endif
 		case OTHER:
 			if (prog.devs.note != NULL) {
 				msg_ginfo("\nSupported devices for the %s programmer:\n", prog.name);
@@ -571,6 +569,7 @@ const struct board_info boards_known[] = {
 	B("ASRock",	"AMCP7AION-HT",		OK, "http://www.asrock.com/nettop/NVIDIA/ION%20330HT/", "Used in ION 330HT(-BD) barebones."),
 	B("ASRock",	"ConRoeXFire-eSATA2",	OK, "http://www.asrock.com/mb/overview.asp?model=conroexfire-esata2", NULL),
 	B("ASRock",	"E350M1/USB3",		OK, "http://www.asrock.com/mb/overview.asp?model=e350m1/usb3", "Vendor firmware writes to flash at shutdown. This probably corrupts the flash in case you write coreboot while running the vendor firmware. Simply updating the vendor firmware should be fine."),
+	B("ASRock",	"Fatal1ty 970 Performance", OK, "http://www.asrock.com/mb/overview.asp?Model=Fatal1ty%20970%20Performance", "Probing works (Winbond W25Q64, 8192 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME region is locked."),
 	B("ASRock",	"Fatal1ty Z77 Performance", BAD, "http://www.asrock.com/mb/overview.asp?Model=Fatal1ty%20Z77%20Performance", "Probing works (Winbond W25Q64, 8192 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME region is locked."),
 	B("ASRock",	"G31M-GS",		OK, "http://www.asrock.com/mb/overview.asp?Model=G31M-GS", NULL),
 	B("ASRock",	"G31M-S rev 2.0",	OK, "http://www.asrock.com/mb/overview.asp?model=G31M-S", NULL),
@@ -585,6 +584,7 @@ const struct board_info boards_known[] = {
 	B("ASRock",	"M3A790GXH/128M",	OK, "http://www.asrock.com/mb/overview.asp?Model=M3A790GXH/128M", NULL),
 	B("ASRock",	"N61P-S",		OK, "http://www.asrock.com/mb/overview.asp?Model=N61P-S", NULL),
 	B("ASRock",	"N68C-S UCC",		OK, "http://www.asrock.com/mb/overview.asp?Model=N68C-S%20UCC", NULL),
+	B("ASRock",	"P4i65G",		OK, "http://www.asrock.com/mb/overview.asp?Model=P4i65G", NULL),
 	B("ASRock",	"P4i65GV",		OK, "http://www.asrock.com/mb/overview.asp?Model=P4i65GV", NULL),
 	B("ASRock",	"Z68 Extreme4",		BAD, "http://www.asrock.com/mb/overview.asp?Model=Z68%20Extreme4", "Probing works (Winbond W25Q64, 8192 kB, SPI), but parts of the flash are problematic: descriptor is r/o (conforming to ICH reqs), ME region is locked."),
 	B("ASUS",	"A7N8X Deluxe",		OK, "http://www.asus.com/Motherboards/AMD_Socket_A/A7N8X_Deluxe/", NULL),

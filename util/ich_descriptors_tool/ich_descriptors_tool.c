@@ -180,7 +180,7 @@ int main(int argc, char *argv[])
 			usage(argv, "Could not allocate memory");
 		lseek(fd, 0, SEEK_SET);
 		if (len != read(fd, buf, len))
-			usage(argv, "Seeking to the end of the file failed");
+			usage(argv, "Reading the descriptor image file failed");
 	}
 	printf("The flash image has a size of %d [0x%x] bytes.\n", len, len);
 	close(fd);

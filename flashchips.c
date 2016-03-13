@@ -4663,7 +4663,7 @@ const struct flashchip flashchips[] = {
 		.page_size	= 256,
 		/* OTP: 512B total; enter 0x3A */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
-		.tested		= TEST_UNTESTED,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
@@ -5368,13 +5368,13 @@ const struct flashchip flashchips[] = {
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
 		{
-		 {
-			.eraseblocks = { {64 * 1024, 8} },
-			.block_erase = spi_block_erase_d8,
-		 }, {
-			.eraseblocks = { {512 * 1024, 1} },
-			.block_erase = spi_block_erase_c7,
-		 }
+			{
+				.eraseblocks = { {64 * 1024, 8} },
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { {512 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
 		.unlock		= spi_disable_blockprotect_bp2_srwd,
@@ -5399,13 +5399,13 @@ const struct flashchip flashchips[] = {
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
 		{
-		 {
-			.eraseblocks = { {64 * 1024, 16} },
-			.block_erase = spi_block_erase_d8,
-		 }, {
-			.eraseblocks = { {1024 * 1024, 1} },
-			.block_erase = spi_block_erase_c7,
-		 }
+			{
+				.eraseblocks = { {64 * 1024, 16} },
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { {1024 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
 		.unlock		= spi_disable_blockprotect_bp2_srwd,
@@ -6382,27 +6382,27 @@ const struct flashchip flashchips[] = {
 		.page_size	= 256,
 		/* OTP: 1536B total; read 0x48, write 0x42, erase 0x44 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI,
-		.tested		= TEST_UNTESTED,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers  =
+		.block_erasers	=
 		{
-		  {
-			.eraseblocks = { { 4 * 1024, 128} },
-			.block_erase = spi_block_erase_20,
-		  }, {
-			.eraseblocks = { { 32 * 1024, 16} },
-			.block_erase = spi_block_erase_52,
-		  }, {
-			.eraseblocks = { { 64 * 1024, 8} },
-			.block_erase = spi_block_erase_d8,
-		  }, {
-			.eraseblocks = { {512 * 1024, 1} },
-			.block_erase = spi_block_erase_60,
-		  }, {
-			.eraseblocks = { {512 * 1024, 1} },
-			.block_erase = spi_block_erase_c7,
-		  }
+			{
+				.eraseblocks = { { 4 * 1024, 128} },
+				.block_erase = spi_block_erase_20,
+			}, {
+				.eraseblocks = { { 32 * 1024, 16} },
+				.block_erase = spi_block_erase_52,
+			}, {
+				.eraseblocks = { { 64 * 1024, 8} },
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { {512 * 1024, 1} },
+				.block_erase = spi_block_erase_60,
+			}, {
+				.eraseblocks = { {512 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp4_srwd,
 		.unlock		= spi_disable_blockprotect_bp4_srwd, /* TODO: 2nd status reg (read with 0x35) */
@@ -15627,7 +15627,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 512,
 		.page_size	= 64 * 1024,
 		.feature_bits	= FEATURE_REGISTERMAP | FEATURE_EITHER_RESET,
-		.tested		= TEST_OK_PR,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_jedec,
 		.probe_timing	= 10,
 		.block_erasers	=

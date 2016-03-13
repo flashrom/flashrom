@@ -400,7 +400,7 @@ static int pickit2_shutdown(void *data)
 
 int pickit2_spi_init(void)
 {
-	unsigned int usedevice = 0; // FIXME: allow to select one of multiple devices
+	unsigned int usedevice = 0; // FIXME: Allow selecting one of multiple devices
 
 	uint8_t buf[CMD_LENGTH] = {
 		CMD_EXEC_SCRIPT,

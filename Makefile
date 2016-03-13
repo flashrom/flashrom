@@ -314,7 +314,7 @@ UNSUPPORTED_FEATURES += CONFIG_PONY_SPI=yes
 else
 override CONFIG_PONY_SPI = no
 endif
-# Dediprog, USB-Blaster, PICkit2, CH341A and FT2232 are not supported with libpayload (missing libusb support)
+# Dediprog, USB-Blaster, PICkit2, CH341A and FT2232 are not supported with libpayload (missing libusb support).
 ifeq ($(CONFIG_DEDIPROG), yes)
 UNSUPPORTED_FEATURES += CONFIG_DEDIPROG=yes
 else
@@ -661,22 +661,22 @@ override CONFIG_CH341A_SPI = no
 override CONFIG_DEDIPROG = no
 endif
 ifeq ($(CONFIG_ENABLE_LIBPCI_PROGRAMMERS), no)
-override CONFIG_INTERNAL = no 
-override CONFIG_NIC3COM = no 
-override CONFIG_GFXNVIDIA = no 
-override CONFIG_SATASII = no 
-override CONFIG_ATAHPT = no 
-override CONFIG_ATAVIA = no 
-override CONFIG_ATAPROMISE = no 
-override CONFIG_IT8212 = no 
-override CONFIG_DRKAISER = no 
-override CONFIG_NICREALTEK = no 
-override CONFIG_NICNATSEMI = no 
-override CONFIG_NICINTEL = no 
-override CONFIG_NICINTEL_SPI = no 
-override CONFIG_NICINTEL_EEPROM = no 
-override CONFIG_OGP_SPI = no 
-override CONFIG_SATAMV = no 
+override CONFIG_INTERNAL = no
+override CONFIG_NIC3COM = no
+override CONFIG_GFXNVIDIA = no
+override CONFIG_SATASII = no
+override CONFIG_ATAHPT = no
+override CONFIG_ATAVIA = no
+override CONFIG_ATAPROMISE = no
+override CONFIG_IT8212 = no
+override CONFIG_DRKAISER = no
+override CONFIG_NICREALTEK = no
+override CONFIG_NICNATSEMI = no
+override CONFIG_NICINTEL = no
+override CONFIG_NICINTEL_SPI = no
+override CONFIG_NICINTEL_EEPROM = no
+override CONFIG_OGP_SPI = no
+override CONFIG_SATAMV = no
 endif
 
 # Bitbanging SPI infrastructure, default off unless needed.

@@ -136,6 +136,12 @@ Processor architecture dependent features:
  use port-based I/O which is not directly available on non-x86. Those
  programmers will be disabled automatically if you run "make".
 
+Compiler quirks:
+
+If you are using clang and if you want to enable only one driver, you may hit an
+overzealous compiler warning from clang. Compile with "make WARNERROR=no" to
+force it to continue and enjoy.
+
 Installation
 ------------
 
