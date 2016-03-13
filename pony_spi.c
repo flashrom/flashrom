@@ -103,6 +103,18 @@ static const struct bitbang_spi_master bitbang_spi_master_pony = {
 	.half_period = 0,
 };
 
+static int pony_spi_shutdown(void *data)
+{
+	/* Shut down serial port communication */
+	int ret = serialport_shutdown(NULL);
+	if (ret)
+		msg_pdbg("Pony SPI shutdown failed.\n");
+	else
+		msg_pdbg("Pony SPI shutdown completed.\n");
+
+	return ret;
+}
+
 int pony_spi_init(void)
 {
 	int i, data_out;
@@ -118,6 +130,11 @@ int pony_spi_init(void)
 		sp_fd = sp_openserport(arg, 9600);
 		if (sp_fd == SER_INV_FD) {
 			free(arg);
+			return 1;
+		}
+		if (register_shutdown(pony_spi_shutdown, NULL) != 0) {
+			free(arg);
+			serialport_shutdown(NULL);
 			return 1;
 		}
 		have_device++;
