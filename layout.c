@@ -68,7 +68,7 @@ int read_romlayout(const char *name)
 			(void)fclose(romlayout);
 			return 1;
 		}
-		if (2 != fscanf(romlayout, "%s %s\n", tempstr, rom_entries[num_rom_entries].name))
+		if (2 != fscanf(romlayout, "%255s %255s\n", tempstr, rom_entries[num_rom_entries].name))
 			continue;
 #if 0
 		// fscanf does not like arbitrary comments like that :( later
