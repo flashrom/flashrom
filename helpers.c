@@ -66,6 +66,23 @@ void tolower_string(char *str)
 		*str = (char)tolower((unsigned char)*str);
 }
 
+uint8_t reverse_byte(uint8_t x)
+{
+	x = ((x >> 1) & 0x55) | ((x << 1) & 0xaa);
+	x = ((x >> 2) & 0x33) | ((x << 2) & 0xcc);
+	x = ((x >> 4) & 0x0f) | ((x << 4) & 0xf0);
+
+	return x;
+}
+
+void reverse_bytes(uint8_t *dst, const uint8_t *src, size_t length)
+{
+	size_t i;
+
+	for (i = 0; i < length; i++)
+		dst[i] = reverse_byte(src[i]);
+}
+
 /* FIXME: Find a better solution for MinGW. Maybe wrap strtok_s (C11) if it becomes available */
 #ifdef __MINGW32__
 char* strtok_r(char *str, const char *delim, char **nextp)

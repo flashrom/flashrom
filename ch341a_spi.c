@@ -274,15 +274,6 @@ static int32_t config_stream(uint32_t speed)
 	return ret;
 }
 
-/* ch341 requires LSB first, swap the bit order before send and after receive */
-static uint8_t swap_byte(uint8_t x)
-{
-	x = ((x >> 1) & 0x55) | ((x << 1) & 0xaa);
-	x = ((x >> 2) & 0x33) | ((x << 2) & 0xcc);
-	x = ((x >> 4) & 0x0f) | ((x << 4) & 0xf0);
-	return x;
-}
-
 /* The assumed map between UIO command bits, pins on CH341A chip and pins on SPI chip:
  * UIO	CH341A	SPI	CH341A SPI name
  * 0	D0/15	CS/1	(CS0)
@@ -372,7 +363,7 @@ static int ch341a_spi_spi_send_command(struct flashctx *flash, unsigned int writ
 		*ptr++ = CH341A_CMD_SPI_STREAM;
 		unsigned int i;
 		for (i = 0; i < write_now; ++i)
-			*ptr++ = swap_byte(*writearr++);
+			*ptr++ = reverse_byte(*writearr++);
 		if (read_now) {
 			memset(ptr, 0xFF, read_now);
 			read_left -= read_now;
@@ -387,7 +378,7 @@ static int ch341a_spi_spi_send_command(struct flashctx *flash, unsigned int writ
 
 	unsigned int i;
 	for (i = 0; i < readcnt; i++) {
-		*readarr++ = swap_byte(rbuf[writecnt + i]);
+		*readarr++ = reverse_byte(rbuf[writecnt + i]);
 	}
 
 	return 0;
