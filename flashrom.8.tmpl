@@ -331,6 +331,8 @@ bitbanging adapter)
 .sp
 .BR "* digilent_spi" " (for SPI flash ROMs attached to iCEblink40 development boards)"
 .sp
+.BR "* jlink_spi" " (for SPI flash ROMs attached to SEGGER J-Link and compatible devices)"
+.sp
 Some programmers have optional or mandatory parameters which are described
 in detail in the
 .B PROGRAMMER-SPECIFIC INFORMATION
@@ -1131,6 +1133,60 @@ can be
 (in Hz). The default is a frequency of 4 MHz.
 .sp
 .SS
+.BR "jlink_spi " programmer
+.IP
+This module supports SEGGER J-Link and compatible devices.
+
+The \fBMOSI\fP signal of the flash chip must be attached to \fBTDI\fP pin of
+the programmer, \fBMISO\fP to \fBTDO\fP and \fBSCK\fP to \fBTCK\fP.
+The chip select (\fBCS\fP) signal of the flash chip can be attached to
+different pins of the programmer which can be selected with the
+.sp
+.B "  flashrom \-p jlink_spi:cs=pin"
+.sp
+syntax where \fBpin\fP can be either \fBTRST\fP or \fBRESET\fP.
+The default pin for chip select is \fBRESET\fP.
+Note that, when using \fBRESET\fP, it is normal that the indicator LED blinks
+orange or red.
+.br
+Additionally, the \fBVTref\fP pin of the programmer must be attached to the
+logic level of the flash chip.
+The programmer measures the voltage on this pin and generates the reference
+voltage for its input comparators and adapts its output voltages to it.
+.sp
+Pinout for devices with 20-pin JTAG connector:
+.sp
+    +-------+
+    |  1  2 |     1: VTref     2:
+    |  3  4 |     3: TRST      4: GND
+    |  5  6 |     5: TDI       6: GND
+  +-+  7  8 |     7:           8: GND
+  |    9 10 |     9: TCK      10: GND
+  |   11 12 |    11:          12: GND
+  +-+ 13 14 |    13: TDO      14:
+    | 15 16 |    15: RESET    16:
+    | 17 18 |    17:          18:
+    | 19 20 |    19: PWR_5V   20:
+    +-------+
+.sp
+If there is more than one compatible device connected, you can select which one
+should be used by specifying its serial number with the
+.sp
+.B "  flashrom \-p jlink_spi:serial=number"
+.sp
+syntax where
+.B number
+is the serial number of the device (which can be found for example in the
+output of lsusb -v).
+.sp
+The SPI speed can be selected by using the
+.sp
+.B "  flashrom \-p jlink_spi:spispeed=frequency"
+.sp
+syntax where \fBfrequency\fP is the SPI clock frequency in kHz.
+The maximum speed depends on the device in use.
+.SS
+
 .SH EXAMPLES
 To back up and update your BIOS, run
 .sp

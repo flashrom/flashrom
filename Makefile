@@ -656,6 +656,9 @@ CONFIG_CH341A_SPI ?= yes
 # Digilent Development board JTAG
 CONFIG_DIGILENT_SPI ?= yes
 
+# Disable J-Link for now.
+CONFIG_JLINK_SPI ?= no
+
 # Disable wiki printing by default. It is only useful if you have wiki access.
 CONFIG_PRINT_WIKI ?= no
 
@@ -964,6 +967,12 @@ PROGRAMMER_OBJS += digilent_spi.o
 NEED_LIBUSB1 += CONFIG_DIGILENT_SPI
 endif
 
+ifeq ($(CONFIG_JLINK_SPI), yes)
+NEED_LIBJAYLINK += CONFIG_JLINK_SPI
+FEATURE_CFLAGS += -D'CONFIG_JLINK_SPI=1'
+PROGRAMMER_OBJS += jlink_spi.o
+endif
+
 ifneq ($(NEED_SERIAL), )
 LIB_OBJS += serial.o custom_baud.o
 endif
@@ -1038,6 +1047,12 @@ endif
 endif
 endif
 
+ifneq ($(NEED_LIBJAYLINK), )
+CHECK_LIBJAYLINK = yes
+JAYLINKLIBS += $(call debug_shell,[ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)"; $(PKG_CONFIG) --libs libjaylink)
+override CPPFLAGS += $(call debug_shell,[ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)"; $(PKG_CONFIG) --cflags-only-I libjaylink)
+endif
+
 ifeq ($(CONFIG_PRINT_WIKI), yes)
 FEATURE_CFLAGS += -D'CONFIG_PRINT_WIKI=1'
 CLI_OBJS += print_wiki.o
@@ -1060,7 +1075,7 @@ ifeq ($(ARCH), x86)
 endif
 
 $(PROGRAM)$(EXEC_SUFFIX): $(OBJS)
-	$(CC) $(LDFLAGS) -o $(PROGRAM)$(EXEC_SUFFIX) $(OBJS) $(LIBS) $(PCILIBS) $(FEATURE_LIBS) $(USBLIBS) $(USB1LIBS)
+	$(CC) $(LDFLAGS) -o $(PROGRAM)$(EXEC_SUFFIX) $(OBJS) $(LIBS) $(PCILIBS) $(FEATURE_LIBS) $(USBLIBS) $(USB1LIBS) $(JAYLINKLIBS)
 
 libflashrom.a: $(LIBFLASHROM_OBJS)
 	$(AR) rcs $@ $^
@@ -1194,6 +1209,24 @@ int main(int argc, char **argv)
 endef
 export LIBUSB1_TEST
 
+define LIBJAYLINK_TEST
+#include <stddef.h>
+#include <libjaylink/libjaylink.h>
+int main(int argc, char **argv)
+{
+	struct jaylink_context *ctx;
+
+	(void)argc;
+	(void)argv;
+
+	jaylink_init(&ctx);
+	jaylink_exit(ctx);
+
+	return 0;
+}
+endef
+export LIBJAYLINK_TEST
+
 hwlibs: compiler
 	@printf "" > .libdeps
 ifeq ($(CHECK_LIBPCI), yes)
@@ -1268,6 +1301,28 @@ ifeq ($(CHECK_LIBUSB1), yes)
 		echo "The following features require libusb-1.0: $(NEED_LIBUSB1).";	\
 		echo "Please install libusb-1.0 or disable all features"; \
 		echo "mentioned above by specifying make CONFIG_ENABLE_LIBUSB1_PROGRAMMERS=no"; \
+		echo "See README for more information."; echo;				\
+		rm -f .test.c .test.o .test$(EXEC_SUFFIX); exit 1; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
+	@rm -f .test.c .test.o .test$(EXEC_SUFFIX)
+endif
+ifeq ($(CHECK_LIBJAYLINK), yes)
+	@printf "Checking for libjaylink headers... " | tee -a $(BUILD_DETAILS_FILE)
+	@echo "$$LIBJAYLINK_TEST" > .test.c
+	@printf "\nexec: %s\n" "$(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o" >>$(BUILD_DETAILS_FILE)
+	@{ { { { { $(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o >&2 && \
+		echo "found." || { echo "not found."; echo;				\
+		echo "The following feature requires libjaylink: $(NEED_LIBJAYLINK).";	\
+		echo "Please install libjaylink headers or disable the feature"; \
+		echo "mentioned above by specifying make CONFIG_JLINK_SPI=no"; \
+		echo "See README for more information."; echo;				\
+		rm -f .test.c .test.o; exit 1; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
+	@printf "Checking if libjaylink is usable... " | tee -a $(BUILD_DETAILS_FILE)
+	@printf "\nexec: %s\n" "$(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) $(JAYLINKLIBS)" >>$(BUILD_DETAILS_FILE)
+	@{ { { { { $(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) $(JAYLINKLIBS) >&2 && \
+		echo "yes." || { echo "no.";						\
+		echo "The following feature requires libjaylink: $(NEED_LIBJAYLINK).";	\
+		echo "Please install libjaylink or disable the feature"; \
+		echo "mentioned above by specifying make CONFIG_JLINK_SPI=no"; \
 		echo "See README for more information."; echo;				\
 		rm -f .test.c .test.o .test$(EXEC_SUFFIX); exit 1; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
 	@rm -f .test.c .test.o .test$(EXEC_SUFFIX)

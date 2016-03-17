@@ -118,6 +118,9 @@ enum programmer {
 #if CONFIG_DIGILENT_SPI == 1
 	PROGRAMMER_DIGILENT_SPI,
 #endif
+#if CONFIG_JLINK_SPI == 1
+	PROGRAMMER_JLINK_SPI,
+#endif
 	PROGRAMMER_INVALID /* This must always be the last entry. */
 };
 
@@ -573,6 +576,11 @@ int digilent_spi_init(void);
 extern const struct dev_entry devs_digilent_spi[];
 #endif
 
+/* jlink_spi.c */
+#if CONFIG_JLINK_SPI == 1
+int jlink_spi_init(void);
+#endif
+
 /* flashrom.c */
 struct decode_sizes {
 	uint32_t parallel;
@@ -640,6 +648,9 @@ enum spi_controller {
 #endif
 #if CONFIG_DIGILENT_SPI == 1
 	SPI_CONTROLLER_DIGILENT_SPI,
+#endif
+#if CONFIG_JLINK_SPI == 1
+	SPI_CONTROLLER_JLINK_SPI,
 #endif
 };
 

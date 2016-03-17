@@ -437,6 +437,18 @@ const struct programmer_entry programmer_table[] = {
 	},
 #endif
 
+#if CONFIG_JLINK_SPI == 1
+	{
+		.name			= "jlink_spi",
+		.type			= OTHER,
+		.init			= jlink_spi_init,
+		.devs.note		= "SEGGER J-Link and compatible devices\n",
+		.map_flash_region	= fallback_map,
+		.unmap_flash_region	= fallback_unmap,
+		.delay			= internal_delay,
+	},
+#endif
+
 	{0}, /* This entry corresponds to PROGRAMMER_INVALID. */
 };
 
