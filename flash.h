@@ -37,6 +37,8 @@
 #undef max
 #endif
 
+#include "layout.h"
+
 #define ERROR_PTR ((void*)-1)
 
 /* Error codes */
@@ -46,14 +48,6 @@
 /* TODO: check using code for correct usage of types */
 typedef uintptr_t chipaddr;
 #define PRIxPTR_WIDTH ((int)(sizeof(uintptr_t)*2))
-
-/* Types and macros regarding the maximum flash space size supported by generic code. */
-typedef uint32_t chipoff_t; /* Able to store any addressable offset within a supported flash memory. */
-typedef uint32_t chipsize_t; /* Able to store the number of bytes of any supported flash memory. */
-#define FL_MAX_CHIPOFF_BITS (24)
-#define FL_MAX_CHIPOFF ((chipoff_t)(1ULL<<FL_MAX_CHIPOFF_BITS)-1)
-#define PRIxCHIPOFF "06"PRIx32
-#define PRIuCHIPSIZE PRIu32
 
 int register_shutdown(int (*function) (void *data), void *data);
 int shutdown_free(void *data);
