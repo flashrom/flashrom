@@ -530,24 +530,28 @@ int main(int argc, char *argv[])
 		goto out_shutdown;
 	}
 
-	/* Always verify write operations unless -n is used. */
-	if (write_it && !dont_verify_it)
-		verify_it = 1;
+	if (layoutfile)
+		flashrom_layout_set(fill_flash, get_global_layout());
 
-	/* Map the selected flash chip again. */
-	if (map_flash(fill_flash) != 0) {
-		ret = 1;
-		goto out_shutdown;
-	}
+	flashrom_flag_set(fill_flash, FLASHROM_FLAG_FORCE, !!force);
+	flashrom_flag_set(fill_flash, FLASHROM_FLAG_FORCE_BOARDMISMATCH, !!force_boardmismatch);
+	flashrom_flag_set(fill_flash, FLASHROM_FLAG_VERIFY_AFTER_WRITE, !dont_verify_it);
+	flashrom_flag_set(fill_flash, FLASHROM_FLAG_VERIFY_WHOLE_CHIP, true);
 
 	/* FIXME: We should issue an unconditional chip reset here. This can be
 	 * done once we have a .reset function in struct flashchip.
 	 * Give the chip time to settle.
 	 */
 	programmer_delay(100000);
-	ret |= doit(fill_flash, force, filename, read_it, write_it, erase_it, verify_it);
+	if (read_it)
+		ret = do_read(fill_flash, filename);
+	else if (erase_it)
+		ret = do_erase(fill_flash);
+	else if (write_it)
+		ret = do_write(fill_flash, filename);
+	else if (verify_it)
+		ret = do_verify(fill_flash, filename);
 
-	unmap_flash(fill_flash);
 out_shutdown:
 	programmer_shutdown();
 out:

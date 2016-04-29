@@ -285,9 +285,12 @@ void print_buildinfo(void);
 void print_banner(void);
 void list_programmers_linebreak(int startcol, int cols, int paren);
 int selfcheck(void);
-int doit(struct flashctx *flash, int force, const char *filename, int read_it, int write_it, int erase_it, int verify_it);
 int read_buf_from_file(unsigned char *buf, unsigned long size, const char *filename);
 int write_buf_to_file(const unsigned char *buf, unsigned long size, const char *filename);
+int do_read(struct flashctx *, const char *filename);
+int do_erase(struct flashctx *);
+int do_write(struct flashctx *, const char *const filename);
+int do_verify(struct flashctx *, const char *const filename);
 
 /* Something happened that shouldn't happen, but we can go on. */
 #define ERROR_NONFATAL 0x100
@@ -354,7 +357,6 @@ int register_include_arg(char *name);
 int process_include_args(void);
 int read_romlayout(const char *name);
 int normalize_romentries(const struct flashctx *flash);
-int build_new_image(struct flashctx *flash, bool oldcontents_valid, uint8_t *oldcontents, uint8_t *newcontents);
 void layout_cleanup(void);
 
 /* spi.c */

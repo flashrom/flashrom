@@ -202,33 +202,6 @@ void layout_cleanup(void)
 	layout.num_entries = 0;
 }
 
-struct romentry *get_next_included_romentry(unsigned int start)
-{
-	int i;
-	unsigned int best_start = UINT_MAX;
-	struct romentry *best_entry = NULL;
-	struct romentry *cur;
-
-	/* First come, first serve for overlapping regions. */
-	for (i = 0; i < layout.num_entries; i++) {
-		cur = &layout.entries[i];
-		if (!cur->included)
-			continue;
-		/* Already past the current entry? */
-		if (start > cur->end)
-			continue;
-		/* Inside the current entry? */
-		if (start >= cur->start)
-			return cur;
-		/* Entry begins after start. */
-		if (best_start > cur->start) {
-			best_start = cur->start;
-			best_entry = cur;
-		}
-	}
-	return best_entry;
-}
-
 /* Validate and - if needed - normalize layout entries. */
 int normalize_romentries(const struct flashctx *flash)
 {
@@ -251,61 +224,4 @@ int normalize_romentries(const struct flashctx *flash)
 	}
 
 	return ret;
-}
-
-static int copy_old_content(struct flashctx *flash, int oldcontents_valid, uint8_t *oldcontents, uint8_t *newcontents, unsigned int start, unsigned int size)
-{
-	if (!oldcontents_valid) {
-		/* oldcontents is a zero-filled buffer. By reading the current data into oldcontents here, we
-		 * avoid a rewrite of identical regions even if an initial full chip read didn't happen. */
-		msg_gdbg2("Read a chunk starting at 0x%06x (len=0x%06x).\n", start, size);
-		int ret = flash->chip->read(flash, oldcontents + start, start, size);
-		if (ret != 0) {
-			msg_gerr("Failed to read chunk 0x%06x-0x%06x.\n", start, start + size - 1);
-			return 1;
-		}
-	}
-	memcpy(newcontents + start, oldcontents + start, size);
-	return 0;
-}
-
-/**
- * Modify @newcontents so that it contains the data that should be on the chip eventually. In the case the user
- * wants to update only parts of it, copy the chunks to be preserved from @oldcontents to @newcontents. If
- * @oldcontents is not valid, we need to fetch the current data from the chip first.
- */
-int build_new_image(struct flashctx *flash, bool oldcontents_valid, uint8_t *oldcontents, uint8_t *newcontents)
-{
-	unsigned int start = 0;
-	struct romentry *entry;
-	unsigned int size = flash->chip->total_size * 1024;
-
-	/* If no regions were specified for inclusion, assume
-	 * that the user wants to write the complete new image.
-	 */
-	if (num_include_args == 0)
-		return 0;
-
-	/* Non-included romentries are ignored.
-	 * The union of all included romentries is used from the new image.
-	 */
-	while (start < size) {
-		entry = get_next_included_romentry(start);
-		/* No more romentries for remaining region? */
-		if (!entry) {
-			copy_old_content(flash, oldcontents_valid, oldcontents, newcontents, start,
-					 size - start);
-			break;
-		}
-		/* For non-included region, copy from old content. */
-		if (entry->start > start)
-			copy_old_content(flash, oldcontents_valid, oldcontents, newcontents, start,
-					 entry->start - start);
-		/* Skip to location after current romentry. */
-		start = entry->end + 1;
-		/* Catch overflow. */
-		if (!start)
-			break;
-	}
-	return 0;
 }
