@@ -216,6 +216,8 @@ struct flashctx {
 	uintptr_t physical_registers;
 	chipaddr virtual_registers;
 	struct registered_master *mst;
+	const struct flashrom_layout *layout;
+	struct single_layout fallback_layout;
 };
 
 /* Timing used in probe routines. ZERO is -2 to differentiate between an unset
