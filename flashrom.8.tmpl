@@ -48,7 +48,8 @@ flashrom \- detect, read, write, verify and erase flash chips
 \fB\-p\fR <programmername>[:<parameters>]
                [\fB\-E\fR|\fB\-r\fR <file>|\fB\-w\fR <file>|\fB\-v\fR <file>] \
 [\fB\-c\fR <chipname>]
-               [\fB\-l\fR <file> [\fB\-i\fR <image>]] [\fB\-n\fR] [\fB\-f\fR]]
+               [\fB\-l\fR <file> [\fB\-i\fR <image>]] [\fB\-n\fR] [\fB\-N\fR] \
+[\fB\-f\fR]]
          [\fB\-V\fR[\fBV\fR[\fBV\fR]]] [\fB-o\fR <logfile>]
 .SH DESCRIPTION
 .B flashrom
@@ -111,6 +112,21 @@ Typical usage is:
 .sp
 This option is only useful in combination with
 .BR \-\-write .
+.TP
+.B "\-N, \-\-noverify-all"
+Skip not included regions during automatic verification after writing (cf.
+.BR "\-l " "and " "\-i" ).
+You should only use this option if you are sure that communication with
+the flash chip is reliable (e.g. when using the
+.BR internal
+programmer). Even if flashrom is instructed not to touch parts of the
+flash chip, their contents could be damaged (e.g. due to misunderstood
+erase commands).
+.sp
+This option is required to flash an Intel system with locked ME flash
+region using the
+.BR internal
+programmer. It may be enabled by default in this case in the future.
 .TP
 .B "\-v, \-\-verify <file>"
 Verify the flash ROM contents against the given

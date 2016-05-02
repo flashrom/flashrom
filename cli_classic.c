@@ -42,7 +42,7 @@ static void cli_classic_usage(const char *name)
 	       "-z|"
 #endif
 	       "-p <programmername>[:<parameters>] [-c <chipname>]\n"
-	       "[-E|(-r|-w|-v) <file>] [-l <layoutfile> [-i <imagename>]...] [-n] [-f]]\n"
+	       "[-E|(-r|-w|-v) <file>] [-l <layoutfile> [-i <imagename>]...] [-n] [-N] [-f]]\n"
 	       "[-V[V[V]]] [-o <logfile>]\n\n", name);
 
 	printf(" -h | --help                        print this help text\n"
@@ -55,6 +55,7 @@ static void cli_classic_usage(const char *name)
 	       " -c | --chip <chipname>             probe only for specified flash chip\n"
 	       " -f | --force                       force specific operations (see man page)\n"
 	       " -n | --noverify                    don't auto-verify\n"
+	       " -N | --noverify-all                verify included regions only (cf. -i)\n"
 	       " -l | --layout <layoutfile>         read ROM layout from <layoutfile>\n"
 	       " -i | --image <name>                only flash image <name> from flash layout\n"
 	       " -o | --output <logfile>            log output to <logfile>\n"
@@ -103,17 +104,18 @@ int main(int argc, char *argv[])
 	int list_supported_wiki = 0;
 #endif
 	int read_it = 0, write_it = 0, erase_it = 0, verify_it = 0;
-	int dont_verify_it = 0, list_supported = 0, operation_specified = 0;
+	int dont_verify_it = 0, dont_verify_all = 0, list_supported = 0, operation_specified = 0;
 	enum programmer prog = PROGRAMMER_INVALID;
 	int ret = 0;
 
-	static const char optstring[] = "r:Rw:v:nVEfc:l:i:p:Lzho:";
+	static const char optstring[] = "r:Rw:v:nNVEfc:l:i:p:Lzho:";
 	static const struct option long_options[] = {
 		{"read",		1, NULL, 'r'},
 		{"write",		1, NULL, 'w'},
 		{"erase",		0, NULL, 'E'},
 		{"verify",		1, NULL, 'v'},
 		{"noverify",		0, NULL, 'n'},
+		{"noverify-all",	0, NULL, 'N'},
 		{"chip",		1, NULL, 'c'},
 		{"verbose",		0, NULL, 'V'},
 		{"force",		0, NULL, 'f'},
@@ -189,6 +191,9 @@ int main(int argc, char *argv[])
 				cli_classic_abort_usage();
 			}
 			dont_verify_it = 1;
+			break;
+		case 'N':
+			dont_verify_all = 1;
 			break;
 		case 'c':
 			chip_to_probe = strdup(optarg);
@@ -536,7 +541,7 @@ int main(int argc, char *argv[])
 	flashrom_flag_set(fill_flash, FLASHROM_FLAG_FORCE, !!force);
 	flashrom_flag_set(fill_flash, FLASHROM_FLAG_FORCE_BOARDMISMATCH, !!force_boardmismatch);
 	flashrom_flag_set(fill_flash, FLASHROM_FLAG_VERIFY_AFTER_WRITE, !dont_verify_it);
-	flashrom_flag_set(fill_flash, FLASHROM_FLAG_VERIFY_WHOLE_CHIP, true);
+	flashrom_flag_set(fill_flash, FLASHROM_FLAG_VERIFY_WHOLE_CHIP, !dont_verify_all);
 
 	/* FIXME: We should issue an unconditional chip reset here. This can be
 	 * done once we have a .reset function in struct flashchip.
