@@ -19,14 +19,13 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#if defined(__i386__) || defined(__x86_64__)
-
 #include "ich_descriptors.h"
 
-#ifdef ICH_DESCRIPTORS_FROM_DUMP
-
+#ifdef ICH_DESCRIPTORS_FROM_DUMP_ONLY
 #include <stdio.h>
 #define print(t, ...) printf(__VA_ARGS__)
+#endif
+
 #define DESCRIPTOR_MODE_SIGNATURE 0x0ff0a55a
 /* The upper map is located in the word before the 256B-long OEM section at the
  * end of the 4kB-long flash descriptor.
@@ -34,12 +33,9 @@
 #define UPPER_MAP_OFFSET (4096 - 256 - 4)
 #define getVTBA(flumap)	(((flumap)->FLUMAP1 << 4) & 0x00000ff0)
 
-#else /* ICH_DESCRIPTORS_FROM_DUMP */
-
+#include <string.h>
 #include "flash.h" /* for msg_* */
 #include "programmer.h"
-
-#endif /* ICH_DESCRIPTORS_FROM_DUMP */
 
 #ifndef min
 #define min(a, b) (a < b) ? a : b
@@ -69,12 +65,12 @@ void prettyprint_ich_descriptors(enum ich_chipset cs, const struct ich_descripto
 	prettyprint_ich_descriptor_component(cs, desc);
 	prettyprint_ich_descriptor_region(desc);
 	prettyprint_ich_descriptor_master(&desc->master);
-#ifdef ICH_DESCRIPTORS_FROM_DUMP
+#ifdef ICH_DESCRIPTORS_FROM_DUMP_ONLY
 	if (cs >= CHIPSET_ICH8) {
 		prettyprint_ich_descriptor_upper_map(&desc->upper);
 		prettyprint_ich_descriptor_straps(cs, desc);
 	}
-#endif /* ICH_DESCRIPTORS_FROM_DUMP */
+#endif /* ICH_DESCRIPTORS_FROM_DUMP_ONLY */
 }
 
 void prettyprint_ich_descriptor_content(const struct ich_desc_content *cont)
@@ -300,8 +296,6 @@ void prettyprint_ich_descriptor_master(const struct ich_desc_master *mstr)
 	(mstr->GbE_plat_r)	?'r':' ', (mstr->GbE_plat_w)	?'w':' ');
 	msg_pdbg2("\n");
 }
-
-#ifdef ICH_DESCRIPTORS_FROM_DUMP
 
 void prettyprint_ich_descriptor_straps_ich8(const struct ich_descriptors *desc)
 {
@@ -792,7 +786,7 @@ int read_ich_descriptors_from_dump(const uint32_t *dump, unsigned int len, struc
 	return ICH_RET_OK;
 }
 
-#else /* ICH_DESCRIPTORS_FROM_DUMP */
+#ifndef ICH_DESCRIPTORS_FROM_DUMP_ONLY
 
 /** Returns the integer representation of the component density with index
 \em idx in bytes or -1 if the correct size can not be determined. */
@@ -922,5 +916,4 @@ int read_ich_descriptors_via_fdo(void *spibar, struct ich_descriptors *desc)
 	msg_pdbg2(" done.\n");
 	return ICH_RET_OK;
 }
-#endif /* ICH_DESCRIPTORS_FROM_DUMP */
-#endif /* defined(__i386__) || defined(__x86_64__) */
+#endif /* ICH_DESCRIPTORS_FROM_DUMP_ONLY */

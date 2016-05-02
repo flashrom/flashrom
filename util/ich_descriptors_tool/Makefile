@@ -32,7 +32,7 @@ endif
 
 FLASHROM_CFLAGS += -MMD -MP -MF $(DEPPATH)/$(@F).d
 # enables functions that populate the descriptor structs from plain binary dumps
-FLASHROM_CFLAGS += -D ICH_DESCRIPTORS_FROM_DUMP
+FLASHROM_CFLAGS += -D ICH_DESCRIPTORS_FROM_DUMP_ONLY
 FLASHROM_CFLAGS += $(patsubst %,-I%,$(EXTRAINCDIRS))
 
 OBJ = $(OBJATH)/$(SRC:%.c=%.o)

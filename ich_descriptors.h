@@ -19,7 +19,6 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
  */
 
-#if defined(__i386__) || defined(__x86_64__)
 #ifndef __ICH_DESCRIPTORS_H__
 #define __ICH_DESCRIPTORS_H__ 1
 
@@ -250,7 +249,6 @@ struct ich_desc_master {
 	};
 };
 
-#ifdef ICH_DESCRIPTORS_FROM_DUMP
 struct ich_desc_north_strap {
 	union {
 		uint32_t STRPs[1]; /* current maximum: ich8 */
@@ -561,18 +559,15 @@ struct ich_desc_upper_map {
 		};
 	} vscc_table[128];
 };
-#endif /* ICH_DESCRIPTORS_FROM_DUMP */
 
 struct ich_descriptors {
 	struct ich_desc_content content;
 	struct ich_desc_component component;
 	struct ich_desc_region region;
 	struct ich_desc_master master;
-#ifdef ICH_DESCRIPTORS_FROM_DUMP
 	struct ich_desc_north_strap north;
 	struct ich_desc_south_strap south;
 	struct ich_desc_upper_map upper;
-#endif /* ICH_DESCRIPTORS_FROM_DUMP */
 };
 
 void prettyprint_ich_descriptors(enum ich_chipset cs, const struct ich_descriptors *desc);
@@ -582,17 +577,11 @@ void prettyprint_ich_descriptor_component(enum ich_chipset cs, const struct ich_
 void prettyprint_ich_descriptor_region(const struct ich_descriptors *desc);
 void prettyprint_ich_descriptor_master(const struct ich_desc_master *master);
 
-#ifdef ICH_DESCRIPTORS_FROM_DUMP
-
 void prettyprint_ich_descriptor_upper_map(const struct ich_desc_upper_map *umap);
 void prettyprint_ich_descriptor_straps(enum ich_chipset cs, const struct ich_descriptors *desc);
 int read_ich_descriptors_from_dump(const uint32_t *dump, unsigned int len, struct ich_descriptors *desc);
 
-#else /* ICH_DESCRIPTORS_FROM_DUMP */
-
 int read_ich_descriptors_via_fdo(void *spibar, struct ich_descriptors *desc);
 int getFCBA_component_density(enum ich_chipset cs, const struct ich_descriptors *desc, uint8_t idx);
 
-#endif /* ICH_DESCRIPTORS_FROM_DUMP */
 #endif /* __ICH_DESCRIPTORS_H__ */
-#endif /* defined(__i386__) || defined(__x86_64__) */
