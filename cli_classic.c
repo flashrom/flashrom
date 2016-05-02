@@ -376,12 +376,6 @@ int main(int argc, char *argv[])
 		ret = 1;
 		goto out;
 	}
-	if (layoutfile != NULL && !write_it) {
-		msg_gerr("Layout files are currently supported for write operations only.\n");
-		ret = 1;
-		goto out;
-	}
-
 	if (process_include_args()) {
 		ret = 1;
 		goto out;
