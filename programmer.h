@@ -308,7 +308,7 @@ void cleanup_cpu_msr(void);
 
 /* cbtable.c */
 int cb_parse_table(const char **vendor, const char **model);
-int cb_check_image(uint8_t *bios, int size);
+int cb_check_image(const uint8_t *bios, int size);
 
 /* dmi.c */
 #if defined(__i386__) || defined(__x86_64__)

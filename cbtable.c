@@ -38,13 +38,13 @@ static char *cb_vendor = NULL, *cb_model = NULL;
  * 	-1	if IDs in the image do not match the IDs embedded in the current firmware,
  * 	 0	if the IDs could not be found in the image or if they match correctly.
  */
-int cb_check_image(uint8_t *image, int size)
+int cb_check_image(const uint8_t *image, int size)
 {
-	unsigned int *walk;
+	const unsigned int *walk;
 	unsigned int mb_part_offset, mb_vendor_offset;
-	char *mb_part, *mb_vendor;
+	const char *mb_part, *mb_vendor;
 
-	walk = (unsigned int *)(image + size - 0x10);
+	walk = (const unsigned int *)(image + size - 0x10);
 	walk--;
 
 	if ((*walk) == 0 || ((*walk) & 0x3ff) != 0) {
@@ -52,7 +52,7 @@ int cb_check_image(uint8_t *image, int size)
 		 * flash at exactly the location where coreboot image size, coreboot vendor name pointer and
 		 * coreboot board name pointer are usually stored. In this case coreboot uses an alternate
 		 * location for the coreboot image data. */
-		walk = (unsigned int *)(image + size - 0x80);
+		walk = (const unsigned int *)(image + size - 0x80);
 		walk--;
 	}
 
@@ -70,8 +70,8 @@ int cb_check_image(uint8_t *image, int size)
 		return 0;
 	}
 
-	mb_part = (char *)(image + size - mb_part_offset);
-	mb_vendor = (char *)(image + size - mb_vendor_offset);
+	mb_part = (const char *)(image + size - mb_part_offset);
+	mb_vendor = (const char *)(image + size - mb_vendor_offset);
 	if (!isprint((unsigned char)*mb_part) ||
 	    !isprint((unsigned char)*mb_vendor)) {
 		msg_pdbg("Flash image seems to have garbage in the ID location. "
