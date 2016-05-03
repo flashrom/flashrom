@@ -264,13 +264,14 @@ void tolower_string(char *str);
 #ifdef __MINGW32__
 char* strtok_r(char *str, const char *delim, char **nextp);
 #endif
-#if defined(__DJGPP__) || !defined(HAVE_STRNLEN)
+#if defined(__DJGPP__) || (!defined(__LIBPAYLOAD__) && !defined(HAVE_STRNLEN))
 size_t strnlen(const char *str, size_t n);
 #endif
 
 /* flashrom.c */
 extern const char flashrom_version[];
 extern const char *chip_to_probe;
+char *flashbuses_to_text(enum chipbustype bustype);
 int map_flash(struct flashctx *flash);
 void unmap_flash(struct flashctx *flash);
 int read_memmapped(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
@@ -308,7 +309,6 @@ int do_verify(struct flashctx *, const char *const filename);
 #define ERROR_FLASHROM_LIMIT -201
 
 /* cli_common.c */
-char *flashbuses_to_text(enum chipbustype bustype);
 void print_chip_support_status(const struct flashchip *chip);
 
 /* cli_output.c */

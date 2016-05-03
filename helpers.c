@@ -92,7 +92,7 @@ char* strtok_r(char *str, const char *delim, char **nextp)
 #endif
 
 /* There is no strnlen in DJGPP */
-#if defined(__DJGPP__) || !defined(HAVE_STRNLEN)
+#if defined(__DJGPP__) || (!defined(__LIBPAYLOAD__) && !defined(HAVE_STRNLEN))
 size_t strnlen(const char *str, size_t n)
 {
 	size_t i;
