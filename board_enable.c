@@ -2458,6 +2458,7 @@ const struct board_match board_matches[] = {
 	{0x10DE, 0x0360, 0x1462, 0x7250,  0x10DE, 0x0368, 0x1462, 0x7250, NULL,         NULL, NULL,           P3, "MSI",         "MS-7250 (K9N SLI)",     0,   OK, nvidia_mcp_gpio2_raise},
 	{0x1011, 0x0019, 0xaa55, 0xaa55,  0x8086, 0x7190,      0,      0, NULL,         NULL, NULL,           P3, "Nokia",       "IP530",                 0,   OK, fdc37b787_gpio50_raise_3f0},
 	{0x8086, 0x3B30, 0x1025, 0x0379,  0x8086, 0x3B09, 0x1025, 0x0379, "^EasyNote LM85$", NULL, NULL,      P2, "Packard Bell","EasyNote LM85",         0,   OK, p2_whitelist_laptop},
+	{0x8086, 0x0154, 0x8086, 0x0154,  0x8086, 0x1e55, 0x8086, 0x1e55, "RV11$",      "Roda", "Lizard RV11", P2, "Roda",       "RV11",                  0,   OK, p2_whitelist_laptop},
 	{0x8086, 0x24d3, 0x144d, 0xb025,  0x8086, 0x1050, 0x144d, 0xb025, NULL,         NULL, NULL,           P3, "Samsung",     "Polaris 32",            0,   OK, intel_ich_gpio21_raise},
 	{0x1106, 0x3099,      0,      0,  0x1106, 0x3074,      0,      0, NULL,         "shuttle", "ak31",    P3, "Shuttle",     "AK31",                  0,   OK, w836xx_memw_enable_2e},
 	{0x1106, 0x3104, 0x1297, 0xa238,  0x1106, 0x3059, 0x1297, 0xc063, NULL,         NULL, NULL,           P3, "Shuttle",     "AK38N",                 256, OK, NULL},
