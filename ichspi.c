@@ -221,6 +221,13 @@
 #define ICH7_REG_OPTYPE		0x56	/* 16 Bits */
 #define ICH7_REG_OPMENU		0x58	/* 64 Bits */
 
+enum ich_access_protection {
+	NO_PROT		= 0,
+	READ_PROT	= 1,
+	WRITE_PROT	= 2,
+	LOCKED		= 3,
+};
+
 /* ICH SPI configuration lock-down. May be set during chipset enabling. */
 static int ichspi_lock = 0;
 
@@ -1547,12 +1554,15 @@ static int ich_spi_send_multicommand(struct flashctx *flash,
 #define ICH_BRWA(x)  ((x >>  8) & 0xff)
 #define ICH_BRRA(x)  ((x >>  0) & 0xff)
 
-/* returns 0 if region is unused or r/w */
-static int ich9_handle_frap(uint32_t frap, int i)
+static const enum ich_access_protection access_perms_to_protection[] = {
+	LOCKED, WRITE_PROT, READ_PROT, NO_PROT
+};
+static const char *const access_names[] = {
+	"locked", "read-only", "write-only", "read-write"
+};
+
+static enum ich_access_protection ich9_handle_frap(uint32_t frap, int i)
 {
-	static const char *const access_names[4] = {
-		"locked", "read-only", "write-only", "read-write"
-	};
 	const int rwperms_unknown = ARRAY_SIZE(access_names);
 	static const char *const region_names[5] = {
 		"Flash Descriptor", "BIOS", "Management Engine",
@@ -1582,23 +1592,23 @@ static int ich9_handle_frap(uint32_t frap, int i)
 		/* this FREG is disabled */
 		msg_pdbg2("0x%02X: 0x%08x FREG%i: %s region is unused.\n",
 			  offset, freg, i, region_name);
-		return 0;
+		return NO_PROT;
 	}
 	msg_pdbg("0x%02X: 0x%08x ", offset, freg);
 	if (rwperms == 0x3) {
 		msg_pdbg("FREG%i: %s region (0x%08x-0x%08x) is %s.\n", i,
 			 region_name, base, limit, access_names[rwperms]);
-		return 0;
+		return NO_PROT;
 	}
 	if (rwperms == rwperms_unknown) {
 		msg_pdbg("FREG%i: %s region (0x%08x-0x%08x) has unknown permissions.\n",
 			 i, region_name, base, limit);
-		return 0;
+		return NO_PROT;
 	}
 
-	msg_pwarn("FREG%i: Warning: %s region (0x%08x-0x%08x) is %s.\n", i,
+	msg_pinfo("FREG%i: %s region (0x%08x-0x%08x) is %s.\n", i,
 		  region_name, base, limit, access_names[rwperms]);
-	return 1;
+	return access_perms_to_protection[rwperms];
 }
 
 	/* In contrast to FRAP and the master section of the descriptor the bits
@@ -1610,12 +1620,8 @@ static int ich9_handle_frap(uint32_t frap, int i)
 #define ICH_PR_PERMS(pr)	(((~((pr) >> PR_RP_OFF) & 1) << 0) | \
 				 ((~((pr) >> PR_WP_OFF) & 1) << 1))
 
-/* returns 0 if range is unused (i.e. r/w) */
-static int ich9_handle_pr(const size_t reg_pr0, int i)
+static enum ich_access_protection ich9_handle_pr(const size_t reg_pr0, int i)
 {
-	static const char *const access_names[3] = {
-		"locked", "read-only", "write-only"
-	};
 	uint8_t off = reg_pr0 + (i * 4);
 	uint32_t pr = mmio_readl(ich_spibar + off);
 	unsigned int rwperms = ICH_PR_PERMS(pr);
@@ -1627,13 +1633,13 @@ static int ich9_handle_pr(const size_t reg_pr0, int i)
 
 	if (rwperms == 0x3) {
 		msg_pdbg2("0x%02X: 0x%08x (%sPR%u is unused)\n", off, pr, prefix, i);
-		return 0;
+		return NO_PROT;
 	}
 
 	msg_pdbg("0x%02X: 0x%08x ", off, pr);
 	msg_pwarn("%sPR%u: Warning: 0x%08x-0x%08x is %s.\n", prefix, i, ICH_FREG_BASE(pr),
 		  ICH_FREG_LIMIT(pr), access_names[rwperms]);
-	return 1;
+	return access_perms_to_protection[rwperms];
 }
 
 /* Set/Clear the read and write protection enable bits of PR register @i
@@ -1696,7 +1702,6 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 	uint16_t tmp2;
 	uint32_t tmp;
 	char *arg;
-	int ich_spi_force = 0;
 	int ich_spi_rw_restricted = 0;
 	int desc_valid = 0;
 	struct ich_descriptors desc = {{ 0 }};
@@ -1805,27 +1810,11 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 		}
 		free(arg);
 
-		arg = extract_programmer_param("ich_spi_force");
-		if (arg && !strcmp(arg, "yes")) {
-			ich_spi_force = 1;
-			msg_pspew("ich_spi_force enabled.\n");
-		} else if (arg && !strlen(arg)) {
-			msg_perr("Missing argument for ich_spi_force.\n");
-			free(arg);
-			return ERROR_FATAL;
-		} else if (arg) {
-			msg_perr("Unknown argument for ich_spi_force: \"%s\" "
-				 "(not \"yes\").\n", arg);
-			free(arg);
-			return ERROR_FATAL;
-		}
-		free(arg);
-
 		tmp2 = mmio_readw(ich_spibar + ICH9_REG_HSFS);
 		msg_pdbg("0x04: 0x%04x (HSFS)\n", tmp2);
 		prettyprint_ich9_reg_hsfs(tmp2);
 		if (tmp2 & HSFS_FLOCKDN) {
-			msg_pwarn("Warning: SPI Configuration Lockdown activated.\n");
+			msg_pinfo("SPI Configuration is locked down.\n");
 			ichspi_lock = 1;
 		}
 		if (tmp2 & HSFS_FDV)
@@ -1863,7 +1852,7 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 			for (i = 0; i < num_freg; i++)
 				ich_spi_rw_restricted |= ich9_handle_frap(tmp, i);
 			if (ich_spi_rw_restricted)
-				msg_pwarn("Not all flash regions are freely accessible by flashrom. This is "
+				msg_pinfo("Not all flash regions are freely accessible by flashrom. This is "
 					  "most likely\ndue to an active ME. Please see "
 					  "https://flashrom.org/ME for details.\n");
 		}
@@ -1876,16 +1865,19 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 			ich_spi_rw_restricted |= ich9_handle_pr(reg_pr0, i);
 		}
 
-		if (ich_spi_rw_restricted) {
-			if (!ich_spi_force)
-				programmer_may_write = 0;
-			msg_pinfo("Writes have been disabled for safety reasons. You can enforce write\n"
-				  "support with the ich_spi_force programmer option, but you will most likely\n"
-				  "harm your hardware! If you force flashrom you will get no support if\n"
-				  "something breaks. On a few mainboards it is possible to enable write\n"
-				  "access by setting a jumper (see its documentation or the board itself).\n");
-			if (ich_spi_force)
-				msg_pinfo("Continuing with write support because the user forced us to!\n");
+		switch (ich_spi_rw_restricted) {
+		case WRITE_PROT:
+			msg_pwarn("At least some flash regions are write protected. For write operations,\n"
+				  "you should use a flash layout and include only writable regions. See\n"
+				  "manpage for more details.\n");
+			break;
+		case READ_PROT:
+		case LOCKED:
+			msg_pwarn("At least some flash regions are read protected. You have to use a flash\n"
+				  "layout and include only accessible regions. For write operations, you'll\n"
+				  "additionally need the --noverify-all switch. See manpage for more details.\n"
+				  );
+			break;
 		}
 
 		tmp = mmio_readl(ich_spibar + swseq_data.reg_ssfsc);
