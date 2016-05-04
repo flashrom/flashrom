@@ -462,7 +462,9 @@ static int dediprog_spi_bulk_read(struct flashctx *flash, uint8_t *buf, unsigned
 
 	/* Now transfer requested chunks using libusb's asynchronous interface. */
 	while (!status.error && (status.queued_idx < count)) {
-		while ((status.queued_idx - status.finished_idx) < DEDIPROG_ASYNC_TRANSFERS) {
+		while ((status.queued_idx < count) &&
+		       (status.queued_idx - status.finished_idx) < DEDIPROG_ASYNC_TRANSFERS)
+		{
 			transfer = transfers[status.queued_idx % DEDIPROG_ASYNC_TRANSFERS];
 			libusb_fill_bulk_transfer(transfer, dediprog_handle, 0x80 | dediprog_in_endpoint,
 					(unsigned char *)buf + status.queued_idx * chunksize, chunksize,
