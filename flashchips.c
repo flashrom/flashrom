@@ -14588,6 +14588,54 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Winbond",
+		.name		= "W25Q256.V",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= WINBOND_NEX_ID,
+		.model_id	= WINBOND_NEX_W25Q256_V,
+		.total_size	= 32768,
+		.page_size	= 256,
+		/* supports SFDP */
+		/* OTP: 1024B total, 256B reserved; read 0x48; write 0x42, erase 0x44, read ID 0x4B */
+		/* FOUR_BYTE_ADDR: supports 4-bytes addressing mode */
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_4BA_SUPPORT,
+		.four_bytes_addr_funcs =
+		{
+			.enter_4ba = spi_enter_4ba_b7_we, /* enter 4-bytes addressing mode by CMD B7 + WREN */
+			.read_nbyte = spi_nbyte_read_4ba, /* read from 4-bytes addressing mode */
+			.program_byte = spi_byte_program_4ba, /* write from 4-bytes addressing mode */
+			.program_nbyte = spi_nbyte_program_4ba /* write from 4-bytes addressing mode */
+		},
+		.tested		= TEST_OK_PREW,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 8192} },
+				.block_erase = spi_block_erase_20_4ba, /* erases 4k from 4-bytes addressing mode */
+			}, {
+				.eraseblocks = { {32 * 1024, 1024} },
+				.block_erase = spi_block_erase_52_4ba, /* erases 32k from 4-bytes addressing mode */
+			}, {
+				.eraseblocks = { {64 * 1024, 512} },
+				.block_erase = spi_block_erase_d8_4ba, /* erases 64k from 4-bytes addressing mode */
+			}, {
+				.eraseblocks = { {32 * 1024 * 1024, 1} },
+				.block_erase = spi_block_erase_60,
+			}, {
+				.eraseblocks = { {32 * 1024 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
+		},
+		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
+		.unlock		= spi_disable_blockprotect,
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
+	},
+
+	{
+		.vendor		= "Winbond",
 		.name		= "W25Q20.W",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= WINBOND_NEX_ID,
