@@ -46,6 +46,36 @@
 #define JEDEC_READ_EXT_ADDR_REG_OUTSIZE		0x01
 #define JEDEC_READ_EXT_ADDR_REG_INSIZE		0x01
 
+/* Read the memory with 4-byte address
+   From ANY mode (3-bytes or 4-bytes) it works with 4-byte address */
+#define JEDEC_READ_4BA		0x13
+#define JEDEC_READ_4BA_OUTSIZE	0x05
+/*      JEDEC_READ_4BA_INSIZE : any length */
+
+/* Write memory byte with 4-byte address
+   From ANY mode (3-bytes or 4-bytes) it works with 4-byte address */
+#define JEDEC_BYTE_PROGRAM_4BA		0x12
+#define JEDEC_BYTE_PROGRAM_4BA_OUTSIZE	0x06
+#define JEDEC_BYTE_PROGRAM_4BA_INSIZE	0x00
+
+/* Sector Erase 0x21 (with 4-byte address), usually 4k size.
+   From ANY mode (3-bytes or 4-bytes) it works with 4-byte address */
+#define JEDEC_SE_4BA		0x21
+#define JEDEC_SE_4BA_OUTSIZE	0x05
+#define JEDEC_SE_4BA_INSIZE	0x00
+
+/* Block Erase 0x5C (with 4-byte address), usually 32k size.
+   From ANY mode (3-bytes or 4-bytes) it works with 4-byte address */
+#define JEDEC_BE_5C_4BA		0x5C
+#define JEDEC_BE_5C_4BA_OUTSIZE	0x05
+#define JEDEC_BE_5C_4BA_INSIZE	0x00
+
+/* Block Erase 0xDC (with 4-byte address), usually 64k size.
+   From ANY mode (3-bytes or 4-bytes) it works with 4-byte address */
+#define JEDEC_BE_DC_4BA		0xdc
+#define JEDEC_BE_DC_4BA_OUTSIZE	0x05
+#define JEDEC_BE_DC_4BA_INSIZE	0x00
+
 /* enter 4-bytes addressing mode */
 int spi_enter_4ba_b7(struct flashctx *flash);
 int spi_enter_4ba_b7_we(struct flashctx *flash);
@@ -69,6 +99,16 @@ int spi_nbyte_read_4ba_ereg(struct flashctx *flash, unsigned int addr, uint8_t *
 int spi_block_erase_20_4ba_ereg(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 int spi_block_erase_52_4ba_ereg(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 int spi_block_erase_d8_4ba_ereg(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
+
+/* read/write flash bytes with 4-bytes address from any mode (3-byte or 4-byte) */
+int spi_byte_program_4ba_direct(struct flashctx *flash, unsigned int addr, uint8_t databyte);
+int spi_nbyte_program_4ba_direct(struct flashctx *flash, unsigned int addr, const uint8_t *bytes, unsigned int len);
+int spi_nbyte_read_4ba_direct(struct flashctx *flash, unsigned int addr, uint8_t *bytes, unsigned int len);
+
+/* erase flash bytes with 4-bytes address from any mode (3-byte or 4-byte) */
+int spi_block_erase_21_4ba_direct(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
+int spi_block_erase_5c_4ba_direct(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
+int spi_block_erase_dc_4ba_direct(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 
 
 #endif /* __SPI_4BA_H__ */

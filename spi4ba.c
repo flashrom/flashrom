@@ -645,3 +645,268 @@ int spi_block_erase_d8_4ba_ereg(struct flashctx *flash, unsigned int addr,
 	/* FIXME: Check the status register for errors. */
 	return 0;
 }
+
+/* Program one flash byte with 4-bytes address from ANY mode (3-bytes or 4-bytes)
+   JEDEC_BYTE_PROGRAM_4BA (12h) instruction is new for 4-bytes addressing flash chips.
+   The presence of this instruction for an exact chip should be checked
+   by its datasheet or from SFDP 4-Bytes Address Instruction Table (JESD216B). */
+int spi_byte_program_4ba_direct(struct flashctx *flash, unsigned int addr,
+				 uint8_t databyte)
+{
+	int result;
+	struct spi_command cmds[] = {
+	{
+		.writecnt	= JEDEC_WREN_OUTSIZE,
+		.writearr	= (const unsigned char[]){ JEDEC_WREN },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= JEDEC_BYTE_PROGRAM_4BA_OUTSIZE,
+		.writearr	= (const unsigned char[]){
+					JEDEC_BYTE_PROGRAM_4BA,
+					(addr >> 24) & 0xff,
+					(addr >> 16) & 0xff,
+					(addr >> 8) & 0xff,
+					(addr & 0xff),
+					databyte
+				},
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= 0,
+		.writearr	= NULL,
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}};
+
+	msg_trace("-> %s (0x%08X)\n", __func__, addr);
+
+	result = spi_send_multicommand(flash, cmds);
+	if (result) {
+		msg_cerr("%s failed during command execution at address 0x%x\n",
+			__func__, addr);
+	}
+	return result;
+}
+
+/* Program flash bytes with 4-bytes address from ANY mode (3-bytes or 4-bytes)
+   JEDEC_BYTE_PROGRAM_4BA (12h) instruction is new for 4-bytes addressing flash chips.
+   The presence of this instruction for an exact chip should be checked
+   by its datasheet or from SFDP 4-Bytes Address Instruction Table (JESD216B). */
+int spi_nbyte_program_4ba_direct(struct flashctx *flash, unsigned int addr,
+				  const uint8_t *bytes, unsigned int len)
+{
+	int result;
+	unsigned char cmd[JEDEC_BYTE_PROGRAM_4BA_OUTSIZE - 1 + 256] = {
+		JEDEC_BYTE_PROGRAM_4BA,
+		(addr >> 24) & 0xff,
+		(addr >> 16) & 0xff,
+		(addr >> 8) & 0xff,
+		(addr >> 0) & 0xff
+	};
+	struct spi_command cmds[] = {
+	{
+		.writecnt	= JEDEC_WREN_OUTSIZE,
+		.writearr	= (const unsigned char[]){ JEDEC_WREN },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= JEDEC_BYTE_PROGRAM_4BA_OUTSIZE - 1 + len,
+		.writearr	= cmd,
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= 0,
+		.writearr	= NULL,
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}};
+
+	msg_trace("-> %s (0x%08X-0x%08X)\n", __func__, addr, addr + len - 1);
+
+	if (!len) {
+		msg_cerr("%s called for zero-length write\n", __func__);
+		return 1;
+	}
+	if (len > 256) {
+		msg_cerr("%s called for too long a write\n", __func__);
+		return 1;
+	}
+
+	memcpy(&cmd[JEDEC_BYTE_PROGRAM_4BA_OUTSIZE - 1], bytes, len);
+
+	result = spi_send_multicommand(flash, cmds);
+	if (result) {
+		msg_cerr("%s failed during command execution at address 0x%x\n",
+			__func__, addr);
+	}
+	return result;
+}
+
+/* Read flash bytes with 4-bytes address from ANY mode (3-bytes or 4-bytes)
+   JEDEC_READ_4BA (13h) instruction is new for 4-bytes addressing flash chips.
+   The presence of this instruction for an exact chip should be checked
+   by its datasheet or from SFDP 4-Bytes Address Instruction Table (JESD216B). */
+int spi_nbyte_read_4ba_direct(struct flashctx *flash, unsigned int addr,
+		   uint8_t *bytes, unsigned int len)
+{
+	const unsigned char cmd[JEDEC_READ_4BA_OUTSIZE] = {
+		JEDEC_READ_4BA,
+		(addr >> 24) & 0xff,
+		(addr >> 16) & 0xff,
+		(addr >> 8) & 0xff,
+		(addr >> 0) & 0xff
+	};
+
+	msg_trace("-> %s (0x%08X-0x%08X)\n", __func__, addr, addr + len - 1);
+
+	/* Send Read */
+	return spi_send_command(flash, sizeof(cmd), len, cmd, bytes);
+}
+
+/* Erase 4 KB of flash with 4-bytes address from ANY mode (3-bytes or 4-bytes)
+   JEDEC_SE_4BA (21h) instruction is new for 4-bytes addressing flash chips.
+   The presence of this instruction for an exact chip should be checked
+   by its datasheet or from SFDP 4-Bytes Address Instruction Table (JESD216B). */
+int spi_block_erase_21_4ba_direct(struct flashctx *flash, unsigned int addr,
+				   unsigned int blocklen)
+{
+	int result;
+	struct spi_command cmds[] = {
+	{
+		.writecnt	= JEDEC_WREN_OUTSIZE,
+		.writearr	= (const unsigned char[]){ JEDEC_WREN },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= JEDEC_SE_4BA_OUTSIZE,
+		.writearr	= (const unsigned char[]){
+					JEDEC_SE_4BA,
+					(addr >> 24) & 0xff,
+					(addr >> 16) & 0xff,
+					(addr >> 8) & 0xff,
+					(addr & 0xff)
+				},
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= 0,
+		.writearr	= NULL,
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}};
+
+	msg_trace("-> %s (0x%08X-0x%08X)\n", __func__, addr, addr + blocklen - 1);
+
+	result = spi_send_multicommand(flash, cmds);
+	if (result) {
+		msg_cerr("%s failed during command execution at address 0x%x\n",
+			__func__, addr);
+		return result;
+	}
+	/* Wait until the Write-In-Progress bit is cleared.
+	 * This usually takes 15-800 ms, so wait in 10 ms steps.
+	 */
+	while (spi_read_status_register(flash) & SPI_SR_WIP)
+		programmer_delay(10 * 1000);
+	/* FIXME: Check the status register for errors. */
+	return 0;
+}
+
+/* Erase 32 KB of flash with 4-bytes address from ANY mode (3-bytes or 4-bytes)
+   JEDEC_BE_5C_4BA (5Ch) instruction is new for 4-bytes addressing flash chips.
+   The presence of this instruction for an exact chip should be checked
+   by its datasheet or from SFDP 4-Bytes Address Instruction Table (JESD216B). */
+int spi_block_erase_5c_4ba_direct(struct flashctx *flash, unsigned int addr,
+		       unsigned int blocklen)
+{
+	int result;
+	struct spi_command cmds[] = {
+	{
+		.writecnt	= JEDEC_WREN_OUTSIZE,
+		.writearr	= (const unsigned char[]){ JEDEC_WREN },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= JEDEC_BE_5C_4BA_OUTSIZE,
+		.writearr	= (const unsigned char[]){
+					JEDEC_BE_5C_4BA,
+					(addr >> 24) & 0xff,
+					(addr >> 16) & 0xff,
+					(addr >> 8) & 0xff,
+					(addr & 0xff)
+				},
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= 0,
+		.writearr	= NULL,
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}};
+
+	msg_trace("-> %s (0x%08X-0x%08X)\n", __func__, addr, addr + blocklen - 1);
+
+	result = spi_send_multicommand(flash, cmds);
+	if (result) {
+		msg_cerr("%s failed during command execution at address 0x%x\n",
+			__func__, addr);
+		return result;
+	}
+	/* Wait until the Write-In-Progress bit is cleared.
+	 * This usually takes 100-4000 ms, so wait in 100 ms steps.
+	 */
+	while (spi_read_status_register(flash) & SPI_SR_WIP)
+		programmer_delay(100 * 1000);
+	/* FIXME: Check the status register for errors. */
+	return 0;
+}
+
+/* Erase 64 KB of flash with 4-bytes address from ANY mode (3-bytes or 4-bytes)
+   JEDEC_BE_DC_4BA (DCh) instruction is new for 4-bytes addressing flash chips.
+   The presence of this instruction for an exact chip should be checked
+   by its datasheet or from SFDP 4-Bytes Address Instruction Table (JESD216B). */
+int spi_block_erase_dc_4ba_direct(struct flashctx *flash, unsigned int addr,
+				   unsigned int blocklen)
+{
+	int result;
+	struct spi_command cmds[] = {
+	{
+		.writecnt	= JEDEC_WREN_OUTSIZE,
+		.writearr	= (const unsigned char[]){ JEDEC_WREN },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= JEDEC_BE_DC_4BA_OUTSIZE,
+		.writearr	= (const unsigned char[]){
+					JEDEC_BE_DC_4BA,
+					(addr >> 24) & 0xff,
+					(addr >> 16) & 0xff,
+					(addr >> 8) & 0xff,
+					(addr & 0xff)
+				},
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= 0,
+		.writearr	= NULL,
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}};
+
+	msg_trace("-> %s (0x%08X-0x%08X)\n", __func__, addr, addr + blocklen - 1);
+
+	result = spi_send_multicommand(flash, cmds);
+	if (result) {
+		msg_cerr("%s failed during command execution at address 0x%x\n",
+			__func__, addr);
+		return result;
+	}
+	/* Wait until the Write-In-Progress bit is cleared.
+	 * This usually takes 100-4000 ms, so wait in 100 ms steps.
+	 */
+	while (spi_read_status_register(flash) & SPI_SR_WIP)
+		programmer_delay(100 * 1000);
+	/* FIXME: Check the status register for errors. */
+	return 0;
+}
