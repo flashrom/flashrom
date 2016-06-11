@@ -167,6 +167,14 @@ struct flashchip {
 	unsigned int page_size;
 	int feature_bits;
 
+	/* set of function pointers to use in 4-bytes addressing mode */
+	struct four_bytes_addr_funcs_set {
+		int (*enter_4ba) (struct flashctx *flash);
+		int (*read_nbyte) (struct flashctx *flash, unsigned int addr, uint8_t *bytes, unsigned int len);
+		int (*program_byte) (struct flashctx *flash, unsigned int addr, const uint8_t databyte);
+		int (*program_nbyte) (struct flashctx *flash, unsigned int addr, const uint8_t *bytes, unsigned int len);
+	} four_bytes_addr_funcs;
+
 	/* Indicate how well flashrom supports different operations of this flash chip. */
 	struct tested {
 		enum test_state probe;

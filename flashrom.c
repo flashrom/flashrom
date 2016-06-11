@@ -2223,6 +2223,29 @@ int prepare_flash_access(struct flashctx *const flash,
 	if (flash->chip->unlock)
 		flash->chip->unlock(flash);
 
+	/* Switching to 4-Bytes Addressing mode if flash chip supports it */
+	if(flash->chip->feature_bits & FEATURE_4BA_SUPPORT) {
+		/* Do not switch if chip is already in 4-bytes addressing mode */
+		if (flash->chip->feature_bits & FEATURE_4BA_ONLY) {
+			msg_cdbg("Flash chip is already in 4-bytes addressing mode.\n");
+		}
+		/* Go to 4-Bytes Addressing mode */
+		else {
+			if (!flash->chip->four_bytes_addr_funcs.enter_4ba) {
+				msg_cerr("No function for Enter 4-bytes addressing mode for this flash chip.\n"
+					"Please report to flashrom@flashrom.org\n");
+				return 1;
+			}
+
+			if(flash->chip->four_bytes_addr_funcs.enter_4ba(flash)) {
+				msg_cerr("Switching to 4-bytes addressing mode failed!\n");
+				return 1;
+			}
+
+			msg_cdbg("Switched to 4-bytes addressing mode.\n");
+		}
+	}
+
 	return 0;
 }
 

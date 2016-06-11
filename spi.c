@@ -110,7 +110,10 @@ int spi_chip_read(struct flashctx *flash, uint8_t *buf, unsigned int start,
 	 * means 0xffffff, the highest unsigned 24bit number.
 	 */
 	addrbase = spi_get_valid_read_addr(flash);
-	if (addrbase + flash->chip->total_size * 1024 > (1 << 24)) {
+	/* Show flash chip size warning if flash chip doesn't support
+	   4-Bytes Addressing mode and last address excedes 24 bits */
+	if (!(flash->chip->feature_bits & FEATURE_4BA_SUPPORT) &&
+	    addrbase + flash->chip->total_size * 1024 > (1 << 24)) {
 		msg_perr("Flash chip size exceeds the allowed access window. ");
 		msg_perr("Read will probably fail.\n");
 		/* Try to get the best alignment subject to constraints. */
