@@ -119,6 +119,9 @@ enum write_granularity {
 #define FEATURE_WRSR_EITHER	(FEATURE_WRSR_EWSR | FEATURE_WRSR_WREN)
 #define FEATURE_OTP		(1 << 8)
 #define FEATURE_QPI		(1 << 9)
+/* Feature bits used for 4-bytes addressing mode */
+#define FEATURE_4BA_SUPPORT		(1 << 10)
+#define FEATURE_4BA_ONLY 		(1 << 11)
 
 enum test_state {
 	OK = 0,

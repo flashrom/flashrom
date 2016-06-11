@@ -195,4 +195,14 @@ int erase_sector_stm50(struct flashctx *flash, unsigned int block, unsigned int 
 int probe_en29lv640b(struct flashctx *flash);
 int write_en29lv640b(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 
+/* spi4ba.c */
+int spi_enter_4ba_b7(struct flashctx *flash);
+int spi_enter_4ba_b7_we(struct flashctx *flash);
+int spi_byte_program_4ba(struct flashctx *flash, unsigned int addr, uint8_t databyte);
+int spi_nbyte_program_4ba(struct flashctx *flash, unsigned int addr, const uint8_t *bytes, unsigned int len);
+int spi_nbyte_read_4ba(struct flashctx *flash, unsigned int addr, uint8_t *bytes, unsigned int len);
+int spi_block_erase_20_4ba(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
+int spi_block_erase_52_4ba(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
+int spi_block_erase_d8_4ba(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
+
 #endif /* !__CHIPDRIVERS_H__ */
