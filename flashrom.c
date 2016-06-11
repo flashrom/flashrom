@@ -2229,6 +2229,10 @@ int prepare_flash_access(struct flashctx *const flash,
 		if (flash->chip->feature_bits & FEATURE_4BA_ONLY) {
 			msg_cdbg("Flash chip is already in 4-bytes addressing mode.\n");
 		}
+		/* Do not switch to 4-Bytes Addressing mode if using Extended Address Register */
+		else if(flash->chip->feature_bits & FEATURE_4BA_EXTENDED_ADDR_REG) {
+			msg_cdbg("Using 4-bytes addressing with extended address register.\n");
+		}
 		/* Go to 4-Bytes Addressing mode */
 		else {
 			if (!flash->chip->four_bytes_addr_funcs.enter_4ba) {

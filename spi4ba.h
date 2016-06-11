@@ -36,6 +36,16 @@
 #define JEDEC_EXIT_4_BYTE_ADDR_MODE_OUTSIZE	0x01
 #define JEDEC_EXIT_4_BYTE_ADDR_MODE_INSIZE	0x00
 
+/* Write Extended Address Register */
+#define JEDEC_WRITE_EXT_ADDR_REG		0xC5
+#define JEDEC_WRITE_EXT_ADDR_REG_OUTSIZE	0x02
+#define JEDEC_WRITE_EXT_ADDR_REG_INSIZE		0x00
+
+/* Read Extended Address Register */
+#define JEDEC_READ_EXT_ADDR_REG			0xC8
+#define JEDEC_READ_EXT_ADDR_REG_OUTSIZE		0x01
+#define JEDEC_READ_EXT_ADDR_REG_INSIZE		0x01
+
 /* enter 4-bytes addressing mode */
 int spi_enter_4ba_b7(struct flashctx *flash);
 int spi_enter_4ba_b7_we(struct flashctx *flash);
@@ -49,6 +59,16 @@ int spi_nbyte_read_4ba(struct flashctx *flash, unsigned int addr, uint8_t *bytes
 int spi_block_erase_20_4ba(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 int spi_block_erase_52_4ba(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 int spi_block_erase_d8_4ba(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
+
+/* read/write flash bytes from 3-bytes addressing mode using extended address register */
+int spi_byte_program_4ba_ereg(struct flashctx *flash, unsigned int addr, uint8_t databyte);
+int spi_nbyte_program_4ba_ereg(struct flashctx *flash, unsigned int addr, const uint8_t *bytes, unsigned int len);
+int spi_nbyte_read_4ba_ereg(struct flashctx *flash, unsigned int addr, uint8_t *bytes, unsigned int len);
+
+/* erase flash bytes from 3-bytes addressing mode using extended address register */
+int spi_block_erase_20_4ba_ereg(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
+int spi_block_erase_52_4ba_ereg(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
+int spi_block_erase_d8_4ba_ereg(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 
 
 #endif /* __SPI_4BA_H__ */
