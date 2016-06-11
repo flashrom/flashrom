@@ -43,7 +43,7 @@ int spi_enter_4ba_b7(struct flashctx *flash)
 
 	msg_trace("-> %s\n", __func__);
 
-	/* Switch to 4-bytes addressing mode  */
+	/* Switch to 4-bytes addressing mode */
 	return spi_send_command(flash, sizeof(cmd), 0, cmd, NULL);
 }
 
@@ -71,17 +71,15 @@ int spi_enter_4ba_b7_we(struct flashctx *flash)
 
 	msg_trace("-> %s\n", __func__);
 
-	/* Switch to 4-bytes addressing mode  */
+	/* Switch to 4-bytes addressing mode */
 	result = spi_send_multicommand(flash, cmds);
-	if (result) {
+	if (result)
 		msg_cerr("%s failed during command execution\n", __func__);
-	}
 	return result;
 }
 
 /* Program one flash byte from 4-bytes addressing mode */
-int spi_byte_program_4ba(struct flashctx *flash, unsigned int addr,
-				 uint8_t databyte)
+int spi_byte_program_4ba(struct flashctx *flash, unsigned int addr, uint8_t databyte)
 {
 	int result;
 	struct spi_command cmds[] = {
@@ -112,16 +110,13 @@ int spi_byte_program_4ba(struct flashctx *flash, unsigned int addr,
 	msg_trace("-> %s (0x%08X)\n", __func__, addr);
 
 	result = spi_send_multicommand(flash, cmds);
-	if (result) {
-		msg_cerr("%s failed during command execution at address 0x%x\n",
-			__func__, addr);
-	}
+	if (result)
+		msg_cerr("%s failed during command execution at address 0x%x\n", __func__, addr);
 	return result;
 }
 
 /* Program flash bytes from 4-bytes addressing mode */
-int spi_nbyte_program_4ba(struct flashctx *flash, unsigned int addr,
-			  const uint8_t *bytes, unsigned int len)
+int spi_nbyte_program_4ba(struct flashctx *flash, unsigned int addr, const uint8_t *bytes, unsigned int len)
 {
 	int result;
 	unsigned char cmd[(JEDEC_BYTE_PROGRAM_OUTSIZE + 1) - 1 + 256] = {
@@ -171,8 +166,7 @@ int spi_nbyte_program_4ba(struct flashctx *flash, unsigned int addr,
 }
 
 /* Read flash bytes from 4-bytes addressing mode */
-int spi_nbyte_read_4ba(struct flashctx *flash, unsigned int addr,
-		   uint8_t *bytes, unsigned int len)
+int spi_nbyte_read_4ba(struct flashctx *flash, unsigned int addr, uint8_t *bytes, unsigned int len)
 {
 	const unsigned char cmd[JEDEC_READ_OUTSIZE + 1] = {
 		JEDEC_READ,
@@ -188,9 +182,8 @@ int spi_nbyte_read_4ba(struct flashctx *flash, unsigned int addr,
 	return spi_send_command(flash, sizeof(cmd), len, cmd, bytes);
 }
 
-/* Erases 4 KB of flash from 4-bytes addressing mode */
-int spi_block_erase_20_4ba(struct flashctx *flash, unsigned int addr,
-		       unsigned int blocklen)
+/* Erase one sector of flash from 4-bytes addressing mode */
+int spi_block_erase_20_4ba(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
 {
 	int result;
 	struct spi_command cmds[] = {
@@ -234,9 +227,8 @@ int spi_block_erase_20_4ba(struct flashctx *flash, unsigned int addr,
 	return 0;
 }
 
-/* Erases 32 KB of flash from 4-bytes addressing mode */
-int spi_block_erase_52_4ba(struct flashctx *flash, unsigned int addr,
-		       unsigned int blocklen)
+/* Erase one sector of flash from 4-bytes addressing mode */
+int spi_block_erase_52_4ba(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
 {
 	int result;
 	struct spi_command cmds[] = {
@@ -280,7 +272,7 @@ int spi_block_erase_52_4ba(struct flashctx *flash, unsigned int addr,
 	return 0;
 }
 
-/* Erases 64 KB of flash from 4-bytes addressing mode */
+/* Erase one sector of flash from 4-bytes addressing mode */
 int spi_block_erase_d8_4ba(struct flashctx *flash, unsigned int addr,
 		       unsigned int blocklen)
 {
