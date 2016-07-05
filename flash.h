@@ -37,6 +37,7 @@
 #include "libflashrom.h"
 #include "layout.h"
 #include "spi25_statusreg.h"
+#include "writeprotect.h"
 
 #define ERROR_PTR ((void*)-1)
 
@@ -246,7 +247,7 @@ struct flashchip {
 	} *status_register;
 
 	int (*printlock) (struct flashctx *flash);	// TODO(hatim): This member should be decommissioned
-	int (*unlock) (struct flashctx *flash);
+	int (*unlock) (struct flashctx *flash);		// TODO(hatim): This member should be decommissioned
 	int (*write) (struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 	int (*read) (struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 	struct voltage {
@@ -257,6 +258,26 @@ struct flashchip {
 
 	/* SPI specific options (TODO: Make it a union in case other bustypes get specific options.) */
 	uint8_t wrea_override; /**< override opcode for write extended address register */
+
+	struct wp {
+		/* WP range table, indexed by BP bit configuration. For chips
+		 * that also have a CMP bit, the most significant bit after
+		 * the highest BP bit should represent the CMP bit. For example,
+		 * a chip with BP[0..2] and CMP bits, the index mask is 0x0f and
+		 * the most significant 1 represents CMP. */
+		struct range *ranges;
+		/* Either ranges is assigned to or range_table is, NOT both. */
+		/* Return pointer to WP range table. */
+		struct range *(*range_table) (struct flashctx *flash);
+		/* Return BP(BP0, BP1, ... , SEC, TB) bit mask. */
+		uint32_t (*bp_bitmask) (struct flashctx *flash);
+		/* Given a range, set the corresponding BP and CMP bit (if present) in the status
+		 * register. If range is invalid, return -1 and abort writing to status register. */
+		int (*set_range) (struct flashctx *flash, uint32_t start, uint32_t len);
+		/* Disable any block protection in effect. */
+		int (*disable) (struct flashctx *flash);
+		int (*print_table) (struct flashctx *flash);
+	} *wp;
 };
 
 struct flashrom_flashctx {
