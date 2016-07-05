@@ -303,8 +303,14 @@ static int spi_poll_wip(struct flashctx *const flash, const unsigned int poll_de
 {
 	/* FIXME: We can't tell if spi_read_status_register() failed. */
 	/* FIXME: We don't time out. */
-	while (spi_read_status_register(flash) & SPI_SR_WIP)
-		programmer_delay(poll_delay);
+	/* TODO(hatim): Switch to newer infrastructure completely after integration */
+	if (flash->chip->status_register) {
+		while (flash->chip->status_register->read(flash, SR1) & SPI_SR_WIP)
+			programmer_delay(poll_delay);
+	} else {
+		while (spi_read_status_register(flash) & SPI_SR_WIP)
+			programmer_delay(poll_delay);
+	}
 	/* FIXME: Check the status register for errors. */
 	return 0;
 }
