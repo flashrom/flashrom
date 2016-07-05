@@ -6,6 +6,7 @@
  * Copyright (C) 2008 coresystems GmbH
  * Copyright (C) 2008 Ronald Hoogenboom <ronald@zonnet.nl>
  * Copyright (C) 2012 Stefan Tauner
+ * Copyright (C) 2016 Hatim Kanchwala <hatim@hatimak.me>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +21,48 @@
 #include "flash.h"
 #include "chipdrivers.h"
 #include "spi.h"
+#include "spi25_statusreg.h"
+
+/* The following multi-array contains descriptions of corresponding bits defined
+ * in enum status_register_bit. It is imperative that the correspondence between
+ * the two definitions remain intact. The first index defines the correspondence. */
+char *statreg_bit_desc[][2] = {
+		/* Name,	Description */
+		{ "",		"" },	/* Corresponds to INVALID_BIT. */
+		{ "RESV",	"" },	/* Corresponds to RESV. */
+		{ "WIP",	"BUSY/Write In Progress (WIP)" },
+		{ "WEL",	"Write Enable Latch (WEL)" },
+		{ "SRP0",	"Status Register Write Disable (SRWD)/Software Register Protect (SRP/SRP0)" },
+		{ "SRP1",	"Software Register Protect 1 (SRP1)" },
+		{ "BPL",	"Block Protect Write Disable (BPL)" },
+		{ "WP",		"WP# Disable (WPDIS)" },
+		{ "CMP",	"Complement Protect (CMP)" },
+		{ "WPS",	"Write Protect Scheme (WPS)" },
+		{ "QE",		"Quad Enable (QE)" },
+		{ "SUS",	"Erase/Program Suspend (SUS)" },
+		{ "SUS1",	"Erase Suspend (SUS1)" },
+		{ "SUS2",	"Program Suspend (SUS2)" },
+		{ "DRV0",	"Output Driver Strength (DRV0)" },
+		{ "DRV1",	"Output Driver Strength (DRV1)" },
+		{ "RST",	"HOLD/Reset (RST)" },
+		{ "HPF",	"HPF/HPM (High Performance Flag)" },
+		{ "LPE",	"Low Power Enable (LPE)" },
+		{ "AAI",	"Auto Address Increment (AAI)" },
+		{ "APT",	"All Protect (APT)" },
+		{ "CP",		"Continuously Program mode (CP)" },
+		/* The order of the following bits must not be altered and
+		 * newer entries must not be inserted between them. */
+		{ "BP0",	"Block Protect 0 (BP0)" },
+		{ "BP1",	"Block Protect 1 (BP1)" },
+		{ "BP2",	"Block Protect 2 (BP2)" },
+		{ "BP3",	"Block Protect 3 (BP3)" },
+		{ "BP4",	"Block Protect 4 (BP4)" },
+		{ "TB",		"Top/Bottom Block Protect (TB)" },
+		{ "SEC",	"Sector/Block Protect (SEC)" },
+		{ "LB1",	"Security Register Lock (LB/LB1)" },
+		{ "LB2",	"Security Register Lock (LB2)" },
+		{ "LB3",	"Security Register Lock (LB3)" },
+};
 
 /* === Generic functions === */
 int spi_write_status_enable(struct flashctx *flash)
@@ -104,6 +147,7 @@ int spi_write_status_register(struct flashctx *flash, int status)
 	return ret;
 }
 
+// TODO(hatim): This function should be decommissioned once integration is complete
 uint8_t spi_read_status_register(struct flashctx *flash)
 {
 	static const unsigned char cmd[JEDEC_RDSR_OUTSIZE] = { JEDEC_RDSR };
@@ -120,6 +164,302 @@ uint8_t spi_read_status_register(struct flashctx *flash)
 	}
 
 	return readarr[0];
+}
+
+/* Generic function to read status register SRn (n = 1, 2, or 3). */
+// TODO(hatim): This should eventually replace calls to spi_read_status_register().
+uint8_t spi_read_status_register_generic(struct flashctx *flash, enum status_register_num SRn)
+{
+	// TODO(hatim): Check whether flash has SRn in the first place
+	static unsigned char const cmd[MAX_STATUS_REGISTERS][JEDEC_RDSR_OUTSIZE] = {
+		{ JEDEC_RDSR }, { JEDEC_RDSR2 }, { JEDEC_RDSR3 }
+	};
+	unsigned char readarr[JEDEC_RDSR_INSIZE];
+
+	if (spi_send_command(flash, sizeof(cmd[SRn]), sizeof(readarr), cmd[SRn], readarr))
+		msg_cerr("%s for SR%d failed.\n", __func__, SRn + 1);
+	return (uint8_t)readarr[0];
+}
+
+/* Called by spi_write_status_register_generic() to set status for chips with
+ * exactly 2 status registers. */
+static int spi_write_status_generic_2(struct flashctx *flash, uint16_t status)
+{
+	int result = spi_write_enable(flash);
+	if (result) {
+		msg_cerr("%s failed\n", __func__);
+		return result;
+	}
+
+	unsigned char cmd[JEDEC_WRSR_2_OUTSIZE] = { JEDEC_WRSR, status & 0xff, (status >> 8) & 0xff };
+	result = spi_send_command(flash, sizeof(cmd), 0, cmd, NULL);
+	if (result)
+		msg_cerr("%s failed\n", __func__);
+	// FIXME(hatim): Verify whether status was indeed written (?)
+	return result;
+}
+
+/* Called by spi_write_status_register_generic() to set status for chips with
+ * exactly 3 status registers. */
+static int spi_write_status_generic_3(struct flashctx *flash, enum status_register_num SRn, uint8_t status)
+{
+	int result = spi_write_enable(flash);
+	if (result) {
+		msg_cerr("%s failed\n", __func__);
+		return result;
+	}
+
+	unsigned char cmd[JEDEC_WRSR_OUTSIZE];
+	switch (SRn) {
+	case SR1:
+		cmd[0] = JEDEC_WRSR1;
+		break;
+	case SR2:
+		cmd[0] = JEDEC_WRSR2;
+		break;
+	case SR3:
+		cmd[0] = JEDEC_WRSR3;
+		break;
+	}
+	cmd[1] = status;
+	result = spi_send_command(flash, sizeof(cmd), 0, cmd, NULL);
+	if (result)
+		msg_cerr("%s failed\n", __func__);
+	// FIXME(hatim): Verify whether status was indeed written (?)
+	return result;
+}
+
+/* Generic function to set status register SRn (n = 1, 2, or 3) to status. */
+// TODO(hatim): This should eventually replace calls to spi_write_status_register()
+// and, consequently spi_write_status_register() should be made static.
+int spi_write_status_register_generic(struct flashctx *flash, enum status_register_num SRn, uint8_t status)
+{
+	// TODO(hatim): Check whether flash has SRn in the first place
+	int result = 0;
+	uint8_t other_status;
+	uint16_t total_status;
+
+	switch (top_status_register(flash)) {
+	case SR1:
+		result = spi_write_status_register(flash, (int)status);
+		break;
+	case SR2:
+		/* Use specific read function if available */
+		if (flash->chip->status_register->read)
+			other_status = flash->chip->status_register->read(flash, SRn);
+		else
+			other_status = spi_read_status_register_generic(flash, (SRn == SR1) ? SR2 : SR1);
+		total_status = (SRn == SR1) ? ((other_status << 8) | status) : ((status << 8) | other_status);
+		result = spi_write_status_generic_2(flash, total_status);
+		break;
+	case SR3:
+		result = spi_write_status_generic_3(flash, SRn, status);
+		break;
+	}
+	if (result)
+		msg_cerr("%s failed\n", __func__);
+	return result;
+}
+
+/* Return top-most (highest) status register. */
+enum status_register_num top_status_register(struct flashctx *flash) {
+	enum status_register_num SRn = SR1;
+	enum status_register_bit (*layout)[8] = flash->chip->status_register->layout;
+
+	while (layout[SRn++][0] != INVALID_BIT)
+		;
+	return SRn - 2;
+}
+
+/* Given a bit, return position of the bit in status register or -1 if not found.
+ * Counting starts from 0 for bit_0 of SR1, moves to 8 for bit_0 of SR2 and,
+ * finally moves to 23 for bit_7 of SR3. */
+char pos_bit(struct flashctx *flash, enum status_register_bit bit) {
+	enum status_register_num SRn;
+	char pos = -1;
+	int j;
+
+	for (SRn = SR1; SRn <= top_status_register(flash); SRn++) {
+		for (j = 0; j < 8; j++) {
+			if (flash->chip->status_register->layout[SRn][j] == bit) {
+				pos = (8 * SRn) + j;
+				break;
+			}
+		}
+	}
+	return pos;
+}
+
+// TODO(hatim): Improve code, merge different switch-cases into one
+enum wp_mode get_wp_mode_generic(struct flashctx *flash)
+{
+	// TODO(hatim): Check whether chip has said status register and bits in the first place
+	int result, status, status_tmp, srp_mask;
+
+	if (pos_bit(flash, SRP1) != -1) {
+		/* The following code assumes that SRP0 and SRP1 are present in the first and second
+		 * status registers as bit_7 and bit_8 respectively. */
+		status = flash->chip->status_register->read(flash, SR1);
+		status |= flash->chip->status_register->read(flash, SR2) << 8;
+		srp_mask = 1 << 7 | 1 << 8;
+
+		switch ((status & srp_mask) >> 7) {
+		case 0x00:
+			return WP_MODE_SOFTWARE;
+		case 0x01:
+			/* Make (SRP1, SRP0) = (0, 0). */
+			status_tmp = (status & ~srp_mask) & 0xffff;
+			/* Only need to write SRP0=0, which is always present in the first status register. */
+			if (flash->chip->status_register->write(flash, SR1, (uint8_t)(status_tmp & 0xff))) {
+				/* FIXME: If flash->chip->status_register->write() verifies whether status
+				 * supplied to it is indeed written, then, if we are in this block, we should
+				 * simply return WP_MODE_HARDWARE_PROTECTED because failure is a sufficient
+				 * indication for hardware protection mode to be on. */
+				msg_cerr("%s failed\n", __func__);
+				return WP_MODE_INVALID;
+			}
+			status_tmp = flash->chip->status_register->read(flash, SR1);
+			status_tmp |= flash->chip->status_register->read(flash, SR2) << 8;
+			result = (status_tmp & srp_mask) >> 7;
+			if (result == 0x01) {
+				return WP_MODE_HARDWARE_PROTECTED;
+			} else if (result == 0x00) {
+				status_tmp = ((status_tmp & ~srp_mask) | (0x01 << 7)) & 0xffff;
+				if (flash->chip->status_register->write(flash, SR1,
+					(uint8_t)(status_tmp & 0xff))) {
+					msg_cerr("%s failed\n", __func__);
+					return WP_MODE_SOFTWARE;
+				}
+				return WP_MODE_HARDWARE_UNPROTECTED;
+			} else {
+				return WP_MODE_INVALID;
+			}
+		case 0x02:
+			return WP_MODE_POWER_CYCLE;
+		case 0x03:
+			return WP_MODE_PERMANENT;
+		default:
+			return WP_MODE_INVALID;
+		}
+	} else {
+		status = flash->chip->status_register->read(flash, SR1);
+		srp_mask = 1 << 7;
+
+		switch ((status & srp_mask) >> 7) {
+		case 0x00:
+			return WP_MODE_SOFTWARE;
+		case 0x01:
+			/* Make SRP0 = 0. */
+			status_tmp = (status & ~srp_mask) & 0xff;
+			result = flash->chip->status_register->write(flash, SR1, (uint8_t)status_tmp);
+			if (result) {
+				/* FIXME: If flash->chip->status_register->write() verifies whether status
+				 * supplied to it is indeed written, then, if we are in this block, we should
+				 * simply return WP_MODE_HARDWARE_PROTECTED because failure is a sufficient
+				 * indication for hardware protection mode to be on. */
+				msg_cerr("%s failed\n", __func__);
+				return WP_MODE_INVALID;
+			}
+			status_tmp = flash->chip->status_register->read(flash, SR1);
+			result = (status_tmp & srp_mask) >> 7;
+			if (result == 0x01) {
+				return WP_MODE_HARDWARE_PROTECTED;
+			} else if (result == 0x00) {
+				status_tmp = ((status_tmp & ~srp_mask) | (0x01 << 7)) & 0xff;
+				if (flash->chip->status_register->write(flash, SR1, (uint8_t)status_tmp)) {
+					msg_cerr("%s failed\n", __func__);
+					return WP_MODE_SOFTWARE;
+				}
+				return WP_MODE_HARDWARE_UNPROTECTED;
+			} else {
+				return WP_MODE_INVALID;
+			}
+		default:
+			return WP_MODE_INVALID;
+		}
+	}
+}
+
+// TODO(hatim): Improve code, merge different switch-cases into one
+int set_wp_mode_generic(struct flashctx *flash, enum wp_mode wp_mode)
+{
+	int srp_mask = 1 << 7, srp_bitfield, srp_bitfield_new, result;
+	int status = flash->chip->status_register->read(flash, SR1);
+
+	if (pos_bit(flash, SRP1) != -1) {
+		/* The following code assumes that SRP0 and SRP1 are present and that they
+		 * are present in the first and second status registers as bit_7 and bit_8
+		 * respectively. */
+		status |= flash->chip->status_register->read(flash, SR2) << 8;
+		/* SRP1 is bit_8. */
+		srp_mask |= 1 << 8;
+		switch (wp_mode) {
+		case WP_MODE_SOFTWARE:
+			srp_bitfield = 0x00;
+			break;
+		case WP_MODE_HARDWARE_UNPROTECTED:
+			srp_bitfield = 0x01;
+			break;
+		case WP_MODE_POWER_CYCLE:
+			srp_bitfield = 0x02;
+			break;
+		case WP_MODE_PERMANENT:
+			srp_bitfield = 0x03;
+			break;
+		default:
+			msg_cdbg("Invalid write protection mode for status register(s)\n");
+			msg_cerr("%s failed\n", __func__);
+			return -1;
+		}
+		status = ((status & ~srp_mask) | (srp_bitfield << 7)) & 0xffff;
+		result = flash->chip->status_register->write(flash, SR1, (uint8_t)(status & 0xff));
+		if (result) {
+			msg_cerr("%s failed", __func__);
+			return result;
+		}
+		result = flash->chip->status_register->write(flash, SR2, (uint8_t)((status >> 8) & 0xff));
+		if (result) {
+			msg_cerr("%s failed", __func__);
+			return result;
+		}
+		status = flash->chip->status_register->read(flash, SR1);
+		status |= flash->chip->status_register->read(flash, SR2) << 8;
+		srp_bitfield_new = (status & srp_mask ) >> 7;
+		if (srp_bitfield_new != srp_bitfield) {
+			msg_cdbg("Setting write protection mode for status register(s) failed\n");
+			msg_cerr("%s failed\n", __func__);
+			return -1;
+		}
+	} else {
+		switch (wp_mode) {
+		case WP_MODE_SOFTWARE:
+			srp_bitfield = 0x00;
+			break;
+		case WP_MODE_HARDWARE_UNPROTECTED:
+			srp_bitfield = 0x01;
+			break;
+		case WP_MODE_POWER_CYCLE:
+		case WP_MODE_PERMANENT:
+		default:
+			msg_cdbg("Invalid write protection mode for status register(s)\n");
+			msg_cerr("%s failed\n", __func__);
+			return -1;
+		}
+		status = ((status & ~srp_mask) | (srp_bitfield << 7)) & 0xff;
+		result = flash->chip->status_register->write(flash, SR1, (uint8_t)status);
+		if (result) {
+			msg_cerr("%s failed", __func__);
+			return result;
+		}
+		status = flash->chip->status_register->read(flash, SR1);
+		srp_bitfield_new = (status & srp_mask ) >> 7;
+		if (srp_bitfield_new != srp_bitfield) {
+			msg_cdbg("Setting write protection mode for status register(s) failed\n");
+			msg_cerr("%s failed\n", __func__);
+			return -1;
+		}
+	}
+	return 0;
 }
 
 /* A generic block protection disable.
@@ -237,12 +577,14 @@ int spi_disable_blockprotect_bp4_srwd(struct flashctx *flash)
 	return spi_disable_blockprotect_generic(flash, 0x7C, 1 << 7, 0, 0xFF);
 }
 
+// TODO(hatim): This function should be decommissioned once integration is complete
 static void spi_prettyprint_status_register_hex(uint8_t status)
 {
 	msg_cdbg("Chip status register is 0x%02x.\n", status);
 }
 
 /* Common highest bit: Status Register Write Disable (SRWD) or Status Register Protect (SRP). */
+// TODO(hatim): This function should be decommissioned once integration is complete
 static void spi_prettyprint_status_register_srwd(uint8_t status)
 {
 	msg_cdbg("Chip status register: Status Register Write Disable (SRWD, SRP, ...) is %sset\n",
@@ -250,6 +592,7 @@ static void spi_prettyprint_status_register_srwd(uint8_t status)
 }
 
 /* Common highest bit: Block Protect Write Disable (BPL). */
+// TODO(hatim): This function should be decommissioned once integration is complete
 static void spi_prettyprint_status_register_bpl(uint8_t status)
 {
 	msg_cdbg("Chip status register: Block Protect Write Disable (BPL) is %sset\n",
@@ -257,6 +600,7 @@ static void spi_prettyprint_status_register_bpl(uint8_t status)
 }
 
 /* Common lowest 2 bits: WEL and WIP. */
+// TODO(hatim): This function should be decommissioned once integration is complete
 static void spi_prettyprint_status_register_welwip(uint8_t status)
 {
 	msg_cdbg("Chip status register: Write Enable Latch (WEL) is %sset\n",
@@ -266,6 +610,7 @@ static void spi_prettyprint_status_register_welwip(uint8_t status)
 }
 
 /* Common block protection (BP) bits. */
+// TODO(hatim): This function should be decommissioned once integration is complete
 static void spi_prettyprint_status_register_bp(uint8_t status, int bp)
 {
 	switch (bp) {
@@ -289,11 +634,13 @@ static void spi_prettyprint_status_register_bp(uint8_t status, int bp)
 }
 
 /* Unnamed bits. */
+// TODO(hatim): This function should be decommissioned once integration is complete
 void spi_prettyprint_status_register_bit(uint8_t status, int bit)
 {
 	msg_cdbg("Chip status register: Bit %i is %sset\n", bit, (status & (1 << bit)) ? "" : "not ");
 }
 
+// TODO(hatim): This function should be decommissioned once integration is complete
 int spi_prettyprint_status_register_plain(struct flashctx *flash)
 {
 	uint8_t status = spi_read_status_register(flash);
@@ -302,6 +649,7 @@ int spi_prettyprint_status_register_plain(struct flashctx *flash)
 }
 
 /* Print the plain hex value and the welwip bits only. */
+// TODO(hatim): This function should be decommissioned once integration is complete
 int spi_prettyprint_status_register_default_welwip(struct flashctx *flash)
 {
 	uint8_t status = spi_read_status_register(flash);
@@ -315,6 +663,7 @@ int spi_prettyprint_status_register_default_welwip(struct flashctx *flash)
  * AMIC A25L series
  * and MX MX25L512
  */
+// TODO(hatim): This function should be decommissioned once integration is complete
 int spi_prettyprint_status_register_bp1_srwd(struct flashctx *flash)
 {
 	uint8_t status = spi_read_status_register(flash);
@@ -333,6 +682,7 @@ int spi_prettyprint_status_register_bp1_srwd(struct flashctx *flash)
  * AMIC A25L series
  * PMC Pm25LD series
  */
+// TODO(hatim): This function should be decommissioned once integration is complete
 int spi_prettyprint_status_register_bp2_srwd(struct flashctx *flash)
 {
 	uint8_t status = spi_read_status_register(flash);
@@ -350,6 +700,7 @@ int spi_prettyprint_status_register_bp2_srwd(struct flashctx *flash)
  * ST M25P series
  * MX MX25L series
  */
+// TODO(hatim): This function should be decommissioned once integration is complete
 int spi_prettyprint_status_register_bp3_srwd(struct flashctx *flash)
 {
 	uint8_t status = spi_read_status_register(flash);
@@ -362,6 +713,7 @@ int spi_prettyprint_status_register_bp3_srwd(struct flashctx *flash)
 	return 0;
 }
 
+// TODO(hatim): This function should be decommissioned once integration is complete
 int spi_prettyprint_status_register_bp4_srwd(struct flashctx *flash)
 {
 	uint8_t status = spi_read_status_register(flash);
@@ -373,6 +725,7 @@ int spi_prettyprint_status_register_bp4_srwd(struct flashctx *flash)
 	return 0;
 }
 
+// TODO(hatim): This function should be decommissioned once integration is complete
 int spi_prettyprint_status_register_bp2_bpl(struct flashctx *flash)
 {
 	uint8_t status = spi_read_status_register(flash);
@@ -386,6 +739,7 @@ int spi_prettyprint_status_register_bp2_bpl(struct flashctx *flash)
 	return 0;
 }
 
+// TODO(hatim): This function should be decommissioned once integration is complete
 int spi_prettyprint_status_register_bp2_tb_bpl(struct flashctx *flash)
 {
 	uint8_t status = spi_read_status_register(flash);
@@ -396,6 +750,65 @@ int spi_prettyprint_status_register_bp2_tb_bpl(struct flashctx *flash)
 	msg_cdbg("Chip status register: Top/Bottom (TB) is %s\n", (status & (1 << 5)) ? "bottom" : "top");
 	spi_prettyprint_status_register_bp(status, 2);
 	spi_prettyprint_status_register_welwip(status);
+	return 0;
+}
+
+/* TODO: Use in place of printlock, after asigning a struct status_register member. This supersedes
+ * functionality of all prettyprint functions defined above. */
+int spi_prettyprint_status_register_generic(struct flashctx *flash, enum status_register_num SRn)
+{
+	uint8_t status = flash->chip->status_register->read(flash, SRn);
+	enum status_register_bit bit;
+	int i;
+
+	msg_cdbg("Chip status register %d is 0x%02x.\n", SRn + 1, status);
+	for (i = 7; i >= 0; i--) {
+		switch (bit = flash->chip->status_register->layout[SRn][i]) {
+		case RESV:
+			msg_cdbg("Chip status register %d: Bit %d is reserved\n", SRn + 1, i);
+			break;
+		case TB:
+			msg_cdbg("Chip status register %d : %s is %s\n", SRn + 1, statreg_bit_desc[bit][1],
+				(status & (1 << i)) ? "bottom" : "top");
+			break;
+		case SEC:
+			msg_cdbg("Chip status register %d: %s is %s\n", SRn + 1, statreg_bit_desc[bit][1],
+				(status & (1 << i)) ? "sectors" : "blocks");
+		default:
+			msg_cdbg("Chip status register %d: %s is %sset\n", SRn + 1, statreg_bit_desc[bit][1],
+				(status & (1 << i)) ? "" : "not ");
+			break;
+		}
+	}
+	return 0;
+}
+
+int spi_prettyprint_status_register_wp_generic(struct flashctx *flash)
+{
+	uint8_t multiple = (top_status_register(flash) == SR1) ? 0 : 1;
+	switch (flash->chip->status_register->get_wp_mode(flash)) {
+	case WP_MODE_INVALID:
+		msg_cdbg("Invalid write protection mode for status register%s\n", (multiple) ? "s" : "");
+		break;
+	case WP_MODE_POWER_CYCLE:
+		msg_cdbg("Power supply lock down, cannot write to status register%s until next power "
+			"down-up cycle\n", (multiple) ? "s" : "");
+		break;
+	case WP_MODE_PERMANENT:
+		msg_cdbg("Status register%s permanently locked\n", (multiple) ? "s are" : " is");
+		break;
+	case WP_MODE_HARDWARE_PROTECTED:
+		msg_cerr("Hardware protection of status register%s is active (WP# pin low),"
+			" disabling impossible\n", (multiple) ? "s" : "");
+		break;
+	case WP_MODE_HARDWARE_UNPROTECTED:
+		msg_cdbg("Hardware protection is active (WP# pin high), writes to status "
+			"register%s still possible\n", (multiple) ? "s are" : " is");
+		break;
+	case WP_MODE_SOFTWARE:
+		msg_cdbg("Write protection for status register%s is NOT in effect\n", (multiple) ? "s" : "");
+		break;
+	}
 	return 0;
 }
 

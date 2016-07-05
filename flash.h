@@ -36,6 +36,7 @@
 
 #include "libflashrom.h"
 #include "layout.h"
+#include "spi25_statusreg.h"
 
 #define ERROR_PTR ((void*)-1)
 
@@ -225,7 +226,26 @@ struct flashchip {
 		int (*block_erase) (struct flashctx *flash, unsigned int blockaddr, unsigned int blocklen);
 	} block_erasers[NUM_ERASEFUNCTIONS];
 
-	int (*printlock) (struct flashctx *flash);
+	/* The following struct represents the status register(s). Each status register
+	 * is a member of the layout array at the corresponding index (starting at SR1=0). */
+	struct status_register {
+		/* We need one more than MAX_STATUS_REGISTERS */
+		enum status_register_bit layout[MAX_STATUS_REGISTERS + 1][8];
+
+		/* Return value of status register SRn. */
+		uint8_t (*read) (struct flashctx *flash, enum status_register_num SRn);
+		/* Set value of status register SRn to status. */
+		int (*write) (struct flashctx *flash, enum status_register_num SRn, uint8_t status);
+		/* Print the contents of status register SRn. */
+		int (*print) (struct flashctx *flash, enum status_register_num SRn);
+		/* Get mode of write protection currently in effect against status register. */
+		enum wp_mode (*get_wp_mode) (struct flashctx *flash);
+		/* Set mode of write protection against status register. */
+		int (*set_wp_mode) (struct flashctx *flash, enum wp_mode wp_mode);
+		int (*print_wp_mode) (struct flashctx *flash);
+	} *status_register;
+
+	int (*printlock) (struct flashctx *flash);	// TODO(hatim): This member should be decommissioned
 	int (*unlock) (struct flashctx *flash);
 	int (*write) (struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 	int (*read) (struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
