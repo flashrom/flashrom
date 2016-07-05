@@ -388,3 +388,22 @@ int disable_generic(struct flashctx *flash) {
 	msg_cdbg("Disabled any block protection in effect\n");
 	return result;
 }
+
+/* === Chip specific range_table generators === */
+/* === AMIC === */
+/* A25L032 */
+struct range *a25l032_range_table(struct flashctx *flash) {
+	struct range *table = sec_block_range_pattern(flash);
+	/* CMP=0 */
+	table[0x16].start = 0x3f0000;
+	table[0x16].len = 64;
+	table[0x1e].start = 0x000000;
+	table[0x1e].len = 64;
+	/* CMP=1 */
+	table[1 << 5 | 0x16].start = 0x000000;
+	table[1 << 5 | 0x16].len = 4032;
+	table[1 << 5 | 0x1e].start = 0x010000;
+	table[1 << 5 | 0x1e].len = 4032;
+
+	return table;
+}

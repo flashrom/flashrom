@@ -22,6 +22,7 @@
 #include "flashchips.h"
 #include "chipdrivers.h"
 #include "spi25_statusreg.h"
+#include "writeprotect.h"
 
 /**
  * List of supported flash chips.
@@ -1162,12 +1163,11 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		/* TODO: Read/write 2nd status register */
 		.status_register = &a25l080_sr,
-		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
 		.voltage	= {2700, 3600},
+		.wp		= &gd25_a25l080_q16_32a_wp,
 	},
 
 	{
@@ -1273,12 +1273,11 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		 /* TODO: Read/write 2nd status register */
 		.status_register = &a25lq16_32a_sr,
-		.unlock		= spi_disable_blockprotect_bp2_srwd,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
 		.voltage	= {2700, 3600},
+		.wp		= &gd25_a25l080_q16_32a_wp,
 	},
 
 	{
@@ -1314,12 +1313,11 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		/* TODO: Read/write 2nd status register */
 		.status_register = &a25l032_sr,
-		.unlock		= spi_disable_blockprotect_bp2_srwd,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
 		.voltage	= {2700, 3600},
+		.wp		= &a25l032_32a_wp,
 	},
 
 	{
@@ -1356,10 +1354,10 @@ const struct flashchip flashchips[] = {
 			}
 		},
 		.status_register = &a25lq16_32a_sr,
-		.unlock		= spi_disable_blockprotect_bp2_srwd, /* TODO: 2nd status reg (read with 0x35) */
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
 		.voltage	= {2700, 3600},
+		.wp		= &a25l032_32a_wp,
 	},
 
 	{
@@ -5926,12 +5924,11 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		/* TODO: Read/write 2nd status register */
 		.status_register = &gd25lq_sr,
-		.unlock		= spi_disable_blockprotect_bp4_srwd,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read, /* Fast read (0x0B) and multi I/O supported */
 		.voltage	= {1695, 1950},
+		.wp		= &gd25_a25l080_q16_32a_wp,
 	},
 
 	{
@@ -5966,12 +5963,11 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		/* TODO: Read/write 2nd status register*/
 		.status_register = &gd25lq_sr,
-		.unlock		= spi_disable_blockprotect_bp4_srwd,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read, /* Fast read (0x0B) and multi I/O supported */
 		.voltage	= {1695, 1950},
+		.wp		= &gd25_a25l080_q16_32a_wp,
 	},
 
 	{
@@ -6006,12 +6002,11 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		/* TODO: Read/write 2nd status register */
 		.status_register = &gd25lq_sr,
-		.unlock		= spi_disable_blockprotect_bp4_srwd,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read, /* Fast read (0x0B) and multi I/O supported */
 		.voltage	= {1695, 1950},
+		.wp		= &gd25_a25l080_q16_32a_wp,
 	},
 
 	{
@@ -6348,12 +6343,11 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		/* TODO: Read/write 2nd status register */
 		.status_register = &gd25q10_20_40_80_sr,
-		.unlock		= spi_disable_blockprotect_bp4_srwd,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read, /* Fast read (0x0B) and multi I/O supported */
 		.voltage	= {2700, 3600},
+		.wp		= &gd25_a25l080_q16_32a_wp,
 	},
 
 	{
@@ -6388,12 +6382,11 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_block_erase_c7,
 			}
 		},
-		/* TODO: Read/write 2nd status register */
 		.status_register = &gd25q16_32_64b_sr,
-		.unlock		= spi_disable_blockprotect_bp4_srwd,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read, /* Fast read (0x0B) and multi I/O supported */
 		.voltage	= {2700, 3600},
+		.wp		= &gd25_a25l080_q16_32a_wp,
 	},
 
 	{
@@ -7974,10 +7967,10 @@ const struct flashchip flashchips[] = {
 			},
 		},
 		.status_register = &mx25lx5d_sr,
-		.unlock		= spi_disable_blockprotect_bp3_srwd,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read, /* Fast read (0x0B), dual I/O supported */
 		.voltage	= {2700, 3600},
+		.wp		= &mx25l16xd_wp,
 	},
 
 	{
@@ -8009,10 +8002,10 @@ const struct flashchip flashchips[] = {
 			},
 		},
 		.status_register = &mx25lx65e_sr,
-		.unlock		= spi_disable_blockprotect_bp3_srwd,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read, /* Fast read (0x0B), dual I/O supported */
 		.voltage	= {2700, 3600},
+		.wp		= &mx25l16xd_wp,
 	},
 
 	{
@@ -8152,10 +8145,10 @@ const struct flashchip flashchips[] = {
 			},
 		},
 		.status_register = &mx25lx5d_sr,
-		.unlock		= spi_disable_blockprotect_bp3_srwd,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read, /* Fast read (0x0B) and dual I/O supported */
 		.voltage	= {2700, 3600},
+		.wp		= &mx25lx5d_wp,
 	},
 
 	{
@@ -8338,10 +8331,10 @@ const struct flashchip flashchips[] = {
 			}
 		},
 		.status_register = &mx25lx5d_sr,
-		.unlock		= spi_disable_blockprotect_bp3_srwd,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read, /* Fast read (0x0B), dual I/O read (0xBB) supported */
 		.voltage	= {2700, 3600},
+		.wp		= &mx25l6405d_wp,
 	},
 
 	{
@@ -8378,10 +8371,10 @@ const struct flashchip flashchips[] = {
 			}
 		},
 		.status_register = &mx25l64xe_sr,
-		.unlock		= spi_disable_blockprotect_bp3_srwd,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read, /* Fast read (0x0B), dual I/O read supported */
 		.voltage	= {2700, 3600},
+		.wp		= &mx25l6405d_wp,
 	},
 
 	{
@@ -8423,10 +8416,10 @@ const struct flashchip flashchips[] = {
 		 * of SRWD), but similar chips have SRWD.
 		 */
 		.status_register = &mx25lx65e_sr,
-		.unlock		= spi_disable_blockprotect_bp3_srwd,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read, /* Fast read (0x0B) and multi I/O supported */
 		.voltage	= {2700, 3600},
+		.wp		= &mx25lx65e_wp,
 	},
 
 	{

@@ -126,6 +126,7 @@ int print_table_generic(struct flashctx *flash);
 int set_range_generic(struct flashctx *flash, uint32_t start, uint32_t len);
 int disable_generic(struct flashctx *flash);
 struct range *range_table_global(struct flashctx *flash);
+struct range *a25l032_range_table(struct flashctx *flash);
 
 /* sfdp.c */
 int probe_spi_sfdp(struct flashctx *flash);
