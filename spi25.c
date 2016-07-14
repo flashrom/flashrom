@@ -872,3 +872,201 @@ int spi_exit_4ba(struct flashctx *flash)
 {
 	return spi_enter_exit_4ba(flash, false);
 }
+
+/* This function is specific to mostly Eon chips. It maps the
+ * additional OTP sector to the top or bottom sector (depending
+ * on the chip). The mapped sector behaves like just another
+ * normal sector. */
+int spi_enter_otp_mode(struct flashctx *flash)
+{
+	static const unsigned char cmd[JEDEC_ENTER_OTP_OUTSIZE] = { JEDEC_ENTER_OTP };
+	return spi_send_command(flash, sizeof(cmd), 0, cmd, NULL);
+}
+
+int spi_sec_reg_nbyte_read(struct flashctx *flash, unsigned int address, uint8_t *bytes,
+		   unsigned int len)
+{
+	const unsigned char cmd[JEDEC_READ_SEC_REG_OUTSIZE] = {
+		JEDEC_READ_SEC_REG,
+		(address >> 16) & 0xff,
+		(address >> 8) & 0xff,
+		(address >> 0) & 0xff,
+		0x00,
+	};
+
+	/* Send Read */
+	return spi_send_command(flash, sizeof(cmd), len, cmd, bytes);
+}
+
+int spi_sec_reg_read_chunked(struct flashctx *flash, uint8_t *buf, unsigned int start,
+		     unsigned int len, unsigned int chunksize)
+{
+	int rc = 0;
+	unsigned int i, j, starthere, lenhere, toread;
+	/* Limit for multi-die 4-byte-addressing chips. */
+	unsigned int area_size = min(flash->chip->total_size * 1024, 16 * 1024 * 1024);
+
+	/* Warning: This loop has a very unusual condition and body.
+	 * The loop needs to go through each area with at least one affected
+	 * byte. The lowest area number is (start / area_size) since that
+	 * division rounds down. The highest area number we want is the area
+	 * where the last byte of the range lives. That last byte has the
+	 * address (start + len - 1), thus the highest area number is
+	 * (start + len - 1) / area_size. Since we want to include that last
+	 * area as well, the loop condition uses <=.
+	 */
+	for (i = start / area_size; i <= (start + len - 1) / area_size; i++) {
+		/* Byte position of the first byte in the range in this area. */
+		/* starthere is an offset to the base address of the chip. */
+		starthere = max(start, i * area_size);
+		/* Length of bytes in the range in this area. */
+		lenhere = min(start + len, (i + 1) * area_size) - starthere;
+		for (j = 0; j < lenhere; j += chunksize) {
+			toread = min(chunksize, lenhere - j);
+			rc = spi_sec_reg_nbyte_read(flash, starthere + j, buf + starthere - start + j, toread);
+
+			if (rc)
+				break;
+		}
+		if (rc)
+			break;
+	}
+
+	return rc;
+}
+
+int spi_sec_reg_read(struct flashctx *flash, uint8_t *buf, unsigned int start,
+		     unsigned int len)
+{
+	unsigned int max_data = flash->mst->spi.max_data_read - 1; /* -1 because of dummy byte */
+	if (max_data == MAX_DATA_UNSPECIFIED) {
+		msg_perr("%s called, but SPI read chunk size not defined "
+			 "on this hardware. Please report a bug at "
+			 "flashrom@flashrom.org\n", __func__);
+		return 1;
+	}
+	return spi_sec_reg_read_chunked(flash, buf, start, len, max_data);
+}
+
+int spi_sec_reg_nbyte_program(struct flashctx *flash, unsigned int addr, const uint8_t *bytes, unsigned int len)
+{
+	/* FIXME: Switch to malloc based on len unless that kills speed. */
+	unsigned char cmd[JEDEC_PROG_BYTE_SEC_REG_OUTSIZE - 1 + 256] = {
+		JEDEC_PROG_BYTE_SEC_REG,
+		(addr >> 16) & 0xff,
+		(addr >> 8) & 0xff,
+		(addr >> 0) & 0xff,
+	};
+	struct spi_command cmds[] = {
+	{
+		.writecnt	= JEDEC_WREN_OUTSIZE,
+		.writearr	= (const unsigned char[]){ JEDEC_WREN },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= JEDEC_BYTE_PROGRAM_OUTSIZE - 1 + len,
+		.writearr	= cmd,
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= 0,
+		.writearr	= NULL,
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}};
+
+	if (!len) {
+		msg_cerr("%s called for zero-length write\n", __func__);
+		return 1;
+	}
+	if (len > 256) {
+		msg_cerr("%s called for too long a write\n", __func__);
+		return 1;
+	}
+
+	memcpy(&cmd[4], bytes, len);
+
+	const int result = spi_send_multicommand(flash, cmds);
+	if (result)
+		msg_cerr("%s failed during command execution at address 0x%x\n", __func__, addr);
+
+	const int status = spi_poll_wip(flash, 10);
+
+	return result ? result : status;
+}
+
+int spi_sec_reg_write_chunked(struct flashctx *flash, const uint8_t *buf, unsigned int start,
+			      unsigned int len, unsigned int chunksize)
+{
+	unsigned int i, j, starthere, lenhere, towrite;
+	/* FIXME: page_size is the wrong variable. We need max_writechunk_size
+	 * in struct flashctx to do this properly. All chips using
+	 * spi_chip_write_256 have page_size set to max_writechunk_size, so
+	 * we're OK for now.
+	 */
+	unsigned int page_size = flash->chip->page_size;
+
+	/* Warning: This loop has a very unusual condition and body.
+	 * The loop needs to go through each page with at least one affected
+	 * byte. The lowest page number is (start / page_size) since that
+	 * division rounds down. The highest page number we want is the page
+	 * where the last byte of the range lives. That last byte has the
+	 * address (start + len - 1), thus the highest page number is
+	 * (start + len - 1) / page_size. Since we want to include that last
+	 * page as well, the loop condition uses <=.
+	 */
+	for (i = start / page_size; i <= (start + len - 1) / page_size; i++) {
+		/* Byte position of the first byte in the range in this page. */
+		/* starthere is an offset to the base address of the chip. */
+		starthere = max(start, i * page_size);
+		/* Length of bytes in the range in this page. */
+		lenhere = min(start + len, (i + 1) * page_size) - starthere;
+		for (j = 0; j < lenhere; j += chunksize) {
+			int rc;
+
+			towrite = min(chunksize, lenhere - j);
+			rc = spi_sec_reg_nbyte_program(flash, starthere + j, buf + starthere - start + j, towrite);
+			if (rc)
+				return rc;
+		}
+	}
+
+	return 0;
+}
+
+int spi_sec_reg_prog(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len)
+{
+	unsigned int max_data = flash->mst->spi.max_data_write;
+	if (max_data == MAX_DATA_UNSPECIFIED) {
+		msg_perr("%s called, but SPI write chunk size not defined "
+			 "on this hardware. Please report a bug at "
+			 "flashrom@flashrom.org\n", __func__);
+		return 1;
+	}
+	return spi_sec_reg_write_chunked(flash, buf, start, len, max_data);
+}
+
+int spi_sec_reg_erase(struct flashctx *flash, uint32_t addr)
+{
+	/* We assume that addr is correct and proceed without any error checking. */
+	int ret = spi_write_enable(flash);
+	if (ret) {
+		msg_cerr("%s failed\n", __func__);
+		return ret;
+	}
+
+	uint8_t cmd[JEDEC_ERASE_SEC_REG_OUTSIZE] = {
+		(uint8_t)JEDEC_ERASE_SEC_REG,
+		(uint8_t)(addr >> 16) & 0xff,
+		(uint8_t)(addr >> 8) & 0xff,
+		(uint8_t)addr & 0xff,
+	};
+
+	ret = spi_send_command(flash, sizeof(cmd), 0, cmd, NULL);
+	if (ret)
+		msg_cerr("%s\n", __func__);
+
+	spi_poll_wip(flash, 10);
+
+	return ret;
+}

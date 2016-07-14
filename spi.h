@@ -176,6 +176,26 @@
    From ANY mode (3-bytes or 4-bytes) it works with 4-byte address */
 #define JEDEC_BYTE_PROGRAM_4BA	0x12
 
+/* Enter OTP mode (supported by most Eon chips) */
+#define JEDEC_ENTER_OTP		0x3A
+#define JEDEC_ENTER_OTP_OUTSIZE	0x01
+#define JEDEC_ENTER_OTP_INSIZE	0x00
+
+/* Read Security Register(s) (supported by most GigaDevice chips) */
+#define JEDEC_READ_SEC_REG		0x48
+#define JEDEC_READ_SEC_REG_OUTSIZE	0x05
+/* JEDEC_READ_SEC_REG_INSIZE		any length */
+
+/* Program Security Register(s) (supported by most GigaDevice chips) */
+#define JEDEC_PROG_BYTE_SEC_REG		0x42
+#define JEDEC_PROG_BYTE_SEC_REG_OUTSIZE	0x05
+#define JEDEC_PROG_BYTE_SEC_REG_INSIZE	0x00
+
+/* Erase Security Register(s) (supported by most GigaDevice chips) */
+#define JEDEC_ERASE_SEC_REG		0x44
+#define JEDEC_ERASE_SEC_REG_OUTSIZE	0x04
+#define JEDEC_ERASE_SEC_REG_INSIZE	0x00
+
 /* Error codes */
 #define SPI_GENERIC_ERROR	-1
 #define SPI_INVALID_OPCODE	-2

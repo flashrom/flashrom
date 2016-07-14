@@ -36,6 +36,7 @@
 
 #include "libflashrom.h"
 #include "layout.h"
+#include "otp.h"
 #include "spi25_statusreg.h"
 #include "writeprotect.h"
 
@@ -278,6 +279,28 @@ struct flashchip {
 		int (*disable) (struct flashctx *flash);
 		int (*print_table) (struct flashctx *flash);
 	} *wp;
+
+	struct otp {
+		struct region {
+			/* This address corresponds to the first byte in the OTP memory region. */
+			uint32_t addr;
+			uint32_t size; /* in bytes */
+
+			/* Usually, setting this modifier bit will permanently lock the
+			 * corresponding OTP region against writes.
+			 * Not all chips have a modifier bit (AMIC, Macronix). */
+			enum status_register_bit status_bit;
+		} region[MAX_OTP_REGIONS + 1]; /* We need one more than MAX_STATUS_REGISTERS */
+
+		int (*status) (struct flashctx *flash, enum otp_region otp_region);
+		int (*print_status) (struct flashctx *flash);
+		int (*read) (struct flashctx *flash, uint8_t *buf, enum otp_region otp_region,
+			uint32_t start_addr, uint32_t len);
+		int (*write) (struct flashctx *flash, const uint8_t *buf, enum otp_region otp_region,
+			uint32_t start_addr, uint32_t len);
+		int (*erase) (struct flashctx *flash, enum otp_region otp_region);
+		int (*lock) (struct flashctx *flash, enum otp_region otp_region);
+	} *otp;
 };
 
 struct flashrom_flashctx {
