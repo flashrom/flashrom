@@ -25,4 +25,15 @@
 
 enum otp_region { OTP_REG_1 = 0, OTP_REG_2, OTP_REG_3 };
 
+extern struct otp en128_2048otp;
+extern struct otp en256_512otp;
+extern struct otp en256_1024otp;
+extern struct otp en512_2048otp;
+extern struct otp en512_4096otp;
+extern struct otp en512_8192otp;
+extern struct otp en512_16384otp;
+extern struct otp gd_w256_3_otp;
+extern struct otp gd256_4_otp;
+extern struct otp gd512_3_otp;
+
 #endif		/* !__OTP_H__ */
