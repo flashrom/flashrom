@@ -48,6 +48,60 @@ struct status_register a25l080_sr = {
 	.get_wp_mode	= &get_wp_mode_generic,
 	.set_wp_mode	= &set_wp_mode_generic,
 };
+
+/* === Eon === */
+/* EN25QH128, EN25Q128, EN25QH64, EN25Q64, EN25QH32 */
+struct status_register en25qh128_sr = {
+	.layout = {
+		{ WIP, WEL, BP0, BP1, BP2, BP3, WP, SRP0 },
+	},
+	.read		= &spi_read_status_register_generic,
+	.write		= &spi_write_status_register_generic,
+	.print		= &spi_prettyprint_status_register_generic,
+	.print_wp_mode	= &spi_prettyprint_status_register_wp_generic,
+	.get_wp_mode	= &get_wp_mode_generic,
+	.set_wp_mode	= &set_wp_mode_generic,
+};
+
+/* EN25QH16 */
+struct status_register en25qh16_sr = {
+	.layout = {
+		{ WIP, WEL, BP0, BP1, BP2, BP3, QE, SRP0 },
+	},
+	.read		= &spi_read_status_register_generic,
+	.write		= &spi_write_status_register_generic,
+	.print		= &spi_prettyprint_status_register_generic,
+	.print_wp_mode	= &spi_prettyprint_status_register_wp_generic,
+	.get_wp_mode	= &get_wp_mode_generic,
+	.set_wp_mode	= &set_wp_mode_generic,
+};
+
+/* EN25Q16, EN25Q32 */
+struct status_register en25q16_sr = {
+	.layout = {
+		{ WIP, WEL, BP0, BP1, BP2, RESV, RESV, SRP0 },
+	},
+	.read		= &spi_read_status_register_generic,
+	.write		= &spi_write_status_register_generic,
+	.print		= &spi_prettyprint_status_register_generic,
+	.print_wp_mode	= &spi_prettyprint_status_register_wp_generic,
+	.get_wp_mode	= &get_wp_mode_generic,
+	.set_wp_mode	= &set_wp_mode_generic,
+};
+
+/* EN25Q80A, EN25Q40 */
+struct status_register en25q80a_sr = {
+	.layout = {
+		{ WIP, WEL, BP0, BP1, BP2, RESV, WP, SRP0 },
+	},
+	.read		= &spi_read_status_register_generic,
+	.write		= &spi_write_status_register_generic,
+	.print		= &spi_prettyprint_status_register_generic,
+	.print_wp_mode	= &spi_prettyprint_status_register_wp_generic,
+	.get_wp_mode	= &get_wp_mode_generic,
+	.set_wp_mode	= &set_wp_mode_generic,
+};
+
 /* === Macronix === */
 /* MX25L6408E, MX25L6406E */
 struct status_register mx25l64xe_sr = {
@@ -142,7 +196,7 @@ struct status_register gd25lq_sr = {
 	.set_wp_mode	= &set_wp_mode_generic,
 };
 
-/* GD25Q16B, GD25Q32B, GD25Q64B */
+/* GD25Q16B, GD25Q32B, GD25Q64B, GD25Q128B */
 struct status_register gd25q16_32_64b_sr = {
 	.layout = {
 		{ WIP, WEL, BP0, BP1, BP2, BP3, BP4, SRP0 },
@@ -170,7 +224,7 @@ struct status_register gd25q10_20_40_80_sr = {
 	.set_wp_mode	= &set_wp_mode_generic,
 };
 
-/* GD25VQ16C, GD25VQ80C, GD25Q16C, GD25Q40C */
+/* GD25VQ16C, GD25VQ40C, GD25VQ80C, GD25Q16C, GD25Q40C */
 struct status_register gd25vq16_80c_q16_40c_sr = {
 	.layout = {
 		{ WIP, WEL, BP0, BP1, BP2, BP3, BP4, SRP0 },

@@ -31,7 +31,18 @@ struct range {
 };
 
 extern struct wp a25l032_32a_wp;
-extern struct wp gd25_a25l080_q16_32a_wp;
+extern struct wp gd_w_wp;
+extern struct wp en25qh128_wp;
+extern struct wp en25q128_wp;
+extern struct wp en25qh64_wp;
+extern struct wp en25q64_wp;
+extern struct wp en25qh32_wp;
+extern struct wp en25q32ab_wp;
+extern struct wp en25qh16_wp;
+extern struct wp en25q16_wp;
+extern struct wp en25q32_wp;
+extern struct wp en25q80a_wp;
+extern struct wp en25q40_wp;
 extern struct wp mx25l16xd_wp;
 extern struct wp mx25l6405d_wp;
 extern struct wp mx25lx5d_wp;

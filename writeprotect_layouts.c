@@ -42,9 +42,274 @@ struct wp a25l032_32a_wp = {
 	.disable	= &disable_generic,
 };
 
-/* A25L080, A25LQ16, GD25LQ40, GD25LQ80, GD25LQ16, GD25Q16, GD25Q16B */
-struct wp gd25_a25l080_q16_32a_wp = {
+/* A25L080, A25LQ16, GD25LQ40, GD25LQ80, GD25LQ16, GD25Q16, GD25Q16B GD25Q32(B),
+ * GD25Q64(B), GD25Q128B, GD25Q128C, GD25VQ16C, GD25VQ21B, GD25VQ40C, GD25VQ41B,
+ * GD25VQ80C, W25Q40BL, W25Q64FV */
+struct wp gd_w_wp = {
 	.range_table	= &sec_block_range_pattern,
+	.bp_bitmask	= &bp_bitmask_generic,
+	.print_table	= &print_table_generic,
+	.set_range	= &set_range_generic,
+	.disable	= &disable_generic,
+};
+
+/* EN25QH128 */
+struct wp en25qh128_wp = {
+	.ranges = (struct range[]){
+		/* BP3 effectively acts as TB bit,
+		 * BP[0..2] function normally. */
+		{ 0x000000, 0 },
+		{ 0xff0000, 64 },
+		{ 0xfe0000, 128 },
+		{ 0xfc0000, 256 },
+		{ 0xf80000, 512 },
+		{ 0xf00000, 1024 },
+		{ 0xe00000, 2048 },
+		{ 0x000000, 16384 },
+
+		{ 0x000000, 0 },
+		{ 0x000000, 64 },
+		{ 0x000000, 128 },
+		{ 0x000000, 256 },
+		{ 0x000000, 512 },
+		{ 0x000000, 1024 },
+		{ 0x000000, 2048 },
+		{ 0x000000, 16384 },
+	},
+	.bp_bitmask	= &bp_bitmask_generic,
+	.print_table	= &print_table_generic,
+	.set_range	= &set_range_generic,
+	.disable	= &disable_generic,
+};
+
+/* EN25Q128 */
+struct wp en25q128_wp = {
+	.ranges = (struct range[]){
+		{ 0x000000, 0 },
+		{ 0x000000, 16320 },
+		{ 0x000000, 16256 },
+		{ 0x000000, 16128 },
+		{ 0x000000, 15872 },
+		{ 0x000000, 15360 },
+		{ 0x000000, 14336 },
+		{ 0x000000, 16384 },
+
+		{ 0x000000, 0 },
+		{ 0x010000, 16320 },
+		{ 0x020000, 16256 },
+		{ 0x040000, 16128 },
+		{ 0x080000, 15872 },
+		{ 0x100000, 15360 },
+		{ 0x200000, 14336 },
+		{ 0x000000, 16384 },
+	},
+	.bp_bitmask	= &bp_bitmask_generic,
+	.print_table	= &print_table_generic,
+	.set_range	= &set_range_generic,
+	.disable	= &disable_generic,
+};
+
+/* EN25QH64 */
+struct wp en25qh64_wp = {
+	.ranges = (struct range[]){
+		{ 0x000000, 0 },
+		{ 0x7f0000, 64 },
+		{ 0x7e0000, 128 },
+		{ 0x7c0000, 256 },
+		{ 0x780000, 512 },
+		{ 0x700000, 1024 },
+		{ 0x600000, 2048 },
+		{ 0x000000, 8192 },
+
+		{ 0x000000, 0 },
+		{ 0x000000, 64 },
+		{ 0x000000, 128 },
+		{ 0x000000, 256 },
+		{ 0x000000, 512 },
+		{ 0x000000, 1024 },
+		{ 0x000000, 2048 },
+		{ 0x000000, 8192 },
+	},
+	.bp_bitmask	= &bp_bitmask_generic,
+	.print_table	= &print_table_generic,
+	.set_range	= &set_range_generic,
+	.disable	= &disable_generic,
+};
+
+/* EN25Q64 */
+struct wp en25q64_wp = {
+	.ranges = (struct range[]){
+		{ 0x000000, 0 },
+		{ 0x000000, 8128 },
+		{ 0x000000, 8064 },
+		{ 0x000000, 7936 },
+		{ 0x000000, 7680 },
+		{ 0x000000, 7168 },
+		{ 0x000000, 6144 },
+		{ 0x000000, 8192 },
+
+		{ 0x000000, 0 },
+		{ 0x010000, 8128 },
+		{ 0x020000, 8064 },
+		{ 0x040000, 7936 },
+		{ 0x080000, 7680 },
+		{ 0x100000, 7168 },
+		{ 0x200000, 6144 },
+		{ 0x000000, 8192 },
+	},
+	.bp_bitmask	= &bp_bitmask_generic,
+	.print_table	= &print_table_generic,
+	.set_range	= &set_range_generic,
+	.disable	= &disable_generic,
+};
+
+/* EN25QH32 */
+struct wp en25qh32_wp = {
+	.ranges = (struct range[]){
+		{ 0x000000, 0 },
+		{ 0x3f0000, 64 },
+		{ 0x3e0000, 128 },
+		{ 0x3c0000, 256 },
+		{ 0x380000, 512 },
+		{ 0x300000, 1024 },
+		{ 0x200000, 2048 },
+		{ 0x000000, 4096 },
+
+		{ 0x000000, 0 },
+		{ 0x000000, 64 },
+		{ 0x000000, 128 },
+		{ 0x000000, 256 },
+		{ 0x000000, 512 },
+		{ 0x000000, 1024 },
+		{ 0x000000, 2048 },
+		{ 0x000000, 4096 },
+	},
+	.bp_bitmask	= &bp_bitmask_generic,
+	.print_table	= &print_table_generic,
+	.set_range	= &set_range_generic,
+	.disable	= &disable_generic,
+};
+
+/* EN25Q32A/EN25Q32B */
+struct wp en25q32ab_wp = {
+	.ranges = (struct range[]){
+		{ 0x000000, 0 },
+		{ 0x3f0000, 4032 },
+		{ 0x3e0000, 3968 },
+		{ 0x3c0000, 3840 },
+		{ 0x380000, 3584 },
+		{ 0x300000, 3072 },
+		{ 0x200000, 2048 },
+		{ 0x000000, 4096 },
+
+		{ 0x000000, 0 },
+		{ 0x010000, 4032 },
+		{ 0x020000, 3968 },
+		{ 0x040000, 3840 },
+		{ 0x080000, 3584 },
+		{ 0x100000, 3072 },
+		{ 0x200000, 2048 },
+		{ 0x000000, 4096 },
+	},
+	.bp_bitmask	= &bp_bitmask_generic,
+	.print_table	= &print_table_generic,
+	.set_range	= &set_range_generic,
+	.disable	= &disable_generic,
+};
+
+/* EN25QH16 */
+struct wp en25qh16_wp = {
+	.ranges = (struct range[]){
+		{ 0x000000, 0 },
+		{ 0x1f0000, 64 },
+		{ 0x1e0000, 128 },
+		{ 0x1c0000, 256 },
+		{ 0x180000, 512 },
+		{ 0x100000, 1024 },
+		{ 0x000000, 2048 },
+		{ 0x000000, 2048 },
+
+		{ 0x000000, 0 },
+		{ 0x000000, 64 },
+		{ 0x000000, 128 },
+		{ 0x000000, 256 },
+		{ 0x000000, 512 },
+		{ 0x000000, 1024 },
+		{ 0x000000, 2048 },
+		{ 0x000000, 2048 },
+	},
+	.bp_bitmask	= &bp_bitmask_generic,
+	.print_table	= &print_table_generic,
+	.set_range	= &set_range_generic,
+	.disable	= &disable_generic,
+};
+
+/* EN25Q16 */
+struct wp en25q16_wp = {
+	.ranges = (struct range[]){
+		{ 0x000000, 0 },
+		{ 0x000000, 1984 },
+		{ 0x000000, 1920 },
+		{ 0x000000, 1792 },
+		{ 0x000000, 1536 },
+		{ 0x000000, 1024 },
+		{ 0x000000, 2048 },
+		{ 0x000000, 2048 },
+	},
+	.bp_bitmask	= &bp_bitmask_generic,
+	.print_table	= &print_table_generic,
+	.set_range	= &set_range_generic,
+	.disable	= &disable_generic,
+};
+
+/* EN25Q32 */
+struct wp en25q32_wp = {
+	.ranges = (struct range[]){
+		{ 0x000000, 0 },
+		{ 0x3f0000, 64 },
+		{ 0x3e0000, 128 },
+		{ 0x3c0000, 256 },
+		{ 0x380000, 512 },
+		{ 0x300000, 1024 },
+		{ 0x200000, 2048 },
+		{ 0x000000, 4096 },
+	},
+	.bp_bitmask	= &bp_bitmask_generic,
+	.print_table	= &print_table_generic,
+	.set_range	= &set_range_generic,
+	.disable	= &disable_generic,
+};
+
+/* EN25Q80A */
+struct wp en25q80a_wp = {
+	.ranges = (struct range[]){
+		{ 0x000000, 0 },
+		{ 0x000000, 1016 },
+		{ 0x000000, 1008 },
+		{ 0x000000, 992 },
+		{ 0x000000, 960 },
+		{ 0x000000, 896 },
+		{ 0x000000, 768 },
+		{ 0x000000, 1024 },
+	},
+	.bp_bitmask	= &bp_bitmask_generic,
+	.print_table	= &print_table_generic,
+	.set_range	= &set_range_generic,
+	.disable	= &disable_generic,
+};
+
+/* EN25Q40 */
+struct wp en25q40_wp = {
+	.ranges = (struct range[]){
+		{ 0x000000, 0 },
+		{ 0x000000, 504 },
+		{ 0x000000, 496 },
+		{ 0x000000, 480 },
+		{ 0x000000, 448 },
+		{ 0x000000, 384 },
+		{ 0x000000, 256 },
+		{ 0x000000, 512 },
+	},
 	.bp_bitmask	= &bp_bitmask_generic,
 	.print_table	= &print_table_generic,
 	.set_range	= &set_range_generic,

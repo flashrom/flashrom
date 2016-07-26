@@ -80,6 +80,12 @@ extern char *statreg_bit_desc[][2];
 /* === AMIC === */
 extern struct status_register a25l080_sr;
 
+/* === Eon === */
+extern struct status_register en25qh128_sr;
+extern struct status_register en25qh16_sr;
+extern struct status_register en25q16_sr;
+extern struct status_register en25q80a_sr;
+
 /* === Macronix === */
 extern struct status_register mx25l64xe_sr;
 extern struct status_register mx25lx5d_sr;
