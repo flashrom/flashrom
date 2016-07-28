@@ -414,7 +414,7 @@ int do_verify(struct flashctx *, const char *const filename);
 #define ERROR_FLASHROM_LIMIT -201
 
 /* cli_common.c */
-void print_chip_support_status(const struct flashchip *chip);
+void print_chip_support_status(struct flashctx *flash);
 
 /* cli_output.c */
 extern enum flashrom_log_level verbose_screen;

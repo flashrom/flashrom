@@ -54,6 +54,9 @@ flashrom \- detect, read, write, verify and erase flash chips
          [\fB--print-status-reg\fR] [\fB--print-wp-status\fR]
          [\fB--wp-list\fR] [\fB--wp-enable\fR[=<MODE>]]
          [\fB--wp-disable\fR] [\fB--wp-set-range\fR start=<start>,len=<len>]
+         [\fB--print-otp-status\fR] [\fB--read-otp\fR file=<file>[,reg=<region>]]
+         [\fB--erase-otp\fR [reg=<region>]] [\fB--lock-otp\fR [reg=<region>]]
+         [\fB--write-otp\fR file=<file>[,reg=<region>]]
 .SH DESCRIPTION
 .B flashrom
 is a utility for detecting, reading, writing, verifying and erasing flash
@@ -193,10 +196,55 @@ will be applied after disabling.
 .B "\-\-wp\-set\-range start=<start>,len=<len>"
 Configure status register(s) to protect
 .B "<len>"
- kB of memory starting from address
-.B "<start>".
+kB of memory starting from address
+.B "<start>."
 Both start and len must be supplied. (Consider setting a write protection \
 mode to prevent against configuration changes to status register(s).)
+
+.TP
+.B "\-\-print\-otp\-status"
+Print details of OTP memory region(s) for the chip along with corresponding \
+modifier bits
+.TP
+.B "\-\-read\-otp file=<file>[,reg=<reg>]"
+Read OTP memory region
+.B "<reg>"
+of the chip, and save to
+.B "<file>."
+If
+.B "<reg>"
+is ommitted, then it defaults to the first OTP region.
+.sp
+Example:
+.sp
+.B "  flashrom \-p prog \-c chip \-\-read\-otp file=read_otp.bin,reg=2"
+.sp
+will read the the 2nd OTP region and save it to
+.B "read_otp.bin."
+.TP
+.B "\-\-write\-otp file=<file>[,reg=<reg>]"
+Write
+.B "<file>"
+to OTP memory region
+.B "<reg>."
+of the chip. If
+.B "<reg>"
+is ommitted, then it defaults to the first OTP region.
+.TP
+.B "\-\-erase\-otp [reg=<reg>]"
+Erase OTP memory region
+.B "<reg>."
+of the chip. If
+.B "<reg>"
+is ommitted, then it defaults to the first OTP region.
+.TP
+.B "\-\-lock\-otp [reg=<reg>]"
+Lock OTP memory region
+.B "<reg>."
+of the chip against any future writes (Please be cautious, this action is \
+almost always irreversible). If
+.B "<reg>"
+is ommitted, then it defaults to the first OTP region.
 .TP
 .B "\-f, \-\-force"
 Force one or more of the following actions:
