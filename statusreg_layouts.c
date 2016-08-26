@@ -281,7 +281,7 @@ struct status_register w25q80_16_32_sr = {
 	.set_wp_mode	= &set_wp_mode_generic,
 };
 
-/* W25Q40BL, W25Q64FV */
+/* W25Q40BL, W25Q64FV, W25Q128BV */
 struct status_register w25q40bl_64fv_sr = {
 	.layout = {
 		{ WIP, WEL, BP0, BP1, BP2, TB, SEC, SRP0 },
@@ -358,7 +358,7 @@ struct status_register gd25q128c_sr = {
 };
 
 /* === Winbond === */
-/* W25Q128FW */
+/* W25Q128FW, W25Q128FV */
 struct status_register w25q128fw_sr = {
 	.layout = {
 		{ WIP, WEL, BP0, BP1, BP2, TB, SEC, SRP0 },

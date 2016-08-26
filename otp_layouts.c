@@ -144,7 +144,7 @@ struct otp en512_16384otp = {
 
 /* === GigaDevice and Winbond === */
 // FIXME(hatim): Deal with chips with shared OTP modifier bit
-/* GD25LQ16, GD25LQ80, GD25LQ40, W25Q40BL, W25Q64FV
+/* GD25LQ16, GD25LQ80, GD25LQ40, W25Q40BL, W25Q64FV, W25Q128BV
  * (There is an additional 256 bytes security register
  * at 0x000000 which is reserved and can only be read.) */
 // FIXME(hatim): Add support to interact with the reserved security register

@@ -44,7 +44,7 @@ struct wp a25l032_32a_wp = {
 
 /* A25L080, A25LQ16, GD25LQ40, GD25LQ80, GD25LQ16, GD25Q16, GD25Q16B GD25Q32(B),
  * GD25Q64(B), GD25Q128B, GD25Q128C, GD25VQ16C, GD25VQ21B, GD25VQ40C, GD25VQ41B,
- * GD25VQ80C, W25Q40BL, W25Q64FV */
+ * GD25VQ80C, W25Q40BL, W25Q64FV, W25Q128BV, W25Q128FV */
 struct wp gd_w_wp = {
 	.range_table	= &sec_block_range_pattern,
 	.bp_bitmask	= &bp_bitmask_generic,
