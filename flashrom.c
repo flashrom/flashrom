@@ -2030,7 +2030,7 @@ void print_buildinfo(void)
 
 void print_version(void)
 {
-	msg_ginfo("flashrom v%s", flashrom_version);
+	msg_ginfo("flashrom %s", flashrom_version);
 	print_sysinfo();
 	msg_ginfo("\n");
 }
