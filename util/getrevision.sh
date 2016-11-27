@@ -5,7 +5,7 @@
 # Copyright (C) 2005 coresystems GmbH <stepan@coresystems.de>
 # Copyright (C) 2009,2010 Carl-Daniel Hailfinger
 # Copyright (C) 2010 Chromium OS Authors
-# Copyright (C) 2013 Stefan Tauner
+# Copyright (C) 2013-2016 Stefan Tauner
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,23 +30,65 @@ export LC_ALL=C
 # nor local times or dates
 export TZ=UTC0
 
-# Helper functions
-# First argument is the path to inspect (usually optional; w/o it the whole repository will be considered)
-svn_has_local_changes() {
-	svn status "$1" | egrep '^ *[ADMR] *' >/dev/null
+# List of important upstream branches...
+upstream_branches="stable staging"
+upstream_url="https://flashrom.org/git/flashrom.git"
+upstream_patterns="github\.com.flashrom/flashrom(\.git)?|flashrom\.org.git/flashrom(\.git)?"
+
+upcache_prefix="refs/flashrom_org/"
+# Generate upcache_refs
+for b in $upstream_branches ; do
+	upcache_refs="$upcache_refs ${upcache_prefix}$b"
+done
+
+# We need to update our upstream information sometimes so that we can create detailed version information.
+# To that end the code below fetches parts of the upstream repository via https.
+# This takes about one second or less under normal circumstances.
+#
+# It can be called manually, but is usually called via
+#  - the Makefile (implicitly via revision()) when there is no upstream information in any existing remote
+forced_update() {
+	local rev_remote_refs
+	for ref in $upcache_refs ; do
+		rev_remote_refs="$rev_remote_refs +${ref##*/}:$ref"
+	done
+	git fetch -q "$upstream_url" --tags $rev_remote_refs && echo "Success."
 }
 
+update() {
+	offline=$(git config flashrom.offline-builds 2>/dev/null)
+	if [ -z "$offline" ]; then
+		echo "To produce useful version information the build process needs access to the commit
+history from an upstream repository. If no git remote is pointing to one we
+can store the necessary information out of sight and update it on every build.
+To enable this functionality and fetch the upstream commits from $upstream_url
+please execute 'git config flashrom.offline-builds false' or add one of the
+upstream repositories as git remote to rely on that information.
+However, if you want to work completely offline and generate possibly meaningless
+version strings then disable it with 'git config flashrom.offline-builds true'
+You can force updating the local commit cache with '$0 --forced-update'">&2
+		return 1
+	elif [ "x$offline" = "xfalse" ]; then
+		echo "Fetching commit history from upstream repository $upstream_url
+To disable any network activity execute 'git config flashrom.offline-builds true'.">&2
+		forced_update >/dev/null
+	else
+		echo "Fetching commit history from upstream is disabled - version strings might be misleading.
+To ensure proper version strings and allow network access run 'git config flashrom.offline-builds false'.">&2
+	fi
+	return 0
+}
+
+# Helper functions
+# First argument is the path to inspect (usually optional; w/o it the whole repository will be considered)
 git_has_local_changes() {
 	git update-index -q --refresh >/dev/null
 	! git diff-index --quiet HEAD -- "$1"
 }
 
 git_last_commit() {
+	# git rev-parse --short HEAD would suffice if repository as a whole is of interest (no $1)
 	git log --pretty=format:"%h" -1 -- "$1"
-}
-
-svn_is_file_tracked() {
-	svn info "$1" >/dev/null 2>&1
 }
 
 git_is_file_tracked() {
@@ -54,7 +96,7 @@ git_is_file_tracked() {
 }
 
 is_file_tracked() {
-	svn_is_file_tracked "$1" || git_is_file_tracked "$1"
+	git_is_file_tracked "$1"
 }
 
 # Tries to find a remote source for the changes committed locally.
@@ -89,13 +131,7 @@ git_url() {
 scm_url() {
 	local url=
 
-	# for a primitive VCS like subversion finding the URL is easy: there is only one upstream host
-	if svn_is_file_tracked "$1" ; then
-		url="$(svn info "$1" 2>/dev/null |
-		       grep URL: |
-		       sed 's/.*URL:[[:blank:]]*//;s/:\/\/.*@/:\/\//' |
-		       grep ^.)"
-	elif git_is_file_tracked "$1" ; then
+	if git_is_file_tracked "$1" ; then
 		url="$(git_url "$1")"
 	else
 		return ${EXIT_FAILURE}
@@ -116,29 +152,7 @@ timestamp() {
 	# freebsd	date [-jnu]  [-d dst] [-r seconds] [-f fmt date | [[[[[cc]yy]mm]dd]HH]MM[.ss]] [+format] [...]
 	# dragonflybsd	date [-jnu]  [-d dst] [-r seconds] [-f fmt date | [[[[[cc]yy]mm]dd]HH]MM[.ss]] [+format] [...]
 	# openbsd	date [-aju]  [-d dst] [-r seconds] [+format] [[[[[[cc]yy]mm]dd]HH]MM[.SS]] [...]
-	if svn_is_file_tracked "$2" ; then
-		if svn_has_local_changes "$2"; then
-			t=$(date -u "$1")
-		else
-			# No local changes, get date of the last log record. Subversion provides that in
-			# ISO 8601 format when using the --xml switch. The sed call extracts that ignoring any
-			# fractional parts started by a comma or a dot.
-			local last_commit_date="$(svn info --xml "$2"| \
-						  sed -n -e 's/<date>\([^,\.]*\)\([\.,].*\)*Z<\/date>/\1Z/p')"
-
-			case $(uname) in
-			# Most BSD dates do not support parsing date values from user input with -d but all of
-			# them support parsing the syntax with [[[[[[cc]yy]mm]dd]HH]MM[.ss]]. We have to
-			# transform the ISO8601 date first though.
-			NetBSD|OpenBSD|DragonFly|FreeBSD)
-				last_commit_date="$(echo ${last_commit_date} | \
-				   sed -n -e 's/\(....\)-\(..\)-\(..\)T\(..\):\(..\):\(..\)Z/\1\2\3\4\5\.\6/p')"
-				t=$(date -u -j "${last_commit_date}" "$1" 2>/dev/null);;
-			*)
-				t=$(date -u -d "${last_commit_date}" "$1" 2>/dev/null);;
-			esac
-		fi
-	elif git_is_file_tracked "$2" ; then
+	if git_is_file_tracked "$2" ; then
 		# are there local changes?
 		if git_has_local_changes "$2" ; then
 			t=$(date -u "${1}")
@@ -163,55 +177,102 @@ timestamp() {
 	echo "${t}"
 }
 
-# Retrieve local SCM revision info. This is useful if we're working in a different SCM than upstream and/or
-# have local changes.
-local_revision() {
-	local r=
+tag() {
+	local t=
 
-	if svn_is_file_tracked "$1" ; then
-		r=$(svn_has_local_changes "$1" && echo "dirty")
-	elif git_is_file_tracked "$1" ; then
-		r=$(git_last_commit "$1")
-
-		local svn_base=$(git log --grep=git-svn-id -1 --format='%h')
-		if [ "$svn_base" != "" ] ; then
-			local diff_to_svn=$(git rev-list --count ${svn_base}..${r})
-			if [ "$diff_to_svn" -gt 0 ] ; then
-				r="$r-$diff_to_svn"
-			fi
-		fi
-
-		if git_has_local_changes "$1" ; then
-			r="$r-dirty"
-		fi
-	else
-		return ${EXIT_FAILURE}
+	if git_is_file_tracked "$1" ; then
+		local sha=$(git_last_commit "$1")
+		t=$(git describe --abbrev=0 "$sha")
 	fi
-
-	echo "${r}"
+	if [ -z "$t" ]; then
+		t="unknown" # default to unknown
+	fi
+	echo "${t}"
 }
 
-# Get the upstream flashrom revision stored in SVN metadata.
-upstream_revision() {
-	local r=
+find_upremote() {
+	# Try to find upstream's remote name
+	for remote in $(git remote) ; do
+		local url=$(git ls-remote --get-url $remote)
+		if echo "$url" | grep -q -E "$upstream_patterns" ; then
+			echo "$remote"
+			return
+		fi
+	done
+}
 
-	if svn_is_file_tracked "$1" ; then
-		r=$(svn info "$1" 2>/dev/null | \
-		    grep "Last Changed Rev:" | \
-		    sed -e "s/^Last Changed Rev: *//" -e "s/\([0-9]*\).*/r\1/" | \
-		    grep "r[0-9]")
-	elif git_is_file_tracked "$1" ; then
-		# If this is a "native" git-svn clone we could use git svn log:
-		# git svn log --oneline -1 | sed 's/^r//;s/[[:blank:]].*//' or even git svn find-rev
-		# but it is easier to just grep for the git-svn-id unconditionally
-		r=$(git log --grep=git-svn-id -1 -- "$1" | \
-		    grep git-svn-id | \
-		    sed 's/.*@/r/;s/[[:blank:]].*//')
+revision() {
+	local sha=$(git_last_commit "$1" 2>/dev/null)
+	# No git no fun
+	if [ -z "$sha" ]; then
+		echo "unknown"
+		return
 	fi
 
-	if [ -z "$r" ]; then
-		r="unknown" # default to unknown
+	local r="$sha"
+	if git_has_local_changes "$1" ; then
+		r="$r-dirty"
 	fi
+
+	# sha + possibly dirty info is not exactly verbose, therefore the code below tries to use tags and
+	# branches from the upstream repos to derive a more previse version string.
+	# To that end we try to use the existing remotes first.
+	# If the upstream repos (and its mirrors) are not available as remotes, use a shadow copy instead.
+
+	local up_refs
+	local up_remote=$(find_upremote)
+	if [ -n "$up_remote" ]; then
+		for b in $upstream_branches ; do
+			up_refs="$up_refs ${up_remote}/${b}"
+		done
+	else
+		update || { echo "offline" ; return ; }
+		up_refs=$upcache_refs
+	fi
+
+	# Find nearest commit contained in this branch that is also in any of the up_refs, i.e. the branch point
+	# of the current branch. This might be the latest commit if it's in any of the upstream branches.
+	local merge_point=$(git merge-base ${sha} ${up_refs})
+	local upstream_branch
+	if [ -z "$merge_point" ]; then
+		echo "$sha"
+		return
+	fi
+
+	# If the current commit is reachable from any remote branch, append the branch name and its
+	# distance to the nearest earlier tag to that tag name itself (tag-distance-branch).
+	# If multiple branches are reachable then we use the newest one (by commit date).
+	# If none is reachable we use the nearest tag and ? for distances and remote branch name.
+
+	local cnt_upstream_branch2sha=$(git rev-list --count "${merge_point}..${sha}" 2>/dev/null)
+
+	local lasttag=$(git describe --abbrev=0 "$merge_point" 2>/dev/null)
+	if [ -z "$lasttag" ]; then
+		echo "Could not find tag reachable from merge point!">&2
+		echo "$sha"
+		return
+	fi
+
+	local cnt_tag2upstream_branch
+	for ref in $up_refs ; do
+		if git merge-base --is-ancestor ${merge_point} ${ref}; then
+			upstream_branch=${ref##*/} # remove everything till last /
+			cnt_tag2upstream_branch=$(git rev-list --count "${lasttag}..${merge_point}" 2>/dev/null)
+			break
+		fi
+	done
+
+	if [ "$cnt_upstream_branch2sha" -gt 0 ]; then
+		r="$cnt_upstream_branch2sha-$r"
+	fi
+	if [ "$cnt_tag2upstream_branch" -gt 0 ]; then
+		if [ -n "$upstream_branch" ]; then
+			r="$upstream_branch-$r"
+		fi
+		r="$cnt_tag2upstream_branch-$r"
+	fi
+	r="$lasttag-$r"
+
 	echo "${r}"
 }
 
@@ -228,16 +289,20 @@ Commands
         this message
     -c or --check
         test if path is under version control at all
-    -l or --local
-        local revision information including an indicator for uncommitted changes
-    -u or --upstream
-        upstream revision
-    -U or --url
+    -T or --tag
+        returns the name of the last release/tag
+    -r or --revision
+        return unique revision information including the last tag and an indicator for uncommitted changes
+    -u or --url
         URL associated with the latest commit
     -d or --date
         date of most recent modification
     -t or --timestamp
         timestamp of most recent modification
+    -U or --update
+        update local shadow copy of upstream commits if need be and offline builds are not enforced
+          --forced-update
+        force updating the local shadow copy of upstream commits
 "
 	return
 }
@@ -260,15 +325,15 @@ main() {
 		-h|--help)
 			action=show_help;
 			shift;;
-		-l|--local)
+		-T|--tag)
 			check_action $1
-			action=local_revision
+			action=tag
 			shift;;
-		-u|--upstream)
+		-r|--revision)
 			check_action $1
-			action=upstream_revision
+			action=revision
 			shift;;
-		-U|--url)
+		-u|--url)
 			check_action $1
 			action=scm_url
 			shift;;
@@ -280,9 +345,17 @@ main() {
 			check_action $1
 			action="timestamp +%Y-%m-%dT%H:%M:%SZ" # There is only one valid time format! ISO 8601
 			shift;;
+		-U|--update)
+			check_action $1
+			action=update
+			shift;;
+		--forced-update)
+			check_action $1
+			action=forced_update
+			shift;;
 		-c|--check)
-			check_action=$1
-			action="is_tracked"
+			check_action $1
+			action=is_tracked
 			shift;;
 		-*)
 			show_help;
@@ -305,9 +378,6 @@ main() {
 	# default to current directory (usually equals the whole repository)
 	if [ -z "$query_path" ] ; then
 		query_path=.
-	fi
-	if ! is_file_tracked "$query_path" ; then
-		echo "Warning: Path \"${query_path}\" is not under version control.">&2
 	fi
 	if [ -z "$action" ] ; then
 		show_help

@@ -1,0 +1,15 @@
+*.d
+*.o
+/.features
+/.dependencies
+/.libdeps
+/build_details.txt
+/flashrom
+/flashrom-*
+/flashrom.exe
+/flashrom.8
+
+/util/ich_descriptors_tool/ich_descriptors_tool
+/util/ich_descriptors_tool/ich_descriptors_tool.exe
+/util/ich_descriptors_tool/.dep
+/util/ich_descriptors_tool/.obj
