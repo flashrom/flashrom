@@ -215,7 +215,7 @@ int serialport_config(fdtype fd, int baud)
 	}
 	wanted.c_cflag &= ~(PARENB | CSTOPB | CSIZE | CRTSCTS);
 	wanted.c_cflag |= (CS8 | CLOCAL | CREAD);
-	wanted.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
+	wanted.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG | IEXTEN);
 	wanted.c_iflag &= ~(IXON | IXOFF | IXANY | ICRNL | IGNCR | INLCR);
 	wanted.c_oflag &= ~OPOST;
 	if (tcsetattr(fd, TCSANOW, &wanted) != 0) {
