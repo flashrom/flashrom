@@ -643,6 +643,7 @@ static void enable_flash_ich_report_gcs(struct pci_dev *const dev, const enum ic
 		straps_names = straps_names_pch89_baytrail;
 		break;
 	case CHIPSET_8_SERIES_LYNX_POINT_LP:
+	case CHIPSET_9_SERIES_WILDCAT_POINT_LP:
 		straps_names = straps_names_pch8_lp;
 		break;
 	case CHIPSET_8_SERIES_WELLSBURG: // FIXME: check datasheet
@@ -661,7 +662,8 @@ static void enable_flash_ich_report_gcs(struct pci_dev *const dev, const enum ic
 		bbs = (gcs >> 1) & 0x1;
 		break;
 	case CHIPSET_8_SERIES_LYNX_POINT_LP:
-		/* Lynx Point LP uses a single bit for BBS */
+	case CHIPSET_9_SERIES_WILDCAT_POINT_LP:
+		/* LP PCHs use a single bit for BBS */
 		bbs = (gcs >> 10) & 0x1;
 		break;
 	default:
@@ -796,6 +798,12 @@ static int enable_flash_pch8_wb(struct pci_dev *dev, const char *name)
 static int enable_flash_pch9(struct pci_dev *dev, const char *name)
 {
 	return enable_flash_ich_spi(dev, CHIPSET_9_SERIES_WILDCAT_POINT, 0xdc);
+}
+
+/* Wildcat Point LP */
+static int enable_flash_pch9_lp(struct pci_dev *dev, const char *name)
+{
+	return enable_flash_ich_spi(dev, CHIPSET_9_SERIES_WILDCAT_POINT_LP, 0xdc);
 }
 
 /* Silvermont architecture: Bay Trail(-T/-I), Avoton/Rangeley.
@@ -1787,13 +1795,13 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x9c43, NT,  "Intel", "Lynx Point LP Premium",		enable_flash_pch8_lp},
 	{0x8086, 0x9c45, NT,  "Intel", "Lynx Point LP Mainstream",	enable_flash_pch8_lp},
 	{0x8086, 0x9c47, NT,  "Intel", "Lynx Point LP Value",		enable_flash_pch8_lp},
-	{0x8086, 0x9cc1, NT,  "Intel", "Haswell U Sample",		enable_flash_pch9},
-	{0x8086, 0x9cc2, NT,  "Intel", "Broadwell U Sample",		enable_flash_pch9},
-	{0x8086, 0x9cc3, NT,  "Intel", "Broadwell U Premium",		enable_flash_pch9},
-	{0x8086, 0x9cc5, NT,  "Intel", "Broadwell U Base",		enable_flash_pch9},
-	{0x8086, 0x9cc6, NT,  "Intel", "Broadwell Y Sample",		enable_flash_pch9},
-	{0x8086, 0x9cc7, NT,  "Intel", "Broadwell Y Premium",		enable_flash_pch9},
-	{0x8086, 0x9cc9, NT,  "Intel", "Broadwell Y Base",		enable_flash_pch9},
+	{0x8086, 0x9cc1, NT,  "Intel", "Haswell U Sample",		enable_flash_pch9_lp},
+	{0x8086, 0x9cc2, NT,  "Intel", "Broadwell U Sample",		enable_flash_pch9_lp},
+	{0x8086, 0x9cc3, NT,  "Intel", "Broadwell U Premium",		enable_flash_pch9_lp},
+	{0x8086, 0x9cc5, NT,  "Intel", "Broadwell U Base",		enable_flash_pch9_lp},
+	{0x8086, 0x9cc6, NT,  "Intel", "Broadwell Y Sample",		enable_flash_pch9_lp},
+	{0x8086, 0x9cc7, NT,  "Intel", "Broadwell Y Premium",		enable_flash_pch9_lp},
+	{0x8086, 0x9cc9, NT,  "Intel", "Broadwell Y Base",		enable_flash_pch9_lp},
 	{0x8086, 0x9ccb, NT,  "Intel", "Broadwell H",			enable_flash_pch9},
 	{0x8086, 0x9d41, BAD, "Intel", "Sunrise Point (Skylake LP Sample)",	NULL},
 	{0x8086, 0x9d43, BAD, "Intel", "Sunrise Point (Skylake-U Base)",	NULL},
