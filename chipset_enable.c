@@ -584,8 +584,23 @@ static int enable_flash_poulsbo(struct pci_dev *dev, const char *name)
 	return enable_flash_ich_fwh(dev, CHIPSET_POULSBO, 0xd8);
 }
 
-static void enable_flash_ich_handle_gcs(struct pci_dev *dev, enum ich_chipset ich_generation, uint32_t gcs, bool top_swap)
+static void enable_flash_ich_report_gcs(struct pci_dev *const dev, const enum ich_chipset ich_generation,
+					const uint8_t *const rcrb)
 {
+	uint32_t gcs;
+	bool top_swap;
+
+	switch (ich_generation) {
+	case CHIPSET_BAYTRAIL:
+		gcs = mmio_readl(rcrb + 0);
+		top_swap = (gcs & 2) >> 1;
+		break;
+	default:
+		gcs = mmio_readl(rcrb + 0x3410);
+		top_swap = mmio_readb(rcrb + 0x3414) & 1;
+		break;
+	}
+
 	msg_pdbg("GCS = 0x%x: ", gcs);
 	msg_pdbg("BIOS Interface Lock-Down: %sabled, ", (gcs & 0x1) ? "en" : "dis");
 
@@ -673,7 +688,7 @@ static int enable_flash_ich_spi(struct pci_dev *dev, enum ich_chipset ich_genera
 	if (rcrb == ERROR_PTR)
 		return ERROR_FATAL;
 
-	enable_flash_ich_handle_gcs(dev, ich_generation, mmio_readl(rcrb + 0x3410), mmio_readb(rcrb + 0x3414));
+	enable_flash_ich_report_gcs(dev, ich_generation, rcrb);
 
 	/* Handle FWH-related parameters and initialization */
 	int ret_fwh = enable_flash_ich_fwh(dev, ich_generation, bios_cntl);
@@ -803,8 +818,7 @@ static int enable_flash_silvermont(struct pci_dev *dev, const char *name)
 
 	/* Handle GCS (in RCRB) */
 	void *rcrb = physmap("BYT RCRB", rcba, 4);
-	uint32_t gcs = mmio_readl(rcrb + 0);
-	enable_flash_ich_handle_gcs(dev, ich_generation, gcs, gcs & 0x2);
+	enable_flash_ich_report_gcs(dev, ich_generation, rcrb);
 	physunmap(rcrb, 4);
 
 	/* Handle fwh_idsel parameter */
