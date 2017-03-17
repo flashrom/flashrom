@@ -351,16 +351,16 @@ int internal_init(void);
 void mmio_writeb(uint8_t val, void *addr);
 void mmio_writew(uint16_t val, void *addr);
 void mmio_writel(uint32_t val, void *addr);
-uint8_t mmio_readb(void *addr);
-uint16_t mmio_readw(void *addr);
-uint32_t mmio_readl(void *addr);
-void mmio_readn(void *addr, uint8_t *buf, size_t len);
+uint8_t mmio_readb(const void *addr);
+uint16_t mmio_readw(const void *addr);
+uint32_t mmio_readl(const void *addr);
+void mmio_readn(const void *addr, uint8_t *buf, size_t len);
 void mmio_le_writeb(uint8_t val, void *addr);
 void mmio_le_writew(uint16_t val, void *addr);
 void mmio_le_writel(uint32_t val, void *addr);
-uint8_t mmio_le_readb(void *addr);
-uint16_t mmio_le_readw(void *addr);
-uint32_t mmio_le_readl(void *addr);
+uint8_t mmio_le_readb(const void *addr);
+uint16_t mmio_le_readw(const void *addr);
+uint32_t mmio_le_readl(const void *addr);
 #define pci_mmio_writeb mmio_le_writeb
 #define pci_mmio_writew mmio_le_writew
 #define pci_mmio_writel mmio_le_writel
