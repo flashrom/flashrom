@@ -70,6 +70,9 @@
 #define FL_SO	3
 #define FL_REQ	4
 #define FL_GNT	5
+#define FL_LOCKED  6
+#define FL_ABORT   7
+#define FL_CLR_ERR 8
 /* Currently unused */
 // #define FL_BUSY	30
 // #define FL_ER	31
@@ -94,6 +97,14 @@ const struct dev_entry nics_intel_spi[] = {
 	{PCI_VENDOR_ID_INTEL, 0x1529, NT, "Intel", "82599 10 Gigabit Dual Port Network Controller with FCoE"},
 	{PCI_VENDOR_ID_INTEL, 0x152a, NT, "Intel", "82599 10 Gigabit Dual Port Backplane Controller with FCoE"},
 	{PCI_VENDOR_ID_INTEL, 0x1557, NT, "Intel", "82599 10 Gigabit SFI Network Controller"},
+
+	{PCI_VENDOR_ID_INTEL, 0x1531, OK, "Intel", "I210 Gigabit Network Connection Unprogrammed"},
+	{PCI_VENDOR_ID_INTEL, 0x1532, NT, "Intel", "I211 Gigabit Network Connection Unprogrammed"},
+	{PCI_VENDOR_ID_INTEL, 0x1533, NT, "Intel", "I210 Gigabit Network Connection"},
+	{PCI_VENDOR_ID_INTEL, 0x1536, NT, "Intel", "I210 Gigabit Network Connection SERDES Fiber"},
+	{PCI_VENDOR_ID_INTEL, 0x1537, NT, "Intel", "I210 Gigabit Network Connection SERDES Backplane"},
+	{PCI_VENDOR_ID_INTEL, 0x1538, NT, "Intel", "I210 Gigabit Network Connection SGMII"},
+	{PCI_VENDOR_ID_INTEL, 0x1539, NT, "Intel", "I211 Gigabit Network Connection"},
 
 	{0},
 };
@@ -182,31 +193,9 @@ static int nicintel_spi_shutdown(void *data)
 	return 0;
 }
 
-int nicintel_spi_init(void)
+static int nicintel_spi_82599_enable_flash(void)
 {
-	struct pci_dev *dev = NULL;
 	uint32_t tmp;
-
-	if (rget_io_perms())
-		return 1;
-
-	dev = pcidev_init(nics_intel_spi, PCI_BASE_ADDRESS_0);
-	if (!dev)
-		return 1;
-
-	uint32_t io_base_addr = pcidev_readbar(dev, PCI_BASE_ADDRESS_0);
-	if (!io_base_addr)
-		return 1;
-
-	if (dev->device_id < 0x10d8) {
-		nicintel_spibar = rphysmap("Intel Gigabit NIC w/ SPI flash", io_base_addr,
-					   MEMMAP_SIZE);
-	} else {
-		nicintel_spibar = rphysmap("Intel 10 Gigabit NIC w/ SPI flash", io_base_addr + 0x10000,
-					   MEMMAP_SIZE);
-	}
-	if (nicintel_spibar == ERROR_PTR)
-		return 1;
 
 	/* Automatic restore of EECD on shutdown is not possible because EECD
 	 * does not only contain FLASH_WRITES_DISABLED|FLASH_WRITES_ENABLED,
@@ -227,6 +216,65 @@ int nicintel_spi_init(void)
 
 	if (register_shutdown(nicintel_spi_shutdown, NULL))
 		return 1;
+
+	return 0;
+}
+
+static int nicintel_spi_i210_enable_flash()
+{
+	uint32_t tmp;
+
+	tmp = pci_mmio_readl(nicintel_spibar + FLA);
+	if (tmp & (1 << FL_LOCKED)) {
+		msg_perr("Flash is in Secure Mode. Abort.\n");
+		return 1;
+	}
+
+	if (!(tmp & (1 << FL_ABORT)))
+		return 0;
+
+	tmp |= (1 << FL_CLR_ERR);
+	pci_mmio_writel(tmp, nicintel_spibar + FLA);
+	tmp = pci_mmio_readl(nicintel_spibar + FLA);
+	if (!(tmp & (1 << FL_ABORT))) {
+		msg_perr("Unable to clear Flash Access Error. Abort\n");
+		return 1;
+	}
+
+	return 0;
+}
+
+int nicintel_spi_init(void)
+{
+	struct pci_dev *dev = NULL;
+
+	if (rget_io_perms())
+		return 1;
+
+	dev = pcidev_init(nics_intel_spi, PCI_BASE_ADDRESS_0);
+	if (!dev)
+		return 1;
+
+	uint32_t io_base_addr = pcidev_readbar(dev, PCI_BASE_ADDRESS_0);
+	if (!io_base_addr)
+		return 1;
+
+	if ((dev->device_id & 0xfff0) == 0x1530) {
+		nicintel_spibar = rphysmap("Intel I210 Gigabit w/ SPI flash", io_base_addr + 0x12000,
+					   MEMMAP_SIZE);
+		if (!nicintel_spibar || nicintel_spi_i210_enable_flash())
+				return 1;
+	} else if (dev->device_id < 0x10d8) {
+		nicintel_spibar = rphysmap("Intel Gigabit NIC w/ SPI flash", io_base_addr,
+					   MEMMAP_SIZE);
+		if (!nicintel_spibar || nicintel_spi_82599_enable_flash())
+				return 1;
+	} else {
+		nicintel_spibar = rphysmap("Intel 10 Gigabit NIC w/ SPI flash", io_base_addr + 0x10000,
+					   MEMMAP_SIZE);
+		if (!nicintel_spibar || nicintel_spi_82599_enable_flash())
+				return 1;
+	}
 
 	if (register_spi_bitbang_master(&bitbang_spi_master_nicintel))
 		return 1;
