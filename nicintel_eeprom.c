@@ -25,6 +25,12 @@
  * 4.7: Access to shared resources (FIXME: we should probably use this semaphore interface)
  * 7.4: Register Descriptions
  */
+/*
+ * Datasheet: Intel Ethernet Controller I210: Datasheet
+ * 8.4.3: EEPROM-Mode Read Register
+ * 8.4.6: EEPROM-Mode Write Register
+ * Write process inspired on kernel e1000_i210.c
+ */
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -34,10 +40,11 @@
 #include "hwaccess.h"
 
 #define PCI_VENDOR_ID_INTEL 0x8086
-#define MEMMAP_SIZE (0x14 + 3) /* Only EEC and EERD are needed. */
+#define MEMMAP_SIZE 0x1c /* Only EEC, EERD and EEWR are needed. */
 
 #define EEC	0x10 /* EEPROM/Flash Control Register */
 #define EERD	0x14 /* EEPROM Read Register */
+#define EEWR	0x18 /* EEPROM Write Register */
 
 /* EPROM/Flash Control Register bits */
 #define EE_SCK	0
@@ -49,6 +56,8 @@
 #define EE_PRES	8
 #define EE_SIZE 11
 #define EE_SIZE_MASK 0xf
+#define EE_FLUPD   23
+#define EE_FLUDONE 26
 
 /* EEPROM Read Register bits */
 #define EERD_START 0
@@ -56,11 +65,18 @@
 #define EERD_ADDR 2
 #define EERD_DATA 16
 
+/* EEPROM Write Register bits */
+#define EEWR_CMDV 0
+#define EEWR_DONE 1
+#define EEWR_ADDR 2
+#define EEWR_DATA 16
+
 #define BIT(x) (1<<x)
 #define EE_PAGE_MASK 0x3f
 
 static uint8_t *nicintel_eebar;
 static struct pci_dev *nicintel_pci;
+static bool done_i20_write = false;
 
 #define UNPROG_DEVICE 0x1509
 
@@ -71,10 +87,35 @@ const struct dev_entry nics_intel_ee[] = {
 	{PCI_VENDOR_ID_INTEL, 0x1511, NT , "Intel", "82580 Quad Gigabit Ethernet Controller (Ext. PHY)"},
 	{PCI_VENDOR_ID_INTEL, 0x1511, NT , "Intel", "82580 Dual Gigabit Ethernet Controller (Copper)"},
 	{PCI_VENDOR_ID_INTEL, UNPROG_DEVICE, OK, "Intel", "Unprogrammed 82580 Quad/Dual Gigabit Ethernet Controller"},
+	{PCI_VENDOR_ID_INTEL, 0x1531, NT, "Intel", "I210 Gigabit Network Connection Unprogrammed"},
+	{PCI_VENDOR_ID_INTEL, 0x1532, NT, "Intel", "I211 Gigabit Network Connection Unprogrammed"},
+	{PCI_VENDOR_ID_INTEL, 0x1533, OK, "Intel", "I210 Gigabit Network Connection"},
+	{PCI_VENDOR_ID_INTEL, 0x1536, NT, "Intel", "I210 Gigabit Network Connection SERDES Fiber"},
+	{PCI_VENDOR_ID_INTEL, 0x1537, NT, "Intel", "I210 Gigabit Network Connection SERDES Backplane"},
+	{PCI_VENDOR_ID_INTEL, 0x1538, NT, "Intel", "I210 Gigabit Network Connection SGMII"},
+	{PCI_VENDOR_ID_INTEL, 0x1539, NT, "Intel", "I211 Gigabit Network Connection"},
 	{0},
 };
 
-static int nicintel_ee_probe(struct flashctx *flash)
+static inline bool is_i210(uint16_t device_id)
+{
+	return (device_id & 0xff00) == 0x1500;
+}
+
+static int nicintel_ee_probe_i210(struct flashctx *flash)
+{
+	/* Emulated eeprom has a fixed size of 4 KB */
+	flash->chip->total_size = 4;
+	flash->chip->page_size = flash->chip->total_size * 1024;
+	flash->chip->tested = TEST_OK_PREW;
+	flash->chip->gran = write_gran_1byte_implicit_erase;
+	flash->chip->block_erasers->eraseblocks[0].size = flash->chip->page_size;
+	flash->chip->block_erasers->eraseblocks[0].count = 1;
+
+	return 1;
+}
+
+static int nicintel_ee_probe_82580(struct flashctx *flash)
 {
 	if (nicintel_pci->device_id == UNPROG_DEVICE)
 		flash->chip->total_size = 16; /* Fall back to minimum supported size. */
@@ -103,6 +144,15 @@ static int nicintel_ee_probe(struct flashctx *flash)
 	return 1;
 }
 
+static int nicintel_ee_probe(struct flashctx *flash)
+{
+	if (is_i210(nicintel_pci->device_id))
+		return nicintel_ee_probe_i210(flash);
+
+	return nicintel_ee_probe_82580(flash);
+}
+
+#define MAX_ATTEMPTS 10000000
 static int nicintel_ee_read_word(unsigned int addr, uint16_t *data)
 {
 	uint32_t tmp = BIT(EERD_START) | (addr << EERD_ADDR);
@@ -110,7 +160,7 @@ static int nicintel_ee_read_word(unsigned int addr, uint16_t *data)
 
 	/* Poll done flag. 10.000.000 cycles seem to be enough. */
 	uint32_t i;
-	for (i = 0; i < 10000000; i++) {
+	for (i = 0; i < MAX_ATTEMPTS; i++) {
 		tmp = pci_mmio_readl(nicintel_eebar + EERD);
 		if (tmp & BIT(EERD_DONE)) {
 			*data = (tmp >> EERD_DATA) & 0xffff;
@@ -146,6 +196,83 @@ static int nicintel_ee_read(struct flashctx *flash, uint8_t *buf, unsigned int a
 			addr++;
 			len--;
 		}
+	}
+
+	return 0;
+}
+
+static int nicintel_ee_write_word_i210(unsigned int addr, uint16_t data)
+{
+	uint32_t eewr;
+
+	eewr = addr << EEWR_ADDR;
+	eewr |= data << EEWR_DATA;
+	eewr |= BIT(EEWR_CMDV);
+	pci_mmio_writel(eewr, nicintel_eebar + EEWR);
+
+	programmer_delay(5);
+	for (int i = 0; i < MAX_ATTEMPTS; i++)
+		if (pci_mmio_readl(nicintel_eebar + EEWR) & BIT(EEWR_DONE))
+			return 0;
+	return -1;
+}
+
+static int nicintel_ee_write_i210(struct flashctx *flash, const uint8_t *buf, unsigned int addr, unsigned int len)
+{
+	done_i20_write = true;
+
+	if (addr & 1) {
+		uint16_t data;
+
+		if (nicintel_ee_read_word(addr / 2, &data)) {
+			msg_perr("Timeout reading heading byte\n");
+			return -1;
+		}
+
+		data &= 0xff;
+		data |= (buf ? (buf[0]) : 0xff) << 8;
+
+		if (nicintel_ee_write_word_i210(addr / 2, data)) {
+			msg_perr("Timeout writing heading word\n");
+			return -1;
+		}
+
+		if (buf)
+			buf ++;
+		addr ++;
+		len --;
+	}
+
+	while (len > 0) {
+		uint16_t data;
+
+		if (len == 1) {
+			if (nicintel_ee_read_word(addr / 2, &data)) {
+				msg_perr("Timeout reading tail byte\n");
+				return -1;
+			}
+
+			data &= 0xff00;
+			data |= buf ? (buf[0]) : 0xff;
+		} else {
+			if (buf)
+				data = buf[0] | (buf[1] << 8);
+			else
+				data = 0xffff;
+		}
+
+		if (nicintel_ee_write_word_i210(addr / 2, data)) {
+			msg_perr("Timeout writing Shadow RAM\n");
+			return -1;
+		}
+
+		if (buf)
+			buf += 2;
+		if (len > 2)
+			len -= 2;
+		else
+			len = 0;
+		addr += 2;
 	}
 
 	return 0;
@@ -224,7 +351,7 @@ static int nicintel_ee_req(void)
 	return 0;
 }
 
-static int nicintel_ee_write(struct flashctx *flash, const uint8_t *buf, unsigned int addr, unsigned int len)
+static int nicintel_ee_write_82580(struct flashctx *flash, const uint8_t *buf, unsigned int addr, unsigned int len)
 {
 	if (nicintel_ee_req())
 		return -1;
@@ -262,6 +389,13 @@ out:
 	nicintel_ee_bitset(EEC, EE_REQ, 0); /* Give up direct access. */
 	return ret;
 }
+static int nicintel_ee_write(struct flashctx *flash, const uint8_t *buf, unsigned int addr, unsigned int len)
+{
+	if (is_i210(nicintel_pci->device_id))
+		return nicintel_ee_write_i210(flash, buf, addr, len);
+
+	return nicintel_ee_write_82580(flash, buf, addr, len);
+}
 
 static int nicintel_ee_erase(struct flashctx *flash, unsigned int addr, unsigned int len)
 {
@@ -274,6 +408,25 @@ static const struct opaque_master opaque_master_nicintel_ee = {
 	.write = nicintel_ee_write,
 	.erase = nicintel_ee_erase,
 };
+
+static int nicintel_ee_shutdown_i210(void *arg)
+{
+	if (!done_i20_write)
+		return 0;
+
+	uint32_t flup = pci_mmio_readl(nicintel_eebar + EEC);
+
+	flup |= BIT(EE_FLUPD);
+	pci_mmio_writel(flup, nicintel_eebar + EEC);
+
+	for (int i = 0; i < MAX_ATTEMPTS; i++)
+		if (pci_mmio_readl(nicintel_eebar + EEC) & BIT(EE_FLUDONE))
+			return 0;
+
+	msg_perr("Flash update failed\n");
+
+	return -1;
+}
 
 static int nicintel_ee_shutdown(void *eecp)
 {
@@ -306,9 +459,14 @@ int nicintel_ee_init(void)
 	if (!io_base_addr)
 		return 1;
 
-	nicintel_eebar = rphysmap("Intel Gigabit NIC w/ SPI EEPROM", io_base_addr, MEMMAP_SIZE);
+	nicintel_eebar = rphysmap("Intel Gigabit NIC w/ SPI EEPROM",
+				  io_base_addr + (is_i210(dev->device_id) ? 0x12000 : 0), MEMMAP_SIZE);
+	if (!nicintel_eebar)
+		return 1;
+
 	nicintel_pci = dev;
-	if (dev->device_id != UNPROG_DEVICE) {
+	if ((dev->device_id != UNPROG_DEVICE) && ! is_i210(dev->device_id))
+	{
 		uint32_t eec = pci_mmio_readl(nicintel_eebar + EEC);
 
 		/* C.f. 3.3.1.5 for the detection mechanism (maybe? contradicting the EE_PRES definition),
@@ -326,6 +484,10 @@ int nicintel_ee_init(void)
 		if (register_shutdown(nicintel_ee_shutdown, eecp))
 			return 1;
 	}
+
+	if (is_i210(dev->device_id))
+		if (register_shutdown(nicintel_ee_shutdown_i210, NULL))
+			return 1;
 
 	return register_opaque_master(&opaque_master_nicintel_ee);
 }
