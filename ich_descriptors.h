@@ -33,6 +33,7 @@
 #define ICH_RET_OOB	-4
 
 #define ICH9_REG_FDOC		0xB0	/* 32 Bits Flash Descriptor Observability Control */
+#define PCH100_REG_FDOC		0xB4	/* New offset from Sunrise Point on */
 					/* 0-1: reserved */
 #define FDOC_FDSI_OFF		2	/* 2-11: Flash Descriptor Section Index */
 #define FDOC_FDSI		(0x3f << FDOC_FDSI_OFF)
@@ -41,6 +42,7 @@
 					/* 15-31: reserved */
 
 #define ICH9_REG_FDOD		0xB4	/* 32 Bits Flash Descriptor Observability Data */
+#define PCH100_REG_FDOD		0xB8	/* New offset from Sunrise Point on */
 
 /* Field locations and semantics for LVSCC, UVSCC and related words in the flash
  * descriptor are equal therefore they all share the same macros below. */
@@ -581,7 +583,7 @@ void prettyprint_ich_descriptor_upper_map(const struct ich_desc_upper_map *umap)
 void prettyprint_ich_descriptor_straps(enum ich_chipset cs, const struct ich_descriptors *desc);
 int read_ich_descriptors_from_dump(const uint32_t *dump, unsigned int len, struct ich_descriptors *desc);
 
-int read_ich_descriptors_via_fdo(void *spibar, struct ich_descriptors *desc);
+int read_ich_descriptors_via_fdo(enum ich_chipset cs, void *spibar, struct ich_descriptors *desc);
 int getFCBA_component_density(enum ich_chipset cs, const struct ich_descriptors *desc, uint8_t idx);
 
 int layout_from_ich_descriptors(struct ich_layout *, const void *dump, size_t len);
