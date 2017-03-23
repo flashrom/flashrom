@@ -77,6 +77,8 @@
 // #define FL_BUSY	30
 // #define FL_ER	31
 
+#define BIT(x) (1<<(x))
+
 uint8_t *nicintel_spibar;
 
 const struct dev_entry nics_intel_spi[] = {
@@ -114,11 +116,11 @@ static void nicintel_request_spibus(void)
 	uint32_t tmp;
 
 	tmp = pci_mmio_readl(nicintel_spibar + FLA);
-	tmp |= 1 << FL_REQ;
+	tmp |= BIT(FL_REQ);
 	pci_mmio_writel(tmp, nicintel_spibar + FLA);
 
 	/* Wait until we are allowed to use the SPI bus. */
-	while (!(pci_mmio_readl(nicintel_spibar + FLA) & (1 << FL_GNT))) ;
+	while (!(pci_mmio_readl(nicintel_spibar + FLA) & BIT(FL_GNT))) ;
 }
 
 static void nicintel_release_spibus(void)
@@ -126,7 +128,7 @@ static void nicintel_release_spibus(void)
 	uint32_t tmp;
 
 	tmp = pci_mmio_readl(nicintel_spibar + FLA);
-	tmp &= ~(1 << FL_REQ);
+	tmp &= ~BIT(FL_REQ);
 	pci_mmio_writel(tmp, nicintel_spibar + FLA);
 }
 
@@ -135,7 +137,7 @@ static void nicintel_bitbang_set_cs(int val)
 	uint32_t tmp;
 
 	tmp = pci_mmio_readl(nicintel_spibar + FLA);
-	tmp &= ~(1 << FL_CS);
+	tmp &= ~BIT(FL_CS);
 	tmp |= (val << FL_CS);
 	pci_mmio_writel(tmp,  nicintel_spibar + FLA);
 }
@@ -145,7 +147,7 @@ static void nicintel_bitbang_set_sck(int val)
 	uint32_t tmp;
 
 	tmp = pci_mmio_readl(nicintel_spibar + FLA);
-	tmp &= ~(1 << FL_SCK);
+	tmp &= ~BIT(FL_SCK);
 	tmp |= (val << FL_SCK);
 	pci_mmio_writel(tmp, nicintel_spibar + FLA);
 }
@@ -155,7 +157,7 @@ static void nicintel_bitbang_set_mosi(int val)
 	uint32_t tmp;
 
 	tmp = pci_mmio_readl(nicintel_spibar + FLA);
-	tmp &= ~(1 << FL_SI);
+	tmp &= ~BIT(FL_SI);
 	tmp |= (val << FL_SI);
 	pci_mmio_writel(tmp, nicintel_spibar + FLA);
 }
@@ -225,18 +227,18 @@ static int nicintel_spi_i210_enable_flash()
 	uint32_t tmp;
 
 	tmp = pci_mmio_readl(nicintel_spibar + FLA);
-	if (tmp & (1 << FL_LOCKED)) {
+	if (tmp & BIT(FL_LOCKED)) {
 		msg_perr("Flash is in Secure Mode. Abort.\n");
 		return 1;
 	}
 
-	if (!(tmp & (1 << FL_ABORT)))
+	if (!(tmp & BIT(FL_ABORT)))
 		return 0;
 
-	tmp |= (1 << FL_CLR_ERR);
+	tmp |= BIT(FL_CLR_ERR);
 	pci_mmio_writel(tmp, nicintel_spibar + FLA);
 	tmp = pci_mmio_readl(nicintel_spibar + FLA);
-	if (!(tmp & (1 << FL_ABORT))) {
+	if (!(tmp & BIT(FL_ABORT))) {
 		msg_perr("Unable to clear Flash Access Error. Abort\n");
 		return 1;
 	}
