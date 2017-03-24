@@ -40,15 +40,18 @@
 #include <sys/mman.h>
 #endif
 
-static void dump_file(const char *prefix, const uint32_t *dump, unsigned int len, struct ich_desc_region *reg, unsigned int i)
+static const char *const region_names[] = {
+	"Descriptor", "BIOS", "ME", "GbE", "Platform",
+	"Region5", "Region6", "Region7", "EC", "Region9",
+};
+
+static void dump_file(const char *prefix, const uint32_t *dump, unsigned int len,
+		      const struct ich_desc_region *const reg, unsigned int i)
 {
 	int ret;
 	char *fn;
 	const char *reg_name;
 	uint32_t file_len;
-	const char *const region_names[5] = {
-		"Descriptor", "BIOS", "ME", "GbE", "Platform"
-	};
 	uint32_t base = ICH_FREG_BASE(reg->FLREGs[i]);
 	uint32_t limit = ICH_FREG_LIMIT(reg->FLREGs[i]);
 
@@ -94,12 +97,19 @@ static void dump_file(const char *prefix, const uint32_t *dump, unsigned int len
 	close(fh);
 }
 
-void dump_files(const char *name, const uint32_t *buf, unsigned int len, struct ich_desc_region *reg)
+int min(int a, int b)
 {
-	unsigned int i;
+	return (a < b) ? a : b;
+}
+
+static void dump_files(const char *name, const uint32_t *buf, unsigned int len,
+		       const enum ich_chipset cs, const struct ich_descriptors *const desc)
+{
+	ssize_t i;
+	const ssize_t nr = min(ich_number_of_regions(cs, &desc->content), ARRAY_SIZE(region_names));
 	printf("=== Dumping region files ===\n");
-	for (i = 0; i < 5; i++)
-		dump_file(name, buf, len, reg, i);
+	for (i = 0; i < nr; i++)
+		dump_file(name, buf, len, &desc->region, i);
 	printf("\n");
 }
 
@@ -123,6 +133,7 @@ static void usage(char *argv[], char *error)
 "\t- \"7\" or \"panther\" for Intel's 7 series chipsets.\n"
 "\t- \"8\" or \"lynx\" for Intel's 8 series chipsets.\n"
 "\t- \"9\" or \"wildcat\" for Intel's 9 series chipsets.\n"
+"\t- \"100\" or \"sunrise\" for Intel's 100 series chipsets.\n"
 "If '-d' is specified some regions such as the BIOS image as seen by the CPU or\n"
 "the GbE blob that is required to initialize the GbE are also dumped to files.\n",
 	argv[0], argv[0]);
@@ -208,9 +219,12 @@ int main(int argc, char *argv[])
 		else if ((strcmp(csn, "9") == 0) ||
 			 (strcmp(csn, "wildcat") == 0))
 			cs = CHIPSET_9_SERIES_WILDCAT_POINT;
+		else if ((strcmp(csn, "100") == 0) ||
+			 (strcmp(csn, "sunrise") == 0))
+			cs = CHIPSET_100_SERIES_SUNRISE_POINT;
 	}
 
-	ret = read_ich_descriptors_from_dump(buf, len, &desc);
+	ret = read_ich_descriptors_from_dump(buf, len, &cs, &desc);
 	switch (ret) {
 	case ICH_RET_OK:
 		break;
@@ -228,15 +242,15 @@ int main(int argc, char *argv[])
 
 	prettyprint_ich_descriptors(cs, &desc);
 
-	pMAC = (uint8_t *) &buf[ICH_FREG_BASE(desc.region.reg3_base) >> 2];
-	if (len >= ICH_FREG_BASE(desc.region.reg3_base) + 6 && pMAC[0] != 0xff)
+	pMAC = (uint8_t *) &buf[ICH_FREG_BASE(desc.region.FLREGs[3]) >> 2];
+	if (len >= ICH_FREG_BASE(desc.region.FLREGs[3]) + 6 && pMAC[0] != 0xff)
 		printf("The MAC address might be at offset 0x%x: "
 		       "%02x:%02x:%02x:%02x:%02x:%02x\n",
-		       ICH_FREG_BASE(desc.region.reg3_base),
+		       ICH_FREG_BASE(desc.region.FLREGs[3]),
 		       pMAC[0], pMAC[1], pMAC[2], pMAC[3], pMAC[4], pMAC[5]);
 
 	if (dump == 1)
-		dump_files(fn, buf, len, &desc.region);
+		dump_files(fn, buf, len, cs, &desc);
 
 	return 0;
 }
