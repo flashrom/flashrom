@@ -724,7 +724,7 @@ int read_ich_descriptors_from_dump(const uint32_t *dump, unsigned int len, struc
 	}
 
 	/* map */
-	if (len < (4 + pch_bug_offset) * 4 - 1)
+	if (len < (4 + pch_bug_offset) * 4)
 		return ICH_RET_OOB;
 	desc->content.FLVALSIG	= dump[0 + pch_bug_offset];
 	desc->content.FLMAP0	= dump[1 + pch_bug_offset];
@@ -732,14 +732,14 @@ int read_ich_descriptors_from_dump(const uint32_t *dump, unsigned int len, struc
 	desc->content.FLMAP2	= dump[3 + pch_bug_offset];
 
 	/* component */
-	if (len < (getFCBA(&desc->content) + 3 * 4 - 1))
+	if (len < getFCBA(&desc->content) + 3 * 4)
 		return ICH_RET_OOB;
 	desc->component.FLCOMP	= dump[(getFCBA(&desc->content) >> 2) + 0];
 	desc->component.FLILL	= dump[(getFCBA(&desc->content) >> 2) + 1];
 	desc->component.FLPB	= dump[(getFCBA(&desc->content) >> 2) + 2];
 
 	/* region */
-	if (len < (getFRBA(&desc->content) + 5 * 4 - 1))
+	if (len < getFRBA(&desc->content) + 5 * 4)
 		return ICH_RET_OOB;
 	desc->region.FLREGs[0] = dump[(getFRBA(&desc->content) >> 2) + 0];
 	desc->region.FLREGs[1] = dump[(getFRBA(&desc->content) >> 2) + 1];
@@ -748,7 +748,7 @@ int read_ich_descriptors_from_dump(const uint32_t *dump, unsigned int len, struc
 	desc->region.FLREGs[4] = dump[(getFRBA(&desc->content) >> 2) + 4];
 
 	/* master */
-	if (len < (getFMBA(&desc->content) + 3 * 4 - 1))
+	if (len < getFMBA(&desc->content) + 3 * 4)
 		return ICH_RET_OOB;
 	desc->master.FLMSTR1 = dump[(getFMBA(&desc->content) >> 2) + 0];
 	desc->master.FLMSTR2 = dump[(getFMBA(&desc->content) >> 2) + 1];
@@ -763,7 +763,7 @@ int read_ich_descriptors_from_dump(const uint32_t *dump, unsigned int len, struc
 	 * the maximum of 255 gives us 127.5 SPI components(!?) 8 bytes each. A
 	 * check ensures that the maximum offset actually accessed is available.
 	 */
-	if (len < (getVTBA(&desc->upper) + (desc->upper.VTL / 2 * 8) - 1))
+	if (len < getVTBA(&desc->upper) + (desc->upper.VTL / 2 * 8))
 		return ICH_RET_OOB;
 
 	for (i = 0; i < desc->upper.VTL/2; i++) {
