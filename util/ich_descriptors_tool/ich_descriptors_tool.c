@@ -230,7 +230,7 @@ int main(int argc, char *argv[])
 	prettyprint_ich_descriptors(cs, &desc);
 
 	pMAC = (uint8_t *) &buf[ICH_FREG_BASE(desc.region.reg3_base) >> 2];
-	if (len >= ICH_FREG_BASE(desc.region.reg3_base) + 5 && pMAC[0] != 0xff)
+	if (len >= ICH_FREG_BASE(desc.region.reg3_base) + 6 && pMAC[0] != 0xff)
 		printf("The MAC address might be at offset 0x%x: "
 		       "%02x:%02x:%02x:%02x:%02x:%02x\n",
 		       ICH_FREG_BASE(desc.region.reg3_base),
