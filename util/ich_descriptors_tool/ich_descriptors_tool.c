@@ -58,7 +58,6 @@ static void dump_file(const char *prefix, const uint32_t *dump, unsigned int len
 		return;
 	}
 
-	limit = limit | 0x0fff;
 	file_len = limit + 1 - base;
 	if (base + file_len > len) {
 		printf("The %s region is spanning 0x%08x-0x%08x, but it is "

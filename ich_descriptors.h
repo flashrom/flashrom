@@ -63,7 +63,7 @@
 					/* 24-31: reserved */
 
 #define ICH_FREG_BASE(flreg)  (((flreg) << 12) & 0x01fff000)
-#define ICH_FREG_LIMIT(flreg) (((flreg) >>  4) & 0x01fff000)
+#define ICH_FREG_LIMIT(flreg) ((((flreg) >> 4) & 0x01fff000) | 0x00000fff)
 
 void prettyprint_ich_reg_vscc(uint32_t reg_val, int verbosity, bool print_vcl);
 

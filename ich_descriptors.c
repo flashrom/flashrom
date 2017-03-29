@@ -246,7 +246,7 @@ static void pprint_freg(const struct ich_desc_region *reg, uint32_t i)
 	if (base > limit)
 		msg_pdbg2("is unused.\n");
 	else
-		msg_pdbg2("0x%08x - 0x%08x\n", base, limit | 0x0fff);
+		msg_pdbg2("0x%08x - 0x%08x\n", base, limit);
 }
 
 void prettyprint_ich_descriptor_region(const struct ich_descriptors *desc)
@@ -952,7 +952,7 @@ int layout_from_ich_descriptors(struct ich_layout *const layout, const void *con
 	size_t i, j;
 	for (i = 0, j = 0; i < min(desc.content.NR + 1, ARRAY_SIZE(regions)); ++i) {
 		const chipoff_t base = ICH_FREG_BASE(desc.region.FLREGs[i]);
-		const chipoff_t limit = ICH_FREG_LIMIT(desc.region.FLREGs[i]) + 0xfff;
+		const chipoff_t limit = ICH_FREG_LIMIT(desc.region.FLREGs[i]);
 		if (limit <= base)
 			continue;
 		layout->entries[j].start = base;

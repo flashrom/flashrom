@@ -1566,14 +1566,12 @@ static int ich9_handle_frap(uint32_t frap, int i)
 	msg_pdbg("0x%02X: 0x%08x ", offset, freg);
 	if (rwperms == 0x3) {
 		msg_pdbg("FREG%i: %s region (0x%08x-0x%08x) is %s.\n", i,
-			 region_name, base, (limit | 0x0fff),
-			 access_names[rwperms]);
+			 region_name, base, limit, access_names[rwperms]);
 		return 0;
 	}
 
 	msg_pwarn("FREG%i: Warning: %s region (0x%08x-0x%08x) is %s.\n", i,
-		  region_name, base, (limit | 0x0fff),
-		  access_names[rwperms]);
+		  region_name, base, limit, access_names[rwperms]);
 	return 1;
 }
 
@@ -1608,7 +1606,7 @@ static int ich9_handle_pr(const size_t reg_pr0, int i)
 
 	msg_pdbg("0x%02X: 0x%08x ", off, pr);
 	msg_pwarn("%sPR%u: Warning: 0x%08x-0x%08x is %s.\n", prefix, i, ICH_FREG_BASE(pr),
-		  ICH_FREG_LIMIT(pr) | 0x0fff, access_names[rwperms]);
+		  ICH_FREG_LIMIT(pr), access_names[rwperms]);
 	return 1;
 }
 
