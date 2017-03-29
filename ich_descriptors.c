@@ -611,26 +611,24 @@ void prettyprint_ich_descriptor_straps(enum ich_chipset cs, const struct ich_des
 	unsigned int i, max_count;
 	msg_pdbg2("=== Softstraps ===\n");
 
-	if (sizeof(desc->north.STRPs) / 4 + 1 < desc->content.MSL) {
-		max_count = sizeof(desc->north.STRPs) / 4 + 1;
+	max_count = min(ARRAY_SIZE(desc->north.STRPs), desc->content.MSL);
+	if (max_count < desc->content.MSL) {
 		msg_pdbg2("MSL (%u) is greater than the current maximum of %u entries.\n",
-			  desc->content.MSL, max_count + 1);
+			  desc->content.MSL, max_count);
 		msg_pdbg2("Only the first %u entries will be printed.\n", max_count);
-	} else
-		max_count = desc->content.MSL;
+	}
 
 	msg_pdbg2("--- North/MCH/PROC (%d entries) ---\n", max_count);
 	for (i = 0; i < max_count; i++)
 		msg_pdbg2("STRP%-2d = 0x%08x\n", i, desc->north.STRPs[i]);
 	msg_pdbg2("\n");
 
-	if (sizeof(desc->south.STRPs) / 4 < desc->content.ISL) {
-		max_count = sizeof(desc->south.STRPs) / 4;
+	max_count = min(ARRAY_SIZE(desc->south.STRPs), desc->content.ISL);
+	if (max_count < desc->content.ISL) {
 		msg_pdbg2("ISL (%u) is greater than the current maximum of %u entries.\n",
 			  desc->content.ISL, max_count);
 		msg_pdbg2("Only the first %u entries will be printed.\n", max_count);
-	} else
-		max_count = desc->content.ISL;
+	}
 
 	msg_pdbg2("--- South/ICH/PCH (%d entries) ---\n", max_count);
 	for (i = 0; i < max_count; i++)
