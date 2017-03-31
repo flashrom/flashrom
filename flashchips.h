@@ -206,6 +206,9 @@
 #define ATMEL_AT49F080		0x23
 #define ATMEL_AT49F080T		0x27
 
+#define BERGMICRO_ID		0xE0
+#define BERGMICRO_BG25Q40	0x4013
+
 /* Bright Microelectronics has the same manufacturer ID as Hyundai... */
 #define BRIGHT_ID		0xAD	/* Bright Microelectronics */
 #define BRIGHT_BM29F040		0x40
