@@ -300,7 +300,6 @@ static int serprog_spi_send_command(struct flashctx *flash,
 				    const unsigned char *writearr,
 				    unsigned char *readarr);
 static struct spi_master spi_master_serprog = {
-	.type		= SPI_CONTROLLER_SERPROG,
 	.features	= SPI_MASTER_4BA,
 	.max_data_read	= MAX_DATA_READ_UNLIMITED,
 	.max_data_write	= MAX_DATA_WRITE_UNLIMITED,

@@ -1666,7 +1666,6 @@ static void ich9_set_pr(const size_t reg_pr0, int i, int read_prot, int write_pr
 }
 
 static const struct spi_master spi_master_ich7 = {
-	.type = SPI_CONTROLLER_ICH7,
 	.max_data_read = 64,
 	.max_data_write = 64,
 	.command = ich_spi_send_command,
@@ -1677,7 +1676,6 @@ static const struct spi_master spi_master_ich7 = {
 };
 
 static const struct spi_master spi_master_ich9 = {
-	.type = SPI_CONTROLLER_ICH9,
 	.max_data_read = 64,
 	.max_data_write = 64,
 	.command = ich_spi_send_command,
@@ -1990,7 +1988,6 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 }
 
 static const struct spi_master spi_master_via = {
-	.type = SPI_CONTROLLER_VIA,
 	.max_data_read = 16,
 	.max_data_write = 16,
 	.command = ich_spi_send_command,

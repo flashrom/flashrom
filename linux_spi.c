@@ -54,7 +54,6 @@ static int linux_spi_write_256(struct flashctx *flash, const uint8_t *buf,
 			       unsigned int start, unsigned int len);
 
 static const struct spi_master spi_master_linux = {
-	.type		= SPI_CONTROLLER_LINUX,
 	.features	= SPI_MASTER_4BA,
 	.max_data_read	= MAX_DATA_UNSPECIFIED, /* TODO? */
 	.max_data_write	= MAX_DATA_UNSPECIFIED, /* TODO? */

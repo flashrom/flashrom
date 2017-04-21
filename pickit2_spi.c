@@ -350,7 +350,6 @@ static int parse_voltage(char *voltage)
 }
 
 static const struct spi_master spi_master_pickit2 = {
-	.type		= SPI_CONTROLLER_PICKIT2,
 	.max_data_read	= 40,
 	.max_data_write	= 40,
 	.command	= pickit2_spi_send_command,

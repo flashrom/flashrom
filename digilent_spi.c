@@ -313,7 +313,6 @@ static int digilent_spi_send_command(struct flashctx *flash, unsigned int writec
 }
 
 static const struct spi_master spi_master_digilent_spi = {
-	.type		= SPI_CONTROLLER_DIGILENT_SPI,
 	.features	= SPI_MASTER_4BA,
 	.max_data_read	= 252,
 	.max_data_write	= 252,

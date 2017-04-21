@@ -108,7 +108,6 @@ static int it8716f_spi_chip_write_256(struct flashctx *flash, const uint8_t *buf
 				      unsigned int start, unsigned int len);
 
 static const struct spi_master spi_master_it87xx = {
-	.type		= SPI_CONTROLLER_IT87XX,
 	.max_data_read	= MAX_DATA_UNSPECIFIED,
 	.max_data_write	= MAX_DATA_UNSPECIFIED,
 	.command	= it8716f_spi_send_command,

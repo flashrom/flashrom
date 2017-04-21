@@ -208,7 +208,6 @@ static int usbblaster_spi_send_command(struct flashctx *flash, unsigned int writ
 
 
 static const struct spi_master spi_master_usbblaster = {
-	.type		= SPI_CONTROLLER_USBBLASTER,
 	.max_data_read	= 256,
 	.max_data_write	= 256,
 	.command	= usbblaster_spi_send_command,

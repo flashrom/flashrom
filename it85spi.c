@@ -276,7 +276,6 @@ static int it85xx_spi_send_command(struct flashctx *flash,
 				   unsigned char *readarr);
 
 static const struct spi_master spi_master_it85xx = {
-	.type		= SPI_CONTROLLER_IT85XX,
 	.max_data_read	= 64,
 	.max_data_write	= 64,
 	.command	= it85xx_spi_send_command,

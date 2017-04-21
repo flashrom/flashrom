@@ -571,64 +571,6 @@ unsigned int count_max_decode_exceedings(const struct flashctx *flash);
 char *extract_programmer_param(const char *param_name);
 
 /* spi.c */
-enum spi_controller {
-	SPI_CONTROLLER_NONE,
-#if CONFIG_INTERNAL == 1
-#if defined(__i386__) || defined(__x86_64__)
-	SPI_CONTROLLER_ICH7,
-	SPI_CONTROLLER_ICH9,
-	SPI_CONTROLLER_IT85XX,
-	SPI_CONTROLLER_IT87XX,
-	SPI_CONTROLLER_SB600,
-	SPI_CONTROLLER_YANGTZE,
-	SPI_CONTROLLER_VIA,
-	SPI_CONTROLLER_WBSIO,
-#endif
-#endif
-#if CONFIG_FT2232_SPI == 1
-	SPI_CONTROLLER_FT2232,
-#endif
-#if CONFIG_DUMMY == 1
-	SPI_CONTROLLER_DUMMY,
-#endif
-#if CONFIG_BUSPIRATE_SPI == 1
-	SPI_CONTROLLER_BUSPIRATE,
-#endif
-#if CONFIG_DEDIPROG == 1
-	SPI_CONTROLLER_DEDIPROG,
-#endif
-#if CONFIG_OGP_SPI == 1 || CONFIG_NICINTEL_SPI == 1 || CONFIG_RAYER_SPI == 1 || CONFIG_PONY_SPI == 1 || (CONFIG_INTERNAL == 1 && (defined(__i386__) || defined(__x86_64__)))
-	SPI_CONTROLLER_BITBANG,
-#endif
-#if CONFIG_LINUX_MTD == 1
-	SPI_CONTROLLER_LINUX_MTD,
-#endif
-#if CONFIG_LINUX_SPI == 1
-	SPI_CONTROLLER_LINUX,
-#endif
-#if CONFIG_SERPROG == 1
-	SPI_CONTROLLER_SERPROG,
-#endif
-#if CONFIG_USBBLASTER_SPI == 1
-	SPI_CONTROLLER_USBBLASTER,
-#endif
-#if CONFIG_MSTARDDC_SPI == 1
-	SPI_CONTROLLER_MSTARDDC,
-#endif
-#if CONFIG_PICKIT2_SPI == 1
-	SPI_CONTROLLER_PICKIT2,
-#endif
-#if CONFIG_CH341A_SPI == 1
-	SPI_CONTROLLER_CH341A_SPI,
-#endif
-#if CONFIG_DIGILENT_SPI == 1
-	SPI_CONTROLLER_DIGILENT_SPI,
-#endif
-#if CONFIG_JLINK_SPI == 1
-	SPI_CONTROLLER_JLINK_SPI,
-#endif
-};
-
 #define MAX_DATA_UNSPECIFIED 0
 #define MAX_DATA_READ_UNLIMITED 64 * 1024
 #define MAX_DATA_WRITE_UNLIMITED 256
@@ -638,7 +580,6 @@ enum spi_controller {
 						        register, 4BA mode switch) don't work */
 
 struct spi_master {
-	enum spi_controller type;
 	uint32_t features;
 	unsigned int max_data_read; // (Ideally,) maximum data read size in one go (excluding opcode+address).
 	unsigned int max_data_write; // (Ideally,) maximum data write size in one go (excluding opcode+address).

@@ -61,7 +61,6 @@ static int spi100_spi_send_command(struct flashctx *flash, unsigned int writecnt
 				  const unsigned char *writearr, unsigned char *readarr);
 
 static struct spi_master spi_master_sb600 = {
-	.type = SPI_CONTROLLER_SB600,
 	.max_data_read = FIFO_SIZE_OLD,
 	.max_data_write = FIFO_SIZE_OLD - 3,
 	.command = sb600_spi_send_command,
@@ -72,7 +71,6 @@ static struct spi_master spi_master_sb600 = {
 };
 
 static struct spi_master spi_master_yangtze = {
-	.type = SPI_CONTROLLER_YANGTZE,
 	.max_data_read = FIFO_SIZE_YANGTZE - 3, /* Apparently the big SPI 100 buffer is not a ring buffer. */
 	.max_data_write = FIFO_SIZE_YANGTZE - 3,
 	.command = spi100_spi_send_command,

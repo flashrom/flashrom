@@ -220,7 +220,6 @@ static int mstarddc_spi_send_command(struct flashctx *flash,
 }
 
 static const struct spi_master spi_master_mstarddc = {
-	.type = SPI_CONTROLLER_MSTARDDC,
 	.max_data_read = 256,
 	.max_data_write = 256,
 	.command = mstarddc_spi_send_command,

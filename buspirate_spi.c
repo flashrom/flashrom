@@ -133,7 +133,6 @@ static int buspirate_spi_send_command_v2(struct flashctx *flash, unsigned int wr
 					 const unsigned char *writearr, unsigned char *readarr);
 
 static struct spi_master spi_master_buspirate = {
-	.type		= SPI_CONTROLLER_BUSPIRATE,
 	.features	= SPI_MASTER_4BA,
 	.max_data_read	= MAX_DATA_UNSPECIFIED,
 	.max_data_write	= MAX_DATA_UNSPECIFIED,

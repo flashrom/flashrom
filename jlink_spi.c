@@ -152,7 +152,6 @@ static int jlink_spi_send_command(struct flashctx *flash, unsigned int writecnt,
 }
 
 static const struct spi_master spi_master_jlink_spi = {
-	.type		= SPI_CONTROLLER_JLINK_SPI,
 	/* Maximum data read size in one go (excluding opcode+address). */
 	.max_data_read	= JTAG_MAX_TRANSFER_SIZE - 5,
 	/* Maximum data write size in one go (excluding opcode+address). */
