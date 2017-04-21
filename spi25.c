@@ -100,9 +100,11 @@ static int probe_spi_rdid_generic(struct flashctx *flash, int bytes)
 	uint32_t id1;
 	uint32_t id2;
 
-	if (spi_rdid(flash, readarr, bytes)) {
+	const int ret = spi_rdid(flash, readarr, bytes);
+	if (ret == SPI_INVALID_LENGTH)
+		msg_cinfo("%d byte RDID not supported on this SPI controller\n", bytes);
+	if (ret)
 		return 0;
-	}
 
 	if (!oddparity(readarr[0]))
 		msg_cdbg("RDID byte 0 parity violation. ");
@@ -147,24 +149,7 @@ int probe_spi_rdid(struct flashctx *flash)
 
 int probe_spi_rdid4(struct flashctx *flash)
 {
-	/* Some SPI controllers do not support commands with writecnt=1 and
-	 * readcnt=4.
-	 */
-	switch (flash->mst->spi.type) {
-#if CONFIG_INTERNAL == 1
-#if defined(__i386__) || defined(__x86_64__)
-	case SPI_CONTROLLER_IT87XX:
-	case SPI_CONTROLLER_WBSIO:
-		msg_cinfo("4 byte RDID not supported on this SPI controller\n");
-		return 0;
-		break;
-#endif
-#endif
-	default:
-		return probe_spi_rdid_generic(flash, 4);
-	}
-
-	return 0;
+	return probe_spi_rdid_generic(flash, 4);
 }
 
 int probe_spi_rems(struct flashctx *flash)
