@@ -743,20 +743,6 @@ int default_spi_write_aai(struct flashctx *flash, const uint8_t *buf, unsigned i
 		JEDEC_AAI_WORD_PROGRAM,
 	};
 
-	switch (flash->mst->spi.type) {
-#if CONFIG_INTERNAL == 1
-#if defined(__i386__) || defined(__x86_64__)
-	case SPI_CONTROLLER_IT87XX:
-	case SPI_CONTROLLER_WBSIO:
-		msg_perr("%s: impossible with this SPI controller,"
-				" degrading to byte program\n", __func__);
-		return spi_chip_write_1(flash, buf, start, len);
-#endif
-#endif
-	default:
-		break;
-	}
-
 	/* The even start address and even length requirements can be either
 	 * honored outside this function, or we can call spi_byte_program
 	 * for the first and/or last byte and use AAI for the rest.

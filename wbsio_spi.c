@@ -72,7 +72,7 @@ static const struct spi_master spi_master_wbsio = {
 	.multicommand = default_spi_send_multicommand,
 	.read = wbsio_spi_read,
 	.write_256 = spi_chip_write_1,
-	.write_aai = default_spi_write_aai,
+	.write_aai = spi_chip_write_1,
 };
 
 int wbsio_check_for_spi(void)
