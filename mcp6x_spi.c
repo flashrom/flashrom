@@ -88,7 +88,6 @@ static int mcp6x_bitbang_get_miso(void)
 }
 
 static const struct bitbang_spi_master bitbang_spi_master_mcp6x = {
-	.type = BITBANG_SPI_MASTER_MCP,
 	.set_cs = mcp6x_bitbang_set_cs,
 	.set_sck = mcp6x_bitbang_set_sck,
 	.set_mosi = mcp6x_bitbang_set_mosi,

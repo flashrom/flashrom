@@ -159,33 +159,7 @@ extern const struct programmer_entry programmer_table[];
 int programmer_init(enum programmer prog, const char *param);
 int programmer_shutdown(void);
 
-enum bitbang_spi_master_type {
-	BITBANG_SPI_INVALID	= 0, /* This must always be the first entry. */
-#if CONFIG_RAYER_SPI == 1
-	BITBANG_SPI_MASTER_RAYER,
-#endif
-#if CONFIG_PONY_SPI == 1
-	BITBANG_SPI_MASTER_PONY,
-#endif
-#if CONFIG_NICINTEL_SPI == 1
-	BITBANG_SPI_MASTER_NICINTEL,
-#endif
-#if CONFIG_INTERNAL == 1
-#if defined(__i386__) || defined(__x86_64__)
-	BITBANG_SPI_MASTER_MCP,
-#endif
-#endif
-#if CONFIG_OGP_SPI == 1
-	BITBANG_SPI_MASTER_OGP,
-#endif
-#if CONFIG_DEVELOPERBOX_SPI == 1
-	BITBANG_SPI_MASTER_DEVELOPERBOX,
-#endif
-};
-
 struct bitbang_spi_master {
-	enum bitbang_spi_master_type type;
-
 	/* Note that CS# is active low, so val=0 means the chip is active. */
 	void (*set_cs) (int val);
 	void (*set_sck) (int val);

@@ -168,7 +168,6 @@ static int nicintel_bitbang_get_miso(void)
 }
 
 static const struct bitbang_spi_master bitbang_spi_master_nicintel = {
-	.type = BITBANG_SPI_MASTER_NICINTEL,
 	.set_cs = nicintel_bitbang_set_cs,
 	.set_sck = nicintel_bitbang_set_sck,
 	.set_mosi = nicintel_bitbang_set_mosi,

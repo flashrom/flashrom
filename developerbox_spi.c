@@ -121,7 +121,6 @@ static void cp210x_bitbang_set_sck_set_mosi(int sck, int mosi)
 }
 
 static const struct bitbang_spi_master bitbang_spi_master_cp210x = {
-	.type = BITBANG_SPI_MASTER_DEVELOPERBOX,
 	.set_cs = cp210x_bitbang_set_cs,
 	.set_sck = cp210x_bitbang_set_sck,
 	.set_mosi = cp210x_bitbang_set_mosi,

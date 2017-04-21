@@ -91,7 +91,6 @@ static int pony_bitbang_get_miso(void)
 }
 
 static const struct bitbang_spi_master bitbang_spi_master_pony = {
-	.type = BITBANG_SPI_MASTER_PONY,
 	.set_cs = pony_bitbang_set_cs,
 	.set_sck = pony_bitbang_set_sck,
 	.set_mosi = pony_bitbang_set_mosi,

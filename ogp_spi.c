@@ -83,7 +83,6 @@ static int ogp_bitbang_get_miso(void)
 }
 
 static const struct bitbang_spi_master bitbang_spi_master_ogp = {
-	.type = BITBANG_SPI_MASTER_OGP,
 	.set_cs = ogp_bitbang_set_cs,
 	.set_sck = ogp_bitbang_set_sck,
 	.set_mosi = ogp_bitbang_set_mosi,
