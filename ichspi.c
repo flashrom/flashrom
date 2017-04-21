@@ -229,7 +229,7 @@
 static int ichspi_lock = 0;
 
 static enum ich_chipset ich_generation = CHIPSET_ICH_UNKNOWN;
-uint32_t ichspi_bbar = 0;
+static uint32_t ichspi_bbar;
 
 static void *ich_spibar = NULL;
 
@@ -1150,19 +1150,6 @@ static int ich_spi_send_command(struct flashctx *flash, unsigned int writecnt,
 		return SPI_INVALID_LENGTH;
 	}
 
-	/* if opcode-type requires an address */
-	if (opcode->spi_type == SPI_OPCODE_TYPE_READ_WITH_ADDRESS ||
-	    opcode->spi_type == SPI_OPCODE_TYPE_WRITE_WITH_ADDRESS) {
-		addr = (writearr[1] << 16) |
-		    (writearr[2] << 8) | (writearr[3] << 0);
-		if (addr < ichspi_bbar) {
-			msg_perr("%s: Address 0x%06x below allowed "
-				 "range 0x%06x-0xffffff\n", __func__,
-				 addr, ichspi_bbar);
-			return SPI_INVALID_ADDRESS;
-		}
-	}
-
 	/* Translate read/write array/count.
 	 * The maximum data length is identical for the maximum read length and
 	 * for the maximum write length excluding opcode and address. Opcode and
@@ -1179,6 +1166,30 @@ static int ich_spi_send_command(struct flashctx *flash, unsigned int writecnt,
 	} else {
 		data = (uint8_t *) readarr;
 		count = readcnt;
+	}
+
+	/* if opcode-type requires an address */
+	if (cmd == JEDEC_REMS || cmd == JEDEC_RES) {
+		addr = ichspi_bbar;
+	} else if (opcode->spi_type == SPI_OPCODE_TYPE_READ_WITH_ADDRESS ||
+	    opcode->spi_type == SPI_OPCODE_TYPE_WRITE_WITH_ADDRESS) {
+		/* BBAR may cut part of the chip off at the lower end. */
+		const uint32_t valid_base = ichspi_bbar & ((flash->chip->total_size * 1024) - 1);
+		const uint32_t addr_offset = ichspi_bbar - valid_base;
+		/* Highest address we can program is (2^24 - 1). */
+		const uint32_t valid_end = (1 << 24) - addr_offset;
+
+		addr = writearr[1] << 16 | writearr[2] << 8 | writearr[3];
+		const uint32_t addr_end = addr + count;
+
+		if (addr < valid_base ||
+		    addr_end < addr || /* integer overflow check */
+		    addr_end > valid_end) {
+			msg_perr("%s: Addressed region 0x%06x-0x%06x not in allowed range 0x%06x-0x%06x\n",
+				 __func__, addr, addr_end - 1, valid_base, valid_end - 1);
+			return SPI_INVALID_ADDRESS;
+		}
+		addr += addr_offset;
 	}
 
 	result = run_opcode(flash, *opcode, addr, count, data);

@@ -103,31 +103,7 @@ int default_spi_write_256(struct flashctx *flash, const uint8_t *buf, unsigned i
 int spi_chip_read(struct flashctx *flash, uint8_t *buf, unsigned int start,
 		  unsigned int len)
 {
-	unsigned int addrbase = 0;
-
-	/* Check if the chip fits between lowest valid and highest possible
-	 * address. Highest possible address with the current SPI implementation
-	 * means 0xffffff, the highest unsigned 24bit number.
-	 */
-	addrbase = spi_get_valid_read_addr(flash);
-	/* Show flash chip size warning if flash chip doesn't support
-	   4-Bytes Addressing mode and last address excedes 24 bits */
-	if (!(flash->chip->feature_bits & FEATURE_4BA_SUPPORT) &&
-	    addrbase + flash->chip->total_size * 1024 > (1 << 24)) {
-		msg_perr("Flash chip size exceeds the allowed access window. ");
-		msg_perr("Read will probably fail.\n");
-		/* Try to get the best alignment subject to constraints. */
-		addrbase = (1 << 24) - flash->chip->total_size * 1024;
-	}
-	/* Check if alignment is native (at least the largest power of two which
-	 * is a factor of the mapped size of the chip).
-	 */
-	if (ffs(flash->chip->total_size * 1024) > (ffs(addrbase) ? : 33)) {
-		msg_perr("Flash chip is not aligned natively in the allowed "
-			 "access window.\n");
-		msg_perr("Read will probably return garbage.\n");
-	}
-	return flash->mst->spi.read(flash, buf, addrbase + start, len);
+	return flash->mst->spi.read(flash, buf, start, len);
 }
 
 /*
@@ -140,27 +116,6 @@ int spi_chip_read(struct flashctx *flash, uint8_t *buf, unsigned int start,
 int spi_chip_write_256(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len)
 {
 	return flash->mst->spi.write_256(flash, buf, start, len);
-}
-
-/*
- * Get the lowest allowed address for read accesses. This often happens to
- * be the lowest allowed address for all commands which take an address.
- * This is a master limitation.
- */
-uint32_t spi_get_valid_read_addr(struct flashctx *flash)
-{
-	switch (flash->mst->spi.type) {
-#if CONFIG_INTERNAL == 1
-#if defined(__i386__) || defined(__x86_64__)
-	case SPI_CONTROLLER_ICH7:
-	case SPI_CONTROLLER_ICH9:
-		/* Return BBAR for ICH chipsets. */
-		return ichspi_bbar;
-#endif
-#endif
-	default:
-		return 0;
-	}
 }
 
 int spi_aai_write(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len)

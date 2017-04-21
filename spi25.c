@@ -49,21 +49,10 @@ static int spi_rdid(struct flashctx *flash, unsigned char *readarr, int bytes)
 
 static int spi_rems(struct flashctx *flash, unsigned char *readarr)
 {
-	unsigned char cmd[JEDEC_REMS_OUTSIZE] = { JEDEC_REMS, 0, 0, 0 };
-	uint32_t readaddr;
+	static const unsigned char cmd[JEDEC_REMS_OUTSIZE] = { JEDEC_REMS, };
 	int ret;
 
-	ret = spi_send_command(flash, sizeof(cmd), JEDEC_REMS_INSIZE, cmd,
-			       readarr);
-	if (ret == SPI_INVALID_ADDRESS) {
-		/* Find the lowest even address allowed for reads. */
-		readaddr = (spi_get_valid_read_addr(flash) + 1) & ~1;
-		cmd[1] = (readaddr >> 16) & 0xff,
-		cmd[2] = (readaddr >> 8) & 0xff,
-		cmd[3] = (readaddr >> 0) & 0xff,
-		ret = spi_send_command(flash, sizeof(cmd), JEDEC_REMS_INSIZE,
-				       cmd, readarr);
-	}
+	ret = spi_send_command(flash, sizeof(cmd), JEDEC_REMS_INSIZE, cmd, readarr);
 	if (ret)
 		return ret;
 	msg_cspew("REMS returned 0x%02x 0x%02x. ", readarr[0], readarr[1]);
@@ -72,20 +61,11 @@ static int spi_rems(struct flashctx *flash, unsigned char *readarr)
 
 static int spi_res(struct flashctx *flash, unsigned char *readarr, int bytes)
 {
-	unsigned char cmd[JEDEC_RES_OUTSIZE] = { JEDEC_RES, 0, 0, 0 };
-	uint32_t readaddr;
+	static const unsigned char cmd[JEDEC_RES_OUTSIZE] = { JEDEC_RES, };
 	int ret;
 	int i;
 
 	ret = spi_send_command(flash, sizeof(cmd), bytes, cmd, readarr);
-	if (ret == SPI_INVALID_ADDRESS) {
-		/* Find the lowest even address allowed for reads. */
-		readaddr = (spi_get_valid_read_addr(flash) + 1) & ~1;
-		cmd[1] = (readaddr >> 16) & 0xff,
-		cmd[2] = (readaddr >> 8) & 0xff,
-		cmd[3] = (readaddr >> 0) & 0xff,
-		ret = spi_send_command(flash, sizeof(cmd), bytes, cmd, readarr);
-	}
 	if (ret)
 		return ret;
 	msg_cspew("RES returned");

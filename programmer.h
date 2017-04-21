@@ -661,7 +661,6 @@ enum ich_chipset {
 
 /* ichspi.c */
 #if CONFIG_INTERNAL == 1
-extern uint32_t ichspi_bbar;
 int ich_init_spi(void *spibar, enum ich_chipset ich_generation);
 int via_init_spi(uint32_t mmio_base);
 
