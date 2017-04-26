@@ -1561,7 +1561,7 @@ static const struct opaque_master opaque_master_ich_hwseq = {
 	.erase = ich_hwseq_block_erase,
 };
 
-int ich_init_spi(struct pci_dev *dev, void *spibar, enum ich_chipset ich_gen)
+int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 {
 	int i;
 	uint16_t tmp2;
@@ -1828,7 +1828,7 @@ static const struct spi_master spi_master_via = {
 	.write_aai = default_spi_write_aai,
 };
 
-int via_init_spi(struct pci_dev *dev, uint32_t mmio_base)
+int via_init_spi(uint32_t mmio_base)
 {
 	int i;
 

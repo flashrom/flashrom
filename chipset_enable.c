@@ -718,7 +718,7 @@ static int enable_flash_ich_spi(struct pci_dev *dev, enum ich_chipset ich_genera
 	void *spibar = rcrb + spibar_offset;
 
 	/* This adds BUS_SPI */
-	int ret_spi = ich_init_spi(dev, spibar, ich_generation);
+	int ret_spi = ich_init_spi(spibar, ich_generation);
 	if (ret_spi == ERROR_FATAL)
 		return ret_spi;
 	
@@ -846,7 +846,7 @@ static int enable_flash_silvermont(struct pci_dev *dev, const char *name)
 	 */
 	enable_flash_ich_bios_cntl_memmapped(ich_generation, spibar + 0xFC);
 
-	int ret_spi = ich_init_spi(dev, spibar, ich_generation);
+	int ret_spi = ich_init_spi(spibar, ich_generation);
 	if (ret_spi == ERROR_FATAL)
 		return ret_spi;
 
@@ -949,12 +949,12 @@ static int enable_flash_vt_vx(struct pci_dev *dev, const char *name)
 			return ERROR_FATAL;
 	}
 
-	return via_init_spi(dev, spi0_mm_base);
+	return via_init_spi(spi0_mm_base);
 }
 
 static int enable_flash_vt8237s_spi(struct pci_dev *dev, const char *name)
 {
-	return via_init_spi(dev, pci_read_long(dev, 0xbc) << 8);
+	return via_init_spi(pci_read_long(dev, 0xbc) << 8);
 }
 
 static int enable_flash_cs5530(struct pci_dev *dev, const char *name)
