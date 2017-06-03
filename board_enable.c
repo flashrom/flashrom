@@ -2437,6 +2437,7 @@ const struct board_match board_matches[] = {
 	{0x8086, 0x2917, 0x17AA, 0x20F5,  0x8086, 0x2930, 0x17AA, 0x20F9, "^ThinkPad W500", NULL, NULL,       P2, "IBM/Lenovo",  "ThinkPad W500",         0,   OK, p2_whitelist_laptop},
 	{0x8086, 0x2917, 0x17AA, 0x20F5,  0x8086, 0x2930, 0x17AA, 0x20F9, "^ThinkPad X200", NULL, NULL,       P2, "IBM/Lenovo",  "ThinkPad X200",         0,   OK, p2_whitelist_laptop},
 	{0x8086, 0x3B07, 0x17AA, 0x2166,  0x8086, 0x3B30, 0x17AA, 0x2167, "^Lenovo X201", NULL, NULL,         P2, "IBM/Lenovo",  "ThinkPad X201",         0,   OK, p2_whitelist_laptop},
+	{0x8086, 0x1C22, 0x17AA, 0x21DB,  0x8086, 0x1C4F, 0x17AA, 0x21DB, NULL, "lenovo", "x220",             P2, "IBM/Lenovo",  "ThinkPad X220",         0,   OK, p2_whitelist_laptop},
 	{0x8086, 0x1E22, 0x17AA, 0x21FA,  0x8086, 0x1E55, 0x17AA, 0x21FA, "^ThinkPad X230", NULL, NULL,       P2, "IBM/Lenovo",  "ThinkPad X230",         0,   OK, p2_whitelist_laptop},
 	{0x8086, 0x27A0, 0x17AA, 0x2017,  0x8086, 0x27B9, 0x17AA, 0x2009, "^ThinkPad X60", NULL, NULL,        P2, "IBM/Lenovo",  "ThinkPad X60(s)",       0,   OK, p2_whitelist_laptop},
 	{0x8086, 0x2917, 0x17AA, 0x20F5,  0x8086, 0x2930, 0x17AA, 0x20F9, "^Taurinus X200", "Libiquity", "Taurinus X200", P2, "Libiquity", "ThinkPad X200", 0, OK, p2_whitelist_laptop},
