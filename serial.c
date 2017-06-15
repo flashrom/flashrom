@@ -40,6 +40,7 @@
 #endif
 #include "flash.h"
 #include "programmer.h"
+#include "custom_baud.h"
 
 fdtype sp_fd = SER_INV_FD;
 
@@ -49,18 +50,14 @@ fdtype sp_fd = SER_INV_FD;
  * The code below creates a mapping in sp_baudtable between these macros and the numerical baud rates to deal
  * with numerical user input.
  *
- * On Linux there is a non-standard way to use arbitrary baud rates that flashrom does not support (yet), cf.
- * http://www.downtowndougbrown.com/2013/11/linux-custom-serial-baud-rates/
+ * On Linux there is a non-standard way to use arbitrary baud rates that we use if there is no
+ * matching standard rate, see custom_baud.c
  *
  * On Windows there exist similar macros (starting with CBR_ instead of B) but they are only defined for
  * backwards compatibility and the API supports arbitrary baud rates in the same manner as the macros, see
  * http://msdn.microsoft.com/en-us/library/windows/desktop/aa363214(v=vs.85).aspx
  */
 #if !IS_WINDOWS
-struct baudentry {
-	int flag;
-	unsigned int baud;
-};
 #define BAUDENTRY(baud) { B##baud, baud },
 
 static const struct baudentry sp_baudtable[] = {
@@ -195,10 +192,25 @@ int serialport_config(fdtype fd, int baud)
 	}
 	wanted = observed;
 	if (baud >= 0) {
-		const struct baudentry *entry = round_baud(baud);
-		if (cfsetispeed(&wanted, entry->flag) != 0 || cfsetospeed(&wanted, entry->flag) != 0) {
-			msg_perr_strerror("Could not set serial baud rate: ");
-			return 1;
+		if (use_custom_baud(baud, sp_baudtable)) {
+			if (set_custom_baudrate(fd, baud)) {
+				msg_perr_strerror("Could not set custom baudrate: ");
+				return 1;
+			}
+			/* We want whatever the termios looks like now, so the rest of the
+			   setup doesnt mess up the custom rate. */
+			if (tcgetattr(fd, &wanted) != 0) {
+				/* This should pretty much never happen (see above), but.. */
+				msg_perr_strerror("Could not fetch serial port configuration: ");
+				return 1;
+			}
+			msg_pdbg("Using custom baud rate.\n");
+		} else {
+			const struct baudentry *entry = round_baud(baud);
+			if (cfsetispeed(&wanted, entry->flag) != 0 || cfsetospeed(&wanted, entry->flag) != 0) {
+				msg_perr_strerror("Could not set serial baud rate: ");
+				return 1;
+			}
 		}
 	}
 	wanted.c_cflag &= ~(PARENB | CSTOPB | CSIZE | CRTSCTS);

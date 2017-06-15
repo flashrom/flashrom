@@ -921,7 +921,7 @@ NEED_LIBUSB1 += CONFIG_CH341A_SPI
 endif
 
 ifneq ($(NEED_SERIAL), )
-LIB_OBJS += serial.o
+LIB_OBJS += serial.o custom_baud.o
 endif
 
 ifneq ($(NEED_POSIX_SOCKETS), )
