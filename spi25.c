@@ -940,30 +940,31 @@ int spi_nbyte_read(struct flashctx *flash, unsigned int address, uint8_t *bytes,
 /*
  * Read a part of the flash chip.
  * FIXME: Use the chunk code from Michael Karcher instead.
- * Each page is read separately in chunks with a maximum size of chunksize.
+ * Each naturally aligned area is read separately in chunks with a maximum size of chunksize.
  */
 int spi_read_chunked(struct flashctx *flash, uint8_t *buf, unsigned int start,
 		     unsigned int len, unsigned int chunksize)
 {
 	int rc = 0;
 	unsigned int i, j, starthere, lenhere, toread;
-	unsigned int page_size = flash->chip->page_size;
+	/* Limit for multi-die 4-byte-addressing chips. */
+	unsigned int area_size = min(flash->chip->total_size * 1024, 16 * 1024 * 1024);
 
 	/* Warning: This loop has a very unusual condition and body.
-	 * The loop needs to go through each page with at least one affected
-	 * byte. The lowest page number is (start / page_size) since that
-	 * division rounds down. The highest page number we want is the page
+	 * The loop needs to go through each area with at least one affected
+	 * byte. The lowest area number is (start / area_size) since that
+	 * division rounds down. The highest area number we want is the area
 	 * where the last byte of the range lives. That last byte has the
-	 * address (start + len - 1), thus the highest page number is
-	 * (start + len - 1) / page_size. Since we want to include that last
-	 * page as well, the loop condition uses <=.
+	 * address (start + len - 1), thus the highest area number is
+	 * (start + len - 1) / area_size. Since we want to include that last
+	 * area as well, the loop condition uses <=.
 	 */
-	for (i = start / page_size; i <= (start + len - 1) / page_size; i++) {
-		/* Byte position of the first byte in the range in this page. */
+	for (i = start / area_size; i <= (start + len - 1) / area_size; i++) {
+		/* Byte position of the first byte in the range in this area. */
 		/* starthere is an offset to the base address of the chip. */
-		starthere = max(start, i * page_size);
-		/* Length of bytes in the range in this page. */
-		lenhere = min(start + len, (i + 1) * page_size) - starthere;
+		starthere = max(start, i * area_size);
+		/* Length of bytes in the range in this area. */
+		lenhere = min(start + len, (i + 1) * area_size) - starthere;
 		for (j = 0; j < lenhere; j += chunksize) {
 			toread = min(chunksize, lenhere - j);
 			rc = spi_nbyte_read(flash, starthere + j, buf + starthere - start + j, toread);
