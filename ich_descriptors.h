@@ -93,9 +93,10 @@ struct ich_desc_content {
 	union {			/* 0x0c */
 		uint32_t FLMAP2;
 		struct {
-			uint32_t FMSBA	:8, /* Flash (G)MCH Strap Base Addr. */
-				 MSL	:8, /* MCH Strap Length */
-					:16;
+			uint32_t FMSBA		:8, /* Flash (G)MCH Strap Base Addr. */
+				 MSL		:8, /* MCH Strap Length */
+				 ICCRIBA	:8, /* ICC Reg. Init Base Addr.	(new since Sandy Bridge) */
+				 RIL		:8; /* Register Init Length	(new since Hawell) */
 		};
 	};
 };

@@ -702,6 +702,68 @@ void prettyprint_ich_descriptor_upper_map(const struct ich_desc_upper_map *umap)
 	msg_pdbg2("\n");
 }
 
+/*
+ * Guesses a minimum chipset version based on the maximum number of
+ * soft straps per generation.
+ */
+static enum ich_chipset guess_ich_chipset_from_content(const struct ich_desc_content *const content)
+{
+	if (content->ICCRIBA == 0x00) {
+		if (content->MSL == 0 && content->ISL <= 2)
+			return CHIPSET_ICH8;
+		else if (content->ISL <= 2)
+			return CHIPSET_ICH9;
+		else if (content->ISL <= 10)
+			return CHIPSET_ICH10;
+		else if (content->ISL <= 16)
+			return CHIPSET_5_SERIES_IBEX_PEAK;
+		msg_pwarn("Peculiar firmware descriptor, assuming Ibex Peak compatibility.\n");
+		return CHIPSET_5_SERIES_IBEX_PEAK;
+	} else if (content->ICCRIBA < 0x31 && content->FMSBA < 0x30) {
+		if (content->MSL == 0 && content->ISL <= 17)
+			return CHIPSET_BAYTRAIL;
+		else if (content->MSL <= 1 && content->ISL <= 18)
+			return CHIPSET_6_SERIES_COUGAR_POINT;
+		else if (content->MSL <= 1 && content->ISL <= 21)
+			return CHIPSET_8_SERIES_LYNX_POINT;
+		msg_pwarn("Peculiar firmware descriptor, assuming Wildcat Point compatibility.\n");
+		return CHIPSET_9_SERIES_WILDCAT_POINT;
+	} else {
+		return CHIPSET_100_SERIES_SUNRISE_POINT;
+	}
+}
+
+/*
+ * As an additional measure, we check the read frequency like `ifdtool`.
+ * The frequency value 6 (17MHz) was reserved before Skylake and is the
+ * only valid value since. Skylake is currently the most important dis-
+ * tinction because of the dropped number of regions field (NR).
+ */
+enum ich_chipset guess_ich_chipset(const struct ich_desc_content *const content,
+				   const struct ich_desc_component *const component)
+{
+	const enum ich_chipset guess = guess_ich_chipset_from_content(content);
+
+	if (component->modes.freq_read == 6) {
+		if (guess != CHIPSET_100_SERIES_SUNRISE_POINT)
+			msg_pwarn("\nThe firmware descriptor has the read frequency set to 17MHz. However,\n"
+				  "it doesn't look like a Skylake/Sunrise Point compatible descriptor.\n"
+				  "Please report this message, the output of `ich_descriptors_tool` for\n"
+				  "your descriptor and the output of `lspci -nn` to flashrom@flashrom.org\n\n");
+		return CHIPSET_100_SERIES_SUNRISE_POINT;
+	} else {
+		if (guess == CHIPSET_100_SERIES_SUNRISE_POINT) {
+			msg_pwarn("\nThe firmware descriptor looks like a Skylake/Sunrise Point descriptor.\n"
+				  "However, the read frequency isn't set to 17MHz (the only valid value).\n"
+				  "Please report this message, the output of `ich_descriptors_tool` for\n"
+				  "your descriptor and the output of `lspci -nn` to flashrom@flashrom.org\n\n");
+			return CHIPSET_9_SERIES_WILDCAT_POINT;
+		}
+	}
+
+	return guess;
+}
+
 /* len is the length of dump in bytes */
 int read_ich_descriptors_from_dump(const uint32_t *dump, unsigned int len, struct ich_descriptors *desc)
 {
