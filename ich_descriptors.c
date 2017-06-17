@@ -90,6 +90,21 @@ void prettyprint_ich_reg_vscc(uint32_t reg_val, int verbosity, bool print_vcl)
 #define getFISBA(cont)	(((cont)->FLMAP1 >> 12) & 0x00000ff0)
 #define getFMSBA(cont)	(((cont)->FLMAP2 <<  4) & 0x00000ff0)
 
+void prettyprint_ich_chipset(enum ich_chipset cs)
+{
+	static const char *const chipset_names[] = {
+		"Unknown ICH", "ICH8", "ICH9", "ICH10",
+		"5 series Ibex Peak", "6 series Cougar Point", "7 series Panther Point",
+		"8 series Lynx Point", "Baytrail", "8 series Lynx Point LP", "8 series Wellsburg",
+		"9 series Wildcat Point", "9 series Wildcat Point LP", "100 series Sunrise Point",
+	};
+	if (cs < CHIPSET_ICH8 || cs - CHIPSET_ICH8 + 1 >= ARRAY_SIZE(chipset_names))
+		cs = 0;
+	else
+		cs = cs - CHIPSET_ICH8 + 1;
+	msg_pdbg2("Assuming chipset '%s'.\n", chipset_names[cs]);
+}
+
 void prettyprint_ich_descriptors(enum ich_chipset cs, const struct ich_descriptors *desc)
 {
 	prettyprint_ich_descriptor_content(cs, &desc->content);
@@ -881,8 +896,10 @@ int read_ich_descriptors_from_dump(const uint32_t *const dump, const size_t len,
 	desc->component.FLILL	= dump[(getFCBA(&desc->content) >> 2) + 1];
 	desc->component.FLPB	= dump[(getFCBA(&desc->content) >> 2) + 2];
 
-	if (*cs == CHIPSET_ICH_UNKNOWN)
+	if (*cs == CHIPSET_ICH_UNKNOWN) {
 		*cs = guess_ich_chipset(&desc->content, &desc->component);
+		prettyprint_ich_chipset(*cs);
+	}
 
 	/* region */
 	const ssize_t nr = ich_number_of_regions(*cs, &desc->content);

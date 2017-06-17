@@ -567,6 +567,7 @@ struct ich_descriptors {
 ssize_t ich_number_of_regions(enum ich_chipset cs, const struct ich_desc_content *content);
 ssize_t ich_number_of_masters(enum ich_chipset cs, const struct ich_desc_content *content);
 
+void prettyprint_ich_chipset(enum ich_chipset cs);
 void prettyprint_ich_descriptors(enum ich_chipset cs, const struct ich_descriptors *desc);
 
 void prettyprint_ich_descriptor_content(enum ich_chipset cs, const struct ich_desc_content *content);
