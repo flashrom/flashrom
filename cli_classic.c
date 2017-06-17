@@ -553,7 +553,9 @@ int main(int argc, char *argv[])
 
 	flashrom_layout_set(fill_flash, layout);
 	flashrom_flag_set(fill_flash, FLASHROM_FLAG_FORCE, !!force);
+#if CONFIG_INTERNAL == 1
 	flashrom_flag_set(fill_flash, FLASHROM_FLAG_FORCE_BOARDMISMATCH, !!force_boardmismatch);
+#endif
 	flashrom_flag_set(fill_flash, FLASHROM_FLAG_VERIFY_AFTER_WRITE, !dont_verify_it);
 	flashrom_flag_set(fill_flash, FLASHROM_FLAG_VERIFY_WHOLE_CHIP, !dont_verify_all);
 
