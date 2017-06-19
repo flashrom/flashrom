@@ -2294,7 +2294,7 @@ static void combine_image_by_layout(const struct flashctx *const flashctx,
  * containing included regions will be touched.
  *
  * @param flashctx The context of the flash chip.
- * @param buffer Source buffer to read image from.
+ * @param buffer Source buffer to read image from (may be altered for full verification).
  * @param buffer_len Size of source buffer in bytes.
  * @return 0 on success,
  *         4 if buffer_len doesn't match the size of the flash chip,
