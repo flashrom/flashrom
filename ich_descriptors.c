@@ -847,6 +847,8 @@ int getFCBA_component_density(enum ich_chipset cs, const struct ich_descriptors 
 	return (1 << (19 + size_enc));
 }
 
+/* Only used by ichspi.c */
+#if CONFIG_INTERNAL == 1 && (defined(__i386__) || defined(__x86_64__))
 static uint32_t read_descriptor_reg(uint8_t section, uint16_t offset, void *spibar)
 {
 	uint32_t control = 0;
@@ -918,6 +920,7 @@ int read_ich_descriptors_via_fdo(void *spibar, struct ich_descriptors *desc)
 	msg_pdbg2(" done.\n");
 	return ICH_RET_OK;
 }
+#endif
 
 /**
  * @brief Read a layout from the dump of an Intel ICH descriptor.
