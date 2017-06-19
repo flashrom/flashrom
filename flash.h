@@ -38,6 +38,7 @@
 #undef max
 #endif
 
+#include "libflashrom.h"
 #include "layout.h"
 
 #define ERROR_PTR ((void*)-1)
@@ -312,47 +313,39 @@ int do_verify(struct flashctx *, const char *const filename);
 void print_chip_support_status(const struct flashchip *chip);
 
 /* cli_output.c */
-extern int verbose_screen;
-extern int verbose_logfile;
+extern enum flashrom_log_level verbose_screen;
+extern enum flashrom_log_level verbose_logfile;
 #ifndef STANDALONE
 int open_logfile(const char * const filename);
 int close_logfile(void);
 void start_logging(void);
 #endif
-enum msglevel {
-	MSG_ERROR	= 0,
-	MSG_WARN	= 1,
-	MSG_INFO	= 2,
-	MSG_DEBUG	= 3,
-	MSG_DEBUG2	= 4,
-	MSG_SPEW	= 5,
-};
-int flashrom_print_cb(enum msglevel level, const char *fmt, va_list ap);
+int flashrom_print_cb(enum flashrom_log_level level, const char *fmt, va_list ap);
 /* Let gcc and clang check for correct printf-style format strings. */
-int print(enum msglevel level, const char *fmt, ...)
+int print(enum flashrom_log_level level, const char *fmt, ...)
 #ifdef __MINGW32__
 __attribute__((format(gnu_printf, 2, 3)));
 #else
 __attribute__((format(printf, 2, 3)));
 #endif
-#define msg_gerr(...)	print(MSG_ERROR, __VA_ARGS__)	/* general errors */
-#define msg_perr(...)	print(MSG_ERROR, __VA_ARGS__)	/* programmer errors */
-#define msg_cerr(...)	print(MSG_ERROR, __VA_ARGS__)	/* chip errors */
-#define msg_gwarn(...)	print(MSG_WARN, __VA_ARGS__)	/* general warnings */
-#define msg_pwarn(...)	print(MSG_WARN, __VA_ARGS__)	/* programmer warnings */
-#define msg_cwarn(...)	print(MSG_WARN, __VA_ARGS__)	/* chip warnings */
-#define msg_ginfo(...)	print(MSG_INFO, __VA_ARGS__)	/* general info */
-#define msg_pinfo(...)	print(MSG_INFO, __VA_ARGS__)	/* programmer info */
-#define msg_cinfo(...)	print(MSG_INFO, __VA_ARGS__)	/* chip info */
-#define msg_gdbg(...)	print(MSG_DEBUG, __VA_ARGS__)	/* general debug */
-#define msg_pdbg(...)	print(MSG_DEBUG, __VA_ARGS__)	/* programmer debug */
-#define msg_cdbg(...)	print(MSG_DEBUG, __VA_ARGS__)	/* chip debug */
-#define msg_gdbg2(...)	print(MSG_DEBUG2, __VA_ARGS__)	/* general debug2 */
-#define msg_pdbg2(...)	print(MSG_DEBUG2, __VA_ARGS__)	/* programmer debug2 */
-#define msg_cdbg2(...)	print(MSG_DEBUG2, __VA_ARGS__)	/* chip debug2 */
-#define msg_gspew(...)	print(MSG_SPEW, __VA_ARGS__)	/* general debug spew  */
-#define msg_pspew(...)	print(MSG_SPEW, __VA_ARGS__)	/* programmer debug spew  */
-#define msg_cspew(...)	print(MSG_SPEW, __VA_ARGS__)	/* chip debug spew  */
+#define msg_gerr(...)	print(FLASHROM_MSG_ERROR, __VA_ARGS__)	/* general errors */
+#define msg_perr(...)	print(FLASHROM_MSG_ERROR, __VA_ARGS__)	/* programmer errors */
+#define msg_cerr(...)	print(FLASHROM_MSG_ERROR, __VA_ARGS__)	/* chip errors */
+#define msg_gwarn(...)	print(FLASHROM_MSG_WARN, __VA_ARGS__)	/* general warnings */
+#define msg_pwarn(...)	print(FLASHROM_MSG_WARN, __VA_ARGS__)	/* programmer warnings */
+#define msg_cwarn(...)	print(FLASHROM_MSG_WARN, __VA_ARGS__)	/* chip warnings */
+#define msg_ginfo(...)	print(FLASHROM_MSG_INFO, __VA_ARGS__)	/* general info */
+#define msg_pinfo(...)	print(FLASHROM_MSG_INFO, __VA_ARGS__)	/* programmer info */
+#define msg_cinfo(...)	print(FLASHROM_MSG_INFO, __VA_ARGS__)	/* chip info */
+#define msg_gdbg(...)	print(FLASHROM_MSG_DEBUG, __VA_ARGS__)	/* general debug */
+#define msg_pdbg(...)	print(FLASHROM_MSG_DEBUG, __VA_ARGS__)	/* programmer debug */
+#define msg_cdbg(...)	print(FLASHROM_MSG_DEBUG, __VA_ARGS__)	/* chip debug */
+#define msg_gdbg2(...)	print(FLASHROM_MSG_DEBUG2, __VA_ARGS__)	/* general debug2 */
+#define msg_pdbg2(...)	print(FLASHROM_MSG_DEBUG2, __VA_ARGS__)	/* programmer debug2 */
+#define msg_cdbg2(...)	print(FLASHROM_MSG_DEBUG2, __VA_ARGS__)	/* chip debug2 */
+#define msg_gspew(...)	print(FLASHROM_MSG_SPEW, __VA_ARGS__)	/* general debug spew  */
+#define msg_pspew(...)	print(FLASHROM_MSG_SPEW, __VA_ARGS__)	/* programmer debug spew  */
+#define msg_cspew(...)	print(FLASHROM_MSG_SPEW, __VA_ARGS__)	/* chip debug spew  */
 
 /* layout.c */
 int register_include_arg(char *name);

@@ -25,8 +25,8 @@
 #include <errno.h>
 #include "flash.h"
 
-int verbose_screen = MSG_INFO;
-int verbose_logfile = MSG_DEBUG2;
+enum flashrom_log_level verbose_screen = FLASHROM_MSG_INFO;
+enum flashrom_log_level verbose_logfile = FLASHROM_MSG_DEBUG2;
 
 #ifndef STANDALONE
 static FILE *logfile = NULL;
@@ -61,17 +61,17 @@ int open_logfile(const char * const filename)
 
 void start_logging(void)
 {
-	enum msglevel oldverbose_screen = verbose_screen;
+	enum flashrom_log_level oldverbose_screen = verbose_screen;
 
 	/* Shut up the console. */
-	verbose_screen = MSG_ERROR;
+	verbose_screen = FLASHROM_MSG_ERROR;
 	print_version();
 	verbose_screen = oldverbose_screen;
 }
 #endif /* !STANDALONE */
 
 /* Please note that level is the verbosity, not the importance of the message. */
-int flashrom_print_cb(enum msglevel level, const char *fmt, va_list ap)
+int flashrom_print_cb(enum flashrom_log_level level, const char *fmt, va_list ap)
 {
 	int ret = 0;
 	FILE *output_type = stdout;
@@ -79,20 +79,20 @@ int flashrom_print_cb(enum msglevel level, const char *fmt, va_list ap)
 	va_list logfile_args;
 	va_copy(logfile_args, ap);
 
-	if (level < MSG_INFO)
+	if (level < FLASHROM_MSG_INFO)
 		output_type = stderr;
 
 	if (level <= verbose_screen) {
 		ret = vfprintf(output_type, fmt, ap);
 		/* msg_*spew often happens inside chip accessors in possibly
 		 * time-critical operations. Don't slow them down by flushing. */
-		if (level != MSG_SPEW)
+		if (level != FLASHROM_MSG_SPEW)
 			fflush(output_type);
 	}
 #ifndef STANDALONE
 	if ((level <= verbose_logfile) && logfile) {
 		ret = vfprintf(logfile, fmt, logfile_args);
-		if (level != MSG_SPEW)
+		if (level != FLASHROM_MSG_SPEW)
 			fflush(logfile);
 	}
 #endif /* !STANDALONE */

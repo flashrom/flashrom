@@ -27,7 +27,7 @@
 int flashrom_init(int perform_selfcheck);
 int flashrom_shutdown(void);
 /** @ingroup flashrom-general */
-enum flashrom_log_level { /* This has to match enum msglevel. */
+enum flashrom_log_level {
 	FLASHROM_MSG_ERROR	= 0,
 	FLASHROM_MSG_WARN	= 1,
 	FLASHROM_MSG_INFO	= 2,

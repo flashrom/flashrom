@@ -203,7 +203,7 @@ int main(int argc, char *argv[])
 			break;
 		case 'V':
 			verbose_screen++;
-			if (verbose_screen > MSG_DEBUG2)
+			if (verbose_screen > FLASHROM_MSG_DEBUG2)
 				verbose_logfile = verbose_screen;
 			break;
 		case 'E':
