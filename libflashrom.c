@@ -90,7 +90,7 @@ int print(const enum msglevel level, const char *const fmt, ...)
 		int ret;
 		va_list args;
 		va_start(args, fmt);
-		ret = global_log_callback(level, fmt, args);
+		ret = global_log_callback((enum flashrom_log_level)level, fmt, args);
 		va_end(args);
 		return ret;
 	}

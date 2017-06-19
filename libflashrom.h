@@ -29,10 +29,11 @@ int flashrom_shutdown(void);
 /** @ingroup flashrom-general */
 enum flashrom_log_level { /* This has to match enum msglevel. */
 	FLASHROM_MSG_ERROR	= 0,
-	FLASHROM_MSG_INFO	= 1,
-	FLASHROM_MSG_DEBUG	= 2,
-	FLASHROM_MSG_DEBUG2	= 3,
-	FLASHROM_MSG_SPEW	= 4,
+	FLASHROM_MSG_WARN	= 1,
+	FLASHROM_MSG_INFO	= 2,
+	FLASHROM_MSG_DEBUG	= 3,
+	FLASHROM_MSG_DEBUG2	= 4,
+	FLASHROM_MSG_SPEW	= 5,
 };
 /** @ingroup flashrom-general */
 typedef int(flashrom_log_callback)(enum flashrom_log_level, const char *format, va_list);
