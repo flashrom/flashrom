@@ -1427,9 +1427,6 @@ tarball: _export
 	@rm -rf "$(EXPORTDIR)/flashrom-$(RELEASENAME)"
 	@echo Created "$(EXPORTDIR)/flashrom-$(RELEASENAME).tar.gz"
 
-djgpp-dos: clean
-	make CC=i586-pc-msdosdjgpp-gcc STRIP=i586-pc-msdosdjgpp-strip
-
 libpayload: clean
 	make CC="CC=i386-elf-gcc lpgcc" AR=i386-elf-ar RANLIB=i386-elf-ranlib
 
