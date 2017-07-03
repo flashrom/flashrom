@@ -80,6 +80,10 @@
 int spi_enter_4ba_b7(struct flashctx *flash);
 int spi_enter_4ba_b7_we(struct flashctx *flash);
 
+/* exit 4-bytes addressing mode */
+int spi_exit_4ba_e9(struct flashctx *flash);
+int spi_exit_4ba_e9_we(struct flashctx *flash);
+
 /* read/write flash bytes in 4-bytes addressing mode */
 int spi_byte_program_4ba(struct flashctx *flash, unsigned int addr, uint8_t databyte);
 int spi_nbyte_program_4ba(struct flashctx *flash, unsigned int addr, const uint8_t *bytes, unsigned int len);

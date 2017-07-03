@@ -78,6 +78,49 @@ int spi_enter_4ba_b7_we(struct flashctx *flash)
 	return result;
 }
 
+/* Exit 4-bytes addressing mode (without sending WREN before) */
+int spi_exit_4ba_e9(struct flashctx *flash)
+{
+	const unsigned char cmd[JEDEC_EXIT_4_BYTE_ADDR_MODE_OUTSIZE] = { JEDEC_EXIT_4_BYTE_ADDR_MODE };
+
+	msg_trace("-> %s\n", __func__);
+
+	/* Switch to 3-bytes addressing mode  */
+	return spi_send_command(flash, sizeof(cmd), 0, cmd, NULL);
+}
+
+/* Exit 4-bytes addressing mode with sending WREN before */
+int spi_exit_4ba_e9_we(struct flashctx *flash)
+{
+	int result;
+	struct spi_command cmds[] = {
+	{
+		.writecnt	= JEDEC_WREN_OUTSIZE,
+		.writearr	= (const unsigned char[]){ JEDEC_WREN },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= JEDEC_EXIT_4_BYTE_ADDR_MODE_OUTSIZE,
+		.writearr	= (const unsigned char[]){ JEDEC_EXIT_4_BYTE_ADDR_MODE },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= 0,
+		.writearr	= NULL,
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}};
+
+	msg_trace("-> %s\n", __func__);
+
+	/* Switch to 3-bytes addressing mode  */
+	result = spi_send_multicommand(flash, cmds);
+	if (result) {
+		msg_cerr("%s failed during command execution\n", __func__);
+	}
+	return result;
+}
+
 /* Program one flash byte from 4-bytes addressing mode */
 int spi_byte_program_4ba(struct flashctx *flash, unsigned int addr, uint8_t databyte)
 {
