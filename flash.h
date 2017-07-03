@@ -119,14 +119,7 @@ enum write_granularity {
 #define FEATURE_WRSR_EITHER	(FEATURE_WRSR_EWSR | FEATURE_WRSR_WREN)
 #define FEATURE_OTP		(1 << 8)
 #define FEATURE_QPI		(1 << 9)
-/* Feature bits used for 4-bytes addressing mode */
-#define FEATURE_4BA_SUPPORT		(1 << 10)
-#define FEATURE_4BA_ONLY 		(1 << 11)
-#define FEATURE_4BA_EXTENDED_ADDR_REG	(1 << 12)
-#define FEATURE_4BA_DIRECT_READ		(1 << 13)
-#define FEATURE_4BA_DIRECT_WRITE	(1 << 14)
-#define FEATURE_4BA_ALL_ERASERS_DIRECT  (1 << 15)
-#define FEATURE_4BA_ALL_DIRECT  (FEATURE_4BA_DIRECT_READ | FEATURE_4BA_DIRECT_WRITE | FEATURE_4BA_ALL_ERASERS_DIRECT)
+#define FEATURE_4BA_SUPPORT	(1 << 10)
 
 enum test_state {
 	OK = 0,
@@ -174,7 +167,7 @@ struct flashchip {
 
 	/* set of function pointers to use in 4-bytes addressing mode */
 	struct four_bytes_addr_funcs_set {
-		int (*enter_4ba) (struct flashctx *flash);
+		int (*set_4ba) (struct flashctx *flash);
 		int (*read_nbyte) (struct flashctx *flash, unsigned int addr, uint8_t *bytes, unsigned int len);
 		int (*program_byte) (struct flashctx *flash, unsigned int addr, const uint8_t databyte);
 		int (*program_nbyte) (struct flashctx *flash, unsigned int addr, const uint8_t *bytes, unsigned int len);

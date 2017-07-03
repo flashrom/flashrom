@@ -14597,10 +14597,10 @@ const struct flashchip flashchips[] = {
 		/* supports SFDP */
 		/* OTP: 1024B total, 256B reserved; read 0x48; write 0x42, erase 0x44, read ID 0x4B */
 		/* FOUR_BYTE_ADDR: supports 4-bytes addressing mode */
-		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_4BA_SUPPORT | FEATURE_4BA_DIRECT_READ,
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_4BA_SUPPORT,
 		.four_bytes_addr_funcs =
 		{
-			.enter_4ba = spi_enter_4ba_b7_we, /* enter 4-bytes addressing mode by CMD B7 + WREN */
+			.set_4ba = spi_enter_4ba_b7_we, /* enter 4-bytes addressing mode by CMD B7 + WREN */
 			.read_nbyte = spi_nbyte_read_4ba_direct, /* read directly from any mode, no need to enter 4ba */
 			.program_byte = spi_byte_program_4ba, /* write from 4-bytes addressing mode */
 			.program_nbyte = spi_nbyte_program_4ba /* write from 4-bytes addressing mode */
