@@ -843,6 +843,7 @@ static int enable_flash_pch100(struct pci_dev *const dev, const char *const name
 	 * straints (e.g. on PCI domains, extended PCIe config space).
 	 */
 	struct pci_access *const pci_acc = pci_alloc();
+	struct pci_access *const saved_pacc = pacc;
 	if (!pci_acc) {
 		msg_perr("Can't allocate PCI accessor.\n");
 		return ret;
@@ -857,6 +858,9 @@ static int enable_flash_pch100(struct pci_dev *const dev, const char *const name
 		return ret;
 	}
 
+	/* Modify pacc so the rpci_write can register the undo callback with a
+	 * device using the correct pci_access */
+	pacc = pci_acc;
 	enable_flash_ich_report_gcs(spi_dev, pch_generation, NULL);
 
 	const int ret_bc = enable_flash_ich_bios_cntl_config_space(spi_dev, pch_generation, 0xdc);
@@ -880,6 +884,7 @@ static int enable_flash_pch100(struct pci_dev *const dev, const char *const name
 
 _freepci_ret:
 	pci_free_dev(spi_dev);
+	pacc = saved_pacc;
 	return ret;
 }
 

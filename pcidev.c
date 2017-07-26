@@ -160,6 +160,7 @@ static int pcidev_shutdown(void *data)
 		return 1;
 	}
 	pci_cleanup(pacc);
+	pacc = NULL;
 	return 0;
 }
 
@@ -259,7 +260,7 @@ enum pci_write_type {
 };
 
 struct undo_pci_write_data {
-	struct pci_dev dev;
+	struct pci_dev *dev;
 	int reg;
 	enum pci_write_type type;
 	union {
@@ -272,22 +273,23 @@ struct undo_pci_write_data {
 int undo_pci_write(void *p)
 {
 	struct undo_pci_write_data *data = p;
-	if (pacc == NULL) {
-		msg_perr("%s: Tried to undo PCI writes without a valid PCI context!\n"
-			 "Please report a bug at flashrom@flashrom.org\n", __func__);
+	if (pacc == NULL || data->dev == NULL) {
+		msg_perr("%s: Tried to undo PCI writes without a valid PCI %s!\n"
+			"Please report a bug at flashrom@flashrom.org\n",
+			__func__, data->dev == NULL ? "device" : "context");
 		return 1;
 	}
 	msg_pdbg("Restoring PCI config space for %02x:%02x:%01x reg 0x%02x\n",
-		 data->dev.bus, data->dev.dev, data->dev.func, data->reg);
+		 data->dev->bus, data->dev->dev, data->dev->func, data->reg);
 	switch (data->type) {
 	case pci_write_type_byte:
-		pci_write_byte(&data->dev, data->reg, data->bytedata);
+		pci_write_byte(data->dev, data->reg, data->bytedata);
 		break;
 	case pci_write_type_word:
-		pci_write_word(&data->dev, data->reg, data->worddata);
+		pci_write_word(data->dev, data->reg, data->worddata);
 		break;
 	case pci_write_type_long:
-		pci_write_long(&data->dev, data->reg, data->longdata);
+		pci_write_long(data->dev, data->reg, data->longdata);
 		break;
 	}
 	/* p was allocated in register_undo_pci_write. */
@@ -303,7 +305,11 @@ int undo_pci_write(void *p)
 		msg_gerr("Out of memory!\n");				\
 		exit(1);						\
 	}								\
-	undo_pci_write_data->dev = *a;					\
+	if (pacc)							\
+		undo_pci_write_data->dev = pci_get_dev(pacc,		\
+				a->domain, a->bus, a->dev, a->func);	\
+	else								\
+		undo_pci_write_data->dev =  NULL;			\
 	undo_pci_write_data->reg = b;					\
 	undo_pci_write_data->type = pci_write_type_##c;			\
 	undo_pci_write_data->c##data = pci_read_##c(dev, reg);		\
