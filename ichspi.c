@@ -389,11 +389,13 @@ static void prettyprint_ich9_reg_hsfs(uint16_t reg_val)
 	pprint_reg(HSFS, FDONE, reg_val, ", ");
 	pprint_reg(HSFS, FCERR, reg_val, ", ");
 	pprint_reg(HSFS, AEL, reg_val, ", ");
-	if (ich_generation != CHIPSET_100_SERIES_SUNRISE_POINT) {
+	if (ich_generation != CHIPSET_100_SERIES_SUNRISE_POINT &&
+			ich_generation != CHIPSET_C620_SERIES_LEWISBURG) {
 		pprint_reg(HSFS, BERASE, reg_val, ", ");
 	}
 	pprint_reg(HSFS, SCIP, reg_val, ", ");
-	if (ich_generation == CHIPSET_100_SERIES_SUNRISE_POINT) {
+	if (ich_generation == CHIPSET_100_SERIES_SUNRISE_POINT ||
+			ich_generation == CHIPSET_C620_SERIES_LEWISBURG) {
 		pprint_reg(HSFS, PRR34_LOCKDN, reg_val, ", ");
 		pprint_reg(HSFS, WRSDIS, reg_val, ", ");
 	}
@@ -406,7 +408,8 @@ static void prettyprint_ich9_reg_hsfc(uint16_t reg_val)
 {
 	msg_pdbg("HSFC: ");
 	pprint_reg(HSFC, FGO, reg_val, ", ");
-	if (ich_generation != CHIPSET_100_SERIES_SUNRISE_POINT) {
+	if (ich_generation != CHIPSET_100_SERIES_SUNRISE_POINT &&
+			ich_generation != CHIPSET_C620_SERIES_LEWISBURG) {
 		pprint_reg(HSFC, FCYCLE, reg_val, ", ");
 	} else {
 		_pprint_reg(HSFC, PCH100_HSFC_FCYCLE, PCH100_HSFC_FCYCLE_OFF, reg_val, ", ");
@@ -1703,7 +1706,18 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 	/* Moving registers / bits */
 	if (ich_generation == CHIPSET_100_SERIES_SUNRISE_POINT) {
 		num_freg		= 10;
-		num_pr			= 6;
+		num_pr			= 6;	/* Includes GPR0 */
+		reg_pr0			= PCH100_REG_FPR0;
+		swseq_data.reg_ssfsc	= PCH100_REG_SSFSC;
+		swseq_data.reg_preop	= PCH100_REG_PREOP;
+		swseq_data.reg_optype	= PCH100_REG_OPTYPE;
+		swseq_data.reg_opmenu	= PCH100_REG_OPMENU;
+		hwseq_data.addr_mask	= PCH100_FADDR_FLA;
+		hwseq_data.only_4k	= true;
+		hwseq_data.hsfc_fcycle	= PCH100_HSFC_FCYCLE;
+	} if (ich_generation == CHIPSET_C620_SERIES_LEWISBURG) {
+		num_freg		= 12;	/* 12 MMIO regs, but 16 regions in FD spec */
+		num_pr			= 6;	/* Includes GPR0 */
 		reg_pr0			= PCH100_REG_FPR0;
 		swseq_data.reg_ssfsc	= PCH100_REG_SSFSC;
 		swseq_data.reg_preop	= PCH100_REG_PREOP;
@@ -1824,7 +1838,7 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 		tmp = mmio_readl(ich_spibar + ICH9_REG_FADDR);
 		msg_pdbg2("0x08: 0x%08x (FADDR)\n", tmp);
 
-		if (ich_gen == CHIPSET_100_SERIES_SUNRISE_POINT) {
+		if (ich_gen == CHIPSET_100_SERIES_SUNRISE_POINT || ich_gen == CHIPSET_C620_SERIES_LEWISBURG) {
 			const uint32_t dlock = mmio_readl(ich_spibar + PCH100_REG_DLOCK);
 			msg_pdbg("0x0c: 0x%08x (DLOCK)\n", dlock);
 			prettyprint_pch100_reg_dlock(dlock);
@@ -1890,7 +1904,8 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 			msg_pdbg("0xC1: 0x%08x (VSCC)\n", tmp);
 			msg_pdbg("VSCC: ");
 			prettyprint_ich_reg_vscc(tmp, FLASHROM_MSG_DEBUG, true);
-		} else if (ich_generation != CHIPSET_100_SERIES_SUNRISE_POINT) {
+		} else if (ich_generation != CHIPSET_100_SERIES_SUNRISE_POINT &&
+				ich_generation != CHIPSET_C620_SERIES_LEWISBURG) {
 			if (ich_generation != CHIPSET_BAYTRAIL && desc_valid) {
 				ichspi_bbar = mmio_readl(ich_spibar + ICH9_REG_BBAR);
 				msg_pdbg("0xA0: 0x%08x (BBAR)\n",

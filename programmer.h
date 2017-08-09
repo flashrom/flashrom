@@ -656,6 +656,7 @@ enum ich_chipset {
 	CHIPSET_9_SERIES_WILDCAT_POINT,
 	CHIPSET_9_SERIES_WILDCAT_POINT_LP,
 	CHIPSET_100_SERIES_SUNRISE_POINT, /* also 6th/7th gen Core i/o (LP) variants */
+	CHIPSET_C620_SERIES_LEWISBURG,
 };
 
 /* ichspi.c */

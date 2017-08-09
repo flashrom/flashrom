@@ -601,6 +601,7 @@ static void enable_flash_ich_report_gcs(struct pci_dev *const dev, const enum ic
 		top_swap = (gcs & 2) >> 1;
 		break;
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
+	case CHIPSET_C620_SERIES_LEWISBURG:
 		reg_name = "BIOS_SPI_BC";
 		gcs = pci_read_long(dev, 0xdc);
 		bild = (gcs >> 7) & 1;
@@ -658,6 +659,7 @@ static void enable_flash_ich_report_gcs(struct pci_dev *const dev, const enum ic
 	case CHIPSET_8_SERIES_LYNX_POINT_LP:
 	case CHIPSET_9_SERIES_WILDCAT_POINT_LP:
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
+	case CHIPSET_C620_SERIES_LEWISBURG:
 		straps_names = straps_names_pch8_lp;
 		break;
 	case CHIPSET_8_SERIES_WELLSBURG: // FIXME: check datasheet
@@ -681,6 +683,7 @@ static void enable_flash_ich_report_gcs(struct pci_dev *const dev, const enum ic
 		bbs = (gcs >> 10) & 0x1;
 		break;
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
+	case CHIPSET_C620_SERIES_LEWISBURG:
 		bbs = (gcs >> 6) & 0x1;
 		break;
 	default:
@@ -830,9 +833,8 @@ static int enable_flash_pch100_shutdown(void *const pci_acc)
 	return 0;
 }
 
-static int enable_flash_pch100(struct pci_dev *const dev, const char *const name)
+static int enable_flash_pch100_or_c620(struct pci_dev *const dev, const char *const name, const enum ich_chipset pch_generation)
 {
-	const enum ich_chipset pch_generation = CHIPSET_100_SERIES_SUNRISE_POINT;
 	int ret = ERROR_FATAL;
 
 	/*
@@ -886,6 +888,16 @@ _freepci_ret:
 	pci_free_dev(spi_dev);
 	pacc = saved_pacc;
 	return ret;
+}
+
+static int enable_flash_pch100(struct pci_dev *const dev, const char *const name)
+{
+	return enable_flash_pch100_or_c620(dev, name, CHIPSET_100_SERIES_SUNRISE_POINT);
+}
+
+static int enable_flash_c620(struct pci_dev *const dev, const char *const name)
+{
+	return enable_flash_pch100_or_c620(dev, name, CHIPSET_C620_SERIES_LEWISBURG);
 }
 
 /* Silvermont architecture: Bay Trail(-T/-I), Avoton/Rangeley.
@@ -1915,6 +1927,19 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0xa153, NT,  "Intel", "QM175",				enable_flash_pch100},
 	{0x8086, 0xa154, NT,  "Intel", "CM238",				enable_flash_pch100},
 	{0x8086, 0xa155, NT,  "Intel", "QMU185",			enable_flash_pch100},
+	{0x8086, 0xa1c1, NT,  "Intel", "C621 Series Chipset (QS/PRQ)",	enable_flash_c620},
+	{0x8086, 0xa1c2, NT,  "Intel", "C622 Series Chipset (QS/PRQ)",	enable_flash_c620},
+	{0x8086, 0xa1c3, NT,  "Intel", "C624 Series Chipset (QS/PRQ)",	enable_flash_c620},
+	{0x8086, 0xa1c4, NT,  "Intel", "C625 Series Chipset (QS/PRQ)",	enable_flash_c620},
+	{0x8086, 0xa1c5, NT,  "Intel", "C626 Series Chipset (QS/PRQ)",	enable_flash_c620},
+	{0x8086, 0xa1c6, NT,  "Intel", "C627 Series Chipset (QS/PRQ)",	enable_flash_c620},
+	{0x8086, 0xa1c7, NT,  "Intel", "C628 Series Chipset (QS/PRQ)",	enable_flash_c620},
+	{0x8086, 0xa242, NT,  "Intel", "C624 Series Chipset Supersku",	enable_flash_c620},
+	{0x8086, 0xa243, NT,  "Intel", "C627 Series Chipset Supersku",	enable_flash_c620},
+	{0x8086, 0xa244, NT,  "Intel", "C621 Series Chipset Supersku",	enable_flash_c620},
+	{0x8086, 0xa245, NT,  "Intel", "C627 Series Chipset Supersku",	enable_flash_c620},
+	{0x8086, 0xa246, NT,  "Intel", "C628 Series Chipset Supersku",	enable_flash_c620},
+	{0x8086, 0xa247, NT,  "Intel", "C620 Series Chipset Supersku",	enable_flash_c620},
 #endif
 	{0},
 };

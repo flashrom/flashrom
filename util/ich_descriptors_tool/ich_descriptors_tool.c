@@ -42,7 +42,9 @@
 
 static const char *const region_names[] = {
 	"Descriptor", "BIOS", "ME", "GbE", "Platform",
-	"Region5", "Region6", "Region7", "EC", "Region9",
+	"Region5", "BIOS2", "Region7", "EC/BMC", "Region9",
+	"IE", "10GbE", "Region12", "Region13", "Region14",
+	"Region15"
 };
 
 static void dump_file(const char *prefix, const uint32_t *dump, unsigned int len,
