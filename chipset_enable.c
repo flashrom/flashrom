@@ -1740,7 +1740,7 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x1f39, NT,  "Intel", "Avoton/Rangeley",		enable_flash_silvermont},
 	{0x8086, 0x1f3a, NT,  "Intel", "Avoton/Rangeley",		enable_flash_silvermont},
 	{0x8086, 0x1f3b, NT,  "Intel", "Avoton/Rangeley",		enable_flash_silvermont},
-	{0x8086, 0x229c, NT,  "Intel", "Braswell",			enable_flash_silvermont},
+	{0x8086, 0x229c, OK,  "Intel", "Braswell",			enable_flash_silvermont},
 	{0x8086, 0x2310, NT,  "Intel", "DH89xxCC (Cave Creek)",		enable_flash_pch7},
 	{0x8086, 0x2390, NT,  "Intel", "Coleto Creek",			enable_flash_pch7},
 	{0x8086, 0x2410, OK,  "Intel", "ICH",				enable_flash_ich0},
