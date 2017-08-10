@@ -165,7 +165,7 @@ struct ich_desc_component {
 	};
 };
 
-#define MAX_NUM_FLREGS 10 /* 16 on unsupported Lewisburg PCH */
+#define MAX_NUM_FLREGS 16
 struct ich_desc_region {
 	/*
 	 * Number of entries and width differ on various generations:
@@ -174,6 +174,7 @@ struct ich_desc_region {
 	 * ICH8			.. Panther Point/7	 5		13
 	 * Lynx Point/8		.. Wildcat Point/9	 7		15
 	 * Sunrise Point/100	..			10		15
+	 * Lewisburg/100	..			16		15
 	 */
 	union {
 		uint32_t FLREGs[MAX_NUM_FLREGS]; /* Flash Descriptor Regions */
@@ -188,7 +189,7 @@ struct ich_desc_region {
 	};
 };
 
-#define MAX_NUM_MASTERS 5 /* 6 on unsupported Lewisburg PCH */
+#define MAX_NUM_MASTERS 6 /* 5 prior to C620/Lewisburg PCH */
 struct ich_desc_master {
 	union {
 		uint32_t FLMSTRs[MAX_NUM_MASTERS]; /* Flash Masters */
