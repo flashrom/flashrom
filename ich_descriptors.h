@@ -22,6 +22,7 @@
 #ifndef __ICH_DESCRIPTORS_H__
 #define __ICH_DESCRIPTORS_H__ 1
 
+#include <sys/types.h>
 #include <stdint.h>
 #include "programmer.h" /* for enum ich_chipset */
 

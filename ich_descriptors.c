@@ -34,6 +34,7 @@
 #define UPPER_MAP_OFFSET (4096 - 256 - 4)
 #define getVTBA(flumap)	(((flumap)->FLUMAP1 << 4) & 0x00000ff0)
 
+#include <sys/types.h>
 #include <string.h>
 #include "flash.h" /* for msg_* */
 #include "programmer.h"
