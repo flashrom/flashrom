@@ -1543,6 +1543,7 @@ static int ich9_handle_frap(uint32_t frap, int i)
 	static const char *const access_names[4] = {
 		"locked", "read-only", "write-only", "read-write"
 	};
+	const int rwperms_unknown = ARRAY_SIZE(access_names);
 	static const char *const region_names[5] = {
 		"Flash Descriptor", "BIOS", "Management Engine",
 		"Gigabit Ethernet", "Platform Data"
@@ -1550,10 +1551,20 @@ static int ich9_handle_frap(uint32_t frap, int i)
 	const char *const region_name = i < ARRAY_SIZE(region_names) ? region_names[i] : "unknown";
 
 	uint32_t base, limit;
-	int rwperms = (((ICH_BRWA(frap) >> i) & 1) << 1) |
-		      (((ICH_BRRA(frap) >> i) & 1) << 0);
+	int rwperms;
 	int offset = ICH9_REG_FREG0 + i * 4;
 	uint32_t freg = mmio_readl(ich_spibar + offset);
+
+	if (i < 8) {
+		rwperms = (((ICH_BRWA(frap) >> i) & 1) << 1) |
+			  (((ICH_BRRA(frap) >> i) & 1) << 0);
+	} else {
+		/* Datasheets don't define any access bits for regions > 7. We
+		   can't rely on the actual descriptor settings either as there
+		   are several overrides for them (those by other masters are
+		   not even readable by us, *shrug*). */
+		rwperms = rwperms_unknown;
+	}
 
 	base  = ICH_FREG_BASE(freg);
 	limit = ICH_FREG_LIMIT(freg);
@@ -1567,6 +1578,11 @@ static int ich9_handle_frap(uint32_t frap, int i)
 	if (rwperms == 0x3) {
 		msg_pdbg("FREG%i: %s region (0x%08x-0x%08x) is %s.\n", i,
 			 region_name, base, limit, access_names[rwperms]);
+		return 0;
+	}
+	if (rwperms == rwperms_unknown) {
+		msg_pdbg("FREG%i: %s region (0x%08x-0x%08x) has unknown permissions.\n",
+			 i, region_name, base, limit);
 		return 0;
 	}
 
