@@ -983,8 +983,8 @@ static int ich9_run_opcode(OPCODE op, uint32_t offset,
 	}
 
 	/* Select opcode */
-	opmenu = REGREAD32(ICH9_REG_OPMENU);
-	opmenu |= ((uint64_t)REGREAD32(ICH9_REG_OPMENU + 4)) << 32;
+	opmenu = REGREAD32(swseq_data.reg_opmenu);
+	opmenu |= ((uint64_t)REGREAD32(swseq_data.reg_opmenu + 4)) << 32;
 
 	for (opcode_index = 0; opcode_index < 8; opcode_index++) {
 		if ((opmenu & 0xff) == op.opcode) {
