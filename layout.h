@@ -57,11 +57,6 @@ struct single_layout {
 	struct romentry entry;
 };
 
-struct ich_layout {
-	struct flashrom_layout base;
-	struct romentry entries[5];
-};
-
 struct flashrom_layout *get_global_layout(void);
 
 int process_include_args(struct flashrom_layout *);

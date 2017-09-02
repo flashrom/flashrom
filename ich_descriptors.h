@@ -566,6 +566,11 @@ struct ich_descriptors {
 	struct ich_desc_upper_map upper;
 };
 
+struct ich_layout {
+	struct flashrom_layout base;
+	struct romentry entries[5];
+};
+
 ssize_t ich_number_of_regions(enum ich_chipset cs, const struct ich_desc_content *content);
 ssize_t ich_number_of_masters(enum ich_chipset cs, const struct ich_desc_content *content);
 
