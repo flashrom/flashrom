@@ -568,7 +568,7 @@ struct ich_descriptors {
 
 struct ich_layout {
 	struct flashrom_layout base;
-	struct romentry entries[5];
+	struct romentry entries[MAX_NUM_FLREGS];
 };
 
 ssize_t ich_number_of_regions(enum ich_chipset cs, const struct ich_desc_content *content);
