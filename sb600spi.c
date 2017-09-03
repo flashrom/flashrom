@@ -149,6 +149,23 @@ static void determine_generation(struct pci_dev *dev)
 				  "Please report this to flashrom@flashrom.org and include this log and\n"
 				  "the output of lspci -nnvx, thanks!.\n", rev);
 		}
+	} else if (dev->device_id == 0x790e) {
+		struct pci_dev *smbus_dev = pci_dev_find(0x1022, 0x790B);
+		if (smbus_dev == NULL) {
+			msg_pdbg("No SMBus device with ID 1022:790B found.\n");
+			return;
+		}
+		uint8_t rev = pci_read_byte(smbus_dev, PCI_REVISION_ID);
+		if (rev == 0x4a) {
+			amd_gen = CHIPSET_YANGTZE;
+			msg_pdbg("Yangtze detected.\n");
+		} else {
+			msg_pwarn("FCH device found but SMBus revision 0x%02x does not match known values.\n"
+				  "Please report this to flashrom@flashrom.org and include this log and\n"
+				  "the output of lspci -nnvx, thanks!.\n", rev);
+		}
+
+
 #endif
 	} else
 		msg_pwarn("%s: Unknown LPC device %" PRIx16 ":%" PRIx16 ".\n"
@@ -646,12 +663,13 @@ int sb600_probe_spi(struct pci_dev *dev)
 
 	/* Look for the SMBus device. */
 	smbus_dev = pci_dev_find(0x1002, 0x4385);
-	if (!smbus_dev) {
+	if (!smbus_dev)
 		smbus_dev = pci_dev_find(0x1022, 0x780b); /* AMD FCH */
-		if (!smbus_dev) {
-			msg_perr("ERROR: SMBus device not found. Not enabling SPI.\n");
-			return ERROR_NONFATAL;
-		}
+	if (!smbus_dev)
+		smbus_dev = pci_dev_find(0x1022, 0x790b); /* AMD FP4 */
+	if (!smbus_dev) {
+		msg_perr("ERROR: SMBus device not found. Not enabling SPI.\n");
+		return ERROR_NONFATAL;
 	}
 
 	/* Note about the bit tests below: If a bit is zero, the GPIO is SPI. */
