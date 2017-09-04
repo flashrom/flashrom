@@ -1529,14 +1529,6 @@ static int check_block_eraser(const struct flashctx *flash, int k, int log)
 	return 0;
 }
 
-static const struct flashrom_layout *get_layout(const struct flashctx *const flashctx)
-{
-	if (flashctx->layout && flashctx->layout->num_entries)
-		return flashctx->layout;
-	else
-		return &flashctx->fallback_layout.base;
-}
-
 /**
  * @brief Reads the included layout regions into a buffer.
  *

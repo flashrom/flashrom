@@ -58,6 +58,8 @@ struct single_layout {
 };
 
 struct flashrom_layout *get_global_layout(void);
+struct flashrom_flashctx;
+const struct flashrom_layout *get_layout(const struct flashrom_flashctx *const flashctx);
 
 int process_include_args(struct flashrom_layout *);
 
