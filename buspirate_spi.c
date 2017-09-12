@@ -54,6 +54,7 @@ static int buspirate_serialport_setup(char *dev)
 
 static unsigned char *bp_commbuf = NULL;
 static int bp_commbufsize = 0;
+static int spispeed = 0x7;
 
 static int buspirate_commbuf_grow(int bufsize)
 {
@@ -154,6 +155,15 @@ static const struct buspirate_spispeeds spispeeds[] = {
 	{"2.6M",	0x5},
 	{"4M",		0x6},
 	{"8M",		0x7},
+	/* Hydrabus-only speeds */
+	{"160k",	0x8},
+	{"320k",	0x9},
+	{"650k",	0xa},
+	{"1.3M",	0xb},
+	{"2.6M",	0xc},
+	{"5.2M",	0xd},
+	{"10.5M",	0xe},
+	{"21M",		0xf},
 	{NULL,		0x0},
 };
 
@@ -190,23 +200,111 @@ out_shutdown:
 	free(bp_commbuf);
 	bp_commbuf = NULL;
 	if (ret)
-		msg_pdbg("Bus Pirate shutdown failed.\n");
+		msg_pdbg("Shutdown failed.\n");
 	else
-		msg_pdbg("Bus Pirate shutdown completed.\n");
+		msg_pdbg("Shutdown completed.\n");
 
 	return ret;
 }
 
 #define BP_FWVERSION(a,b)	((a) << 8 | (b))
 
+int buspirate_detect_hw(void)
+{
+	char *tmp;
+	int i;
+	unsigned int fw_version_major = 0;
+	unsigned int fw_version_minor = 0;
+	int ret = 0;
+
+	/* Default buffer size is 19: 16 bytes data, 3 bytes control. */
+#define DEFAULT_BUFSIZE (16 + 3)
+	/* Read the hardware version string. Last byte of the buffer is reserved for \0. */
+	for (i = 0; i < DEFAULT_BUFSIZE - 1; i++) {
+		if ((ret = buspirate_sendrecv(bp_commbuf + i, 0, 1)))
+			return ret;
+		if (strchr("\r\n\t ", bp_commbuf[i]))
+			break;
+	}
+	bp_commbuf[i] = '\0';
+	msg_pdbg("Detected Bus Pirate hardware %s\n", bp_commbuf);
+
+	if ((ret = buspirate_wait_for_string(bp_commbuf, "irmware ")))
+		return ret;
+	/* Read the firmware version string. Last byte of the buffer is reserved for \0. */
+	for (i = 0; i < DEFAULT_BUFSIZE - 1; i++) {
+		if ((ret = buspirate_sendrecv(bp_commbuf + i, 0, 1)))
+			return ret;
+		if (strchr("\r\n\t ", bp_commbuf[i]))
+			break;
+	}
+	bp_commbuf[i] = '\0';
+	msg_pdbg("Detected Bus Pirate firmware ");
+	if (bp_commbuf[0] != 'v')
+		msg_pdbg("(unknown version number format)");
+	else if (!strchr("0123456789", bp_commbuf[1]))
+		msg_pdbg("(unknown version number format)");
+	else {
+		fw_version_major = strtoul((char *)bp_commbuf + 1, &tmp, 10);
+		while ((*tmp != '\0') && !strchr("0123456789", *tmp))
+			tmp++;
+		fw_version_minor = strtoul(tmp, NULL, 10);
+		msg_pdbg("%u.%u", fw_version_major, fw_version_minor);
+	}
+	msg_pdbg2(" (\"%s\")", bp_commbuf);
+	msg_pdbg("\n");
+
+	if ((ret = buspirate_wait_for_string(bp_commbuf, "HiZ>")))
+		return ret;
+
+	/* Tell the user about missing SPI binary mode in firmware 2.3 and older. */
+	if (BP_FWVERSION(fw_version_major, fw_version_minor) < BP_FWVERSION(2, 4)) {
+		msg_pinfo("Bus Pirate firmware 2.3 and older does not support binary SPI access.\n");
+		msg_pinfo("Please upgrade to the latest firmware (at least 2.4).\n");
+		return SPI_PROGRAMMER_ERROR;
+	}
+
+	/* Use fast SPI mode in firmware 5.5 and newer. */
+	if (BP_FWVERSION(fw_version_major, fw_version_minor) >= BP_FWVERSION(5, 5)) {
+		msg_pdbg("Using SPI command set v2.\n");
+		/* Sensible default buffer size. */
+		if (buspirate_commbuf_grow(260 + 5))
+			return ERROR_OOM;
+		spi_master_buspirate.max_data_read = 2048;
+		spi_master_buspirate.max_data_write = 256;
+		spi_master_buspirate.command = buspirate_spi_send_command_v2;
+	} else {
+		msg_pinfo("Bus Pirate firmware 5.4 and older does not support fast SPI access.\n");
+		msg_pinfo("Reading/writing a flash chip may take hours.\n");
+		msg_pinfo("It is recommended to upgrade to firmware 5.5 or newer.\n");
+		/* Sensible default buffer size. */
+		if (buspirate_commbuf_grow(16 + 3))
+			return ERROR_OOM;
+		spi_master_buspirate.max_data_read = 12;
+		spi_master_buspirate.max_data_write = 12;
+		spi_master_buspirate.command = buspirate_spi_send_command_v1;
+	}
+
+	/* Workaround for broken speed settings in firmware 6.1 and older. */
+	if (BP_FWVERSION(fw_version_major, fw_version_minor) < BP_FWVERSION(6, 2))
+		if (spispeed > 0x4) {
+			msg_perr("Bus Pirate firmware 6.1 and older does not support SPI speeds above 2 MHz. "
+				 "Limiting speed to 2 MHz.\n");
+			msg_pinfo("It is recommended to upgrade to firmware 6.2 or newer.\n");
+			spispeed = 0x4;
+		}
+	if(spispeed > 0x07) {
+		msg_perr("Bus Pirate hardware doesn't support higher speeds.\n");
+		spispeed=0x07;
+	}
+	return ret;
+}
+
 int buspirate_spi_init(void)
 {
 	char *tmp;
 	char *dev;
 	int i;
-	unsigned int fw_version_major = 0;
-	unsigned int fw_version_minor = 0;
-	int spispeed = 0x7;
 	int ret = 0;
 	int pullup = 0;
 
@@ -244,8 +342,6 @@ int buspirate_spi_init(void)
 	}
 	free(tmp);
 
-	/* Default buffer size is 19: 16 bytes data, 3 bytes control. */
-#define DEFAULT_BUFSIZE (16 + 3)
 	bp_commbuf = malloc(DEFAULT_BUFSIZE);
 	if (!bp_commbuf) {
 		bp_commbufsize = 0;
@@ -300,85 +396,24 @@ int buspirate_spi_init(void)
 	/* Reset the Bus Pirate. */
 	bp_commbuf[0] = 0x0f;
 	/* Send the command, don't read the response. */
-	if ((ret = buspirate_sendrecv(bp_commbuf, 1, 0)))
+	if ((ret = buspirate_sendrecv(bp_commbuf, 1, 6)))
 		return ret;
-	if ((ret = buspirate_wait_for_string(bp_commbuf, "irate ")))
-		return ret;
-	/* Read the hardware version string. Last byte of the buffer is reserved for \0. */
-	for (i = 0; i < DEFAULT_BUFSIZE - 1; i++) {
-		if ((ret = buspirate_sendrecv(bp_commbuf + i, 0, 1)))
-			return ret;
-		if (strchr("\r\n\t ", bp_commbuf[i]))
-			break;
-	}
-	bp_commbuf[i] = '\0';
-	msg_pdbg("Detected Bus Pirate hardware %s\n", bp_commbuf);
-
-	if ((ret = buspirate_wait_for_string(bp_commbuf, "irmware ")))
-		return ret;
-	/* Read the firmware version string. Last byte of the buffer is reserved for \0. */
-	for (i = 0; i < DEFAULT_BUFSIZE - 1; i++) {
-		if ((ret = buspirate_sendrecv(bp_commbuf + i, 0, 1)))
-			return ret;
-		if (strchr("\r\n\t ", bp_commbuf[i]))
-			break;
-	}
-	bp_commbuf[i] = '\0';
-	msg_pdbg("Detected Bus Pirate firmware ");
-	if (bp_commbuf[0] != 'v')
-		msg_pdbg("(unknown version number format)");
-	else if (!strchr("0123456789", bp_commbuf[1]))
-		msg_pdbg("(unknown version number format)");
-	else {
-		fw_version_major = strtoul((char *)bp_commbuf + 1, &tmp, 10);
-		while ((*tmp != '\0') && !strchr("0123456789", *tmp))
-			tmp++;
-		fw_version_minor = strtoul(tmp, NULL, 10);
-		msg_pdbg("%u.%u", fw_version_major, fw_version_minor);
-	}
-	msg_pdbg2(" (\"%s\")", bp_commbuf);
-	msg_pdbg("\n");
-
-	if ((ret = buspirate_wait_for_string(bp_commbuf, "HiZ>")))
-		return ret;
-	
-	/* Tell the user about missing SPI binary mode in firmware 2.3 and older. */
-	if (BP_FWVERSION(fw_version_major, fw_version_minor) < BP_FWVERSION(2, 4)) {
-		msg_pinfo("Bus Pirate firmware 2.3 and older does not support binary SPI access.\n");
-		msg_pinfo("Please upgrade to the latest firmware (at least 2.4).\n");
-		return SPI_PROGRAMMER_ERROR;
-	}
-
-	/* Use fast SPI mode in firmware 5.5 and newer. */
-	if (BP_FWVERSION(fw_version_major, fw_version_minor) >= BP_FWVERSION(5, 5)) {
-		msg_pdbg("Using SPI command set v2.\n"); 
-		/* Sensible default buffer size. */
-		if (buspirate_commbuf_grow(260 + 5))
-			return ERROR_OOM;
-		spi_master_buspirate.max_data_read = 2048;
-		spi_master_buspirate.max_data_write = 256;
+	/* Detect the device type and set the settings accordingly */
+	if (!strncasecmp((char *)bp_commbuf+1, "Hydra", 5)) {
+		msg_pdbg("Detected Hydrabus hardware\n");
+		spi_master_buspirate.max_data_read = 4096;
+		spi_master_buspirate.max_data_write = 4096;
 		spi_master_buspirate.command = buspirate_spi_send_command_v2;
+		if(spispeed < 0x08) {
+			msg_pinfo("Hydrabus does not support lower speeds.\n");
+			spispeed = 0x08;
+		}
+	} else if (!(ret = buspirate_wait_for_string(bp_commbuf, "irate "))){
+		buspirate_detect_hw();
 	} else {
-		msg_pinfo("Bus Pirate firmware 5.4 and older does not support fast SPI access.\n");
-		msg_pinfo("Reading/writing a flash chip may take hours.\n");
-		msg_pinfo("It is recommended to upgrade to firmware 5.5 or newer.\n");
-		/* Sensible default buffer size. */
-		if (buspirate_commbuf_grow(16 + 3))
-			return ERROR_OOM;
-		spi_master_buspirate.max_data_read = 12;
-		spi_master_buspirate.max_data_write = 12;
-		spi_master_buspirate.command = buspirate_spi_send_command_v1;
+		return ret;
 	}
 
-	/* Workaround for broken speed settings in firmware 6.1 and older. */
-	if (BP_FWVERSION(fw_version_major, fw_version_minor) < BP_FWVERSION(6, 2))
-		if (spispeed > 0x4) {
-			msg_perr("Bus Pirate firmware 6.1 and older does not support SPI speeds above 2 MHz. "
-				 "Limiting speed to 2 MHz.\n");
-			msg_pinfo("It is recommended to upgrade to firmware 6.2 or newer.\n");
-			spispeed = 0x4;
-		}
-		
 	/* This works because speeds numbering starts at 0 and is contiguous. */
 	msg_pdbg("SPI speed is %sHz\n", spispeeds[spispeed].name);
 
@@ -424,6 +459,8 @@ int buspirate_spi_init(void)
 		return 1;
 	}
 
+	/* Hydrabus uses different speeds in the same range */
+	spispeed &= 0x07;
 	/* Set SPI speed */
 	bp_commbuf[0] = 0x60 | spispeed;
 	ret = buspirate_sendrecv(bp_commbuf, 1, 1);
@@ -487,7 +524,7 @@ static int buspirate_spi_send_command_v1(struct flashctx *flash, unsigned int wr
 	ret = buspirate_sendrecv(bp_commbuf, i, i);
 
 	if (ret) {
-		msg_perr("Bus Pirate communication error!\n");
+		msg_perr("Communication error!\n");
 		return SPI_GENERIC_ERROR;
 	}
 
@@ -537,7 +574,7 @@ static int buspirate_spi_send_command_v2(struct flashctx *flash, unsigned int wr
 	ret = buspirate_sendrecv(bp_commbuf, i + writecnt, 1 + readcnt);
 
 	if (ret) {
-		msg_perr("Bus Pirate communication error!\n");
+		msg_perr("Communication error!\n");
 		return SPI_GENERIC_ERROR;
 	}
 
