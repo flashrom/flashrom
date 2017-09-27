@@ -31,6 +31,7 @@
 int spi_aai_write(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 int spi_chip_write_256(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 int spi_chip_read(struct flashctx *flash, uint8_t *buf, unsigned int start, int unsigned len);
+int spi_chip_otp_read(struct flashctx *flash, uint8_t *buf);
 
 /* spi25.c */
 int probe_spi_rdid(struct flashctx *flash);
