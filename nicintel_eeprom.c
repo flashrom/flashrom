@@ -211,7 +211,8 @@ static int nicintel_ee_write_word_i210(unsigned int addr, uint16_t data)
 	pci_mmio_writel(eewr, nicintel_eebar + EEWR);
 
 	programmer_delay(5);
-	for (int i = 0; i < MAX_ATTEMPTS; i++)
+	int i;
+	for (i = 0; i < MAX_ATTEMPTS; i++)
 		if (pci_mmio_readl(nicintel_eebar + EEWR) & BIT(EEWR_DONE))
 			return 0;
 	return -1;
@@ -419,7 +420,8 @@ static int nicintel_ee_shutdown_i210(void *arg)
 	flup |= BIT(EE_FLUPD);
 	pci_mmio_writel(flup, nicintel_eebar + EEC);
 
-	for (int i = 0; i < MAX_ATTEMPTS; i++)
+	int i;
+	for (i = 0; i < MAX_ATTEMPTS; i++)
 		if (pci_mmio_readl(nicintel_eebar + EEC) & BIT(EE_FLUDONE))
 			return 0;
 
