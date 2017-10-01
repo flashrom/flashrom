@@ -14,6 +14,7 @@ for h in $hooks; do
 		if [ -e "${dst}$h" ]; then
 			mv "${dst}$h" "${dst}$h.local"
 		fi
-		ln -s "$(git rev-parse --prefix $(git rev-parse --git-path hooks/) --show-cdup)${src}wrapper.sh" "${dst}$h"
+		ln -s "$(git rev-parse --prefix $(git rev-parse --git-path hooks/) --show-cdup)${src}wrapper.sh" \
+		      "${dst}$h"
 	fi
 done
