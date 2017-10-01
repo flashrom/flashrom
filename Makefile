@@ -1421,8 +1421,8 @@ export: _export
 	@echo "Exported $(EXPORTDIR)/flashrom-$(RELEASENAME)/"
 
 tarball: _export
-	@tar -cz --format=ustar -f "$(EXPORTDIR)/flashrom-$(RELEASENAME).tar.gz" \
-		-C "$(EXPORTDIR)/$(TAROPTIONS)" "flashrom-$(RELEASENAME)/"
+	@tar -cz --format=ustar -f "$(EXPORTDIR)/flashrom-$(RELEASENAME).tar.gz" -C $(EXPORTDIR)/ \
+		$(TAROPTIONS) "flashrom-$(RELEASENAME)/"
 #	Delete the exported directory again because it is most likely what's expected by the user.
 	@rm -rf "$(EXPORTDIR)/flashrom-$(RELEASENAME)"
 	@echo Created "$(EXPORTDIR)/flashrom-$(RELEASENAME).tar.gz"
