@@ -1406,16 +1406,17 @@ _export: $(PROGRAM).8
 #	exported sources.
 	@echo "VERSION = $(VERSION)" > "$(EXPORTDIR)/flashrom-$(RELEASENAME)/Makefile.version"
 	@echo "MAN_DATE = $(MAN_DATE)" >> "$(EXPORTDIR)/flashrom-$(RELEASENAME)/Makefile.version"
-#	Restore modification date of all tracked files not marked
-#	'export-ignore' in .gitattributes. sed is required to filter out file
-#	names having the attribute set.
+#	Restore modification date of all tracked files not marked 'export-ignore' in .gitattributes.
+#	sed is required to filter out file names having the attribute set.
+#	The sed program saves the file name in the hold buffer and then checks if the respective value is 'set'.
+#	If so it ignores the rest of the program, which otherwise restores the file name and prints it.
 	@git ls-tree -r -z -t --full-name --name-only HEAD | \
 		git check-attr -z --stdin export-ignore | \
-		sed -zne 'x;n;n;/^set$$/{b};x;p' | \
+		sed -zne 'x;n;n;{/^set$$/b;};x;p;' | \
 		xargs -0 sh -c 'for f; do \
 			touch -d $$(git log --pretty=format:%cI -1 HEAD -- "$$f") \
 				"$(EXPORTDIR)/flashrom-$(RELEASENAME)/$$f"; \
-		done'
+		done' dummy_arg0
 
 export: _export
 	@echo "Exported $(EXPORTDIR)/flashrom-$(RELEASENAME)/"
