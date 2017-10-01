@@ -1,6 +1,8 @@
 #!/bin/sh
 #
-# Part of Gerrit Code Review (http://code.google.com/p/gerrit/)
+# Change-ID amending from Gerrit Code Review 2.14.2
+#
+# Part of Gerrit Code Review (https://www.gerritcodereview.com/)
 #
 # Copyright (C) 2009 The Android Open Source Project
 #
@@ -17,14 +19,16 @@
 # limitations under the License.
 #
 
-CHANGE_ID_AFTER="Bug|Issue"
+unset GREP_OPTIONS
+
+CHANGE_ID_AFTER="Bug|Depends-On|Issue|Test|Feature|Fixes|Fixed|Staging-ID"
 MSG="$1"
 
 # Check for, and add if missing, a unique Change-Id
 #
 add_ChangeId() {
 	clean_message=`sed -e '
-		/^diff --git a\/.*/{
+		/^diff --git .*/{
 			s///
 			q
 		}
@@ -36,8 +40,19 @@ add_ChangeId() {
 		return
 	fi
 
+	# *Do* add Change-Id to temp commits (original code bails out here)
+	# if echo "$clean_message" | head -1 | grep -q '^\(fixup\|squash\)!'
+	# then
+	# 	return
+	# fi
+
+	if test "false" = "`git config --bool --get gerrit.createChangeId`"
+	then
+		return
+	fi
+
 	# Does Change-Id: already exist? if so, exit (no change).
-	if grep -i '^Change-Id: I[0-9a-f]\{40\}$' "$MSG" >/dev/null
+	if grep -i '^Change-Id:' "$MSG" >/dev/null
 	then
 		return
 	fi
@@ -49,6 +64,10 @@ add_ChangeId() {
 		# Solaris AWK is just too broken
 		AWK=/usr/xpg4/bin/awk
 	fi
+
+	# Get core.commentChar from git config or use default symbol
+	commentChar=`git config --get core.commentChar`
+	commentChar=${commentChar:-#}
 
 	# How this works:
 	# - parse the commit message as (textLine+ blankLine*)*
@@ -68,13 +87,13 @@ add_ChangeId() {
 		blankLines = 0
 	}
 
-	# Skip lines starting with "#" without any spaces before it.
-	/^#/ { next }
+	# Skip lines starting with commentChar without any spaces before it.
+	/^'"$commentChar"'/ { next }
 
 	# Skip the line starting with the diff command and everything after it,
 	# up to the end of the file, assuming it is only patch data.
 	# If more than one line before the diff was empty, strip all but one.
-	/^diff --git a/ {
+	/^diff --git / {
 		blankLines = 0
 		while (getline) { }
 		next
@@ -151,7 +170,7 @@ add_ChangeId() {
 		if (unprinted) {
 			print "Change-Id: I'"$id"'"
 		}
-	}' "$MSG" > $T && mv $T "$MSG" || rm -f $T
+	}' "$MSG" > "$T" && mv "$T" "$MSG" || rm -f "$T"
 }
 _gen_ChangeIdInput() {
 	echo "tree `git write-tree`"
