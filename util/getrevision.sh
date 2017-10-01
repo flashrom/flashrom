@@ -1,4 +1,5 @@
 #!/bin/sh
+# NB: Supposed to be POSIX compatible but at least the usage of 'local' is not.
 #
 # This file is part of the flashrom project.
 #
@@ -78,7 +79,7 @@ git_url() {
 	echo "$(git ls-remote --exit-code --get-url ${target%/*}) ${target#*/}"
 }
 
-# Returns a string indicating where others can get the current source code (excluding uncommitted changes)
+# Returns a string indicating where others can get the current source code (excluding uncommitted changes).
 # Takes one optional argument: the path to inspect
 scm_url() {
 	local url=
