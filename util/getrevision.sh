@@ -131,13 +131,14 @@ timestamp() {
 
 # Retrieve local revision info.
 local_revision() {
+	local r
 	if git_is_file_tracked "$1" ; then
-		local r=$(git describe $(git_last_commit "$1"))
+		r=$(git describe $(git_last_commit "$1"))
 		if git_has_local_changes "$1" ; then
 			r="$r-dirty"
 		fi
 	else
-		return ${EXIT_FAILURE}
+		r="unknown"
 	fi
 
 	echo "${r}"
