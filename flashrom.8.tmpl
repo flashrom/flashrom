@@ -58,7 +58,8 @@ chips. It's often used to flash BIOS/EFI/coreboot/firmware images in-system
 using a supported mainboard. However, it also supports various external
 PCI/USB/parallel-port/serial-port based devices which can program flash chips,
 including some network cards (NICs), SATA/IDE controller cards, graphics cards,
-the Bus Pirate device, various FTDI FT2232/FT4232H/FT232H based USB devices, and more.
+the Bus Pirate device, HydraBus, various FTDI FT2232/FT4232H/FT232H based USB
+devices, and more.
 .PP
 It supports a wide range of DIP32, PLCC32, DIP8, SO8/SOIC8, TSOP32, TSOP40,
 TSOP48, and BGA chips, which use various protocols such as LPC, FWH,
@@ -276,7 +277,7 @@ cards)"
 .BR "* serprog" " (for flash ROMs attached to a programmer speaking serprog, \
 including some Arduino-based devices)."
 .sp
-.BR "* buspirate_spi" " (for SPI flash ROMs attached to a Bus Pirate)"
+.BR "* buspirate_spi" " (for SPI flash ROMs attached to a Bus Pirate or a HydraBus)"
 .sp
 .BR "* dediprog" " (for SPI flash ROMs attached to a Dediprog SF100)"
 .sp
@@ -804,7 +805,7 @@ in the source distribution.
 .IP
 A required
 .B dev
-parameter specifies the Bus Pirate device node and an optional
+parameter specifies the Bus Pirate or HydraBus device node and an optional
 .B spispeed
 parameter specifies the frequency of the SPI bus. The parameter
 delimiter is a comma. Syntax is
@@ -813,11 +814,18 @@ delimiter is a comma. Syntax is
 .sp
 where
 .B frequency
-can be
+can be :
+.sp
+  * For Bus Pirate
 .BR 30k ", " 125k ", " 250k ", " 1M ", " 2M ", " 2.6M ", " 4M " or " 8M
 (in Hz). The default is the maximum frequency of 8 MHz.
 .sp
-An optional pullups parameter specifies the use of the Bus Pirate internal pull-up resistors. This may be
+  * For HydraBus
+.BR 160k ", " 320k ", " 650k ", " 1.3M ", " 2.6M ", " 5.2M ", " 10.5M " or " 21M
+(in Hz). The default is the maximum frequency of 21 MHz.
+.sp
+.sp
+An optional pullups parameter specifies the use of the Bus Pirate or HydraBus internal pull-up resistors. This may be
 needed if you are working with a flash ROM chip that you have physically removed from the board. Syntax is
 .sp
 .B "  flashrom -p buspirate_spi:pullups=state"

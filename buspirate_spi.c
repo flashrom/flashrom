@@ -30,7 +30,7 @@
 /* Change this to #define if you want to test without a serial implementation */
 #undef FAKE_COMMUNICATION
 
-struct buspirate_spispeeds {
+struct spispeeds_struct {
 	const char *name;
 	const int speed;
 };
@@ -146,7 +146,7 @@ static struct spi_master spi_master_buspirate = {
 	.write_aai	= default_spi_write_aai,
 };
 
-static const struct buspirate_spispeeds spispeeds[] = {
+static const struct spispeeds_struct buspirate_spispeeds[] = {
 	{"30k",		0x0},
 	{"125k",	0x1},
 	{"250k",	0x2},
@@ -155,16 +155,18 @@ static const struct buspirate_spispeeds spispeeds[] = {
 	{"2.6M",	0x5},
 	{"4M",		0x6},
 	{"8M",		0x7},
+};
+static const struct spispeeds_struct hydrabus_spispeeds[] = {
 	/* Hydrabus-only speeds */
-	{"160k",	0x8},
-	{"320k",	0x9},
-	{"650k",	0xa},
-	{"1.3M",	0xb},
-	{"2.6M",	0xc},
-	{"5.2M",	0xd},
-	{"10.5M",	0xe},
-	{"21M",		0xf},
-	{NULL,		0x0},
+	{"160k",	0x0},
+	{"320k",	0x1},
+	{"650k",	0x2},
+	{"1.3M",	0x3},
+	{"2.6M",	0x4},
+	{"5.2M",	0x5},
+	{"10.5M",	0x6},
+	{"21M",		0x7},
+	{NULL,		0x8},
 };
 
 static int buspirate_spi_shutdown(void *data)
@@ -307,6 +309,7 @@ int buspirate_spi_init(void)
 	int i;
 	int ret = 0;
 	int pullup = 0;
+	struct spispeeds_struct const *spispeeds;
 
 	dev = extract_programmer_param("dev");
 	if (dev && !strlen(dev)) {
@@ -317,19 +320,6 @@ int buspirate_spi_init(void)
 		msg_perr("No serial device given. Use flashrom -p buspirate_spi:dev=/dev/ttyUSB0\n");
 		return 1;
 	}
-
-	tmp = extract_programmer_param("spispeed");
-	if (tmp) {
-		for (i = 0; spispeeds[i].name; i++) {
-			if (!strncasecmp(spispeeds[i].name, tmp, strlen(spispeeds[i].name))) {
-				spispeed = spispeeds[i].speed;
-				break;
-			}
-		}
-		if (!spispeeds[i].name)
-			msg_perr("Invalid SPI speed, using default.\n");
-	}
-	free(tmp);
 
 	tmp = extract_programmer_param("pullups");
 	if (tmp) {
@@ -404,15 +394,26 @@ int buspirate_spi_init(void)
 		spi_master_buspirate.max_data_read = 4096;
 		spi_master_buspirate.max_data_write = 4096;
 		spi_master_buspirate.command = buspirate_spi_send_command_v2;
-		if(spispeed < 0x08) {
-			msg_pinfo("Hydrabus does not support lower speeds.\n");
-			spispeed = 0x08;
-		}
+		spispeeds = hydrabus_spispeeds;
 	} else if (!(ret = buspirate_wait_for_string(bp_commbuf, "irate "))){
 		buspirate_detect_hw();
+		spispeeds = buspirate_spispeeds;
 	} else {
 		return ret;
 	}
+
+	tmp = extract_programmer_param("spispeed");
+	if (tmp) {
+		for (i = 0; spispeeds[i].name; i++) {
+			if (!strncasecmp(spispeeds[i].name, tmp, strlen(spispeeds[i].name))) {
+				spispeed = spispeeds[i].speed;
+				break;
+			}
+		}
+		if (!spispeeds[i].name)
+			msg_perr("Invalid SPI speed, using default.\n");
+	}
+	free(tmp);
 
 	/* This works because speeds numbering starts at 0 and is contiguous. */
 	msg_pdbg("SPI speed is %sHz\n", spispeeds[spispeed].name);
