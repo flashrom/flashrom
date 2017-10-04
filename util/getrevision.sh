@@ -130,8 +130,7 @@ timestamp() {
 	echo "${t}"
 }
 
-# Retrieve local revision info.
-local_revision() {
+revision() {
 	local r
 	if git_is_file_tracked "$1" ; then
 		r=$(git describe $(git_last_commit "$1"))
@@ -158,8 +157,9 @@ Commands
         this message
     -c or --check
         test if path is under version control at all
-    -l or --local
-        local revision information including an indicator for uncommitted changes
+    -r or --revision
+        return unique revision information including an indicator for
+        uncommitted changes
     -U or --url
         URL associated with the latest commit
     -d or --date
@@ -188,10 +188,6 @@ main() {
 		-h|--help)
 			action=show_help;
 			shift;;
-		-l|--local)
-			check_action $1
-			action=local_revision
-			shift;;
 		-U|--url)
 			check_action $1
 			action=scm_url
@@ -199,6 +195,10 @@ main() {
 		-d|--date)
 			check_action $1
 			action="timestamp +%Y-%m-%d" # refrain from suffixing 'Z' to indicate it's UTC
+			shift;;
+		-r|--revision)
+			check_action $1
+			action=revision
 			shift;;
 		-t|--timestamp)
 			check_action $1

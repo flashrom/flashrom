@@ -530,7 +530,7 @@ CLI_OBJS = cli_classic.o cli_output.o cli_common.o print.o
 # export rule. If versioninfo.inc is not found, version info will be obtained
 # using util/getrevision.sh.
 ifeq ($(wildcard versioninfo.inc),)
-VERSION ?= $(shell ./util/getrevision.sh --local)
+VERSION ?= $(shell ./util/getrevision.sh --revision)
 MAN_DATE ?= $(shell ./util/getrevision.sh --date $(PROGRAM).8.tmpl 2>/dev/null)
 else
 include versioninfo.inc
