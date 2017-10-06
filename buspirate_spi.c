@@ -295,10 +295,6 @@ int buspirate_detect_hw(void)
 			msg_pinfo("It is recommended to upgrade to firmware 6.2 or newer.\n");
 			spispeed = 0x4;
 		}
-	if(spispeed > 0x07) {
-		msg_perr("Bus Pirate hardware doesn't support higher speeds.\n");
-		spispeed=0x07;
-	}
 	return ret;
 }
 
@@ -460,8 +456,6 @@ int buspirate_spi_init(void)
 		return 1;
 	}
 
-	/* Hydrabus uses different speeds in the same range */
-	spispeed &= 0x07;
 	/* Set SPI speed */
 	bp_commbuf[0] = 0x60 | spispeed;
 	ret = buspirate_sendrecv(bp_commbuf, 1, 1);
