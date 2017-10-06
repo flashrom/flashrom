@@ -155,6 +155,7 @@ static const struct spispeeds_struct buspirate_spispeeds[] = {
 	{"2.6M",	0x5},
 	{"4M",		0x6},
 	{"8M",		0x7},
+	{NULL,		0x8},
 };
 static const struct spispeeds_struct hydrabus_spispeeds[] = {
 	/* Hydrabus-only speeds */
