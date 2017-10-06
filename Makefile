@@ -533,12 +533,6 @@ CLI_OBJS = cli_classic.o cli_output.o cli_common.o print.o
 VERSION ?= $(shell ./util/getrevision.sh --revision)
 MAN_DATE ?= $(shell ./util/getrevision.sh --date $(PROGRAM).8.tmpl 2>/dev/null)
 
-# VERSION equals "offline" if online access is required but the respective git
-# config variable is not set yet.
-ifeq ($(VERSION),offline)
-  $(error Aborting)
-endif
-
 SCMDEF := -D'FLASHROM_VERSION="$(VERSION)"'
 
 # No spaces in release names unless set explicitly
