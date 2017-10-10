@@ -145,14 +145,6 @@ static int nicintel_ee_probe_82580(struct flashctx *flash)
 	return 1;
 }
 
-static int nicintel_ee_probe(struct flashctx *flash)
-{
-	if (is_i210(nicintel_pci->device_id))
-		return nicintel_ee_probe_i210(flash);
-
-	return nicintel_ee_probe_82580(flash);
-}
-
 #define MAX_ATTEMPTS 10000000
 static int nicintel_ee_read_word(unsigned int addr, uint16_t *data)
 {
@@ -281,6 +273,11 @@ static int nicintel_ee_write_i210(struct flashctx *flash, const uint8_t *buf,
 	return 0;
 }
 
+static int nicintel_ee_erase_i210(struct flashctx *flash, unsigned int addr, unsigned int len)
+{
+	return nicintel_ee_write_i210(flash, NULL, addr, len);
+}
+
 static int nicintel_ee_bitset(int reg, int bit, bool val)
 {
 	uint32_t tmp;
@@ -392,24 +389,24 @@ out:
 	nicintel_ee_bitset(EEC, EE_REQ, 0); /* Give up direct access. */
 	return ret;
 }
-static int nicintel_ee_write(struct flashctx *flash, const uint8_t *buf, unsigned int addr, unsigned int len)
-{
-	if (is_i210(nicintel_pci->device_id))
-		return nicintel_ee_write_i210(flash, buf, addr, len);
 
-	return nicintel_ee_write_82580(flash, buf, addr, len);
+static int nicintel_ee_erase_82580(struct flashctx *flash, unsigned int addr, unsigned int len)
+{
+	return nicintel_ee_write_82580(flash, NULL, addr, len);
 }
 
-static int nicintel_ee_erase(struct flashctx *flash, unsigned int addr, unsigned int len)
-{
-	return nicintel_ee_write(flash, NULL, addr, len);
-}
-
-static const struct opaque_master opaque_master_nicintel_ee = {
-	.probe = nicintel_ee_probe,
+static const struct opaque_master opaque_master_nicintel_ee_82580 = {
+	.probe = nicintel_ee_probe_82580,
 	.read = nicintel_ee_read,
-	.write = nicintel_ee_write,
-	.erase = nicintel_ee_erase,
+	.write = nicintel_ee_write_82580,
+	.erase = nicintel_ee_erase_82580,
+};
+
+static const struct opaque_master opaque_master_nicintel_ee_i210 = {
+	.probe = nicintel_ee_probe_i210,
+	.read = nicintel_ee_read,
+	.write = nicintel_ee_write_i210,
+	.erase = nicintel_ee_erase_i210,
 };
 
 static int nicintel_ee_shutdown_i210(void *arg)
@@ -432,7 +429,7 @@ static int nicintel_ee_shutdown_i210(void *arg)
 	return -1;
 }
 
-static int nicintel_ee_shutdown(void *eecp)
+static int nicintel_ee_shutdown_82580(void *eecp)
 {
 	uint32_t old_eec = *(uint32_t *)eecp;
 	/* Request bitbanging and unselect the chip first to be safe. */
@@ -463,35 +460,44 @@ int nicintel_ee_init(void)
 	if (!io_base_addr)
 		return 1;
 
-	nicintel_eebar = rphysmap("Intel Gigabit NIC w/ SPI EEPROM",
-				  io_base_addr + (is_i210(dev->device_id) ? 0x12000 : 0), MEMMAP_SIZE);
-	if (!nicintel_eebar)
-		return 1;
-
-	nicintel_pci = dev;
-	if ((dev->device_id != UNPROG_DEVICE) && ! is_i210(dev->device_id))
-	{
-		uint32_t eec = pci_mmio_readl(nicintel_eebar + EEC);
-
-		/* C.f. 3.3.1.5 for the detection mechanism (maybe? contradicting the EE_PRES definition),
-		 * and 3.3.1.7 for possible recovery. */
-		if (!(eec & BIT(EE_PRES))) {
-			msg_perr("Controller reports no EEPROM is present.\n");
+	if (!is_i210(dev->device_id)) {
+		nicintel_eebar = rphysmap("Intel Gigabit NIC w/ SPI EEPROM", io_base_addr, MEMMAP_SIZE);
+		if (!nicintel_eebar)
 			return 1;
+
+		nicintel_pci = dev;
+		if ((dev->device_id != UNPROG_DEVICE)) {
+			uint32_t eec = pci_mmio_readl(nicintel_eebar + EEC);
+
+			/* C.f. 3.3.1.5 for the detection mechanism (maybe? contradicting
+			                the EE_PRES definition),
+			    and 3.3.1.7 for possible recovery. */
+			if (!(eec & BIT(EE_PRES))) {
+				msg_perr("Controller reports no EEPROM is present.\n");
+				return 1;
+			}
+
+			uint32_t *eecp = malloc(sizeof(uint32_t));
+			if (eecp == NULL)
+				return 1;
+			*eecp = eec;
+
+			if (register_shutdown(nicintel_ee_shutdown_82580, eecp))
+				return 1;
 		}
 
-		uint32_t *eecp = malloc(sizeof(uint32_t));
-		if (eecp == NULL)
+		return register_opaque_master(&opaque_master_nicintel_ee_82580);
+	} else {
+		nicintel_eebar = rphysmap("Intel i210 NIC w/ emulated EEPROM",
+					  io_base_addr + 0x12000, MEMMAP_SIZE);
+		if (!nicintel_eebar)
 			return 1;
-		*eecp = eec;
 
-		if (register_shutdown(nicintel_ee_shutdown, eecp))
-			return 1;
-	}
-
-	if (is_i210(dev->device_id))
 		if (register_shutdown(nicintel_ee_shutdown_i210, NULL))
 			return 1;
 
-	return register_opaque_master(&opaque_master_nicintel_ee);
+		return register_opaque_master(&opaque_master_nicintel_ee_i210);
+	}
+
+	return 1;
 }
