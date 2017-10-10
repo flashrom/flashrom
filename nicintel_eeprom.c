@@ -80,6 +80,10 @@ static bool done_i20_write = false;
 
 #define UNPROG_DEVICE 0x1509
 
+/*
+ * Warning: is_i210() below makes assumptions on these PCI ids.
+ *          It may have to be updated when this list is extended.
+ */
 const struct dev_entry nics_intel_ee[] = {
 	{PCI_VENDOR_ID_INTEL, 0x150e, OK, "Intel", "82580 Quad Gigabit Ethernet Controller (Copper)"},
 	{PCI_VENDOR_ID_INTEL, 0x150f, NT , "Intel", "82580 Quad Gigabit Ethernet Controller (Fiber)"},
@@ -99,7 +103,7 @@ const struct dev_entry nics_intel_ee[] = {
 
 static inline bool is_i210(uint16_t device_id)
 {
-	return (device_id & 0xff00) == 0x1500;
+	return (device_id & 0xfff0) == 0x1530;
 }
 
 static int nicintel_ee_probe_i210(struct flashctx *flash)
@@ -218,7 +222,8 @@ static int nicintel_ee_write_word_i210(unsigned int addr, uint16_t data)
 	return -1;
 }
 
-static int nicintel_ee_write_i210(struct flashctx *flash, const uint8_t *buf, unsigned int addr, unsigned int len)
+static int nicintel_ee_write_i210(struct flashctx *flash, const uint8_t *buf,
+				  unsigned int addr, unsigned int len)
 {
 	done_i20_write = true;
 
