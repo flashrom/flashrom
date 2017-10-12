@@ -1,0 +1,75 @@
+#!/bin/sh
+
+# A hook script to verify what is about to be pushed.  Called by "git
+# push" after it has checked the remote status, but before anything has been
+# pushed.  If this script exits with a non-zero status nothing will be pushed.
+#
+# This hook is called with the following parameters:
+#
+# $1 -- Name of the remote to which the push is being done
+# $2 -- URL to which the push is being done
+#
+# If pushing without using a named remote those arguments will be equal.
+#
+# Information about the commits which are being pushed is supplied as lines to
+# the standard input in the form:
+#
+#   <local ref> <local sha1> <remote ref> <remote sha1>
+
+remote="$1"
+url="$2"
+
+zero=0000000000000000000000000000000000000000
+
+upstream_pattern="github\.com.flashrom/flashrom(\.git)?|flashrom\.org.git/flashrom(\.git)?"
+
+# Only care about the upstream repositories
+if echo "$url" | grep -q -v -E "$upstream_pattern" ; then
+	exit 0
+fi
+
+while read local_ref local_sha remote_ref remote_sha ; do
+
+	# Only allow the stable and staging branches as well as versioned stable branches (e.g., 0.0.x).
+	# The matching expression's RE is always anchored to the first character (^ is undefined).
+	# The outer parentheses are needed to print out the whole matched string.
+	version=$(expr ${remote_ref#*refs/heads/} : '\(\([0-9]\+\.\)\{2,\}x\)$')
+	if [ "$remote_ref" != "refs/heads/staging" ] && \
+	   [ "$remote_ref" != "refs/heads/stable" ] && \
+	   [ -z "$version" ]; then
+		echo "Feature branches not allowed ($remote_ref)." >&2
+		exit 1
+	fi
+
+	if [ "$local_sha" = $zero ]; then
+		echo "Deletion of branches is prohibited." >&2
+		exit 1
+	fi
+
+	# Check for Signed-off-by and Acked-by
+	commit=$(git rev-list -n 1 --all-match --invert-grep -E \
+		--grep '^Signed-off-by: .+ <.+@.+\..+>$' \
+		--grep '^Acked-by: .+ <.+@.+\..+>$' \
+		"$remote_sha..$local_sha")
+	if [ -n "$commit" ]; then
+		echo "Commit $local_sha in $local_ref is missing either \"Signed-off-by\"" \
+			" or \"Acked-by\" lines, not pushing." >&2
+		exit 1
+	fi
+
+	# Make _really_ sure we do not rewrite history of any head/branch
+	if [ "${remote_ref#*refs/heads/}" != "$remote_ref" ]; then
+		nonreachable=$(git rev-list $remote_sha ^$local_sha | head -1)
+		if [ -n "$nonreachable" ]; then
+			echo "Only fast-forward pushes are allowed on branches." >&2
+			echo "At least $nonreachable is not included in $remote_sha while pushing to " \
+			     "$remote_ref" >&2
+			exit 1
+		fi
+	fi
+
+	# FIXME: check commit log format (subject without full stop at the end etc).
+	# FIXME: do buildbot checks if authorized?
+done
+
+exit 0
