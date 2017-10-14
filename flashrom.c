@@ -2219,9 +2219,8 @@ int prepare_flash_access(struct flashctx *const flash,
 	flash->in_4ba_mode = false;
 
 	/* Enable/disable 4-byte addressing mode if flash chip supports it */
-	if ((flash->chip->feature_bits & FEATURE_4BA_SUPPORT) &&
-	    flash->chip->four_bytes_addr_funcs.set_4ba) {
-		if (flash->chip->four_bytes_addr_funcs.set_4ba(flash)) {
+	if ((flash->chip->feature_bits & FEATURE_4BA_SUPPORT) && flash->chip->set_4ba) {
+		if (flash->chip->set_4ba(flash)) {
 			msg_cerr("Enabling/disabling 4-byte addressing mode failed!\n");
 			return 1;
 		}
