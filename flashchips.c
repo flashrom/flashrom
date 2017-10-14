@@ -9923,10 +9923,10 @@ const struct flashchip flashchips[] = {
 		.block_erasers	= {
 			{
 				.eraseblocks = { {4 * 1024, 8192} },
-				.block_erase = spi_block_erase_21_4ba_direct,
+				.block_erase = spi_block_erase_21,
 			}, {
 				.eraseblocks = { {64 * 1024, 512} },
-				.block_erase = spi_block_erase_dc_4ba_direct,
+				.block_erase = spi_block_erase_dc,
 			}, {
 				.eraseblocks = { {32768 * 1024, 1} },
 				.block_erase = spi_block_erase_c7,
@@ -9956,10 +9956,10 @@ const struct flashchip flashchips[] = {
 		.block_erasers	= {
 			{
 				.eraseblocks = { {4 * 1024, 16384} },
-				.block_erase = spi_block_erase_21_4ba_direct,
+				.block_erase = spi_block_erase_21,
 			}, {
 				.eraseblocks = { {64 * 1024, 1024} },
-				.block_erase = spi_block_erase_dc_4ba_direct,
+				.block_erase = spi_block_erase_dc,
 			}, {
 				.eraseblocks = { {65536 * 1024, 1} },
 				.block_erase = spi_block_erase_c7,

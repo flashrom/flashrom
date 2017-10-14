@@ -43,8 +43,10 @@ int probe_spi_at25f(struct flashctx *flash);
 int spi_write_enable(struct flashctx *flash);
 int spi_write_disable(struct flashctx *flash);
 int spi_block_erase_20(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
+int spi_block_erase_21(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 int spi_block_erase_50(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 int spi_block_erase_52(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
+int spi_block_erase_5c(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 int spi_block_erase_60(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 int spi_block_erase_62(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 int spi_block_erase_81(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
@@ -53,11 +55,17 @@ int spi_block_erase_c7(struct flashctx *flash, unsigned int addr, unsigned int b
 int spi_block_erase_d7(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 int spi_block_erase_d8(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 int spi_block_erase_db(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
+int spi_block_erase_dc(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 erasefunc_t *spi_get_erasefn_from_opcode(uint8_t opcode);
 int spi_chip_write_1(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 int spi_nbyte_read(struct flashctx *flash, unsigned int addr, uint8_t *bytes, unsigned int len);
 int spi_read_chunked(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len, unsigned int chunksize);
 int spi_write_chunked(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len, unsigned int chunksize);
+int spi_enter_4ba_b7(struct flashctx *flash);
+int spi_enter_4ba_b7_we(struct flashctx *flash);
+int spi_exit_4ba_e9(struct flashctx *flash);
+int spi_exit_4ba_e9_we(struct flashctx *flash);
+
 
 /* spi25_statusreg.c */
 uint8_t spi_read_status_register(struct flashctx *flash);
@@ -192,29 +200,5 @@ int erase_sector_stm50(struct flashctx *flash, unsigned int block, unsigned int 
 /* en29lv640b.c */
 int probe_en29lv640b(struct flashctx *flash);
 int write_en29lv640b(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
-
-/* spi4ba.c */
-int spi_enter_4ba_b7(struct flashctx *flash);
-int spi_enter_4ba_b7_we(struct flashctx *flash);
-int spi_exit_4ba_e9(struct flashctx *flash);
-int spi_exit_4ba_e9_we(struct flashctx *flash);
-int spi_byte_program_4ba(struct flashctx *flash, unsigned int addr, uint8_t databyte);
-int spi_nbyte_program_4ba(struct flashctx *flash, unsigned int addr, const uint8_t *bytes, unsigned int len);
-int spi_nbyte_read_4ba(struct flashctx *flash, unsigned int addr, uint8_t *bytes, unsigned int len);
-int spi_block_erase_20_4ba(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
-int spi_block_erase_52_4ba(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
-int spi_block_erase_d8_4ba(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
-int spi_byte_program_4ba_ereg(struct flashctx *flash, unsigned int addr, uint8_t databyte);
-int spi_nbyte_program_4ba_ereg(struct flashctx *flash, unsigned int addr, const uint8_t *bytes, unsigned int len);
-int spi_nbyte_read_4ba_ereg(struct flashctx *flash, unsigned int addr, uint8_t *bytes, unsigned int len);
-int spi_block_erase_20_4ba_ereg(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
-int spi_block_erase_52_4ba_ereg(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
-int spi_block_erase_d8_4ba_ereg(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
-int spi_byte_program_4ba_direct(struct flashctx *flash, unsigned int addr, uint8_t databyte);
-int spi_nbyte_program_4ba_direct(struct flashctx *flash, unsigned int addr, const uint8_t *bytes, unsigned int len);
-int spi_nbyte_read_4ba_direct(struct flashctx *flash, unsigned int addr, uint8_t *bytes, unsigned int len);
-int spi_block_erase_21_4ba_direct(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
-int spi_block_erase_5c_4ba_direct(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
-int spi_block_erase_dc_4ba_direct(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 
 #endif /* !__CHIPDRIVERS_H__ */

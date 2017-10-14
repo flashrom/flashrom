@@ -30,7 +30,6 @@
 #include "chipdrivers.h"
 #include "programmer.h"
 #include "spi.h"
-#include "spi4ba.h"
 
 static int spi_rdid(struct flashctx *flash, unsigned char *readarr, int bytes)
 {
@@ -364,6 +363,25 @@ static int spi_simple_write_cmd(struct flashctx *const flash, const uint8_t op, 
 	return result ? result : status;
 }
 
+static int spi_write_extended_address_register(struct flashctx *const flash, const uint8_t regdata)
+{
+	struct spi_command cmds[] = {
+	{
+		.writecnt = 1,
+		.writearr = (const unsigned char[]){ JEDEC_WREN },
+	}, {
+		.writecnt = 2,
+		.writearr = (const unsigned char[]){ JEDEC_WRITE_EXT_ADDR_REG, regdata },
+	},
+		NULL_SPI_CMD,
+	};
+
+	const int result = spi_send_multicommand(flash, cmds);
+	if (result)
+		msg_cerr("%s failed during command execution\n", __func__);
+	return result;
+}
+
 static int spi_set_extended_address(struct flashctx *const flash, const uint8_t addr_high)
 {
 	if (flash->address_high_byte != addr_high &&
@@ -565,6 +583,27 @@ int spi_block_erase_c7(struct flashctx *flash, unsigned int addr,
 	return spi_chip_erase_c7(flash);
 }
 
+/* Erase 4 KB of flash with 4-bytes address from ANY mode (3-bytes or 4-bytes) */
+int spi_block_erase_21(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
+{
+	/* This usually takes 15-800ms, so wait in 10ms steps. */
+	return spi_write_cmd(flash, 0x21, true, addr, NULL, 0, 10 * 1000);
+}
+
+/* Erase 32 KB of flash with 4-bytes address from ANY mode (3-bytes or 4-bytes) */
+int spi_block_erase_5c(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
+{
+	/* This usually takes 100-4000ms, so wait in 100ms steps. */
+	return spi_write_cmd(flash, 0x5c, true, addr, NULL, 0, 100 * 1000);
+}
+
+/* Erase 64 KB of flash with 4-bytes address from ANY mode (3-bytes or 4-bytes) */
+int spi_block_erase_dc(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
+{
+	/* This usually takes 100-4000ms, so wait in 100ms steps. */
+	return spi_write_cmd(flash, 0xdc, true, addr, NULL, 0, 100 * 1000);
+}
+
 erasefunc_t *spi_get_erasefn_from_opcode(uint8_t opcode)
 {
 	switch(opcode){
@@ -574,10 +613,14 @@ erasefunc_t *spi_get_erasefn_from_opcode(uint8_t opcode)
 		return NULL;
 	case 0x20:
 		return &spi_block_erase_20;
+	case 0x21:
+		return &spi_block_erase_21;
 	case 0x50:
 		return &spi_block_erase_50;
 	case 0x52:
 		return &spi_block_erase_52;
+	case 0x5c:
+		return &spi_block_erase_5c;
 	case 0x60:
 		return &spi_block_erase_60;
 	case 0x62:
@@ -594,6 +637,8 @@ erasefunc_t *spi_get_erasefn_from_opcode(uint8_t opcode)
 		return &spi_block_erase_d8;
 	case 0xdb:
 		return &spi_block_erase_db;
+	case 0xdc:
+		return &spi_block_erase_dc;
 	default:
 		msg_cinfo("%s: unknown erase opcode (0x%02x). Please report "
 			  "this at flashrom@flashrom.org\n", __func__, opcode);
@@ -811,4 +856,44 @@ bailout:
 	if (result != 0)
 		msg_cerr("%s failed to disable AAI mode.\n", __func__);
 	return SPI_GENERIC_ERROR;
+}
+
+/* Enter 4-bytes addressing mode (without sending WREN before) */
+int spi_enter_4ba_b7(struct flashctx *flash)
+{
+	const unsigned char cmd = JEDEC_ENTER_4_BYTE_ADDR_MODE;
+
+	const int ret = spi_send_command(flash, sizeof(cmd), 0, &cmd, NULL);
+	if (!ret)
+		flash->in_4ba_mode = true;
+	return ret;
+}
+
+/* Enter 4-bytes addressing mode with sending WREN before */
+int spi_enter_4ba_b7_we(struct flashctx *flash)
+{
+	const int ret = spi_simple_write_cmd(flash, JEDEC_ENTER_4_BYTE_ADDR_MODE, 0);
+	if (!ret)
+		flash->in_4ba_mode = true;
+	return ret;
+}
+
+/* Exit 4-bytes addressing mode (without sending WREN before) */
+int spi_exit_4ba_e9(struct flashctx *flash)
+{
+	const unsigned char cmd = JEDEC_EXIT_4_BYTE_ADDR_MODE;
+
+	const int ret = spi_send_command(flash, sizeof(cmd), 0, &cmd, NULL);
+	if (!ret)
+		flash->in_4ba_mode = false;
+	return ret;
+}
+
+/* Exit 4-bytes addressing mode with sending WREN before */
+int spi_exit_4ba_e9_we(struct flashctx *flash)
+{
+	const int ret = spi_simple_write_cmd(flash, JEDEC_EXIT_4_BYTE_ADDR_MODE, 0);
+	if (!ret)
+		flash->in_4ba_mode = false;
+	return ret;
 }
