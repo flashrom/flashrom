@@ -117,8 +117,11 @@ uint8_t spi_read_status_register(struct flashctx *flash)
 
 	/* Read Status Register */
 	ret = spi_send_command(flash, sizeof(cmd), sizeof(readarr), cmd, readarr);
-	if (ret)
+	if (ret) {
 		msg_cerr("RDSR failed!\n");
+		/* FIXME: We should propagate the error. */
+		return 0;
+	}
 
 	return readarr[0];
 }
