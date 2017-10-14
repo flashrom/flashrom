@@ -24,6 +24,7 @@
 
 #include <stddef.h>
 #include <string.h>
+#include <stdbool.h>
 #include "flash.h"
 #include "flashchips.h"
 #include "chipdrivers.h"
@@ -372,10 +373,10 @@ static int spi_set_extended_address(struct flashctx *const flash, const uint8_t 
 	return 0;
 }
 
-static int spi_prepare_address(struct flashctx *const flash,
-			       uint8_t cmd_buf[], const unsigned int addr)
+static int spi_prepare_address(struct flashctx *const flash, uint8_t cmd_buf[],
+			       const bool native_4ba, const unsigned int addr)
 {
-	if (flash->in_4ba_mode) {
+	if (native_4ba || flash->in_4ba_mode) {
 		cmd_buf[1] = (addr >> 24) & 0xff;
 		cmd_buf[2] = (addr >> 16) & 0xff;
 		cmd_buf[3] = (addr >>  8) & 0xff;
@@ -402,6 +403,7 @@ static int spi_prepare_address(struct flashctx *const flash,
  *
  * @param flash       the flash chip's context
  * @param op          the operation to execute
+ * @param native_4ba  whether `op` always takes a 4-byte address
  * @param addr        the address parameter to `op`
  * @param out_bytes   bytes to send after the address,
  *                    may be NULL if and only if `out_bytes` is 0
@@ -409,8 +411,8 @@ static int spi_prepare_address(struct flashctx *const flash,
  * @param poll_delay  interval in us for polling WIP
  * @return 0 on success, non-zero otherwise
  */
-static int spi_write_cmd(struct flashctx *const flash,
-			 const uint8_t op, const unsigned int addr,
+static int spi_write_cmd(struct flashctx *const flash, const uint8_t op,
+			 const bool native_4ba, const unsigned int addr,
 			 const uint8_t *const out_bytes, const size_t out_len,
 			 const unsigned int poll_delay)
 {
@@ -426,7 +428,7 @@ static int spi_write_cmd(struct flashctx *const flash,
 	};
 
 	cmd[0] = op;
-	const int addr_len = spi_prepare_address(flash, cmd, addr);
+	const int addr_len = spi_prepare_address(flash, cmd, native_4ba, addr);
 	if (addr_len < 0)
 		return 1;
 
@@ -469,7 +471,7 @@ int spi_block_erase_52(struct flashctx *flash, unsigned int addr,
 		       unsigned int blocklen)
 {
 	/* This usually takes 100-4000ms, so wait in 100ms steps. */
-	return spi_write_cmd(flash, 0x52, addr, NULL, 0, 100 * 1000);
+	return spi_write_cmd(flash, 0x52, false, addr, NULL, 0, 100 * 1000);
 }
 
 /* Block size is usually
@@ -478,7 +480,7 @@ int spi_block_erase_52(struct flashctx *flash, unsigned int addr,
 int spi_block_erase_c4(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
 {
 	/* This usually takes 240-480s, so wait in 500ms steps. */
-	return spi_write_cmd(flash, 0xc4, addr, NULL, 0, 500 * 1000);
+	return spi_write_cmd(flash, 0xc4, false, addr, NULL, 0, 500 * 1000);
 }
 
 /* Block size is usually
@@ -490,7 +492,7 @@ int spi_block_erase_d8(struct flashctx *flash, unsigned int addr,
 		       unsigned int blocklen)
 {
 	/* This usually takes 100-4000ms, so wait in 100ms steps. */
-	return spi_write_cmd(flash, 0xd8, addr, NULL, 0, 100 * 1000);
+	return spi_write_cmd(flash, 0xd8, false, addr, NULL, 0, 100 * 1000);
 }
 
 /* Block size is usually
@@ -500,7 +502,7 @@ int spi_block_erase_d7(struct flashctx *flash, unsigned int addr,
 		       unsigned int blocklen)
 {
 	/* This usually takes 100-4000ms, so wait in 100ms steps. */
-	return spi_write_cmd(flash, 0xd7, addr, NULL, 0, 100 * 1000);
+	return spi_write_cmd(flash, 0xd7, false, addr, NULL, 0, 100 * 1000);
 }
 
 /* Page erase (usually 256B blocks) */
@@ -508,7 +510,7 @@ int spi_block_erase_db(struct flashctx *flash, unsigned int addr, unsigned int b
 {
 	/* This takes up to 20ms usually (on worn out devices
 	   up to the 0.5s range), so wait in 1ms steps. */
-	return spi_write_cmd(flash, 0xdb, addr, NULL, 0, 1 * 1000);
+	return spi_write_cmd(flash, 0xdb, false, addr, NULL, 0, 1 * 1000);
 }
 
 /* Sector size is usually 4k, though Macronix eliteflash has 64k */
@@ -516,19 +518,19 @@ int spi_block_erase_20(struct flashctx *flash, unsigned int addr,
 		       unsigned int blocklen)
 {
 	/* This usually takes 15-800ms, so wait in 10ms steps. */
-	return spi_write_cmd(flash, 0x20, addr, NULL, 0, 10 * 1000);
+	return spi_write_cmd(flash, 0x20, false, addr, NULL, 0, 10 * 1000);
 }
 
 int spi_block_erase_50(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
 {
 	/* This usually takes 10ms, so wait in 1ms steps. */
-	return spi_write_cmd(flash, 0x50, addr, NULL, 0, 1 * 1000);
+	return spi_write_cmd(flash, 0x50, false, addr, NULL, 0, 1 * 1000);
 }
 
 int spi_block_erase_81(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
 {
 	/* This usually takes 8ms, so wait in 1ms steps. */
-	return spi_write_cmd(flash, 0x81, addr, NULL, 0, 1 * 1000);
+	return spi_write_cmd(flash, 0x81, false, addr, NULL, 0, 1 * 1000);
 }
 
 int spi_block_erase_60(struct flashctx *flash, unsigned int addr,
@@ -601,15 +603,18 @@ erasefunc_t *spi_get_erasefn_from_opcode(uint8_t opcode)
 
 static int spi_nbyte_program(struct flashctx *flash, unsigned int addr, const uint8_t *bytes, unsigned int len)
 {
-	return spi_write_cmd(flash, JEDEC_BYTE_PROGRAM, addr, bytes, len, 10);
+	const bool native_4ba = !!(flash->chip->feature_bits & FEATURE_4BA_WRITE);
+	const uint8_t op = native_4ba ? JEDEC_BYTE_PROGRAM_4BA : JEDEC_BYTE_PROGRAM;
+	return spi_write_cmd(flash, op, native_4ba, addr, bytes, len, 10);
 }
 
 int spi_nbyte_read(struct flashctx *flash, unsigned int address, uint8_t *bytes,
 		   unsigned int len)
 {
-	uint8_t cmd[1 + JEDEC_MAX_ADDR_LEN] = { JEDEC_READ, };
+	const bool native_4ba = !!(flash->chip->feature_bits & FEATURE_4BA_READ);
+	uint8_t cmd[1 + JEDEC_MAX_ADDR_LEN] = { native_4ba ? JEDEC_READ_4BA : JEDEC_READ, };
 
-	const int addr_len = spi_prepare_address(flash, cmd, address);
+	const int addr_len = spi_prepare_address(flash, cmd, native_4ba, address);
 	if (addr_len < 0)
 		return 1;
 
@@ -781,7 +786,7 @@ int default_spi_write_aai(struct flashctx *flash, const uint8_t *buf, unsigned i
 		//return SPI_GENERIC_ERROR;
 	}
 
-	result = spi_write_cmd(flash, JEDEC_AAI_WORD_PROGRAM, start, buf + pos - start, 2, 10);
+	result = spi_write_cmd(flash, JEDEC_AAI_WORD_PROGRAM, false, start, buf + pos - start, 2, 10);
 	if (result)
 		goto bailout;
 

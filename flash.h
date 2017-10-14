@@ -122,6 +122,8 @@ enum write_granularity {
 #define FEATURE_4BA_SUPPORT	(1 << 10)
 #define FEATURE_4BA_EXT_ADDR	(1 << 11) /**< Regular 3-byte operations can be used by writing the most
 					       significant address byte into an extended address register. */
+#define FEATURE_4BA_READ	(1 << 12) /**< Native 4BA read instruction (0x13) is supported. */
+#define FEATURE_4BA_WRITE	(1 << 13) /**< Native 4BA byte program (0x12) is supported. */
 
 enum test_state {
 	OK = 0,
