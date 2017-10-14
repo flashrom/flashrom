@@ -363,14 +363,37 @@ static int spi_simple_write_cmd(struct flashctx *const flash, const uint8_t op, 
 	return result ? result : status;
 }
 
+static int spi_set_extended_address(struct flashctx *const flash, const uint8_t addr_high)
+{
+	if (flash->address_high_byte != addr_high &&
+	    spi_write_extended_address_register(flash, addr_high))
+		return -1;
+	flash->address_high_byte = addr_high;
+	return 0;
+}
+
 static int spi_prepare_address(struct flashctx *const flash,
 			       uint8_t cmd_buf[], const unsigned int addr)
 {
-	/* TODO: extend for 4BA */
-	cmd_buf[1] = (addr >> 16) & 0xff;
-	cmd_buf[2] = (addr >>  8) & 0xff;
-	cmd_buf[3] = (addr >>  0) & 0xff;
-	return 3;
+	if (flash->in_4ba_mode) {
+		cmd_buf[1] = (addr >> 24) & 0xff;
+		cmd_buf[2] = (addr >> 16) & 0xff;
+		cmd_buf[3] = (addr >>  8) & 0xff;
+		cmd_buf[4] = (addr >>  0) & 0xff;
+		return 4;
+	} else {
+		if (flash->chip->feature_bits & FEATURE_4BA_EXT_ADDR) {
+			if (spi_set_extended_address(flash, addr >> 24))
+				return -1;
+		} else {
+			if (addr >> 24)
+				return -1;
+		}
+		cmd_buf[1] = (addr >> 16) & 0xff;
+		cmd_buf[2] = (addr >>  8) & 0xff;
+		cmd_buf[3] = (addr >>  0) & 0xff;
+		return 3;
+	}
 }
 
 /**

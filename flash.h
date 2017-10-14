@@ -120,6 +120,8 @@ enum write_granularity {
 #define FEATURE_OTP		(1 << 8)
 #define FEATURE_QPI		(1 << 9)
 #define FEATURE_4BA_SUPPORT	(1 << 10)
+#define FEATURE_4BA_EXT_ADDR	(1 << 11) /**< Regular 3-byte operations can be used by writing the most
+					       significant address byte into an extended address register. */
 
 enum test_state {
 	OK = 0,
@@ -236,6 +238,12 @@ struct flashrom_flashctx {
 		bool verify_after_write;
 		bool verify_whole_chip;
 	} flags;
+	/* We cache the state of the extended address register (highest byte
+           of a 4BA for 3BA instructions) and the state of the 4BA mode here.
+           If possible, we enter 4BA mode early. If that fails, we make use
+           of the extended address register. */
+	int address_high_byte;
+	bool in_4ba_mode;
 };
 
 /* Timing used in probe routines. ZERO is -2 to differentiate between an unset
