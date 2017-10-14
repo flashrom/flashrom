@@ -323,6 +323,16 @@ int probe_spi_at25f(struct flashctx *flash)
 	return 0;
 }
 
+static int spi_poll_wip(struct flashctx *const flash, const unsigned int poll_delay)
+{
+	/* FIXME: We can't tell if spi_read_status_register() failed. */
+	/* FIXME: We don't time out. */
+	while (spi_read_status_register(flash) & SPI_SR_WIP)
+		programmer_delay(poll_delay);
+	/* FIXME: Check the status register for errors. */
+	return 0;
+}
+
 /**
  * Execute WREN plus another one byte `op`, optionally poll WIP afterwards.
  *
@@ -348,13 +358,70 @@ static int spi_simple_write_cmd(struct flashctx *const flash, const uint8_t op, 
 	if (result)
 		msg_cerr("%s failed during command execution\n", __func__);
 
-	/* FIXME: We can't tell if spi_read_status_register() failed. */
-	/* FIXME: We don't time out. */
-	while (poll_delay && spi_read_status_register(flash) & SPI_SR_WIP)
-		programmer_delay(poll_delay);
-	/* FIXME: Check the status register for errors. */
+	const int status = poll_delay ? spi_poll_wip(flash, poll_delay) : 0;
 
-	return result;
+	return result ? result : status;
+}
+
+static int spi_prepare_address(struct flashctx *const flash,
+			       uint8_t cmd_buf[], const unsigned int addr)
+{
+	/* TODO: extend for 4BA */
+	cmd_buf[1] = (addr >> 16) & 0xff;
+	cmd_buf[2] = (addr >>  8) & 0xff;
+	cmd_buf[3] = (addr >>  0) & 0xff;
+	return 3;
+}
+
+/**
+ * Execute WREN plus another `op` that takes an address and
+ * optional data, poll WIP afterwards.
+ *
+ * @param flash       the flash chip's context
+ * @param op          the operation to execute
+ * @param addr        the address parameter to `op`
+ * @param out_bytes   bytes to send after the address,
+ *                    may be NULL if and only if `out_bytes` is 0
+ * @param out_bytes   number of bytes to send, 256 at most, may be zero
+ * @param poll_delay  interval in us for polling WIP
+ * @return 0 on success, non-zero otherwise
+ */
+static int spi_write_cmd(struct flashctx *const flash,
+			 const uint8_t op, const unsigned int addr,
+			 const uint8_t *const out_bytes, const size_t out_len,
+			 const unsigned int poll_delay)
+{
+	uint8_t cmd[1 + JEDEC_MAX_ADDR_LEN + 256];
+	struct spi_command cmds[] = {
+	{
+		.writecnt = 1,
+		.writearr = (const unsigned char[]){ JEDEC_WREN },
+	}, {
+		.writearr = cmd,
+	},
+		NULL_SPI_CMD,
+	};
+
+	cmd[0] = op;
+	const int addr_len = spi_prepare_address(flash, cmd, addr);
+	if (addr_len < 0)
+		return 1;
+
+	if (1 + addr_len + out_len > sizeof(cmd)) {
+		msg_cerr("%s called for too long a write\n", __func__);
+		return 1;
+	}
+
+	memcpy(cmd + 1 + addr_len, out_bytes, out_len);
+	cmds[1].writecnt = 1 + addr_len + out_len;
+
+	const int result = spi_send_multicommand(flash, cmds);
+	if (result)
+		msg_cerr("%s failed during command execution at address 0x%x\n", __func__, addr);
+
+	const int status = spi_poll_wip(flash, poll_delay);
+
+	return result ? result : status;
 }
 
 int spi_chip_erase_60(struct flashctx *flash)
@@ -378,43 +445,8 @@ int spi_chip_erase_c7(struct flashctx *flash)
 int spi_block_erase_52(struct flashctx *flash, unsigned int addr,
 		       unsigned int blocklen)
 {
-	int result;
-	struct spi_command cmds[] = {
-	{
-		.writecnt	= JEDEC_WREN_OUTSIZE,
-		.writearr	= (const unsigned char[]){ JEDEC_WREN },
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}, {
-		.writecnt	= JEDEC_BE_52_OUTSIZE,
-		.writearr	= (const unsigned char[]){
-					JEDEC_BE_52,
-					(addr >> 16) & 0xff,
-					(addr >> 8) & 0xff,
-					(addr & 0xff)
-				},
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}, {
-		.writecnt	= 0,
-		.writearr	= NULL,
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}};
-
-	result = spi_send_multicommand(flash, cmds);
-	if (result) {
-		msg_cerr("%s failed during command execution at address 0x%x\n",
-			__func__, addr);
-		return result;
-	}
-	/* Wait until the Write-In-Progress bit is cleared.
-	 * This usually takes 100-4000 ms, so wait in 100 ms steps.
-	 */
-	while (spi_read_status_register(flash) & SPI_SR_WIP)
-		programmer_delay(100 * 1000);
-	/* FIXME: Check the status register for errors. */
-	return 0;
+	/* This usually takes 100-4000ms, so wait in 100ms steps. */
+	return spi_write_cmd(flash, 0x52, addr, NULL, 0, 100 * 1000);
 }
 
 /* Block size is usually
@@ -422,42 +454,8 @@ int spi_block_erase_52(struct flashctx *flash, unsigned int addr,
  */
 int spi_block_erase_c4(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
 {
-	int result;
-	struct spi_command cmds[] = {
-	{
-		.writecnt	= JEDEC_WREN_OUTSIZE,
-		.writearr	= (const unsigned char[]){ JEDEC_WREN },
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}, {
-		.writecnt	= JEDEC_BE_C4_OUTSIZE,
-		.writearr	= (const unsigned char[]){
-					JEDEC_BE_C4,
-					(addr >> 16) & 0xff,
-					(addr >> 8) & 0xff,
-					(addr & 0xff)
-				},
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}, {
-		.writecnt	= 0,
-		.writearr	= NULL,
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}};
-
-	result = spi_send_multicommand(flash, cmds);
-	if (result) {
-		msg_cerr("%s failed during command execution at address 0x%x\n", __func__, addr);
-		return result;
-	}
-	/* Wait until the Write-In-Progress bit is cleared.
-	 * This usually takes 240-480 s, so wait in 500 ms steps.
-	 */
-	while (spi_read_status_register(flash) & SPI_SR_WIP)
-		programmer_delay(500 * 1000 * 1000);
-	/* FIXME: Check the status register for errors. */
-	return 0;
+	/* This usually takes 240-480s, so wait in 500ms steps. */
+	return spi_write_cmd(flash, 0xc4, addr, NULL, 0, 500 * 1000);
 }
 
 /* Block size is usually
@@ -468,43 +466,8 @@ int spi_block_erase_c4(struct flashctx *flash, unsigned int addr, unsigned int b
 int spi_block_erase_d8(struct flashctx *flash, unsigned int addr,
 		       unsigned int blocklen)
 {
-	int result;
-	struct spi_command cmds[] = {
-	{
-		.writecnt	= JEDEC_WREN_OUTSIZE,
-		.writearr	= (const unsigned char[]){ JEDEC_WREN },
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}, {
-		.writecnt	= JEDEC_BE_D8_OUTSIZE,
-		.writearr	= (const unsigned char[]){
-					JEDEC_BE_D8,
-					(addr >> 16) & 0xff,
-					(addr >> 8) & 0xff,
-					(addr & 0xff)
-				},
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}, {
-		.writecnt	= 0,
-		.writearr	= NULL,
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}};
-
-	result = spi_send_multicommand(flash, cmds);
-	if (result) {
-		msg_cerr("%s failed during command execution at address 0x%x\n",
-			__func__, addr);
-		return result;
-	}
-	/* Wait until the Write-In-Progress bit is cleared.
-	 * This usually takes 100-4000 ms, so wait in 100 ms steps.
-	 */
-	while (spi_read_status_register(flash) & SPI_SR_WIP)
-		programmer_delay(100 * 1000);
-	/* FIXME: Check the status register for errors. */
-	return 0;
+	/* This usually takes 100-4000ms, so wait in 100ms steps. */
+	return spi_write_cmd(flash, 0xd8, addr, NULL, 0, 100 * 1000);
 }
 
 /* Block size is usually
@@ -513,207 +476,36 @@ int spi_block_erase_d8(struct flashctx *flash, unsigned int addr,
 int spi_block_erase_d7(struct flashctx *flash, unsigned int addr,
 		       unsigned int blocklen)
 {
-	int result;
-	struct spi_command cmds[] = {
-	{
-		.writecnt	= JEDEC_WREN_OUTSIZE,
-		.writearr	= (const unsigned char[]){ JEDEC_WREN },
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}, {
-		.writecnt	= JEDEC_BE_D7_OUTSIZE,
-		.writearr	= (const unsigned char[]){
-					JEDEC_BE_D7,
-					(addr >> 16) & 0xff,
-					(addr >> 8) & 0xff,
-					(addr & 0xff)
-				},
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}, {
-		.writecnt	= 0,
-		.writearr	= NULL,
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}};
-
-	result = spi_send_multicommand(flash, cmds);
-	if (result) {
-		msg_cerr("%s failed during command execution at address 0x%x\n",
-			__func__, addr);
-		return result;
-	}
-	/* Wait until the Write-In-Progress bit is cleared.
-	 * This usually takes 100-4000 ms, so wait in 100 ms steps.
-	 */
-	while (spi_read_status_register(flash) & SPI_SR_WIP)
-		programmer_delay(100 * 1000);
-	/* FIXME: Check the status register for errors. */
-	return 0;
+	/* This usually takes 100-4000ms, so wait in 100ms steps. */
+	return spi_write_cmd(flash, 0xd7, addr, NULL, 0, 100 * 1000);
 }
 
 /* Page erase (usually 256B blocks) */
 int spi_block_erase_db(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
 {
-	int result;
-	struct spi_command cmds[] = {
-	{
-		.writecnt	= JEDEC_WREN_OUTSIZE,
-		.writearr	= (const unsigned char[]){ JEDEC_WREN },
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}, {
-		.writecnt	= JEDEC_PE_OUTSIZE,
-		.writearr	= (const unsigned char[]){
-					JEDEC_PE,
-					(addr >> 16) & 0xff,
-					(addr >> 8) & 0xff,
-					(addr & 0xff)
-				},
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}, {
-		.writecnt	= 0,
-		.writearr	= NULL,
-		.readcnt	= 0,
-		.readarr	= NULL,
-	} };
-
-	result = spi_send_multicommand(flash, cmds);
-	if (result) {
-		msg_cerr("%s failed during command execution at address 0x%x\n", __func__, addr);
-		return result;
-	}
-
-	/* Wait until the Write-In-Progress bit is cleared.
-	 * This takes up to 20 ms usually (on worn out devices up to the 0.5s range), so wait in 1 ms steps. */
-	while (spi_read_status_register(flash) & SPI_SR_WIP)
-		programmer_delay(1 * 1000);
-	/* FIXME: Check the status register for errors. */
-	return 0;
+	/* This takes up to 20ms usually (on worn out devices
+	   up to the 0.5s range), so wait in 1ms steps. */
+	return spi_write_cmd(flash, 0xdb, addr, NULL, 0, 1 * 1000);
 }
 
 /* Sector size is usually 4k, though Macronix eliteflash has 64k */
 int spi_block_erase_20(struct flashctx *flash, unsigned int addr,
 		       unsigned int blocklen)
 {
-	int result;
-	struct spi_command cmds[] = {
-	{
-		.writecnt	= JEDEC_WREN_OUTSIZE,
-		.writearr	= (const unsigned char[]){ JEDEC_WREN },
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}, {
-		.writecnt	= JEDEC_SE_OUTSIZE,
-		.writearr	= (const unsigned char[]){
-					JEDEC_SE,
-					(addr >> 16) & 0xff,
-					(addr >> 8) & 0xff,
-					(addr & 0xff)
-				},
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}, {
-		.writecnt	= 0,
-		.writearr	= NULL,
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}};
-
-	result = spi_send_multicommand(flash, cmds);
-	if (result) {
-		msg_cerr("%s failed during command execution at address 0x%x\n",
-			__func__, addr);
-		return result;
-	}
-	/* Wait until the Write-In-Progress bit is cleared.
-	 * This usually takes 15-800 ms, so wait in 10 ms steps.
-	 */
-	while (spi_read_status_register(flash) & SPI_SR_WIP)
-		programmer_delay(10 * 1000);
-	/* FIXME: Check the status register for errors. */
-	return 0;
+	/* This usually takes 15-800ms, so wait in 10ms steps. */
+	return spi_write_cmd(flash, 0x20, addr, NULL, 0, 10 * 1000);
 }
 
 int spi_block_erase_50(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
 {
-	int result;
-	struct spi_command cmds[] = {
-	{
-/*		.writecnt	= JEDEC_WREN_OUTSIZE,
-		.writearr	= (const unsigned char[]){ JEDEC_WREN },
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}, { */
-		.writecnt	= JEDEC_BE_50_OUTSIZE,
-		.writearr	= (const unsigned char[]){
-					JEDEC_BE_50,
-					(addr >> 16) & 0xff,
-					(addr >> 8) & 0xff,
-					(addr & 0xff)
-				},
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}, {
-		.writecnt	= 0,
-		.writearr	= NULL,
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}};
-
-	result = spi_send_multicommand(flash, cmds);
-	if (result) {
-		msg_cerr("%s failed during command execution at address 0x%x\n", __func__, addr);
-		return result;
-	}
-	/* Wait until the Write-In-Progress bit is cleared.
-	 * This usually takes 10 ms, so wait in 1 ms steps.
-	 */
-	while (spi_read_status_register(flash) & SPI_SR_WIP)
-		programmer_delay(1 * 1000);
-	/* FIXME: Check the status register for errors. */
-	return 0;
+	/* This usually takes 10ms, so wait in 1ms steps. */
+	return spi_write_cmd(flash, 0x50, addr, NULL, 0, 1 * 1000);
 }
 
 int spi_block_erase_81(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
 {
-	int result;
-	struct spi_command cmds[] = {
-	{
-/*		.writecnt	= JEDEC_WREN_OUTSIZE,
-		.writearr	= (const unsigned char[]){ JEDEC_WREN },
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}, { */
-		.writecnt	= JEDEC_BE_81_OUTSIZE,
-		.writearr	= (const unsigned char[]){
-					JEDEC_BE_81,
-					(addr >> 16) & 0xff,
-					(addr >> 8) & 0xff,
-					(addr & 0xff)
-				},
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}, {
-		.writecnt	= 0,
-		.writearr	= NULL,
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}};
-
-	result = spi_send_multicommand(flash, cmds);
-	if (result) {
-		msg_cerr("%s failed during command execution at address 0x%x\n", __func__, addr);
-		return result;
-	}
-	/* Wait until the Write-In-Progress bit is cleared.
-	 * This usually takes 8 ms, so wait in 1 ms steps.
-	 */
-	while (spi_read_status_register(flash) & SPI_SR_WIP)
-		programmer_delay(1 * 1000);
-	/* FIXME: Check the status register for errors. */
-	return 0;
+	/* This usually takes 8ms, so wait in 1ms steps. */
+	return spi_write_cmd(flash, 0x81, addr, NULL, 0, 1 * 1000);
 }
 
 int spi_block_erase_60(struct flashctx *flash, unsigned int addr,
@@ -784,101 +576,22 @@ erasefunc_t *spi_get_erasefn_from_opcode(uint8_t opcode)
 	}
 }
 
-int spi_byte_program(struct flashctx *flash, unsigned int addr,
-		     uint8_t databyte)
+static int spi_nbyte_program(struct flashctx *flash, unsigned int addr, const uint8_t *bytes, unsigned int len)
 {
-	int result;
-	struct spi_command cmds[] = {
-	{
-		.writecnt	= JEDEC_WREN_OUTSIZE,
-		.writearr	= (const unsigned char[]){ JEDEC_WREN },
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}, {
-		.writecnt	= JEDEC_BYTE_PROGRAM_OUTSIZE,
-		.writearr	= (const unsigned char[]){
-					JEDEC_BYTE_PROGRAM,
-					(addr >> 16) & 0xff,
-					(addr >> 8) & 0xff,
-					(addr & 0xff),
-					databyte
-				},
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}, {
-		.writecnt	= 0,
-		.writearr	= NULL,
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}};
-
-	result = spi_send_multicommand(flash, cmds);
-	if (result) {
-		msg_cerr("%s failed during command execution at address 0x%x\n",
-			__func__, addr);
-	}
-	return result;
-}
-
-int spi_nbyte_program(struct flashctx *flash, unsigned int addr, const uint8_t *bytes, unsigned int len)
-{
-	int result;
-	/* FIXME: Switch to malloc based on len unless that kills speed. */
-	unsigned char cmd[JEDEC_BYTE_PROGRAM_OUTSIZE - 1 + 256] = {
-		JEDEC_BYTE_PROGRAM,
-		(addr >> 16) & 0xff,
-		(addr >> 8) & 0xff,
-		(addr >> 0) & 0xff,
-	};
-	struct spi_command cmds[] = {
-	{
-		.writecnt	= JEDEC_WREN_OUTSIZE,
-		.writearr	= (const unsigned char[]){ JEDEC_WREN },
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}, {
-		.writecnt	= JEDEC_BYTE_PROGRAM_OUTSIZE - 1 + len,
-		.writearr	= cmd,
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}, {
-		.writecnt	= 0,
-		.writearr	= NULL,
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}};
-
-	if (!len) {
-		msg_cerr("%s called for zero-length write\n", __func__);
-		return 1;
-	}
-	if (len > 256) {
-		msg_cerr("%s called for too long a write\n", __func__);
-		return 1;
-	}
-
-	memcpy(&cmd[4], bytes, len);
-
-	result = spi_send_multicommand(flash, cmds);
-	if (result) {
-		msg_cerr("%s failed during command execution at address 0x%x\n",
-			__func__, addr);
-	}
-	return result;
+	return spi_write_cmd(flash, JEDEC_BYTE_PROGRAM, addr, bytes, len, 10);
 }
 
 int spi_nbyte_read(struct flashctx *flash, unsigned int address, uint8_t *bytes,
 		   unsigned int len)
 {
-	const unsigned char cmd[JEDEC_READ_OUTSIZE] = {
-		JEDEC_READ,
-		(address >> 16) & 0xff,
-		(address >> 8) & 0xff,
-		(address >> 0) & 0xff,
-	};
+	uint8_t cmd[1 + JEDEC_MAX_ADDR_LEN] = { JEDEC_READ, };
+
+	const int addr_len = spi_prepare_address(flash, cmd, address);
+	if (addr_len < 0)
+		return 1;
 
 	/* Send Read */
-	return spi_send_command(flash, sizeof(cmd), len, cmd, bytes);
+	return spi_send_command(flash, 1 + addr_len, len, cmd, bytes);
 }
 
 /*
@@ -989,7 +702,7 @@ int spi_chip_write_1(struct flashctx *flash, const uint8_t *buf, unsigned int st
 
 	for (i = start; i < start + len; i++) {
 		result = (flash->chip->feature_bits & FEATURE_4BA_SUPPORT) == 0
-			? spi_byte_program(flash, i, buf[i - start])
+			? spi_nbyte_program(flash, i, buf + i - start, 1)
 			: flash->chip->four_bytes_addr_funcs.program_byte(flash, i, buf[i - start]);
 		if (result)
 			return 1;
@@ -1007,30 +720,6 @@ int default_spi_write_aai(struct flashctx *flash, const uint8_t *buf, unsigned i
 	unsigned char cmd[JEDEC_AAI_WORD_PROGRAM_CONT_OUTSIZE] = {
 		JEDEC_AAI_WORD_PROGRAM,
 	};
-	struct spi_command cmds[] = {
-	{
-		.writecnt	= JEDEC_WREN_OUTSIZE,
-		.writearr	= (const unsigned char[]){ JEDEC_WREN },
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}, {
-		.writecnt	= JEDEC_AAI_WORD_PROGRAM_OUTSIZE,
-		.writearr	= (const unsigned char[]){
-					JEDEC_AAI_WORD_PROGRAM,
-					(start >> 16) & 0xff,
-					(start >> 8) & 0xff,
-					(start & 0xff),
-					buf[0],
-					buf[1]
-				},
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}, {
-		.writecnt	= 0,
-		.writearr	= NULL,
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}};
 
 	switch (flash->mst->spi.type) {
 #if CONFIG_INTERNAL == 1
@@ -1058,14 +747,6 @@ int default_spi_write_aai(struct flashctx *flash, const uint8_t *buf, unsigned i
 		if (spi_chip_write_1(flash, buf, start, start % 2))
 			return SPI_GENERIC_ERROR;
 		pos += start % 2;
-		cmds[1].writearr = (const unsigned char[]){
-					JEDEC_AAI_WORD_PROGRAM,
-					(pos >> 16) & 0xff,
-					(pos >> 8) & 0xff,
-					(pos & 0xff),
-					buf[pos - start],
-					buf[pos - start + 1]
-				};
 		/* Do not return an error for now. */
 		//return SPI_GENERIC_ERROR;
 	}
@@ -1077,14 +758,9 @@ int default_spi_write_aai(struct flashctx *flash, const uint8_t *buf, unsigned i
 		//return SPI_GENERIC_ERROR;
 	}
 
-
-	result = spi_send_multicommand(flash, cmds);
-	if (result != 0) {
-		msg_cerr("%s failed during start command execution: %d\n", __func__, result);
+	result = spi_write_cmd(flash, JEDEC_AAI_WORD_PROGRAM, start, buf + pos - start, 2, 10);
+	if (result)
 		goto bailout;
-	}
-	while (spi_read_status_register(flash) & SPI_SR_WIP)
-		programmer_delay(10);
 
 	/* We already wrote 2 bytes in the multicommand step. */
 	pos += 2;
@@ -1098,8 +774,8 @@ int default_spi_write_aai(struct flashctx *flash, const uint8_t *buf, unsigned i
 			msg_cerr("%s failed during followup AAI command execution: %d\n", __func__, result);
 			goto bailout;
 		}
-		while (spi_read_status_register(flash) & SPI_SR_WIP)
-			programmer_delay(10);
+		if (spi_poll_wip(flash, 10))
+			goto bailout;
 	}
 
 	/* Use WRDI to exit AAI mode. This needs to be done before issuing any other non-AAI command. */

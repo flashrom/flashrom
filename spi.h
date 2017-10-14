@@ -24,6 +24,8 @@
  * Contains the generic SPI headers
  */
 
+#define JEDEC_MAX_ADDR_LEN	0x04
+
 /* Read Electronic ID */
 #define JEDEC_RDID		0x9f
 #define JEDEC_RDID_OUTSIZE	0x01
