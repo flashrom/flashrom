@@ -22,6 +22,7 @@
  * Contains the common SPI chip driver functions
  */
 
+#include <stddef.h>
 #include <string.h>
 #include "flash.h"
 #include "flashchips.h"
@@ -322,114 +323,56 @@ int probe_spi_at25f(struct flashctx *flash)
 	return 0;
 }
 
-int spi_chip_erase_60(struct flashctx *flash)
+/**
+ * Execute WREN plus another one byte `op`, optionally poll WIP afterwards.
+ *
+ * @param flash       the flash chip's context
+ * @param op          the operation to execute
+ * @param poll_delay  interval in us for polling WIP, don't poll if zero
+ * @return 0 on success, non-zero otherwise
+ */
+static int spi_simple_write_cmd(struct flashctx *const flash, const uint8_t op, const unsigned int poll_delay)
 {
-	int result;
 	struct spi_command cmds[] = {
 	{
-		.writecnt	= JEDEC_WREN_OUTSIZE,
-		.writearr	= (const unsigned char[]){ JEDEC_WREN },
-		.readcnt	= 0,
-		.readarr	= NULL,
+		.writecnt = 1,
+		.writearr = (const unsigned char[]){ JEDEC_WREN },
 	}, {
-		.writecnt	= JEDEC_CE_60_OUTSIZE,
-		.writearr	= (const unsigned char[]){ JEDEC_CE_60 },
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}, {
-		.writecnt	= 0,
-		.writearr	= NULL,
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}};
-	
-	result = spi_send_multicommand(flash, cmds);
-	if (result) {
-		msg_cerr("%s failed during command execution\n",
-			__func__);
-		return result;
-	}
-	/* Wait until the Write-In-Progress bit is cleared.
-	 * This usually takes 1-85 s, so wait in 1 s steps.
-	 */
-	/* FIXME: We assume spi_read_status_register will never fail. */
-	while (spi_read_status_register(flash) & SPI_SR_WIP)
-		programmer_delay(1000 * 1000);
+		.writecnt = 1,
+		.writearr = (const unsigned char[]){ op },
+	},
+		NULL_SPI_CMD,
+	};
+
+	const int result = spi_send_multicommand(flash, cmds);
+	if (result)
+		msg_cerr("%s failed during command execution\n", __func__);
+
+	/* FIXME: We can't tell if spi_read_status_register() failed. */
+	/* FIXME: We don't time out. */
+	while (poll_delay && spi_read_status_register(flash) & SPI_SR_WIP)
+		programmer_delay(poll_delay);
 	/* FIXME: Check the status register for errors. */
-	return 0;
+
+	return result;
+}
+
+int spi_chip_erase_60(struct flashctx *flash)
+{
+	/* This usually takes 1-85s, so wait in 1s steps. */
+	return spi_simple_write_cmd(flash, 0x60, 1000 * 1000);
 }
 
 int spi_chip_erase_62(struct flashctx *flash)
 {
-	int result;
-	struct spi_command cmds[] = {
-	{
-		.writecnt	= JEDEC_WREN_OUTSIZE,
-		.writearr	= (const unsigned char[]){ JEDEC_WREN },
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}, {
-		.writecnt	= JEDEC_CE_62_OUTSIZE,
-		.writearr	= (const unsigned char[]){ JEDEC_CE_62 },
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}, {
-		.writecnt	= 0,
-		.writearr	= NULL,
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}};
-	
-	result = spi_send_multicommand(flash, cmds);
-	if (result) {
-		msg_cerr("%s failed during command execution\n",
-			__func__);
-		return result;
-	}
-	/* Wait until the Write-In-Progress bit is cleared.
-	 * This usually takes 2-5 s, so wait in 100 ms steps.
-	 */
-	/* FIXME: We assume spi_read_status_register will never fail. */
-	while (spi_read_status_register(flash) & SPI_SR_WIP)
-		programmer_delay(100 * 1000);
-	/* FIXME: Check the status register for errors. */
-	return 0;
+	/* This usually takes 2-5s, so wait in 100ms steps. */
+	return spi_simple_write_cmd(flash, 0x62, 100 * 1000);
 }
 
 int spi_chip_erase_c7(struct flashctx *flash)
 {
-	int result;
-	struct spi_command cmds[] = {
-	{
-		.writecnt	= JEDEC_WREN_OUTSIZE,
-		.writearr	= (const unsigned char[]){ JEDEC_WREN },
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}, {
-		.writecnt	= JEDEC_CE_C7_OUTSIZE,
-		.writearr	= (const unsigned char[]){ JEDEC_CE_C7 },
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}, {
-		.writecnt	= 0,
-		.writearr	= NULL,
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}};
-
-	result = spi_send_multicommand(flash, cmds);
-	if (result) {
-		msg_cerr("%s failed during command execution\n", __func__);
-		return result;
-	}
-	/* Wait until the Write-In-Progress bit is cleared.
-	 * This usually takes 1-85 s, so wait in 1 s steps.
-	 */
-	/* FIXME: We assume spi_read_status_register will never fail. */
-	while (spi_read_status_register(flash) & SPI_SR_WIP)
-		programmer_delay(1000 * 1000);
-	/* FIXME: Check the status register for errors. */
-	return 0;
+	/* This usually takes 1-85s, so wait in 1s steps. */
+	return spi_simple_write_cmd(flash, 0xc7, 1000 * 1000);
 }
 
 int spi_block_erase_52(struct flashctx *flash, unsigned int addr,

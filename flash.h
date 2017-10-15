@@ -369,6 +369,7 @@ struct spi_command {
 	const unsigned char *writearr;
 	unsigned char *readarr;
 };
+#define NULL_SPI_CMD { 0, 0, NULL, NULL, }
 int spi_send_command(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr);
 int spi_send_multicommand(struct flashctx *flash, struct spi_command *cmds);
 uint32_t spi_get_valid_read_addr(struct flashctx *flash);
