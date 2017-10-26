@@ -21,10 +21,23 @@ CC ?= gcc
 # If the user has specified custom CFLAGS, all CFLAGS settings below will be
 # completely ignored by gnumake.
 CFLAGS ?= -Os -Wall -Wshadow
+
+override TARGET_OS := $(shell $(CC) $(CPPFLAGS) -E $(SHAREDSRCDIR)/os.h | grep -v '^\#' | grep '"' | \
+			cut -f 2 -d'"')
+
 ifeq ($(TARGET_OS), DOS)
+EXEC_SUFFIX := .exe
 # DJGPP has odd uint*_t definitions which cause lots of format string warnings.
 CFLAGS += -Wno-format
 endif
+
+ifeq ($(TARGET_OS), MinGW)
+EXEC_SUFFIX := .exe
+# Some functions provided by Microsoft do not work as described in C99 specifications. This macro fixes that
+# for MinGW. See http://sourceforge.net/p/mingw-w64/wiki2/printf%20and%20scanf%20family/ */
+FLASHROM_CFLAGS += -D__USE_MINGW_ANSI_STDIO=1
+endif
+
 ifeq ($(WARNERROR), yes)
 CFLAGS += -Werror
 endif
