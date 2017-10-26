@@ -324,7 +324,7 @@ int flashrom_print_cb(enum flashrom_log_level level, const char *fmt, va_list ap
 /* Let gcc and clang check for correct printf-style format strings. */
 int print(enum flashrom_log_level level, const char *fmt, ...)
 #ifdef __MINGW32__
-__attribute__((format(gnu_printf, 2, 3)));
+__attribute__((format(__MINGW_PRINTF_FORMAT, 2, 3)));
 #else
 __attribute__((format(printf, 2, 3)));
 #endif
