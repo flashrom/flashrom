@@ -1013,10 +1013,18 @@ static int enable_flash_vt_vx(struct pci_dev *dev, const char *name)
 	switch(dev->device_id) {
 		case 0x8353: /* VX800/VX820 */
 			spi0_mm_base = pci_read_long(dev, 0xbc) << 8;
+			if (spi0_mm_base == 0x0) {
+				msg_pdbg ("MMIO not enabled!\n");
+				return ERROR_FATAL;
+			}
 			break;
 		case 0x8409: /* VX855/VX875 */
 		case 0x8410: /* VX900 */
 			mmio_base = pci_read_long(dev, 0xbc) << 8;
+			if (mmio_base == 0x0) {
+				msg_pdbg ("MMIO not enabled!\n");
+				return ERROR_FATAL;
+			}
 			mmio_base_physmapped = physmap("VIA VX MMIO register", mmio_base, SPI_CNTL_LEN);
 			if (mmio_base_physmapped == ERROR_PTR)
 				return ERROR_FATAL;
