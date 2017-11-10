@@ -42,6 +42,7 @@
 #include "flashchips.h"
 #include "programmer.h"
 #include "hwaccess.h"
+#include "chipdrivers.h"
 
 const char flashrom_version[] = FLASHROM_VERSION;
 const char *chip_to_probe = NULL;
@@ -2219,9 +2220,14 @@ int prepare_flash_access(struct flashctx *const flash,
 	flash->in_4ba_mode = false;
 
 	/* Enable/disable 4-byte addressing mode if flash chip supports it */
-	if ((flash->chip->feature_bits & FEATURE_4BA_SUPPORT) && flash->chip->set_4ba) {
-		if (flash->chip->set_4ba(flash)) {
-			msg_cerr("Enabling/disabling 4-byte addressing mode failed!\n");
+	if (flash->chip->feature_bits & (FEATURE_4BA_ENTER | FEATURE_4BA_ENTER_WREN)) {
+		int ret;
+		if (spi_master_4ba(flash))
+			ret = spi_enter_4ba(flash);
+		else
+			ret = spi_exit_4ba(flash);
+		if (ret) {
+			msg_cerr("Failed to set correct 4BA mode! Aborting.\n");
 			return 1;
 		}
 	}

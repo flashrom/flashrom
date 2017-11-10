@@ -8134,7 +8134,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 32768,
 		.page_size	= 256,
 		/* OTP: 512B total; enter 0xB1, exit 0xC1 */
-		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_4BA_SUPPORT,
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_4BA_ENTER,
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
@@ -8162,7 +8162,6 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect_bp3_srwd,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read, /* Fast read (0x0B) supported */
-		.set_4ba	= spi_enter_4ba_b7,
 		.voltage	= {2700, 3600},
 	},
 
@@ -8175,7 +8174,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 65536,
 		.page_size	= 256,
 		/* OTP: 512B total; enter 0xB1, exit 0xC1 */
-		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_4BA_SUPPORT,
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_4BA_ENTER,
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
@@ -8203,7 +8202,6 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect_bp3_srwd,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read, /* Fast read (0x0B) supported */
-		.set_4ba	= spi_enter_4ba_b7,
 		.voltage	= {2700, 3600},
 	},
 
@@ -9916,7 +9914,8 @@ const struct flashchip flashchips[] = {
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 64B total; read 0x4B, write 0x42 */
-		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_4BA_SUPPORT | FEATURE_4BA_READ | FEATURE_4BA_WRITE,
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP
+			| FEATURE_4BA_ENTER_WREN | FEATURE_4BA_READ | FEATURE_4BA_WRITE,
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
@@ -9949,7 +9948,8 @@ const struct flashchip flashchips[] = {
 		.page_size	= 256,
 		/* supports SFDP */
 		/* OTP: 64B total; read 0x4B, write 0x42 */
-		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_4BA_SUPPORT | FEATURE_4BA_READ | FEATURE_4BA_WRITE,
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP
+			| FEATURE_4BA_ENTER_WREN | FEATURE_4BA_READ | FEATURE_4BA_WRITE,
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
@@ -14827,7 +14827,7 @@ const struct flashchip flashchips[] = {
 		/* supports SFDP */
 		/* OTP: 1024B total, 256B reserved; read 0x48; write 0x42, erase 0x44, read ID 0x4B */
 		/* FOUR_BYTE_ADDR: supports 4-bytes addressing mode */
-		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_4BA_SUPPORT | FEATURE_4BA_READ,
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_4BA_ENTER_WREN | FEATURE_4BA_READ,
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
@@ -14854,7 +14854,6 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
-		.set_4ba	= spi_enter_4ba_b7_we,
 		.voltage	= {2700, 3600},
 	},
 

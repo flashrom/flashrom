@@ -61,10 +61,8 @@ int spi_chip_write_1(struct flashctx *flash, const uint8_t *buf, unsigned int st
 int spi_nbyte_read(struct flashctx *flash, unsigned int addr, uint8_t *bytes, unsigned int len);
 int spi_read_chunked(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len, unsigned int chunksize);
 int spi_write_chunked(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len, unsigned int chunksize);
-int spi_enter_4ba_b7(struct flashctx *flash);
-int spi_enter_4ba_b7_we(struct flashctx *flash);
-int spi_exit_4ba_e9(struct flashctx *flash);
-int spi_exit_4ba_e9_we(struct flashctx *flash);
+int spi_enter_4ba(struct flashctx *flash);
+int spi_exit_4ba(struct flashctx *flash);
 
 
 /* spi25_statusreg.c */

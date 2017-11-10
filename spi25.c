@@ -843,42 +843,27 @@ bailout:
 	return SPI_GENERIC_ERROR;
 }
 
-/* Enter 4-bytes addressing mode (without sending WREN before) */
-int spi_enter_4ba_b7(struct flashctx *flash)
+static int spi_enter_exit_4ba(struct flashctx *const flash, const bool enter)
 {
-	const unsigned char cmd = JEDEC_ENTER_4_BYTE_ADDR_MODE;
+	const unsigned char cmd = enter ? JEDEC_ENTER_4_BYTE_ADDR_MODE : JEDEC_EXIT_4_BYTE_ADDR_MODE;
+	int ret = 1;
 
-	const int ret = spi_send_command(flash, sizeof(cmd), 0, &cmd, NULL);
+	if (flash->chip->feature_bits & FEATURE_4BA_ENTER)
+		ret = spi_send_command(flash, sizeof(cmd), 0, &cmd, NULL);
+	else if (flash->chip->feature_bits & FEATURE_4BA_ENTER_WREN)
+		ret = spi_simple_write_cmd(flash, cmd, 0);
+
 	if (!ret)
-		flash->in_4ba_mode = true;
+		flash->in_4ba_mode = enter;
 	return ret;
 }
 
-/* Enter 4-bytes addressing mode with sending WREN before */
-int spi_enter_4ba_b7_we(struct flashctx *flash)
+int spi_enter_4ba(struct flashctx *const flash)
 {
-	const int ret = spi_simple_write_cmd(flash, JEDEC_ENTER_4_BYTE_ADDR_MODE, 0);
-	if (!ret)
-		flash->in_4ba_mode = true;
-	return ret;
+	return spi_enter_exit_4ba(flash, true);
 }
 
-/* Exit 4-bytes addressing mode (without sending WREN before) */
-int spi_exit_4ba_e9(struct flashctx *flash)
+int spi_exit_4ba(struct flashctx *flash)
 {
-	const unsigned char cmd = JEDEC_EXIT_4_BYTE_ADDR_MODE;
-
-	const int ret = spi_send_command(flash, sizeof(cmd), 0, &cmd, NULL);
-	if (!ret)
-		flash->in_4ba_mode = false;
-	return ret;
-}
-
-/* Exit 4-bytes addressing mode with sending WREN before */
-int spi_exit_4ba_e9_we(struct flashctx *flash)
-{
-	const int ret = spi_simple_write_cmd(flash, JEDEC_EXIT_4_BYTE_ADDR_MODE, 0);
-	if (!ret)
-		flash->in_4ba_mode = false;
-	return ret;
+	return spi_enter_exit_4ba(flash, false);
 }
