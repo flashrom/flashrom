@@ -98,9 +98,9 @@ enum write_granularity {
 
 /*
  * How many different erase functions do we have per chip?
- * Atmel AT25FS010 has 6 different functions.
+ * Macronix MX25L25635F has 8 different functions.
  */
-#define NUM_ERASEFUNCTIONS 6
+#define NUM_ERASEFUNCTIONS 8
 
 /* Feature bits used for non-SPI only */
 #define FEATURE_REGISTERMAP	(1 << 0)
@@ -124,7 +124,12 @@ enum write_granularity {
 #define FEATURE_4BA_EXT_ADDR	(1 << 12) /**< Regular 3-byte operations can be used by writing the most
 					       significant address byte into an extended address register. */
 #define FEATURE_4BA_READ	(1 << 13) /**< Native 4BA read instruction (0x13) is supported. */
-#define FEATURE_4BA_WRITE	(1 << 14) /**< Native 4BA byte program (0x12) is supported. */
+#define FEATURE_4BA_FAST_READ	(1 << 14) /**< Native 4BA fast read instruction (0x0c) is supported. */
+#define FEATURE_4BA_WRITE	(1 << 15) /**< Native 4BA byte program (0x12) is supported. */
+/* 4BA Shorthands */
+#define FEATURE_4BA_NATIVE	(FEATURE_4BA_READ | FEATURE_4BA_FAST_READ | FEATURE_4BA_WRITE)
+#define FEATURE_4BA		(FEATURE_4BA_ENTER | FEATURE_4BA_EXT_ADDR | FEATURE_4BA_NATIVE)
+#define FEATURE_4BA_WREN	(FEATURE_4BA_ENTER_WREN | FEATURE_4BA_EXT_ADDR | FEATURE_4BA_NATIVE)
 
 enum test_state {
 	OK = 0,
