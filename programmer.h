@@ -24,6 +24,8 @@
 #ifndef __PROGRAMMER_H__
 #define __PROGRAMMER_H__ 1
 
+#include <stdint.h>
+
 #include "flash.h"	/* for chipaddr and flashctx */
 
 enum programmer {
@@ -610,8 +612,12 @@ enum spi_controller {
 #define MAX_DATA_UNSPECIFIED 0
 #define MAX_DATA_READ_UNLIMITED 64 * 1024
 #define MAX_DATA_WRITE_UNLIMITED 256
+
+#define SPI_MASTER_4BA			(1U << 0)  /**< Can handle 4-byte addresses */
+
 struct spi_master {
 	enum spi_controller type;
+	uint32_t features;
 	unsigned int max_data_read; // (Ideally,) maximum data read size in one go (excluding opcode+address).
 	unsigned int max_data_write; // (Ideally,) maximum data write size in one go (excluding opcode+address).
 	int (*command)(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
@@ -785,5 +791,12 @@ enum SP_PIN {
 
 void sp_set_pin(enum SP_PIN pin, int val);
 int sp_get_pin(enum SP_PIN pin);
+
+/* spi_master feature checks */
+static inline bool spi_master_4ba(const struct flashctx *const flash)
+{
+	return flash->mst->buses_supported & BUS_SPI &&
+		flash->mst->spi.features & SPI_MASTER_4BA;
+}
 
 #endif				/* !__PROGRAMMER_H__ */

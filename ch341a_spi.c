@@ -399,6 +399,7 @@ static int ch341a_spi_spi_send_command(struct flashctx *flash, unsigned int writ
 
 static const struct spi_master spi_master_ch341a_spi = {
 	.type		= SPI_CONTROLLER_CH341A_SPI,
+	.features	= SPI_MASTER_4BA,
 	/* flashrom's current maximum is 256 B. CH341A was tested on Linux and Windows to accept atleast
 	 * 128 kB. Basically there should be no hard limit because transfers are broken up into USB packets
 	 * sent to the device and most of their payload streamed via SPI. */

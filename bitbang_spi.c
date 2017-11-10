@@ -65,6 +65,7 @@ static int bitbang_spi_send_command(struct flashctx *flash,
 
 static const struct spi_master spi_master_bitbang = {
 	.type		= SPI_CONTROLLER_BITBANG,
+	.features	= SPI_MASTER_4BA,
 	.max_data_read	= MAX_DATA_READ_UNLIMITED,
 	.max_data_write	= MAX_DATA_WRITE_UNLIMITED,
 	.command	= bitbang_spi_send_command,

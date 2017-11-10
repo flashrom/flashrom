@@ -375,6 +375,10 @@ static int spi_prepare_address(struct flashctx *const flash, uint8_t cmd_buf[],
 			       const bool native_4ba, const unsigned int addr)
 {
 	if (native_4ba || flash->in_4ba_mode) {
+		if (!spi_master_4ba(flash)) {
+			msg_cwarn("4-byte address requested but master can't handle 4-byte addresses.\n");
+			return -1;
+		}
 		cmd_buf[1] = (addr >> 24) & 0xff;
 		cmd_buf[2] = (addr >> 16) & 0xff;
 		cmd_buf[3] = (addr >>  8) & 0xff;
@@ -384,9 +388,10 @@ static int spi_prepare_address(struct flashctx *const flash, uint8_t cmd_buf[],
 		if (flash->chip->feature_bits & FEATURE_4BA_EXT_ADDR) {
 			if (spi_set_extended_address(flash, addr >> 24))
 				return -1;
-		} else {
-			if (addr >> 24)
-				return -1;
+		} else if (addr >> 24) {
+			msg_cerr("Can't handle 4-byte address for opcode '0x%02x'\n"
+				 "with this chip/programmer combination.\n", cmd_buf[0]);
+			return -1;
 		}
 		cmd_buf[1] = (addr >> 16) & 0xff;
 		cmd_buf[2] = (addr >>  8) & 0xff;
@@ -628,7 +633,7 @@ erasefunc_t *spi_get_erasefn_from_opcode(uint8_t opcode)
 
 static int spi_nbyte_program(struct flashctx *flash, unsigned int addr, const uint8_t *bytes, unsigned int len)
 {
-	const bool native_4ba = !!(flash->chip->feature_bits & FEATURE_4BA_WRITE);
+	const bool native_4ba = flash->chip->feature_bits & FEATURE_4BA_WRITE && spi_master_4ba(flash);
 	const uint8_t op = native_4ba ? JEDEC_BYTE_PROGRAM_4BA : JEDEC_BYTE_PROGRAM;
 	return spi_write_cmd(flash, op, native_4ba, addr, bytes, len, 10);
 }
@@ -636,7 +641,7 @@ static int spi_nbyte_program(struct flashctx *flash, unsigned int addr, const ui
 int spi_nbyte_read(struct flashctx *flash, unsigned int address, uint8_t *bytes,
 		   unsigned int len)
 {
-	const bool native_4ba = !!(flash->chip->feature_bits & FEATURE_4BA_READ);
+	const bool native_4ba =	flash->chip->feature_bits & FEATURE_4BA_READ && spi_master_4ba(flash);
 	uint8_t cmd[1 + JEDEC_MAX_ADDR_LEN] = { native_4ba ? JEDEC_READ_4BA : JEDEC_READ, };
 
 	const int addr_len = spi_prepare_address(flash, cmd, native_4ba, address);

@@ -111,6 +111,7 @@ static void dummy_chip_readn(const struct flashctx *flash, uint8_t *buf, const c
 
 static const struct spi_master spi_master_dummyflasher = {
 	.type		= SPI_CONTROLLER_DUMMY,
+	.features	= SPI_MASTER_4BA,
 	.max_data_read	= MAX_DATA_READ_UNLIMITED,
 	.max_data_write	= MAX_DATA_UNSPECIFIED,
 	.command	= dummy_spi_send_command,
