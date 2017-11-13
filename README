@@ -24,20 +24,22 @@ Please see the flashrom(8) manpage.
 Packaging
 ---------
 
-To package flashrom and remove dependencies on subversion, either use
+To package flashrom and remove dependencies on Git, either use
 make export
 or
 make tarball
 
-make export will export all flashrom files from the subversion repository at
-revision BASE into a directory named $EXPORTDIR/flashrom-$VERSION-r$SVNREVISION
-and will additionally modify the Makefile in that directory to contain the svn
-revision of the exported tree.
+'make export' will export all flashrom files from the Git repository at
+revision HEAD into a directory named "$EXPORTDIR/flashrom-$RELEASENAME"
+and will additionally add a "versioninfo.inc" file in that directory to
+contain the Git revision of the exported tree and a date for the manual
+page.
 
-make tarball will simply tar up the result of make export and gzip compress it.
+'make tarball' will simply tar up the result of make export and compress
+it with bzip2.
 
-The snapshot tarballs are the result of make tarball and require no further
-processing.
+The snapshot tarballs are the result of 'make tarball' and require no
+further processing.
 
 
 Build Instructions
