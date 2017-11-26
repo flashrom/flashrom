@@ -76,4 +76,40 @@ enum wp_mode {
 /* Describes corresponding bits from enum status_register_bit */
 extern char *statreg_bit_desc[][2];
 
+/* === Single status register === */
+/* === AMIC === */
+extern struct status_register a25l080_sr;
+
+/* === Macronix === */
+extern struct status_register mx25l64xe_sr;
+extern struct status_register mx25lx5d_sr;
+extern struct status_register mx25lx65e_sr;
+
+/* === Double status registers === */
+/* === AMIC === */
+extern struct status_register a25lq16_32a_sr;
+extern struct status_register a25l032_sr;
+
+/* === GigaDevice === */
+extern struct status_register gd25lq_sr;
+extern struct status_register gd25q16_32_64b_sr;
+extern struct status_register gd25q10_20_40_80_sr;
+extern struct status_register gd25vq16_80c_q16_40c_sr;
+extern struct status_register gd25vq21_41b_q21_q41b_sr;
+extern struct status_register gd25q80b_128_sr;
+
+/* === Winbond === */
+extern struct status_register w25q80_16_32_sr;
+extern struct status_register w25q40bl_64fv_sr;
+
+/* === Triple status registers === */
+/* === GigaDevice === */
+extern struct status_register gd25lq05_10_20b_sr;
+extern struct status_register gd25q32_64c_sr;
+extern struct status_register gd25q127c_sr;
+extern struct status_register gd25q128c_sr;
+
+/* === Winbond === */
+extern struct status_register w25q128fw_sr;
+
 #endif		/* !__SPI25_STATUSREG_H__ */
