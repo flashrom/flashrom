@@ -30,4 +30,11 @@ struct range {
 	uint32_t len;	/* in kB */
 };
 
+extern struct wp a25l032_32a_wp;
+extern struct wp gd25_a25l080_q16_32a_wp;
+extern struct wp mx25l16xd_wp;
+extern struct wp mx25l6405d_wp;
+extern struct wp mx25lx5d_wp;
+extern struct wp mx25lx65e_wp;
+
 #endif		/* !__WRITEPROTECT_H__ */
