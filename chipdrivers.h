@@ -27,6 +27,7 @@
 
 #include "flash.h"	/* for chipaddr and flashctx */
 #include "spi25_statusreg.h"	/* For enum status_register_num */
+#include "writeprotect.h"
 
 /* spi.c */
 int spi_aai_write(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
@@ -112,6 +113,19 @@ int spi_disable_blockprotect_bp2_ep_srwd(struct flashctx *flash);
 int spi_prettyprint_status_register_sst25(struct flashctx *flash);
 int spi_prettyprint_status_register_sst25vf016(struct flashctx *flash);
 int spi_prettyprint_status_register_sst25vf040b(struct flashctx *flash);
+
+/* writeprotect.c */
+struct range *sec_block_range_pattern(struct flashctx *flash);
+char get_cmp(struct flashctx *flash);
+int set_cmp(struct flashctx *flash, uint8_t cmp);
+uint32_t bp_bitmask_generic(struct flashctx *flash);
+struct range *bp_to_range(struct flashctx *flash, unsigned char bp_config);
+int range_to_bp_bitfield(struct flashctx *flash, uint32_t start, uint32_t len);
+int print_range_generic(struct flashctx *flash);
+int print_table_generic(struct flashctx *flash);
+int set_range_generic(struct flashctx *flash, uint32_t start, uint32_t len);
+int disable_generic(struct flashctx *flash);
+struct range *range_table_global(struct flashctx *flash);
 
 /* sfdp.c */
 int probe_spi_sfdp(struct flashctx *flash);

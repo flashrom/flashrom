@@ -484,6 +484,7 @@ int set_wp_mode_generic(struct flashctx *flash, enum wp_mode wp_mode)
  * wp_mask: set the bits that correspond to bits indicating non-software revocable protections.
  * unprotect_mask: set the bits that should be preserved if possible when unprotecting.
  */
+// TODO(hatim): This function should be decommissioned once integration is complete
 static int spi_disable_blockprotect_generic(struct flashctx *flash, uint8_t bp_mask, uint8_t lock_mask, uint8_t wp_mask, uint8_t unprotect_mask)
 {
 	uint8_t status;
@@ -532,6 +533,7 @@ static int spi_disable_blockprotect_generic(struct flashctx *flash, uint8_t bp_m
 }
 
 /* A common block protection disable that tries to unset the status register bits masked by 0x3C. */
+// TODO(hatim): This function should be decommissioned once integration is complete
 int spi_disable_blockprotect(struct flashctx *flash)
 {
 	return spi_disable_blockprotect_generic(flash, 0x3C, 0, 0, 0xFF);
@@ -539,6 +541,7 @@ int spi_disable_blockprotect(struct flashctx *flash)
 
 /* A common block protection disable that tries to unset the status register bits masked by 0x0C (BP0-1) and
  * protected/locked by bit #7. Useful when bits 4-5 may be non-0). */
+// TODO(hatim): This function should be decommissioned once integration is complete
 int spi_disable_blockprotect_bp1_srwd(struct flashctx *flash)
 {
 	return spi_disable_blockprotect_generic(flash, 0x0C, 1 << 7, 0, 0xFF);
@@ -547,6 +550,7 @@ int spi_disable_blockprotect_bp1_srwd(struct flashctx *flash)
 /* A common block protection disable that tries to unset the status register bits masked by 0x1C (BP0-2) and
  * protected/locked by bit #7. Useful when bit #5 is neither a protection bit nor reserved (and hence possibly
  * non-0). */
+// TODO(hatim): This function should be decommissioned once integration is complete
 int spi_disable_blockprotect_bp2_srwd(struct flashctx *flash)
 {
 	return spi_disable_blockprotect_generic(flash, 0x1C, 1 << 7, 0, 0xFF);
@@ -554,6 +558,7 @@ int spi_disable_blockprotect_bp2_srwd(struct flashctx *flash)
 
 /* A common block protection disable that tries to unset the status register bits masked by 0x3C (BP0-3) and
  * protected/locked by bit #7. */
+// TODO(hatim): This function should be decommissioned once integration is complete
 int spi_disable_blockprotect_bp3_srwd(struct flashctx *flash)
 {
 	return spi_disable_blockprotect_generic(flash, 0x3C, 1 << 7, 0, 0xFF);
@@ -561,6 +566,7 @@ int spi_disable_blockprotect_bp3_srwd(struct flashctx *flash)
 
 /* A common block protection disable that tries to unset the status register bits masked by 0x7C (BP0-4) and
  * protected/locked by bit #7. */
+// TODO(hatim): This function should be decommissioned once integration is complete
 int spi_disable_blockprotect_bp4_srwd(struct flashctx *flash)
 {
 	return spi_disable_blockprotect_generic(flash, 0x7C, 1 << 7, 0, 0xFF);
