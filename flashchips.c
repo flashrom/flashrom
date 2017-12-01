@@ -6257,6 +6257,53 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "GigaDevice",
+		.name		= "GD25Q256C",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= GIGADEVICE_ID,
+		.model_id	= GIGADEVICE_GD25Q256C,
+		.total_size	= 32768,
+		.page_size	= 256,
+		/* OTP: 768B total; read 0x48; write 0x42, erase 0x44 */
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI | FEATURE_4BA_SUPPORT,
+		.four_bytes_addr_funcs =
+		{
+			.set_4ba = spi_enter_4ba_b7, /* enter 4-bytes addressing mode by CMD B7 */
+			.read_nbyte = spi_nbyte_read_4ba,  /* read from 4-bytes addressing mode */
+			.program_byte = spi_byte_program_4ba, /* write from 4-bytes addressing mode */
+			.program_nbyte = spi_nbyte_program_4ba /* write from 4-bytes addressing mode */
+		},
+		.tested		= TEST_OK_PREW,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 8192} },
+				.block_erase = spi_block_erase_20_4ba,
+			}, {
+				.eraseblocks = { {32 * 1024, 1024} },
+				.block_erase = spi_block_erase_52_4ba,
+			}, {
+				.eraseblocks = { {64 * 1024, 512} },
+				.block_erase = spi_block_erase_d8_4ba,
+			}, {
+				.eraseblocks = { {32 * 1024 * 1024, 1} },
+				.block_erase = spi_block_erase_60,
+			}, {
+				.eraseblocks = { {32 * 1024 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
+		},
+		/* TODO: 2nd status reg (read 0x35, write 0x31) and 3rd status reg (read 0x15, write 0x11) */
+		.printlock	= spi_prettyprint_status_register_bp4_srwd,
+		.unlock		= spi_disable_blockprotect_bp4_srwd,
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read, /* Fast read (0x0B) and multi I/O supported */
+		.voltage	= {2700, 3600},
+	},
+
+	{
+		.vendor		= "GigaDevice",
 		.name		= "GD25T80",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= GIGADEVICE_ID,
