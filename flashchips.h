@@ -908,6 +908,7 @@
 #define WINBOND_NEX_W25Q32_W	0x6016	/* W25Q32DW; W25Q32FV in QPI mode */
 #define WINBOND_NEX_W25Q64_W	0x6017	/* W25Q64DW; W25Q64FV in QPI mode */
 #define WINBOND_NEX_W25Q128_W	0x6018	/* W25Q128FW; W25Q128FV in QPI mode */
+#define WINBOND_NEX_W25P16      0x2015  /* W25P16VSIG tested; NX25P16 fully compatible */
 
 #define WINBOND_ID		0xDA	/* Winbond */
 #define WINBOND_W19B160BB	0x49
@@ -950,5 +951,8 @@
 #define WINBOND_W49F020		0x8C
 #define WINBOND_W49V002A	0xB0
 #define WINBOND_W49V002FA	0x32
+
+#define ZETTADEVICE_ID          0x9F	/* Zetta Device */
+#define ZETTADEVICE_ZD25D40     0x2013
 
 #endif /* !FLASHCHIPS_H */
