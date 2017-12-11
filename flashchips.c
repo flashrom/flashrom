@@ -42,6 +42,7 @@ const struct flashchip flashchips[] = {
 	 * .model_id		= Model chip ID
 	 * .total_size		= Total size in (binary) kbytes
 	 * .page_size		= Page or eraseblock(?) size in bytes
+	 * .otp_size		= OTP section size in bytes
 	 * .tested		= Test status
 	 * .probe		= Probe function
 	 * .probe_timing	= Probe function delay
@@ -54,6 +55,7 @@ const struct flashchip flashchips[] = {
 	 * .unlock		= Chip unlock function
 	 * .write		= Chip write function
 	 * .read		= Chip read function
+	 * .otp_read		= Chip OTP read function
 	 * .voltage		= Voltage range in millivolt
 	 */
 
@@ -7823,6 +7825,7 @@ const struct flashchip flashchips[] = {
 		.model_id	= MACRONIX_MX25L6405,
 		.total_size	= 8192,
 		.page_size	= 256,
+		.otp_size	= 64,
 		/* Has an additional 512B EEPROM sector */
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_OK_PREW,
@@ -7848,6 +7851,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect_bp3_srwd,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read, /* Fast read (0x0B) supported */
+		.otp_read	= spi_chip_otp_read,
 		.voltage	= {2700, 3600},
 	},
 
@@ -7859,6 +7863,7 @@ const struct flashchip flashchips[] = {
 		.model_id	= MACRONIX_MX25L6405,
 		.total_size	= 8192,
 		.page_size	= 256,
+		.otp_size	= 64,
 		/* OTP: 64B total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
 		.tested		= TEST_OK_PREW,
@@ -7884,6 +7889,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect_bp3_srwd,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read, /* Fast read (0x0B), dual I/O read (0xBB) supported */
+		.otp_read	= spi_chip_otp_read,
 		.voltage	= {2700, 3600},
 	},
 

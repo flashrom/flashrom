@@ -1438,6 +1438,37 @@ out_free:
 	return ret;
 }
 
+static int otp_read(struct flashctx *, uint8_t *);
+int otp_read_flash_to_file(struct flashctx *flash, const char *filename)
+{
+	unsigned long size = flash->chip->otp_size;
+	unsigned char *buf = calloc(size, sizeof(char));
+	int ret = 0;
+
+	msg_cinfo("Reading otp flash section... ");
+	if (!buf) {
+		msg_gerr("Memory allocation failed!\n");
+		msg_cinfo("FAILED.\n");
+		return 1;
+	}
+	if (!flash->chip->otp_read) {
+		msg_cerr("No otp read function available for this flash chip.\n");
+		ret = 1;
+		goto out_free;
+	}
+	if (otp_read(flash, buf)) {
+		msg_cerr("Otp read operation failed!\n");
+		ret = 1;
+		goto out_free;
+	}
+
+	ret = write_buf_to_file(buf, size, filename);
+out_free:
+	free(buf);
+	msg_cinfo("%s.\n", ret ? "FAILED" : "done");
+	return ret;
+}
+
 /* Even if an error is found, the function will keep going and check the rest. */
 static int selfcheck_eraseblocks(const struct flashchip *chip)
 {
@@ -1555,6 +1586,24 @@ static int read_by_layout(struct flashctx *const flashctx, uint8_t *const buffer
 		if (flashctx->chip->read(flashctx, buffer + region_start, region_start, region_len))
 			return 1;
 	}
+	return 0;
+}
+
+/**
+ * @brief Reads the OTP section into a buffer.
+ *
+ * @param flashctx Flash context to be used.
+ * @param buffer   Buffer of full chip size to read into.
+ * @return 0 on success,
+ *	   1 if any read fails.
+ */
+static int otp_read(struct flashctx *const flashctx, uint8_t *const buffer)
+{
+	//const struct flashrom_layout *const layout = get_layout(flashctx);
+
+	if (flashctx->chip->otp_read(flashctx, buffer))
+		return 1;
+
 	return 0;
 }
 
@@ -2504,6 +2553,18 @@ int do_read(struct flashctx *const flash, const char *const filename)
 		return 1;
 
 	const int ret = read_flash_to_file(flash, filename);
+
+	finalize_flash_access(flash);
+
+	return ret;
+}
+
+int do_otp_read(struct flashctx *const flash, const char *const filename)
+{
+	if (prepare_flash_access(flash, true, false, false, false))
+		return 1;
+
+	const int ret = otp_read_flash_to_file(flash, filename);
 
 	finalize_flash_access(flash);
 

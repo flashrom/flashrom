@@ -141,6 +141,16 @@
 #define JEDEC_READ_OUTSIZE	0x04
 /*      JEDEC_READ_INSIZE : any length */
 
+/* Enter secured OTP */
+#define JEDEC_ENSO		0xB1
+#define JEDEC_ENSO_OUTSIZE	0x01
+#define JEDEC_ENSO_INSIZE	0x00
+
+/* Exit secured OTP */
+#define JEDEC_EXSO		0xC1
+#define JEDEC_EXSO_OUTSIZE	0x01
+#define JEDEC_EXSO_INSIZE	0x00
+
 /* Write memory byte */
 #define JEDEC_BYTE_PROGRAM		0x02
 #define JEDEC_BYTE_PROGRAM_OUTSIZE	0x05

@@ -130,6 +130,30 @@ int spi_chip_read(struct flashctx *flash, uint8_t *buf, unsigned int start,
 	return flash->mst->spi.read(flash, buf, addrbase + start, len);
 }
 
+
+int spi_chip_otp_read(struct flashctx *flash, uint8_t *buf)
+{
+        static const unsigned char otp_incmd[JEDEC_ENSO_OUTSIZE] = { JEDEC_ENSO };
+        static const unsigned char otp_outcmd[JEDEC_EXSO_OUTSIZE] = { JEDEC_EXSO };
+        int ret;
+
+	ret = spi_send_command(flash, sizeof(otp_incmd), 0, otp_incmd, NULL);
+	if (!ret)
+		ret = flash->mst->spi.read(flash, buf, 0, flash->chip->otp_size);
+	else
+		msg_perr("Error on sending ENSO cmd.\n");
+
+	if (!ret)
+		ret += spi_send_command(flash, sizeof(otp_outcmd), 0, otp_outcmd, NULL);
+	else
+		msg_perr("Error on reading OTP data.\n");
+
+	if (ret)
+		msg_perr("Error on sendinf EXSO cmd.\n");
+
+	return ret;
+}
+
 /*
  * Program chip using page (256 bytes) programming.
  * Some SPI masters can't do this, they use single byte programming instead.

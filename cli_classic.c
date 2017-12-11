@@ -50,6 +50,7 @@ static void cli_classic_usage(const char *name)
 	       " -r | --read <file>                 read flash and save to <file>\n"
 	       " -w | --write <file>                write <file> to flash\n"
 	       " -v | --verify <file>               verify flash against <file>\n"
+	       " -g | --otp-read <file>             read otp section and save to <file>\n"
 	       " -E | --erase                       erase flash memory\n"
 	       " -V | --verbose                     more verbose output\n"
 	       " -c | --chip <chipname>             probe only for specified flash chip\n"
@@ -104,18 +105,19 @@ int main(int argc, char *argv[])
 #if CONFIG_PRINT_WIKI == 1
 	int list_supported_wiki = 0;
 #endif
-	int read_it = 0, write_it = 0, erase_it = 0, verify_it = 0;
+	int read_it = 0, otp_read_it = 0, write_it = 0, erase_it = 0, verify_it = 0;
 	int dont_verify_it = 0, dont_verify_all = 0, list_supported = 0, operation_specified = 0;
 	struct flashrom_layout *layout = NULL;
 	enum programmer prog = PROGRAMMER_INVALID;
 	int ret = 0;
 
-	static const char optstring[] = "r:Rw:v:nNVEfc:l:i:p:Lzho:";
+	static const char optstring[] = "r:g:Rw:v:nNVEfc:l:i:p:Lzho:";
 	static const struct option long_options[] = {
 		{"read",		1, NULL, 'r'},
 		{"write",		1, NULL, 'w'},
 		{"erase",		0, NULL, 'E'},
 		{"verify",		1, NULL, 'v'},
+		{"otp-read",		1, NULL, 'g'},
 		{"noverify",		0, NULL, 'n'},
 		{"noverify-all",	0, NULL, 'N'},
 		{"chip",		1, NULL, 'c'},
@@ -187,6 +189,15 @@ int main(int argc, char *argv[])
 			}
 			filename = strdup(optarg);
 			verify_it = 1;
+			break;
+		case 'g':
+			if (++operation_specified > 1) {
+				fprintf(stderr, "More than one operation "
+					"specified. Aborting.\n");
+				cli_classic_abort_usage();
+			}
+			filename = strdup(optarg);
+			otp_read_it = 1;
 			break;
 		case 'n':
 			if (verify_it) {
@@ -348,7 +359,7 @@ int main(int argc, char *argv[])
 		cli_classic_abort_usage();
 	}
 
-	if ((read_it | write_it | verify_it) && check_filename(filename, "image")) {
+	if ((read_it | write_it | verify_it | otp_read_it) && check_filename(filename, "image")) {
 		cli_classic_abort_usage();
 	}
 	if (layoutfile && check_filename(layoutfile, "layout")) {
@@ -538,7 +549,7 @@ int main(int argc, char *argv[])
 		goto out_shutdown;
 	}
 
-	if (!(read_it | write_it | verify_it | erase_it)) {
+	if (!(read_it | otp_read_it | write_it | verify_it | erase_it)) {
 		msg_ginfo("No operations were specified.\n");
 		goto out_shutdown;
 	}
@@ -566,6 +577,8 @@ int main(int argc, char *argv[])
 	programmer_delay(100000);
 	if (read_it)
 		ret = do_read(fill_flash, filename);
+	else if (otp_read_it)
+		ret = do_otp_read(fill_flash, filename);
 	else if (erase_it)
 		ret = do_erase(fill_flash);
 	else if (write_it)

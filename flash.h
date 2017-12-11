@@ -163,6 +163,8 @@ struct flashchip {
 	unsigned int total_size;
 	/* Chip page size in bytes */
 	unsigned int page_size;
+	/* otp section size in bytes */
+	unsigned int otp_size;
 	int feature_bits;
 
 	/* set of function pointers to use in 4-bytes addressing mode */
@@ -209,6 +211,7 @@ struct flashchip {
 	int (*unlock) (struct flashctx *flash);
 	int (*write) (struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 	int (*read) (struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
+	int (*otp_read) (struct flashctx *flash, uint8_t *buf);
 	struct voltage {
 		uint16_t min;
 		uint16_t max;
@@ -301,6 +304,7 @@ int write_buf_to_file(const unsigned char *buf, unsigned long size, const char *
 int prepare_flash_access(struct flashctx *, bool read_it, bool write_it, bool erase_it, bool verify_it);
 void finalize_flash_access(struct flashctx *);
 int do_read(struct flashctx *, const char *filename);
+int do_otp_read(struct flashctx *, const char *filename);
 int do_erase(struct flashctx *);
 int do_write(struct flashctx *, const char *const filename);
 int do_verify(struct flashctx *, const char *const filename);
