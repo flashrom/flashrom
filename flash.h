@@ -40,6 +40,8 @@
 
 #include "libflashrom.h"
 #include "layout.h"
+#include "spi25_statusreg.h"
+#include "writeprotect.h"
 
 #define ERROR_PTR ((void*)-1)
 
@@ -205,8 +207,27 @@ struct flashchip {
 		int (*block_erase) (struct flashctx *flash, unsigned int blockaddr, unsigned int blocklen);
 	} block_erasers[NUM_ERASEFUNCTIONS];
 
-	int (*printlock) (struct flashctx *flash);
-	int (*unlock) (struct flashctx *flash);
+	/* The following struct represents the status register(s). Each status register
+	 * is a member of the layout array at the corresponding index (starting at SR1=0). */
+	struct status_register {
+		/* We need one more than MAX_STATUS_REGISTERS */
+		enum status_register_bit layout[MAX_STATUS_REGISTERS + 1][8];
+
+		/* Return value of status register SRn. */
+		uint8_t (*read) (struct flashctx *flash, enum status_register_num SRn);
+		/* Set value of status register SRn to status. */
+		int (*write) (struct flashctx *flash, enum status_register_num SRn, uint8_t status);
+		/* Print the contents of status register SRn. */
+		int (*print) (struct flashctx *flash, enum status_register_num SRn);
+		/* Get mode of write protection currently in effect against status register. */
+		enum wp_mode (*get_wp_mode) (struct flashctx *flash);
+		/* Set mode of write protection against status register. */
+		int (*set_wp_mode) (struct flashctx *flash, enum wp_mode wp_mode);
+		int (*print_wp_mode) (struct flashctx *flash);
+	} *status_register;
+
+	int (*printlock) (struct flashctx *flash);	// TODO(hatim): This member should be decommissioned
+	int (*unlock) (struct flashctx *flash);		// TODO(hatim): This member should be decommissioned
 	int (*write) (struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 	int (*read) (struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 	struct voltage {
@@ -214,6 +235,26 @@ struct flashchip {
 		uint16_t max;
 	} voltage;
 	enum write_granularity gran;
+
+	struct wp {
+		/* WP range table, indexed by BP bit configuration. For chips
+		 * that also have a CMP bit, the most significant bit after
+		 * the highest BP bit should represent the CMP bit. For example,
+		 * a chip with BP[0..2] and CMP bits, the index mask is 0x0f and
+		 * the most significant 1 represents CMP. */
+		struct range *ranges;
+		/* Either ranges is assigned to or range_table is, NOT both. */
+		/* Return pointer to WP range table. */
+		struct range *(*range_table) (struct flashctx *flash);
+		/* Return BP(BP0, BP1, ... , SEC, TB) bit mask. */
+		uint32_t (*bp_bitmask) (struct flashctx *flash);
+		/* Given a range, set the corresponding BP and CMP bit (if present) in the status
+		 * register. If range is invalid, return -1 and abort writing to status register. */
+		int (*set_range) (struct flashctx *flash, uint32_t start, uint32_t len);
+		/* Disable any block protection in effect. */
+		int (*disable) (struct flashctx *flash);
+		int (*print_table) (struct flashctx *flash);
+	} *wp;
 };
 
 struct flashrom_flashctx {

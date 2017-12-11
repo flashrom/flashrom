@@ -27,10 +27,23 @@
 #include <string.h>
 #include <stdlib.h>
 #include <getopt.h>
+#include "chipdrivers.h"
 #include "flash.h"
 #include "flashchips.h"
 #include "programmer.h"
 #include "libflashrom.h"
+#include "writeprotect.h"
+
+enum LONGOPT_RETURN_VALUES {
+	/* Start after ASCII chars */
+	LONGOPT_IFD = 256,
+	LONGOPT_PRINT_STATUSREG = 512,
+	LONGOPT_PRINT_WP_STATUS,
+	LONGOPT_LIST_BP_RANGES,
+	LONGOPT_WP_ENABLE,
+	LONGOPT_WP_DISABLE,
+	LONGOPT_SET_BP_RANGE,
+};
 
 static void cli_classic_usage(const char *name)
 {
@@ -43,7 +56,9 @@ static void cli_classic_usage(const char *name)
 #endif
 	       "-p <programmername>[:<parameters>] [-c <chipname>]\n"
 	       "[-E|(-r|-w|-v) <file>] [(-l <layoutfile>|--ifd) [-i <imagename>]...] [-n] [-N] [-f]]\n"
-	       "[-V[V[V]]] [-o <logfile>]\n\n", name);
+	       "[-V[V[V]]] [-o <logfile>] [--print-status-reg] [--print-wp-status]\n"
+	       "[--wp-list] [--wp-enable[=<MODE>]] [--wp-disable]\n"
+	       "[--wp-set-range start=<start>,len=<len>]\n\n", name);
 
 	printf(" -h | --help                        print this help text\n"
 	       " -R | --version                     print version (release)\n"
@@ -64,6 +79,15 @@ static void cli_classic_usage(const char *name)
 #if CONFIG_PRINT_WIKI == 1
 	       " -z | --list-supported-wiki         print supported devices in wiki syntax\n"
 #endif
+	       "      --print-status-reg            print detailed contents of status register(s)\n"
+	       "      --print-wp-status             print write protection mode of status register(s)\n"
+	       "      --wp-list                     print list of write protection ranges\n"
+	       "      --wp-enable[=MODE]            enable write protection of status register(s)\n"
+	       "                                    MODE can be one of HARDWARE (default),\n"
+	       "                                    PERMANENT, POWER_CYCLE, SOFTWARE (see man page)\n"
+	       "      --wp-disable                  disable any write protection of status register(s)\n"
+	       "      --wp-set-range start=<start>,len=<len>\n"
+	       "                                    set write protection range (see man page)\n"
 	       " -p | --programmer <name>[:<param>] specify the programmer device. One of\n");
 	list_programmers_linebreak(4, 80, 0);
 	printf(".\n\nYou can specify one of -h, -R, -L, "
@@ -78,6 +102,13 @@ static void cli_classic_abort_usage(void)
 {
 	printf("Please run \"flashrom --help\" for usage info.\n");
 	exit(1);
+}
+
+static void cli_statreg_wp_support(struct flashctx *flash)
+{
+	msg_ginfo("flashrom does not (yet) support write protection for chip \"%s\".\n"
+		  "You could add support and send the patch to flashrom at flashrom.org\n",
+		  flash->chip->name);
 }
 
 static int check_filename(char *filename, char *type)
@@ -104,7 +135,8 @@ int main(int argc, char *argv[])
 #if CONFIG_PRINT_WIKI == 1
 	int list_supported_wiki = 0;
 #endif
-	int read_it = 0, write_it = 0, erase_it = 0, verify_it = 0;
+	int read_it = 0, write_it = 0, erase_it = 0, verify_it = 0, print_status_reg = 0;
+	int print_wp_status = 0, wp_list = 0, wp_enable = 0, wp_disable = 0, wp_set_range = 0;
 	int dont_verify_it = 0, dont_verify_all = 0, list_supported = 0, operation_specified = 0;
 	struct flashrom_layout *layout = NULL;
 	enum programmer prog = PROGRAMMER_INVALID;
@@ -122,7 +154,7 @@ int main(int argc, char *argv[])
 		{"verbose",		0, NULL, 'V'},
 		{"force",		0, NULL, 'f'},
 		{"layout",		1, NULL, 'l'},
-		{"ifd",			0, NULL, 0x0100},
+		{"ifd",			0, NULL, LONGOPT_IFD},
 		{"image",		1, NULL, 'i'},
 		{"list-supported",	0, NULL, 'L'},
 		{"list-supported-wiki",	0, NULL, 'z'},
@@ -130,6 +162,12 @@ int main(int argc, char *argv[])
 		{"help",		0, NULL, 'h'},
 		{"version",		0, NULL, 'R'},
 		{"output",		1, NULL, 'o'},
+		{"print-status-reg",	0, NULL, LONGOPT_PRINT_STATUSREG},
+		{"print-wp-status",	0, NULL, LONGOPT_PRINT_WP_STATUS},
+		{"wp-list",		0, NULL, LONGOPT_LIST_BP_RANGES},
+		{"wp-enable",		optional_argument, NULL, LONGOPT_WP_ENABLE},
+		{"wp-disable",		0, NULL, LONGOPT_WP_DISABLE},
+		{"wp-set-range",	1, NULL, LONGOPT_SET_BP_RANGE},
 		{NULL,			0, NULL, 0},
 	};
 
@@ -140,6 +178,8 @@ int main(int argc, char *argv[])
 #endif /* !STANDALONE */
 	char *tempstr = NULL;
 	char *pparam = NULL;
+	char *wp_mode_opt = NULL;
+	char const *wp_set_range_opt = NULL;
 
 	flashrom_set_log_callback((flashrom_log_callback *)&flashrom_print_cb);
 
@@ -229,7 +269,7 @@ int main(int argc, char *argv[])
 			}
 			layoutfile = strdup(optarg);
 			break;
-		case 0x0100:
+		case LONGOPT_IFD:
 			if (layoutfile) {
 				fprintf(stderr, "Error: --layout and --ifd both specified. Aborting.\n");
 				cli_classic_abort_usage();
@@ -336,6 +376,61 @@ int main(int argc, char *argv[])
 				cli_classic_abort_usage();
 			}
 #endif /* STANDALONE */
+			break;
+		/* FIXME(hatim): For the following long options, not _all_
+		 * of them are mutually exclusive per se (like wp_set_range
+		 * and wp_enable makes sense). There is scope for improvement
+		 * here, but for now let's treat each one as separate operation. */
+		case LONGOPT_PRINT_STATUSREG:
+			if (++operation_specified > 1) {
+				fprintf(stderr, "More than one operation "
+					"specified. Aborting.\n");
+				cli_classic_abort_usage();
+			}
+			print_status_reg = 1;
+			break;
+		case LONGOPT_PRINT_WP_STATUS:
+			if (++operation_specified > 1) {
+				fprintf(stderr, "More than one operation "
+					"specified. Aborting.\n");
+				cli_classic_abort_usage();
+			}
+			print_wp_status = 1;
+			break;
+		case LONGOPT_LIST_BP_RANGES:
+			if (++operation_specified > 1) {
+				fprintf(stderr, "More than one operation "
+					"specified. Aborting.\n");
+				cli_classic_abort_usage();
+			}
+			wp_list = 1;
+			break;
+		case LONGOPT_WP_ENABLE:
+			if (++operation_specified > 1) {
+				fprintf(stderr, "More than one operation "
+					"specified. Aborting.\n");
+				cli_classic_abort_usage();
+			}
+			wp_enable = 1;
+			if (optarg)
+				wp_mode_opt = strdup(optarg);
+			break;
+		case LONGOPT_WP_DISABLE:
+			if (++operation_specified > 1) {
+				fprintf(stderr, "More than one operation "
+					"specified. Aborting.\n");
+				cli_classic_abort_usage();
+			}
+			wp_disable = 1;
+			break;
+		case LONGOPT_SET_BP_RANGE:
+			if (++operation_specified > 1) {
+				fprintf(stderr, "More than one operation "
+					"specified. Aborting.\n");
+				cli_classic_abort_usage();
+			}
+			wp_set_range_opt = strdup(optarg);
+			wp_set_range = 1;
 			break;
 		default:
 			cli_classic_abort_usage();
@@ -538,7 +633,8 @@ int main(int argc, char *argv[])
 		goto out_shutdown;
 	}
 
-	if (!(read_it | write_it | verify_it | erase_it)) {
+	if (!(read_it | write_it | verify_it | erase_it | print_status_reg |
+	      print_wp_status | wp_list | wp_enable | wp_disable | wp_set_range)) {
 		msg_ginfo("No operations were specified.\n");
 		goto out_shutdown;
 	}
@@ -558,6 +654,105 @@ int main(int argc, char *argv[])
 #endif
 	flashrom_flag_set(fill_flash, FLASHROM_FLAG_VERIFY_AFTER_WRITE, !dont_verify_it);
 	flashrom_flag_set(fill_flash, FLASHROM_FLAG_VERIFY_WHOLE_CHIP, !dont_verify_all);
+
+	if (print_status_reg) {
+		verbose_screen++;
+		if (fill_flash->chip->status_register) {
+			for (enum status_register_num SRn = SR1; SRn <= top_status_register(fill_flash); SRn++)
+				fill_flash->chip->status_register->print(fill_flash, SRn);
+			fill_flash->chip->status_register->print_wp_mode(fill_flash);
+			if (fill_flash->chip->wp)
+				print_range_generic(fill_flash);
+		} else
+			cli_statreg_wp_support(fill_flash);
+		goto out_shutdown;
+	}
+
+	if (print_wp_status) {
+		verbose_screen++;
+		if (fill_flash->chip->status_register || fill_flash->chip->wp) {
+			msg_ginfo("WP status -\n");
+			fill_flash->chip->status_register->print_wp_mode(fill_flash);
+			if (fill_flash->chip->wp)
+				print_range_generic(fill_flash);
+		} else
+			cli_statreg_wp_support(fill_flash);
+		goto out_shutdown;
+	}
+
+	if (wp_list) {
+		verbose_screen++;
+		if (fill_flash->chip->wp) {
+			msg_ginfo("Valid write protection ranges for chip \"%s\" are -\n",
+				  fill_flash->chip->name);
+			fill_flash->chip->wp->print_table(fill_flash);
+		} else
+			cli_statreg_wp_support(fill_flash);
+		goto out_shutdown;
+	}
+
+	if (wp_disable) {
+		verbose_screen++;
+		if (fill_flash->chip->wp) {
+			ret = fill_flash->chip->wp->disable(fill_flash);
+		} else
+			cli_statreg_wp_support(fill_flash);
+		goto out_shutdown;
+	}
+
+	if (wp_set_range) {
+		verbose_screen++;
+		if (fill_flash->chip->wp) {
+			char *endptr = NULL;
+			uint8_t start_cmp, end_cmp, has_cmp = pos_bit(fill_flash, CMP) != -1;
+			if (has_cmp)
+				start_cmp = get_cmp(fill_flash);
+			/* FIXME(hatim): Implement error checking */
+			uint32_t start = strtoul(extract_param(&wp_set_range_opt, "start", ","), &endptr, 0);
+			uint32_t len = strtoul(extract_param(&wp_set_range_opt, "len", ","), &endptr, 0);
+			msg_ginfo("Trying to protect %d kB starting from address 0x%06x...\n", len, start);
+			ret = fill_flash->chip->wp->set_range(fill_flash, start, len);
+			if (has_cmp && start_cmp != (end_cmp = get_cmp(fill_flash)))
+				msg_ginfo("CMP bit was %sset\n", end_cmp ? "" : "un");
+			if (ret)
+				msg_gerr("Failed to protect\n");
+			else
+				msg_ginfo("Protection successful!\n");
+		} else
+			cli_statreg_wp_support(fill_flash);
+		goto out_shutdown;
+	}
+
+	if (wp_enable) {
+		verbose_screen++;
+		if (fill_flash->chip->status_register) {
+			enum wp_mode wp_mode = WP_MODE_HARDWARE_UNPROTECTED;
+
+			if (wp_mode_opt) {
+				if (!strcasecmp(wp_mode_opt, "PERMANENT")) {
+					wp_mode = WP_MODE_PERMANENT;
+				} else if (!strcasecmp(wp_mode_opt, "POWER_CYCLE")) {
+					wp_mode = WP_MODE_POWER_CYCLE;
+				} else if (!strcasecmp(wp_mode_opt, "SOFTWARE")) {
+					wp_mode = WP_MODE_SOFTWARE;
+				} else if (!strcasecmp(wp_mode_opt, "HARDWARE")) {
+					wp_mode = WP_MODE_HARDWARE_UNPROTECTED;
+				} else {
+					msg_gerr("Invalid write protection mode for status register(s)\n");
+					cli_classic_abort_usage();
+					ret = 1;
+					goto out_shutdown;
+				}
+			}
+			msg_ginfo("Setting write protection mode to %s ...\n",
+				  wp_mode_opt ? wp_mode_opt : "HARDWARE");
+			fill_flash->chip->status_register->set_wp_mode(fill_flash, wp_mode);
+			ret = !(wp_mode == fill_flash->chip->status_register->get_wp_mode(fill_flash));
+			msg_gerr("%s\n", ret ? "Failed" : "Success");
+		} else
+			cli_statreg_wp_support(fill_flash);
+		goto out_shutdown;
+	}
 
 	/* FIXME: We should issue an unconditional chip reset here. This can be
 	 * done once we have a .reset function in struct flashchip.

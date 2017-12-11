@@ -40,17 +40,20 @@
 .    \}
 .  \}
 ..
-.TH FLASHROM 8 "" ""
+.TH FLASHROM 8 "2016-03-13" "0.9.9-unknown"
 .SH NAME
 flashrom \- detect, read, write, verify and erase flash chips
 .SH SYNOPSIS
 .B flashrom \fR[\fB\-h\fR|\fB\-R\fR|\fB\-L\fR|\fB\-z\fR|\
 \fB\-p\fR <programmername>[:<parameters>]
-               [\fB\-E\fR|\fB\-r\fR <file>|\fB\-w\fR <file>|\fB\-v\fR <file>] \
+         [\fB\-E\fR|\fB\-r\fR <file>|\fB\-w\fR <file>|\fB\-v\fR <file>] \
 [\fB\-c\fR <chipname>]
                [(\fB\-l\fR <file>|\fB\-\-ifd\fR) [\fB\-i\fR <image>]] \
 [\fB\-n\fR] [\fB\-N\fR] [\fB\-f\fR]]
          [\fB\-V\fR[\fBV\fR[\fBV\fR]]] [\fB-o\fR <logfile>]
+         [\fB--print-status-reg\fR] [\fB--print-wp-status\fR]
+         [\fB--wp-list\fR] [\fB--wp-enable\fR[=<MODE>]]
+         [\fB--wp-disable\fR] [\fB--wp-set-range\fR start=<start>,len=<len>]
 .SH DESCRIPTION
 .B flashrom
 is a utility for detecting, reading, writing, verifying and erasing flash
@@ -147,6 +150,53 @@ printed by
 .B "flashrom \-L"
 without the vendor name as parameter. Please note that the chip name is
 case sensitive.
+.TP
+.B "\-\-print\-status\-reg"
+Print the contents of the status register(s) with bit description along with
+write protection mode of status register(s) and protected range.
+.TP
+.B "\-\-print\-wp\-status"
+Print the write protection mode of status register(s) and protected range.
+.TP
+.B "\-\-wp\-list"
+List the valid write protection ranges for the chip.
+.TP
+.B "\-\-wp\-enable[=<MODE>]"
+Set write protection mode of status register(s).
+.sp
+.B "<MODE>"
+is optional argument (case insensitive) that takes one of -
+.sp
+*
+.B "HARDWARE"
+mode (default) allows writes to status register(s) as long as WP# is high. \
+Writes are disallowed as long as WP# is low.
+.sp
+*
+.B "PERMANENT"
+mode will lock the status register(s) and all future attempts to write to it \
+will fail.
+.sp
+*
+.B "POWER_CYCLE"
+mode will lock the status register(s) until the next power down-up cycle. \
+After the cycle, SOFTWARE mode will be in effect.
+.sp
+*
+.B "SOFTWARE"
+mode allows writes to status register(s) irrespective of level of WP# pin.
+.TP
+.B "\-\-wp\-disable"
+Disable any write protection of status register(s) in effect. SOFTWARE mode \
+will be applied after disabling.
+.TP
+.B "\-\-wp\-set\-range start=<start>,len=<len>"
+Configure status register(s) to protect
+.B "<len>"
+ kB of memory starting from address
+.B "<start>".
+Both start and len must be supplied. (Consider setting a write protection \
+mode to prevent against configuration changes to status register(s).)
 .TP
 .B "\-f, \-\-force"
 Force one or more of the following actions:
