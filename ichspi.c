@@ -1715,7 +1715,7 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 		hwseq_data.addr_mask	= PCH100_FADDR_FLA;
 		hwseq_data.only_4k	= true;
 		hwseq_data.hsfc_fcycle	= PCH100_HSFC_FCYCLE;
-	} if (ich_generation == CHIPSET_C620_SERIES_LEWISBURG) {
+	} else if (ich_generation == CHIPSET_C620_SERIES_LEWISBURG) {
 		num_freg		= 12;	/* 12 MMIO regs, but 16 regions in FD spec */
 		num_pr			= 6;	/* Includes GPR0 */
 		reg_pr0			= PCH100_REG_FPR0;
