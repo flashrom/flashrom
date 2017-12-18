@@ -436,6 +436,10 @@ int buspirate_spi_init(void)
 	
 	/* Set SPI config: output type, idle, clock edge, sample */
 	bp_commbuf[0] = 0x80 | 0xa;
+	if (pullup == 1) {
+		bp_commbuf[0] &= ~(1 << 3);
+		msg_pdbg("Pull-ups enabled, so using HiZ pin output! (Open-Drain mode)\n");
+	}
 	ret = buspirate_sendrecv(bp_commbuf, 1, 1);
 	if (ret)
 		return 1;
