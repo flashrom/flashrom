@@ -22,6 +22,8 @@
  * Contains the generic SPI framework
  */
 
+#define _XOPEN_SOURCE 700	/* for ffs() */
+
 #include <strings.h>
 #include <string.h>
 #include "flash.h"
