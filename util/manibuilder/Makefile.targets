@@ -1,0 +1,85 @@
+ANITA_TAGS := anita\:amd64 anita\:i386
+
+MULTIARCH_TAGS := \
+	centos\:7.3-aarch64-clean centos\:7.3-amd64-clean \
+	centos\:7.2-amd64-clean \
+	$(foreach a,x86_64 ppc64le aarch64, \
+	  $(foreach v,25 24, \
+	    fedora\:$(v)-$(a))) \
+	$(foreach a,ppc64el arm64 armhf mips mipsel amd64 i386, \
+	  $(foreach v,sid buster stretch, \
+	    debian-debootstrap\:$(a)-$(v))) \
+	$(foreach a,ppc64el arm64 armhf amd64 i386, \
+	  $(foreach v,bionic xenial, \
+	    ubuntu-debootstrap\:$(a)-$(v))) \
+	ubuntu-debootstrap\:powerpc-xenial \
+	$(foreach a,aarch64 armhf amd64 i386, \
+	  $(foreach v,v3.8 v3.7 v3.6, \
+	    alpine\:$(a)-$(v))) \
+
+OTHER_TAGS := djgpp\:6.1.0
+
+ALL_TAGS := $(ANITA_TAGS) $(MULTIARCH_TAGS) $(OTHER_TAGS)
+
+arch_filter = $(sort \
+	$(foreach arch,$(1), \
+	  $(filter-out $(subst $(arch),,$(MULTIARCH_TAGS)),$(MULTIARCH_TAGS))))
+
+machine_map = \
+	$(if $(filter i386 i686 x86,$(1)),i386 x86, \
+	$(if $(filter x86_64,$(1)),amd64 i386 x86, \
+	$(if $(filter armv7l armv6l,$(1)),armhf, \
+	$(if $(filter aarch64,$(1)),aarch64 arm64, \
+	$(if $(filter ppc64le,$(1)),ppc64le ppc64el, \
+	$(if $(filter ppc,$(1)),powerpc, \
+	$(if $(filter mips,$(1)),mips mipsel, \
+	$(1))))))))
+
+NATIVE_TAGS := $(call arch_filter,$(call machine_map,$(shell uname -m)))
+
+# rather arbitrary selection of images that seem to work (focus on amd64)
+DEFAULT_TAGS := \
+	anita\:amd64 \
+	djgpp\:6.1.0 \
+	fedora\:25-x86_64 \
+	fedora\:25-ppc64le \
+	fedora\:25-aarch64 \
+	fedora\:24-x86_64 \
+	centos\:7.3-aarch64-clean \
+	centos\:7.3-amd64-clean \
+	centos\:7.2-amd64-clean \
+	debian-debootstrap\:ppc64el-stretch \
+	debian-debootstrap\:armhf-stretch \
+	debian-debootstrap\:mips-stretch \
+	debian-debootstrap\:mipsel-stretch \
+	debian-debootstrap\:amd64-stretch \
+	debian-debootstrap\:i386-stretch \
+	debian-debootstrap\:amd64-sid \
+	ubuntu-debootstrap\:arm64-xenial \
+	ubuntu-debootstrap\:amd64-xenial \
+	ubuntu-debootstrap\:powerpc-xenial \
+	ubuntu-debootstrap\:amd64-bionic \
+	alpine\:amd64-v3.7 \
+	alpine\:amd64-v3.8 \
+
+# also run all native tests by default
+DEFAULT_TAGS += $(filter-out $(DEFAULT_TAGS),$(NATIVE_TAGS))
+
+default: $(DEFAULT_TAGS)
+
+native: $(NATIVE_TAGS)
+
+all: $(ALL_TAGS)
+
+show-default:
+	@printf "%s\n" $(DEFAULT_TAGS)
+
+show-native:
+	@printf "%s\n" $(NATIVE_TAGS)
+
+show-all:
+	@printf "%s\n" $(ALL_TAGS)
+
+.PHONY: default native all
+.PHONY: show-default show-native show-all
+.PHONY: $(ALL_TAGS)
