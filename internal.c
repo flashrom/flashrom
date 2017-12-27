@@ -131,7 +131,7 @@ int register_superio(struct superio s)
 int is_laptop = 0;
 int laptop_ok = 0;
 
-#if IS_X86 || IS_MIPS
+#if (IS_X86 || IS_MIPS) && defined(__FLASHROM_LITTLE_ENDIAN__)
 static void internal_chip_writeb(const struct flashctx *flash, uint8_t val,
 				 chipaddr addr);
 static void internal_chip_writew(const struct flashctx *flash, uint16_t val,
@@ -360,7 +360,7 @@ int internal_init(void)
 }
 #endif
 
-#if IS_X86 || IS_MIPS
+#if (IS_X86 || IS_MIPS) && defined(__FLASHROM_LITTLE_ENDIAN__)
 static void internal_chip_writeb(const struct flashctx *flash, uint8_t val,
 				 chipaddr addr)
 {
