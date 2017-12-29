@@ -38,29 +38,40 @@
 
 #ifdef __DJGPP__
 #include <dpmi.h>
+#include <malloc.h>
 #include <sys/nearptr.h>
 
+#define ONE_MEGABYTE (1024 * 1024)
 #define MEM_DEV "dpmi"
 
-static void *realmem_map;
+static void *realmem_map_aligned;
 
 static void *map_first_meg(uintptr_t phys_addr, size_t len)
 {
-	if (realmem_map)
-		return realmem_map + phys_addr;
+	void *realmem_map;
+	size_t pagesize;
 
-	realmem_map = valloc(1024 * 1024);
+	if (realmem_map_aligned)
+		return realmem_map_aligned + phys_addr;
+
+	/* valloc() from DJGPP 2.05 does not work properly */
+	pagesize = getpagesize();
+
+	realmem_map = malloc(ONE_MEGABYTE + pagesize);
 
 	if (!realmem_map)
 		return ERROR_PTR;
 
-	if (__djgpp_map_physical_memory(realmem_map, (1024 * 1024), 0)) {
+	realmem_map_aligned = (void *)(((size_t) realmem_map +
+		(pagesize - 1)) & ~(pagesize - 1));
+
+	if (__djgpp_map_physical_memory(realmem_map_aligned, ONE_MEGABYTE, 0)) {
 		free(realmem_map);
-		realmem_map = NULL;
+		realmem_map_aligned = NULL;
 		return ERROR_PTR;
 	}
 
-	return realmem_map + phys_addr;
+	return realmem_map_aligned + phys_addr;
 }
 
 static void *sys_physmap(uintptr_t phys_addr, size_t len)
@@ -72,7 +83,7 @@ static void *sys_physmap(uintptr_t phys_addr, size_t len)
 	if (!__djgpp_nearptr_enable())
 		return ERROR_PTR;
 
-	if ((phys_addr + len - 1) < (1024 * 1024)) {
+	if ((phys_addr + len - 1) < ONE_MEGABYTE) {
 		/* We need to use another method to map first 1MB. */
 		return map_first_meg(phys_addr, len);
 	}
@@ -97,8 +108,8 @@ void sys_physunmap_unaligned(void *virt_addr, size_t len)
 	/* There is no known way to unmap the first 1 MB. The DPMI server will
 	 * do this for us on exit.
 	 */
-	if ((virt_addr >= realmem_map) &&
-	    ((virt_addr + len) <= (realmem_map + (1024 * 1024)))) {
+	if ((virt_addr >= realmem_map_aligned) &&
+	    ((virt_addr + len) <= (realmem_map_aligned + ONE_MEGABYTE))) {
 		return;
 	}
 
