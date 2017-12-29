@@ -97,27 +97,43 @@ To cross-compile on Linux for DOS:
  Get packages of the DJGPP cross compiler and install them:
  djgpp-filesystem djgpp-gcc djgpp-cpp djgpp-runtime djgpp-binutils
  As an alternative, the DJGPP web site offers packages for download as well:
- djcross-binutils-2.19.1-10ap.i386.rpm
- djcross-gcc-4.3.2-8ap.i686.rpm
- djcrx-2.04pre_20090725-13ap.i386.rpm
+ djcross-binutils-2.29.1-1ap.x86_64.rpm
+ djcross-gcc-7.2.0-1ap.x86_64.rpm
+ djcrx-2.05-5.x86_64.rpm
  The cross toolchain packages for your distribution may have slightly different
  names (look for packages named *djgpp*).
 
- You will need the following library source trees containing their compiled
- static libraries either in the parent directory of the flashrom source or
- specify the base folder on compile time with the LIBS_BASE parameter.
- The default as described above is equal to calling
-   'make djgpp-dos LIBS_BASE=..'
+ Alternatively, you could use a script to build it from scratch:
+ https://github.com/andrewwutw/build-djgpp
 
- To get and build said libraries...
- Download pciutils 3.1.5 and apply http://flashrom.org/File:Pciutils.patch.gz
- Compile pciutils, see README.DJGPP for instructions.
- Download and compile http://flashrom.org/File:Libgetopt.tar.gz
+ You will need the libpci and libgetopt library source trees and
+ their compiled static libraries and header files installed in some
+ directory say libpci-libgetopt/, which will be later specified with
+ LIBS_BASE parameter during flashrom compilation. Easiest way to
+ handle it is to put pciutils, libgetopt and flashrom directories
+ in one subdirectory. There will be an extra subdirectory libpci-libgetopt
+ created, which will contain compiled libpci and libgetopt.
+
+ Download pciutils 3.5.6 and apply http://flashrom.org/File:Pciutils-3.5.6.patch.gz
+ Compile pciutils, using following command line:
+
+ make ZLIB=no DNS=no HOST=i386-djgpp-djgpp CROSS_COMPILE=i586-pc-msdosdjgpp- \
+     PREFIX=/ DESTDIR=$PWD/../libpci-libgetopt  \
+     STRIP="--strip-program=i586-pc-msdosdjgpp-strip -s" install install-lib
+
+ Download and compile with 'make' http://flashrom.org/File:Libgetopt.tar.gz
+
+ Copy the libgetopt.a to ../libpci-libgetopt/lib and
+ getopt.h to ../libpci-libgetopt/include
+
  Enter the flashrom directory.
- Run either (change settings where appropriate)
- make CC=i586-pc-msdosdjgpp-gcc STRIP=i586-pc-msdosdjgpp-strip
- or (above settings hardcoded)
- make djgpp-dos
+
+ make CC=i586-pc-msdosdjgpp-gcc STRIP=i586-pc-msdosdjgpp-strip LIBS_BASE=../libpci-libgetopt/ strip
+
+ If you like, you can compress the resulting executable with UPX:
+
+ upx -9 flashrom.exe
+
  To run flashrom.exe, download http://flashrom.org/File:Csdpmi7b.zip and
  unpack CWSDPMI.EXE into the current directory or one in PATH.
 
