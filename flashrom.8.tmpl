@@ -817,6 +817,18 @@ can be
 .BR 30k ", " 125k ", " 250k ", " 1M ", " 2M ", " 2.6M ", " 4M " or " 8M
 (in Hz). The default is the maximum frequency of 8 MHz.
 .sp
+The baud rate for communication between the host and the Bus Pirate can be specified with the optional
+.B serialspeed
+parameter. Syntax is
+.sp
+.B "  flashrom -p buspirate_spi:serialspeed=baud
+.sp
+where
+.B baud
+can be
+.BR 115200 ", " 230400 ", " 250000 " or " 2000000 " (" 2M ")."
+The default is 2M baud for Bus Pirate hardware version 3.0 and greater, and 115200 otherwise.
+.sp
 An optional pullups parameter specifies the use of the Bus Pirate internal pull-up resistors. This may be
 needed if you are working with a flash ROM chip that you have physically removed from the board. Syntax is
 .sp

@@ -30,16 +30,18 @@
 /* Change this to #define if you want to test without a serial implementation */
 #undef FAKE_COMMUNICATION
 
-struct buspirate_spispeeds {
+struct buspirate_speeds {
 	const char *name;
 	const int speed;
 };
+
+#define BP_DEFAULTBAUD 115200
 
 #ifndef FAKE_COMMUNICATION
 static int buspirate_serialport_setup(char *dev)
 {
 	/* 115200bps, 8 databits, no parity, 1 stopbit */
-	sp_fd = sp_openserport(dev, 115200);
+	sp_fd = sp_openserport(dev, BP_DEFAULTBAUD);
  	if (sp_fd == SER_INV_FD)
 		return 1;
 	return 0;
@@ -146,7 +148,7 @@ static struct spi_master spi_master_buspirate = {
 	.write_aai	= default_spi_write_aai,
 };
 
-static const struct buspirate_spispeeds spispeeds[] = {
+static const struct buspirate_speeds spispeeds[] = {
 	{"30k",		0x0},
 	{"125k",	0x1},
 	{"250k",	0x2},
@@ -155,7 +157,16 @@ static const struct buspirate_spispeeds spispeeds[] = {
 	{"2.6M",	0x5},
 	{"4M",		0x6},
 	{"8M",		0x7},
-	{NULL,		0x0},
+	{NULL,		0x0}
+};
+
+static const struct buspirate_speeds serialspeeds[] = {
+	{"115200",  115200},
+	{"230400",  230400},
+	{"250000",  250000},
+	{"2000000", 2000000},
+	{"2M",      2000000},
+	{NULL,      0}
 };
 
 static int buspirate_spi_shutdown(void *data)
@@ -199,15 +210,26 @@ out_shutdown:
 }
 
 #define BP_FWVERSION(a,b)	((a) << 8 | (b))
+#define BP_HWVERSION(a,b)	BP_FWVERSION(a,b)
+
+/**
+ * The Bus Pirate's PIC microcontroller supports custom baud rates by manually specifying a
+ * clock divisor that can be calculated with the formula (16000000 / (4 * baud)) - 1.
+ */
+#define BP_DIVISOR(baud) ((4000000/(baud)) - 1)
 
 int buspirate_spi_init(void)
 {
 	char *tmp;
 	char *dev;
 	int i;
+	int cnt;
 	unsigned int fw_version_major = 0;
 	unsigned int fw_version_minor = 0;
+	unsigned int hw_version_major = 0;
+	unsigned int hw_version_minor = 0;
 	int spispeed = 0x7;
+	int serialspeed_index = -1;
 	int ret = 0;
 	int pullup = 0;
 
@@ -231,6 +253,20 @@ int buspirate_spi_init(void)
 		}
 		if (!spispeeds[i].name)
 			msg_perr("Invalid SPI speed, using default.\n");
+	}
+	free(tmp);
+
+	/* Extract serialspeed paramater */
+	tmp = extract_programmer_param("serialspeed");
+	if (tmp) {
+		for (i = 0; serialspeeds[i].name; i++) {
+			if (!strncasecmp(serialspeeds[i].name, tmp, strlen(serialspeeds[i].name))) {
+				serialspeed_index = i;
+				break;
+			}
+		}
+		if (!serialspeeds[i].name)
+			msg_perr("Invalid serial speed %s, using default.\n", tmp);
 	}
 	free(tmp);
 
@@ -313,7 +349,20 @@ int buspirate_spi_init(void)
 			break;
 	}
 	bp_commbuf[i] = '\0';
-	msg_pdbg("Detected Bus Pirate hardware %s\n", bp_commbuf);
+	msg_pdbg("Detected Bus Pirate hardware ");
+	if (bp_commbuf[0] != 'v')
+		msg_pdbg("(unknown version number format)");
+	else if (!strchr("0123456789", bp_commbuf[1]))
+		msg_pdbg("(unknown version number format)");
+	else {
+		hw_version_major = strtoul((char *)bp_commbuf + 1, &tmp, 10);
+		while ((*tmp != '\0') && !strchr("0123456789", *tmp))
+			tmp++;
+		hw_version_minor = strtoul(tmp, NULL, 10);
+		msg_pdbg("%u.%u", hw_version_major, hw_version_minor);
+	}
+	msg_pdbg2(" (\"%s\")", bp_commbuf);
+	msg_pdbg("\n");
 
 	if ((ret = buspirate_wait_for_string(bp_commbuf, "irmware ")))
 		return ret;
@@ -342,7 +391,7 @@ int buspirate_spi_init(void)
 
 	if ((ret = buspirate_wait_for_string(bp_commbuf, "HiZ>")))
 		return ret;
-	
+
 	/* Tell the user about missing SPI binary mode in firmware 2.3 and older. */
 	if (BP_FWVERSION(fw_version_major, fw_version_minor) < BP_FWVERSION(2, 4)) {
 		msg_pinfo("Bus Pirate firmware 2.3 and older does not support binary SPI access.\n");
@@ -352,7 +401,7 @@ int buspirate_spi_init(void)
 
 	/* Use fast SPI mode in firmware 5.5 and newer. */
 	if (BP_FWVERSION(fw_version_major, fw_version_minor) >= BP_FWVERSION(5, 5)) {
-		msg_pdbg("Using SPI command set v2.\n"); 
+		msg_pdbg("Using SPI command set v2.\n");
 		/* Sensible default buffer size. */
 		if (buspirate_commbuf_grow(260 + 5))
 			return ERROR_OOM;
@@ -379,9 +428,70 @@ int buspirate_spi_init(void)
 			msg_pinfo("It is recommended to upgrade to firmware 6.2 or newer.\n");
 			spispeed = 0x4;
 		}
-		
+
 	/* This works because speeds numbering starts at 0 and is contiguous. */
 	msg_pdbg("SPI speed is %sHz\n", spispeeds[spispeed].name);
+
+	/* Set 2M baud serial speed by default on hardware 3.0 and newer if a custom speed was not set */
+	if (serialspeed_index == -1 && BP_HWVERSION(hw_version_major, hw_version_minor) >= BP_HWVERSION(3, 0)) {
+		serialspeed_index = ARRAY_SIZE(serialspeeds) - 2;
+		msg_pdbg("Bus Pirate v3 or newer detected. Set serial speed to 2M baud.\n");
+	}
+
+	/* Set custom serial speed if specified */
+	if (serialspeed_index != -1) {
+		if (BP_FWVERSION(fw_version_major, fw_version_minor) < BP_FWVERSION(5, 5)) {
+			/* This feature requires firmware 5.5 or newer */
+			msg_perr("Bus Pirate firmware 5.4 and older does not support custom serial speeds."
+				 "Using default speed of 115200 baud.\n");
+		} else if (serialspeeds[serialspeed_index].speed != BP_DEFAULTBAUD) {
+			/* Set the serial speed to match the user's choice if it doesn't already */
+
+			if (BP_HWVERSION(hw_version_major, hw_version_minor) < BP_HWVERSION(3, 0))
+				msg_pwarn("Increased serial speeds may not work on older (<3.0) Bus Pirates."
+					" Continue at your own risk.\n");
+
+			/* Enter baud rate configuration mode */
+			cnt = snprintf((char *)bp_commbuf, DEFAULT_BUFSIZE, "b\n");
+			if ((ret = buspirate_sendrecv(bp_commbuf, cnt, 0)))
+				return ret;
+			if ((ret = buspirate_wait_for_string(bp_commbuf, ">")))
+				return ret;
+
+			/* Enter manual clock divisor entry mode */
+			cnt = snprintf((char *)bp_commbuf, DEFAULT_BUFSIZE, "10\n");
+			if ((ret = buspirate_sendrecv(bp_commbuf, cnt, 0)))
+				return ret;
+			if ((ret = buspirate_wait_for_string(bp_commbuf, ">")))
+				return ret;
+
+			/* Set the clock divisor to the value calculated from the user's input */
+			cnt = snprintf((char *)bp_commbuf, DEFAULT_BUFSIZE, "%d\n",
+				BP_DIVISOR(serialspeeds[serialspeed_index].speed));
+
+			if ((ret = buspirate_sendrecv(bp_commbuf, cnt, 0)))
+				return ret;
+			sleep(1);
+
+			/* Reconfigure the host's serial baud rate to the new value */
+			if ((ret = serialport_config(sp_fd, serialspeeds[serialspeed_index].speed))) {
+				msg_perr("Unable to configure system baud rate to specified value.");
+				return ret;
+			}
+
+			/* Return to the main prompt */
+			bp_commbuf[0] = ' ';
+			if ((ret = buspirate_sendrecv(bp_commbuf, 1, 0)))
+				return ret;
+			if ((ret = buspirate_wait_for_string(bp_commbuf, "HiZ>")))
+				return ret;
+
+			msg_pdbg("Serial speed is %d baud\n", serialspeeds[serialspeed_index].speed);
+		}
+
+	}
+
+
 
 	/* Enter raw bitbang mode */
 	for (i = 0; i < 20; i++) {
@@ -434,7 +544,7 @@ int buspirate_spi_init(void)
 		msg_perr("Protocol error while setting SPI speed!\n");
 		return 1;
 	}
-	
+
 	/* Set SPI config: output type, idle, clock edge, sample */
 	bp_commbuf[0] = 0x80 | 0xa;
 	ret = buspirate_sendrecv(bp_commbuf, 1, 1);
@@ -534,7 +644,7 @@ static int buspirate_spi_send_command_v2(struct flashctx *flash, unsigned int wr
 	bp_commbuf[i++] = (readcnt >> 8) & 0xff;
 	bp_commbuf[i++] = readcnt & 0xff;
 	memcpy(bp_commbuf + i, writearr, writecnt);
-	
+
 	ret = buspirate_sendrecv(bp_commbuf, i + writecnt, 1 + readcnt);
 
 	if (ret) {
