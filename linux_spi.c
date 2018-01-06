@@ -42,6 +42,7 @@
  */
 
 static int fd = -1;
+static size_t max_kernel_buf_size = 4096;
 
 static int linux_spi_shutdown(void *data);
 static int linux_spi_send_command(struct flashctx *flash, unsigned int writecnt,
@@ -127,6 +128,19 @@ int linux_spi_init(void)
 		return 1;
 	}
 
+	/* Try to read the kernel's max bufsize */
+	char buf[10];
+	memset(buf, 0, sizeof(buf));
+	int param_fd = open("/sys/module/spidev/parameters/bufsiz", O_RDONLY);
+	if (param_fd == -1 || read(param_fd, &buf, sizeof(buf) - 1) == -1) {
+		msg_pwarn("%s: failed to retrieve kernel buffer size. Attempting to use default.\n", __func__);
+	} else {
+		max_kernel_buf_size = atoi(buf);
+	}
+
+	if (param_fd != -1)
+		close(param_fd);
+
 	register_spi_master(&spi_master_linux);
 
 	return 0;
@@ -182,14 +196,16 @@ static int linux_spi_send_command(struct flashctx *flash, unsigned int writecnt,
 static int linux_spi_read(struct flashctx *flash, uint8_t *buf,
 			  unsigned int start, unsigned int len)
 {
+	/* The size of the command and the buffer may add up to no more than max_kernel_buf_size.
+	   At the moment the command size is at most 5 bytes, so allow the rest for the buffer. */
 	return spi_read_chunked(flash, buf, start, len,
-				(unsigned int)getpagesize());
+				max_kernel_buf_size - 5);
 }
 
 static int linux_spi_write_256(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len)
 {
 	return spi_write_chunked(flash, buf, start, len,
-				((unsigned int)getpagesize()) - 4);
+				 max_kernel_buf_size - 5);
 }
 
 #endif // CONFIG_LINUX_SPI == 1
