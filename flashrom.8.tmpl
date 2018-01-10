@@ -44,12 +44,10 @@
 .SH NAME
 flashrom \- detect, read, write, verify and erase flash chips
 .SH SYNOPSIS
-.B flashrom \fR[\fB\-h\fR|\fB\-R\fR|\fB\-L\fR|\fB\-z\fR|\
-\fB\-p\fR <programmername>[:<parameters>]
-               [\fB\-E\fR|\fB\-r\fR <file>|\fB\-w\fR <file>|\fB\-v\fR <file>] \
-[\fB\-c\fR <chipname>]
-               [(\fB\-l\fR <file>|\fB\-\-ifd\fR) [\fB\-i\fR <image>]] \
-[\fB\-n\fR] [\fB\-N\fR] [\fB\-f\fR]]
+.B flashrom \fR[\fB\-h\fR|\fB\-R\fR|\fB\-L\fR|\fB\-z\fR|\fB\-p\fR <programmername>[:<parameters>]
+            [\fB\-E\fR|\fB\-r\fR <file>|\fB\-w\fR <file>|\fB\-v\fR <file>] [\fB\-c\fR <chipname>]
+            [(\fB\-l\fR <file>|\fB\-\-ifd|\fB \-\-fmap\fR|\fB\-\-fmap-file\fR <file>) [\fB\-i\fR <image>]]
+            [\fB\-n\fR] [\fB\-N\fR] [\fB\-f\fR]]
          [\fB\-V\fR[\fBV\fR[\fBV\fR]]] [\fB-o\fR <logfile>]
 .SH DESCRIPTION
 .B flashrom
@@ -194,6 +192,34 @@ To update only the images named
 .B "  flashrom \-p prog \-l rom.layout \-i normal -i fallback \-w some.rom"
 .sp
 Overlapping sections are not supported.
+.TP
+.B "\-\-fmap"
+Read layout from fmap in flash chip.
+.sp
+flashrom supports the fmap binary format which is commonly used by coreboot
+for partitioning a flash chip. The on-chip fmap will be read and used to generate
+the layout.
+.sp
+If you only want to update the
+.BR "COREBOOT"
+region defined in the fmap, run
+.sp
+.B " flashrom -p prog \-\-fmap \-\-image COREBOOT \-w some.rom"
+.TP
+.B "\-\-fmap-file <file>"
+Read layout from a
+.BR <file>
+containing binary fmap (e.g. coreboot roms).
+.sp
+flashrom supports the fmap binary format which is commonly used by coreboot
+for partitioning a flash chip. The fmap in the specified file will be read and
+used to generate the layout.
+.sp
+If you only want to update the
+.BR "COREBOOT"
+region defined in the binary fmap file, run
+.sp
+.B "  flashrom \-p prog \-\-fmap-file some.rom \-\-image COREBOOT \-w some.rom"
 .TP
 .B "\-\-ifd"
 Read ROM layout from Intel Firmware Descriptor.

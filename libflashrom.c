@@ -25,6 +25,7 @@
 #include <stdarg.h>
 
 #include "flash.h"
+#include "fmap.h"
 #include "programmer.h"
 #include "layout.h"
 #include "hwaccess.h"
@@ -378,6 +379,124 @@ _free_ret:
 	if (ret)
 		free(chip_layout);
 	free(desc);
+	return ret;
+#endif
+}
+
+static int flashrom_layout_parse_fmap(struct flashrom_layout **layout,
+		struct flashctx *const flashctx, const struct fmap *const fmap)
+{
+	int i;
+	struct flashrom_layout *l = get_global_layout();
+
+	if (!fmap || !l)
+		return 1;
+
+	if (l->num_entries + fmap->nareas > MAX_ROMLAYOUT) {
+		msg_gerr("Cannot add fmap entries to layout - Too many entries.\n");
+		return 1;
+	}
+
+	for (i = 0; i < fmap->nareas; i++) {
+		l->entries[l->num_entries].start = fmap->areas[i].offset;
+		l->entries[l->num_entries].end = fmap->areas[i].offset + fmap->areas[i].size - 1;
+		l->entries[l->num_entries].included = false;
+		memset(l->entries[l->num_entries].name, 0, sizeof(l->entries[i].name));
+		memcpy(l->entries[l->num_entries].name, fmap->areas[i].name,
+			min(FMAP_STRLEN, sizeof(l->entries[i].name)));
+		msg_gdbg("fmap %08x - %08x named %s\n",
+			l->entries[l->num_entries].start,
+			l->entries[l->num_entries].end,
+			l->entries[l->num_entries].name);
+		l->num_entries++;
+	}
+
+	*layout = l;
+	return 0;
+}
+
+/**
+ * @brief Read a layout by searching the flash chip for fmap.
+ *
+ * @param[out] layout Points to a struct flashrom_layout pointer that
+ *                    gets set if the fmap is read and parsed successfully.
+ * @param[in] flashctx Flash context
+ * @param[in] offset Offset to begin searching for fmap.
+ * @param[in] offset Length of address space to search.
+ *
+ * @return 0 on success,
+ *         3 if fmap parsing isn't implemented for the host,
+ *         2 if the fmap couldn't be read,
+ *         1 on any other error.
+ */
+int flashrom_layout_read_fmap_from_rom(struct flashrom_layout **const layout,
+		struct flashctx *const flashctx, off_t offset, size_t len)
+{
+#ifndef __FLASHROM_LITTLE_ENDIAN__
+	return 3;
+#else
+	struct fmap *fmap = NULL;
+	int ret = 0;
+
+	msg_gdbg("Attempting to read fmap from ROM content.\n");
+	if (fmap_read_from_rom(&fmap, flashctx, offset, len)) {
+		msg_gerr("Failed to read fmap from ROM.\n");
+		return 1;
+	}
+
+	msg_gdbg("Adding fmap layout to global layout.\n");
+	if (flashrom_layout_parse_fmap(layout, flashctx, fmap)) {
+		msg_gerr("Failed to add fmap regions to layout.\n");
+		ret = 1;
+	}
+
+	free(fmap);
+	return ret;
+#endif
+}
+
+/**
+ * @brief Read a layout by searching buffer for fmap.
+ *
+ * @param[out] layout Points to a struct flashrom_layout pointer that
+ *                    gets set if the fmap is read and parsed successfully.
+ * @param[in] flashctx Flash context
+ * @param[in] buffer Buffer to search in
+ * @param[in] size Size of buffer to search
+ *
+ * @return 0 on success,
+ *         3 if fmap parsing isn't implemented for the host,
+ *         2 if the fmap couldn't be read,
+ *         1 on any other error.
+ */
+int flashrom_layout_read_fmap_from_buffer(struct flashrom_layout **const layout,
+		struct flashctx *const flashctx, const uint8_t *const buf, size_t size)
+{
+#ifndef __FLASHROM_LITTLE_ENDIAN__
+	return 3;
+#else
+	struct fmap *fmap = NULL;
+	int ret = 1;
+
+	if (!buf || !size)
+		goto _ret;
+
+	msg_gdbg("Attempting to read fmap from buffer.\n");
+	if (fmap_read_from_buffer(&fmap, buf, size)) {
+		msg_gerr("Failed to read fmap from buffer.\n");
+		goto _ret;
+	}
+
+	msg_gdbg("Adding fmap layout to global layout.\n");
+	if (flashrom_layout_parse_fmap(layout, flashctx, fmap)) {
+		msg_gerr("Failed to add fmap regions to layout.\n");
+		goto _free_ret;
+	}
+
+	ret = 0;
+_free_ret:
+	free(fmap);
+_ret:
 	return ret;
 #endif
 }
