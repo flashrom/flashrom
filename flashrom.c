@@ -2345,13 +2345,15 @@ static void combine_image_by_layout(const struct flashctx *const flashctx,
  * @param flashctx The context of the flash chip.
  * @param buffer Source buffer to read image from (may be altered for full verification).
  * @param buffer_len Size of source buffer in bytes.
+ * @param refbuffer If given, assume flash chip contains same data as `refbuffer`.
  * @return 0 on success,
  *         4 if buffer_len doesn't match the size of the flash chip,
  *         3 if write was tried but nothing has changed,
  *         2 if write failed and flash contents changed,
  *         or 1 on any other failure.
  */
-int flashrom_image_write(struct flashctx *const flashctx, void *const buffer, const size_t buffer_len)
+int flashrom_image_write(struct flashctx *const flashctx, void *const buffer, const size_t buffer_len,
+                         const void *const refbuffer)
 {
 	const size_t flash_size = flashctx->chip->total_size * 1024;
 	const bool verify_all = flashctx->flags.verify_whole_chip;
@@ -2363,6 +2365,7 @@ int flashrom_image_write(struct flashctx *const flashctx, void *const buffer, co
 	int ret = 1;
 
 	uint8_t *const newcontents = buffer;
+	const uint8_t *const refcontents = refbuffer;
 	uint8_t *const curcontents = malloc(flash_size);
 	uint8_t *oldcontents = NULL;
 	if (verify_all)
@@ -2387,27 +2390,35 @@ int flashrom_image_write(struct flashctx *const flashctx, void *const buffer, co
 	if (prepare_flash_access(flashctx, false, true, false, verify))
 		goto _free_ret;
 
-	/*
-	 * Read the whole chip to be able to check whether regions need to be
-	 * erased and to give better diagnostics in case write fails.
-	 * The alternative is to read only the regions which are to be
-	 * preserved, but in that case we might perform unneeded erase which
-	 * takes time as well.
-	 */
-	msg_cinfo("Reading old flash chip contents... ");
-	if (verify_all) {
-		if (flashctx->chip->read(flashctx, oldcontents, 0, flash_size)) {
-			msg_cinfo("FAILED.\n");
-			goto _finalize_ret;
-		}
-		memcpy(curcontents, oldcontents, flash_size);
+	/* If given, assume flash chip contains same data as `refcontents`. */
+	if (refcontents) {
+		msg_cinfo("Assuming old flash chip contents as ref-file...\n");
+		memcpy(curcontents, refcontents, flash_size);
+		if (oldcontents)
+			memcpy(oldcontents, refcontents, flash_size);
 	} else {
-		if (read_by_layout(flashctx, curcontents)) {
-			msg_cinfo("FAILED.\n");
-			goto _finalize_ret;
+		/*
+		 * Read the whole chip to be able to check whether regions need to be
+		 * erased and to give better diagnostics in case write fails.
+		 * The alternative is to read only the regions which are to be
+		 * preserved, but in that case we might perform unneeded erase which
+		 * takes time as well.
+		 */
+		msg_cinfo("Reading old flash chip contents... ");
+		if (verify_all) {
+			if (flashctx->chip->read(flashctx, oldcontents, 0, flash_size)) {
+				msg_cinfo("FAILED.\n");
+				goto _finalize_ret;
+			}
+			memcpy(curcontents, oldcontents, flash_size);
+		} else {
+			if (read_by_layout(flashctx, curcontents)) {
+				msg_cinfo("FAILED.\n");
+				goto _finalize_ret;
+			}
 		}
+		msg_cinfo("done.\n");
 	}
-	msg_cinfo("done.\n");
 
 	if (write_by_layout(flashctx, curcontents, newcontents)) {
 		msg_cerr("Uh oh. Erase/write failed. ");
@@ -2542,13 +2553,15 @@ int do_erase(struct flashctx *const flash)
 	return ret;
 }
 
-int do_write(struct flashctx *const flash, const char *const filename)
+int do_write(struct flashctx *const flash, const char *const filename, const char *const referencefile)
 {
 	const size_t flash_size = flash->chip->total_size * 1024;
 	int ret = 1;
 
 	uint8_t *const newcontents = malloc(flash_size);
-	if (!newcontents) {
+	uint8_t *const refcontents = referencefile ? malloc(flash_size) : NULL;
+
+	if (!newcontents || (referencefile && !refcontents)) {
 		msg_gerr("Out of memory!\n");
 		goto _free_ret;
 	}
@@ -2556,9 +2569,15 @@ int do_write(struct flashctx *const flash, const char *const filename)
 	if (read_buf_from_file(newcontents, flash_size, filename))
 		goto _free_ret;
 
-	ret = flashrom_image_write(flash, newcontents, flash_size);
+	if (referencefile) {
+		if (read_buf_from_file(refcontents, flash_size, referencefile))
+			goto _free_ret;
+	}
+
+	ret = flashrom_image_write(flash, newcontents, flash_size, refcontents);
 
 _free_ret:
+	free(refcontents);
 	free(newcontents);
 	return ret;
 }

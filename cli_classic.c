@@ -60,6 +60,7 @@ static void cli_classic_usage(const char *name)
 	       "      --ifd                         read layout from an Intel Firmware Descriptor\n"
 	       " -i | --image <name>                only flash image <name> from flash layout\n"
 	       " -o | --output <logfile>            log output to <logfile>\n"
+	       "      --flash-contents <ref-file>   assume flash contents to be <ref-file>\n"
 	       " -L | --list-supported              print supported devices\n"
 #if CONFIG_PRINT_WIKI == 1
 	       " -z | --list-supported-wiki         print supported devices in wiki syntax\n"
@@ -108,6 +109,10 @@ int main(int argc, char *argv[])
 	int dont_verify_it = 0, dont_verify_all = 0, list_supported = 0, operation_specified = 0;
 	struct flashrom_layout *layout = NULL;
 	enum programmer prog = PROGRAMMER_INVALID;
+	enum {
+		OPTION_IFD = 0x0100,
+		OPTION_FLASH_CONTENTS,
+	};
 	int ret = 0;
 
 	static const char optstring[] = "r:Rw:v:nNVEfc:l:i:p:Lzho:";
@@ -122,8 +127,9 @@ int main(int argc, char *argv[])
 		{"verbose",		0, NULL, 'V'},
 		{"force",		0, NULL, 'f'},
 		{"layout",		1, NULL, 'l'},
-		{"ifd",			0, NULL, 0x0100},
+		{"ifd",			0, NULL, OPTION_IFD},
 		{"image",		1, NULL, 'i'},
+		{"flash-contents",	1, NULL, OPTION_FLASH_CONTENTS},
 		{"list-supported",	0, NULL, 'L'},
 		{"list-supported-wiki",	0, NULL, 'z'},
 		{"programmer",		1, NULL, 'p'},
@@ -134,6 +140,7 @@ int main(int argc, char *argv[])
 	};
 
 	char *filename = NULL;
+	char *referencefile = NULL;
 	char *layoutfile = NULL;
 #ifndef STANDALONE
 	char *logfile = NULL;
@@ -229,7 +236,7 @@ int main(int argc, char *argv[])
 			}
 			layoutfile = strdup(optarg);
 			break;
-		case 0x0100:
+		case OPTION_IFD:
 			if (layoutfile) {
 				fprintf(stderr, "Error: --layout and --ifd both specified. Aborting.\n");
 				cli_classic_abort_usage();
@@ -242,6 +249,9 @@ int main(int argc, char *argv[])
 				free(tempstr);
 				cli_classic_abort_usage();
 			}
+			break;
+		case OPTION_FLASH_CONTENTS:
+			referencefile = strdup(optarg);
 			break;
 		case 'L':
 			if (++operation_specified > 1) {
@@ -352,6 +362,9 @@ int main(int argc, char *argv[])
 		cli_classic_abort_usage();
 	}
 	if (layoutfile && check_filename(layoutfile, "layout")) {
+		cli_classic_abort_usage();
+	}
+	if (referencefile && check_filename(referencefile, "reference")) {
 		cli_classic_abort_usage();
 	}
 
@@ -569,7 +582,7 @@ int main(int argc, char *argv[])
 	else if (erase_it)
 		ret = do_erase(fill_flash);
 	else if (write_it)
-		ret = do_write(fill_flash, filename);
+		ret = do_write(fill_flash, filename, referencefile);
 	else if (verify_it)
 		ret = do_verify(fill_flash, filename);
 
@@ -583,6 +596,7 @@ out:
 
 	layout_cleanup();
 	free(filename);
+	free(referencefile);
 	free(layoutfile);
 	free(pparam);
 	/* clean up global variables */

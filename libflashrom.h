@@ -60,7 +60,7 @@ void flashrom_flag_set(struct flashrom_flashctx *, enum flashrom_flag, bool valu
 bool flashrom_flag_get(const struct flashrom_flashctx *, enum flashrom_flag);
 
 int flashrom_image_read(struct flashrom_flashctx *, void *buffer, size_t buffer_len);
-int flashrom_image_write(struct flashrom_flashctx *, void *buffer, size_t buffer_len);
+int flashrom_image_write(struct flashrom_flashctx *, void *buffer, size_t buffer_len, const void *refbuffer);
 int flashrom_image_verify(struct flashrom_flashctx *, const void *buffer, size_t buffer_len);
 
 struct flashrom_layout;
