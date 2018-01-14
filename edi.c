@@ -150,12 +150,18 @@ static int edi_chip_probe(struct flashctx *flash, const struct ene_chip *chip)
 	int rc;
 
 	rc = edi_read(flash, ENE_EC_HWVERSION, &hwversion);
-	if (rc < 0)
+	if (rc < 0) {
+		msg_cdbg("%s: reading hwversion failed\n", __func__);
 		return 0;
+	}
 
 	rc = edi_read(flash, ENE_EC_EDIID, &ediid);
-	if (rc < 0)
+	if (rc < 0) {
+		msg_cdbg("%s: reading ediid failed\n", __func__);
 		return 0;
+	}
+
+	msg_cdbg("%s: hwversion 0x%02x, ediid 0x%02x\n", __func__, hwversion, ediid);
 
 	if (chip->hwversion == hwversion && chip->ediid == ediid)
 		return 1;
