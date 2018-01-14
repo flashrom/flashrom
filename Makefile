@@ -640,6 +640,9 @@ CONFIG_IT8212 ?= yes
 # Winchiphead CH341A
 CONFIG_CH341A_SPI ?= yes
 
+# Digilent Development board JTAG
+CONFIG_DIGILENT_SPI ?= yes
+
 # Disable wiki printing by default. It is only useful if you have wiki access.
 CONFIG_PRINT_WIKI ?= no
 
@@ -667,6 +670,7 @@ endif
 ifeq ($(CONFIG_ENABLE_LIBUSB1_PROGRAMMERS), no)
 override CONFIG_CH341A_SPI = no
 override CONFIG_DEDIPROG = no
+override CONFIG_DIGILENT_SPI = no
 endif
 ifeq ($(CONFIG_ENABLE_LIBPCI_PROGRAMMERS), no)
 override CONFIG_INTERNAL = no
@@ -932,6 +936,12 @@ ifeq ($(CONFIG_CH341A_SPI), yes)
 FEATURE_CFLAGS += -D'CONFIG_CH341A_SPI=1'
 PROGRAMMER_OBJS += ch341a_spi.o
 NEED_LIBUSB1 += CONFIG_CH341A_SPI
+endif
+
+ifeq ($(CONFIG_DIGILENT_SPI), yes)
+FEATURE_CFLAGS += -D'CONFIG_DIGILENT_SPI=1'
+PROGRAMMER_OBJS += digilent_spi.o
+NEED_LIBUSB1 += CONFIG_DIGILENT_SPI
 endif
 
 ifneq ($(NEED_SERIAL), )

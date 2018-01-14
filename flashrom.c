@@ -413,6 +413,18 @@ const struct programmer_entry programmer_table[] = {
 	},
 #endif
 
+#if CONFIG_DIGILENT_SPI == 1
+	{
+		.name			= "digilent_spi",
+		.type			= USB,
+		.devs.dev		= devs_digilent_spi,
+		.init			= digilent_spi_init,
+		.map_flash_region	= fallback_map,
+		.unmap_flash_region	= fallback_unmap,
+		.delay			= internal_delay,
+	},
+#endif
+
 	{0}, /* This entry corresponds to PROGRAMMER_INVALID. */
 };
 
