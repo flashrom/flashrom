@@ -183,6 +183,17 @@ struct flashchip {
 		enum test_state write;
 	} tested;
 
+	/*
+	 * Group chips that have common command sets. This should ensure that
+	 * no chip gets confused by a probing command for a very different class
+	 * of chips.
+	 */
+	enum {
+		/* SPI25 is very common. Keep it at zero so we don't have
+		   to specify it for each and every chip in the database.*/
+		SPI25 = 0,
+	} spi_cmd_set;
+
 	int (*probe) (struct flashctx *flash);
 
 	/* Delay after "enter/exit ID mode" commands in microseconds.

@@ -1209,6 +1209,9 @@ int probe_flash(struct registered_master *mst, int startchip, struct flashctx *f
 		buses_common = mst->buses_supported & chip->bustype;
 		if (!buses_common)
 			continue;
+		/* Only probe for SPI25 chips by default. */
+		if (chip->bustype == BUS_SPI && !chip_to_probe && chip->spi_cmd_set != SPI25)
+			continue;
 		msg_gdbg("Probing for %s %s, %d kB: ", chip->vendor, chip->name, chip->total_size);
 		if (!chip->probe && !force) {
 			msg_gdbg("failed! flashrom has no probe function for this flash chip.\n");
