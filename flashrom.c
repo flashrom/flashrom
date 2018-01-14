@@ -700,12 +700,13 @@ int check_erased_range(struct flashctx *flash, unsigned int start,
 {
 	int ret;
 	uint8_t *cmpbuf = malloc(len);
+	const uint8_t erased_value = ERASED_VALUE(flash);
 
 	if (!cmpbuf) {
 		msg_gerr("Could not allocate memory!\n");
 		exit(1);
 	}
-	memset(cmpbuf, 0xff, len);
+	memset(cmpbuf, erased_value, len);
 	ret = verify_range(flash, cmpbuf, start, len);
 	free(cmpbuf);
 	return ret;
@@ -758,7 +759,8 @@ out_free:
 }
 
 /* Helper function for need_erase() that focuses on granularities of gran bytes. */
-static int need_erase_gran_bytes(const uint8_t *have, const uint8_t *want, unsigned int len, unsigned int gran)
+static int need_erase_gran_bytes(const uint8_t *have, const uint8_t *want, unsigned int len,
+                                 unsigned int gran, const uint8_t erased_value)
 {
 	unsigned int i, j, limit;
 	for (j = 0; j < len / gran; j++) {
@@ -768,7 +770,7 @@ static int need_erase_gran_bytes(const uint8_t *have, const uint8_t *want, unsig
 			continue;
 		/* have needs to be in erased state. */
 		for (i = 0; i < limit; i++)
-			if (have[j * gran + i] != 0xff)
+			if (have[j * gran + i] != erased_value)
 				return 1;
 	}
 	return 0;
@@ -788,7 +790,8 @@ static int need_erase_gran_bytes(const uint8_t *have, const uint8_t *want, unsig
  * @gran	write granularity (enum, not count)
  * @return      0 if no erase is needed, 1 otherwise
  */
-int need_erase(const uint8_t *have, const uint8_t *want, unsigned int len, enum write_granularity gran)
+int need_erase(const uint8_t *have, const uint8_t *want, unsigned int len,
+               enum write_granularity gran, const uint8_t erased_value)
 {
 	int result = 0;
 	unsigned int i;
@@ -803,31 +806,31 @@ int need_erase(const uint8_t *have, const uint8_t *want, unsigned int len, enum 
 		break;
 	case write_gran_1byte:
 		for (i = 0; i < len; i++)
-			if ((have[i] != want[i]) && (have[i] != 0xff)) {
+			if ((have[i] != want[i]) && (have[i] != erased_value)) {
 				result = 1;
 				break;
 			}
 		break;
 	case write_gran_128bytes:
-		result = need_erase_gran_bytes(have, want, len, 128);
+		result = need_erase_gran_bytes(have, want, len, 128, erased_value);
 		break;
 	case write_gran_256bytes:
-		result = need_erase_gran_bytes(have, want, len, 256);
+		result = need_erase_gran_bytes(have, want, len, 256, erased_value);
 		break;
 	case write_gran_264bytes:
-		result = need_erase_gran_bytes(have, want, len, 264);
+		result = need_erase_gran_bytes(have, want, len, 264, erased_value);
 		break;
 	case write_gran_512bytes:
-		result = need_erase_gran_bytes(have, want, len, 512);
+		result = need_erase_gran_bytes(have, want, len, 512, erased_value);
 		break;
 	case write_gran_528bytes:
-		result = need_erase_gran_bytes(have, want, len, 528);
+		result = need_erase_gran_bytes(have, want, len, 528, erased_value);
 		break;
 	case write_gran_1024bytes:
-		result = need_erase_gran_bytes(have, want, len, 1024);
+		result = need_erase_gran_bytes(have, want, len, 1024, erased_value);
 		break;
 	case write_gran_1056bytes:
-		result = need_erase_gran_bytes(have, want, len, 1056);
+		result = need_erase_gran_bytes(have, want, len, 1056, erased_value);
 		break;
 	case write_gran_1byte_implicit_erase:
 		/* Do not erase, handle content changes from anything->0xff by writing 0xff. */
@@ -1772,11 +1775,12 @@ static int read_erase_write_block(struct flashctx *const flashctx,
 	ret = 1;
 	bool skipped = true;
 	uint8_t *const curcontents = info->curcontents + info->erase_start;
-	if (need_erase(curcontents, newcontents, erase_len, flashctx->chip->gran)) {
+	const uint8_t erased_value = ERASED_VALUE(flashctx);
+	if (need_erase(curcontents, newcontents, erase_len, flashctx->chip->gran, erased_value)) {
 		if (erase_block(flashctx, info, erasefn))
 			goto _free_ret;
 		/* Erase was successful. Adjust curcontents. */
-		memset(curcontents, 0xff, erase_len);
+		memset(curcontents, erased_value, erase_len);
 		skipped = false;
 	}
 

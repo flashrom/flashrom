@@ -130,6 +130,13 @@ enum write_granularity {
 #define FEATURE_4BA_NATIVE	(FEATURE_4BA_READ | FEATURE_4BA_FAST_READ | FEATURE_4BA_WRITE)
 #define FEATURE_4BA		(FEATURE_4BA_ENTER | FEATURE_4BA_EXT_ADDR | FEATURE_4BA_NATIVE)
 #define FEATURE_4BA_WREN	(FEATURE_4BA_ENTER_WREN | FEATURE_4BA_EXT_ADDR | FEATURE_4BA_NATIVE)
+/*
+ * Most flash chips are erased to ones and programmed to zeros. However, some
+ * other flash chips, such as the ENE KB9012 internal flash, work the opposite way.
+ */
+#define FEATURE_ERASED_ZERO	(1 << 16)
+
+#define ERASED_VALUE(flash)	(((flash)->chip->feature_bits & FEATURE_ERASED_ZERO) ? 0x00 : 0xff)
 
 enum test_state {
 	OK = 0,
@@ -309,7 +316,7 @@ int probe_flash(struct registered_master *mst, int startchip, struct flashctx *f
 int read_flash_to_file(struct flashctx *flash, const char *filename);
 char *extract_param(const char *const *haystack, const char *needle, const char *delim);
 int verify_range(struct flashctx *flash, const uint8_t *cmpbuf, unsigned int start, unsigned int len);
-int need_erase(const uint8_t *have, const uint8_t *want, unsigned int len, enum write_granularity gran);
+int need_erase(const uint8_t *have, const uint8_t *want, unsigned int len, enum write_granularity gran, const uint8_t erased_value);
 void print_version(void);
 void print_buildinfo(void);
 void print_banner(void);
