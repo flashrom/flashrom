@@ -199,4 +199,10 @@ int erase_sector_stm50(struct flashctx *flash, unsigned int block, unsigned int 
 int probe_en29lv640b(struct flashctx *flash);
 int write_en29lv640b(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 
+/* edi.c */
+int edi_chip_block_erase(struct flashctx *flash, unsigned int page, unsigned int size);
+int edi_chip_write(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
+int edi_chip_read(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
+int edi_probe_kb9012(struct flashctx *flash);
+
 #endif /* !__CHIPDRIVERS_H__ */

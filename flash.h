@@ -199,6 +199,7 @@ struct flashchip {
 		/* SPI25 is very common. Keep it at zero so we don't have
 		   to specify it for each and every chip in the database.*/
 		SPI25 = 0,
+		SPI_EDI = 1,
 	} spi_cmd_set;
 
 	int (*probe) (struct flashctx *flash);
@@ -266,7 +267,7 @@ struct flashrom_flashctx {
 
 /* Timing used in probe routines. ZERO is -2 to differentiate between an unset
  * field and zero delay.
- * 
+ *
  * SPI devices will always have zero delay and ignore this field.
  */
 #define TIMING_FIXME	-1
