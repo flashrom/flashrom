@@ -121,6 +121,9 @@ enum programmer {
 #if CONFIG_JLINK_SPI == 1
 	PROGRAMMER_JLINK_SPI,
 #endif
+#if CONFIG_NI845X_SPI == 1
+	PROGRAMMER_NI845X_SPI,
+#endif
 	PROGRAMMER_INVALID /* This must always be the last entry. */
 };
 
@@ -554,6 +557,11 @@ extern const struct dev_entry devs_digilent_spi[];
 /* jlink_spi.c */
 #if CONFIG_JLINK_SPI == 1
 int jlink_spi_init(void);
+#endif
+
+/* ni845x_spi.c */
+#if CONFIG_NI845X_SPI == 1
+int ni845x_spi_init(void);
 #endif
 
 /* flashrom.c */
