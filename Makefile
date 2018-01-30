@@ -97,7 +97,11 @@ debug_shell = $(shell export LC_ALL=C ; { echo 'exec: export LC_ALL=C ; { $(1) ;
 
 # HOST_OS is only used to work around local toolchain issues.
 HOST_OS ?= $(shell uname)
-ifeq ($(HOST_OS), MINGW32_NT-5.1)
+
+# Use a regexp to check if we are building in a mingw enviroment.
+# uname returns MINGW32_NT-5.1 on XP, MINGW32_NT-6.1 on Windows 7
+# the regexp should support 64 bit variant of mingw if exists
+ifeq ($(shell if  [[ $$(uname) =~ ^MINGW[0-9]{0,2}_NT-[0-9]{1,2}.[0-9]{1,2}$$ ]]; then echo yes; else echo no; fi), yes)
 # Explicitly set CC = gcc on MinGW, otherwise: "cc: command not found".
 CC = gcc
 endif
