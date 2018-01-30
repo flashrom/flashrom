@@ -301,6 +301,8 @@ bitbanging adapter)
 .sp
 .BR "* ch341a_spi" " (for SPI flash ROMs attached to WCH CH341A)"
 .sp
+.BR "* ni845x_spi" " (for SPI flash ROMs attached to National Instruments USB-8451 or USB-8452)"
+.sp
 Some programmers have optional or mandatory parameters which are described
 in detail in the
 .B PROGRAMMER-SPECIFIC INFORMATION
@@ -1063,6 +1065,59 @@ Please also note that the mstarddc_spi driver only works on Linux.
 .BR "ch341a_spi " programmer
 The WCH CH341A programmer does not support any parameters currently. SPI frequency is fixed at 2 MHz, and CS0 is
 used as per the device.
+.SS
+.BR "ni845x_spi " programmer
+.IP
+An optional
+.B voltage
+parameter could be used to specify the IO voltage. This parameter is available for the NI USB-8452 device. The default unit is
+Volt if no unit is specified. You can use
+.BR mV ", " milliVolt ", " V " or " Volt
+as unit specifier. Syntax is
+.sp
+.B "  flashrom \-p ni845x_spi:voltage=value"
+.sp
+where
+.B value
+can be
+.BR 1.2V ", " 1.5V ", " 1.8V ", " 2.5V ", " 3.3V
+or the equivalent in mV.
+.sp
+You can use the
+.B serial
+parameter to explicitly specify which connected NI USB-845x device should be used.
+You should use your device's 7 digit hexadecimal serial number.
+Usage example to select the device with 1230A2 serial number:
+.sp
+.B "  flashrom \-p ni845x_spi:serial=1230A2"
+.sp
+An optional
+.B spispeed
+parameter specifies the frequency of the SPI bus.
+Syntax is
+.sp
+.B "  flashrom \-p ni845x_spi:spispeed=frequency"
+.sp
+where
+.B frequency
+should a number corresponding to the desired frequency in KHz.
+The maximum
+.B frequency
+is 12 MHz (12000 KHz) for the USB-8451 and 50 MHz (50000 KHz) for the USB-8452.
+The default is a frequency of 1 MHz (1000 KHz).
+.sp
+An optional
+.B csnumber
+parameter specifies which target chip select line should be used. Syntax is
+.sp
+.B "  flashrom \-p ni845x_spi:csnumber=value"
+.sp
+where
+.B value
+should be between
+.BR 0 " and " 7
+By default the CS0 is used.
+.SS
 .SH EXAMPLES
 To back up and update your BIOS, run
 .sp

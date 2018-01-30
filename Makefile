@@ -193,6 +193,10 @@ FLASHROM_CFLAGS += -Dffs=__builtin_ffs
 # Some functions provided by Microsoft do not work as described in C99 specifications. This macro fixes that
 # for MinGW. See http://sourceforge.net/p/mingw-w64/wiki2/printf%20and%20scanf%20family/ */
 FLASHROM_CFLAGS += -D__USE_MINGW_ANSI_STDIO=1
+
+# National Instruments USB-845x is Windows only for now
+CONFIG_NI845X_SPI ?= no
+
 # For now we disable all PCI-based programmers on Windows/MinGW (no libpci).
 ifeq ($(CONFIG_INTERNAL), yes)
 UNSUPPORTED_FEATURES += CONFIG_INTERNAL=yes
@@ -278,6 +282,15 @@ ifeq ($(CONFIG_SATAMV), yes)
 UNSUPPORTED_FEATURES += CONFIG_SATAMV=yes
 else
 override CONFIG_SATAMV = no
+endif
+endif
+
+ifneq ($(TARGET_OS), MinGW)
+# NI USB-845x only supported on Windows at the moment
+ifeq ($(CONFIG_NI845X_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_NI845X_SPI=yes
+else
+override CONFIG_NI845X_SPI = no
 endif
 endif
 
@@ -920,6 +933,17 @@ PROGRAMMER_OBJS += ch341a_spi.o
 NEED_LIBUSB1 += CONFIG_CH341A_SPI
 endif
 
+ifeq ($(CONFIG_NI845X_SPI), yes)
+FEATURE_CFLAGS += -D'CONFIG_NI845X_SPI=1'
+NI845X_LIBS += -L'C:\Program Files (x86)\National Instruments\NI-845x\MS Visual C'
+NI845X_LIBS += -L'C:\Program Files\National Instruments\NI-845x\MS Visual C'
+NI845X_INCLUDES += -I'C:\Program Files (x86)\National Instruments\NI-845x\MS Visual C'
+NI845X_INCLUDES += -I'C:\Program Files\National Instruments\NI-845x\MS Visual C'
+FEATURE_CFLAGS += $(NI845X_INCLUDES)
+LIBS += -lni845x
+PROGRAMMER_OBJS += ni845x_spi.o
+endif
+
 ifneq ($(NEED_SERIAL), )
 LIB_OBJS += serial.o custom_baud.o
 endif
@@ -1015,7 +1039,7 @@ ifeq ($(ARCH), x86)
 endif
 
 $(PROGRAM)$(EXEC_SUFFIX): $(OBJS)
-	$(CC) $(LDFLAGS) -o $(PROGRAM)$(EXEC_SUFFIX) $(OBJS) $(LIBS) $(PCILIBS) $(FEATURE_LIBS) $(USBLIBS) $(USB1LIBS)
+	$(CC) $(LDFLAGS) -o $(PROGRAM)$(EXEC_SUFFIX) $(OBJS) $(LIBS) $(PCILIBS) $(FEATURE_LIBS) $(USBLIBS) $(USB1LIBS) $(NI845X_LIBS)
 
 libflashrom.a: $(LIBFLASHROM_OBJS)
 	$(AR) rcs $@ $^
@@ -1314,6 +1338,23 @@ int main(int argc, char **argv)
 endef
 export CLOCK_GETTIME_TEST
 
+define NI845X_TEST
+#include <ni845x.h>
+
+int main(int argc, char ** argv)
+{
+    (void) argc;
+    (void) argv;
+    char I2C_Device[256];
+    NiHandle Dev_Handle;
+    uInt32 NumberFound = 0;
+    ni845xFindDevice(I2C_Device, &Dev_Handle, &NumberFound);
+    ni845xCloseFindDeviceHandle(Dev_Handle);
+    return 0;
+}
+endef
+export NI845X_TEST
+
 features: compiler
 	@echo "FEATURES := yes" > .features.tmp
 ifneq ($(NEED_LIBFTDI), )
@@ -1348,6 +1389,15 @@ ifneq ($(NEED_LINUX_I2C), )
 	@ { $(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) >&2 && \
 		( echo "yes."; echo "LINUX_I2C_SUPPORT := yes" >> .features.tmp ) ||	\
 		( echo "no."; echo "LINUX_I2C_SUPPORT := no" >> .features.tmp ) } \
+		2>>$(BUILD_DETAILS_FILE) | tee -a $(BUILD_DETAILS_FILE)
+endif
+ifeq ($(CONFIG_NI845X_SPI), yes)
+	@printf "Checking for NI USB-845x installation... " | tee -a $(BUILD_DETAILS_FILE)
+	@echo "$$NI845X_TEST" > .featuretest.c
+	@printf "\nexec: %s\n" "$(CC) $(CPPFLAGS) $(CFLAGS) $(NI845X_INCLUDES) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) $(NI845X_LIBS) $(LIBS)" >>$(BUILD_DETAILS_FILE)
+	@ { $(CC) $(CPPFLAGS) $(CFLAGS) $(NI845X_INCLUDES) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) $(NI845X_LIBS) $(LIBS) >&2 && \
+		( echo "yes."; echo "NI845X_SUPPORT := yes" >> .features.tmp ) ||	\
+		( echo "no."; echo "NI845X_SUPPORT := no" >> .features.tmp ) } \
 		2>>$(BUILD_DETAILS_FILE) | tee -a $(BUILD_DETAILS_FILE)
 endif
 	@printf "Checking for utsname support... " | tee -a $(BUILD_DETAILS_FILE)

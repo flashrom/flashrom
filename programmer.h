@@ -111,6 +111,9 @@ enum programmer {
 #if CONFIG_CH341A_SPI == 1
 	PROGRAMMER_CH341A_SPI,
 #endif
+#if CONFIG_NI845X_SPI == 1
+    PROGRAMMER_NI845X_SPI,
+#endif
 	PROGRAMMER_INVALID /* This must always be the last entry. */
 };
 
@@ -543,6 +546,11 @@ void ch341a_spi_delay(unsigned int usecs);
 extern const struct dev_entry devs_ch341a_spi[];
 #endif
 
+/* ch341a_spi.c */
+#if CONFIG_NI845X_SPI == 1
+int ni845x_spi_init(void);
+#endif
+
 /* flashrom.c */
 struct decode_sizes {
 	uint32_t parallel;
@@ -604,6 +612,9 @@ enum spi_controller {
 #endif
 #if CONFIG_CH341A_SPI == 1
 	SPI_CONTROLLER_CH341A_SPI,
+#endif
+#if CONFIG_NI845X_SPI == 1
+    SPI_CONTROLLER_NI845X,
 #endif
 };
 
