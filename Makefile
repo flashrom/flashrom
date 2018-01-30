@@ -93,10 +93,11 @@ debug_shell = $(shell export LC_ALL=C ; { echo 'exec: export LC_ALL=C ; { $(1) ;
 
 # HOST_OS is only used to work around local toolchain issues.
 HOST_OS ?= $(shell uname)
-ifeq ($(HOST_OS), MINGW32_NT-5.1)
+ifeq ($(findstring MINGW, $(HOST_OS)), MINGW)
 # Explicitly set CC = gcc on MinGW, otherwise: "cc: command not found".
 CC = gcc
 endif
+
 ifneq ($(HOST_OS), SunOS)
 STRIP_ARGS = -s
 endif
