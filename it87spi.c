@@ -365,7 +365,7 @@ static int it8716f_spi_page_program(struct flashctx *flash, const uint8_t *buf, 
 	/* Wait until the Write-In-Progress bit is cleared.
 	 * This usually takes 1-10 ms, so wait in 1 ms steps.
 	 */
-	while (spi_read_status_register(flash) & SPI_SR_WIP)
+	while (spi_read_status_register(flash, JEDEC_RDSR) & SPI_SR_WIP)
 		programmer_delay(1000);
 	return 0;
 }

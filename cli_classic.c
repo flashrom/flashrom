@@ -31,6 +31,7 @@
 #include "flashchips.h"
 #include "programmer.h"
 #include "libflashrom.h"
+#include "chipdrivers.h"
 
 static void cli_classic_usage(const char *name)
 {
@@ -70,8 +71,13 @@ static void cli_classic_usage(const char *name)
 #if CONFIG_PRINT_WIKI == 1
 	         "-z, "
 #endif
-	         "-E, -r, -w, -v or no operation.\n"
+	       "-E, -r, -w, -v or no operation.\n"
 	       "If no operation is specified, flashrom will only probe for flash chips.\n");
+
+	printf("\n\nAdditional features:\n"
+		   "--adp-status                        Get Winbond ADP status\n"
+		   "--adp-enable                        Enable Winbond ADP feature\n"
+		   "--adp-disable                       Disable Winbond ADP feature\n");
 }
 
 static void cli_classic_abort_usage(void)
@@ -106,6 +112,7 @@ int main(int argc, char *argv[])
 #endif
 	int read_it = 0, write_it = 0, erase_it = 0, verify_it = 0;
 	int dont_verify_it = 0, dont_verify_all = 0, list_supported = 0, operation_specified = 0;
+	int adp_status = 0, adp_enable = 0, adp_disable = 0;
 	struct flashrom_layout *layout = NULL;
 	enum programmer prog = PROGRAMMER_INVALID;
 	int ret = 0;
@@ -130,6 +137,9 @@ int main(int argc, char *argv[])
 		{"help",		0, NULL, 'h'},
 		{"version",		0, NULL, 'R'},
 		{"output",		1, NULL, 'o'},
+		{"adp-status",	0, NULL, WINBOND_ADP_STATUS},
+		{"adp-enable",	0, NULL, WINBOND_ADP_ENABLE},
+		{"adp-disable", 0, NULL, WINBOND_ADP_DISABLE},
 		{NULL,			0, NULL, 0},
 	};
 
@@ -337,6 +347,16 @@ int main(int argc, char *argv[])
 			}
 #endif /* STANDALONE */
 			break;
+
+		case WINBOND_ADP_STATUS:
+			adp_status = 1;
+			break;
+		case WINBOND_ADP_ENABLE:
+			adp_enable = 1;
+			break;
+		case WINBOND_ADP_DISABLE:
+			adp_disable = 1;
+			break;
 		default:
 			cli_classic_abort_usage();
 			break;
@@ -538,7 +558,7 @@ int main(int argc, char *argv[])
 		goto out_shutdown;
 	}
 
-	if (!(read_it | write_it | verify_it | erase_it)) {
+	if (!(read_it | write_it | verify_it | erase_it | adp_status | adp_enable | adp_disable)) {
 		msg_ginfo("No operations were specified.\n");
 		goto out_shutdown;
 	}
@@ -564,14 +584,22 @@ int main(int argc, char *argv[])
 	 * Give the chip time to settle.
 	 */
 	programmer_delay(100000);
-	if (read_it)
+	if (read_it) {
 		ret = do_read(fill_flash, filename);
-	else if (erase_it)
+	} else if (erase_it) {
 		ret = do_erase(fill_flash);
-	else if (write_it)
+	} else if (write_it) {
 		ret = do_write(fill_flash, filename);
-	else if (verify_it)
+	} else if (verify_it) {
 		ret = do_verify(fill_flash, filename);
+	} else if (adp_status) {
+		ret = w25q_get_adp_status(fill_flash);
+	} else if (adp_enable) {
+		ret = w25q_set_adp_status(fill_flash, 1);
+	} else if (adp_disable) {
+		ret = w25q_set_adp_status(fill_flash, 0);
+	}
+
 
 	flashrom_layout_release(layout);
 

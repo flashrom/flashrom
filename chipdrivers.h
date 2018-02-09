@@ -66,7 +66,7 @@ int spi_exit_4ba(struct flashctx *flash);
 
 
 /* spi25_statusreg.c */
-uint8_t spi_read_status_register(struct flashctx *flash);
+uint8_t spi_read_status_register(struct flashctx *flash, uint8_t cmd);
 int spi_write_status_register(struct flashctx *flash, int status);
 void spi_prettyprint_status_register_bit(uint8_t status, int bit);
 int spi_prettyprint_status_register_plain(struct flashctx *flash);
@@ -107,6 +107,8 @@ int spi_disable_blockprotect_bp2_ep_srwd(struct flashctx *flash);
 int spi_prettyprint_status_register_sst25(struct flashctx *flash);
 int spi_prettyprint_status_register_sst25vf016(struct flashctx *flash);
 int spi_prettyprint_status_register_sst25vf040b(struct flashctx *flash);
+int w25q_get_adp_status(struct flashctx *flash);
+int w25q_set_adp_status(struct flashctx *flash, int enable);
 
 /* sfdp.c */
 int probe_spi_sfdp(struct flashctx *flash);

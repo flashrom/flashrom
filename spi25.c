@@ -307,7 +307,7 @@ static int spi_poll_wip(struct flashctx *const flash, const unsigned int poll_de
 {
 	/* FIXME: We can't tell if spi_read_status_register() failed. */
 	/* FIXME: We don't time out. */
-	while (spi_read_status_register(flash) & SPI_SR_WIP)
+	while (spi_read_status_register(flash, JEDEC_RDSR) & SPI_SR_WIP)
 		programmer_delay(poll_delay);
 	/* FIXME: Check the status register for errors. */
 	return 0;

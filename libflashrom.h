@@ -69,4 +69,12 @@ int flashrom_layout_include_region(struct flashrom_layout *, const char *name);
 void flashrom_layout_release(struct flashrom_layout *);
 void flashrom_layout_set(struct flashrom_flashctx *, const struct flashrom_layout *);
 
+/*
+ * D-Team args macros
+ * Note: number must be larger than ASCII bytes, i.e. larger than 256
+ */
+#define WINBOND_ADP_STATUS	257
+#define WINBOND_ADP_ENABLE	258
+#define WINBOND_ADP_DISABLE	259
+
 #endif				/* !__LIBFLASHROM_H__ */
