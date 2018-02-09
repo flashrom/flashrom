@@ -454,27 +454,27 @@ static int spi_write_cmd(struct flashctx *const flash, const uint8_t op,
 
 int spi_chip_erase_60(struct flashctx *flash)
 {
-	/* This usually takes 1-85s, so wait in 1s steps. */
-	return spi_simple_write_cmd(flash, 0x60, 1000 * 1000);
+	/* This usually takes 1-85s, so wait in 0.1s steps. */
+	return spi_simple_write_cmd(flash, 0x60, 100 * 1000);
 }
 
 int spi_chip_erase_62(struct flashctx *flash)
 {
-	/* This usually takes 2-5s, so wait in 100ms steps. */
-	return spi_simple_write_cmd(flash, 0x62, 100 * 1000);
+	/* This usually takes 2-5s, so wait in 20ms steps. */
+	return spi_simple_write_cmd(flash, 0x62, 20 * 1000);
 }
 
 int spi_chip_erase_c7(struct flashctx *flash)
 {
-	/* This usually takes 1-85s, so wait in 1s steps. */
-	return spi_simple_write_cmd(flash, 0xc7, 1000 * 1000);
+	/* This usually takes 1-85s, so wait in 0.1s steps. */
+	return spi_simple_write_cmd(flash, 0xc7, 100 * 1000);
 }
 
 int spi_block_erase_52(struct flashctx *flash, unsigned int addr,
 		       unsigned int blocklen)
 {
-	/* This usually takes 100-4000ms, so wait in 100ms steps. */
-	return spi_write_cmd(flash, 0x52, false, addr, NULL, 0, 100 * 1000);
+	/* This usually takes 100-4000ms, so wait in 20ms steps. */
+	return spi_write_cmd(flash, 0x52, false, addr, NULL, 0, 20 * 1000);
 }
 
 /* Block size is usually
@@ -482,8 +482,8 @@ int spi_block_erase_52(struct flashctx *flash, unsigned int addr,
  */
 int spi_block_erase_c4(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
 {
-	/* This usually takes 240-480s, so wait in 500ms steps. */
-	return spi_write_cmd(flash, 0xc4, false, addr, NULL, 0, 500 * 1000);
+	/* This usually takes 240-480s, so wait in 100ms steps. */
+	return spi_write_cmd(flash, 0xc4, false, addr, NULL, 0, 100 * 1000);
 }
 
 /* Block size is usually
@@ -494,8 +494,8 @@ int spi_block_erase_c4(struct flashctx *flash, unsigned int addr, unsigned int b
 int spi_block_erase_d8(struct flashctx *flash, unsigned int addr,
 		       unsigned int blocklen)
 {
-	/* This usually takes 100-4000ms, so wait in 100ms steps. */
-	return spi_write_cmd(flash, 0xd8, false, addr, NULL, 0, 100 * 1000);
+	/* This usually takes 100-4000ms, so wait in 10ms steps. */
+	return spi_write_cmd(flash, 0xd8, false, addr, NULL, 0, 10 * 1000);
 }
 
 /* Block size is usually
@@ -504,24 +504,24 @@ int spi_block_erase_d8(struct flashctx *flash, unsigned int addr,
 int spi_block_erase_d7(struct flashctx *flash, unsigned int addr,
 		       unsigned int blocklen)
 {
-	/* This usually takes 100-4000ms, so wait in 100ms steps. */
-	return spi_write_cmd(flash, 0xd7, false, addr, NULL, 0, 100 * 1000);
+	/* This usually takes 100-4000ms, so wait in 10ms steps. */
+	return spi_write_cmd(flash, 0xd7, false, addr, NULL, 0, 10 * 1000);
 }
 
 /* Page erase (usually 256B blocks) */
 int spi_block_erase_db(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
 {
 	/* This takes up to 20ms usually (on worn out devices
-	   up to the 0.5s range), so wait in 1ms steps. */
-	return spi_write_cmd(flash, 0xdb, false, addr, NULL, 0, 1 * 1000);
+	   up to the 0.5s range), so wait in 0.1ms steps. */
+	return spi_write_cmd(flash, 0xdb, false, addr, NULL, 0, 1 * 100);
 }
 
 /* Sector size is usually 4k, though Macronix eliteflash has 64k */
 int spi_block_erase_20(struct flashctx *flash, unsigned int addr,
 		       unsigned int blocklen)
 {
-	/* This usually takes 15-800ms, so wait in 10ms steps. */
-	return spi_write_cmd(flash, 0x20, false, addr, NULL, 0, 10 * 1000);
+	/* This usually takes 15-800ms, so wait in 1ms steps. */
+	return spi_write_cmd(flash, 0x20, false, addr, NULL, 0, 1 * 1000);
 }
 
 int spi_block_erase_50(struct flashctx *flash, unsigned int addr, unsigned int blocklen)

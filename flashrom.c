@@ -6,6 +6,7 @@
  * Copyright (C) 2005-2008 coresystems GmbH
  * Copyright (C) 2008,2009 Carl-Daniel Hailfinger
  * Copyright (C) 2016 secunet Security Networks AG
+ * Copyright (C) 2017-2018 "Jackson" Ming Hu, D-Team Technology (Shenzhen) Co, Ltd.
  * (Written by Nico Huber <nico.huber@secunet.com> for secunet)
  *
  * This program is free software; you can redistribute it and/or modify
@@ -1642,7 +1643,7 @@ static int walk_by_layout(struct flashctx *const flashctx, struct walk_info *con
 
 		size_t j;
 		int error = 1; /* retry as long as it's 1 */
-		for (j = 0; j < NUM_ERASEFUNCTIONS; ++j) {
+		for (j = (NUM_ERASEFUNCTIONS - 1); j >= 0; j--) {
 			if (j != 0)
 				msg_cinfo("Looking for another erase function.\n");
 			msg_cdbg("Trying erase function %zi... ", j);
