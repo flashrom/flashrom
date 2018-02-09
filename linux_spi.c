@@ -115,7 +115,14 @@ int linux_spi_init(void)
 			return 1;
 		}
 
-		msg_pdbg("Using %d kHz clock\n", speed_hz/1000);
+		if (ioctl(fd, SPI_IOC_RD_MAX_SPEED_HZ, &speed_hz) == -1) {
+			msg_perr("%s: failed to set READ speed %dHz: %s\n",
+				 __func__, speed_hz, strerror(errno));
+			close(fd);
+			return 1;
+		}
+
+		msg_pinfo("Using %d kHz clock\n", speed_hz/1000);
 	}
 
 	if (ioctl(fd, SPI_IOC_WR_MODE, &mode) == -1) {
