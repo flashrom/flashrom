@@ -957,4 +957,7 @@
 #define WINBOND_W49V002A	0xB0
 #define WINBOND_W49V002FA	0x32
 
+#define ZETTADEVICE_ID          0xBA	/* Zetta Device */
+#define ZETTADEVICE_ZD25D40     0x2013
+
 #endif /* !FLASHCHIPS_H */
