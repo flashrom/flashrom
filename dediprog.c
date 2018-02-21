@@ -144,6 +144,17 @@ enum dediprog_standalone_mode {
 	LEAVE_STANDALONE_MODE = 1,
 };
 
+/*
+ * These are not official designations; they are for use in flashrom only.
+ * Order must be preserved so that comparison operators work.
+ */
+enum protocol {
+	PROTOCOL_UNKNOWN,
+	PROTOCOL_V1,
+	PROTOCOL_V2,
+	PROTOCOL_V3,
+};
+
 const struct dev_entry devs_dediprog[] = {
 	{0x0483, 0xDADA, OK, "Dediprog", "SF100/SF600"},
 
@@ -169,16 +180,24 @@ const char * LIBUSB_CALL libusb_error_name(int error_code)
 }
 #endif
 
-/* Returns true if firmware (and thus hardware) supports the "new" protocol */
-static bool is_new_prot(void)
+static enum protocol protocol(void)
 {
+	/* Firmware version < 5.0.0 is handled explicitly in some cases. */
 	switch (dediprog_devicetype) {
 	case DEV_SF100:
-		return dediprog_firmwareversion >= FIRMWARE_VERSION(5, 5, 0);
+		if (dediprog_firmwareversion < FIRMWARE_VERSION(5, 5, 0))
+			return PROTOCOL_V1;
+		else
+			return PROTOCOL_V2;
 	case DEV_SF600:
-		return dediprog_firmwareversion >= FIRMWARE_VERSION(6, 9, 0);
+		if (dediprog_firmwareversion < FIRMWARE_VERSION(6, 9, 0))
+			return PROTOCOL_V1;
+		else if (dediprog_firmwareversion <= FIRMWARE_VERSION(7, 2, 21))
+			return PROTOCOL_V2;
+		else
+			return PROTOCOL_V3;
 	default:
-		return 0;
+		return PROTOCOL_UNKNOWN;
 	}
 }
 
@@ -287,7 +306,7 @@ static int dediprog_set_leds(int leds)
 	 * FIXME: take IO pins into account
 	 */
 	int target_leds, ret;
-	if (is_new_prot()) {
+	if (protocol() >= PROTOCOL_V2) {
 		target_leds = (leds ^ 7) << 8;
 		ret = dediprog_write(CMD_SET_IO_LED, target_leds, 0, NULL, 0);
 	} else {
@@ -387,7 +406,8 @@ static int dediprog_set_spi_speed(unsigned int spispeed_idx)
 	return 0;
 }
 
-static void fill_rw_cmd_payload(uint8_t *data_packet, unsigned int count, uint8_t dedi_spi_cmd, unsigned int *value, unsigned int *idx, unsigned int start) {
+static void fill_rw_cmd_payload(uint8_t *data_packet, unsigned int count, uint8_t dedi_spi_cmd,
+		unsigned int *value, unsigned int *idx, unsigned int start, int is_read) {
 	/* First 5 bytes are common in both generations. */
 	data_packet[0] = count & 0xff;
 	data_packet[1] = (count >> 8) & 0xff;
@@ -395,13 +415,26 @@ static void fill_rw_cmd_payload(uint8_t *data_packet, unsigned int count, uint8_
 	data_packet[3] = dedi_spi_cmd; /* Read/Write Mode (currently READ_MODE_STD, WRITE_MODE_PAGE_PGM or WRITE_MODE_2B_AAI) */
 	data_packet[4] = 0; /* "Opcode". Specs imply necessity only for READ_MODE_4B_ADDR_FAST and WRITE_MODE_4B_ADDR_256B_PAGE_PGM */
 
-	if (is_new_prot()) {
+	if (protocol() >= PROTOCOL_V2) {
 		*value = *idx = 0;
 		data_packet[5] = 0; /* RFU */
 		data_packet[6] = (start >>  0) & 0xff;
 		data_packet[7] = (start >>  8) & 0xff;
 		data_packet[8] = (start >> 16) & 0xff;
 		data_packet[9] = (start >> 24) & 0xff;
+		if (protocol() >= PROTOCOL_V3) {
+			if (is_read) {
+				data_packet[10] = 0x00;	/* address length (3 or 4) */
+				data_packet[11] = 0x00;	/* dummy cycle / 2 */
+			} else {
+				/* 16 LSBs and 16 HSBs of page size */
+				/* FIXME: This assumes page size of 256. */
+				data_packet[10] = 0x00;
+				data_packet[11] = 0x01;
+				data_packet[12] = 0x00;
+				data_packet[13] = 0x00;
+			}
+		}
 	} else {
 		*value = start % 0x10000;
 		*idx = start / 0x10000;
@@ -434,10 +467,24 @@ static int dediprog_spi_bulk_read(struct flashctx *flash, uint8_t *buf, unsigned
 	if (len == 0)
 		return 0;
 
-	/* Command packet size of protocols: new 10 B, old 5 B. */
-	uint8_t data_packet[is_new_prot() ? 10 : 5];
+	int command_packet_size;
+	switch (protocol()) {
+	case PROTOCOL_V1:
+		command_packet_size = 5;
+		break;
+	case PROTOCOL_V2:
+		command_packet_size = 10;
+		break;
+	case PROTOCOL_V3:
+		command_packet_size = 12;
+		break;
+	default:
+		return 1;
+	}
+
+	uint8_t data_packet[command_packet_size];
 	unsigned int value, idx;
-	fill_rw_cmd_payload(data_packet, count, READ_MODE_STD, &value, &idx, start);
+	fill_rw_cmd_payload(data_packet, count, READ_MODE_STD, &value, &idx, start, 1);
 
 	int ret = dediprog_write(CMD_READ, value, idx, data_packet, sizeof(data_packet));
 	if (ret != sizeof(data_packet)) {
@@ -576,10 +623,24 @@ static int dediprog_spi_bulk_write(struct flashctx *flash, const uint8_t *buf, u
 	if (len == 0)
 		return 0;
 
-	/* Command packet size of protocols: new 10 B, old 5 B. */
-	uint8_t data_packet[is_new_prot() ? 10 : 5];
+	int command_packet_size;
+	switch (protocol()) {
+	case PROTOCOL_V1:
+		command_packet_size = 5;
+		break;
+	case PROTOCOL_V2:
+		command_packet_size = 10;
+		break;
+	case PROTOCOL_V3:
+		command_packet_size = 14;
+		break;
+	default:
+		return 1;
+	}
+
+	uint8_t data_packet[command_packet_size];
 	unsigned int value, idx;
-	fill_rw_cmd_payload(data_packet, count, dedi_spi_cmd, &value, &idx, start);
+	fill_rw_cmd_payload(data_packet, count, dedi_spi_cmd, &value, &idx, start, 0);
 	int ret = dediprog_write(CMD_WRITE, value, idx, data_packet, sizeof(data_packet));
 	if (ret != sizeof(data_packet)) {
 		msg_perr("Command Write SPI Bulk failed, %s!\n", libusb_error_name(ret));
@@ -686,7 +747,7 @@ static int dediprog_spi_send_command(struct flashctx *flash,
 	unsigned int idx, value;
 	/* New protocol has options and timeout combined as value while the old one used the value field for
 	 * timeout and the index field for options. */
-	if (is_new_prot()) {
+	if (protocol() >= PROTOCOL_V2) {
 		idx = 0;
 		value = readcnt ? 0x1 : 0x0; // Indicate if we require a read
 	} else {
@@ -711,7 +772,7 @@ static int dediprog_spi_send_command(struct flashctx *flash,
 	 * The specification also uses only 0 in its examples, so the lesson to learn here:
 	 * "Never trust the description of an interface in the documentation but use the example code and pray."
 	const uint8_t read_timeout = 10 + readcnt/512;
-	if (is_new_prot()) {
+	if (protocol() >= PROTOCOL_V2) {
 		idx = 0;
 		value = min(read_timeout, 0xFF) | (0 << 8) ; // Timeout in lower byte, option in upper byte
 	} else {
@@ -762,7 +823,12 @@ static int dediprog_check_devicestring(void)
 		msg_perr("Unexpected firmware version %d.%d.%d!\n", fw[0], fw[1], fw[2]);
 		return 1;
 	}
+
 	dediprog_firmwareversion = FIRMWARE_VERSION(fw[0], fw[1], fw[2]);
+	if (protocol() == PROTOCOL_UNKNOWN) {
+		msg_perr("Internal error: Unable to determine protocol version.\n");
+		return 1;
+	}
 
 	return 0;
 }
@@ -922,7 +988,6 @@ static const struct spi_master spi_master_dediprog = {
 
 static int dediprog_shutdown(void *data)
 {
-	dediprog_firmwareversion = FIRMWARE_VERSION(0, 0, 0);
 	dediprog_devicetype = DEV_UNKNOWN;
 
 	/* URB 28. Command Set SPI Voltage to 0. */
@@ -1083,7 +1148,7 @@ int dediprog_init(void)
 
 	/* Set all possible LEDs as soon as possible to indicate activity.
 	 * Because knowing the firmware version is required to set the LEDs correctly we need to this after
-	 * dediprog_check_devicestring() has queried the device and set dediprog_firmwareversion. */
+	 * dediprog_check_devicestring() has queried the device. */
 	dediprog_set_leds(LED_ALL);
 
 	/* Select target/socket, frequency and VCC. */
