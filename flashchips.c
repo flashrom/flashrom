@@ -2177,6 +2177,35 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Atmel",
+		.name		= "AT25XE041B",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= ATMEL_ID,
+		.model_id	= ATMEL_AT25XE041B,
+		.total_size	= 512,
+		.page_size	= 256,
+		.feature_bits	= FEATURE_WRSR_WREN,
+		.tested		= TEST_OK_PREW,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {64 * 1024, 8} },
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { {512 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
+		},
+		.printlock	= spi_prettyprint_status_register_at25df,
+		.unlock		= spi_disable_blockprotect_at2x_global_unprotect,
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read,
+		.voltage	= {1600, 3600}, /* 1.6V - 3.6V */
+	},
+
+	{
+		.vendor		= "Atmel",
 		.name		= "AT26DF041",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
