@@ -207,7 +207,7 @@ static int usb8452_spi_set_io_voltage(uint16_t IOVoltage_mV)
     uint8_t selected_voltage_100mV = 0;
     uint8_t IO_voltage_100mV = 0;
 
-    if (device_pid != USB8452) {
+    if (device_pid == USB8451) {
         msg_pwarn("USB-8451 does not supports the changing of the SPI IO voltage\n");
         return 0;
     }
@@ -215,7 +215,7 @@ static int usb8452_spi_set_io_voltage(uint16_t IOVoltage_mV)
     // limit the IO voltage to 3.3V
     if (IOVoltage_mV > 3300) {
         msg_pinfo("USB-8452 maximum IO voltage is 3.3V\n");
-        IO_voltage_100mV = kNi845x33Volts;
+        return -1;
     } else {
         IO_voltage_100mV = ((float)IOVoltage_mV / 100.0f);
     }
@@ -226,7 +226,7 @@ static int usb8452_spi_set_io_voltage(uint16_t IOVoltage_mV)
             IO_voltage_100mV > usb8452_io_voltages_in_100mV[i+1]) {
             selected_voltage_100mV = usb8452_io_voltages_in_100mV[i];
             if (IO_voltage_100mV != usb8452_io_voltages_in_100mV[i]) {
-                msg_pwarn("USB-8452 IO Voltage coerced to: %.1f V\n", (float)selected_voltage_100mV / 10.0f);
+                msg_pwarn("USB-8452 IO Voltage forced to: %.1f V\n", (float)selected_voltage_100mV / 10.0f);
 			} else {
                 msg_pwarn("USB-8452 IO Voltage set to: %.1f V\n", (float)selected_voltage_100mV / 10.0f);
 			}
@@ -281,9 +281,8 @@ static int ni845x_spi_set_speed(uint16_t clockToSetInkHz)
         return -1;
     } else {
         if (clock_freq_read_KHz != clockToSetInkHz) {
-            msg_pinfo("SPI clock frequency coerced to: %d KHz (requested: %d KHz)\n",
-                      (int)clock_freq_read_KHz,
-                      (int)clockToSetInkHz);
+            msg_pinfo("SPI clock frequency forced to: %d KHz (requested: %d KHz)\n",
+                      (int)clock_freq_read_KHz, (int)clockToSetInkHz);
         } else {
             msg_pinfo("SPI clock frequency set to: %d KHz\n",
                       (int)clockToSetInkHz);
@@ -304,6 +303,14 @@ void ni845x_spi_print_available_devices(void)
     uint32_t pid, vid, usb_bus, serial_as_number;
 
     tmp = ni845xFindDevice(resource_handle, &device_find_handle, &found_devices_count);
+    if (tmp != 0) {
+        ni845xStatusToString(tmp, ARRAY_SIZE(error_string_buffer), error_string_buffer);
+        msg_perr("ni845xFindDevice() failed with: %s (%ld)\n",
+                 error_string_buffer,
+                 tmp);
+        return;
+    }
+
     if (found_devices_count) {
         msg_pinfo("Available devices:\n");
         do {
@@ -345,8 +352,8 @@ int ni845x_spi_init(void)
     int spi_speed_KHz = 1000; // selecting 1 MHz SCK is a good bet
     int32 tmp = 0;
 
-    // read the csnumber parameter (which Chip select should we use)
-    CS_str = extract_programmer_param("csnumber");
+    // read the cs parameter (which Chip select should we use)
+    CS_str = extract_programmer_param("cs");
     if (CS_str) {
         CS_number = atoi(CS_str);
         if (CS_number < 0 || 7 < CS_number) {
@@ -456,7 +463,7 @@ static int ni845x_spi_transmit(struct flashctx *flash,
     ret = ni845xSpiWriteRead(device_handle,
                                    configuration_handle,
                                    (uInt32)(write_cnt + read_cnt),
-                                   (uInt8*)transfer_buffer,
+                                   transfer_buffer,
                                    &read_size,
                                    transfer_buffer);
     if (ret < 0) {

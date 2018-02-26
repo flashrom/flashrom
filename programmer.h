@@ -546,7 +546,7 @@ void ch341a_spi_delay(unsigned int usecs);
 extern const struct dev_entry devs_ch341a_spi[];
 #endif
 
-/* ch341a_spi.c */
+/* ni845x_spi.c */
 #if CONFIG_NI845X_SPI == 1
 int ni845x_spi_init(void);
 #endif
