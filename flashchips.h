@@ -150,6 +150,7 @@
 #define ATMEL_AT25F4096		0x64	/* Needs AT25F_RDID */
 #define ATMEL_AT25FS010		0x6601
 #define ATMEL_AT25FS040		0x6604
+#define ATMEL_AT25XE041B	0x4402
 #define ATMEL_AT26DF041		0x4400
 #define ATMEL_AT26DF081		0x4500	/* guessed, no datasheet available */
 #define ATMEL_AT26DF081A	0x4501
