@@ -97,7 +97,7 @@ debug_shell = $(shell export LC_ALL=C ; { echo 'exec: export LC_ALL=C ; { $(1) ;
 
 # HOST_OS is only used to work around local toolchain issues.
 HOST_OS ?= $(shell uname)
-ifeq ($(HOST_OS), MINGW32_NT-5.1)
+ifeq ($(findstring MINGW, $(HOST_OS)), MINGW)
 # Explicitly set CC = gcc on MinGW, otherwise: "cc: command not found".
 CC = gcc
 endif
@@ -188,8 +188,9 @@ endif
 # FIXME: Should we check for Cygwin/MSVC as well?
 ifeq ($(TARGET_OS), MinGW)
 EXEC_SUFFIX := .exe
+override LDFLAGS += -lwinmm -Wl
 # MinGW doesn't have the ffs() function, but we can use gcc's __builtin_ffs().
-FLASHROM_CFLAGS += -Dffs=__builtin_ffs
+FLASHROM_CFLAGS += -Dffs=__builtin_ffs -D_CRT_SECURE_NO_WARNINGS
 # Some functions provided by Microsoft do not work as described in C99 specifications. This macro fixes that
 # for MinGW. See http://sourceforge.net/p/mingw-w64/wiki2/printf%20and%20scanf%20family/ */
 FLASHROM_CFLAGS += -D__USE_MINGW_ANSI_STDIO=1
