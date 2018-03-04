@@ -188,7 +188,7 @@ endif
 # FIXME: Should we check for Cygwin/MSVC as well?
 ifeq ($(TARGET_OS), MinGW)
 EXEC_SUFFIX := .exe
-override LDFLAGS += -lwinmm -Wl
+override LDFLAGS += -lwinmm
 # MinGW doesn't have the ffs() function, but we can use gcc's __builtin_ffs().
 FLASHROM_CFLAGS += -Dffs=__builtin_ffs -D_CRT_SECURE_NO_WARNINGS
 # Some functions provided by Microsoft do not work as described in C99 specifications. This macro fixes that
