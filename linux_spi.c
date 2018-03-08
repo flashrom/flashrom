@@ -183,7 +183,7 @@ static int linux_spi_read(struct flashctx *flash, uint8_t *buf,
 			  unsigned int start, unsigned int len)
 {
 	return spi_read_chunked(flash, buf, start, len,
-				(unsigned int)getpagesize());
+				(unsigned int)getpagesize() - 4);
 }
 
 static int linux_spi_write_256(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len)
