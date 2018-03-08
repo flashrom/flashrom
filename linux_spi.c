@@ -221,8 +221,9 @@ static int linux_spi_send_command(struct flashctx *flash, unsigned int writecnt,
 
 static int linux_spi_read(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len)
 {
-	/* Read buffer is fully utilized for data. */
-	return spi_read_chunked(flash, buf, start, len, max_kernel_buf_size);
+	/* Older kernels use a single buffer for combined input and output
+	   data. So account for longest possible command + address, too. */
+	return spi_read_chunked(flash, buf, start, len, max_kernel_buf_size - 5);
 }
 
 static int linux_spi_write_256(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len)
