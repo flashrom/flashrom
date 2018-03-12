@@ -15066,10 +15066,10 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Winbond",
-		.name		= "W25Q80.W",
+		.name		= "W25Q80BW",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= WINBOND_NEX_ID,
-		.model_id	= WINBOND_NEX_W25Q80_W,
+		.model_id	= WINBOND_NEX_W25Q80BW,
 		.total_size	= 1024,
 		.page_size	= 256,
 		/* OTP: 256B total; read 0x48; write 0x42, erase 0x44, read ID 0x4B */
