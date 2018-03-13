@@ -849,6 +849,8 @@ static int spi_enter_exit_4ba(struct flashctx *const flash, const bool enter)
 		ret = spi_send_command(flash, sizeof(cmd), 0, &cmd, NULL);
 	else if (flash->chip->feature_bits & FEATURE_4BA_ENTER_WREN)
 		ret = spi_simple_write_cmd(flash, cmd, 0);
+	else if (flash->chip->feature_bits & FEATURE_4BA_ENTER_EAR7)
+		ret = spi_set_extended_address(flash, enter ? 0x80 : 0x00);
 
 	if (!ret)
 		flash->in_4ba_mode = enter;

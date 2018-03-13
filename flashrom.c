@@ -2260,7 +2260,7 @@ int prepare_flash_access(struct flashctx *const flash,
 	flash->in_4ba_mode = false;
 
 	/* Enable/disable 4-byte addressing mode if flash chip supports it */
-	if (flash->chip->feature_bits & (FEATURE_4BA_ENTER | FEATURE_4BA_ENTER_WREN)) {
+	if (flash->chip->feature_bits & (FEATURE_4BA_ENTER | FEATURE_4BA_ENTER_WREN | FEATURE_4BA_ENTER_EAR7)) {
 		int ret;
 		if (spi_master_4ba(flash))
 			ret = spi_enter_4ba(flash);
