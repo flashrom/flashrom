@@ -12516,6 +12516,48 @@ const struct flashchip flashchips[] = {
 	},
 
 	{
+		.vendor		= "Spansion",
+		.name		= "S25FL256S......0", /* hybrid: 32 (top or bottom) 4 kB sub-sectors + 64 kB sectors */
+		.bustype	= BUS_SPI,
+		.manufacture_id	= SPANSION_ID,
+		.model_id	= SPANSION_S25FL256,
+		.total_size	= 32768,
+		.page_size	= 256,
+		/* OTP: 1024B total, 32B reserved; read 0x4B; write 0x42 */
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_4BA_EXT_ADDR,
+		.tested		= TEST_OK_PREW,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	= {
+			{
+				/* This chip supports erasing of the 32 so-called "parameter sectors" with
+				 * opcode 0x20. Trying to access an address outside these 4kB blocks does
+				 * have no effect on the memory contents, but sets a flag in the SR.
+				.eraseblocks = {
+					{4 * 1024, 32},
+					{64 * 1024, 254} // inaccessible
+				},
+				.block_erase = spi_block_erase_20,
+			}, { */
+				.eraseblocks = { { 64 * 1024, 512} },
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { { 32768 * 1024, 1} },
+				.block_erase = spi_block_erase_60,
+			}, {
+				.eraseblocks = { { 32768 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
+		},
+		.printlock	= spi_prettyprint_status_register_bp2_ep_srwd, /* TODO: SR2 and many others */
+		.unlock		= spi_disable_blockprotect_bp2_srwd, /* TODO: various other locks */
+		.write		= spi_chip_write_256, /* Multi I/O supported */
+		.read		= spi_chip_read, /* Fast read (0x0B) and multi I/O supported */
+		.voltage	= {2700, 3600},
+		.wrea_override	= 0x17,
+	},
+
+	{
 		.vendor		= "SST",
 		.name		= "SST25LF020A",
 		.bustype	= BUS_SPI,
