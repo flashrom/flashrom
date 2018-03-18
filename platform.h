@@ -69,6 +69,9 @@
 #elif defined (__m68k__)
 	#define __FLASHROM_ARCH__ "m68k"
 	#define IS_M68K 1
+#elif defined (__riscv)
+	#define __FLASHROM_ARCH__ "riscv"
+	#define IS_RISCV 1
 #elif defined (__sh__)
 	#define __FLASHROM_ARCH__ "sh"
 	#define IS_SH 1
@@ -77,7 +80,7 @@
 	#define IS_S390 1
 #endif
 
-#if !(IS_X86 || IS_MIPS || IS_PPC || IS_ARM || IS_SPARC || IS_ALPHA || IS_HPPA || IS_M68K || IS_SH || IS_S390)
+#if !(IS_X86 || IS_MIPS || IS_PPC || IS_ARM || IS_SPARC || IS_ALPHA || IS_HPPA || IS_M68K || IS_RISCV || IS_SH || IS_S390)
 #error Unknown architecture
 #endif
 
