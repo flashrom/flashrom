@@ -170,7 +170,7 @@ recalibrate:
 	/* Avoid division by zero, but in that case the loop is shot anyway. */
 	if (!timeusec)
 		timeusec = 1;
-	
+
 	/* Compute rounded up number of loops per microsecond. */
 	micro = (count * micro) / timeusec + 1;
 	msg_pdbg("%luM loops per second, ", micro);
@@ -183,7 +183,7 @@ recalibrate:
 		for (i = 0; i < 4; i++) {
 			if (resolution && (resolution < 10)) {
 				timeusec = measure_delay(100);
-			} else if (resolution && 
+			} else if (resolution &&
 				   (resolution < ULONG_MAX / 200)) {
 				timeusec = measure_delay(resolution * 10) *
 					   100 / (resolution * 10);

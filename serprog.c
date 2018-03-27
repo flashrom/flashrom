@@ -662,7 +662,7 @@ int serprog_init(void)
 		}
 		msg_pdbg(MSGHEADER "operation buffer size is %d\n",
 			 sp_device_opbuf_size);
-  	}
+	}
 
 	if (sp_check_commandavail(S_CMD_S_PIN_STATE)) {
 		uint8_t en = 1;

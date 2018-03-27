@@ -325,13 +325,13 @@ int rpci_write_byte(struct pci_dev *dev, int reg, uint8_t data)
 	register_undo_pci_write_byte(dev, reg);
 	return pci_write_byte(dev, reg, data);
 }
- 
+
 int rpci_write_word(struct pci_dev *dev, int reg, uint16_t data)
 {
 	register_undo_pci_write_word(dev, reg);
 	return pci_write_word(dev, reg, data);
 }
- 
+
 int rpci_write_long(struct pci_dev *dev, int reg, uint32_t data)
 {
 	register_undo_pci_write_long(dev, reg);

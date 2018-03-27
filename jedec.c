@@ -68,7 +68,7 @@ void toggle_ready_jedec(const struct flashctx *flash, chipaddr dst)
  * The Winbond W39V040C wants 50 ms between reads on sector erase toggle,
  * but experiments show that 2 ms are already enough. Pick a safety factor
  * of 4 and use an 8 ms delay.
- * Given that erase is slow on all chips, it is recommended to use 
+ * Given that erase is slow on all chips, it is recommended to use
  * toggle_ready_jedec_slow in erase functions.
  */
 static void toggle_ready_jedec_slow(const struct flashctx *flash, chipaddr dst)

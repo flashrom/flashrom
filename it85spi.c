@@ -54,7 +54,7 @@
 
 /* The 8042 keyboard controller uses an input buffer and an output buffer to
  * communicate with the host CPU. Both buffers are 1-byte depth. That means
- * IBF is set to 1 when the host CPU sends a command to the input buffer 
+ * IBF is set to 1 when the host CPU sends a command to the input buffer
  * of the EC. IBF is cleared to 0 once the command is read by the EC.
  */
 #define KB_IBF 			(1 << 1)  /* Input Buffer Full */

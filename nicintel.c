@@ -40,7 +40,7 @@ const struct dev_entry nics_intel[] = {
 #define NICINTEL_MEMMAP_SIZE (128 * 1024)
 #define NICINTEL_MEMMAP_MASK (NICINTEL_MEMMAP_SIZE - 1)
 
-#define NICINTEL_CONTROL_MEMMAP_SIZE	0x10 
+#define NICINTEL_CONTROL_MEMMAP_SIZE	0x10
 
 #define CSR_FCR 0x0c
 

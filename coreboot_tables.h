@@ -29,7 +29,7 @@
  * is expected to be information that cannot be discovered by
  * other means, such as querying the hardware directly.
  *
- * All of the information should be Position Independent Data.  
+ * All of the information should be Position Independent Data.
  * That is it should be safe to relocated any of the information
  * without it's meaning/correctness changing.   For table that
  * can reasonably be used on multiple architectures the data
@@ -52,9 +52,9 @@
  * table entries and be backwards compatible, but it is not required.
  */
 
-/* Since coreboot is usually compiled 32bit, gcc will align 64bit 
- * types to 32bit boundaries. If the coreboot table is dumped on a 
- * 64bit system, a uint64_t would be aligned to 64bit boundaries, 
+/* Since coreboot is usually compiled 32bit, gcc will align 64bit
+ * types to 32bit boundaries. If the coreboot table is dumped on a
+ * 64bit system, a uint64_t would be aligned to 64bit boundaries,
  * breaking the table format.
  *
  * lb_uint64 will keep 64bit coreboot table values aligned to 32bit

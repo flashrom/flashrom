@@ -159,7 +159,7 @@ struct winbond_mux {
 struct winbond_port {
 	const struct winbond_mux *mux; /* NULL or pointer to mux info for the 8 bits */
 	uint8_t ldn;		/* LDN this GPIO register is located in */
-	uint8_t enable_bit;	/* bit in 0x30 of that LDN to enable 
+	uint8_t enable_bit;	/* bit in 0x30 of that LDN to enable
 	                           the GPIO port */
 	uint8_t base;		/* base register in that LDN for the port */
 };
@@ -547,8 +547,8 @@ void w83697xx_memw_enable(uint16_t port)
 		}
 	} else {
 		msg_pinfo("BIOS ROM is disabled\n");
- 	}
- 	w836xx_ext_leave(port);
+	}
+	w836xx_ext_leave(port);
 }
 
 /*
@@ -1036,7 +1036,7 @@ static int nvidia_mcp_gpio_set(int gpio, int raise)
 	case 0x0364: /* MCP55 */
 		/* find SMBus controller on *this* southbridge */
 		/* The infamous Tyan S2915-E has two south bridges; they are
-		   easily told apart from each other by the class of the 
+		   easily told apart from each other by the class of the
 		   LPC bridge, but have the same SMBus bridge IDs */
 		if (dev->func != 0) {
 			msg_perr("MCP LPC bridge at unexpected function"

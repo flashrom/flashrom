@@ -3068,7 +3068,7 @@ const struct flashchip flashchips[] = {
 			}
 		},
 		.printlock	= printlock_at49f,
- 		.write		= write_jedec_1,
+		.write		= write_jedec_1,
 		.read		= read_memmapped,
 		.voltage	= {4500, 5500},
 	},
@@ -13833,7 +13833,7 @@ const struct flashchip flashchips[] = {
 		.name		= "SST49LF080A",
 		.bustype	= BUS_LPC, /* A/A Mux */
 		.manufacture_id	= SST_ID,
- 		.model_id	= SST_SST49LF080A,
+		.model_id	= SST_SST49LF080A,
 		.total_size	= 1024,
 		.page_size	= 4096,
 		.feature_bits	= FEATURE_EITHER_RESET,

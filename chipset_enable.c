@@ -1117,7 +1117,7 @@ static int enable_flash_cs5530(struct pci_dev *dev, const char *name)
 
 /*
  * Geode systems write protect the BIOS via RCONFs (cache settings similar
- * to MTRRs). To unlock, change MSR 0x1808 top byte to 0x22. 
+ * to MTRRs). To unlock, change MSR 0x1808 top byte to 0x22.
  *
  * Geode systems also write protect the NOR flash chip itself via MSR_NORF_CTL.
  * To enable write to NOR Boot flash for the benefit of systems that have such

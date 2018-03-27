@@ -712,7 +712,7 @@ static void ich_set_bbar(uint32_t min_addr)
 		bbar_off = ICH9_REG_BBAR;
 		break;
 	}
-	
+
 	ichspi_bbar = mmio_readl(ich_spibar + bbar_off) & ~BBAR_MASK;
 	if (ichspi_bbar) {
 		msg_pdbg("Reserved bits in BBAR not zero: 0x%08x\n",
@@ -737,7 +737,7 @@ static void ich_set_bbar(uint32_t min_addr)
  * may even crash.
  */
 static void ich_read_data(uint8_t *data, int len, int reg0_off)
- {
+{
 	int i;
 	uint32_t temp32 = 0;
 

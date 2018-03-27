@@ -505,8 +505,8 @@ static int dediprog_spi_bulk_read(struct flashctx *flash, uint8_t *buf, unsigned
 		if (!transfers[i]) {
 			msg_perr("Allocating libusb transfer %i failed: %s!\n", i, libusb_error_name(ret));
 			goto err_free;
- 		}
- 	}
+		}
+	}
 
 	/* Now transfer requested chunks using libusb's asynchronous interface. */
 	while (!status.error && (status.queued_idx < count)) {

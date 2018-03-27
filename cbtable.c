@@ -289,7 +289,7 @@ int cb_parse_table(const char **vendor, const char **model)
 	}
 
 	addr = ((char *)lb_table) - ((char *)table_area) + start;
-	msg_pinfo("coreboot table found at 0x%lx.\n", 
+	msg_pinfo("coreboot table found at 0x%lx.\n",
 		(unsigned long)lb_table - (unsigned long)table_area + start);
 	rec = (struct lb_record *)(((char *)lb_table) + lb_table->header_bytes);
 	last = (struct lb_record *)(((char *)rec) + lb_table->table_bytes);
