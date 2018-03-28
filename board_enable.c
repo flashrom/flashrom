@@ -1692,6 +1692,7 @@ static int intel_ich_gpio19_raise(void)
 /*
  * Suited for:
  *  - ASUS P5BV-R: LGA775 + 3200 + ICH7
+ *  - AOpen i965GMt-LA: Intel Socket479 + 965GM + ICH8M
  */
 static int intel_ich_gpio20_raise(void)
 {
@@ -2324,6 +2325,7 @@ const struct board_match board_matches[] = {
 	{0x1022, 0x2090,      0,      0,  0x1022, 0x2080,      0,      0, NULL,        "artecgroup", "dbe61", P3, "Artec Group", "DBE61",                 0,   OK, board_artecgroup_dbe6x},
 	{0x1022, 0x2090,      0,      0,  0x1022, 0x2080,      0,      0, NULL,        "artecgroup", "dbe62", P3, "Artec Group", "DBE62",                 0,   OK, board_artecgroup_dbe6x},
 	{0x8086, 0x27b9, 0xa0a0, 0x0632,  0x8086, 0x27da, 0xa0a0, 0x0632, NULL,         NULL, NULL,           P3, "AOpen",       "i945GMx-VFX",           0,   OK, intel_ich_gpio38_raise},
+	{0x8086, 0x2a00, 0xa0a0, 0x063e,  0x8086, 0x2815, 0xa0a0, 0x063e, NULL,         NULL, NULL,           P3, "AOpen",       "i965GMt-LA",            0,   OK, intel_ich_gpio20_raise},
 	{0x8086, 0x277c, 0xa0a0, 0x060b,  0x8086, 0x27da, 0xa0a0, 0x060b, NULL,         NULL, NULL,           P3, "AOpen",       "i975Xa-YDG",            0,   OK, board_aopen_i975xa_ydg},
 	{0x8086, 0x27A0, 0x8086, 0x7270,  0x8086, 0x27B9, 0x8086, 0x7270, "^iMac5,2$",  NULL, NULL,           P2, "Apple",       "iMac5,2",               0,   OK, p2_whitelist_laptop},
 	{0x8086, 0x27A0, 0x8086, 0x7270,  0x8086, 0x27B9, 0x8086, 0x7270, "^MacBook2,1$", NULL, NULL,         P2, "Apple",       "MacBook2,1",            0,   OK, p2_whitelist_laptop},
