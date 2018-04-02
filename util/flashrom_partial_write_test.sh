@@ -13,10 +13,6 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
-#
 # This script attempts to test Flashrom partial write capability by writing
 # patterns of 0xff and 0x00 bytes to the lowest 128kB of flash. 128kB is chosen
 # since 64kB is usually the largest possible block size, so we will try to
