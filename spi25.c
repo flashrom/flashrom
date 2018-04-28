@@ -339,6 +339,11 @@ static int spi_simple_write_cmd(struct flashctx *const flash, const uint8_t op, 
 	return result ? result : status;
 }
 
+int spi_disable_blockprotect_sst26vf016b(struct flashctx *flash)
+{
+	return spi_simple_write_cmd(flash, 0x98, 1000);
+}
+
 static int spi_write_extended_address_register(struct flashctx *const flash, const uint8_t regdata)
 {
 	struct spi_command cmds[] = {
