@@ -195,6 +195,19 @@ int spi_disable_blockprotect(struct flashctx *flash)
 	return spi_disable_blockprotect_generic(flash, 0x3C, 0, 0, 0xFF);
 }
 
+int spi_disable_blockprotect_sst26_global_unprotect(struct flashctx *flash)
+{
+	int result = spi_write_enable(flash);
+	if (result)
+		return result;
+
+	static const unsigned char cmd[] = { 0x98 }; /* ULBPR */
+	result = spi_send_command(flash, sizeof(cmd), 0, cmd, NULL);
+	if (result)
+		msg_cerr("ULBPR failed\n");
+	return result;
+}
+
 /* A common block protection disable that tries to unset the status register bits masked by 0x0C (BP0-1) and
  * protected/locked by bit #7. Useful when bits 4-5 may be non-0). */
 int spi_disable_blockprotect_bp1_srwd(struct flashctx *flash)
