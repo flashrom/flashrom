@@ -82,6 +82,7 @@ static struct libusb_transfer *transfer_ins[USB_IN_TRANSFERS] = {0};
 static unsigned int stored_delay_us = 0;
 
 static struct libusb_device_handle *handle = NULL;
+struct libusb_context *usb_ctx;
 
 const struct dev_entry devs_ch341a_spi[] = {
 	{0x1A86, 0x5512, OK, "Winchiphead (WCH)", "CH341A"},
@@ -249,7 +250,7 @@ err:
 		}
 		if (finished)
 			break;
-		libusb_handle_events_timeout(NULL, &(struct timeval){1, 0});
+		libusb_handle_events_timeout(usb_ctx, &(struct timeval){1, 0});
 	}
 	return -1;
 }
@@ -344,7 +345,9 @@ void ch341a_spi_delay(unsigned int usecs)
 	stored_delay_us += usecs;
 }
 
-static int ch341a_spi_spi_send_command(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr)
+static int ch341a_spi_spi_send_command(struct flashctx __attribute__((unused))*flash, 
+										unsigned int writecnt, unsigned int readcnt, 
+										const unsigned char *writearr, unsigned char *readarr)
 {
 	if (handle == NULL)
 		return -1;
@@ -408,7 +411,7 @@ static const struct spi_master spi_master_ch341a_spi = {
 	.write_aai	= default_spi_write_aai,
 };
 
-static int ch341a_spi_shutdown(void *data)
+static int ch341a_spi_shutdown(void __attribute__((unused))*data)
 {
 	if (handle == NULL)
 		return -1;
@@ -423,7 +426,7 @@ static int ch341a_spi_shutdown(void *data)
 	}
 	libusb_release_interface(handle, 0);
 	libusb_close(handle);
-	libusb_exit(NULL);
+	libusb_exit(usb_ctx);
 	handle = NULL;
 	return 0;
 }
@@ -435,17 +438,21 @@ int ch341a_spi_init(void)
 		return -1;
 	}
 
-	int32_t ret = libusb_init(NULL);
+	int32_t ret = libusb_init(&usb_ctx);
 	if (ret < 0) {
 		msg_perr("Couldnt initialize libusb!\n");
 		return -1;
 	}
-
-	libusb_set_debug(NULL, 3); // Enable information, warning and error messages (only).
+#if LIBUSB_API_VERSION >= 0x01000106
+	libusb_set_option(usb_ctx, LIBUSB_OPTION_LOG_LEVEL, LIBUSB_LOG_LEVEL_WARNING);
+	libusb_set_option(usb_ctx, LIBUSB_OPTION_USE_USBDK, 1);
+#else
+	libusb_set_debug(usb_ctx, LIBUSB_LOG_LEVEL_WARNING);
+#endif
 
 	uint16_t vid = devs_ch341a_spi[0].vendor_id;
 	uint16_t pid = devs_ch341a_spi[0].device_id;
-	handle = libusb_open_device_with_vid_pid(NULL, vid, pid);
+	handle = libusb_open_device_with_vid_pid(usb_ctx, vid, pid);
 	if (handle == NULL) {
 		msg_perr("Couldn't open device %04x:%04x.\n", vid, pid);
 		return -1;
