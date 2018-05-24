@@ -376,6 +376,24 @@ int linux_mtd_init(void)
 		}
 	}
 
+	/*
+	 * If user specified the MTD device number then error out if it doesn't
+	 * appear to exist. Otherwise assume the error is benign and print a
+	 * debug message. Bail out in either case.
+	 */
+	char sysfs_path[32];
+	if (snprintf(sysfs_path, sizeof(sysfs_path), "%s/mtd%d", LINUX_MTD_SYSFS_ROOT, dev_num) < 0)
+		goto linux_mtd_init_exit;
+
+	struct stat s;
+	if (stat(sysfs_path, &s) < 0) {
+		if (param)
+			msg_perr("%s does not exist\n", sysfs_path);
+		else
+			msg_pdbg("%s does not exist\n", sysfs_path);
+		goto linux_mtd_init_exit;
+	}
+
 	if (linux_mtd_setup(dev_num))
 		goto linux_mtd_init_exit;
 
