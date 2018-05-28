@@ -121,7 +121,7 @@ enum dediprog_readmode {
 };
 
 enum dediprog_writemode {
-	WRITE_MODE_PAGE_PGM 			= 1,
+	WRITE_MODE_PAGE_PGM			= 1,
 	WRITE_MODE_PAGE_WRITE			= 2,
 	WRITE_MODE_1B_AAI			= 3,
 	WRITE_MODE_2B_AAI			= 4,

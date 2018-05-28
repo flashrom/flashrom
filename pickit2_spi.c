@@ -449,7 +449,7 @@ int pickit2_spi_init(void)
 	(void)usb_find_devices();
 	const uint16_t vid = devs_pickit2_spi[0].vendor_id;
 	const uint16_t pid = devs_pickit2_spi[0].device_id;
- 	struct usb_device *dev = get_device_by_vid_pid(vid, pid, usedevice);
+	struct usb_device *dev = get_device_by_vid_pid(vid, pid, usedevice);
 	if (dev == NULL) {
 		msg_perr("Could not find a PICkit2 on USB!\n");
 		return 1;

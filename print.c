@@ -974,7 +974,7 @@ const struct board_info boards_known[] = {
 	B("MSI",	"MS-7312 (K9MM-V)",	OK, "http://www.msi.com/product/mb/K9MM-V.html", NULL),
 	B("MSI",	"MS-7336",		OK, NULL, "Some non-essential DMI data (e.g. serial numbers) is overwritten when using flashrom. This is an OEM board used by HP (e.g. dx2300 Microtower)."),
 	B("MSI",	"MS-7345 (P35 Neo2-FIR)", OK, "http://www.msi.com/product/mb/P35-Neo2-FR---FIR.html", NULL),
-	B("MSI",	"MS-7357 (G33M)", 	OK, "http://www.msi.com/product/mb/G33M.html", NULL),
+	B("MSI",	"MS-7357 (G33M)",	OK, "http://www.msi.com/product/mb/G33M.html", NULL),
 	B("MSI",	"MS-7368 (K9AG Neo2-Digital)", OK, "http://www.msi.com/product/mb/K9AG-Neo2-Digital.html", NULL),
 	B("MSI",	"MS-7369 (K9N Neo V2)", OK, "http://www.msi.com/product/mb/K9N-Neo-V2.html", NULL),
 	B("MSI",	"MS-7376 (K9A2 Platinum V1)", OK, "http://www.msi.com/product/mb/K9A2-Platinum.html", NULL),

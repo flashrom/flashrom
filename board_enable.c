@@ -527,10 +527,10 @@ void w83697xx_memw_enable(uint16_t port)
 
 		/* CR24 Bits 7 & 2 must be set to 0 enable the flash ROM    */
 		/* address segments 000E0000h ~ 000FFFFFh on W83697SF/UF/UG */
-		/* These bits are reserved on W83697HF/F/HG 		    */
-		/* Shouldn't be needed though.			   	    */
+		/* These bits are reserved on W83697HF/F/HG		    */
+		/* Shouldn't be needed though.				    */
 
-		/* CR28 Bit3 must be set to 1 to enable flash access to     */
+		/* CR28 Bit3 must be set to 1 to enable flash access to	    */
 		/* FFE80000h ~ FFEFFFFFh on W83697SF/UF/UG.		    */
 		/* This bit is reserved on W83697HF/F/HG which default to 0 */
 			sio_mask(port, 0x28, 0x08, 0x08);

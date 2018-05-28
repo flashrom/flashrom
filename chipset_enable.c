@@ -1168,7 +1168,7 @@ static int enable_flash_sc1100(struct pci_dev *dev, const char *name)
 /* Works for AMD-768, AMD-8111, VIA VT82C586A/B, VIA VT82C596, VIA VT82C686A/B.
  *
  * ROM decode control register matrix
- * 	AMD-768			AMD-8111	VT82C586A/B		VT82C596		VT82C686A/B
+ *	AMD-768			AMD-8111	VT82C586A/B		VT82C596		VT82C686A/B
  * 7	FFC0_0000h–FFFF_FFFFh	<-		FFFE0000h-FFFEFFFFh	<-			<-
  * 6	FFB0_0000h–FFBF_FFFFh	<-		FFF80000h-FFFDFFFFh	<-			<-
  * 5	00E8...			<-		<-			FFF00000h-FFF7FFFFh	<-
@@ -1512,7 +1512,7 @@ static int enable_flash_mcp6x_7x(struct pci_dev *dev, const char *name)
 		/* Should not happen. */
 		internal_buses_supported = BUS_NONE;
 		msg_pwarn("Flash bus type is unknown (none)\n");
-		msg_pinfo("Please send the log files created by \"flashrom -p internal -o logfile\" to \n"
+		msg_pinfo("Please send the log files created by \"flashrom -p internal -o logfile\" to\n"
 			  "flashrom@flashrom.org with \"your board name: flashrom -V\" as the subject to\n"
 			  "help us finish support for your chipset. Thanks.\n");
 		return ERROR_NONFATAL;

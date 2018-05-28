@@ -285,7 +285,7 @@ static uint8_t swap_byte(uint8_t x)
 
 /* The assumed map between UIO command bits, pins on CH341A chip and pins on SPI chip:
  * UIO	CH341A	SPI	CH341A SPI name
- * 0	D0/15	CS/1 	(CS0)
+ * 0	D0/15	CS/1	(CS0)
  * 1	D1/16	unused	(CS1)
  * 2	D2/17	unused	(CS2)
  * 3	D3/18	SCK/6	(DCK)

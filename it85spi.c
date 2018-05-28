@@ -53,8 +53,8 @@
  * IBF is set to 1 when the host CPU sends a command to the input buffer
  * of the EC. IBF is cleared to 0 once the command is read by the EC.
  */
-#define KB_IBF 			(1 << 1)  /* Input Buffer Full */
-#define KB_OBF 			(1 << 0)  /* Output Buffer Full */
+#define KB_IBF			(1 << 1)  /* Input Buffer Full */
+#define KB_OBF			(1 << 0)  /* Output Buffer Full */
 
 /* IT8502 supports two access modes:
  *   LPC_MEMORY: through the memory window in 0xFFFFFxxx (follow mode)

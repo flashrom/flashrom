@@ -92,7 +92,7 @@ static const char chip_th[] = "\
 ! align=\"center\" colspan=\"2\" | Voltage [V]\n\n\
 |- bgcolor=\"#6699ff\"\n| colspan=\"4\" | &nbsp;\n\
 | Probe\n| Read\n| Erase\n| Write\n\
-| align=\"center\" | Min \n| align=\"center\" | Max\n\n";
+| align=\"center\" | Min\n| align=\"center\" | Max\n\n";
 
 static const char chip_intro[] = "\
 \n== Supported flash chips ==\n\n\
@@ -323,7 +323,7 @@ static void print_supported_chips_wiki(int cols)
 		sprintf(vmax, "%0.03f", f->voltage.max / (double)1000);
 		printf("|- bgcolor=\"#%s\"\n| %s || %s || align=\"right\" | %d "
 		       "|| %s || {{%s}} || {{%s}} || {{%s}} || {{%s}}"
-		       "|| %s || %s \n",
+		       "|| %s || %s\n",
 		       (c == 1) ? "eeeeee" : "dddddd", f->vendor, f->name,
 		       f->total_size, s,
 		       test_state_to_template(f->tested.probe),

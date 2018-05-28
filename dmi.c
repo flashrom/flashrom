@@ -60,9 +60,9 @@ static struct {
 
 /* This list is used to identify supposed laptops. The is_laptop field has the
  * following meaning:
- * 	- 0: in all likelihood not a laptop
- * 	- 1: in all likelihood a laptop
- * 	- 2: chassis-type is not specific enough
+ *	- 0: in all likelihood not a laptop
+ *	- 1: in all likelihood a laptop
+ *	- 2: chassis-type is not specific enough
  * A full list of chassis types can be found in the System Management BIOS
  * (SMBIOS) Reference Specification 2.7.0 section 7.4.1 "Chassis Types" at
  * http://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.0.pdf

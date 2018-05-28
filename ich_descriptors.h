@@ -104,7 +104,7 @@ struct ich_desc_component {
 		/* FLCOMP encoding on various generations:
 		 *
 		 * Chipset/Generation	max_speed	dual_output	density
-		 * 			[MHz]		bits		max.	bits
+		 *			[MHz]		bits		max.	bits
 		 * ICH8:		33		N/A		5	0:2, 3:5
 		 * ICH9:		33		N/A		5	0:2, 3:5
 		 * ICH10:		33		N/A		5	0:2, 3:5

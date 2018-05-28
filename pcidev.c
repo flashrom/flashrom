@@ -221,7 +221,7 @@ struct pci_dev *pcidev_init(const struct dev_entry *devs, int bar)
 				 dev->func);
 			if (devs[i].status == NT)
 				msg_pinfo("===\nThis PCI device is UNTESTED. Please report the 'flashrom -p "
-					  "xxxx' output \n"
+					  "xxxx' output\n"
 					  "to flashrom@flashrom.org if it works for you. Please add the name "
 					  "of your\n"
 					  "PCI device to the subject. Thank you for your help!\n===\n");
@@ -241,7 +241,7 @@ struct pci_dev *pcidev_init(const struct dev_entry *devs, int bar)
 		msg_perr("Error: No supported PCI device found.\n");
 		return NULL;
 	} else if (found > 1) {
-		msg_perr("Error: Multiple supported PCI devices found. Use 'flashrom -p xxxx:pci=bb:dd.f' \n"
+		msg_perr("Error: Multiple supported PCI devices found. Use 'flashrom -p xxxx:pci=bb:dd.f'\n"
 			 "to explicitly select the card with the given BDF (PCI bus, device, function).\n");
 		return NULL;
 	}
@@ -293,7 +293,7 @@ int undo_pci_write(void *p)
 	return 0;
 }
 
-#define register_undo_pci_write(a, b, c) 				\
+#define register_undo_pci_write(a, b, c)				\
 {									\
 	struct undo_pci_write_data *undo_pci_write_data;		\
 	undo_pci_write_data = malloc(sizeof(struct undo_pci_write_data)); \

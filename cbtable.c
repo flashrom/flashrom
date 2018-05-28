@@ -31,8 +31,8 @@ static char *cb_vendor = NULL, *cb_model = NULL;
 
 /* Tries to find coreboot IDs in the supplied image and compares them to the current IDs.
  * Returns...
- * 	-1	if IDs in the image do not match the IDs embedded in the current firmware,
- * 	 0	if the IDs could not be found in the image or if they match correctly.
+ *	-1	if IDs in the image do not match the IDs embedded in the current firmware,
+ *	 0	if the IDs could not be found in the image or if they match correctly.
  */
 int cb_check_image(const uint8_t *image, int size)
 {

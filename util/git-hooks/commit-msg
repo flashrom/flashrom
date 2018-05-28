@@ -47,7 +47,7 @@ add_ChangeId() {
 	# *Do* add Change-Id to temp commits (original code bails out here)
 	# if echo "$clean_message" | head -1 | grep -q '^\(fixup\|squash\)!'
 	# then
-	# 	return
+	#	return
 	# fi
 
 	if test "false" = "`git config --bool --get gerrit.createChangeId`"
