@@ -177,11 +177,6 @@ cpu_to_be(64)
 
 #else
 
-#if defined(__MACH__) && defined(__APPLE__)
-    /* Header is part of the DirectHW library. */
-    #include <DirectHW/DirectHW.h>
-#endif
-
   /* This is the usual glibc interface. */
   #define OUTB outb
   #define OUTW outw

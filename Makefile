@@ -975,8 +975,6 @@ ifeq ($(TARGET_OS), OpenBSD)
 PCILIBS += -l$(shell uname -m)
 else
 ifeq ($(TARGET_OS), Darwin)
-# DirectHW framework can be found in the DirectHW library.
-PCILIBS += -framework IOKit -framework DirectHW
 endif
 endif
 endif

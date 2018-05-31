@@ -89,8 +89,7 @@ To compile on NetBSD (with pciutils, libftdi, libusb installed in /usr/pkg/), us
 
 To compile and run on Darwin/Mac OS X:
 
- Install DirectHW from coresystems GmbH.
- DirectHW is available at http://www.coreboot.org/DirectHW .
+ Nothing special needed.
 
 To cross-compile on Linux for DOS:
 
