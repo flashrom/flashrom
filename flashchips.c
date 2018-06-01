@@ -2244,7 +2244,7 @@ const struct flashchip flashchips[] = {
 	 .unlock		= spi_disable_blockprotect,
 	 .write		= spi_chip_write_256,
 	 .read		= spi_chip_read,
-	 .voltage	= {2500, 3600},
+	 .voltage	= {2300, 3600},
 	},
 
 	{
