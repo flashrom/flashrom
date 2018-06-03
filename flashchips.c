@@ -1519,7 +1519,7 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Atmel",
-		.name		= "AT25DF021",
+		.name		= "AT25DF021A",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT25DF021A,
@@ -1553,7 +1553,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect_at2x_global_unprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
-		.voltage	= {2700, 3600}, /* 2.3-3.6V & 2.7-3.6V models available */
+		.voltage	= {1650, 3600},
 	},
 
 	{
