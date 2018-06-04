@@ -8563,6 +8563,55 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Macronix",
+		.name		= "MX25U51245G",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= MACRONIX_ID,
+		.model_id	= MACRONIX_MX25U51245G,
+		.total_size	= 65536,
+		.page_size	= 256,
+		/* OTP: 512B factory programmed and 512B customer programmed; enter 0xB1, exit 0xC1 */
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI | FEATURE_4BA,
+		.tested		= TEST_OK_PREW,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 16384} },
+				.block_erase = spi_block_erase_21,
+			}, {
+				.eraseblocks = { {4 * 1024, 16384} },
+				.block_erase = spi_block_erase_20,
+			}, {
+				.eraseblocks = { {32 * 1024, 2048} },
+				.block_erase = spi_block_erase_5c,
+			}, {
+				.eraseblocks = { {32 * 1024, 2048} },
+				.block_erase = spi_block_erase_52,
+			}, {
+				.eraseblocks = { {64 * 1024, 1024} },
+				.block_erase = spi_block_erase_dc,
+			}, {
+				.eraseblocks = { {64 * 1024, 1024} },
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { {64 * 1024 * 1024, 1} },
+				.block_erase = spi_block_erase_60,
+			}, {
+				.eraseblocks = { {64 * 1024 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
+		},
+		/* TODO: security register */
+		.printlock	= spi_prettyprint_status_register_bp3_srwd, /* bit6 is quad enable */
+		.unlock		= spi_disable_blockprotect_bp3_srwd,
+		.write		= spi_chip_write_256, /* Multi I/O supported */
+		.read		= spi_chip_read, /* Fast read (0x0B) and multi I/O supported */
+		.voltage	= {1650, 2000},
+	},
+
+	{
+		.vendor		= "Macronix",
 		.name		= "MX25L6495F",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
