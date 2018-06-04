@@ -255,6 +255,18 @@ const struct programmer_entry programmer_table[] = {
 	},
 #endif
 
+#if CONFIG_DEVELOPERBOX_SPI == 1
+	{
+		.name			= "developerbox",
+		.type			= USB,
+		.devs.dev		= devs_developerbox_spi,
+		.init			= developerbox_spi_init,
+		.map_flash_region	= fallback_map,
+		.unmap_flash_region	= fallback_unmap,
+		.delay			= internal_delay,
+	},
+#endif
+
 #if CONFIG_RAYER_SPI == 1
 	{
 		.name			= "rayer_spi",

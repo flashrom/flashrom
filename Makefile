@@ -154,11 +154,16 @@ UNSUPPORTED_FEATURES += CONFIG_PONY_SPI=yes
 else
 override CONFIG_PONY_SPI = no
 endif
-# Dediprog, USB-Blaster, PICkit2, CH341A and FT2232 are not supported under DOS (missing USB support).
+# Dediprog, Developerbox, USB-Blaster, PICkit2, CH341A and FT2232 are not supported under DOS (missing USB support).
 ifeq ($(CONFIG_DEDIPROG), yes)
 UNSUPPORTED_FEATURES += CONFIG_DEDIPROG=yes
 else
 override CONFIG_DEDIPROG = no
+endif
+ifeq ($(CONFIG_DEVELOPERBOX_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_DEVELOPERBOX_SPI=yes
+else
+override CONFIG_DEVELOPERBOX_SPI = no
 endif
 ifeq ($(CONFIG_FT2232_SPI), yes)
 UNSUPPORTED_FEATURES += CONFIG_FT2232_SPI=yes
@@ -311,11 +316,16 @@ UNSUPPORTED_FEATURES += CONFIG_PONY_SPI=yes
 else
 override CONFIG_PONY_SPI = no
 endif
-# Dediprog, USB-Blaster, PICkit2, CH341A and FT2232 are not supported with libpayload (missing libusb support).
+# Dediprog, Developerbox, USB-Blaster, PICkit2, CH341A and FT2232 are not supported with libpayload (missing libusb support).
 ifeq ($(CONFIG_DEDIPROG), yes)
 UNSUPPORTED_FEATURES += CONFIG_DEDIPROG=yes
 else
 override CONFIG_DEDIPROG = no
+endif
+ifeq ($(CONFIG_DEVELOPERBOX_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_DEVELOPERBOX_SPI=yes
+else
+override CONFIG_DEVELOPERBOX_SPI = no
 endif
 ifeq ($(CONFIG_FT2232_SPI), yes)
 UNSUPPORTED_FEATURES += CONFIG_FT2232_SPI=yes
@@ -627,6 +637,9 @@ CONFIG_BUSPIRATE_SPI ?= yes
 # Always enable Dediprog SF100 for now.
 CONFIG_DEDIPROG ?= yes
 
+# Always enable Developerbox emergency recovery for now.
+CONFIG_DEVELOPERBOX_SPI ?= yes
+
 # Always enable Marvell SATA controllers for now.
 CONFIG_SATAMV ?= yes
 
@@ -671,6 +684,7 @@ ifeq ($(CONFIG_ENABLE_LIBUSB1_PROGRAMMERS), no)
 override CONFIG_CH341A_SPI = no
 override CONFIG_DEDIPROG = no
 override CONFIG_DIGILENT_SPI = no
+override CONFIG_DEVELOPERBOX_SPI = no
 endif
 ifeq ($(CONFIG_ENABLE_LIBPCI_PROGRAMMERS), no)
 override CONFIG_INTERNAL = no
@@ -905,6 +919,12 @@ ifeq ($(CONFIG_DEDIPROG), yes)
 FEATURE_CFLAGS += -D'CONFIG_DEDIPROG=1'
 PROGRAMMER_OBJS += dediprog.o
 NEED_LIBUSB1 += CONFIG_DEDIPROG
+endif
+
+ifeq ($(CONFIG_DEVELOPERBOX_SPI), yes)
+FEATURE_CFLAGS += -D'CONFIG_DEVELOPERBOX_SPI=1'
+PROGRAMMER_OBJS += developerbox_spi.o
+NEED_LIBUSB1 += CONFIG_DEVELOPERBOX_SPI
 endif
 
 ifeq ($(CONFIG_SATAMV), yes)
