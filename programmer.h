@@ -184,6 +184,9 @@ struct bitbang_spi_master {
 	int (*get_miso) (void);
 	void (*request_bus) (void);
 	void (*release_bus) (void);
+	/* optional functions to optimize xfers */
+	void (*set_sck_set_mosi) (int sck, int mosi);
+	int (*set_sck_get_miso) (int sck);
 	/* Length of half a clock period in usecs. */
 	unsigned int half_period;
 };
