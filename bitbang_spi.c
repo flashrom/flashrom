@@ -119,20 +119,34 @@ int register_spi_bitbang_master(const struct bitbang_spi_master *master)
 	return 0;
 }
 
-static uint8_t bitbang_spi_rw_byte(const struct bitbang_spi_master *master,
-				   uint8_t val)
+static uint8_t bitbang_spi_read_byte(const struct bitbang_spi_master *master)
 {
 	uint8_t ret = 0;
 	int i;
 
 	for (i = 7; i >= 0; i--) {
-		bitbang_spi_set_sck_set_mosi(master, 0, (val >> i) & 1);
+		if (i == 0)
+			bitbang_spi_set_sck_set_mosi(master, 0, 0);
+		else
+			bitbang_spi_set_sck(master, 0);
 		programmer_delay(master->half_period);
 		ret <<= 1;
 		ret |= bitbang_spi_set_sck_get_miso(master, 1);
 		programmer_delay(master->half_period);
 	}
 	return ret;
+}
+
+static void bitbang_spi_write_byte(const struct bitbang_spi_master *master, uint8_t val)
+{
+	int i;
+
+	for (i = 7; i >= 0; i--) {
+		bitbang_spi_set_sck_set_mosi(master, 0, (val >> i) & 1);
+		programmer_delay(master->half_period);
+		bitbang_spi_set_sck(master, 1);
+		programmer_delay(master->half_period);
+	}
 }
 
 static int bitbang_spi_send_command(struct flashctx *flash,
@@ -150,9 +164,9 @@ static int bitbang_spi_send_command(struct flashctx *flash,
 	bitbang_spi_request_bus(master);
 	bitbang_spi_set_cs(master, 0);
 	for (i = 0; i < writecnt; i++)
-		bitbang_spi_rw_byte(master, writearr[i]);
+		bitbang_spi_write_byte(master, writearr[i]);
 	for (i = 0; i < readcnt; i++)
-		readarr[i] = bitbang_spi_rw_byte(master, 0);
+		readarr[i] = bitbang_spi_read_byte(master);
 
 	bitbang_spi_set_sck(master, 0);
 	programmer_delay(master->half_period);
