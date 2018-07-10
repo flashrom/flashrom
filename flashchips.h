@@ -965,4 +965,7 @@
 #define ZETTADEVICE_ZD25D20     0x2012
 #define ZETTADEVICE_ZD25D40     0x2013
 
+#define FMD_ID            0x0E    /* Fremont Micro Devices */
+#define FMD_FT25H04        0x4013
+
 #endif /* !FLASHCHIPS_H */
