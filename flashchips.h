@@ -968,4 +968,7 @@
 #define FMD_ID            0x0E    /* Fremont Micro Devices */
 #define FMD_FT25H04        0x4013
 
+#define SFM_ID		  0xA1 /*Shanghai Fudan Microelectronics Group Company Limited*/
+#define SFM_FM25F04	  0x3113
+
 #endif /* !FLASHCHIPS_H */
