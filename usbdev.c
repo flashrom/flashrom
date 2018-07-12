@@ -15,12 +15,25 @@
  * GNU General Public License for more details.
  */
 
+#include <stdbool.h>
 #include <string.h>
 #include <libusb.h>
 #include "programmer.h"
 
-struct libusb_device_handle *usb_dev_get_by_vid_pid_serial(
-		struct libusb_context *usb_ctx, uint16_t vid, uint16_t pid, const char *serialno)
+/*
+ * Check whether we should filter the current device.
+ *
+ * The main code filters by VID/PID then calls out to the filter function for extra filtering.
+ * The filter function is called twice for each device. Once with handle == NULL to allow the
+ * filter to cull devices without opening them and, assuming the first filter does not trigger,
+ * also with a real handle to allow the filter to query the device further.
+ *
+ * Returns true if the device should be skipped.
+ */
+typedef bool (*filter_func)(struct libusb_device_descriptor *desc, struct libusb_device_handle *handle, void*ctx);
+
+static struct libusb_device_handle *get_by_vid_pid_filter(struct libusb_context *usb_ctx,
+		uint16_t vid, uint16_t pid, filter_func filter_fn, void *filter_ctx)
 {
 	struct libusb_device **list;
 	ssize_t count = libusb_get_device_list(usb_ctx, &list);
@@ -48,28 +61,22 @@ struct libusb_device_handle *usb_dev_get_by_vid_pid_serial(
 			 desc.idVendor, desc.idProduct,
 			 libusb_get_bus_number(dev), libusb_get_device_address(dev));
 
+		/* allow filters to trigger before the device is opened */
+		if (filter_fn(&desc, NULL, filter_ctx))
+			continue;
+
 		res = libusb_open(dev, &handle);
 		if (res != 0) {
-			msg_perr("Opening the USB device failed (%s)!\n", libusb_error_name(res));
-			continue;
+			msg_perr("Opening the USB device at address %d-%d failed (%s)!\n",
+				 libusb_get_bus_number(dev), libusb_get_device_address(dev),
+				 libusb_error_name(res));
+			break;
 		}
 
-		if (serialno) {
-			unsigned char myserial[64];
-			res = libusb_get_string_descriptor_ascii(handle, desc.iSerialNumber, myserial,
-					sizeof(myserial));
-			if (res < 0) {
-				msg_perr("Reading the USB serialno failed (%s)!\n", libusb_error_name(res));
-				libusb_close(handle);
-				continue;
-			}
-			msg_pdbg("Serial number is %s\n", myserial);
-
-			/* Reject any serial number that does not commence with serialno */
-			if (0 != strncmp(serialno, (char *)myserial, strlen(serialno))) {
-				libusb_close(handle);
-				continue;
-			}
+		/* filter can also trigger after a device is opened */
+		if (filter_fn(&desc, handle, filter_ctx)) {
+			libusb_close(handle);
+			continue;
 		}
 
 		libusb_free_device_list(list, 1);
@@ -78,6 +85,48 @@ struct libusb_device_handle *usb_dev_get_by_vid_pid_serial(
 
 	libusb_free_device_list(list, 1);
 	return NULL;
+
+}
+
+static bool filter_by_serial(struct libusb_device_descriptor *desc, struct libusb_device_handle *handle,
+			     void *serialno)
+{
+	/* Never filter if device is not yet open or when user did not provide a serial number */
+	if (!handle || !serialno)
+		return false;
+
+	unsigned char myserial[64];
+	int res = libusb_get_string_descriptor_ascii(handle, desc->iSerialNumber, myserial, sizeof(myserial));
+	if (res < 0) {
+		msg_perr("Reading the USB serialno failed (%s)!\n", libusb_error_name(res));
+		return true;
+	}
+	msg_pdbg("Serial number is %s\n", myserial);
+
+	/* Filter out any serial number that does not commence with serialno */
+	return 0 != strncmp(serialno, (char *)myserial, strlen(serialno));
+}
+
+struct libusb_device_handle *usb_dev_get_by_vid_pid_serial(
+		struct libusb_context *usb_ctx, uint16_t vid, uint16_t pid, const char *serialno)
+{
+	return get_by_vid_pid_filter(usb_ctx, vid, pid, filter_by_serial, (void *)serialno);
+}
+
+static bool filter_by_number(struct libusb_device_descriptor *desc, struct libusb_device_handle *handle,
+			     void *ctx)
+{
+	/* This filter never triggers once it has allowed the device to be opened */
+	if (handle != NULL)
+		return false;
+
+	unsigned int *nump = ctx;
+	if (*nump) {
+		(*nump)--;
+		return true;
+	}
+
+	return false;
 }
 
 /*
@@ -89,42 +138,5 @@ struct libusb_device_handle *usb_dev_get_by_vid_pid_serial(
 struct libusb_device_handle *usb_dev_get_by_vid_pid_number(
 		struct libusb_context *usb_ctx, uint16_t vid, uint16_t pid, unsigned int num)
 {
-	struct libusb_device **list;
-	ssize_t count = libusb_get_device_list(usb_ctx, &list);
-	if (count < 0) {
-		msg_perr("Getting the USB device list failed (%s)!\n", libusb_error_name(count));
-		return NULL;
-	}
-
-	struct libusb_device_handle *handle = NULL;
-	ssize_t i = 0;
-	for (i = 0; i < count; i++) {
-		struct libusb_device *dev = list[i];
-		struct libusb_device_descriptor desc;
-		int err = libusb_get_device_descriptor(dev, &desc);
-		if (err != 0) {
-			msg_perr("Reading the USB device descriptor failed (%s)!\n", libusb_error_name(err));
-			libusb_free_device_list(list, 1);
-			return NULL;
-		}
-		if ((desc.idVendor == vid) && (desc.idProduct == pid)) {
-			msg_pdbg("Found USB device %04"PRIx16":%04"PRIx16" at address %d-%d.\n",
-				 desc.idVendor, desc.idProduct,
-				 libusb_get_bus_number(dev), libusb_get_device_address(dev));
-			if (num == 0) {
-				err = libusb_open(dev, &handle);
-				if (err != 0) {
-					msg_perr("Opening the USB device failed (%s)!\n",
-						 libusb_error_name(err));
-					libusb_free_device_list(list, 1);
-					return NULL;
-				}
-				break;
-			}
-			num--;
-		}
-	}
-	libusb_free_device_list(list, 1);
-
-	return handle;
+	return get_by_vid_pid_filter(usb_ctx, vid, pid, filter_by_number, &num);
 }
