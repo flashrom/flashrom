@@ -841,4 +841,12 @@ static inline bool spi_master_4ba(const struct flashctx *const flash)
 		flash->mst->spi.features & SPI_MASTER_4BA;
 }
 
+/* usbdev.c */
+struct libusb_device_handle;
+struct libusb_context;
+struct libusb_device_handle *usb_dev_get_by_vid_pid_serial(
+		struct libusb_context *usb_ctx, uint16_t vid, uint16_t pid, const char *serialno);
+struct libusb_device_handle *usb_dev_get_by_vid_pid_number(
+		struct libusb_context *usb_ctx, uint16_t vid, uint16_t pid, unsigned int num);
+
 #endif				/* !__PROGRAMMER_H__ */

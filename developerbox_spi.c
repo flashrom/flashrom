@@ -34,7 +34,6 @@
 #include "platform.h"
 
 #include <stdlib.h>
-#include <string.h>
 #include <libusb.h>
 #include "programmer.h"
 #include "spi.h"
@@ -130,67 +129,6 @@ static const struct bitbang_spi_master bitbang_spi_master_cp210x = {
 	.set_sck_set_mosi = cp210x_bitbang_set_sck_set_mosi,
 };
 
-static struct libusb_device_handle *get_device_by_vid_pid_serial(uint16_t vid, uint16_t pid,
-								 const char *serialno)
-{
-	struct libusb_device **list;
-	ssize_t count = libusb_get_device_list(usb_ctx, &list);
-	if (count < 0) {
-		msg_perr("Getting the USB device list failed (%s)!\n", libusb_error_name(count));
-		return NULL;
-	}
-
-	ssize_t i = 0;
-	for (i = 0; i < count; i++) {
-		struct libusb_device *dev = list[i];
-		struct libusb_device_descriptor desc;
-		struct libusb_device_handle *handle;
-
-		int res = libusb_get_device_descriptor(dev, &desc);
-		if (res != 0) {
-			msg_perr("Reading the USB device descriptor failed (%s)!\n", libusb_error_name(res));
-			continue;
-		}
-
-		if ((desc.idVendor != vid) && (desc.idProduct != pid))
-			continue;
-
-		msg_pdbg("Found USB device %04"PRIx16":%04"PRIx16" at address %d-%d.\n",
-			 desc.idVendor, desc.idProduct,
-			 libusb_get_bus_number(dev), libusb_get_device_address(dev));
-
-		res = libusb_open(dev, &handle);
-		if (res != 0) {
-			msg_perr("Opening the USB device failed (%s)!\n", libusb_error_name(res));
-			continue;
-		}
-
-		if (serialno) {
-			unsigned char myserial[64];
-			res = libusb_get_string_descriptor_ascii(handle, desc.iSerialNumber, myserial,
-								 sizeof(myserial));
-			if (res < 0) {
-				msg_perr("Reading the USB serialno failed (%s)!\n", libusb_error_name(res));
-				libusb_close(handle);
-				continue;
-			}
-			msg_pdbg("Serial number is %s\n", myserial);
-
-			/* Filter out any serial number that does not commence with serialno */
-			if (0 != strncmp(serialno, (char *) myserial, strlen(serialno))) {
-				libusb_close(handle);
-				continue;
-			}
-		}
-
-		libusb_free_device_list(list, 1);
-		return handle;
-	}
-
-	libusb_free_device_list(list, 1);
-	return NULL;
-}
-
 static int developerbox_spi_shutdown(void *data)
 {
 	libusb_close(cp210x_handle);
@@ -210,7 +148,7 @@ int developerbox_spi_init(void)
 	char *serialno = extract_programmer_param("serial");
 	if (serialno)
 		msg_pdbg("Looking for serial number commencing %s\n", serialno);
-	cp210x_handle = get_device_by_vid_pid_serial(
+	cp210x_handle = usb_dev_get_by_vid_pid_serial(usb_ctx,
 			devs_developerbox_spi[0].vendor_id, devs_developerbox_spi[0].device_id, serialno);
 	free(serialno);
 	if (!cp210x_handle) {

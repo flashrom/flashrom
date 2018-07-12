@@ -242,50 +242,6 @@ static int dediprog_write(enum dediprog_cmds cmd, unsigned int value, unsigned i
 }
 
 
-/* Might be useful for other USB devices as well. static for now.
- * num parameter allows user to specify one device of multiple installed */
-static struct libusb_device_handle *get_device_by_vid_pid_number(uint16_t vid, uint16_t pid, unsigned int num)
-{
-	struct libusb_device **list;
-	ssize_t count = libusb_get_device_list(usb_ctx, &list);
-	if (count < 0) {
-		msg_perr("Getting the USB device list failed (%s)!\n", libusb_error_name(count));
-		return NULL;
-	}
-
-	struct libusb_device_handle *handle = NULL;
-	ssize_t i = 0;
-	for (i = 0; i < count; i++) {
-		struct libusb_device *dev = list[i];
-		struct libusb_device_descriptor desc;
-		int err = libusb_get_device_descriptor(dev, &desc);
-		if (err != 0) {
-			msg_perr("Reading the USB device descriptor failed (%s)!\n", libusb_error_name(err));
-			libusb_free_device_list(list, 1);
-			return NULL;
-		}
-		if ((desc.idVendor == vid) && (desc.idProduct == pid)) {
-			msg_pdbg("Found USB device %04"PRIx16":%04"PRIx16" at address %d-%d.\n",
-				 desc.idVendor, desc.idProduct,
-				 libusb_get_bus_number(dev), libusb_get_device_address(dev));
-			if (num == 0) {
-				err = libusb_open(dev, &handle);
-				if (err != 0) {
-					msg_perr("Opening the USB device failed (%s)!\n",
-						 libusb_error_name(err));
-					libusb_free_device_list(list, 1);
-					return NULL;
-				}
-				break;
-			}
-			num--;
-		}
-	}
-	libusb_free_device_list(list, 1);
-
-	return handle;
-}
-
 /* This function sets the GPIOs connected to the LEDs as well as IO1-IO4. */
 static int dediprog_set_leds(int leds)
 {
@@ -1102,7 +1058,7 @@ int dediprog_init(void)
 
 	const uint16_t vid = devs_dediprog[0].vendor_id;
 	const uint16_t pid = devs_dediprog[0].device_id;
-	dediprog_handle = get_device_by_vid_pid_number(vid, pid, (unsigned int) usedevice);
+	dediprog_handle = usb_dev_get_by_vid_pid_number(usb_ctx, vid, pid, (unsigned int) usedevice);
 	if (!dediprog_handle) {
 		msg_perr("Could not find a Dediprog programmer on USB.\n");
 		libusb_exit(usb_ctx);
