@@ -327,6 +327,23 @@ int ft2232_spi_init(void)
 	}
 	free(arg);
 
+	arg = extract_programmer_param("csgpiol");
+	if (arg) {
+		char *endptr;
+		unsigned int temp = strtoul(arg, &endptr, 10);
+		if (*endptr || endptr == arg || temp > 3) {
+			msg_perr("Error: Invalid GPIOL specified: \"%s\".\n"
+				 "Valid values are between 0 and 3.\n", arg);
+			free(arg);
+			return -2;
+		} else {
+			unsigned int pin = temp + 4;
+			cs_bits |= 1 << pin;
+			pindir |= 1 << pin;
+		}
+	}
+	free(arg);
+
 	msg_pdbg("Using device type %s %s ",
 		 get_ft2232_vendorname(ft2232_vid, ft2232_type),
 		 get_ft2232_devicename(ft2232_vid, ft2232_type));
