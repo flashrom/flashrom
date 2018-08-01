@@ -722,9 +722,9 @@ Olimex ARM-USB-TINY/-H, Olimex ARM-USB-OCD/-H, OpenMoko Neo1973 Debug board (V2+
 Multi-Protocol Adapter (TUMPA), TUMPA Lite, GOEPEL PicoTAP and Google Servo v1/v2.
 .sp
 An optional parameter specifies the controller
-type and channel/interface/port it should support. For that you have to use the
+type and channel/interface/port/GPIO-based chip select it should support. For that you have to use the
 .sp
-.B "  flashrom \-p ft2232_spi:type=model,port=interface"
+.B "  flashrom \-p ft2232_spi:type=model,port=interface,csgpiol=gpio"
 .sp
 syntax where
 .B model
@@ -733,14 +733,17 @@ can be
 arm-usb-tiny ", " arm-usb-tiny-h ", " arm-usb-ocd ", " arm-usb-ocd-h \
 ", " tumpa ", " tumpalite ", " picotap ", " google-servo ", " google-servo-v2 \
 " or " google-servo-v2-legacy
-and
 .B interface
 can be
-.BR A ", " B ", " C ", or " D .
+.BR A ", " B ", " C ", or " D
+and
+.B csgpiol
+can be a number between 0 and 3, denoting GPIOL0-GPIOL3 correspondingly.
 The default model is
 .B 4232H
-and the default interface is
-.BR A .
+the default interface is
+.BR A
+and GPIO is not used by default.
 .sp
 If there is more than one ft2232_spi-compatible device connected, you can select which one should be used by
 specifying its serial number with the
