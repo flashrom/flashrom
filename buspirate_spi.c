@@ -550,7 +550,9 @@ static int buspirate_spi_send_command_v2(struct flashctx *flash, unsigned int wr
 {
 	int i = 0, ret = 0;
 
-	if (writecnt > 4096 || readcnt > 4096 || (readcnt + writecnt) > 4096)
+	if (writecnt > spi_master_buspirate.max_data_write ||
+	    readcnt > spi_master_buspirate.max_data_read ||
+	    (readcnt + writecnt) > spi_master_buspirate.max_data_write+spi_master_buspirate.max_data_read)
 		return SPI_INVALID_LENGTH;
 
 	/* 5 bytes extra for command, writelen, readlen.
