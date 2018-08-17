@@ -51,6 +51,7 @@ static int dediprog_out_endpoint;
 enum dediprog_devtype {
 	DEV_UNKNOWN		= 0,
 	DEV_SF100		= 100,
+	DEV_SF200		= 200,
 	DEV_SF600		= 600,
 };
 
@@ -152,7 +153,7 @@ enum protocol {
 };
 
 const struct dev_entry devs_dediprog[] = {
-	{0x0483, 0xDADA, OK, "Dediprog", "SF100/SF600"},
+	{0x0483, 0xDADA, OK, "Dediprog", "SF100/SF200/SF600"},
 
 	{0},
 };
@@ -185,6 +186,11 @@ static enum protocol protocol(void)
 			return PROTOCOL_V1;
 		else
 			return PROTOCOL_V2;
+    case DEV_SF200:
+        if (dediprog_firmwareversion < FIRMWARE_VERSION(5, 5, 0))
+            return PROTOCOL_V1;
+        else
+            return PROTOCOL_V2;
 	case DEV_SF600:
 		if (dediprog_firmwareversion < FIRMWARE_VERSION(6, 9, 0))
 			return PROTOCOL_V1;
@@ -800,10 +806,12 @@ static int dediprog_check_devicestring(void)
 	msg_pdbg("Found a %s\n", buf);
 	if (memcmp(buf, "SF100", 0x5) == 0)
 		dediprog_devicetype = DEV_SF100;
+    else if (memcmp(buf, "SF200", 0x5) == 0)
+        dediprog_devicetype = DEV_SF200;
 	else if (memcmp(buf, "SF600", 0x5) == 0)
 		dediprog_devicetype = DEV_SF600;
 	else {
-		msg_perr("Device not a SF100 or SF600!\n");
+		msg_perr("Device not a SF100, SF200, or SF600!\n");
 		return 1;
 	}
 
@@ -1139,6 +1147,8 @@ int dediprog_init(void)
 	dediprog_in_endpoint = 2;
 	if (dediprog_devicetype == DEV_SF100)
 		dediprog_out_endpoint = 2;
+    else if (dediprog_devicetype == DEV_SF200)
+        dediprog_out_endpoint = 2;
 	else
 		dediprog_out_endpoint = 1;
 
