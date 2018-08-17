@@ -51,6 +51,7 @@ static int dediprog_out_endpoint;
 enum dediprog_devtype {
 	DEV_UNKNOWN		= 0,
 	DEV_SF100		= 100,
+	DEV_SF200		= 200,
 	DEV_SF600		= 600,
 };
 
@@ -152,7 +153,7 @@ enum protocol {
 };
 
 const struct dev_entry devs_dediprog[] = {
-	{0x0483, 0xDADA, OK, "Dediprog", "SF100/SF600"},
+	{0x0483, 0xDADA, OK, "Dediprog", "SF100/SF200/SF600"},
 
 	{0},
 };
@@ -181,6 +182,7 @@ static enum protocol protocol(void)
 	/* Firmware version < 5.0.0 is handled explicitly in some cases. */
 	switch (dediprog_devicetype) {
 	case DEV_SF100:
+	case DEV_SF200:
 		if (dediprog_firmwareversion < FIRMWARE_VERSION(5, 5, 0))
 			return PROTOCOL_V1;
 		else
@@ -756,10 +758,12 @@ static int dediprog_check_devicestring(void)
 	msg_pdbg("Found a %s\n", buf);
 	if (memcmp(buf, "SF100", 0x5) == 0)
 		dediprog_devicetype = DEV_SF100;
+	else if (memcmp(buf, "SF200", 0x5) == 0)
+		dediprog_devicetype = DEV_SF200;
 	else if (memcmp(buf, "SF600", 0x5) == 0)
 		dediprog_devicetype = DEV_SF600;
 	else {
-		msg_perr("Device not a SF100 or SF600!\n");
+		msg_perr("Device not a SF100, SF200, or SF600!\n");
 		return 1;
 	}
 
@@ -1091,12 +1095,17 @@ int dediprog_init(void)
 			return 1;
 	}
 
-	/* SF100 only has 1 endpoint for in/out, SF600 uses two separate endpoints instead. */
+	/* SF100/SF200 uses one in/out endpoint, SF600 uses separate in/out endpoints */
 	dediprog_in_endpoint = 2;
-	if (dediprog_devicetype == DEV_SF100)
+	switch (dediprog_devicetype) {
+	case DEV_SF100:
+	case DEV_SF200:
 		dediprog_out_endpoint = 2;
-	else
+		break;
+	default:
 		dediprog_out_endpoint = 1;
+		break;
+	}
 
 	/* Set all possible LEDs as soon as possible to indicate activity.
 	 * Because knowing the firmware version is required to set the LEDs correctly we need to this after
