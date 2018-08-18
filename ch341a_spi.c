@@ -315,7 +315,7 @@ static int32_t enable_pins(bool enable)
 /* De-assert and assert CS in one operation. */
 static void pluck_cs(uint8_t *ptr)
 {
-	/* This was measured to give a minumum deassertion time of 2.25 us,
+	/* This was measured to give a minimum deassertion time of 2.25 us,
 	 * >20x more than needed for most SPI chips (100ns). */
 	int delay_cnt = 2;
 	if (stored_delay_us) {

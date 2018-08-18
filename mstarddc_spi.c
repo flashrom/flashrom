@@ -57,7 +57,7 @@ static int mstarddc_spi_shutdown(void *data)
 	} else {
 		msg_pinfo("Info: Reset command was not sent. "
 			  "Either the noreset=1 option was used, "
-			  "or an error occured.\n");
+			  "or an error occurred.\n");
 	}
 
 	if (close(mstarddc_fd) < 0) {

@@ -5533,7 +5533,7 @@ const struct flashchip flashchips[] = {
 		.model_id	= EXCEL_ES25P40,
 		.total_size	= 512,
 		.page_size	= 256,
-		/* 256-byte paramter page separate from memory array:
+		/* 256-byte parameter page separate from memory array:
 		 * supports read (0x53), fast read (0x5B), erase (0xD5) and program (0x52) instructions. */
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_UNTESTED,
@@ -5564,7 +5564,7 @@ const struct flashchip flashchips[] = {
 		.model_id	= EXCEL_ES25P80,
 		.total_size	= 1024,
 		.page_size	= 256,
-		/* 256-byte paramter page separate from memory array:
+		/* 256-byte parameter page separate from memory array:
 		 * supports read (0x53), fast read (0x5B), erase (0xD5) and program (0x52) instructions. */
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_UNTESTED,
@@ -5595,7 +5595,7 @@ const struct flashchip flashchips[] = {
 		.model_id	= EXCEL_ES25P16,
 		.total_size	= 2 * 1024,
 		.page_size	= 256,
-		/* 256-byte paramter page separate from memory array:
+		/* 256-byte parameter page separate from memory array:
 		 * supports read (0x53), fast read (0x5B), erase (0xD5) and program (0x52) instructions. */
 		.feature_bits	= FEATURE_WRSR_WREN,
 		.tested		= TEST_UNTESTED,

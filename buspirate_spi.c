@@ -252,7 +252,7 @@ int buspirate_spi_init(void)
 	}
 	free(tmp);
 
-	/* Extract serialspeed paramater */
+	/* Extract serialspeed parameter */
 	tmp = extract_programmer_param("serialspeed");
 	if (tmp) {
 		for (i = 0; serialspeeds[i].name; i++) {

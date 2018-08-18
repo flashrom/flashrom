@@ -194,7 +194,7 @@ int serialport_config(fdtype fd, int baud)
 				return 1;
 			}
 			/* We want whatever the termios looks like now, so the rest of the
-			   setup doesnt mess up the custom rate. */
+			   setup doesn't mess up the custom rate. */
 			if (tcgetattr(fd, &wanted) != 0) {
 				/* This should pretty much never happen (see above), but.. */
 				msg_perr_strerror("Could not fetch serial port configuration: ");
