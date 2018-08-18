@@ -751,4 +751,3 @@ int unlock_regspace2_block_eraser_1(struct flashctx *flash)
 		(const struct unlockblock *)flash->chip->block_erasers[1].eraseblocks;
 	return regspace2_walk_unlockblocks(flash, unlockblocks, &unlock_regspace2_block_generic);
 }
-

@@ -76,4 +76,3 @@ void print_chip_support_status(const struct flashchip *chip)
 			  "Thanks for your help!\n");
 	}
 }
-

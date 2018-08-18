@@ -450,4 +450,3 @@ void print_supported_wiki(void)
 #endif
 	print_supported_devs_wiki();
 }
-

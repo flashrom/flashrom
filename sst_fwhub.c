@@ -88,4 +88,3 @@ int unlock_sst_fwhub(struct flashctx *flash)
 	}
 	return ret;
 }
-
