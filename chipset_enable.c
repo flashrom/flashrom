@@ -1721,6 +1721,7 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x0f1f, NT,  "Intel", "Bay Trail",			enable_flash_silvermont},
 	{0x8086, 0x122e, OK,  "Intel", "PIIX",				enable_flash_piix4},
 	{0x8086, 0x1234, NT,  "Intel", "MPIIX",				enable_flash_piix4},
+	{0x8086, 0x1980, NT,  "Intel", "Denverton",                     enable_flash_pch100},
 	{0x8086, 0x1c44, DEP, "Intel", "Z68",				enable_flash_pch6},
 	{0x8086, 0x1c46, DEP, "Intel", "P67",				enable_flash_pch6},
 	{0x8086, 0x1c47, NT,  "Intel", "UM67",				enable_flash_pch6},
