@@ -1805,7 +1805,7 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x3b06, DEP, "Intel", "H55",				enable_flash_pch5},
 	{0x8086, 0x3b07, DEP, "Intel", "QM57",				enable_flash_pch5},
 	{0x8086, 0x3b08, NT,  "Intel", "H57",				enable_flash_pch5},
-	{0x8086, 0x3b09, NT,  "Intel", "HM55",				enable_flash_pch5},
+	{0x8086, 0x3b09, DEP, "Intel", "HM55",				enable_flash_pch5},
 	{0x8086, 0x3b0a, NT,  "Intel", "Q57",				enable_flash_pch5},
 	{0x8086, 0x3b0b, NT,  "Intel", "HM57",				enable_flash_pch5},
 	{0x8086, 0x3b0d, NT,  "Intel", "3400 Mobile SFF",		enable_flash_pch5},
