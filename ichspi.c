@@ -2010,7 +2010,7 @@ int via_init_spi(uint32_t mmio_base)
 	/* Do we really need no write enable? Like the LPC one at D17F0 0x40 */
 
 	/* Not sure if it speaks all these bus protocols. */
-	internal_buses_supported = BUS_LPC | BUS_FWH;
+	internal_buses_supported &= BUS_LPC | BUS_FWH;
 	ich_generation = CHIPSET_ICH7;
 	register_spi_master(&spi_master_via);
 

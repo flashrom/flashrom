@@ -543,21 +543,22 @@ Example:
 .TP
 .B Laptops
 .sp
-Using flashrom on laptops is dangerous and may easily make your hardware
-unusable (see also the
+Using flashrom on older laptops that don't boot from the SPI bus is
+dangerous and may easily make your hardware unusable (see also the
 .B BUGS
-section). The embedded controller (EC) in these
-machines often interacts badly with flashing.
+section). The embedded controller (EC) in some
+machines may interact badly with flashing.
 More information is
 .URLB https://flashrom.org/Laptops "in the wiki" .
-For example the EC firmware sometimes resides on the same
-flash chip as the host firmware. While flashrom tries to change the contents of
+Problems occur when the flash chip is shared between BIOS
+and EC firmware, and the latter does not expect flashrom
+to access the chip. While flashrom tries to change the contents of
 that memory the EC might need to fetch new instructions or data from it and
 could stop working correctly. Probing for and reading from the chip may also
 irritate your EC and cause fan failure, backlight failure, sudden poweroff, and
-other nasty effects. flashrom will attempt to detect if it is running on a
-laptop and abort immediately for safety reasons if it clearly identifies the
-host computer as one. If you want to proceed anyway at your own risk, use
+other nasty effects. flashrom will attempt to detect if it is running on such a
+laptop and limit probing to SPI buses. If you want to probe the LPC bus
+anyway at your own risk, use
 .sp
 .B "  flashrom \-p internal:laptop=force_I_want_a_brick"
 .sp
@@ -568,8 +569,8 @@ You have been warned.
 .sp
 Currently we rely on the chassis type encoded in the DMI/SMBIOS data to detect
 laptops. Some vendors did not implement those bits correctly or set them to
-generic and/or dummy values. flashrom will then issue a warning and bail out
-like above. In this case you can use
+generic and/or dummy values. flashrom will then issue a warning and restrict
+buses like above. In this case you can use
 .sp
 .B "  flashrom \-p internal:laptop=this_is_not_a_laptop"
 .sp
@@ -1291,10 +1292,10 @@ channel.
 .SS
 .B Laptops
 .sp
-Using flashrom on laptops is dangerous and may easily make your hardware
-unusable. flashrom will attempt to detect if it is running on a laptop and abort
-immediately for safety reasons. Please see the detailed discussion of this topic
-and associated flashrom options in the
+Using flashrom on older laptops is dangerous and may easily make your hardware
+unusable. flashrom will attempt to detect if it is running on a susceptible
+laptop and restrict flash-chip probing for safety reasons. Please see the
+detailed discussion of this topic and associated flashrom options in the
 .B Laptops
 paragraph in the
 .B internal programmer

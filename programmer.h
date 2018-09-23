@@ -226,6 +226,7 @@ int rpci_write_long(struct pci_dev *dev, int reg, uint32_t data);
 struct penable {
 	uint16_t vendor_id;
 	uint16_t device_id;
+	enum chipbustype buses;
 	const enum test_state status;
 	const char *vendor_name;
 	const char *device_name;

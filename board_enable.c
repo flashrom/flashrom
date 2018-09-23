@@ -600,12 +600,15 @@ int it8705f_write_enable(uint8_t port)
 	uint8_t tmp;
 	int ret = 0;
 
+	if (!(internal_buses_supported & BUS_PARALLEL))
+		return 1;
+
 	enter_conf_mode_ite(port);
 	tmp = sio_read(port, 0x24);
 	/* Check if at least one flash segment is enabled. */
 	if (tmp & 0xf0) {
 		/* The IT8705F will respond to LPC cycles and translate them. */
-		internal_buses_supported = BUS_PARALLEL;
+		internal_buses_supported &= BUS_PARALLEL;
 		/* Flash ROM I/F Writes Enable */
 		tmp |= 0x04;
 		msg_pdbg("Enabling IT8705F flash ROM interface write.\n");
