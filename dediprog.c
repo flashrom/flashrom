@@ -360,8 +360,9 @@ static int dediprog_set_spi_speed(unsigned int spispeed_idx)
 	return 0;
 }
 
-static void fill_rw_cmd_payload(uint8_t *data_packet, unsigned int count, uint8_t dedi_spi_cmd,
-		unsigned int *value, unsigned int *idx, unsigned int start, int is_read) {
+static void prepare_rw_cmd(
+		struct flashctx *const flash, uint8_t *data_packet, unsigned int count,
+		uint8_t dedi_spi_cmd, unsigned int *value, unsigned int *idx, unsigned int start, int is_read) {
 	/* First 5 bytes are common in both generations. */
 	data_packet[0] = count & 0xff;
 	data_packet[1] = (count >> 8) & 0xff;
@@ -370,6 +371,15 @@ static void fill_rw_cmd_payload(uint8_t *data_packet, unsigned int count, uint8_
 	data_packet[4] = 0; /* "Opcode". Specs imply necessity only for READ_MODE_4B_ADDR_FAST and WRITE_MODE_4B_ADDR_256B_PAGE_PGM */
 
 	if (protocol() >= PROTOCOL_V2) {
+		if (is_read && flash->chip->feature_bits & FEATURE_4BA_FAST_READ) {
+			data_packet[3] = READ_MODE_4B_ADDR_FAST_0x0C;
+			data_packet[4] = JEDEC_READ_4BA_FAST;
+		} else if (dedi_spi_cmd == WRITE_MODE_PAGE_PGM
+			   && (flash->chip->feature_bits & FEATURE_4BA_WRITE)) {
+			data_packet[3] = WRITE_MODE_4B_ADDR_256B_PAGE_PGM_0x12;
+			data_packet[4] = JEDEC_BYTE_PROGRAM_4BA;
+		}
+
 		*value = *idx = 0;
 		data_packet[5] = 0; /* RFU */
 		data_packet[6] = (start >>  0) & 0xff;
@@ -438,7 +448,7 @@ static int dediprog_spi_bulk_read(struct flashctx *flash, uint8_t *buf, unsigned
 
 	uint8_t data_packet[command_packet_size];
 	unsigned int value, idx;
-	fill_rw_cmd_payload(data_packet, count, READ_MODE_STD, &value, &idx, start, 1);
+	prepare_rw_cmd(flash, data_packet, count, READ_MODE_STD, &value, &idx, start, 1);
 
 	int ret = dediprog_write(CMD_READ, value, idx, data_packet, sizeof(data_packet));
 	if (ret != sizeof(data_packet)) {
@@ -594,7 +604,7 @@ static int dediprog_spi_bulk_write(struct flashctx *flash, const uint8_t *buf, u
 
 	uint8_t data_packet[command_packet_size];
 	unsigned int value, idx;
-	fill_rw_cmd_payload(data_packet, count, dedi_spi_cmd, &value, &idx, start, 0);
+	prepare_rw_cmd(flash, data_packet, count, dedi_spi_cmd, &value, &idx, start, 0);
 	int ret = dediprog_write(CMD_WRITE, value, idx, data_packet, sizeof(data_packet));
 	if (ret != sizeof(data_packet)) {
 		msg_perr("Command Write SPI Bulk failed, %s!\n", libusb_error_name(ret));
@@ -638,8 +648,8 @@ static int dediprog_spi_write(struct flashctx *flash, const uint8_t *buf,
 	if (residue) {
 		msg_pdbg("Slow write for partial block from 0x%x, length 0x%x\n",
 			 start, residue);
-		/* No idea about the real limit. Maybe 12, maybe more. */
-		ret = spi_write_chunked(flash, buf, start, residue, 12);
+		/* No idea about the real limit. Maybe 16 including command and address, maybe more. */
+		ret = spi_write_chunked(flash, buf, start, residue, 11);
 		if (ret) {
 			dediprog_set_leds(LED_ERROR);
 			return ret;
@@ -659,7 +669,7 @@ static int dediprog_spi_write(struct flashctx *flash, const uint8_t *buf,
 		msg_pdbg("Slow write for partial block from 0x%x, length 0x%x\n",
 			 start, len);
 		ret = spi_write_chunked(flash, buf + residue + bulklen,
-				        start + residue + bulklen, len, 12);
+				        start + residue + bulklen, len, 11);
 		if (ret) {
 			dediprog_set_leds(LED_ERROR);
 			return ret;
@@ -931,7 +941,7 @@ static int parse_voltage(char *voltage)
 	return millivolt;
 }
 
-static const struct spi_master spi_master_dediprog = {
+static struct spi_master spi_master_dediprog = {
 	.type		= SPI_CONTROLLER_DEDIPROG,
 	.features	= SPI_MASTER_NO_4BA_MODES,
 	.max_data_read	= 16, /* 18 seems to work fine as well, but 19 times out sometimes with FW 5.15. */
@@ -1123,6 +1133,9 @@ int dediprog_init(void)
 
 	if (dediprog_standalone_mode())
 		return 1;
+
+	if (dediprog_devicetype == DEV_SF600 && protocol() == PROTOCOL_V2)
+		spi_master_dediprog.features |= SPI_MASTER_4BA;
 
 	if (register_spi_master(&spi_master_dediprog) || dediprog_set_leds(LED_NONE))
 		return 1;
