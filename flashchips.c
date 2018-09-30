@@ -11881,6 +11881,106 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Sanyo",
+		.name		= "LE25FU106B",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= SANYO_ID,
+		.model_id	= SANYO_LE25FU106B,
+		.total_size	= 128,
+		.page_size	= 256,
+		.feature_bits	= FEATURE_WRSR_WREN,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_res2,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	= {
+			/* FIXME: Is this correct?
+			{
+				.eraseblocks = { {2 * 1024, 64} },
+				.block_erase = spi_block_erase_d7,
+			},*/
+			{
+				.eraseblocks = { {32 * 1024, 4} },
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { {128 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
+		},
+		.printlock	= spi_prettyprint_status_register_bp1_srwd,
+		.unlock		= spi_disable_blockprotect_bp1_srwd,
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read,
+		.voltage	= {2300, 3600},
+	},
+
+	{
+		.vendor		= "Sanyo",
+		.name		= "LE25FU206",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= SANYO_ID,
+		.model_id	= SANYO_LE25FU206,
+		.total_size	= 256,
+		.page_size	= 256,
+		.feature_bits	= FEATURE_WRSR_WREN,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_res2,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	= {
+			{
+				.eraseblocks = { {4 * 1024, 64} },
+				.block_erase = spi_block_erase_d7,
+			}, {
+				.eraseblocks = { {64 * 1024, 4} },
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { {256 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
+		},
+		.printlock	= spi_prettyprint_status_register_bp1_srwd,
+		.unlock		= spi_disable_blockprotect_bp1_srwd,
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read,
+		.voltage	= {2300, 3600},
+	},
+
+	{
+		.vendor		= "Sanyo",
+		.name		= "LE25FU206A",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= SANYO_ID,
+		.model_id	= SANYO_LE25FU206A,
+		.total_size	= 256,
+		.page_size	= 256,
+		.tested		= TEST_UNTESTED,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	= {
+			{
+				.eraseblocks = { {4 * 1024, 64} },
+				.block_erase = spi_block_erase_20,
+			}, {
+				.eraseblocks = { {4 * 1024, 64} },
+				.block_erase = spi_block_erase_d7,
+			}, {
+				.eraseblocks = { {64 * 1024, 4} },
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { {256 * 1024, 1} },
+				.block_erase = spi_block_erase_60,
+			}, {
+				.eraseblocks = { {256 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
+		},
+		.printlock	= spi_prettyprint_status_register_bp2_srwd,
+		.unlock		= spi_disable_blockprotect, /* #WP pin write-protects SRWP bit. */
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read,
+		.voltage	= {2300, 3600},
+	},
+
+	{
+		.vendor		= "Sanyo",
 		.name		= "LE25FU406B",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= SANYO_ID,
