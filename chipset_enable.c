@@ -1896,7 +1896,7 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x9c47, NT,  "Intel", "Lynx Point LP Value",		enable_flash_pch8_lp},
 	{0x8086, 0x9cc1, NT,  "Intel", "Haswell U Sample",		enable_flash_pch9_lp},
 	{0x8086, 0x9cc2, NT,  "Intel", "Broadwell U Sample",		enable_flash_pch9_lp},
-	{0x8086, 0x9cc3, NT,  "Intel", "Broadwell U Premium",		enable_flash_pch9_lp},
+	{0x8086, 0x9cc3, DEP, "Intel", "Broadwell U Premium",		enable_flash_pch9_lp},
 	{0x8086, 0x9cc5, NT,  "Intel", "Broadwell U Base",		enable_flash_pch9_lp},
 	{0x8086, 0x9cc6, NT,  "Intel", "Broadwell Y Sample",		enable_flash_pch9_lp},
 	{0x8086, 0x9cc7, NT,  "Intel", "Broadwell Y Premium",		enable_flash_pch9_lp},
