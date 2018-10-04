@@ -654,7 +654,6 @@ char *extract_param(const char *const *haystack, const char *needle, const char 
 			return NULL;
 		/* Needle followed by '='? */
 		if (param_pos[needlelen] == '=') {
-			
 			/* Beginning of the string? */
 			if (param_pos == *haystack)
 				break;

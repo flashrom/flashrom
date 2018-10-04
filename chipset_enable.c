@@ -151,7 +151,7 @@ static int enable_flash_sis501(struct pci_dev *dev, const char *name)
 	tmp &= (~0x20);
 	tmp |= 0x4;
 	sio_write(0x22, 0x70, tmp);
-	
+
 	return ret;
 }
 
