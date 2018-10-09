@@ -114,10 +114,12 @@
 #define JEDEC_PE_OUTSIZE	0x04
 #define JEDEC_PE_INSIZE		0x00
 
-/* Read Status Register */
+/* Read Status Register(s) */
 #define JEDEC_RDSR		0x05
 #define JEDEC_RDSR_OUTSIZE	0x01
 #define JEDEC_RDSR_INSIZE	0x01
+#define JEDEC_RDSR2		0x35
+#define JEDEC_RDSR3		0x15
 
 /* Status Register Bits */
 #define SPI_SR_WIP	(0x01 << 0)
@@ -133,6 +135,10 @@
 #define JEDEC_WRSR		0x01
 #define JEDEC_WRSR_OUTSIZE	0x02
 #define JEDEC_WRSR_INSIZE	0x00
+#define JEDEC_WRSR_2_OUTSIZE	0x03
+#define JEDEC_WRSR1		0x01
+#define JEDEC_WRSR2		0x31
+#define JEDEC_WRSR3		0x11
 
 /* Enter 4-byte Address Mode */
 #define JEDEC_ENTER_4_BYTE_ADDR_MODE	0xB7
@@ -169,6 +175,26 @@
 /* Write memory byte with 4-byte address
    From ANY mode (3-bytes or 4-bytes) it works with 4-byte address */
 #define JEDEC_BYTE_PROGRAM_4BA	0x12
+
+/* Enter OTP mode (supported by most Eon chips) */
+#define JEDEC_ENTER_OTP		0x3A
+#define JEDEC_ENTER_OTP_OUTSIZE	0x01
+#define JEDEC_ENTER_OTP_INSIZE	0x00
+
+/* Read Security Register(s) (supported by most GigaDevice chips) */
+#define JEDEC_READ_SEC_REG		0x48
+#define JEDEC_READ_SEC_REG_OUTSIZE	0x05
+/* JEDEC_READ_SEC_REG_INSIZE		any length */
+
+/* Program Security Register(s) (supported by most GigaDevice chips) */
+#define JEDEC_PROG_BYTE_SEC_REG		0x42
+#define JEDEC_PROG_BYTE_SEC_REG_OUTSIZE	0x05
+#define JEDEC_PROG_BYTE_SEC_REG_INSIZE	0x00
+
+/* Erase Security Register(s) (supported by most GigaDevice chips) */
+#define JEDEC_ERASE_SEC_REG		0x44
+#define JEDEC_ERASE_SEC_REG_OUTSIZE	0x04
+#define JEDEC_ERASE_SEC_REG_INSIZE	0x00
 
 /* Error codes */
 #define SPI_GENERIC_ERROR	-1

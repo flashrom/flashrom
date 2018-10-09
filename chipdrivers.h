@@ -21,6 +21,9 @@
 #define __CHIPDRIVERS_H__ 1
 
 #include "flash.h"	/* for chipaddr and flashctx */
+#include "otp.h"	/* For enum otp_region */
+#include "spi25_statusreg.h"	/* For enum status_register_num */
+#include "writeprotect.h"
 
 /* spi.c */
 int spi_aai_write(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
@@ -58,11 +61,27 @@ int spi_read_chunked(struct flashctx *flash, uint8_t *buf, unsigned int start, u
 int spi_write_chunked(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len, unsigned int chunksize);
 int spi_enter_4ba(struct flashctx *flash);
 int spi_exit_4ba(struct flashctx *flash);
+int spi_enter_otp_mode(struct flashctx *flash);
+int spi_sec_reg_nbyte_read(struct flashctx *flash, unsigned int address, uint8_t *bytes, unsigned int len);
+int spi_sec_reg_read_chunked(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len, unsigned int chunksize);
+int spi_sec_reg_read(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
+int spi_sec_reg_nbyte_program(struct flashctx *flash, unsigned int addr, const uint8_t *bytes, unsigned int len);
+int spi_sec_reg_write_chunked(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len, unsigned int chunksize);
+int spi_sec_reg_prog(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
+int spi_sec_reg_erase(struct flashctx *flash, uint32_t addr);
 
 
 /* spi25_statusreg.c */
 uint8_t spi_read_status_register(struct flashctx *flash);
+uint8_t spi_read_status_register_generic(struct flashctx *flash, enum status_register_num SRn);
 int spi_write_status_register(struct flashctx *flash, int status);
+int spi_write_status_register_generic(struct flashctx *flash, enum status_register_num SRn, uint8_t status);
+enum status_register_num top_status_register(struct flashctx *flash);
+char pos_bit(struct flashctx *flash, enum status_register_bit bit);
+enum wp_mode get_wp_mode_generic(struct flashctx *flash);
+int set_wp_mode_generic(struct flashctx *flash, enum wp_mode wp_mode);
+int spi_prettyprint_status_register_generic(struct flashctx *flash, enum status_register_num SRn);
+int spi_prettyprint_status_register_wp_generic(struct flashctx *flash);
 void spi_prettyprint_status_register_bit(uint8_t status, int bit);
 int spi_prettyprint_status_register_plain(struct flashctx *flash);
 int spi_prettyprint_status_register_default_welwip(struct flashctx *flash);
@@ -103,6 +122,38 @@ int spi_prettyprint_status_register_sst25(struct flashctx *flash);
 int spi_prettyprint_status_register_sst25vf016(struct flashctx *flash);
 int spi_prettyprint_status_register_sst25vf040b(struct flashctx *flash);
 int spi_disable_blockprotect_sst26_global_unprotect(struct flashctx *flash);
+
+/* otp.c */
+int eon_status_generic(struct flashctx *flash, enum otp_region otp_region);
+int eon_print_status_generic(struct flashctx *flash);
+int eon_read_generic(struct flashctx *flash, uint8_t *buf, enum otp_region otp_region,
+	uint32_t start_byte, uint32_t len);
+int eon_write_generic(struct flashctx *flash, const uint8_t *buf, enum otp_region otp_region,
+	uint32_t start_byte, uint32_t len);
+int eon_erase_generic(struct flashctx *flash, enum otp_region otp_region);
+int eon_lock_generic(struct flashctx *flash, enum otp_region otp_region);
+int gd_w_status_generic(struct flashctx *flash, enum otp_region otp_region);
+int gd_w_print_status_generic(struct flashctx *flash);
+int gd_w_read_generic(struct flashctx *flash, uint8_t *buf, enum otp_region otp_region,
+	uint32_t start_byte, uint32_t len);
+int gd_w_write_generic(struct flashctx *flash, const uint8_t *buf, enum otp_region otp_region,
+	uint32_t start_byte, uint32_t len);
+int gd_erase_generic(struct flashctx *flash, enum otp_region otp_region);
+int gd_w_lock_generic(struct flashctx *flash, enum otp_region otp_region);
+
+/* writeprotect.c */
+struct range *sec_block_range_pattern(struct flashctx *flash);
+char get_cmp(struct flashctx *flash);
+int set_cmp(struct flashctx *flash, uint8_t cmp);
+uint32_t bp_bitmask_generic(struct flashctx *flash);
+struct range *bp_to_range(struct flashctx *flash, unsigned char bp_config);
+int range_to_bp_bitfield(struct flashctx *flash, uint32_t start, uint32_t len);
+int print_range_generic(struct flashctx *flash);
+int print_table_generic(struct flashctx *flash);
+int set_range_generic(struct flashctx *flash, uint32_t start, uint32_t len);
+int disable_generic(struct flashctx *flash);
+struct range *range_table_global(struct flashctx *flash);
+struct range *a25l032_range_table(struct flashctx *flash);
 
 /* sfdp.c */
 int probe_spi_sfdp(struct flashctx *flash);

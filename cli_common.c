@@ -20,50 +20,52 @@
 #include <string.h>
 #include "flash.h"
 
-void print_chip_support_status(const struct flashchip *chip)
+void print_chip_support_status(struct flashctx *flash)
 {
-	if (chip->feature_bits & FEATURE_OTP) {
-		msg_cdbg("This chip may contain one-time programmable memory. flashrom cannot read\n"
-			 "and may never be able to write it, hence it may not be able to completely\n"
-			 "clone the contents of this chip (see man page for details).\n");
+	if (flash->chip->otp) {
+		flash->chip->otp->print_status(flash);
+	} else if (flash->chip->feature_bits & FEATURE_OTP) {
+		msg_cdbg("This chip may contain one-time programmable memory. flashrom may be able\n"
+			 "to read, write, erase and/or lock it, if OTP infrastructure support is added.\n"
+			 "You could add support and send the patch to flashrom@flashrom.org\n");
 	}
 
-	if ((chip->tested.erase == NA) && (chip->tested.write == NA)) {
+	if ((flash->chip->tested.erase == NA) && (flash->chip->tested.write == NA)) {
 		msg_cdbg("This chip's main memory can not be erased/written by design.\n");
 	}
 
-	if ((chip->tested.probe == BAD) || (chip->tested.probe == NT) ||
-	    (chip->tested.read == BAD)  || (chip->tested.read == NT) ||
-	    (chip->tested.erase == BAD) || (chip->tested.erase == NT) ||
-	    (chip->tested.write == BAD) || (chip->tested.write == NT)){
+	if ((flash->chip->tested.probe == BAD) || (flash->chip->tested.probe == NT) ||
+	    (flash->chip->tested.read == BAD)  || (flash->chip->tested.read == NT) ||
+	    (flash->chip->tested.erase == BAD) || (flash->chip->tested.erase == NT) ||
+	    (flash->chip->tested.write == BAD) || (flash->chip->tested.write == NT)){
 		msg_cinfo("===\n");
-		if ((chip->tested.probe == BAD) ||
-		    (chip->tested.read == BAD) ||
-		    (chip->tested.erase == BAD) ||
-		    (chip->tested.write == BAD)) {
+		if ((flash->chip->tested.probe == BAD) ||
+		    (flash->chip->tested.read == BAD) ||
+		    (flash->chip->tested.erase == BAD) ||
+		    (flash->chip->tested.write == BAD)) {
 			msg_cinfo("This flash part has status NOT WORKING for operations:");
-			if (chip->tested.probe == BAD)
+			if (flash->chip->tested.probe == BAD)
 				msg_cinfo(" PROBE");
-			if (chip->tested.read == BAD)
+			if (flash->chip->tested.read == BAD)
 				msg_cinfo(" READ");
-			if (chip->tested.erase == BAD)
+			if (flash->chip->tested.erase == BAD)
 				msg_cinfo(" ERASE");
-			if (chip->tested.write == BAD)
+			if (flash->chip->tested.write == BAD)
 				msg_cinfo(" WRITE");
 			msg_cinfo("\n");
 		}
-		if ((chip->tested.probe == NT) ||
-		    (chip->tested.read == NT) ||
-		    (chip->tested.erase == NT) ||
-		    (chip->tested.write == NT)) {
+		if ((flash->chip->tested.probe == NT) ||
+		    (flash->chip->tested.read == NT) ||
+		    (flash->chip->tested.erase == NT) ||
+		    (flash->chip->tested.write == NT)) {
 			msg_cinfo("This flash part has status UNTESTED for operations:");
-			if (chip->tested.probe == NT)
+			if (flash->chip->tested.probe == NT)
 				msg_cinfo(" PROBE");
-			if (chip->tested.read == NT)
+			if (flash->chip->tested.read == NT)
 				msg_cinfo(" READ");
-			if (chip->tested.erase == NT)
+			if (flash->chip->tested.erase == NT)
 				msg_cinfo(" ERASE");
-			if (chip->tested.write == NT)
+			if (flash->chip->tested.write == NT)
 				msg_cinfo(" WRITE");
 			msg_cinfo("\n");
 		}

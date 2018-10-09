@@ -2,6 +2,7 @@
  * This file is part of the flashrom project.
  *
  * Copyright (C) 2009,2010 Carl-Daniel Hailfinger
+ * Copyright (C) 2016 Hatim Kanchwala <hatim@hatimak.me>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,12 +38,22 @@
 
 #if EMULATE_CHIP
 static uint8_t *flashchip_contents = NULL;
+static uint8_t *gd25q128c_otp_1_contents = NULL;
+static uint8_t *gd25q128c_otp_2_contents = NULL;
+static uint8_t *gd25q128c_otp_3_contents = NULL;
+static uint8_t *en25qh128_otp_contents = NULL;
+static uint8_t *w25q40v_otp_1_contents = NULL;
+static uint8_t *w25q40v_otp_2_contents = NULL;
+static uint8_t *w25q40v_otp_3_contents = NULL;
 enum emu_chip {
 	EMULATE_NONE,
 	EMULATE_ST_M25P10_RES,
 	EMULATE_SST_SST25VF040_REMS,
 	EMULATE_SST_SST25VF032B,
 	EMULATE_MACRONIX_MX25L6436,
+	EMULATE_GIGADEVICE_GD25Q128C,
+	EMULATE_EON_EN25QH128,
+	EMULATE_WINBOND_W25Q40_V,
 };
 static enum emu_chip emu_chip = EMULATE_NONE;
 static char *emu_persistent_image = NULL;
@@ -59,7 +70,16 @@ unsigned char spi_blacklist[256];
 unsigned char spi_ignorelist[256];
 int spi_blacklist_size = 0;
 int spi_ignorelist_size = 0;
-static uint8_t emu_status = 0;
+static uint32_t emu_status = 0;
+static char *emu_persistent_gd25_otp_1_image = NULL;
+static char *emu_persistent_gd25_otp_2_image = NULL;
+static char *emu_persistent_gd25_otp_3_image = NULL;
+static char *emu_persistent_en25_otp_image = NULL;
+static char *emu_persistent_w25_otp_1_image = NULL;
+static char *emu_persistent_w25_otp_2_image = NULL;
+static char *emu_persistent_w25_otp_3_image = NULL;
+static uint8_t read_only_bits = 0;
+static uint8_t en25qh128_otp_mode = 0, en25qh128_otp_bit = 0;
 
 /* A legit complete SFDP table based on the MX25L6436E (rev. 1.8) datasheet. */
 static const uint8_t sfdp_table[] = {
@@ -86,6 +106,8 @@ static const uint8_t sfdp_table[] = {
 	0xD9, 0xC8, 0xFF, 0xFF, // @0x50
 	0xFF, 0xFF, 0xFF, 0xFF, // @0x54: Macronix parameter table end
 };
+
+// TODO(hatim): Add SFDP table for GD25Q128C, EN25QH128 and W25Q40.V
 
 #endif
 #endif
@@ -142,6 +164,61 @@ static int dummy_shutdown(void *data)
 			emu_persistent_image = NULL;
 		}
 		free(flashchip_contents);
+		if (emu_chip == EMULATE_GIGADEVICE_GD25Q128C) {
+			if (emu_persistent_gd25_otp_1_image) {
+				msg_pdbg("Writing %s\n", emu_persistent_gd25_otp_1_image);
+				write_buf_to_file(gd25q128c_otp_1_contents, 512, emu_persistent_gd25_otp_1_image);
+				free(emu_persistent_gd25_otp_1_image);
+				emu_persistent_gd25_otp_1_image = NULL;
+			}
+			if (emu_persistent_gd25_otp_2_image) {
+				msg_pdbg("Writing %s\n", emu_persistent_gd25_otp_2_image);
+				write_buf_to_file(gd25q128c_otp_2_contents, 512, emu_persistent_gd25_otp_2_image);
+				free(emu_persistent_gd25_otp_2_image);
+				emu_persistent_gd25_otp_2_image = NULL;
+			}
+			if (emu_persistent_gd25_otp_3_image) {
+				msg_pdbg("Writing %s\n", emu_persistent_gd25_otp_3_image);
+				write_buf_to_file(gd25q128c_otp_3_contents, 512, emu_persistent_gd25_otp_3_image);
+				free(emu_persistent_gd25_otp_3_image);
+				emu_persistent_gd25_otp_3_image = NULL;
+			}
+			free(gd25q128c_otp_1_contents);
+			free(gd25q128c_otp_2_contents);
+			free(gd25q128c_otp_3_contents);
+		}
+		if (emu_chip == EMULATE_EON_EN25QH128) {
+			if (emu_persistent_en25_otp_image) {
+				msg_pdbg("Writing %s\n", emu_persistent_en25_otp_image);
+				write_buf_to_file(en25qh128_otp_contents, 512, emu_persistent_en25_otp_image);
+				free(emu_persistent_en25_otp_image);
+				emu_persistent_en25_otp_image = NULL;
+			}
+			free(en25qh128_otp_contents);
+		}
+		if (emu_chip == EMULATE_WINBOND_W25Q40_V) {
+			if (emu_persistent_w25_otp_1_image) {
+				msg_pdbg("Writing %s\n", emu_persistent_w25_otp_1_image);
+				write_buf_to_file(w25q40v_otp_1_contents, 256, emu_persistent_w25_otp_1_image);
+				free(emu_persistent_w25_otp_1_image);
+				emu_persistent_w25_otp_1_image = NULL;
+			}
+			if (emu_persistent_w25_otp_2_image) {
+				msg_pdbg("Writing %s\n", emu_persistent_w25_otp_2_image);
+				write_buf_to_file(w25q40v_otp_2_contents, 256, emu_persistent_w25_otp_2_image);
+				free(emu_persistent_w25_otp_2_image);
+				emu_persistent_w25_otp_2_image = NULL;
+			}
+			if (emu_persistent_w25_otp_3_image) {
+				msg_pdbg("Writing %s\n", emu_persistent_w25_otp_3_image);
+				write_buf_to_file(w25q40v_otp_3_contents, 256, emu_persistent_w25_otp_3_image);
+				free(emu_persistent_w25_otp_3_image);
+				emu_persistent_w25_otp_3_image = NULL;
+			}
+			free(w25q40v_otp_1_contents);
+			free(w25q40v_otp_2_contents);
+			free(w25q40v_otp_3_contents);
+		}
 	}
 #endif
 	return 0;
@@ -331,6 +408,42 @@ int dummy_init(void)
 		msg_pdbg("Emulating Macronix MX25L6436 SPI flash chip (RDID, "
 			 "SFDP)\n");
 	}
+	if (!strcmp(tmp, "GD25Q128C")) {
+		emu_chip = EMULATE_GIGADEVICE_GD25Q128C;
+		emu_chip_size = 16 * 1024 * 1024;
+		emu_max_byteprogram_size = 256;
+		emu_max_aai_size = 0;
+		emu_jedec_se_size = 4 * 1024;
+		emu_jedec_be_52_size = 32 * 1024;
+		emu_jedec_be_d8_size = 64 * 1024;
+		emu_jedec_ce_60_size = emu_chip_size;
+		emu_jedec_ce_c7_size = emu_chip_size;
+		msg_pdbg("Emulating GigaDevice GD25Q128C SPI flash chip (RDID)\n");
+	}
+	if (!strcmp(tmp, "EN25QH128")) {
+		emu_chip = EMULATE_EON_EN25QH128;
+		emu_chip_size = 16 * 1024 * 1024;
+		emu_max_byteprogram_size = 256;
+		emu_max_aai_size = 0;
+		emu_jedec_se_size = 4 * 1024;
+		emu_jedec_be_52_size = 32 * 1024;
+		emu_jedec_be_d8_size = 64 * 1024;
+		emu_jedec_ce_60_size = emu_chip_size;
+		emu_jedec_ce_c7_size = emu_chip_size;
+		msg_pdbg("Emulating Eon EN25QH128 SPI flash chip (RDID)\n");
+	}
+	if (!strcmp(tmp, "W25Q40.V")) {
+		emu_chip = EMULATE_WINBOND_W25Q40_V;
+		emu_chip_size = 512 * 1024;
+		emu_max_byteprogram_size = 256;
+		emu_max_aai_size = 0;
+		emu_jedec_se_size = 4 * 1024;
+		emu_jedec_be_52_size = 32 * 1024;
+		emu_jedec_be_d8_size = 64 * 1024;
+		emu_jedec_ce_60_size = emu_chip_size;
+		emu_jedec_ce_c7_size = emu_chip_size;
+		msg_pdbg("Emulating Winbond W25Q40.V SPI flash chip (RDID)\n");
+	}
 #endif
 	if (emu_chip == EMULATE_NONE) {
 		msg_perr("Invalid chip specified for emulation: %s\n", tmp);
@@ -342,6 +455,53 @@ int dummy_init(void)
 	if (!flashchip_contents) {
 		msg_perr("Out of memory!\n");
 		return 1;
+	}
+
+	/* Allocate memory for each of the 512 bytes Security Register of GD25Q128C. */
+	if (emu_chip == EMULATE_GIGADEVICE_GD25Q128C) {
+		gd25q128c_otp_1_contents = malloc(512);
+		if (!gd25q128c_otp_1_contents) {
+			msg_perr("Out of memory!\n");
+			return 1;
+		}
+		gd25q128c_otp_2_contents = malloc(512);
+		if (!gd25q128c_otp_2_contents) {
+			msg_perr("Out of memory!\n");
+			return 1;
+		}
+		gd25q128c_otp_3_contents = malloc(512);
+		if (!gd25q128c_otp_3_contents) {
+			msg_perr("Out of memory!\n");
+			return 1;
+		}
+	}
+
+	/* Allocate memory for the 512 byte security sector of EN25QH128. */
+	if (emu_chip == EMULATE_EON_EN25QH128) {
+		en25qh128_otp_contents = malloc(512);
+		if (!en25qh128_otp_contents) {
+			msg_perr("Out of memory!\n");
+			return 1;
+		}
+	}
+
+	/* Allocate memory for each of the 256 bytes Security Register of GD25Q128C. */
+	if (emu_chip == EMULATE_WINBOND_W25Q40_V) {
+		w25q40v_otp_1_contents = malloc(256);
+		if (!w25q40v_otp_1_contents) {
+			msg_perr("Out of memory!\n");
+			return 1;
+		}
+		w25q40v_otp_2_contents = malloc(256);
+		if (!w25q40v_otp_2_contents) {
+			msg_perr("Out of memory!\n");
+			return 1;
+		}
+		w25q40v_otp_3_contents = malloc(256);
+		if (!w25q40v_otp_3_contents) {
+			msg_perr("Out of memory!\n");
+			return 1;
+		}
 	}
 
 #ifdef EMULATE_SPI_CHIP
@@ -356,8 +516,21 @@ int dummy_init(void)
 				 "but the value could not be converted.\n");
 			return 1;
 		}
-		msg_pdbg("Initial status register is set to 0x%02x.\n",
+		if (emu_chip == EMULATE_GIGADEVICE_GD25Q128C) {
+			msg_pdbg("Initial status registers -\n"
+				"\tSR1 is set to 0x%02x\n"
+				"\tSR2 is set to 0x%02x\n"
+				"\tSR3 is set to 0x%02x\n",
+				emu_status & 0xff, (emu_status >> 8) & 0xff, (emu_status >> 16) & 0xff);
+		} else if (emu_chip == EMULATE_WINBOND_W25Q40_V) {
+			msg_pdbg("Initial status registers -\n"
+				"\tSR1 is set to 0x%02x\n"
+				"\tSR2 is set to 0x%02x\n",
+				emu_status & 0xff, (emu_status >> 8) & 0xff);
+		} else {
+			msg_pdbg("Initial status register is set to 0x%02x.\n",
 			 emu_status);
+		}
 	}
 #endif
 
@@ -366,13 +539,9 @@ int dummy_init(void)
 
 	/* Will be freed by shutdown function if necessary. */
 	emu_persistent_image = extract_programmer_param("image");
-	if (!emu_persistent_image) {
-		/* Nothing else to do. */
-		goto dummy_init_out;
-	}
 	/* We will silently (in default verbosity) ignore the file if it does not exist (yet) or the size does
 	 * not match the emulated chip. */
-	if (!stat(emu_persistent_image, &image_stat)) {
+	if (emu_persistent_image && !stat(emu_persistent_image, &image_stat)) {
 		msg_pdbg("Found persistent image %s, %jd B ",
 			 emu_persistent_image, (intmax_t)image_stat.st_size);
 		if (image_stat.st_size == emu_chip_size) {
@@ -384,11 +553,146 @@ int dummy_init(void)
 			msg_pdbg("doesn't match.\n");
 		}
 	}
+
+	/* Each OTP image will be freed by shutdown function, if necessary. GD25Q128C has 3 Security Registers
+	 * each of 512 bytes.
+	 * We will silently (in default verbosity) ignore the file(s) if it does not exist (yet)
+	 * or the size does not match the security register size on chip. */
+	if (emu_chip == EMULATE_GIGADEVICE_GD25Q128C) {
+		msg_pdbg("Filling fake security register 1, 2 and 3 with 0xff, size 512 bytes each\n");
+		memset(gd25q128c_otp_1_contents, 0xff, 512);
+		memset(gd25q128c_otp_2_contents, 0xff, 512);
+		memset(gd25q128c_otp_3_contents, 0xff, 512);
+
+		emu_persistent_gd25_otp_1_image = extract_programmer_param("otp_1");
+		emu_persistent_gd25_otp_2_image = extract_programmer_param("otp_2");
+		emu_persistent_gd25_otp_3_image = extract_programmer_param("otp_3");
+
+		if (emu_persistent_gd25_otp_1_image && !stat(emu_persistent_gd25_otp_1_image, &image_stat)) {
+			msg_pdbg("Found persistent image %s, %jd B for security register 1, ",
+				 emu_persistent_gd25_otp_1_image, (intmax_t)image_stat.st_size);
+			if (image_stat.st_size == 512) {
+				msg_pdbg("matches.\n");
+				msg_pdbg("Reading %s\n", emu_persistent_gd25_otp_1_image);
+				read_buf_from_file(gd25q128c_otp_1_contents, 512,
+						   emu_persistent_gd25_otp_1_image);
+			} else {
+				msg_pdbg("doesn't match.\n");
+			}
+		}
+		if (emu_persistent_gd25_otp_2_image && !stat(emu_persistent_gd25_otp_2_image, &image_stat)) {
+			msg_pdbg("Found persistent image %s, %jd B for security register 2, ",
+				 emu_persistent_gd25_otp_2_image, (intmax_t)image_stat.st_size);
+			if (image_stat.st_size == 512) {
+				msg_pdbg("matches.\n");
+				msg_pdbg("Reading %s\n", emu_persistent_gd25_otp_2_image);
+				read_buf_from_file(gd25q128c_otp_2_contents, 512,
+						   emu_persistent_gd25_otp_2_image);
+			} else {
+				msg_pdbg("doesn't match.\n");
+			}
+		}
+		if (emu_persistent_gd25_otp_3_image && !stat(emu_persistent_gd25_otp_3_image, &image_stat)) {
+			msg_pdbg("Found persistent image %s, %jd B for security register 3, ",
+				 emu_persistent_gd25_otp_3_image, (intmax_t)image_stat.st_size);
+			if (image_stat.st_size == 512) {
+				msg_pdbg("matches.\n");
+				msg_pdbg("Reading %s\n", emu_persistent_gd25_otp_3_image);
+				read_buf_from_file(gd25q128c_otp_3_contents, 512,
+						   emu_persistent_gd25_otp_3_image);
+			} else {
+				msg_pdbg("doesn't match.\n");
+			}
+		}
+	}
+
+	/* Eon EN25QH128 has a security sector of 512 bytes. OTP image will be freed by shutdown
+	 * function, if necessary. We will silently (in default verbosity) ignore the file(s)
+	 * if it does not exist (yet) or the size does not match the security register size on chip. */
+	if (emu_chip == EMULATE_EON_EN25QH128) {
+		msg_pdbg("Filling fake security sector with 0xff, size 512 bytes\n");
+		memset(en25qh128_otp_contents, 0xff, 512);
+		emu_persistent_en25_otp_image = extract_programmer_param("otp");
+		if (emu_persistent_en25_otp_image && !stat(emu_persistent_en25_otp_image, &image_stat)) {
+			msg_pdbg("Found persistent image %s, %jd B for security sector, ",
+				 emu_persistent_en25_otp_image, (intmax_t)image_stat.st_size);
+			if (image_stat.st_size == 512) {
+				msg_pdbg("matches.\n");
+				msg_pdbg("Reading %s\n", emu_persistent_en25_otp_image);
+				read_buf_from_file(en25qh128_otp_contents, 512,
+						   emu_persistent_en25_otp_image);
+			} else {
+				msg_pdbg("doesn't match.\n");
+			}
+		}
+	}
+
+	/* W25Q40.V has 3 Security Registers each of 256 bytes. */
+	if (emu_chip == EMULATE_WINBOND_W25Q40_V) {
+		msg_pdbg("Filling fake security register 1, 2 and 3 with 0xff, size 256 bytes each\n");
+		memset(w25q40v_otp_1_contents, 0xff, 256);
+		memset(w25q40v_otp_2_contents, 0xff, 256);
+		memset(w25q40v_otp_3_contents, 0xff, 256);
+
+		emu_persistent_w25_otp_1_image = extract_programmer_param("otp_1");
+		emu_persistent_w25_otp_2_image = extract_programmer_param("otp_2");
+		emu_persistent_w25_otp_3_image = extract_programmer_param("otp_3");
+
+		if (emu_persistent_w25_otp_1_image && !stat(emu_persistent_w25_otp_1_image, &image_stat)) {
+			msg_pdbg("Found persistent image %s, %jd B for security register 1, ",
+				 emu_persistent_w25_otp_1_image, (intmax_t)image_stat.st_size);
+			if (image_stat.st_size == 256) {
+				msg_pdbg("matches.\n");
+				msg_pdbg("Reading %s\n", emu_persistent_w25_otp_1_image);
+				read_buf_from_file(w25q40v_otp_1_contents, 256,
+						   emu_persistent_w25_otp_1_image);
+			} else {
+				msg_pdbg("doesn't match.\n");
+			}
+		}
+		if (emu_persistent_w25_otp_2_image && !stat(emu_persistent_w25_otp_2_image, &image_stat)) {
+			msg_pdbg("Found persistent image %s, %jd B for security register 2, ",
+				 emu_persistent_w25_otp_2_image, (intmax_t)image_stat.st_size);
+			if (image_stat.st_size == 256) {
+				msg_pdbg("matches.\n");
+				msg_pdbg("Reading %s\n", emu_persistent_w25_otp_2_image);
+				read_buf_from_file(w25q40v_otp_2_contents, 256,
+						   emu_persistent_w25_otp_2_image);
+			} else {
+				msg_pdbg("doesn't match.\n");
+			}
+		}
+		if (emu_persistent_w25_otp_3_image && !stat(emu_persistent_w25_otp_3_image, &image_stat)) {
+			msg_pdbg("Found persistent image %s, %jd B for security register 3, ",
+				 emu_persistent_w25_otp_3_image, (intmax_t)image_stat.st_size);
+			if (image_stat.st_size == 256) {
+				msg_pdbg("matches.\n");
+				msg_pdbg("Reading %s\n", emu_persistent_w25_otp_3_image);
+				read_buf_from_file(w25q40v_otp_3_contents, 256,
+						   emu_persistent_w25_otp_3_image);
+			} else {
+				msg_pdbg("doesn't match.\n");
+			}
+		}
+	}
 #endif
 
 dummy_init_out:
 	if (register_shutdown(dummy_shutdown, NULL)) {
 		free(flashchip_contents);
+		if (emu_chip == EMULATE_GIGADEVICE_GD25Q128C) {
+			free(gd25q128c_otp_1_contents);
+			free(gd25q128c_otp_2_contents);
+			free(gd25q128c_otp_3_contents);
+		}
+		if (emu_chip == EMULATE_EON_EN25QH128) {
+			free(en25qh128_otp_contents);
+		}
+		if (emu_chip == EMULATE_WINBOND_W25Q40_V) {
+			free(w25q40v_otp_1_contents);
+			free(w25q40v_otp_2_contents);
+			free(w25q40v_otp_3_contents);
+		}
 		return 1;
 	}
 	if (dummy_buses_supported & (BUS_PARALLEL | BUS_LPC | BUS_FWH))
@@ -464,6 +768,7 @@ static void dummy_chip_readn(const struct flashctx *flash, uint8_t *buf, const c
 }
 
 #if EMULATE_SPI_CHIP
+
 static int emulate_spi_chip_response(unsigned int writecnt,
 				     unsigned int readcnt,
 				     const unsigned char *writearr,
@@ -474,6 +779,9 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 	const unsigned char sst25vf040_rems_response[2] = {0xbf, 0x44};
 	const unsigned char sst25vf032b_rems_response[2] = {0xbf, 0x4a};
 	const unsigned char mx25l6436_rems_response[2] = {0xc2, 0x16};
+	const unsigned char gd25q128c_rems_response[2] = {0xc8, 0x17};
+	const unsigned char en25qh128_rems_response[2] = {0x1c, 0x17};
+	const unsigned char w25q40v_rems_response[2] = {0xef, 0x12};
 
 	if (writecnt == 0) {
 		msg_perr("No command sent to the chip!\n");
@@ -532,6 +840,18 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 			if (readcnt > 0)
 				memset(readarr, 0x16, readcnt);
 			break;
+		case EMULATE_GIGADEVICE_GD25Q128C:
+			if (readcnt > 0)
+				memset(readarr, 0x17, readcnt);
+			break;
+		case EMULATE_EON_EN25QH128:
+			if (readcnt > 0)
+				memset(readarr, 0x17, readcnt);
+			break;
+		case EMULATE_WINBOND_W25Q40_V:
+			if (readcnt > 0)
+				memset(readarr, 0x12, readcnt);
+			break;
 		default: /* ignore */
 			break;
 		}
@@ -555,6 +875,18 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 			for (i = 0; i < readcnt; i++)
 				readarr[i] = mx25l6436_rems_response[(offs + i) % 2];
 			break;
+		case EMULATE_GIGADEVICE_GD25Q128C:
+			for (i = 0; i < readcnt; i++)
+				readarr[i] = gd25q128c_rems_response[(offs + i) % 2];
+			break;
+		case EMULATE_EON_EN25QH128:
+			for (i = 0; i < readcnt; i++)
+				readarr[i] = en25qh128_rems_response[(offs + i) % 2];
+			break;
+		case EMULATE_WINBOND_W25Q40_V:
+			for (i = 0; i < readcnt; i++)
+				readarr[i] = w25q40v_rems_response[(offs + i) % 2];
+			break;
 		default: /* ignore */
 			break;
 		}
@@ -577,29 +909,133 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 			if (readcnt > 2)
 				readarr[2] = 0x17;
 			break;
+		case EMULATE_GIGADEVICE_GD25Q128C:
+			if (readcnt > 0)
+				readarr[0] = 0xc8;
+			if (readcnt > 1)
+				readarr[1] = 0x40;
+			if (readcnt > 2)
+				readarr[2] = 0x18;
+			break;
+		case EMULATE_EON_EN25QH128:
+			if (readcnt > 0)
+				readarr[0] = 0x1c;
+			if (readcnt > 1)
+				readarr[1] = 0x70;
+			if (readcnt > 2)
+				readarr[2] = 0x18;
+			break;
+		case EMULATE_WINBOND_W25Q40_V:
+			if (readcnt > 0)
+				readarr[0] = 0xef;
+			if (readcnt > 1)
+				readarr[1] = 0x40;
+			if (readcnt > 2)
+				readarr[2] = 0x13;
+			break;
 		default: /* ignore */
 			break;
 		}
 		break;
 	case JEDEC_RDSR:
+		if (emu_chip == EMULATE_EON_EN25QH128 && en25qh128_otp_mode) {
+			memset(readarr, (emu_status & 0x7F) | (en25qh128_otp_bit << 7), readcnt);
+			break;
+		}
 		memset(readarr, emu_status, readcnt);
+		break;
+	case JEDEC_RDSR2:
+		if (emu_chip != EMULATE_GIGADEVICE_GD25Q128C && emu_chip != EMULATE_WINBOND_W25Q40_V)
+			break;
+		memset(readarr, (emu_status >> 8) & 0xff, readcnt);
+		break;
+	case JEDEC_RDSR3:
+		if (emu_chip != EMULATE_GIGADEVICE_GD25Q128C)
+			break;
+		memset(readarr, (emu_status >> 16) & 0xff, readcnt);
 		break;
 	/* FIXME: this should be chip-specific. */
 	case JEDEC_EWSR:
 	case JEDEC_WREN:
 		emu_status |= SPI_SR_WEL;
 		break;
-	case JEDEC_WRSR:
+	case JEDEC_WRSR1:
 		if (!(emu_status & SPI_SR_WEL)) {
-			msg_perr("WRSR attempted, but WEL is 0!\n");
+			msg_perr("WRSR1 attempted, but WEL is 0!\n");
+			break;
+		}
+		if (emu_chip == EMULATE_EON_EN25QH128 && en25qh128_otp_mode) {
+			en25qh128_otp_bit = 1;
+			msg_pdbg("OTP bit set...\n");
+			break;
+		}
+		if (emu_chip == EMULATE_WINBOND_W25Q40_V) {
+			/* Make sure reserved bits and read-only bits are not set.
+			 * For W25Q40.V, SUS (bit_7) and reserved (bit_2) bits in SR2 are read-only. */
+			read_only_bits = 0x84;
+			/* If any of the Lock Bits in SR2, LB[1..3] are set, then they are read-only. */
+			if (emu_status & 0x00ff00 & (1 << 3))
+				read_only_bits |= 1 << 3;
+			if (emu_status & 0x00ff00 & (1 << 4))
+				read_only_bits |= 1 << 4;
+			if (emu_status & 0x00ff00 & (1 << 5))
+				read_only_bits |= 1 << 5;
+			if (writecnt == 3)
+				emu_status |= ((writearr[2] & ~read_only_bits) & 0xff) << 8;
+			else
+				emu_status &= 0x00ff;
+		}
+		/* FIXME: add some reasonable simulation of the busy flag */
+		emu_status |= (writearr[1] & ~SPI_SR_WIP) & 0xffff;
+		msg_pdbg2("WRSR1 wrote 0x%02x.\n", emu_status & 0xffff);
+		break;
+	case JEDEC_WRSR2:
+		if (emu_chip != EMULATE_GIGADEVICE_GD25Q128C)
+			break;
+		if (!(emu_status & SPI_SR_WEL)) {
+			msg_perr("WRSR2 attempted, but WEL is 0!\n");
 			break;
 		}
 		/* FIXME: add some reasonable simulation of the busy flag */
-		emu_status = writearr[1] & ~SPI_SR_WIP;
-		msg_pdbg2("WRSR wrote 0x%02x.\n", emu_status);
+		/* Make sure reserved bits and read-only bits are not set.
+		 * For GD25Q128C, SUS1 (bit_7) and SUS2 (bit_2) bits in SR2 are read-only. */
+		read_only_bits = 0x84;
+		/* If any of the Lock Bits, LB[1..3] are set, then they are read-only. */
+		if (emu_status & 0x00ff00 & (1 << 3))
+			read_only_bits |= 1 << 3;
+		if (emu_status & 0x00ff00 & (1 << 4))
+			read_only_bits |= 1 << 4;
+		if (emu_status & 0x00ff00 & (1 << 5))
+			read_only_bits |= 1 << 5;
+		emu_status |= (writearr[1] & ~read_only_bits) & 0xff00;
+		break;
+	case JEDEC_WRSR3:
+		if (emu_chip != EMULATE_GIGADEVICE_GD25Q128C)
+			break;
+		if (!(emu_status & SPI_SR_WEL)) {
+			msg_perr("WRSR3 attempted, but WEL is 0!\n");
+			break;
+		}
+		/* FIXME: add some reasonable simulation of the busy flag */
+		/* Make sure reserved bits and read-only bits are not set.
+		 * For GD25Q128C, bit_{0, 1, 3, 4} in SR3 are reserved. */
+		read_only_bits = 0x1b;
+		emu_status |= (writearr[1] & ~read_only_bits) &0xff0000;
 		break;
 	case JEDEC_READ:
 		offs = writearr[1] << 16 | writearr[2] << 8 | writearr[3];
+		if (emu_chip == EMULATE_EON_EN25QH128 && en25qh128_otp_mode) {
+			if (en25qh128_otp_bit) {
+				msg_perr("OTP bit is set, cannot erase OTP sector anymore\n");
+				break;
+			}
+			if ((~(offs >> 12) & 0xfff) || (offs & 0xfff) >= 0x200) {
+				msg_perr("Address out of range\n");
+				break;
+			}
+			memcpy(readarr, en25qh128_otp_contents + (offs & 0xfff), readcnt);
+			break;
+		}
 		/* Truncate to emu_chip_size. */
 		offs %= emu_chip_size;
 		if (readcnt > 0)
@@ -607,6 +1043,18 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 		break;
 	case JEDEC_BYTE_PROGRAM:
 		offs = writearr[1] << 16 | writearr[2] << 8 | writearr[3];
+		if (emu_chip == EMULATE_EON_EN25QH128 && en25qh128_otp_mode) {
+			if (en25qh128_otp_bit) {
+				msg_perr("OTP bit is set, cannot program OTP sector anymore\n");
+				break;
+			}
+			if ((~(offs >> 12) & 0xfff) || (offs & 0xfff) >= 0x200) {
+				msg_perr("Address out of range\n");
+				break;
+			}
+			memcpy(en25qh128_otp_contents + (offs & 0xfff), writearr + 4, writecnt - 4);
+			break;
+		}
 		/* Truncate to emu_chip_size. */
 		offs %= emu_chip_size;
 		if (writecnt < 5) {
@@ -658,6 +1106,8 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 	case JEDEC_WRDI:
 		if (emu_max_aai_size)
 			emu_status &= ~SPI_SR_AAI;
+		if (emu_chip == EMULATE_EON_EN25QH128)
+			en25qh128_otp_mode = 0;
 		break;
 	case JEDEC_SE:
 		if (!emu_jedec_se_size)
@@ -671,6 +1121,18 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 			return 1;
 		}
 		offs = writearr[1] << 16 | writearr[2] << 8 | writearr[3];
+		if (emu_chip == EMULATE_EON_EN25QH128 && en25qh128_otp_mode) {
+			if (en25qh128_otp_bit) {
+				msg_perr("OTP bit is set, cannot erase OTP sector anymore\n");
+				break;
+			}
+			if ((~(offs >> 12) & 0xfff) || (offs & 0xfff) >= 0x200) {
+				msg_perr("Address out of range\n");
+				break;
+			}
+			memset(en25qh128_otp_contents, 0xff, 512);
+			break;
+		}
 		if (offs & (emu_jedec_se_size - 1))
 			msg_pdbg("Unaligned SECTOR ERASE 0x20: 0x%x\n", offs);
 		offs &= ~(emu_jedec_se_size - 1);
@@ -741,6 +1203,7 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 		memset(flashchip_contents, 0xff, emu_jedec_ce_c7_size);
 		break;
 	case JEDEC_SFDP:
+		// TODO(hatim): SFDP for GD25Q128C, EN25QH128 and W25Q40.V
 		if (emu_chip != EMULATE_MACRONIX_MX25L6436)
 			break;
 		if (writecnt < 4)
@@ -775,6 +1238,136 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 				 "continuous chunk produces undefined results "
 				 "after that point.\n");
 		break;
+	case JEDEC_READ_SEC_REG:
+		if (emu_chip != EMULATE_GIGADEVICE_GD25Q128C && emu_chip != EMULATE_WINBOND_W25Q40_V)
+			break;
+		if (writecnt != JEDEC_READ_SEC_REG_OUTSIZE) {
+			msg_perr("READ SECURITY REGISTER size not proper!\n");
+			break;
+		}
+		/* writearr[1..3] holds the address, writearr[1] must be 0x00,
+		 * (writearr[2..3] & 01ff) holds the byte address pointing to within
+		 * the security register range, and (writearr[2] & 0xf0) must be either
+		 * of 0x01, 0x02 or 0x03 corresponding to security register 1, 2 or 3 resp. */
+		if (writearr[1] || (writearr[2] & 0x0e))
+			break;
+		offs = (writearr[2] & 0x01) << 8 | writearr[3];
+		/* Truncate to security register size, i.e., 512 bytes for GD25Q128C,
+		 * or 256 bytes for W25Q40.V. */
+		offs %= (emu_chip == EMULATE_GIGADEVICE_GD25Q128C) ? 512 : 256;
+		if (readcnt > 0) {
+			switch ((writearr[2] & 0xf0) >> 4) {
+			case 0x01:
+				memcpy(readarr, ((emu_chip == EMULATE_GIGADEVICE_GD25Q128C) ?
+					gd25q128c_otp_1_contents : w25q40v_otp_1_contents) + offs, readcnt);
+				break;
+			case 0x02:
+				memcpy(readarr, ((emu_chip == EMULATE_GIGADEVICE_GD25Q128C) ?
+					gd25q128c_otp_2_contents : w25q40v_otp_2_contents) + offs, readcnt);
+				break;
+			case 0x03:
+				memcpy(readarr, ((emu_chip == EMULATE_GIGADEVICE_GD25Q128C) ?
+					gd25q128c_otp_3_contents : w25q40v_otp_3_contents) + offs, readcnt);
+				break;
+			default:
+				break;
+			}
+		}
+		break;
+	case JEDEC_PROG_BYTE_SEC_REG:
+		if (emu_chip != EMULATE_GIGADEVICE_GD25Q128C && emu_chip != EMULATE_WINBOND_W25Q40_V)
+			break;
+		if (writecnt < JEDEC_PROG_BYTE_SEC_REG_OUTSIZE) {
+			msg_perr("PROGRAM SECURITY REGISTER size too short!\n");
+			break;
+		}
+		/* writearr[1..3] holds the address, writearr[1] must be 0x00,
+		 * (writearr[2..3] & 01ff) holds the byte address pointing to within
+		 * the security register range, and (writearr[2] & 0xf0) must be either
+		 * of 0x01, 0x02 or 0x03 corresponding to security register 1, 2 or 3 resp. */
+		if (writearr[1] || (writearr[2] & 0x0e))
+			break;
+		offs = (writearr[2] & 0x01) << 8 | writearr[3];
+		/* Truncate to security register size, i.e., 512 bytes for GD25Q128C,
+		 * or 256 bytes for W25Q40.V. */
+		offs %= (emu_chip == EMULATE_GIGADEVICE_GD25Q128C) ? 512 : 256;
+		/* If corresponding Lock Bits are set then the register is locked against
+		 * any further write attempts. */
+		switch ((writearr[2] & 0xf0) >> 4) {
+		case 0x01:
+			/* LB1 is NOT set */
+			if (!(emu_status & 0x00ff00 & (1 << 3)))
+				memcpy(((emu_chip == EMULATE_GIGADEVICE_GD25Q128C) ?
+					gd25q128c_otp_1_contents : w25q40v_otp_1_contents) + offs,
+					writearr + 4, writecnt - 4);
+			break;
+		case 0x02:
+			/* LB2 is NOT set */
+			if (!(emu_status & 0x00ff00 & (1 << 4)))
+				memcpy(((emu_chip == EMULATE_GIGADEVICE_GD25Q128C) ?
+					gd25q128c_otp_2_contents : w25q40v_otp_2_contents) + offs,
+					writearr + 4, writecnt - 4);
+			break;
+		case 0x03:
+			/* LB3 is NOT set */
+			if (!(emu_status & 0x00ff00 & (1 << 5)))
+				memcpy(((emu_chip == EMULATE_GIGADEVICE_GD25Q128C) ?
+					gd25q128c_otp_3_contents : w25q40v_otp_3_contents) + offs,
+					writearr + 4, writecnt - 4);
+			break;
+		default:
+			break;
+		}
+		break;
+	case JEDEC_ERASE_SEC_REG:
+		if (emu_chip != EMULATE_GIGADEVICE_GD25Q128C && emu_chip != EMULATE_WINBOND_W25Q40_V)
+			break;
+		if (writecnt != JEDEC_ERASE_SEC_REG_OUTSIZE) {
+			msg_perr("ERASE SECURITY REGISTER size not proper!\n");
+			break;
+		}
+		/* writearr[1..3] holds the address, writearr[1] must be 0x00,
+		 * (writearr[2..3] & 01ff) holds the byte address pointing to within
+		 * the security register range, and (writearr[2] & 0xf0) must be either
+		 * of 0x01, 0x02 or 0x03 corresponding to security register 1, 2 or 3 resp. */
+		if (writearr[1] || (writearr[2] & 0x0e))
+			break;
+		/* If corresponding Lock Bits are set then the register is locked against
+		 * any further erase attempts. */
+		switch ((writearr[2] & 0xf0) >> 4) {
+		case 0x01:
+			/* LB1 is NOT set */
+			if (!(emu_status & 0x00ff00 & (1 << 3)))
+				memset((emu_chip == EMULATE_GIGADEVICE_GD25Q128C) ?
+					gd25q128c_otp_1_contents : w25q40v_otp_1_contents, 0xff,
+					(emu_chip == EMULATE_GIGADEVICE_GD25Q128C) ? 512 : 256);
+			break;
+		case 0x02:
+			/* LB2 is NOT set */
+			if (!(emu_status & 0x00ff00 & (1 << 4)))
+				memset((emu_chip == EMULATE_GIGADEVICE_GD25Q128C) ?
+					gd25q128c_otp_2_contents : w25q40v_otp_2_contents, 0xff,
+					(emu_chip == EMULATE_GIGADEVICE_GD25Q128C) ? 512 : 256);
+			break;
+		case 0x03:
+			/* LB3 is NOT set */
+			if (!(emu_status & 0x00ff00 & (1 << 5)))
+				memset((emu_chip == EMULATE_GIGADEVICE_GD25Q128C) ?
+					gd25q128c_otp_3_contents : w25q40v_otp_3_contents, 0xff,
+					(emu_chip == EMULATE_GIGADEVICE_GD25Q128C) ? 512 : 256);
+			break;
+		default:
+			break;
+		}
+		break;
+	case JEDEC_ENTER_OTP:
+		/* Eon chip specific opcode, not observed in other
+		 * manufacturers (yet, please update this when required). */
+		if (emu_chip != EMULATE_EON_EN25QH128)
+			break;
+		en25qh128_otp_mode = 1;
+		msg_pdbg("Entered OTP mode...\n");
+		break;
 	default:
 		/* No special response. */
 		break;
@@ -806,6 +1399,9 @@ static int dummy_spi_send_command(struct flashctx *flash, unsigned int writecnt,
 	case EMULATE_SST_SST25VF040_REMS:
 	case EMULATE_SST_SST25VF032B:
 	case EMULATE_MACRONIX_MX25L6436:
+	case EMULATE_GIGADEVICE_GD25Q128C:
+	case EMULATE_EON_EN25QH128:
+	case EMULATE_WINBOND_W25Q40_V:
 		if (emulate_spi_chip_response(writecnt, readcnt, writearr,
 					      readarr)) {
 			msg_pdbg("Invalid command sent to flash chip!\n");
