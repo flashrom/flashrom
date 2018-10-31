@@ -895,6 +895,9 @@
 #define TI_TMS29F002RT		0xB0
 #define TI_TMS29F002RB		0x34
 
+#define TOSHIBA_ID		0x00	/* Toshiba serial flashes */
+#define TOSHIBA_TC58CV	0x98CB
+
 /*
  * W25X chips are SPI, first byte of device ID is memory type, second
  * byte of device ID is related to log(bitsize).

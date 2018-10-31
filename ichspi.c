@@ -27,6 +27,7 @@
 #include "programmer.h"
 #include "hwaccess.h"
 #include "spi.h"
+#include "spi25.h"
 #include "ich_descriptors.h"
 
 /* Sunrise Point */

@@ -28,6 +28,7 @@
 #if EMULATE_SPI_CHIP
 #define EMULATE_CHIP 1
 #include "spi.h"
+#include "spi25.h"
 #endif
 
 #if EMULATE_CHIP

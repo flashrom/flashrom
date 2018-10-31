@@ -17328,6 +17328,16 @@ const struct flashchip flashchips[] = {
 		.write		= NULL,
 	},
 
+	{
+		.vendor		= "Generic",
+		.name		= "Generic NAND chip",
+		.bustype	= BUS_SPI,
+		.spi_cmd_set	= SPI_NAND,
+		.probe		= probe_spi_nand,
+		.write		= NULL,
+		.read		= spi_chip_read,
+	},
+
 	{0}
 };
 

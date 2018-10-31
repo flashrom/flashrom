@@ -26,6 +26,7 @@
 #include "chipdrivers.h"
 #include "programmer.h"
 #include "spi.h"
+#include "spi25.h"
 
 static int spi_rdid(struct flashctx *flash, unsigned char *readarr, int bytes)
 {

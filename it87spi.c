@@ -29,6 +29,7 @@
 #include "programmer.h"
 #include "hwaccess.h"
 #include "spi.h"
+#include "spi25.h"
 
 #define ITE_SUPERIO_PORT1	0x2e
 #define ITE_SUPERIO_PORT2	0x4e
@@ -124,7 +125,7 @@ static uint16_t it87spi_probe(uint16_t port)
 	uint16_t flashport = 0;
 
 	enter_conf_mode_ite(port);
-	
+
 	char *param = extract_programmer_param("dualbiosindex");
 	if (param != NULL) {
 		sio_write(port, 0x07, 0x07); /* Select GPIO LDN */

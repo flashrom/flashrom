@@ -32,7 +32,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "flash.h"
-#include "spi.h"
+#include "spi25.h"
 #include "programmer.h"
 #include "hwaccess.h"
 

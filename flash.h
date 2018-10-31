@@ -175,10 +175,20 @@ struct flashchip {
 	uint32_t manufacture_id;
 	uint32_t model_id;
 
+	/* only page size for NOR; others for NAND */
 	/* Total chip size in kilobytes */
 	unsigned int total_size;
+	/* Chip unit size in bytes */
+	unsigned int unit_size;
+	/* Chip block size in bytes */
+	unsigned int block_size;
 	/* Chip page size in bytes */
 	unsigned int page_size;
+	/* Chip partial page size in bytes */
+	unsigned int partial_page_size;
+	/* Data bytes per spare size */
+	unsigned int data_per_spare;
+
 	int feature_bits;
 
 	/* Indicate how well flashrom supports different operations of this flash chip. */
@@ -199,6 +209,7 @@ struct flashchip {
 		   to specify it for each and every chip in the database.*/
 		SPI25 = 0,
 		SPI_EDI = 1,
+		SPI_NAND = 2,
 	} spi_cmd_set;
 
 	int (*probe) (struct flashctx *flash);

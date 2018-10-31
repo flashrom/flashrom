@@ -19,7 +19,7 @@
 
 #include "flash.h"
 #include "chipdrivers.h"
-#include "spi.h"
+#include "spi25.h"
 
 /* === Generic functions === */
 int spi_write_status_enable(struct flashctx *flash)
