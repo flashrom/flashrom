@@ -33,7 +33,10 @@ enum flashrom_log_level {
 };
 /** @ingroup flashrom-general */
 typedef int(flashrom_log_callback)(enum flashrom_log_level, const char *format, va_list);
+typedef int(flashrom_progress_callback)(float progress);
+
 void flashrom_set_log_callback(flashrom_log_callback *);
+void flashrom_set_progress_callback(flashrom_progress_callback *);
 
 struct flashrom_programmer;
 int flashrom_programmer_init(struct flashrom_programmer **, const char *prog_name, const char *prog_params);

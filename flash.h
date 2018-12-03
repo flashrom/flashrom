@@ -360,7 +360,11 @@ int open_logfile(const char * const filename);
 int close_logfile(void);
 void start_logging(void);
 #endif
+
+int set_progress(float progress);
+
 int flashrom_print_cb(enum flashrom_log_level level, const char *fmt, va_list ap);
+
 /* Let gcc and clang check for correct printf-style format strings. */
 int print(enum flashrom_log_level level, const char *fmt, ...)
 #ifdef __MINGW32__
@@ -389,6 +393,8 @@ __attribute__((format(printf, 2, 3)));
 #define msg_gspew(...)	print(FLASHROM_MSG_SPEW, __VA_ARGS__)	/* general debug spew  */
 #define msg_pspew(...)	print(FLASHROM_MSG_SPEW, __VA_ARGS__)	/* programmer debug spew  */
 #define msg_cspew(...)	print(FLASHROM_MSG_SPEW, __VA_ARGS__)	/* chip debug spew  */
+
+#define upd_progress(_current, _total) set_progress((float) (100 * (_current)) / (_total))
 
 /* layout.c */
 int register_include_arg(char *name);
