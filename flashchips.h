@@ -226,6 +226,7 @@
 #define ESMT_F25L64QA		0x4117
 #define ESMT_F25L128QA		0x4118
 #define ESMT_F49B002UA		0x00
+#define ESMT_F25L16PA		0x2015
 
 /*
  * EN25 chips are SPI, first byte of device ID is memory type,
