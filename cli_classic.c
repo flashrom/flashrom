@@ -106,6 +106,7 @@ int main(int argc, char *argv[])
 #endif
 	int read_it = 0, write_it = 0, erase_it = 0, verify_it = 0;
 	int dont_verify_it = 0, dont_verify_all = 0, list_supported = 0, operation_specified = 0;
+	int show_progress = 0;
 	struct flashrom_layout *layout = NULL;
 	enum programmer prog = PROGRAMMER_INVALID;
 	enum {
@@ -116,7 +117,7 @@ int main(int argc, char *argv[])
 	};
 	int ret = 0;
 
-	static const char optstring[] = "r:Rw:v:nNVEfc:l:i:p:Lzho:";
+	static const char optstring[] = "r:Rw:v:nNVEfc:l:i:Pp:Lzho:";
 	static const struct option long_options[] = {
 		{"read",		1, NULL, 'r'},
 		{"write",		1, NULL, 'w'},
@@ -136,6 +137,7 @@ int main(int argc, char *argv[])
 		{"list-supported",	0, NULL, 'L'},
 		{"list-supported-wiki",	0, NULL, 'z'},
 		{"programmer",		1, NULL, 'p'},
+		{"progress",		0, NULL, 'P'},
 		{"help",		0, NULL, 'h'},
 		{"version",		0, NULL, 'R'},
 		{"output",		1, NULL, 'o'},
@@ -362,6 +364,9 @@ int main(int argc, char *argv[])
 				cli_classic_abort_usage();
 			}
 			break;
+		case 'P':
+			show_progress = 1;
+			break;
 		case 'R':
 			/* print_version() is always called during startup. */
 			if (++operation_specified > 1) {
@@ -397,6 +402,9 @@ int main(int argc, char *argv[])
 			break;
 		}
 	}
+
+	if (show_progress)
+		flashrom_set_progress_callback(flashrom_output_progress);
 
 	if (optind < argc) {
 		fprintf(stderr, "Error: Extra parameter found.\n");

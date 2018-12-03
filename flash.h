@@ -361,6 +361,7 @@ int close_logfile(void);
 void start_logging(void);
 #endif
 
+int flashrom_output_progress(float progress);
 int set_progress(float progress);
 
 int flashrom_print_cb(enum flashrom_log_level level, const char *fmt, va_list ap);
