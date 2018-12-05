@@ -425,14 +425,14 @@ static int dediprog_spi_bulk_read(struct flashctx *flash, uint8_t *buf, unsigned
 	struct libusb_transfer *transfers[DEDIPROG_ASYNC_TRANSFERS] = { NULL, };
 	struct libusb_transfer *transfer;
 
+	if (len == 0)
+		return 0;
+
 	if ((start % chunksize) || (len % chunksize)) {
 		msg_perr("%s: Unaligned start=%i, len=%i! Please report a bug at flashrom@flashrom.org\n",
 			 __func__, start, len);
 		return 1;
 	}
-
-	if (len == 0)
-		return 0;
 
 	/* Command packet size of protocols: new 10 B, old 5 B. */
 	uint8_t data_packet[is_new_prot() ? 10 : 5];
@@ -503,7 +503,7 @@ static int dediprog_spi_read(struct flashctx *flash, uint8_t *buf, unsigned int 
 	int ret;
 	/* chunksize must be 512, other sizes will NOT work at all. */
 	const unsigned int chunksize = 0x200;
-	unsigned int residue = start % chunksize ? chunksize - start % chunksize : 0;
+	unsigned int residue = start % chunksize ? min(len, chunksize - start % chunksize) : 0;
 	unsigned int bulklen;
 
 	dediprog_set_leds(LED_BUSY);
