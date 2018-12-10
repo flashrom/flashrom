@@ -18,6 +18,8 @@
 #ifndef __LIBFLASHROM_H__
 #define __LIBFLASHROM_H__ 1
 
+#include <sys/types.h>
+#include <stddef.h>
 #include <stdarg.h>
 
 int flashrom_init(int perform_selfcheck);
