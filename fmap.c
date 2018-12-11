@@ -243,7 +243,7 @@ static int fmap_bsearch_rom(struct fmap **fmap_out, struct flashctx *const flash
 			if (flashctx->chip->read(flashctx, (uint8_t *)fmap + sig_len,
 						offset + sig_len, sizeof(*fmap) - sig_len)) {
 				msg_cerr("Cannot read %zu bytes at offset %06zx\n",
-						sizeof(*fmap) + sig_len, offset + sig_len);
+						sizeof(*fmap) - sig_len, offset + sig_len);
 				continue;
 			}
 
