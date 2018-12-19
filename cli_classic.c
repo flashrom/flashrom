@@ -677,6 +677,7 @@ out:
 
 	layout_cleanup();
 	free(filename);
+	free(fmapfile);
 	free(referencefile);
 	free(layoutfile);
 	free(pparam);
