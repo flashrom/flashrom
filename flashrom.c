@@ -1461,7 +1461,7 @@ static int read_by_layout(struct flashctx *, uint8_t *);
 int read_flash_to_file(struct flashctx *flash, const char *filename)
 {
 	unsigned long size = flash->chip->total_size * 1024;
-	unsigned char *buf = calloc(size, sizeof(char));
+	unsigned char *buf = calloc(size, sizeof(unsigned char));
 	int ret = 0;
 
 	msg_cinfo("Reading flash... ");
