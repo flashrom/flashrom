@@ -455,10 +455,10 @@ const struct programmer_entry programmer_table[] = {
 #define SHUTDOWN_MAXFN 32
 static int shutdown_fn_count = 0;
 /** @private */
-struct shutdown_func_data {
+static struct shutdown_func_data {
 	int (*func) (void *data);
 	void *data;
-} static shutdown_fn[SHUTDOWN_MAXFN];
+} shutdown_fn[SHUTDOWN_MAXFN];
 /* Initialize to 0 to make sure nobody registers a shutdown function before
  * programmer init.
  */

@@ -218,7 +218,7 @@ static int nicintel_spi_82599_enable_flash(void)
 	return 0;
 }
 
-static int nicintel_spi_i210_enable_flash()
+static int nicintel_spi_i210_enable_flash(void)
 {
 	uint32_t tmp;
 

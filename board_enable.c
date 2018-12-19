@@ -2585,7 +2585,7 @@ static const struct board_match *board_match_name(const char *vendor, const char
  * Match boards on PCI IDs and subsystem IDs.
  * Second set of IDs can be either main+subsystem IDs, main IDs or no IDs.
  */
-const static struct board_match *board_match_pci_ids(enum board_match_phase phase)
+static const struct board_match *board_match_pci_ids(enum board_match_phase phase)
 {
 	const struct board_match *board = board_matches;
 

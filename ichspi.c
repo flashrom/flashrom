@@ -676,7 +676,7 @@ static int program_opcodes(OPCODES *op, int enable_undo)
  *   - at least one program opcode (BYTE_PROGRAM, AAI_WORD_PROGRAM, ...?)
  *   - necessary preops? (EWSR, WREN, ...?)
  */
-static int ich_missing_opcodes()
+static int ich_missing_opcodes(void)
 {
 	uint8_t ops[] = {
 		JEDEC_READ,
