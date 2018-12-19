@@ -507,6 +507,8 @@ int buspirate_spi_init(void)
 	/* Enter raw SPI mode */
 	bp_commbuf[0] = 0x01;
 	ret = buspirate_sendrecv(bp_commbuf, 1, 0);
+	if (ret)
+		return 1;
 	if ((ret = buspirate_wait_for_string(bp_commbuf, "SPI")))
 		return ret;
 	if ((ret = buspirate_sendrecv(bp_commbuf, 0, 1)))
