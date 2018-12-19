@@ -69,6 +69,7 @@ ssize_t ich_number_of_masters(const enum ich_chipset cs, const struct ich_desc_c
 	case CHIPSET_C620_SERIES_LEWISBURG:
 		if (cont->NM <= MAX_NUM_MASTERS)
 			return cont->NM;
+		break;
 	default:
 		if (cont->NM < MAX_NUM_MASTERS)
 			return cont->NM + 1;
@@ -238,6 +239,7 @@ static const char *pprint_freq(enum ich_chipset cs, uint8_t value)
 	case CHIPSET_ICH10:
 		if (value > 1)
 			return "reserved";
+		/* Fall through. */
 	case CHIPSET_5_SERIES_IBEX_PEAK:
 	case CHIPSET_6_SERIES_COUGAR_POINT:
 	case CHIPSET_7_SERIES_PANTHER_POINT:
