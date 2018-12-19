@@ -638,6 +638,7 @@ int sb600_probe_spi(struct pci_dev *dev)
 	switch (amd_gen) {
 	case CHIPSET_SB7XX:
 		msg_pdbg(", DropOneClkOnRd/SpiClkGate=%i", (tmp >> 28) & 0x1);
+		/* Fall through. */
 	case CHIPSET_SB89XX:
 	case CHIPSET_HUDSON234:
 	case CHIPSET_YANGTZE:

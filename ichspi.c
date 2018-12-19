@@ -891,7 +891,7 @@ static int ich7_run_opcode(OPCODE op, uint32_t offset,
 	case 2:
 		/* Select second preop. */
 		temp16 |= SPIC_SPOP;
-		/* And fall through. */
+		/* Fall through. */
 	case 1:
 		/* Atomic command (preop+op) */
 		temp16 |= SPIC_ACS;
@@ -1013,7 +1013,7 @@ static int ich9_run_opcode(OPCODE op, uint32_t offset,
 	case 2:
 		/* Select second preop. */
 		temp32 |= SSFC_SPOP;
-		/* And fall through. */
+		/* Fall through. */
 	case 1:
 		/* Atomic command (preop+op) */
 		temp32 |= SSFC_ACS;
