@@ -321,9 +321,11 @@ static int spi_simple_write_cmd(struct flashctx *const flash, const uint8_t op, 
 {
 	struct spi_command cmds[] = {
 	{
+		.readarr = 0,
 		.writecnt = 1,
 		.writearr = (const unsigned char[]){ JEDEC_WREN },
 	}, {
+		.readarr = 0,
 		.writecnt = 1,
 		.writearr = (const unsigned char[]){ op },
 	},
@@ -344,9 +346,11 @@ static int spi_write_extended_address_register(struct flashctx *const flash, con
 	const uint8_t op = flash->chip->wrea_override ? : JEDEC_WRITE_EXT_ADDR_REG;
 	struct spi_command cmds[] = {
 	{
+		.readarr = 0,
 		.writecnt = 1,
 		.writearr = (const unsigned char[]){ JEDEC_WREN },
 	}, {
+		.readarr = 0,
 		.writecnt = 2,
 		.writearr = (const unsigned char[]){ op, regdata },
 	},
@@ -419,9 +423,11 @@ static int spi_write_cmd(struct flashctx *const flash, const uint8_t op,
 	uint8_t cmd[1 + JEDEC_MAX_ADDR_LEN + 256];
 	struct spi_command cmds[] = {
 	{
+		.readarr = 0,
 		.writecnt = 1,
 		.writearr = (const unsigned char[]){ JEDEC_WREN },
 	}, {
+		.readarr = 0,
 		.writearr = cmd,
 	},
 		NULL_SPI_CMD,

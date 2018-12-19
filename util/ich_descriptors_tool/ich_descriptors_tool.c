@@ -150,7 +150,7 @@ int main(int argc, char *argv[])
 	const char *fn = NULL;
 	const char *csn = NULL;
 	enum ich_chipset cs = CHIPSET_ICH_UNKNOWN;
-	struct ich_descriptors desc = {{ 0 }};
+	struct ich_descriptors desc = { 0 };
 
 	while ((opt = getopt(argc, argv, "df:c:")) != -1) {
 		switch (opt) {

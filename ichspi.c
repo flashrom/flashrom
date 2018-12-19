@@ -1704,7 +1704,7 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 	char *arg;
 	int ich_spi_rw_restricted = 0;
 	int desc_valid = 0;
-	struct ich_descriptors desc = {{ 0 }};
+	struct ich_descriptors desc = { 0 };
 	enum ich_spi_mode {
 		ich_auto,
 		ich_hwseq,
