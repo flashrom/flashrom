@@ -227,3 +227,21 @@ int normalize_romentries(const struct flashctx *flash)
 
 	return ret;
 }
+
+const struct romentry *layout_next_included_region(
+		const struct flashrom_layout *const l, const chipoff_t where)
+{
+	unsigned int i;
+	const struct romentry *lowest = NULL;
+
+	for (i = 0; i < l->num_entries; ++i) {
+		if (!l->entries[i].included)
+			continue;
+		if (l->entries[i].end < where)
+			continue;
+		if (!lowest || lowest->start > l->entries[i].start)
+			lowest = &l->entries[i];
+	}
+
+	return lowest;
+}

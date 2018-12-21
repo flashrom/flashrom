@@ -2430,17 +2430,23 @@ static void combine_image_by_layout(const struct flashctx *const flashctx,
 				    uint8_t *const newcontents, const uint8_t *const oldcontents)
 {
 	const struct flashrom_layout *const layout = get_layout(flashctx);
+	const struct romentry *included;
+	chipoff_t start = 0;
 
-	size_t i;
-	for (i = 0; i < layout->num_entries; ++i) {
-		if (layout->entries[i].included)
-			continue;
-
-		const chipoff_t region_start	= layout->entries[i].start;
-		const chipsize_t region_len	= layout->entries[i].end - layout->entries[i].start + 1;
-
-		memcpy(newcontents + region_start, oldcontents + region_start, region_len);
+	while ((included = layout_next_included_region(layout, start))) {
+		if (included->start > start) {
+			/* copy everything up to the start of this included region */
+			memcpy(newcontents + start, oldcontents + start, included->start - start);
+		}
+		/* skip this included region */
+		start = included->end + 1;
+		if (start == 0)
+			return;
 	}
+
+	/* copy the rest of the chip */
+	const chipsize_t copy_len = flashctx->chip->total_size * 1024 - start;
+	memcpy(newcontents + start, oldcontents + start, copy_len);
 }
 
 /**
