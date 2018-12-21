@@ -60,5 +60,6 @@ struct single_layout {
 struct flashrom_layout *get_global_layout(void);
 
 int process_include_args(struct flashrom_layout *);
+const struct romentry *layout_next_included_region(const struct flashrom_layout *, chipoff_t);
 
 #endif				/* !__LAYOUT_H__ */
