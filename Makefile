@@ -56,7 +56,7 @@ CONFIG_DEFAULT_PROGRAMMER_ARGS ?= ''
 
 # If your compiler spits out excessive warnings, run make WARNERROR=no
 # You shouldn't have to change this flag.
-WARNERROR ?= yes
+WARNERROR ?= no
 
 ifeq ($(WARNERROR), yes)
 CFLAGS += -Werror
@@ -185,6 +185,14 @@ UNSUPPORTED_FEATURES += CONFIG_CH341A_SPI=yes
 else
 override CONFIG_CH341A_SPI = no
 endif
+
+# MCP2210 is Linux only for now
+ifeq ($(CONFIG_MCP2210_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_MCP2210_SPI=yes
+else
+override CONFIG_MCP2210_SPI = no
+endif
+
 endif
 
 # FIXME: Should we check for Cygwin/MSVC as well?
@@ -281,6 +289,14 @@ UNSUPPORTED_FEATURES += CONFIG_SATAMV=yes
 else
 override CONFIG_SATAMV = no
 endif
+
+# MCP2210 is Linux only for now
+ifeq ($(CONFIG_MCP2210_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_MCP2210_SPI=yes
+else
+override CONFIG_MCP2210_SPI = no
+endif
+
 endif
 
 ifeq ($(TARGET_OS), libpayload)
@@ -347,6 +363,14 @@ UNSUPPORTED_FEATURES += CONFIG_CH341A_SPI=yes
 else
 override CONFIG_CH341A_SPI = no
 endif
+
+# MCP2210 is Linux only for now
+ifeq ($(CONFIG_MCP2210_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_MCP2210_SPI=yes
+else
+override CONFIG_MCP2210_SPI = no
+endif
+
 endif
 
 ifneq ($(TARGET_OS), Linux)
@@ -659,6 +683,9 @@ CONFIG_DIGILENT_SPI ?= yes
 # Disable wiki printing by default. It is only useful if you have wiki access.
 CONFIG_PRINT_WIKI ?= no
 
+# MCP2210 USB to SPI master bridge
+CONFIG_MCP2210_SPI ?= yes
+
 # Disable all features if CONFIG_NOTHING=yes is given unless CONFIG_EVERYTHING was also set
 ifeq ($(CONFIG_NOTHING), yes)
   ifeq ($(CONFIG_EVERYTHING), yes)
@@ -962,6 +989,13 @@ ifeq ($(CONFIG_DIGILENT_SPI), yes)
 FEATURE_CFLAGS += -D'CONFIG_DIGILENT_SPI=1'
 PROGRAMMER_OBJS += digilent_spi.o
 NEED_LIBUSB1 += CONFIG_DIGILENT_SPI
+endif
+
+ifeq ($(CONFIG_MCP2210_SPI), yes)
+FEATURE_CFLAGS += -D'CONFIG_MCP2210_SPI=1'
+PROGRAMMER_OBJS += libmcp2210/hid_linux.o libmcp2210/libmcp2210.o \
+	mcp2210_spi.o
+LIBS += -ludev
 endif
 
 ifneq ($(NEED_SERIAL), )
