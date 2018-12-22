@@ -659,6 +659,8 @@ enum spi_controller {
 #define MAX_DATA_WRITE_UNLIMITED 256
 
 #define SPI_MASTER_4BA			(1U << 0)  /**< Can handle 4-byte addresses */
+#define SPI_MASTER_NO_4BA_MODES		(1U << 1)  /**< Compatibility modes (i.e. extended address
+						        register, 4BA mode switch) don't work */
 
 struct spi_master {
 	enum spi_controller type;
@@ -850,6 +852,11 @@ static inline bool spi_master_4ba(const struct flashctx *const flash)
 {
 	return flash->mst->buses_supported & BUS_SPI &&
 		flash->mst->spi.features & SPI_MASTER_4BA;
+}
+static inline bool spi_master_no_4ba_modes(const struct flashctx *const flash)
+{
+	return flash->mst->buses_supported & BUS_SPI &&
+		flash->mst->spi.features & SPI_MASTER_NO_4BA_MODES;
 }
 
 /* usbdev.c */
