@@ -63,7 +63,7 @@ CONFIG_DEFAULT_PROGRAMMER_ARGS ?= ''
 WARNERROR ?= yes
 
 ifeq ($(WARNERROR), yes)
-CFLAGS += -Werror
+CFLAGS += -Werror -Wno-error=deprecated-declarations
 endif
 
 ifdef LIBS_BASE
