@@ -373,7 +373,8 @@ void probe_superio_winbond(void)
 
 static const struct winbond_chip *winbond_superio_chipdef(void)
 {
-	int i, j;
+	int i;
+	unsigned int j;
 
 	for (i = 0; i < superio_count; i++) {
 		if (superios[i].vendor != SUPERIO_VENDOR_WINBOND)

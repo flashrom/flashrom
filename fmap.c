@@ -96,7 +96,7 @@ static off_t fmap_lsearch(const uint8_t *buf, size_t len)
 	off_t offset;
 	bool fmap_found = 0;
 
-	for (offset = 0; offset <= len - sizeof(struct fmap); offset++) {
+	for (offset = 0; offset <= (off_t)(len - sizeof(struct fmap)); offset++) {
 		if (is_valid_fmap((struct fmap *)&buf[offset])) {
 			fmap_found = 1;
 			break;
@@ -178,7 +178,7 @@ _finalize_ret:
 }
 
 static int fmap_bsearch_rom(struct fmap **fmap_out, struct flashctx *const flashctx,
-		size_t rom_offset, size_t len, int min_stride)
+		size_t rom_offset, size_t len, size_t min_stride)
 {
 	size_t stride, fmap_len = 0;
 	int ret = 1, fmap_found = 0, check_offset_0 = 1;

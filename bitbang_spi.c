@@ -150,7 +150,7 @@ static int bitbang_spi_send_command(struct flashctx *flash,
 				    const unsigned char *writearr,
 				    unsigned char *readarr)
 {
-	int i;
+	unsigned int i;
 	const struct bitbang_spi_master *master = flash->mst->spi.data;
 
 	/* FIXME: Run bitbang_spi_request_bus here or in programmer init?

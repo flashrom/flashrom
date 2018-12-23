@@ -408,7 +408,8 @@ retry:
 int write_jedec_1(struct flashctx *flash, const uint8_t *src, unsigned int start,
 		  unsigned int len)
 {
-	int i, failed = 0;
+	unsigned int i;
+	int failed = 0;
 	chipaddr dst = flash->virtual_memory + start;
 	chipaddr olddst;
 	unsigned int mask;
@@ -430,7 +431,8 @@ int write_jedec_1(struct flashctx *flash, const uint8_t *src, unsigned int start
 static int write_page_write_jedec_common(struct flashctx *flash, const uint8_t *src,
 					 unsigned int start, unsigned int page_size)
 {
-	int i, tried = 0, failed;
+	unsigned int i;
+	int tried = 0, failed;
 	const uint8_t *s = src;
 	chipaddr bios = flash->virtual_memory;
 	chipaddr dst = bios + start;

@@ -35,10 +35,6 @@
 #include "flash.h" /* for msg_* */
 #include "programmer.h"
 
-#ifndef min
-#define min(a, b) (((a) < (b)) ? (a) : (b))
-#endif
-
 ssize_t ich_number_of_regions(const enum ich_chipset cs, const struct ich_desc_content *const cont)
 {
 	switch (cs) {
@@ -365,7 +361,7 @@ static void pprint_freg(const struct ich_desc_region *reg, uint32_t i)
 
 void prettyprint_ich_descriptor_region(const enum ich_chipset cs, const struct ich_descriptors *const desc)
 {
-	size_t i;
+	ssize_t i;
 	const ssize_t nr = ich_number_of_regions(cs, &desc->content);
 	msg_pdbg2("=== Region Section ===\n");
 	if (nr < 0) {
@@ -374,18 +370,18 @@ void prettyprint_ich_descriptor_region(const enum ich_chipset cs, const struct i
 		return;
 	}
 	for (i = 0; i < nr; i++)
-		msg_pdbg2("FLREG%zu   0x%08x\n", i, desc->region.FLREGs[i]);
+		msg_pdbg2("FLREG%zd   0x%08x\n", i, desc->region.FLREGs[i]);
 	msg_pdbg2("\n");
 
 	msg_pdbg2("--- Details ---\n");
 	for (i = 0; i < nr; i++)
-		pprint_freg(&desc->region, i);
+		pprint_freg(&desc->region, (uint32_t)i);
 	msg_pdbg2("\n");
 }
 
 void prettyprint_ich_descriptor_master(const enum ich_chipset cs, const struct ich_descriptors *const desc)
 {
-	size_t i;
+	ssize_t i;
 	const ssize_t nm = ich_number_of_masters(cs, &desc->content);
 	msg_pdbg2("=== Master Section ===\n");
 	if (nm < 0) {
@@ -394,7 +390,7 @@ void prettyprint_ich_descriptor_master(const enum ich_chipset cs, const struct i
 		return;
 	}
 	for (i = 0; i < nm; i++)
-		msg_pdbg2("FLMSTR%zu  0x%08x\n", i + 1, desc->master.FLMSTRs[i]);
+		msg_pdbg2("FLMSTR%zd  0x%08x\n", i + 1, desc->master.FLMSTRs[i]);
 	msg_pdbg2("\n");
 
 	msg_pdbg2("--- Details ---\n");
@@ -402,7 +398,7 @@ void prettyprint_ich_descriptor_master(const enum ich_chipset cs, const struct i
 		const char *const master_names[] = {
 			"BIOS", "ME", "GbE", "unknown", "EC",
 		};
-		if (nm >= ARRAY_SIZE(master_names)) {
+		if (nm >= (ssize_t)ARRAY_SIZE(master_names)) {
 			msg_pdbg2("%s: number of masters too high (%d).\n", __func__,
 				  desc->content.NM + 1);
 			return;
@@ -423,7 +419,7 @@ void prettyprint_ich_descriptor_master(const enum ich_chipset cs, const struct i
 			"BIOS", "ME", "GbE", "DE", "BMC", "IE",
 		};
 		/* NM starts at 1 instead of 0 for LBG */
-		if (nm > ARRAY_SIZE(master_names)) {
+		if (nm > (ssize_t)ARRAY_SIZE(master_names)) {
 			msg_pdbg2("%s: number of masters too high (%d).\n", __func__,
 				  desc->content.NM);
 			return;
@@ -446,14 +442,14 @@ void prettyprint_ich_descriptor_master(const enum ich_chipset cs, const struct i
 		}
 	} else if (cs == CHIPSET_APOLLO_LAKE) {
 		const char *const master_names[] = { "BIOS", "TXE", };
-		if (nm > ARRAY_SIZE(master_names)) {
+		if (nm > (ssize_t)ARRAY_SIZE(master_names)) {
 			msg_pdbg2("%s: number of masters too high (%d).\n", __func__, desc->content.NM);
 			return;
 		}
 
 		msg_pdbg2("       FD   IFWI  TXE   n/a  Platf DevExp\n");
 		for (i = 0; i < nm; i++) {
-			size_t j;
+			ssize_t j;
 			msg_pdbg2("%-4s", master_names[i]);
 			for (j = 0; j < ich_number_of_regions(cs, &desc->content); j++)
 				msg_pdbg2("   %c%c ",
@@ -799,7 +795,7 @@ void prettyprint_ich_descriptor_straps(enum ich_chipset cs, const struct ich_des
 	unsigned int i, max_count;
 	msg_pdbg2("=== Softstraps ===\n");
 
-	max_count = min(ARRAY_SIZE(desc->north.STRPs), desc->content.MSL);
+	max_count = MIN(ARRAY_SIZE(desc->north.STRPs), desc->content.MSL);
 	if (max_count < desc->content.MSL) {
 		msg_pdbg2("MSL (%u) is greater than the current maximum of %u entries.\n",
 			  desc->content.MSL, max_count);
@@ -811,7 +807,7 @@ void prettyprint_ich_descriptor_straps(enum ich_chipset cs, const struct ich_des
 		msg_pdbg2("STRP%-2d = 0x%08x\n", i, desc->north.STRPs[i]);
 	msg_pdbg2("\n");
 
-	max_count = min(ARRAY_SIZE(desc->south.STRPs), desc->content.ISL);
+	max_count = MIN(ARRAY_SIZE(desc->south.STRPs), desc->content.ISL);
 	if (max_count < desc->content.ISL) {
 		msg_pdbg2("ISL (%u) is greater than the current maximum of %u entries.\n",
 			  desc->content.ISL, max_count);
@@ -965,8 +961,8 @@ static enum ich_chipset guess_ich_chipset(const struct ich_desc_content *const c
 int read_ich_descriptors_from_dump(const uint32_t *const dump, const size_t len,
 				   enum ich_chipset *const cs, struct ich_descriptors *const desc)
 {
-	size_t i, max_count;
-	uint8_t pch_bug_offset = 0;
+	ssize_t i, max_count;
+	size_t pch_bug_offset = 0;
 
 	if (dump == NULL || desc == NULL)
 		return ICH_RET_PARAM;
@@ -1000,14 +996,14 @@ int read_ich_descriptors_from_dump(const uint32_t *const dump, const size_t len,
 
 	/* region */
 	const ssize_t nr = ich_number_of_regions(*cs, &desc->content);
-	if (nr < 0 || len < getFRBA(&desc->content) + nr * 4)
+	if (nr < 0 || len < getFRBA(&desc->content) + (size_t)nr * 4)
 		return ICH_RET_OOB;
 	for (i = 0; i < nr; i++)
 		desc->region.FLREGs[i] = dump[(getFRBA(&desc->content) >> 2) + i];
 
 	/* master */
 	const ssize_t nm = ich_number_of_masters(*cs, &desc->content);
-	if (nm < 0 || len < getFMBA(&desc->content) + nm * 4)
+	if (nm < 0 || len < getFMBA(&desc->content) + (size_t)nm * 4)
 		return ICH_RET_OOB;
 	for (i = 0; i < nm; i++)
 		desc->master.FLMSTRs[i] = dump[(getFMBA(&desc->content) >> 2) + i];
@@ -1034,7 +1030,7 @@ int read_ich_descriptors_from_dump(const uint32_t *const dump, const size_t len,
 		return ICH_RET_OOB;
 
 	/* limit the range to be written */
-	max_count = min(sizeof(desc->north.STRPs) / 4, desc->content.MSL);
+	max_count = MIN(sizeof(desc->north.STRPs) / 4, desc->content.MSL);
 	for (i = 0; i < max_count; i++)
 		desc->north.STRPs[i] = dump[(getFMSBA(&desc->content) >> 2) + i];
 
@@ -1043,7 +1039,7 @@ int read_ich_descriptors_from_dump(const uint32_t *const dump, const size_t len,
 		return ICH_RET_OOB;
 
 	/* limit the range to be written */
-	max_count = min(sizeof(desc->south.STRPs) / 4, desc->content.ISL);
+	max_count = MIN(sizeof(desc->south.STRPs) / 4, desc->content.ISL);
 	for (i = 0; i < max_count; i++)
 		desc->south.STRPs[i] = dump[(getFISBA(&desc->content) >> 2) + i];
 
@@ -1134,7 +1130,7 @@ static uint32_t read_descriptor_reg(enum ich_chipset cs, uint8_t section, uint16
 
 int read_ich_descriptors_via_fdo(enum ich_chipset cs, void *spibar, struct ich_descriptors *desc)
 {
-	size_t i;
+	ssize_t i;
 	struct ich_desc_region *r = &desc->region;
 
 	/* Test if bit-fields are working as expected.
@@ -1226,7 +1222,8 @@ int layout_from_ich_descriptors(struct ich_layout *const layout, const void *con
 	memset(layout, 0x00, sizeof(*layout));
 
 	ssize_t i, j;
-	for (i = 0, j = 0; i < min(ich_number_of_regions(cs, &desc.content), ARRAY_SIZE(regions)); ++i) {
+	const ssize_t nr = MIN(ich_number_of_regions(cs, &desc.content), (ssize_t)ARRAY_SIZE(regions));
+	for (i = 0, j = 0; i < nr; ++i) {
 		const chipoff_t base = ICH_FREG_BASE(desc.region.FLREGs[i]);
 		const chipoff_t limit = ICH_FREG_LIMIT(desc.region.FLREGs[i]);
 		if (limit <= base)

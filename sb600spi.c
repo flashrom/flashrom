@@ -247,7 +247,7 @@ static int sb600_spi_send_command(struct flashctx *flash, unsigned int writecnt,
 
 	reset_internal_fifo_pointer();
 	msg_pspew("Filling FIFO: ");
-	int count;
+	unsigned int count;
 	for (count = 0; count < writecnt; count++) {
 		msg_pspew("[%02x]", writearr[count]);
 		mmio_writeb(writearr[count], sb600_spibar + 0xC);
@@ -326,7 +326,7 @@ static int spi100_spi_send_command(struct flashctx *flash, unsigned int writecnt
 	mmio_writeb(readcnt, sb600_spibar + 0x4b);
 
 	msg_pspew("Filling buffer: ");
-	int count;
+	unsigned int count;
 	for (count = 0; count < writecnt; count++) {
 		msg_pspew("[%02x]", writearr[count]);
 		mmio_writeb(writearr[count], sb600_spibar + 0x80 + count);

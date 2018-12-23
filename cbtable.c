@@ -34,7 +34,7 @@ static char *cb_vendor = NULL, *cb_model = NULL;
  *	-1	if IDs in the image do not match the IDs embedded in the current firmware,
  *	 0	if the IDs could not be found in the image or if they match correctly.
  */
-int cb_check_image(const uint8_t *image, int size)
+int cb_check_image(const uint8_t *image, unsigned int size)
 {
 	const unsigned int *walk;
 	unsigned int mb_part_offset, mb_vendor_offset;
@@ -138,10 +138,10 @@ static unsigned long compute_checksum(void *addr, unsigned long length)
 		((((char *)rec) + rec->size) <= (((char *)head) + sizeof(*head) + head->table_bytes)); \
 		rec = (struct lb_record *)(((char *)rec) + rec->size))
 
-static int count_lb_records(struct lb_header *head)
+static unsigned int count_lb_records(struct lb_header *head)
 {
 	struct lb_record *rec;
-	int count;
+	unsigned int count;
 
 	count = 0;
 	for_each_lbrec(head, rec) {

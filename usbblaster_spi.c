@@ -119,11 +119,11 @@ int usbblaster_spi_init(void)
 
 static int send_write(unsigned int writecnt, const unsigned char *writearr)
 {
-	int i;
 	uint8_t buf[BUF_SIZE];
 
 	memset(buf, 0, sizeof(buf));
 	while (writecnt) {
+		unsigned int i;
 		unsigned int n_write = min(writecnt, BUF_SIZE - 1);
 		msg_pspew("writing %d-byte packet\n", n_write);
 

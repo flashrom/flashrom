@@ -58,8 +58,8 @@ static unsigned int emu_jedec_ce_60_size = 0;
 static unsigned int emu_jedec_ce_c7_size = 0;
 static unsigned char spi_blacklist[256];
 static unsigned char spi_ignorelist[256];
-static int spi_blacklist_size = 0;
-static int spi_ignorelist_size = 0;
+static unsigned int spi_blacklist_size = 0;
+static unsigned int spi_ignorelist_size = 0;
 static uint8_t emu_status = 0;
 
 /* A legit complete SFDP table based on the MX25L6436E (rev. 1.8) datasheet. */
@@ -151,7 +151,7 @@ int dummy_init(void)
 {
 	char *bustext = NULL;
 	char *tmp = NULL;
-	int i;
+	unsigned int i;
 #if EMULATE_SPI_CHIP
 	char *status = NULL;
 #endif
@@ -231,7 +231,7 @@ int dummy_init(void)
 		msg_pdbg("SPI blacklist is ");
 		for (i = 0; i < spi_blacklist_size; i++)
 			msg_pdbg("%02x ", spi_blacklist[i]);
-		msg_pdbg(", size %i\n", spi_blacklist_size);
+		msg_pdbg(", size %u\n", spi_blacklist_size);
 	}
 	free(tmp);
 
@@ -267,7 +267,7 @@ int dummy_init(void)
 		msg_pdbg("SPI ignorelist is ");
 		for (i = 0; i < spi_ignorelist_size; i++)
 			msg_pdbg("%02x ", spi_ignorelist[i]);
-		msg_pdbg(", size %i\n", spi_ignorelist_size);
+		msg_pdbg(", size %u\n", spi_ignorelist_size);
 	}
 	free(tmp);
 
@@ -819,7 +819,7 @@ static int dummy_spi_send_command(struct flashctx *flash, unsigned int writecnt,
 				  const unsigned char *writearr,
 				  unsigned char *readarr)
 {
-	int i;
+	unsigned int i;
 
 	msg_pspew("%s:", __func__);
 

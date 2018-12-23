@@ -245,7 +245,7 @@ static void print_supported_boards_wiki_helper(const char *devicetype, int cols,
 					   "<span id=\"%s_note%d\">%d. [[#%s_ref%d|&#x2191;]]</span>"
 					   " <nowiki>%s</nowiki><br />\n", devicetype, num_notes, num_notes,
 					   devicetype, num_notes, boards[i].note);
-			if (ret < 0 || ret >= sizeof(tmp)) {
+			if (ret < 0 || (unsigned int)ret >= sizeof(tmp)) {
 				fprintf(stderr, "Footnote text #%d of %s truncated (ret=%d, sizeof(tmp)=%zu)\n",
 					num_notes, devicetype, ret, sizeof(tmp));
 			}

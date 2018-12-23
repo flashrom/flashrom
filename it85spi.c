@@ -327,7 +327,7 @@ static int it85xx_spi_send_command(struct flashctx *flash,
 				   const unsigned char *writearr,
 				   unsigned char *readarr)
 {
-	int i;
+	unsigned int i;
 
 	it85xx_enter_scratch_rom();
 	/* Exit scratch ROM ONLY when programmer shuts down. Otherwise, the

@@ -29,7 +29,7 @@
 /* chunksize is 1 */
 int write_en29lv640b(struct flashctx *flash, const uint8_t *src, unsigned int start, unsigned int len)
 {
-	int i;
+	unsigned int i;
 	chipaddr bios = flash->virtual_memory;
 	chipaddr dst = flash->virtual_memory + start;
 

@@ -480,10 +480,10 @@ int serialport_read_nonblock(unsigned char *c, unsigned int readcnt, unsigned in
 	}
 #endif
 
-	int i;
-	int rd_bytes = 0;
+	unsigned int i;
+	unsigned int rd_bytes = 0;
 	for (i = 0; i < timeout; i++) {
-		msg_pspew("readcnt %d rd_bytes %d\n", readcnt, rd_bytes);
+		msg_pspew("readcnt %u rd_bytes %u\n", readcnt, rd_bytes);
 #if IS_WINDOWS
 		ReadFile(sp_fd, c + rd_bytes, readcnt - rd_bytes, &rv, NULL);
 		msg_pspew("read %lu bytes\n", rv);
@@ -560,10 +560,10 @@ int serialport_write_nonblock(const unsigned char *buf, unsigned int writecnt, u
 	}
 #endif
 
-	int i;
-	int wr_bytes = 0;
+	unsigned int i;
+	unsigned int wr_bytes = 0;
 	for (i = 0; i < timeout; i++) {
-		msg_pspew("writecnt %d wr_bytes %d\n", writecnt, wr_bytes);
+		msg_pspew("writecnt %u wr_bytes %u\n", writecnt, wr_bytes);
 #if IS_WINDOWS
 		WriteFile(sp_fd, buf + wr_bytes, writecnt - wr_bytes, &rv, NULL);
 		msg_pspew("wrote %lu bytes\n", rv);

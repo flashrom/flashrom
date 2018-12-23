@@ -209,7 +209,7 @@ static int pickit2_spi_send_command(struct flashctx *flash, unsigned int writecn
 	}
 
 	uint8_t buf[CMD_LENGTH] = {CMD_DOWNLOAD_DATA, writecnt};
-	int i = 2;
+	unsigned int i = 2;
 	for (; i < writecnt + 2; i++) {
 		buf[i] = writearr[i - 2];
 	}

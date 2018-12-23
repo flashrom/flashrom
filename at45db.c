@@ -463,9 +463,9 @@ static int at45db_fill_buffer1(struct flashctx *flash, const uint8_t *bytes, uns
 	}
 
 	/* Create a suitable buffer to store opcode, address and data chunks for buffer1. */
-	const int max_data_write = flash->mst->spi.max_data_write - 4;
-	const unsigned int max_chunk = (max_data_write > 0 && max_data_write <= page_size) ?
-				       max_data_write : page_size;
+	const unsigned int max_data_write = flash->mst->spi.max_data_write;
+	const unsigned int max_chunk = max_data_write > 4 && max_data_write - 4 <= page_size ?
+				       max_data_write - 4 : page_size;
 	uint8_t buf[4 + max_chunk];
 
 	buf[0] = AT45DB_BUFFER1_WRITE;

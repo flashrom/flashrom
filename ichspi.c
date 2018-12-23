@@ -470,7 +470,7 @@ static struct {
 
 static uint8_t lookup_spi_type(uint8_t opcode)
 {
-	int a;
+	unsigned int a;
 
 	for (a = 0; a < ARRAY_SIZE(POSSIBLE_OPCODES); a++) {
 		if (POSSIBLE_OPCODES[a].opcode == opcode)
@@ -1564,7 +1564,7 @@ static const char *const access_names[] = {
 	"locked", "read-only", "write-only", "read-write"
 };
 
-static enum ich_access_protection ich9_handle_frap(uint32_t frap, int i)
+static enum ich_access_protection ich9_handle_frap(uint32_t frap, unsigned int i)
 {
 	const int rwperms_unknown = ARRAY_SIZE(access_names);
 	static const char *const region_names[6] = {
@@ -1595,23 +1595,23 @@ static enum ich_access_protection ich9_handle_frap(uint32_t frap, int i)
 	limit = ICH_FREG_LIMIT(freg);
 	if (base > limit || (freg == 0 && i > 0)) {
 		/* this FREG is disabled */
-		msg_pdbg2("0x%02X: 0x%08x FREG%i: %s region is unused.\n",
+		msg_pdbg2("0x%02X: 0x%08x FREG%u: %s region is unused.\n",
 			  offset, freg, i, region_name);
 		return NO_PROT;
 	}
 	msg_pdbg("0x%02X: 0x%08x ", offset, freg);
 	if (rwperms == 0x3) {
-		msg_pdbg("FREG%i: %s region (0x%08x-0x%08x) is %s.\n", i,
+		msg_pdbg("FREG%u: %s region (0x%08x-0x%08x) is %s.\n", i,
 			 region_name, base, limit, access_names[rwperms]);
 		return NO_PROT;
 	}
 	if (rwperms == rwperms_unknown) {
-		msg_pdbg("FREG%i: %s region (0x%08x-0x%08x) has unknown permissions.\n",
+		msg_pdbg("FREG%u: %s region (0x%08x-0x%08x) has unknown permissions.\n",
 			 i, region_name, base, limit);
 		return NO_PROT;
 	}
 
-	msg_pinfo("FREG%i: %s region (0x%08x-0x%08x) is %s.\n", i,
+	msg_pinfo("FREG%u: %s region (0x%08x-0x%08x) is %s.\n", i,
 		  region_name, base, limit, access_names[rwperms]);
 	return access_perms_to_protection[rwperms];
 }
@@ -1625,7 +1625,7 @@ static enum ich_access_protection ich9_handle_frap(uint32_t frap, int i)
 #define ICH_PR_PERMS(pr)	(((~((pr) >> PR_RP_OFF) & 1) << 0) | \
 				 ((~((pr) >> PR_WP_OFF) & 1) << 1))
 
-static enum ich_access_protection ich9_handle_pr(const size_t reg_pr0, int i)
+static enum ich_access_protection ich9_handle_pr(const size_t reg_pr0, unsigned int i)
 {
 	uint8_t off = reg_pr0 + (i * 4);
 	uint32_t pr = mmio_readl(ich_spibar + off);
@@ -1701,7 +1701,7 @@ static const struct opaque_master opaque_master_ich_hwseq = {
 
 int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 {
-	int i;
+	unsigned int i;
 	uint16_t tmp2;
 	uint32_t tmp;
 	char *arg;
@@ -1786,7 +1786,7 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 		for (i = 0; i < 3; i++) {
 			int offs;
 			offs = 0x60 + (i * 4);
-			msg_pdbg("0x%02x: 0x%08x (PBR%d)\n", offs,
+			msg_pdbg("0x%02x: 0x%08x (PBR%u)\n", offs,
 				     mmio_readl(ich_spibar + offs), i);
 		}
 		if (mmio_readw(ich_spibar) & (1 << 15)) {

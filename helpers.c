@@ -30,9 +30,9 @@ uint32_t address_to_bits(uint32_t addr)
 	return 32 - lzb;
 }
 
-int bitcount(unsigned long a)
+unsigned int bitcount(unsigned long a)
 {
-	int i = 0;
+	unsigned int i = 0;
 	for (; a != 0; a >>= 1)
 		if (a & 1)
 			i++;

@@ -474,7 +474,7 @@ static int dediprog_spi_bulk_read(struct flashctx *flash, uint8_t *buf, unsigned
 		return 1;
 
 	int ret = dediprog_write(CMD_READ, value, idx, data_packet, sizeof(data_packet));
-	if (ret != sizeof(data_packet)) {
+	if (ret != (int)sizeof(data_packet)) {
 		msg_perr("Command Read SPI Bulk failed, %i %s!\n", ret, libusb_error_name(ret));
 		return 1;
 	}
@@ -487,7 +487,7 @@ static int dediprog_spi_bulk_read(struct flashctx *flash, uint8_t *buf, unsigned
 
 	/* Allocate bulk transfers. */
 	unsigned int i;
-	for (i = 0; i < min(DEDIPROG_ASYNC_TRANSFERS, count); ++i) {
+	for (i = 0; i < MIN(DEDIPROG_ASYNC_TRANSFERS, count); ++i) {
 		transfers[i] = libusb_alloc_transfer(0);
 		if (!transfers[i]) {
 			msg_perr("Allocating libusb transfer %i failed: %s!\n", i, libusb_error_name(ret));
@@ -630,7 +630,7 @@ static int dediprog_spi_bulk_write(struct flashctx *flash, const uint8_t *buf, u
 	if (prepare_rw_cmd(flash, data_packet, count, dedi_spi_cmd, &value, &idx, start, 0))
 		return 1;
 	int ret = dediprog_write(CMD_WRITE, value, idx, data_packet, sizeof(data_packet));
-	if (ret != sizeof(data_packet)) {
+	if (ret != (int)sizeof(data_packet)) {
 		msg_perr("Command Write SPI Bulk failed, %s!\n", libusb_error_name(ret));
 		return 1;
 	}
@@ -743,7 +743,7 @@ static int dediprog_spi_send_command(struct flashctx *flash,
 		value = 0;
 	}
 	ret = dediprog_write(CMD_TRANSCEIVE, value, idx, writearr, writecnt);
-	if (ret != writecnt) {
+	if (ret != (int)writecnt) {
 		msg_perr("Send SPI failed, expected %i, got %i %s!\n",
 			 writecnt, ret, libusb_error_name(ret));
 		return 1;
@@ -770,7 +770,7 @@ static int dediprog_spi_send_command(struct flashctx *flash,
 	ret = dediprog_read(CMD_TRANSCEIVE, value, idx, readarr, readcnt);
 	*/
 	ret = dediprog_read(CMD_TRANSCEIVE, 0, 0, readarr, readcnt);
-	if (ret != readcnt) {
+	if (ret != (int)readcnt) {
 		msg_perr("Receive SPI failed, expected %i, got %i %s!\n", readcnt, ret, libusb_error_name(ret));
 		return 1;
 	}
@@ -804,7 +804,7 @@ static int dediprog_check_devicestring(void)
 	int sfnum;
 	int fw[3];
 	if (sscanf(buf, "SF%d V:%d.%d.%d ", &sfnum, &fw[0], &fw[1], &fw[2]) != 4 ||
-	    sfnum != dediprog_devicetype) {
+	    sfnum != (int)dediprog_devicetype) {
 		msg_perr("Unexpected firmware version string '%s'\n", buf);
 		return 1;
 	}

@@ -281,7 +281,6 @@ static int it8716f_spi_send_command(struct flashctx *flash,
 				    unsigned char *readarr)
 {
 	uint8_t busy, writeenc;
-	int i;
 
 	do {
 		busy = INB(it8716f_flashport) & 0x80;
@@ -330,6 +329,8 @@ static int it8716f_spi_send_command(struct flashctx *flash,
 		| ((readcnt & 0x3) << 2) | (writeenc), it8716f_flashport);
 
 	if (readcnt > 0) {
+		unsigned int i;
+
 		do {
 			busy = INB(it8716f_flashport) & 0x80;
 		} while (busy);

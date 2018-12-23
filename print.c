@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stddef.h>
 #include "flash.h"
 #include "programmer.h"
 
@@ -314,20 +315,20 @@ static int print_supported_chips(void)
 #if CONFIG_INTERNAL == 1
 static void print_supported_chipsets(void)
 {
-	int i, chipsetcount = 0;
+	unsigned int i, chipsetcount = 0;
 	const struct penable *c = chipset_enables;
-	int maxvendorlen = strlen("Vendor") + 1;
-	int maxchipsetlen = strlen("Chipset") + 1;
+	size_t maxvendorlen = strlen("Vendor") + 1;
+	size_t maxchipsetlen = strlen("Chipset") + 1;
 
 	for (c = chipset_enables; c->vendor_name != NULL; c++) {
 		chipsetcount++;
-		maxvendorlen = max(maxvendorlen, strlen(c->vendor_name));
-		maxchipsetlen = max(maxchipsetlen, strlen(c->device_name));
+		maxvendorlen = MAX(maxvendorlen, strlen(c->vendor_name));
+		maxchipsetlen = MAX(maxchipsetlen, strlen(c->device_name));
 	}
 	maxvendorlen++;
 	maxchipsetlen++;
 
-	msg_ginfo("Supported chipsets (total: %d):\n\n", chipsetcount);
+	msg_ginfo("Supported chipsets (total: %u):\n\n", chipsetcount);
 
 	msg_ginfo("Vendor");
 	for (i = strlen("Vendor"); i < maxvendorlen; i++)
@@ -354,12 +355,12 @@ static void print_supported_chipsets(void)
 static void print_supported_boards_helper(const struct board_info *boards,
 				   const char *devicetype)
 {
-	int i;
+	unsigned int i;
 	unsigned int boardcount_good = 0, boardcount_bad = 0, boardcount_nt = 0;
 	const struct board_match *e = board_matches;
 	const struct board_info *b = boards;
-	int maxvendorlen = strlen("Vendor") + 1;
-	int maxboardlen = strlen("Board") + 1;
+	size_t maxvendorlen = strlen("Vendor") + 1;
+	size_t maxboardlen = strlen("Board") + 1;
 
 	for (b = boards; b->vendor != NULL; b++) {
 		maxvendorlen = max(maxvendorlen, strlen(b->vendor));

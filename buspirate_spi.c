@@ -76,7 +76,8 @@ static int buspirate_commbuf_grow(int bufsize)
 static int buspirate_sendrecv(unsigned char *buf, unsigned int writecnt,
 			      unsigned int readcnt)
 {
-	int i, ret = 0;
+	unsigned int i;
+	int ret = 0;
 
 	msg_pspew("%s: write %i, read %i ", __func__, writecnt, readcnt);
 	if (!writecnt && !readcnt) {

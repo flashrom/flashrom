@@ -147,7 +147,7 @@ static char *dmi_string(const char *buf, uint8_t string_id, const char *limit)
 
 static void dmi_chassis_type(uint8_t code)
 {
-	int i;
+	unsigned int i;
 	code &= 0x7f; /* bits 6:0 are chassis type, 7th bit is the lock bit */
 	is_laptop = 2;
 	for (i = 0; i < ARRAY_SIZE(dmi_chassis_types); i++) {
@@ -161,7 +161,7 @@ static void dmi_chassis_type(uint8_t code)
 
 static void dmi_table(uint32_t base, uint16_t len, uint16_t num)
 {
-	int i = 0, j = 0;
+	unsigned int i = 0, j = 0;
 
 	uint8_t *dmi_table_mem = physmap_ro("DMI Table", base, len);
 	if (dmi_table_mem == NULL) {
@@ -346,7 +346,7 @@ static char *get_dmi_string(const char *string_name)
 
 static int dmi_fill(void)
 {
-	int i;
+	unsigned int i;
 	char *chassis_type;
 
 	msg_pdbg("Using External DMI decoder.\n");
@@ -376,7 +376,7 @@ static int dmi_fill(void)
 
 static int dmi_shutdown(void *data)
 {
-	int i;
+	unsigned int i;
 	for (i = 0; i < ARRAY_SIZE(dmi_strings); i++) {
 		free(dmi_strings[i].value);
 		dmi_strings[i].value = NULL;
@@ -406,7 +406,7 @@ void dmi_init(void)
 	}
 
 	has_dmi_support = 1;
-	int i;
+	unsigned int i;
 	for (i = 0; i < ARRAY_SIZE(dmi_strings); i++) {
 		msg_pdbg("DMI string %s: \"%s\"\n", dmi_strings[i].keyword,
 			 (dmi_strings[i].value == NULL) ? "" : dmi_strings[i].value);
@@ -463,7 +463,7 @@ static int dmi_compare(const char *value, const char *pattern)
 
 int dmi_match(const char *pattern)
 {
-	int i;
+	unsigned int i;
 
 	if (!has_dmi_support)
 		return 0;

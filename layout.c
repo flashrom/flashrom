@@ -46,7 +46,8 @@ int read_romlayout(const char *name)
 	struct flashrom_layout *const layout = get_global_layout();
 	FILE *romlayout;
 	char tempstr[256], tempname[256];
-	int i, ret = 1;
+	unsigned int i;
+	int ret = 1;
 
 	romlayout = fopen(name, "r");
 
@@ -154,7 +155,7 @@ static int find_romentry(struct flashrom_layout *const l, char *name)
  */
 int process_include_args(struct flashrom_layout *l, const struct layout_include_args *const args)
 {
-	int found = 0;
+	unsigned int found = 0;
 	const struct layout_include_args *tmp;
 
 	if (args == NULL)
@@ -193,7 +194,7 @@ int process_include_args(struct flashrom_layout *l, const struct layout_include_
 void layout_cleanup(struct layout_include_args **args)
 {
 	struct flashrom_layout *const layout = get_global_layout();
-	int i;
+	unsigned int i;
 	struct layout_include_args *tmp;
 
 	while (*args) {
@@ -216,7 +217,7 @@ int normalize_romentries(const struct flashctx *flash)
 	chipsize_t total_size = flash->chip->total_size * 1024;
 	int ret = 0;
 
-	int i;
+	unsigned int i;
 	for (i = 0; i < layout->num_entries; i++) {
 		if (layout->entries[i].start >= total_size || layout->entries[i].end >= total_size) {
 			msg_gwarn("Warning: Address range of region \"%s\" exceeds the current chip's "

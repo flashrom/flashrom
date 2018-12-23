@@ -71,8 +71,8 @@ static uint8_t *sp_write_n_buf;
 static uint32_t sp_write_n_bytes = 0;
 
 /* sp_streamed_* used for flow control checking */
-static int sp_streamed_transmit_ops = 0;
-static int sp_streamed_transmit_bytes = 0;
+static unsigned int sp_streamed_transmit_ops = 0;
+static unsigned int sp_streamed_transmit_bytes = 0;
 
 /* sp_opbuf_usage used for counting the amount of
 	on-device operation buffer used */

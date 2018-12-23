@@ -115,7 +115,7 @@ static int wbsio_spi_send_command(struct flashctx *flash, unsigned int writecnt,
 				  const unsigned char *writearr,
 				  unsigned char *readarr)
 {
-	int i;
+	unsigned int i;
 	uint8_t mode = 0;
 
 	msg_pspew("%s:", __func__);

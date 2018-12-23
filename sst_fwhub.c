@@ -21,7 +21,7 @@
 #include "flash.h"
 #include "chipdrivers.h"
 
-static int check_sst_fwhub_block_lock(struct flashctx *flash, int offset)
+static int check_sst_fwhub_block_lock(struct flashctx *flash, unsigned int offset)
 {
 	chipaddr registers = flash->virtual_registers;
 	uint8_t blockstatus;
@@ -47,7 +47,7 @@ static int check_sst_fwhub_block_lock(struct flashctx *flash, int offset)
 	return blockstatus & 0x1;
 }
 
-static int clear_sst_fwhub_block_lock(struct flashctx *flash, int offset)
+static int clear_sst_fwhub_block_lock(struct flashctx *flash, unsigned int offset)
 {
 	chipaddr registers = flash->virtual_registers;
 	uint8_t blockstatus;
@@ -67,7 +67,7 @@ static int clear_sst_fwhub_block_lock(struct flashctx *flash, int offset)
 
 int printlock_sst_fwhub(struct flashctx *flash)
 {
-	int i;
+	unsigned int i;
 
 	for (i = 0; i < flash->chip->total_size * 1024; i += flash->chip->page_size)
 		check_sst_fwhub_block_lock(flash, i);
@@ -77,7 +77,8 @@ int printlock_sst_fwhub(struct flashctx *flash)
 
 int unlock_sst_fwhub(struct flashctx *flash)
 {
-	int i, ret=0;
+	unsigned int i;
+	int ret = 0;
 
 	for (i = 0; i < flash->chip->total_size * 1024; i += flash->chip->page_size)
 	{
