@@ -15,10 +15,8 @@ lt_version = '@0@.@1@.@2@'.format(lt_current, lt_age, lt_revision)
 warning_flags = [
   '-Wwrite-strings',
   '-Wno-unused-parameter',
-  '-Wno-sign-compare',
   '-Wno-address-of-packed-member',
   '-Wno-enum-conversion',
-  '-Wno-missing-field-initializers',
   '-Wno-missing-braces',
 ]
 
