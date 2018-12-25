@@ -190,8 +190,10 @@ endif
 # FIXME: Should we check for Cygwin/MSVC as well?
 ifeq ($(TARGET_OS), MinGW)
 EXEC_SUFFIX := .exe
+override LDFLAGS += -lwinmm
+RESOURCE_OBJS = resource.o
 # MinGW doesn't have the ffs() function, but we can use gcc's __builtin_ffs().
-FLASHROM_CFLAGS += -Dffs=__builtin_ffs
+FLASHROM_CFLAGS += -Dffs=__builtin_ffs -D_CRT_SECURE_NO_WARNINGS
 # Some functions provided by Microsoft do not work as described in C99 specifications. This macro fixes that
 # for MinGW. See http://sourceforge.net/p/mingw-w64/wiki2/printf%20and%20scanf%20family/ */
 FLASHROM_CFLAGS += -D__USE_MINGW_ANSI_STDIO=1
@@ -560,6 +562,10 @@ $(info Replacing all version templates with $(VERSION).)
 
 # If a VCS is found then try to install hooks.
 $(shell ./util/getrevision.sh -c 2>/dev/null && ./util/git-hooks/install.sh)
+VERSION_STR := $(VERSION)
+VERSION_STRING := -D'VERSION_STRING=\"$(VERSION_STR)\"'
+VERSION_BIN := -D'VERSION_BIN=1,0'
+PRODUCT_NAME := -D'PRODUCT_NAME=\"$(PROGRAM)\"'
 
 ###############################################################################
 # Default settings of CONFIG_* variables.
@@ -1054,13 +1060,17 @@ FEATURE_LIBS += $(call debug_shell,grep -q "CLOCK_GETTIME := yes" .features && p
 LIBFLASHROM_OBJS = $(CHIP_OBJS) $(PROGRAMMER_OBJS) $(LIB_OBJS)
 OBJS = $(CLI_OBJS) $(LIBFLASHROM_OBJS)
 
+ifeq ($(TARGET_OS), MinGW)
+OBJS += $(RESOURCE_OBJS)
+endif
+
 all: hwlibs features $(PROGRAM)$(EXEC_SUFFIX) $(PROGRAM).8
 ifeq ($(ARCH), x86)
 	@+$(MAKE) -C util/ich_descriptors_tool/ TARGET_OS=$(TARGET_OS) EXEC_SUFFIX=$(EXEC_SUFFIX)
 endif
 
-$(PROGRAM)$(EXEC_SUFFIX): $(OBJS)
-	$(CC) $(LDFLAGS) -o $(PROGRAM)$(EXEC_SUFFIX) $(OBJS) $(LIBS) $(PCILIBS) $(FEATURE_LIBS) $(USBLIBS) $(USB1LIBS)
+$(PROGRAM)$(EXEC_SUFFIX):  $(OBJS)
+	$(CC) -o $(PROGRAM)$(EXEC_SUFFIX) $(OBJS) $(LIBS) $(PCILIBS) $(FEATURE_LIBS) $(USBLIBS) $(USB1LIBS) $(LDFLAGS)
 
 libflashrom.a: $(LIBFLASHROM_OBJS)
 	$(AR) rcs $@ $^
@@ -1073,7 +1083,10 @@ TAROPTIONS = $(shell LC_ALL=C tar --version|grep -q GNU && echo "--owner=root --
 
 %.o: %.c .features
 	$(CC) -MMD $(CFLAGS) $(CPPFLAGS) $(FLASHROM_CFLAGS) $(FEATURE_CFLAGS) $(SCMDEF) -o $@ -c $<
-
+ifeq ($(TARGET_OS), MinGW)
+%.o: %.rc
+	windres -DGCC_WINDRES $(VERSION_STRING) $(VERSION_BIN) $(PRODUCT_NAME) -o $@ -i $<
+endif
 # Make sure to add all names of generated binaries here.
 # This includes all frontends and libflashrom.
 # We don't use EXEC_SUFFIX here because we want to clean everything.

@@ -490,7 +490,10 @@ int main(int argc, char *argv[])
 			goto out;
 		}
 	}
-
+#if IS_WINDOWS
+	/* improve timer resolution */
+	timeBeginPeriod(1);
+#endif
 	/* FIXME: Delay calibration should happen in programmer code. */
 	myusec_calibrate_delay();
 
@@ -687,5 +690,11 @@ out:
 	free(logfile);
 	ret |= close_logfile();
 #endif /* !STANDALONE */
+
+#if IS_WINDOWS
+	/* end timer */
+	timeEndPeriod(1);
+#endif
+
 	return ret;
 }
