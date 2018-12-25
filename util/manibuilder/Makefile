@@ -4,6 +4,7 @@ include Makefile.targets
 
 CC := ccache cc
 MAKECMD := make
+MAKEARGS := CONFIG_EVERYTHING=yes
 
 spc :=
 spc := $(spc) $(spc)
@@ -50,7 +51,7 @@ $(filter centos%,$(MULTIARCH_TAGS)) anita\:sparc: CC=cc
 djgpp\:6.1.0: CC=ccache i586-pc-msdosdjgpp-gcc
 djgpp\:6.1.0: STRIP=i586-pc-msdosdjgpp-strip
 djgpp\:6.1.0: LIBS_BASE=../
-djgpp\:6.1.0: TARGET=strip
+djgpp\:6.1.0: MAKEARGS+=strip
 $(ANITA_TAGS): MAKECMD=gmake
 $(ALL_TAGS): export QUIET_SETUP=$(QUIET_TEST)
 $(ALL_TAGS): %: %-check-build
@@ -65,7 +66,7 @@ $(ALL_TAGS): %: %-check-build
 		 $(MAKECMD) clean && $(MAKECMD) -j$${CPUS:-1} CC='$(CC)' \
 		 $(if $(STRIP),STRIP='$(STRIP)') \
 		 $(if $(LIBS_BASE),LIBS_BASE='$(LIBS_BASE)') \
-		 $(TARGET)" \
+		 $(MAKEARGS)" \
 		$(if $(QUIET_TEST),>/dev/null 2>&1) || echo $*: $$?
 
 $(addsuffix -shell,$(ALL_TAGS)): %-shell: %-check-build
