@@ -32,7 +32,10 @@ static mcp2210_chip_settings_t chip_settings = {
 
 // SPI settings
 static mcp2210_spi_settings_t spi_settings = {
-	.bitrate				= b32(8000000),
+	// there is no need for a higher bitrate, because
+	// the MCP2210 cannot push data any faster over HID
+	// to the host computer
+	.bitrate				= b32(750000),
 	.idle_cs				= b16(1),
 	.active_cs				= b16(0),
 	.cs_to_data_delay		= b16(0),
@@ -55,7 +58,7 @@ static int mcp2210_spi_send_command(struct flashctx *flash,
 	// And doing multiple transfers
 	assert(transfer_total <= 0xffff);
 
-	// Setting this on every command is a MAJOR bottleneck
+	// Set the transfer length if it changed
 	if (spi_settings.bytes_per_transaction != b16(transfer_total)) {
 		spi_settings.bytes_per_transaction = b16(transfer_total);
 		if (-1 == mcp2210_spi_settings(mcp2210_handle, &spi_settings)) {
