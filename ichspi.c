@@ -1704,7 +1704,7 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 	char *arg;
 	int ich_spi_rw_restricted = 0;
 	int desc_valid = 0;
-	struct ich_descriptors desc = { 0 };
+	struct ich_descriptors desc;
 	enum ich_spi_mode {
 		ich_auto,
 		ich_hwseq,
@@ -1714,6 +1714,8 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 
 	ich_generation = ich_gen;
 	ich_spibar = spibar;
+
+	memset(&desc, 0x00, sizeof(struct ich_descriptors));
 
 	/* Moving registers / bits */
 	if (ich_generation == CHIPSET_100_SERIES_SUNRISE_POINT) {
