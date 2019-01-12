@@ -49,6 +49,10 @@ static int mcp2210_spi_send_command(struct flashctx *flash,
 	//printf("\nCMD: W: %d R: %d\n", writecnt, readcnt);
 
 	size_t transfer_total = writecnt + readcnt;
+
+	// This is the technical transfer limit of the MCP2210
+	// In theory this can be avoided by using GPIO as chip select
+	// And doing multiple transfers
 	assert(transfer_total <= 0xffff);
 
 	// Setting this on every command is a MAJOR bottleneck
