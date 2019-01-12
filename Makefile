@@ -56,7 +56,7 @@ CONFIG_DEFAULT_PROGRAMMER_ARGS ?= ''
 
 # If your compiler spits out excessive warnings, run make WARNERROR=no
 # You shouldn't have to change this flag.
-WARNERROR ?= no
+WARNERROR ?= yes
 
 ifeq ($(WARNERROR), yes)
 CFLAGS += -Werror
