@@ -1112,7 +1112,8 @@ TAROPTIONS = $(shell LC_ALL=C tar --version|grep -q GNU && echo "--owner=root --
 # This includes all frontends and libflashrom.
 # We don't use EXEC_SUFFIX here because we want to clean everything.
 clean:
-	rm -f $(PROGRAM) $(PROGRAM).exe libflashrom.a *.o *.d $(PROGRAM).8 $(PROGRAM).8.html $(BUILD_DETAILS_FILE)
+	find -name "*.o" -or -name "*.d" -delete
+	rm -f $(PROGRAM) $(PROGRAM).exe libflashrom.a $(PROGRAM).8 $(PROGRAM).8.html $(BUILD_DETAILS_FILE)
 	@+$(MAKE) -C util/ich_descriptors_tool/ clean
 
 distclean: clean
