@@ -437,6 +437,18 @@ const struct programmer_entry programmer_table[] = {
 	},
 #endif
 
+#if CONFIG_MCP2210_SPI == 1
+	{
+		.name				= "mcp2210_spi",
+		.type				= USB,
+		.devs.note			= "MCP2210 USB to SPI master bridge",
+		.init				= mcp2210_spi_init,
+		.map_flash_region	= fallback_map,
+		.unmap_flash_region	= fallback_unmap,
+		.delay				= internal_delay,
+	},
+#endif
+
 	{0}, /* This entry corresponds to PROGRAMMER_INVALID. */
 };
 

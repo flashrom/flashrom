@@ -118,6 +118,9 @@ enum programmer {
 #if CONFIG_DIGILENT_SPI == 1
 	PROGRAMMER_DIGILENT_SPI,
 #endif
+#if CONFIG_MCP2210_SPI == 1
+	PROGRAMMER_MCP2210_SPI,
+#endif
 	PROGRAMMER_INVALID /* This must always be the last entry. */
 };
 
@@ -573,6 +576,10 @@ int digilent_spi_init(void);
 extern const struct dev_entry devs_digilent_spi[];
 #endif
 
+#if CONFIG_MCP2210_SPI == 1
+int mcp2210_spi_init();
+#endif
+
 /* flashrom.c */
 struct decode_sizes {
 	uint32_t parallel;
@@ -640,6 +647,9 @@ enum spi_controller {
 #endif
 #if CONFIG_DIGILENT_SPI == 1
 	SPI_CONTROLLER_DIGILENT_SPI,
+#endif
+#if CONFIG_MCP2210_SPI == 1
+	SPI_CONTROLLER_MCP2210_SPI,
 #endif
 };
 
