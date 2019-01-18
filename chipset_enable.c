@@ -598,6 +598,7 @@ static enum chipbustype enable_flash_ich_report_gcs(
 		break;
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 	case CHIPSET_C620_SERIES_LEWISBURG:
+	case CHIPSET_APOLLO_LAKE:
 		reg_name = "BIOS_SPI_BC";
 		gcs = pci_read_long(dev, 0xdc);
 		bild = (gcs >> 7) & 1;
@@ -649,6 +650,9 @@ static enum chipbustype enable_flash_ich_report_gcs(
 	static const struct boot_straps boot_straps_pch8_lp[] =
 		{ { "SPI", BUS_SPI },
 		  { "LPC", BUS_LPC | BUS_FWH } };
+	static const struct boot_straps boot_straps_apl[] =
+		{ { "SPI", BUS_SPI },
+		  { "reserved" } };
 	static const struct boot_straps boot_straps_unknown[] =
 		{ { "unknown" },
 		  { "unknown" },
@@ -690,6 +694,9 @@ static enum chipbustype enable_flash_ich_report_gcs(
 	case CHIPSET_C620_SERIES_LEWISBURG:
 		boot_straps = boot_straps_pch8_lp;
 		break;
+	case CHIPSET_APOLLO_LAKE:
+		boot_straps = boot_straps_apl;
+		break;
 	case CHIPSET_8_SERIES_WELLSBURG: // FIXME: check datasheet
 	case CHIPSET_CENTERTON: // FIXME: Datasheet does not mention GCS at all
 		boot_straps = boot_straps_unknown;
@@ -712,6 +719,7 @@ static enum chipbustype enable_flash_ich_report_gcs(
 		break;
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 	case CHIPSET_C620_SERIES_LEWISBURG:
+	case CHIPSET_APOLLO_LAKE:
 		bbs = (gcs >> 6) & 0x1;
 		break;
 	default:
@@ -866,7 +874,9 @@ static int enable_flash_pch100_shutdown(void *const pci_acc)
 	return 0;
 }
 
-static int enable_flash_pch100_or_c620(struct pci_dev *const dev, const char *const name, const enum ich_chipset pch_generation)
+static int enable_flash_pch100_or_c620(
+		struct pci_dev *const dev, const char *const name,
+		const int slot, const int func, const enum ich_chipset pch_generation)
 {
 	int ret = ERROR_FATAL;
 
@@ -887,7 +897,7 @@ static int enable_flash_pch100_or_c620(struct pci_dev *const dev, const char *co
 	pci_init(pci_acc);
 	register_shutdown(enable_flash_pch100_shutdown, pci_acc);
 
-	struct pci_dev *const spi_dev = pci_get_dev(pci_acc, dev->domain, dev->bus, 0x1f, 5);
+	struct pci_dev *const spi_dev = pci_get_dev(pci_acc, dev->domain, dev->bus, slot, func);
 	if (!spi_dev) {
 		msg_perr("Can't allocate PCI device.\n");
 		return ret;
@@ -929,12 +939,17 @@ _freepci_ret:
 
 static int enable_flash_pch100(struct pci_dev *const dev, const char *const name)
 {
-	return enable_flash_pch100_or_c620(dev, name, CHIPSET_100_SERIES_SUNRISE_POINT);
+	return enable_flash_pch100_or_c620(dev, name, 0x1f, 5, CHIPSET_100_SERIES_SUNRISE_POINT);
 }
 
 static int enable_flash_c620(struct pci_dev *const dev, const char *const name)
 {
-	return enable_flash_pch100_or_c620(dev, name, CHIPSET_C620_SERIES_LEWISBURG);
+	return enable_flash_pch100_or_c620(dev, name, 0x1f, 5, CHIPSET_C620_SERIES_LEWISBURG);
+}
+
+static int enable_flash_apl(struct pci_dev *const dev, const char *const name)
+{
+	return enable_flash_pch100_or_c620(dev, name, 0x0d, 2, CHIPSET_APOLLO_LAKE);
 }
 
 /* Silvermont architecture: Bay Trail(-T/-I), Avoton/Rangeley.
@@ -2011,6 +2026,7 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0xa2c8, B_S,    NT,  "Intel", "B250",				enable_flash_pch100},
 	{0x8086, 0xa2c9, B_S,    NT,  "Intel", "Z370",				enable_flash_pch100},
 	{0x8086, 0xa2d2, B_S,    NT,  "Intel", "X299",				enable_flash_pch100},
+	{0x8086, 0x5ae8, B_S,    BAD, "Intel", "Apollo Lake",			enable_flash_apl},
 #endif
 	{0},
 };
