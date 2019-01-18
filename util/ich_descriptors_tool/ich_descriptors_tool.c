@@ -126,6 +126,7 @@ static void usage(char *argv[], char *error)
 "\t- \"ich9\",\n"
 "\t- \"ich10\",\n"
 "\t- \"silvermont\" for chipsets from Intel's Silvermont architecture (e.g. Bay Trail),\n"
+"\t- \"apollo\" for Intel's Apollo Lake SoC.\n"
 "\t- \"5\" or \"ibex\" for Intel's 5 series chipsets,\n"
 "\t- \"6\" or \"cougar\" for Intel's 6 series chipsets,\n"
 "\t- \"7\" or \"panther\" for Intel's 7 series chipsets.\n"
@@ -220,6 +221,8 @@ int main(int argc, char *argv[])
 		else if ((strcmp(csn, "100") == 0) ||
 			 (strcmp(csn, "sunrise") == 0))
 			cs = CHIPSET_100_SERIES_SUNRISE_POINT;
+		else if (strcmp(csn, "apollo") == 0)
+			cs = CHIPSET_APOLLO_LAKE;
 	}
 
 	ret = read_ich_descriptors_from_dump(buf, len, &cs, &desc);

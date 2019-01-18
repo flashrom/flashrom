@@ -29,6 +29,9 @@
 #include "spi.h"
 #include "ich_descriptors.h"
 
+/* Apollo Lake */
+#define APL_REG_FREG12		0xe0	/* 32 Bytes Flash Region 12 */
+
 /* Sunrise Point */
 
 /* Added HSFS Status bits */
@@ -1564,15 +1567,17 @@ static const char *const access_names[] = {
 static enum ich_access_protection ich9_handle_frap(uint32_t frap, int i)
 {
 	const int rwperms_unknown = ARRAY_SIZE(access_names);
-	static const char *const region_names[5] = {
+	static const char *const region_names[6] = {
 		"Flash Descriptor", "BIOS", "Management Engine",
-		"Gigabit Ethernet", "Platform Data"
+		"Gigabit Ethernet", "Platform Data", "Device Expansion",
 	};
 	const char *const region_name = i < ARRAY_SIZE(region_names) ? region_names[i] : "unknown";
 
 	uint32_t base, limit;
 	int rwperms;
-	int offset = ICH9_REG_FREG0 + i * 4;
+	const int offset = i < 12
+		? ICH9_REG_FREG0 + i * 4
+		: APL_REG_FREG12 + (i - 12) * 4;
 	uint32_t freg = mmio_readl(ich_spibar + offset);
 
 	if (i < 8) {
@@ -1716,8 +1721,10 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 	memset(&desc, 0x00, sizeof(struct ich_descriptors));
 
 	/* Moving registers / bits */
-	if (ich_generation == CHIPSET_100_SERIES_SUNRISE_POINT) {
-		num_freg		= 10;
+	switch (ich_generation) {
+	case CHIPSET_100_SERIES_SUNRISE_POINT:
+	case CHIPSET_C620_SERIES_LEWISBURG:
+	case CHIPSET_APOLLO_LAKE:
 		num_pr			= 6;	/* Includes GPR0 */
 		reg_pr0			= PCH100_REG_FPR0;
 		swseq_data.reg_ssfsc	= PCH100_REG_SSFSC;
@@ -1727,19 +1734,8 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 		hwseq_data.addr_mask	= PCH100_FADDR_FLA;
 		hwseq_data.only_4k	= true;
 		hwseq_data.hsfc_fcycle	= PCH100_HSFC_FCYCLE;
-	} else if (ich_generation == CHIPSET_C620_SERIES_LEWISBURG) {
-		num_freg		= 12;	/* 12 MMIO regs, but 16 regions in FD spec */
-		num_pr			= 6;	/* Includes GPR0 */
-		reg_pr0			= PCH100_REG_FPR0;
-		swseq_data.reg_ssfsc	= PCH100_REG_SSFSC;
-		swseq_data.reg_preop	= PCH100_REG_PREOP;
-		swseq_data.reg_optype	= PCH100_REG_OPTYPE;
-		swseq_data.reg_opmenu	= PCH100_REG_OPMENU;
-		hwseq_data.addr_mask	= PCH100_FADDR_FLA;
-		hwseq_data.only_4k	= true;
-		hwseq_data.hsfc_fcycle	= PCH100_HSFC_FCYCLE;
-	} else {
-		num_freg		= 5;
+		break;
+	default:
 		num_pr			= 5;
 		reg_pr0			= ICH9_REG_PR0;
 		swseq_data.reg_ssfsc	= ICH9_REG_SSFS;
@@ -1749,6 +1745,21 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 		hwseq_data.addr_mask	= ICH9_FADDR_FLA;
 		hwseq_data.only_4k	= false;
 		hwseq_data.hsfc_fcycle	= HSFC_FCYCLE;
+		break;
+	}
+	switch (ich_generation) {
+	case CHIPSET_100_SERIES_SUNRISE_POINT:
+		num_freg = 10;
+		break;
+	case CHIPSET_C620_SERIES_LEWISBURG:
+		num_freg = 12;	/* 12 MMIO regs, but 16 regions in FD spec */
+		break;
+	case CHIPSET_APOLLO_LAKE:
+		num_freg = 16;
+		break;
+	default:
+		num_freg = 5;
+		break;
 	}
 
 	switch (ich_generation) {
@@ -1834,10 +1845,16 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 		tmp = mmio_readl(ich_spibar + ICH9_REG_FADDR);
 		msg_pdbg2("0x08: 0x%08x (FADDR)\n", tmp);
 
-		if (ich_gen == CHIPSET_100_SERIES_SUNRISE_POINT || ich_gen == CHIPSET_C620_SERIES_LEWISBURG) {
-			const uint32_t dlock = mmio_readl(ich_spibar + PCH100_REG_DLOCK);
-			msg_pdbg("0x0c: 0x%08x (DLOCK)\n", dlock);
-			prettyprint_pch100_reg_dlock(dlock);
+		switch (ich_gen) {
+		case CHIPSET_100_SERIES_SUNRISE_POINT:
+		case CHIPSET_C620_SERIES_LEWISBURG:
+		case CHIPSET_APOLLO_LAKE:
+			tmp = mmio_readl(ich_spibar + PCH100_REG_DLOCK);
+			msg_pdbg("0x0c: 0x%08x (DLOCK)\n", tmp);
+			prettyprint_pch100_reg_dlock(tmp);
+			break;
+		default:
+			break;
 		}
 
 		if (desc_valid) {
@@ -1898,37 +1915,51 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 			 swseq_data.reg_opmenu, mmio_readl(ich_spibar + swseq_data.reg_opmenu));
 		msg_pdbg("0x%zx: 0x%08x (OPMENU+4)\n",
 			 swseq_data.reg_opmenu + 4, mmio_readl(ich_spibar + swseq_data.reg_opmenu + 4));
-		if (ich_generation == CHIPSET_ICH8 && desc_valid) {
-			tmp = mmio_readl(ich_spibar + ICH8_REG_VSCC);
-			msg_pdbg("0xC1: 0x%08x (VSCC)\n", tmp);
-			msg_pdbg("VSCC: ");
-			prettyprint_ich_reg_vscc(tmp, FLASHROM_MSG_DEBUG, true);
-		} else if (ich_generation != CHIPSET_100_SERIES_SUNRISE_POINT &&
-				ich_generation != CHIPSET_C620_SERIES_LEWISBURG) {
-			if (ich_generation != CHIPSET_BAYTRAIL && desc_valid) {
+
+		if (desc_valid) {
+			switch (ich_gen) {
+			case CHIPSET_ICH8:
+			case CHIPSET_100_SERIES_SUNRISE_POINT:
+			case CHIPSET_C620_SERIES_LEWISBURG:
+			case CHIPSET_APOLLO_LAKE:
+			case CHIPSET_BAYTRAIL:
+				break;
+			default:
 				ichspi_bbar = mmio_readl(ich_spibar + ICH9_REG_BBAR);
-				msg_pdbg("0xA0: 0x%08x (BBAR)\n",
-					     ichspi_bbar);
+				msg_pdbg("0x%x: 0x%08x (BBAR)\n", ICH9_REG_BBAR, ichspi_bbar);
 				ich_set_bbar(0);
+				break;
 			}
 
-			if (desc_valid) {
+			if (ich_gen == CHIPSET_ICH8) {
+				tmp = mmio_readl(ich_spibar + ICH8_REG_VSCC);
+				msg_pdbg("0x%x: 0x%08x (VSCC)\n", ICH8_REG_VSCC, tmp);
+				msg_pdbg("VSCC: ");
+				prettyprint_ich_reg_vscc(tmp, FLASHROM_MSG_DEBUG, true);
+			} else {
 				tmp = mmio_readl(ich_spibar + ICH9_REG_LVSCC);
-				msg_pdbg("0xC4: 0x%08x (LVSCC)\n", tmp);
+				msg_pdbg("0x%x: 0x%08x (LVSCC)\n", ICH9_REG_LVSCC, tmp);
 				msg_pdbg("LVSCC: ");
 				prettyprint_ich_reg_vscc(tmp, FLASHROM_MSG_DEBUG, true);
 
 				tmp = mmio_readl(ich_spibar + ICH9_REG_UVSCC);
-				msg_pdbg("0xC8: 0x%08x (UVSCC)\n", tmp);
+				msg_pdbg("0x%x: 0x%08x (UVSCC)\n", ICH9_REG_UVSCC, tmp);
 				msg_pdbg("UVSCC: ");
 				prettyprint_ich_reg_vscc(tmp, FLASHROM_MSG_DEBUG, false);
-
-				tmp = mmio_readl(ich_spibar + ICH9_REG_FPB);
-				msg_pdbg("0xD0: 0x%08x (FPB)\n", tmp);
 			}
-		}
 
-		if (desc_valid) {
+			switch (ich_gen) {
+			case CHIPSET_ICH8:
+			case CHIPSET_100_SERIES_SUNRISE_POINT:
+			case CHIPSET_C620_SERIES_LEWISBURG:
+			case CHIPSET_APOLLO_LAKE:
+				break;
+			default:
+				tmp = mmio_readl(ich_spibar + ICH9_REG_FPB);
+				msg_pdbg("0x%x: 0x%08x (FPB)\n", ICH9_REG_FPB, tmp);
+				break;
+			}
+
 			if (read_ich_descriptors_via_fdo(ich_gen, ich_spibar, &desc) == ICH_RET_OK)
 				prettyprint_ich_descriptors(ich_gen, &desc);
 
@@ -1952,6 +1983,11 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 
 		if (ich_spi_mode == ich_auto && ich_gen == CHIPSET_100_SERIES_SUNRISE_POINT) {
 			msg_pdbg("Enabling hardware sequencing by default for 100 series PCH.\n");
+			ich_spi_mode = ich_hwseq;
+		}
+
+		if (ich_spi_mode == ich_auto && ich_gen == CHIPSET_APOLLO_LAKE) {
+			msg_pdbg("Enabling hardware sequencing by default for Apollo Lake.\n");
 			ich_spi_mode = ich_hwseq;
 		}
 
