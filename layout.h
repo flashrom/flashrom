@@ -23,6 +23,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 /* Types and macros regarding the maximum flash space size supported by generic code. */
 typedef uint32_t chipoff_t; /* Able to store any addressable offset within a supported flash memory. */
