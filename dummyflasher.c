@@ -43,6 +43,7 @@ enum emu_chip {
 	EMULATE_SST_SST25VF040_REMS,
 	EMULATE_SST_SST25VF032B,
 	EMULATE_MACRONIX_MX25L6436,
+	EMULATE_WINBOND_W25Q128FV,
 };
 static enum emu_chip emu_chip = EMULATE_NONE;
 static char *emu_persistent_image = NULL;
@@ -331,6 +332,18 @@ int dummy_init(void)
 		msg_pdbg("Emulating Macronix MX25L6436 SPI flash chip (RDID, "
 			 "SFDP)\n");
 	}
+	if (!strcmp(tmp, "W25Q128FV")) {
+		emu_chip = EMULATE_WINBOND_W25Q128FV;
+		emu_chip_size = 16 * 1024 * 1024;
+		emu_max_byteprogram_size = 256;
+		emu_max_aai_size = 0;
+		emu_jedec_se_size = 4 * 1024;
+		emu_jedec_be_52_size = 32 * 1024;
+		emu_jedec_be_d8_size = 64 * 1024;
+		emu_jedec_ce_60_size = emu_chip_size;
+		emu_jedec_ce_c7_size = emu_chip_size;
+		msg_pdbg("Emulating Winbond W25Q128FV SPI flash chip (RDID)\n");
+	}
 #endif
 	if (emu_chip == EMULATE_NONE) {
 		msg_perr("Invalid chip specified for emulation: %s\n", tmp);
@@ -474,6 +487,7 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 	const unsigned char sst25vf040_rems_response[2] = {0xbf, 0x44};
 	const unsigned char sst25vf032b_rems_response[2] = {0xbf, 0x4a};
 	const unsigned char mx25l6436_rems_response[2] = {0xc2, 0x16};
+	const unsigned char w25q128fv_rems_response[2] = {0xef, 0x17};
 
 	if (writecnt == 0) {
 		msg_perr("No command sent to the chip!\n");
@@ -532,6 +546,10 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 			if (readcnt > 0)
 				memset(readarr, 0x16, readcnt);
 			break;
+		case EMULATE_WINBOND_W25Q128FV:
+			if (readcnt > 0)
+				memset(readarr, 0x17, readcnt);
+			break;
 		default: /* ignore */
 			break;
 		}
@@ -555,6 +573,10 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 			for (i = 0; i < readcnt; i++)
 				readarr[i] = mx25l6436_rems_response[(offs + i) % 2];
 			break;
+		case EMULATE_WINBOND_W25Q128FV:
+			for (i = 0; i < readcnt; i++)
+				readarr[i] = w25q128fv_rems_response[(offs + i) % 2];
+			break;
 		default: /* ignore */
 			break;
 		}
@@ -576,6 +598,14 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 				readarr[1] = 0x20;
 			if (readcnt > 2)
 				readarr[2] = 0x17;
+			break;
+		case EMULATE_WINBOND_W25Q128FV:
+			if (readcnt > 0)
+				readarr[0] = 0xef;
+			if (readcnt > 1)
+				readarr[1] = 0x40;
+			if (readcnt > 2)
+				readarr[2] = 0x18;
 			break;
 		default: /* ignore */
 			break;
@@ -806,6 +836,7 @@ static int dummy_spi_send_command(struct flashctx *flash, unsigned int writecnt,
 	case EMULATE_SST_SST25VF040_REMS:
 	case EMULATE_SST_SST25VF032B:
 	case EMULATE_MACRONIX_MX25L6436:
+	case EMULATE_WINBOND_W25Q128FV:
 		if (emulate_spi_chip_response(writecnt, readcnt, writearr,
 					      readarr)) {
 			msg_pdbg("Invalid command sent to flash chip!\n");
