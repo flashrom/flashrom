@@ -1690,17 +1690,82 @@ static int erase_block(struct flashctx *const flashctx,
 		       const struct walk_info *const info, const erasefn_t erasefn)
 {
 	const unsigned int erase_len = info->erase_end + 1 - info->erase_start;
+	const bool region_unaligned = info->region_start > info->erase_start ||
+				      info->erase_end > info->region_end;
+	uint8_t *backup_contents = NULL, *erased_contents = NULL;
+	int ret = 2;
 
+	/*
+	 * If the region is not erase-block aligned, merge current flash con-
+	 * tents into a new buffer `backup_contents`.
+	 */
+	if (region_unaligned) {
+		backup_contents = malloc(erase_len);
+		erased_contents = malloc(erase_len);
+		if (!backup_contents || !erased_contents) {
+			msg_cerr("Out of memory!\n");
+			ret = 1;
+			goto _free_ret;
+		}
+		memset(backup_contents, 0xff, erase_len);
+		memset(erased_contents, 0xff, erase_len);
+
+		msg_cdbg("R");
+		/* Merge data preceding the current region. */
+		if (info->region_start > info->erase_start) {
+			const chipoff_t start	= info->erase_start;
+			const chipsize_t len	= info->region_start - info->erase_start;
+			if (flashctx->chip->read(flashctx, backup_contents, start, len)) {
+				msg_cerr("Can't read! Aborting.\n");
+				goto _free_ret;
+			}
+		}
+		/* Merge data following the current region. */
+		if (info->erase_end > info->region_end) {
+			const chipoff_t start     = info->region_end + 1;
+			const chipoff_t rel_start = start - info->erase_start; /* within this erase block */
+			const chipsize_t len      = info->erase_end - info->region_end;
+			if (flashctx->chip->read(flashctx, backup_contents + rel_start, start, len)) {
+				msg_cerr("Can't read! Aborting.\n");
+				goto _free_ret;
+			}
+		}
+	}
+
+	ret = 1;
 	all_skipped = false;
 
 	msg_cdbg("E");
 	if (erasefn(flashctx, info->erase_start, erase_len))
-		return 1;
+		goto _free_ret;
 	if (check_erased_range(flashctx, info->erase_start, erase_len)) {
 		msg_cerr("ERASE FAILED!\n");
-		return 1;
+		goto _free_ret;
 	}
-	return 0;
+
+	if (region_unaligned) {
+		unsigned int starthere = 0, lenhere = 0, writecount = 0;
+		/* get_next_write() sets starthere to a new value after the call. */
+		while ((lenhere = get_next_write(erased_contents + starthere, backup_contents + starthere,
+						 erase_len - starthere, &starthere, flashctx->chip->gran))) {
+			if (!writecount++)
+				msg_cdbg("W");
+			/* Needs the partial write function signature. */
+			if (flashctx->chip->write(flashctx, backup_contents + starthere,
+						  info->erase_start + starthere, lenhere))
+				goto _free_ret;
+			starthere += lenhere;
+		}
+	}
+
+	ret = 0;
+
+_free_ret:
+	if (erased_contents != NULL)
+		free(erased_contents);
+	if (backup_contents != NULL)
+		free(backup_contents);
+	return ret;
 }
 
 /**
