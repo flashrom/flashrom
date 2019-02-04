@@ -697,7 +697,7 @@ static int dediprog_spi_send_command(struct flashctx *flash,
 		msg_perr("Invalid readcnt=%i, aborting.\n", readcnt);
 		return 1;
 	}
-	
+
 	unsigned int idx, value;
 	/* New protocol has options and timeout combined as value while the old one used the value field for
 	 * timeout and the index field for options. */

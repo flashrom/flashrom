@@ -200,7 +200,7 @@ int rayer_spi_init(void)
 		lpt_iobase = 0x378;
 	}
 	free(arg);
-	
+
 	msg_pdbg("Using address 0x%x as I/O base for parallel port access.\n",
 		 lpt_iobase);
 

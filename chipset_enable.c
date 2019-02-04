@@ -737,7 +737,7 @@ static int enable_flash_ich_spi(struct pci_dev *dev, enum ich_chipset ich_genera
 	int ret_spi = ich_init_spi(spibar, ich_generation);
 	if (ret_spi == ERROR_FATAL)
 		return ret_spi;
-	
+
 	if (ret_fwh || ret_spi)
 		return ERROR_NONFATAL;
 

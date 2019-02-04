@@ -136,7 +136,7 @@ static int sfdp_fill_flash(struct flashchip *chip, uint8_t *buf, uint16_t len)
 		return 1;
 	}
 	msg_cdbg2("\n");
-	
+
 	/* 1. double word */
 	tmp32 =  ((unsigned int)buf[(4 * 0) + 0]);
 	tmp32 |= ((unsigned int)buf[(4 * 0) + 1]) << 8;

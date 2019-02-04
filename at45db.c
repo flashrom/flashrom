@@ -341,7 +341,7 @@ int spi_erase_at45db_page(struct flashctx *flash, unsigned int addr, unsigned in
 {
 	const unsigned int page_size = flash->chip->page_size;
 	const unsigned int total_size = flash->chip->total_size * 1024;
-	
+
 	if ((addr % page_size) != 0 || (blocklen % page_size) != 0) {
 		msg_cerr("%s: cannot erase partial pages: addr=%u, blocklen=%u\n", __func__, addr, blocklen);
 		return 1;
@@ -361,7 +361,7 @@ int spi_erase_at45db_block(struct flashctx *flash, unsigned int addr, unsigned i
 {
 	const unsigned int page_size = flash->chip->page_size;
 	const unsigned int total_size = flash->chip->total_size * 1024;
-	
+
 	if ((addr % page_size) != 0 || (blocklen % page_size) != 0) { // FIXME: should check blocks not pages
 		msg_cerr("%s: cannot erase partial pages: addr=%u, blocklen=%u\n", __func__, addr, blocklen);
 		return 1;
@@ -381,7 +381,7 @@ int spi_erase_at45db_sector(struct flashctx *flash, unsigned int addr, unsigned 
 {
 	const unsigned int page_size = flash->chip->page_size;
 	const unsigned int total_size = flash->chip->total_size * 1024;
-	
+
 	if ((addr % page_size) != 0 || (blocklen % page_size) != 0) { // FIXME: should check sectors not pages
 		msg_cerr("%s: cannot erase partial pages: addr=%u, blocklen=%u\n", __func__, addr, blocklen);
 		return 1;
@@ -400,7 +400,7 @@ int spi_erase_at45db_sector(struct flashctx *flash, unsigned int addr, unsigned 
 int spi_erase_at45db_chip(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
 {
 	const unsigned int total_size = flash->chip->total_size * 1024;
-	
+
 	if ((addr + blocklen) > total_size) {
 		msg_cerr("%s: tried to erase beyond flash boundary: addr=%u, blocklen=%u, size=%u\n",
 			 __func__, addr, blocklen, total_size);
@@ -532,7 +532,7 @@ int spi_write_at45db(struct flashctx *flash, const uint8_t *buf, unsigned int st
 {
 	const unsigned int page_size = flash->chip->page_size;
 	const unsigned int total_size = flash->chip->total_size;
-	
+
 	if ((start % page_size) != 0 || (len % page_size) != 0) {
 		msg_cerr("%s: cannot write partial pages: start=%u, len=%u\n", __func__, start, len);
 		return 1;
