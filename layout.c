@@ -161,7 +161,6 @@ static int find_romentry(struct flashrom_layout *const l, char *name)
 int process_include_args(struct flashrom_layout *const l)
 {
 	int i;
-	unsigned int found = 0;
 
 	if (num_include_args == 0)
 		return 0;
@@ -180,7 +179,6 @@ int process_include_args(struct flashrom_layout *const l)
 				 include_args[i]);
 			return 1;
 		}
-		found++;
 	}
 
 	msg_ginfo("Using region%s: \"%s\"", num_include_args > 1 ? "s" : "",
