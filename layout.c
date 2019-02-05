@@ -135,24 +135,19 @@ int register_include_arg(char *name)
 	return 0;
 }
 
-/* returns the index of the entry (or a negative value if it is not found) */
+/* returns -1 if an entry is not found, 0 if found. */
 static int find_romentry(struct flashrom_layout *const l, char *name)
 {
-	int i;
-
 	if (l->num_entries == 0)
 		return -1;
 
 	msg_gspew("Looking for region \"%s\"... ", name);
-	for (i = 0; i < l->num_entries; i++) {
-		if (!strcmp(l->entries[i].name, name)) {
-			l->entries[i].included = 1;
-			msg_gspew("found.\n");
-			return i;
-		}
+	if (flashrom_layout_include_region(l, name)) {
+		msg_gspew("not found.\n");
+		return -1;
 	}
-	msg_gspew("not found.\n");
-	return -1;
+	msg_gspew("found.\n");
+	return 0;
 }
 
 /* process -i arguments
