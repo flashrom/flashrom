@@ -391,10 +391,10 @@ __attribute__((format(printf, 2, 3)));
 #define msg_cspew(...)	print(FLASHROM_MSG_SPEW, __VA_ARGS__)	/* chip debug spew  */
 
 /* layout.c */
-int register_include_arg(char *name);
+int register_include_arg(struct layout_include_args **args, char *name);
 int read_romlayout(const char *name);
 int normalize_romentries(const struct flashctx *flash);
-void layout_cleanup(void);
+void layout_cleanup(struct layout_include_args **args);
 
 /* spi.c */
 struct spi_command {

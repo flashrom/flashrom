@@ -26,11 +26,6 @@
 struct romentry entries[MAX_ROMLAYOUT];
 static struct flashrom_layout layout = { entries, 0 };
 
-/* include_args holds the arguments specified at the command line with -i. They must be processed at some point
- * so that desired regions are marked as "included" in the layout. */
-static char *include_args[MAX_ROMLAYOUT];
-static int num_include_args = 0; /* the number of valid include_args. */
-
 struct flashrom_layout *get_global_layout(void)
 {
 	return &layout;
@@ -101,37 +96,34 @@ int read_romlayout(const char *name)
 }
 #endif
 
-/* returns the index of the entry (or a negative value if it is not found) */
-static int find_include_arg(const char *const name)
-{
-	unsigned int i;
-	for (i = 0; i < num_include_args; i++) {
-		if (!strcmp(include_args[i], name))
-			return i;
-	}
-	return -1;
-}
-
 /* register an include argument (-i) for later processing */
-int register_include_arg(char *name)
+int register_include_arg(struct layout_include_args **args, char *name)
 {
-	if (num_include_args >= MAX_ROMLAYOUT) {
-		msg_gerr("Too many regions included (%i).\n", num_include_args);
-		return 1;
-	}
-
+	struct layout_include_args *tmp;
 	if (name == NULL) {
 		msg_gerr("<NULL> is a bad region name.\n");
 		return 1;
 	}
 
-	if (find_include_arg(name) != -1) {
-		msg_gerr("Duplicate region name: \"%s\".\n", name);
+	tmp = *args;
+	while (tmp) {
+		if (!strcmp(tmp->name, name)) {
+			msg_gerr("Duplicate region name: \"%s\".\n", name);
+			return 1;
+		}
+		tmp = tmp->next;
+	}
+
+	tmp = malloc(sizeof(struct layout_include_args));
+	if (tmp == NULL) {
+		msg_gerr("Could not allocate memory");
 		return 1;
 	}
 
-	include_args[num_include_args] = name;
-	num_include_args++;
+	tmp->name = name;
+	tmp->next = *args;
+	*args = tmp;
+
 	return 0;
 }
 
@@ -153,45 +145,54 @@ static int find_romentry(struct flashrom_layout *const l, char *name)
 /* process -i arguments
  * returns 0 to indicate success, >0 to indicate failure
  */
-int process_include_args(struct flashrom_layout *const l)
+int process_include_args(struct flashrom_layout *l, const struct layout_include_args *const args)
 {
-	int i;
+	int found = 0;
+	const struct layout_include_args *tmp;
 
-	if (num_include_args == 0)
+	if (args == NULL)
 		return 0;
 
 	/* User has specified an area, but no layout file is loaded. */
 	if (l->num_entries == 0) {
 		msg_gerr("Region requested (with -i \"%s\"), "
 			 "but no layout data is available.\n",
-			 include_args[0]);
+			 args->name);
 		return 1;
 	}
 
-	for (i = 0; i < num_include_args; i++) {
-		if (find_romentry(l, include_args[i]) < 0) {
+	tmp = args;
+	while (tmp) {
+		if (find_romentry(l, tmp->name) < 0) {
 			msg_gerr("Invalid region specified: \"%s\".\n",
-				 include_args[i]);
+				 tmp->name);
 			return 1;
 		}
+		tmp = tmp->next;
+		found++;
 	}
 
-	msg_ginfo("Using region%s: \"%s\"", num_include_args > 1 ? "s" : "",
-		  include_args[0]);
-	for (i = 1; i < num_include_args; i++)
-		msg_ginfo(", \"%s\"", include_args[i]);
+	msg_ginfo("Using region%s:", found > 1 ? "s" : "");
+	tmp = args;
+	while (tmp) {
+		msg_ginfo(" \"%s\"%s", tmp->name, found > 1 ? "," : "");
+		found--;
+		tmp = tmp->next;
+	}
 	msg_ginfo(".\n");
 	return 0;
 }
 
-void layout_cleanup(void)
+void layout_cleanup(struct layout_include_args **args)
 {
 	int i;
-	for (i = 0; i < num_include_args; i++) {
-		free(include_args[i]);
-		include_args[i] = NULL;
+	struct layout_include_args *tmp;
+
+	while (*args) {
+		tmp = (*args)->next;
+		free(*args);
+		*args = tmp;
 	}
-	num_include_args = 0;
 
 	for (i = 0; i < layout.num_entries; i++) {
 		layout.entries[i].included = 0;

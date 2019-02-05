@@ -151,6 +151,7 @@ int main(int argc, char *argv[])
 #endif /* !STANDALONE */
 	char *tempstr = NULL;
 	char *pparam = NULL;
+	struct layout_include_args *include_args = NULL;
 
 	flashrom_set_log_callback((flashrom_log_callback *)&flashrom_print_cb);
 
@@ -290,7 +291,7 @@ int main(int argc, char *argv[])
 			break;
 		case 'i':
 			tempstr = strdup(optarg);
-			if (register_include_arg(tempstr)) {
+			if (register_include_arg(&include_args, tempstr)) {
 				free(tempstr);
 				cli_classic_abort_usage();
 			}
@@ -452,7 +453,7 @@ int main(int argc, char *argv[])
 		goto out;
 	}
 
-	if (!ifd && !fmap && process_include_args(get_global_layout())) {
+	if (!ifd && !fmap && process_include_args(get_global_layout(), include_args)) {
 		ret = 1;
 		goto out;
 	}
@@ -608,7 +609,7 @@ int main(int argc, char *argv[])
 	if (layoutfile) {
 		layout = get_global_layout();
 	} else if (ifd && (flashrom_layout_read_from_ifd(&layout, fill_flash, NULL, 0) ||
-			   process_include_args(layout))) {
+			   process_include_args(layout, include_args))) {
 		ret = 1;
 		goto out_shutdown;
 	} else if (fmap && fmapfile) {
@@ -633,14 +634,14 @@ int main(int argc, char *argv[])
 		}
 
 		if (flashrom_layout_read_fmap_from_buffer(&layout, fill_flash, fmapfile_buffer, fmapfile_size) ||
-				process_include_args(layout)) {
+		    process_include_args(layout, include_args)) {
 			ret = 1;
 			free(fmapfile_buffer);
 			goto out_shutdown;
 		}
 		free(fmapfile_buffer);
 	} else if (fmap && (flashrom_layout_read_fmap_from_rom(&layout, fill_flash, 0,
-				fill_flash->chip->total_size * 1024) || process_include_args(layout))) {
+		       fill_flash->chip->total_size * 1024) || process_include_args(layout, include_args))) {
 		ret = 1;
 		goto out_shutdown;
 	}
@@ -675,7 +676,7 @@ out:
 	for (i = 0; i < chipcount; i++)
 		free(flashes[i].chip);
 
-	layout_cleanup();
+	layout_cleanup(&include_args);
 	free(filename);
 	free(fmapfile);
 	free(referencefile);
