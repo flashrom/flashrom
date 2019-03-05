@@ -18,8 +18,9 @@ RUN \
 	apt-get -qq update && \
 	apt-get -qq upgrade && \
 	apt-get -qq dist-upgrade && \
-	apt-get -qqy install gcc make git doxygen ccache \
+	apt-get -qqy install gcc make git doxygen ccache pkg-config \
 		libpci-dev libusb-dev libftdi-dev libusb-1.0-0-dev && \
+	{ apt-get -qqy install libjaylink-dev || true; } && \
 	apt-get clean
 
 USER mani

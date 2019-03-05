@@ -3,7 +3,8 @@ FROM manibase
 RUN \
 	useradd -p locked -m mani && \
 	dnf install -q -y git gcc ccache make \
-		pciutils-devel libusb-devel libusbx-devel libftdi-devel && \
+		pciutils-devel libusb-devel libusbx-devel libftdi-devel \
+		libjaylink-devel && \
 	dnf clean -q -y all
 
 USER mani
