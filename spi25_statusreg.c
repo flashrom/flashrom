@@ -237,6 +237,28 @@ int spi_disable_blockprotect_bp4_srwd(struct flashctx *flash)
 	return spi_disable_blockprotect_generic(flash, 0x7C, 1 << 7, 0, 0xFF);
 }
 
+int spi_disable_blockprotect_mx25_global_unprotect(struct flashctx *flash)
+{
+	static const unsigned char cmd[JEDEC_GBULK_OUTSIZE] = { JEDEC_GBULK };
+	int ret;
+
+	ret = spi_write_enable(flash);
+	if (ret) {
+		msg_cerr("Set WREN failed!\n");
+		return -1;
+	}
+
+	/* Send GBULK cmd to device. */
+	ret = spi_send_command(flash, sizeof(cmd), 0, cmd, NULL);
+	if (ret) {
+		msg_cerr("GBULK failed!\n");
+		return -1;
+	}
+
+	/* Disable standard blockprotect */
+	return spi_disable_blockprotect_bp3_srwd(flash);
+}
+
 static void spi_prettyprint_status_register_hex(uint8_t status)
 {
 	msg_cdbg("Chip status register is 0x%02x.\n", status);
@@ -750,4 +772,33 @@ int spi_prettyprint_status_register_sst25vf040b(struct flashctx *flash)
 	spi_prettyprint_status_register_sst25_common(status);
 	msg_cdbg("Resulting block protection : %s\n", bpt[(status & 0x1c) >> 2]);
 	return 0;
+}
+
+/* === Macronix chips with Security Register === */
+
+int spi_read_security_register(struct flashctx *flash)
+{
+	static const unsigned char cmd[JEDEC_RDSCUR_OUTSIZE] = { JEDEC_RDSCUR };
+	unsigned char readarr[JEDEC_RDSCUR_INSIZE];
+	int ret;
+
+	ret = spi_send_command(flash, sizeof(cmd), sizeof(readarr), cmd, readarr);
+	if (ret) {
+		msg_cerr("RDSCUR failed!\n");
+		return 0;
+	}
+
+	return readarr[0];
+}
+
+int spi_prettyprint_security_register_mx25(struct flashctx *flash)
+{
+	int security_register = spi_read_security_register(flash);
+	int wpsel = !!(security_register & (1 << 7));
+
+	msg_cdbg("Chip security register: 0x%02X\n", security_register);
+	msg_cdbg("\tWPSEL is %s\n", wpsel ? "ON" : "OFF");
+
+	/* Print standard blockprotect info */
+	return spi_prettyprint_status_register_bp3_srwd(flash);
 }

@@ -170,6 +170,15 @@
    From ANY mode (3-bytes or 4-bytes) it works with 4-byte address */
 #define JEDEC_BYTE_PROGRAM_4BA	0x12
 
+/* Read Security Register */
+#define JEDEC_RDSCUR		0x2B
+#define JEDEC_RDSCUR_OUTSIZE	0x01
+#define JEDEC_RDSCUR_INSIZE		0x01
+
+/* Do GBULK (gang block unlock) */
+#define JEDEC_GBULK		0x98
+#define JEDEC_GBULK_OUTSIZE	0x01
+
 /* Error codes */
 #define SPI_GENERIC_ERROR	-1
 #define SPI_INVALID_OPCODE	-2
