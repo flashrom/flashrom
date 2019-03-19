@@ -598,6 +598,7 @@ static enum chipbustype enable_flash_ich_report_gcs(
 		break;
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 	case CHIPSET_C620_SERIES_LEWISBURG:
+	case CHIPSET_300_SERIES_CANNON_POINT:
 	case CHIPSET_APOLLO_LAKE:
 		reg_name = "BIOS_SPI_BC";
 		gcs = pci_read_long(dev, 0xdc);
@@ -692,6 +693,7 @@ static enum chipbustype enable_flash_ich_report_gcs(
 	case CHIPSET_9_SERIES_WILDCAT_POINT_LP:
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 	case CHIPSET_C620_SERIES_LEWISBURG:
+	case CHIPSET_300_SERIES_CANNON_POINT:
 		boot_straps = boot_straps_pch8_lp;
 		break;
 	case CHIPSET_APOLLO_LAKE:
@@ -719,6 +721,7 @@ static enum chipbustype enable_flash_ich_report_gcs(
 		break;
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 	case CHIPSET_C620_SERIES_LEWISBURG:
+	case CHIPSET_300_SERIES_CANNON_POINT:
 	case CHIPSET_APOLLO_LAKE:
 		bbs = (gcs >> 6) & 0x1;
 		break;
@@ -945,6 +948,11 @@ static int enable_flash_pch100(struct pci_dev *const dev, const char *const name
 static int enable_flash_c620(struct pci_dev *const dev, const char *const name)
 {
 	return enable_flash_pch100_or_c620(dev, name, 0x1f, 5, CHIPSET_C620_SERIES_LEWISBURG);
+}
+
+static int enable_flash_pch300(struct pci_dev *const dev, const char *const name)
+{
+	return enable_flash_pch100_or_c620(dev, name, 0x1f, 5, CHIPSET_300_SERIES_CANNON_POINT);
 }
 
 static int enable_flash_apl(struct pci_dev *const dev, const char *const name)
@@ -2027,6 +2035,16 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0xa2c9, B_S,    NT,  "Intel", "Z370",				enable_flash_pch100},
 	{0x8086, 0xa2d2, B_S,    NT,  "Intel", "X299",				enable_flash_pch100},
 	{0x8086, 0x5ae8, B_S,    DEP, "Intel", "Apollo Lake",			enable_flash_apl},
+	{0x8086, 0xa303, B_S,    BAD, "Intel", "H310",				enable_flash_pch300},
+	{0x8086, 0xa304, B_S,    BAD, "Intel", "H370",				enable_flash_pch300},
+	{0x8086, 0xa305, B_S,    BAD, "Intel", "Z390",				enable_flash_pch300},
+	{0x8086, 0xa306, B_S,    BAD, "Intel", "Q370",				enable_flash_pch300},
+	{0x8086, 0xa308, B_S,    BAD, "Intel", "B360",				enable_flash_pch300},
+	{0x8086, 0xa309, B_S,    BAD, "Intel", "C246",				enable_flash_pch300},
+	{0x8086, 0xa30a, B_S,    BAD, "Intel", "C242",				enable_flash_pch300},
+	{0x8086, 0xa30c, B_S,    BAD, "Intel", "QM370",				enable_flash_pch300},
+	{0x8086, 0xa30d, B_S,    BAD, "Intel", "HM370",				enable_flash_pch300},
+	{0x8086, 0xa30e, B_S,    BAD, "Intel", "CM246",				enable_flash_pch300},
 #endif
 	{0},
 };
