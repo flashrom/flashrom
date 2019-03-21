@@ -363,7 +363,7 @@ static int spi_write_extended_address_register(struct flashctx *const flash, con
 	return result;
 }
 
-static int spi_set_extended_address(struct flashctx *const flash, const uint8_t addr_high)
+int spi_set_extended_address(struct flashctx *const flash, const uint8_t addr_high)
 {
 	if (flash->address_high_byte != addr_high &&
 	    spi_write_extended_address_register(flash, addr_high))

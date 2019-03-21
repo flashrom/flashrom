@@ -58,6 +58,7 @@ int spi_read_chunked(struct flashctx *flash, uint8_t *buf, unsigned int start, u
 int spi_write_chunked(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len, unsigned int chunksize);
 int spi_enter_4ba(struct flashctx *flash);
 int spi_exit_4ba(struct flashctx *flash);
+int spi_set_extended_address(struct flashctx *, uint8_t addr_high);
 
 
 /* spi25_statusreg.c */

@@ -360,7 +360,7 @@ static int dediprog_set_spi_speed(unsigned int spispeed_idx)
 	return 0;
 }
 
-static void prepare_rw_cmd(
+static int prepare_rw_cmd(
 		struct flashctx *const flash, uint8_t *data_packet, unsigned int count,
 		uint8_t dedi_spi_cmd, unsigned int *value, unsigned int *idx, unsigned int start, int is_read) {
 	/* First 5 bytes are common in both generations. */
@@ -400,9 +400,23 @@ static void prepare_rw_cmd(
 			}
 		}
 	} else {
-		*value = start % 0x10000;
-		*idx = start / 0x10000;
+		if (flash->chip->feature_bits & FEATURE_4BA_EXT_ADDR) {
+			if (spi_set_extended_address(flash, start >> 24))
+				return 1;
+		} else if (start >> 24) {
+			msg_cerr("Can't handle 4-byte address with dediprog.\n");
+			return 1;
+		}
+		/*
+		 * We don't know how the dediprog firmware handles 4-byte
+		 * addresses. So let's not tell it what we are doing and
+		 * only send the lower 3 bytes.
+		 */
+		*value = start & 0xffff;
+		*idx = (start >> 16) & 0xff;
 	}
+
+	return 0;
 }
 
 /* Bulk read interface, will read multiple 512 byte chunks aligned to 512 bytes.
@@ -448,7 +462,8 @@ static int dediprog_spi_bulk_read(struct flashctx *flash, uint8_t *buf, unsigned
 
 	uint8_t data_packet[command_packet_size];
 	unsigned int value, idx;
-	prepare_rw_cmd(flash, data_packet, count, READ_MODE_STD, &value, &idx, start, 1);
+	if (prepare_rw_cmd(flash, data_packet, count, READ_MODE_STD, &value, &idx, start, 1))
+		return 1;
 
 	int ret = dediprog_write(CMD_READ, value, idx, data_packet, sizeof(data_packet));
 	if (ret != sizeof(data_packet)) {
@@ -604,7 +619,8 @@ static int dediprog_spi_bulk_write(struct flashctx *flash, const uint8_t *buf, u
 
 	uint8_t data_packet[command_packet_size];
 	unsigned int value, idx;
-	prepare_rw_cmd(flash, data_packet, count, dedi_spi_cmd, &value, &idx, start, 0);
+	if (prepare_rw_cmd(flash, data_packet, count, dedi_spi_cmd, &value, &idx, start, 0))
+		return 1;
 	int ret = dediprog_write(CMD_WRITE, value, idx, data_packet, sizeof(data_packet));
 	if (ret != sizeof(data_packet)) {
 		msg_perr("Command Write SPI Bulk failed, %s!\n", libusb_error_name(ret));
@@ -1133,6 +1149,9 @@ int dediprog_init(void)
 
 	if (dediprog_standalone_mode())
 		return 1;
+
+	if (dediprog_devicetype == DEV_SF100 && protocol() == PROTOCOL_V1)
+		spi_master_dediprog.features &= ~SPI_MASTER_NO_4BA_MODES;
 
 	if (dediprog_devicetype == DEV_SF600 && protocol() == PROTOCOL_V2)
 		spi_master_dediprog.features |= SPI_MASTER_4BA;
