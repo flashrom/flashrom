@@ -168,7 +168,8 @@ static int spi_disable_blockprotect_generic(struct flashctx *flash, uint8_t bp_m
 	status = spi_read_status_register(flash);
 	if ((status & bp_mask) != 0) {
 		msg_cerr("Block protection could not be disabled!\n");
-		flash->chip->printlock(flash);
+		if (flash->chip->printlock)
+			flash->chip->printlock(flash);
 		return 1;
 	}
 	msg_cdbg("disabled.\n");
