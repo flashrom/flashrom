@@ -690,15 +690,12 @@ $(foreach var, $(filter CONFIG_%, $(.VARIABLES)),\
 		$(eval $(var)=yes)))
 endif
 
-# Disable feature groups
-ifeq ($(CONFIG_ENABLE_LIBUSB0_PROGRAMMERS), no)
-override CONFIG_PICKIT2_SPI = no
-endif
 ifeq ($(CONFIG_ENABLE_LIBUSB1_PROGRAMMERS), no)
 override CONFIG_CH341A_SPI = no
 override CONFIG_DEDIPROG = no
 override CONFIG_DIGILENT_SPI = no
 override CONFIG_DEVELOPERBOX_SPI = no
+override CONFIG_PICKIT2_SPI = no
 endif
 ifeq ($(CONFIG_ENABLE_LIBPCI_PROGRAMMERS), no)
 override CONFIG_INTERNAL = no
@@ -863,7 +860,7 @@ endif
 ifeq ($(CONFIG_PICKIT2_SPI), yes)
 FEATURE_CFLAGS += -D'CONFIG_PICKIT2_SPI=1'
 PROGRAMMER_OBJS += pickit2_spi.o
-NEED_LIBUSB0 += CONFIG_PICKIT2_SPI
+NEED_LIBUSB1 += CONFIG_PICKIT2_SPI
 endif
 
 ifneq ($(NEED_LIBFTDI), )
@@ -1034,11 +1031,6 @@ endif
 
 endif
 
-ifneq ($(NEED_LIBUSB0), )
-CHECK_LIBUSB0 = yes
-FEATURE_CFLAGS += -D'NEED_LIBUSB0=1'
-USBLIBS := $(call debug_shell,[ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ; $(PKG_CONFIG) --libs libusb || printf "%s" "-lusb")
-endif
 
 ifneq ($(NEED_LIBUSB1), )
 CHECK_LIBUSB1 = yes
@@ -1190,23 +1182,6 @@ int main(int argc, char **argv)
 endef
 export PCI_GET_DEV_TEST
 
-define LIBUSB0_TEST
-#include "platform.h"
-#if IS_WINDOWS
-#include <lusb0_usb.h>
-#else
-#include <usb.h>
-#endif
-int main(int argc, char **argv)
-{
-	(void) argc;
-	(void) argv;
-	usb_init();
-	return 0;
-}
-endef
-export LIBUSB0_TEST
-
 define LIBUSB1_TEST
 #include <stddef.h>
 #include <libusb.h>
@@ -1270,28 +1245,6 @@ ifeq ($(CHECK_LIBPCI), yes)
 		echo "mentioned above by specifying make CONFIG_ENABLE_LIBPCI_PROGRAMMERS=no"; \
 		echo "See README for more information."; echo;				\
 		rm -f .test.c .test.o .test$(EXEC_SUFFIX); exit 1; }; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
-	@rm -f .test.c .test.o .test$(EXEC_SUFFIX)
-endif
-ifeq ($(CHECK_LIBUSB0), yes)
-	@printf "Checking for libusb-0.1/libusb-compat headers... " | tee -a $(BUILD_DETAILS_FILE)
-	@echo "$$LIBUSB0_TEST" > .test.c
-	@printf "\nexec: %s\n" "$(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o" >>$(BUILD_DETAILS_FILE)
-	@{ { { { { $(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o >&2 && \
-		echo "found." || { echo "not found."; echo;				\
-		echo "The following features require libusb-0.1/libusb-compat: $(NEED_LIBUSB0)."; \
-		echo "Please install libusb-0.1 headers or libusb-compat headers or disable all features"; \
-		echo "mentioned above by specifying make CONFIG_ENABLE_LIBUSB0_PROGRAMMERS=no"; \
-		echo "See README for more information."; echo;				\
-		rm -f .test.c .test.o; exit 1; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
-	@printf "Checking if libusb-0.1 is usable... " | tee -a $(BUILD_DETAILS_FILE)
-	@printf "\nexec: %s\n" "$(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) $(USBLIBS)" >>$(BUILD_DETAILS_FILE)
-	@{ { { { { $(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) $(USBLIBS) >&2 && \
-		echo "yes." || { echo "no.";						\
-		echo "The following features require libusb-0.1/libusb-compat: $(NEED_LIBUSB0)."; \
-		echo "Please install libusb-0.1 or libusb-compat or disable all features"; \
-		echo "mentioned above by specifying make CONFIG_ENABLE_LIBUSB0_PROGRAMMERS=no"; \
-		echo "See README for more information."; echo;				\
-		rm -f .test.c .test.o .test$(EXEC_SUFFIX); exit 1; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
 	@rm -f .test.c .test.o .test$(EXEC_SUFFIX)
 endif
 ifeq ($(CHECK_LIBUSB1), yes)

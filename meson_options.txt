@@ -26,7 +26,7 @@ option('config_nicintel', type : 'boolean', value : true, description : 'Intel N
 option('config_nicnatsemi', type : 'boolean', value : false, description : 'National Semiconductor NICs')
 option('config_nicrealtek', type : 'boolean', value : true, description : 'Realtek NICs')
 option('config_ogp_spi', type : 'boolean', value : true, description : 'SPI on OGP cards')
-option('config_pickit2_spi', type : 'boolean', value : false, description : 'PICkit2 SPI')
+option('config_pickit2_spi', type : 'boolean', value : true, description : 'PICkit2 SPI')
 option('config_pony_spi', type : 'boolean', value : true, description : 'PonyProg2000 SPI')
 option('config_rayer_spi', type : 'boolean', value : true, description : 'RayeR SPIPGM')
 option('config_satamv', type : 'boolean', value : true, description : 'Marvell SATA controllers')

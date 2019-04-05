@@ -67,7 +67,6 @@ cargs = []
 deps = []
 srcs = []
 
-need_libusb0 = false
 need_raw_access = false
 need_serial = false
 
@@ -91,6 +90,7 @@ else
   config_dediprog = false
   config_digilent_spi = false
   config_developerbox_spi = false
+  config_pickit2_spi = false
 endif
 
 # some programmers require libpci
@@ -242,7 +242,6 @@ endif
 if config_pickit2_spi
   srcs += 'pickit2_spi.c'
   cargs += '-DCONFIG_PICKIT2_SPI=1'
-  need_libusb0 = true
 endif
 if config_pony_spi
   srcs += 'pony_spi.c'
@@ -291,11 +290,6 @@ endif
 if need_serial
   srcs += 'custom_baud.c'
   srcs += 'serial.c'
-endif
-
-# raw deprecated and old USB library
-if need_libusb0
-  deps += dependency('libusb')
 endif
 
 prefix = get_option('prefix')
