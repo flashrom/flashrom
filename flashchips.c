@@ -15631,7 +15631,7 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Winbond",
-		.name		= "W25Q64.FW",
+		.name		= "W25Q64FW",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= WINBOND_NEX_ID,
 		.model_id	= WINBOND_NEX_W25Q64FW,
