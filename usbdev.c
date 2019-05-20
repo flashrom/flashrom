@@ -54,7 +54,7 @@ static struct libusb_device_handle *get_by_vid_pid_filter(struct libusb_context 
 			continue;
 		}
 
-		if ((desc.idVendor != vid) && (desc.idProduct != pid))
+		if ((desc.idVendor != vid) || (desc.idProduct != pid))
 			continue;
 
 		msg_pdbg("Found USB device %04"PRIx16":%04"PRIx16" at address %d-%d.\n",
