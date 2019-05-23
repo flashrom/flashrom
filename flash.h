@@ -360,6 +360,7 @@ int open_logfile(const char * const filename);
 int close_logfile(void);
 void start_logging(void);
 #endif
+bool skipsize;
 int flashrom_print_cb(enum flashrom_log_level level, const char *fmt, va_list ap);
 /* Let gcc and clang check for correct printf-style format strings. */
 int print(enum flashrom_log_level level, const char *fmt, ...)
