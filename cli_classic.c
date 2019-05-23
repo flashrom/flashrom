@@ -51,6 +51,7 @@ static void cli_classic_usage(const char *name)
 	       " -V | --verbose                     more verbose output\n"
 	       " -c | --chip <chipname>             probe only for specified flash chip\n"
 	       " -f | --force                       force specific operations (see man page)\n"
+               " -S | --skip-size                   proceed with write even if flash is bigger than image\n"
 	       " -n | --noverify                    don't auto-verify\n"
 	       " -N | --noverify-all                verify included regions only (cf. -i)\n"
 	       " -l | --layout <layoutfile>         read ROM layout from <layoutfile>\n"
@@ -116,7 +117,7 @@ int main(int argc, char *argv[])
 	};
 	int ret = 0;
 
-	static const char optstring[] = "r:Rw:v:nNVEfc:l:i:p:Lzho:";
+	static const char optstring[] = "r:Rw:v:nNVEfSc:l:i:p:Lzho:";
 	static const struct option long_options[] = {
 		{"read",		1, NULL, 'r'},
 		{"write",		1, NULL, 'w'},
@@ -127,6 +128,7 @@ int main(int argc, char *argv[])
 		{"chip",		1, NULL, 'c'},
 		{"verbose",		0, NULL, 'V'},
 		{"force",		0, NULL, 'f'},
+                {"skip-size",		0, NULL, 'S'},
 		{"layout",		1, NULL, 'l'},
 		{"ifd",			0, NULL, OPTION_IFD},
 		{"fmap",		0, NULL, OPTION_FMAP},
@@ -227,6 +229,9 @@ int main(int argc, char *argv[])
 			break;
 		case 'f':
 			force = 1;
+			break;
+                case 'S':
+                        skipsize = 1;
 			break;
 		case 'l':
 			if (layoutfile) {
