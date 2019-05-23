@@ -2722,7 +2722,6 @@ int do_verify(struct flashctx *const flash, const char *const filename)
 
 	uint8_t *const newcontents = malloc(flash_size);
 	if (!newcontents) {
-
         	msg_gerr("Out of memory!\n");
 		goto _free_ret;
 	}
