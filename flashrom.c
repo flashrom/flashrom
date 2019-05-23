@@ -1386,18 +1386,28 @@ int read_buf_from_file(unsigned char *buf, unsigned long size,
 		ret = 1;
 		goto out;
 	}
-	if (image_stat.st_size != size) {
+	if (image_stat.st_size != size && !skipsize) {
 		msg_gerr("Error: Image size (%jd B) doesn't match the flash chip's size (%lu B)!\n",
 			 (intmax_t)image_stat.st_size, size);
 		ret = 1;
 		goto out;
 	}
+        if (image_stat.st_size <= size && skipsize) {
+		msg_cerr("WARNING: Image size (%jd B) is smaller than flash chip's size (%lu B), forced to proceed.\n",
+			 (intmax_t)image_stat.st_size, size);
+		ret = 0;
+//goto out;
+	}
 
 	unsigned long numbytes = fread(buf, 1, size, image);
-	if (numbytes != size) {
+	if (numbytes != size && !skipsize) {
 		msg_gerr("Error: Failed to read complete file. Got %ld bytes, "
 			 "wanted %ld!\n", numbytes, size);
 		ret = 1;
+	}
+        if (numbytes <= size && skipsize) {
+		msg_cerr("WARNING: Image size (%ld B) is smaller than flash chip's size (%ld!), forced to proceed.\n", numbytes, size);
+		ret = 0;
 	}
 out:
 	(void)fclose(image);
@@ -2712,7 +2722,8 @@ int do_verify(struct flashctx *const flash, const char *const filename)
 
 	uint8_t *const newcontents = malloc(flash_size);
 	if (!newcontents) {
-		msg_gerr("Out of memory!\n");
+
+        	msg_gerr("Out of memory!\n");
 		goto _free_ret;
 	}
 
