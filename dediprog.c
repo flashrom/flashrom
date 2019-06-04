@@ -1153,7 +1153,7 @@ int dediprog_init(void)
 	if (dediprog_devicetype == DEV_SF100 && protocol() == PROTOCOL_V1)
 		spi_master_dediprog.features &= ~SPI_MASTER_NO_4BA_MODES;
 
-	if (dediprog_devicetype == DEV_SF600 && protocol() == PROTOCOL_V2)
+	if (protocol() == PROTOCOL_V2)
 		spi_master_dediprog.features |= SPI_MASTER_4BA;
 
 	if (register_spi_master(&spi_master_dediprog) || dediprog_set_leds(LED_NONE))
