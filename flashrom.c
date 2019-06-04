@@ -1279,8 +1279,12 @@ int probe_flash(struct registered_master *mst, int startchip, struct flashctx *f
 		/* We handle a forced match like a real match, we just avoid probing. Note that probe_flash()
 		 * is only called with force=1 after normal probing failed.
 		 */
-		if (force)
+		if (force == 2)
 			break;
+
+		if (force == 1 && chip->feature_bits & FEATURE_IDENTITY_MISSING) {
+            flash->flags.force = force;
+		}
 
 		if (flash->chip->probe(flash) != 1)
 			goto notfound;
@@ -1341,7 +1345,7 @@ notfound:
 	strcpy(fallback->entry.name, "complete flash");
 
 	tmp = flashbuses_to_text(flash->chip->bustype);
-	msg_cinfo("%s %s flash chip \"%s\" (%d kB, %s) ", force ? "Assuming" : "Found",
+	msg_cinfo("%s %s flash chip \"%s\" (%d kB, %s) ", force == 2 ? "Assuming" : "Found",
 		  flash->chip->vendor, flash->chip->name, flash->chip->total_size, tmp);
 	free(tmp);
 #if CONFIG_INTERNAL == 1
@@ -1679,7 +1683,7 @@ static int walk_by_layout(struct flashctx *const flashctx, struct walk_info *con
 	const struct flashrom_layout *const layout = get_layout(flashctx);
 
 	all_skipped = true;
-	msg_cinfo("Erasing and writing flash chip... ");
+	msg_cinfo("Erasing and writing flash chip...\n");
 
 	size_t i;
 	for (i = 0; i < layout->num_entries; ++i) {
@@ -2264,7 +2268,7 @@ int chip_safety_check(const struct flashctx *flash, int force, int read_it, int 
 				return 1;
 			msg_cerr("Continuing anyway.\n");
 		}
-		if (!chip->read) {
+		if (chip->tested.read == OK && !chip->read) {
 			msg_cerr("flashrom has no read function for this "
 				 "flash chip.\n");
 			return 1;
@@ -2282,7 +2286,7 @@ int chip_safety_check(const struct flashctx *flash, int force, int read_it, int 
 				return 1;
 			msg_cerr("Continuing anyway.\n");
 		}
-		if(count_usable_erasers(flash) == 0) {
+		if(chip->tested.erase == OK && count_usable_erasers(flash) == 0) {
 			msg_cerr("flashrom has no erase function for this "
 				 "flash chip.\n");
 			return 1;
@@ -2299,7 +2303,7 @@ int chip_safety_check(const struct flashctx *flash, int force, int read_it, int 
 				return 1;
 			msg_cerr("Continuing anyway.\n");
 		}
-		if (!chip->write) {
+		if (chip->tested.write == OK && !chip->write) {
 			msg_cerr("flashrom has no write function for this "
 				 "flash chip.\n");
 			return 1;

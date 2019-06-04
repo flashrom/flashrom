@@ -34,6 +34,7 @@ int probe_spi_rems(struct flashctx *flash);
 int probe_spi_res1(struct flashctx *flash);
 int probe_spi_res2(struct flashctx *flash);
 int probe_spi_res3(struct flashctx *flash);
+int probe_spi_st_95(struct flashctx *flash);
 int probe_spi_at25f(struct flashctx *flash);
 int spi_write_enable(struct flashctx *flash);
 int spi_write_disable(struct flashctx *flash);
@@ -51,7 +52,9 @@ int spi_block_erase_d7(struct flashctx *flash, unsigned int addr, unsigned int b
 int spi_block_erase_d8(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 int spi_block_erase_db(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 int spi_block_erase_dc(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
+int spi_block_erase_emulation(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 erasefunc_t *spi_get_erasefn_from_opcode(uint8_t opcode);
+int spi_nbyte_program(struct flashctx *flash, unsigned int addr, const uint8_t *bytes, unsigned int len);
 int spi_chip_write_1(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 int spi_nbyte_read(struct flashctx *flash, unsigned int addr, uint8_t *bytes, unsigned int len);
 int spi_read_chunked(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len, unsigned int chunksize);

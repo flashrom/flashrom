@@ -21,12 +21,36 @@
  */
 
 #define JEDEC_MAX_ADDR_LEN	0x04
+#define JEDEC_SHORT_ADDR_LEN	0x03
 
 /* Read Electronic ID */
 #define JEDEC_RDID		0x9f
 #define JEDEC_RDID_OUTSIZE	0x01
 /* INSIZE may be 0x04 for some chips*/
 #define JEDEC_RDID_INSIZE	0x03
+
+/* Some ST M95X model  */
+#define ST_M95_RDID		        0x83
+#define ST_M95_RDID_OUTSIZE	    0x03
+#define ST_M95_RDID_INSIZE  	0x03
+#define ST_M95_RDLS		        0x83
+#define ST_M95_RDLS_OUTSIZE	    0x03
+#define ST_M95_RDLS_INSIZE  	0x01
+#define ST_M95_RDSR		        0x05
+#define ST_M95_RDSR_OUTSIZE	    0x01
+#define ST_M95_RDSR_INSIZE	    0x01
+#define ST_M95_READ		        0x03
+#define ST_M95_READ_OUTSIZE 	0x03
+#define ST_M95_READ_INSIZE  	0x03
+#define ST_M95_WREN 	        0x06
+#define ST_M95_WREN_OUTSIZE     0x01
+#define ST_M95_WREN_INSIZE      0x00
+#define ST_M95_WRITE	        0x02
+#define ST_M95_WRITE_OUTSIZE	0x06
+#define ST_M95_WRITE_INSIZE 	0x03
+#define ST_M95_WRID             0x82
+#define ST_M95_WRID_OUTSIZE 	0x06
+#define ST_M95_WRID_INSIZE  	0x00
 
 /* Some Atmel AT25F* models have bit 3 as don't care bit in commands */
 #define AT25F_RDID		0x15	/* 0x15 or 0x1d */

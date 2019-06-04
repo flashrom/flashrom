@@ -21,6 +21,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include "flash.h"
 #include "flashchips.h"
 #include "chipdrivers.h"
@@ -277,6 +278,31 @@ int probe_spi_res3(struct flashctx *flash)
 	return 1;
 }
 
+/* Only used for some stm95080 and higher chip. */
+int probe_spi_st_95(struct flashctx *flash)
+{
+//
+    static const unsigned char cmdJRdid[JEDEC_RDID_OUTSIZE] = { JEDEC_RDID};
+    unsigned char readJRdid[JEDEC_RDID_INSIZE];
+    uint32_t manufacture_id;
+    uint32_t model_id;
+
+    spi_send_command(flash, sizeof(cmdJRdid), sizeof(readJRdid), cmdJRdid, readJRdid);
+
+    manufacture_id = readJRdid[0];
+    model_id = readJRdid[2];
+
+    msg_ginfo("RDID[%s: manID 0x%02x, modID 0x%02x, L 0x%02x, M 0x%02x, H 0x%02x]\n", __func__, flash->chip->manufacture_id,  flash->chip->model_id, readJRdid[0], readJRdid[1], readJRdid[2]);
+
+    if (manufacture_id == flash->chip->manufacture_id && model_id == flash->chip->model_id)
+        return 1;
+
+    if (flash->flags.force)
+        return 1;
+
+    return 0;
+}
+
 /* Only used for some Atmel chips. */
 int probe_spi_at25f(struct flashctx *flash)
 {
@@ -394,10 +420,16 @@ static int spi_prepare_address(struct flashctx *const flash, uint8_t cmd_buf[],
 				 "with this chip/programmer combination.\n", cmd_buf[0]);
 			return -1;
 		}
-		cmd_buf[1] = (addr >> 16) & 0xff;
-		cmd_buf[2] = (addr >>  8) & 0xff;
-		cmd_buf[3] = (addr >>  0) & 0xff;
-		return 3;
+		if (flash->chip->feature_bits & FEATURE_SHORT_ADDR_LEN) {
+            cmd_buf[1] = (addr >> 8) & 0xff;
+            cmd_buf[2] = (addr >> 0) & 0xff;
+            return 2;
+        } else  {
+            cmd_buf[1] = (addr >> 16) & 0xff;
+            cmd_buf[2] = (addr >> 8) & 0xff;
+            cmd_buf[3] = (addr >> 0) & 0xff;
+            return 3;
+        }
 	}
 }
 
@@ -420,7 +452,16 @@ static int spi_write_cmd(struct flashctx *const flash, const uint8_t op,
 			 const uint8_t *const out_bytes, const size_t out_len,
 			 const unsigned int poll_delay)
 {
-	uint8_t cmd[1 + JEDEC_MAX_ADDR_LEN + 256];
+    const unsigned int cmd_len = 1 + (flash->chip->feature_bits & FEATURE_SHORT_ADDR_LEN ? JEDEC_SHORT_ADDR_LEN : JEDEC_MAX_ADDR_LEN) + 256;
+    uint8_t *cmd = NULL;
+
+    cmd = (uint8_t*) malloc(cmd_len * sizeof(uint8_t));
+    if (!cmd) {
+        msg_cerr("Out of memory!\n");
+        return 1;
+    }
+   memset(cmd,0x00, cmd_len * sizeof(uint8_t));
+
 	struct spi_command cmds[] = {
 	{
 		.readarr = 0,
@@ -438,7 +479,7 @@ static int spi_write_cmd(struct flashctx *const flash, const uint8_t op,
 	if (addr_len < 0)
 		return 1;
 
-	if (1 + addr_len + out_len > sizeof(cmd)) {
+	if (1 + addr_len + out_len > cmd_len) {
 		msg_cerr("%s called for too long a write\n", __func__);
 		return 1;
 	}
@@ -451,6 +492,7 @@ static int spi_write_cmd(struct flashctx *const flash, const uint8_t op,
 		msg_cerr("%s failed during command execution at address 0x%x\n", __func__, addr);
 
 	const int status = spi_poll_wip(flash, poll_delay);
+    free(cmd);
 
 	return result ? result : status;
 }
@@ -592,6 +634,33 @@ int spi_block_erase_dc(struct flashctx *flash, unsigned int addr, unsigned int b
 	return spi_write_cmd(flash, 0xdc, true, addr, NULL, 0, 100 * 1000);
 }
 
+/* some chip does't have erase function */
+int spi_block_erase_emulation(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
+{
+    unsigned int i;
+    const unsigned int erase_len = flash->chip->page_size;
+    uint8_t *erased_contents = NULL;
+    int result = 0;
+
+    erased_contents = (uint8_t*) malloc(erase_len * sizeof(uint8_t));
+    if (!erased_contents) {
+        msg_cerr("Out of memory!\n");
+        return 1;
+    }
+    memset(erased_contents, ERASED_VALUE(flash), erase_len * sizeof(uint8_t));
+    msg_cinfo("\n");
+    for (i = addr; i < blocklen; i+=erase_len) {
+        if (spi_nbyte_program(flash, i, erased_contents, erase_len) ) {
+            result = 1;
+            break;
+        }
+     }
+
+     free(erased_contents);
+
+    return result;
+}
+
 erasefunc_t *spi_get_erasefn_from_opcode(uint8_t opcode)
 {
 	switch(opcode){
@@ -634,7 +703,7 @@ erasefunc_t *spi_get_erasefn_from_opcode(uint8_t opcode)
 	}
 }
 
-static int spi_nbyte_program(struct flashctx *flash, unsigned int addr, const uint8_t *bytes, unsigned int len)
+int spi_nbyte_program(struct flashctx *flash, unsigned int addr, const uint8_t *bytes, unsigned int len)
 {
 	const bool native_4ba = flash->chip->feature_bits & FEATURE_4BA_WRITE && spi_master_4ba(flash);
 	const uint8_t op = native_4ba ? JEDEC_BYTE_PROGRAM_4BA : JEDEC_BYTE_PROGRAM;
@@ -645,14 +714,28 @@ int spi_nbyte_read(struct flashctx *flash, unsigned int address, uint8_t *bytes,
 		   unsigned int len)
 {
 	const bool native_4ba =	flash->chip->feature_bits & FEATURE_4BA_READ && spi_master_4ba(flash);
-	uint8_t cmd[1 + JEDEC_MAX_ADDR_LEN] = { native_4ba ? JEDEC_READ_4BA : JEDEC_READ, };
+    const unsigned int cmd_len = 1 + (flash->chip->feature_bits & FEATURE_SHORT_ADDR_LEN ? JEDEC_SHORT_ADDR_LEN : JEDEC_MAX_ADDR_LEN);
+    int result;
+    uint8_t *cmd = NULL;
+
+    cmd = (uint8_t*) malloc(cmd_len * sizeof(uint8_t));
+    if (!cmd) {
+        msg_cerr("Out of memory!\n");
+        return 1;
+    }
+    memset(cmd, 0x00, cmd_len * sizeof(uint8_t));
+
+	cmd[0] =  native_4ba ? JEDEC_READ_4BA : JEDEC_READ;
 
 	const int addr_len = spi_prepare_address(flash, cmd, native_4ba, address);
 	if (addr_len < 0)
 		return 1;
 
 	/* Send Read */
-	return spi_send_command(flash, 1 + addr_len, len, cmd, bytes);
+    result = spi_send_command(flash, 1 + addr_len, len, cmd, bytes);
+    free(cmd);
+
+	return result;
 }
 
 /*

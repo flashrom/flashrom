@@ -15151,6 +15151,188 @@ const struct flashchip flashchips[] = {
 		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
 	},
 
+//    {
+//            .vendor		= "ST",
+//            .name		= "M95040",
+//            .bustype	= BUS_SPI,
+//            .manufacture_id	= ST_ID,
+//            .model_id	= ST_M95040,
+//            .total_size	= 512,
+//            .page_size	= 16,
+//            .feature_bits	= FEATURE_WRSR_WREN | FEATURE_SHORT_ADDR_LEN| FEATURE_CAPACITY_IN_BYTE | FEATURE_IDENTITY_MISSING,
+//            .tested		= TEST_UNTESTED,/* {.probe = BAD, .read = OK, .erase = OK, .write = OK },*/
+//            .probe		= probe_spi_st_95,
+//            .probe_timing	= TIMING_ZERO,
+//            .block_erasers	=
+//                    {
+//                            {
+//                                    .eraseblocks = { { 512 * 1, 1 } },
+//                                    .block_erase = spi_block_erase_emulation,
+//                            }
+//                    },
+//            .printlock	= spi_prettyprint_status_register_bp1_srwd,
+//            .unlock		= spi_disable_blockprotect_bp1_srwd,
+//            .write		= spi_chip_write_1,
+//            .read		= spi_chip_read,
+//            .voltage	= {2500, 5500},
+//    },
+
+    {
+            .vendor		= "ST",
+            .name		= "M95080",
+            .bustype	= BUS_SPI,
+            .manufacture_id	= ST_ID,
+            .model_id	= ST_M95080,
+            .total_size	= 1,
+            .page_size	= 32,
+            .feature_bits	= FEATURE_WRSR_WREN | FEATURE_SHORT_ADDR_LEN | FEATURE_IDENTITY_MISSING,
+            .tested		= {.probe = OK, .read = OK, .erase = OK, .write = OK },
+            .probe		= probe_spi_st_95,
+            .probe_timing	= TIMING_ZERO,
+            .block_erasers	=
+                    {
+                            {
+                                    .eraseblocks = { { 1 * 1024, 1 } },
+                                    .block_erase = spi_block_erase_emulation,
+                            }
+                    },
+            .printlock	= spi_prettyprint_status_register_bp1_srwd,
+            .unlock		= spi_disable_blockprotect_bp1_srwd,
+            .write		= spi_chip_write_1,
+            .read		= spi_chip_read,
+            .voltage	= {2500, 5500},
+    },
+
+    {
+            .vendor		= "ST",
+            .name		= "M95160",
+            .bustype	= BUS_SPI,
+            .manufacture_id	= ST_ID,
+            .model_id	= ST_M95160,
+            .total_size	= 2,
+            .page_size	= 32,
+            .feature_bits	= FEATURE_WRSR_WREN | FEATURE_SHORT_ADDR_LEN | FEATURE_IDENTITY_MISSING,
+            .tested		= {.probe = OK, .read = OK, .erase = OK, .write = OK },
+            .probe		= probe_spi_st_95,
+            .probe_timing	= TIMING_ZERO,
+            .block_erasers	=
+                    {
+                            {
+                                    .eraseblocks = { { 2 * 1024, 1 } },
+                                    .block_erase = spi_block_erase_emulation,
+                            }
+                    },
+            .printlock	= spi_prettyprint_status_register_bp1_srwd,
+            .unlock		= spi_disable_blockprotect_bp1_srwd,
+            .write		= spi_chip_write_1,
+            .read		= spi_chip_read,
+            .voltage	= {2500, 5500},
+    },
+
+    {
+            .vendor		= "ST",
+            .name		= "M95320",
+            .bustype	= BUS_SPI,
+            .manufacture_id	= ST_ID,
+            .model_id	= ST_M95320,
+            .total_size	= 4,
+            .page_size	= 32,
+            .feature_bits	= FEATURE_WRSR_WREN | FEATURE_SHORT_ADDR_LEN | FEATURE_IDENTITY_MISSING,
+            .tested		= {.probe = OK, .read = OK, .erase = OK, .write = OK },
+            .probe		= probe_spi_st_95,
+            .probe_timing	= TIMING_ZERO,
+            .block_erasers	=
+                    {
+                            {
+                                    .eraseblocks = { { 4 * 1024, 1 } },
+                                    .block_erase = spi_block_erase_emulation,
+                            }
+                    },
+            .printlock	= spi_prettyprint_status_register_bp1_srwd,
+            .unlock		= spi_disable_blockprotect_bp1_srwd,
+            .write		= spi_chip_write_1,
+            .read		= spi_chip_read,
+            .voltage	= {2500, 5500},
+    },
+
+    {
+            .vendor		= "ST",
+            .name		= "M95640",
+            .bustype	= BUS_SPI,
+            .manufacture_id	= ST_ID,
+            .model_id	= ST_M95640,
+            .total_size	= 8,
+            .page_size	= 32,
+            .feature_bits	= FEATURE_WRSR_WREN | FEATURE_SHORT_ADDR_LEN | FEATURE_IDENTITY_MISSING,
+            .tested		= {.probe = OK, .read = OK, .erase = OK, .write = OK },
+            .probe		= probe_spi_st_95,
+            .probe_timing	= TIMING_ZERO,
+            .block_erasers	=
+                    {
+                            {
+                                    .eraseblocks = { { 8 * 1024, 1 } },
+                                    .block_erase = spi_block_erase_emulation,
+                            }
+                    },
+            .printlock	= spi_prettyprint_status_register_bp1_srwd,
+            .unlock		= spi_disable_blockprotect_bp1_srwd,
+            .write		= spi_chip_write_1,
+            .read		= spi_chip_read,
+            .voltage	= {2500, 5500},
+    },
+
+    {
+            .vendor		= "ST",
+            .name		= "M95128",
+            .bustype	= BUS_SPI,
+            .manufacture_id	= ST_ID,
+            .model_id	= ST_M95128,
+            .total_size	= 16,
+            .page_size	= 64,
+            .feature_bits	= FEATURE_WRSR_WREN | FEATURE_SHORT_ADDR_LEN | FEATURE_IDENTITY_MISSING,
+            .tested		= {.probe = OK, .read = OK, .erase = OK, .write = OK },
+            .probe		= probe_spi_st_95,
+            .probe_timing	= TIMING_ZERO,
+            .block_erasers	=
+                    {
+                            {
+                                    .eraseblocks = { { 16 * 1024, 1 } },
+                                    .block_erase = spi_block_erase_emulation,
+                            }
+                    },
+            .printlock	= spi_prettyprint_status_register_bp1_srwd,
+            .unlock		= spi_disable_blockprotect_bp1_srwd,
+            .write		= spi_chip_write_1,
+            .read		= spi_chip_read,
+            .voltage	= {2500, 5500},
+    },
+
+    {
+            .vendor		= "ST",
+            .name		= "M95256",
+            .bustype	= BUS_SPI,
+            .manufacture_id	= ST_ID,
+            .model_id	= ST_M95256,
+            .total_size	= 32,
+            .page_size	= 64,
+            .feature_bits	= FEATURE_WRSR_WREN | FEATURE_SHORT_ADDR_LEN | FEATURE_IDENTITY_MISSING,
+            .tested		= {.probe = OK, .read = OK, .erase = OK, .write = OK },
+            .probe		= probe_spi_st_95,
+            .probe_timing	= TIMING_ZERO,
+            .block_erasers	=
+                    {
+                            {
+                                    .eraseblocks = { { 32 * 1024, 1 } },
+                                    .block_erase = spi_block_erase_emulation,
+                            }
+                    },
+            .printlock	= spi_prettyprint_status_register_bp1_srwd,
+            .unlock		= spi_disable_blockprotect_bp1_srwd,
+            .write		= spi_chip_write_1,
+            .read		= spi_chip_read,
+            .voltage	= {2500, 5500},
+    },
+
 	{
 		.vendor		= "SyncMOS/MoselVitelic",
 		.name		= "{F,S,V}29C51001B",

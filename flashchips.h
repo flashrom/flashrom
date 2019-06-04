@@ -852,6 +852,16 @@
 #define ST_M58WR032KT		0x8814
 #define ST_M58WR064KB		0x8811
 #define ST_M58WR064KT		0x8810
+/* 00h Memory Density code ST_ID*/
+/* 01h SPI Family code     0x00*/
+/* 02h Memory Density code ST_M95XXX */
+#define ST_M95040           0x0009
+#define ST_M95080           0x000A
+#define ST_M95160           0x000B
+#define ST_M95320           0x000C
+#define ST_M95640           0x000D
+#define ST_M95128           0x000E
+#define ST_M95256           0x000F
 #define ST_MT28GU01G___1	0x88B0
 #define ST_MT28GU01G___2	0x88B1
 #define ST_MT28GU256___1	0x8901
