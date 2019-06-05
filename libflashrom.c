@@ -104,7 +104,142 @@ int print(const enum flashrom_log_level level, const char *const fmt, ...)
  * @{
  */
 
-/* TBD */
+/**
+ * @brief Returns flashrom version
+ * @return Flashrom version
+ */
+const char *flashrom_version_info(void)
+{
+	return flashrom_version;
+}
+
+/**
+ * @brief Returns list of supported programmers
+ * @return List of supported programmers
+ */
+const char **flashrom_supported_programmers(void)
+{
+	enum programmer p = 0;
+	const char **supported_programmers = NULL;
+	supported_programmers = malloc((PROGRAMMER_INVALID + 1) * sizeof(char*));
+
+	if (supported_programmers != NULL) {
+		for (; p < PROGRAMMER_INVALID; ++p) {
+			supported_programmers[p] = programmer_table[p].name;
+		}
+	} else {
+		msg_gerr("Memory allocation error!\n");
+	}
+
+	return supported_programmers;
+}
+
+/**
+ * @brief Returns list of supported flash chips
+ * @return List of supported flash chips
+ */
+flashrom_flashchip_info *flashrom_supported_flash_chips(void)
+{
+	int i = 0;
+	flashrom_flashchip_info *supported_flashchips = malloc(flashchips_size * sizeof(flashrom_flashchip_info));
+
+	if (supported_flashchips != NULL) {
+		for (; i < flashchips_size; ++i) {
+			supported_flashchips[i].vendor = flashchips[i].vendor;
+			supported_flashchips[i].name = flashchips[i].name;
+			supported_flashchips[i].tested.erase = (flashrom_test_state) flashchips[i].tested.erase;
+			supported_flashchips[i].tested.probe =  (flashrom_test_state) flashchips[i].tested.probe;
+			supported_flashchips[i].tested.read = (flashrom_test_state) flashchips[i].tested.read;
+			supported_flashchips[i].tested.write = (flashrom_test_state) flashchips[i].tested.write;
+			supported_flashchips[i].total_size = flashchips[i].total_size;
+		}
+	} else {
+		msg_gerr("Memory allocation error!\n");
+	}
+
+	return supported_flashchips;
+}
+
+/**
+ * @brief Returns list of supported mainboards
+ * @return List of supported mainboards
+ */
+flashrom_board_info *flashrom_supported_boards(void)
+{
+	int boards_known_size = 0;
+	int i = 0;
+	const struct board_info *binfo = boards_known;
+
+	while ((binfo++)->vendor)
+		++boards_known_size;
+	binfo = boards_known;
+	/* add place for {0} */
+	++boards_known_size;
+
+	flashrom_board_info *supported_boards = malloc(boards_known_size * sizeof(flashrom_board_info));
+
+	if (supported_boards != NULL) {
+		for (; i < boards_known_size; ++i) {
+			supported_boards[i].vendor = binfo[i].vendor;
+			supported_boards[i].name = binfo[i].name;
+			supported_boards[i].working = binfo[i].working;
+		}
+	} else {
+		msg_gerr("Memory allocation error!\n");
+	}
+
+	return supported_boards;
+}
+
+/**
+ * @brief Returns list of supported chipsets
+ * @return List of supported chipsets
+ */
+flashrom_chipset_info *flashrom_supported_chipsets(void)
+{
+	int chipset_enables_size = 0;
+	int i = 0;
+	const struct penable *chipset = chipset_enables;
+
+	while ((chipset++)->vendor_name)
+		++chipset_enables_size;
+	chipset = chipset_enables;
+	/* add place for {0}*/
+	++chipset_enables_size;
+
+	flashrom_chipset_info *supported_chipsets = malloc(chipset_enables_size * sizeof(flashrom_chipset_info));
+
+	if (supported_chipsets != NULL) {
+		for (; i < chipset_enables_size; ++i) {
+			supported_chipsets[i].vendor = chipset[i].vendor_name;
+			supported_chipsets[i].chipset = chipset[i].device_name;
+			supported_chipsets[i].vendor_id = chipset[i].vendor_id;
+			supported_chipsets[i].chipset_id = chipset[i].device_id;
+			supported_chipsets[i].status = chipset[i].status;
+	  }
+	} else {
+		msg_gerr("Memory allocation error!\n");
+	}
+
+	return supported_chipsets;
+}
+
+/**
+ * @brief Frees memory allocated by libflashrom API
+ * @param Pointer to block of memory which should be freed
+ * @return 0 on success
+ *         1 on null pointer error
+ */
+int flashrom_data_free(void *const p)
+{
+	if (!p) {
+		msg_gerr("flashrom_data_free - Null pointer!\n");
+		return 1;
+	} else {
+		free(p);
+		return 0;
+	}
+}
 
 /** @} */ /* end flashrom-query */
 

@@ -1,7 +1,11 @@
 LIBFLASHROM_1.0 {
   global:
+    flashrom_board_info;
+    flashrom_chipset_info;
+    flashrom_data_free;
     flashrom_flag_get;
     flashrom_flag_set;
+    flashrom_flashchip_info;
     flashrom_flash_erase;
     flashrom_flash_getsize;
     flashrom_flash_probe;
@@ -20,5 +24,8 @@ LIBFLASHROM_1.0 {
     flashrom_programmer_shutdown;
     flashrom_set_log_callback;
     flashrom_shutdown;
+    flashrom_supported_programmers;
+    flashrom_system_info;
+    flashrom_version_info;
   local: *;
 };

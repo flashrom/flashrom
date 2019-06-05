@@ -37,6 +37,50 @@ enum flashrom_log_level {
 typedef int(flashrom_log_callback)(enum flashrom_log_level, const char *format, va_list);
 void flashrom_set_log_callback(flashrom_log_callback *);
 
+/** @ingroup flashrom-query */
+typedef enum {
+	FLASHROM_TESTED_OK  = 0,
+	FLASHROM_TESTED_NT  = 1,
+	FLASHROM_TESTED_BAD = 2,
+	FLASHROM_TESTED_DEP = 3,
+	FLASHROM_TESTED_NA  = 4,
+} flashrom_test_state;
+
+typedef struct flashrom_flashchip_info {
+	const char *vendor;
+	const char *name;
+	unsigned int total_size;
+	struct flashrom_tested {
+		flashrom_test_state probe;
+		flashrom_test_state read;
+		flashrom_test_state erase;
+		flashrom_test_state write;
+	} tested;
+} flashrom_flashchip_info;
+
+typedef struct flashrom_board_info {
+	const char *vendor;
+	const char *name;
+	flashrom_test_state working;
+} flashrom_board_info;
+
+typedef struct flashrom_chipset_info {
+	const char *vendor;
+	const char *chipset;
+	uint16_t vendor_id;
+	uint16_t chipset_id;
+	flashrom_test_state status;
+} flashrom_chipset_info;
+
+const char *flashrom_version_info(void);
+void flashrom_system_info(void);
+const char **flashrom_supported_programmers(void);
+flashrom_flashchip_info *flashrom_supported_flash_chips(void);
+flashrom_board_info *flashrom_supported_boards(void);
+flashrom_chipset_info *flashrom_supported_chipsets(void);
+int flashrom_data_free(void *const p);
+
+/** @ingroup flashrom-prog */
 struct flashrom_programmer;
 int flashrom_programmer_init(struct flashrom_programmer **, const char *prog_name, const char *prog_params);
 int flashrom_programmer_shutdown(struct flashrom_programmer *);
