@@ -686,6 +686,8 @@ int spi_read_chunked(struct flashctx *flash, uint8_t *buf, unsigned int start,
 		for (j = 0; j < lenhere; j += chunksize) {
 			toread = min(chunksize, lenhere - j);
 			rc = spi_nbyte_read(flash, starthere + j, buf + starthere - start + j, toread);
+
+			upd_progress(starthere - start + j, len);
 			if (rc)
 				break;
 		}

@@ -40,6 +40,9 @@
 /** Pointer to log callback function. */
 static flashrom_log_callback *global_log_callback = NULL;
 
+/** Pointer to the progress callback function */
+static flashrom_progress_callback *global_progress_callback = NULL;
+
 /**
  * @brief Initialize libflashrom.
  *
@@ -80,6 +83,12 @@ void flashrom_set_log_callback(flashrom_log_callback *const log_callback)
 {
 	global_log_callback = log_callback;
 }
+
+void flashrom_set_progress_callback(flashrom_progress_callback *const progress_callback)
+{
+	global_progress_callback = progress_callback;
+}
+
 /** @private */
 int print(const enum flashrom_log_level level, const char *const fmt, ...)
 {
@@ -91,6 +100,15 @@ int print(const enum flashrom_log_level level, const char *const fmt, ...)
 		va_end(args);
 		return ret;
 	}
+	return 0;
+}
+
+/** @private */
+int set_progress(float progress)
+{
+	if (global_progress_callback)
+		return global_progress_callback(progress);
+
 	return 0;
 }
 

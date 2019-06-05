@@ -1464,7 +1464,7 @@ int read_flash_to_file(struct flashctx *flash, const char *filename)
 	unsigned char *buf = calloc(size, sizeof(unsigned char));
 	int ret = 0;
 
-	msg_cinfo("Reading flash... ");
+	msg_cinfo("Reading flash... \n");
 	if (!buf) {
 		msg_gerr("Memory allocation failed!\n");
 		msg_cinfo("FAILED.\n");
@@ -2420,7 +2420,7 @@ int flashrom_image_read(struct flashctx *const flashctx, void *const buffer, con
 	if (prepare_flash_access(flashctx, true, false, false, false))
 		return 1;
 
-	msg_cinfo("Reading flash... ");
+	msg_cinfo("Reading flash... \n");
 
 	int ret = 1;
 	if (read_by_layout(flashctx, buffer)) {

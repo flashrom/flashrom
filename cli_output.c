@@ -95,3 +95,30 @@ int flashrom_print_cb(enum flashrom_log_level level, const char *fmt, va_list ap
 	va_end(logfile_args);
 	return ret;
 }
+
+int flashrom_output_progress(float progress) {
+	FILE *output_type = stdout;
+
+	fprintf(output_type, "|");
+
+	int progress_length = 18;
+	for (int i = 0; i < progress_length; i++) {
+		if ((float) 100 * (i+1) / progress_length < progress)
+			fprintf(output_type, "+");
+		else
+			fprintf(output_type, " ");
+	}
+
+	fprintf(output_type, "| %0.1f%%\r", progress);
+
+	fflush(output_type);
+
+#ifndef STANDALONE
+	if (logfile) {
+		fprintf(logfile, "Progress: %0.1f%%\n", progress);
+		fflush(logfile);
+	}
+#endif /* !STANDALONE */
+
+	return 0;
+}
