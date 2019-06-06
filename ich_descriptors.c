@@ -214,23 +214,23 @@ static const char *pprint_density(enum ich_chipset cs, const struct ich_descript
 static const char *pprint_freq(enum ich_chipset cs, uint8_t value)
 {
 	static const char *const freq_str[2][8] = { {
-		"20 MHz",	/* 000 */
-		"33 MHz",	/* 001 */
-		"reserved",	/* 010 */
-		"reserved",	/* 011 */
-		"50 MHz",	/* 100 */ /* New since Ibex Peak */
-		"reserved",	/* 101 */
-		"reserved",	/* 110 */
-		"reserved"	/* 111 */
+		"20 MHz",
+		"33 MHz",
+		"reserved",
+		"reserved",
+		"50 MHz",	/* New since Ibex Peak */
+		"reserved",
+		"reserved",
+		"reserved"
 	}, {
-		"reserved",	/* 000 */
-		"reserved",	/* 001 */
-		"48 MHz",	/* 010 */
-		"reserved",	/* 011 */
-		"30 MHz",	/* 100 */
-		"reserved",	/* 101 */
-		"17 MHz",	/* 110 */
-		"reserved"	/* 111 */
+		"reserved",
+		"reserved",
+		"48 MHz",
+		"reserved",
+		"30 MHz",
+		"reserved",
+		"17 MHz",
+		"reserved"
 	} };
 
 	switch (cs) {
