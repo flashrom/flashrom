@@ -353,18 +353,21 @@ int flashrom_layout_read_from_ifd(struct flashrom_layout **const layout, struct 
 	msg_cinfo("done.\n");
 
 	if (layout_from_ich_descriptors(chip_layout, desc, 0x1000)) {
+		msg_cerr("Couldn't parse the descriptor!\n");
 		ret = 3;
 		goto _finalize_ret;
 	}
 
 	if (dump) {
 		if (layout_from_ich_descriptors(&dump_layout, dump, len)) {
+			msg_cerr("Couldn't parse the descriptor!\n");
 			ret = 4;
 			goto _finalize_ret;
 		}
 
 		if (chip_layout->base.num_entries != dump_layout.base.num_entries ||
 		    memcmp(chip_layout->entries, dump_layout.entries, sizeof(dump_layout.entries))) {
+			msg_cerr("Descriptors don't match!\n");
 			ret = 5;
 			goto _finalize_ret;
 		}
