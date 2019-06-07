@@ -190,6 +190,12 @@ UNSUPPORTED_FEATURES += CONFIG_CH341A_SPI=yes
 else
 override CONFIG_CH341A_SPI = no
 endif
+# libjaylink is also not available for DOS
+ifeq ($(CONFIG_JLINK_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_JLINK_SPI=yes
+else
+override CONFIG_JLINK_SPI = no
+endif
 endif
 
 # FIXME: Should we check for Cygwin/MSVC as well?
