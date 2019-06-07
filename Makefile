@@ -154,7 +154,12 @@ UNSUPPORTED_FEATURES += CONFIG_PONY_SPI=yes
 else
 override CONFIG_PONY_SPI = no
 endif
-# Dediprog, Developerbox, USB-Blaster, PICkit2, CH341A and FT2232 are not supported under DOS (missing USB support).
+# Digilent SPI, Dediprog, Developerbox, USB-Blaster, PICkit2, CH341A and FT2232 are not supported under DOS (missing USB support).
+ifeq ($(CONFIG_DIGILENT_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_DIGILENT_SPI=yes
+else
+override CONFIG_DIGILENT_SPI = no
+endif
 ifeq ($(CONFIG_DEDIPROG), yes)
 UNSUPPORTED_FEATURES += CONFIG_DEDIPROG=yes
 else
