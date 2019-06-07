@@ -386,6 +386,7 @@ _free_ret:
 #endif
 }
 
+#ifdef __FLASHROM_LITTLE_ENDIAN__
 static int flashrom_layout_parse_fmap(struct flashrom_layout **layout,
 		struct flashctx *const flashctx, const struct fmap *const fmap)
 {
@@ -417,6 +418,7 @@ static int flashrom_layout_parse_fmap(struct flashrom_layout **layout,
 	*layout = l;
 	return 0;
 }
+#endif /* __FLASHROM_LITTLE_ENDIAN__ */
 
 /**
  * @brief Read a layout by searching the flash chip for fmap.
