@@ -53,9 +53,10 @@ djgpp\:6.1.0: STRIP=i586-pc-msdosdjgpp-strip
 djgpp\:6.1.0: LIBS_BASE=../
 djgpp\:6.1.0: MAKEARGS+=strip CONFIG_JLINK_SPI=no
 $(ANITA_TAGS): MAKECMD=gmake
-$(ANITA_TAGS): MAKEARGS+=CONFIG_JLINK_SPI=no
+$(ANITA_TAGS): MAKEARGS+=CONFIG_JLINK_SPI=no WARNERROR=no
 $(filter alpine% centos%,$(MULTIARCH_TAGS)): MAKEARGS+=CONFIG_JLINK_SPI=no
 $(filter %-xenial %-stretch,$(MULTIARCH_TAGS)): MAKEARGS+=CONFIG_JLINK_SPI=no
+$(filter centos%,$(MULTIARCH_TAGS)): MAKEARGS+=WARNERROR=no
 $(ALL_TAGS): export QUIET_SETUP=$(QUIET_TEST)
 $(ALL_TAGS): %: %-check-build
 	$(QUIET_TEST)docker rm -f mani_$(call ident,$*) >/dev/null 2>&1 || true
