@@ -1244,21 +1244,21 @@ static void ich_hwseq_set_addr(uint32_t addr)
  */
 static uint32_t ich_hwseq_get_erase_block_size(unsigned int addr)
 {
+	uint8_t enc_berase;
+	static const uint32_t dec_berase[4] = {
+		256,
+		4 * 1024,
+		8 * 1024,
+		64 * 1024
+	};
+
 	if (hwseq_data.only_4k) {
 		return 4 * 1024;
-	} else {
-		uint8_t enc_berase;
-		static const uint32_t dec_berase[4] = {
-			256,
-			4 * 1024,
-			8 * 1024,
-			64 * 1024
-		};
-
-		ich_hwseq_set_addr(addr);
-		enc_berase = (REGREAD16(ICH9_REG_HSFS) & HSFS_BERASE) >> HSFS_BERASE_OFF;
-		return dec_berase[enc_berase];
 	}
+
+	ich_hwseq_set_addr(addr);
+	enc_berase = (REGREAD16(ICH9_REG_HSFS) & HSFS_BERASE) >> HSFS_BERASE_OFF;
+	return dec_berase[enc_berase];
 }
 
 /* Polls for Cycle Done Status, Flash Cycle Error or timeout in 8 us intervals.
