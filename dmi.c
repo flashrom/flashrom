@@ -320,9 +320,8 @@ static char *get_dmi_string(const char *string_name)
 				msg_perr("DMI pipe read error\n");
 				pclose(dmidecode_pipe);
 				return NULL;
-			} else {
-				answerbuf[0] = 0;	/* Hit EOF */
 			}
+			answerbuf[0] = 0;	/* Hit EOF */
 		}
 	} while (answerbuf[0] == '#');
 
