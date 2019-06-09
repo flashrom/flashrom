@@ -321,9 +321,8 @@ int ft2232_spi_init(void)
 				 "Valid are even values between 2 and 131072.\n", arg);
 			free(arg);
 			return -2;
-		} else {
-			divisor = (uint32_t)temp;
 		}
+		divisor = (uint32_t)temp;
 	}
 	free(arg);
 
@@ -336,11 +335,10 @@ int ft2232_spi_init(void)
 				 "Valid values are between 0 and 3.\n", arg);
 			free(arg);
 			return -2;
-		} else {
-			unsigned int pin = temp + 4;
-			cs_bits |= 1 << pin;
-			pindir |= 1 << pin;
 		}
+		unsigned int pin = temp + 4;
+		cs_bits |= 1 << pin;
+		pindir |= 1 << pin;
 	}
 	free(arg);
 
