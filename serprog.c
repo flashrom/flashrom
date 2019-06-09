@@ -937,9 +937,8 @@ void *serprog_map(const char *descr, uintptr_t phys_addr, size_t len)
 	 * needed for non-SPI chips). Below we make sure that the requested range is within this window. */
 	if ((phys_addr & 0xFF000000) == 0xFF000000) {
 		return (void*)phys_addr;
-	} else {
-		msg_pwarn(MSGHEADER "requested mapping %s is incompatible: 0x%zx bytes at 0x%0*" PRIxPTR ".\n",
-			  descr, len, PRIxPTR_WIDTH, phys_addr);
-		return NULL;
 	}
+	msg_pwarn(MSGHEADER "requested mapping %s is incompatible: 0x%zx bytes at 0x%0*" PRIxPTR ".\n",
+		  descr, len, PRIxPTR_WIDTH, phys_addr);
+	return NULL;
 }
