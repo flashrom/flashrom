@@ -1,8 +1,12 @@
 ANITA_TAGS := anita\:amd64 anita\:i386
 
 MULTIARCH_TAGS := \
+	centos\:7.6-armhfp-clean centos\:7.6-amd64-clean \
 	centos\:7.3-aarch64-clean centos\:7.3-amd64-clean \
 	centos\:7.2-amd64-clean \
+	$(foreach a,x86_64 s390x aarch64, fedora\:30-$(a)) \
+	$(foreach a,x86_64 s390x ppc64le aarch64, fedora\:29-$(a)) \
+	fedora\:28-armhfp \
 	$(foreach a,x86_64 ppc64le aarch64, \
 	  $(foreach v,25 24, \
 	    fedora\:$(v)-$(a))) \
@@ -14,7 +18,7 @@ MULTIARCH_TAGS := \
 	    ubuntu-debootstrap\:$(a)-$(v))) \
 	ubuntu-debootstrap\:powerpc-xenial \
 	$(foreach a,aarch64 armhf amd64 i386, \
-	  $(foreach v,v3.8 v3.7 v3.6, \
+	  $(foreach v,v3.9 v3.8 v3.7 v3.6, \
 	    alpine\:$(a)-$(v))) \
 
 OTHER_TAGS := djgpp\:6.1.0
@@ -41,6 +45,7 @@ NATIVE_TAGS := $(call arch_filter,$(call machine_map,$(shell uname -m)))
 DEFAULT_TAGS := \
 	anita\:amd64 \
 	djgpp\:6.1.0 \
+	fedora\:30-aarch64 \
 	fedora\:25-x86_64 \
 	fedora\:25-ppc64le \
 	fedora\:25-aarch64 \
@@ -59,8 +64,9 @@ DEFAULT_TAGS := \
 	ubuntu-debootstrap\:amd64-xenial \
 	ubuntu-debootstrap\:powerpc-xenial \
 	ubuntu-debootstrap\:amd64-bionic \
-	alpine\:amd64-v3.7 \
+	alpine\:aarch64-v3.9 \
 	alpine\:amd64-v3.8 \
+	alpine\:amd64-v3.7 \
 
 # also run all native tests by default
 DEFAULT_TAGS += $(filter-out $(DEFAULT_TAGS),$(NATIVE_TAGS))
