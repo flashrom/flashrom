@@ -252,6 +252,24 @@ const struct romentry *layout_next_included_region(
 	return lowest;
 }
 
+const struct romentry *layout_next_included(
+		const struct flashrom_layout *const layout, const struct romentry *iterator)
+{
+	const struct romentry *const end = layout->entries + layout->num_entries;
+
+	if (iterator)
+		++iterator;
+	else
+		iterator = &layout->entries[0];
+
+	for (; iterator < end; ++iterator) {
+		if (!iterator->included)
+			continue;
+		return iterator;
+	}
+	return NULL;
+}
+
 /**
  * @addtogroup flashrom-layout
  * @{

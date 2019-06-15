@@ -1597,14 +1597,11 @@ static int check_block_eraser(const struct flashctx *flash, int k, int log)
 static int read_by_layout(struct flashctx *const flashctx, uint8_t *const buffer)
 {
 	const struct flashrom_layout *const layout = get_layout(flashctx);
+	const struct romentry *entry = NULL;
 
-	size_t i;
-	for (i = 0; i < layout->num_entries; ++i) {
-		if (!layout->entries[i].included)
-			continue;
-
-		const chipoff_t region_start	= layout->entries[i].start;
-		const chipsize_t region_len	= layout->entries[i].end - layout->entries[i].start + 1;
+	while ((entry = layout_next_included(layout, entry))) {
+		const chipoff_t region_start	= entry->start;
+		const chipsize_t region_len	= entry->end - entry->start + 1;
 
 		if (flashctx->chip->read(flashctx, buffer + region_start, region_start, region_len))
 			return 1;
@@ -1681,17 +1678,14 @@ static int walk_by_layout(struct flashctx *const flashctx, struct walk_info *con
 			  const per_blockfn_t per_blockfn)
 {
 	const struct flashrom_layout *const layout = get_layout(flashctx);
+	const struct romentry *entry = NULL;
 
 	all_skipped = true;
 	msg_cinfo("Erasing and writing flash chip... ");
 
-	size_t i;
-	for (i = 0; i < layout->num_entries; ++i) {
-		if (!layout->entries[i].included)
-			continue;
-
-		info->region_start = layout->entries[i].start;
-		info->region_end   = layout->entries[i].end;
+	while ((entry = layout_next_included(layout, entry))) {
+		info->region_start = entry->start;
+		info->region_end   = entry->end;
 
 		size_t j;
 		int error = 1; /* retry as long as it's 1 */
@@ -1962,14 +1956,11 @@ static int verify_by_layout(struct flashctx *const flashctx,
 			    void *const curcontents, const uint8_t *const newcontents)
 {
 	const struct flashrom_layout *const layout = get_layout(flashctx);
+	const struct romentry *entry = NULL;
 
-	size_t i;
-	for (i = 0; i < layout->num_entries; ++i) {
-		if (!layout->entries[i].included)
-			continue;
-
-		const chipoff_t region_start	= layout->entries[i].start;
-		const chipsize_t region_len	= layout->entries[i].end - layout->entries[i].start + 1;
+	while ((entry = layout_next_included(layout, entry))) {
+		const chipoff_t region_start	= entry->start;
+		const chipsize_t region_len	= entry->end - entry->start + 1;
 
 		if (flashctx->chip->read(flashctx, curcontents + region_start, region_start, region_len))
 			return 1;
