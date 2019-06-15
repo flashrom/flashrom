@@ -506,7 +506,7 @@ static int flashrom_layout_parse_fmap(struct flashrom_layout **layout,
 	if (!fmap || !l)
 		return 1;
 
-	if (l->num_entries + fmap->nareas > MAX_ROMLAYOUT) {
+	if (l->num_entries + fmap->nareas > l->capacity) {
 		msg_gerr("Cannot add fmap entries to layout - Too many entries.\n");
 		return 1;
 	}

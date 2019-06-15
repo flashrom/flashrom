@@ -46,6 +46,8 @@ struct romentry {
 struct flashrom_layout {
 	/* entries store the entries specified in a layout file and associated run-time data */
 	struct romentry *entries;
+	/* the maximum number of entries */
+	size_t capacity;
 	/* the number of successfully parsed entries */
 	size_t num_entries;
 };

@@ -825,6 +825,7 @@ notfound:
 	/* Fill fallback layout covering the whole chip. */
 	struct single_layout *const fallback = &flash->fallback_layout;
 	fallback->base.entries		= &fallback->entry;
+	fallback->base.capacity		= 1;
 	fallback->base.num_entries	= 1;
 	fallback->entry.start		= 0;
 	fallback->entry.end		= flash->chip->total_size * 1024 - 1;

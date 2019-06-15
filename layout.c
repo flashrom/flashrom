@@ -26,7 +26,7 @@
 #include "layout.h"
 
 static struct romentry entries[MAX_ROMLAYOUT];
-static struct flashrom_layout global_layout = { entries, 0 };
+static struct flashrom_layout global_layout = { entries, MAX_ROMLAYOUT, 0 };
 
 struct flashrom_layout *get_global_layout(void)
 {
@@ -87,9 +87,9 @@ int read_romlayout(const char *name)
 	while (!feof(romlayout)) {
 		char *tstr1, *tstr2;
 
-		if (layout->num_entries >= MAX_ROMLAYOUT) {
-			msg_gerr("Maximum number of ROM images (%i) in layout "
-				 "file reached.\n", MAX_ROMLAYOUT);
+		if (layout->num_entries >= layout->capacity) {
+			msg_gerr("Maximum number of ROM images (%zu) in layout "
+				 "file reached.\n", layout->capacity);
 			goto _close_ret;
 		}
 		if (2 != fscanf(romlayout, "%255s %255s\n", tempstr, tempname))
