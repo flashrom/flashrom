@@ -25,12 +25,17 @@
 #include "programmer.h"
 #include "layout.h"
 
-static struct romentry entries[MAX_ROMLAYOUT];
-static struct flashrom_layout global_layout = { entries, MAX_ROMLAYOUT, 0 };
+struct flashrom_layout {
+	struct romentry *head;
+};
+
+static struct flashrom_layout *global_layout;
 
 struct flashrom_layout *get_global_layout(void)
 {
-	return &global_layout;
+	if (!global_layout)
+		flashrom_layout_new(&global_layout, 0);
+	return global_layout;
 }
 
 const struct flashrom_layout *get_default_layout(const struct flashrom_flashctx *const flashctx)
@@ -40,7 +45,7 @@ const struct flashrom_layout *get_default_layout(const struct flashrom_flashctx 
 
 const struct flashrom_layout *get_layout(const struct flashrom_flashctx *const flashctx)
 {
-	if (flashctx->layout && flashctx->layout->num_entries)
+	if (flashctx->layout)
 		return flashctx->layout;
 	else
 		return get_default_layout(flashctx);
@@ -49,16 +54,7 @@ const struct flashrom_layout *get_layout(const struct flashrom_flashctx *const f
 static struct romentry *mutable_layout_next(
 		const struct flashrom_layout *const layout, struct romentry *iterator)
 {
-	const struct romentry *const end = layout->entries + layout->num_entries;
-
-	if (iterator)
-		++iterator;
-	else
-		iterator = &layout->entries[0];
-
-	if (iterator < end)
-		return iterator;
-	return NULL;
+	return iterator ? iterator->next : layout->head;
 }
 
 static struct romentry *_layout_entry_by_name(
@@ -91,11 +87,6 @@ int read_romlayout(const char *name)
 	while (!feof(romlayout)) {
 		char *tstr1, *tstr2;
 
-		if (layout->num_entries >= layout->capacity) {
-			msg_gerr("Maximum number of ROM images (%zu) in layout "
-				 "file reached.\n", layout->capacity);
-			goto _close_ret;
-		}
 		if (2 != fscanf(romlayout, "%255s %255s\n", tempstr, tempname))
 			continue;
 #if 0
@@ -186,7 +177,7 @@ static int include_region(struct flashrom_layout *const l, const char *name,
 /* returns -1 if an entry is not found, 0 if found. */
 static int find_romentry(struct flashrom_layout *const l, char *name, char *file)
 {
-	if (l->num_entries == 0)
+	if (!l->head)
 		return -1;
 
 	msg_gspew("Looking for region \"%s\"... ", name);
@@ -222,7 +213,7 @@ int process_include_args(struct flashrom_layout *l, const struct layout_include_
 		return 0;
 
 	/* User has specified an include argument, but no layout is loaded. */
-	if (l->num_entries == 0) {
+	if (!l->head) {
 		msg_gerr("Region requested (with -i \"%s\"), "
 			 "but no layout data is available.\n",
 			 args->name);
@@ -287,7 +278,6 @@ int included_regions_overlap(const struct flashrom_layout *const l)
 void layout_cleanup(struct layout_include_args **args)
 {
 	struct flashrom_layout *const layout = get_global_layout();
-	unsigned int i;
 	struct layout_include_args *tmp;
 
 	while (*args) {
@@ -298,12 +288,8 @@ void layout_cleanup(struct layout_include_args **args)
 		*args = tmp;
 	}
 
-	for (i = 0; i < layout->num_entries; i++) {
-		free(layout->entries[i].name);
-		free(layout->entries[i].file);
-		layout->entries[i].included = false;
-	}
-	layout->num_entries = 0;
+	global_layout = NULL;
+	flashrom_layout_release(layout);
 }
 
 /* Validate and - if needed - normalize layout entries. */
@@ -380,7 +366,7 @@ const struct romentry *layout_next_included(
 const struct romentry *layout_next(
 		const struct flashrom_layout *const layout, const struct romentry *iterator)
 {
-	return mutable_layout_next(layout, (struct romentry *)iterator);
+	return iterator ? iterator->next : layout->head;
 }
 
 /**
@@ -399,17 +385,13 @@ const struct romentry *layout_next(
  */
 int flashrom_layout_new(struct flashrom_layout **const layout, const unsigned int count)
 {
-	*layout = malloc(sizeof(**layout) + count * sizeof(struct romentry));
+	*layout = malloc(sizeof(**layout));
 	if (!*layout) {
 		msg_gerr("Error creating layout: %s\n", strerror(errno));
 		return 1;
 	}
 
-	const struct flashrom_layout tmp = {
-		.entries	= (void *)((char *)*layout + sizeof(**layout)),
-		.capacity	= count,
-		.num_entries	= 0,
-	};
+	const struct flashrom_layout tmp = { 0 };
 	**layout = tmp;
 	return 0;
 }
@@ -423,32 +405,36 @@ int flashrom_layout_new(struct flashrom_layout **const layout, const unsigned in
  * @param name   Name of the region.
  *
  * @return 0 on success,
- *         1 if out of memory,
- *         2 if the layout is full already.
+ *         1 if out of memory.
  */
 int flashrom_layout_add_region(
 		struct flashrom_layout *const layout,
 		const size_t start, const size_t end, const char *const name)
 {
-	if (layout->num_entries >= layout->capacity) {
-		msg_gerr("Error adding layout entry: No space left\n");
-		return 2;
-	}
+	struct romentry *const entry = malloc(sizeof(*entry));
+	if (!entry)
+		goto _err_ret;
 
-	struct romentry *const entry = &layout->entries[layout->num_entries];
-	entry->start	= start;
-	entry->end	= end;
-	entry->included	= false;
-	entry->name	= strdup(name);
-	entry->file	= NULL;
-	if (!entry->name) {
-		msg_gerr("Error adding layout entry: %s\n", strerror(errno));
-		return 1;
-	}
+	const struct romentry tmp = {
+		.next		= layout->head,
+		.start		= start,
+		.end		= end,
+		.included	= false,
+		.name		= strdup(name),
+		.file		= NULL,
+	};
+	*entry = tmp;
+	if (!entry->name)
+		goto _err_ret;
 
 	msg_gdbg("Added layout entry %08zx - %08zx named %s\n", start, end, name);
-	++layout->num_entries;
+	layout->head = entry;
 	return 0;
+
+_err_ret:
+	msg_gerr("Error adding layout entry: %s\n", strerror(errno));
+	free(entry);
+	return 1;
 }
 
 /**
@@ -472,14 +458,18 @@ int flashrom_layout_include_region(struct flashrom_layout *const layout, const c
  */
 void flashrom_layout_release(struct flashrom_layout *const layout)
 {
-	unsigned int i;
-
-	if (!layout || layout == get_global_layout())
+	if (layout == global_layout)
 		return;
 
-	for (i = 0; i < layout->num_entries; ++i) {
-		free(layout->entries[i].name);
-		free(layout->entries[i].file);
+	if (!layout)
+		return;
+
+	while (layout->head) {
+		struct romentry *const entry = layout->head;
+		layout->head = entry->next;
+		free(entry->file);
+		free(entry->name);
+		free(entry);
 	}
 	free(layout);
 }

@@ -505,11 +505,6 @@ static int flashrom_layout_parse_fmap(struct flashrom_layout **layout,
 	if (!fmap || !l)
 		return 1;
 
-	if (l->num_entries + fmap->nareas > l->capacity) {
-		msg_gerr("Cannot add fmap entries to layout - Too many entries.\n");
-		return 1;
-	}
-
 	for (i = 0, area = fmap->areas; i < fmap->nareas; i++, area++) {
 		snprintf(name, sizeof(name), "%s", area->name);
 		if (flashrom_layout_add_region(l, area->offset, area->offset + area->size - 1, name))

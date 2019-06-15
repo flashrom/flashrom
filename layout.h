@@ -36,6 +36,8 @@ typedef uint32_t chipsize_t; /* Able to store the number of bytes of any support
 #define MAX_ROMLAYOUT	128
 
 struct romentry {
+	struct romentry *next;
+
 	chipoff_t start;
 	chipoff_t end;
 	bool included;
@@ -43,14 +45,7 @@ struct romentry {
 	char *file;
 };
 
-struct flashrom_layout {
-	/* entries store the entries specified in a layout file and associated run-time data */
-	struct romentry *entries;
-	/* the maximum number of entries */
-	size_t capacity;
-	/* the number of successfully parsed entries */
-	size_t num_entries;
-};
+struct flashrom_layout;
 
 struct layout_include_args {
 	char *name;
