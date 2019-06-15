@@ -283,27 +283,6 @@ bool flashrom_flag_get(const struct flashrom_flashctx *const flashctx, const enu
  */
 
 /**
- * @brief Mark given region as included.
- *
- * @param layout The layout to alter.
- * @param name   The name of the region to include.
- *
- * @return 0 on success,
- *         1 if the given name can't be found.
- */
-int flashrom_layout_include_region(struct flashrom_layout *const layout, const char *name)
-{
-	size_t i;
-	for (i = 0; i < layout->num_entries; ++i) {
-		if (!strcmp(layout->entries[i].name, name)) {
-			layout->entries[i].included = true;
-			return 0;
-		}
-	}
-	return 1;
-}
-
-/**
  * @brief Read a layout from the Intel ICH descriptor in the flash.
  *
  * Optionally verify that the layout matches the one in the given
@@ -504,19 +483,6 @@ _free_ret:
 _ret:
 	return ret;
 #endif
-}
-
-/**
- * @brief Free a layout.
- *
- * @param layout Layout to free.
- */
-void flashrom_layout_release(struct flashrom_layout *const layout)
-{
-	if (layout == get_global_layout())
-		return;
-
-	free(layout);
 }
 
 /**
