@@ -15,6 +15,7 @@
  * GNU General Public License for more details.
  */
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -44,8 +45,8 @@ int read_romlayout(const char *name)
 {
 	struct flashrom_layout *const layout = get_global_layout();
 	FILE *romlayout;
-	char tempstr[256];
-	int i;
+	char tempstr[256], tempname[256];
+	int i, ret = 1;
 
 	romlayout = fopen(name, "r");
 
@@ -61,10 +62,9 @@ int read_romlayout(const char *name)
 		if (layout->num_entries >= MAX_ROMLAYOUT) {
 			msg_gerr("Maximum number of ROM images (%i) in layout "
 				 "file reached.\n", MAX_ROMLAYOUT);
-			(void)fclose(romlayout);
-			return 1;
+			goto _close_ret;
 		}
-		if (2 != fscanf(romlayout, "%255s %255s\n", tempstr, layout->entries[layout->num_entries].name))
+		if (2 != fscanf(romlayout, "%255s %255s\n", tempstr, tempname))
 			continue;
 #if 0
 		// fscanf does not like arbitrary comments like that :( later
@@ -76,12 +76,16 @@ int read_romlayout(const char *name)
 		tstr2 = strtok(NULL, ":");
 		if (!tstr1 || !tstr2) {
 			msg_gerr("Error parsing layout file. Offending string: \"%s\"\n", tempstr);
-			(void)fclose(romlayout);
-			return 1;
+			goto _close_ret;
 		}
 		layout->entries[layout->num_entries].start = strtol(tstr1, (char **)NULL, 16);
 		layout->entries[layout->num_entries].end = strtol(tstr2, (char **)NULL, 16);
 		layout->entries[layout->num_entries].included = 0;
+		layout->entries[layout->num_entries].name = strdup(tempname);
+		if (!layout->entries[layout->num_entries].name) {
+			msg_gerr("Error adding layout entry: %s\n", strerror(errno));
+			goto _close_ret;
+		}
 		layout->num_entries++;
 	}
 
@@ -91,9 +95,11 @@ int read_romlayout(const char *name)
 			     layout->entries[i].end, layout->entries[i].name);
 	}
 
-	(void)fclose(romlayout);
+	ret = 0;
 
-	return 0;
+_close_ret:
+	(void)fclose(romlayout);
+	return ret;
 }
 #endif
 
@@ -197,6 +203,7 @@ void layout_cleanup(struct layout_include_args **args)
 	}
 
 	for (i = 0; i < layout->num_entries; i++) {
+		free(layout->entries[i].name);
 		layout->entries[i].included = 0;
 	}
 	layout->num_entries = 0;
@@ -278,9 +285,13 @@ int flashrom_layout_include_region(struct flashrom_layout *const layout, const c
  */
 void flashrom_layout_release(struct flashrom_layout *const layout)
 {
-	if (layout == get_global_layout())
+	unsigned int i;
+
+	if (!layout || layout == get_global_layout())
 		return;
 
+	for (i = 0; i < layout->num_entries; ++i)
+		free(layout->entries[i].name);
 	free(layout);
 }
 

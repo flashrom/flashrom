@@ -1338,7 +1338,11 @@ notfound:
 	fallback->entry.start		= 0;
 	fallback->entry.end		= flash->chip->total_size * 1024 - 1;
 	fallback->entry.included	= true;
-	strcpy(fallback->entry.name, "complete flash");
+	fallback->entry.name		= strdup("complete flash");
+	if (!fallback->entry.name) {
+		msg_cerr("Failed to probe chip: %s\n", strerror(errno));
+		return -1;
+	}
 
 	tmp = flashbuses_to_text(flash->chip->bustype);
 	msg_cinfo("%s %s flash chip \"%s\" (%d kB, %s) ", force ? "Assuming" : "Found",

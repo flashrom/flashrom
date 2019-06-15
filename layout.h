@@ -39,7 +39,7 @@ struct romentry {
 	chipoff_t start;
 	chipoff_t end;
 	bool included;
-	char name[256];
+	char *name;
 };
 
 struct flashrom_layout {

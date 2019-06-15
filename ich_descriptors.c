@@ -1153,7 +1153,8 @@ int read_ich_descriptors_via_fdo(enum ich_chipset cs, void *spibar, struct ich_d
  * @param len    The length of the descriptor dump.
  *
  * @return 0 on success,
- *	   1 if the descriptor couldn't be parsed.
+ *	   1 if the descriptor couldn't be parsed,
+ *	   2 when out of memory.
  */
 int layout_from_ich_descriptors(struct ich_layout *const layout, const void *const dump, const size_t len)
 {
@@ -1178,7 +1179,9 @@ int layout_from_ich_descriptors(struct ich_layout *const layout, const void *con
 		layout->entries[j].start = base;
 		layout->entries[j].end = limit;
 		layout->entries[j].included = false;
-		snprintf(layout->entries[j].name, sizeof(layout->entries[j].name), "%s", regions[i]);
+		layout->entries[j].name = strdup(regions[i]);
+		if (!layout->entries[j].name)
+			return 2;
 		++j;
 	}
 	layout->base.entries = layout->entries;

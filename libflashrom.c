@@ -20,6 +20,7 @@
  * Have a look at the Modules section for a function reference.
  */
 
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
@@ -384,9 +385,12 @@ static int flashrom_layout_parse_fmap(struct flashrom_layout **layout,
 		l->entries[l->num_entries].start = fmap->areas[i].offset;
 		l->entries[l->num_entries].end = fmap->areas[i].offset + fmap->areas[i].size - 1;
 		l->entries[l->num_entries].included = false;
-		memset(l->entries[l->num_entries].name, 0, sizeof(l->entries[i].name));
-		memcpy(l->entries[l->num_entries].name, fmap->areas[i].name,
-			min(FMAP_STRLEN, sizeof(l->entries[i].name)));
+		l->entries[l->num_entries].name =
+			strndup((const char *)fmap->areas[i].name, FMAP_STRLEN);
+		if (!l->entries[l->num_entries].name) {
+			msg_gerr("Error adding layout entry: %s\n", strerror(errno));
+			return 1;
+		}
 		msg_gdbg("fmap %08x - %08x named %s\n",
 			l->entries[l->num_entries].start,
 			l->entries[l->num_entries].end,
