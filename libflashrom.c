@@ -501,6 +501,8 @@ static int flashrom_layout_parse_fmap(struct flashrom_layout **layout,
 		struct flashctx *const flashctx, const struct fmap *const fmap)
 {
 	int i;
+	char name[FMAP_STRLEN + 1];
+	const struct fmap_area *area;
 	struct flashrom_layout *l = get_global_layout();
 
 	if (!fmap || !l)
@@ -511,21 +513,10 @@ static int flashrom_layout_parse_fmap(struct flashrom_layout **layout,
 		return 1;
 	}
 
-	for (i = 0; i < fmap->nareas; i++) {
-		l->entries[l->num_entries].start = fmap->areas[i].offset;
-		l->entries[l->num_entries].end = fmap->areas[i].offset + fmap->areas[i].size - 1;
-		l->entries[l->num_entries].included = false;
-		l->entries[l->num_entries].name =
-			strndup((const char *)fmap->areas[i].name, FMAP_STRLEN);
-		if (!l->entries[l->num_entries].name) {
-			msg_gerr("Error adding layout entry: %s\n", strerror(errno));
+	for (i = 0, area = fmap->areas; i < fmap->nareas; i++, area++) {
+		snprintf(name, sizeof(name), "%s", area->name);
+		if (flashrom_layout_add_region(l, area->offset, area->offset + area->size - 1, name))
 			return 1;
-		}
-		msg_gdbg("fmap %08x - %08x named %s\n",
-			l->entries[l->num_entries].start,
-			l->entries[l->num_entries].end,
-			l->entries[l->num_entries].name);
-		l->num_entries++;
 	}
 
 	*layout = l;

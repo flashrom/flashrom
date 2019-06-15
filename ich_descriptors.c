@@ -1278,25 +1278,20 @@ int layout_from_ich_descriptors(struct ich_layout *const layout, const void *con
 	}
 
 	memset(layout, 0x00, sizeof(*layout));
+	layout->base.entries = layout->entries;
+	layout->base.capacity = ARRAY_SIZE(layout->entries);
+	layout->base.num_entries = 0;
 
-	ssize_t i, j;
+	ssize_t i;
 	const ssize_t nr = MIN(ich_number_of_regions(cs, &desc.content), (ssize_t)ARRAY_SIZE(regions));
-	for (i = 0, j = 0; i < nr; ++i) {
+	for (i = 0; i < nr; ++i) {
 		const chipoff_t base = ICH_FREG_BASE(desc.region.FLREGs[i]);
 		const chipoff_t limit = ICH_FREG_LIMIT(desc.region.FLREGs[i]);
 		if (limit <= base)
 			continue;
-		layout->entries[j].start = base;
-		layout->entries[j].end = limit;
-		layout->entries[j].included = false;
-		layout->entries[j].name = strdup(regions[i]);
-		if (!layout->entries[j].name)
+		if (flashrom_layout_add_region(&layout->base, base, limit, regions[i]))
 			return 2;
-		++j;
 	}
-	layout->base.entries = layout->entries;
-	layout->base.capacity = ARRAY_SIZE(layout->entries);
-	layout->base.num_entries = j;
 	return 0;
 }
 

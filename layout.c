@@ -73,7 +73,6 @@ int read_romlayout(const char *name)
 	struct flashrom_layout *const layout = get_global_layout();
 	FILE *romlayout;
 	char tempstr[256], tempname[256];
-	unsigned int i;
 	int ret = 1;
 
 	romlayout = fopen(name, "r");
@@ -106,24 +105,10 @@ int read_romlayout(const char *name)
 			msg_gerr("Error parsing layout file. Offending string: \"%s\"\n", tempstr);
 			goto _close_ret;
 		}
-		layout->entries[layout->num_entries].start = strtol(tstr1, (char **)NULL, 16);
-		layout->entries[layout->num_entries].end = strtol(tstr2, (char **)NULL, 16);
-		layout->entries[layout->num_entries].included = false;
-		layout->entries[layout->num_entries].file = NULL;
-		layout->entries[layout->num_entries].name = strdup(tempname);
-		if (!layout->entries[layout->num_entries].name) {
-			msg_gerr("Error adding layout entry: %s\n", strerror(errno));
+		if (flashrom_layout_add_region(layout,
+				strtol(tstr1, NULL, 16), strtol(tstr2, NULL, 16), tempname))
 			goto _close_ret;
-		}
-		layout->num_entries++;
 	}
-
-	for (i = 0; i < layout->num_entries; i++) {
-		msg_gdbg("romlayout %08x - %08x named %s\n",
-			     layout->entries[i].start,
-			     layout->entries[i].end, layout->entries[i].name);
-	}
-
 	ret = 0;
 
 _close_ret:
@@ -397,6 +382,43 @@ const struct romentry *layout_next(
  * @addtogroup flashrom-layout
  * @{
  */
+
+/**
+ * @brief Add another region to an existing layout.
+ *
+ * @param layout The existing layout.
+ * @param start  Start address of the region.
+ * @param end    End address (inclusive) of the region.
+ * @param name   Name of the region.
+ *
+ * @return 0 on success,
+ *         1 if out of memory,
+ *         2 if the layout is full already.
+ */
+int flashrom_layout_add_region(
+		struct flashrom_layout *const layout,
+		const size_t start, const size_t end, const char *const name)
+{
+	if (layout->num_entries >= layout->capacity) {
+		msg_gerr("Error adding layout entry: No space left\n");
+		return 2;
+	}
+
+	struct romentry *const entry = &layout->entries[layout->num_entries];
+	entry->start	= start;
+	entry->end	= end;
+	entry->included	= false;
+	entry->name	= strdup(name);
+	entry->file	= NULL;
+	if (!entry->name) {
+		msg_gerr("Error adding layout entry: %s\n", strerror(errno));
+		return 1;
+	}
+
+	msg_gdbg("Added layout entry %08zx - %08zx named %s\n", start, end, name);
+	++layout->num_entries;
+	return 0;
+}
 
 /**
  * @brief Mark given region as included.
