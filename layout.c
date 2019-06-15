@@ -24,11 +24,11 @@
 #include "layout.h"
 
 struct romentry entries[MAX_ROMLAYOUT];
-static struct flashrom_layout layout = { entries, 0 };
+static struct flashrom_layout global_layout = { entries, 0 };
 
 struct flashrom_layout *get_global_layout(void)
 {
-	return &layout;
+	return &global_layout;
 }
 
 const struct flashrom_layout *get_layout(const struct flashrom_flashctx *const flashctx)
@@ -42,6 +42,7 @@ const struct flashrom_layout *get_layout(const struct flashrom_flashctx *const f
 #ifndef __LIBPAYLOAD__
 int read_romlayout(const char *name)
 {
+	struct flashrom_layout *const layout = get_global_layout();
 	FILE *romlayout;
 	char tempstr[256];
 	int i;
@@ -57,13 +58,13 @@ int read_romlayout(const char *name)
 	while (!feof(romlayout)) {
 		char *tstr1, *tstr2;
 
-		if (layout.num_entries >= MAX_ROMLAYOUT) {
+		if (layout->num_entries >= MAX_ROMLAYOUT) {
 			msg_gerr("Maximum number of ROM images (%i) in layout "
 				 "file reached.\n", MAX_ROMLAYOUT);
 			(void)fclose(romlayout);
 			return 1;
 		}
-		if (2 != fscanf(romlayout, "%255s %255s\n", tempstr, layout.entries[layout.num_entries].name))
+		if (2 != fscanf(romlayout, "%255s %255s\n", tempstr, layout->entries[layout->num_entries].name))
 			continue;
 #if 0
 		// fscanf does not like arbitrary comments like that :( later
@@ -78,16 +79,16 @@ int read_romlayout(const char *name)
 			(void)fclose(romlayout);
 			return 1;
 		}
-		layout.entries[layout.num_entries].start = strtol(tstr1, (char **)NULL, 16);
-		layout.entries[layout.num_entries].end = strtol(tstr2, (char **)NULL, 16);
-		layout.entries[layout.num_entries].included = 0;
-		layout.num_entries++;
+		layout->entries[layout->num_entries].start = strtol(tstr1, (char **)NULL, 16);
+		layout->entries[layout->num_entries].end = strtol(tstr2, (char **)NULL, 16);
+		layout->entries[layout->num_entries].included = 0;
+		layout->num_entries++;
 	}
 
-	for (i = 0; i < layout.num_entries; i++) {
+	for (i = 0; i < layout->num_entries; i++) {
 		msg_gdbg("romlayout %08x - %08x named %s\n",
-			     layout.entries[i].start,
-			     layout.entries[i].end, layout.entries[i].name);
+			     layout->entries[i].start,
+			     layout->entries[i].end, layout->entries[i].name);
 	}
 
 	(void)fclose(romlayout);
@@ -185,6 +186,7 @@ int process_include_args(struct flashrom_layout *l, const struct layout_include_
 
 void layout_cleanup(struct layout_include_args **args)
 {
+	struct flashrom_layout *const layout = get_global_layout();
 	int i;
 	struct layout_include_args *tmp;
 
@@ -194,29 +196,30 @@ void layout_cleanup(struct layout_include_args **args)
 		*args = tmp;
 	}
 
-	for (i = 0; i < layout.num_entries; i++) {
-		layout.entries[i].included = 0;
+	for (i = 0; i < layout->num_entries; i++) {
+		layout->entries[i].included = 0;
 	}
-	layout.num_entries = 0;
+	layout->num_entries = 0;
 }
 
 /* Validate and - if needed - normalize layout entries. */
 int normalize_romentries(const struct flashctx *flash)
 {
+	struct flashrom_layout *const layout = get_global_layout();
 	chipsize_t total_size = flash->chip->total_size * 1024;
 	int ret = 0;
 
 	int i;
-	for (i = 0; i < layout.num_entries; i++) {
-		if (layout.entries[i].start >= total_size || layout.entries[i].end >= total_size) {
+	for (i = 0; i < layout->num_entries; i++) {
+		if (layout->entries[i].start >= total_size || layout->entries[i].end >= total_size) {
 			msg_gwarn("Warning: Address range of region \"%s\" exceeds the current chip's "
-				  "address space.\n", layout.entries[i].name);
-			if (layout.entries[i].included)
+				  "address space.\n", layout->entries[i].name);
+			if (layout->entries[i].included)
 				ret = 1;
 		}
-		if (layout.entries[i].start > layout.entries[i].end) {
+		if (layout->entries[i].start > layout->entries[i].end) {
 			msg_gerr("Error: Size of the address range of region \"%s\" is not positive.\n",
-				  layout.entries[i].name);
+				  layout->entries[i].name);
 			ret = 1;
 		}
 	}
