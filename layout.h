@@ -47,11 +47,7 @@ struct romentry {
 
 struct flashrom_layout;
 
-struct layout_include_args {
-	char *name;
-	char *file;
-	struct layout_include_args *next;
-};
+struct layout_include_args;
 
 struct flashrom_flashctx;
 struct flashrom_layout *get_global_layout(void);
