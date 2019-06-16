@@ -1513,16 +1513,18 @@ static int write_by_layout(struct flashctx *const flashctx,
  * contents will be compared.
  *
  * @param flashctx    Flash context to be used.
+ * @param layout      Flash layout information.
  * @param curcontents A buffer of full chip size to read current chip contents into.
  * @param newcontents The new image to compare to.
  * @return 0 on success,
  *	   1 if reading failed,
  *	   3 if the contents don't match.
  */
-static int verify_by_layout(struct flashctx *const flashctx,
-			    void *const curcontents, const uint8_t *const newcontents)
+static int verify_by_layout(
+		struct flashctx *const flashctx,
+		const struct flashrom_layout *const layout,
+		void *const curcontents, const uint8_t *const newcontents)
 {
-	const struct flashrom_layout *const layout = get_layout(flashctx);
 	const struct romentry *entry = NULL;
 
 	while ((entry = layout_next_included(layout, entry))) {
@@ -2029,6 +2031,8 @@ int flashrom_image_write(struct flashctx *const flashctx, void *const buffer, co
 	const size_t flash_size = flashctx->chip->total_size * 1024;
 	const bool verify_all = flashctx->flags.verify_whole_chip;
 	const bool verify = flashctx->flags.verify_after_write;
+	const struct flashrom_layout *const verify_layout =
+		verify_all ? get_default_layout(flashctx) : get_layout(flashctx);
 
 	if (buffer_len != flash_size)
 		return 4;
@@ -2117,19 +2121,14 @@ int flashrom_image_write(struct flashctx *const flashctx, void *const buffer, co
 
 	/* Verify only if we actually changed something. */
 	if (verify && !all_skipped) {
-		const struct flashrom_layout *const layout_bak = flashctx->layout;
-
 		msg_cinfo("Verifying flash... ");
 
 		/* Work around chips which need some time to calm down. */
 		programmer_delay(1000*1000);
 
-		if (verify_all) {
+		if (verify_all)
 			combine_image_by_layout(flashctx, newcontents, oldcontents);
-			flashctx->layout = NULL;
-		}
-		ret = verify_by_layout(flashctx, curcontents, newcontents);
-		flashctx->layout = layout_bak;
+		ret = verify_by_layout(flashctx, verify_layout, curcontents, newcontents);
 		/* If we tried to write, and verification now fails, we
 		   might have an emergency situation. */
 		if (ret)
@@ -2165,6 +2164,7 @@ _free_ret:
  */
 int flashrom_image_verify(struct flashctx *const flashctx, const void *const buffer, const size_t buffer_len)
 {
+	const struct flashrom_layout *const layout = get_layout(flashctx);
 	const size_t flash_size = flashctx->chip->total_size * 1024;
 
 	if (buffer_len != flash_size)
@@ -2183,7 +2183,7 @@ int flashrom_image_verify(struct flashctx *const flashctx, const void *const buf
 		goto _free_ret;
 
 	msg_cinfo("Verifying flash... ");
-	ret = verify_by_layout(flashctx, curcontents, newcontents);
+	ret = verify_by_layout(flashctx, layout, curcontents, newcontents);
 	if (!ret)
 		msg_cinfo("VERIFIED.\n");
 
