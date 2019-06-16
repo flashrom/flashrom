@@ -70,6 +70,7 @@ int get_region_range(struct flashrom_layout *const l, const char *name,
 int process_include_args(struct flashrom_layout *l, const struct layout_include_args *const args);
 const struct romentry *layout_next_included_region(const struct flashrom_layout *, chipoff_t);
 const struct romentry *layout_next_included(const struct flashrom_layout *, const struct romentry *);
+const struct romentry *layout_next(const struct flashrom_layout *, const struct romentry *);
 int included_regions_overlap(const struct flashrom_layout *const flashrom_layout);
 void prepare_layout_for_extraction(struct flashrom_flashctx *flash);
 

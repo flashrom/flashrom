@@ -470,8 +470,13 @@ int flashrom_layout_read_from_ifd(struct flashrom_layout **const layout, struct 
 			goto _finalize_ret;
 		}
 
-		if (chip_layout->base.num_entries != dump_layout.base.num_entries ||
-		    memcmp(chip_layout->entries, dump_layout.entries, sizeof(dump_layout.entries))) {
+		const struct romentry *chip_entry = layout_next(&chip_layout->base, NULL);
+		const struct romentry *dump_entry = layout_next(&dump_layout.base, NULL);
+		while (chip_entry && dump_entry && !memcmp(chip_entry, dump_entry, sizeof(*chip_entry))) {
+			chip_entry = layout_next(&chip_layout->base, chip_entry);
+			dump_entry = layout_next(&dump_layout.base, dump_entry);
+		}
+		if (chip_entry || dump_entry) {
 			msg_cerr("Descriptors don't match!\n");
 			ret = 5;
 			goto _finalize_ret;

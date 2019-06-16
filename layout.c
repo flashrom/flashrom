@@ -41,6 +41,32 @@ const struct flashrom_layout *get_layout(const struct flashrom_flashctx *const f
 		return &flashctx->fallback_layout.base;
 }
 
+static struct romentry *mutable_layout_next(
+		const struct flashrom_layout *const layout, struct romentry *iterator)
+{
+	const struct romentry *const end = layout->entries + layout->num_entries;
+
+	if (iterator)
+		++iterator;
+	else
+		iterator = &layout->entries[0];
+
+	if (iterator < end)
+		return iterator;
+	return NULL;
+}
+
+static struct romentry *_layout_entry_by_name(
+		const struct flashrom_layout *const layout, const char *name)
+{
+	struct romentry *entry = NULL;
+	while ((entry = mutable_layout_next(layout, entry))) {
+		if (!strcmp(entry->name, name))
+			return entry;
+	}
+	return NULL;
+}
+
 #ifndef __LIBPAYLOAD__
 int read_romlayout(const char *name)
 {
@@ -157,14 +183,12 @@ error:
 static int include_region(struct flashrom_layout *const l, const char *name,
 			  const char *file)
 {
-	size_t i;
-	for (i = 0; i < l->num_entries; ++i) {
-		if (!strcmp(l->entries[i].name, name)) {
-			l->entries[i].included = true;
-			if (file)
-				l->entries[i].file = strdup(file);
-			return 0;
-		}
+	struct romentry *const entry = _layout_entry_by_name(l, name);
+	if (entry) {
+		entry->included = true;
+		if (file)
+			entry->file = strdup(file);
+		return 0;
 	}
 	return 1;
 }
@@ -187,13 +211,11 @@ static int find_romentry(struct flashrom_layout *const l, char *name, char *file
 int get_region_range(struct flashrom_layout *const l, const char *name,
 		     unsigned int *start, unsigned int *len)
 {
-	size_t i;
-	for (i = 0; i < l->num_entries; ++i) {
-		if (!strcmp(l->entries[i].name, name)) {
-			*start = l->entries[i].start;
-			*len = l->entries[i].end - l->entries[i].start + 1;
-			return 0;
-		}
+	const struct romentry *const entry = _layout_entry_by_name(l, name);
+	if (entry) {
+		*start = entry->start;
+		*len = entry->end - entry->start + 1;
+		return 0;
 	}
 	return 1;
 }
@@ -246,30 +268,26 @@ int process_include_args(struct flashrom_layout *l, const struct layout_include_
 /* returns boolean 1 if any regions overlap, 0 otherwise */
 int included_regions_overlap(const struct flashrom_layout *const l)
 {
-	size_t i;
+	const struct romentry *lhs = NULL;
 	int overlap_detected = 0;
 
-	for (i = 0; i < l->num_entries; i++) {
-		size_t j;
-
-		if (!l->entries[i].included)
+	while ((lhs = layout_next(l, lhs))) {
+		if (!lhs->included)
 			continue;
 
-		for (j = i + 1; j < l->num_entries; j++) {
-			if (!l->entries[j].included)
+		const struct romentry *rhs = lhs;
+		while ((rhs = layout_next(l, rhs))) {
+			if (rhs->included)
 				continue;
 
-			if (l->entries[i].start > l->entries[j].end)
+			if (lhs->start > rhs->end)
 				continue;
 
-			if (l->entries[i].end < l->entries[j].start)
+			if (lhs->end < rhs->start)
 				continue;
 
-			msg_gdbg("Regions %s [0x%08x-0x%08x] and "
-				"%s [0x%08x-0x%08x] overlap\n",
-				l->entries[i].name, l->entries[i].start,
-				l->entries[i].end, l->entries[j].name,
-				l->entries[j].start, l->entries[j].end);
+			msg_gdbg("Regions %s [0x%08x-0x%08x] and %s [0x%08x-0x%08x] overlap\n",
+				 lhs->name, lhs->start, lhs->end, rhs->name, rhs->start, rhs->end);
 			overlap_detected = 1;
 		}
 	}
@@ -305,17 +323,17 @@ int normalize_romentries(const struct flashctx *flash)
 	chipsize_t total_size = flash->chip->total_size * 1024;
 	int ret = 0;
 
-	unsigned int i;
-	for (i = 0; i < layout->num_entries; i++) {
-		if (layout->entries[i].start >= total_size || layout->entries[i].end >= total_size) {
-			msg_gwarn("Warning: Address range of region \"%s\" exceeds the current chip's "
-				  "address space.\n", layout->entries[i].name);
-			if (layout->entries[i].included)
+	const struct romentry *entry = NULL;
+	while ((entry = layout_next(layout, entry))) {
+		if (entry->start >= total_size || entry->end >= total_size) {
+			msg_gwarn("Warning: Address range of region \"%s\" "
+				  "exceeds the current chip's address space.\n", entry->name);
+			if (entry->included)
 				ret = 1;
 		}
-		if (layout->entries[i].start > layout->entries[i].end) {
+		if (entry->start > entry->end) {
 			msg_gerr("Error: Size of the address range of region \"%s\" is not positive.\n",
-				  layout->entries[i].name);
+				  entry->name);
 			ret = 1;
 		}
 	}
@@ -326,17 +344,18 @@ int normalize_romentries(const struct flashctx *flash)
 void prepare_layout_for_extraction(struct flashctx *flash)
 {
 	const struct flashrom_layout *const l = get_layout(flash);
-	unsigned int i, j;
+	struct romentry *entry = NULL;
+	unsigned int i;
 
-	for (i = 0; i < l->num_entries; ++i) {
-		l->entries[i].included = true;
+	while ((entry = mutable_layout_next(l, entry))) {
+		entry->included = true;
 
-		if (!l->entries[i].file)
-			l->entries[i].file = strdup(l->entries[i].name);
+		if (!entry->file)
+			entry->file = strdup(entry->name);
 
-		for (j = 0; l->entries[i].file[j]; j++) {
-			if (isspace(l->entries[i].file[j]))
-				l->entries[i].file[j] = '_';
+		for (i = 0; entry->file[i]; ++i) {
+			if (isspace(entry->file[i]))
+				entry->file[i] = '_';
 		}
 	}
 }
@@ -344,16 +363,15 @@ void prepare_layout_for_extraction(struct flashctx *flash)
 const struct romentry *layout_next_included_region(
 		const struct flashrom_layout *const l, const chipoff_t where)
 {
-	unsigned int i;
-	const struct romentry *lowest = NULL;
+	const struct romentry *entry = NULL, *lowest = NULL;
 
-	for (i = 0; i < l->num_entries; ++i) {
-		if (!l->entries[i].included)
+	while ((entry = layout_next(l, entry))) {
+		if (!entry->included)
 			continue;
-		if (l->entries[i].end < where)
+		if (entry->end < where)
 			continue;
-		if (!lowest || lowest->start > l->entries[i].start)
-			lowest = &l->entries[i];
+		if (!lowest || lowest->start > entry->start)
+			lowest = entry;
 	}
 
 	return lowest;
@@ -362,19 +380,17 @@ const struct romentry *layout_next_included_region(
 const struct romentry *layout_next_included(
 		const struct flashrom_layout *const layout, const struct romentry *iterator)
 {
-	const struct romentry *const end = layout->entries + layout->num_entries;
-
-	if (iterator)
-		++iterator;
-	else
-		iterator = &layout->entries[0];
-
-	for (; iterator < end; ++iterator) {
-		if (!iterator->included)
-			continue;
-		return iterator;
+	while ((iterator = layout_next(layout, iterator))) {
+		if (iterator->included)
+			break;
 	}
-	return NULL;
+	return iterator;
+}
+
+const struct romentry *layout_next(
+		const struct flashrom_layout *const layout, const struct romentry *iterator)
+{
+	return mutable_layout_next(layout, (struct romentry *)iterator);
 }
 
 /**
