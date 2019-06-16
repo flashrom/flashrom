@@ -823,7 +823,7 @@ notfound:
 		return -1;
 
 	/* Fill default layout covering the whole chip. */
-	if (flashrom_layout_new(&flash->default_layout, 1) ||
+	if (flashrom_layout_new(&flash->default_layout) ||
 	    flashrom_layout_add_region(flash->default_layout,
 			0, flash->chip->total_size * 1024 - 1, "complete flash") ||
 	    flashrom_layout_include_region(flash->default_layout, "complete flash"))

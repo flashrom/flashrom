@@ -1279,7 +1279,7 @@ int layout_from_ich_descriptors(
 		return 1;
 	}
 
-	if (flashrom_layout_new(layout, ARRAY_SIZE(regions)))
+	if (flashrom_layout_new(layout))
 		return 2;
 
 	ssize_t i;

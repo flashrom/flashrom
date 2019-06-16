@@ -34,7 +34,7 @@ static struct flashrom_layout *global_layout;
 struct flashrom_layout *get_global_layout(void)
 {
 	if (!global_layout)
-		flashrom_layout_new(&global_layout, 0);
+		flashrom_layout_new(&global_layout);
 	return global_layout;
 }
 
@@ -378,12 +378,11 @@ const struct romentry *layout_next(
  * @brief Create a new, empty layout.
  *
  * @param layout Pointer to returned layout reference.
- * @param count  Number of layout entries to allocate.
  *
  * @return 0 on success,
  *         1 if out of memory.
  */
-int flashrom_layout_new(struct flashrom_layout **const layout, const unsigned int count)
+int flashrom_layout_new(struct flashrom_layout **const layout)
 {
 	*layout = malloc(sizeof(**layout));
 	if (!*layout) {
