@@ -33,12 +33,17 @@ struct flashrom_layout *get_global_layout(void)
 	return &global_layout;
 }
 
+const struct flashrom_layout *get_default_layout(const struct flashrom_flashctx *const flashctx)
+{
+	return flashctx->default_layout;
+}
+
 const struct flashrom_layout *get_layout(const struct flashrom_flashctx *const flashctx)
 {
 	if (flashctx->layout && flashctx->layout->num_entries)
 		return flashctx->layout;
 	else
-		return flashctx->default_layout;
+		return get_default_layout(flashctx);
 }
 
 static struct romentry *mutable_layout_next(
