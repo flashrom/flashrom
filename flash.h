@@ -265,7 +265,7 @@ struct flashrom_flashctx {
 	chipaddr virtual_registers;
 	struct registered_master *mst;
 	const struct flashrom_layout *layout;
-	struct single_layout fallback_layout;
+	struct flashrom_layout *default_layout;
 	struct {
 		bool force;
 		bool force_boardmismatch;

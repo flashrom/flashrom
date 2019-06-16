@@ -106,6 +106,7 @@ int flashrom_image_write(struct flashrom_flashctx *, void *buffer, size_t buffer
 int flashrom_image_verify(struct flashrom_flashctx *, const void *buffer, size_t buffer_len);
 
 struct flashrom_layout;
+int flashrom_layout_new(struct flashrom_layout **, unsigned int count);
 int flashrom_layout_read_from_ifd(struct flashrom_layout **, struct flashrom_flashctx *, const void *dump, size_t len);
 int flashrom_layout_read_fmap_from_rom(struct flashrom_layout **,
 		struct flashrom_flashctx *, off_t offset, size_t length);

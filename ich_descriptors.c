@@ -1261,7 +1261,9 @@ int read_ich_descriptors_via_fdo(enum ich_chipset cs, void *spibar, struct ich_d
  *	   1 if the descriptor couldn't be parsed,
  *	   2 when out of memory.
  */
-int layout_from_ich_descriptors(struct ich_layout *const layout, const void *const dump, const size_t len)
+int layout_from_ich_descriptors(
+		struct flashrom_layout **const layout,
+		const void *const dump, const size_t len)
 {
 	static const char *const regions[] = {
 		"fd", "bios", "me", "gbe", "pd", "reg5", "bios2", "reg7", "ec", "reg9", "ie",
@@ -1277,10 +1279,8 @@ int layout_from_ich_descriptors(struct ich_layout *const layout, const void *con
 		return 1;
 	}
 
-	memset(layout, 0x00, sizeof(*layout));
-	layout->base.entries = layout->entries;
-	layout->base.capacity = ARRAY_SIZE(layout->entries);
-	layout->base.num_entries = 0;
+	if (flashrom_layout_new(layout, ARRAY_SIZE(regions)))
+		return 2;
 
 	ssize_t i;
 	const ssize_t nr = MIN(ich_number_of_regions(cs, &desc.content), (ssize_t)ARRAY_SIZE(regions));
@@ -1289,8 +1289,11 @@ int layout_from_ich_descriptors(struct ich_layout *const layout, const void *con
 		const chipoff_t limit = ICH_FREG_LIMIT(desc.region.FLREGs[i]);
 		if (limit <= base)
 			continue;
-		if (flashrom_layout_add_region(&layout->base, base, limit, regions[i]))
+		if (flashrom_layout_add_region(*layout, base, limit, regions[i])) {
+			flashrom_layout_release(*layout);
+			*layout = NULL;
 			return 2;
+		}
 	}
 	return 0;
 }

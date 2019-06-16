@@ -564,11 +564,6 @@ struct ich_descriptors {
 	struct ich_desc_upper_map upper;
 };
 
-struct ich_layout {
-	struct flashrom_layout base;
-	struct romentry entries[MAX_NUM_FLREGS];
-};
-
 ssize_t ich_number_of_regions(enum ich_chipset cs, const struct ich_desc_content *content);
 ssize_t ich_number_of_masters(enum ich_chipset cs, const struct ich_desc_content *content);
 
@@ -587,6 +582,6 @@ int read_ich_descriptors_from_dump(const uint32_t *dump, size_t len, enum ich_ch
 int read_ich_descriptors_via_fdo(enum ich_chipset cs, void *spibar, struct ich_descriptors *desc);
 int getFCBA_component_density(enum ich_chipset cs, const struct ich_descriptors *desc, uint8_t idx);
 
-int layout_from_ich_descriptors(struct ich_layout *, const void *dump, size_t len);
+int layout_from_ich_descriptors(struct flashrom_layout **, const void *dump, size_t len);
 
 #endif /* __ICH_DESCRIPTORS_H__ */

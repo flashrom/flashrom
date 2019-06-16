@@ -330,13 +330,14 @@ int flashrom_flash_probe(struct flashrom_flashctx **const flashctx,
 			ret = 0;
 			/* We found one chip, now check that there is no second match. */
 			if (probe_flash(&registered_masters[i], flash_idx + 1, &second_flashctx, 0) != -1) {
+				flashrom_layout_release(second_flashctx.default_layout);
 				ret = 3;
 				break;
 			}
 		}
 	}
 	if (ret) {
-		free(*flashctx);
+		flashrom_flash_release(*flashctx);
 		*flashctx = NULL;
 	}
 	return ret;
@@ -360,6 +361,7 @@ size_t flashrom_flash_getsize(const struct flashrom_flashctx *const flashctx)
  */
 void flashrom_flash_release(struct flashrom_flashctx *const flashctx)
 {
+	flashrom_layout_release(flashctx->default_layout);
 	free(flashctx);
 }
 
@@ -435,16 +437,10 @@ int flashrom_layout_read_from_ifd(struct flashrom_layout **const layout, struct 
 #ifndef __FLASHROM_LITTLE_ENDIAN__
 	return 6;
 #else
-	struct ich_layout dump_layout;
+	struct flashrom_layout *dump_layout, *chip_layout;
 	int ret = 1;
 
 	void *const desc = malloc(0x1000);
-	struct ich_layout *const chip_layout = malloc(sizeof(*chip_layout));
-	if (!desc || !chip_layout) {
-		msg_gerr("Out of memory!\n");
-		goto _free_ret;
-	}
-
 	if (prepare_flash_access(flashctx, true, false, false, false))
 		goto _free_ret;
 
@@ -457,7 +453,7 @@ int flashrom_layout_read_from_ifd(struct flashrom_layout **const layout, struct 
 	}
 	msg_cinfo("done.\n");
 
-	if (layout_from_ich_descriptors(chip_layout, desc, 0x1000)) {
+	if (layout_from_ich_descriptors(&chip_layout, desc, 0x1000)) {
 		msg_cerr("Couldn't parse the descriptor!\n");
 		ret = 3;
 		goto _finalize_ret;
@@ -470,12 +466,13 @@ int flashrom_layout_read_from_ifd(struct flashrom_layout **const layout, struct 
 			goto _finalize_ret;
 		}
 
-		const struct romentry *chip_entry = layout_next(&chip_layout->base, NULL);
-		const struct romentry *dump_entry = layout_next(&dump_layout.base, NULL);
+		const struct romentry *chip_entry = layout_next(chip_layout, NULL);
+		const struct romentry *dump_entry = layout_next(dump_layout, NULL);
 		while (chip_entry && dump_entry && !memcmp(chip_entry, dump_entry, sizeof(*chip_entry))) {
-			chip_entry = layout_next(&chip_layout->base, chip_entry);
-			dump_entry = layout_next(&dump_layout.base, dump_entry);
+			chip_entry = layout_next(chip_layout, chip_entry);
+			dump_entry = layout_next(dump_layout, dump_entry);
 		}
+		flashrom_layout_release(dump_layout);
 		if (chip_entry || dump_entry) {
 			msg_cerr("Descriptors don't match!\n");
 			ret = 5;
@@ -490,7 +487,7 @@ _finalize_ret:
 	finalize_flash_access(flashctx);
 _free_ret:
 	if (ret)
-		free(chip_layout);
+		flashrom_layout_release(chip_layout);
 	free(desc);
 	return ret;
 #endif

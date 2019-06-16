@@ -38,7 +38,7 @@ const struct flashrom_layout *get_layout(const struct flashrom_flashctx *const f
 	if (flashctx->layout && flashctx->layout->num_entries)
 		return flashctx->layout;
 	else
-		return &flashctx->fallback_layout.base;
+		return flashctx->default_layout;
 }
 
 static struct romentry *mutable_layout_next(
@@ -382,6 +382,32 @@ const struct romentry *layout_next(
  * @addtogroup flashrom-layout
  * @{
  */
+
+/**
+ * @brief Create a new, empty layout.
+ *
+ * @param layout Pointer to returned layout reference.
+ * @param count  Number of layout entries to allocate.
+ *
+ * @return 0 on success,
+ *         1 if out of memory.
+ */
+int flashrom_layout_new(struct flashrom_layout **const layout, const unsigned int count)
+{
+	*layout = malloc(sizeof(**layout) + count * sizeof(struct romentry));
+	if (!*layout) {
+		msg_gerr("Error creating layout: %s\n", strerror(errno));
+		return 1;
+	}
+
+	const struct flashrom_layout tmp = {
+		.entries	= (void *)((char *)*layout + sizeof(**layout)),
+		.capacity	= count,
+		.num_entries	= 0,
+	};
+	**layout = tmp;
+	return 0;
+}
 
 /**
  * @brief Add another region to an existing layout.

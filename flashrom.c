@@ -822,15 +822,12 @@ notfound:
 	if (!flash->chip)
 		return -1;
 
-	/* Fill fallback layout covering the whole chip. */
-	struct single_layout *const fallback = &flash->fallback_layout;
-	fallback->base.entries		= &fallback->entry;
-	fallback->base.capacity		= 1;
-	fallback->base.num_entries	= 0;
-	if (flashrom_layout_add_region(&fallback->base,
+	/* Fill default layout covering the whole chip. */
+	if (flashrom_layout_new(&flash->default_layout, 1) ||
+	    flashrom_layout_add_region(flash->default_layout,
 			0, flash->chip->total_size * 1024 - 1, "complete flash") ||
-	    flashrom_layout_include_region(&fallback->base, "complete flash"))
-		return -1;
+	    flashrom_layout_include_region(flash->default_layout, "complete flash"))
+	        return -1;
 
 	tmp = flashbuses_to_text(flash->chip->bustype);
 	msg_cinfo("%s %s flash chip \"%s\" (%d kB, %s) ", force ? "Assuming" : "Found",
