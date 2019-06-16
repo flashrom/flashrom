@@ -331,6 +331,7 @@ int flashrom_flash_probe(struct flashrom_flashctx **const flashctx,
 			/* We found one chip, now check that there is no second match. */
 			if (probe_flash(&registered_masters[i], flash_idx + 1, &second_flashctx, 0) != -1) {
 				flashrom_layout_release(second_flashctx.default_layout);
+				free(second_flashctx.chip);
 				ret = 3;
 				break;
 			}
@@ -362,6 +363,7 @@ size_t flashrom_flash_getsize(const struct flashrom_flashctx *const flashctx)
 void flashrom_flash_release(struct flashrom_flashctx *const flashctx)
 {
 	flashrom_layout_release(flashctx->default_layout);
+	free(flashctx->chip);
 	free(flashctx);
 }
 
