@@ -363,6 +363,10 @@ static int dediprog_set_spi_speed(unsigned int spispeed_idx)
 static int prepare_rw_cmd(
 		struct flashctx *const flash, uint8_t *data_packet, unsigned int count,
 		uint8_t dedi_spi_cmd, unsigned int *value, unsigned int *idx, unsigned int start, int is_read) {
+	if (count > 0xffff) {
+		msg_cerr("prepare_rw_cmd called with count=%#010x. Please report a bug at flashrom@flashrom.org\n", count);
+		return 1;
+	}
 	/* First 5 bytes are common in both generations. */
 	data_packet[0] = count & 0xff;
 	data_packet[1] = (count >> 8) & 0xff;
@@ -544,9 +548,19 @@ static int dediprog_spi_read(struct flashctx *flash, uint8_t *buf, unsigned int 
 
 	/* Round down. */
 	bulklen = (len - residue) / chunksize * chunksize;
-	ret = dediprog_spi_bulk_read(flash, buf + residue, start + residue, bulklen);
-	if (ret)
-		goto err;
+
+	/* dediprog_spi_bulk_read can read at the most 2^16-1 chucks of 512 bytes per invocation */
+	unsigned int bulkend = residue + bulklen;
+	unsigned int max_transfer_size = 0x1000000;
+	for (unsigned int offset = residue; offset < bulkend; ) {
+		unsigned int transfer_size = bulkend - offset;
+		if (bulklen > max_transfer_size)
+			transfer_size = max_transfer_size;
+		ret = dediprog_spi_bulk_read(flash, buf + offset, start + offset, transfer_size);
+		if (ret)
+			goto err;
+		offset += transfer_size;
+        }
 
 	len -= residue + bulklen;
 	if (len != 0) {
