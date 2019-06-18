@@ -99,7 +99,19 @@ int default_spi_write_256(struct flashctx *flash, const uint8_t *buf, unsigned i
 int spi_chip_read(struct flashctx *flash, uint8_t *buf, unsigned int start,
 		  unsigned int len)
 {
-	return flash->mst->spi.read(flash, buf, start, len);
+	int ret;
+	size_t to_read;
+	for (; len; len -= to_read, buf += to_read, start += to_read) {
+		/* Do not cross 16MiB boundaries in a single transfer.
+		   This helps with
+		   o multi-die 4-byte-addressing chips,
+		   o dediprog that has a protocol limit of 32MiB-512B. */
+		to_read = min(ALIGN_DOWN(start + 16*MiB, 16*MiB) - start, len);
+		ret = flash->mst->spi.read(flash, buf, start, to_read);
+		if (ret)
+			return ret;
+	}
+	return 0;
 }
 
 /*

@@ -657,43 +657,20 @@ int spi_nbyte_read(struct flashctx *flash, unsigned int address, uint8_t *bytes,
 
 /*
  * Read a part of the flash chip.
- * FIXME: Use the chunk code from Michael Karcher instead.
- * Each naturally aligned area is read separately in chunks with a maximum size of chunksize.
+ * Data is read in chunks with a maximum size of chunksize.
  */
 int spi_read_chunked(struct flashctx *flash, uint8_t *buf, unsigned int start,
 		     unsigned int len, unsigned int chunksize)
 {
-	int rc = 0;
-	unsigned int i, j, starthere, lenhere, toread;
-	/* Limit for multi-die 4-byte-addressing chips. */
-	unsigned int area_size = min(flash->chip->total_size * 1024, 16 * 1024 * 1024);
-
-	/* Warning: This loop has a very unusual condition and body.
-	 * The loop needs to go through each area with at least one affected
-	 * byte. The lowest area number is (start / area_size) since that
-	 * division rounds down. The highest area number we want is the area
-	 * where the last byte of the range lives. That last byte has the
-	 * address (start + len - 1), thus the highest area number is
-	 * (start + len - 1) / area_size. Since we want to include that last
-	 * area as well, the loop condition uses <=.
-	 */
-	for (i = start / area_size; i <= (start + len - 1) / area_size; i++) {
-		/* Byte position of the first byte in the range in this area. */
-		/* starthere is an offset to the base address of the chip. */
-		starthere = max(start, i * area_size);
-		/* Length of bytes in the range in this area. */
-		lenhere = min(start + len, (i + 1) * area_size) - starthere;
-		for (j = 0; j < lenhere; j += chunksize) {
-			toread = min(chunksize, lenhere - j);
-			rc = spi_nbyte_read(flash, starthere + j, buf + starthere - start + j, toread);
-			if (rc)
-				break;
-		}
-		if (rc)
-			break;
+	int ret;
+	size_t to_read;
+	for (; len; len -= to_read, buf += to_read, start += to_read) {
+		to_read = min(chunksize, len);
+		ret = spi_nbyte_read(flash, start, buf, to_read);
+		if (ret)
+			return ret;
 	}
-
-	return rc;
+	return 0;
 }
 
 /*

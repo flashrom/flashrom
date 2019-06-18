@@ -37,6 +37,12 @@
 #include "libflashrom.h"
 #include "layout.h"
 
+#define KiB (1024)
+#define MiB (1024 * KiB)
+
+/* Assumes `n` and `a` are at most 64-bit wide (to avoid typeof() operator). */
+#define ALIGN_DOWN(n, a) ((n) & ~((uint64_t)(a) - 1))
+
 #define ERROR_PTR ((void*)-1)
 
 /* Error codes */
