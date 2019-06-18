@@ -362,7 +362,15 @@ static int dediprog_set_spi_speed(unsigned int spispeed_idx)
 
 static int prepare_rw_cmd(
 		struct flashctx *const flash, uint8_t *data_packet, unsigned int count,
-		uint8_t dedi_spi_cmd, unsigned int *value, unsigned int *idx, unsigned int start, int is_read) {
+		uint8_t dedi_spi_cmd, unsigned int *value, unsigned int *idx, unsigned int start, int is_read)
+{
+	if (count >= 1 << 16) {
+		msg_perr("%s: Unsupported transfer length of %u blocks! "
+			 "Please report a bug at flashrom@flashrom.org\n",
+			 __func__, count);
+		return 1;
+	}
+
 	/* First 5 bytes are common in both generations. */
 	data_packet[0] = count & 0xff;
 	data_packet[1] = (count >> 8) & 0xff;
