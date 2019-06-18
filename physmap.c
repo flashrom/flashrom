@@ -131,27 +131,6 @@ void sys_physunmap_unaligned(void *virt_addr, size_t len)
 }
 #elif defined(__MACH__) && defined(__APPLE__)
 
-#define MEM_DEV "DirectHW"
-
-static void *sys_physmap(uintptr_t phys_addr, size_t len)
-{
-	/* The short form of ?: is a GNU extension.
-	 * FIXME: map_physical returns NULL both for errors and for success
-	 * if the region is mapped at virtual address zero. If in doubt, report
-	 * an error until a better interface exists.
-	 */
-	return map_physical(phys_addr, len) ? : ERROR_PTR;
-}
-
-/* The OS X driver does not differentiate between mapping types. */
-#define sys_physmap_rw_uncached	sys_physmap
-#define sys_physmap_ro_cached	sys_physmap
-
-void sys_physunmap_unaligned(void *virt_addr, size_t len)
-{
-	unmap_physical(virt_addr, len);
-}
-
 #else
 #include <sys/mman.h>
 
