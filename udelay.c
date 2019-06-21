@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include "flash.h"
+#include "programmer.h"
 
 static bool use_clock_gettime = false;
 

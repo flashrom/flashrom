@@ -16,6 +16,7 @@
 
 #include <string.h>
 #include "flash.h"
+#include "chipdrivers.h"
 #include "ene.h"
 #include "edi.h"
 
