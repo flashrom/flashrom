@@ -550,14 +550,6 @@ int erase_block_jedec(struct flashctx *flash, unsigned int page,
 	return erase_block_jedec_common(flash, page, size, mask);
 }
 
-int erase_chip_jedec(struct flashctx *flash)
-{
-	unsigned int mask;
-
-	mask = getaddrmask(flash->chip);
-	return erase_chip_jedec_common(flash, mask);
-}
-
 struct unlockblock {
 	unsigned int size;
 	unsigned int count;
@@ -614,11 +606,6 @@ static int printlock_regspace2_block(const struct flashctx *flash, chipaddr lock
 		break;
 	}
 	return 0;
-}
-
-int printlock_regspace2_blocks(const struct flashctx *flash, const struct unlockblock *blocks)
-{
-	return regspace2_walk_unlockblocks(flash, blocks, &printlock_regspace2_block);
 }
 
 static int printlock_regspace2_uniform(struct flashctx *flash, unsigned long block_size)

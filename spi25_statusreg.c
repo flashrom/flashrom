@@ -22,20 +22,6 @@
 #include "spi.h"
 
 /* === Generic functions === */
-int spi_write_status_enable(struct flashctx *flash)
-{
-	static const unsigned char cmd[JEDEC_EWSR_OUTSIZE] = { JEDEC_EWSR };
-	int result;
-
-	/* Send EWSR (Enable Write Status Register). */
-	result = spi_send_command(flash, sizeof(cmd), JEDEC_EWSR_INSIZE, cmd, NULL);
-
-	if (result)
-		msg_cerr("%s failed\n", __func__);
-
-	return result;
-}
-
 static int spi_write_status_register_flag(struct flashctx *flash, int status, const unsigned char enable_opcode)
 {
 	int result;
