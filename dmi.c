@@ -250,7 +250,7 @@ static int legacy_decode(uint8_t *buf)
 	return 0;
 }
 
-int dmi_fill(void)
+static int dmi_fill(void)
 {
 	size_t fp;
 	uint8_t *dmi_mem;
@@ -344,7 +344,7 @@ static char *get_dmi_string(const char *string_name)
 	return result;
 }
 
-int dmi_fill(void)
+static int dmi_fill(void)
 {
 	int i;
 	char *chassis_type;

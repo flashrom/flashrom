@@ -57,7 +57,7 @@ void exit_conf_mode_ite(uint16_t port)
 	sio_write(port, 0x02, 0x02);
 }
 
-uint16_t probe_id_ite(uint16_t port)
+static uint16_t probe_id_ite(uint16_t port)
 {
 	uint16_t id;
 

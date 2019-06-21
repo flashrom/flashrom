@@ -455,19 +455,19 @@ static int spi_write_cmd(struct flashctx *const flash, const uint8_t op,
 	return result ? result : status;
 }
 
-int spi_chip_erase_60(struct flashctx *flash)
+static int spi_chip_erase_60(struct flashctx *flash)
 {
 	/* This usually takes 1-85s, so wait in 1s steps. */
 	return spi_simple_write_cmd(flash, 0x60, 1000 * 1000);
 }
 
-int spi_chip_erase_62(struct flashctx *flash)
+static int spi_chip_erase_62(struct flashctx *flash)
 {
 	/* This usually takes 2-5s, so wait in 100ms steps. */
 	return spi_simple_write_cmd(flash, 0x62, 100 * 1000);
 }
 
-int spi_chip_erase_c7(struct flashctx *flash)
+static int spi_chip_erase_c7(struct flashctx *flash)
 {
 	/* This usually takes 1-85s, so wait in 1s steps. */
 	return spi_simple_write_cmd(flash, 0xc7, 1000 * 1000);

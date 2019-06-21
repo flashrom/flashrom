@@ -106,7 +106,7 @@ static int wait_for(const unsigned int mask, const unsigned int expected_value,
 
 /* IT8502 employs a scratch RAM when flash is being updated. Call the following
  * two functions before/after flash erase/program. */
-void it85xx_enter_scratch_rom(void)
+static void it85xx_enter_scratch_rom(void)
 {
 	int ret, tries;
 
@@ -163,7 +163,7 @@ void it85xx_enter_scratch_rom(void)
 	}
 }
 
-void it85xx_exit_scratch_rom(void)
+static void it85xx_exit_scratch_rom(void)
 {
 #if 0
 	int ret;

@@ -457,7 +457,7 @@ int edi_chip_read(struct flashctx *flash, uint8_t *buf, unsigned int start, unsi
 	return 0;
 }
 
-int edi_shutdown(void *data)
+static int edi_shutdown(void *data)
 {
 	struct flashctx *flash;
 	int rc;

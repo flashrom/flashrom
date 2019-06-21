@@ -266,7 +266,7 @@ struct undo_pci_write_data {
 	};
 };
 
-int undo_pci_write(void *p)
+static int undo_pci_write(void *p)
 {
 	struct undo_pci_write_data *data = p;
 	if (pacc == NULL || data->dev == NULL) {

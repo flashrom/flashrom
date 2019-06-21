@@ -738,8 +738,7 @@ static int compare_range(const uint8_t *wantbuf, const uint8_t *havebuf, unsigne
 }
 
 /* start is an offset to the base address of the flash chip */
-int check_erased_range(struct flashctx *flash, unsigned int start,
-		       unsigned int len)
+static int check_erased_range(struct flashctx *flash, unsigned int start, unsigned int len)
 {
 	int ret;
 	uint8_t *cmpbuf = malloc(len);
@@ -2055,7 +2054,7 @@ void list_programmers_linebreak(int startcol, int cols, int paren)
 	}
 }
 
-void print_sysinfo(void)
+static void print_sysinfo(void)
 {
 #if IS_WINDOWS
 	SYSTEM_INFO si;
@@ -2235,8 +2234,8 @@ int selfcheck(void)
 /* FIXME: This function signature needs to be improved once doit() has a better
  * function signature.
  */
-int chip_safety_check(const struct flashctx *flash, int force, int read_it, int write_it, int erase_it,
-		      int verify_it)
+static int chip_safety_check(const struct flashctx *flash, int force,
+			     int read_it, int write_it, int erase_it, int verify_it)
 {
 	const struct flashchip *chip = flash->chip;
 

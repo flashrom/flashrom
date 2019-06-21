@@ -442,7 +442,7 @@ void prettyprint_ich_descriptor_master(const enum ich_chipset cs, const struct i
 	msg_pdbg2("\n");
 }
 
-void prettyprint_ich_descriptor_straps_ich8(const struct ich_descriptors *desc)
+static void prettyprint_ich_descriptor_straps_ich8(const struct ich_descriptors *desc)
 {
 	static const char * const str_GPIO12[4] = {
 		"GPIO12",
@@ -504,7 +504,7 @@ static void prettyprint_ich_descriptor_straps_56_pciecs(uint8_t conf, uint8_t of
 	msg_pdbg2("\n");
 }
 
-void prettyprint_ich_descriptor_pchstraps45678_56(const struct ich_desc_south_strap *s)
+static void prettyprint_ich_descriptor_pchstraps45678_56(const struct ich_desc_south_strap *s)
 {
 	/* PCHSTRP4 */
 	msg_pdbg2("Intel PHY is %s.\n",
@@ -528,7 +528,7 @@ void prettyprint_ich_descriptor_pchstraps45678_56(const struct ich_desc_south_st
 	/* PCHSTRP8 */
 }
 
-void prettyprint_ich_descriptor_pchstraps111213_56(const struct ich_desc_south_strap *s)
+static void prettyprint_ich_descriptor_pchstraps111213_56(const struct ich_desc_south_strap *s)
 {
 	/* PCHSTRP11 */
 	msg_pdbg2("SMLink1 GP Address is %sabled.\n",
@@ -544,7 +544,7 @@ void prettyprint_ich_descriptor_pchstraps111213_56(const struct ich_desc_south_s
 	/* PCHSTRP13 */
 }
 
-void prettyprint_ich_descriptor_straps_ibex(const struct ich_desc_south_strap *s)
+static void prettyprint_ich_descriptor_straps_ibex(const struct ich_desc_south_strap *s)
 {
 	static const uint8_t dec_t209min[4] = {
 		100,
@@ -642,7 +642,7 @@ void prettyprint_ich_descriptor_straps_ibex(const struct ich_desc_south_strap *s
 	msg_pdbg2("\n");
 }
 
-void prettyprint_ich_descriptor_straps_cougar(const struct ich_desc_south_strap *s)
+static void prettyprint_ich_descriptor_straps_cougar(const struct ich_desc_south_strap *s)
 {
 	msg_pdbg2("--- PCH ---\n");
 
@@ -811,7 +811,7 @@ void prettyprint_ich_descriptor_straps(enum ich_chipset cs, const struct ich_des
 	}
 }
 
-void prettyprint_rdid(uint32_t reg_val)
+static void prettyprint_rdid(uint32_t reg_val)
 {
 	uint8_t mid = reg_val & 0xFF;
 	uint16_t did = ((reg_val >> 16) & 0xFF) | (reg_val & 0xFF00);

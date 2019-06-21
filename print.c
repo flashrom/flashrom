@@ -423,7 +423,7 @@ static void print_supported_boards_helper(const struct board_info *boards,
 }
 #endif
 
-void print_supported_devs(const struct programmer_entry prog, const char *const type)
+static void print_supported_devs(const struct programmer_entry prog, const char *const type)
 {
 	const struct dev_entry *const devs = prog.devs.dev;
 	msg_ginfo("\nSupported %s devices for the %s programmer:\n", type, prog.name);

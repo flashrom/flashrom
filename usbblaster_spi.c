@@ -67,7 +67,7 @@ static struct ftdi_context ftdic;
 
 /* The programmer shifts bits in the wrong order for SPI, so we use this method to reverse the bits when needed.
  * http://graphics.stanford.edu/~seander/bithacks.html#ReverseByteWith32Bits */
-uint8_t reverse(uint8_t b)
+static uint8_t reverse(uint8_t b)
 {
 	return ((b * 0x0802LU & 0x22110LU) | (b * 0x8020LU & 0x88440LU)) * 0x10101LU >> 16;
 }

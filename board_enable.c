@@ -67,7 +67,7 @@ void sio_mask(uint16_t port, uint8_t reg, uint8_t data, uint8_t mask)
 }
 
 /* Winbond W83697 documentation indicates that the index register has to be written for each access. */
-void sio_mask_alzheimer(uint16_t port, uint8_t reg, uint8_t data, uint8_t mask)
+static void sio_mask_alzheimer(uint16_t port, uint8_t reg, uint8_t data, uint8_t mask)
 {
 	uint8_t tmp;
 
@@ -519,7 +519,7 @@ static void w836xx_memw_enable(uint16_t port)
  * Supported chips:
  * W83697HF/F/HG, W83697SF/UF/UG
  */
-void w83697xx_memw_enable(uint16_t port)
+static void w83697xx_memw_enable(uint16_t port)
 {
 	w836xx_ext_enter(port);
 	if (!(sio_read(port, 0x24) & 0x02)) { /* Flash ROM enabled? */
