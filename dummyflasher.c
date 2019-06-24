@@ -56,10 +56,10 @@ static unsigned int emu_jedec_be_52_size = 0;
 static unsigned int emu_jedec_be_d8_size = 0;
 static unsigned int emu_jedec_ce_60_size = 0;
 static unsigned int emu_jedec_ce_c7_size = 0;
-unsigned char spi_blacklist[256];
-unsigned char spi_ignorelist[256];
-int spi_blacklist_size = 0;
-int spi_ignorelist_size = 0;
+static unsigned char spi_blacklist[256];
+static unsigned char spi_ignorelist[256];
+static int spi_blacklist_size = 0;
+static int spi_ignorelist_size = 0;
 static uint8_t emu_status = 0;
 
 /* A legit complete SFDP table based on the MX25L6436E (rev. 1.8) datasheet. */
@@ -129,7 +129,7 @@ static const struct par_master par_master_dummy = {
 		.chip_writen		= dummy_chip_writen,
 };
 
-enum chipbustype dummy_buses_supported = BUS_NONE;
+static enum chipbustype dummy_buses_supported = BUS_NONE;
 
 static int dummy_shutdown(void *data)
 {

@@ -24,7 +24,7 @@
 #include "programmer.h"
 #include "layout.h"
 
-struct romentry entries[MAX_ROMLAYOUT];
+static struct romentry entries[MAX_ROMLAYOUT];
 static struct flashrom_layout global_layout = { entries, 0 };
 
 struct flashrom_layout *get_global_layout(void)

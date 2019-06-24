@@ -36,7 +36,7 @@
 #define MCP6X_SPI_REQUEST	0
 #define MCP6X_SPI_GRANT		8
 
-void *mcp6x_spibar = NULL;
+static void *mcp6x_spibar = NULL;
 
 /* Cached value of last GPIO state. */
 static uint8_t mcp_gpiostate;

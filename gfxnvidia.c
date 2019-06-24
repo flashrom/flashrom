@@ -28,7 +28,7 @@
 #define GFXNVIDIA_MEMMAP_MASK		((1 << 17) - 1)
 #define GFXNVIDIA_MEMMAP_SIZE		(16 * 1024 * 1024)
 
-uint8_t *nvidia_bar;
+static uint8_t *nvidia_bar;
 
 const struct dev_entry gfx_nvidia[] = {
 	{0x10de, 0x0010, NT, "NVIDIA", "Mutara V08 [NV2]" },

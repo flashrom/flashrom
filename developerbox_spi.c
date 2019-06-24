@@ -60,7 +60,7 @@ const struct dev_entry devs_developerbox_spi[] = {
 	{0},
 };
 
-struct libusb_context *usb_ctx;
+static struct libusb_context *usb_ctx;
 static libusb_device_handle *cp210x_handle;
 
 static int cp210x_gpio_get(void)
