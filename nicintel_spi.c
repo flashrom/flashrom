@@ -75,7 +75,7 @@
 
 #define BIT(x) (1<<(x))
 
-uint8_t *nicintel_spibar;
+static uint8_t *nicintel_spibar;
 
 const struct dev_entry nics_intel_spi[] = {
 	{PCI_VENDOR_ID_INTEL, 0x105e, OK, "Intel", "82571EB Gigabit Ethernet Controller"},

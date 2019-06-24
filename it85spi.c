@@ -74,9 +74,9 @@
 #endif  /* LPC_IO */
 
 #ifdef LPC_IO
-unsigned int shm_io_base;
+static unsigned int shm_io_base;
 #endif
-unsigned char *ce_high, *ce_low;
+static unsigned char *ce_high, *ce_low;
 static int it85xx_scratch_rom_reenter = 0;
 
 /* This function will poll the keyboard status register until either

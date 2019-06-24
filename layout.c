@@ -23,7 +23,7 @@
 #include "programmer.h"
 #include "layout.h"
 
-struct romentry entries[MAX_ROMLAYOUT];
+static struct romentry entries[MAX_ROMLAYOUT];
 static struct flashrom_layout layout = { entries, 0 };
 
 /* include_args holds the arguments specified at the command line with -i. They must be processed at some point

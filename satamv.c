@@ -22,8 +22,8 @@
 #include "programmer.h"
 #include "hwaccess.h"
 
-uint8_t *mv_bar;
-uint16_t mv_iobar;
+static uint8_t *mv_bar;
+static uint16_t mv_iobar;
 
 const struct dev_entry satas_mv[] = {
 	/* 88SX6041 and 88SX6042 are the same according to the datasheet. */
