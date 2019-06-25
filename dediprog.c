@@ -824,6 +824,33 @@ static int dediprog_check_devicestring(void)
 }
 
 /*
+ * Read the id from the dediprog. This should return the numeric part of the
+ * serial number found on a sticker on the back of the dediprog. Note this
+ * number is stored in writable eeprom, so it could get out of sync. Also note,
+ * this function only supports SF100 at this time, but SF600 support is not too
+ * much different.
+ * @return  the id on success, -1 on failure
+ */
+static int dediprog_read_id(void)
+{
+	int ret;
+	uint8_t buf[3];
+
+	ret = libusb_control_transfer(dediprog_handle, REQTYPE_OTHER_IN,
+				      0x7,    /* request */
+				      0,      /* value */
+				      0xEF00, /* index */
+				      buf, sizeof(buf),
+				      DEFAULT_TIMEOUT);
+	if (ret != sizeof(buf)) {
+		msg_perr("Failed to read dediprog id, error %d!\n", ret);
+		return -1;
+	}
+
+	return buf[0] << 16 | buf[1] << 8 | buf[2];
+}
+
+/*
  * This command presumably sets the voltage for the SF100 itself (not the
  * SPI flash). Only use this command with firmware older than V6.0.0. Newer
  * (including all SF600s) do not support it.
@@ -976,6 +1003,40 @@ static struct spi_master spi_master_dediprog = {
 	.write_aai	= dediprog_spi_write_aai,
 };
 
+/*
+ * Open a dediprog_handle with the USB device at the given index.
+ * @index   index of the USB device
+ * @return  0 for success, -1 for error, -2 for busy device
+ */
+static int dediprog_open(int index)
+{
+	const uint16_t vid = devs_dediprog[0].vendor_id;
+	const uint16_t pid = devs_dediprog[0].device_id;
+	int ret;
+
+	dediprog_handle = usb_dev_get_by_vid_pid_number(usb_ctx, vid, pid, (unsigned int) index);
+	if (!dediprog_handle) {
+		msg_perr("Could not find a Dediprog programmer on USB.\n");
+		libusb_exit(usb_ctx);
+		return -1;
+	}
+	ret = libusb_set_configuration(dediprog_handle, 1);
+	if (ret != 0) {
+		msg_perr("Could not set USB device configuration: %i %s\n",
+			 ret, libusb_error_name(ret));
+		libusb_close(dediprog_handle);
+		return -2;
+	}
+	ret = libusb_claim_interface(dediprog_handle, 0);
+	if (ret < 0) {
+		msg_perr("Could not claim USB device interface %i: %i %s\n",
+			 0, ret, libusb_error_name(ret));
+		libusb_close(dediprog_handle);
+		return -2;
+	}
+	return 0;
+}
+
 static int dediprog_shutdown(void *data)
 {
 	dediprog_devicetype = DEV_UNKNOWN;
@@ -996,9 +1057,11 @@ static int dediprog_shutdown(void *data)
 
 int dediprog_init(void)
 {
-	char *voltage, *device, *spispeed, *target_str;
+	char *voltage, *id_str, *device, *spispeed, *target_str;
 	int spispeed_idx = 1;
 	int millivolt = 3500;
+	int id = -1; /* -1 defaults to enumeration order */
+	int found_id;
 	long usedevice = 0;
 	long target = FLASH_TYPE_APPLICATION_FLASH_1;
 	int i, ret;
@@ -1028,9 +1091,35 @@ int dediprog_init(void)
 		msg_pinfo("Setting voltage to %i mV\n", millivolt);
 	}
 
+	id_str = extract_programmer_param("id");
+	if (id_str) {
+		char prefix0, prefix1;
+		if (sscanf(id_str, "%c%c%d", &prefix0, &prefix1, &id) != 3) {
+			msg_perr("Error: Could not parse dediprog 'id'.\n");
+			msg_perr("Expected a string like SF012345 or DP012345.\n");
+			free(id_str);
+			return 1;
+		}
+		if (id < 0 || id >= 0x1000000) {
+			msg_perr("Error: id %s is out of range!\n", id_str);
+			free(id_str);
+			return 1;
+		}
+		if (!(prefix0 == 'S' && prefix1 == 'F') && !(prefix0 == 'D' && prefix1 == 'P')) {
+			msg_perr("Error: %s is an invalid id!\n", id_str);
+			free(id_str);
+			return 1;
+		}
+		msg_pinfo("Will search for dediprog id %s.\n", id_str);
+	}
+	free(id_str);
+
 	device = extract_programmer_param("device");
 	if (device) {
 		char *dev_suffix;
+		if (id != -1) {
+			msg_perr("Error: Cannot use 'id' and 'device'.\n");
+		}
 		errno = 0;
 		usedevice = strtol(device, &dev_suffix, 10);
 		if (errno != 0 || device == dev_suffix) {
@@ -1094,27 +1183,49 @@ int dediprog_init(void)
 		return 1;
 	}
 
-	const uint16_t vid = devs_dediprog[0].vendor_id;
-	const uint16_t pid = devs_dediprog[0].device_id;
-	dediprog_handle = usb_dev_get_by_vid_pid_number(usb_ctx, vid, pid, (unsigned int) usedevice);
-	if (!dediprog_handle) {
-		msg_perr("Could not find a Dediprog programmer on USB.\n");
-		libusb_exit(usb_ctx);
-		return 1;
+	if (id != -1) {
+		for (i = 0; ; i++) {
+			ret = dediprog_open(i);
+			if (ret == -1) {
+				/* no dev */
+				libusb_exit(usb_ctx);
+				return 1;
+			} else if (ret == -2) {
+				/* busy dev */
+				continue;
+			}
+
+			/* Notice we can only call dediprog_read_id() after
+			 * libusb_set_configuration() and
+			 * libusb_claim_interface(). When searching by id and
+			 * either configuration or claim fails (usually the
+			 * device is in use by another instance of flashrom),
+			 * the device is skipped and the next device is tried.
+			 */
+			found_id = dediprog_read_id();
+			if (found_id < 0) {
+				msg_perr("Could not read id.\n");
+				libusb_release_interface(dediprog_handle, 0);
+				libusb_close(dediprog_handle);
+				continue;
+			}
+			msg_pinfo("Found dediprog id SF%06d.\n", found_id);
+			if (found_id != id) {
+				libusb_release_interface(dediprog_handle, 0);
+				libusb_close(dediprog_handle);
+				continue;
+			}
+			break;
+		}
+	} else {
+		if (dediprog_open(usedevice)) {
+			return 1;
+		}
+		found_id = dediprog_read_id();
 	}
-	ret = libusb_set_configuration(dediprog_handle, 1);
-	if (ret != 0) {
-		msg_perr("Could not set USB device configuration: %i %s\n", ret, libusb_error_name(ret));
-		libusb_close(dediprog_handle);
-		libusb_exit(usb_ctx);
-		return 1;
-	}
-	ret = libusb_claim_interface(dediprog_handle, 0);
-	if (ret < 0) {
-		msg_perr("Could not claim USB device interface %i: %i %s\n", 0, ret, libusb_error_name(ret));
-		libusb_close(dediprog_handle);
-		libusb_exit(usb_ctx);
-		return 1;
+
+	if (found_id >= 0) {
+		msg_pinfo("Using dediprog id SF%06d.\n", found_id);
 	}
 
 	if (register_shutdown(dediprog_shutdown, NULL))
