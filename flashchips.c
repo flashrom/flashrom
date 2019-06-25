@@ -2560,7 +2560,7 @@ const struct flashchip flashchips[] = {
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
-		.write		= NULL /* Incompatible Page write */,
+		.write		= NULL, /* Incompatible Page write */
 		.read		= spi_chip_read,
 		.voltage	= {2700, 3600},
 	},
@@ -2667,8 +2667,8 @@ const struct flashchip flashchips[] = {
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT45CS1282,
-		.total_size	= 16896 /* No power of two sizes */,
-		.page_size	= 1056 /* No power of two sizes */,
+		.total_size	= 16896, /* No power of two sizes */
+		.page_size	= 1056, /* No power of two sizes */
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
 		/* OTP: 128B total, 64B pre-programmed; read 0x77 (4 dummy bytes); write 0x9A (via buffer) */
 		.feature_bits	= FEATURE_OTP,
@@ -2699,8 +2699,8 @@ const struct flashchip flashchips[] = {
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT45DB011D,
-		.total_size	= 128 /* or 132, determined from status register */,
-		.page_size	= 256 /* or 264, determined from status register */,
+		.total_size	= 128, /* or 132, determined from status register */
+		.page_size	= 256, /* or 264, determined from status register */
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
 		/* OTP: 128B total, 64B pre-programmed; read 0x77; write 0x9B */
 		.feature_bits	= FEATURE_OTP,
@@ -2741,8 +2741,8 @@ const struct flashchip flashchips[] = {
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT45DB021D,
-		.total_size	= 256 /* or 264, determined from status register */,
-		.page_size	= 256 /* or 264, determined from status register */,
+		.total_size	= 256, /* or 264, determined from status register */
+		.page_size	= 256, /* or 264, determined from status register */
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
 		/* OTP: 128B total, 64B pre-programmed; read 0x77; write 0x9B */
 		.feature_bits	= FEATURE_OTP,
@@ -2783,8 +2783,8 @@ const struct flashchip flashchips[] = {
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT45DB041D,
-		.total_size	= 512 /* or 528, determined from status register */,
-		.page_size	= 256 /* or 264, determined from status register */,
+		.total_size	= 512, /* or 528, determined from status register */
+		.page_size	= 256, /* or 264, determined from status register */
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
 		/* OTP: 128B total, 64B pre-programmed; read 0x77; write 0x9B */
 		.feature_bits	= FEATURE_OTP,
@@ -2825,8 +2825,8 @@ const struct flashchip flashchips[] = {
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT45DB081D,
-		.total_size	= 1024 /* or 1056, determined from status register */,
-		.page_size	= 256 /* or 264, determined from status register */,
+		.total_size	= 1024, /* or 1056, determined from status register */
+		.page_size	= 256, /* or 264, determined from status register */
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
 		/* OTP: 128B total, 64B pre-programmed; read 0x77; write 0x9B */
 		.feature_bits	= FEATURE_OTP,
@@ -2867,8 +2867,8 @@ const struct flashchip flashchips[] = {
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT45DB161D,
-		.total_size	= 2048 /* or 2112, determined from status register */,
-		.page_size	= 512 /* or 528, determined from status register */,
+		.total_size	= 2048, /* or 2112, determined from status register */
+		.page_size	= 512, /* or 528, determined from status register */
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
 		/* OTP: 128B total, 64B pre-programmed; read 0x77; write 0x9B */
 		.feature_bits	= FEATURE_OTP,
@@ -2909,8 +2909,8 @@ const struct flashchip flashchips[] = {
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT45DB321C,
-		.total_size	= 4224 /* No power of two sizes */,
-		.page_size	= 528 /* No power of two sizes */,
+		.total_size	= 4224, /* No power of two sizes */
+		.page_size	= 528, /* No power of two sizes */
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
 		/* OTP: 128B total, 64B pre-programmed; read 0x77 (4 dummy bytes); write 0x9A (via buffer) */
 		.feature_bits	= FEATURE_OTP,
@@ -2952,8 +2952,8 @@ const struct flashchip flashchips[] = {
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT45DB321D,
-		.total_size	= 4096 /* or 4224, determined from status register */,
-		.page_size	= 512 /* or 528, determined from status register */,
+		.total_size	= 4096, /* or 4224, determined from status register */
+		.page_size	= 512, /* or 528, determined from status register */
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
 		/* OTP: 128B total, 64B pre-programmed; read 0x77; write 0x9B */
 		.feature_bits	= FEATURE_OTP,
@@ -2994,8 +2994,8 @@ const struct flashchip flashchips[] = {
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT45DB321C,
-		.total_size	= 4096 /* or 4224, determined from status register */,
-		.page_size	= 512 /* or 528, determined from status register */,
+		.total_size	= 4096, /* or 4224, determined from status register */
+		.page_size	= 512, /* or 528, determined from status register */
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
 		/* OTP: 128B total, 64B pre-programmed; read 0x77; write 0x9B */
 		.feature_bits	= FEATURE_OTP,
@@ -3036,8 +3036,8 @@ const struct flashchip flashchips[] = {
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
 		.model_id	= ATMEL_AT45DB642D,
-		.total_size	= 8192 /* or 8448, determined from status register */,
-		.page_size	= 1024 /* or 1056, determined from status register */,
+		.total_size	= 8192, /* or 8448, determined from status register */
+		.page_size	= 1024, /* or 1056, determined from status register */
 		/* does not support EWSR nor WREN and has no writable status register bits whatsoever */
 		/* OTP: 128B total, 64B pre-programmed; read 0x77; write 0x9B */
 		.feature_bits	= FEATURE_OTP,
