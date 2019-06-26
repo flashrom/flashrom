@@ -31,9 +31,6 @@
 
 static void cli_classic_usage(const char *name)
 {
-	printf("Please note that the command line interface for flashrom has changed between\n"
-	       "0.9.5 and 0.9.6 and will change again before flashrom 1.0.\n\n");
-
 	printf("Usage: %s [-h|-R|-L|"
 #if CONFIG_PRINT_WIKI == 1
 	       "-z|"
@@ -480,7 +477,6 @@ int main(int argc, char *argv[])
 				  programmer_table[CONFIG_DEFAULT_PROGRAMMER].name, pparam);
 		} else {
 			msg_perr("Please select a programmer with the --programmer parameter.\n"
-				 "Previously this was not necessary because there was a default set.\n"
 #if CONFIG_INTERNAL == 1
 				 "To choose the mainboard of this computer use 'internal'. "
 #endif
