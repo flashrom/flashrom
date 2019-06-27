@@ -525,7 +525,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
-		.voltage	= {3000, 3600} /* 3.0-3.6V for type -70R, others 2.7-3.6V */
+		.voltage	= {3000, 3600}, /* 3.0-3.6V for type -70R, others 2.7-3.6V */
 	},
 
 	{
@@ -557,7 +557,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_jedec_1,
 		.read		= read_memmapped,
-		.voltage	= {3000, 3600} /* 3.0-3.6V for type -70R, others 2.7-3.6V */
+		.voltage	= {3000, 3600}, /* 3.0-3.6V for type -70R, others 2.7-3.6V */
 	},
 
 	{
