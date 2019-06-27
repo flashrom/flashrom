@@ -1253,7 +1253,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { { 4 * 1024, 512 } },
 				.block_erase = spi_block_erase_20,
@@ -4991,7 +4992,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {4 * 1024, 2048} },
 				.block_erase = spi_block_erase_20,
@@ -5028,7 +5030,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {4 * 1024, 4096} },
 				.block_erase = spi_block_erase_20,
@@ -5063,7 +5066,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {4 * 1024, 32} },
 				.block_erase = spi_block_erase_20,
@@ -5098,7 +5102,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {4 * 1024, 64} },
 				.block_erase = spi_block_erase_20,
@@ -5133,7 +5138,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
 				.block_erase = spi_block_erase_20,
@@ -5168,7 +5174,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
 				.block_erase = spi_block_erase_20,
@@ -5203,7 +5210,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {4 * 1024, 512} },
 				.block_erase = spi_block_erase_20,
@@ -5241,7 +5249,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {4 * 1024, 1024} },
 				.block_erase = spi_block_erase_20,
@@ -5279,7 +5288,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {4 * 1024, 2048} },
 				.block_erase = spi_block_erase_20,
@@ -6096,7 +6106,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {4 * 1024, 16} },
 				.block_erase = spi_block_erase_20,
@@ -6130,7 +6141,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {4 * 1024, 32} },
 				.block_erase = spi_block_erase_20,
@@ -6480,7 +6492,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
 				.block_erase = spi_block_erase_20,
@@ -10045,7 +10058,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { { 4 * 1024, 256 } },
 				.block_erase = spi_block_erase_20,
@@ -10174,7 +10188,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {256, 512} },
 				.block_erase = spi_block_erase_db,
@@ -10201,7 +10216,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {256, 1024} },
 				.block_erase = spi_block_erase_db,
@@ -10228,7 +10244,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {256, 2048} },
 				.block_erase = spi_block_erase_db,
@@ -10255,7 +10272,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {256, 4096} },
 				.block_erase = spi_block_erase_db,
@@ -10282,7 +10300,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {256, 8192} },
 				.block_erase = spi_block_erase_db,
@@ -10485,7 +10504,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {4 * 1024, 4096 } },
 				.block_erase = spi_block_erase_20,
@@ -10518,7 +10538,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {4 * 1024, 4096 } },
 				.block_erase = spi_block_erase_20,
@@ -10551,7 +10572,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {4 * 1024, 8192} },
 				.block_erase = spi_block_erase_21,
@@ -10590,7 +10612,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {4 * 1024, 16384} },
 				.block_erase = spi_block_erase_21,
@@ -11879,7 +11902,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_res2,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {2 * 1024, 64} },
 				.block_erase = spi_block_erase_d7,
@@ -11910,7 +11934,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_res2,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
 				.block_erase = spi_block_erase_d7,
@@ -11920,8 +11945,8 @@ const struct flashchip flashchips[] = {
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
 				.block_erase = spi_block_erase_c7,
-				}
-			},
+			}
+		},
 		.printlock	= spi_prettyprint_status_register_plain,
 		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
@@ -11941,7 +11966,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_res2,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			/* FIXME: Is this correct?
 			{
 				.eraseblocks = { {2 * 1024, 64} },
@@ -11974,7 +12000,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_res2,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {4 * 1024, 64} },
 				.block_erase = spi_block_erase_d7,
@@ -12004,7 +12031,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {4 * 1024, 64} },
 				.block_erase = spi_block_erase_20,
@@ -12041,7 +12069,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_res2,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
 				.block_erase = spi_block_erase_d7,
@@ -12052,7 +12081,7 @@ const struct flashchip flashchips[] = {
 				.eraseblocks = { {512 * 1024, 1} },
 				.block_erase = spi_block_erase_c7,
 				}
-			},
+		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
 		.unlock		= spi_disable_blockprotect, /* #WP pin write-protects SRWP bit. */
 		.write		= spi_chip_write_256,
@@ -12072,7 +12101,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
 				.block_erase = spi_block_erase_20,
@@ -12089,7 +12119,7 @@ const struct flashchip flashchips[] = {
 				.eraseblocks = { {512 * 1024, 1} },
 				.block_erase = spi_block_erase_c7,
 				}
-			},
+		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
 		.unlock		= spi_disable_blockprotect_bp2_srwd,
 		.write		= spi_chip_write_256,
@@ -12139,7 +12169,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {256, 2 * 1024} },
 				.block_erase = spi_block_erase_db,
@@ -12170,7 +12201,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_res2,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
 				.block_erase = spi_block_erase_d7,
@@ -12180,8 +12212,8 @@ const struct flashchip flashchips[] = {
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
 				.block_erase = spi_block_erase_c7,
-				}
-			},
+			}
+		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
 		.unlock		= spi_disable_blockprotect, /* #WP pin write-protects SRWP bit. */
 		.write		= spi_chip_write_256,
@@ -12201,7 +12233,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_res2,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
 				.block_erase = spi_block_erase_20,
@@ -12235,7 +12268,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_res2,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {8 * 1024, 128} },
 				.block_erase = spi_block_erase_d7,
@@ -12474,7 +12508,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PR,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
 				.block_erase = spi_block_erase_20,
@@ -12508,7 +12543,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
 				.block_erase = spi_block_erase_20,
@@ -12543,7 +12579,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {4 * 1024, 512} },
 				.block_erase = spi_block_erase_20,
@@ -12578,7 +12615,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {4 * 1024, 1024} },
 				.block_erase = spi_block_erase_20,
@@ -12613,7 +12651,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {4 * 1024, 2048} },
 				.block_erase = spi_block_erase_20,
@@ -12650,7 +12689,8 @@ const struct flashchip flashchips[] = {
 		/* FIXME: we should distinguish the configuration on probing time like we do for AT45DB chips */
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				/* This chip supports erasing of 32 so-called "parameter sectors" with
 				 * opcode 0x20 which may be configured to be on top or bottom of the address
@@ -12693,7 +12733,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {256 * 1024, 64} },
 				.block_erase = spi_block_erase_d8,
@@ -12724,7 +12765,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {64 * 1024, 256} },
 				.block_erase = spi_block_erase_20,
@@ -12758,7 +12800,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {256 * 1024, 64} },
 				.block_erase = spi_block_erase_d8,
@@ -12788,7 +12831,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				/* This chip supports erasing of the 32 so-called "parameter sectors" with
 				 * opcode 0x20. Trying to access an address outside these 4kB blocks does
@@ -12830,7 +12874,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {256 * 1024, 64} },
 				.block_erase = spi_block_erase_d8,
@@ -12862,7 +12907,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 			/* FIXME: This chip supports erasing of the 32 so-called "parameter sectors" with
 			 * opcode 0x20. Trying to access an address outside these 4kB blocks does have no
@@ -12910,7 +12956,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				.eraseblocks = { {256 * 1024, 64} },
 				.block_erase = spi_block_erase_d8,
@@ -12942,7 +12989,8 @@ const struct flashchip flashchips[] = {
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
-		.block_erasers	= {
+		.block_erasers	=
+		{
 			{
 				/* This chip supports erasing of the 32 so-called "parameter sectors" with
 				 * opcode 0x20. Trying to access an address outside these 4kB blocks does
