@@ -156,7 +156,6 @@
 #define ATMEL_AT26DF081A	0x4501
 #define ATMEL_AT26DF161		0x4600
 #define ATMEL_AT26DF161A	0x4601
-#define ATMEL_AT26DF321		0x4700	/* Same as 25DF321 */
 #define ATMEL_AT26F004		0x0400
 #define ATMEL_AT29LV512		0x3D
 #define ATMEL_AT29LV010A	0x35	/* Same as AT29BV010A, the latter works down to 2.7V */
