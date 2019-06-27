@@ -2519,8 +2519,8 @@ const struct flashchip flashchips[] = {
 		.model_id	= ATMEL_AT26F004,
 		.total_size	= 512,
 		.page_size	= 256,
-		.tested		= {.probe = NT, .read = NT, .erase = NT, .write = BAD },
 		.feature_bits	= FEATURE_WRSR_WREN,
+		.tested		= {.probe = NT, .read = NT, .erase = NT, .write = BAD },
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
@@ -2670,10 +2670,10 @@ const struct flashchip flashchips[] = {
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain,
-		.gran		= write_gran_1056bytes,
 		.write		= spi_write_at45db,
 		.read		= spi_read_at45db,
 		.voltage	= {2700, 3600},
+		.gran		= write_gran_1056bytes,
 	},
 
 	{
@@ -2710,8 +2710,8 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_erase_at45db_chip,
 			}
 		},
-		.unlock		= spi_disable_blockprotect_at45db, /* Impossible if locked down or #WP is low */
 		.printlock	= spi_prettyprint_status_register_at45db,
+		.unlock		= spi_disable_blockprotect_at45db, /* Impossible if locked down or #WP is low */
 		/* granularity will be set by the probing function. */
 		.write		= spi_write_at45db,
 		.read		= spi_read_at45db, /* Fast read (0x0B) supported */
@@ -2752,8 +2752,8 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_erase_at45db_chip,
 			}
 		},
-		.unlock		= spi_disable_blockprotect_at45db, /* Impossible if locked down or #WP is low */
 		.printlock	= spi_prettyprint_status_register_at45db,
+		.unlock		= spi_disable_blockprotect_at45db, /* Impossible if locked down or #WP is low */
 		/* granularity will be set by the probing function. */
 		.write		= spi_write_at45db,
 		.read		= spi_read_at45db, /* Fast read (0x0B) supported */
@@ -2794,8 +2794,8 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_erase_at45db_chip,
 			}
 		},
-		.unlock		= spi_disable_blockprotect_at45db, /* Impossible if locked down or #WP is low */
 		.printlock	= spi_prettyprint_status_register_at45db,
+		.unlock		= spi_disable_blockprotect_at45db, /* Impossible if locked down or #WP is low */
 		/* granularity will be set by the probing function. */
 		.write		= spi_write_at45db,
 		.read		= spi_read_at45db, /* Fast read (0x0B) supported */
@@ -2836,8 +2836,8 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_erase_at45db_chip,
 			}
 		},
-		.unlock		= spi_disable_blockprotect_at45db, /* Impossible if locked down or #WP is low */
 		.printlock	= spi_prettyprint_status_register_at45db,
+		.unlock		= spi_disable_blockprotect_at45db, /* Impossible if locked down or #WP is low */
 		/* granularity will be set by the probing function. */
 		.write		= spi_write_at45db,
 		.read		= spi_read_at45db, /* Fast read (0x0B) supported */
@@ -2878,8 +2878,8 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_erase_at45db_chip,
 			}
 		},
-		.unlock		= spi_disable_blockprotect_at45db, /* Impossible if locked down or #WP is low */
 		.printlock	= spi_prettyprint_status_register_at45db,
+		.unlock		= spi_disable_blockprotect_at45db, /* Impossible if locked down or #WP is low */
 		/* granularity will be set by the probing function. */
 		.write		= spi_write_at45db,
 		.read		= spi_read_at45db, /* Fast read (0x0B) supported */
@@ -2923,10 +2923,10 @@ const struct flashchip flashchips[] = {
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at45db, /* Bit 0 is undefined, no lockdown */
-		.gran		= write_gran_528bytes,
 		.write		= spi_write_at45db,
 		.read		= spi_read_at45db_e8, /* 3 address and 4 dummy bytes */
 		.voltage	= {2700, 3600},
+		.gran		= write_gran_528bytes,
 	},
 
 	{
@@ -2963,8 +2963,8 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_erase_at45db_chip,
 			}
 		},
-		.unlock		= spi_disable_blockprotect_at45db, /* Impossible if locked down or #WP is low */
 		.printlock	= spi_prettyprint_status_register_at45db,
+		.unlock		= spi_disable_blockprotect_at45db, /* Impossible if locked down or #WP is low */
 		/* granularity will be set by the probing function. */
 		.write		= spi_write_at45db,
 		.read		= spi_read_at45db, /* Fast read (0x0B) supported */
@@ -3005,8 +3005,8 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_erase_at45db_chip,
 			}
 		},
-		.unlock		= spi_disable_blockprotect_at45db, /* Impossible if locked down or #WP is low */
 		.printlock	= spi_prettyprint_status_register_at45db, /* has a 2nd status register */
+		.unlock		= spi_disable_blockprotect_at45db, /* Impossible if locked down or #WP is low */
 		/* granularity will be set by the probing function. */
 		.write		= spi_write_at45db,
 		.read		= spi_read_at45db, /* Fast read (0x0B) supported */
@@ -3047,8 +3047,8 @@ const struct flashchip flashchips[] = {
 				.block_erase = spi_erase_at45db_chip,
 			}
 		},
-		.unlock		= spi_disable_blockprotect_at45db, /* Impossible if locked down or #WP is low */
 		.printlock	= spi_prettyprint_status_register_at45db,
+		.unlock		= spi_disable_blockprotect_at45db, /* Impossible if locked down or #WP is low */
 		/* granularity will be set by the probing function. */
 		.write		= spi_write_at45db,
 		.read		= spi_read_at45db, /* Fast read (0x0B) supported */
@@ -3456,11 +3456,11 @@ const struct flashchip flashchips[] = {
 		.vendor		= "ENE",
 		.name		= "KB9012 (EDI)",
 		.bustype	= BUS_SPI,
-		.spi_cmd_set	= SPI_EDI,
 		.total_size	= 128,
 		.page_size	= 128,
 		.feature_bits	= FEATURE_ERASED_ZERO,
 		.tested		= TEST_OK_PREW,
+		.spi_cmd_set	= SPI_EDI,
 		.probe		= edi_probe_kb9012,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
@@ -3470,10 +3470,10 @@ const struct flashchip flashchips[] = {
 				.block_erase = edi_chip_block_erase,
 			},
 		},
-		.gran		= write_gran_128bytes,
 		.write		= edi_chip_write,
 		.read		= edi_chip_read,
 		.voltage	= {2700, 3600},
+		.gran		= write_gran_128bytes,
 	},
 
 	{
@@ -14959,8 +14959,8 @@ const struct flashchip flashchips[] = {
 				.block_erase = erase_block_82802ab,
 			}
 		},
-		.write		= write_82802ab,
 		.unlock		= unlock_regspace2_uniform_64k,
+		.write		= write_82802ab,
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
 	},
@@ -14992,8 +14992,8 @@ const struct flashchip flashchips[] = {
 				.block_erase = erase_block_82802ab,
 			}
 		},
-		.write		= write_82802ab,
 		.unlock		= unlock_regspace2_uniform_64k,
+		.write		= write_82802ab,
 		.read		= read_memmapped,
 		.voltage	= {3000, 3600}, /* Also has 12V fast program & erase */
 	},
