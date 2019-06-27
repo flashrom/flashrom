@@ -2325,7 +2325,7 @@ const struct flashchip flashchips[] = {
 	},
 
 	{
-		.vendor		= "ATMEL",
+		.vendor		= "Atmel",
 		.name		= "AT25SL128A",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ATMEL_ID,
