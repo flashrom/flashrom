@@ -16607,7 +16607,8 @@ const struct flashchip flashchips[] = {
 		.read		= read_memmapped,
 	},
 
-	{/* W29EE011, W29EE012, W29C010M, W29C011A do not support probe_jedec according to the datasheet, but it works for newer(?) steppings. */
+	/* W29EE011, W29EE012, W29C010M, W29C011A do not support probe_jedec according to the datasheet, but it works for newer(?) steppings. */
+	{
 		.vendor		= "Winbond",
 		.name		= "W29C010(M)/W29C011A/W29EE011/W29EE012",
 		.bustype	= BUS_PARALLEL,
