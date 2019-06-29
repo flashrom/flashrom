@@ -15,6 +15,10 @@
  * GNU General Public License for more details.
  */
 
+#if defined(__MINGW32__) || defined(__MINGW64__)
+	#define __USE_MINGW_ANSI_STDIO 1
+#endif
+
 #include "ich_descriptors.h"
 
 #ifdef ICH_DESCRIPTORS_FROM_DUMP_ONLY
