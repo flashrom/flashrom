@@ -33,6 +33,25 @@
 #include "ich_descriptors.h"
 #include "libflashrom.h"
 
+#if defined(__MINGW32__) || defined(__MINGW64__)
+char *strndup(const char *str, int chars);
+
+char *strndup(const char *str, int chars)
+{
+    char *buffer;
+    int n;
+
+    buffer = (char *) malloc(chars +1);
+    if (buffer)
+    {
+        for (n = 0; ((n < chars) && (str[n] != 0)) ; n++) buffer[n] = str[n];
+        buffer[n] = 0;
+    }
+
+    return buffer;
+}
+#endif
+
 /**
  * @defgroup flashrom-general General
  * @{
