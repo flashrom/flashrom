@@ -453,7 +453,7 @@ endif
 # Disable all drivers needing raw access (memory, PCI, port I/O) on
 # architectures with unknown raw access properties.
 # Right now those architectures are alpha hppa m68k sh s390
-ifneq ($(ARCH),$(filter $(ARCH),x86 mips ppc arm sparc))
+ifneq ($(ARCH),$(filter $(ARCH),x86 mips ppc arm sparc arc))
 ifeq ($(CONFIG_RAYER_SPI), yes)
 UNSUPPORTED_FEATURES += CONFIG_RAYER_SPI=yes
 else
