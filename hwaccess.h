@@ -291,6 +291,10 @@ int libpayload_wrmsr(int addr, msr_t msr);
 
 /* Non memory mapped I/O is not supported on ARM. */
 
+#elif IS_ARC
+
+/* Non memory mapped I/O is not supported on ARC. */
+
 #else
 
 #error Unknown architecture, please check if it supports PCI port IO.

@@ -74,9 +74,12 @@
 #elif defined(__s390__) || defined(__s390x__) || defined(__zarch__)
 	#define __FLASHROM_ARCH__ "s390"
 	#define IS_S390 1
+#elif defined(__arc__)
+	#define __FLASHROM_ARCH__ "arc"
+	#define IS_ARC 1
 #endif
 
-#if !(IS_X86 || IS_MIPS || IS_PPC || IS_ARM || IS_SPARC || IS_ALPHA || IS_HPPA || IS_M68K || IS_RISCV || IS_SH || IS_S390)
+#if !(IS_X86 || IS_MIPS || IS_PPC || IS_ARM || IS_SPARC || IS_ALPHA || IS_HPPA || IS_M68K || IS_RISCV || IS_SH || IS_S390 || IS_ARC)
 #error Unknown architecture
 #endif
 
@@ -122,6 +125,13 @@
 #elif IS_SPARC
 /* SPARC is big endian in general (but allows to access data in little endian too). */
 #define __FLASHROM_BIG_ENDIAN__ 1
+
+#elif IS_ARC
+#if defined(__BIG_ENDIAN__)
+#define __FLASHROM_BIG_ENDIAN__ 1
+#else
+#define __FLASHROM_LITTLE_ENDIAN__ 1
+#endif
 
 #endif /* IS_? */
 
