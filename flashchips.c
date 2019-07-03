@@ -2523,7 +2523,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 512,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
-		.tested		= {.probe = NT, .read = NT, .erase = NT, .write = BAD },
+		.tested		= {.probe = NT, .read = NT, .erase = NT, .write = BAD},
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
@@ -3440,7 +3440,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 64,
 		.page_size	= 0, /* unused */
 		.feature_bits	= 0,
-		.tested		= {.probe = OK, .read = OK, .erase = BAD, .write = BAD },
+		.tested		= {.probe = OK, .read = OK, .erase = BAD, .write = BAD},
 		.probe		= probe_jedec, /* FIXME! */
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
