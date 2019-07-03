@@ -33,7 +33,7 @@ typedef uint32_t chipsize_t; /* Able to store the number of bytes of any support
 #define PRIxCHIPOFF "06"PRIx32
 #define PRIuCHIPSIZE PRIu32
 
-#define MAX_ROMLAYOUT	32
+#define MAX_ROMLAYOUT	128
 
 struct romentry {
 	chipoff_t start;
