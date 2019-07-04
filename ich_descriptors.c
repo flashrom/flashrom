@@ -41,6 +41,7 @@ ssize_t ich_number_of_regions(const enum ich_chipset cs, const struct ich_desc_c
 	case CHIPSET_APOLLO_LAKE:
 		return 6;
 	case CHIPSET_C620_SERIES_LEWISBURG:
+	case CHIPSET_300_SERIES_CANNON_POINT:
 		return 16;
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 		return 10;
@@ -102,7 +103,7 @@ void prettyprint_ich_chipset(enum ich_chipset cs)
 		"5 series Ibex Peak", "6 series Cougar Point", "7 series Panther Point",
 		"8 series Lynx Point", "Baytrail", "8 series Lynx Point LP", "8 series Wellsburg",
 		"9 series Wildcat Point", "9 series Wildcat Point LP", "100 series Sunrise Point",
-		"C620 series Lewisburg", "Apollo Lake",
+		"C620 series Lewisburg", "300 series Cannon Point", "Apollo Lake",
 	};
 	if (cs < CHIPSET_ICH8 || cs - CHIPSET_ICH8 + 1 >= ARRAY_SIZE(chipset_names))
 		cs = 0;
@@ -194,6 +195,7 @@ static const char *pprint_density(enum ich_chipset cs, const struct ich_descript
 	case CHIPSET_9_SERIES_WILDCAT_POINT_LP:
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 	case CHIPSET_C620_SERIES_LEWISBURG:
+	case CHIPSET_300_SERIES_CANNON_POINT:
 	case CHIPSET_APOLLO_LAKE: {
 		uint8_t size_enc;
 		if (idx == 0) {
@@ -261,6 +263,7 @@ static const char *pprint_freq(enum ich_chipset cs, uint8_t value)
 		return freq_str[0][value];
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 	case CHIPSET_C620_SERIES_LEWISBURG:
+	case CHIPSET_300_SERIES_CANNON_POINT:
 		return freq_str[1][value];
 	case CHIPSET_APOLLO_LAKE:
 		return freq_str[2][value];
@@ -277,6 +280,7 @@ void prettyprint_ich_descriptor_component(enum ich_chipset cs, const struct ich_
 	switch (cs) {
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 	case CHIPSET_C620_SERIES_LEWISBURG:
+	case CHIPSET_300_SERIES_CANNON_POINT:
 	case CHIPSET_APOLLO_LAKE:
 		has_flill1 = true;
 		break;
@@ -394,7 +398,8 @@ void prettyprint_ich_descriptor_master(const enum ich_chipset cs, const struct i
 	msg_pdbg2("\n");
 
 	msg_pdbg2("--- Details ---\n");
-	if (cs == CHIPSET_100_SERIES_SUNRISE_POINT) {
+	if (cs == CHIPSET_100_SERIES_SUNRISE_POINT ||
+	    cs == CHIPSET_300_SERIES_CANNON_POINT) {
 		const char *const master_names[] = {
 			"BIOS", "ME", "GbE", "unknown", "EC",
 		};
@@ -404,14 +409,26 @@ void prettyprint_ich_descriptor_master(const enum ich_chipset cs, const struct i
 			return;
 		}
 
-		msg_pdbg2("      FD  BIOS  ME  GbE  Pltf Reg5 Reg6 Reg7  EC  Reg9\n");
+		size_t num_regions;
+		msg_pdbg2("      FD  BIOS  ME  GbE  Pltf Reg5 Reg6 Reg7  EC  Reg9");
+		if (cs == CHIPSET_100_SERIES_SUNRISE_POINT) {
+			num_regions = 10;
+			msg_pdbg2("\n");
+		} else {
+			num_regions = 16;
+			msg_pdbg2(" RegA RegB RegC RegD RegE RegF\n");
+		}
 		for (i = 0; i < nm; i++) {
 			size_t j;
 			msg_pdbg2("%-4s", master_names[i]);
-			for (j = 0; j < 10; j++)
+			for (j = 0; j < min(num_regions, 12); j++)
 				msg_pdbg2("  %c%c ",
 					  desc->master.mstr[i].read & (1 << j) ? 'r' : ' ',
 					  desc->master.mstr[i].write & (1 << j) ? 'w' : ' ');
+			for (; j < num_regions; j++)
+				msg_pdbg2("  %c%c ",
+					  desc->master.mstr[i].ext_read & (1 << (j - 12)) ? 'r' : ' ',
+					  desc->master.mstr[i].ext_write & (1 << (j - 12)) ? 'w' : ' ');
 			msg_pdbg2("\n");
 		}
 	} else if (cs == CHIPSET_C620_SERIES_LEWISBURG) {
@@ -915,10 +932,15 @@ static enum ich_chipset guess_ich_chipset_from_content(const struct ich_desc_con
 			return CHIPSET_8_SERIES_LYNX_POINT;
 		msg_pwarn("Peculiar firmware descriptor, assuming Wildcat Point compatibility.\n");
 		return CHIPSET_9_SERIES_WILDCAT_POINT;
-	} else if (content->NM == 6) {
-		return CHIPSET_C620_SERIES_LEWISBURG;
+	} else if (content->ICCRIBA < 0x34) {
+		if (content->NM == 6)
+			return CHIPSET_C620_SERIES_LEWISBURG;
+		else
+			return CHIPSET_100_SERIES_SUNRISE_POINT;
 	} else {
-		return CHIPSET_100_SERIES_SUNRISE_POINT;
+		if (content->ICCRIBA > 0x34)
+			msg_pwarn("Unknown firmware descriptor, assuming 300 series compatibility.\n");
+		return CHIPSET_300_SERIES_CANNON_POINT;
 	}
 }
 
@@ -934,6 +956,9 @@ static enum ich_chipset guess_ich_chipset(const struct ich_desc_content *const c
 	const enum ich_chipset guess = guess_ich_chipset_from_content(content);
 
 	switch (guess) {
+	case CHIPSET_300_SERIES_CANNON_POINT:
+		/* `freq_read` was repurposed, so can't check on it any more. */
+		return guess;
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 	case CHIPSET_C620_SERIES_LEWISBURG:
 	case CHIPSET_APOLLO_LAKE:
@@ -1085,6 +1110,7 @@ int getFCBA_component_density(enum ich_chipset cs, const struct ich_descriptors 
 	case CHIPSET_9_SERIES_WILDCAT_POINT_LP:
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 	case CHIPSET_C620_SERIES_LEWISBURG:
+	case CHIPSET_300_SERIES_CANNON_POINT:
 	case CHIPSET_APOLLO_LAKE:
 		if (idx == 0) {
 			size_enc = desc->component.dens_new.comp1_density;
@@ -1119,6 +1145,7 @@ static uint32_t read_descriptor_reg(enum ich_chipset cs, uint8_t section, uint16
 	switch (cs) {
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 	case CHIPSET_C620_SERIES_LEWISBURG:
+	case CHIPSET_300_SERIES_CANNON_POINT:
 	case CHIPSET_APOLLO_LAKE:
 		mmio_le_writel(control, spibar + PCH100_REG_FDOC);
 		return mmio_le_readl(spibar + PCH100_REG_FDOD);

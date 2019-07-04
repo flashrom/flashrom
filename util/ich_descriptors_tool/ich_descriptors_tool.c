@@ -133,6 +133,7 @@ static void usage(char *argv[], char *error)
 "\t- \"8\" or \"lynx\" for Intel's 8 series chipsets.\n"
 "\t- \"9\" or \"wildcat\" for Intel's 9 series chipsets.\n"
 "\t- \"100\" or \"sunrise\" for Intel's 100 series chipsets.\n"
+"\t- \"300\" or \"cannon\" for Intel's 300 series chipsets.\n"
 "If '-d' is specified some regions such as the BIOS image as seen by the CPU or\n"
 "the GbE blob that is required to initialize the GbE are also dumped to files.\n",
 	argv[0], argv[0]);
@@ -221,6 +222,9 @@ int main(int argc, char *argv[])
 		else if ((strcmp(csn, "100") == 0) ||
 			 (strcmp(csn, "sunrise") == 0))
 			cs = CHIPSET_100_SERIES_SUNRISE_POINT;
+		else if ((strcmp(csn, "300") == 0) ||
+			 (strcmp(csn, "cannon") == 0))
+			cs = CHIPSET_300_SERIES_CANNON_POINT;
 		else if (strcmp(csn, "apollo") == 0)
 			cs = CHIPSET_APOLLO_LAKE;
 	}

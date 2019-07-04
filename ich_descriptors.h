@@ -170,8 +170,9 @@ struct ich_desc_region {
 	 * Chipset/Generation				#FLREGs		width (bits)
 	 * ICH8			.. Panther Point/7	 5		13
 	 * Lynx Point/8		.. Wildcat Point/9	 7		15
-	 * Sunrise Point/100	..			10		15
+	 * Sunrise Point/100	.. 200 Series		10		15
 	 * Lewisburg/100	..			16		15
+	 * Cannon Point/300	..			16		15
 	 */
 	union {
 		uint32_t FLREGs[MAX_NUM_FLREGS]; /* Flash Descriptor Regions */
@@ -234,9 +235,10 @@ struct ich_desc_master {
 		};
 		/* From Skylake on */
 		struct {
-			uint32_t	:8,
-				 read	:12,
-				 write	:12;
+			uint32_t ext_read	:4,
+				 ext_write	:4,
+				 read		:12,
+				 write		:12;
 		} mstr[MAX_NUM_MASTERS];
 	};
 };
