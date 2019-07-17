@@ -26,6 +26,7 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <linux/types.h>
+#include <linux/ioctl.h>
 #include <linux/spi/spidev.h>
 #include <linux/ioctl.h>
 #include "flash.h"
