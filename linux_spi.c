@@ -26,12 +26,17 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <linux/types.h>
-#include <linux/spi/spidev.h>
-#include <linux/ioctl.h>
 #include "flash.h"
 #include "chipdrivers.h"
 #include "programmer.h"
 #include "spi.h"
+/*
+ * Linux versions prior to v4.14-rc7 may need linux/ioctl.h included here due
+ * to missing from linux/spi/spidev.h. This was fixed in the following commit:
+ * a2b4a79b88b2 spi: uapi: spidev: add missing ioctl header
+ */
+#include <linux/ioctl.h>
+#include <linux/spi/spidev.h>
 
 /* Devices known to work with this module (FIXME: export as struct dev_entry):
  * Beagle Bone Black
