@@ -782,7 +782,6 @@ int default_spi_write_aai(struct flashctx *flash, const uint8_t *buf, unsigned i
 	if (pos < start + len) {
 		if (spi_chip_write_1(flash, buf + pos - start, pos, pos % 2))
 			return SPI_GENERIC_ERROR;
-		pos += pos % 2;
 	}
 
 	return 0;
