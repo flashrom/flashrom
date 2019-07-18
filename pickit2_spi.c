@@ -93,17 +93,23 @@ static int pickit2_get_firmware_version(void)
 {
 	int ret;
 	uint8_t command[CMD_LENGTH] = {CMD_GET_VERSION, CMD_END_OF_BUFFER};
-
 	int transferred;
-	ret = libusb_interrupt_transfer(pickit2_handle, ENDPOINT_OUT, command, CMD_LENGTH, &transferred, DFLT_TIMEOUT);
-	ret = libusb_interrupt_transfer(pickit2_handle, ENDPOINT_IN, command, CMD_LENGTH, &transferred, DFLT_TIMEOUT);
 
-	msg_pdbg("PICkit2 Firmware Version: %d.%d\n", (int)command[0], (int)command[1]);
+	ret = libusb_interrupt_transfer(pickit2_handle, ENDPOINT_OUT, command, CMD_LENGTH, &transferred, DFLT_TIMEOUT);
+
 	if (ret != 0) {
 		msg_perr("Command Get Firmware Version failed!\n");
 		return 1;
 	}
 
+	ret = libusb_interrupt_transfer(pickit2_handle, ENDPOINT_IN, command, CMD_LENGTH, &transferred, DFLT_TIMEOUT);
+
+	if (ret != 0) {
+		msg_perr("Command Get Firmware Version failed!\n");
+		return 1;
+	}
+
+	msg_pdbg("PICkit2 Firmware Version: %d.%d\n", (int)command[0], (int)command[1]);
 	return 0;
 }
 
