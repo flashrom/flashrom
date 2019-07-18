@@ -119,14 +119,20 @@ static int pickit2_get_firmware_version(void)
 	uint8_t command[CMD_LENGTH] = {CMD_GET_VERSION, CMD_END_OF_BUFFER};
 
 	ret = usb_interrupt_write(pickit2_handle, ENDPOINT_OUT, (char *)command, CMD_LENGTH, DFLT_TIMEOUT);
+
+	if (ret != CMD_LENGTH) {
+		msg_perr("Command Get Firmware Version failed!\n");
+		return 1;
+	}
+
 	ret = usb_interrupt_read(pickit2_handle, ENDPOINT_IN, (char *)command, CMD_LENGTH, DFLT_TIMEOUT);
 
-	msg_pdbg("PICkit2 Firmware Version: %d.%d\n", (int)command[0], (int)command[1]);
 	if (ret != CMD_LENGTH) {
 		msg_perr("Command Get Firmware Version failed (%s)!\n", usb_strerror());
 		return 1;
 	}
 
+	msg_pdbg("PICkit2 Firmware Version: %d.%d\n", (int)command[0], (int)command[1]);
 	return 0;
 }
 
