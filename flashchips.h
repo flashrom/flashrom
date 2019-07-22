@@ -866,13 +866,16 @@
 #define ST_N25Q032__1E		0xBB16	/* N25Q032, 1.8V, (uniform sectors expected) */
 #define ST_N25Q064__3E		0xBA17	/* N25Q064, 3.0V, (uniform sectors expected) */
 #define ST_N25Q064__1E		0xBB17	/* N25Q064, 1.8V, (uniform sectors expected) */
-#define ST_N25Q128__3E		0xBA18	/* N25Q128, 3.0V, (uniform sectors expected) */
-#define ST_N25Q128__1E		0xBB18	/* N25Q128, 1.8V, (uniform sectors expected) */
-#define ST_N25Q256__3E		0xBA19	/* N25Q256, 3.0V, (uniform sectors expected) */
-#define ST_N25Q256__1E		0xBB19	/* N25Q256, 1.8V, (uniform sectors expected) */
-#define ST_N25Q512__3E		0xBA20	/* N25Q512, 3.0V, (uniform sectors expected) */
-#define ST_N25Q512__1E		0xBB20	/* N25Q512, 1.8V, (uniform sectors expected) */
-#define ST_N25Q00A__3E		0xBA21	/* N25Q00A, 3.0V, (uniform sectors expected) */
+#define ST_N25Q128__3E		0xBA18	/* N25Q128/MT25QL128, 3.0V, (uniform sectors expected) */
+#define ST_N25Q128__1E		0xBB18	/* N25Q128/MT25QU128, 1.8V, (uniform sectors expected) */
+#define ST_N25Q256__3E		0xBA19	/* N25Q256/MT25QL256, 3.0V, (uniform sectors expected) */
+#define ST_N25Q256__1E		0xBB19	/* N25Q256/MT25QU256, 1.8V, (uniform sectors expected) */
+#define ST_N25Q512__3G		0xBA20	/* N25Q512/MT25QL512, 3.0V, (uniform sectors expected) */
+#define ST_N25Q512__1G		0xBB20	/* N25Q512/MT25QU512, 1.8V, (uniform sectors expected) */
+#define ST_N25Q00A__3G		0xBA21	/* N25Q00A/MT25QL01G, 3.0V, (uniform sectors expected) */
+#define ST_N25Q00A__1G		0xBB21	/* N25Q00A/MT25QU01G, 1.8V, (uniform sectors expected) */
+#define ST_MT25QL02G		0xBA22	/* MT25QL02G, 3.0V, (uniform sectors expected) */
+#define ST_MT25QU02G		0xBB22	/* MT25QU02G, 1.8V, (uniform sectors expected) */
 #define ST_NP5Q032		0xDA16	/* Phase-change memory (PCM), 3V */
 #define ST_NP5Q064		0xDA17	/* Phase-change memory (PCM), 3V */
 #define ST_NP5Q128		0xDA18	/* Phase-change memory (PCM), 3V */
