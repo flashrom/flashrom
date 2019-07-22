@@ -202,4 +202,8 @@ int edi_chip_write(struct flashctx *flash, const uint8_t *buf, unsigned int star
 int edi_chip_read(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 int edi_probe_kb9012(struct flashctx *flash);
 
+/* spi95.c */
+int probe_spi_st95(struct flashctx *flash);
+int spi_block_erase_emulation(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
+
 #endif /* !__CHIPDRIVERS_H__ */
