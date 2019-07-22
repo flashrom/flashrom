@@ -10612,8 +10612,8 @@ const struct flashchip flashchips[] = {
 				.eraseblocks = { {64 * 1024, 1024} },
 				.block_erase = spi_block_erase_d8,
 			}, {
-				.eraseblocks = { {65536 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.eraseblocks = { {32768 * 1024, 2} },
+				.block_erase = spi_block_erase_c4,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_n25q, /* TODO: config, lock, flag regs */
