@@ -621,13 +621,13 @@ static enum chipbustype enable_flash_ich_report_gcs(
 	};
 	static const struct boot_straps boot_straps_EP80579[] =
 		{ { "SPI", BUS_SPI },
-		  { "reserved" },
-		  { "reserved" },
+		  { "reserved", BUS_NONE },
+		  { "reserved", BUS_NONE },
 		  { "LPC", BUS_LPC | BUS_FWH } };
 	static const struct boot_straps boot_straps_ich7_nm10[] =
-		{ { "reserved" },
+		{ { "reserved", BUS_NONE },
 		  { "SPI", BUS_SPI },
-		  { "PCI" },
+		  { "PCI", BUS_NONE },
 		  { "LPC", BUS_LPC | BUS_FWH } };
 	static const struct boot_straps boot_straps_tunnel_creek[] =
 		{ { "SPI", BUS_SPI },
@@ -635,29 +635,29 @@ static enum chipbustype enable_flash_ich_report_gcs(
 	static const struct boot_straps boot_straps_ich8910[] =
 		{ { "SPI", BUS_SPI },
 		  { "SPI", BUS_SPI },
-		  { "PCI" },
+		  { "PCI", BUS_NONE },
 		  { "LPC", BUS_LPC | BUS_FWH } };
 	static const struct boot_straps boot_straps_pch567[] =
 		{ { "LPC", BUS_LPC | BUS_FWH },
-		  { "reserved" },
-		  { "PCI" },
+		  { "reserved", BUS_NONE },
+		  { "PCI", BUS_NONE },
 		  { "SPI", BUS_SPI } };
 	static const struct boot_straps boot_straps_pch89_baytrail[] =
 		{ { "LPC", BUS_LPC | BUS_FWH },
-		  { "reserved" },
-		  { "reserved" },
+		  { "reserved", BUS_NONE },
+		  { "reserved", BUS_NONE },
 		  { "SPI", BUS_SPI } };
 	static const struct boot_straps boot_straps_pch8_lp[] =
 		{ { "SPI", BUS_SPI },
 		  { "LPC", BUS_LPC | BUS_FWH } };
 	static const struct boot_straps boot_straps_apl[] =
 		{ { "SPI", BUS_SPI },
-		  { "reserved" } };
+		  { "reserved", BUS_NONE } };
 	static const struct boot_straps boot_straps_unknown[] =
-		{ { "unknown" },
-		  { "unknown" },
-		  { "unknown" },
-		  { "unknown" } };
+		{ { "unknown", BUS_NONE },
+		  { "unknown", BUS_NONE },
+		  { "unknown", BUS_NONE },
+		  { "unknown", BUS_NONE } };
 
 	const struct boot_straps *boot_straps;
 	switch (ich_generation) {
