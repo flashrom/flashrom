@@ -69,7 +69,7 @@ static struct {
 static const struct {
 	uint8_t type;
 	uint8_t is_laptop;
-	char *name;
+	const char *name;
 } dmi_chassis_types[] = {
 	{0x01, 2, "Other"},
 	{0x02, 2, "Unknown"},

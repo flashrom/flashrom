@@ -115,7 +115,7 @@ int pony_spi_init(void)
 	int i, data_out;
 	char *arg = NULL;
 	enum pony_type type = TYPE_SI_PROG;
-	char *name;
+	const char *name;
 	int have_device = 0;
 	int have_prog = 0;
 

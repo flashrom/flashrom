@@ -113,7 +113,7 @@ static int buspirate_sendrecv(unsigned char *buf, unsigned int writecnt,
 	return 0;
 }
 
-static int buspirate_wait_for_string(unsigned char *buf, char *key)
+static int buspirate_wait_for_string(unsigned char *buf, const char *key)
 {
 	unsigned int keylen = strlen(key);
 	int ret;
