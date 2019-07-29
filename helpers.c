@@ -102,6 +102,20 @@ char* strtok_r(char *str, const char *delim, char **nextp)
 	*nextp = str;
 	return ret;
 }
+
+/* strndup is a POSIX function not present in MinGW */
+char *strndup(const char *src, size_t maxlen)
+{
+	if (strlen(src) > maxlen) {
+		char *retbuf;
+		if ((retbuf = malloc(1 + maxlen)) != NULL) {
+			memcpy(retbuf, src, maxlen);
+			retbuf[maxlen] = '\0';
+		}
+		return retbuf;
+	}
+	return strdup(src);
+}
 #endif
 
 /* There is no strnlen in DJGPP */
