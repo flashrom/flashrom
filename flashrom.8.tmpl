@@ -343,6 +343,8 @@ bitbanging adapter)
 .sp
 .BR "* ni845x_spi" " (for SPI flash ROMs attached to National Instruments USB-8451 or USB-8452)"
 .sp
+.BR "* stlinkv3_spi" " (for SPI flash ROMs attached to STMicroelectronics STLINK V3 devices)"
+.sp
 Some programmers have optional or mandatory parameters which are described
 in detail in the
 .B PROGRAMMER-SPECIFIC INFORMATION
@@ -1259,6 +1261,31 @@ The SPI speed can be selected by using the
 .sp
 syntax where \fBfrequency\fP is the SPI clock frequency in kHz.
 The maximum speed depends on the device in use.
+.SS
+.BR "stlinkv3_spi " programmer
+.IP
+This module supports SPI flash programming through the STMicroelectronics
+STLINK V3 programmer/debugger's SPI bridge interface
+.sp
+.B "  flashrom \-p stlinkv3_spi"
+.sp
+If there is more than one compatible device connected, you can select which one
+should be used by specifying its serial number with the
+.sp
+.B "  flashrom \-p stlinkv3_spi:serial=number"
+.sp
+syntax where
+.B number
+is the serial number of the device (which can be found for example in the
+output of lsusb -v).
+.sp
+The SPI speed can be selected by using the
+.sp
+.B "  flashrom \-p stlinkv3_spi:spispeed=frequency"
+.sp
+syntax where \fBfrequency\fP is the SPI clock frequency in kHz.
+If the passed frequency is not supported by the adapter the nearest lower
+supported frequency will be used.
 .SS
 
 .SH EXAMPLES

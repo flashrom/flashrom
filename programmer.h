@@ -124,6 +124,9 @@ enum programmer {
 #if CONFIG_NI845X_SPI == 1
 	PROGRAMMER_NI845X_SPI,
 #endif
+#if CONFIG_STLINKV3_SPI == 1
+	PROGRAMMER_STLINKV3_SPI,
+#endif
 	PROGRAMMER_INVALID /* This must always be the last entry. */
 };
 
@@ -499,6 +502,12 @@ int mstarddc_spi_init(void);
 #if CONFIG_PICKIT2_SPI == 1
 int pickit2_spi_init(void);
 extern const struct dev_entry devs_pickit2_spi[];
+#endif
+
+/* stlinkv3_spi.c */
+#if CONFIG_STLINKV3_SPI == 1
+int stlinkv3_spi_init(void);
+extern const struct dev_entry devs_stlinkv3_spi[];
 #endif
 
 /* rayer_spi.c */

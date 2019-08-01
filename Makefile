@@ -190,6 +190,11 @@ UNSUPPORTED_FEATURES += CONFIG_CH341A_SPI=yes
 else
 override CONFIG_CH341A_SPI = no
 endif
+ifeq ($(CONFIG_STLINKV3_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_STLINKV3_SPI=yes
+else
+override CONFIG_STLINKV3_SPI = no
+endif
 # libjaylink is also not available for DOS
 ifeq ($(CONFIG_JLINK_SPI), yes)
 UNSUPPORTED_FEATURES += CONFIG_JLINK_SPI=yes
@@ -365,6 +370,11 @@ ifeq ($(CONFIG_PICKIT2_SPI), yes)
 UNSUPPORTED_FEATURES += CONFIG_PICKIT2_SPI=yes
 else
 override CONFIG_PICKIT2_SPI = no
+endif
+ifeq ($(CONFIG_STLINKV3_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_STLINKV3_SPI=yes
+else
+override CONFIG_STLINKV3_SPI = no
 endif
 ifeq ($(CONFIG_CH341A_SPI), yes)
 UNSUPPORTED_FEATURES += CONFIG_CH341A_SPI=yes
@@ -631,6 +641,9 @@ CONFIG_MSTARDDC_SPI ?= no
 # Always enable PICkit2 SPI dongles for now.
 CONFIG_PICKIT2_SPI ?= yes
 
+# Always enable STLink V3
+CONFIG_STLINKV3_SPI ?= yes
+
 # Always enable dummy tracing for now.
 CONFIG_DUMMY ?= yes
 
@@ -709,6 +722,7 @@ override CONFIG_DEDIPROG = no
 override CONFIG_DIGILENT_SPI = no
 override CONFIG_DEVELOPERBOX_SPI = no
 override CONFIG_PICKIT2_SPI = no
+override CONFIG_STLINKV3_SPI = no
 endif
 ifeq ($(CONFIG_ENABLE_LIBPCI_PROGRAMMERS), no)
 override CONFIG_INTERNAL = no
@@ -874,6 +888,12 @@ ifeq ($(CONFIG_PICKIT2_SPI), yes)
 FEATURE_CFLAGS += -D'CONFIG_PICKIT2_SPI=1'
 PROGRAMMER_OBJS += pickit2_spi.o
 NEED_LIBUSB1 += CONFIG_PICKIT2_SPI
+endif
+
+ifeq ($(CONFIG_STLINKV3_SPI), yes)
+FEATURE_CFLAGS += -D'CONFIG_STLINKV3_SPI=1'
+PROGRAMMER_OBJS += stlinkv3_spi.o
+NEED_LIBUSB1 += CONFIG_STLINKV3_SPI
 endif
 
 ifneq ($(NEED_LIBFTDI), )
