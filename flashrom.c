@@ -460,6 +460,19 @@ const struct programmer_entry programmer_table[] = {
 		.delay			= internal_delay,
 	},
 #endif
+
+#if CONFIG_STLINKV3_SPI == 1
+	{
+		.name			= "stlinkv3_spi",
+		.type			= USB,
+		.devs.dev		= devs_stlinkv3_spi,
+		.init			= stlinkv3_spi_init,
+		.map_flash_region	= fallback_map,
+		.unmap_flash_region	= fallback_unmap,
+		.delay			= internal_delay,
+	},
+#endif
+
 	{0}, /* This entry corresponds to PROGRAMMER_INVALID. */
 };
 

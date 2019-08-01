@@ -61,6 +61,7 @@ config_satamv = get_option('config_satamv')
 config_satasii = get_option('config_satasii')
 config_serprog = get_option('config_serprog')
 config_usbblaster_spi = get_option('config_usbblaster_spi')
+config_stlinkv3_spi = get_option('config_stlinkv3_spi')
 
 cargs = []
 deps = []
@@ -270,6 +271,10 @@ endif
 if config_usbblaster_spi
   srcs += 'usbblaster_spi.c'
   cargs += '-DCONFIG_USBBLASTER_SPI=1'
+endif
+if config_stlinkv3_spi
+  srcs += 'stlinkv3_spi.c'
+  cargs += '-DCONFIG_STLINKV3_SPI=1'
 endif
 
 # bitbanging SPI infrastructure
