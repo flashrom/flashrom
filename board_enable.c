@@ -1708,6 +1708,7 @@ static int intel_ich_gpio20_raise(void)
  *  - ASUS P4P800-E Deluxe: Intel socket478 + 865PE + ICH5R
  *  - ASUS P4P800-VM: Intel socket478 + 865PE + ICH5R
  *  - ASUS P4P800-X: Intel socket478 + 865PE + ICH5R
+ *  - ASUS P4P800SE: Intel socket478 + 865PE + ICH5R
  *  - ASUS P5GD1 Pro: Intel LGA 775 + 915P + ICH6R
  *  - ASUS P5GD2 Premium: Intel LGA775 + 915G + ICH6R
  *  - ASUS P5GDC Deluxe: Intel socket775 + 915P + ICH6R
@@ -2362,6 +2363,7 @@ const struct board_match board_matches[] = {
 	{0x8086, 0x2570, 0x1043, 0x80f2,  0x8086, 0x24d3, 0x1043, 0x80a6, "^P4P800-E$", NULL, NULL,           P3, "ASUS",        "P4P800-E Deluxe",       0,   OK, intel_ich_gpio21_raise},
 	{0x8086, 0x2570, 0x1043, 0x80a5,  0x8086, 0x24d3, 0x1043, 0x80a6, "^P4P800-VM$", NULL, NULL,          P3, "ASUS",        "P4P800-VM",             0,   OK, intel_ich_gpio21_raise},
 	{0x8086, 0x2570, 0x1043, 0x80f2,  0x8086, 0x24d3, 0x1043, 0x80a6, "^P4P800-X$", NULL, NULL,           P3, "ASUS",        "P4P800-X",              0,   OK, intel_ich_gpio21_raise},
+	{0x8086, 0x2570, 0x1043, 0x80f2,  0x8086, 0x24d3,      0,      0, "^P4P800SE$", NULL, NULL,           P3, "ASUS",        "P4P800SE",              0,   OK, intel_ich_gpio21_raise},
 	{0x8086, 0x2570, 0x1043, 0x80b2,  0x8086, 0x24c3, 0x1043, 0x8089, "^P4PE-X/TE$",NULL, NULL,           P3, "ASUS",        "P4PE-X/TE",             0,   NT, intel_ich_gpio21_raise},
 	{0x1039, 0x0651, 0x1043, 0x8081,  0x1039, 0x0962,      0,      0, NULL,         NULL, NULL,           P3, "ASUS",        "P4SC-E",                0,   OK, it8707f_write_enable_2e},
 	{0x8086, 0x2570, 0x1043, 0x80A5,  0x105A, 0x24D3, 0x1043, 0x80A6, NULL,         NULL, NULL,           P3, "ASUS",        "P4SD-LA",               0,   NT, intel_ich_gpio32_raise},
