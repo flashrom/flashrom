@@ -138,8 +138,7 @@ int linux_spi_init(void)
 	}
 
 	char buf[10];
-	memset(buf, 0, sizeof(buf));
-	if (!fread(buf, 1, sizeof(buf) - 1, fp)) {
+	if (!fgets(buf, sizeof(buf), fp)) {
 		if (feof(fp))
 			msg_pwarn("Cannot read %s: file is empty.\n", BUF_SIZE_FROM_SYSFS);
 		else
