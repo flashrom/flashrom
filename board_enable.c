@@ -2516,7 +2516,7 @@ int selfcheck_board_enables(void)
  * Parameters vendor and model will be overwritten. Returns 0 on success.
  * Note: strtok modifies the original string, so we work on a copy and allocate memory for the results.
  */
-int board_parse_parameter(const char *boardstring, const char **vendor, const char **model)
+int board_parse_parameter(const char *boardstring, char **vendor, char **model)
 {
 	/* strtok may modify the original string. */
 	char *tempstr = strdup(boardstring);

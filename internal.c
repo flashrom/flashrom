@@ -145,8 +145,8 @@ int internal_init(void)
 	int ret = 0;
 	int force_laptop = 0;
 	int not_a_laptop = 0;
-	const char *board_vendor = NULL;
-	const char *board_model = NULL;
+	char *board_vendor = NULL;
+	char *board_model = NULL;
 #if IS_X86
 	const char *cb_vendor = NULL;
 	const char *cb_model = NULL;
@@ -210,8 +210,10 @@ int internal_init(void)
 	}
 	free(arg);
 
-	if (rget_io_perms())
-		return 1;
+	if (rget_io_perms()) {
+		ret = 1;
+		goto internal_init_exit;
+	}
 
 	/* Default to Parallel/LPC/FWH flash devices. If a known host controller
 	 * is found, the host controller init routine sets the
@@ -219,17 +221,22 @@ int internal_init(void)
 	 */
 	internal_buses_supported = BUS_NONSPI;
 
-	if (try_mtd() == 0)
-		return 0;
+	if (try_mtd() == 0) {
+		ret = 0;
+		goto internal_init_exit;
+	}
 
 	/* Initialize PCI access for flash enables */
-	if (pci_init_common() != 0)
-		return 1;
+	if (pci_init_common() != 0) {
+		ret = 1;
+		goto internal_init_exit;
+	}
 
 	if (processor_flash_enable()) {
 		msg_perr("Processor detection/init failed.\n"
 			 "Aborting.\n");
-		return 1;
+		ret = 1;
+		goto internal_init_exit;
 	}
 
 #if IS_X86
@@ -238,8 +245,10 @@ int internal_init(void)
 			msg_pwarn("Warning: The mainboard IDs set by -p internal:mainboard (%s:%s) do not\n"
 				  "         match the current coreboot IDs of the mainboard (%s:%s).\n",
 				  board_vendor, board_model, cb_vendor, cb_model);
-			if (!force_boardmismatch)
-				return 1;
+			if (!force_boardmismatch) {
+				ret = 1;
+				goto internal_init_exit;
+			}
 			msg_pinfo("Continuing anyway.\n");
 		}
 	}
@@ -281,8 +290,9 @@ int internal_init(void)
 	if (ret == -2) {
 		msg_perr("WARNING: No chipset found. Flash detection "
 			 "will most likely fail.\n");
-	} else if (ret == ERROR_FATAL)
-		return ret;
+	} else if (ret == ERROR_FATAL) {
+		goto internal_init_exit;
+	}
 
 #if IS_X86
 	/* Probe unconditionally for ITE Super I/O chips. This enables LPC->SPI translation on IT87* and
@@ -291,7 +301,8 @@ int internal_init(void)
 
 	if (board_flash_enable(board_vendor, board_model, cb_vendor, cb_model)) {
 		msg_perr("Aborting to be safe.\n");
-		return 1;
+		ret = 1;
+		goto internal_init_exit;
 	}
 #endif
 
@@ -325,7 +336,13 @@ int internal_init(void)
 			 "========================================================================\n");
 	}
 
-	return 0;
+	ret = 0;
+
+internal_init_exit:
+	free(board_vendor);
+	free(board_model);
+
+	return ret;
 }
 
 static void internal_chip_writeb(const struct flashctx *flash, uint8_t val,
