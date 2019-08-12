@@ -184,6 +184,7 @@ static int print_supported_chips(void)
 		dev = malloc(strlen(chip->name) + 1);
 		if (dev == NULL) {
 			msg_gerr("Out of memory!\n");
+			free(ven);
 			return 1;
 		}
 		strcpy(dev, chip->name);
