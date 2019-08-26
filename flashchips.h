@@ -212,6 +212,10 @@
 #define BRIGHT_BM29F400B	0xAB
 #define BRIGHT_BM29F400T	0xAD
 
+/* Boya Microelectronics Inc. */
+#define BOYA_ID			0x68
+#define BOYA_BY25D16		0x4015
+
 #define CATALYST_ID		0x31	/* Catalyst */
 #define CATALYST_CAT28F512	0xB8
 
