@@ -20,6 +20,8 @@
 
 #include <sys/types.h>
 #include <stddef.h>
+#include <stdbool.h>
+#include <cstdint.h>
 #include <stdarg.h>
 
 int flashrom_init(int perform_selfcheck);
