@@ -52,6 +52,7 @@ static void cli_classic_usage(const char *name)
 	       " -N | --noverify-all                verify included regions only (cf. -i)\n"
 	       " -l | --layout <layoutfile>         read ROM layout from <layoutfile>\n"
 	       "      --flash-name                  read out the detected flash name\n"
+	       "      --flash-size                  read out the detected flash size\n"
 	       "      --fmap                        read ROM layout from fmap embedded in ROM\n"
 	       "      --fmap-file <fmapfile>        read ROM layout from fmap in <fmapfile>\n"
 	       "      --ifd                         read layout from an Intel Firmware Descriptor\n"
@@ -102,7 +103,7 @@ int main(int argc, char *argv[])
 #if CONFIG_PRINT_WIKI == 1
 	int list_supported_wiki = 0;
 #endif
-	int flash_name = 0;
+	int flash_name = 0, flash_size = 0;
 	int read_it = 0, write_it = 0, erase_it = 0, verify_it = 0;
 	int dont_verify_it = 0, dont_verify_all = 0, list_supported = 0, operation_specified = 0;
 	struct flashrom_layout *layout = NULL;
@@ -113,6 +114,7 @@ int main(int argc, char *argv[])
 		OPTION_FMAP_FILE,
 		OPTION_FLASH_CONTENTS,
 		OPTION_FLASH_NAME,
+		OPTION_FLASH_SIZE,
 	};
 	int ret = 0;
 
@@ -134,6 +136,8 @@ int main(int argc, char *argv[])
 		{"image",		1, NULL, 'i'},
 		{"flash-contents",	1, NULL, OPTION_FLASH_CONTENTS},
 		{"flash-name",		0, NULL, OPTION_FLASH_NAME},
+		{"flash-size",		0, NULL, OPTION_FLASH_SIZE},
+		{"get-size",		0, NULL, OPTION_FLASH_SIZE}, // (deprecated): back compatibility.
 		{"list-supported",	0, NULL, 'L'},
 		{"list-supported-wiki",	0, NULL, 'z'},
 		{"programmer",		1, NULL, 'p'},
@@ -307,6 +311,14 @@ int main(int argc, char *argv[])
 				cli_classic_abort_usage();
 			}
 			flash_name = 1;
+			break;
+		case OPTION_FLASH_SIZE:
+			if (++operation_specified > 1) {
+				fprintf(stderr, "More than one operation "
+					"specified. Aborting.\n");
+				cli_classic_abort_usage();
+			}
+			flash_size = 1;
 			break;
 		case 'L':
 			if (++operation_specified > 1) {
@@ -614,7 +626,7 @@ int main(int argc, char *argv[])
 		goto out_shutdown;
 	}
 
-	if (!(read_it | write_it | verify_it | erase_it | flash_name)) {
+	if (!(read_it | write_it | verify_it | erase_it | flash_name | flash_size)) {
 		msg_ginfo("No operations were specified.\n");
 		goto out_shutdown;
 	}
@@ -627,6 +639,11 @@ int main(int argc, char *argv[])
 		} else {
 			ret = -1;
 		}
+		goto out_shutdown;
+	}
+
+	if (flash_size) {
+		printf("%d\n", fill_flash->chip->total_size * 1024);
 		goto out_shutdown;
 	}
 

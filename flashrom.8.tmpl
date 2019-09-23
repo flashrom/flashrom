@@ -46,7 +46,7 @@ flashrom \- detect, read, write, verify and erase flash chips
 .SH SYNOPSIS
 .B flashrom \fR[\fB\-h\fR|\fB\-R\fR|\fB\-L\fR|\fB\-z\fR|
           \fB\-p\fR <programmername>[:<parameters>] [\fB\-c\fR <chipname>]
-            (\fB\-\-flash\-name\fR|
+            (\fB\-\-flash\-name\fR|\fB\-\-flash\-size\fR|
              [\fB\-E\fR|\fB\-r\fR <file>|\fB\-w\fR <file>|\fB\-v\fR <file>]
              [(\fB\-l\fR <file>|\fB\-\-ifd|\fB \-\-fmap\fR|\fB\-\-fmap-file\fR <file>) [\fB\-i\fR <image>]]
              [\fB\-n\fR] [\fB\-N\fR] [\fB\-f\fR])]
@@ -246,6 +246,9 @@ from flash layout.
 .TP
 .B "\-\-flash\-name"
 Prints out the detected flash chips name.
+.TP
+.B "\-\-flash\-size"
+Prints out the detected flash chips size.
 .TP
 .B "\-L, \-\-list\-supported"
 List the flash chips, chipsets, mainboards, and external programmers
