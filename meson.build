@@ -349,10 +349,19 @@ flashrom = shared_library(
   link_depends : mapfile,
 )
 
+version = meson.project_version()
+#strip leading characters
+if version.startswith('v')
+  version = version.split('v')[1]
+endif
+if version.startswith('p')
+  version = version.split('p')[1]
+endif
+
 pkgg = import('pkgconfig')
 pkgg.generate(
   libraries : flashrom,
-  version : meson.project_version(),
+  version : version,
   name : 'libflashrom',
   filebase : 'libflashrom',
   description : 'libflashrom',
