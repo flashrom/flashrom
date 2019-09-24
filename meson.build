@@ -1,5 +1,5 @@
 project('flashromutils', 'c',
-  version : '1.0',
+  version : run_command('util/getversion.sh', '-v').stdout().strip(),
   license : 'GPL-2.0',
   meson_version : '>=0.47.0',
   default_options : ['warning_level=2', 'c_std=c99'],
