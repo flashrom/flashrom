@@ -387,7 +387,7 @@ int dummy_init(void)
 	if (!stat(emu_persistent_image, &image_stat)) {
 		msg_pdbg("Found persistent image %s, %jd B ",
 			 emu_persistent_image, (intmax_t)image_stat.st_size);
-		if (image_stat.st_size == emu_chip_size) {
+		if ((uintmax_t)image_stat.st_size == emu_chip_size) {
 			msg_pdbg("matches.\n");
 			msg_pdbg("Reading %s\n", emu_persistent_image);
 			if (read_buf_from_file(flashchip_contents, emu_chip_size,
