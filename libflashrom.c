@@ -139,7 +139,7 @@ const char **flashrom_supported_programmers(void)
  */
 struct flashrom_flashchip_info *flashrom_supported_flash_chips(void)
 {
-	int i = 0;
+	unsigned int i = 0;
 	struct flashrom_flashchip_info *supported_flashchips =
 		malloc(flashchips_size * sizeof(*supported_flashchips));
 

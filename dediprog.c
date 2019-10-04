@@ -1038,7 +1038,7 @@ int dediprog_init(void)
 			free(device);
 			return 1;
 		}
-		if (usedevice < 0 || usedevice > UINT_MAX) {
+		if (usedevice < 0 || usedevice > INT_MAX) {
 			msg_perr("Error: Value for 'device' is out of range.\n");
 			free(device);
 			return 1;
