@@ -35,9 +35,12 @@ static void cli_classic_usage(const char *name)
 #if CONFIG_PRINT_WIKI == 1
 	       "-z|"
 #endif
-	       "-p <programmername>[:<parameters>] [-c <chipname>]\n"
-	       "[-E|(-r|-w|-v) <file>] [(-l <layoutfile>|--ifd) [-i <imagename>]...] [-n] [-N] [-f]]\n"
-	       "[-V[V[V]]] [-o <logfile>]\n\n", name);
+	       "\n\t-p <programmername>[:<parameters>] [-c <chipname>]\n"
+	       "\t\t(--flash-name|--flash-size|\n"
+	       "\t\t [-E|(-r|-w|-v) <file>]\n"
+	       "\t\t [(-l <layoutfile>|--ifd| --fmap|--fmap-file <file>) [-i <imagename>]...]\n"
+	       "\t\t [-n] [-N] [-f])]\n"
+	       "\t[-V[V[V]]] [-o <logfile>]\n\n", name);
 
 	printf(" -h | --help                        print this help text\n"
 	       " -R | --version                     print version (release)\n"
