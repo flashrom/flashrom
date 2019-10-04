@@ -2493,7 +2493,7 @@ int selfcheck_board_enables(void)
 
 	int ret = 0;
 	unsigned int i;
-	for (i = 0; i < ARRAY_SIZE(board_matches) - 1; i++) {
+	for (i = 0; i + 1 < ARRAY_SIZE(board_matches); i++) {
 		const struct board_match *b = &board_matches[i];
 		if (b->vendor_name == NULL || b->board_name == NULL) {
 			msg_gerr("ERROR: Board enable #%d does not define a vendor and board name.\n"
