@@ -430,6 +430,7 @@ int wrmsr(int addr, msr_t msr)
 	return 0;
 }
 
+#if CONFIG_INTERNAL == 1
 int setup_cpu_msr(int cpu)
 {
 	char msrfilename[64];
@@ -464,6 +465,8 @@ void cleanup_cpu_msr(void)
 	/* Clear MSR file descriptor. */
 	fd_msr = -1;
 }
+#endif
+
 #elif defined(__OpenBSD__) && defined (__i386__) /* This does only work for certain AMD Geode LX systems see amdmsr(4). */
 #include <sys/ioctl.h>
 #include <machine/amdmsr.h>

@@ -171,18 +171,21 @@ struct flashrom_flashchip_info *flashrom_supported_flash_chips(void)
 struct flashrom_board_info *flashrom_supported_boards(void)
 {
 	int boards_known_size = 0;
+#if CONFIG_INTERNAL == 1
 	int i = 0;
 	const struct board_info *binfo = boards_known;
 
 	while ((binfo++)->vendor)
 		++boards_known_size;
 	binfo = boards_known;
+#endif
 	/* add place for {0} */
 	++boards_known_size;
 
 	struct flashrom_board_info *supported_boards =
-		malloc(boards_known_size * sizeof(*binfo));
+		malloc(boards_known_size * sizeof(*supported_boards));
 
+#if CONFIG_INTERNAL == 1
 	if (supported_boards != NULL) {
 		for (; i < boards_known_size; ++i) {
 			supported_boards[i].vendor = binfo[i].vendor;
@@ -192,6 +195,7 @@ struct flashrom_board_info *flashrom_supported_boards(void)
 	} else {
 		msg_gerr("Memory allocation error!\n");
 	}
+#endif
 
 	return supported_boards;
 }
@@ -203,18 +207,21 @@ struct flashrom_board_info *flashrom_supported_boards(void)
 struct flashrom_chipset_info *flashrom_supported_chipsets(void)
 {
 	int chipset_enables_size = 0;
+#if CONFIG_INTERNAL == 1
 	int i = 0;
 	const struct penable *chipset = chipset_enables;
 
 	while ((chipset++)->vendor_name)
 		++chipset_enables_size;
 	chipset = chipset_enables;
+#endif
 	/* add place for {0}*/
 	++chipset_enables_size;
 
 	struct flashrom_chipset_info *supported_chipsets =
 		malloc(chipset_enables_size * sizeof(*supported_chipsets));
 
+#if CONFIG_INTERNAL == 1
 	if (supported_chipsets != NULL) {
 		for (; i < chipset_enables_size; ++i) {
 			supported_chipsets[i].vendor = chipset[i].vendor_name;
@@ -226,6 +233,7 @@ struct flashrom_chipset_info *flashrom_supported_chipsets(void)
 	} else {
 		msg_gerr("Memory allocation error!\n");
 	}
+#endif
 
 	return supported_chipsets;
 }
