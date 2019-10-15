@@ -362,9 +362,9 @@ pkgg = import('pkgconfig')
 pkgg.generate(
   libraries : flashrom,
   version : version,
-  name : 'libflashrom',
-  filebase : 'libflashrom',
-  description : 'libflashrom',
+  name : 'flashrom',
+  filebase : 'flashrom',
+  description : 'library to interact with flashrom',
 )
 
 flashrom_dep = declare_dependency(
