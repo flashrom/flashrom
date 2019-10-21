@@ -15,6 +15,7 @@
  * GNU General Public License for more details.
  */
 
+#include <inttypes.h>
 #include <stdbool.h>
 #include <string.h>
 #include <libusb.h>
