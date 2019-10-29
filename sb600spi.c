@@ -80,6 +80,17 @@ static struct spi_master spi_master_yangtze = {
 	.write_aai = default_spi_write_aai,
 };
 
+static int find_smbus_dev_rev(uint16_t vendor, uint16_t device)
+{
+	struct pci_dev *smbus_dev = pci_dev_find(vendor, device);
+	if (!smbus_dev) {
+		msg_pdbg("No SMBus device with ID %04X:%04X found.\n", vendor, device);
+		msg_perr("ERROR: SMBus device not found. Not enabling SPI.\n");
+		return -1;
+	}
+	return pci_read_byte(smbus_dev, PCI_REVISION_ID);
+}
+
 static void determine_generation(struct pci_dev *dev)
 {
 	amd_gen = CHIPSET_AMD_UNKNOWN;
@@ -88,10 +99,9 @@ static void determine_generation(struct pci_dev *dev)
 		amd_gen = CHIPSET_SB6XX;
 		msg_pdbg("SB6xx detected.\n");
 	} else if (dev->device_id == 0x439d) {
-		struct pci_dev *smbus_dev = pci_dev_find(0x1002, 0x4385);
-		if (smbus_dev == NULL)
+		int rev = find_smbus_dev_rev(0x1002, 0x4385);
+		if (rev < 0)
 			return;
-		uint8_t rev = pci_read_byte(smbus_dev, PCI_REVISION_ID);
 		if (rev >= 0x39 && rev <= 0x3D) {
 			amd_gen = CHIPSET_SB7XX;
 			msg_pdbg("SB7xx/SP5100 detected.\n");
@@ -123,12 +133,9 @@ static void determine_generation(struct pci_dev *dev)
 		msg_pdbg("not found. Assuming Hudson.\n");
 		amd_gen = CHIPSET_HUDSON234;
 #else
-		struct pci_dev *smbus_dev = pci_dev_find(0x1022, 0x780B);
-		if (smbus_dev == NULL) {
-			msg_pdbg("No SMBus device with ID 1022:780B found.\n");
+		int rev = find_smbus_dev_rev(0x1022, 0x780B);
+		if (rev < 0)
 			return;
-		}
-		uint8_t rev = pci_read_byte(smbus_dev, PCI_REVISION_ID);
 		if (rev >= 0x11 && rev <= 0x15) {
 			amd_gen = CHIPSET_HUDSON234;
 			msg_pdbg("Hudson-2/3/4 detected.\n");
@@ -144,12 +151,9 @@ static void determine_generation(struct pci_dev *dev)
 				  "the output of lspci -nnvx, thanks!.\n", rev);
 		}
 	} else if (dev->device_id == 0x790e) {
-		struct pci_dev *smbus_dev = pci_dev_find(0x1022, 0x790B);
-		if (smbus_dev == NULL) {
-			msg_pdbg("No SMBus device with ID 1022:790B found.\n");
+		int rev = find_smbus_dev_rev(0x1022, 0x790B);
+		if (rev < 0)
 			return;
-		}
-		uint8_t rev = pci_read_byte(smbus_dev, PCI_REVISION_ID);
 		if (rev == 0x4a) {
 			amd_gen = CHIPSET_YANGTZE;
 			msg_pdbg("Yangtze detected.\n");
