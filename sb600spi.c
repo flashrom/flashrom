@@ -51,7 +51,6 @@ enum amd_chipset {
 	CHIPSET_YANGTZE,
 	CHIPSET_PROMONTORY,
 };
-static enum amd_chipset amd_gen = CHIPSET_AMD_UNKNOWN;
 
 #define FIFO_SIZE_OLD		8
 #define FIFO_SIZE_YANGTZE	71
@@ -68,44 +67,43 @@ static int find_smbus_dev_rev(uint16_t vendor, uint16_t device)
 }
 
 /* Determine the chipset's version and identify the respective SMBUS device. */
-static int determine_generation(struct pci_dev *dev)
+static enum amd_chipset determine_generation(struct pci_dev *dev)
 {
-	amd_gen = CHIPSET_AMD_UNKNOWN;
 	msg_pdbg2("Trying to determine the generation of the SPI interface... ");
 	if (dev->device_id == 0x438d) {
-		amd_gen = CHIPSET_SB6XX;
 		msg_pdbg("SB6xx detected.\n");
+		return CHIPSET_SB6XX;
 	} else if (dev->device_id == 0x439d) {
 		int rev = find_smbus_dev_rev(0x1002, 0x4385);
 		if (rev < 0)
-			return -1;
+			return CHIPSET_AMD_UNKNOWN;
 		if (rev >= 0x39 && rev <= 0x3D) {
-			amd_gen = CHIPSET_SB7XX;
 			msg_pdbg("SB7xx/SP5100 detected.\n");
+			return CHIPSET_SB7XX;
 		} else if (rev >= 0x40 && rev <= 0x42) {
-			amd_gen = CHIPSET_SB89XX;
 			msg_pdbg("SB8xx/SB9xx/Hudson-1 detected.\n");
+			return CHIPSET_SB89XX;
 		} else {
 			msg_pwarn("SB device found but SMBus revision 0x%02x does not match known values.\n"
 				  "Assuming SB8xx/SB9xx/Hudson-1. Please send a log to flashrom@flashrom.org\n",
 				   rev);
-			amd_gen = CHIPSET_SB89XX;
+			return CHIPSET_SB89XX;
 		}
 	} else if (dev->device_id == 0x780e) {
 		/* The PCI ID of the LPC bridge doesn't change between Hudson-2/3/4 and Yangtze (Kabini/Temash)
 		 * although they use different SPI interfaces. */
 		int rev = find_smbus_dev_rev(0x1022, 0x780B);
 		if (rev < 0)
-			return -1;
+			return CHIPSET_AMD_UNKNOWN;
 		if (rev >= 0x11 && rev <= 0x15) {
-			amd_gen = CHIPSET_HUDSON234;
 			msg_pdbg("Hudson-2/3/4 detected.\n");
+			return CHIPSET_HUDSON234;
 		} else if (rev == 0x16) {
-			amd_gen = CHIPSET_BOLTON;
 			msg_pdbg("Bolton detected.\n");
+			return CHIPSET_BOLTON;
 		} else if ((rev >= 0x39 && rev <= 0x3A) || rev == 0x42) {
-			amd_gen = CHIPSET_YANGTZE;
 			msg_pdbg("Yangtze detected.\n");
+			return CHIPSET_YANGTZE;
 		} else {
 			msg_pwarn("FCH device found but SMBus revision 0x%02x does not match known values.\n"
 				  "Please report this to flashrom@flashrom.org and include this log and\n"
@@ -114,13 +112,13 @@ static int determine_generation(struct pci_dev *dev)
 	} else if (dev->device_id == 0x790e) {
 		int rev = find_smbus_dev_rev(0x1022, 0x790B);
 		if (rev < 0)
-			return -1;
+			return CHIPSET_AMD_UNKNOWN;
 		if (rev == 0x4a) {
-			amd_gen = CHIPSET_YANGTZE;
 			msg_pdbg("Yangtze detected.\n");
+			return CHIPSET_YANGTZE;
 		} else if (rev == 0x4b) {
-			amd_gen = CHIPSET_PROMONTORY;
 			msg_pdbg("Promontory detected.\n");
+			return CHIPSET_PROMONTORY;
 		} else {
 			msg_pwarn("FCH device found but SMBus revision 0x%02x does not match known values.\n"
 				  "Please report this to flashrom@flashrom.org and include this log and\n"
@@ -133,11 +131,9 @@ static int determine_generation(struct pci_dev *dev)
 			  "Please report this to flashrom@flashrom.org and include this log and\n"
 			  "the output of lspci -nnvx, thanks!\n",
 			  __func__, dev->vendor_id, dev->device_id);
-	if (amd_gen == CHIPSET_AMD_UNKNOWN) {
-		msg_perr("Could not determine chipset generation.");
-		return -1;
-	}
-	return 0;
+
+	msg_perr("Could not determine chipset generation.");
+	return CHIPSET_AMD_UNKNOWN;
 }
 
 static void reset_internal_fifo_pointer(void)
@@ -344,7 +340,7 @@ static const char* spireadmodes[] = {
 	"Fast Read",
 };
 
-static int set_speed(struct pci_dev *dev, uint8_t speed)
+static int set_speed(struct pci_dev *dev, enum amd_chipset amd_gen, uint8_t speed)
 {
 	bool success = false;
 
@@ -382,7 +378,7 @@ static int set_mode(struct pci_dev *dev, uint8_t mode)
 	return 0;
 }
 
-static int handle_speed(struct pci_dev *dev)
+static int handle_speed(struct pci_dev *dev, enum amd_chipset amd_gen)
 {
 	uint32_t tmp;
 	int16_t spispeed_idx = -1;
@@ -493,10 +489,10 @@ static int handle_speed(struct pci_dev *dev)
 		msg_perr("Warning: spispeed not set, leaving spispeed unchanged.");
 		return 0;
 	}
-	return set_speed(dev, spispeed_idx);
+	return set_speed(dev, amd_gen, spispeed_idx);
 }
 
-static int handle_imc(struct pci_dev *dev)
+static int handle_imc(struct pci_dev *dev, enum amd_chipset amd_gen)
 {
 	/* Handle IMC everywhere but sb600 which does not have one. */
 	if (amd_gen == CHIPSET_SB6XX)
@@ -590,7 +586,8 @@ int sb600_probe_spi(struct pci_dev *dev)
 	 */
 	sb600_spibar += tmp & 0xfff;
 
-	if (determine_generation(dev) < 0)
+	enum amd_chipset amd_gen = determine_generation(dev);
+	if (amd_gen == CHIPSET_AMD_UNKNOWN)
 		return ERROR_NONFATAL;
 
 	/* How to read the following table and similar ones in this file:
@@ -723,10 +720,10 @@ int sb600_probe_spi(struct pci_dev *dev)
 		return 0;
 	}
 
-	if (handle_speed(dev) != 0)
+	if (handle_speed(dev, amd_gen) != 0)
 		return ERROR_FATAL;
 
-	if (handle_imc(dev) != 0)
+	if (handle_imc(dev, amd_gen) != 0)
 		return ERROR_FATAL;
 
 	/* Starting with Yangtze the SPI controller got a different interface with a much bigger buffer. */
