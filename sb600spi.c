@@ -49,6 +49,7 @@ enum amd_chipset {
 	CHIPSET_HUDSON234,
 	CHIPSET_BOLTON,
 	CHIPSET_YANGTZE,
+	CHIPSET_PROMONTORY,
 };
 static enum amd_chipset amd_gen = CHIPSET_AMD_UNKNOWN;
 
@@ -118,22 +119,6 @@ static int determine_generation(struct pci_dev *dev)
 	} else if (dev->device_id == 0x780e) {
 		/* The PCI ID of the LPC bridge doesn't change between Hudson-2/3/4 and Yangtze (Kabini/Temash)
 		 * although they use different SPI interfaces. */
-#ifdef USE_YANGTZE_HEURISTICS
-		/* This heuristic accesses the SPI interface MMIO BAR at locations beyond those supported by
-		 * Hudson in the hope of getting 0xff readback on older chipsets and non-0xff readback on
-		 * Yangtze (and newer, compatible chipsets). */
-		int i;
-		msg_pdbg("Checking for AMD Yangtze (Kabini/Temash) or later... ");
-		for (i = 0x20; i <= 0x4f; i++) {
-			if (mmio_readb(sb600_spibar + i) != 0xff) {
-				amd_gen = CHIPSET_YANGTZE;
-				msg_pdbg("found.\n");
-				return 0;
-			}
-		}
-		msg_pdbg("not found. Assuming Hudson.\n");
-		amd_gen = CHIPSET_HUDSON234;
-#else
 		int rev = find_smbus_dev_rev(0x1022, 0x780B);
 		if (rev < 0)
 			return -1;
@@ -158,6 +143,9 @@ static int determine_generation(struct pci_dev *dev)
 		if (rev == 0x4a) {
 			amd_gen = CHIPSET_YANGTZE;
 			msg_pdbg("Yangtze detected.\n");
+		} else if (rev == 0x4b) {
+			amd_gen = CHIPSET_PROMONTORY;
+			msg_pdbg("Promontory detected.\n");
 		} else {
 			msg_pwarn("FCH device found but SMBus revision 0x%02x does not match known values.\n"
 				  "Please report this to flashrom@flashrom.org and include this log and\n"
@@ -165,7 +153,6 @@ static int determine_generation(struct pci_dev *dev)
 		}
 
 
-#endif
 	} else
 		msg_pwarn("%s: Unknown LPC device %" PRIx16 ":%" PRIx16 ".\n"
 			  "Please report this to flashrom@flashrom.org and include this log and\n"
@@ -595,7 +582,7 @@ int sb600_probe_spi(struct pci_dev *dev)
 		msg_pdbg("SpiRomEnable=%i", (tmp >> 1) & 0x1);
 		if (amd_gen == CHIPSET_SB7XX)
 			msg_pdbg(", AltSpiCSEnable=%i, AbortEnable=%i", tmp & 0x1, (tmp >> 2) & 0x1);
-		else if (amd_gen == CHIPSET_YANGTZE)
+		else if (amd_gen >= CHIPSET_YANGTZE)
 			msg_pdbg(", RouteTpm2Sp=%i", (tmp >> 3) & 0x1);
 
 		tmp = pci_read_byte(dev, 0xba);
@@ -631,13 +618,13 @@ int sb600_probe_spi(struct pci_dev *dev)
 	 */
 	tmp = mmio_readl(sb600_spibar + 0x00);
 	msg_pdbg("(0x%08" PRIx32 ") SpiArbEnable=%i", tmp, (tmp >> 19) & 0x1);
-	if (amd_gen == CHIPSET_YANGTZE)
+	if (amd_gen >= CHIPSET_YANGTZE)
 		msg_pdbg(", IllegalAccess=%i", (tmp >> 21) & 0x1);
 
 	msg_pdbg(", SpiAccessMacRomEn=%i, SpiHostAccessRomEn=%i, ArbWaitCount=%i",
 		 (tmp >> 22) & 0x1, (tmp >> 23) & 0x1, (tmp >> 24) & 0x7);
 
-	if (amd_gen != CHIPSET_YANGTZE)
+	if (amd_gen < CHIPSET_YANGTZE)
 		msg_pdbg(", SpiBridgeDisable=%i", (tmp >> 27) & 0x1);
 
 	switch (amd_gen) {
@@ -647,6 +634,7 @@ int sb600_probe_spi(struct pci_dev *dev)
 	case CHIPSET_SB89XX:
 	case CHIPSET_HUDSON234:
 	case CHIPSET_YANGTZE:
+	case CHIPSET_PROMONTORY:
 		msg_pdbg(", SpiBusy=%i", (tmp >> 31) & 0x1);
 	default: break;
 	}
@@ -710,7 +698,7 @@ int sb600_probe_spi(struct pci_dev *dev)
 		return ERROR_FATAL;
 
 	/* Starting with Yangtze the SPI controller got a different interface with a much bigger buffer. */
-	if (amd_gen != CHIPSET_YANGTZE)
+	if (amd_gen < CHIPSET_YANGTZE)
 		register_spi_master(&spi_master_sb600);
 	else
 		register_spi_master(&spi_master_yangtze);
