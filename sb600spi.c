@@ -91,7 +91,8 @@ static int find_smbus_dev_rev(uint16_t vendor, uint16_t device)
 	return pci_read_byte(smbus_dev, PCI_REVISION_ID);
 }
 
-static void determine_generation(struct pci_dev *dev)
+/* Determine the chipset's version and identify the respective SMBUS device. */
+static int determine_generation(struct pci_dev *dev)
 {
 	amd_gen = CHIPSET_AMD_UNKNOWN;
 	msg_pdbg2("Trying to determine the generation of the SPI interface... ");
@@ -101,7 +102,7 @@ static void determine_generation(struct pci_dev *dev)
 	} else if (dev->device_id == 0x439d) {
 		int rev = find_smbus_dev_rev(0x1002, 0x4385);
 		if (rev < 0)
-			return;
+			return -1;
 		if (rev >= 0x39 && rev <= 0x3D) {
 			amd_gen = CHIPSET_SB7XX;
 			msg_pdbg("SB7xx/SP5100 detected.\n");
@@ -127,7 +128,7 @@ static void determine_generation(struct pci_dev *dev)
 			if (mmio_readb(sb600_spibar + i) != 0xff) {
 				amd_gen = CHIPSET_YANGTZE;
 				msg_pdbg("found.\n");
-				return;
+				return 0;
 			}
 		}
 		msg_pdbg("not found. Assuming Hudson.\n");
@@ -135,7 +136,7 @@ static void determine_generation(struct pci_dev *dev)
 #else
 		int rev = find_smbus_dev_rev(0x1022, 0x780B);
 		if (rev < 0)
-			return;
+			return -1;
 		if (rev >= 0x11 && rev <= 0x15) {
 			amd_gen = CHIPSET_HUDSON234;
 			msg_pdbg("Hudson-2/3/4 detected.\n");
@@ -153,7 +154,7 @@ static void determine_generation(struct pci_dev *dev)
 	} else if (dev->device_id == 0x790e) {
 		int rev = find_smbus_dev_rev(0x1022, 0x790B);
 		if (rev < 0)
-			return;
+			return -1;
 		if (rev == 0x4a) {
 			amd_gen = CHIPSET_YANGTZE;
 			msg_pdbg("Yangtze detected.\n");
@@ -170,6 +171,11 @@ static void determine_generation(struct pci_dev *dev)
 			  "Please report this to flashrom@flashrom.org and include this log and\n"
 			  "the output of lspci -nnvx, thanks!\n",
 			  __func__, dev->vendor_id, dev->device_id);
+	if (amd_gen == CHIPSET_AMD_UNKNOWN) {
+		msg_perr("Could not determine chipset generation.");
+		return -1;
+	}
+	return 0;
 }
 
 static void reset_internal_fifo_pointer(void)
@@ -565,11 +571,8 @@ int sb600_probe_spi(struct pci_dev *dev)
 	 */
 	sb600_spibar += tmp & 0xfff;
 
-	determine_generation(dev);
-	if (amd_gen == CHIPSET_AMD_UNKNOWN) {
-		msg_perr("Could not determine chipset generation.");
+	if (determine_generation(dev) < 0)
 		return ERROR_NONFATAL;
-	}
 
 	/* How to read the following table and similar ones in this file:
 	 * "?" means we have no datasheet for this chipset generation or it doesn't have any relevant info.
