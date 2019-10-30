@@ -269,6 +269,12 @@ int ft2232_spi_init(void)
 		} else if (!strcasecmp(arg, "google-servo-v2-legacy")) {
 			ft2232_vid = GOOGLE_VID;
 			ft2232_type = GOOGLE_SERVO_V2_PID0;
+		} else if (!strcasecmp(arg, "flyswatter")) {
+			ft2232_type = FTDI_FT2232H_PID;
+			channel_count = 2;
+			/* Flyswatter and Flyswatter-2 require GPIO bits 0x80
+			 * and 0x40 to be driven low to enable output buffers */
+			pindir = 0xcb;
 		} else {
 			msg_perr("Error: Invalid device type specified.\n");
 			free(arg);
