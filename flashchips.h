@@ -150,6 +150,7 @@
 #define ATMEL_AT25SF041		0x8401
 #define ATMEL_AT25SF081		0x8501
 #define ATMEL_AT25SF161		0x8601
+#define ATMEL_AT25SF321		0x8701
 #define ATMEL_AT25SL128A	0x4218
 #define ATMEL_AT26DF041		0x4400
 #define ATMEL_AT26DF081		0x4500	/* guessed, no datasheet available */
