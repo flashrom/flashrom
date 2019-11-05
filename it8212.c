@@ -26,7 +26,7 @@ static uint8_t *it8212_bar = NULL;
 const struct dev_entry devs_it8212[] = {
 	{PCI_VENDOR_ID_ITE, 0x8212, NT, "ITE", "8212F PATA RAID"},
 
-	{},
+	{0},
 };
 
 #define IT8212_MEMMAP_SIZE (128 * 1024)
