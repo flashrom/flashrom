@@ -51,7 +51,7 @@
 const struct dev_entry ata_via[] = {
 	{PCI_VENDOR_ID_VIA, 0x3249, DEP, "VIA", "VT6421A"},
 
-	{},
+	{0},
 };
 
 static void atavia_chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr);

@@ -48,7 +48,7 @@
 const struct dev_entry devs_usbblasterspi[] = {
 	{ALTERA_VID, ALTERA_USBBLASTER_PID, OK, "Altera", "USB-Blaster"},
 
-	{}
+	{0}
 };
 
 static const struct spi_master spi_master_usbblaster;
