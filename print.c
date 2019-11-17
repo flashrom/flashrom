@@ -401,14 +401,7 @@ static void print_supported_boards_helper(const struct board_info *boards,
 		for (i = 0; i < maxboardlen - strlen(b->name); i++)
 			msg_ginfo(" ");
 
-		switch (b->working) {
-		case OK:  msg_ginfo("OK      "); break;
-		case NT:  msg_ginfo("NT      "); break;
-		case DEP: msg_ginfo("DEP     "); break;
-		case NA:  msg_ginfo("N/A     "); break;
-		case BAD:
-		default:  msg_ginfo("BAD     "); break;
-		}
+		msg_pinfo(test_state_to_text(b->working));
 
 		for (e = board_matches; e->vendor_name != NULL; e++) {
 			if (strcmp(e->vendor_name, b->vendor)
