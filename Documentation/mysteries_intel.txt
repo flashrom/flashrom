@@ -5,6 +5,27 @@
  A0h), so we have no clue if or where it is on ICH8. Out current policy is to
  not touch it at all and assume/hope it is 0.
 
+= SMM BIOS Write Protection =
+Sometimes a hardware vendor will enable "SMM BIOS Write Protect" (SMM_BWP)
+in the firmware during boot time. The bits that control SMM_BWP are in the
+BIOS_CNTL register in the LPC interface.
+
+When enabled, the SPI flash can only be written when the system is operating in
+in System Management Mode (SMM). In other words, only certain code that was
+installed by the BIOS can write to the flash chip. Programs that run in OS
+context such as flashrom can still read the flash chip, but cannot write to the
+flash chip.
+
+Flashrom will attempt to detect this and print a warning such as the following:
+"Warning: BIOS region SMM protection is enabled!"
+
+Many vendor-supplied firmware update utilities do not actually write to the ROM;
+instead they transfer data to/from memory which is read/written by a routine
+running in SMM and is responsible for writing to the firmware ROM. This causes
+severe system performance degradataion since all processors must be in SMM
+context (ring -2) instead of OS context (ring 0) while the firmware ROM is being
+written.
+
 = Accesses beyond region bounds in descriptor mode =
  Intel's flash image tool will always expand the last region so that it covers
  the whole flash chip, but some boards ship with a different configuration.
