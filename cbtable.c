@@ -170,6 +170,23 @@ static int lb_header_valid(struct lb_header *head, unsigned long addr)
 	return 1;
 }
 
+static int lb_table_valid(struct lb_header *head, struct lb_record *recs)
+{
+	if (compute_checksum(recs, head->table_bytes)
+	    != head->table_checksum) {
+		msg_perr("Bad table checksum: %04x.\n",
+			head->table_checksum);
+		return 0;
+	}
+	if (count_lb_records(head) != head->table_entries) {
+		msg_perr("Bad record count: %d.\n",
+			head->table_entries);
+		return 0;
+	}
+
+	return 1;
+}
+
 static struct lb_header *find_lb_table(void *base, unsigned long start,
 				       unsigned long end)
 {
@@ -183,17 +200,8 @@ static struct lb_header *find_lb_table(void *base, unsigned long start,
 		    (struct lb_record *)(((char *)base) + addr + sizeof(*head));
 		if (!lb_header_valid(head, addr))
 			continue;
-		if (count_lb_records(head) != head->table_entries) {
-			msg_perr("Bad record count: %d.\n",
-				head->table_entries);
+		if (!lb_table_valid(head, recs))
 			continue;
-		}
-		if (compute_checksum(recs, head->table_bytes)
-		    != head->table_checksum) {
-			msg_perr("Bad table checksum: %04x.\n",
-				head->table_checksum);
-			continue;
-		}
 		msg_pdbg("Found coreboot table at 0x%08lx.\n", addr);
 		return head;
 
