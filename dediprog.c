@@ -1006,15 +1006,19 @@ static struct spi_master spi_master_dediprog = {
 /*
  * Open a dediprog_handle with the USB device at the given index.
  * @index   index of the USB device
+ * @serial_number serial number of the USB device (id is ignored then)
  * @return  0 for success, -1 for error, -2 for busy device
  */
-static int dediprog_open(int index)
+static int dediprog_open(int index, char *serial_number)
 {
 	const uint16_t vid = devs_dediprog[0].vendor_id;
 	const uint16_t pid = devs_dediprog[0].device_id;
 	int ret;
 
-	dediprog_handle = usb_dev_get_by_vid_pid_number(usb_ctx, vid, pid, (unsigned int) index);
+	if (serial_number)
+		dediprog_handle = usb_dev_get_by_vid_pid_serial(usb_ctx, vid, pid, serial_number);
+	else
+		dediprog_handle = usb_dev_get_by_vid_pid_number(usb_ctx, vid, pid, (unsigned int) index);
 	if (!dediprog_handle) {
 		msg_perr("Could not find a Dediprog programmer on USB.\n");
 		libusb_exit(usb_ctx);
@@ -1057,7 +1061,8 @@ static int dediprog_shutdown(void *data)
 
 int dediprog_init(void)
 {
-	char *voltage, *id_str, *device, *spispeed, *target_str;
+	char *voltage, *id_str, *device, *spispeed, *target_str,
+		*serial_number;
 	int spispeed_idx = 1;
 	int millivolt = 3500;
 	int id = -1; /* -1 defaults to enumeration order */
@@ -1091,6 +1096,7 @@ int dediprog_init(void)
 		msg_pinfo("Setting voltage to %i mV\n", millivolt);
 	}
 
+	serial_number = extract_programmer_param("serial");
 	id_str = extract_programmer_param("id");
 	if (id_str) {
 		char prefix0, prefix1;
@@ -1183,9 +1189,14 @@ int dediprog_init(void)
 		return 1;
 	}
 
-	if (id != -1) {
+	if (serial_number) {
+		if (dediprog_open(0, serial_number)) {
+			return 1;
+		}
+		found_id = dediprog_read_id();
+	} else if (id != -1) {
 		for (i = 0; ; i++) {
-			ret = dediprog_open(i);
+			ret = dediprog_open(i, NULL);
 			if (ret == -1) {
 				/* no dev */
 				libusb_exit(usb_ctx);
@@ -1218,7 +1229,7 @@ int dediprog_init(void)
 			break;
 		}
 	} else {
-		if (dediprog_open(usedevice)) {
+		if (dediprog_open(usedevice, NULL)) {
 			return 1;
 		}
 		found_id = dediprog_read_id();
@@ -1276,6 +1287,5 @@ int dediprog_init(void)
 
 	if (register_spi_master(&spi_master_dediprog) || dediprog_set_leds(LED_NONE))
 		return 1;
-
 	return 0;
 }

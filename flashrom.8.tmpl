@@ -928,6 +928,12 @@ can be
 .BR 0V ", " 1.8V ", " 2.5V ", " 3.5V
 or the equivalent in mV.
 .sp
+You can use the
+.B serial
+parameter to explicitly specify which dediprog device should be used
+based on their USB serial number::
+.sp
+.B "  flashrom \-p dediprog:serial=1230A12"
 An optional
 .B device
 parameter specifies which of multiple connected Dediprog devices should be used.
