@@ -151,6 +151,25 @@ static unsigned int count_lb_records(struct lb_header *head)
 	return count;
 }
 
+static int lb_header_valid(struct lb_header *head, unsigned long addr)
+{
+	if (memcmp(head->signature, "LBIO", 4) != 0)
+		return 0;
+	msg_pdbg("Found candidate at: %08lx-%08lx\n",
+		     addr, addr + sizeof(*head) + head->table_bytes);
+	if (head->header_bytes != sizeof(*head)) {
+		msg_perr("Header bytes of %d are incorrect.\n",
+			head->header_bytes);
+		return 0;
+	}
+	if (compute_checksum((uint8_t *) head, sizeof(*head)) != 0) {
+		msg_perr("Bad header checksum.\n");
+		return 0;
+	}
+
+	return 1;
+}
+
 static struct lb_header *find_lb_table(void *base, unsigned long start,
 				       unsigned long end)
 {
@@ -162,22 +181,11 @@ static struct lb_header *find_lb_table(void *base, unsigned long start,
 		    (struct lb_header *)(((char *)base) + addr);
 		struct lb_record *recs =
 		    (struct lb_record *)(((char *)base) + addr + sizeof(*head));
-		if (memcmp(head->signature, "LBIO", 4) != 0)
+		if (!lb_header_valid(head, addr))
 			continue;
-		msg_pdbg("Found candidate at: %08lx-%08lx\n",
-			     addr, addr + head->table_bytes);
-		if (head->header_bytes != sizeof(*head)) {
-			msg_perr("Header bytes of %d are incorrect.\n",
-				head->header_bytes);
-			continue;
-		}
 		if (count_lb_records(head) != head->table_entries) {
 			msg_perr("Bad record count: %d.\n",
 				head->table_entries);
-			continue;
-		}
-		if (compute_checksum((uint8_t *) head, sizeof(*head)) != 0) {
-			msg_perr("Bad header checksum.\n");
 			continue;
 		}
 		if (compute_checksum(recs, head->table_bytes)
