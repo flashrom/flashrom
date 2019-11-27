@@ -148,6 +148,33 @@ uintptr_t pcidev_readbar(struct pci_dev *dev, int bar)
 	return (uintptr_t)addr;
 }
 
+static uintptr_t pcidev_validate(struct pci_dev *dev, int bar, const struct dev_entry *devs)
+{
+	unsigned i;
+
+	/* Check against list of supported devices. */
+	for (i = 0; devs[i].device_name != NULL; i++) {
+		if (dev->device_id != devs[i].device_id)
+			continue;
+
+		msg_pinfo("Found \"%s %s\" (%04x:%04x, BDF %02x:%02x.%x).\n",
+				devs[i].vendor_name, devs[i].device_name,
+				dev->vendor_id, dev->device_id, dev->bus, dev->dev,
+				dev->func);
+
+		if (devs[i].status == NT)
+			msg_pinfo("===\nThis PCI device is UNTESTED. Please report the 'flashrom -p "
+				  "xxxx' output\n"
+				  "to flashrom@flashrom.org if it works for you. Please add the name "
+				  "of your\n"
+				  "PCI device to the subject. Thank you for your help!\n===\n");
+
+
+		return pcidev_readbar(dev, bar);
+	}
+	return 0;
+}
+
 static int pcidev_shutdown(void *data)
 {
 	if (pacc == NULL) {
@@ -183,12 +210,10 @@ int pci_init_common(void)
 struct pci_dev *pcidev_init(const struct dev_entry *devs, int bar)
 {
 	struct pci_dev *dev;
-	struct pci_dev *found_dev = NULL;
 	struct pci_filter filter;
 	char *pcidev_bdf;
 	char *msg = NULL;
 	int found = 0;
-	int i;
 	uintptr_t addr = 0;
 
 	if (pci_init_common() != 0)
@@ -207,30 +232,10 @@ struct pci_dev *pcidev_init(const struct dev_entry *devs, int bar)
 
 	for (dev = pacc->devices; dev; dev = dev->next) {
 		if (pci_filter_match(&filter, dev)) {
-			/* Check against list of supported devices. */
-			for (i = 0; devs[i].device_name != NULL; i++)
-				if ((dev->vendor_id == devs[i].vendor_id) &&
-				    (dev->device_id == devs[i].device_id))
-					break;
-			/* Not supported, try the next one. */
-			if (devs[i].device_name == NULL)
-				continue;
-
-			msg_pdbg("Found \"%s %s\" (%04x:%04x, BDF %02x:%02x.%x).\n", devs[i].vendor_name,
-				 devs[i].device_name, dev->vendor_id, dev->device_id, dev->bus, dev->dev,
-				 dev->func);
-			if (devs[i].status == NT)
-				msg_pinfo("===\nThis PCI device is UNTESTED. Please report the 'flashrom -p "
-					  "xxxx' output\n"
-					  "to flashrom@flashrom.org if it works for you. Please add the name "
-					  "of your\n"
-					  "PCI device to the subject. Thank you for your help!\n===\n");
-
 			/* FIXME: We should count all matching devices, not
 			 * just those with a valid BAR.
 			 */
-			if ((addr = pcidev_readbar(dev, bar)) != 0) {
-				found_dev = dev;
+			if ((addr = pcidev_validate(dev, bar, devs)) != 0) {
 				found++;
 			}
 		}
@@ -246,7 +251,7 @@ struct pci_dev *pcidev_init(const struct dev_entry *devs, int bar)
 		return NULL;
 	}
 
-	return found_dev;
+	return dev;
 }
 
 enum pci_write_type {
