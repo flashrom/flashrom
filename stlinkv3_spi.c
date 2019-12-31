@@ -333,6 +333,7 @@ static int stlinkv3_spi_transmit(struct flashctx *flash,
 	int rc = 0;
 	int actual_length = 0;
 	uint32_t rw_status = 0;
+	unsigned int i;
 
 	if (stlinkv3_spi_set_SPI_NSS(SPI_NSS_LOW)) {
 		msg_perr("Failed to set the NSS pin to low\n");
@@ -346,7 +347,7 @@ static int stlinkv3_spi_transmit(struct flashctx *flash,
 	command[2] = (uint8_t)write_cnt;
 	command[3] = (uint8_t)(write_cnt >> 8);
 
-	for (unsigned int i = 0; (i < 8) && (i < write_cnt); i++)
+	for (i = 0; (i < 8) && (i < write_cnt); i++)
 		command[4+i] = write_arr[i];
 
 	rc = libusb_bulk_transfer(stlinkv3_handle, STLINK_EP_OUT,
