@@ -1579,11 +1579,11 @@ export: _export
 	@echo "Exported $(EXPORTDIR)/flashrom-$(RELEASENAME)/"
 
 tarball: _export
-	@tar -cj --format=ustar -f "$(EXPORTDIR)/flashrom-$(RELEASENAME).tar.bz2" -C $(EXPORTDIR)/ \
-		$(TAROPTIONS) "flashrom-$(RELEASENAME)/"
+	@tar -cJ --format=ustar -f "$(EXPORTDIR)/flashrom-$(RELEASENAME).tar.xz" -C $(EXPORTDIR)/ \
+	$(TAROPTIONS) "flashrom-$(RELEASENAME)/"
 #	Delete the exported directory again because it is most likely what's expected by the user.
 	@rm -rf "$(EXPORTDIR)/flashrom-$(RELEASENAME)"
-	@echo Created "$(EXPORTDIR)/flashrom-$(RELEASENAME).tar.bz2"
+	@echo Created "$(EXPORTDIR)/flashrom-$(RELEASENAME).tar.xz"
 
 libpayload: clean
 	make CC="CC=i386-elf-gcc lpgcc" AR=i386-elf-ar RANLIB=i386-elf-ranlib
