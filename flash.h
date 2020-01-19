@@ -129,6 +129,8 @@ enum write_granularity {
 #define FEATURE_4BA_READ	(1 << 14) /**< Native 4BA read instruction (0x13) is supported. */
 #define FEATURE_4BA_FAST_READ	(1 << 15) /**< Native 4BA fast read instruction (0x0c) is supported. */
 #define FEATURE_4BA_WRITE	(1 << 16) /**< Native 4BA byte program (0x12) is supported. */
+#define FEATURE_2BA       	(1 << 17) /* 16 bit address mode */
+
 /* 4BA Shorthands */
 #define FEATURE_4BA_NATIVE	(FEATURE_4BA_READ | FEATURE_4BA_FAST_READ | FEATURE_4BA_WRITE)
 #define FEATURE_4BA		(FEATURE_4BA_ENTER | FEATURE_4BA_EXT_ADDR | FEATURE_4BA_NATIVE)
