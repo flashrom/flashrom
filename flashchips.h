@@ -602,7 +602,7 @@
 #define PMC_PM49FL004		0x6E
 
 /*
- * The Sanyo chip found so far uses SPI, first byte is manufacture code,
+ * The Sanyo chip found so far uses SPI, first byte is manufacturer code,
  * second byte is the device code,
  * third byte is a dummy byte.
  */

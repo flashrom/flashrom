@@ -142,7 +142,7 @@ int atavia_init(void)
 	if (rget_io_perms())
 		return 1;
 
-	dev = pcidev_init(ata_via, PCI_ROM_ADDRESS); /* Acutally no BAR setup needed at all. */
+	dev = pcidev_init(ata_via, PCI_ROM_ADDRESS); /* Actually no BAR setup needed at all. */
 	if (!dev)
 		return 1;
 
