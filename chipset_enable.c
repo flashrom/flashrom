@@ -1989,7 +1989,7 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x9d46, B_S,    NT,  "Intel", "Skylake Y Premium",		enable_flash_pch100},
 	{0x8086, 0x9d48, B_S,    NT,  "Intel", "Skylake U Premium",		enable_flash_pch100},
 	{0x8086, 0x9d4b, B_S,    NT,  "Intel", "Kaby Lake Y w/ iHDCP2.2 Prem.",	enable_flash_pch100},
-	{0x8086, 0x9d4e, B_S,    NT,  "Intel", "Kaby Lake U w/ iHDCP2.2 Prem.",	enable_flash_pch100},
+	{0x8086, 0x9d4e, B_S,    DEP, "Intel", "Kaby Lake U w/ iHDCP2.2 Prem.",	enable_flash_pch100},
 	{0x8086, 0x9d50, B_S,    NT,  "Intel", "Kaby Lake U w/ iHDCP2.2 Base",	enable_flash_pch100},
 	{0x8086, 0x9d51, B_S,    NT,  "Intel", "Kabe Lake w/ iHDCP2.2 Sample",	enable_flash_pch100},
 	{0x8086, 0x9d53, B_S,    NT,  "Intel", "Kaby Lake U Base",		enable_flash_pch100},
