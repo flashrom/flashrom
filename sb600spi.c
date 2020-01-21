@@ -347,23 +347,33 @@ struct spispeed {
 	const uint8_t speed;
 };
 
-static const struct spispeed spispeeds[] = {
-	{ "66 MHz",	0x00 },
-	{ "33 MHz",	0x01 },
-	{ "22 MHz",	0x02 },
-	{ "16.5 MHz",	0x03 },
-	{ "100 MHz",	0x04 },
-	{ "Reserved",	0x05 },
-	{ "Reserved",	0x06 },
-	{ "800 kHz",	0x07 },
+static const char* spispeeds[] = {
+	"66 MHz",
+	"33 MHz",
+	"22 MHz",
+	"16.5 MHz",
+	"100 MHz",
+	"Reserved",
+	"Reserved",
+	"800 kHz",
 };
 
-static int set_speed(struct pci_dev *dev, const struct spispeed *spispeed)
+static const char* spireadmodes[] = {
+	"Normal (up to 33 MHz)",
+	"Reserved",
+	"Dual IO (1-1-2)",
+	"Quad IO (1-1-4)",
+	"Dual IO (1-2-2)",
+	"Quad IO (1-4-4)",
+	"Normal (up to 66 MHz)",
+	"Fast Read",
+};
+
+static int set_speed(struct pci_dev *dev, uint8_t speed)
 {
 	bool success = false;
-	uint8_t speed = spispeed->speed;
 
-	msg_pdbg("Setting SPI clock to %s (0x%x).\n", spispeed->name, speed);
+	msg_pdbg("Setting SPI clock to %s (%i)... ", spispeeds[speed], speed);
 	if (amd_gen >= CHIPSET_YANGTZE) {
 		rmmio_writew((speed << 12) | (speed << 8) | (speed << 4) | speed, sb600_spibar + 0x22);
 		uint16_t tmp = mmio_readw(sb600_spibar + 0x22);
@@ -375,33 +385,41 @@ static int set_speed(struct pci_dev *dev, const struct spispeed *spispeed)
 	}
 
 	if (!success) {
-		msg_perr("Setting SPI clock failed.\n");
+		msg_perr("FAILED!\n");
 		return 1;
 	}
+	msg_pdbg("succeeded.\n");
 	return 0;
 }
 
-static int set_mode(struct pci_dev *dev, uint8_t read_mode)
+static int set_mode(struct pci_dev *dev, uint8_t mode)
 {
+	msg_pdbg("Setting SPI read mode to %s (%i)... ", spireadmodes[mode], mode);
 	uint32_t tmp = mmio_readl(sb600_spibar + 0x00);
 	tmp &= ~(0x6 << 28 | 0x1 << 18); /* Clear mode bits */
-	tmp |= ((read_mode & 0x6) << 28) | ((read_mode & 0x1) << 18);
+	tmp |= ((mode & 0x6) << 28) | ((mode & 0x1) << 18);
 	rmmio_writel(tmp, sb600_spibar + 0x00);
-	if (tmp != mmio_readl(sb600_spibar + 0x00))
+	if (tmp != mmio_readl(sb600_spibar + 0x00)) {
+		msg_perr("FAILED!\n");
 		return 1;
+	}
+	msg_pdbg("succeeded.\n");
 	return 0;
 }
 
 static int handle_speed(struct pci_dev *dev)
 {
 	uint32_t tmp;
-	uint8_t spispeed_idx = 3; /* Default to 16.5 MHz */
+	int16_t spispeed_idx = -1;
+	int16_t spireadmode_idx = -1;
+	char *spispeed;
+	char *spireadmode;
 
-	char *spispeed = extract_programmer_param("spispeed");
+	spispeed = extract_programmer_param("spispeed");
 	if (spispeed != NULL) {
 		unsigned int i;
 		for (i = 0; i < ARRAY_SIZE(spispeeds); i++) {
-			if (strcasecmp(spispeeds[i].name, spispeed) == 0) {
+			if (strcasecmp(spispeeds[i], spispeed) == 0) {
 				spispeed_idx = i;
 				break;
 			}
@@ -421,32 +439,44 @@ static int handle_speed(struct pci_dev *dev)
 		free(spispeed);
 	}
 
+ 	spireadmode = extract_programmer_param("spireadmode");
+	if (spireadmode != NULL) {
+		unsigned int i;
+		for (i = 0; i < ARRAY_SIZE(spireadmodes); i++) {
+			if (strcasecmp(spireadmodes[i], spireadmode) == 0) {
+				spireadmode_idx = i;
+				break;
+			}
+		}
+		if ((strcasecmp(spireadmode, "reserved") == 0) ||
+		    (i == ARRAY_SIZE(spireadmodes))) {
+			msg_perr("Error: Invalid spireadmode value: '%s'.\n", spireadmode);
+			free(spireadmode);
+			return 1;
+		}
+		if (amd_gen < CHIPSET_BOLTON) {
+			msg_perr("Warning: spireadmode not supported for this chipset.");
+		}
+		free(spireadmode);
+	}
+
 	/* See the chipset support matrix for SPI Base_Addr below for an explanation of the symbols used.
 	 * bit   6xx   7xx/SP5100  8xx             9xx  hudson1  hudson234  bolton/yangtze
 	 * 18    rsvd  <-          fastReadEnable  ?    <-       ?          SpiReadMode[0]
 	 * 29:30 rsvd  <-          <-              ?    <-       ?          SpiReadMode[2:1]
 	 */
 	if (amd_gen >= CHIPSET_BOLTON) {
-		static const char *spireadmodes[] = {
-			"Normal (up to 33 MHz)", /* 0 */
-			"Reserved",		 /* 1 */
-			"Dual IO (1-1-2)",	 /* 2 */
-			"Quad IO (1-1-4)",	 /* 3 */
-			"Dual IO (1-2-2)",	 /* 4 */
-			"Quad IO (1-4-4)",	 /* 5 */
-			"Normal (up to 66 MHz)", /* 6 */
-			"Fast Read",		 /* 7 (Not defined in the Bolton datasheet.) */
-		};
+
 		tmp = mmio_readl(sb600_spibar + 0x00);
 		uint8_t read_mode = ((tmp >> 28) & 0x6) | ((tmp >> 18) & 0x1);
-		msg_pdbg("SpiReadMode=%s (%i)\n", spireadmodes[read_mode], read_mode);
-		if (read_mode != 6) {
-			read_mode = 6; /* Default to "Normal (up to 66 MHz)" */
-			if (set_mode(dev, read_mode) != 0) {
-				msg_perr("Setting read mode to \"%s\" failed.\n", spireadmodes[read_mode]);
-				return 1;
-			}
-			msg_pdbg("Setting read mode to \"%s\" succeeded.\n", spireadmodes[read_mode]);
+		msg_pdbg("SPI read mode is %s (%i)\n",
+			spireadmodes[read_mode], read_mode);
+		if (spireadmode_idx < 0) {
+			msg_perr("Warning: spireadmode not set, "
+					 "leaving spireadmode unchanged.");
+		}
+		else if (set_mode(dev, spireadmode_idx) != 0) {
+			return 1;
 		}
 
 		if (amd_gen >= CHIPSET_YANGTZE) {
@@ -463,10 +493,10 @@ static int handle_speed(struct pci_dev *dev)
 			}
 
 			tmp = mmio_readw(sb600_spibar + 0x22); /* SPI 100 Speed Config */
-			msg_pdbg("NormSpeedNew is %s\n", spispeeds[(tmp >> 12) & 0xf].name);
-			msg_pdbg("FastSpeedNew is %s\n", spispeeds[(tmp >> 8) & 0xf].name);
-			msg_pdbg("AltSpeedNew is %s\n", spispeeds[(tmp >> 4) & 0xf].name);
-			msg_pdbg("TpmSpeedNew is %s\n", spispeeds[(tmp >> 0) & 0xf].name);
+			msg_pdbg("NormSpeedNew is %s\n", spispeeds[(tmp >> 12) & 0xf]);
+			msg_pdbg("FastSpeedNew is %s\n", spispeeds[(tmp >> 8) & 0xf]);
+			msg_pdbg("AltSpeedNew is %s\n", spispeeds[(tmp >> 4) & 0xf]);
+			msg_pdbg("TpmSpeedNew is %s\n", spispeeds[(tmp >> 0) & 0xf]);
 		}
 	} else {
 		if (amd_gen >= CHIPSET_SB89XX && amd_gen <= CHIPSET_HUDSON234) {
@@ -479,9 +509,16 @@ static int handle_speed(struct pci_dev *dev)
 			}
 		}
 		tmp = (mmio_readb(sb600_spibar + 0xd) >> 4) & 0x3;
-		msg_pdbg("NormSpeed is %s\n", spispeeds[tmp].name);
+		msg_pdbg("NormSpeed is %s\n", spispeeds[tmp]);
+		if (spispeed_idx < 0) {
+			spispeed_idx = 3; /* Default to 16.5 MHz */
+		}
 	}
-	return set_speed(dev, &spispeeds[spispeed_idx]);
+	if (spispeed_idx < 0) {
+		msg_perr("Warning: spispeed not set, leaving spispeed unchanged.");
+		return 0;
+	}
+	return set_speed(dev, spispeed_idx);
 }
 
 static int handle_imc(struct pci_dev *dev)
