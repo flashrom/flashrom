@@ -33,3 +33,4 @@ option('config_satamv', type : 'boolean', value : true, description : 'Marvell S
 option('config_satasii', type : 'boolean', value : true, description : 'SiI SATA controllers')
 option('config_serprog', type : 'boolean', value : true, description : 'serprog')
 option('config_usbblaster_spi', type : 'boolean', value : true, description : 'Altera USB-Blaster dongles')
+option('config_stlinkv3_spi', type : 'boolean', value : true, description : 'STMicroelectronics STLINK-V3')
