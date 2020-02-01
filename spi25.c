@@ -142,6 +142,11 @@ static int probe_spi_rdid_generic(struct flashctx *flash, int bytes)
 	return 0;
 }
 
+int probe_spi_none(struct flashctx *flash)
+{
+	return 1;
+}
+
 int probe_spi_rdid(struct flashctx *flash)
 {
 	return probe_spi_rdid_generic(flash, 3);
