@@ -15968,6 +15968,39 @@ const struct flashchip flashchips[] = {
 	},
 
 	{
+		.vendor		= "Spansion",
+		.name		= "S25FL512S",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= SPANSION_ID,
+		.model_id	= SPANSION_S25FL512,
+		.total_size	= 65536, /* 512 Mb (=> 64 MB)) */
+		.page_size	= 256,
+		/* OTP: 1024B total, 32B reserved; read 0x4B; write 0x42 */
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_4BA_NATIVE,
+		.tested		= TEST_OK_PREW,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { { 256 * 1024, 256} },
+				.block_erase = spi_block_erase_dc,
+			}, {
+				.eraseblocks = { { 65536 * 1024, 1} },
+				.block_erase = spi_block_erase_60,
+			}, {
+				.eraseblocks = { { 65536 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
+		},
+		.printlock	= spi_prettyprint_status_register_bp2_ep_srwd, /* TODO: SR2 and many others */
+		.unlock		= spi_disable_blockprotect_bp2_srwd, /* TODO: various other locks */
+		.write		= spi_chip_write_256, /* Multi I/O supported, IGNORE for now */
+		.read		= spi_chip_read, /* Fast read (0x0B) and multi I/O supported */
+		.voltage	= {2700, 3600},
+	},
+
+	{
 		.vendor		= "SyncMOS/MoselVitelic",
 		.name		= "{F,S,V}29C51001B",
 		.bustype	= BUS_PARALLEL,
