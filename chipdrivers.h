@@ -29,7 +29,6 @@ int spi_chip_write_256(struct flashctx *flash, const uint8_t *buf, unsigned int 
 int spi_chip_read(struct flashctx *flash, uint8_t *buf, unsigned int start, int unsigned len);
 
 /* spi25.c */
-int probe_spi_none(struct flashctx *flash);
 int probe_spi_rdid(struct flashctx *flash);
 int probe_spi_rdid4(struct flashctx *flash);
 int probe_spi_rems(struct flashctx *flash);

@@ -9584,7 +9584,7 @@ const struct flashchip flashchips[] = {
 		.page_size	= 32,
 		.feature_bits	= FEATURE_2BA | FEATURE_NO_ERASE,
 		.tested		= TEST_OK_PREW,
-		.probe		= probe_spi_none,
+		.probe		= NULL,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
 		{
