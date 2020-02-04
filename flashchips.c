@@ -9573,6 +9573,34 @@ const struct flashchip flashchips[] = {
 		.voltage	= {2700, 3600},
 	},
 
+
+	{
+		.vendor		= "Microchip",
+		.name		= "25LC640",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= 0, /* Not used. */
+		.model_id	= 0,
+		.total_size	= 8,
+		.page_size	= 32,
+		.feature_bits	= FEATURE_2BA | FEATURE_NO_ERASE,
+		.tested		= TEST_OK_PREW,
+		.probe		= NULL,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {8192, 1} },
+				.block_erase = spi_block_erase_emulation,
+			}
+		},
+		.printlock	= spi_prettyprint_status_register_bp1_srwd, /* TODO: check */
+		.unlock		= spi_disable_blockprotect_bp1_srwd,
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read,
+		.voltage	= {5000, 5000},
+	},
+
+
 	/* The ST M25P05 is a bit of a problem. It has the same ID as the
 	 * ST M25P05-A in RES mode, but supports only 128 byte writes instead
 	 * of 256 byte writes. We rely heavily on the fact that probe_spi_res1

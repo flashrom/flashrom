@@ -129,6 +129,7 @@ enum write_granularity {
 #define FEATURE_4BA_READ	(1 << 14) /**< Native 4BA read instruction (0x13) is supported. */
 #define FEATURE_4BA_FAST_READ	(1 << 15) /**< Native 4BA fast read instruction (0x0c) is supported. */
 #define FEATURE_4BA_WRITE	(1 << 16) /**< Native 4BA byte program (0x12) is supported. */
+
 /* 4BA Shorthands */
 #define FEATURE_4BA_NATIVE	(FEATURE_4BA_READ | FEATURE_4BA_FAST_READ | FEATURE_4BA_WRITE)
 #define FEATURE_4BA		(FEATURE_4BA_ENTER | FEATURE_4BA_EXT_ADDR | FEATURE_4BA_NATIVE)
@@ -142,6 +143,8 @@ enum write_granularity {
 #define FEATURE_NO_ERASE	(1 << 18)
 
 #define ERASED_VALUE(flash)	(((flash)->chip->feature_bits & FEATURE_ERASED_ZERO) ? 0x00 : 0xff)
+
+#define FEATURE_2BA       	(1 << 19) /* 16 bit address mode */
 
 enum test_state {
 	OK = 0,
