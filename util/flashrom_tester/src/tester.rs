@@ -39,6 +39,7 @@ use super::utils::{self, LayoutSizes};
 use flashrom::{FlashChip, Flashrom, FlashromCmd};
 use serde_json::json;
 use std::mem::MaybeUninit;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
 
 // type-signature comes from the return type of lib.rs workers.
@@ -480,6 +481,7 @@ pub fn run_all_tests<T, TS>(
     chip: FlashChip,
     cmd: &FlashromCmd,
     ts: TS,
+    terminate_flag: Option<&AtomicBool>,
 ) -> Vec<(String, (TestConclusion, Option<TestError>))>
 where
     T: TestCase + Copy,
@@ -489,6 +491,13 @@ where
 
     let mut results = Vec::new();
     for t in ts {
+        if terminate_flag
+            .map(|b| b.load(Ordering::Acquire))
+            .unwrap_or(false)
+        {
+            break;
+        }
+
         let result = decode_test_result(env.run_test(t), t.expected_result());
         results.push((t.get_name().into(), result));
     }

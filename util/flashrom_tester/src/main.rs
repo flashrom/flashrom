@@ -42,6 +42,7 @@ use clap::{App, Arg};
 use flashrom::FlashChip;
 use flashrom_tester::{tester, tests};
 use std::path::PathBuf;
+use std::sync::atomic::AtomicBool;
 
 pub mod built_info {
     include!(concat!(env!("OUT_DIR"), "/built.rs"));
@@ -136,8 +137,45 @@ fn main() {
         print_layout,
         output_format,
         test_names,
+        Some(handle_sigint()),
     ) {
         eprintln!("Failed to run tests: {:?}", e);
         std::process::exit(1);
     }
+}
+
+/// Catch exactly one SIGINT, printing a message in response and setting a flag.
+///
+/// The returned value is false by default, becoming true after a SIGINT is
+/// trapped.
+///
+/// Once a signal is trapped, the default behavior is restored (terminating
+/// the process) for future signals.
+fn handle_sigint() -> &'static AtomicBool {
+    use nix::libc::c_int;
+    use nix::sys::signal::{self, SigHandler, Signal};
+    use std::sync::atomic::Ordering;
+
+    unsafe {
+        let _ = signal::signal(Signal::SIGINT, SigHandler::Handler(sigint_handler));
+    }
+    static TERMINATE_FLAG: AtomicBool = AtomicBool::new(false);
+
+    extern "C" fn sigint_handler(_: c_int) {
+        const STDERR_FILENO: c_int = 2;
+        static MESSAGE: &[u8] = b"
+WARNING: terminating tests prematurely may leave Flash in an inconsistent state,
+rendering your machine unbootable. Testing will end on completion of the current
+test, or press ^C again to exit immediately (possibly bricking your machine).
+";
+
+        // Use raw write() because signal-safety is a very hard problem
+        let _ = nix::unistd::write(STDERR_FILENO, MESSAGE);
+        unsafe {
+            let _ = signal::signal(Signal::SIGINT, SigHandler::SigDfl);
+        }
+        TERMINATE_FLAG.store(true, Ordering::Release);
+    }
+
+    &TERMINATE_FLAG
 }

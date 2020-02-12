@@ -40,6 +40,7 @@ use flashrom::{FlashChip, Flashrom, FlashromCmd};
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::{BufRead, Write};
+use std::sync::atomic::AtomicBool;
 
 const LAYOUT_FILE: &'static str = "/tmp/layout.file";
 
@@ -82,6 +83,7 @@ pub fn generic<'a, TN: Iterator<Item = &'a str>>(
     print_layout: bool,
     output_format: OutputFormat,
     test_names: Option<TN>,
+    terminate_flag: Option<&AtomicBool>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let p = path.to_string();
     let cmd = FlashromCmd { path: p, fc };
@@ -142,7 +144,7 @@ pub fn generic<'a, TN: Iterator<Item = &'a str>>(
 
     // ------------------------.
     // Run all the tests and collate the findings:
-    let results = tester::run_all_tests(fc, &cmd, tests);
+    let results = tester::run_all_tests(fc, &cmd, tests, terminate_flag);
 
     // Any leftover filtered names were specified to be run but don't exist
     for leftover in filter_names.iter().flatten() {
