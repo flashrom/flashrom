@@ -321,6 +321,7 @@ endif
 prefix = get_option('prefix')
 sbindir = join_paths(prefix, get_option('sbindir'))
 libdir = join_paths(prefix, get_option('libdir'))
+mandir = join_paths(prefix, get_option('mandir'))
 
 install_headers([
     'libflashrom.h',
@@ -392,6 +393,16 @@ pkgg.generate(
   name : 'flashrom',
   filebase : 'flashrom',
   description : 'library to interact with flashrom',
+)
+
+conf.set('VERSION', version)
+conf.set('MAN_DATE', run_command('util/getrevision.sh', '--date', 'flashrom.8.tmpl').stdout().strip())
+configure_file(
+  input : 'flashrom.8.tmpl',
+  output : 'flashrom.8',
+  configuration : conf,
+  install: true,
+  install_dir: join_paths(mandir, 'man8'),
 )
 
 flashrom_dep = declare_dependency(
