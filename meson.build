@@ -84,6 +84,7 @@ endif
 # some programmers require libusb
 if get_option('usb')
   srcs += 'usbdev.c'
+  srcs += 'usb_device.c'
   deps += dependency('libusb-1.0')
 else
   config_ch341a_spi = false
