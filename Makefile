@@ -1088,7 +1088,7 @@ endif
 ifneq ($(NEED_LIBUSB1), )
 CHECK_LIBUSB1 = yes
 FEATURE_CFLAGS += -D'NEED_LIBUSB1=1'
-PROGRAMMER_OBJS += usbdev.o
+PROGRAMMER_OBJS += usbdev.o usb_device.o
 # FreeBSD and DragonflyBSD use a reimplementation of libusb-1.0 that is simply called libusb
 ifeq ($(TARGET_OS),$(filter $(TARGET_OS),FreeBSD DragonFlyBSD))
 USB1LIBS += -lusb
