@@ -1,0 +1,9 @@
+[package]
+name = "flashrom"
+version = "1.0.0"
+authors = ["Edward O'Callaghan <quasisec@chromium.org>",
+           "Peter Marheine <pmarheine@chromium.org>"]
+edition = "2018"
+
+[dependencies]
+log = "0.4"
