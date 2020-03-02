@@ -42,6 +42,7 @@ config_drkaiser = get_option('config_drkaiser')
 config_dummy = get_option('config_dummy')
 config_ft2232_spi = get_option('config_ft2232_spi')
 config_gfxnvidia = get_option('config_gfxnvidia')
+config_raiden = get_option('config_raiden')
 config_internal = get_option('config_internal')
 config_it8212 = get_option('config_it8212')
 config_linux_mtd = get_option('config_linux_mtd')
@@ -105,6 +106,7 @@ else
   config_atavia = false
   config_drkaiser = false
   config_gfxnvidia = false
+  config_raiden = false
   config_internal = false
   config_it8212 = false
   config_nic3com = false
@@ -170,6 +172,10 @@ endif
 if config_gfxnvidia
   srcs += 'gfxnvidia.c'
   cargs += '-DCONFIG_GFXNVIDIA=1'
+endif
+if config_raiden
+  srcs += 'raiden_debug_spi.c'
+  cargs += '-DCONFIG_RAIDEN=1'
 endif
 if config_internal
   srcs += 'board_enable.c'

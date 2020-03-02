@@ -226,6 +226,11 @@ UNSUPPORTED_FEATURES += CONFIG_RAYER_SPI=yes
 else
 override CONFIG_RAYER_SPI = no
 endif
+ifeq ($(CONFIG_RAIDEN), yes)
+UNSUPPORTED_FEATURES += CONFIG_RAIDEN=yes
+else
+override CONFIG_RAIDEN = no
+endif
 ifeq ($(CONFIG_NIC3COM), yes)
 UNSUPPORTED_FEATURES += CONFIG_NIC3COM=yes
 else
@@ -607,6 +612,9 @@ CONFIG_SERPROG ?= yes
 # RayeR SPIPGM hardware support
 CONFIG_RAYER_SPI ?= yes
 
+# ChromiumOS servo DUT debug board hardware support
+CONFIG_RAIDEN ?= yes
+
 # PonyProg2000 SPI hardware support
 CONFIG_PONY_SPI ?= yes
 
@@ -815,6 +823,11 @@ ifeq ($(CONFIG_RAYER_SPI), yes)
 FEATURE_CFLAGS += -D'CONFIG_RAYER_SPI=1'
 PROGRAMMER_OBJS += rayer_spi.o
 NEED_RAW_ACCESS += CONFIG_RAYER_SPI
+endif
+
+ifeq ($(CONFIG_RAIDEN), yes)
+FEATURE_CFLAGS += -D'CONFIG_RAIDEN=1'
+PROGRAMMER_OBJS += raiden_debug_spi.o
 endif
 
 ifeq ($(CONFIG_PONY_SPI), yes)
