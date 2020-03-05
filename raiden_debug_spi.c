@@ -128,8 +128,9 @@ enum raiden_debug_spi_request {
 	RAIDEN_DEBUG_SPI_REQ_ENABLE_EC = 0x0003,
 };
 
-#define PACKET_HEADER_SIZE	2
-#define MAX_PACKET_SIZE		64
+#define PACKET_HEADER_SIZE      (2)
+#define MAX_PACKET_SIZE         (64)
+#define PAYLOAD_SIZE            (MAX_PACKET_SIZE - PACKET_HEADER_SIZE)
 
 /*
  * This timeout is so large because the Raiden SPI timeout is 800ms.
@@ -140,37 +141,50 @@ struct usb_device *device       = NULL;
 uint8_t            in_endpoint  = 0;
 uint8_t            out_endpoint = 0;
 
-static int send_command(struct flashctx *flash,
-			unsigned int write_count,
-			unsigned int read_count,
-			const unsigned char *write_buffer,
-			unsigned char *read_buffer)
-{
-	uint8_t  buffer[MAX_PACKET_SIZE];
-	int      transferred;
-	int ret;
+typedef struct {
+	int8_t write_count;
+	/* -1 Indicates readback all on halfduplex compliant devices. */
+	int8_t read_count;
+	uint8_t data[PAYLOAD_SIZE];
+} __attribute__((packed)) usb_spi_command_t;
 
-	if (write_count > MAX_PACKET_SIZE - PACKET_HEADER_SIZE) {
+typedef struct {
+	uint16_t status_code;
+	uint8_t data[PAYLOAD_SIZE];
+} __attribute__((packed)) usb_spi_response_t;
+
+static int write_command(const struct flashctx *flash,
+		unsigned int write_count,
+		unsigned int read_count,
+		const unsigned char *write_buffer,
+		unsigned char *read_buffer)
+{
+
+	int transferred;
+	int ret;
+	usb_spi_command_t command_packet;
+
+	if (write_count > PAYLOAD_SIZE) {
 		msg_perr("Raiden: Invalid write_count of %d\n", write_count);
 		return SPI_INVALID_LENGTH;
 	}
 
-	if (read_count > MAX_PACKET_SIZE - PACKET_HEADER_SIZE) {
+	if (read_count > PAYLOAD_SIZE) {
 		msg_perr("Raiden: Invalid read_count of %d\n", read_count);
 		return SPI_INVALID_LENGTH;
 	}
 
-	buffer[0] = write_count;
-	buffer[1] = read_count;
+	command_packet.write_count = write_count;
+	command_packet.read_count = read_count;
 
-	memcpy(buffer + PACKET_HEADER_SIZE, write_buffer, write_count);
+	memcpy(command_packet.data, write_buffer, write_count);
 
 	ret = LIBUSB(libusb_bulk_transfer(device->handle,
-	                                  out_endpoint,
-					  buffer,
-	                                  write_count + PACKET_HEADER_SIZE,
-	                                  &transferred,
-	                                  TRANSFER_TIMEOUT_MS));
+				out_endpoint,
+				(void*)&command_packet,
+				write_count + PACKET_HEADER_SIZE,
+				&transferred,
+				TRANSFER_TIMEOUT_MS));
 	if (ret != 0) {
 		msg_perr("Raiden: OUT transfer failed\n"
 		         "    write_count = %d\n"
@@ -185,9 +199,22 @@ static int send_command(struct flashctx *flash,
 		return 0x10001;
 	}
 
+	return 0;
+}
+
+static int read_response(const struct flashctx *flash,
+		unsigned int write_count,
+		unsigned int read_count,
+		const unsigned char *write_buffer,
+		unsigned char *read_buffer)
+{
+	int transferred;
+	int ret;
+	usb_spi_response_t response_packet;
+
 	ret = LIBUSB(libusb_bulk_transfer(device->handle,
 				in_endpoint,
-					  buffer,
+				(void*)&response_packet,
 				read_count + PACKET_HEADER_SIZE,
 				&transferred,
 				TRANSFER_TIMEOUT_MS));
@@ -205,9 +232,30 @@ static int send_command(struct flashctx *flash,
 		return 0x10002;
 	}
 
-	memcpy(read_buffer, buffer + PACKET_HEADER_SIZE, read_count);
+	memcpy(read_buffer, response_packet.data, read_count);
 
-	return buffer[0] | (buffer[1] << 8);
+	return response_packet.status_code;
+}
+
+static int send_command(struct flashctx *flash,
+		unsigned int write_count,
+		unsigned int read_count,
+		const unsigned char *write_buffer,
+		unsigned char *read_buffer)
+{
+	int status = -1;
+
+	status = write_command(flash, write_count, read_count,
+			write_buffer, read_buffer);
+
+	if (status) {
+		return status;
+	}
+
+	status = read_response(flash, write_count, read_count,
+			write_buffer, read_buffer);
+
+	return status;
 }
 
 /*
@@ -221,9 +269,7 @@ static int send_command(struct flashctx *flash,
  * The largest command that flashrom generates is the byte program command, so
  * we use that command header maximum size here.
  */
-#define MAX_DATA_SIZE	(MAX_PACKET_SIZE -			\
-			 PACKET_HEADER_SIZE -			\
-			 JEDEC_BYTE_PROGRAM_OUTSIZE)
+#define MAX_DATA_SIZE   (PAYLOAD_SIZE - JEDEC_BYTE_PROGRAM_OUTSIZE)
 
 static const struct spi_master spi_master_raiden_debug = {
 	.features	= SPI_MASTER_4BA,
