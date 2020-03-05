@@ -27,10 +27,18 @@
 
 #include <libusb.h>
 #include <stdint.h>
+#include <stdbool.h>
+
+/*
+ * The LIBUSB_ERROR macro converts a libusb failure code into an error code that
+ * flashrom recognizes. It does so without displaying an error code allowing us
+ * to compare error codes against the library enumeration values.
+ */
+#define LIBUSB_ERROR(eror_code)		(0x20000 | -eror_code)
 
 /*
  * The LIBUSB macro converts a libusb failure code into an error code that
- * flashrom recognizes.  It also displays additional libusb specific
+ * flashrom recognizes. It also displays additional libusb specific
  * information about the failure.
  */
 #define LIBUSB(expression)				      		\
@@ -42,13 +50,22 @@
 				 __FILE__,		      		\
 				 __LINE__,		      		\
 				 libusb_error_name(libusb_error__)); 	\
-			libusb_error__ = 0x20000 | -libusb_error__;	\
+			libusb_error__ = LIBUSB_ERROR(libusb_error__);	\
 		} else {				      		\
 			libusb_error__ = 0;			      	\
 		}					      		\
 									\
 		libusb_error__;				      		\
 	})
+
+/*
+ * Returns true if the error code falls within the range of valid libusb
+ * error codes.
+ */
+static inline bool usb_device_is_libusb_error(int error_code)
+{
+    return (0x20000 <= error_code && error_code < 0x20064);
+}
 
 /*
  * A USB match and associated value struct are used to encode the information
