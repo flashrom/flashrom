@@ -120,6 +120,15 @@
 #define GOOGLE_RAIDEN_SPI_SUBCLASS  (0x51)
 #define GOOGLE_RAIDEN_SPI_PROTOCOL  (0x01)
 
+enum usb_spi_error {
+	USB_SPI_SUCCESS             = 0x0000,
+	USB_SPI_TIMEOUT             = 0x0001,
+	USB_SPI_BUSY                = 0x0002,
+	USB_SPI_WRITE_COUNT_INVALID = 0x0003,
+	USB_SPI_READ_COUNT_INVALID  = 0x0004,
+	USB_SPI_DISABLED            = 0x0005,
+	USB_SPI_UNKNOWN_ERROR       = 0x8000,
+};
 
 enum raiden_debug_spi_request {
 	RAIDEN_DEBUG_SPI_REQ_ENABLE    = 0x0000,
@@ -162,6 +171,29 @@ typedef struct {
 	uint16_t status_code;
 	uint8_t data[PAYLOAD_SIZE];
 } __attribute__((packed)) usb_spi_response_t;
+
+/*
+ * This function will return true when an error code can potentially recover
+ * if we attempt to write SPI data to the device or read from it. We know
+ * that some conditions are not recoverable in the current state so allows us
+ * to bypass the retry logic and terminate early.
+ */
+static bool retry_recovery(int error_code)
+{
+	if (error_code < 0x10000) {
+		/* Handle error codes returned from the device. */
+		if (USB_SPI_WRITE_COUNT_INVALID <= error_code &&
+			error_code <= USB_SPI_DISABLED) {
+			return false;
+		}
+	} else if (usb_device_is_libusb_error(error_code)) {
+		/* Handle error codes returned from libusb. */
+		if (error_code == LIBUSB_ERROR(LIBUSB_ERROR_NO_DEVICE)) {
+			return false;
+		}
+	}
+	return true;
+}
 
 static int write_command(const struct flashctx *flash,
 		unsigned int write_count,
@@ -267,6 +299,10 @@ static int send_command(struct flashctx *flash,
 				"Write attempt = %d\n"
 				"status = %d\n",
 				write_attempt + 1, status);
+			if (!retry_recovery(status)) {
+				/* Reattempting will not result in a recovery. */
+				return status;
+			}
 			programmer_delay(RETY_INTERVAL_US);
 			continue;
 		}
@@ -282,6 +318,10 @@ static int send_command(struct flashctx *flash,
 					"Read attempt = %d\n"
 					"status = %d\n",
 					write_attempt + 1, read_attempt + 1, status);
+				if (!retry_recovery(status)) {
+					/* Reattempting will not result in a recovery. */
+					return status;
+				}
 				programmer_delay(RETY_INTERVAL_US);
 			} else {
 				/* We were successful at performing the SPI transfer. */
