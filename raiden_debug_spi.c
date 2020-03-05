@@ -151,12 +151,12 @@ static int send_command(struct flashctx *flash,
 	int ret;
 
 	if (write_count > MAX_PACKET_SIZE - PACKET_HEADER_SIZE) {
-		msg_perr("Raiden: invalid write_count of %d\n", write_count);
+		msg_perr("Raiden: Invalid write_count of %d\n", write_count);
 		return SPI_INVALID_LENGTH;
 	}
 
 	if (read_count > MAX_PACKET_SIZE - PACKET_HEADER_SIZE) {
-		msg_perr("Raiden: invalid read_count of %d\n", read_count);
+		msg_perr("Raiden: Invalid read_count of %d\n", read_count);
 		return SPI_INVALID_LENGTH;
 	}
 
@@ -166,11 +166,11 @@ static int send_command(struct flashctx *flash,
 	memcpy(buffer + PACKET_HEADER_SIZE, write_buffer, write_count);
 
 	ret = LIBUSB(libusb_bulk_transfer(device->handle,
-					  out_endpoint,
+	                                  out_endpoint,
 					  buffer,
-					  write_count + PACKET_HEADER_SIZE,
-					  &transferred,
-					  TRANSFER_TIMEOUT_MS));
+	                                  write_count + PACKET_HEADER_SIZE,
+	                                  &transferred,
+	                                  TRANSFER_TIMEOUT_MS));
 	if (ret != 0) {
 		msg_perr("Raiden: OUT transfer failed\n"
 		         "    write_count = %d\n"
@@ -186,11 +186,11 @@ static int send_command(struct flashctx *flash,
 	}
 
 	ret = LIBUSB(libusb_bulk_transfer(device->handle,
-					  in_endpoint,
+				in_endpoint,
 					  buffer,
-					  read_count + PACKET_HEADER_SIZE,
-					  &transferred,
-					  TRANSFER_TIMEOUT_MS));
+				read_count + PACKET_HEADER_SIZE,
+				&transferred,
+				TRANSFER_TIMEOUT_MS));
 	if (ret != 0) {
 		msg_perr("Raiden: IN transfer failed\n"
 		         "    write_count = %d\n"
@@ -201,7 +201,7 @@ static int send_command(struct flashctx *flash,
 
 	if ((unsigned) transferred != read_count + PACKET_HEADER_SIZE) {
 		msg_perr("Raiden: Read failure (read %d, expected %d)\n",
-		         transferred, read_count + PACKET_HEADER_SIZE);
+				transferred, read_count + PACKET_HEADER_SIZE);
 		return 0x10002;
 	}
 
@@ -281,16 +281,16 @@ static int find_endpoints(struct usb_device *dev, uint8_t *in_ep, uint8_t *out_e
 static int shutdown(void * data)
 {
 	int ret = LIBUSB(libusb_control_transfer(
-			     device->handle,
-			     LIBUSB_ENDPOINT_OUT |
-			     LIBUSB_REQUEST_TYPE_VENDOR |
-			     LIBUSB_RECIPIENT_INTERFACE,
-			     RAIDEN_DEBUG_SPI_REQ_DISABLE,
-			     0,
-			     device->interface_descriptor->bInterfaceNumber,
-			     NULL,
-			     0,
-			     TRANSFER_TIMEOUT_MS));
+				device->handle,
+				LIBUSB_ENDPOINT_OUT |
+				LIBUSB_REQUEST_TYPE_VENDOR |
+				LIBUSB_RECIPIENT_INTERFACE,
+				RAIDEN_DEBUG_SPI_REQ_DISABLE,
+				0,
+				device->interface_descriptor->bInterfaceNumber,
+				NULL,
+				0,
+				TRANSFER_TIMEOUT_MS));
 	if (ret != 0) {
 		msg_perr("Raiden: Failed to disable SPI bridge\n");
 		return ret;
@@ -368,15 +368,15 @@ int raiden_debug_spi_init(void)
 		device = current;
 
 		if (find_endpoints(device, &in_endpoint, &out_endpoint)) {
-		      msg_pdbg("Raiden: Failed to find valid endpoints on device");
-		      usb_device_show(" ", current);
-		      goto loop_end;
+			msg_pdbg("Raiden: Failed to find valid endpoints on device");
+			usb_device_show(" ", current);
+			goto loop_end;
 		}
 
 		if (usb_device_claim(device)) {
-		      msg_pdbg("Raiden: Failed to claim USB device");
-		      usb_device_show(" ", current);
-		      goto loop_end;
+			msg_pdbg("Raiden: Failed to claim USB device");
+			usb_device_show(" ", current);
+			goto loop_end;
 		}
 
 		if (!serial) {
@@ -395,9 +395,9 @@ int raiden_debug_spi_init(void)
 			}
 
 			rc = libusb_get_string_descriptor_ascii(device->handle,
-							       descriptor.iSerialNumber,
-							       dev_serial,
-							       sizeof(dev_serial));
+					descriptor.iSerialNumber,
+					dev_serial,
+					sizeof(dev_serial));
 			if (rc < 0) {
 				LIBUSB(rc);
 			} else {
@@ -427,16 +427,16 @@ loop_end:
 	free_dev_list(&current);
 
 	ret = LIBUSB(libusb_control_transfer(
-			     device->handle,
-			     LIBUSB_ENDPOINT_OUT |
-			     LIBUSB_REQUEST_TYPE_VENDOR |
-			     LIBUSB_RECIPIENT_INTERFACE,
-			     request_enable,
-			     0,
-			     device->interface_descriptor->bInterfaceNumber,
-			     NULL,
-			     0,
-			     TRANSFER_TIMEOUT_MS));
+				device->handle,
+				LIBUSB_ENDPOINT_OUT |
+				LIBUSB_REQUEST_TYPE_VENDOR |
+				LIBUSB_RECIPIENT_INTERFACE,
+				request_enable,
+				0,
+				device->interface_descriptor->bInterfaceNumber,
+				NULL,
+				0,
+				TRANSFER_TIMEOUT_MS));
 	if (ret != 0) {
 		msg_perr("Raiden: Failed to enable SPI bridge\n");
 		return ret;
