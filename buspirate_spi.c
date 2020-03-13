@@ -214,6 +214,10 @@ out_shutdown:
  */
 #define BP_DIVISOR(baud) ((4000000/(baud)) - 1)
 
+// Information on the buspirate's Raw Bitbanging and Raw SPI modes used here:
+// http://dangerousprototypes.com/blog/2009/10/09/bus-pirate-raw-bitbang-mode/
+// http://dangerousprototypes.com/blog/2009/10/08/bus-pirate-raw-spi-mode/
+
 int buspirate_spi_init(void)
 {
 	char *tmp;
