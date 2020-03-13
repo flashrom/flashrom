@@ -898,10 +898,22 @@ where
 .B state
 can be
 .BR on " or " off .
+.sp
 More information about the Bus Pirate pull-up resistors and their purpose is available
 .URLB "http://dangerousprototypes.com/docs/Practical_guide_to_Bus_Pirate_pull-up_resistors" \
 "in a guide by dangerousprototypes" .
 Only the external supply voltage (Vpu) is supported as of this writing.
+.sp
+An optional
+.B auxpin
+parameter specifies the state in which the Bus Pirate's AUX pin is to be held.
+Use this e.g., if you need to hold a reset line low.
+Syntax is
+.sp
+.B "  flashrom -p buspirate_spi:auxpin=state"
+.sp
+where
+.BR state " can be " high " or " low ". The default is " high "."
 .SS
 .BR "pickit2_spi " programmer
 .IP

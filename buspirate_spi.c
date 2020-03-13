@@ -232,6 +232,7 @@ int buspirate_spi_init(void)
 	int serialspeed_index = -1;
 	int ret = 0;
 	int pullup = 0;
+	int auxpin = 1; // default: 1 -> high
 
 	dev = extract_programmer_param("dev");
 	if (dev && !strlen(dev)) {
@@ -278,6 +279,17 @@ int buspirate_spi_init(void)
 			; // ignore
 		else
 			msg_perr("Invalid pullups state, not using them.\n");
+	}
+	free(tmp);
+
+	tmp = extract_programmer_param("auxpin");
+	if (tmp) {
+		if (strcasecmp("low", tmp) == 0)
+			auxpin = 0;
+		else if (strcasecmp("high", tmp) == 0)
+			; // ignore
+		else
+			msg_perr("Invalid auxpin state \"%s\", setting high.\n", tmp);
 	}
 	free(tmp);
 
@@ -524,11 +536,19 @@ int buspirate_spi_init(void)
 	}
 
 	/* Initial setup (SPI peripherals config): Enable power, CS high, AUX */
-	bp_commbuf[0] = 0x40 | 0x0b;
+	bp_commbuf[0] = 0x40 | 0x09;
 	if (pullup == 1) {
 		bp_commbuf[0] |= (1 << 2);
 		msg_pdbg("Enabling pull-up resistors.\n");
 	}
+	/* Set AUX pin state */
+	if (auxpin == 1) {
+		bp_commbuf[0] |= (1 << 1);
+		msg_pdbg("Setting AUX pin high.\n");
+	} else {
+		msg_pdbg("Setting AUX pin low.\n");
+	}
+
 	ret = buspirate_sendrecv(bp_commbuf, 1, 1);
 	if (ret)
 		return 1;
