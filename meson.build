@@ -290,6 +290,11 @@ if config_bitbang_spi
   cargs += '-DCONFIG_BITBANG_SPI=1'
 endif
 
+if host_machine.system() == 'linux'
+  srcs += 'i2c_helper_linux.c'
+  cargs += '-DCONFIG_I2C_SUPPORT=1'
+endif
+
 # raw memory, MSR or PCI port I/O access
 if need_raw_access
   srcs += 'hwaccess.c'
