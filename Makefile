@@ -195,6 +195,11 @@ UNSUPPORTED_FEATURES += CONFIG_STLINKV3_SPI=yes
 else
 override CONFIG_STLINKV3_SPI = no
 endif
+ifeq ($(CONFIG_LSPCON_I2C_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_LSPCON_I2C_SPI=yes
+else
+override CONFIG_LSPCON_I2C_SPI = no
+endif
 # libjaylink is also not available for DOS
 ifeq ($(CONFIG_JLINK_SPI), yes)
 UNSUPPORTED_FEATURES += CONFIG_JLINK_SPI=yes
@@ -306,6 +311,11 @@ UNSUPPORTED_FEATURES += CONFIG_SATAMV=yes
 else
 override CONFIG_SATAMV = no
 endif
+ifeq ($(CONFIG_LSPCON_I2C_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_LSPCON_I2C_SPI=yes
+else
+override CONFIG_LSPCON_I2C_SPI = no
+endif
 endif
 
 ifneq ($(TARGET_OS), MinGW)
@@ -380,6 +390,11 @@ ifeq ($(CONFIG_STLINKV3_SPI), yes)
 UNSUPPORTED_FEATURES += CONFIG_STLINKV3_SPI=yes
 else
 override CONFIG_STLINKV3_SPI = no
+endif
+ifeq ($(CONFIG_LSPCON_I2C_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_LSPCON_I2C_SPI=yes
+else
+override CONFIG_LSPCON_I2C_SPI = no
 endif
 ifeq ($(CONFIG_CH341A_SPI), yes)
 UNSUPPORTED_FEATURES += CONFIG_CH341A_SPI=yes
@@ -656,6 +671,9 @@ CONFIG_PICKIT2_SPI ?= yes
 # Always enable STLink V3
 CONFIG_STLINKV3_SPI ?= yes
 
+# Disables LSPCON support until the i2c helper supports multiple systems.
+CONFIG_LSPCON_I2C_SPI ?= no
+
 # Always enable dummy tracing for now.
 CONFIG_DUMMY ?= yes
 
@@ -736,6 +754,7 @@ override CONFIG_DEVELOPERBOX_SPI = no
 override CONFIG_PICKIT2_SPI = no
 override CONFIG_RAIDEN = no
 override CONFIG_STLINKV3_SPI = no
+override CONFIG_LSPCON_I2C_SPI = no
 endif
 ifeq ($(CONFIG_ENABLE_LIBPCI_PROGRAMMERS), no)
 override CONFIG_INTERNAL = no
@@ -912,6 +931,12 @@ ifeq ($(CONFIG_STLINKV3_SPI), yes)
 FEATURE_CFLAGS += -D'CONFIG_STLINKV3_SPI=1'
 PROGRAMMER_OBJS += stlinkv3_spi.o
 NEED_LIBUSB1 += CONFIG_STLINKV3_SPI
+endif
+
+ifeq ($(CONFIG_LSPCON_I2C_SPI), yes)
+FEATURE_CFLAGS += -D'CONFIG_LSPCON_I2C_SPI=1'
+PROGRAMMER_OBJS += lspcon_i2c_spi.o
+NEED_LIBUSB1 += CONFIG_LSPCON_I2C_SPI
 endif
 
 ifneq ($(NEED_LIBFTDI), )
