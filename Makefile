@@ -418,6 +418,10 @@ override CONFIG_RAYER_SPI = no
 endif
 endif
 
+ifeq ($(TARGET_OS), Linux)
+CONFIG_LINUX_I2C_HELPER = yes
+endif
+
 ###############################################################################
 # General architecture-specific settings.
 # Like above for the OS, below we verify user-supplied options depending on the target architecture.
@@ -1046,6 +1050,11 @@ endif
 FEATURE_CFLAGS += $(NI845X_INCLUDES)
 LIBS += -lni845x
 PROGRAMMER_OBJS += ni845x_spi.o
+endif
+
+ifeq ($(CONFIG_LINUX_I2C_HELPER), yes)
+LIB_OBJS += i2c_helper_linux.o
+FEATURE_CFLAGS += -D'CONFIG_I2C_SUPPORT=1'
 endif
 
 ifneq ($(NEED_SERIAL), )
