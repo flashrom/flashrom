@@ -389,6 +389,18 @@ const struct programmer_entry programmer_table[] = {
 	},
 #endif
 
+#if CONFIG_LSPCON_I2C_SPI == 1
+	{
+		.name			= "lspcon_i2c_spi",
+		.type			= OTHER,
+		.devs.note		= "Device files /dev/i2c-*.\n",
+		.init			= lspcon_i2c_spi_init,
+		.map_flash_region	= fallback_map,
+		.unmap_flash_region	= fallback_unmap,
+		.delay			= internal_delay,
+	},
+#endif
+
 #if CONFIG_USBBLASTER_SPI == 1
 	{
 		.name			= "usbblaster_spi",
