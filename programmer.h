@@ -277,6 +277,8 @@ void myusec_delay(unsigned int usecs);
 void myusec_calibrate_delay(void);
 void internal_sleep(unsigned int usecs);
 void internal_delay(unsigned int usecs);
+unsigned long get_calibration_value(void);
+void set_external_calibration(unsigned long external_micro);
 
 #if CONFIG_INTERNAL == 1
 /* board_enable.c */

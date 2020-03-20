@@ -221,6 +221,25 @@ recalibrate:
 	msg_pinfo("OK.\n");
 }
 
+void set_external_calibration(unsigned long external_micro) {
+	micro = external_micro;
+	unsigned long elapsed = measure_delay(100000);
+
+	/* Do a sanity check if the provided parameter makes loops fall within 10% of
+	   the desired value. Otherwise, ignore provided value and recalibrate. */
+	if (elapsed > 90000 && elapsed < 110000) {
+		msg_pinfo("Provided delay is acceptable!\n");
+	}
+	else {
+		myusec_calibrate_delay();
+	}
+}
+
+unsigned long get_calibration_value(void) {
+	myusec_calibrate_delay();
+	return micro;
+}
+
 /* Not very precise sleep. */
 void internal_sleep(unsigned int usecs)
 {
