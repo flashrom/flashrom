@@ -116,6 +116,11 @@
 #include <string.h>
 #include <unistd.h>
 
+/* FIXME: Add some programmer IDs here */
+const struct dev_entry devs_raiden[] = {
+	{0},
+};
+
 #define GOOGLE_VID                  (0x18D1)
 #define GOOGLE_RAIDEN_SPI_SUBCLASS  (0x51)
 #define GOOGLE_RAIDEN_SPI_PROTOCOL  (0x01)

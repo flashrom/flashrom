@@ -137,7 +137,7 @@ const struct programmer_entry programmer_table[] = {
 	{
 		.name			= "raiden_debug",
 		.type			= USB,
-		.devs.note		= "All programmer devices speaking the raiden protocol\n",
+		.devs.dev		= devs_raiden,
 		.init			= raiden_debug_spi_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
