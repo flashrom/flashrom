@@ -407,6 +407,7 @@ extern const struct dev_entry gfx_nvidia[];
 /* raiden_debug_spi.c */
 #if CONFIG_RAIDEN == 1
 int raiden_debug_spi_init(void);
+extern const struct dev_entry devs_raiden[];
 #endif
 
 /* drkaiser.c */
