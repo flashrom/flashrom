@@ -133,6 +133,9 @@ enum programmer {
 #if CONFIG_LSPCON_I2C_SPI == 1
 	PROGRAMMER_LSPCON_I2C_SPI,
 #endif
+#if CONFIG_REALTEK_MST_I2C_SPI == 1
+	PROGRAMMER_REALTEK_MST_I2C_SPI,
+#endif
 	PROGRAMMER_INVALID /* This must always be the last entry. */
 };
 
@@ -817,6 +820,11 @@ struct libusb_device_handle *usb_dev_get_by_vid_pid_number(
 /* lspcon_i2c_spi.c */
 #if CONFIG_LSPCON_I2C_SPI == 1
 int lspcon_i2c_spi_init(void);
+#endif
+
+/* realtek_mst_i2c_spi.c */
+#if CONFIG_REALTEK_MST_I2C_SPI == 1
+int realtek_mst_i2c_spi_init(void);
 #endif
 
 #endif				/* !__PROGRAMMER_H__ */

@@ -200,6 +200,11 @@ UNSUPPORTED_FEATURES += CONFIG_LSPCON_I2C_SPI=yes
 else
 override CONFIG_LSPCON_I2C_SPI = no
 endif
+ifeq ($(CONFIG_REALTEK_MST_I2C_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_REALTEK_MST_I2C_SPI=yes
+else
+override CONFIG_REALTEK_MST_I2C_SPI = no
+endif
 # libjaylink is also not available for DOS
 ifeq ($(CONFIG_JLINK_SPI), yes)
 UNSUPPORTED_FEATURES += CONFIG_JLINK_SPI=yes
@@ -316,6 +321,11 @@ UNSUPPORTED_FEATURES += CONFIG_LSPCON_I2C_SPI=yes
 else
 override CONFIG_LSPCON_I2C_SPI = no
 endif
+ifeq ($(CONFIG_REALTEK_MST_I2C_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_REALTEK_MST_I2C_SPI=yes
+else
+override CONFIG_REALTEK_MST_I2C_SPI = no
+endif
 endif
 
 ifneq ($(TARGET_OS), MinGW)
@@ -395,6 +405,11 @@ ifeq ($(CONFIG_LSPCON_I2C_SPI), yes)
 UNSUPPORTED_FEATURES += CONFIG_LSPCON_I2C_SPI=yes
 else
 override CONFIG_LSPCON_I2C_SPI = no
+endif
+ifeq ($(CONFIG_REALTEK_MST_I2C_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_REALTEK_MST_I2C_SPI=yes
+else
+override CONFIG_REALTEK_MST_I2C_SPI = no
 endif
 ifeq ($(CONFIG_CH341A_SPI), yes)
 UNSUPPORTED_FEATURES += CONFIG_CH341A_SPI=yes
@@ -674,6 +689,9 @@ CONFIG_STLINKV3_SPI ?= yes
 # Disables LSPCON support until the i2c helper supports multiple systems.
 CONFIG_LSPCON_I2C_SPI ?= no
 
+# Disables REALTEK_MST support until the i2c helper supports multiple systems.
+CONFIG_REALTEK_MST_I2C_SPI ?= no
+
 # Always enable dummy tracing for now.
 CONFIG_DUMMY ?= yes
 
@@ -755,6 +773,7 @@ override CONFIG_PICKIT2_SPI = no
 override CONFIG_RAIDEN = no
 override CONFIG_STLINKV3_SPI = no
 override CONFIG_LSPCON_I2C_SPI = no
+override CONFIG_REALTEK_MST_I2C_SPI = no
 endif
 ifeq ($(CONFIG_ENABLE_LIBPCI_PROGRAMMERS), no)
 override CONFIG_INTERNAL = no
@@ -937,6 +956,11 @@ ifeq ($(CONFIG_LSPCON_I2C_SPI), yes)
 FEATURE_CFLAGS += -D'CONFIG_LSPCON_I2C_SPI=1'
 PROGRAMMER_OBJS += lspcon_i2c_spi.o
 NEED_LIBUSB1 += CONFIG_LSPCON_I2C_SPI
+endif
+
+ifeq ($(CONFIG_REALTEK_MST_I2C_SPI), yes)
+FEATURE_CFLAGS += -D'CONFIG_REALTEK_MST_I2C_SPI=1'
+PROGRAMMER_OBJS += realtek_mst_i2c_spi.o
 endif
 
 ifneq ($(NEED_LIBFTDI), )

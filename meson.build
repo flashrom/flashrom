@@ -64,6 +64,7 @@ config_serprog = get_option('config_serprog')
 config_usbblaster_spi = get_option('config_usbblaster_spi')
 config_stlinkv3_spi = get_option('config_stlinkv3_spi')
 config_lspcon_i2c_spi = get_option('config_lspcon_i2c_spi')
+config_realtek_mst_i2c_spi = get_option('config_realtek_mst_i2c_spi')
 
 cargs = []
 deps = []
@@ -287,6 +288,10 @@ endif
 if config_lspcon_i2c_spi
   srcs += 'lspcon_i2c_spi.c'
   cargs += '-DCONFIG_LSPCON_I2C_SPI=1'
+endif
+if config_realtek_mst_i2c_spi
+  srcs += 'realtek_mst_i2c_spi.c'
+  cargs += '-DCONFIG_REALTEK_MST_I2C_SPI=1'
 endif
 
 # bitbanging SPI infrastructure
