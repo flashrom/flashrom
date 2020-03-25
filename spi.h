@@ -101,7 +101,7 @@
 #define JEDEC_BE_C4_OUTSIZE	0x04
 #define JEDEC_BE_C4_INSIZE	0x00
 
-/* Block Erase 0xd8 is supported by EON/Macronix chips. */
+/* Block Erase 0xd8 is supported by EON/Macronix/Spansion chips. */
 #define JEDEC_BE_D8		0xd8
 #define JEDEC_BE_D8_OUTSIZE	0x04
 #define JEDEC_BE_D8_INSIZE	0x00
@@ -116,6 +116,18 @@
 #define JEDEC_SE_OUTSIZE	0x04
 #define JEDEC_SE_INSIZE		0x00
 
+/* RADR, WRAR, RSTEN, RST & CR3NV OPs and timers on Spansion S25FS chips */
+#define CMD_RDAR		0x65
+#define CMD_WRAR		0x71
+#define CMD_WRAR_LEN		5
+#define CMD_RSTEN		0x66
+#define CMD_RST			0x99
+#define CR3NV_ADDR		0x000004
+#define CR3NV_20H_NV		(1 << 3)
+#define T_W			145 * 1000	/* NV register write time */
+#define T_RPH			35		/* Reset pulse hold time */
+#define T_SE			145 * 1000	/* Sector Erase Time */
+
 /* Page Erase 0xDB */
 #define JEDEC_PE		0xDB
 #define JEDEC_PE_OUTSIZE	0x04
@@ -129,6 +141,7 @@
 /* Status Register Bits */
 #define SPI_SR_WIP	(0x01 << 0)
 #define SPI_SR_WEL	(0x01 << 1)
+#define SPI_SR_ERA_ERR	(0x01 << 5)
 #define SPI_SR_AAI	(0x01 << 6)
 
 /* Write Status Enable */
