@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
 		{"help",		0, NULL, 'h'},
 		{"version",		0, NULL, 'R'},
 		{"output",		1, NULL, 'o'},
-		{"delay",       1, NULL, 'd'},
+		{"delay",		1, NULL, 'd'},
 		{NULL,			0, NULL, 0},
 	};
 
