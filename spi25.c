@@ -25,6 +25,7 @@
 #include "flashchips.h"
 #include "chipdrivers.h"
 #include "programmer.h"
+#include "hwaccess.h"
 #include "spi.h"
 
 static int spi_rdid(struct flashctx *flash, unsigned char *readarr, int bytes)
@@ -284,13 +285,155 @@ int probe_spi_at25f(struct flashctx *flash)
 	return 0;
 }
 
-static int spi_poll_wip(struct flashctx *const flash, const unsigned int poll_delay)
+/* Used for probing 'big' Spansion/Cypress S25FS chips */
+int probe_spi_big_spansion(struct flashctx *flash)
 {
-	/* FIXME: We can't tell if spi_read_status_register() failed. */
+	static const unsigned char cmd = JEDEC_RDID;
+	int ret;
+	unsigned char dev_id[6]; /* We care only about 6 first bytes */
+
+	ret = spi_send_command(flash, sizeof(cmd), sizeof(dev_id), &cmd, dev_id);
+
+	if (!ret) {
+		unsigned long i;
+
+		for (i = 0; i < sizeof(dev_id); i++)
+			msg_gdbg(" 0x%02x", dev_id[i]);
+		msg_gdbg(".\n");
+
+		if (dev_id[0] == flash->chip->manufacture_id) {
+			union {
+				uint8_t array[4];
+				uint32_t whole;
+			} model_id;
+
+	/*
+	 * The structure of the RDID output is as follows:
+	 *
+	 *     offset   value              meaning
+	 *       00h     01h      Manufacturer ID for Spansion
+	 *       01h     20h           128 Mb capacity
+	 *       01h     02h           256 Mb capacity
+	 *       02h     18h           128 Mb capacity
+	 *       02h     19h           256 Mb capacity
+	 *       03h     4Dh       Full size of the RDID output (ignored)
+	 *       04h     00h       FS: 256-kB physical sectors
+	 *       04h     01h       FS: 64-kB physical sectors
+	 *       04h     00h       FL: 256-kB physical sectors
+	 *       04h     01h       FL: Mix of 64-kB and 4KB overlayed sectors
+	 *       05h     80h       FL family
+	 *       05h     81h       FS family
+	 *
+	 * Need to use bytes 1, 2, 4, and 5 to properly identify one of eight
+	 * possible chips:
+	 *
+	 * 2 types * 2 possible sizes * 2 possible sector layouts
+	 *
+	 */
+			memcpy(model_id.array, dev_id + 1, 2);
+			memcpy(model_id.array + 2, dev_id + 4, 2);
+			if (be_to_cpu32(model_id.whole) == flash->chip->model_id)
+				return 1;
+		}
+	}
+
+	return 0;
+}
+
+/* Used for Spansion/Cypress S25F chips */
+static int s25f_legacy_software_reset(struct flashctx *flash)
+{
+	int result;
+	struct spi_command cmds[] = {
+	{
+		.writecnt	= 1,
+		.writearr	= (const unsigned char[]){ CMD_RSTEN },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= 1,
+		.writearr	= (const unsigned char[]){ 0xf0 },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= 0,
+		.writearr	= NULL,
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}};
+
+	result = spi_send_multicommand(flash, cmds);
+	if (result) {
+		msg_cerr("%s failed during command execution\n", __func__);
+		return result;
+	}
+	/* Reset takes 35us according to data-sheet, double that for safety */
+	programmer_delay(T_RPH * 2);
+
+	return 0;
+}
+
+/* Only for Spansion S25FS chips, where legacy reset is disabled by default */
+int s25fs_software_reset(struct flashctx *flash)
+{
+	int result;
+	struct spi_command cmds[] = {
+	{
+		.writecnt	= 1,
+		.writearr	= (const unsigned char[]){ CMD_RSTEN },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= 1,
+		.writearr	= (const unsigned char[]){ CMD_RST },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= 0,
+		.writearr	= NULL,
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}};
+
+	msg_cdbg("Force resetting SPI chip.\n");
+	result = spi_send_multicommand(flash, cmds);
+	if (result) {
+		msg_cerr("%s failed during command execution\n", __func__);
+		return result;
+	}
+
+	programmer_delay(T_RPH * 2);
+
+	return 0;
+}
+
+int spi_poll_wip(struct flashctx *const flash, const unsigned int poll_delay)
+{
+	uint8_t status_reg = spi_read_status_register(flash);
+
 	/* FIXME: We don't time out. */
-	while (spi_read_status_register(flash) & SPI_SR_WIP)
+	while (status_reg & SPI_SR_WIP) {
+		/*
+		 * The WIP bit on S25F chips remains set to 1 if erase or
+		 * programming errors occur, so we must check for those
+		 * errors here. If an error is encountered, do a software
+		 * reset to clear WIP and other volatile bits, otherwise
+		 * the chip will be unresponsive to further commands.
+		 */
+		if (status_reg & SPI_SR_ERA_ERR) {
+			msg_cerr("Erase error occurred\n");
+			s25f_legacy_software_reset(flash);
+			return -1;
+		}
+		if (status_reg & (1 << 6)) {
+			msg_cerr("Programming error occurred\n");
+			s25f_legacy_software_reset(flash);
+			return -1;
+		}
 		programmer_delay(poll_delay);
-	/* FIXME: Check the status register for errors. */
+		status_reg = spi_read_status_register(flash);
+	}
+
 	return 0;
 }
 
@@ -484,6 +627,73 @@ int spi_block_erase_d8(struct flashctx *flash, unsigned int addr,
 {
 	/* This usually takes 100-4000ms, so wait in 100ms steps. */
 	return spi_write_cmd(flash, 0xd8, false, addr, NULL, 0, 100 * 1000);
+}
+
+/* Used on Spansion/Cypress S25FS chips */
+int s25fs_block_erase_d8(struct flashctx *flash,
+		unsigned int addr, unsigned int blocklen)
+{
+	unsigned char cfg;
+	int result;
+	static int cr3nv_checked = 0;
+
+	struct spi_command erase_cmds[] = {
+	{
+		.writecnt	= JEDEC_WREN_OUTSIZE,
+		.writearr	= (const unsigned char[]){ JEDEC_WREN },
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= JEDEC_BE_D8_OUTSIZE,
+		.writearr	= (const unsigned char[]){
+					JEDEC_BE_D8,
+					(addr >> 16) & 0xff,
+					(addr >> 8) & 0xff,
+					(addr & 0xff)
+				},
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= 0,
+		.writearr	= NULL,
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}};
+
+	/* Check if hybrid sector architecture is in use and, if so,
+	 * switch to uniform sectors. */
+	if (!cr3nv_checked) {
+		cfg = s25fs_read_cr(flash, CR3NV_ADDR);
+		if (!(cfg & CR3NV_20H_NV)) {
+			s25fs_write_cr(flash, CR3NV_ADDR, cfg | CR3NV_20H_NV);
+			s25fs_software_reset(flash);
+
+			cfg = s25fs_read_cr(flash, CR3NV_ADDR);
+			if (!(cfg & CR3NV_20H_NV)) {
+				msg_cerr("%s: Unable to enable uniform "
+					"block sizes.\n", __func__);
+				return 1;
+			}
+
+			msg_cdbg("\n%s: CR3NV updated (0x%02x -> 0x%02x)\n",
+					__func__, cfg,
+					s25fs_read_cr(flash, CR3NV_ADDR));
+			/* Restore CR3V when flashrom exits */
+			register_chip_restore(s25fs_restore_cr3nv, flash, cfg);
+		}
+
+		cr3nv_checked = 1;
+	}
+
+	result = spi_send_multicommand(flash, erase_cmds);
+	if (result) {
+		msg_cerr("%s failed during command execution at address 0x%x\n",
+			__func__, addr);
+		return result;
+	}
+
+	programmer_delay(T_SE);
+	return spi_poll_wip(flash, 1000 * 10);
 }
 
 /* Block size is usually

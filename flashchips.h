@@ -642,6 +642,8 @@
 #define SPANSION_S25FL032A	0x0215	/* Same as S25FL032P, but the latter supports EDI and CFI */
 #define SPANSION_S25FL064A	0x0216	/* Same as S25FL064P, but the latter supports EDI and CFI */
 #define SPANSION_S25FL128	0x2018	/* Same ID for various S25FL127S, S25FL128P, S25FL128S and S25FL129P (including dual-die S70FL256P) variants (EDI supported) */
+#define SPANSION_S25FS128S_L	0x20180081  /* Large sectors. */
+#define SPANSION_S25FS128S_S	0x20180181  /* Small sectors. */
 #define SPANSION_S25FL256	0x0219
 #define SPANSION_S25FL512	0x0220
 #define SPANSION_S25FL204	0x4013
