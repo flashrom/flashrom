@@ -730,6 +730,7 @@ override CONFIG_DEDIPROG = no
 override CONFIG_DIGILENT_SPI = no
 override CONFIG_DEVELOPERBOX_SPI = no
 override CONFIG_PICKIT2_SPI = no
+override CONFIG_RAIDEN = no
 override CONFIG_STLINKV3_SPI = no
 endif
 ifeq ($(CONFIG_ENABLE_LIBPCI_PROGRAMMERS), no)
