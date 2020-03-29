@@ -193,6 +193,7 @@ struct pci_dev;
 // FIXME: This needs to be local, not global(?)
 extern struct pci_access *pacc;
 int pci_init_common(void);
+int pci_bar_number_from_offset(int offset);
 uintptr_t pcidev_readbar(struct pci_dev *dev, int bar);
 struct pci_dev *pcidev_init(const struct dev_entry *devs, int bar);
 /* rpci_write_* are reversible writes. The original PCI config space register

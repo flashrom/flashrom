@@ -30,20 +30,47 @@ enum pci_bartype {
 	TYPE_UNKNOWN
 };
 
+int pci_bar_number_from_offset(int offset)
+{
+	switch (offset) {
+		case PCI_BASE_ADDRESS_0:
+			return 0;
+		case PCI_BASE_ADDRESS_1:
+			return 1;
+		case PCI_BASE_ADDRESS_2:
+			return 2;
+		case PCI_BASE_ADDRESS_3:
+			return 3;
+		case PCI_BASE_ADDRESS_4:
+			return 4;
+		case PCI_BASE_ADDRESS_5:
+			return 5;
+		default:
+			return -1;
+	}
+	return -1;
+}
+
 uintptr_t pcidev_readbar(struct pci_dev *dev, int bar)
 {
 	uint64_t addr;
 	uint32_t upperaddr;
 	uint8_t headertype;
 	uint16_t supported_cycles;
+	int bar_number;
 	enum pci_bartype bartype = TYPE_UNKNOWN;
 
 
 	headertype = pci_read_byte(dev, PCI_HEADER_TYPE) & 0x7f;
 	msg_pspew("PCI header type 0x%02x\n", headertype);
+	bar_number = pci_bar_number_from_offset(bar);
 
-	/* Don't use dev->base_addr[x] (as value for 'bar'), won't work on older libpci. */
-	addr = pci_read_long(dev, bar);
+	if (PCI_LIB_VERSION >= 0x030500 && bar_number > -1) {
+		addr = dev->base_addr[bar_number];
+	} else {
+		/* Don't use dev->base_addr[x] (as value for 'bar'), won't work on older libpci. */
+		addr = pci_read_long(dev, bar);
+	}
 
 	/* Sanity checks. */
 	switch (headertype) {
