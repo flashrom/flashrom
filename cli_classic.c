@@ -273,6 +273,9 @@ int main(int argc, char *argv[])
 			}
 			break;
 		case OPTION_FLASH_CONTENTS:
+			if (referencefile)
+				cli_classic_abort_usage("Error: --flash-contents specified more than once."
+							"Aborting.\n");
 			referencefile = strdup(optarg);
 			break;
 		case OPTION_FLASH_NAME:
