@@ -570,6 +570,8 @@ static int spi_write_cmd(struct flashctx *const flash, const uint8_t op,
 		msg_cerr("%s called for too long a write\n", __func__);
 		return 1;
 	}
+	if (!out_bytes && out_len > 0)
+		return 1;
 
 	memcpy(cmd + 1 + addr_len, out_bytes, out_len);
 	cmds[1].writecnt = 1 + addr_len + out_len;
