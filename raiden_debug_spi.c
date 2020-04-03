@@ -161,9 +161,11 @@ enum raiden_debug_spi_request {
  */
 #define TRANSFER_TIMEOUT_MS     (200 + 800)
 
-struct usb_device *device       = NULL;
-uint8_t            in_endpoint  = 0;
-uint8_t            out_endpoint = 0;
+struct raiden_debug_spi_data {
+	struct usb_device *dev;
+	uint8_t in_ep;
+	uint8_t out_ep;
+};
 
 typedef struct {
 	int8_t write_count;
@@ -200,6 +202,12 @@ static bool retry_recovery(int error_code)
 	return true;
 }
 
+static const struct raiden_debug_spi_data *
+	get_raiden_data_from_context(const struct flashctx *flash)
+{
+	return (const struct raiden_debug_spi_data *)flash->mst->spi.data;
+}
+
 static int write_command(const struct flashctx *flash,
 		unsigned int write_count,
 		unsigned int read_count,
@@ -210,6 +218,7 @@ static int write_command(const struct flashctx *flash,
 	int transferred;
 	int ret;
 	usb_spi_command_t command_packet;
+	const struct raiden_debug_spi_data * ctx_data = get_raiden_data_from_context(flash);
 
 	if (write_count > PAYLOAD_SIZE) {
 		msg_perr("Raiden: Invalid write_count of %d\n", write_count);
@@ -226,8 +235,8 @@ static int write_command(const struct flashctx *flash,
 
 	memcpy(command_packet.data, write_buffer, write_count);
 
-	ret = LIBUSB(libusb_bulk_transfer(device->handle,
-				out_endpoint,
+	ret = LIBUSB(libusb_bulk_transfer(ctx_data->dev->handle,
+				ctx_data->out_ep,
 				(void*)&command_packet,
 				write_count + PACKET_HEADER_SIZE,
 				&transferred,
@@ -258,9 +267,10 @@ static int read_response(const struct flashctx *flash,
 	int transferred;
 	int ret;
 	usb_spi_response_t response_packet;
+	const struct raiden_debug_spi_data * ctx_data = get_raiden_data_from_context(flash);
 
-	ret = LIBUSB(libusb_bulk_transfer(device->handle,
-				in_endpoint,
+	ret = LIBUSB(libusb_bulk_transfer(ctx_data->dev->handle,
+				ctx_data->in_ep,
 				(void*)&response_packet,
 				read_count + PACKET_HEADER_SIZE,
 				&transferred,
@@ -350,7 +360,7 @@ static int send_command(const struct flashctx *flash,
  */
 #define MAX_DATA_SIZE   (PAYLOAD_SIZE - JEDEC_BYTE_PROGRAM_OUTSIZE)
 
-static const struct spi_master spi_master_raiden_debug = {
+static struct spi_master spi_master_raiden_debug = {
 	.features	= SPI_MASTER_4BA,
 	.max_data_read	= MAX_DATA_SIZE,
 	.max_data_write	= MAX_DATA_SIZE,
@@ -403,16 +413,19 @@ static int find_endpoints(struct usb_device *dev, uint8_t *in_ep, uint8_t *out_e
 	return 0;
 }
 
-static int shutdown(void * data)
+static int raiden_debug_spi_shutdown(void * data)
 {
+	struct raiden_debug_spi_data * ctx_data =
+		(struct raiden_debug_spi_data *)data;
+
 	int ret = LIBUSB(libusb_control_transfer(
-				device->handle,
+				ctx_data->dev->handle,
 				LIBUSB_ENDPOINT_OUT |
 				LIBUSB_REQUEST_TYPE_VENDOR |
 				LIBUSB_RECIPIENT_INTERFACE,
 				RAIDEN_DEBUG_SPI_REQ_DISABLE,
 				0,
-				device->interface_descriptor->bInterfaceNumber,
+				ctx_data->dev->interface_descriptor->bInterfaceNumber,
 				NULL,
 				0,
 				TRANSFER_TIMEOUT_MS));
@@ -421,10 +434,9 @@ static int shutdown(void * data)
 		return ret;
 	}
 
-	usb_device_free(device);
-
-	device = NULL;
+	usb_device_free(ctx_data->dev);
 	libusb_exit(NULL);
+	free(ctx_data);
 
 	return 0;
 }
@@ -463,6 +475,7 @@ int raiden_debug_spi_init(void)
 	struct usb_match match;
 	char *serial = extract_programmer_param("serial");
 	struct usb_device *current;
+	struct usb_device *device = NULL;
 	int found = 0;
 	int ret;
 
@@ -491,6 +504,8 @@ int raiden_debug_spi_init(void)
 		return ret;
 	}
 
+	uint8_t in_endpoint  = 0;
+	uint8_t out_endpoint = 0;
 	while (current) {
 		device = current;
 
@@ -579,8 +594,20 @@ loop_end:
 		(request_enable == RAIDEN_DEBUG_SPI_REQ_ENABLE_EC))
 		usleep(50 * 1000);
 
+	struct raiden_debug_spi_data *data = calloc(1, sizeof(struct raiden_debug_spi_data));
+	if (!data) {
+		msg_perr("Unable to allocate space for extra SPI master data.\n");
+		return SPI_GENERIC_ERROR;
+	}
+
+	data->dev = device;
+	data->in_ep = in_endpoint;
+	data->out_ep = out_endpoint;
+
+	spi_master_raiden_debug.data = data;
+
 	register_spi_master(&spi_master_raiden_debug);
-	register_shutdown(shutdown, NULL);
+	register_shutdown(raiden_debug_spi_shutdown, data);
 
 	return 0;
 }
