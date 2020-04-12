@@ -612,9 +612,9 @@ struct spi_master {
 	uint32_t features;
 	unsigned int max_data_read; // (Ideally,) maximum data read size in one go (excluding opcode+address).
 	unsigned int max_data_write; // (Ideally,) maximum data write size in one go (excluding opcode+address).
-	int (*command)(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
+	int (*command)(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
 		   const unsigned char *writearr, unsigned char *readarr);
-	int (*multicommand)(struct flashctx *flash, struct spi_command *cmds);
+	int (*multicommand)(const struct flashctx *flash, struct spi_command *cmds);
 
 	/* Optimized functions for this master */
 	int (*read)(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
@@ -623,9 +623,9 @@ struct spi_master {
 	const void *data;
 };
 
-int default_spi_send_command(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
+int default_spi_send_command(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
 			     const unsigned char *writearr, unsigned char *readarr);
-int default_spi_send_multicommand(struct flashctx *flash, struct spi_command *cmds);
+int default_spi_send_multicommand(const struct flashctx *flash, struct spi_command *cmds);
 int default_spi_read(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 int default_spi_write_256(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 int default_spi_write_aai(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);

@@ -155,7 +155,7 @@ static int get_buf(struct ftdi_context *ftdic, const unsigned char *buf,
 	return 0;
 }
 
-static int ft2232_spi_send_command(struct flashctx *flash,
+static int ft2232_spi_send_command(const struct flashctx *flash,
 				   unsigned int writecnt, unsigned int readcnt,
 				   const unsigned char *writearr,
 				   unsigned char *readarr);
@@ -459,7 +459,7 @@ ftdi_err:
 }
 
 /* Returns 0 upon success, a negative number upon errors. */
-static int ft2232_spi_send_command(struct flashctx *flash,
+static int ft2232_spi_send_command(const struct flashctx *flash,
 				   unsigned int writecnt, unsigned int readcnt,
 				   const unsigned char *writearr,
 				   unsigned char *readarr)

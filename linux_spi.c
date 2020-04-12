@@ -49,7 +49,7 @@ static int fd = -1;
 static size_t max_kernel_buf_size;
 
 static int linux_spi_shutdown(void *data);
-static int linux_spi_send_command(struct flashctx *flash, unsigned int writecnt,
+static int linux_spi_send_command(const struct flashctx *flash, unsigned int writecnt,
 				  unsigned int readcnt,
 				  const unsigned char *txbuf,
 				  unsigned char *rxbuf);
@@ -183,7 +183,7 @@ static int linux_spi_shutdown(void *data)
 	return 0;
 }
 
-static int linux_spi_send_command(struct flashctx *flash, unsigned int writecnt,
+static int linux_spi_send_command(const struct flashctx *flash, unsigned int writecnt,
 				  unsigned int readcnt,
 				  const unsigned char *txbuf,
 				  unsigned char *rxbuf)

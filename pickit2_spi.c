@@ -195,7 +195,7 @@ static int pickit2_set_spi_speed(unsigned int spispeed_idx)
 	return 0;
 }
 
-static int pickit2_spi_send_command(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
+static int pickit2_spi_send_command(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
 				     const unsigned char *writearr, unsigned char *readarr)
 {
 

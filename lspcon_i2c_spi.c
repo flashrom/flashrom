@@ -98,7 +98,7 @@ static int lspcon_i2c_spi_read_data(int fd, uint16_t addr, void *buf, uint16_t l
 	return i2c_read(fd, addr, &data) == len ? 0 : SPI_GENERIC_ERROR;
 }
 
-static int get_fd_from_context(struct flashctx *flash)
+static int get_fd_from_context(const struct flashctx *flash)
 {
 	if (!flash || !flash->mst || !flash->mst->spi.data) {
 		msg_perr("Unable to extract fd from flash context.\n");
@@ -251,7 +251,7 @@ static int lspcon_i2c_spi_disable_all_protection(int fd)
 	return ret;
 }
 
-static int lspcon_i2c_spi_send_command(struct flashctx *flash,
+static int lspcon_i2c_spi_send_command(const struct flashctx *flash,
 				unsigned int writecnt, unsigned int readcnt,
 				const unsigned char *writearr,
 				unsigned char *readarr)

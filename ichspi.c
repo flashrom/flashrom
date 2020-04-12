@@ -1103,7 +1103,7 @@ static int run_opcode(const struct flashctx *flash, OPCODE op, uint32_t offset,
 	}
 }
 
-static int ich_spi_send_command(struct flashctx *flash, unsigned int writecnt,
+static int ich_spi_send_command(const struct flashctx *flash, unsigned int writecnt,
 				unsigned int readcnt,
 				const unsigned char *writearr,
 				unsigned char *readarr)
@@ -1506,7 +1506,7 @@ static int ich_hwseq_write(struct flashctx *flash, const uint8_t *buf, unsigned 
 	return 0;
 }
 
-static int ich_spi_send_multicommand(struct flashctx *flash,
+static int ich_spi_send_multicommand(const struct flashctx *flash,
 				     struct spi_command *cmds)
 {
 	int ret = 0;

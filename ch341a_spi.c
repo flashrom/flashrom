@@ -335,7 +335,7 @@ void ch341a_spi_delay(unsigned int usecs)
 	stored_delay_us += usecs;
 }
 
-static int ch341a_spi_spi_send_command(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr)
+static int ch341a_spi_spi_send_command(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr)
 {
 	if (handle == NULL)
 		return -1;

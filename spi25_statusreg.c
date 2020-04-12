@@ -22,7 +22,7 @@
 #include "spi.h"
 
 /* === Generic functions === */
-static int spi_write_status_register_flag(struct flashctx *flash, int status, const unsigned char enable_opcode)
+static int spi_write_status_register_flag(const struct flashctx *flash, int status, const unsigned char enable_opcode)
 {
 	int result;
 	int i = 0;
@@ -73,7 +73,7 @@ static int spi_write_status_register_flag(struct flashctx *flash, int status, co
 	return 0;
 }
 
-int spi_write_status_register(struct flashctx *flash, int status)
+int spi_write_status_register(const struct flashctx *flash, int status)
 {
 	int feature_bits = flash->chip->feature_bits;
 	int ret = 1;
@@ -90,7 +90,7 @@ int spi_write_status_register(struct flashctx *flash, int status)
 	return ret;
 }
 
-uint8_t spi_read_status_register(struct flashctx *flash)
+uint8_t spi_read_status_register(const struct flashctx *flash)
 {
 	static const unsigned char cmd[JEDEC_RDSR_OUTSIZE] = { JEDEC_RDSR };
 	/* FIXME: No workarounds for driver/hardware bugs in generic code. */
