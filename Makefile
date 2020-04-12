@@ -1598,6 +1598,10 @@ install: $(PROGRAM)$(EXEC_SUFFIX) $(PROGRAM).8
 	$(INSTALL) -m 0755 $(PROGRAM)$(EXEC_SUFFIX) $(DESTDIR)$(PREFIX)/sbin
 	$(INSTALL) -m 0644 $(PROGRAM).8 $(DESTDIR)$(MANDIR)/man8
 
+uninstall: $(PROGRAM)$(EXEC_SUFFIX)
+	rm -rf $(DESTDIR)$(PREFIX)/sbin/$(PROGRAM)$(EXEC_SUFFIX)
+	rm -rf $(DESTDIR)$(MANDIR)/man8/$(PROGRAM).8
+
 libinstall: libflashrom.a libflashrom.h
 	mkdir -p $(DESTDIR)$(PREFIX)/lib
 	$(INSTALL) -m 0644 libflashrom.a $(DESTDIR)$(PREFIX)/lib
