@@ -1640,7 +1640,7 @@ tarball: _export
 libpayload: clean
 	make CC="CC=i386-elf-gcc lpgcc" AR=i386-elf-ar RANLIB=i386-elf-ranlib
 
-.PHONY: all install clean distclean compiler hwlibs features _export export tarball featuresavailable libpayload
+.PHONY: all install uninstall clean distclean compiler hwlibs features _export export tarball featuresavailable libpayload
 
 # Disable implicit suffixes and built-in rules (for performance and profit)
 .SUFFIXES:
