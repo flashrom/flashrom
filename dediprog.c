@@ -714,7 +714,7 @@ static int dediprog_spi_write_aai(struct flashctx *flash, const uint8_t *buf, un
 	return dediprog_spi_write(flash, buf, start, len, WRITE_MODE_2B_AAI);
 }
 
-static int dediprog_spi_send_command(struct flashctx *flash,
+static int dediprog_spi_send_command(const struct flashctx *flash,
 				     unsigned int writecnt,
 				     unsigned int readcnt,
 				     const unsigned char *writearr,

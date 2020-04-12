@@ -101,7 +101,7 @@ static bool deassert_cs(void)
 	return true;
 }
 
-static int jlink_spi_send_command(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
+static int jlink_spi_send_command(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
 		const unsigned char *writearr, unsigned char *readarr)
 {
 	uint32_t length;

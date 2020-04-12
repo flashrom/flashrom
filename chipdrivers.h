@@ -65,8 +65,8 @@ int spi_exit_4ba(struct flashctx *flash);
 int spi_set_extended_address(struct flashctx *, uint8_t addr_high);
 
 /* spi25_statusreg.c */
-uint8_t spi_read_status_register(struct flashctx *flash);
-int spi_write_status_register(struct flashctx *flash, int status);
+uint8_t spi_read_status_register(const struct flashctx *flash);
+int spi_write_status_register(const struct flashctx *flash, int status);
 int s25fs_read_cr(struct flashctx *const flash, uint32_t addr);
 int s25fs_write_cr(struct flashctx *const flash, uint32_t addr, uint8_t data);
 int s25fs_restore_cr3nv(struct flashctx *const flash, uint8_t cfg);

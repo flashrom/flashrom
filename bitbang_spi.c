@@ -64,7 +64,7 @@ static int bitbang_spi_set_sck_get_miso(const struct bitbang_spi_master * const 
 	return master->get_miso();
 }
 
-static int bitbang_spi_send_command(struct flashctx *flash,
+static int bitbang_spi_send_command(const struct flashctx *flash,
 				    unsigned int writecnt, unsigned int readcnt,
 				    const unsigned char *writearr,
 				    unsigned char *readarr);
@@ -145,7 +145,7 @@ static void bitbang_spi_write_byte(const struct bitbang_spi_master *master, uint
 	}
 }
 
-static int bitbang_spi_send_command(struct flashctx *flash,
+static int bitbang_spi_send_command(const struct flashctx *flash,
 				    unsigned int writecnt, unsigned int readcnt,
 				    const unsigned char *writearr,
 				    unsigned char *readarr)

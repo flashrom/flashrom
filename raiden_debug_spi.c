@@ -284,7 +284,7 @@ static int read_response(const struct flashctx *flash,
 	return response_packet.status_code;
 }
 
-static int send_command(struct flashctx *flash,
+static int send_command(const struct flashctx *flash,
 		unsigned int write_count,
 		unsigned int read_count,
 		const unsigned char *write_buffer,

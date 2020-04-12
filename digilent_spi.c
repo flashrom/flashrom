@@ -257,7 +257,7 @@ static int spi_tx_end(uint8_t read_follows, uint32_t tx_len)
 	return 0;
 }
 
-static int digilent_spi_send_command(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
+static int digilent_spi_send_command(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
 				     const unsigned char *writearr, unsigned char *readarr)
 {
 	int ret;

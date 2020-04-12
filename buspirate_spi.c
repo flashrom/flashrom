@@ -128,9 +128,9 @@ static int buspirate_wait_for_string(unsigned char *buf, const char *key)
 	return ret;
 }
 
-static int buspirate_spi_send_command_v1(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
+static int buspirate_spi_send_command_v1(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
 					 const unsigned char *writearr, unsigned char *readarr);
-static int buspirate_spi_send_command_v2(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
+static int buspirate_spi_send_command_v2(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
 					 const unsigned char *writearr, unsigned char *readarr);
 
 static struct spi_master spi_master_buspirate = {
@@ -572,7 +572,7 @@ int buspirate_spi_init(void)
 	return 0;
 }
 
-static int buspirate_spi_send_command_v1(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
+static int buspirate_spi_send_command_v1(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
 					 const unsigned char *writearr, unsigned char *readarr)
 {
 	unsigned int i = 0;
@@ -625,7 +625,7 @@ static int buspirate_spi_send_command_v1(struct flashctx *flash, unsigned int wr
 	return ret;
 }
 
-static int buspirate_spi_send_command_v2(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
+static int buspirate_spi_send_command_v2(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
 					 const unsigned char *writearr, unsigned char *readarr)
 {
 	int i = 0, ret = 0;

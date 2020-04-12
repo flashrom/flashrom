@@ -56,9 +56,9 @@ static enum amd_chipset amd_gen = CHIPSET_AMD_UNKNOWN;
 #define FIFO_SIZE_OLD		8
 #define FIFO_SIZE_YANGTZE	71
 
-static int sb600_spi_send_command(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
+static int sb600_spi_send_command(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
 				  const unsigned char *writearr, unsigned char *readarr);
-static int spi100_spi_send_command(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
+static int spi100_spi_send_command(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
 				  const unsigned char *writearr, unsigned char *readarr);
 
 static struct spi_master spi_master_sb600 = {
@@ -190,7 +190,7 @@ static int compare_internal_fifo_pointer(uint8_t want)
 }
 
 /* Check the number of bytes to be transmitted and extract opcode. */
-static int check_readwritecnt(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt)
+static int check_readwritecnt(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt)
 {
 	unsigned int maxwritecnt = flash->mst->spi.max_data_write + 3;
 	if (writecnt > maxwritecnt) {
@@ -217,7 +217,7 @@ static void execute_command(void)
 	msg_pspew("done\n");
 }
 
-static int sb600_spi_send_command(struct flashctx *flash, unsigned int writecnt,
+static int sb600_spi_send_command(const struct flashctx *flash, unsigned int writecnt,
 				  unsigned int readcnt,
 				  const unsigned char *writearr,
 				  unsigned char *readarr)
@@ -303,7 +303,7 @@ static int sb600_spi_send_command(struct flashctx *flash, unsigned int writecnt,
 	return 0;
 }
 
-static int spi100_spi_send_command(struct flashctx *flash, unsigned int writecnt,
+static int spi100_spi_send_command(const struct flashctx *flash, unsigned int writecnt,
 				  unsigned int readcnt,
 				  const unsigned char *writearr,
 				  unsigned char *readarr)

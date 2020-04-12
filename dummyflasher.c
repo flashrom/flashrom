@@ -93,7 +93,7 @@ static const uint8_t sfdp_table[] = {
 
 static unsigned int spi_write_256_chunksize = 256;
 
-static int dummy_spi_send_command(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
+static int dummy_spi_send_command(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
 				  const unsigned char *writearr, unsigned char *readarr);
 static int dummy_spi_write_256(struct flashctx *flash, const uint8_t *buf,
 			       unsigned int start, unsigned int len);
@@ -818,7 +818,7 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 }
 #endif
 
-static int dummy_spi_send_command(struct flashctx *flash, unsigned int writecnt,
+static int dummy_spi_send_command(const struct flashctx *flash, unsigned int writecnt,
 				  unsigned int readcnt,
 				  const unsigned char *writearr,
 				  unsigned char *readarr)

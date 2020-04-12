@@ -323,7 +323,7 @@ static int stlinkv3_spi_set_SPI_NSS(enum spi_nss_level nss_level)
 	return 0;
 }
 
-static int stlinkv3_spi_transmit(struct flashctx *flash,
+static int stlinkv3_spi_transmit(const struct flashctx *flash,
 				 unsigned int write_cnt,
 				 unsigned int read_cnt,
 				 const unsigned char *write_arr,
