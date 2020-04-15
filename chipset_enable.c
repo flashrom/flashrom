@@ -757,6 +757,14 @@ static int enable_flash_ich_spi(struct pci_dev *dev, enum ich_chipset ich_genera
 	if (ret_fwh == ERROR_FATAL)
 		return ret_fwh;
 
+	/*
+	 * It seems that the ICH7 does not support SPI and LPC chips at the same time. When booted
+	 * from LPC, the SCIP bit will never clear, which causes long delays and many error messages.
+	 * To avoid this, we will not enable SPI on ICH7 when the southbridge is strapped to LPC.
+	 */
+	if (ich_generation == CHIPSET_ICH7 && (boot_buses & BUS_LPC))
+		return 0;
+
 	/* SPIBAR is at RCRB+0x3020 for ICH[78], Tunnel Creek and Centerton, and RCRB+0x3800 for ICH9. */
 	uint16_t spibar_offset;
 	switch (ich_generation) {
