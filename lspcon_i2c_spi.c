@@ -406,7 +406,7 @@ static int lspcon_i2c_spi_write_aai(struct flashctx *flash, const uint8_t *buf,
 	return SPI_GENERIC_ERROR;
 }
 
-static const struct spi_master spi_master_i2c_lspcon = {
+static struct spi_master spi_master_i2c_lspcon = {
 	.max_data_read = 16,
 	.max_data_write = 12,
 	.command = lspcon_i2c_spi_send_command,
@@ -468,14 +468,6 @@ get_bus_done:
 	return ret;
 }
 
-static int register_lspcon_i2c_spi_master(void *ptr)
-{
-	struct spi_master mst = spi_master_i2c_lspcon;
-	mst.data = ptr;
-
-	return register_spi_master(&mst);
-}
-
 int lspcon_i2c_spi_init(void)
 {
 	int lspcon_i2c_spi_bus = get_bus();
@@ -488,8 +480,10 @@ int lspcon_i2c_spi_init(void)
 		return fd;
 
 	ret |= lspcon_i2c_spi_reset_mpu_stop(fd);
-	if (ret)
+	if (ret) {
+		msg_perr("%s: call to reset_mpu_stop failed.\n", __func__);
 		return ret;
+	}
 
 	struct lspcon_i2c_spi_data *data = calloc(1, sizeof(struct lspcon_i2c_spi_data));
 	if (!data) {
@@ -498,8 +492,10 @@ int lspcon_i2c_spi_init(void)
 	}
 
 	data->fd = fd;
+	spi_master_i2c_lspcon.data = data;
+
 	ret |= register_shutdown(lspcon_i2c_spi_shutdown, data);
-	ret |= register_lspcon_i2c_spi_master(data);
+	ret |= register_spi_master(&spi_master_i2c_lspcon);
 
 	return ret;
 }
