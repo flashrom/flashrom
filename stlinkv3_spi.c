@@ -491,10 +491,11 @@ int stlinkv3_spi_init(void)
 	speed_str = extract_programmer_param("spispeed");
 	if (speed_str) {
 		sck_freq_kHz = strtoul(speed_str, &endptr, 0);
-		if (*endptr) {
+		if (*endptr || sck_freq_kHz == 0) {
 			msg_perr("The spispeed parameter passed with invalid format: %s\n",
 				 speed_str);
-			msg_perr("Please pass the parameter with a simple number in kHz\n");
+			msg_perr("Please pass the parameter "
+				 "with a simple non-zero number in kHz\n");
 			free(speed_str);
 			return -1;
 		}
