@@ -495,6 +495,7 @@ int stlinkv3_spi_init(void)
 			msg_perr("The spispeed parameter passed with invalid format: %s\n",
 				 speed_str);
 			msg_perr("Please pass the parameter with a simple number in kHz\n");
+			free(speed_str);
 			return -1;
 		}
 		free(speed_str);
