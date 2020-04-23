@@ -480,12 +480,14 @@ int raiden_debug_spi_init(void)
 	ret = LIBUSB(libusb_init(NULL));
 	if (ret != 0) {
 		msg_perr("Raiden: libusb_init failed\n");
+		free(serial);
 		return ret;
 	}
 
 	ret = usb_device_find(&match, &current);
 	if (ret != 0) {
 		msg_perr("Raiden: Failed to find devices\n");
+		free(serial);
 		return ret;
 	}
 
@@ -546,6 +548,7 @@ loop_end:
 
 	if (!device || !found) {
 		msg_perr("Raiden: No usable device found.\n");
+		free(serial);
 		return 1;
 	}
 
