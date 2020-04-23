@@ -480,8 +480,10 @@ int raiden_debug_spi_init(void)
 	int ret;
 
 	int request_enable = get_target();
-	if (request_enable < 0)
+	if (request_enable < 0) {
+		free(serial);
 		return 1;
+	}
 
 	usb_match_init(&match);
 
