@@ -226,6 +226,8 @@ int usb_device_find(struct usb_match const *match, struct usb_device **devices)
 							  &descriptor));
 		      if (ret != 0) {
 			      msg_perr("USB: Failed to get device descriptor");
+			      free(*devices);
+			      *devices = NULL;
 			      return ret;
 		      }
 
