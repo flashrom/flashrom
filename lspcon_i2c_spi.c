@@ -151,7 +151,7 @@ static int lspcon_i2c_spi_wait_command_done(int fd, unsigned int offset, int mas
 	int ret = 0;
 	do {
 		ret |= lspcon_i2c_spi_read_register(fd, offset, &val);
-	} while(!ret && (val & mask) && ++tried < MAX_SPI_WAIT_RETRIES);
+	} while (!ret && (val & mask) && ++tried < MAX_SPI_WAIT_RETRIES);
 
 	if (tried == MAX_SPI_WAIT_RETRIES) {
 		msg_perr("Error: Time out on sending command.\n");
