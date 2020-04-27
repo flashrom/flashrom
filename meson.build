@@ -74,6 +74,7 @@ cargs = []
 deps = []
 srcs = []
 
+need_libpci = false
 need_libusb = false
 need_raw_access = false
 need_serial = false
@@ -100,13 +101,8 @@ if get_option('no_libusb_programmers')
   config_stlinkv3_spi = false
 endif
 
-# some programmers require libpci
-if get_option('pciutils')
-  srcs += 'pcidev.c'
-  deps += dependency('libpci')
-  need_raw_access = true
-  cargs += '-DNEED_PCI=1'
-else
+if get_option('no_libpci_programmers')
+  message('Disabling ALL libpci-based programmers')
   config_atahpt = false
   config_atapromise = false
   config_atavia = false
@@ -128,14 +124,17 @@ endif
 # set defines for configured programmers
 if config_atahpt
   srcs += 'atahpt.c'
+  need_libpci = true
   cargs += '-DCONFIG_ATAHPT=1'
 endif
 if config_atapromise
   srcs += 'atapromise.c'
+  need_libpci = true
   cargs += '-DCONFIG_ATAPROMISE=1'
 endif
 if config_atavia
   srcs += 'atavia.c'
+  need_libpci = true
   cargs += '-DCONFIG_ATAVIA=1'
 endif
 if config_buspirate_spi
@@ -170,6 +169,7 @@ if config_jlink_spi
 endif
 if config_drkaiser
   srcs += 'drkaiser.c'
+  need_libpci = true
   cargs += '-DCONFIG_DRKAISER=1'
 endif
 if config_dummy
@@ -184,10 +184,12 @@ if config_ft2232_spi
 endif
 if config_gfxnvidia
   srcs += 'gfxnvidia.c'
+  need_libpci = true
   cargs += '-DCONFIG_GFXNVIDIA=1'
 endif
 if config_raiden_debug_spi
   srcs += 'raiden_debug_spi.c'
+  need_libpci = true
   cargs += '-DCONFIG_RAIDEN_DEBUG_SPI=1'
 endif
 if config_internal
@@ -206,6 +208,7 @@ if config_internal
     srcs += 'sb600spi.c'
     srcs += 'wbsio_spi.c'
   endif
+  need_libpci = true
   config_bitbang_spi = true
   cargs += '-DCONFIG_INTERNAL=1'
   if get_option('config_internal_dmi')
@@ -219,6 +222,7 @@ if config_ene_lpc
 endif
 if config_it8212
   srcs += 'it8212.c'
+  need_libpci = true
   cargs += '-DCONFIG_IT8212=1'
 endif
 if config_linux_mtd
@@ -239,32 +243,39 @@ if config_mstarddc_spi
 endif
 if config_nic3com
   srcs += 'nic3com.c'
+  need_libpci = true
   cargs += '-DCONFIG_NIC3COM=1'
 endif
 if config_nicintel
   srcs += 'nicintel.c'
+  need_libpci = true
   cargs += '-DCONFIG_NICINTEL=1'
 endif
 if config_nicintel_eeprom
   srcs += 'nicintel_eeprom.c'
+  need_libpci = true
   cargs += '-DCONFIG_NICINTEL_EEPROM=1'
 endif
 if config_nicintel_spi
   srcs += 'nicintel_spi.c'
+  need_libpci = true
   config_bitbang_spi = true
   cargs += '-DCONFIG_NICINTEL_SPI=1'
 endif
 if config_nicnatsemi
   srcs += 'nicnatsemi.c'
+  need_libpci = true
   cargs += '-DCONFIG_NICNATSEMI=1'
 endif
 if config_nicrealtek
   srcs += 'nicrealtek.c'
+  need_libpci = true
   cargs += '-DCONFIG_NICREALTEK=1'
 endif
 if config_ogp_spi
   config_bitbang_spi = true
   srcs += 'ogp_spi.c'
+  need_libpci = true
   cargs += '-DCONFIG_OGP_SPI=1'
 endif
 if config_pickit2_spi
@@ -286,10 +297,12 @@ if config_rayer_spi
 endif
 if config_satamv
   srcs += 'satamv.c'
+  need_libpci = true
   cargs += '-DCONFIG_SATAMV=1'
 endif
 if config_satasii
   srcs += 'satasii.c'
+  need_libpci = true
   cargs += '-DCONFIG_SATASII=1'
 endif
 if config_serprog
@@ -325,6 +338,14 @@ endif
 if host_machine.system() == 'linux'
   srcs += 'i2c_helper_linux.c'
   cargs += '-DCONFIG_I2C_SUPPORT=1'
+endif
+
+# some programmers require libpci
+if need_libpci
+  srcs += 'pcidev.c'
+  deps += dependency('libpci')
+  need_raw_access = true
+  cargs += '-DNEED_PCI=1'
 endif
 
 # some programmers require libusb

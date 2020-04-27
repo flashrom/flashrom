@@ -1,4 +1,4 @@
-option('pciutils', type : 'boolean', value : true, description : 'use pciutils')
+option('no_libpci_programmers', type : 'boolean', value : false, description : 'disable all programmers depending on libpci')
 option('no_libusb_programmers', type : 'boolean', value : false, description : 'disable all programmers depending on libusb')
 option('print_wiki', type : 'boolean', value : true,  description : 'Print Wiki')
 
