@@ -74,6 +74,7 @@ cargs = []
 deps = []
 srcs = []
 
+need_libftdi = false
 need_libpci = false
 need_libusb = false
 need_raw_access = false
@@ -88,6 +89,12 @@ if cc.has_function('strnlen')
 endif
 if cc.check_header('sys/utsname.h')
   add_project_arguments('-DHAVE_UTSNAME=1', language : 'c')
+endif
+
+if get_option('no_libftdi_programmers')
+  message('Disabling ALL libftdi-based programmers')
+  config_ft2232_spi = false
+  config_usbblaster_spi = false
 endif
 
 if get_option('no_libusb_programmers')
@@ -178,8 +185,8 @@ if config_dummy
 endif
 if config_ft2232_spi
   srcs += 'ft2232_spi.c'
+  need_libftdi = true
   cargs += '-DCONFIG_FT2232_SPI=1'
-  deps += dependency('libftdi1')
   cargs += '-DHAVE_FT232H=1'
 endif
 if config_gfxnvidia
@@ -312,8 +319,8 @@ if config_serprog
 endif
 if config_usbblaster_spi
   srcs += 'usbblaster_spi.c'
+  need_libftdi = true
   cargs += '-DCONFIG_USBBLASTER_SPI=1'
-  deps += dependency('libftdi1')
 endif
 if config_stlinkv3_spi
   srcs += 'stlinkv3_spi.c'
@@ -338,6 +345,11 @@ endif
 if host_machine.system() == 'linux'
   srcs += 'i2c_helper_linux.c'
   cargs += '-DCONFIG_I2C_SUPPORT=1'
+endif
+
+# some programmers require libftdi
+if need_libftdi
+  deps += dependency('libftdi1')
 endif
 
 # some programmers require libpci
