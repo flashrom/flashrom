@@ -298,6 +298,7 @@ endif
 if config_usbblaster_spi
   srcs += 'usbblaster_spi.c'
   cargs += '-DCONFIG_USBBLASTER_SPI=1'
+  deps += dependency('libftdi1')
 endif
 if config_stlinkv3_spi
   srcs += 'stlinkv3_spi.c'
