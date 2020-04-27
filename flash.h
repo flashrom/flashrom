@@ -54,8 +54,6 @@ typedef uintptr_t chipaddr;
 #define PRIxPTR_WIDTH ((int)(sizeof(uintptr_t)*2))
 
 int register_shutdown(int (*function) (void *data), void *data);
-#define CHIP_RESTORE_CALLBACK	int (*func) (struct flashrom_flashctx *flash, uint8_t status)
-int register_chip_restore(CHIP_RESTORE_CALLBACK, struct flashrom_flashctx *flash, uint8_t status);
 int shutdown_free(void *data);
 void *programmer_map_flash_region(const char *descr, uintptr_t phys_addr, size_t len);
 void programmer_unmap_flash_region(void *virt_addr, size_t len);
@@ -209,7 +207,6 @@ struct flashchip {
 		SPI_EDI = 1,
 	} spi_cmd_set;
 
-	int (*reset) (struct flashctx *flash);
 	int (*probe) (struct flashctx *flash);
 
 	/* Delay after "enter/exit ID mode" commands in microseconds.

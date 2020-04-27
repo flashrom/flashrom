@@ -35,9 +35,6 @@ int probe_spi_res1(struct flashctx *flash);
 int probe_spi_res2(struct flashctx *flash);
 int probe_spi_res3(struct flashctx *flash);
 int probe_spi_at25f(struct flashctx *flash);
-int probe_spi_big_spansion(struct flashctx *flash);
-int s25fs_software_reset(struct flashctx *flash);
-int spi_poll_wip(struct flashctx *const flash, const unsigned int poll_delay);
 int spi_write_enable(struct flashctx *flash);
 int spi_write_disable(struct flashctx *flash);
 int spi_block_erase_20(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
@@ -52,7 +49,6 @@ int spi_block_erase_c4(struct flashctx *flash, unsigned int addr, unsigned int b
 int spi_block_erase_c7(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 int spi_block_erase_d7(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 int spi_block_erase_d8(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
-int s25fs_block_erase_d8(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 int spi_block_erase_db(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 int spi_block_erase_dc(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 erasefunc_t *spi_get_erasefn_from_opcode(uint8_t opcode);
@@ -64,12 +60,10 @@ int spi_enter_4ba(struct flashctx *flash);
 int spi_exit_4ba(struct flashctx *flash);
 int spi_set_extended_address(struct flashctx *, uint8_t addr_high);
 
+
 /* spi25_statusreg.c */
 uint8_t spi_read_status_register(const struct flashctx *flash);
 int spi_write_status_register(const struct flashctx *flash, int status);
-int s25fs_read_cr(struct flashctx *const flash, uint32_t addr);
-int s25fs_write_cr(struct flashctx *const flash, uint32_t addr, uint8_t data);
-int s25fs_restore_cr3nv(struct flashctx *const flash, uint8_t cfg);
 void spi_prettyprint_status_register_bit(uint8_t status, int bit);
 int spi_prettyprint_status_register_plain(struct flashctx *flash);
 int spi_prettyprint_status_register_default_welwip(struct flashctx *flash);

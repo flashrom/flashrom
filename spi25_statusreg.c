@@ -108,89 +108,6 @@ uint8_t spi_read_status_register(const struct flashctx *flash)
 	return readarr[0];
 }
 
-static int spi_restore_status(struct flashctx *flash, uint8_t status)
-{
-	msg_cdbg("restoring chip status (0x%02x)\n", status);
-	return spi_write_status_register(flash, status);
-}
-
-/* 'Read Any Register' used on Spansion/Cypress S25FS chips */
-int s25fs_read_cr(struct flashctx *const flash, uint32_t addr)
-{
-	int result;
-	uint8_t cfg;
-	/* By default, 8 dummy cycles are necessary for variable-latency
-	   commands such as RDAR (see CR2NV[3:0]). */
-	unsigned char read_cr_cmd[] = {
-					CMD_RDAR,
-					(addr >> 16) & 0xff,
-					(addr >> 8) & 0xff,
-					(addr & 0xff),
-					0x00, 0x00, 0x00, 0x00,
-					0x00, 0x00, 0x00, 0x00,
-	};
-
-	result = spi_send_command(flash, sizeof(read_cr_cmd), 1, read_cr_cmd, &cfg);
-	if (result) {
-		msg_cerr("%s failed during command execution at address 0x%x\n",
-			__func__, addr);
-		return -1;
-	}
-
-	return cfg;
-}
-
-/* 'Write Any Register' used on Spansion/Cypress S25FS chips */
-int s25fs_write_cr(struct flashctx *const flash,
-			  uint32_t addr, uint8_t data)
-{
-	int result;
-	struct spi_command cmds[] = {
-	{
-		.writecnt	= JEDEC_WREN_OUTSIZE,
-		.writearr	= (const unsigned char[]){ JEDEC_WREN },
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}, {
-		.writecnt	= CMD_WRAR_LEN,
-		.writearr	= (const unsigned char[]){
-					CMD_WRAR,
-					(addr >> 16) & 0xff,
-					(addr >> 8) & 0xff,
-					(addr & 0xff),
-					data
-				},
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}, {
-		.writecnt	= 0,
-		.writearr	= NULL,
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}};
-
-	result = spi_send_multicommand(flash, cmds);
-	if (result) {
-		msg_cerr("%s failed during command execution at address 0x%x\n",
-			__func__, addr);
-		return -1;
-	}
-
-	programmer_delay(T_W);
-	return spi_poll_wip(flash, 1000 * 10);
-}
-
-/* Used on Spansion/Cypress S25FS chips */
-int s25fs_restore_cr3nv(struct flashctx *const flash, uint8_t cfg)
-{
-	int ret = 0;
-
-	msg_cdbg("Restoring CR3NV value to 0x%02x\n", cfg);
-	ret |= s25fs_write_cr(flash, CR3NV_ADDR, cfg);
-	ret |= s25fs_software_reset(flash);
-	return ret;
-}
-
 /* A generic block protection disable.
  * Tests if a protection is enabled with the block protection mask (bp_mask) and returns success otherwise.
  * Tests if the register bits are locked with the lock_mask (lock_mask).
@@ -221,9 +138,6 @@ static int spi_disable_blockprotect_generic(struct flashctx *flash, uint8_t bp_m
 		msg_cdbg2("Block protection is disabled.\n");
 		return 0;
 	}
-
-	/* restore status register content upon exit */
-	register_chip_restore(spi_restore_status, flash, status);
 
 	msg_cdbg("Some block protection in effect, disabling... ");
 	if ((status & lock_mask) != 0) {
