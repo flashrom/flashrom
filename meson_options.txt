@@ -1,5 +1,5 @@
 option('pciutils', type : 'boolean', value : true, description : 'use pciutils')
-option('usb', type : 'boolean', value : true, description : 'use libusb1')
+option('no_libusb_programmers', type : 'boolean', value : false, description : 'disable all programmers depending on libusb')
 option('print_wiki', type : 'boolean', value : true,  description : 'Print Wiki')
 
 option('config_atahpt', type : 'boolean', value : false, description : 'Highpoint (HPT) ATA/RAID controllers')

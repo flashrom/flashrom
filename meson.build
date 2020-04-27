@@ -74,6 +74,7 @@ cargs = []
 deps = []
 srcs = []
 
+need_libusb = false
 need_raw_access = false
 need_serial = false
 
@@ -88,12 +89,8 @@ if cc.check_header('sys/utsname.h')
   add_project_arguments('-DHAVE_UTSNAME=1', language : 'c')
 endif
 
-# some programmers require libusb
-if get_option('usb')
-  srcs += 'usbdev.c'
-  srcs += 'usb_device.c'
-  deps += dependency('libusb-1.0')
-else
+if get_option('no_libusb_programmers')
+  message('Disabling ALL libusb-based programmers')
   config_ch341a_spi = false
   config_dediprog = false
   config_digilent_spi = false
@@ -148,18 +145,22 @@ if config_buspirate_spi
 endif
 if config_ch341a_spi
   srcs += 'ch341a_spi.c'
+  need_libusb = true
   cargs += '-DCONFIG_CH341A_SPI=1'
 endif
 if config_dediprog
   srcs += 'dediprog.c'
+  need_libusb = true
   cargs += '-DCONFIG_DEDIPROG=1'
 endif
 if config_developerbox_spi
   srcs += 'developerbox_spi.c'
+  need_libusb = true
   cargs += '-DCONFIG_DEVELOPERBOX_SPI=1'
 endif
 if config_digilent_spi
   srcs += 'digilent_spi.c'
+  need_libusb = true
   cargs += '-DCONFIG_DIGILENT_SPI=1'
 endif
 if config_jlink_spi
@@ -268,6 +269,7 @@ if config_ogp_spi
 endif
 if config_pickit2_spi
   srcs += 'pickit2_spi.c'
+  need_libusb = true
   cargs += '-DCONFIG_PICKIT2_SPI=1'
 endif
 if config_pony_spi
@@ -302,6 +304,7 @@ if config_usbblaster_spi
 endif
 if config_stlinkv3_spi
   srcs += 'stlinkv3_spi.c'
+  need_libusb = true
   cargs += '-DCONFIG_STLINKV3_SPI=1'
 endif
 if config_lspcon_i2c_spi
@@ -322,6 +325,13 @@ endif
 if host_machine.system() == 'linux'
   srcs += 'i2c_helper_linux.c'
   cargs += '-DCONFIG_I2C_SUPPORT=1'
+endif
+
+# some programmers require libusb
+if need_libusb
+  srcs += 'usbdev.c'
+  srcs += 'usb_device.c'
+  deps += dependency('libusb-1.0')
 endif
 
 # raw memory, MSR or PCI port I/O access
