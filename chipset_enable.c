@@ -354,7 +354,7 @@ static int enable_flash_ich_bios_cntl_common(enum ich_chipset ich_generation, vo
 		msg_pwarn("Warning: BIOS region SMM protection is enabled!\n");
 
 	if (new != wanted)
-		msg_pwarn("Warning: Setting Bios Control at 0x%x from 0x%02x to 0x%02x failed.\n"
+		msg_pwarn("Warning: Setting BIOS Control at 0x%x from 0x%02x to 0x%02x failed.\n"
 			  "New value is 0x%02x.\n", bios_cntl, old, wanted, new);
 
 	/* Return an error if we could not set the write enable only. */
