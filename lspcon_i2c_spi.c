@@ -154,7 +154,7 @@ static int lspcon_i2c_spi_wait_command_done(int fd, unsigned int offset, int mas
 	} while (!ret && (val & mask) && ++tried < MAX_SPI_WAIT_RETRIES);
 
 	if (tried == MAX_SPI_WAIT_RETRIES) {
-		msg_perr("Error: Time out on sending command.\n");
+		msg_perr("%s: Time out on sending command.\n", __func__);
 		return -MAX_SPI_WAIT_RETRIES;
 	}
 
@@ -179,7 +179,7 @@ static int lspcon_i2c_spi_wait_rom_free(int fd)
 	} while (!ret && (val & SWSPICTL_ACCESS_TRIGGER) && ++tried < MAX_SPI_WAIT_RETRIES);
 
 	if (tried == MAX_SPI_WAIT_RETRIES) {
-		msg_perr("Error: Time out on waiting ROM free.\n");
+		msg_perr("%s: Time out on waiting ROM free.\n", __func__);
 		return -MAX_SPI_WAIT_RETRIES;
 	}
 
@@ -258,7 +258,8 @@ static int lspcon_i2c_spi_send_command(const struct flashctx *flash,
 {
 	unsigned int i;
 	if (writecnt > 16 || readcnt > 16 || writecnt == 0) {
-		msg_perr("Error: Invalid read/write count for send command.\n");
+		msg_perr("%s: Invalid read/write count for send command.\n",
+                         __func__);
 		return SPI_GENERIC_ERROR;
 	}
 
@@ -402,7 +403,8 @@ static int lspcon_i2c_spi_write_256(struct flashctx *flash, const uint8_t *buf,
 static int lspcon_i2c_spi_write_aai(struct flashctx *flash, const uint8_t *buf,
 				 unsigned int start, unsigned int len)
 {
-	msg_perr("Error: AAI write function is not supported.\n");
+	msg_perr("%s: AAI write function is not supported.\n",
+                 __func__);
 	return SPI_GENERIC_ERROR;
 }
 
@@ -441,17 +443,19 @@ static int get_bus(void)
 		errno = 0;
 		int bus = (int)strtol(bus_str, &bus_suffix, 10);
 		if (errno != 0 || bus_str == bus_suffix) {
-			msg_perr("Error: Could not convert 'bus'.\n");
+			msg_perr("%s: Could not convert 'bus'.\n", __func__);
 			goto get_bus_done;
 		}
 
 		if (bus < 0 || bus > 255) {
-			msg_perr("Error: Value for 'bus' is out of range(0-255).\n");
+			msg_perr("%s: Value for 'bus' is out of range(0-255).\n",
+                                 __func__);
 			goto get_bus_done;
 		}
 
 		if (strlen(bus_suffix) > 0) {
-			msg_perr("Error: Garbage following 'bus' value.\n");
+			msg_perr("%s: Garbage following 'bus' value.\n",
+                                 __func__);
 			goto get_bus_done;
 		}
 
@@ -459,7 +463,7 @@ static int get_bus(void)
 		ret = bus;
 		goto get_bus_done;
 	} else {
-		msg_perr("Error: Bus number not specified.\n");
+		msg_perr("%s: Bus number not specified.\n", __func__);
 	}
 get_bus_done:
 	if (bus_str)
