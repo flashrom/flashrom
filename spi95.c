@@ -33,12 +33,15 @@ int probe_spi_st95(struct flashctx *flash)
 	static const unsigned char cmd[ST_M95_RDID_OUTSIZE_MAX] = { ST_M95_RDID };
 	unsigned char readarr[ST_M95_RDID_INSIZE];
 	uint32_t id1, id2;
+	int ret;
 
 	uint32_t rdid_outsize = ST_M95_RDID_2BA_OUTSIZE; // 16 bit address
 	if (flash->chip->total_size * KiB > 64 * KiB)
 		rdid_outsize = ST_M95_RDID_3BA_OUTSIZE; // 24 bit address
 
-	spi_send_command(flash, rdid_outsize, sizeof(readarr), cmd, readarr);
+	ret = spi_send_command(flash, rdid_outsize, sizeof(readarr), cmd, readarr);
+	if (ret)
+		return ret;
 
 	id1 = readarr[0]; // manufacture id
 	id2 = (readarr[1] << 8) | readarr[2]; // SPI family code + model id
