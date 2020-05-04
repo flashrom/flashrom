@@ -31,6 +31,15 @@
 #define PAGE_SIZE		256
 #define MAX_SPI_WAIT_RETRIES	1000
 
+#define MCU_MODE 0x6F
+#define 	ENTER_ISP_MODE 0x80
+
+#define MCU_DATA_PORT 0x70
+
+#define MAP_PAGE_BYTE2 0x64
+#define MAP_PAGE_BYTE1 0x65
+#define MAP_PAGE_BYTE0 0x66
+
 //opcodes
 #define OPCODE_READ  3
 #define OPCODE_WRITE 2
@@ -104,8 +113,7 @@ static int realtek_mst_i2c_spi_wait_command_done(int fd, unsigned int offset, in
 
 static int realtek_mst_i2c_spi_enter_isp_mode(int fd)
 {
-	// 0xFF6F = 0x80;
-	int ret = realtek_mst_i2c_spi_write_register(fd, 0x6F, 0x80);  // enter isp mode
+	int ret = realtek_mst_i2c_spi_write_register(fd, MCU_MODE, ENTER_ISP_MODE);
 
 	// set internal osc divider register to default to speed up MCU
 	// 0x06A0 = 0x74
@@ -226,9 +234,9 @@ static int realtek_mst_i2c_spi_send_command(const struct flashctx *flash,
 static int realtek_mst_i2c_spi_map_page(int fd, uint8_t block_idx, uint8_t page_idx, uint8_t byte_idx)
 {
 	int ret = 0;
-	ret |= realtek_mst_i2c_spi_write_register(fd, 0x64, block_idx);
-	ret |= realtek_mst_i2c_spi_write_register(fd, 0x65, page_idx);
-	ret |= realtek_mst_i2c_spi_write_register(fd, 0x66, byte_idx);
+	ret |= realtek_mst_i2c_spi_write_register(fd, MAP_PAGE_BYTE2, block_idx);
+	ret |= realtek_mst_i2c_spi_write_register(fd, MAP_PAGE_BYTE1, page_idx);
+	ret |= realtek_mst_i2c_spi_write_register(fd, MAP_PAGE_BYTE0, byte_idx);
 
 	return ret ? SPI_GENERIC_ERROR : 0;
 }
@@ -267,7 +275,7 @@ static int realtek_mst_i2c_spi_read(struct flashctx *flash, uint8_t *buf,
 	 * Advance the read by a offset of one byte and continue.
 	 */
 	uint8_t dummy;
-	realtek_mst_i2c_spi_read_register(fd, 0x70, &dummy);
+	realtek_mst_i2c_spi_read_register(fd, MCU_DATA_PORT, &dummy);
 
 	for (i = 0; i < len; i += PAGE_SIZE) {
 		ret |= realtek_mst_i2c_spi_read_data(fd, REGISTER_ADDRESS,
