@@ -188,9 +188,13 @@ typedef struct {
 static bool retry_recovery(int error_code)
 {
 	if (error_code < 0x10000) {
-		/* Handle error codes returned from the device. */
-		if (USB_SPI_WRITE_COUNT_INVALID <= error_code &&
-			error_code <= USB_SPI_DISABLED) {
+		/*
+		 * Handle error codes returned from the device. USB_SPI_TIMEOUT,
+		 * USB_SPI_BUSY, and USB_SPI_WRITE_COUNT_INVALID have been observed
+		 * during transfer errors to the device and can be recovered.
+		 */
+		if (USB_SPI_READ_COUNT_INVALID <= error_code &&
+		    error_code <= USB_SPI_DISABLED) {
 			return false;
 		}
 	} else if (usb_device_is_libusb_error(error_code)) {
