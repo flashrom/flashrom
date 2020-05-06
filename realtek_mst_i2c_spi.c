@@ -33,6 +33,8 @@
 
 #define MCU_MODE 0x6F
 #define 	ENTER_ISP_MODE 0x80
+#define 	START_WRITE_XFER 0xA0
+#define 	WRITE_XFER_STATUS_MASK  0x20
 
 #define MCU_DATA_PORT 0x70
 
@@ -94,14 +96,14 @@ static int realtek_mst_i2c_spi_read_register(int fd, uint8_t reg, uint8_t *value
 	return ret ? SPI_GENERIC_ERROR : 0;
 }
 
-static int realtek_mst_i2c_spi_wait_command_done(int fd, unsigned int offset, int mask)
+static int realtek_mst_i2c_spi_wait_command_done(int fd, unsigned int offset, int mask, int target)
 {
 	uint8_t val;
 	int tried = 0;
 	int ret = 0;
 	do {
 		ret |= realtek_mst_i2c_spi_read_register(fd, offset, &val);
-	} while (!ret && (val & mask) && ++tried < MAX_SPI_WAIT_RETRIES);
+	} while (!ret && ((val & mask) != target) && ++tried < MAX_SPI_WAIT_RETRIES);
 
 	if (tried == MAX_SPI_WAIT_RETRIES) {
 		msg_perr("%s: Time out on sending command.\n", __func__);
@@ -122,6 +124,13 @@ static int realtek_mst_i2c_spi_enter_isp_mode(int fd)
 	ret |= realtek_mst_i2c_spi_write_register(fd, 0xF4, 0xA0);
 	ret |= realtek_mst_i2c_spi_write_register(fd, 0xF5, 0x74);
 
+	return ret;
+}
+
+static int realtek_mst_i2c_execute_write(int fd)
+{
+	int ret = realtek_mst_i2c_spi_write_register(fd, MCU_MODE, START_WRITE_XFER);
+	ret |= realtek_mst_i2c_spi_wait_command_done(fd, MCU_MODE, WRITE_XFER_STATUS_MASK, 0);
 	return ret;
 }
 
@@ -252,7 +261,7 @@ static int realtek_mst_i2c_spi_send_command(const struct flashctx *flash,
 	if (ret)
 		return ret;
 
-	ret = realtek_mst_i2c_spi_wait_command_done(fd, 0x60, 0x01);
+	ret = realtek_mst_i2c_spi_wait_command_done(fd, 0x60, 0x01, 0);
 	if (ret)
 		return ret;
 
@@ -270,6 +279,21 @@ static int realtek_mst_i2c_spi_map_page(int fd, uint8_t block_idx, uint8_t page_
 	ret |= realtek_mst_i2c_spi_write_register(fd, MAP_PAGE_BYTE0, byte_idx);
 
 	return ret ? SPI_GENERIC_ERROR : 0;
+}
+
+static int realtek_mst_i2c_spi_write_page(int fd, uint8_t reg, const uint8_t *buf, unsigned int len)
+{
+	/**
+	 * Using static buffer with maximum possible size,
+	 * extra byte is needed for prefixing the data port register at index 0.
+	 */
+	uint8_t wbuf[PAGE_SIZE + 1] = { MCU_DATA_PORT };
+	if (len > PAGE_SIZE)
+		return SPI_GENERIC_ERROR;
+
+	memcpy(&wbuf[1], buf, len);
+
+	return realtek_mst_i2c_spi_write_data(fd, REGISTER_ADDRESS, wbuf, len + 1);
 }
 
 static int realtek_mst_i2c_spi_read(struct flashctx *flash, uint8_t *buf,
@@ -297,7 +321,7 @@ static int realtek_mst_i2c_spi_read(struct flashctx *flash, uint8_t *buf,
 	if (ret)
 		return ret;
 
-	ret = realtek_mst_i2c_spi_wait_command_done(fd, 0x60, 0x01);
+	ret = realtek_mst_i2c_spi_wait_command_done(fd, 0x60, 0x01, 0);
 	if (ret)
 		return ret;
 
@@ -335,30 +359,34 @@ static int realtek_mst_i2c_spi_write_256(struct flashctx *flash, const uint8_t *
 	if (ret)
 		return ret;
 
-	start--;
-	ret |= realtek_mst_i2c_spi_write_register(fd, 0x60, 0x46); // **
-	ret |= realtek_mst_i2c_spi_write_register(fd, 0x61, OPCODE_WRITE);
-	uint8_t block_idx = start >> 16;
-	uint8_t page_idx  = start >>  8;
-	uint8_t byte_idx  = start;
-	ret |= realtek_mst_i2c_spi_map_page(fd, block_idx, page_idx, byte_idx);
-	ret |= realtek_mst_i2c_spi_write_register(fd, 0x6a, 0x03);
-	ret |= realtek_mst_i2c_spi_write_register(fd, 0x60, 0x47); // **
-	if (ret)
-		goto fail;
-
-	ret = realtek_mst_i2c_spi_wait_command_done(fd, 0x60, 0x01);
-	if (ret)
-		goto fail;
+	ret |= realtek_mst_i2c_spi_write_register(fd, 0x6D, 0x02); /* write opcode */
+	ret |= realtek_mst_i2c_spi_write_register(fd, 0x71, (PAGE_SIZE - 1)); /* fit len=256 */
 
 	for (i = 0; i < len; i += PAGE_SIZE) {
-		ret |= realtek_mst_i2c_spi_write_data(fd, REGISTER_ADDRESS,
-				(uint8_t *)buf + i, min(len - i, PAGE_SIZE));
+		uint16_t page_len = min(len - i, PAGE_SIZE);
+		if (len - i < PAGE_SIZE)
+			ret |= realtek_mst_i2c_spi_write_register(fd, 0x71, page_len-1);
+		uint8_t block_idx = (start + i) >> 16;
+		uint8_t page_idx  = (start + i) >>  8;
+		ret |= realtek_mst_i2c_spi_map_page(fd, block_idx, page_idx, 0);
+		if (ret)
+			break;
+
+		/* Wait for empty buffer. */
+		ret |= realtek_mst_i2c_spi_wait_command_done(fd, MCU_MODE, 0x10, 0x10);
+		if (ret)
+			break;
+
+		ret |= realtek_mst_i2c_spi_write_page(fd, MCU_DATA_PORT,
+				buf + i, page_len);
+		if (ret)
+			break;
+		ret |= realtek_mst_i2c_execute_write(fd);
 		if (ret)
 			break;
 	}
 
-fail:
+
 	/* TODO: re-enable the write protection? */
 
 	return ret;
