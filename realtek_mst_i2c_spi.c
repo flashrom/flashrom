@@ -196,21 +196,55 @@ static int realtek_mst_i2c_spi_send_command(const struct flashctx *flash,
 	int ret = 0;
 
 	if (writecnt > 4 || readcnt > 3 || writecnt == 0) {
-		//msg_perr("%s: Invalid read/write count for send command.\n", __func__);
 		return SPI_GENERIC_ERROR;
 	}
-	//printf("%s: writearr[0]=0x%x\n", __func__, writearr[0]);
 
 	int fd = get_fd_from_context(flash);
 	if (fd < 0)
 		return SPI_GENERIC_ERROR;
 
-	/* First byte of writearr should be the command value, followed by the value to write. */
-	// 0xFF60 = cmd;
+	/* First byte of writearr should be the spi opcode value, followed by the value to write. */
 	writecnt--;
-	uint8_t ctrl_reg_val = (writecnt << 3) | (readcnt << 1) | (2 << 5);
+
+	/**
+	 * Before dispatching a SPI opcode the MCU register 0x60 requires
+	 * the following configuration byte set:
+	 *
+	 *  BIT0      - start [0] , end [1].
+	 *  BITS[1-4] - counts.
+	 *  BITS[5-7] - opcode type.
+	 *
+	 * | bit7 | bit6 | bit5 |
+	 * +------+------+------+
+	 * |  0   |  1   |  0   | ~ JEDEC_RDID,REMS,READ
+	 * |  0   |  1   |  1   | ~ JEDEC_WRSR
+	 * |  1   |  0   |  1   | ~ JEDEC_.. erasures.
+	 */
+	uint8_t ctrl_reg_val = (writecnt << 3) | (readcnt << 1);
+	switch (writearr[0]) {
+	/* WREN isn't a supported somehow? ignore it. */
+	case JEDEC_WREN: return 0;
+	/* WRSR requires BIT6 && BIT5 set. */
+	case JEDEC_WRSR:
+		ctrl_reg_val |= (1 << 5);
+		ctrl_reg_val |= (2 << 5);
+		break;
+	/* Erasures require BIT7 && BIT5 set. */
+	case JEDEC_CE_60:
+	case JEDEC_CE_C7:
+	case JEDEC_BE_52:
+	case JEDEC_BE_D8:
+	case JEDEC_BE_D7:
+	case JEDEC_SE:
+		ctrl_reg_val |= (1 << 5);
+		ctrl_reg_val |= (4 << 5);
+		break;
+	default:
+		/* Otherwise things like RDID,REMS,READ require BIT6 */
+		ctrl_reg_val |= (2 << 5);
+	}
 	ret |= realtek_mst_i2c_spi_write_register(fd, 0x60, ctrl_reg_val);
-	ret |= realtek_mst_i2c_spi_write_register(fd, 0x61, writearr[0]);
+	ret |= realtek_mst_i2c_spi_write_register(fd, 0x61, writearr[0]); /* opcode */
 
 	for (i = 0; i < writecnt; ++i)
 		ret |= realtek_mst_i2c_spi_write_register(fd, 0x64 + i, writearr[i + 1]);
@@ -224,9 +258,6 @@ static int realtek_mst_i2c_spi_send_command(const struct flashctx *flash,
 
 	for (i = 0; i < readcnt; ++i)
 		ret |= realtek_mst_i2c_spi_read_register(fd, 0x67 + i, &readarr[i]);
-
-	//for (i = 0; i< readcnt; i++)
-	//	printf("DEBUG: readarr[%d]=0x%02x\n", i, readarr[i]);
 
 	return ret;
 }
