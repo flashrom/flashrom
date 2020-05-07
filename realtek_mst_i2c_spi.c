@@ -96,21 +96,22 @@ static int realtek_mst_i2c_spi_read_register(int fd, uint8_t reg, uint8_t *value
 	return ret ? SPI_GENERIC_ERROR : 0;
 }
 
-static int realtek_mst_i2c_spi_wait_command_done(int fd, unsigned int offset, int mask, int target)
+static int realtek_mst_i2c_spi_wait_command_done(int fd, unsigned int offset, int mask,
+		int target, int multiplier)
 {
 	uint8_t val;
 	int tried = 0;
 	int ret = 0;
 	do {
 		ret |= realtek_mst_i2c_spi_read_register(fd, offset, &val);
-	} while (!ret && ((val & mask) != target) && ++tried < MAX_SPI_WAIT_RETRIES);
+	} while (!ret && ((val & mask) != target) && ++tried < (MAX_SPI_WAIT_RETRIES*multiplier));
 
 	if (tried == MAX_SPI_WAIT_RETRIES) {
 		msg_perr("%s: Time out on sending command.\n", __func__);
 		return -MAX_SPI_WAIT_RETRIES;
 	}
 
-	return (val & mask) ? SPI_GENERIC_ERROR : ret;
+	return (val & mask) != target ? SPI_GENERIC_ERROR : ret;
 }
 
 static int realtek_mst_i2c_spi_enter_isp_mode(int fd)
@@ -130,7 +131,7 @@ static int realtek_mst_i2c_spi_enter_isp_mode(int fd)
 static int realtek_mst_i2c_execute_write(int fd)
 {
 	int ret = realtek_mst_i2c_spi_write_register(fd, MCU_MODE, START_WRITE_XFER);
-	ret |= realtek_mst_i2c_spi_wait_command_done(fd, MCU_MODE, WRITE_XFER_STATUS_MASK, 0);
+	ret |= realtek_mst_i2c_spi_wait_command_done(fd, MCU_MODE, WRITE_XFER_STATUS_MASK, 0, 1);
 	return ret;
 }
 
@@ -202,6 +203,7 @@ static int realtek_mst_i2c_spi_send_command(const struct flashctx *flash,
 				unsigned char *readarr)
 {
 	unsigned i;
+	int max_timeout_mul = 1;
 	int ret = 0;
 
 	if (writecnt > 4 || readcnt > 3 || writecnt == 0) {
@@ -239,8 +241,10 @@ static int realtek_mst_i2c_spi_send_command(const struct flashctx *flash,
 		ctrl_reg_val |= (2 << 5);
 		break;
 	/* Erasures require BIT7 && BIT5 set. */
-	case JEDEC_CE_60:
 	case JEDEC_CE_C7:
+		max_timeout_mul *= 20; /* chip erasures take much longer! */
+	/* FALLTHRU */
+	case JEDEC_CE_60:
 	case JEDEC_BE_52:
 	case JEDEC_BE_D8:
 	case JEDEC_BE_D7:
@@ -261,7 +265,7 @@ static int realtek_mst_i2c_spi_send_command(const struct flashctx *flash,
 	if (ret)
 		return ret;
 
-	ret = realtek_mst_i2c_spi_wait_command_done(fd, 0x60, 0x01, 0);
+	ret = realtek_mst_i2c_spi_wait_command_done(fd, 0x60, 0x01, 0, max_timeout_mul);
 	if (ret)
 		return ret;
 
@@ -321,7 +325,7 @@ static int realtek_mst_i2c_spi_read(struct flashctx *flash, uint8_t *buf,
 	if (ret)
 		return ret;
 
-	ret = realtek_mst_i2c_spi_wait_command_done(fd, 0x60, 0x01, 0);
+	ret = realtek_mst_i2c_spi_wait_command_done(fd, 0x60, 0x01, 0, 1);
 	if (ret)
 		return ret;
 
@@ -373,7 +377,7 @@ static int realtek_mst_i2c_spi_write_256(struct flashctx *flash, const uint8_t *
 			break;
 
 		/* Wait for empty buffer. */
-		ret |= realtek_mst_i2c_spi_wait_command_done(fd, MCU_MODE, 0x10, 0x10);
+		ret |= realtek_mst_i2c_spi_wait_command_done(fd, MCU_MODE, 0x10, 0x10, 1);
 		if (ret)
 			break;
 
