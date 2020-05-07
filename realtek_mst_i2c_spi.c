@@ -145,33 +145,6 @@ static int realtek_mst_i2c_spi_reset_mpu(int fd)
 	return ret;
 }
 
-#if 0
-static int realtek_mst_i2c_spi_set_defaults(int fd)
-{
-	// 0xFF1B = 0x02;
-	int ret = realtek_mst_i2c_spi_write_register(fd, 0x1B, 0x02);
-	ret = realtek_mst_i2c_spi_write_register(fd, 0x1C, 0x30);
-	ret = realtek_mst_i2c_spi_write_register(fd, 0x1D, 0x1C);
-	ret = realtek_mst_i2c_spi_write_register(fd, 0x1E, 0x02);
-	ret = realtek_mst_i2c_spi_write_register(fd, 0x1F, 0x00);
-
-	ret = realtek_mst_i2c_spi_write_register(fd, 0x20, 0x1C);
-	ret = realtek_mst_i2c_spi_write_register(fd, 0x2C, 0x02);
-	ret = realtek_mst_i2c_spi_write_register(fd, 0x2D, 0x00);
-	ret = realtek_mst_i2c_spi_write_register(fd, 0x2E, 0x1C);
-
-	ret = realtek_mst_i2c_spi_write_register(fd, 0x62, 0x06);
-	ret = realtek_mst_i2c_spi_write_register(fd, 0x6A, 0x03);
-	ret = realtek_mst_i2c_spi_write_register(fd, 0x6B, 0x0B);
-	ret = realtek_mst_i2c_spi_write_register(fd, 0x6C, 0x00);
-
-	ret = realtek_mst_i2c_spi_write_register(fd, 0xED, 0x88);
-	ret = realtek_mst_i2c_spi_write_register(fd, 0xEE, 0x04);
-
-	return ret;
-}
-#endif
-
 static int realtek_mst_i2c_spi_disable_protection(int fd)
 {
 	int ret = 0;
@@ -485,12 +458,6 @@ int realtek_mst_i2c_spi_init(void)
 	ret |= realtek_mst_i2c_spi_enter_isp_mode(fd);
 	if (ret)
 		return ret;
-// XXX: maybe make into a mode:defaults cli param?
-#if 0
-	ret |= realtek_mst_i2c_spi_set_defaults(fd);
-	if (ret)
-		return ret;
-#endif
 
 	struct realtek_mst_i2c_spi_data *data = calloc(1, sizeof(struct realtek_mst_i2c_spi_data));
 	if (!data) {
