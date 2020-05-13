@@ -875,6 +875,52 @@ static int board_msi_kt4v(void)
 
 /*
  * Suited for:
+ *  - ASUS P3B-F
+ *
+ * We are talking to a proprietary device on SMBus: the AS99127F which does
+ * much more than the Winbond W83781D it tries to be compatible with.
+ */
+static int board_asus_p3b_f(void)
+{
+	/*
+	 * Find where the SMBus host is. ASUS sets it to 0xE800; coreboot sets it to 0x0F00.
+	 */
+	struct pci_dev *dev;
+	uint16_t smbba;
+	uint8_t b;
+
+	dev = pci_dev_find(0x8086, 0x7113); /* Intel PIIX4, PM/SMBus function. */
+	if (!dev) {
+		msg_perr("\nERROR: Intel PIIX4 PM not found.\n");
+		return -1;
+	}
+
+	smbba = pci_read_word(dev, 0x90) & 0xfff0;
+
+	OUTB(0xFF, smbba); /* Clear previous SMBus status. */
+	OUTB(0x48 << 1, smbba + 4);
+	OUTB(0x80, smbba + 3);
+	OUTB(0x80, smbba + 5);
+	OUTB(0x48, smbba + 2);
+
+	/* Wait until SMBus transaction is complete. */
+	b = 0x1;
+	while (b & 0x01) {
+		b = INB(0x80);
+		b = INB(smbba);
+	}
+
+	/* Write failed if any status is set. */
+	if (b & 0x1e) {
+		msg_perr("Failed to write to device.\n");
+		return -1;
+	}
+
+	return 0;
+}
+
+/*
+ * Suited for:
  *  - ASUS P5A
  *
  * This is rather nasty code, but there's no way to do this cleanly.
@@ -2354,6 +2400,7 @@ const struct board_match board_matches[] = {
 	{0x8086, 0x24cc,      0,      0,  0x8086, 0x24c3, 0x1043, 0x1869, "^M6Ne$",     NULL, NULL,           P3, "ASUS",        "M6Ne",                  0,   NT, intel_ich_gpio43_raise},
 	{0x8086, 0x7180,      0,      0,  0x8086, 0x7110,      0,      0, "^OPLX-M$",   NULL, NULL,           P3, "ASUS",        "OPLX-M",                0,   NT, intel_piix4_gpo18_lower},
 	{0x8086, 0x7190,      0,      0,  0x8086, 0x7110,      0,      0, "^P2B-N$",    NULL, NULL,           P3, "ASUS",        "P2B-N",                 0,   OK, intel_piix4_gpo18_lower},
+	{0x8086, 0x7190, 0x1043, 0x8024,  0x8086, 0x7110,      0,      0, "P3B-F",      "asus", "p3b-f",      P3, "ASUS",        "P3B-F",                 0,   OK, board_asus_p3b_f},
 	{0x8086, 0x1A30, 0x1043, 0x8025,  0x8086, 0x244B, 0x104D, 0x80F0, NULL,         NULL, NULL,           P3, "ASUS",        "P4B266-LM",             0,   OK, intel_ich_gpio21_raise},
 	{0x8086, 0x1a30, 0x1043, 0x8070,  0x8086, 0x244b, 0x1043, 0x8028, NULL,         NULL, NULL,           P3, "ASUS",        "P4B266",                0,   OK, intel_ich_gpio22_raise},
 	{0x8086, 0x1A30, 0x1043, 0x8088,  0x8086, 0x24C3, 0x1043, 0x8089, NULL,         NULL, NULL,           P3, "ASUS",        "P4B533-E",              0,   NT, intel_ich_gpio22_raise},
