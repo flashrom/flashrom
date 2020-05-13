@@ -667,7 +667,7 @@ const struct board_info boards_known[] = {
 	B("ASUS",	"P2B-N",		OK, NULL, NULL),
 	B("ASUS",	"P2E-M",		OK, NULL, NULL),
 	B("ASUS",	"P2L97-S",		OK, NULL, NULL),
-	B("ASUS",	"P3B-F",		BAD, NULL, "No public report found. Owned by Uwe Hermann <uwe@hermann-uwe.de>. May work now."),
+	B("ASUS",	"P3B-F",		OK, NULL, "Owned by Uwe Hermann <uwe@hermann-uwe.de>."),
 	B("ASUS",	"P4B266",		OK, NULL, NULL),
 	B("ASUS",	"P4B266-LM",		OK, "http://esupport.sony.com/US/perl/swu-list.pl?mdl=PCVRX650", NULL),
 	B("ASUS",	"P4B533-E",		OK, NULL, NULL),
