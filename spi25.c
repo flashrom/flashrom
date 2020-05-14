@@ -93,19 +93,9 @@ int spi_write_disable(struct flashctx *flash)
 	return spi_send_command(flash, sizeof(cmd), 0, cmd, NULL);
 }
 
-static int probe_spi_rdid_generic(struct flashctx *flash, int bytes)
+static void rdid_get_ids(unsigned char *readarr, int bytes,
+		uint32_t *id1, uint32_t *id2)
 {
-	const struct flashchip *chip = flash->chip;
-	unsigned char readarr[4];
-	uint32_t id1;
-	uint32_t id2;
-
-	const int ret = spi_rdid(flash, readarr, bytes);
-	if (ret == SPI_INVALID_LENGTH)
-		msg_cinfo("%d byte RDID not supported on this SPI controller\n", bytes);
-	if (ret)
-		return 0;
-
 	if (!oddparity(readarr[0]))
 		msg_cdbg("RDID byte 0 parity violation. ");
 
@@ -115,17 +105,20 @@ static int probe_spi_rdid_generic(struct flashctx *flash, int bytes)
 	if (readarr[0] == 0x7f) {
 		if (!oddparity(readarr[1]))
 			msg_cdbg("RDID byte 1 parity violation. ");
-		id1 = (readarr[0] << 8) | readarr[1];
-		id2 = readarr[2];
+		*id1 = (readarr[0] << 8) | readarr[1];
+		*id2 = readarr[2];
 		if (bytes > 3) {
-			id2 <<= 8;
-			id2 |= readarr[3];
+			*id2 <<= 8;
+			*id2 |= readarr[3];
 		}
 	} else {
-		id1 = readarr[0];
-		id2 = (readarr[1] << 8) | readarr[2];
+		*id1 = readarr[0];
+		*id2 = (readarr[1] << 8) | readarr[2];
 	}
+}
 
+static int compare_id(const struct flashchip *chip, uint32_t id1, uint32_t id2)
+{
 	msg_cdbg("%s: id1 0x%02x, id2 0x%02x\n", __func__, id1, id2);
 
 	if (id1 == chip->manufacture_id && id2 == chip->model_id)
@@ -140,6 +133,24 @@ static int probe_spi_rdid_generic(struct flashctx *flash, int bytes)
 		return 1;
 
 	return 0;
+}
+
+static int probe_spi_rdid_generic(struct flashctx *flash, int bytes)
+{
+	const struct flashchip *chip = flash->chip;
+	unsigned char readarr[4];
+	uint32_t id1;
+	uint32_t id2;
+
+	const int ret = spi_rdid(flash, readarr, bytes);
+	if (ret == SPI_INVALID_LENGTH)
+		msg_cinfo("%d byte RDID not supported on this SPI controller\n", bytes);
+	if (ret)
+		return 0;
+
+	rdid_get_ids(readarr, bytes, &id1, &id2);
+
+	return compare_id(chip, id1, id2);
 }
 
 int probe_spi_rdid(struct flashctx *flash)
@@ -165,20 +176,7 @@ int probe_spi_rems(struct flashctx *flash)
 	id1 = readarr[0];
 	id2 = readarr[1];
 
-	msg_cdbg("%s: id1 0x%x, id2 0x%x\n", __func__, id1, id2);
-
-	if (id1 == chip->manufacture_id && id2 == chip->model_id)
-		return 1;
-
-	/* Test if this is a pure vendor match. */
-	if (id1 == chip->manufacture_id && GENERIC_DEVICE_ID == chip->model_id)
-		return 1;
-
-	/* Test if there is any vendor ID. */
-	if (GENERIC_MANUF_ID == chip->manufacture_id && id1 != 0xff && id1 != 0x00)
-		return 1;
-
-	return 0;
+	return compare_id(chip, id1, id2);
 }
 
 int probe_spi_res1(struct flashctx *flash)
