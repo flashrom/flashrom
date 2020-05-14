@@ -192,4 +192,6 @@
 #define SPI_FLASHROM_BUG	-5
 #define SPI_PROGRAMMER_ERROR	-6
 
+void clear_spi_id_cache(void);
+
 #endif		/* !__SPI_H__ */
