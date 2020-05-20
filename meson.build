@@ -424,3 +424,23 @@ executable(
 )
 
 subdir('util')
+
+# unit-test framework
+cmocka_dep = dependency(
+  'cmocka',
+  fallback: ['cmocka', 'cmocka_dep']
+)
+flashrom_test_dep = declare_dependency(
+  include_directories : include_directories('.'),
+  sources : [
+    srcs,
+    'cli_common.c',
+    'cli_output.c',
+    'flashrom.c',
+  ],
+  dependencies : [
+    deps,
+  ],
+)
+
+subdir('tests')
