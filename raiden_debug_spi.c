@@ -123,7 +123,11 @@ const struct dev_entry devs_raiden[] = {
 
 #define GOOGLE_VID                  (0x18D1)
 #define GOOGLE_RAIDEN_SPI_SUBCLASS  (0x51)
-#define GOOGLE_RAIDEN_SPI_PROTOCOL  (0x01)
+
+enum {
+	GOOGLE_RAIDEN_SPI_PROTOCOL_V1 = 0x01,
+	GOOGLE_RAIDEN_SPI_PROTOCOL_V2 = 0x02,
+};
 
 enum usb_spi_error {
 	USB_SPI_SUCCESS             = 0x0000,
@@ -144,7 +148,7 @@ enum raiden_debug_spi_request {
 
 #define PACKET_HEADER_SIZE      (2)
 #define MAX_PACKET_SIZE         (64)
-#define PAYLOAD_SIZE            (MAX_PACKET_SIZE - PACKET_HEADER_SIZE)
+#define PAYLOAD_SIZE_V1         (MAX_PACKET_SIZE - PACKET_HEADER_SIZE)
 
 /*
  * Servo Micro has an error where it is capable of acknowledging USB packets
@@ -171,13 +175,13 @@ typedef struct {
 	int8_t write_count;
 	/* -1 Indicates readback all on halfduplex compliant devices. */
 	int8_t read_count;
-	uint8_t data[PAYLOAD_SIZE];
-} __attribute__((packed)) usb_spi_command_t;
+	uint8_t data[PAYLOAD_SIZE_V1];
+} __attribute__((packed)) usb_spi_command_v1_t;
 
 typedef struct {
 	uint16_t status_code;
-	uint8_t data[PAYLOAD_SIZE];
-} __attribute__((packed)) usb_spi_response_t;
+	uint8_t data[PAYLOAD_SIZE_V1];
+} __attribute__((packed)) usb_spi_response_v1_t;
 
 /*
  * This function will return true when an error code can potentially recover
@@ -221,15 +225,15 @@ static int write_command(const struct flashctx *flash,
 
 	int transferred;
 	int ret;
-	usb_spi_command_t command_packet;
+	usb_spi_command_v1_t command_packet;
 	const struct raiden_debug_spi_data * ctx_data = get_raiden_data_from_context(flash);
 
-	if (write_count > PAYLOAD_SIZE) {
+	if (write_count > PAYLOAD_SIZE_V1) {
 		msg_perr("Raiden: Invalid write_count of %d\n", write_count);
 		return SPI_INVALID_LENGTH;
 	}
 
-	if (read_count > PAYLOAD_SIZE) {
+	if (read_count > PAYLOAD_SIZE_V1) {
 		msg_perr("Raiden: Invalid read_count of %d\n", read_count);
 		return SPI_INVALID_LENGTH;
 	}
@@ -270,7 +274,7 @@ static int read_response(const struct flashctx *flash,
 {
 	int transferred;
 	int ret;
-	usb_spi_response_t response_packet;
+	usb_spi_response_v1_t response_packet;
 	const struct raiden_debug_spi_data * ctx_data = get_raiden_data_from_context(flash);
 
 	ret = LIBUSB(libusb_bulk_transfer(ctx_data->dev->handle,
@@ -362,17 +366,17 @@ static int send_command(const struct flashctx *flash,
  * The largest command that flashrom generates is the byte program command, so
  * we use that command header maximum size here.
  */
-#define MAX_DATA_SIZE   (PAYLOAD_SIZE - JEDEC_BYTE_PROGRAM_OUTSIZE)
+#define MAX_DATA_SIZE   (PAYLOAD_SIZE_V1 - JEDEC_BYTE_PROGRAM_OUTSIZE)
 
 static struct spi_master spi_master_raiden_debug = {
-	.features	= SPI_MASTER_4BA,
-	.max_data_read	= MAX_DATA_SIZE,
-	.max_data_write	= MAX_DATA_SIZE,
-	.command	= send_command,
-	.multicommand	= default_spi_send_multicommand,
-	.read		= default_spi_read,
-	.write_256	= default_spi_write_256,
-	.write_aai	= default_spi_write_aai,
+	.features       = SPI_MASTER_4BA,
+	.max_data_read  = MAX_DATA_SIZE,
+	.max_data_write = MAX_DATA_SIZE,
+	.command        = send_command,
+	.multicommand   = default_spi_send_multicommand,
+	.read           = default_spi_read,
+	.write_256      = default_spi_write_256,
+	.write_aai      = default_spi_write_aai,
 };
 
 static int match_endpoint(struct libusb_endpoint_descriptor const *descriptor,
@@ -494,7 +498,7 @@ int raiden_debug_spi_init(void)
 	usb_match_value_default(&match.vid,      GOOGLE_VID);
 	usb_match_value_default(&match.class,    LIBUSB_CLASS_VENDOR_SPEC);
 	usb_match_value_default(&match.subclass, GOOGLE_RAIDEN_SPI_SUBCLASS);
-	usb_match_value_default(&match.protocol, GOOGLE_RAIDEN_SPI_PROTOCOL);
+	usb_match_value_default(&match.protocol, GOOGLE_RAIDEN_SPI_PROTOCOL_V1);
 
 	ret = LIBUSB(libusb_init(NULL));
 	if (ret != 0) {
