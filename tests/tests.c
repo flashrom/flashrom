@@ -21,5 +21,18 @@ int main(void)
 {
 	int ret = 0;
 
+	const struct CMUnitTest spi25_tests[] = {
+		cmocka_unit_test(spi_write_enable_test_success),
+		cmocka_unit_test(spi_write_disable_test_success),
+		cmocka_unit_test(probe_spi_rdid_test_success),
+		cmocka_unit_test(probe_spi_rdid4_test_success),
+		cmocka_unit_test(probe_spi_rems_test_success),
+		cmocka_unit_test(probe_spi_res1_test_success),
+		cmocka_unit_test(probe_spi_res2_test_success),
+		cmocka_unit_test(probe_spi_res3_test_success),
+		cmocka_unit_test(probe_spi_at25f_test_success),
+	};
+	ret |= cmocka_run_group_tests_name("spi25.c tests", spi25_tests, NULL, NULL);
+
 	return ret;
 }

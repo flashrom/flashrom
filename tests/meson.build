@@ -2,11 +2,13 @@ root_includes = include_directories('../subprojects')
 
 srcs = [
   'tests.c',
+  'spi25.c',
 ]
 
 mocks = [
   '-Wl,--wrap=physunmap',
   '-Wl,--wrap=physmap',
+  '-Wl,--wrap=spi_send_command',
   '-Wl,--gc-sections',
 ]
 
