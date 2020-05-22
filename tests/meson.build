@@ -2,6 +2,7 @@ root_includes = include_directories('../subprojects')
 
 srcs = [
   'tests.c',
+  'helpers.c',
   'flashrom.c',
   'spi25.c',
 ]
