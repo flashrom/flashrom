@@ -47,6 +47,7 @@ int main(void)
 		cmocka_unit_test(probe_spi_res2_test_success),
 		cmocka_unit_test(probe_spi_res3_test_success),
 		cmocka_unit_test(probe_spi_at25f_test_success),
+		cmocka_unit_test(probe_spi_st95_test_success), /* spi95.c */
 	};
 	ret |= cmocka_run_group_tests_name("spi25.c tests", spi25_tests, NULL, NULL);
 
