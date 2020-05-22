@@ -21,6 +21,17 @@ int main(void)
 {
 	int ret = 0;
 
+	const struct CMUnitTest helpers_tests[] = {
+		cmocka_unit_test(address_to_bits_test_success),
+		cmocka_unit_test(bitcount_test_success),
+		cmocka_unit_test(minmax_test_success),
+		cmocka_unit_test(strcat_realloc_test_success),
+		cmocka_unit_test(tolower_string_test_success),
+		cmocka_unit_test(reverse_byte_test_success),
+		cmocka_unit_test(reverse_bytes_test_success),
+	};
+	ret |= cmocka_run_group_tests_name("helpers.c tests", helpers_tests, NULL, NULL);
+
 	const struct CMUnitTest flashrom_tests[] = {
 		cmocka_unit_test(flashbuses_to_text_test_success),
 	};

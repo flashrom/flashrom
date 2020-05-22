@@ -1,6 +1,15 @@
 #ifndef TESTS_H
 #define TESTS_H
 
+/* helpers.c */
+void address_to_bits_test_success(void **state);
+void bitcount_test_success(void **state);
+void minmax_test_success(void **state);
+void strcat_realloc_test_success(void **state);
+void tolower_string_test_success(void **state);
+void reverse_byte_test_success(void **state);
+void reverse_bytes_test_success(void **state);
+
 /* flashrom.c */
 void flashbuses_to_text_test_success(void **state);
 
