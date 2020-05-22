@@ -21,6 +21,11 @@ int main(void)
 {
 	int ret = 0;
 
+	const struct CMUnitTest flashrom_tests[] = {
+		cmocka_unit_test(flashbuses_to_text_test_success),
+	};
+	ret |= cmocka_run_group_tests_name("flashrom.c tests", flashrom_tests, NULL, NULL);
+
 	const struct CMUnitTest spi25_tests[] = {
 		cmocka_unit_test(spi_write_enable_test_success),
 		cmocka_unit_test(spi_write_disable_test_success),
