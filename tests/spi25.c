@@ -168,3 +168,22 @@ void probe_spi_at25f_test_success(void **state)
 	will_return(__wrap_spi_send_command, AT25F_RDID_INSIZE);
 	assert_int_equal(0, probe_spi_at25f(&flashctx));
 }
+
+/* spi95.c */
+void probe_spi_st95_test_success(void **state)
+{
+	(void) state; /* unused */
+
+	/* setup initial test state. */
+	struct flashctx flashctx = { .chip = &mock_chip };
+	expect_memory(__wrap_spi_send_command, flash,
+			&flashctx, sizeof(flashctx));
+
+	/* chip total size < 64K. */
+	uint32_t rdid_outsize = ST_M95_RDID_2BA_OUTSIZE; // 16 bit address
+
+	will_return(__wrap_spi_send_command, rdid_outsize);
+	will_return(__wrap_spi_send_command, ST_M95_RDID);
+	will_return(__wrap_spi_send_command, ST_M95_RDID_INSIZE);
+	assert_int_equal(0, probe_spi_st95(&flashctx));
+}
