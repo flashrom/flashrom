@@ -188,7 +188,8 @@ struct flashrom_board_info *flashrom_supported_boards(void)
 		for (; i < boards_known_size; ++i) {
 			supported_boards[i].vendor = binfo[i].vendor;
 			supported_boards[i].name = binfo[i].name;
-			supported_boards[i].working = binfo[i].working;
+			supported_boards[i].working =
+				(enum flashrom_test_state) binfo[i].working;
 		}
 	} else {
 		msg_gerr("Memory allocation error!\n");
@@ -226,7 +227,8 @@ struct flashrom_chipset_info *flashrom_supported_chipsets(void)
 			supported_chipsets[i].chipset = chipset[i].device_name;
 			supported_chipsets[i].vendor_id = chipset[i].vendor_id;
 			supported_chipsets[i].chipset_id = chipset[i].device_id;
-			supported_chipsets[i].status = chipset[i].status;
+			supported_chipsets[i].status =
+				(enum flashrom_test_state) chipset[i].status;
 	  }
 	} else {
 		msg_gerr("Memory allocation error!\n");
