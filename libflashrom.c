@@ -229,7 +229,7 @@ struct flashrom_chipset_info *flashrom_supported_chipsets(void)
 			supported_chipsets[i].chipset_id = chipset[i].device_id;
 			supported_chipsets[i].status =
 				(enum flashrom_test_state) chipset[i].status;
-	  }
+		}
 	} else {
 		msg_gerr("Memory allocation error!\n");
 	}
