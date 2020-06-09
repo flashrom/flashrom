@@ -426,7 +426,6 @@ executable(
   ],
   c_args : [
     cargs,
-    '-DSTANDALONE',
     '-DCONFIG_DEFAULT_PROGRAMMER=PROGRAMMER_INVALID',
     '-DCONFIG_DEFAULT_PROGRAMMER_ARGS=""',
   ],
