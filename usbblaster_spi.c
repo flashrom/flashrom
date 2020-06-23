@@ -160,7 +160,7 @@ static int send_read(unsigned int readcnt, unsigned char *readarr)
 			return -1;
 		}
 		n_read -= payload_size;
-	};
+	}
 
 	n_read = readcnt;
 	while (n_read) {
