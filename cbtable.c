@@ -205,7 +205,7 @@ static struct lb_header *find_lb_table(void *base, unsigned long start,
 		msg_pdbg("Found coreboot table at 0x%08lx.\n", addr);
 		return head;
 
-	};
+	}
 
 	return NULL;
 }
