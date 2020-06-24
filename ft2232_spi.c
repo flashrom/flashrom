@@ -110,7 +110,8 @@ static const char *get_ft2232_devicename(int ft2232_vid, int ft2232_type)
 {
 	int i;
 	for (i = 0; devs_ft2232spi[i].vendor_name != NULL; i++) {
-		if ((devs_ft2232spi[i].device_id == ft2232_type) && (devs_ft2232spi[i].vendor_id == ft2232_vid))
+		if ((devs_ft2232spi[i].device_id == ft2232_type)
+			&& (devs_ft2232spi[i].vendor_id == ft2232_vid))
 				return devs_ft2232spi[i].device_name;
 	}
 	return "unknown device";
@@ -120,7 +121,8 @@ static const char *get_ft2232_vendorname(int ft2232_vid, int ft2232_type)
 {
 	int i;
 	for (i = 0; devs_ft2232spi[i].vendor_name != NULL; i++) {
-		if ((devs_ft2232spi[i].device_id == ft2232_type) && (devs_ft2232spi[i].vendor_id == ft2232_vid))
+		if ((devs_ft2232spi[i].device_id == ft2232_type)
+			&& (devs_ft2232spi[i].vendor_id == ft2232_vid))
 				return devs_ft2232spi[i].vendor_name;
 	}
 	return "unknown vendor";
@@ -132,7 +134,8 @@ static int send_buf(struct ftdi_context *ftdic, const unsigned char *buf,
 	int r;
 	r = ftdi_write_data(ftdic, (unsigned char *) buf, size);
 	if (r < 0) {
-		msg_perr("ftdi_write_data: %d, %s\n", r, ftdi_get_error_string(ftdic));
+		msg_perr("ftdi_write_data: %d, %s\n", r,
+				ftdi_get_error_string(ftdic));
 		return 1;
 	}
 	return 0;
@@ -146,7 +149,8 @@ static int get_buf(struct ftdi_context *ftdic, const unsigned char *buf,
 	while (size > 0) {
 		r = ftdi_read_data(ftdic, (unsigned char *) buf, size);
 		if (r < 0) {
-			msg_perr("ftdi_read_data: %d, %s\n", r, ftdi_get_error_string(ftdic));
+			msg_perr("ftdi_read_data: %d, %s\n", r,
+					ftdi_get_error_string(ftdic));
 			return 1;
 		}
 		buf += r;
@@ -183,8 +187,8 @@ int ft2232_spi_init(void)
 	enum ftdi_interface ft2232_interface = INTERFACE_A;
 	/*
 	 * The 'H' chips can run with an internal clock of either 12 MHz or 60 MHz,
-	 * but the non-H chips can only run at 12 MHz. We enable the divide-by-5
-	 * prescaler on the former to run on the same speed.
+	 * but the non-H chips can only run at 12 MHz. We disable the divide-by-5
+	 * prescaler on 'H' chips so they run at 60MHz.
 	 */
 	uint8_t clock_5x = 1;
 	/* In addition to the prescaler mentioned above there is also another
@@ -193,7 +197,8 @@ int ft2232_spi_init(void)
 	 * div = (1 + x) * 2 <-> x = div / 2 - 1
 	 * Hence the expressible divisors are all even numbers between 2 and
 	 * 2^17 (=131072) resulting in SCK frequencies of 6 MHz down to about
-	 * 92 Hz for 12 MHz inputs.
+	 * 92 Hz for 12 MHz inputs and 30 MHz down to about 458 Hz for 60 MHz
+	 * inputs.
 	 */
 	uint32_t divisor = DEFAULT_DIVISOR;
 	int f;
@@ -381,7 +386,8 @@ int ft2232_spi_init(void)
 	free(arg);
 
 	if (f < 0 && f != -5) {
-		msg_perr("Unable to open FTDI device: %d (%s).\n", f, ftdi_get_error_string(ftdic));
+		msg_perr("Unable to open FTDI device: %d (%s)\n", f,
+				ftdi_get_error_string(ftdic));
 		return -4;
 	}
 
@@ -408,7 +414,7 @@ int ft2232_spi_init(void)
 
 	if (clock_5x) {
 		msg_pdbg("Disable divide-by-5 front stage\n");
-		buf[0] = 0x8a; /* Disable divide-by-5. DIS_DIV_5 in newer libftdi */
+		buf[0] = DIS_DIV_5;
 		if (send_buf(ftdic, buf, 1)) {
 			ret = -5;
 			goto ftdi_err;
@@ -453,7 +459,8 @@ int ft2232_spi_init(void)
 
 ftdi_err:
 	if ((f = ftdi_usb_close(ftdic)) < 0) {
-		msg_perr("Unable to close FTDI device: %d (%s)\n", f, ftdi_get_error_string(ftdic));
+		msg_perr("Unable to close FTDI device: %d (%s)\n", f,
+		         ftdi_get_error_string(ftdic));
 	}
 	return ret;
 }
