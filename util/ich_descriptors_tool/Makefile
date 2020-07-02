@@ -41,6 +41,10 @@ EXEC_SUFFIX := .exe
 CFLAGS += -Wno-format
 endif
 
+ifeq ($(TARGET_OS), MinGW)
+CFLAGS += -D__USE_MINGW_ANSI_STDIO=1
+endif
+
 ifeq ($(WARNERROR), yes)
 CFLAGS += -Werror
 endif
