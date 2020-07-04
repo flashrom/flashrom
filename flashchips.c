@@ -18671,7 +18671,7 @@ const struct flashchip flashchips[] = {
 		.name		= "XM25QH64A",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= XMC_ID,
-		.model_id	= XMC-XM25QH64A,
+		.model_id	= XMC_XM25QH64A,
 		.total_size	= 8192,
 		.page_size	= 256,
 		/* supports SFDP */
