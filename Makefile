@@ -83,7 +83,8 @@ dummy_for_make_3_80:=$(shell printf "Build started on %s\n\n" "$$(date)" >$(BUIL
 
 # Provide an easy way to execute a command, print its output to stdout and capture any error message on stderr
 # in the build details file together with the original stdout output.
-debug_shell = $(shell export LC_ALL=C ; { echo 'exec: export LC_ALL=C ; { $(1) ; }' >&2;  { $(1) ; } | tee -a $(BUILD_DETAILS_FILE) ; echo >&2 ; } 2>>$(BUILD_DETAILS_FILE))
+debug_shell = $(shell export LC_ALL=C ; { echo 'exec: export LC_ALL=C ; { $(subst ','\'',$(1)) ; }' >&2; \
+    { $(1) ; } | tee -a $(BUILD_DETAILS_FILE) ; echo >&2 ; } 2>>$(BUILD_DETAILS_FILE))
 
 ###############################################################################
 # General OS-specific settings.
@@ -106,7 +107,8 @@ endif
 # IMPORTANT: The following line must be placed before TARGET_OS is ever used
 # (of course), but should come after any lines setting CC because the line
 # below uses CC itself.
-override TARGET_OS := $(strip $(call debug_shell,$(CC) $(CPPFLAGS) -E os.h 2>/dev/null | grep -v '^\#' | grep '"' | cut -f 2 -d'"'))
+override TARGET_OS := $(strip $(call debug_shell,$(CC) $(CPPFLAGS) -E os.h 2>/dev/null \
+    | tail -1 | cut -f 2 -d'"'))
 
 ifeq ($(TARGET_OS), Darwin)
 override CPPFLAGS += -I/opt/local/include -I/usr/local/include
@@ -421,8 +423,10 @@ endif
 # IMPORTANT: The following line must be placed before ARCH is ever used
 # (of course), but should come after any lines setting CC because the line
 # below uses CC itself.
-override ARCH := $(strip $(call debug_shell,$(CC) $(CPPFLAGS) -E archtest.c 2>/dev/null | grep -v '^\#' | grep '"' | cut -f 2 -d'"'))
-override ENDIAN := $(strip $(call debug_shell,$(CC) $(CPPFLAGS) -E endiantest.c 2>/dev/null | grep -v '^\#'))
+override ARCH := $(strip $(call debug_shell,$(CC) $(CPPFLAGS) -E archtest.c 2>/dev/null \
+    | tail -1 | cut -f 2 -d'"'))
+override ENDIAN := $(strip $(call debug_shell,$(CC) $(CPPFLAGS) -E endiantest.c 2>/dev/null \
+    | tail -1))
 
 # Disable the internal programmer on unsupported architectures (everything but x86 and mipsel)
 ifneq ($(ARCH)-little, $(filter $(ARCH),x86 mips)-$(ENDIAN))
@@ -1182,12 +1186,12 @@ compiler: featuresavailable
 	@printf "Target arch is "
 	@# FreeBSD wc will output extraneous whitespace.
 	@echo $(ARCH)|wc -w|grep -q '^[[:blank:]]*1[[:blank:]]*$$' ||	\
-		( echo "unknown. Aborting."; exit 1)
+		( echo "unknown (\"$(ARCH)\"). Aborting."; exit 1)
 	@printf "%s\n" '$(ARCH)'
 	@printf "Target OS is "
 	@# FreeBSD wc will output extraneous whitespace.
 	@echo $(TARGET_OS)|wc -w|grep -q '^[[:blank:]]*1[[:blank:]]*$$' ||	\
-		( echo "unknown. Aborting."; exit 1)
+		( echo "unknown (\"$(TARGET_OS)\"). Aborting."; exit 1)
 	@printf "%s\n" '$(TARGET_OS)'
 ifeq ($(TARGET_OS), libpayload)
 	@$(CC) --version 2>&1 | grep -q coreboot || \
