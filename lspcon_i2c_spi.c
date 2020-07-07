@@ -388,8 +388,9 @@ static int lspcon_i2c_spi_write_256(struct flashctx *flash, const uint8_t *buf,
 	/* Enable hardware write and reset clt2SPI interface. */
 	ret |= lspcon_i2c_spi_enable_hw_write(fd);
 	ret |= lspcon_i2c_clt2_spi_reset(fd);
-
-	for (unsigned int i = 0; i < len; i += PAGE_SIZE) {
+	
+	unsigned int i;
+	for (i = 0; i < len; i += PAGE_SIZE) {
 		ret |= lspcon_i2c_spi_map_page(fd, start + i);
 		ret |= lspcon_i2c_spi_write_page(fd, buf + i, min(len - i, PAGE_SIZE));
 	}
