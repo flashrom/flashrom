@@ -305,8 +305,9 @@ static int send_command(const struct flashctx *flash,
 		unsigned char *read_buffer)
 {
 	int status = -1;
+	int write_attempt;
 
-	for (int write_attempt = 0; write_attempt < WRITE_RETY_ATTEMPTS;
+	for (write_attempt = 0; write_attempt < WRITE_RETY_ATTEMPTS;
 	         write_attempt++) {
 
 		status = write_command(flash, write_count, read_count,
@@ -325,7 +326,8 @@ static int send_command(const struct flashctx *flash,
 			programmer_delay(RETY_INTERVAL_US);
 			continue;
 		}
-		for (int read_attempt = 0; read_attempt < READ_RETY_ATTEMPTS; read_attempt++) {
+		int read_attempt;
+		for (read_attempt = 0; read_attempt < READ_RETY_ATTEMPTS; read_attempt++) {
 
 			status = read_response(flash, write_count, read_count,
 					write_buffer, read_buffer);
