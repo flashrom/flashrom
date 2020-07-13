@@ -482,6 +482,7 @@
  * Generalplus SPI chips seem to be compatible with Macronix
  * and use the same set of IDs. */
 #define MACRONIX_MX25L512	0x2010	/* Same as MX25L512E, MX25V512, MX25V512C */
+#define MACRONIX_MX25L5121E	0x2210
 #define MACRONIX_MX25L1005	0x2011	/* Same as MX25L1005C, MX25L1006E */
 #define MACRONIX_MX25L2005	0x2012	/* Same as MX25L2005C, MX25L2006E */
 #define MACRONIX_MX25L4005	0x2013	/* Same as MX25L4005A, MX25L4005C, MX25L4006E */
