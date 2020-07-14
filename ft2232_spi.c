@@ -86,10 +86,17 @@ const struct dev_entry devs_ft2232spi[] = {
 
 /* The variables cs_bits and pindir store the values for the "set data bits low byte" MPSSE command that
  * sets the initial state and the direction of the I/O pins. The pin offsets are as follows:
- * SCK is bit 0.
- * DO  is bit 1.
- * DI  is bit 2.
- * CS  is bit 3.
+ * TCK/SK is bit 0.
+ * TDI/DO is bit 1.
+ * TDO/DI is bit 2.
+ * TMS/CS is bit 3.
+ * GPIOL0 is bit 4.
+ * GPIOL1 is bit 5.
+ * GPIOL2 is bit 6.
+ * GPIOL3 is bit 7.
+ *
+ * The pin signal direction bit offsets follow the same order; 0 means that
+ * pin at the matching bit index is an input, 1 means pin is an output.
  *
  * The default values (set below) are used for most devices:
  *  value: 0x08  CS=high, DI=low, DO=low, SK=low
@@ -148,7 +155,7 @@ static int get_buf(struct ftdi_context *ftdic, const unsigned char *buf,
 	return 0;
 }
 
-static int ft2232_spi_send_command(struct flashctx *flash,
+static int ft2232_spi_send_command(const struct flashctx *flash,
 				   unsigned int writecnt, unsigned int readcnt,
 				   const unsigned char *writearr,
 				   unsigned char *readarr);
@@ -269,6 +276,12 @@ int ft2232_spi_init(void)
 		} else if (!strcasecmp(arg, "google-servo-v2-legacy")) {
 			ft2232_vid = GOOGLE_VID;
 			ft2232_type = GOOGLE_SERVO_V2_PID0;
+		} else if (!strcasecmp(arg, "flyswatter")) {
+			ft2232_type = FTDI_FT2232H_PID;
+			channel_count = 2;
+			/* Flyswatter and Flyswatter-2 require GPIO bits 0x80
+			 * and 0x40 to be driven low to enable output buffers */
+			pindir = 0xcb;
 		} else {
 			msg_perr("Error: Invalid device type specified.\n");
 			free(arg);
@@ -325,19 +338,24 @@ int ft2232_spi_init(void)
 	}
 	free(arg);
 
+	/* Allows setting multiple GPIOL states, for example: csgpiol=012 */
 	arg = extract_programmer_param("csgpiol");
 	if (arg) {
-		char *endptr;
-		unsigned int temp = strtoul(arg, &endptr, 10);
-		if (*endptr || endptr == arg || temp > 3) {
-			msg_perr("Error: Invalid GPIOL specified: \"%s\".\n"
-				 "Valid values are between 0 and 3.\n", arg);
-			free(arg);
-			return -2;
+		unsigned int ngpios = strlen(arg);
+		for (unsigned int i = 0; i <= ngpios; i++) {
+			int temp = arg[i] - '0';
+			if (ngpios == 0 || (ngpios != i && (temp < 0 || temp > 3))) {
+				msg_perr("Error: Invalid GPIOLs specified: \"%s\".\n"
+					 "Valid values are numbers between 0 and 3. "
+					 "Multiple GPIOLs can be specified.\n", arg);
+				free(arg);
+				return -2;
+			} else {
+				unsigned int pin = temp + 4;
+				cs_bits |= 1 << pin;
+				pindir |= 1 << pin;
+			}
 		}
-		unsigned int pin = temp + 4;
-		cs_bits |= 1 << pin;
-		pindir |= 1 << pin;
 	}
 	free(arg);
 
@@ -380,7 +398,7 @@ int ft2232_spi_init(void)
 		msg_perr("Unable to set latency timer (%s).\n", ftdi_get_error_string(ftdic));
 	}
 
-	if (ftdi_write_data_set_chunksize(ftdic, 256)) {
+	if (ftdi_write_data_set_chunksize(ftdic, 270)) {
 		msg_perr("Unable to set chunk size (%s).\n", ftdi_get_error_string(ftdic));
 	}
 
@@ -441,7 +459,7 @@ ftdi_err:
 }
 
 /* Returns 0 upon success, a negative number upon errors. */
-static int ft2232_spi_send_command(struct flashctx *flash,
+static int ft2232_spi_send_command(const struct flashctx *flash,
 				   unsigned int writecnt, unsigned int readcnt,
 				   const unsigned char *writearr,
 				   unsigned char *readarr)
@@ -450,8 +468,8 @@ static int ft2232_spi_send_command(struct flashctx *flash,
 	static unsigned char *buf = NULL;
 	/* failed is special. We use bitwise ops, but it is essentially bool. */
 	int i = 0, ret = 0, failed = 0;
-	int bufsize;
-	static int oldbufsize = 0;
+	size_t bufsize;
+	static size_t oldbufsize = 0;
 
 	if (writecnt > 65536 || readcnt > 65536)
 		return SPI_INVALID_LENGTH;
@@ -459,7 +477,7 @@ static int ft2232_spi_send_command(struct flashctx *flash,
 	/* buf is not used for the response from the chip. */
 	bufsize = max(writecnt + 9, 260 + 9);
 	/* Never shrink. realloc() calls are expensive. */
-	if (bufsize > oldbufsize) {
+	if (!buf || bufsize > oldbufsize) {
 		buf = realloc(buf, bufsize);
 		if (!buf) {
 			msg_perr("Out of memory!\n");
@@ -477,7 +495,7 @@ static int ft2232_spi_send_command(struct flashctx *flash,
 	 */
 	msg_pspew("Assert CS#\n");
 	buf[i++] = SET_BITS_LOW;
-	buf[i++] = 0 & ~cs_bits; /* assertive */
+	buf[i++] = ~ 0x08 & cs_bits; /* assert CS (3rd) bit only */
 	buf[i++] = pindir;
 
 	if (writecnt) {

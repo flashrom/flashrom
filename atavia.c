@@ -51,7 +51,7 @@
 const struct dev_entry ata_via[] = {
 	{PCI_VENDOR_ID_VIA, 0x3249, DEP, "VIA", "VT6421A"},
 
-	{},
+	{0},
 };
 
 static void atavia_chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr);
@@ -142,7 +142,7 @@ int atavia_init(void)
 	if (rget_io_perms())
 		return 1;
 
-	dev = pcidev_init(ata_via, PCI_ROM_ADDRESS); /* Acutally no BAR setup needed at all. */
+	dev = pcidev_init(ata_via, PCI_ROM_ADDRESS); /* Actually no BAR setup needed at all. */
 	if (!dev)
 		return 1;
 

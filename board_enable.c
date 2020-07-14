@@ -875,6 +875,52 @@ static int board_msi_kt4v(void)
 
 /*
  * Suited for:
+ *  - ASUS P3B-F
+ *
+ * We are talking to a proprietary device on SMBus: the AS99127F which does
+ * much more than the Winbond W83781D it tries to be compatible with.
+ */
+static int board_asus_p3b_f(void)
+{
+	/*
+	 * Find where the SMBus host is. ASUS sets it to 0xE800; coreboot sets it to 0x0F00.
+	 */
+	struct pci_dev *dev;
+	uint16_t smbba;
+	uint8_t b;
+
+	dev = pci_dev_find(0x8086, 0x7113); /* Intel PIIX4, PM/SMBus function. */
+	if (!dev) {
+		msg_perr("\nERROR: Intel PIIX4 PM not found.\n");
+		return -1;
+	}
+
+	smbba = pci_read_word(dev, 0x90) & 0xfff0;
+
+	OUTB(0xFF, smbba); /* Clear previous SMBus status. */
+	OUTB(0x48 << 1, smbba + 4);
+	OUTB(0x80, smbba + 3);
+	OUTB(0x80, smbba + 5);
+	OUTB(0x48, smbba + 2);
+
+	/* Wait until SMBus transaction is complete. */
+	b = 0x1;
+	while (b & 0x01) {
+		b = INB(0x80);
+		b = INB(smbba);
+	}
+
+	/* Write failed if any status is set. */
+	if (b & 0x1e) {
+		msg_perr("Failed to write to device.\n");
+		return -1;
+	}
+
+	return 0;
+}
+
+/*
+ * Suited for:
  *  - ASUS P5A
  *
  * This is rather nasty code, but there's no way to do this cleanly.
@@ -1708,6 +1754,7 @@ static int intel_ich_gpio20_raise(void)
  *  - ASUS P4P800-E Deluxe: Intel socket478 + 865PE + ICH5R
  *  - ASUS P4P800-VM: Intel socket478 + 865PE + ICH5R
  *  - ASUS P4P800-X: Intel socket478 + 865PE + ICH5R
+ *  - ASUS P4P800SE: Intel socket478 + 865PE + ICH5R
  *  - ASUS P5GD1 Pro: Intel LGA 775 + 915P + ICH6R
  *  - ASUS P5GD2 Premium: Intel LGA775 + 915G + ICH6R
  *  - ASUS P5GDC Deluxe: Intel socket775 + 915P + ICH6R
@@ -2353,6 +2400,7 @@ const struct board_match board_matches[] = {
 	{0x8086, 0x24cc,      0,      0,  0x8086, 0x24c3, 0x1043, 0x1869, "^M6Ne$",     NULL, NULL,           P3, "ASUS",        "M6Ne",                  0,   NT, intel_ich_gpio43_raise},
 	{0x8086, 0x7180,      0,      0,  0x8086, 0x7110,      0,      0, "^OPLX-M$",   NULL, NULL,           P3, "ASUS",        "OPLX-M",                0,   NT, intel_piix4_gpo18_lower},
 	{0x8086, 0x7190,      0,      0,  0x8086, 0x7110,      0,      0, "^P2B-N$",    NULL, NULL,           P3, "ASUS",        "P2B-N",                 0,   OK, intel_piix4_gpo18_lower},
+	{0x8086, 0x7190, 0x1043, 0x8024,  0x8086, 0x7110,      0,      0, "P3B-F",      "asus", "p3b-f",      P3, "ASUS",        "P3B-F",                 0,   OK, board_asus_p3b_f},
 	{0x8086, 0x1A30, 0x1043, 0x8025,  0x8086, 0x244B, 0x104D, 0x80F0, NULL,         NULL, NULL,           P3, "ASUS",        "P4B266-LM",             0,   OK, intel_ich_gpio21_raise},
 	{0x8086, 0x1a30, 0x1043, 0x8070,  0x8086, 0x244b, 0x1043, 0x8028, NULL,         NULL, NULL,           P3, "ASUS",        "P4B266",                0,   OK, intel_ich_gpio22_raise},
 	{0x8086, 0x1A30, 0x1043, 0x8088,  0x8086, 0x24C3, 0x1043, 0x8089, NULL,         NULL, NULL,           P3, "ASUS",        "P4B533-E",              0,   NT, intel_ich_gpio22_raise},
@@ -2362,6 +2410,7 @@ const struct board_match board_matches[] = {
 	{0x8086, 0x2570, 0x1043, 0x80f2,  0x8086, 0x24d3, 0x1043, 0x80a6, "^P4P800-E$", NULL, NULL,           P3, "ASUS",        "P4P800-E Deluxe",       0,   OK, intel_ich_gpio21_raise},
 	{0x8086, 0x2570, 0x1043, 0x80a5,  0x8086, 0x24d3, 0x1043, 0x80a6, "^P4P800-VM$", NULL, NULL,          P3, "ASUS",        "P4P800-VM",             0,   OK, intel_ich_gpio21_raise},
 	{0x8086, 0x2570, 0x1043, 0x80f2,  0x8086, 0x24d3, 0x1043, 0x80a6, "^P4P800-X$", NULL, NULL,           P3, "ASUS",        "P4P800-X",              0,   OK, intel_ich_gpio21_raise},
+	{0x8086, 0x2570, 0x1043, 0x80f2,  0x8086, 0x24d3,      0,      0, "^P4P800SE$", NULL, NULL,           P3, "ASUS",        "P4P800SE",              0,   OK, intel_ich_gpio21_raise},
 	{0x8086, 0x2570, 0x1043, 0x80b2,  0x8086, 0x24c3, 0x1043, 0x8089, "^P4PE-X/TE$",NULL, NULL,           P3, "ASUS",        "P4PE-X/TE",             0,   NT, intel_ich_gpio21_raise},
 	{0x1039, 0x0651, 0x1043, 0x8081,  0x1039, 0x0962,      0,      0, NULL,         NULL, NULL,           P3, "ASUS",        "P4SC-E",                0,   OK, it8707f_write_enable_2e},
 	{0x8086, 0x2570, 0x1043, 0x80A5,  0x105A, 0x24D3, 0x1043, 0x80A6, NULL,         NULL, NULL,           P3, "ASUS",        "P4SD-LA",               0,   NT, intel_ich_gpio32_raise},
@@ -2491,7 +2540,7 @@ int selfcheck_board_enables(void)
 
 	int ret = 0;
 	unsigned int i;
-	for (i = 0; i < ARRAY_SIZE(board_matches) - 1; i++) {
+	for (i = 0; i + 1 < ARRAY_SIZE(board_matches); i++) {
 		const struct board_match *b = &board_matches[i];
 		if (b->vendor_name == NULL || b->board_name == NULL) {
 			msg_gerr("ERROR: Board enable #%d does not define a vendor and board name.\n"
@@ -2516,7 +2565,7 @@ int selfcheck_board_enables(void)
  * Parameters vendor and model will be overwritten. Returns 0 on success.
  * Note: strtok modifies the original string, so we work on a copy and allocate memory for the results.
  */
-int board_parse_parameter(const char *boardstring, const char **vendor, const char **model)
+int board_parse_parameter(const char *boardstring, char **vendor, char **model)
 {
 	/* strtok may modify the original string. */
 	char *tempstr = strdup(boardstring);

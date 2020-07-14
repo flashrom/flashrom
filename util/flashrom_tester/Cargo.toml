@@ -1,0 +1,32 @@
+[package]
+name = "flashrom_tester"
+version = "1.6.0"
+authors = ["Edward O'Callaghan <quasisec@chromium.org>",
+           "Peter Marheine <pmarheine@chromium.org>"]
+edition = "2018"
+build = "build.rs"
+
+[lib]
+name = "flashrom_tester"
+
+[[bin]]
+name = "flashrom_tester"
+required-features = ["cli"]
+
+[dependencies]
+built = { version = "0.3", default-features = false, features = ["serialized_time", "serialized_version"] }
+chrono = { version = "0.4", optional = true }
+clap = { version = "2.33", default-features = false, optional = true }
+flashrom = { path = "flashrom/" }
+log = { version = "0.4", features = ["std"] }
+rand = "0.6.4"
+serde_json = "1"
+sys-info = "0.5.7"
+
+[build-dependencies]
+built = { version = "0.3", default-features = false, features = ["serialized_time", "serialized_version"] }
+
+[features]
+# Features required to build the CLI binary but not the library
+cli = ["chrono", "clap"]
+default = ["cli"]

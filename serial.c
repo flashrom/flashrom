@@ -391,14 +391,17 @@ int serialport_write(const unsigned char *buf, unsigned int writecnt)
 
 	while (writecnt > 0) {
 #if IS_WINDOWS
-		WriteFile(sp_fd, buf, writecnt, &tmp, NULL);
+		if (!WriteFile(sp_fd, buf, writecnt, &tmp, NULL)) {
+			msg_perr("Serial port write error!\n");
+			return 1;
+		}
 #else
 		tmp = write(sp_fd, buf, writecnt);
-#endif
 		if (tmp == -1) {
 			msg_perr("Serial port write error!\n");
 			return 1;
 		}
+#endif
 		if (!tmp) {
 			msg_pdbg2("Empty write\n");
 			empty_writes--;
@@ -425,14 +428,17 @@ int serialport_read(unsigned char *buf, unsigned int readcnt)
 
 	while (readcnt > 0) {
 #if IS_WINDOWS
-		ReadFile(sp_fd, buf, readcnt, &tmp, NULL);
+		if (!ReadFile(sp_fd, buf, readcnt, &tmp, NULL)) {
+			msg_perr("Serial port read error!\n");
+			return 1;
+		}
 #else
 		tmp = read(sp_fd, buf, readcnt);
-#endif
 		if (tmp == -1) {
 			msg_perr("Serial port read error!\n");
 			return 1;
 		}
+#endif
 		if (!tmp)
 			msg_pdbg2("Empty read\n");
 		readcnt -= tmp;
@@ -485,17 +491,21 @@ int serialport_read_nonblock(unsigned char *c, unsigned int readcnt, unsigned in
 	for (i = 0; i < timeout; i++) {
 		msg_pspew("readcnt %u rd_bytes %u\n", readcnt, rd_bytes);
 #if IS_WINDOWS
-		ReadFile(sp_fd, c + rd_bytes, readcnt - rd_bytes, &rv, NULL);
+		if (!ReadFile(sp_fd, c + rd_bytes, readcnt - rd_bytes, &rv, NULL)) {
+			msg_perr_strerror("Serial port read error: ");
+			ret = -1;
+			break;
+		}
 		msg_pspew("read %lu bytes\n", rv);
 #else
 		rv = read(sp_fd, c + rd_bytes, readcnt - rd_bytes);
 		msg_pspew("read %zd bytes\n", rv);
-#endif
 		if ((rv == -1) && (errno != EAGAIN)) {
 			msg_perr_strerror("Serial port read error: ");
 			ret = -1;
 			break;
 		}
+#endif
 		if (rv > 0)
 			rd_bytes += rv;
 		if (rd_bytes == readcnt) {
@@ -565,17 +575,21 @@ int serialport_write_nonblock(const unsigned char *buf, unsigned int writecnt, u
 	for (i = 0; i < timeout; i++) {
 		msg_pspew("writecnt %u wr_bytes %u\n", writecnt, wr_bytes);
 #if IS_WINDOWS
-		WriteFile(sp_fd, buf + wr_bytes, writecnt - wr_bytes, &rv, NULL);
+		if (!WriteFile(sp_fd, buf + wr_bytes, writecnt - wr_bytes, &rv, NULL)) {
+			msg_perr_strerror("Serial port write error: ");
+			ret = -1;
+			break;
+		}
 		msg_pspew("wrote %lu bytes\n", rv);
 #else
 		rv = write(sp_fd, buf + wr_bytes, writecnt - wr_bytes);
 		msg_pspew("wrote %zd bytes\n", rv);
-#endif
 		if ((rv == -1) && (errno != EAGAIN)) {
 			msg_perr_strerror("Serial port write error: ");
 			ret = -1;
 			break;
 		}
+#endif
 		if (rv > 0) {
 			wr_bytes += rv;
 			if (wr_bytes == writecnt) {

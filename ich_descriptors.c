@@ -421,7 +421,7 @@ void prettyprint_ich_descriptor_master(const enum ich_chipset cs, const struct i
 		for (i = 0; i < nm; i++) {
 			size_t j;
 			msg_pdbg2("%-4s", master_names[i]);
-			for (j = 0; j < min(num_regions, 12); j++)
+			for (j = 0; j < (size_t)min(num_regions, 12); j++)
 				msg_pdbg2("  %c%c ",
 					  desc->master.mstr[i].read & (1 << j) ? 'r' : ' ',
 					  desc->master.mstr[i].write & (1 << j) ? 'w' : ' ');

@@ -354,7 +354,7 @@ static int enable_flash_ich_bios_cntl_common(enum ich_chipset ich_generation, vo
 		msg_pwarn("Warning: BIOS region SMM protection is enabled!\n");
 
 	if (new != wanted)
-		msg_pwarn("Warning: Setting Bios Control at 0x%x from 0x%02x to 0x%02x failed.\n"
+		msg_pwarn("Warning: Setting BIOS Control at 0x%x from 0x%02x to 0x%02x failed.\n"
 			  "New value is 0x%02x.\n", bios_cntl, old, wanted, new);
 
 	/* Return an error if we could not set the write enable only. */
@@ -756,6 +756,14 @@ static int enable_flash_ich_spi(struct pci_dev *dev, enum ich_chipset ich_genera
 	int ret_fwh = enable_flash_ich_fwh(dev, ich_generation, bios_cntl);
 	if (ret_fwh == ERROR_FATAL)
 		return ret_fwh;
+
+	/*
+	 * It seems that the ICH7 does not support SPI and LPC chips at the same time. When booted
+	 * from LPC, the SCIP bit will never clear, which causes long delays and many error messages.
+	 * To avoid this, we will not enable SPI on ICH7 when the southbridge is strapped to LPC.
+	 */
+	if (ich_generation == CHIPSET_ICH7 && (boot_buses & BUS_LPC))
+		return 0;
 
 	/* SPIBAR is at RCRB+0x3020 for ICH[78], Tunnel Creek and Centerton, and RCRB+0x3800 for ICH9. */
 	uint16_t spibar_offset;
@@ -1823,7 +1831,7 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x1e44, B_FS,   DEP, "Intel", "Z77",				enable_flash_pch7},
 	{0x8086, 0x1e46, B_FS,   NT,  "Intel", "Z75",				enable_flash_pch7},
 	{0x8086, 0x1e47, B_FS,   NT,  "Intel", "Q77",				enable_flash_pch7},
-	{0x8086, 0x1e48, B_FS,   NT,  "Intel", "Q75",				enable_flash_pch7},
+	{0x8086, 0x1e48, B_FS,   DEP, "Intel", "Q75",				enable_flash_pch7},
 	{0x8086, 0x1e49, B_FS,   DEP, "Intel", "B75",				enable_flash_pch7},
 	{0x8086, 0x1e4a, B_FS,   DEP, "Intel", "H77",				enable_flash_pch7},
 	{0x8086, 0x1e53, B_FS,   NT,  "Intel", "C216",				enable_flash_pch7},
@@ -1831,8 +1839,8 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x1e56, B_FS,   DEP, "Intel", "QS77",				enable_flash_pch7},
 	{0x8086, 0x1e57, B_FS,   DEP, "Intel", "HM77",				enable_flash_pch7},
 	{0x8086, 0x1e58, B_FS,   NT,  "Intel", "UM77",				enable_flash_pch7},
-	{0x8086, 0x1e59, B_FS,   NT,  "Intel", "HM76",				enable_flash_pch7},
-	{0x8086, 0x1e5d, B_FS,   NT,  "Intel", "HM75",				enable_flash_pch7},
+	{0x8086, 0x1e59, B_FS,   DEP, "Intel", "HM76",				enable_flash_pch7},
+	{0x8086, 0x1e5d, B_FS,   DEP, "Intel", "HM75",				enable_flash_pch7},
 	{0x8086, 0x1e5e, B_FS,   NT,  "Intel", "HM70",				enable_flash_pch7},
 	{0x8086, 0x1e5f, B_FS,   DEP, "Intel", "NM70",				enable_flash_pch7},
 	{0x8086, 0x1f38, B_FS,   DEP, "Intel", "Avoton/Rangeley",		enable_flash_silvermont},
@@ -1987,9 +1995,9 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x9d41, B_S,    NT,  "Intel", "Skylake / Kaby Lake Sample",	enable_flash_pch100},
 	{0x8086, 0x9d43, B_S,    NT,  "Intel", "Skylake U Base",		enable_flash_pch100},
 	{0x8086, 0x9d46, B_S,    NT,  "Intel", "Skylake Y Premium",		enable_flash_pch100},
-	{0x8086, 0x9d48, B_S,    NT,  "Intel", "Skylake U Premium",		enable_flash_pch100},
+	{0x8086, 0x9d48, B_S,    DEP, "Intel", "Skylake U Premium",		enable_flash_pch100},
 	{0x8086, 0x9d4b, B_S,    NT,  "Intel", "Kaby Lake Y w/ iHDCP2.2 Prem.",	enable_flash_pch100},
-	{0x8086, 0x9d4e, B_S,    NT,  "Intel", "Kaby Lake U w/ iHDCP2.2 Prem.",	enable_flash_pch100},
+	{0x8086, 0x9d4e, B_S,    DEP, "Intel", "Kaby Lake U w/ iHDCP2.2 Prem.",	enable_flash_pch100},
 	{0x8086, 0x9d50, B_S,    NT,  "Intel", "Kaby Lake U w/ iHDCP2.2 Base",	enable_flash_pch100},
 	{0x8086, 0x9d51, B_S,    NT,  "Intel", "Kabe Lake w/ iHDCP2.2 Sample",	enable_flash_pch100},
 	{0x8086, 0x9d53, B_S,    NT,  "Intel", "Kaby Lake U Base",		enable_flash_pch100},
@@ -2015,6 +2023,7 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0xa153, B_S,    NT,  "Intel", "QM175",				enable_flash_pch100},
 	{0x8086, 0xa154, B_S,    NT,  "Intel", "CM238",				enable_flash_pch100},
 	{0x8086, 0xa155, B_S,    NT,  "Intel", "QMU185",			enable_flash_pch100},
+	{0x8086, 0xa1c0, B_S,    NT,  "Intel", "C620 Series Chipset (QS/PRQ)",	enable_flash_c620},
 	{0x8086, 0xa1c1, B_S,    NT,  "Intel", "C621 Series Chipset (QS/PRQ)",	enable_flash_c620},
 	{0x8086, 0xa1c2, B_S,    NT,  "Intel", "C622 Series Chipset (QS/PRQ)",	enable_flash_c620},
 	{0x8086, 0xa1c3, B_S,    NT,  "Intel", "C624 Series Chipset (QS/PRQ)",	enable_flash_c620},
@@ -2022,12 +2031,19 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0xa1c5, B_S,    NT,  "Intel", "C626 Series Chipset (QS/PRQ)",	enable_flash_c620},
 	{0x8086, 0xa1c6, B_S,    NT,  "Intel", "C627 Series Chipset (QS/PRQ)",	enable_flash_c620},
 	{0x8086, 0xa1c7, B_S,    NT,  "Intel", "C628 Series Chipset (QS/PRQ)",	enable_flash_c620},
+	{0x8086, 0xa1c8, B_S,    NT,  "Intel", "C620 Series Chipset (QS/PRQ)",	enable_flash_c620},
+	{0x8086, 0xa1c9, B_S,    NT,  "Intel", "C620 Series Chipset (QS/PRQ)",	enable_flash_c620},
+	{0x8086, 0xa1ca, B_S,    NT,  "Intel", "C629 Series Chipset (QS/PRQ)",	enable_flash_c620},
+	{0x8086, 0xa240, B_S,    NT,  "Intel", "C620 Series Chipset Supersku",	enable_flash_c620},
+	{0x8086, 0xa241, B_S,    NT,  "Intel", "C620 Series Chipset Supersku",	enable_flash_c620},
 	{0x8086, 0xa242, B_S,    NT,  "Intel", "C624 Series Chipset Supersku",	enable_flash_c620},
 	{0x8086, 0xa243, B_S,    NT,  "Intel", "C627 Series Chipset Supersku",	enable_flash_c620},
 	{0x8086, 0xa244, B_S,    NT,  "Intel", "C621 Series Chipset Supersku",	enable_flash_c620},
 	{0x8086, 0xa245, B_S,    NT,  "Intel", "C627 Series Chipset Supersku",	enable_flash_c620},
 	{0x8086, 0xa246, B_S,    NT,  "Intel", "C628 Series Chipset Supersku",	enable_flash_c620},
 	{0x8086, 0xa247, B_S,    NT,  "Intel", "C620 Series Chipset Supersku",	enable_flash_c620},
+	{0x8086, 0xa248, B_S,    NT,  "Intel", "C620 Series Chipset Supersku",	enable_flash_c620},
+	{0x8086, 0xa249, B_S,    NT,  "Intel", "C620 Series Chipset Supersku",	enable_flash_c620},
 	{0x8086, 0xa2c4, B_S,    NT,  "Intel", "H270",				enable_flash_pch100},
 	{0x8086, 0xa2c5, B_S,    NT,  "Intel", "Z270",				enable_flash_pch100},
 	{0x8086, 0xa2c6, B_S,    NT,  "Intel", "Q270",				enable_flash_pch100},
@@ -2036,6 +2052,7 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0xa2c9, B_S,    NT,  "Intel", "Z370",				enable_flash_pch100},
 	{0x8086, 0xa2d2, B_S,    NT,  "Intel", "X299",				enable_flash_pch100},
 	{0x8086, 0x5ae8, B_S,    DEP, "Intel", "Apollo Lake",			enable_flash_apl},
+	{0x8086, 0x5af0, B_S,    DEP, "Intel", "Apollo Lake",			enable_flash_apl},
 	{0x8086, 0xa303, B_S,    NT,  "Intel", "H310",				enable_flash_pch300},
 	{0x8086, 0xa304, B_S,    NT,  "Intel", "H370",				enable_flash_pch300},
 	{0x8086, 0xa305, B_S,    NT,  "Intel", "Z390",				enable_flash_pch300},
@@ -2046,6 +2063,7 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0xa30c, B_S,    NT,  "Intel", "QM370",				enable_flash_pch300},
 	{0x8086, 0xa30d, B_S,    NT,  "Intel", "HM370",				enable_flash_pch300},
 	{0x8086, 0xa30e, B_S,    DEP, "Intel", "CM246",				enable_flash_pch300},
+	{0x8086, 0x3482, B_S,    DEP, "Intel", "Ice Lake U Premium",		enable_flash_pch300},
 #endif
 	{0},
 };

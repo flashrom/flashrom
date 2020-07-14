@@ -111,7 +111,7 @@ static void dump_files(const char *name, const uint32_t *buf, unsigned int len,
 	printf("\n");
 }
 
-static void usage(char *argv[], char *error)
+static void usage(char *argv[], const char *error)
 {
 	if (error != NULL) {
 		fprintf(stderr, "%s\n", error);

@@ -153,7 +153,7 @@ out:
 }
 
 /* Returns 0 upon success, a negative number upon errors. */
-static int mstarddc_spi_send_command(struct flashctx *flash,
+static int mstarddc_spi_send_command(const struct flashctx *flash,
 				     unsigned int writecnt,
 				     unsigned int readcnt,
 				     const unsigned char *writearr,

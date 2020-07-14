@@ -49,15 +49,16 @@ enum amd_chipset {
 	CHIPSET_HUDSON234,
 	CHIPSET_BOLTON,
 	CHIPSET_YANGTZE,
+	CHIPSET_PROMONTORY,
 };
 static enum amd_chipset amd_gen = CHIPSET_AMD_UNKNOWN;
 
 #define FIFO_SIZE_OLD		8
 #define FIFO_SIZE_YANGTZE	71
 
-static int sb600_spi_send_command(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
+static int sb600_spi_send_command(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
 				  const unsigned char *writearr, unsigned char *readarr);
-static int spi100_spi_send_command(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
+static int spi100_spi_send_command(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
 				  const unsigned char *writearr, unsigned char *readarr);
 
 static struct spi_master spi_master_sb600 = {
@@ -80,7 +81,19 @@ static struct spi_master spi_master_yangtze = {
 	.write_aai = default_spi_write_aai,
 };
 
-static void determine_generation(struct pci_dev *dev)
+static int find_smbus_dev_rev(uint16_t vendor, uint16_t device)
+{
+	struct pci_dev *smbus_dev = pci_dev_find(vendor, device);
+	if (!smbus_dev) {
+		msg_pdbg("No SMBus device with ID %04X:%04X found.\n", vendor, device);
+		msg_perr("ERROR: SMBus device not found. Not enabling SPI.\n");
+		return -1;
+	}
+	return pci_read_byte(smbus_dev, PCI_REVISION_ID);
+}
+
+/* Determine the chipset's version and identify the respective SMBUS device. */
+static int determine_generation(struct pci_dev *dev)
 {
 	amd_gen = CHIPSET_AMD_UNKNOWN;
 	msg_pdbg2("Trying to determine the generation of the SPI interface... ");
@@ -88,10 +101,9 @@ static void determine_generation(struct pci_dev *dev)
 		amd_gen = CHIPSET_SB6XX;
 		msg_pdbg("SB6xx detected.\n");
 	} else if (dev->device_id == 0x439d) {
-		struct pci_dev *smbus_dev = pci_dev_find(0x1002, 0x4385);
-		if (smbus_dev == NULL)
-			return;
-		uint8_t rev = pci_read_byte(smbus_dev, PCI_REVISION_ID);
+		int rev = find_smbus_dev_rev(0x1002, 0x4385);
+		if (rev < 0)
+			return -1;
 		if (rev >= 0x39 && rev <= 0x3D) {
 			amd_gen = CHIPSET_SB7XX;
 			msg_pdbg("SB7xx/SP5100 detected.\n");
@@ -107,28 +119,9 @@ static void determine_generation(struct pci_dev *dev)
 	} else if (dev->device_id == 0x780e) {
 		/* The PCI ID of the LPC bridge doesn't change between Hudson-2/3/4 and Yangtze (Kabini/Temash)
 		 * although they use different SPI interfaces. */
-#ifdef USE_YANGTZE_HEURISTICS
-		/* This heuristic accesses the SPI interface MMIO BAR at locations beyond those supported by
-		 * Hudson in the hope of getting 0xff readback on older chipsets and non-0xff readback on
-		 * Yangtze (and newer, compatible chipsets). */
-		int i;
-		msg_pdbg("Checking for AMD Yangtze (Kabini/Temash) or later... ");
-		for (i = 0x20; i <= 0x4f; i++) {
-			if (mmio_readb(sb600_spibar + i) != 0xff) {
-				amd_gen = CHIPSET_YANGTZE;
-				msg_pdbg("found.\n");
-				return;
-			}
-		}
-		msg_pdbg("not found. Assuming Hudson.\n");
-		amd_gen = CHIPSET_HUDSON234;
-#else
-		struct pci_dev *smbus_dev = pci_dev_find(0x1022, 0x780B);
-		if (smbus_dev == NULL) {
-			msg_pdbg("No SMBus device with ID 1022:780B found.\n");
-			return;
-		}
-		uint8_t rev = pci_read_byte(smbus_dev, PCI_REVISION_ID);
+		int rev = find_smbus_dev_rev(0x1022, 0x780B);
+		if (rev < 0)
+			return -1;
 		if (rev >= 0x11 && rev <= 0x15) {
 			amd_gen = CHIPSET_HUDSON234;
 			msg_pdbg("Hudson-2/3/4 detected.\n");
@@ -144,15 +137,15 @@ static void determine_generation(struct pci_dev *dev)
 				  "the output of lspci -nnvx, thanks!.\n", rev);
 		}
 	} else if (dev->device_id == 0x790e) {
-		struct pci_dev *smbus_dev = pci_dev_find(0x1022, 0x790B);
-		if (smbus_dev == NULL) {
-			msg_pdbg("No SMBus device with ID 1022:790B found.\n");
-			return;
-		}
-		uint8_t rev = pci_read_byte(smbus_dev, PCI_REVISION_ID);
+		int rev = find_smbus_dev_rev(0x1022, 0x790B);
+		if (rev < 0)
+			return -1;
 		if (rev == 0x4a) {
 			amd_gen = CHIPSET_YANGTZE;
 			msg_pdbg("Yangtze detected.\n");
+		} else if (rev == 0x4b) {
+			amd_gen = CHIPSET_PROMONTORY;
+			msg_pdbg("Promontory detected.\n");
 		} else {
 			msg_pwarn("FCH device found but SMBus revision 0x%02x does not match known values.\n"
 				  "Please report this to flashrom@flashrom.org and include this log and\n"
@@ -160,12 +153,16 @@ static void determine_generation(struct pci_dev *dev)
 		}
 
 
-#endif
 	} else
 		msg_pwarn("%s: Unknown LPC device %" PRIx16 ":%" PRIx16 ".\n"
 			  "Please report this to flashrom@flashrom.org and include this log and\n"
 			  "the output of lspci -nnvx, thanks!\n",
 			  __func__, dev->vendor_id, dev->device_id);
+	if (amd_gen == CHIPSET_AMD_UNKNOWN) {
+		msg_perr("Could not determine chipset generation.");
+		return -1;
+	}
+	return 0;
 }
 
 static void reset_internal_fifo_pointer(void)
@@ -193,7 +190,7 @@ static int compare_internal_fifo_pointer(uint8_t want)
 }
 
 /* Check the number of bytes to be transmitted and extract opcode. */
-static int check_readwritecnt(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt)
+static int check_readwritecnt(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt)
 {
 	unsigned int maxwritecnt = flash->mst->spi.max_data_write + 3;
 	if (writecnt > maxwritecnt) {
@@ -220,7 +217,7 @@ static void execute_command(void)
 	msg_pspew("done\n");
 }
 
-static int sb600_spi_send_command(struct flashctx *flash, unsigned int writecnt,
+static int sb600_spi_send_command(const struct flashctx *flash, unsigned int writecnt,
 				  unsigned int readcnt,
 				  const unsigned char *writearr,
 				  unsigned char *readarr)
@@ -306,7 +303,7 @@ static int sb600_spi_send_command(struct flashctx *flash, unsigned int writecnt,
 	return 0;
 }
 
-static int spi100_spi_send_command(struct flashctx *flash, unsigned int writecnt,
+static int spi100_spi_send_command(const struct flashctx *flash, unsigned int writecnt,
 				  unsigned int readcnt,
 				  const unsigned char *writearr,
 				  unsigned char *readarr)
@@ -350,23 +347,33 @@ struct spispeed {
 	const uint8_t speed;
 };
 
-static const struct spispeed spispeeds[] = {
-	{ "66 MHz",	0x00 },
-	{ "33 MHz",	0x01 },
-	{ "22 MHz",	0x02 },
-	{ "16.5 MHz",	0x03 },
-	{ "100 MHz",	0x04 },
-	{ "Reserved",	0x05 },
-	{ "Reserved",	0x06 },
-	{ "800 kHz",	0x07 },
+static const char* spispeeds[] = {
+	"66 MHz",
+	"33 MHz",
+	"22 MHz",
+	"16.5 MHz",
+	"100 MHz",
+	"Reserved",
+	"Reserved",
+	"800 kHz",
 };
 
-static int set_speed(struct pci_dev *dev, const struct spispeed *spispeed)
+static const char* spireadmodes[] = {
+	"Normal (up to 33 MHz)",
+	"Reserved",
+	"Dual IO (1-1-2)",
+	"Quad IO (1-1-4)",
+	"Dual IO (1-2-2)",
+	"Quad IO (1-4-4)",
+	"Normal (up to 66 MHz)",
+	"Fast Read",
+};
+
+static int set_speed(struct pci_dev *dev, uint8_t speed)
 {
 	bool success = false;
-	uint8_t speed = spispeed->speed;
 
-	msg_pdbg("Setting SPI clock to %s (0x%x).\n", spispeed->name, speed);
+	msg_pdbg("Setting SPI clock to %s (%i)... ", spispeeds[speed], speed);
 	if (amd_gen >= CHIPSET_YANGTZE) {
 		rmmio_writew((speed << 12) | (speed << 8) | (speed << 4) | speed, sb600_spibar + 0x22);
 		uint16_t tmp = mmio_readw(sb600_spibar + 0x22);
@@ -378,33 +385,41 @@ static int set_speed(struct pci_dev *dev, const struct spispeed *spispeed)
 	}
 
 	if (!success) {
-		msg_perr("Setting SPI clock failed.\n");
+		msg_perr("FAILED!\n");
 		return 1;
 	}
+	msg_pdbg("succeeded.\n");
 	return 0;
 }
 
-static int set_mode(struct pci_dev *dev, uint8_t read_mode)
+static int set_mode(struct pci_dev *dev, uint8_t mode)
 {
+	msg_pdbg("Setting SPI read mode to %s (%i)... ", spireadmodes[mode], mode);
 	uint32_t tmp = mmio_readl(sb600_spibar + 0x00);
 	tmp &= ~(0x6 << 28 | 0x1 << 18); /* Clear mode bits */
-	tmp |= ((read_mode & 0x6) << 28) | ((read_mode & 0x1) << 18);
+	tmp |= ((mode & 0x6) << 28) | ((mode & 0x1) << 18);
 	rmmio_writel(tmp, sb600_spibar + 0x00);
-	if (tmp != mmio_readl(sb600_spibar + 0x00))
+	if (tmp != mmio_readl(sb600_spibar + 0x00)) {
+		msg_perr("FAILED!\n");
 		return 1;
+	}
+	msg_pdbg("succeeded.\n");
 	return 0;
 }
 
 static int handle_speed(struct pci_dev *dev)
 {
 	uint32_t tmp;
-	uint8_t spispeed_idx = 3; /* Default to 16.5 MHz */
+	int16_t spispeed_idx = -1;
+	int16_t spireadmode_idx = -1;
+	char *spispeed;
+	char *spireadmode;
 
-	char *spispeed = extract_programmer_param("spispeed");
+	spispeed = extract_programmer_param("spispeed");
 	if (spispeed != NULL) {
 		unsigned int i;
 		for (i = 0; i < ARRAY_SIZE(spispeeds); i++) {
-			if (strcasecmp(spispeeds[i].name, spispeed) == 0) {
+			if (strcasecmp(spispeeds[i], spispeed) == 0) {
 				spispeed_idx = i;
 				break;
 			}
@@ -424,32 +439,44 @@ static int handle_speed(struct pci_dev *dev)
 		free(spispeed);
 	}
 
+ 	spireadmode = extract_programmer_param("spireadmode");
+	if (spireadmode != NULL) {
+		unsigned int i;
+		for (i = 0; i < ARRAY_SIZE(spireadmodes); i++) {
+			if (strcasecmp(spireadmodes[i], spireadmode) == 0) {
+				spireadmode_idx = i;
+				break;
+			}
+		}
+		if ((strcasecmp(spireadmode, "reserved") == 0) ||
+		    (i == ARRAY_SIZE(spireadmodes))) {
+			msg_perr("Error: Invalid spireadmode value: '%s'.\n", spireadmode);
+			free(spireadmode);
+			return 1;
+		}
+		if (amd_gen < CHIPSET_BOLTON) {
+			msg_perr("Warning: spireadmode not supported for this chipset.");
+		}
+		free(spireadmode);
+	}
+
 	/* See the chipset support matrix for SPI Base_Addr below for an explanation of the symbols used.
 	 * bit   6xx   7xx/SP5100  8xx             9xx  hudson1  hudson234  bolton/yangtze
 	 * 18    rsvd  <-          fastReadEnable  ?    <-       ?          SpiReadMode[0]
 	 * 29:30 rsvd  <-          <-              ?    <-       ?          SpiReadMode[2:1]
 	 */
 	if (amd_gen >= CHIPSET_BOLTON) {
-		static const char *spireadmodes[] = {
-			"Normal (up to 33 MHz)", /* 0 */
-			"Reserved",		 /* 1 */
-			"Dual IO (1-1-2)",	 /* 2 */
-			"Quad IO (1-1-4)",	 /* 3 */
-			"Dual IO (1-2-2)",	 /* 4 */
-			"Quad IO (1-4-4)",	 /* 5 */
-			"Normal (up to 66 MHz)", /* 6 */
-			"Fast Read",		 /* 7 (Not defined in the Bolton datasheet.) */
-		};
+
 		tmp = mmio_readl(sb600_spibar + 0x00);
 		uint8_t read_mode = ((tmp >> 28) & 0x6) | ((tmp >> 18) & 0x1);
-		msg_pdbg("SpiReadMode=%s (%i)\n", spireadmodes[read_mode], read_mode);
-		if (read_mode != 6) {
-			read_mode = 6; /* Default to "Normal (up to 66 MHz)" */
-			if (set_mode(dev, read_mode) != 0) {
-				msg_perr("Setting read mode to \"%s\" failed.\n", spireadmodes[read_mode]);
-				return 1;
-			}
-			msg_pdbg("Setting read mode to \"%s\" succeeded.\n", spireadmodes[read_mode]);
+		msg_pdbg("SPI read mode is %s (%i)\n",
+			spireadmodes[read_mode], read_mode);
+		if (spireadmode_idx < 0) {
+			msg_perr("Warning: spireadmode not set, "
+					 "leaving spireadmode unchanged.");
+		}
+		else if (set_mode(dev, spireadmode_idx) != 0) {
+			return 1;
 		}
 
 		if (amd_gen >= CHIPSET_YANGTZE) {
@@ -466,10 +493,10 @@ static int handle_speed(struct pci_dev *dev)
 			}
 
 			tmp = mmio_readw(sb600_spibar + 0x22); /* SPI 100 Speed Config */
-			msg_pdbg("NormSpeedNew is %s\n", spispeeds[(tmp >> 12) & 0xf].name);
-			msg_pdbg("FastSpeedNew is %s\n", spispeeds[(tmp >> 8) & 0xf].name);
-			msg_pdbg("AltSpeedNew is %s\n", spispeeds[(tmp >> 4) & 0xf].name);
-			msg_pdbg("TpmSpeedNew is %s\n", spispeeds[(tmp >> 0) & 0xf].name);
+			msg_pdbg("NormSpeedNew is %s\n", spispeeds[(tmp >> 12) & 0xf]);
+			msg_pdbg("FastSpeedNew is %s\n", spispeeds[(tmp >> 8) & 0xf]);
+			msg_pdbg("AltSpeedNew is %s\n", spispeeds[(tmp >> 4) & 0xf]);
+			msg_pdbg("TpmSpeedNew is %s\n", spispeeds[(tmp >> 0) & 0xf]);
 		}
 	} else {
 		if (amd_gen >= CHIPSET_SB89XX && amd_gen <= CHIPSET_HUDSON234) {
@@ -482,9 +509,16 @@ static int handle_speed(struct pci_dev *dev)
 			}
 		}
 		tmp = (mmio_readb(sb600_spibar + 0xd) >> 4) & 0x3;
-		msg_pdbg("NormSpeed is %s\n", spispeeds[tmp].name);
+		msg_pdbg("NormSpeed is %s\n", spispeeds[tmp]);
+		if (spispeed_idx < 0) {
+			spispeed_idx = 3; /* Default to 16.5 MHz */
+		}
 	}
-	return set_speed(dev, &spispeeds[spispeed_idx]);
+	if (spispeed_idx < 0) {
+		msg_perr("Warning: spispeed not set, leaving spispeed unchanged.");
+		return 0;
+	}
+	return set_speed(dev, spispeed_idx);
 }
 
 static int handle_imc(struct pci_dev *dev)
@@ -561,11 +595,8 @@ int sb600_probe_spi(struct pci_dev *dev)
 	 */
 	sb600_spibar += tmp & 0xfff;
 
-	determine_generation(dev);
-	if (amd_gen == CHIPSET_AMD_UNKNOWN) {
-		msg_perr("Could not determine chipset generation.");
+	if (determine_generation(dev) < 0)
 		return ERROR_NONFATAL;
-	}
 
 	/* How to read the following table and similar ones in this file:
 	 * "?" means we have no datasheet for this chipset generation or it doesn't have any relevant info.
@@ -588,7 +619,7 @@ int sb600_probe_spi(struct pci_dev *dev)
 		msg_pdbg("SpiRomEnable=%i", (tmp >> 1) & 0x1);
 		if (amd_gen == CHIPSET_SB7XX)
 			msg_pdbg(", AltSpiCSEnable=%i, AbortEnable=%i", tmp & 0x1, (tmp >> 2) & 0x1);
-		else if (amd_gen == CHIPSET_YANGTZE)
+		else if (amd_gen >= CHIPSET_YANGTZE)
 			msg_pdbg(", RouteTpm2Sp=%i", (tmp >> 3) & 0x1);
 
 		tmp = pci_read_byte(dev, 0xba);
@@ -624,13 +655,13 @@ int sb600_probe_spi(struct pci_dev *dev)
 	 */
 	tmp = mmio_readl(sb600_spibar + 0x00);
 	msg_pdbg("(0x%08" PRIx32 ") SpiArbEnable=%i", tmp, (tmp >> 19) & 0x1);
-	if (amd_gen == CHIPSET_YANGTZE)
+	if (amd_gen >= CHIPSET_YANGTZE)
 		msg_pdbg(", IllegalAccess=%i", (tmp >> 21) & 0x1);
 
 	msg_pdbg(", SpiAccessMacRomEn=%i, SpiHostAccessRomEn=%i, ArbWaitCount=%i",
 		 (tmp >> 22) & 0x1, (tmp >> 23) & 0x1, (tmp >> 24) & 0x7);
 
-	if (amd_gen != CHIPSET_YANGTZE)
+	if (amd_gen < CHIPSET_YANGTZE)
 		msg_pdbg(", SpiBridgeDisable=%i", (tmp >> 27) & 0x1);
 
 	switch (amd_gen) {
@@ -640,6 +671,7 @@ int sb600_probe_spi(struct pci_dev *dev)
 	case CHIPSET_SB89XX:
 	case CHIPSET_HUDSON234:
 	case CHIPSET_YANGTZE:
+	case CHIPSET_PROMONTORY:
 		msg_pdbg(", SpiBusy=%i", (tmp >> 31) & 0x1);
 	default: break;
 	}
@@ -703,7 +735,7 @@ int sb600_probe_spi(struct pci_dev *dev)
 		return ERROR_FATAL;
 
 	/* Starting with Yangtze the SPI controller got a different interface with a much bigger buffer. */
-	if (amd_gen != CHIPSET_YANGTZE)
+	if (amd_gen < CHIPSET_YANGTZE)
 		register_spi_master(&spi_master_sb600);
 	else
 		register_spi_master(&spi_master_yangtze);

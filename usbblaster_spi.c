@@ -48,7 +48,7 @@
 const struct dev_entry devs_usbblasterspi[] = {
 	{ALTERA_VID, ALTERA_USBBLASTER_PID, OK, "Altera", "USB-Blaster"},
 
-	{}
+	{0}
 };
 
 static const struct spi_master spi_master_usbblaster;
@@ -160,7 +160,7 @@ static int send_read(unsigned int readcnt, unsigned char *readarr)
 			return -1;
 		}
 		n_read -= payload_size;
-	};
+	}
 
 	n_read = readcnt;
 	while (n_read) {
@@ -179,7 +179,7 @@ static int send_read(unsigned int readcnt, unsigned char *readarr)
 }
 
 /* Returns 0 upon success, a negative number upon errors. */
-static int usbblaster_spi_send_command(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
+static int usbblaster_spi_send_command(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
 				       const unsigned char *writearr, unsigned char *readarr)
 {
 	uint8_t cmd;

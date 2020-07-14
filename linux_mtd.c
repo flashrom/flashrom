@@ -404,5 +404,6 @@ int linux_mtd_init(void)
 
 	ret = 0;
 linux_mtd_init_exit:
+	free(param);
 	return ret;
 }

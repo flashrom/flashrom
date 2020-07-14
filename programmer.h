@@ -43,6 +43,9 @@ enum programmer {
 #if CONFIG_GFXNVIDIA == 1
 	PROGRAMMER_GFXNVIDIA,
 #endif
+#if CONFIG_RAIDEN == 1
+	PROGRAMMER_RAIDEN,
+#endif
 #if CONFIG_DRKAISER == 1
 	PROGRAMMER_DRKAISER,
 #endif
@@ -120,6 +123,18 @@ enum programmer {
 #endif
 #if CONFIG_JLINK_SPI == 1
 	PROGRAMMER_JLINK_SPI,
+#endif
+#if CONFIG_NI845X_SPI == 1
+	PROGRAMMER_NI845X_SPI,
+#endif
+#if CONFIG_STLINKV3_SPI == 1
+	PROGRAMMER_STLINKV3_SPI,
+#endif
+#if CONFIG_LSPCON_I2C_SPI == 1
+	PROGRAMMER_LSPCON_I2C_SPI,
+#endif
+#if CONFIG_REALTEK_MST_I2C_SPI == 1
+	PROGRAMMER_REALTEK_MST_I2C_SPI,
 #endif
 	PROGRAMMER_INVALID /* This must always be the last entry. */
 };
@@ -272,7 +287,7 @@ void internal_delay(unsigned int usecs);
 #if CONFIG_INTERNAL == 1
 /* board_enable.c */
 int selfcheck_board_enables(void);
-int board_parse_parameter(const char *boardstring, const char **vendor, const char **model);
+int board_parse_parameter(const char *boardstring, char **vendor, char **model);
 void w836xx_ext_enter(uint16_t port);
 void w836xx_ext_leave(uint16_t port);
 void probe_superio_winbond(void);
@@ -395,6 +410,12 @@ int gfxnvidia_init(void);
 extern const struct dev_entry gfx_nvidia[];
 #endif
 
+/* raiden_debug_spi.c */
+#if CONFIG_RAIDEN == 1
+int raiden_debug_spi_init(void);
+extern const struct dev_entry devs_raiden[];
+#endif
+
 /* drkaiser.c */
 #if CONFIG_DRKAISER == 1
 int drkaiser_init(void);
@@ -498,6 +519,12 @@ int pickit2_spi_init(void);
 extern const struct dev_entry devs_pickit2_spi[];
 #endif
 
+/* stlinkv3_spi.c */
+#if CONFIG_STLINKV3_SPI == 1
+int stlinkv3_spi_init(void);
+extern const struct dev_entry devs_stlinkv3_spi[];
+#endif
+
 /* rayer_spi.c */
 #if CONFIG_RAYER_SPI == 1
 int rayer_spi_init(void);
@@ -556,6 +583,11 @@ extern const struct dev_entry devs_digilent_spi[];
 int jlink_spi_init(void);
 #endif
 
+/* ni845x_spi.c */
+#if CONFIG_NI845X_SPI == 1
+int ni845x_spi_init(void);
+#endif
+
 /* flashrom.c */
 struct decode_sizes {
 	uint32_t parallel;
@@ -583,9 +615,9 @@ struct spi_master {
 	uint32_t features;
 	unsigned int max_data_read; // (Ideally,) maximum data read size in one go (excluding opcode+address).
 	unsigned int max_data_write; // (Ideally,) maximum data write size in one go (excluding opcode+address).
-	int (*command)(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
+	int (*command)(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
 		   const unsigned char *writearr, unsigned char *readarr);
-	int (*multicommand)(struct flashctx *flash, struct spi_command *cmds);
+	int (*multicommand)(const struct flashctx *flash, struct spi_command *cmds);
 
 	/* Optimized functions for this master */
 	int (*read)(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
@@ -594,9 +626,9 @@ struct spi_master {
 	const void *data;
 };
 
-int default_spi_send_command(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
+int default_spi_send_command(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
 			     const unsigned char *writearr, unsigned char *readarr);
-int default_spi_send_multicommand(struct flashctx *flash, struct spi_command *cmds);
+int default_spi_send_multicommand(const struct flashctx *flash, struct spi_command *cmds);
 int default_spi_read(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 int default_spi_write_256(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 int default_spi_write_aai(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
@@ -784,5 +816,15 @@ struct libusb_device_handle *usb_dev_get_by_vid_pid_serial(
 		struct libusb_context *usb_ctx, uint16_t vid, uint16_t pid, const char *serialno);
 struct libusb_device_handle *usb_dev_get_by_vid_pid_number(
 		struct libusb_context *usb_ctx, uint16_t vid, uint16_t pid, unsigned int num);
+
+/* lspcon_i2c_spi.c */
+#if CONFIG_LSPCON_I2C_SPI == 1
+int lspcon_i2c_spi_init(void);
+#endif
+
+/* realtek_mst_i2c_spi.c */
+#if CONFIG_REALTEK_MST_I2C_SPI == 1
+int realtek_mst_i2c_spi_init(void);
+#endif
 
 #endif				/* !__PROGRAMMER_H__ */

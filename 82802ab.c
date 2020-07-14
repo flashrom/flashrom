@@ -89,9 +89,9 @@ uint8_t wait_82802ab(struct flashctx *flash)
 	chipaddr bios = flash->virtual_memory;
 
 	chip_writeb(flash, 0x70, bios);
-	if ((chip_readb(flash, bios) & 0x80) == 0) {	// it's busy
-		while ((chip_readb(flash, bios) & 0x80) == 0) ;
-	}
+
+	while ((chip_readb(flash, bios) & 0x80) == 0)	// it's busy
+		;
 
 	status = chip_readb(flash, bios);
 

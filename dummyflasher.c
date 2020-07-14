@@ -93,7 +93,7 @@ static const uint8_t sfdp_table[] = {
 
 static unsigned int spi_write_256_chunksize = 256;
 
-static int dummy_spi_send_command(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
+static int dummy_spi_send_command(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
 				  const unsigned char *writearr, unsigned char *readarr);
 static int dummy_spi_write_256(struct flashctx *flash, const uint8_t *buf,
 			       unsigned int start, unsigned int len);
@@ -387,11 +387,15 @@ int dummy_init(void)
 	if (!stat(emu_persistent_image, &image_stat)) {
 		msg_pdbg("Found persistent image %s, %jd B ",
 			 emu_persistent_image, (intmax_t)image_stat.st_size);
-		if (image_stat.st_size == emu_chip_size) {
+		if ((uintmax_t)image_stat.st_size == emu_chip_size) {
 			msg_pdbg("matches.\n");
 			msg_pdbg("Reading %s\n", emu_persistent_image);
-			read_buf_from_file(flashchip_contents, emu_chip_size,
-					   emu_persistent_image);
+			if (read_buf_from_file(flashchip_contents, emu_chip_size,
+					   emu_persistent_image)) {
+				msg_perr("Unable to read %s\n", emu_persistent_image);
+				free(flashchip_contents);
+				return 1;
+			}
 		} else {
 			msg_pdbg("doesn't match.\n");
 		}
@@ -814,7 +818,7 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 }
 #endif
 
-static int dummy_spi_send_command(struct flashctx *flash, unsigned int writecnt,
+static int dummy_spi_send_command(const struct flashctx *flash, unsigned int writecnt,
 				  unsigned int readcnt,
 				  const unsigned char *writearr,
 				  unsigned char *readarr)

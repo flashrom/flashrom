@@ -314,6 +314,7 @@ uint8_t reverse_byte(uint8_t x);
 void reverse_bytes(uint8_t *dst, const uint8_t *src, size_t length);
 #ifdef __MINGW32__
 char* strtok_r(char *str, const char *delim, char **nextp);
+char *strndup(const char *str, size_t size);
 #endif
 #if defined(__DJGPP__) || (!defined(__LIBPAYLOAD__) && !defined(HAVE_STRNLEN))
 size_t strnlen(const char *str, size_t n);
@@ -414,8 +415,8 @@ struct spi_command {
 	unsigned char *readarr;
 };
 #define NULL_SPI_CMD { 0, 0, NULL, NULL, }
-int spi_send_command(struct flashctx *flash, unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr);
-int spi_send_multicommand(struct flashctx *flash, struct spi_command *cmds);
+int spi_send_command(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr);
+int spi_send_multicommand(const struct flashctx *flash, struct spi_command *cmds);
 
 enum chipbustype get_buses_supported(void);
 #endif				/* !__FLASH_H__ */

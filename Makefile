@@ -30,7 +30,7 @@ INSTALL = install
 DIFF    = diff
 PREFIX  ?= /usr/local
 MANDIR  ?= $(PREFIX)/share/man
-CFLAGS  ?= -Os -Wall -Wshadow -Wmissing-prototypes
+CFLAGS  ?= -Os -Wall -Wextra -Wno-unused-parameter -Wshadow -Wmissing-prototypes -Wwrite-strings
 EXPORTDIR ?= .
 RANLIB  ?= ranlib
 PKG_CONFIG ?= pkg-config
@@ -190,6 +190,21 @@ UNSUPPORTED_FEATURES += CONFIG_CH341A_SPI=yes
 else
 override CONFIG_CH341A_SPI = no
 endif
+ifeq ($(CONFIG_STLINKV3_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_STLINKV3_SPI=yes
+else
+override CONFIG_STLINKV3_SPI = no
+endif
+ifeq ($(CONFIG_LSPCON_I2C_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_LSPCON_I2C_SPI=yes
+else
+override CONFIG_LSPCON_I2C_SPI = no
+endif
+ifeq ($(CONFIG_REALTEK_MST_I2C_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_REALTEK_MST_I2C_SPI=yes
+else
+override CONFIG_REALTEK_MST_I2C_SPI = no
+endif
 # libjaylink is also not available for DOS
 ifeq ($(CONFIG_JLINK_SPI), yes)
 UNSUPPORTED_FEATURES += CONFIG_JLINK_SPI=yes
@@ -206,6 +221,10 @@ FLASHROM_CFLAGS += -Dffs=__builtin_ffs
 # Some functions provided by Microsoft do not work as described in C99 specifications. This macro fixes that
 # for MinGW. See http://sourceforge.net/p/mingw-w64/wiki2/printf%20and%20scanf%20family/ */
 FLASHROM_CFLAGS += -D__USE_MINGW_ANSI_STDIO=1
+
+# National Instruments USB-845x is Windows only for now
+CONFIG_NI845X_SPI ?= no
+
 # For now we disable all PCI-based programmers on Windows/MinGW (no libpci).
 ifeq ($(CONFIG_INTERNAL), yes)
 UNSUPPORTED_FEATURES += CONFIG_INTERNAL=yes
@@ -216,6 +235,11 @@ ifeq ($(CONFIG_RAYER_SPI), yes)
 UNSUPPORTED_FEATURES += CONFIG_RAYER_SPI=yes
 else
 override CONFIG_RAYER_SPI = no
+endif
+ifeq ($(CONFIG_RAIDEN), yes)
+UNSUPPORTED_FEATURES += CONFIG_RAIDEN=yes
+else
+override CONFIG_RAIDEN = no
 endif
 ifeq ($(CONFIG_NIC3COM), yes)
 UNSUPPORTED_FEATURES += CONFIG_NIC3COM=yes
@@ -292,6 +316,25 @@ UNSUPPORTED_FEATURES += CONFIG_SATAMV=yes
 else
 override CONFIG_SATAMV = no
 endif
+ifeq ($(CONFIG_LSPCON_I2C_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_LSPCON_I2C_SPI=yes
+else
+override CONFIG_LSPCON_I2C_SPI = no
+endif
+ifeq ($(CONFIG_REALTEK_MST_I2C_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_REALTEK_MST_I2C_SPI=yes
+else
+override CONFIG_REALTEK_MST_I2C_SPI = no
+endif
+endif
+
+ifneq ($(TARGET_OS), MinGW)
+# NI USB-845x only supported on Windows at the moment
+ifeq ($(CONFIG_NI845X_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_NI845X_SPI=yes
+else
+override CONFIG_NI845X_SPI = no
+endif
 endif
 
 ifeq ($(TARGET_OS), libpayload)
@@ -353,6 +396,21 @@ UNSUPPORTED_FEATURES += CONFIG_PICKIT2_SPI=yes
 else
 override CONFIG_PICKIT2_SPI = no
 endif
+ifeq ($(CONFIG_STLINKV3_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_STLINKV3_SPI=yes
+else
+override CONFIG_STLINKV3_SPI = no
+endif
+ifeq ($(CONFIG_LSPCON_I2C_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_LSPCON_I2C_SPI=yes
+else
+override CONFIG_LSPCON_I2C_SPI = no
+endif
+ifeq ($(CONFIG_REALTEK_MST_I2C_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_REALTEK_MST_I2C_SPI=yes
+else
+override CONFIG_REALTEK_MST_I2C_SPI = no
+endif
 ifeq ($(CONFIG_CH341A_SPI), yes)
 UNSUPPORTED_FEATURES += CONFIG_CH341A_SPI=yes
 else
@@ -388,6 +446,10 @@ UNSUPPORTED_FEATURES += CONFIG_RAYER_SPI=yes
 else
 override CONFIG_RAYER_SPI = no
 endif
+endif
+
+ifeq ($(TARGET_OS), Linux)
+CONFIG_LINUX_I2C_HELPER = yes
 endif
 
 ###############################################################################
@@ -453,7 +515,7 @@ endif
 # Disable all drivers needing raw access (memory, PCI, port I/O) on
 # architectures with unknown raw access properties.
 # Right now those architectures are alpha hppa m68k sh s390
-ifneq ($(ARCH),$(filter $(ARCH),x86 mips ppc arm sparc))
+ifneq ($(ARCH),$(filter $(ARCH),x86 mips ppc arm sparc arc))
 ifeq ($(CONFIG_RAYER_SPI), yes)
 UNSUPPORTED_FEATURES += CONFIG_RAYER_SPI=yes
 else
@@ -542,7 +604,7 @@ endif
 CHIP_OBJS = jedec.o stm50.o w39.o w29ee011.o \
 	sst28sf040.o 82802ab.o \
 	sst49lfxxxc.o sst_fwhub.o edi.o flashchips.o spi.o spi25.o spi25_statusreg.o \
-	opaque.o sfdp.o en29lv640b.o at45db.o
+	spi95.o opaque.o sfdp.o en29lv640b.o at45db.o
 
 ###############################################################################
 # Library code.
@@ -584,6 +646,9 @@ CONFIG_SERPROG ?= yes
 # RayeR SPIPGM hardware support
 CONFIG_RAYER_SPI ?= yes
 
+# ChromiumOS servo DUT debug board hardware support
+CONFIG_RAIDEN ?= yes
+
 # PonyProg2000 SPI hardware support
 CONFIG_PONY_SPI ?= yes
 
@@ -617,6 +682,15 @@ CONFIG_MSTARDDC_SPI ?= no
 
 # Always enable PICkit2 SPI dongles for now.
 CONFIG_PICKIT2_SPI ?= yes
+
+# Always enable STLink V3
+CONFIG_STLINKV3_SPI ?= yes
+
+# Disables LSPCON support until the i2c helper supports multiple systems.
+CONFIG_LSPCON_I2C_SPI ?= no
+
+# Disables REALTEK_MST support until the i2c helper supports multiple systems.
+CONFIG_REALTEK_MST_I2C_SPI ?= no
 
 # Always enable dummy tracing for now.
 CONFIG_DUMMY ?= yes
@@ -696,6 +770,10 @@ override CONFIG_DEDIPROG = no
 override CONFIG_DIGILENT_SPI = no
 override CONFIG_DEVELOPERBOX_SPI = no
 override CONFIG_PICKIT2_SPI = no
+override CONFIG_RAIDEN = no
+override CONFIG_STLINKV3_SPI = no
+override CONFIG_LSPCON_I2C_SPI = no
+override CONFIG_REALTEK_MST_I2C_SPI = no
 endif
 ifeq ($(CONFIG_ENABLE_LIBPCI_PROGRAMMERS), no)
 override CONFIG_INTERNAL = no
@@ -790,6 +868,11 @@ PROGRAMMER_OBJS += rayer_spi.o
 NEED_RAW_ACCESS += CONFIG_RAYER_SPI
 endif
 
+ifeq ($(CONFIG_RAIDEN), yes)
+FEATURE_CFLAGS += -D'CONFIG_RAIDEN=1'
+PROGRAMMER_OBJS += raiden_debug_spi.o
+endif
+
 ifeq ($(CONFIG_PONY_SPI), yes)
 FEATURE_CFLAGS += -D'CONFIG_PONY_SPI=1'
 PROGRAMMER_OBJS += pony_spi.o
@@ -861,6 +944,22 @@ ifeq ($(CONFIG_PICKIT2_SPI), yes)
 FEATURE_CFLAGS += -D'CONFIG_PICKIT2_SPI=1'
 PROGRAMMER_OBJS += pickit2_spi.o
 NEED_LIBUSB1 += CONFIG_PICKIT2_SPI
+endif
+
+ifeq ($(CONFIG_STLINKV3_SPI), yes)
+FEATURE_CFLAGS += -D'CONFIG_STLINKV3_SPI=1'
+PROGRAMMER_OBJS += stlinkv3_spi.o
+NEED_LIBUSB1 += CONFIG_STLINKV3_SPI
+endif
+
+ifeq ($(CONFIG_LSPCON_I2C_SPI), yes)
+FEATURE_CFLAGS += -D'CONFIG_LSPCON_I2C_SPI=1'
+PROGRAMMER_OBJS += lspcon_i2c_spi.o
+endif
+
+ifeq ($(CONFIG_REALTEK_MST_I2C_SPI), yes)
+FEATURE_CFLAGS += -D'CONFIG_REALTEK_MST_I2C_SPI=1'
+PROGRAMMER_OBJS += realtek_mst_i2c_spi.o
 endif
 
 ifneq ($(NEED_LIBFTDI), )
@@ -981,6 +1080,31 @@ FEATURE_CFLAGS += -D'CONFIG_JLINK_SPI=1'
 PROGRAMMER_OBJS += jlink_spi.o
 endif
 
+ifeq ($(CONFIG_NI845X_SPI), yes)
+FEATURE_CFLAGS += -D'CONFIG_NI845X_SPI=1'
+
+ifeq ($(CONFIG_NI845X_LIBRARY_PATH),)
+# if the user did not specified the NI-845x headers/lib path
+# do a guess for both 32 and 64 bit Windows versions
+NI845X_LIBS += -L'${PROGRAMFILES}\National Instruments\NI-845x\MS Visual C'
+NI845X_LIBS += -L'${PROGRAMFILES(x86)}\National Instruments\NI-845x\MS Visual C'
+NI845X_INCLUDES += -I'${PROGRAMFILES}\National Instruments\NI-845x\MS Visual C'
+NI845X_INCLUDES += -I'${PROGRAMFILES(x86)}\National Instruments\NI-845x\MS Visual C'
+else
+NI845X_LIBS += -L'$(CONFIG_NI845X_LIBRARY_PATH)'
+NI845X_INCLUDES += -I'$(CONFIG_NI845X_LIBRARY_PATH)'
+endif
+
+FEATURE_CFLAGS += $(NI845X_INCLUDES)
+LIBS += -lni845x
+PROGRAMMER_OBJS += ni845x_spi.o
+endif
+
+ifeq ($(CONFIG_LINUX_I2C_HELPER), yes)
+LIB_OBJS += i2c_helper_linux.o
+FEATURE_CFLAGS += -D'CONFIG_I2C_SUPPORT=1'
+endif
+
 ifneq ($(NEED_SERIAL), )
 LIB_OBJS += serial.o custom_baud.o
 endif
@@ -1035,7 +1159,7 @@ endif
 ifneq ($(NEED_LIBUSB1), )
 CHECK_LIBUSB1 = yes
 FEATURE_CFLAGS += -D'NEED_LIBUSB1=1'
-PROGRAMMER_OBJS += usbdev.o
+PROGRAMMER_OBJS += usbdev.o usb_device.o
 # FreeBSD and DragonflyBSD use a reimplementation of libusb-1.0 that is simply called libusb
 ifeq ($(TARGET_OS),$(filter $(TARGET_OS),FreeBSD DragonFlyBSD))
 USB1LIBS += -lusb
@@ -1078,7 +1202,7 @@ ifeq ($(ARCH), x86)
 endif
 
 $(PROGRAM)$(EXEC_SUFFIX): $(OBJS)
-	$(CC) $(LDFLAGS) -o $(PROGRAM)$(EXEC_SUFFIX) $(OBJS) $(LIBS) $(PCILIBS) $(FEATURE_LIBS) $(USBLIBS) $(USB1LIBS) $(JAYLINKLIBS)
+	$(CC) $(LDFLAGS) -o $(PROGRAM)$(EXEC_SUFFIX) $(OBJS) $(LIBS) $(PCILIBS) $(FEATURE_LIBS) $(USBLIBS) $(USB1LIBS) $(JAYLINKLIBS) $(NI845X_LIBS)
 
 libflashrom.a: $(LIBFLASHROM_OBJS)
 	$(AR) rcs $@ $^
@@ -1390,6 +1514,23 @@ int main(int argc, char **argv)
 endef
 export CLOCK_GETTIME_TEST
 
+define NI845X_TEST
+#include <ni845x.h>
+
+int main(int argc, char **argv)
+{
+    (void) argc;
+    (void) argv;
+    char I2C_Device[256];
+    NiHandle Dev_Handle;
+    uInt32 NumberFound = 0;
+    ni845xFindDevice(I2C_Device, &Dev_Handle, &NumberFound);
+    ni845xCloseFindDeviceHandle(Dev_Handle);
+    return 0;
+}
+endef
+export NI845X_TEST
+
 features: compiler
 	@echo "FEATURES := yes" > .features.tmp
 ifneq ($(NEED_LIBFTDI), )
@@ -1434,6 +1575,22 @@ ifneq ($(NEED_LINUX_I2C), )
 		( echo "yes."; echo "LINUX_I2C_SUPPORT := yes" >> .features.tmp ) ||	\
 		( echo "no."; echo "LINUX_I2C_SUPPORT := no" >> .features.tmp ) } \
 		2>>$(BUILD_DETAILS_FILE) | tee -a $(BUILD_DETAILS_FILE)
+endif
+ifeq ($(CONFIG_NI845X_SPI), yes)
+	@printf "Checking for NI USB-845x installation... " | tee -a $(BUILD_DETAILS_FILE)
+	@echo "$$NI845X_TEST" > .featuretest.c
+	@printf "\nexec: %s\n" "$(CC) $(CPPFLAGS) $(CFLAGS) $(NI845X_INCLUDES) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) $(NI845X_LIBS) $(LIBS)" >>$(BUILD_DETAILS_FILE)
+
+	@ { { { { { $(CC) $(CPPFLAGS) $(CFLAGS) $(NI845X_INCLUDES) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) $(NI845X_LIBS) $(LIBS) >&2 && \
+		( echo "yes."; echo "NI845X_SUPPORT := yes" >> .features.tmp ) ||	\
+		{   echo -e "\nUnable to find NI-845x headers or libraries."; \
+			echo "Please pass the NI-845x library path to the make with the CONFIG_NI845X_LIBRARY_PATH parameter,"; \
+			echo "or disable the NI-845x support by specifying make CONFIG_NI845X_SPI=no"; \
+			echo "For the NI-845x 17.0 the library path is:"; \
+			echo " On 32 bit systems: C:\Program Files)\National Instruments\NI-845x\MS Visual C"; \
+			echo " On 64 bit systems: C:\Program Files (x86)\National Instruments\NI-845x\MS Visual C"; \
+			exit 1; }; } \
+		2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
 endif
 	@printf "Checking for utsname support... " | tee -a $(BUILD_DETAILS_FILE)
 	@echo "$$UTSNAME_TEST" > .featuretest.c

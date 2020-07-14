@@ -324,7 +324,7 @@ static OPCODES O_ST_M25P = {
 	{
 	 {JEDEC_BYTE_PROGRAM, SPI_OPCODE_TYPE_WRITE_WITH_ADDRESS, 0},	// Write Byte
 	 {JEDEC_READ, SPI_OPCODE_TYPE_READ_WITH_ADDRESS, 0},	// Read Data
-	 {JEDEC_BE_D8, SPI_OPCODE_TYPE_WRITE_WITH_ADDRESS, 0},	// Erase Sector
+	 {JEDEC_SE, SPI_OPCODE_TYPE_WRITE_WITH_ADDRESS, 0},	// Erase Sector
 	 {JEDEC_RDSR, SPI_OPCODE_TYPE_READ_NO_ADDRESS, 0},	// Read Device Status Reg
 	 {JEDEC_REMS, SPI_OPCODE_TYPE_READ_WITH_ADDRESS, 0},	// Read Electronic Manufacturer Signature
 	 {JEDEC_WRSR, SPI_OPCODE_TYPE_WRITE_NO_ADDRESS, 0},	// Write Status Register
@@ -1103,7 +1103,7 @@ static int run_opcode(const struct flashctx *flash, OPCODE op, uint32_t offset,
 	}
 }
 
-static int ich_spi_send_command(struct flashctx *flash, unsigned int writecnt,
+static int ich_spi_send_command(const struct flashctx *flash, unsigned int writecnt,
 				unsigned int readcnt,
 				const unsigned char *writearr,
 				unsigned char *readarr)
@@ -1506,7 +1506,7 @@ static int ich_hwseq_write(struct flashctx *flash, const uint8_t *buf, unsigned 
 	return 0;
 }
 
-static int ich_spi_send_multicommand(struct flashctx *flash,
+static int ich_spi_send_multicommand(const struct flashctx *flash,
 				     struct spi_command *cmds)
 {
 	int ret = 0;

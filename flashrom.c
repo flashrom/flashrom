@@ -133,6 +133,18 @@ const struct programmer_entry programmer_table[] = {
 	},
 #endif
 
+#if CONFIG_RAIDEN == 1
+	{
+		.name			= "raiden_debug",
+		.type			= USB,
+		.devs.dev		= devs_raiden,
+		.init			= raiden_debug_spi_init,
+		.map_flash_region	= fallback_map,
+		.unmap_flash_region	= fallback_unmap,
+		.delay			= internal_delay,
+	},
+#endif
+
 #if CONFIG_DRKAISER == 1
 	{
 		.name			= "drkaiser",
@@ -377,6 +389,30 @@ const struct programmer_entry programmer_table[] = {
 	},
 #endif
 
+#if CONFIG_LSPCON_I2C_SPI == 1
+	{
+		.name			= "lspcon_i2c_spi",
+		.type			= OTHER,
+		.devs.note		= "Device files /dev/i2c-*.\n",
+		.init			= lspcon_i2c_spi_init,
+		.map_flash_region	= fallback_map,
+		.unmap_flash_region	= fallback_unmap,
+		.delay			= internal_delay,
+	},
+#endif
+
+#if CONFIG_REALTEK_MST_I2C_SPI == 1
+	{
+		.name			= "realtek_mst_i2c_spi",
+		.type			= OTHER,
+		.devs.note		= "Device files /dev/i2c-*.\n",
+		.init			= realtek_mst_i2c_spi_init,
+		.map_flash_region	= fallback_map,
+		.unmap_flash_region	= fallback_unmap,
+		.delay			= internal_delay,
+	},
+#endif
+
 #if CONFIG_USBBLASTER_SPI == 1
 	{
 		.name			= "usbblaster_spi",
@@ -443,6 +479,30 @@ const struct programmer_entry programmer_table[] = {
 		.type			= OTHER,
 		.init			= jlink_spi_init,
 		.devs.note		= "SEGGER J-Link and compatible devices\n",
+		.map_flash_region	= fallback_map,
+		.unmap_flash_region	= fallback_unmap,
+		.delay			= internal_delay,
+	},
+#endif
+
+#if CONFIG_NI845X_SPI == 1
+	{
+		.name			= "ni845x_spi",
+		.type			= OTHER, // choose other because NI-845x uses own USB implementation
+		.devs.note		= "National Instruments USB-845x\n",
+		.init			= ni845x_spi_init,
+		.map_flash_region	= fallback_map,
+		.unmap_flash_region	= fallback_unmap,
+		.delay			= internal_delay,
+	},
+#endif
+
+#if CONFIG_STLINKV3_SPI == 1
+	{
+		.name			= "stlinkv3_spi",
+		.type			= USB,
+		.devs.dev		= devs_stlinkv3_spi,
+		.init			= stlinkv3_spi_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
 		.delay			= internal_delay,

@@ -28,6 +28,13 @@
 /* INSIZE may be 0x04 for some chips*/
 #define JEDEC_RDID_INSIZE	0x03
 
+/* Some ST M95X model */
+#define ST_M95_RDID		0x83
+#define ST_M95_RDID_3BA_OUTSIZE	0x04	/* 8b op, 24bit addr where size >64KiB */
+#define ST_M95_RDID_2BA_OUTSIZE	0x03	/* 8b op, 16bit addr where size <=64KiB */
+#define ST_M95_RDID_OUTSIZE_MAX 0x04	/* ST_M95_RDID_3BA_OUTSIZE */
+#define ST_M95_RDID_INSIZE	0x03
+
 /* Some Atmel AT25F* models have bit 3 as don't care bit in commands */
 #define AT25F_RDID		0x15	/* 0x15 or 0x1d */
 #define AT25F_RDID_OUTSIZE	0x01

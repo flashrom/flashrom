@@ -26,7 +26,7 @@
 #include "programmer.h"
 #include "spi.h"
 
-int spi_send_command(struct flashctx *flash, unsigned int writecnt,
+int spi_send_command(const struct flashctx *flash, unsigned int writecnt,
 		     unsigned int readcnt, const unsigned char *writearr,
 		     unsigned char *readarr)
 {
@@ -34,12 +34,12 @@ int spi_send_command(struct flashctx *flash, unsigned int writecnt,
 				       readarr);
 }
 
-int spi_send_multicommand(struct flashctx *flash, struct spi_command *cmds)
+int spi_send_multicommand(const struct flashctx *flash, struct spi_command *cmds)
 {
 	return flash->mst->spi.multicommand(flash, cmds);
 }
 
-int default_spi_send_command(struct flashctx *flash, unsigned int writecnt,
+int default_spi_send_command(const struct flashctx *flash, unsigned int writecnt,
 			     unsigned int readcnt,
 			     const unsigned char *writearr,
 			     unsigned char *readarr)
@@ -60,7 +60,7 @@ int default_spi_send_command(struct flashctx *flash, unsigned int writecnt,
 	return spi_send_multicommand(flash, cmd);
 }
 
-int default_spi_send_multicommand(struct flashctx *flash,
+int default_spi_send_multicommand(const struct flashctx *flash,
 				  struct spi_command *cmds)
 {
 	int result = 0;

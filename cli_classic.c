@@ -35,9 +35,12 @@ static void cli_classic_usage(const char *name)
 #if CONFIG_PRINT_WIKI == 1
 	       "-z|"
 #endif
-	       "-p <programmername>[:<parameters>] [-c <chipname>]\n"
-	       "[-E|(-r|-w|-v) <file>] [(-l <layoutfile>|--ifd) [-i <imagename>]...] [-n] [-N] [-f]]\n"
-	       "[-V[V[V]]] [-o <logfile>]\n\n", name);
+	       "\n\t-p <programmername>[:<parameters>] [-c <chipname>]\n"
+	       "\t\t(--flash-name|--flash-size|\n"
+	       "\t\t [-E|(-r|-w|-v) <file>]\n"
+	       "\t\t [(-l <layoutfile>|--ifd| --fmap|--fmap-file <file>) [-i <imagename>]...]\n"
+	       "\t\t [-n] [-N] [-f])]\n"
+	       "\t[-V[V[V]]] [-o <logfile>]\n\n", name);
 
 	printf(" -h | --help                        print this help text\n"
 	       " -R | --version                     print version (release)\n"
@@ -51,6 +54,8 @@ static void cli_classic_usage(const char *name)
 	       " -n | --noverify                    don't auto-verify\n"
 	       " -N | --noverify-all                verify included regions only (cf. -i)\n"
 	       " -l | --layout <layoutfile>         read ROM layout from <layoutfile>\n"
+	       "      --flash-name                  read out the detected flash name\n"
+	       "      --flash-size                  read out the detected flash size\n"
 	       "      --fmap                        read ROM layout from fmap embedded in ROM\n"
 	       "      --fmap-file <fmapfile>        read ROM layout from fmap in <fmapfile>\n"
 	       "      --ifd                         read layout from an Intel Firmware Descriptor\n"
@@ -71,13 +76,22 @@ static void cli_classic_usage(const char *name)
 	       "If no operation is specified, flashrom will only probe for flash chips.\n");
 }
 
-static void cli_classic_abort_usage(void)
+static void cli_classic_abort_usage(const char *msg)
 {
+	if (msg)
+		fprintf(stderr, "%s", msg);
 	printf("Please run \"flashrom --help\" for usage info.\n");
 	exit(1);
 }
 
-static int check_filename(char *filename, char *type)
+static void cli_classic_validate_singleop(int *operation_specified)
+{
+	if (++(*operation_specified) > 1) {
+		cli_classic_abort_usage("More than one operation specified. Aborting.\n");
+	}
+}
+
+static int check_filename(char *filename, const char *type)
 {
 	if (!filename || (filename[0] == '\0')) {
 		fprintf(stderr, "Error: No %s file specified.\n", type);
@@ -101,6 +115,7 @@ int main(int argc, char *argv[])
 #if CONFIG_PRINT_WIKI == 1
 	int list_supported_wiki = 0;
 #endif
+	int flash_name = 0, flash_size = 0;
 	int read_it = 0, write_it = 0, erase_it = 0, verify_it = 0;
 	int dont_verify_it = 0, dont_verify_all = 0, list_supported = 0, operation_specified = 0;
 	struct flashrom_layout *layout = NULL;
@@ -110,6 +125,8 @@ int main(int argc, char *argv[])
 		OPTION_FMAP,
 		OPTION_FMAP_FILE,
 		OPTION_FLASH_CONTENTS,
+		OPTION_FLASH_NAME,
+		OPTION_FLASH_SIZE,
 	};
 	int ret = 0;
 
@@ -130,6 +147,9 @@ int main(int argc, char *argv[])
 		{"fmap-file",		1, NULL, OPTION_FMAP_FILE},
 		{"image",		1, NULL, 'i'},
 		{"flash-contents",	1, NULL, OPTION_FLASH_CONTENTS},
+		{"flash-name",		0, NULL, OPTION_FLASH_NAME},
+		{"flash-size",		0, NULL, OPTION_FLASH_SIZE},
+		{"get-size",		0, NULL, OPTION_FLASH_SIZE}, // (deprecated): back compatibility.
 		{"list-supported",	0, NULL, 'L'},
 		{"list-supported-wiki",	0, NULL, 'z'},
 		{"programmer",		1, NULL, 'p'},
@@ -166,41 +186,27 @@ int main(int argc, char *argv[])
 				  long_options, &option_index)) != EOF) {
 		switch (opt) {
 		case 'r':
-			if (++operation_specified > 1) {
-				fprintf(stderr, "More than one operation "
-					"specified. Aborting.\n");
-				cli_classic_abort_usage();
-			}
+			cli_classic_validate_singleop(&operation_specified);
 			filename = strdup(optarg);
 			read_it = 1;
 			break;
 		case 'w':
-			if (++operation_specified > 1) {
-				fprintf(stderr, "More than one operation "
-					"specified. Aborting.\n");
-				cli_classic_abort_usage();
-			}
+			cli_classic_validate_singleop(&operation_specified);
 			filename = strdup(optarg);
 			write_it = 1;
 			break;
 		case 'v':
 			//FIXME: gracefully handle superfluous -v
-			if (++operation_specified > 1) {
-				fprintf(stderr, "More than one operation "
-					"specified. Aborting.\n");
-				cli_classic_abort_usage();
-			}
+			cli_classic_validate_singleop(&operation_specified);
 			if (dont_verify_it) {
-				fprintf(stderr, "--verify and --noverify are mutually exclusive. Aborting.\n");
-				cli_classic_abort_usage();
+				cli_classic_abort_usage("--verify and --noverify are mutually exclusive. Aborting.\n");
 			}
 			filename = strdup(optarg);
 			verify_it = 1;
 			break;
 		case 'n':
 			if (verify_it) {
-				fprintf(stderr, "--verify and --noverify are mutually exclusive. Aborting.\n");
-				cli_classic_abort_usage();
+				cli_classic_abort_usage("--verify and --noverify are mutually exclusive. Aborting.\n");
 			}
 			dont_verify_it = 1;
 			break;
@@ -216,116 +222,90 @@ int main(int argc, char *argv[])
 				verbose_logfile = verbose_screen;
 			break;
 		case 'E':
-			if (++operation_specified > 1) {
-				fprintf(stderr, "More than one operation "
-					"specified. Aborting.\n");
-				cli_classic_abort_usage();
-			}
+			cli_classic_validate_singleop(&operation_specified);
 			erase_it = 1;
 			break;
 		case 'f':
 			force = 1;
 			break;
 		case 'l':
-			if (layoutfile) {
-				fprintf(stderr, "Error: --layout specified "
-					"more than once. Aborting.\n");
-				cli_classic_abort_usage();
-			}
-			if (ifd) {
-				fprintf(stderr, "Error: --layout and --ifd both specified. Aborting.\n");
-				cli_classic_abort_usage();
-			}
-			if (fmap) {
-				fprintf(stderr, "Error: --layout and --fmap-file both specified. Aborting.\n");
-				cli_classic_abort_usage();
-			}
+			if (layoutfile)
+				cli_classic_abort_usage("Error: --layout specified more than once. Aborting.\n");
+			if (ifd)
+				cli_classic_abort_usage("Error: --layout and --ifd both specified. Aborting.\n");
+			if (fmap)
+				cli_classic_abort_usage("Error: --layout and --fmap-file both specified. Aborting.\n");
 			layoutfile = strdup(optarg);
 			break;
 		case OPTION_IFD:
-			if (layoutfile) {
-				fprintf(stderr, "Error: --layout and --ifd both specified. Aborting.\n");
-				cli_classic_abort_usage();
-			}
-			if (fmap) {
-				fprintf(stderr, "Error: --fmap-file and --ifd both specified. Aborting.\n");
-				cli_classic_abort_usage();
-			}
+			if (layoutfile)
+				cli_classic_abort_usage("Error: --layout and --ifd both specified. Aborting.\n");
+			if (fmap)
+				cli_classic_abort_usage("Error: --fmap-file and --ifd both specified. Aborting.\n");
 			ifd = 1;
 			break;
 		case OPTION_FMAP_FILE:
-			if (fmap) {
-				fprintf(stderr, "Error: --fmap or --fmap-file specified "
+			if (fmap)
+				cli_classic_abort_usage("Error: --fmap or --fmap-file specified "
 					"more than once. Aborting.\n");
-				cli_classic_abort_usage();
-			}
-			if (ifd) {
-				fprintf(stderr, "Error: --fmap-file and --ifd both specified. Aborting.\n");
-				cli_classic_abort_usage();
-			}
-			if (layoutfile) {
-				fprintf(stderr, "Error: --fmap-file and --layout both specified. Aborting.\n");
-				cli_classic_abort_usage();
-			}
+			if (ifd)
+				cli_classic_abort_usage("Error: --fmap-file and --ifd both specified. Aborting.\n");
+			if (layoutfile)
+				cli_classic_abort_usage("Error: --fmap-file and --layout both specified. Aborting.\n");
 			fmapfile = strdup(optarg);
 			fmap = 1;
 			break;
 		case OPTION_FMAP:
-			if (fmap) {
-				fprintf(stderr, "Error: --fmap or --fmap-file specified "
+			if (fmap)
+				cli_classic_abort_usage("Error: --fmap or --fmap-file specified "
 					"more than once. Aborting.\n");
-				cli_classic_abort_usage();
-			}
-			if (ifd) {
-				fprintf(stderr, "Error: --fmap and --ifd both specified. Aborting.\n");
-				cli_classic_abort_usage();
-			}
-			if (layoutfile) {
-				fprintf(stderr, "Error: --layout and --fmap both specified. Aborting.\n");
-				cli_classic_abort_usage();
-			}
+			if (ifd)
+				cli_classic_abort_usage("Error: --fmap and --ifd both specified. Aborting.\n");
+			if (layoutfile)
+				cli_classic_abort_usage("Error: --layout and --fmap both specified. Aborting.\n");
 			fmap = 1;
 			break;
 		case 'i':
 			tempstr = strdup(optarg);
 			if (register_include_arg(&include_args, tempstr)) {
 				free(tempstr);
-				cli_classic_abort_usage();
+				cli_classic_abort_usage(NULL);
 			}
 			break;
 		case OPTION_FLASH_CONTENTS:
+			if (referencefile)
+				cli_classic_abort_usage("Error: --flash-contents specified more than once."
+							"Aborting.\n");
 			referencefile = strdup(optarg);
 			break;
+		case OPTION_FLASH_NAME:
+			cli_classic_validate_singleop(&operation_specified);
+			flash_name = 1;
+			break;
+		case OPTION_FLASH_SIZE:
+			cli_classic_validate_singleop(&operation_specified);
+			flash_size = 1;
+			break;
 		case 'L':
-			if (++operation_specified > 1) {
-				fprintf(stderr, "More than one operation "
-					"specified. Aborting.\n");
-				cli_classic_abort_usage();
-			}
+			cli_classic_validate_singleop(&operation_specified);
 			list_supported = 1;
 			break;
 		case 'z':
 #if CONFIG_PRINT_WIKI == 1
-			if (++operation_specified > 1) {
-				fprintf(stderr, "More than one operation "
-					"specified. Aborting.\n");
-				cli_classic_abort_usage();
-			}
+			cli_classic_validate_singleop(&operation_specified);
 			list_supported_wiki = 1;
 #else
-			fprintf(stderr, "Error: Wiki output was not compiled "
-				"in. Aborting.\n");
-			cli_classic_abort_usage();
+			cli_classic_abort_usage("Error: Wiki output was not"
+					"compiled in. Aborting.\n");
 #endif
 			break;
 		case 'p':
 			if (prog != PROGRAMMER_INVALID) {
-				fprintf(stderr, "Error: --programmer specified "
+				cli_classic_abort_usage("Error: --programmer specified "
 					"more than once. You can separate "
 					"multiple\nparameters for a programmer "
 					"with \",\". Please see the man page "
 					"for details.\n");
-				cli_classic_abort_usage();
 			}
 			for (prog = 0; prog < PROGRAMMER_INVALID; prog++) {
 				name = programmer_table[prog].name;
@@ -357,31 +337,22 @@ int main(int argc, char *argv[])
 					optarg);
 				list_programmers_linebreak(0, 80, 0);
 				msg_ginfo(".\n");
-				cli_classic_abort_usage();
+				cli_classic_abort_usage(NULL);
 			}
 			break;
 		case 'R':
 			/* print_version() is always called during startup. */
-			if (++operation_specified > 1) {
-				fprintf(stderr, "More than one operation "
-					"specified. Aborting.\n");
-				cli_classic_abort_usage();
-			}
+			cli_classic_validate_singleop(&operation_specified);
 			exit(0);
 			break;
 		case 'h':
-			if (++operation_specified > 1) {
-				fprintf(stderr, "More than one operation "
-					"specified. Aborting.\n");
-				cli_classic_abort_usage();
-			}
+			cli_classic_validate_singleop(&operation_specified);
 			cli_classic_usage(argv[0]);
 			exit(0);
 			break;
 		case 'o':
 #ifdef STANDALONE
-			fprintf(stderr, "Log file not supported in standalone mode. Aborting.\n");
-			cli_classic_abort_usage();
+			cli_classic_abort_usage("Log file not supported in standalone mode. Aborting.\n");
 #else /* STANDALONE */
 			if (logfile) {
 				fprintf(stderr, "Warning: -o/--output specified multiple times.\n");
@@ -390,40 +361,32 @@ int main(int argc, char *argv[])
 
 			logfile = strdup(optarg);
 			if (logfile[0] == '\0') {
-				fprintf(stderr, "No log filename specified.\n");
-				cli_classic_abort_usage();
+				cli_classic_abort_usage("No log filename specified.\n");
 			}
 #endif /* STANDALONE */
 			break;
 		default:
-			cli_classic_abort_usage();
+			cli_classic_abort_usage(NULL);
 			break;
 		}
 	}
 
-	if (optind < argc) {
-		fprintf(stderr, "Error: Extra parameter found.\n");
-		cli_classic_abort_usage();
-	}
-
-	if ((read_it | write_it | verify_it) && check_filename(filename, "image")) {
-		cli_classic_abort_usage();
-	}
-	if (layoutfile && check_filename(layoutfile, "layout")) {
-		cli_classic_abort_usage();
-	}
-	if (fmapfile && check_filename(fmapfile, "fmap")) {
-		cli_classic_abort_usage();
-	}
-	if (referencefile && check_filename(referencefile, "reference")) {
-		cli_classic_abort_usage();
-	}
+	if (optind < argc)
+		cli_classic_abort_usage("Error: Extra parameter found.\n");
+	if ((read_it | write_it | verify_it) && check_filename(filename, "image"))
+		cli_classic_abort_usage(NULL);
+	if (layoutfile && check_filename(layoutfile, "layout"))
+		cli_classic_abort_usage(NULL);
+	if (fmapfile && check_filename(fmapfile, "fmap"))
+		cli_classic_abort_usage(NULL);
+	if (referencefile && check_filename(referencefile, "reference"))
+		cli_classic_abort_usage(NULL);
 
 #ifndef STANDALONE
 	if (logfile && check_filename(logfile, "log"))
-		cli_classic_abort_usage();
+		cli_classic_abort_usage(NULL);
 	if (logfile && open_logfile(logfile))
-		cli_classic_abort_usage();
+		cli_classic_abort_usage(NULL);
 #endif /* !STANDALONE */
 
 #if CONFIG_PRINT_WIKI == 1
@@ -602,8 +565,24 @@ int main(int argc, char *argv[])
 		goto out_shutdown;
 	}
 
-	if (!(read_it | write_it | verify_it | erase_it)) {
+	if (!(read_it | write_it | verify_it | erase_it | flash_name | flash_size)) {
 		msg_ginfo("No operations were specified.\n");
+		goto out_shutdown;
+	}
+
+	if (flash_name) {
+		if (fill_flash->chip->vendor && fill_flash->chip->name) {
+			printf("vendor=\"%s\" name=\"%s\"\n",
+				fill_flash->chip->vendor,
+				fill_flash->chip->name);
+		} else {
+			ret = -1;
+		}
+		goto out_shutdown;
+	}
+
+	if (flash_size) {
+		printf("%d\n", fill_flash->chip->total_size * 1024);
 		goto out_shutdown;
 	}
 

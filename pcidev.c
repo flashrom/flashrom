@@ -189,7 +189,6 @@ struct pci_dev *pcidev_init(const struct dev_entry *devs, int bar)
 	char *msg = NULL;
 	int found = 0;
 	int i;
-	uintptr_t addr = 0;
 
 	if (pci_init_common() != 0)
 		return NULL;
@@ -229,7 +228,7 @@ struct pci_dev *pcidev_init(const struct dev_entry *devs, int bar)
 			/* FIXME: We should count all matching devices, not
 			 * just those with a valid BAR.
 			 */
-			if ((addr = pcidev_readbar(dev, bar)) != 0) {
+			if (pcidev_readbar(dev, bar) != 0) {
 				found_dev = dev;
 				found++;
 			}
