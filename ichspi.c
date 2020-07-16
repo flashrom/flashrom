@@ -1736,7 +1736,7 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 	memset(&desc, 0x00, sizeof(struct ich_descriptors));
 
 	/* Moving registers / bits */
-	switch (ich_generation) {
+	switch (ich_gen) {
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 	case CHIPSET_C620_SERIES_LEWISBURG:
 	case CHIPSET_300_SERIES_CANNON_POINT:
@@ -1763,7 +1763,7 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 		hwseq_data.hsfc_fcycle	= HSFC_FCYCLE;
 		break;
 	}
-	switch (ich_generation) {
+	switch (ich_gen) {
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 		num_freg = 10;
 		break;
@@ -1779,7 +1779,7 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 		break;
 	}
 
-	switch (ich_generation) {
+	switch (ich_gen) {
 	case CHIPSET_ICH7:
 	case CHIPSET_TUNNEL_CREEK:
 	case CHIPSET_CENTERTON:
@@ -2021,14 +2021,14 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 				return ERROR_FATAL;
 			}
 
-			int tmpi = getFCBA_component_density(ich_generation, &desc, 0);
+			int tmpi = getFCBA_component_density(ich_gen, &desc, 0);
 			if (tmpi < 0) {
 				msg_perr("Could not determine density of flash component %d.\n", 0);
 				return ERROR_FATAL;
 			}
 			hwseq_data.size_comp0 = tmpi;
 
-			tmpi = getFCBA_component_density(ich_generation, &desc, 1);
+			tmpi = getFCBA_component_density(ich_gen, &desc, 1);
 			if (tmpi < 0) {
 				msg_perr("Could not determine density of flash component %d.\n", 1);
 				return ERROR_FATAL;
