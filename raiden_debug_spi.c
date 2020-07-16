@@ -399,17 +399,17 @@ enum usb_spi_error {
 };
 
 enum raiden_debug_spi_request {
-	RAIDEN_DEBUG_SPI_REQ_ENABLE        = 0x0000,
-	RAIDEN_DEBUG_SPI_REQ_DISABLE       = 0x0001,
-	RAIDEN_DEBUG_SPI_REQ_ENABLE_AP     = 0x0002,
-	RAIDEN_DEBUG_SPI_REQ_ENABLE_EC     = 0x0003,
-	RAIDEN_DEBUG_SPI_REQ_ENABLE_H1     = 0x0004,
-	RAIDEN_DEBUG_SPI_REQ_RESET         = 0x0005,
-	RAIDEN_DEBUG_SPI_REQ_BOOT_CFG      = 0x0006,
-	RAIDEN_DEBUG_SPI_REQ_SOCKET        = 0x0007,
-	RAIDEN_DEBUG_SPI_REQ_SIGNING_START = 0x0008,
-	RAIDEN_DEBUG_SPI_REQ_SIGNING_SIGN  = 0x0009,
-
+	RAIDEN_DEBUG_SPI_REQ_ENABLE           = 0x0000,
+	RAIDEN_DEBUG_SPI_REQ_DISABLE          = 0x0001,
+	RAIDEN_DEBUG_SPI_REQ_ENABLE_AP        = 0x0002,
+	RAIDEN_DEBUG_SPI_REQ_ENABLE_EC        = 0x0003,
+	RAIDEN_DEBUG_SPI_REQ_ENABLE_H1        = 0x0004,
+	RAIDEN_DEBUG_SPI_REQ_RESET            = 0x0005,
+	RAIDEN_DEBUG_SPI_REQ_BOOT_CFG         = 0x0006,
+	RAIDEN_DEBUG_SPI_REQ_SOCKET           = 0x0007,
+	RAIDEN_DEBUG_SPI_REQ_SIGNING_START    = 0x0008,
+	RAIDEN_DEBUG_SPI_REQ_SIGNING_SIGN     = 0x0009,
+	RAIDEN_DEBUG_SPI_REQ_ENABLE_AP_CUSTOM = 0x000a,
 };
 
 /*
@@ -1407,6 +1407,23 @@ static int raiden_debug_spi_shutdown(void * data)
 	return 0;
 }
 
+static int get_ap_request_type(void)
+{
+	int ap_request = RAIDEN_DEBUG_SPI_REQ_ENABLE_AP;
+	char *custom_rst_str = extract_programmer_param("custom_rst");
+	if (custom_rst_str) {
+		if (!strcasecmp(custom_rst_str, "true"))
+			ap_request = RAIDEN_DEBUG_SPI_REQ_ENABLE_AP_CUSTOM;
+		else {
+			msg_perr("Invalid custom rst param: %s\n",
+			         custom_rst_str);
+			ap_request = -1;
+		}
+	}
+	free(custom_rst_str);
+	return ap_request;
+}
+
 static int get_target(void)
 {
 	int request_enable = RAIDEN_DEBUG_SPI_REQ_ENABLE;
@@ -1414,7 +1431,7 @@ static int get_target(void)
 	char *target_str = extract_programmer_param("target");
 	if (target_str) {
 		if (!strcasecmp(target_str, "ap"))
-			request_enable = RAIDEN_DEBUG_SPI_REQ_ENABLE_AP;
+			request_enable = get_ap_request_type();
 		else if (!strcasecmp(target_str, "ec"))
 			request_enable = RAIDEN_DEBUG_SPI_REQ_ENABLE_EC;
 		else {
@@ -1423,6 +1440,7 @@ static int get_target(void)
 		}
 	}
 	free(target_str);
+	msg_pinfo("Raiden target: %d\n", request_enable);
 
 	return request_enable;
 }
