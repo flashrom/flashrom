@@ -389,13 +389,13 @@ static void prettyprint_opcodes(OPCODES *ops)
 #define _pprint_reg(bit, mask, off, val, sep) msg_pdbg("%s=%d" sep, #bit, (val & mask) >> off)
 #define pprint_reg(reg, bit, val, sep) _pprint_reg(bit, reg##_##bit, reg##_##bit##_OFF, val, sep)
 
-static void prettyprint_ich9_reg_hsfs(uint16_t reg_val)
+static void prettyprint_ich9_reg_hsfs(uint16_t reg_val, enum ich_chipset ich_gen)
 {
 	msg_pdbg("HSFS: ");
 	pprint_reg(HSFS, FDONE, reg_val, ", ");
 	pprint_reg(HSFS, FCERR, reg_val, ", ");
 	pprint_reg(HSFS, AEL, reg_val, ", ");
-	switch (ich_generation) {
+	switch (ich_gen) {
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 	case CHIPSET_C620_SERIES_LEWISBURG:
 	case CHIPSET_300_SERIES_CANNON_POINT:
@@ -405,7 +405,7 @@ static void prettyprint_ich9_reg_hsfs(uint16_t reg_val)
 		break;
 	}
 	pprint_reg(HSFS, SCIP, reg_val, ", ");
-	switch (ich_generation) {
+	switch (ich_gen) {
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 	case CHIPSET_C620_SERIES_LEWISBURG:
 	case CHIPSET_300_SERIES_CANNON_POINT:
@@ -420,11 +420,11 @@ static void prettyprint_ich9_reg_hsfs(uint16_t reg_val)
 	pprint_reg(HSFS, FLOCKDN, reg_val, "\n");
 }
 
-static void prettyprint_ich9_reg_hsfc(uint16_t reg_val)
+static void prettyprint_ich9_reg_hsfc(uint16_t reg_val, enum ich_chipset ich_gen)
 {
 	msg_pdbg("HSFC: ");
 	pprint_reg(HSFC, FGO, reg_val, ", ");
-	switch (ich_generation) {
+	switch (ich_gen) {
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 	case CHIPSET_C620_SERIES_LEWISBURG:
 	case CHIPSET_300_SERIES_CANNON_POINT:
@@ -1283,7 +1283,8 @@ static uint32_t ich_hwseq_get_erase_block_size(unsigned int addr)
    Returns 0 if the cycle completes successfully without errors within
    timeout us, 1 on errors. */
 static int ich_hwseq_wait_for_cycle_complete(unsigned int timeout,
-					     unsigned int len)
+					     unsigned int len,
+					     enum ich_chipset ich_gen)
 {
 	uint16_t hsfs;
 	uint32_t addr;
@@ -1300,8 +1301,8 @@ static int ich_hwseq_wait_for_cycle_complete(unsigned int timeout,
 		msg_perr("Timeout error between offset 0x%08x and "
 			 "0x%08x (= 0x%08x + %d)!\n",
 			 addr, addr + len - 1, addr, len - 1);
-		prettyprint_ich9_reg_hsfs(hsfs);
-		prettyprint_ich9_reg_hsfc(REGREAD16(ICH9_REG_HSFC));
+		prettyprint_ich9_reg_hsfs(hsfs, ich_gen);
+		prettyprint_ich9_reg_hsfc(REGREAD16(ICH9_REG_HSFC), ich_gen);
 		return 1;
 	}
 
@@ -1310,8 +1311,8 @@ static int ich_hwseq_wait_for_cycle_complete(unsigned int timeout,
 		msg_perr("Transaction error between offset 0x%08x and "
 			 "0x%08x (= 0x%08x + %d)!\n",
 			 addr, addr + len - 1, addr, len - 1);
-		prettyprint_ich9_reg_hsfs(hsfs);
-		prettyprint_ich9_reg_hsfc(REGREAD16(ICH9_REG_HSFC));
+		prettyprint_ich9_reg_hsfs(hsfs, ich_gen);
+		prettyprint_ich9_reg_hsfc(REGREAD16(ICH9_REG_HSFC), ich_gen);
 		return 1;
 	}
 	return 0;
@@ -1415,10 +1416,10 @@ static int ich_hwseq_block_erase(struct flashctx *flash, unsigned int addr,
 	hsfc |= (0x3 << HSFC_FCYCLE_OFF); /* set erase operation */
 	hsfc |= HSFC_FGO; /* start */
 	msg_pdbg("HSFC used for block erasing: ");
-	prettyprint_ich9_reg_hsfc(hsfc);
+	prettyprint_ich9_reg_hsfc(hsfc, ich_generation);
 	REGWRITE16(ICH9_REG_HSFC, hsfc);
 
-	if (ich_hwseq_wait_for_cycle_complete(timeout, len))
+	if (ich_hwseq_wait_for_cycle_complete(timeout, len, ich_generation))
 		return -1;
 	return 0;
 }
@@ -1455,7 +1456,7 @@ static int ich_hwseq_read(struct flashctx *flash, uint8_t *buf,
 		hsfc |= HSFC_FGO; /* start */
 		REGWRITE16(ICH9_REG_HSFC, hsfc);
 
-		if (ich_hwseq_wait_for_cycle_complete(timeout, block_len))
+		if (ich_hwseq_wait_for_cycle_complete(timeout, block_len, ich_generation))
 			return 1;
 		ich_read_data(buf, block_len, ICH9_REG_FDATA0);
 		addr += block_len;
@@ -1497,7 +1498,7 @@ static int ich_hwseq_write(struct flashctx *flash, const uint8_t *buf, unsigned 
 		hsfc |= HSFC_FGO; /* start */
 		REGWRITE16(ICH9_REG_HSFC, hsfc);
 
-		if (ich_hwseq_wait_for_cycle_complete(timeout, block_len))
+		if (ich_hwseq_wait_for_cycle_complete(timeout, block_len, ich_generation))
 			return -1;
 		addr += block_len;
 		buf += block_len;
@@ -1840,7 +1841,7 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 
 		tmp2 = mmio_readw(ich_spibar + ICH9_REG_HSFS);
 		msg_pdbg("0x04: 0x%04x (HSFS)\n", tmp2);
-		prettyprint_ich9_reg_hsfs(tmp2);
+		prettyprint_ich9_reg_hsfs(tmp2, ich_gen);
 		if (tmp2 & HSFS_FLOCKDN) {
 			msg_pinfo("SPI Configuration is locked down.\n");
 			ichspi_lock = 1;
@@ -1856,7 +1857,7 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 		if (desc_valid) {
 			tmp2 = mmio_readw(ich_spibar + ICH9_REG_HSFC);
 			msg_pdbg("0x06: 0x%04x (HSFC)\n", tmp2);
-			prettyprint_ich9_reg_hsfc(tmp2);
+			prettyprint_ich9_reg_hsfc(tmp2, ich_gen);
 		}
 
 		tmp = mmio_readl(ich_spibar + ICH9_REG_FADDR);
