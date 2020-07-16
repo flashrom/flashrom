@@ -288,8 +288,8 @@ static uint16_t REGREAD8(int X)
 /* Common SPI functions */
 static int find_opcode(OPCODES *op, uint8_t opcode);
 static int find_preop(OPCODES *op, uint8_t preop);
-static int generate_opcodes(OPCODES * op);
-static int program_opcodes(OPCODES *op, int enable_undo);
+static int generate_opcodes(OPCODES * op, enum ich_chipset ich_gen);
+static int program_opcodes(OPCODES *op, int enable_undo, enum ich_chipset ich_gen);
 static int run_opcode(const struct flashctx *flash, OPCODE op, uint32_t offset,
 		      uint8_t datalength, uint8_t * data);
 
@@ -524,7 +524,7 @@ static int reprogram_opcode_on_the_fly(uint8_t opcode, unsigned int writecnt, un
 	int oppos = 2;	// use original JEDEC_BE_D8 offset
 	curopcodes->opcode[oppos].opcode = opcode;
 	curopcodes->opcode[oppos].spi_type = spi_type;
-	program_opcodes(curopcodes, 0);
+	program_opcodes(curopcodes, 0, ich_generation);
 	oppos = find_opcode(curopcodes, opcode);
 	msg_pdbg2("on-the-fly OPCODE (0x%02X) re-programmed, op-pos=%d\n", opcode, oppos);
 	return oppos;
@@ -565,7 +565,7 @@ static int find_preop(OPCODES *op, uint8_t preop)
 }
 
 /* Create a struct OPCODES based on what we find in the locked down chipset. */
-static int generate_opcodes(OPCODES * op)
+static int generate_opcodes(OPCODES * op, enum ich_chipset ich_gen)
 {
 	int a;
 	uint16_t preop, optype;
@@ -576,7 +576,7 @@ static int generate_opcodes(OPCODES * op)
 		return -1;
 	}
 
-	switch (ich_generation) {
+	switch (ich_gen) {
 	case CHIPSET_ICH7:
 	case CHIPSET_TUNNEL_CREEK:
 	case CHIPSET_CENTERTON:
@@ -619,7 +619,7 @@ static int generate_opcodes(OPCODES * op)
 	return 0;
 }
 
-static int program_opcodes(OPCODES *op, int enable_undo)
+static int program_opcodes(OPCODES *op, int enable_undo, enum ich_chipset ich_gen)
 {
 	uint8_t a;
 	uint16_t preop, optype;
@@ -650,7 +650,7 @@ static int program_opcodes(OPCODES *op, int enable_undo)
 	}
 
 	msg_pdbg2("\n%s: preop=%04x optype=%04x opmenu=%08x%08x\n", __func__, preop, optype, opmenu[0], opmenu[1]);
-	switch (ich_generation) {
+	switch (ich_gen) {
 	case CHIPSET_ICH7:
 	case CHIPSET_TUNNEL_CREEK:
 	case CHIPSET_CENTERTON:
@@ -801,7 +801,7 @@ static void ich_fill_data(const uint8_t *data, int len, int reg0_off)
  *
  * It should be called before ICH sends any spi command.
  */
-static int ich_init_opcodes(void)
+static int ich_init_opcodes(enum ich_chipset ich_gen)
 {
 	int rc = 0;
 	OPCODES *curopcodes_done;
@@ -812,11 +812,11 @@ static int ich_init_opcodes(void)
 	if (ichspi_lock) {
 		msg_pdbg("Reading OPCODES... ");
 		curopcodes_done = &O_EXISTING;
-		rc = generate_opcodes(curopcodes_done);
+		rc = generate_opcodes(curopcodes_done, ich_gen);
 	} else {
 		msg_pdbg("Programming OPCODES... ");
 		curopcodes_done = &O_ST_M25P;
-		rc = program_opcodes(curopcodes_done, 1);
+		rc = program_opcodes(curopcodes_done, 1, ich_gen);
 	}
 
 	if (rc) {
@@ -1810,7 +1810,7 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 			msg_pwarn("WARNING: SPI Configuration Lockdown activated.\n");
 			ichspi_lock = 1;
 		}
-		ich_init_opcodes();
+		ich_init_opcodes(ich_gen);
 		ich_set_bbar(0);
 		register_spi_master(&spi_master_ich7);
 		break;
@@ -1851,7 +1851,7 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 			msg_pinfo("The Flash Descriptor Override Strap-Pin is set. Restrictions implied by\n"
 				  "the Master Section of the flash descriptor are NOT in effect. Please note\n"
 				  "that Protected Range (PR) restrictions still apply.\n");
-		ich_init_opcodes();
+		ich_init_opcodes(ich_gen);
 
 		if (desc_valid) {
 			tmp2 = mmio_readw(ich_spibar + ICH9_REG_HSFC);
@@ -2100,7 +2100,7 @@ int via_init_spi(uint32_t mmio_base)
 	}
 
 	ich_set_bbar(0);
-	ich_init_opcodes();
+	ich_init_opcodes(ich_generation);
 
 	return 0;
 }
