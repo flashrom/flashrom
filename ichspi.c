@@ -1785,29 +1785,29 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 	case CHIPSET_TUNNEL_CREEK:
 	case CHIPSET_CENTERTON:
 		msg_pdbg("0x00: 0x%04x     (SPIS)\n",
-			     mmio_readw(ich_spibar + 0));
+			     mmio_readw(spibar + 0));
 		msg_pdbg("0x02: 0x%04x     (SPIC)\n",
-			     mmio_readw(ich_spibar + 2));
+			     mmio_readw(spibar + 2));
 		msg_pdbg("0x04: 0x%08x (SPIA)\n",
-			     mmio_readl(ich_spibar + 4));
-		ichspi_bbar = mmio_readl(ich_spibar + 0x50);
+			     mmio_readl(spibar + 4));
+		ichspi_bbar = mmio_readl(spibar + 0x50);
 		msg_pdbg("0x50: 0x%08x (BBAR)\n",
 			     ichspi_bbar);
 		msg_pdbg("0x54: 0x%04x     (PREOP)\n",
-			     mmio_readw(ich_spibar + 0x54));
+			     mmio_readw(spibar + 0x54));
 		msg_pdbg("0x56: 0x%04x     (OPTYPE)\n",
-			     mmio_readw(ich_spibar + 0x56));
+			     mmio_readw(spibar + 0x56));
 		msg_pdbg("0x58: 0x%08x (OPMENU)\n",
-			     mmio_readl(ich_spibar + 0x58));
+			     mmio_readl(spibar + 0x58));
 		msg_pdbg("0x5c: 0x%08x (OPMENU+4)\n",
-			     mmio_readl(ich_spibar + 0x5c));
+			     mmio_readl(spibar + 0x5c));
 		for (i = 0; i < 3; i++) {
 			int offs;
 			offs = 0x60 + (i * 4);
 			msg_pdbg("0x%02x: 0x%08x (PBR%u)\n", offs,
-				     mmio_readl(ich_spibar + offs), i);
+				     mmio_readl(spibar + offs), i);
 		}
-		if (mmio_readw(ich_spibar) & (1 << 15)) {
+		if (mmio_readw(spibar) & (1 << 15)) {
 			msg_pwarn("WARNING: SPI Configuration Lockdown activated.\n");
 			ichspi_lock = 1;
 		}
@@ -1839,7 +1839,7 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 		}
 		free(arg);
 
-		tmp2 = mmio_readw(ich_spibar + ICH9_REG_HSFS);
+		tmp2 = mmio_readw(spibar + ICH9_REG_HSFS);
 		msg_pdbg("0x04: 0x%04x (HSFS)\n", tmp2);
 		prettyprint_ich9_reg_hsfs(tmp2, ich_gen);
 		if (tmp2 & HSFS_FLOCKDN) {
@@ -1855,12 +1855,12 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 		ich_init_opcodes(ich_gen);
 
 		if (desc_valid) {
-			tmp2 = mmio_readw(ich_spibar + ICH9_REG_HSFC);
+			tmp2 = mmio_readw(spibar + ICH9_REG_HSFC);
 			msg_pdbg("0x06: 0x%04x (HSFC)\n", tmp2);
 			prettyprint_ich9_reg_hsfc(tmp2, ich_gen);
 		}
 
-		tmp = mmio_readl(ich_spibar + ICH9_REG_FADDR);
+		tmp = mmio_readl(spibar + ICH9_REG_FADDR);
 		msg_pdbg2("0x08: 0x%08x (FADDR)\n", tmp);
 
 		switch (ich_gen) {
@@ -1868,7 +1868,7 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 		case CHIPSET_C620_SERIES_LEWISBURG:
 		case CHIPSET_300_SERIES_CANNON_POINT:
 		case CHIPSET_APOLLO_LAKE:
-			tmp = mmio_readl(ich_spibar + PCH100_REG_DLOCK);
+			tmp = mmio_readl(spibar + PCH100_REG_DLOCK);
 			msg_pdbg("0x0c: 0x%08x (DLOCK)\n", tmp);
 			prettyprint_pch100_reg_dlock(tmp);
 			break;
@@ -1877,7 +1877,7 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 		}
 
 		if (desc_valid) {
-			tmp = mmio_readl(ich_spibar + ICH9_REG_FRAP);
+			tmp = mmio_readl(spibar + ICH9_REG_FRAP);
 			msg_pdbg("0x50: 0x%08x (FRAP)\n", tmp);
 			msg_pdbg("BMWAG 0x%02x, ", ICH_BMWAG(tmp));
 			msg_pdbg("BMRAG 0x%02x, ", ICH_BMRAG(tmp));
@@ -1916,24 +1916,24 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 			break;
 		}
 
-		tmp = mmio_readl(ich_spibar + swseq_data.reg_ssfsc);
+		tmp = mmio_readl(spibar + swseq_data.reg_ssfsc);
 		msg_pdbg("0x%zx: 0x%02x (SSFS)\n", swseq_data.reg_ssfsc, tmp & 0xff);
 		prettyprint_ich9_reg_ssfs(tmp);
 		if (tmp & SSFS_FCERR) {
 			msg_pdbg("Clearing SSFS.FCERR\n");
-			mmio_writeb(SSFS_FCERR, ich_spibar + swseq_data.reg_ssfsc);
+			mmio_writeb(SSFS_FCERR, spibar + swseq_data.reg_ssfsc);
 		}
 		msg_pdbg("0x%zx: 0x%06x (SSFC)\n", swseq_data.reg_ssfsc + 1, tmp >> 8);
 		prettyprint_ich9_reg_ssfc(tmp);
 
 		msg_pdbg("0x%zx: 0x%04x     (PREOP)\n",
-			 swseq_data.reg_preop, mmio_readw(ich_spibar + swseq_data.reg_preop));
+			 swseq_data.reg_preop, mmio_readw(spibar + swseq_data.reg_preop));
 		msg_pdbg("0x%zx: 0x%04x     (OPTYPE)\n",
-			 swseq_data.reg_optype, mmio_readw(ich_spibar + swseq_data.reg_optype));
+			 swseq_data.reg_optype, mmio_readw(spibar + swseq_data.reg_optype));
 		msg_pdbg("0x%zx: 0x%08x (OPMENU)\n",
-			 swseq_data.reg_opmenu, mmio_readl(ich_spibar + swseq_data.reg_opmenu));
+			 swseq_data.reg_opmenu, mmio_readl(spibar + swseq_data.reg_opmenu));
 		msg_pdbg("0x%zx: 0x%08x (OPMENU+4)\n",
-			 swseq_data.reg_opmenu + 4, mmio_readl(ich_spibar + swseq_data.reg_opmenu + 4));
+			 swseq_data.reg_opmenu + 4, mmio_readl(spibar + swseq_data.reg_opmenu + 4));
 
 		if (desc_valid) {
 			switch (ich_gen) {
@@ -1945,24 +1945,24 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 			case CHIPSET_BAYTRAIL:
 				break;
 			default:
-				ichspi_bbar = mmio_readl(ich_spibar + ICH9_REG_BBAR);
+				ichspi_bbar = mmio_readl(spibar + ICH9_REG_BBAR);
 				msg_pdbg("0x%x: 0x%08x (BBAR)\n", ICH9_REG_BBAR, ichspi_bbar);
 				ich_set_bbar(0, ich_gen);
 				break;
 			}
 
 			if (ich_gen == CHIPSET_ICH8) {
-				tmp = mmio_readl(ich_spibar + ICH8_REG_VSCC);
+				tmp = mmio_readl(spibar + ICH8_REG_VSCC);
 				msg_pdbg("0x%x: 0x%08x (VSCC)\n", ICH8_REG_VSCC, tmp);
 				msg_pdbg("VSCC: ");
 				prettyprint_ich_reg_vscc(tmp, FLASHROM_MSG_DEBUG, true);
 			} else {
-				tmp = mmio_readl(ich_spibar + ICH9_REG_LVSCC);
+				tmp = mmio_readl(spibar + ICH9_REG_LVSCC);
 				msg_pdbg("0x%x: 0x%08x (LVSCC)\n", ICH9_REG_LVSCC, tmp);
 				msg_pdbg("LVSCC: ");
 				prettyprint_ich_reg_vscc(tmp, FLASHROM_MSG_DEBUG, true);
 
-				tmp = mmio_readl(ich_spibar + ICH9_REG_UVSCC);
+				tmp = mmio_readl(spibar + ICH9_REG_UVSCC);
 				msg_pdbg("0x%x: 0x%08x (UVSCC)\n", ICH9_REG_UVSCC, tmp);
 				msg_pdbg("UVSCC: ");
 				prettyprint_ich_reg_vscc(tmp, FLASHROM_MSG_DEBUG, false);
@@ -1976,12 +1976,12 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 			case CHIPSET_APOLLO_LAKE:
 				break;
 			default:
-				tmp = mmio_readl(ich_spibar + ICH9_REG_FPB);
+				tmp = mmio_readl(spibar + ICH9_REG_FPB);
 				msg_pdbg("0x%x: 0x%08x (FPB)\n", ICH9_REG_FPB, tmp);
 				break;
 			}
 
-			if (read_ich_descriptors_via_fdo(ich_gen, ich_spibar, &desc) == ICH_RET_OK)
+			if (read_ich_descriptors_via_fdo(ich_gen, spibar, &desc) == ICH_RET_OK)
 				prettyprint_ich_descriptors(ich_gen, &desc);
 
 			/* If the descriptor is valid and indicates multiple
