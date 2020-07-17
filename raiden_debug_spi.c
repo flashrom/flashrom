@@ -42,35 +42,50 @@
  *
  *     https://chromium.googlesource.com/chromiumos/platform/ec
  *
- * The protocol for the USB-SPI bridge is documented in the following file in
- * that respository:
+ * The protocol for the USB-SPI bridge is implemented in the following files
+ * in that repository:
  *
+ *     chip/stm32/usb_spi.h
  *     chip/stm32/usb_spi.c
  *
- * Version 1:
- * SPI transactions of up to 62B in each direction with every command having
- * a response. The initial packet from host contains a 2B header indicating
- * write and read counts with an optional payload length equal to the write
- * count. The device will respond with a message that reports the 2B status
- * code and an optional payload response length equal to read count.
+ * bInterfaceProtocol determines which protocol is used by the USB SPI device.
  *
- * Message Format:
  *
- * Command Packet:
+ * USB SPI Version 1:
+ *
+ *     SPI transactions of up to 62B in each direction with every command having
+ *     a response. The initial packet from host contains a 2B header indicating
+ *     write and read counts with an optional payload length equal to the write
+ *     count. The device will respond with a message that reports the 2B status
+ *     code and an optional payload response length equal to read count.
+ *
+ *
+ * Message Packets:
+ *
+ * Command First Packet (Host to Device):
+ *
+ *      USB SPI command, containing the number of bytes to write and read
+ *      and a payload of bytes to write.
+ *
  *     +------------------+-----------------+------------------------+
  *     | write count : 1B | read count : 1B | write payload : <= 62B |
  *     +------------------+-----------------+------------------------+
  *
  *     write count:   1 byte, zero based count of bytes to write
  *
- *     read count:    1 byte, zero based count of bytes to read
+ *     read count:    1 byte, zero based count of bytes to read. Full duplex
+ *                    mode is enabled with UINT8_MAX
  *
  *     write payload: Up to 62 bytes of data to write to SPI, the total
  *                    length of all TX packets must match write count.
  *                    Due to data alignment constraints, this must be an
  *                    even number of bytes unless this is the final packet.
  *
- * Response Packet:
+ * Response Packet (Device to Host):
+ *
+ *      USB SPI response, containing the status code and any bytes of the
+ *      read payload.
+ *
  *     +-------------+-----------------------+
  *     | status : 2B | read payload : <= 62B |
  *     +-------------+-----------------------+
@@ -81,8 +96,8 @@
  *         0x0002: Busy, try again
  *             This can happen if someone else has acquired the shared memory
  *             buffer that the SPI driver uses as /dev/null
- *         0x0003: Write count invalid (V1 > 62B)
- *         0x0004: Read count invalid (V1 > 62B)
+ *         0x0003: Write count invalid (over 62 bytes)
+ *         0x0004: Read count invalid (over 62 bytes)
  *         0x0005: The SPI bridge is disabled.
  *         0x8000: Unknown error mask
  *             The bottom 15 bits will contain the bottom 15 bits from the EC
@@ -94,13 +109,14 @@
  *                   alignment constraints, this must be a even number
  *                   of bytes unless this is the final packet.
  *
+ *
  * USB Error Codes:
  *
  * send_command return codes have the following format:
  *
  *     0x00000:         Status code success.
  *     0x00001-0x0FFFF: Error code returned by the USB SPI device.
- *     0x10001-0x1FFFF: The host has determined an error has occurred.
+ *     0x10001-0x1FFFF: Error code returned by the USB SPI host.
  *     0x20001-0x20063  Lower bits store the positive value representation
  *                      of the libusb_error enum. See the libusb documentation:
  *                      http://libusb.sourceforge.net/api-1.0/group__misc.html
@@ -130,13 +146,13 @@ enum {
 };
 
 enum usb_spi_error {
-	USB_SPI_SUCCESS             = 0x0000,
-	USB_SPI_TIMEOUT             = 0x0001,
-	USB_SPI_BUSY                = 0x0002,
-	USB_SPI_WRITE_COUNT_INVALID = 0x0003,
-	USB_SPI_READ_COUNT_INVALID  = 0x0004,
-	USB_SPI_DISABLED            = 0x0005,
-	USB_SPI_UNKNOWN_ERROR       = 0x8000,
+	USB_SPI_SUCCESS                 = 0x0000,
+	USB_SPI_TIMEOUT                 = 0x0001,
+	USB_SPI_BUSY                    = 0x0002,
+	USB_SPI_WRITE_COUNT_INVALID     = 0x0003,
+	USB_SPI_READ_COUNT_INVALID      = 0x0004,
+	USB_SPI_DISABLED                = 0x0005,
+	USB_SPI_UNKNOWN_ERROR           = 0x8000,
 };
 
 enum raiden_debug_spi_request {
@@ -147,8 +163,8 @@ enum raiden_debug_spi_request {
 };
 
 #define PACKET_HEADER_SIZE      (2)
-#define MAX_PACKET_SIZE         (64)
-#define PAYLOAD_SIZE_V1         (MAX_PACKET_SIZE - PACKET_HEADER_SIZE)
+#define USB_MAX_PACKET_SIZE     (64)
+#define PAYLOAD_SIZE_V1         (USB_MAX_PACKET_SIZE - PACKET_HEADER_SIZE)
 
 /*
  * Servo Micro has an error where it is capable of acknowledging USB packets
@@ -156,9 +172,9 @@ enum raiden_debug_spi_request {
  * See crbug.com/952494. Retry mechanisms have been implemented to recover
  * from these rare failures allowing the process to continue.
  */
-#define WRITE_RETY_ATTEMPTS     (3)
-#define READ_RETY_ATTEMPTS      (3)
-#define RETY_INTERVAL_US        (100 * 1000)
+#define WRITE_RETRY_ATTEMPTS     (3)
+#define READ_RETRY_ATTEMPTS      (3)
+#define RETRY_INTERVAL_US        (100 * 1000)
 
 /*
  * This timeout is so large because the Raiden SPI timeout is 800ms.
@@ -171,17 +187,21 @@ struct raiden_debug_spi_data {
 	uint8_t out_ep;
 };
 
-typedef struct {
-	int8_t write_count;
-	/* -1 Indicates readback all on halfduplex compliant devices. */
-	int8_t read_count;
-	uint8_t data[PAYLOAD_SIZE_V1];
-} __attribute__((packed)) usb_spi_command_v1_t;
+/*
+ * Version 1 protocol specific attributes
+ */
 
-typedef struct {
+struct usb_spi_command_v1 {
+	uint8_t write_count;
+	/* UINT8_MAX indicates full duplex mode on compliant devices. */
+	uint8_t read_count;
+	uint8_t data[PAYLOAD_SIZE_V1];
+} __attribute__((packed));
+
+struct usb_spi_response_v1 {
 	uint16_t status_code;
 	uint8_t data[PAYLOAD_SIZE_V1];
-} __attribute__((packed)) usb_spi_response_v1_t;
+} __attribute__((packed));
 
 /*
  * This function will return true when an error code can potentially recover
@@ -216,7 +236,14 @@ static const struct raiden_debug_spi_data *
 	return (const struct raiden_debug_spi_data *)flash->mst->spi.data;
 }
 
-static int write_command(const struct flashctx *flash,
+/*
+ * Version 1 Protocol: Responsible for constructing the packet to start
+ * a USB SPI transfer. Write and read counts and payloads to write from
+ * the write_buffer are transmitted to the device.
+ *
+ * @returns             Returns status code with 0 on success.
+ */
+static int write_command_v1(const struct flashctx *flash,
 		unsigned int write_count,
 		unsigned int read_count,
 		const unsigned char *write_buffer,
@@ -225,18 +252,8 @@ static int write_command(const struct flashctx *flash,
 
 	int transferred;
 	int ret;
-	usb_spi_command_v1_t command_packet;
+	struct usb_spi_command_v1 command_packet;
 	const struct raiden_debug_spi_data * ctx_data = get_raiden_data_from_context(flash);
-
-	if (write_count > PAYLOAD_SIZE_V1) {
-		msg_perr("Raiden: Invalid write_count of %d\n", write_count);
-		return SPI_INVALID_LENGTH;
-	}
-
-	if (read_count > PAYLOAD_SIZE_V1) {
-		msg_perr("Raiden: Invalid read_count of %d\n", read_count);
-		return SPI_INVALID_LENGTH;
-	}
 
 	command_packet.write_count = write_count;
 	command_packet.read_count = read_count;
@@ -266,7 +283,14 @@ static int write_command(const struct flashctx *flash,
 	return 0;
 }
 
-static int read_response(const struct flashctx *flash,
+/*
+ * Version 1 Protocol: Responsible for reading the response of the USB SPI
+ * transfer. Status codes from the transfer and any read payload are copied
+ * to the read_buffer.
+ *
+ * @returns             Returns status code with 0 on success.
+ */
+static int read_response_v1(const struct flashctx *flash,
 		unsigned int write_count,
 		unsigned int read_count,
 		const unsigned char *write_buffer,
@@ -274,7 +298,7 @@ static int read_response(const struct flashctx *flash,
 {
 	int transferred;
 	int ret;
-	usb_spi_response_v1_t response_packet;
+	struct usb_spi_response_v1 response_packet;
 	const struct raiden_debug_spi_data * ctx_data = get_raiden_data_from_context(flash);
 
 	ret = LIBUSB(libusb_bulk_transfer(ctx_data->dev->handle,
@@ -302,7 +326,21 @@ static int read_response(const struct flashctx *flash,
 	return response_packet.status_code;
 }
 
-static int send_command(const struct flashctx *flash,
+/*
+ * Version 1 Protocol: Sets up a USB SPI transfer, transmits data to the device,
+ * reads the status code and any payload from the device. This will also handle
+ * recovery if an error has occurred.
+ *
+ * @param flash         Flash context storing SPI capabilities and USB device
+ *                      information.
+ * @param write_count   Number of bytes to write
+ * @param read_count    Number of bytes to read
+ * @param write_buffer  Address of write buffer
+ * @param read_buffer   Address of buffer to store read data
+ *
+ * @returns             Returns status code with 0 on success.
+ */
+static int send_command_v1(const struct flashctx *flash,
 		unsigned int write_count,
 		unsigned int read_count,
 		const unsigned char *write_buffer,
@@ -310,42 +348,65 @@ static int send_command(const struct flashctx *flash,
 {
 	int status = -1;
 
-	for (int write_attempt = 0; write_attempt < WRITE_RETY_ATTEMPTS;
+	if (write_count > PAYLOAD_SIZE_V1) {
+		msg_perr("Raiden: Invalid write count\n"
+			 "    write count = %u\n"
+			 "    max write   = %d\n",
+			 write_count, PAYLOAD_SIZE_V1);
+		return SPI_INVALID_LENGTH;
+	}
+
+	if (read_count > PAYLOAD_SIZE_V1) {
+		msg_perr("Raiden: Invalid read count\n"
+			 "    read count = %d\n"
+			 "    max read   = %d\n",
+			 read_count, PAYLOAD_SIZE_V1);
+		return SPI_INVALID_LENGTH;
+	}
+
+	for (unsigned int write_attempt = 0; write_attempt < WRITE_RETRY_ATTEMPTS;
 	         write_attempt++) {
 
-		status = write_command(flash, write_count, read_count,
+		status = write_command_v1(flash, write_count, read_count,
 		                       write_buffer, read_buffer);
 
 		if (status) {
 			/* Write operation failed. */
 			msg_perr("Raiden: Write command failed\n"
-				"Write attempt = %d\n"
-				"status = %d\n",
-				write_attempt + 1, status);
+				 "    write count       = %u\n"
+				 "    read count        = %u\n"
+				 "    write attempt     = %u\n"
+				 "    status            = 0x%05x\n",
+				 write_count, read_count,
+				 write_attempt + 1, status);
 			if (!retry_recovery(status)) {
 				/* Reattempting will not result in a recovery. */
 				return status;
 			}
-			programmer_delay(RETY_INTERVAL_US);
+			programmer_delay(RETRY_INTERVAL_US);
 			continue;
 		}
-		for (int read_attempt = 0; read_attempt < READ_RETY_ATTEMPTS; read_attempt++) {
+		for (unsigned int read_attempt = 0; read_attempt < READ_RETRY_ATTEMPTS;
+				read_attempt++) {
 
-			status = read_response(flash, write_count, read_count,
+			status = read_response_v1(flash, write_count, read_count,
 					write_buffer, read_buffer);
 
-			if (status != 0) {
+			if (status) {
 				/* Read operation failed. */
 				msg_perr("Raiden: Read response failed\n"
-					"Write attempt = %d\n"
-					"Read attempt = %d\n"
-					"status = %d\n",
-					write_attempt + 1, read_attempt + 1, status);
+					 "    write count    = %u\n"
+					 "    read count     = %u\n"
+					 "    write attempt  = %u\n"
+					 "    read attempt   = %u\n"
+					 "    status         = 0x%05x\n",
+					 write_count, read_count,
+					 write_attempt + 1, read_attempt + 1, status);
 				if (!retry_recovery(status)) {
 					/* Reattempting will not result in a recovery. */
 					return status;
 				}
-				programmer_delay(RETY_INTERVAL_US);
+				programmer_delay(RETRY_INTERVAL_US);
 			} else {
 				/* We were successful at performing the SPI transfer. */
 				return status;
@@ -372,7 +433,7 @@ static struct spi_master spi_master_raiden_debug = {
 	.features       = SPI_MASTER_4BA,
 	.max_data_read  = MAX_DATA_SIZE,
 	.max_data_write = MAX_DATA_SIZE,
-	.command        = send_command,
+	.command        = send_command_v1,
 	.multicommand   = default_spi_send_multicommand,
 	.read           = default_spi_read,
 	.write_256      = default_spi_write_256,
