@@ -145,6 +145,25 @@ enum {
 	GOOGLE_RAIDEN_SPI_PROTOCOL_V2 = 0x02,
 };
 
+enum {
+	/* The host failed to transfer the data with no libusb error. */
+	USB_SPI_HOST_TX_BAD_TRANSFER      = 0x10001,
+	/* The number of bytes written did not match expected. */
+	USB_SPI_HOST_TX_WRITE_FAILURE     = 0x10002,
+
+	/* We did not receive the expected USB packet. */
+	USB_SPI_HOST_RX_UNEXPECTED_PACKET = 0x11001,
+	/* We received a continue packet with an invalid data index. */
+	USB_SPI_HOST_RX_BAD_DATA_INDEX    = 0x11002,
+	/* We received too much data. */
+	USB_SPI_HOST_RX_DATA_OVERFLOW     = 0x11003,
+	/* The number of bytes read did not match expected. */
+	USB_SPI_HOST_RX_READ_FAILURE      = 0x11004,
+
+	/* We were unable to configure the device. */
+	USB_SPI_HOST_INIT_FAILURE         = 0x12001,
+};
+
 enum usb_spi_error {
 	USB_SPI_SUCCESS                 = 0x0000,
 	USB_SPI_TIMEOUT                 = 0x0001,
@@ -172,9 +191,9 @@ enum raiden_debug_spi_request {
  * See crbug.com/952494. Retry mechanisms have been implemented to recover
  * from these rare failures allowing the process to continue.
  */
-#define WRITE_RETRY_ATTEMPTS     (3)
-#define READ_RETRY_ATTEMPTS      (3)
-#define RETRY_INTERVAL_US        (100 * 1000)
+#define WRITE_RETRY_ATTEMPTS    (3)
+#define READ_RETRY_ATTEMPTS     (3)
+#define RETRY_INTERVAL_US       (100 * 1000)
 
 /*
  * This timeout is so large because the Raiden SPI timeout is 800ms.
@@ -202,6 +221,27 @@ struct usb_spi_response_v1 {
 	uint16_t status_code;
 	uint8_t data[PAYLOAD_SIZE_V1];
 } __attribute__((packed));
+
+union usb_spi_packet_v1 {
+	struct usb_spi_command_v1 command;
+	struct usb_spi_response_v1 response;
+} __attribute__((packed));
+
+struct usb_spi_packet_ctx {
+	union {
+		uint8_t bytes[USB_MAX_PACKET_SIZE];
+		union usb_spi_packet_v1 packet_v1;
+	};
+	/*
+	 * By storing the number of bytes in the header and knowing that the
+	 * USB data packets are all 64B long, we are able to use the header
+	 * size to store the offset of the buffer and it's size without
+	 * duplicating variables that can go out of sync.
+	 */
+	size_t header_size;
+	/* Number of bytes in the packet */
+	size_t packet_size;
+};
 
 struct usb_spi_transmit_ctx {
 	/* Buffer we are reading data from. */
@@ -255,53 +295,150 @@ static const struct raiden_debug_spi_data *
 }
 
 /*
- * Version 1 Protocol: Responsible for constructing the packet to start
- * a USB SPI transfer. Write and read counts and payloads to write from
- * the write_buffer are transmitted to the device.
+ * Read data into the receive buffer.
  *
- * @param flash         Flash context storing SPI capabilities and USB device
- *                      information.
+ * @param dst       Destination receive context we are writing data to.
+ * @param src       Source packet context we are reading data from.
+ *
+ * @returns         status code 0 on success.
+ *                  USB_SPI_HOST_RX_DATA_OVERFLOW if the source packet is too
+ *                  large to fit in read buffer.
+ */
+static int read_usb_packet(struct usb_spi_receive_ctx *dst,
+		const struct usb_spi_packet_ctx *src)
+{
+	size_t max_read_length = dst->receive_size - dst->receive_index;
+	size_t bytes_in_buffer = src->packet_size - src->header_size;
+	const uint8_t *packet_buffer = src->bytes + src->header_size;
+
+	if (bytes_in_buffer > max_read_length) {
+		/*
+		 * An error occurred, we should not receive more data than
+		 * the buffer can support.
+		 */
+		msg_perr("Raiden: Receive packet overflowed\n"
+				"    bytes_in_buffer = %zu\n"
+				"    max_read_length = %zu\n"
+				"    receive_index   = %zu\n"
+				"    receive_size    = %zu\n",
+				bytes_in_buffer, max_read_length,
+				dst->receive_size, dst->receive_index);
+		return USB_SPI_HOST_RX_DATA_OVERFLOW;
+	}
+	memcpy(dst->buffer + dst->receive_index, packet_buffer,
+		bytes_in_buffer);
+
+	dst->receive_index += bytes_in_buffer;
+	return 0;
+}
+
+/*
+ * Fill the USB packet with data from the transmit buffer.
+ *
+ * @param dst       Destination packet context we are writing data to.
+ * @param src       Source transmit context we are reading data from.
+ */
+static void fill_usb_packet(struct usb_spi_packet_ctx *dst,
+		struct usb_spi_transmit_ctx *src)
+{
+	size_t transmit_size = src->transmit_size - src->transmit_index;
+	size_t max_buffer_size = USB_MAX_PACKET_SIZE - dst->header_size;
+	uint8_t *packet_buffer = dst->bytes + dst->header_size;
+
+	if (transmit_size > max_buffer_size)
+		transmit_size = max_buffer_size;
+
+	memcpy(packet_buffer, src->buffer + src->transmit_index, transmit_size);
+
+	dst->packet_size = dst->header_size + transmit_size;
+	src->transmit_index += transmit_size;
+}
+
+/*
+ * Receive the data from the device USB endpoint and store in the packet.
+ *
+ * @param ctx_data      Raiden SPI config.
+ * @param packet        Destination packet used to store the endpoint data.
+ *
+ * @returns             Returns status code with 0 on success.
+ */
+static int receive_packet(const struct raiden_debug_spi_data *ctx_data,
+		struct usb_spi_packet_ctx *packet)
+{
+	int received;
+	int status = LIBUSB(libusb_bulk_transfer(ctx_data->dev->handle,
+				ctx_data->in_ep,
+				packet->bytes,
+				USB_MAX_PACKET_SIZE,
+				&received,
+				TRANSFER_TIMEOUT_MS));
+	packet->packet_size = received;
+	if (status) {
+		msg_perr("Raiden: IN transfer failed\n"
+			 "    received = %d\n"
+			 "    status   = 0x%05x\n",
+			 received, status);
+	}
+	return status;
+}
+
+/*
+ * Transmit data from the packet to the device's USB endpoint.
+ *
+ * @param ctx_data      Raiden SPI config.
+ * @param packet        Source packet we will write to the endpoint data.
+ *
+ * @returns             Returns status code with 0 on success.
+ */
+static int transmit_packet(const struct raiden_debug_spi_data *ctx_data,
+		struct usb_spi_packet_ctx *packet)
+{
+	int transferred;
+	int status = LIBUSB(libusb_bulk_transfer(ctx_data->dev->handle,
+				ctx_data->out_ep,
+				packet->bytes,
+				packet->packet_size,
+				&transferred,
+				TRANSFER_TIMEOUT_MS));
+	if (status || (size_t)transferred != packet->packet_size) {
+		if (!status) {
+			/* No error was reported, but we didn't transmit the data expected. */
+			status = USB_SPI_HOST_TX_BAD_TRANSFER;
+		}
+		msg_perr("Raiden: OUT transfer failed\n"
+			 "    transferred = %d\n"
+			 "    packet_size = %zu\n"
+			 "    status      = 0x%05x\n",
+			 transferred, packet->packet_size, status);
+
+	}
+	return status;
+}
+
+/*
+ * Version 1 protocol command to start a USB SPI transfer and write the payload.
+ *
+ * @param ctx_data      Raiden SPI config.
  * @param write         Write context of data to transmit and write payload.
  * @param read          Read context of data to receive and read buffer.
  *
  * @returns             Returns status code with 0 on success.
  */
-static int write_command_v1(const struct flashctx *flash,
+static int write_command_v1(const struct raiden_debug_spi_data *ctx_data,
 		struct usb_spi_transmit_ctx *write,
 		struct usb_spi_receive_ctx *read)
 {
+	struct usb_spi_packet_ctx command = {
+		.header_size = offsetof(struct usb_spi_command_v1, data),
+		.packet_v1.command.write_count = write->transmit_size,
+		.packet_v1.command.read_count = read->receive_size
+	};
 
-	int transferred;
-	int ret;
-	struct usb_spi_command_v1 command_packet;
-	const struct raiden_debug_spi_data * ctx_data = get_raiden_data_from_context(flash);
+	/* Reset the write context to the start. */
+	write->transmit_index = 0;
 
-	command_packet.write_count = write->transmit_size;
-	command_packet.read_count = read->receive_size;
-
-	memcpy(command_packet.data, write->buffer, write->transmit_size);
-
-	ret = LIBUSB(libusb_bulk_transfer(ctx_data->dev->handle,
-				ctx_data->out_ep,
-				(void*)&command_packet,
-				write->transmit_size + PACKET_HEADER_SIZE,
-				&transferred,
-				TRANSFER_TIMEOUT_MS));
-	if (ret != 0) {
-		msg_perr("Raiden: OUT transfer failed\n"
-		         "    write_count = %zu\n"
-		         "    read_count  = %zu\n",
-		         write->transmit_size, read->receive_size);
-		return ret;
-	}
-
-	if ((unsigned) transferred != write->transmit_size + PACKET_HEADER_SIZE) {
-		msg_perr("Raiden: Write failure (wrote %d, expected %zu)\n",
-			 transferred, write->transmit_size + PACKET_HEADER_SIZE);
-		return 0x10001;
-	}
-
-	return 0;
+	fill_usb_packet(&command, write);
+	return transmit_packet(ctx_data, &command);
 }
 
 /*
@@ -309,45 +446,34 @@ static int write_command_v1(const struct flashctx *flash,
  * transfer. Status codes from the transfer and any read payload are copied
  * to the read_buffer.
  *
- * @param flash         Flash context storing SPI capabilities and USB device
- *                      information.
+ * @param ctx_data      Raiden SPI config.
  * @param write         Write context of data to transmit and write payload.
  * @param read          Read context of data to receive and read buffer.
  *
  * @returns             Returns status code with 0 on success.
  */
-static int read_response_v1(const struct flashctx *flash,
+static int read_response_v1(const struct raiden_debug_spi_data *ctx_data,
 		struct usb_spi_transmit_ctx *write,
 		struct usb_spi_receive_ctx *read)
 {
-	int transferred;
-	int ret;
-	struct usb_spi_response_v1 response_packet;
-	const struct raiden_debug_spi_data * ctx_data = get_raiden_data_from_context(flash);
+	int status;
+	struct usb_spi_packet_ctx response;
 
-	ret = LIBUSB(libusb_bulk_transfer(ctx_data->dev->handle,
-				ctx_data->in_ep,
-				(void*)&response_packet,
-				read->receive_size + PACKET_HEADER_SIZE,
-				&transferred,
-				TRANSFER_TIMEOUT_MS));
-	if (ret != 0) {
-		msg_perr("Raiden: IN transfer failed\n"
-		         "    write_count = %zu\n"
-		         "    read_count  = %zu\n",
-		         write->transmit_size, read->receive_size);
-		return ret;
+	/* Reset the read context to the start. */
+	read->receive_index = 0;
+
+	status = receive_packet(ctx_data, &response);
+	if (status) {
+		/* Return the transfer error since the status_code is unreliable */
+		return status;
 	}
-
-	if ((unsigned) transferred != read->receive_size + PACKET_HEADER_SIZE) {
-		msg_perr("Raiden: Read failure (read %d, expected %zu)\n",
-				transferred, read->receive_size + PACKET_HEADER_SIZE);
-		return 0x10002;
+	if (response.packet_v1.response.status_code) {
+		return response.packet_v1.response.status_code;
 	}
+	response.header_size = offsetof(struct usb_spi_response_v1, data);
 
-	memcpy(read->buffer, response_packet.data, read->receive_size);
-
-	return response_packet.status_code;
+	status = read_usb_packet(read, &response);
+	return status;
 }
 
 /*
@@ -380,6 +506,7 @@ static int send_command_v1(const struct flashctx *flash,
 		.buffer = read_buffer,
 		.receive_size = read_count
 	};
+	const struct raiden_debug_spi_data *ctx_data = get_raiden_data_from_context(flash);
 
 	if (write_count > PAYLOAD_SIZE_V1) {
 		msg_perr("Raiden: Invalid write count\n"
@@ -401,7 +528,13 @@ static int send_command_v1(const struct flashctx *flash,
 	         write_attempt++) {
 
 
-		status = write_command_v1(flash, &write_ctx, &read_ctx);
+		status = write_command_v1(ctx_data, &write_ctx, &read_ctx);
+
+		if (!status &&
+			(write_ctx.transmit_index != write_ctx.transmit_size)) {
+			/* No errors were reported, but write is incomplete. */
+			status = USB_SPI_HOST_TX_WRITE_FAILURE;
+		}
 
 		if (status) {
 			/* Write operation failed. */
@@ -424,7 +557,17 @@ static int send_command_v1(const struct flashctx *flash,
 		for (unsigned int read_attempt = 0; read_attempt < READ_RETRY_ATTEMPTS;
 				read_attempt++) {
 
-			status = read_response_v1(flash, &write_ctx, &read_ctx);
+			status = read_response_v1(ctx_data, &write_ctx, &read_ctx);
+
+			if (!status) {
+				if (read_ctx.receive_size == read_ctx.receive_index) {
+					/* Successful transfer. */
+					return status;
+				} else {
+					/* Report the error from the failed read. */
+					status = USB_SPI_HOST_RX_READ_FAILURE;
+				}
+			}
 
 			if (status) {
 				/* Read operation failed. */
@@ -442,9 +585,6 @@ static int send_command_v1(const struct flashctx *flash,
 					return status;
 				}
 				programmer_delay(RETRY_INTERVAL_US);
-			} else {
-				/* We were successful at performing the SPI transfer. */
-				return status;
 			}
 		}
 	}
