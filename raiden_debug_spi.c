@@ -203,6 +203,24 @@ struct usb_spi_response_v1 {
 	uint8_t data[PAYLOAD_SIZE_V1];
 } __attribute__((packed));
 
+struct usb_spi_transmit_ctx {
+	/* Buffer we are reading data from. */
+	const uint8_t *buffer;
+	/* Number of bytes in the transfer. */
+	size_t transmit_size;
+	/* Number of bytes transferred. */
+	size_t transmit_index;
+};
+
+struct usb_spi_receive_ctx {
+	/* Buffer we are writing data into. */
+	uint8_t *buffer;
+	/* Number of bytes in the transfer. */
+	size_t receive_size;
+	/* Number of bytes transferred. */
+	size_t receive_index;
+};
+
 /*
  * This function will return true when an error code can potentially recover
  * if we attempt to write SPI data to the device or read from it. We know
@@ -241,13 +259,16 @@ static const struct raiden_debug_spi_data *
  * a USB SPI transfer. Write and read counts and payloads to write from
  * the write_buffer are transmitted to the device.
  *
+ * @param flash         Flash context storing SPI capabilities and USB device
+ *                      information.
+ * @param write         Write context of data to transmit and write payload.
+ * @param read          Read context of data to receive and read buffer.
+ *
  * @returns             Returns status code with 0 on success.
  */
 static int write_command_v1(const struct flashctx *flash,
-		unsigned int write_count,
-		unsigned int read_count,
-		const unsigned char *write_buffer,
-		unsigned char *read_buffer)
+		struct usb_spi_transmit_ctx *write,
+		struct usb_spi_receive_ctx *read)
 {
 
 	int transferred;
@@ -255,28 +276,28 @@ static int write_command_v1(const struct flashctx *flash,
 	struct usb_spi_command_v1 command_packet;
 	const struct raiden_debug_spi_data * ctx_data = get_raiden_data_from_context(flash);
 
-	command_packet.write_count = write_count;
-	command_packet.read_count = read_count;
+	command_packet.write_count = write->transmit_size;
+	command_packet.read_count = read->receive_size;
 
-	memcpy(command_packet.data, write_buffer, write_count);
+	memcpy(command_packet.data, write->buffer, write->transmit_size);
 
 	ret = LIBUSB(libusb_bulk_transfer(ctx_data->dev->handle,
 				ctx_data->out_ep,
 				(void*)&command_packet,
-				write_count + PACKET_HEADER_SIZE,
+				write->transmit_size + PACKET_HEADER_SIZE,
 				&transferred,
 				TRANSFER_TIMEOUT_MS));
 	if (ret != 0) {
 		msg_perr("Raiden: OUT transfer failed\n"
-		         "    write_count = %d\n"
-		         "    read_count  = %d\n",
-		         write_count, read_count);
+		         "    write_count = %zu\n"
+		         "    read_count  = %zu\n",
+		         write->transmit_size, read->receive_size);
 		return ret;
 	}
 
-	if ((unsigned) transferred != write_count + PACKET_HEADER_SIZE) {
-		msg_perr("Raiden: Write failure (wrote %d, expected %d)\n",
-			 transferred, write_count + PACKET_HEADER_SIZE);
+	if ((unsigned) transferred != write->transmit_size + PACKET_HEADER_SIZE) {
+		msg_perr("Raiden: Write failure (wrote %d, expected %zu)\n",
+			 transferred, write->transmit_size + PACKET_HEADER_SIZE);
 		return 0x10001;
 	}
 
@@ -288,13 +309,16 @@ static int write_command_v1(const struct flashctx *flash,
  * transfer. Status codes from the transfer and any read payload are copied
  * to the read_buffer.
  *
+ * @param flash         Flash context storing SPI capabilities and USB device
+ *                      information.
+ * @param write         Write context of data to transmit and write payload.
+ * @param read          Read context of data to receive and read buffer.
+ *
  * @returns             Returns status code with 0 on success.
  */
 static int read_response_v1(const struct flashctx *flash,
-		unsigned int write_count,
-		unsigned int read_count,
-		const unsigned char *write_buffer,
-		unsigned char *read_buffer)
+		struct usb_spi_transmit_ctx *write,
+		struct usb_spi_receive_ctx *read)
 {
 	int transferred;
 	int ret;
@@ -304,24 +328,24 @@ static int read_response_v1(const struct flashctx *flash,
 	ret = LIBUSB(libusb_bulk_transfer(ctx_data->dev->handle,
 				ctx_data->in_ep,
 				(void*)&response_packet,
-				read_count + PACKET_HEADER_SIZE,
+				read->receive_size + PACKET_HEADER_SIZE,
 				&transferred,
 				TRANSFER_TIMEOUT_MS));
 	if (ret != 0) {
 		msg_perr("Raiden: IN transfer failed\n"
-		         "    write_count = %d\n"
-		         "    read_count  = %d\n",
-		         write_count, read_count);
+		         "    write_count = %zu\n"
+		         "    read_count  = %zu\n",
+		         write->transmit_size, read->receive_size);
 		return ret;
 	}
 
-	if ((unsigned) transferred != read_count + PACKET_HEADER_SIZE) {
-		msg_perr("Raiden: Read failure (read %d, expected %d)\n",
-				transferred, read_count + PACKET_HEADER_SIZE);
+	if ((unsigned) transferred != read->receive_size + PACKET_HEADER_SIZE) {
+		msg_perr("Raiden: Read failure (read %d, expected %zu)\n",
+				transferred, read->receive_size + PACKET_HEADER_SIZE);
 		return 0x10002;
 	}
 
-	memcpy(read_buffer, response_packet.data, read_count);
+	memcpy(read->buffer, response_packet.data, read->receive_size);
 
 	return response_packet.status_code;
 }
@@ -348,6 +372,15 @@ static int send_command_v1(const struct flashctx *flash,
 {
 	int status = -1;
 
+	struct usb_spi_transmit_ctx write_ctx = {
+		.buffer = write_buffer,
+		.transmit_size = write_count
+	};
+	struct usb_spi_receive_ctx read_ctx = {
+		.buffer = read_buffer,
+		.receive_size = read_count
+	};
+
 	if (write_count > PAYLOAD_SIZE_V1) {
 		msg_perr("Raiden: Invalid write count\n"
 			 "    write count = %u\n"
@@ -367,17 +400,19 @@ static int send_command_v1(const struct flashctx *flash,
 	for (unsigned int write_attempt = 0; write_attempt < WRITE_RETRY_ATTEMPTS;
 	         write_attempt++) {
 
-		status = write_command_v1(flash, write_count, read_count,
-		                       write_buffer, read_buffer);
+
+		status = write_command_v1(flash, &write_ctx, &read_ctx);
 
 		if (status) {
 			/* Write operation failed. */
 			msg_perr("Raiden: Write command failed\n"
 				 "    write count       = %u\n"
 				 "    read count        = %u\n"
+				 "    transmitted bytes = %zu\n"
 				 "    write attempt     = %u\n"
 				 "    status            = 0x%05x\n",
-				 write_count, read_count,
+
+				 write_count, read_count, write_ctx.transmit_index,
 				 write_attempt + 1, status);
 			if (!retry_recovery(status)) {
 				/* Reattempting will not result in a recovery. */
@@ -389,18 +424,18 @@ static int send_command_v1(const struct flashctx *flash,
 		for (unsigned int read_attempt = 0; read_attempt < READ_RETRY_ATTEMPTS;
 				read_attempt++) {
 
-			status = read_response_v1(flash, write_count, read_count,
-					write_buffer, read_buffer);
+			status = read_response_v1(flash, &write_ctx, &read_ctx);
 
 			if (status) {
 				/* Read operation failed. */
 				msg_perr("Raiden: Read response failed\n"
 					 "    write count    = %u\n"
 					 "    read count     = %u\n"
+					 "    received bytes = %zu\n"
 					 "    write attempt  = %u\n"
 					 "    read attempt   = %u\n"
 					 "    status         = 0x%05x\n",
-					 write_count, read_count,
+					 write_count, read_count, read_ctx.receive_index,
 					 write_attempt + 1, read_attempt + 1, status);
 				if (!retry_recovery(status)) {
 					/* Reattempting will not result in a recovery. */
