@@ -332,8 +332,7 @@ int ft2232_spi_init(void)
 			msg_perr("Error: Invalid SPI frequency divisor specified: \"%s\".\n"
 				 "Valid are even values between 2 and 131072.\n", arg);
 			free(arg);
-			return -2;
-		}
+			return -2;		}
 		divisor = (uint32_t)temp;
 	}
 	free(arg);
@@ -342,7 +341,8 @@ int ft2232_spi_init(void)
 	arg = extract_programmer_param("csgpiol");
 	if (arg) {
 		unsigned int ngpios = strlen(arg);
-		for (unsigned int i = 0; i <= ngpios; i++) {
+		unsigned int i;
+		for (i = 0; i <= ngpios; i++) {
 			int temp = arg[i] - '0';
 			if (ngpios == 0 || (ngpios != i && (temp < 0 || temp > 3))) {
 				msg_perr("Error: Invalid GPIOLs specified: \"%s\".\n"
