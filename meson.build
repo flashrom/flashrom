@@ -64,6 +64,7 @@ endif
 config_atahpt = get_option('config_atahpt')
 config_atapromise = get_option('config_atapromise')
 config_atavia = get_option('config_atavia')
+config_bitbang_spi = get_option('config_bitbang_spi')
 config_buspirate_spi = get_option('config_buspirate_spi')
 config_ch341a_spi = get_option('config_ch341a_spi')
 config_dediprog = get_option('config_dediprog')
