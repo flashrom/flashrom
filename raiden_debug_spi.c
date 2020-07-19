@@ -184,6 +184,7 @@ enum raiden_debug_spi_request {
 #define PACKET_HEADER_SIZE      (2)
 #define USB_MAX_PACKET_SIZE     (64)
 #define PAYLOAD_SIZE_V1         (USB_MAX_PACKET_SIZE - PACKET_HEADER_SIZE)
+#define SPI_TRANSFER_V1_MAX     (PAYLOAD_SIZE_V1)
 
 /*
  * Servo Micro has an error where it is capable of acknowledging USB packets
@@ -204,6 +205,15 @@ struct raiden_debug_spi_data {
 	struct usb_device *dev;
 	uint8_t in_ep;
 	uint8_t out_ep;
+	uint8_t protocol_version;
+	/*
+	 * Note: Due to bugs, flashrom does not always treat the max_data_write
+	 * and max_data_read counts as the maximum packet size. As a result, we
+	 * have to store a local copy of the actual max packet sizes and validate
+	 * against it when performing transfers.
+	 */
+	uint16_t max_spi_write_count;
+	uint16_t max_spi_read_count;
 };
 
 /*
@@ -288,10 +298,10 @@ static bool retry_recovery(int error_code)
 	return true;
 }
 
-static const struct raiden_debug_spi_data *
+static struct raiden_debug_spi_data *
 	get_raiden_data_from_context(const struct flashctx *flash)
 {
-	return (const struct raiden_debug_spi_data *)flash->mst->spi.data;
+	return (struct raiden_debug_spi_data *)flash->mst->spi.data;
 }
 
 /*
@@ -508,19 +518,19 @@ static int send_command_v1(const struct flashctx *flash,
 	};
 	const struct raiden_debug_spi_data *ctx_data = get_raiden_data_from_context(flash);
 
-	if (write_count > PAYLOAD_SIZE_V1) {
+	if (write_count > ctx_data->max_spi_write_count) {
 		msg_perr("Raiden: Invalid write count\n"
 			 "    write count = %u\n"
 			 "    max write   = %d\n",
-			 write_count, PAYLOAD_SIZE_V1);
+			 write_count, ctx_data->max_spi_write_count);
 		return SPI_INVALID_LENGTH;
 	}
 
-	if (read_count > PAYLOAD_SIZE_V1) {
+	if (read_count > ctx_data->max_spi_read_count) {
 		msg_perr("Raiden: Invalid read count\n"
 			 "    read count = %d\n"
 			 "    max read   = %d\n",
-			 read_count, PAYLOAD_SIZE_V1);
+			 read_count, ctx_data->max_spi_read_count);
 		return SPI_INVALID_LENGTH;
 	}
 
@@ -591,24 +601,11 @@ static int send_command_v1(const struct flashctx *flash,
 	return status;
 }
 
-/*
- * Unfortunately there doesn't seem to be a way to specify the maximum number
- * of bytes that your SPI device can read/write, these values are the maximum
- * data chunk size that flashrom will package up with an additional five bytes
- * of command for the flash device, resulting in a 62 byte packet, that we then
- * add two bytes to in either direction, making our way up to the 64 byte
- * maximum USB packet size for the device.
- *
- * The largest command that flashrom generates is the byte program command, so
- * we use that command header maximum size here.
- */
-#define MAX_DATA_SIZE   (PAYLOAD_SIZE_V1 - JEDEC_BYTE_PROGRAM_OUTSIZE)
-
-static struct spi_master spi_master_raiden_debug = {
+static const struct spi_master spi_master_raiden_debug = {
 	.features       = SPI_MASTER_4BA,
-	.max_data_read  = MAX_DATA_SIZE,
-	.max_data_write = MAX_DATA_SIZE,
-	.command        = send_command_v1,
+	.max_data_read  = 0,
+	.max_data_write = 0,
+	.command        = NULL,
 	.multicommand   = default_spi_send_multicommand,
 	.read           = default_spi_read,
 	.write_256      = default_spi_write_256,
@@ -657,10 +654,64 @@ static int find_endpoints(struct usb_device *dev, uint8_t *in_ep, uint8_t *out_e
 	return 0;
 }
 
+/*
+ * Configure the USB SPI master based on the device we are connected to.
+ * It will use the device's bInterfaceProtocol to identify which protocol
+ * is being used by the device USB SPI interface and if needed query the
+ * device for its capabilities.
+ *
+ * @param spi_config    Raiden SPI config which will be modified.
+ *
+ * @returns             Returns status code with 0 on success.
+ */
+static int configure_protocol(struct spi_master *spi_config)
+{
+	struct raiden_debug_spi_data *ctx_data =
+		(struct raiden_debug_spi_data *)spi_config->data;
+
+	ctx_data->protocol_version =
+		ctx_data->dev->interface_descriptor->bInterfaceProtocol;
+
+	switch (ctx_data->protocol_version) {
+	case GOOGLE_RAIDEN_SPI_PROTOCOL_V1:
+		/*
+		 * Protocol V1 is supported by adjusting the max data
+		 * read and write sizes which results in no continue packets.
+		 */
+		spi_config->command = send_command_v1;
+		ctx_data->max_spi_write_count = SPI_TRANSFER_V1_MAX;
+		ctx_data->max_spi_read_count = SPI_TRANSFER_V1_MAX;
+		break;
+	default:
+		msg_pdbg("Raiden: Unknown USB SPI protocol version = %d",
+		         ctx_data->protocol_version);
+		return USB_SPI_HOST_INIT_FAILURE;
+	}
+
+	/*
+	 * Unfortunately there doesn't seem to be a way to specify the maximum number
+	 * of bytes that your SPI device can read/write, these values are the maximum
+	 * data chunk size that flashrom will package up with an additional five bytes
+	 * of command for the flash device.
+	 *
+	 * The largest command that flashrom generates is the byte program command, so
+	 * we use that command header maximum size here. If we didn't include the
+	 * offset, flashrom may request a SPI transfer that is too large for the SPI
+	 * device to support.
+	 */
+	spi_config->max_data_write = ctx_data->max_spi_write_count -
+		JEDEC_BYTE_PROGRAM_OUTSIZE;
+	spi_config->max_data_read = ctx_data->max_spi_read_count -
+		JEDEC_BYTE_PROGRAM_OUTSIZE;
+
+	return 0;
+}
+
 static int raiden_debug_spi_shutdown(void * data)
 {
-	struct raiden_debug_spi_data * ctx_data =
-		(struct raiden_debug_spi_data *)data;
+	struct spi_master *spi_config = data;
+	struct raiden_debug_spi_data *ctx_data =
+		(struct raiden_debug_spi_data *)spi_config->data;
 
 	int ret = LIBUSB(libusb_control_transfer(
 				ctx_data->dev->handle,
@@ -675,12 +726,15 @@ static int raiden_debug_spi_shutdown(void * data)
 				TRANSFER_TIMEOUT_MS));
 	if (ret != 0) {
 		msg_perr("Raiden: Failed to disable SPI bridge\n");
+		free(ctx_data);
+		free(spi_config);
 		return ret;
 	}
 
 	usb_device_free(ctx_data->dev);
 	libusb_exit(NULL);
 	free(ctx_data);
+	free(spi_config);
 
 	return 0;
 }
@@ -840,20 +894,43 @@ loop_end:
 		(request_enable == RAIDEN_DEBUG_SPI_REQ_ENABLE_EC))
 		usleep(50 * 1000);
 
+	struct spi_master *spi_config = calloc(1, sizeof(struct spi_master));
+	if (!spi_config) {
+		msg_perr("Unable to allocate space for SPI master.\n");
+		return SPI_GENERIC_ERROR;
+	}
 	struct raiden_debug_spi_data *data = calloc(1, sizeof(struct raiden_debug_spi_data));
 	if (!data) {
+		free(spi_config);
 		msg_perr("Unable to allocate space for extra SPI master data.\n");
 		return SPI_GENERIC_ERROR;
 	}
+
+	memcpy(spi_config, &spi_master_raiden_debug, sizeof(struct spi_master));
 
 	data->dev = device;
 	data->in_ep = in_endpoint;
 	data->out_ep = out_endpoint;
 
-	spi_master_raiden_debug.data = data;
+	spi_config->data = data;
+	/*
+	 * The SPI master needs to be configured based on the device connected.
+	 * Using the device protocol interrogation, we will set the limits on
+	 * the write and read sizes and switch command functions.
+	 */
+	ret = configure_protocol(spi_config);
+	if (ret) {
+		msg_perr("Raiden: Error configuring protocol\n"
+			 "    protocol       = %u\n"
+			 "    status         = 0x%05x\n",
+			 data->dev->interface_descriptor->bInterfaceProtocol, ret);
+		free(data);
+		free(spi_config);
+		return SPI_GENERIC_ERROR;
+	}
 
-	register_spi_master(&spi_master_raiden_debug);
-	register_shutdown(raiden_debug_spi_shutdown, data);
+	register_spi_master(spi_config);
+	register_shutdown(raiden_debug_spi_shutdown, spi_config);
 
 	return 0;
 }
