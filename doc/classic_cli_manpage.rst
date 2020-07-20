@@ -780,6 +780,14 @@ where ``state`` can be ``on`` or ``off``.
 This allows the bus pirate to power the ROM chip directly. This may also be used to provide the required pullup voltage
 (when using the **pullups** option), by connecting the Bus Pirate's Vpu input to the appropriate Vcc pin.
 
+An optional aux parameter specifies the state of the Bus Pirate auxiliary pin.
+This may be used to drive the auxiliary pin high or low before a transfer.
+Syntax is::
+
+        flashrom -p buspirate_spi:aux=state
+
+where ``state`` can be ``high`` or ``low``. The default ``state`` is ``high``.
+
 
 pickit2_spi programmer
 ^^^^^^^^^^^^^^^^^^^^^^

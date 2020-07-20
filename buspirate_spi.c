@@ -327,6 +327,7 @@ static int buspirate_spi_init(const struct programmer_cfg *cfg)
 	int ret = 0;
 	bool pullup = false;
 	bool psu = false;
+	bool aux = true;
 	unsigned char *bp_commbuf;
 	int bp_commbufsize;
 
@@ -386,6 +387,17 @@ static int buspirate_spi_init(const struct programmer_cfg *cfg)
 			; // ignore
 		else
 			msg_perr("Invalid psus state, not enabling.\n");
+	}
+	free(tmp);
+
+	tmp = extract_programmer_param_str(cfg, "aux");
+	if (tmp) {
+		if (strcasecmp("high", tmp) == 0)
+			; /* Default */
+		else if (strcasecmp("low", tmp) == 0)
+			aux = false;
+		else
+			msg_perr("Invalid AUX state, driving high by default.\n");
 	}
 	free(tmp);
 
@@ -642,8 +654,8 @@ static int buspirate_spi_init(const struct programmer_cfg *cfg)
 		goto init_err_cleanup_exit;
 	}
 
-	/* Initial setup (SPI peripherals config): Enable power, CS high, AUX */
-	bp_commbuf[0] = 0x40 | 0x0b;
+	/* Initial setup (SPI peripherals config): Enable power, CS high */
+	bp_commbuf[0] = 0x40 | 0x09;
 	if (pullup) {
 		bp_commbuf[0] |= (1 << 2);
 		msg_pdbg("Enabling pull-up resistors.\n");
@@ -651,6 +663,12 @@ static int buspirate_spi_init(const struct programmer_cfg *cfg)
 	if (psu) {
 		bp_commbuf[0] |= (1 << 3);
 		msg_pdbg("Enabling PSUs.\n");
+	}
+	if (aux) {
+		bp_commbuf[0] |= (1 << 1);
+		msg_pdbg("Driving AUX high.\n");
+	} else {
+		msg_pdbg("Driving AUX low.\n");
 	}
 	ret = buspirate_sendrecv(bp_commbuf, 1, 1);
 	if (ret)
