@@ -253,21 +253,22 @@ static int stlinkv3_spi_open(uint16_t reqested_freq_in_kHz)
 	enum fw_version_check_result fw_check_result;
 
 	if (stlinkv3_check_version(&fw_check_result)) {
-		msg_perr("Failed to query FW version");
+		msg_perr("Failed to query FW version\n");
 		return -1;
 	}
 
 	if (fw_check_result != FW_VERSION_OK) {
-		msg_pinfo("Your STLink V3 has too old version of the bridge interface\n"
-			  "Please update the firmware with the STSW-LINK007 which can be downloaded from here:\n"
-			  "https://www.st.com/en/development-tools/stsw-link007.html");
+		msg_pinfo("Your STLink V3 has a too old version of the bridge interface\n"
+			  "Please update the firmware to version 2.33.25 or newer of the STSW-LINK007\n"
+			  "which can be downloaded from here:\n"
+			  "https://www.st.com/en/development-tools/stsw-link007.html\n");
 		return -1;
 	}
 
 	if (stlinkv3_spi_calc_prescaler(reqested_freq_in_kHz,
 					&prescaler,
 					&SCK_freq_in_kHz)) {
-		msg_perr("Failed to calculate SPI clock prescaler");
+		msg_perr("Failed to calculate SPI clock prescaler\n");
 		return -1;
 	}
 	msg_pinfo("SCK frequency set to %d kHz\n", SCK_freq_in_kHz);
