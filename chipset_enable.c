@@ -2023,6 +2023,7 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0xa153, B_S,    NT,  "Intel", "QM175",				enable_flash_pch100},
 	{0x8086, 0xa154, B_S,    NT,  "Intel", "CM238",				enable_flash_pch100},
 	{0x8086, 0xa155, B_S,    NT,  "Intel", "QMU185",			enable_flash_pch100},
+	{0x8086, 0xa1a4, B_S,    DEP, "Intel", "C620 Series Chipset (QS/PRQ)",  enable_flash_c620},
 	{0x8086, 0xa1c0, B_S,    NT,  "Intel", "C620 Series Chipset (QS/PRQ)",	enable_flash_c620},
 	{0x8086, 0xa1c1, B_S,    NT,  "Intel", "C621 Series Chipset (QS/PRQ)",	enable_flash_c620},
 	{0x8086, 0xa1c2, B_S,    NT,  "Intel", "C622 Series Chipset (QS/PRQ)",	enable_flash_c620},
