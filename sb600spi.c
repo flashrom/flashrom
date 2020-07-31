@@ -55,6 +55,10 @@ enum amd_chipset {
 #define FIFO_SIZE_OLD		8
 #define FIFO_SIZE_YANGTZE	71
 
+struct sb600spi_data {
+	struct flashctx *flash;
+};
+
 static int find_smbus_dev_rev(uint16_t vendor, uint16_t device)
 {
 	struct pci_dev *smbus_dev = pci_dev_find(vendor, device);
@@ -116,8 +120,17 @@ static enum amd_chipset determine_generation(struct pci_dev *dev)
 		if (rev == 0x4a) {
 			msg_pdbg("Yangtze detected.\n");
 			return CHIPSET_YANGTZE;
-		} else if (rev == 0x4b) {
-			msg_pdbg("Promontory detected.\n");
+		/**
+		 * FCH chipsets called 'Promontory' are one's with the
+		 * so-called SPI100 ip core that uses memory mapping and
+		 * not a ring buffer for transactions. Typically this is
+		 * found on both Stoney Ridge and Zen platforms.
+		 *
+		 * The revisions I have found by searching various lspci
+		 * outputs are as follows: 0x4b, 0x59 & 0x61.
+		 */
+		} else if (rev == 0x4b || rev == 0x59 || rev == 0x61) {
+			msg_pdbg("Promontory (rev 0x%02x) detected.\n", rev);
 			return CHIPSET_PROMONTORY;
 		} else {
 			msg_pwarn("FCH device found but SMBus revision 0x%02x does not match known values.\n"
@@ -541,6 +554,18 @@ static int handle_imc(struct pci_dev *dev, enum amd_chipset amd_gen)
 	return amd_imc_shutdown(dev);
 }
 
+static int promontory_read_memmapped(struct flashctx *flash, uint8_t *buf,
+		unsigned int start, unsigned int len)
+{
+	struct sb600spi_data * data = (struct sb600spi_data *)flash->mst->spi.data;
+	if (!data->flash) {
+		map_flash(flash);
+		data->flash = flash; /* keep a copy of flashctx for unmap() on tear-down. */
+	}
+	mmio_readn((void *)(flash->virtual_memory + start), buf, len);
+	return 0;
+}
+
 static struct spi_master spi_master_sb600 = {
 	.max_data_read = FIFO_SIZE_OLD,
 	.max_data_write = FIFO_SIZE_OLD - 3,
@@ -560,6 +585,25 @@ static struct spi_master spi_master_yangtze = {
 	.write_256 = default_spi_write_256,
 	.write_aai = default_spi_write_aai,
 };
+
+static struct spi_master spi_master_promontory = {
+	.max_data_read = MAX_DATA_READ_UNLIMITED,
+	.max_data_write = FIFO_SIZE_YANGTZE - 3,
+	.command = spi100_spi_send_command,
+	.multicommand = default_spi_send_multicommand,
+	.read = promontory_read_memmapped,
+	.write_256 = default_spi_write_256,
+	.write_aai = default_spi_write_aai,
+};
+
+static int sb600spi_shutdown(void *data)
+{
+	struct flashctx *flash = ((struct sb600spi_data *)data)->flash;
+	if (flash)
+		finalize_flash_access(flash);
+	free(data);
+	return 0;
+}
 
 int sb600_probe_spi(struct pci_dev *dev)
 {
@@ -726,11 +770,28 @@ int sb600_probe_spi(struct pci_dev *dev)
 	if (handle_imc(dev, amd_gen) != 0)
 		return ERROR_FATAL;
 
+	struct sb600spi_data *data = calloc(1, sizeof(struct sb600spi_data));
+	if (!data) {
+		msg_perr("Unable to allocate space for extra SPI master data.\n");
+		return SPI_GENERIC_ERROR;
+	}
+
+	data->flash = NULL;
+
+	register_shutdown(sb600spi_shutdown, data);
+	spi_master_sb600.data = data;
+	spi_master_yangtze.data = data;
+	spi_master_promontory.data = data;
+
+
 	/* Starting with Yangtze the SPI controller got a different interface with a much bigger buffer. */
 	if (amd_gen < CHIPSET_YANGTZE)
 		register_spi_master(&spi_master_sb600);
-	else
+	else if (amd_gen == CHIPSET_YANGTZE)
 		register_spi_master(&spi_master_yangtze);
+	else
+		register_spi_master(&spi_master_promontory);
+
 	return 0;
 }
 
