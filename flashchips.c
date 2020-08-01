@@ -3448,37 +3448,36 @@ const struct flashchip flashchips[] = {
 		.bustype	= BUS_SPI,
 		.manufacture_id	= BOYAMICRO_ID,
 		.model_id	= BOYAMICRO_BY25Q128AS,
-		.total_size	= 131072,
+		.total_size	= 16384,
 		.page_size	= 256,
-
-		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_QPI | FEATURE_OTP | FEATURE_4BA_ENTER_WREN | FEATURE_4BA_EXT_ADDR | FEATURE_4BA_READ | FEATURE_4BA_FAST_READ,
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI,
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
 		{
 			{
-				.eraseblocks = { {4 * 1024, 32768} },
+				.eraseblocks = { {4 * 1024, 4096} },
 				.block_erase = spi_block_erase_20,
 			}, {
-				.eraseblocks = { {32 * 1024, 4096} },
+				.eraseblocks = { {32 * 1024, 512} },
 				.block_erase = spi_block_erase_52,
 			}, {
-				.eraseblocks = { {64 * 1024, 2048} },
+				.eraseblocks = { {64 * 1024, 256} },
 				.block_erase = spi_block_erase_d8,
 			}, {
-				.eraseblocks = { {128 * 1024 * 1024, 1} },
+				.eraseblocks = { {16 * 1024 * 1024, 1} },
 				.block_erase = spi_block_erase_60,
 			}, {
-				.eraseblocks = { {128 * 1024 * 1024, 1} },
+				.eraseblocks = { {16 * 1024 * 1024, 1} },
 				.block_erase = spi_block_erase_c7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain,
-		.unlock		= spi_disable_blockprotect_at2x_global_unprotect,
+		.unlock		= spi_disable_blockprotect,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
-		.voltage	= {1800, 3600},
+		.voltage	= {2700, 3600},
 	},
 
 	{
