@@ -3474,7 +3474,7 @@ const struct flashchip flashchips[] = {
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain,
-		.unlock		= spi_disable_blockprotect,
+		.unlock		= spi_disable_blockprotect_at25fs040,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
 		.voltage	= {2700, 3600},
