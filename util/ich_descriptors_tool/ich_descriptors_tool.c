@@ -225,6 +225,9 @@ int main(int argc, char *argv[])
 		else if ((strcmp(csn, "300") == 0) ||
 			 (strcmp(csn, "cannon") == 0))
 			cs = CHIPSET_300_SERIES_CANNON_POINT;
+		else if ((strcmp(csn, "400") == 0) ||
+			 (strcmp(csn, "comet") == 0))
+			cs = CHIPSET_400_SERIES_COMET_POINT;
 		else if (strcmp(csn, "apollo") == 0)
 			cs = CHIPSET_APOLLO_LAKE;
 	}

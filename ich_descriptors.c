@@ -42,6 +42,7 @@ ssize_t ich_number_of_regions(const enum ich_chipset cs, const struct ich_desc_c
 		return 6;
 	case CHIPSET_C620_SERIES_LEWISBURG:
 	case CHIPSET_300_SERIES_CANNON_POINT:
+	case CHIPSET_400_SERIES_COMET_POINT:
 		return 16;
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 		return 10;
@@ -196,6 +197,7 @@ static const char *pprint_density(enum ich_chipset cs, const struct ich_descript
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 	case CHIPSET_C620_SERIES_LEWISBURG:
 	case CHIPSET_300_SERIES_CANNON_POINT:
+	case CHIPSET_400_SERIES_COMET_POINT:
 	case CHIPSET_APOLLO_LAKE: {
 		uint8_t size_enc;
 		if (idx == 0) {
@@ -264,6 +266,7 @@ static const char *pprint_freq(enum ich_chipset cs, uint8_t value)
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 	case CHIPSET_C620_SERIES_LEWISBURG:
 	case CHIPSET_300_SERIES_CANNON_POINT:
+	case CHIPSET_400_SERIES_COMET_POINT:
 		return freq_str[1][value];
 	case CHIPSET_APOLLO_LAKE:
 		return freq_str[2][value];
@@ -281,6 +284,7 @@ void prettyprint_ich_descriptor_component(enum ich_chipset cs, const struct ich_
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 	case CHIPSET_C620_SERIES_LEWISBURG:
 	case CHIPSET_300_SERIES_CANNON_POINT:
+	case CHIPSET_400_SERIES_COMET_POINT:
 	case CHIPSET_APOLLO_LAKE:
 		has_flill1 = true;
 		break;
@@ -399,7 +403,8 @@ void prettyprint_ich_descriptor_master(const enum ich_chipset cs, const struct i
 
 	msg_pdbg2("--- Details ---\n");
 	if (cs == CHIPSET_100_SERIES_SUNRISE_POINT ||
-	    cs == CHIPSET_300_SERIES_CANNON_POINT) {
+	    cs == CHIPSET_300_SERIES_CANNON_POINT ||
+	    cs == CHIPSET_400_SERIES_COMET_POINT) {
 		const char *const master_names[] = {
 			"BIOS", "ME", "GbE", "unknown", "EC",
 		};
@@ -961,6 +966,7 @@ static enum ich_chipset guess_ich_chipset(const struct ich_desc_content *const c
 
 	switch (guess) {
 	case CHIPSET_300_SERIES_CANNON_POINT:
+	case CHIPSET_400_SERIES_COMET_POINT:
 		/* `freq_read` was repurposed, so can't check on it any more. */
 		return guess;
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
@@ -1115,6 +1121,7 @@ int getFCBA_component_density(enum ich_chipset cs, const struct ich_descriptors 
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 	case CHIPSET_C620_SERIES_LEWISBURG:
 	case CHIPSET_300_SERIES_CANNON_POINT:
+	case CHIPSET_400_SERIES_COMET_POINT:
 	case CHIPSET_APOLLO_LAKE:
 		if (idx == 0) {
 			size_enc = desc->component.dens_new.comp1_density;
@@ -1150,6 +1157,7 @@ static uint32_t read_descriptor_reg(enum ich_chipset cs, uint8_t section, uint16
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 	case CHIPSET_C620_SERIES_LEWISBURG:
 	case CHIPSET_300_SERIES_CANNON_POINT:
+	case CHIPSET_400_SERIES_COMET_POINT:
 	case CHIPSET_APOLLO_LAKE:
 		mmio_le_writel(control, spibar + PCH100_REG_FDOC);
 		return mmio_le_readl(spibar + PCH100_REG_FDOD);
