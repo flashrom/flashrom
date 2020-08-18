@@ -112,6 +112,9 @@ enum programmer {
 #if CONFIG_USBBLASTER_SPI == 1
 	PROGRAMMER_USBBLASTER_SPI,
 #endif
+#if CONFIG_MEC1308 == 1
+	PROGRAMMER_MEC1308,
+#endif
 #if CONFIG_MSTARDDC_SPI == 1
 	PROGRAMMER_MSTARDDC_SPI,
 #endif
@@ -696,6 +699,11 @@ static inline int try_mtd(void) { return 1; };
 
 /* mcp6x_spi.c */
 int mcp6x_spi_init(int want_spi);
+
+/* mec1308.c */
+#if CONFIG_MEC1308 == 1
+int mec1308_init(void);
+#endif
 
 /* sb600spi.c */
 int sb600_probe_spi(struct pci_dev *dev);

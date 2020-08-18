@@ -180,6 +180,11 @@ UNSUPPORTED_FEATURES += CONFIG_FT2232_SPI=yes
 else
 override CONFIG_FT2232_SPI = no
 endif
+ifeq ($(CONFIG_MEC1308), yes)
+UNSUPPORTED_FEATURES += CONFIG_MEC1308=yes
+else
+override CONFIG_MEC1308 = no
+endif
 ifeq ($(CONFIG_USBBLASTER_SPI), yes)
 UNSUPPORTED_FEATURES += CONFIG_USBBLASTER_SPI=yes
 else
@@ -291,6 +296,11 @@ UNSUPPORTED_FEATURES += CONFIG_DRKAISER=yes
 else
 override CONFIG_DRKAISER = no
 endif
+ifeq ($(CONFIG_MEC1308), yes)
+UNSUPPORTED_FEATURES += CONFIG_MEC1308=yes
+else
+override CONFIG_MEC1308 = no
+endif
 ifeq ($(CONFIG_NICREALTEK), yes)
 UNSUPPORTED_FEATURES += CONFIG_NICREALTEK=yes
 else
@@ -400,6 +410,11 @@ ifeq ($(CONFIG_FT2232_SPI), yes)
 UNSUPPORTED_FEATURES += CONFIG_FT2232_SPI=yes
 else
 override CONFIG_FT2232_SPI = no
+endif
+ifeq ($(CONFIG_MEC1308), yes)
+UNSUPPORTED_FEATURES += CONFIG_MEC1308=yes
+else
+override CONFIG_MEC1308 = no
 endif
 ifeq ($(CONFIG_USBBLASTER_SPI), yes)
 UNSUPPORTED_FEATURES += CONFIG_USBBLASTER_SPI=yes
@@ -692,6 +707,9 @@ CONFIG_ENE_LPC ?= yes
 # Always enable FT2232 SPI dongles for now.
 CONFIG_FT2232_SPI ?= yes
 
+# Microchip MEC1308 Embedded Controller
+CONFIG_MEC1308 ?= yes
+
 # Always enable Altera USB-Blaster dongles for now.
 CONFIG_USBBLASTER_SPI ?= yes
 
@@ -876,6 +894,11 @@ endif
 ifeq ($(CONFIG_ENE_LPC), yes)
 FEATURE_CFLAGS += -D'CONFIG_ENE_LPC=1'
 PROGRAMMER_OBJS += ene_lpc.o
+endif
+
+ifeq ($(CONFIG_MEC1308), yes)
+FEATURE_CFLAGS += -D'CONFIG_MEC1308=1'
+PROGRAMMER_OBJS += mec1308.o
 endif
 
 ifeq ($(CONFIG_SERPROG), yes)

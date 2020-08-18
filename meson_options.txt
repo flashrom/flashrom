@@ -20,6 +20,7 @@ option('config_internal_dmi', type : 'boolean', value : true, description : 'Use
 option('config_it8212', type : 'boolean', value : true, description : 'ITE IT8212F PATA')
 option('config_linux_mtd', type : 'boolean', value : true, description : 'Linux MTD interfaces')
 option('config_linux_spi', type : 'boolean', value : true, description : 'Linux spidev interfaces')
+option('config_mec1308', type : 'boolean', value : true, description : 'Microchip MEC1308 Embedded Controller')
 option('config_mstarddc_spi', type : 'boolean', value : false, description : 'MSTAR DDC support')
 option('config_nic3com', type : 'boolean', value : true, description : '3Com NICs')
 option('config_nicintel_eeprom', type : 'boolean', value : true, description : 'EEPROM on Intel NICs')

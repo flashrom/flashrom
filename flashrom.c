@@ -84,6 +84,18 @@ const struct programmer_entry programmer_table[] = {
 	},
 #endif
 
+#if CONFIG_MEC1308 == 1
+	{
+		.name			= "mec1308",
+		.type			= OTHER,
+		.devs.note		= "Microchip MEC1308 Embedded Controller.\n",
+		.init			= mec1308_init,
+		.map_flash_region	= fallback_map,
+		.unmap_flash_region	= fallback_unmap,
+		.delay			= internal_delay,
+	},
+#endif
+
 #if CONFIG_NIC3COM == 1
 	{
 		.name			= "nic3com",
