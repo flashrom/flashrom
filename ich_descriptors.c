@@ -937,9 +937,13 @@ static enum ich_chipset guess_ich_chipset_from_content(const struct ich_desc_con
 			return CHIPSET_C620_SERIES_LEWISBURG;
 		else
 			return CHIPSET_100_SERIES_SUNRISE_POINT;
+	} else if (content->ICCRIBA == 0x34) {
+		if (content->NM == 6)
+			return CHIPSET_C620_SERIES_LEWISBURG;
+		else
+			return CHIPSET_300_SERIES_CANNON_POINT;
 	} else {
-		if (content->ICCRIBA > 0x34)
-			msg_pwarn("Unknown firmware descriptor, assuming 300 series compatibility.\n");
+		msg_pwarn("Unknown firmware descriptor, assuming 300 series compatibility.\n");
 		return CHIPSET_300_SERIES_CANNON_POINT;
 	}
 }
@@ -1243,8 +1247,12 @@ int layout_from_ich_descriptors(struct ich_layout *const layout, const void *con
 
 	struct ich_descriptors desc;
 	enum ich_chipset cs = CHIPSET_ICH_UNKNOWN;
-	if (read_ich_descriptors_from_dump(dump, len, &cs, &desc))
+	int ret = read_ich_descriptors_from_dump(dump, len, &cs, &desc);
+	if (ret) {
+		msg_pdbg("%s():%d, returned with value %d.\n",
+			__func__, __LINE__, ret);
 		return 1;
+	}
 
 	memset(layout, 0x00, sizeof(*layout));
 
