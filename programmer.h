@@ -61,6 +61,9 @@ enum programmer {
 #if CONFIG_ATAPROMISE == 1
 	PROGRAMMER_ATAPROMISE,
 #endif
+#if CONFIG_ENE_LPC == 1
+	PROGRAMMER_ENE_LPC,
+#endif
 #if CONFIG_IT8212 == 1
 	PROGRAMMER_IT8212,
 #endif
@@ -576,6 +579,11 @@ extern const struct dev_entry devs_ch341a_spi[];
 #if CONFIG_DIGILENT_SPI == 1
 int digilent_spi_init(void);
 extern const struct dev_entry devs_digilent_spi[];
+#endif
+
+/* ene_lpc.c */
+#if CONFIG_ENE_LPC == 1
+int ene_lpc_init(void);
 #endif
 
 /* jlink_spi.c */

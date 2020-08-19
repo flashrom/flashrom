@@ -40,6 +40,7 @@ config_developerbox_spi = get_option('config_developerbox_spi')
 config_digilent_spi = get_option('config_digilent_spi')
 config_drkaiser = get_option('config_drkaiser')
 config_dummy = get_option('config_dummy')
+config_ene_lpc = get_option('config_ene_lpc')
 config_ft2232_spi = get_option('config_ft2232_spi')
 config_gfxnvidia = get_option('config_gfxnvidia')
 config_raiden = get_option('config_raiden')
@@ -201,6 +202,10 @@ if config_internal
     # Use internal DMI/SMBIOS decoder by default instead of relying on dmidecode.
     cargs += '-DCONFIG_INTERNAL_DMI=1'
   endif
+endif
+if config_ene_lpc
+  srcs += 'ene_lpc.c'
+  cargs += '-DCONFIG_ENE_LPC=1'
 endif
 if config_it8212
   srcs += 'it8212.c'

@@ -279,6 +279,18 @@ const struct programmer_entry programmer_table[] = {
 	},
 #endif
 
+#if CONFIG_ENE_LPC == 1
+	{
+		.name			= "ene_lpc",
+		.type			= OTHER,
+		.devs.note		= "ENE LPC interface keyboard controller\n",
+		.init			= ene_lpc_init,
+		.map_flash_region	= fallback_map,
+		.unmap_flash_region	= fallback_unmap,
+		.delay			= internal_delay,
+	},
+#endif
+
 #if CONFIG_RAYER_SPI == 1
 	{
 		.name			= "rayer_spi",

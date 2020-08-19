@@ -170,6 +170,11 @@ UNSUPPORTED_FEATURES += CONFIG_DEVELOPERBOX_SPI=yes
 else
 override CONFIG_DEVELOPERBOX_SPI = no
 endif
+ifeq ($(CONFIG_ENE_LPC), yes)
+UNSUPPORTED_FEATURES += CONFIG_ENE_LPC=yes
+else
+override CONFIG_ENE_LPC = no
+endif
 ifeq ($(CONFIG_FT2232_SPI), yes)
 UNSUPPORTED_FEATURES += CONFIG_FT2232_SPI=yes
 else
@@ -270,6 +275,11 @@ ifeq ($(CONFIG_ATAPROMISE), yes)
 UNSUPPORTED_FEATURES += CONFIG_ATAPROMISE=yes
 else
 override CONFIG_ATAPROMISE = no
+endif
+ifeq ($(CONFIG_ENE_LPC), yes)
+UNSUPPORTED_FEATURES += CONFIG_ENE_LPC=yes
+else
+override CONFIG_ENE_LPC = no
 endif
 ifeq ($(CONFIG_IT8212), yes)
 UNSUPPORTED_FEATURES += CONFIG_IT8212=yes
@@ -380,6 +390,11 @@ ifeq ($(CONFIG_DEVELOPERBOX_SPI), yes)
 UNSUPPORTED_FEATURES += CONFIG_DEVELOPERBOX_SPI=yes
 else
 override CONFIG_DEVELOPERBOX_SPI = no
+endif
+ifeq ($(CONFIG_ENE_LPC), yes)
+UNSUPPORTED_FEATURES += CONFIG_ENE_LPC=yes
+else
+override CONFIG_ENE_LPC = no
 endif
 ifeq ($(CONFIG_FT2232_SPI), yes)
 UNSUPPORTED_FEATURES += CONFIG_FT2232_SPI=yes
@@ -671,6 +686,9 @@ CONFIG_ATAVIA ?= yes
 # Promise ATA controller support.
 CONFIG_ATAPROMISE ?= no
 
+# ENE LPC interface keyboard controller
+CONFIG_ENE_LPC ?= yes
+
 # Always enable FT2232 SPI dongles for now.
 CONFIG_FT2232_SPI ?= yes
 
@@ -853,6 +871,11 @@ endif
 else
 endif
 NEED_LIBPCI += CONFIG_INTERNAL
+endif
+
+ifeq ($(CONFIG_ENE_LPC), yes)
+FEATURE_CFLAGS += -D'CONFIG_ENE_LPC=1'
+PROGRAMMER_OBJS += ene_lpc.o
 endif
 
 ifeq ($(CONFIG_SERPROG), yes)
