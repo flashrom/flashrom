@@ -34,7 +34,7 @@
  * Maximum number of bytes that can be transferred at once via the JTAG
  * interface, see jaylink_jtag_io().
  */
-#define JTAG_MAX_TRANSFER_SIZE	(UINT16_MAX / 8)
+#define JTAG_MAX_TRANSFER_SIZE	(32768 / 8)
 
 /*
  * Default base frequency in Hz. Used when the base frequency can not be
