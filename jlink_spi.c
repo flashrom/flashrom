@@ -55,6 +55,7 @@ struct jlink_spi_data {
 	struct jaylink_context *ctx;
 	struct jaylink_device_handle *devh;
 	bool reset_cs;
+	bool enable_target_power;
 };
 
 static bool assert_cs(struct jlink_spi_data *jlink_data)
@@ -158,11 +159,20 @@ static int jlink_spi_send_command(const struct flashctx *flash, unsigned int wri
 static int jlink_spi_shutdown(void *data)
 {
 	struct jlink_spi_data *jlink_data = data;
+
+	if (jlink_data->enable_target_power) {
+		int ret = jaylink_set_target_power(jlink_data->devh, false);
+
+		if (ret != JAYLINK_OK) {
+			msg_perr("jaylink_set_target_power() failed: %s.\n",
+				jaylink_strerror(ret));
+		}
+	}
+
 	if (jlink_data->devh)
 		jaylink_close(jlink_data->devh);
 
 	jaylink_exit(jlink_data->ctx);
-
 	/* jlink_data->ctx, jlink_data->devh are freed by jaylink_close and jaylink_exit */
 	free(jlink_data);
 	return 0;
@@ -190,6 +200,7 @@ static int jlink_spi_init(void)
 	struct jaylink_device_handle *jaylink_devh = NULL;
 	bool reset_cs;
 	struct jlink_spi_data *jlink_data = NULL;
+	bool enable_target_power;
 
 	arg = extract_programmer_param("spispeed");
 
@@ -267,6 +278,21 @@ static int jlink_spi_init(void)
 		msg_pdbg("Using RESET as chip select signal.\n");
 	else
 		msg_pdbg("Using TRST as chip select signal.\n");
+
+	enable_target_power = false;
+	arg = extract_programmer_param("power");
+
+	if (arg) {
+		if (!strcasecmp(arg, "on")) {
+			enable_target_power = true;
+		} else {
+			msg_perr("Invalid value for 'power' argument: '%s'.\n", arg);
+			free(arg);
+			return 1;
+		}
+	}
+
+	free(arg);
 
 	ret = jaylink_init(&jaylink_ctx);
 
@@ -377,6 +403,13 @@ static int jlink_spi_init(void)
 		}
 	}
 
+	if (enable_target_power) {
+		if (!jaylink_has_cap(caps, JAYLINK_DEV_CAP_SET_TARGET_POWER)) {
+			msg_perr("Device does not support target power.\n");
+			goto init_err;
+		}
+	}
+
 	uint32_t ifaces;
 
 	ret = jaylink_get_available_interfaces(jaylink_devh, &ifaces);
@@ -396,6 +429,18 @@ static int jlink_spi_init(void)
 	if (ret != JAYLINK_OK) {
 		msg_perr("jaylink_select_interface() failed: %s.\n", jaylink_strerror(ret));
 		goto init_err;
+	}
+
+	if (enable_target_power) {
+		ret = jaylink_set_target_power(jaylink_devh, true);
+
+		if (ret != JAYLINK_OK) {
+			msg_perr("jaylink_set_target_power() failed: %s.\n", jaylink_strerror(ret));
+			goto init_err;
+		}
+
+		/* Wait some time until the target is powered up. */
+		internal_sleep(10000);
 	}
 
 	struct jaylink_hardware_status hwstat;
@@ -464,6 +509,7 @@ static int jlink_spi_init(void)
 	jlink_data->ctx = jaylink_ctx;
 	jlink_data->devh = jaylink_devh;
 	jlink_data->reset_cs = reset_cs;
+	jlink_data->enable_target_power = enable_target_power;
 
 	/* Ensure that the CS signal is not active initially. */
 	if (!deassert_cs(jlink_data))
