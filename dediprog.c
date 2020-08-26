@@ -1267,7 +1267,8 @@ int dediprog_init(void)
 	if (dediprog_standalone_mode())
 		return 1;
 
-	if (dediprog_devicetype == DEV_SF100 && protocol() == PROTOCOL_V1)
+	if ((dediprog_devicetype == DEV_SF100) ||
+	    (dediprog_devicetype == DEV_SF600 && protocol() == PROTOCOL_V3))
 		spi_master_dediprog.features &= ~SPI_MASTER_NO_4BA_MODES;
 
 	if (protocol() == PROTOCOL_V2)
