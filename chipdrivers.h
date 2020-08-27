@@ -196,6 +196,9 @@ int erase_sector_stm50(struct flashctx *flash, unsigned int block, unsigned int 
 int probe_en29lv640b(struct flashctx *flash);
 int write_en29lv640b(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 
+/* dummyflasher.c */
+int probe_variable_size(struct flashctx *flash);
+
 /* edi.c */
 int edi_chip_block_erase(struct flashctx *flash, unsigned int page, unsigned int size);
 int edi_chip_write(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);

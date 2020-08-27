@@ -18759,6 +18759,27 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Generic",
+		.name		= "Variable Size SPI chip",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= PROGMANUF_ID,
+		.model_id	= PROGDEV_ID,
+		.total_size	= 64,  /* This size is set temporarily */
+		.page_size	= 256,
+		.tested		= TEST_OK_PREW,
+		.probe		= probe_variable_size,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {64 * 1024, 1} },
+				.block_erase = spi_block_erase_d8,
+			}
+		},
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read,
+	},
+
+	{
+		.vendor		= "Generic",
 		.name		= "unknown SPI chip (RDID)",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= GENERIC_MANUF_ID,

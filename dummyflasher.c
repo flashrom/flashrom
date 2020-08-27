@@ -21,6 +21,7 @@
 #include "flash.h"
 #include "chipdrivers.h"
 #include "programmer.h"
+#include "flashchips.h"
 
 /* Remove the #define below if you don't want SPI flash chip emulation. */
 #define EMULATE_SPI_CHIP 1
@@ -44,6 +45,7 @@ enum emu_chip {
 	EMULATE_SST_SST25VF032B,
 	EMULATE_MACRONIX_MX25L6436,
 	EMULATE_WINBOND_W25Q128FV,
+	EMULATE_VARIABLE_SIZE,
 };
 static enum emu_chip emu_chip = EMULATE_NONE;
 static char *emu_persistent_image = NULL;
@@ -154,6 +156,7 @@ int dummy_init(void)
 	unsigned int i;
 #if EMULATE_SPI_CHIP
 	char *status = NULL;
+	int size = -1;  /* size for VARIOUS_SIZE chip device */
 #endif
 #if EMULATE_CHIP
 	struct stat image_stat;
@@ -272,6 +275,23 @@ int dummy_init(void)
 	free(tmp);
 
 #if EMULATE_CHIP
+#if EMULATE_SPI_CHIP
+	tmp = extract_programmer_param("size");
+	if (tmp) {
+		size = atoi(tmp);
+		if (size <= 0 || (size % 1024 != 0)) {
+			msg_perr("%s: Chip size is not a multipler of 1024: %s\n",
+					 __func__, tmp);
+			free(tmp);
+			return 1;
+		}
+		free(tmp);
+	} else {
+		msg_perr("%s: the size parameter is not given.\n", __func__);
+		return 1;
+	}
+#endif
+
 	tmp = extract_programmer_param("emulate");
 	if (!tmp) {
 		msg_pdbg("Not emulating any flash chip.\n");
@@ -342,6 +362,23 @@ int dummy_init(void)
 		emu_jedec_ce_60_size = emu_chip_size;
 		emu_jedec_ce_c7_size = emu_chip_size;
 		msg_pdbg("Emulating Winbond W25Q128FV SPI flash chip (RDID)\n");
+	}
+
+	/* The name of variable-size virtual chip. A 4 MiB flash example:
+	 *   flashrom -p dummy:emulate=VARIABLE_SIZE,size=4194304
+	 */
+	if (!strcmp(tmp, "VARIABLE_SIZE")) {
+		emu_chip = EMULATE_VARIABLE_SIZE;
+		emu_chip_size = size;
+		emu_max_byteprogram_size = 256;
+		emu_max_aai_size = 0;
+		emu_jedec_se_size = 4 * 1024;
+		emu_jedec_be_52_size = 32 * 1024;
+		emu_jedec_be_d8_size = 64 * 1024;
+		emu_jedec_ce_60_size = emu_chip_size;
+		emu_jedec_ce_c7_size = emu_chip_size;
+		msg_pdbg("Emulating generic SPI flash chip (size=%d bytes)\n",
+		         emu_chip_size);
 	}
 #endif
 	if (emu_chip == EMULATE_NONE) {
@@ -610,6 +647,16 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 			if (readcnt > 2)
 				readarr[2] = 0x18;
 			break;
+		case EMULATE_VARIABLE_SIZE:
+			if (readcnt > 0)
+				readarr[0] = (PROGMANUF_ID >> 8) & 0xff;
+			if (readcnt > 1)
+				readarr[1] = PROGMANUF_ID & 0xff;
+			if (readcnt > 2)
+				readarr[2] = (PROGDEV_ID >> 8) & 0xff;
+			if (readcnt > 3)
+				readarr[3] = PROGDEV_ID & 0xff;
+			break;
 		default: /* ignore */
 			break;
 		}
@@ -840,6 +887,7 @@ static int dummy_spi_send_command(const struct flashctx *flash, unsigned int wri
 	case EMULATE_SST_SST25VF032B:
 	case EMULATE_MACRONIX_MX25L6436:
 	case EMULATE_WINBOND_W25Q128FV:
+	case EMULATE_VARIABLE_SIZE:
 		if (emulate_spi_chip_response(writecnt, readcnt, writearr,
 					      readarr)) {
 			msg_pdbg("Invalid command sent to flash chip!\n");
@@ -862,3 +910,44 @@ static int dummy_spi_write_256(struct flashctx *flash, const uint8_t *buf, unsig
 	return spi_write_chunked(flash, buf, start, len,
 				 spi_write_256_chunksize);
 }
+
+#if EMULATE_CHIP && EMULATE_SPI_CHIP
+int probe_variable_size(struct flashctx *flash)
+{
+	unsigned int i;
+
+	/* Skip the probing if we don't emulate this chip. */
+	if (emu_chip != EMULATE_VARIABLE_SIZE)
+		return 0;
+
+	/*
+	 * This will break if one day flashctx becomes read-only.
+	 * Once that happens, we need to have special hacks in functions:
+	 *
+	 *     erase_and_write_flash() in flashrom.c
+	 *     read_flash_to_file()
+	 *     handle_romentries()
+	 *     ...
+	 *
+	 * Search "total_size * 1024" in code.
+	 */
+	flash->chip->total_size = emu_chip_size / 1024;
+	msg_cdbg("%s: set flash->total_size to %dK bytes.\n", __func__,
+	         flash->chip->total_size);
+
+	/* Update the first count of each of the block_erasers. */
+	for (i = 0; i < NUM_ERASEFUNCTIONS; i++) {
+		struct block_eraser *eraser = &flash->chip->block_erasers[i];
+		if (!eraser->block_erase)
+			break;
+
+		eraser->eraseblocks[0].count = emu_chip_size /
+			eraser->eraseblocks[0].size;
+		msg_cdbg("%s: eraser.size=%d, .count=%d\n",
+		         __func__, eraser->eraseblocks[0].size,
+		         eraser->eraseblocks[0].count);
+	}
+
+	return 1;
+}
+#endif
