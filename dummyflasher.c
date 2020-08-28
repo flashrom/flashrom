@@ -50,6 +50,7 @@ enum emu_chip {
 static enum emu_chip emu_chip = EMULATE_NONE;
 static char *emu_persistent_image = NULL;
 static unsigned int emu_chip_size = 0;
+static int emu_modified = 0;	/* is the image modified since reading it? */
 #if EMULATE_SPI_CHIP
 static unsigned int emu_max_byteprogram_size = 0;
 static unsigned int emu_max_aai_size = 0;
@@ -137,7 +138,7 @@ static int dummy_shutdown(void *data)
 	msg_pspew("%s\n", __func__);
 #if EMULATE_CHIP
 	if (emu_chip != EMULATE_NONE) {
-		if (emu_persistent_image) {
+		if (emu_persistent_image && emu_modified) {
 			msg_pdbg("Writing %s\n", emu_persistent_image);
 			write_buf_to_file(flashchip_contents, emu_chip_size, emu_persistent_image);
 			free(emu_persistent_image);
@@ -698,6 +699,7 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 			return 1;
 		}
 		memcpy(flashchip_contents + offs, writearr + 4, writecnt - 4);
+		emu_modified = 1;
 		break;
 	case JEDEC_AAI_WORD_PROGRAM:
 		if (!emu_max_aai_size)
@@ -734,6 +736,7 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 			memcpy(flashchip_contents + aai_offs, writearr + 1, 2);
 			aai_offs += 2;
 		}
+		emu_modified = 1;
 		break;
 	case JEDEC_WRDI:
 		if (emu_max_aai_size)
@@ -755,6 +758,7 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 			msg_pdbg("Unaligned SECTOR ERASE 0x20: 0x%x\n", offs);
 		offs &= ~(emu_jedec_se_size - 1);
 		memset(flashchip_contents + offs, 0xff, emu_jedec_se_size);
+		emu_modified = 1;
 		break;
 	case JEDEC_BE_52:
 		if (!emu_jedec_be_52_size)
@@ -772,6 +776,7 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 			msg_pdbg("Unaligned BLOCK ERASE 0x52: 0x%x\n", offs);
 		offs &= ~(emu_jedec_be_52_size - 1);
 		memset(flashchip_contents + offs, 0xff, emu_jedec_be_52_size);
+		emu_modified = 1;
 		break;
 	case JEDEC_BE_D8:
 		if (!emu_jedec_be_d8_size)
@@ -789,6 +794,7 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 			msg_pdbg("Unaligned BLOCK ERASE 0xd8: 0x%x\n", offs);
 		offs &= ~(emu_jedec_be_d8_size - 1);
 		memset(flashchip_contents + offs, 0xff, emu_jedec_be_d8_size);
+		emu_modified = 1;
 		break;
 	case JEDEC_CE_60:
 		if (!emu_jedec_ce_60_size)
@@ -804,6 +810,7 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 		/* JEDEC_CE_60_OUTSIZE is 1 (no address) -> no offset. */
 		/* emu_jedec_ce_60_size is emu_chip_size. */
 		memset(flashchip_contents, 0xff, emu_jedec_ce_60_size);
+		emu_modified = 1;
 		break;
 	case JEDEC_CE_C7:
 		if (!emu_jedec_ce_c7_size)
@@ -819,6 +826,7 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 		/* JEDEC_CE_C7_OUTSIZE is 1 (no address) -> no offset. */
 		/* emu_jedec_ce_c7_size is emu_chip_size. */
 		memset(flashchip_contents, 0xff, emu_jedec_ce_c7_size);
+		emu_modified = 1;
 		break;
 	case JEDEC_SFDP:
 		if (emu_chip != EMULATE_MACRONIX_MX25L6436)
