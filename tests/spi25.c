@@ -129,6 +129,7 @@ void probe_spi_res2_test_success(void **state)
 	(void) state; /* unused */
 
 	/* setup initial test state. */
+	clear_spi_id_cache();
 	struct flashctx flashctx = { .chip = &mock_chip };
 	expect_memory(__wrap_spi_send_command, flash,
 			&flashctx, sizeof(flashctx));
