@@ -49,6 +49,7 @@
 
 struct realtek_mst_i2c_spi_data {
 	int fd;
+	int reset;
 };
 
 static int realtek_mst_i2c_spi_write_data(int fd, uint16_t addr, void *buf, uint16_t len)
@@ -392,16 +393,20 @@ static int realtek_mst_i2c_spi_shutdown(void *data)
         struct realtek_mst_i2c_spi_data *realtek_mst_data =
 		(struct realtek_mst_i2c_spi_data *)data;
 	int fd = realtek_mst_data->fd;
-	ret |= realtek_mst_i2c_spi_reset_mpu(fd);
+	if (realtek_mst_data->reset) {
+		ret |= realtek_mst_i2c_spi_reset_mpu(fd);
+		if (ret != 0)
+			msg_perr("%s: MCU failed to reset on tear-down.\n", __func__);
+	}
 	i2c_close(fd);
 	free(data);
 
 	return ret;
 }
 
-static int get_params(int *i2c_bus)
+static int get_params(int *i2c_bus, int *reset)
 {
-	char *bus_str = NULL;
+	char *bus_str = NULL, *reset_str = NULL;
         int ret = SPI_GENERIC_ERROR;
 
 	bus_str = extract_programmer_param("bus");
@@ -431,6 +436,21 @@ static int get_params(int *i2c_bus)
 	} else {
 		msg_perr("%s: Bus number not specified.\n", __func__);
 	}
+
+	reset_str = extract_programmer_param("reset-mcu");
+	if (reset_str) {
+		if (reset_str[0] == '1')
+			*reset = 1;
+		else if (reset_str[0] == '0')
+			*reset = 0;
+		else {
+			msg_perr("%s: Incorrect param format, reset-mcu=1 or 0.\n", __func__);
+			ret = SPI_GENERIC_ERROR;
+		}
+	} else
+		*reset = 0; /* Default behaviour is no MCU reset on tear-down. */
+	free(reset_str);
+
 get_params_done:
 	if (bus_str)
 		free(bus_str);
@@ -441,9 +461,9 @@ get_params_done:
 int realtek_mst_i2c_spi_init(void)
 {
 	int ret = 0;
-	int i2c_bus = 0;
+	int i2c_bus = 0, reset = 0;
 
-	if (get_params(&i2c_bus))
+	if (get_params(&i2c_bus, &reset))
 		return SPI_GENERIC_ERROR;
 
 	int fd = i2c_open(i2c_bus, REGISTER_ADDRESS, 0);
@@ -461,6 +481,7 @@ int realtek_mst_i2c_spi_init(void)
 	}
 
 	data->fd = fd;
+	data->reset = reset;
 	ret |= register_shutdown(realtek_mst_i2c_spi_shutdown, data);
 
 	spi_master_i2c_realtek_mst.data = data;
