@@ -450,11 +450,6 @@ int realtek_mst_i2c_spi_init(void)
 	if (fd < 0)
 		return fd;
 
-	/* Ensure we are in a known state before entering ISP mode */
-	ret |= realtek_mst_i2c_spi_reset_mpu(fd);
-	if (ret)
-		return ret;
-
 	ret |= realtek_mst_i2c_spi_enter_isp_mode(fd);
 	if (ret)
 		return ret;
