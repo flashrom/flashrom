@@ -416,23 +416,22 @@ static int get_params(int *i2c_bus, int *reset)
 		int bus = (int)strtol(bus_str, &bus_suffix, 10);
 		if (errno != 0 || bus_str == bus_suffix) {
 			msg_perr("%s: Could not convert 'bus'.\n", __func__);
-			goto get_params_done;
+			goto _get_params_failed;
 		}
 
 		if (bus < 0 || bus > 255) {
 			msg_perr("%s: Value for 'bus' is out of range(0-255).\n", __func__);
-			goto get_params_done;
+			goto _get_params_failed;
 		}
 
 		if (strlen(bus_suffix) > 0) {
 			msg_perr("%s: Garbage following 'bus' value.\n", __func__);
-			goto get_params_done;
+			goto _get_params_failed;
 		}
 
 		msg_pinfo("Using i2c bus %i.\n", bus);
 		*i2c_bus = bus;
 		ret = 0;
-		goto get_params_done;
 	} else {
 		msg_perr("%s: Bus number not specified.\n", __func__);
 	}
@@ -451,7 +450,7 @@ static int get_params(int *i2c_bus, int *reset)
 		*reset = 0; /* Default behaviour is no MCU reset on tear-down. */
 	free(reset_str);
 
-get_params_done:
+_get_params_failed:
 	if (bus_str)
 		free(bus_str);
 
