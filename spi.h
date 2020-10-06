@@ -111,6 +111,11 @@
 #define JEDEC_BE_D7_OUTSIZE	0x04
 #define JEDEC_BE_D7_INSIZE	0x00
 
+/* Block Erase 0xdc is supported by Spansion chips, takes 4 byte address */
+#define JEDEC_BE_DC		0xdc
+#define JEDEC_BE_DC_OUTSIZE	0x05
+#define JEDEC_BE_DC_INSIZE	0x00
+
 /* Sector Erase 0x20 is supported by Macronix/SST chips. */
 #define JEDEC_SE		0x20
 #define JEDEC_SE_OUTSIZE	0x04
@@ -129,6 +134,7 @@
 /* Status Register Bits */
 #define SPI_SR_WIP	(0x01 << 0)
 #define SPI_SR_WEL	(0x01 << 1)
+#define SPI_SR_ERA_ERR	(0x01 << 5)
 #define SPI_SR_AAI	(0x01 << 6)
 
 /* Write Status Enable */

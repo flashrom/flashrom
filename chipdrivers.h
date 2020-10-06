@@ -170,6 +170,11 @@ int erase_sector_49lfxxxc(struct flashctx *flash, unsigned int address, unsigned
 int printlock_sst_fwhub(struct flashctx *flash);
 int unlock_sst_fwhub(struct flashctx *flash);
 
+/* s25f.c */
+int probe_spi_big_spansion(struct flashctx *flash);
+int s25fl_block_erase(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
+int s25fs_block_erase_d8(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
+
 /* w39.c */
 int printlock_w39f010(struct flashctx * flash);
 int printlock_w39l010(struct flashctx * flash);
