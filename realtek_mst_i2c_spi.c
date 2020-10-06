@@ -46,6 +46,8 @@
 #define OPCODE_READ  3
 #define OPCODE_WRITE 2
 
+#define GPIO_CONFIG_ADDRESS 0x104F
+#define GPIO_VALUE_ADDRESS  0xFE3F
 
 struct realtek_mst_i2c_spi_data {
 	int fd;
@@ -146,27 +148,54 @@ static int realtek_mst_i2c_spi_reset_mpu(int fd)
 	return ret;
 }
 
-static int realtek_mst_i2c_spi_disable_protection(int fd)
+static int realtek_mst_i2c_spi_select_indexed_register(int fd, uint16_t address)
+{
+	int ret = 0;
+
+	ret |= realtek_mst_i2c_spi_write_register(fd, 0xF4, 0x9F);
+	ret |= realtek_mst_i2c_spi_write_register(fd, 0xF5, address >> 8);
+	ret |= realtek_mst_i2c_spi_write_register(fd, 0xF4, address & 0xFF);
+
+	return ret;
+}
+
+static int realtek_mst_i2c_spi_write_indexed_register(int fd, uint16_t address, uint8_t val)
+{
+	int ret = 0;
+
+	ret |= realtek_mst_i2c_spi_select_indexed_register(fd, address);
+	ret |= realtek_mst_i2c_spi_write_register(fd, 0xF5, val);
+
+	return ret;
+}
+
+static int realtek_mst_i2c_spi_read_indexed_register(int fd, uint16_t address, uint8_t *val)
+{
+	int ret = 0;
+
+	ret |= realtek_mst_i2c_spi_select_indexed_register(fd, address);
+	ret |= realtek_mst_i2c_spi_read_register(fd, 0xF5, val);
+
+	return ret;
+}
+
+
+/* Toggle the GPIO pin 88, this could be routed to different controls like write
+ * protection or a led. */
+static int realtek_mst_i2c_spi_toggle_gpio_88_strap(int fd, bool toggle)
 {
 	int ret = 0;
 	uint8_t val = 0;
-	// 0xAB[2:0] = b001
 
-	ret |= realtek_mst_i2c_spi_write_register(fd, 0xF4, 0x9F);
-	ret |= realtek_mst_i2c_spi_write_register(fd, 0xF5, 0x10);
-	ret |= realtek_mst_i2c_spi_write_register(fd, 0xF4, 0xAB);
+	/* Read register 0x104F into val. */
+	ret |= realtek_mst_i2c_spi_read_indexed_register(fd, GPIO_CONFIG_ADDRESS, &val);
+	/* Write 0x104F[3:0] = b0001 to enable the toggle of pin value. */
+	ret |= realtek_mst_i2c_spi_write_indexed_register(fd, GPIO_CONFIG_ADDRESS, (val & 0xF0) | 0x01);
 
-	ret |= realtek_mst_i2c_spi_read_register(fd, 0xF5, &val);
-
-	ret |= realtek_mst_i2c_spi_write_register(fd, 0xF4, 0x9F);
-	ret |= realtek_mst_i2c_spi_write_register(fd, 0xF5, 0x10);
-	ret |= realtek_mst_i2c_spi_write_register(fd, 0xF4, 0xAB);
-
-	ret |= realtek_mst_i2c_spi_write_register(fd, 0xF5, (val & 0xF8) | 0x01);
-
-	/* Set pin value to high, 0xFFD7[0] = 1. */
-	ret |= realtek_mst_i2c_spi_read_register(fd, 0xD7, &val);
-	ret |= realtek_mst_i2c_spi_write_register(fd, 0xD7, (val & 0xFE) | 0x01);
+	/* Read register 0xFE3F into val. */
+	ret |= realtek_mst_i2c_spi_read_indexed_register(fd, GPIO_VALUE_ADDRESS, &val);
+	/* Write 0xFE3F[0] = b|toggle| to toggle pin value to low/high. */
+	ret |= realtek_mst_i2c_spi_write_indexed_register(fd, GPIO_VALUE_ADDRESS, (val & 0xFE) | toggle);
 
 	return ret;
 }
@@ -333,7 +362,7 @@ static int realtek_mst_i2c_spi_write_256(struct flashctx *flash, const uint8_t *
 	if (fd < 0)
 		return SPI_GENERIC_ERROR;
 
-	ret = realtek_mst_i2c_spi_disable_protection(fd);
+	ret = realtek_mst_i2c_spi_toggle_gpio_88_strap(fd, true);
 	if (ret)
 		return ret;
 
