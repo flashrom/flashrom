@@ -662,8 +662,17 @@
 #define SPANSION_S25FL204	0x4013
 #define SPANSION_S25FL208	0x4014
 #define SPANSION_S25FL216	0x4015	/* Same as S25FL216K, but the latter supports OTP, 3 status regs, quad I/O, SFDP etc. */
+#define SPANSION_S25FL116K	0x4015
 #define SPANSION_S25FL132K	0x4016
 #define SPANSION_S25FL164K	0x4017
+#define SPANSION_S25FS128S_L	0x20180081  /* Large sectors. */
+#define SPANSION_S25FS128S_S	0x20180181  /* Small sectors. */
+#define SPANSION_S25FS256S_L	0x02190081  /* Large sectors. */
+#define SPANSION_S25FS256S_S	0x02190181  /* Small sectors. */
+#define SPANSION_S25FL128S_UL	0x20180080  /* Uniform Large (128kB) sectors */
+#define SPANSION_S25FL128S_US	0x20180180  /* Uniform Small (64kB) sectors */
+#define SPANSION_S25FL256S_UL	0x02190080  /* Uniform Large (128kB) sectors */
+#define SPANSION_S25FL256S_US	0x02190180  /* Uniform Small (64kB) sectors */
 
 /* Spansion 29GL families got a suffix indicating the process technology but share the same 3-Byte IDs. They can
  * however be differentiated by CFI byte 45h. Some versions exist which have special top or bottom boot sectors
