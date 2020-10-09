@@ -108,7 +108,7 @@ static int it8716f_spi_chip_write_256(struct flashctx *flash, const uint8_t *buf
 				      unsigned int start, unsigned int len);
 
 static const struct spi_master spi_master_it87xx = {
-	.max_data_read	= MAX_DATA_UNSPECIFIED,
+	.max_data_read	= 3,
 	.max_data_write	= MAX_DATA_UNSPECIFIED,
 	.command	= it8716f_spi_send_command,
 	.multicommand	= default_spi_send_multicommand,
@@ -380,7 +380,7 @@ static int it8716f_spi_chip_read(struct flashctx *flash, uint8_t *buf,
 	 * via a programmer parameter for the internal programmer.
 	 */
 	if ((flash->chip->total_size * 1024 > 512 * 1024)) {
-		spi_read_chunked(flash, buf, start, len, 3);
+		default_spi_read(flash, buf, start, len);
 	} else {
 		mmio_readn((void *)(flash->virtual_memory + start), buf, len);
 	}
