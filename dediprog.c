@@ -545,7 +545,7 @@ static int dediprog_spi_read(struct flashctx *flash, uint8_t *buf, unsigned int 
 	if (residue) {
 		msg_pdbg("Slow read for partial block from 0x%x, length 0x%x\n",
 			 start, residue);
-		ret = spi_read_chunked(flash, buf, start, residue, 16);
+		ret = default_spi_read(flash, buf, start, residue);
 		if (ret)
 			goto err;
 	}
@@ -560,8 +560,8 @@ static int dediprog_spi_read(struct flashctx *flash, uint8_t *buf, unsigned int 
 	if (len != 0) {
 		msg_pdbg("Slow read for partial block from 0x%x, length 0x%x\n",
 			 start, len);
-		ret = spi_read_chunked(flash, buf + residue + bulklen,
-				       start + residue + bulklen, len, 16);
+		ret = default_spi_read(flash, buf + residue + bulklen,
+				       start + residue + bulklen, len);
 		if (ret)
 			goto err;
 	}
