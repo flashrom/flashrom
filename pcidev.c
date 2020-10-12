@@ -206,6 +206,7 @@ struct pci_dev *pcidev_init(const struct dev_entry *devs, int bar)
 
 	for (dev = pacc->devices; dev; dev = dev->next) {
 		if (pci_filter_match(&filter, dev)) {
+			pci_fill_info(dev, PCI_FILL_IDENT);
 			/* Check against list of supported devices. */
 			for (i = 0; devs[i].device_name != NULL; i++)
 				if ((dev->vendor_id == devs[i].vendor_id) &&
