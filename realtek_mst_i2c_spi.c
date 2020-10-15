@@ -393,8 +393,7 @@ static int realtek_mst_i2c_spi_write_256(struct flashctx *flash, const uint8_t *
 			break;
 	}
 
-
-	/* TODO: re-enable the write protection? */
+	ret |= realtek_mst_i2c_spi_toggle_gpio_88_strap(fd, false);
 
 	return ret;
 }
