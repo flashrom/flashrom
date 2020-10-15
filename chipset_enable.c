@@ -1010,6 +1010,8 @@ static int enable_flash_silvermont(struct pci_dev *dev, const char *name)
 	uint32_t sbase = pci_read_long(dev, 0x54) & 0xfffffe00;
 	msg_pdbg("SPI_BASE_ADDRESS = 0x%x\n", sbase);
 	void *spibar = rphysmap("BYT SBASE", sbase, 512); /* Last defined address on Bay Trail is 0x100 */
+	if (spibar == ERROR_PTR)
+		return ERROR_FATAL;
 
 	/* Enable Flash Writes.
 	 * Silvermont-based: BCR at SBASE + 0xFC (some bits of BCR are also accessible via BC at IBASE + 0x1C).
