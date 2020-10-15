@@ -1,5 +1,5 @@
 /*
- * Copyright 2015, Google Inc.
+ * Copyright 2010, Google LLC.
  * Copyright 2018-present, Facebook Inc.
  * All rights reserved.
  *
