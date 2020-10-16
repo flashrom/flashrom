@@ -649,7 +649,7 @@ static int spi_nbyte_program(struct flashctx *flash, unsigned int addr, const ui
 int spi_nbyte_read(struct flashctx *flash, unsigned int address, uint8_t *bytes,
 		   unsigned int len)
 {
-	const bool native_4ba =	flash->chip->feature_bits & FEATURE_4BA_READ && spi_master_4ba(flash);
+	const bool native_4ba = flash->chip->feature_bits & FEATURE_4BA_READ && spi_master_4ba(flash);
 	uint8_t cmd[1 + JEDEC_MAX_ADDR_LEN] = { native_4ba ? JEDEC_READ_4BA : JEDEC_READ, };
 
 	const int addr_len = spi_prepare_address(flash, cmd, native_4ba, address);
