@@ -1029,13 +1029,9 @@ int probe_variable_size(struct flashctx *flash)
 {
 	unsigned int i;
 	const struct emu_data *emu_data = get_data_from_context(flash);
-	if (!emu_data) {
-		msg_perr("No data in flash context!\n");
-		return 0;
-	}
 
 	/* Skip the probing if we don't emulate this chip. */
-	if (emu_data->emu_chip != EMULATE_VARIABLE_SIZE)
+	if (!emu_data || emu_data->emu_chip != EMULATE_VARIABLE_SIZE)
 		return 0;
 
 	/*
