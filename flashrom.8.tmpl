@@ -646,8 +646,19 @@ vendor):
 .sp
 .RB "* Macronix " MX25L6436 " SPI flash chip (8192 kB, RDID, SFDP)"
 .sp
+.RB "* Dummy vendor " VARIABLE_SIZE " SPI flash chip (configurable size, page write)"
+.sp
 Example:
 .B "flashrom -p dummy:emulate=SST25VF040.REMS"
+.sp
+To use
+.B VARIABLE_SIZE
+chip,
+.B size
+must be specified to configure the size of the flash chip as a power of two.
+.sp
+Example:
+.B "flashrom -p dummy:emulate=VARIABLE_SIZE,size=16777216,image=dummy.bin"
 .TP
 .B Persistent images
 .sp

@@ -126,7 +126,7 @@ static struct spi_master spi_master_dummyflasher = {
 	.write_aai	= default_spi_write_aai,
 };
 
-static const struct par_master par_master_dummy = {
+static struct par_master par_master_dummy = {
 		.chip_readb		= dummy_chip_readb,
 		.chip_readw		= dummy_chip_readw,
 		.chip_readl		= dummy_chip_readl,
@@ -166,7 +166,7 @@ int dummy_init(void)
 	unsigned int i;
 #if EMULATE_SPI_CHIP
 	char *status = NULL;
-	int size = -1;  /* size for VARIOUS_SIZE chip device */
+	int size = -1;  /* size for VARIABLE_SIZE chip device */
 #endif
 #if EMULATE_CHIP
 	struct stat image_stat;
@@ -180,6 +180,7 @@ int dummy_init(void)
 	data->emu_chip = EMULATE_NONE;
 	data->delay_us = 0;
 	spi_master_dummyflasher.data = data;
+	par_master_dummy.data = data;
 
 	msg_pspew("%s\n", __func__);
 
@@ -343,7 +344,7 @@ int dummy_init(void)
 #if EMULATE_SPI_CHIP
 	tmp = extract_programmer_param("size");
 	if (tmp) {
-		size = atoi(tmp);
+		size = strtol(tmp, NULL, 10);
 		if (size <= 0 || (size % 1024 != 0)) {
 			msg_perr("%s: Chip size is not a multipler of 1024: %s\n",
 					 __func__, tmp);
@@ -351,9 +352,6 @@ int dummy_init(void)
 			return 1;
 		}
 		free(tmp);
-	} else {
-		msg_perr("%s: the size parameter is not given.\n", __func__);
-		return 1;
 	}
 #endif
 
@@ -433,6 +431,11 @@ int dummy_init(void)
 	 *   flashrom -p dummy:emulate=VARIABLE_SIZE,size=4194304
 	 */
 	if (!strcmp(tmp, "VARIABLE_SIZE")) {
+		if (size == -1) {
+			msg_perr("%s: the size parameter is not given.\n", __func__);
+			free(tmp);
+			return 1;
+		}
 		data->emu_chip = EMULATE_VARIABLE_SIZE;
 		data->emu_chip_size = size;
 		data->emu_max_byteprogram_size = 256;
