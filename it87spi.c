@@ -139,12 +139,13 @@ static uint16_t it87spi_probe(uint16_t port)
 			char *dualbiosindex_suffix;
 			errno = 0;
 			long chip_index = strtol(param, &dualbiosindex_suffix, 0);
-			free(param);
 			if (errno != 0 || *dualbiosindex_suffix != '\0' || chip_index < 0 || chip_index > 1) {
 				msg_perr("DualBIOS: Invalid chip index requested - choose 0 or 1.\n");
+				free(param);
 				exit_conf_mode_ite(port);
 				return 1;
 			}
+			free(param);
 			if (chip_index != (tmp & 1)) {
 				msg_pdbg("DualBIOS: Previous chip index: %d\n", tmp & 1);
 				sio_write(port, 0xEF, (tmp & 0xFE) | chip_index);
