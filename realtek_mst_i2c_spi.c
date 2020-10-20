@@ -432,10 +432,10 @@ static int realtek_mst_i2c_spi_shutdown(void *data)
 	return ret;
 }
 
-static int get_params(int *i2c_bus, int *reset)
+static int get_params(int *i2c_bus, int *reset, int *enter_isp)
 {
-	char *bus_str = NULL, *reset_str = NULL;
-        int ret = SPI_GENERIC_ERROR;
+	char *bus_str = NULL, *reset_str = NULL, *isp_str = NULL;
+	int ret = SPI_GENERIC_ERROR;
 
 	bus_str = extract_programmer_param("bus");
 	if (bus_str) {
@@ -478,6 +478,20 @@ static int get_params(int *i2c_bus, int *reset)
 		*reset = 0; /* Default behaviour is no MCU reset on tear-down. */
 	free(reset_str);
 
+	isp_str = extract_programmer_param("enter-isp");
+	if (isp_str) {
+		if (isp_str[0] == '1')
+			*enter_isp = 1;
+		else if (isp_str[0] == '0')
+			*enter_isp = 0;
+		else {
+			msg_perr("%s: Incorrect param format, enter-isp=1 or 0.\n", __func__);
+			ret = SPI_GENERIC_ERROR;
+		}
+	} else
+		*enter_isp = 1; /* Default behaviour is enter ISP on setup. */
+	free(isp_str);
+
 _get_params_failed:
 	if (bus_str)
 		free(bus_str);
@@ -488,18 +502,20 @@ _get_params_failed:
 int realtek_mst_i2c_spi_init(void)
 {
 	int ret = 0;
-	int i2c_bus = 0, reset = 0;
+	int i2c_bus = 0, reset = 0, enter_isp = 0;
 
-	if (get_params(&i2c_bus, &reset))
+	if (get_params(&i2c_bus, &reset, &enter_isp))
 		return SPI_GENERIC_ERROR;
 
 	int fd = i2c_open(i2c_bus, REGISTER_ADDRESS, 0);
 	if (fd < 0)
 		return fd;
 
-	ret |= realtek_mst_i2c_spi_enter_isp_mode(fd);
-	if (ret)
-		return ret;
+	if (enter_isp) {
+		ret |= realtek_mst_i2c_spi_enter_isp_mode(fd);
+		if (ret)
+			return ret;
+	}
 
 	struct realtek_mst_i2c_spi_data *data = calloc(1, sizeof(struct realtek_mst_i2c_spi_data));
 	if (!data) {
