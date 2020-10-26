@@ -21,6 +21,14 @@
 #include "programmer.h"
 #include "hwaccess.h"
 
+int is_laptop = 0;
+int laptop_ok = 0;
+
+int force_boardenable = 0;
+int force_boardmismatch = 0;
+
+enum chipbustype internal_buses_supported = BUS_NONE;
+
 struct pci_dev *pci_dev_find_vendorclass(uint16_t vendor, uint16_t devclass)
 {
 	struct pci_dev *temp;
@@ -79,9 +87,6 @@ struct pci_dev *pci_card_find(uint16_t vendor, uint16_t device,
 	return NULL;
 }
 
-int force_boardenable = 0;
-int force_boardmismatch = 0;
-
 #if IS_X86
 void probe_superio(void)
 {
@@ -109,9 +114,6 @@ int register_superio(struct superio s)
 }
 
 #endif
-
-int is_laptop = 0;
-int laptop_ok = 0;
 
 static void internal_chip_writeb(const struct flashctx *flash, uint8_t val,
 				 chipaddr addr)
@@ -166,8 +168,6 @@ static const struct par_master par_master_internal = {
 		.chip_writel		= internal_chip_writel,
 		.chip_writen		= fallback_chip_writen,
 };
-
-enum chipbustype internal_buses_supported = BUS_NONE;
 
 int internal_init(void)
 {
