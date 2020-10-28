@@ -812,8 +812,6 @@ override CONFIG_DEVELOPERBOX_SPI = no
 override CONFIG_PICKIT2_SPI = no
 override CONFIG_RAIDEN = no
 override CONFIG_STLINKV3_SPI = no
-override CONFIG_LSPCON_I2C_SPI = no
-override CONFIG_REALTEK_MST_I2C_SPI = no
 endif
 ifeq ($(CONFIG_ENABLE_LIBPCI_PROGRAMMERS), no)
 override CONFIG_INTERNAL = no
