@@ -325,7 +325,7 @@ static int spi_simple_write_cmd(struct flashctx *const flash, const uint8_t op, 
 	struct spi_command cmds[] = {
 	{
 		.readarr = 0,
-		.writecnt = 1,
+		.writecnt = JEDEC_WREN_OUTSIZE,
 		.writearr = (const unsigned char[]){ JEDEC_WREN },
 	}, {
 		.readarr = 0,
