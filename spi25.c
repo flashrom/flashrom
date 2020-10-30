@@ -463,26 +463,26 @@ static int spi_write_cmd(struct flashctx *const flash, const uint8_t op,
 static int spi_chip_erase_60(struct flashctx *flash)
 {
 	/* This usually takes 1-85s, so wait in 1s steps. */
-	return spi_simple_write_cmd(flash, 0x60, 1000 * 1000);
+	return spi_simple_write_cmd(flash, JEDEC_CE_60, 1000 * 1000);
 }
 
 static int spi_chip_erase_62(struct flashctx *flash)
 {
 	/* This usually takes 2-5s, so wait in 100ms steps. */
-	return spi_simple_write_cmd(flash, 0x62, 100 * 1000);
+	return spi_simple_write_cmd(flash, JEDEC_CE_62, 100 * 1000);
 }
 
 static int spi_chip_erase_c7(struct flashctx *flash)
 {
 	/* This usually takes 1-85s, so wait in 1s steps. */
-	return spi_simple_write_cmd(flash, 0xc7, 1000 * 1000);
+	return spi_simple_write_cmd(flash, JEDEC_CE_C7, 1000 * 1000);
 }
 
 int spi_block_erase_52(struct flashctx *flash, unsigned int addr,
 		       unsigned int blocklen)
 {
 	/* This usually takes 100-4000ms, so wait in 100ms steps. */
-	return spi_write_cmd(flash, 0x52, false, addr, NULL, 0, 100 * 1000);
+	return spi_write_cmd(flash, JEDEC_BE_52, false, addr, NULL, 0, 100 * 1000);
 }
 
 /* Block size is usually
@@ -491,7 +491,7 @@ int spi_block_erase_52(struct flashctx *flash, unsigned int addr,
 int spi_block_erase_c4(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
 {
 	/* This usually takes 240-480s, so wait in 500ms steps. */
-	return spi_write_cmd(flash, 0xc4, false, addr, NULL, 0, 500 * 1000);
+	return spi_write_cmd(flash, JEDEC_BE_C4, false, addr, NULL, 0, 500 * 1000);
 }
 
 /* Block size is usually
@@ -503,7 +503,7 @@ int spi_block_erase_d8(struct flashctx *flash, unsigned int addr,
 		       unsigned int blocklen)
 {
 	/* This usually takes 100-4000ms, so wait in 100ms steps. */
-	return spi_write_cmd(flash, 0xd8, false, addr, NULL, 0, 100 * 1000);
+	return spi_write_cmd(flash, JEDEC_BE_D8, false, addr, NULL, 0, 100 * 1000);
 }
 
 /* Block size is usually
@@ -513,7 +513,7 @@ int spi_block_erase_d7(struct flashctx *flash, unsigned int addr,
 		       unsigned int blocklen)
 {
 	/* This usually takes 100-4000ms, so wait in 100ms steps. */
-	return spi_write_cmd(flash, 0xd7, false, addr, NULL, 0, 100 * 1000);
+	return spi_write_cmd(flash, JEDEC_BE_D7, false, addr, NULL, 0, 100 * 1000);
 }
 
 /* Page erase (usually 256B blocks) */
@@ -529,19 +529,19 @@ int spi_block_erase_20(struct flashctx *flash, unsigned int addr,
 		       unsigned int blocklen)
 {
 	/* This usually takes 15-800ms, so wait in 10ms steps. */
-	return spi_write_cmd(flash, 0x20, false, addr, NULL, 0, 10 * 1000);
+	return spi_write_cmd(flash, JEDEC_SE, false, addr, NULL, 0, 10 * 1000);
 }
 
 int spi_block_erase_50(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
 {
 	/* This usually takes 10ms, so wait in 1ms steps. */
-	return spi_write_cmd(flash, 0x50, false, addr, NULL, 0, 1 * 1000);
+	return spi_write_cmd(flash, JEDEC_BE_50, false, addr, NULL, 0, 1 * 1000);
 }
 
 int spi_block_erase_81(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
 {
 	/* This usually takes 8ms, so wait in 1ms steps. */
-	return spi_write_cmd(flash, 0x81, false, addr, NULL, 0, 1 * 1000);
+	return spi_write_cmd(flash, JEDEC_BE_81, false, addr, NULL, 0, 1 * 1000);
 }
 
 int spi_block_erase_60(struct flashctx *flash, unsigned int addr,
