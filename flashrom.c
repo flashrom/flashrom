@@ -580,6 +580,34 @@ int register_shutdown(int (*function) (void *data), void *data)
 	return 0;
 }
 
+int register_chip_restore(chip_restore_fn_cb_t func,
+			  struct flashctx *flash, uint8_t status)
+{
+	if (flash->chip_restore_fn_count >= MAX_CHIP_RESTORE_FUNCTIONS) {
+		msg_perr("Tried to register more than %i chip restore"
+		         " functions.\n", MAX_CHIP_RESTORE_FUNCTIONS);
+		return 1;
+	}
+	flash->chip_restore_fn[flash->chip_restore_fn_count].func = func;
+	flash->chip_restore_fn[flash->chip_restore_fn_count].status = status;
+	flash->chip_restore_fn_count++;
+
+	return 0;
+}
+
+static int deregister_chip_restore(struct flashctx *flash)
+{
+	int rc = 0;
+
+	while (flash->chip_restore_fn_count > 0) {
+		int i = --flash->chip_restore_fn_count;
+		rc |= flash->chip_restore_fn[i].func(
+			flash, flash->chip_restore_fn[i].status);
+	}
+
+	return rc;
+}
+
 int programmer_init(enum programmer prog, const char *param)
 {
 	int ret;
@@ -2256,6 +2284,7 @@ int prepare_flash_access(struct flashctx *const flash,
 
 	flash->address_high_byte = -1;
 	flash->in_4ba_mode = false;
+	flash->chip_restore_fn_count = 0;
 
 	/* Be careful about 4BA chips and broken masters */
 	if (flash->chip->total_size > 16 * 1024 && spi_master_no_4ba_modes(flash)) {
@@ -2285,6 +2314,7 @@ int prepare_flash_access(struct flashctx *const flash,
 
 void finalize_flash_access(struct flashctx *const flash)
 {
+	deregister_chip_restore(flash);
 	unmap_flash(flash);
 }
 
