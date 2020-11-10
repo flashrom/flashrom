@@ -544,6 +544,16 @@ UNSUPPORTED_FEATURES += CONFIG_SATAMV=yes
 else
 override CONFIG_SATAMV = no
 endif
+ifeq ($(CONFIG_ENE_LPC), yes)
+UNSUPPORTED_FEATURES += CONFIG_ENE_LPC=yes
+else
+override CONFIG_ENE_LPC = no
+endif
+ifeq ($(CONFIG_MEC1308), yes)
+UNSUPPORTED_FEATURES += CONFIG_MEC1308=yes
+else
+override CONFIG_MEC1308 = no
+endif
 endif
 
 # Disable all drivers needing raw access (memory, PCI, port I/O) on
