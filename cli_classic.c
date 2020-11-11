@@ -70,6 +70,8 @@ static void cli_classic_usage(const char *name)
 	       " -o | --output <logfile>            log output to <logfile>\n"
 	       "      --flash-contents <ref-file>   assume flash contents to be <ref-file>\n"
 	       " -L | --list-supported              print supported devices\n"
+	       " -d | --loop-delay <value>          set loop delay calibration manually\n"
+	       "      --loop-delay get              show loop delay calibration\n"
 #if CONFIG_PRINT_WIKI == 1
 	       " -z | --list-supported-wiki         print supported devices in wiki syntax\n"
 #endif
@@ -153,6 +155,7 @@ int main(int argc, char *argv[])
 	int set_wp_range = 0, set_wp_region = 0, wp_list = 0;
 	int read_it = 0, write_it = 0, erase_it = 0, verify_it = 0;
 	int dont_verify_it = 0, dont_verify_all = 0, list_supported = 0, operation_specified = 0;
+	unsigned long provided_delay = 0;
 	struct flashrom_layout *layout = NULL;
 	enum programmer prog = PROGRAMMER_INVALID;
 	enum {
@@ -172,7 +175,7 @@ int main(int argc, char *argv[])
 	int ret = 0;
 	unsigned int wp_start = 0, wp_len = 0;
 
-	static const char optstring[] = "r:Rw:v:nNVEfc:l:i:p:Lzho:";
+	static const char optstring[] = "r:Rw:v:nNVEfc:l:i:p:Lzho:d:";
 	static const struct option long_options[] = {
 		{"read",		1, NULL, 'r'},
 		{"write",		1, NULL, 'w'},
@@ -204,6 +207,7 @@ int main(int argc, char *argv[])
 		{"help",		0, NULL, 'h'},
 		{"version",		0, NULL, 'R'},
 		{"output",		1, NULL, 'o'},
+		{"delay",		1, NULL, 'd'},
 		{NULL,			0, NULL, 0},
 	};
 
@@ -434,6 +438,14 @@ int main(int argc, char *argv[])
 			}
 #endif /* STANDALONE */
 			break;
+			case 'd':
+				provided_delay = strtoul(strdup(optarg), NULL, 0);
+				if (!provided_delay) {
+					/* Make it easy for scripts to parse this by omitting anything else */
+					msg_pinfo("%lu\n", get_calibration_value());
+					exit(0);
+				}
+				break;
 		default:
 			cli_classic_abort_usage(NULL);
 			break;
@@ -526,7 +538,10 @@ int main(int argc, char *argv[])
 	}
 
 	/* FIXME: Delay calibration should happen in programmer code. */
-	myusec_calibrate_delay();
+	if (provided_delay)
+		set_external_calibration(provided_delay);
+	else
+		myusec_calibrate_delay();
 
 	if (programmer_init(prog, pparam)) {
 		msg_perr("Error: Programmer initialization failed.\n");

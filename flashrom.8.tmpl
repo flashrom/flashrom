@@ -50,7 +50,7 @@ flashrom \- detect, read, write, verify and erase flash chips
              [\fB\-E\fR|\fB\-r\fR <file>|\fB\-w\fR <file>|\fB\-v\fR <file>]
              [(\fB\-l\fR <file>|\fB\-\-ifd|\fB \-\-fmap\fR|\fB\-\-fmap-file\fR <file>) [\fB\-i\fR <image>]]
              [\fB\-n\fR] [\fB\-N\fR] [\fB\-f\fR])]
-         [\fB\-V\fR[\fBV\fR[\fBV\fR]]] [\fB-o\fR <logfile>]
+         [\fB\-V\fR[\fBV\fR[\fBV\fR]]] [\fB-o\fR <logfile>] [\fB-d\fR get | <value>]
 .SH DESCRIPTION
 .B flashrom
 is a utility for detecting, reading, writing, verifying and erasing flash
@@ -364,6 +364,18 @@ on-screen messages are not verbose and don't require output redirection.
 .TP
 .B "\-R, \-\-version"
 Show version information and exit.
+.TP
+.B "\-d, \-\-delay"
+Retrieve the loop calibration delay value or provide one externally. Calibrate
+delay procedure can take a few seconds and for repeated execution on a large
+number of hosts it can provide a significant overhead. Therefore, this argument
+makes it possible to provide the calibration delay through the command line
+option.
+
+To retrieve the value, run
+.BR "flashrom \--delay get " "and to provide it during programming, add "
+.BR "--delay <value> " "to your command."
+
 .SH PROGRAMMER-SPECIFIC INFORMATION
 Some programmer drivers accept further parameters to set programmer-specific
 parameters. These parameters are separated from the programmer name by a
