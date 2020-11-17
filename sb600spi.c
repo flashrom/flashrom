@@ -56,31 +56,6 @@ static enum amd_chipset amd_gen = CHIPSET_AMD_UNKNOWN;
 #define FIFO_SIZE_OLD		8
 #define FIFO_SIZE_YANGTZE	71
 
-static int sb600_spi_send_command(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
-				  const unsigned char *writearr, unsigned char *readarr);
-static int spi100_spi_send_command(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
-				  const unsigned char *writearr, unsigned char *readarr);
-
-static struct spi_master spi_master_sb600 = {
-	.max_data_read = FIFO_SIZE_OLD,
-	.max_data_write = FIFO_SIZE_OLD - 3,
-	.command = sb600_spi_send_command,
-	.multicommand = default_spi_send_multicommand,
-	.read = default_spi_read,
-	.write_256 = default_spi_write_256,
-	.write_aai = default_spi_write_aai,
-};
-
-static struct spi_master spi_master_yangtze = {
-	.max_data_read = FIFO_SIZE_YANGTZE - 3, /* Apparently the big SPI 100 buffer is not a ring buffer. */
-	.max_data_write = FIFO_SIZE_YANGTZE - 3,
-	.command = spi100_spi_send_command,
-	.multicommand = default_spi_send_multicommand,
-	.read = default_spi_read,
-	.write_256 = default_spi_write_256,
-	.write_aai = default_spi_write_aai,
-};
-
 static int find_smbus_dev_rev(uint16_t vendor, uint16_t device)
 {
 	struct pci_dev *smbus_dev = pci_dev_find(vendor, device);
@@ -569,6 +544,26 @@ static int handle_imc(struct pci_dev *dev)
 
 	return amd_imc_shutdown(dev);
 }
+
+static struct spi_master spi_master_sb600 = {
+	.max_data_read = FIFO_SIZE_OLD,
+	.max_data_write = FIFO_SIZE_OLD - 3,
+	.command = sb600_spi_send_command,
+	.multicommand = default_spi_send_multicommand,
+	.read = default_spi_read,
+	.write_256 = default_spi_write_256,
+	.write_aai = default_spi_write_aai,
+};
+
+static struct spi_master spi_master_yangtze = {
+	.max_data_read = FIFO_SIZE_YANGTZE - 3, /* Apparently the big SPI 100 buffer is not a ring buffer. */
+	.max_data_write = FIFO_SIZE_YANGTZE - 3,
+	.command = spi100_spi_send_command,
+	.multicommand = default_spi_send_multicommand,
+	.read = default_spi_read,
+	.write_256 = default_spi_write_256,
+	.write_aai = default_spi_write_aai,
+};
 
 int sb600_probe_spi(struct pci_dev *dev)
 {
