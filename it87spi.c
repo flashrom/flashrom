@@ -33,14 +33,15 @@
 #define ITE_SUPERIO_PORT1	0x2e
 #define ITE_SUPERIO_PORT2	0x4e
 
+#define CHIP_ID_BYTE1_REG	0x20
+#define CHIP_ID_BYTE2_REG	0x21
+#define CHIP_VER_REG		0x22
+
 static uint16_t it8716f_flashport = 0;
 /* use fast 33MHz SPI (<>0) or slow 16MHz (0) */
 static int fast_spi = 1;
 
 /* Helper functions for most recent ITE IT87xx Super I/O chips */
-#define CHIP_ID_BYTE1_REG	0x20
-#define CHIP_ID_BYTE2_REG	0x21
-#define CHIP_VER_REG		0x22
 void enter_conf_mode_ite(uint16_t port)
 {
 	OUTB(0x87, port);
@@ -98,14 +99,170 @@ void probe_superio_ite(void)
 	return;
 }
 
+/* Page size is usually 256 bytes */
+static int it8716f_spi_page_program(struct flashctx *flash, const uint8_t *buf, unsigned int start)
+{
+	unsigned int i;
+	int result;
+	chipaddr bios = flash->virtual_memory;
+
+	result = spi_write_enable(flash);
+	if (result)
+		return result;
+	/* FIXME: The command below seems to be redundant or wrong. */
+	OUTB(0x06, it8716f_flashport + 1);
+	OUTB(((2 + (fast_spi ? 1 : 0)) << 4), it8716f_flashport);
+	for (i = 0; i < flash->chip->page_size; i++)
+		mmio_writeb(buf[i], (void *)(bios + start + i));
+	OUTB(0, it8716f_flashport);
+	/* Wait until the Write-In-Progress bit is cleared.
+	 * This usually takes 1-10 ms, so wait in 1 ms steps.
+	 */
+	while (spi_read_status_register(flash) & SPI_SR_WIP)
+		programmer_delay(1000);
+	return 0;
+}
+
+/*
+ * The IT8716F only supports commands with length 1,2,4,5 bytes including
+ * command byte and can not read more than 3 bytes from the device.
+ *
+ * This function expects writearr[0] to be the first byte sent to the device,
+ * whereas the IT8716F splits commands internally into address and non-address
+ * commands with the address in inverse wire order. That's why the register
+ * ordering in case 4 and 5 may seem strange.
+ */
 static int it8716f_spi_send_command(const struct flashctx *flash,
 				    unsigned int writecnt, unsigned int readcnt,
 				    const unsigned char *writearr,
-				    unsigned char *readarr);
+				    unsigned char *readarr)
+{
+	uint8_t busy, writeenc;
+
+	do {
+		busy = INB(it8716f_flashport) & 0x80;
+	} while (busy);
+	if (readcnt > 3) {
+		msg_pinfo("%s called with unsupported readcnt %i.\n",
+			  __func__, readcnt);
+		return SPI_INVALID_LENGTH;
+	}
+	switch (writecnt) {
+	case 1:
+		OUTB(writearr[0], it8716f_flashport + 1);
+		writeenc = 0x0;
+		break;
+	case 2:
+		OUTB(writearr[0], it8716f_flashport + 1);
+		OUTB(writearr[1], it8716f_flashport + 7);
+		writeenc = 0x1;
+		break;
+	case 4:
+		OUTB(writearr[0], it8716f_flashport + 1);
+		OUTB(writearr[1], it8716f_flashport + 4);
+		OUTB(writearr[2], it8716f_flashport + 3);
+		OUTB(writearr[3], it8716f_flashport + 2);
+		writeenc = 0x2;
+		break;
+	case 5:
+		OUTB(writearr[0], it8716f_flashport + 1);
+		OUTB(writearr[1], it8716f_flashport + 4);
+		OUTB(writearr[2], it8716f_flashport + 3);
+		OUTB(writearr[3], it8716f_flashport + 2);
+		OUTB(writearr[4], it8716f_flashport + 7);
+		writeenc = 0x3;
+		break;
+	default:
+		msg_pinfo("%s called with unsupported writecnt %i.\n",
+			  __func__, writecnt);
+		return SPI_INVALID_LENGTH;
+	}
+	/*
+	 * Start IO, 33 or 16 MHz, readcnt input bytes, writecnt output bytes.
+	 * Note:
+	 * We can't use writecnt directly, but have to use a strange encoding.
+	 */
+	OUTB(((0x4 + (fast_spi ? 1 : 0)) << 4)
+		| ((readcnt & 0x3) << 2) | (writeenc), it8716f_flashport);
+
+	if (readcnt > 0) {
+		unsigned int i;
+
+		do {
+			busy = INB(it8716f_flashport) & 0x80;
+		} while (busy);
+
+		for (i = 0; i < readcnt; i++)
+			readarr[i] = INB(it8716f_flashport + 5 + i);
+	}
+
+	return 0;
+}
+
+/*
+ * IT8716F only allows maximum of 512 kb SPI mapped to LPC memory cycles
+ * Need to read this big flash using firmware cycles 3 byte at a time.
+ */
 static int it8716f_spi_chip_read(struct flashctx *flash, uint8_t *buf,
-				 unsigned int start, unsigned int len);
+				 unsigned int start, unsigned int len)
+{
+	fast_spi = 0;
+
+	/* FIXME: Check if someone explicitly requested to use IT87 SPI although
+	 * the mainboard does not use IT87 SPI translation. This should be done
+	 * via a programmer parameter for the internal programmer.
+	 */
+	if ((flash->chip->total_size * 1024 > 512 * 1024)) {
+		default_spi_read(flash, buf, start, len);
+	} else {
+		mmio_readn((void *)(flash->virtual_memory + start), buf, len);
+	}
+
+	return 0;
+}
+
 static int it8716f_spi_chip_write_256(struct flashctx *flash, const uint8_t *buf,
-				      unsigned int start, unsigned int len);
+				      unsigned int start, unsigned int len)
+{
+	const struct flashchip *chip = flash->chip;
+	/*
+	 * IT8716F only allows maximum of 512 kb SPI chip size for memory
+	 * mapped access. It also can't write more than 1+3+256 bytes at once,
+	 * so page_size > 256 bytes needs a fallback.
+	 * FIXME: Split too big page writes into chunks IT87* can handle instead
+	 * of degrading to single-byte program.
+	 * FIXME: Check if someone explicitly requested to use IT87 SPI although
+	 * the mainboard does not use IT87 SPI translation. This should be done
+	 * via a programmer parameter for the internal programmer.
+	 */
+	if ((chip->total_size * 1024 > 512 * 1024) || (chip->page_size > 256)) {
+		spi_chip_write_1(flash, buf, start, len);
+	} else {
+		unsigned int lenhere;
+
+		if (start % chip->page_size) {
+			/* start to the end of the page or to start + len,
+			 * whichever is smaller.
+			 */
+			lenhere = min(len, chip->page_size - start % chip->page_size);
+			spi_chip_write_1(flash, buf, start, lenhere);
+			start += lenhere;
+			len -= lenhere;
+			buf += lenhere;
+		}
+
+		while (len >= chip->page_size) {
+			it8716f_spi_page_program(flash, buf, start);
+			start += chip->page_size;
+			len -= chip->page_size;
+			buf += chip->page_size;
+		}
+		if (len)
+			spi_chip_write_1(flash, buf, start, len);
+	}
+
+	return 0;
+}
 
 static const struct spi_master spi_master_it87xx = {
 	.max_data_read	= 3,
@@ -267,169 +424,4 @@ int init_superio_ite(void)
 	return ret;
 }
 
-/*
- * The IT8716F only supports commands with length 1,2,4,5 bytes including
- * command byte and can not read more than 3 bytes from the device.
- *
- * This function expects writearr[0] to be the first byte sent to the device,
- * whereas the IT8716F splits commands internally into address and non-address
- * commands with the address in inverse wire order. That's why the register
- * ordering in case 4 and 5 may seem strange.
- */
-static int it8716f_spi_send_command(const struct flashctx *flash,
-				    unsigned int writecnt, unsigned int readcnt,
-				    const unsigned char *writearr,
-				    unsigned char *readarr)
-{
-	uint8_t busy, writeenc;
-
-	do {
-		busy = INB(it8716f_flashport) & 0x80;
-	} while (busy);
-	if (readcnt > 3) {
-		msg_pinfo("%s called with unsupported readcnt %i.\n",
-			  __func__, readcnt);
-		return SPI_INVALID_LENGTH;
-	}
-	switch (writecnt) {
-	case 1:
-		OUTB(writearr[0], it8716f_flashport + 1);
-		writeenc = 0x0;
-		break;
-	case 2:
-		OUTB(writearr[0], it8716f_flashport + 1);
-		OUTB(writearr[1], it8716f_flashport + 7);
-		writeenc = 0x1;
-		break;
-	case 4:
-		OUTB(writearr[0], it8716f_flashport + 1);
-		OUTB(writearr[1], it8716f_flashport + 4);
-		OUTB(writearr[2], it8716f_flashport + 3);
-		OUTB(writearr[3], it8716f_flashport + 2);
-		writeenc = 0x2;
-		break;
-	case 5:
-		OUTB(writearr[0], it8716f_flashport + 1);
-		OUTB(writearr[1], it8716f_flashport + 4);
-		OUTB(writearr[2], it8716f_flashport + 3);
-		OUTB(writearr[3], it8716f_flashport + 2);
-		OUTB(writearr[4], it8716f_flashport + 7);
-		writeenc = 0x3;
-		break;
-	default:
-		msg_pinfo("%s called with unsupported writecnt %i.\n",
-			  __func__, writecnt);
-		return SPI_INVALID_LENGTH;
-	}
-	/*
-	 * Start IO, 33 or 16 MHz, readcnt input bytes, writecnt output bytes.
-	 * Note:
-	 * We can't use writecnt directly, but have to use a strange encoding.
-	 */
-	OUTB(((0x4 + (fast_spi ? 1 : 0)) << 4)
-		| ((readcnt & 0x3) << 2) | (writeenc), it8716f_flashport);
-
-	if (readcnt > 0) {
-		unsigned int i;
-
-		do {
-			busy = INB(it8716f_flashport) & 0x80;
-		} while (busy);
-
-		for (i = 0; i < readcnt; i++)
-			readarr[i] = INB(it8716f_flashport + 5 + i);
-	}
-
-	return 0;
-}
-
-/* Page size is usually 256 bytes */
-static int it8716f_spi_page_program(struct flashctx *flash, const uint8_t *buf, unsigned int start)
-{
-	unsigned int i;
-	int result;
-	chipaddr bios = flash->virtual_memory;
-
-	result = spi_write_enable(flash);
-	if (result)
-		return result;
-	/* FIXME: The command below seems to be redundant or wrong. */
-	OUTB(0x06, it8716f_flashport + 1);
-	OUTB(((2 + (fast_spi ? 1 : 0)) << 4), it8716f_flashport);
-	for (i = 0; i < flash->chip->page_size; i++)
-		mmio_writeb(buf[i], (void *)(bios + start + i));
-	OUTB(0, it8716f_flashport);
-	/* Wait until the Write-In-Progress bit is cleared.
-	 * This usually takes 1-10 ms, so wait in 1 ms steps.
-	 */
-	while (spi_read_status_register(flash) & SPI_SR_WIP)
-		programmer_delay(1000);
-	return 0;
-}
-
-/*
- * IT8716F only allows maximum of 512 kb SPI mapped to LPC memory cycles
- * Need to read this big flash using firmware cycles 3 byte at a time.
- */
-static int it8716f_spi_chip_read(struct flashctx *flash, uint8_t *buf,
-				 unsigned int start, unsigned int len)
-{
-	fast_spi = 0;
-
-	/* FIXME: Check if someone explicitly requested to use IT87 SPI although
-	 * the mainboard does not use IT87 SPI translation. This should be done
-	 * via a programmer parameter for the internal programmer.
-	 */
-	if ((flash->chip->total_size * 1024 > 512 * 1024)) {
-		default_spi_read(flash, buf, start, len);
-	} else {
-		mmio_readn((void *)(flash->virtual_memory + start), buf, len);
-	}
-
-	return 0;
-}
-
-static int it8716f_spi_chip_write_256(struct flashctx *flash, const uint8_t *buf,
-				      unsigned int start, unsigned int len)
-{
-	const struct flashchip *chip = flash->chip;
-	/*
-	 * IT8716F only allows maximum of 512 kb SPI chip size for memory
-	 * mapped access. It also can't write more than 1+3+256 bytes at once,
-	 * so page_size > 256 bytes needs a fallback.
-	 * FIXME: Split too big page writes into chunks IT87* can handle instead
-	 * of degrading to single-byte program.
-	 * FIXME: Check if someone explicitly requested to use IT87 SPI although
-	 * the mainboard does not use IT87 SPI translation. This should be done
-	 * via a programmer parameter for the internal programmer.
-	 */
-	if ((chip->total_size * 1024 > 512 * 1024) || (chip->page_size > 256)) {
-		spi_chip_write_1(flash, buf, start, len);
-	} else {
-		unsigned int lenhere;
-
-		if (start % chip->page_size) {
-			/* start to the end of the page or to start + len,
-			 * whichever is smaller.
-			 */
-			lenhere = min(len, chip->page_size - start % chip->page_size);
-			spi_chip_write_1(flash, buf, start, lenhere);
-			start += lenhere;
-			len -= lenhere;
-			buf += lenhere;
-		}
-
-		while (len >= chip->page_size) {
-			it8716f_spi_page_program(flash, buf, start);
-			start += chip->page_size;
-			len -= chip->page_size;
-			buf += chip->page_size;
-		}
-		if (len)
-			spi_chip_write_1(flash, buf, start, len);
-	}
-
-	return 0;
-}
-
-#endif
+#endif /* defined(__i386__) || defined(__x86_64__) */
