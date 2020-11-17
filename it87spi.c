@@ -37,9 +37,22 @@
 #define CHIP_ID_BYTE2_REG	0x21
 #define CHIP_VER_REG		0x22
 
-static uint16_t it8716f_flashport = 0;
-/* use fast 33MHz SPI (<>0) or slow 16MHz (0) */
-static int fast_spi = 1;
+struct it8716f_spi_data {
+	uint16_t it8716f_flashport;
+	/* use fast 33MHz SPI (<>0) or slow 16MHz (0) */
+	int fast_spi;
+};
+
+static int get_data_from_context(const struct flashctx *flash, struct it8716f_spi_data **data)
+{
+	if (!flash || !flash->mst || !flash->mst->spi.data) {
+		msg_perr("Unable to extract fd from flash context.\n");
+		return SPI_GENERIC_ERROR;
+	}
+	*data = (struct it8716f_spi_data *)flash->mst->spi.data;
+
+	return 0;
+}
 
 /* Helper functions for most recent ITE IT87xx Super I/O chips */
 void enter_conf_mode_ite(uint16_t port)
@@ -105,16 +118,20 @@ static int it8716f_spi_page_program(struct flashctx *flash, const uint8_t *buf, 
 	unsigned int i;
 	int result;
 	chipaddr bios = flash->virtual_memory;
+	struct it8716f_spi_data *data;
+
+	if (get_data_from_context(flash, &data) < 0)
+		return SPI_GENERIC_ERROR;
 
 	result = spi_write_enable(flash);
 	if (result)
 		return result;
 	/* FIXME: The command below seems to be redundant or wrong. */
-	OUTB(0x06, it8716f_flashport + 1);
-	OUTB(((2 + (fast_spi ? 1 : 0)) << 4), it8716f_flashport);
+	OUTB(0x06, data->it8716f_flashport + 1);
+	OUTB(((2 + (data->fast_spi ? 1 : 0)) << 4), data->it8716f_flashport);
 	for (i = 0; i < flash->chip->page_size; i++)
 		mmio_writeb(buf[i], (void *)(bios + start + i));
-	OUTB(0, it8716f_flashport);
+	OUTB(0, data->it8716f_flashport);
 	/* Wait until the Write-In-Progress bit is cleared.
 	 * This usually takes 1-10 ms, so wait in 1 ms steps.
 	 */
@@ -138,9 +155,13 @@ static int it8716f_spi_send_command(const struct flashctx *flash,
 				    unsigned char *readarr)
 {
 	uint8_t busy, writeenc;
+	struct it8716f_spi_data *data;
+
+	if (get_data_from_context(flash, &data) < 0)
+		return SPI_GENERIC_ERROR;
 
 	do {
-		busy = INB(it8716f_flashport) & 0x80;
+		busy = INB(data->it8716f_flashport) & 0x80;
 	} while (busy);
 	if (readcnt > 3) {
 		msg_pinfo("%s called with unsupported readcnt %i.\n",
@@ -149,27 +170,27 @@ static int it8716f_spi_send_command(const struct flashctx *flash,
 	}
 	switch (writecnt) {
 	case 1:
-		OUTB(writearr[0], it8716f_flashport + 1);
+		OUTB(writearr[0], data->it8716f_flashport + 1);
 		writeenc = 0x0;
 		break;
 	case 2:
-		OUTB(writearr[0], it8716f_flashport + 1);
-		OUTB(writearr[1], it8716f_flashport + 7);
+		OUTB(writearr[0], data->it8716f_flashport + 1);
+		OUTB(writearr[1], data->it8716f_flashport + 7);
 		writeenc = 0x1;
 		break;
 	case 4:
-		OUTB(writearr[0], it8716f_flashport + 1);
-		OUTB(writearr[1], it8716f_flashport + 4);
-		OUTB(writearr[2], it8716f_flashport + 3);
-		OUTB(writearr[3], it8716f_flashport + 2);
+		OUTB(writearr[0], data->it8716f_flashport + 1);
+		OUTB(writearr[1], data->it8716f_flashport + 4);
+		OUTB(writearr[2], data->it8716f_flashport + 3);
+		OUTB(writearr[3], data->it8716f_flashport + 2);
 		writeenc = 0x2;
 		break;
 	case 5:
-		OUTB(writearr[0], it8716f_flashport + 1);
-		OUTB(writearr[1], it8716f_flashport + 4);
-		OUTB(writearr[2], it8716f_flashport + 3);
-		OUTB(writearr[3], it8716f_flashport + 2);
-		OUTB(writearr[4], it8716f_flashport + 7);
+		OUTB(writearr[0], data->it8716f_flashport + 1);
+		OUTB(writearr[1], data->it8716f_flashport + 4);
+		OUTB(writearr[2], data->it8716f_flashport + 3);
+		OUTB(writearr[3], data->it8716f_flashport + 2);
+		OUTB(writearr[4], data->it8716f_flashport + 7);
 		writeenc = 0x3;
 		break;
 	default:
@@ -182,18 +203,18 @@ static int it8716f_spi_send_command(const struct flashctx *flash,
 	 * Note:
 	 * We can't use writecnt directly, but have to use a strange encoding.
 	 */
-	OUTB(((0x4 + (fast_spi ? 1 : 0)) << 4)
-		| ((readcnt & 0x3) << 2) | (writeenc), it8716f_flashport);
+	OUTB(((0x4 + (data->fast_spi ? 1 : 0)) << 4)
+		| ((readcnt & 0x3) << 2) | (writeenc), data->it8716f_flashport);
 
 	if (readcnt > 0) {
 		unsigned int i;
 
 		do {
-			busy = INB(it8716f_flashport) & 0x80;
+			busy = INB(data->it8716f_flashport) & 0x80;
 		} while (busy);
 
 		for (i = 0; i < readcnt; i++)
-			readarr[i] = INB(it8716f_flashport + 5 + i);
+			readarr[i] = INB(data->it8716f_flashport + 5 + i);
 	}
 
 	return 0;
@@ -206,7 +227,12 @@ static int it8716f_spi_send_command(const struct flashctx *flash,
 static int it8716f_spi_chip_read(struct flashctx *flash, uint8_t *buf,
 				 unsigned int start, unsigned int len)
 {
-	fast_spi = 0;
+	struct it8716f_spi_data *data;
+
+	if (get_data_from_context(flash, &data) < 0)
+		return SPI_GENERIC_ERROR;
+
+	data->fast_spi = 0;
 
 	/* FIXME: Check if someone explicitly requested to use IT87 SPI although
 	 * the mainboard does not use IT87 SPI translation. This should be done
@@ -264,7 +290,7 @@ static int it8716f_spi_chip_write_256(struct flashctx *flash, const uint8_t *buf
 	return 0;
 }
 
-static const struct spi_master spi_master_it87xx = {
+static struct spi_master spi_master_it87xx = {
 	.max_data_read	= 3,
 	.max_data_write	= MAX_DATA_UNSPECIFIED,
 	.command	= it8716f_spi_send_command,
@@ -273,6 +299,13 @@ static const struct spi_master spi_master_it87xx = {
 	.write_256	= it8716f_spi_chip_write_256,
 	.write_aai	= spi_chip_write_1,
 };
+
+
+static int it8716f_shutdown(void *data)
+{
+	free(data);
+	return 0;
+}
 
 static uint16_t it87spi_probe(uint16_t port)
 {
@@ -377,7 +410,19 @@ static uint16_t it87spi_probe(uint16_t port)
 	}
 	free(param);
 	exit_conf_mode_ite(port);
-	it8716f_flashport = flashport;
+
+	struct it8716f_spi_data *data = calloc(1, sizeof(struct it8716f_spi_data));
+	if (!data) {
+		msg_perr("Unable to allocate space for extra SPI master data.\n");
+		return SPI_GENERIC_ERROR;
+	}
+
+	data->it8716f_flashport = flashport;
+	data->fast_spi = 1;
+	spi_master_it87xx.data = data;
+
+	register_shutdown(it8716f_shutdown, data);
+
 	if (internal_buses_supported & BUS_SPI)
 		msg_pdbg("Overriding chipset SPI with IT87 SPI.\n");
 	/* FIXME: Add the SPI bus or replace the other buses with it? */
