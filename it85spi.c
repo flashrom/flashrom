@@ -223,6 +223,70 @@ static int it85xx_shutdown(void *data)
 	return 0;	/* FIXME: Should probably return something meaningful */
 }
 
+/* According to ITE 8502 document, the procedure to follow mode is following:
+ *   1. write 0x00 to LPC/FWH address 0xffff_fexxh (drive CE# high)
+ *   2. write data to LPC/FWH address 0xffff_fdxxh (drive CE# low and MOSI
+ *      with data)
+ *   3. read date from LPC/FWH address 0xffff_fdxxh (drive CE# low and get
+ *      data from MISO)
+ */
+static int it85xx_spi_send_command(const struct flashctx *flash,
+                                   unsigned int writecnt, unsigned int readcnt,
+                                   const unsigned char *writearr,
+                                   unsigned char *readarr)
+{
+        unsigned int i;
+
+        it85xx_enter_scratch_rom();
+        /* Exit scratch ROM ONLY when programmer shuts down. Otherwise, the
+         * temporary flash state may halt the EC.
+         */
+
+#ifdef LPC_IO
+        INDIRECT_A1(shm_io_base, (((unsigned long int)ce_high) >> 8) & 0xff);
+        INDIRECT_WRITE(shm_io_base, 0xFF);  /* Write anything to this address.*/
+        INDIRECT_A1(shm_io_base, (((unsigned long int)ce_low) >> 8) & 0xff);
+#endif
+#ifdef LPC_MEMORY
+        mmio_writeb(0, ce_high);
+#endif
+        for (i = 0; i < writecnt; ++i) {
+#ifdef LPC_IO
+                INDIRECT_WRITE(shm_io_base, writearr[i]);
+#endif
+#ifdef LPC_MEMORY
+                mmio_writeb(writearr[i], ce_low);
+#endif
+        }
+        for (i = 0; i < readcnt; ++i) {
+#ifdef LPC_IO
+                readarr[i] = INDIRECT_READ(shm_io_base);
+#endif
+#ifdef LPC_MEMORY
+                readarr[i] = mmio_readb(ce_low);
+#endif
+        }
+#ifdef LPC_IO
+        INDIRECT_A1(shm_io_base, (((unsigned long int)ce_high) >> 8) & 0xff);
+        INDIRECT_WRITE(shm_io_base, 0xFF);  /* Write anything to this address.*/
+#endif
+#ifdef LPC_MEMORY
+        mmio_writeb(0, ce_high);
+#endif
+
+        return 0;
+}
+
+static const struct spi_master spi_master_it85xx = {
+        .max_data_read  = 64,
+        .max_data_write = 64,
+        .command        = it85xx_spi_send_command,
+        .multicommand   = default_spi_send_multicommand,
+        .read           = default_spi_read,
+        .write_256      = default_spi_write_256,
+        .write_aai      = default_spi_write_aai,
+};
+
 static int it85xx_spi_common_init(struct superio s)
 {
 	chipaddr base;
@@ -270,21 +334,6 @@ static int it85xx_spi_common_init(struct superio s)
 	return 0;
 }
 
-static int it85xx_spi_send_command(const struct flashctx *flash,
-				   unsigned int writecnt, unsigned int readcnt,
-				   const unsigned char *writearr,
-				   unsigned char *readarr);
-
-static const struct spi_master spi_master_it85xx = {
-	.max_data_read	= 64,
-	.max_data_write	= 64,
-	.command	= it85xx_spi_send_command,
-	.multicommand	= default_spi_send_multicommand,
-	.read		= default_spi_read,
-	.write_256	= default_spi_write_256,
-	.write_aai	= default_spi_write_aai,
-};
-
 int it85xx_spi_init(struct superio s)
 {
 	int ret;
@@ -313,60 +362,6 @@ int it85xx_spi_init(struct superio s)
 		register_spi_master(&spi_master_it85xx);
 	}
 	return ret;
-}
-
-/* According to ITE 8502 document, the procedure to follow mode is following:
- *   1. write 0x00 to LPC/FWH address 0xffff_fexxh (drive CE# high)
- *   2. write data to LPC/FWH address 0xffff_fdxxh (drive CE# low and MOSI
- *      with data)
- *   3. read date from LPC/FWH address 0xffff_fdxxh (drive CE# low and get
- *      data from MISO)
- */
-static int it85xx_spi_send_command(const struct flashctx *flash,
-				   unsigned int writecnt, unsigned int readcnt,
-				   const unsigned char *writearr,
-				   unsigned char *readarr)
-{
-	unsigned int i;
-
-	it85xx_enter_scratch_rom();
-	/* Exit scratch ROM ONLY when programmer shuts down. Otherwise, the
-	 * temporary flash state may halt the EC.
-	 */
-
-#ifdef LPC_IO
-	INDIRECT_A1(shm_io_base, (((unsigned long int)ce_high) >> 8) & 0xff);
-	INDIRECT_WRITE(shm_io_base, 0xFF);  /* Write anything to this address.*/
-	INDIRECT_A1(shm_io_base, (((unsigned long int)ce_low) >> 8) & 0xff);
-#endif
-#ifdef LPC_MEMORY
-	mmio_writeb(0, ce_high);
-#endif
-	for (i = 0; i < writecnt; ++i) {
-#ifdef LPC_IO
-		INDIRECT_WRITE(shm_io_base, writearr[i]);
-#endif
-#ifdef LPC_MEMORY
-		mmio_writeb(writearr[i], ce_low);
-#endif
-	}
-	for (i = 0; i < readcnt; ++i) {
-#ifdef LPC_IO
-		readarr[i] = INDIRECT_READ(shm_io_base);
-#endif
-#ifdef LPC_MEMORY
-		readarr[i] = mmio_readb(ce_low);
-#endif
-	}
-#ifdef LPC_IO
-	INDIRECT_A1(shm_io_base, (((unsigned long int)ce_high) >> 8) & 0xff);
-	INDIRECT_WRITE(shm_io_base, 0xFF);  /* Write anything to this address.*/
-#endif
-#ifdef LPC_MEMORY
-	mmio_writeb(0, ce_high);
-#endif
-
-	return 0;
 }
 
 #endif
