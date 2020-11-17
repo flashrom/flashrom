@@ -73,11 +73,13 @@
 #define INDIRECT_WRITE(base, value) OUTB(value, (base) + 4)
 #endif  /* LPC_IO */
 
+struct it85spi_data {
 #ifdef LPC_IO
-static unsigned int shm_io_base;
+	unsigned int shm_io_base;
 #endif
-static unsigned char *ce_high, *ce_low;
-static int it85xx_scratch_rom_reenter = 0;
+	unsigned char *ce_high, *ce_low;
+	int it85xx_scratch_rom_reenter;
+};
 
 /* This function will poll the keyboard status register until either
  * an expected value shows up, or the timeout is reached.
@@ -106,12 +108,12 @@ static int wait_for(const unsigned int mask, const unsigned int expected_value,
 
 /* IT8502 employs a scratch RAM when flash is being updated. Call the following
  * two functions before/after flash erase/program. */
-static void it85xx_enter_scratch_rom(void)
+static void it85xx_enter_scratch_rom(struct it85spi_data *data)
 {
 	int ret, tries;
 
 	msg_pdbg("%s():%d was called ...\n", __func__, __LINE__);
-	if (it85xx_scratch_rom_reenter > 0)
+	if (data->it85xx_scratch_rom_reenter > 0)
 		return;
 
 #if 0
@@ -156,14 +158,14 @@ static void it85xx_enter_scratch_rom(void)
 
 	if (tries < MAX_TRY) {
 		/* EC already runs on SRAM */
-		it85xx_scratch_rom_reenter++;
+		data->it85xx_scratch_rom_reenter++;
 		msg_pdbg("%s():%d * SUCCESS.\n", __func__, __LINE__);
 	} else {
 		msg_perr("%s():%d * Max try reached.\n", __func__, __LINE__);
 	}
 }
 
-static void it85xx_exit_scratch_rom(void)
+static void it85xx_exit_scratch_rom(struct it85spi_data *data)
 {
 #if 0
 	int ret;
@@ -171,7 +173,7 @@ static void it85xx_exit_scratch_rom(void)
 	int tries;
 
 	msg_pdbg("%s():%d was called ...\n", __func__, __LINE__);
-	if (it85xx_scratch_rom_reenter <= 0)
+	if (data->it85xx_scratch_rom_reenter <= 0)
 		return;
 
 	for (tries = 0; tries < MAX_TRY; ++tries) {
@@ -199,7 +201,7 @@ static void it85xx_exit_scratch_rom(void)
 	}
 
 	if (tries < MAX_TRY) {
-		it85xx_scratch_rom_reenter = 0;
+		data->it85xx_scratch_rom_reenter = 0;
 		msg_pdbg("%s():%d * SUCCESS.\n", __func__, __LINE__);
 	} else {
 		msg_perr("%s():%d * Max try reached.\n", __func__, __LINE__);
@@ -218,7 +220,8 @@ static void it85xx_exit_scratch_rom(void)
 static int it85xx_shutdown(void *data)
 {
 	msg_pdbg("%s():%d\n", __func__, __LINE__);
-	it85xx_exit_scratch_rom();
+	it85xx_exit_scratch_rom(data);
+	free(data);
 
 	return 0;	/* FIXME: Should probably return something meaningful */
 }
@@ -235,49 +238,50 @@ static int it85xx_spi_send_command(const struct flashctx *flash,
                                    const unsigned char *writearr,
                                    unsigned char *readarr)
 {
-        unsigned int i;
+	unsigned int i;
+	struct it85spi_data *data = flash->mst->spi.data;
 
-        it85xx_enter_scratch_rom();
+	it85xx_enter_scratch_rom(data);
         /* Exit scratch ROM ONLY when programmer shuts down. Otherwise, the
          * temporary flash state may halt the EC.
          */
 
 #ifdef LPC_IO
-        INDIRECT_A1(shm_io_base, (((unsigned long int)ce_high) >> 8) & 0xff);
-        INDIRECT_WRITE(shm_io_base, 0xFF);  /* Write anything to this address.*/
-        INDIRECT_A1(shm_io_base, (((unsigned long int)ce_low) >> 8) & 0xff);
+        INDIRECT_A1(data->shm_io_base, (((unsigned long int)data->ce_high) >> 8) & 0xff);
+        INDIRECT_WRITE(data->shm_io_base, 0xFF);  /* Write anything to this address.*/
+        INDIRECT_A1(data->shm_io_base, (((unsigned long int)data->ce_low) >> 8) & 0xff);
 #endif
 #ifdef LPC_MEMORY
-        mmio_writeb(0, ce_high);
+        mmio_writeb(0, data->ce_high);
 #endif
         for (i = 0; i < writecnt; ++i) {
 #ifdef LPC_IO
-                INDIRECT_WRITE(shm_io_base, writearr[i]);
+                INDIRECT_WRITE(data->shm_io_base, writearr[i]);
 #endif
 #ifdef LPC_MEMORY
-                mmio_writeb(writearr[i], ce_low);
+                mmio_writeb(writearr[i], data->ce_low);
 #endif
         }
         for (i = 0; i < readcnt; ++i) {
 #ifdef LPC_IO
-                readarr[i] = INDIRECT_READ(shm_io_base);
+                readarr[i] = INDIRECT_READ(data->shm_io_base);
 #endif
 #ifdef LPC_MEMORY
-                readarr[i] = mmio_readb(ce_low);
+                readarr[i] = mmio_readb(data->ce_low);
 #endif
         }
 #ifdef LPC_IO
-        INDIRECT_A1(shm_io_base, (((unsigned long int)ce_high) >> 8) & 0xff);
-        INDIRECT_WRITE(shm_io_base, 0xFF);  /* Write anything to this address.*/
+        INDIRECT_A1(data->shm_io_base, (((unsigned long int)data->ce_high) >> 8) & 0xff);
+        INDIRECT_WRITE(data->shm_io_base, 0xFF);  /* Write anything to this address.*/
 #endif
 #ifdef LPC_MEMORY
-        mmio_writeb(0, ce_high);
+        mmio_writeb(0, data->ce_high);
 #endif
 
         return 0;
 }
 
-static const struct spi_master spi_master_it85xx = {
+static struct spi_master spi_master_it85xx = {
         .max_data_read  = 64,
         .max_data_write = 64,
         .command        = it85xx_spi_send_command,
@@ -291,31 +295,41 @@ static int it85xx_spi_common_init(struct superio s)
 {
 	chipaddr base;
 
+	struct it85spi_data *data = calloc(1, sizeof(struct it85spi_data));
+	if (!data) {
+		msg_perr("Unable to allocate space for extra SPI master data.\n");
+		return SPI_GENERIC_ERROR;
+	}
+
+	spi_master_it85xx.data = data;
+
 	msg_pdbg("%s():%d superio.vendor=0x%02x\n", __func__, __LINE__,
 	         s.vendor);
 
-	if (register_shutdown(it85xx_shutdown, NULL))
+	if (register_shutdown(it85xx_shutdown, data)) {
+		free(data);
 		return 1;
+	}
 
 #ifdef LPC_IO
 	/* Get LPCPNP of SHM. That's big-endian. */
 	sio_write(s.port, LDNSEL, 0x0F); /* Set LDN to SHM (0x0F) */
-	shm_io_base = (sio_read(s.port, SHM_IO_BAR0) << 8) +
+	data->shm_io_base = (sio_read(s.port, SHM_IO_BAR0) << 8) +
 	              sio_read(s.port, SHM_IO_BAR1);
-	msg_pdbg("%s():%d shm_io_base=0x%04x\n", __func__, __LINE__,
-	         shm_io_base);
+	msg_pdbg("%s():%d it85spi_data->shm_io_base=0x%04x\n", __func__, __LINE__,
+	         data->shm_io_base);
 
 	/* These pointers are not used directly. They will be send to EC's
 	 * register for indirect access. */
 	base = 0xFFFFF000;
-	ce_high = ((unsigned char *)base) + 0xE00;  /* 0xFFFFFE00 */
-	ce_low = ((unsigned char *)base) + 0xD00;  /* 0xFFFFFD00 */
+	data->ce_high = ((unsigned char *)base) + 0xE00;  /* 0xFFFFFE00 */
+	data->ce_low = ((unsigned char *)base) + 0xD00;  /* 0xFFFFFD00 */
 
 	/* pre-set indirect-access registers since in most of cases they are
 	 * 0xFFFFxx00. */
-	INDIRECT_A0(shm_io_base, base & 0xFF);
-	INDIRECT_A2(shm_io_base, (base >> 16) & 0xFF);
-	INDIRECT_A3(shm_io_base, (base >> 24));
+	INDIRECT_A0(data->shm_io_base, base & 0xFF);
+	INDIRECT_A2(data->shm_io_base, (base >> 16) & 0xFF);
+	INDIRECT_A3(data->shm_io_base, (base >> 24));
 #endif
 #ifdef LPC_MEMORY
 	/* FIXME: We should block accessing that region for anything else.
@@ -327,8 +341,8 @@ static int it85xx_spi_common_init(struct superio s)
 
 	msg_pdbg("%s():%d base=0x%08x\n", __func__, __LINE__,
 	         (unsigned int)base);
-	ce_high = (unsigned char *)(base + 0xE00);  /* 0xFFFFFE00 */
-	ce_low = (unsigned char *)(base + 0xD00);  /* 0xFFFFFD00 */
+	data->ce_high = (unsigned char *)(base + 0xE00);  /* 0xFFFFFE00 */
+	data->ce_low = (unsigned char *)(base + 0xD00);  /* 0xFFFFFD00 */
 #endif
 
 	return 0;
