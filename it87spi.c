@@ -38,7 +38,7 @@
 #define CHIP_VER_REG		0x22
 
 struct it8716f_spi_data {
-	uint16_t it8716f_flashport;
+	uint16_t flashport;
 	/* use fast 33MHz SPI (<>0) or slow 16MHz (0) */
 	int fast_spi;
 };
@@ -127,11 +127,11 @@ static int it8716f_spi_page_program(struct flashctx *flash, const uint8_t *buf, 
 	if (result)
 		return result;
 	/* FIXME: The command below seems to be redundant or wrong. */
-	OUTB(0x06, data->it8716f_flashport + 1);
-	OUTB(((2 + (data->fast_spi ? 1 : 0)) << 4), data->it8716f_flashport);
+	OUTB(0x06, data->flashport + 1);
+	OUTB(((2 + (data->fast_spi ? 1 : 0)) << 4), data->flashport);
 	for (i = 0; i < flash->chip->page_size; i++)
 		mmio_writeb(buf[i], (void *)(bios + start + i));
-	OUTB(0, data->it8716f_flashport);
+	OUTB(0, data->flashport);
 	/* Wait until the Write-In-Progress bit is cleared.
 	 * This usually takes 1-10 ms, so wait in 1 ms steps.
 	 */
@@ -161,7 +161,7 @@ static int it8716f_spi_send_command(const struct flashctx *flash,
 		return SPI_GENERIC_ERROR;
 
 	do {
-		busy = INB(data->it8716f_flashport) & 0x80;
+		busy = INB(data->flashport) & 0x80;
 	} while (busy);
 	if (readcnt > 3) {
 		msg_pinfo("%s called with unsupported readcnt %i.\n",
@@ -170,27 +170,27 @@ static int it8716f_spi_send_command(const struct flashctx *flash,
 	}
 	switch (writecnt) {
 	case 1:
-		OUTB(writearr[0], data->it8716f_flashport + 1);
+		OUTB(writearr[0], data->flashport + 1);
 		writeenc = 0x0;
 		break;
 	case 2:
-		OUTB(writearr[0], data->it8716f_flashport + 1);
-		OUTB(writearr[1], data->it8716f_flashport + 7);
+		OUTB(writearr[0], data->flashport + 1);
+		OUTB(writearr[1], data->flashport + 7);
 		writeenc = 0x1;
 		break;
 	case 4:
-		OUTB(writearr[0], data->it8716f_flashport + 1);
-		OUTB(writearr[1], data->it8716f_flashport + 4);
-		OUTB(writearr[2], data->it8716f_flashport + 3);
-		OUTB(writearr[3], data->it8716f_flashport + 2);
+		OUTB(writearr[0], data->flashport + 1);
+		OUTB(writearr[1], data->flashport + 4);
+		OUTB(writearr[2], data->flashport + 3);
+		OUTB(writearr[3], data->flashport + 2);
 		writeenc = 0x2;
 		break;
 	case 5:
-		OUTB(writearr[0], data->it8716f_flashport + 1);
-		OUTB(writearr[1], data->it8716f_flashport + 4);
-		OUTB(writearr[2], data->it8716f_flashport + 3);
-		OUTB(writearr[3], data->it8716f_flashport + 2);
-		OUTB(writearr[4], data->it8716f_flashport + 7);
+		OUTB(writearr[0], data->flashport + 1);
+		OUTB(writearr[1], data->flashport + 4);
+		OUTB(writearr[2], data->flashport + 3);
+		OUTB(writearr[3], data->flashport + 2);
+		OUTB(writearr[4], data->flashport + 7);
 		writeenc = 0x3;
 		break;
 	default:
@@ -204,17 +204,17 @@ static int it8716f_spi_send_command(const struct flashctx *flash,
 	 * We can't use writecnt directly, but have to use a strange encoding.
 	 */
 	OUTB(((0x4 + (data->fast_spi ? 1 : 0)) << 4)
-		| ((readcnt & 0x3) << 2) | (writeenc), data->it8716f_flashport);
+		| ((readcnt & 0x3) << 2) | (writeenc), data->flashport);
 
 	if (readcnt > 0) {
 		unsigned int i;
 
 		do {
-			busy = INB(data->it8716f_flashport) & 0x80;
+			busy = INB(data->flashport) & 0x80;
 		} while (busy);
 
 		for (i = 0; i < readcnt; i++)
-			readarr[i] = INB(data->it8716f_flashport + 5 + i);
+			readarr[i] = INB(data->flashport + 5 + i);
 	}
 
 	return 0;
@@ -417,7 +417,7 @@ static uint16_t it87spi_probe(uint16_t port)
 		return SPI_GENERIC_ERROR;
 	}
 
-	data->it8716f_flashport = flashport;
+	data->flashport = flashport;
 	data->fast_spi = 1;
 	spi_master_it87xx.data = data;
 
