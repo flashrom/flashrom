@@ -27,6 +27,7 @@
 #include <stdint.h>
 #include <cli_getopt.h>
 #include <cli_output.h>
+#include <time.h>
 #include "flash.h"
 #include "flashchips.h"
 #include "fmap.h"
@@ -1049,6 +1050,7 @@ int main(int argc, char *argv[])
 	int ret = 0;
 	int all_matched_count = 0;
 	const char **all_matched_names = NULL;
+	time_t time_start, time_end;
 
 	struct cli_options options = { 0 };
 	static const char optstring[] = "r::Rw::v::nNVEfc:l:i:p:Lzho:x";
@@ -1195,6 +1197,8 @@ int main(int argc, char *argv[])
 	/* FIXME: Delay calibration should happen in programmer code. */
 	if (flashrom_init(1))
 		exit(1);
+
+	time(&time_start);
 
 	if (programmer_init(options.prog, options.pparam)) {
 		msg_perr("Error: Programmer initialization failed.\n");
@@ -1536,6 +1540,11 @@ out:
 	flashrom_data_free(all_matched_names);
 
 	free_options(&options);
+
+	time(&time_end);
+	msg_gdbg("Runtime from programmer init to shutdown: %dmin%2dsec\n",
+		(int)(difftime(time_end, time_start) / 60), (int)(difftime(time_end, time_start)) % 60);
+
 	ret |= close_logfile();
 	return ret;
 }
