@@ -57,39 +57,6 @@ done:
 	return flashport;
 }
 
-static int wbsio_spi_send_command(const struct flashctx *flash, unsigned int writecnt,
-				  unsigned int readcnt,
-				  const unsigned char *writearr,
-				  unsigned char *readarr);
-static int wbsio_spi_read(struct flashctx *flash, uint8_t *buf,
-			  unsigned int start, unsigned int len);
-
-static const struct spi_master spi_master_wbsio = {
-	.max_data_read = MAX_DATA_UNSPECIFIED,
-	.max_data_write = MAX_DATA_UNSPECIFIED,
-	.command = wbsio_spi_send_command,
-	.multicommand = default_spi_send_multicommand,
-	.read = wbsio_spi_read,
-	.write_256 = spi_chip_write_1,
-	.write_aai = spi_chip_write_1,
-};
-
-int wbsio_check_for_spi(void)
-{
-	if (0 == (wbsio_spibase = wbsio_get_spibase(WBSIO_PORT1)))
-		if (0 == (wbsio_spibase = wbsio_get_spibase(WBSIO_PORT2)))
-			return 1;
-
-	msg_pspew("\nwbsio_spibase = 0x%x\n", wbsio_spibase);
-
-	msg_pdbg("%s: Winbond saved on 4 register bits so max chip size is "
-		 "1024 kB!\n", __func__);
-	max_rom_decode.spi = 1024 * 1024;
-	register_spi_master(&spi_master_wbsio);
-
-	return 0;
-}
-
 /* W83627DHG has 11 command modes:
  * 1=1 command only
  * 2=1 command+1 data write
@@ -203,4 +170,30 @@ static int wbsio_spi_read(struct flashctx *flash, uint8_t *buf,
 	return 0;
 }
 
-#endif
+static const struct spi_master spi_master_wbsio = {
+	.max_data_read = MAX_DATA_UNSPECIFIED,
+	.max_data_write = MAX_DATA_UNSPECIFIED,
+	.command = wbsio_spi_send_command,
+	.multicommand = default_spi_send_multicommand,
+	.read = wbsio_spi_read,
+	.write_256 = spi_chip_write_1,
+	.write_aai = spi_chip_write_1,
+};
+
+int wbsio_check_for_spi(void)
+{
+	if (0 == (wbsio_spibase = wbsio_get_spibase(WBSIO_PORT1)))
+		if (0 == (wbsio_spibase = wbsio_get_spibase(WBSIO_PORT2)))
+			return 1;
+
+	msg_pspew("\nwbsio_spibase = 0x%x\n", wbsio_spibase);
+
+	msg_pdbg("%s: Winbond saved on 4 register bits so max chip size is "
+		 "1024 kB!\n", __func__);
+	max_rom_decode.spi = 1024 * 1024;
+	register_spi_master(&spi_master_wbsio);
+
+	return 0;
+}
+
+#endif /* defined(__i386__) || defined(__x86_64__) */
