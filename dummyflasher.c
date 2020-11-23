@@ -52,6 +52,7 @@ struct emu_data {
 	enum emu_chip emu_chip;
 	char *emu_persistent_image;
 	unsigned int emu_chip_size;
+	int erase_to_zero;
 	int emu_modified;	/* is the image modified since reading it? */
 	uint8_t emu_status;
 	/* If "freq" parameter is passed in from command line, commands will delay
@@ -455,6 +456,23 @@ int dummy_init(void)
 		return 1;
 	}
 	free(tmp);
+
+	/* Should emulated flash erase to zero (yes/no)? */
+	tmp = extract_programmer_param("erase_to_zero");
+	if (tmp) {
+		if (!strcmp(tmp, "yes")) {
+			msg_pdbg("Emulated chip will erase to 0x00\n");
+			data->erase_to_zero = 1;
+		} else if (!strcmp(tmp, "no")) {
+			msg_pdbg("Emulated chip will erase to 0xff\n");
+		} else {
+			msg_perr("erase_to_zero can be \"yes\" or \"no\"\n");
+			free(tmp);
+			return 1;
+		}
+	}
+	free(tmp);
+
 	flashchip_contents = malloc(data->emu_chip_size);
 	if (!flashchip_contents) {
 		msg_perr("Out of memory!\n");
@@ -478,8 +496,9 @@ int dummy_init(void)
 	}
 #endif
 
-	msg_pdbg("Filling fake flash chip with 0xff, size %i\n", data->emu_chip_size);
-	memset(flashchip_contents, 0xff, data->emu_chip_size);
+	msg_pdbg("Filling fake flash chip with 0x%02x, size %i\n",
+			data->erase_to_zero ? 0x00 : 0xff, data->emu_chip_size);
+	memset(flashchip_contents, data->erase_to_zero ? 0x00 : 0xff, data->emu_chip_size);
 
 	/* Will be freed by shutdown function if necessary. */
 	data->emu_persistent_image = extract_programmer_param("image");
@@ -1051,6 +1070,9 @@ int probe_variable_size(struct flashctx *flash)
 	flash->chip->total_size = emu_data->emu_chip_size / 1024;
 	msg_cdbg("%s: set flash->total_size to %dK bytes.\n", __func__,
 	         flash->chip->total_size);
+
+	if (emu_data->erase_to_zero)
+		flash->chip->feature_bits |= FEATURE_ERASED_ZERO;
 
 	/* Update the first count of each of the block_erasers. */
 	for (i = 0; i < NUM_ERASEFUNCTIONS; i++) {
