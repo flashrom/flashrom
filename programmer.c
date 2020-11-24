@@ -35,11 +35,6 @@ void fallback_unmap(void *virt_addr, size_t len)
 {
 }
 
-/* No-op chip_writeb() for parallel style drivers not supporting writes */
-void noop_chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr)
-{
-}
-
 /* Little-endian fallback for drivers not supporting 16 bit accesses */
 void fallback_chip_writew(const struct flashctx *flash, uint16_t val,
 			  chipaddr addr)

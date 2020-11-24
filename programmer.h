@@ -730,7 +730,6 @@ int register_opaque_master(const struct opaque_master *mst);
 int noop_shutdown(void);
 void *fallback_map(const char *descr, uintptr_t phys_addr, size_t len);
 void fallback_unmap(void *virt_addr, size_t len);
-void noop_chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr);
 void fallback_chip_writew(const struct flashctx *flash, uint16_t val, chipaddr addr);
 void fallback_chip_writel(const struct flashctx *flash, uint32_t val, chipaddr addr);
 void fallback_chip_writen(const struct flashctx *flash, const uint8_t *buf, chipaddr addr, size_t len);
