@@ -19,7 +19,9 @@
 
 /* strnlen is in POSIX but was a GNU extension up to glibc 2.10 */
 #if (__GLIBC__ == 2 && __GLIBC_MINOR__ < 10) || __GLIBC__ < 2
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif /* !GNU_SOURCE */
 #else
 #define _POSIX_C_SOURCE 200809L
 #endif
