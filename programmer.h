@@ -46,7 +46,7 @@ enum programmer {
 #if CONFIG_GFXNVIDIA == 1
 	PROGRAMMER_GFXNVIDIA,
 #endif
-#if CONFIG_RAIDEN == 1
+#if CONFIG_RAIDEN_DEBUG_SPI == 1
 	PROGRAMMER_RAIDEN,
 #endif
 #if CONFIG_DRKAISER == 1
@@ -417,7 +417,7 @@ extern const struct dev_entry gfx_nvidia[];
 #endif
 
 /* raiden_debug_spi.c */
-#if CONFIG_RAIDEN == 1
+#if CONFIG_RAIDEN_DEBUG_SPI == 1
 int raiden_debug_spi_init(void);
 extern const struct dev_entry devs_raiden[];
 #endif

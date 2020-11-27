@@ -248,10 +248,10 @@ UNSUPPORTED_FEATURES += CONFIG_RAYER_SPI=yes
 else
 override CONFIG_RAYER_SPI = no
 endif
-ifeq ($(CONFIG_RAIDEN), yes)
-UNSUPPORTED_FEATURES += CONFIG_RAIDEN=yes
+ifeq ($(CONFIG_RAIDEN_DEBUG_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_RAIDEN_DEBUG_SPI=yes
 else
-override CONFIG_RAIDEN = no
+override CONFIG_RAIDEN_DEBUG_SPI = no
 endif
 ifeq ($(CONFIG_NIC3COM), yes)
 UNSUPPORTED_FEATURES += CONFIG_NIC3COM=yes
@@ -691,7 +691,7 @@ CONFIG_SERPROG ?= yes
 CONFIG_RAYER_SPI ?= yes
 
 # ChromiumOS servo DUT debug board hardware support
-CONFIG_RAIDEN ?= yes
+CONFIG_RAIDEN_DEBUG_SPI ?= yes
 
 # PonyProg2000 SPI hardware support
 CONFIG_PONY_SPI ?= yes
@@ -820,7 +820,7 @@ override CONFIG_DEDIPROG = no
 override CONFIG_DIGILENT_SPI = no
 override CONFIG_DEVELOPERBOX_SPI = no
 override CONFIG_PICKIT2_SPI = no
-override CONFIG_RAIDEN = no
+override CONFIG_RAIDEN_DEBUG_SPI = no
 override CONFIG_STLINKV3_SPI = no
 endif
 ifeq ($(CONFIG_ENABLE_LIBPCI_PROGRAMMERS), no)
@@ -932,8 +932,8 @@ PROGRAMMER_OBJS += rayer_spi.o
 NEED_RAW_ACCESS += CONFIG_RAYER_SPI
 endif
 
-ifeq ($(CONFIG_RAIDEN), yes)
-FEATURE_CFLAGS += -D'CONFIG_RAIDEN=1'
+ifeq ($(CONFIG_RAIDEN_DEBUG_SPI), yes)
+FEATURE_CFLAGS += -D'CONFIG_RAIDEN_DEBUG_SPI=1'
 PROGRAMMER_OBJS += raiden_debug_spi.o
 endif
 
