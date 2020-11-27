@@ -147,7 +147,7 @@ const struct programmer_entry programmer_table[] = {
 
 #if CONFIG_RAIDEN_DEBUG_SPI == 1
 	{
-		.name			= "raiden_debug",
+		.name			= "raiden_debug_spi",
 		.type			= USB,
 		.devs.dev		= devs_raiden,
 		.init			= raiden_debug_spi_init,
