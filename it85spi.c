@@ -291,91 +291,84 @@ static struct spi_master spi_master_it85xx = {
         .write_aai      = default_spi_write_aai,
 };
 
-static int it85xx_spi_common_init(struct superio s)
+int it85xx_spi_init(struct superio s)
 {
 	chipaddr base;
+	struct it85spi_data *data;
+	unsigned int shm_io_base = 0;
 
-	struct it85spi_data *data = calloc(1, sizeof(struct it85spi_data));
+	msg_pdbg("%s():%d superio.vendor=0x%02x internal_buses_supported=0x%x\n",
+			__func__, __LINE__, s.vendor, internal_buses_supported);
+
+	/* Check for FWH because IT85 listens to FWH cycles.
+	 * FIXME: The big question is whether FWH cycles are necessary
+	 * for communication even if LPC_IO is defined.
+	 */
+	if (!(internal_buses_supported & BUS_FWH)) {
+		msg_pdbg("%s():%d buses not support FWH\n", __func__, __LINE__);
+		return 1;
+	}
+
+	msg_pdbg("Registering IT85 SPI.\n");
+
+#ifdef LPC_IO
+	/* Get LPCPNP of SHM. That's big-endian. */
+	sio_write(s.port, LDNSEL, 0x0F); /* Set LDN to SHM (0x0F) */
+	shm_io_base = (sio_read(s.port, SHM_IO_BAR0) << 8) +
+	              sio_read(s.port, SHM_IO_BAR1);
+	msg_pdbg("%s():%d shm_io_base=0x%04x\n", __func__, __LINE__,
+	         shm_io_base);
+
+	/* These pointers are not used directly. They will be send to EC's
+	 * register for indirect access. */
+	base = 0xFFFFF000;
+
+	/* pre-set indirect-access registers since in most of cases they are
+	 * 0xFFFFxx00. */
+	INDIRECT_A0(shm_io_base, base & 0xFF);
+	INDIRECT_A2(shm_io_base, (base >> 16) & 0xFF);
+	INDIRECT_A3(shm_io_base, (base >> 24));
+#endif
+#ifdef LPC_MEMORY
+	/* FIXME: We should block accessing that region for anything else.
+	 * Major TODO here, and it will be a lot of work.
+	 */
+	base = physmap("it85 communication", 0xFFFFF000, 0x1000);
+	if (base == ERROR_PTR)
+		return 1;
+
+	msg_pdbg("%s():%d base=0x%08x\n", __func__, __LINE__,
+	         (unsigned int)base);
+#endif
+
+	data = calloc(1, sizeof(struct it85spi_data));
 	if (!data) {
 		msg_perr("Unable to allocate space for extra SPI master data.\n");
 		return SPI_GENERIC_ERROR;
 	}
 
-	spi_master_it85xx.data = data;
-
-	msg_pdbg("%s():%d superio.vendor=0x%02x\n", __func__, __LINE__,
-	         s.vendor);
+#ifdef LPC_IO
+	data->shm_io_base = shm_io_base;
+#endif
+	data->ce_high = ((unsigned char *)base) + 0xE00;  /* 0xFFFFFE00 */
+	data->ce_low = ((unsigned char *)base) + 0xD00;  /* 0xFFFFFD00 */
 
 	if (register_shutdown(it85xx_shutdown, data)) {
 		free(data);
 		return 1;
 	}
 
-#ifdef LPC_IO
-	/* Get LPCPNP of SHM. That's big-endian. */
-	sio_write(s.port, LDNSEL, 0x0F); /* Set LDN to SHM (0x0F) */
-	data->shm_io_base = (sio_read(s.port, SHM_IO_BAR0) << 8) +
-	              sio_read(s.port, SHM_IO_BAR1);
-	msg_pdbg("%s():%d it85spi_data->shm_io_base=0x%04x\n", __func__, __LINE__,
-	         data->shm_io_base);
+	spi_master_it85xx.data = data;
 
-	/* These pointers are not used directly. They will be send to EC's
-	 * register for indirect access. */
-	base = 0xFFFFF000;
-	data->ce_high = ((unsigned char *)base) + 0xE00;  /* 0xFFFFFE00 */
-	data->ce_low = ((unsigned char *)base) + 0xD00;  /* 0xFFFFFD00 */
-
-	/* pre-set indirect-access registers since in most of cases they are
-	 * 0xFFFFxx00. */
-	INDIRECT_A0(data->shm_io_base, base & 0xFF);
-	INDIRECT_A2(data->shm_io_base, (base >> 16) & 0xFF);
-	INDIRECT_A3(data->shm_io_base, (base >> 24));
-#endif
-#ifdef LPC_MEMORY
-	/* FIXME: We should block accessing that region for anything else.
-	 * Major TODO here, and it will be a lot of work.
+	/* FIXME: Really leave FWH enabled? We can't use this region
+	 * anymore since accessing it would mess up IT85 communication.
+	 * If we decide to disable FWH for this region, we should print
+	 * a debug message about it.
 	 */
-	base = (chipaddr)physmap("it85 communication", 0xFFFFF000, 0x1000);
-	if (base == (chipaddr)ERROR_PTR)
-		return 1;
-
-	msg_pdbg("%s():%d base=0x%08x\n", __func__, __LINE__,
-	         (unsigned int)base);
-	data->ce_high = (unsigned char *)(base + 0xE00);  /* 0xFFFFFE00 */
-	data->ce_low = (unsigned char *)(base + 0xD00);  /* 0xFFFFFD00 */
-#endif
+	/* Set this as SPI controller. */
+	register_spi_master(&spi_master_it85xx);
 
 	return 0;
-}
-
-int it85xx_spi_init(struct superio s)
-{
-	int ret;
-
-	if (!(internal_buses_supported & BUS_FWH)) {
-		msg_pdbg("%s():%d buses not support FWH\n", __func__, __LINE__);
-		return 1;
-	}
-	ret = it85xx_spi_common_init(s);
-	msg_pdbg("FWH: %s():%d ret=%d\n", __func__, __LINE__, ret);
-	if (!ret) {
-		msg_pdbg("%s: internal_buses_supported=0x%x\n", __func__,
-		          internal_buses_supported);
-		/* Check for FWH because IT85 listens to FWH cycles.
-		 * FIXME: The big question is whether FWH cycles are necessary
-		 * for communication even if LPC_IO is defined.
-		 */
-		if (internal_buses_supported & BUS_FWH)
-			msg_pdbg("Registering IT85 SPI.\n");
-		/* FIXME: Really leave FWH enabled? We can't use this region
-		 * anymore since accessing it would mess up IT85 communication.
-		 * If we decide to disable FWH for this region, we should print
-		 * a debug message about it.
-		 */
-		/* Set this as SPI controller. */
-		register_spi_master(&spi_master_it85xx);
-	}
-	return ret;
 }
 
 #endif
