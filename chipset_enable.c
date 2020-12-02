@@ -996,6 +996,8 @@ static int enable_flash_silvermont(struct pci_dev *dev, const char *name)
 
 	/* Handle GCS (in RCRB) */
 	void *rcrb = physmap("BYT RCRB", rcba, 4);
+	if (rcrb == ERROR_PTR)
+		return ERROR_FATAL;
 	const enum chipbustype boot_buses = enable_flash_ich_report_gcs(dev, ich_generation, rcrb);
 	physunmap(rcrb, 4);
 
