@@ -364,7 +364,7 @@ int main(int argc, char *argv[])
 			cli_classic_validate_singleop(&operation_specified);
 			list_supported_wiki = 1;
 #else
-			cli_classic_abort_usage("Error: Wiki output was not"
+			cli_classic_abort_usage("Error: Wiki output was not "
 					"compiled in. Aborting.\n");
 #endif
 			break;
