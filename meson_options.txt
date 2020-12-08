@@ -9,6 +9,7 @@ option('config_ch341a_spi', type : 'boolean', value : true, description : 'Winch
 option('config_dediprog', type : 'boolean', value : true, description : 'Dediprog SF100')
 option('config_developerbox_spi', type : 'boolean', value : true, description : 'Developerbox emergency recovery')
 option('config_digilent_spi', type : 'boolean', value : true, description : 'Digilent Development board JTAG')
+option('config_jlink_spi', type : 'boolean', value : false, description : 'SEGGER J-Link and compatible devices')
 option('config_drkaiser', type : 'boolean', value : true, description : 'Dr. Kaiser')
 option('config_dummy', type : 'boolean', value : true, description : 'dummy tracing')
 option('config_ene_lpc', type : 'boolean', value : true, description : 'ENE LPC interface keyboard controller')

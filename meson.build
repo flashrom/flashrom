@@ -38,6 +38,7 @@ config_ch341a_spi = get_option('config_ch341a_spi')
 config_dediprog = get_option('config_dediprog')
 config_developerbox_spi = get_option('config_developerbox_spi')
 config_digilent_spi = get_option('config_digilent_spi')
+config_jlink_spi = get_option('config_jlink_spi')
 config_drkaiser = get_option('config_drkaiser')
 config_dummy = get_option('config_dummy')
 config_ene_lpc = get_option('config_ene_lpc')
@@ -158,6 +159,11 @@ endif
 if config_digilent_spi
   srcs += 'digilent_spi.c'
   cargs += '-DCONFIG_DIGILENT_SPI=1'
+endif
+if config_jlink_spi
+  srcs += 'jlink_spi.c'
+  cargs += '-DCONFIG_JLINK_SPI=1'
+  deps += dependency('libjaylink')
 endif
 if config_drkaiser
   srcs += 'drkaiser.c'
