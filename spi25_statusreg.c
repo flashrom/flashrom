@@ -108,6 +108,12 @@ uint8_t spi_read_status_register(const struct flashctx *flash)
 	return readarr[0];
 }
 
+static int spi_restore_status(struct flashctx *flash, uint8_t status)
+{
+	msg_cdbg("restoring chip status (0x%02x)\n", status);
+	return spi_write_status_register(flash, status);
+}
+
 /* A generic block protection disable.
  * Tests if a protection is enabled with the block protection mask (bp_mask) and returns success otherwise.
  * Tests if the register bits are locked with the lock_mask (lock_mask).
@@ -138,6 +144,9 @@ static int spi_disable_blockprotect_generic(struct flashctx *flash, uint8_t bp_m
 		msg_cdbg2("Block protection is disabled.\n");
 		return 0;
 	}
+
+	/* Restore status register content upon exit in finalize_flash_access(). */
+	register_chip_restore(spi_restore_status, flash, status);
 
 	msg_cdbg("Some block protection in effect, disabling... ");
 	if ((status & lock_mask) != 0) {
