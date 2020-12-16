@@ -32,7 +32,7 @@
 #define MAX_SPI_WAIT_RETRIES	1000
 
 #define MCU_MODE 0x6F
-#define 	ENTER_ISP_MODE 0x80
+#define 	MCU_ISP_MODE_MASK 0x80
 #define 	START_WRITE_XFER 0xA0
 #define 	WRITE_XFER_STATUS_MASK  0x20
 
@@ -119,7 +119,12 @@ static int realtek_mst_i2c_spi_wait_command_done(int fd, unsigned int offset, in
 
 static int realtek_mst_i2c_spi_enter_isp_mode(int fd)
 {
-	int ret = realtek_mst_i2c_spi_write_register(fd, MCU_MODE, ENTER_ISP_MODE);
+	int ret = realtek_mst_i2c_spi_write_register(fd, MCU_MODE, MCU_ISP_MODE_MASK);
+	/* wait for ISP mode enter success */
+	ret |= realtek_mst_i2c_spi_wait_command_done(fd, MCU_MODE, MCU_ISP_MODE_MASK, MCU_ISP_MODE_MASK, 1);
+
+	if (ret)
+		return ret;
 
 	// set internal osc divider register to default to speed up MCU
 	// 0x06A0 = 0x74
@@ -140,7 +145,13 @@ static int realtek_mst_i2c_execute_write(int fd)
 
 static int realtek_mst_i2c_spi_reset_mpu(int fd)
 {
-	int ret = 0;
+	uint8_t mcu_mode_val;
+	int ret = realtek_mst_i2c_spi_read_register(fd, MCU_MODE, &mcu_mode_val);
+	if (ret || (mcu_mode_val & MCU_ISP_MODE_MASK) == 0) {
+		msg_perr("%s: MST not in ISP mode, cannot perform MCU reset.\n", __func__);
+		return SPI_GENERIC_ERROR;
+	}
+
 	// 0xFFEE[1] = 1;
 	uint8_t val = 0;
 	ret |= realtek_mst_i2c_spi_read_register(fd, 0xEE, &val);
