@@ -1188,7 +1188,6 @@ int dediprog_init(void)
 			ret = dediprog_open(i);
 			if (ret == -1) {
 				/* no dev */
-				libusb_exit(usb_ctx);
 				return 1;
 			} else if (ret == -2) {
 				/* busy dev */
