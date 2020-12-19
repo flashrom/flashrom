@@ -81,7 +81,7 @@ int read_romlayout(const char *name)
 		}
 		layout->entries[layout->num_entries].start = strtol(tstr1, (char **)NULL, 16);
 		layout->entries[layout->num_entries].end = strtol(tstr2, (char **)NULL, 16);
-		layout->entries[layout->num_entries].included = 0;
+		layout->entries[layout->num_entries].included = false;
 		layout->entries[layout->num_entries].name = strdup(tempname);
 		if (!layout->entries[layout->num_entries].name) {
 			msg_gerr("Error adding layout entry: %s\n", strerror(errno));
@@ -205,7 +205,7 @@ void layout_cleanup(struct layout_include_args **args)
 
 	for (i = 0; i < layout->num_entries; i++) {
 		free(layout->entries[i].name);
-		layout->entries[i].included = 0;
+		layout->entries[i].included = false;
 	}
 	layout->num_entries = 0;
 }
