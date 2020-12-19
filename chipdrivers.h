@@ -159,7 +159,7 @@ int printlock_regspace2_block_eraser_1(struct flashctx *flash);
 /* sst28sf040.c */
 int erase_chip_28sf040(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 int erase_sector_28sf040(struct flashctx *flash, unsigned int address, unsigned int sector_size);
-int write_28sf040(struct flashctx *flash, const uint8_t *buf,unsigned int start, unsigned int len);
+int write_28sf040(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 int unprotect_28sf040(struct flashctx *flash);
 int protect_28sf040(struct flashctx *flash);
 
