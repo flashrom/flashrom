@@ -28,7 +28,7 @@
 
 #define MCU_I2C_SLAVE_ADDR 0x94
 #define REGISTER_ADDRESS	(0x94 >> 1)
-#define PAGE_SIZE		256
+#define PAGE_SIZE		128
 #define MAX_SPI_WAIT_RETRIES	1000
 
 #define MCU_MODE 0x6F
@@ -386,7 +386,8 @@ static int realtek_mst_i2c_spi_write_256(struct flashctx *flash, const uint8_t *
 			ret |= realtek_mst_i2c_spi_write_register(fd, 0x71, page_len-1);
 		uint8_t block_idx = (start + i) >> 16;
 		uint8_t page_idx  = (start + i) >>  8;
-		ret |= realtek_mst_i2c_spi_map_page(fd, block_idx, page_idx, 0);
+		uint8_t byte_idx = start + i;
+		ret |= realtek_mst_i2c_spi_map_page(fd, block_idx, page_idx, byte_idx);
 		if (ret)
 			break;
 
