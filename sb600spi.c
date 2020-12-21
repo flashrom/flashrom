@@ -129,7 +129,7 @@ static enum amd_chipset determine_generation(struct pci_dev *dev)
 		 * The revisions I have found by searching various lspci
 		 * outputs are as follows: 0x4b, 0x59 & 0x61.
 		 */
-		} else if (rev == 0x4b || rev == 0x59 || rev == 0x61) {
+		} else if (rev == 0x4b || rev == 0x51 || rev == 0x59 || rev == 0x61) {
 			msg_pdbg("Promontory (rev 0x%02x) detected.\n", rev);
 			return CHIPSET_PROMONTORY;
 		} else {
