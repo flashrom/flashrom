@@ -20,6 +20,7 @@
 #include <string.h>
 #include <libusb.h>
 #include "flash.h"
+#include "platform.h"
 #include "programmer.h"
 
 /* LIBUSB_CALL ensures the right calling conventions on libusb callbacks.

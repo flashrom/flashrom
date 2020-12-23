@@ -18,6 +18,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "flash.h"
+#include "platform.h"
 #include "programmer.h"
 #include "hwaccess.h"
 
