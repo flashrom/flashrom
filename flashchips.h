@@ -792,7 +792,7 @@
  * ST25P chips are SPI, first byte of device ID is memory type, second
  * byte of device ID is related to log(bitsize) at least for some chips.
  */
-#define ST_ID			0x20	/* ST / SGS/Thomson / Numonyx (later acquired by Micron) */
+#define ST_ID			0x20	/* ST / SGS/Thomson / Numonyx / XMC(later acquired by Micron) */
 #define ST_M25P05A		0x2010
 #define ST_M25P05_RES		0x05
 #define ST_M25P10A		0x2011
@@ -811,6 +811,12 @@
 #define ST_M45PE40		0x4013
 #define ST_M45PE80		0x4014
 #define ST_M45PE16		0x4015
+#define XMC_XM25QH64C		0x4017
+#define XMC_XM25QU64C		0x4117
+#define XMC_XM25QH128C		0x4018
+#define XMC_XM25QU128C		0x4118
+#define XMC_XM25QH256C		0x4019
+#define XMC_XM25QU256C		0x4119
 #define ST_M25PX80		0x7114
 #define ST_M25PX16		0x7115
 #define ST_M25PX32		0x7116
