@@ -289,9 +289,14 @@ static int realtek_mst_i2c_spi_send_command(const struct flashctx *flash,
 	return ret;
 }
 
-static int realtek_mst_i2c_spi_map_page(int fd, uint8_t block_idx, uint8_t page_idx, uint8_t byte_idx)
+static int realtek_mst_i2c_spi_map_page(int fd, uint32_t addr)
 {
 	int ret = 0;
+
+	uint8_t block_idx = (addr >> 16) & 0xff;
+	uint8_t page_idx  = (addr >>  8) & 0xff;
+	uint8_t byte_idx  =  addr        & 0xff;
+
 	ret |= realtek_mst_i2c_spi_write_register(fd, MAP_PAGE_BYTE2, block_idx);
 	ret |= realtek_mst_i2c_spi_write_register(fd, MAP_PAGE_BYTE1, page_idx);
 	ret |= realtek_mst_i2c_spi_write_register(fd, MAP_PAGE_BYTE0, byte_idx);
@@ -330,10 +335,7 @@ static int realtek_mst_i2c_spi_read(struct flashctx *flash, uint8_t *buf,
 	start--;
 	ret |= realtek_mst_i2c_spi_write_register(fd, 0x60, 0x46); // **
 	ret |= realtek_mst_i2c_spi_write_register(fd, 0x61, OPCODE_READ);
-	uint8_t block_idx = (start >> 16) & 0xff;
-	uint8_t page_idx  = (start >>  8) & 0xff;
-	uint8_t byte_idx  =  start & 0xff;
-	ret |= realtek_mst_i2c_spi_map_page(fd, block_idx, page_idx, byte_idx);
+	ret |= realtek_mst_i2c_spi_map_page(fd, start);
 	ret |= realtek_mst_i2c_spi_write_register(fd, 0x6a, 0x03);
 	ret |= realtek_mst_i2c_spi_write_register(fd, 0x60, 0x47); // **
 	if (ret)
@@ -384,10 +386,7 @@ static int realtek_mst_i2c_spi_write_256(struct flashctx *flash, const uint8_t *
 		uint16_t page_len = min(len - i, PAGE_SIZE);
 		if (len - i < PAGE_SIZE)
 			ret |= realtek_mst_i2c_spi_write_register(fd, 0x71, page_len-1);
-		uint8_t block_idx = ((start + i) >> 16) & 0xff;
-		uint8_t page_idx  = ((start + i) >>  8) & 0xff;
-		uint8_t byte_idx  =  (start + i) & 0xff;
-		ret |= realtek_mst_i2c_spi_map_page(fd, block_idx, page_idx, byte_idx);
+		ret |= realtek_mst_i2c_spi_map_page(fd, start + i);
 		if (ret)
 			break;
 
