@@ -634,7 +634,7 @@ struct spi_master {
 	int (*read)(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 	int (*write_256)(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 	int (*write_aai)(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
-	const void *data;
+	void *data;
 };
 
 int default_spi_send_command(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
@@ -722,7 +722,7 @@ struct opaque_master {
 	int (*read) (struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 	int (*write) (struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 	int (*erase) (struct flashctx *flash, unsigned int blockaddr, unsigned int blocklen);
-	const void *data;
+	void *data;
 };
 int register_opaque_master(const struct opaque_master *mst);
 
@@ -745,7 +745,7 @@ struct par_master {
 	uint16_t (*chip_readw) (const struct flashctx *flash, const chipaddr addr);
 	uint32_t (*chip_readl) (const struct flashctx *flash, const chipaddr addr);
 	void (*chip_readn) (const struct flashctx *flash, uint8_t *buf, const chipaddr addr, size_t len);
-	const void *data;
+	void *data;
 };
 int register_par_master(const struct par_master *mst, const enum chipbustype buses);
 struct registered_master {

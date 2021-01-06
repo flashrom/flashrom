@@ -94,13 +94,18 @@ static void bitbang_spi_write_byte(const struct bitbang_spi_master *master, uint
 	}
 }
 
+struct bitbang_spi_master_data {
+	const struct bitbang_spi_master *mst;
+};
+
 static int bitbang_spi_send_command(const struct flashctx *flash,
 				    unsigned int writecnt, unsigned int readcnt,
 				    const unsigned char *writearr,
 				    unsigned char *readarr)
 {
 	unsigned int i;
-	const struct bitbang_spi_master *master = flash->mst->spi.data;
+	const struct bitbang_spi_master_data *data = flash->mst->spi.data;
+	const struct bitbang_spi_master *master = data->mst;
 
 	/* FIXME: Run bitbang_spi_request_bus here or in programmer init?
 	 * Requesting and releasing the SPI bus is handled in here to allow the
@@ -134,13 +139,12 @@ static const struct spi_master spi_master_bitbang = {
 	.write_aai	= default_spi_write_aai,
 };
 
-#if 0 // until it is needed
-static int bitbang_spi_shutdown(const struct bitbang_spi_master *master)
+static int bitbang_spi_shutdown(void *data)
 {
 	/* FIXME: Run bitbang_spi_release_bus here or per command? */
+	free(data);
 	return 0;
 }
-#endif
 
 int register_spi_bitbang_master(const struct bitbang_spi_master *master)
 {
@@ -155,8 +159,11 @@ int register_spi_bitbang_master(const struct bitbang_spi_master *master)
 		return ERROR_FLASHROM_BUG;
 	}
 
-	mst.data = master;
+	struct bitbang_spi_master_data *data = calloc(1, sizeof(struct bitbang_spi_master_data));
+	data->mst = master;
+	mst.data = data;
 	register_spi_master(&mst);
+	register_shutdown(bitbang_spi_shutdown, data);
 
 	/* Only mess with the bus if we're sure nobody else uses it. */
 	bitbang_spi_request_bus(master);
