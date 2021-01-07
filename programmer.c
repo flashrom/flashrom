@@ -17,12 +17,6 @@
 #include "flash.h"
 #include "programmer.h"
 
-/* No-op shutdown() for programmers which don't need special handling */
-int noop_shutdown(void)
-{
-	return 0;
-}
-
 /* Fallback map() for programmers which don't need special handling */
 void *fallback_map(const char *descr, uintptr_t phys_addr, size_t len)
 {
