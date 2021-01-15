@@ -79,6 +79,7 @@ static void cli_classic_usage(const char *name)
 #if CONFIG_PRINT_WIKI == 1
 	       " -z | --list-supported-wiki         print supported devices in wiki syntax\n"
 #endif
+	       "      --progress                    show progress percentage on the standard output\n"
 	       " -p | --programmer <name>[:<param>] specify the programmer device. One of\n");
 	list_programmers_linebreak(4, 80, 0);
 	printf(".\n\nYou can specify one of -h, -R, -L, "
@@ -472,6 +473,7 @@ int main(int argc, char *argv[])
 	uint32_t wp_start = 0, wp_len = 0;
 	int read_it = 0, extract_it = 0, write_it = 0, erase_it = 0, verify_it = 0;
 	int dont_verify_it = 0, dont_verify_all = 0, list_supported = 0, operation_specified = 0;
+	int show_progress = 0;
 	struct flashrom_layout *layout = NULL;
 	static const struct programmer_entry *prog = NULL;
 	enum {
@@ -487,6 +489,7 @@ int main(int argc, char *argv[])
 		OPTION_WP_ENABLE,
 		OPTION_WP_DISABLE,
 		OPTION_WP_LIST,
+		OPTION_PROGRESS,
 	};
 	int ret = 0;
 
@@ -523,6 +526,7 @@ int main(int argc, char *argv[])
 		{"help",		0, NULL, 'h'},
 		{"version",		0, NULL, 'R'},
 		{"output",		1, NULL, 'o'},
+		{"progress",		0, NULL, OPTION_PROGRESS},
 		{NULL,			0, NULL, 0},
 	};
 
@@ -763,6 +767,9 @@ int main(int argc, char *argv[])
 				cli_classic_abort_usage("No log filename specified.\n");
 			}
 			break;
+		case OPTION_PROGRESS:
+			show_progress = 1;
+			break;
 		default:
 			cli_classic_abort_usage(NULL);
 			break;
@@ -933,6 +940,13 @@ int main(int argc, char *argv[])
 	}
 
 	fill_flash = &flashes[0];
+
+	unsigned int progress_user_data[FLASHROM_PROGRESS_NR];
+	struct flashrom_progress progress_state = {
+		 .user_data = progress_user_data
+	};
+	if (show_progress)
+		flashrom_set_progress_callback(fill_flash, &flashrom_progress_cb, &progress_state);
 
 	print_chip_support_status(fill_flash->chip);
 

@@ -658,6 +658,7 @@ static int dediprog_spi_bulk_write(struct flashctx *flash, const uint8_t *buf, u
 			msg_perr("SPI bulk write failed, expected %i, got %s!\n", 512, libusb_error_name(ret));
 			return 1;
 		}
+		update_progress(flash, FLASHROM_PROGRESS_WRITE, i + 1, count);
 	}
 
 	return 0;

@@ -24,6 +24,7 @@ LIBFLASHROM_1.0 {
     flashrom_programmer_init;
     flashrom_programmer_shutdown;
     flashrom_set_log_callback;
+    flashrom_set_progress_callback;
     flashrom_shutdown;
     flashrom_version_info;
   local: *;

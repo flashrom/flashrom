@@ -350,6 +350,9 @@ struct flashrom_flashctx {
 		chip_restore_fn_cb_t func;
 		uint8_t status;
 	} chip_restore_fn[MAX_CHIP_RESTORE_FUNCTIONS];
+	/* Progress reporting */
+	flashrom_progress_callback *progress_callback;
+	struct flashrom_progress *progress_state;
 };
 
 /* Timing used in probe routines. ZERO is -2 to differentiate between an unset
@@ -446,6 +449,7 @@ int open_logfile(const char * const filename);
 int close_logfile(void);
 void start_logging(void);
 int flashrom_print_cb(enum flashrom_log_level level, const char *fmt, va_list ap);
+void flashrom_progress_cb(struct flashrom_flashctx *flashctx);
 /* Let gcc and clang check for correct printf-style format strings. */
 int print(enum flashrom_log_level level, const char *fmt, ...)
 #ifdef __MINGW32__
@@ -474,6 +478,7 @@ __attribute__((format(printf, 2, 3)));
 #define msg_gspew(...)	print(FLASHROM_MSG_SPEW, __VA_ARGS__)	/* general debug spew  */
 #define msg_pspew(...)	print(FLASHROM_MSG_SPEW, __VA_ARGS__)	/* programmer debug spew  */
 #define msg_cspew(...)	print(FLASHROM_MSG_SPEW, __VA_ARGS__)	/* chip debug spew  */
+void update_progress(struct flashctx *flash, enum flashrom_progress_stage stage, size_t current, size_t total);
 
 /* spi.c */
 struct spi_command {

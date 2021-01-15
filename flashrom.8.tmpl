@@ -53,7 +53,8 @@ flashrom \- detect, read, write, verify and erase flash chips
              [\fB\-\-wp\-status\fR] [\fB\-\-wp\-list\fR] [\fB\-\-wp\-enable\fR|\fB\-\-wp\-disable\fR]
              [\fB\-\-wp\-range\fR <start>,<length>|\fB\-\-wp\-region\fR <region>]
              [\fB\-n\fR] [\fB\-N\fR] [\fB\-f\fR])]
-         [\fB\-V\fR[\fBV\fR[\fBV\fR]]] [\fB-o\fR <logfile>]
+         [\fB\-V\fR[\fBV\fR[\fBV\fR]]] [\fB-o\fR <logfile>] [\fB\-\-progress\fR]
+
 .SH DESCRIPTION
 .B flashrom
 is a utility for detecting, reading, writing, verifying and erasing flash
@@ -444,6 +445,9 @@ Save the full debug log to
 If the file already exists, it will be overwritten. This is the recommended
 way to gather logs from flashrom because they will be verbose even if the
 on-screen messages are not verbose and don't require output redirection.
+.TP
+.B "\-\-progress"
+Show progress percentage of operations on the standard output.
 .TP
 .B "\-R, \-\-version"
 Show version information and exit.

@@ -354,6 +354,7 @@ static int lspcon_i2c_spi_read(struct flashctx *flash, uint8_t *buf,
 	for (i = 0; i < len; i += LSPCON_PAGE_SIZE) {
 		ret |= lspcon_i2c_spi_map_page(fd, start + i);
 		ret |= lspcon_i2c_spi_read_data(fd, PAGE_ADDRESS, buf + i, min(len - i, LSPCON_PAGE_SIZE));
+		update_progress(flash, FLASHROM_PROGRESS_READ, i + LSPCON_PAGE_SIZE, len);
 	}
 
 	return ret;
@@ -394,6 +395,7 @@ static int lspcon_i2c_spi_write_256(struct flashctx *flash, const uint8_t *buf,
 	for (unsigned int i = 0; i < len; i += LSPCON_PAGE_SIZE) {
 		ret |= lspcon_i2c_spi_map_page(fd, start + i);
 		ret |= lspcon_i2c_spi_write_page(fd, buf + i, min(len - i, LSPCON_PAGE_SIZE));
+		update_progress(flash, FLASHROM_PROGRESS_WRITE, i + LSPCON_PAGE_SIZE, len);
 	}
 
 	ret |= lspcon_i2c_spi_enable_write_protection(fd);
