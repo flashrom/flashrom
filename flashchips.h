@@ -978,6 +978,9 @@
 #define XTX_ID			0x0B	/* XTX */
 #define XTX_XT25F01D		0x4011
 
+#define XTX_25W_ID		0x0B
+#define XTX_XT25W128B		0x4018
+
 #define ZETTADEVICE_ID          0xBA	/* Zetta Device */
 #define ZETTADEVICE_ZD25D20     0x2012
 #define ZETTADEVICE_ZD25D40     0x2013
