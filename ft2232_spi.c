@@ -367,7 +367,7 @@ int ft2232_spi_init(void)
 	}
 	free(arg);
 
-	/* Allows setting multiple GPIOL states, for example: csgpiol=012 */
+	/* Allows setting multiple GPIOL pins to high, for example: csgpiol=012 */
 	arg = extract_programmer_param("csgpiol");
 	if (arg) {
 		unsigned int ngpios = strlen(arg);
@@ -384,6 +384,48 @@ int ft2232_spi_init(void)
 				cs_bits |= 1 << pin;
 				pindir |= 1 << pin;
 			}
+		}
+	}
+	free(arg);
+
+	/* Allows setting GPIOL pins high, low or input (high-z) */
+	arg = extract_programmer_param("gpiol");
+	if (arg) {
+		int ok = 0;
+		if (strlen(arg) == 4) {
+			ok = 1;
+			for (int i = 0; i < 4; i++) {
+				unsigned int pin = i + 4;
+				switch (toupper(arg[i])) {
+					case 'H':
+						cs_bits |= 1 << pin;
+						pindir |= 1 << pin;
+						break;
+					case 'L':
+						cs_bits &= ~(1 << pin);
+						pindir |= 1 << pin;
+						break;
+					case 'Z':
+						pindir &= ~(1 << pin);
+						break;
+					case 'X':
+						break;
+					default:
+						ok = 0;
+				}
+			}
+		}
+		if (!ok) {
+			msg_perr("Error: Invalid GPIOLs specified: \"%s\".\n"
+				 "Valid values are 4 character strings of H, L, Z and X.\n"
+				 "    H - Set GPIOL output high\n"
+				 "    L - Set GPIOL output low\n"
+				 "    Z - Set GPIOL as input (high impedance)\n"
+				 "    X - Leave as programmer default\n"
+				 "Example: gpiol=LZXH drives GPIOL 0 low, and GPIOL 3 high, sets GPIOL 1\n"
+				 "to an input and leaves GPIOL 2 set according to the programmer type.\n", arg);
+			free(arg);
+			return -2;
 		}
 	}
 	free(arg);
