@@ -84,7 +84,7 @@ const struct dev_entry devs_ft2232spi[] = {
 #define BITMODE_BITBANG_NORMAL	1
 #define BITMODE_BITBANG_SPI	2
 
-/* The variables cs_bits and pindir store the values for the "set data bits low byte" MPSSE command that
+/* The variables pinlvl and pindir store the values for the "set data bits low byte" MPSSE command that
  * sets the initial state and the direction of the I/O pins. The pin offsets are as follows:
  * TCK/SK is bit 0.
  * TDI/DO is bit 1.
@@ -102,7 +102,7 @@ const struct dev_entry devs_ft2232spi[] = {
  *  value: 0x08  CS=high, DI=low, DO=low, SK=low
  *    dir: 0x0b  CS=output, DI=input, DO=output, SK=output
  */
-static uint8_t cs_bits = 0x08;
+static uint8_t pinlvl = 0x08;
 static uint8_t pindir = 0x0b;
 static struct ftdi_context ftdic_context;
 
@@ -246,7 +246,7 @@ int ft2232_spi_init(void)
 			/* JTAGkey(2) needs to enable its output via Bit4 / GPIOL0
 			*  value: 0x18  OE=high, CS=high, DI=low, DO=low, SK=low
 			*    dir: 0x1b  OE=output, CS=output, DI=input, DO=output, SK=output */
-			cs_bits = 0x18;
+			pinlvl = 0x18;
 			pindir = 0x1b;
 		} else if (!strcasecmp(arg, "picotap")) {
 			ft2232_vid = GOEPEL_VID;
@@ -264,7 +264,7 @@ int ft2232_spi_init(void)
 			/* In its default configuration it is a jtagkey clone */
 			ft2232_type = FTDI_FT2232H_PID;
 			channel_count = 2;
-			cs_bits = 0x18;
+			pinlvl = 0x18;
 			pindir = 0x1b;
 		} else if (!strcasecmp(arg, "openmoko")) {
 			ft2232_vid = FIC_VID;
@@ -277,7 +277,7 @@ int ft2232_spi_init(void)
 			/* arm-usb-ocd(-h) has an output buffer that needs to be enabled by pulling ADBUS4 low.
 			*  value: 0x08  #OE=low, CS=high, DI=low, DO=low, SK=low
 			*    dir: 0x1b  #OE=output, CS=output, DI=input, DO=output, SK=output */
-			cs_bits = 0x08;
+			pinlvl = 0x08;
 			pindir = 0x1b;
 		} else if (!strcasecmp(arg, "arm-usb-tiny")) {
 			ft2232_vid = OLIMEX_VID;
@@ -288,7 +288,7 @@ int ft2232_spi_init(void)
 			ft2232_type = OLIMEX_ARM_OCD_H_PID;
 			channel_count = 2;
 			/* See arm-usb-ocd */
-			cs_bits = 0x08;
+			pinlvl = 0x08;
 			pindir = 0x1b;
 		} else if (!strcasecmp(arg, "arm-usb-tiny-h")) {
 			ft2232_vid = OLIMEX_VID;
@@ -381,7 +381,7 @@ int ft2232_spi_init(void)
 				return -2;
 			} else {
 				unsigned int pin = temp + 4;
-				cs_bits |= 1 << pin;
+				pinlvl |= 1 << pin;
 				pindir |= 1 << pin;
 			}
 		}
@@ -398,11 +398,11 @@ int ft2232_spi_init(void)
 				unsigned int pin = i + 4;
 				switch (toupper(arg[i])) {
 					case 'H':
-						cs_bits |= 1 << pin;
+						pinlvl |= 1 << pin;
 						pindir |= 1 << pin;
 						break;
 					case 'L':
-						cs_bits &= ~(1 << pin);
+						pinlvl &= ~(1 << pin);
 						pindir |= 1 << pin;
 						break;
 					case 'Z':
@@ -512,7 +512,7 @@ int ft2232_spi_init(void)
 
 	msg_pdbg("Set data bits\n");
 	buf[0] = SET_BITS_LOW;
-	buf[1] = cs_bits;
+	buf[1] = pinlvl;
 	buf[2] = pindir;
 	if (send_buf(ftdic, buf, 3)) {
 		ret = -8;
@@ -569,7 +569,7 @@ static int ft2232_spi_send_command(const struct flashctx *flash,
 	 */
 	msg_pspew("Assert CS#\n");
 	buf[i++] = SET_BITS_LOW;
-	buf[i++] = ~ 0x08 & cs_bits; /* assert CS (3rd) bit only */
+	buf[i++] = ~ 0x08 & pinlvl; /* assert CS (3rd) bit only */
 	buf[i++] = pindir;
 
 	if (writecnt) {
@@ -610,7 +610,7 @@ static int ft2232_spi_send_command(const struct flashctx *flash,
 
 	msg_pspew("De-assert CS#\n");
 	buf[i++] = SET_BITS_LOW;
-	buf[i++] = cs_bits;
+	buf[i++] = pinlvl;
 	buf[i++] = pindir;
 	ret = send_buf(ftdic, buf, i);
 	failed |= ret;
