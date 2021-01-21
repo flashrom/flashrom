@@ -727,7 +727,6 @@ struct opaque_master {
 int register_opaque_master(const struct opaque_master *mst);
 
 /* programmer.c */
-int noop_shutdown(void);
 void *fallback_map(const char *descr, uintptr_t phys_addr, size_t len);
 void fallback_unmap(void *virt_addr, size_t len);
 void fallback_chip_writew(const struct flashctx *flash, uint16_t val, chipaddr addr);
