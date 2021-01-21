@@ -26,7 +26,7 @@
 #include "i2c_helper.h"
 
 
-#define MCU_I2C_SLAVE_ADDR 0x94
+#define MCU_I2C_SLAVE_ADDR	0x94
 #define REGISTER_ADDRESS	(0x94 >> 1)
 #define PAGE_SIZE		128
 #define MAX_SPI_WAIT_RETRIES	1000
@@ -78,7 +78,7 @@ static int get_fd_from_context(const struct flashctx *flash)
 		msg_perr("Unable to extract fd from flash context.\n");
 		return SPI_GENERIC_ERROR;
 	}
-        const struct realtek_mst_i2c_spi_data *data =
+	const struct realtek_mst_i2c_spi_data *data =
 		(const struct realtek_mst_i2c_spi_data *)flash->mst->spi.data;
 
 	return data->fd;
@@ -429,7 +429,7 @@ static struct spi_master spi_master_i2c_realtek_mst = {
 static int realtek_mst_i2c_spi_shutdown(void *data)
 {
 	int ret = 0;
-        struct realtek_mst_i2c_spi_data *realtek_mst_data =
+	struct realtek_mst_i2c_spi_data *realtek_mst_data =
 		(struct realtek_mst_i2c_spi_data *)data;
 	int fd = realtek_mst_data->fd;
 	if (realtek_mst_data->reset) {
