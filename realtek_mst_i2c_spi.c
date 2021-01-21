@@ -375,10 +375,6 @@ static int realtek_mst_i2c_spi_write_256(struct flashctx *flash, const uint8_t *
 	if (fd < 0)
 		return SPI_GENERIC_ERROR;
 
-	ret = realtek_mst_i2c_spi_toggle_gpio_88_strap(fd, true);
-	if (ret)
-		return ret;
-
 	ret |= realtek_mst_i2c_spi_write_register(fd, 0x6D, 0x02); /* write opcode */
 	ret |= realtek_mst_i2c_spi_write_register(fd, 0x71, (PAGE_SIZE - 1)); /* fit len=256 */
 
@@ -403,8 +399,6 @@ static int realtek_mst_i2c_spi_write_256(struct flashctx *flash, const uint8_t *
 		if (ret)
 			break;
 	}
-
-	ret |= realtek_mst_i2c_spi_toggle_gpio_88_strap(fd, false);
 
 	return ret;
 }
@@ -432,6 +426,7 @@ static int realtek_mst_i2c_spi_shutdown(void *data)
 	struct realtek_mst_i2c_spi_data *realtek_mst_data =
 		(struct realtek_mst_i2c_spi_data *)data;
 	int fd = realtek_mst_data->fd;
+	ret |= realtek_mst_i2c_spi_toggle_gpio_88_strap(fd, false);
 	if (realtek_mst_data->reset) {
 		/*
 		 * Return value for reset mpu is not checked since
@@ -530,6 +525,12 @@ int realtek_mst_i2c_spi_init(void)
 		ret |= realtek_mst_i2c_spi_enter_isp_mode(fd);
 		if (ret)
 			return ret;
+	}
+
+	ret |= realtek_mst_i2c_spi_toggle_gpio_88_strap(fd, true);
+	if (ret) {
+		msg_perr("Unable to toggle gpio 88 strap to True.\n");
+		return ret;
 	}
 
 	struct realtek_mst_i2c_spi_data *data = calloc(1, sizeof(struct realtek_mst_i2c_spi_data));
