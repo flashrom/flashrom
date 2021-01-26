@@ -15,7 +15,7 @@ option('config_dummy', type : 'boolean', value : true, description : 'dummy trac
 option('config_ene_lpc', type : 'boolean', value : true, description : 'ENE LPC interface keyboard controller')
 option('config_ft2232_spi', type : 'boolean', value : true, description : 'FT2232 SPI dongles')
 option('config_gfxnvidia', type : 'boolean', value : true, description : 'NVIDIA graphics cards')
-option('config_raiden', type : 'boolean', value : true, description : 'ChromiumOS Servo DUT debug board')
+option('config_raiden_debug_spi', type : 'boolean', value : true, description : 'ChromiumOS Servo DUT debug board')
 option('config_internal', type : 'boolean', value : true, description : 'internal/onboard')
 option('config_internal_dmi', type : 'boolean', value : true, description : 'Use internal DMI parser')
 option('config_it8212', type : 'boolean', value : true, description : 'ITE IT8212F PATA')
