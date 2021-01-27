@@ -1045,6 +1045,7 @@
 #define WINBOND_W49V002FA	0x32
 
 #define XTX_ID			0x0B	/* XTX Technology Limited */
+#define XTX_XT25F02E		0x4012
 #define XTX_XT25F64B		0x4017
 
 #define ZETTADEVICE_ID          0xBA	/* Zetta Device */
