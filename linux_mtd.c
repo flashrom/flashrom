@@ -340,6 +340,10 @@ static int linux_mtd_setup(int dev_num)
 		msg_perr("Cannot open file stream for %s\n", dev_path);
 		goto linux_mtd_setup_exit;
 	}
+	ret = setvbuf(dev_fp, NULL, _IONBF, 0);
+	if (ret)
+		msg_pwarn("Failed to set MTD device to unbuffered: %d\n", ret);
+
 	msg_pinfo("Opened %s successfully\n", dev_path);
 
 	ret = 0;
