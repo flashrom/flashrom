@@ -133,7 +133,7 @@ int spi_aai_write(struct flashctx *flash, const uint8_t *buf, unsigned int start
 
 int register_spi_master(const struct spi_master *mst)
 {
-	struct registered_master rmst;
+	struct registered_master rmst = {0};
 
 	if (!mst->write_aai || !mst->write_256 || !mst->read || !mst->command ||
 	    !mst->multicommand ||
