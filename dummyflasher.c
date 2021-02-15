@@ -102,19 +102,514 @@ static const uint8_t sfdp_table[] = {
 #endif
 
 static unsigned int spi_write_256_chunksize = 256;
+static enum chipbustype dummy_buses_supported = BUS_NONE;
 
-static int dummy_spi_send_command(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
-				  const unsigned char *writearr, unsigned char *readarr);
-static int dummy_spi_write_256(struct flashctx *flash, const uint8_t *buf,
-			       unsigned int start, unsigned int len);
-static void dummy_chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr);
-static void dummy_chip_writew(const struct flashctx *flash, uint16_t val, chipaddr addr);
-static void dummy_chip_writel(const struct flashctx *flash, uint32_t val, chipaddr addr);
-static void dummy_chip_writen(const struct flashctx *flash, const uint8_t *buf, chipaddr addr, size_t len);
-static uint8_t dummy_chip_readb(const struct flashctx *flash, const chipaddr addr);
-static uint16_t dummy_chip_readw(const struct flashctx *flash, const chipaddr addr);
-static uint32_t dummy_chip_readl(const struct flashctx *flash, const chipaddr addr);
-static void dummy_chip_readn(const struct flashctx *flash, uint8_t *buf, const chipaddr addr, size_t len);
+void *dummy_map(const char *descr, uintptr_t phys_addr, size_t len)
+{
+	msg_pspew("%s: Mapping %s, 0x%zx bytes at 0x%0*" PRIxPTR "\n",
+		  __func__, descr, len, PRIxPTR_WIDTH, phys_addr);
+	return (void *)phys_addr;
+}
+
+void dummy_unmap(void *virt_addr, size_t len)
+{
+	msg_pspew("%s: Unmapping 0x%zx bytes at %p\n", __func__, len, virt_addr);
+}
+
+static int dummy_spi_write_256(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len)
+{
+	return spi_write_chunked(flash, buf, start, len,
+				 spi_write_256_chunksize);
+}
+
+static void dummy_chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr)
+{
+	msg_pspew("%s: addr=0x%" PRIxPTR ", val=0x%02x\n", __func__, addr, val);
+}
+
+static void dummy_chip_writew(const struct flashctx *flash, uint16_t val, chipaddr addr)
+{
+	msg_pspew("%s: addr=0x%" PRIxPTR ", val=0x%04x\n", __func__, addr, val);
+}
+
+static void dummy_chip_writel(const struct flashctx *flash, uint32_t val, chipaddr addr)
+{
+	msg_pspew("%s: addr=0x%" PRIxPTR ", val=0x%08x\n", __func__, addr, val);
+}
+
+static void dummy_chip_writen(const struct flashctx *flash, const uint8_t *buf, chipaddr addr, size_t len)
+{
+	size_t i;
+	msg_pspew("%s: addr=0x%" PRIxPTR ", len=0x%zx, writing data (hex):", __func__, addr, len);
+	for (i = 0; i < len; i++) {
+		if ((i % 16) == 0)
+			msg_pspew("\n");
+		msg_pspew("%02x ", buf[i]);
+	}
+}
+
+static uint8_t dummy_chip_readb(const struct flashctx *flash, const chipaddr addr)
+{
+	msg_pspew("%s:  addr=0x%" PRIxPTR ", returning 0xff\n", __func__, addr);
+	return 0xff;
+}
+
+static uint16_t dummy_chip_readw(const struct flashctx *flash, const chipaddr addr)
+{
+	msg_pspew("%s:  addr=0x%" PRIxPTR ", returning 0xffff\n", __func__, addr);
+	return 0xffff;
+}
+
+static uint32_t dummy_chip_readl(const struct flashctx *flash, const chipaddr addr)
+{
+	msg_pspew("%s:  addr=0x%" PRIxPTR ", returning 0xffffffff\n", __func__, addr);
+	return 0xffffffff;
+}
+
+static void dummy_chip_readn(const struct flashctx *flash, uint8_t *buf, const chipaddr addr, size_t len)
+{
+	msg_pspew("%s:  addr=0x%" PRIxPTR ", len=0x%zx, returning array of 0xff\n", __func__, addr, len);
+	memset(buf, 0xff, len);
+	return;
+}
+
+static struct emu_data* get_data_from_context(const struct flashctx *flash)
+{
+	if (dummy_buses_supported & (BUS_PARALLEL | BUS_LPC | BUS_FWH))
+		return (struct emu_data *)flash->mst->par.data;
+	else if (dummy_buses_supported & BUS_SPI)
+		return (struct emu_data *)flash->mst->spi.data;
+
+	return NULL;	/* buses was set to BUS_NONE. */
+}
+
+#if EMULATE_SPI_CHIP
+static int emulate_spi_chip_response(unsigned int writecnt,
+				     unsigned int readcnt,
+				     const unsigned char *writearr,
+				     unsigned char *readarr,
+				     struct emu_data *data)
+{
+	unsigned int offs, i, toread;
+	static int unsigned aai_offs;
+	const unsigned char sst25vf040_rems_response[2] = {0xbf, 0x44};
+	const unsigned char sst25vf032b_rems_response[2] = {0xbf, 0x4a};
+	const unsigned char mx25l6436_rems_response[2] = {0xc2, 0x16};
+	const unsigned char w25q128fv_rems_response[2] = {0xef, 0x17};
+
+	if (writecnt == 0) {
+		msg_perr("No command sent to the chip!\n");
+		return 1;
+	}
+	/* spi_blacklist has precedence over spi_ignorelist. */
+	for (i = 0; i < data->spi_blacklist_size; i++) {
+		if (writearr[0] == data->spi_blacklist[i]) {
+			msg_pdbg("Refusing blacklisted SPI command 0x%02x\n",
+				 data->spi_blacklist[i]);
+			return SPI_INVALID_OPCODE;
+		}
+	}
+	for (i = 0; i < data->spi_ignorelist_size; i++) {
+		if (writearr[0] == data->spi_ignorelist[i]) {
+			msg_cdbg("Ignoring ignorelisted SPI command 0x%02x\n",
+				 data->spi_ignorelist[i]);
+			/* Return success because the command does not fail,
+			 * it is simply ignored.
+			 */
+			return 0;
+		}
+	}
+
+	if (data->emu_max_aai_size && (data->emu_status & SPI_SR_AAI)) {
+		if (writearr[0] != JEDEC_AAI_WORD_PROGRAM &&
+		    writearr[0] != JEDEC_WRDI &&
+		    writearr[0] != JEDEC_RDSR) {
+			msg_perr("Forbidden opcode (0x%02x) attempted during "
+				 "AAI sequence!\n", writearr[0]);
+			return 0;
+		}
+	}
+
+	switch (writearr[0]) {
+	case JEDEC_RES:
+		if (writecnt < JEDEC_RES_OUTSIZE)
+			break;
+		/* offs calculation is only needed for SST chips which treat RES like REMS. */
+		offs = writearr[1] << 16 | writearr[2] << 8 | writearr[3];
+		offs += writecnt - JEDEC_REMS_OUTSIZE;
+		switch (data->emu_chip) {
+		case EMULATE_ST_M25P10_RES:
+			if (readcnt > 0)
+				memset(readarr, 0x10, readcnt);
+			break;
+		case EMULATE_SST_SST25VF040_REMS:
+			for (i = 0; i < readcnt; i++)
+				readarr[i] = sst25vf040_rems_response[(offs + i) % 2];
+			break;
+		case EMULATE_SST_SST25VF032B:
+			for (i = 0; i < readcnt; i++)
+				readarr[i] = sst25vf032b_rems_response[(offs + i) % 2];
+			break;
+		case EMULATE_MACRONIX_MX25L6436:
+			if (readcnt > 0)
+				memset(readarr, 0x16, readcnt);
+			break;
+		case EMULATE_WINBOND_W25Q128FV:
+			if (readcnt > 0)
+				memset(readarr, 0x17, readcnt);
+			break;
+		default: /* ignore */
+			break;
+		}
+		break;
+	case JEDEC_REMS:
+		/* REMS response has wraparound and uses an address parameter. */
+		if (writecnt < JEDEC_REMS_OUTSIZE)
+			break;
+		offs = writearr[1] << 16 | writearr[2] << 8 | writearr[3];
+		offs += writecnt - JEDEC_REMS_OUTSIZE;
+		switch (data->emu_chip) {
+		case EMULATE_SST_SST25VF040_REMS:
+			for (i = 0; i < readcnt; i++)
+				readarr[i] = sst25vf040_rems_response[(offs + i) % 2];
+			break;
+		case EMULATE_SST_SST25VF032B:
+			for (i = 0; i < readcnt; i++)
+				readarr[i] = sst25vf032b_rems_response[(offs + i) % 2];
+			break;
+		case EMULATE_MACRONIX_MX25L6436:
+			for (i = 0; i < readcnt; i++)
+				readarr[i] = mx25l6436_rems_response[(offs + i) % 2];
+			break;
+		case EMULATE_WINBOND_W25Q128FV:
+			for (i = 0; i < readcnt; i++)
+				readarr[i] = w25q128fv_rems_response[(offs + i) % 2];
+			break;
+		default: /* ignore */
+			break;
+		}
+		break;
+	case JEDEC_RDID:
+		switch (data->emu_chip) {
+		case EMULATE_SST_SST25VF032B:
+			if (readcnt > 0)
+				readarr[0] = 0xbf;
+			if (readcnt > 1)
+				readarr[1] = 0x25;
+			if (readcnt > 2)
+				readarr[2] = 0x4a;
+			break;
+		case EMULATE_MACRONIX_MX25L6436:
+			if (readcnt > 0)
+				readarr[0] = 0xc2;
+			if (readcnt > 1)
+				readarr[1] = 0x20;
+			if (readcnt > 2)
+				readarr[2] = 0x17;
+			break;
+		case EMULATE_WINBOND_W25Q128FV:
+			if (readcnt > 0)
+				readarr[0] = 0xef;
+			if (readcnt > 1)
+				readarr[1] = 0x40;
+			if (readcnt > 2)
+				readarr[2] = 0x18;
+			break;
+		case EMULATE_VARIABLE_SIZE:
+			if (readcnt > 0)
+				readarr[0] = (PROGMANUF_ID >> 8) & 0xff;
+			if (readcnt > 1)
+				readarr[1] = PROGMANUF_ID & 0xff;
+			if (readcnt > 2)
+				readarr[2] = (PROGDEV_ID >> 8) & 0xff;
+			if (readcnt > 3)
+				readarr[3] = PROGDEV_ID & 0xff;
+			break;
+		default: /* ignore */
+			break;
+		}
+		break;
+	case JEDEC_RDSR:
+		memset(readarr, data->emu_status, readcnt);
+		break;
+	/* FIXME: this should be chip-specific. */
+	case JEDEC_EWSR:
+	case JEDEC_WREN:
+		data->emu_status |= SPI_SR_WEL;
+		break;
+	case JEDEC_WRSR:
+		if (!(data->emu_status & SPI_SR_WEL)) {
+			msg_perr("WRSR attempted, but WEL is 0!\n");
+			break;
+		}
+		/* FIXME: add some reasonable simulation of the busy flag */
+		data->emu_status = writearr[1] & ~SPI_SR_WIP;
+		msg_pdbg2("WRSR wrote 0x%02x.\n", data->emu_status);
+		break;
+	case JEDEC_READ:
+		offs = writearr[1] << 16 | writearr[2] << 8 | writearr[3];
+		/* Truncate to emu_chip_size. */
+		offs %= data->emu_chip_size;
+		if (readcnt > 0)
+			memcpy(readarr, flashchip_contents + offs, readcnt);
+		break;
+	case JEDEC_READ_4BA:
+		offs = writearr[1] << 24 | writearr[2] << 16 | writearr[3] << 8 | writearr[4];
+		/* Truncate to emu_chip_size. */
+		offs %= data->emu_chip_size;
+		if (readcnt > 0)
+			memcpy(readarr, flashchip_contents + offs, readcnt);
+		break;
+	case JEDEC_BYTE_PROGRAM:
+		offs = writearr[1] << 16 | writearr[2] << 8 | writearr[3];
+		/* Truncate to emu_chip_size. */
+		offs %= data->emu_chip_size;
+		if (writecnt < 5) {
+			msg_perr("BYTE PROGRAM size too short!\n");
+			return 1;
+		}
+		if (writecnt - 4 > data->emu_max_byteprogram_size) {
+			msg_perr("Max BYTE PROGRAM size exceeded!\n");
+			return 1;
+		}
+		memcpy(flashchip_contents + offs, writearr + 4, writecnt - 4);
+		data->emu_modified = 1;
+		break;
+	case JEDEC_BYTE_PROGRAM_4BA:
+		offs = writearr[1] << 24 | writearr[2] << 16 | writearr[3] << 8 | writearr[4];
+		/* Truncate to emu_chip_size. */
+		offs %= data->emu_chip_size;
+		if (writecnt < 6) {
+			msg_perr("BYTE PROGRAM size too short!\n");
+			return 1;
+		}
+		if (writecnt - 5 > data->emu_max_byteprogram_size) {
+			msg_perr("Max BYTE PROGRAM size exceeded!\n");
+			return 1;
+		}
+		memcpy(flashchip_contents + offs, writearr + 5, writecnt - 5);
+		data->emu_modified = 1;
+		break;
+	case JEDEC_AAI_WORD_PROGRAM:
+		if (!data->emu_max_aai_size)
+			break;
+		if (!(data->emu_status & SPI_SR_AAI)) {
+			if (writecnt < JEDEC_AAI_WORD_PROGRAM_OUTSIZE) {
+				msg_perr("Initial AAI WORD PROGRAM size too "
+					 "short!\n");
+				return 1;
+			}
+			if (writecnt > JEDEC_AAI_WORD_PROGRAM_OUTSIZE) {
+				msg_perr("Initial AAI WORD PROGRAM size too "
+					 "long!\n");
+				return 1;
+			}
+			data->emu_status |= SPI_SR_AAI;
+			aai_offs = writearr[1] << 16 | writearr[2] << 8 |
+				   writearr[3];
+			/* Truncate to emu_chip_size. */
+			aai_offs %= data->emu_chip_size;
+			memcpy(flashchip_contents + aai_offs, writearr + 4, 2);
+			aai_offs += 2;
+		} else {
+			if (writecnt < JEDEC_AAI_WORD_PROGRAM_CONT_OUTSIZE) {
+				msg_perr("Continuation AAI WORD PROGRAM size "
+					 "too short!\n");
+				return 1;
+			}
+			if (writecnt > JEDEC_AAI_WORD_PROGRAM_CONT_OUTSIZE) {
+				msg_perr("Continuation AAI WORD PROGRAM size "
+					 "too long!\n");
+				return 1;
+			}
+			memcpy(flashchip_contents + aai_offs, writearr + 1, 2);
+			aai_offs += 2;
+		}
+		data->emu_modified = 1;
+		break;
+	case JEDEC_WRDI:
+		if (data->emu_max_aai_size)
+			data->emu_status &= ~SPI_SR_AAI;
+		break;
+	case JEDEC_SE:
+		if (!data->emu_jedec_se_size)
+			break;
+		if (writecnt != JEDEC_SE_OUTSIZE) {
+			msg_perr("SECTOR ERASE 0x20 outsize invalid!\n");
+			return 1;
+		}
+		if (readcnt != JEDEC_SE_INSIZE) {
+			msg_perr("SECTOR ERASE 0x20 insize invalid!\n");
+			return 1;
+		}
+		offs = writearr[1] << 16 | writearr[2] << 8 | writearr[3];
+		if (offs & (data->emu_jedec_se_size - 1))
+			msg_pdbg("Unaligned SECTOR ERASE 0x20: 0x%x\n", offs);
+		offs &= ~(data->emu_jedec_se_size - 1);
+		memset(flashchip_contents + offs, 0xff, data->emu_jedec_se_size);
+		data->emu_modified = 1;
+		break;
+	case JEDEC_BE_52:
+		if (!data->emu_jedec_be_52_size)
+			break;
+		if (writecnt != JEDEC_BE_52_OUTSIZE) {
+			msg_perr("BLOCK ERASE 0x52 outsize invalid!\n");
+			return 1;
+		}
+		if (readcnt != JEDEC_BE_52_INSIZE) {
+			msg_perr("BLOCK ERASE 0x52 insize invalid!\n");
+			return 1;
+		}
+		offs = writearr[1] << 16 | writearr[2] << 8 | writearr[3];
+		if (offs & (data->emu_jedec_be_52_size - 1))
+			msg_pdbg("Unaligned BLOCK ERASE 0x52: 0x%x\n", offs);
+		offs &= ~(data->emu_jedec_be_52_size - 1);
+		memset(flashchip_contents + offs, 0xff, data->emu_jedec_be_52_size);
+		data->emu_modified = 1;
+		break;
+	case JEDEC_BE_D8:
+		if (!data->emu_jedec_be_d8_size)
+			break;
+		if (writecnt != JEDEC_BE_D8_OUTSIZE) {
+			msg_perr("BLOCK ERASE 0xd8 outsize invalid!\n");
+			return 1;
+		}
+		if (readcnt != JEDEC_BE_D8_INSIZE) {
+			msg_perr("BLOCK ERASE 0xd8 insize invalid!\n");
+			return 1;
+		}
+		offs = writearr[1] << 16 | writearr[2] << 8 | writearr[3];
+		if (offs & (data->emu_jedec_be_d8_size - 1))
+			msg_pdbg("Unaligned BLOCK ERASE 0xd8: 0x%x\n", offs);
+		offs &= ~(data->emu_jedec_be_d8_size - 1);
+		memset(flashchip_contents + offs, 0xff, data->emu_jedec_be_d8_size);
+		data->emu_modified = 1;
+		break;
+	case JEDEC_CE_60:
+		if (!data->emu_jedec_ce_60_size)
+			break;
+		if (writecnt != JEDEC_CE_60_OUTSIZE) {
+			msg_perr("CHIP ERASE 0x60 outsize invalid!\n");
+			return 1;
+		}
+		if (readcnt != JEDEC_CE_60_INSIZE) {
+			msg_perr("CHIP ERASE 0x60 insize invalid!\n");
+			return 1;
+		}
+		/* JEDEC_CE_60_OUTSIZE is 1 (no address) -> no offset. */
+		/* emu_jedec_ce_60_size is emu_chip_size. */
+		memset(flashchip_contents, 0xff, data->emu_jedec_ce_60_size);
+		data->emu_modified = 1;
+		break;
+	case JEDEC_CE_C7:
+		if (!data->emu_jedec_ce_c7_size)
+			break;
+		if (writecnt != JEDEC_CE_C7_OUTSIZE) {
+			msg_perr("CHIP ERASE 0xc7 outsize invalid!\n");
+			return 1;
+		}
+		if (readcnt != JEDEC_CE_C7_INSIZE) {
+			msg_perr("CHIP ERASE 0xc7 insize invalid!\n");
+			return 1;
+		}
+		/* JEDEC_CE_C7_OUTSIZE is 1 (no address) -> no offset. */
+		/* emu_jedec_ce_c7_size is emu_chip_size. */
+		memset(flashchip_contents, 0xff, data->emu_jedec_ce_c7_size);
+		data->emu_modified = 1;
+		break;
+	case JEDEC_SFDP:
+		if (data->emu_chip != EMULATE_MACRONIX_MX25L6436)
+			break;
+		if (writecnt < 4)
+			break;
+		offs = writearr[1] << 16 | writearr[2] << 8 | writearr[3];
+
+		/* SFDP expects one dummy byte after the address. */
+		if (writecnt == 4) {
+			/* The dummy byte was not written, make sure it is read instead.
+			 * Shifting and shortening the read array does achieve this goal.
+			 */
+			readarr++;
+			readcnt--;
+		} else {
+			/* The response is shifted if more than 5 bytes are written, because SFDP data is
+			 * already shifted out by the chip while those superfluous bytes are written. */
+			offs += writecnt - 5;
+		}
+
+		/* The SFDP spec implies that the start address of an SFDP read may be truncated to fit in the
+		 * SFDP table address space, i.e. the start address may be wrapped around at SFDP table size.
+		 * This is a reasonable implementation choice in hardware because it saves a few gates. */
+		if (offs >= sizeof(sfdp_table)) {
+			msg_pdbg("Wrapping the start address around the SFDP table boundary (using 0x%x "
+				 "instead of 0x%x).\n", (unsigned int)(offs % sizeof(sfdp_table)), offs);
+			offs %= sizeof(sfdp_table);
+		}
+		toread = min(sizeof(sfdp_table) - offs, readcnt);
+		memcpy(readarr, sfdp_table + offs, toread);
+		if (toread < readcnt)
+			msg_pdbg("Crossing the SFDP table boundary in a single "
+				 "continuous chunk produces undefined results "
+				 "after that point.\n");
+		break;
+	default:
+		/* No special response. */
+		break;
+	}
+	if (writearr[0] != JEDEC_WREN && writearr[0] != JEDEC_EWSR)
+		data->emu_status &= ~SPI_SR_WEL;
+	return 0;
+}
+#endif
+
+static int dummy_spi_send_command(const struct flashctx *flash, unsigned int writecnt,
+				  unsigned int readcnt,
+				  const unsigned char *writearr,
+				  unsigned char *readarr)
+{
+	unsigned int i;
+	struct emu_data *emu_data = get_data_from_context(flash);
+	if (!emu_data) {
+		msg_perr("No data in flash context!\n");
+		return 1;
+	}
+
+	msg_pspew("%s:", __func__);
+
+	msg_pspew(" writing %u bytes:", writecnt);
+	for (i = 0; i < writecnt; i++)
+		msg_pspew(" 0x%02x", writearr[i]);
+
+	/* Response for unknown commands and missing chip is 0xff. */
+	memset(readarr, 0xff, readcnt);
+#if EMULATE_SPI_CHIP
+	switch (emu_data->emu_chip) {
+	case EMULATE_ST_M25P10_RES:
+	case EMULATE_SST_SST25VF040_REMS:
+	case EMULATE_SST_SST25VF032B:
+	case EMULATE_MACRONIX_MX25L6436:
+	case EMULATE_WINBOND_W25Q128FV:
+	case EMULATE_VARIABLE_SIZE:
+		if (emulate_spi_chip_response(writecnt, readcnt, writearr,
+					      readarr, emu_data)) {
+			msg_pdbg("Invalid command sent to flash chip!\n");
+			return 1;
+		}
+		break;
+	default:
+		break;
+	}
+#endif
+	msg_pspew(" reading %u bytes:", readcnt);
+	for (i = 0; i < readcnt; i++)
+		msg_pspew(" 0x%02x", readarr[i]);
+	msg_pspew("\n");
+
+	programmer_delay((writecnt + readcnt) * emu_data->delay_us);
+	return 0;
+}
+
+
 
 static struct spi_master spi_master_dummyflasher = {
 	.features	= SPI_MASTER_4BA,
@@ -137,8 +632,6 @@ static struct par_master par_master_dummy = {
 		.chip_writel		= dummy_chip_writel,
 		.chip_writen		= dummy_chip_writen,
 };
-
-static enum chipbustype dummy_buses_supported = BUS_NONE;
 
 static int dummy_shutdown(void *data)
 {
@@ -539,511 +1032,6 @@ dummy_init_out:
 		register_spi_master(&spi_master_dummyflasher);
 
 	return 0;
-}
-
-void *dummy_map(const char *descr, uintptr_t phys_addr, size_t len)
-{
-	msg_pspew("%s: Mapping %s, 0x%zx bytes at 0x%0*" PRIxPTR "\n",
-		  __func__, descr, len, PRIxPTR_WIDTH, phys_addr);
-	return (void *)phys_addr;
-}
-
-void dummy_unmap(void *virt_addr, size_t len)
-{
-	msg_pspew("%s: Unmapping 0x%zx bytes at %p\n", __func__, len, virt_addr);
-}
-
-static void dummy_chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr)
-{
-	msg_pspew("%s: addr=0x%" PRIxPTR ", val=0x%02x\n", __func__, addr, val);
-}
-
-static void dummy_chip_writew(const struct flashctx *flash, uint16_t val, chipaddr addr)
-{
-	msg_pspew("%s: addr=0x%" PRIxPTR ", val=0x%04x\n", __func__, addr, val);
-}
-
-static void dummy_chip_writel(const struct flashctx *flash, uint32_t val, chipaddr addr)
-{
-	msg_pspew("%s: addr=0x%" PRIxPTR ", val=0x%08x\n", __func__, addr, val);
-}
-
-static void dummy_chip_writen(const struct flashctx *flash, const uint8_t *buf, chipaddr addr, size_t len)
-{
-	size_t i;
-	msg_pspew("%s: addr=0x%" PRIxPTR ", len=0x%zx, writing data (hex):", __func__, addr, len);
-	for (i = 0; i < len; i++) {
-		if ((i % 16) == 0)
-			msg_pspew("\n");
-		msg_pspew("%02x ", buf[i]);
-	}
-}
-
-static uint8_t dummy_chip_readb(const struct flashctx *flash, const chipaddr addr)
-{
-	msg_pspew("%s:  addr=0x%" PRIxPTR ", returning 0xff\n", __func__, addr);
-	return 0xff;
-}
-
-static uint16_t dummy_chip_readw(const struct flashctx *flash, const chipaddr addr)
-{
-	msg_pspew("%s:  addr=0x%" PRIxPTR ", returning 0xffff\n", __func__, addr);
-	return 0xffff;
-}
-
-static uint32_t dummy_chip_readl(const struct flashctx *flash, const chipaddr addr)
-{
-	msg_pspew("%s:  addr=0x%" PRIxPTR ", returning 0xffffffff\n", __func__, addr);
-	return 0xffffffff;
-}
-
-static void dummy_chip_readn(const struct flashctx *flash, uint8_t *buf, const chipaddr addr, size_t len)
-{
-	msg_pspew("%s:  addr=0x%" PRIxPTR ", len=0x%zx, returning array of 0xff\n", __func__, addr, len);
-	memset(buf, 0xff, len);
-	return;
-}
-
-#if EMULATE_SPI_CHIP
-static int emulate_spi_chip_response(unsigned int writecnt,
-				     unsigned int readcnt,
-				     const unsigned char *writearr,
-				     unsigned char *readarr,
-				     struct emu_data *data)
-{
-	unsigned int offs, i, toread;
-	static int unsigned aai_offs;
-	const unsigned char sst25vf040_rems_response[2] = {0xbf, 0x44};
-	const unsigned char sst25vf032b_rems_response[2] = {0xbf, 0x4a};
-	const unsigned char mx25l6436_rems_response[2] = {0xc2, 0x16};
-	const unsigned char w25q128fv_rems_response[2] = {0xef, 0x17};
-
-	if (writecnt == 0) {
-		msg_perr("No command sent to the chip!\n");
-		return 1;
-	}
-	/* spi_blacklist has precedence over spi_ignorelist. */
-	for (i = 0; i < data->spi_blacklist_size; i++) {
-		if (writearr[0] == data->spi_blacklist[i]) {
-			msg_pdbg("Refusing blacklisted SPI command 0x%02x\n",
-				 data->spi_blacklist[i]);
-			return SPI_INVALID_OPCODE;
-		}
-	}
-	for (i = 0; i < data->spi_ignorelist_size; i++) {
-		if (writearr[0] == data->spi_ignorelist[i]) {
-			msg_cdbg("Ignoring ignorelisted SPI command 0x%02x\n",
-				 data->spi_ignorelist[i]);
-			/* Return success because the command does not fail,
-			 * it is simply ignored.
-			 */
-			return 0;
-		}
-	}
-
-	if (data->emu_max_aai_size && (data->emu_status & SPI_SR_AAI)) {
-		if (writearr[0] != JEDEC_AAI_WORD_PROGRAM &&
-		    writearr[0] != JEDEC_WRDI &&
-		    writearr[0] != JEDEC_RDSR) {
-			msg_perr("Forbidden opcode (0x%02x) attempted during "
-				 "AAI sequence!\n", writearr[0]);
-			return 0;
-		}
-	}
-
-	switch (writearr[0]) {
-	case JEDEC_RES:
-		if (writecnt < JEDEC_RES_OUTSIZE)
-			break;
-		/* offs calculation is only needed for SST chips which treat RES like REMS. */
-		offs = writearr[1] << 16 | writearr[2] << 8 | writearr[3];
-		offs += writecnt - JEDEC_REMS_OUTSIZE;
-		switch (data->emu_chip) {
-		case EMULATE_ST_M25P10_RES:
-			if (readcnt > 0)
-				memset(readarr, 0x10, readcnt);
-			break;
-		case EMULATE_SST_SST25VF040_REMS:
-			for (i = 0; i < readcnt; i++)
-				readarr[i] = sst25vf040_rems_response[(offs + i) % 2];
-			break;
-		case EMULATE_SST_SST25VF032B:
-			for (i = 0; i < readcnt; i++)
-				readarr[i] = sst25vf032b_rems_response[(offs + i) % 2];
-			break;
-		case EMULATE_MACRONIX_MX25L6436:
-			if (readcnt > 0)
-				memset(readarr, 0x16, readcnt);
-			break;
-		case EMULATE_WINBOND_W25Q128FV:
-			if (readcnt > 0)
-				memset(readarr, 0x17, readcnt);
-			break;
-		default: /* ignore */
-			break;
-		}
-		break;
-	case JEDEC_REMS:
-		/* REMS response has wraparound and uses an address parameter. */
-		if (writecnt < JEDEC_REMS_OUTSIZE)
-			break;
-		offs = writearr[1] << 16 | writearr[2] << 8 | writearr[3];
-		offs += writecnt - JEDEC_REMS_OUTSIZE;
-		switch (data->emu_chip) {
-		case EMULATE_SST_SST25VF040_REMS:
-			for (i = 0; i < readcnt; i++)
-				readarr[i] = sst25vf040_rems_response[(offs + i) % 2];
-			break;
-		case EMULATE_SST_SST25VF032B:
-			for (i = 0; i < readcnt; i++)
-				readarr[i] = sst25vf032b_rems_response[(offs + i) % 2];
-			break;
-		case EMULATE_MACRONIX_MX25L6436:
-			for (i = 0; i < readcnt; i++)
-				readarr[i] = mx25l6436_rems_response[(offs + i) % 2];
-			break;
-		case EMULATE_WINBOND_W25Q128FV:
-			for (i = 0; i < readcnt; i++)
-				readarr[i] = w25q128fv_rems_response[(offs + i) % 2];
-			break;
-		default: /* ignore */
-			break;
-		}
-		break;
-	case JEDEC_RDID:
-		switch (data->emu_chip) {
-		case EMULATE_SST_SST25VF032B:
-			if (readcnt > 0)
-				readarr[0] = 0xbf;
-			if (readcnt > 1)
-				readarr[1] = 0x25;
-			if (readcnt > 2)
-				readarr[2] = 0x4a;
-			break;
-		case EMULATE_MACRONIX_MX25L6436:
-			if (readcnt > 0)
-				readarr[0] = 0xc2;
-			if (readcnt > 1)
-				readarr[1] = 0x20;
-			if (readcnt > 2)
-				readarr[2] = 0x17;
-			break;
-		case EMULATE_WINBOND_W25Q128FV:
-			if (readcnt > 0)
-				readarr[0] = 0xef;
-			if (readcnt > 1)
-				readarr[1] = 0x40;
-			if (readcnt > 2)
-				readarr[2] = 0x18;
-			break;
-		case EMULATE_VARIABLE_SIZE:
-			if (readcnt > 0)
-				readarr[0] = (PROGMANUF_ID >> 8) & 0xff;
-			if (readcnt > 1)
-				readarr[1] = PROGMANUF_ID & 0xff;
-			if (readcnt > 2)
-				readarr[2] = (PROGDEV_ID >> 8) & 0xff;
-			if (readcnt > 3)
-				readarr[3] = PROGDEV_ID & 0xff;
-			break;
-		default: /* ignore */
-			break;
-		}
-		break;
-	case JEDEC_RDSR:
-		memset(readarr, data->emu_status, readcnt);
-		break;
-	/* FIXME: this should be chip-specific. */
-	case JEDEC_EWSR:
-	case JEDEC_WREN:
-		data->emu_status |= SPI_SR_WEL;
-		break;
-	case JEDEC_WRSR:
-		if (!(data->emu_status & SPI_SR_WEL)) {
-			msg_perr("WRSR attempted, but WEL is 0!\n");
-			break;
-		}
-		/* FIXME: add some reasonable simulation of the busy flag */
-		data->emu_status = writearr[1] & ~SPI_SR_WIP;
-		msg_pdbg2("WRSR wrote 0x%02x.\n", data->emu_status);
-		break;
-	case JEDEC_READ:
-		offs = writearr[1] << 16 | writearr[2] << 8 | writearr[3];
-		/* Truncate to emu_chip_size. */
-		offs %= data->emu_chip_size;
-		if (readcnt > 0)
-			memcpy(readarr, flashchip_contents + offs, readcnt);
-		break;
-	case JEDEC_READ_4BA:
-		offs = writearr[1] << 24 | writearr[2] << 16 | writearr[3] << 8 | writearr[4];
-		/* Truncate to emu_chip_size. */
-		offs %= data->emu_chip_size;
-		if (readcnt > 0)
-			memcpy(readarr, flashchip_contents + offs, readcnt);
-		break;
-	case JEDEC_BYTE_PROGRAM:
-		offs = writearr[1] << 16 | writearr[2] << 8 | writearr[3];
-		/* Truncate to emu_chip_size. */
-		offs %= data->emu_chip_size;
-		if (writecnt < 5) {
-			msg_perr("BYTE PROGRAM size too short!\n");
-			return 1;
-		}
-		if (writecnt - 4 > data->emu_max_byteprogram_size) {
-			msg_perr("Max BYTE PROGRAM size exceeded!\n");
-			return 1;
-		}
-		memcpy(flashchip_contents + offs, writearr + 4, writecnt - 4);
-		data->emu_modified = 1;
-		break;
-	case JEDEC_BYTE_PROGRAM_4BA:
-		offs = writearr[1] << 24 | writearr[2] << 16 | writearr[3] << 8 | writearr[4];
-		/* Truncate to emu_chip_size. */
-		offs %= data->emu_chip_size;
-		if (writecnt < 6) {
-			msg_perr("BYTE PROGRAM size too short!\n");
-			return 1;
-		}
-		if (writecnt - 5 > data->emu_max_byteprogram_size) {
-			msg_perr("Max BYTE PROGRAM size exceeded!\n");
-			return 1;
-		}
-		memcpy(flashchip_contents + offs, writearr + 5, writecnt - 5);
-		data->emu_modified = 1;
-		break;
-	case JEDEC_AAI_WORD_PROGRAM:
-		if (!data->emu_max_aai_size)
-			break;
-		if (!(data->emu_status & SPI_SR_AAI)) {
-			if (writecnt < JEDEC_AAI_WORD_PROGRAM_OUTSIZE) {
-				msg_perr("Initial AAI WORD PROGRAM size too "
-					 "short!\n");
-				return 1;
-			}
-			if (writecnt > JEDEC_AAI_WORD_PROGRAM_OUTSIZE) {
-				msg_perr("Initial AAI WORD PROGRAM size too "
-					 "long!\n");
-				return 1;
-			}
-			data->emu_status |= SPI_SR_AAI;
-			aai_offs = writearr[1] << 16 | writearr[2] << 8 |
-				   writearr[3];
-			/* Truncate to emu_chip_size. */
-			aai_offs %= data->emu_chip_size;
-			memcpy(flashchip_contents + aai_offs, writearr + 4, 2);
-			aai_offs += 2;
-		} else {
-			if (writecnt < JEDEC_AAI_WORD_PROGRAM_CONT_OUTSIZE) {
-				msg_perr("Continuation AAI WORD PROGRAM size "
-					 "too short!\n");
-				return 1;
-			}
-			if (writecnt > JEDEC_AAI_WORD_PROGRAM_CONT_OUTSIZE) {
-				msg_perr("Continuation AAI WORD PROGRAM size "
-					 "too long!\n");
-				return 1;
-			}
-			memcpy(flashchip_contents + aai_offs, writearr + 1, 2);
-			aai_offs += 2;
-		}
-		data->emu_modified = 1;
-		break;
-	case JEDEC_WRDI:
-		if (data->emu_max_aai_size)
-			data->emu_status &= ~SPI_SR_AAI;
-		break;
-	case JEDEC_SE:
-		if (!data->emu_jedec_se_size)
-			break;
-		if (writecnt != JEDEC_SE_OUTSIZE) {
-			msg_perr("SECTOR ERASE 0x20 outsize invalid!\n");
-			return 1;
-		}
-		if (readcnt != JEDEC_SE_INSIZE) {
-			msg_perr("SECTOR ERASE 0x20 insize invalid!\n");
-			return 1;
-		}
-		offs = writearr[1] << 16 | writearr[2] << 8 | writearr[3];
-		if (offs & (data->emu_jedec_se_size - 1))
-			msg_pdbg("Unaligned SECTOR ERASE 0x20: 0x%x\n", offs);
-		offs &= ~(data->emu_jedec_se_size - 1);
-		memset(flashchip_contents + offs, 0xff, data->emu_jedec_se_size);
-		data->emu_modified = 1;
-		break;
-	case JEDEC_BE_52:
-		if (!data->emu_jedec_be_52_size)
-			break;
-		if (writecnt != JEDEC_BE_52_OUTSIZE) {
-			msg_perr("BLOCK ERASE 0x52 outsize invalid!\n");
-			return 1;
-		}
-		if (readcnt != JEDEC_BE_52_INSIZE) {
-			msg_perr("BLOCK ERASE 0x52 insize invalid!\n");
-			return 1;
-		}
-		offs = writearr[1] << 16 | writearr[2] << 8 | writearr[3];
-		if (offs & (data->emu_jedec_be_52_size - 1))
-			msg_pdbg("Unaligned BLOCK ERASE 0x52: 0x%x\n", offs);
-		offs &= ~(data->emu_jedec_be_52_size - 1);
-		memset(flashchip_contents + offs, 0xff, data->emu_jedec_be_52_size);
-		data->emu_modified = 1;
-		break;
-	case JEDEC_BE_D8:
-		if (!data->emu_jedec_be_d8_size)
-			break;
-		if (writecnt != JEDEC_BE_D8_OUTSIZE) {
-			msg_perr("BLOCK ERASE 0xd8 outsize invalid!\n");
-			return 1;
-		}
-		if (readcnt != JEDEC_BE_D8_INSIZE) {
-			msg_perr("BLOCK ERASE 0xd8 insize invalid!\n");
-			return 1;
-		}
-		offs = writearr[1] << 16 | writearr[2] << 8 | writearr[3];
-		if (offs & (data->emu_jedec_be_d8_size - 1))
-			msg_pdbg("Unaligned BLOCK ERASE 0xd8: 0x%x\n", offs);
-		offs &= ~(data->emu_jedec_be_d8_size - 1);
-		memset(flashchip_contents + offs, 0xff, data->emu_jedec_be_d8_size);
-		data->emu_modified = 1;
-		break;
-	case JEDEC_CE_60:
-		if (!data->emu_jedec_ce_60_size)
-			break;
-		if (writecnt != JEDEC_CE_60_OUTSIZE) {
-			msg_perr("CHIP ERASE 0x60 outsize invalid!\n");
-			return 1;
-		}
-		if (readcnt != JEDEC_CE_60_INSIZE) {
-			msg_perr("CHIP ERASE 0x60 insize invalid!\n");
-			return 1;
-		}
-		/* JEDEC_CE_60_OUTSIZE is 1 (no address) -> no offset. */
-		/* emu_jedec_ce_60_size is emu_chip_size. */
-		memset(flashchip_contents, 0xff, data->emu_jedec_ce_60_size);
-		data->emu_modified = 1;
-		break;
-	case JEDEC_CE_C7:
-		if (!data->emu_jedec_ce_c7_size)
-			break;
-		if (writecnt != JEDEC_CE_C7_OUTSIZE) {
-			msg_perr("CHIP ERASE 0xc7 outsize invalid!\n");
-			return 1;
-		}
-		if (readcnt != JEDEC_CE_C7_INSIZE) {
-			msg_perr("CHIP ERASE 0xc7 insize invalid!\n");
-			return 1;
-		}
-		/* JEDEC_CE_C7_OUTSIZE is 1 (no address) -> no offset. */
-		/* emu_jedec_ce_c7_size is emu_chip_size. */
-		memset(flashchip_contents, 0xff, data->emu_jedec_ce_c7_size);
-		data->emu_modified = 1;
-		break;
-	case JEDEC_SFDP:
-		if (data->emu_chip != EMULATE_MACRONIX_MX25L6436)
-			break;
-		if (writecnt < 4)
-			break;
-		offs = writearr[1] << 16 | writearr[2] << 8 | writearr[3];
-
-		/* SFDP expects one dummy byte after the address. */
-		if (writecnt == 4) {
-			/* The dummy byte was not written, make sure it is read instead.
-			 * Shifting and shortening the read array does achieve this goal.
-			 */
-			readarr++;
-			readcnt--;
-		} else {
-			/* The response is shifted if more than 5 bytes are written, because SFDP data is
-			 * already shifted out by the chip while those superfluous bytes are written. */
-			offs += writecnt - 5;
-		}
-
-		/* The SFDP spec implies that the start address of an SFDP read may be truncated to fit in the
-		 * SFDP table address space, i.e. the start address may be wrapped around at SFDP table size.
-		 * This is a reasonable implementation choice in hardware because it saves a few gates. */
-		if (offs >= sizeof(sfdp_table)) {
-			msg_pdbg("Wrapping the start address around the SFDP table boundary (using 0x%x "
-				 "instead of 0x%x).\n", (unsigned int)(offs % sizeof(sfdp_table)), offs);
-			offs %= sizeof(sfdp_table);
-		}
-		toread = min(sizeof(sfdp_table) - offs, readcnt);
-		memcpy(readarr, sfdp_table + offs, toread);
-		if (toread < readcnt)
-			msg_pdbg("Crossing the SFDP table boundary in a single "
-				 "continuous chunk produces undefined results "
-				 "after that point.\n");
-		break;
-	default:
-		/* No special response. */
-		break;
-	}
-	if (writearr[0] != JEDEC_WREN && writearr[0] != JEDEC_EWSR)
-		data->emu_status &= ~SPI_SR_WEL;
-	return 0;
-}
-#endif
-
-static struct emu_data* get_data_from_context(const struct flashctx *flash)
-{
-	if (dummy_buses_supported & (BUS_PARALLEL | BUS_LPC | BUS_FWH))
-		return (struct emu_data *)flash->mst->par.data;
-	else if (dummy_buses_supported & BUS_SPI)
-		return (struct emu_data *)flash->mst->spi.data;
-
-	return NULL;	/* buses was set to BUS_NONE. */
-}
-
-static int dummy_spi_send_command(const struct flashctx *flash, unsigned int writecnt,
-				  unsigned int readcnt,
-				  const unsigned char *writearr,
-				  unsigned char *readarr)
-{
-	unsigned int i;
-	struct emu_data *emu_data = get_data_from_context(flash);
-	if (!emu_data) {
-		msg_perr("No data in flash context!\n");
-		return 1;
-	}
-
-	msg_pspew("%s:", __func__);
-
-	msg_pspew(" writing %u bytes:", writecnt);
-	for (i = 0; i < writecnt; i++)
-		msg_pspew(" 0x%02x", writearr[i]);
-
-	/* Response for unknown commands and missing chip is 0xff. */
-	memset(readarr, 0xff, readcnt);
-#if EMULATE_SPI_CHIP
-	switch (emu_data->emu_chip) {
-	case EMULATE_ST_M25P10_RES:
-	case EMULATE_SST_SST25VF040_REMS:
-	case EMULATE_SST_SST25VF032B:
-	case EMULATE_MACRONIX_MX25L6436:
-	case EMULATE_WINBOND_W25Q128FV:
-	case EMULATE_VARIABLE_SIZE:
-		if (emulate_spi_chip_response(writecnt, readcnt, writearr,
-					      readarr, emu_data)) {
-			msg_pdbg("Invalid command sent to flash chip!\n");
-			return 1;
-		}
-		break;
-	default:
-		break;
-	}
-#endif
-	msg_pspew(" reading %u bytes:", readcnt);
-	for (i = 0; i < readcnt; i++)
-		msg_pspew(" 0x%02x", readarr[i]);
-	msg_pspew("\n");
-
-	programmer_delay((writecnt + readcnt) * emu_data->delay_us);
-	return 0;
-}
-
-static int dummy_spi_write_256(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len)
-{
-	return spi_write_chunked(flash, buf, start, len,
-				 spi_write_256_chunksize);
 }
 
 #if EMULATE_CHIP && EMULATE_SPI_CHIP
