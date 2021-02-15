@@ -50,10 +50,6 @@ static NiHandle configuration_handle;
 static uint16_t io_voltage_in_mV;
 static bool ignore_io_voltage_limits;
 
-static int ni845x_spi_shutdown(void *data);
-static int32 ni845x_spi_open_resource(char *resource_handle, uInt32 *opened_handle);
-static void ni845x_spi_print_available_devices(void);
-
 // USB-8452 supported voltages, keep this array in ascending order!
 static const uint8_t usb8452_io_voltages_in_100mV[5] = {
 	kNi845x12Volts,
@@ -129,6 +125,28 @@ static void ni845x_report_warning(const char *const func, const int32 err)
 }
 
 /**
+ * @brief ni845x_spi_open_resource
+ * @param resource_handle the resource handle returned by the ni845xFindDevice or ni845xFindDeviceNext
+ * @param opened_handle the opened handle from the ni845xOpen
+ * @return the 0 on successful competition, negative error code on failure positive code on warning
+ */
+static int32 ni845x_spi_open_resource(char *resource_handle, uInt32 *opened_handle)
+{
+	// NI-845x driver loads the FPGA bitfile at the first time
+	// which can take couple seconds
+	if (device_pid == USB8452)
+		msg_pwarn("Opening NI-8452, this might take a while for the first time\n");
+
+	int32 tmp = ni845xOpen(resource_handle, opened_handle);
+
+	if (tmp < 0)
+		ni845x_report_error("ni845xOpen", tmp);
+	else if (tmp > 0)
+		ni845x_report_warning("ni845xOpen", tmp);
+	return tmp;
+}
+
+/**
  * @param serial a null terminated string containing the serial number of the specific device or NULL
  * @return the 0 on successful completition, negative error code on failure
  */
@@ -191,28 +209,6 @@ _close_ret:
 		return -1;
 	}
 	return ret;
-}
-
-/**
- * @brief ni845x_spi_open_resource
- * @param resource_handle the resource handle returned by the ni845xFindDevice or ni845xFindDeviceNext
- * @param opened_handle the opened handle from the ni845xOpen
- * @return the 0 on successful competition, negative error code on failure positive code on warning
- */
-static int32 ni845x_spi_open_resource(char *resource_handle, uInt32 *opened_handle)
-{
-	// NI-845x driver loads the FPGA bitfile at the first time
-	// which can take couple seconds
-	if (device_pid == USB8452)
-		msg_pwarn("Opening NI-8452, this might take a while for the first time\n");
-
-	int32 tmp = ni845xOpen(resource_handle, opened_handle);
-
-	if (tmp < 0)
-		ni845x_report_error("ni845xOpen", tmp);
-	else if (tmp > 0)
-		ni845x_report_warning("ni845xOpen", tmp);
-	return tmp;
 }
 
 /**
@@ -389,6 +385,24 @@ static void ni845x_spi_print_available_devices(void)
 		ni845x_report_error("ni845xCloseFindDeviceHandle", tmp);
 }
 
+static int ni845x_spi_shutdown(void *data)
+{
+	int32 ret = 0;
+
+	if (configuration_handle != 0) {
+		ret = ni845xSpiConfigurationClose(configuration_handle);
+		if (ret)
+			ni845x_report_error("ni845xSpiConfigurationClose", ret);
+	}
+
+	if (device_handle != 0) {
+		ret = ni845xClose(device_handle);
+		if (ret)
+			ni845x_report_error("ni845xClose", ret);
+	}
+	return 0;
+}
+
 int ni845x_spi_init(void)
 {
 	char *speed_str = NULL;
@@ -483,24 +497,6 @@ int ni845x_spi_init(void)
 
 	register_spi_master(&spi_programmer_ni845x);
 
-	return 0;
-}
-
-static int ni845x_spi_shutdown(void *data)
-{
-	int32 ret = 0;
-
-	if (configuration_handle != 0) {
-		ret = ni845xSpiConfigurationClose(configuration_handle);
-		if (ret)
-			ni845x_report_error("ni845xSpiConfigurationClose", ret);
-	}
-
-	if (device_handle != 0) {
-		ret = ni845xClose(device_handle);
-		if (ret)
-			ni845x_report_error("ni845xClose", ret);
-	}
 	return 0;
 }
 

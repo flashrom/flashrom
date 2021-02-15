@@ -48,15 +48,65 @@ static int fd = -1;
 #define BUF_SIZE_FROM_SYSFS	"/sys/module/spidev/parameters/bufsiz"
 static size_t max_kernel_buf_size;
 
-static int linux_spi_shutdown(void *data);
+static int linux_spi_read(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len)
+{
+	/* Older kernels use a single buffer for combined input and output
+	   data. So account for longest possible command + address, too. */
+	return spi_read_chunked(flash, buf, start, len, max_kernel_buf_size - 5);
+}
+
+static int linux_spi_write_256(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len)
+{
+	/* 5 bytes must be reserved for longest possible command + address. */
+	return spi_write_chunked(flash, buf, start, len, max_kernel_buf_size - 5);
+}
+
+static int linux_spi_shutdown(void *data)
+{
+	if (fd != -1) {
+		close(fd);
+		fd = -1;
+	}
+	return 0;
+}
+
 static int linux_spi_send_command(const struct flashctx *flash, unsigned int writecnt,
 				  unsigned int readcnt,
 				  const unsigned char *txbuf,
-				  unsigned char *rxbuf);
-static int linux_spi_read(struct flashctx *flash, uint8_t *buf,
-			  unsigned int start, unsigned int len);
-static int linux_spi_write_256(struct flashctx *flash, const uint8_t *buf,
-			       unsigned int start, unsigned int len);
+				  unsigned char *rxbuf)
+{
+	int iocontrol_code;
+	struct spi_ioc_transfer msg[2] = {
+		{
+			.tx_buf = (uint64_t)(uintptr_t)txbuf,
+			.len = writecnt,
+		},
+		{
+			.rx_buf = (uint64_t)(uintptr_t)rxbuf,
+			.len = readcnt,
+		},
+	};
+
+	if (fd == -1)
+		return -1;
+	/* The implementation currently does not support requests that
+	   don't start with sending a command. */
+	if (writecnt == 0)
+		return SPI_INVALID_LENGTH;
+
+	/* Just submit the first (write) request in case there is nothing
+	   to read. Otherwise submit both requests. */
+	if (readcnt == 0)
+		iocontrol_code = SPI_IOC_MESSAGE(1);
+	else
+		iocontrol_code = SPI_IOC_MESSAGE(2);
+
+	if (ioctl(fd, iocontrol_code, msg) == -1) {
+		msg_cerr("%s: ioctl: %s\n", __func__, strerror(errno));
+		return -1;
+	}
+	return 0;
+}
 
 static const struct spi_master spi_master_linux = {
 	.features	= SPI_MASTER_4BA,
@@ -172,66 +222,6 @@ out:
 	msg_pdbg("%s: max_kernel_buf_size: %zu\n", __func__, max_kernel_buf_size);
 	register_spi_master(&spi_master_linux);
 	return 0;
-}
-
-static int linux_spi_shutdown(void *data)
-{
-	if (fd != -1) {
-		close(fd);
-		fd = -1;
-	}
-	return 0;
-}
-
-static int linux_spi_send_command(const struct flashctx *flash, unsigned int writecnt,
-				  unsigned int readcnt,
-				  const unsigned char *txbuf,
-				  unsigned char *rxbuf)
-{
-	int iocontrol_code;
-	struct spi_ioc_transfer msg[2] = {
-		{
-			.tx_buf = (uint64_t)(uintptr_t)txbuf,
-			.len = writecnt,
-		},
-		{
-			.rx_buf = (uint64_t)(uintptr_t)rxbuf,
-			.len = readcnt,
-		},
-	};
-
-	if (fd == -1)
-		return -1;
-	/* The implementation currently does not support requests that
-	   don't start with sending a command. */
-	if (writecnt == 0)
-		return SPI_INVALID_LENGTH;
-
-	/* Just submit the first (write) request in case there is nothing
-	   to read. Otherwise submit both requests. */
-	if (readcnt == 0)
-		iocontrol_code = SPI_IOC_MESSAGE(1);
-	else
-		iocontrol_code = SPI_IOC_MESSAGE(2);
-
-	if (ioctl(fd, iocontrol_code, msg) == -1) {
-		msg_cerr("%s: ioctl: %s\n", __func__, strerror(errno));
-		return -1;
-	}
-	return 0;
-}
-
-static int linux_spi_read(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len)
-{
-	/* Older kernels use a single buffer for combined input and output
-	   data. So account for longest possible command + address, too. */
-	return spi_read_chunked(flash, buf, start, len, max_kernel_buf_size - 5);
-}
-
-static int linux_spi_write_256(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len)
-{
-	/* 5 bytes must be reserved for longest possible command + address. */
-	return spi_write_chunked(flash, buf, start, len, max_kernel_buf_size - 5);
 }
 
 #endif // CONFIG_LINUX_SPI == 1

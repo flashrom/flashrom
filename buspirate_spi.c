@@ -128,11 +128,6 @@ static int buspirate_wait_for_string(unsigned char *buf, const char *key)
 	return ret;
 }
 
-static int buspirate_spi_send_command_v1(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
-					 const unsigned char *writearr, unsigned char *readarr);
-static int buspirate_spi_send_command_v2(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
-					 const unsigned char *writearr, unsigned char *readarr);
-
 static struct spi_master spi_master_buspirate = {
 	.features	= SPI_MASTER_4BA,
 	.max_data_read	= MAX_DATA_UNSPECIFIED,
@@ -201,6 +196,99 @@ out_shutdown:
 		msg_pdbg("Bus Pirate shutdown failed.\n");
 	else
 		msg_pdbg("Bus Pirate shutdown completed.\n");
+
+	return ret;
+}
+
+static int buspirate_spi_send_command_v1(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
+					 const unsigned char *writearr, unsigned char *readarr)
+{
+	unsigned int i = 0;
+	int ret = 0;
+
+	if (writecnt > 16 || readcnt > 16 || (readcnt + writecnt) > 16)
+		return SPI_INVALID_LENGTH;
+
+	/* 3 bytes extra for CS#, len, CS#. */
+	if (buspirate_commbuf_grow(writecnt + readcnt + 3))
+		return ERROR_OOM;
+
+	/* Assert CS# */
+	bp_commbuf[i++] = 0x02;
+
+	bp_commbuf[i++] = 0x10 | (writecnt + readcnt - 1);
+	memcpy(bp_commbuf + i, writearr, writecnt);
+	i += writecnt;
+	memset(bp_commbuf + i, 0, readcnt);
+
+	i += readcnt;
+	/* De-assert CS# */
+	bp_commbuf[i++] = 0x03;
+
+	ret = buspirate_sendrecv(bp_commbuf, i, i);
+
+	if (ret) {
+		msg_perr("Bus Pirate communication error!\n");
+		return SPI_GENERIC_ERROR;
+	}
+
+	if (bp_commbuf[0] != 0x01) {
+		msg_perr("Protocol error while lowering CS#!\n");
+		return SPI_GENERIC_ERROR;
+	}
+
+	if (bp_commbuf[1] != 0x01) {
+		msg_perr("Protocol error while reading/writing SPI!\n");
+		return SPI_GENERIC_ERROR;
+	}
+
+	if (bp_commbuf[i - 1] != 0x01) {
+		msg_perr("Protocol error while raising CS#!\n");
+		return SPI_GENERIC_ERROR;
+	}
+
+	/* Skip CS#, length, writearr. */
+	memcpy(readarr, bp_commbuf + 2 + writecnt, readcnt);
+
+	return ret;
+}
+
+static int buspirate_spi_send_command_v2(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
+					 const unsigned char *writearr, unsigned char *readarr)
+{
+	int i = 0, ret = 0;
+
+	if (writecnt > 4096 || readcnt > 4096 || (readcnt + writecnt) > 4096)
+		return SPI_INVALID_LENGTH;
+
+	/* 5 bytes extra for command, writelen, readlen.
+	 * 1 byte extra for Ack/Nack.
+	 */
+	if (buspirate_commbuf_grow(max(writecnt + 5, readcnt + 1)))
+		return ERROR_OOM;
+
+	/* Combined SPI write/read. */
+	bp_commbuf[i++] = 0x04;
+	bp_commbuf[i++] = (writecnt >> 8) & 0xff;
+	bp_commbuf[i++] = writecnt & 0xff;
+	bp_commbuf[i++] = (readcnt >> 8) & 0xff;
+	bp_commbuf[i++] = readcnt & 0xff;
+	memcpy(bp_commbuf + i, writearr, writecnt);
+
+	ret = buspirate_sendrecv(bp_commbuf, i + writecnt, 1 + readcnt);
+
+	if (ret) {
+		msg_perr("Bus Pirate communication error!\n");
+		return SPI_GENERIC_ERROR;
+	}
+
+	if (bp_commbuf[0] != 0x01) {
+		msg_perr("Protocol error while sending SPI write/read!\n");
+		return SPI_GENERIC_ERROR;
+	}
+
+	/* Skip Ack. */
+	memcpy(readarr, bp_commbuf + 1, readcnt);
 
 	return ret;
 }
@@ -570,97 +658,4 @@ int buspirate_spi_init(void)
 	register_spi_master(&spi_master_buspirate);
 
 	return 0;
-}
-
-static int buspirate_spi_send_command_v1(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
-					 const unsigned char *writearr, unsigned char *readarr)
-{
-	unsigned int i = 0;
-	int ret = 0;
-
-	if (writecnt > 16 || readcnt > 16 || (readcnt + writecnt) > 16)
-		return SPI_INVALID_LENGTH;
-
-	/* 3 bytes extra for CS#, len, CS#. */
-	if (buspirate_commbuf_grow(writecnt + readcnt + 3))
-		return ERROR_OOM;
-
-	/* Assert CS# */
-	bp_commbuf[i++] = 0x02;
-
-	bp_commbuf[i++] = 0x10 | (writecnt + readcnt - 1);
-	memcpy(bp_commbuf + i, writearr, writecnt);
-	i += writecnt;
-	memset(bp_commbuf + i, 0, readcnt);
-
-	i += readcnt;
-	/* De-assert CS# */
-	bp_commbuf[i++] = 0x03;
-
-	ret = buspirate_sendrecv(bp_commbuf, i, i);
-
-	if (ret) {
-		msg_perr("Bus Pirate communication error!\n");
-		return SPI_GENERIC_ERROR;
-	}
-
-	if (bp_commbuf[0] != 0x01) {
-		msg_perr("Protocol error while lowering CS#!\n");
-		return SPI_GENERIC_ERROR;
-	}
-
-	if (bp_commbuf[1] != 0x01) {
-		msg_perr("Protocol error while reading/writing SPI!\n");
-		return SPI_GENERIC_ERROR;
-	}
-
-	if (bp_commbuf[i - 1] != 0x01) {
-		msg_perr("Protocol error while raising CS#!\n");
-		return SPI_GENERIC_ERROR;
-	}
-
-	/* Skip CS#, length, writearr. */
-	memcpy(readarr, bp_commbuf + 2 + writecnt, readcnt);
-
-	return ret;
-}
-
-static int buspirate_spi_send_command_v2(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
-					 const unsigned char *writearr, unsigned char *readarr)
-{
-	int i = 0, ret = 0;
-
-	if (writecnt > 4096 || readcnt > 4096 || (readcnt + writecnt) > 4096)
-		return SPI_INVALID_LENGTH;
-
-	/* 5 bytes extra for command, writelen, readlen.
-	 * 1 byte extra for Ack/Nack.
-	 */
-	if (buspirate_commbuf_grow(max(writecnt + 5, readcnt + 1)))
-		return ERROR_OOM;
-
-	/* Combined SPI write/read. */
-	bp_commbuf[i++] = 0x04;
-	bp_commbuf[i++] = (writecnt >> 8) & 0xff;
-	bp_commbuf[i++] = writecnt & 0xff;
-	bp_commbuf[i++] = (readcnt >> 8) & 0xff;
-	bp_commbuf[i++] = readcnt & 0xff;
-	memcpy(bp_commbuf + i, writearr, writecnt);
-
-	ret = buspirate_sendrecv(bp_commbuf, i + writecnt, 1 + readcnt);
-
-	if (ret) {
-		msg_perr("Bus Pirate communication error!\n");
-		return SPI_GENERIC_ERROR;
-	}
-
-	if (bp_commbuf[0] != 0x01) {
-		msg_perr("Protocol error while sending SPI write/read!\n");
-		return SPI_GENERIC_ERROR;
-	}
-
-	/* Skip Ack. */
-	memcpy(readarr, bp_commbuf + 1, readcnt);
-
-	return ret;
 }
