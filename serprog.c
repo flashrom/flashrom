@@ -42,13 +42,6 @@
 
 #define MSGHEADER "serprog: "
 
-/*
- * FIXME: This prototype was added to help reduce diffs for the shutdown
- * registration patch, which shifted many lines of code to place
- * serprog_shutdown() before serprog_init(). It should be removed soon.
- */
-static int serprog_shutdown(void *data);
-
 static uint16_t sp_device_serbuf_size = 16;
 static uint16_t sp_device_opbuf_size = 300;
 /* Bitmap of supported commands */
@@ -295,10 +288,112 @@ static int sp_stream_buffer_op(uint8_t cmd, uint32_t parmlen, uint8_t *parms)
 	return 0;
 }
 
+/* Move an in flashrom buffer existing write-n operation to the on-device operation buffer. */
+static int sp_pass_writen(void)
+{
+	unsigned char header[7];
+	msg_pspew(MSGHEADER "Passing write-n bytes=%d addr=0x%x\n", sp_write_n_bytes, sp_write_n_addr);
+	if (sp_streamed_transmit_bytes >= (7 + sp_write_n_bytes + sp_device_serbuf_size)) {
+		if (sp_flush_stream() != 0) {
+			return 1;
+		}
+	}
+	/* In case it's just a single byte send it as a single write. */
+	if (sp_write_n_bytes == 1) {
+		sp_write_n_bytes = 0;
+		header[0] = (sp_write_n_addr >> 0) & 0xFF;
+		header[1] = (sp_write_n_addr >> 8) & 0xFF;
+		header[2] = (sp_write_n_addr >> 16) & 0xFF;
+		header[3] = sp_write_n_buf[0];
+		if (sp_stream_buffer_op(S_CMD_O_WRITEB, 4, header) != 0)
+			return 1;
+		sp_opbuf_usage += 5;
+		return 0;
+	}
+	header[0] = S_CMD_O_WRITEN;
+	header[1] = (sp_write_n_bytes >> 0) & 0xFF;
+	header[2] = (sp_write_n_bytes >> 8) & 0xFF;
+	header[3] = (sp_write_n_bytes >> 16) & 0xFF;
+	header[4] = (sp_write_n_addr >> 0) & 0xFF;
+	header[5] = (sp_write_n_addr >> 8) & 0xFF;
+	header[6] = (sp_write_n_addr >> 16) & 0xFF;
+	if (serialport_write(header, 7) != 0) {
+		msg_perr(MSGHEADER "Error: cannot write write-n command\n");
+		return 1;
+	}
+	if (serialport_write(sp_write_n_buf, sp_write_n_bytes) != 0) {
+		msg_perr(MSGHEADER "Error: cannot write write-n data");
+		return 1;
+	}
+	sp_streamed_transmit_bytes += 7 + sp_write_n_bytes;
+	sp_streamed_transmit_ops += 1;
+	sp_opbuf_usage += 7 + sp_write_n_bytes;
+	sp_write_n_bytes = 0;
+	sp_prev_was_write = 0;
+	return 0;
+}
+
+static int sp_execute_opbuf_noflush(void)
+{
+	if ((sp_max_write_n) && (sp_write_n_bytes)) {
+		if (sp_pass_writen() != 0) {
+			msg_perr("Error: could not transfer write buffer\n");
+			return 1;
+		}
+	}
+	if (sp_stream_buffer_op(S_CMD_O_EXEC, 0, NULL) != 0) {
+		msg_perr("Error: could not execute command buffer\n");
+		return 1;
+	}
+	msg_pspew(MSGHEADER "Executed operation buffer of %d bytes\n", sp_opbuf_usage);
+	sp_opbuf_usage = 0;
+	sp_prev_was_write = 0;
+	return 0;
+}
+
+static int sp_execute_opbuf(void)
+{
+	if (sp_execute_opbuf_noflush() != 0)
+		return 1;
+	if (sp_flush_stream() != 0)
+		return 1;
+
+	return 0;
+}
+
 static int serprog_spi_send_command(const struct flashctx *flash,
 				    unsigned int writecnt, unsigned int readcnt,
 				    const unsigned char *writearr,
-				    unsigned char *readarr);
+				    unsigned char *readarr)
+{
+	unsigned char *parmbuf;
+	int ret;
+	msg_pspew("%s, writecnt=%i, readcnt=%i\n", __func__, writecnt, readcnt);
+	if ((sp_opbuf_usage) || (sp_max_write_n && sp_write_n_bytes)) {
+		if (sp_execute_opbuf() != 0) {
+			msg_perr("Error: could not execute command buffer before sending SPI commands.\n");
+			return 1;
+		}
+	}
+
+	parmbuf = malloc(writecnt + 6);
+	if (!parmbuf) {
+		msg_perr("Error: could not allocate SPI send param buffer.\n");
+		return 1;
+	}
+	parmbuf[0] = (writecnt >> 0) & 0xFF;
+	parmbuf[1] = (writecnt >> 8) & 0xFF;
+	parmbuf[2] = (writecnt >> 16) & 0xFF;
+	parmbuf[3] = (readcnt >> 0) & 0xFF;
+	parmbuf[4] = (readcnt >> 8) & 0xFF;
+	parmbuf[5] = (readcnt >> 16) & 0xFF;
+	memcpy(parmbuf + 6, writearr, writecnt);
+	ret = sp_docommand(S_CMD_O_SPIOP, writecnt + 6, parmbuf, readcnt,
+			   readarr);
+	free(parmbuf);
+	return ret;
+}
+
 static struct spi_master spi_master_serprog = {
 	.features	= SPI_MASTER_4BA,
 	.max_data_read	= MAX_DATA_READ_UNLIMITED,
@@ -310,12 +405,108 @@ static struct spi_master spi_master_serprog = {
 	.write_aai	= default_spi_write_aai,
 };
 
+static int sp_check_opbuf_usage(int bytes_to_be_added)
+{
+	if (sp_device_opbuf_size <= (sp_opbuf_usage + bytes_to_be_added)) {
+		/* If this happens in the middle of a page load the page load will probably fail. */
+		msg_pwarn(MSGHEADER "Warning: executed operation buffer due to size reasons\n");
+		if (sp_execute_opbuf() != 0)
+			return 1;
+	}
+	return 0;
+}
+
 static void serprog_chip_writeb(const struct flashctx *flash, uint8_t val,
-				chipaddr addr);
+				chipaddr addr)
+{
+	msg_pspew("%s\n", __func__);
+	if (sp_max_write_n) {
+		if ((sp_prev_was_write)
+		    && (addr == (sp_write_n_addr + sp_write_n_bytes))) {
+			sp_write_n_buf[sp_write_n_bytes++] = val;
+		} else {
+			if ((sp_prev_was_write) && (sp_write_n_bytes))
+				sp_pass_writen();
+			sp_prev_was_write = 1;
+			sp_write_n_addr = addr;
+			sp_write_n_bytes = 1;
+			sp_write_n_buf[0] = val;
+		}
+		sp_check_opbuf_usage(7 + sp_write_n_bytes);
+		if (sp_write_n_bytes >= sp_max_write_n)
+			sp_pass_writen();
+	} else {
+		/* We will have to do single writeb ops. */
+		unsigned char writeb_parm[4];
+		sp_check_opbuf_usage(6);
+		writeb_parm[0] = (addr >> 0) & 0xFF;
+		writeb_parm[1] = (addr >> 8) & 0xFF;
+		writeb_parm[2] = (addr >> 16) & 0xFF;
+		writeb_parm[3] = val;
+		sp_stream_buffer_op(S_CMD_O_WRITEB, 4, writeb_parm); // FIXME: return error
+		sp_opbuf_usage += 5;
+	}
+}
+
 static uint8_t serprog_chip_readb(const struct flashctx *flash,
-				  const chipaddr addr);
-static void serprog_chip_readn(const struct flashctx *flash, uint8_t *buf,
-			       const chipaddr addr, size_t len);
+				  const chipaddr addr)
+{
+	unsigned char c;
+	unsigned char buf[3];
+	/* Will stream the read operation - eg. add it to the stream buffer, *
+	 * then flush the buffer, then read the read answer.		     */
+	if ((sp_opbuf_usage) || (sp_max_write_n && sp_write_n_bytes))
+		sp_execute_opbuf_noflush();
+	buf[0] = ((addr >> 0) & 0xFF);
+	buf[1] = ((addr >> 8) & 0xFF);
+	buf[2] = ((addr >> 16) & 0xFF);
+	sp_stream_buffer_op(S_CMD_R_BYTE, 3, buf); // FIXME: return error
+	sp_flush_stream(); // FIXME: return error
+	if (serialport_read(&c, 1) != 0)
+		msg_perr(MSGHEADER "readb byteread");  // FIXME: return error
+	msg_pspew("%s addr=0x%" PRIxPTR " returning 0x%02X\n", __func__, addr, c);
+	return c;
+}
+
+/* Local version that really does the job, doesn't care of max_read_n. */
+static int sp_do_read_n(uint8_t * buf, const chipaddr addr, size_t len)
+{
+	unsigned char sbuf[6];
+	msg_pspew("%s: addr=0x%" PRIxPTR " len=%zu\n", __func__, addr, len);
+	/* Stream the read-n -- as above. */
+	if ((sp_opbuf_usage) || (sp_max_write_n && sp_write_n_bytes))
+		sp_execute_opbuf_noflush();
+	sbuf[0] = ((addr >> 0) & 0xFF);
+	sbuf[1] = ((addr >> 8) & 0xFF);
+	sbuf[2] = ((addr >> 16) & 0xFF);
+	sbuf[3] = ((len >> 0) & 0xFF);
+	sbuf[4] = ((len >> 8) & 0xFF);
+	sbuf[5] = ((len >> 16) & 0xFF);
+	sp_stream_buffer_op(S_CMD_R_NBYTES, 6, sbuf);
+	if (sp_flush_stream() != 0)
+		return 1;
+	if (serialport_read(buf, len) != 0) {
+		msg_perr(MSGHEADER "Error: cannot read read-n data");
+		return 1;
+	}
+	return 0;
+}
+
+/* The externally called version that makes sure that max_read_n is obeyed. */
+static void serprog_chip_readn(const struct flashctx *flash, uint8_t * buf,
+			       const chipaddr addr, size_t len)
+{
+	size_t lenm = len;
+	chipaddr addrm = addr;
+	while ((sp_max_read_n != 0) && (lenm > sp_max_read_n)) {
+		sp_do_read_n(&(buf[addrm-addr]), addrm, sp_max_read_n); // FIXME: return error
+		addrm += sp_max_read_n;
+		lenm -= sp_max_read_n;
+	}
+	if (lenm)
+		sp_do_read_n(&(buf[addrm-addr]), addrm, lenm); // FIXME: return error
+}
+
 static const struct par_master par_master_serprog = {
 		.chip_readb		= serprog_chip_readb,
 		.chip_readw		= fallback_chip_readw,
@@ -326,6 +517,25 @@ static const struct par_master par_master_serprog = {
 		.chip_writel		= fallback_chip_writel,
 		.chip_writen		= fallback_chip_writen,
 };
+
+static int serprog_shutdown(void *data)
+{
+	if ((sp_opbuf_usage) || (sp_max_write_n && sp_write_n_bytes))
+	if (sp_execute_opbuf() != 0)
+		msg_pwarn("Could not flush command buffer.\n");
+	if (sp_check_commandavail(S_CMD_S_PIN_STATE)) {
+		uint8_t dis = 0;
+		if (sp_docommand(S_CMD_S_PIN_STATE, 1, &dis, 0, NULL) == 0)
+			msg_pdbg(MSGHEADER "Output drivers disabled\n");
+		else
+			msg_pwarn(MSGHEADER "%s: Warning: could not disable output buffers\n", __func__);
+	}
+	/* FIXME: fix sockets on windows(?), especially closing */
+	serialport_shutdown(&sp_fd);
+	if (sp_max_write_n)
+		free(sp_write_n_buf);
+	return 0;
+}
 
 static enum chipbustype serprog_buses_supported = BUS_NONE;
 
@@ -679,200 +889,6 @@ int serprog_init(void)
 	return 0;
 }
 
-/* Move an in flashrom buffer existing write-n operation to the on-device operation buffer. */
-static int sp_pass_writen(void)
-{
-	unsigned char header[7];
-	msg_pspew(MSGHEADER "Passing write-n bytes=%d addr=0x%x\n", sp_write_n_bytes, sp_write_n_addr);
-	if (sp_streamed_transmit_bytes >= (7 + sp_write_n_bytes + sp_device_serbuf_size)) {
-		if (sp_flush_stream() != 0) {
-			return 1;
-		}
-	}
-	/* In case it's just a single byte send it as a single write. */
-	if (sp_write_n_bytes == 1) {
-		sp_write_n_bytes = 0;
-		header[0] = (sp_write_n_addr >> 0) & 0xFF;
-		header[1] = (sp_write_n_addr >> 8) & 0xFF;
-		header[2] = (sp_write_n_addr >> 16) & 0xFF;
-		header[3] = sp_write_n_buf[0];
-		if (sp_stream_buffer_op(S_CMD_O_WRITEB, 4, header) != 0)
-			return 1;
-		sp_opbuf_usage += 5;
-		return 0;
-	}
-	header[0] = S_CMD_O_WRITEN;
-	header[1] = (sp_write_n_bytes >> 0) & 0xFF;
-	header[2] = (sp_write_n_bytes >> 8) & 0xFF;
-	header[3] = (sp_write_n_bytes >> 16) & 0xFF;
-	header[4] = (sp_write_n_addr >> 0) & 0xFF;
-	header[5] = (sp_write_n_addr >> 8) & 0xFF;
-	header[6] = (sp_write_n_addr >> 16) & 0xFF;
-	if (serialport_write(header, 7) != 0) {
-		msg_perr(MSGHEADER "Error: cannot write write-n command\n");
-		return 1;
-	}
-	if (serialport_write(sp_write_n_buf, sp_write_n_bytes) != 0) {
-		msg_perr(MSGHEADER "Error: cannot write write-n data");
-		return 1;
-	}
-	sp_streamed_transmit_bytes += 7 + sp_write_n_bytes;
-	sp_streamed_transmit_ops += 1;
-	sp_opbuf_usage += 7 + sp_write_n_bytes;
-	sp_write_n_bytes = 0;
-	sp_prev_was_write = 0;
-	return 0;
-}
-
-static int sp_execute_opbuf_noflush(void)
-{
-	if ((sp_max_write_n) && (sp_write_n_bytes)) {
-		if (sp_pass_writen() != 0) {
-			msg_perr("Error: could not transfer write buffer\n");
-			return 1;
-		}
-	}
-	if (sp_stream_buffer_op(S_CMD_O_EXEC, 0, NULL) != 0) {
-		msg_perr("Error: could not execute command buffer\n");
-		return 1;
-	}
-	msg_pspew(MSGHEADER "Executed operation buffer of %d bytes\n", sp_opbuf_usage);
-	sp_opbuf_usage = 0;
-	sp_prev_was_write = 0;
-	return 0;
-}
-
-static int sp_execute_opbuf(void)
-{
-	if (sp_execute_opbuf_noflush() != 0)
-		return 1;
-	if (sp_flush_stream() != 0)
-		return 1;
-
-	return 0;
-}
-
-static int serprog_shutdown(void *data)
-{
-	if ((sp_opbuf_usage) || (sp_max_write_n && sp_write_n_bytes))
-	if (sp_execute_opbuf() != 0)
-		msg_pwarn("Could not flush command buffer.\n");
-	if (sp_check_commandavail(S_CMD_S_PIN_STATE)) {
-		uint8_t dis = 0;
-		if (sp_docommand(S_CMD_S_PIN_STATE, 1, &dis, 0, NULL) == 0)
-			msg_pdbg(MSGHEADER "Output drivers disabled\n");
-		else
-			msg_pwarn(MSGHEADER "%s: Warning: could not disable output buffers\n", __func__);
-	}
-	/* FIXME: fix sockets on windows(?), especially closing */
-	serialport_shutdown(&sp_fd);
-	if (sp_max_write_n)
-		free(sp_write_n_buf);
-	return 0;
-}
-
-static int sp_check_opbuf_usage(int bytes_to_be_added)
-{
-	if (sp_device_opbuf_size <= (sp_opbuf_usage + bytes_to_be_added)) {
-		/* If this happens in the middle of a page load the page load will probably fail. */
-		msg_pwarn(MSGHEADER "Warning: executed operation buffer due to size reasons\n");
-		if (sp_execute_opbuf() != 0)
-			return 1;
-	}
-	return 0;
-}
-
-static void serprog_chip_writeb(const struct flashctx *flash, uint8_t val,
-				chipaddr addr)
-{
-	msg_pspew("%s\n", __func__);
-	if (sp_max_write_n) {
-		if ((sp_prev_was_write)
-		    && (addr == (sp_write_n_addr + sp_write_n_bytes))) {
-			sp_write_n_buf[sp_write_n_bytes++] = val;
-		} else {
-			if ((sp_prev_was_write) && (sp_write_n_bytes))
-				sp_pass_writen();
-			sp_prev_was_write = 1;
-			sp_write_n_addr = addr;
-			sp_write_n_bytes = 1;
-			sp_write_n_buf[0] = val;
-		}
-		sp_check_opbuf_usage(7 + sp_write_n_bytes);
-		if (sp_write_n_bytes >= sp_max_write_n)
-			sp_pass_writen();
-	} else {
-		/* We will have to do single writeb ops. */
-		unsigned char writeb_parm[4];
-		sp_check_opbuf_usage(6);
-		writeb_parm[0] = (addr >> 0) & 0xFF;
-		writeb_parm[1] = (addr >> 8) & 0xFF;
-		writeb_parm[2] = (addr >> 16) & 0xFF;
-		writeb_parm[3] = val;
-		sp_stream_buffer_op(S_CMD_O_WRITEB, 4, writeb_parm); // FIXME: return error
-		sp_opbuf_usage += 5;
-	}
-}
-
-static uint8_t serprog_chip_readb(const struct flashctx *flash,
-				  const chipaddr addr)
-{
-	unsigned char c;
-	unsigned char buf[3];
-	/* Will stream the read operation - eg. add it to the stream buffer, *
-	 * then flush the buffer, then read the read answer.		     */
-	if ((sp_opbuf_usage) || (sp_max_write_n && sp_write_n_bytes))
-		sp_execute_opbuf_noflush();
-	buf[0] = ((addr >> 0) & 0xFF);
-	buf[1] = ((addr >> 8) & 0xFF);
-	buf[2] = ((addr >> 16) & 0xFF);
-	sp_stream_buffer_op(S_CMD_R_BYTE, 3, buf); // FIXME: return error
-	sp_flush_stream(); // FIXME: return error
-	if (serialport_read(&c, 1) != 0)
-		msg_perr(MSGHEADER "readb byteread");  // FIXME: return error
-	msg_pspew("%s addr=0x%" PRIxPTR " returning 0x%02X\n", __func__, addr, c);
-	return c;
-}
-
-/* Local version that really does the job, doesn't care of max_read_n. */
-static int sp_do_read_n(uint8_t * buf, const chipaddr addr, size_t len)
-{
-	unsigned char sbuf[6];
-	msg_pspew("%s: addr=0x%" PRIxPTR " len=%zu\n", __func__, addr, len);
-	/* Stream the read-n -- as above. */
-	if ((sp_opbuf_usage) || (sp_max_write_n && sp_write_n_bytes))
-		sp_execute_opbuf_noflush();
-	sbuf[0] = ((addr >> 0) & 0xFF);
-	sbuf[1] = ((addr >> 8) & 0xFF);
-	sbuf[2] = ((addr >> 16) & 0xFF);
-	sbuf[3] = ((len >> 0) & 0xFF);
-	sbuf[4] = ((len >> 8) & 0xFF);
-	sbuf[5] = ((len >> 16) & 0xFF);
-	sp_stream_buffer_op(S_CMD_R_NBYTES, 6, sbuf);
-	if (sp_flush_stream() != 0)
-		return 1;
-	if (serialport_read(buf, len) != 0) {
-		msg_perr(MSGHEADER "Error: cannot read read-n data");
-		return 1;
-	}
-	return 0;
-}
-
-/* The externally called version that makes sure that max_read_n is obeyed. */
-static void serprog_chip_readn(const struct flashctx *flash, uint8_t * buf,
-			       const chipaddr addr, size_t len)
-{
-	size_t lenm = len;
-	chipaddr addrm = addr;
-	while ((sp_max_read_n != 0) && (lenm > sp_max_read_n)) {
-		sp_do_read_n(&(buf[addrm-addr]), addrm, sp_max_read_n); // FIXME: return error
-		addrm += sp_max_read_n;
-		lenm -= sp_max_read_n;
-	}
-	if (lenm)
-		sp_do_read_n(&(buf[addrm-addr]), addrm, lenm); // FIXME: return error
-}
-
 void serprog_delay(unsigned int usecs)
 {
 	unsigned char buf[4];
@@ -892,39 +908,6 @@ void serprog_delay(unsigned int usecs)
 	sp_stream_buffer_op(S_CMD_O_DELAY, 4, buf);
 	sp_opbuf_usage += 5;
 	sp_prev_was_write = 0;
-}
-
-static int serprog_spi_send_command(const struct flashctx *flash,
-				    unsigned int writecnt, unsigned int readcnt,
-				    const unsigned char *writearr,
-				    unsigned char *readarr)
-{
-	unsigned char *parmbuf;
-	int ret;
-	msg_pspew("%s, writecnt=%i, readcnt=%i\n", __func__, writecnt, readcnt);
-	if ((sp_opbuf_usage) || (sp_max_write_n && sp_write_n_bytes)) {
-		if (sp_execute_opbuf() != 0) {
-			msg_perr("Error: could not execute command buffer before sending SPI commands.\n");
-			return 1;
-		}
-	}
-
-	parmbuf = malloc(writecnt + 6);
-	if (!parmbuf) {
-		msg_perr("Error: could not allocate SPI send param buffer.\n");
-		return 1;
-	}
-	parmbuf[0] = (writecnt >> 0) & 0xFF;
-	parmbuf[1] = (writecnt >> 8) & 0xFF;
-	parmbuf[2] = (writecnt >> 16) & 0xFF;
-	parmbuf[3] = (readcnt >> 0) & 0xFF;
-	parmbuf[4] = (readcnt >> 8) & 0xFF;
-	parmbuf[5] = (readcnt >> 16) & 0xFF;
-	memcpy(parmbuf + 6, writearr, writecnt);
-	ret = sp_docommand(S_CMD_O_SPIOP, writecnt + 6, parmbuf, readcnt,
-			   readarr);
-	free(parmbuf);
-	return ret;
 }
 
 void *serprog_map(const char *descr, uintptr_t phys_addr, size_t len)
