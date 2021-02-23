@@ -127,6 +127,7 @@
 #define AMIC_A49LF040A		0x9d
 
 #define ATMEL_ID		0x1F	/* Atmel (now used by Adesto) */
+#define ATMEL_AT25DF011		0x4200
 #define ATMEL_AT25DF021		0x4300
 #define ATMEL_AT25DF021A	0x4301
 #define ATMEL_AT25DF041A	0x4401
