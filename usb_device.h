@@ -34,7 +34,7 @@
  * flashrom recognizes. It does so without displaying an error code allowing us
  * to compare error codes against the library enumeration values.
  */
-#define LIBUSB_ERROR(eror_code)		(0x20000 | -eror_code)
+#define LIBUSB_ERROR(error_code)	(0x20000 | -(error_code))
 
 /*
  * The LIBUSB macro converts a libusb failure code into an error code that
