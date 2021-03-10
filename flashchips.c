@@ -16376,6 +16376,35 @@ const struct flashchip flashchips[] = {
 		.voltage	= {2700, 3600},
 	},
 
+		{
+		.vendor		= "Spansion",
+		.name		= "S25FL256L",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= SPANSION_ID,
+		.model_id	= SPANSION_S25FL256L,
+		.total_size	= 32768,
+		.page_size	= 256,
+		.feature_bits	= FEATURE_WRSR_WREN|FEATURE_4BA,
+		.tested		= TEST_OK_PREW,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {64 * 1024, 0x200} },
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { {512 * 1024, 0x200} },
+				.block_erase = spi_block_erase_c7,
+			}
+		},
+		.printlock	= spi_prettyprint_status_register_plain,
+		.unlock		= spi_disable_blockprotect,
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
+	},
+	
 	{
 		.vendor		= "Spansion",
 		.name		= "S25FL204K",
