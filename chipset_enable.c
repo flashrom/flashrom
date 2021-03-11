@@ -2020,6 +2020,7 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x9d58, B_S,    NT,  "Intel", "Kaby Lake U Premium",		enable_flash_pch100},
 	{0x8086, 0x9d84, B_S,    DEP, "Intel", "Cannon Lake U Premium",		enable_flash_pch300},
 	{0x8086, 0x0284, B_S,    DEP, "Intel", "Comet Lake U Premium",		enable_flash_pch400},
+	{0x8086, 0x0285, B_S,    DEP, "Intel", "Comet Lake U Base",		enable_flash_pch400},
 	{0x8086, 0xa141, B_S,    NT,  "Intel", "Sunrise Point Desktop Sample",	enable_flash_pch100},
 	{0x8086, 0xa142, B_S,    NT,  "Intel", "Sunrise Point Unknown Sample",	enable_flash_pch100},
 	{0x8086, 0xa143, B_S,    DEP, "Intel", "H110",				enable_flash_pch100},
