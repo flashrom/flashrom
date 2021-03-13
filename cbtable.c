@@ -257,7 +257,7 @@ static struct lb_header *find_lb_table_remap(unsigned long start_addr,
 		recs = (struct lb_record *)(((char *)base) + offset + sizeof(*head));
 		if (!lb_table_valid(head, recs))
 			continue;
-		msg_pdbg("Found coreboot table at 0x%08lx.\n", offset);
+		msg_pdbg("Found coreboot table at 0x%08zx.\n", offset);
 		*table_area = base;
 		return head;
 	}
