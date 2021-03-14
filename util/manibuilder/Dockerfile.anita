@@ -2,6 +2,8 @@ FROM debian:stable
 
 ARG PKG_PATH=http://cdn.netbsd.org/pub/pkgsrc/packages/NetBSD/amd64/7.1/All
 ARG INST_IMG=http://ftp.de.netbsd.org/pub/NetBSD/NetBSD-7.1/amd64/
+ARG DISK_SIZE=1G
+ARG MEM_SIZE=128M
 ARG EXTRA_PKG=""
 
 RUN \
@@ -18,7 +20,8 @@ RUN \
 USER mani
 RUN cd && mkdir .ccache && chown mani:mani .ccache && \
 	  anita --sets kern-GENERIC,modules,base,etc,comp \
-		--disk-size 1024M --memory-size=128M install ${INST_IMG} && \
+		--disk-size ${DISK_SIZE} --memory-size=${MEM_SIZE} \
+		install ${INST_IMG} && \
 	  rm -rf work-*/download
 
 RUN cd && anita --persist --run \

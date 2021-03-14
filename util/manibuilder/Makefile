@@ -21,10 +21,15 @@ anita\:amd64-build: NETBSD_IMAGE=pub/NetBSD/NetBSD-7.1/amd64/
 anita\:i386-build: PKGSRC_PATH=pub/pkgsrc/packages/NetBSD/i386/7.1/All
 anita\:i386-build: NETBSD_IMAGE=pub/NetBSD/NetBSD-7.1/i386/
 
+$(addsuffix -build,$(ANITA_TAGS)): QEMU_DISK_SIZE=1G
+$(addsuffix -build,$(ANITA_TAGS)): QEMU_MEM_SIZE=128M
+
 $(addsuffix -build,$(ANITA_TAGS)): %-build: Dockerfile.anita anita-wrapper.sh
 	$(QUIET_SETUP)docker build . -f $< -t mani/$* \
 		--build-arg PKG_PATH=$(PKGSRC_MIRROR)$(PKGSRC_PATH) \
-		--build-arg INST_IMG=$(NETBSD_MIRROR)$(NETBSD_IMAGE)
+		--build-arg INST_IMG=$(NETBSD_MIRROR)$(NETBSD_IMAGE) \
+		--build-arg DISK_SIZE=$(QEMU_DISK_SIZE) \
+		--build-arg MEM_SIZE=$(QEMU_MEM_SIZE)
 
 define build_template
 Dockerfile.$(call ident,$(1)): Dockerfile.$(call stem,$(1)) mani-wrapper.sh
