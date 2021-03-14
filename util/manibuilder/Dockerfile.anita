@@ -36,15 +36,19 @@ RUN cd && anita --persist --run \
 
 RUN cd && dd if=/dev/zero bs=1M count=64 of=cache.img && \
 	  anita --vmm-args '-hdb cache.img' --persist --run \
-"echo fdisk -0 -s 169/63/131009 -f -u wd1 && \
- newfs wd1a && \
+"if [ \$(uname -m) = i386 -o \$(uname -m) = amd64 ]; then \
+     bdev=wd1d; \
+ else \
+     bdev=wd1c; \
+ fi; \
+ newfs -I \${bdev} && \
  mkdir .ccache && \
- mount /dev/wd1a .ccache && \
+ mount /dev/\${bdev} .ccache && \
  ccache -M 60M && \
  umount .ccache && \
  echo 'manitest() {'                            >>init && \
- echo '    fsck -y /dev/wd1a'                   >>init && \
- echo '    mount /dev/wd1a ~/.ccache'           >>init && \
+ echo '    fsck -y -t ffs /dev/'\${bdev}        >>init && \
+ echo '    mount /dev/'\${bdev}' ~/.ccache'     >>init && \
  echo '    (cd ~/flashrom && eval \" \$*\")'    >>init && \
  echo '    ret=\$?'                             >>init && \
  echo '    umount ~/.ccache'                    >>init && \
