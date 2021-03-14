@@ -12,30 +12,7 @@ spc := $(spc) $(spc)
 stem = $(word 1,$(subst :,$(spc),$(subst \:,$(spc),$(1))))
 ident = $(subst :,_,$(subst \:,_,$(1)))
 
-PKGSRC_MIRROR = http://cdn.netbsd.org/
-NETBSD_MIRROR = http://ftp.de.netbsd.org/
-
-anita\:8.2-amd64-build: PKGSRC_PATH=pub/pkgsrc/packages/NetBSD/amd64/8.2/All
-anita\:8.2-amd64-build: NETBSD_IMAGE=pub/NetBSD/NetBSD-8.2/amd64/
-anita\:8.2-amd64-build: QEMU_DISK_SIZE=2G
-anita\:8.2-amd64-build: QEMU_MEM_SIZE=256M
-
-anita\:7.1-amd64-build: PKGSRC_PATH=pub/pkgsrc/packages/NetBSD/amd64/7.1/All
-anita\:7.1-amd64-build: NETBSD_IMAGE=pub/NetBSD/NetBSD-7.1/amd64/
-anita\:7.1-amd64-build: QEMU_DISK_SIZE=1G
-anita\:7.1-amd64-build: QEMU_MEM_SIZE=128M
-
-anita\:7.1-i386-build: PKGSRC_PATH=pub/pkgsrc/packages/NetBSD/i386/7.1/All
-anita\:7.1-i386-build: NETBSD_IMAGE=pub/NetBSD/NetBSD-7.1/i386/
-anita\:7.1-i386-build: QEMU_DISK_SIZE=1G
-anita\:7.1-i386-build: QEMU_MEM_SIZE=128M
-
-$(addsuffix -build,$(ANITA_TAGS)): %-build: Dockerfile.anita anita-wrapper.sh
-	$(QUIET_SETUP)docker build . -f $< -t mani/$* \
-		--build-arg PKG_PATH=$(PKGSRC_MIRROR)$(PKGSRC_PATH) \
-		--build-arg INST_IMG=$(NETBSD_MIRROR)$(NETBSD_IMAGE) \
-		--build-arg DISK_SIZE=$(QEMU_DISK_SIZE) \
-		--build-arg MEM_SIZE=$(QEMU_MEM_SIZE)
+include Makefile.anita
 
 define build_template
 Dockerfile.$(call ident,$(1)): Dockerfile.$(call stem,$(1)) mani-wrapper.sh
