@@ -1,4 +1,4 @@
-ANITA_TAGS := anita\:amd64 anita\:i386
+ANITA_TAGS := anita\:7.1-amd64 anita\:7.1-i386
 
 MULTIARCH_TAGS := \
 	centos\:7.6-armhfp-clean centos\:7.6-amd64-clean \
@@ -43,7 +43,7 @@ NATIVE_TAGS := $(call arch_filter,$(call machine_map,$(shell uname -m)))
 
 # rather arbitrary selection of images that seem to work (focus on amd64)
 DEFAULT_TAGS := \
-	anita\:amd64 \
+	anita\:7.1-amd64 \
 	djgpp\:6.1.0 \
 	fedora\:30-aarch64 \
 	fedora\:25-x86_64 \
@@ -73,8 +73,8 @@ DEFAULT_TAGS += $(filter-out $(DEFAULT_TAGS),$(NATIVE_TAGS))
 
 # original 1.0.x tags
 10X_TAGS := \
-	anita\:amd64 \
-	anita\:i386 \
+	anita\:7.1-amd64 \
+	anita\:7.1-i386 \
 	djgpp\:6.1.0 \
 	alpine\:amd64-v3.6 \
 	alpine\:amd64-v3.7 \
@@ -120,7 +120,7 @@ DEFAULT_TAGS += $(filter-out $(DEFAULT_TAGS),$(NATIVE_TAGS))
 
 # original 1.1.x tags
 11X_TAGS := \
-	anita\:amd64 \
+	anita\:7.1-amd64 \
 	djgpp\:6.1.0 \
 	fedora\:30-x86_64 \
 	fedora\:30-aarch64 \

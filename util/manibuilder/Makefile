@@ -15,11 +15,11 @@ ident = $(subst :,_,$(subst \:,_,$(1)))
 PKGSRC_MIRROR = http://cdn.netbsd.org/
 NETBSD_MIRROR = http://ftp.de.netbsd.org/
 
-anita\:amd64-build: PKGSRC_PATH=pub/pkgsrc/packages/NetBSD/amd64/7.1/All
-anita\:amd64-build: NETBSD_IMAGE=pub/NetBSD/NetBSD-7.1/amd64/
+anita\:7.1-amd64-build: PKGSRC_PATH=pub/pkgsrc/packages/NetBSD/amd64/7.1/All
+anita\:7.1-amd64-build: NETBSD_IMAGE=pub/NetBSD/NetBSD-7.1/amd64/
 
-anita\:i386-build: PKGSRC_PATH=pub/pkgsrc/packages/NetBSD/i386/7.1/All
-anita\:i386-build: NETBSD_IMAGE=pub/NetBSD/NetBSD-7.1/i386/
+anita\:7.1-i386-build: PKGSRC_PATH=pub/pkgsrc/packages/NetBSD/i386/7.1/All
+anita\:7.1-i386-build: NETBSD_IMAGE=pub/NetBSD/NetBSD-7.1/i386/
 
 $(addsuffix -build,$(ANITA_TAGS)): QEMU_DISK_SIZE=1G
 $(addsuffix -build,$(ANITA_TAGS)): QEMU_MEM_SIZE=128M
@@ -52,7 +52,7 @@ $(addsuffix -check-build,$(ALL_TAGS)): %-check-build:
 	[ $$(docker image ls -q mani/$*) ] \
 		|| $(MAKE) $*-build $(if $(QUIET_SETUP),>/dev/null 2>/dev/null)
 
-$(filter centos%,$(MULTIARCH_TAGS)) anita\:sparc: CC=cc
+$(filter centos%,$(MULTIARCH_TAGS)) anita\:7.1-sparc: CC=cc
 djgpp\:6.1.0: CC=ccache i586-pc-msdosdjgpp-gcc
 djgpp\:6.1.0: STRIP=i586-pc-msdosdjgpp-strip
 djgpp\:6.1.0: LIBS_BASE=../
