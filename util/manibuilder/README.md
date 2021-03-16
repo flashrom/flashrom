@@ -1,7 +1,7 @@
 Manibuilder
 ===========
 
-Manibuilder is a set of Dockerfiles for manic build testing, hold
+Manibuilder is a set of Dockerfiles for manic build testing, held
 together by some make-foo. Most of the Dockerfiles make use of
 *multiarch* images. This way we can test building on many platforms
 supported by *Qemu*. The idea is to test in environments as close
