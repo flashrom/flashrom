@@ -1,5 +1,6 @@
 option('pciutils', type : 'boolean', value : true, description : 'use pciutils')
 option('usb', type : 'boolean', value : true, description : 'use libusb1')
+option('print_wiki', type : 'boolean', value : true,  description : 'Print Wiki')
 
 option('config_atahpt', type : 'boolean', value : false, description : 'Highpoint (HPT) ATA/RAID controllers')
 option('config_atapromise', type : 'boolean', value : false, description : 'Promise ATA controller')

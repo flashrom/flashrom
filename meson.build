@@ -68,6 +68,7 @@ config_usbblaster_spi = get_option('config_usbblaster_spi')
 config_stlinkv3_spi = get_option('config_stlinkv3_spi')
 config_lspcon_i2c_spi = get_option('config_lspcon_i2c_spi')
 config_realtek_mst_i2c_spi = get_option('config_realtek_mst_i2c_spi')
+config_print_wiki= get_option('print_wiki')
 
 cargs = []
 deps = []
@@ -428,6 +429,11 @@ flashrom_dep = declare_dependency(
   include_directories : include_directories('.'),
   dependencies : deps
 )
+
+if config_print_wiki
+  srcs += 'print_wiki.c'
+  cargs += '-DCONFIG_PRINT_WIKI=1'
+endif
 
 # we can't just link_with libflashrom as we require all the internal symbols...
 executable(
