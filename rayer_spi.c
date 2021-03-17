@@ -31,6 +31,11 @@
 #include "programmer.h"
 #include "hwaccess.h"
 
+static uint16_t lpt_iobase;
+
+/* Cached value of last byte sent. */
+static uint8_t lpt_outbyte;
+
 /* We have two sets of pins, out and in. The numbers for both sets are
  * independent and are bitshift values, not real pin numbers.
  * Default settings are for the RayeR hardware.
@@ -59,8 +64,20 @@ static const struct rayer_pinout rayer_spipgm = {
 	.miso_bit = 6,
 };
 
-static void dlc5_preinit(const void *);
-static int dlc5_shutdown(void *);
+static void dlc5_preinit(const void *data) {
+	msg_pdbg("dlc5_preinit\n");
+	/* Assert pin 6 to receive MISO. */
+	lpt_outbyte |= (1<<4);
+	OUTB(lpt_outbyte, lpt_iobase);
+}
+
+static int dlc5_shutdown(void *data) {
+	msg_pdbg("dlc5_shutdown\n");
+	/* De-assert pin 6 to force MISO low. */
+	lpt_outbyte &= ~(1<<4);
+	OUTB(lpt_outbyte, lpt_iobase);
+	return 0;
+}
 
 static const struct rayer_pinout xilinx_dlc5 = {
 	.cs_bit = 2,
@@ -71,8 +88,18 @@ static const struct rayer_pinout xilinx_dlc5 = {
 	.shutdown = dlc5_shutdown,
 };
 
-static void byteblaster_preinit(const void *);
-static int byteblaster_shutdown(void *);
+static void byteblaster_preinit(const void *data){
+	msg_pdbg("byteblaster_preinit\n");
+	/* Assert #EN signal. */
+	OUTB(2, lpt_iobase + 2 );
+}
+
+static int byteblaster_shutdown(void *data){
+	msg_pdbg("byteblaster_shutdown\n");
+	/* De-Assert #EN signal. */
+	OUTB(0, lpt_iobase + 2 );
+	return 0;
+}
 
 static const struct rayer_pinout altera_byteblastermv = {
 	.cs_bit = 1,
@@ -83,8 +110,20 @@ static const struct rayer_pinout altera_byteblastermv = {
 	.shutdown = byteblaster_shutdown,
 };
 
-static void stk200_preinit(const void *);
-static int stk200_shutdown(void *);
+static void stk200_preinit(const void *data) {
+	msg_pdbg("stk200_init\n");
+	/* Assert #EN signals, set LED signal. */
+	lpt_outbyte = (1 << 6) ;
+	OUTB(lpt_outbyte, lpt_iobase);
+}
+
+static int stk200_shutdown(void *data) {
+	msg_pdbg("stk200_shutdown\n");
+	/* Assert #EN signals, clear LED signal. */
+	lpt_outbyte = (1 << 2) | (1 << 3);
+	OUTB(lpt_outbyte, lpt_iobase);
+	return 0;
+}
 
 static const struct rayer_pinout atmel_stk200 = {
 	.cs_bit = 7,
@@ -120,11 +159,6 @@ static const struct rayer_programmer rayer_spi_types[] = {
 };
 
 static const struct rayer_pinout *pinout = NULL;
-
-static uint16_t lpt_iobase;
-
-/* Cached value of last byte sent. */
-static uint8_t lpt_outbyte;
 
 static void rayer_bitbang_set_cs(int val)
 {
@@ -234,49 +268,6 @@ int rayer_spi_init(void)
 	if (register_spi_bitbang_master(&bitbang_spi_master_rayer))
 		return 1;
 
-	return 0;
-}
-
-static void byteblaster_preinit(const void *data){
-	msg_pdbg("byteblaster_preinit\n");
-	/* Assert #EN signal. */
-	OUTB(2, lpt_iobase + 2 );
-}
-
-static int byteblaster_shutdown(void *data){
-	msg_pdbg("byteblaster_shutdown\n");
-	/* De-Assert #EN signal. */
-	OUTB(0, lpt_iobase + 2 );
-	return 0;
-}
-
-static void stk200_preinit(const void *data) {
-	msg_pdbg("stk200_init\n");
-	/* Assert #EN signals, set LED signal. */
-	lpt_outbyte = (1 << 6) ;
-	OUTB(lpt_outbyte, lpt_iobase);
-}
-
-static int stk200_shutdown(void *data) {
-	msg_pdbg("stk200_shutdown\n");
-	/* Assert #EN signals, clear LED signal. */
-	lpt_outbyte = (1 << 2) | (1 << 3);
-	OUTB(lpt_outbyte, lpt_iobase);
-	return 0;
-}
-
-static void dlc5_preinit(const void *data) {
-	msg_pdbg("dlc5_preinit\n");
-	/* Assert pin 6 to receive MISO. */
-	lpt_outbyte |= (1<<4);
-	OUTB(lpt_outbyte, lpt_iobase);
-}
-
-static int dlc5_shutdown(void *data) {
-	msg_pdbg("dlc5_shutdown\n");
-	/* De-assert pin 6 to force MISO low. */
-	lpt_outbyte &= ~(1<<4);
-	OUTB(lpt_outbyte, lpt_iobase);
 	return 0;
 }
 
