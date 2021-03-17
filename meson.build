@@ -104,6 +104,7 @@ endif
 if get_option('pciutils')
   srcs += 'pcidev.c'
   deps += dependency('libpci')
+  need_raw_access = true
   cargs += '-DNEED_PCI=1'
 else
   config_atahpt = false
@@ -277,7 +278,6 @@ endif
 if config_rayer_spi
   srcs += 'rayer_spi.c'
   config_bitbang_spi = true
-  need_raw_access = true
   cargs += '-DCONFIG_RAYER_SPI=1'
 endif
 if config_satamv
