@@ -378,7 +378,7 @@ srcs += 'writeprotect.c'
 
 mapfile = 'libflashrom.map'
 vflag = '-Wl,--version-script,@0@/@1@'.format(meson.current_source_dir(), mapfile)
-flashrom = shared_library(
+flashrom = library(
   'flashrom',
   sources : [
     srcs,
