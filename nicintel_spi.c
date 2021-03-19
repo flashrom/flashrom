@@ -28,6 +28,9 @@
  *
  * Intel 82599 10 GbE Controller Datasheet (331520)
  * http://www.intel.com/content/dam/www/public/us/en/documents/datasheets/82599-10-gbe-controller-datasheet.pdf
+ *
+ * Intel I350 Gigabit controller Datasheet
+ * https://www.intel.com/content/dam/www/public/us/en/documents/datasheets/ethernet-controller-i350-datasheet.pdf
  */
 
 #include <stdlib.h>
@@ -104,6 +107,11 @@ const struct dev_entry nics_intel_spi[] = {
 	{PCI_VENDOR_ID_INTEL, 0x1538, NT, "Intel", "I210 Gigabit Network Connection SGMII"},
 	{PCI_VENDOR_ID_INTEL, 0x1539, NT, "Intel", "I211 Gigabit Network Connection"},
 
+	{PCI_VENDOR_ID_INTEL, 0x151f, NT, "Intel", "I350 Gigabit Network Connection Unprogrammed"},
+	{PCI_VENDOR_ID_INTEL, 0x1521, NT, "Intel", "I350 Gigabit Network Connection Copper"},
+	{PCI_VENDOR_ID_INTEL, 0x1522, NT, "Intel", "I350 Gigabit Network Connection Fiber"},
+	{PCI_VENDOR_ID_INTEL, 0x1523, NT, "Intel", "I350 Gigabit Network Connection 1000BASE-KX / 1000BASE-BX backplane"},
+	{PCI_VENDOR_ID_INTEL, 0x1524, NT, "Intel", "I350 Gigabit Network Connection External SGMII PHY"},
 	{0},
 };
 
@@ -252,7 +260,7 @@ int nicintel_spi_init(void)
 	if (!dev)
 		return 1;
 
-	uint32_t io_base_addr = pcidev_readbar(dev, PCI_BASE_ADDRESS_0);
+	pciaddr_t io_base_addr = pcidev_readbar(dev, PCI_BASE_ADDRESS_0);
 	if (!io_base_addr)
 		return 1;
 
@@ -265,6 +273,12 @@ int nicintel_spi_init(void)
 		nicintel_spibar = rphysmap("Intel Gigabit NIC w/ SPI flash", io_base_addr,
 					   MEMMAP_SIZE);
 		if (!nicintel_spibar || nicintel_spi_82599_enable_flash())
+				return 1;
+	} else if ((dev->device_id & 0xfff0) == 0x1510 ||
+			(dev->device_id & 0xfff0) == 0x1520) {
+		nicintel_spibar = rphysmap("Intel I350 Gigabit w/ SPI flash", io_base_addr,
+					   MEMMAP_SIZE);
+		if (!nicintel_spibar || nicintel_spi_i210_enable_flash())
 				return 1;
 	} else {
 		nicintel_spibar = rphysmap("Intel 10 Gigabit NIC w/ SPI flash", io_base_addr + 0x10000,
