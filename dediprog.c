@@ -1300,10 +1300,10 @@ static int dediprog_init(void)
 	if (protocol(dp_data) >= PROTOCOL_V2)
 		spi_master_dediprog.features |= SPI_MASTER_4BA;
 
-	if (register_spi_master(&spi_master_dediprog, dp_data) || dediprog_set_leds(LED_NONE, dp_data))
-		return 1; /* shutdown function does cleanup */
+	if (dediprog_set_leds(LED_NONE, dp_data))
+		goto init_err_cleanup_exit;
 
-	return 0;
+	return register_spi_master(&spi_master_dediprog, dp_data);
 
 init_err_cleanup_exit:
 	dediprog_shutdown(dp_data);
