@@ -51,8 +51,6 @@ const struct dev_entry devs_usbblasterspi[] = {
 	{0}
 };
 
-static const struct spi_master spi_master_usbblaster;
-
 static struct ftdi_context ftdic;
 
 // command bytes
@@ -70,51 +68,6 @@ static struct ftdi_context ftdic;
 static uint8_t reverse(uint8_t b)
 {
 	return ((b * 0x0802LU & 0x22110LU) | (b * 0x8020LU & 0x88440LU)) * 0x10101LU >> 16;
-}
-
-
-/* Returns 0 upon success, a negative number upon errors. */
-int usbblaster_spi_init(void)
-{
-	uint8_t buf[BUF_SIZE + 1];
-
-	if (ftdi_init(&ftdic) < 0)
-		return -1;
-
-	if (ftdi_usb_open(&ftdic, ALTERA_VID, ALTERA_USBBLASTER_PID) < 0) {
-		msg_perr("Failed to open USB-Blaster: %s\n", ftdic.error_str);
-		return -1;
-	}
-
-	if (ftdi_usb_reset(&ftdic) < 0) {
-		msg_perr("USB-Blaster reset failed\n");
-		return -1;
-	}
-
-	if (ftdi_set_latency_timer(&ftdic, 2) < 0) {
-		msg_perr("USB-Blaster set latency timer failed\n");
-		return -1;
-	}
-
-	if (ftdi_write_data_set_chunksize(&ftdic, 4096) < 0 ||
-	    ftdi_read_data_set_chunksize(&ftdic, BUF_SIZE) < 0) {
-		msg_perr("USB-Blaster set chunk size failed\n");
-		return -1;
-	}
-
-	memset(buf, 0, sizeof(buf));
-	buf[sizeof(buf)-1] = BIT_LED | BIT_CS;
-	if (ftdi_write_data(&ftdic, buf, sizeof(buf)) < 0) {
-		msg_perr("USB-Blaster reset write failed\n");
-		return -1;
-	}
-	if (ftdi_read_data(&ftdic, buf, sizeof(buf)) < 0) {
-		msg_perr("USB-Blaster reset read failed\n");
-		return -1;
-	}
-
-	register_spi_master(&spi_master_usbblaster);
-	return 0;
 }
 
 static int send_write(unsigned int writecnt, const unsigned char *writearr)
@@ -216,5 +169,49 @@ static const struct spi_master spi_master_usbblaster = {
 	.write_256	= default_spi_write_256,
 	.write_aai	= default_spi_write_aai,
 };
+
+/* Returns 0 upon success, a negative number upon errors. */
+int usbblaster_spi_init(void)
+{
+	uint8_t buf[BUF_SIZE + 1];
+
+	if (ftdi_init(&ftdic) < 0)
+		return -1;
+
+	if (ftdi_usb_open(&ftdic, ALTERA_VID, ALTERA_USBBLASTER_PID) < 0) {
+		msg_perr("Failed to open USB-Blaster: %s\n", ftdic.error_str);
+		return -1;
+	}
+
+	if (ftdi_usb_reset(&ftdic) < 0) {
+		msg_perr("USB-Blaster reset failed\n");
+		return -1;
+	}
+
+	if (ftdi_set_latency_timer(&ftdic, 2) < 0) {
+		msg_perr("USB-Blaster set latency timer failed\n");
+		return -1;
+	}
+
+	if (ftdi_write_data_set_chunksize(&ftdic, 4096) < 0 ||
+	    ftdi_read_data_set_chunksize(&ftdic, BUF_SIZE) < 0) {
+		msg_perr("USB-Blaster set chunk size failed\n");
+		return -1;
+	}
+
+	memset(buf, 0, sizeof(buf));
+	buf[sizeof(buf)-1] = BIT_LED | BIT_CS;
+	if (ftdi_write_data(&ftdic, buf, sizeof(buf)) < 0) {
+		msg_perr("USB-Blaster reset write failed\n");
+		return -1;
+	}
+	if (ftdi_read_data(&ftdic, buf, sizeof(buf)) < 0) {
+		msg_perr("USB-Blaster reset read failed\n");
+		return -1;
+	}
+
+	register_spi_master(&spi_master_usbblaster);
+	return 0;
+}
 
 #endif

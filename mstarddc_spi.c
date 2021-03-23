@@ -31,8 +31,6 @@
 #include "programmer.h"
 #include "spi.h"
 
-static const struct spi_master spi_master_mstarddc;
-
 static int mstarddc_fd;
 static int mstarddc_addr;
 static int mstarddc_doreset = 1;
@@ -66,6 +64,83 @@ static int mstarddc_spi_shutdown(void *data)
 	}
 	return 0;
 }
+
+/* Returns 0 upon success, a negative number upon errors. */
+static int mstarddc_spi_send_command(const struct flashctx *flash,
+				     unsigned int writecnt,
+				     unsigned int readcnt,
+				     const unsigned char *writearr,
+				     unsigned char *readarr)
+{
+	int ret = 0;
+	uint8_t *cmd = malloc((writecnt + 1) * sizeof(uint8_t));
+	if (cmd == NULL) {
+		msg_perr("Error allocating memory: errno %d.\n", errno);
+		ret = -1;
+	}
+
+	if (!ret && writecnt) {
+		cmd[0] = MSTARDDC_SPI_WRITE;
+		memcpy(cmd + 1, writearr, writecnt);
+		if (write(mstarddc_fd, cmd, writecnt + 1) < 0) {
+			msg_perr("Error sending write command: errno %d.\n",
+				 errno);
+			ret = -1;
+		}
+	}
+
+	if (!ret && readcnt) {
+		struct i2c_rdwr_ioctl_data i2c_data;
+		struct i2c_msg msg[2];
+
+		cmd[0] = MSTARDDC_SPI_READ;
+		i2c_data.nmsgs = 2;
+		i2c_data.msgs = msg;
+		i2c_data.msgs[0].addr = mstarddc_addr;
+		i2c_data.msgs[0].len = 1;
+		i2c_data.msgs[0].flags = 0;
+		i2c_data.msgs[0].buf = cmd;
+		i2c_data.msgs[1].addr = mstarddc_addr;
+		i2c_data.msgs[1].len = readcnt;
+		i2c_data.msgs[1].flags = I2C_M_RD;
+		i2c_data.msgs[1].buf = readarr;
+
+		if (ioctl(mstarddc_fd, I2C_RDWR, &i2c_data) < 0) {
+			msg_perr("Error sending read command: errno %d.\n",
+				 errno);
+			ret = -1;
+		}
+	}
+
+	if (!ret && (writecnt || readcnt)) {
+		cmd[0] = MSTARDDC_SPI_END;
+		if (write(mstarddc_fd, cmd, 1) < 0) {
+			msg_perr("Error sending end command: errno %d.\n",
+				 errno);
+			ret = -1;
+		}
+	}
+
+	/* Do not reset if something went wrong, as it might prevent from
+	 * retrying flashing. */
+	if (ret != 0)
+		mstarddc_doreset = 0;
+
+	if (cmd)
+		free(cmd);
+
+	return ret;
+}
+
+static const struct spi_master spi_master_mstarddc = {
+	.max_data_read = 256,
+	.max_data_write = 256,
+	.command = mstarddc_spi_send_command,
+	.multicommand = default_spi_send_multicommand,
+	.read = default_spi_read,
+	.write_256 = default_spi_write_256,
+	.write_aai = default_spi_write_aai,
+};
 
 /* Returns 0 upon success, a negative number upon errors. */
 int mstarddc_spi_init(void)
@@ -151,82 +226,5 @@ out:
 	free(i2c_device);
 	return ret;
 }
-
-/* Returns 0 upon success, a negative number upon errors. */
-static int mstarddc_spi_send_command(const struct flashctx *flash,
-				     unsigned int writecnt,
-				     unsigned int readcnt,
-				     const unsigned char *writearr,
-				     unsigned char *readarr)
-{
-	int ret = 0;
-	uint8_t *cmd = malloc((writecnt + 1) * sizeof(uint8_t));
-	if (cmd == NULL) {
-		msg_perr("Error allocating memory: errno %d.\n", errno);
-		ret = -1;
-	}
-
-	if (!ret && writecnt) {
-		cmd[0] = MSTARDDC_SPI_WRITE;
-		memcpy(cmd + 1, writearr, writecnt);
-		if (write(mstarddc_fd, cmd, writecnt + 1) < 0) {
-			msg_perr("Error sending write command: errno %d.\n",
-				 errno);
-			ret = -1;
-		}
-	}
-
-	if (!ret && readcnt) {
-		struct i2c_rdwr_ioctl_data i2c_data;
-		struct i2c_msg msg[2];
-
-		cmd[0] = MSTARDDC_SPI_READ;
-		i2c_data.nmsgs = 2;
-		i2c_data.msgs = msg;
-		i2c_data.msgs[0].addr = mstarddc_addr;
-		i2c_data.msgs[0].len = 1;
-		i2c_data.msgs[0].flags = 0;
-		i2c_data.msgs[0].buf = cmd;
-		i2c_data.msgs[1].addr = mstarddc_addr;
-		i2c_data.msgs[1].len = readcnt;
-		i2c_data.msgs[1].flags = I2C_M_RD;
-		i2c_data.msgs[1].buf = readarr;
-
-		if (ioctl(mstarddc_fd, I2C_RDWR, &i2c_data) < 0) {
-			msg_perr("Error sending read command: errno %d.\n",
-				 errno);
-			ret = -1;
-		}
-	}
-
-	if (!ret && (writecnt || readcnt)) {
-		cmd[0] = MSTARDDC_SPI_END;
-		if (write(mstarddc_fd, cmd, 1) < 0) {
-			msg_perr("Error sending end command: errno %d.\n",
-				 errno);
-			ret = -1;
-		}
-	}
-
-	/* Do not reset if something went wrong, as it might prevent from
-	 * retrying flashing. */
-	if (ret != 0)
-		mstarddc_doreset = 0;
-
-	if (cmd)
-		free(cmd);
-
-	return ret;
-}
-
-static const struct spi_master spi_master_mstarddc = {
-	.max_data_read = 256,
-	.max_data_write = 256,
-	.command = mstarddc_spi_send_command,
-	.multicommand = default_spi_send_multicommand,
-	.read = default_spi_read,
-	.write_256 = default_spi_write_256,
-	.write_aai = default_spi_write_aai,
-};
 
 #endif

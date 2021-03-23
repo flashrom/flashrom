@@ -40,8 +40,6 @@ enum voltage_coerce_mode {
 	USE_HIGHER
 };
 
-static const struct spi_master spi_programmer_ni845x;
-
 static unsigned char CS_number;	// use chip select 0 as default
 static enum USB845x_type device_pid = Unknown_NI845X_Device;
 
@@ -403,103 +401,6 @@ static int ni845x_spi_shutdown(void *data)
 	return 0;
 }
 
-int ni845x_spi_init(void)
-{
-	char *speed_str = NULL;
-	char *CS_str = NULL;
-	char *voltage = NULL;
-	char *endptr = NULL;
-	int requested_io_voltage_mV = 1200;     // default the IO voltage to 1.2V
-	int spi_speed_KHz = 1000;		// selecting 1 MHz SCK is a good bet
-	char *serial_number = NULL;		// by default open the first connected device
-	char *ignore_io_voltage_limits_str = NULL;
-	int32 tmp = 0;
-
-	// read the cs parameter (which Chip select should we use)
-	CS_str = extract_programmer_param("cs");
-	if (CS_str) {
-		CS_number = CS_str[0] - '0';
-		free(CS_str);
-		if (strlen(CS_str) > 1 || CS_number < 0 || 7 < CS_number) {
-			msg_perr("Only CS 0-7 supported\n");
-			return 1;
-		}
-	}
-
-	voltage = extract_programmer_param("voltage");
-	if (voltage != NULL) {
-		requested_io_voltage_mV = parse_voltage(voltage);
-		free(voltage);
-		if (requested_io_voltage_mV < 0)
-			return 1;
-	}
-
-	serial_number = extract_programmer_param("serial");
-
-	speed_str = extract_programmer_param("spispeed");
-	if (speed_str) {
-		spi_speed_KHz = strtoul(speed_str, &endptr, 0);
-		if (*endptr) {
-			msg_perr("The spispeed parameter passed with invalid format: %s\n",
-				 speed_str);
-			msg_perr("Please pass the parameter with a simple number in kHz\n");
-			return 1;
-		}
-		free(speed_str);
-	}
-
-	ignore_io_voltage_limits = false;
-	ignore_io_voltage_limits_str = extract_programmer_param("ignore_io_voltage_limits");
-	if (ignore_io_voltage_limits_str
-		&& strcmp(ignore_io_voltage_limits_str, "yes") == 0) {
-		ignore_io_voltage_limits = true;
-	}
-
-	if (ni845x_spi_open(serial_number, &device_handle)) {
-		if (serial_number) {
-			msg_pinfo("Could not find any connected NI USB-8451/8452 with serialnumber: %s!\n",
-				  serial_number);
-			ni845x_spi_print_available_devices();
-			msg_pinfo("Check the S/N field on the bottom of the device,\n"
-				  "or use 'lsusb -v -d 3923:7166 | grep Serial' for USB-8451\n"
-				  "or 'lsusb -v -d 3923:7514 | grep Serial' for USB-8452\n");
-			free(serial_number);
-		} else {
-			msg_pinfo("Could not find any connected NI USB-845x device!\n");
-		}
-		return 1;
-	}
-	free(serial_number);
-
-	// open the SPI config handle
-	tmp = ni845xSpiConfigurationOpen(&configuration_handle);
-	if (tmp != 0) {
-		ni845x_report_error("ni845xSpiConfigurationOpen", tmp);
-		ni845x_spi_shutdown(NULL);
-		return 1;
-	}
-
-	if (usb8452_spi_set_io_voltage(requested_io_voltage_mV, &io_voltage_in_mV, USE_LOWER) < 0) {
-		ni845x_spi_shutdown(NULL);
-		return 1;	// no alert here usb8452_spi_set_io_voltage already printed that
-	}
-
-	if (ni845x_spi_set_speed(spi_speed_KHz)) {
-		msg_perr("Unable to set SPI speed\n");
-		ni845x_spi_shutdown(NULL);
-		return 1;
-	}
-
-	if (register_shutdown(ni845x_spi_shutdown, NULL)) {
-		ni845x_spi_shutdown(NULL);
-		return 1;
-	}
-
-	register_spi_master(&spi_programmer_ni845x);
-
-	return 0;
-}
-
 static void ni845x_warn_over_max_voltage(const struct flashctx *flash)
 {
 	if (device_pid == USB8451) {
@@ -636,3 +537,100 @@ static const struct spi_master spi_programmer_ni845x = {
 	.write_256 = default_spi_write_256,
 	.write_aai = default_spi_write_aai,
 };
+
+int ni845x_spi_init(void)
+{
+	char *speed_str = NULL;
+	char *CS_str = NULL;
+	char *voltage = NULL;
+	char *endptr = NULL;
+	int requested_io_voltage_mV = 1200;     // default the IO voltage to 1.2V
+	int spi_speed_KHz = 1000;		// selecting 1 MHz SCK is a good bet
+	char *serial_number = NULL;		// by default open the first connected device
+	char *ignore_io_voltage_limits_str = NULL;
+	int32 tmp = 0;
+
+	// read the cs parameter (which Chip select should we use)
+	CS_str = extract_programmer_param("cs");
+	if (CS_str) {
+		CS_number = CS_str[0] - '0';
+		free(CS_str);
+		if (strlen(CS_str) > 1 || CS_number < 0 || 7 < CS_number) {
+			msg_perr("Only CS 0-7 supported\n");
+			return 1;
+		}
+	}
+
+	voltage = extract_programmer_param("voltage");
+	if (voltage != NULL) {
+		requested_io_voltage_mV = parse_voltage(voltage);
+		free(voltage);
+		if (requested_io_voltage_mV < 0)
+			return 1;
+	}
+
+	serial_number = extract_programmer_param("serial");
+
+	speed_str = extract_programmer_param("spispeed");
+	if (speed_str) {
+		spi_speed_KHz = strtoul(speed_str, &endptr, 0);
+		if (*endptr) {
+			msg_perr("The spispeed parameter passed with invalid format: %s\n",
+				 speed_str);
+			msg_perr("Please pass the parameter with a simple number in kHz\n");
+			return 1;
+		}
+		free(speed_str);
+	}
+
+	ignore_io_voltage_limits = false;
+	ignore_io_voltage_limits_str = extract_programmer_param("ignore_io_voltage_limits");
+	if (ignore_io_voltage_limits_str
+		&& strcmp(ignore_io_voltage_limits_str, "yes") == 0) {
+		ignore_io_voltage_limits = true;
+	}
+
+	if (ni845x_spi_open(serial_number, &device_handle)) {
+		if (serial_number) {
+			msg_pinfo("Could not find any connected NI USB-8451/8452 with serialnumber: %s!\n",
+				  serial_number);
+			ni845x_spi_print_available_devices();
+			msg_pinfo("Check the S/N field on the bottom of the device,\n"
+				  "or use 'lsusb -v -d 3923:7166 | grep Serial' for USB-8451\n"
+				  "or 'lsusb -v -d 3923:7514 | grep Serial' for USB-8452\n");
+			free(serial_number);
+		} else {
+			msg_pinfo("Could not find any connected NI USB-845x device!\n");
+		}
+		return 1;
+	}
+	free(serial_number);
+
+	// open the SPI config handle
+	tmp = ni845xSpiConfigurationOpen(&configuration_handle);
+	if (tmp != 0) {
+		ni845x_report_error("ni845xSpiConfigurationOpen", tmp);
+		ni845x_spi_shutdown(NULL);
+		return 1;
+	}
+
+	if (usb8452_spi_set_io_voltage(requested_io_voltage_mV, &io_voltage_in_mV, USE_LOWER) < 0) {
+		ni845x_spi_shutdown(NULL);
+		return 1;	// no alert here usb8452_spi_set_io_voltage already printed that
+	}
+
+	if (ni845x_spi_set_speed(spi_speed_KHz)) {
+		msg_perr("Unable to set SPI speed\n");
+		ni845x_spi_shutdown(NULL);
+		return 1;
+	}
+
+	if (register_shutdown(ni845x_spi_shutdown, NULL)) {
+		ni845x_spi_shutdown(NULL);
+		return 1;
+	}
+
+	register_spi_master(&spi_programmer_ni845x);
+
+	return 0;
+}
