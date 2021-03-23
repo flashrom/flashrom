@@ -5441,7 +5441,7 @@ const struct flashchip flashchips[] = {
 		.page_size	= 256,
 		/* OTP: 512B total; enter 0x3A */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI,
-		.tested		= TEST_UNTESTED,
+		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
