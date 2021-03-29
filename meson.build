@@ -99,6 +99,7 @@ else
   config_digilent_spi = false
   config_developerbox_spi = false
   config_pickit2_spi = false
+  config_raiden_debug_spi = false
 endif
 
 # some programmers require libpci
@@ -113,7 +114,6 @@ else
   config_atavia = false
   config_drkaiser = false
   config_gfxnvidia = false
-  config_raiden_debug_spi = false
   config_internal = false
   config_it8212 = false
   config_nic3com = false
