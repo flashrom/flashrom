@@ -123,7 +123,6 @@ else
   config_nicnatsemi = false
   config_nicrealtek = false
   config_ogp_spi = false
-  config_rayer_spi = false
   config_satamv = false
   config_satasii = false
 endif
@@ -279,6 +278,7 @@ endif
 if config_rayer_spi
   srcs += 'rayer_spi.c'
   config_bitbang_spi = true
+  need_raw_access = true
   cargs += '-DCONFIG_RAYER_SPI=1'
 endif
 if config_satamv
