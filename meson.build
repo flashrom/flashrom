@@ -99,6 +99,7 @@ else
   config_digilent_spi = false
   config_developerbox_spi = false
   config_pickit2_spi = false
+  config_stlinkv3_spi = false
 endif
 
 # some programmers require libpci
