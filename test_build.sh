@@ -3,6 +3,8 @@ set -e
 
 make CONFIG_EVERYTHING=yes WARNERROR=yes
 
-meson out
-(cd out && ninja)
-(cd out && ninja test)
+
+builddir=out
+meson $builddir
+ninja -C $builddir
+ninja -C $builddir test
