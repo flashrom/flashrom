@@ -175,7 +175,7 @@ struct programmer_entry {
 	void (*delay) (unsigned int usecs);
 };
 
-extern const struct programmer_entry programmer_table[];
+extern const struct programmer_entry *const programmer_table[];
 extern const size_t programmer_table_size;
 
 int programmer_init(enum programmer prog, const char *param);

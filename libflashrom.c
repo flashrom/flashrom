@@ -124,7 +124,7 @@ const char **flashrom_supported_programmers(void)
 
 	if (supported_programmers != NULL) {
 		for (; p < PROGRAMMER_INVALID; ++p) {
-			supported_programmers[p] = programmer_table[p].name;
+			supported_programmers[p] = programmer_table[p]->name;
 		}
 	} else {
 		msg_gerr("Memory allocation error!\n");
@@ -279,7 +279,7 @@ int flashrom_programmer_init(struct flashrom_programmer **const flashprog,
 	unsigned prog;
 
 	for (prog = 0; prog < PROGRAMMER_INVALID; prog++) {
-		if (strcmp(prog_name, programmer_table[prog].name) == 0)
+		if (strcmp(prog_name, programmer_table[prog]->name) == 0)
 			break;
 	}
 	if (prog >= PROGRAMMER_INVALID) {

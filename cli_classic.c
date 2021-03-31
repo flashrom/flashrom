@@ -407,7 +407,7 @@ int main(int argc, char *argv[])
 					"for details.\n");
 			}
 			for (prog = 0; prog < PROGRAMMER_INVALID; prog++) {
-				name = programmer_table[prog].name;
+				name = programmer_table[prog]->name;
 				namelen = strlen(name);
 				if (strncmp(optarg, name, namelen) == 0) {
 					switch (optarg[namelen]) {
@@ -545,7 +545,7 @@ int main(int argc, char *argv[])
 			/* We need to strdup here because we free(pparam) unconditionally later. */
 			pparam = strdup(CONFIG_DEFAULT_PROGRAMMER_ARGS);
 			msg_pinfo("Using default programmer \"%s\" with arguments \"%s\".\n",
-				  programmer_table[CONFIG_DEFAULT_PROGRAMMER].name, pparam);
+				  programmer_table[CONFIG_DEFAULT_PROGRAMMER]->name, pparam);
 		} else {
 			msg_perr("Please select a programmer with the --programmer parameter.\n"
 #if CONFIG_INTERNAL == 1

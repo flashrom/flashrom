@@ -155,8 +155,8 @@ int programmer_init(enum programmer prog, const char *param)
 	programmer_may_write = 1;
 
 	programmer_param = param;
-	msg_pdbg("Initializing %s programmer\n", programmer_table[programmer].name);
-	ret = programmer_table[programmer].init();
+	msg_pdbg("Initializing %s programmer\n", programmer_table[programmer]->name);
+	ret = programmer_table[programmer]->init();
 	if (programmer_param && strlen(programmer_param)) {
 		if (ret != 0) {
 			/* It is quite possible that any unhandled programmer parameter would have been valid,
@@ -200,7 +200,7 @@ int programmer_shutdown(void)
 
 void *programmer_map_flash_region(const char *descr, uintptr_t phys_addr, size_t len)
 {
-	void *ret = programmer_table[programmer].map_flash_region(descr, phys_addr, len);
+	void *ret = programmer_table[programmer]->map_flash_region(descr, phys_addr, len);
 	msg_gspew("%s: mapping %s from 0x%0*" PRIxPTR " to 0x%0*" PRIxPTR "\n",
 		  __func__, descr, PRIxPTR_WIDTH, phys_addr, PRIxPTR_WIDTH, (uintptr_t) ret);
 	return ret;
@@ -208,7 +208,7 @@ void *programmer_map_flash_region(const char *descr, uintptr_t phys_addr, size_t
 
 void programmer_unmap_flash_region(void *virt_addr, size_t len)
 {
-	programmer_table[programmer].unmap_flash_region(virt_addr, len);
+	programmer_table[programmer]->unmap_flash_region(virt_addr, len);
 	msg_gspew("%s: unmapped 0x%0*" PRIxPTR "\n", __func__, PRIxPTR_WIDTH, (uintptr_t)virt_addr);
 }
 
@@ -256,7 +256,7 @@ void chip_readn(const struct flashctx *flash, uint8_t *buf, chipaddr addr,
 void programmer_delay(unsigned int usecs)
 {
 	if (usecs > 0)
-		programmer_table[programmer].delay(usecs);
+		programmer_table[programmer]->delay(usecs);
 }
 
 int read_memmapped(struct flashctx *flash, uint8_t *buf, unsigned int start,
@@ -840,12 +840,12 @@ notfound:
 		  flash->chip->vendor, flash->chip->name, flash->chip->total_size, tmp);
 	free(tmp);
 #if CONFIG_INTERNAL == 1
-	if (programmer_table[programmer].map_flash_region == physmap)
+	if (programmer_table[programmer]->map_flash_region == physmap)
 		msg_cinfo("mapped at physical address 0x%0*" PRIxPTR ".\n",
 			  PRIxPTR_WIDTH, flash->physical_memory);
 	else
 #endif
-		msg_cinfo("on %s.\n", programmer_table[programmer].name);
+		msg_cinfo("on %s.\n", programmer_table[programmer]->name);
 
 	/* Flash registers may more likely not be mapped if the chip was forced.
 	 * Lock info may be stored in registers, so avoid lock info printing. */
@@ -1586,7 +1586,7 @@ void list_programmers_linebreak(int startcol, int cols, int paren)
 	int i;
 
 	for (p = 0; p < PROGRAMMER_INVALID; p++) {
-		pname = programmer_table[p].name;
+		pname = programmer_table[p]->name;
 		pnamelen = strlen(pname);
 		if (remaining - pnamelen - 2 < 0) {
 			if (firstline)
@@ -1718,45 +1718,50 @@ int selfcheck(void)
 		ret = 1;
 	}
 	for (i = 0; i < PROGRAMMER_INVALID; i++) {
-		const struct programmer_entry p = programmer_table[i];
-		if (p.name == NULL) {
+		const struct programmer_entry *const p = programmer_table[i];
+		if (p == NULL) {
+			msg_gerr("Programmer with index %d is NULL instead of a valid pointer!\n", i);
+			ret = 1;
+			continue;
+		}
+		if (p->name == NULL) {
 			msg_gerr("All programmers need a valid name, but the one with index %d does not!\n", i);
 			ret = 1;
 			/* This might hide other problems with this programmer, but allows for better error
 			 * messages below without jumping through hoops. */
 			continue;
 		}
-		switch (p.type) {
+		switch (p->type) {
 		case USB:
 		case PCI:
 		case OTHER:
-			if (p.devs.note == NULL) {
-				if (strcmp("internal", p.name) == 0)
+			if (p->devs.note == NULL) {
+				if (strcmp("internal", p->name) == 0)
 					break; /* This one has its device list stored separately. */
 				msg_gerr("Programmer %s has neither a device list nor a textual description!\n",
-					 p.name);
+					 p->name);
 				ret = 1;
 			}
 			break;
 		default:
-			msg_gerr("Programmer %s does not have a valid type set!\n", p.name);
+			msg_gerr("Programmer %s does not have a valid type set!\n", p->name);
 			ret = 1;
 			break;
 		}
-		if (p.init == NULL) {
-			msg_gerr("Programmer %s does not have a valid init function!\n", p.name);
+		if (p->init == NULL) {
+			msg_gerr("Programmer %s does not have a valid init function!\n", p->name);
 			ret = 1;
 		}
-		if (p.delay == NULL) {
-			msg_gerr("Programmer %s does not have a valid delay function!\n", p.name);
+		if (p->delay == NULL) {
+			msg_gerr("Programmer %s does not have a valid delay function!\n", p->name);
 			ret = 1;
 		}
-		if (p.map_flash_region == NULL) {
-			msg_gerr("Programmer %s does not have a valid map_flash_region function!\n", p.name);
+		if (p->map_flash_region == NULL) {
+			msg_gerr("Programmer %s does not have a valid map_flash_region function!\n", p->name);
 			ret = 1;
 		}
-		if (p.unmap_flash_region == NULL) {
-			msg_gerr("Programmer %s does not have a valid unmap_flash_region function!\n", p.name);
+		if (p->unmap_flash_region == NULL) {
+			msg_gerr("Programmer %s does not have a valid unmap_flash_region function!\n", p->name);
 			ret = 1;
 		}
 	}
