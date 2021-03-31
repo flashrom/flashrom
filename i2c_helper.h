@@ -72,6 +72,14 @@ static inline int i2c_buffer_t_fill(i2c_buffer_t *i2c_buf, void *buf, uint16_t l
 int i2c_open(int bus, uint16_t addr, int force);
 
 /**
+ * i2c_open_path: open an I2C device by device path
+ *
+ * This function behaves the same as i2c_open, but takes a filesystem
+ * path (assumed to be an I2C device file) instead of a bus number.
+ */
+int i2c_open_path(const char *path, uint16_t addr, int force);
+
+/**
  * i2c_close - closes the file descriptor returned by i2c_open
  *
  * @fd:	file descriptor to be closed.

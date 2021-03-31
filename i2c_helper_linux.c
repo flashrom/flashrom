@@ -37,14 +37,31 @@ int i2c_close(int fd)
 	return fd == -1 ? 0 : close(fd);
 }
 
+int i2c_open_path(const char *path, uint16_t addr, int force)
+{
+	int fd = open(path, O_RDWR);
+	if (fd < 0) {
+		msg_perr("Unable to open I2C device %s: %s.\n", path, strerror(errno));
+		return fd;
+	}
+
+	int request = force ? I2C_SLAVE_FORCE : I2C_SLAVE;
+	int ret = ioctl(fd, request, addr);
+	if (ret < 0) {
+		msg_perr("Unable to set I2C slave address to 0x%02x: %s.\n", addr, strerror(errno));
+		i2c_close(fd);
+                return ret;
+	}
+
+	return fd;
+}
+
+
 int i2c_open(int bus, uint16_t addr, int force)
 {
 	char dev[sizeof(I2C_DEV_PREFIX)] = {0};
 
 	int ret = -1;
-	int fd = -1;
-
-	int request = force ? I2C_SLAVE_FORCE : I2C_SLAVE;
 
 	if (bus < 0 || bus > I2C_MAX_BUS) {
 		msg_perr("Invalid I2C bus %d.\n", bus);
@@ -57,20 +74,7 @@ int i2c_open(int bus, uint16_t addr, int force)
 		return ret;
 	}
 
-	fd = open(dev, O_RDWR);
-	if (fd < 0) {
-		msg_perr("Unable to open I2C device %s: %s.\n", dev, strerror(errno));
-		return fd;
-	}
-
-	ret = ioctl(fd, request, addr);
-	if (ret < 0) {
-		msg_perr("Unable to set I2C slave address to 0x%02x: %s.\n", addr, strerror(errno));
-		i2c_close(fd);
-		return ret;
-	}
-
-	return fd;
+	return i2c_open_path(dev, addr, force);
 }
 
 int i2c_read(int fd, uint16_t addr, i2c_buffer_t *buf)
