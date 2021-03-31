@@ -633,7 +633,7 @@ CHIP_OBJS = jedec.o stm50.o w39.o w29ee011.o \
 ###############################################################################
 # Library code.
 
-LIB_OBJS = libflashrom.o layout.o flashrom.o udelay.o programmer.o helpers.o ich_descriptors.o fmap.o
+LIB_OBJS = libflashrom.o layout.o flashrom.o udelay.o programmer.o programmer_table.o helpers.o ich_descriptors.o fmap.o
 
 ###############################################################################
 # Frontend related stuff.
