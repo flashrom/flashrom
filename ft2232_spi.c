@@ -79,6 +79,8 @@ static const struct dev_entry devs_ft2232spi[] = {
 	{0},
 };
 
+#define FTDI_HW_BUFFER_SIZE 4096 /* in bytes */
+
 #define DEFAULT_DIVISOR 2
 
 #define BITMODE_BITBANG_NORMAL	1
@@ -276,12 +278,99 @@ static int ft2232_spi_send_command(const struct flashctx *flash,
 	return failed ? -1 : 0;
 }
 
+static bool ft2232_spi_command_fits(const struct spi_command *cmd, size_t buffer_size)
+{
+	const size_t cmd_len = 3; /* same length for any ft2232 command */
+	return
+		/* commands for CS# assertion and de-assertion: */
+		cmd_len + cmd_len
+		/* commands for either a write, a read or both: */
+		+ (cmd->writecnt && cmd->readcnt ? cmd_len + cmd_len : cmd_len)
+		/* payload (only writecnt; readcnt concerns another buffer): */
+		+ cmd->writecnt
+		<= buffer_size;
+}
+
+/* Returns 0 upon success, a negative number upon errors. */
+static int ft2232_spi_send_multicommand(const struct flashctx *flash, struct spi_command *cmds)
+{
+	struct ft2232_data *spi_data = flash->mst->spi.data;
+	struct ftdi_context *ftdic = &spi_data->ftdic_context;
+	static unsigned char buf[FTDI_HW_BUFFER_SIZE];
+	size_t i = 0;
+	int ret = 0;
+
+	/*
+	 * Minimize FTDI-calls by packing as many commands as possible together.
+	 */
+	for (; cmds->writecnt || cmds->readcnt; cmds++) {
+
+		if (cmds->writecnt > 65536 || cmds->readcnt > 65536)
+			return SPI_INVALID_LENGTH;
+
+		if (!ft2232_spi_command_fits(cmds, FTDI_HW_BUFFER_SIZE - i)) {
+			msg_perr("Command does not fit\n");
+			return SPI_GENERIC_ERROR;
+		}
+
+		msg_pspew("Assert CS#\n");
+		buf[i++] = SET_BITS_LOW;
+		buf[i++] = ~ 0x08 & spi_data->pinlvl; /* assert CS (3rd) bit only */
+		buf[i++] = spi_data->pindir;
+
+		/* WREN, OP(PROGRAM, ERASE), ADDR, DATA */
+		if (cmds->writecnt) {
+			buf[i++] = MPSSE_DO_WRITE | MPSSE_WRITE_NEG;
+			buf[i++] = (cmds->writecnt - 1) & 0xff;
+			buf[i++] = ((cmds->writecnt - 1) >> 8) & 0xff;
+			memcpy(buf + i, cmds->writearr, cmds->writecnt);
+			i += cmds->writecnt;
+		}
+
+		/* An optional read command */
+		if (cmds->readcnt) {
+			buf[i++] = MPSSE_DO_READ;
+			buf[i++] = (cmds->readcnt - 1) & 0xff;
+			buf[i++] = ((cmds->readcnt - 1) >> 8) & 0xff;
+		}
+
+		/* Add final de-assert CS# */
+		msg_pspew("De-assert CS#\n");
+		buf[i++] = SET_BITS_LOW;
+		buf[i++] = spi_data->pinlvl;
+		buf[i++] = spi_data->pindir;
+
+		/* continue if there is no read-cmd and further cmds exist */
+		if (!cmds->readcnt &&
+				((cmds + 1)->writecnt || (cmds + 1)->readcnt) &&
+				ft2232_spi_command_fits((cmds + 1), FTDI_HW_BUFFER_SIZE - i)) {
+			continue;
+		}
+
+		ret = send_buf(ftdic, buf, i);
+		i = 0;
+		if (ret) {
+			msg_perr("send_buf failed: %i\n", ret);
+			break;
+		}
+
+		if (cmds->readcnt) {
+			ret = get_buf(ftdic, cmds->readarr, cmds->readcnt);
+			if (ret) {
+				msg_perr("get_buf failed: %i\n", ret);
+				break;
+			}
+		}
+	}
+	return ret ? -1 : 0;
+}
+
 static const struct spi_master spi_master_ft2232 = {
 	.features	= SPI_MASTER_4BA,
 	.max_data_read	= 64 * 1024,
 	.max_data_write	= 256,
 	.command	= ft2232_spi_send_command,
-	.multicommand	= default_spi_send_multicommand,
+	.multicommand	= ft2232_spi_send_multicommand,
 	.read		= default_spi_read,
 	.write_256	= default_spi_write_256,
 	.write_aai	= default_spi_write_aai,
