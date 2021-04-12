@@ -119,6 +119,46 @@ static const struct spi_master spi_master_linux = {
 	.write_aai	= default_spi_write_aai,
 };
 
+/* Read max buffer size from sysfs, or use page size as fallback. */
+static size_t get_max_kernel_buf_size() {
+	size_t result = 0;
+	FILE *fp;
+	fp = fopen(BUF_SIZE_FROM_SYSFS, "r");
+	if (!fp) {
+		msg_pwarn("Cannot open %s: %s.\n", BUF_SIZE_FROM_SYSFS, strerror(errno));
+		goto out;
+	}
+
+	char buf[10];
+	if (!fgets(buf, sizeof(buf), fp)) {
+		if (feof(fp))
+			msg_pwarn("Cannot read %s: file is empty.\n", BUF_SIZE_FROM_SYSFS);
+		else
+			msg_pwarn("Cannot read %s: %s.\n", BUF_SIZE_FROM_SYSFS, strerror(errno));
+		goto out;
+	}
+
+	long int tmp;
+	errno = 0;
+	tmp = strtol(buf, NULL, 0);
+	if ((tmp < 0) || errno) {
+		msg_pwarn("Buffer size %ld from %s seems wrong.\n", tmp, BUF_SIZE_FROM_SYSFS);
+	} else {
+		msg_pdbg("%s: Using value from %s as max buffer size.\n", __func__, BUF_SIZE_FROM_SYSFS);
+		result = (size_t)tmp;
+	}
+
+out:
+	if (fp)
+		fclose(fp);
+
+	if (!result) {
+		msg_pdbg("%s: Using page size as max buffer size.\n", __func__);
+		result = (size_t)getpagesize();
+	}
+	return result;
+}
+
 int linux_spi_init(void)
 {
 	char *p, *endp, *dev;
@@ -183,43 +223,9 @@ int linux_spi_init(void)
 		return 1;
 	}
 
-	/* Read max buffer size from sysfs, or use page size as fallback. */
-	FILE *fp;
-	fp = fopen(BUF_SIZE_FROM_SYSFS, "r");
-	if (!fp) {
-		msg_pwarn("Cannot open %s: %s.\n", BUF_SIZE_FROM_SYSFS, strerror(errno));
-		goto out;
-	}
-
-	char buf[10];
-	if (!fgets(buf, sizeof(buf), fp)) {
-		if (feof(fp))
-			msg_pwarn("Cannot read %s: file is empty.\n", BUF_SIZE_FROM_SYSFS);
-		else
-			msg_pwarn("Cannot read %s: %s.\n", BUF_SIZE_FROM_SYSFS, strerror(errno));
-		goto out;
-	}
-
-	long int tmp;
-	errno = 0;
-	tmp = strtol(buf, NULL, 0);
-	if ((tmp < 0) || errno) {
-		msg_pwarn("Buffer size %ld from %s seems wrong.\n", tmp, BUF_SIZE_FROM_SYSFS);
-	} else {
-		msg_pdbg("%s: Using value from %s as max buffer size.\n", __func__, BUF_SIZE_FROM_SYSFS);
-		max_kernel_buf_size = (size_t)tmp;
-	}
-
-out:
-	if (fp)
-		fclose(fp);
-
-	if (!max_kernel_buf_size) {
-		msg_pdbg("%s: Using page size as max buffer size.\n", __func__);
-		max_kernel_buf_size = (size_t)getpagesize();
-	}
-
+	max_kernel_buf_size = get_max_kernel_buf_size();
 	msg_pdbg("%s: max_kernel_buf_size: %zu\n", __func__, max_kernel_buf_size);
+
 	register_spi_master(&spi_master_linux);
 	return 0;
 }
