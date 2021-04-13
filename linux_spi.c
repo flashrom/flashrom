@@ -167,6 +167,7 @@ int linux_spi_init(void)
 	/* SPI mode 0 (beware this also includes: MSB first, CS active low and others */
 	const uint8_t mode = SPI_MODE_0;
 	const uint8_t bits = 8;
+	int ret = 0;
 
 	p = extract_programmer_param("spispeed");
 	if (p && strlen(p)) {
@@ -200,34 +201,44 @@ int linux_spi_init(void)
 	}
 	free(dev);
 
-	if (register_shutdown(linux_spi_shutdown, NULL))
-		return 1;
-	/* We rely on the shutdown function for cleanup from here on. */
-
 	if (ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &speed_hz) == -1) {
 		msg_perr("%s: failed to set speed to %"PRIu32"Hz: %s\n",
 			 __func__, speed_hz, strerror(errno));
-		return 1;
+		ret = 1;
+		goto init_err;
 	}
 	msg_pdbg("Using %"PRIu32"kHz clock\n", speed_hz / 1000);
 
 	if (ioctl(fd, SPI_IOC_WR_MODE, &mode) == -1) {
 		msg_perr("%s: failed to set SPI mode to 0x%02x: %s\n",
 			 __func__, mode, strerror(errno));
-		return 1;
+		ret = 1;
+		goto init_err;
 	}
 
 	if (ioctl(fd, SPI_IOC_WR_BITS_PER_WORD, &bits) == -1) {
 		msg_perr("%s: failed to set the number of bits per SPI word to %u: %s\n",
 			 __func__, bits == 0 ? 8 : bits, strerror(errno));
-		return 1;
+		ret = 1;
+		goto init_err;
 	}
 
 	max_kernel_buf_size = get_max_kernel_buf_size();
 	msg_pdbg("%s: max_kernel_buf_size: %zu\n", __func__, max_kernel_buf_size);
 
+	if (register_shutdown(linux_spi_shutdown, NULL)) {
+		ret = 1;
+		goto init_err;
+	}
 	register_spi_master(&spi_master_linux);
 	return 0;
+
+init_err:
+	if (fd != -1) {
+		close(fd);
+		fd = -1;
+	}
+	return ret;
 }
 
 #endif // CONFIG_LINUX_SPI == 1
