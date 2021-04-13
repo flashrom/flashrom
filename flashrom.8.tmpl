@@ -48,7 +48,8 @@ flashrom \- detect, read, write, verify and erase flash chips
           \fB\-p\fR <programmername>[:<parameters>] [\fB\-c\fR <chipname>]
             (\fB\-\-flash\-name\fR|\fB\-\-flash\-size\fR|
              [\fB\-E\fR|\fB\-r\fR <file>|\fB\-w\fR <file>|\fB\-v\fR <file>]
-             [(\fB\-l\fR <file>|\fB\-\-ifd|\fB \-\-fmap\fR|\fB\-\-fmap-file\fR <file>) [\fB\-i\fR <image>]]
+             [(\fB\-l\fR <file>|\fB\-\-ifd|\fB \-\-fmap\fR|\fB\-\-fmap-file\fR <file>)
+               [\fB\-i\fR <image>[:<file>]]]
              [\fB\-n\fR] [\fB\-N\fR] [\fB\-f\fR])]
          [\fB\-V\fR[\fBV\fR[\fBV\fR]]] [\fB-o\fR <logfile>]
 .SH DESCRIPTION
@@ -239,10 +240,45 @@ The following ROM images may be present in an IFD:
   gbe   gigabit ethernet firmware
   pd    platform specific data
 .TP
-.B "\-i, \-\-image <imagename>"
-Only flash region/image
-.B <imagename>
-from flash layout.
+.B "\-i, \-\-include <region>[:<file>]"
+Read or write only
+.B <region>
+to or from ROM.
+The
+.B "\-i"
+option may be used multiple times if the user wishes to read or write
+multiple regions using a single command.
+.sp
+The user may optionally specify a corresponding
+.B <file>
+for any region they wish to read or write. A read operation will read the
+corresponding regions from ROM and write individual files for each one. A write
+option will read file(s) and write to the corresponding region(s) in ROM.
+.sp
+For write operations, files specified using
+.B "\-i"
+take precedence over content from the argument to
+.B "\-w."
+.sp
+Examples:
+.sp
+  To read regions named
+.BR "foo " and " bar"
+in layout file
+.B <layout>
+into region-sized files
+.BR "foo.bin " and " bar.bin" ", run:
+.sp
+.B "    flashrom \-p prog \-l <layout> \-i foo:foo.bin -i bar:bar.bin -r rom.bin
+.sp
+  To write files
+.BR "foo.bin " and " bar.bin"
+into regions named
+.BR "foo " and " bar" " in layout file
+.BR <layout>
+to the ROM, run:
+.sp
+.B "    flashrom \-p prog \-l <layout> \-i foo:foo.bin -i bar:bar.bin -w rom.bin
 .TP
 .B "\-\-flash\-name"
 Prints out the detected flash chips name.

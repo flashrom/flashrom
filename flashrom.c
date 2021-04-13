@@ -1360,7 +1360,7 @@ int read_buf_from_file(unsigned char *buf, unsigned long size,
 		goto out;
 	}
 	if (image_stat.st_size != (intmax_t)size) {
-		msg_gerr("Error: Image size (%jd B) doesn't match the flash chip's size (%lu B)!\n",
+		msg_gerr("Error: Image size (%jd B) doesn't match the expected size (%lu B)!\n",
 			 (intmax_t)image_stat.st_size, size);
 		ret = 1;
 		goto out;
@@ -1378,6 +1378,51 @@ out:
 #endif
 }
 
+/**
+ * @brief Reads content to buffer from one or more files.
+ *
+ * Reads content to supplied buffer from files. If a filename is specified for
+ * individual regions using the partial read syntax ('-i <region>[:<filename>]')
+ * then this will read file data into the corresponding region in the
+ * supplied buffer.
+ *
+ * @param flashctx Flash context to be used.
+ * @param buf      Chip-sized buffer to write data to
+ * @return 0 on success
+ */
+static int read_buf_from_include_args(const struct flashctx *const flash,
+				      unsigned char *buf)
+{
+	const struct flashrom_layout *const layout = get_layout(flash);
+	const struct romentry *entry = NULL;
+
+	/*
+	 * Content will be read from -i args, so they must not overlap since
+	 * we need to know exactly what content to write to the ROM.
+	 */
+	if (included_regions_overlap(layout)) {
+		msg_gerr("Error: Included regions must not overlap when writing.\n");
+		return 1;
+	}
+
+	while ((entry = layout_next_included(layout, entry))) {
+		if (!entry->file)
+			continue;
+		if (read_buf_from_file(buf + entry->start,
+				       entry->end - entry->start + 1, entry->file))
+			return 1;
+	}
+	return 0;
+}
+
+/**
+ * @brief Writes passed data buffer into a file
+ *
+ * @param buf      Buffer with data to write
+ * @param size     Size of buffer
+ * @param filename File path to write to
+ * @return 0 on success
+ */
 int write_buf_to_file(const unsigned char *buf, unsigned long size, const char *filename)
 {
 #ifdef __LIBPAYLOAD__
@@ -1430,6 +1475,35 @@ out:
 #endif
 }
 
+/**
+ * @brief Writes content from buffer to one or more files.
+ *
+ * Writes content from supplied buffer to files. If a filename is specified for
+ * individual regions using the partial read syntax ('-i <region>[:<filename>]')
+ * then this will write files using data from the corresponding region in the
+ * supplied buffer.
+ *
+ * @param flashctx Flash context to be used.
+ * @param buf      Chip-sized buffer to read data from
+ * @return 0 on success
+ */
+static int write_buf_to_include_args(const struct flashctx *const flash,
+				     unsigned char *buf)
+{
+	const struct flashrom_layout *const layout = get_layout(flash);
+	const struct romentry *entry = NULL;
+
+	while ((entry = layout_next_included(layout, entry))) {
+		if (!entry->file)
+			continue;
+		if (write_buf_to_file(buf + entry->start,
+				      entry->end - entry->start + 1, entry->file))
+			return 1;
+	}
+
+	return 0;
+}
+
 static int read_by_layout(struct flashctx *, uint8_t *);
 int read_flash_to_file(struct flashctx *flash, const char *filename)
 {
@@ -1450,6 +1524,10 @@ int read_flash_to_file(struct flashctx *flash, const char *filename)
 	}
 	if (read_by_layout(flash, buf)) {
 		msg_cerr("Read operation failed!\n");
+		ret = 1;
+		goto out_free;
+	}
+	if (write_buf_to_include_args(flash, buf)) {
 		ret = 1;
 		goto out_free;
 	}
@@ -2643,7 +2721,14 @@ int do_write(struct flashctx *const flash, const char *const filename, const cha
 		goto _free_ret;
 	}
 
+	/* Read '-w' argument first... */
 	if (read_buf_from_file(newcontents, flash_size, filename))
+		goto _free_ret;
+	/*
+	 * ... then update newcontents with contents from files provided to '-i'
+	 * args if needed.
+	 */
+	if (read_buf_from_include_args(flash, newcontents))
 		goto _free_ret;
 
 	if (referencefile) {
@@ -2670,7 +2755,14 @@ int do_verify(struct flashctx *const flash, const char *const filename)
 		goto _free_ret;
 	}
 
+	/* Read '-v' argument first... */
 	if (read_buf_from_file(newcontents, flash_size, filename))
+		goto _free_ret;
+	/*
+	 * ... then update newcontents with contents from files provided to '-i'
+	 * args if needed.
+	 */
+	if (read_buf_from_include_args(flash, newcontents))
 		goto _free_ret;
 
 	ret = flashrom_image_verify(flash, newcontents, flash_size);

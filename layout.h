@@ -40,6 +40,7 @@ struct romentry {
 	chipoff_t end;
 	bool included;
 	char *name;
+	char *file;
 };
 
 struct flashrom_layout {
@@ -56,6 +57,7 @@ struct single_layout {
 
 struct layout_include_args {
 	char *name;
+	char *file;
 	struct layout_include_args *next;
 };
 
@@ -66,5 +68,6 @@ const struct flashrom_layout *get_layout(const struct flashrom_flashctx *const f
 int process_include_args(struct flashrom_layout *l, const struct layout_include_args *const args);
 const struct romentry *layout_next_included_region(const struct flashrom_layout *, chipoff_t);
 const struct romentry *layout_next_included(const struct flashrom_layout *, const struct romentry *);
+int included_regions_overlap(const struct flashrom_layout *const flashrom_layout);
 
 #endif /* !__LAYOUT_H__ */

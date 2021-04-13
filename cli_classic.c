@@ -41,7 +41,7 @@ static void cli_classic_usage(const char *name)
 	       "\n\t-p <programmername>[:<parameters>] [-c <chipname>]\n"
 	       "\t\t(--flash-name|--flash-size|\n"
 	       "\t\t [-E|(-r|-w|-v) <file>]\n"
-	       "\t\t [(-l <layoutfile>|--ifd| --fmap|--fmap-file <file>) [-i <imagename>]...]\n"
+	       "\t\t [(-l <layoutfile>|--ifd| --fmap|--fmap-file <file>) [-i <region>[:<file>]]...]\n"
 	       "\t\t [-n] [-N] [-f])]\n"
 	       "\t[-V[V[V]]] [-o <logfile>]\n\n", name);
 
@@ -67,7 +67,8 @@ static void cli_classic_usage(const char *name)
 	       "      --fmap                        read ROM layout from fmap embedded in ROM\n"
 	       "      --fmap-file <fmapfile>        read ROM layout from fmap in <fmapfile>\n"
 	       "      --ifd                         read layout from an Intel Firmware Descriptor\n"
-	       " -i | --image <name>                only flash image <name> from flash layout\n"
+	       " -i | --image <region>[:<file>]     only read/write image <region> from layout\n"
+	       "                                    (optionally with data from <file>)\n"
 	       " -o | --output <logfile>            log output to <logfile>\n"
 	       "      --flash-contents <ref-file>   assume flash contents to be <ref-file>\n"
 	       " -L | --list-supported              print supported devices\n"
@@ -337,11 +338,8 @@ int main(int argc, char *argv[])
 			fmap = 1;
 			break;
 		case 'i':
-			tempstr = strdup(optarg);
-			if (register_include_arg(&include_args, tempstr)) {
-				free(tempstr);
+			if (register_include_arg(&include_args, optarg))
 				cli_classic_abort_usage(NULL);
-			}
 			break;
 		case OPTION_FLASH_CONTENTS:
 			if (referencefile)
