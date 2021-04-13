@@ -179,8 +179,6 @@ int jlink_spi_init(void)
 	char *arg;
 	unsigned long speed = 0;
 
-	register_shutdown(jlink_spi_shutdown, NULL);
-
 	arg = extract_programmer_param("spispeed");
 
 	if (arg) {
@@ -269,7 +267,7 @@ int jlink_spi_init(void)
 
 	if (ret != JAYLINK_OK) {
 		msg_perr("jaylink_discover_scan() failed: %s.\n", jaylink_strerror(ret));
-		return 1;
+		goto init_err;
 	}
 
 	struct jaylink_device **devs;
@@ -278,7 +276,7 @@ int jlink_spi_init(void)
 
 	if (ret != JAYLINK_OK) {
 		msg_perr("jaylink_get_devices() failed: %s.\n", jaylink_strerror(ret));
-		return 1;
+		goto init_err;
 	}
 
 	if (!use_serial_number)
@@ -321,7 +319,7 @@ int jlink_spi_init(void)
 
 	if (!device_found) {
 		msg_perr("No J-Link device found.\n");
-		return 1;
+		goto init_err;
 	}
 
 	size_t length;
@@ -332,7 +330,7 @@ int jlink_spi_init(void)
 
 	if (ret != JAYLINK_OK) {
 		msg_perr("jaylink_get_firmware_version() failed: %s.\n", jaylink_strerror(ret));
-		return 1;
+		goto init_err;
 	} else if (length > 0) {
 		msg_pdbg("Firmware: %s\n", firmware_version);
 		free(firmware_version);
@@ -346,7 +344,7 @@ int jlink_spi_init(void)
 		msg_pdbg("S/N: N/A\n");
 	} else {
 		msg_perr("jaylink_device_get_serial_number() failed: %s.\n", jaylink_strerror(ret));
-		return 1;
+		goto init_err;
 	}
 
 	uint8_t caps[JAYLINK_DEV_EXT_CAPS_SIZE];
@@ -356,7 +354,7 @@ int jlink_spi_init(void)
 
 	if (ret != JAYLINK_OK) {
 		msg_perr("jaylink_get_caps() failed: %s.\n", jaylink_strerror(ret));
-		return 1;
+		goto init_err;
 	}
 
 	if (jaylink_has_cap(caps, JAYLINK_DEV_CAP_GET_EXT_CAPS)) {
@@ -364,7 +362,7 @@ int jlink_spi_init(void)
 
 		if (ret != JAYLINK_OK) {
 			msg_perr("jaylink_get_available_interfaces() failed: %s.\n", jaylink_strerror(ret));
-			return 1;
+			goto init_err;
 		}
 	}
 
@@ -374,19 +372,19 @@ int jlink_spi_init(void)
 
 	if (ret != JAYLINK_OK) {
 		msg_perr("jaylink_get_available_interfaces() failed: %s.\n", jaylink_strerror(ret));
-		return 1;
+		goto init_err;
 	}
 
 	if (!(ifaces & (1 << JAYLINK_TIF_JTAG))) {
 		msg_perr("Device does not support JTAG interface.\n");
-		return 1;
+		goto init_err;
 	}
 
 	ret = jaylink_select_interface(jaylink_devh, JAYLINK_TIF_JTAG, NULL);
 
 	if (ret != JAYLINK_OK) {
 		msg_perr("jaylink_select_interface() failed: %s.\n", jaylink_strerror(ret));
-		return 1;
+		goto init_err;
 	}
 
 	struct jaylink_hardware_status hwstat;
@@ -395,7 +393,7 @@ int jlink_spi_init(void)
 
 	if (ret != JAYLINK_OK) {
 		msg_perr("jaylink_get_hardware_status() failed: %s.\n", jaylink_strerror(ret));
-		return 1;
+		goto init_err;
 	}
 
 	msg_pdbg("VTarget: %u.%03u V\n", hwstat.target_voltage / 1000,
@@ -404,7 +402,7 @@ int jlink_spi_init(void)
 	if (hwstat.target_voltage < MIN_TARGET_VOLTAGE) {
 		msg_perr("Target voltage is below %u.%03u V. You need to attach VTref to the I/O voltage of "
 			"the chip.\n", MIN_TARGET_VOLTAGE / 1000, MIN_TARGET_VOLTAGE % 1000);
-		return 1;
+		goto init_err;
 	}
 
 	struct jaylink_speed device_speeds;
@@ -417,7 +415,7 @@ int jlink_spi_init(void)
 
 		if (ret != JAYLINK_OK) {
 			msg_perr("jaylink_get_speeds() failed: %s.\n", jaylink_strerror(ret));
-			return 1;
+			goto init_err;
 		}
 	}
 
@@ -433,23 +431,33 @@ int jlink_spi_init(void)
 	if (speed > (device_speeds.freq / device_speeds.div)) {
 		msg_perr("Specified SPI speed of %lu kHz is too high. Maximum is %" PRIu32 " kHz.\n", speed,
 			device_speeds.freq / device_speeds.div);
-		return 1;
+		goto init_err;
 	}
 
 	ret = jaylink_set_speed(jaylink_devh, speed);
 
 	if (ret != JAYLINK_OK) {
 		msg_perr("jaylink_set_speed() failed: %s.\n", jaylink_strerror(ret));
-		return 1;
+		goto init_err;
 	}
 
 	msg_pdbg("SPI speed: %lu kHz\n", speed);
 
 	/* Ensure that the CS signal is not active initially. */
 	if (!deassert_cs())
-		return 1;
+		goto init_err;
 
+	if (register_shutdown(jlink_spi_shutdown, NULL))
+		goto init_err;
 	register_spi_master(&spi_master_jlink_spi);
 
 	return 0;
+
+init_err:
+	if (jaylink_devh)
+		jaylink_close(jaylink_devh);
+
+	jaylink_exit(jaylink_ctx);
+
+	return 1;
 }
