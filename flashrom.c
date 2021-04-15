@@ -2189,8 +2189,8 @@ int selfcheck(void)
 	return ret;
 }
 
-/* FIXME: This function signature needs to be improved once doit() has a better
- * function signature.
+/* FIXME: This function signature needs to be improved once prepare_flash_access()
+ * has a better function signature.
  */
 static int chip_safety_check(const struct flashctx *flash, int force,
 			     int read_it, int write_it, int erase_it, int verify_it)
