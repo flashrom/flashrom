@@ -15760,6 +15760,44 @@ const struct flashchip flashchips[] = {
 	},
 
 	{
+		.vendor		= "Shenzhen FirstRank",
+		.name		= "T25S32",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= SHENZHEN_FIRSTRANK_ID,
+		.model_id	= SHENZHEN_FIRSTRANK_T25S32_SPI,
+		.total_size	= 4096,
+		.page_size	= 256,
+		.feature_bits	= FEATURE_WRSR_WREN,
+		.tested		= TEST_OK_PREW,
+		.probe		= probe_spi_rdid,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 1024} }, /* Sector Erase */
+				.block_erase = spi_block_erase_20,
+			}, {
+				.eraseblocks = { {32 * 1024, 128} }, /* 32 KB Block Erase */
+				.block_erase = spi_block_erase_52,
+			}, {
+				.eraseblocks = { {64 * 1024, 64} }, /* 64 KB Block Erase */
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { {4 * 1024 * 1024, 1} }, /* Chip erase - option 1 */
+				.block_erase = spi_block_erase_60,
+			}, {
+				.eraseblocks = { {4 * 1024 * 1024, 1} }, /* Chip erase - option 2 */
+				.block_erase = spi_block_erase_c7,
+			}
+		},
+		.printlock 	= spi_prettyprint_status_register_plain, /* TODO: improve */
+		.unlock		= spi_disable_blockprotect,
+		.write		= spi_chip_write_256,
+		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
+	},
+
+	{
 		.vendor		= "Spansion",
 		.name		= "S25FL004A",
 		.bustype	= BUS_SPI,

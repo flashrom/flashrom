@@ -648,6 +648,11 @@
 #define SHARP_LHF00L02		0xC9	/* Same as LHF00L06/LHF00L07 */
 #define SHARP_LHF00L04		0xCF	/* Same as LHF00L03/LHF00L05 */
 
+/* Shenzhen First-Rank Technology Co Ltd. */
+#define SHENZHEN_FIRSTRANK_ID	0x5E
+#define SHENZHEN_FIRSTRANK_T25S32_SPI	0x4016 /* When in SPI mode */
+#define SHENZHEN_FIRSTRANK_T25S32_QPI	0x6016 /* When in QPI mode */
+
 /* Spansion was previously a joint venture of AMD and Fujitsu. */
 #define SPANSION_ID		0x01	/* Spansion, same ID as AMD */
 /* S25 chips are SPI. The first device ID byte is memory type and
