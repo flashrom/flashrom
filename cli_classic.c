@@ -48,8 +48,10 @@ static void cli_classic_usage(const char *name)
 	printf(" -h | --help                        print this help text\n"
 	       " -R | --version                     print version (release)\n"
 	       " -r | --read <file>                 read flash and save to <file>\n"
-	       " -w | --write <file>                write <file> to flash\n"
-	       " -v | --verify <file>               verify flash against <file>\n"
+	       " -w | --write <file|->              write <file> or the content provided\n"
+	       "                                    on the standard input to flash\n"
+	       " -v | --verify <file|->             verify flash against <file>\n"
+	       "                                    or the content provided on the standard input\n"
 	       " -E | --erase                       erase flash memory\n"
 	       " -V | --verbose                     more verbose output\n"
 	       " -c | --chip <chipname>             probe only for specified flash chip\n"
@@ -107,7 +109,7 @@ static int check_filename(char *filename, const char *type)
 		return 1;
 	}
 	/* Not an error, but maybe the user intended to specify a CLI option instead of a file name. */
-	if (filename[0] == '-')
+	if (filename[0] == '-' && filename[1] != '\0')
 		fprintf(stderr, "Warning: Supplied %s file name starts with -\n", type);
 	return 0;
 }
