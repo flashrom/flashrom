@@ -166,7 +166,7 @@ static void ec_command(const ene_chip_t *chip, uint8_t cmd, uint8_t data)
 	gettimeofday(&begin, NULL);
 	while (INB(chip->port_ec_command) & MASK_INPUT_BUFFER_FULL) {
 		gettimeofday(&now, NULL);
-		if ((now.tv_sec - begin.tv_sec) >= EC_COMMAND_TIMEOUT) {
+		if (now.tv_sec - begin.tv_sec >= EC_COMMAND_TIMEOUT) {
 			msg_pdbg("%s: buf not empty\n", __func__);
 			return;
 		}
@@ -178,11 +178,9 @@ static void ec_command(const ene_chip_t *chip, uint8_t cmd, uint8_t data)
 	if (chip->chip_id == ENE_KB932) {
 		/* Spin wait for EC input buffer empty */
 		gettimeofday(&begin, NULL);
-		while (INB(chip->port_ec_command) &
-		       MASK_INPUT_BUFFER_FULL) {
+		while (INB(chip->port_ec_command) & MASK_INPUT_BUFFER_FULL) {
 			gettimeofday(&now, NULL);
-			if ((now.tv_sec - begin.tv_sec) >=
-			     EC_COMMAND_TIMEOUT) {
+			if (now.tv_sec - begin.tv_sec >= EC_COMMAND_TIMEOUT) {
 				msg_pdbg("%s: buf not empty\n", __func__);
 				return;
 			}
@@ -295,9 +293,9 @@ static int ene_spi_wait(const ene_chip_t *chip)
 	struct timeval begin, now;
 
 	gettimeofday(&begin, NULL);
-	while(ene_read(chip, REG_SPI_CONFIG) & CFG_STATUS) {
+	while (ene_read(chip, REG_SPI_CONFIG) & CFG_STATUS) {
 		gettimeofday(&now, NULL);
-		if ((now.tv_sec - begin.tv_sec) >= EC_COMMAND_TIMEOUT) {
+		if (now.tv_sec - begin.tv_sec >= EC_COMMAND_TIMEOUT) {
 			msg_pdbg("%s: spi busy\n", __func__);
 			return 1;
 		}
@@ -318,16 +316,13 @@ static int ene_pause_ec(ene_lpc_data_t *ctx_data)
 
 	gettimeofday(&begin, NULL);
 	/* Spin wait for EC ready */
-	while (ene_read(chip, chip->ec_status_buf) !=
-	       chip->ec_is_pausing) {
+	while (ene_read(chip, chip->ec_status_buf) != chip->ec_is_pausing) {
 		gettimeofday(&now, NULL);
-		if ((now.tv_sec - begin.tv_sec) >=
-		     EC_COMMAND_TIMEOUT) {
+		if (now.tv_sec - begin.tv_sec >= EC_COMMAND_TIMEOUT) {
 			msg_pdbg("%s: unable to pause ec\n", __func__);
 			return -1;
 		}
 	}
-
 
 	gettimeofday(&ctx_data->pause_begin, NULL);
 	ctx_data->ec_state = EC_STATE_IDLE;
@@ -346,11 +341,9 @@ static int ene_resume_ec(ene_lpc_data_t *ctx_data)
 		ene_write(chip, REG_EC_EXTCMD, 0xff);
 
 	gettimeofday(&begin, NULL);
-	while (ene_read(chip, chip->ec_status_buf) !=
-	       chip->ec_is_running) {
+	while (ene_read(chip, chip->ec_status_buf) != chip->ec_is_running) {
 		gettimeofday(&now, NULL);
-		if ((now.tv_sec - begin.tv_sec) >=
-		     EC_COMMAND_TIMEOUT) {
+		if (now.tv_sec - begin.tv_sec >= EC_COMMAND_TIMEOUT) {
 			msg_pdbg("%s: unable to resume ec\n", __func__);
 			return -1;
 		}
@@ -364,11 +357,9 @@ static int ene_pause_timeout_check(ene_lpc_data_t *ctx_data)
 {
 	struct timeval pause_now;
 	gettimeofday(&pause_now, NULL);
-	if ((pause_now.tv_sec - ctx_data->pause_begin.tv_sec) >=
-			     EC_PAUSE_TIMEOUT) {
-		if(ene_resume_ec(ctx_data) == 0)
+	if (pause_now.tv_sec - ctx_data->pause_begin.tv_sec >= EC_PAUSE_TIMEOUT) {
+		if (ene_resume_ec(ctx_data) == 0)
 			ene_pause_ec(ctx_data);
-
 	}
 	return 0;
 }
@@ -385,11 +376,9 @@ static int ene_reset_ec(ene_lpc_data_t *ctx_data)
 	ec_command(chip, chip->ec_reset_cmd, chip->ec_reset_data);
 
 	/* Spin wait for EC ready */
-	while (ene_read(chip, chip->ec_status_buf) !=
-	       chip->ec_is_stopping) {
+	while (ene_read(chip, chip->ec_status_buf) != chip->ec_is_stopping) {
 		gettimeofday(&now, NULL);
-		if ((now.tv_sec - begin.tv_sec) >=
-		     EC_COMMAND_TIMEOUT) {
+		if (now.tv_sec - begin.tv_sec >= EC_COMMAND_TIMEOUT) {
 			msg_pdbg("%s: unable to reset ec\n", __func__);
 			return -1;
 		}
@@ -440,9 +429,9 @@ static int ene_spi_send_command(const struct flashctx *flash,
 			ctx_data->ec_state = EC_STATE_IDLE;
 			return 1;
 		}
-	}
-	else if(chip->chip_id == ENE_KB94X && ctx_data->ec_state == EC_STATE_IDLE)
+	} else if (chip->chip_id == ENE_KB94X && ctx_data->ec_state == EC_STATE_IDLE) {
 		ene_pause_timeout_check(ctx_data);
+	}
 
 	ene_spi_start(chip);
 
@@ -487,19 +476,16 @@ static int ene_leave_flash_mode(void *data)
 
 		gettimeofday(&begin, NULL);
 		/* EC restart */
-		while (ene_read(chip, chip->ec_status_buf) !=
-		       chip->ec_is_running) {
+		while (ene_read(chip, chip->ec_status_buf) != chip->ec_is_running) {
 			gettimeofday(&now, NULL);
-			if ((now.tv_sec - begin.tv_sec) >=
-			     EC_RESTART_TIMEOUT) {
+			if (now.tv_sec - begin.tv_sec >= EC_RESTART_TIMEOUT) {
 				msg_pdbg("%s: ec restart busy\n", __func__);
 				rv = 1;
 				goto exit;
 			}
 		}
 		msg_pdbg("%s: send ec restart\n", __func__);
-		ec_command(chip, chip->ec_restart_cmd,
-		           chip->ec_restart_data);
+		ec_command(chip, chip->ec_restart_cmd, chip->ec_restart_data);
 
 		ctx_data->ec_state = EC_STATE_NORMAL;
 		rv = 0;
