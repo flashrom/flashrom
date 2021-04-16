@@ -559,16 +559,15 @@ int ene_lpc_init()
 	 * Compal - ec_command(0x41, 0xa1) returns 43 4f 4d 50 41 4c 9c
 	 */
 
+	ene_enter_flash_mode(ctx_data);
+
+	internal_buses_supported |= BUS_LPC;
+	spi_master_ene.data = ctx_data;
 
 	if (register_shutdown(ene_leave_flash_mode, ctx_data)) {
 		ret = 1;
 		goto ene_probe_spi_flash_exit;
 	}
-
-	ene_enter_flash_mode(ctx_data);
-
-	internal_buses_supported |= BUS_LPC;
-	spi_master_ene.data = ctx_data;
 	register_spi_master(&spi_master_ene);
 	msg_pdbg("%s: successfully initialized ene\n", __func__);
 
