@@ -2695,6 +2695,12 @@ int do_read(struct flashctx *const flash, const char *const filename)
 	return ret;
 }
 
+int do_extract(struct flashctx *const flash)
+{
+	prepare_layout_for_extraction(flash);
+	return do_read(flash, NULL);
+}
+
 int do_erase(struct flashctx *const flash)
 {
 	const int ret = flashrom_flash_erase(flash);

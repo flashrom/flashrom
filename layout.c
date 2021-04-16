@@ -15,6 +15,7 @@
  * GNU General Public License for more details.
  */
 
+#include <ctype.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -306,6 +307,24 @@ int normalize_romentries(const struct flashctx *flash)
 	}
 
 	return ret;
+}
+
+void prepare_layout_for_extraction(struct flashctx *flash)
+{
+	const struct flashrom_layout *const l = get_layout(flash);
+	unsigned int i, j;
+
+	for (i = 0; i < l->num_entries; ++i) {
+		l->entries[i].included = true;
+
+		if (!l->entries[i].file)
+			l->entries[i].file = strdup(l->entries[i].name);
+
+		for (j = 0; l->entries[i].file[j]; j++) {
+			if (isspace(l->entries[i].file[j]))
+				l->entries[i].file[j] = '_';
+		}
+	}
 }
 
 const struct romentry *layout_next_included_region(

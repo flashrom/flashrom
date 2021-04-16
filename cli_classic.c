@@ -40,7 +40,7 @@ static void cli_classic_usage(const char *name)
 #endif
 	       "\n\t-p <programmername>[:<parameters>] [-c <chipname>]\n"
 	       "\t\t(--flash-name|--flash-size|\n"
-	       "\t\t [-E|(-r|-w|-v) <file>]\n"
+	       "\t\t [-E|-x|(-r|-w|-v) <file>]\n"
 	       "\t\t [(-l <layoutfile>|--ifd| --fmap|--fmap-file <file>) [-i <region>[:<file>]]...]\n"
 	       "\t\t [-n] [-N] [-f])]\n"
 	       "\t[-V[V[V]]] [-o <logfile>]\n\n", name);
@@ -58,6 +58,7 @@ static void cli_classic_usage(const char *name)
 	       " -f | --force                       force specific operations (see man page)\n"
 	       " -n | --noverify                    don't auto-verify\n"
 	       " -N | --noverify-all                verify included regions only (cf. -i)\n"
+	       " -x | --extract                     extract regions to files\n"
 	       " -l | --layout <layoutfile>         read ROM layout from <layoutfile>\n"
 	       "      --wp-disable                  disable write protection\n"
 	       "      --wp-enable                   enable write protection\n"
@@ -167,7 +168,7 @@ int main(int argc, char *argv[])
 	int flash_name = 0, flash_size = 0;
 	int set_wp_enable = 0, set_wp_disable = 0, wp_status = 0;
 	int set_wp_range = 0, set_wp_region = 0, wp_list = 0;
-	int read_it = 0, write_it = 0, erase_it = 0, verify_it = 0;
+	int read_it = 0, extract_it = 0, write_it = 0, erase_it = 0, verify_it = 0;
 	int dont_verify_it = 0, dont_verify_all = 0, list_supported = 0, operation_specified = 0;
 	struct flashrom_layout *layout = NULL;
 	enum programmer prog = PROGRAMMER_INVALID;
@@ -188,7 +189,7 @@ int main(int argc, char *argv[])
 	int ret = 0;
 	unsigned int wp_start = 0, wp_len = 0;
 
-	static const char optstring[] = "r:Rw:v:nNVEfc:l:i:p:Lzho:";
+	static const char optstring[] = "r:Rw:v:nNVEfc:l:i:p:Lzho:x";
 	static const struct option long_options[] = {
 		{"read",		1, NULL, 'r'},
 		{"write",		1, NULL, 'w'},
@@ -196,6 +197,7 @@ int main(int argc, char *argv[])
 		{"verify",		1, NULL, 'v'},
 		{"noverify",		0, NULL, 'n'},
 		{"noverify-all",	0, NULL, 'N'},
+		{"extract",		0, NULL, 'x'},
 		{"chip",		1, NULL, 'c'},
 		{"verbose",		0, NULL, 'V'},
 		{"force",		0, NULL, 'f'},
@@ -286,6 +288,10 @@ int main(int argc, char *argv[])
 			break;
 		case 'N':
 			dont_verify_all = 1;
+			break;
+		case 'x':
+			cli_classic_validate_singleop(&operation_specified);
+			extract_it = 1;
 			break;
 		case 'c':
 			chip_to_probe = strdup(optarg);
@@ -658,7 +664,7 @@ int main(int argc, char *argv[])
 
 	if (!(read_it | write_it | verify_it | erase_it | flash_name | flash_size
 	      | set_wp_range | set_wp_region | set_wp_enable |
-	      set_wp_disable | wp_status | wp_list)) {
+	      set_wp_disable | wp_status | wp_list | extract_it)) {
 		msg_ginfo("No operations were specified.\n");
 		goto out_shutdown;
 	}
@@ -813,6 +819,8 @@ int main(int argc, char *argv[])
 	programmer_delay(100000);
 	if (read_it)
 		ret = do_read(fill_flash, filename);
+	else if (extract_it)
+		ret = do_extract(fill_flash);
 	else if (erase_it)
 		ret = do_erase(fill_flash);
 	else if (write_it)
