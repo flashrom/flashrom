@@ -28,7 +28,8 @@
 #include "flash.h"
 #include "i2c_helper.h"
 
-#define I2C_DEV_PREFIX	"/dev/i2c-"
+/* Null characters are placeholders for bus number digits */
+#define I2C_DEV_PREFIX	"/dev/i2c-\0\0\0"
 #define I2C_MAX_BUS	255
 
 int i2c_close(int fd)
@@ -38,11 +39,11 @@ int i2c_close(int fd)
 
 int i2c_open(int bus, uint16_t addr, int force)
 {
+	char dev[sizeof(I2C_DEV_PREFIX)] = {0};
+
 	int ret = -1;
 	int fd = -1;
 
-	/* Maximum i2c bus number is 255(3 char), +1 for null terminated string. */
-	int path_len = strlen(I2C_DEV_PREFIX) + 4;
 	int request = force ? I2C_SLAVE_FORCE : I2C_SLAVE;
 
 	if (bus < 0 || bus > I2C_MAX_BUS) {
@@ -50,38 +51,26 @@ int i2c_open(int bus, uint16_t addr, int force)
 		return ret;
 	}
 
-	char *dev = calloc(1, path_len);
-	if (!dev) {
-		msg_perr("Unable to allocate space for device name of len %d: %s.\n",
-			path_len, strerror(errno));
-		goto linux_i2c_open_err;
-	}
-
-	ret = snprintf(dev, path_len, "%s%d", I2C_DEV_PREFIX, bus);
+	ret = snprintf(dev, sizeof(dev), "%s%d", I2C_DEV_PREFIX, bus);
 	if (ret < 0) {
 		msg_perr("Unable to join bus number to device name: %s.\n", strerror(errno));
-		goto linux_i2c_open_err;
+		return ret;
 	}
 
 	fd = open(dev, O_RDWR);
 	if (fd < 0) {
 		msg_perr("Unable to open I2C device %s: %s.\n", dev, strerror(errno));
-		ret = fd;
-		goto linux_i2c_open_err;
+		return fd;
 	}
 
 	ret = ioctl(fd, request, addr);
 	if (ret < 0) {
 		msg_perr("Unable to set I2C slave address to 0x%02x: %s.\n", addr, strerror(errno));
 		i2c_close(fd);
-		goto linux_i2c_open_err;
+		return ret;
 	}
 
-linux_i2c_open_err:
-	if (dev)
-		free(dev);
-
-	return ret ? ret : fd;
+	return fd;
 }
 
 int i2c_read(int fd, uint16_t addr, i2c_buffer_t *buf)
