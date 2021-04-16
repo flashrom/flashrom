@@ -134,7 +134,7 @@ static int jlink_spi_send_command(const struct flashctx *flash, unsigned int wri
 	ret = jaylink_jtag_io(jaylink_devh, buffer, buffer, buffer, length * 8, JAYLINK_JTAG_VERSION_2);
 
 	if (ret != JAYLINK_OK) {
-		msg_perr("jaylink_jag_io() failed: %s.\n", jaylink_strerror(ret));
+		msg_perr("jaylink_jtag_io() failed: %s.\n", jaylink_strerror(ret));
 		free(buffer);
 		return SPI_PROGRAMMER_ERROR;
 	}
@@ -210,7 +210,7 @@ int jlink_spi_init(void)
 
 	if (arg) {
 		if (!strlen(arg)) {
-			msg_perr("Emptpy serial number specified.\n");
+			msg_perr("Empty serial number specified.\n");
 			free(arg);
 			return 1;
 		}
@@ -266,7 +266,7 @@ int jlink_spi_init(void)
 	ret = jaylink_discovery_scan(jaylink_ctx, 0);
 
 	if (ret != JAYLINK_OK) {
-		msg_perr("jaylink_discover_scan() failed: %s.\n", jaylink_strerror(ret));
+		msg_perr("jaylink_discovery_scan() failed: %s.\n", jaylink_strerror(ret));
 		goto init_err;
 	}
 
@@ -361,7 +361,7 @@ int jlink_spi_init(void)
 		ret = jaylink_get_extended_caps(jaylink_devh, caps);
 
 		if (ret != JAYLINK_OK) {
-			msg_perr("jaylink_get_available_interfaces() failed: %s.\n", jaylink_strerror(ret));
+			msg_perr("jaylink_get_extended_caps() failed: %s.\n", jaylink_strerror(ret));
 			goto init_err;
 		}
 	}
