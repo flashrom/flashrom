@@ -27,7 +27,7 @@
 #include <ftdi.h>
 
 /* This is not defined in libftdi.h <0.20 (c7e4c09e68cfa6f5e112334aa1b3bb23401c8dc7 to be exact).
- * Some tests indicate that his is the only change that it is needed to support the FT232H in flashrom. */
+ * Some tests indicate that this is the only change that it is needed to support the FT232H in flashrom. */
 #if !defined(HAVE_FT232H)
 #define TYPE_232H	6
 #endif
