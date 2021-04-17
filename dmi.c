@@ -184,7 +184,7 @@ static void dmi_table(uint32_t base, uint16_t len, uint16_t num)
 		 *   is invalid, but we cannot reliably locate the next entry.
 		 * - If the length value indicates that this structure spreads
 		 *   across the table border, something is fishy too.
-		 * Better stop at this point, and let the user know his/her
+		 * Better stop at this point, and let the user know their
 		 * table is broken.
 		 */
 		if (data[1] < 4 || data + data[1] >= limit) {

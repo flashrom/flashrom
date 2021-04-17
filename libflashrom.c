@@ -65,7 +65,7 @@ int flashrom_shutdown(void)
 }
 
 /* TODO: flashrom_set_loglevel()? do we need it?
-         For now, let the user decide in his callback. */
+         For now, let the user decide in their callback. */
 
 /**
  * @brief Set the log callback function.
