@@ -27,7 +27,7 @@
 
 #define REGISTER_ADDRESS	(0x94 >> 1)
 #define PAGE_ADDRESS		(0x9e >> 1)
-#define PAGE_SIZE		256
+#define LSPCON_PAGE_SIZE	256
 #define MAX_SPI_WAIT_RETRIES	1000
 
 #define CLT2_SPI		0x82
@@ -330,7 +330,7 @@ static int lspcon_i2c_spi_reset_mpu_stop(int fd)
 static int lspcon_i2c_spi_map_page(int fd, unsigned int offset)
 {
 	int ret = 0;
-	/* Page number byte, need to / PAGE_SIZE. */
+	/* Page number byte, need to / LSPCON_PAGE_SIZE. */
 	ret |= lspcon_i2c_spi_write_register(fd, ROMADDR_BYTE1, (offset >> 8) & 0xff);
 	ret |= lspcon_i2c_spi_write_register(fd, ROMADDR_BYTE2, (offset >> 16));
 
@@ -349,9 +349,9 @@ static int lspcon_i2c_spi_read(struct flashctx *flash, uint8_t *buf,
 	if (fd < 0)
 		return SPI_GENERIC_ERROR;
 
-	for (i = 0; i < len; i += PAGE_SIZE) {
+	for (i = 0; i < len; i += LSPCON_PAGE_SIZE) {
 		ret |= lspcon_i2c_spi_map_page(fd, start + i);
-		ret |= lspcon_i2c_spi_read_data(fd, PAGE_ADDRESS, buf + i, min(len - i, PAGE_SIZE));
+		ret |= lspcon_i2c_spi_read_data(fd, PAGE_ADDRESS, buf + i, min(len - i, LSPCON_PAGE_SIZE));
 	}
 
 	return ret;
@@ -363,8 +363,8 @@ static int lspcon_i2c_spi_write_page(int fd, const uint8_t *buf, unsigned int le
          * Using static buffer with maximum possible size,
          * extra byte is needed for prefixing zero at index 0.
          */
-	uint8_t write_buffer[PAGE_SIZE + 1] = { 0 };
-	if (len > PAGE_SIZE)
+	uint8_t write_buffer[LSPCON_PAGE_SIZE + 1] = { 0 };
+	if (len > LSPCON_PAGE_SIZE)
 		return SPI_GENERIC_ERROR;
 
 	/* First byte represents the writing offset and should always be zero. */
@@ -389,9 +389,9 @@ static int lspcon_i2c_spi_write_256(struct flashctx *flash, const uint8_t *buf,
 	ret |= lspcon_i2c_spi_enable_hw_write(fd);
 	ret |= lspcon_i2c_clt2_spi_reset(fd);
 
-	for (unsigned int i = 0; i < len; i += PAGE_SIZE) {
+	for (unsigned int i = 0; i < len; i += LSPCON_PAGE_SIZE) {
 		ret |= lspcon_i2c_spi_map_page(fd, start + i);
-		ret |= lspcon_i2c_spi_write_page(fd, buf + i, min(len - i, PAGE_SIZE));
+		ret |= lspcon_i2c_spi_write_page(fd, buf + i, min(len - i, LSPCON_PAGE_SIZE));
 	}
 
 	ret |= lspcon_i2c_spi_enable_write_protection(fd);
