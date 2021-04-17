@@ -3,7 +3,7 @@ FROM debian:stable
 ARG PKG_PATH=http://cdn.netbsd.org/pub/pkgsrc/packages/NetBSD/amd64/7.1/All
 ARG INST_IMG=http://ftp.de.netbsd.org/pub/NetBSD/NetBSD-7.1/amd64/
 ARG DISK_SIZE=1G
-ARG MEM_SIZE=128M
+ARG INSTALL_MEM=128M
 ARG EXTRA_PKG=""
 
 RUN \
@@ -20,11 +20,12 @@ RUN \
 USER mani
 RUN cd && mkdir .ccache && chown mani:mani .ccache && \
 	  anita --sets kern-GENERIC,modules,base,etc,comp \
-		--disk-size ${DISK_SIZE} --memory-size=${MEM_SIZE} \
+		--disk-size ${DISK_SIZE} --memory-size=${INSTALL_MEM} \
 		install ${INST_IMG} && \
 	  rm -rf work-*/download
 
-RUN cd && anita --persist --run \
+ARG RUNTIME_MEM=128M
+RUN cd && anita --persist --memory-size=${RUNTIME_MEM} --run \
 "echo 'dhcpcd'                                   >init && \
  echo 'export PKG_PATH=${PKG_PATH}'             >>init && \
  . ./init && \
@@ -35,7 +36,8 @@ RUN cd && anita --persist --run \
 		boot ${INST_IMG}
 
 RUN cd && dd if=/dev/zero bs=1M count=64 of=cache.img && \
-	  anita --vmm-args '-hdb cache.img' --persist --run \
+	  anita --vmm-args '-hdb cache.img' --persist \
+		--memory-size=${RUNTIME_MEM} --run \
 "if [ \$(uname -m) = i386 -o \$(uname -m) = amd64 ]; then \
      bdev=wd1d; \
  else \
@@ -59,4 +61,5 @@ RUN cd && dd if=/dev/zero bs=1M count=64 of=cache.img && \
 
 COPY anita-wrapper.sh /home/mani/mani-wrapper.sh
 ENV INST_IMG ${INST_IMG}
+ENV MEM_SIZE ${RUNTIME_MEM}
 ENTRYPOINT ["/bin/sh", "/home/mani/mani-wrapper.sh"]
