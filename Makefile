@@ -1186,12 +1186,14 @@ FEATURE_CFLAGS += -D'NEED_RAW_ACCESS=1'
 PROGRAMMER_OBJS += physmap.o hwaccess.o
 
 ifeq ($(TARGET_OS), NetBSD)
-# For (i386|x86_64)_iopl(2).
+ifeq ($(ARCH), x86)
 PCILIBS += -l$(shell uname -p)
+endif
 else
 ifeq ($(TARGET_OS), OpenBSD)
-# For (i386|amd64)_iopl(2).
+ifeq ($(ARCH), x86)
 PCILIBS += -l$(shell uname -m)
+endif
 else
 ifeq ($(TARGET_OS), Darwin)
 # DirectHW framework can be found in the DirectHW library.
