@@ -19,19 +19,24 @@
 #include <stdio.h>
 
 /* redefinitions/wrapping */
+#define LOG_ME printf("%s is called\n", __func__)
+
 void __wrap_physunmap(void *virt_addr, size_t len)
 {
-	fprintf(stderr, "%s\n", __func__);
+	LOG_ME;
 }
+
 void *__wrap_physmap(const char *descr, uintptr_t phys_addr, size_t len)
 {
-	fprintf(stderr, "%s\n", __func__);
+	LOG_ME;
 	return NULL;
 }
 
 int main(void)
 {
 	int ret = 0;
+
+	cmocka_set_message_output(CM_OUTPUT_STDOUT);
 
 	const struct CMUnitTest helpers_tests[] = {
 		cmocka_unit_test(address_to_bits_test_success),
