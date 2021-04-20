@@ -3481,11 +3481,11 @@ const struct flashchip flashchips[] = {
 	},
 
 	{
-		.vendor		= "Boya Microelectronics",
-		.name		= "BY25Q128AS",
+		.vendor		= "Boya/BoHong Microelectronics",
+		.name		= "B.25Q128AS",
 		.bustype	= BUS_SPI,
-		.manufacture_id	= BOYA_ID,
-		.model_id	= BOYA_BY25Q128AS,
+		.manufacture_id	= BOYA_BOHONG_ID,
+		.model_id	= BOYA_BOHONG_B_25Q128AS,
 		.total_size	= 16384,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI,

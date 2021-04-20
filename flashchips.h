@@ -208,9 +208,9 @@
 #define ATMEL_AT49F080		0x23
 #define ATMEL_AT49F080T		0x27
 
-/* Boya Microelectronics Inc.*/
-#define BOYA_ID			0x68
-#define BOYA_BY25Q128AS		0x4018
+/* Boya/BoHong Microelectronics Inc. */
+#define BOYA_BOHONG_ID		0x68
+#define BOYA_BOHONG_B_25Q128AS	0x4018
 
 /* Bright Microelectronics has the same manufacturer ID as Hyundai... */
 #define BRIGHT_ID		0xAD	/* Bright Microelectronics */
