@@ -680,8 +680,9 @@ int main(int argc, char *argv[])
 		goto out_shutdown;
 	}
 
+	struct wp *wp = fill_flash->chip->wp;
 	if (set_wp_range || set_wp_region) {
-		if (!fill_flash->chip->wp || !fill_flash->chip->wp->set_range) {
+		if (!wp || !wp->set_range) {
 			msg_gerr("Error: write protect is not supported on this flash chip.\n");
 			ret = 1;
 			goto out_shutdown;
@@ -702,66 +703,6 @@ int main(int argc, char *argv[])
 	if (flash_size) {
 		printf("%d\n", fill_flash->chip->total_size * 1024);
 		goto out_shutdown;
-	}
-
-	if (wp_status) {
-		if (fill_flash->chip->wp && fill_flash->chip->wp->wp_status) {
-			ret |= fill_flash->chip->wp->wp_status(fill_flash);
-		} else {
-			msg_gerr("Error: write protect is not supported on this flash chip.\n");
-			ret = 1;
-		}
-		goto out_shutdown;
-	}
-
-	/* Note: set_wp_disable should be done before setting the range */
-	if (set_wp_disable) {
-		if (fill_flash->chip->wp && fill_flash->chip->wp->disable) {
-			ret |= fill_flash->chip->wp->disable(fill_flash);
-		} else {
-			msg_gerr("Error: write protect is not supported on this flash chip.\n");
-			ret = 1;
-			goto out_shutdown;
-		}
-	}
-
-	if (!ret && set_wp_enable) {
-		enum wp_mode wp_mode;
-
-		if (wp_mode_opt)
-			wp_mode = get_wp_mode(wp_mode_opt);
-		else
-			wp_mode = WP_MODE_HARDWARE;	/* default */
-
-		if (wp_mode == WP_MODE_UNKNOWN) {
-			msg_gerr("Error: Invalid WP mode: \"%s\"\n", wp_mode_opt);
-			ret = 1;
-			goto out_shutdown;
-		}
-
-		if (fill_flash->chip->wp && fill_flash->chip->wp->enable) {
-			ret |= fill_flash->chip->wp->enable(fill_flash, wp_mode);
-		} else {
-			msg_gerr("Error: write protect is not supported on this flash chip.\n");
-			ret = 1;
-			goto out_shutdown;
-		}
-	}
-
-	if (wp_list) {
-		msg_ginfo("Valid write protection ranges:\n");
-		if (fill_flash->chip->wp && fill_flash->chip->wp->list_ranges) {
-			ret |= fill_flash->chip->wp->list_ranges(fill_flash);
-		} else {
-			msg_gerr("Error: write protect is not supported on this flash chip.\n");
-			ret = 1;
-		}
-		goto out_shutdown;
-	}
-
-	/* Note: set_wp_range must happen before set_wp_enable */
-	if (set_wp_range) {
-		ret |= fill_flash->chip->wp->set_range(fill_flash, wp_start, wp_len);
 	}
 
 	if (layoutfile) {
@@ -803,8 +744,68 @@ int main(int argc, char *argv[])
 		ret = 1;
 		goto out_shutdown;
 	}
-
 	flashrom_layout_set(fill_flash, layout);
+
+	if (wp_status) {
+		if (wp && wp->wp_status) {
+			ret |= wp->wp_status(fill_flash);
+		} else {
+			msg_gerr("Error: write protect is not supported on this flash chip.\n");
+			ret = 1;
+		}
+		goto out_release;
+	}
+
+	/* Note: set_wp_disable should be done before setting the range */
+	if (set_wp_disable) {
+		if (wp && wp->disable) {
+			ret |= wp->disable(fill_flash);
+		} else {
+			msg_gerr("Error: write protect is not supported on this flash chip.\n");
+			ret = 1;
+			goto out_release;
+		}
+	}
+
+	/* Note: set_wp_range must happen before set_wp_enable */
+	if (set_wp_range) {
+		ret |= wp->set_range(fill_flash, wp_start, wp_len);
+	}
+
+	if (!ret && set_wp_enable) {
+		enum wp_mode wp_mode;
+
+		if (wp_mode_opt)
+			wp_mode = get_wp_mode(wp_mode_opt);
+		else
+			wp_mode = WP_MODE_HARDWARE;	/* default */
+
+		if (wp_mode == WP_MODE_UNKNOWN) {
+			msg_gerr("Error: Invalid WP mode: \"%s\"\n", wp_mode_opt);
+			ret = 1;
+			goto out_release;
+		}
+
+		if (wp && wp->enable) {
+			ret |= wp->enable(fill_flash, wp_mode);
+		} else {
+			msg_gerr("Error: write protect is not supported on this flash chip.\n");
+			ret = 1;
+			goto out_release;
+		}
+	}
+
+	if (wp_list) {
+		msg_ginfo("Valid write protection ranges:\n");
+		if (wp && wp->list_ranges) {
+			ret |= wp->list_ranges(fill_flash);
+		} else {
+			msg_gerr("Error: write protect is not supported on this flash chip.\n");
+			ret = 1;
+		}
+		goto out_release;
+	}
+
 	flashrom_flag_set(fill_flash, FLASHROM_FLAG_FORCE, !!force);
 #if CONFIG_INTERNAL == 1
 	flashrom_flag_set(fill_flash, FLASHROM_FLAG_FORCE_BOARDMISMATCH, !!force_boardmismatch);
@@ -828,8 +829,8 @@ int main(int argc, char *argv[])
 	else if (verify_it)
 		ret = do_verify(fill_flash, filename);
 
+out_release:
 	flashrom_layout_release(layout);
-
 out_shutdown:
 	programmer_shutdown();
 out:
