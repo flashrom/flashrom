@@ -68,5 +68,10 @@ int main(void)
 	};
 	ret |= cmocka_run_group_tests_name("spi25.c tests", spi25_tests, NULL, NULL);
 
+	const struct CMUnitTest init_shutdown_tests[] = {
+		cmocka_unit_test(dummy_init_and_shutdown_test_success),
+	};
+	ret |= cmocka_run_group_tests_name("init_shutdown.c tests", init_shutdown_tests, NULL, NULL);
+
 	return ret;
 }
