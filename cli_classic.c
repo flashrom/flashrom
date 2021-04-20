@@ -65,6 +65,7 @@ static void cli_classic_usage(const char *name)
 	       "      --wp-list                     list write protect range\n"
 	       "      --wp-status                   show write protect status\n"
 	       "      --wp-range=<start>,<len>      set write protect range\n"
+	       "      --wp-region <region>          set write protect region\n"
 	       "      --flash-name                  read out the detected flash name\n"
 	       "      --flash-size                  read out the detected flash size\n"
 	       "      --fmap                        read ROM layout from fmap embedded in ROM\n"
@@ -236,6 +237,7 @@ int main(int argc, char *argv[])
 	char *pparam = NULL;
 	struct layout_include_args *include_args = NULL;
 	char *wp_mode_opt = NULL;
+	char *wp_region = NULL;
 
 	/*
 	 * Safety-guard against a user who has (mistakenly) closed
@@ -461,6 +463,10 @@ int main(int argc, char *argv[])
 				cli_classic_abort_usage("No log filename specified.\n");
 			}
 #endif /* STANDALONE */
+			break;
+		case OPTION_WP_SET_REGION:
+			set_wp_region = 1;
+			wp_region = strdup(optarg);
 			break;
 		default:
 			cli_classic_abort_usage(NULL);
@@ -770,6 +776,15 @@ int main(int argc, char *argv[])
 	/* Note: set_wp_range must happen before set_wp_enable */
 	if (set_wp_range) {
 		ret |= wp->set_range(fill_flash, wp_start, wp_len);
+	}
+
+	if (set_wp_region && wp_region) {
+		if (get_region_range(layout, wp_region, &wp_start, &wp_len)) {
+			ret = 1;
+			goto out_release;
+		}
+		ret |= wp->set_range(fill_flash, wp_start, wp_len);
+		free(wp_region);
 	}
 
 	if (!ret && set_wp_enable) {

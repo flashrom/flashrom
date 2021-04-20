@@ -184,6 +184,20 @@ static int find_romentry(struct flashrom_layout *const l, char *name, char *file
 	return 0;
 }
 
+int get_region_range(struct flashrom_layout *const l, const char *name,
+		     unsigned int *start, unsigned int *len)
+{
+	size_t i;
+	for (i = 0; i < l->num_entries; ++i) {
+		if (!strcmp(l->entries[i].name, name)) {
+			*start = l->entries[i].start;
+			*len = l->entries[i].end - l->entries[i].start + 1;
+			return 0;
+		}
+	}
+	return 1;
+}
+
 /* process -i arguments
  * returns 0 to indicate success, >0 to indicate failure
  */
