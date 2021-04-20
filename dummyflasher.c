@@ -650,6 +650,7 @@ static int dummy_shutdown(void *data)
 		free(flashchip_contents);
 	}
 #endif
+	free(data);
 	return 0;
 }
 
