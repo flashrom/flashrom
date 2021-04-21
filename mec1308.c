@@ -406,13 +406,27 @@ static struct spi_master spi_master_mec1308 = {
 	.write_256 = default_spi_write_256,
 };
 
+static int check_params(void)
+{
+	int ret = 0;
+	char *p = NULL;
+
+	p = extract_programmer_param("type");
+	if (p && strcmp(p, "ec")) {
+		msg_pdbg("mec1308 only supports \"ec\" type devices\n");
+		ret = 1;
+	}
+
+	free(p);
+	return ret;
+}
+
 int mec1308_init(void)
 {
 	uint16_t sio_port;
 	uint8_t device_id;
 	uint8_t tmp8;
 	int ret = 0;
-	char *p = NULL;
 	mec1308_data_t *ctx_data = NULL;
 
 	msg_pdbg("%s(): entered\n", __func__);
@@ -423,9 +437,7 @@ int mec1308_init(void)
 		return 1;
 	}
 
-	p = extract_programmer_param("type");
-	if (p && strcmp(p, "ec")) {
-		msg_pdbg("mec1308 only supports \"ec\" type devices\n");
+	if (check_params()) {
 		ret = 1;
 		goto mec1308_init_exit;
 	}
@@ -515,7 +527,6 @@ int mec1308_init(void)
 	msg_pdbg("%s(): successfully initialized mec1308\n", __func__);
 
 mec1308_init_exit:
-	free(p);
 	if (ret)
 		free(ctx_data);
 	return ret;
