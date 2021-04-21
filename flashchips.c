@@ -8813,7 +8813,7 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "Macronix",
-		.name		= "MX25L3273E",
+		.name		= "MX25L3233F/MX25L3273E",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25L3205,
@@ -8847,7 +8847,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect_bp3_srwd,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read, /* Fast read (0x0B) and dual I/O supported */
-		.voltage	= {2700, 3600},
+		.voltage	= {2700, 3600}, /* 33F 2.65V..3.6V */
 	},
 
 	{
