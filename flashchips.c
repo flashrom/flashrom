@@ -8819,7 +8819,7 @@ const struct flashchip flashchips[] = {
 		.model_id	= MACRONIX_MX25L3205,
 		.total_size	= 4096,
 		.page_size	= 256,
-		/* OTP: 64B total; enter 0xB1, exit 0xC1 */
+		/* OTP: 512B total; enter 0xB1, exit 0xC1 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
