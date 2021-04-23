@@ -35,3 +35,14 @@ void dummy_init_and_shutdown_test_success(void **state)
 {
 	run_lifecycle(state, PROGRAMMER_DUMMY, "bus=parallel+lpc+fwh+spi");
 }
+
+void linux_spi_init_and_shutdown_test_success(void **state)
+{
+	/*
+	 * Current implementation tests a particular path of the init procedure.
+	 * There are two ways for it to succeed: reading the buffer size from sysfs
+	 * and the fallback to getpagesize(). This test does the latter (fallback to
+	 * getpagesize).
+	 */
+	run_lifecycle(state, PROGRAMMER_LINUX_SPI, "dev=/dev/null");
+}
