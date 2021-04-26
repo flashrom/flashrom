@@ -52,24 +52,24 @@
 #define MIN_TARGET_VOLTAGE	1200
 
 struct jlink_spi_data {
-	struct jaylink_context *jaylink_ctx;
-	struct jaylink_device_handle *jaylink_devh;
+	struct jaylink_context *ctx;
+	struct jaylink_device_handle *devh;
 	bool reset_cs;
 };
 
-static bool assert_cs(struct jlink_spi_data *spi_data)
+static bool assert_cs(struct jlink_spi_data *jlink_data)
 {
 	int ret;
 
-	if (spi_data->reset_cs) {
-		ret = jaylink_clear_reset(spi_data->jaylink_devh);
+	if (jlink_data->reset_cs) {
+		ret = jaylink_clear_reset(jlink_data->devh);
 
 		if (ret != JAYLINK_OK) {
 			msg_perr("jaylink_clear_reset() failed: %s.\n", jaylink_strerror(ret));
 			return false;
 		}
 	} else {
-		ret = jaylink_jtag_clear_trst(spi_data->jaylink_devh);
+		ret = jaylink_jtag_clear_trst(jlink_data->devh);
 
 		if (ret != JAYLINK_OK) {
 			msg_perr("jaylink_jtag_clear_trst() failed: %s.\n", jaylink_strerror(ret));
@@ -80,19 +80,19 @@ static bool assert_cs(struct jlink_spi_data *spi_data)
 	return true;
 }
 
-static bool deassert_cs(struct jlink_spi_data *spi_data)
+static bool deassert_cs(struct jlink_spi_data *jlink_data)
 {
 	int ret;
 
-	if (spi_data->reset_cs) {
-		ret = jaylink_set_reset(spi_data->jaylink_devh);
+	if (jlink_data->reset_cs) {
+		ret = jaylink_set_reset(jlink_data->devh);
 
 		if (ret != JAYLINK_OK) {
 			msg_perr("jaylink_set_reset() failed: %s.\n", jaylink_strerror(ret));
 			return false;
 		}
 	} else {
-		ret = jaylink_jtag_set_trst(spi_data->jaylink_devh);
+		ret = jaylink_jtag_set_trst(jlink_data->devh);
 
 		if (ret != JAYLINK_OK) {
 			msg_perr("jaylink_jtag_set_trst() failed: %s.\n", jaylink_strerror(ret));
@@ -108,7 +108,7 @@ static int jlink_spi_send_command(const struct flashctx *flash, unsigned int wri
 {
 	uint32_t length;
 	uint8_t *buffer;
-	struct jlink_spi_data *spi_data = flash->mst->spi.data;
+	struct jlink_spi_data *jlink_data = flash->mst->spi.data;
 
 	length = writecnt + readcnt;
 
@@ -127,14 +127,14 @@ static int jlink_spi_send_command(const struct flashctx *flash, unsigned int wri
 
 	memset(buffer + writecnt, 0x00, readcnt);
 
-	if (!assert_cs(spi_data)) {
+	if (!assert_cs(jlink_data)) {
 		free(buffer);
 		return SPI_PROGRAMMER_ERROR;
 	}
 
 	int ret;
 
-	ret = jaylink_jtag_io(spi_data->jaylink_devh,
+	ret = jaylink_jtag_io(jlink_data->devh,
 				buffer, buffer, buffer, length * 8, JAYLINK_JTAG_VERSION_2);
 
 	if (ret != JAYLINK_OK) {
@@ -143,7 +143,7 @@ static int jlink_spi_send_command(const struct flashctx *flash, unsigned int wri
 		return SPI_PROGRAMMER_ERROR;
 	}
 
-	if (!deassert_cs(spi_data)) {
+	if (!deassert_cs(jlink_data)) {
 		free(buffer);
 		return SPI_PROGRAMMER_ERROR;
 	}
@@ -170,14 +170,14 @@ static struct spi_master spi_master_jlink_spi = {
 
 static int jlink_spi_shutdown(void *data)
 {
-	struct jlink_spi_data *spi_data = data;
-	if (spi_data->jaylink_devh)
-		jaylink_close(spi_data->jaylink_devh);
+	struct jlink_spi_data *jlink_data = data;
+	if (jlink_data->devh)
+		jaylink_close(jlink_data->devh);
 
-	jaylink_exit(spi_data->jaylink_ctx);
+	jaylink_exit(jlink_data->ctx);
 
-	/* jaylink_ctx, jaylink_devh are freed by jaylink_close and jaylink_exit */
-	free(spi_data);
+	/* jlink_data->ctx, jlink_data->devh are freed by jaylink_close and jaylink_exit */
+	free(jlink_data);
 	return 0;
 }
 
@@ -188,7 +188,7 @@ int jlink_spi_init(void)
 	struct jaylink_context *jaylink_ctx = NULL;
 	struct jaylink_device_handle *jaylink_devh = NULL;
 	bool reset_cs;
-	struct jlink_spi_data *spi_data = NULL;
+	struct jlink_spi_data *jlink_data = NULL;
 
 	arg = extract_programmer_param("spispeed");
 
@@ -454,23 +454,23 @@ int jlink_spi_init(void)
 
 	msg_pdbg("SPI speed: %lu kHz\n", speed);
 
-	spi_data = calloc(1, sizeof(*spi_data));
-	if (!spi_data) {
+	jlink_data = calloc(1, sizeof(*jlink_data));
+	if (!jlink_data) {
 		msg_perr("Unable to allocate space for SPI master data\n");
 		goto init_err;
 	}
 
 	/* jaylink_ctx, jaylink_devh are allocated by jaylink_init and jaylink_open */
-	spi_data->jaylink_ctx = jaylink_ctx;
-	spi_data->jaylink_devh = jaylink_devh;
-	spi_data->reset_cs = reset_cs;
-	spi_master_jlink_spi.data = spi_data;
+	jlink_data->ctx = jaylink_ctx;
+	jlink_data->devh = jaylink_devh;
+	jlink_data->reset_cs = reset_cs;
+	spi_master_jlink_spi.data = jlink_data;
 
 	/* Ensure that the CS signal is not active initially. */
-	if (!deassert_cs(spi_data))
+	if (!deassert_cs(jlink_data))
 		goto init_err;
 
-	if (register_shutdown(jlink_spi_shutdown, spi_data))
+	if (register_shutdown(jlink_spi_shutdown, jlink_data))
 		goto init_err;
 	register_spi_master(&spi_master_jlink_spi);
 
@@ -483,8 +483,8 @@ init_err:
 	jaylink_exit(jaylink_ctx);
 
 	/* jaylink_ctx, jaylink_devh are freed by jaylink_close and jaylink_exit */
-	if (spi_data)
-		free(spi_data);
+	if (jlink_data)
+		free(jlink_data);
 
 	return 1;
 }
