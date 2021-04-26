@@ -496,9 +496,6 @@ int mec1308_init(void)
 		goto init_err_exit;
 	}
 
-	if (register_shutdown(mec1308_shutdown, ctx_data))
-		goto init_err_exit;
-
 	/*
 	 * Enter SPI Pass-Thru Mode after commands which do not require access
 	 * to SPI ROM are complete. We'll start by doing the exit_passthru_mode
@@ -507,14 +504,21 @@ int mec1308_init(void)
 	mec1308_exit_passthru_mode(ctx_data);
 
 	if (enter_passthru_mode(ctx_data))
-		goto init_err_exit;
+		goto init_err_cleanup_exit;
 
 	internal_buses_supported |= BUS_LPC;	/* for LPC <--> SPI bridging */
 	spi_master_mec1308.data = ctx_data;
+
+	if (register_shutdown(mec1308_shutdown, ctx_data))
+		goto init_err_cleanup_exit;
 	register_spi_master(&spi_master_mec1308);
 	msg_pdbg("%s(): successfully initialized mec1308\n", __func__);
 
 	return 0;
+
+init_err_cleanup_exit:
+	mec1308_shutdown(ctx_data);
+	return 1;
 
 init_err_exit:
 	free(ctx_data);
