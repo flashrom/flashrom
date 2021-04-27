@@ -529,7 +529,6 @@ static int check_params(void)
 int ene_lpc_init()
 {
 	uint8_t hwver, ediid, i;
-	int ret = 0;
 	ene_lpc_data_t *ctx_data = NULL;
 
 	msg_pdbg("%s\n", __func__);
@@ -541,10 +540,8 @@ int ene_lpc_init()
 	}
 	ctx_data->ec_state = EC_STATE_NORMAL;
 
-	if (check_params()) {
-		ret = 1;
-		goto ene_probe_spi_flash_exit;
-	}
+	if (check_params())
+		goto init_err_exit;
 
 	for (i = 0; i < ENE_LAST; ++i) {
 		ctx_data->chip = &ene_chips[i];
@@ -560,8 +557,7 @@ int ene_lpc_init()
 
 	if (i == ENE_LAST) {
 		msg_pdbg("ENE EC not found (probe failed)\n");
-		ret = 1;
-		goto ene_probe_spi_flash_exit;
+		goto init_err_exit;
 	}
 
 	/* TODO: probe the EC stop protocol
@@ -574,17 +570,20 @@ int ene_lpc_init()
 	internal_buses_supported |= BUS_LPC;
 	spi_master_ene.data = ctx_data;
 
-	if (register_shutdown(ene_leave_flash_mode, ctx_data)) {
-		ret = 1;
-		goto ene_probe_spi_flash_exit;
-	}
+	if (register_shutdown(ene_leave_flash_mode, ctx_data))
+		goto init_err_cleanup_exit;
 	register_spi_master(&spi_master_ene);
 	msg_pdbg("%s: successfully initialized ene\n", __func__);
 
-ene_probe_spi_flash_exit:
-	if (ret)
-		free(ctx_data);
-	return ret;
+	return 0;
+
+init_err_cleanup_exit:
+	ene_leave_flash_mode(ctx_data);
+	return 1;
+
+init_err_exit:
+	free(ctx_data);
+	return 1;
 }
 
 #endif /* __i386__ || __x86_64__ */
