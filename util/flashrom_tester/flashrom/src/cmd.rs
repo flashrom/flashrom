@@ -129,9 +129,6 @@ fn flashrom_decode_opts(opts: FlashromOpt) -> Vec<String> {
     if opts.flash_name {
         params.push("--flash-name".to_string());
     }
-    if opts.ignore_fmap {
-        params.push("--ignore-fmap".to_string());
-    }
     if opts.verbose {
         params.push("-V".to_string());
     }
@@ -325,11 +322,10 @@ mod tests {
         assert_eq!(
             flashrom_decode_opts(FlashromOpt {
                 flash_name: true,
-                ignore_fmap: true,
                 verbose: true,
                 ..Default::default()
             }),
-            &["--flash-name", "--ignore-fmap", "-V"]
+            &["--flash-name", "-V"]
         );
     }
 
