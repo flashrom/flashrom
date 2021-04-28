@@ -513,11 +513,23 @@ static struct spi_master spi_master_ene = {
 	.write_256 = default_spi_write_256,
 };
 
+static int check_params(void)
+{
+	int ret = 0;
+	char *const p = extract_programmer_param("type");
+	if (p && strcmp(p, "ec")) {
+		msg_pdbg("ene_lpc only supports \"ec\" type devices\n");
+		ret = 1;
+	}
+
+	free(p);
+	return ret;
+}
+
 int ene_lpc_init()
 {
 	uint8_t hwver, ediid, i;
 	int ret = 0;
-	char *p = NULL;
 	ene_lpc_data_t *ctx_data = NULL;
 
 	msg_pdbg("%s\n", __func__);
@@ -529,9 +541,7 @@ int ene_lpc_init()
 	}
 	ctx_data->ec_state = EC_STATE_NORMAL;
 
-	p = extract_programmer_param("type");
-	if (p && strcmp(p, "ec")) {
-		msg_pdbg("ene_lpc only supports \"ec\" type devices\n");
+	if (check_params()) {
 		ret = 1;
 		goto ene_probe_spi_flash_exit;
 	}
@@ -572,7 +582,6 @@ int ene_lpc_init()
 	msg_pdbg("%s: successfully initialized ene\n", __func__);
 
 ene_probe_spi_flash_exit:
-	free(p);
 	if (ret)
 		free(ctx_data);
 	return ret;
