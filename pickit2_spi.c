@@ -458,34 +458,33 @@ int pickit2_spi_init(void)
 		return 1;
 	}
 
-	if (register_shutdown(pickit2_shutdown, NULL) != 0) {
-		return 1;
-	}
-
-	if (pickit2_get_firmware_version()) {
-		return 1;
-	}
+	if (pickit2_get_firmware_version())
+		goto init_err_cleanup_exit;
 
 	/* Command Set SPI Speed */
-	if (pickit2_set_spi_speed(spispeed_idx)) {
-		return 1;
-	}
+	if (pickit2_set_spi_speed(spispeed_idx))
+		goto init_err_cleanup_exit;
 
 	/* Command Set SPI Voltage */
 	msg_pdbg("Setting voltage to %i mV.\n", millivolt);
-	if (pickit2_set_spi_voltage(millivolt) != 0) {
-		return 1;
-	}
+	if (pickit2_set_spi_voltage(millivolt) != 0)
+		goto init_err_cleanup_exit;
 
 	/* Perform basic setup.
 	 * Configure pin directions and logic levels, turn Vdd on, turn busy LED on and clear buffers. */
 	int transferred;
 	if (libusb_interrupt_transfer(pickit2_handle, ENDPOINT_OUT, buf, CMD_LENGTH, &transferred, DFLT_TIMEOUT) != 0) {
 		msg_perr("Command Setup failed!\n");
-		return 1;
+		goto init_err_cleanup_exit;
 	}
 
+	if (register_shutdown(pickit2_shutdown, NULL))
+		goto init_err_cleanup_exit;
 	register_spi_master(&spi_master_pickit2);
 
 	return 0;
+
+init_err_cleanup_exit:
+	pickit2_shutdown(NULL);
+	return 1;
 }
