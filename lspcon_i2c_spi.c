@@ -433,69 +433,9 @@ static int lspcon_i2c_spi_shutdown(void *data)
 	return ret;
 }
 
-/* TODO: remove this out of the specific SPI master implementation. */
-static int get_bus_number(void)
-{
-	char *bus_str = extract_programmer_param("bus");
-	/* Return INVALID_ADDRESS if bus value was given but invalid, and GENERIC_ERROR
-	 * if no value was provided. */
-        int ret = SPI_INVALID_ADDRESS;
-
-        if (bus_str == NULL)
-        	return SPI_GENERIC_ERROR;
-
-	char *bus_suffix;
-	errno = 0;
-	int bus = (int)strtol(bus_str, &bus_suffix, 10);
-	if (errno != 0 || bus_str == bus_suffix) {
-		msg_perr("%s: Could not convert 'bus'.\n", __func__);
-		goto get_bus_done;
-	}
-
-	if (bus < 0 || bus > 255) {
-		msg_perr("%s: Value for 'bus' is out of range(0-255).\n", __func__);
-		goto get_bus_done;
-	}
-
-	if (strlen(bus_suffix) > 0) {
-		msg_perr("%s: Garbage following 'bus' value.\n", __func__);
-		goto get_bus_done;
-	}
-
-	msg_pinfo("Using i2c bus %i.\n", bus);
-	ret = bus;
-
-get_bus_done:
-	free(bus_str);
-	return ret;
-}
-
 int lspcon_i2c_spi_init(void)
 {
-	int fd = -1;
-	int bus_number = get_bus_number();
-	if (bus_number == SPI_INVALID_ADDRESS) {
-		/* Bus was specified but unusable, bail out immediately */
-		return SPI_GENERIC_ERROR;
-	}
-	char *device_path = extract_programmer_param("devpath");
-
-	if (device_path != NULL && bus_number >= 0) {
-		msg_perr("%s: only one of bus and devpath may be specified\n", __func__);
-		free(device_path);
-		return SPI_GENERIC_ERROR;
-	} else if (device_path == NULL && bus_number < 0) {
-		msg_perr("%s: one of bus and devpath must be specified\n", __func__);
-		return SPI_GENERIC_ERROR;
-	}
-
-	if (device_path != NULL) {
-		fd = i2c_open_path(device_path, REGISTER_ADDRESS, 0);
-		free(device_path);
-	} else {
-		fd = i2c_open(bus_number, REGISTER_ADDRESS, 0);
-	}
-
+	int fd = i2c_open_from_programmer_params(REGISTER_ADDRESS, 0);
 	if (fd < 0)
 		return fd;
 

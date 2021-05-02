@@ -80,6 +80,15 @@ int i2c_open(int bus, uint16_t addr, int force);
 int i2c_open_path(const char *path, uint16_t addr, int force);
 
 /**
+ * i2c_open_from_programmer_params: open an I2C device from programmer params
+ *
+ * This function is a wrapper for i2c_open and i2c_open_path that obtains the
+ * I2C device to use from programmer parameters. It is meant to be called
+ * from I2C-based programmers to avoid repeating parameter parsing code.
+ */
+int i2c_open_from_programmer_params(uint16_t addr, int force);
+
+/**
  * i2c_close - closes the file descriptor returned by i2c_open
  *
  * @fd:	file descriptor to be closed.
