@@ -502,12 +502,14 @@ int lspcon_i2c_spi_init(void)
 	int ret = lspcon_i2c_spi_reset_mpu_stop(fd);
 	if (ret) {
 		msg_perr("%s: call to reset_mpu_stop failed.\n", __func__);
+		i2c_close(fd);
 		return ret;
 	}
 
 	struct lspcon_i2c_spi_data *data = calloc(1, sizeof(struct lspcon_i2c_spi_data));
 	if (!data) {
 		msg_perr("Unable to allocate space for extra SPI master data.\n");
+		i2c_close(fd);
 		return SPI_GENERIC_ERROR;
 	}
 
