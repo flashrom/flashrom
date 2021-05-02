@@ -50,12 +50,11 @@ int i2c_open_path(const char *path, uint16_t addr, int force)
 	if (ret < 0) {
 		msg_perr("Unable to set I2C slave address to 0x%02x: %s.\n", addr, strerror(errno));
 		i2c_close(fd);
-                return ret;
+		return ret;
 	}
 
 	return fd;
 }
-
 
 int i2c_open(int bus, uint16_t addr, int force)
 {
