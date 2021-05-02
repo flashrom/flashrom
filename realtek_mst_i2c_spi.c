@@ -442,37 +442,10 @@ static int realtek_mst_i2c_spi_shutdown(void *data)
 	return ret;
 }
 
-static int get_params(int *i2c_bus, int *reset, int *enter_isp)
+static int get_params(int *reset, int *enter_isp)
 {
-	char *bus_str = NULL, *reset_str = NULL, *isp_str = NULL;
+	char *reset_str = NULL, *isp_str = NULL;
 	int ret = SPI_GENERIC_ERROR;
-
-	bus_str = extract_programmer_param("bus");
-	if (bus_str) {
-		char *bus_suffix;
-		errno = 0;
-		int bus = (int)strtol(bus_str, &bus_suffix, 10);
-		if (errno != 0 || bus_str == bus_suffix) {
-			msg_perr("%s: Could not convert 'bus'.\n", __func__);
-			goto _get_params_failed;
-		}
-
-		if (bus < 0 || bus > 255) {
-			msg_perr("%s: Value for 'bus' is out of range(0-255).\n", __func__);
-			goto _get_params_failed;
-		}
-
-		if (strlen(bus_suffix) > 0) {
-			msg_perr("%s: Garbage following 'bus' value.\n", __func__);
-			goto _get_params_failed;
-		}
-
-		msg_pinfo("Using i2c bus %i.\n", bus);
-		*i2c_bus = bus;
-		ret = 0;
-	} else {
-		msg_perr("%s: Bus number not specified.\n", __func__);
-	}
 
 	reset_str = extract_programmer_param("reset-mcu");
 	if (reset_str) {
@@ -504,22 +477,18 @@ static int get_params(int *i2c_bus, int *reset, int *enter_isp)
 	}
 	free(isp_str);
 
-_get_params_failed:
-	if (bus_str)
-		free(bus_str);
-
 	return ret;
 }
 
 int realtek_mst_i2c_spi_init(void)
 {
 	int ret = 0;
-	int i2c_bus = 0, reset = 0, enter_isp = 0;
+	int reset = 0, enter_isp = 0;
 
-	if (get_params(&i2c_bus, &reset, &enter_isp))
+	if (get_params(&reset, &enter_isp))
 		return SPI_GENERIC_ERROR;
 
-	int fd = i2c_open(i2c_bus, REGISTER_ADDRESS, 0);
+	int fd = i2c_open_from_programmer_params(REGISTER_ADDRESS, 0);
 	if (fd < 0)
 		return fd;
 
