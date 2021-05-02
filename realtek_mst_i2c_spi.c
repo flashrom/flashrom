@@ -476,30 +476,32 @@ static int get_params(int *i2c_bus, int *reset, int *enter_isp)
 
 	reset_str = extract_programmer_param("reset-mcu");
 	if (reset_str) {
-		if (reset_str[0] == '1')
+		if (reset_str[0] == '1') {
 			*reset = 1;
-		else if (reset_str[0] == '0')
+		} else if (reset_str[0] == '0') {
 			*reset = 0;
-		else {
+		} else {
 			msg_perr("%s: Incorrect param format, reset-mcu=1 or 0.\n", __func__);
 			ret = SPI_GENERIC_ERROR;
 		}
-	} else
+	} else {
 		*reset = 0; /* Default behaviour is no MCU reset on tear-down. */
+	}
 	free(reset_str);
 
 	isp_str = extract_programmer_param("enter-isp");
 	if (isp_str) {
-		if (isp_str[0] == '1')
+		if (isp_str[0] == '1') {
 			*enter_isp = 1;
-		else if (isp_str[0] == '0')
+		} else if (isp_str[0] == '0') {
 			*enter_isp = 0;
-		else {
+		} else {
 			msg_perr("%s: Incorrect param format, enter-isp=1 or 0.\n", __func__);
 			ret = SPI_GENERIC_ERROR;
 		}
-	} else
+	} else {
 		*enter_isp = 1; /* Default behaviour is enter ISP on setup. */
+	}
 	free(isp_str);
 
 _get_params_failed:
