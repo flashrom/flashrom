@@ -165,7 +165,7 @@ out:
 	return result;
 }
 
-int linux_spi_init(void)
+static int linux_spi_init(void)
 {
 	char *p, *endp, *dev;
 	uint32_t speed_hz = 2 * 1000 * 1000;
@@ -250,5 +250,15 @@ init_err:
 	close(fd);
 	return 1;
 }
+
+const struct programmer_entry programmer_linux_spi = {
+	.name			= "linux_spi",
+	.type			= OTHER,
+	.devs.note		= "Device files /dev/spidev*.*\n",
+	.init			= linux_spi_init,
+	.map_flash_region	= fallback_map,
+	.unmap_flash_region	= fallback_unmap,
+	.delay			= internal_delay,
+};
 
 #endif // CONFIG_LINUX_SPI == 1

@@ -45,7 +45,7 @@ struct ogp_spi_data {
 	uint32_t reg_sck;
 };
 
-const struct dev_entry ogp_spi[] = {
+static const struct dev_entry ogp_spi[] = {
 	{PCI_VENDOR_ID_OGP, 0x0000, OK, "Open Graphics Project", "Development Board OGD1"},
 
 	{0},
@@ -106,7 +106,7 @@ static int ogp_spi_shutdown(void *data)
 	return 0;
 }
 
-int ogp_spi_init(void)
+static int ogp_spi_init(void)
 {
 	struct pci_dev *dev = NULL;
 	char *type;
@@ -174,3 +174,13 @@ int ogp_spi_init(void)
 
 	return 0;
 }
+
+const struct programmer_entry programmer_ogp_spi = {
+	.name			= "ogp_spi",
+	.type			= PCI,
+	.devs.dev		= ogp_spi,
+	.init			= ogp_spi_init,
+	.map_flash_region	= fallback_map,
+	.unmap_flash_region	= fallback_unmap,
+	.delay			= internal_delay,
+};

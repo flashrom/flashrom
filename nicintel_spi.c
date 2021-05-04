@@ -79,7 +79,7 @@ struct nicintel_spi_data {
 	uint8_t *spibar;
 };
 
-const struct dev_entry nics_intel_spi[] = {
+static const struct dev_entry nics_intel_spi[] = {
 	{PCI_VENDOR_ID_INTEL, 0x105e, OK, "Intel", "82571EB Gigabit Ethernet Controller"},
 	{PCI_VENDOR_ID_INTEL, 0x1076, OK, "Intel", "82541GI Gigabit Ethernet Controller"},
 	{PCI_VENDOR_ID_INTEL, 0x107c, OK, "Intel", "82541PI Gigabit Ethernet Controller"},
@@ -259,7 +259,7 @@ static int nicintel_spi_i210_enable_flash(struct nicintel_spi_data *data)
 	return 0;
 }
 
-int nicintel_spi_init(void)
+static int nicintel_spi_init(void)
 {
 	struct pci_dev *dev = NULL;
 
@@ -308,3 +308,13 @@ int nicintel_spi_init(void)
 
 	return 0;
 }
+
+const struct programmer_entry programmer_nicintel_spi = {
+	.name			= "nicintel_spi",
+	.type			= PCI,
+	.devs.dev		= nics_intel_spi,
+	.init			= nicintel_spi_init,
+	.map_flash_region	= fallback_map,
+	.unmap_flash_region	= fallback_unmap,
+	.delay			= internal_delay,
+};

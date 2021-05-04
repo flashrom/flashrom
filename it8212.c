@@ -23,7 +23,7 @@ static uint8_t *it8212_bar = NULL;
 
 #define PCI_VENDOR_ID_ITE 0x1283
 
-const struct dev_entry devs_it8212[] = {
+static const struct dev_entry devs_it8212[] = {
 	{PCI_VENDOR_ID_ITE, 0x8212, NT, "ITE", "8212F PATA RAID"},
 
 	{0},
@@ -53,7 +53,7 @@ static const struct par_master par_master_it8212 = {
 		.chip_writen		= fallback_chip_writen,
 };
 
-int it8212_init(void)
+static int it8212_init(void)
 {
 	if (rget_io_perms())
 		return 1;
@@ -78,3 +78,12 @@ int it8212_init(void)
 	register_par_master(&par_master_it8212, BUS_PARALLEL, NULL);
 	return 0;
 }
+const struct programmer_entry programmer_it8212 = {
+	.name			= "it8212",
+	.type			= PCI,
+	.devs.dev		= devs_it8212,
+	.init			= it8212_init,
+	.map_flash_region	= fallback_map,
+	.unmap_flash_region	= fallback_unmap,
+	.delay			= internal_delay,
+};

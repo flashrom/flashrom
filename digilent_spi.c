@@ -53,7 +53,7 @@ struct digilent_spi_data {
 #define DIGILENT_VID		0x1443
 #define DIGILENT_JTAG_PID	0x0007
 
-const struct dev_entry devs_digilent_spi[] = {
+static const struct dev_entry devs_digilent_spi[] = {
 	{ DIGILENT_VID, DIGILENT_JTAG_PID, OK, "Digilent", "Development board JTAG" },
 	{ 0 },
 };
@@ -373,7 +373,7 @@ static const struct digilent_spispeeds spispeeds[] = {
 	{ NULL,		0 },
 };
 
-int digilent_spi_init(void)
+static int digilent_spi_init(void)
 {
 	char *p;
 	uint32_t speed_hz = spispeeds[0].speed;
@@ -464,3 +464,13 @@ close_handle:
 	libusb_close(handle);
 	return -1;
 }
+
+const struct programmer_entry programmer_digilent_spi = {
+	.name			= "digilent_spi",
+	.type			= USB,
+	.devs.dev		= devs_digilent_spi,
+	.init			= digilent_spi_init,
+	.map_flash_region	= fallback_map,
+	.unmap_flash_region	= fallback_unmap,
+	.delay			= internal_delay,
+};

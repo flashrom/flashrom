@@ -433,7 +433,7 @@ static int lspcon_i2c_spi_shutdown(void *data)
 	return ret;
 }
 
-int lspcon_i2c_spi_init(void)
+static int lspcon_i2c_spi_init(void)
 {
 	int fd = i2c_open_from_programmer_params(REGISTER_ADDRESS, 0);
 	if (fd < 0)
@@ -460,3 +460,13 @@ int lspcon_i2c_spi_init(void)
 
 	return ret;
 }
+
+const struct programmer_entry programmer_lspcon_i2c_spi = {
+	.name			= "lspcon_i2c_spi",
+	.type			= OTHER,
+	.devs.note		= "Device files /dev/i2c-*.\n",
+	.init			= lspcon_i2c_spi_init,
+	.map_flash_region	= fallback_map,
+	.unmap_flash_region	= fallback_unmap,
+	.delay			= internal_delay,
+};

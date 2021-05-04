@@ -55,7 +55,7 @@
 #define CP210X_WRITE_LATCH      0x37e1
 #define CP210X_READ_LATCH       0x00c2
 
-const struct dev_entry devs_developerbox_spi[] = {
+static const struct dev_entry devs_developerbox_spi[] = {
 	{0x10c4, 0xea60, OK, "Silicon Labs", "CP2102N USB to UART Bridge Controller"},
 	{0},
 };
@@ -144,7 +144,7 @@ static int developerbox_spi_shutdown(void *spi_data)
 	return 0;
 }
 
-int developerbox_spi_init(void)
+static int developerbox_spi_init(void)
 {
 	struct libusb_context *usb_ctx;
 	libusb_device_handle *cp210x_handle;
@@ -190,3 +190,13 @@ err_exit:
 	libusb_exit(usb_ctx);
 	return 1;
 }
+
+const struct programmer_entry programmer_developerbox = {
+	.name			= "developerbox",
+	.type			= USB,
+	.devs.dev		= devs_developerbox_spi,
+	.init			= developerbox_spi_init,
+	.map_flash_region	= fallback_map,
+	.unmap_flash_region	= fallback_unmap,
+	.delay			= internal_delay,
+};

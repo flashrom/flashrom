@@ -84,7 +84,7 @@ static unsigned int stored_delay_us = 0;
 
 static struct libusb_device_handle *handle = NULL;
 
-const struct dev_entry devs_ch341a_spi[] = {
+static const struct dev_entry devs_ch341a_spi[] = {
 	{0x1A86, 0x5512, OK, "Winchiphead (WCH)", "CH341A"},
 
 	{0},
@@ -323,7 +323,7 @@ static void pluck_cs(uint8_t *ptr)
 	*ptr++ = CH341A_CMD_UIO_STM_END;
 }
 
-void ch341a_spi_delay(unsigned int usecs)
+static void ch341a_spi_delay(unsigned int usecs)
 {
 	/* There is space for 28 bytes instructions of 750 ns each in the CS packet (32 - 4 for the actual CS
 	 * instructions), thus max 21 us, but we avoid getting too near to this boundary and use
@@ -419,7 +419,7 @@ static int ch341a_spi_shutdown(void *data)
 	return 0;
 }
 
-int ch341a_spi_init(void)
+static int ch341a_spi_init(void)
 {
 	if (handle != NULL) {
 		msg_cerr("%s: handle already set! Please report a bug at flashrom@flashrom.org\n", __func__);
@@ -526,3 +526,13 @@ close_handle:
 	handle = NULL;
 	return -1;
 }
+
+const struct programmer_entry programmer_ch341a_spi = {
+	.name			= "ch341a_spi",
+	.type			= USB,
+	.devs.dev		= devs_ch341a_spi,
+	.init			= ch341a_spi_init,
+	.map_flash_region	= fallback_map,
+	.unmap_flash_region	= fallback_unmap,
+	.delay			= ch341a_spi_delay,
+};

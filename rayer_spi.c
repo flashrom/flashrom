@@ -236,7 +236,7 @@ static const struct bitbang_spi_master bitbang_spi_master_rayer = {
 	.half_period = 0,
 };
 
-int rayer_spi_init(void)
+static int rayer_spi_init(void)
 {
 	const struct rayer_programmer *prog = rayer_spi_types;
 	char *arg = NULL;
@@ -323,6 +323,17 @@ int rayer_spi_init(void)
 
 	return 0;
 }
+
+const struct programmer_entry programmer_rayer_spi = {
+	.name			= "rayer_spi",
+	.type			= OTHER,
+				/* FIXME */
+	.devs.note		= "RayeR parallel port programmer\n",
+	.init			= rayer_spi_init,
+	.map_flash_region	= fallback_map,
+	.unmap_flash_region	= fallback_unmap,
+	.delay			= internal_delay,
+};
 
 #else
 #error PCI port I/O access is not supported on this architecture yet.

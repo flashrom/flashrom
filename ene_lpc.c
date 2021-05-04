@@ -526,7 +526,7 @@ static int check_params(void)
 	return ret;
 }
 
-int ene_lpc_init()
+static int ene_lpc_init()
 {
 	uint8_t hwver, ediid, i;
 	ene_lpc_data_t *ctx_data = NULL;
@@ -584,5 +584,15 @@ init_err_exit:
 	free(ctx_data);
 	return 1;
 }
+
+const struct programmer_entry programmer_ene_lpc = {
+	.name			= "ene_lpc",
+	.type			= OTHER,
+	.devs.note		= "ENE LPC interface keyboard controller\n",
+	.init			= ene_lpc_init,
+	.map_flash_region	= fallback_map,
+	.unmap_flash_region	= fallback_unmap,
+	.delay			= internal_delay,
+};
 
 #endif /* __i386__ || __x86_64__ */

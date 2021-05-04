@@ -349,7 +349,7 @@
 #include <unistd.h>
 
 /* FIXME: Add some programmer IDs here */
-const struct dev_entry devs_raiden[] = {
+static const struct dev_entry devs_raiden[] = {
 	{0},
 };
 
@@ -1454,7 +1454,7 @@ static void free_dev_list(struct usb_device **dev_lst)
 		dev = usb_device_free(dev);
 }
 
-int raiden_debug_spi_init(void)
+static int raiden_debug_spi_init(void)
 {
 	struct usb_match match;
 	char *serial = extract_programmer_param("serial");
@@ -1617,3 +1617,13 @@ loop_end:
 
 	return 0;
 }
+
+const struct programmer_entry programmer_raiden_debug_spi = {
+	.name			= "raiden_debug_spi",
+	.type			= USB,
+	.devs.dev		= devs_raiden,
+	.init			= raiden_debug_spi_init,
+	.map_flash_region	= fallback_map,
+	.unmap_flash_region	= fallback_unmap,
+	.delay			= internal_delay,
+};

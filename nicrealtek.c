@@ -27,7 +27,7 @@
 static uint32_t io_base_addr = 0;
 static int bios_rom_addr, bios_rom_data;
 
-const struct dev_entry nics_realtek[] = {
+static const struct dev_entry nics_realtek[] = {
 	{0x10ec, 0x8139, OK, "Realtek", "RTL8139/8139C/8139C+"},
 	{0x10ec, 0x8169, NT, "Realtek", "RTL8169"},
 	{0x1113, 0x1211, OK, "SMC", "1211TX"}, /* RTL8139 clone */
@@ -90,7 +90,7 @@ static int nicrealtek_shutdown(void *data)
 	return 0;
 }
 
-int nicrealtek_init(void)
+static int nicrealtek_init(void)
 {
 	struct pci_dev *dev = NULL;
 
@@ -126,6 +126,16 @@ int nicrealtek_init(void)
 
 	return 0;
 }
+
+const struct programmer_entry programmer_nicrealtek = {
+	.name			= "nicrealtek",
+	.type			= PCI,
+	.devs.dev		= nics_realtek,
+	.init			= nicrealtek_init,
+	.map_flash_region	= fallback_map,
+	.unmap_flash_region	= fallback_unmap,
+	.delay			= internal_delay,
+};
 
 #else
 #error PCI port I/O access is not supported on this architecture yet.

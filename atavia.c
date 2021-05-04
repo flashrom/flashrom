@@ -48,7 +48,7 @@
 #define ENABLE_BYTE(address)	((~(1 << ((address) & 3))) & BROM_BYTE_ENABLE_MASK)
 #define BYTE_OFFSET(address)	(((addr) & 3) * 8)
 
-const struct dev_entry ata_via[] = {
+static const struct dev_entry ata_via[] = {
 	{PCI_VENDOR_ID_VIA, 0x3249, DEP, "VIA", "VT6421A"},
 
 	{0},
@@ -101,7 +101,7 @@ static bool atavia_ready(struct pci_dev *pcidev_dev)
 	return ready;
 }
 
-void *atavia_map(const char *descr, uintptr_t phys_addr, size_t len)
+static void *atavia_map(const char *descr, uintptr_t phys_addr, size_t len)
 {
 	return (atavia_offset != 0) ? atavia_offset : (void *)phys_addr;
 }
@@ -143,7 +143,7 @@ static const struct par_master lpc_master_atavia = {
 		.chip_writen		= fallback_chip_writen,
 };
 
-int atavia_init(void)
+static int atavia_init(void)
 {
 	char *arg = extract_programmer_param("offset");
 	if (arg) {
@@ -188,3 +188,13 @@ int atavia_init(void)
 
 	return 0;
 }
+
+const struct programmer_entry programmer_atavia = {
+	.name			= "atavia",
+	.type			= PCI,
+	.devs.dev		= ata_via,
+	.init			= atavia_init,
+	.map_flash_region	= atavia_map,
+	.unmap_flash_region	= fallback_unmap,
+	.delay			= internal_delay,
+};

@@ -46,7 +46,7 @@
 #include "programmer.h"
 #include "spi.h"
 
-const struct dev_entry devs_pickit2_spi[] = {
+static const struct dev_entry devs_pickit2_spi[] = {
 	{0x04D8, 0x0033, OK, "Microchip", "PICkit 2"},
 
 	{0}
@@ -388,7 +388,7 @@ static int pickit2_shutdown(void *data)
 	return ret;
 }
 
-int pickit2_spi_init(void)
+static int pickit2_spi_init(void)
 {
 	uint8_t buf[CMD_LENGTH] = {
 		CMD_EXEC_SCRIPT,
@@ -508,3 +508,13 @@ init_err_cleanup_exit:
 	pickit2_shutdown(pickit2_data);
 	return 1;
 }
+
+const struct programmer_entry programmer_pickit2_spi = {
+	.name			= "pickit2_spi",
+	.type			= USB,
+	.devs.dev		= devs_pickit2_spi,
+	.init			= pickit2_spi_init,
+	.map_flash_region	= fallback_map,
+	.unmap_flash_region	= fallback_unmap,
+	.delay			= internal_delay,
+};

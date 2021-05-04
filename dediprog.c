@@ -152,7 +152,7 @@ enum protocol {
 	PROTOCOL_V3,
 };
 
-const struct dev_entry devs_dediprog[] = {
+static const struct dev_entry devs_dediprog[] = {
 	{0x0483, 0xDADA, OK, "Dediprog", "SF100/SF200/SF600"},
 
 	{0},
@@ -1055,7 +1055,7 @@ static int dediprog_shutdown(void *data)
 	return 0;
 }
 
-int dediprog_init(void)
+static int dediprog_init(void)
 {
 	char *voltage, *id_str, *device, *spispeed, *target_str;
 	int spispeed_idx = 1;
@@ -1279,3 +1279,13 @@ int dediprog_init(void)
 
 	return 0;
 }
+
+const struct programmer_entry programmer_dediprog = {
+	.name			= "dediprog",
+	.type			= USB,
+	.devs.dev		= devs_dediprog,
+	.init			= dediprog_init,
+	.map_flash_region	= fallback_map,
+	.unmap_flash_region	= fallback_unmap,
+	.delay			= internal_delay,
+};

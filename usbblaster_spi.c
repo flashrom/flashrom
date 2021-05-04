@@ -45,7 +45,7 @@
 #define ALTERA_VID		0x09fb
 #define ALTERA_USBBLASTER_PID	0x6001
 
-const struct dev_entry devs_usbblasterspi[] = {
+static const struct dev_entry devs_usbblasterspi[] = {
 	{ALTERA_VID, ALTERA_USBBLASTER_PID, OK, "Altera", "USB-Blaster"},
 
 	{0}
@@ -177,7 +177,7 @@ static const struct spi_master spi_master_usbblaster = {
 };
 
 /* Returns 0 upon success, a negative number upon errors. */
-int usbblaster_spi_init(void)
+static int usbblaster_spi_init(void)
 {
 	uint8_t buf[BUF_SIZE + 1] = { 0 };
 	struct ftdi_context ftdic;
@@ -231,5 +231,15 @@ int usbblaster_spi_init(void)
 	register_spi_master(&spi_master_usbblaster, usbblaster_data);
 	return 0;
 }
+
+const struct programmer_entry programmer_usbblaster_spi = {
+	.name			= "usbblaster_spi",
+	.type			= USB,
+	.devs.dev		= devs_usbblasterspi,
+	.init			= usbblaster_spi_init,
+	.map_flash_region	= fallback_map,
+	.unmap_flash_region	= fallback_unmap,
+	.delay			= internal_delay,
+};
 
 #endif

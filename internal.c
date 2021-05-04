@@ -170,7 +170,7 @@ static const struct par_master par_master_internal = {
 		.chip_writen		= fallback_chip_writen,
 };
 
-int internal_init(void)
+static int internal_init(void)
 {
 	int ret = 0;
 	int force_laptop = 0;
@@ -372,3 +372,13 @@ internal_init_exit:
 
 	return ret;
 }
+
+const struct programmer_entry programmer_internal = {
+	.name			= "internal",
+	.type			= OTHER,
+	.devs.note		= NULL,
+	.init			= internal_init,
+	.map_flash_region	= physmap,
+	.unmap_flash_region	= physunmap,
+	.delay			= internal_delay,
+};

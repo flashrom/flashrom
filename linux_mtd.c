@@ -295,7 +295,7 @@ static int linux_mtd_erase(struct flashctx *flash,
 	return 0;
 }
 
-static const struct opaque_master programmer_linux_mtd = {
+static const struct opaque_master linux_mtd_opaque_master = {
 	/* max_data_{read,write} don't have any effect for this programmer */
 	.max_data_read	= MAX_DATA_UNSPECIFIED,
 	.max_data_write	= MAX_DATA_UNSPECIFIED,
@@ -367,7 +367,7 @@ static int linux_mtd_shutdown(void *data)
 	return 0;
 }
 
-int linux_mtd_init(void)
+static int linux_mtd_init(void)
 {
 	char *param;
 	int dev_num = 0;
@@ -422,10 +422,20 @@ int linux_mtd_init(void)
 		goto linux_mtd_init_exit;
 	}
 
-	register_opaque_master(&programmer_linux_mtd, data);
+	register_opaque_master(&linux_mtd_opaque_master, data);
 
 	ret = 0;
 linux_mtd_init_exit:
 	free(param);
 	return ret;
 }
+
+const struct programmer_entry programmer_linux_mtd = {
+	.name			= "linux_mtd",
+	.type			= OTHER,
+	.devs.note		= "Device files /dev/mtd*\n",
+	.init			= linux_mtd_init,
+	.map_flash_region	= fallback_map,
+	.unmap_flash_region	= fallback_unmap,
+	.delay			= internal_delay,
+};

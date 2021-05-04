@@ -419,7 +419,7 @@ static int check_params(void)
 	return ret;
 }
 
-int mec1308_init(void)
+static int mec1308_init(void)
 {
 	uint16_t sio_port;
 	uint8_t device_id;
@@ -521,4 +521,15 @@ init_err_exit:
 	free(ctx_data);
 	return 1;
 }
+
+const struct programmer_entry programmer_mec1308 = {
+	.name			= "mec1308",
+	.type			= OTHER,
+	.devs.note		= "Microchip MEC1308 Embedded Controller.\n",
+	.init			= mec1308_init,
+	.map_flash_region	= fallback_map,
+	.unmap_flash_region	= fallback_unmap,
+	.delay			= internal_delay,
+};
+
 #endif

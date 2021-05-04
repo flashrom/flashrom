@@ -25,7 +25,7 @@
 static uint8_t *mv_bar;
 static uint16_t mv_iobar;
 
-const struct dev_entry satas_mv[] = {
+static const struct dev_entry satas_mv[] = {
 	/* 88SX6041 and 88SX6042 are the same according to the datasheet. */
 	{0x11ab, 0x7042, OK, "Marvell", "88SX7042 PCI-e 4-port SATA-II"},
 
@@ -100,7 +100,7 @@ static const struct par_master par_master_satamv = {
  * 0xc08	PCI BAR2 (Flash/NVRAM) Control
  * 0x1046c	Flash Parameters
  */
-int satamv_init(void)
+static int satamv_init(void)
 {
 	struct pci_dev *dev = NULL;
 	uintptr_t addr;
@@ -183,6 +183,16 @@ int satamv_init(void)
 
 	return 0;
 }
+
+const struct programmer_entry programmer_satamv = {
+	.name			= "satamv",
+	.type			= PCI,
+	.devs.dev		= satas_mv,
+	.init			= satamv_init,
+	.map_flash_region	= fallback_map,
+	.unmap_flash_region	= fallback_unmap,
+	.delay			= internal_delay,
+};
 
 #else
 #error PCI port I/O access is not supported on this architecture yet.

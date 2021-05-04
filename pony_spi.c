@@ -120,7 +120,7 @@ static int pony_spi_shutdown(void *data)
 	return ret;
 }
 
-int pony_spi_init(void)
+static int pony_spi_init(void)
 {
 	int i, data_out;
 	char *arg = NULL;
@@ -250,3 +250,14 @@ int pony_spi_init(void)
 
 	return 0;
 }
+
+const struct programmer_entry programmer_pony_spi = {
+	.name			= "pony_spi",
+	.type			= OTHER,
+				/* FIXME */
+	.devs.note		= "Programmers compatible with SI-Prog, serbang or AJAWe\n",
+	.init			= pony_spi_init,
+	.map_flash_region	= fallback_map,
+	.unmap_flash_region	= fallback_unmap,
+	.delay			= internal_delay,
+};

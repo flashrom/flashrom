@@ -480,7 +480,7 @@ static int get_params(int *reset, int *enter_isp)
 	return ret;
 }
 
-int realtek_mst_i2c_spi_init(void)
+static int realtek_mst_i2c_spi_init(void)
 {
 	int ret = 0;
 	int reset = 0, enter_isp = 0;
@@ -517,3 +517,13 @@ int realtek_mst_i2c_spi_init(void)
 
 	return ret;
 }
+
+const struct programmer_entry programmer_realtek_mst_i2c_spi = {
+	.name			= "realtek_mst_i2c_spi",
+	.type			= OTHER,
+	.devs.note		= "Device files /dev/i2c-*.\n",
+	.init			= realtek_mst_i2c_spi_init,
+	.map_flash_region	= fallback_map,
+	.unmap_flash_region	= fallback_unmap,
+	.delay			= internal_delay,
+};

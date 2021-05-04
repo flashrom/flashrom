@@ -27,7 +27,7 @@
 #define BOOT_ROM_DATA		0x54
 
 static uint32_t io_base_addr = 0;
-const struct dev_entry nics_natsemi[] = {
+static const struct dev_entry nics_natsemi[] = {
 	{0x100b, 0x0020, NT, "National Semiconductor", "DP83815/DP83816"},
 	{0x100b, 0x0022, NT, "National Semiconductor", "DP83820"},
 
@@ -75,7 +75,7 @@ static const struct par_master par_master_nicnatsemi = {
 		.chip_writen		= fallback_chip_writen,
 };
 
-int nicnatsemi_init(void)
+static int nicnatsemi_init(void)
 {
 	struct pci_dev *dev = NULL;
 
@@ -101,6 +101,17 @@ int nicnatsemi_init(void)
 
 	return 0;
 }
+
+
+const struct programmer_entry programmer_nicnatsemi = {
+	.name			= "nicnatsemi",
+	.type			= PCI,
+	.devs.dev		= nics_natsemi,
+	.init			= nicnatsemi_init,
+	.map_flash_region	= fallback_map,
+	.unmap_flash_region	= fallback_unmap,
+	.delay			= internal_delay,
+};
 
 #else
 #error PCI port I/O access is not supported on this architecture yet.

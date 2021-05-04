@@ -302,7 +302,7 @@ static int buspirate_spi_send_command_v2(const struct flashctx *flash, unsigned 
  */
 #define BP_DIVISOR(baud) ((4000000/(baud)) - 1)
 
-int buspirate_spi_init(void)
+static int buspirate_spi_init(void)
 {
 	char *tmp;
 	char *dev;
@@ -659,3 +659,14 @@ int buspirate_spi_init(void)
 
 	return 0;
 }
+
+const struct programmer_entry programmer_buspirate_spi = {
+	.name			= "buspirate_spi",
+	.type			= OTHER,
+				/* FIXME */
+	.devs.note		= "Dangerous Prototypes Bus Pirate\n",
+	.init			= buspirate_spi_init,
+	.map_flash_region	= fallback_map,
+	.unmap_flash_region	= fallback_unmap,
+	.delay			= internal_delay,
+};

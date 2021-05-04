@@ -81,7 +81,7 @@ static bool done_i20_write = false;
  * Warning: is_i210() below makes assumptions on these PCI ids.
  *          It may have to be updated when this list is extended.
  */
-const struct dev_entry nics_intel_ee[] = {
+static const struct dev_entry nics_intel_ee[] = {
 	{PCI_VENDOR_ID_INTEL, 0x150e, OK, "Intel", "82580 Quad Gigabit Ethernet Controller (Copper)"},
 	{PCI_VENDOR_ID_INTEL, 0x150f, NT , "Intel", "82580 Quad Gigabit Ethernet Controller (Fiber)"},
 	{PCI_VENDOR_ID_INTEL, 0x1510, NT , "Intel", "82580 Quad Gigabit Ethernet Controller (Backplane)"},
@@ -447,7 +447,7 @@ static int nicintel_ee_shutdown_82580(void *eecp)
 	return ret;
 }
 
-int nicintel_ee_init(void)
+static int nicintel_ee_init(void)
 {
 	if (rget_io_perms())
 		return 1;
@@ -501,3 +501,13 @@ int nicintel_ee_init(void)
 
 	return 1;
 }
+
+const struct programmer_entry programmer_nicintel_eeprom = {
+	.name			= "nicintel_eeprom",
+	.type			= PCI,
+	.devs.dev		= nics_intel_ee,
+	.init			= nicintel_ee_init,
+	.map_flash_region	= fallback_map,
+	.unmap_flash_region	= fallback_unmap,
+	.delay			= internal_delay,
+};

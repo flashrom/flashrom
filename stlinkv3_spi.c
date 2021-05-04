@@ -114,7 +114,7 @@ enum spi_nss_level {
 
 #define USB_TIMEOUT_IN_MS					5000
 
-const struct dev_entry devs_stlinkv3_spi[] = {
+static const struct dev_entry devs_stlinkv3_spi[] = {
 	{0x0483, 0x374F, OK, "STMicroelectronics", "STLINK-V3"},
 	{0}
 };
@@ -469,7 +469,7 @@ static const struct spi_master spi_programmer_stlinkv3 = {
 	.write_aai = default_spi_write_aai,
 };
 
-int stlinkv3_spi_init(void)
+static int stlinkv3_spi_init(void)
 {
 	uint16_t sck_freq_kHz = 1000;	// selecting 1 MHz SCK is a good bet
 	char *speed_str = NULL;
@@ -549,3 +549,13 @@ init_err_exit:
 	libusb_exit(usb_ctx);
 	return ret;
 }
+
+const struct programmer_entry programmer_stlinkv3_spi = {
+	.name			= "stlinkv3_spi",
+	.type			= USB,
+	.devs.dev		= devs_stlinkv3_spi,
+	.init			= stlinkv3_spi_init,
+	.map_flash_region	= fallback_map,
+	.unmap_flash_region	= fallback_unmap,
+	.delay			= internal_delay,
+};

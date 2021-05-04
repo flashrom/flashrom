@@ -29,7 +29,7 @@
 /* Mask to restrict flash accesses to the 128kB memory window. */
 #define DRKAISER_MEMMAP_MASK		((1 << 17) - 1)
 
-const struct dev_entry drkaiser_pcidev[] = {
+static const struct dev_entry drkaiser_pcidev[] = {
 	{0x1803, 0x5057, OK, "Dr. Kaiser", "PC-Waechter (Actel FPGA)"},
 
 	{0},
@@ -60,7 +60,7 @@ static const struct par_master par_master_drkaiser = {
 		.chip_writen		= fallback_chip_writen,
 };
 
-int drkaiser_init(void)
+static int drkaiser_init(void)
 {
 	struct pci_dev *dev = NULL;
 	uint32_t addr;
@@ -89,3 +89,13 @@ int drkaiser_init(void)
 
 	return 0;
 }
+
+const struct programmer_entry programmer_drkaiser = {
+	.name			= "drkaiser",
+	.type			= PCI,
+	.devs.dev		= drkaiser_pcidev,
+	.init			= drkaiser_init,
+	.map_flash_region	= fallback_map,
+	.unmap_flash_region	= fallback_unmap,
+	.delay			= internal_delay,
+};

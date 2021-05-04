@@ -26,7 +26,7 @@
 static uint8_t *sii_bar;
 static uint16_t id;
 
-const struct dev_entry satas_sii[] = {
+static const struct dev_entry satas_sii[] = {
 	{0x1095, 0x0680, OK, "Silicon Image", "PCI0680 Ultra ATA-133 Host Ctrl"},
 	{0x1095, 0x3112, OK, "Silicon Image", "SiI 3112 [SATALink/SATARaid] SATA Ctrl"},
 	{0x1095, 0x3114, OK, "Silicon Image", "SiI 3114 [SATALink/SATARaid] SATA Ctrl"},
@@ -93,7 +93,7 @@ static const struct par_master par_master_satasii = {
 		.chip_writen		= fallback_chip_writen,
 };
 
-int satasii_init(void)
+static int satasii_init(void)
 {
 	struct pci_dev *dev = NULL;
 	uint32_t addr;
@@ -133,3 +133,12 @@ int satasii_init(void)
 
 	return 0;
 }
+const struct programmer_entry programmer_satasii = {
+	.name			= "satasii",
+	.type			= PCI,
+	.devs.dev		= satas_sii,
+	.init			= satasii_init,
+	.map_flash_region	= fallback_map,
+	.unmap_flash_region	= fallback_unmap,
+	.delay			= internal_delay,
+};

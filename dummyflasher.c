@@ -89,14 +89,14 @@ static const uint8_t sfdp_table[] = {
 	0xFF, 0xFF, 0xFF, 0xFF, // @0x54: Macronix parameter table end
 };
 
-void *dummy_map(const char *descr, uintptr_t phys_addr, size_t len)
+static void *dummy_map(const char *descr, uintptr_t phys_addr, size_t len)
 {
 	msg_pspew("%s: Mapping %s, 0x%zx bytes at 0x%0*" PRIxPTR "\n",
 		  __func__, descr, len, PRIxPTR_WIDTH, phys_addr);
 	return (void *)phys_addr;
 }
 
-void dummy_unmap(void *virt_addr, size_t len)
+static void dummy_unmap(void *virt_addr, size_t len)
 {
 	msg_pspew("%s: Unmapping 0x%zx bytes at %p\n", __func__, len, virt_addr);
 }
@@ -943,7 +943,7 @@ static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_suppor
 	return 0;
 }
 
-int dummy_init(void)
+static int dummy_init(void)
 {
 	struct stat image_stat;
 
@@ -1060,3 +1060,14 @@ int probe_variable_size(struct flashctx *flash)
 
 	return 1;
 }
+
+const struct programmer_entry programmer_dummy = {
+	.name			= "dummy",
+	.type			= OTHER,
+				/* FIXME */
+	.devs.note		= "Dummy device, does nothing and logs all accesses\n",
+	.init			= dummy_init,
+	.map_flash_region	= dummy_map,
+	.unmap_flash_region	= dummy_unmap,
+	.delay			= internal_delay,
+};
