@@ -47,7 +47,7 @@ flashrom \- detect, read, write, verify and erase flash chips
 .B flashrom \fR[\fB\-h\fR|\fB\-R\fR|\fB\-L\fR|\fB\-z\fR|
           \fB\-p\fR <programmername>[:<parameters>] [\fB\-c\fR <chipname>]
             (\fB\-\-flash\-name\fR|\fB\-\-flash\-size\fR|
-             [\fB\-E\fR|\fB\-r\fR <file>|\fB\-w\fR <file>|\fB\-v\fR <file>]
+             [\fB\-E\fR|\fB\-x\fR|\fB\-r\fR <file>|\fB\-w\fR <file>|\fB\-v\fR <file>]
              [(\fB\-l\fR <file>|\fB\-\-ifd|\fB \-\-fmap\fR|\fB\-\-fmap-file\fR <file>)
                [\fB\-i\fR <image>[:<file>]]]
              [\fB\-n\fR] [\fB\-N\fR] [\fB\-f\fR])]
@@ -135,6 +135,10 @@ Verify the flash ROM contents against the given
 .TP
 .B "\-E, \-\-erase"
 Erase the flash ROM chip.
+.TP
+.B "\-x, \-\-extract"
+Extract every region defined on the layout from flash ROM chip to a
+file with the same name as the extracted region.
 .TP
 .B "\-V, \-\-verbose"
 More verbose output. This option can be supplied multiple times
