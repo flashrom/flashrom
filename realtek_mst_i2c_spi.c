@@ -28,7 +28,7 @@
 
 #define MCU_I2C_SLAVE_ADDR	0x94
 #define REGISTER_ADDRESS	(0x94 >> 1)
-#define PAGE_SIZE		128
+#define RTK_PAGE_SIZE		128
 #define MAX_SPI_WAIT_RETRIES	1000
 
 #define MCU_MODE 0x6F
@@ -310,8 +310,8 @@ static int realtek_mst_i2c_spi_write_page(int fd, uint8_t reg, const uint8_t *bu
 	 * Using static buffer with maximum possible size,
 	 * extra byte is needed for prefixing the data port register at index 0.
 	 */
-	uint8_t wbuf[PAGE_SIZE + 1] = { MCU_DATA_PORT };
-	if (len > PAGE_SIZE)
+	uint8_t wbuf[RTK_PAGE_SIZE + 1] = { MCU_DATA_PORT };
+	if (len > RTK_PAGE_SIZE)
 		return SPI_GENERIC_ERROR;
 
 	memcpy(&wbuf[1], buf, len);
@@ -352,9 +352,9 @@ static int realtek_mst_i2c_spi_read(struct flashctx *flash, uint8_t *buf,
 	uint8_t dummy;
 	realtek_mst_i2c_spi_read_register(fd, MCU_DATA_PORT, &dummy);
 
-	for (i = 0; i < len; i += PAGE_SIZE) {
+	for (i = 0; i < len; i += RTK_PAGE_SIZE) {
 		ret |= realtek_mst_i2c_spi_read_data(fd, REGISTER_ADDRESS,
-				buf + i, min(len - i, PAGE_SIZE));
+				buf + i, min(len - i, RTK_PAGE_SIZE));
 		if (ret)
 			return ret;
 	}
@@ -376,11 +376,11 @@ static int realtek_mst_i2c_spi_write_256(struct flashctx *flash, const uint8_t *
 		return SPI_GENERIC_ERROR;
 
 	ret |= realtek_mst_i2c_spi_write_register(fd, 0x6D, 0x02); /* write opcode */
-	ret |= realtek_mst_i2c_spi_write_register(fd, 0x71, (PAGE_SIZE - 1)); /* fit len=256 */
+	ret |= realtek_mst_i2c_spi_write_register(fd, 0x71, (RTK_PAGE_SIZE - 1)); /* fit len=256 */
 
-	for (i = 0; i < len; i += PAGE_SIZE) {
-		uint16_t page_len = min(len - i, PAGE_SIZE);
-		if (len - i < PAGE_SIZE)
+	for (i = 0; i < len; i += RTK_PAGE_SIZE) {
+		uint16_t page_len = min(len - i, RTK_PAGE_SIZE);
+		if (len - i < RTK_PAGE_SIZE)
 			ret |= realtek_mst_i2c_spi_write_register(fd, 0x71, page_len-1);
 		ret |= realtek_mst_i2c_spi_map_page(fd, start + i);
 		if (ret)
