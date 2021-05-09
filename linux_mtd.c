@@ -33,13 +33,13 @@
 
 struct linux_mtd_data {
 	FILE *dev_fp;
-	int mtd_device_is_writeable;
-	int mtd_no_erase;
+	int device_is_writeable;
+	int no_erase;
 	/* Size info is presented in bytes in sysfs. */
-	unsigned long int mtd_total_size;
-	unsigned long int mtd_numeraseregions;
+	unsigned long int total_size;
+	unsigned long int numeraseregions;
 	/* only valid if numeraseregions is 0 */
-	unsigned long int mtd_erasesize;
+	unsigned long int erasesize;
 };
 
 /* read a string from a sysfs file and sanitize it */
@@ -123,51 +123,51 @@ static int popcnt(unsigned int u)
 static int get_mtd_info(const char *sysfs_path, struct linux_mtd_data *data)
 {
 	unsigned long int tmp;
-	char mtd_device_name[32];
+	char device_name[32];
 
 	/* Flags */
 	if (read_sysfs_int(sysfs_path, "flags", &tmp))
 		return 1;
 	if (tmp & MTD_WRITEABLE) {
 		/* cache for later use by write function */
-		data->mtd_device_is_writeable = 1;
+		data->device_is_writeable = 1;
 	}
 	if (tmp & MTD_NO_ERASE) {
-		data->mtd_no_erase = 1;
+		data->no_erase = 1;
 	}
 
 	/* Device name */
-	if (read_sysfs_string(sysfs_path, "name", mtd_device_name, sizeof(mtd_device_name)))
+	if (read_sysfs_string(sysfs_path, "name", device_name, sizeof(device_name)))
 		return 1;
 
 	/* Total size */
-	if (read_sysfs_int(sysfs_path, "size", &data->mtd_total_size))
+	if (read_sysfs_int(sysfs_path, "size", &data->total_size))
 		return 1;
-	if (popcnt(data->mtd_total_size) != 1) {
+	if (popcnt(data->total_size) != 1) {
 		msg_perr("MTD size is not a power of 2\n");
 		return 1;
 	}
 
 	/* Erase size */
-	if (read_sysfs_int(sysfs_path, "erasesize", &data->mtd_erasesize))
+	if (read_sysfs_int(sysfs_path, "erasesize", &data->erasesize))
 		return 1;
-	if (popcnt(data->mtd_erasesize) != 1) {
+	if (popcnt(data->erasesize) != 1) {
 		msg_perr("MTD erase size is not a power of 2\n");
 		return 1;
 	}
 
 	/* Erase regions */
-	if (read_sysfs_int(sysfs_path, "numeraseregions", &data->mtd_numeraseregions))
+	if (read_sysfs_int(sysfs_path, "numeraseregions", &data->numeraseregions))
 		return 1;
-	if (data->mtd_numeraseregions != 0) {
+	if (data->numeraseregions != 0) {
 		msg_perr("Non-uniform eraseblock size is unsupported.\n");
 		return 1;
 	}
 
 	msg_pdbg("%s: device_name: \"%s\", is_writeable: %d, "
 		"numeraseregions: %lu, total_size: %lu, erasesize: %lu\n",
-		__func__, mtd_device_name, data->mtd_device_is_writeable,
-		data->mtd_numeraseregions, data->mtd_total_size, data->mtd_erasesize);
+		__func__, device_name, data->device_is_writeable,
+		data->numeraseregions, data->total_size, data->erasesize);
 
 	return 0;
 }
@@ -176,13 +176,13 @@ static int linux_mtd_probe(struct flashctx *flash)
 {
 	struct linux_mtd_data *data = flash->mst->opaque.data;
 
-	if (data->mtd_no_erase)
+	if (data->no_erase)
 		flash->chip->feature_bits |= FEATURE_NO_ERASE;
 	flash->chip->tested = TEST_OK_PREW;
-	flash->chip->total_size = data->mtd_total_size / 1024;	/* bytes -> kB */
-	flash->chip->block_erasers[0].eraseblocks[0].size = data->mtd_erasesize;
+	flash->chip->total_size = data->total_size / 1024;	/* bytes -> kB */
+	flash->chip->block_erasers[0].eraseblocks[0].size = data->erasesize;
 	flash->chip->block_erasers[0].eraseblocks[0].count =
-		data->mtd_total_size / data->mtd_erasesize;
+		data->total_size / data->erasesize;
 	return 1;
 }
 
@@ -227,7 +227,7 @@ static int linux_mtd_write(struct flashctx *flash, const uint8_t *buf,
 	unsigned int chunksize = flash->chip->block_erasers[0].eraseblocks[0].size;
 	unsigned int i;
 
-	if (!data->mtd_device_is_writeable)
+	if (!data->device_is_writeable)
 		return 1;
 
 	if (fseek(data->dev_fp, start, SEEK_SET) != 0) {
@@ -267,23 +267,23 @@ static int linux_mtd_erase(struct flashctx *flash,
 	struct linux_mtd_data *data = flash->mst->opaque.data;
 	uint32_t u;
 
-	if (data->mtd_no_erase) {
+	if (data->no_erase) {
 		msg_perr("%s: device does not support erasing. Please file a "
 				"bug report at flashrom@flashrom.org\n", __func__);
 		return 1;
 	}
 
-	if (data->mtd_numeraseregions != 0) {
+	if (data->numeraseregions != 0) {
 		/* TODO: Support non-uniform eraseblock size using
 		   use MEMGETREGIONCOUNT/MEMGETREGIONINFO ioctls */
-		msg_perr("%s: mtd_numeraseregions must be 0\n", __func__);
+		msg_perr("%s: numeraseregions must be 0\n", __func__);
 		return 1;
 	}
 
-	for (u = 0; u < len; u += data->mtd_erasesize) {
+	for (u = 0; u < len; u += data->erasesize) {
 		struct erase_info_user erase_info = {
 			.start = start + u,
-			.length = data->mtd_erasesize,
+			.length = data->erasesize,
 		};
 
 		if (ioctl(fileno(data->dev_fp), MEMERASE, &erase_info) == -1) {
