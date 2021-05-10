@@ -14,6 +14,7 @@
  */
 
 #include <include/test.h>
+#include "io_mock.h"
 #include "tests.h"
 
 #include <stdio.h>
@@ -21,6 +22,13 @@
 
 /* redefinitions/wrapping */
 #define LOG_ME printf("%s is called\n", __func__)
+
+static const struct io_mock *current_io = NULL;
+
+void io_mock_register(const struct io_mock *io)
+{
+	current_io = io;
+}
 
 void __wrap_physunmap(void *virt_addr, size_t len)
 {
@@ -74,6 +82,51 @@ FILE *__wrap_fopen64(const char *pathname, const char *mode)
 	return NULL;
 }
 
+int __wrap_rget_io_perms(void)
+{
+	LOG_ME;
+	return 0;
+}
+
+void __wrap_test_outb(unsigned char value, unsigned short port) {
+	/* LOG_ME; */
+	if (current_io && current_io->outb)
+		current_io->outb(current_io->state, value, port);
+}
+
+unsigned char __wrap_test_inb(unsigned short port) {
+	/* LOG_ME; */
+	if (current_io && current_io->inb)
+		return current_io->inb(current_io->state, port);
+	return 0;
+}
+
+void __wrap_test_outw(unsigned short value, unsigned short port) {
+	/* LOG_ME; */
+	if (current_io && current_io->outw)
+		current_io->outw(current_io->state, value, port);
+}
+
+unsigned short __wrap_test_inw(unsigned short port) {
+	/* LOG_ME; */
+	if (current_io && current_io->inw)
+		return current_io->inw(current_io->state, port);
+	return 0;
+}
+
+void __wrap_test_outl(unsigned int value, unsigned short port) {
+	/* LOG_ME; */
+	if (current_io && current_io->outl)
+		current_io->outl(current_io->state, value, port);
+}
+
+unsigned int __wrap_test_inl(unsigned short port) {
+	/* LOG_ME; */
+	if (current_io && current_io->inl)
+		return current_io->inl(current_io->state, port);
+	return 0;
+}
+
 int main(void)
 {
 	int ret = 0;
@@ -112,6 +165,8 @@ int main(void)
 
 	const struct CMUnitTest init_shutdown_tests[] = {
 		cmocka_unit_test(dummy_init_and_shutdown_test_success),
+		cmocka_unit_test(mec1308_init_and_shutdown_test_success),
+		cmocka_unit_test(ene_lpc_init_and_shutdown_test_success),
 		cmocka_unit_test(linux_spi_init_and_shutdown_test_success),
 	};
 	ret |= cmocka_run_group_tests_name("init_shutdown.c tests", init_shutdown_tests, NULL, NULL);

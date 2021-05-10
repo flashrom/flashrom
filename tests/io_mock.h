@@ -32,16 +32,16 @@
 #define _IO_MOCK_H_
 
 struct io_mock {
-	void *priv;
+	void *state;
 
-	void (*outb)(void *priv, unsigned char value, unsigned short port);
-	unsigned char (*inb)(void *priv, unsigned short port);
+	void (*outb)(void *state, unsigned char value, unsigned short port);
+	unsigned char (*inb)(void *state, unsigned short port);
 
-	void (*outw)(void *priv, unsigned short value, unsigned short port);
-	unsigned short (*inw)(void *priv, unsigned short port);
+	void (*outw)(void *state, unsigned short value, unsigned short port);
+	unsigned short (*inw)(void *state, unsigned short port);
 
-	void (*outl)(void *priv, unsigned int value, unsigned short port);
-	unsigned int (*inl)(void *priv, unsigned short port);
+	void (*outl)(void *state, unsigned int value, unsigned short port);
+	unsigned int (*inl)(void *state, unsigned short port);
 };
 
 void io_mock_register(const struct io_mock *io);

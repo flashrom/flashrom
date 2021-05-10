@@ -32,6 +32,13 @@ mocks = [
   '-Wl,--wrap=ioctl',
   '-Wl,--wrap=fopen',
   '-Wl,--wrap=fopen64',
+  '-Wl,--wrap=rget_io_perms',
+  '-Wl,--wrap=test_outb',
+  '-Wl,--wrap=test_inb',
+  '-Wl,--wrap=test_outw',
+  '-Wl,--wrap=test_inw',
+  '-Wl,--wrap=test_outl',
+  '-Wl,--wrap=test_inl',
   '-Wl,--gc-sections',
 ]
 

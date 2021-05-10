@@ -476,6 +476,7 @@ flashrom_test_dep = declare_dependency(
   compile_args : [
     '-includestdlib.h',
     '-includeunittest_env.h',
+    '-includehwaccess_x86_io_unittest.h'
   ],
   dependencies : [
     deps,
