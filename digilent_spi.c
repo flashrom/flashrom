@@ -45,8 +45,10 @@
 #define	DATA_WRITE_EP		0x03
 #define	DATA_READ_EP		0x84
 
-static struct libusb_device_handle *handle = NULL;
-static bool reset_board;
+struct digilent_spi_data {
+	struct libusb_device_handle *handle;
+	bool reset_board;
+};
 
 #define DIGILENT_VID		0x1443
 #define DIGILENT_JTAG_PID	0x0007
@@ -97,7 +99,7 @@ enum {
 	CMD_SPI_TX_END		= 0x87,
 };
 
-static int do_command(uint8_t *req, int req_len, uint8_t *res, int res_len)
+static int do_command(uint8_t *req, int req_len, uint8_t *res, int res_len, struct libusb_device_handle *handle)
 {
 	int tx_len = 0;
 	int ret;
@@ -133,41 +135,41 @@ static int do_command(uint8_t *req, int req_len, uint8_t *res, int res_len)
 	return 0;
 }
 
-static int gpio_open(void)
+static int gpio_open(struct libusb_device_handle *handle)
 {
 	uint8_t req[] = { 0x00, CMD_GPIO, CMD_GPIO_OPEN, 0x00 };
 	uint8_t res[2];
 
-	return do_command(req, sizeof(req), res, sizeof(res));
+	return do_command(req, sizeof(req), res, sizeof(res), handle);
 }
 
-static int gpio_set_dir(uint8_t direction)
+static int gpio_set_dir(uint8_t direction, struct libusb_device_handle *handle)
 {
 	uint8_t req[] = { 0x00, CMD_GPIO, CMD_GPIO_SET_DIR, 0x00,
 			  direction, 0x00, 0x00, 0x00 };
 	uint8_t res[6];
 
-	return do_command(req, sizeof(req), res, sizeof(res));
+	return do_command(req, sizeof(req), res, sizeof(res), handle);
 }
 
-static int gpio_set_value(uint8_t value)
+static int gpio_set_value(uint8_t value, struct libusb_device_handle *handle)
 {
 	uint8_t req[] = { 0x00, CMD_GPIO, CMD_GPIO_SET_VAL, 0x00,
 			  value, 0x00, 0x00, 0x00 };
 	uint8_t res[2];
 
-	return do_command(req, sizeof(req), res, sizeof(res));
+	return do_command(req, sizeof(req), res, sizeof(res), handle);
 }
 
-static int spi_open(void)
+static int spi_open(struct libusb_device_handle *handle)
 {
 	uint8_t req[] = { 0x00, CMD_SPI, CMD_SPI_OPEN, 0x00 };
 	uint8_t res[2];
 
-	return do_command(req, sizeof(req), res, sizeof(res));
+	return do_command(req, sizeof(req), res, sizeof(res), handle);
 }
 
-static int spi_set_speed(uint32_t speed)
+static int spi_set_speed(uint32_t speed, struct libusb_device_handle *handle)
 {
 	uint8_t req[] = { 0x00, CMD_SPI, CMD_SPI_SET_SPEED, 0x00,
 			  (speed) & 0xff,
@@ -178,7 +180,7 @@ static int spi_set_speed(uint32_t speed)
 	uint32_t real_speed;
 	int ret;
 
-	ret = do_command(req, sizeof(req), res, sizeof(res));
+	ret = do_command(req, sizeof(req), res, sizeof(res), handle);
 	if (ret)
 		return ret;
 
@@ -189,23 +191,23 @@ static int spi_set_speed(uint32_t speed)
 	return 0;
 }
 
-static int spi_set_mode(uint8_t mode)
+static int spi_set_mode(uint8_t mode, struct libusb_device_handle *handle)
 {
 	uint8_t req[] = { 0x00, CMD_SPI, CMD_SPI_SET_MODE, 0x00, mode };
 	uint8_t res[2];
 
-	return do_command(req, sizeof(req), res, sizeof(res));
+	return do_command(req, sizeof(req), res, sizeof(res), handle);
 }
 
-static int spi_set_cs(uint8_t cs)
+static int spi_set_cs(uint8_t cs, struct libusb_device_handle *handle)
 {
 	uint8_t req[] = { 0x00, CMD_SPI, CMD_SPI_SET_CS, 0x00, cs };
 	uint8_t res[2];
 
-	return do_command(req, sizeof(req), res, sizeof(res));
+	return do_command(req, sizeof(req), res, sizeof(res), handle);
 }
 
-static int spi_start_io(uint8_t read_follows, uint32_t write_len)
+static int spi_start_io(uint8_t read_follows, uint32_t write_len, struct libusb_device_handle *handle)
 {
 	uint8_t req[] = { 0x00, CMD_SPI, CMD_SPI_START_IO, 0x00,
 			  0x00, 0x00, /* meaning unknown */
@@ -216,17 +218,17 @@ static int spi_start_io(uint8_t read_follows, uint32_t write_len)
 			  (write_len >> 24) & 0xff };
 	uint8_t res[2];
 
-	return do_command(req, sizeof(req), res, sizeof(res));
+	return do_command(req, sizeof(req), res, sizeof(res), handle);
 }
 
-static int spi_tx_end(uint8_t read_follows, uint32_t tx_len)
+static int spi_tx_end(uint8_t read_follows, uint32_t tx_len, struct libusb_device_handle *handle)
 {
 	uint8_t req[] = { 0x00, CMD_SPI, CMD_SPI_TX_END, 0x00 };
 	uint8_t res[read_follows ? 10 : 6];
 	int ret;
 	uint32_t count;
 
-	ret = do_command(req, sizeof(req), res, sizeof(res));
+	ret = do_command(req, sizeof(req), res, sizeof(res), handle);
 	if (ret != 0)
 		return ret;
 
@@ -265,19 +267,20 @@ static int digilent_spi_send_command(const struct flashctx *flash, unsigned int 
 	int tx_len = 0;
 	uint8_t buf[len];
 	uint8_t read_follows = readcnt > 0 ? 1 : 0;
+	struct digilent_spi_data *digilent_data = flash->mst->spi.data;
 
 	memcpy(buf, writearr, writecnt);
 	memset(buf + writecnt, 0xff, readcnt);
 
-	ret = spi_set_cs(0);
+	ret = spi_set_cs(0, digilent_data->handle);
 	if (ret != 0)
 		return ret;
 
-	ret = spi_start_io(read_follows, writecnt);
+	ret = spi_start_io(read_follows, writecnt, digilent_data->handle);
 	if (ret != 0)
 		return ret;
 
-	ret = libusb_bulk_transfer(handle, DATA_WRITE_EP, buf, len, &tx_len, USB_TIMEOUT);
+	ret = libusb_bulk_transfer(digilent_data->handle, DATA_WRITE_EP, buf, len, &tx_len, USB_TIMEOUT);
 	if (ret != 0) {
 		msg_perr("%s: failed to write data: '%s'\n", __func__, libusb_error_name(ret));
 		return -1;
@@ -288,7 +291,7 @@ static int digilent_spi_send_command(const struct flashctx *flash, unsigned int 
 	}
 
 	if (read_follows) {
-		ret = libusb_bulk_transfer(handle, DATA_READ_EP, buf, len, &tx_len, USB_TIMEOUT);
+		ret = libusb_bulk_transfer(digilent_data->handle, DATA_READ_EP, buf, len, &tx_len, USB_TIMEOUT);
 		if (ret != 0) {
 			msg_perr("%s: failed to read data: '%s'\n", __func__, libusb_error_name(ret));
 			return -1;
@@ -299,11 +302,11 @@ static int digilent_spi_send_command(const struct flashctx *flash, unsigned int 
 		}
 	}
 
-	ret = spi_tx_end(read_follows, len);
+	ret = spi_tx_end(read_follows, len, digilent_data->handle);
 	if (ret != 0)
 		return ret;
 
-	ret = spi_set_cs(1);
+	ret = spi_set_cs(1, digilent_data->handle);
 	if (ret != 0)
 		return ret;
 
@@ -312,7 +315,7 @@ static int digilent_spi_send_command(const struct flashctx *flash, unsigned int 
 	return 0;
 }
 
-static const struct spi_master spi_master_digilent_spi = {
+static struct spi_master spi_master_digilent_spi = {
 	.features	= SPI_MASTER_4BA,
 	.max_data_read	= 252,
 	.max_data_write	= 252,
@@ -326,16 +329,18 @@ static const struct spi_master spi_master_digilent_spi = {
 
 static int digilent_spi_shutdown(void *data)
 {
-	if (reset_board)
-		gpio_set_dir(0);
+	struct digilent_spi_data *digilent_data = data;
 
-	libusb_close(handle);
-	handle = NULL;
+	if (digilent_data->reset_board)
+		gpio_set_dir(0, digilent_data->handle);
 
+	libusb_close(digilent_data->handle);
+
+	free(data);
 	return 0;
 }
 
-static bool default_reset(void)
+static bool default_reset(struct libusb_device_handle *handle)
 {
 	char board[17];
 
@@ -373,11 +378,8 @@ int digilent_spi_init(void)
 	char *p;
 	uint32_t speed_hz = spispeeds[0].speed;
 	int i;
-
-	if (handle != NULL) {
-		msg_cerr("%s: handle already set! Please report a bug at flashrom@flashrom.org\n", __func__);
-		return -1;
-	}
+	struct libusb_device_handle *handle = NULL;
+	bool reset_board;
 
 	int32_t ret = libusb_init(NULL);
 	if (ret < 0) {
@@ -425,32 +427,41 @@ int digilent_spi_init(void)
 	if (p && strlen(p))
 		reset_board = (p[0] == '1');
 	else
-		reset_board = default_reset();
+		reset_board = default_reset(handle);
 	free(p);
 
+
 	if (reset_board) {
-		if (gpio_open() != 0)
+		if (gpio_open(handle) != 0)
 			goto close_handle;
-		if (gpio_set_dir(1) != 0)
+		if (gpio_set_dir(1, handle) != 0)
 			goto close_handle;
-		if (gpio_set_value(0) != 0)
+		if (gpio_set_value(0, handle) != 0)
 			goto close_handle;
 	}
 
-	if (spi_open() != 0)
+	if (spi_open(handle) != 0)
 		goto close_handle;
-	if (spi_set_speed(speed_hz) != 0)
+	if (spi_set_speed(speed_hz, handle) != 0)
 		goto close_handle;
-	if (spi_set_mode(0x00) != 0)
+	if (spi_set_mode(0x00, handle) != 0)
 		goto close_handle;
 
-	register_shutdown(digilent_spi_shutdown, NULL);
+	struct digilent_spi_data *digilent_data = calloc(1, sizeof(*digilent_data));
+	if (!digilent_data) {
+		msg_perr("Unable to allocate space for SPI master data\n");
+		goto close_handle;
+	}
+	digilent_data->reset_board = reset_board;
+	digilent_data->handle = handle;
+	spi_master_digilent_spi.data = digilent_data;
+
+	register_shutdown(digilent_spi_shutdown, digilent_data);
 	register_spi_master(&spi_master_digilent_spi);
 
 	return 0;
 
 close_handle:
 	libusb_close(handle);
-	handle = NULL;
 	return -1;
 }
