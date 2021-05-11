@@ -51,7 +51,9 @@ const struct dev_entry devs_usbblasterspi[] = {
 	{0}
 };
 
-static struct ftdi_context ftdic;
+struct usbblaster_spi_data {
+	struct ftdi_context ftdic;
+};
 
 // command bytes
 #define BIT_BYTE	(1<<7)	// byte mode (rather than bitbang)
@@ -70,7 +72,7 @@ static uint8_t reverse(uint8_t b)
 	return ((b * 0x0802LU & 0x22110LU) | (b * 0x8020LU & 0x88440LU)) * 0x10101LU >> 16;
 }
 
-static int send_write(unsigned int writecnt, const unsigned char *writearr)
+static int send_write(unsigned int writecnt, const unsigned char *writearr, struct ftdi_context ftdic)
 {
 	uint8_t buf[BUF_SIZE];
 
@@ -95,7 +97,7 @@ static int send_write(unsigned int writecnt, const unsigned char *writearr)
 	return 0;
 }
 
-static int send_read(unsigned int readcnt, unsigned char *readarr)
+static int send_read(unsigned int readcnt, unsigned char *readarr, struct ftdi_context ftdic)
 {
 	int i;
 	unsigned int n_read;
@@ -135,23 +137,24 @@ static int send_read(unsigned int readcnt, unsigned char *readarr)
 static int usbblaster_spi_send_command(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
 				       const unsigned char *writearr, unsigned char *readarr)
 {
+	struct usbblaster_spi_data *usbblaster_data = flash->mst->spi.data;
 	uint8_t cmd;
 	int ret = 0;
 
 	cmd = BIT_LED; // asserts /CS
-	if (ftdi_write_data(&ftdic, &cmd, 1) < 0) {
+	if (ftdi_write_data(&usbblaster_data->ftdic, &cmd, 1) < 0) {
 		msg_perr("USB-Blaster enable chip select failed\n");
 		ret = -1;
 	}
 
 	if (!ret && writecnt)
-		ret = send_write(writecnt, writearr);
+		ret = send_write(writecnt, writearr, usbblaster_data->ftdic);
 
 	if (!ret && readcnt)
-		ret = send_read(readcnt, readarr);
+		ret = send_read(readcnt, readarr, usbblaster_data->ftdic);
 
 	cmd = BIT_CS;
-	if (ftdi_write_data(&ftdic, &cmd, 1) < 0) {
+	if (ftdi_write_data(&usbblaster_data->ftdic, &cmd, 1) < 0) {
 		msg_perr("USB-Blaster disable chip select failed\n");
 		ret = -1;
 	}
@@ -159,8 +162,13 @@ static int usbblaster_spi_send_command(const struct flashctx *flash, unsigned in
 	return ret;
 }
 
+static int usbblaster_shutdown(void *data)
+{
+	free(data);
+	return 0;
+}
 
-static const struct spi_master spi_master_usbblaster = {
+static struct spi_master spi_master_usbblaster = {
 	.max_data_read	= 256,
 	.max_data_write	= 256,
 	.command	= usbblaster_spi_send_command,
@@ -174,6 +182,8 @@ static const struct spi_master spi_master_usbblaster = {
 int usbblaster_spi_init(void)
 {
 	uint8_t buf[BUF_SIZE + 1];
+	struct ftdi_context ftdic;
+	struct usbblaster_spi_data *usbblaster_data;
 
 	if (ftdi_init(&ftdic) < 0)
 		return -1;
@@ -210,6 +220,18 @@ int usbblaster_spi_init(void)
 		return -1;
 	}
 
+	usbblaster_data = calloc(1, sizeof(*usbblaster_data));
+	if (!usbblaster_data) {
+		msg_perr("Unable to allocate space for SPI master data\n");
+		return -1;
+	}
+	usbblaster_data->ftdic = ftdic;
+	spi_master_usbblaster.data = usbblaster_data;
+
+	if (register_shutdown(usbblaster_shutdown, usbblaster_data)) {
+		free(usbblaster_data);
+		return -1;
+	}
 	register_spi_master(&spi_master_usbblaster);
 	return 0;
 }
