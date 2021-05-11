@@ -626,7 +626,7 @@ int ft2232_spi_init(void)
 		free(spi_data);
 		goto ftdi_err;
 	}
-	register_spi_master(&spi_master_ft2232);
+	register_spi_master(&spi_master_ft2232, NULL);
 
 	return 0;
 

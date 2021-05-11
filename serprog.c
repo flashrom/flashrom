@@ -883,7 +883,7 @@ int serprog_init(void)
 	sp_streamed_transmit_bytes = 0;
 	sp_opbuf_usage = 0;
 	if (serprog_buses_supported & BUS_SPI)
-		register_spi_master(&spi_master_serprog);
+		register_spi_master(&spi_master_serprog, NULL);
 	if (serprog_buses_supported & BUS_NONSPI)
 		register_par_master(&par_master_serprog, serprog_buses_supported & BUS_NONSPI);
 	return 0;

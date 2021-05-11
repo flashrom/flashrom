@@ -457,7 +457,7 @@ int digilent_spi_init(void)
 	spi_master_digilent_spi.data = digilent_data;
 
 	register_shutdown(digilent_spi_shutdown, digilent_data);
-	register_spi_master(&spi_master_digilent_spi);
+	register_spi_master(&spi_master_digilent_spi, NULL);
 
 	return 0;
 

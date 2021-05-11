@@ -244,7 +244,7 @@ int linux_spi_init(void)
 		free(spi_data);
 		goto init_err;
 	}
-	register_spi_master(&spi_master_linux);
+	register_spi_master(&spi_master_linux, NULL);
 	return 0;
 
 init_err:

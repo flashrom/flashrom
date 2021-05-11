@@ -515,7 +515,7 @@ int realtek_mst_i2c_spi_init(void)
 	ret |= register_shutdown(realtek_mst_i2c_spi_shutdown, data);
 
 	spi_master_i2c_realtek_mst.data = data;
-	ret |= register_spi_master(&spi_master_i2c_realtek_mst);
+	ret |= register_spi_master(&spi_master_i2c_realtek_mst, NULL);
 
 	return ret;
 }

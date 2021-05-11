@@ -232,7 +232,7 @@ int usbblaster_spi_init(void)
 		free(usbblaster_data);
 		return -1;
 	}
-	register_spi_master(&spi_master_usbblaster);
+	register_spi_master(&spi_master_usbblaster, NULL);
 	return 0;
 }
 

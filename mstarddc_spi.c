@@ -221,7 +221,7 @@ int mstarddc_spi_init(void)
 	register_shutdown(mstarddc_spi_shutdown, NULL);
 
 	// Register programmer
-	register_spi_master(&spi_master_mstarddc);
+	register_spi_master(&spi_master_mstarddc, NULL);
 out:
 	free(i2c_device);
 	return ret;

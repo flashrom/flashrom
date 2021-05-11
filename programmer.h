@@ -643,7 +643,7 @@ int default_spi_send_multicommand(const struct flashctx *flash, struct spi_comma
 int default_spi_read(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 int default_spi_write_256(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 int default_spi_write_aai(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
-int register_spi_master(const struct spi_master *mst);
+int register_spi_master(const struct spi_master *mst, void *data);
 
 /* The following enum is needed by ich_descriptor_tool and ich* code as well as in chipset_enable.c. */
 enum ich_chipset {

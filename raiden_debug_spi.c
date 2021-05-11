@@ -1614,7 +1614,7 @@ loop_end:
 		return SPI_GENERIC_ERROR;
 	}
 
-	register_spi_master(spi_config);
+	register_spi_master(spi_config, NULL);
 	register_shutdown(raiden_debug_spi_shutdown, spi_config);
 
 	return 0;

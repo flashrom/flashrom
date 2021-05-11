@@ -509,7 +509,7 @@ int mec1308_init(void)
 
 	if (register_shutdown(mec1308_shutdown, ctx_data))
 		goto init_err_cleanup_exit;
-	register_spi_master(&spi_master_mec1308);
+	register_spi_master(&spi_master_mec1308, NULL);
 	msg_pdbg("%s(): successfully initialized mec1308\n", __func__);
 
 	return 0;

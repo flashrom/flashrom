@@ -501,7 +501,7 @@ int pickit2_spi_init(void)
 
 	if (register_shutdown(pickit2_shutdown, pickit2_data))
 		goto init_err_cleanup_exit;
-	register_spi_master(&spi_master_pickit2);
+	register_spi_master(&spi_master_pickit2, NULL);
 
 	return 0;
 

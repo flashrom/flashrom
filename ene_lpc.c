@@ -572,7 +572,7 @@ int ene_lpc_init()
 
 	if (register_shutdown(ene_leave_flash_mode, ctx_data))
 		goto init_err_cleanup_exit;
-	register_spi_master(&spi_master_ene);
+	register_spi_master(&spi_master_ene, NULL);
 	msg_pdbg("%s: successfully initialized ene\n", __func__);
 
 	return 0;

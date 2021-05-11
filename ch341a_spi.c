@@ -506,7 +506,7 @@ int ch341a_spi_init(void)
 		goto dealloc_transfers;
 
 	register_shutdown(ch341a_spi_shutdown, NULL);
-	register_spi_master(&spi_master_ch341a_spi);
+	register_spi_master(&spi_master_ch341a_spi, NULL);
 
 	return 0;
 

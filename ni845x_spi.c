@@ -630,7 +630,7 @@ int ni845x_spi_init(void)
 		return 1;
 	}
 
-	register_spi_master(&spi_programmer_ni845x);
+	register_spi_master(&spi_programmer_ni845x, NULL);
 
 	return 0;
 }

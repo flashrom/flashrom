@@ -457,7 +457,7 @@ int lspcon_i2c_spi_init(void)
 	spi_master_i2c_lspcon.data = data;
 
 	ret |= register_shutdown(lspcon_i2c_spi_shutdown, data);
-	ret |= register_spi_master(&spi_master_i2c_lspcon);
+	ret |= register_spi_master(&spi_master_i2c_lspcon, NULL);
 
 	return ret;
 }

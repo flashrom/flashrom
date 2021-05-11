@@ -1274,7 +1274,7 @@ int dediprog_init(void)
 	if (protocol() >= PROTOCOL_V2)
 		spi_master_dediprog.features |= SPI_MASTER_4BA;
 
-	if (register_spi_master(&spi_master_dediprog) || dediprog_set_leds(LED_NONE))
+	if (register_spi_master(&spi_master_dediprog, NULL) || dediprog_set_leds(LED_NONE))
 		return 1;
 
 	return 0;

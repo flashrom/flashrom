@@ -216,7 +216,7 @@ int wbsio_check_for_spi(void)
 
 	register_shutdown(wbsio_spi_shutdown, data);
 	spi_master_wbsio.data = data;
-	register_spi_master(&spi_master_wbsio);
+	register_spi_master(&spi_master_wbsio, NULL);
 
 	return 0;
 }

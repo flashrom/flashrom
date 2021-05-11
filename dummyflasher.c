@@ -1030,7 +1030,7 @@ dummy_init_out:
 		register_par_master(&par_master_dummy,
 				    dummy_buses_supported & (BUS_PARALLEL | BUS_LPC | BUS_FWH));
 	if (dummy_buses_supported & BUS_SPI)
-		register_spi_master(&spi_master_dummyflasher);
+		register_spi_master(&spi_master_dummyflasher, NULL);
 
 	return 0;
 }

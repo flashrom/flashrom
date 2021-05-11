@@ -366,7 +366,7 @@ int it85xx_spi_init(struct superio s)
 	 * a debug message about it.
 	 */
 	/* Set this as SPI controller. */
-	register_spi_master(&spi_master_it85xx);
+	register_spi_master(&spi_master_it85xx, NULL);
 
 	return 0;
 }

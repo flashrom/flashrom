@@ -472,7 +472,7 @@ int jlink_spi_init(void)
 
 	if (register_shutdown(jlink_spi_shutdown, jlink_data))
 		goto init_err;
-	register_spi_master(&spi_master_jlink_spi);
+	register_spi_master(&spi_master_jlink_spi, NULL);
 
 	return 0;
 

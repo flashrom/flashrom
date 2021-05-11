@@ -509,7 +509,7 @@ int stlinkv3_spi_init(void)
 	if (register_shutdown(stlinkv3_spi_shutdown, NULL))
 		goto err_exit;
 
-	if (register_spi_master(&spi_programmer_stlinkv3))
+	if (register_spi_master(&spi_programmer_stlinkv3, NULL))
 		goto err_exit;
 
 	return 0;

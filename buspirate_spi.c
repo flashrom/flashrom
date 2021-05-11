@@ -655,7 +655,7 @@ int buspirate_spi_init(void)
 		return 1;
 	}
 
-	register_spi_master(&spi_master_buspirate);
+	register_spi_master(&spi_master_buspirate, NULL);
 
 	return 0;
 }
