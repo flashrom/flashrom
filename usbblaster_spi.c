@@ -168,7 +168,7 @@ static int usbblaster_shutdown(void *data)
 	return 0;
 }
 
-static struct spi_master spi_master_usbblaster = {
+static const struct spi_master spi_master_usbblaster = {
 	.max_data_read	= 256,
 	.max_data_write	= 256,
 	.command	= usbblaster_spi_send_command,
@@ -226,13 +226,12 @@ int usbblaster_spi_init(void)
 		return -1;
 	}
 	usbblaster_data->ftdic = ftdic;
-	spi_master_usbblaster.data = usbblaster_data;
 
 	if (register_shutdown(usbblaster_shutdown, usbblaster_data)) {
 		free(usbblaster_data);
 		return -1;
 	}
-	register_spi_master(&spi_master_usbblaster, NULL);
+	register_spi_master(&spi_master_usbblaster, usbblaster_data);
 	return 0;
 }
 

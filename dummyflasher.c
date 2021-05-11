@@ -611,7 +611,7 @@ static int dummy_spi_send_command(const struct flashctx *flash, unsigned int wri
 
 
 
-static struct spi_master spi_master_dummyflasher = {
+static const struct spi_master spi_master_dummyflasher = {
 	.features	= SPI_MASTER_4BA,
 	.max_data_read	= MAX_DATA_READ_UNLIMITED,
 	.max_data_write	= MAX_DATA_UNSPECIFIED,
@@ -674,7 +674,6 @@ int dummy_init(void)
 	}
 	data->emu_chip = EMULATE_NONE;
 	data->delay_us = 0;
-	spi_master_dummyflasher.data = data;
 	par_master_dummy.data = data;
 
 	msg_pspew("%s\n", __func__);
@@ -1030,7 +1029,7 @@ dummy_init_out:
 		register_par_master(&par_master_dummy,
 				    dummy_buses_supported & (BUS_PARALLEL | BUS_LPC | BUS_FWH));
 	if (dummy_buses_supported & BUS_SPI)
-		register_spi_master(&spi_master_dummyflasher, NULL);
+		register_spi_master(&spi_master_dummyflasher, data);
 
 	return 0;
 }

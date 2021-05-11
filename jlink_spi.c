@@ -155,7 +155,7 @@ static int jlink_spi_send_command(const struct flashctx *flash, unsigned int wri
 	return 0;
 }
 
-static struct spi_master spi_master_jlink_spi = {
+static const struct spi_master spi_master_jlink_spi = {
 	/* Maximum data read size in one go (excluding opcode+address). */
 	.max_data_read	= JTAG_MAX_TRANSFER_SIZE - 5,
 	/* Maximum data write size in one go (excluding opcode+address). */
@@ -464,7 +464,6 @@ int jlink_spi_init(void)
 	jlink_data->ctx = jaylink_ctx;
 	jlink_data->devh = jaylink_devh;
 	jlink_data->reset_cs = reset_cs;
-	spi_master_jlink_spi.data = jlink_data;
 
 	/* Ensure that the CS signal is not active initially. */
 	if (!deassert_cs(jlink_data))
@@ -472,7 +471,7 @@ int jlink_spi_init(void)
 
 	if (register_shutdown(jlink_spi_shutdown, jlink_data))
 		goto init_err;
-	register_spi_master(&spi_master_jlink_spi, NULL);
+	register_spi_master(&spi_master_jlink_spi, jlink_data);
 
 	return 0;
 

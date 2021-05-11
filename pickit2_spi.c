@@ -340,7 +340,7 @@ static int parse_voltage(char *voltage)
 	return millivolt;
 }
 
-static struct spi_master spi_master_pickit2 = {
+static const struct spi_master spi_master_pickit2 = {
 	.max_data_read	= 40,
 	.max_data_write	= 40,
 	.command	= pickit2_spi_send_command,
@@ -477,7 +477,6 @@ int pickit2_spi_init(void)
 		return 1;
 	}
 	pickit2_data->pickit2_handle = pickit2_handle;
-	spi_master_pickit2.data = pickit2_data;
 
 	if (pickit2_get_firmware_version(pickit2_handle))
 		goto init_err_cleanup_exit;
@@ -501,7 +500,7 @@ int pickit2_spi_init(void)
 
 	if (register_shutdown(pickit2_shutdown, pickit2_data))
 		goto init_err_cleanup_exit;
-	register_spi_master(&spi_master_pickit2, NULL);
+	register_spi_master(&spi_master_pickit2, pickit2_data);
 
 	return 0;
 

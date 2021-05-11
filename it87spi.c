@@ -290,7 +290,7 @@ static int it8716f_spi_chip_write_256(struct flashctx *flash, const uint8_t *buf
 	return 0;
 }
 
-static struct spi_master spi_master_it87xx = {
+static const struct spi_master spi_master_it87xx = {
 	.max_data_read	= 3,
 	.max_data_write	= MAX_DATA_UNSPECIFIED,
 	.command	= it8716f_spi_send_command,
@@ -419,14 +419,13 @@ static uint16_t it87spi_probe(uint16_t port)
 
 	data->flashport = flashport;
 	data->fast_spi = 1;
-	spi_master_it87xx.data = data;
 
 	register_shutdown(it8716f_shutdown, data);
 
 	if (internal_buses_supported & BUS_SPI)
 		msg_pdbg("Overriding chipset SPI with IT87 SPI.\n");
 	/* FIXME: Add the SPI bus or replace the other buses with it? */
-	register_spi_master(&spi_master_it87xx, NULL);
+	register_spi_master(&spi_master_it87xx, data);
 	return 0;
 }
 

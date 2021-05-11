@@ -177,7 +177,7 @@ static int wbsio_spi_read(struct flashctx *flash, uint8_t *buf,
 	return 0;
 }
 
-static struct spi_master spi_master_wbsio = {
+static const struct spi_master spi_master_wbsio = {
 	.max_data_read = MAX_DATA_UNSPECIFIED,
 	.max_data_write = MAX_DATA_UNSPECIFIED,
 	.command = wbsio_spi_send_command,
@@ -215,8 +215,7 @@ int wbsio_check_for_spi(void)
 	data->spibase = wbsio_spibase;
 
 	register_shutdown(wbsio_spi_shutdown, data);
-	spi_master_wbsio.data = data;
-	register_spi_master(&spi_master_wbsio, NULL);
+	register_spi_master(&spi_master_wbsio, data);
 
 	return 0;
 }

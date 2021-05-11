@@ -408,7 +408,7 @@ static int lspcon_i2c_spi_write_aai(struct flashctx *flash, const uint8_t *buf,
 	return SPI_GENERIC_ERROR;
 }
 
-static struct spi_master spi_master_i2c_lspcon = {
+static const struct spi_master spi_master_i2c_lspcon = {
 	.max_data_read = 16,
 	.max_data_write = 12,
 	.command = lspcon_i2c_spi_send_command,
@@ -454,10 +454,9 @@ int lspcon_i2c_spi_init(void)
 	}
 
 	data->fd = fd;
-	spi_master_i2c_lspcon.data = data;
 
 	ret |= register_shutdown(lspcon_i2c_spi_shutdown, data);
-	ret |= register_spi_master(&spi_master_i2c_lspcon, NULL);
+	ret |= register_spi_master(&spi_master_i2c_lspcon, data);
 
 	return ret;
 }

@@ -276,7 +276,7 @@ static int ft2232_spi_send_command(const struct flashctx *flash,
 	return failed ? -1 : 0;
 }
 
-static struct spi_master spi_master_ft2232 = {
+static const struct spi_master spi_master_ft2232 = {
 	.features	= SPI_MASTER_4BA,
 	.max_data_read	= 64 * 1024,
 	.max_data_write	= 256,
@@ -620,13 +620,11 @@ int ft2232_spi_init(void)
 	spi_data->pindir = pindir;
 	spi_data->ftdic_context = ftdic;
 
-	spi_master_ft2232.data = spi_data;
-
 	if (register_shutdown(ft2232_shutdown, spi_data)) {
 		free(spi_data);
 		goto ftdi_err;
 	}
-	register_spi_master(&spi_master_ft2232, NULL);
+	register_spi_master(&spi_master_ft2232, spi_data);
 
 	return 0;
 

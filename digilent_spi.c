@@ -315,7 +315,7 @@ static int digilent_spi_send_command(const struct flashctx *flash, unsigned int 
 	return 0;
 }
 
-static struct spi_master spi_master_digilent_spi = {
+static const struct spi_master spi_master_digilent_spi = {
 	.features	= SPI_MASTER_4BA,
 	.max_data_read	= 252,
 	.max_data_write	= 252,
@@ -454,10 +454,9 @@ int digilent_spi_init(void)
 	}
 	digilent_data->reset_board = reset_board;
 	digilent_data->handle = handle;
-	spi_master_digilent_spi.data = digilent_data;
 
 	register_shutdown(digilent_spi_shutdown, digilent_data);
-	register_spi_master(&spi_master_digilent_spi, NULL);
+	register_spi_master(&spi_master_digilent_spi, digilent_data);
 
 	return 0;
 

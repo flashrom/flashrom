@@ -113,7 +113,7 @@ static int linux_spi_send_command(const struct flashctx *flash, unsigned int wri
 	return 0;
 }
 
-static struct spi_master spi_master_linux = {
+static const struct spi_master spi_master_linux = {
 	.features	= SPI_MASTER_4BA,
 	.max_data_read	= MAX_DATA_UNSPECIFIED, /* TODO? */
 	.max_data_write	= MAX_DATA_UNSPECIFIED, /* TODO? */
@@ -238,13 +238,12 @@ int linux_spi_init(void)
 	}
 	spi_data->fd = fd;
 	spi_data->max_kernel_buf_size = max_kernel_buf_size;
-	spi_master_linux.data = spi_data;
 
 	if (register_shutdown(linux_spi_shutdown, spi_data)) {
 		free(spi_data);
 		goto init_err;
 	}
-	register_spi_master(&spi_master_linux, NULL);
+	register_spi_master(&spi_master_linux, spi_data);
 	return 0;
 
 init_err:

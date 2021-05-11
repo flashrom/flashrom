@@ -281,7 +281,7 @@ static int it85xx_spi_send_command(const struct flashctx *flash,
         return 0;
 }
 
-static struct spi_master spi_master_it85xx = {
+static const struct spi_master spi_master_it85xx = {
         .max_data_read  = 64,
         .max_data_write = 64,
         .command        = it85xx_spi_send_command,
@@ -358,15 +358,13 @@ int it85xx_spi_init(struct superio s)
 		return 1;
 	}
 
-	spi_master_it85xx.data = data;
-
 	/* FIXME: Really leave FWH enabled? We can't use this region
 	 * anymore since accessing it would mess up IT85 communication.
 	 * If we decide to disable FWH for this region, we should print
 	 * a debug message about it.
 	 */
 	/* Set this as SPI controller. */
-	register_spi_master(&spi_master_it85xx, NULL);
+	register_spi_master(&spi_master_it85xx, data);
 
 	return 0;
 }
