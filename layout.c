@@ -298,11 +298,10 @@ void layout_cleanup(struct layout_include_args **args)
 	flashrom_layout_release(layout);
 }
 
-/* Validate and - if needed - normalize layout entries. */
-int normalize_romentries(const struct flashctx *flash)
+int layout_sanity_checks(const struct flashrom_flashctx *const flash)
 {
-	struct flashrom_layout *const layout = get_global_layout();
-	chipsize_t total_size = flash->chip->total_size * 1024;
+	const struct flashrom_layout *const layout = get_layout(flash);
+	const chipsize_t total_size = flash->chip->total_size * 1024;
 	int ret = 0;
 
 	const struct romentry *entry = NULL;

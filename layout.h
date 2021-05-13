@@ -62,5 +62,6 @@ const struct romentry *layout_next_included(const struct flashrom_layout *, cons
 const struct romentry *layout_next(const struct flashrom_layout *, const struct romentry *);
 int included_regions_overlap(const struct flashrom_layout *const flashrom_layout);
 void prepare_layout_for_extraction(struct flashrom_flashctx *flash);
+int layout_sanity_checks(const struct flashrom_flashctx *);
 
 #endif /* !__LAYOUT_H__ */
