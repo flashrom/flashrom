@@ -51,21 +51,21 @@ struct layout_include_args;
 
 struct flashrom_flashctx;
 const struct flashrom_layout *get_default_layout(const struct flashrom_flashctx *);
-const struct flashrom_layout *get_layout(const struct flashrom_flashctx *const flashctx);
+const struct flashrom_layout *get_layout(const struct flashrom_flashctx *);
 
 int layout_from_file(struct flashrom_layout **, const char *name);
 
-int register_include_arg(struct layout_include_args **args, const char *arg);
-int process_include_args(struct flashrom_layout *l, const struct layout_include_args *const args);
-void cleanup_include_args(struct layout_include_args **args);
+int register_include_arg(struct layout_include_args **, const char *arg);
+int process_include_args(struct flashrom_layout *, const struct layout_include_args *);
+void cleanup_include_args(struct layout_include_args **);
 
-int get_region_range(struct flashrom_layout *const l, const char *name,
+int get_region_range(struct flashrom_layout *, const char *name,
 		     unsigned int *start, unsigned int *len);
 const struct romentry *layout_next_included_region(const struct flashrom_layout *, chipoff_t);
 const struct romentry *layout_next_included(const struct flashrom_layout *, const struct romentry *);
 const struct romentry *layout_next(const struct flashrom_layout *, const struct romentry *);
-int included_regions_overlap(const struct flashrom_layout *const flashrom_layout);
-void prepare_layout_for_extraction(struct flashrom_flashctx *flash);
+int included_regions_overlap(const struct flashrom_layout *);
+void prepare_layout_for_extraction(struct flashrom_flashctx *);
 int layout_sanity_checks(const struct flashrom_flashctx *);
 
 #endif /* !__LAYOUT_H__ */
