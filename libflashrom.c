@@ -502,15 +502,17 @@ static int flashrom_layout_parse_fmap(struct flashrom_layout **layout,
 	int i;
 	char name[FMAP_STRLEN + 1];
 	const struct fmap_area *area;
-	struct flashrom_layout *l = get_global_layout();
+	struct flashrom_layout *l;
 
-	if (!fmap || !l)
+	if (!fmap || flashrom_layout_new(&l))
 		return 1;
 
 	for (i = 0, area = fmap->areas; i < fmap->nareas; i++, area++) {
 		snprintf(name, sizeof(name), "%s", area->name);
-		if (flashrom_layout_add_region(l, area->offset, area->offset + area->size - 1, name))
+		if (flashrom_layout_add_region(l, area->offset, area->offset + area->size - 1, name)) {
+			flashrom_layout_release(l);
 			return 1;
+		}
 	}
 
 	*layout = l;
