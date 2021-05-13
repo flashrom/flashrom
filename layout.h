@@ -55,9 +55,12 @@ const struct flashrom_layout *get_layout(const struct flashrom_flashctx *const f
 
 int layout_from_file(struct flashrom_layout **, const char *name);
 
+int register_include_arg(struct layout_include_args **args, const char *arg);
+int process_include_args(struct flashrom_layout *l, const struct layout_include_args *const args);
+void cleanup_include_args(struct layout_include_args **args);
+
 int get_region_range(struct flashrom_layout *const l, const char *name,
 		     unsigned int *start, unsigned int *len);
-int process_include_args(struct flashrom_layout *l, const struct layout_include_args *const args);
 const struct romentry *layout_next_included_region(const struct flashrom_layout *, chipoff_t);
 const struct romentry *layout_next_included(const struct flashrom_layout *, const struct romentry *);
 const struct romentry *layout_next(const struct flashrom_layout *, const struct romentry *);

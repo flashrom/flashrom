@@ -857,7 +857,7 @@ out:
 		free(flashes[i].chip);
 	}
 
-	layout_cleanup(&include_args);
+	cleanup_include_args(&include_args);
 	free(filename);
 	free(fmapfile);
 	free(referencefile);

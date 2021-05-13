@@ -274,7 +274,7 @@ int included_regions_overlap(const struct flashrom_layout *const l)
 	return overlap_detected;
 }
 
-void layout_cleanup(struct layout_include_args **args)
+void cleanup_include_args(struct layout_include_args **args)
 {
 	struct layout_include_args *tmp;
 
