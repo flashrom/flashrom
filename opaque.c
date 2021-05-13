@@ -46,7 +46,7 @@ int erase_opaque(struct flashctx *flash, unsigned int blockaddr, unsigned int bl
 	return flash->mst->opaque.erase(flash, blockaddr, blocklen);
 }
 
-int register_opaque_master(const struct opaque_master *mst)
+int register_opaque_master(const struct opaque_master *mst, void *data)
 {
 	struct registered_master rmst = {0};
 
@@ -58,5 +58,7 @@ int register_opaque_master(const struct opaque_master *mst)
 	}
 	rmst.buses_supported = BUS_PROG;
 	rmst.opaque = *mst;
+	if (data)
+		rmst.opaque.data = data;
 	return register_master(&rmst);
 }

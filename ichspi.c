@@ -2046,7 +2046,7 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 			}
 			hwseq_data.size_comp1 = tmpi;
 
-			register_opaque_master(&opaque_master_ich_hwseq);
+			register_opaque_master(&opaque_master_ich_hwseq, NULL);
 		} else {
 			register_spi_master(&spi_master_ich9, NULL);
 		}

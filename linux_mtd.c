@@ -424,7 +424,7 @@ int linux_mtd_init(void)
 		goto linux_mtd_init_exit;
 	}
 
-	register_opaque_master(&programmer_linux_mtd);
+	register_opaque_master(&programmer_linux_mtd, NULL);
 
 	ret = 0;
 linux_mtd_init_exit:

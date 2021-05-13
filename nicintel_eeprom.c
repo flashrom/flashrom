@@ -486,7 +486,7 @@ int nicintel_ee_init(void)
 				return 1;
 		}
 
-		return register_opaque_master(&opaque_master_nicintel_ee_82580);
+		return register_opaque_master(&opaque_master_nicintel_ee_82580, NULL);
 	} else {
 		nicintel_eebar = rphysmap("Intel i210 NIC w/ emulated EEPROM",
 					  io_base_addr + 0x12000, MEMMAP_SIZE);
@@ -496,7 +496,7 @@ int nicintel_ee_init(void)
 		if (register_shutdown(nicintel_ee_shutdown_i210, NULL))
 			return 1;
 
-		return register_opaque_master(&opaque_master_nicintel_ee_i210);
+		return register_opaque_master(&opaque_master_nicintel_ee_i210, NULL);
 	}
 
 	return 1;

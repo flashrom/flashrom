@@ -725,7 +725,7 @@ struct opaque_master {
 	int (*erase) (struct flashctx *flash, unsigned int blockaddr, unsigned int blocklen);
 	void *data;
 };
-int register_opaque_master(const struct opaque_master *mst);
+int register_opaque_master(const struct opaque_master *mst, void *data);
 
 /* programmer.c */
 void *fallback_map(const char *descr, uintptr_t phys_addr, size_t len);
