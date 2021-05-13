@@ -50,9 +50,10 @@ struct flashrom_layout;
 struct layout_include_args;
 
 struct flashrom_flashctx;
-struct flashrom_layout *get_global_layout(void);
 const struct flashrom_layout *get_default_layout(const struct flashrom_flashctx *);
 const struct flashrom_layout *get_layout(const struct flashrom_flashctx *const flashctx);
+
+int layout_from_file(struct flashrom_layout **, const char *name);
 
 int get_region_range(struct flashrom_layout *const l, const char *name,
 		     unsigned int *start, unsigned int *len);

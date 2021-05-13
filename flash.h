@@ -419,7 +419,6 @@ __attribute__((format(printf, 2, 3)));
 
 /* layout.c */
 int register_include_arg(struct layout_include_args **args, const char *arg);
-int read_romlayout(const char *name);
 void layout_cleanup(struct layout_include_args **args);
 
 /* spi.c */

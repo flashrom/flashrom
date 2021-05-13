@@ -35,15 +35,6 @@ struct layout_include_args {
 	struct layout_include_args *next;
 };
 
-static struct flashrom_layout *global_layout;
-
-struct flashrom_layout *get_global_layout(void)
-{
-	if (!global_layout)
-		flashrom_layout_new(&global_layout);
-	return global_layout;
-}
-
 const struct flashrom_layout *get_default_layout(const struct flashrom_flashctx *const flashctx)
 {
 	return flashctx->default_layout;
@@ -75,12 +66,14 @@ static struct romentry *_layout_entry_by_name(
 }
 
 #ifndef __LIBPAYLOAD__
-int read_romlayout(const char *name)
+int layout_from_file(struct flashrom_layout **layout, const char *name)
 {
-	struct flashrom_layout *const layout = get_global_layout();
 	FILE *romlayout;
 	char tempstr[256], tempname[256];
 	int ret = 1;
+
+	if (flashrom_layout_new(layout))
+		return 1;
 
 	romlayout = fopen(name, "r");
 
@@ -107,7 +100,7 @@ int read_romlayout(const char *name)
 			msg_gerr("Error parsing layout file. Offending string: \"%s\"\n", tempstr);
 			goto _close_ret;
 		}
-		if (flashrom_layout_add_region(layout,
+		if (flashrom_layout_add_region(*layout,
 				strtol(tstr1, NULL, 16), strtol(tstr2, NULL, 16), tempname))
 			goto _close_ret;
 	}
@@ -219,7 +212,7 @@ int process_include_args(struct flashrom_layout *l, const struct layout_include_
 		return 0;
 
 	/* User has specified an include argument, but no layout is loaded. */
-	if (!l->head) {
+	if (!l || !l->head) {
 		msg_gerr("Region requested (with -i \"%s\"), "
 			 "but no layout data is available.\n",
 			 args->name);
@@ -283,7 +276,6 @@ int included_regions_overlap(const struct flashrom_layout *const l)
 
 void layout_cleanup(struct layout_include_args **args)
 {
-	struct flashrom_layout *const layout = get_global_layout();
 	struct layout_include_args *tmp;
 
 	while (*args) {
@@ -293,9 +285,6 @@ void layout_cleanup(struct layout_include_args **args)
 		free(*args);
 		*args = tmp;
 	}
-
-	global_layout = NULL;
-	flashrom_layout_release(layout);
 }
 
 int layout_sanity_checks(const struct flashrom_flashctx *const flash)
@@ -462,9 +451,6 @@ int flashrom_layout_include_region(struct flashrom_layout *const layout, const c
  */
 void flashrom_layout_release(struct flashrom_layout *const layout)
 {
-	if (layout == global_layout)
-		return;
-
 	if (!layout)
 		return;
 
