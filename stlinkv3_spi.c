@@ -464,6 +464,7 @@ int stlinkv3_spi_init(void)
 	char *speed_str = NULL;
 	char *serialno = NULL;
 	char *endptr = NULL;
+	int ret = 1;
 
 	libusb_init(&usb_ctx);
 	if (!usb_ctx) {
@@ -485,7 +486,7 @@ int stlinkv3_spi_init(void)
 		else
 			msg_perr("Could not find any connected STLINK-V3\n");
 		free(serialno);
-		goto err_exit;
+		goto init_err_exit;
 	}
 	free(serialno);
 
@@ -498,23 +499,30 @@ int stlinkv3_spi_init(void)
 			msg_perr("Please pass the parameter "
 				 "with a simple non-zero number in kHz\n");
 			free(speed_str);
-			return -1;
+			ret = -1;
+			goto init_err_exit;
 		}
 		free(speed_str);
 	}
 
 	if (stlinkv3_spi_open(sck_freq_kHz))
-		goto err_exit;
+		goto init_err_exit;
 
 	if (register_shutdown(stlinkv3_spi_shutdown, NULL))
-		goto err_exit;
+		goto init_err_cleanup_exit;
 
 	if (register_spi_master(&spi_programmer_stlinkv3, NULL))
-		goto err_exit;
+		return 1; /* shutdown function does cleanup */
 
 	return 0;
 
-err_exit:
-	libusb_exit(usb_ctx);
+init_err_cleanup_exit:
+	stlinkv3_spi_shutdown(NULL);
 	return 1;
+
+init_err_exit:
+	if (stlinkv3_handle)
+		libusb_close(stlinkv3_handle);
+	libusb_exit(usb_ctx);
+	return ret;
 }
