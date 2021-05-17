@@ -106,7 +106,8 @@ void prettyprint_ich_chipset(enum ich_chipset cs)
 		"5 series Ibex Peak", "6 series Cougar Point", "7 series Panther Point",
 		"8 series Lynx Point", "Baytrail", "8 series Lynx Point LP", "8 series Wellsburg",
 		"9 series Wildcat Point", "9 series Wildcat Point LP", "100 series Sunrise Point",
-		"C620 series Lewisburg", "300 series Cannon Point", "Apollo Lake", "Gemini Lake",
+		"C620 series Lewisburg", "300 series Cannon Point", "400 series Comet Point",
+		"Apollo Lake", "Gemini Lake",
 	};
 	if (cs < CHIPSET_ICH8 || cs - CHIPSET_ICH8 + 1 >= ARRAY_SIZE(chipset_names))
 		cs = 0;
