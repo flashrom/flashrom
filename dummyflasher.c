@@ -175,7 +175,7 @@ static void dummy_chip_readn(const struct flashctx *flash, uint8_t *buf, const c
 
 static struct emu_data* get_data_from_context(const struct flashctx *flash)
 {
-	if (dummy_buses_supported & (BUS_PARALLEL | BUS_LPC | BUS_FWH))
+	if (dummy_buses_supported & BUS_NONSPI)
 		return (struct emu_data *)flash->mst->par.data;
 	else if (dummy_buses_supported & BUS_SPI)
 		return (struct emu_data *)flash->mst->spi.data;
@@ -1025,9 +1025,9 @@ dummy_init_out:
 		free(data);
 		return 1;
 	}
-	if (dummy_buses_supported & (BUS_PARALLEL | BUS_LPC | BUS_FWH))
+	if (dummy_buses_supported & BUS_NONSPI)
 		register_par_master(&par_master_dummy,
-				    dummy_buses_supported & (BUS_PARALLEL | BUS_LPC | BUS_FWH));
+				    dummy_buses_supported & BUS_NONSPI);
 	if (dummy_buses_supported & BUS_SPI)
 		register_spi_master(&spi_master_dummyflasher, data);
 
