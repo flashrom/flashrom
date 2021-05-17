@@ -32,9 +32,9 @@
 #include "spi.h"
 
 struct mstarddc_spi_data {
-	int mstarddc_fd;
-	int mstarddc_addr;
-	int mstarddc_doreset;
+	int fd;
+	int addr;
+	int doreset;
 };
 
 // MSTAR DDC Commands
@@ -49,9 +49,9 @@ static int mstarddc_spi_shutdown(void *data)
 	struct mstarddc_spi_data *mstarddc_data = data;
 
 	// Reset, disables ISP mode
-	if (mstarddc_data->mstarddc_doreset == 1) {
+	if (mstarddc_data->doreset == 1) {
 		uint8_t cmd = MSTARDDC_SPI_RESET;
-		if (write(mstarddc_data->mstarddc_fd, &cmd, 1) < 0) {
+		if (write(mstarddc_data->fd, &cmd, 1) < 0) {
 			msg_perr("Error sending reset command: errno %d.\n",
 				 errno);
 			return -1;
@@ -62,7 +62,7 @@ static int mstarddc_spi_shutdown(void *data)
 			  "or an error occurred.\n");
 	}
 
-	if (close(mstarddc_data->mstarddc_fd) < 0) {
+	if (close(mstarddc_data->fd) < 0) {
 		msg_perr("Error closing device: errno %d.\n", errno);
 		return -1;
 	}
@@ -89,7 +89,7 @@ static int mstarddc_spi_send_command(const struct flashctx *flash,
 	if (!ret && writecnt) {
 		cmd[0] = MSTARDDC_SPI_WRITE;
 		memcpy(cmd + 1, writearr, writecnt);
-		if (write(mstarddc_data->mstarddc_fd, cmd, writecnt + 1) < 0) {
+		if (write(mstarddc_data->fd, cmd, writecnt + 1) < 0) {
 			msg_perr("Error sending write command: errno %d.\n",
 				 errno);
 			ret = -1;
@@ -103,16 +103,16 @@ static int mstarddc_spi_send_command(const struct flashctx *flash,
 		cmd[0] = MSTARDDC_SPI_READ;
 		i2c_data.nmsgs = 2;
 		i2c_data.msgs = msg;
-		i2c_data.msgs[0].addr = mstarddc_data->mstarddc_addr;
+		i2c_data.msgs[0].addr = mstarddc_data->addr;
 		i2c_data.msgs[0].len = 1;
 		i2c_data.msgs[0].flags = 0;
 		i2c_data.msgs[0].buf = cmd;
-		i2c_data.msgs[1].addr = mstarddc_data->mstarddc_addr;
+		i2c_data.msgs[1].addr = mstarddc_data->addr;
 		i2c_data.msgs[1].len = readcnt;
 		i2c_data.msgs[1].flags = I2C_M_RD;
 		i2c_data.msgs[1].buf = readarr;
 
-		if (ioctl(mstarddc_data->mstarddc_fd, I2C_RDWR, &i2c_data) < 0) {
+		if (ioctl(mstarddc_data->fd, I2C_RDWR, &i2c_data) < 0) {
 			msg_perr("Error sending read command: errno %d.\n",
 				 errno);
 			ret = -1;
@@ -121,7 +121,7 @@ static int mstarddc_spi_send_command(const struct flashctx *flash,
 
 	if (!ret && (writecnt || readcnt)) {
 		cmd[0] = MSTARDDC_SPI_END;
-		if (write(mstarddc_data->mstarddc_fd, cmd, 1) < 0) {
+		if (write(mstarddc_data->fd, cmd, 1) < 0) {
 			msg_perr("Error sending end command: errno %d.\n",
 				 errno);
 			ret = -1;
@@ -131,7 +131,7 @@ static int mstarddc_spi_send_command(const struct flashctx *flash,
 	/* Do not reset if something went wrong, as it might prevent from
 	 * retrying flashing. */
 	if (ret != 0)
-		mstarddc_data->mstarddc_doreset = 0;
+		mstarddc_data->doreset = 0;
 
 	if (cmd)
 		free(cmd);
@@ -235,9 +235,10 @@ int mstarddc_spi_init(void)
 		ret = -1;
 		goto out;
 	}
-	mstarddc_data->mstarddc_fd = mstarddc_fd;
-	mstarddc_data->mstarddc_addr = mstarddc_addr;
-	mstarddc_data->mstarddc_doreset = mstarddc_doreset;
+
+	mstarddc_data->fd = mstarddc_fd;
+	mstarddc_data->addr = mstarddc_addr;
+	mstarddc_data->doreset = mstarddc_doreset;
 
 	// Register shutdown function
 	register_shutdown(mstarddc_spi_shutdown, mstarddc_data);
