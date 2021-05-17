@@ -31,9 +31,11 @@
 #include "programmer.h"
 #include "spi.h"
 
-static int mstarddc_fd;
-static int mstarddc_addr;
-static int mstarddc_doreset = 1;
+struct mstarddc_spi_data {
+	int mstarddc_fd;
+	int mstarddc_addr;
+	int mstarddc_doreset;
+};
 
 // MSTAR DDC Commands
 #define MSTARDDC_SPI_WRITE	0x10
@@ -44,10 +46,12 @@ static int mstarddc_doreset = 1;
 /* Returns 0 upon success, a negative number upon errors. */
 static int mstarddc_spi_shutdown(void *data)
 {
+	struct mstarddc_spi_data *mstarddc_data = data;
+
 	// Reset, disables ISP mode
-	if (mstarddc_doreset == 1) {
+	if (mstarddc_data->mstarddc_doreset == 1) {
 		uint8_t cmd = MSTARDDC_SPI_RESET;
-		if (write(mstarddc_fd, &cmd, 1) < 0) {
+		if (write(mstarddc_data->mstarddc_fd, &cmd, 1) < 0) {
 			msg_perr("Error sending reset command: errno %d.\n",
 				 errno);
 			return -1;
@@ -58,10 +62,12 @@ static int mstarddc_spi_shutdown(void *data)
 			  "or an error occurred.\n");
 	}
 
-	if (close(mstarddc_fd) < 0) {
+	if (close(mstarddc_data->mstarddc_fd) < 0) {
 		msg_perr("Error closing device: errno %d.\n", errno);
 		return -1;
 	}
+
+	free(data);
 	return 0;
 }
 
@@ -72,6 +78,7 @@ static int mstarddc_spi_send_command(const struct flashctx *flash,
 				     const unsigned char *writearr,
 				     unsigned char *readarr)
 {
+	struct mstarddc_spi_data *mstarddc_data = flash->mst->spi.data;
 	int ret = 0;
 	uint8_t *cmd = malloc((writecnt + 1) * sizeof(uint8_t));
 	if (cmd == NULL) {
@@ -82,7 +89,7 @@ static int mstarddc_spi_send_command(const struct flashctx *flash,
 	if (!ret && writecnt) {
 		cmd[0] = MSTARDDC_SPI_WRITE;
 		memcpy(cmd + 1, writearr, writecnt);
-		if (write(mstarddc_fd, cmd, writecnt + 1) < 0) {
+		if (write(mstarddc_data->mstarddc_fd, cmd, writecnt + 1) < 0) {
 			msg_perr("Error sending write command: errno %d.\n",
 				 errno);
 			ret = -1;
@@ -96,16 +103,16 @@ static int mstarddc_spi_send_command(const struct flashctx *flash,
 		cmd[0] = MSTARDDC_SPI_READ;
 		i2c_data.nmsgs = 2;
 		i2c_data.msgs = msg;
-		i2c_data.msgs[0].addr = mstarddc_addr;
+		i2c_data.msgs[0].addr = mstarddc_data->mstarddc_addr;
 		i2c_data.msgs[0].len = 1;
 		i2c_data.msgs[0].flags = 0;
 		i2c_data.msgs[0].buf = cmd;
-		i2c_data.msgs[1].addr = mstarddc_addr;
+		i2c_data.msgs[1].addr = mstarddc_data->mstarddc_addr;
 		i2c_data.msgs[1].len = readcnt;
 		i2c_data.msgs[1].flags = I2C_M_RD;
 		i2c_data.msgs[1].buf = readarr;
 
-		if (ioctl(mstarddc_fd, I2C_RDWR, &i2c_data) < 0) {
+		if (ioctl(mstarddc_data->mstarddc_fd, I2C_RDWR, &i2c_data) < 0) {
 			msg_perr("Error sending read command: errno %d.\n",
 				 errno);
 			ret = -1;
@@ -114,7 +121,7 @@ static int mstarddc_spi_send_command(const struct flashctx *flash,
 
 	if (!ret && (writecnt || readcnt)) {
 		cmd[0] = MSTARDDC_SPI_END;
-		if (write(mstarddc_fd, cmd, 1) < 0) {
+		if (write(mstarddc_data->mstarddc_fd, cmd, 1) < 0) {
 			msg_perr("Error sending end command: errno %d.\n",
 				 errno);
 			ret = -1;
@@ -124,7 +131,7 @@ static int mstarddc_spi_send_command(const struct flashctx *flash,
 	/* Do not reset if something went wrong, as it might prevent from
 	 * retrying flashing. */
 	if (ret != 0)
-		mstarddc_doreset = 0;
+		mstarddc_data->mstarddc_doreset = 0;
 
 	if (cmd)
 		free(cmd);
@@ -146,6 +153,10 @@ static const struct spi_master spi_master_mstarddc = {
 int mstarddc_spi_init(void)
 {
 	int ret = 0;
+	int mstarddc_fd = -1;
+	int mstarddc_addr;
+	int mstarddc_doreset = 1;
+	struct mstarddc_spi_data *mstarddc_data;
 
 	// Get device, address from command-line
 	char *i2c_device = extract_programmer_param("dev");
@@ -217,13 +228,26 @@ int mstarddc_spi_init(void)
 			goto out;
 		}
 	}
+
+	mstarddc_data = calloc(1, sizeof(*mstarddc_data));
+	if (!mstarddc_data) {
+		msg_perr("Unable to allocate space for SPI master data\n");
+		ret = -1;
+		goto out;
+	}
+	mstarddc_data->mstarddc_fd = mstarddc_fd;
+	mstarddc_data->mstarddc_addr = mstarddc_addr;
+	mstarddc_data->mstarddc_doreset = mstarddc_doreset;
+
 	// Register shutdown function
-	register_shutdown(mstarddc_spi_shutdown, NULL);
+	register_shutdown(mstarddc_spi_shutdown, mstarddc_data);
 
 	// Register programmer
-	register_spi_master(&spi_master_mstarddc, NULL);
+	register_spi_master(&spi_master_mstarddc, mstarddc_data);
 out:
 	free(i2c_device);
+	if (ret && (mstarddc_fd >= 0))
+		close(mstarddc_fd);
 	return ret;
 }
 
