@@ -121,7 +121,7 @@ const struct dev_entry devs_stlinkv3_spi[] = {
 
 struct stlinkv3_spi_data {
 	struct libusb_context *usb_ctx;
-	libusb_device_handle *stlinkv3_handle;
+	libusb_device_handle *handle;
 };
 
 static int stlinkv3_command(uint8_t *command, size_t command_length,
@@ -349,7 +349,7 @@ static int stlinkv3_spi_transmit(const struct flashctx *flash,
 				 unsigned char *read_arr)
 {
 	struct stlinkv3_spi_data *stlinkv3_data = flash->mst->spi.data;
-	libusb_device_handle *stlinkv3_handle = stlinkv3_data->stlinkv3_handle;
+	libusb_device_handle *stlinkv3_handle = stlinkv3_data->handle;
 	uint8_t command[16];
 	int rc = 0;
 	int actual_length = 0;
@@ -464,9 +464,9 @@ static int stlinkv3_spi_shutdown(void *data)
 	stlinkv3_command(command, sizeof(command),
 				answer, sizeof(answer),
 				"STLINK_BRIDGE_CLOSE",
-				stlinkv3_data->stlinkv3_handle);
+				stlinkv3_data->handle);
 
-	libusb_close(stlinkv3_data->stlinkv3_handle);
+	libusb_close(stlinkv3_data->handle);
 	libusb_exit(stlinkv3_data->usb_ctx);
 
 	free(data);
@@ -543,7 +543,7 @@ int stlinkv3_spi_init(void)
 	}
 
 	stlinkv3_data->usb_ctx = usb_ctx;
-	stlinkv3_data->stlinkv3_handle = stlinkv3_handle;
+	stlinkv3_data->handle = stlinkv3_handle;
 
 	if (register_shutdown(stlinkv3_spi_shutdown, stlinkv3_data))
 		goto init_err_cleanup_exit;
