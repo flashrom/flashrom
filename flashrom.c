@@ -134,7 +134,7 @@ int programmer_init(enum programmer prog, const char *param)
 {
 	int ret;
 
-	if (prog >= PROGRAMMER_INVALID) {
+	if (prog >= programmer_table_size) {
 		msg_perr("Invalid programmer specified!\n");
 		return -1;
 	}
@@ -1585,7 +1585,7 @@ void list_programmers_linebreak(int startcol, int cols, int paren)
 	enum programmer p;
 	int i;
 
-	for (p = 0; p < PROGRAMMER_INVALID; p++) {
+	for (p = 0; p < programmer_table_size; p++) {
 		pname = programmer_table[p]->name;
 		pnamelen = strlen(pname);
 		if (remaining - pnamelen - 2 < 0) {
@@ -1606,7 +1606,7 @@ void list_programmers_linebreak(int startcol, int cols, int paren)
 		}
 		msg_ginfo("%s", pname);
 		remaining -= pnamelen;
-		if (p < PROGRAMMER_INVALID - 1) {
+		if (p < programmer_table_size - 1) {
 			msg_ginfo(",");
 			remaining--;
 		} else {
@@ -1715,7 +1715,7 @@ int selfcheck(void)
 		msg_gerr("Programmer table miscompilation!\n");
 		ret = 1;
 	}
-	for (i = 0; i < PROGRAMMER_INVALID; i++) {
+	for (i = 0; i < programmer_table_size; i++) {
 		const struct programmer_entry *const p = programmer_table[i];
 		if (p == NULL) {
 			msg_gerr("Programmer with index %d is NULL instead of a valid pointer!\n", i);

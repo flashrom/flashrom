@@ -482,7 +482,7 @@ int print_supported(void)
 	msg_ginfo("\n");
 	print_supported_boards_helper(laptops_known, "mobile devices");
 #endif
-	for (i = 0; i < PROGRAMMER_INVALID; i++) {
+	for (i = 0; i < programmer_table_size; i++) {
 		const struct programmer_entry *const prog = programmer_table[i];
 		switch (prog->type) {
 		case USB:

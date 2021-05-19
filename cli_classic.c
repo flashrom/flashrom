@@ -406,7 +406,7 @@ int main(int argc, char *argv[])
 					"with \",\". Please see the man page "
 					"for details.\n");
 			}
-			for (prog = 0; prog < PROGRAMMER_INVALID; prog++) {
+			for (prog = 0; prog < programmer_table_size; prog++) {
 				name = programmer_table[prog]->name;
 				namelen = strlen(name);
 				if (strncmp(optarg, name, namelen) == 0) {

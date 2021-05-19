@@ -380,7 +380,7 @@ static void print_supported_devs_wiki()
 	unsigned int usb_count = 0;
 	unsigned int i;
 
-	for (i = 0; i < PROGRAMMER_INVALID; i++) {
+	for (i = 0; i < programmer_table_size; i++) {
 		const struct programmer_entry *const prog = programmer_table[i];
 		switch (prog->type) {
 		case USB:
@@ -399,7 +399,7 @@ static void print_supported_devs_wiki()
 	       "Total amount of supported PCI devices flashrom can use as a programmer: '''%d'''\n\n"
 	       "{%s%s", pci_count, th_start, programmer_th);
 
-	for (i = 0; i < PROGRAMMER_INVALID; i++) {
+	for (i = 0; i < programmer_table_size; i++) {
 		const struct programmer_entry *const prog = programmer_table[i];
 		if (prog->type == PCI) {
 			print_supported_devs_wiki_helper(prog);
@@ -411,7 +411,7 @@ static void print_supported_devs_wiki()
 	       "Total amount of supported USB devices flashrom can use as a programmer: '''%d'''\n\n"
 	       "{%s%s", usb_count, th_start, programmer_th);
 
-	for (i = 0; i < PROGRAMMER_INVALID; i++) {
+	for (i = 0; i < programmer_table_size; i++) {
 		const struct programmer_entry *const prog = programmer_table[i];
 		if (prog->type == USB) {
 			print_supported_devs_wiki_helper(prog);
@@ -424,7 +424,7 @@ static void print_supported_devs_wiki()
 	printf("! align=\"left\" | Programmer\n"
 	       "! align=\"left\" | Note\n\n");
 
-	for (i = 0; i < PROGRAMMER_INVALID; i++) {
+	for (i = 0; i < programmer_table_size; i++) {
 		static int c = 0;
 		const struct programmer_entry *const prog = programmer_table[i];
 		if (prog->type == OTHER && prog->devs.note != NULL) {

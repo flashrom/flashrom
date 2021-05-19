@@ -120,10 +120,10 @@ const char *flashrom_version_info(void)
 const char **flashrom_supported_programmers(void)
 {
 	enum programmer p = 0;
-	const char **supported_programmers = malloc((PROGRAMMER_INVALID + 1) * sizeof(char*));
+	const char **supported_programmers = malloc((programmer_table_size + 1) * sizeof(char*));
 
 	if (supported_programmers != NULL) {
-		for (; p < PROGRAMMER_INVALID; ++p) {
+		for (; p < programmer_table_size; ++p) {
 			supported_programmers[p] = programmer_table[p]->name;
 		}
 	} else {
@@ -278,11 +278,11 @@ int flashrom_programmer_init(struct flashrom_programmer **const flashprog,
 {
 	unsigned prog;
 
-	for (prog = 0; prog < PROGRAMMER_INVALID; prog++) {
+	for (prog = 0; prog < programmer_table_size; prog++) {
 		if (strcmp(prog_name, programmer_table[prog]->name) == 0)
 			break;
 	}
-	if (prog >= PROGRAMMER_INVALID) {
+	if (prog >= programmer_table_size) {
 		msg_ginfo("Error: Unknown programmer \"%s\". Valid choices are:\n", prog_name);
 		list_programmers_linebreak(0, 80, 0);
 		return 1;
