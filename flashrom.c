@@ -532,8 +532,6 @@ const struct programmer_entry programmer_table[] = {
 		.delay			= internal_delay,
 	},
 #endif
-
-	{0}, /* This entry corresponds to PROGRAMMER_INVALID. */
 };
 
 #define SHUTDOWN_MAXFN 32
@@ -2191,7 +2189,7 @@ int selfcheck(void)
 	/* Safety check. Instead of aborting after the first error, check
 	 * if more errors exist.
 	 */
-	if (ARRAY_SIZE(programmer_table) - 1 != PROGRAMMER_INVALID) {
+	if (ARRAY_SIZE(programmer_table) != PROGRAMMER_INVALID) {
 		msg_gerr("Programmer table miscompilation!\n");
 		ret = 1;
 	}
