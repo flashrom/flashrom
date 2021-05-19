@@ -534,6 +534,8 @@ const struct programmer_entry programmer_table[] = {
 #endif
 };
 
+const size_t programmer_table_size = ARRAY_SIZE(programmer_table);
+
 #define SHUTDOWN_MAXFN 32
 static int shutdown_fn_count = 0;
 /** @private */
@@ -2189,7 +2191,7 @@ int selfcheck(void)
 	/* Safety check. Instead of aborting after the first error, check
 	 * if more errors exist.
 	 */
-	if (ARRAY_SIZE(programmer_table) != PROGRAMMER_INVALID) {
+	if (programmer_table_size != PROGRAMMER_INVALID) {
 		msg_gerr("Programmer table miscompilation!\n");
 		ret = 1;
 	}
