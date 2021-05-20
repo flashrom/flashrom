@@ -622,7 +622,7 @@ static const struct spi_master spi_master_dummyflasher = {
 	.write_aai	= default_spi_write_aai,
 };
 
-static const struct par_master par_master_dummy = {
+static const struct par_master par_master_dummyflasher = {
 		.chip_readb		= dummy_chip_readb,
 		.chip_readw		= dummy_chip_readw,
 		.chip_readl		= dummy_chip_readl,
@@ -1025,7 +1025,7 @@ dummy_init_out:
 		return 1;
 	}
 	if (dummy_buses_supported & BUS_NONSPI)
-		register_par_master(&par_master_dummy,
+		register_par_master(&par_master_dummyflasher,
 				    dummy_buses_supported & BUS_NONSPI,
 				    data);
 	if (dummy_buses_supported & BUS_SPI)
