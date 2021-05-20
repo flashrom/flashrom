@@ -622,7 +622,7 @@ static const struct spi_master spi_master_dummyflasher = {
 	.write_aai	= default_spi_write_aai,
 };
 
-static struct par_master par_master_dummy = {
+static const struct par_master par_master_dummy = {
 		.chip_readb		= dummy_chip_readb,
 		.chip_readw		= dummy_chip_readw,
 		.chip_readl		= dummy_chip_readl,
@@ -674,7 +674,6 @@ int dummy_init(void)
 	}
 	data->emu_chip = EMULATE_NONE;
 	data->delay_us = 0;
-	par_master_dummy.data = data;
 
 	msg_pspew("%s\n", __func__);
 
@@ -1028,7 +1027,7 @@ dummy_init_out:
 	if (dummy_buses_supported & BUS_NONSPI)
 		register_par_master(&par_master_dummy,
 				    dummy_buses_supported & BUS_NONSPI,
-				    NULL);
+				    data);
 	if (dummy_buses_supported & BUS_SPI)
 		register_spi_master(&spi_master_dummyflasher, data);
 
