@@ -56,7 +56,7 @@ enum amd_chipset {
 
 struct sb600spi_data {
 	struct flashctx *flash;
-	uint8_t *sb600_spibar;
+	uint8_t *spibar;
 };
 
 static int find_smbus_dev_rev(uint16_t vendor, uint16_t device)
@@ -207,7 +207,7 @@ static int sb600_spi_send_command(const struct flashctx *flash, unsigned int wri
 				  unsigned char *readarr)
 {
 	struct sb600spi_data *sb600_data = flash->mst->spi.data;
-	uint8_t *sb600_spibar = sb600_data->sb600_spibar;
+	uint8_t *sb600_spibar = sb600_data->spibar;
 	/* First byte is cmd which can not be sent through the FIFO. */
 	unsigned char cmd = *writearr++;
 	writecnt--;
@@ -295,7 +295,7 @@ static int spi100_spi_send_command(const struct flashctx *flash, unsigned int wr
 				  unsigned char *readarr)
 {
 	struct sb600spi_data *sb600_data = flash->mst->spi.data;
-	uint8_t *sb600_spibar = sb600_data->sb600_spibar;
+	uint8_t *sb600_spibar = sb600_data->spibar;
 	/* First byte is cmd which can not be sent through the buffer. */
 	unsigned char cmd = *writearr++;
 	writecnt--;
@@ -784,7 +784,7 @@ int sb600_probe_spi(struct pci_dev *dev)
 	}
 
 	data->flash = NULL;
-	data->sb600_spibar = sb600_spibar;
+	data->spibar = sb600_spibar;
 
 	register_shutdown(sb600spi_shutdown, data);
 
