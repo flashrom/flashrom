@@ -69,6 +69,8 @@ struct emu_data {
 	unsigned char spi_ignorelist[256];
 	unsigned int spi_blacklist_size;
 	unsigned int spi_ignorelist_size;
+
+	unsigned int spi_write_256_chunksize;
 };
 
 #if EMULATE_SPI_CHIP
@@ -101,8 +103,17 @@ static const uint8_t sfdp_table[] = {
 #endif
 #endif
 
-static unsigned int spi_write_256_chunksize = 256;
 static enum chipbustype dummy_buses_supported = BUS_NONE;
+
+static struct emu_data* get_data_from_context(const struct flashctx *flash)
+{
+	if (dummy_buses_supported & BUS_NONSPI)
+		return (struct emu_data *)flash->mst->par.data;
+	else if (dummy_buses_supported & BUS_SPI)
+		return (struct emu_data *)flash->mst->spi.data;
+
+	return NULL;	/* buses was set to BUS_NONE. */
+}
 
 void *dummy_map(const char *descr, uintptr_t phys_addr, size_t len)
 {
@@ -118,8 +129,9 @@ void dummy_unmap(void *virt_addr, size_t len)
 
 static int dummy_spi_write_256(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len)
 {
+	struct emu_data *emu_data = get_data_from_context(flash);
 	return spi_write_chunked(flash, buf, start, len,
-				 spi_write_256_chunksize);
+				 emu_data->spi_write_256_chunksize);
 }
 
 static void dummy_chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr)
@@ -171,16 +183,6 @@ static void dummy_chip_readn(const struct flashctx *flash, uint8_t *buf, const c
 	msg_pspew("%s:  addr=0x%" PRIxPTR ", len=0x%zx, returning array of 0xff\n", __func__, addr, len);
 	memset(buf, 0xff, len);
 	return;
-}
-
-static struct emu_data* get_data_from_context(const struct flashctx *flash)
-{
-	if (dummy_buses_supported & BUS_NONSPI)
-		return (struct emu_data *)flash->mst->par.data;
-	else if (dummy_buses_supported & BUS_SPI)
-		return (struct emu_data *)flash->mst->spi.data;
-
-	return NULL;	/* buses was set to BUS_NONE. */
 }
 
 #if EMULATE_SPI_CHIP
@@ -674,6 +676,7 @@ int dummy_init(void)
 	}
 	data->emu_chip = EMULATE_NONE;
 	data->delay_us = 0;
+	data->spi_write_256_chunksize = 256;
 
 	msg_pspew("%s\n", __func__);
 
@@ -707,9 +710,9 @@ int dummy_init(void)
 
 	tmp = extract_programmer_param("spi_write_256_chunksize");
 	if (tmp) {
-		spi_write_256_chunksize = atoi(tmp);
+		data->spi_write_256_chunksize = atoi(tmp);
 		free(tmp);
-		if (spi_write_256_chunksize < 1) {
+		if (data->spi_write_256_chunksize < 1) {
 			msg_perr("invalid spi_write_256_chunksize\n");
 			return 1;
 		}
