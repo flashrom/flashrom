@@ -40,7 +40,6 @@
  *};
  */
 
-static uint8_t *sb600_spibar = NULL;
 enum amd_chipset {
 	CHIPSET_AMD_UNKNOWN,
 	CHIPSET_SB6XX,
@@ -57,6 +56,7 @@ enum amd_chipset {
 
 struct sb600spi_data {
 	struct flashctx *flash;
+	uint8_t *sb600_spibar;
 };
 
 static int find_smbus_dev_rev(uint16_t vendor, uint16_t device)
@@ -149,7 +149,7 @@ static enum amd_chipset determine_generation(struct pci_dev *dev)
 	return CHIPSET_AMD_UNKNOWN;
 }
 
-static void reset_internal_fifo_pointer(void)
+static void reset_internal_fifo_pointer(uint8_t *sb600_spibar)
 {
 	mmio_writeb(mmio_readb(sb600_spibar + 2) | 0x10, sb600_spibar + 2);
 
@@ -158,7 +158,7 @@ static void reset_internal_fifo_pointer(void)
 		msg_pspew("reset\n");
 }
 
-static int compare_internal_fifo_pointer(uint8_t want)
+static int compare_internal_fifo_pointer(uint8_t want, uint8_t *sb600_spibar)
 {
 	uint8_t have = mmio_readb(sb600_spibar + 0xd) & 0x07;
 	want %= FIFO_SIZE_OLD;
@@ -192,7 +192,7 @@ static int check_readwritecnt(const struct flashctx *flash, unsigned int writecn
 	return 0;
 }
 
-static void execute_command(void)
+static void execute_command(uint8_t *sb600_spibar)
 {
 	msg_pspew("Executing... ");
 	mmio_writeb(mmio_readb(sb600_spibar + 2) | 1, sb600_spibar + 2);
@@ -206,6 +206,8 @@ static int sb600_spi_send_command(const struct flashctx *flash, unsigned int wri
 				  const unsigned char *writearr,
 				  unsigned char *readarr)
 {
+	struct sb600spi_data *sb600_data = flash->mst->spi.data;
+	uint8_t *sb600_spibar = sb600_data->sb600_spibar;
 	/* First byte is cmd which can not be sent through the FIFO. */
 	unsigned char cmd = *writearr++;
 	writecnt--;
@@ -226,7 +228,7 @@ static int sb600_spi_send_command(const struct flashctx *flash, unsigned int wri
 	uint8_t readwrite = (readcnt + readoffby1) << 4 | (writecnt);
 	mmio_writeb(readwrite, sb600_spibar + 1);
 
-	reset_internal_fifo_pointer();
+	reset_internal_fifo_pointer(sb600_spibar);
 	msg_pspew("Filling FIFO: ");
 	unsigned int count;
 	for (count = 0; count < writecnt; count++) {
@@ -234,16 +236,16 @@ static int sb600_spi_send_command(const struct flashctx *flash, unsigned int wri
 		mmio_writeb(writearr[count], sb600_spibar + 0xC);
 	}
 	msg_pspew("\n");
-	if (compare_internal_fifo_pointer(writecnt))
+	if (compare_internal_fifo_pointer(writecnt, sb600_spibar))
 		return SPI_PROGRAMMER_ERROR;
 
 	/*
 	 * We should send the data in sequence, which means we need to reset
 	 * the FIFO pointer to the first byte we want to send.
 	 */
-	reset_internal_fifo_pointer();
-	execute_command();
-	if (compare_internal_fifo_pointer(writecnt + readcnt))
+	reset_internal_fifo_pointer(sb600_spibar);
+	execute_command(sb600_spibar);
+	if (compare_internal_fifo_pointer(writecnt + readcnt, sb600_spibar))
 		return SPI_PROGRAMMER_ERROR;
 
 	/*
@@ -257,7 +259,7 @@ static int sb600_spi_send_command(const struct flashctx *flash, unsigned int wri
 	 * the opcode, the FIFO already stores the response from the chip.
 	 * Usually, the chip will respond with 0x00 or 0xff.
 	 */
-	reset_internal_fifo_pointer();
+	reset_internal_fifo_pointer(sb600_spibar);
 
 	/* Skip the bytes we sent. */
 	msg_pspew("Skipping: ");
@@ -265,7 +267,7 @@ static int sb600_spi_send_command(const struct flashctx *flash, unsigned int wri
 		msg_pspew("[%02x]", mmio_readb(sb600_spibar + 0xC));
 	}
 	msg_pspew("\n");
-	if (compare_internal_fifo_pointer(writecnt))
+	if (compare_internal_fifo_pointer(writecnt, sb600_spibar))
 		return SPI_PROGRAMMER_ERROR;
 
 	msg_pspew("Reading FIFO: ");
@@ -274,7 +276,7 @@ static int sb600_spi_send_command(const struct flashctx *flash, unsigned int wri
 		msg_pspew("[%02x]", readarr[count]);
 	}
 	msg_pspew("\n");
-	if (compare_internal_fifo_pointer(writecnt+readcnt))
+	if (compare_internal_fifo_pointer(writecnt+readcnt, sb600_spibar))
 		return SPI_PROGRAMMER_ERROR;
 
 	if (mmio_readb(sb600_spibar + 1) != readwrite) {
@@ -292,6 +294,8 @@ static int spi100_spi_send_command(const struct flashctx *flash, unsigned int wr
 				  const unsigned char *writearr,
 				  unsigned char *readarr)
 {
+	struct sb600spi_data *sb600_data = flash->mst->spi.data;
+	uint8_t *sb600_spibar = sb600_data->sb600_spibar;
 	/* First byte is cmd which can not be sent through the buffer. */
 	unsigned char cmd = *writearr++;
 	writecnt--;
@@ -314,7 +318,7 @@ static int spi100_spi_send_command(const struct flashctx *flash, unsigned int wr
 	}
 	msg_pspew("\n");
 
-	execute_command();
+	execute_command(sb600_spibar);
 
 	msg_pspew("Reading buffer: ");
 	for (count = 0; count < readcnt; count++) {
@@ -353,7 +357,7 @@ static const char* spireadmodes[] = {
 	"Fast Read",
 };
 
-static int set_speed(struct pci_dev *dev, enum amd_chipset amd_gen, uint8_t speed)
+static int set_speed(struct pci_dev *dev, enum amd_chipset amd_gen, uint8_t speed, uint8_t *sb600_spibar)
 {
 	bool success = false;
 
@@ -376,7 +380,7 @@ static int set_speed(struct pci_dev *dev, enum amd_chipset amd_gen, uint8_t spee
 	return 0;
 }
 
-static int set_mode(struct pci_dev *dev, uint8_t mode)
+static int set_mode(struct pci_dev *dev, uint8_t mode, uint8_t *sb600_spibar)
 {
 	msg_pdbg("Setting SPI read mode to %s (%i)... ", spireadmodes[mode], mode);
 	uint32_t tmp = mmio_readl(sb600_spibar + 0x00);
@@ -391,7 +395,7 @@ static int set_mode(struct pci_dev *dev, uint8_t mode)
 	return 0;
 }
 
-static int handle_speed(struct pci_dev *dev, enum amd_chipset amd_gen)
+static int handle_speed(struct pci_dev *dev, enum amd_chipset amd_gen, uint8_t *sb600_spibar)
 {
 	uint32_t tmp;
 	int16_t spispeed_idx = -1;
@@ -459,7 +463,7 @@ static int handle_speed(struct pci_dev *dev, enum amd_chipset amd_gen)
 			msg_perr("Warning: spireadmode not set, "
 					 "leaving spireadmode unchanged.");
 		}
-		else if (set_mode(dev, spireadmode_idx) != 0) {
+		else if (set_mode(dev, spireadmode_idx, sb600_spibar) != 0) {
 			return 1;
 		}
 
@@ -502,7 +506,7 @@ static int handle_speed(struct pci_dev *dev, enum amd_chipset amd_gen)
 		msg_perr("Warning: spispeed not set, leaving spispeed unchanged.");
 		return 0;
 	}
-	return set_speed(dev, amd_gen, spispeed_idx);
+	return set_speed(dev, amd_gen, spispeed_idx, sb600_spibar);
 }
 
 static int handle_imc(struct pci_dev *dev, enum amd_chipset amd_gen)
@@ -598,9 +602,11 @@ static struct spi_master spi_master_promontory = {
 
 static int sb600spi_shutdown(void *data)
 {
-	struct flashctx *flash = ((struct sb600spi_data *)data)->flash;
+	struct sb600spi_data *sb600_data = data;
+	struct flashctx *flash = sb600_data->flash;
 	if (flash)
 		finalize_flash_access(flash);
+
 	free(data);
 	return 0;
 }
@@ -610,6 +616,7 @@ int sb600_probe_spi(struct pci_dev *dev)
 	struct pci_dev *smbus_dev;
 	uint32_t tmp;
 	uint8_t reg;
+	uint8_t *sb600_spibar = NULL;
 
 	/* Read SPI_BaseAddr */
 	tmp = pci_read_long(dev, 0xa0);
@@ -764,7 +771,7 @@ int sb600_probe_spi(struct pci_dev *dev)
 		return 0;
 	}
 
-	if (handle_speed(dev, amd_gen) != 0)
+	if (handle_speed(dev, amd_gen, sb600_spibar) != 0)
 		return ERROR_FATAL;
 
 	if (handle_imc(dev, amd_gen) != 0)
@@ -777,6 +784,7 @@ int sb600_probe_spi(struct pci_dev *dev)
 	}
 
 	data->flash = NULL;
+	data->sb600_spibar = sb600_spibar;
 
 	register_shutdown(sb600spi_shutdown, data);
 	spi_master_sb600.data = data;
