@@ -103,7 +103,7 @@ int gfxnvidia_init(void)
 
 	/* Write/erase doesn't work. */
 	programmer_may_write = 0;
-	register_par_master(&par_master_gfxnvidia, BUS_PARALLEL);
+	register_par_master(&par_master_gfxnvidia, BUS_PARALLEL, NULL);
 
 	return 0;
 }

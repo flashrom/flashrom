@@ -86,7 +86,7 @@ int nicrealtek_init(void)
 	if (register_shutdown(nicrealtek_shutdown, NULL))
 		return 1;
 
-	register_par_master(&par_master_nicrealtek, BUS_PARALLEL);
+	register_par_master(&par_master_nicrealtek, BUS_PARALLEL, NULL);
 
 	return 0;
 }

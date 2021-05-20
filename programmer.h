@@ -747,7 +747,7 @@ struct par_master {
 	void (*chip_readn) (const struct flashctx *flash, uint8_t *buf, const chipaddr addr, size_t len);
 	void *data;
 };
-int register_par_master(const struct par_master *mst, const enum chipbustype buses);
+int register_par_master(const struct par_master *mst, const enum chipbustype buses, void *data);
 struct registered_master {
 	enum chipbustype buses_supported;
 	struct {

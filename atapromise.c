@@ -140,7 +140,7 @@ int atapromise_init(void)
 	}
 
 	max_rom_decode.parallel = rom_size;
-	register_par_master(&par_master_atapromise, BUS_PARALLEL);
+	register_par_master(&par_master_atapromise, BUS_PARALLEL, NULL);
 
 	msg_pwarn("Do not use this device as a generic programmer. It will leave anything outside\n"
 		  "the first %zu kB of the flash chip in an undefined state. It works fine for the\n"

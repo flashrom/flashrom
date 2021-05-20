@@ -160,7 +160,7 @@ int atavia_init(void)
 		return 1;
 	}
 
-	register_par_master(&lpc_master_atavia, BUS_LPC);
+	register_par_master(&lpc_master_atavia, BUS_LPC, NULL);
 
 	return 0;
 }

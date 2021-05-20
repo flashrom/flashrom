@@ -120,7 +120,7 @@ int nic3com_init(void)
 		return 1;
 
 	max_rom_decode.parallel = 128 * 1024;
-	register_par_master(&par_master_nic3com, BUS_PARALLEL);
+	register_par_master(&par_master_nic3com, BUS_PARALLEL, NULL);
 
 	return 0;
 }

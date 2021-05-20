@@ -1027,7 +1027,8 @@ dummy_init_out:
 	}
 	if (dummy_buses_supported & BUS_NONSPI)
 		register_par_master(&par_master_dummy,
-				    dummy_buses_supported & BUS_NONSPI);
+				    dummy_buses_supported & BUS_NONSPI,
+				    NULL);
 	if (dummy_buses_supported & BUS_SPI)
 		register_spi_master(&spi_master_dummyflasher, data);
 

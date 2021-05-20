@@ -75,7 +75,7 @@ int atahpt_init(void)
 	reg32 |= (1 << 24);
 	rpci_write_long(dev, REG_FLASH_ACCESS, reg32);
 
-	register_par_master(&par_master_atahpt, BUS_PARALLEL);
+	register_par_master(&par_master_atahpt, BUS_PARALLEL, NULL);
 
 	return 0;
 }

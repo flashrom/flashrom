@@ -335,7 +335,7 @@ int internal_init(void)
 #endif /* IS_X86 */
 
 	if (internal_buses_supported & BUS_NONSPI)
-		register_par_master(&par_master_internal, internal_buses_supported);
+		register_par_master(&par_master_internal, internal_buses_supported, NULL);
 
 	/* Report if a non-whitelisted laptop is detected that likely uses a legacy bus. */
 	if (is_laptop && !laptop_ok) {
