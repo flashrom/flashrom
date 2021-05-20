@@ -570,7 +570,7 @@ static int promontory_read_memmapped(struct flashctx *flash, uint8_t *buf,
 	return 0;
 }
 
-static struct spi_master spi_master_sb600 = {
+static const struct spi_master spi_master_sb600 = {
 	.max_data_read = FIFO_SIZE_OLD,
 	.max_data_write = FIFO_SIZE_OLD - 3,
 	.command = sb600_spi_send_command,
@@ -580,7 +580,7 @@ static struct spi_master spi_master_sb600 = {
 	.write_aai = default_spi_write_aai,
 };
 
-static struct spi_master spi_master_yangtze = {
+static const struct spi_master spi_master_yangtze = {
 	.max_data_read = FIFO_SIZE_YANGTZE - 3, /* Apparently the big SPI 100 buffer is not a ring buffer. */
 	.max_data_write = FIFO_SIZE_YANGTZE - 3,
 	.command = spi100_spi_send_command,
@@ -590,7 +590,7 @@ static struct spi_master spi_master_yangtze = {
 	.write_aai = default_spi_write_aai,
 };
 
-static struct spi_master spi_master_promontory = {
+static const struct spi_master spi_master_promontory = {
 	.max_data_read = MAX_DATA_READ_UNLIMITED,
 	.max_data_write = FIFO_SIZE_YANGTZE - 3,
 	.command = spi100_spi_send_command,
@@ -787,18 +787,14 @@ int sb600_probe_spi(struct pci_dev *dev)
 	data->sb600_spibar = sb600_spibar;
 
 	register_shutdown(sb600spi_shutdown, data);
-	spi_master_sb600.data = data;
-	spi_master_yangtze.data = data;
-	spi_master_promontory.data = data;
-
 
 	/* Starting with Yangtze the SPI controller got a different interface with a much bigger buffer. */
 	if (amd_gen < CHIPSET_YANGTZE)
-		register_spi_master(&spi_master_sb600, NULL);
+		register_spi_master(&spi_master_sb600, data);
 	else if (amd_gen == CHIPSET_YANGTZE)
-		register_spi_master(&spi_master_yangtze, NULL);
+		register_spi_master(&spi_master_yangtze, data);
 	else
-		register_spi_master(&spi_master_promontory, NULL);
+		register_spi_master(&spi_master_promontory, data);
 
 	return 0;
 }
