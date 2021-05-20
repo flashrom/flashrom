@@ -37,7 +37,6 @@
 #endif
 
 #if EMULATE_CHIP
-static uint8_t *flashchip_contents = NULL;
 enum emu_chip {
 	EMULATE_NONE,
 	EMULATE_ST_M25P10_RES,
@@ -71,6 +70,7 @@ struct emu_data {
 	unsigned int spi_ignorelist_size;
 
 	unsigned int spi_write_256_chunksize;
+	uint8_t *flashchip_contents;
 };
 
 #if EMULATE_SPI_CHIP
@@ -353,14 +353,14 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 		/* Truncate to emu_chip_size. */
 		offs %= data->emu_chip_size;
 		if (readcnt > 0)
-			memcpy(readarr, flashchip_contents + offs, readcnt);
+			memcpy(readarr, data->flashchip_contents + offs, readcnt);
 		break;
 	case JEDEC_READ_4BA:
 		offs = writearr[1] << 24 | writearr[2] << 16 | writearr[3] << 8 | writearr[4];
 		/* Truncate to emu_chip_size. */
 		offs %= data->emu_chip_size;
 		if (readcnt > 0)
-			memcpy(readarr, flashchip_contents + offs, readcnt);
+			memcpy(readarr, data->flashchip_contents + offs, readcnt);
 		break;
 	case JEDEC_BYTE_PROGRAM:
 		offs = writearr[1] << 16 | writearr[2] << 8 | writearr[3];
@@ -374,7 +374,7 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 			msg_perr("Max BYTE PROGRAM size exceeded!\n");
 			return 1;
 		}
-		memcpy(flashchip_contents + offs, writearr + 4, writecnt - 4);
+		memcpy(data->flashchip_contents + offs, writearr + 4, writecnt - 4);
 		data->emu_modified = 1;
 		break;
 	case JEDEC_BYTE_PROGRAM_4BA:
@@ -389,7 +389,7 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 			msg_perr("Max BYTE PROGRAM size exceeded!\n");
 			return 1;
 		}
-		memcpy(flashchip_contents + offs, writearr + 5, writecnt - 5);
+		memcpy(data->flashchip_contents + offs, writearr + 5, writecnt - 5);
 		data->emu_modified = 1;
 		break;
 	case JEDEC_AAI_WORD_PROGRAM:
@@ -411,7 +411,7 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 				   writearr[3];
 			/* Truncate to emu_chip_size. */
 			aai_offs %= data->emu_chip_size;
-			memcpy(flashchip_contents + aai_offs, writearr + 4, 2);
+			memcpy(data->flashchip_contents + aai_offs, writearr + 4, 2);
 			aai_offs += 2;
 		} else {
 			if (writecnt < JEDEC_AAI_WORD_PROGRAM_CONT_OUTSIZE) {
@@ -424,7 +424,7 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 					 "too long!\n");
 				return 1;
 			}
-			memcpy(flashchip_contents + aai_offs, writearr + 1, 2);
+			memcpy(data->flashchip_contents + aai_offs, writearr + 1, 2);
 			aai_offs += 2;
 		}
 		data->emu_modified = 1;
@@ -448,7 +448,7 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 		if (offs & (data->emu_jedec_se_size - 1))
 			msg_pdbg("Unaligned SECTOR ERASE 0x20: 0x%x\n", offs);
 		offs &= ~(data->emu_jedec_se_size - 1);
-		memset(flashchip_contents + offs, 0xff, data->emu_jedec_se_size);
+		memset(data->flashchip_contents + offs, 0xff, data->emu_jedec_se_size);
 		data->emu_modified = 1;
 		break;
 	case JEDEC_BE_52:
@@ -466,7 +466,7 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 		if (offs & (data->emu_jedec_be_52_size - 1))
 			msg_pdbg("Unaligned BLOCK ERASE 0x52: 0x%x\n", offs);
 		offs &= ~(data->emu_jedec_be_52_size - 1);
-		memset(flashchip_contents + offs, 0xff, data->emu_jedec_be_52_size);
+		memset(data->flashchip_contents + offs, 0xff, data->emu_jedec_be_52_size);
 		data->emu_modified = 1;
 		break;
 	case JEDEC_BE_D8:
@@ -484,7 +484,7 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 		if (offs & (data->emu_jedec_be_d8_size - 1))
 			msg_pdbg("Unaligned BLOCK ERASE 0xd8: 0x%x\n", offs);
 		offs &= ~(data->emu_jedec_be_d8_size - 1);
-		memset(flashchip_contents + offs, 0xff, data->emu_jedec_be_d8_size);
+		memset(data->flashchip_contents + offs, 0xff, data->emu_jedec_be_d8_size);
 		data->emu_modified = 1;
 		break;
 	case JEDEC_CE_60:
@@ -500,7 +500,7 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 		}
 		/* JEDEC_CE_60_OUTSIZE is 1 (no address) -> no offset. */
 		/* emu_jedec_ce_60_size is emu_chip_size. */
-		memset(flashchip_contents, 0xff, data->emu_jedec_ce_60_size);
+		memset(data->flashchip_contents, 0xff, data->emu_jedec_ce_60_size);
 		data->emu_modified = 1;
 		break;
 	case JEDEC_CE_C7:
@@ -516,7 +516,7 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 		}
 		/* JEDEC_CE_C7_OUTSIZE is 1 (no address) -> no offset. */
 		/* emu_jedec_ce_c7_size is emu_chip_size. */
-		memset(flashchip_contents, 0xff, data->emu_jedec_ce_c7_size);
+		memset(data->flashchip_contents, 0xff, data->emu_jedec_ce_c7_size);
 		data->emu_modified = 1;
 		break;
 	case JEDEC_SFDP:
@@ -643,13 +643,13 @@ static int dummy_shutdown(void *data)
 	if (emu_data->emu_chip != EMULATE_NONE) {
 		if (emu_data->emu_persistent_image && emu_data->emu_modified) {
 			msg_pdbg("Writing %s\n", emu_data->emu_persistent_image);
-			write_buf_to_file(flashchip_contents,
+			write_buf_to_file(emu_data->flashchip_contents,
 					  emu_data->emu_chip_size,
 					  emu_data->emu_persistent_image);
 			free(emu_data->emu_persistent_image);
 			emu_data->emu_persistent_image = NULL;
 		}
-		free(flashchip_contents);
+		free(emu_data->flashchip_contents);
 	}
 #endif
 	free(data);
@@ -968,8 +968,8 @@ int dummy_init(void)
 	}
 	free(tmp);
 
-	flashchip_contents = malloc(data->emu_chip_size);
-	if (!flashchip_contents) {
+	data->flashchip_contents = malloc(data->emu_chip_size);
+	if (!data->flashchip_contents) {
 		msg_perr("Out of memory!\n");
 		return 1;
 	}
@@ -993,7 +993,7 @@ int dummy_init(void)
 
 	msg_pdbg("Filling fake flash chip with 0x%02x, size %i\n",
 			data->erase_to_zero ? 0x00 : 0xff, data->emu_chip_size);
-	memset(flashchip_contents, data->erase_to_zero ? 0x00 : 0xff, data->emu_chip_size);
+	memset(data->flashchip_contents, data->erase_to_zero ? 0x00 : 0xff, data->emu_chip_size);
 
 	/* Will be freed by shutdown function if necessary. */
 	data->emu_persistent_image = extract_programmer_param("image");
@@ -1009,10 +1009,10 @@ int dummy_init(void)
 		if ((uintmax_t)image_stat.st_size == data->emu_chip_size) {
 			msg_pdbg("matches.\n");
 			msg_pdbg("Reading %s\n", data->emu_persistent_image);
-			if (read_buf_from_file(flashchip_contents, data->emu_chip_size,
+			if (read_buf_from_file(data->flashchip_contents, data->emu_chip_size,
 					   data->emu_persistent_image)) {
 				msg_perr("Unable to read %s\n", data->emu_persistent_image);
-				free(flashchip_contents);
+				free(data->flashchip_contents);
 				return 1;
 			}
 		} else {
@@ -1023,7 +1023,7 @@ int dummy_init(void)
 
 dummy_init_out:
 	if (register_shutdown(dummy_shutdown, data)) {
-		free(flashchip_contents);
+		free(data->flashchip_contents);
 		free(data);
 		return 1;
 	}
