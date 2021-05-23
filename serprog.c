@@ -635,33 +635,30 @@ int serprog_init(void)
 		return 1;
 	}
 
-	if (register_shutdown(serprog_shutdown, NULL))
-		return 1;
-
 	msg_pdbg(MSGHEADER "connected - attempting to synchronize\n");
 
 	sp_check_avail_automatic = 0;
 
 	if (sp_synchronize())
-		return 1;
+		goto init_err_cleanup_exit;
 
 	msg_pdbg(MSGHEADER "Synchronized\n");
 
 	if (sp_docommand(S_CMD_Q_IFACE, 0, NULL, 2, &iface)) {
 		msg_perr("Error: NAK to query interface version\n");
-		return 1;
+		goto init_err_cleanup_exit;
 	}
 
 	if (iface != 1) {
 		msg_perr("Error: Unknown interface version: %d\n", iface);
-		return 1;
+		goto init_err_cleanup_exit;
 	}
 
 	msg_pdbg(MSGHEADER "Interface version ok.\n");
 
 	if (sp_docommand(S_CMD_Q_CMDMAP, 0, NULL, 32, sp_cmdmap)) {
 		msg_perr("Error: query command map not supported\n");
-		return 1;
+		goto init_err_cleanup_exit;
 	}
 
 	sp_check_avail_automatic = 1;
@@ -688,10 +685,10 @@ int serprog_init(void)
 		if (sp_check_commandavail(S_CMD_O_SPIOP) == 0) {
 			msg_perr("Error: SPI operation not supported while the "
 				 "bustype is SPI\n");
-			return 1;
+			goto init_err_cleanup_exit;
 		}
 		if (sp_docommand(S_CMD_S_BUSTYPE, 1, &bt, 0, NULL))
-			return 1;
+			goto init_err_cleanup_exit;
 		/* Success of any of these commands is optional. We don't need
 		   the programmer to tell us its limits, but if it doesn't, we
 		   will assume stuff, so it's in the programmers best interest
@@ -727,7 +724,7 @@ int serprog_init(void)
 			if (errno != 0 || spispeed == f_spi_suffix) {
 				msg_perr("Error: Could not convert 'spispeed'.\n");
 				free(spispeed);
-				return 1;
+				goto init_err_cleanup_exit;
 			}
 			if (strlen(f_spi_suffix) == 1) {
 				if (!strcasecmp(f_spi_suffix, "M"))
@@ -737,12 +734,12 @@ int serprog_init(void)
 				else {
 					msg_perr("Error: Garbage following 'spispeed' value.\n");
 					free(spispeed);
-					return 1;
+					goto init_err_cleanup_exit;
 				}
 			} else if (strlen(f_spi_suffix) > 1) {
 				msg_perr("Error: Garbage following 'spispeed' value.\n");
 				free(spispeed);
-				return 1;
+				goto init_err_cleanup_exit;
 			}
 
 			buf[0] = (f_spi_req >> (0 * 8)) & 0xFF;
@@ -765,38 +762,38 @@ int serprog_init(void)
 		free(spispeed);
 		bt = serprog_buses_supported;
 		if (sp_docommand(S_CMD_S_BUSTYPE, 1, &bt, 0, NULL))
-			return 1;
+			goto init_err_cleanup_exit;
 	}
 
 	if (serprog_buses_supported & BUS_NONSPI) {
 		if (sp_check_commandavail(S_CMD_O_INIT) == 0) {
 			msg_perr("Error: Initialize operation buffer "
 				 "not supported\n");
-			return 1;
+			goto init_err_cleanup_exit;
 		}
 
 		if (sp_check_commandavail(S_CMD_O_DELAY) == 0) {
 			msg_perr("Error: Write to opbuf: "
 				 "delay not supported\n");
-			return 1;
+			goto init_err_cleanup_exit;
 		}
 
 		/* S_CMD_O_EXEC availability checked later. */
 
 		if (sp_check_commandavail(S_CMD_R_BYTE) == 0) {
 			msg_perr("Error: Single byte read not supported\n");
-			return 1;
+			goto init_err_cleanup_exit;
 		}
 		/* This could be translated to single byte reads (if missing),
 		 * but now we don't support that. */
 		if (sp_check_commandavail(S_CMD_R_NBYTES) == 0) {
 			msg_perr("Error: Read n bytes not supported\n");
-			return 1;
+			goto init_err_cleanup_exit;
 		}
 		if (sp_check_commandavail(S_CMD_O_WRITEB) == 0) {
 			msg_perr("Error: Write to opbuf: "
 				 "write byte not supported\n");
-			return 1;
+			goto init_err_cleanup_exit;
 		}
 
 		if (sp_docommand(S_CMD_Q_WRNMAXLEN, 0, NULL, 3, rbuf)) {
@@ -815,7 +812,7 @@ int serprog_init(void)
 			if (!sp_write_n_buf) {
 				msg_perr("Error: cannot allocate memory for "
 					 "Write-n buffer\n");
-				return 1;
+				goto init_err_cleanup_exit;
 			}
 			sp_write_n_bytes = 0;
 		}
@@ -853,12 +850,12 @@ int serprog_init(void)
 		if (sp_check_commandavail(S_CMD_O_EXEC) == 0) {
 			msg_perr("Error: Execute operation buffer not "
 				 "supported\n");
-			return 1;
+			goto init_err_cleanup_exit;
 		}
 
 		if (sp_docommand(S_CMD_O_INIT, 0, NULL, 0, NULL)) {
 			msg_perr("Error: NAK to initialize operation buffer\n");
-			return 1;
+			goto init_err_cleanup_exit;
 		}
 
 		if (sp_docommand(S_CMD_Q_OPBUF, 0, NULL, 2,
@@ -873,20 +870,28 @@ int serprog_init(void)
 		uint8_t en = 1;
 		if (sp_docommand(S_CMD_S_PIN_STATE, 1, &en, 0, NULL) != 0) {
 			msg_perr("Error: could not enable output buffers\n");
-			return 1;
+			goto init_err_cleanup_exit;
 		} else
 			msg_pdbg(MSGHEADER "Output drivers enabled\n");
 	} else
 		msg_pdbg(MSGHEADER "Warning: Programmer does not support toggling its output drivers\n");
+
 	sp_prev_was_write = 0;
 	sp_streamed_transmit_ops = 0;
 	sp_streamed_transmit_bytes = 0;
 	sp_opbuf_usage = 0;
+
+	if (register_shutdown(serprog_shutdown, NULL))
+		goto init_err_cleanup_exit;
 	if (serprog_buses_supported & BUS_SPI)
 		register_spi_master(&spi_master_serprog, NULL);
 	if (serprog_buses_supported & BUS_NONSPI)
 		register_par_master(&par_master_serprog, serprog_buses_supported & BUS_NONSPI, NULL);
 	return 0;
+
+init_err_cleanup_exit:
+	serprog_shutdown(NULL);
+	return 1;
 }
 
 void serprog_delay(unsigned int usecs)
