@@ -326,6 +326,7 @@ static int buspirate_spi_init(void)
 	int serialspeed_index = -1;
 	int ret = 0;
 	int pullup = 0;
+	int psu = 0;
 	unsigned char *bp_commbuf;
 	int bp_commbufsize;
 
@@ -374,6 +375,17 @@ static int buspirate_spi_init(void)
 			; // ignore
 		else
 			msg_perr("Invalid pullups state, not using them.\n");
+	}
+	free(tmp);
+
+	tmp = extract_programmer_param("psus");
+	if (tmp) {
+		if (strcasecmp("on", tmp) == 0)
+			psu = 1;
+		else if (strcasecmp("off", tmp) == 0)
+			; // ignore
+		else
+			msg_perr("Invalid psus state, not enabling.\n");
 	}
 	free(tmp);
 
@@ -637,6 +649,10 @@ static int buspirate_spi_init(void)
 	if (pullup == 1) {
 		bp_commbuf[0] |= (1 << 2);
 		msg_pdbg("Enabling pull-up resistors.\n");
+	}
+	if (psu == 1) {
+		bp_commbuf[0] |= (1 << 3);
+		msg_pdbg("Enabling PSUs.\n");
 	}
 	ret = buspirate_sendrecv(bp_commbuf, 1, 1);
 	if (ret) {

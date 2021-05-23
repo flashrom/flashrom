@@ -952,7 +952,21 @@ can be
 More information about the Bus Pirate pull-up resistors and their purpose is available
 .URLB "http://dangerousprototypes.com/docs/Practical_guide_to_Bus_Pirate_pull-up_resistors" \
 "in a guide by dangerousprototypes" .
-Only the external supply voltage (Vpu) is supported as of this writing.
+.sp
+The state of the Bus Pirate power supply pins is controllable through an optional
+.B psus
+parameter. Syntax is
+.sp
+.B "  flashrom -p buspirate_spi:psus=state"
+.sp
+where
+.B state
+can be
+.BR on " or " off .
+This allows the bus pirate to power the ROM chip directly. This may also be used to provide the
+required pullup voltage (when using the
+.B pullups
+option), by connecting the Bus Pirate's Vpu input to the appropriate Vcc pin.
 .SS
 .BR "pickit2_spi " programmer
 .IP
