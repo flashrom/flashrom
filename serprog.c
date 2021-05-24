@@ -564,8 +564,9 @@ int serprog_init(void)
 		if (baud_str == NULL || *baud_str == '\0') {
 			baud = -1;
 			msg_pdbg("No baudrate specified, using the hardware's defaults.\n");
-		} else
+		} else {
 			baud = atoi(baud_str); // FIXME: replace atoi with strtoul
+		}
 		if (strlen(device) > 0) {
 			sp_fd = sp_openserport(device, baud);
 			if (sp_fd == SER_INV_FD) {
@@ -727,11 +728,11 @@ int serprog_init(void)
 				goto init_err_cleanup_exit;
 			}
 			if (strlen(f_spi_suffix) == 1) {
-				if (!strcasecmp(f_spi_suffix, "M"))
+				if (!strcasecmp(f_spi_suffix, "M")) {
 					f_spi_req *= 1000000;
-				else if (!strcasecmp(f_spi_suffix, "k"))
+				} else if (!strcasecmp(f_spi_suffix, "k")) {
 					f_spi_req *= 1000;
-				else {
+				} else {
 					msg_perr("Error: Garbage following 'spispeed' value.\n");
 					free(spispeed);
 					goto init_err_cleanup_exit;
@@ -747,17 +748,18 @@ int serprog_init(void)
 			buf[2] = (f_spi_req >> (2 * 8)) & 0xFF;
 			buf[3] = (f_spi_req >> (3 * 8)) & 0xFF;
 
-			if (sp_check_commandavail(S_CMD_S_SPI_FREQ) == 0)
+			if (sp_check_commandavail(S_CMD_S_SPI_FREQ) == 0) {
 				msg_pwarn(MSGHEADER "Warning: Setting the SPI clock rate is not supported!\n");
-			else if (sp_docommand(S_CMD_S_SPI_FREQ, 4, buf, 4, buf) == 0) {
+			} else if (sp_docommand(S_CMD_S_SPI_FREQ, 4, buf, 4, buf) == 0) {
 				f_spi = buf[0];
 				f_spi |= buf[1] << (1 * 8);
 				f_spi |= buf[2] << (2 * 8);
 				f_spi |= buf[3] << (3 * 8);
 				msg_pdbg(MSGHEADER "Requested to set SPI clock frequency to %u Hz. "
 					 "It was actually set to %u Hz\n", f_spi_req, f_spi);
-			} else
+			} else {
 				msg_pwarn(MSGHEADER "Setting SPI clock rate to %u Hz failed!\n", f_spi_req);
+			}
 		}
 		free(spispeed);
 		bt = serprog_buses_supported;
@@ -871,10 +873,12 @@ int serprog_init(void)
 		if (sp_docommand(S_CMD_S_PIN_STATE, 1, &en, 0, NULL) != 0) {
 			msg_perr("Error: could not enable output buffers\n");
 			goto init_err_cleanup_exit;
-		} else
+		} else {
 			msg_pdbg(MSGHEADER "Output drivers enabled\n");
-	} else
+		}
+	} else {
 		msg_pdbg(MSGHEADER "Warning: Programmer does not support toggling its output drivers\n");
+	}
 
 	sp_prev_was_write = 0;
 	sp_streamed_transmit_ops = 0;
