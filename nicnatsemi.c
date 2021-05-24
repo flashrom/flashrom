@@ -35,9 +35,35 @@ const struct dev_entry nics_natsemi[] = {
 };
 
 static void nicnatsemi_chip_writeb(const struct flashctx *flash, uint8_t val,
-				   chipaddr addr);
+				   chipaddr addr)
+{
+	OUTL((uint32_t)addr & 0x0001FFFF, io_base_addr + BOOT_ROM_ADDR);
+	/*
+	 * The datasheet requires 32 bit accesses to this register, but it seems
+	 * that requirement might only apply if the register is memory mapped.
+	 * Bits 8-31 of this register are apparently don't care, and if this
+	 * register is I/O port mapped, 8 bit accesses to the lowest byte of the
+	 * register seem to work fine. Due to that, we ignore the advice in the
+	 * data sheet.
+	 */
+	OUTB(val, io_base_addr + BOOT_ROM_DATA);
+}
+
 static uint8_t nicnatsemi_chip_readb(const struct flashctx *flash,
-				     const chipaddr addr);
+				     const chipaddr addr)
+{
+	OUTL(((uint32_t)addr & 0x0001FFFF), io_base_addr + BOOT_ROM_ADDR);
+	/*
+	 * The datasheet requires 32 bit accesses to this register, but it seems
+	 * that requirement might only apply if the register is memory mapped.
+	 * Bits 8-31 of this register are apparently don't care, and if this
+	 * register is I/O port mapped, 8 bit accesses to the lowest byte of the
+	 * register seem to work fine. Due to that, we ignore the advice in the
+	 * data sheet.
+	 */
+	return INB(io_base_addr + BOOT_ROM_DATA);
+}
+
 static const struct par_master par_master_nicnatsemi = {
 		.chip_readb		= nicnatsemi_chip_readb,
 		.chip_readw		= fallback_chip_readw,
@@ -74,36 +100,6 @@ int nicnatsemi_init(void)
 	register_par_master(&par_master_nicnatsemi, BUS_PARALLEL, NULL);
 
 	return 0;
-}
-
-static void nicnatsemi_chip_writeb(const struct flashctx *flash, uint8_t val,
-				   chipaddr addr)
-{
-	OUTL((uint32_t)addr & 0x0001FFFF, io_base_addr + BOOT_ROM_ADDR);
-	/*
-	 * The datasheet requires 32 bit accesses to this register, but it seems
-	 * that requirement might only apply if the register is memory mapped.
-	 * Bits 8-31 of this register are apparently don't care, and if this
-	 * register is I/O port mapped, 8 bit accesses to the lowest byte of the
-	 * register seem to work fine. Due to that, we ignore the advice in the
-	 * data sheet.
-	 */
-	OUTB(val, io_base_addr + BOOT_ROM_DATA);
-}
-
-static uint8_t nicnatsemi_chip_readb(const struct flashctx *flash,
-				     const chipaddr addr)
-{
-	OUTL(((uint32_t)addr & 0x0001FFFF), io_base_addr + BOOT_ROM_ADDR);
-	/*
-	 * The datasheet requires 32 bit accesses to this register, but it seems
-	 * that requirement might only apply if the register is memory mapped.
-	 * Bits 8-31 of this register are apparently don't care, and if this
-	 * register is I/O port mapped, 8 bit accesses to the lowest byte of the
-	 * register seem to work fine. Due to that, we ignore the advice in the
-	 * data sheet.
-	 */
-	return INB(io_base_addr + BOOT_ROM_DATA);
 }
 
 #else

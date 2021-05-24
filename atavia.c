@@ -54,19 +54,6 @@ const struct dev_entry ata_via[] = {
 	{0},
 };
 
-static void atavia_chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr);
-static uint8_t atavia_chip_readb(const struct flashctx *flash, const chipaddr addr);
-static const struct par_master lpc_master_atavia = {
-		.chip_readb		= atavia_chip_readb,
-		.chip_readw		= fallback_chip_readw,
-		.chip_readl		= fallback_chip_readl,
-		.chip_readn		= fallback_chip_readn,
-		.chip_writeb		= atavia_chip_writeb,
-		.chip_writew		= fallback_chip_writew,
-		.chip_writel		= fallback_chip_writel,
-		.chip_writen		= fallback_chip_writen,
-};
-
 static void *atavia_offset = NULL;
 static struct pci_dev *dev = NULL;
 
@@ -119,6 +106,43 @@ void *atavia_map(const char *descr, uintptr_t phys_addr, size_t len)
 	return (atavia_offset != 0) ? atavia_offset : (void *)phys_addr;
 }
 
+static void atavia_chip_writeb(const struct flashctx *flash, uint8_t val, const chipaddr addr)
+{
+	msg_pspew("%s: 0x%02x to 0x%*" PRIxPTR ".\n", __func__, val, PRIxPTR_WIDTH, addr);
+	pci_write_long(dev, BROM_ADDR, (addr & ~3));
+	pci_write_long(dev, BROM_DATA, val << BYTE_OFFSET(addr));
+	pci_write_byte(dev, BROM_ACCESS, BROM_TRIGGER | BROM_WRITE | ENABLE_BYTE(addr));
+
+	if (!atavia_ready(dev)) {
+		msg_perr("not ready after write\n");
+	}
+}
+
+static uint8_t atavia_chip_readb(const struct flashctx *flash, const chipaddr addr)
+{
+	pci_write_long(dev, BROM_ADDR, (addr & ~3));
+	pci_write_byte(dev, BROM_ACCESS, BROM_TRIGGER | ENABLE_BYTE(addr));
+
+	if (!atavia_ready(dev)) {
+		msg_perr("not ready after read\n");
+	}
+
+	uint8_t val = (pci_read_long(dev, BROM_DATA) >> BYTE_OFFSET(addr)) & 0xff;
+	msg_pspew("%s: 0x%02x from 0x%*" PRIxPTR ".\n", __func__, val, PRIxPTR_WIDTH, addr);
+	return val;
+}
+
+static const struct par_master lpc_master_atavia = {
+		.chip_readb		= atavia_chip_readb,
+		.chip_readw		= fallback_chip_readw,
+		.chip_readl		= fallback_chip_readl,
+		.chip_readn		= fallback_chip_readn,
+		.chip_writeb		= atavia_chip_writeb,
+		.chip_writew		= fallback_chip_writew,
+		.chip_writel		= fallback_chip_writel,
+		.chip_writen		= fallback_chip_writen,
+};
+
 int atavia_init(void)
 {
 	char *arg = extract_programmer_param("offset");
@@ -163,30 +187,4 @@ int atavia_init(void)
 	register_par_master(&lpc_master_atavia, BUS_LPC, NULL);
 
 	return 0;
-}
-
-static void atavia_chip_writeb(const struct flashctx *flash, uint8_t val, const chipaddr addr)
-{
-	msg_pspew("%s: 0x%02x to 0x%*" PRIxPTR ".\n", __func__, val, PRIxPTR_WIDTH, addr);
-	pci_write_long(dev, BROM_ADDR, (addr & ~3));
-	pci_write_long(dev, BROM_DATA, val << BYTE_OFFSET(addr));
-	pci_write_byte(dev, BROM_ACCESS, BROM_TRIGGER | BROM_WRITE | ENABLE_BYTE(addr));
-
-	if (!atavia_ready(dev)) {
-		msg_perr("not ready after write\n");
-	}
-}
-
-static uint8_t atavia_chip_readb(const struct flashctx *flash, const chipaddr addr)
-{
-	pci_write_long(dev, BROM_ADDR, (addr & ~3));
-	pci_write_byte(dev, BROM_ACCESS, BROM_TRIGGER | ENABLE_BYTE(addr));
-
-	if (!atavia_ready(dev)) {
-		msg_perr("not ready after read\n");
-	}
-
-	uint8_t val = (pci_read_long(dev, BROM_DATA) >> BYTE_OFFSET(addr)) & 0xff;
-	msg_pspew("%s: 0x%02x from 0x%*" PRIxPTR ".\n", __func__, val, PRIxPTR_WIDTH, addr);
-	return val;
 }

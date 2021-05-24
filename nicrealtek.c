@@ -35,8 +35,44 @@ const struct dev_entry nics_realtek[] = {
 	{0},
 };
 
-static void nicrealtek_chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr);
-static uint8_t nicrealtek_chip_readb(const struct flashctx *flash, const chipaddr addr);
+static void nicrealtek_chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr)
+{
+	/* Output addr and data, set WE to 0, set OE to 1, set CS to 0,
+	 * enable software access.
+	 */
+	OUTL(((uint32_t)addr & 0x01FFFF) | 0x0A0000 | (val << 24),
+	     io_base_addr + bios_rom_addr);
+	/* Output addr and data, set WE to 1, set OE to 1, set CS to 1,
+	 * enable software access.
+	 */
+	OUTL(((uint32_t)addr & 0x01FFFF) | 0x1E0000 | (val << 24),
+	     io_base_addr + bios_rom_addr);
+}
+
+static uint8_t nicrealtek_chip_readb(const struct flashctx *flash, const chipaddr addr)
+{
+	uint8_t val;
+
+	/* FIXME: Can we skip reading the old data and simply use 0? */
+	/* Read old data. */
+	val = INB(io_base_addr + bios_rom_data);
+	/* Output new addr and old data, set WE to 1, set OE to 0, set CS to 0,
+	 * enable software access.
+	 */
+	OUTL(((uint32_t)addr & 0x01FFFF) | 0x060000 | (val << 24),
+	     io_base_addr + bios_rom_addr);
+
+	/* Read new data. */
+	val = INB(io_base_addr + bios_rom_data);
+	/* Output addr and new data, set WE to 1, set OE to 1, set CS to 1,
+	 * enable software access.
+	 */
+	OUTL(((uint32_t)addr & 0x01FFFF) | 0x1E0000 | (val << 24),
+	     io_base_addr + bios_rom_addr);
+
+	return val;
+}
+
 static const struct par_master par_master_nicrealtek = {
 		.chip_readb		= nicrealtek_chip_readb,
 		.chip_readw		= fallback_chip_readw,
@@ -89,44 +125,6 @@ int nicrealtek_init(void)
 	register_par_master(&par_master_nicrealtek, BUS_PARALLEL, NULL);
 
 	return 0;
-}
-
-static void nicrealtek_chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr)
-{
-	/* Output addr and data, set WE to 0, set OE to 1, set CS to 0,
-	 * enable software access.
-	 */
-	OUTL(((uint32_t)addr & 0x01FFFF) | 0x0A0000 | (val << 24),
-	     io_base_addr + bios_rom_addr);
-	/* Output addr and data, set WE to 1, set OE to 1, set CS to 1,
-	 * enable software access.
-	 */
-	OUTL(((uint32_t)addr & 0x01FFFF) | 0x1E0000 | (val << 24),
-	     io_base_addr + bios_rom_addr);
-}
-
-static uint8_t nicrealtek_chip_readb(const struct flashctx *flash, const chipaddr addr)
-{
-	uint8_t val;
-
-	/* FIXME: Can we skip reading the old data and simply use 0? */
-	/* Read old data. */
-	val = INB(io_base_addr + bios_rom_data);
-	/* Output new addr and old data, set WE to 1, set OE to 0, set CS to 0,
-	 * enable software access.
-	 */
-	OUTL(((uint32_t)addr & 0x01FFFF) | 0x060000 | (val << 24),
-	     io_base_addr + bios_rom_addr);
-
-	/* Read new data. */
-	val = INB(io_base_addr + bios_rom_data);
-	/* Output addr and new data, set WE to 1, set OE to 1, set CS to 1,
-	 * enable software access.
-	 */
-	OUTL(((uint32_t)addr & 0x01FFFF) | 0x1E0000 | (val << 24),
-	     io_base_addr + bios_rom_addr);
-
-	return val;
 }
 
 #else

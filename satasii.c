@@ -37,19 +37,6 @@ const struct dev_entry satas_sii[] = {
 	{0},
 };
 
-static void satasii_chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr);
-static uint8_t satasii_chip_readb(const struct flashctx *flash, const chipaddr addr);
-static const struct par_master par_master_satasii = {
-		.chip_readb		= satasii_chip_readb,
-		.chip_readw		= fallback_chip_readw,
-		.chip_readl		= fallback_chip_readl,
-		.chip_readn		= fallback_chip_readn,
-		.chip_writeb		= satasii_chip_writeb,
-		.chip_writew		= fallback_chip_writew,
-		.chip_writel		= fallback_chip_writel,
-		.chip_writen		= fallback_chip_writen,
-};
-
 static uint32_t satasii_wait_done(void)
 {
 	uint32_t ctrl_reg;
@@ -63,6 +50,48 @@ static uint32_t satasii_wait_done(void)
 	}
 	return ctrl_reg;
 }
+
+static void satasii_chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr)
+{
+	uint32_t data_reg;
+	uint32_t ctrl_reg = satasii_wait_done();
+
+	/* Mask out unused/reserved bits, set writes and start transaction. */
+	ctrl_reg &= 0xfcf80000;
+	ctrl_reg |= (1 << 25) | (0 << 24) | ((uint32_t) addr & 0x7ffff);
+
+	data_reg = (pci_mmio_readl((sii_bar + 4)) & ~0xff) | val;
+	pci_mmio_writel(data_reg, (sii_bar + 4));
+	pci_mmio_writel(ctrl_reg, sii_bar);
+
+	satasii_wait_done();
+}
+
+static uint8_t satasii_chip_readb(const struct flashctx *flash, const chipaddr addr)
+{
+	uint32_t ctrl_reg = satasii_wait_done();
+
+	/* Mask out unused/reserved bits, set reads and start transaction. */
+	ctrl_reg &= 0xfcf80000;
+	ctrl_reg |= (1 << 25) | (1 << 24) | ((uint32_t) addr & 0x7ffff);
+
+	pci_mmio_writel(ctrl_reg, sii_bar);
+
+	satasii_wait_done();
+
+	return (pci_mmio_readl(sii_bar + 4)) & 0xff;
+}
+
+static const struct par_master par_master_satasii = {
+		.chip_readb		= satasii_chip_readb,
+		.chip_readw		= fallback_chip_readw,
+		.chip_readl		= fallback_chip_readl,
+		.chip_readn		= fallback_chip_readn,
+		.chip_writeb		= satasii_chip_writeb,
+		.chip_writew		= fallback_chip_writew,
+		.chip_writel		= fallback_chip_writel,
+		.chip_writen		= fallback_chip_writen,
+};
 
 int satasii_init(void)
 {
@@ -103,35 +132,4 @@ int satasii_init(void)
 	register_par_master(&par_master_satasii, BUS_PARALLEL, NULL);
 
 	return 0;
-}
-
-static void satasii_chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr)
-{
-	uint32_t data_reg;
-	uint32_t ctrl_reg = satasii_wait_done();
-
-	/* Mask out unused/reserved bits, set writes and start transaction. */
-	ctrl_reg &= 0xfcf80000;
-	ctrl_reg |= (1 << 25) | (0 << 24) | ((uint32_t) addr & 0x7ffff);
-
-	data_reg = (pci_mmio_readl((sii_bar + 4)) & ~0xff) | val;
-	pci_mmio_writel(data_reg, (sii_bar + 4));
-	pci_mmio_writel(ctrl_reg, sii_bar);
-
-	satasii_wait_done();
-}
-
-static uint8_t satasii_chip_readb(const struct flashctx *flash, const chipaddr addr)
-{
-	uint32_t ctrl_reg = satasii_wait_done();
-
-	/* Mask out unused/reserved bits, set reads and start transaction. */
-	ctrl_reg &= 0xfcf80000;
-	ctrl_reg |= (1 << 25) | (1 << 24) | ((uint32_t) addr & 0x7ffff);
-
-	pci_mmio_writel(ctrl_reg, sii_bar);
-
-	satasii_wait_done();
-
-	return (pci_mmio_readl(sii_bar + 4)) & 0xff;
 }

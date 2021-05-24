@@ -40,9 +40,19 @@ const struct dev_entry ata_hpt[] = {
 };
 
 static void atahpt_chip_writeb(const struct flashctx *flash, uint8_t val,
-			       chipaddr addr);
+			       chipaddr addr)
+{
+	OUTL((uint32_t)addr, io_base_addr + BIOS_ROM_ADDR);
+	OUTB(val, io_base_addr + BIOS_ROM_DATA);
+}
+
 static uint8_t atahpt_chip_readb(const struct flashctx *flash,
-				 const chipaddr addr);
+				 const chipaddr addr)
+{
+	OUTL((uint32_t)addr, io_base_addr + BIOS_ROM_ADDR);
+	return INB(io_base_addr + BIOS_ROM_DATA);
+}
+
 static const struct par_master par_master_atahpt = {
 		.chip_readb		= atahpt_chip_readb,
 		.chip_readw		= fallback_chip_readw,
@@ -78,20 +88,6 @@ int atahpt_init(void)
 	register_par_master(&par_master_atahpt, BUS_PARALLEL, NULL);
 
 	return 0;
-}
-
-static void atahpt_chip_writeb(const struct flashctx *flash, uint8_t val,
-			       chipaddr addr)
-{
-	OUTL((uint32_t)addr, io_base_addr + BIOS_ROM_ADDR);
-	OUTB(val, io_base_addr + BIOS_ROM_DATA);
-}
-
-static uint8_t atahpt_chip_readb(const struct flashctx *flash,
-				 const chipaddr addr)
-{
-	OUTL((uint32_t)addr, io_base_addr + BIOS_ROM_ADDR);
-	return INB(io_base_addr + BIOS_ROM_DATA);
 }
 
 #else

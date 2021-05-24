@@ -54,9 +54,19 @@ const struct dev_entry nics_3com[] = {
 };
 
 static void nic3com_chip_writeb(const struct flashctx *flash, uint8_t val,
-				chipaddr addr);
+				chipaddr addr)
+{
+	OUTL((uint32_t)addr, io_base_addr + BIOS_ROM_ADDR);
+	OUTB(val, io_base_addr + BIOS_ROM_DATA);
+}
+
 static uint8_t nic3com_chip_readb(const struct flashctx *flash,
-				  const chipaddr addr);
+				  const chipaddr addr)
+{
+	OUTL((uint32_t)addr, io_base_addr + BIOS_ROM_ADDR);
+	return INB(io_base_addr + BIOS_ROM_DATA);
+}
+
 static const struct par_master par_master_nic3com = {
 		.chip_readb		= nic3com_chip_readb,
 		.chip_readw		= fallback_chip_readw,
@@ -123,20 +133,6 @@ int nic3com_init(void)
 	register_par_master(&par_master_nic3com, BUS_PARALLEL, NULL);
 
 	return 0;
-}
-
-static void nic3com_chip_writeb(const struct flashctx *flash, uint8_t val,
-				chipaddr addr)
-{
-	OUTL((uint32_t)addr, io_base_addr + BIOS_ROM_ADDR);
-	OUTB(val, io_base_addr + BIOS_ROM_DATA);
-}
-
-static uint8_t nic3com_chip_readb(const struct flashctx *flash,
-				  const chipaddr addr)
-{
-	OUTL((uint32_t)addr, io_base_addr + BIOS_ROM_ADDR);
-	return INB(io_base_addr + BIOS_ROM_DATA);
 }
 
 #else
