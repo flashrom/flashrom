@@ -385,13 +385,6 @@ static int buspirate_spi_init(void)
 		return ret;
 	}
 
-	if (register_shutdown(buspirate_spi_shutdown, NULL) != 0) {
-		bp_commbufsize = 0;
-		free(bp_commbuf);
-		bp_commbuf = NULL;
-		return 1;
-	}
-
 	/* This is the brute force version, but it should work.
 	 * It is likely to fail if a previous flashrom run was aborted during a write with the new SPI commands
 	 * in firmware v5.5 because that firmware may wait for up to 4096 bytes of input before responding to
@@ -403,7 +396,7 @@ static int buspirate_spi_init(void)
 		/* Send the command, don't read the response. */
 		ret = buspirate_sendrecv(bp_commbuf, 1, 0);
 		if (ret)
-			return ret;
+			goto init_err_cleanup_exit;
 		/* The old way to handle responses from a Bus Pirate already in BBIO mode was to flush any
 		 * response which came in over serial. Unfortunately that does not work reliably on Linux
 		 * with FTDI USB-serial.
@@ -416,19 +409,19 @@ static int buspirate_spi_init(void)
 	}
 	/* We know that 20 commands of \0 should elicit at least one BBIO1 response. */
 	if ((ret = buspirate_wait_for_string(bp_commbuf, "BBIO")))
-		return ret;
+		goto init_err_cleanup_exit;
 
 	/* Reset the Bus Pirate. */
 	bp_commbuf[0] = 0x0f;
 	/* Send the command, don't read the response. */
 	if ((ret = buspirate_sendrecv(bp_commbuf, 1, 0)))
-		return ret;
+		goto init_err_cleanup_exit;
 	if ((ret = buspirate_wait_for_string(bp_commbuf, "irate ")))
-		return ret;
+		goto init_err_cleanup_exit;
 	/* Read the hardware version string. Last byte of the buffer is reserved for \0. */
 	for (i = 0; i < DEFAULT_BUFSIZE - 1; i++) {
 		if ((ret = buspirate_sendrecv(bp_commbuf + i, 0, 1)))
-			return ret;
+			goto init_err_cleanup_exit;
 		if (strchr("\r\n\t ", bp_commbuf[i]))
 			break;
 	}
@@ -449,11 +442,11 @@ static int buspirate_spi_init(void)
 	msg_pdbg("\n");
 
 	if ((ret = buspirate_wait_for_string(bp_commbuf, "irmware ")))
-		return ret;
+		goto init_err_cleanup_exit;
 	/* Read the firmware version string. Last byte of the buffer is reserved for \0. */
 	for (i = 0; i < DEFAULT_BUFSIZE - 1; i++) {
 		if ((ret = buspirate_sendrecv(bp_commbuf + i, 0, 1)))
-			return ret;
+			goto init_err_cleanup_exit;
 		if (strchr("\r\n\t ", bp_commbuf[i]))
 			break;
 	}
@@ -474,21 +467,24 @@ static int buspirate_spi_init(void)
 	msg_pdbg("\n");
 
 	if ((ret = buspirate_wait_for_string(bp_commbuf, "HiZ>")))
-		return ret;
+		goto init_err_cleanup_exit;
 
 	/* Tell the user about missing SPI binary mode in firmware 2.3 and older. */
 	if (BP_FWVERSION(fw_version_major, fw_version_minor) < BP_FWVERSION(2, 4)) {
 		msg_pinfo("Bus Pirate firmware 2.3 and older does not support binary SPI access.\n");
 		msg_pinfo("Please upgrade to the latest firmware (at least 2.4).\n");
-		return SPI_PROGRAMMER_ERROR;
+		ret = SPI_PROGRAMMER_ERROR;
+		goto init_err_cleanup_exit;
 	}
 
 	/* Use fast SPI mode in firmware 5.5 and newer. */
 	if (BP_FWVERSION(fw_version_major, fw_version_minor) >= BP_FWVERSION(5, 5)) {
 		msg_pdbg("Using SPI command set v2.\n");
 		/* Sensible default buffer size. */
-		if (buspirate_commbuf_grow(260 + 5))
-			return ERROR_OOM;
+		if (buspirate_commbuf_grow(260 + 5)) {
+			ret = ERROR_OOM;
+			goto init_err_cleanup_exit;
+		}
 		spi_master_buspirate.max_data_read = 2048;
 		spi_master_buspirate.max_data_write = 256;
 		spi_master_buspirate.command = buspirate_spi_send_command_v2;
@@ -497,8 +493,10 @@ static int buspirate_spi_init(void)
 		msg_pinfo("Reading/writing a flash chip may take hours.\n");
 		msg_pinfo("It is recommended to upgrade to firmware 5.5 or newer.\n");
 		/* Sensible default buffer size. */
-		if (buspirate_commbuf_grow(16 + 3))
-			return ERROR_OOM;
+		if (buspirate_commbuf_grow(16 + 3)) {
+			ret = ERROR_OOM;
+			goto init_err_cleanup_exit;
+		}
 		spi_master_buspirate.max_data_read = 12;
 		spi_master_buspirate.max_data_write = 12;
 		spi_master_buspirate.command = buspirate_spi_send_command_v1;
@@ -538,37 +536,37 @@ static int buspirate_spi_init(void)
 			/* Enter baud rate configuration mode */
 			cnt = snprintf((char *)bp_commbuf, DEFAULT_BUFSIZE, "b\n");
 			if ((ret = buspirate_sendrecv(bp_commbuf, cnt, 0)))
-				return ret;
+				goto init_err_cleanup_exit;
 			if ((ret = buspirate_wait_for_string(bp_commbuf, ">")))
-				return ret;
+				goto init_err_cleanup_exit;
 
 			/* Enter manual clock divisor entry mode */
 			cnt = snprintf((char *)bp_commbuf, DEFAULT_BUFSIZE, "10\n");
 			if ((ret = buspirate_sendrecv(bp_commbuf, cnt, 0)))
-				return ret;
+				goto init_err_cleanup_exit;
 			if ((ret = buspirate_wait_for_string(bp_commbuf, ">")))
-				return ret;
+				goto init_err_cleanup_exit;
 
 			/* Set the clock divisor to the value calculated from the user's input */
 			cnt = snprintf((char *)bp_commbuf, DEFAULT_BUFSIZE, "%d\n",
 				BP_DIVISOR(serialspeeds[serialspeed_index].speed));
 
 			if ((ret = buspirate_sendrecv(bp_commbuf, cnt, 0)))
-				return ret;
+				goto init_err_cleanup_exit;
 			sleep(1);
 
 			/* Reconfigure the host's serial baud rate to the new value */
 			if ((ret = serialport_config(sp_fd, serialspeeds[serialspeed_index].speed))) {
 				msg_perr("Unable to configure system baud rate to specified value.");
-				return ret;
+				goto init_err_cleanup_exit;
 			}
 
 			/* Return to the main prompt */
 			bp_commbuf[0] = ' ';
 			if ((ret = buspirate_sendrecv(bp_commbuf, 1, 0)))
-				return ret;
+				goto init_err_cleanup_exit;
 			if ((ret = buspirate_wait_for_string(bp_commbuf, "HiZ>")))
-				return ret;
+				goto init_err_cleanup_exit;
 
 			msg_pdbg("Serial speed is %d baud\n", serialspeeds[serialspeed_index].speed);
 		}
@@ -581,30 +579,34 @@ static int buspirate_spi_init(void)
 	for (i = 0; i < 20; i++) {
 		bp_commbuf[0] = 0x00;
 		if ((ret = buspirate_sendrecv(bp_commbuf, 1, 0)))
-			return ret;
+			goto init_err_cleanup_exit;
 	}
 	if ((ret = buspirate_wait_for_string(bp_commbuf, "BBIO")))
-		return ret;
+		goto init_err_cleanup_exit;
 	if ((ret = buspirate_sendrecv(bp_commbuf, 0, 1)))
-		return ret;
+		goto init_err_cleanup_exit;
 	msg_pdbg("Raw bitbang mode version %c\n", bp_commbuf[0]);
 	if (bp_commbuf[0] != '1') {
 		msg_perr("Can't handle raw bitbang mode version %c!\n", bp_commbuf[0]);
-		return 1;
+		ret = 1;
+		goto init_err_cleanup_exit;
 	}
 	/* Enter raw SPI mode */
 	bp_commbuf[0] = 0x01;
 	ret = buspirate_sendrecv(bp_commbuf, 1, 0);
-	if (ret)
-		return 1;
+	if (ret) {
+		ret = 1;
+		goto init_err_cleanup_exit;
+	}
 	if ((ret = buspirate_wait_for_string(bp_commbuf, "SPI")))
-		return ret;
+		goto init_err_cleanup_exit;
 	if ((ret = buspirate_sendrecv(bp_commbuf, 0, 1)))
-		return ret;
+		goto init_err_cleanup_exit;
 	msg_pdbg("Raw SPI mode version %c\n", bp_commbuf[0]);
 	if (bp_commbuf[0] != '1') {
 		msg_perr("Can't handle raw SPI mode version %c!\n", bp_commbuf[0]);
-		return 1;
+		ret = 1;
+		goto init_err_cleanup_exit;
 	}
 
 	/* Initial setup (SPI peripherals config): Enable power, CS high, AUX */
@@ -614,21 +616,27 @@ static int buspirate_spi_init(void)
 		msg_pdbg("Enabling pull-up resistors.\n");
 	}
 	ret = buspirate_sendrecv(bp_commbuf, 1, 1);
-	if (ret)
-		return 1;
+	if (ret) {
+		ret = 1;
+		goto init_err_cleanup_exit;
+	}
 	if (bp_commbuf[0] != 0x01) {
 		msg_perr("Protocol error while setting power/CS/AUX(/Pull-up resistors)!\n");
-		return 1;
+		ret = 1;
+		goto init_err_cleanup_exit;
 	}
 
 	/* Set SPI speed */
 	bp_commbuf[0] = 0x60 | spispeed;
 	ret = buspirate_sendrecv(bp_commbuf, 1, 1);
-	if (ret)
-		return 1;
+	if (ret) {
+		ret = 1;
+		goto init_err_cleanup_exit;
+	}
 	if (bp_commbuf[0] != 0x01) {
 		msg_perr("Protocol error while setting SPI speed!\n");
-		return 1;
+		ret = 1;
+		goto init_err_cleanup_exit;
 	}
 
 	/* Set SPI config: output type, idle, clock edge, sample */
@@ -638,26 +646,40 @@ static int buspirate_spi_init(void)
 		msg_pdbg("Pull-ups enabled, so using HiZ pin output! (Open-Drain mode)\n");
 	}
 	ret = buspirate_sendrecv(bp_commbuf, 1, 1);
-	if (ret)
-		return 1;
+	if (ret) {
+		ret = 1;
+		goto init_err_cleanup_exit;
+	}
 	if (bp_commbuf[0] != 0x01) {
 		msg_perr("Protocol error while setting SPI config!\n");
-		return 1;
+		ret = 1;
+		goto init_err_cleanup_exit;
 	}
 
 	/* De-assert CS# */
 	bp_commbuf[0] = 0x03;
 	ret = buspirate_sendrecv(bp_commbuf, 1, 1);
-	if (ret)
-		return 1;
+	if (ret) {
+		ret = 1;
+		goto init_err_cleanup_exit;
+	}
 	if (bp_commbuf[0] != 0x01) {
 		msg_perr("Protocol error while raising CS#!\n");
-		return 1;
+		ret = 1;
+		goto init_err_cleanup_exit;
 	}
 
+	if (register_shutdown(buspirate_spi_shutdown, NULL) != 0) {
+		ret = 1;
+		goto init_err_cleanup_exit;
+	}
 	register_spi_master(&spi_master_buspirate, NULL);
 
 	return 0;
+
+init_err_cleanup_exit:
+	buspirate_spi_shutdown(NULL);
+	return ret;
 }
 
 const struct programmer_entry programmer_buspirate_spi = {
