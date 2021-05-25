@@ -962,12 +962,13 @@ int dummy_init(void)
 	if (status) {
 		errno = 0;
 		data->emu_status = strtoul(status, &endptr, 0);
-		free(status);
 		if (errno != 0 || status == endptr) {
+			free(status);
 			msg_perr("Error: initial status register specified, "
 				 "but the value could not be converted.\n");
 			return 1;
 		}
+		free(status);
 		msg_pdbg("Initial status register is set to 0x%02x.\n",
 			 data->emu_status);
 	}
