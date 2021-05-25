@@ -1597,7 +1597,7 @@ loop_end:
 	data->in_ep = in_endpoint;
 	data->out_ep = out_endpoint;
 
-	spi_config->data = data;
+	spi_config->data = data; /* data is needed to configure protocol below */
 	/*
 	 * The SPI master needs to be configured based on the device connected.
 	 * Using the device protocol interrogation, we will set the limits on
@@ -1614,7 +1614,7 @@ loop_end:
 		return SPI_GENERIC_ERROR;
 	}
 
-	register_spi_master(spi_config, NULL);
+	register_spi_master(spi_config, data);
 	register_shutdown(raiden_debug_spi_shutdown, spi_config);
 
 	return 0;

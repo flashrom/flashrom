@@ -397,7 +397,7 @@ mec1308_spi_send_command_exit:
 	return rc;
 }
 
-static struct spi_master spi_master_mec1308 = {
+static const struct spi_master spi_master_mec1308 = {
 	.max_data_read = 256,	/* FIXME: should be MAX_DATA_READ_UNLIMITED? */
 	.max_data_write = 256,	/* FIXME: should be MAX_DATA_WRITE_UNLIMITED? */
 	.command = mec1308_spi_send_command,
@@ -505,11 +505,10 @@ int mec1308_init(void)
 		goto init_err_cleanup_exit;
 
 	internal_buses_supported |= BUS_LPC;	/* for LPC <--> SPI bridging */
-	spi_master_mec1308.data = ctx_data;
 
 	if (register_shutdown(mec1308_shutdown, ctx_data))
 		goto init_err_cleanup_exit;
-	register_spi_master(&spi_master_mec1308, NULL);
+	register_spi_master(&spi_master_mec1308, ctx_data);
 	msg_pdbg("%s(): successfully initialized mec1308\n", __func__);
 
 	return 0;

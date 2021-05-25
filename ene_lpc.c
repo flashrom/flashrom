@@ -504,7 +504,7 @@ exit:
 	return rv;
 }
 
-static struct spi_master spi_master_ene = {
+static const struct spi_master spi_master_ene = {
 	.max_data_read = 256,
 	.max_data_write = 256,
 	.command = ene_spi_send_command,
@@ -568,11 +568,10 @@ int ene_lpc_init()
 	ene_enter_flash_mode(ctx_data);
 
 	internal_buses_supported |= BUS_LPC;
-	spi_master_ene.data = ctx_data;
 
 	if (register_shutdown(ene_leave_flash_mode, ctx_data))
 		goto init_err_cleanup_exit;
-	register_spi_master(&spi_master_ene, NULL);
+	register_spi_master(&spi_master_ene, ctx_data);
 	msg_pdbg("%s: successfully initialized ene\n", __func__);
 
 	return 0;
