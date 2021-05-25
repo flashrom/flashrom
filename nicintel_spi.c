@@ -107,7 +107,7 @@ const struct dev_entry nics_intel_spi[] = {
 	{0},
 };
 
-static void nicintel_request_spibus(void)
+static void nicintel_request_spibus(void *spi_data)
 {
 	uint32_t tmp;
 
@@ -119,7 +119,7 @@ static void nicintel_request_spibus(void)
 	while (!(pci_mmio_readl(nicintel_spibar + FLA) & BIT(FL_GNT))) ;
 }
 
-static void nicintel_release_spibus(void)
+static void nicintel_release_spibus(void *spi_data)
 {
 	uint32_t tmp;
 
@@ -128,7 +128,7 @@ static void nicintel_release_spibus(void)
 	pci_mmio_writel(tmp, nicintel_spibar + FLA);
 }
 
-static void nicintel_bitbang_set_cs(int val)
+static void nicintel_bitbang_set_cs(int val, void *spi_data)
 {
 	uint32_t tmp;
 
@@ -138,7 +138,7 @@ static void nicintel_bitbang_set_cs(int val)
 	pci_mmio_writel(tmp,  nicintel_spibar + FLA);
 }
 
-static void nicintel_bitbang_set_sck(int val)
+static void nicintel_bitbang_set_sck(int val, void *spi_data)
 {
 	uint32_t tmp;
 
@@ -148,7 +148,7 @@ static void nicintel_bitbang_set_sck(int val)
 	pci_mmio_writel(tmp, nicintel_spibar + FLA);
 }
 
-static void nicintel_bitbang_set_mosi(int val)
+static void nicintel_bitbang_set_mosi(int val, void *spi_data)
 {
 	uint32_t tmp;
 
@@ -158,7 +158,7 @@ static void nicintel_bitbang_set_mosi(int val)
 	pci_mmio_writel(tmp, nicintel_spibar + FLA);
 }
 
-static int nicintel_bitbang_get_miso(void)
+static int nicintel_bitbang_get_miso(void *spi_data)
 {
 	uint32_t tmp;
 

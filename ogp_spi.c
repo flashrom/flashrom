@@ -49,32 +49,32 @@ const struct dev_entry ogp_spi[] = {
 	{0},
 };
 
-static void ogp_request_spibus(void)
+static void ogp_request_spibus(void *spi_data)
 {
 	pci_mmio_writel(1, ogp_spibar + ogp_reg_sel);
 }
 
-static void ogp_release_spibus(void)
+static void ogp_release_spibus(void *spi_data)
 {
 	pci_mmio_writel(0, ogp_spibar + ogp_reg_sel);
 }
 
-static void ogp_bitbang_set_cs(int val)
+static void ogp_bitbang_set_cs(int val, void *spi_data)
 {
 	pci_mmio_writel(val, ogp_spibar + ogp_reg__ce);
 }
 
-static void ogp_bitbang_set_sck(int val)
+static void ogp_bitbang_set_sck(int val, void *spi_data)
 {
 	pci_mmio_writel(val, ogp_spibar + ogp_reg_sck);
 }
 
-static void ogp_bitbang_set_mosi(int val)
+static void ogp_bitbang_set_mosi(int val, void *spi_data)
 {
 	pci_mmio_writel(val, ogp_spibar + ogp_reg_siso);
 }
 
-static int ogp_bitbang_get_miso(void)
+static int ogp_bitbang_get_miso(void *spi_data)
 {
 	uint32_t tmp;
 

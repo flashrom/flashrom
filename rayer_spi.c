@@ -160,28 +160,28 @@ static const struct rayer_programmer rayer_spi_types[] = {
 
 static const struct rayer_pinout *pinout = NULL;
 
-static void rayer_bitbang_set_cs(int val)
+static void rayer_bitbang_set_cs(int val, void *spi_data)
 {
 	lpt_outbyte &= ~(1 << pinout->cs_bit);
 	lpt_outbyte |= (val << pinout->cs_bit);
 	OUTB(lpt_outbyte, lpt_iobase);
 }
 
-static void rayer_bitbang_set_sck(int val)
+static void rayer_bitbang_set_sck(int val, void *spi_data)
 {
 	lpt_outbyte &= ~(1 << pinout->sck_bit);
 	lpt_outbyte |= (val << pinout->sck_bit);
 	OUTB(lpt_outbyte, lpt_iobase);
 }
 
-static void rayer_bitbang_set_mosi(int val)
+static void rayer_bitbang_set_mosi(int val, void *spi_data)
 {
 	lpt_outbyte &= ~(1 << pinout->mosi_bit);
 	lpt_outbyte |= (val << pinout->mosi_bit);
 	OUTB(lpt_outbyte, lpt_iobase);
 }
 
-static int rayer_bitbang_get_miso(void)
+static int rayer_bitbang_get_miso(void *spi_data)
 {
 	uint8_t tmp;
 

@@ -41,7 +41,7 @@ static void *mcp6x_spibar = NULL;
 /* Cached value of last GPIO state. */
 static uint8_t mcp_gpiostate;
 
-static void mcp6x_request_spibus(void)
+static void mcp6x_request_spibus(void *spi_data)
 {
 	mcp_gpiostate = mmio_readb(mcp6x_spibar + 0x530);
 	mcp_gpiostate |= 1 << MCP6X_SPI_REQUEST;
@@ -54,34 +54,34 @@ static void mcp6x_request_spibus(void)
 	mcp_gpiostate = mmio_readb(mcp6x_spibar + 0x530);
 }
 
-static void mcp6x_release_spibus(void)
+static void mcp6x_release_spibus(void *spi_data)
 {
 	mcp_gpiostate &= ~(1 << MCP6X_SPI_REQUEST);
 	mmio_writeb(mcp_gpiostate, mcp6x_spibar + 0x530);
 }
 
-static void mcp6x_bitbang_set_cs(int val)
+static void mcp6x_bitbang_set_cs(int val, void *spi_data)
 {
 	mcp_gpiostate &= ~(1 << MCP6X_SPI_CS);
 	mcp_gpiostate |= (val << MCP6X_SPI_CS);
 	mmio_writeb(mcp_gpiostate, mcp6x_spibar + 0x530);
 }
 
-static void mcp6x_bitbang_set_sck(int val)
+static void mcp6x_bitbang_set_sck(int val, void *spi_data)
 {
 	mcp_gpiostate &= ~(1 << MCP6X_SPI_SCK);
 	mcp_gpiostate |= (val << MCP6X_SPI_SCK);
 	mmio_writeb(mcp_gpiostate, mcp6x_spibar + 0x530);
 }
 
-static void mcp6x_bitbang_set_mosi(int val)
+static void mcp6x_bitbang_set_mosi(int val, void *spi_data)
 {
 	mcp_gpiostate &= ~(1 << MCP6X_SPI_MOSI);
 	mcp_gpiostate |= (val << MCP6X_SPI_MOSI);
 	mmio_writeb(mcp_gpiostate, mcp6x_spibar + 0x530);
 }
 
-static int mcp6x_bitbang_get_miso(void)
+static int mcp6x_bitbang_get_miso(void *spi_data)
 {
 	mcp_gpiostate = mmio_readb(mcp6x_spibar + 0x530);
 	return (mcp_gpiostate >> MCP6X_SPI_MISO) & 0x1;

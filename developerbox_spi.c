@@ -94,27 +94,27 @@ static void cp210x_gpio_set(uint8_t val, uint8_t mask)
 		msg_perr("Failed to read GPIO pins (%s)\n", libusb_error_name(res));
 }
 
-static void cp210x_bitbang_set_cs(int val)
+static void cp210x_bitbang_set_cs(int val, void *spi_data)
 {
 	cp210x_gpio_set(val << DEVELOPERBOX_SPI_CS, 1 << DEVELOPERBOX_SPI_CS);
 }
 
-static void cp210x_bitbang_set_sck(int val)
+static void cp210x_bitbang_set_sck(int val, void *spi_data)
 {
 	cp210x_gpio_set(val << DEVELOPERBOX_SPI_SCK, 1 << DEVELOPERBOX_SPI_SCK);
 }
 
-static void cp210x_bitbang_set_mosi(int val)
+static void cp210x_bitbang_set_mosi(int val, void *spi_data)
 {
 	cp210x_gpio_set(val << DEVELOPERBOX_SPI_MOSI, 1 << DEVELOPERBOX_SPI_MOSI);
 }
 
-static int cp210x_bitbang_get_miso(void)
+static int cp210x_bitbang_get_miso(void *spi_data)
 {
 	return !!(cp210x_gpio_get() & (1 << DEVELOPERBOX_SPI_MISO));
 }
 
-static void cp210x_bitbang_set_sck_set_mosi(int sck, int mosi)
+static void cp210x_bitbang_set_sck_set_mosi(int sck, int mosi, void *spi_data)
 {
 	cp210x_gpio_set(sck << DEVELOPERBOX_SPI_SCK | mosi << DEVELOPERBOX_SPI_MOSI,
 			  1 << DEVELOPERBOX_SPI_SCK |    1 << DEVELOPERBOX_SPI_MOSI);

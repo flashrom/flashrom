@@ -56,7 +56,7 @@ static int pony_negate_mosi = 0;
 /* Pins for slave->master direction */
 static int pony_negate_miso = 0;
 
-static void pony_bitbang_set_cs(int val)
+static void pony_bitbang_set_cs(int val, void *spi_data)
 {
 	if (pony_negate_cs)
 		val ^=  1;
@@ -64,7 +64,7 @@ static void pony_bitbang_set_cs(int val)
 	sp_set_pin(PIN_TXD, val);
 }
 
-static void pony_bitbang_set_sck(int val)
+static void pony_bitbang_set_sck(int val, void *spi_data)
 {
 	if (pony_negate_sck)
 		val ^=  1;
@@ -72,7 +72,7 @@ static void pony_bitbang_set_sck(int val)
 	sp_set_pin(PIN_RTS, val);
 }
 
-static void pony_bitbang_set_mosi(int val)
+static void pony_bitbang_set_mosi(int val, void *spi_data)
 {
 	if (pony_negate_mosi)
 		val ^=  1;
@@ -80,7 +80,7 @@ static void pony_bitbang_set_mosi(int val)
 	sp_set_pin(PIN_DTR, val);
 }
 
-static int pony_bitbang_get_miso(void)
+static int pony_bitbang_get_miso(void *spi_data)
 {
 	int tmp = sp_get_pin(PIN_CTS);
 
@@ -192,9 +192,9 @@ int pony_spi_init(void)
 	/*
 	 * Detect if there is a compatible hardware programmer connected.
 	 */
-	pony_bitbang_set_cs(1);
-	pony_bitbang_set_sck(1);
-	pony_bitbang_set_mosi(1);
+	pony_bitbang_set_cs(1, NULL);
+	pony_bitbang_set_sck(1, NULL);
+	pony_bitbang_set_mosi(1, NULL);
 
 	switch (type) {
 	case TYPE_AJAWE:

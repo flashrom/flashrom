@@ -24,44 +24,44 @@
 /* Note that CS# is active low, so val=0 means the chip is active. */
 static void bitbang_spi_set_cs(const struct bitbang_spi_master * const master, int val)
 {
-	master->set_cs(val);
+	master->set_cs(val, NULL);
 }
 
 static void bitbang_spi_set_sck(const struct bitbang_spi_master * const master, int val)
 {
-	master->set_sck(val);
+	master->set_sck(val, NULL);
 }
 
 static void bitbang_spi_request_bus(const struct bitbang_spi_master * const master)
 {
 	if (master->request_bus)
-		master->request_bus();
+		master->request_bus(NULL);
 }
 
 static void bitbang_spi_release_bus(const struct bitbang_spi_master * const master)
 {
 	if (master->release_bus)
-		master->release_bus();
+		master->release_bus(NULL);
 }
 
 static void bitbang_spi_set_sck_set_mosi(const struct bitbang_spi_master * const master, int sck, int mosi)
 {
 	if (master->set_sck_set_mosi) {
-		master->set_sck_set_mosi(sck, mosi);
+		master->set_sck_set_mosi(sck, mosi, NULL);
 		return;
 	}
 
-	master->set_sck(sck);
-	master->set_mosi(mosi);
+	master->set_sck(sck, NULL);
+	master->set_mosi(mosi, NULL);
 }
 
 static int bitbang_spi_set_sck_get_miso(const struct bitbang_spi_master * const master, int sck)
 {
 	if (master->set_sck_get_miso)
-		return master->set_sck_get_miso(sck);
+		return master->set_sck_get_miso(sck, NULL);
 
-	master->set_sck(sck);
-	return master->get_miso();
+	master->set_sck(sck, NULL);
+	return master->get_miso(NULL);
 }
 
 static uint8_t bitbang_spi_read_byte(const struct bitbang_spi_master *master)
