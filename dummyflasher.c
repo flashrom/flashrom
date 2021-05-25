@@ -831,7 +831,7 @@ int dummy_init(void)
 	if (tmp) {
 		size = strtol(tmp, NULL, 10);
 		if (size <= 0 || (size % 1024 != 0)) {
-			msg_perr("%s: Chip size is not a multipler of 1024: %s\n",
+			msg_perr("%s: Chip size is not a multiple of 1024: %s\n",
 					 __func__, tmp);
 			free(tmp);
 			return 1;
