@@ -634,9 +634,8 @@ static int dummy_shutdown(void *data)
 			write_buf_to_file(emu_data->flashchip_contents,
 					  emu_data->emu_chip_size,
 					  emu_data->emu_persistent_image);
-			free(emu_data->emu_persistent_image);
-			emu_data->emu_persistent_image = NULL;
 		}
+		free(emu_data->emu_persistent_image);
 		free(emu_data->flashchip_contents);
 	}
 #endif
@@ -1001,6 +1000,7 @@ int dummy_init(void)
 			if (read_buf_from_file(data->flashchip_contents, data->emu_chip_size,
 					   data->emu_persistent_image)) {
 				msg_perr("Unable to read %s\n", data->emu_persistent_image);
+				free(data->emu_persistent_image);
 				free(data->flashchip_contents);
 				return 1;
 			}
@@ -1012,6 +1012,7 @@ int dummy_init(void)
 
 dummy_init_out:
 	if (register_shutdown(dummy_shutdown, data)) {
+		free(data->emu_persistent_image);
 		free(data->flashchip_contents);
 		free(data);
 		return 1;
