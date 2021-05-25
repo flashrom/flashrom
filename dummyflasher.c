@@ -129,7 +129,7 @@ void dummy_unmap(void *virt_addr, size_t len)
 
 static int dummy_spi_write_256(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len)
 {
-	struct emu_data *emu_data = get_data_from_context(flash);
+	struct emu_data *emu_data = flash->mst->spi.data;
 	return spi_write_chunked(flash, buf, start, len,
 				 emu_data->spi_write_256_chunksize);
 }
@@ -570,7 +570,7 @@ static int dummy_spi_send_command(const struct flashctx *flash, unsigned int wri
 				  unsigned char *readarr)
 {
 	unsigned int i;
-	struct emu_data *emu_data = get_data_from_context(flash);
+	struct emu_data *emu_data = flash->mst->spi.data;
 	if (!emu_data) {
 		msg_perr("No data in flash context!\n");
 		return 1;
