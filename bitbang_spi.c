@@ -95,7 +95,7 @@ static void bitbang_spi_write_byte(const struct bitbang_spi_master *master, uint
 }
 
 struct bitbang_spi_master_data {
-	const struct bitbang_spi_master *mst;
+	const struct bitbang_spi_master *master;
 };
 
 static int bitbang_spi_send_command(const struct flashctx *flash,
@@ -105,7 +105,7 @@ static int bitbang_spi_send_command(const struct flashctx *flash,
 {
 	unsigned int i;
 	const struct bitbang_spi_master_data *data = flash->mst->spi.data;
-	const struct bitbang_spi_master *master = data->mst;
+	const struct bitbang_spi_master *master = data->master;
 
 	/* FIXME: Run bitbang_spi_request_bus here or in programmer init?
 	 * Requesting and releasing the SPI bus is handled in here to allow the
@@ -160,7 +160,7 @@ int register_spi_bitbang_master(const struct bitbang_spi_master *master)
 	}
 
 	struct bitbang_spi_master_data *data = calloc(1, sizeof(struct bitbang_spi_master_data));
-	data->mst = master;
+	data->master = master;
 	mst.data = data;
 	register_spi_master(&mst, NULL);
 	register_shutdown(bitbang_spi_shutdown, data);
