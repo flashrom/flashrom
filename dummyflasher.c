@@ -103,18 +103,6 @@ static const uint8_t sfdp_table[] = {
 #endif
 #endif
 
-static enum chipbustype dummy_buses_supported = BUS_NONE;
-
-static struct emu_data* get_data_from_context(const struct flashctx *flash)
-{
-	if (dummy_buses_supported & BUS_NONSPI)
-		return (struct emu_data *)flash->mst->par.data;
-	else if (dummy_buses_supported & BUS_SPI)
-		return (struct emu_data *)flash->mst->spi.data;
-
-	return NULL;	/* buses was set to BUS_NONE. */
-}
-
 void *dummy_map(const char *descr, uintptr_t phys_addr, size_t len)
 {
 	msg_pspew("%s: Mapping %s, 0x%zx bytes at 0x%0*" PRIxPTR "\n",
@@ -688,7 +676,7 @@ int dummy_init(void)
 	/* Convert the parameters to lowercase. */
 	tolower_string(bustext);
 
-	dummy_buses_supported = BUS_NONE;
+	enum chipbustype dummy_buses_supported = BUS_NONE;
 	if (strstr(bustext, "parallel")) {
 		dummy_buses_supported |= BUS_PARALLEL;
 		msg_pdbg("Enabling support for %s flash.\n", "parallel");
@@ -1041,7 +1029,7 @@ dummy_init_out:
 int probe_variable_size(struct flashctx *flash)
 {
 	unsigned int i;
-	const struct emu_data *emu_data = get_data_from_context(flash);
+	const struct emu_data *emu_data = flash->mst->spi.data;
 
 	/* Skip the probing if we don't emulate this chip. */
 	if (!emu_data || emu_data->emu_chip != EMULATE_VARIABLE_SIZE)
