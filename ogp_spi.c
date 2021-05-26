@@ -36,12 +36,14 @@
 #define OGA1_XP10_CPROM_SCK			     0x0058 /*	W */
 #define OGA1_XP10_CPROM_REG_SEL			     0x005C /*	W */
 
-static uint8_t *ogp_spibar;
+struct ogp_spi_data {
+	uint8_t *spibar;
 
-static uint32_t ogp_reg_sel;
-static uint32_t ogp_reg_siso;
-static uint32_t ogp_reg__ce;
-static uint32_t ogp_reg_sck;
+	uint32_t reg_sel;
+	uint32_t reg_siso;
+	uint32_t reg__ce;
+	uint32_t reg_sck;
+};
 
 const struct dev_entry ogp_spi[] = {
 	{PCI_VENDOR_ID_OGP, 0x0000, OK, "Open Graphics Project", "Development Board OGD1"},
@@ -51,34 +53,40 @@ const struct dev_entry ogp_spi[] = {
 
 static void ogp_request_spibus(void *spi_data)
 {
-	pci_mmio_writel(1, ogp_spibar + ogp_reg_sel);
+	struct ogp_spi_data *data = spi_data;
+	pci_mmio_writel(1, data->spibar + data->reg_sel);
 }
 
 static void ogp_release_spibus(void *spi_data)
 {
-	pci_mmio_writel(0, ogp_spibar + ogp_reg_sel);
+	struct ogp_spi_data *data = spi_data;
+	pci_mmio_writel(0, data->spibar + data->reg_sel);
 }
 
 static void ogp_bitbang_set_cs(int val, void *spi_data)
 {
-	pci_mmio_writel(val, ogp_spibar + ogp_reg__ce);
+	struct ogp_spi_data *data = spi_data;
+	pci_mmio_writel(val, data->spibar + data->reg__ce);
 }
 
 static void ogp_bitbang_set_sck(int val, void *spi_data)
 {
-	pci_mmio_writel(val, ogp_spibar + ogp_reg_sck);
+	struct ogp_spi_data *data = spi_data;
+	pci_mmio_writel(val, data->spibar + data->reg_sck);
 }
 
 static void ogp_bitbang_set_mosi(int val, void *spi_data)
 {
-	pci_mmio_writel(val, ogp_spibar + ogp_reg_siso);
+	struct ogp_spi_data *data = spi_data;
+	pci_mmio_writel(val, data->spibar + data->reg_siso);
 }
 
 static int ogp_bitbang_get_miso(void *spi_data)
 {
+	struct ogp_spi_data *data = spi_data;
 	uint32_t tmp;
 
-	tmp = pci_mmio_readl(ogp_spibar + ogp_reg_siso);
+	tmp = pci_mmio_readl(data->spibar + data->reg_siso);
 	return tmp & 0x1;
 }
 
@@ -92,10 +100,21 @@ static const struct bitbang_spi_master bitbang_spi_master_ogp = {
 	.half_period = 0,
 };
 
+static int ogp_spi_shutdown(void *data)
+{
+	free(data);
+	return 0;
+}
+
 int ogp_spi_init(void)
 {
 	struct pci_dev *dev = NULL;
 	char *type;
+	uint8_t *ogp_spibar;
+	uint32_t ogp_reg_sel;
+	uint32_t ogp_reg_siso;
+	uint32_t ogp_reg__ce;
+	uint32_t ogp_reg_sck;
 
 	type = extract_programmer_param("rom");
 
@@ -135,7 +154,22 @@ int ogp_spi_init(void)
 	if (ogp_spibar == ERROR_PTR)
 		return 1;
 
-	if (register_spi_bitbang_master(&bitbang_spi_master_ogp, NULL))
+	struct ogp_spi_data *data = calloc(1, sizeof(*data));
+	if (!data) {
+		msg_perr("Unable to allocate space for SPI master data\n");
+		return 1;
+	}
+	data->spibar = ogp_spibar;
+	data->reg_sel = ogp_reg_sel;
+	data->reg_siso = ogp_reg_siso;
+	data->reg__ce = ogp_reg__ce;
+	data->reg_sck = ogp_reg_sck;
+	if (register_shutdown(ogp_spi_shutdown, data)) {
+		free(data);
+		return 1;
+	}
+
+	if (register_spi_bitbang_master(&bitbang_spi_master_ogp, data))
 		return 1;
 
 	return 0;
