@@ -22,74 +22,76 @@
 #include "spi.h"
 
 /* Note that CS# is active low, so val=0 means the chip is active. */
-static void bitbang_spi_set_cs(const struct bitbang_spi_master * const master, int val)
+static void bitbang_spi_set_cs(const struct bitbang_spi_master * const master, int val, void *spi_data)
 {
-	master->set_cs(val, NULL);
+	master->set_cs(val, spi_data);
 }
 
-static void bitbang_spi_set_sck(const struct bitbang_spi_master * const master, int val)
+static void bitbang_spi_set_sck(const struct bitbang_spi_master * const master, int val, void *spi_data)
 {
-	master->set_sck(val, NULL);
+	master->set_sck(val, spi_data);
 }
 
-static void bitbang_spi_request_bus(const struct bitbang_spi_master * const master)
+static void bitbang_spi_request_bus(const struct bitbang_spi_master * const master, void *spi_data)
 {
 	if (master->request_bus)
-		master->request_bus(NULL);
+		master->request_bus(spi_data);
 }
 
-static void bitbang_spi_release_bus(const struct bitbang_spi_master * const master)
+static void bitbang_spi_release_bus(const struct bitbang_spi_master * const master, void *spi_data)
 {
 	if (master->release_bus)
-		master->release_bus(NULL);
+		master->release_bus(spi_data);
 }
 
-static void bitbang_spi_set_sck_set_mosi(const struct bitbang_spi_master * const master, int sck, int mosi)
+static void bitbang_spi_set_sck_set_mosi(const struct bitbang_spi_master * const master, int sck, int mosi,
+					void *spi_data)
 {
 	if (master->set_sck_set_mosi) {
-		master->set_sck_set_mosi(sck, mosi, NULL);
+		master->set_sck_set_mosi(sck, mosi, spi_data);
 		return;
 	}
 
-	master->set_sck(sck, NULL);
-	master->set_mosi(mosi, NULL);
+	master->set_sck(sck, spi_data);
+	master->set_mosi(mosi, spi_data);
 }
 
-static int bitbang_spi_set_sck_get_miso(const struct bitbang_spi_master * const master, int sck)
+static int bitbang_spi_set_sck_get_miso(const struct bitbang_spi_master * const master, int sck,
+					void *spi_data)
 {
 	if (master->set_sck_get_miso)
-		return master->set_sck_get_miso(sck, NULL);
+		return master->set_sck_get_miso(sck, spi_data);
 
-	master->set_sck(sck, NULL);
-	return master->get_miso(NULL);
+	master->set_sck(sck, spi_data);
+	return master->get_miso(spi_data);
 }
 
-static uint8_t bitbang_spi_read_byte(const struct bitbang_spi_master *master)
+static uint8_t bitbang_spi_read_byte(const struct bitbang_spi_master *master, void *spi_data)
 {
 	uint8_t ret = 0;
 	int i;
 
 	for (i = 7; i >= 0; i--) {
 		if (i == 0)
-			bitbang_spi_set_sck_set_mosi(master, 0, 0);
+			bitbang_spi_set_sck_set_mosi(master, 0, 0, spi_data);
 		else
-			bitbang_spi_set_sck(master, 0);
+			bitbang_spi_set_sck(master, 0, spi_data);
 		programmer_delay(master->half_period);
 		ret <<= 1;
-		ret |= bitbang_spi_set_sck_get_miso(master, 1);
+		ret |= bitbang_spi_set_sck_get_miso(master, 1, spi_data);
 		programmer_delay(master->half_period);
 	}
 	return ret;
 }
 
-static void bitbang_spi_write_byte(const struct bitbang_spi_master *master, uint8_t val)
+static void bitbang_spi_write_byte(const struct bitbang_spi_master *master, uint8_t val, void *spi_data)
 {
 	int i;
 
 	for (i = 7; i >= 0; i--) {
-		bitbang_spi_set_sck_set_mosi(master, 0, (val >> i) & 1);
+		bitbang_spi_set_sck_set_mosi(master, 0, (val >> i) & 1, spi_data);
 		programmer_delay(master->half_period);
-		bitbang_spi_set_sck(master, 1);
+		bitbang_spi_set_sck(master, 1, spi_data);
 		programmer_delay(master->half_period);
 	}
 }
@@ -112,19 +114,19 @@ static int bitbang_spi_send_command(const struct flashctx *flash,
 	 * Requesting and releasing the SPI bus is handled in here to allow the
 	 * programmer to use its own SPI engine for native accesses.
 	 */
-	bitbang_spi_request_bus(master);
-	bitbang_spi_set_cs(master, 0);
+	bitbang_spi_request_bus(master, data->spi_data);
+	bitbang_spi_set_cs(master, 0, data->spi_data);
 	for (i = 0; i < writecnt; i++)
-		bitbang_spi_write_byte(master, writearr[i]);
+		bitbang_spi_write_byte(master, writearr[i], data->spi_data);
 	for (i = 0; i < readcnt; i++)
-		readarr[i] = bitbang_spi_read_byte(master);
+		readarr[i] = bitbang_spi_read_byte(master, data->spi_data);
 
-	bitbang_spi_set_sck(master, 0);
+	bitbang_spi_set_sck(master, 0, data->spi_data);
 	programmer_delay(master->half_period);
-	bitbang_spi_set_cs(master, 1);
+	bitbang_spi_set_cs(master, 1, data->spi_data);
 	programmer_delay(master->half_period);
 	/* FIXME: Run bitbang_spi_release_bus here or in programmer init? */
-	bitbang_spi_release_bus(master);
+	bitbang_spi_release_bus(master, data->spi_data);
 
 	return 0;
 }
@@ -169,12 +171,12 @@ int register_spi_bitbang_master(const struct bitbang_spi_master *master, void *s
 	register_shutdown(bitbang_spi_shutdown, data);
 
 	/* Only mess with the bus if we're sure nobody else uses it. */
-	bitbang_spi_request_bus(master);
-	bitbang_spi_set_cs(master, 1);
-	bitbang_spi_set_sck_set_mosi(master, 0, 0);
+	bitbang_spi_request_bus(master, spi_data);
+	bitbang_spi_set_cs(master, 1, spi_data);
+	bitbang_spi_set_sck_set_mosi(master, 0, 0, spi_data);
 	/* FIXME: Release SPI bus here and request it again for each command or
 	 * don't release it now and only release it on programmer shutdown?
 	 */
-	bitbang_spi_release_bus(master);
+	bitbang_spi_release_bus(master, spi_data);
 	return 0;
 }
