@@ -116,9 +116,9 @@
 #elif IS_ARM
 
 /* ARM can be either endian. */
-#if defined (__ARMEB__)
+#if defined (__ARMEB__) || defined (__BIG_ENDIAN__)
 #define __FLASHROM_BIG_ENDIAN__ 1
-#elif defined (__ARMEL__)
+#elif defined (__ARMEL__) || defined (__LITTLE_ENDIAN__)
 #define __FLASHROM_LITTLE_ENDIAN__ 1
 #endif
 
