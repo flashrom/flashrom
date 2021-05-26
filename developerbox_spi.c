@@ -60,15 +60,18 @@ const struct dev_entry devs_developerbox_spi[] = {
 	{0},
 };
 
-static struct libusb_context *usb_ctx;
-static libusb_device_handle *cp210x_handle;
+struct devbox_spi_data {
+	struct libusb_context *usb_ctx;
+	libusb_device_handle *cp210x_handle;
+};
 
-static int cp210x_gpio_get(void)
+static int cp210x_gpio_get(void *spi_data)
 {
 	int res;
 	uint8_t gpio;
+	struct devbox_spi_data *data = spi_data;
 
-	res = libusb_control_transfer(cp210x_handle, REQTYPE_DEVICE_TO_HOST,
+	res = libusb_control_transfer(data->cp210x_handle, REQTYPE_DEVICE_TO_HOST,
 			CP210X_VENDOR_SPECIFIC, CP210X_READ_LATCH,
 			0, &gpio, 1, 0);
 	if (res < 0) {
@@ -79,15 +82,16 @@ static int cp210x_gpio_get(void)
 	return gpio;
 }
 
-static void cp210x_gpio_set(uint8_t val, uint8_t mask)
+static void cp210x_gpio_set(uint8_t val, uint8_t mask, void *spi_data)
 {
 	int res;
 	uint16_t gpio;
+	struct devbox_spi_data *data = spi_data;
 
 	gpio = ((val & 0xf) << 8) | (mask & 0xf);
 
 	/* Set relay state on the card */
-	res = libusb_control_transfer(cp210x_handle, REQTYPE_HOST_TO_DEVICE,
+	res = libusb_control_transfer(data->cp210x_handle, REQTYPE_HOST_TO_DEVICE,
 			CP210X_VENDOR_SPECIFIC, CP210X_WRITE_LATCH,
 			gpio, NULL, 0, 0);
 	if (res < 0)
@@ -96,28 +100,29 @@ static void cp210x_gpio_set(uint8_t val, uint8_t mask)
 
 static void cp210x_bitbang_set_cs(int val, void *spi_data)
 {
-	cp210x_gpio_set(val << DEVELOPERBOX_SPI_CS, 1 << DEVELOPERBOX_SPI_CS);
+	cp210x_gpio_set(val << DEVELOPERBOX_SPI_CS, 1 << DEVELOPERBOX_SPI_CS, spi_data);
 }
 
 static void cp210x_bitbang_set_sck(int val, void *spi_data)
 {
-	cp210x_gpio_set(val << DEVELOPERBOX_SPI_SCK, 1 << DEVELOPERBOX_SPI_SCK);
+	cp210x_gpio_set(val << DEVELOPERBOX_SPI_SCK, 1 << DEVELOPERBOX_SPI_SCK, spi_data);
 }
 
 static void cp210x_bitbang_set_mosi(int val, void *spi_data)
 {
-	cp210x_gpio_set(val << DEVELOPERBOX_SPI_MOSI, 1 << DEVELOPERBOX_SPI_MOSI);
+	cp210x_gpio_set(val << DEVELOPERBOX_SPI_MOSI, 1 << DEVELOPERBOX_SPI_MOSI, spi_data);
 }
 
 static int cp210x_bitbang_get_miso(void *spi_data)
 {
-	return !!(cp210x_gpio_get() & (1 << DEVELOPERBOX_SPI_MISO));
+	return !!(cp210x_gpio_get(spi_data) & (1 << DEVELOPERBOX_SPI_MISO));
 }
 
 static void cp210x_bitbang_set_sck_set_mosi(int sck, int mosi, void *spi_data)
 {
 	cp210x_gpio_set(sck << DEVELOPERBOX_SPI_SCK | mosi << DEVELOPERBOX_SPI_MOSI,
-			  1 << DEVELOPERBOX_SPI_SCK |    1 << DEVELOPERBOX_SPI_MOSI);
+			  1 << DEVELOPERBOX_SPI_SCK |    1 << DEVELOPERBOX_SPI_MOSI,
+			  spi_data);
 }
 
 static const struct bitbang_spi_master bitbang_spi_master_cp210x = {
@@ -128,16 +133,22 @@ static const struct bitbang_spi_master bitbang_spi_master_cp210x = {
 	.set_sck_set_mosi = cp210x_bitbang_set_sck_set_mosi,
 };
 
-static int developerbox_spi_shutdown(void *data)
+static int developerbox_spi_shutdown(void *spi_data)
 {
-	libusb_close(cp210x_handle);
-	libusb_exit(usb_ctx);
+	struct devbox_spi_data *data = spi_data;
 
+	libusb_close(data->cp210x_handle);
+	libusb_exit(data->usb_ctx);
+
+	free(data);
 	return 0;
 }
 
 int developerbox_spi_init(void)
 {
+	struct libusb_context *usb_ctx;
+	libusb_device_handle *cp210x_handle;
+
 	libusb_init(&usb_ctx);
 	if (!usb_ctx) {
 		msg_perr("Could not initialize libusb!\n");
@@ -155,15 +166,27 @@ int developerbox_spi_init(void)
 		goto err_exit;
 	}
 
-	if (register_shutdown(developerbox_spi_shutdown, NULL))
+	struct devbox_spi_data *data = calloc(1, sizeof(*data));
+	if (!data) {
+		msg_perr("Unable to allocate space for SPI master data\n");
 		goto err_exit;
+	}
+	data->usb_ctx = usb_ctx;
+	data->cp210x_handle = cp210x_handle;
 
-	if (register_spi_bitbang_master(&bitbang_spi_master_cp210x, NULL))
+	if (register_shutdown(developerbox_spi_shutdown, data)) {
+		free(data);
 		goto err_exit;
+	}
+
+	if (register_spi_bitbang_master(&bitbang_spi_master_cp210x, data))
+		return 1; /* shutdown function does the cleanup */
 
 	return 0;
 
 err_exit:
+	if (cp210x_handle)
+		libusb_close(cp210x_handle);
 	libusb_exit(usb_ctx);
 	return 1;
 }
