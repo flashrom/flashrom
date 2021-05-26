@@ -49,16 +49,20 @@ enum pony_type {
 	TYPE_AJAWE
 };
 
-/* Pins for master->slave direction */
-static int pony_negate_cs = 1;
-static int pony_negate_sck = 0;
-static int pony_negate_mosi = 0;
-/* Pins for slave->master direction */
-static int pony_negate_miso = 0;
+struct pony_spi_data {
+	/* Pins for master->slave direction */
+	int negate_cs;
+	int negate_sck;
+	int negate_mosi;
+	/* Pins for slave->master direction */
+	int negate_miso;
+};
 
 static void pony_bitbang_set_cs(int val, void *spi_data)
 {
-	if (pony_negate_cs)
+	struct pony_spi_data *data = spi_data;
+
+	if (data->negate_cs)
 		val ^=  1;
 
 	sp_set_pin(PIN_TXD, val);
@@ -66,7 +70,9 @@ static void pony_bitbang_set_cs(int val, void *spi_data)
 
 static void pony_bitbang_set_sck(int val, void *spi_data)
 {
-	if (pony_negate_sck)
+	struct pony_spi_data *data = spi_data;
+
+	if (data->negate_sck)
 		val ^=  1;
 
 	sp_set_pin(PIN_RTS, val);
@@ -74,7 +80,9 @@ static void pony_bitbang_set_sck(int val, void *spi_data)
 
 static void pony_bitbang_set_mosi(int val, void *spi_data)
 {
-	if (pony_negate_mosi)
+	struct pony_spi_data *data = spi_data;
+
+	if (data->negate_mosi)
 		val ^=  1;
 
 	sp_set_pin(PIN_DTR, val);
@@ -82,9 +90,10 @@ static void pony_bitbang_set_mosi(int val, void *spi_data)
 
 static int pony_bitbang_get_miso(void *spi_data)
 {
+	struct pony_spi_data *data = spi_data;
 	int tmp = sp_get_pin(PIN_CTS);
 
-	if (pony_negate_miso)
+	if (data->negate_miso)
 		tmp ^= 1;
 
 	return tmp;
@@ -107,6 +116,7 @@ static int pony_spi_shutdown(void *data)
 	else
 		msg_pdbg("Pony SPI shutdown completed.\n");
 
+	free(data);
 	return ret;
 }
 
@@ -119,6 +129,16 @@ int pony_spi_init(void)
 	int have_device = 0;
 	int have_prog = 0;
 
+	struct pony_spi_data *data = calloc(1, sizeof(*data));
+	if (!data) {
+		msg_perr("Unable to allocate space for SPI master data\n");
+		return 1;
+	}
+	data->negate_cs = 1;
+	data->negate_sck = 0;
+	data->negate_mosi = 0;
+	data->negate_miso = 0;
+
 	/* The parameter is in format "dev=/dev/device,type=serbang" */
 	arg = extract_programmer_param("dev");
 	if (arg && strlen(arg)) {
@@ -127,8 +147,9 @@ int pony_spi_init(void)
 			free(arg);
 			return 1;
 		}
-		if (register_shutdown(pony_spi_shutdown, NULL) != 0) {
+		if (register_shutdown(pony_spi_shutdown, data) != 0) {
 			free(arg);
+			free(data);
 			serialport_shutdown(NULL);
 			return 1;
 		}
@@ -165,25 +186,25 @@ int pony_spi_init(void)
 	 */
 	switch (type) {
 	case TYPE_AJAWE:
-		pony_negate_cs = 1;
-		pony_negate_sck = 1;
-		pony_negate_mosi = 1;
-		pony_negate_miso = 1;
+		data->negate_cs = 1;
+		data->negate_sck = 1;
+		data->negate_mosi = 1;
+		data->negate_miso = 1;
 		name = "AJAWe";
 		break;
 	case TYPE_SERBANG:
-		pony_negate_cs = 0;
-		pony_negate_sck = 0;
-		pony_negate_mosi = 0;
-		pony_negate_miso = 1;
+		data->negate_cs = 0;
+		data->negate_sck = 0;
+		data->negate_mosi = 0;
+		data->negate_miso = 1;
 		name = "serbang";
 		break;
 	default:
 	case TYPE_SI_PROG:
-		pony_negate_cs = 1;
-		pony_negate_sck = 0;
-		pony_negate_mosi = 0;
-		pony_negate_miso = 0;
+		data->negate_cs = 1;
+		data->negate_sck = 0;
+		data->negate_mosi = 0;
+		data->negate_miso = 0;
 		name = "SI-Prog";
 		break;
 	}
@@ -192,9 +213,9 @@ int pony_spi_init(void)
 	/*
 	 * Detect if there is a compatible hardware programmer connected.
 	 */
-	pony_bitbang_set_cs(1, NULL);
-	pony_bitbang_set_sck(1, NULL);
-	pony_bitbang_set_mosi(1, NULL);
+	pony_bitbang_set_cs(1, data);
+	pony_bitbang_set_sck(1, data);
+	pony_bitbang_set_mosi(1, data);
 
 	switch (type) {
 	case TYPE_AJAWE:
@@ -224,8 +245,8 @@ int pony_spi_init(void)
 		return 1;
 	}
 
-	if (register_spi_bitbang_master(&bitbang_spi_master_pony, NULL)) {
+	if (register_spi_bitbang_master(&bitbang_spi_master_pony, data))
 		return 1;
-	}
+
 	return 0;
 }
