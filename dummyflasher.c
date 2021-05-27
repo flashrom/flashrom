@@ -700,12 +700,13 @@ int dummy_init(void)
 	tmp = extract_programmer_param("spi_write_256_chunksize");
 	if (tmp) {
 		data->spi_write_256_chunksize = strtoul(tmp, &endptr, 0);
-		free(tmp);
 		if (*endptr != '\0' || data->spi_write_256_chunksize < 1) {
 			msg_perr("invalid spi_write_256_chunksize\n");
+			free(tmp);
 			return 1;
 		}
 	}
+	free(tmp);
 
 	tmp = extract_programmer_param("spi_blacklist");
 	if (tmp) {
