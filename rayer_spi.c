@@ -31,11 +31,6 @@
 #include "programmer.h"
 #include "hwaccess.h"
 
-static uint16_t lpt_iobase;
-
-/* Cached value of last byte sent. */
-static uint8_t lpt_outbyte;
-
 /* We have two sets of pins, out and in. The numbers for both sets are
  * independent and are bitshift values, not real pin numbers.
  * Default settings are for the RayeR hardware.
@@ -53,8 +48,16 @@ struct rayer_pinout {
 	uint8_t sck_bit;
 	uint8_t mosi_bit;
 	uint8_t miso_bit;
-	void (*preinit)(const void *);
+	void (*preinit)(void *);
 	int (*shutdown)(void *);
+};
+
+struct rayer_spi_data {
+	uint16_t lpt_iobase;
+	/* Cached value of last byte sent. */
+	uint8_t lpt_outbyte;
+
+	const struct rayer_pinout *pinout;
 };
 
 static const struct rayer_pinout rayer_spipgm = {
@@ -64,18 +67,26 @@ static const struct rayer_pinout rayer_spipgm = {
 	.miso_bit = 6,
 };
 
-static void dlc5_preinit(const void *data) {
+static void dlc5_preinit(void *spi_data)
+{
+	struct rayer_spi_data *data = spi_data;
+
 	msg_pdbg("dlc5_preinit\n");
 	/* Assert pin 6 to receive MISO. */
-	lpt_outbyte |= (1<<4);
-	OUTB(lpt_outbyte, lpt_iobase);
+	data->lpt_outbyte |= (1<<4);
+	OUTB(data->lpt_outbyte, data->lpt_iobase);
 }
 
-static int dlc5_shutdown(void *data) {
+static int dlc5_shutdown(void *spi_data)
+{
+	struct rayer_spi_data *data = spi_data;
+
 	msg_pdbg("dlc5_shutdown\n");
 	/* De-assert pin 6 to force MISO low. */
-	lpt_outbyte &= ~(1<<4);
-	OUTB(lpt_outbyte, lpt_iobase);
+	data->lpt_outbyte &= ~(1<<4);
+	OUTB(data->lpt_outbyte, data->lpt_iobase);
+
+	free(data);
 	return 0;
 }
 
@@ -88,16 +99,24 @@ static const struct rayer_pinout xilinx_dlc5 = {
 	.shutdown = dlc5_shutdown,
 };
 
-static void byteblaster_preinit(const void *data){
+static void byteblaster_preinit(void *spi_data)
+{
+	struct rayer_spi_data *data = spi_data;
+
 	msg_pdbg("byteblaster_preinit\n");
 	/* Assert #EN signal. */
-	OUTB(2, lpt_iobase + 2 );
+	OUTB(2, data->lpt_iobase + 2 );
 }
 
-static int byteblaster_shutdown(void *data){
+static int byteblaster_shutdown(void *spi_data)
+{
+	struct rayer_spi_data *data = spi_data;
+
 	msg_pdbg("byteblaster_shutdown\n");
 	/* De-Assert #EN signal. */
-	OUTB(0, lpt_iobase + 2 );
+	OUTB(0, data->lpt_iobase + 2 );
+
+	free(data);
 	return 0;
 }
 
@@ -110,18 +129,26 @@ static const struct rayer_pinout altera_byteblastermv = {
 	.shutdown = byteblaster_shutdown,
 };
 
-static void stk200_preinit(const void *data) {
+static void stk200_preinit(void *spi_data)
+{
+	struct rayer_spi_data *data = spi_data;
+
 	msg_pdbg("stk200_init\n");
 	/* Assert #EN signals, set LED signal. */
-	lpt_outbyte = (1 << 6) ;
-	OUTB(lpt_outbyte, lpt_iobase);
+	data->lpt_outbyte = (1 << 6) ;
+	OUTB(data->lpt_outbyte, data->lpt_iobase);
 }
 
-static int stk200_shutdown(void *data) {
+static int stk200_shutdown(void *spi_data)
+{
+	struct rayer_spi_data *data = spi_data;
+
 	msg_pdbg("stk200_shutdown\n");
 	/* Assert #EN signals, clear LED signal. */
-	lpt_outbyte = (1 << 2) | (1 << 3);
-	OUTB(lpt_outbyte, lpt_iobase);
+	data->lpt_outbyte = (1 << 2) | (1 << 3);
+	OUTB(data->lpt_outbyte, data->lpt_iobase);
+
+	free(data);
 	return 0;
 }
 
@@ -158,36 +185,47 @@ static const struct rayer_programmer rayer_spi_types[] = {
 	{0},
 };
 
-static const struct rayer_pinout *pinout = NULL;
-
 static void rayer_bitbang_set_cs(int val, void *spi_data)
 {
-	lpt_outbyte &= ~(1 << pinout->cs_bit);
-	lpt_outbyte |= (val << pinout->cs_bit);
-	OUTB(lpt_outbyte, lpt_iobase);
+	struct rayer_spi_data *data = spi_data;
+
+	data->lpt_outbyte &= ~(1 << data->pinout->cs_bit);
+	data->lpt_outbyte |= (val << data->pinout->cs_bit);
+	OUTB(data->lpt_outbyte, data->lpt_iobase);
 }
 
 static void rayer_bitbang_set_sck(int val, void *spi_data)
 {
-	lpt_outbyte &= ~(1 << pinout->sck_bit);
-	lpt_outbyte |= (val << pinout->sck_bit);
-	OUTB(lpt_outbyte, lpt_iobase);
+	struct rayer_spi_data *data = spi_data;
+
+	data->lpt_outbyte &= ~(1 << data->pinout->sck_bit);
+	data->lpt_outbyte |= (val << data->pinout->sck_bit);
+	OUTB(data->lpt_outbyte, data->lpt_iobase);
 }
 
 static void rayer_bitbang_set_mosi(int val, void *spi_data)
 {
-	lpt_outbyte &= ~(1 << pinout->mosi_bit);
-	lpt_outbyte |= (val << pinout->mosi_bit);
-	OUTB(lpt_outbyte, lpt_iobase);
+	struct rayer_spi_data *data = spi_data;
+
+	data->lpt_outbyte &= ~(1 << data->pinout->mosi_bit);
+	data->lpt_outbyte |= (val << data->pinout->mosi_bit);
+	OUTB(data->lpt_outbyte, data->lpt_iobase);
 }
 
 static int rayer_bitbang_get_miso(void *spi_data)
 {
+	struct rayer_spi_data *data = spi_data;
 	uint8_t tmp;
 
-	tmp = INB(lpt_iobase + 1) ^ 0x80; // bit.7 inverted
-	tmp = (tmp >> pinout->miso_bit) & 0x1;
+	tmp = INB(data->lpt_iobase + 1) ^ 0x80; // bit.7 inverted
+	tmp = (tmp >> data->pinout->miso_bit) & 0x1;
 	return tmp;
+}
+
+static int rayer_shutdown(void *spi_data)
+{
+	free(spi_data);
+	return 0;
 }
 
 static const struct bitbang_spi_master bitbang_spi_master_rayer = {
@@ -202,6 +240,9 @@ int rayer_spi_init(void)
 {
 	const struct rayer_programmer *prog = rayer_spi_types;
 	char *arg = NULL;
+	struct rayer_pinout *pinout = NULL;
+	uint16_t lpt_iobase;
+	uint8_t lpt_outbyte;
 
 	/* Non-default port requested? */
 	arg = extract_programmer_param("iobase");
@@ -260,12 +301,24 @@ int rayer_spi_init(void)
 	/* Get the initial value before writing to any line. */
 	lpt_outbyte = INB(lpt_iobase);
 
-	if (pinout->shutdown)
-		register_shutdown(pinout->shutdown, (void*)pinout);
-	if (pinout->preinit)
-		pinout->preinit(pinout);
+	struct rayer_spi_data *data = calloc(1, sizeof(*data));
+	if (!data) {
+		msg_perr("Unable to allocate space for SPI master data\n");
+		return 1;
+	}
+	data->pinout = pinout;
+	data->lpt_iobase = lpt_iobase;
+	data->lpt_outbyte = lpt_outbyte;
 
-	if (register_spi_bitbang_master(&bitbang_spi_master_rayer, NULL))
+	if (pinout->shutdown)
+		register_shutdown(pinout->shutdown, data);
+	else
+		register_shutdown(rayer_shutdown, data);
+
+	if (pinout->preinit)
+		pinout->preinit(data);
+
+	if (register_spi_bitbang_master(&bitbang_spi_master_rayer, data))
 		return 1;
 
 	return 0;
