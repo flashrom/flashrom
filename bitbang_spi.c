@@ -161,8 +161,7 @@ int register_spi_bitbang_master(const struct bitbang_spi_master *master)
 
 	struct bitbang_spi_master_data *data = calloc(1, sizeof(struct bitbang_spi_master_data));
 	data->master = master;
-	mst.data = data;
-	register_spi_master(&mst, NULL);
+	register_spi_master(&mst, data);
 	register_shutdown(bitbang_spi_shutdown, data);
 
 	/* Only mess with the bus if we're sure nobody else uses it. */
