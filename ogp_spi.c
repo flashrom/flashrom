@@ -135,7 +135,7 @@ int ogp_spi_init(void)
 	if (ogp_spibar == ERROR_PTR)
 		return 1;
 
-	if (register_spi_bitbang_master(&bitbang_spi_master_ogp))
+	if (register_spi_bitbang_master(&bitbang_spi_master_ogp, NULL))
 		return 1;
 
 	return 0;

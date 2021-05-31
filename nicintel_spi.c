@@ -273,7 +273,7 @@ int nicintel_spi_init(void)
 				return 1;
 	}
 
-	if (register_spi_bitbang_master(&bitbang_spi_master_nicintel))
+	if (register_spi_bitbang_master(&bitbang_spi_master_nicintel, NULL))
 		return 1;
 
 	return 0;

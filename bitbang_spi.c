@@ -96,6 +96,7 @@ static void bitbang_spi_write_byte(const struct bitbang_spi_master *master, uint
 
 struct bitbang_spi_master_data {
 	const struct bitbang_spi_master *master;
+	void *spi_data;
 };
 
 static int bitbang_spi_send_command(const struct flashctx *flash,
@@ -146,7 +147,7 @@ static int bitbang_spi_shutdown(void *data)
 	return 0;
 }
 
-int register_spi_bitbang_master(const struct bitbang_spi_master *master)
+int register_spi_bitbang_master(const struct bitbang_spi_master *master, void *spi_data)
 {
 	struct spi_master mst = spi_master_bitbang;
 	/* If someone forgot to initialize a bitbang function, we catch it here. */
@@ -161,6 +162,9 @@ int register_spi_bitbang_master(const struct bitbang_spi_master *master)
 
 	struct bitbang_spi_master_data *data = calloc(1, sizeof(struct bitbang_spi_master_data));
 	data->master = master;
+	if (spi_data)
+		data->spi_data = spi_data;
+
 	register_spi_master(&mst, data);
 	register_shutdown(bitbang_spi_shutdown, data);
 

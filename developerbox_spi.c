@@ -158,7 +158,7 @@ int developerbox_spi_init(void)
 	if (register_shutdown(developerbox_spi_shutdown, NULL))
 		goto err_exit;
 
-	if (register_spi_bitbang_master(&bitbang_spi_master_cp210x))
+	if (register_spi_bitbang_master(&bitbang_spi_master_cp210x, NULL))
 		goto err_exit;
 
 	return 0;
