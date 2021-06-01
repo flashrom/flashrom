@@ -19,22 +19,22 @@
 #include "io_mock.h"
 #include "programmer.h"
 
-static void run_lifecycle(void **state, enum programmer prog, const char *param)
+static void run_lifecycle(void **state, const struct programmer_entry *prog, const char *param)
 {
 	(void) state; /* unused */
 
-	printf("Testing programmer_init for programmer=%u ...\n", prog);
+	printf("Testing programmer_init for programmer=%s ...\n", prog->name);
 	assert_int_equal(0, programmer_init(prog, strdup(param)));
-	printf("... programmer_init for programmer=%u successful\n", prog);
+	printf("... programmer_init for programmer=%s successful\n", prog->name);
 
-	printf("Testing programmer_shutdown for programmer=%u ...\n", prog);
+	printf("Testing programmer_shutdown for programmer=%s ...\n", prog->name);
 	assert_int_equal(0, programmer_shutdown());
-	printf("... programmer_shutdown for programmer=%u successful\n", prog);
+	printf("... programmer_shutdown for programmer=%s successful\n", prog->name);
 }
 
 void dummy_init_and_shutdown_test_success(void **state)
 {
-	run_lifecycle(state, PROGRAMMER_DUMMY, "bus=parallel+lpc+fwh+spi");
+	run_lifecycle(state, &programmer_dummy, "bus=parallel+lpc+fwh+spi");
 }
 
 struct mec1308_io_state {
@@ -72,7 +72,7 @@ void mec1308_init_and_shutdown_test_success(void **state)
 	io_mock_register(&mec1308_io);
 
 	will_return_always(__wrap_sio_read, 0x4d); /* MEC1308_DEVICE_ID_VAL */
-	run_lifecycle(state, PROGRAMMER_MEC1308, "");
+	run_lifecycle(state, &programmer_mec1308, "");
 
 	io_mock_register(NULL);
 }
@@ -131,7 +131,7 @@ void ene_lpc_init_and_shutdown_test_success(void **state)
 
 	io_mock_register(&ene_lpc_io);
 
-	run_lifecycle(state, PROGRAMMER_ENE_LPC, "");
+	run_lifecycle(state, &programmer_ene_lpc, "");
 
 	io_mock_register(NULL);
 }
@@ -144,5 +144,5 @@ void linux_spi_init_and_shutdown_test_success(void **state)
 	 * and the fallback to getpagesize(). This test does the latter (fallback to
 	 * getpagesize).
 	 */
-	run_lifecycle(state, PROGRAMMER_LINUX_SPI, "dev=/dev/null");
+	run_lifecycle(state, &programmer_linux_spi, "dev=/dev/null");
 }

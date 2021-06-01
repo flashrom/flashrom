@@ -287,7 +287,7 @@ int flashrom_programmer_init(struct flashrom_programmer **const flashprog,
 		list_programmers_linebreak(0, 80, 0);
 		return 1;
 	}
-	return programmer_init(prog, prog_param);
+	return programmer_init(programmer_table[prog], prog_param);
 }
 
 /**

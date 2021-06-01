@@ -130,15 +130,15 @@ static int deregister_chip_restore(struct flashctx *flash)
 	return rc;
 }
 
-int programmer_init(enum programmer prog, const char *param)
+int programmer_init(const struct programmer_entry *prog, const char *param)
 {
 	int ret;
 
-	if (prog >= programmer_table_size) {
+	if (prog == NULL) {
 		msg_perr("Invalid programmer specified!\n");
 		return -1;
 	}
-	programmer = programmer_table[prog];
+	programmer = prog;
 	/* Initialize all programmer specific data. */
 	/* Default to unlimited decode sizes. */
 	max_rom_decode = (const struct decode_sizes) {
