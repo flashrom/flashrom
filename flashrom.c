@@ -43,7 +43,7 @@
 const char flashrom_version[] = FLASHROM_VERSION;
 const char *chip_to_probe = NULL;
 
-static enum programmer programmer = PROGRAMMER_INVALID;
+static const struct programmer_entry *programmer = NULL;
 static const char *programmer_param = NULL;
 
 /*
@@ -138,7 +138,7 @@ int programmer_init(enum programmer prog, const char *param)
 		msg_perr("Invalid programmer specified!\n");
 		return -1;
 	}
-	programmer = prog;
+	programmer = programmer_table[prog];
 	/* Initialize all programmer specific data. */
 	/* Default to unlimited decode sizes. */
 	max_rom_decode = (const struct decode_sizes) {
@@ -155,8 +155,8 @@ int programmer_init(enum programmer prog, const char *param)
 	programmer_may_write = 1;
 
 	programmer_param = param;
-	msg_pdbg("Initializing %s programmer\n", programmer_table[programmer]->name);
-	ret = programmer_table[programmer]->init();
+	msg_pdbg("Initializing %s programmer\n", programmer->name);
+	ret = programmer->init();
 	if (programmer_param && strlen(programmer_param)) {
 		if (ret != 0) {
 			/* It is quite possible that any unhandled programmer parameter would have been valid,
@@ -200,7 +200,7 @@ int programmer_shutdown(void)
 
 void *programmer_map_flash_region(const char *descr, uintptr_t phys_addr, size_t len)
 {
-	void *ret = programmer_table[programmer]->map_flash_region(descr, phys_addr, len);
+	void *ret = programmer->map_flash_region(descr, phys_addr, len);
 	msg_gspew("%s: mapping %s from 0x%0*" PRIxPTR " to 0x%0*" PRIxPTR "\n",
 		  __func__, descr, PRIxPTR_WIDTH, phys_addr, PRIxPTR_WIDTH, (uintptr_t) ret);
 	return ret;
@@ -208,7 +208,7 @@ void *programmer_map_flash_region(const char *descr, uintptr_t phys_addr, size_t
 
 void programmer_unmap_flash_region(void *virt_addr, size_t len)
 {
-	programmer_table[programmer]->unmap_flash_region(virt_addr, len);
+	programmer->unmap_flash_region(virt_addr, len);
 	msg_gspew("%s: unmapped 0x%0*" PRIxPTR "\n", __func__, PRIxPTR_WIDTH, (uintptr_t)virt_addr);
 }
 
@@ -256,7 +256,7 @@ void chip_readn(const struct flashctx *flash, uint8_t *buf, chipaddr addr,
 void programmer_delay(unsigned int usecs)
 {
 	if (usecs > 0)
-		programmer_table[programmer]->delay(usecs);
+		programmer->delay(usecs);
 }
 
 int read_memmapped(struct flashctx *flash, uint8_t *buf, unsigned int start,
@@ -840,12 +840,12 @@ notfound:
 		  flash->chip->vendor, flash->chip->name, flash->chip->total_size, tmp);
 	free(tmp);
 #if CONFIG_INTERNAL == 1
-	if (programmer_table[programmer]->map_flash_region == physmap)
+	if (programmer->map_flash_region == physmap)
 		msg_cinfo("mapped at physical address 0x%0*" PRIxPTR ".\n",
 			  PRIxPTR_WIDTH, flash->physical_memory);
 	else
 #endif
-		msg_cinfo("on %s.\n", programmer_table[programmer]->name);
+		msg_cinfo("on %s.\n", programmer->name);
 
 	/* Flash registers may more likely not be mapped if the chip was forced.
 	 * Lock info may be stored in registers, so avoid lock info printing. */
@@ -1548,7 +1548,7 @@ static void nonfatal_help_message(void)
 {
 	msg_gerr("Good, writing to the flash chip apparently didn't do anything.\n");
 #if CONFIG_INTERNAL == 1
-	if (programmer == PROGRAMMER_INTERNAL)
+	if (programmer == &programmer_internal)
 		msg_gerr("This means we have to add special support for your board, programmer or flash\n"
 			 "chip. Please report this on IRC at chat.freenode.net (channel #flashrom) or\n"
 			 "mail flashrom@flashrom.org, thanks!\n"
@@ -1566,7 +1566,7 @@ static void emergency_help_message(void)
 {
 	msg_gerr("Your flash chip is in an unknown state.\n");
 #if CONFIG_INTERNAL == 1
-	if (programmer == PROGRAMMER_INTERNAL)
+	if (programmer == &programmer_internal)
 		msg_gerr("Get help on IRC at chat.freenode.net (channel #flashrom) or\n"
 			"mail flashrom@flashrom.org with the subject \"FAILED: <your board name>\"!\n"
 			"-------------------------------------------------------------------------------\n"
@@ -2060,7 +2060,7 @@ int flashrom_image_write(struct flashctx *const flashctx, void *const buffer, co
 	}
 
 #if CONFIG_INTERNAL == 1
-	if (programmer == PROGRAMMER_INTERNAL && cb_check_image(newcontents, flash_size) < 0) {
+	if (programmer == &programmer_internal && cb_check_image(newcontents, flash_size) < 0) {
 		if (flashctx->flags.force_boardmismatch) {
 			msg_pinfo("Proceeding anyway because user forced us to.\n");
 		} else {
