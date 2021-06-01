@@ -24,8 +24,11 @@
 #define PCI_VENDOR_ID_REALTEK	0x10ec
 #define PCI_VENDOR_ID_SMC1211	0x1113
 
-static uint32_t io_base_addr = 0;
-static int bios_rom_addr, bios_rom_data;
+struct nicrealtek_data {
+	uint32_t io_base_addr;
+	int bios_rom_addr;
+	int bios_rom_data;
+};
 
 static const struct dev_entry nics_realtek[] = {
 	{0x10ec, 0x8139, OK, "Realtek", "RTL8139/8139C/8139C+"},
@@ -37,38 +40,41 @@ static const struct dev_entry nics_realtek[] = {
 
 static void nicrealtek_chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr)
 {
+	struct nicrealtek_data *data = flash->mst->par.data;
+
 	/* Output addr and data, set WE to 0, set OE to 1, set CS to 0,
 	 * enable software access.
 	 */
 	OUTL(((uint32_t)addr & 0x01FFFF) | 0x0A0000 | (val << 24),
-	     io_base_addr + bios_rom_addr);
+	     data->io_base_addr + data->bios_rom_addr);
 	/* Output addr and data, set WE to 1, set OE to 1, set CS to 1,
 	 * enable software access.
 	 */
 	OUTL(((uint32_t)addr & 0x01FFFF) | 0x1E0000 | (val << 24),
-	     io_base_addr + bios_rom_addr);
+	     data->io_base_addr + data->bios_rom_addr);
 }
 
 static uint8_t nicrealtek_chip_readb(const struct flashctx *flash, const chipaddr addr)
 {
+	struct nicrealtek_data *data = flash->mst->par.data;
 	uint8_t val;
 
 	/* FIXME: Can we skip reading the old data and simply use 0? */
 	/* Read old data. */
-	val = INB(io_base_addr + bios_rom_data);
+	val = INB(data->io_base_addr + data->bios_rom_data);
 	/* Output new addr and old data, set WE to 1, set OE to 0, set CS to 0,
 	 * enable software access.
 	 */
 	OUTL(((uint32_t)addr & 0x01FFFF) | 0x060000 | (val << 24),
-	     io_base_addr + bios_rom_addr);
+	     data->io_base_addr + data->bios_rom_addr);
 
 	/* Read new data. */
-	val = INB(io_base_addr + bios_rom_data);
+	val = INB(data->io_base_addr + data->bios_rom_data);
 	/* Output addr and new data, set WE to 1, set OE to 1, set CS to 1,
 	 * enable software access.
 	 */
 	OUTL(((uint32_t)addr & 0x01FFFF) | 0x1E0000 | (val << 24),
-	     io_base_addr + bios_rom_addr);
+	     data->io_base_addr + data->bios_rom_addr);
 
 	return val;
 }
@@ -87,12 +93,16 @@ static const struct par_master par_master_nicrealtek = {
 static int nicrealtek_shutdown(void *data)
 {
 	/* FIXME: We forgot to disable software access again. */
+	free(data);
 	return 0;
 }
 
 static int nicrealtek_init(void)
 {
 	struct pci_dev *dev = NULL;
+	uint32_t io_base_addr = 0;
+	int bios_rom_addr;
+	int bios_rom_data;
 
 	if (rget_io_perms())
 		return 1;
@@ -119,10 +129,21 @@ static int nicrealtek_init(void)
 		break;
 	}
 
-	if (register_shutdown(nicrealtek_shutdown, NULL))
+	struct nicrealtek_data *data = calloc(1, sizeof(*data));
+	if (!data) {
+		msg_perr("Unable to allocate space for PAR master data\n");
 		return 1;
+	}
+	data->io_base_addr = io_base_addr;
+	data->bios_rom_addr = bios_rom_addr;
+	data->bios_rom_data = bios_rom_data;
 
-	register_par_master(&par_master_nicrealtek, BUS_PARALLEL, NULL);
+	if (register_shutdown(nicrealtek_shutdown, data)) {
+		free(data);
+		return 1;
+	}
+
+	register_par_master(&par_master_nicrealtek, BUS_PARALLEL, data);
 
 	return 0;
 }
