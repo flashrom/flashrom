@@ -1708,13 +1708,6 @@ int selfcheck(void)
 	unsigned int i;
 	int ret = 0;
 
-	/* Safety check. Instead of aborting after the first error, check
-	 * if more errors exist.
-	 */
-	if (programmer_table_size != PROGRAMMER_INVALID) {
-		msg_gerr("Programmer table miscompilation!\n");
-		ret = 1;
-	}
 	for (i = 0; i < programmer_table_size; i++) {
 		const struct programmer_entry *const p = programmer_table[i];
 		if (p == NULL) {
