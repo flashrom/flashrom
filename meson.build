@@ -69,6 +69,8 @@ config_stlinkv3_spi = get_option('config_stlinkv3_spi')
 config_lspcon_i2c_spi = get_option('config_lspcon_i2c_spi')
 config_realtek_mst_i2c_spi = get_option('config_realtek_mst_i2c_spi')
 config_print_wiki= get_option('print_wiki')
+config_default_programmer_name = get_option('default_programmer_name')
+config_default_programmer_args = get_option('default_programmer_args')
 
 cargs = []
 deps = []
@@ -436,6 +438,14 @@ if config_print_wiki
   cargs += '-DCONFIG_PRINT_WIKI=1'
 endif
 
+if config_default_programmer_name != ''
+  cargs += '-DCONFIG_DEFAULT_PROGRAMMER_NAME=&programmer_' + config_default_programmer_name
+else
+  cargs += '-DCONFIG_DEFAULT_PROGRAMMER_NAME=NULL'
+endif
+
+cargs += '-DCONFIG_DEFAULT_PROGRAMMER_ARGS="' + config_default_programmer_args + '"'
+
 # we can't just link_with libflashrom as we require all the internal symbols...
 executable(
   'flashrom',
@@ -450,9 +460,7 @@ executable(
     deps,
   ],
   c_args : [
-    cargs,
-    '-DCONFIG_DEFAULT_PROGRAMMER=PROGRAMMER_INVALID',
-    '-DCONFIG_DEFAULT_PROGRAMMER_ARGS=""',
+    cargs
   ],
   install : true,
   install_dir : sbindir,

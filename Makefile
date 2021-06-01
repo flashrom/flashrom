@@ -44,14 +44,12 @@ BUILD_DETAILS_FILE ?= build_details.txt
 # system attached to an external programmer while the default programmer is set to the internal programmer, and
 # you forget to use the -p parameter. This would (try to) overwrite the existing firmware of the computer
 # running flashrom). Please do not enable this without thinking about the possible consequences. Possible
-# values are those specified in enum programmer in programmer.h (which depend on other CONFIG_* options
-# evaluated below, namely those that enable/disable the various programmers).
-# Compilation will fail for unspecified values.
-CONFIG_DEFAULT_PROGRAMMER ?= PROGRAMMER_INVALID
+# values can be found when running 'flashrom --list-supported' under the 'Supported programmers' section.
+CONFIG_DEFAULT_PROGRAMMER_NAME ?=
 # The following adds a default parameter for the default programmer set above (only).
-CONFIG_DEFAULT_PROGRAMMER_ARGS ?= ''
+CONFIG_DEFAULT_PROGRAMMER_ARGS ?=
 # Example: compiling with
-#   make CONFIG_DEFAULT_PROGRAMMER=PROGRAMMER_SERPROG CONFIG_DEFAULT_PROGRAMMER_ARGS="dev=/dev/ttyUSB0:1500000"
+#   make CONFIG_DEFAULT_PROGRAMMER_NAME=serprog CONFIG_DEFAULT_PROGRAMMER_ARGS="dev=/dev/ttyUSB0:1500000"
 # would make executing './flashrom' (almost) equivialent to './flashrom -p serprog:dev=/dev/ttyUSB0:1500000'.
 
 # If your compiler spits out excessive warnings, run make WARNERROR=no
@@ -868,7 +866,12 @@ CONFIG_INTERNAL_DMI ?= yes
 # Programmer drivers and programmer support infrastructure.
 # Depending on the CONFIG_* variables set and verified above we set compiler flags and parameters below.
 
-FEATURE_CFLAGS += -D'CONFIG_DEFAULT_PROGRAMMER=$(CONFIG_DEFAULT_PROGRAMMER)'
+ifdef CONFIG_DEFAULT_PROGRAMMER_NAME
+FEATURE_CFLAGS += -D'CONFIG_DEFAULT_PROGRAMMER_NAME=&programmer_$(CONFIG_DEFAULT_PROGRAMMER_NAME)'
+else
+FEATURE_CFLAGS += -D'CONFIG_DEFAULT_PROGRAMMER_NAME=NULL'
+endif
+
 FEATURE_CFLAGS += -D'CONFIG_DEFAULT_PROGRAMMER_ARGS="$(CONFIG_DEFAULT_PROGRAMMER_ARGS)"'
 
 ifeq ($(CONFIG_INTERNAL), yes)
