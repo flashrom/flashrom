@@ -1582,7 +1582,7 @@ void list_programmers_linebreak(int startcol, int cols, int paren)
 	const char *pname;
 	int pnamelen;
 	int remaining = 0, firstline = 1;
-	enum programmer p;
+	size_t p;
 	int i;
 
 	for (p = 0; p < programmer_table_size; p++) {

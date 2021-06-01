@@ -119,7 +119,7 @@ const char *flashrom_version_info(void)
  */
 const char **flashrom_supported_programmers(void)
 {
-	enum programmer p = 0;
+	size_t p = 0;
 	const char **supported_programmers = malloc((programmer_table_size + 1) * sizeof(char*));
 
 	if (supported_programmers != NULL) {
