@@ -29,9 +29,11 @@
 
 #define PCI_VENDOR_ID_3COM	0x10b7
 
-static uint32_t io_base_addr = 0;
-static uint32_t internal_conf;
-static uint16_t id;
+struct nic3com_data {
+	uint32_t io_base_addr;
+	uint32_t internal_conf;
+	uint16_t id;
+};
 
 const struct dev_entry nics_3com[] = {
 	/* 3C90xB */
@@ -56,15 +58,19 @@ const struct dev_entry nics_3com[] = {
 static void nic3com_chip_writeb(const struct flashctx *flash, uint8_t val,
 				chipaddr addr)
 {
-	OUTL((uint32_t)addr, io_base_addr + BIOS_ROM_ADDR);
-	OUTB(val, io_base_addr + BIOS_ROM_DATA);
+	struct nic3com_data *data = flash->mst->par.data;
+
+	OUTL((uint32_t)addr, data->io_base_addr + BIOS_ROM_ADDR);
+	OUTB(val, data->io_base_addr + BIOS_ROM_DATA);
 }
 
 static uint8_t nic3com_chip_readb(const struct flashctx *flash,
 				  const chipaddr addr)
 {
-	OUTL((uint32_t)addr, io_base_addr + BIOS_ROM_ADDR);
-	return INB(io_base_addr + BIOS_ROM_DATA);
+	struct nic3com_data *data = flash->mst->par.data;
+
+	OUTL((uint32_t)addr, data->io_base_addr + BIOS_ROM_ADDR);
+	return INB(data->io_base_addr + BIOS_ROM_DATA);
 }
 
 static const struct par_master par_master_nic3com = {
@@ -78,22 +84,29 @@ static const struct par_master par_master_nic3com = {
 		.chip_writen		= fallback_chip_writen,
 };
 
-static int nic3com_shutdown(void *data)
+static int nic3com_shutdown(void *par_data)
 {
+	struct nic3com_data *data = par_data;
+	const uint16_t id = data->id;
+
 	/* 3COM 3C90xB cards need a special fixup. */
 	if (id == 0x9055 || id == 0x9001 || id == 0x9004 || id == 0x9005
 	    || id == 0x9006 || id == 0x900a || id == 0x905a || id == 0x9058) {
 		/* Select register window 3 and restore the receiver status. */
-		OUTW(SELECT_REG_WINDOW + 3, io_base_addr + INT_STATUS);
-		OUTL(internal_conf, io_base_addr + INTERNAL_CONFIG);
+		OUTW(SELECT_REG_WINDOW + 3, data->io_base_addr + INT_STATUS);
+		OUTL(data->internal_conf, data->io_base_addr + INTERNAL_CONFIG);
 	}
 
+	free(data);
 	return 0;
 }
 
 int nic3com_init(void)
 {
 	struct pci_dev *dev = NULL;
+	uint32_t io_base_addr = 0;
+	uint32_t internal_conf = 0;
+	uint16_t id;
 
 	if (rget_io_perms())
 		return 1;
@@ -126,13 +139,34 @@ int nic3com_init(void)
 	 */
 	OUTW(SELECT_REG_WINDOW + 0, io_base_addr + INT_STATUS);
 
-	if (register_shutdown(nic3com_shutdown, NULL))
-		return 1;
+	struct nic3com_data *data = calloc(1, sizeof(*data));
+	if (!data) {
+		msg_perr("Unable to allocate space for PAR master data\n");
+		goto init_err_cleanup_exit;
+	}
+	data->io_base_addr = io_base_addr;
+	data->internal_conf = internal_conf;
+	data->id = id;
 
 	max_rom_decode.parallel = 128 * 1024;
-	register_par_master(&par_master_nic3com, BUS_PARALLEL, NULL);
+
+	if (register_shutdown(nic3com_shutdown, data)) {
+		free(data);
+		goto init_err_cleanup_exit;
+	}
+	register_par_master(&par_master_nic3com, BUS_PARALLEL, data);
 
 	return 0;
+
+init_err_cleanup_exit:
+	/* 3COM 3C90xB cards need a special fixup. */
+	if (id == 0x9055 || id == 0x9001 || id == 0x9004 || id == 0x9005
+	    || id == 0x9006 || id == 0x900a || id == 0x905a || id == 0x9058) {
+		/* Select register window 3 and restore the receiver status. */
+		OUTW(SELECT_REG_WINDOW + 3, io_base_addr + INT_STATUS);
+		OUTL(internal_conf, io_base_addr + INTERNAL_CONFIG);
+	}
+	return 1;
 }
 
 #else
