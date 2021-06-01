@@ -474,8 +474,7 @@ int print_supported(void)
 	list_programmers_linebreak(0, 80, 0);
 	msg_ginfo("\n");
 #if CONFIG_INTERNAL == 1
-	msg_ginfo("\nSupported devices for the %s programmer:\n\n",
-	       programmer_table[PROGRAMMER_INTERNAL]->name);
+	msg_ginfo("\nSupported devices for the internal programmer:\n\n");
 	print_supported_chipsets();
 	msg_ginfo("\n");
 	print_supported_boards_helper(boards_known, "mainboards");
