@@ -315,8 +315,7 @@ static int linux_mtd_setup(int dev_num, struct linux_mtd_data *data)
 	if (snprintf(sysfs_path, sizeof(sysfs_path), "%s/mtd%d/", LINUX_MTD_SYSFS_ROOT, dev_num) < 0)
 		goto linux_mtd_setup_exit;
 
-	char buf[4];
-	memset(buf, 0, sizeof(buf));
+	char buf[4] = { 0 };
 	if (read_sysfs_string(sysfs_path, "type", buf, sizeof(buf)))
 		return 1;
 

@@ -74,9 +74,8 @@ static uint8_t reverse(uint8_t b)
 
 static int send_write(unsigned int writecnt, const unsigned char *writearr, struct ftdi_context ftdic)
 {
-	uint8_t buf[BUF_SIZE];
+	uint8_t buf[BUF_SIZE] = { 0 };
 
-	memset(buf, 0, sizeof(buf));
 	while (writecnt) {
 		unsigned int i;
 		unsigned int n_write = min(writecnt, BUF_SIZE - 1);
@@ -101,8 +100,7 @@ static int send_read(unsigned int readcnt, unsigned char *readarr, struct ftdi_c
 {
 	int i;
 	unsigned int n_read;
-	uint8_t buf[BUF_SIZE];
-	memset(buf, 0, sizeof(buf));
+	uint8_t buf[BUF_SIZE] = { 0 };
 
 	n_read = readcnt;
 	while (n_read) {
@@ -181,7 +179,7 @@ static const struct spi_master spi_master_usbblaster = {
 /* Returns 0 upon success, a negative number upon errors. */
 int usbblaster_spi_init(void)
 {
-	uint8_t buf[BUF_SIZE + 1];
+	uint8_t buf[BUF_SIZE + 1] = { 0 };
 	struct ftdi_context ftdic;
 	struct usbblaster_spi_data *usbblaster_data;
 
@@ -209,7 +207,6 @@ int usbblaster_spi_init(void)
 		return -1;
 	}
 
-	memset(buf, 0, sizeof(buf));
 	buf[sizeof(buf)-1] = BIT_LED | BIT_CS;
 	if (ftdi_write_data(&ftdic, buf, sizeof(buf)) < 0) {
 		msg_perr("USB-Blaster reset write failed\n");

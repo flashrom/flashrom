@@ -1510,11 +1510,9 @@ int raiden_debug_spi_init(void)
 			found = 1;
 			goto loop_end;
 		} else {
-			unsigned char dev_serial[32];
+			unsigned char dev_serial[32] = { 0 };
 			struct libusb_device_descriptor descriptor;
 			int rc;
-
-			memset(dev_serial, 0, sizeof(dev_serial));
 
 			if (libusb_get_device_descriptor(device->device, &descriptor)) {
 				msg_pdbg("USB: Failed to get device descriptor.\n");
@@ -1591,7 +1589,7 @@ loop_end:
 		return SPI_GENERIC_ERROR;
 	}
 
-	memcpy(spi_config, &spi_master_raiden_debug, sizeof(*spi_config));
+	*spi_config = spi_master_raiden_debug;
 
 	data->dev = device;
 	data->in_ep = in_endpoint;

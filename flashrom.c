@@ -761,7 +761,7 @@ int probe_flash(struct registered_master *mst, int startchip, struct flashctx *f
 			msg_gerr("Out of memory!\n");
 			exit(1);
 		}
-		memcpy(flash->chip, chip, sizeof(*flash->chip));
+		*flash->chip = *chip;
 		flash->mst = mst;
 
 		if (map_flash(flash) != 0)
@@ -1619,11 +1619,9 @@ void list_programmers_linebreak(int startcol, int cols, int paren)
 static void print_sysinfo(void)
 {
 #if IS_WINDOWS
-	SYSTEM_INFO si;
-	OSVERSIONINFOEX osvi;
+	SYSTEM_INFO si = { 0 };
+	OSVERSIONINFOEX osvi = { 0 };
 
-	memset(&si, 0, sizeof(SYSTEM_INFO));
-	memset(&osvi, 0, sizeof(OSVERSIONINFOEX));
 	msg_ginfo(" on Windows");
 	/* Tell Windows which version of the structure we want. */
 	osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);

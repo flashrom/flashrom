@@ -433,8 +433,7 @@ int wrmsr(int addr, msr_t msr)
 
 int setup_cpu_msr(int cpu)
 {
-	char msrfilename[64];
-	memset(msrfilename, 0, sizeof(msrfilename));
+	char msrfilename[64] = { 0 };
 	snprintf(msrfilename, sizeof(msrfilename), "/dev/cpu/%d/msr", cpu);
 
 	if (fd_msr != -1) {
@@ -509,8 +508,7 @@ int wrmsr(int addr, msr_t msr)
 
 int setup_cpu_msr(int cpu)
 {
-	char msrfilename[64];
-	memset(msrfilename, 0, sizeof(msrfilename));
+	char msrfilename[64] = { 0 };
 	snprintf(msrfilename, sizeof(msrfilename), "/dev/amdmsr");
 
 	if (fd_msr != -1) {
@@ -591,8 +589,7 @@ int wrmsr(int addr, msr_t msr)
 
 int setup_cpu_msr(int cpu)
 {
-	char msrfilename[64];
-	memset(msrfilename, 0, sizeof(msrfilename));
+	char msrfilename[64] = { 0 };
 	snprintf(msrfilename, sizeof(msrfilename), "/dev/cpu%d", cpu);
 
 	if (fd_msr != -1) {
