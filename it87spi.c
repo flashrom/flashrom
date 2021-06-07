@@ -411,7 +411,7 @@ static uint16_t it87spi_probe(uint16_t port)
 	free(param);
 	exit_conf_mode_ite(port);
 
-	struct it8716f_spi_data *data = calloc(1, sizeof(struct it8716f_spi_data));
+	struct it8716f_spi_data *data = calloc(1, sizeof(*data));
 	if (!data) {
 		msg_perr("Unable to allocate space for extra SPI master data.\n");
 		return SPI_GENERIC_ERROR;

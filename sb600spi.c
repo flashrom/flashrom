@@ -777,7 +777,7 @@ int sb600_probe_spi(struct pci_dev *dev)
 	if (handle_imc(dev, amd_gen) != 0)
 		return ERROR_FATAL;
 
-	struct sb600spi_data *data = calloc(1, sizeof(struct sb600spi_data));
+	struct sb600spi_data *data = calloc(1, sizeof(*data));
 	if (!data) {
 		msg_perr("Unable to allocate space for extra SPI master data.\n");
 		return SPI_GENERIC_ERROR;

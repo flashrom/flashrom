@@ -247,7 +247,7 @@ static int undo_mmio_write(void *p)
 #define register_undo_mmio_write(a, c)					\
 {									\
 	struct undo_mmio_write_data *undo_mmio_write_data;		\
-	undo_mmio_write_data = malloc(sizeof(struct undo_mmio_write_data)); \
+	undo_mmio_write_data = malloc(sizeof(*undo_mmio_write_data));	\
 	if (!undo_mmio_write_data) {					\
 		msg_gerr("Out of memory!\n");				\
 		exit(1);						\

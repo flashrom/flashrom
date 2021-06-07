@@ -1731,7 +1731,7 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 	ich_generation = ich_gen;
 	ich_spibar = spibar;
 
-	memset(&desc, 0x00, sizeof(struct ich_descriptors));
+	memset(&desc, 0x00, sizeof(desc));
 
 	/* Moving registers / bits */
 	switch (ich_gen) {

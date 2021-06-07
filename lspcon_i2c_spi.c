@@ -446,7 +446,7 @@ int lspcon_i2c_spi_init(void)
 		return ret;
 	}
 
-	struct lspcon_i2c_spi_data *data = calloc(1, sizeof(struct lspcon_i2c_spi_data));
+	struct lspcon_i2c_spi_data *data = calloc(1, sizeof(*data));
 	if (!data) {
 		msg_perr("Unable to allocate space for extra SPI master data.\n");
 		i2c_close(fd);

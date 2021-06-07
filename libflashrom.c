@@ -182,7 +182,7 @@ struct flashrom_board_info *flashrom_supported_boards(void)
 	++boards_known_size;
 
 	struct flashrom_board_info *supported_boards =
-		malloc(boards_known_size * sizeof(struct flashrom_board_info));
+		malloc(boards_known_size * sizeof(*supported_boards));
 
 	if (supported_boards != NULL) {
 		for (; i < boards_known_size; ++i) {

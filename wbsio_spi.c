@@ -207,7 +207,7 @@ int wbsio_check_for_spi(void)
 		 "1024 kB!\n", __func__);
 	max_rom_decode.spi = 1024 * 1024;
 
-	struct wbsio_spi_data * data = calloc(1, sizeof(struct wbsio_spi_data));
+	struct wbsio_spi_data *data = calloc(1, sizeof(*data));
 	if (!data) {
 		msg_perr("Unable to allocate space for extra SPI master data.\n");
 		return SPI_GENERIC_ERROR;

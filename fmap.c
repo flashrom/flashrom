@@ -195,7 +195,7 @@ static int fmap_bsearch_rom(struct fmap **fmap_out, struct flashctx *const flash
 	if (prepare_flash_access(flashctx, true, false, false, false))
 		return 1;
 
-	fmap = malloc(sizeof(struct fmap));
+	fmap = malloc(sizeof(*fmap));
 	if (!fmap) {
 		msg_gerr("Out of memory.\n");
 		goto _free_ret;

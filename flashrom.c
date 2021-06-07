@@ -756,12 +756,12 @@ int probe_flash(struct registered_master *mst, int startchip, struct flashctx *f
 		}
 
 		/* Start filling in the dynamic data. */
-		flash->chip = calloc(1, sizeof(struct flashchip));
+		flash->chip = calloc(1, sizeof(*flash->chip));
 		if (!flash->chip) {
 			msg_gerr("Out of memory!\n");
 			exit(1);
 		}
-		memcpy(flash->chip, chip, sizeof(struct flashchip));
+		memcpy(flash->chip, chip, sizeof(*flash->chip));
 		flash->mst = mst;
 
 		if (map_flash(flash) != 0)

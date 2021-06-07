@@ -292,7 +292,7 @@ static void *physmap_common(const char *descr, uintptr_t phys_addr, size_t len, 
 	}
 
 	if (autocleanup) {
-		struct undo_physmap_data *d = malloc(sizeof(struct undo_physmap_data));
+		struct undo_physmap_data *d = malloc(sizeof(*d));
 		if (d == NULL) {
 			msg_perr("%s: Out of memory!\n", __func__);
 			physunmap_unaligned(virt_addr, len);

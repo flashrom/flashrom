@@ -99,7 +99,7 @@ static int check_match(struct usb_match_value const *match_value, int value)
 static void add_device(struct usb_device *device,
 		       struct usb_device **devices)
 {
-	struct usb_device *copy = malloc(sizeof(struct usb_device));
+	struct usb_device *copy = malloc(sizeof(*copy));
 
 	assert(copy != NULL);
 

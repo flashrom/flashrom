@@ -296,7 +296,7 @@ static int undo_pci_write(void *p)
 #define register_undo_pci_write(a, b, c)				\
 {									\
 	struct undo_pci_write_data *undo_pci_write_data;		\
-	undo_pci_write_data = malloc(sizeof(struct undo_pci_write_data)); \
+	undo_pci_write_data = malloc(sizeof(*undo_pci_write_data));	\
 	if (!undo_pci_write_data) {					\
 		msg_gerr("Out of memory!\n");				\
 		exit(1);						\

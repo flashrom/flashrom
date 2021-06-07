@@ -162,7 +162,7 @@ int register_spi_bitbang_master(const struct bitbang_spi_master *master, void *s
 		return ERROR_FLASHROM_BUG;
 	}
 
-	struct bitbang_spi_master_data *data = calloc(1, sizeof(struct bitbang_spi_master_data));
+	struct bitbang_spi_master_data *data = calloc(1, sizeof(*data));
 	data->master = master;
 	if (spi_data)
 		data->spi_data = spi_data;
