@@ -22,21 +22,11 @@
 #include "chipdrivers.h"
 #include "programmer.h"
 #include "flashchips.h"
-
-/* Remove the #define below if you don't want SPI flash chip emulation. */
-#define EMULATE_SPI_CHIP 1
-
-#if EMULATE_SPI_CHIP
-#define EMULATE_CHIP 1
 #include "spi.h"
-#endif
 
-#if EMULATE_CHIP
 #include <sys/types.h>
 #include <sys/stat.h>
-#endif
 
-#if EMULATE_CHIP
 enum emu_chip {
 	EMULATE_NONE,
 	EMULATE_ST_M25P10_RES,
@@ -73,7 +63,6 @@ struct emu_data {
 	uint8_t *flashchip_contents;
 };
 
-#if EMULATE_SPI_CHIP
 /* A legit complete SFDP table based on the MX25L6436E (rev. 1.8) datasheet. */
 static const uint8_t sfdp_table[] = {
 	0x53, 0x46, 0x44, 0x50, // @0x00: SFDP signature
@@ -99,9 +88,6 @@ static const uint8_t sfdp_table[] = {
 	0xD9, 0xC8, 0xFF, 0xFF, // @0x50
 	0xFF, 0xFF, 0xFF, 0xFF, // @0x54: Macronix parameter table end
 };
-
-#endif
-#endif
 
 void *dummy_map(const char *descr, uintptr_t phys_addr, size_t len)
 {
@@ -173,7 +159,6 @@ static void dummy_chip_readn(const struct flashctx *flash, uint8_t *buf, const c
 	return;
 }
 
-#if EMULATE_SPI_CHIP
 static int emulate_spi_chip_response(unsigned int writecnt,
 				     unsigned int readcnt,
 				     const unsigned char *writearr,
@@ -550,7 +535,6 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 		data->emu_status &= ~SPI_SR_WEL;
 	return 0;
 }
-#endif
 
 static int dummy_spi_send_command(const struct flashctx *flash, unsigned int writecnt,
 				  unsigned int readcnt,
@@ -572,7 +556,6 @@ static int dummy_spi_send_command(const struct flashctx *flash, unsigned int wri
 
 	/* Response for unknown commands and missing chip is 0xff. */
 	memset(readarr, 0xff, readcnt);
-#if EMULATE_SPI_CHIP
 	switch (emu_data->emu_chip) {
 	case EMULATE_ST_M25P10_RES:
 	case EMULATE_SST_SST25VF040_REMS:
@@ -589,7 +572,6 @@ static int dummy_spi_send_command(const struct flashctx *flash, unsigned int wri
 	default:
 		break;
 	}
-#endif
 	msg_pspew(" reading %u bytes:", readcnt);
 	for (i = 0; i < readcnt; i++)
 		msg_pspew(" 0x%02x", readarr[i]);
@@ -626,7 +608,6 @@ static const struct par_master par_master_dummyflasher = {
 static int dummy_shutdown(void *data)
 {
 	msg_pspew("%s\n", __func__);
-#if EMULATE_CHIP
 	struct emu_data *emu_data = (struct emu_data *)data;
 	if (emu_data->emu_chip != EMULATE_NONE) {
 		if (emu_data->emu_persistent_image && emu_data->emu_modified) {
@@ -638,7 +619,6 @@ static int dummy_shutdown(void *data)
 		free(emu_data->emu_persistent_image);
 		free(emu_data->flashchip_contents);
 	}
-#endif
 	free(data);
 	return 0;
 }
@@ -650,10 +630,8 @@ static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_suppor
 	char *tmp = NULL;
 	unsigned int i;
 	char *endptr;
-#if EMULATE_SPI_CHIP
 	char *status = NULL;
 	int size = -1;  /* size for VARIABLE_SIZE chip device */
-#endif
 
 	bustext = extract_programmer_param("bus");
 	msg_pdbg("Requested buses are: %s\n", bustext ? bustext : "default");
@@ -812,8 +790,6 @@ static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_suppor
 	}
 	free(tmp);
 
-#if EMULATE_CHIP
-#if EMULATE_SPI_CHIP
 	tmp = extract_programmer_param("size");
 	if (tmp) {
 		size = strtol(tmp, NULL, 10);
@@ -825,7 +801,6 @@ static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_suppor
 		}
 		free(tmp);
 	}
-#endif /* EMULATE_SPI_CHIP */
 
 	tmp = extract_programmer_param("emulate");
 	if (!tmp) {
@@ -834,7 +809,6 @@ static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_suppor
 		return 0;
 	}
 
-#if EMULATE_SPI_CHIP
 	if (!strcmp(tmp, "M25P10.RES")) {
 		data->emu_chip = EMULATE_ST_M25P10_RES;
 		data->emu_chip_size = 128 * 1024;
@@ -921,7 +895,7 @@ static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_suppor
 		msg_pdbg("Emulating generic SPI flash chip (size=%d bytes)\n",
 		         data->emu_chip_size);
 	}
-#endif /* EMULATE_SPI_CHIP */
+
 	if (data->emu_chip == EMULATE_NONE) {
 		msg_perr("Invalid chip specified for emulation: %s\n", tmp);
 		free(tmp);
@@ -945,7 +919,6 @@ static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_suppor
 	}
 	free(tmp);
 
-#ifdef EMULATE_SPI_CHIP
 	status = extract_programmer_param("spi_status");
 	if (status) {
 		errno = 0;
@@ -960,7 +933,6 @@ static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_suppor
 		msg_pdbg("Initial status register is set to 0x%02x.\n",
 			 data->emu_status);
 	}
-#endif /* EMULATE_SPI_CHIP */
 
 	data->flashchip_contents = malloc(data->emu_chip_size);
 	if (!data->flashchip_contents) {
@@ -968,16 +940,12 @@ static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_suppor
 		return 1;
 	}
 
-#endif /* EMULATE_CHIP */
-
 	return 0;
 }
 
 int dummy_init(void)
 {
-#if EMULATE_CHIP
 	struct stat image_stat;
-#endif
 
 	struct emu_data *data = calloc(1, sizeof(struct emu_data));
 	if (!data) {
@@ -996,7 +964,6 @@ int dummy_init(void)
 		return 1;
 	}
 
-#if EMULATE_CHIP
 	if (data->emu_chip == EMULATE_NONE) {
 		msg_pdbg("Not emulating any flash chip.\n");
 		/* Nothing else to do. */
@@ -1033,7 +1000,6 @@ int dummy_init(void)
 			msg_pdbg("doesn't match.\n");
 		}
 	}
-#endif /* EMULATE_CHIP */
 
 dummy_init_out:
 	if (register_shutdown(dummy_shutdown, data)) {
@@ -1052,7 +1018,6 @@ dummy_init_out:
 	return 0;
 }
 
-#if EMULATE_CHIP && EMULATE_SPI_CHIP
 int probe_variable_size(struct flashctx *flash)
 {
 	unsigned int i;
@@ -1095,4 +1060,3 @@ int probe_variable_size(struct flashctx *flash)
 
 	return 1;
 }
-#endif
