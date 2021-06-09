@@ -114,26 +114,6 @@ const char *flashrom_version_info(void)
 }
 
 /**
- * @brief Returns list of supported programmers
- * @return List of supported programmers, or NULL if an error occurred
- */
-const char **flashrom_supported_programmers(void)
-{
-	size_t p = 0;
-	const char **supported_programmers = malloc((programmer_table_size + 1) * sizeof(char*));
-
-	if (supported_programmers != NULL) {
-		for (; p < programmer_table_size; ++p) {
-			supported_programmers[p] = programmer_table[p]->name;
-		}
-	} else {
-		msg_gerr("Memory allocation error!\n");
-	}
-
-	return supported_programmers;
-}
-
-/**
  * @brief Returns list of supported flash chips
  * @return List of supported flash chips, or NULL if an error occurred
  */

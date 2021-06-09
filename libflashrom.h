@@ -76,7 +76,6 @@ struct flashrom_chipset_info {
 
 const char *flashrom_version_info(void);
 void flashrom_system_info(void);
-const char **flashrom_supported_programmers(void);
 struct flashrom_flashchip_info *flashrom_supported_flash_chips(void);
 struct flashrom_board_info *flashrom_supported_boards(void);
 struct flashrom_chipset_info *flashrom_supported_chipsets(void);
