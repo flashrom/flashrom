@@ -947,7 +947,7 @@ static int dummy_init(void)
 {
 	struct stat image_stat;
 
-	struct emu_data *data = calloc(1, sizeof(struct emu_data));
+	struct emu_data *data = calloc(1, sizeof(*data));
 	if (!data) {
 		msg_perr("Out of memory!\n");
 		return 1;
