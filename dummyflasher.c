@@ -18,14 +18,13 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include "flash.h"
 #include "chipdrivers.h"
 #include "programmer.h"
 #include "flashchips.h"
 #include "spi.h"
-
-#include <sys/types.h>
-#include <sys/stat.h>
 
 enum emu_chip {
 	EMULATE_NONE,
