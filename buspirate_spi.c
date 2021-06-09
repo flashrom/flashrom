@@ -51,8 +51,8 @@ static int buspirate_serialport_setup(char *dev)
 #endif
 
 struct bp_spi_data {
-	unsigned char *bp_commbuf;
-	int bp_commbufsize;
+	unsigned char *commbuf;
+	int commbufsize;
 };
 
 static int buspirate_commbuf_grow(int bufsize, unsigned char **bp_commbuf, int *bp_commbufsize)
@@ -165,7 +165,7 @@ static const struct buspirate_speeds serialspeeds[] = {
 static int buspirate_spi_shutdown(void *data)
 {
 	struct bp_spi_data *bp_data = data;
-	unsigned char *const bp_commbuf = bp_data->bp_commbuf;
+	unsigned char *const bp_commbuf = bp_data->commbuf;
 	int ret = 0, ret2 = 0;
 	/* No need to allocate a buffer here, we know that bp_commbuf is at least DEFAULT_BUFSIZE big. */
 
@@ -215,10 +215,10 @@ static int buspirate_spi_send_command_v1(const struct flashctx *flash, unsigned 
 		return SPI_INVALID_LENGTH;
 
 	/* 3 bytes extra for CS#, len, CS#. */
-	if (buspirate_commbuf_grow(writecnt + readcnt + 3, &bp_data->bp_commbuf, &bp_data->bp_commbufsize))
+	if (buspirate_commbuf_grow(writecnt + readcnt + 3, &bp_data->commbuf, &bp_data->commbufsize))
 		return ERROR_OOM;
 
-	unsigned char *const bp_commbuf = bp_data->bp_commbuf;
+	unsigned char *const bp_commbuf = bp_data->commbuf;
 
 	/* Assert CS# */
 	bp_commbuf[i++] = 0x02;
@@ -272,10 +272,10 @@ static int buspirate_spi_send_command_v2(const struct flashctx *flash, unsigned 
 	/* 5 bytes extra for command, writelen, readlen.
 	 * 1 byte extra for Ack/Nack.
 	 */
-	if (buspirate_commbuf_grow(max(writecnt + 5, readcnt + 1), &bp_data->bp_commbuf, &bp_data->bp_commbufsize))
+	if (buspirate_commbuf_grow(max(writecnt + 5, readcnt + 1), &bp_data->commbuf, &bp_data->commbufsize))
 		return ERROR_OOM;
 
-	unsigned char *const bp_commbuf = bp_data->bp_commbuf;
+	unsigned char *const bp_commbuf = bp_data->commbuf;
 
 	/* Combined SPI write/read. */
 	bp_commbuf[i++] = 0x04;
@@ -401,8 +401,8 @@ static int buspirate_spi_init(void)
 		free(bp_commbuf);
 		return 1;
 	}
-	bp_data->bp_commbuf = bp_commbuf;
-	bp_data->bp_commbufsize = bp_commbufsize;
+	bp_data->commbuf = bp_commbuf;
+	bp_data->commbufsize = bp_commbufsize;
 
 	/* This is the brute force version, but it should work.
 	 * It is likely to fail if a previous flashrom run was aborted during a write with the new SPI commands
@@ -504,8 +504,8 @@ static int buspirate_spi_init(void)
 			ret = ERROR_OOM;
 			goto init_err_cleanup_exit;
 		}
-		bp_data->bp_commbuf = bp_commbuf;
-		bp_data->bp_commbufsize = bp_commbufsize;
+		bp_data->commbuf = bp_commbuf;
+		bp_data->commbufsize = bp_commbufsize;
 		spi_master_buspirate.max_data_read = 2048;
 		spi_master_buspirate.max_data_write = 256;
 		spi_master_buspirate.command = buspirate_spi_send_command_v2;
@@ -518,8 +518,8 @@ static int buspirate_spi_init(void)
 			ret = ERROR_OOM;
 			goto init_err_cleanup_exit;
 		}
-		bp_data->bp_commbuf = bp_commbuf;
-		bp_data->bp_commbufsize = bp_commbufsize;
+		bp_data->commbuf = bp_commbuf;
+		bp_data->commbufsize = bp_commbufsize;
 		spi_master_buspirate.max_data_read = 12;
 		spi_master_buspirate.max_data_write = 12;
 		spi_master_buspirate.command = buspirate_spi_send_command_v1;
