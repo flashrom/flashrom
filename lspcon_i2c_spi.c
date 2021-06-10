@@ -318,11 +318,13 @@ static int lspcon_i2c_clt2_spi_reset(int fd)
 	return ret;
 }
 
-static int lspcon_i2c_spi_reset_mpu_stop(int fd)
+static int lspcon_i2c_spi_set_mpu_active(int fd, int running)
 {
 	int ret = 0;
-	ret |= lspcon_i2c_spi_write_register(fd, MPU, 0xc0); // cmd mode
-	ret |= lspcon_i2c_spi_write_register(fd, MPU, 0x40); // stop mcu
+	// Cmd mode
+	ret |= lspcon_i2c_spi_write_register(fd, MPU, 0xc0);
+	// Stop or release MPU
+	ret |= lspcon_i2c_spi_write_register(fd, MPU, running ? 0 : 0x40);
 
 	return ret;
 }
@@ -418,15 +420,16 @@ static const struct spi_master spi_master_i2c_lspcon = {
 	.write_aai = lspcon_i2c_spi_write_aai,
 };
 
-/* TODO: MPU still stopped at this point, probably need to reset it. */
 static int lspcon_i2c_spi_shutdown(void *data)
 {
 	int ret = 0;
         struct lspcon_i2c_spi_data *lspcon_data =
 		(struct lspcon_i2c_spi_data *)data;
 	int fd = lspcon_data->fd;
+
 	ret |= lspcon_i2c_spi_enable_write_protection(fd);
 	ret |= lspcon_i2c_spi_toggle_register_protection(fd, 0);
+	ret |= lspcon_i2c_spi_set_mpu_active(fd, 1);
 	i2c_close(fd);
 	free(data);
 
@@ -439,9 +442,9 @@ static int lspcon_i2c_spi_init(void)
 	if (fd < 0)
 		return fd;
 
-	int ret = lspcon_i2c_spi_reset_mpu_stop(fd);
+	int ret = lspcon_i2c_spi_set_mpu_active(fd, 0);
 	if (ret) {
-		msg_perr("%s: call to reset_mpu_stop failed.\n", __func__);
+		msg_perr("%s: call to set_mpu_active failed.\n", __func__);
 		i2c_close(fd);
 		return ret;
 	}
