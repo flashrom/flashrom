@@ -57,6 +57,47 @@ struct programmer_entry {
 extern const struct programmer_entry *const programmer_table[];
 extern const size_t programmer_table_size;
 
+/* programmer drivers */
+extern const struct programmer_entry programmer_internal;
+extern const struct programmer_entry programmer_dummy;
+extern const struct programmer_entry programmer_nic3com;
+extern const struct programmer_entry programmer_gfxnvidia;
+extern const struct programmer_entry programmer_raiden_debug_spi;
+extern const struct programmer_entry programmer_drkaiser;
+extern const struct programmer_entry programmer_nicrealtek;
+extern const struct programmer_entry programmer_nicnatsemi;
+extern const struct programmer_entry programmer_nicintel;
+extern const struct programmer_entry programmer_nicintel_spi;
+extern const struct programmer_entry programmer_nicintel_eeprom;
+extern const struct programmer_entry programmer_ogp_spi;
+extern const struct programmer_entry programmer_satamv;
+extern const struct programmer_entry programmer_satasii;
+extern const struct programmer_entry programmer_atahpt;
+extern const struct programmer_entry programmer_atavia;
+extern const struct programmer_entry programmer_atapromise;
+extern const struct programmer_entry programmer_it8212;
+extern const struct programmer_entry programmer_ft2232_spi;
+extern const struct programmer_entry programmer_usbblaster_spi;
+extern const struct programmer_entry programmer_mstarddc_spi;
+extern const struct programmer_entry programmer_pickit2_spi;
+extern const struct programmer_entry programmer_stlinkv3_spi;
+extern const struct programmer_entry programmer_rayer_spi;
+extern const struct programmer_entry programmer_pony_spi;
+extern const struct programmer_entry programmer_buspirate_spi;
+extern const struct programmer_entry programmer_linux_mtd;
+extern const struct programmer_entry programmer_linux_spi;
+extern const struct programmer_entry programmer_dediprog;
+extern const struct programmer_entry programmer_developerbox;
+extern const struct programmer_entry programmer_ch341a_spi;
+extern const struct programmer_entry programmer_digilent_spi;
+extern const struct programmer_entry programmer_ene_lpc;
+extern const struct programmer_entry programmer_jlink_spi;
+extern const struct programmer_entry programmer_ni845x_spi;
+extern const struct programmer_entry programmer_mec1308;
+extern const struct programmer_entry programmer_serprog;
+extern const struct programmer_entry programmer_lspcon_i2c_spi;
+extern const struct programmer_entry programmer_realtek_mst_i2c_spi;
+
 int programmer_init(const struct programmer_entry *prog, const char *param);
 int programmer_shutdown(void);
 
@@ -241,7 +282,6 @@ extern int force_boardmismatch;
 void probe_superio(void);
 int register_superio(struct superio s);
 extern enum chipbustype internal_buses_supported;
-extern const struct programmer_entry programmer_internal;
 #endif
 
 /* hwaccess.c */
@@ -277,178 +317,9 @@ void rmmio_valb(void *addr);
 void rmmio_valw(void *addr);
 void rmmio_vall(void *addr);
 
-/* dummyflasher.c */
-#if CONFIG_DUMMY == 1
-extern const struct programmer_entry programmer_dummy;
-#endif
-
-/* nic3com.c */
-#if CONFIG_NIC3COM == 1
-extern const struct programmer_entry programmer_nic3com;
-#endif
-
-/* gfxnvidia.c */
-#if CONFIG_GFXNVIDIA == 1
-extern const struct programmer_entry programmer_gfxnvidia;
-#endif
-
-/* raiden_debug_spi.c */
-#if CONFIG_RAIDEN_DEBUG_SPI == 1
-extern const struct programmer_entry programmer_raiden_debug_spi;
-#endif
-
-/* drkaiser.c */
-#if CONFIG_DRKAISER == 1
-extern const struct programmer_entry programmer_drkaiser;
-#endif
-
-/* nicrealtek.c */
-#if CONFIG_NICREALTEK == 1
-extern const struct programmer_entry programmer_nicrealtek;
-#endif
-
-/* nicnatsemi.c */
-#if CONFIG_NICNATSEMI == 1
-extern const struct programmer_entry programmer_nicnatsemi;
-#endif
-
-/* nicintel.c */
-#if CONFIG_NICINTEL == 1
-extern const struct programmer_entry programmer_nicintel;
-#endif
-
-/* nicintel_spi.c */
-#if CONFIG_NICINTEL_SPI == 1
-extern const struct programmer_entry programmer_nicintel_spi;
-#endif
-
-/* nicintel_eeprom.c */
-#if CONFIG_NICINTEL_EEPROM == 1
-extern const struct programmer_entry programmer_nicintel_eeprom;
-#endif
-
-/* ogp_spi.c */
-#if CONFIG_OGP_SPI == 1
-extern const struct programmer_entry programmer_ogp_spi;
-#endif
-
-/* satamv.c */
-#if CONFIG_SATAMV == 1
-extern const struct programmer_entry programmer_satamv;
-#endif
-
-/* satasii.c */
-#if CONFIG_SATASII == 1
-extern const struct programmer_entry programmer_satasii;
-#endif
-
-/* atahpt.c */
-#if CONFIG_ATAHPT == 1
-extern const struct programmer_entry programmer_atahpt;
-#endif
-
-/* atavia.c */
-#if CONFIG_ATAVIA == 1
-extern const struct programmer_entry programmer_atavia;
-#endif
-
-/* atapromise.c */
-#if CONFIG_ATAPROMISE == 1
-extern const struct programmer_entry programmer_atapromise;
-#endif
-
-/* it8212.c */
-#if CONFIG_IT8212 == 1
-extern const struct programmer_entry programmer_it8212;
-#endif
-
-/* ft2232_spi.c */
-#if CONFIG_FT2232_SPI == 1
-extern const struct programmer_entry programmer_ft2232_spi;
-#endif
-
-/* usbblaster_spi.c */
-#if CONFIG_USBBLASTER_SPI == 1
-extern const struct programmer_entry programmer_usbblaster_spi;
-#endif
-
-/* mstarddc_spi.c */
-#if CONFIG_MSTARDDC_SPI == 1
-extern const struct programmer_entry programmer_mstarddc_spi;
-#endif
-
-/* pickit2_spi.c */
-#if CONFIG_PICKIT2_SPI == 1
-extern const struct programmer_entry programmer_pickit2_spi;
-#endif
-
-/* stlinkv3_spi.c */
-#if CONFIG_STLINKV3_SPI == 1
-extern const struct programmer_entry programmer_stlinkv3_spi;
-#endif
-
-/* rayer_spi.c */
-#if CONFIG_RAYER_SPI == 1
-extern const struct programmer_entry programmer_rayer_spi;
-#endif
-
-/* pony_spi.c */
-#if CONFIG_PONY_SPI == 1
-extern const struct programmer_entry programmer_pony_spi;
-#endif
-
 /* bitbang_spi.c */
 int register_spi_bitbang_master(const struct bitbang_spi_master *master, void *spi_data);
 
-/* buspirate_spi.c */
-#if CONFIG_BUSPIRATE_SPI == 1
-extern const struct programmer_entry programmer_buspirate_spi;
-#endif
-
-/* linux_mtd.c */
-#if CONFIG_LINUX_MTD == 1
-extern const struct programmer_entry programmer_linux_mtd;
-#endif
-
-/* linux_spi.c */
-#if CONFIG_LINUX_SPI == 1
-extern const struct programmer_entry programmer_linux_spi;
-#endif
-
-/* dediprog.c */
-#if CONFIG_DEDIPROG == 1
-extern const struct programmer_entry programmer_dediprog;
-#endif
-
-/* developerbox_spi.c */
-#if CONFIG_DEVELOPERBOX_SPI == 1
-extern const struct programmer_entry programmer_developerbox;
-#endif
-
-/* ch341a_spi.c */
-#if CONFIG_CH341A_SPI == 1
-extern const struct programmer_entry programmer_ch341a_spi;
-#endif
-
-/* digilent_spi.c */
-#if CONFIG_DIGILENT_SPI == 1
-extern const struct programmer_entry programmer_digilent_spi;
-#endif
-
-/* ene_lpc.c */
-#if CONFIG_ENE_LPC == 1
-extern const struct programmer_entry programmer_ene_lpc;
-#endif
-
-/* jlink_spi.c */
-#if CONFIG_JLINK_SPI == 1
-extern const struct programmer_entry programmer_jlink_spi;
-#endif
-
-/* ni845x_spi.c */
-#if CONFIG_NI845X_SPI == 1
-extern const struct programmer_entry programmer_ni845x_spi;
-#endif
 
 /* flashrom.c */
 struct decode_sizes {
@@ -553,10 +424,7 @@ static inline int try_mtd(void) { return 1; };
 /* mcp6x_spi.c */
 int mcp6x_spi_init(int want_spi);
 
-/* mec1308.c */
-#if CONFIG_MEC1308 == 1
-extern const struct programmer_entry programmer_mec1308;
-#endif
+
 
 /* sb600spi.c */
 int sb600_probe_spi(struct pci_dev *dev);
@@ -611,10 +479,7 @@ extern struct registered_master registered_masters[];
 extern int registered_master_count;
 int register_master(const struct registered_master *mst);
 
-/* serprog.c */
-#if CONFIG_SERPROG == 1
-extern const struct programmer_entry programmer_serprog;
-#endif
+
 
 /* serial.c */
 #if IS_WINDOWS
@@ -682,14 +547,5 @@ struct libusb_device_handle *usb_dev_get_by_vid_pid_serial(
 struct libusb_device_handle *usb_dev_get_by_vid_pid_number(
 		struct libusb_context *usb_ctx, uint16_t vid, uint16_t pid, unsigned int num);
 
-/* lspcon_i2c_spi.c */
-#if CONFIG_LSPCON_I2C_SPI == 1
-extern const struct programmer_entry programmer_lspcon_i2c_spi;
-#endif
-
-/* realtek_mst_i2c_spi.c */
-#if CONFIG_REALTEK_MST_I2C_SPI == 1
-extern const struct programmer_entry programmer_realtek_mst_i2c_spi;
-#endif
 
 #endif				/* !__PROGRAMMER_H__ */
