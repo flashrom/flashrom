@@ -45,6 +45,7 @@ ssize_t ich_number_of_regions(const enum ich_chipset cs, const struct ich_desc_c
 	case CHIPSET_C620_SERIES_LEWISBURG:
 	case CHIPSET_300_SERIES_CANNON_POINT:
 	case CHIPSET_400_SERIES_COMET_POINT:
+	case CHIPSET_500_SERIES_TIGER_POINT:
 		return 16;
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 		return 10;
@@ -108,7 +109,7 @@ void prettyprint_ich_chipset(enum ich_chipset cs)
 		"8 series Lynx Point", "Baytrail", "8 series Lynx Point LP", "8 series Wellsburg",
 		"9 series Wildcat Point", "9 series Wildcat Point LP", "100 series Sunrise Point",
 		"C620 series Lewisburg", "300 series Cannon Point", "400 series Comet Point",
-		"Apollo Lake", "Gemini Lake",
+		"500 series Tiger Point", "Apollo Lake", "Gemini Lake",
 	};
 	if (cs < CHIPSET_ICH8 || cs - CHIPSET_ICH8 + 1 >= ARRAY_SIZE(chipset_names))
 		cs = 0;
@@ -202,6 +203,7 @@ static const char *pprint_density(enum ich_chipset cs, const struct ich_descript
 	case CHIPSET_C620_SERIES_LEWISBURG:
 	case CHIPSET_300_SERIES_CANNON_POINT:
 	case CHIPSET_400_SERIES_COMET_POINT:
+	case CHIPSET_500_SERIES_TIGER_POINT:
 	case CHIPSET_APOLLO_LAKE:
 	case CHIPSET_GEMINI_LAKE: {
 		uint8_t size_enc;
@@ -222,7 +224,7 @@ static const char *pprint_density(enum ich_chipset cs, const struct ich_descript
 
 static const char *pprint_freq(enum ich_chipset cs, uint8_t value)
 {
-	static const char *const freq_str[3][8] = { {
+	static const char *const freq_str[4][8] = { {
 		"20 MHz",
 		"33 MHz",
 		"reserved",
@@ -249,7 +251,16 @@ static const char *pprint_freq(enum ich_chipset cs, uint8_t value)
 		"reserved",
 		"14 MHz / 17 MHz",
 		"reserved"
-	} };
+	}, {
+		"100 MHz",
+		"50 MHz",
+		"reserved",
+		"33 MHz",
+		"25 MHz",
+		"reserved",
+		"14 MHz",
+		"reserved"
+	}};
 
 	switch (cs) {
 	case CHIPSET_ICH8:
@@ -276,9 +287,38 @@ static const char *pprint_freq(enum ich_chipset cs, uint8_t value)
 	case CHIPSET_APOLLO_LAKE:
 	case CHIPSET_GEMINI_LAKE:
 		return freq_str[2][value];
+	case CHIPSET_500_SERIES_TIGER_POINT:
+		return freq_str[3][value];
 	case CHIPSET_ICH_UNKNOWN:
 	default:
 		return "unknown";
+	}
+}
+
+static void pprint_read_freq(enum ich_chipset cs, uint8_t value)
+{
+	static const char *const freq_str[1][8] = { {
+		"20 MHz",
+		"24 MHz",
+		"30 MHz",
+		"48 MHz",
+		"60 MHz",
+		"reserved",
+		"reserved",
+		"reserved"
+	}};
+
+	switch (cs) {
+	case CHIPSET_300_SERIES_CANNON_POINT:
+	case CHIPSET_400_SERIES_COMET_POINT:
+		msg_pdbg2("eSPI/EC Bus Clock Frequency:    %s\n", freq_str[0][value]);
+		return;
+	case CHIPSET_500_SERIES_TIGER_POINT:
+		msg_pdbg2("Read Clock Frequency:           %s\n", "reserved");
+		return;
+	default:
+		msg_pdbg2("Read Clock Frequency:           %s\n", pprint_freq(cs, value));
+		return;
 	}
 }
 
@@ -291,6 +331,7 @@ void prettyprint_ich_descriptor_component(enum ich_chipset cs, const struct ich_
 	case CHIPSET_C620_SERIES_LEWISBURG:
 	case CHIPSET_300_SERIES_CANNON_POINT:
 	case CHIPSET_400_SERIES_COMET_POINT:
+	case CHIPSET_500_SERIES_TIGER_POINT:
 	case CHIPSET_APOLLO_LAKE:
 	case CHIPSET_GEMINI_LAKE:
 		has_flill1 = true;
@@ -313,7 +354,9 @@ void prettyprint_ich_descriptor_component(enum ich_chipset cs, const struct ich_
 		msg_pdbg2("Component 2 density:            %s\n", pprint_density(cs, desc, 1));
 	else
 		msg_pdbg2("Component 2 is not used.\n");
-	msg_pdbg2("Read Clock Frequency:           %s\n", pprint_freq(cs, desc->component.modes.freq_read));
+
+	pprint_read_freq(cs, desc->component.modes.freq_read);
+
 	msg_pdbg2("Read ID and Status Clock Freq.: %s\n", pprint_freq(cs, desc->component.modes.freq_read_id));
 	msg_pdbg2("Write and Erase Clock Freq.:    %s\n", pprint_freq(cs, desc->component.modes.freq_write));
 	msg_pdbg2("Fast Read is %ssupported.\n", desc->component.modes.fastread ? "" : "not ");
@@ -411,7 +454,8 @@ void prettyprint_ich_descriptor_master(const enum ich_chipset cs, const struct i
 	msg_pdbg2("--- Details ---\n");
 	if (cs == CHIPSET_100_SERIES_SUNRISE_POINT ||
 	    cs == CHIPSET_300_SERIES_CANNON_POINT ||
-	    cs == CHIPSET_400_SERIES_COMET_POINT) {
+	    cs == CHIPSET_400_SERIES_COMET_POINT ||
+	    cs == CHIPSET_500_SERIES_TIGER_POINT) {
 		const char *const master_names[] = {
 			"BIOS", "ME", "GbE", "unknown", "EC",
 		};
@@ -970,8 +1014,10 @@ static enum ich_chipset guess_ich_chipset_from_content(const struct ich_desc_con
 	} else {
 		if (content->ICCRIBA == 0x34)
 			return CHIPSET_300_SERIES_CANNON_POINT;
-		msg_pwarn("Unknown flash descriptor, assuming 300 series compatibility.\n");
-		return CHIPSET_300_SERIES_CANNON_POINT;
+		if (content->CSSL == 0x11)
+			return CHIPSET_500_SERIES_TIGER_POINT;
+		msg_pwarn("Unknown flash descriptor, assuming 500 series compatibility.\n");
+		return CHIPSET_500_SERIES_TIGER_POINT;
 	}
 }
 
@@ -990,6 +1036,7 @@ static enum ich_chipset guess_ich_chipset(const struct ich_desc_content *const c
 	switch (guess) {
 	case CHIPSET_300_SERIES_CANNON_POINT:
 	case CHIPSET_400_SERIES_COMET_POINT:
+	case CHIPSET_500_SERIES_TIGER_POINT:
 	case CHIPSET_GEMINI_LAKE:
 		/* `freq_read` was repurposed, so can't check on it any more. */
 		break;
@@ -1144,6 +1191,7 @@ int getFCBA_component_density(enum ich_chipset cs, const struct ich_descriptors 
 	case CHIPSET_C620_SERIES_LEWISBURG:
 	case CHIPSET_300_SERIES_CANNON_POINT:
 	case CHIPSET_400_SERIES_COMET_POINT:
+	case CHIPSET_500_SERIES_TIGER_POINT:
 	case CHIPSET_APOLLO_LAKE:
 	case CHIPSET_GEMINI_LAKE:
 		if (idx == 0) {
@@ -1181,6 +1229,7 @@ static uint32_t read_descriptor_reg(enum ich_chipset cs, uint8_t section, uint16
 	case CHIPSET_C620_SERIES_LEWISBURG:
 	case CHIPSET_300_SERIES_CANNON_POINT:
 	case CHIPSET_400_SERIES_COMET_POINT:
+	case CHIPSET_500_SERIES_TIGER_POINT:
 	case CHIPSET_APOLLO_LAKE:
 	case CHIPSET_GEMINI_LAKE:
 		mmio_le_writel(control, spibar + PCH100_REG_FDOC);

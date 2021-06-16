@@ -95,6 +95,13 @@ struct ich_desc_content {
 				 ICCRIBA	:8, /* ICC Reg. Init Base Addr.	(new since Sandy Bridge) */
 				 RIL		:8; /* Register Init Length	(new since Hawell) */
 		};
+		struct {	/* new since Tiger Point */
+			uint32_t		:2,
+				 CSSO		:10, /* CPU Soft Strap Offset from PMC Base */
+						:4,
+				 CSSL		:8,  /* CPU Soft Strap Length */
+						:8;
+		};
 	};
 };
 

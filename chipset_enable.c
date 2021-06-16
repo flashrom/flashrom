@@ -600,6 +600,7 @@ static enum chipbustype enable_flash_ich_report_gcs(
 	case CHIPSET_C620_SERIES_LEWISBURG:
 	case CHIPSET_300_SERIES_CANNON_POINT:
 	case CHIPSET_400_SERIES_COMET_POINT:
+	case CHIPSET_500_SERIES_TIGER_POINT:
 	case CHIPSET_APOLLO_LAKE:
 	case CHIPSET_GEMINI_LAKE:
 		reg_name = "BIOS_SPI_BC";
@@ -653,6 +654,9 @@ static enum chipbustype enable_flash_ich_report_gcs(
 	static const struct boot_straps boot_straps_pch8_lp[] =
 		{ { "SPI", BUS_SPI },
 		  { "LPC", BUS_LPC | BUS_FWH } };
+	static const struct boot_straps boot_straps_pch500[] =
+		{ { "SPI", BUS_SPI },
+		  { "eSPI", BUS_NONE } };
 	static const struct boot_straps boot_straps_apl[] =
 		{ { "SPI", BUS_SPI },
 		  { "reserved", BUS_NONE } };
@@ -699,6 +703,9 @@ static enum chipbustype enable_flash_ich_report_gcs(
 	case CHIPSET_400_SERIES_COMET_POINT:
 		boot_straps = boot_straps_pch8_lp;
 		break;
+	case CHIPSET_500_SERIES_TIGER_POINT:
+		boot_straps = boot_straps_pch500;
+		break;
 	case CHIPSET_APOLLO_LAKE:
 	case CHIPSET_GEMINI_LAKE:
 		boot_straps = boot_straps_apl;
@@ -727,6 +734,7 @@ static enum chipbustype enable_flash_ich_report_gcs(
 	case CHIPSET_C620_SERIES_LEWISBURG:
 	case CHIPSET_300_SERIES_CANNON_POINT:
 	case CHIPSET_400_SERIES_COMET_POINT:
+	case CHIPSET_500_SERIES_TIGER_POINT:
 	case CHIPSET_APOLLO_LAKE:
 	case CHIPSET_GEMINI_LAKE:
 		bbs = (gcs >> 6) & 0x1;
@@ -972,6 +980,11 @@ static int enable_flash_pch300(struct pci_dev *const dev, const char *const name
 static int enable_flash_pch400(struct pci_dev *const dev, const char *const name)
 {
 	return enable_flash_pch100_or_c620(dev, name, 0x1f, 5, CHIPSET_400_SERIES_COMET_POINT);
+}
+
+static int enable_flash_pch500(struct pci_dev *const dev, const char *const name)
+{
+	return enable_flash_pch100_or_c620(dev, name, 0x1f, 5, CHIPSET_500_SERIES_TIGER_POINT);
 }
 
 static int enable_flash_apl(struct pci_dev *const dev, const char *const name)
@@ -2029,6 +2042,7 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x9d84, B_S,    DEP, "Intel", "Cannon Lake U Premium",		enable_flash_pch300},
 	{0x8086, 0x0284, B_S,    DEP, "Intel", "Comet Lake U Premium",		enable_flash_pch400},
 	{0x8086, 0x0285, B_S,    DEP, "Intel", "Comet Lake U Base",		enable_flash_pch400},
+	{0x8086, 0xa082, B_S,    DEP, "Intel", "Tiger Lake U Premium",		enable_flash_pch500},
 	{0x8086, 0xa141, B_S,    NT,  "Intel", "Sunrise Point Desktop Sample",	enable_flash_pch100},
 	{0x8086, 0xa142, B_S,    NT,  "Intel", "Sunrise Point Unknown Sample",	enable_flash_pch100},
 	{0x8086, 0xa143, B_S,    DEP, "Intel", "H110",				enable_flash_pch100},
