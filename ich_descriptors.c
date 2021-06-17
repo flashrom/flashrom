@@ -1037,6 +1037,23 @@ int read_ich_descriptors_from_dump(const uint32_t *const dump, const size_t len,
 	desc->component.FLILL	= dump[(getFCBA(&desc->content) >> 2) + 1];
 	desc->component.FLPB	= dump[(getFCBA(&desc->content) >> 2) + 2];
 
+	/* upper map */
+	desc->upper.FLUMAP1 = dump[(UPPER_MAP_OFFSET >> 2) + 0];
+
+	/* VTL is 8 bits long. Quote from the Ibex Peak SPI programming guide:
+	 * "Identifies the 1s based number of DWORDS contained in the VSCC
+	 * Table. Each SPI component entry in the table is 2 DWORDS long." So
+	 * the maximum of 255 gives us 127.5 SPI components(!?) 8 bytes each. A
+	 * check ensures that the maximum offset actually accessed is available.
+	 */
+	if (len < getVTBA(&desc->upper) + (desc->upper.VTL / 2 * 8))
+		return ICH_RET_OOB;
+
+	for (i = 0; i < desc->upper.VTL/2; i++) {
+		desc->upper.vscc_table[i].JID  = dump[(getVTBA(&desc->upper) >> 2) + i * 2 + 0];
+		desc->upper.vscc_table[i].VSCC = dump[(getVTBA(&desc->upper) >> 2) + i * 2 + 1];
+	}
+
 	if (*cs == CHIPSET_ICH_UNKNOWN) {
 		*cs = guess_ich_chipset(&desc->content, &desc->component);
 		prettyprint_ich_chipset(*cs);
@@ -1055,23 +1072,6 @@ int read_ich_descriptors_from_dump(const uint32_t *const dump, const size_t len,
 		return ICH_RET_OOB;
 	for (i = 0; i < nm; i++)
 		desc->master.FLMSTRs[i] = dump[(getFMBA(&desc->content) >> 2) + i];
-
-	/* upper map */
-	desc->upper.FLUMAP1 = dump[(UPPER_MAP_OFFSET >> 2) + 0];
-
-	/* VTL is 8 bits long. Quote from the Ibex Peak SPI programming guide:
-	 * "Identifies the 1s based number of DWORDS contained in the VSCC
-	 * Table. Each SPI component entry in the table is 2 DWORDS long." So
-	 * the maximum of 255 gives us 127.5 SPI components(!?) 8 bytes each. A
-	 * check ensures that the maximum offset actually accessed is available.
-	 */
-	if (len < getVTBA(&desc->upper) + (desc->upper.VTL / 2 * 8))
-		return ICH_RET_OOB;
-
-	for (i = 0; i < desc->upper.VTL/2; i++) {
-		desc->upper.vscc_table[i].JID  = dump[(getVTBA(&desc->upper) >> 2) + i * 2 + 0];
-		desc->upper.vscc_table[i].VSCC = dump[(getVTBA(&desc->upper) >> 2) + i * 2 + 1];
-	}
 
 	/* MCH/PROC (aka. North) straps */
 	if (len < getFMSBA(&desc->content) + desc->content.MSL * 4)
