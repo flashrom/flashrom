@@ -928,13 +928,13 @@ static enum ich_chipset guess_ich_chipset_from_content(const struct ich_desc_con
 	if (content->ICCRIBA == 0x00) {
 		if (content->MSL == 0 && content->ISL <= 2)
 			return CHIPSET_ICH8;
-		else if (content->ISL <= 2)
+		if (content->ISL <= 2)
 			return CHIPSET_ICH9;
-		else if (content->ISL <= 10)
+		if (content->ISL <= 10)
 			return CHIPSET_ICH10;
-		else if (content->ISL <= 16)
+		if (content->ISL <= 16)
 			return CHIPSET_5_SERIES_IBEX_PEAK;
-		else if (content->FLMAP2 == 0) {
+		if (content->FLMAP2 == 0) {
 			if (content->ISL == 23)
 				return CHIPSET_GEMINI_LAKE;
 			warn_peculiar_desc(content->ISL != 19, "Apollo Lake");
@@ -945,22 +945,20 @@ static enum ich_chipset guess_ich_chipset_from_content(const struct ich_desc_con
 	} else if (content->ICCRIBA < 0x31 && content->FMSBA < 0x30) {
 		if (content->MSL == 0 && content->ISL <= 17)
 			return CHIPSET_BAYTRAIL;
-		else if (content->MSL <= 1 && content->ISL <= 18)
+		if (content->MSL <= 1 && content->ISL <= 18)
 			return CHIPSET_6_SERIES_COUGAR_POINT;
-		else if (content->MSL <= 1 && content->ISL <= 21)
+		if (content->MSL <= 1 && content->ISL <= 21)
 			return CHIPSET_8_SERIES_LYNX_POINT;
 		warn_peculiar_desc(true, "Wildcat Point");
 		return CHIPSET_9_SERIES_WILDCAT_POINT;
 	} else if (content->ICCRIBA < 0x34) {
 		if (content->NM == 6)
 			return CHIPSET_C620_SERIES_LEWISBURG;
-		else
-			return CHIPSET_100_SERIES_SUNRISE_POINT;
+		return CHIPSET_100_SERIES_SUNRISE_POINT;
 	} else if (content->ICCRIBA == 0x34) {
 		if (content->NM == 6)
 			return CHIPSET_C620_SERIES_LEWISBURG;
-		else
-			return CHIPSET_300_SERIES_CANNON_POINT;
+		return CHIPSET_300_SERIES_CANNON_POINT;
 	} else {
 		msg_pwarn("Unknown flash descriptor, assuming 300 series compatibility.\n");
 		return CHIPSET_300_SERIES_CANNON_POINT;
