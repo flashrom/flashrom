@@ -984,7 +984,7 @@ static enum ich_chipset guess_ich_chipset(const struct ich_desc_content *const c
 	case CHIPSET_400_SERIES_COMET_POINT:
 	case CHIPSET_GEMINI_LAKE:
 		/* `freq_read` was repurposed, so can't check on it any more. */
-		return guess;
+		break;
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 	case CHIPSET_C620_SERIES_LEWISBURG:
 	case CHIPSET_APOLLO_LAKE:
@@ -993,19 +993,17 @@ static enum ich_chipset guess_ich_chipset(const struct ich_desc_content *const c
 				  "However, the read frequency isn't set to 17MHz (the only valid value).\n"
 				  "Please report this message, the output of `ich_descriptors_tool` for\n"
 				  "your descriptor and the output of `lspci -nn` to flashrom@flashrom.org\n\n");
-			return CHIPSET_9_SERIES_WILDCAT_POINT;
 		}
-		return guess;
+		break;
 	default:
 		if (component->modes.freq_read == 6) {
 			msg_pwarn("\nThe flash descriptor has the read frequency set to 17MHz. However,\n"
 				  "it doesn't look like a Skylake/Sunrise Point compatible descriptor.\n"
 				  "Please report this message, the output of `ich_descriptors_tool` for\n"
 				  "your descriptor and the output of `lspci -nn` to flashrom@flashrom.org\n\n");
-			return CHIPSET_100_SERIES_SUNRISE_POINT;
 		}
-		return guess;
 	}
+	return guess;
 }
 
 /* len is the length of dump in bytes */
