@@ -933,15 +933,13 @@ static enum ich_chipset guess_ich_chipset_from_content(const struct ich_desc_con
 			return CHIPSET_ICH9;
 		if (content->ISL <= 10)
 			return CHIPSET_ICH10;
-		if (content->ISL <= 16)
-			return CHIPSET_5_SERIES_IBEX_PEAK;
 		if (content->FLMAP2 == 0) {
-			if (content->ISL == 23)
-				return CHIPSET_GEMINI_LAKE;
-			warn_peculiar_desc(content->ISL != 19, "Apollo Lake");
-			return CHIPSET_APOLLO_LAKE;
+			if (content->ISL == 19)
+				return CHIPSET_APOLLO_LAKE;
+			warn_peculiar_desc(content->ISL != 23, "Gemini Lake");
+			return CHIPSET_GEMINI_LAKE;
 		}
-		warn_peculiar_desc(true, "Ibex Peak");
+		warn_peculiar_desc(content->ISL != 16, "Ibex Peak");
 		return CHIPSET_5_SERIES_IBEX_PEAK;
 	} else if (upper->MDTBA == 0x00) {
 		if (content->ICCRIBA < 0x31 && content->FMSBA < 0x30) {
@@ -949,10 +947,8 @@ static enum ich_chipset guess_ich_chipset_from_content(const struct ich_desc_con
 				return CHIPSET_BAYTRAIL;
 			if (content->MSL <= 1 && content->ISL <= 18)
 				return CHIPSET_6_SERIES_COUGAR_POINT;
-			if (content->MSL <= 1 && content->ISL <= 21)
-				return CHIPSET_8_SERIES_LYNX_POINT;
-			warn_peculiar_desc(true, "Wildcat Point");
-			return CHIPSET_9_SERIES_WILDCAT_POINT;
+			warn_peculiar_desc(content->MSL != 1 || content->ISL != 21, "Lynx Point");
+			return CHIPSET_8_SERIES_LYNX_POINT;
 		}
 		if (content->NM == 6) {
 			warn_peculiar_desc(content->ICCRIBA > 0x34, "C620 series");
