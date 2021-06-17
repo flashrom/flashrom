@@ -521,7 +521,8 @@ struct ich_desc_upper_map {
 		struct {
 			uint32_t VTBA	:8,	/* ME VSCC Table Base Address */
 				 VTL	:8,	/* ME VSCC Table Length */
-					:16;
+					:8,
+				 MDTBA	:8;	/* MIP Descr. Table Base Addr. (new since Cannon Point/300) */
 		};
 	};
 	struct {

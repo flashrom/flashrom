@@ -921,9 +921,10 @@ static inline void warn_peculiar_desc(const bool warn_if, const char *const name
 
 /*
  * Guesses a minimum chipset version based on the maximum number of
- * soft straps per generation.
+ * soft straps per generation and presence of the MIP base (MDTBA).
  */
-static enum ich_chipset guess_ich_chipset_from_content(const struct ich_desc_content *const content)
+static enum ich_chipset guess_ich_chipset_from_content(const struct ich_desc_content *const content,
+						       const struct ich_desc_upper_map *const upper)
 {
 	if (content->ICCRIBA == 0x00) {
 		if (content->MSL == 0 && content->ISL <= 2)
@@ -942,25 +943,26 @@ static enum ich_chipset guess_ich_chipset_from_content(const struct ich_desc_con
 		}
 		warn_peculiar_desc(true, "Ibex Peak");
 		return CHIPSET_5_SERIES_IBEX_PEAK;
-	} else if (content->ICCRIBA < 0x31 && content->FMSBA < 0x30) {
-		if (content->MSL == 0 && content->ISL <= 17)
-			return CHIPSET_BAYTRAIL;
-		if (content->MSL <= 1 && content->ISL <= 18)
-			return CHIPSET_6_SERIES_COUGAR_POINT;
-		if (content->MSL <= 1 && content->ISL <= 21)
-			return CHIPSET_8_SERIES_LYNX_POINT;
-		warn_peculiar_desc(true, "Wildcat Point");
-		return CHIPSET_9_SERIES_WILDCAT_POINT;
-	} else if (content->ICCRIBA < 0x34) {
-		if (content->NM == 6)
+	} else if (upper->MDTBA == 0x00) {
+		if (content->ICCRIBA < 0x31 && content->FMSBA < 0x30) {
+			if (content->MSL == 0 && content->ISL <= 17)
+				return CHIPSET_BAYTRAIL;
+			if (content->MSL <= 1 && content->ISL <= 18)
+				return CHIPSET_6_SERIES_COUGAR_POINT;
+			if (content->MSL <= 1 && content->ISL <= 21)
+				return CHIPSET_8_SERIES_LYNX_POINT;
+			warn_peculiar_desc(true, "Wildcat Point");
+			return CHIPSET_9_SERIES_WILDCAT_POINT;
+		}
+		if (content->NM == 6) {
+			warn_peculiar_desc(content->ICCRIBA > 0x34, "C620 series");
 			return CHIPSET_C620_SERIES_LEWISBURG;
+		}
+		warn_peculiar_desc(content->ICCRIBA != 0x31, "100 series");
 		return CHIPSET_100_SERIES_SUNRISE_POINT;
-	} else if (content->ICCRIBA == 0x34) {
-		if (content->NM == 6)
-			return CHIPSET_C620_SERIES_LEWISBURG;
-		return CHIPSET_300_SERIES_CANNON_POINT;
 	} else {
-		msg_pwarn("Unknown flash descriptor, assuming 300 series compatibility.\n");
+		if (content->ICCRIBA != 0x34)
+			msg_pwarn("Unknown flash descriptor, assuming 300 series compatibility.\n");
 		return CHIPSET_300_SERIES_CANNON_POINT;
 	}
 }
@@ -972,9 +974,10 @@ static enum ich_chipset guess_ich_chipset_from_content(const struct ich_desc_con
  * tinction because of the dropped number of regions field (NR).
  */
 static enum ich_chipset guess_ich_chipset(const struct ich_desc_content *const content,
-					  const struct ich_desc_component *const component)
+					  const struct ich_desc_component *const component,
+					  const struct ich_desc_upper_map *const upper)
 {
-	const enum ich_chipset guess = guess_ich_chipset_from_content(content);
+	const enum ich_chipset guess = guess_ich_chipset_from_content(content, upper);
 
 	switch (guess) {
 	case CHIPSET_300_SERIES_CANNON_POINT:
@@ -1055,7 +1058,7 @@ int read_ich_descriptors_from_dump(const uint32_t *const dump, const size_t len,
 	}
 
 	if (*cs == CHIPSET_ICH_UNKNOWN) {
-		*cs = guess_ich_chipset(&desc->content, &desc->component);
+		*cs = guess_ich_chipset(&desc->content, &desc->component, &desc->upper);
 		prettyprint_ich_chipset(*cs);
 	}
 
