@@ -912,6 +912,13 @@ void prettyprint_ich_descriptor_upper_map(const struct ich_desc_upper_map *umap)
 	msg_pdbg2("\n");
 }
 
+static inline void warn_peculiar_desc(const bool warn_if, const char *const name)
+{
+	if (!warn_if)
+		return;
+	msg_pwarn("Peculiar flash descriptor, assuming %s compatibility.\n", name);
+}
+
 /*
  * Guesses a minimum chipset version based on the maximum number of
  * soft straps per generation.
@@ -930,11 +937,10 @@ static enum ich_chipset guess_ich_chipset_from_content(const struct ich_desc_con
 		else if (content->FLMAP2 == 0) {
 			if (content->ISL == 23)
 				return CHIPSET_GEMINI_LAKE;
-			else if (content->ISL != 19)
-				msg_pwarn("Peculiar firmware descriptor, assuming Apollo Lake compatibility.\n");
+			warn_peculiar_desc(content->ISL != 19, "Apollo Lake");
 			return CHIPSET_APOLLO_LAKE;
 		}
-		msg_pwarn("Peculiar firmware descriptor, assuming Ibex Peak compatibility.\n");
+		warn_peculiar_desc(true, "Ibex Peak");
 		return CHIPSET_5_SERIES_IBEX_PEAK;
 	} else if (content->ICCRIBA < 0x31 && content->FMSBA < 0x30) {
 		if (content->MSL == 0 && content->ISL <= 17)
@@ -943,7 +949,7 @@ static enum ich_chipset guess_ich_chipset_from_content(const struct ich_desc_con
 			return CHIPSET_6_SERIES_COUGAR_POINT;
 		else if (content->MSL <= 1 && content->ISL <= 21)
 			return CHIPSET_8_SERIES_LYNX_POINT;
-		msg_pwarn("Peculiar firmware descriptor, assuming Wildcat Point compatibility.\n");
+		warn_peculiar_desc(true, "Wildcat Point");
 		return CHIPSET_9_SERIES_WILDCAT_POINT;
 	} else if (content->ICCRIBA < 0x34) {
 		if (content->NM == 6)
@@ -956,7 +962,7 @@ static enum ich_chipset guess_ich_chipset_from_content(const struct ich_desc_con
 		else
 			return CHIPSET_300_SERIES_CANNON_POINT;
 	} else {
-		msg_pwarn("Unknown firmware descriptor, assuming 300 series compatibility.\n");
+		msg_pwarn("Unknown flash descriptor, assuming 300 series compatibility.\n");
 		return CHIPSET_300_SERIES_CANNON_POINT;
 	}
 }
@@ -982,7 +988,7 @@ static enum ich_chipset guess_ich_chipset(const struct ich_desc_content *const c
 	case CHIPSET_C620_SERIES_LEWISBURG:
 	case CHIPSET_APOLLO_LAKE:
 		if (component->modes.freq_read != 6) {
-			msg_pwarn("\nThe firmware descriptor looks like a Skylake/Sunrise Point descriptor.\n"
+			msg_pwarn("\nThe flash descriptor looks like a Skylake/Sunrise Point descriptor.\n"
 				  "However, the read frequency isn't set to 17MHz (the only valid value).\n"
 				  "Please report this message, the output of `ich_descriptors_tool` for\n"
 				  "your descriptor and the output of `lspci -nn` to flashrom@flashrom.org\n\n");
@@ -991,7 +997,7 @@ static enum ich_chipset guess_ich_chipset(const struct ich_desc_content *const c
 		return guess;
 	default:
 		if (component->modes.freq_read == 6) {
-			msg_pwarn("\nThe firmware descriptor has the read frequency set to 17MHz. However,\n"
+			msg_pwarn("\nThe flash descriptor has the read frequency set to 17MHz. However,\n"
 				  "it doesn't look like a Skylake/Sunrise Point compatible descriptor.\n"
 				  "Please report this message, the output of `ich_descriptors_tool` for\n"
 				  "your descriptor and the output of `lspci -nn` to flashrom@flashrom.org\n\n");
