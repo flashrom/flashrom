@@ -524,6 +524,9 @@ int need_erase(const uint8_t *have, const uint8_t *want, unsigned int len,
 	case write_gran_1056bytes:
 		result = need_erase_gran_bytes(have, want, len, 1056, erased_value);
 		break;
+	case write_gran_64kbytes:
+		result = need_erase_gran_bytes(have, want, len, 64*KiB, erased_value);
+		break;
 	case write_gran_1byte_implicit_erase:
 		/* Do not erase, handle content changes from anything->0xff by writing 0xff. */
 		result = 0;
@@ -592,6 +595,9 @@ static unsigned int get_next_write(const uint8_t *have, const uint8_t *want, uns
 		break;
 	case write_gran_1056bytes:
 		stride = 1056;
+		break;
+	case write_gran_64kbytes:
+		stride = 64*KiB;
 		break;
 	default:
 		msg_cerr("%s: Unsupported granularity! Please report a bug at "

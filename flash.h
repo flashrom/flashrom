@@ -86,6 +86,7 @@ enum write_granularity {
 	write_gran_528bytes,	/* If less than 528 bytes are written, the unwritten bytes are undefined. */
 	write_gran_1024bytes,	/* If less than 1024 bytes are written, the unwritten bytes are undefined. */
 	write_gran_1056bytes,	/* If less than 1056 bytes are written, the unwritten bytes are undefined. */
+	write_gran_64kbytes,    /* If less than 64 kbytes are written, the unwritten bytes are undefined. */
 	write_gran_1byte_implicit_erase, /* EEPROMs and other chips with implicit erase and 1-byte writes. */
 };
 
