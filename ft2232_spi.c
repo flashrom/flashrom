@@ -180,8 +180,7 @@ static int ft2232_shutdown(void *data)
 	buf[1] = 0; /* Output byte ignored */
 	buf[2] = 0; /* Pin direction: all inputs */
 	if (send_buf(ftdic, buf, 3)) {
-		msg_perr("Unable to set pins back inputs: (%s)\n",
-		         ftdi_get_error_string(ftdic));
+		msg_perr("Unable to set pins back to inputs.\n");
 		ret = 1;
 	}
 
