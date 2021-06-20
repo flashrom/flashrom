@@ -86,15 +86,27 @@ static const struct dev_entry devs_ft2232spi[] = {
 #define BITMODE_BITBANG_NORMAL	1
 #define BITMODE_BITBANG_SPI	2
 
-/* The variables cs_bits and pindir store the values for the "set data bits low byte" MPSSE command that
- * sets the initial state and the direction of the I/O pins. The pin offsets are as follows:
- * SCK is bit 0.
- * DO  is bit 1.
- * DI  is bit 2.
- * CS  is bit 3.
+/*
+ * The variables `cs_bits` and `pindir` store the values for the
+ * "set data bits low byte" MPSSE command that sets the initial
+ * state and the direction of the I/O pins. `cs_bits` pins default
+ * to high and will be toggled during SPI transactions. All other
+ * output pins will be kept low all the time. On exit, all pins
+ * will be reconfigured as inputs.
  *
- * The default values (set below in ft2232_spi_init) are used for most devices:
- *  value: 0x08  CS=high, DI=low, DO=low, SK=low
+ * The pin offsets are as follows:
+ * TCK/SK is bit 0.
+ * TDI/DO is bit 1.
+ * TDO/DI is bit 2.
+ * TMS/CS is bit 3.
+ * GPIOL0 is bit 4.
+ * GPIOL1 is bit 5.
+ * GPIOL2 is bit 6.
+ * GPIOL3 is bit 7.
+ *
+ * The default values (set below in ft2232_spi_init) are used for
+ * most devices:
+ *  value: 0x08  CS=high,   DI=low,   DO=low,    SK=low
  *    dir: 0x0b  CS=output, DI=input, DO=output, SK=output
  */
 struct ft2232_data {
@@ -219,7 +231,7 @@ static int ft2232_spi_send_multicommand(const struct flashctx *flash, struct spi
 
 		msg_pspew("Assert CS#\n");
 		buf[i++] = SET_BITS_LOW;
-		buf[i++] = 0 & ~spi_data->cs_bits; /* assertive */
+		buf[i++] = 0; /* assert CS# pins, all other output pins stay low */
 		buf[i++] = spi_data->pindir;
 
 		/* WREN, OP(PROGRAM, ERASE), ADDR, DATA */
