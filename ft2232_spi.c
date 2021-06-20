@@ -651,10 +651,6 @@ static int ft2232_spi_init(void)
 		msg_perr("Unable to set latency timer (%s).\n", ftdi_get_error_string(&ftdic));
 	}
 
-	if (ftdi_write_data_set_chunksize(&ftdic, 270)) {
-		msg_perr("Unable to set chunk size (%s).\n", ftdi_get_error_string(&ftdic));
-	}
-
 	if (ftdi_set_bitmode(&ftdic, 0x00, BITMODE_BITBANG_SPI) < 0) {
 		msg_perr("Unable to set bitmode to SPI (%s).\n", ftdi_get_error_string(&ftdic));
 	}
