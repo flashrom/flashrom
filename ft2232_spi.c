@@ -226,7 +226,7 @@ static int ft2232_spi_send_multicommand(const struct flashctx *flash, struct spi
 
 		msg_pspew("Assert CS#\n");
 		buf[i++] = SET_BITS_LOW;
-		buf[i++] = ~ 0x08 & spi_data->cs_bits; /* assert CS (3rd) bit only */
+		buf[i++] = 0 & ~spi_data->cs_bits; /* assertive */
 		buf[i++] = spi_data->pindir;
 
 		/* WREN, OP(PROGRAM, ERASE), ADDR, DATA */
