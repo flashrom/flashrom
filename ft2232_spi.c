@@ -170,10 +170,10 @@ static int get_buf(struct ftdi_context *ftdic, const unsigned char *buf,
 
 static int ft2232_shutdown(void *data)
 {
-	int f;
 	struct ft2232_data *spi_data = (struct ft2232_data *) data;
 	struct ftdi_context *ftdic = &spi_data->ftdic_context;
 	unsigned char buf[3];
+	int ret = 0;
 
 	msg_pdbg("Releasing I/Os\n");
 	buf[0] = SET_BITS_LOW;
@@ -182,16 +182,18 @@ static int ft2232_shutdown(void *data)
 	if (send_buf(ftdic, buf, 3)) {
 		msg_perr("Unable to set pins back inputs: (%s)\n",
 		         ftdi_get_error_string(ftdic));
+		ret = 1;
 	}
 
-	if ((f = ftdi_usb_close(ftdic)) < 0) {
-		msg_perr("Unable to close FTDI device: %d (%s)\n", f,
+	const int close_ret = ftdi_usb_close(ftdic);
+	if (close_ret < 0) {
+		msg_perr("Unable to close FTDI device: %d (%s)\n", close_ret,
 		         ftdi_get_error_string(ftdic));
-		return f;
+		ret = 1;
 	}
 
 	free(spi_data);
-	return 0;
+	return ret;
 }
 
 static bool ft2232_spi_command_fits(const struct spi_command *cmd, size_t buffer_size)
