@@ -189,95 +189,6 @@ static int ft2232_shutdown(void *data)
 	return 0;
 }
 
-/* Returns 0 upon success, a negative number upon errors. */
-static int ft2232_spi_send_command(const struct flashctx *flash,
-				   unsigned int writecnt, unsigned int readcnt,
-				   const unsigned char *writearr,
-				   unsigned char *readarr)
-{
-	struct ft2232_data *spi_data = flash->mst->spi.data;
-	struct ftdi_context *ftdic = &spi_data->ftdic_context;
-	static unsigned char *buf = NULL;
-	/* failed is special. We use bitwise ops, but it is essentially bool. */
-	int i = 0, ret = 0, failed = 0;
-	size_t bufsize;
-	static size_t oldbufsize = 0;
-
-	if (writecnt > 65536 || readcnt > 65536)
-		return SPI_INVALID_LENGTH;
-
-	/* buf is not used for the response from the chip. */
-	bufsize = max(writecnt + 9, 260 + 9);
-	/* Never shrink. realloc() calls are expensive. */
-	if (!buf || bufsize > oldbufsize) {
-		buf = realloc(buf, bufsize);
-		if (!buf) {
-			msg_perr("Out of memory!\n");
-			/* TODO: What to do with buf? */
-			return SPI_GENERIC_ERROR;
-		}
-		oldbufsize = bufsize;
-	}
-
-	/*
-	 * Minimize USB transfers by packing as many commands as possible
-	 * together. If we're not expecting to read, we can assert CS#, write,
-	 * and deassert CS# all in one shot. If reading, we do three separate
-	 * operations.
-	 */
-	msg_pspew("Assert CS#\n");
-	buf[i++] = SET_BITS_LOW;
-	buf[i++] = ~ 0x08 & spi_data->pinlvl; /* assert CS (3rd) bit only */
-	buf[i++] = spi_data->pindir;
-
-	if (writecnt) {
-		buf[i++] = MPSSE_DO_WRITE | MPSSE_WRITE_NEG;
-		buf[i++] = (writecnt - 1) & 0xff;
-		buf[i++] = ((writecnt - 1) >> 8) & 0xff;
-		memcpy(buf + i, writearr, writecnt);
-		i += writecnt;
-	}
-
-	/*
-	 * Optionally terminate this batch of commands with a
-	 * read command, then do the fetch of the results.
-	 */
-	if (readcnt) {
-		buf[i++] = MPSSE_DO_READ;
-		buf[i++] = (readcnt - 1) & 0xff;
-		buf[i++] = ((readcnt - 1) >> 8) & 0xff;
-		ret = send_buf(ftdic, buf, i);
-		failed = ret;
-		/* We can't abort here, we still have to deassert CS#. */
-		if (ret)
-			msg_perr("send_buf failed before read: %i\n", ret);
-		i = 0;
-		if (ret == 0) {
-			/*
-			 * FIXME: This is unreliable. There's no guarantee that
-			 * we read the response directly after sending the read
-			 * command. We may be scheduled out etc.
-			 */
-			ret = get_buf(ftdic, readarr, readcnt);
-			failed |= ret;
-			/* We can't abort here either. */
-			if (ret)
-				msg_perr("get_buf failed: %i\n", ret);
-		}
-	}
-
-	msg_pspew("De-assert CS#\n");
-	buf[i++] = SET_BITS_LOW;
-	buf[i++] = spi_data->pinlvl;
-	buf[i++] = spi_data->pindir;
-	ret = send_buf(ftdic, buf, i);
-	failed |= ret;
-	if (ret)
-		msg_perr("send_buf failed at end: %i\n", ret);
-
-	return failed ? -1 : 0;
-}
-
 static bool ft2232_spi_command_fits(const struct spi_command *cmd, size_t buffer_size)
 {
 	const size_t cmd_len = 3; /* same length for any ft2232 command */
@@ -369,7 +280,7 @@ static const struct spi_master spi_master_ft2232 = {
 	.features	= SPI_MASTER_4BA,
 	.max_data_read	= 64 * 1024,
 	.max_data_write	= 256,
-	.command	= ft2232_spi_send_command,
+	.command	= default_spi_send_command,
 	.multicommand	= ft2232_spi_send_multicommand,
 	.read		= default_spi_read,
 	.write_256	= default_spi_write_256,
