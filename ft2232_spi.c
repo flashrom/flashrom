@@ -86,7 +86,7 @@ static const struct dev_entry devs_ft2232spi[] = {
 #define BITMODE_BITBANG_NORMAL	1
 #define BITMODE_BITBANG_SPI	2
 
-/* The variables pinlvl and pindir store the values for the "set data bits low byte" MPSSE command that
+/* The variables cs_bits and pindir store the values for the "set data bits low byte" MPSSE command that
  * sets the initial state and the direction of the I/O pins. The pin offsets are as follows:
  * TCK/SK is bit 0.
  * TDI/DO is bit 1.
@@ -105,7 +105,7 @@ static const struct dev_entry devs_ft2232spi[] = {
  *    dir: 0x0b  CS=output, DI=input, DO=output, SK=output
  */
 struct ft2232_data {
-	uint8_t pinlvl;
+	uint8_t cs_bits;
 	uint8_t pindir;
 	struct ftdi_context ftdic_context;
 };
@@ -226,7 +226,7 @@ static int ft2232_spi_send_multicommand(const struct flashctx *flash, struct spi
 
 		msg_pspew("Assert CS#\n");
 		buf[i++] = SET_BITS_LOW;
-		buf[i++] = ~ 0x08 & spi_data->pinlvl; /* assert CS (3rd) bit only */
+		buf[i++] = ~ 0x08 & spi_data->cs_bits; /* assert CS (3rd) bit only */
 		buf[i++] = spi_data->pindir;
 
 		/* WREN, OP(PROGRAM, ERASE), ADDR, DATA */
@@ -248,7 +248,7 @@ static int ft2232_spi_send_multicommand(const struct flashctx *flash, struct spi
 		/* Add final de-assert CS# */
 		msg_pspew("De-assert CS#\n");
 		buf[i++] = SET_BITS_LOW;
-		buf[i++] = spi_data->pinlvl;
+		buf[i++] = spi_data->cs_bits;
 		buf[i++] = spi_data->pindir;
 
 		/* continue if there is no read-cmd and further cmds exist */
@@ -316,7 +316,7 @@ static int ft2232_spi_init(void)
 	char *arg;
 	double mpsse_clk;
 
-	uint8_t pinlvl = 0x08;
+	uint8_t cs_bits = 0x08;
 	uint8_t pindir = 0x0b;
 	struct ftdi_context ftdic;
 	struct ft2232_data *spi_data;
@@ -338,7 +338,7 @@ static int ft2232_spi_init(void)
 			/* JTAGkey(2) needs to enable its output via Bit4 / GPIOL0
 			*  value: 0x18  OE=high, CS=high, DI=low, DO=low, SK=low
 			*    dir: 0x1b  OE=output, CS=output, DI=input, DO=output, SK=output */
-			pinlvl = 0x18;
+			cs_bits = 0x18;
 			pindir = 0x1b;
 		} else if (!strcasecmp(arg, "picotap")) {
 			ft2232_vid = GOEPEL_VID;
@@ -356,7 +356,7 @@ static int ft2232_spi_init(void)
 			/* In its default configuration it is a jtagkey clone */
 			ft2232_type = FTDI_FT2232H_PID;
 			channel_count = 2;
-			pinlvl = 0x18;
+			cs_bits = 0x18;
 			pindir = 0x1b;
 		} else if (!strcasecmp(arg, "openmoko")) {
 			ft2232_vid = FIC_VID;
@@ -369,7 +369,7 @@ static int ft2232_spi_init(void)
 			/* arm-usb-ocd(-h) has an output buffer that needs to be enabled by pulling ADBUS4 low.
 			*  value: 0x08  #OE=low, CS=high, DI=low, DO=low, SK=low
 			*    dir: 0x1b  #OE=output, CS=output, DI=input, DO=output, SK=output */
-			pinlvl = 0x08;
+			cs_bits = 0x08;
 			pindir = 0x1b;
 		} else if (!strcasecmp(arg, "arm-usb-tiny")) {
 			ft2232_vid = OLIMEX_VID;
@@ -380,7 +380,7 @@ static int ft2232_spi_init(void)
 			ft2232_type = OLIMEX_ARM_OCD_H_PID;
 			channel_count = 2;
 			/* See arm-usb-ocd */
-			pinlvl = 0x08;
+			cs_bits = 0x08;
 			pindir = 0x1b;
 		} else if (!strcasecmp(arg, "arm-usb-tiny-h")) {
 			ft2232_vid = OLIMEX_VID;
@@ -473,7 +473,7 @@ static int ft2232_spi_init(void)
 				return -2;
 			} else {
 				unsigned int pin = temp + 4;
-				pinlvl |= 1 << pin;
+				cs_bits |= 1 << pin;
 				pindir |= 1 << pin;
 			}
 		}
@@ -490,11 +490,11 @@ static int ft2232_spi_init(void)
 				unsigned int pin = i + 4;
 				switch (toupper(arg[i])) {
 					case 'H':
-						pinlvl |= 1 << pin;
+						cs_bits |= 1 << pin;
 						pindir |= 1 << pin;
 						break;
 					case 'L':
-						pinlvl &= ~(1 << pin);
+						cs_bits &= ~(1 << pin);
 						pindir |= 1 << pin;
 						break;
 					case 'Z':
@@ -600,7 +600,7 @@ static int ft2232_spi_init(void)
 
 	msg_pdbg("Set data bits\n");
 	buf[0] = SET_BITS_LOW;
-	buf[1] = pinlvl;
+	buf[1] = cs_bits;
 	buf[2] = pindir;
 	if (send_buf(&ftdic, buf, 3)) {
 		ret = -8;
@@ -612,7 +612,7 @@ static int ft2232_spi_init(void)
 		msg_perr("Unable to allocate space for SPI master data\n");
 		return SPI_GENERIC_ERROR;
 	}
-	spi_data->pinlvl = pinlvl;
+	spi_data->cs_bits = cs_bits;
 	spi_data->pindir = pindir;
 	spi_data->ftdic_context = ftdic;
 
