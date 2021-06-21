@@ -387,6 +387,8 @@ bitbanging adapter)
 .sp
 .BR "* stlinkv3_spi" " (for SPI flash ROMs attached to STMicroelectronics STLINK V3 devices)"
 .sp
+.BR "* ite_ec" " (for ITE Embedded Controllers)"
+.sp
 Some programmers have optional or mandatory parameters which are described
 in detail in the
 .B PROGRAMMER-SPECIFIC INFORMATION
@@ -1408,6 +1410,72 @@ The SPI speed can be selected by using the
 syntax where \fBfrequency\fP is the SPI clock frequency in kHz.
 If the passed frequency is not supported by the adapter the nearest lower
 supported frequency will be used.
+.SS
+.BR "ite_ec " programmer
+.IP
+This module supports EC flash programming on laptops with ITE EC.
+.IP
+An optional
+.B portpair
+parameter specifies ports to use to read/write EC ROM data.
+Syntax is
+.sp
+.B "  flashrom \-p ite_ec:portpair=pairnum"
+.sp
+where
+.B pairnum
+can be (data port/control port):
+.BR 0 " (0x60/0x64), " 1 " (0x62/0x66), " 2 " (0x68/0x6C) or " 3 " (0x6A/0x6E)."
+. The default is 1.
+.sp
+An optional
+.B noaccheck
+parameter allows operations with unplugged AC adapter, which is an error
+otherwise.
+Syntax is
+.sp
+.B "  flashrom \-p ite_ec:noaccheck=yes"
+.sp
+An optional
+.B romsize
+parameter specifies size of EC ROM.  Syntax is
+.sp
+.B "  flashrom \-p ite_ec:romsize=size"
+.sp
+where
+.B size
+can be:
+.BR 64K ", " 128K ", " 192K " or " 256K "."
+The default value is queried from EC.
+.sp
+An optional
+.B autload
+parameter specifies autoloading action. Autoloading controlls the ITE EC flash
+mirroring feature.
+Syntax is
+.sp
+.B "  flashrom \-p ite_ec:autoload=action"
+.sp
+where
+.B action
+can be:
+.BR none ", " disable ", " on " or " enable "."
+. The default is none.
+.sp
+An optional
+.B ite5570
+parameter explicitly sets ITE5570 is present.  Syntax is
+.sp
+.B "  flashrom \-p ite_ec:ite5570=yes"
+.sp
+An optional
+.B boardmismatch
+The ITE EC programmer checks for supported laptops before initializing the
+programmer. In order to ignore baord matching and force the programmer
+initialization pass the parameter as below:
+.sp
+.B "  flashrom \-p ite_ec:boardmismatch=force"
+.sp
 .SS
 
 .SH EXAMPLES

@@ -273,6 +273,76 @@ endif
 
 ifeq ($(TARGET_OS), $(filter $(TARGET_OS), MinGW Cygwin))
 FEATURE_CFLAGS += -D'IS_WINDOWS=1'
+ifeq ($(CONFIG_PONY_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_PONY_SPI=yes
+else
+override CONFIG_PONY_SPI = no
+endif
+# Digilent SPI, Dediprog, Developerbox, USB-Blaster, PICkit2, CH341A and FT2232 are not supported under DOS (missing USB support).
+ifeq ($(CONFIG_DIGILENT_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_DIGILENT_SPI=yes
+else
+override CONFIG_DIGILENT_SPI = no
+endif
+ifeq ($(CONFIG_DEDIPROG), yes)
+UNSUPPORTED_FEATURES += CONFIG_DEDIPROG=yes
+else
+override CONFIG_DEDIPROG = no
+endif
+ifeq ($(CONFIG_DEVELOPERBOX_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_DEVELOPERBOX_SPI=yes
+else
+override CONFIG_DEVELOPERBOX_SPI = no
+endif
+ifeq ($(CONFIG_ENE_LPC), yes)
+UNSUPPORTED_FEATURES += CONFIG_ENE_LPC=yes
+else
+override CONFIG_ENE_LPC = no
+endif
+ifeq ($(CONFIG_FT2232_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_FT2232_SPI=yes
+else
+override CONFIG_FT2232_SPI = no
+endif
+ifeq ($(CONFIG_MEC1308), yes)
+UNSUPPORTED_FEATURES += CONFIG_MEC1308=yes
+else
+override CONFIG_MEC1308 = no
+endif
+ifeq ($(CONFIG_ITE_EC), yes)
+UNSUPPORTED_FEATURES += CONFIG_ITE_EC=yes
+else
+override CONFIG_ITE_EC = no
+endif
+ifeq ($(CONFIG_USBBLASTER_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_USBBLASTER_SPI=yes
+else
+override CONFIG_USBBLASTER_SPI = no
+endif
+ifeq ($(CONFIG_PICKIT2_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_PICKIT2_SPI=yes
+else
+override CONFIG_PICKIT2_SPI = no
+endif
+ifeq ($(CONFIG_CH341A_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_CH341A_SPI=yes
+else
+override CONFIG_CH341A_SPI = no
+endif
+ifeq ($(CONFIG_RAIDEN_DEBUG_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_RAIDEN_DEBUG_SPI=yes
+else
+override CONFIG_RAIDEN_DEBUG_SPI = no
+endif
+ifeq ($(CONFIG_STLINKV3_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_STLINKV3_SPI=yes
+else
+override CONFIG_STLINKV3_SPI = no
+endif
+# libjaylink is also not available for DOS
+ifeq ($(CONFIG_JLINK_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_JLINK_SPI=yes
+>>>>>>> 43085b3a9d88... ite_ec: Implement support for flashing ITE ECs found on TUXEDO laptops
 else
 FEATURE_CFLAGS += -D'IS_WINDOWS=0'
 endif
@@ -292,6 +362,108 @@ $(call mark_unsupported,$(DEPENDS_ON_LIBPCI))
 $(call mark_unsupported,$(DEPENDS_ON_RAW_MEM_ACCESS))
 
 else # No MinGW
+ifeq ($(CONFIG_INTERNAL), yes)
+UNSUPPORTED_FEATURES += CONFIG_INTERNAL=yes
+else
+override CONFIG_INTERNAL = no
+endif
+ifeq ($(CONFIG_RAYER_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_RAYER_SPI=yes
+else
+override CONFIG_RAYER_SPI = no
+endif
+ifeq ($(CONFIG_NIC3COM), yes)
+UNSUPPORTED_FEATURES += CONFIG_NIC3COM=yes
+else
+override CONFIG_NIC3COM = no
+endif
+ifeq ($(CONFIG_GFXNVIDIA), yes)
+UNSUPPORTED_FEATURES += CONFIG_GFXNVIDIA=yes
+else
+override CONFIG_GFXNVIDIA = no
+endif
+ifeq ($(CONFIG_SATASII), yes)
+UNSUPPORTED_FEATURES += CONFIG_SATASII=yes
+else
+override CONFIG_SATASII = no
+endif
+ifeq ($(CONFIG_ATAHPT), yes)
+UNSUPPORTED_FEATURES += CONFIG_ATAHPT=yes
+else
+override CONFIG_ATAHPT = no
+endif
+ifeq ($(CONFIG_ATAVIA), yes)
+UNSUPPORTED_FEATURES += CONFIG_ATAVIA=yes
+else
+override CONFIG_ATAVIA = no
+endif
+ifeq ($(CONFIG_ATAPROMISE), yes)
+UNSUPPORTED_FEATURES += CONFIG_ATAPROMISE=yes
+else
+override CONFIG_ATAPROMISE = no
+endif
+ifeq ($(CONFIG_ENE_LPC), yes)
+UNSUPPORTED_FEATURES += CONFIG_ENE_LPC=yes
+else
+override CONFIG_ENE_LPC = no
+endif
+ifeq ($(CONFIG_IT8212), yes)
+UNSUPPORTED_FEATURES += CONFIG_IT8212=yes
+else
+override CONFIG_IT8212 = no
+endif
+ifeq ($(CONFIG_DRKAISER), yes)
+UNSUPPORTED_FEATURES += CONFIG_DRKAISER=yes
+else
+override CONFIG_DRKAISER = no
+endif
+ifeq ($(CONFIG_MEC1308), yes)
+UNSUPPORTED_FEATURES += CONFIG_MEC1308=yes
+else
+override CONFIG_MEC1308 = no
+endif
+ifeq ($(CONFIG_ITE_EC), yes)
+UNSUPPORTED_FEATURES += CONFIG_ITE_EC=yes
+else
+override CONFIG_ITE_EC = no
+endif
+ifeq ($(CONFIG_NICREALTEK), yes)
+UNSUPPORTED_FEATURES += CONFIG_NICREALTEK=yes
+else
+override CONFIG_NICREALTEK = no
+endif
+ifeq ($(CONFIG_NICNATSEMI), yes)
+UNSUPPORTED_FEATURES += CONFIG_NICNATSEMI=yes
+else
+override CONFIG_NICNATSEMI = no
+endif
+ifeq ($(CONFIG_NICINTEL), yes)
+UNSUPPORTED_FEATURES += CONFIG_NICINTEL=yes
+else
+override CONFIG_NICINTEL = no
+endif
+ifeq ($(CONFIG_NICINTEL_EEPROM), yes)
+UNSUPPORTED_FEATURES += CONFIG_NICINTEL_EEPROM=yes
+else
+override CONFIG_NICINTEL_EEPROM = no
+endif
+ifeq ($(CONFIG_NICINTEL_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_NICINTEL_SPI=yes
+else
+override CONFIG_NICINTEL_SPI = no
+endif
+ifeq ($(CONFIG_OGP_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_OGP_SPI=yes
+else
+override CONFIG_OGP_SPI = no
+endif
+ifeq ($(CONFIG_SATAMV), yes)
+UNSUPPORTED_FEATURES += CONFIG_SATAMV=yes
+else
+override CONFIG_SATAMV = no
+endif
+endif
+>>>>>>> 43085b3a9d88... ite_ec: Implement support for flashing ITE ECs found on TUXEDO laptops
 
 # NI USB-845x only supported on Windows at the moment
 $(call mark_unsupported,CONFIG_NI845X_SPI)
@@ -311,6 +483,57 @@ $(call mark_unsupported,CONFIG_ATAPROMISE)
 $(call mark_unsupported,$(DEPENDS_ON_SERIAL))
 # Dediprog, Developerbox, USB-Blaster, PICkit2, CH341A and FT2232 are not supported with libpayload (missing libusb support).
 $(call mark_unsupported,$(DEPENDS_ON_LIBUSB1) $(DEPENDS_ON_LIBFTDI) $(DEPENDS_ON_LIBJAYLINK))
+ifeq ($(CONFIG_DEDIPROG), yes)
+UNSUPPORTED_FEATURES += CONFIG_DEDIPROG=yes
+else
+override CONFIG_DEDIPROG = no
+endif
+ifeq ($(CONFIG_DEVELOPERBOX_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_DEVELOPERBOX_SPI=yes
+else
+override CONFIG_DEVELOPERBOX_SPI = no
+endif
+ifeq ($(CONFIG_ENE_LPC), yes)
+UNSUPPORTED_FEATURES += CONFIG_ENE_LPC=yes
+else
+override CONFIG_ENE_LPC = no
+endif
+ifeq ($(CONFIG_FT2232_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_FT2232_SPI=yes
+else
+override CONFIG_FT2232_SPI = no
+endif
+ifeq ($(CONFIG_MEC1308), yes)
+UNSUPPORTED_FEATURES += CONFIG_MEC1308=yes
+else
+override CONFIG_MEC1308 = no
+endif
+ifeq ($(CONFIG_ITE_EC), yes)
+UNSUPPORTED_FEATURES += CONFIG_ITE_EC=yes
+else
+override CONFIG_ITE_EC = no
+endif
+ifeq ($(CONFIG_USBBLASTER_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_USBBLASTER_SPI=yes
+else
+override CONFIG_USBBLASTER_SPI = no
+endif
+ifeq ($(CONFIG_PICKIT2_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_PICKIT2_SPI=yes
+else
+override CONFIG_PICKIT2_SPI = no
+endif
+ifeq ($(CONFIG_STLINKV3_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_STLINKV3_SPI=yes
+else
+override CONFIG_STLINKV3_SPI = no
+endif
+ifeq ($(CONFIG_CH341A_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_CH341A_SPI=yes
+else
+override CONFIG_CH341A_SPI = no
+endif
+>>>>>>> 43085b3a9d88... ite_ec: Implement support for flashing ITE ECs found on TUXEDO laptops
 endif
 
 ifeq ($(HAS_LINUX_MTD), no)
@@ -363,6 +586,57 @@ endif
 ifneq ($(ARCH), x86)
 $(call mark_unsupported,$(DEPENDS_ON_X86_MSR))
 $(call mark_unsupported,$(DEPENDS_ON_X86_PORT_IO))
+ifeq ($(CONFIG_NIC3COM), yes)
+UNSUPPORTED_FEATURES += CONFIG_NIC3COM=yes
+else
+override CONFIG_NIC3COM = no
+endif
+ifeq ($(CONFIG_NICREALTEK), yes)
+UNSUPPORTED_FEATURES += CONFIG_NICREALTEK=yes
+else
+override CONFIG_NICREALTEK = no
+endif
+ifeq ($(CONFIG_NICNATSEMI), yes)
+UNSUPPORTED_FEATURES += CONFIG_NICNATSEMI=yes
+else
+override CONFIG_NICNATSEMI = no
+endif
+ifeq ($(CONFIG_RAYER_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_RAYER_SPI=yes
+else
+override CONFIG_RAYER_SPI = no
+endif
+ifeq ($(CONFIG_ATAHPT), yes)
+UNSUPPORTED_FEATURES += CONFIG_ATAHPT=yes
+else
+override CONFIG_ATAHPT = no
+endif
+ifeq ($(CONFIG_ATAPROMISE), yes)
+UNSUPPORTED_FEATURES += CONFIG_ATAPROMISE=yes
+else
+override CONFIG_ATAPROMISE = no
+endif
+ifeq ($(CONFIG_SATAMV), yes)
+UNSUPPORTED_FEATURES += CONFIG_SATAMV=yes
+else
+override CONFIG_SATAMV = no
+endif
+ifeq ($(CONFIG_ENE_LPC), yes)
+UNSUPPORTED_FEATURES += CONFIG_ENE_LPC=yes
+else
+override CONFIG_ENE_LPC = no
+endif
+ifeq ($(CONFIG_MEC1308), yes)
+UNSUPPORTED_FEATURES += CONFIG_MEC1308=yes
+else
+override CONFIG_MEC1308 = no
+endif
+ifeq ($(CONFIG_ITE_EC), yes)
+UNSUPPORTED_FEATURES += CONFIG_ITE_EC=yes
+else
+override CONFIG_ITE_EC = no
+endif
+>>>>>>> 43085b3a9d88... ite_ec: Implement support for flashing ITE ECs found on TUXEDO laptops
 endif
 
 # Additionally disable all drivers needing raw access (memory, PCI, port I/O)
@@ -466,6 +740,12 @@ CONFIG_ATAPROMISE ?= no
 
 # Always enable FT2232 SPI dongles for now.
 CONFIG_FT2232_SPI ?= yes
+
+# Microchip MEC1308 Embedded Controller
+CONFIG_MEC1308 ?= yes
+
+# ITE Embedded Controllers.
+CONFIG_ITE_EC ?= yes
 
 # Always enable Altera USB-Blaster dongles for now.
 CONFIG_USBBLASTER_SPI ?= yes
@@ -608,6 +888,33 @@ FEATURE_CFLAGS += -D'CONFIG_INTERNAL_DMI=1'
 endif
 else
 endif
+NEED_LIBPCI += CONFIG_INTERNAL
+endif
+
+ifeq ($(CONFIG_ITE_EC), yes)
+FEATURE_CFLAGS += -D'CONFIG_ITE_EC=1'
+PROGRAMMER_OBJS += ite_ec.o
+ifeq ($(findstring it87spi.o,$(PROGRAMMER_OBJS)),)
+# Do not include it87spi.c twice
+PROGRAMMER_OBJS += it87spi.o
+endif
+NEED_RAW_ACCESS += CONFIG_ITE_EC
+NEED_LIBPCI += CONFIG_ITE_EC
+endif
+
+ifeq ($(CONFIG_ENE_LPC), yes)
+FEATURE_CFLAGS += -D'CONFIG_ENE_LPC=1'
+PROGRAMMER_OBJS += ene_lpc.o
+NEED_RAW_ACCESS += CONFIG_ENE_LPC
+NEED_LIBPCI += CONFIG_ENE_LPC
+endif
+
+ifeq ($(CONFIG_MEC1308), yes)
+FEATURE_CFLAGS += -D'CONFIG_MEC1308=1'
+PROGRAMMER_OBJS += mec1308.o
+NEED_RAW_ACCESS += CONFIG_MEC1308
+NEED_LIBPCI += CONFIG_MEC1308
+>>>>>>> 43085b3a9d88... ite_ec: Implement support for flashing ITE ECs found on TUXEDO laptops
 endif
 
 ifeq ($(CONFIG_SERPROG), yes)
