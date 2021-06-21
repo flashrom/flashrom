@@ -165,6 +165,19 @@ static void nicintel_bitbang_set_mosi(int val, void *spi_data)
 	pci_mmio_writel(tmp, data->spibar + FLA);
 }
 
+static void nicintel_bitbang_set_sck_set_mosi(int sck, int mosi, void *spi_data)
+{
+	struct nicintel_spi_data *data = spi_data;
+	uint32_t tmp;
+
+	tmp = pci_mmio_readl(data->spibar + FLA);
+	tmp &= ~BIT(FL_SCK);
+	tmp &= ~BIT(FL_SI);
+	tmp |= (sck << FL_SCK);
+	tmp |= (mosi << FL_SI);
+	pci_mmio_writel(tmp, data->spibar + FLA);
+}
+
 static int nicintel_bitbang_get_miso(void *spi_data)
 {
 	struct nicintel_spi_data *data = spi_data;
@@ -175,10 +188,24 @@ static int nicintel_bitbang_get_miso(void *spi_data)
 	return tmp;
 }
 
+static int nicintel_bitbang_set_sck_get_miso(int sck, void *spi_data)
+{
+	struct nicintel_spi_data *data = spi_data;
+	uint32_t tmp;
+
+	tmp = pci_mmio_readl(data->spibar + FLA);
+	tmp &= ~BIT(FL_SCK);
+	tmp |= (sck << FL_SCK);
+	pci_mmio_writel(tmp, data->spibar + FLA);
+	return (tmp >> FL_SO) & 0x1;
+}
+
 static const struct bitbang_spi_master bitbang_spi_master_nicintel = {
 	.set_cs = nicintel_bitbang_set_cs,
 	.set_sck = nicintel_bitbang_set_sck,
 	.set_mosi = nicintel_bitbang_set_mosi,
+	.set_sck_set_mosi = nicintel_bitbang_set_sck_set_mosi,
+	.set_sck_get_miso = nicintel_bitbang_set_sck_get_miso,
 	.get_miso = nicintel_bitbang_get_miso,
 	.request_bus = nicintel_request_spibus,
 	.release_bus = nicintel_release_spibus,
