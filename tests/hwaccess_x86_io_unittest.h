@@ -38,7 +38,17 @@
 #define INL(p) test_inl(p)
 
 #include <stdint.h>
-#include <sys/io.h>
+
+/*
+ * Dummy implementation of iopl from sys/io.h.
+ * sys/io.h by itself is platform-specific, so instead of including
+ * the header we just have this dummy function, which is sufficient
+ * for test purposes.
+ */
+static inline int iopl(int level)
+{
+	return 0;
+}
 
 /* All functions below are mocked in unit tests. */
 
