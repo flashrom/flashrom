@@ -100,7 +100,9 @@ void probe_superio_ite(void)
 			msg_pdbg("Found ITE Super I/O, ID 0x%04hx on port 0x%x\n", s.model, s.port);
 			register_superio(s);
 			break;
+		case 0x55:
 		case 0x85:
+		case 0x89:
 			msg_pdbg("Found ITE EC, ID 0x%04hx, Rev 0x%02x on port 0x%x.\n",
 				 s.model, sio_read(s.port, CHIP_VER_REG), s.port);
 			register_superio(s);
