@@ -333,3 +333,61 @@ int rpci_write_long(struct pci_dev *dev, int reg, uint32_t data)
 	register_undo_pci_write_long(dev, reg);
 	return pci_write_long(dev, reg, data);
 }
+
+struct pci_dev *pci_dev_find_vendorclass(uint16_t vendor, uint16_t devclass)
+{
+	struct pci_dev *temp;
+	struct pci_filter filter;
+	uint16_t tmp2;
+
+	pci_filter_init(NULL, &filter);
+	filter.vendor = vendor;
+
+	for (temp = pacc->devices; temp; temp = temp->next)
+		if (pci_filter_match(&filter, temp)) {
+			/* Read PCI class */
+			tmp2 = pci_read_word(temp, 0x0a);
+			if (tmp2 == devclass)
+				return temp;
+		}
+
+	return NULL;
+}
+
+struct pci_dev *pci_dev_find(uint16_t vendor, uint16_t device)
+{
+	struct pci_dev *temp;
+	struct pci_filter filter;
+
+	pci_filter_init(NULL, &filter);
+	filter.vendor = vendor;
+	filter.device = device;
+
+	for (temp = pacc->devices; temp; temp = temp->next)
+		if (pci_filter_match(&filter, temp))
+			return temp;
+
+	return NULL;
+}
+
+struct pci_dev *pci_card_find(uint16_t vendor, uint16_t device,
+			      uint16_t card_vendor, uint16_t card_device)
+{
+	struct pci_dev *temp;
+	struct pci_filter filter;
+
+	pci_filter_init(NULL, &filter);
+	filter.vendor = vendor;
+	filter.device = device;
+
+	for (temp = pacc->devices; temp; temp = temp->next)
+		if (pci_filter_match(&filter, temp)) {
+			if ((card_vendor ==
+			     pci_read_word(temp, PCI_SUBSYSTEM_VENDOR_ID))
+			    && (card_device ==
+				pci_read_word(temp, PCI_SUBSYSTEM_ID)))
+				return temp;
+		}
+
+	return NULL;
+}
