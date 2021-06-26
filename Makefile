@@ -227,9 +227,6 @@ FLASHROM_CFLAGS += -Dffs=__builtin_ffs
 # for MinGW. See http://sourceforge.net/p/mingw-w64/wiki2/printf%20and%20scanf%20family/ */
 FLASHROM_CFLAGS += -D__USE_MINGW_ANSI_STDIO=1
 
-# National Instruments USB-845x is Windows only for now
-CONFIG_NI845X_SPI ?= no
-
 # For now we disable all PCI-based programmers on Windows/MinGW (no libpci).
 ifeq ($(CONFIG_INTERNAL), yes)
 UNSUPPORTED_FEATURES += CONFIG_INTERNAL=yes
@@ -771,6 +768,9 @@ CONFIG_DIGILENT_SPI ?= yes
 
 # Disable J-Link for now.
 CONFIG_JLINK_SPI ?= no
+
+# National Instruments USB-845x is Windows only and needs a proprietary library.
+CONFIG_NI845X_SPI ?= no
 
 # Disable wiki printing by default. It is only useful if you have wiki access.
 CONFIG_PRINT_WIKI ?= no
