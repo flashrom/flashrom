@@ -229,79 +229,15 @@ ifeq ($(MAKECMDGOALS),)
 $(info Setting default goal to libflashrom.a)
 endif
 FLASHROM_CFLAGS += -DSTANDALONE
-ifeq ($(CONFIG_DUMMY), yes)
-UNSUPPORTED_FEATURES += CONFIG_DUMMY=yes
-else
-override CONFIG_DUMMY = no
-endif
+$(call mark_unsupported,CONFIG_DUMMY)
 # libpayload does not provide the romsize field in struct pci_dev that the atapromise code requires.
-ifeq ($(CONFIG_ATAPROMISE), yes)
-UNSUPPORTED_FEATURES += CONFIG_ATAPROMISE=yes
-else
-override CONFIG_ATAPROMISE = no
-endif
+$(call mark_unsupported,CONFIG_ATAPROMISE)
 # Bus Pirate, Serprog and PonyProg are not supported with libpayload (missing serial support).
-ifeq ($(CONFIG_BUSPIRATE_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_BUSPIRATE_SPI=yes
-else
-override CONFIG_BUSPIRATE_SPI = no
-endif
-ifeq ($(CONFIG_SERPROG), yes)
-UNSUPPORTED_FEATURES += CONFIG_SERPROG=yes
-else
-override CONFIG_SERPROG = no
-endif
-ifeq ($(CONFIG_PONY_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_PONY_SPI=yes
-else
-override CONFIG_PONY_SPI = no
-endif
+$(call mark_unsupported,CONFIG_BUSPIRATE_SPI CONFIG_SERPROG CONFIG_PONY_SPI)
 # Dediprog, Developerbox, USB-Blaster, PICkit2, CH341A and FT2232 are not supported with libpayload (missing libusb support).
-ifeq ($(CONFIG_DEDIPROG), yes)
-UNSUPPORTED_FEATURES += CONFIG_DEDIPROG=yes
-else
-override CONFIG_DEDIPROG = no
-endif
-ifeq ($(CONFIG_DEVELOPERBOX_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_DEVELOPERBOX_SPI=yes
-else
-override CONFIG_DEVELOPERBOX_SPI = no
-endif
-ifeq ($(CONFIG_ENE_LPC), yes)
-UNSUPPORTED_FEATURES += CONFIG_ENE_LPC=yes
-else
-override CONFIG_ENE_LPC = no
-endif
-ifeq ($(CONFIG_FT2232_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_FT2232_SPI=yes
-else
-override CONFIG_FT2232_SPI = no
-endif
-ifeq ($(CONFIG_MEC1308), yes)
-UNSUPPORTED_FEATURES += CONFIG_MEC1308=yes
-else
-override CONFIG_MEC1308 = no
-endif
-ifeq ($(CONFIG_USBBLASTER_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_USBBLASTER_SPI=yes
-else
-override CONFIG_USBBLASTER_SPI = no
-endif
-ifeq ($(CONFIG_PICKIT2_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_PICKIT2_SPI=yes
-else
-override CONFIG_PICKIT2_SPI = no
-endif
-ifeq ($(CONFIG_STLINKV3_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_STLINKV3_SPI=yes
-else
-override CONFIG_STLINKV3_SPI = no
-endif
-ifeq ($(CONFIG_CH341A_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_CH341A_SPI=yes
-else
-override CONFIG_CH341A_SPI = no
-endif
+$(call mark_unsupported,$(DEPENDS_ON_LIBUSB1) $(DEPENDS_ON_LIBFTDI) $(DEPENDS_ON_LIBJAYLINK))
+# Odd ones. (FIXME: why?)
+$(call mark_unsupported,CONFIG_ENE_LPC CONFIG_MEC1308)
 endif
 
 ifneq ($(TARGET_OS), Linux)
