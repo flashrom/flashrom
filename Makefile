@@ -270,147 +270,24 @@ override ENDIAN := $(strip $(call debug_shell,$(CC) $(CPPFLAGS) -E endiantest.c 
 
 # Disable the internal programmer on unsupported architectures (everything but x86 and mipsel)
 ifneq ($(ARCH)-little, $(filter $(ARCH),x86 mips)-$(ENDIAN))
-ifeq ($(CONFIG_INTERNAL), yes)
-UNSUPPORTED_FEATURES += CONFIG_INTERNAL=yes
-else
-override CONFIG_INTERNAL = no
-endif
+$(call mark_unsupported,CONFIG_INTERNAL)
 endif
 
 # PCI port I/O support is unimplemented on PPC/MIPS/SPARC and unavailable on ARM.
 # Right now this means the drivers below only work on x86.
 ifneq ($(ARCH), x86)
-ifeq ($(CONFIG_NIC3COM), yes)
-UNSUPPORTED_FEATURES += CONFIG_NIC3COM=yes
-else
-override CONFIG_NIC3COM = no
-endif
-ifeq ($(CONFIG_NICREALTEK), yes)
-UNSUPPORTED_FEATURES += CONFIG_NICREALTEK=yes
-else
-override CONFIG_NICREALTEK = no
-endif
-ifeq ($(CONFIG_NICNATSEMI), yes)
-UNSUPPORTED_FEATURES += CONFIG_NICNATSEMI=yes
-else
-override CONFIG_NICNATSEMI = no
-endif
-ifeq ($(CONFIG_RAYER_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_RAYER_SPI=yes
-else
-override CONFIG_RAYER_SPI = no
-endif
-ifeq ($(CONFIG_ATAHPT), yes)
-UNSUPPORTED_FEATURES += CONFIG_ATAHPT=yes
-else
-override CONFIG_ATAHPT = no
-endif
-ifeq ($(CONFIG_ATAPROMISE), yes)
-UNSUPPORTED_FEATURES += CONFIG_ATAPROMISE=yes
-else
-override CONFIG_ATAPROMISE = no
-endif
-ifeq ($(CONFIG_SATAMV), yes)
-UNSUPPORTED_FEATURES += CONFIG_SATAMV=yes
-else
-override CONFIG_SATAMV = no
-endif
-ifeq ($(CONFIG_ENE_LPC), yes)
-UNSUPPORTED_FEATURES += CONFIG_ENE_LPC=yes
-else
-override CONFIG_ENE_LPC = no
-endif
-ifeq ($(CONFIG_MEC1308), yes)
-UNSUPPORTED_FEATURES += CONFIG_MEC1308=yes
-else
-override CONFIG_MEC1308 = no
-endif
+$(call mark_unsupported,CONFIG_NIC3COM CONFIG_NICREALTEK CONFIG_NICNATSEMI)
+$(call mark_unsupported,CONFIG_RAYER_SPI CONFIG_ATAHPT CONFIG_ATAPROMISE)
+$(call mark_unsupported,CONFIG_SATAMV CONFIG_ENE_LPC CONFIG_MEC1308)
 endif
 
-# Disable all drivers needing raw access (memory, PCI, port I/O) on
-# architectures with unknown raw access properties.
+# Additionally disable all drivers needing raw access (memory, PCI, port I/O)
+# on architectures with unknown raw access properties.
 # Right now those architectures are alpha hppa m68k sh s390
 ifneq ($(ARCH),$(filter $(ARCH),x86 mips ppc arm sparc arc))
-ifeq ($(CONFIG_RAYER_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_RAYER_SPI=yes
-else
-override CONFIG_RAYER_SPI = no
-endif
-ifeq ($(CONFIG_NIC3COM), yes)
-UNSUPPORTED_FEATURES += CONFIG_NIC3COM=yes
-else
-override CONFIG_NIC3COM = no
-endif
-ifeq ($(CONFIG_GFXNVIDIA), yes)
-UNSUPPORTED_FEATURES += CONFIG_GFXNVIDIA=yes
-else
-override CONFIG_GFXNVIDIA = no
-endif
-ifeq ($(CONFIG_SATASII), yes)
-UNSUPPORTED_FEATURES += CONFIG_SATASII=yes
-else
-override CONFIG_SATASII = no
-endif
-ifeq ($(CONFIG_ATAHPT), yes)
-UNSUPPORTED_FEATURES += CONFIG_ATAHPT=yes
-else
-override CONFIG_ATAHPT = no
-endif
-ifeq ($(CONFIG_ATAVIA), yes)
-UNSUPPORTED_FEATURES += CONFIG_ATAVIA=yes
-else
-override CONFIG_ATAVIA = no
-endif
-ifeq ($(CONFIG_ATAPROMISE), yes)
-UNSUPPORTED_FEATURES += CONFIG_ATAPROMISE=yes
-else
-override CONFIG_ATAPROMISE = no
-endif
-ifeq ($(CONFIG_DRKAISER), yes)
-UNSUPPORTED_FEATURES += CONFIG_DRKAISER=yes
-else
-override CONFIG_DRKAISER = no
-endif
-ifeq ($(CONFIG_NICREALTEK), yes)
-UNSUPPORTED_FEATURES += CONFIG_NICREALTEK=yes
-else
-override CONFIG_NICREALTEK = no
-endif
-ifeq ($(CONFIG_NICNATSEMI), yes)
-UNSUPPORTED_FEATURES += CONFIG_NICNATSEMI=yes
-else
-override CONFIG_NICNATSEMI = no
-endif
-ifeq ($(CONFIG_NICINTEL), yes)
-UNSUPPORTED_FEATURES += CONFIG_NICINTEL=yes
-else
-override CONFIG_NICINTEL = no
-endif
-ifeq ($(CONFIG_NICINTEL_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_NICINTEL_SPI=yes
-else
-override CONFIG_NICINTEL_SPI = no
-endif
-ifeq ($(CONFIG_NICINTEL_EEPROM), yes)
-UNSUPPORTED_FEATURES += CONFIG_NICINTEL_EEPROM=yes
-else
-override CONFIG_NICINTEL_EEPROM = no
-endif
-ifeq ($(CONFIG_OGP_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_OGP_SPI=yes
-else
-override CONFIG_OGP_SPI = no
-endif
-ifeq ($(CONFIG_SATAMV), yes)
-UNSUPPORTED_FEATURES += CONFIG_SATAMV=yes
-else
-override CONFIG_SATAMV = no
-endif
-ifeq ($(CONFIG_IT8212), yes)
-UNSUPPORTED_FEATURES += CONFIG_IT8212=yes
-else
-override CONFIG_IT8212 = no
-endif
+$(call mark_unsupported,CONFIG_GFXNVIDIA CONFIG_SATASII CONFIG_ATAVIA)
+$(call mark_unsupported,CONFIG_DRKAISER CONFIG_NICINTEL CONFIG_NICINTEL_SPI)
+$(call mark_unsupported,CONFIG_NICINTEL_EEPROM CONFIG_OGP_SPI CONFIG_IT8212)
 endif
 
 ###############################################################################
