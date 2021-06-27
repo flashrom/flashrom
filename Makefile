@@ -140,6 +140,19 @@ $(foreach p,$1, \
 		$(eval override $(p) := no)))
 endef
 
+define disable_all
+$(foreach p,$1, \
+	$(eval override $(p) := no))
+endef
+
+ifeq ($(CONFIG_ENABLE_LIBUSB1_PROGRAMMERS), no)
+$(call disable_all,$(DEPENDS_ON_LIBUSB1))
+endif
+
+ifeq ($(CONFIG_ENABLE_LIBPCI_PROGRAMMERS), no)
+$(call disable_all,$(DEPENDS_ON_LIBPCI))
+endif
+
 ###############################################################################
 # General OS-specific settings.
 # 1. Prepare for later by gathering information about host and target OS
@@ -463,34 +476,6 @@ ifeq ($(CONFIG_EVERYTHING), yes)
 $(foreach var, $(filter CONFIG_%, $(.VARIABLES)),\
 	$(if $(filter no, $($(var))),\
 		$(eval $(var)=yes)))
-endif
-
-ifeq ($(CONFIG_ENABLE_LIBUSB1_PROGRAMMERS), no)
-override CONFIG_CH341A_SPI = no
-override CONFIG_DEDIPROG = no
-override CONFIG_DIGILENT_SPI = no
-override CONFIG_DEVELOPERBOX_SPI = no
-override CONFIG_PICKIT2_SPI = no
-override CONFIG_RAIDEN_DEBUG_SPI = no
-override CONFIG_STLINKV3_SPI = no
-endif
-ifeq ($(CONFIG_ENABLE_LIBPCI_PROGRAMMERS), no)
-override CONFIG_INTERNAL = no
-override CONFIG_NIC3COM = no
-override CONFIG_GFXNVIDIA = no
-override CONFIG_SATASII = no
-override CONFIG_ATAHPT = no
-override CONFIG_ATAVIA = no
-override CONFIG_ATAPROMISE = no
-override CONFIG_IT8212 = no
-override CONFIG_DRKAISER = no
-override CONFIG_NICREALTEK = no
-override CONFIG_NICNATSEMI = no
-override CONFIG_NICINTEL = no
-override CONFIG_NICINTEL_SPI = no
-override CONFIG_NICINTEL_EEPROM = no
-override CONFIG_OGP_SPI = no
-override CONFIG_SATAMV = no
 endif
 
 # Bitbanging SPI infrastructure, default off unless needed.
