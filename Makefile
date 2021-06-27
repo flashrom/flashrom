@@ -133,6 +133,13 @@ DEPENDS_ON_LIBFTDI := \
 DEPENDS_ON_LIBJAYLINK := \
 	CONFIG_JLINK_SPI \
 
+define mark_unsupported
+$(foreach p,$1, \
+	$(if $(filter $($(p)),yes), \
+		$(eval UNSUPPORTED_FEATURES += $(p)=yes), \
+		$(eval override $(p) := no)))
+endef
+
 ###############################################################################
 # General OS-specific settings.
 # 1. Prepare for later by gathering information about host and target OS
