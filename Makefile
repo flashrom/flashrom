@@ -194,84 +194,12 @@ EXEC_SUFFIX := .exe
 # DJGPP has odd uint*_t definitions which cause lots of format string warnings.
 override CFLAGS += -Wno-format
 LIBS += -lgetopt
-# Bus Pirate, Serprog and PonyProg are not supported under DOS (missing serial support).
-ifeq ($(CONFIG_BUSPIRATE_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_BUSPIRATE_SPI=yes
-else
-override CONFIG_BUSPIRATE_SPI = no
-endif
-ifeq ($(CONFIG_SERPROG), yes)
-UNSUPPORTED_FEATURES += CONFIG_SERPROG=yes
-else
-override CONFIG_SERPROG = no
-endif
-ifeq ($(CONFIG_PONY_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_PONY_SPI=yes
-else
-override CONFIG_PONY_SPI = no
-endif
-# Digilent SPI, Dediprog, Developerbox, USB-Blaster, PICkit2, CH341A and FT2232 are not supported under DOS (missing USB support).
-ifeq ($(CONFIG_DIGILENT_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_DIGILENT_SPI=yes
-else
-override CONFIG_DIGILENT_SPI = no
-endif
-ifeq ($(CONFIG_DEDIPROG), yes)
-UNSUPPORTED_FEATURES += CONFIG_DEDIPROG=yes
-else
-override CONFIG_DEDIPROG = no
-endif
-ifeq ($(CONFIG_DEVELOPERBOX_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_DEVELOPERBOX_SPI=yes
-else
-override CONFIG_DEVELOPERBOX_SPI = no
-endif
-ifeq ($(CONFIG_ENE_LPC), yes)
-UNSUPPORTED_FEATURES += CONFIG_ENE_LPC=yes
-else
-override CONFIG_ENE_LPC = no
-endif
-ifeq ($(CONFIG_FT2232_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_FT2232_SPI=yes
-else
-override CONFIG_FT2232_SPI = no
-endif
-ifeq ($(CONFIG_MEC1308), yes)
-UNSUPPORTED_FEATURES += CONFIG_MEC1308=yes
-else
-override CONFIG_MEC1308 = no
-endif
-ifeq ($(CONFIG_USBBLASTER_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_USBBLASTER_SPI=yes
-else
-override CONFIG_USBBLASTER_SPI = no
-endif
-ifeq ($(CONFIG_PICKIT2_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_PICKIT2_SPI=yes
-else
-override CONFIG_PICKIT2_SPI = no
-endif
-ifeq ($(CONFIG_CH341A_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_CH341A_SPI=yes
-else
-override CONFIG_CH341A_SPI = no
-endif
-ifeq ($(CONFIG_RAIDEN_DEBUG_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_RAIDEN_DEBUG_SPI=yes
-else
-override CONFIG_RAIDEN_DEBUG_SPI = no
-endif
-ifeq ($(CONFIG_STLINKV3_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_STLINKV3_SPI=yes
-else
-override CONFIG_STLINKV3_SPI = no
-endif
-# libjaylink is also not available for DOS
-ifeq ($(CONFIG_JLINK_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_JLINK_SPI=yes
-else
-override CONFIG_JLINK_SPI = no
-endif
+# Missing serial support.
+$(call mark_unsupported,$(DEPENDS_ON_SERIAL))
+# Libraries not available for DOS
+$(call mark_unsupported,$(DEPENDS_ON_LIBUSB1) $(DEPENDS_ON_LIBFTDI) $(DEPENDS_ON_LIBJAYLINK))
+# Odd ones (FIXME: why are they unsupported?)
+$(call mark_unsupported,CONFIG_ENE_LPC CONFIG_MEC1308)
 endif
 
 # FIXME: Should we check for Cygwin/MSVC as well?
