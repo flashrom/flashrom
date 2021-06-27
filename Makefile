@@ -240,44 +240,15 @@ $(call mark_unsupported,$(DEPENDS_ON_LIBUSB1) $(DEPENDS_ON_LIBFTDI) $(DEPENDS_ON
 $(call mark_unsupported,CONFIG_ENE_LPC CONFIG_MEC1308)
 endif
 
-ifneq ($(TARGET_OS), Linux)
-# Android is handled internally as separate OS, but it supports CONFIG_LINUX_SPI and CONFIG_MSTARDDC_SPI
-ifneq ($(TARGET_OS), Android)
-ifeq ($(CONFIG_LINUX_MTD), yes)
-UNSUPPORTED_FEATURES += CONFIG_LINUX_MTD=yes
-else
-override CONFIG_LINUX_MTD = no
-endif
-ifeq ($(CONFIG_LINUX_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_LINUX_SPI=yes
-else
-override CONFIG_LINUX_SPI = no
-endif
-ifeq ($(CONFIG_MSTARDDC_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_MSTARDDC_SPI=yes
-else
-override CONFIG_MSTARDDC_SPI = no
-ifeq ($(CONFIG_LSPCON_I2C_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_LSPCON_I2C_SPI=yes
-else
-override CONFIG_LSPCON_I2C_SPI = no
-endif
-ifeq ($(CONFIG_REALTEK_MST_I2C_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_REALTEK_MST_I2C_SPI=yes
-else
-override CONFIG_REALTEK_MST_I2C_SPI = no
-endif
-endif
-endif
+# Android is handled internally as separate OS, but it supports about the same drivers as Linux.
+ifeq ($(filter $(TARGET_OS),Linux Android), )
+$(call mark_unsupported,CONFIG_LINUX_MTD CONFIG_LINUX_SPI)
+$(call mark_unsupported,CONFIG_MSTARDDC_SPI CONFIG_LSPCON_I2C_SPI CONFIG_REALTEK_MST_I2C_SPI)
 endif
 
 ifeq ($(TARGET_OS), Android)
-# Android on x86 (currently) does not provide raw PCI port I/O operations
-ifeq ($(CONFIG_RAYER_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_RAYER_SPI=yes
-else
-override CONFIG_RAYER_SPI = no
-endif
+# Android on x86 (currently) does not provide raw PCI port I/O operations.
+$(call mark_unsupported,CONFIG_RAYER_SPI)
 endif
 
 ifeq ($(TARGET_OS), Linux)
