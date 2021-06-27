@@ -532,7 +532,6 @@ FEATURE_CFLAGS += -D'CONFIG_INTERNAL_DMI=1'
 endif
 else
 endif
-NEED_LIBPCI += CONFIG_INTERNAL
 endif
 
 ifeq ($(CONFIG_ENE_LPC), yes)
@@ -579,69 +578,58 @@ endif
 ifeq ($(CONFIG_NIC3COM), yes)
 FEATURE_CFLAGS += -D'CONFIG_NIC3COM=1'
 PROGRAMMER_OBJS += nic3com.o
-NEED_LIBPCI += CONFIG_NIC3COM
 endif
 
 ifeq ($(CONFIG_GFXNVIDIA), yes)
 FEATURE_CFLAGS += -D'CONFIG_GFXNVIDIA=1'
 PROGRAMMER_OBJS += gfxnvidia.o
-NEED_LIBPCI += CONFIG_GFXNVIDIA
 endif
 
 ifeq ($(CONFIG_SATASII), yes)
 FEATURE_CFLAGS += -D'CONFIG_SATASII=1'
 PROGRAMMER_OBJS += satasii.o
-NEED_LIBPCI += CONFIG_SATASII
 endif
 
 ifeq ($(CONFIG_ATAHPT), yes)
 FEATURE_CFLAGS += -D'CONFIG_ATAHPT=1'
 PROGRAMMER_OBJS += atahpt.o
-NEED_LIBPCI += CONFIG_ATAHPT
 endif
 
 ifeq ($(CONFIG_ATAVIA), yes)
 FEATURE_CFLAGS += -D'CONFIG_ATAVIA=1'
 PROGRAMMER_OBJS += atavia.o
-NEED_LIBPCI += CONFIG_ATAVIA
 endif
 
 ifeq ($(CONFIG_ATAPROMISE), yes)
 FEATURE_CFLAGS += -D'CONFIG_ATAPROMISE=1'
 PROGRAMMER_OBJS += atapromise.o
-NEED_LIBPCI += CONFIG_ATAPROMISE
 endif
 
 ifeq ($(CONFIG_IT8212), yes)
 FEATURE_CFLAGS += -D'CONFIG_IT8212=1'
 PROGRAMMER_OBJS += it8212.o
-NEED_LIBPCI += CONFIG_IT8212
 endif
 
 ifeq ($(CONFIG_FT2232_SPI), yes)
 # This is a totally ugly hack.
 FEATURE_CFLAGS += $(call debug_shell,grep -q "FTDISUPPORT := yes" .features && printf "%s" "-D'CONFIG_FT2232_SPI=1'")
-NEED_LIBFTDI += CONFIG_FT2232_SPI
 PROGRAMMER_OBJS += ft2232_spi.o
 endif
 
 ifeq ($(CONFIG_USBBLASTER_SPI), yes)
 # This is a totally ugly hack.
 FEATURE_CFLAGS += $(call debug_shell,grep -q "FTDISUPPORT := yes" .features && printf "%s" "-D'CONFIG_USBBLASTER_SPI=1'")
-NEED_LIBFTDI += CONFIG_USBBLASTER_SPI
 PROGRAMMER_OBJS += usbblaster_spi.o
 endif
 
 ifeq ($(CONFIG_PICKIT2_SPI), yes)
 FEATURE_CFLAGS += -D'CONFIG_PICKIT2_SPI=1'
 PROGRAMMER_OBJS += pickit2_spi.o
-NEED_LIBUSB1 += CONFIG_PICKIT2_SPI
 endif
 
 ifeq ($(CONFIG_STLINKV3_SPI), yes)
 FEATURE_CFLAGS += -D'CONFIG_STLINKV3_SPI=1'
 PROGRAMMER_OBJS += stlinkv3_spi.o
-NEED_LIBUSB1 += CONFIG_STLINKV3_SPI
 endif
 
 ifeq ($(CONFIG_LSPCON_I2C_SPI), yes)
@@ -662,43 +650,36 @@ endif
 ifeq ($(CONFIG_DRKAISER), yes)
 FEATURE_CFLAGS += -D'CONFIG_DRKAISER=1'
 PROGRAMMER_OBJS += drkaiser.o
-NEED_LIBPCI += CONFIG_DRKAISER
 endif
 
 ifeq ($(CONFIG_NICREALTEK), yes)
 FEATURE_CFLAGS += -D'CONFIG_NICREALTEK=1'
 PROGRAMMER_OBJS += nicrealtek.o
-NEED_LIBPCI += CONFIG_NICREALTEK
 endif
 
 ifeq ($(CONFIG_NICNATSEMI), yes)
 FEATURE_CFLAGS += -D'CONFIG_NICNATSEMI=1'
 PROGRAMMER_OBJS += nicnatsemi.o
-NEED_LIBPCI += CONFIG_NICNATSEMI
 endif
 
 ifeq ($(CONFIG_NICINTEL), yes)
 FEATURE_CFLAGS += -D'CONFIG_NICINTEL=1'
 PROGRAMMER_OBJS += nicintel.o
-NEED_LIBPCI += CONFIG_NICINTEL
 endif
 
 ifeq ($(CONFIG_NICINTEL_SPI), yes)
 FEATURE_CFLAGS += -D'CONFIG_NICINTEL_SPI=1'
 PROGRAMMER_OBJS += nicintel_spi.o
-NEED_LIBPCI += CONFIG_NICINTEL_SPI
 endif
 
 ifeq ($(CONFIG_NICINTEL_EEPROM), yes)
 FEATURE_CFLAGS += -D'CONFIG_NICINTEL_EEPROM=1'
 PROGRAMMER_OBJS += nicintel_eeprom.o
-NEED_LIBPCI += CONFIG_NICINTEL_EEPROM
 endif
 
 ifeq ($(CONFIG_OGP_SPI), yes)
 FEATURE_CFLAGS += -D'CONFIG_OGP_SPI=1'
 PROGRAMMER_OBJS += ogp_spi.o
-NEED_LIBPCI += CONFIG_OGP_SPI
 endif
 
 ifeq ($(CONFIG_BUSPIRATE_SPI), yes)
@@ -710,19 +691,16 @@ endif
 ifeq ($(CONFIG_DEDIPROG), yes)
 FEATURE_CFLAGS += -D'CONFIG_DEDIPROG=1'
 PROGRAMMER_OBJS += dediprog.o
-NEED_LIBUSB1 += CONFIG_DEDIPROG
 endif
 
 ifeq ($(CONFIG_DEVELOPERBOX_SPI), yes)
 FEATURE_CFLAGS += -D'CONFIG_DEVELOPERBOX_SPI=1'
 PROGRAMMER_OBJS += developerbox_spi.o
-NEED_LIBUSB1 += CONFIG_DEVELOPERBOX_SPI
 endif
 
 ifeq ($(CONFIG_SATAMV), yes)
 FEATURE_CFLAGS += -D'CONFIG_SATAMV=1'
 PROGRAMMER_OBJS += satamv.o
-NEED_LIBPCI += CONFIG_SATAMV
 endif
 
 ifeq ($(CONFIG_LINUX_MTD), yes)
@@ -747,17 +725,14 @@ endif
 ifeq ($(CONFIG_CH341A_SPI), yes)
 FEATURE_CFLAGS += -D'CONFIG_CH341A_SPI=1'
 PROGRAMMER_OBJS += ch341a_spi.o
-NEED_LIBUSB1 += CONFIG_CH341A_SPI
 endif
 
 ifeq ($(CONFIG_DIGILENT_SPI), yes)
 FEATURE_CFLAGS += -D'CONFIG_DIGILENT_SPI=1'
 PROGRAMMER_OBJS += digilent_spi.o
-NEED_LIBUSB1 += CONFIG_DIGILENT_SPI
 endif
 
 ifeq ($(CONFIG_JLINK_SPI), yes)
-NEED_LIBJAYLINK += CONFIG_JLINK_SPI
 FEATURE_CFLAGS += -D'CONFIG_JLINK_SPI=1'
 PROGRAMMER_OBJS += jlink_spi.o
 endif
@@ -797,6 +772,7 @@ LIBS += -lsocket -lnsl
 endif
 endif
 
+NEED_LIBPCI := $(call filter_deps,$(DEPENDS_ON_LIBPCI))
 ifneq ($(NEED_LIBPCI), )
 CHECK_LIBPCI = yes
 # This is a dirty hack, but it saves us from checking all PCI drivers and all platforms manually.
@@ -839,7 +815,7 @@ endif
 
 endif
 
-
+NEED_LIBUSB1 := $(call filter_deps,$(DEPENDS_ON_LIBUSB1))
 ifneq ($(NEED_LIBUSB1), )
 CHECK_LIBUSB1 = yes
 FEATURE_CFLAGS += -D'NEED_LIBUSB1=1'
@@ -858,6 +834,7 @@ endif
 endif
 endif
 
+NEED_LIBFTDI := $(call filter_deps,$(DEPENDS_ON_LIBFTDI))
 ifneq ($(NEED_LIBFTDI), )
 FTDILIBS := $(call debug_shell,[ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ; $(PKG_CONFIG) --libs libftdi1 || $(PKG_CONFIG) --libs libftdi || printf "%s" "-lftdi -lusb")
 FEATURE_CFLAGS += $(call debug_shell,grep -q "FT232H := yes" .features && printf "%s" "-D'HAVE_FT232H=1'")
@@ -868,6 +845,7 @@ FEATURE_LIBS += $(call debug_shell,grep -q "FTDISUPPORT := yes" .features && pri
 # into a hard requirement for libusb, defeating the purpose of auto-enabling.
 endif
 
+NEED_LIBJAYLINK := $(call filter_deps,$(DEPENDS_ON_LIBJAYLINK))
 ifneq ($(NEED_LIBJAYLINK), )
 CHECK_LIBJAYLINK = yes
 JAYLINKLIBS += $(call debug_shell,[ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)"; $(PKG_CONFIG) --libs libjaylink)
