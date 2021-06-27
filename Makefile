@@ -212,110 +212,15 @@ FLASHROM_CFLAGS += -Dffs=__builtin_ffs
 FLASHROM_CFLAGS += -D__USE_MINGW_ANSI_STDIO=1
 
 # For now we disable all PCI-based programmers on Windows/MinGW (no libpci).
-ifeq ($(CONFIG_INTERNAL), yes)
-UNSUPPORTED_FEATURES += CONFIG_INTERNAL=yes
-else
-override CONFIG_INTERNAL = no
-endif
-ifeq ($(CONFIG_RAYER_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_RAYER_SPI=yes
-else
-override CONFIG_RAYER_SPI = no
-endif
-ifeq ($(CONFIG_NIC3COM), yes)
-UNSUPPORTED_FEATURES += CONFIG_NIC3COM=yes
-else
-override CONFIG_NIC3COM = no
-endif
-ifeq ($(CONFIG_GFXNVIDIA), yes)
-UNSUPPORTED_FEATURES += CONFIG_GFXNVIDIA=yes
-else
-override CONFIG_GFXNVIDIA = no
-endif
-ifeq ($(CONFIG_SATASII), yes)
-UNSUPPORTED_FEATURES += CONFIG_SATASII=yes
-else
-override CONFIG_SATASII = no
-endif
-ifeq ($(CONFIG_ATAHPT), yes)
-UNSUPPORTED_FEATURES += CONFIG_ATAHPT=yes
-else
-override CONFIG_ATAHPT = no
-endif
-ifeq ($(CONFIG_ATAVIA), yes)
-UNSUPPORTED_FEATURES += CONFIG_ATAVIA=yes
-else
-override CONFIG_ATAVIA = no
-endif
-ifeq ($(CONFIG_ATAPROMISE), yes)
-UNSUPPORTED_FEATURES += CONFIG_ATAPROMISE=yes
-else
-override CONFIG_ATAPROMISE = no
-endif
-ifeq ($(CONFIG_ENE_LPC), yes)
-UNSUPPORTED_FEATURES += CONFIG_ENE_LPC=yes
-else
-override CONFIG_ENE_LPC = no
-endif
-ifeq ($(CONFIG_IT8212), yes)
-UNSUPPORTED_FEATURES += CONFIG_IT8212=yes
-else
-override CONFIG_IT8212 = no
-endif
-ifeq ($(CONFIG_DRKAISER), yes)
-UNSUPPORTED_FEATURES += CONFIG_DRKAISER=yes
-else
-override CONFIG_DRKAISER = no
-endif
-ifeq ($(CONFIG_MEC1308), yes)
-UNSUPPORTED_FEATURES += CONFIG_MEC1308=yes
-else
-override CONFIG_MEC1308 = no
-endif
-ifeq ($(CONFIG_NICREALTEK), yes)
-UNSUPPORTED_FEATURES += CONFIG_NICREALTEK=yes
-else
-override CONFIG_NICREALTEK = no
-endif
-ifeq ($(CONFIG_NICNATSEMI), yes)
-UNSUPPORTED_FEATURES += CONFIG_NICNATSEMI=yes
-else
-override CONFIG_NICNATSEMI = no
-endif
-ifeq ($(CONFIG_NICINTEL), yes)
-UNSUPPORTED_FEATURES += CONFIG_NICINTEL=yes
-else
-override CONFIG_NICINTEL = no
-endif
-ifeq ($(CONFIG_NICINTEL_EEPROM), yes)
-UNSUPPORTED_FEATURES += CONFIG_NICINTEL_EEPROM=yes
-else
-override CONFIG_NICINTEL_EEPROM = no
-endif
-ifeq ($(CONFIG_NICINTEL_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_NICINTEL_SPI=yes
-else
-override CONFIG_NICINTEL_SPI = no
-endif
-ifeq ($(CONFIG_OGP_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_OGP_SPI=yes
-else
-override CONFIG_OGP_SPI = no
-endif
-ifeq ($(CONFIG_SATAMV), yes)
-UNSUPPORTED_FEATURES += CONFIG_SATAMV=yes
-else
-override CONFIG_SATAMV = no
-endif
-endif
+$(call mark_unsupported,$(DEPENDS_ON_LIBPCI))
+# And programmers that need raw access.
+$(call mark_unsupported,CONFIG_ENE_LPC CONFIG_MEC1308 CONFIG_RAYER_SPI)
 
-ifneq ($(TARGET_OS), MinGW)
+else # No MinGW
+
 # NI USB-845x only supported on Windows at the moment
-ifeq ($(CONFIG_NI845X_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_NI845X_SPI=yes
-else
-override CONFIG_NI845X_SPI = no
-endif
+$(call mark_unsupported,CONFIG_NI845X_SPI)
+
 endif
 
 ifeq ($(TARGET_OS), libpayload)
