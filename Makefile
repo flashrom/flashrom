@@ -140,6 +140,12 @@ $(foreach p,$1, \
 		$(eval override $(p) := no)))
 endef
 
+define filter_deps
+$(strip $(foreach p,$1, \
+	$(if $(filter $($(p)),yes), \
+		$(p))))
+endef
+
 define disable_all
 $(foreach p,$1, \
 	$(eval override $(p) := no))
@@ -479,26 +485,11 @@ $(foreach var, $(filter CONFIG_%, $(.VARIABLES)),\
 endif
 
 # Bitbanging SPI infrastructure, default off unless needed.
-ifeq ($(CONFIG_RAYER_SPI), yes)
-override CONFIG_BITBANG_SPI = yes
-else
-ifeq ($(CONFIG_PONY_SPI), yes)
-override CONFIG_BITBANG_SPI = yes
-else
-ifeq ($(CONFIG_INTERNAL), yes)
-override CONFIG_BITBANG_SPI = yes
-else
-ifeq ($(CONFIG_NICINTEL_SPI), yes)
-override CONFIG_BITBANG_SPI = yes
-else
-ifeq ($(CONFIG_OGP_SPI), yes)
+
+ifneq ($(call filter_deps,$(DEPENDS_ON_BITBANG_SPI)), )
 override CONFIG_BITBANG_SPI = yes
 else
 CONFIG_BITBANG_SPI ?= no
-endif
-endif
-endif
-endif
 endif
 
 ###############################################################################
