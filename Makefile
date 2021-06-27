@@ -85,6 +85,55 @@ debug_shell = $(shell export LC_ALL=C ; { echo 'exec: export LC_ALL=C ; { $(subs
     { $(1) ; } | tee -a $(BUILD_DETAILS_FILE) ; echo >&2 ; } 2>>$(BUILD_DETAILS_FILE))
 
 ###############################################################################
+# Dependency handling.
+
+DEPENDS_ON_SERIAL := \
+	CONFIG_BUSPIRATE_SPI \
+	CONFIG_PONY_SPI \
+	CONFIG_SERPROG \
+
+DEPENDS_ON_BITBANG_SPI := \
+	CONFIG_INTERNAL \
+	CONFIG_NICINTEL_SPI \
+	CONFIG_OGP_SPI \
+	CONFIG_PONY_SPI \
+	CONFIG_RAYER_SPI \
+
+DEPENDS_ON_LIBPCI := \
+	CONFIG_ATAHPT \
+	CONFIG_ATAPROMISE \
+	CONFIG_ATAVIA \
+	CONFIG_DRKAISER \
+	CONFIG_GFXNVIDIA \
+	CONFIG_INTERNAL \
+	CONFIG_IT8212 \
+	CONFIG_NIC3COM \
+	CONFIG_NICINTEL \
+	CONFIG_NICINTEL_EEPROM \
+	CONFIG_NICINTEL_SPI \
+	CONFIG_NICNATSEMI \
+	CONFIG_NICREALTEK \
+	CONFIG_OGP_SPI \
+	CONFIG_SATAMV \
+	CONFIG_SATASII \
+
+DEPENDS_ON_LIBUSB1 := \
+	CONFIG_CH341A_SPI \
+	CONFIG_DEDIPROG \
+	CONFIG_DEVELOPERBOX_SPI \
+	CONFIG_DIGILENT_SPI \
+	CONFIG_PICKIT2_SPI \
+	CONFIG_RAIDEN_DEBUG_SPI \
+	CONFIG_STLINKV3_SPI \
+
+DEPENDS_ON_LIBFTDI := \
+	CONFIG_FT2232_SPI \
+	CONFIG_USBBLASTER_SPI \
+
+DEPENDS_ON_LIBJAYLINK := \
+	CONFIG_JLINK_SPI \
+
+###############################################################################
 # General OS-specific settings.
 # 1. Prepare for later by gathering information about host and target OS
 # 2. Set compiler flags and parameters according to OSes
