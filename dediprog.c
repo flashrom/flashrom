@@ -1227,16 +1227,13 @@ static int dediprog_init(void)
 		msg_pinfo("Using dediprog id SF%06d.\n", found_id);
 	}
 
-	if (register_shutdown(dediprog_shutdown, NULL))
-		return 1;
-
 	/* Try reading the devicestring. If that fails and the device is old (FW < 6.0.0, which we can not know)
 	 * then we need to try the "set voltage" command and then attempt to read the devicestring again. */
 	if (dediprog_check_devicestring()) {
 		if (dediprog_set_voltage())
-			return 1;
+			goto init_err_cleanup_exit;
 		if (dediprog_check_devicestring())
-			return 1;
+			goto init_err_cleanup_exit;
 	}
 
 	/* SF100/SF200 uses one in/out endpoint, SF600 uses separate in/out endpoints */
@@ -1261,11 +1258,11 @@ static int dediprog_init(void)
 	    dediprog_set_spi_speed(spispeed_idx) ||
 	    dediprog_set_spi_voltage(millivolt)) {
 		dediprog_set_leds(LED_ERROR);
-		return 1;
+		goto init_err_cleanup_exit;
 	}
 
 	if (dediprog_standalone_mode())
-		return 1;
+		goto init_err_cleanup_exit;
 
 	if ((dediprog_devicetype == DEV_SF100) ||
 	    (dediprog_devicetype == DEV_SF600 && protocol() == PROTOCOL_V3))
@@ -1274,10 +1271,17 @@ static int dediprog_init(void)
 	if (protocol() >= PROTOCOL_V2)
 		spi_master_dediprog.features |= SPI_MASTER_4BA;
 
+	if (register_shutdown(dediprog_shutdown, NULL))
+		goto init_err_cleanup_exit;
+
 	if (register_spi_master(&spi_master_dediprog, NULL) || dediprog_set_leds(LED_NONE))
-		return 1;
+		return 1; /* shutdown function does cleanup */
 
 	return 0;
+
+init_err_cleanup_exit:
+	dediprog_shutdown(NULL);
+	return 1;
 }
 
 const struct programmer_entry programmer_dediprog = {
