@@ -120,6 +120,8 @@
 #define __FLASHROM_BIG_ENDIAN__ 1
 #elif defined (__ARMEL__) || defined (__LITTLE_ENDIAN__)
 #define __FLASHROM_LITTLE_ENDIAN__ 1
+#elif defined (__APPLE__)
+#define __FLASHROM_LITTLE_ENDIAN__ 1
 #endif
 
 #elif IS_SPARC
