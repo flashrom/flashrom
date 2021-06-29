@@ -85,6 +85,40 @@ void mec1308_init_and_shutdown_test_success(void **state)
 #endif
 }
 
+int dediprog_libusb_control_transfer(void *state,
+					libusb_device_handle *devh,
+					uint8_t bmRequestType,
+					uint8_t bRequest,
+					uint16_t wValue,
+					uint16_t wIndex,
+					unsigned char *data,
+					uint16_t wLength,
+					unsigned int timeout)
+{
+	if (bRequest == 0x08 /* dediprog_cmds CMD_READ_PROG_INFO */) {
+		/* Provide dediprog Device String into data buffer */
+		memcpy(data, "SF600 V:7.2.2   ", wLength);
+	}
+	return wLength;
+}
+
+void dediprog_init_and_shutdown_test_success(void **state)
+{
+#if CONFIG_DEDIPROG == 1
+	const struct io_mock dediprog_io = {
+		.libusb_control_transfer = dediprog_libusb_control_transfer,
+	};
+
+	io_mock_register(&dediprog_io);
+
+	run_lifecycle(state, &programmer_dediprog, "voltage=3.5V");
+
+	io_mock_register(NULL);
+#else
+	skip();
+#endif
+}
+
 struct ene_lpc_io_state {
 	unsigned char outb_val;
 	int pause_cmd;

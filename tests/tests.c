@@ -22,6 +22,7 @@
 
 /* redefinitions/wrapping */
 #define LOG_ME printf("%s is called\n", __func__)
+#define MOCK_HANDLE 2021
 
 static const struct io_mock *current_io = NULL;
 
@@ -55,19 +56,19 @@ uint8_t __wrap_sio_read(uint16_t port, uint8_t reg)
 int __wrap_open(const char *pathname, int flags)
 {
 	LOG_ME;
-	return 2021;
+	return MOCK_HANDLE;
 }
 
 int __wrap_open64(const char *pathname, int flags)
 {
 	LOG_ME;
-	return 2021;
+	return MOCK_HANDLE;
 }
 
 int __wrap_ioctl(int fd, unsigned long int request, ...)
 {
 	LOG_ME;
-	return 2021;
+	return MOCK_HANDLE;
 }
 
 FILE *__wrap_fopen(const char *pathname, const char *mode)
@@ -133,6 +134,52 @@ unsigned int __wrap_test_inl(unsigned short port)
 	return 0;
 }
 
+void *__wrap_usb_dev_get_by_vid_pid_number(
+		libusb_context *usb_ctx, uint16_t vid, uint16_t pid, unsigned int num)
+{
+	LOG_ME;
+	return (void *)MOCK_HANDLE;
+}
+
+int __wrap_libusb_set_configuration(libusb_device_handle *devh, int config)
+{
+	LOG_ME;
+	return 0;
+}
+
+int __wrap_libusb_claim_interface(libusb_device_handle *devh, int interface_number)
+{
+	LOG_ME;
+	return 0;
+}
+
+int __wrap_libusb_control_transfer(libusb_device_handle *devh, uint8_t bmRequestType,
+		uint8_t bRequest, uint16_t wValue, uint16_t wIndex, unsigned char *data,
+		uint16_t wLength, unsigned int timeout)
+{
+	LOG_ME;
+	if (current_io && current_io->libusb_control_transfer)
+		return current_io->libusb_control_transfer(current_io->state,
+				devh, bmRequestType, bRequest, wValue, wIndex, data, wLength, timeout);
+	return 0;
+}
+
+int __wrap_libusb_release_interface(libusb_device_handle *devh, int interface_number)
+{
+	LOG_ME;
+	return 0;
+}
+
+void __wrap_libusb_close(libusb_device_handle *devh)
+{
+	LOG_ME;
+}
+
+void __wrap_libusb_exit(libusb_context *ctx)
+{
+	LOG_ME;
+}
+
 int main(void)
 {
 	int ret = 0;
@@ -172,6 +219,7 @@ int main(void)
 	const struct CMUnitTest init_shutdown_tests[] = {
 		cmocka_unit_test(dummy_init_and_shutdown_test_success),
 		cmocka_unit_test(mec1308_init_and_shutdown_test_success),
+		cmocka_unit_test(dediprog_init_and_shutdown_test_success),
 		cmocka_unit_test(ene_lpc_init_and_shutdown_test_success),
 		cmocka_unit_test(linux_spi_init_and_shutdown_test_success),
 	};

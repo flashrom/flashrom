@@ -31,9 +31,16 @@
 #ifndef _IO_MOCK_H_
 #define _IO_MOCK_H_
 
+/* Define libusb symbols to avoid dependency on libusb.h */
+struct libusb_device_handle;
+typedef struct libusb_device_handle libusb_device_handle;
+struct libusb_context;
+typedef struct libusb_context libusb_context;
+
 struct io_mock {
 	void *state;
 
+	/* Port I/O */
 	void (*outb)(void *state, unsigned char value, unsigned short port);
 	unsigned char (*inb)(void *state, unsigned short port);
 
@@ -42,6 +49,17 @@ struct io_mock {
 
 	void (*outl)(void *state, unsigned int value, unsigned short port);
 	unsigned int (*inl)(void *state, unsigned short port);
+
+	/* USB I/O */
+	int (*libusb_control_transfer)(void *state,
+					libusb_device_handle *devh,
+					uint8_t bmRequestType,
+					uint8_t bRequest,
+					uint16_t wValue,
+					uint16_t wIndex,
+					unsigned char *data,
+					uint16_t wLength,
+					unsigned int timeout);
 };
 
 void io_mock_register(const struct io_mock *io);
