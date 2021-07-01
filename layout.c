@@ -257,7 +257,7 @@ int included_regions_overlap(const struct flashrom_layout *const l)
 
 		const struct romentry *rhs = lhs;
 		while ((rhs = layout_next(l, rhs))) {
-			if (rhs->included)
+			if (!rhs->included)
 				continue;
 
 			if (lhs->start > rhs->end)
