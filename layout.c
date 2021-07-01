@@ -266,8 +266,8 @@ int included_regions_overlap(const struct flashrom_layout *const l)
 			if (lhs->end < rhs->start)
 				continue;
 
-			msg_gdbg("Regions %s [0x%08x-0x%08x] and %s [0x%08x-0x%08x] overlap\n",
-				 lhs->name, lhs->start, lhs->end, rhs->name, rhs->start, rhs->end);
+			msg_gwarn("Regions %s [0x%08x-0x%08x] and %s [0x%08x-0x%08x] overlap\n",
+				  lhs->name, lhs->start, lhs->end, rhs->name, rhs->start, rhs->end);
 			overlap_detected = 1;
 		}
 	}
