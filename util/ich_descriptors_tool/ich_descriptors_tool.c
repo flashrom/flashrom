@@ -135,6 +135,7 @@ static void usage(char *argv[], const char *error)
 "\t- \"9\" or \"wildcat\" for Intel's 9 series chipsets.\n"
 "\t- \"100\" or \"sunrise\" for Intel's 100 series chipsets.\n"
 "\t- \"300\" or \"cannon\" for Intel's 300 series chipsets.\n"
+"\t- \"400\" or \"comet\" for Intel's 400 series chipsets.\n"
 "If '-d' is specified some regions such as the BIOS image as seen by the CPU or\n"
 "the GbE blob that is required to initialize the GbE are also dumped to files.\n",
 	argv[0], argv[0]);
