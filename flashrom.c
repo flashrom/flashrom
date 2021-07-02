@@ -1940,16 +1940,16 @@ static void nonfatal_help_message(void)
 #if CONFIG_INTERNAL == 1
 	if (programmer == PROGRAMMER_INTERNAL)
 		msg_gerr("This means we have to add special support for your board, programmer or flash\n"
-			 "chip. Please report this on IRC at chat.freenode.net (channel #flashrom) or\n"
-			 "mail flashrom@flashrom.org, thanks!\n"
+			 "chip. Please report this to the mailing list at flashrom@flashrom.org or on\n"
+			 "IRC (see https://www.flashrom.org/Contact for details), thanks!\n"
 			 "-------------------------------------------------------------------------------\n"
 			 "You may now reboot or simply leave the machine running.\n");
 	else
 #endif
 		msg_gerr("Please check the connections (especially those to write protection pins) between\n"
 			 "the programmer and the flash chip. If you think the error is caused by flashrom\n"
-			 "please report this on IRC at chat.freenode.net (channel #flashrom) or\n"
-			 "mail flashrom@flashrom.org, thanks!\n");
+			 "please report this to the mailing list at flashrom@flashrom.org or on IRC (see\n"
+			 "https://www.flashrom.org/Contact for details), thanks!\n");
 }
 
 static void emergency_help_message(void)
@@ -1957,14 +1957,14 @@ static void emergency_help_message(void)
 	msg_gerr("Your flash chip is in an unknown state.\n");
 #if CONFIG_INTERNAL == 1
 	if (programmer == PROGRAMMER_INTERNAL)
-		msg_gerr("Get help on IRC at chat.freenode.net (channel #flashrom) or\n"
-			"mail flashrom@flashrom.org with the subject \"FAILED: <your board name>\"!\n"
+		msg_gerr("Get help on IRC (see https://www.flashrom.org/Contact) or mail\n"
+			"flashrom@flashrom.org with the subject \"FAILED: <your board name>\"!"
 			"-------------------------------------------------------------------------------\n"
 			"DO NOT REBOOT OR POWEROFF!\n");
 	else
 #endif
-		msg_gerr("Please report this on IRC at chat.freenode.net (channel #flashrom) or\n"
-			 "mail flashrom@flashrom.org, thanks!\n");
+		msg_gerr("Please report this to the mailing list at flashrom@flashrom.org or\n"
+			 "on IRC (see https://www.flashrom.org/Contact for details), thanks!\n");
 }
 
 /* The way to go if you want a delimited list of programmers */
