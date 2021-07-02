@@ -80,7 +80,7 @@ chip), or that they do not yet work at all. If they do not work, support may \
 or may not be added later.\n\n\
 Mainboards (or individual revisions) which don't appear in the list may or may \
 not work (we don't know, someone has to give it a try). Please report any \
-further verified mainboards on the [[Mailinglist|mailing list]].\n";
+further verified mainboards on the [[Contact#Mailing_List|mailing list]].\n";
 #endif
 
 static const char chip_th[] = "\
