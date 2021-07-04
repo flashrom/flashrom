@@ -135,6 +135,13 @@ int register_spi_master(const struct spi_master *mst, void *data)
 {
 	struct registered_master rmst = {0};
 
+	if (mst->shutdown) {
+		if (register_shutdown(mst->shutdown, data)) {
+			mst->shutdown(data); /* cleanup */
+			return 1;
+		}
+	}
+
 	if (!mst->write_aai || !mst->write_256 || !mst->read || !mst->command ||
 	    !mst->multicommand ||
 	    ((mst->command == default_spi_send_command) &&
