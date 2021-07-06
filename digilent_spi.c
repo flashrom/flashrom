@@ -337,6 +337,7 @@ static const struct spi_master spi_master_digilent_spi = {
 	.read		= default_spi_read,
 	.write_256	= default_spi_write_256,
 	.write_aai	= default_spi_write_aai,
+	.shutdown	= digilent_spi_shutdown,
 };
 
 static bool default_reset(struct libusb_device_handle *handle)
@@ -454,10 +455,7 @@ static int digilent_spi_init(void)
 	digilent_data->reset_board = reset_board;
 	digilent_data->handle = handle;
 
-	register_shutdown(digilent_spi_shutdown, digilent_data);
-	register_spi_master(&spi_master_digilent_spi, digilent_data);
-
-	return 0;
+	return register_spi_master(&spi_master_digilent_spi, digilent_data);
 
 close_handle:
 	libusb_close(handle);

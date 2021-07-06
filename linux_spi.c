@@ -122,6 +122,7 @@ static const struct spi_master spi_master_linux = {
 	.read		= linux_spi_read,
 	.write_256	= linux_spi_write_256,
 	.write_aai	= default_spi_write_aai,
+	.shutdown	= linux_spi_shutdown,
 };
 
 /* Read max buffer size from sysfs, or use page size as fallback. */
@@ -239,12 +240,7 @@ static int linux_spi_init(void)
 	spi_data->fd = fd;
 	spi_data->max_kernel_buf_size = max_kernel_buf_size;
 
-	if (register_shutdown(linux_spi_shutdown, spi_data)) {
-		free(spi_data);
-		goto init_err;
-	}
-	register_spi_master(&spi_master_linux, spi_data);
-	return 0;
+	return register_spi_master(&spi_master_linux, spi_data);
 
 init_err:
 	close(fd);

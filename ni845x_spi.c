@@ -536,6 +536,7 @@ static const struct spi_master spi_programmer_ni845x = {
 	.read = default_spi_read,
 	.write_256 = default_spi_write_256,
 	.write_aai = default_spi_write_aai,
+	.shutdown = ni845x_spi_shutdown,
 };
 
 static int ni845x_spi_init(void)
@@ -625,14 +626,7 @@ static int ni845x_spi_init(void)
 		return 1;
 	}
 
-	if (register_shutdown(ni845x_spi_shutdown, NULL)) {
-		ni845x_spi_shutdown(NULL);
-		return 1;
-	}
-
-	register_spi_master(&spi_programmer_ni845x, NULL);
-
-	return 0;
+	return register_spi_master(&spi_programmer_ni845x, NULL);
 }
 
 const struct programmer_entry programmer_ni845x_spi = {

@@ -147,6 +147,7 @@ static const struct spi_master spi_master_mstarddc = {
 	.read = default_spi_read,
 	.write_256 = default_spi_write_256,
 	.write_aai = default_spi_write_aai,
+	.shutdown = mstarddc_spi_shutdown,
 };
 
 /* Returns 0 upon success, a negative number upon errors. */
@@ -239,9 +240,6 @@ static int mstarddc_spi_init(void)
 	mstarddc_data->fd = mstarddc_fd;
 	mstarddc_data->addr = mstarddc_addr;
 	mstarddc_data->doreset = mstarddc_doreset;
-
-	// Register shutdown function
-	register_shutdown(mstarddc_spi_shutdown, mstarddc_data);
 
 	// Register programmer
 	register_spi_master(&spi_master_mstarddc, mstarddc_data);

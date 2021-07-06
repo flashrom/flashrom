@@ -589,6 +589,7 @@ static const struct spi_master spi_master_sb600 = {
 	.read = default_spi_read,
 	.write_256 = default_spi_write_256,
 	.write_aai = default_spi_write_aai,
+	.shutdown = sb600spi_shutdown,
 };
 
 static const struct spi_master spi_master_yangtze = {
@@ -599,6 +600,7 @@ static const struct spi_master spi_master_yangtze = {
 	.read = default_spi_read,
 	.write_256 = default_spi_write_256,
 	.write_aai = default_spi_write_aai,
+	.shutdown = sb600spi_shutdown,
 };
 
 static const struct spi_master spi_master_promontory = {
@@ -609,6 +611,7 @@ static const struct spi_master spi_master_promontory = {
 	.read = promontory_read_memmapped,
 	.write_256 = default_spi_write_256,
 	.write_aai = default_spi_write_aai,
+	.shutdown = sb600spi_shutdown,
 };
 
 int sb600_probe_spi(struct pci_dev *dev)
@@ -785,8 +788,6 @@ int sb600_probe_spi(struct pci_dev *dev)
 
 	data->flash = NULL;
 	data->spibar = sb600_spibar;
-
-	register_shutdown(sb600spi_shutdown, data);
 
 	/* Starting with Yangtze the SPI controller got a different interface with a much bigger buffer. */
 	if (amd_gen < CHIPSET_YANGTZE)

@@ -289,6 +289,7 @@ static const struct spi_master spi_master_it85xx = {
         .read           = default_spi_read,
         .write_256      = default_spi_write_256,
         .write_aai      = default_spi_write_aai,
+	.shutdown	= it85xx_shutdown,
 };
 
 int it85xx_spi_init(struct superio s)
@@ -353,20 +354,13 @@ int it85xx_spi_init(struct superio s)
 	data->ce_high = ((unsigned char *)base) + 0xE00;  /* 0xFFFFFE00 */
 	data->ce_low = ((unsigned char *)base) + 0xD00;  /* 0xFFFFFD00 */
 
-	if (register_shutdown(it85xx_shutdown, data)) {
-		free(data);
-		return 1;
-	}
-
 	/* FIXME: Really leave FWH enabled? We can't use this region
 	 * anymore since accessing it would mess up IT85 communication.
 	 * If we decide to disable FWH for this region, we should print
 	 * a debug message about it.
 	 */
 	/* Set this as SPI controller. */
-	register_spi_master(&spi_master_it85xx, data);
-
-	return 0;
+	return register_spi_master(&spi_master_it85xx, data);
 }
 
 #endif

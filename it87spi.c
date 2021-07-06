@@ -304,6 +304,7 @@ static const struct spi_master spi_master_it87xx = {
 	.read		= it8716f_spi_chip_read,
 	.write_256	= it8716f_spi_chip_write_256,
 	.write_aai	= spi_chip_write_1,
+	.shutdown	= it8716f_shutdown,
 };
 
 static uint16_t it87spi_probe(uint16_t port)
@@ -419,13 +420,10 @@ static uint16_t it87spi_probe(uint16_t port)
 	data->flashport = flashport;
 	data->fast_spi = 1;
 
-	register_shutdown(it8716f_shutdown, data);
-
 	if (internal_buses_supported & BUS_SPI)
 		msg_pdbg("Overriding chipset SPI with IT87 SPI.\n");
 	/* FIXME: Add the SPI bus or replace the other buses with it? */
-	register_spi_master(&spi_master_it87xx, data);
-	return 0;
+	return register_spi_master(&spi_master_it87xx, data);
 }
 
 int init_superio_ite(void)

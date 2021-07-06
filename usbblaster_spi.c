@@ -174,6 +174,7 @@ static const struct spi_master spi_master_usbblaster = {
 	.read		= default_spi_read,
 	.write_256	= default_spi_write_256,
 	.write_aai	= default_spi_write_aai,
+	.shutdown	= usbblaster_shutdown,
 };
 
 /* Returns 0 upon success, a negative number upon errors. */
@@ -224,12 +225,7 @@ static int usbblaster_spi_init(void)
 	}
 	usbblaster_data->ftdic = ftdic;
 
-	if (register_shutdown(usbblaster_shutdown, usbblaster_data)) {
-		free(usbblaster_data);
-		return -1;
-	}
-	register_spi_master(&spi_master_usbblaster, usbblaster_data);
-	return 0;
+	return register_spi_master(&spi_master_usbblaster, usbblaster_data);
 }
 
 const struct programmer_entry programmer_usbblaster_spi = {

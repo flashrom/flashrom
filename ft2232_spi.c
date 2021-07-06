@@ -291,6 +291,7 @@ static const struct spi_master spi_master_ft2232 = {
 	.read		= default_spi_read,
 	.write_256	= default_spi_write_256,
 	.write_aai	= default_spi_write_aai,
+	.shutdown	= ft2232_shutdown,
 };
 
 /* Returns 0 upon success, a negative number upon errors. */
@@ -579,13 +580,7 @@ static int ft2232_spi_init(void)
 	spi_data->pindir = pindir;
 	spi_data->ftdic_context = ftdic;
 
-	if (register_shutdown(ft2232_shutdown, spi_data)) {
-		free(spi_data);
-		goto ftdi_err;
-	}
-	register_spi_master(&spi_master_ft2232, spi_data);
-
-	return 0;
+	return register_spi_master(&spi_master_ft2232, spi_data);
 
 ftdi_err:
 	if ((f = ftdi_usb_close(&ftdic)) < 0) {

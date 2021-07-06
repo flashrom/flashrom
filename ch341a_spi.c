@@ -417,6 +417,7 @@ static const struct spi_master spi_master_ch341a_spi = {
 	.read		= default_spi_read,
 	.write_256	= default_spi_write_256,
 	.write_aai	= default_spi_write_aai,
+	.shutdown	= ch341a_spi_shutdown,
 };
 
 static int ch341a_spi_init(void)
@@ -505,10 +506,7 @@ static int ch341a_spi_init(void)
 	if ((config_stream(CH341A_STM_I2C_100K) < 0) || (enable_pins(true) < 0))
 		goto dealloc_transfers;
 
-	register_shutdown(ch341a_spi_shutdown, NULL);
-	register_spi_master(&spi_master_ch341a_spi, NULL);
-
-	return 0;
+	return register_spi_master(&spi_master_ch341a_spi, NULL);
 
 dealloc_transfers:
 	for (i = 0; i < USB_IN_TRANSFERS; i++) {

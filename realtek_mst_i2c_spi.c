@@ -440,6 +440,7 @@ static const struct spi_master spi_master_i2c_realtek_mst = {
 	.read = realtek_mst_i2c_spi_read,
 	.write_256 = realtek_mst_i2c_spi_write_256,
 	.write_aai = realtek_mst_i2c_spi_write_aai,
+	.shutdown = realtek_mst_i2c_spi_shutdown,
 };
 
 static int get_params(int *reset, int *enter_isp)
@@ -512,10 +513,7 @@ static int realtek_mst_i2c_spi_init(void)
 
 	data->fd = fd;
 	data->reset = reset;
-	ret |= register_shutdown(realtek_mst_i2c_spi_shutdown, data);
-	ret |= register_spi_master(&spi_master_i2c_realtek_mst, data);
-
-	return ret;
+	return register_spi_master(&spi_master_i2c_realtek_mst, data);
 }
 
 const struct programmer_entry programmer_realtek_mst_i2c_spi = {

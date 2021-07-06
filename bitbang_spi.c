@@ -147,6 +147,7 @@ static const struct spi_master spi_master_bitbang = {
 	.read		= default_spi_read,
 	.write_256	= default_spi_write_256,
 	.write_aai	= default_spi_write_aai,
+	.shutdown	= bitbang_spi_shutdown,
 };
 
 int register_spi_bitbang_master(const struct bitbang_spi_master *master, void *spi_data)
@@ -168,7 +169,6 @@ int register_spi_bitbang_master(const struct bitbang_spi_master *master, void *s
 		data->spi_data = spi_data;
 
 	register_spi_master(&mst, data);
-	register_shutdown(bitbang_spi_shutdown, data);
 
 	/* Only mess with the bus if we're sure nobody else uses it. */
 	bitbang_spi_request_bus(master, spi_data);

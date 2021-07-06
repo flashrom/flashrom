@@ -434,6 +434,7 @@ static const struct spi_master spi_master_i2c_lspcon = {
 	.read = lspcon_i2c_spi_read,
 	.write_256 = lspcon_i2c_spi_write_256,
 	.write_aai = lspcon_i2c_spi_write_aai,
+	.shutdown = lspcon_i2c_spi_shutdown,
 };
 
 static int lspcon_i2c_spi_init(void)
@@ -458,10 +459,7 @@ static int lspcon_i2c_spi_init(void)
 
 	data->fd = fd;
 
-	ret |= register_shutdown(lspcon_i2c_spi_shutdown, data);
-	ret |= register_spi_master(&spi_master_i2c_lspcon, data);
-
-	return ret;
+	return register_spi_master(&spi_master_i2c_lspcon, data);
 }
 
 const struct programmer_entry programmer_lspcon_i2c_spi = {

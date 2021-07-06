@@ -191,6 +191,7 @@ static const struct spi_master spi_master_wbsio = {
 	.read = wbsio_spi_read,
 	.write_256 = spi_chip_write_1,
 	.write_aai = spi_chip_write_1,
+	.shutdown = wbsio_spi_shutdown,
 };
 
 int wbsio_check_for_spi(void)
@@ -214,10 +215,7 @@ int wbsio_check_for_spi(void)
 	}
 	data->spibase = wbsio_spibase;
 
-	register_shutdown(wbsio_spi_shutdown, data);
-	register_spi_master(&spi_master_wbsio, data);
-
-	return 0;
+	return register_spi_master(&spi_master_wbsio, data);
 }
 
 #endif /* defined(__i386__) || defined(__x86_64__) */

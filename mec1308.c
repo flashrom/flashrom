@@ -405,6 +405,7 @@ static const struct spi_master spi_master_mec1308 = {
 	.read = default_spi_read,
 	.write_256 = default_spi_write_256,
 	.write_aai = default_spi_write_aai,
+	.shutdown = mec1308_shutdown,
 };
 
 static int check_params(void)
@@ -507,12 +508,7 @@ static int mec1308_init(void)
 
 	internal_buses_supported |= BUS_LPC;	/* for LPC <--> SPI bridging */
 
-	if (register_shutdown(mec1308_shutdown, ctx_data))
-		goto init_err_cleanup_exit;
-	register_spi_master(&spi_master_mec1308, ctx_data);
-	msg_pdbg("%s(): successfully initialized mec1308\n", __func__);
-
-	return 0;
+	return register_spi_master(&spi_master_mec1308, ctx_data);
 
 init_err_cleanup_exit:
 	mec1308_shutdown(ctx_data);

@@ -512,6 +512,7 @@ static const struct spi_master spi_master_ene = {
 	.read = default_spi_read,
 	.write_256 = default_spi_write_256,
 	.write_aai = default_spi_write_aai,
+	.shutdown = ene_leave_flash_mode,
 };
 
 static int check_params(void)
@@ -570,16 +571,7 @@ static int ene_lpc_init()
 
 	internal_buses_supported |= BUS_LPC;
 
-	if (register_shutdown(ene_leave_flash_mode, ctx_data))
-		goto init_err_cleanup_exit;
-	register_spi_master(&spi_master_ene, ctx_data);
-	msg_pdbg("%s: successfully initialized ene\n", __func__);
-
-	return 0;
-
-init_err_cleanup_exit:
-	ene_leave_flash_mode(ctx_data);
-	return 1;
+	return register_spi_master(&spi_master_ene, ctx_data);
 
 init_err_exit:
 	free(ctx_data);

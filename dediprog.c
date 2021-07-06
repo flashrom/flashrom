@@ -1019,6 +1019,7 @@ static struct spi_master spi_master_dediprog = {
 	.read		= dediprog_spi_read,
 	.write_256	= dediprog_spi_write_256,
 	.write_aai	= dediprog_spi_write_aai,
+	.shutdown	= dediprog_shutdown,
 };
 
 /*
@@ -1270,9 +1271,6 @@ static int dediprog_init(void)
 
 	if (protocol() >= PROTOCOL_V2)
 		spi_master_dediprog.features |= SPI_MASTER_4BA;
-
-	if (register_shutdown(dediprog_shutdown, NULL))
-		goto init_err_cleanup_exit;
 
 	if (register_spi_master(&spi_master_dediprog, NULL) || dediprog_set_leds(LED_NONE))
 		return 1; /* shutdown function does cleanup */

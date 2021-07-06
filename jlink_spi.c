@@ -179,6 +179,7 @@ static const struct spi_master spi_master_jlink_spi = {
 	.write_256	= default_spi_write_256,
 	.write_aai	= default_spi_write_aai,
 	.features	= SPI_MASTER_4BA,
+	.shutdown	= jlink_spi_shutdown,
 };
 
 static int jlink_spi_init(void)
@@ -468,11 +469,7 @@ static int jlink_spi_init(void)
 	if (!deassert_cs(jlink_data))
 		goto init_err;
 
-	if (register_shutdown(jlink_spi_shutdown, jlink_data))
-		goto init_err;
-	register_spi_master(&spi_master_jlink_spi, jlink_data);
-
-	return 0;
+	return register_spi_master(&spi_master_jlink_spi, jlink_data);
 
 init_err:
 	if (jaylink_devh)
