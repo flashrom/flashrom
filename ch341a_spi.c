@@ -385,20 +385,6 @@ static int ch341a_spi_spi_send_command(const struct flashctx *flash, unsigned in
 	return 0;
 }
 
-static const struct spi_master spi_master_ch341a_spi = {
-	.features	= SPI_MASTER_4BA,
-	/* flashrom's current maximum is 256 B. CH341A was tested on Linux and Windows to accept atleast
-	 * 128 kB. Basically there should be no hard limit because transfers are broken up into USB packets
-	 * sent to the device and most of their payload streamed via SPI. */
-	.max_data_read	= 4 * 1024,
-	.max_data_write	= 4 * 1024,
-	.command	= ch341a_spi_spi_send_command,
-	.multicommand	= default_spi_send_multicommand,
-	.read		= default_spi_read,
-	.write_256	= default_spi_write_256,
-	.write_aai	= default_spi_write_aai,
-};
-
 static int ch341a_spi_shutdown(void *data)
 {
 	if (handle == NULL)
@@ -418,6 +404,20 @@ static int ch341a_spi_shutdown(void *data)
 	handle = NULL;
 	return 0;
 }
+
+static const struct spi_master spi_master_ch341a_spi = {
+	.features	= SPI_MASTER_4BA,
+	/* flashrom's current maximum is 256 B. CH341A was tested on Linux and Windows to accept atleast
+	 * 128 kB. Basically there should be no hard limit because transfers are broken up into USB packets
+	 * sent to the device and most of their payload streamed via SPI. */
+	.max_data_read	= 4 * 1024,
+	.max_data_write	= 4 * 1024,
+	.command	= ch341a_spi_spi_send_command,
+	.multicommand	= default_spi_send_multicommand,
+	.read		= default_spi_read,
+	.write_256	= default_spi_write_256,
+	.write_aai	= default_spi_write_aai,
+};
 
 static int ch341a_spi_init(void)
 {

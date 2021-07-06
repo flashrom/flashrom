@@ -155,19 +155,6 @@ static int jlink_spi_send_command(const struct flashctx *flash, unsigned int wri
 	return 0;
 }
 
-static const struct spi_master spi_master_jlink_spi = {
-	/* Maximum data read size in one go (excluding opcode+address). */
-	.max_data_read	= JTAG_MAX_TRANSFER_SIZE - 5,
-	/* Maximum data write size in one go (excluding opcode+address). */
-	.max_data_write	= JTAG_MAX_TRANSFER_SIZE - 5,
-	.command	= jlink_spi_send_command,
-	.multicommand	= default_spi_send_multicommand,
-	.read		= default_spi_read,
-	.write_256	= default_spi_write_256,
-	.write_aai	= default_spi_write_aai,
-	.features	= SPI_MASTER_4BA,
-};
-
 static int jlink_spi_shutdown(void *data)
 {
 	struct jlink_spi_data *jlink_data = data;
@@ -180,6 +167,19 @@ static int jlink_spi_shutdown(void *data)
 	free(jlink_data);
 	return 0;
 }
+
+static const struct spi_master spi_master_jlink_spi = {
+	/* Maximum data read size in one go (excluding opcode+address). */
+	.max_data_read	= JTAG_MAX_TRANSFER_SIZE - 5,
+	/* Maximum data write size in one go (excluding opcode+address). */
+	.max_data_write	= JTAG_MAX_TRANSFER_SIZE - 5,
+	.command	= jlink_spi_send_command,
+	.multicommand	= default_spi_send_multicommand,
+	.read		= default_spi_read,
+	.write_256	= default_spi_write_256,
+	.write_aai	= default_spi_write_aai,
+	.features	= SPI_MASTER_4BA,
+};
 
 static int jlink_spi_init(void)
 {

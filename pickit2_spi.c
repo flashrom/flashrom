@@ -340,16 +340,6 @@ static int parse_voltage(char *voltage)
 	return millivolt;
 }
 
-static const struct spi_master spi_master_pickit2 = {
-	.max_data_read	= 40,
-	.max_data_write	= 40,
-	.command	= pickit2_spi_send_command,
-	.multicommand	= default_spi_send_multicommand,
-	.read		= default_spi_read,
-	.write_256	= default_spi_write_256,
-	.write_aai	= default_spi_write_aai,
-};
-
 static int pickit2_shutdown(void *data)
 {
 	struct pickit2_spi_data *pickit2_data = data;
@@ -387,6 +377,16 @@ static int pickit2_shutdown(void *data)
 	free(data);
 	return ret;
 }
+
+static const struct spi_master spi_master_pickit2 = {
+	.max_data_read	= 40,
+	.max_data_write	= 40,
+	.command	= pickit2_spi_send_command,
+	.multicommand	= default_spi_send_multicommand,
+	.read		= default_spi_read,
+	.write_256	= default_spi_write_256,
+	.write_aai	= default_spi_write_aai,
+};
 
 static int pickit2_spi_init(void)
 {

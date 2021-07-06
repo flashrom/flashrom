@@ -131,6 +131,13 @@ static int bitbang_spi_send_command(const struct flashctx *flash,
 	return 0;
 }
 
+static int bitbang_spi_shutdown(void *data)
+{
+	/* FIXME: Run bitbang_spi_release_bus here or per command? */
+	free(data);
+	return 0;
+}
+
 static const struct spi_master spi_master_bitbang = {
 	.features	= SPI_MASTER_4BA,
 	.max_data_read	= MAX_DATA_READ_UNLIMITED,
@@ -141,13 +148,6 @@ static const struct spi_master spi_master_bitbang = {
 	.write_256	= default_spi_write_256,
 	.write_aai	= default_spi_write_aai,
 };
-
-static int bitbang_spi_shutdown(void *data)
-{
-	/* FIXME: Run bitbang_spi_release_bus here or per command? */
-	free(data);
-	return 0;
-}
 
 int register_spi_bitbang_master(const struct bitbang_spi_master *master, void *spi_data)
 {

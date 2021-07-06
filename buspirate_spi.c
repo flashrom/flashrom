@@ -130,38 +130,6 @@ static int buspirate_wait_for_string(unsigned char *buf, const char *key)
 	return ret;
 }
 
-static struct spi_master spi_master_buspirate = {
-	.features	= SPI_MASTER_4BA,
-	.max_data_read	= MAX_DATA_UNSPECIFIED,
-	.max_data_write	= MAX_DATA_UNSPECIFIED,
-	.command	= NULL,
-	.multicommand	= default_spi_send_multicommand,
-	.read		= default_spi_read,
-	.write_256	= default_spi_write_256,
-	.write_aai	= default_spi_write_aai,
-};
-
-static const struct buspirate_speeds spispeeds[] = {
-	{"30k",		0x0},
-	{"125k",	0x1},
-	{"250k",	0x2},
-	{"1M",		0x3},
-	{"2M",		0x4},
-	{"2.6M",	0x5},
-	{"4M",		0x6},
-	{"8M",		0x7},
-	{NULL,		0x0}
-};
-
-static const struct buspirate_speeds serialspeeds[] = {
-	{"115200",  115200},
-	{"230400",  230400},
-	{"250000",  250000},
-	{"2000000", 2000000},
-	{"2M",      2000000},
-	{NULL,      0}
-};
-
 static int buspirate_spi_shutdown(void *data)
 {
 	struct bp_spi_data *bp_data = data;
@@ -203,6 +171,38 @@ out_shutdown:
 	free(data);
 	return ret;
 }
+
+static struct spi_master spi_master_buspirate = {
+	.features	= SPI_MASTER_4BA,
+	.max_data_read	= MAX_DATA_UNSPECIFIED,
+	.max_data_write	= MAX_DATA_UNSPECIFIED,
+	.command	= NULL,
+	.multicommand	= default_spi_send_multicommand,
+	.read		= default_spi_read,
+	.write_256	= default_spi_write_256,
+	.write_aai	= default_spi_write_aai,
+};
+
+static const struct buspirate_speeds spispeeds[] = {
+	{"30k",		0x0},
+	{"125k",	0x1},
+	{"250k",	0x2},
+	{"1M",		0x3},
+	{"2M",		0x4},
+	{"2.6M",	0x5},
+	{"4M",		0x6},
+	{"8M",		0x7},
+	{NULL,		0x0}
+};
+
+static const struct buspirate_speeds serialspeeds[] = {
+	{"115200",  115200},
+	{"230400",  230400},
+	{"250000",  250000},
+	{"2000000", 2000000},
+	{"2M",      2000000},
+	{NULL,      0}
+};
 
 static int buspirate_spi_send_command_v1(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
 					 const unsigned char *writearr, unsigned char *readarr)

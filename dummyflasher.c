@@ -580,7 +580,23 @@ static int dummy_spi_send_command(const struct flashctx *flash, unsigned int wri
 	return 0;
 }
 
-
+static int dummy_shutdown(void *data)
+{
+	msg_pspew("%s\n", __func__);
+	struct emu_data *emu_data = (struct emu_data *)data;
+	if (emu_data->emu_chip != EMULATE_NONE) {
+		if (emu_data->emu_persistent_image && emu_data->emu_modified) {
+			msg_pdbg("Writing %s\n", emu_data->emu_persistent_image);
+			write_buf_to_file(emu_data->flashchip_contents,
+					  emu_data->emu_chip_size,
+					  emu_data->emu_persistent_image);
+		}
+		free(emu_data->emu_persistent_image);
+		free(emu_data->flashchip_contents);
+	}
+	free(data);
+	return 0;
+}
 
 static const struct spi_master spi_master_dummyflasher = {
 	.features	= SPI_MASTER_4BA,
@@ -603,24 +619,6 @@ static const struct par_master par_master_dummyflasher = {
 		.chip_writel		= dummy_chip_writel,
 		.chip_writen		= dummy_chip_writen,
 };
-
-static int dummy_shutdown(void *data)
-{
-	msg_pspew("%s\n", __func__);
-	struct emu_data *emu_data = (struct emu_data *)data;
-	if (emu_data->emu_chip != EMULATE_NONE) {
-		if (emu_data->emu_persistent_image && emu_data->emu_modified) {
-			msg_pdbg("Writing %s\n", emu_data->emu_persistent_image);
-			write_buf_to_file(emu_data->flashchip_contents,
-					  emu_data->emu_chip_size,
-					  emu_data->emu_persistent_image);
-		}
-		free(emu_data->emu_persistent_image);
-		free(emu_data->flashchip_contents);
-	}
-	free(data);
-	return 0;
-}
 
 static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_supported)
 {

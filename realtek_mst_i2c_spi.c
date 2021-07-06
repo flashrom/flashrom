@@ -410,16 +410,6 @@ static int realtek_mst_i2c_spi_write_aai(struct flashctx *flash, const uint8_t *
 	return SPI_GENERIC_ERROR;
 }
 
-static const struct spi_master spi_master_i2c_realtek_mst = {
-	.max_data_read = 16,
-	.max_data_write = 8,
-	.command = realtek_mst_i2c_spi_send_command,
-	.multicommand = default_spi_send_multicommand,
-	.read = realtek_mst_i2c_spi_read,
-	.write_256 = realtek_mst_i2c_spi_write_256,
-	.write_aai = realtek_mst_i2c_spi_write_aai,
-};
-
 static int realtek_mst_i2c_spi_shutdown(void *data)
 {
 	int ret = 0;
@@ -441,6 +431,16 @@ static int realtek_mst_i2c_spi_shutdown(void *data)
 
 	return ret;
 }
+
+static const struct spi_master spi_master_i2c_realtek_mst = {
+	.max_data_read = 16,
+	.max_data_write = 8,
+	.command = realtek_mst_i2c_spi_send_command,
+	.multicommand = default_spi_send_multicommand,
+	.read = realtek_mst_i2c_spi_read,
+	.write_256 = realtek_mst_i2c_spi_write_256,
+	.write_aai = realtek_mst_i2c_spi_write_aai,
+};
 
 static int get_params(int *reset, int *enter_isp)
 {

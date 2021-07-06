@@ -394,6 +394,25 @@ static int serprog_spi_send_command(const struct flashctx *flash,
 	return ret;
 }
 
+static int serprog_shutdown(void *data)
+{
+	if ((sp_opbuf_usage) || (sp_max_write_n && sp_write_n_bytes))
+	if (sp_execute_opbuf() != 0)
+		msg_pwarn("Could not flush command buffer.\n");
+	if (sp_check_commandavail(S_CMD_S_PIN_STATE)) {
+		uint8_t dis = 0;
+		if (sp_docommand(S_CMD_S_PIN_STATE, 1, &dis, 0, NULL) == 0)
+			msg_pdbg(MSGHEADER "Output drivers disabled\n");
+		else
+			msg_pwarn(MSGHEADER "%s: Warning: could not disable output buffers\n", __func__);
+	}
+	/* FIXME: fix sockets on windows(?), especially closing */
+	serialport_shutdown(&sp_fd);
+	if (sp_max_write_n)
+		free(sp_write_n_buf);
+	return 0;
+}
+
 static struct spi_master spi_master_serprog = {
 	.features	= SPI_MASTER_4BA,
 	.max_data_read	= MAX_DATA_READ_UNLIMITED,
@@ -517,25 +536,6 @@ static const struct par_master par_master_serprog = {
 		.chip_writel		= fallback_chip_writel,
 		.chip_writen		= fallback_chip_writen,
 };
-
-static int serprog_shutdown(void *data)
-{
-	if ((sp_opbuf_usage) || (sp_max_write_n && sp_write_n_bytes))
-	if (sp_execute_opbuf() != 0)
-		msg_pwarn("Could not flush command buffer.\n");
-	if (sp_check_commandavail(S_CMD_S_PIN_STATE)) {
-		uint8_t dis = 0;
-		if (sp_docommand(S_CMD_S_PIN_STATE, 1, &dis, 0, NULL) == 0)
-			msg_pdbg(MSGHEADER "Output drivers disabled\n");
-		else
-			msg_pwarn(MSGHEADER "%s: Warning: could not disable output buffers\n", __func__);
-	}
-	/* FIXME: fix sockets on windows(?), especially closing */
-	serialport_shutdown(&sp_fd);
-	if (sp_max_write_n)
-		free(sp_write_n_buf);
-	return 0;
-}
 
 static enum chipbustype serprog_buses_supported = BUS_NONE;
 

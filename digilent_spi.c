@@ -315,18 +315,6 @@ static int digilent_spi_send_command(const struct flashctx *flash, unsigned int 
 	return 0;
 }
 
-static const struct spi_master spi_master_digilent_spi = {
-	.features	= SPI_MASTER_4BA,
-	.max_data_read	= 252,
-	.max_data_write	= 252,
-	.command	= digilent_spi_send_command,
-	.multicommand	= default_spi_send_multicommand,
-	.read		= default_spi_read,
-	.write_256	= default_spi_write_256,
-	.write_aai	= default_spi_write_aai,
-};
-
-
 static int digilent_spi_shutdown(void *data)
 {
 	struct digilent_spi_data *digilent_data = data;
@@ -339,6 +327,17 @@ static int digilent_spi_shutdown(void *data)
 	free(data);
 	return 0;
 }
+
+static const struct spi_master spi_master_digilent_spi = {
+	.features	= SPI_MASTER_4BA,
+	.max_data_read	= 252,
+	.max_data_write	= 252,
+	.command	= digilent_spi_send_command,
+	.multicommand	= default_spi_send_multicommand,
+	.read		= default_spi_read,
+	.write_256	= default_spi_write_256,
+	.write_aai	= default_spi_write_aai,
+};
 
 static bool default_reset(struct libusb_device_handle *handle)
 {

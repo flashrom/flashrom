@@ -992,6 +992,24 @@ static int parse_voltage(char *voltage)
 	return millivolt;
 }
 
+static int dediprog_shutdown(void *data)
+{
+	dediprog_devicetype = DEV_UNKNOWN;
+
+	/* URB 28. Command Set SPI Voltage to 0. */
+	if (dediprog_set_spi_voltage(0x0))
+		return 1;
+
+	if (libusb_release_interface(dediprog_handle, 0)) {
+		msg_perr("Could not release USB interface!\n");
+		return 1;
+	}
+	libusb_close(dediprog_handle);
+	libusb_exit(usb_ctx);
+
+	return 0;
+}
+
 static struct spi_master spi_master_dediprog = {
 	.features	= SPI_MASTER_NO_4BA_MODES,
 	.max_data_read	= 16, /* 18 seems to work fine as well, but 19 times out sometimes with FW 5.15. */
@@ -1034,24 +1052,6 @@ static int dediprog_open(int index)
 		libusb_close(dediprog_handle);
 		return -2;
 	}
-	return 0;
-}
-
-static int dediprog_shutdown(void *data)
-{
-	dediprog_devicetype = DEV_UNKNOWN;
-
-	/* URB 28. Command Set SPI Voltage to 0. */
-	if (dediprog_set_spi_voltage(0x0))
-		return 1;
-
-	if (libusb_release_interface(dediprog_handle, 0)) {
-		msg_perr("Could not release USB interface!\n");
-		return 1;
-	}
-	libusb_close(dediprog_handle);
-	libusb_exit(usb_ctx);
-
 	return 0;
 }
 

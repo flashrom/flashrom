@@ -290,6 +290,12 @@ static int it8716f_spi_chip_write_256(struct flashctx *flash, const uint8_t *buf
 	return 0;
 }
 
+static int it8716f_shutdown(void *data)
+{
+	free(data);
+	return 0;
+}
+
 static const struct spi_master spi_master_it87xx = {
 	.max_data_read	= 3,
 	.max_data_write	= MAX_DATA_UNSPECIFIED,
@@ -299,13 +305,6 @@ static const struct spi_master spi_master_it87xx = {
 	.write_256	= it8716f_spi_chip_write_256,
 	.write_aai	= spi_chip_write_1,
 };
-
-
-static int it8716f_shutdown(void *data)
-{
-	free(data);
-	return 0;
-}
 
 static uint16_t it87spi_probe(uint16_t port)
 {

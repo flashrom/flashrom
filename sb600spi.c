@@ -570,6 +570,17 @@ static int promontory_read_memmapped(struct flashctx *flash, uint8_t *buf,
 	return 0;
 }
 
+static int sb600spi_shutdown(void *data)
+{
+	struct sb600spi_data *sb600_data = data;
+	struct flashctx *flash = sb600_data->flash;
+	if (flash)
+		finalize_flash_access(flash);
+
+	free(data);
+	return 0;
+}
+
 static const struct spi_master spi_master_sb600 = {
 	.max_data_read = FIFO_SIZE_OLD,
 	.max_data_write = FIFO_SIZE_OLD - 3,
@@ -599,17 +610,6 @@ static const struct spi_master spi_master_promontory = {
 	.write_256 = default_spi_write_256,
 	.write_aai = default_spi_write_aai,
 };
-
-static int sb600spi_shutdown(void *data)
-{
-	struct sb600spi_data *sb600_data = data;
-	struct flashctx *flash = sb600_data->flash;
-	if (flash)
-		finalize_flash_access(flash);
-
-	free(data);
-	return 0;
-}
 
 int sb600_probe_spi(struct pci_dev *dev)
 {
