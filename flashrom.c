@@ -73,8 +73,6 @@ static int may_register_shutdown = 0;
 /* Did we change something or was every erase/write skipped (if any)? */
 static bool all_skipped = true;
 
-static int check_block_eraser(const struct flashctx *flash, int k, int log);
-
 /* Register a function to be executed on programmer shutdown.
  * The advantage over atexit() is that you can supply a void pointer which will
  * be used as parameter to the registered function upon programmer shutdown.
@@ -331,6 +329,31 @@ static char *extract_param(const char *const *haystack, const char *needle, cons
 char *extract_programmer_param(const char *param_name)
 {
 	return extract_param(&programmer_param, param_name, ",");
+}
+
+static int check_block_eraser(const struct flashctx *flash, int k, int log)
+{
+	struct block_eraser eraser = flash->chip->block_erasers[k];
+
+	if (!eraser.block_erase && !eraser.eraseblocks[0].count) {
+		if (log)
+			msg_cdbg("not defined. ");
+		return 1;
+	}
+	if (!eraser.block_erase && eraser.eraseblocks[0].count) {
+		if (log)
+			msg_cdbg("eraseblock layout is known, but matching "
+				 "block erase function is not implemented. ");
+		return 1;
+	}
+	if (eraser.block_erase && !eraser.eraseblocks[0].count) {
+		if (log)
+			msg_cdbg("block erase function found, but "
+				 "eraseblock layout is not defined. ");
+		return 1;
+	}
+	// TODO: Once erase functions are annotated with allowed buses, check that as well.
+	return 0;
 }
 
 /* Returns the number of well-defined erasers for a chip. */
@@ -1123,31 +1146,6 @@ static int selfcheck_eraseblocks(const struct flashchip *chip)
 		}
 	}
 	return ret;
-}
-
-static int check_block_eraser(const struct flashctx *flash, int k, int log)
-{
-	struct block_eraser eraser = flash->chip->block_erasers[k];
-
-	if (!eraser.block_erase && !eraser.eraseblocks[0].count) {
-		if (log)
-			msg_cdbg("not defined. ");
-		return 1;
-	}
-	if (!eraser.block_erase && eraser.eraseblocks[0].count) {
-		if (log)
-			msg_cdbg("eraseblock layout is known, but matching "
-				 "block erase function is not implemented. ");
-		return 1;
-	}
-	if (eraser.block_erase && !eraser.eraseblocks[0].count) {
-		if (log)
-			msg_cdbg("block erase function found, but "
-				 "eraseblock layout is not defined. ");
-		return 1;
-	}
-	// TODO: Once erase functions are annotated with allowed buses, check that as well.
-	return 0;
 }
 
 /**
