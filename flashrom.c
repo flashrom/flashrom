@@ -1047,7 +1047,32 @@ static int write_buf_to_include_args(const struct flashctx *const flash,
 	return 0;
 }
 
-static int read_by_layout(struct flashctx *, uint8_t *);
+/**
+ * @brief Reads the included layout regions into a buffer.
+ *
+ * If there is no layout set in the given flash context, the whole chip will
+ * be read.
+ *
+ * @param flashctx Flash context to be used.
+ * @param buffer   Buffer of full chip size to read into.
+ * @return 0 on success,
+ *	   1 if any read fails.
+ */
+static int read_by_layout(struct flashctx *const flashctx, uint8_t *const buffer)
+{
+	const struct flashrom_layout *const layout = get_layout(flashctx);
+	const struct romentry *entry = NULL;
+
+	while ((entry = layout_next_included(layout, entry))) {
+		const chipoff_t region_start	= entry->start;
+		const chipsize_t region_len	= entry->end - entry->start + 1;
+
+		if (flashctx->chip->read(flashctx, buffer + region_start, region_start, region_len))
+			return 1;
+	}
+	return 0;
+}
+
 int read_flash_to_file(struct flashctx *flash, const char *filename)
 {
 	unsigned long size = flash->chip->total_size * 1024;
@@ -1146,32 +1171,6 @@ static int selfcheck_eraseblocks(const struct flashchip *chip)
 		}
 	}
 	return ret;
-}
-
-/**
- * @brief Reads the included layout regions into a buffer.
- *
- * If there is no layout set in the given flash context, the whole chip will
- * be read.
- *
- * @param flashctx Flash context to be used.
- * @param buffer   Buffer of full chip size to read into.
- * @return 0 on success,
- *	   1 if any read fails.
- */
-static int read_by_layout(struct flashctx *const flashctx, uint8_t *const buffer)
-{
-	const struct flashrom_layout *const layout = get_layout(flashctx);
-	const struct romentry *entry = NULL;
-
-	while ((entry = layout_next_included(layout, entry))) {
-		const chipoff_t region_start	= entry->start;
-		const chipsize_t region_len	= entry->end - entry->start + 1;
-
-		if (flashctx->chip->read(flashctx, buffer + region_start, region_start, region_len))
-			return 1;
-	}
-	return 0;
 }
 
 typedef int (*erasefn_t)(struct flashctx *, unsigned int addr, unsigned int len);
