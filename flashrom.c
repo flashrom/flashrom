@@ -272,7 +272,7 @@ int read_memmapped(struct flashctx *flash, uint8_t *buf, unsigned int start,
  * needle and remove everything from the first occurrence of needle to the next
  * delimiter from haystack.
  */
-char *extract_param(const char *const *haystack, const char *needle, const char *delim)
+static char *extract_param(const char *const *haystack, const char *needle, const char *delim)
 {
 	char *param_pos, *opt_pos, *rest;
 	char *opt = NULL;
