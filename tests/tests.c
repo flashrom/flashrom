@@ -18,6 +18,7 @@
 #include "tests.h"
 
 #include <stdio.h>
+#include <string.h>
 #include <stdint.h>
 
 /* redefinitions/wrapping */
@@ -29,6 +30,16 @@ static const struct io_mock *current_io = NULL;
 void io_mock_register(const struct io_mock *io)
 {
 	current_io = io;
+}
+
+/* Workaround for https://github.com/clibs/cmocka/issues/17 */
+char *__wrap_strdup(const char *s)
+{
+	size_t len = strlen(s) + 1;
+	void *new = malloc(len);
+	if (new == NULL)
+		return NULL;
+	return (char *)memcpy(new, s, len);
 }
 
 void __wrap_physunmap(void *virt_addr, size_t len)

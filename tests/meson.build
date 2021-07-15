@@ -22,6 +22,7 @@ srcs = [
 ]
 
 mocks = [
+  '-Wl,--wrap=strdup',
   '-Wl,--wrap=physunmap',
   '-Wl,--wrap=physmap',
   '-Wl,--wrap=spi_send_command',
