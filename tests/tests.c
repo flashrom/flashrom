@@ -236,5 +236,12 @@ int main(void)
 	};
 	ret |= cmocka_run_group_tests_name("init_shutdown.c tests", init_shutdown_tests, NULL, NULL);
 
+	const struct CMUnitTest layout_tests[] = {
+		cmocka_unit_test(included_regions_dont_overlap_test_success),
+		cmocka_unit_test(included_regions_overlap_test_success),
+		cmocka_unit_test(region_not_included_overlap_test_success),
+	};
+	ret |= cmocka_run_group_tests_name("layout.c tests", layout_tests, NULL, NULL);
+
 	return ret;
 }

@@ -19,6 +19,7 @@ srcs = [
   'flashrom.c',
   'spi25.c',
   'init_shutdown.c',
+  'layout.c',
 ]
 
 mocks = [
