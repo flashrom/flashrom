@@ -23,26 +23,26 @@ void included_regions_dont_overlap_test_success(void **state)
 {
 	(void) state; /* unused */
 
-	printf("Creating layout...\n");
+	printf("Creating layout... ");
 	struct flashrom_layout *layout;
 	assert_int_equal(0, flashrom_layout_new(&layout));
 	printf("done\n");
 
-	printf("Adding and including first region...\n");
+	printf("Adding and including first region... ");
 	assert_int_equal(0, flashrom_layout_add_region(layout, 0x00021000, 0x00031000, "first region"));
 	assert_int_equal(0, flashrom_layout_include_region(layout, "first region"));
-	printf("done\n");
+	printf("done");
 
-	printf("Adding and including second (non-overlapping) region...\n");
+	printf(", second (non-overlapping) region... ");
 	assert_int_equal(0, flashrom_layout_add_region(layout, 0x00031001, 0x0023efc0, "second region"));
 	assert_int_equal(0, flashrom_layout_include_region(layout, "second region"));
 	printf("done\n");
 
-	printf("Asserting included regions do not overlap...\n");
+	printf("Asserting included regions do not overlap... ");
 	assert_int_equal(0, included_regions_overlap(layout));
 	printf("done\n");
 
-	printf("Releasing layout...\n");
+	printf("Releasing layout... ");
 	flashrom_layout_release(layout);
 	printf("done\n");
 }
@@ -51,26 +51,26 @@ void included_regions_overlap_test_success(void **state)
 {
 	(void) state; /* unused */
 
-	printf("Creating layout...\n");
+	printf("Creating layout... ");
 	struct flashrom_layout *layout;
 	assert_int_equal(0, flashrom_layout_new(&layout));
 	printf("done\n");
 
-	printf("Adding and including first region...\n");
+	printf("Adding and including first region... ");
 	assert_int_equal(0, flashrom_layout_add_region(layout, 0x00021000, 0x00031000, "first region"));
 	assert_int_equal(0, flashrom_layout_include_region(layout, "first region"));
-	printf("done\n");
+	printf("done");
 
-	printf("Adding and including second (overlapping) region...\n");
+	printf(", second (overlapping) region... ");
 	assert_int_equal(0, flashrom_layout_add_region(layout, 0x00027100, 0x0023efc0, "second region"));
 	assert_int_equal(0, flashrom_layout_include_region(layout, "second region"));
 	printf("done\n");
 
-	printf("Asserting included regions overlap...\n");
+	printf("Asserting included regions overlap... ");
 	assert_int_equal(1, included_regions_overlap(layout));
 	printf("done\n");
 
-	printf("Releasing layout...\n");
+	printf("Releasing layout... ");
 	flashrom_layout_release(layout);
 	printf("done\n");
 }
@@ -79,25 +79,25 @@ void region_not_included_overlap_test_success(void **state)
 {
 	(void) state; /* unused */
 
-	printf("Creating layout...\n");
+	printf("Creating layout... ");
 	struct flashrom_layout *layout;
 	assert_int_equal(0, flashrom_layout_new(&layout));
 	printf("done\n");
 
-	printf("Adding and including first region...\n");
+	printf("Adding and including first region... ");
 	assert_int_equal(0, flashrom_layout_add_region(layout, 0x00021000, 0x00031000, "first region"));
 	assert_int_equal(0, flashrom_layout_include_region(layout, "first region"));
-	printf("done\n");
+	printf("done");
 
-	printf("Adding second (overlapping) region, not included...\n");
+	printf(", second (overlapping) region, not included... ");
 	assert_int_equal(0, flashrom_layout_add_region(layout, 0x00027100, 0x0023efc0, "second region"));
 	printf("done\n");
 
-	printf("Asserting included regions do not overlap...\n");
+	printf("Asserting included regions do not overlap... ");
 	assert_int_equal(0, included_regions_overlap(layout));
 	printf("done\n");
 
-	printf("Releasing layout...\n");
+	printf("Releasing layout... ");
 	flashrom_layout_release(layout);
 	printf("done\n");
 }
