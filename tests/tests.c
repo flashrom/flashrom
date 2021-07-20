@@ -240,6 +240,9 @@ int main(void)
 		cmocka_unit_test(included_regions_dont_overlap_test_success),
 		cmocka_unit_test(included_regions_overlap_test_success),
 		cmocka_unit_test(region_not_included_overlap_test_success),
+		cmocka_unit_test(layout_pass_sanity_checks_test_success),
+		cmocka_unit_test(layout_region_invalid_address_test_success),
+		cmocka_unit_test(layout_region_invalid_range_test_success),
 	};
 	ret |= cmocka_run_group_tests_name("layout.c tests", layout_tests, NULL, NULL);
 

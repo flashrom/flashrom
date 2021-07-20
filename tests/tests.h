@@ -51,5 +51,8 @@ void linux_spi_init_and_shutdown_test_success(void **state);
 void included_regions_dont_overlap_test_success(void **state);
 void included_regions_overlap_test_success(void **state);
 void region_not_included_overlap_test_success(void **state);
+void layout_pass_sanity_checks_test_success(void **state);
+void layout_region_invalid_address_test_success(void **state);
+void layout_region_invalid_range_test_success(void **state);
 
 #endif /* TESTS_H */
