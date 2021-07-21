@@ -33,7 +33,7 @@ const struct programmer_entry *const programmer_table[] = {
 #endif
 
 #if CONFIG_NICREALTEK == 1
-    & programmer_nicrealtek,
+    &programmer_nicrealtek,
 #endif
 
 #if CONFIG_NICNATSEMI == 1
