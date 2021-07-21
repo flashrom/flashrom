@@ -15,7 +15,6 @@ option('config_digilent_spi', type : 'boolean', value : true, description : 'Dig
 option('config_jlink_spi', type : 'boolean', value : false, description : 'SEGGER J-Link and compatible devices')
 option('config_drkaiser', type : 'boolean', value : true, description : 'Dr. Kaiser')
 option('config_dummy', type : 'boolean', value : true, description : 'dummy tracing')
-option('config_ene_lpc', type : 'boolean', value : true, description : 'ENE LPC interface keyboard controller')
 option('config_ft2232_spi', type : 'boolean', value : true, description : 'FT2232 SPI dongles')
 option('config_gfxnvidia', type : 'boolean', value : true, description : 'NVIDIA graphics cards')
 option('config_raiden_debug_spi', type : 'boolean', value : true, description : 'ChromiumOS Servo DUT debug board')

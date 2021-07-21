@@ -217,8 +217,6 @@ LIBS += -lgetopt
 $(call mark_unsupported,$(DEPENDS_ON_SERIAL))
 # Libraries not available for DOS
 $(call mark_unsupported,$(DEPENDS_ON_LIBUSB1) $(DEPENDS_ON_LIBFTDI) $(DEPENDS_ON_LIBJAYLINK))
-# Odd ones (FIXME: why are they unsupported?)
-$(call mark_unsupported,CONFIG_ENE_LPC CONFIG_MEC1308)
 endif
 
 # FIXME: Should we check for Cygwin/MSVC as well?
@@ -233,7 +231,7 @@ FLASHROM_CFLAGS += -D__USE_MINGW_ANSI_STDIO=1
 # For now we disable all PCI-based programmers on Windows/MinGW (no libpci).
 $(call mark_unsupported,$(DEPENDS_ON_LIBPCI))
 # And programmers that need raw access.
-$(call mark_unsupported,CONFIG_ENE_LPC CONFIG_MEC1308 CONFIG_RAYER_SPI)
+$(call mark_unsupported,CONFIG_MEC1308 CONFIG_RAYER_SPI)
 
 else # No MinGW
 
@@ -256,7 +254,7 @@ $(call mark_unsupported,CONFIG_BUSPIRATE_SPI CONFIG_SERPROG CONFIG_PONY_SPI)
 # Dediprog, Developerbox, USB-Blaster, PICkit2, CH341A and FT2232 are not supported with libpayload (missing libusb support).
 $(call mark_unsupported,$(DEPENDS_ON_LIBUSB1) $(DEPENDS_ON_LIBFTDI) $(DEPENDS_ON_LIBJAYLINK))
 # Odd ones. (FIXME: why?)
-$(call mark_unsupported,CONFIG_ENE_LPC CONFIG_MEC1308)
+$(call mark_unsupported,CONFIG_MEC1308)
 endif
 
 # Android is handled internally as separate OS, but it supports about the same drivers as Linux.
@@ -297,7 +295,7 @@ endif
 ifneq ($(ARCH), x86)
 $(call mark_unsupported,CONFIG_NIC3COM CONFIG_NICREALTEK CONFIG_NICNATSEMI)
 $(call mark_unsupported,CONFIG_RAYER_SPI CONFIG_ATAHPT CONFIG_ATAPROMISE)
-$(call mark_unsupported,CONFIG_SATAMV CONFIG_ENE_LPC CONFIG_MEC1308)
+$(call mark_unsupported,CONFIG_SATAMV CONFIG_MEC1308)
 endif
 
 # Additionally disable all drivers needing raw access (memory, PCI, port I/O)
@@ -381,9 +379,6 @@ CONFIG_ATAVIA ?= yes
 
 # Promise ATA controller support.
 CONFIG_ATAPROMISE ?= no
-
-# ENE LPC interface keyboard controller
-CONFIG_ENE_LPC ?= yes
 
 # Always enable FT2232 SPI dongles for now.
 CONFIG_FT2232_SPI ?= yes
@@ -532,12 +527,6 @@ FEATURE_CFLAGS += -D'CONFIG_INTERNAL_DMI=1'
 endif
 else
 endif
-endif
-
-ifeq ($(CONFIG_ENE_LPC), yes)
-FEATURE_CFLAGS += -D'CONFIG_ENE_LPC=1'
-PROGRAMMER_OBJS += ene_lpc.o
-NEED_RAW_ACCESS += CONFIG_ENE_LPC
 endif
 
 ifeq ($(CONFIG_MEC1308), yes)

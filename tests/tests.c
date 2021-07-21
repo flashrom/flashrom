@@ -339,7 +339,6 @@ int main(void)
 		cmocka_unit_test(mec1308_init_and_shutdown_test_success),
 		cmocka_unit_test(nicrealtek_init_and_shutdown_test_success),
 		cmocka_unit_test(dediprog_init_and_shutdown_test_success),
-		cmocka_unit_test(ene_lpc_init_and_shutdown_test_success),
 		cmocka_unit_test(linux_mtd_init_and_shutdown_test_success),
 		cmocka_unit_test(linux_spi_init_and_shutdown_test_success),
 		cmocka_unit_test(realtek_mst_init_and_shutdown_test_success),

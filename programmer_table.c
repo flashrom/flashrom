@@ -92,10 +92,6 @@ const struct programmer_entry *const programmer_table[] = {
     &programmer_developerbox,
 #endif
 
-#if CONFIG_ENE_LPC == 1
-    &programmer_ene_lpc,
-#endif
-
 #if CONFIG_RAYER_SPI == 1
     &programmer_rayer_spi,
 #endif
