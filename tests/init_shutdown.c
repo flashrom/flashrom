@@ -47,50 +47,6 @@ void dummy_init_and_shutdown_test_success(void **state)
 #endif
 }
 
-struct mec1308_io_state {
-	unsigned char outb_val;
-};
-
-void mec1308_outb(void *state, unsigned char value, unsigned short port)
-{
-	struct mec1308_io_state *io_state = state;
-
-	io_state->outb_val = value;
-}
-
-unsigned char mec1308_inb(void *state, unsigned short port)
-{
-	struct mec1308_io_state *io_state = state;
-
-	return ((port == 0x2e /* MEC1308_SIO_PORT1 */
-			|| port == 0x4e /* MEC1308_SIO_PORT2 */)
-		? 0x20 /* MEC1308_DEVICE_ID_REG */
-		: ((io_state->outb_val == 0x84 /* MEC1308_MBX_DATA_START */)
-			? 0xaa /* MEC1308_CMD_PASSTHRU_SUCCESS */
-			: 0));
-}
-
-void mec1308_init_and_shutdown_test_success(void **state)
-{
-#if CONFIG_MEC1308 == 1
-	struct mec1308_io_state mec1308_io_state = { 0 };
-	const struct io_mock mec1308_io = {
-		.state		= &mec1308_io_state,
-		.outb		= mec1308_outb,
-		.inb		= mec1308_inb,
-	};
-
-	io_mock_register(&mec1308_io);
-
-	will_return_always(__wrap_sio_read, 0x4d); /* MEC1308_DEVICE_ID_VAL */
-	run_lifecycle(state, &programmer_mec1308, "");
-
-	io_mock_register(NULL);
-#else
-	skip();
-#endif
-}
-
 void nicrealtek_init_and_shutdown_test_success(void **state)
 {
 #if CONFIG_NICREALTEK == 1
