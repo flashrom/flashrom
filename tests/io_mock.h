@@ -37,6 +37,11 @@ typedef struct libusb_device_handle libusb_device_handle;
 struct libusb_context;
 typedef struct libusb_context libusb_context;
 
+/* Define struct pci_dev to avoid dependency on pci.h */
+struct pci_dev {
+	unsigned int device_id;
+};
+
 struct io_mock {
 	void *state;
 

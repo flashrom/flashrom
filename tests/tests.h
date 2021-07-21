@@ -43,6 +43,7 @@ void probe_spi_st95_test_success(void **state); /* spi95.c */
 /* init_shutdown.c */
 void dummy_init_and_shutdown_test_success(void **state);
 void mec1308_init_and_shutdown_test_success(void **state);
+void nicrealtek_init_and_shutdown_test_success(void **state);
 void dediprog_init_and_shutdown_test_success(void **state);
 void ene_lpc_init_and_shutdown_test_success(void **state);
 void linux_spi_init_and_shutdown_test_success(void **state);

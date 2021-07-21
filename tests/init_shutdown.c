@@ -89,6 +89,15 @@ void mec1308_init_and_shutdown_test_success(void **state)
 #endif
 }
 
+void nicrealtek_init_and_shutdown_test_success(void **state)
+{
+#if CONFIG_NICREALTEK == 1
+	run_lifecycle(state, &programmer_nicrealtek, "");
+#else
+	skip();
+#endif
+}
+
 int dediprog_libusb_control_transfer(void *state,
 					libusb_device_handle *devh,
 					uint8_t bmRequestType,

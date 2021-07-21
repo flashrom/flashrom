@@ -53,6 +53,22 @@ void *__wrap_physmap(const char *descr, uintptr_t phys_addr, size_t len)
 	return NULL;
 }
 
+struct pci_dev mock_pci_dev = {
+	.device_id = MOCK_HANDLE,
+};
+
+struct pci_dev *__wrap_pcidev_init(void *devs, int bar)
+{
+	LOG_ME;
+	return &mock_pci_dev;
+}
+
+uintptr_t __wrap_pcidev_readbar(void *dev, int bar)
+{
+	LOG_ME;
+	return MOCK_HANDLE;
+}
+
 void __wrap_sio_write(uint16_t port, uint8_t reg, uint8_t data)
 {
 	LOG_ME;
@@ -230,6 +246,7 @@ int main(void)
 	const struct CMUnitTest init_shutdown_tests[] = {
 		cmocka_unit_test(dummy_init_and_shutdown_test_success),
 		cmocka_unit_test(mec1308_init_and_shutdown_test_success),
+		cmocka_unit_test(nicrealtek_init_and_shutdown_test_success),
 		cmocka_unit_test(dediprog_init_and_shutdown_test_success),
 		cmocka_unit_test(ene_lpc_init_and_shutdown_test_success),
 		cmocka_unit_test(linux_spi_init_and_shutdown_test_success),
