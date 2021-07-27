@@ -744,9 +744,18 @@ ifeq ($(CONFIG_NI845X_LIBRARY_PATH),)
 # if the user did not specified the NI-845x headers/lib path
 # do a guess for both 32 and 64 bit Windows versions
 NI845X_LIBS += -L'${PROGRAMFILES}\National Instruments\NI-845x\MS Visual C'
-NI845X_LIBS += -L'${PROGRAMFILES(x86)}\National Instruments\NI-845x\MS Visual C'
 NI845X_INCLUDES += -I'${PROGRAMFILES}\National Instruments\NI-845x\MS Visual C'
-NI845X_INCLUDES += -I'${PROGRAMFILES(x86)}\National Instruments\NI-845x\MS Visual C'
+
+# hack to access env variable containing brackets...
+PROGRAMFILES_X86DIR = $(shell env | sed -n "s/^PROGRAMFILES(X86)=//p")
+
+ifneq ($(PROGRAMFILES_X86DIR),)
+ifneq ($(PROGRAMFILES_X86DIR), ${PROGRAMFILES})
+NI845X_LIBS += -L'$(PROGRAMFILES_X86DIR)\National Instruments\NI-845x\MS Visual C'
+NI845X_INCLUDES += -I'$(PROGRAMFILES_X86DIR)\National Instruments\NI-845x\MS Visual C'
+endif
+endif
+
 else
 NI845X_LIBS += -L'$(CONFIG_NI845X_LIBRARY_PATH)'
 NI845X_INCLUDES += -I'$(CONFIG_NI845X_LIBRARY_PATH)'
