@@ -185,7 +185,7 @@ static int ni845x_spi_open(const char *serial, uInt32 *return_handle)
 
 		device_pid = pid;
 
-		if (!serial || strtol(serial, NULL, 16) == serial_as_number)
+		if (!serial || strtoul(serial, NULL, 16) == serial_as_number)
 			break;
 
 		if (found_devices_count > 1) {
@@ -222,7 +222,7 @@ static int usb8452_spi_set_io_voltage(uint16_t requested_io_voltage_mV,
 				      uint16_t *set_io_voltage_mV,
 				      enum voltage_coerce_mode coerce_mode)
 {
-	int i = 0;
+	unsigned int i = 0;
 	uint8_t selected_voltage_100mV = 0;
 	uint8_t requested_io_voltage_100mV = 0;
 
@@ -552,9 +552,9 @@ static int ni845x_spi_init(const struct programmer_cfg *cfg)
 	// read the cs parameter (which Chip select should we use)
 	CS_str = extract_programmer_param_str(cfg, "cs");
 	if (CS_str) {
-		CS_number = CS_str[0] - '0';
+		CS_number = strtoul(CS_str, NULL, 10);
 		free(CS_str);
-		if (strlen(CS_str) > 1 || CS_number < 0 || 7 < CS_number) {
+		if (CS_number > 7) {
 			msg_perr("Only CS 0-7 supported\n");
 			return 1;
 		}
