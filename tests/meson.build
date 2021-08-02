@@ -20,6 +20,7 @@ srcs = [
   'spi25.c',
   'init_shutdown.c',
   'layout.c',
+  'chip.c',
 ]
 
 mocks = [

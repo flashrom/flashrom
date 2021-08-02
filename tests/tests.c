@@ -292,5 +292,11 @@ int main(void)
 	};
 	ret |= cmocka_run_group_tests_name("layout.c tests", layout_tests, NULL, NULL);
 
+	const struct CMUnitTest chip_tests[] = {
+		cmocka_unit_test(erase_chip_test_success),
+		cmocka_unit_test(erase_chip_with_dummyflasher_test_success),
+	};
+	ret |= cmocka_run_group_tests_name("chip.c tests", chip_tests, NULL, NULL);
+
 	return ret;
 }
