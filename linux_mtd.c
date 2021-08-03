@@ -404,27 +404,29 @@ static int linux_mtd_init(void)
 			msg_pdbg("%s does not exist\n", sysfs_path);
 		goto linux_mtd_init_exit;
 	}
+	free(param);
 
 	data = calloc(1, sizeof(*data));
 	if (!data) {
 		msg_perr("Unable to allocate memory for linux_mtd_data\n");
-		goto linux_mtd_init_exit;
+		return 1;
 	}
 
 	/* Get MTD info and store it in `data` */
 	if (linux_mtd_setup(dev_num, data)) {
 		free(data);
-		goto linux_mtd_init_exit;
+		return 1;
 	}
 
 	if (register_shutdown(linux_mtd_shutdown, (void *)data)) {
 		free(data);
-		goto linux_mtd_init_exit;
+		return 1;
 	}
 
 	register_opaque_master(&linux_mtd_opaque_master, data);
 
-	ret = 0;
+	return 0;
+
 linux_mtd_init_exit:
 	free(param);
 	return ret;
