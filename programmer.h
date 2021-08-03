@@ -443,6 +443,7 @@ struct opaque_master {
 	int (*read) (struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 	int (*write) (struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 	int (*erase) (struct flashctx *flash, unsigned int blockaddr, unsigned int blocklen);
+	int (*shutdown)(void *data);
 	void *data;
 };
 int register_opaque_master(const struct opaque_master *mst, void *data);

@@ -50,6 +50,13 @@ int register_opaque_master(const struct opaque_master *mst, void *data)
 {
 	struct registered_master rmst = {0};
 
+	if (mst->shutdown) {
+		if (register_shutdown(mst->shutdown, data)) {
+			mst->shutdown(data); /* cleanup */
+			return 1;
+		}
+	}
+
 	if (!mst->probe || !mst->read || !mst->write || !mst->erase) {
 		msg_perr("%s called with incomplete master definition. "
 			 "Please report a bug at flashrom@flashrom.org\n",
