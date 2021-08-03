@@ -295,6 +295,17 @@ static int linux_mtd_erase(struct flashctx *flash,
 	return 0;
 }
 
+static int linux_mtd_shutdown(void *data)
+{
+	struct linux_mtd_data *mtd_data = data;
+	if (mtd_data->dev_fp != NULL) {
+		fclose(mtd_data->dev_fp);
+	}
+	free(data);
+
+	return 0;
+}
+
 static const struct opaque_master linux_mtd_opaque_master = {
 	/* max_data_{read,write} don't have any effect for this programmer */
 	.max_data_read	= MAX_DATA_UNSPECIFIED,
@@ -354,17 +365,6 @@ static int linux_mtd_setup(int dev_num, struct linux_mtd_data *data)
 	ret = 0;
 linux_mtd_setup_exit:
 	return ret;
-}
-
-static int linux_mtd_shutdown(void *data)
-{
-	struct linux_mtd_data *mtd_data = data;
-	if (mtd_data->dev_fp != NULL) {
-		fclose(mtd_data->dev_fp);
-	}
-	free(data);
-
-	return 0;
 }
 
 static int linux_mtd_init(void)

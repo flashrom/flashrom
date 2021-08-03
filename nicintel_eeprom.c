@@ -395,20 +395,6 @@ static int nicintel_ee_erase_82580(struct flashctx *flash, unsigned int addr, un
 	return nicintel_ee_write_82580(flash, NULL, addr, len);
 }
 
-static const struct opaque_master opaque_master_nicintel_ee_82580 = {
-	.probe = nicintel_ee_probe_82580,
-	.read = nicintel_ee_read,
-	.write = nicintel_ee_write_82580,
-	.erase = nicintel_ee_erase_82580,
-};
-
-static const struct opaque_master opaque_master_nicintel_ee_i210 = {
-	.probe = nicintel_ee_probe_i210,
-	.read = nicintel_ee_read,
-	.write = nicintel_ee_write_i210,
-	.erase = nicintel_ee_erase_i210,
-};
-
 static int nicintel_ee_shutdown_i210(void *arg)
 {
 	if (!done_i20_write)
@@ -454,6 +440,20 @@ out:
 	free(eecp);
 	return ret;
 }
+
+static const struct opaque_master opaque_master_nicintel_ee_82580 = {
+	.probe = nicintel_ee_probe_82580,
+	.read = nicintel_ee_read,
+	.write = nicintel_ee_write_82580,
+	.erase = nicintel_ee_erase_82580,
+};
+
+static const struct opaque_master opaque_master_nicintel_ee_i210 = {
+	.probe = nicintel_ee_probe_i210,
+	.read = nicintel_ee_read,
+	.write = nicintel_ee_write_i210,
+	.erase = nicintel_ee_erase_i210,
+};
 
 static int nicintel_ee_init(void)
 {
