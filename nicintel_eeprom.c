@@ -466,7 +466,7 @@ static int nicintel_ee_init(void)
 			return 1;
 
 		nicintel_pci = dev;
-		if ((dev->device_id != UNPROG_DEVICE)) {
+		if (dev->device_id != UNPROG_DEVICE) {
 			uint32_t eec = pci_mmio_readl(nicintel_eebar + EEC);
 
 			/* C.f. 3.3.1.5 for the detection mechanism (maybe? contradicting
