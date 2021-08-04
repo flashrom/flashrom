@@ -445,7 +445,7 @@ static int realtek_mst_i2c_spi_shutdown(void *data)
 static int get_params(int *reset, int *enter_isp)
 {
 	char *reset_str = NULL, *isp_str = NULL;
-	int ret = SPI_GENERIC_ERROR;
+	int ret = 0;
 
 	reset_str = extract_programmer_param("reset-mcu");
 	if (reset_str) {
