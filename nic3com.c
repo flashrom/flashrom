@@ -40,7 +40,7 @@ static const struct dev_entry nics_3com[] = {
 	{0x10b7, 0x9001, NT, "3COM", "3C90xB: PCI 10/100 Mbps; shared 10BASE-T/100BASE-T4" },
 	{0x10b7, 0x9004, OK, "3COM", "3C90xB: PCI 10BASE-T (TPO)" },
 	{0x10b7, 0x9005, NT, "3COM", "3C90xB: PCI 10BASE-T/10BASE2/AUI (COMBO)" },
-	{0x10b7, 0x9006, NT, "3COM", "3C90xB: PCI 10BASE-T/10BASE2 (TPC)" },
+	{0x10b7, 0x9006, OK, "3COM", "3C90xB: PCI 10BASE-T/10BASE2 (TPC)" },
 	{0x10b7, 0x900a, NT, "3COM", "3C90xB: PCI 10BASE-FL" },
 	{0x10b7, 0x905a, NT, "3COM", "3C90xB: PCI 10BASE-FX" },
 	{0x10b7, 0x9058, OK, "3COM", "3C905B: Cyclone 10/100/BNC" },
