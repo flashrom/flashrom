@@ -209,3 +209,57 @@ void linux_spi_init_and_shutdown_test_success(void **state)
 	skip();
 #endif
 }
+
+#define REALTEK_MST_MOCK_FD 0x10ec
+
+static int realtek_mst_open(void *state, const char *pathname, int flags)
+{
+	assert_string_equal(pathname, "/dev/i2c-254");
+	assert_int_equal(flags & O_RDWR, O_RDWR);
+	return REALTEK_MST_MOCK_FD;
+}
+
+static int realtek_mst_ioctl(void *state, int fd, unsigned long request, va_list args)
+{
+	assert_int_equal(fd, REALTEK_MST_MOCK_FD);
+	assert_int_equal(request, I2C_SLAVE);
+	/* Only access to I2C address 0x4a is expected */
+	unsigned long addr = va_arg(args, unsigned long);
+	assert_int_equal(addr, 0x4a);
+
+	return 0;
+}
+
+static int realtek_mst_read(void *state, int fd, void *buf, size_t sz)
+{
+	assert_int_equal(fd, REALTEK_MST_MOCK_FD);
+	assert_int_equal(sz, 1);
+	return sz;
+}
+
+static int realtek_mst_write(void *state, int fd, const void *buf, size_t sz)
+{
+	assert_int_equal(fd, REALTEK_MST_MOCK_FD);
+	const LargestIntegralType accepted_sizes[] = {1, 2};
+	assert_in_set(sz, accepted_sizes, ARRAY_SIZE(accepted_sizes));
+	return sz;
+}
+
+void realtek_mst_init_and_shutdown_test_success(void **state)
+{
+#if CONFIG_REALTEK_MST_I2C_SPI == 1
+	const struct io_mock realtek_mst_io = {
+		.open = realtek_mst_open,
+		.ioctl = realtek_mst_ioctl,
+		.read = realtek_mst_read,
+		.write = realtek_mst_write,
+	};
+	io_mock_register(&realtek_mst_io);
+
+	run_lifecycle(state, &programmer_realtek_mst_i2c_spi, "bus=254,enter-isp=0");
+
+	io_mock_register(NULL);
+#else
+	skip();
+#endif /* CONFIG_REALTEK_I2C_SPI */
+}
