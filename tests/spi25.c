@@ -20,22 +20,6 @@
 #include "chipdrivers.h"
 #include "spi.h"
 
-int __wrap_spi_send_command(const struct flashctx *flash,
-		unsigned int writecnt, unsigned int readcnt,
-		const unsigned char *writearr, unsigned char *readarr)
-{
-	check_expected_ptr(flash);
-	assert_int_equal(writecnt,    mock_type(int));
-	assert_int_equal(writearr[0], mock_type(int));
-
-	int rcnt = mock_type(int);
-	assert_int_equal(readcnt, rcnt);
-	for (int i = 0; i < rcnt; i++)
-		readarr[i] = i;
-
-	return 0;
-}
-
 struct flashchip mock_chip = {
 	.vendor		= "Generic",
 	.name		= "unknown SPI chip (RDID)",
@@ -48,6 +32,38 @@ struct flashchip mock_chip = {
 	.probe		= probe_spi_rdid,
 	.write		= NULL,
 };
+
+/*
+ * This declaration is needed for visibility, so that wrap below could
+ * redirect to real function.
+ */
+int __real_spi_send_command(const struct flashctx *flash,
+		unsigned int writecnt, unsigned int readcnt,
+		const unsigned char *writearr, unsigned char *readarr);
+
+int __wrap_spi_send_command(const struct flashctx *flash,
+		unsigned int writecnt, unsigned int readcnt,
+		const unsigned char *writearr, unsigned char *readarr)
+{
+	if (flash->chip != &mock_chip)
+		/*
+		 * Caller is some other test, redirecting to real function.
+		 * This test is the only one which uses wrap of spi_send_command,
+		 * all other tests use real function.
+		*/
+		return __real_spi_send_command(flash, writecnt, readcnt, writearr, readarr);
+
+	check_expected_ptr(flash);
+	assert_int_equal(writecnt,    mock_type(int));
+	assert_int_equal(writearr[0], mock_type(int));
+
+	int rcnt = mock_type(int);
+	assert_int_equal(readcnt, rcnt);
+	for (int i = 0; i < rcnt; i++)
+		readarr[i] = i;
+
+	return 0;
+}
 
 void spi_write_enable_test_success(void **state)
 {
