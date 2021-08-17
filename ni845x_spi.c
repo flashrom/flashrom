@@ -480,7 +480,7 @@ static int ni845x_spi_io_voltage_check(const struct flashctx *flash)
 	return 0;
 }
 
-static int ni845x_spi_transmit(struct flashctx *flash,
+static int ni845x_spi_transmit(const struct flashctx *flash,
 			       unsigned int write_cnt,
 			       unsigned int read_cnt,
 			       const unsigned char *write_arr,
