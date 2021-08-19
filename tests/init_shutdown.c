@@ -19,6 +19,8 @@
 #include "io_mock.h"
 #include "programmer.h"
 
+#define NOT_NULL ((void *)0xf000baaa)
+
 static void run_lifecycle(void **state, const struct programmer_entry *prog, const char *param)
 {
 	(void) state; /* unused */
@@ -195,16 +197,107 @@ void ene_lpc_init_and_shutdown_test_success(void **state)
 #endif
 }
 
+struct linux_mtd_io_state {
+	char *fopen_path;
+};
+
+FILE *linux_mtd_fopen(void *state, const char *pathname, const char *mode)
+{
+	struct linux_mtd_io_state *io_state = state;
+
+	io_state->fopen_path = strdup(pathname);
+
+	return NOT_NULL;
+}
+
+size_t linux_mtd_fread(void *state, void *buf, size_t size, size_t len, FILE *fp)
+{
+	struct linux_mtd_fread_mock_entry {
+		const char *path;
+		const char *data;
+	};
+	const struct linux_mtd_fread_mock_entry fread_mock_map[] = {
+		{ "/sys/class/mtd/mtd0//type",            "nor"    },
+		{ "/sys/class/mtd/mtd0//name",            "Device" },
+		{ "/sys/class/mtd/mtd0//flags",           ""       },
+		{ "/sys/class/mtd/mtd0//size",            "1024"   },
+		{ "/sys/class/mtd/mtd0//erasesize",       "512"    },
+		{ "/sys/class/mtd/mtd0//numeraseregions", "0"      },
+	};
+
+	struct linux_mtd_io_state *io_state = state;
+	unsigned int i;
+
+	if (!io_state->fopen_path)
+		return 0;
+
+	for (i = 0; i < ARRAY_SIZE(fread_mock_map); i++) {
+		const struct linux_mtd_fread_mock_entry *entry = &fread_mock_map[i];
+
+		if (!strcmp(io_state->fopen_path, entry->path)) {
+			size_t data_len = min(size * len, strlen(entry->data));
+			memcpy(buf, entry->data, data_len);
+			return data_len;
+		}
+	}
+
+	return 0;
+}
+
+int linux_mtd_fclose(void *state, FILE *fp)
+{
+	struct linux_mtd_io_state *io_state = state;
+
+	free(io_state->fopen_path);
+
+	return 0;
+}
+
+void linux_mtd_init_and_shutdown_test_success(void **state)
+{
+#if CONFIG_LINUX_MTD == 1
+	struct linux_mtd_io_state linux_mtd_io_state = { NULL };
+	const struct io_mock linux_mtd_io = {
+		.state	= &linux_mtd_io_state,
+		.fopen	= linux_mtd_fopen,
+		.fread	= linux_mtd_fread,
+		.fclose = linux_mtd_fclose,
+	};
+
+	io_mock_register(&linux_mtd_io);
+
+	run_lifecycle(state, &programmer_linux_mtd, "");
+
+	io_mock_register(NULL);
+#else
+	skip();
+#endif
+}
+
+char *linux_spi_fgets(void *state, char *buf, int len, FILE *fp)
+{
+	/* Emulate reading max buffer size from sysfs. */
+	const char *max_buf_size = "1048576";
+
+	return memcpy(buf, max_buf_size, min(len, strlen(max_buf_size) + 1));
+}
+
 void linux_spi_init_and_shutdown_test_success(void **state)
 {
 	/*
 	 * Current implementation tests a particular path of the init procedure.
-	 * There are two ways for it to succeed: reading the buffer size from sysfs
-	 * and the fallback to getpagesize(). This test does the latter (fallback to
-	 * getpagesize).
+	 * Specifically, it is reading the buffer size from sysfs.
 	 */
 #if CONFIG_LINUX_SPI == 1
+	const struct io_mock linux_spi_io = {
+		.fgets	= linux_spi_fgets,
+	};
+
+	io_mock_register(&linux_spi_io);
+
 	run_lifecycle(state, &programmer_linux_spi, "dev=/dev/null");
+
+	io_mock_register(NULL);
 #else
 	skip();
 #endif

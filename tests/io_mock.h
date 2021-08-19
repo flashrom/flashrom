@@ -31,6 +31,9 @@
 #ifndef _IO_MOCK_H_
 #define _IO_MOCK_H_
 
+/* Required for `FILE *` */
+#include <stdio.h>
+
 /* Define libusb symbols to avoid dependency on libusb.h */
 struct libusb_device_handle;
 typedef struct libusb_device_handle libusb_device_handle;
@@ -79,6 +82,12 @@ struct io_mock {
 	int (*ioctl)(void *state, int fd, unsigned long request, va_list args);
 	int (*read)(void *state, int fd, void *buf, size_t sz);
 	int (*write)(void *state, int fd, const void *buf, size_t sz);
+
+	/* Standard I/O */
+	FILE* (*fopen)(void *state, const char *pathname, const char *mode);
+	char* (*fgets)(void *state, char *buf, int len, FILE *fp);
+	size_t (*fread)(void *state, void *buf, size_t size, size_t len, FILE *fp);
+	int (*fclose)(void *state, FILE *fp);
 };
 
 void io_mock_register(const struct io_mock *io);

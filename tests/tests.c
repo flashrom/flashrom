@@ -129,13 +129,76 @@ int __wrap_read(int fd, void *buf, size_t sz)
 FILE *__wrap_fopen(const char *pathname, const char *mode)
 {
 	LOG_ME;
-	return NULL;
+	if (current_io && current_io->fopen)
+		return current_io->fopen(current_io->state, pathname, mode);
+	return (void *)MOCK_HANDLE;
 }
 
 FILE *__wrap_fopen64(const char *pathname, const char *mode)
 {
 	LOG_ME;
+	if (current_io && current_io->fopen)
+		return current_io->fopen(current_io->state, pathname, mode);
+	return (void *)MOCK_HANDLE;
+}
+
+int __wrap_stat(const char *path, void *buf)
+{
+	LOG_ME;
+	return 0;
+}
+
+int __wrap_stat64(const char *path, void *buf)
+{
+	LOG_ME;
+	return 0;
+}
+
+char *__wrap_fgets(char *buf, int len, FILE *fp)
+{
+	LOG_ME;
+	if (current_io && current_io->fgets)
+		return current_io->fgets(current_io->state, buf, len, fp);
 	return NULL;
+}
+
+size_t __wrap_fread(void *ptr, size_t size, size_t len, FILE *fp)
+{
+	LOG_ME;
+	if (current_io && current_io->fread)
+		return current_io->fread(current_io->state, ptr, size, len, fp);
+	return 0;
+}
+
+int __wrap_setvbuf(FILE *fp, char *buf, int type, size_t size)
+{
+	LOG_ME;
+	return 0;
+}
+
+int __wrap_fclose(FILE *fp)
+{
+	LOG_ME;
+	if (current_io && current_io->fclose)
+		return current_io->fclose(current_io->state, fp);
+	return 0;
+}
+
+int __wrap_feof(FILE *fp)
+{
+	/* LOG_ME; */
+	return 0;
+}
+
+int __wrap_ferror(FILE *fp)
+{
+	/* LOG_ME; */
+	return 0;
+}
+void __wrap_clearerr(FILE *fp)
+{
+	/* LOG_ME; */
+	return;
 }
 
 int __wrap_rget_io_perms(void)
@@ -277,6 +340,7 @@ int main(void)
 		cmocka_unit_test(nicrealtek_init_and_shutdown_test_success),
 		cmocka_unit_test(dediprog_init_and_shutdown_test_success),
 		cmocka_unit_test(ene_lpc_init_and_shutdown_test_success),
+		cmocka_unit_test(linux_mtd_init_and_shutdown_test_success),
 		cmocka_unit_test(linux_spi_init_and_shutdown_test_success),
 		cmocka_unit_test(realtek_mst_init_and_shutdown_test_success),
 	};
