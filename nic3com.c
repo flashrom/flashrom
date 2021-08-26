@@ -73,17 +73,6 @@ static uint8_t nic3com_chip_readb(const struct flashctx *flash,
 	return INB(data->io_base_addr + BIOS_ROM_DATA);
 }
 
-static const struct par_master par_master_nic3com = {
-		.chip_readb		= nic3com_chip_readb,
-		.chip_readw		= fallback_chip_readw,
-		.chip_readl		= fallback_chip_readl,
-		.chip_readn		= fallback_chip_readn,
-		.chip_writeb		= nic3com_chip_writeb,
-		.chip_writew		= fallback_chip_writew,
-		.chip_writel		= fallback_chip_writel,
-		.chip_writen		= fallback_chip_writen,
-};
-
 static int nic3com_shutdown(void *par_data)
 {
 	struct nic3com_data *data = par_data;
@@ -100,6 +89,17 @@ static int nic3com_shutdown(void *par_data)
 	free(data);
 	return 0;
 }
+
+static const struct par_master par_master_nic3com = {
+		.chip_readb		= nic3com_chip_readb,
+		.chip_readw		= fallback_chip_readw,
+		.chip_readl		= fallback_chip_readl,
+		.chip_readn		= fallback_chip_readn,
+		.chip_writeb		= nic3com_chip_writeb,
+		.chip_writew		= fallback_chip_writew,
+		.chip_writel		= fallback_chip_writel,
+		.chip_writen		= fallback_chip_writen,
+};
 
 static int nic3com_init(void)
 {

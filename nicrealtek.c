@@ -79,6 +79,13 @@ static uint8_t nicrealtek_chip_readb(const struct flashctx *flash, const chipadd
 	return val;
 }
 
+static int nicrealtek_shutdown(void *data)
+{
+	/* FIXME: We forgot to disable software access again. */
+	free(data);
+	return 0;
+}
+
 static const struct par_master par_master_nicrealtek = {
 		.chip_readb		= nicrealtek_chip_readb,
 		.chip_readw		= fallback_chip_readw,
@@ -89,13 +96,6 @@ static const struct par_master par_master_nicrealtek = {
 		.chip_writel		= fallback_chip_writel,
 		.chip_writen		= fallback_chip_writen,
 };
-
-static int nicrealtek_shutdown(void *data)
-{
-	/* FIXME: We forgot to disable software access again. */
-	free(data);
-	return 0;
-}
 
 static int nicrealtek_init(void)
 {
