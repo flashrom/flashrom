@@ -86,6 +86,13 @@ int register_par_master(const struct par_master *mst,
 {
 	struct registered_master rmst = {0};
 
+	if (mst->shutdown) {
+		if (register_shutdown(mst->shutdown, data)) {
+			mst->shutdown(data); /* cleanup */
+			return 1;
+		}
+	}
+
 	if (!mst->chip_writeb || !mst->chip_writew || !mst->chip_writel ||
 	    !mst->chip_writen || !mst->chip_readb || !mst->chip_readw ||
 	    !mst->chip_readl || !mst->chip_readn) {
