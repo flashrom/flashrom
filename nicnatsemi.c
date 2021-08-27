@@ -97,9 +97,7 @@ static int nicnatsemi_init(void)
 	 * functions below wants to be 0x0000FFFF.
 	 */
 	max_rom_decode.parallel = 131072;
-	register_par_master(&par_master_nicnatsemi, BUS_PARALLEL, NULL);
-
-	return 0;
+	return register_par_master(&par_master_nicnatsemi, BUS_PARALLEL, NULL);
 }
 
 

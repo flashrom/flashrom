@@ -129,9 +129,7 @@ static int satasii_init(void)
 	if ((id != 0x0680) && (!(pci_mmio_readl(sii_bar) & (1 << 26))))
 		msg_pwarn("Warning: Flash seems unconnected.\n");
 
-	register_par_master(&par_master_satasii, BUS_PARALLEL, NULL);
-
-	return 0;
+	return register_par_master(&par_master_satasii, BUS_PARALLEL, NULL);
 }
 const struct programmer_entry programmer_satasii = {
 	.name			= "satasii",

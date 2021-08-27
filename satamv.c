@@ -179,9 +179,7 @@ static int satamv_init(void)
 	/* 512 kByte with two 8-bit latches, and
 	 * 4 MByte with additional 3-bit latch. */
 	max_rom_decode.parallel = 4 * 1024 * 1024;
-	register_par_master(&par_master_satamv, BUS_PARALLEL, NULL);
-
-	return 0;
+	return register_par_master(&par_master_satamv, BUS_PARALLEL, NULL);
 }
 
 const struct programmer_entry programmer_satamv = {
