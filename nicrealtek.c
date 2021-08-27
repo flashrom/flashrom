@@ -95,6 +95,7 @@ static const struct par_master par_master_nicrealtek = {
 		.chip_writew		= fallback_chip_writew,
 		.chip_writel		= fallback_chip_writel,
 		.chip_writen		= fallback_chip_writen,
+		.shutdown		= nicrealtek_shutdown,
 };
 
 static int nicrealtek_init(void)
@@ -138,14 +139,7 @@ static int nicrealtek_init(void)
 	data->bios_rom_addr = bios_rom_addr;
 	data->bios_rom_data = bios_rom_data;
 
-	if (register_shutdown(nicrealtek_shutdown, data)) {
-		free(data);
-		return 1;
-	}
-
-	register_par_master(&par_master_nicrealtek, BUS_PARALLEL, data);
-
-	return 0;
+	return register_par_master(&par_master_nicrealtek, BUS_PARALLEL, data);
 }
 
 const struct programmer_entry programmer_nicrealtek = {

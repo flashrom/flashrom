@@ -99,6 +99,7 @@ static const struct par_master par_master_nic3com = {
 		.chip_writew		= fallback_chip_writew,
 		.chip_writel		= fallback_chip_writel,
 		.chip_writen		= fallback_chip_writen,
+		.shutdown		= nic3com_shutdown,
 };
 
 static int nic3com_init(void)
@@ -150,13 +151,7 @@ static int nic3com_init(void)
 
 	max_rom_decode.parallel = 128 * 1024;
 
-	if (register_shutdown(nic3com_shutdown, data)) {
-		free(data);
-		goto init_err_cleanup_exit;
-	}
-	register_par_master(&par_master_nic3com, BUS_PARALLEL, data);
-
-	return 0;
+	return register_par_master(&par_master_nic3com, BUS_PARALLEL, data);
 
 init_err_cleanup_exit:
 	/* 3COM 3C90xB cards need a special fixup. */
