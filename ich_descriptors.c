@@ -939,6 +939,8 @@ static enum ich_chipset guess_ich_chipset_from_content(const struct ich_desc_con
 			warn_peculiar_desc(content->ISL != 23, "Gemini Lake");
 			return CHIPSET_GEMINI_LAKE;
 		}
+		if (content->ISL <= 80)
+			return CHIPSET_C620_SERIES_LEWISBURG;
 		warn_peculiar_desc(content->ISL != 16, "Ibex Peak");
 		return CHIPSET_5_SERIES_IBEX_PEAK;
 	} else if (upper->MDTBA == 0x00) {
