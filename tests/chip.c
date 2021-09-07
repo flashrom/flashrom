@@ -216,3 +216,100 @@ void erase_chip_with_dummyflasher_test_success(void **state)
 
 	free(param_dup);
 }
+
+void read_chip_test_success(void **state)
+{
+	(void) state; /* unused */
+
+	struct flashchip chip = {
+		.vendor		= "aklm",
+		/*
+		 * Total size less than 16 to skip some steps
+		 * in flashrom.c#prepare_flash_access.
+		 */
+		.total_size	= 8,
+		.tested		= TEST_OK_PREW,
+		.read		= read_chip,
+		.write		= write_chip,
+		.unlock		= unlock_chip,
+		.block_erasers	=
+		{{
+			 /* All blocks within total size of the chip. */
+			.eraseblocks = { {2 * 1024, 4} },
+			.block_erase = block_erase_chip,
+		 }},
+	};
+
+	struct flashrom_flashctx flash = { 0 };
+	struct flashrom_layout *layout;
+	const char *param = ""; /* Default values for all params. */
+
+	setup_chip(&flash, &layout, &chip, param);
+
+	const char *const filename = "read_chip.test";
+
+	printf("Read chip operation started.\n");
+	assert_int_equal(0, do_read(&flash, filename));
+	printf("Read chip operation done.\n");
+
+	teardown(&layout);
+}
+
+void read_chip_with_dummyflasher_test_success(void **state)
+{
+	(void) state; /* unused */
+
+	struct flashchip chip = {
+		.vendor		= "aklm&dummyflasher",
+		/*
+		 * Setup the values for W25Q128.V because we ask dummyflasher
+		 * to emulate this chip. All operations: read/write/unlock/erase
+		 * are real, not mocks, and they are expected to be handled by
+		 * dummyflasher.
+		 */
+		.total_size	= 16 * 1024,
+		.tested		= TEST_OK_PREW,
+		.read		= spi_chip_read,
+		.write		= spi_chip_write_256,
+		.unlock         = spi_disable_blockprotect,
+		.block_erasers  =
+		{
+			{
+				.eraseblocks = { {4 * 1024, 4096} },
+				.block_erase = spi_block_erase_20,
+			}, {
+				.eraseblocks = { {32 * 1024, 512} },
+				.block_erase = spi_block_erase_52,
+			}, {
+				.eraseblocks = { {64 * 1024, 256} },
+				.block_erase = spi_block_erase_d8,
+			}, {
+				.eraseblocks = { {16 * 1024 * 1024, 1} },
+				.block_erase = spi_block_erase_60,
+			}, {
+				.eraseblocks = { {16 * 1024 * 1024, 1} },
+				.block_erase = spi_block_erase_c7,
+			}
+		},
+	};
+
+	struct flashrom_flashctx flash = { 0 };
+	struct flashrom_layout *layout;
+	/*
+	 * Dummyflasher is capable to emulate a chip, so we ask it to do this.
+	 * Nothing to mock, dummy is taking care of this already.
+	 */
+	char *param_dup = strdup("bus=spi,emulate=W25Q128FV");
+
+	setup_chip(&flash, &layout, &chip, param_dup);
+
+	const char *const filename = "read_chip.test";
+
+	printf("Read chip operation started.\n");
+	assert_int_equal(0, do_read(&flash, filename));
+	printf("Read chip operation done.\n");
+
+	teardown(&layout);
+
+	free(param_dup);
+}

@@ -154,6 +154,18 @@ int __wrap_stat64(const char *path, void *buf)
 	return 0;
 }
 
+int __wrap_fstat(int fd, void *buf)
+{
+	LOG_ME;
+	return 0;
+}
+
+int __wrap_fstat64(int fd, void *buf)
+{
+	LOG_ME;
+	return 0;
+}
+
 char *__wrap_fgets(char *buf, int len, FILE *fp)
 {
 	LOG_ME;
@@ -167,6 +179,30 @@ size_t __wrap_fread(void *ptr, size_t size, size_t len, FILE *fp)
 	LOG_ME;
 	if (current_io && current_io->fread)
 		return current_io->fread(current_io->state, ptr, size, len, fp);
+	return 0;
+}
+
+size_t __wrap_fwrite(const void *ptr, size_t size, size_t nmemb, FILE *fp)
+{
+	LOG_ME;
+	return nmemb;
+}
+
+int __wrap_fflush(FILE *fp)
+{
+	LOG_ME;
+	return 0;
+}
+
+int __wrap_fileno(FILE *fp)
+{
+	LOG_ME;
+	return MOCK_HANDLE;
+}
+
+int __wrap_fsync(int fd)
+{
+	LOG_ME;
 	return 0;
 }
 
@@ -357,6 +393,8 @@ int main(void)
 	const struct CMUnitTest chip_tests[] = {
 		cmocka_unit_test(erase_chip_test_success),
 		cmocka_unit_test(erase_chip_with_dummyflasher_test_success),
+		cmocka_unit_test(read_chip_test_success),
+		cmocka_unit_test(read_chip_with_dummyflasher_test_success),
 	};
 	ret |= cmocka_run_group_tests_name("chip.c tests", chip_tests, NULL, NULL);
 

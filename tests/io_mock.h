@@ -53,6 +53,9 @@ struct pci_dev {
 /* Linux I2C interface constants, avoiding linux/i2c-dev.h */
 #define I2C_SLAVE 0x0703
 
+/* Always return success for tests. */
+#define S_ISREG(x) 0
+
 struct io_mock {
 	void *state;
 

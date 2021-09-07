@@ -59,5 +59,7 @@ void layout_region_invalid_range_test_success(void **state);
 /* chip.c */
 void erase_chip_test_success(void **state);
 void erase_chip_with_dummyflasher_test_success(void **state);
+void read_chip_test_success(void **state);
+void read_chip_with_dummyflasher_test_success(void **state);
 
 #endif /* TESTS_H */
