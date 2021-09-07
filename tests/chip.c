@@ -86,6 +86,45 @@ int block_erase_chip(struct flashctx *flash, unsigned int blockaddr, unsigned in
 	return 0;
 }
 
+static void setup_chip(struct flashrom_flashctx *flash, struct flashrom_layout **layout,
+		struct flashchip *chip, const char *programmer_param)
+{
+	flash->chip = chip;
+
+	g_chip_state.unlock_calls = 0;
+
+	printf("Creating layout with one included region... ");
+	assert_int_equal(0, flashrom_layout_new(layout));
+	/* One region which covers total size of chip. */
+	assert_int_equal(0, flashrom_layout_add_region(*layout, 0, chip->total_size * 1024 - 1, "region"));
+	assert_int_equal(0, flashrom_layout_include_region(*layout, "region"));
+
+	flashrom_layout_set(flash, *layout);
+	printf("done\n");
+
+	/*
+	 * We need some programmer (any), and dummy is a very good one,
+	 * because it doesn't need any mocking. So no extra complexity
+	 * from a programmer side, and test can focus on working with the chip.
+	 */
+	printf("Dummyflasher initialising with param=\"%s\"... ", programmer_param);
+	assert_int_equal(0, programmer_init(&programmer_dummy, programmer_param));
+	/* Assignment below normally happens while probing, but this test is not probing. */
+	flash->mst = &registered_masters[0];
+	printf("done\n");
+}
+
+static void teardown(struct flashrom_layout **layout)
+{
+	printf("Dummyflasher shutdown... ");
+	assert_int_equal(0, programmer_shutdown());
+	printf("done\n");
+
+	printf("Releasing layout... ");
+	flashrom_layout_release(*layout);
+	printf("done\n");
+}
+
 void erase_chip_test_success(void **state)
 {
 	(void) state; /* unused */
@@ -108,43 +147,17 @@ void erase_chip_test_success(void **state)
 			.block_erase = block_erase_chip,
 		 }},
 	};
-	struct flashrom_flashctx flash = {
-		.chip = &chip,
-	};
-
+	struct flashrom_flashctx flash = { 0 };
 	struct flashrom_layout *layout;
+	const char *param = ""; /* Default values for all params. */
 
-	printf("Creating layout with one included region... ");
-	assert_int_equal(0, flashrom_layout_new(&layout));
-	/* One region which covers total size of chip. */
-	assert_int_equal(0, flashrom_layout_add_region(layout, 0, chip.total_size * 1024 - 1, "region"));
-	assert_int_equal(0, flashrom_layout_include_region(layout, "region"));
-
-	flashrom_layout_set(&flash, layout);
-	printf("done\n");
-
-	/*
-	 * We need some programmer (any), and dummy is a very good one,
-	 * because it doesn't need any mocking. So no extra complexity
-	 * from a programmer side, and test can focus on the code which
-	 * erases the chip.
-	 */
-	const char *param = ""; /* default values for all params */
-	printf("Dummyflasher initialising... ");
-	assert_int_equal(0, programmer_init(&programmer_dummy, param));
-	printf("done\n");
+	setup_chip(&flash, &layout, &chip, param);
 
 	printf("Erase chip operation started.\n");
 	assert_int_equal(0, do_erase(&flash));
 	printf("Erase chip operation done.\n");
 
-	printf("Dummyflasher shutdown... ");
-	assert_int_equal(0, programmer_shutdown());
-	printf("done\n");
-
-	printf("Releasing layout... ");
-	flashrom_layout_release(layout);
-	printf("done\n");
+	teardown(&layout);
 }
 
 void erase_chip_with_dummyflasher_test_success(void **state)
@@ -184,43 +197,22 @@ void erase_chip_with_dummyflasher_test_success(void **state)
 			}
 		},
 	};
-	struct flashrom_flashctx flash = {
-		.chip = &chip,
-	};
 
+	struct flashrom_flashctx flash = { 0 };
 	struct flashrom_layout *layout;
-
-	printf("Creating layout with one included region... ");
-	assert_int_equal(0, flashrom_layout_new(&layout));
-	/* One region which covers total size of chip. */
-	assert_int_equal(0, flashrom_layout_add_region(layout, 0, chip.total_size * 1024 - 1, "region"));
-	assert_int_equal(0, flashrom_layout_include_region(layout, "region"));
-
-	flashrom_layout_set(&flash, layout);
-	printf("done\n");
-
 	/*
 	 * Dummyflasher is capable to emulate a chip, so we ask it to do this.
 	 * Nothing to mock, dummy is taking care of this already.
 	 */
 	char *param_dup = strdup("bus=spi,emulate=W25Q128FV");
-	printf("Dummyflasher initialising to emulate W25Q128FV... ");
-	assert_int_equal(0, programmer_init(&programmer_dummy, param_dup));
-	/* Assignment below normally happens while probing, but this test is not probing. */
-	flash.mst = &registered_masters[0];
-	printf("done\n");
+
+	setup_chip(&flash, &layout, &chip, param_dup);
 
 	printf("Erase chip operation started.\n");
 	assert_int_equal(0, do_erase(&flash));
 	printf("Erase chip operation done.\n");
 
-	printf("Dummyflasher shutdown... ");
-	assert_int_equal(0, programmer_shutdown());
-	printf("done\n");
-
-	printf("Releasing layout... ");
-	flashrom_layout_release(layout);
-	printf("done\n");
+	teardown(&layout);
 
 	free(param_dup);
 }
