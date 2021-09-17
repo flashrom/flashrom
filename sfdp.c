@@ -300,7 +300,7 @@ int probe_spi_sfdp(struct flashctx *flash)
 
 	/* Fetch all parameter headers, even if we don't use them all (yet). */
 	hbuf = malloc((nph + 1) * 8);
-	hdrs = malloc((nph + 1) * sizeof(struct sfdp_tbl_hdr));
+	hdrs = malloc((nph + 1) * sizeof(*hdrs));
 	if (hbuf == NULL || hdrs == NULL ) {
 		msg_gerr("Out of memory!\n");
 		goto cleanup_hdrs;

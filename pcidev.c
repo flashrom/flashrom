@@ -206,6 +206,7 @@ struct pci_dev *pcidev_init(const struct dev_entry *devs, int bar)
 
 	for (dev = pacc->devices; dev; dev = dev->next) {
 		if (pci_filter_match(&filter, dev)) {
+			pci_fill_info(dev, PCI_FILL_IDENT);
 			/* Check against list of supported devices. */
 			for (i = 0; devs[i].device_name != NULL; i++)
 				if ((dev->vendor_id == devs[i].vendor_id) &&
@@ -295,7 +296,7 @@ static int undo_pci_write(void *p)
 #define register_undo_pci_write(a, b, c)				\
 {									\
 	struct undo_pci_write_data *undo_pci_write_data;		\
-	undo_pci_write_data = malloc(sizeof(struct undo_pci_write_data)); \
+	undo_pci_write_data = malloc(sizeof(*undo_pci_write_data));	\
 	if (!undo_pci_write_data) {					\
 		msg_gerr("Out of memory!\n");				\
 		exit(1);						\

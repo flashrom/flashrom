@@ -81,14 +81,14 @@ static bool done_i20_write = false;
  * Warning: is_i210() below makes assumptions on these PCI ids.
  *          It may have to be updated when this list is extended.
  */
-const struct dev_entry nics_intel_ee[] = {
+static const struct dev_entry nics_intel_ee[] = {
 	{PCI_VENDOR_ID_INTEL, 0x150e, OK, "Intel", "82580 Quad Gigabit Ethernet Controller (Copper)"},
 	{PCI_VENDOR_ID_INTEL, 0x150f, NT , "Intel", "82580 Quad Gigabit Ethernet Controller (Fiber)"},
 	{PCI_VENDOR_ID_INTEL, 0x1510, NT , "Intel", "82580 Quad Gigabit Ethernet Controller (Backplane)"},
 	{PCI_VENDOR_ID_INTEL, 0x1511, NT , "Intel", "82580 Quad Gigabit Ethernet Controller (Ext. PHY)"},
 	{PCI_VENDOR_ID_INTEL, 0x1511, NT , "Intel", "82580 Dual Gigabit Ethernet Controller (Copper)"},
 	{PCI_VENDOR_ID_INTEL, UNPROG_DEVICE, OK, "Intel", "Unprogrammed 82580 Quad/Dual Gigabit Ethernet Controller"},
-	{PCI_VENDOR_ID_INTEL, 0x1531, NT, "Intel", "I210 Gigabit Network Connection Unprogrammed"},
+	{PCI_VENDOR_ID_INTEL, 0x1531, OK, "Intel", "I210 Gigabit Network Connection Unprogrammed"},
 	{PCI_VENDOR_ID_INTEL, 0x1532, NT, "Intel", "I211 Gigabit Network Connection Unprogrammed"},
 	{PCI_VENDOR_ID_INTEL, 0x1533, OK, "Intel", "I210 Gigabit Network Connection"},
 	{PCI_VENDOR_ID_INTEL, 0x1536, NT, "Intel", "I210 Gigabit Network Connection SERDES Fiber"},
@@ -395,20 +395,6 @@ static int nicintel_ee_erase_82580(struct flashctx *flash, unsigned int addr, un
 	return nicintel_ee_write_82580(flash, NULL, addr, len);
 }
 
-static const struct opaque_master opaque_master_nicintel_ee_82580 = {
-	.probe = nicintel_ee_probe_82580,
-	.read = nicintel_ee_read,
-	.write = nicintel_ee_write_82580,
-	.erase = nicintel_ee_erase_82580,
-};
-
-static const struct opaque_master opaque_master_nicintel_ee_i210 = {
-	.probe = nicintel_ee_probe_i210,
-	.read = nicintel_ee_read,
-	.write = nicintel_ee_write_i210,
-	.erase = nicintel_ee_erase_i210,
-};
-
 static int nicintel_ee_shutdown_i210(void *arg)
 {
 	if (!done_i20_write)
@@ -431,23 +417,47 @@ static int nicintel_ee_shutdown_i210(void *arg)
 
 static int nicintel_ee_shutdown_82580(void *eecp)
 {
-	uint32_t old_eec = *(uint32_t *)eecp;
-	/* Request bitbanging and unselect the chip first to be safe. */
-	if (nicintel_ee_req() || nicintel_ee_bitset(EEC, EE_CS, 1))
-		return -1;
+	int ret = 0;
 
-	/* Try to restore individual bits we care about. */
-	int ret = nicintel_ee_bitset(EEC, EE_SCK, old_eec & BIT(EE_SCK));
-	ret |= nicintel_ee_bitset(EEC, EE_SI, old_eec & BIT(EE_SI));
-	ret |= nicintel_ee_bitset(EEC, EE_CS, old_eec & BIT(EE_CS));
-	/* REQ will be cleared by hardware anyway after 2 seconds of inactivity on the SPI pins (3.3.2.1). */
-	ret |= nicintel_ee_bitset(EEC, EE_REQ, old_eec & BIT(EE_REQ));
+	if (nicintel_pci->device_id != UNPROG_DEVICE) {
+		uint32_t old_eec = *(uint32_t *)eecp;
+		/* Request bitbanging and unselect the chip first to be safe. */
+		if (nicintel_ee_req() || nicintel_ee_bitset(EEC, EE_CS, 1)) {
+			ret = -1;
+			goto out;
+		}
 
+		/* Try to restore individual bits we care about. */
+		ret = nicintel_ee_bitset(EEC, EE_SCK, old_eec & BIT(EE_SCK));
+		ret |= nicintel_ee_bitset(EEC, EE_SI, old_eec & BIT(EE_SI));
+		ret |= nicintel_ee_bitset(EEC, EE_CS, old_eec & BIT(EE_CS));
+		/* REQ will be cleared by hardware anyway after 2 seconds of inactivity
+		 * on the SPI pins (3.3.2.1). */
+		ret |= nicintel_ee_bitset(EEC, EE_REQ, old_eec & BIT(EE_REQ));
+	}
+
+out:
 	free(eecp);
 	return ret;
 }
 
-int nicintel_ee_init(void)
+static const struct opaque_master opaque_master_nicintel_ee_82580 = {
+	.probe = nicintel_ee_probe_82580,
+	.read = nicintel_ee_read,
+	.write = nicintel_ee_write_82580,
+	.erase = nicintel_ee_erase_82580,
+	.shutdown = nicintel_ee_shutdown_82580,
+};
+
+static const struct opaque_master opaque_master_nicintel_ee_i210 = {
+	.probe = nicintel_ee_probe_i210,
+	.read = nicintel_ee_read,
+	.write = nicintel_ee_write_i210,
+	.erase = nicintel_ee_erase_i210,
+	.shutdown = nicintel_ee_shutdown_i210,
+};
+
+static int nicintel_ee_init(void)
 {
 	if (rget_io_perms())
 		return 1;
@@ -465,8 +475,10 @@ int nicintel_ee_init(void)
 		if (!nicintel_eebar)
 			return 1;
 
+		uint32_t *eecp = NULL;
+
 		nicintel_pci = dev;
-		if ((dev->device_id != UNPROG_DEVICE)) {
+		if (dev->device_id != UNPROG_DEVICE) {
 			uint32_t eec = pci_mmio_readl(nicintel_eebar + EEC);
 
 			/* C.f. 3.3.1.5 for the detection mechanism (maybe? contradicting
@@ -477,27 +489,31 @@ int nicintel_ee_init(void)
 				return 1;
 			}
 
-			uint32_t *eecp = malloc(sizeof(uint32_t));
+			eecp = malloc(sizeof(uint32_t));
 			if (eecp == NULL)
 				return 1;
 			*eecp = eec;
-
-			if (register_shutdown(nicintel_ee_shutdown_82580, eecp))
-				return 1;
 		}
 
-		return register_opaque_master(&opaque_master_nicintel_ee_82580);
+		return register_opaque_master(&opaque_master_nicintel_ee_82580, eecp);
 	} else {
 		nicintel_eebar = rphysmap("Intel i210 NIC w/ emulated EEPROM",
 					  io_base_addr + 0x12000, MEMMAP_SIZE);
 		if (!nicintel_eebar)
 			return 1;
 
-		if (register_shutdown(nicintel_ee_shutdown_i210, NULL))
-			return 1;
-
-		return register_opaque_master(&opaque_master_nicintel_ee_i210);
+		return register_opaque_master(&opaque_master_nicintel_ee_i210, NULL);
 	}
 
 	return 1;
 }
+
+const struct programmer_entry programmer_nicintel_eeprom = {
+	.name			= "nicintel_eeprom",
+	.type			= PCI,
+	.devs.dev		= nics_intel_ee,
+	.init			= nicintel_ee_init,
+	.map_flash_region	= fallback_map,
+	.unmap_flash_region	= fallback_unmap,
+	.delay			= internal_delay,
+};

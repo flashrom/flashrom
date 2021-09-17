@@ -44,14 +44,12 @@ BUILD_DETAILS_FILE ?= build_details.txt
 # system attached to an external programmer while the default programmer is set to the internal programmer, and
 # you forget to use the -p parameter. This would (try to) overwrite the existing firmware of the computer
 # running flashrom). Please do not enable this without thinking about the possible consequences. Possible
-# values are those specified in enum programmer in programmer.h (which depend on other CONFIG_* options
-# evaluated below, namely those that enable/disable the various programmers).
-# Compilation will fail for unspecified values.
-CONFIG_DEFAULT_PROGRAMMER ?= PROGRAMMER_INVALID
+# values can be found when running 'flashrom --list-supported' under the 'Supported programmers' section.
+CONFIG_DEFAULT_PROGRAMMER_NAME ?=
 # The following adds a default parameter for the default programmer set above (only).
-CONFIG_DEFAULT_PROGRAMMER_ARGS ?= ''
+CONFIG_DEFAULT_PROGRAMMER_ARGS ?=
 # Example: compiling with
-#   make CONFIG_DEFAULT_PROGRAMMER=PROGRAMMER_SERPROG CONFIG_DEFAULT_PROGRAMMER_ARGS="dev=/dev/ttyUSB0:1500000"
+#   make CONFIG_DEFAULT_PROGRAMMER_NAME=serprog CONFIG_DEFAULT_PROGRAMMER_ARGS="dev=/dev/ttyUSB0:1500000"
 # would make executing './flashrom' (almost) equivialent to './flashrom -p serprog:dev=/dev/ttyUSB0:1500000'.
 
 # If your compiler spits out excessive warnings, run make WARNERROR=no
@@ -83,7 +81,83 @@ dummy_for_make_3_80:=$(shell printf "Build started on %s\n\n" "$$(date)" >$(BUIL
 
 # Provide an easy way to execute a command, print its output to stdout and capture any error message on stderr
 # in the build details file together with the original stdout output.
-debug_shell = $(shell export LC_ALL=C ; { echo 'exec: export LC_ALL=C ; { $(1) ; }' >&2;  { $(1) ; } | tee -a $(BUILD_DETAILS_FILE) ; echo >&2 ; } 2>>$(BUILD_DETAILS_FILE))
+debug_shell = $(shell export LC_ALL=C ; { echo 'exec: export LC_ALL=C ; { $(subst ','\'',$(1)) ; }' >&2; \
+    { $(1) ; } | tee -a $(BUILD_DETAILS_FILE) ; echo >&2 ; } 2>>$(BUILD_DETAILS_FILE))
+
+###############################################################################
+# Dependency handling.
+
+DEPENDS_ON_SERIAL := \
+	CONFIG_BUSPIRATE_SPI \
+	CONFIG_PONY_SPI \
+	CONFIG_SERPROG \
+
+DEPENDS_ON_BITBANG_SPI := \
+	CONFIG_INTERNAL \
+	CONFIG_NICINTEL_SPI \
+	CONFIG_OGP_SPI \
+	CONFIG_PONY_SPI \
+	CONFIG_RAYER_SPI \
+
+DEPENDS_ON_LIBPCI := \
+	CONFIG_ATAHPT \
+	CONFIG_ATAPROMISE \
+	CONFIG_ATAVIA \
+	CONFIG_DRKAISER \
+	CONFIG_GFXNVIDIA \
+	CONFIG_INTERNAL \
+	CONFIG_IT8212 \
+	CONFIG_NIC3COM \
+	CONFIG_NICINTEL \
+	CONFIG_NICINTEL_EEPROM \
+	CONFIG_NICINTEL_SPI \
+	CONFIG_NICNATSEMI \
+	CONFIG_NICREALTEK \
+	CONFIG_OGP_SPI \
+	CONFIG_SATAMV \
+	CONFIG_SATASII \
+
+DEPENDS_ON_LIBUSB1 := \
+	CONFIG_CH341A_SPI \
+	CONFIG_DEDIPROG \
+	CONFIG_DEVELOPERBOX_SPI \
+	CONFIG_DIGILENT_SPI \
+	CONFIG_PICKIT2_SPI \
+	CONFIG_RAIDEN_DEBUG_SPI \
+	CONFIG_STLINKV3_SPI \
+
+DEPENDS_ON_LIBFTDI := \
+	CONFIG_FT2232_SPI \
+	CONFIG_USBBLASTER_SPI \
+
+DEPENDS_ON_LIBJAYLINK := \
+	CONFIG_JLINK_SPI \
+
+define mark_unsupported
+$(foreach p,$1, \
+	$(if $(filter $($(p)),yes), \
+		$(eval UNSUPPORTED_FEATURES += $(p)=yes), \
+		$(eval override $(p) := no)))
+endef
+
+define filter_deps
+$(strip $(foreach p,$1, \
+	$(if $(filter $($(p)),yes), \
+		$(p))))
+endef
+
+define disable_all
+$(foreach p,$1, \
+	$(eval override $(p) := no))
+endef
+
+ifeq ($(CONFIG_ENABLE_LIBUSB1_PROGRAMMERS), no)
+$(call disable_all,$(DEPENDS_ON_LIBUSB1))
+endif
+
+ifeq ($(CONFIG_ENABLE_LIBPCI_PROGRAMMERS), no)
+$(call disable_all,$(DEPENDS_ON_LIBPCI))
+endif
 
 ###############################################################################
 # General OS-specific settings.
@@ -106,7 +180,8 @@ endif
 # IMPORTANT: The following line must be placed before TARGET_OS is ever used
 # (of course), but should come after any lines setting CC because the line
 # below uses CC itself.
-override TARGET_OS := $(strip $(call debug_shell,$(CC) $(CPPFLAGS) -E os.h 2>/dev/null | grep -v '^\#' | grep '"' | cut -f 2 -d'"'))
+override TARGET_OS := $(strip $(call debug_shell,$(CC) $(CPPFLAGS) -E os.h 2>/dev/null \
+    | tail -1 | cut -f 2 -d'"'))
 
 ifeq ($(TARGET_OS), Darwin)
 override CPPFLAGS += -I/opt/local/include -I/usr/local/include
@@ -138,79 +213,12 @@ EXEC_SUFFIX := .exe
 # DJGPP has odd uint*_t definitions which cause lots of format string warnings.
 override CFLAGS += -Wno-format
 LIBS += -lgetopt
-# Bus Pirate, Serprog and PonyProg are not supported under DOS (missing serial support).
-ifeq ($(CONFIG_BUSPIRATE_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_BUSPIRATE_SPI=yes
-else
-override CONFIG_BUSPIRATE_SPI = no
-endif
-ifeq ($(CONFIG_SERPROG), yes)
-UNSUPPORTED_FEATURES += CONFIG_SERPROG=yes
-else
-override CONFIG_SERPROG = no
-endif
-ifeq ($(CONFIG_PONY_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_PONY_SPI=yes
-else
-override CONFIG_PONY_SPI = no
-endif
-# Digilent SPI, Dediprog, Developerbox, USB-Blaster, PICkit2, CH341A and FT2232 are not supported under DOS (missing USB support).
-ifeq ($(CONFIG_DIGILENT_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_DIGILENT_SPI=yes
-else
-override CONFIG_DIGILENT_SPI = no
-endif
-ifeq ($(CONFIG_DEDIPROG), yes)
-UNSUPPORTED_FEATURES += CONFIG_DEDIPROG=yes
-else
-override CONFIG_DEDIPROG = no
-endif
-ifeq ($(CONFIG_DEVELOPERBOX_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_DEVELOPERBOX_SPI=yes
-else
-override CONFIG_DEVELOPERBOX_SPI = no
-endif
-ifeq ($(CONFIG_FT2232_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_FT2232_SPI=yes
-else
-override CONFIG_FT2232_SPI = no
-endif
-ifeq ($(CONFIG_USBBLASTER_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_USBBLASTER_SPI=yes
-else
-override CONFIG_USBBLASTER_SPI = no
-endif
-ifeq ($(CONFIG_PICKIT2_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_PICKIT2_SPI=yes
-else
-override CONFIG_PICKIT2_SPI = no
-endif
-ifeq ($(CONFIG_CH341A_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_CH341A_SPI=yes
-else
-override CONFIG_CH341A_SPI = no
-endif
-ifeq ($(CONFIG_STLINKV3_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_STLINKV3_SPI=yes
-else
-override CONFIG_STLINKV3_SPI = no
-endif
-ifeq ($(CONFIG_LSPCON_I2C_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_LSPCON_I2C_SPI=yes
-else
-override CONFIG_LSPCON_I2C_SPI = no
-endif
-ifeq ($(CONFIG_REALTEK_MST_I2C_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_REALTEK_MST_I2C_SPI=yes
-else
-override CONFIG_REALTEK_MST_I2C_SPI = no
-endif
-# libjaylink is also not available for DOS
-ifeq ($(CONFIG_JLINK_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_JLINK_SPI=yes
-else
-override CONFIG_JLINK_SPI = no
-endif
+# Missing serial support.
+$(call mark_unsupported,$(DEPENDS_ON_SERIAL))
+# Libraries not available for DOS
+$(call mark_unsupported,$(DEPENDS_ON_LIBUSB1) $(DEPENDS_ON_LIBFTDI) $(DEPENDS_ON_LIBJAYLINK))
+# Odd ones (FIXME: why are they unsupported?)
+$(call mark_unsupported,CONFIG_ENE_LPC CONFIG_MEC1308)
 endif
 
 # FIXME: Should we check for Cygwin/MSVC as well?
@@ -222,119 +230,16 @@ FLASHROM_CFLAGS += -Dffs=__builtin_ffs
 # for MinGW. See http://sourceforge.net/p/mingw-w64/wiki2/printf%20and%20scanf%20family/ */
 FLASHROM_CFLAGS += -D__USE_MINGW_ANSI_STDIO=1
 
-# National Instruments USB-845x is Windows only for now
-CONFIG_NI845X_SPI ?= no
-
 # For now we disable all PCI-based programmers on Windows/MinGW (no libpci).
-ifeq ($(CONFIG_INTERNAL), yes)
-UNSUPPORTED_FEATURES += CONFIG_INTERNAL=yes
-else
-override CONFIG_INTERNAL = no
-endif
-ifeq ($(CONFIG_RAYER_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_RAYER_SPI=yes
-else
-override CONFIG_RAYER_SPI = no
-endif
-ifeq ($(CONFIG_RAIDEN), yes)
-UNSUPPORTED_FEATURES += CONFIG_RAIDEN=yes
-else
-override CONFIG_RAIDEN = no
-endif
-ifeq ($(CONFIG_NIC3COM), yes)
-UNSUPPORTED_FEATURES += CONFIG_NIC3COM=yes
-else
-override CONFIG_NIC3COM = no
-endif
-ifeq ($(CONFIG_GFXNVIDIA), yes)
-UNSUPPORTED_FEATURES += CONFIG_GFXNVIDIA=yes
-else
-override CONFIG_GFXNVIDIA = no
-endif
-ifeq ($(CONFIG_SATASII), yes)
-UNSUPPORTED_FEATURES += CONFIG_SATASII=yes
-else
-override CONFIG_SATASII = no
-endif
-ifeq ($(CONFIG_ATAHPT), yes)
-UNSUPPORTED_FEATURES += CONFIG_ATAHPT=yes
-else
-override CONFIG_ATAHPT = no
-endif
-ifeq ($(CONFIG_ATAVIA), yes)
-UNSUPPORTED_FEATURES += CONFIG_ATAVIA=yes
-else
-override CONFIG_ATAVIA = no
-endif
-ifeq ($(CONFIG_ATAPROMISE), yes)
-UNSUPPORTED_FEATURES += CONFIG_ATAPROMISE=yes
-else
-override CONFIG_ATAPROMISE = no
-endif
-ifeq ($(CONFIG_IT8212), yes)
-UNSUPPORTED_FEATURES += CONFIG_IT8212=yes
-else
-override CONFIG_IT8212 = no
-endif
-ifeq ($(CONFIG_DRKAISER), yes)
-UNSUPPORTED_FEATURES += CONFIG_DRKAISER=yes
-else
-override CONFIG_DRKAISER = no
-endif
-ifeq ($(CONFIG_NICREALTEK), yes)
-UNSUPPORTED_FEATURES += CONFIG_NICREALTEK=yes
-else
-override CONFIG_NICREALTEK = no
-endif
-ifeq ($(CONFIG_NICNATSEMI), yes)
-UNSUPPORTED_FEATURES += CONFIG_NICNATSEMI=yes
-else
-override CONFIG_NICNATSEMI = no
-endif
-ifeq ($(CONFIG_NICINTEL), yes)
-UNSUPPORTED_FEATURES += CONFIG_NICINTEL=yes
-else
-override CONFIG_NICINTEL = no
-endif
-ifeq ($(CONFIG_NICINTEL_EEPROM), yes)
-UNSUPPORTED_FEATURES += CONFIG_NICINTEL_EEPROM=yes
-else
-override CONFIG_NICINTEL_EEPROM = no
-endif
-ifeq ($(CONFIG_NICINTEL_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_NICINTEL_SPI=yes
-else
-override CONFIG_NICINTEL_SPI = no
-endif
-ifeq ($(CONFIG_OGP_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_OGP_SPI=yes
-else
-override CONFIG_OGP_SPI = no
-endif
-ifeq ($(CONFIG_SATAMV), yes)
-UNSUPPORTED_FEATURES += CONFIG_SATAMV=yes
-else
-override CONFIG_SATAMV = no
-endif
-ifeq ($(CONFIG_LSPCON_I2C_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_LSPCON_I2C_SPI=yes
-else
-override CONFIG_LSPCON_I2C_SPI = no
-endif
-ifeq ($(CONFIG_REALTEK_MST_I2C_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_REALTEK_MST_I2C_SPI=yes
-else
-override CONFIG_REALTEK_MST_I2C_SPI = no
-endif
-endif
+$(call mark_unsupported,$(DEPENDS_ON_LIBPCI))
+# And programmers that need raw access.
+$(call mark_unsupported,CONFIG_ENE_LPC CONFIG_MEC1308 CONFIG_RAYER_SPI)
 
-ifneq ($(TARGET_OS), MinGW)
+else # No MinGW
+
 # NI USB-845x only supported on Windows at the moment
-ifeq ($(CONFIG_NI845X_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_NI845X_SPI=yes
-else
-override CONFIG_NI845X_SPI = no
-endif
+$(call mark_unsupported,CONFIG_NI845X_SPI)
+
 endif
 
 ifeq ($(TARGET_OS), libpayload)
@@ -343,109 +248,26 @@ ifeq ($(MAKECMDGOALS),)
 $(info Setting default goal to libflashrom.a)
 endif
 FLASHROM_CFLAGS += -DSTANDALONE
-ifeq ($(CONFIG_DUMMY), yes)
-UNSUPPORTED_FEATURES += CONFIG_DUMMY=yes
-else
-override CONFIG_DUMMY = no
-endif
+$(call mark_unsupported,CONFIG_DUMMY)
 # libpayload does not provide the romsize field in struct pci_dev that the atapromise code requires.
-ifeq ($(CONFIG_ATAPROMISE), yes)
-UNSUPPORTED_FEATURES += CONFIG_ATAPROMISE=yes
-else
-override CONFIG_ATAPROMISE = no
-endif
+$(call mark_unsupported,CONFIG_ATAPROMISE)
 # Bus Pirate, Serprog and PonyProg are not supported with libpayload (missing serial support).
-ifeq ($(CONFIG_BUSPIRATE_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_BUSPIRATE_SPI=yes
-else
-override CONFIG_BUSPIRATE_SPI = no
-endif
-ifeq ($(CONFIG_SERPROG), yes)
-UNSUPPORTED_FEATURES += CONFIG_SERPROG=yes
-else
-override CONFIG_SERPROG = no
-endif
-ifeq ($(CONFIG_PONY_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_PONY_SPI=yes
-else
-override CONFIG_PONY_SPI = no
-endif
+$(call mark_unsupported,CONFIG_BUSPIRATE_SPI CONFIG_SERPROG CONFIG_PONY_SPI)
 # Dediprog, Developerbox, USB-Blaster, PICkit2, CH341A and FT2232 are not supported with libpayload (missing libusb support).
-ifeq ($(CONFIG_DEDIPROG), yes)
-UNSUPPORTED_FEATURES += CONFIG_DEDIPROG=yes
-else
-override CONFIG_DEDIPROG = no
-endif
-ifeq ($(CONFIG_DEVELOPERBOX_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_DEVELOPERBOX_SPI=yes
-else
-override CONFIG_DEVELOPERBOX_SPI = no
-endif
-ifeq ($(CONFIG_FT2232_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_FT2232_SPI=yes
-else
-override CONFIG_FT2232_SPI = no
-endif
-ifeq ($(CONFIG_USBBLASTER_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_USBBLASTER_SPI=yes
-else
-override CONFIG_USBBLASTER_SPI = no
-endif
-ifeq ($(CONFIG_PICKIT2_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_PICKIT2_SPI=yes
-else
-override CONFIG_PICKIT2_SPI = no
-endif
-ifeq ($(CONFIG_STLINKV3_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_STLINKV3_SPI=yes
-else
-override CONFIG_STLINKV3_SPI = no
-endif
-ifeq ($(CONFIG_LSPCON_I2C_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_LSPCON_I2C_SPI=yes
-else
-override CONFIG_LSPCON_I2C_SPI = no
-endif
-ifeq ($(CONFIG_REALTEK_MST_I2C_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_REALTEK_MST_I2C_SPI=yes
-else
-override CONFIG_REALTEK_MST_I2C_SPI = no
-endif
-ifeq ($(CONFIG_CH341A_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_CH341A_SPI=yes
-else
-override CONFIG_CH341A_SPI = no
-endif
+$(call mark_unsupported,$(DEPENDS_ON_LIBUSB1) $(DEPENDS_ON_LIBFTDI) $(DEPENDS_ON_LIBJAYLINK))
+# Odd ones. (FIXME: why?)
+$(call mark_unsupported,CONFIG_ENE_LPC CONFIG_MEC1308)
 endif
 
-ifneq ($(TARGET_OS), Linux)
-# Android is handled internally as separate OS, but it supports CONFIG_LINUX_SPI and CONFIG_MSTARDDC_SPI
-ifneq ($(TARGET_OS), Android)
-ifeq ($(CONFIG_LINUX_MTD), yes)
-UNSUPPORTED_FEATURES += CONFIG_LINUX_MTD=yes
-else
-override CONFIG_LINUX_MTD = no
-endif
-ifeq ($(CONFIG_LINUX_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_LINUX_SPI=yes
-else
-override CONFIG_LINUX_SPI = no
-endif
-ifeq ($(CONFIG_MSTARDDC_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_MSTARDDC_SPI=yes
-else
-override CONFIG_MSTARDDC_SPI = no
-endif
-endif
+# Android is handled internally as separate OS, but it supports about the same drivers as Linux.
+ifeq ($(filter $(TARGET_OS),Linux Android), )
+$(call mark_unsupported,CONFIG_LINUX_MTD CONFIG_LINUX_SPI)
+$(call mark_unsupported,CONFIG_MSTARDDC_SPI CONFIG_LSPCON_I2C_SPI CONFIG_REALTEK_MST_I2C_SPI)
 endif
 
 ifeq ($(TARGET_OS), Android)
-# Android on x86 (currently) does not provide raw PCI port I/O operations
-ifeq ($(CONFIG_RAYER_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_RAYER_SPI=yes
-else
-override CONFIG_RAYER_SPI = no
-endif
+# Android on x86 (currently) does not provide raw PCI port I/O operations.
+$(call mark_unsupported,CONFIG_RAYER_SPI)
 endif
 
 ifeq ($(TARGET_OS), Linux)
@@ -460,142 +282,31 @@ endif
 # IMPORTANT: The following line must be placed before ARCH is ever used
 # (of course), but should come after any lines setting CC because the line
 # below uses CC itself.
-override ARCH := $(strip $(call debug_shell,$(CC) $(CPPFLAGS) -E archtest.c 2>/dev/null | grep -v '^\#' | grep '"' | cut -f 2 -d'"'))
-override ENDIAN := $(strip $(call debug_shell,$(CC) $(CPPFLAGS) -E endiantest.c 2>/dev/null | grep -v '^\#'))
+override ARCH := $(strip $(call debug_shell,$(CC) $(CPPFLAGS) -E archtest.c 2>/dev/null \
+    | tail -1 | cut -f 2 -d'"'))
+override ENDIAN := $(strip $(call debug_shell,$(CC) $(CPPFLAGS) -E endiantest.c 2>/dev/null \
+    | tail -1))
 
 # Disable the internal programmer on unsupported architectures (everything but x86 and mipsel)
 ifneq ($(ARCH)-little, $(filter $(ARCH),x86 mips)-$(ENDIAN))
-ifeq ($(CONFIG_INTERNAL), yes)
-UNSUPPORTED_FEATURES += CONFIG_INTERNAL=yes
-else
-override CONFIG_INTERNAL = no
-endif
+$(call mark_unsupported,CONFIG_INTERNAL)
 endif
 
 # PCI port I/O support is unimplemented on PPC/MIPS/SPARC and unavailable on ARM.
 # Right now this means the drivers below only work on x86.
 ifneq ($(ARCH), x86)
-ifeq ($(CONFIG_NIC3COM), yes)
-UNSUPPORTED_FEATURES += CONFIG_NIC3COM=yes
-else
-override CONFIG_NIC3COM = no
-endif
-ifeq ($(CONFIG_NICREALTEK), yes)
-UNSUPPORTED_FEATURES += CONFIG_NICREALTEK=yes
-else
-override CONFIG_NICREALTEK = no
-endif
-ifeq ($(CONFIG_NICNATSEMI), yes)
-UNSUPPORTED_FEATURES += CONFIG_NICNATSEMI=yes
-else
-override CONFIG_NICNATSEMI = no
-endif
-ifeq ($(CONFIG_RAYER_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_RAYER_SPI=yes
-else
-override CONFIG_RAYER_SPI = no
-endif
-ifeq ($(CONFIG_ATAHPT), yes)
-UNSUPPORTED_FEATURES += CONFIG_ATAHPT=yes
-else
-override CONFIG_ATAHPT = no
-endif
-ifeq ($(CONFIG_ATAPROMISE), yes)
-UNSUPPORTED_FEATURES += CONFIG_ATAPROMISE=yes
-else
-override CONFIG_ATAPROMISE = no
-endif
-ifeq ($(CONFIG_SATAMV), yes)
-UNSUPPORTED_FEATURES += CONFIG_SATAMV=yes
-else
-override CONFIG_SATAMV = no
-endif
+$(call mark_unsupported,CONFIG_NIC3COM CONFIG_NICREALTEK CONFIG_NICNATSEMI)
+$(call mark_unsupported,CONFIG_RAYER_SPI CONFIG_ATAHPT CONFIG_ATAPROMISE)
+$(call mark_unsupported,CONFIG_SATAMV CONFIG_ENE_LPC CONFIG_MEC1308)
 endif
 
-# Disable all drivers needing raw access (memory, PCI, port I/O) on
-# architectures with unknown raw access properties.
+# Additionally disable all drivers needing raw access (memory, PCI, port I/O)
+# on architectures with unknown raw access properties.
 # Right now those architectures are alpha hppa m68k sh s390
 ifneq ($(ARCH),$(filter $(ARCH),x86 mips ppc arm sparc arc))
-ifeq ($(CONFIG_RAYER_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_RAYER_SPI=yes
-else
-override CONFIG_RAYER_SPI = no
-endif
-ifeq ($(CONFIG_NIC3COM), yes)
-UNSUPPORTED_FEATURES += CONFIG_NIC3COM=yes
-else
-override CONFIG_NIC3COM = no
-endif
-ifeq ($(CONFIG_GFXNVIDIA), yes)
-UNSUPPORTED_FEATURES += CONFIG_GFXNVIDIA=yes
-else
-override CONFIG_GFXNVIDIA = no
-endif
-ifeq ($(CONFIG_SATASII), yes)
-UNSUPPORTED_FEATURES += CONFIG_SATASII=yes
-else
-override CONFIG_SATASII = no
-endif
-ifeq ($(CONFIG_ATAHPT), yes)
-UNSUPPORTED_FEATURES += CONFIG_ATAHPT=yes
-else
-override CONFIG_ATAHPT = no
-endif
-ifeq ($(CONFIG_ATAVIA), yes)
-UNSUPPORTED_FEATURES += CONFIG_ATAVIA=yes
-else
-override CONFIG_ATAVIA = no
-endif
-ifeq ($(CONFIG_ATAPROMISE), yes)
-UNSUPPORTED_FEATURES += CONFIG_ATAPROMISE=yes
-else
-override CONFIG_ATAPROMISE = no
-endif
-ifeq ($(CONFIG_DRKAISER), yes)
-UNSUPPORTED_FEATURES += CONFIG_DRKAISER=yes
-else
-override CONFIG_DRKAISER = no
-endif
-ifeq ($(CONFIG_NICREALTEK), yes)
-UNSUPPORTED_FEATURES += CONFIG_NICREALTEK=yes
-else
-override CONFIG_NICREALTEK = no
-endif
-ifeq ($(CONFIG_NICNATSEMI), yes)
-UNSUPPORTED_FEATURES += CONFIG_NICNATSEMI=yes
-else
-override CONFIG_NICNATSEMI = no
-endif
-ifeq ($(CONFIG_NICINTEL), yes)
-UNSUPPORTED_FEATURES += CONFIG_NICINTEL=yes
-else
-override CONFIG_NICINTEL = no
-endif
-ifeq ($(CONFIG_NICINTEL_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_NICINTEL_SPI=yes
-else
-override CONFIG_NICINTEL_SPI = no
-endif
-ifeq ($(CONFIG_NICINTEL_EEPROM), yes)
-UNSUPPORTED_FEATURES += CONFIG_NICINTEL_EEPROM=yes
-else
-override CONFIG_NICINTEL_EEPROM = no
-endif
-ifeq ($(CONFIG_OGP_SPI), yes)
-UNSUPPORTED_FEATURES += CONFIG_OGP_SPI=yes
-else
-override CONFIG_OGP_SPI = no
-endif
-ifeq ($(CONFIG_SATAMV), yes)
-UNSUPPORTED_FEATURES += CONFIG_SATAMV=yes
-else
-override CONFIG_SATAMV = no
-endif
-ifeq ($(CONFIG_IT8212), yes)
-UNSUPPORTED_FEATURES += CONFIG_IT8212=yes
-else
-override CONFIG_IT8212 = no
-endif
+$(call mark_unsupported,CONFIG_GFXNVIDIA CONFIG_SATASII CONFIG_ATAVIA)
+$(call mark_unsupported,CONFIG_DRKAISER CONFIG_NICINTEL CONFIG_NICINTEL_SPI)
+$(call mark_unsupported,CONFIG_NICINTEL_EEPROM CONFIG_OGP_SPI CONFIG_IT8212)
 endif
 
 ###############################################################################
@@ -604,12 +315,12 @@ endif
 CHIP_OBJS = jedec.o stm50.o w39.o w29ee011.o \
 	sst28sf040.o 82802ab.o \
 	sst49lfxxxc.o sst_fwhub.o edi.o flashchips.o spi.o spi25.o spi25_statusreg.o \
-	spi95.o opaque.o sfdp.o en29lv640b.o at45db.o
+	spi95.o opaque.o sfdp.o en29lv640b.o at45db.o writeprotect.o s25f.o
 
 ###############################################################################
 # Library code.
 
-LIB_OBJS = libflashrom.o layout.o flashrom.o udelay.o programmer.o helpers.o ich_descriptors.o fmap.o
+LIB_OBJS = libflashrom.o layout.o flashrom.o udelay.o programmer.o programmer_table.o helpers.o ich_descriptors.o fmap.o
 
 ###############################################################################
 # Frontend related stuff.
@@ -647,7 +358,7 @@ CONFIG_SERPROG ?= yes
 CONFIG_RAYER_SPI ?= yes
 
 # ChromiumOS servo DUT debug board hardware support
-CONFIG_RAIDEN ?= yes
+CONFIG_RAIDEN_DEBUG_SPI ?= yes
 
 # PonyProg2000 SPI hardware support
 CONFIG_PONY_SPI ?= yes
@@ -671,8 +382,14 @@ CONFIG_ATAVIA ?= yes
 # Promise ATA controller support.
 CONFIG_ATAPROMISE ?= no
 
+# ENE LPC interface keyboard controller
+CONFIG_ENE_LPC ?= yes
+
 # Always enable FT2232 SPI dongles for now.
 CONFIG_FT2232_SPI ?= yes
+
+# Microchip MEC1308 Embedded Controller
+CONFIG_MEC1308 ?= yes
 
 # Always enable Altera USB-Blaster dongles for now.
 CONFIG_USBBLASTER_SPI ?= yes
@@ -744,6 +461,9 @@ CONFIG_DIGILENT_SPI ?= yes
 # Disable J-Link for now.
 CONFIG_JLINK_SPI ?= no
 
+# National Instruments USB-845x is Windows only and needs a proprietary library.
+CONFIG_NI845X_SPI ?= no
+
 # Disable wiki printing by default. It is only useful if you have wiki access.
 CONFIG_PRINT_WIKI ?= no
 
@@ -764,57 +484,12 @@ $(foreach var, $(filter CONFIG_%, $(.VARIABLES)),\
 		$(eval $(var)=yes)))
 endif
 
-ifeq ($(CONFIG_ENABLE_LIBUSB1_PROGRAMMERS), no)
-override CONFIG_CH341A_SPI = no
-override CONFIG_DEDIPROG = no
-override CONFIG_DIGILENT_SPI = no
-override CONFIG_DEVELOPERBOX_SPI = no
-override CONFIG_PICKIT2_SPI = no
-override CONFIG_RAIDEN = no
-override CONFIG_STLINKV3_SPI = no
-override CONFIG_LSPCON_I2C_SPI = no
-override CONFIG_REALTEK_MST_I2C_SPI = no
-endif
-ifeq ($(CONFIG_ENABLE_LIBPCI_PROGRAMMERS), no)
-override CONFIG_INTERNAL = no
-override CONFIG_NIC3COM = no
-override CONFIG_GFXNVIDIA = no
-override CONFIG_SATASII = no
-override CONFIG_ATAHPT = no
-override CONFIG_ATAVIA = no
-override CONFIG_ATAPROMISE = no
-override CONFIG_IT8212 = no
-override CONFIG_DRKAISER = no
-override CONFIG_NICREALTEK = no
-override CONFIG_NICNATSEMI = no
-override CONFIG_NICINTEL = no
-override CONFIG_NICINTEL_SPI = no
-override CONFIG_NICINTEL_EEPROM = no
-override CONFIG_OGP_SPI = no
-override CONFIG_SATAMV = no
-endif
-
 # Bitbanging SPI infrastructure, default off unless needed.
-ifeq ($(CONFIG_RAYER_SPI), yes)
-override CONFIG_BITBANG_SPI = yes
-else
-ifeq ($(CONFIG_PONY_SPI), yes)
-override CONFIG_BITBANG_SPI = yes
-else
-ifeq ($(CONFIG_INTERNAL), yes)
-override CONFIG_BITBANG_SPI = yes
-else
-ifeq ($(CONFIG_NICINTEL_SPI), yes)
-override CONFIG_BITBANG_SPI = yes
-else
-ifeq ($(CONFIG_OGP_SPI), yes)
+
+ifneq ($(call filter_deps,$(DEPENDS_ON_BITBANG_SPI)), )
 override CONFIG_BITBANG_SPI = yes
 else
 CONFIG_BITBANG_SPI ?= no
-endif
-endif
-endif
-endif
 endif
 
 ###############################################################################
@@ -838,7 +513,12 @@ CONFIG_INTERNAL_DMI ?= yes
 # Programmer drivers and programmer support infrastructure.
 # Depending on the CONFIG_* variables set and verified above we set compiler flags and parameters below.
 
-FEATURE_CFLAGS += -D'CONFIG_DEFAULT_PROGRAMMER=$(CONFIG_DEFAULT_PROGRAMMER)'
+ifdef CONFIG_DEFAULT_PROGRAMMER_NAME
+FEATURE_CFLAGS += -D'CONFIG_DEFAULT_PROGRAMMER_NAME=&programmer_$(CONFIG_DEFAULT_PROGRAMMER_NAME)'
+else
+FEATURE_CFLAGS += -D'CONFIG_DEFAULT_PROGRAMMER_NAME=NULL'
+endif
+
 FEATURE_CFLAGS += -D'CONFIG_DEFAULT_PROGRAMMER_ARGS="$(CONFIG_DEFAULT_PROGRAMMER_ARGS)"'
 
 ifeq ($(CONFIG_INTERNAL), yes)
@@ -852,7 +532,18 @@ FEATURE_CFLAGS += -D'CONFIG_INTERNAL_DMI=1'
 endif
 else
 endif
-NEED_LIBPCI += CONFIG_INTERNAL
+endif
+
+ifeq ($(CONFIG_ENE_LPC), yes)
+FEATURE_CFLAGS += -D'CONFIG_ENE_LPC=1'
+PROGRAMMER_OBJS += ene_lpc.o
+NEED_RAW_ACCESS += CONFIG_ENE_LPC
+endif
+
+ifeq ($(CONFIG_MEC1308), yes)
+FEATURE_CFLAGS += -D'CONFIG_MEC1308=1'
+PROGRAMMER_OBJS += mec1308.o
+NEED_RAW_ACCESS += CONFIG_MEC1308
 endif
 
 ifeq ($(CONFIG_SERPROG), yes)
@@ -868,8 +559,8 @@ PROGRAMMER_OBJS += rayer_spi.o
 NEED_RAW_ACCESS += CONFIG_RAYER_SPI
 endif
 
-ifeq ($(CONFIG_RAIDEN), yes)
-FEATURE_CFLAGS += -D'CONFIG_RAIDEN=1'
+ifeq ($(CONFIG_RAIDEN_DEBUG_SPI), yes)
+FEATURE_CFLAGS += -D'CONFIG_RAIDEN_DEBUG_SPI=1'
 PROGRAMMER_OBJS += raiden_debug_spi.o
 endif
 
@@ -887,69 +578,58 @@ endif
 ifeq ($(CONFIG_NIC3COM), yes)
 FEATURE_CFLAGS += -D'CONFIG_NIC3COM=1'
 PROGRAMMER_OBJS += nic3com.o
-NEED_LIBPCI += CONFIG_NIC3COM
 endif
 
 ifeq ($(CONFIG_GFXNVIDIA), yes)
 FEATURE_CFLAGS += -D'CONFIG_GFXNVIDIA=1'
 PROGRAMMER_OBJS += gfxnvidia.o
-NEED_LIBPCI += CONFIG_GFXNVIDIA
 endif
 
 ifeq ($(CONFIG_SATASII), yes)
 FEATURE_CFLAGS += -D'CONFIG_SATASII=1'
 PROGRAMMER_OBJS += satasii.o
-NEED_LIBPCI += CONFIG_SATASII
 endif
 
 ifeq ($(CONFIG_ATAHPT), yes)
 FEATURE_CFLAGS += -D'CONFIG_ATAHPT=1'
 PROGRAMMER_OBJS += atahpt.o
-NEED_LIBPCI += CONFIG_ATAHPT
 endif
 
 ifeq ($(CONFIG_ATAVIA), yes)
 FEATURE_CFLAGS += -D'CONFIG_ATAVIA=1'
 PROGRAMMER_OBJS += atavia.o
-NEED_LIBPCI += CONFIG_ATAVIA
 endif
 
 ifeq ($(CONFIG_ATAPROMISE), yes)
 FEATURE_CFLAGS += -D'CONFIG_ATAPROMISE=1'
 PROGRAMMER_OBJS += atapromise.o
-NEED_LIBPCI += CONFIG_ATAPROMISE
 endif
 
 ifeq ($(CONFIG_IT8212), yes)
 FEATURE_CFLAGS += -D'CONFIG_IT8212=1'
 PROGRAMMER_OBJS += it8212.o
-NEED_LIBPCI += CONFIG_IT8212
 endif
 
 ifeq ($(CONFIG_FT2232_SPI), yes)
 # This is a totally ugly hack.
 FEATURE_CFLAGS += $(call debug_shell,grep -q "FTDISUPPORT := yes" .features && printf "%s" "-D'CONFIG_FT2232_SPI=1'")
-NEED_LIBFTDI += CONFIG_FT2232_SPI
 PROGRAMMER_OBJS += ft2232_spi.o
 endif
 
 ifeq ($(CONFIG_USBBLASTER_SPI), yes)
 # This is a totally ugly hack.
 FEATURE_CFLAGS += $(call debug_shell,grep -q "FTDISUPPORT := yes" .features && printf "%s" "-D'CONFIG_USBBLASTER_SPI=1'")
-NEED_LIBFTDI += CONFIG_USBBLASTER_SPI
 PROGRAMMER_OBJS += usbblaster_spi.o
 endif
 
 ifeq ($(CONFIG_PICKIT2_SPI), yes)
 FEATURE_CFLAGS += -D'CONFIG_PICKIT2_SPI=1'
 PROGRAMMER_OBJS += pickit2_spi.o
-NEED_LIBUSB1 += CONFIG_PICKIT2_SPI
 endif
 
 ifeq ($(CONFIG_STLINKV3_SPI), yes)
 FEATURE_CFLAGS += -D'CONFIG_STLINKV3_SPI=1'
 PROGRAMMER_OBJS += stlinkv3_spi.o
-NEED_LIBUSB1 += CONFIG_STLINKV3_SPI
 endif
 
 ifeq ($(CONFIG_LSPCON_I2C_SPI), yes)
@@ -962,16 +642,6 @@ FEATURE_CFLAGS += -D'CONFIG_REALTEK_MST_I2C_SPI=1'
 PROGRAMMER_OBJS += realtek_mst_i2c_spi.o
 endif
 
-ifneq ($(NEED_LIBFTDI), )
-FTDILIBS := $(call debug_shell,[ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ; $(PKG_CONFIG) --libs libftdi1 || $(PKG_CONFIG) --libs libftdi || printf "%s" "-lftdi -lusb")
-FEATURE_CFLAGS += $(call debug_shell,grep -q "FT232H := yes" .features && printf "%s" "-D'HAVE_FT232H=1'")
-FTDI_INCLUDES := $(call debug_shell,[ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ; $(PKG_CONFIG) --cflags-only-I libftdi1)
-FEATURE_CFLAGS += $(FTDI_INCLUDES)
-FEATURE_LIBS += $(call debug_shell,grep -q "FTDISUPPORT := yes" .features && printf "%s" "$(FTDILIBS)")
-# We can't set NEED_LIBUSB0 here because that would transform libftdi auto-enabling
-# into a hard requirement for libusb, defeating the purpose of auto-enabling.
-endif
-
 ifeq ($(CONFIG_DUMMY), yes)
 FEATURE_CFLAGS += -D'CONFIG_DUMMY=1'
 PROGRAMMER_OBJS += dummyflasher.o
@@ -980,43 +650,36 @@ endif
 ifeq ($(CONFIG_DRKAISER), yes)
 FEATURE_CFLAGS += -D'CONFIG_DRKAISER=1'
 PROGRAMMER_OBJS += drkaiser.o
-NEED_LIBPCI += CONFIG_DRKAISER
 endif
 
 ifeq ($(CONFIG_NICREALTEK), yes)
 FEATURE_CFLAGS += -D'CONFIG_NICREALTEK=1'
 PROGRAMMER_OBJS += nicrealtek.o
-NEED_LIBPCI += CONFIG_NICREALTEK
 endif
 
 ifeq ($(CONFIG_NICNATSEMI), yes)
 FEATURE_CFLAGS += -D'CONFIG_NICNATSEMI=1'
 PROGRAMMER_OBJS += nicnatsemi.o
-NEED_LIBPCI += CONFIG_NICNATSEMI
 endif
 
 ifeq ($(CONFIG_NICINTEL), yes)
 FEATURE_CFLAGS += -D'CONFIG_NICINTEL=1'
 PROGRAMMER_OBJS += nicintel.o
-NEED_LIBPCI += CONFIG_NICINTEL
 endif
 
 ifeq ($(CONFIG_NICINTEL_SPI), yes)
 FEATURE_CFLAGS += -D'CONFIG_NICINTEL_SPI=1'
 PROGRAMMER_OBJS += nicintel_spi.o
-NEED_LIBPCI += CONFIG_NICINTEL_SPI
 endif
 
 ifeq ($(CONFIG_NICINTEL_EEPROM), yes)
 FEATURE_CFLAGS += -D'CONFIG_NICINTEL_EEPROM=1'
 PROGRAMMER_OBJS += nicintel_eeprom.o
-NEED_LIBPCI += CONFIG_NICINTEL_EEPROM
 endif
 
 ifeq ($(CONFIG_OGP_SPI), yes)
 FEATURE_CFLAGS += -D'CONFIG_OGP_SPI=1'
 PROGRAMMER_OBJS += ogp_spi.o
-NEED_LIBPCI += CONFIG_OGP_SPI
 endif
 
 ifeq ($(CONFIG_BUSPIRATE_SPI), yes)
@@ -1028,19 +691,16 @@ endif
 ifeq ($(CONFIG_DEDIPROG), yes)
 FEATURE_CFLAGS += -D'CONFIG_DEDIPROG=1'
 PROGRAMMER_OBJS += dediprog.o
-NEED_LIBUSB1 += CONFIG_DEDIPROG
 endif
 
 ifeq ($(CONFIG_DEVELOPERBOX_SPI), yes)
 FEATURE_CFLAGS += -D'CONFIG_DEVELOPERBOX_SPI=1'
 PROGRAMMER_OBJS += developerbox_spi.o
-NEED_LIBUSB1 += CONFIG_DEVELOPERBOX_SPI
 endif
 
 ifeq ($(CONFIG_SATAMV), yes)
 FEATURE_CFLAGS += -D'CONFIG_SATAMV=1'
 PROGRAMMER_OBJS += satamv.o
-NEED_LIBPCI += CONFIG_SATAMV
 endif
 
 ifeq ($(CONFIG_LINUX_MTD), yes)
@@ -1065,17 +725,14 @@ endif
 ifeq ($(CONFIG_CH341A_SPI), yes)
 FEATURE_CFLAGS += -D'CONFIG_CH341A_SPI=1'
 PROGRAMMER_OBJS += ch341a_spi.o
-NEED_LIBUSB1 += CONFIG_CH341A_SPI
 endif
 
 ifeq ($(CONFIG_DIGILENT_SPI), yes)
 FEATURE_CFLAGS += -D'CONFIG_DIGILENT_SPI=1'
 PROGRAMMER_OBJS += digilent_spi.o
-NEED_LIBUSB1 += CONFIG_DIGILENT_SPI
 endif
 
 ifeq ($(CONFIG_JLINK_SPI), yes)
-NEED_LIBJAYLINK += CONFIG_JLINK_SPI
 FEATURE_CFLAGS += -D'CONFIG_JLINK_SPI=1'
 PROGRAMMER_OBJS += jlink_spi.o
 endif
@@ -1087,9 +744,18 @@ ifeq ($(CONFIG_NI845X_LIBRARY_PATH),)
 # if the user did not specified the NI-845x headers/lib path
 # do a guess for both 32 and 64 bit Windows versions
 NI845X_LIBS += -L'${PROGRAMFILES}\National Instruments\NI-845x\MS Visual C'
-NI845X_LIBS += -L'${PROGRAMFILES(x86)}\National Instruments\NI-845x\MS Visual C'
 NI845X_INCLUDES += -I'${PROGRAMFILES}\National Instruments\NI-845x\MS Visual C'
-NI845X_INCLUDES += -I'${PROGRAMFILES(x86)}\National Instruments\NI-845x\MS Visual C'
+
+# hack to access env variable containing brackets...
+PROGRAMFILES_X86DIR = $(shell env | sed -n "s/^PROGRAMFILES(X86)=//p")
+
+ifneq ($(PROGRAMFILES_X86DIR),)
+ifneq ($(PROGRAMFILES_X86DIR), ${PROGRAMFILES})
+NI845X_LIBS += -L'$(PROGRAMFILES_X86DIR)\National Instruments\NI-845x\MS Visual C'
+NI845X_INCLUDES += -I'$(PROGRAMFILES_X86DIR)\National Instruments\NI-845x\MS Visual C'
+endif
+endif
+
 else
 NI845X_LIBS += -L'$(CONFIG_NI845X_LIBRARY_PATH)'
 NI845X_INCLUDES += -I'$(CONFIG_NI845X_LIBRARY_PATH)'
@@ -1115,6 +781,7 @@ LIBS += -lsocket -lnsl
 endif
 endif
 
+NEED_LIBPCI := $(call filter_deps,$(DEPENDS_ON_LIBPCI))
 ifneq ($(NEED_LIBPCI), )
 CHECK_LIBPCI = yes
 # This is a dirty hack, but it saves us from checking all PCI drivers and all platforms manually.
@@ -1139,12 +806,14 @@ FEATURE_CFLAGS += -D'NEED_RAW_ACCESS=1'
 PROGRAMMER_OBJS += physmap.o hwaccess.o
 
 ifeq ($(TARGET_OS), NetBSD)
-# For (i386|x86_64)_iopl(2).
+ifeq ($(ARCH), x86)
 PCILIBS += -l$(shell uname -p)
+endif
 else
 ifeq ($(TARGET_OS), OpenBSD)
-# For (i386|amd64)_iopl(2).
+ifeq ($(ARCH), x86)
 PCILIBS += -l$(shell uname -m)
+endif
 else
 ifeq ($(TARGET_OS), Darwin)
 # DirectHW framework can be found in the DirectHW library.
@@ -1155,7 +824,7 @@ endif
 
 endif
 
-
+NEED_LIBUSB1 := $(call filter_deps,$(DEPENDS_ON_LIBUSB1))
 ifneq ($(NEED_LIBUSB1), )
 CHECK_LIBUSB1 = yes
 FEATURE_CFLAGS += -D'NEED_LIBUSB1=1'
@@ -1174,6 +843,18 @@ endif
 endif
 endif
 
+NEED_LIBFTDI := $(call filter_deps,$(DEPENDS_ON_LIBFTDI))
+ifneq ($(NEED_LIBFTDI), )
+FTDILIBS := $(call debug_shell,[ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ; $(PKG_CONFIG) --libs libftdi1 || $(PKG_CONFIG) --libs libftdi || printf "%s" "-lftdi -lusb")
+FEATURE_CFLAGS += $(call debug_shell,grep -q "FT232H := yes" .features && printf "%s" "-D'HAVE_FT232H=1'")
+FTDI_INCLUDES := $(call debug_shell,[ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ; $(PKG_CONFIG) --cflags-only-I libftdi1)
+FEATURE_CFLAGS += $(FTDI_INCLUDES)
+FEATURE_LIBS += $(call debug_shell,grep -q "FTDISUPPORT := yes" .features && printf "%s" "$(FTDILIBS)")
+# We can't set NEED_LIBUSB1 here because that would transform libftdi auto-enabling
+# into a hard requirement for libusb, defeating the purpose of auto-enabling.
+endif
+
+NEED_LIBJAYLINK := $(call filter_deps,$(DEPENDS_ON_LIBJAYLINK))
 ifneq ($(NEED_LIBJAYLINK), )
 CHECK_LIBJAYLINK = yes
 JAYLINKLIBS += $(call debug_shell,[ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)"; $(PKG_CONFIG) --libs libjaylink)
@@ -1253,12 +934,12 @@ compiler: featuresavailable
 	@printf "Target arch is "
 	@# FreeBSD wc will output extraneous whitespace.
 	@echo $(ARCH)|wc -w|grep -q '^[[:blank:]]*1[[:blank:]]*$$' ||	\
-		( echo "unknown. Aborting."; exit 1)
+		( echo "unknown (\"$(ARCH)\"). Aborting."; exit 1)
 	@printf "%s\n" '$(ARCH)'
 	@printf "Target OS is "
 	@# FreeBSD wc will output extraneous whitespace.
 	@echo $(TARGET_OS)|wc -w|grep -q '^[[:blank:]]*1[[:blank:]]*$$' ||	\
-		( echo "unknown. Aborting."; exit 1)
+		( echo "unknown (\"$(TARGET_OS)\"). Aborting."; exit 1)
 	@printf "%s\n" '$(TARGET_OS)'
 ifeq ($(TARGET_OS), libpayload)
 	@$(CC) --version 2>&1 | grep -q coreboot || \
@@ -1599,12 +1280,17 @@ endif
 		( echo "found."; echo "UTSNAME := yes" >> .features.tmp ) ||	\
 		( echo "not found."; echo "UTSNAME := no" >> .features.tmp ) } 2>>$(BUILD_DETAILS_FILE) | tee -a $(BUILD_DETAILS_FILE)
 	@printf "Checking for clock_gettime support... " | tee -a $(BUILD_DETAILS_FILE)
+ifeq ($(DISABLE_CLOCK_GETTIME), yes)
+	@ { ( echo "disabled."; echo "CLOCK_GETTIME := no" >>.features.tmp ) } \
+		2>>$(BUILD_DETAILS_FILE) | tee -a $(BUILD_DETAILS_FILE)
+else
 	@echo "$$CLOCK_GETTIME_TEST" >.featuretest.c
 	@printf "\nexec: %s\n" "$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -lrt .featuretest.c -o .featuretest$(EXEC_SUFFIX)" >>$(BUILD_DETAILS_FILE)
 	@ { $(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -lrt .featuretest.c -o .featuretest$(EXEC_SUFFIX) >&2 && \
 		( echo "found."; echo "CLOCK_GETTIME := yes" >>.features.tmp ) || \
 		( echo "not found."; echo "CLOCK_GETTIME := no" >>.features.tmp ) } \
 		2>>$(BUILD_DETAILS_FILE) | tee -a $(BUILD_DETAILS_FILE)
+endif
 	@$(DIFF) -q .features.tmp .features >/dev/null 2>&1 && rm .features.tmp || mv .features.tmp .features
 	@rm -f .featuretest.c .featuretest$(EXEC_SUFFIX)
 

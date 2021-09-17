@@ -210,6 +210,62 @@ static struct lb_header *find_lb_table(void *base, unsigned long start,
 	return NULL;
 }
 
+static struct lb_header *find_lb_table_remap(unsigned long start_addr,
+					     uint8_t **table_area)
+{
+	size_t offset;
+	unsigned long end;
+	size_t mapping_size;
+	void *base;
+
+	mapping_size = getpagesize();
+	offset = start_addr % getpagesize();
+	start_addr -= offset;
+
+	base = physmap_ro("high tables", start_addr, mapping_size);
+	if (ERROR_PTR == base) {
+		msg_perr("Failed getting access to coreboot high tables.\n");
+		return NULL;
+	}
+
+	for (end = getpagesize(); offset < end; offset += 16) {
+		struct lb_record *recs;
+		struct lb_header *head;
+
+		/* No more headers to check. */
+		if (end - offset < sizeof(*head))
+			return NULL;
+
+		head = (struct lb_header *)(((char *)base) + offset);
+
+		if (!lb_header_valid(head, offset))
+			continue;
+
+		if (mapping_size - offset < head->table_bytes + sizeof(*head)) {
+			size_t prev_mapping_size = mapping_size;
+			mapping_size = head->table_bytes + sizeof(*head);
+			mapping_size += offset;
+			mapping_size += getpagesize() - (mapping_size % getpagesize());
+			physunmap(base, prev_mapping_size);
+			base = physmap_ro("high tables", start_addr, mapping_size);
+			if (ERROR_PTR == base)
+				msg_perr("Failed getting access to coreboot high tables.\n");
+			else
+				head = (struct lb_header *)(((char *)base) + offset);
+		}
+
+		recs = (struct lb_record *)(((char *)base) + offset + sizeof(*head));
+		if (!lb_table_valid(head, recs))
+			continue;
+		msg_pdbg("Found coreboot table at 0x%08zx.\n", offset);
+		*table_area = base;
+		return head;
+	}
+
+	physunmap(base, mapping_size);
+	return NULL;
+}
+
 static void find_mainboard(struct lb_record *ptr, unsigned long addr)
 {
 	struct lb_mainboard *rec;
@@ -283,15 +339,8 @@ int cb_parse_table(const char **vendor, const char **model)
 			(((char *)lb_table) + lb_table->header_bytes);
 		if (forward->tag == LB_TAG_FORWARD) {
 			start = forward->forward;
-			start &= ~(getpagesize() - 1);
 			physunmap_unaligned(table_area, BYTES_TO_MAP);
-			// FIXME: table_area is never unmapped below, nor is it unmapped above in the no-forward case
-			table_area = physmap_ro_unaligned("high tables", start, BYTES_TO_MAP);
-			if (ERROR_PTR == table_area) {
-				msg_perr("Failed getting access to coreboot high tables.\n");
-				return -1;
-			}
-			lb_table = find_lb_table(table_area, 0x00000, 0x1000);
+			lb_table = find_lb_table_remap(start, &table_area);
 		}
 	}
 

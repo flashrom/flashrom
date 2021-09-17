@@ -25,7 +25,7 @@
 static uint8_t *mv_bar;
 static uint16_t mv_iobar;
 
-const struct dev_entry satas_mv[] = {
+static const struct dev_entry satas_mv[] = {
 	/* 88SX6041 and 88SX6042 are the same according to the datasheet. */
 	{0x11ab, 0x7042, OK, "Marvell", "88SX7042 PCI-e 4-port SATA-II"},
 
@@ -38,10 +38,41 @@ const struct dev_entry satas_mv[] = {
 #define PCI_BAR2_CONTROL		0x00c08
 #define GPIO_PORT_CONTROL		0x104f0
 
+/* BAR2 (MEM) can map NVRAM and flash. We set it to flash in the init function.
+ * If BAR2 is disabled, it still can be accessed indirectly via BAR1 (I/O).
+ * This code only supports indirect accesses for now.
+ */
+
+/* Indirect access to via the I/O BAR1. */
+static void satamv_indirect_chip_writeb(uint8_t val, chipaddr addr)
+{
+	/* 0x80000000 selects BAR2 for remapping. */
+	OUTL(((uint32_t)addr | 0x80000000) & 0xfffffffc, mv_iobar);
+	OUTB(val, mv_iobar + 0x80 + (addr & 0x3));
+}
+
+/* Indirect access to via the I/O BAR1. */
+static uint8_t satamv_indirect_chip_readb(const chipaddr addr)
+{
+	/* 0x80000000 selects BAR2 for remapping. */
+	OUTL(((uint32_t)addr | 0x80000000) & 0xfffffffc, mv_iobar);
+	return INB(mv_iobar + 0x80 + (addr & 0x3));
+}
+
+/* FIXME: Prefer direct access to BAR2 if BAR2 is active. */
 static void satamv_chip_writeb(const struct flashctx *flash, uint8_t val,
-			       chipaddr addr);
+			       chipaddr addr)
+{
+	satamv_indirect_chip_writeb(val, addr);
+}
+
+/* FIXME: Prefer direct access to BAR2 if BAR2 is active. */
 static uint8_t satamv_chip_readb(const struct flashctx *flash,
-				 const chipaddr addr);
+				 const chipaddr addr)
+{
+	return satamv_indirect_chip_readb(addr);
+}
+
 static const struct par_master par_master_satamv = {
 		.chip_readb		= satamv_chip_readb,
 		.chip_readw		= fallback_chip_readw,
@@ -69,7 +100,7 @@ static const struct par_master par_master_satamv = {
  * 0xc08	PCI BAR2 (Flash/NVRAM) Control
  * 0x1046c	Flash Parameters
  */
-int satamv_init(void)
+static int satamv_init(void)
 {
 	struct pci_dev *dev = NULL;
 	uintptr_t addr;
@@ -148,45 +179,18 @@ int satamv_init(void)
 	/* 512 kByte with two 8-bit latches, and
 	 * 4 MByte with additional 3-bit latch. */
 	max_rom_decode.parallel = 4 * 1024 * 1024;
-	register_par_master(&par_master_satamv, BUS_PARALLEL);
-
-	return 0;
+	return register_par_master(&par_master_satamv, BUS_PARALLEL, NULL);
 }
 
-/* BAR2 (MEM) can map NVRAM and flash. We set it to flash in the init function.
- * If BAR2 is disabled, it still can be accessed indirectly via BAR1 (I/O).
- * This code only supports indirect accesses for now.
- */
-
-/* Indirect access to via the I/O BAR1. */
-static void satamv_indirect_chip_writeb(uint8_t val, chipaddr addr)
-{
-	/* 0x80000000 selects BAR2 for remapping. */
-	OUTL(((uint32_t)addr | 0x80000000) & 0xfffffffc, mv_iobar);
-	OUTB(val, mv_iobar + 0x80 + (addr & 0x3));
-}
-
-/* Indirect access to via the I/O BAR1. */
-static uint8_t satamv_indirect_chip_readb(const chipaddr addr)
-{
-	/* 0x80000000 selects BAR2 for remapping. */
-	OUTL(((uint32_t)addr | 0x80000000) & 0xfffffffc, mv_iobar);
-	return INB(mv_iobar + 0x80 + (addr & 0x3));
-}
-
-/* FIXME: Prefer direct access to BAR2 if BAR2 is active. */
-static void satamv_chip_writeb(const struct flashctx *flash, uint8_t val,
-			       chipaddr addr)
-{
-	satamv_indirect_chip_writeb(val, addr);
-}
-
-/* FIXME: Prefer direct access to BAR2 if BAR2 is active. */
-static uint8_t satamv_chip_readb(const struct flashctx *flash,
-				 const chipaddr addr)
-{
-	return satamv_indirect_chip_readb(addr);
-}
+const struct programmer_entry programmer_satamv = {
+	.name			= "satamv",
+	.type			= PCI,
+	.devs.dev		= satas_mv,
+	.init			= satamv_init,
+	.map_flash_region	= fallback_map,
+	.unmap_flash_region	= fallback_unmap,
+	.delay			= internal_delay,
+};
 
 #else
 #error PCI port I/O access is not supported on this architecture yet.

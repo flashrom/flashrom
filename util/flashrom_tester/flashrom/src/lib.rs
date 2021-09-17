@@ -91,9 +91,8 @@ pub struct FlashromOpt<'a> {
     pub layout: Option<&'a str>, // -l <file>
     pub image: Option<&'a str>,  // -i <name>
 
-    pub flash_name: bool,  // --flash-name
-    pub ignore_fmap: bool, // --ignore-fmap
-    pub verbose: bool,     // -V
+    pub flash_name: bool, // --flash-name
+    pub verbose: bool,    // -V
 }
 
 #[derive(Default)]
@@ -182,8 +181,6 @@ pub fn write_file_with_layout(
 
         layout: rws.layout_file,
         image: rws.name_file,
-
-        ignore_fmap: true,
 
         ..Default::default()
     };

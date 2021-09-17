@@ -42,6 +42,7 @@ use clap::{App, Arg};
 use flashrom::FlashChip;
 use flashrom_tester::{tester, tests};
 use std::path::PathBuf;
+use std::sync::atomic::AtomicBool;
 
 pub mod built_info {
     include!(concat!(env!("OUT_DIR"), "/built.rs"));
@@ -136,8 +137,51 @@ fn main() {
         print_layout,
         output_format,
         test_names,
+        Some(handle_sigint()),
     ) {
         eprintln!("Failed to run tests: {:?}", e);
         std::process::exit(1);
     }
+}
+
+/// Catch exactly one SIGINT, printing a message in response and setting a flag.
+///
+/// The returned value is false by default, becoming true after a SIGINT is
+/// trapped.
+///
+/// Once a signal is trapped, the default behavior is restored (terminating
+/// the process) for future signals.
+fn handle_sigint() -> &'static AtomicBool {
+    use libc::c_int;
+    use std::sync::atomic::Ordering;
+
+    unsafe {
+        let _ = libc::signal(libc::SIGINT, sigint_handler as libc::sighandler_t);
+    }
+    static TERMINATE_FLAG: AtomicBool = AtomicBool::new(false);
+
+    extern "C" fn sigint_handler(_: c_int) {
+        const STDERR_FILENO: c_int = 2;
+        static MESSAGE: &[u8] = b"
+WARNING: terminating tests prematurely may leave Flash in an inconsistent state,
+rendering your machine unbootable. Testing will end on completion of the current
+test, or press ^C again to exit immediately (possibly bricking your machine).
+";
+
+        // Use raw write() because signal-safety is a very hard problem. Safe because this doesn't
+        // modify any memory.
+        let _ = unsafe {
+            libc::write(
+                STDERR_FILENO,
+                MESSAGE.as_ptr() as *const libc::c_void,
+                MESSAGE.len() as libc::size_t,
+            )
+        };
+        unsafe {
+            let _ = libc::signal(libc::SIGINT, libc::SIG_DFL);
+        }
+        TERMINATE_FLAG.store(true, Ordering::Release);
+    }
+
+    &TERMINATE_FLAG
 }

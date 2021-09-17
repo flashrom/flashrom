@@ -27,7 +27,7 @@
 
 #define REGISTER_ADDRESS	(0x94 >> 1)
 #define PAGE_ADDRESS		(0x9e >> 1)
-#define PAGE_SIZE		256
+#define LSPCON_PAGE_SIZE	256
 #define MAX_SPI_WAIT_RETRIES	1000
 
 #define CLT2_SPI		0x82
@@ -318,11 +318,13 @@ static int lspcon_i2c_clt2_spi_reset(int fd)
 	return ret;
 }
 
-static int lspcon_i2c_spi_reset_mpu_stop(int fd)
+static int lspcon_i2c_spi_set_mpu_active(int fd, int running)
 {
 	int ret = 0;
-	ret |= lspcon_i2c_spi_write_register(fd, MPU, 0xc0); // cmd mode
-	ret |= lspcon_i2c_spi_write_register(fd, MPU, 0x40); // stop mcu
+	// Cmd mode
+	ret |= lspcon_i2c_spi_write_register(fd, MPU, 0xc0);
+	// Stop or release MPU
+	ret |= lspcon_i2c_spi_write_register(fd, MPU, running ? 0 : 0x40);
 
 	return ret;
 }
@@ -330,7 +332,7 @@ static int lspcon_i2c_spi_reset_mpu_stop(int fd)
 static int lspcon_i2c_spi_map_page(int fd, unsigned int offset)
 {
 	int ret = 0;
-	/* Page number byte, need to / PAGE_SIZE. */
+	/* Page number byte, need to / LSPCON_PAGE_SIZE. */
 	ret |= lspcon_i2c_spi_write_register(fd, ROMADDR_BYTE1, (offset >> 8) & 0xff);
 	ret |= lspcon_i2c_spi_write_register(fd, ROMADDR_BYTE2, (offset >> 16));
 
@@ -349,9 +351,9 @@ static int lspcon_i2c_spi_read(struct flashctx *flash, uint8_t *buf,
 	if (fd < 0)
 		return SPI_GENERIC_ERROR;
 
-	for (i = 0; i < len; i += PAGE_SIZE) {
+	for (i = 0; i < len; i += LSPCON_PAGE_SIZE) {
 		ret |= lspcon_i2c_spi_map_page(fd, start + i);
-		ret |= lspcon_i2c_spi_read_data(fd, PAGE_ADDRESS, buf + i, min(len - i, PAGE_SIZE));
+		ret |= lspcon_i2c_spi_read_data(fd, PAGE_ADDRESS, buf + i, min(len - i, LSPCON_PAGE_SIZE));
 	}
 
 	return ret;
@@ -363,8 +365,8 @@ static int lspcon_i2c_spi_write_page(int fd, const uint8_t *buf, unsigned int le
          * Using static buffer with maximum possible size,
          * extra byte is needed for prefixing zero at index 0.
          */
-	uint8_t write_buffer[PAGE_SIZE + 1] = { 0 };
-	if (len > PAGE_SIZE)
+	uint8_t write_buffer[LSPCON_PAGE_SIZE + 1] = { 0 };
+	if (len > LSPCON_PAGE_SIZE)
 		return SPI_GENERIC_ERROR;
 
 	/* First byte represents the writing offset and should always be zero. */
@@ -389,9 +391,9 @@ static int lspcon_i2c_spi_write_256(struct flashctx *flash, const uint8_t *buf,
 	ret |= lspcon_i2c_spi_enable_hw_write(fd);
 	ret |= lspcon_i2c_clt2_spi_reset(fd);
 
-	for (unsigned int i = 0; i < len; i += PAGE_SIZE) {
+	for (unsigned int i = 0; i < len; i += LSPCON_PAGE_SIZE) {
 		ret |= lspcon_i2c_spi_map_page(fd, start + i);
-		ret |= lspcon_i2c_spi_write_page(fd, buf + i, min(len - i, PAGE_SIZE));
+		ret |= lspcon_i2c_spi_write_page(fd, buf + i, min(len - i, LSPCON_PAGE_SIZE));
 	}
 
 	ret |= lspcon_i2c_spi_enable_write_protection(fd);
@@ -408,7 +410,23 @@ static int lspcon_i2c_spi_write_aai(struct flashctx *flash, const uint8_t *buf,
 	return SPI_GENERIC_ERROR;
 }
 
-static struct spi_master spi_master_i2c_lspcon = {
+static int lspcon_i2c_spi_shutdown(void *data)
+{
+	int ret = 0;
+        struct lspcon_i2c_spi_data *lspcon_data =
+		(struct lspcon_i2c_spi_data *)data;
+	int fd = lspcon_data->fd;
+
+	ret |= lspcon_i2c_spi_enable_write_protection(fd);
+	ret |= lspcon_i2c_spi_toggle_register_protection(fd, 0);
+	ret |= lspcon_i2c_spi_set_mpu_active(fd, 1);
+	i2c_close(fd);
+	free(data);
+
+	return ret;
+}
+
+static const struct spi_master spi_master_i2c_lspcon = {
 	.max_data_read = 16,
 	.max_data_write = 12,
 	.command = lspcon_i2c_spi_send_command,
@@ -416,90 +434,40 @@ static struct spi_master spi_master_i2c_lspcon = {
 	.read = lspcon_i2c_spi_read,
 	.write_256 = lspcon_i2c_spi_write_256,
 	.write_aai = lspcon_i2c_spi_write_aai,
+	.shutdown = lspcon_i2c_spi_shutdown,
 };
 
-/* TODO: MPU still stopped at this point, probably need to reset it. */
-static int lspcon_i2c_spi_shutdown(void *data)
+static int lspcon_i2c_spi_init(void)
 {
-	int ret = 0;
-        struct lspcon_i2c_spi_data *lspcon_data =
-		(struct lspcon_i2c_spi_data *)data;
-	int fd = lspcon_data->fd;
-	ret |= lspcon_i2c_spi_enable_write_protection(fd);
-	ret |= lspcon_i2c_spi_toggle_register_protection(fd, 0);
-	i2c_close(fd);
-	free(data);
-
-	return ret;
-}
-
-/* TODO: remove this out of the specific SPI master implementation. */
-static int get_bus(void)
-{
-	char *bus_str = extract_programmer_param("bus");
-        int ret = SPI_GENERIC_ERROR;
-	if (bus_str) {
-		char *bus_suffix;
-		errno = 0;
-		int bus = (int)strtol(bus_str, &bus_suffix, 10);
-		if (errno != 0 || bus_str == bus_suffix) {
-			msg_perr("%s: Could not convert 'bus'.\n", __func__);
-			goto get_bus_done;
-		}
-
-		if (bus < 0 || bus > 255) {
-			msg_perr("%s: Value for 'bus' is out of range(0-255).\n",
-                                 __func__);
-			goto get_bus_done;
-		}
-
-		if (strlen(bus_suffix) > 0) {
-			msg_perr("%s: Garbage following 'bus' value.\n",
-                                 __func__);
-			goto get_bus_done;
-		}
-
-		msg_pinfo("Using i2c bus %i.\n", bus);
-		ret = bus;
-		goto get_bus_done;
-	} else {
-		msg_perr("%s: Bus number not specified.\n", __func__);
-	}
-get_bus_done:
-	if (bus_str)
-		free(bus_str);
-
-	return ret;
-}
-
-int lspcon_i2c_spi_init(void)
-{
-	int lspcon_i2c_spi_bus = get_bus();
-	if (lspcon_i2c_spi_bus < 0)
-		return SPI_GENERIC_ERROR;
-
-	int ret = 0;
-	int fd = i2c_open(lspcon_i2c_spi_bus, REGISTER_ADDRESS, 0);
+	int fd = i2c_open_from_programmer_params(REGISTER_ADDRESS, 0);
 	if (fd < 0)
 		return fd;
 
-	ret |= lspcon_i2c_spi_reset_mpu_stop(fd);
+	int ret = lspcon_i2c_spi_set_mpu_active(fd, 0);
 	if (ret) {
-		msg_perr("%s: call to reset_mpu_stop failed.\n", __func__);
+		msg_perr("%s: call to set_mpu_active failed.\n", __func__);
+		i2c_close(fd);
 		return ret;
 	}
 
-	struct lspcon_i2c_spi_data *data = calloc(1, sizeof(struct lspcon_i2c_spi_data));
+	struct lspcon_i2c_spi_data *data = calloc(1, sizeof(*data));
 	if (!data) {
 		msg_perr("Unable to allocate space for extra SPI master data.\n");
+		i2c_close(fd);
 		return SPI_GENERIC_ERROR;
 	}
 
 	data->fd = fd;
-	spi_master_i2c_lspcon.data = data;
 
-	ret |= register_shutdown(lspcon_i2c_spi_shutdown, data);
-	ret |= register_spi_master(&spi_master_i2c_lspcon);
-
-	return ret;
+	return register_spi_master(&spi_master_i2c_lspcon, data);
 }
+
+const struct programmer_entry programmer_lspcon_i2c_spi = {
+	.name			= "lspcon_i2c_spi",
+	.type			= OTHER,
+	.devs.note		= "Device files /dev/i2c-*.\n",
+	.init			= lspcon_i2c_spi_init,
+	.map_flash_region	= fallback_map,
+	.unmap_flash_region	= fallback_unmap,
+	.delay			= internal_delay,
+};

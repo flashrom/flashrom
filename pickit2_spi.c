@@ -46,13 +46,15 @@
 #include "programmer.h"
 #include "spi.h"
 
-const struct dev_entry devs_pickit2_spi[] = {
+static const struct dev_entry devs_pickit2_spi[] = {
 	{0x04D8, 0x0033, OK, "Microchip", "PICkit 2"},
 
 	{0}
 };
 
-static libusb_device_handle *pickit2_handle;
+struct pickit2_spi_data {
+	libusb_device_handle *pickit2_handle;
+};
 
 /* Default USB transaction timeout in ms */
 #define DFLT_TIMEOUT            10000
@@ -89,7 +91,7 @@ static libusb_device_handle *pickit2_handle;
 #define SCR_VDD_OFF             0xFE
 #define SCR_VDD_ON              0xFF
 
-static int pickit2_get_firmware_version(void)
+static int pickit2_get_firmware_version(libusb_device_handle *pickit2_handle)
 {
 	int ret;
 	uint8_t command[CMD_LENGTH] = {CMD_GET_VERSION, CMD_END_OF_BUFFER};
@@ -113,7 +115,7 @@ static int pickit2_get_firmware_version(void)
 	return 0;
 }
 
-static int pickit2_set_spi_voltage(int millivolt)
+static int pickit2_set_spi_voltage(libusb_device_handle *pickit2_handle, int millivolt)
 {
 	double voltage_selector;
 	switch (millivolt) {
@@ -172,7 +174,7 @@ static const struct pickit2_spispeeds spispeeds[] = {
 	{ NULL,		0x0 },
 };
 
-static int pickit2_set_spi_speed(unsigned int spispeed_idx)
+static int pickit2_set_spi_speed(libusb_device_handle *pickit2_handle, unsigned int spispeed_idx)
 {
 	msg_pdbg("SPI speed is %sHz\n", spispeeds[spispeed_idx].name);
 
@@ -198,6 +200,7 @@ static int pickit2_set_spi_speed(unsigned int spispeed_idx)
 static int pickit2_spi_send_command(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
 				     const unsigned char *writearr, unsigned char *readarr)
 {
+	struct pickit2_spi_data *pickit2_data = flash->mst->spi.data;
 
 	/* Maximum number of bytes per transaction (including command overhead) is 64. Lets play it safe
 	 * and always assume the worst case scenario of 20 bytes command overhead.
@@ -255,7 +258,8 @@ static int pickit2_spi_send_command(const struct flashctx *flash, unsigned int w
 	buf[i++] = CMD_END_OF_BUFFER;
 
 	int transferred;
-	int ret = libusb_interrupt_transfer(pickit2_handle, ENDPOINT_OUT, buf, CMD_LENGTH, &transferred, DFLT_TIMEOUT);
+	int ret = libusb_interrupt_transfer(pickit2_data->pickit2_handle,
+					ENDPOINT_OUT, buf, CMD_LENGTH, &transferred, DFLT_TIMEOUT);
 
 	if (ret != 0) {
 		msg_perr("Send SPI failed!\n");
@@ -264,7 +268,8 @@ static int pickit2_spi_send_command(const struct flashctx *flash, unsigned int w
 
 	if (readcnt) {
 		int length = 0;
-		ret = libusb_interrupt_transfer(pickit2_handle, ENDPOINT_IN, buf, CMD_LENGTH, &length, DFLT_TIMEOUT);
+		ret = libusb_interrupt_transfer(pickit2_data->pickit2_handle,
+					ENDPOINT_IN, buf, CMD_LENGTH, &length, DFLT_TIMEOUT);
 
 		if (length == 0 || ret != 0) {
 			msg_perr("Receive SPI failed\n");
@@ -335,18 +340,10 @@ static int parse_voltage(char *voltage)
 	return millivolt;
 }
 
-static const struct spi_master spi_master_pickit2 = {
-	.max_data_read	= 40,
-	.max_data_write	= 40,
-	.command	= pickit2_spi_send_command,
-	.multicommand	= default_spi_send_multicommand,
-	.read		= default_spi_read,
-	.write_256	= default_spi_write_256,
-	.write_aai	= default_spi_write_aai,
-};
-
 static int pickit2_shutdown(void *data)
 {
+	struct pickit2_spi_data *pickit2_data = data;
+
 	/* Set all pins to float and turn voltages off */
 	uint8_t command[CMD_LENGTH] = {
 		CMD_EXEC_SCRIPT,
@@ -363,22 +360,36 @@ static int pickit2_shutdown(void *data)
 	};
 
 	int transferred;
-	int ret = libusb_interrupt_transfer(pickit2_handle, ENDPOINT_OUT, command, CMD_LENGTH, &transferred, DFLT_TIMEOUT);
+	int ret = libusb_interrupt_transfer(pickit2_data->pickit2_handle,
+					ENDPOINT_OUT, command, CMD_LENGTH, &transferred, DFLT_TIMEOUT);
 
 	if (ret != 0) {
 		msg_perr("Command Shutdown failed!\n");
 		ret = 1;
 	}
-	if (libusb_release_interface(pickit2_handle, 0) != 0) {
+	if (libusb_release_interface(pickit2_data->pickit2_handle, 0) != 0) {
 		msg_perr("Could not release USB interface!\n");
 		ret = 1;
 	}
-	libusb_close(pickit2_handle);
+	libusb_close(pickit2_data->pickit2_handle);
 	libusb_exit(NULL);
+
+	free(data);
 	return ret;
 }
 
-int pickit2_spi_init(void)
+static const struct spi_master spi_master_pickit2 = {
+	.max_data_read	= 40,
+	.max_data_write	= 40,
+	.command	= pickit2_spi_send_command,
+	.multicommand	= default_spi_send_multicommand,
+	.read		= default_spi_read,
+	.write_256	= default_spi_write_256,
+	.write_aai	= default_spi_write_aai,
+	.shutdown	= pickit2_shutdown,
+};
+
+static int pickit2_spi_init(void)
 {
 	uint8_t buf[CMD_LENGTH] = {
 		CMD_EXEC_SCRIPT,
@@ -397,7 +408,8 @@ int pickit2_spi_init(void)
 		CMD_END_OF_BUFFER
 	};
 
-
+	libusb_device_handle *pickit2_handle;
+	struct pickit2_spi_data *pickit2_data;
 	int spispeed_idx = 0;
 	char *spispeed = extract_programmer_param("spispeed");
 	if (spispeed != NULL) {
@@ -458,34 +470,48 @@ int pickit2_spi_init(void)
 		return 1;
 	}
 
-	if (register_shutdown(pickit2_shutdown, NULL) != 0) {
+	pickit2_data = calloc(1, sizeof(*pickit2_data));
+	if (!pickit2_data) {
+		msg_perr("Unable to allocate space for SPI master data\n");
+		libusb_close(pickit2_handle);
+		libusb_exit(NULL);
 		return 1;
 	}
+	pickit2_data->pickit2_handle = pickit2_handle;
 
-	if (pickit2_get_firmware_version()) {
-		return 1;
-	}
+	if (pickit2_get_firmware_version(pickit2_handle))
+		goto init_err_cleanup_exit;
 
 	/* Command Set SPI Speed */
-	if (pickit2_set_spi_speed(spispeed_idx)) {
-		return 1;
-	}
+	if (pickit2_set_spi_speed(pickit2_handle, spispeed_idx))
+		goto init_err_cleanup_exit;
 
 	/* Command Set SPI Voltage */
 	msg_pdbg("Setting voltage to %i mV.\n", millivolt);
-	if (pickit2_set_spi_voltage(millivolt) != 0) {
-		return 1;
-	}
+	if (pickit2_set_spi_voltage(pickit2_handle, millivolt) != 0)
+		goto init_err_cleanup_exit;
 
 	/* Perform basic setup.
 	 * Configure pin directions and logic levels, turn Vdd on, turn busy LED on and clear buffers. */
 	int transferred;
 	if (libusb_interrupt_transfer(pickit2_handle, ENDPOINT_OUT, buf, CMD_LENGTH, &transferred, DFLT_TIMEOUT) != 0) {
 		msg_perr("Command Setup failed!\n");
-		return 1;
+		goto init_err_cleanup_exit;
 	}
 
-	register_spi_master(&spi_master_pickit2);
+	return register_spi_master(&spi_master_pickit2, pickit2_data);
 
-	return 0;
+init_err_cleanup_exit:
+	pickit2_shutdown(pickit2_data);
+	return 1;
 }
+
+const struct programmer_entry programmer_pickit2_spi = {
+	.name			= "pickit2_spi",
+	.type			= USB,
+	.devs.dev		= devs_pickit2_spi,
+	.init			= pickit2_spi_init,
+	.map_flash_region	= fallback_map,
+	.unmap_flash_region	= fallback_unmap,
+	.delay			= internal_delay,
+};

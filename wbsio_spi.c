@@ -16,6 +16,8 @@
 
 #if defined(__i386__) || defined(__x86_64__)
 
+#include <stdlib.h>
+
 #include "flash.h"
 #include "chipdrivers.h"
 #include "programmer.h"
@@ -25,7 +27,9 @@
 #define WBSIO_PORT1	0x2e
 #define WBSIO_PORT2	0x4e
 
-static uint16_t wbsio_spibase = 0;
+struct wbsio_spi_data {
+	uint16_t spibase;
+};
 
 static uint16_t wbsio_get_spibase(uint16_t port)
 {
@@ -55,39 +59,6 @@ static uint16_t wbsio_get_spibase(uint16_t port)
 done:
 	w836xx_ext_leave(port);
 	return flashport;
-}
-
-static int wbsio_spi_send_command(const struct flashctx *flash, unsigned int writecnt,
-				  unsigned int readcnt,
-				  const unsigned char *writearr,
-				  unsigned char *readarr);
-static int wbsio_spi_read(struct flashctx *flash, uint8_t *buf,
-			  unsigned int start, unsigned int len);
-
-static const struct spi_master spi_master_wbsio = {
-	.max_data_read = MAX_DATA_UNSPECIFIED,
-	.max_data_write = MAX_DATA_UNSPECIFIED,
-	.command = wbsio_spi_send_command,
-	.multicommand = default_spi_send_multicommand,
-	.read = wbsio_spi_read,
-	.write_256 = spi_chip_write_1,
-	.write_aai = spi_chip_write_1,
-};
-
-int wbsio_check_for_spi(void)
-{
-	if (0 == (wbsio_spibase = wbsio_get_spibase(WBSIO_PORT1)))
-		if (0 == (wbsio_spibase = wbsio_get_spibase(WBSIO_PORT2)))
-			return 1;
-
-	msg_pspew("\nwbsio_spibase = 0x%x\n", wbsio_spibase);
-
-	msg_pdbg("%s: Winbond saved on 4 register bits so max chip size is "
-		 "1024 kB!\n", __func__);
-	max_rom_decode.spi = 1024 * 1024;
-	register_spi_master(&spi_master_wbsio);
-
-	return 0;
 }
 
 /* W83627DHG has 11 command modes:
@@ -120,10 +91,13 @@ static int wbsio_spi_send_command(const struct flashctx *flash, unsigned int wri
 
 	msg_pspew("%s:", __func__);
 
+	const struct wbsio_spi_data *data =
+		(const struct wbsio_spi_data *)flash->mst->spi.data;
+
 	if (1 == writecnt && 0 == readcnt) {
 		mode = 0x10;
 	} else if (2 == writecnt && 0 == readcnt) {
-		OUTB(writearr[1], wbsio_spibase + 4);
+		OUTB(writearr[1], data->spibase + 4);
 		msg_pspew(" data=0x%02x", writearr[1]);
 		mode = 0x20;
 	} else if (1 == writecnt && 2 == readcnt) {
@@ -131,28 +105,28 @@ static int wbsio_spi_send_command(const struct flashctx *flash, unsigned int wri
 	} else if (4 == writecnt && 0 == readcnt) {
 		msg_pspew(" addr=0x%02x", (writearr[1] & 0x0f));
 		for (i = 2; i < writecnt; i++) {
-			OUTB(writearr[i], wbsio_spibase + i);
+			OUTB(writearr[i], data->spibase + i);
 			msg_pspew("%02x", writearr[i]);
 		}
 		mode = 0x40 | (writearr[1] & 0x0f);
 	} else if (5 == writecnt && 0 == readcnt) {
 		msg_pspew(" addr=0x%02x", (writearr[1] & 0x0f));
 		for (i = 2; i < 4; i++) {
-			OUTB(writearr[i], wbsio_spibase + i);
+			OUTB(writearr[i], data->spibase + i);
 			msg_pspew("%02x", writearr[i]);
 		}
-		OUTB(writearr[i], wbsio_spibase + i);
+		OUTB(writearr[i], data->spibase + i);
 		msg_pspew(" data=0x%02x", writearr[i]);
 		mode = 0x50 | (writearr[1] & 0x0f);
 	} else if (8 == writecnt && 0 == readcnt) {
 		msg_pspew(" addr=0x%02x", (writearr[1] & 0x0f));
 		for (i = 2; i < 4; i++) {
-			OUTB(writearr[i], wbsio_spibase + i);
+			OUTB(writearr[i], data->spibase + i);
 			msg_pspew("%02x", writearr[i]);
 		}
 		msg_pspew(" data=0x");
 		for (; i < writecnt; i++) {
-			OUTB(writearr[i], wbsio_spibase + i);
+			OUTB(writearr[i], data->spibase + i);
 			msg_pspew("%02x", writearr[i]);
 		}
 		mode = 0x60 | (writearr[1] & 0x0f);
@@ -166,7 +140,7 @@ static int wbsio_spi_send_command(const struct flashctx *flash, unsigned int wri
 	} else if (4 == writecnt && readcnt >= 1 && readcnt <= 4) {
 		msg_pspew(" addr=0x%02x", (writearr[1] & 0x0f));
 		for (i = 2; i < writecnt; i++) {
-			OUTB(writearr[i], wbsio_spibase + i);
+			OUTB(writearr[i], data->spibase + i);
 			msg_pspew("%02x", writearr[i]);
 		}
 		mode = ((7 + readcnt) << 4) | (writearr[1] & 0x0f);
@@ -180,8 +154,8 @@ static int wbsio_spi_send_command(const struct flashctx *flash, unsigned int wri
 		return SPI_INVALID_LENGTH;
 	}
 
-	OUTB(writearr[0], wbsio_spibase);
-	OUTB(mode, wbsio_spibase + 1);
+	OUTB(writearr[0], data->spibase);
+	OUTB(mode, data->spibase + 1);
 	programmer_delay(10);
 
 	if (!readcnt)
@@ -189,7 +163,7 @@ static int wbsio_spi_send_command(const struct flashctx *flash, unsigned int wri
 
 	msg_pspew("%s: returning data =", __func__);
 	for (i = 0; i < readcnt; i++) {
-		readarr[i] = INB(wbsio_spibase + 4 + i);
+		readarr[i] = INB(data->spibase + 4 + i);
 		msg_pspew(" 0x%02x", readarr[i]);
 	}
 	msg_pspew("\n");
@@ -203,4 +177,45 @@ static int wbsio_spi_read(struct flashctx *flash, uint8_t *buf,
 	return 0;
 }
 
-#endif
+static int wbsio_spi_shutdown(void *data)
+{
+	free(data);
+	return 0;
+}
+
+static const struct spi_master spi_master_wbsio = {
+	.max_data_read = MAX_DATA_UNSPECIFIED,
+	.max_data_write = MAX_DATA_UNSPECIFIED,
+	.command = wbsio_spi_send_command,
+	.multicommand = default_spi_send_multicommand,
+	.read = wbsio_spi_read,
+	.write_256 = spi_chip_write_1,
+	.write_aai = spi_chip_write_1,
+	.shutdown = wbsio_spi_shutdown,
+};
+
+int wbsio_check_for_spi(void)
+{
+	uint16_t wbsio_spibase = 0;
+
+	if (0 == (wbsio_spibase = wbsio_get_spibase(WBSIO_PORT1)))
+		if (0 == (wbsio_spibase = wbsio_get_spibase(WBSIO_PORT2)))
+			return 1;
+
+	msg_pspew("\nwbsio_spibase = 0x%x\n", wbsio_spibase);
+
+	msg_pdbg("%s: Winbond saved on 4 register bits so max chip size is "
+		 "1024 kB!\n", __func__);
+	max_rom_decode.spi = 1024 * 1024;
+
+	struct wbsio_spi_data *data = calloc(1, sizeof(*data));
+	if (!data) {
+		msg_perr("Unable to allocate space for extra SPI master data.\n");
+		return SPI_GENERIC_ERROR;
+	}
+	data->spibase = wbsio_spibase;
+
+	return register_spi_master(&spi_master_wbsio, data);
+}
+
+#endif /* defined(__i386__) || defined(__x86_64__) */

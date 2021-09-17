@@ -36,35 +36,36 @@ typedef uint32_t chipsize_t; /* Able to store the number of bytes of any support
 #define MAX_ROMLAYOUT	128
 
 struct romentry {
+	struct romentry *next;
+
 	chipoff_t start;
 	chipoff_t end;
 	bool included;
 	char *name;
+	char *file;
 };
 
-struct flashrom_layout {
-	/* entries store the entries specified in a layout file and associated run-time data */
-	struct romentry *entries;
-	/* the number of successfully parsed entries */
-	size_t num_entries;
-};
+struct flashrom_layout;
 
-struct single_layout {
-	struct flashrom_layout base;
-	struct romentry entry;
-};
+struct layout_include_args;
 
-struct layout_include_args {
-	char *name;
-	struct layout_include_args *next;
-};
-
-struct flashrom_layout *get_global_layout(void);
 struct flashrom_flashctx;
-const struct flashrom_layout *get_layout(const struct flashrom_flashctx *const flashctx);
+const struct flashrom_layout *get_default_layout(const struct flashrom_flashctx *);
+const struct flashrom_layout *get_layout(const struct flashrom_flashctx *);
 
-int process_include_args(struct flashrom_layout *l, const struct layout_include_args *const args);
+int layout_from_file(struct flashrom_layout **, const char *name);
+
+int register_include_arg(struct layout_include_args **, const char *arg);
+int process_include_args(struct flashrom_layout *, const struct layout_include_args *);
+void cleanup_include_args(struct layout_include_args **);
+
+int get_region_range(struct flashrom_layout *, const char *name,
+		     unsigned int *start, unsigned int *len);
 const struct romentry *layout_next_included_region(const struct flashrom_layout *, chipoff_t);
 const struct romentry *layout_next_included(const struct flashrom_layout *, const struct romentry *);
+const struct romentry *layout_next(const struct flashrom_layout *, const struct romentry *);
+int included_regions_overlap(const struct flashrom_layout *);
+void prepare_layout_for_extraction(struct flashrom_flashctx *);
+int layout_sanity_checks(const struct flashrom_flashctx *);
 
-#endif				/* !__LAYOUT_H__ */
+#endif /* !__LAYOUT_H__ */

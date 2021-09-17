@@ -30,7 +30,7 @@
 
 static uint8_t *nvidia_bar;
 
-const struct dev_entry gfx_nvidia[] = {
+static const struct dev_entry gfx_nvidia[] = {
 	{0x10de, 0x0010, NT, "NVIDIA", "Mutara V08 [NV2]" },
 	{0x10de, 0x0018, NT, "NVIDIA", "RIVA 128" },
 	{0x10de, 0x0020, NT, "NVIDIA", "RIVA TNT" },
@@ -59,9 +59,17 @@ const struct dev_entry gfx_nvidia[] = {
 };
 
 static void gfxnvidia_chip_writeb(const struct flashctx *flash, uint8_t val,
-				  chipaddr addr);
+				  chipaddr addr)
+{
+	pci_mmio_writeb(val, nvidia_bar + (addr & GFXNVIDIA_MEMMAP_MASK));
+}
+
 static uint8_t gfxnvidia_chip_readb(const struct flashctx *flash,
-				    const chipaddr addr);
+				    const chipaddr addr)
+{
+	return pci_mmio_readb(nvidia_bar + (addr & GFXNVIDIA_MEMMAP_MASK));
+}
+
 static const struct par_master par_master_gfxnvidia = {
 		.chip_readb		= gfxnvidia_chip_readb,
 		.chip_readw		= fallback_chip_readw,
@@ -73,7 +81,7 @@ static const struct par_master par_master_gfxnvidia = {
 		.chip_writen		= fallback_chip_writen,
 };
 
-int gfxnvidia_init(void)
+static int gfxnvidia_init(void)
 {
 	struct pci_dev *dev = NULL;
 	uint32_t reg32;
@@ -103,19 +111,15 @@ int gfxnvidia_init(void)
 
 	/* Write/erase doesn't work. */
 	programmer_may_write = 0;
-	register_par_master(&par_master_gfxnvidia, BUS_PARALLEL);
-
-	return 0;
+	return register_par_master(&par_master_gfxnvidia, BUS_PARALLEL, NULL);
 }
 
-static void gfxnvidia_chip_writeb(const struct flashctx *flash, uint8_t val,
-				  chipaddr addr)
-{
-	pci_mmio_writeb(val, nvidia_bar + (addr & GFXNVIDIA_MEMMAP_MASK));
-}
-
-static uint8_t gfxnvidia_chip_readb(const struct flashctx *flash,
-				    const chipaddr addr)
-{
-	return pci_mmio_readb(nvidia_bar + (addr & GFXNVIDIA_MEMMAP_MASK));
-}
+const struct programmer_entry programmer_gfxnvidia = {
+	.name			= "gfxnvidia",
+	.type			= PCI,
+	.devs.dev		= gfx_nvidia,
+	.init			= gfxnvidia_init,
+	.map_flash_region	= fallback_map,
+	.unmap_flash_region	= fallback_unmap,
+	.delay			= internal_delay,
+};

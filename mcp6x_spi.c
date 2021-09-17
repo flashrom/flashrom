@@ -36,55 +36,68 @@
 #define MCP6X_SPI_REQUEST	0
 #define MCP6X_SPI_GRANT		8
 
-static void *mcp6x_spibar = NULL;
+struct mcp6x_spi_data {
+	void *spibar;
+	/* Cached value of last GPIO state. */
+	uint8_t gpiostate;
+};
 
-/* Cached value of last GPIO state. */
-static uint8_t mcp_gpiostate;
-
-static void mcp6x_request_spibus(void)
+static void mcp6x_request_spibus(void *spi_data)
 {
-	mcp_gpiostate = mmio_readb(mcp6x_spibar + 0x530);
-	mcp_gpiostate |= 1 << MCP6X_SPI_REQUEST;
-	mmio_writeb(mcp_gpiostate, mcp6x_spibar + 0x530);
+	struct mcp6x_spi_data *data = spi_data;
+
+	data->gpiostate = mmio_readb(data->spibar + 0x530);
+	data->gpiostate |= 1 << MCP6X_SPI_REQUEST;
+	mmio_writeb(data->gpiostate, data->spibar + 0x530);
 
 	/* Wait until we are allowed to use the SPI bus. */
-	while (!(mmio_readw(mcp6x_spibar + 0x530) & (1 << MCP6X_SPI_GRANT))) ;
+	while (!(mmio_readw(data->spibar + 0x530) & (1 << MCP6X_SPI_GRANT))) ;
 
 	/* Update the cache. */
-	mcp_gpiostate = mmio_readb(mcp6x_spibar + 0x530);
+	data->gpiostate = mmio_readb(data->spibar + 0x530);
 }
 
-static void mcp6x_release_spibus(void)
+static void mcp6x_release_spibus(void *spi_data)
 {
-	mcp_gpiostate &= ~(1 << MCP6X_SPI_REQUEST);
-	mmio_writeb(mcp_gpiostate, mcp6x_spibar + 0x530);
+	struct mcp6x_spi_data *data = spi_data;
+
+	data->gpiostate &= ~(1 << MCP6X_SPI_REQUEST);
+	mmio_writeb(data->gpiostate, data->spibar + 0x530);
 }
 
-static void mcp6x_bitbang_set_cs(int val)
+static void mcp6x_bitbang_set_cs(int val, void *spi_data)
 {
-	mcp_gpiostate &= ~(1 << MCP6X_SPI_CS);
-	mcp_gpiostate |= (val << MCP6X_SPI_CS);
-	mmio_writeb(mcp_gpiostate, mcp6x_spibar + 0x530);
+	struct mcp6x_spi_data *data = spi_data;
+
+	data->gpiostate &= ~(1 << MCP6X_SPI_CS);
+	data->gpiostate |= (val << MCP6X_SPI_CS);
+	mmio_writeb(data->gpiostate, data->spibar + 0x530);
 }
 
-static void mcp6x_bitbang_set_sck(int val)
+static void mcp6x_bitbang_set_sck(int val, void *spi_data)
 {
-	mcp_gpiostate &= ~(1 << MCP6X_SPI_SCK);
-	mcp_gpiostate |= (val << MCP6X_SPI_SCK);
-	mmio_writeb(mcp_gpiostate, mcp6x_spibar + 0x530);
+	struct mcp6x_spi_data *data = spi_data;
+
+	data->gpiostate &= ~(1 << MCP6X_SPI_SCK);
+	data->gpiostate |= (val << MCP6X_SPI_SCK);
+	mmio_writeb(data->gpiostate, data->spibar + 0x530);
 }
 
-static void mcp6x_bitbang_set_mosi(int val)
+static void mcp6x_bitbang_set_mosi(int val, void *spi_data)
 {
-	mcp_gpiostate &= ~(1 << MCP6X_SPI_MOSI);
-	mcp_gpiostate |= (val << MCP6X_SPI_MOSI);
-	mmio_writeb(mcp_gpiostate, mcp6x_spibar + 0x530);
+	struct mcp6x_spi_data *data = spi_data;
+
+	data->gpiostate &= ~(1 << MCP6X_SPI_MOSI);
+	data->gpiostate |= (val << MCP6X_SPI_MOSI);
+	mmio_writeb(data->gpiostate, data->spibar + 0x530);
 }
 
-static int mcp6x_bitbang_get_miso(void)
+static int mcp6x_bitbang_get_miso(void *spi_data)
 {
-	mcp_gpiostate = mmio_readb(mcp6x_spibar + 0x530);
-	return (mcp_gpiostate >> MCP6X_SPI_MISO) & 0x1;
+	struct mcp6x_spi_data *data = spi_data;
+
+	data->gpiostate = mmio_readb(data->spibar + 0x530);
+	return (data->gpiostate >> MCP6X_SPI_MISO) & 0x1;
 }
 
 static const struct bitbang_spi_master bitbang_spi_master_mcp6x = {
@@ -97,11 +110,19 @@ static const struct bitbang_spi_master bitbang_spi_master_mcp6x = {
 	.half_period = 0,
 };
 
+static int mcp6x_shutdown(void *spi_data)
+{
+	free(spi_data);
+	return 0;
+}
+
 int mcp6x_spi_init(int want_spi)
 {
 	uint16_t status;
 	uint32_t mcp6x_spibaraddr;
 	struct pci_dev *smbusdev;
+	void *mcp6x_spibar = NULL;
+	uint8_t mcp_gpiostate;
 
 	/* Look for the SMBus device (SMBus PCI class) */
 	smbusdev = pci_dev_find_vendorclass(0x10de, 0x0c05);
@@ -151,7 +172,19 @@ int mcp6x_spi_init(int want_spi)
 		 (status >> MCP6X_SPI_GRANT) & 0x1);
 	mcp_gpiostate = status & 0xff;
 
-	if (register_spi_bitbang_master(&bitbang_spi_master_mcp6x)) {
+	struct mcp6x_spi_data *data = calloc(1, sizeof(*data));
+	if (!data) {
+		msg_perr("Unable to allocate space for SPI master data\n");
+		return 1;
+	}
+	data->spibar = mcp6x_spibar;
+	data->gpiostate = mcp_gpiostate;
+
+	if (register_shutdown(mcp6x_shutdown, data)) {
+		free(data);
+		return 1;
+	}
+	if (register_spi_bitbang_master(&bitbang_spi_master_mcp6x, data)) {
 		/* This should never happen. */
 		msg_perr("MCP6X bitbang SPI master init failed!\n");
 		return 1;

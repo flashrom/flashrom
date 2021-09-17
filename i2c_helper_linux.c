@@ -17,7 +17,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
-#include <sys/fcntl.h>
+#include <fcntl.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
 
@@ -27,8 +27,10 @@
 
 #include "flash.h"
 #include "i2c_helper.h"
+#include "programmer.h"
 
-#define I2C_DEV_PREFIX	"/dev/i2c-"
+/* Null characters are placeholders for bus number digits */
+#define I2C_DEV_PREFIX	"/dev/i2c-\0\0\0"
 #define I2C_MAX_BUS	255
 
 int i2c_close(int fd)
@@ -36,52 +38,89 @@ int i2c_close(int fd)
 	return fd == -1 ? 0 : close(fd);
 }
 
+int i2c_open_path(const char *path, uint16_t addr, int force)
+{
+	int fd = open(path, O_RDWR);
+	if (fd < 0) {
+		msg_perr("Unable to open I2C device %s: %s.\n", path, strerror(errno));
+		return fd;
+	}
+
+	int request = force ? I2C_SLAVE_FORCE : I2C_SLAVE;
+	int ret = ioctl(fd, request, addr);
+	if (ret < 0) {
+		msg_perr("Unable to set I2C slave address to 0x%02x: %s.\n", addr, strerror(errno));
+		i2c_close(fd);
+		return ret;
+	}
+
+	return fd;
+}
+
 int i2c_open(int bus, uint16_t addr, int force)
 {
-	int ret = -1;
-	int fd = -1;
+	char dev[sizeof(I2C_DEV_PREFIX)] = {0};
 
-	/* Maximum i2c bus number is 255(3 char), +1 for null terminated string. */
-	int path_len = strlen(I2C_DEV_PREFIX) + 4;
-	int request = force ? I2C_SLAVE_FORCE : I2C_SLAVE;
+	int ret = -1;
 
 	if (bus < 0 || bus > I2C_MAX_BUS) {
 		msg_perr("Invalid I2C bus %d.\n", bus);
 		return ret;
 	}
 
-	char *dev = calloc(1, path_len);
-	if (!dev) {
-		msg_perr("Unable to allocate space for device name of len %d: %s.\n",
-			path_len, strerror(errno));
-		goto linux_i2c_open_err;
-	}
-
-	ret = snprintf(dev, path_len, "%s%d", I2C_DEV_PREFIX, bus);
+	ret = snprintf(dev, sizeof(dev), "%s%d", I2C_DEV_PREFIX, bus);
 	if (ret < 0) {
 		msg_perr("Unable to join bus number to device name: %s.\n", strerror(errno));
-		goto linux_i2c_open_err;
+		return ret;
 	}
 
-	fd = open(dev, O_RDWR);
-	if (fd < 0) {
-		msg_perr("Unable to open I2C device %s: %s.\n", dev, strerror(errno));
-		ret = fd;
-		goto linux_i2c_open_err;
+	return i2c_open_path(dev, addr, force);
+}
+
+static int get_bus_number(char *bus_str)
+{
+	char *bus_suffix;
+	errno = 0;
+	int bus = (int)strtol(bus_str, &bus_suffix, 10);
+	if (errno != 0 || bus_str == bus_suffix) {
+		msg_perr("%s: Could not convert 'bus'.\n", __func__);
+		return -1;
 	}
 
-	ret = ioctl(fd, request, addr);
-	if (ret < 0) {
-		msg_perr("Unable to set I2C slave address to 0x%02x: %s.\n", addr, strerror(errno));
-		i2c_close(fd);
-		goto linux_i2c_open_err;
+	if (strlen(bus_suffix) > 0) {
+		msg_perr("%s: Garbage following 'bus' value.\n", __func__);
+		return -1;
 	}
 
-linux_i2c_open_err:
-	if (dev)
-		free(dev);
+	msg_pinfo("Using I2C bus %d.\n", bus);
+	return bus;
+}
 
-	return ret ? ret : fd;
+int i2c_open_from_programmer_params(uint16_t addr, int force)
+{
+	int fd = -1;
+
+	char *bus_str = extract_programmer_param("bus");
+	char *device_path = extract_programmer_param("devpath");
+
+	if (device_path != NULL && bus_str != NULL) {
+		msg_perr("%s: only one of bus and devpath may be specified\n", __func__);
+		goto out;
+	}
+	if (device_path == NULL && bus_str == NULL) {
+		msg_perr("%s: one of bus and devpath must be specified\n", __func__);
+		goto out;
+	}
+
+	if (device_path != NULL)
+		fd = i2c_open_path(device_path, addr, force);
+	else
+		fd = i2c_open(get_bus_number(bus_str), addr, force);
+
+out:
+	free(bus_str);
+	free(device_path);
+	return fd;
 }
 
 int i2c_read(int fd, uint16_t addr, i2c_buffer_t *buf)

@@ -27,6 +27,26 @@
 #include "programmer.h"
 #include "spi.h"
 
+enum id_type {
+	RDID,
+	RDID4,
+	REMS,
+	RES2,
+	RES3,
+	NUM_ID_TYPES,
+};
+
+static struct {
+	int is_cached;
+	unsigned char bytes[4];		/* enough to hold largest ID type */
+} id_cache[NUM_ID_TYPES];
+
+void clear_spi_id_cache(void)
+{
+	memset(id_cache, 0, sizeof(id_cache));
+	return;
+}
+
 static int spi_rdid(struct flashctx *flash, unsigned char *readarr, int bytes)
 {
 	static const unsigned char cmd[JEDEC_RDID_OUTSIZE] = { JEDEC_RDID };
@@ -93,19 +113,9 @@ int spi_write_disable(struct flashctx *flash)
 	return spi_send_command(flash, sizeof(cmd), 0, cmd, NULL);
 }
 
-static int probe_spi_rdid_generic(struct flashctx *flash, int bytes)
+static void rdid_get_ids(unsigned char *readarr, int bytes,
+		uint32_t *id1, uint32_t *id2)
 {
-	const struct flashchip *chip = flash->chip;
-	unsigned char readarr[4];
-	uint32_t id1;
-	uint32_t id2;
-
-	const int ret = spi_rdid(flash, readarr, bytes);
-	if (ret == SPI_INVALID_LENGTH)
-		msg_cinfo("%d byte RDID not supported on this SPI controller\n", bytes);
-	if (ret)
-		return 0;
-
 	if (!oddparity(readarr[0]))
 		msg_cdbg("RDID byte 0 parity violation. ");
 
@@ -115,19 +125,23 @@ static int probe_spi_rdid_generic(struct flashctx *flash, int bytes)
 	if (readarr[0] == 0x7f) {
 		if (!oddparity(readarr[1]))
 			msg_cdbg("RDID byte 1 parity violation. ");
-		id1 = (readarr[0] << 8) | readarr[1];
-		id2 = readarr[2];
+		*id1 = (readarr[0] << 8) | readarr[1];
+		*id2 = readarr[2];
 		if (bytes > 3) {
-			id2 <<= 8;
-			id2 |= readarr[3];
+			*id2 <<= 8;
+			*id2 |= readarr[3];
 		}
 	} else {
-		id1 = readarr[0];
-		id2 = (readarr[1] << 8) | readarr[2];
+		*id1 = readarr[0];
+		*id2 = (readarr[1] << 8) | readarr[2];
 	}
+}
+
+static int compare_id(const struct flashctx *flash, uint32_t id1, uint32_t id2)
+{
+	const struct flashchip *chip = flash->chip;
 
 	msg_cdbg("%s: id1 0x%02x, id2 0x%02x\n", __func__, id1, id2);
-
 	if (id1 == chip->manufacture_id && id2 == chip->model_id)
 		return 1;
 
@@ -140,6 +154,24 @@ static int probe_spi_rdid_generic(struct flashctx *flash, int bytes)
 		return 1;
 
 	return 0;
+}
+
+static int probe_spi_rdid_generic(struct flashctx *flash, int bytes)
+{
+	uint32_t id1, id2;
+	enum id_type idty = bytes == 3 ? RDID : RDID4;
+
+	if (!id_cache[idty].is_cached) {
+		const int ret = spi_rdid(flash, id_cache[idty].bytes, bytes);
+		if (ret == SPI_INVALID_LENGTH)
+			msg_cinfo("%d byte RDID not supported on this SPI controller\n", bytes);
+		if (ret)
+			return 0;
+		id_cache[idty].is_cached = 1;
+	}
+
+	rdid_get_ids(id_cache[idty].bytes, bytes, &id1, &id2);
+	return compare_id(flash, id1, id2);
 }
 
 int probe_spi_rdid(struct flashctx *flash)
@@ -154,31 +186,17 @@ int probe_spi_rdid4(struct flashctx *flash)
 
 int probe_spi_rems(struct flashctx *flash)
 {
-	const struct flashchip *chip = flash->chip;
-	unsigned char readarr[JEDEC_REMS_INSIZE];
 	uint32_t id1, id2;
 
-	if (spi_rems(flash, readarr)) {
-		return 0;
+	if (!id_cache[REMS].is_cached) {
+		if (spi_rems(flash, id_cache[REMS].bytes))
+			return 0;
+		id_cache[REMS].is_cached = 1;
 	}
 
-	id1 = readarr[0];
-	id2 = readarr[1];
-
-	msg_cdbg("%s: id1 0x%x, id2 0x%x\n", __func__, id1, id2);
-
-	if (id1 == chip->manufacture_id && id2 == chip->model_id)
-		return 1;
-
-	/* Test if this is a pure vendor match. */
-	if (id1 == chip->manufacture_id && GENERIC_DEVICE_ID == chip->model_id)
-		return 1;
-
-	/* Test if there is any vendor ID. */
-	if (GENERIC_MANUF_ID == chip->manufacture_id && id1 != 0xff && id1 != 0x00)
-		return 1;
-
-	return 0;
+	id1 = id_cache[REMS].bytes[0];
+	id2 = id_cache[REMS].bytes[1];
+	return compare_id(flash, id1, id2);
 }
 
 int probe_spi_res1(struct flashctx *flash)
@@ -224,16 +242,16 @@ int probe_spi_res1(struct flashctx *flash)
 
 int probe_spi_res2(struct flashctx *flash)
 {
-	unsigned char readarr[2];
 	uint32_t id1, id2;
 
-	if (spi_res(flash, readarr, 2)) {
-		return 0;
+	if (!id_cache[RES2].is_cached) {
+		if (spi_res(flash, id_cache[RES2].bytes, 2))
+			return 0;
+		id_cache[RES2].is_cached = 1;
 	}
 
-	id1 = readarr[0];
-	id2 = readarr[1];
-
+	id1 = id_cache[RES2].bytes[0];
+	id2 = id_cache[RES2].bytes[1];
 	msg_cdbg("%s: id1 0x%x, id2 0x%x\n", __func__, id1, id2);
 
 	if (id1 != flash->chip->manufacture_id || id2 != flash->chip->model_id)
@@ -244,16 +262,16 @@ int probe_spi_res2(struct flashctx *flash)
 
 int probe_spi_res3(struct flashctx *flash)
 {
-	unsigned char readarr[3];
 	uint32_t id1, id2;
 
-	if (spi_res(flash, readarr, 3)) {
-		return 0;
+	if (!id_cache[RES3].is_cached) {
+		if (spi_res(flash, id_cache[RES3].bytes, 3))
+			return 0;
+		id_cache[RES3].is_cached = 1;
 	}
 
-	id1 = (readarr[0] << 8) | readarr[1];
-	id2 = readarr[2];
-
+	id1 = (id_cache[RES3].bytes[0] << 8) | id_cache[RES3].bytes[1];
+	id2 = id_cache[RES3].bytes[3];
 	msg_cdbg("%s: id1 0x%x, id2 0x%x\n", __func__, id1, id2);
 
 	if (id1 != flash->chip->manufacture_id || id2 != flash->chip->model_id)
@@ -307,7 +325,7 @@ static int spi_simple_write_cmd(struct flashctx *const flash, const uint8_t op, 
 	struct spi_command cmds[] = {
 	{
 		.readarr = 0,
-		.writecnt = 1,
+		.writecnt = JEDEC_WREN_OUTSIZE,
 		.writearr = (const unsigned char[]){ JEDEC_WREN },
 	}, {
 		.readarr = 0,
@@ -445,26 +463,26 @@ static int spi_write_cmd(struct flashctx *const flash, const uint8_t op,
 static int spi_chip_erase_60(struct flashctx *flash)
 {
 	/* This usually takes 1-85s, so wait in 1s steps. */
-	return spi_simple_write_cmd(flash, 0x60, 1000 * 1000);
+	return spi_simple_write_cmd(flash, JEDEC_CE_60, 1000 * 1000);
 }
 
 static int spi_chip_erase_62(struct flashctx *flash)
 {
 	/* This usually takes 2-5s, so wait in 100ms steps. */
-	return spi_simple_write_cmd(flash, 0x62, 100 * 1000);
+	return spi_simple_write_cmd(flash, JEDEC_CE_62, 100 * 1000);
 }
 
 static int spi_chip_erase_c7(struct flashctx *flash)
 {
 	/* This usually takes 1-85s, so wait in 1s steps. */
-	return spi_simple_write_cmd(flash, 0xc7, 1000 * 1000);
+	return spi_simple_write_cmd(flash, JEDEC_CE_C7, 1000 * 1000);
 }
 
 int spi_block_erase_52(struct flashctx *flash, unsigned int addr,
 		       unsigned int blocklen)
 {
 	/* This usually takes 100-4000ms, so wait in 100ms steps. */
-	return spi_write_cmd(flash, 0x52, false, addr, NULL, 0, 100 * 1000);
+	return spi_write_cmd(flash, JEDEC_BE_52, false, addr, NULL, 0, 100 * 1000);
 }
 
 /* Block size is usually
@@ -473,7 +491,7 @@ int spi_block_erase_52(struct flashctx *flash, unsigned int addr,
 int spi_block_erase_c4(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
 {
 	/* This usually takes 240-480s, so wait in 500ms steps. */
-	return spi_write_cmd(flash, 0xc4, false, addr, NULL, 0, 500 * 1000);
+	return spi_write_cmd(flash, JEDEC_BE_C4, false, addr, NULL, 0, 500 * 1000);
 }
 
 /* Block size is usually
@@ -485,7 +503,7 @@ int spi_block_erase_d8(struct flashctx *flash, unsigned int addr,
 		       unsigned int blocklen)
 {
 	/* This usually takes 100-4000ms, so wait in 100ms steps. */
-	return spi_write_cmd(flash, 0xd8, false, addr, NULL, 0, 100 * 1000);
+	return spi_write_cmd(flash, JEDEC_BE_D8, false, addr, NULL, 0, 100 * 1000);
 }
 
 /* Block size is usually
@@ -495,7 +513,7 @@ int spi_block_erase_d7(struct flashctx *flash, unsigned int addr,
 		       unsigned int blocklen)
 {
 	/* This usually takes 100-4000ms, so wait in 100ms steps. */
-	return spi_write_cmd(flash, 0xd7, false, addr, NULL, 0, 100 * 1000);
+	return spi_write_cmd(flash, JEDEC_BE_D7, false, addr, NULL, 0, 100 * 1000);
 }
 
 /* Page erase (usually 256B blocks) */
@@ -511,19 +529,19 @@ int spi_block_erase_20(struct flashctx *flash, unsigned int addr,
 		       unsigned int blocklen)
 {
 	/* This usually takes 15-800ms, so wait in 10ms steps. */
-	return spi_write_cmd(flash, 0x20, false, addr, NULL, 0, 10 * 1000);
+	return spi_write_cmd(flash, JEDEC_SE, false, addr, NULL, 0, 10 * 1000);
 }
 
 int spi_block_erase_50(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
 {
 	/* This usually takes 10ms, so wait in 1ms steps. */
-	return spi_write_cmd(flash, 0x50, false, addr, NULL, 0, 1 * 1000);
+	return spi_write_cmd(flash, JEDEC_BE_50, false, addr, NULL, 0, 1 * 1000);
 }
 
 int spi_block_erase_81(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
 {
 	/* This usually takes 8ms, so wait in 1ms steps. */
-	return spi_write_cmd(flash, 0x81, false, addr, NULL, 0, 1 * 1000);
+	return spi_write_cmd(flash, JEDEC_BE_81, false, addr, NULL, 0, 1 * 1000);
 }
 
 int spi_block_erase_60(struct flashctx *flash, unsigned int addr,
@@ -631,7 +649,7 @@ static int spi_nbyte_program(struct flashctx *flash, unsigned int addr, const ui
 int spi_nbyte_read(struct flashctx *flash, unsigned int address, uint8_t *bytes,
 		   unsigned int len)
 {
-	const bool native_4ba =	flash->chip->feature_bits & FEATURE_4BA_READ && spi_master_4ba(flash);
+	const bool native_4ba = flash->chip->feature_bits & FEATURE_4BA_READ && spi_master_4ba(flash);
 	uint8_t cmd[1 + JEDEC_MAX_ADDR_LEN] = { native_4ba ? JEDEC_READ_4BA : JEDEC_READ, };
 
 	const int addr_len = spi_prepare_address(flash, cmd, native_4ba, address);

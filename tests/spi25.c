@@ -1,25 +1,24 @@
+/*
+ * This file is part of the flashrom project.
+ *
+ * Copyright 2020 Google LLC
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; version 2 of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
 #include <include/test.h>
 
 #include "programmer.h"
 #include "flashchips.h"
 #include "chipdrivers.h"
 #include "spi.h"
-
-int __wrap_spi_send_command(const struct flashctx *flash,
-		unsigned int writecnt, unsigned int readcnt,
-		const unsigned char *writearr, unsigned char *readarr)
-{
-	check_expected_ptr(flash);
-	assert_int_equal(writecnt,    mock_type(int));
-	assert_int_equal(writearr[0], mock_type(int));
-
-	int rcnt = mock_type(int);
-	assert_int_equal(readcnt, rcnt);
-	for (int i = 0; i < rcnt; i++)
-		readarr[i] = i;
-
-	return 0;
-}
 
 struct flashchip mock_chip = {
 	.vendor		= "Generic",
@@ -33,6 +32,38 @@ struct flashchip mock_chip = {
 	.probe		= probe_spi_rdid,
 	.write		= NULL,
 };
+
+/*
+ * This declaration is needed for visibility, so that wrap below could
+ * redirect to real function.
+ */
+int __real_spi_send_command(const struct flashctx *flash,
+		unsigned int writecnt, unsigned int readcnt,
+		const unsigned char *writearr, unsigned char *readarr);
+
+int __wrap_spi_send_command(const struct flashctx *flash,
+		unsigned int writecnt, unsigned int readcnt,
+		const unsigned char *writearr, unsigned char *readarr)
+{
+	if (flash->chip != &mock_chip)
+		/*
+		 * Caller is some other test, redirecting to real function.
+		 * This test is the only one which uses wrap of spi_send_command,
+		 * all other tests use real function.
+		*/
+		return __real_spi_send_command(flash, writecnt, readcnt, writearr, readarr);
+
+	check_expected_ptr(flash);
+	assert_int_equal(writecnt,    mock_type(int));
+	assert_int_equal(writearr[0], mock_type(int));
+
+	int rcnt = mock_type(int);
+	assert_int_equal(readcnt, rcnt);
+	for (int i = 0; i < rcnt; i++)
+		readarr[i] = i;
+
+	return 0;
+}
 
 void spi_write_enable_test_success(void **state)
 {
@@ -129,6 +160,7 @@ void probe_spi_res2_test_success(void **state)
 	(void) state; /* unused */
 
 	/* setup initial test state. */
+	clear_spi_id_cache();
 	struct flashctx flashctx = { .chip = &mock_chip };
 	expect_memory(__wrap_spi_send_command, flash,
 			&flashctx, sizeof(flashctx));

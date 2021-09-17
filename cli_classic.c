@@ -17,16 +17,19 @@
  * GNU General Public License for more details.
  */
 
+#include <errno.h>
 #include <stdio.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <string.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <getopt.h>
 #include "flash.h"
 #include "flashchips.h"
 #include "fmap.h"
 #include "programmer.h"
+#include "writeprotect.h"
 #include "libflashrom.h"
 
 static void cli_classic_usage(const char *name)
@@ -37,29 +40,39 @@ static void cli_classic_usage(const char *name)
 #endif
 	       "\n\t-p <programmername>[:<parameters>] [-c <chipname>]\n"
 	       "\t\t(--flash-name|--flash-size|\n"
-	       "\t\t [-E|(-r|-w|-v) <file>]\n"
-	       "\t\t [(-l <layoutfile>|--ifd| --fmap|--fmap-file <file>) [-i <imagename>]...]\n"
+	       "\t\t [-E|-x|(-r|-w|-v) <file>]\n"
+	       "\t\t [(-l <layoutfile>|--ifd| --fmap|--fmap-file <file>) [-i <region>[:<file>]]...]\n"
 	       "\t\t [-n] [-N] [-f])]\n"
 	       "\t[-V[V[V]]] [-o <logfile>]\n\n", name);
 
 	printf(" -h | --help                        print this help text\n"
 	       " -R | --version                     print version (release)\n"
 	       " -r | --read <file>                 read flash and save to <file>\n"
-	       " -w | --write <file>                write <file> to flash\n"
-	       " -v | --verify <file>               verify flash against <file>\n"
+	       " -w | --write <file|->              write <file> or the content provided\n"
+	       "                                    on the standard input to flash\n"
+	       " -v | --verify <file|->             verify flash against <file>\n"
+	       "                                    or the content provided on the standard input\n"
 	       " -E | --erase                       erase flash memory\n"
 	       " -V | --verbose                     more verbose output\n"
 	       " -c | --chip <chipname>             probe only for specified flash chip\n"
 	       " -f | --force                       force specific operations (see man page)\n"
 	       " -n | --noverify                    don't auto-verify\n"
 	       " -N | --noverify-all                verify included regions only (cf. -i)\n"
+	       " -x | --extract                     extract regions to files\n"
 	       " -l | --layout <layoutfile>         read ROM layout from <layoutfile>\n"
+	       "      --wp-disable                  disable write protection\n"
+	       "      --wp-enable                   enable write protection\n"
+	       "      --wp-list                     list write protect range\n"
+	       "      --wp-status                   show write protect status\n"
+	       "      --wp-range=<start>,<len>      set write protect range\n"
+	       "      --wp-region <region>          set write protect region\n"
 	       "      --flash-name                  read out the detected flash name\n"
 	       "      --flash-size                  read out the detected flash size\n"
 	       "      --fmap                        read ROM layout from fmap embedded in ROM\n"
 	       "      --fmap-file <fmapfile>        read ROM layout from fmap in <fmapfile>\n"
 	       "      --ifd                         read layout from an Intel Firmware Descriptor\n"
-	       " -i | --image <name>                only flash image <name> from flash layout\n"
+	       " -i | --image <region>[:<file>]     only read/write image <region> from layout\n"
+	       "                                    (optionally with data from <file>)\n"
 	       " -o | --output <logfile>            log output to <logfile>\n"
 	       "      --flash-contents <ref-file>   assume flash contents to be <ref-file>\n"
 	       " -L | --list-supported              print supported devices\n"
@@ -98,8 +111,46 @@ static int check_filename(char *filename, const char *type)
 		return 1;
 	}
 	/* Not an error, but maybe the user intended to specify a CLI option instead of a file name. */
-	if (filename[0] == '-')
+	if (filename[0] == '-' && filename[1] != '\0')
 		fprintf(stderr, "Warning: Supplied %s file name starts with -\n", type);
+	return 0;
+}
+
+/* Ensure a file is open by means of fstat */
+static bool check_file(FILE *file)
+{
+#ifndef STANDALONE
+	struct stat statbuf;
+
+	if (fstat(fileno(file), &statbuf) < 0)
+		return false;
+#endif /* !STANDALONE */
+	return true;
+}
+
+static int parse_wp_range(unsigned int *start, unsigned int *len)
+{
+	char *endptr = NULL, *token = NULL;
+
+	if (!optarg) {
+		msg_gerr("Error: No wp-range values provided\n");
+		return -1;
+	}
+
+	token = strtok(optarg, ",");
+	if (!token) {
+		msg_gerr("Error: Invalid wp-range argument format\n");
+		return -1;
+	}
+	*start = strtoul(token, &endptr, 0);
+
+	token = strtok(NULL, ",");
+	if (!token) {
+		msg_gerr("Error: Invalid wp-range argument format\n");
+		return -1;
+	}
+	*len = strtoul(token, &endptr, 0);
+
 	return 0;
 }
 
@@ -116,10 +167,12 @@ int main(int argc, char *argv[])
 	int list_supported_wiki = 0;
 #endif
 	int flash_name = 0, flash_size = 0;
-	int read_it = 0, write_it = 0, erase_it = 0, verify_it = 0;
+	int set_wp_enable = 0, set_wp_disable = 0, wp_status = 0;
+	int set_wp_range = 0, set_wp_region = 0, wp_list = 0;
+	int read_it = 0, extract_it = 0, write_it = 0, erase_it = 0, verify_it = 0;
 	int dont_verify_it = 0, dont_verify_all = 0, list_supported = 0, operation_specified = 0;
 	struct flashrom_layout *layout = NULL;
-	enum programmer prog = PROGRAMMER_INVALID;
+	static const struct programmer_entry *prog = NULL;
 	enum {
 		OPTION_IFD = 0x0100,
 		OPTION_FMAP,
@@ -127,10 +180,17 @@ int main(int argc, char *argv[])
 		OPTION_FLASH_CONTENTS,
 		OPTION_FLASH_NAME,
 		OPTION_FLASH_SIZE,
+		OPTION_WP_STATUS,
+		OPTION_WP_SET_RANGE,
+		OPTION_WP_SET_REGION,
+		OPTION_WP_ENABLE,
+		OPTION_WP_DISABLE,
+		OPTION_WP_LIST,
 	};
 	int ret = 0;
+	unsigned int wp_start = 0, wp_len = 0;
 
-	static const char optstring[] = "r:Rw:v:nNVEfc:l:i:p:Lzho:";
+	static const char optstring[] = "r:Rw:v:nNVEfc:l:i:p:Lzho:x";
 	static const struct option long_options[] = {
 		{"read",		1, NULL, 'r'},
 		{"write",		1, NULL, 'w'},
@@ -138,6 +198,7 @@ int main(int argc, char *argv[])
 		{"verify",		1, NULL, 'v'},
 		{"noverify",		0, NULL, 'n'},
 		{"noverify-all",	0, NULL, 'N'},
+		{"extract",		0, NULL, 'x'},
 		{"chip",		1, NULL, 'c'},
 		{"verbose",		0, NULL, 'V'},
 		{"force",		0, NULL, 'f'},
@@ -150,6 +211,12 @@ int main(int argc, char *argv[])
 		{"flash-name",		0, NULL, OPTION_FLASH_NAME},
 		{"flash-size",		0, NULL, OPTION_FLASH_SIZE},
 		{"get-size",		0, NULL, OPTION_FLASH_SIZE}, // (deprecated): back compatibility.
+		{"wp-status", 		0, 0, OPTION_WP_STATUS},
+		{"wp-range", 		required_argument, NULL, OPTION_WP_SET_RANGE},
+		{"wp-region",		1, 0, OPTION_WP_SET_REGION},
+		{"wp-enable", 		optional_argument, 0, OPTION_WP_ENABLE},
+		{"wp-disable", 		0, 0, OPTION_WP_DISABLE},
+		{"wp-list", 		0, 0, OPTION_WP_LIST},
 		{"list-supported",	0, NULL, 'L'},
 		{"list-supported-wiki",	0, NULL, 'z'},
 		{"programmer",		1, NULL, 'p'},
@@ -169,8 +236,19 @@ int main(int argc, char *argv[])
 	char *tempstr = NULL;
 	char *pparam = NULL;
 	struct layout_include_args *include_args = NULL;
+	char *wp_mode_opt = NULL;
+	char *wp_region = NULL;
 
-	flashrom_set_log_callback((flashrom_log_callback *)&flashrom_print_cb);
+	/*
+	 * Safety-guard against a user who has (mistakenly) closed
+	 * stdout or stderr before exec'ing flashrom.  We disable
+	 * logging in this case to prevent writing log data to a flash
+	 * chip when a flash device gets opened with fd 1 or 2.
+	 */
+	if (check_file(stdout) && check_file(stderr)) {
+		flashrom_set_log_callback(
+			(flashrom_log_callback *)&flashrom_print_cb);
+	}
 
 	print_version();
 	print_banner();
@@ -212,6 +290,10 @@ int main(int argc, char *argv[])
 			break;
 		case 'N':
 			dont_verify_all = 1;
+			break;
+		case 'x':
+			cli_classic_validate_singleop(&operation_specified);
+			extract_it = 1;
 			break;
 		case 'c':
 			chip_to_probe = strdup(optarg);
@@ -266,11 +348,8 @@ int main(int argc, char *argv[])
 			fmap = 1;
 			break;
 		case 'i':
-			tempstr = strdup(optarg);
-			if (register_include_arg(&include_args, tempstr)) {
-				free(tempstr);
+			if (register_include_arg(&include_args, optarg))
 				cli_classic_abort_usage(NULL);
-			}
 			break;
 		case OPTION_FLASH_CONTENTS:
 			if (referencefile)
@@ -286,6 +365,26 @@ int main(int argc, char *argv[])
 			cli_classic_validate_singleop(&operation_specified);
 			flash_size = 1;
 			break;
+		case OPTION_WP_STATUS:
+			wp_status = 1;
+			break;
+		case OPTION_WP_LIST:
+			wp_list = 1;
+			break;
+		case OPTION_WP_SET_RANGE:
+			if (parse_wp_range(&wp_start, &wp_len) < 0)
+				cli_classic_abort_usage("Incorrect wp-range arguments provided.\n");
+
+			set_wp_range = 1;
+			break;
+		case OPTION_WP_ENABLE:
+			set_wp_enable = 1;
+			if (optarg)
+				wp_mode_opt = strdup(optarg);
+			break;
+		case OPTION_WP_DISABLE:
+			set_wp_disable = 1;
+			break;
 		case 'L':
 			cli_classic_validate_singleop(&operation_specified);
 			list_supported = 1;
@@ -295,20 +394,21 @@ int main(int argc, char *argv[])
 			cli_classic_validate_singleop(&operation_specified);
 			list_supported_wiki = 1;
 #else
-			cli_classic_abort_usage("Error: Wiki output was not"
+			cli_classic_abort_usage("Error: Wiki output was not "
 					"compiled in. Aborting.\n");
 #endif
 			break;
 		case 'p':
-			if (prog != PROGRAMMER_INVALID) {
+			if (prog != NULL) {
 				cli_classic_abort_usage("Error: --programmer specified "
 					"more than once. You can separate "
 					"multiple\nparameters for a programmer "
 					"with \",\". Please see the man page "
 					"for details.\n");
 			}
-			for (prog = 0; prog < PROGRAMMER_INVALID; prog++) {
-				name = programmer_table[prog].name;
+			size_t p;
+			for (p = 0; p < programmer_table_size; p++) {
+				name = programmer_table[p]->name;
 				namelen = strlen(name);
 				if (strncmp(optarg, name, namelen) == 0) {
 					switch (optarg[namelen]) {
@@ -318,8 +418,10 @@ int main(int argc, char *argv[])
 							free(pparam);
 							pparam = NULL;
 						}
+						prog = programmer_table[p];
 						break;
 					case '\0':
+						prog = programmer_table[p];
 						break;
 					default:
 						/* The continue refers to the
@@ -332,7 +434,7 @@ int main(int argc, char *argv[])
 					break;
 				}
 			}
-			if (prog == PROGRAMMER_INVALID) {
+			if (prog == NULL) {
 				fprintf(stderr, "Error: Unknown programmer \"%s\". Valid choices are:\n",
 					optarg);
 				list_programmers_linebreak(0, 80, 0);
@@ -364,6 +466,10 @@ int main(int argc, char *argv[])
 				cli_classic_abort_usage("No log filename specified.\n");
 			}
 #endif /* STANDALONE */
+			break;
+		case OPTION_WP_SET_REGION:
+			set_wp_region = 1;
+			wp_region = strdup(optarg);
 			break;
 		default:
 			cli_classic_abort_usage(NULL);
@@ -413,12 +519,12 @@ int main(int argc, char *argv[])
 	}
 	msg_gdbg("\n");
 
-	if (layoutfile && read_romlayout(layoutfile)) {
+	if (layoutfile && layout_from_file(&layout, layoutfile)) {
 		ret = 1;
 		goto out;
 	}
 
-	if (!ifd && !fmap && process_include_args(get_global_layout(), include_args)) {
+	if (!ifd && !fmap && process_include_args(layout, include_args)) {
 		ret = 1;
 		goto out;
 	}
@@ -436,13 +542,15 @@ int main(int argc, char *argv[])
 		/* Keep chip around for later usage in case a forced read is requested. */
 	}
 
-	if (prog == PROGRAMMER_INVALID) {
-		if (CONFIG_DEFAULT_PROGRAMMER != PROGRAMMER_INVALID) {
-			prog = CONFIG_DEFAULT_PROGRAMMER;
+	if (prog == NULL) {
+		const struct programmer_entry *const default_programmer = CONFIG_DEFAULT_PROGRAMMER_NAME;
+
+		if (default_programmer) {
+			prog = default_programmer;
 			/* We need to strdup here because we free(pparam) unconditionally later. */
 			pparam = strdup(CONFIG_DEFAULT_PROGRAMMER_ARGS);
 			msg_pinfo("Using default programmer \"%s\" with arguments \"%s\".\n",
-				  programmer_table[CONFIG_DEFAULT_PROGRAMMER].name, pparam);
+				  default_programmer->name, pparam);
 		} else {
 			msg_perr("Please select a programmer with the --programmer parameter.\n"
 #if CONFIG_INTERNAL == 1
@@ -565,9 +673,31 @@ int main(int argc, char *argv[])
 		goto out_shutdown;
 	}
 
-	if (!(read_it | write_it | verify_it | erase_it | flash_name | flash_size)) {
+	if (!(read_it | write_it | verify_it | erase_it | flash_name | flash_size
+	      | set_wp_range | set_wp_region | set_wp_enable |
+	      set_wp_disable | wp_status | wp_list | extract_it)) {
 		msg_ginfo("No operations were specified.\n");
 		goto out_shutdown;
+	}
+
+	if (set_wp_enable && set_wp_disable) {
+		msg_ginfo("Error: --wp-enable and --wp-disable are mutually exclusive\n");
+		ret = 1;
+		goto out_shutdown;
+	}
+	if (set_wp_range && set_wp_region) {
+		msg_gerr("Error: Cannot use both --wp-range and --wp-region simultaneously.\n");
+		ret = 1;
+		goto out_shutdown;
+	}
+
+	struct wp *wp = fill_flash->chip->wp;
+	if (set_wp_range || set_wp_region) {
+		if (!wp || !wp->set_range) {
+			msg_gerr("Error: write protect is not supported on this flash chip.\n");
+			ret = 1;
+			goto out_shutdown;
+		}
 	}
 
 	if (flash_name) {
@@ -586,9 +716,7 @@ int main(int argc, char *argv[])
 		goto out_shutdown;
 	}
 
-	if (layoutfile) {
-		layout = get_global_layout();
-	} else if (ifd && (flashrom_layout_read_from_ifd(&layout, fill_flash, NULL, 0) ||
+	if (ifd && (flashrom_layout_read_from_ifd(&layout, fill_flash, NULL, 0) ||
 			   process_include_args(layout, include_args))) {
 		ret = 1;
 		goto out_shutdown;
@@ -625,8 +753,77 @@ int main(int argc, char *argv[])
 		ret = 1;
 		goto out_shutdown;
 	}
-
 	flashrom_layout_set(fill_flash, layout);
+
+	if (wp_status) {
+		if (wp && wp->wp_status) {
+			ret |= wp->wp_status(fill_flash);
+		} else {
+			msg_gerr("Error: write protect is not supported on this flash chip.\n");
+			ret = 1;
+		}
+		goto out_release;
+	}
+
+	/* Note: set_wp_disable should be done before setting the range */
+	if (set_wp_disable) {
+		if (wp && wp->disable) {
+			ret |= wp->disable(fill_flash);
+		} else {
+			msg_gerr("Error: write protect is not supported on this flash chip.\n");
+			ret = 1;
+			goto out_release;
+		}
+	}
+
+	/* Note: set_wp_range must happen before set_wp_enable */
+	if (set_wp_range) {
+		ret |= wp->set_range(fill_flash, wp_start, wp_len);
+	}
+
+	if (set_wp_region && wp_region) {
+		if (get_region_range(layout, wp_region, &wp_start, &wp_len)) {
+			ret = 1;
+			goto out_release;
+		}
+		ret |= wp->set_range(fill_flash, wp_start, wp_len);
+		free(wp_region);
+	}
+
+	if (!ret && set_wp_enable) {
+		enum wp_mode wp_mode;
+
+		if (wp_mode_opt)
+			wp_mode = get_wp_mode(wp_mode_opt);
+		else
+			wp_mode = WP_MODE_HARDWARE;	/* default */
+
+		if (wp_mode == WP_MODE_UNKNOWN) {
+			msg_gerr("Error: Invalid WP mode: \"%s\"\n", wp_mode_opt);
+			ret = 1;
+			goto out_release;
+		}
+
+		if (wp && wp->enable) {
+			ret |= wp->enable(fill_flash, wp_mode);
+		} else {
+			msg_gerr("Error: write protect is not supported on this flash chip.\n");
+			ret = 1;
+			goto out_release;
+		}
+	}
+
+	if (wp_list) {
+		msg_ginfo("Valid write protection ranges:\n");
+		if (wp && wp->list_ranges) {
+			ret |= wp->list_ranges(fill_flash);
+		} else {
+			msg_gerr("Error: write protect is not supported on this flash chip.\n");
+			ret = 1;
+		}
+		goto out_release;
+	}
+
 	flashrom_flag_set(fill_flash, FLASHROM_FLAG_FORCE, !!force);
 #if CONFIG_INTERNAL == 1
 	flashrom_flag_set(fill_flash, FLASHROM_FLAG_FORCE_BOARDMISMATCH, !!force_boardmismatch);
@@ -641,6 +838,8 @@ int main(int argc, char *argv[])
 	programmer_delay(100000);
 	if (read_it)
 		ret = do_read(fill_flash, filename);
+	else if (extract_it)
+		ret = do_extract(fill_flash);
 	else if (erase_it)
 		ret = do_erase(fill_flash);
 	else if (write_it)
@@ -648,15 +847,17 @@ int main(int argc, char *argv[])
 	else if (verify_it)
 		ret = do_verify(fill_flash, filename);
 
+out_release:
 	flashrom_layout_release(layout);
-
 out_shutdown:
 	programmer_shutdown();
 out:
-	for (i = 0; i < chipcount; i++)
+	for (i = 0; i < chipcount; i++) {
+		flashrom_layout_release(flashes[i].default_layout);
 		free(flashes[i].chip);
+	}
 
-	layout_cleanup(&include_args);
+	cleanup_include_args(&include_args);
 	free(filename);
 	free(fmapfile);
 	free(referencefile);

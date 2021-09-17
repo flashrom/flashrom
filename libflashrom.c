@@ -65,7 +65,7 @@ int flashrom_shutdown(void)
 }
 
 /* TODO: flashrom_set_loglevel()? do we need it?
-         For now, let the user decide in his callback. */
+         For now, let the user decide in their callback. */
 
 /**
  * @brief Set the log callback function.
@@ -111,26 +111,6 @@ int print(const enum flashrom_log_level level, const char *const fmt, ...)
 const char *flashrom_version_info(void)
 {
 	return flashrom_version;
-}
-
-/**
- * @brief Returns list of supported programmers
- * @return List of supported programmers, or NULL if an error occurred
- */
-const char **flashrom_supported_programmers(void)
-{
-	enum programmer p = 0;
-	const char **supported_programmers = malloc((PROGRAMMER_INVALID + 1) * sizeof(char*));
-
-	if (supported_programmers != NULL) {
-		for (; p < PROGRAMMER_INVALID; ++p) {
-			supported_programmers[p] = programmer_table[p].name;
-		}
-	} else {
-		msg_gerr("Memory allocation error!\n");
-	}
-
-	return supported_programmers;
 }
 
 /**
@@ -182,7 +162,7 @@ struct flashrom_board_info *flashrom_supported_boards(void)
 	++boards_known_size;
 
 	struct flashrom_board_info *supported_boards =
-		malloc(boards_known_size * sizeof(struct flashrom_board_info));
+		malloc(boards_known_size * sizeof(*supported_boards));
 
 	if (supported_boards != NULL) {
 		for (; i < boards_known_size; ++i) {
@@ -278,16 +258,16 @@ int flashrom_programmer_init(struct flashrom_programmer **const flashprog,
 {
 	unsigned prog;
 
-	for (prog = 0; prog < PROGRAMMER_INVALID; prog++) {
-		if (strcmp(prog_name, programmer_table[prog].name) == 0)
+	for (prog = 0; prog < programmer_table_size; prog++) {
+		if (strcmp(prog_name, programmer_table[prog]->name) == 0)
 			break;
 	}
-	if (prog >= PROGRAMMER_INVALID) {
+	if (prog >= programmer_table_size) {
 		msg_ginfo("Error: Unknown programmer \"%s\". Valid choices are:\n", prog_name);
 		list_programmers_linebreak(0, 80, 0);
 		return 1;
 	}
-	return programmer_init(prog, prog_param);
+	return programmer_init(programmer_table[prog], prog_param);
 }
 
 /**
@@ -350,13 +330,15 @@ int flashrom_flash_probe(struct flashrom_flashctx **const flashctx,
 			ret = 0;
 			/* We found one chip, now check that there is no second match. */
 			if (probe_flash(&registered_masters[i], flash_idx + 1, &second_flashctx, 0) != -1) {
+				flashrom_layout_release(second_flashctx.default_layout);
+				free(second_flashctx.chip);
 				ret = 3;
 				break;
 			}
 		}
 	}
 	if (ret) {
-		free(*flashctx);
+		flashrom_flash_release(*flashctx);
 		*flashctx = NULL;
 	}
 	return ret;
@@ -380,6 +362,8 @@ size_t flashrom_flash_getsize(const struct flashrom_flashctx *const flashctx)
  */
 void flashrom_flash_release(struct flashrom_flashctx *const flashctx)
 {
+	flashrom_layout_release(flashctx->default_layout);
+	free(flashctx->chip);
 	free(flashctx);
 }
 
@@ -455,16 +439,10 @@ int flashrom_layout_read_from_ifd(struct flashrom_layout **const layout, struct 
 #ifndef __FLASHROM_LITTLE_ENDIAN__
 	return 6;
 #else
-	struct ich_layout dump_layout;
+	struct flashrom_layout *dump_layout, *chip_layout;
 	int ret = 1;
 
 	void *const desc = malloc(0x1000);
-	struct ich_layout *const chip_layout = malloc(sizeof(*chip_layout));
-	if (!desc || !chip_layout) {
-		msg_gerr("Out of memory!\n");
-		goto _free_ret;
-	}
-
 	if (prepare_flash_access(flashctx, true, false, false, false))
 		goto _free_ret;
 
@@ -477,7 +455,7 @@ int flashrom_layout_read_from_ifd(struct flashrom_layout **const layout, struct 
 	}
 	msg_cinfo("done.\n");
 
-	if (layout_from_ich_descriptors(chip_layout, desc, 0x1000)) {
+	if (layout_from_ich_descriptors(&chip_layout, desc, 0x1000)) {
 		msg_cerr("Couldn't parse the descriptor!\n");
 		ret = 3;
 		goto _finalize_ret;
@@ -490,8 +468,14 @@ int flashrom_layout_read_from_ifd(struct flashrom_layout **const layout, struct 
 			goto _finalize_ret;
 		}
 
-		if (chip_layout->base.num_entries != dump_layout.base.num_entries ||
-		    memcmp(chip_layout->entries, dump_layout.entries, sizeof(dump_layout.entries))) {
+		const struct romentry *chip_entry = layout_next(chip_layout, NULL);
+		const struct romentry *dump_entry = layout_next(dump_layout, NULL);
+		while (chip_entry && dump_entry && !memcmp(chip_entry, dump_entry, sizeof(*chip_entry))) {
+			chip_entry = layout_next(chip_layout, chip_entry);
+			dump_entry = layout_next(dump_layout, dump_entry);
+		}
+		flashrom_layout_release(dump_layout);
+		if (chip_entry || dump_entry) {
 			msg_cerr("Descriptors don't match!\n");
 			ret = 5;
 			goto _finalize_ret;
@@ -505,7 +489,7 @@ _finalize_ret:
 	finalize_flash_access(flashctx);
 _free_ret:
 	if (ret)
-		free(chip_layout);
+		flashrom_layout_release(chip_layout);
 	free(desc);
 	return ret;
 #endif
@@ -516,31 +500,19 @@ static int flashrom_layout_parse_fmap(struct flashrom_layout **layout,
 		struct flashctx *const flashctx, const struct fmap *const fmap)
 {
 	int i;
-	struct flashrom_layout *l = get_global_layout();
+	char name[FMAP_STRLEN + 1];
+	const struct fmap_area *area;
+	struct flashrom_layout *l;
 
-	if (!fmap || !l)
+	if (!fmap || flashrom_layout_new(&l))
 		return 1;
 
-	if (l->num_entries + fmap->nareas > MAX_ROMLAYOUT) {
-		msg_gerr("Cannot add fmap entries to layout - Too many entries.\n");
-		return 1;
-	}
-
-	for (i = 0; i < fmap->nareas; i++) {
-		l->entries[l->num_entries].start = fmap->areas[i].offset;
-		l->entries[l->num_entries].end = fmap->areas[i].offset + fmap->areas[i].size - 1;
-		l->entries[l->num_entries].included = false;
-		l->entries[l->num_entries].name =
-			strndup((const char *)fmap->areas[i].name, FMAP_STRLEN);
-		if (!l->entries[l->num_entries].name) {
-			msg_gerr("Error adding layout entry: %s\n", strerror(errno));
+	for (i = 0, area = fmap->areas; i < fmap->nareas; i++, area++) {
+		snprintf(name, sizeof(name), "%s", area->name);
+		if (flashrom_layout_add_region(l, area->offset, area->offset + area->size - 1, name)) {
+			flashrom_layout_release(l);
 			return 1;
 		}
-		msg_gdbg("fmap %08x - %08x named %s\n",
-			l->entries[l->num_entries].start,
-			l->entries[l->num_entries].end,
-			l->entries[l->num_entries].name);
-		l->num_entries++;
 	}
 
 	*layout = l;

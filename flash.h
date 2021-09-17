@@ -54,7 +54,6 @@ typedef uintptr_t chipaddr;
 #define PRIxPTR_WIDTH ((int)(sizeof(uintptr_t)*2))
 
 int register_shutdown(int (*function) (void *data), void *data);
-int shutdown_free(void *data);
 void *programmer_map_flash_region(const char *descr, uintptr_t phys_addr, size_t len);
 void programmer_unmap_flash_region(void *virt_addr, size_t len);
 void programmer_delay(unsigned int usecs);
@@ -103,6 +102,8 @@ enum write_granularity {
  * Macronix MX25L25635F has 8 different functions.
  */
 #define NUM_ERASEFUNCTIONS 8
+
+#define MAX_CHIP_RESTORE_FUNCTIONS 4
 
 /* Feature bits used for non-SPI only */
 #define FEATURE_REGISTERMAP	(1 << 0)
@@ -235,6 +236,8 @@ struct flashchip {
 	int (*unlock) (struct flashctx *flash);
 	int (*write) (struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 	int (*read) (struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
+	uint8_t (*read_status) (const struct flashctx *flash);
+	int (*write_status) (const struct flashctx *flash, int status);
 	struct voltage {
 		uint16_t min;
 		uint16_t max;
@@ -243,7 +246,11 @@ struct flashchip {
 
 	/* SPI specific options (TODO: Make it a union in case other bustypes get specific options.) */
 	uint8_t wrea_override; /**< override opcode for write extended address register */
+
+	struct wp *wp;
 };
+
+typedef int (*chip_restore_fn_cb_t)(struct flashctx *flash, uint8_t status);
 
 struct flashrom_flashctx {
 	struct flashchip *chip;
@@ -258,7 +265,7 @@ struct flashrom_flashctx {
 	chipaddr virtual_registers;
 	struct registered_master *mst;
 	const struct flashrom_layout *layout;
-	struct single_layout fallback_layout;
+	struct flashrom_layout *default_layout;
 	struct {
 		bool force;
 		bool force_boardmismatch;
@@ -266,11 +273,18 @@ struct flashrom_flashctx {
 		bool verify_whole_chip;
 	} flags;
 	/* We cache the state of the extended address register (highest byte
-           of a 4BA for 3BA instructions) and the state of the 4BA mode here.
-           If possible, we enter 4BA mode early. If that fails, we make use
-           of the extended address register. */
+	 * of a 4BA for 3BA instructions) and the state of the 4BA mode here.
+	 * If possible, we enter 4BA mode early. If that fails, we make use
+	 * of the extended address register.
+	 */
 	int address_high_byte;
 	bool in_4ba_mode;
+
+	int chip_restore_fn_count;
+	struct chip_restore_func_data {
+		chip_restore_fn_cb_t func;
+		uint8_t status;
+	} chip_restore_fn[MAX_CHIP_RESTORE_FUNCTIONS];
 };
 
 /* Timing used in probe routines. ZERO is -2 to differentiate between an unset
@@ -330,7 +344,6 @@ int read_memmapped(struct flashctx *flash, uint8_t *buf, unsigned int start, uns
 int erase_flash(struct flashctx *flash);
 int probe_flash(struct registered_master *mst, int startchip, struct flashctx *fill_flash, int force);
 int read_flash_to_file(struct flashctx *flash, const char *filename);
-char *extract_param(const char *const *haystack, const char *needle, const char *delim);
 int verify_range(struct flashctx *flash, const uint8_t *cmpbuf, unsigned int start, unsigned int len);
 int need_erase(const uint8_t *have, const uint8_t *want, unsigned int len, enum write_granularity gran, const uint8_t erased_value);
 void print_version(void);
@@ -343,9 +356,11 @@ int write_buf_to_file(const unsigned char *buf, unsigned long size, const char *
 int prepare_flash_access(struct flashctx *, bool read_it, bool write_it, bool erase_it, bool verify_it);
 void finalize_flash_access(struct flashctx *);
 int do_read(struct flashctx *, const char *filename);
+int do_extract(struct flashctx *);
 int do_erase(struct flashctx *);
 int do_write(struct flashctx *, const char *const filename, const char *const referencefile);
 int do_verify(struct flashctx *, const char *const filename);
+int register_chip_restore(chip_restore_fn_cb_t func, struct flashctx *flash, uint8_t status);
 
 /* Something happened that shouldn't happen, but we can go on. */
 #define ERROR_NONFATAL 0x100
@@ -400,12 +415,6 @@ __attribute__((format(printf, 2, 3)));
 #define msg_gspew(...)	print(FLASHROM_MSG_SPEW, __VA_ARGS__)	/* general debug spew  */
 #define msg_pspew(...)	print(FLASHROM_MSG_SPEW, __VA_ARGS__)	/* programmer debug spew  */
 #define msg_cspew(...)	print(FLASHROM_MSG_SPEW, __VA_ARGS__)	/* chip debug spew  */
-
-/* layout.c */
-int register_include_arg(struct layout_include_args **args, char *name);
-int read_romlayout(const char *name);
-int normalize_romentries(const struct flashctx *flash);
-void layout_cleanup(struct layout_include_args **args);
 
 /* spi.c */
 struct spi_command {

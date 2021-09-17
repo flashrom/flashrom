@@ -75,8 +75,6 @@ struct flashrom_chipset_info {
 };
 
 const char *flashrom_version_info(void);
-void flashrom_system_info(void);
-const char **flashrom_supported_programmers(void);
 struct flashrom_flashchip_info *flashrom_supported_flash_chips(void);
 struct flashrom_board_info *flashrom_supported_boards(void);
 struct flashrom_chipset_info *flashrom_supported_chipsets(void);
@@ -108,11 +106,13 @@ int flashrom_image_write(struct flashrom_flashctx *, void *buffer, size_t buffer
 int flashrom_image_verify(struct flashrom_flashctx *, const void *buffer, size_t buffer_len);
 
 struct flashrom_layout;
+int flashrom_layout_new(struct flashrom_layout **);
 int flashrom_layout_read_from_ifd(struct flashrom_layout **, struct flashrom_flashctx *, const void *dump, size_t len);
 int flashrom_layout_read_fmap_from_rom(struct flashrom_layout **,
 		struct flashrom_flashctx *, off_t offset, size_t length);
 int flashrom_layout_read_fmap_from_buffer(struct flashrom_layout **layout,
 		struct flashrom_flashctx *, const uint8_t *buf, size_t len);
+int flashrom_layout_add_region(struct flashrom_layout *, size_t start, size_t end, const char *name);
 int flashrom_layout_include_region(struct flashrom_layout *, const char *name);
 void flashrom_layout_release(struct flashrom_layout *);
 void flashrom_layout_set(struct flashrom_flashctx *, const struct flashrom_layout *);

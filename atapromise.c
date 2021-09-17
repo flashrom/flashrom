@@ -46,28 +46,14 @@ static uint32_t rom_base_addr = 0;
 static uint8_t *atapromise_bar = NULL;
 static size_t rom_size = 0;
 
-const struct dev_entry ata_promise[] = {
+static const struct dev_entry ata_promise[] = {
 	{0x105a, 0x4d38, NT, "Promise", "PDC20262 (FastTrak66/Ultra66)"},
 	{0x105a, 0x0d30, NT, "Promise", "PDC20265 (FastTrak100 Lite/Ultra100)"},
 	{0x105a, 0x4d30, OK, "Promise", "PDC20267 (FastTrak100/Ultra100)"},
 	{0},
 };
 
-static void atapromise_chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr);
-static uint8_t atapromise_chip_readb(const struct flashctx *flash, const chipaddr addr);
-
-static const struct par_master par_master_atapromise = {
-		.chip_readb		= atapromise_chip_readb,
-		.chip_readw		= fallback_chip_readw,
-		.chip_readl		= fallback_chip_readl,
-		.chip_readn		= fallback_chip_readn,
-		.chip_writeb		= atapromise_chip_writeb,
-		.chip_writew		= fallback_chip_writew,
-		.chip_writel		= fallback_chip_writel,
-		.chip_writen		= fallback_chip_writen,
-};
-
-void *atapromise_map(const char *descr, uintptr_t phys_addr, size_t len)
+static void *atapromise_map(const char *descr, uintptr_t phys_addr, size_t len)
 {
 	/* In case fallback_map ever returns something other than NULL. */
 	return NULL;
@@ -106,7 +92,33 @@ static void atapromise_limit_chip(struct flashchip *chip)
 	}
 }
 
-int atapromise_init(void)
+static void atapromise_chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr)
+{
+	uint32_t data;
+
+	atapromise_limit_chip(flash->chip);
+	data = (rom_base_addr + (addr & ADDR_MASK)) << 8 | val;
+	OUTL(data, io_base_addr + 0x14);
+}
+
+static uint8_t atapromise_chip_readb(const struct flashctx *flash, const chipaddr addr)
+{
+	atapromise_limit_chip(flash->chip);
+	return pci_mmio_readb(atapromise_bar + (addr & ADDR_MASK));
+}
+
+static const struct par_master par_master_atapromise = {
+		.chip_readb		= atapromise_chip_readb,
+		.chip_readw		= fallback_chip_readw,
+		.chip_readl		= fallback_chip_readl,
+		.chip_readn		= fallback_chip_readn,
+		.chip_writeb		= atapromise_chip_writeb,
+		.chip_writew		= fallback_chip_writew,
+		.chip_writel		= fallback_chip_writel,
+		.chip_writen		= fallback_chip_writen,
+};
+
+static int atapromise_init(void)
 {
 	struct pci_dev *dev = NULL;
 
@@ -140,30 +152,24 @@ int atapromise_init(void)
 	}
 
 	max_rom_decode.parallel = rom_size;
-	register_par_master(&par_master_atapromise, BUS_PARALLEL);
 
 	msg_pwarn("Do not use this device as a generic programmer. It will leave anything outside\n"
 		  "the first %zu kB of the flash chip in an undefined state. It works fine for the\n"
 		  "purpose of updating the firmware of this device (padding may necessary).\n",
 		  rom_size / 1024);
 
-	return 0;
+	return register_par_master(&par_master_atapromise, BUS_PARALLEL, NULL);
 }
 
-static void atapromise_chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr)
-{
-	uint32_t data;
-
-	atapromise_limit_chip(flash->chip);
-	data = (rom_base_addr + (addr & ADDR_MASK)) << 8 | val;
-	OUTL(data, io_base_addr + 0x14);
-}
-
-static uint8_t atapromise_chip_readb(const struct flashctx *flash, const chipaddr addr)
-{
-	atapromise_limit_chip(flash->chip);
-	return pci_mmio_readb(atapromise_bar + (addr & ADDR_MASK));
-}
+const struct programmer_entry programmer_atapromise = {
+	.name			= "atapromise",
+	.type			= PCI,
+	.devs.dev		= ata_promise,
+	.init			= atapromise_init,
+	.map_flash_region	= atapromise_map,
+	.unmap_flash_region	= fallback_unmap,
+	.delay			= internal_delay,
+};
 
 #else
 #error PCI port I/O access is not supported on this architecture yet.

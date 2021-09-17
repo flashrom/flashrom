@@ -99,7 +99,7 @@ static int check_match(struct usb_match_value const *match_value, int value)
 static void add_device(struct usb_device *device,
 		       struct usb_device **devices)
 {
-	struct usb_device *copy = malloc(sizeof(struct usb_device));
+	struct usb_device *copy = malloc(sizeof(*copy));
 
 	assert(copy != NULL);
 
@@ -224,12 +224,12 @@ int usb_device_find(struct usb_match const *match, struct usb_device **devices)
 
 		ret = LIBUSB(libusb_get_device_descriptor(list[i],
 							  &descriptor));
-		      if (ret != 0) {
-			      msg_perr("USB: Failed to get device descriptor");
-			      free(*devices);
-			      *devices = NULL;
-			      return ret;
-		      }
+		if (ret != 0) {
+			msg_perr("USB: Failed to get device descriptor");
+			free(*devices);
+			*devices = NULL;
+			return ret;
+		}
 
 		if (check_match(&match->vid,     descriptor.idVendor) &&
 		    check_match(&match->pid,     descriptor.idProduct) &&
@@ -279,8 +279,8 @@ int usb_device_show(char const *prefix, struct usb_device *device)
 
 	ret = usb_device_open(device);
 	if (ret != 0) {
-	       msg_perr("USB: Failed to open device\n");
-	       return ret;
+		msg_perr("USB: Failed to open device\n");
+		return ret;
 	}
 
 	ret = LIBUSB(libusb_get_device_descriptor(device->device, &descriptor));

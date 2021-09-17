@@ -73,11 +73,13 @@
 #define INDIRECT_WRITE(base, value) OUTB(value, (base) + 4)
 #endif  /* LPC_IO */
 
+struct it85spi_data {
 #ifdef LPC_IO
-static unsigned int shm_io_base;
+	unsigned int shm_io_base;
 #endif
-static unsigned char *ce_high, *ce_low;
-static int it85xx_scratch_rom_reenter = 0;
+	unsigned char *ce_high, *ce_low;
+	int it85xx_scratch_rom_reenter;
+};
 
 /* This function will poll the keyboard status register until either
  * an expected value shows up, or the timeout is reached.
@@ -106,12 +108,12 @@ static int wait_for(const unsigned int mask, const unsigned int expected_value,
 
 /* IT8502 employs a scratch RAM when flash is being updated. Call the following
  * two functions before/after flash erase/program. */
-static void it85xx_enter_scratch_rom(void)
+static void it85xx_enter_scratch_rom(struct it85spi_data *data)
 {
 	int ret, tries;
 
 	msg_pdbg("%s():%d was called ...\n", __func__, __LINE__);
-	if (it85xx_scratch_rom_reenter > 0)
+	if (data->it85xx_scratch_rom_reenter > 0)
 		return;
 
 #if 0
@@ -156,14 +158,14 @@ static void it85xx_enter_scratch_rom(void)
 
 	if (tries < MAX_TRY) {
 		/* EC already runs on SRAM */
-		it85xx_scratch_rom_reenter++;
+		data->it85xx_scratch_rom_reenter++;
 		msg_pdbg("%s():%d * SUCCESS.\n", __func__, __LINE__);
 	} else {
 		msg_perr("%s():%d * Max try reached.\n", __func__, __LINE__);
 	}
 }
 
-static void it85xx_exit_scratch_rom(void)
+static void it85xx_exit_scratch_rom(struct it85spi_data *data)
 {
 #if 0
 	int ret;
@@ -171,7 +173,7 @@ static void it85xx_exit_scratch_rom(void)
 	int tries;
 
 	msg_pdbg("%s():%d was called ...\n", __func__, __LINE__);
-	if (it85xx_scratch_rom_reenter <= 0)
+	if (data->it85xx_scratch_rom_reenter <= 0)
 		return;
 
 	for (tries = 0; tries < MAX_TRY; ++tries) {
@@ -199,7 +201,7 @@ static void it85xx_exit_scratch_rom(void)
 	}
 
 	if (tries < MAX_TRY) {
-		it85xx_scratch_rom_reenter = 0;
+		data->it85xx_scratch_rom_reenter = 0;
 		msg_pdbg("%s():%d * SUCCESS.\n", __func__, __LINE__);
 	} else {
 		msg_perr("%s():%d * Max try reached.\n", __func__, __LINE__);
@@ -218,20 +220,97 @@ static void it85xx_exit_scratch_rom(void)
 static int it85xx_shutdown(void *data)
 {
 	msg_pdbg("%s():%d\n", __func__, __LINE__);
-	it85xx_exit_scratch_rom();
+	it85xx_exit_scratch_rom(data);
+	free(data);
 
 	return 0;	/* FIXME: Should probably return something meaningful */
 }
 
-static int it85xx_spi_common_init(struct superio s)
+/* According to ITE 8502 document, the procedure to follow mode is following:
+ *   1. write 0x00 to LPC/FWH address 0xffff_fexxh (drive CE# high)
+ *   2. write data to LPC/FWH address 0xffff_fdxxh (drive CE# low and MOSI
+ *      with data)
+ *   3. read date from LPC/FWH address 0xffff_fdxxh (drive CE# low and get
+ *      data from MISO)
+ */
+static int it85xx_spi_send_command(const struct flashctx *flash,
+                                   unsigned int writecnt, unsigned int readcnt,
+                                   const unsigned char *writearr,
+                                   unsigned char *readarr)
+{
+	unsigned int i;
+	struct it85spi_data *data = flash->mst->spi.data;
+
+	it85xx_enter_scratch_rom(data);
+        /* Exit scratch ROM ONLY when programmer shuts down. Otherwise, the
+         * temporary flash state may halt the EC.
+         */
+
+#ifdef LPC_IO
+        INDIRECT_A1(data->shm_io_base, (((unsigned long int)data->ce_high) >> 8) & 0xff);
+        INDIRECT_WRITE(data->shm_io_base, 0xFF);  /* Write anything to this address.*/
+        INDIRECT_A1(data->shm_io_base, (((unsigned long int)data->ce_low) >> 8) & 0xff);
+#endif
+#ifdef LPC_MEMORY
+        mmio_writeb(0, data->ce_high);
+#endif
+        for (i = 0; i < writecnt; ++i) {
+#ifdef LPC_IO
+                INDIRECT_WRITE(data->shm_io_base, writearr[i]);
+#endif
+#ifdef LPC_MEMORY
+                mmio_writeb(writearr[i], data->ce_low);
+#endif
+        }
+        for (i = 0; i < readcnt; ++i) {
+#ifdef LPC_IO
+                readarr[i] = INDIRECT_READ(data->shm_io_base);
+#endif
+#ifdef LPC_MEMORY
+                readarr[i] = mmio_readb(data->ce_low);
+#endif
+        }
+#ifdef LPC_IO
+        INDIRECT_A1(data->shm_io_base, (((unsigned long int)data->ce_high) >> 8) & 0xff);
+        INDIRECT_WRITE(data->shm_io_base, 0xFF);  /* Write anything to this address.*/
+#endif
+#ifdef LPC_MEMORY
+        mmio_writeb(0, data->ce_high);
+#endif
+
+        return 0;
+}
+
+static const struct spi_master spi_master_it85xx = {
+        .max_data_read  = 64,
+        .max_data_write = 64,
+        .command        = it85xx_spi_send_command,
+        .multicommand   = default_spi_send_multicommand,
+        .read           = default_spi_read,
+        .write_256      = default_spi_write_256,
+        .write_aai      = default_spi_write_aai,
+	.shutdown	= it85xx_shutdown,
+};
+
+int it85xx_spi_init(struct superio s)
 {
 	chipaddr base;
+	struct it85spi_data *data;
+	unsigned int shm_io_base = 0;
 
-	msg_pdbg("%s():%d superio.vendor=0x%02x\n", __func__, __LINE__,
-	         s.vendor);
+	msg_pdbg("%s():%d superio.vendor=0x%02x internal_buses_supported=0x%x\n",
+			__func__, __LINE__, s.vendor, internal_buses_supported);
 
-	if (register_shutdown(it85xx_shutdown, NULL))
+	/* Check for FWH because IT85 listens to FWH cycles.
+	 * FIXME: The big question is whether FWH cycles are necessary
+	 * for communication even if LPC_IO is defined.
+	 */
+	if (!(internal_buses_supported & BUS_FWH)) {
+		msg_pdbg("%s():%d buses not support FWH\n", __func__, __LINE__);
 		return 1;
+	}
+
+	msg_pdbg("Registering IT85 SPI.\n");
 
 #ifdef LPC_IO
 	/* Get LPCPNP of SHM. That's big-endian. */
@@ -244,8 +323,6 @@ static int it85xx_spi_common_init(struct superio s)
 	/* These pointers are not used directly. They will be send to EC's
 	 * register for indirect access. */
 	base = 0xFFFFF000;
-	ce_high = ((unsigned char *)base) + 0xE00;  /* 0xFFFFFE00 */
-	ce_low = ((unsigned char *)base) + 0xD00;  /* 0xFFFFFD00 */
 
 	/* pre-set indirect-access registers since in most of cases they are
 	 * 0xFFFFxx00. */
@@ -257,116 +334,33 @@ static int it85xx_spi_common_init(struct superio s)
 	/* FIXME: We should block accessing that region for anything else.
 	 * Major TODO here, and it will be a lot of work.
 	 */
-	base = (chipaddr)physmap("it85 communication", 0xFFFFF000, 0x1000);
-	if (base == (chipaddr)ERROR_PTR)
+	base = physmap("it85 communication", 0xFFFFF000, 0x1000);
+	if (base == ERROR_PTR)
 		return 1;
 
 	msg_pdbg("%s():%d base=0x%08x\n", __func__, __LINE__,
 	         (unsigned int)base);
-	ce_high = (unsigned char *)(base + 0xE00);  /* 0xFFFFFE00 */
-	ce_low = (unsigned char *)(base + 0xD00);  /* 0xFFFFFD00 */
 #endif
 
-	return 0;
-}
-
-static int it85xx_spi_send_command(const struct flashctx *flash,
-				   unsigned int writecnt, unsigned int readcnt,
-				   const unsigned char *writearr,
-				   unsigned char *readarr);
-
-static const struct spi_master spi_master_it85xx = {
-	.max_data_read	= 64,
-	.max_data_write	= 64,
-	.command	= it85xx_spi_send_command,
-	.multicommand	= default_spi_send_multicommand,
-	.read		= default_spi_read,
-	.write_256	= default_spi_write_256,
-	.write_aai	= default_spi_write_aai,
-};
-
-int it85xx_spi_init(struct superio s)
-{
-	int ret;
-
-	if (!(internal_buses_supported & BUS_FWH)) {
-		msg_pdbg("%s():%d buses not support FWH\n", __func__, __LINE__);
-		return 1;
+	data = calloc(1, sizeof(*data));
+	if (!data) {
+		msg_perr("Unable to allocate space for extra SPI master data.\n");
+		return SPI_GENERIC_ERROR;
 	}
-	ret = it85xx_spi_common_init(s);
-	msg_pdbg("FWH: %s():%d ret=%d\n", __func__, __LINE__, ret);
-	if (!ret) {
-		msg_pdbg("%s: internal_buses_supported=0x%x\n", __func__,
-		          internal_buses_supported);
-		/* Check for FWH because IT85 listens to FWH cycles.
-		 * FIXME: The big question is whether FWH cycles are necessary
-		 * for communication even if LPC_IO is defined.
-		 */
-		if (internal_buses_supported & BUS_FWH)
-			msg_pdbg("Registering IT85 SPI.\n");
-		/* FIXME: Really leave FWH enabled? We can't use this region
-		 * anymore since accessing it would mess up IT85 communication.
-		 * If we decide to disable FWH for this region, we should print
-		 * a debug message about it.
-		 */
-		/* Set this as SPI controller. */
-		register_spi_master(&spi_master_it85xx);
-	}
-	return ret;
-}
 
-/* According to ITE 8502 document, the procedure to follow mode is following:
- *   1. write 0x00 to LPC/FWH address 0xffff_fexxh (drive CE# high)
- *   2. write data to LPC/FWH address 0xffff_fdxxh (drive CE# low and MOSI
- *      with data)
- *   3. read date from LPC/FWH address 0xffff_fdxxh (drive CE# low and get
- *      data from MISO)
- */
-static int it85xx_spi_send_command(const struct flashctx *flash,
-				   unsigned int writecnt, unsigned int readcnt,
-				   const unsigned char *writearr,
-				   unsigned char *readarr)
-{
-	unsigned int i;
+#ifdef LPC_IO
+	data->shm_io_base = shm_io_base;
+#endif
+	data->ce_high = ((unsigned char *)base) + 0xE00;  /* 0xFFFFFE00 */
+	data->ce_low = ((unsigned char *)base) + 0xD00;  /* 0xFFFFFD00 */
 
-	it85xx_enter_scratch_rom();
-	/* Exit scratch ROM ONLY when programmer shuts down. Otherwise, the
-	 * temporary flash state may halt the EC.
+	/* FIXME: Really leave FWH enabled? We can't use this region
+	 * anymore since accessing it would mess up IT85 communication.
+	 * If we decide to disable FWH for this region, we should print
+	 * a debug message about it.
 	 */
-
-#ifdef LPC_IO
-	INDIRECT_A1(shm_io_base, (((unsigned long int)ce_high) >> 8) & 0xff);
-	INDIRECT_WRITE(shm_io_base, 0xFF);  /* Write anything to this address.*/
-	INDIRECT_A1(shm_io_base, (((unsigned long int)ce_low) >> 8) & 0xff);
-#endif
-#ifdef LPC_MEMORY
-	mmio_writeb(0, ce_high);
-#endif
-	for (i = 0; i < writecnt; ++i) {
-#ifdef LPC_IO
-		INDIRECT_WRITE(shm_io_base, writearr[i]);
-#endif
-#ifdef LPC_MEMORY
-		mmio_writeb(writearr[i], ce_low);
-#endif
-	}
-	for (i = 0; i < readcnt; ++i) {
-#ifdef LPC_IO
-		readarr[i] = INDIRECT_READ(shm_io_base);
-#endif
-#ifdef LPC_MEMORY
-		readarr[i] = mmio_readb(ce_low);
-#endif
-	}
-#ifdef LPC_IO
-	INDIRECT_A1(shm_io_base, (((unsigned long int)ce_high) >> 8) & 0xff);
-	INDIRECT_WRITE(shm_io_base, 0xFF);  /* Write anything to this address.*/
-#endif
-#ifdef LPC_MEMORY
-	mmio_writeb(0, ce_high);
-#endif
-
-	return 0;
+	/* Set this as SPI controller. */
+	return register_spi_master(&spi_master_it85xx, data);
 }
 
 #endif

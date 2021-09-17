@@ -159,7 +159,7 @@ int printlock_regspace2_block_eraser_1(struct flashctx *flash);
 /* sst28sf040.c */
 int erase_chip_28sf040(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 int erase_sector_28sf040(struct flashctx *flash, unsigned int address, unsigned int sector_size);
-int write_28sf040(struct flashctx *flash, const uint8_t *buf,unsigned int start, unsigned int len);
+int write_28sf040(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 int unprotect_28sf040(struct flashctx *flash);
 int protect_28sf040(struct flashctx *flash);
 
@@ -169,6 +169,11 @@ int erase_sector_49lfxxxc(struct flashctx *flash, unsigned int address, unsigned
 /* sst_fwhub.c */
 int printlock_sst_fwhub(struct flashctx *flash);
 int unlock_sst_fwhub(struct flashctx *flash);
+
+/* s25f.c */
+int probe_spi_big_spansion(struct flashctx *flash);
+int s25fl_block_erase(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
+int s25fs_block_erase_d8(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 
 /* w39.c */
 int printlock_w39f010(struct flashctx * flash);
@@ -195,6 +200,9 @@ int erase_sector_stm50(struct flashctx *flash, unsigned int block, unsigned int 
 /* en29lv640b.c */
 int probe_en29lv640b(struct flashctx *flash);
 int write_en29lv640b(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
+
+/* dummyflasher.c */
+int probe_variable_size(struct flashctx *flash);
 
 /* edi.c */
 int edi_chip_block_erase(struct flashctx *flash, unsigned int page, unsigned int size);

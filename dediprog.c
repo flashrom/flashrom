@@ -43,10 +43,6 @@
 #define REQTYPE_OTHER_IN (LIBUSB_ENDPOINT_IN | LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_RECIPIENT_OTHER)	/* 0xC3 */
 #define REQTYPE_EP_OUT (LIBUSB_ENDPOINT_OUT | LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_RECIPIENT_ENDPOINT)	/* 0x42 */
 #define REQTYPE_EP_IN (LIBUSB_ENDPOINT_IN | LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_RECIPIENT_ENDPOINT)	/* 0xC2 */
-static struct libusb_context *usb_ctx;
-static libusb_device_handle *dediprog_handle;
-static int dediprog_in_endpoint;
-static int dediprog_out_endpoint;
 
 enum dediprog_devtype {
 	DEV_UNKNOWN		= 0,
@@ -152,14 +148,20 @@ enum protocol {
 	PROTOCOL_V3,
 };
 
-const struct dev_entry devs_dediprog[] = {
+static const struct dev_entry devs_dediprog[] = {
 	{0x0483, 0xDADA, OK, "Dediprog", "SF100/SF200/SF600"},
 
 	{0},
 };
 
-static int dediprog_firmwareversion = FIRMWARE_VERSION(0, 0, 0);
-static enum dediprog_devtype dediprog_devicetype = DEV_UNKNOWN;
+struct dediprog_data {
+	struct libusb_context *usb_ctx;
+	libusb_device_handle *handle;
+	int in_endpoint;
+	int out_endpoint;
+	int firmwareversion;
+	enum dediprog_devtype devicetype;
+};
 
 #if defined(LIBUSB_MAJOR) && defined(LIBUSB_MINOR) && defined(LIBUSB_MICRO) && \
     LIBUSB_MAJOR <= 1 && LIBUSB_MINOR == 0 && LIBUSB_MICRO < 9
@@ -177,20 +179,20 @@ const char * LIBUSB_CALL libusb_error_name(int error_code)
 }
 #endif
 
-static enum protocol protocol(void)
+static enum protocol protocol(const struct dediprog_data *dp_data)
 {
 	/* Firmware version < 5.0.0 is handled explicitly in some cases. */
-	switch (dediprog_devicetype) {
+	switch (dp_data->devicetype) {
 	case DEV_SF100:
 	case DEV_SF200:
-		if (dediprog_firmwareversion < FIRMWARE_VERSION(5, 5, 0))
+		if (dp_data->firmwareversion < FIRMWARE_VERSION(5, 5, 0))
 			return PROTOCOL_V1;
 		else
 			return PROTOCOL_V2;
 	case DEV_SF600:
-		if (dediprog_firmwareversion < FIRMWARE_VERSION(6, 9, 0))
+		if (dp_data->firmwareversion < FIRMWARE_VERSION(6, 9, 0))
 			return PROTOCOL_V1;
-		else if (dediprog_firmwareversion <= FIRMWARE_VERSION(7, 2, 21))
+		else if (dp_data->firmwareversion <= FIRMWARE_VERSION(7, 2, 21))
 			return PROTOCOL_V2;
 		else
 			return PROTOCOL_V3;
@@ -215,7 +217,9 @@ static void LIBUSB_CALL dediprog_bulk_read_cb(struct libusb_transfer *const tran
 	++status->finished_idx;
 }
 
-static int dediprog_bulk_read_poll(const struct dediprog_transfer_status *const status, const int finish)
+static int dediprog_bulk_read_poll(struct libusb_context *usb_ctx,
+				   const struct dediprog_transfer_status *const status,
+				   const int finish)
 {
 	if (status->finished_idx >= status->queued_idx)
 		return 0;
@@ -231,13 +235,17 @@ static int dediprog_bulk_read_poll(const struct dediprog_transfer_status *const 
 	return 0;
 }
 
-static int dediprog_read(enum dediprog_cmds cmd, unsigned int value, unsigned int idx, uint8_t *bytes, size_t size)
+static int dediprog_read(libusb_device_handle *dediprog_handle,
+			 enum dediprog_cmds cmd, unsigned int value, unsigned int idx,
+			 uint8_t *bytes, size_t size)
 {
 	return libusb_control_transfer(dediprog_handle, REQTYPE_EP_IN, cmd, value, idx,
 				      (unsigned char *)bytes, size, DEFAULT_TIMEOUT);
 }
 
-static int dediprog_write(enum dediprog_cmds cmd, unsigned int value, unsigned int idx, const uint8_t *bytes, size_t size)
+static int dediprog_write(libusb_device_handle *dediprog_handle,
+			  enum dediprog_cmds cmd, unsigned int value, unsigned int idx,
+			  const uint8_t *bytes, size_t size)
 {
 	return libusb_control_transfer(dediprog_handle, REQTYPE_EP_OUT, cmd, value, idx,
 				      (unsigned char *)bytes, size, DEFAULT_TIMEOUT);
@@ -245,7 +253,7 @@ static int dediprog_write(enum dediprog_cmds cmd, unsigned int value, unsigned i
 
 
 /* This function sets the GPIOs connected to the LEDs as well as IO1-IO4. */
-static int dediprog_set_leds(int leds)
+static int dediprog_set_leds(int leds, const struct dediprog_data *dp_data)
 {
 	if (leds < LED_NONE || leds > LED_ALL)
 		leds = LED_ALL;
@@ -260,18 +268,18 @@ static int dediprog_set_leds(int leds)
 	 * FIXME: take IO pins into account
 	 */
 	int target_leds, ret;
-	if (protocol() >= PROTOCOL_V2) {
+	if (protocol(dp_data) >= PROTOCOL_V2) {
 		target_leds = (leds ^ 7) << 8;
-		ret = dediprog_write(CMD_SET_IO_LED, target_leds, 0, NULL, 0);
+		ret = dediprog_write(dp_data->handle, CMD_SET_IO_LED, target_leds, 0, NULL, 0);
 	} else {
-		if (dediprog_firmwareversion < FIRMWARE_VERSION(5, 0, 0)) {
+		if (dp_data->firmwareversion < FIRMWARE_VERSION(5, 0, 0)) {
 			target_leds = ((leds & LED_ERROR) >> 2) | ((leds & LED_PASS) << 2);
 		} else {
 			target_leds = leds;
 		}
 		target_leds ^= 7;
 
-		ret = dediprog_write(CMD_SET_IO_LED, 0x9, target_leds, NULL, 0);
+		ret = dediprog_write(dp_data->handle, CMD_SET_IO_LED, 0x9, target_leds, NULL, 0);
 	}
 
 	if (ret != 0x0) {
@@ -282,7 +290,7 @@ static int dediprog_set_leds(int leds)
 	return 0;
 }
 
-static int dediprog_set_spi_voltage(int millivolt)
+static int dediprog_set_spi_voltage(libusb_device_handle *dediprog_handle, int millivolt)
 {
 	int ret;
 	uint16_t voltage_selector;
@@ -312,7 +320,7 @@ static int dediprog_set_spi_voltage(int millivolt)
 		/* Wait some time as the original driver does. */
 		programmer_delay(200 * 1000);
 	}
-	ret = dediprog_write(CMD_SET_VCC, voltage_selector, 0, NULL, 0);
+	ret = dediprog_write(dediprog_handle, CMD_SET_VCC, voltage_selector, 0, NULL, 0);
 	if (ret != 0x0) {
 		msg_perr("Command Set SPI Voltage 0x%x failed!\n",
 			 voltage_selector);
@@ -342,9 +350,9 @@ static const struct dediprog_spispeeds spispeeds[] = {
 	{ NULL,		0x0 },
 };
 
-static int dediprog_set_spi_speed(unsigned int spispeed_idx)
+static int dediprog_set_spi_speed(unsigned int spispeed_idx, const struct dediprog_data *dp_data)
 {
-	if (dediprog_firmwareversion < FIRMWARE_VERSION(5, 0, 0)) {
+	if (dp_data->firmwareversion < FIRMWARE_VERSION(5, 0, 0)) {
 		msg_pwarn("Skipping to set SPI speed because firmware is too old.\n");
 		return 0;
 	}
@@ -352,7 +360,7 @@ static int dediprog_set_spi_speed(unsigned int spispeed_idx)
 	const struct dediprog_spispeeds *spispeed = &spispeeds[spispeed_idx];
 	msg_pdbg("SPI speed is %sHz\n", spispeed->name);
 
-	int ret = dediprog_write(CMD_SET_SPI_CLK, spispeed->speed, 0, NULL, 0);
+	int ret = dediprog_write(dp_data->handle, CMD_SET_SPI_CLK, spispeed->speed, 0, NULL, 0);
 	if (ret != 0x0) {
 		msg_perr("Command Set SPI Speed 0x%x failed!\n", spispeed->speed);
 		return 1;
@@ -364,6 +372,8 @@ static int prepare_rw_cmd(
 		struct flashctx *const flash, uint8_t *data_packet, unsigned int count,
 		uint8_t dedi_spi_cmd, unsigned int *value, unsigned int *idx, unsigned int start, int is_read)
 {
+	const struct dediprog_data *dp_data = flash->mst->spi.data;
+
 	if (count >= 1 << 16) {
 		msg_perr("%s: Unsupported transfer length of %u blocks! "
 			 "Please report a bug at flashrom@flashrom.org\n",
@@ -378,7 +388,7 @@ static int prepare_rw_cmd(
 	data_packet[3] = dedi_spi_cmd; /* Read/Write Mode (currently READ_MODE_STD, WRITE_MODE_PAGE_PGM or WRITE_MODE_2B_AAI) */
 	data_packet[4] = 0; /* "Opcode". Specs imply necessity only for READ_MODE_4B_ADDR_FAST and WRITE_MODE_4B_ADDR_256B_PAGE_PGM */
 
-	if (protocol() >= PROTOCOL_V2) {
+	if (protocol(dp_data) >= PROTOCOL_V2) {
 		if (is_read && flash->chip->feature_bits & FEATURE_4BA_FAST_READ) {
 			data_packet[3] = READ_MODE_4B_ADDR_FAST_0x0C;
 			data_packet[4] = JEDEC_READ_4BA_FAST;
@@ -394,7 +404,7 @@ static int prepare_rw_cmd(
 		data_packet[7] = (start >>  8) & 0xff;
 		data_packet[8] = (start >> 16) & 0xff;
 		data_packet[9] = (start >> 24) & 0xff;
-		if (protocol() >= PROTOCOL_V3) {
+		if (protocol(dp_data) >= PROTOCOL_V3) {
 			if (is_read) {
 				data_packet[10] = 0x00;	/* address length (3 or 4) */
 				data_packet[11] = 0x00;	/* dummy cycle / 2 */
@@ -435,6 +445,7 @@ static int prepare_rw_cmd(
 static int dediprog_spi_bulk_read(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len)
 {
 	int err = 1;
+	const struct dediprog_data *dp_data = flash->mst->spi.data;
 
 	/* chunksize must be 512, other sizes will NOT work at all. */
 	const unsigned int chunksize = 512;
@@ -454,7 +465,7 @@ static int dediprog_spi_bulk_read(struct flashctx *flash, uint8_t *buf, unsigned
 	}
 
 	int command_packet_size;
-	switch (protocol()) {
+	switch (protocol(dp_data)) {
 	case PROTOCOL_V1:
 		command_packet_size = 5;
 		break;
@@ -473,7 +484,7 @@ static int dediprog_spi_bulk_read(struct flashctx *flash, uint8_t *buf, unsigned
 	if (prepare_rw_cmd(flash, data_packet, count, READ_MODE_STD, &value, &idx, start, 1))
 		return 1;
 
-	int ret = dediprog_write(CMD_READ, value, idx, data_packet, sizeof(data_packet));
+	int ret = dediprog_write(dp_data->handle, CMD_READ, value, idx, data_packet, sizeof(data_packet));
 	if (ret != (int)sizeof(data_packet)) {
 		msg_perr("Command Read SPI Bulk failed, %i %s!\n", ret, libusb_error_name(ret));
 		return 1;
@@ -501,7 +512,7 @@ static int dediprog_spi_bulk_read(struct flashctx *flash, uint8_t *buf, unsigned
 		       (status.queued_idx - status.finished_idx) < DEDIPROG_ASYNC_TRANSFERS)
 		{
 			transfer = transfers[status.queued_idx % DEDIPROG_ASYNC_TRANSFERS];
-			libusb_fill_bulk_transfer(transfer, dediprog_handle, 0x80 | dediprog_in_endpoint,
+			libusb_fill_bulk_transfer(transfer, dp_data->handle, 0x80 | dp_data->in_endpoint,
 					(unsigned char *)buf + status.queued_idx * chunksize, chunksize,
 					dediprog_bulk_read_cb, &status, DEFAULT_TIMEOUT);
 			transfer->flags |= LIBUSB_TRANSFER_SHORT_NOT_OK;
@@ -513,11 +524,11 @@ static int dediprog_spi_bulk_read(struct flashctx *flash, uint8_t *buf, unsigned
 			}
 			++status.queued_idx;
 		}
-		if (dediprog_bulk_read_poll(&status, 0))
+		if (dediprog_bulk_read_poll(dp_data->usb_ctx, &status, 0))
 			goto err_free;
 	}
 	/* Wait for transfers to finish. */
-	if (dediprog_bulk_read_poll(&status, 1))
+	if (dediprog_bulk_read_poll(dp_data->usb_ctx, &status, 0))
 		goto err_free;
 	/* Check if everything has been transmitted. */
 	if ((status.finished_idx < count) || status.error)
@@ -526,7 +537,7 @@ static int dediprog_spi_bulk_read(struct flashctx *flash, uint8_t *buf, unsigned
 	err = 0;
 
 err_free:
-	dediprog_bulk_read_poll(&status, 1);
+	dediprog_bulk_read_poll(dp_data->usb_ctx, &status, 1);
 	for (i = 0; i < DEDIPROG_ASYNC_TRANSFERS; ++i)
 		if (transfers[i]) libusb_free_transfer(transfers[i]);
 	return err;
@@ -539,13 +550,14 @@ static int dediprog_spi_read(struct flashctx *flash, uint8_t *buf, unsigned int 
 	const unsigned int chunksize = 0x200;
 	unsigned int residue = start % chunksize ? min(len, chunksize - start % chunksize) : 0;
 	unsigned int bulklen;
+	const struct dediprog_data *dp_data = flash->mst->spi.data;
 
-	dediprog_set_leds(LED_BUSY);
+	dediprog_set_leds(LED_BUSY, dp_data);
 
 	if (residue) {
 		msg_pdbg("Slow read for partial block from 0x%x, length 0x%x\n",
 			 start, residue);
-		ret = spi_read_chunked(flash, buf, start, residue, 16);
+		ret = default_spi_read(flash, buf, start, residue);
 		if (ret)
 			goto err;
 	}
@@ -560,16 +572,16 @@ static int dediprog_spi_read(struct flashctx *flash, uint8_t *buf, unsigned int 
 	if (len != 0) {
 		msg_pdbg("Slow read for partial block from 0x%x, length 0x%x\n",
 			 start, len);
-		ret = spi_read_chunked(flash, buf + residue + bulklen,
-				       start + residue + bulklen, len, 16);
+		ret = default_spi_read(flash, buf + residue + bulklen,
+				       start + residue + bulklen, len);
 		if (ret)
 			goto err;
 	}
 
-	dediprog_set_leds(LED_PASS);
+	dediprog_set_leds(LED_PASS, dp_data);
 	return 0;
 err:
-	dediprog_set_leds(LED_ERROR);
+	dediprog_set_leds(LED_ERROR, dp_data);
 	return ret;
 }
 
@@ -588,6 +600,7 @@ static int dediprog_spi_bulk_write(struct flashctx *flash, const uint8_t *buf, u
 	 * space in a USB bulk transfer must be filled with 0xff padding.
 	 */
 	const unsigned int count = len / chunksize;
+	const struct dediprog_data *dp_data = flash->mst->spi.data;
 
 	/*
 	 * We should change this check to
@@ -611,7 +624,7 @@ static int dediprog_spi_bulk_write(struct flashctx *flash, const uint8_t *buf, u
 		return 0;
 
 	int command_packet_size;
-	switch (protocol()) {
+	switch (protocol(dp_data)) {
 	case PROTOCOL_V1:
 		command_packet_size = 5;
 		break;
@@ -629,7 +642,7 @@ static int dediprog_spi_bulk_write(struct flashctx *flash, const uint8_t *buf, u
 	unsigned int value, idx;
 	if (prepare_rw_cmd(flash, data_packet, count, dedi_spi_cmd, &value, &idx, start, 0))
 		return 1;
-	int ret = dediprog_write(CMD_WRITE, value, idx, data_packet, sizeof(data_packet));
+	int ret = dediprog_write(dp_data->handle, CMD_WRITE, value, idx, data_packet, sizeof(data_packet));
 	if (ret != (int)sizeof(data_packet)) {
 		msg_perr("Command Write SPI Bulk failed, %s!\n", libusb_error_name(ret));
 		return 1;
@@ -641,7 +654,7 @@ static int dediprog_spi_bulk_write(struct flashctx *flash, const uint8_t *buf, u
 		memcpy(usbbuf, buf + i * chunksize, chunksize);
 		memset(usbbuf + chunksize, 0xff, sizeof(usbbuf) - chunksize); // fill up with 0xFF
 		int transferred;
-		ret = libusb_bulk_transfer(dediprog_handle, dediprog_out_endpoint, usbbuf, 512, &transferred,
+		ret = libusb_bulk_transfer(dp_data->handle, dp_data->out_endpoint, usbbuf, 512, &transferred,
 					   DEFAULT_TIMEOUT);
 		if ((ret < 0) || (transferred != 512)) {
 			msg_perr("SPI bulk write failed, expected %i, got %s!\n", 512, libusb_error_name(ret));
@@ -659,8 +672,9 @@ static int dediprog_spi_write(struct flashctx *flash, const uint8_t *buf,
 	const unsigned int chunksize = flash->chip->page_size;
 	unsigned int residue = start % chunksize ? chunksize - start % chunksize : 0;
 	unsigned int bulklen;
+	const struct dediprog_data *dp_data = flash->mst->spi.data;
 
-	dediprog_set_leds(LED_BUSY);
+	dediprog_set_leds(LED_BUSY, dp_data);
 
 	if (chunksize != 256) {
 		msg_pdbg("Page sizes other than 256 bytes are unsupported as "
@@ -675,7 +689,7 @@ static int dediprog_spi_write(struct flashctx *flash, const uint8_t *buf,
 		/* No idea about the real limit. Maybe 16 including command and address, maybe more. */
 		ret = spi_write_chunked(flash, buf, start, residue, 11);
 		if (ret) {
-			dediprog_set_leds(LED_ERROR);
+			dediprog_set_leds(LED_ERROR, dp_data);
 			return ret;
 		}
 	}
@@ -684,7 +698,7 @@ static int dediprog_spi_write(struct flashctx *flash, const uint8_t *buf,
 	bulklen = (len - residue) / chunksize * chunksize;
 	ret = dediprog_spi_bulk_write(flash, buf + residue, chunksize, start + residue, bulklen, dedi_spi_cmd);
 	if (ret) {
-		dediprog_set_leds(LED_ERROR);
+		dediprog_set_leds(LED_ERROR, dp_data);
 		return ret;
 	}
 
@@ -695,12 +709,12 @@ static int dediprog_spi_write(struct flashctx *flash, const uint8_t *buf,
 		ret = spi_write_chunked(flash, buf + residue + bulklen,
 				        start + residue + bulklen, len, 11);
 		if (ret) {
-			dediprog_set_leds(LED_ERROR);
+			dediprog_set_leds(LED_ERROR, dp_data);
 			return ret;
 		}
 	}
 
-	dediprog_set_leds(LED_PASS);
+	dediprog_set_leds(LED_PASS, dp_data);
 	return 0;
 }
 
@@ -721,6 +735,7 @@ static int dediprog_spi_send_command(const struct flashctx *flash,
 				     unsigned char *readarr)
 {
 	int ret;
+	const struct dediprog_data *dp_data = flash->mst->spi.data;
 
 	msg_pspew("%s, writecnt=%i, readcnt=%i\n", __func__, writecnt, readcnt);
 	if (writecnt > flash->mst->spi.max_data_write) {
@@ -735,14 +750,14 @@ static int dediprog_spi_send_command(const struct flashctx *flash,
 	unsigned int idx, value;
 	/* New protocol has options and timeout combined as value while the old one used the value field for
 	 * timeout and the index field for options. */
-	if (protocol() >= PROTOCOL_V2) {
+	if (protocol(dp_data) >= PROTOCOL_V2) {
 		idx = 0;
 		value = readcnt ? 0x1 : 0x0; // Indicate if we require a read
 	} else {
 		idx = readcnt ? 0x1 : 0x0; // Indicate if we require a read
 		value = 0;
 	}
-	ret = dediprog_write(CMD_TRANSCEIVE, value, idx, writearr, writecnt);
+	ret = dediprog_write(dp_data->handle, CMD_TRANSCEIVE, value, idx, writearr, writecnt);
 	if (ret != (int)writecnt) {
 		msg_perr("Send SPI failed, expected %i, got %i %s!\n",
 			 writecnt, ret, libusb_error_name(ret));
@@ -767,9 +782,9 @@ static int dediprog_spi_send_command(const struct flashctx *flash,
 		idx = (0 & 0xFF);  // Lower byte is option (0x01 = require SR, 0x02 keep CS low)
 		value = min(read_timeout, 0xFF); // Possibly two bytes but we play safe here
 	}
-	ret = dediprog_read(CMD_TRANSCEIVE, value, idx, readarr, readcnt);
+	ret = dediprog_read(dp_data->dediprog_handle, CMD_TRANSCEIVE, value, idx, readarr, readcnt);
 	*/
-	ret = dediprog_read(CMD_TRANSCEIVE, 0, 0, readarr, readcnt);
+	ret = dediprog_read(dp_data->handle, CMD_TRANSCEIVE, 0, 0, readarr, readcnt);
 	if (ret != (int)readcnt) {
 		msg_perr("Receive SPI failed, expected %i, got %i %s!\n", readcnt, ret, libusb_error_name(ret));
 		return 1;
@@ -777,13 +792,13 @@ static int dediprog_spi_send_command(const struct flashctx *flash,
 	return 0;
 }
 
-static int dediprog_check_devicestring(void)
+static int dediprog_check_devicestring(struct dediprog_data *dp_data)
 {
 	int ret;
 	char buf[0x11];
 
 	/* Command Receive Device String. */
-	ret = dediprog_read(CMD_READ_PROG_INFO, 0, 0, (uint8_t *)buf, 0x10);
+	ret = dediprog_read(dp_data->handle, CMD_READ_PROG_INFO, 0, 0, (uint8_t *)buf, 0x10);
 	if (ret != 0x10) {
 		msg_perr("Incomplete/failed Command Receive Device String!\n");
 		return 1;
@@ -791,11 +806,11 @@ static int dediprog_check_devicestring(void)
 	buf[0x10] = '\0';
 	msg_pdbg("Found a %s\n", buf);
 	if (memcmp(buf, "SF100", 0x5) == 0)
-		dediprog_devicetype = DEV_SF100;
+		dp_data->devicetype = DEV_SF100;
 	else if (memcmp(buf, "SF200", 0x5) == 0)
-		dediprog_devicetype = DEV_SF200;
+		dp_data->devicetype = DEV_SF200;
 	else if (memcmp(buf, "SF600", 0x5) == 0)
-		dediprog_devicetype = DEV_SF600;
+		dp_data->devicetype = DEV_SF600;
 	else {
 		msg_perr("Device not a SF100, SF200, or SF600!\n");
 		return 1;
@@ -804,7 +819,7 @@ static int dediprog_check_devicestring(void)
 	int sfnum;
 	int fw[3];
 	if (sscanf(buf, "SF%d V:%d.%d.%d ", &sfnum, &fw[0], &fw[1], &fw[2]) != 4 ||
-	    sfnum != (int)dediprog_devicetype) {
+	    sfnum != (int)dp_data->devicetype) {
 		msg_perr("Unexpected firmware version string '%s'\n", buf);
 		return 1;
 	}
@@ -814,8 +829,8 @@ static int dediprog_check_devicestring(void)
 		return 1;
 	}
 
-	dediprog_firmwareversion = FIRMWARE_VERSION(fw[0], fw[1], fw[2]);
-	if (protocol() == PROTOCOL_UNKNOWN) {
+	dp_data->firmwareversion = FIRMWARE_VERSION(fw[0], fw[1], fw[2]);
+	if (protocol(dp_data) == PROTOCOL_UNKNOWN) {
 		msg_perr("Internal error: Unable to determine protocol version.\n");
 		return 1;
 	}
@@ -831,7 +846,7 @@ static int dediprog_check_devicestring(void)
  * much different.
  * @return  the id on success, -1 on failure
  */
-static int dediprog_read_id(void)
+static int dediprog_read_id(libusb_device_handle *dediprog_handle)
 {
 	int ret;
 	uint8_t buf[3];
@@ -859,7 +874,7 @@ static int dediprog_read_id(void)
 /* This command presumably sets the voltage for the SF100 itself (not the SPI flash).
  * Only use dediprog_set_voltage on SF100 programmers with firmware older
  * than V6.0.0. Newer programmers (including all SF600s) do not support it. */
-static int dediprog_set_voltage(void)
+static int dediprog_set_voltage(libusb_device_handle *dediprog_handle)
 {
 	unsigned char buf[1] = {0};
 	int ret = libusb_control_transfer(dediprog_handle, REQTYPE_OTHER_IN, CMD_SET_VOLTAGE, 0x0, 0x0,
@@ -876,15 +891,15 @@ static int dediprog_set_voltage(void)
 	return 0;
 }
 
-static int dediprog_standalone_mode(void)
+static int dediprog_standalone_mode(const struct dediprog_data *dp_data)
 {
 	int ret;
 
-	if (dediprog_devicetype != DEV_SF600)
+	if (dp_data->devicetype != DEV_SF600)
 		return 0;
 
 	msg_pdbg2("Disabling standalone mode.\n");
-	ret = dediprog_write(CMD_SET_STANDALONE, LEAVE_STANDALONE_MODE, 0, NULL, 0);
+	ret = dediprog_write(dp_data->handle, CMD_SET_STANDALONE, LEAVE_STANDALONE_MODE, 0, NULL, 0);
 	if (ret) {
 		msg_perr("Failed to disable standalone mode: %s\n", libusb_error_name(ret));
 		return 1;
@@ -898,7 +913,7 @@ static int dediprog_standalone_mode(void)
  * Present in eng_detect_blink.log with firmware 3.1.8
  * Always preceded by Command Receive Device String
  */
-static int dediprog_command_b(void)
+static int dediprog_command_b(libusb_device_handle *dediprog_handle)
 {
 	int ret;
 	char buf[0x3];
@@ -919,9 +934,9 @@ static int dediprog_command_b(void)
 }
 #endif
 
-static int set_target_flash(enum dediprog_target target)
+static int set_target_flash(libusb_device_handle *dediprog_handle, enum dediprog_target target)
 {
-	int ret = dediprog_write(CMD_SET_TARGET, target, 0, NULL, 0);
+	int ret = dediprog_write(dediprog_handle, CMD_SET_TARGET, target, 0, NULL, 0);
 	if (ret != 0) {
 		msg_perr("set_target_flash failed (%s)!\n", libusb_error_name(ret));
 		return 1;
@@ -931,7 +946,7 @@ static int set_target_flash(enum dediprog_target target)
 
 #if 0
 /* Returns true if the button is currently pressed. */
-static bool dediprog_get_button(void)
+static bool dediprog_get_button(libusb_device_handle *dediprog_handle)
 {
 	char buf[1];
 	int ret = usb_control_msg(dediprog_handle, REQTYPE_EP_IN, CMD_GET_BUTTON, 0, 0,
@@ -992,6 +1007,29 @@ static int parse_voltage(char *voltage)
 	return millivolt;
 }
 
+static int dediprog_shutdown(void *data)
+{
+	int ret = 0;
+	struct dediprog_data *dp_data = data;
+
+	/* URB 28. Command Set SPI Voltage to 0. */
+	if (dediprog_set_spi_voltage(dp_data->handle, 0x0)) {
+		ret = 1;
+		goto out;
+	}
+
+	if (libusb_release_interface(dp_data->handle, 0)) {
+		msg_perr("Could not release USB interface!\n");
+		ret = 1;
+		goto out;
+	}
+	libusb_close(dp_data->handle);
+	libusb_exit(dp_data->usb_ctx);
+out:
+	free(data);
+	return ret;
+}
+
 static struct spi_master spi_master_dediprog = {
 	.features	= SPI_MASTER_NO_4BA_MODES,
 	.max_data_read	= 16, /* 18 seems to work fine as well, but 19 times out sometimes with FW 5.15. */
@@ -1001,6 +1039,7 @@ static struct spi_master spi_master_dediprog = {
 	.read		= dediprog_spi_read,
 	.write_256	= dediprog_spi_write_256,
 	.write_aai	= dediprog_spi_write_aai,
+	.shutdown	= dediprog_shutdown,
 };
 
 /*
@@ -1008,54 +1047,36 @@ static struct spi_master spi_master_dediprog = {
  * @index   index of the USB device
  * @return  0 for success, -1 for error, -2 for busy device
  */
-static int dediprog_open(int index)
+static int dediprog_open(int index, struct dediprog_data *dp_data)
 {
 	const uint16_t vid = devs_dediprog[0].vendor_id;
 	const uint16_t pid = devs_dediprog[0].device_id;
 	int ret;
 
-	dediprog_handle = usb_dev_get_by_vid_pid_number(usb_ctx, vid, pid, (unsigned int) index);
-	if (!dediprog_handle) {
+	dp_data->handle = usb_dev_get_by_vid_pid_number(dp_data->usb_ctx, vid, pid, (unsigned int) index);
+	if (!dp_data->handle) {
 		msg_perr("Could not find a Dediprog programmer on USB.\n");
-		libusb_exit(usb_ctx);
+		libusb_exit(dp_data->usb_ctx);
 		return -1;
 	}
-	ret = libusb_set_configuration(dediprog_handle, 1);
+	ret = libusb_set_configuration(dp_data->handle, 1);
 	if (ret != 0) {
 		msg_perr("Could not set USB device configuration: %i %s\n",
 			 ret, libusb_error_name(ret));
-		libusb_close(dediprog_handle);
+		libusb_close(dp_data->handle);
 		return -2;
 	}
-	ret = libusb_claim_interface(dediprog_handle, 0);
+	ret = libusb_claim_interface(dp_data->handle, 0);
 	if (ret < 0) {
 		msg_perr("Could not claim USB device interface %i: %i %s\n",
 			 0, ret, libusb_error_name(ret));
-		libusb_close(dediprog_handle);
+		libusb_close(dp_data->handle);
 		return -2;
 	}
 	return 0;
 }
 
-static int dediprog_shutdown(void *data)
-{
-	dediprog_devicetype = DEV_UNKNOWN;
-
-	/* URB 28. Command Set SPI Voltage to 0. */
-	if (dediprog_set_spi_voltage(0x0))
-		return 1;
-
-	if (libusb_release_interface(dediprog_handle, 0)) {
-		msg_perr("Could not release USB interface!\n");
-		return 1;
-	}
-	libusb_close(dediprog_handle);
-	libusb_exit(usb_ctx);
-
-	return 0;
-}
-
-int dediprog_init(void)
+static int dediprog_init(void)
 {
 	char *voltage, *id_str, *device, *spispeed, *target_str;
 	int spispeed_idx = 1;
@@ -1176,20 +1197,27 @@ int dediprog_init(void)
 	}
 	free(target_str);
 
-	/* Here comes the USB stuff. */
-	libusb_init(&usb_ctx);
-	if (!usb_ctx) {
-		msg_perr("Could not initialize libusb!\n");
+	struct dediprog_data *dp_data = calloc(1, sizeof(*dp_data));
+	if (!dp_data) {
+		msg_perr("Unable to allocate space for SPI master data\n");
 		return 1;
+	}
+	dp_data->firmwareversion = FIRMWARE_VERSION(0, 0, 0);
+	dp_data->devicetype = DEV_UNKNOWN;
+
+	/* Here comes the USB stuff. */
+	libusb_init(&dp_data->usb_ctx);
+	if (!dp_data->usb_ctx) {
+		msg_perr("Could not initialize libusb!\n");
+		goto init_err_exit;
 	}
 
 	if (id != -1) {
 		for (i = 0; ; i++) {
-			ret = dediprog_open(i);
+			ret = dediprog_open(i, dp_data);
 			if (ret == -1) {
 				/* no dev */
-				libusb_exit(usb_ctx);
-				return 1;
+				goto init_err_exit;
 			} else if (ret == -2) {
 				/* busy dev */
 				continue;
@@ -1202,80 +1230,96 @@ int dediprog_init(void)
 			 * device is in use by another instance of flashrom),
 			 * the device is skipped and the next device is tried.
 			 */
-			found_id = dediprog_read_id();
+			found_id = dediprog_read_id(dp_data->handle);
 			if (found_id < 0) {
 				msg_perr("Could not read id.\n");
-				libusb_release_interface(dediprog_handle, 0);
-				libusb_close(dediprog_handle);
+				libusb_release_interface(dp_data->handle, 0);
+				libusb_close(dp_data->handle);
 				continue;
 			}
 			msg_pinfo("Found dediprog id SF%06d.\n", found_id);
 			if (found_id != id) {
-				libusb_release_interface(dediprog_handle, 0);
-				libusb_close(dediprog_handle);
+				libusb_release_interface(dp_data->handle, 0);
+				libusb_close(dp_data->handle);
 				continue;
 			}
 			break;
 		}
 	} else {
-		if (dediprog_open(usedevice)) {
-			return 1;
+		if (dediprog_open(usedevice, dp_data)) {
+			goto init_err_exit;
 		}
-		found_id = dediprog_read_id();
+		found_id = dediprog_read_id(dp_data->handle);
 	}
 
 	if (found_id >= 0) {
 		msg_pinfo("Using dediprog id SF%06d.\n", found_id);
 	}
 
-	if (register_shutdown(dediprog_shutdown, NULL))
-		return 1;
-
 	/* Try reading the devicestring. If that fails and the device is old (FW < 6.0.0, which we can not know)
 	 * then we need to try the "set voltage" command and then attempt to read the devicestring again. */
-	if (dediprog_check_devicestring()) {
-		if (dediprog_set_voltage())
-			return 1;
-		if (dediprog_check_devicestring())
-			return 1;
+	if (dediprog_check_devicestring(dp_data)) {
+		if (dediprog_set_voltage(dp_data->handle))
+			goto init_err_cleanup_exit;
+		if (dediprog_check_devicestring(dp_data))
+			goto init_err_cleanup_exit;
 	}
 
 	/* SF100/SF200 uses one in/out endpoint, SF600 uses separate in/out endpoints */
-	dediprog_in_endpoint = 2;
-	switch (dediprog_devicetype) {
+	dp_data->in_endpoint = 2;
+	switch (dp_data->devicetype) {
 	case DEV_SF100:
 	case DEV_SF200:
-		dediprog_out_endpoint = 2;
+		dp_data->out_endpoint = 2;
 		break;
 	default:
-		dediprog_out_endpoint = 1;
+		dp_data->out_endpoint = 1;
 		break;
 	}
 
 	/* Set all possible LEDs as soon as possible to indicate activity.
 	 * Because knowing the firmware version is required to set the LEDs correctly we need to this after
 	 * dediprog_check_devicestring() has queried the device. */
-	dediprog_set_leds(LED_ALL);
+	dediprog_set_leds(LED_ALL, dp_data);
 
 	/* Select target/socket, frequency and VCC. */
-	if (set_target_flash(target) ||
-	    dediprog_set_spi_speed(spispeed_idx) ||
-	    dediprog_set_spi_voltage(millivolt)) {
-		dediprog_set_leds(LED_ERROR);
-		return 1;
+	if (set_target_flash(dp_data->handle, target) ||
+	    dediprog_set_spi_speed(spispeed_idx, dp_data) ||
+	    dediprog_set_spi_voltage(dp_data->handle, millivolt)) {
+		dediprog_set_leds(LED_ERROR, dp_data);
+		goto init_err_cleanup_exit;
 	}
 
-	if (dediprog_standalone_mode())
-		return 1;
+	if (dediprog_standalone_mode(dp_data))
+		goto init_err_cleanup_exit;
 
-	if (dediprog_devicetype == DEV_SF100 && protocol() == PROTOCOL_V1)
+	if ((dp_data->devicetype == DEV_SF100) ||
+	    (dp_data->devicetype == DEV_SF600 && protocol(dp_data) == PROTOCOL_V3))
 		spi_master_dediprog.features &= ~SPI_MASTER_NO_4BA_MODES;
 
-	if (protocol() == PROTOCOL_V2)
+	if (protocol(dp_data) >= PROTOCOL_V2)
 		spi_master_dediprog.features |= SPI_MASTER_4BA;
 
-	if (register_spi_master(&spi_master_dediprog) || dediprog_set_leds(LED_NONE))
-		return 1;
+	if (register_spi_master(&spi_master_dediprog, dp_data) || dediprog_set_leds(LED_NONE, dp_data))
+		return 1; /* shutdown function does cleanup */
 
 	return 0;
+
+init_err_cleanup_exit:
+	dediprog_shutdown(dp_data);
+	return 1;
+
+init_err_exit:
+	free(dp_data);
+	return 1;
 }
+
+const struct programmer_entry programmer_dediprog = {
+	.name			= "dediprog",
+	.type			= USB,
+	.devs.dev		= devs_dediprog,
+	.init			= dediprog_init,
+	.map_flash_region	= fallback_map,
+	.unmap_flash_region	= fallback_unmap,
+	.delay			= internal_delay,
+};

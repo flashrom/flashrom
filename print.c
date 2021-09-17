@@ -425,10 +425,10 @@ static void print_supported_boards_helper(const struct board_info *boards,
 }
 #endif
 
-static void print_supported_devs(const struct programmer_entry prog, const char *const type)
+static void print_supported_devs(const struct programmer_entry *const prog, const char *const type)
 {
-	const struct dev_entry *const devs = prog.devs.dev;
-	msg_ginfo("\nSupported %s devices for the %s programmer:\n", type, prog.name);
+	const struct dev_entry *const devs = prog->devs.dev;
+	msg_ginfo("\nSupported %s devices for the %s programmer:\n", type, prog->name);
 	unsigned int maxvendorlen = strlen("Vendor") + 1;
 	unsigned int maxdevlen = strlen("Device") + 1;
 
@@ -474,17 +474,16 @@ int print_supported(void)
 	list_programmers_linebreak(0, 80, 0);
 	msg_ginfo("\n");
 #if CONFIG_INTERNAL == 1
-	msg_ginfo("\nSupported devices for the %s programmer:\n\n",
-	       programmer_table[PROGRAMMER_INTERNAL].name);
+	msg_ginfo("\nSupported devices for the internal programmer:\n\n");
 	print_supported_chipsets();
 	msg_ginfo("\n");
 	print_supported_boards_helper(boards_known, "mainboards");
 	msg_ginfo("\n");
 	print_supported_boards_helper(laptops_known, "mobile devices");
 #endif
-	for (i = 0; i < PROGRAMMER_INVALID; i++) {
-		const struct programmer_entry prog = programmer_table[i];
-		switch (prog.type) {
+	for (i = 0; i < programmer_table_size; i++) {
+		const struct programmer_entry *const prog = programmer_table[i];
+		switch (prog->type) {
 		case USB:
 			print_supported_devs(prog, "USB");
 			break;
@@ -492,14 +491,14 @@ int print_supported(void)
 			print_supported_devs(prog, "PCI");
 			break;
 		case OTHER:
-			if (prog.devs.note != NULL) {
-				msg_ginfo("\nSupported devices for the %s programmer:\n", prog.name);
-				msg_ginfo("%s", prog.devs.note);
+			if (prog->devs.note != NULL) {
+				msg_ginfo("\nSupported devices for the %s programmer:\n", prog->name);
+				msg_ginfo("%s", prog->devs.note);
 			}
 			break;
 		default:
 			msg_gerr("\n%s: %s: Uninitialized programmer type! Please report a bug at "
-				 "flashrom@flashrom.org\n", __func__, prog.name);
+				 "flashrom@flashrom.org\n", __func__, prog->name);
 			break;
 		}
 	}

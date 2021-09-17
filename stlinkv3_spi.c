@@ -114,16 +114,19 @@ enum spi_nss_level {
 
 #define USB_TIMEOUT_IN_MS					5000
 
-const struct dev_entry devs_stlinkv3_spi[] = {
+static const struct dev_entry devs_stlinkv3_spi[] = {
 	{0x0483, 0x374F, OK, "STMicroelectronics", "STLINK-V3"},
 	{0}
 };
 
-static struct libusb_context *usb_ctx;
-static libusb_device_handle *stlinkv3_handle;
+struct stlinkv3_spi_data {
+	struct libusb_context *usb_ctx;
+	libusb_device_handle *handle;
+};
 
 static int stlinkv3_command(uint8_t *command, size_t command_length,
-		     uint8_t *answer, size_t answer_length, const char *command_name)
+		     uint8_t *answer, size_t answer_length, const char *command_name,
+		     libusb_device_handle *stlinkv3_handle)
 {
 	int actual_length = 0;
 	int rc = libusb_bulk_transfer(stlinkv3_handle, STLINK_EP_OUT,
@@ -151,21 +154,22 @@ static int stlinkv3_command(uint8_t *command, size_t command_length,
 /**
  * @param[out] bridge_input_clk Current input frequency in kHz of the given com.
  */
-static int stlinkv3_get_clk(uint32_t *bridge_input_clk)
+static int stlinkv3_get_clk(uint32_t *bridge_input_clk, libusb_device_handle *stlinkv3_handle)
 {
-	uint8_t command[16];
+	uint8_t command[16] = { 0 };
 	uint8_t answer[12];
 
 	if (bridge_input_clk == NULL)
 		return -1;
 
-	memset(command, 0, sizeof(command));
-
 	command[0] = STLINK_BRIDGE_COMMAND;
 	command[1] = STLINK_BRIDGE_GET_CLOCK;
 	command[2] = STLINK_SPI_COM;
 
-	if (stlinkv3_command(command, sizeof(command), answer, sizeof(answer), "STLINK_BRIDGE_GET_CLOCK") != 0)
+	if (stlinkv3_command(command, sizeof(command),
+				answer, sizeof(answer),
+				"STLINK_BRIDGE_GET_CLOCK",
+				stlinkv3_handle) != 0)
 		return -1;
 
 	*bridge_input_clk = (uint32_t)answer[4]
@@ -178,13 +182,14 @@ static int stlinkv3_get_clk(uint32_t *bridge_input_clk)
 
 static int stlinkv3_spi_calc_prescaler(uint16_t reqested_freq_in_kHz,
 				       enum spi_prescaler *prescaler,
-				       uint16_t *calculated_freq_in_kHz)
+				       uint16_t *calculated_freq_in_kHz,
+				       libusb_device_handle *stlinkv3_handle)
 {
 	uint32_t bridge_clk_in_kHz;
 	uint32_t calculated_prescaler = 1;
 	uint16_t prescaler_value;
 
-	if (stlinkv3_get_clk(&bridge_clk_in_kHz))
+	if (stlinkv3_get_clk(&bridge_clk_in_kHz, stlinkv3_handle))
 		return -1;
 
 	calculated_prescaler  = bridge_clk_in_kHz/reqested_freq_in_kHz;
@@ -224,17 +229,18 @@ static int stlinkv3_spi_calc_prescaler(uint16_t reqested_freq_in_kHz,
 	return 0;
 }
 
-static int stlinkv3_check_version(enum fw_version_check_result *result)
+static int stlinkv3_check_version(enum fw_version_check_result *result, libusb_device_handle *stlinkv3_handle)
 {
 	uint8_t answer[12];
-	uint8_t command[16];
-
-	memset(command, 0, sizeof(command));
+	uint8_t command[16] = { 0 };
 
 	command[0] = ST_GETVERSION_EXT;
 	command[1] = 0x80;
 
-	if (stlinkv3_command(command, sizeof(command), answer, sizeof(answer), "ST_GETVERSION_EXT") != 0)
+	if (stlinkv3_command(command, sizeof(command),
+				answer, sizeof(answer),
+				"ST_GETVERSION_EXT",
+				stlinkv3_handle) != 0)
 		return -1;
 
 	msg_pinfo("Connected to STLink V3 with bridge FW version: %d\n", answer[4]);
@@ -244,35 +250,35 @@ static int stlinkv3_check_version(enum fw_version_check_result *result)
 	return 0;
 }
 
-static int stlinkv3_spi_open(uint16_t reqested_freq_in_kHz)
+static int stlinkv3_spi_open(uint16_t reqested_freq_in_kHz, libusb_device_handle *stlinkv3_handle)
 {
-	uint8_t command[16];
+	uint8_t command[16] = { 0 };
 	uint8_t answer[2];
 	uint16_t SCK_freq_in_kHz;
 	enum spi_prescaler prescaler;
 	enum fw_version_check_result fw_check_result;
 
-	if (stlinkv3_check_version(&fw_check_result)) {
-		msg_perr("Failed to query FW version");
+	if (stlinkv3_check_version(&fw_check_result, stlinkv3_handle)) {
+		msg_perr("Failed to query FW version\n");
 		return -1;
 	}
 
 	if (fw_check_result != FW_VERSION_OK) {
-		msg_pinfo("Your STLink V3 has too old version of the bridge interface\n"
-			  "Please update the firmware with the STSW-LINK007 which can be downloaded from here:\n"
-			  "https://www.st.com/en/development-tools/stsw-link007.html");
+		msg_pinfo("Your STLink V3 has a too old version of the bridge interface\n"
+			  "Please update the firmware to version 2.33.25 or newer of the STSW-LINK007\n"
+			  "which can be downloaded from here:\n"
+			  "https://www.st.com/en/development-tools/stsw-link007.html\n");
 		return -1;
 	}
 
 	if (stlinkv3_spi_calc_prescaler(reqested_freq_in_kHz,
 					&prescaler,
-					&SCK_freq_in_kHz)) {
-		msg_perr("Failed to calculate SPI clock prescaler");
+					&SCK_freq_in_kHz,
+					stlinkv3_handle)) {
+		msg_perr("Failed to calculate SPI clock prescaler\n");
 		return -1;
 	}
 	msg_pinfo("SCK frequency set to %d kHz\n", SCK_freq_in_kHz);
-
-	memset(command, 0, sizeof(command));
 
 	command[0] = STLINK_BRIDGE_COMMAND;
 	command[1] = STLINK_BRIDGE_INIT_SPI;
@@ -285,40 +291,43 @@ static int stlinkv3_spi_open(uint16_t reqested_freq_in_kHz)
 	command[5] = SPI_NSS_SOFT;
 	command[6] = (uint8_t)prescaler;
 
-	return stlinkv3_command(command, sizeof(command), answer, sizeof(answer), "STLINK_BRIDGE_INIT_SPI");
+	return stlinkv3_command(command, sizeof(command),
+				answer, sizeof(answer),
+				"STLINK_BRIDGE_INIT_SPI",
+				stlinkv3_handle);
 }
 
-static int stlinkv3_get_last_readwrite_status(uint32_t *status)
+static int stlinkv3_get_last_readwrite_status(uint32_t *status, libusb_device_handle *stlinkv3_handle)
 {
-	uint8_t command[16];
+	uint8_t command[16] = { 0 };
 	uint16_t answer[4];
-
-	memset(command, 0, sizeof(command));
 
 	command[0] = STLINK_BRIDGE_COMMAND;
 	command[1] = STLINK_BRIDGE_GET_RWCMD_STATUS;
 
 	if (stlinkv3_command(command, sizeof(command),
 			     (uint8_t *)answer, sizeof(answer),
-			     "STLINK_BRIDGE_GET_RWCMD_STATUS") != 0)
+			     "STLINK_BRIDGE_GET_RWCMD_STATUS",
+			     stlinkv3_handle) != 0)
 		return -1;
 
 	*status = (uint32_t)answer[2] | (uint32_t)answer[3]<<16;
 	return 0;
 }
 
-static int stlinkv3_spi_set_SPI_NSS(enum spi_nss_level nss_level)
+static int stlinkv3_spi_set_SPI_NSS(enum spi_nss_level nss_level, libusb_device_handle *stlinkv3_handle)
 {
-	uint8_t command[16];
+	uint8_t command[16] = { 0 };
 	uint8_t answer[2];
-
-	memset(command, 0, sizeof(command));
 
 	command[0] = STLINK_BRIDGE_COMMAND;
 	command[1] = STLINK_BRIDGE_CS_SPI;
 	command[2] = (uint8_t) (nss_level);
 
-	if (stlinkv3_command(command, sizeof(command), answer, sizeof(answer), "STLINK_BRIDGE_CS_SPI") != 0)
+	if (stlinkv3_command(command, sizeof(command),
+				answer, sizeof(answer),
+				"STLINK_BRIDGE_CS_SPI",
+				stlinkv3_handle) != 0)
 		return -1;
 	return 0;
 }
@@ -329,18 +338,18 @@ static int stlinkv3_spi_transmit(const struct flashctx *flash,
 				 const unsigned char *write_arr,
 				 unsigned char *read_arr)
 {
-	uint8_t command[16];
+	struct stlinkv3_spi_data *stlinkv3_data = flash->mst->spi.data;
+	libusb_device_handle *stlinkv3_handle = stlinkv3_data->handle;
+	uint8_t command[16] = { 0 };
 	int rc = 0;
 	int actual_length = 0;
 	uint32_t rw_status = 0;
 	unsigned int i;
 
-	if (stlinkv3_spi_set_SPI_NSS(SPI_NSS_LOW)) {
+	if (stlinkv3_spi_set_SPI_NSS(SPI_NSS_LOW, stlinkv3_handle)) {
 		msg_perr("Failed to set the NSS pin to low\n");
 		return -1;
 	}
-
-	memset(command, 0, sizeof(command));
 
 	command[0] = STLINK_BRIDGE_COMMAND;
 	command[1] = STLINK_BRIDGE_WRITE_SPI;
@@ -373,7 +382,7 @@ static int stlinkv3_spi_transmit(const struct flashctx *flash,
 		}
 	}
 
-	if (stlinkv3_get_last_readwrite_status(&rw_status))
+	if (stlinkv3_get_last_readwrite_status(&rw_status, stlinkv3_handle))
 		return -1;
 
 	if (rw_status != 0) {
@@ -408,7 +417,7 @@ static int stlinkv3_spi_transmit(const struct flashctx *flash,
 		}
 	}
 
-	if (stlinkv3_get_last_readwrite_status(&rw_status))
+	if (stlinkv3_get_last_readwrite_status(&rw_status, stlinkv3_handle))
 		goto transmit_err;
 
 	if (rw_status != 0) {
@@ -416,34 +425,37 @@ static int stlinkv3_spi_transmit(const struct flashctx *flash,
 		goto transmit_err;
 	}
 
-	if (stlinkv3_spi_set_SPI_NSS(SPI_NSS_HIGH)) {
+	if (stlinkv3_spi_set_SPI_NSS(SPI_NSS_HIGH, stlinkv3_handle)) {
 		msg_perr("Failed to set the NSS pin to high\n");
 		return -1;
 	}
 	return 0;
 
 transmit_err:
-	if (stlinkv3_spi_set_SPI_NSS(SPI_NSS_HIGH))
+	if (stlinkv3_spi_set_SPI_NSS(SPI_NSS_HIGH, stlinkv3_handle))
 		msg_perr("Failed to set the NSS pin to high\n");
 	return -1;
 }
 
 static int stlinkv3_spi_shutdown(void *data)
 {
-	uint8_t command[16];
+	struct stlinkv3_spi_data *stlinkv3_data = data;
+	uint8_t command[16] = { 0 };
 	uint8_t answer[2];
-
-	memset(command, 0, sizeof(command));
 
 	command[0] = STLINK_BRIDGE_COMMAND;
 	command[1] = STLINK_BRIDGE_CLOSE;
 	command[2] = STLINK_SPI_COM;
 
-	stlinkv3_command(command, sizeof(command), answer, sizeof(answer), "STLINK_BRIDGE_CLOSE");
+	stlinkv3_command(command, sizeof(command),
+				answer, sizeof(answer),
+				"STLINK_BRIDGE_CLOSE",
+				stlinkv3_data->handle);
 
-	libusb_close(stlinkv3_handle);
-	libusb_exit(usb_ctx);
+	libusb_close(stlinkv3_data->handle);
+	libusb_exit(stlinkv3_data->usb_ctx);
 
+	free(data);
 	return 0;
 }
 
@@ -455,14 +467,19 @@ static const struct spi_master spi_programmer_stlinkv3 = {
 	.read = default_spi_read,
 	.write_256 = default_spi_write_256,
 	.write_aai = default_spi_write_aai,
+	.shutdown = stlinkv3_spi_shutdown,
 };
 
-int stlinkv3_spi_init(void)
+static int stlinkv3_spi_init(void)
 {
 	uint16_t sck_freq_kHz = 1000;	// selecting 1 MHz SCK is a good bet
 	char *speed_str = NULL;
 	char *serialno = NULL;
 	char *endptr = NULL;
+	int ret = 1;
+	struct libusb_context *usb_ctx;
+	libusb_device_handle *stlinkv3_handle;
+	struct stlinkv3_spi_data *stlinkv3_data;
 
 	libusb_init(&usb_ctx);
 	if (!usb_ctx) {
@@ -484,7 +501,7 @@ int stlinkv3_spi_init(void)
 		else
 			msg_perr("Could not find any connected STLINK-V3\n");
 		free(serialno);
-		goto err_exit;
+		goto init_err_exit;
 	}
 	free(serialno);
 
@@ -497,23 +514,39 @@ int stlinkv3_spi_init(void)
 			msg_perr("Please pass the parameter "
 				 "with a simple non-zero number in kHz\n");
 			free(speed_str);
-			return -1;
+			ret = -1;
+			goto init_err_exit;
 		}
 		free(speed_str);
 	}
 
-	if (stlinkv3_spi_open(sck_freq_kHz))
-		goto err_exit;
+	if (stlinkv3_spi_open(sck_freq_kHz, stlinkv3_handle))
+		goto init_err_exit;
 
-	if (register_shutdown(stlinkv3_spi_shutdown, NULL))
-		goto err_exit;
+	stlinkv3_data = calloc(1, sizeof(*stlinkv3_data));
+	if (!stlinkv3_data) {
+		msg_perr("Unable to allocate space for SPI master data\n");
+		goto init_err_exit;
+	}
 
-	if (register_spi_master(&spi_programmer_stlinkv3))
-		goto err_exit;
+	stlinkv3_data->usb_ctx = usb_ctx;
+	stlinkv3_data->handle = stlinkv3_handle;
 
-	return 0;
+	return register_spi_master(&spi_programmer_stlinkv3, stlinkv3_data);
 
-err_exit:
+init_err_exit:
+	if (stlinkv3_handle)
+		libusb_close(stlinkv3_handle);
 	libusb_exit(usb_ctx);
-	return 1;
+	return ret;
 }
+
+const struct programmer_entry programmer_stlinkv3_spi = {
+	.name			= "stlinkv3_spi",
+	.type			= USB,
+	.devs.dev		= devs_stlinkv3_spi,
+	.init			= stlinkv3_spi_init,
+	.map_flash_region	= fallback_map,
+	.unmap_flash_region	= fallback_unmap,
+	.delay			= internal_delay,
+};

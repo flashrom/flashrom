@@ -152,6 +152,7 @@
 #define ATMEL_AT25SF161		0x8601
 #define ATMEL_AT25SF321		0x8701
 #define ATMEL_AT25SL128A	0x4218
+#define ATMEL_AT25SF128A	0x8901 /* Adesto AT25SF128A */
 #define ATMEL_AT26DF041		0x4400
 #define ATMEL_AT26DF081		0x4500	/* guessed, no datasheet available */
 #define ATMEL_AT26DF081A	0x4501
@@ -206,6 +207,11 @@
 #define ATMEL_AT49F040		0x13
 #define ATMEL_AT49F080		0x23
 #define ATMEL_AT49F080T		0x27
+
+/* Boya/BoHong Microelectronics Inc. */
+#define BOYA_BOHONG_ID		0x68
+#define BOYA_BOHONG_B_25D16A	0x4015
+#define BOYA_BOHONG_B_25Q128AS	0x4018
 
 /* Bright Microelectronics has the same manufacturer ID as Hyundai... */
 #define BRIGHT_ID		0xAD	/* Bright Microelectronics */
@@ -328,6 +334,16 @@
 #define FIDELIX_FM25Q16		0x3215	/* Same as FM25S16 (which is apparently single I/O only) */
 #define FIDELIX_FM25Q32		0x3216
 #define FIDELIX_FM25Q64		0x3217
+
+#define FUDAN_ID		0x7F7F7F7F7F7F7FA1	/* Shanghai Fudan Microelectronics resides in bank 8 */
+#define FUDAN_ID_NOPREFIX	0xA1	/* Fudan, missing 0x7F prefix */
+#define FUDAN_FM25F005		0x3110
+#define FUDAN_FM25F01		0x3111
+#define FUDAN_FM25F02		0x3112	/* Same as FM25F02A */
+#define FUDAN_FM25F04		0x3113	/* Same as FM25F04A */
+#define FUDAN_FM25Q08		0x4014
+#define FUDAN_FM25Q16		0x4015
+#define FUDAN_FM25Q32		0x4016
 
 #define FUJITSU_ID		0x04	/* Fujitsu */
 #define FUJITSU_MBM29DL400BC	0x0F
@@ -482,18 +498,20 @@
  * Generalplus SPI chips seem to be compatible with Macronix
  * and use the same set of IDs. */
 #define MACRONIX_MX25L512	0x2010	/* Same as MX25L512E, MX25V512, MX25V512C */
+#define MACRONIX_MX25L5121E	0x2210
 #define MACRONIX_MX25L1005	0x2011	/* Same as MX25L1005C, MX25L1006E */
 #define MACRONIX_MX25L2005	0x2012	/* Same as MX25L2005C, MX25L2006E */
 #define MACRONIX_MX25L4005	0x2013	/* Same as MX25L4005A, MX25L4005C, MX25L4006E */
 #define MACRONIX_MX25L8005	0x2014	/* Same as MX25V8005, MX25L8006E, MX25L8008E, FIXME: MX25L8073E (4k 0x20) */
 #define MACRONIX_MX25L1605	0x2015	/* MX25L1605 (64k 0x20); MX25L1605A/MX25L1606E/MX25L1608E (4k 0x20, 64k 0x52); MX25L1605D/MX25L1608D/MX25L1673E (4k 0x20) */
-#define MACRONIX_MX25L3205	0x2016	/* MX25L3205, MX25L3205A (64k 0x20); MX25L3205D/MX25L3208D (4k 0x20); MX25L3206E/MX25L3208E (4k 0x20, 64k 0x52); MX25L3273E (4k 0x20, 32k 0x52) */
+#define MACRONIX_MX25L3205	0x2016	/* MX25L3205, MX25L3205A (64k 0x20); MX25L3205D/MX25L3208D (4k 0x20); MX25L3206E/MX25L3208E (4k 0x20, 64k 0x52); MX25L3233F/MX25L3273E (4k 0x20, 32k 0x52) */
 #define MACRONIX_MX25L6405	0x2017	/* MX25L6405, MX25L6405D (64k 0x20); MX25L6406E/MX25L6408E (4k 0x20); MX25L6436E/MX25L6445E/MX25L6465E/MX25L6473E (4k 0x20, 32k 0x52) */
-#define MACRONIX_MX25L12805D	0x2018	/* MX25L12805D (no 32k); MX25L12865E, MX25L12835F, MX25L12845E (32k 0x52) */
+#define MACRONIX_MX25L12805D	0x2018	/* MX25L12805D (no 32k); MX25L12865E, MX25L12835F, MX25L12845E, MX25L12873F, MX25L12833F (32k 0x52) */
 #define MACRONIX_MX25L25635F	0x2019	/* Same as MX25L25639F, but the latter seems to not support REMS */
 #define MACRONIX_MX25L1635D	0x2415
 #define MACRONIX_MX25L1635E	0x2515	/* MX25L1635{E} */
 #define MACRONIX_MX66L51235F	0x201a	/* MX66L51235F, MX25L51245G */
+#define MACRONIX_MX66L1G45G	0x201b	/* MX66L1G45G */
 #define MACRONIX_MX25U8032E	0x2534
 #define MACRONIX_MX25U1635E	0x2535
 #define MACRONIX_MX25U3235E	0x2536	/* Same as MX25U6435F */
@@ -647,8 +665,17 @@
 #define SPANSION_S25FL204	0x4013
 #define SPANSION_S25FL208	0x4014
 #define SPANSION_S25FL216	0x4015	/* Same as S25FL216K, but the latter supports OTP, 3 status regs, quad I/O, SFDP etc. */
+#define SPANSION_S25FL116K	0x4015
 #define SPANSION_S25FL132K	0x4016
 #define SPANSION_S25FL164K	0x4017
+#define SPANSION_S25FS128S_L	0x20180081  /* Large sectors. */
+#define SPANSION_S25FS128S_S	0x20180181  /* Small sectors. */
+#define SPANSION_S25FS256S_L	0x02190081  /* Large sectors. */
+#define SPANSION_S25FS256S_S	0x02190181  /* Small sectors. */
+#define SPANSION_S25FL128S_UL	0x20180080  /* Uniform Large (128kB) sectors */
+#define SPANSION_S25FL128S_US	0x20180180  /* Uniform Small (64kB) sectors */
+#define SPANSION_S25FL256S_UL	0x02190080  /* Uniform Large (128kB) sectors */
+#define SPANSION_S25FL256S_US	0x02190180  /* Uniform Small (64kB) sectors */
 
 /* Spansion 29GL families got a suffix indicating the process technology but share the same 3-Byte IDs. They can
  * however be differentiated by CFI byte 45h. Some versions exist which have special top or bottom boot sectors
@@ -768,7 +795,7 @@
  * ST25P chips are SPI, first byte of device ID is memory type, second
  * byte of device ID is related to log(bitsize) at least for some chips.
  */
-#define ST_ID			0x20	/* ST / SGS/Thomson / Numonyx (later acquired by Micron) */
+#define ST_ID			0x20	/* ST / SGS/Thomson / Numonyx / XMC(later acquired by Micron) */
 #define ST_M25P05A		0x2010
 #define ST_M25P05_RES		0x05
 #define ST_M25P10A		0x2011
@@ -787,6 +814,12 @@
 #define ST_M45PE40		0x4013
 #define ST_M45PE80		0x4014
 #define ST_M45PE16		0x4015
+#define XMC_XM25QH64C		0x4017
+#define XMC_XM25QU64C		0x4117
+#define XMC_XM25QH128C		0x4018
+#define XMC_XM25QU128C		0x4118
+#define XMC_XM25QH256C		0x4019
+#define XMC_XM25QU256C		0x4119
 #define ST_M25PX80		0x7114
 #define ST_M25PX16		0x7115
 #define ST_M25PX32		0x7116
@@ -917,6 +950,7 @@
 #define WINBOND_NEX_W25P80	0x2014
 #define WINBOND_NEX_W25P16	0x2015
 #define WINBOND_NEX_W25P32	0x2016
+#define WINBOND_NEX_W25X05	0x3010 /* W25X05CL */
 #define WINBOND_NEX_W25X10	0x3011
 #define WINBOND_NEX_W25X20	0x3012
 #define WINBOND_NEX_W25X40	0x3013
@@ -945,8 +979,10 @@
 #define WINBOND_NEX_W25Q64_V_M	0x7017	/* W25Q64JVSM */
 #define WINBOND_NEX_W25Q128_V_M	0x7018	/* W25Q128JVSM */
 #define WINBOND_NEX_W25Q256JV_M	0x7019	/* W25Q256JV_M (QE=0) */
-#define WINBOND_NEX_W25Q64JW	0x8017
+#define WINBOND_NEX_W25Q32JW_M	0x8016  /* W25Q32JW...M */
+#define WINBOND_NEX_W25Q64JW_M	0x8017  /* W25Q64JW...M */
 #define WINBOND_NEX_W25Q128_DTR	0x8018	/* W25Q128JW_DTR */
+#define WINBOND_NEX_W25Q256_DTR	0x8019	/* W25Q256JW_DTR aka W25Q256256JW-IM */
 
 #define WINBOND_ID		0xDA	/* Winbond */
 #define WINBOND_W19B160BB	0x49

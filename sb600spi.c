@@ -40,7 +40,6 @@
  *};
  */
 
-static uint8_t *sb600_spibar = NULL;
 enum amd_chipset {
 	CHIPSET_AMD_UNKNOWN,
 	CHIPSET_SB6XX,
@@ -51,34 +50,13 @@ enum amd_chipset {
 	CHIPSET_YANGTZE,
 	CHIPSET_PROMONTORY,
 };
-static enum amd_chipset amd_gen = CHIPSET_AMD_UNKNOWN;
 
 #define FIFO_SIZE_OLD		8
 #define FIFO_SIZE_YANGTZE	71
 
-static int sb600_spi_send_command(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
-				  const unsigned char *writearr, unsigned char *readarr);
-static int spi100_spi_send_command(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
-				  const unsigned char *writearr, unsigned char *readarr);
-
-static struct spi_master spi_master_sb600 = {
-	.max_data_read = FIFO_SIZE_OLD,
-	.max_data_write = FIFO_SIZE_OLD - 3,
-	.command = sb600_spi_send_command,
-	.multicommand = default_spi_send_multicommand,
-	.read = default_spi_read,
-	.write_256 = default_spi_write_256,
-	.write_aai = default_spi_write_aai,
-};
-
-static struct spi_master spi_master_yangtze = {
-	.max_data_read = FIFO_SIZE_YANGTZE - 3, /* Apparently the big SPI 100 buffer is not a ring buffer. */
-	.max_data_write = FIFO_SIZE_YANGTZE - 3,
-	.command = spi100_spi_send_command,
-	.multicommand = default_spi_send_multicommand,
-	.read = default_spi_read,
-	.write_256 = default_spi_write_256,
-	.write_aai = default_spi_write_aai,
+struct sb600spi_data {
+	struct flashctx *flash;
+	uint8_t *spibar;
 };
 
 static int find_smbus_dev_rev(uint16_t vendor, uint16_t device)
@@ -93,44 +71,43 @@ static int find_smbus_dev_rev(uint16_t vendor, uint16_t device)
 }
 
 /* Determine the chipset's version and identify the respective SMBUS device. */
-static int determine_generation(struct pci_dev *dev)
+static enum amd_chipset determine_generation(struct pci_dev *dev)
 {
-	amd_gen = CHIPSET_AMD_UNKNOWN;
 	msg_pdbg2("Trying to determine the generation of the SPI interface... ");
 	if (dev->device_id == 0x438d) {
-		amd_gen = CHIPSET_SB6XX;
 		msg_pdbg("SB6xx detected.\n");
+		return CHIPSET_SB6XX;
 	} else if (dev->device_id == 0x439d) {
 		int rev = find_smbus_dev_rev(0x1002, 0x4385);
 		if (rev < 0)
-			return -1;
+			return CHIPSET_AMD_UNKNOWN;
 		if (rev >= 0x39 && rev <= 0x3D) {
-			amd_gen = CHIPSET_SB7XX;
 			msg_pdbg("SB7xx/SP5100 detected.\n");
+			return CHIPSET_SB7XX;
 		} else if (rev >= 0x40 && rev <= 0x42) {
-			amd_gen = CHIPSET_SB89XX;
 			msg_pdbg("SB8xx/SB9xx/Hudson-1 detected.\n");
+			return CHIPSET_SB89XX;
 		} else {
 			msg_pwarn("SB device found but SMBus revision 0x%02x does not match known values.\n"
 				  "Assuming SB8xx/SB9xx/Hudson-1. Please send a log to flashrom@flashrom.org\n",
 				   rev);
-			amd_gen = CHIPSET_SB89XX;
+			return CHIPSET_SB89XX;
 		}
 	} else if (dev->device_id == 0x780e) {
 		/* The PCI ID of the LPC bridge doesn't change between Hudson-2/3/4 and Yangtze (Kabini/Temash)
 		 * although they use different SPI interfaces. */
 		int rev = find_smbus_dev_rev(0x1022, 0x780B);
 		if (rev < 0)
-			return -1;
+			return CHIPSET_AMD_UNKNOWN;
 		if (rev >= 0x11 && rev <= 0x15) {
-			amd_gen = CHIPSET_HUDSON234;
 			msg_pdbg("Hudson-2/3/4 detected.\n");
+			return CHIPSET_HUDSON234;
 		} else if (rev == 0x16) {
-			amd_gen = CHIPSET_BOLTON;
 			msg_pdbg("Bolton detected.\n");
+			return CHIPSET_BOLTON;
 		} else if ((rev >= 0x39 && rev <= 0x3A) || rev == 0x42) {
-			amd_gen = CHIPSET_YANGTZE;
 			msg_pdbg("Yangtze detected.\n");
+			return CHIPSET_YANGTZE;
 		} else {
 			msg_pwarn("FCH device found but SMBus revision 0x%02x does not match known values.\n"
 				  "Please report this to flashrom@flashrom.org and include this log and\n"
@@ -139,13 +116,22 @@ static int determine_generation(struct pci_dev *dev)
 	} else if (dev->device_id == 0x790e) {
 		int rev = find_smbus_dev_rev(0x1022, 0x790B);
 		if (rev < 0)
-			return -1;
+			return CHIPSET_AMD_UNKNOWN;
 		if (rev == 0x4a) {
-			amd_gen = CHIPSET_YANGTZE;
 			msg_pdbg("Yangtze detected.\n");
-		} else if (rev == 0x4b) {
-			amd_gen = CHIPSET_PROMONTORY;
-			msg_pdbg("Promontory detected.\n");
+			return CHIPSET_YANGTZE;
+		/**
+		 * FCH chipsets called 'Promontory' are one's with the
+		 * so-called SPI100 ip core that uses memory mapping and
+		 * not a ring buffer for transactions. Typically this is
+		 * found on both Stoney Ridge and Zen platforms.
+		 *
+		 * The revisions I have found by searching various lspci
+		 * outputs are as follows: 0x4b, 0x59 & 0x61.
+		 */
+		} else if (rev == 0x4b || rev == 0x51 || rev == 0x59 || rev == 0x61) {
+			msg_pdbg("Promontory (rev 0x%02x) detected.\n", rev);
+			return CHIPSET_PROMONTORY;
 		} else {
 			msg_pwarn("FCH device found but SMBus revision 0x%02x does not match known values.\n"
 				  "Please report this to flashrom@flashrom.org and include this log and\n"
@@ -158,14 +144,12 @@ static int determine_generation(struct pci_dev *dev)
 			  "Please report this to flashrom@flashrom.org and include this log and\n"
 			  "the output of lspci -nnvx, thanks!\n",
 			  __func__, dev->vendor_id, dev->device_id);
-	if (amd_gen == CHIPSET_AMD_UNKNOWN) {
-		msg_perr("Could not determine chipset generation.");
-		return -1;
-	}
-	return 0;
+
+	msg_perr("Could not determine chipset generation.");
+	return CHIPSET_AMD_UNKNOWN;
 }
 
-static void reset_internal_fifo_pointer(void)
+static void reset_internal_fifo_pointer(uint8_t *sb600_spibar)
 {
 	mmio_writeb(mmio_readb(sb600_spibar + 2) | 0x10, sb600_spibar + 2);
 
@@ -174,7 +158,7 @@ static void reset_internal_fifo_pointer(void)
 		msg_pspew("reset\n");
 }
 
-static int compare_internal_fifo_pointer(uint8_t want)
+static int compare_internal_fifo_pointer(uint8_t want, uint8_t *sb600_spibar)
 {
 	uint8_t have = mmio_readb(sb600_spibar + 0xd) & 0x07;
 	want %= FIFO_SIZE_OLD;
@@ -208,7 +192,7 @@ static int check_readwritecnt(const struct flashctx *flash, unsigned int writecn
 	return 0;
 }
 
-static void execute_command(void)
+static void execute_command(uint8_t *sb600_spibar)
 {
 	msg_pspew("Executing... ");
 	mmio_writeb(mmio_readb(sb600_spibar + 2) | 1, sb600_spibar + 2);
@@ -222,6 +206,8 @@ static int sb600_spi_send_command(const struct flashctx *flash, unsigned int wri
 				  const unsigned char *writearr,
 				  unsigned char *readarr)
 {
+	struct sb600spi_data *sb600_data = flash->mst->spi.data;
+	uint8_t *sb600_spibar = sb600_data->spibar;
 	/* First byte is cmd which can not be sent through the FIFO. */
 	unsigned char cmd = *writearr++;
 	writecnt--;
@@ -242,7 +228,7 @@ static int sb600_spi_send_command(const struct flashctx *flash, unsigned int wri
 	uint8_t readwrite = (readcnt + readoffby1) << 4 | (writecnt);
 	mmio_writeb(readwrite, sb600_spibar + 1);
 
-	reset_internal_fifo_pointer();
+	reset_internal_fifo_pointer(sb600_spibar);
 	msg_pspew("Filling FIFO: ");
 	unsigned int count;
 	for (count = 0; count < writecnt; count++) {
@@ -250,16 +236,16 @@ static int sb600_spi_send_command(const struct flashctx *flash, unsigned int wri
 		mmio_writeb(writearr[count], sb600_spibar + 0xC);
 	}
 	msg_pspew("\n");
-	if (compare_internal_fifo_pointer(writecnt))
+	if (compare_internal_fifo_pointer(writecnt, sb600_spibar))
 		return SPI_PROGRAMMER_ERROR;
 
 	/*
 	 * We should send the data in sequence, which means we need to reset
 	 * the FIFO pointer to the first byte we want to send.
 	 */
-	reset_internal_fifo_pointer();
-	execute_command();
-	if (compare_internal_fifo_pointer(writecnt + readcnt))
+	reset_internal_fifo_pointer(sb600_spibar);
+	execute_command(sb600_spibar);
+	if (compare_internal_fifo_pointer(writecnt + readcnt, sb600_spibar))
 		return SPI_PROGRAMMER_ERROR;
 
 	/*
@@ -273,7 +259,7 @@ static int sb600_spi_send_command(const struct flashctx *flash, unsigned int wri
 	 * the opcode, the FIFO already stores the response from the chip.
 	 * Usually, the chip will respond with 0x00 or 0xff.
 	 */
-	reset_internal_fifo_pointer();
+	reset_internal_fifo_pointer(sb600_spibar);
 
 	/* Skip the bytes we sent. */
 	msg_pspew("Skipping: ");
@@ -281,7 +267,7 @@ static int sb600_spi_send_command(const struct flashctx *flash, unsigned int wri
 		msg_pspew("[%02x]", mmio_readb(sb600_spibar + 0xC));
 	}
 	msg_pspew("\n");
-	if (compare_internal_fifo_pointer(writecnt))
+	if (compare_internal_fifo_pointer(writecnt, sb600_spibar))
 		return SPI_PROGRAMMER_ERROR;
 
 	msg_pspew("Reading FIFO: ");
@@ -290,7 +276,7 @@ static int sb600_spi_send_command(const struct flashctx *flash, unsigned int wri
 		msg_pspew("[%02x]", readarr[count]);
 	}
 	msg_pspew("\n");
-	if (compare_internal_fifo_pointer(writecnt+readcnt))
+	if (compare_internal_fifo_pointer(writecnt+readcnt, sb600_spibar))
 		return SPI_PROGRAMMER_ERROR;
 
 	if (mmio_readb(sb600_spibar + 1) != readwrite) {
@@ -308,6 +294,8 @@ static int spi100_spi_send_command(const struct flashctx *flash, unsigned int wr
 				  const unsigned char *writearr,
 				  unsigned char *readarr)
 {
+	struct sb600spi_data *sb600_data = flash->mst->spi.data;
+	uint8_t *sb600_spibar = sb600_data->spibar;
 	/* First byte is cmd which can not be sent through the buffer. */
 	unsigned char cmd = *writearr++;
 	writecnt--;
@@ -330,7 +318,7 @@ static int spi100_spi_send_command(const struct flashctx *flash, unsigned int wr
 	}
 	msg_pspew("\n");
 
-	execute_command();
+	execute_command(sb600_spibar);
 
 	msg_pspew("Reading buffer: ");
 	for (count = 0; count < readcnt; count++) {
@@ -369,7 +357,7 @@ static const char* spireadmodes[] = {
 	"Fast Read",
 };
 
-static int set_speed(struct pci_dev *dev, uint8_t speed)
+static int set_speed(struct pci_dev *dev, enum amd_chipset amd_gen, uint8_t speed, uint8_t *sb600_spibar)
 {
 	bool success = false;
 
@@ -392,7 +380,7 @@ static int set_speed(struct pci_dev *dev, uint8_t speed)
 	return 0;
 }
 
-static int set_mode(struct pci_dev *dev, uint8_t mode)
+static int set_mode(struct pci_dev *dev, uint8_t mode, uint8_t *sb600_spibar)
 {
 	msg_pdbg("Setting SPI read mode to %s (%i)... ", spireadmodes[mode], mode);
 	uint32_t tmp = mmio_readl(sb600_spibar + 0x00);
@@ -407,7 +395,7 @@ static int set_mode(struct pci_dev *dev, uint8_t mode)
 	return 0;
 }
 
-static int handle_speed(struct pci_dev *dev)
+static int handle_speed(struct pci_dev *dev, enum amd_chipset amd_gen, uint8_t *sb600_spibar)
 {
 	uint32_t tmp;
 	int16_t spispeed_idx = -1;
@@ -475,7 +463,7 @@ static int handle_speed(struct pci_dev *dev)
 			msg_perr("Warning: spireadmode not set, "
 					 "leaving spireadmode unchanged.");
 		}
-		else if (set_mode(dev, spireadmode_idx) != 0) {
+		else if (set_mode(dev, spireadmode_idx, sb600_spibar) != 0) {
 			return 1;
 		}
 
@@ -518,10 +506,10 @@ static int handle_speed(struct pci_dev *dev)
 		msg_perr("Warning: spispeed not set, leaving spispeed unchanged.");
 		return 0;
 	}
-	return set_speed(dev, spispeed_idx);
+	return set_speed(dev, amd_gen, spispeed_idx, sb600_spibar);
 }
 
-static int handle_imc(struct pci_dev *dev)
+static int handle_imc(struct pci_dev *dev, enum amd_chipset amd_gen)
 {
 	/* Handle IMC everywhere but sb600 which does not have one. */
 	if (amd_gen == CHIPSET_SB6XX)
@@ -570,11 +558,68 @@ static int handle_imc(struct pci_dev *dev)
 	return amd_imc_shutdown(dev);
 }
 
+static int promontory_read_memmapped(struct flashctx *flash, uint8_t *buf,
+		unsigned int start, unsigned int len)
+{
+	struct sb600spi_data * data = (struct sb600spi_data *)flash->mst->spi.data;
+	if (!data->flash) {
+		map_flash(flash);
+		data->flash = flash; /* keep a copy of flashctx for unmap() on tear-down. */
+	}
+	mmio_readn((void *)(flash->virtual_memory + start), buf, len);
+	return 0;
+}
+
+static int sb600spi_shutdown(void *data)
+{
+	struct sb600spi_data *sb600_data = data;
+	struct flashctx *flash = sb600_data->flash;
+	if (flash)
+		finalize_flash_access(flash);
+
+	free(data);
+	return 0;
+}
+
+static const struct spi_master spi_master_sb600 = {
+	.max_data_read = FIFO_SIZE_OLD,
+	.max_data_write = FIFO_SIZE_OLD - 3,
+	.command = sb600_spi_send_command,
+	.multicommand = default_spi_send_multicommand,
+	.read = default_spi_read,
+	.write_256 = default_spi_write_256,
+	.write_aai = default_spi_write_aai,
+	.shutdown = sb600spi_shutdown,
+};
+
+static const struct spi_master spi_master_yangtze = {
+	.max_data_read = FIFO_SIZE_YANGTZE - 3, /* Apparently the big SPI 100 buffer is not a ring buffer. */
+	.max_data_write = FIFO_SIZE_YANGTZE - 3,
+	.command = spi100_spi_send_command,
+	.multicommand = default_spi_send_multicommand,
+	.read = default_spi_read,
+	.write_256 = default_spi_write_256,
+	.write_aai = default_spi_write_aai,
+	.shutdown = sb600spi_shutdown,
+};
+
+static const struct spi_master spi_master_promontory = {
+	.max_data_read = MAX_DATA_READ_UNLIMITED,
+	.max_data_write = FIFO_SIZE_YANGTZE - 3,
+	.command = spi100_spi_send_command,
+	.multicommand = default_spi_send_multicommand,
+	.read = promontory_read_memmapped,
+	.write_256 = default_spi_write_256,
+	.write_aai = default_spi_write_aai,
+	.shutdown = sb600spi_shutdown,
+};
+
 int sb600_probe_spi(struct pci_dev *dev)
 {
 	struct pci_dev *smbus_dev;
 	uint32_t tmp;
 	uint8_t reg;
+	uint8_t *sb600_spibar = NULL;
 
 	/* Read SPI_BaseAddr */
 	tmp = pci_read_long(dev, 0xa0);
@@ -595,7 +640,8 @@ int sb600_probe_spi(struct pci_dev *dev)
 	 */
 	sb600_spibar += tmp & 0xfff;
 
-	if (determine_generation(dev) < 0)
+	enum amd_chipset amd_gen = determine_generation(dev);
+	if (amd_gen == CHIPSET_AMD_UNKNOWN)
 		return ERROR_NONFATAL;
 
 	/* How to read the following table and similar ones in this file:
@@ -728,17 +774,29 @@ int sb600_probe_spi(struct pci_dev *dev)
 		return 0;
 	}
 
-	if (handle_speed(dev) != 0)
+	if (handle_speed(dev, amd_gen, sb600_spibar) != 0)
 		return ERROR_FATAL;
 
-	if (handle_imc(dev) != 0)
+	if (handle_imc(dev, amd_gen) != 0)
 		return ERROR_FATAL;
+
+	struct sb600spi_data *data = calloc(1, sizeof(*data));
+	if (!data) {
+		msg_perr("Unable to allocate space for extra SPI master data.\n");
+		return SPI_GENERIC_ERROR;
+	}
+
+	data->flash = NULL;
+	data->spibar = sb600_spibar;
 
 	/* Starting with Yangtze the SPI controller got a different interface with a much bigger buffer. */
 	if (amd_gen < CHIPSET_YANGTZE)
-		register_spi_master(&spi_master_sb600);
+		register_spi_master(&spi_master_sb600, data);
+	else if (amd_gen == CHIPSET_YANGTZE)
+		register_spi_master(&spi_master_yangtze, data);
 	else
-		register_spi_master(&spi_master_yangtze);
+		register_spi_master(&spi_master_promontory, data);
+
 	return 0;
 }
 

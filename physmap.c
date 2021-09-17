@@ -292,7 +292,7 @@ static void *physmap_common(const char *descr, uintptr_t phys_addr, size_t len, 
 	}
 
 	if (autocleanup) {
-		struct undo_physmap_data *d = malloc(sizeof(struct undo_physmap_data));
+		struct undo_physmap_data *d = malloc(sizeof(*d));
 		if (d == NULL) {
 			msg_perr("%s: Out of memory!\n", __func__);
 			physunmap_unaligned(virt_addr, len);
@@ -433,8 +433,7 @@ int wrmsr(int addr, msr_t msr)
 
 int setup_cpu_msr(int cpu)
 {
-	char msrfilename[64];
-	memset(msrfilename, 0, sizeof(msrfilename));
+	char msrfilename[64] = { 0 };
 	snprintf(msrfilename, sizeof(msrfilename), "/dev/cpu/%d/msr", cpu);
 
 	if (fd_msr != -1) {
@@ -509,8 +508,7 @@ int wrmsr(int addr, msr_t msr)
 
 int setup_cpu_msr(int cpu)
 {
-	char msrfilename[64];
-	memset(msrfilename, 0, sizeof(msrfilename));
+	char msrfilename[64] = { 0 };
 	snprintf(msrfilename, sizeof(msrfilename), "/dev/amdmsr");
 
 	if (fd_msr != -1) {
@@ -591,8 +589,7 @@ int wrmsr(int addr, msr_t msr)
 
 int setup_cpu_msr(int cpu)
 {
-	char msrfilename[64];
-	memset(msrfilename, 0, sizeof(msrfilename));
+	char msrfilename[64] = { 0 };
 	snprintf(msrfilename, sizeof(msrfilename), "/dev/cpu%d", cpu);
 
 	if (fd_msr != -1) {

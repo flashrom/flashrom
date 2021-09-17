@@ -44,19 +44,74 @@
  * HummingBoard
  */
 
-static int fd = -1;
 #define BUF_SIZE_FROM_SYSFS	"/sys/module/spidev/parameters/bufsiz"
-static size_t max_kernel_buf_size;
 
-static int linux_spi_shutdown(void *data);
+struct linux_spi_data {
+	int fd;
+	size_t max_kernel_buf_size;
+};
+
+static int linux_spi_read(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len)
+{
+	struct linux_spi_data *spi_data = flash->mst->spi.data;
+	/* Older kernels use a single buffer for combined input and output
+	   data. So account for longest possible command + address, too. */
+	return spi_read_chunked(flash, buf, start, len, spi_data->max_kernel_buf_size - 5);
+}
+
+static int linux_spi_write_256(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len)
+{
+	struct linux_spi_data *spi_data = flash->mst->spi.data;
+	/* 5 bytes must be reserved for longest possible command + address. */
+	return spi_write_chunked(flash, buf, start, len, spi_data->max_kernel_buf_size - 5);
+}
+
+static int linux_spi_shutdown(void *data)
+{
+	struct linux_spi_data *spi_data = data;
+	close(spi_data->fd);
+	free(spi_data);
+	return 0;
+}
+
 static int linux_spi_send_command(const struct flashctx *flash, unsigned int writecnt,
 				  unsigned int readcnt,
 				  const unsigned char *txbuf,
-				  unsigned char *rxbuf);
-static int linux_spi_read(struct flashctx *flash, uint8_t *buf,
-			  unsigned int start, unsigned int len);
-static int linux_spi_write_256(struct flashctx *flash, const uint8_t *buf,
-			       unsigned int start, unsigned int len);
+				  unsigned char *rxbuf)
+{
+	struct linux_spi_data *spi_data = flash->mst->spi.data;
+	int iocontrol_code;
+	struct spi_ioc_transfer msg[2] = {
+		{
+			.tx_buf = (uint64_t)(uintptr_t)txbuf,
+			.len = writecnt,
+		},
+		{
+			.rx_buf = (uint64_t)(uintptr_t)rxbuf,
+			.len = readcnt,
+		},
+	};
+
+	if (spi_data->fd == -1)
+		return -1;
+	/* The implementation currently does not support requests that
+	   don't start with sending a command. */
+	if (writecnt == 0)
+		return SPI_INVALID_LENGTH;
+
+	/* Just submit the first (write) request in case there is nothing
+	   to read. Otherwise submit both requests. */
+	if (readcnt == 0)
+		iocontrol_code = SPI_IOC_MESSAGE(1);
+	else
+		iocontrol_code = SPI_IOC_MESSAGE(2);
+
+	if (ioctl(spi_data->fd, iocontrol_code, msg) == -1) {
+		msg_cerr("%s: ioctl: %s\n", __func__, strerror(errno));
+		return -1;
+	}
+	return 0;
+}
 
 static const struct spi_master spi_master_linux = {
 	.features	= SPI_MASTER_4BA,
@@ -67,9 +122,51 @@ static const struct spi_master spi_master_linux = {
 	.read		= linux_spi_read,
 	.write_256	= linux_spi_write_256,
 	.write_aai	= default_spi_write_aai,
+	.shutdown	= linux_spi_shutdown,
 };
 
-int linux_spi_init(void)
+/* Read max buffer size from sysfs, or use page size as fallback. */
+static size_t get_max_kernel_buf_size()
+{
+	size_t result = 0;
+	FILE *fp;
+	fp = fopen(BUF_SIZE_FROM_SYSFS, "r");
+	if (!fp) {
+		msg_pwarn("Cannot open %s: %s.\n", BUF_SIZE_FROM_SYSFS, strerror(errno));
+		goto out;
+	}
+
+	char buf[10];
+	if (!fgets(buf, sizeof(buf), fp)) {
+		if (feof(fp))
+			msg_pwarn("Cannot read %s: file is empty.\n", BUF_SIZE_FROM_SYSFS);
+		else
+			msg_pwarn("Cannot read %s: %s.\n", BUF_SIZE_FROM_SYSFS, strerror(errno));
+		goto out;
+	}
+
+	long int tmp;
+	errno = 0;
+	tmp = strtol(buf, NULL, 0);
+	if ((tmp < 0) || errno) {
+		msg_pwarn("Buffer size %ld from %s seems wrong.\n", tmp, BUF_SIZE_FROM_SYSFS);
+	} else {
+		msg_pdbg("%s: Using value from %s as max buffer size.\n", __func__, BUF_SIZE_FROM_SYSFS);
+		result = (size_t)tmp;
+	}
+
+out:
+	if (fp)
+		fclose(fp);
+
+	if (!result) {
+		msg_pdbg("%s: Using page size as max buffer size.\n", __func__);
+		result = (size_t)getpagesize();
+	}
+	return result;
+}
+
+static int linux_spi_init(void)
 {
 	char *p, *endp, *dev;
 	uint32_t speed_hz = 2 * 1000 * 1000;
@@ -77,6 +174,9 @@ int linux_spi_init(void)
 	/* SPI mode 0 (beware this also includes: MSB first, CS active low and others */
 	const uint8_t mode = SPI_MODE_0;
 	const uint8_t bits = 8;
+	int fd;
+	size_t max_kernel_buf_size;
+	struct linux_spi_data *spi_data;
 
 	p = extract_programmer_param("spispeed");
 	if (p && strlen(p)) {
@@ -110,128 +210,51 @@ int linux_spi_init(void)
 	}
 	free(dev);
 
-	if (register_shutdown(linux_spi_shutdown, NULL))
-		return 1;
-	/* We rely on the shutdown function for cleanup from here on. */
-
 	if (ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &speed_hz) == -1) {
 		msg_perr("%s: failed to set speed to %"PRIu32"Hz: %s\n",
 			 __func__, speed_hz, strerror(errno));
-		return 1;
+		goto init_err;
 	}
 	msg_pdbg("Using %"PRIu32"kHz clock\n", speed_hz / 1000);
 
 	if (ioctl(fd, SPI_IOC_WR_MODE, &mode) == -1) {
 		msg_perr("%s: failed to set SPI mode to 0x%02x: %s\n",
 			 __func__, mode, strerror(errno));
-		return 1;
+		goto init_err;
 	}
 
 	if (ioctl(fd, SPI_IOC_WR_BITS_PER_WORD, &bits) == -1) {
 		msg_perr("%s: failed to set the number of bits per SPI word to %u: %s\n",
 			 __func__, bits == 0 ? 8 : bits, strerror(errno));
-		return 1;
+		goto init_err;
 	}
 
-	/* Read max buffer size from sysfs, or use page size as fallback. */
-	FILE *fp;
-	fp = fopen(BUF_SIZE_FROM_SYSFS, "r");
-	if (!fp) {
-		msg_pwarn("Cannot open %s: %s.\n", BUF_SIZE_FROM_SYSFS, strerror(errno));
-		goto out;
-	}
-
-	char buf[10];
-	if (!fgets(buf, sizeof(buf), fp)) {
-		if (feof(fp))
-			msg_pwarn("Cannot read %s: file is empty.\n", BUF_SIZE_FROM_SYSFS);
-		else
-			msg_pwarn("Cannot read %s: %s.\n", BUF_SIZE_FROM_SYSFS, strerror(errno));
-		goto out;
-	}
-
-	long int tmp;
-	errno = 0;
-	tmp = strtol(buf, NULL, 0);
-	if ((tmp < 0) || errno) {
-		msg_pwarn("Buffer size %ld from %s seems wrong.\n", tmp, BUF_SIZE_FROM_SYSFS);
-	} else {
-		msg_pdbg("%s: Using value from %s as max buffer size.\n", __func__, BUF_SIZE_FROM_SYSFS);
-		max_kernel_buf_size = (size_t)tmp;
-	}
-
-out:
-	if (fp)
-		fclose(fp);
-
-	if (!max_kernel_buf_size) {
-		msg_pdbg("%s: Using page size as max buffer size.\n", __func__);
-		max_kernel_buf_size = (size_t)getpagesize();
-	}
-
+	max_kernel_buf_size = get_max_kernel_buf_size();
 	msg_pdbg("%s: max_kernel_buf_size: %zu\n", __func__, max_kernel_buf_size);
-	register_spi_master(&spi_master_linux);
-	return 0;
-}
 
-static int linux_spi_shutdown(void *data)
-{
-	if (fd != -1) {
-		close(fd);
-		fd = -1;
+	spi_data = calloc(1, sizeof(*spi_data));
+	if (!spi_data) {
+		msg_perr("Unable to allocated space for SPI master data\n");
+		goto init_err;
 	}
-	return 0;
+	spi_data->fd = fd;
+	spi_data->max_kernel_buf_size = max_kernel_buf_size;
+
+	return register_spi_master(&spi_master_linux, spi_data);
+
+init_err:
+	close(fd);
+	return 1;
 }
 
-static int linux_spi_send_command(const struct flashctx *flash, unsigned int writecnt,
-				  unsigned int readcnt,
-				  const unsigned char *txbuf,
-				  unsigned char *rxbuf)
-{
-	int iocontrol_code;
-	struct spi_ioc_transfer msg[2] = {
-		{
-			.tx_buf = (uint64_t)(uintptr_t)txbuf,
-			.len = writecnt,
-		},
-		{
-			.rx_buf = (uint64_t)(uintptr_t)rxbuf,
-			.len = readcnt,
-		},
-	};
-
-	if (fd == -1)
-		return -1;
-	/* The implementation currently does not support requests that
-	   don't start with sending a command. */
-	if (writecnt == 0)
-		return SPI_INVALID_LENGTH;
-
-	/* Just submit the first (write) request in case there is nothing
-	   to read. Otherwise submit both requests. */
-	if (readcnt == 0)
-		iocontrol_code = SPI_IOC_MESSAGE(1);
-	else
-		iocontrol_code = SPI_IOC_MESSAGE(2);
-
-	if (ioctl(fd, iocontrol_code, msg) == -1) {
-		msg_cerr("%s: ioctl: %s\n", __func__, strerror(errno));
-		return -1;
-	}
-	return 0;
-}
-
-static int linux_spi_read(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len)
-{
-	/* Older kernels use a single buffer for combined input and output
-	   data. So account for longest possible command + address, too. */
-	return spi_read_chunked(flash, buf, start, len, max_kernel_buf_size - 5);
-}
-
-static int linux_spi_write_256(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len)
-{
-	/* 5 bytes must be reserved for longest possible command + address. */
-	return spi_write_chunked(flash, buf, start, len, max_kernel_buf_size - 5);
-}
+const struct programmer_entry programmer_linux_spi = {
+	.name			= "linux_spi",
+	.type			= OTHER,
+	.devs.note		= "Device files /dev/spidev*.*\n",
+	.init			= linux_spi_init,
+	.map_flash_region	= fallback_map,
+	.unmap_flash_region	= fallback_unmap,
+	.delay			= internal_delay,
+};
 
 #endif // CONFIG_LINUX_SPI == 1

@@ -1,0 +1,52 @@
+PKGSRC_MIRROR = http://cdn.netbsd.org/
+NETBSD_MIRROR = http://ftp.de.netbsd.org/
+
+anita\:9.1-sparc64-build: PKGSRC_PATH=pub/pkgsrc/packages/NetBSD/sparc64/9.1/All
+anita\:9.1-sparc64-build: NETBSD_IMAGE=pub/NetBSD/iso/9.1/NetBSD-9.1-sparc64.iso
+anita\:9.1-sparc64-build: QEMU_DISK_SIZE=2G
+anita\:9.1-sparc64-build: QEMU_INSTALL_MEM=192M
+anita\:9.1-sparc64-build: QEMU_RUNTIME_MEM=512M
+
+anita\:9.1-amd64-build: PKGSRC_PATH=pub/pkgsrc/packages/NetBSD/amd64/9.1/All
+anita\:9.1-amd64-build: NETBSD_IMAGE=pub/NetBSD/NetBSD-9.1/amd64/
+anita\:9.1-amd64-build: QEMU_DISK_SIZE=2G
+anita\:9.1-amd64-build: QEMU_INSTALL_MEM=192M
+anita\:9.1-amd64-build: QEMU_RUNTIME_MEM=512M
+
+anita\:9.1-i386-build: PKGSRC_PATH=pub/pkgsrc/packages/NetBSD/i386/9.1/All
+anita\:9.1-i386-build: NETBSD_IMAGE=pub/NetBSD/NetBSD-9.1/i386/
+anita\:9.1-i386-build: QEMU_DISK_SIZE=2G
+anita\:9.1-i386-build: QEMU_INSTALL_MEM=128M
+anita\:9.1-i386-build: QEMU_RUNTIME_MEM=256M
+
+anita\:8.2-amd64-build: PKGSRC_PATH=pub/pkgsrc/packages/NetBSD/amd64/8.2/All
+anita\:8.2-amd64-build: NETBSD_IMAGE=pub/NetBSD/NetBSD-8.2/amd64/
+anita\:8.2-amd64-build: QEMU_DISK_SIZE=2G
+anita\:8.2-amd64-build: QEMU_INSTALL_MEM=192M
+anita\:8.2-amd64-build: QEMU_RUNTIME_MEM=512M
+
+anita\:8.2-i386-build: PKGSRC_PATH=pub/pkgsrc/packages/NetBSD/i386/8.2/All
+anita\:8.2-i386-build: NETBSD_IMAGE=pub/NetBSD/NetBSD-8.2/i386/
+anita\:8.2-i386-build: QEMU_DISK_SIZE=2G
+anita\:8.2-i386-build: QEMU_INSTALL_MEM=128M
+anita\:8.2-i386-build: QEMU_RUNTIME_MEM=256M
+
+anita\:7.1-amd64-build: PKGSRC_PATH=pub/pkgsrc/packages/NetBSD/amd64/7.1/All
+anita\:7.1-amd64-build: NETBSD_IMAGE=pub/NetBSD/NetBSD-7.1/amd64/
+anita\:7.1-amd64-build: QEMU_DISK_SIZE=1G
+anita\:7.1-amd64-build: QEMU_INSTALL_MEM=192M
+anita\:7.1-amd64-build: QEMU_RUNTIME_MEM=512M
+
+anita\:7.1-i386-build: PKGSRC_PATH=pub/pkgsrc/packages/NetBSD/i386/7.1/All
+anita\:7.1-i386-build: NETBSD_IMAGE=pub/NetBSD/NetBSD-7.1/i386/
+anita\:7.1-i386-build: QEMU_DISK_SIZE=1G
+anita\:7.1-i386-build: QEMU_INSTALL_MEM=128M
+anita\:7.1-i386-build: QEMU_RUNTIME_MEM=256M
+
+$(addsuffix -build,$(ANITA_TAGS)): %-build: Dockerfile.anita anita-wrapper.sh
+	$(QUIET_SETUP)docker build . -f $< -t mani/$* \
+		--build-arg PKG_PATH=$(PKGSRC_MIRROR)$(PKGSRC_PATH) \
+		--build-arg INST_IMG=$(NETBSD_MIRROR)$(NETBSD_IMAGE) \
+		--build-arg DISK_SIZE=$(QEMU_DISK_SIZE) \
+		--build-arg INSTALL_MEM=$(QEMU_INSTALL_MEM) \
+		--build-arg RUNTIME_MEM=$(QEMU_RUNTIME_MEM)

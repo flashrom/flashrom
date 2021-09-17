@@ -1,0 +1,34 @@
+FROM manibase
+
+RUN \
+	useradd -p locked -m mani && \
+	if grep -q main /etc/apt/sources.list; then \
+		if ! grep -q universe /etc/apt/sources.list; then \
+			sed -i -e 's/ main$/ main universe/' \
+				/etc/apt/sources.list || exit 1; \
+		fi; \
+	else \
+		url="http://ports.ubuntu.com/" && \
+		cn="$(sed -ne's/DISTRIB_CODENAME=//p' /etc/lsb-release)" && \
+		for t in "" "-updates" "-security"; do \
+			echo "deb ${url} ${cn}${t} main universe" \
+				>>/etc/apt/sources.list || exit 1; \
+		done; \
+	fi && \
+	apt-get -qq update && \
+	apt-get -qq upgrade && \
+	apt-get -qq dist-upgrade && \
+	apt-get -qqy install gcc make git doxygen ccache pkg-config \
+		libpci-dev libusb-dev libftdi-dev libusb-1.0-0-dev && \
+	{ apt-get -qqy install libjaylink-dev || true; } && \
+	apt-get clean
+
+USER mani
+RUN \
+	cd && \
+	mkdir .ccache && chown mani:mani .ccache && \
+	git clone https://review.coreboot.org/flashrom.git
+
+ENV DEVSHELL /bin/bash
+COPY mani-wrapper.sh /home/mani/
+ENTRYPOINT ["/bin/sh", "/home/mani/mani-wrapper.sh"]

@@ -23,7 +23,7 @@
 static uint8_t *nicintel_bar;
 static uint8_t *nicintel_control_bar;
 
-const struct dev_entry nics_intel[] = {
+static const struct dev_entry nics_intel[] = {
 	{PCI_VENDOR_ID_INTEL, 0x1209, NT, "Intel", "8255xER/82551IT Fast Ethernet Controller"},
 	{PCI_VENDOR_ID_INTEL, 0x1229, OK, "Intel", "82557/8/9/0/1 Ethernet Pro 100"},
 
@@ -41,9 +41,17 @@ const struct dev_entry nics_intel[] = {
 #define CSR_FCR 0x0c
 
 static void nicintel_chip_writeb(const struct flashctx *flash, uint8_t val,
-				 chipaddr addr);
+				 chipaddr addr)
+{
+	pci_mmio_writeb(val, nicintel_bar + (addr & NICINTEL_MEMMAP_MASK));
+}
+
 static uint8_t nicintel_chip_readb(const struct flashctx *flash,
-				   const chipaddr addr);
+				   const chipaddr addr)
+{
+	return pci_mmio_readb(nicintel_bar + (addr & NICINTEL_MEMMAP_MASK));
+}
+
 static const struct par_master par_master_nicintel = {
 		.chip_readb		= nicintel_chip_readb,
 		.chip_readw		= fallback_chip_readw,
@@ -55,7 +63,7 @@ static const struct par_master par_master_nicintel = {
 		.chip_writen		= fallback_chip_writen,
 };
 
-int nicintel_init(void)
+static int nicintel_init(void)
 {
 	struct pci_dev *dev = NULL;
 	uintptr_t addr;
@@ -99,19 +107,15 @@ int nicintel_init(void)
 	pci_rmmio_writew(0x0001, nicintel_control_bar + CSR_FCR);
 
 	max_rom_decode.parallel = NICINTEL_MEMMAP_SIZE;
-	register_par_master(&par_master_nicintel, BUS_PARALLEL);
-
-	return 0;
+	return register_par_master(&par_master_nicintel, BUS_PARALLEL, NULL);
 }
 
-static void nicintel_chip_writeb(const struct flashctx *flash, uint8_t val,
-				 chipaddr addr)
-{
-	pci_mmio_writeb(val, nicintel_bar + (addr & NICINTEL_MEMMAP_MASK));
-}
-
-static uint8_t nicintel_chip_readb(const struct flashctx *flash,
-				   const chipaddr addr)
-{
-	return pci_mmio_readb(nicintel_bar + (addr & NICINTEL_MEMMAP_MASK));
-}
+const struct programmer_entry programmer_nicintel = {
+	.name			= "nicintel",
+	.type			= PCI,
+	.devs.dev		= nics_intel,
+	.init			= nicintel_init,
+	.map_flash_region	= fallback_map,
+	.unmap_flash_region	= fallback_unmap,
+	.delay			= internal_delay,
+};

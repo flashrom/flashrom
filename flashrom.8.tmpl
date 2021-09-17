@@ -40,15 +40,16 @@
 .    \}
 .  \}
 ..
-.TH FLASHROM 8 "" ""
+.TH FLASHROM 8 "@MAN_DATE@" "@VERSION@" "@MAN_DATE@"
 .SH NAME
 flashrom \- detect, read, write, verify and erase flash chips
 .SH SYNOPSIS
 .B flashrom \fR[\fB\-h\fR|\fB\-R\fR|\fB\-L\fR|\fB\-z\fR|
           \fB\-p\fR <programmername>[:<parameters>] [\fB\-c\fR <chipname>]
             (\fB\-\-flash\-name\fR|\fB\-\-flash\-size\fR|
-             [\fB\-E\fR|\fB\-r\fR <file>|\fB\-w\fR <file>|\fB\-v\fR <file>]
-             [(\fB\-l\fR <file>|\fB\-\-ifd|\fB \-\-fmap\fR|\fB\-\-fmap-file\fR <file>) [\fB\-i\fR <image>]]
+             [\fB\-E\fR|\fB\-x\fR|\fB\-r\fR <file>|\fB\-w\fR <file>|\fB\-v\fR <file>]
+             [(\fB\-l\fR <file>|\fB\-\-ifd|\fB \-\-fmap\fR|\fB\-\-fmap-file\fR <file>)
+               [\fB\-i\fR <image>[:<file>]]]
              [\fB\-n\fR] [\fB\-N\fR] [\fB\-f\fR])]
          [\fB\-V\fR[\fBV\fR[\fBV\fR]]] [\fB-o\fR <logfile>]
 .SH DESCRIPTION
@@ -134,6 +135,10 @@ Verify the flash ROM contents against the given
 .TP
 .B "\-E, \-\-erase"
 Erase the flash ROM chip.
+.TP
+.B "\-x, \-\-extract"
+Extract every region defined on the layout from flash ROM chip to a
+file with the same name as the extracted region.
 .TP
 .B "\-V, \-\-verbose"
 More verbose output. This option can be supplied multiple times
@@ -239,10 +244,45 @@ The following ROM images may be present in an IFD:
   gbe   gigabit ethernet firmware
   pd    platform specific data
 .TP
-.B "\-i, \-\-image <imagename>"
-Only flash region/image
-.B <imagename>
-from flash layout.
+.B "\-i, \-\-include <region>[:<file>]"
+Read or write only
+.B <region>
+to or from ROM.
+The
+.B "\-i"
+option may be used multiple times if the user wishes to read or write
+multiple regions using a single command.
+.sp
+The user may optionally specify a corresponding
+.B <file>
+for any region they wish to read or write. A read operation will read the
+corresponding regions from ROM and write individual files for each one. A write
+option will read file(s) and write to the corresponding region(s) in ROM.
+.sp
+For write operations, files specified using
+.B "\-i"
+take precedence over content from the argument to
+.B "\-w."
+.sp
+Examples:
+.sp
+  To read regions named
+.BR "foo " and " bar"
+in layout file
+.B <layout>
+into region-sized files
+.BR "foo.bin " and " bar.bin" ", run:
+.sp
+.B "    flashrom \-p prog \-l <layout> \-i foo:foo.bin -i bar:bar.bin -r rom.bin
+.sp
+  To write files
+.BR "foo.bin " and " bar.bin"
+into regions named
+.BR "foo " and " bar" " in layout file
+.BR <layout>
+to the ROM, run:
+.sp
+.B "    flashrom \-p prog \-l <layout> \-i foo:foo.bin -i bar:bar.bin -w rom.bin
 .TP
 .B "\-\-flash\-name"
 Prints out the detected flash chips name.
@@ -646,8 +686,19 @@ vendor):
 .sp
 .RB "* Macronix " MX25L6436 " SPI flash chip (8192 kB, RDID, SFDP)"
 .sp
+.RB "* Dummy vendor " VARIABLE_SIZE " SPI flash chip (configurable size, page write)"
+.sp
 Example:
 .B "flashrom -p dummy:emulate=SST25VF040.REMS"
+.sp
+To use
+.B VARIABLE_SIZE
+chip,
+.B size
+must be specified to configure the size of the flash chip as a power of two.
+.sp
+Example:
+.B "flashrom -p dummy:emulate=VARIABLE_SIZE,size=16777216,image=dummy.bin"
 .TP
 .B Persistent images
 .sp
@@ -901,7 +952,21 @@ can be
 More information about the Bus Pirate pull-up resistors and their purpose is available
 .URLB "http://dangerousprototypes.com/docs/Practical_guide_to_Bus_Pirate_pull-up_resistors" \
 "in a guide by dangerousprototypes" .
-Only the external supply voltage (Vpu) is supported as of this writing.
+.sp
+The state of the Bus Pirate power supply pins is controllable through an optional
+.B psus
+parameter. Syntax is
+.sp
+.B "  flashrom -p buspirate_spi:psus=state"
+.sp
+where
+.B state
+can be
+.BR on " or " off .
+This allows the bus pirate to power the ROM chip directly. This may also be used to provide the
+required pullup voltage (when using the
+.B pullups
+option), by connecting the Bus Pirate's Vpu input to the appropriate Vcc pin.
 .SS
 .BR "pickit2_spi " programmer
 .IP
@@ -1389,24 +1454,13 @@ in
 .B "/etc/rc.securelevel"
 and rebooting, or rebooting into single user mode.
 .SH BUGS
-Please report any bugs to the
-.MTOB "flashrom@flashrom.org" "flashrom mailing list" .
+You can report bugs, ask us questions or send success reports
+via our communication channels listed here:
+.URLB "https://www.flashrom.org/Contact" "" .
 .sp
-We recommend to subscribe first at
-.URLB "https://flashrom.org/mailman/listinfo/flashrom" "" .
-.sp
-Many of the developers communicate via the
-.B "#flashrom"
-IRC channel on
-.BR chat.freenode.net .
-If you don't have an IRC client, you can use the
-.URLB http://webchat.freenode.net/?channels=flashrom "freenode webchat" .
-You are welcome to join and ask questions, send us bug and success reports there
-too. Please provide a way to contact you later (e.g.\& a mail address) and be
-patient if there is no immediate reaction. Also, we provide a
+Also, we provide a
 .URLB https://paste.flashrom.org "pastebin service"
-that is very useful when you want to share logs etc.\& without spamming the
-channel.
+that is very useful to share logs without spamming the communication channels.
 .SS
 .B Laptops
 .sp
@@ -1442,6 +1496,8 @@ additionally available under any later version of the GPL.
 Please see the individual files.
 .SH AUTHORS
 Andrew Morgan
+.br
+Anastasia Klimchuk
 .br
 Carl-Daniel Hailfinger
 .br

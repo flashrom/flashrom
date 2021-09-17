@@ -1,0 +1,203 @@
+ANITA_TAGS := \
+	anita\:9.1-amd64 anita\:9.1-i386 anita\:9.1-sparc64 \
+	anita\:8.2-amd64 anita\:8.2-i386 \
+	anita\:7.1-amd64 anita\:7.1-i386 \
+
+MULTIARCH_TAGS := \
+	centos\:7.6-armhfp-clean centos\:7.6-amd64-clean \
+	centos\:7.3-aarch64-clean centos\:7.3-amd64-clean \
+	centos\:7.2-amd64-clean \
+	$(foreach a,x86_64 s390x aarch64, fedora\:30-$(a)) \
+	$(foreach a,x86_64 s390x ppc64le aarch64, fedora\:29-$(a)) \
+	fedora\:28-armhfp \
+	$(foreach a,x86_64 ppc64le aarch64, \
+	  $(foreach v,25 24, \
+	    fedora\:$(v)-$(a))) \
+	$(foreach a,ppc64el arm64 armhf mips mipsel amd64 i386, \
+	  $(foreach v,sid buster stretch, \
+	    debian-debootstrap\:$(a)-$(v))) \
+	$(foreach a,ppc64el arm64 armhf amd64 i386, \
+	  $(foreach v,bionic xenial, \
+	    ubuntu-debootstrap\:$(a)-$(v))) \
+	ubuntu-debootstrap\:powerpc-xenial \
+	$(foreach a,aarch64 armhf amd64 i386, \
+	  $(foreach v,v3.9 v3.8 v3.7 v3.6, \
+	    alpine\:$(a)-$(v))) \
+
+OTHER_TAGS := djgpp\:6.1.0
+
+ALL_TAGS := $(ANITA_TAGS) $(MULTIARCH_TAGS) $(OTHER_TAGS)
+
+arch_filter = $(sort \
+	$(foreach arch,$(1), \
+	  $(filter-out $(subst $(arch),,$(MULTIARCH_TAGS)),$(MULTIARCH_TAGS))))
+
+machine_map = \
+	$(if $(filter i386 i686 x86,$(1)),i386 x86, \
+	$(if $(filter x86_64,$(1)),amd64 i386 x86, \
+	$(if $(filter armv7l armv6l,$(1)),armhf, \
+	$(if $(filter aarch64,$(1)),aarch64 arm64, \
+	$(if $(filter ppc64le,$(1)),ppc64le ppc64el, \
+	$(if $(filter ppc,$(1)),powerpc, \
+	$(if $(filter mips,$(1)),mips mipsel, \
+	$(1))))))))
+
+NATIVE_TAGS := $(call arch_filter,$(call machine_map,$(shell uname -m)))
+
+# rather arbitrary selection of images that seem to work (focus on amd64)
+DEFAULT_TAGS := \
+	anita\:9.1-sparc64 \
+	anita\:9.1-amd64 \
+	anita\:9.1-i386 \
+	anita\:8.2-amd64 \
+	djgpp\:6.1.0 \
+	fedora\:30-aarch64 \
+	fedora\:25-x86_64 \
+	fedora\:25-ppc64le \
+	fedora\:25-aarch64 \
+	fedora\:24-x86_64 \
+	centos\:7.3-aarch64-clean \
+	centos\:7.3-amd64-clean \
+	centos\:7.2-amd64-clean \
+	debian-debootstrap\:ppc64el-stretch \
+	debian-debootstrap\:armhf-stretch \
+	debian-debootstrap\:mips-stretch \
+	debian-debootstrap\:mipsel-stretch \
+	debian-debootstrap\:amd64-stretch \
+	debian-debootstrap\:i386-stretch \
+	debian-debootstrap\:amd64-sid \
+	ubuntu-debootstrap\:arm64-xenial \
+	ubuntu-debootstrap\:amd64-xenial \
+	ubuntu-debootstrap\:powerpc-xenial \
+	ubuntu-debootstrap\:amd64-bionic \
+	alpine\:aarch64-v3.9 \
+	alpine\:amd64-v3.8 \
+	alpine\:amd64-v3.7 \
+
+# also run all native tests by default
+DEFAULT_TAGS += $(filter-out $(DEFAULT_TAGS),$(NATIVE_TAGS))
+
+# original 1.0.x tags
+10X_TAGS := \
+	anita\:7.1-amd64 \
+	anita\:7.1-i386 \
+	djgpp\:6.1.0 \
+	alpine\:amd64-v3.6 \
+	alpine\:amd64-v3.7 \
+	alpine\:i386-v3.6 \
+	alpine\:i386-v3.7 \
+	centos\:7.2-amd64-clean \
+	centos\:7.3-aarch64-clean \
+	centos\:7.3-amd64-clean \
+	debian-debootstrap\:amd64-sid \
+	debian-debootstrap\:amd64-stretch \
+	debian-debootstrap\:armhf-stretch \
+	debian-debootstrap\:i386-sid \
+	debian-debootstrap\:i386-stretch \
+	debian-debootstrap\:mips-stretch \
+	debian-debootstrap\:mipsel-stretch \
+	debian-debootstrap\:powerpc-sid \
+	debian-debootstrap\:ppc64el-stretch \
+	fedora\:24-x86_64 \
+	fedora\:25-aarch64 \
+	fedora\:25-ppc64le \
+	fedora\:25-x86_64 \
+	ubuntu-debootstrap\:amd64-xenial \
+	ubuntu-debootstrap\:amd64-zesty \
+	ubuntu-debootstrap\:arm64-xenial \
+	ubuntu-debootstrap\:i386-xenial \
+	ubuntu-debootstrap\:i386-zesty \
+
+# additional tags added after initial release
+10X_TAGS += \
+	alpine\:aarch64-v3.8 \
+	alpine\:armhf-v3.8 \
+	alpine\:amd64-v3.8 \
+	alpine\:i386-v3.8 \
+	debian-debootstrap\:amd64-buster \
+	debian-debootstrap\:arm64-buster \
+	debian-debootstrap\:i386-buster \
+	ubuntu-debootstrap\:amd64-bionic \
+	ubuntu-debootstrap\:arm64-bionic \
+	ubuntu-debootstrap\:i386-bionic \
+
+# can only run what is still maintained
+10X_TAGS := $(filter $(10X_TAGS),$(ALL_TAGS))
+
+# original 1.1.x tags
+11X_TAGS := \
+	anita\:7.1-amd64 \
+	djgpp\:6.1.0 \
+	fedora\:30-x86_64 \
+	fedora\:30-aarch64 \
+	fedora\:29-x86_64 \
+	fedora\:25-x86_64 \
+	fedora\:25-ppc64le \
+	fedora\:25-aarch64 \
+	fedora\:24-x86_64 \
+	centos\:7.6-amd64-clean \
+	centos\:7.3-aarch64-clean \
+	centos\:7.3-amd64-clean \
+	centos\:7.2-amd64-clean \
+	debian-debootstrap\:ppc64el-stretch \
+	debian-debootstrap\:armhf-stretch \
+	debian-debootstrap\:mips-stretch \
+	debian-debootstrap\:mipsel-stretch \
+	debian-debootstrap\:amd64-stretch \
+	debian-debootstrap\:i386-stretch \
+	debian-debootstrap\:amd64-sid \
+	ubuntu-debootstrap\:arm64-xenial \
+	ubuntu-debootstrap\:amd64-xenial \
+	ubuntu-debootstrap\:powerpc-xenial \
+	ubuntu-debootstrap\:amd64-bionic \
+	alpine\:aarch64-v3.9 \
+	alpine\:amd64-v3.9 \
+	alpine\:amd64-v3.8 \
+	alpine\:amd64-v3.7 \
+	alpine\:amd64-v3.6 \
+	alpine\:armhf-v3.8 \
+	alpine\:i386-v3.9 \
+	alpine\:i386-v3.8 \
+	alpine\:i386-v3.7 \
+	alpine\:i386-v3.6 \
+	debian-debootstrap\:amd64-buster \
+	debian-debootstrap\:i386-buster \
+	debian-debootstrap\:i386-sid \
+	ubuntu-debootstrap\:armhf-xenial \
+	ubuntu-debootstrap\:i386-bionic \
+	ubuntu-debootstrap\:i386-xenial \
+	ubuntu-debootstrap\:ppc64el-xenial \
+
+# can only run what is still maintained
+11X_TAGS := $(filter $(11X_TAGS),$(ALL_TAGS))
+
+default: $(DEFAULT_TAGS)
+
+native: $(NATIVE_TAGS)
+
+all: $(ALL_TAGS)
+
+1.0.x: export TEST_REVISION=refs/heads/1.0.x
+1.0.x: $(10X_TAGS)
+
+1.1.x: export TEST_REVISION=refs/heads/1.1.x
+1.1.x: $(11X_TAGS)
+
+show-default:
+	@printf "%s\n" $(DEFAULT_TAGS)
+
+show-native:
+	@printf "%s\n" $(NATIVE_TAGS)
+
+show-all:
+	@printf "%s\n" $(ALL_TAGS)
+
+show-1.0.x:
+	@printf "%s\n" $(10X_TAGS)
+
+show-1.1.x:
+	@printf "%s\n" $(11X_TAGS)
+
+.PHONY: default native all 1.0.x 1.1.x
+.PHONY: show-default show-native show-all show-1.0.x show-1.1.x
+.PHONY: $(ALL_TAGS)
