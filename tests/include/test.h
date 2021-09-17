@@ -35,4 +35,6 @@
  */
 void *not_null(void);
 
+#define LOG_ME printf("%s is called\n", __func__)
+
 #endif /* _TESTS_TEST_H */

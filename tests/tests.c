@@ -21,9 +21,6 @@
 #include <string.h>
 #include <stdint.h>
 
-/* redefinitions/wrapping */
-#define LOG_ME printf("%s is called\n", __func__)
-
 void *not_null(void)
 {
 	return (void *)NON_ZERO;
