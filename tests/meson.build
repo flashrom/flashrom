@@ -14,6 +14,7 @@
 root_includes = include_directories('../subprojects')
 
 srcs = [
+  'io_mock.c',
   'tests.c',
   'helpers.c',
   'flashrom.c',

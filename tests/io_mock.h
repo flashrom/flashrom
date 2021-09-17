@@ -95,4 +95,6 @@ struct io_mock {
 
 void io_mock_register(const struct io_mock *io);
 
+const struct io_mock *get_io(void);
+
 #endif
