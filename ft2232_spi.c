@@ -419,6 +419,9 @@ static int ft2232_spi_init(void)
 	}
 	free(arg);
 
+	/* Remember reserved pins before pindir gets modified. */
+	const uint8_t rsv_bits = pindir & 0xf0;
+
 	arg = extract_programmer_param("port");
 	if (arg) {
 		switch (toupper((unsigned char)*arg)) {
@@ -478,6 +481,15 @@ static int ft2232_spi_init(void)
 			return -2;
 		}
 		unsigned int pin = temp + 4;
+
+		if (rsv_bits & 1 << pin) {
+			msg_perr("Error: Invalid GPIOL specified: \"%s\".\n"
+				 "The pin is reserved on this programmer.\n",
+				 arg);
+			free(arg);
+			return -2;
+		}
+
 		cs_bits |= 1 << pin;
 		pindir |= 1 << pin;
 	}
