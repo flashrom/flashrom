@@ -89,8 +89,11 @@ static const struct dev_entry devs_ft2232spi[] = {
  * "set data bits low byte" MPSSE command that sets the initial
  * state and the direction of the I/O pins. `cs_bits` pins default
  * to high and will be toggled during SPI transactions. All other
- * output pins will be kept low all the time. On exit, all pins
- * will be reconfigured as inputs.
+ * output pins will be kept low all the time. For some programmers,
+ * some reserved GPIOL* pins are used as outputs. Free GPIOL* pins
+ * are configured as inputs, while it's possible to use one of them
+ * as additional CS# signal through the parameter `csgpiol`. On exit,
+ * all pins will be reconfigured as inputs.
  *
  * The pin offsets are as follows:
  * TCK/SK is bit 0.
