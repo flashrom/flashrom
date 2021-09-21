@@ -20,8 +20,6 @@
  * Contains the ITE IT85* SPI specific routines
  */
 
-#if defined(__i386__) || defined(__x86_64__)
-
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -362,5 +360,3 @@ int it85xx_spi_init(struct superio s)
 	/* Set this as SPI controller. */
 	return register_spi_master(&spi_master_it85xx, data);
 }
-
-#endif

@@ -19,8 +19,6 @@
  * created by Michael Karcher.
  */
 
-#if defined(__i386__) || defined(__x86_64__)
-
 #include <stdlib.h>
 #include <ctype.h>
 #include "flash.h"
@@ -192,5 +190,3 @@ int mcp6x_spi_init(int want_spi)
 
 	return 0;
 }
-
-#endif

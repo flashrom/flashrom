@@ -22,7 +22,6 @@
  * most OS parport drivers will perform many unnecessary accesses although
  * this driver just treats the parallel port as a GPIO set.
  */
-#if defined(__i386__) || defined(__x86_64__)
 
 #include <stdlib.h>
 #include <strings.h>
@@ -334,7 +333,3 @@ const struct programmer_entry programmer_rayer_spi = {
 	.unmap_flash_region	= fallback_unmap,
 	.delay			= internal_delay,
 };
-
-#else
-#error PCI port I/O access is not supported on this architecture yet.
-#endif

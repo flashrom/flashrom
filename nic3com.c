@@ -14,8 +14,6 @@
  * GNU General Public License for more details.
  */
 
-#if defined(__i386__) || defined(__x86_64__)
-
 #include <stdlib.h>
 #include "flash.h"
 #include "programmer.h"
@@ -173,7 +171,3 @@ const struct programmer_entry programmer_nic3com = {
 	.unmap_flash_region	= fallback_unmap,
 	.delay			= internal_delay,
 };
-
-#else
-#error PCI port I/O access is not supported on this architecture yet.
-#endif

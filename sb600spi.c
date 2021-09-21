@@ -18,8 +18,6 @@
  * GNU General Public License for more details.
  */
 
-#if defined(__i386__) || defined(__x86_64__)
-
 #include <string.h>
 #include <stdlib.h>
 #include "flash.h"
@@ -799,5 +797,3 @@ int sb600_probe_spi(struct pci_dev *dev)
 
 	return 0;
 }
-
-#endif

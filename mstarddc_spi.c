@@ -13,8 +13,6 @@
  * GNU General Public License for more details.
  */
 
-#if CONFIG_MSTARDDC_SPI == 1
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -259,5 +257,3 @@ const struct programmer_entry programmer_mstarddc_spi = {
 	.unmap_flash_region	= fallback_unmap,
 	.delay			= internal_delay,
 };
-
-#endif

@@ -14,8 +14,6 @@
  * GNU General Public License for more details.
  */
 
-#if defined(__i386__) || defined(__x86_64__)
-
 #include <stdlib.h>
 
 #include "flash.h"
@@ -217,5 +215,3 @@ int wbsio_check_for_spi(void)
 
 	return register_spi_master(&spi_master_wbsio, data);
 }
-
-#endif /* defined(__i386__) || defined(__x86_64__) */

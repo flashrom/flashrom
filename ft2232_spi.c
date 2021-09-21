@@ -14,8 +14,6 @@
  * GNU General Public License for more details.
  */
 
-#if CONFIG_FT2232_SPI == 1
-
 #include <stdio.h>
 #include <strings.h>
 #include <string.h>
@@ -599,4 +597,3 @@ const struct programmer_entry programmer_ft2232_spi = {
 	.unmap_flash_region	= fallback_unmap,
 	.delay			= internal_delay,
 };
-#endif

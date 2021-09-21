@@ -15,7 +15,6 @@
  */
 
 /* Datasheets are not public (yet?) */
-#if defined(__i386__) || defined(__x86_64__)
 
 #include <stdlib.h>
 #include "flash.h"
@@ -191,7 +190,3 @@ const struct programmer_entry programmer_satamv = {
 	.unmap_flash_region	= fallback_unmap,
 	.delay			= internal_delay,
 };
-
-#else
-#error PCI port I/O access is not supported on this architecture yet.
-#endif
