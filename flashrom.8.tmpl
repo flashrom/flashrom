@@ -883,12 +883,42 @@ parameter with the
 syntax.
 .sp
 Using the parameter
-.B csgpiol
+.B csgpiol (DEPRECATED - use gpiol instead)
 an additional CS# pin can be chosen, where the value can be a number between 0 and 3, denoting GPIOL0-GPIOL3
 correspondingly. Example:
 .sp
 .B "  flashrom \-p ft2232_spi:csgpiol=3"
 .sp
+The parameter
+.B gpiolX=[HLC]
+allows use of the GPIOL pins either as generic gpios with a fixed value during flashing or as addtional CS#
+signal, where
+.B X
+can be a number between 0 and 3, denoting GPIOL0-GPIOL3 correspondingly. The parameter may be specified
+multiple times, one time per GPIOL pin.
+Valid values are
+.B H
+,
+.B L
+and
+.B C
+:
+.br
+.B "  H "
+- Set GPIOL output high
+.br
+.B "  L "
+- Set GPIOL output low
+.br
+.B "  C "
+- Use GPIOL as additional CS# output
+.sp
+.B Example:
+.sp
+.B "  flashrom \-p ft2232_spi:gpiol0=H"
+.sp
+.B Note
+that not all GPIOL pins are freely usable with all programmers as some have special functionality.
 .SS
 .BR "serprog " programmer
 .IP
