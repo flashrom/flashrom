@@ -290,6 +290,13 @@ Prints out the detected flash chips name.
 .B "\-\-flash\-size"
 Prints out the detected flash chips size.
 .TP
+.B "\-\-flash\-contents <ref\-file>"
+The file contents of
+.BR <ref\-file>
+will be used to decide which parts of the flash need to be written. Providing
+this saves an initial read of the full flash chip. Be careful, if the provided
+data doesn't actually match the flash contents, results are undefined.
+.TP
 .B "\-L, \-\-list\-supported"
 List the flash chips, chipsets, mainboards, and external programmers
 (including PCI, USB, parallel port, and serial port based devices)
