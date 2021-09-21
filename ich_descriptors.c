@@ -912,10 +912,8 @@ void prettyprint_ich_descriptor_upper_map(const struct ich_desc_upper_map *umap)
 	msg_pdbg2("\n");
 }
 
-static inline void warn_peculiar_desc(const bool warn_if, const char *const name)
+static inline void warn_peculiar_desc(const char *const name)
 {
-	if (!warn_if)
-		return;
 	msg_pwarn("Peculiar flash descriptor, assuming %s compatibility.\n", name);
 }
 
@@ -933,15 +931,19 @@ static enum ich_chipset guess_ich_chipset_from_content(const struct ich_desc_con
 			return CHIPSET_ICH9;
 		if (content->ISL <= 10)
 			return CHIPSET_ICH10;
+		if (content->ISL <= 16)
+			return CHIPSET_5_SERIES_IBEX_PEAK;
 		if (content->FLMAP2 == 0) {
 			if (content->ISL == 19)
 				return CHIPSET_APOLLO_LAKE;
-			warn_peculiar_desc(content->ISL != 23, "Gemini Lake");
+			if (content->ISL == 23)
+				return CHIPSET_GEMINI_LAKE;
+			warn_peculiar_desc("Gemini Lake");
 			return CHIPSET_GEMINI_LAKE;
 		}
 		if (content->ISL <= 80)
 			return CHIPSET_C620_SERIES_LEWISBURG;
-		warn_peculiar_desc(content->ISL != 16, "Ibex Peak");
+		warn_peculiar_desc("Ibex Peak");
 		return CHIPSET_5_SERIES_IBEX_PEAK;
 	} else if (upper->MDTBA == 0x00) {
 		if (content->ICCRIBA < 0x31 && content->FMSBA < 0x30) {
@@ -949,18 +951,25 @@ static enum ich_chipset guess_ich_chipset_from_content(const struct ich_desc_con
 				return CHIPSET_BAYTRAIL;
 			if (content->MSL <= 1 && content->ISL <= 18)
 				return CHIPSET_6_SERIES_COUGAR_POINT;
-			warn_peculiar_desc(content->MSL != 1 || content->ISL != 21, "Lynx Point");
+			if (content->MSL <= 1 && content->ISL <= 21)
+				return CHIPSET_8_SERIES_LYNX_POINT;
+			warn_peculiar_desc("Lynx Point");
 			return CHIPSET_8_SERIES_LYNX_POINT;
 		}
 		if (content->NM == 6) {
-			warn_peculiar_desc(content->ICCRIBA > 0x34, "C620 series");
+			if (content->ICCRIBA <= 0x34)
+				return CHIPSET_C620_SERIES_LEWISBURG;
+			warn_peculiar_desc("C620 series");
 			return CHIPSET_C620_SERIES_LEWISBURG;
 		}
-		warn_peculiar_desc(content->ICCRIBA != 0x31, "100 series");
+		if (content->ICCRIBA == 0x31)
+			return CHIPSET_100_SERIES_SUNRISE_POINT;
+		warn_peculiar_desc("100 series");
 		return CHIPSET_100_SERIES_SUNRISE_POINT;
 	} else {
-		if (content->ICCRIBA != 0x34)
-			msg_pwarn("Unknown flash descriptor, assuming 300 series compatibility.\n");
+		if (content->ICCRIBA == 0x34)
+			return CHIPSET_300_SERIES_CANNON_POINT;
+		msg_pwarn("Unknown flash descriptor, assuming 300 series compatibility.\n");
 		return CHIPSET_300_SERIES_CANNON_POINT;
 	}
 }
