@@ -20,7 +20,6 @@
 #include <string.h>
 #include <libusb.h>
 #include "flash.h"
-#include "platform.h"
 #include "programmer.h"
 
 /* LIBUSB_CALL ensures the right calling conventions on libusb callbacks.
@@ -448,17 +447,11 @@ static int ch341a_spi_init(void)
 		return -1;
 	}
 
-/* libusb_detach_kernel_driver() and friends basically only work on Linux. We simply try to detach on Linux
- * without a lot of passion here. If that works fine else we will fail on claiming the interface anyway. */
-#if IS_LINUX
-	ret = libusb_detach_kernel_driver(handle, 0);
-	if (ret == LIBUSB_ERROR_NOT_SUPPORTED) {
-		msg_pwarn("Detaching kernel drivers is not supported. Further accesses may fail.\n");
-	} else if (ret != 0 && ret != LIBUSB_ERROR_NOT_FOUND) {
-		msg_pwarn("Failed to detach kernel driver: '%s'. Further accesses will probably fail.\n",
-			  libusb_error_name(ret));
+	ret = libusb_set_auto_detach_kernel_driver(handle, 1);
+	if (ret != 0) {
+		msg_pwarn("Platform does not support detaching of USB kernel drivers.\n"
+			  "If an unsupported driver is active, claiming of the interface may fail.\n");
 	}
-#endif
 
 	ret = libusb_claim_interface(handle, 0);
 	if (ret != 0) {
