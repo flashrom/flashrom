@@ -840,9 +840,9 @@ Multi-Protocol Adapter (TUMPA), TUMPA Lite, GOEPEL PicoTAP, Google Servo v1/v2 a
 Flyswatter/Flyswatter 2.
 .sp
 An optional parameter specifies the controller
-type, channel/interface/port and GPIO-based chip select it should support. For that you have to use the
+type, channel/interface/port it should support. For that you have to use the
 .sp
-.B "  flashrom \-p ft2232_spi:type=model,port=interface,csgpiol=gpio"
+.B "  flashrom \-p ft2232_spi:type=model,port=interface"
 .sp
 syntax where
 .B model
@@ -853,10 +853,7 @@ arm-usb-tiny ", " arm-usb-tiny-h ", " arm-usb-ocd ", " arm-usb-ocd-h \
 " or " google-servo-v2-legacy
 .B interface
 can be
-.BR A ", " B ", " C ", or " D
-and
-.B csgpiol
-can be a number between 0 and 3, denoting GPIOL0-GPIOL3 correspondingly.
+.BR A ", " B ", " C ", or " D .
 The default model is
 .B 4232H
 the default interface is
@@ -884,6 +881,14 @@ parameter with the
 .B "  flashrom \-p ft2232_spi:divisor=div"
 .sp
 syntax.
+.sp
+Using the parameter
+.B csgpiol
+an additional CS# pin can be chosen, where the value can be a number between 0 and 3, denoting GPIOL0-GPIOL3
+correspondingly. Example:
+.sp
+.B "  flashrom \-p ft2232_spi:csgpiol=3"
+.sp
 .SS
 .BR "serprog " programmer
 .IP
