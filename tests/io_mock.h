@@ -34,11 +34,14 @@
 /* Required for `FILE *` */
 #include <stdio.h>
 
-/* Define libusb symbols to avoid dependency on libusb.h */
-struct libusb_device_handle;
-typedef struct libusb_device_handle libusb_device_handle;
-struct libusb_context;
-typedef struct libusb_context libusb_context;
+/*
+ * Explicitly including the header because some tests are using libusb structs
+ * in depth, opaque symbols are not sufficient.
+ */
+#include <libusb.h>
+
+/* Address value needs fit into uint8_t. */
+#define USB_DEVICE_ADDRESS 19
 
 /* Define struct pci_dev to avoid dependency on pci.h */
 struct pci_dev {
@@ -80,6 +83,14 @@ struct io_mock {
 					unsigned char *data,
 					uint16_t wLength,
 					unsigned int timeout);
+	ssize_t (*libusb_get_device_list)(void *state, libusb_context *, libusb_device ***list);
+	void (*libusb_free_device_list)(void *state, libusb_device **list, int unref_devices);
+	int (*libusb_get_device_descriptor)(void *state, libusb_device *, struct libusb_device_descriptor *);
+	int (*libusb_get_config_descriptor)(void *state,
+						libusb_device *,
+						uint8_t config_index,
+						struct libusb_config_descriptor **);
+	void (*libusb_free_config_descriptor)(void *state, struct libusb_config_descriptor *);
 
 	/* POSIX File I/O */
 	int (*open)(void *state, const char *pathname, int flags);

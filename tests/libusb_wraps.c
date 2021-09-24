@@ -13,6 +13,8 @@
  * GNU General Public License for more details.
  */
 
+#include <stdlib.h>
+
 #include <include/test.h>
 #include "io_mock.h"
 
@@ -28,6 +30,76 @@ int __wrap_libusb_init(libusb_context **ctx)
 	LOG_ME;
 	if (get_io() && get_io()->libusb_init)
 		return get_io()->libusb_init(get_io()->state, ctx);
+	return 0;
+}
+
+int __wrap_libusb_open(libusb_device *dev, libusb_device_handle **devh)
+{
+	LOG_ME;
+	return 0;
+}
+
+int __wrap_libusb_set_auto_detach_kernel_driver(libusb_device_handle *devh, int enable)
+{
+	LOG_ME;
+	return 0;
+}
+
+ssize_t __wrap_libusb_get_device_list(libusb_context *ctx, libusb_device ***list)
+{
+	LOG_ME;
+	if (get_io() && get_io()->libusb_get_device_list)
+		return get_io()->libusb_get_device_list(get_io()->state, ctx, list);
+	return 0;
+}
+
+void __wrap_libusb_free_device_list(libusb_device **list, int unref_devices)
+{
+	LOG_ME;
+	if (get_io() && get_io()->libusb_free_device_list)
+		get_io()->libusb_free_device_list(get_io()->state, list, unref_devices);
+}
+
+uint8_t __wrap_libusb_get_bus_number(libusb_device *dev)
+{
+	LOG_ME;
+	return 0;
+}
+
+uint8_t __wrap_libusb_get_device_address(libusb_device *dev)
+{
+	LOG_ME;
+	return USB_DEVICE_ADDRESS;
+}
+
+int __wrap_libusb_get_device_descriptor(libusb_device *dev, struct libusb_device_descriptor *desc)
+{
+	LOG_ME;
+	if (get_io() && get_io()->libusb_get_device_descriptor)
+		return get_io()->libusb_get_device_descriptor(get_io()->state, dev, desc);
+	return 0;
+}
+
+int __wrap_libusb_get_config_descriptor(
+		libusb_device *dev, uint8_t config_index, struct libusb_config_descriptor **config)
+{
+	LOG_ME;
+	if (get_io() && get_io()->libusb_get_config_descriptor)
+		return get_io()->libusb_get_config_descriptor(get_io()->state, dev, config_index, config);
+	return 0;
+}
+
+void __wrap_libusb_free_config_descriptor(struct libusb_config_descriptor *config)
+{
+	LOG_ME;
+	if (get_io() && get_io()->libusb_free_config_descriptor)
+		return get_io()->libusb_free_config_descriptor(get_io()->state, config);
+	return;
+}
+
+int __wrap_libusb_get_configuration(libusb_device_handle *devh, int *config)
+{
+	LOG_ME;
 	return 0;
 }
 
@@ -61,6 +133,17 @@ int __wrap_libusb_release_interface(libusb_device_handle *devh, int interface_nu
 }
 
 void __wrap_libusb_close(libusb_device_handle *devh)
+{
+	LOG_ME;
+}
+
+libusb_device *__wrap_libusb_ref_device(libusb_device *dev)
+{
+	LOG_ME;
+	return NULL;
+}
+
+void __wrap_libusb_unref_device(libusb_device *dev)
 {
 	LOG_ME;
 }
