@@ -23,6 +23,14 @@ void *__wrap_usb_dev_get_by_vid_pid_number(
 	return not_null();
 }
 
+int __wrap_libusb_init(libusb_context **ctx)
+{
+	LOG_ME;
+	if (get_io() && get_io()->libusb_init)
+		return get_io()->libusb_init(get_io()->state, ctx);
+	return 0;
+}
+
 int __wrap_libusb_set_configuration(libusb_device_handle *devh, int config)
 {
 	LOG_ME;

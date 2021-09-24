@@ -54,6 +54,13 @@ void nicrealtek_init_and_shutdown_test_success(void **state)
 #endif
 }
 
+
+int dediprog_libusb_init(void *state, libusb_context **ctx)
+{
+	*ctx = not_null();
+	return 0;
+}
+
 int dediprog_libusb_control_transfer(void *state,
 					libusb_device_handle *devh,
 					uint8_t bmRequestType,
@@ -75,6 +82,7 @@ void dediprog_init_and_shutdown_test_success(void **state)
 {
 #if CONFIG_DEDIPROG == 1
 	const struct io_mock dediprog_io = {
+		.libusb_init = dediprog_libusb_init,
 		.libusb_control_transfer = dediprog_libusb_control_transfer,
 	};
 
