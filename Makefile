@@ -14,6 +14,8 @@
 # GNU General Public License for more details.
 #
 
+include Makefile.include
+
 PROGRAM = flashrom
 
 ###############################################################################
@@ -133,23 +135,6 @@ DEPENDS_ON_LIBFTDI := \
 DEPENDS_ON_LIBJAYLINK := \
 	CONFIG_JLINK_SPI \
 
-define mark_unsupported
-$(foreach p,$1, \
-	$(if $(filter $($(p)),yes), \
-		$(eval UNSUPPORTED_FEATURES += $(p)=yes), \
-		$(eval override $(p) := no)))
-endef
-
-define filter_deps
-$(strip $(foreach p,$1, \
-	$(if $(filter $($(p)),yes), \
-		$(p))))
-endef
-
-define disable_all
-$(foreach p,$1, \
-	$(eval override $(p) := no))
-endef
 
 ifeq ($(CONFIG_ENABLE_LIBUSB1_PROGRAMMERS), no)
 $(call disable_all,$(DEPENDS_ON_LIBUSB1))
@@ -896,16 +881,6 @@ strip: $(PROGRAM)$(EXEC_SUFFIX)
 # to define test programs we use verbatim variables, which get exported
 # to environment variables and are referenced with $$<varname> later
 
-define COMPILER_TEST
-int main(int argc, char **argv)
-{
-	(void) argc;
-	(void) argv;
-	return 0;
-}
-endef
-export COMPILER_TEST
-
 compiler: featuresavailable
 	@printf "Checking for a C compiler... " | tee -a $(BUILD_DETAILS_FILE)
 	@echo "$$COMPILER_TEST" > .test.c
@@ -929,77 +904,6 @@ ifeq ($(TARGET_OS), libpayload)
 		( echo "Warning: It seems you are not using coreboot's reference compiler."; \
 		  echo "This might work but usually does not, please beware." )
 endif
-
-define LIBPCI_TEST
-/* Avoid a failing test due to libpci header symbol shadowing breakage */
-#define index shadow_workaround_index
-#if !defined __NetBSD__
-#include <pci/pci.h>
-#else
-#include <pciutils/pci.h>
-#endif
-struct pci_access *pacc;
-int main(int argc, char **argv)
-{
-	(void) argc;
-	(void) argv;
-	pacc = pci_alloc();
-	return 0;
-}
-endef
-export LIBPCI_TEST
-
-define PCI_GET_DEV_TEST
-/* Avoid a failing test due to libpci header symbol shadowing breakage */
-#define index shadow_workaround_index
-#if !defined __NetBSD__
-#include <pci/pci.h>
-#else
-#include <pciutils/pci.h>
-#endif
-struct pci_access *pacc;
-struct pci_dev *dev = {0};
-int main(int argc, char **argv)
-{
-	(void) argc;
-	(void) argv;
-	pacc = pci_alloc();
-	dev = pci_get_dev(pacc, dev->domain, dev->bus, dev->dev, 1);
-	return 0;
-}
-endef
-export PCI_GET_DEV_TEST
-
-define LIBUSB1_TEST
-#include <stddef.h>
-#include <libusb.h>
-int main(int argc, char **argv)
-{
-	(void)argc;
-	(void)argv;
-	libusb_init(NULL);
-	return 0;
-}
-endef
-export LIBUSB1_TEST
-
-define LIBJAYLINK_TEST
-#include <stddef.h>
-#include <libjaylink/libjaylink.h>
-int main(int argc, char **argv)
-{
-	struct jaylink_context *ctx;
-
-	(void)argc;
-	(void)argv;
-
-	jaylink_init(&ctx);
-	jaylink_exit(ctx);
-
-	return 0;
-}
-endef
-export LIBJAYLINK_TEST
 
 hwlibs: compiler
 	@printf "" > .libdeps
@@ -1095,105 +999,6 @@ ifneq ($(UNSUPPORTED_FEATURES), )
 	@echo "The following features are unavailable on your machine: $(UNSUPPORTED_FEATURES)"
 	@false
 endif
-
-define FTDI_TEST
-#include <stdlib.h>
-#include <ftdi.h>
-struct ftdi_context *ftdic = NULL;
-int main(int argc, char **argv)
-{
-	(void) argc;
-	(void) argv;
-	return ftdi_init(ftdic);
-}
-endef
-export FTDI_TEST
-
-define FTDI_232H_TEST
-#include <ftdi.h>
-enum ftdi_chip_type type = TYPE_232H;
-endef
-export FTDI_232H_TEST
-
-define UTSNAME_TEST
-#include <sys/utsname.h>
-struct utsname osinfo;
-int main(int argc, char **argv)
-{
-	(void) argc;
-	(void) argv;
-	uname (&osinfo);
-	return 0;
-}
-endef
-export UTSNAME_TEST
-
-define LINUX_MTD_TEST
-#include <mtd/mtd-user.h>
-
-int main(int argc, char **argv)
-{
-	(void) argc;
-	(void) argv;
-	return 0;
-}
-endef
-export LINUX_MTD_TEST
-
-define LINUX_SPI_TEST
-#include <linux/types.h>
-#include <linux/spi/spidev.h>
-
-int main(int argc, char **argv)
-{
-	(void) argc;
-	(void) argv;
-	return 0;
-}
-endef
-export LINUX_SPI_TEST
-
-define LINUX_I2C_TEST
-#include <linux/i2c-dev.h>
-#include <linux/i2c.h>
-
-int main(int argc, char **argv)
-{
-	(void) argc;
-	(void) argv;
-	return 0;
-}
-endef
-export LINUX_I2C_TEST
-
-define CLOCK_GETTIME_TEST
-#include <time.h>
-
-int main(int argc, char **argv)
-{
-	struct timespec res;
-	clock_gettime(CLOCK_REALTIME, &res);
-	return 0;
-}
-endef
-export CLOCK_GETTIME_TEST
-
-define NI845X_TEST
-#include <ni845x.h>
-
-int main(int argc, char **argv)
-{
-    (void) argc;
-    (void) argv;
-    char I2C_Device[256];
-    NiHandle Dev_Handle;
-    uInt32 NumberFound = 0;
-    ni845xFindDevice(I2C_Device, &Dev_Handle, &NumberFound);
-    ni845xCloseFindDeviceHandle(Dev_Handle);
-    return 0;
-}
-endef
-export NI845X_TEST
 
 features: compiler
 	@echo "FEATURES := yes" > .features.tmp
