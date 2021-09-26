@@ -88,7 +88,7 @@ struct pci_dev *pci_card_find(uint16_t vendor, uint16_t device,
 	return NULL;
 }
 
-#if IS_X86
+#if defined(__i386__) || defined(__x86_64__)
 void probe_superio(void)
 {
 	probe_superio_winbond();
@@ -114,7 +114,7 @@ int register_superio(struct superio s)
 	return 0;
 }
 
-#endif /* IS_X86 */
+#endif
 
 static void internal_chip_writeb(const struct flashctx *flash, uint8_t val,
 				 chipaddr addr)
@@ -177,7 +177,7 @@ static int internal_init(void)
 	int not_a_laptop = 0;
 	char *board_vendor = NULL;
 	char *board_model = NULL;
-#if IS_X86
+#if defined(__i386__) || defined(__x86_64__)
 	const char *cb_vendor = NULL;
 	const char *cb_model = NULL;
 #endif
@@ -269,7 +269,7 @@ static int internal_init(void)
 		goto internal_init_exit;
 	}
 
-#if IS_X86
+#if defined(__i386__) || defined(__x86_64__)
 	if ((cb_parse_table(&cb_vendor, &cb_model) == 0) && (board_vendor != NULL) && (board_model != NULL)) {
 		if (strcasecmp(board_vendor, cb_vendor) || strcasecmp(board_model, cb_model)) {
 			msg_pwarn("Warning: The mainboard IDs set by -p internal:mainboard (%s:%s) do not\n"
@@ -298,7 +298,7 @@ static int internal_init(void)
 	 * FIXME: Find a replacement for DMI on non-x86.
 	 * FIXME: Enable Super I/O probing once port I/O is possible.
 	 */
-#endif /* IS_X86 */
+#endif
 
 	/* Check laptop whitelist. */
 	board_handle_before_laptop();
@@ -322,7 +322,7 @@ static int internal_init(void)
 		goto internal_init_exit;
 	}
 
-#if IS_X86
+#if defined(__i386__) || defined(__x86_64__)
 	/* Probe unconditionally for ITE Super I/O chips. This enables LPC->SPI translation on IT87* and
 	 * parallel writes on IT8705F. Also, this handles the manual chip select for Gigabyte's DualBIOS. */
 	init_superio_ite();
@@ -332,7 +332,7 @@ static int internal_init(void)
 		ret = 1;
 		goto internal_init_exit;
 	}
-#endif /* IS_X86 */
+#endif
 
 	if (internal_buses_supported & BUS_NONSPI)
 		register_par_master(&par_master_internal, internal_buses_supported, NULL);
