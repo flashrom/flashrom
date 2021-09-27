@@ -1317,15 +1317,14 @@ static int find_endpoints(struct usb_device *dev, uint8_t *in_ep, uint8_t *out_e
  * is being used by the device USB SPI interface and if needed query the
  * device for its capabilities.
  *
- * @param spi_config    Raiden SPI config which will be modified.
+ * @param ctx_data Raiden SPI data, data contains pointer to config which will be modified.
  *
- * @returns             Returns status code with 0 on success.
+ * @returns	   Returns status code with 0 on success.
  */
-static int configure_protocol(struct spi_master *spi_config)
+static int configure_protocol(struct raiden_debug_spi_data *ctx_data)
 {
 	int status = 0;
-	struct raiden_debug_spi_data *ctx_data =
-		(struct raiden_debug_spi_data *)spi_config->data;
+	struct spi_master *spi_config = ctx_data->spi_config;
 
 	ctx_data->protocol_version =
 		ctx_data->dev->interface_descriptor->bInterfaceProtocol;
@@ -1596,13 +1595,12 @@ loop_end:
 	data->out_ep = out_endpoint;
 	data->spi_config = spi_config;
 
-	spi_config->data = data; /* data is needed to configure protocol below */
 	/*
 	 * The SPI master needs to be configured based on the device connected.
 	 * Using the device protocol interrogation, we will set the limits on
 	 * the write and read sizes and switch command functions.
 	 */
-	ret = configure_protocol(spi_config);
+	ret = configure_protocol(data);
 	if (ret) {
 		msg_perr("Raiden: Error configuring protocol\n"
 			 "    protocol       = %u\n"
