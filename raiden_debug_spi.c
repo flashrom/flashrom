@@ -441,6 +441,7 @@ struct raiden_debug_spi_data {
 	 */
 	uint16_t max_spi_write_count;
 	uint16_t max_spi_read_count;
+	struct spi_master *spi_config;
 };
 /*
  * USB permits a maximum bulk transfer of 64B.
@@ -1377,9 +1378,8 @@ static int configure_protocol(struct spi_master *spi_config)
 
 static int raiden_debug_spi_shutdown(void * data)
 {
-	struct spi_master *spi_config = data;
-	struct raiden_debug_spi_data *ctx_data =
-		(struct raiden_debug_spi_data *)spi_config->data;
+	struct raiden_debug_spi_data *ctx_data = (struct raiden_debug_spi_data *)data;
+	struct spi_master *spi_config = ctx_data->spi_config;
 
 	int ret = LIBUSB(libusb_control_transfer(
 				ctx_data->dev->handle,
@@ -1594,6 +1594,7 @@ loop_end:
 	data->dev = device;
 	data->in_ep = in_endpoint;
 	data->out_ep = out_endpoint;
+	data->spi_config = spi_config;
 
 	spi_config->data = data; /* data is needed to configure protocol below */
 	/*
@@ -1613,7 +1614,7 @@ loop_end:
 	}
 
 	register_spi_master(spi_config, data);
-	register_shutdown(raiden_debug_spi_shutdown, spi_config);
+	register_shutdown(raiden_debug_spi_shutdown, data);
 
 	return 0;
 }
