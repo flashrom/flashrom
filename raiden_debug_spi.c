@@ -1258,6 +1258,37 @@ static int send_command_v2(const struct flashctx *flash,
 	return status;
 }
 
+static int raiden_debug_spi_shutdown(void * data)
+{
+	struct raiden_debug_spi_data *ctx_data = (struct raiden_debug_spi_data *)data;
+	struct spi_master *spi_config = ctx_data->spi_config;
+
+	int ret = LIBUSB(libusb_control_transfer(
+				ctx_data->dev->handle,
+				LIBUSB_ENDPOINT_OUT |
+				LIBUSB_REQUEST_TYPE_VENDOR |
+				LIBUSB_RECIPIENT_INTERFACE,
+				RAIDEN_DEBUG_SPI_REQ_DISABLE,
+				0,
+				ctx_data->dev->interface_descriptor->bInterfaceNumber,
+				NULL,
+				0,
+				TRANSFER_TIMEOUT_MS));
+	if (ret != 0) {
+		msg_perr("Raiden: Failed to disable SPI bridge\n");
+		free(ctx_data);
+		free(spi_config);
+		return ret;
+	}
+
+	usb_device_free(ctx_data->dev);
+	libusb_exit(NULL);
+	free(ctx_data);
+	free(spi_config);
+
+	return 0;
+}
+
 static const struct spi_master spi_master_raiden_debug = {
 	.features       = SPI_MASTER_4BA,
 	.max_data_read  = 0,
@@ -1371,37 +1402,6 @@ static int configure_protocol(struct raiden_debug_spi_data *ctx_data)
 		JEDEC_BYTE_PROGRAM_OUTSIZE;
 	spi_config->max_data_read = ctx_data->max_spi_read_count -
 		JEDEC_BYTE_PROGRAM_OUTSIZE;
-
-	return 0;
-}
-
-static int raiden_debug_spi_shutdown(void * data)
-{
-	struct raiden_debug_spi_data *ctx_data = (struct raiden_debug_spi_data *)data;
-	struct spi_master *spi_config = ctx_data->spi_config;
-
-	int ret = LIBUSB(libusb_control_transfer(
-				ctx_data->dev->handle,
-				LIBUSB_ENDPOINT_OUT |
-				LIBUSB_REQUEST_TYPE_VENDOR |
-				LIBUSB_RECIPIENT_INTERFACE,
-				RAIDEN_DEBUG_SPI_REQ_DISABLE,
-				0,
-				ctx_data->dev->interface_descriptor->bInterfaceNumber,
-				NULL,
-				0,
-				TRANSFER_TIMEOUT_MS));
-	if (ret != 0) {
-		msg_perr("Raiden: Failed to disable SPI bridge\n");
-		free(ctx_data);
-		free(spi_config);
-		return ret;
-	}
-
-	usb_device_free(ctx_data->dev);
-	libusb_exit(NULL);
-	free(ctx_data);
-	free(spi_config);
 
 	return 0;
 }
