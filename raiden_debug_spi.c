@@ -1298,6 +1298,7 @@ static const struct spi_master spi_master_raiden_debug = {
 	.read           = default_spi_read,
 	.write_256      = default_spi_write_256,
 	.write_aai      = default_spi_write_aai,
+	.shutdown	= raiden_debug_spi_shutdown,
 };
 
 static int match_endpoint(struct libusb_endpoint_descriptor const *descriptor,
@@ -1611,10 +1612,7 @@ loop_end:
 		return SPI_GENERIC_ERROR;
 	}
 
-	register_spi_master(spi_config, data);
-	register_shutdown(raiden_debug_spi_shutdown, data);
-
-	return 0;
+	return register_spi_master(spi_config, data);
 }
 
 const struct programmer_entry programmer_raiden_debug_spi = {
