@@ -750,7 +750,12 @@ FEATURE_CFLAGS += -D'CONFIG_I2C_SUPPORT=1'
 endif
 
 ifneq ($(NEED_SERIAL), )
-LIB_OBJS += serial.o custom_baud.o
+LIB_OBJS += serial.o
+ifeq ($(TARGET_OS), Linux)
+LIB_OBJS += custom_baud_linux.o
+else
+LIB_OBJS += custom_baud.o
+endif
 endif
 
 ifneq ($(NEED_POSIX_SOCKETS), )

@@ -323,8 +323,12 @@ endif
 
 # raw serial IO
 if need_serial
-  srcs += 'custom_baud.c'
   srcs += 'serial.c'
+  if host_machine.system() == 'linux'
+    srcs += 'custom_baud_linux.c'
+  else
+    srcs += 'custom_baud.c'
+  endif
 endif
 
 prefix = get_option('prefix')
