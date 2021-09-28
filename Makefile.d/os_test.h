@@ -14,7 +14,7 @@
  */
 
 /*
- * Header file for OS checking.
+ * This file determinate the target os. It should only be used my the Makefile
  */
 
 // Solaris
@@ -61,5 +61,7 @@
 	#else
 		#define __FLASHROM_OS__ "Linux"
 	#endif
+#else
+#define __FLASHROM_OS__ "unknown"
 #endif
 __FLASHROM_OS__

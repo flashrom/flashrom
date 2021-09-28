@@ -1,4 +1,5 @@
 *.d
+!Makefile.d/
 *.o
 /.features
 /.dependencies

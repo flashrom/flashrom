@@ -31,6 +31,10 @@ $(foreach p,$1, \
 	$(eval override $(p) := no))
 endef
 
+# Run the C Preprocessor with file $1 and return the last line, removing quotes.
+define c_macro_test
+$(strip $(shell $(CC) -E $1 2>/dev/null | tail -1 | tr -d '"'))
+endef
 
 define COMPILER_TEST
 int main(int argc, char **argv)

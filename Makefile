@@ -162,13 +162,11 @@ endif
 # IMPORTANT: The following lines must be placed before TARGET_OS, ARCH or ENDIAN
 # is ever used (of course), but should come after any lines setting CC because
 # the lines below use CC itself.
-override TARGET_OS := $(strip $(call debug_shell,$(CC) $(CPPFLAGS) -E os.h 2>/dev/null \
-    | tail -1 | cut -f 2 -d'"'))
+override TARGET_OS := $(call c_macro_test, Makefile.d/os_test.h)
 override ARCH := $(strip $(call debug_shell,$(CC) $(CPPFLAGS) -E archtest.c 2>/dev/null \
     | tail -1 | cut -f 2 -d'"'))
 override ENDIAN := $(strip $(call debug_shell,$(CC) $(CPPFLAGS) -E endiantest.c 2>/dev/null \
     | tail -1))
-
 
 ifeq ($(TARGET_OS), $(filter $(TARGET_OS), FreeBSD OpenBSD DragonFlyBSD))
 override CPPFLAGS += -I/usr/local/include
@@ -848,7 +846,7 @@ TAROPTIONS = $(shell LC_ALL=C tar --version|grep -q GNU && echo "--owner=root --
 # This includes all frontends and libflashrom.
 # We don't use EXEC_SUFFIX here because we want to clean everything.
 clean:
-	rm -f $(PROGRAM) $(PROGRAM).exe libflashrom.a *.o *.d $(PROGRAM).8 $(PROGRAM).8.html $(BUILD_DETAILS_FILE)
+	rm -f $(PROGRAM) $(PROGRAM).exe libflashrom.a $(filter-out Makefile.d, $(wildcard *.d *.o)) $(PROGRAM).8 $(PROGRAM).8.html $(BUILD_DETAILS_FILE)
 	@+$(MAKE) -C util/ich_descriptors_tool/ clean
 
 distclean: clean
@@ -873,11 +871,8 @@ compiler: featuresavailable
 	@echo $(ARCH)|wc -w|grep -q '^[[:blank:]]*1[[:blank:]]*$$' ||	\
 		( echo "unknown (\"$(ARCH)\"). Aborting."; exit 1)
 	@printf "%s\n" '$(ARCH)'
-	@printf "Target OS is "
-	@# FreeBSD wc will output extraneous whitespace.
-	@echo $(TARGET_OS)|wc -w|grep -q '^[[:blank:]]*1[[:blank:]]*$$' ||	\
-		( echo "unknown (\"$(TARGET_OS)\"). Aborting."; exit 1)
-	@printf "%s\n" '$(TARGET_OS)'
+	@echo Target OS is $(TARGET_OS)
+	@if [ $(TARGET_OS) = unknown ]; then echo Aborting.; exit 1; fi
 ifeq ($(TARGET_OS), libpayload)
 	@$(CC) --version 2>&1 | grep -q coreboot || \
 		( echo "Warning: It seems you are not using coreboot's reference compiler."; \
