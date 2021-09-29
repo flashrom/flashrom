@@ -450,7 +450,7 @@ static int ch341a_spi_init(void)
 	ret = libusb_set_auto_detach_kernel_driver(handle, 1);
 	if (ret != 0) {
 		msg_pwarn("Platform does not support detaching of USB kernel drivers.\n"
-			  "If an unsupported driver is active, claiming of the interface may fail.\n");
+			  "If an unsupported driver is active, claiming the interface may fail.\n");
 	}
 
 	ret = libusb_claim_interface(handle, 0);
