@@ -154,6 +154,18 @@ int __wrap_stat64(const char *path, void *buf)
 	return 0;
 }
 
+int __wrap___xstat(const char *path, void *buf)
+{
+	LOG_ME;
+	return 0;
+}
+
+int __wrap___xstat64(const char *path, void *buf)
+{
+	LOG_ME;
+	return 0;
+}
+
 int __wrap_fstat(int fd, void *buf)
 {
 	LOG_ME;
@@ -161,6 +173,18 @@ int __wrap_fstat(int fd, void *buf)
 }
 
 int __wrap_fstat64(int fd, void *buf)
+{
+	LOG_ME;
+	return 0;
+}
+
+int __wrap___fxstat(int fd, void *buf)
+{
+	LOG_ME;
+	return 0;
+}
+
+int __wrap___fxstat64(int fd, void *buf)
 {
 	LOG_ME;
 	return 0;
