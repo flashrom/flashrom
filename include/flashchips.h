@@ -635,6 +635,11 @@
 #define PMC_PM49FL002		0x6D
 #define PMC_PM49FL004		0x6E
 
+#define PUYA_ID			0x85
+#define PUYA_P25Q06H		0x4010
+#define PUYA_P25Q11H		0x4011
+#define PUYA_P25Q21H		0x4012
+
 /*
  * The Sanyo chip found so far uses SPI, first byte is manufacturer code,
  * second byte is the device code,
