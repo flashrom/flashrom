@@ -278,6 +278,25 @@ $(call mark_unsupported,CONFIG_DRKAISER CONFIG_NICINTEL CONFIG_NICINTEL_SPI)
 $(call mark_unsupported,CONFIG_NICINTEL_EEPROM CONFIG_OGP_SPI CONFIG_IT8212)
 endif
 
+ifeq ($(TARGET_OS), $(filter $(TARGET_OS), Linux Darwin NetBSD OpenBSD))
+FEATURE_CFLAGS += -D'USE_IOPL=1'
+else
+FEATURE_CFLAGS += -D'USE_IOPL=0'
+endif
+
+ifeq ($(TARGET_OS), $(filter $(TARGET_OS), FreeBSD FreeBSD-glibc DragonFlyBSD))
+FEATURE_CFLAGS += -D'USE_DEV_IO=1'
+else
+FEATURE_CFLAGS += -D'USE_DEV_IO=0'
+endif
+
+ifeq ($(TARGET_OS), $(filter $(TARGET_OS), Hurd))
+FEATURE_CFLAGS += -D'USE_IOPERM=1'
+else
+FEATURE_CFLAGS += -D'USE_IOPERM=0'
+endif
+
+
 ###############################################################################
 # Flash chip drivers and bus support infrastructure.
 

@@ -42,6 +42,24 @@ else
   add_project_arguments('-DIS_WINDOWS=0', language : 'c')
 endif
 
+if host_machine.system() in ['linux', 'darwin', 'netbsd', 'openbsd']
+  add_project_arguments('-DUSE_IOPL=1', language : 'c')
+else
+  add_project_arguments('-DUSE_IOPL=0', language : 'c')
+endif
+
+if host_machine.system() in ['freebsd', 'dragonfly']
+  add_project_arguments('-DUSE_DEV_IO=1', language : 'c')
+else
+  add_project_arguments('-DUSE_DEV_IO=0', language : 'c')
+endif
+
+if host_machine.system() in ['gnu']
+  add_project_arguments('-DUSE_IOPERM=1', language : 'c')
+else
+  add_project_arguments('-DUSE_IOPERM=0', language : 'c')
+endif
+
 # get defaults from configure
 config_atahpt = get_option('config_atahpt')
 config_atapromise = get_option('config_atapromise')

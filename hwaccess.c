@@ -30,26 +30,6 @@
 #include "programmer.h"
 #include "hwaccess.h"
 
-#if !(defined(__gnu_linux__) || defined(__linux__) || defined(__APPLE__) && defined(__MACH__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__DragonFly__) || defined(__DJGPP__) || defined(__LIBPAYLOAD__) || defined(__sun) || defined(__gnu_hurd__))
-#error "Unknown operating system"
-#endif
-
-#if defined(__gnu_linux__) || defined(__linux__) || defined(__APPLE__) && defined(__MACH__) || defined(__NetBSD__) || defined(__OpenBSD__)
-#define USE_IOPL 1
-#else
-#define USE_IOPL 0
-#endif
-#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__DragonFly__)
-#define USE_DEV_IO 1
-#else
-#define USE_DEV_IO 0
-#endif
-#if defined(__gnu_hurd__)
-#define USE_IOPERM 1
-#else
-#define USE_IOPERM 0
-#endif
-
 #if USE_IOPERM
 #include <sys/io.h>
 #endif
