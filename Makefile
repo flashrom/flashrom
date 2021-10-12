@@ -164,8 +164,7 @@ endif
 # the lines below use CC itself.
 override TARGET_OS := $(call c_macro_test, Makefile.d/os_test.h)
 override ARCH      := $(call c_macro_test, Makefile.d/arch_test.h)
-override ENDIAN := $(strip $(call debug_shell,$(CC) $(CPPFLAGS) -E endiantest.c 2>/dev/null \
-    | tail -1))
+override ENDIAN    := $(call c_macro_test, Makefile.d/endian_test.h)
 
 ifeq ($(TARGET_OS), $(filter $(TARGET_OS), FreeBSD OpenBSD DragonFlyBSD))
 override CPPFLAGS += -I/usr/local/include
@@ -869,6 +868,8 @@ compiler: featuresavailable
 	@if [ $(ARCH) = unknown ]; then echo Aborting.; exit 1; fi
 	@echo Target OS is $(TARGET_OS)
 	@if [ $(TARGET_OS) = unknown ]; then echo Aborting.; exit 1; fi
+	@echo Target endian is $(ENDIAN)
+	@if [ $(ENDIAN) = unknown ]; then echo Aborting.; exit 1; fi
 ifeq ($(TARGET_OS), libpayload)
 	@$(CC) --version 2>&1 | grep -q coreboot || \
 		( echo "Warning: It seems you are not using coreboot's reference compiler."; \
