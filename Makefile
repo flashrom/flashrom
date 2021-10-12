@@ -248,6 +248,13 @@ ifneq ($(ARCH)-little, $(filter $(ARCH),x86 mips)-$(ENDIAN))
 $(call mark_unsupported,CONFIG_INTERNAL)
 endif
 
+ifeq ($(ENDIAN), little)
+FEATURE_CFLAGS += -D'__FLASHROM_LITTLE_ENDIAN__=1'
+endif
+ifeq ($(ENDIAN), big)
+FEATURE_CFLAGS += -D'__FLASHROM_BIG_ENDIAN__=1'
+endif
+
 # PCI port I/O support is unimplemented on PPC/MIPS/SPARC and unavailable on ARM.
 # Right now this means the drivers below only work on x86.
 ifneq ($(ARCH), x86)
