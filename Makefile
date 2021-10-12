@@ -158,12 +158,17 @@ ifeq ($(findstring MINGW, $(HOST_OS)), MINGW)
 CC = gcc
 endif
 
-# Determine the destination OS.
-# IMPORTANT: The following line must be placed before TARGET_OS is ever used
-# (of course), but should come after any lines setting CC because the line
-# below uses CC itself.
+# Determine the destination OS, architecture and endian
+# IMPORTANT: The following lines must be placed before TARGET_OS, ARCH or ENDIAN
+# is ever used (of course), but should come after any lines setting CC because
+# the lines below use CC itself.
 override TARGET_OS := $(strip $(call debug_shell,$(CC) $(CPPFLAGS) -E os.h 2>/dev/null \
     | tail -1 | cut -f 2 -d'"'))
+override ARCH := $(strip $(call debug_shell,$(CC) $(CPPFLAGS) -E archtest.c 2>/dev/null \
+    | tail -1 | cut -f 2 -d'"'))
+override ENDIAN := $(strip $(call debug_shell,$(CC) $(CPPFLAGS) -E endiantest.c 2>/dev/null \
+    | tail -1))
+
 
 ifeq ($(TARGET_OS), $(filter $(TARGET_OS), FreeBSD OpenBSD DragonFlyBSD))
 override CPPFLAGS += -I/usr/local/include
@@ -241,19 +246,6 @@ endif
 ifeq ($(TARGET_OS), Linux)
 CONFIG_LINUX_I2C_HELPER = yes
 endif
-
-###############################################################################
-# General architecture-specific settings.
-# Like above for the OS, below we verify user-supplied options depending on the target architecture.
-
-# Determine the destination processor architecture.
-# IMPORTANT: The following line must be placed before ARCH is ever used
-# (of course), but should come after any lines setting CC because the line
-# below uses CC itself.
-override ARCH := $(strip $(call debug_shell,$(CC) $(CPPFLAGS) -E archtest.c 2>/dev/null \
-    | tail -1 | cut -f 2 -d'"'))
-override ENDIAN := $(strip $(call debug_shell,$(CC) $(CPPFLAGS) -E endiantest.c 2>/dev/null \
-    | tail -1))
 
 # Disable the internal programmer on unsupported architectures (everything but x86 and mipsel)
 ifneq ($(ARCH)-little, $(filter $(ARCH),x86 mips)-$(ENDIAN))
