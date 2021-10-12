@@ -30,7 +30,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "platform.h"
 #include "flash.h"
 #include "programmer.h"
 

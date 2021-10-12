@@ -32,8 +32,6 @@
  * PICkit2 code: https://github.com/steve-m/avrdude/blob/master/pickit2.c
  */
 
-#include "platform.h"
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

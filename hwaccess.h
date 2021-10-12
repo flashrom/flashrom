@@ -20,8 +20,6 @@
 #ifndef __HWACCESS_H__
 #define __HWACCESS_H__ 1
 
-#include "platform.h"
-
 #if NEED_PCI == 1
 /*
  * libpci headers use the variable name "index" which triggers shadowing
@@ -109,8 +107,7 @@ cpu_to_be(64)
 #define le_to_cpu32 cpu_to_le32
 #define le_to_cpu64 cpu_to_le64
 
-#if NEED_RAW_ACCESS == 1
-#if IS_X86
+#if NEED_RAW_ACCESS == 1 && (defined (__i386__) || defined (__x86_64__) || defined(__amd64__))
 
 #include "hwaccess_x86_io.h"
 
@@ -140,31 +137,7 @@ int libpayload_wrmsr(int addr, msr_t msr);
 #define wrmsr libpayload_wrmsr
 #endif
 
-#elif IS_PPC
 
-/* PCI port I/O is not yet implemented on PowerPC. */
-
-#elif IS_MIPS
-
-/* PCI port I/O is not yet implemented on MIPS. */
-
-#elif IS_SPARC
-
-/* PCI port I/O is not yet implemented on SPARC. */
-
-#elif IS_ARM
-
-/* Non memory mapped I/O is not supported on ARM. */
-
-#elif IS_ARC
-
-/* Non memory mapped I/O is not supported on ARC. */
-
-#else
-
-#error Unknown architecture, please check if it supports PCI port IO.
-
-#endif /* IS_* */
-#endif /* NEED_RAW_ACCESS == 1 */
+#endif
 
 #endif /* !__HWACCESS_H__ */

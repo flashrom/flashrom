@@ -14,8 +14,6 @@
  * GNU General Public License for more details.
  */
 
-#include "platform.h"
-
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
@@ -34,7 +32,7 @@
 #include <sys/io.h>
 #endif
 
-#if IS_X86 && USE_DEV_IO
+#if (defined (__i386__) || defined (__x86_64__) || defined(__amd64__)) && USE_DEV_IO
 int io_fd;
 #endif
 
@@ -50,9 +48,12 @@ static inline void sync_primitive(void)
  *
  * See also https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/Documentation/memory-barriers.txt
  */
-#if IS_PPC // cf. http://lxr.free-electrons.com/source/arch/powerpc/include/asm/barrier.h
+// cf. http://lxr.free-electrons.com/source/arch/powerpc/include/asm/barrier.h
+#if defined(__powerpc) || defined(__powerpc__) || defined(__powerpc64__) || defined(__POWERPC__) || \
+      defined(__ppc__) || defined(__ppc64__) || defined(_M_PPC) || defined(_ARCH_PPC) || \
+      defined(_ARCH_PPC64) || defined(__ppc)
 	asm("eieio" : : : "memory");
-#elif IS_SPARC
+#elif (__sparc__) || defined (__sparc)
 #if defined(__sparc_v9__) || defined(__sparcv9)
 	/* Sparc V9 CPUs support three different memory orderings that range from x86-like TSO to PowerPC-like
 	 * RMO. The modes can be switched at runtime thus to make sure we maintain the right order of access we
@@ -69,7 +70,7 @@ static inline void sync_primitive(void)
 #endif
 }
 
-#if IS_X86 && !(defined(__DJGPP__) || defined(__LIBPAYLOAD__))
+#if (defined (__i386__) || defined (__x86_64__) || defined(__amd64__)) && !(defined(__DJGPP__) || defined(__LIBPAYLOAD__))
 static int release_io_perms(void *p)
 {
 #if defined (__sun)
@@ -83,13 +84,11 @@ static int release_io_perms(void *p)
 #endif
 	return 0;
 }
-#endif
 
 /* Get I/O permissions with automatic permission release on shutdown. */
 int rget_io_perms(void)
 {
-#if IS_X86 && !(defined(__DJGPP__) || defined(__LIBPAYLOAD__))
-#if defined (__sun)
+	#if defined (__sun)
 	if (sysi86(SI86V86, V86SC_IOPL, PS_IOPL) != 0) {
 #elif USE_DEV_IO
 	if ((io_fd = open("/dev/io", O_RDWR)) < 0) {
@@ -111,12 +110,18 @@ int rget_io_perms(void)
 	} else {
 		register_shutdown(release_io_perms, NULL);
 	}
-#else
-	/* DJGPP and libpayload environments have full PCI port I/O permissions by default. */
-	/* PCI port I/O support is unimplemented on PPC/MIPS and unavailable on ARM. */
-#endif
 	return 0;
 }
+
+#else
+
+/* DJGPP and libpayload environments have full PCI port I/O permissions by default. */
+/* PCI port I/O support is unimplemented on PPC/MIPS and unavailable on ARM. */
+int rget_io_perms(void)
+{
+	return 0;
+}
+#endif
 
 void mmio_writeb(uint8_t val, void *addr)
 {

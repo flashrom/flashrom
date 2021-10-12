@@ -20,8 +20,6 @@
 #ifndef __FLASH_H__
 #define __FLASH_H__ 1
 
-#include "platform.h"
-
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdint.h>

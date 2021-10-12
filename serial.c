@@ -15,8 +15,6 @@
  * GNU General Public License for more details.
  */
 
-#include "platform.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>

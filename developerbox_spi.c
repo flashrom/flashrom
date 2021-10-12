@@ -31,8 +31,6 @@
  * should be turned on).
  */
 
-#include "platform.h"
-
 #include <stdlib.h>
 #include <libusb.h>
 #include "programmer.h"
