@@ -28,6 +28,7 @@ PROGRAM = flashrom
 # Note for anyone editing this Makefile: gnumake will happily ignore any
 # changes in this Makefile to variables set on the command line.
 STRIP   ?= strip
+STRIP_ARGS = -s
 INSTALL = install
 DIFF    = diff
 PREFIX  ?= /usr/local
@@ -155,10 +156,6 @@ HOST_OS ?= $(shell uname)
 ifeq ($(findstring MINGW, $(HOST_OS)), MINGW)
 # Explicitly set CC = gcc on MinGW, otherwise: "cc: command not found".
 CC = gcc
-endif
-
-ifneq ($(HOST_OS), SunOS)
-STRIP_ARGS = -s
 endif
 
 # Determine the destination OS.
