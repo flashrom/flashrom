@@ -20,13 +20,6 @@
 #ifndef __PLATFORM_H__
 #define __PLATFORM_H__ 1
 
-// Helper defines for operating systems
-#if defined(_WIN32) || defined(_WIN64) || defined(__WIN32__) || defined(__WINDOWS__)
-#define IS_WINDOWS 1
-#else
-#define IS_WINDOWS 0
-#endif
-
 // Likewise for target architectures
 #if defined (__i386__) || defined (__x86_64__) || defined(__amd64__)
 	#define IS_X86 1

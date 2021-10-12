@@ -192,6 +192,12 @@ $(call mark_unsupported,$(DEPENDS_ON_SERIAL))
 $(call mark_unsupported,$(DEPENDS_ON_LIBUSB1) $(DEPENDS_ON_LIBFTDI) $(DEPENDS_ON_LIBJAYLINK))
 endif
 
+ifeq ($(TARGET_OS), $(filter $(TARGET_OS), MinGW Cygwin))
+FEATURE_CFLAGS += -D'IS_WINDOWS=1'
+else
+FEATURE_CFLAGS += -D'IS_WINDOWS=0'
+endif
+
 # FIXME: Should we check for Cygwin/MSVC as well?
 ifeq ($(TARGET_OS), MinGW)
 EXEC_SUFFIX := .exe

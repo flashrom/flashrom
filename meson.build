@@ -36,6 +36,12 @@ if host_machine.endian() == 'big'
   add_project_arguments('-D__FLASHROM_BIG_ENDIAN__=1', language : 'c')
 endif
 
+if host_machine.system() in ['cygwin', 'windows']
+  add_project_arguments('-DIS_WINDOWS=1', language : 'c')
+else
+  add_project_arguments('-DIS_WINDOWS=0', language : 'c')
+endif
+
 # get defaults from configure
 config_atahpt = get_option('config_atahpt')
 config_atapromise = get_option('config_atapromise')
