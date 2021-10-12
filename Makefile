@@ -163,8 +163,7 @@ endif
 # is ever used (of course), but should come after any lines setting CC because
 # the lines below use CC itself.
 override TARGET_OS := $(call c_macro_test, Makefile.d/os_test.h)
-override ARCH := $(strip $(call debug_shell,$(CC) $(CPPFLAGS) -E archtest.c 2>/dev/null \
-    | tail -1 | cut -f 2 -d'"'))
+override ARCH      := $(call c_macro_test, Makefile.d/arch_test.h)
 override ENDIAN := $(strip $(call debug_shell,$(CC) $(CPPFLAGS) -E endiantest.c 2>/dev/null \
     | tail -1))
 
@@ -866,11 +865,8 @@ compiler: featuresavailable
 		echo "found." || { echo "not found."; \
 		rm -f .test.c .test$(EXEC_SUFFIX); exit 1; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
 	@rm -f .test.c .test$(EXEC_SUFFIX)
-	@printf "Target arch is "
-	@# FreeBSD wc will output extraneous whitespace.
-	@echo $(ARCH)|wc -w|grep -q '^[[:blank:]]*1[[:blank:]]*$$' ||	\
-		( echo "unknown (\"$(ARCH)\"). Aborting."; exit 1)
-	@printf "%s\n" '$(ARCH)'
+	@echo Target arch is $(ARCH)
+	@if [ $(ARCH) = unknown ]; then echo Aborting.; exit 1; fi
 	@echo Target OS is $(TARGET_OS)
 	@if [ $(TARGET_OS) = unknown ]; then echo Aborting.; exit 1; fi
 ifeq ($(TARGET_OS), libpayload)
