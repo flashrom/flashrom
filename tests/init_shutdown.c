@@ -19,8 +19,6 @@
 #include "io_mock.h"
 #include "programmer.h"
 
-#define NOT_NULL ((void *)0xf000baaa)
-
 static void run_lifecycle(void **state, const struct programmer_entry *prog, const char *param)
 {
 	(void) state; /* unused */
@@ -100,7 +98,7 @@ FILE *linux_mtd_fopen(void *state, const char *pathname, const char *mode)
 
 	io_state->fopen_path = strdup(pathname);
 
-	return NOT_NULL;
+	return not_null();
 }
 
 size_t linux_mtd_fread(void *state, void *buf, size_t size, size_t len, FILE *fp)

@@ -23,7 +23,11 @@
 
 /* redefinitions/wrapping */
 #define LOG_ME printf("%s is called\n", __func__)
-#define MOCK_HANDLE 2021
+
+void *not_null(void)
+{
+	return (void *)NON_ZERO;
+}
 
 static const struct io_mock *current_io = NULL;
 
@@ -54,7 +58,7 @@ void *__wrap_physmap(const char *descr, uintptr_t phys_addr, size_t len)
 }
 
 struct pci_dev mock_pci_dev = {
-	.device_id = MOCK_HANDLE,
+	.device_id = NON_ZERO,
 };
 
 struct pci_dev *__wrap_pcidev_init(void *devs, int bar)
@@ -66,7 +70,7 @@ struct pci_dev *__wrap_pcidev_init(void *devs, int bar)
 uintptr_t __wrap_pcidev_readbar(void *dev, int bar)
 {
 	LOG_ME;
-	return MOCK_HANDLE;
+	return NON_ZERO;
 }
 
 void __wrap_sio_write(uint16_t port, uint8_t reg, uint8_t data)
@@ -85,7 +89,7 @@ int __wrap_open(const char *pathname, int flags)
 	LOG_ME;
 	if (current_io && current_io->open)
 		return current_io->open(current_io->state, pathname, flags);
-	return MOCK_HANDLE;
+	return NON_ZERO;
 }
 
 int __wrap_open64(const char *pathname, int flags)
@@ -93,7 +97,7 @@ int __wrap_open64(const char *pathname, int flags)
 	LOG_ME;
 	if (current_io && current_io->open)
 		return current_io->open(current_io->state, pathname, flags);
-	return MOCK_HANDLE;
+	return NON_ZERO;
 }
 
 int __wrap_ioctl(int fd, unsigned long int request, ...)
@@ -107,7 +111,7 @@ int __wrap_ioctl(int fd, unsigned long int request, ...)
 		va_end(args);
 		return out;
 	}
-	return MOCK_HANDLE;
+	return 0;
 }
 
 int __wrap_write(int fd, const void *buf, size_t sz)
@@ -131,7 +135,7 @@ FILE *__wrap_fopen(const char *pathname, const char *mode)
 	LOG_ME;
 	if (current_io && current_io->fopen)
 		return current_io->fopen(current_io->state, pathname, mode);
-	return (void *)MOCK_HANDLE;
+	return not_null();
 }
 
 FILE *__wrap_fopen64(const char *pathname, const char *mode)
@@ -139,7 +143,7 @@ FILE *__wrap_fopen64(const char *pathname, const char *mode)
 	LOG_ME;
 	if (current_io && current_io->fopen)
 		return current_io->fopen(current_io->state, pathname, mode);
-	return (void *)MOCK_HANDLE;
+	return not_null();
 }
 
 int __wrap_stat(const char *path, void *buf)
@@ -197,7 +201,7 @@ int __wrap_fflush(FILE *fp)
 int __wrap_fileno(FILE *fp)
 {
 	LOG_ME;
-	return MOCK_HANDLE;
+	return NON_ZERO;
 }
 
 int __wrap_fsync(int fd)
@@ -292,7 +296,7 @@ void *__wrap_usb_dev_get_by_vid_pid_number(
 		libusb_context *usb_ctx, uint16_t vid, uint16_t pid, unsigned int num)
 {
 	LOG_ME;
-	return (void *)MOCK_HANDLE;
+	return not_null();
 }
 
 int __wrap_libusb_set_configuration(libusb_device_handle *devh, int config)
