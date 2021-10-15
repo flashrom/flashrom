@@ -168,12 +168,12 @@ char *__wrap_fgets(char *buf, int len, FILE *fp)
 	return NULL;
 }
 
-size_t __wrap_fread(void *ptr, size_t size, size_t len, FILE *fp)
+size_t __wrap_fread(void *ptr, size_t size, size_t nmemb, FILE *fp)
 {
 	LOG_ME;
 	if (get_io() && get_io()->fread)
-		return get_io()->fread(get_io()->state, ptr, size, len, fp);
-	return 0;
+		return get_io()->fread(get_io()->state, ptr, size, nmemb, fp);
+	return nmemb;
 }
 
 size_t __wrap_fwrite(const void *ptr, size_t size, size_t nmemb, FILE *fp)
