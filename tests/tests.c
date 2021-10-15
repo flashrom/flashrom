@@ -136,6 +136,12 @@ FILE *__wrap_fopen64(const char *pathname, const char *mode)
 	return not_null();
 }
 
+FILE *__wrap_fdopen(int fd, const char *mode)
+{
+	LOG_ME;
+	return not_null();
+}
+
 int __wrap_stat(const char *path, void *buf)
 {
 	LOG_ME;
@@ -343,6 +349,8 @@ int main(void)
 		cmocka_unit_test(erase_chip_with_dummyflasher_test_success),
 		cmocka_unit_test(read_chip_test_success),
 		cmocka_unit_test(read_chip_with_dummyflasher_test_success),
+		cmocka_unit_test(write_chip_test_success),
+		cmocka_unit_test(write_chip_with_dummyflasher_test_success),
 	};
 	ret |= cmocka_run_group_tests_name("chip.c tests", chip_tests, NULL, NULL);
 
