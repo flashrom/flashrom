@@ -70,23 +70,23 @@ On OpenBSD, you need the following ports:
 
 To compile on Linux, use:
 
- make
+    make
 
 To compile on FreeBSD, OpenBSD or DragonFly BSD, use:
 
- gmake
+    gmake
 
 To compile on Nexenta, use:
 
- make
+    make
 
 To compile on Solaris, use:
 
- gmake LDFLAGS="-L$pathtolibpci" CC="gcc -I$pathtopciheaders" CFLAGS=-O2
+    gmake LDFLAGS="-L$pathtolibpci" CC="gcc -I$pathtopciheaders" CFLAGS=-O2
 
 To compile on NetBSD (with pciutils, libftdi, libusb installed in /usr/pkg/), use:
 
- gmake
+    gmake
 
 To compile and run on Darwin/Mac OS X:
 
@@ -118,7 +118,7 @@ To cross-compile on Linux for DOS:
  Download pciutils 3.5.6 and apply http://flashrom.org/File:Pciutils-3.5.6.patch.gz
  Compile pciutils, using following command line:
 
- make ZLIB=no DNS=no HOST=i386-djgpp-djgpp CROSS_COMPILE=i586-pc-msdosdjgpp- \
+    make ZLIB=no DNS=no HOST=i386-djgpp-djgpp CROSS_COMPILE=i586-pc-msdosdjgpp- \
      PREFIX=/ DESTDIR=$PWD/../libpci-libgetopt  \
      STRIP="--strip-program=i586-pc-msdosdjgpp-strip -s" install install-lib
 
@@ -129,11 +129,11 @@ To cross-compile on Linux for DOS:
 
  Enter the flashrom directory.
 
- make CC=i586-pc-msdosdjgpp-gcc STRIP=i586-pc-msdosdjgpp-strip LIBS_BASE=../libpci-libgetopt/ strip
+    make CC=i586-pc-msdosdjgpp-gcc STRIP=i586-pc-msdosdjgpp-strip LIBS_BASE=../libpci-libgetopt/ strip
 
  If you like, you can compress the resulting executable with UPX:
 
- upx -9 flashrom.exe
+    upx -9 flashrom.exe
 
  To run flashrom.exe, download http://flashrom.org/File:Csdpmi7b.zip and
  unpack CWSDPMI.EXE into the current directory or one in PATH.
@@ -166,11 +166,11 @@ Installation
 
 In order to install flashrom and the manpage into /usr/local, type:
 
- make install
+    make install
 
 For installation in a different directory use DESTDIR, e.g. like this:
 
- make DESTDIR=/usr install
+    make DESTDIR=/usr install
 
 If you have insufficient permissions for the destination directory, use sudo
 by adding sudo in front of the commands above.
