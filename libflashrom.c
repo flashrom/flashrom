@@ -747,4 +747,77 @@ enum flashrom_wp_result flashrom_wp_read_cfg(struct flashrom_wp_cfg *cfg, struct
 	return FLASHROM_WP_ERR_OTHER;
 }
 
+/**
+ * @brief Get a list of protection ranges supported by the flash chip.
+ *
+ * @param[out] ranges Points to a pointer of type struct flashrom_wp_ranges
+ *                    that will be set if available ranges are found. Finding
+ *                    available ranges may not always be possible, even if the
+ *                    chip's protection range can be read or modified. *ranges
+ *                    must be freed using @ref flashrom_wp_ranges_free.
+ * @param[in] flash   The flash context used to access the chip.
+ * @return  0 on success
+ *         >0 on failure
+ */
+enum flashrom_wp_result flashrom_wp_get_available_ranges(struct flashrom_wp_ranges **list, struct flashrom_flashctx *flash)
+{
+	/*
+	 * TODO: Call custom implementation if the programmer is opaque, as
+	 * direct WP operations require SPI access. We actually can't implement
+	 * this in linux_mtd right now, but we should adopt a proper generic
+	 * architechure to match the read and write functions anyway.
+	 */
+	if (flash->mst->buses_supported & BUS_SPI)
+		return wp_get_available_ranges(list, flash);
+
+	return FLASHROM_WP_ERR_OTHER;
+}
+
+/**
+ * @brief Get a number of protection ranges in a range list.
+ *
+ * @param[in]  ranges The range list to get the count from.
+ * @return Number of ranges in the list.
+ */
+size_t flashrom_wp_ranges_get_count(const struct flashrom_wp_ranges *list)
+{
+	return list->count;
+}
+
+/**
+ * @brief Get a protection range from a range list.
+ *
+ * @param[out] start  Points to a size_t to write the range's start to.
+ * @param[out] len    Points to a size_t to write the range's length to.
+ * @param[in]  ranges The range list to get the range from.
+ * @param[in]  index  Index of the range to get.
+ * @return  0 on success
+ *         >0 on failure
+ */
+enum flashrom_wp_result flashrom_wp_ranges_get_range(size_t *start, size_t *len, const struct flashrom_wp_ranges *list, unsigned int index)
+{
+	if (index >= list->count)
+		return FLASHROM_WP_ERR_OTHER;
+
+	*start = list->ranges[index].start;
+	*len = list->ranges[index].len;
+
+	return 0;
+}
+
+/**
+ * @brief Free a WP range list.
+ *
+ * @param[out] cfg Pointer to the flashrom_wp_ranges to free.
+ */
+void flashrom_wp_ranges_release(struct flashrom_wp_ranges *list)
+{
+	if (!list)
+		return;
+
+	free(list->ranges);
+	free(list);
+}
+
+
 /** @} */ /* end flashrom-wp */

@@ -137,6 +137,7 @@ enum flashrom_wp_mode {
 	FLASHROM_WP_MODE_PERMANENT
 };
 struct flashrom_wp_cfg;
+struct flashrom_wp_ranges;
 
 enum flashrom_wp_result flashrom_wp_cfg_new(struct flashrom_wp_cfg **);
 void flashrom_wp_cfg_release(struct flashrom_wp_cfg *);
@@ -147,5 +148,10 @@ void flashrom_wp_get_range(size_t *start, size_t *len, const struct flashrom_wp_
 
 enum flashrom_wp_result flashrom_wp_read_cfg(struct flashrom_wp_cfg *, struct flashrom_flashctx *);
 enum flashrom_wp_result flashrom_wp_write_cfg(struct flashrom_flashctx *, const struct flashrom_wp_cfg *);
+
+enum flashrom_wp_result flashrom_wp_get_available_ranges(struct flashrom_wp_ranges **, struct flashrom_flashctx *);
+size_t flashrom_wp_ranges_get_count(const struct flashrom_wp_ranges *);
+enum flashrom_wp_result flashrom_wp_ranges_get_range(size_t *start, size_t *len, const struct flashrom_wp_ranges *, unsigned int index);
+void flashrom_wp_ranges_release(struct flashrom_wp_ranges *);
 
 #endif				/* !__LIBFLASHROM_H__ */

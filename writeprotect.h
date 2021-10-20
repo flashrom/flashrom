@@ -37,6 +37,12 @@ struct flashrom_wp_cfg {
         struct wp_range range;
 };
 
+/* Collection of multiple write protection ranges. */
+struct flashrom_wp_ranges {
+	struct wp_range *ranges;
+	size_t count;
+};
+
 /*
  * Description of a chip's write protection configuration.
  *
@@ -76,5 +82,8 @@ enum flashrom_wp_result wp_write_cfg(struct flashrom_flashctx *, const struct fl
 
 /* Read WP configuration from the chip */
 enum flashrom_wp_result wp_read_cfg(struct flashrom_wp_cfg *, struct flashrom_flashctx *);
+
+/* Get a list of protection ranges supported by the chip */
+enum flashrom_wp_result wp_get_available_ranges(struct flashrom_wp_ranges **, struct flashrom_flashctx *);
 
 #endif /* !__WRITEPROTECT_H__ */
