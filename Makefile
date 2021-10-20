@@ -854,7 +854,7 @@ OBJS = $(CLI_OBJS) $(LIBFLASHROM_OBJS)
 
 all: hwlibs features $(PROGRAM)$(EXEC_SUFFIX) $(PROGRAM).8
 ifeq ($(ARCH), x86)
-	@+$(MAKE) -C util/ich_descriptors_tool/ TARGET_OS=$(TARGET_OS) EXEC_SUFFIX=$(EXEC_SUFFIX)
+	@+$(MAKE) -C util/ich_descriptors_tool/ HOST_OS=$(HOST_OS) TARGET_OS=$(TARGET_OS)
 endif
 
 $(PROGRAM)$(EXEC_SUFFIX): $(OBJS)
