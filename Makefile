@@ -738,7 +738,6 @@ endif
 
 ifeq ($(CONFIG_LINUX_I2C_HELPER), yes)
 LIB_OBJS += i2c_helper_linux.o
-FEATURE_CFLAGS += -D'CONFIG_I2C_SUPPORT=1'
 endif
 
 ifneq ($(NEED_SERIAL), )

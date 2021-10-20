@@ -342,7 +342,6 @@ endif
 
 if host_machine.system() == 'linux'
   srcs += 'i2c_helper_linux.c'
-  cargs += '-DCONFIG_I2C_SUPPORT=1'
 endif
 
 # raw memory, MSR or PCI port I/O access
