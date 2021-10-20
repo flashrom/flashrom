@@ -245,7 +245,6 @@ struct flashchip {
 	/* SPI specific options (TODO: Make it a union in case other bustypes get specific options.) */
 	uint8_t wrea_override; /**< override opcode for write extended address register */
 
-	struct wp *wp;
 };
 
 typedef int (*chip_restore_fn_cb_t)(struct flashctx *flash, uint8_t status);
