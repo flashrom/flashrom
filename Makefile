@@ -592,13 +592,13 @@ endif
 
 ifeq ($(CONFIG_FT2232_SPI), yes)
 # This is a totally ugly hack.
-FEATURE_CFLAGS += $(call debug_shell,grep -q "FTDISUPPORT := yes" .features && printf "%s" "-D'CONFIG_FT2232_SPI=1'")
+FEATURE_CFLAGS += $(call debug_shell,grep -q "FTDISUPPORT := yes" .libdeps && printf "%s" "-D'CONFIG_FT2232_SPI=1'")
 PROGRAMMER_OBJS += ft2232_spi.o
 endif
 
 ifeq ($(CONFIG_USBBLASTER_SPI), yes)
 # This is a totally ugly hack.
-FEATURE_CFLAGS += $(call debug_shell,grep -q "FTDISUPPORT := yes" .features && printf "%s" "-D'CONFIG_USBBLASTER_SPI=1'")
+FEATURE_CFLAGS += $(call debug_shell,grep -q "FTDISUPPORT := yes" .libdeps && printf "%s" "-D'CONFIG_USBBLASTER_SPI=1'")
 PROGRAMMER_OBJS += usbblaster_spi.o
 endif
 
@@ -825,10 +825,10 @@ endif
 NEED_LIBFTDI := $(call filter_deps,$(DEPENDS_ON_LIBFTDI))
 ifneq ($(NEED_LIBFTDI), )
 FTDILIBS := $(call debug_shell,[ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ; $(PKG_CONFIG) --libs libftdi1 || $(PKG_CONFIG) --libs libftdi || printf "%s" "-lftdi -lusb")
-FEATURE_CFLAGS += $(call debug_shell,grep -q "FT232H := yes" .features && printf "%s" "-D'HAVE_FT232H=1'")
+FEATURE_CFLAGS += $(call debug_shell,grep -q "FT232H := yes" .libdeps && printf "%s" "-D'HAVE_FT232H=1'")
 FTDI_INCLUDES := $(call debug_shell,[ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ; $(PKG_CONFIG) --cflags-only-I libftdi1)
 FEATURE_CFLAGS += $(FTDI_INCLUDES)
-FEATURE_LIBS += $(call debug_shell,grep -q "FTDISUPPORT := yes" .features && printf "%s" "$(FTDILIBS)")
+FEATURE_LIBS += $(call debug_shell,grep -q "FTDISUPPORT := yes" .libdeps && printf "%s" "$(FTDILIBS)")
 # We can't set NEED_LIBUSB1 here because that would transform libftdi auto-enabling
 # into a hard requirement for libusb, defeating the purpose of auto-enabling.
 endif
@@ -877,7 +877,7 @@ libflashrom.a: $(LIBFLASHROM_OBJS)
 # stored files, they can be handled here as well.
 TAROPTIONS = $(shell LC_ALL=C tar --version|grep -q GNU && echo "--owner=root --group=root")
 
-%.o: %.c .features
+%.o: %.c features
 	$(CC) -MMD $(CFLAGS) $(CPPFLAGS) $(FLASHROM_CFLAGS) $(FEATURE_CFLAGS) $(SCMDEF) -o $@ -c $<
 
 # Make sure to add all names of generated binaries here.
@@ -888,7 +888,7 @@ clean:
 	@+$(MAKE) -C util/ich_descriptors_tool/ clean
 
 distclean: clean
-	rm -f .features .libdeps
+	rm -f .libdeps
 
 strip: $(PROGRAM)$(EXEC_SUFFIX)
 	$(STRIP) $(STRIP_ARGS) $(PROGRAM)$(EXEC_SUFFIX)
@@ -1004,8 +1004,23 @@ ifeq ($(CONFIG_NI845X_SPI), yes)
 		rm -f .test.c .test.o; exit 1; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
 	@rm -f .test.c .test.o .test$(EXEC_SUFFIX)
 endif
-
-.features: features
+ifneq ($(NEED_LIBFTDI), )
+	@printf "Checking for FTDI support... " | tee -a $(BUILD_DETAILS_FILE)
+	@echo "$$FTDI_TEST" > .test.c
+	@printf "\nexec: %s\n" "$(CC) $(CPPFLAGS) $(CFLAGS) $(FTDI_INCLUDES) $(LDFLAGS) .test.c -o .test$(EXEC_SUFFIX) $(FTDILIBS) $(LIBS)" >>$(BUILD_DETAILS_FILE)
+	@ { $(CC) $(CPPFLAGS) $(CFLAGS) $(FTDI_INCLUDES) $(LDFLAGS) .test.c -o .test$(EXEC_SUFFIX) $(FTDILIBS) $(LIBS) >&2 && \
+	(	echo "found."; echo "FTDISUPPORT := yes" >> .libdeps ; \
+		printf "Checking for FT232H support in libftdi... " ; \
+		echo "$$FTDI_232H_TEST" >> .test.c ; \
+		printf "\nexec: %s\n" "$(CC) $(CPPFLAGS) $(CFLAGS) $(FTDI_INCLUDES) $(LDFLAGS) .test.c -o .test$(EXEC_SUFFIX) $(FTDILIBS) $(LIBS)" >>$(BUILD_DETAILS_FILE) ; \
+		{ $(CC) $(CPPFLAGS) $(CFLAGS) $(FTDI_INCLUDES) $(LDFLAGS) .test.c -o .test$(EXEC_SUFFIX) $(FTDILIBS) $(LIBS) >&2 && \
+			( echo "found."; echo "FT232H := yes" >> .libdeps ) ||	\
+			( echo "not found."; echo "FT232H := no" >> .libdeps ) } \
+	) || \
+	( echo "not found."; echo "FTDISUPPORT := no" >> .libdeps ) } \
+	2>>$(BUILD_DETAILS_FILE) | tee -a $(BUILD_DETAILS_FILE)
+	@rm -f .test.c .test.o .test$(EXEC_SUFFIX)
+endif
 
 # If a user does not explicitly request a non-working feature, we should
 # silently disable it. However, if a non-working (does not compile) feature
@@ -1021,26 +1036,7 @@ ifneq ($(UNSUPPORTED_FEATURES), )
 	@false
 endif
 
-features: compiler
-	@echo "FEATURES := yes" > .features.tmp
-ifneq ($(NEED_LIBFTDI), )
-	@printf "Checking for FTDI support... " | tee -a $(BUILD_DETAILS_FILE)
-	@echo "$$FTDI_TEST" > .featuretest.c
-	@printf "\nexec: %s\n" "$(CC) $(CPPFLAGS) $(CFLAGS) $(FTDI_INCLUDES) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) $(FTDILIBS) $(LIBS)" >>$(BUILD_DETAILS_FILE)
-	@ { $(CC) $(CPPFLAGS) $(CFLAGS) $(FTDI_INCLUDES) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) $(FTDILIBS) $(LIBS) >&2 && \
-	(	echo "found."; echo "FTDISUPPORT := yes" >> .features.tmp ; \
-		printf "Checking for FT232H support in libftdi... " ; \
-		echo "$$FTDI_232H_TEST" >> .featuretest.c ; \
-		printf "\nexec: %s\n" "$(CC) $(CPPFLAGS) $(CFLAGS) $(FTDI_INCLUDES) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) $(FTDILIBS) $(LIBS)" >>$(BUILD_DETAILS_FILE) ; \
-		{ $(CC) $(CPPFLAGS) $(CFLAGS) $(FTDI_INCLUDES) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) $(FTDILIBS) $(LIBS) >&2 && \
-			( echo "found."; echo "FT232H := yes" >> .features.tmp ) ||	\
-			( echo "not found."; echo "FT232H := no" >> .features.tmp ) } \
-	) || \
-	( echo "not found."; echo "FTDISUPPORT := no" >> .features.tmp ) } \
-	2>>$(BUILD_DETAILS_FILE) | tee -a $(BUILD_DETAILS_FILE)
-endif
-	@$(DIFF) -q .features.tmp .features >/dev/null 2>&1 && rm .features.tmp || mv .features.tmp .features
-	@rm -f .featuretest.c .featuretest$(EXEC_SUFFIX)
+features: hwlibs
 	@echo "Checking for header \"mtd/mtd-user.h\": $(HAS_LINUX_MTD)"
 	@echo "Checking for header \"linux/spi/spidev.h\": $(HAS_LINUX_SPI)"
 	@echo "Checking for header \"linux/i2c-dev.h\": $(HAS_LINUX_I2C)"
