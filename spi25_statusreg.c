@@ -101,6 +101,33 @@ int spi_write_register(const struct flashctx *flash, enum flash_reg reg, uint8_t
 		write_cmd[1] = value;
 		write_cmd_len = JEDEC_WRSR_OUTSIZE;
 		break;
+	case STATUS2:
+		if (feature_bits & FEATURE_WRSR2) {
+			write_cmd[0] = JEDEC_WRSR2;
+			write_cmd[1] = value;
+			write_cmd_len = JEDEC_WRSR2_OUTSIZE;
+			break;
+		}
+		if (feature_bits & FEATURE_WRSR_EXT) {
+			/*
+			 * Writing SR2 with an extended WRSR command requires
+			 * writing SR1 along with SR2, so just read SR1 and
+			 * write it back
+			 */
+			uint8_t sr1;
+
+			if (spi_read_register(flash, STATUS1, &sr1)) {
+				msg_cerr("Writing SR2 failed: failed to read SR1 for writeback.\n");
+				return 1;
+			}
+			write_cmd[0] = JEDEC_WRSR;
+			write_cmd[1] = sr1;
+			write_cmd[2] = value;
+			write_cmd_len = JEDEC_WRSR_EXT_OUTSIZE;
+			break;
+		}
+		msg_cerr("Cannot write SR2: unsupported by chip\n");
+		return 1;
 	default:
 		msg_cerr("Cannot write register: unknown register\n");
 		return 1;
@@ -122,12 +149,20 @@ int spi_write_register(const struct flashctx *flash, enum flash_reg reg, uint8_t
 
 int spi_read_register(const struct flashctx *flash, enum flash_reg reg, uint8_t *value)
 {
+	int feature_bits = flash->chip->feature_bits;
 	uint8_t read_cmd;
 
 	switch (reg) {
 	case STATUS1:
 		read_cmd = JEDEC_RDSR;
 		break;
+	case STATUS2:
+		if (feature_bits & (FEATURE_WRSR_EXT | FEATURE_WRSR2)) {
+			read_cmd = JEDEC_RDSR2;
+			break;
+		}
+		msg_cerr("Cannot read SR2: unsupported by chip\n");
+		return 1;
 	default:
 		msg_cerr("Cannot read register: unknown register\n");
 		return 1;
