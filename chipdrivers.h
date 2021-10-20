@@ -216,4 +216,7 @@ int edi_probe_kb9012(struct flashctx *flash);
 int probe_spi_st95(struct flashctx *flash);
 int spi_block_erase_emulation(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 
+/* writeprotect_ranges.c */
+void decode_range_spi25(size_t *start, size_t *len, const struct wp_bits *, size_t chip_len);
+
 #endif /* !__CHIPDRIVERS_H__ */
