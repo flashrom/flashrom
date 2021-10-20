@@ -348,6 +348,50 @@ static int set_wp_range(struct wp_bits *bits, struct flashctx *flash, const stru
 	return ret;
 }
 
+/** Get the mode selected by a WP configuration. */
+static int get_wp_mode(enum flashrom_wp_mode *mode, const struct wp_bits *bits)
+{
+	if (!bits->srp_bit_present)
+		return FLASHROM_WP_ERR_CHIP_UNSUPPORTED;
+
+	if (bits->srl_bit_present && bits->srl == 1) {
+		*mode = bits->srp ? FLASHROM_WP_MODE_PERMANENT :
+				    FLASHROM_WP_MODE_POWER_CYCLE;
+	} else {
+		*mode = bits->srp ? FLASHROM_WP_MODE_HARDWARE :
+				    FLASHROM_WP_MODE_DISABLED;
+	}
+
+	return FLASHROM_WP_OK;
+}
+
+/** Modify a wp_bits structure such that it will select a specified protection mode. */
+static int set_wp_mode(struct wp_bits *bits, const enum flashrom_wp_mode mode)
+{
+	switch (mode) {
+	case FLASHROM_WP_MODE_DISABLED:
+		bits->srl = 0;
+		bits->srp = 0;
+		return FLASHROM_WP_OK;
+
+	case FLASHROM_WP_MODE_HARDWARE:
+		bits->srl = 0;
+		bits->srp = 1;
+		return FLASHROM_WP_OK;
+
+	case FLASHROM_WP_MODE_POWER_CYCLE:
+	case FLASHROM_WP_MODE_PERMANENT:
+	default:
+		/*
+		 * Don't try to enable power cycle or permanent protection for
+		 * now. Those modes may be possible to activate on some chips,
+		 * but they are usually unavailable by default or require special
+		 * commands to activate.
+		 */
+		return FLASHROM_WP_ERR_MODE_UNSUPPORTED;
+	}
+}
+
 static bool chip_supported(struct flashctx *flash)
 {
 	return (flash->chip != NULL) && (flash->chip->decode_range != NULL);
@@ -367,11 +411,8 @@ enum flashrom_wp_result wp_read_cfg(struct flashrom_wp_cfg *cfg, struct flashctx
 	if (ret == FLASHROM_WP_OK)
 		ret = get_wp_range(&cfg->range, flash, &bits);
 
-	/* TODO: implement and get_wp_mode() and call it */
-	/*
 	if (ret == FLASHROM_WP_OK)
 		ret = get_wp_mode(&cfg->mode, &bits);
-	*/
 
 	return ret;
 }
@@ -394,11 +435,8 @@ enum flashrom_wp_result wp_write_cfg(struct flashctx *flash, const struct flashr
 		ret = write_wp_bits(flash, bits);
 
 	/* Set protection mode */
-	/* TODO: implement set_wp_mode() and use it */
-	/*
 	if (ret == FLASHROM_WP_OK)
 		ret = set_wp_mode(&bits, cfg->mode);
-	*/
 	if (ret == FLASHROM_WP_OK)
 		ret = write_wp_bits(flash, bits);
 
