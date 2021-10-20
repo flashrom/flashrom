@@ -150,9 +150,17 @@ static enum flashrom_wp_result write_wp_bits(struct flashctx *flash, struct wp_b
 	return FLASHROM_WP_OK;
 }
 
+/** Get the range selected by a WP configuration. */
+static enum flashrom_wp_result get_wp_range(struct wp_range *range, struct flashctx *flash, const struct wp_bits *bits)
+{
+	flash->chip->decode_range(&range->start, &range->len, bits, flashrom_flash_getsize(flash));
+
+	return FLASHROM_WP_OK;
+}
+
 static bool chip_supported(struct flashctx *flash)
 {
-	return false;
+	return (flash->chip != NULL) && (flash->chip->decode_range != NULL);
 }
 
 enum flashrom_wp_result wp_read_cfg(struct flashrom_wp_cfg *cfg, struct flashctx *flash)
@@ -166,11 +174,11 @@ enum flashrom_wp_result wp_read_cfg(struct flashrom_wp_cfg *cfg, struct flashctx
 	if (ret == FLASHROM_WP_OK)
 		ret = read_wp_bits(&bits, flash);
 
-	/* TODO: implement get_wp_range() and get_wp_mode() and call them */
-	/*
 	if (ret == FLASHROM_WP_OK)
 		ret = get_wp_range(&cfg->range, flash, &bits);
 
+	/* TODO: implement and get_wp_mode() and call it */
+	/*
 	if (ret == FLASHROM_WP_OK)
 		ret = get_wp_mode(&cfg->mode, &bits);
 	*/
