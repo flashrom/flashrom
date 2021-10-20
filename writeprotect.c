@@ -314,6 +314,40 @@ static enum flashrom_wp_result get_ranges_and_wp_bits(struct flashctx *flash, st
 	return FLASHROM_WP_OK;
 }
 
+static bool ranges_equal(struct wp_range a, struct wp_range b)
+{
+	return (a.start == b.start) && (a.len == b.len);
+}
+
+/*
+ * Modify the range-related bits in a wp_bits structure so they select a given
+ * protection range. Bits that control the protection mode are not changed.
+ */
+static int set_wp_range(struct wp_bits *bits, struct flashctx *flash, const struct wp_range range)
+{
+	struct wp_range_and_bits *ranges = NULL;
+	size_t count;
+
+	enum flashrom_wp_result ret = get_ranges_and_wp_bits(flash, *bits, &ranges, &count);
+	if (ret != FLASHROM_WP_OK)
+		return ret;
+
+	/* Search for matching range */
+	ret = FLASHROM_WP_ERR_RANGE_UNSUPPORTED;
+	for (size_t i = 0; i < count; i++) {
+
+		if (ranges_equal(ranges[i].range, range)) {
+			*bits = ranges[i].bits;
+			ret = 0;
+			break;
+		}
+	}
+
+	free(ranges);
+
+	return ret;
+}
+
 static bool chip_supported(struct flashctx *flash)
 {
 	return (flash->chip != NULL) && (flash->chip->decode_range != NULL);
@@ -354,13 +388,10 @@ enum flashrom_wp_result wp_write_cfg(struct flashctx *flash, const struct flashr
 		ret = read_wp_bits(&bits, flash);
 
 	/* Set protection range */
-	/* TODO: implement set_wp_range() and use it */
-	/*
 	if (ret == FLASHROM_WP_OK)
 		ret = set_wp_range(&bits, flash, cfg->range);
 	if (ret == FLASHROM_WP_OK)
 		ret = write_wp_bits(flash, bits);
-	*/
 
 	/* Set protection mode */
 	/* TODO: implement set_wp_mode() and use it */
