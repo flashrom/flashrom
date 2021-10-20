@@ -170,6 +170,9 @@ override ENDIAN    := $(call c_macro_test, Makefile.d/endian_test.h)
 
 HAS_UTSNAME        := $(call c_compile_test, Makefile.d/utsname_test.c)
 HAS_CLOCK_GETTIME  := $(call c_compile_test, Makefile.d/clock_gettime_test.c)
+HAS_LINUX_MTD      := $(call c_compile_test, Makefile.d/linux_mtd_test.c)
+HAS_LINUX_SPI      := $(call c_compile_test, Makefile.d/linux_spi_test.c)
+HAS_LINUX_I2C      := $(call c_compile_test, Makefile.d/linux_i2c_test.c)
 
 ifeq ($(TARGET_OS), $(filter $(TARGET_OS), FreeBSD OpenBSD DragonFlyBSD))
 override CPPFLAGS += -I/usr/local/include
@@ -239,19 +242,21 @@ $(call mark_unsupported,CONFIG_BUSPIRATE_SPI CONFIG_SERPROG CONFIG_PONY_SPI)
 $(call mark_unsupported,$(DEPENDS_ON_LIBUSB1) $(DEPENDS_ON_LIBFTDI) $(DEPENDS_ON_LIBJAYLINK))
 endif
 
-# Android is handled internally as separate OS, but it supports about the same drivers as Linux.
-ifneq ($(TARGET_OS), $(filter $(TARGET_OS), Linux Android))
-$(call mark_unsupported,CONFIG_LINUX_MTD CONFIG_LINUX_SPI)
+ifeq ($(HAS_LINUX_MTD), no)
+$(call mark_unsupported,CONFIG_LINUX_MTD)
+endif
+
+ifeq ($(HAS_LINUX_SPI), no)
+$(call mark_unsupported,CONFIG_LINUX_SPI)
+endif
+
+ifeq ($(HAS_LINUX_I2C), no)
 $(call mark_unsupported,CONFIG_MSTARDDC_SPI CONFIG_LSPCON_I2C_SPI CONFIG_REALTEK_MST_I2C_SPI)
 endif
 
 ifeq ($(TARGET_OS), Android)
 # Android on x86 (currently) does not provide raw PCI port I/O operations.
 $(call mark_unsupported,CONFIG_RAYER_SPI)
-endif
-
-ifeq ($(TARGET_OS), Linux)
-CONFIG_LINUX_I2C_HELPER = yes
 endif
 
 # Disable the internal programmer on unsupported architectures (everything but x86 and mipsel)
@@ -679,21 +684,17 @@ PROGRAMMER_OBJS += satamv.o
 endif
 
 ifeq ($(CONFIG_LINUX_MTD), yes)
-# This is a totally ugly hack.
-FEATURE_CFLAGS += $(call debug_shell,grep -q "LINUX_MTD_SUPPORT := yes" .features && printf "%s" "-D'CONFIG_LINUX_MTD=1'")
+FEATURE_CFLAGS += -D'CONFIG_LINUX_MTD=1'
 PROGRAMMER_OBJS += linux_mtd.o
 endif
 
 ifeq ($(CONFIG_LINUX_SPI), yes)
-# This is a totally ugly hack.
-FEATURE_CFLAGS += $(call debug_shell,grep -q "LINUX_SPI_SUPPORT := yes" .features && printf "%s" "-D'CONFIG_LINUX_SPI=1'")
+FEATURE_CFLAGS += -D'CONFIG_LINUX_SPI=1'
 PROGRAMMER_OBJS += linux_spi.o
 endif
 
 ifeq ($(CONFIG_MSTARDDC_SPI), yes)
-# This is a totally ugly hack.
-FEATURE_CFLAGS += $(call debug_shell,grep -q "LINUX_I2C_SUPPORT := yes" .features && printf "%s" "-D'CONFIG_MSTARDDC_SPI=1'")
-NEED_LINUX_I2C += CONFIG_MSTARDDC_SPI
+FEATURE_CFLAGS += -D'CONFIG_MSTARDDC_SPI=1'
 PROGRAMMER_OBJS += mstarddc_spi.o
 endif
 
@@ -741,7 +742,7 @@ LIBS += -lni845x
 PROGRAMMER_OBJS += ni845x_spi.o
 endif
 
-ifeq ($(CONFIG_LINUX_I2C_HELPER), yes)
+ifeq ($(HAS_LINUX_I2C), yes)
 LIB_OBJS += i2c_helper_linux.o
 endif
 
@@ -1023,33 +1024,6 @@ ifneq ($(NEED_LIBFTDI), )
 	( echo "not found."; echo "FTDISUPPORT := no" >> .features.tmp ) } \
 	2>>$(BUILD_DETAILS_FILE) | tee -a $(BUILD_DETAILS_FILE)
 endif
-ifeq ($(CONFIG_LINUX_MTD), yes)
-	@printf "Checking if Linux MTD headers are present... " | tee -a $(BUILD_DETAILS_FILE)
-	@echo "$$LINUX_MTD_TEST" > .featuretest.c
-	@printf "\nexec: %s\n" "$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX)" >>$(BUILD_DETAILS_FILE)
-	@ { $(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) >&2 && \
-		( echo "yes."; echo "LINUX_MTD_SUPPORT := yes" >> .features.tmp ) ||	\
-		( echo "no."; echo "LINUX_MTD_SUPPORT := no" >> .features.tmp ) } \
-		2>>$(BUILD_DETAILS_FILE) | tee -a $(BUILD_DETAILS_FILE)
-endif
-ifeq ($(CONFIG_LINUX_SPI), yes)
-	@printf "Checking if Linux SPI headers are present... " | tee -a $(BUILD_DETAILS_FILE)
-	@echo "$$LINUX_SPI_TEST" > .featuretest.c
-	@printf "\nexec: %s\n" "$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX)" >>$(BUILD_DETAILS_FILE)
-	@ { $(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) >&2 && \
-		( echo "yes."; echo "LINUX_SPI_SUPPORT := yes" >> .features.tmp ) ||	\
-		( echo "no."; echo "LINUX_SPI_SUPPORT := no" >> .features.tmp ) } \
-		2>>$(BUILD_DETAILS_FILE) | tee -a $(BUILD_DETAILS_FILE)
-endif
-ifneq ($(NEED_LINUX_I2C), )
-	@printf "Checking if Linux I2C headers are present... " | tee -a $(BUILD_DETAILS_FILE)
-	@echo "$$LINUX_I2C_TEST" > .featuretest.c
-	@printf "\nexec: %s\n" "$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX)" >>$(BUILD_DETAILS_FILE)
-	@ { $(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) >&2 && \
-		( echo "yes."; echo "LINUX_I2C_SUPPORT := yes" >> .features.tmp ) ||	\
-		( echo "no."; echo "LINUX_I2C_SUPPORT := no" >> .features.tmp ) } \
-		2>>$(BUILD_DETAILS_FILE) | tee -a $(BUILD_DETAILS_FILE)
-endif
 ifeq ($(CONFIG_NI845X_SPI), yes)
 	@printf "Checking for NI USB-845x installation... " | tee -a $(BUILD_DETAILS_FILE)
 	@echo "$$NI845X_TEST" > .featuretest.c
@@ -1066,10 +1040,14 @@ ifeq ($(CONFIG_NI845X_SPI), yes)
 			exit 1; }; } \
 		2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
 endif
-	@echo "Checking for header \"sys/utsname.h\": $(HAS_UTSNAME)"
-	@echo "Checking for function \"clock_gettime\": $(HAS_CLOCK_GETTIME)"
 	@$(DIFF) -q .features.tmp .features >/dev/null 2>&1 && rm .features.tmp || mv .features.tmp .features
 	@rm -f .featuretest.c .featuretest$(EXEC_SUFFIX)
+	@echo "Checking for header \"mtd/mtd-user.h\": $(HAS_LINUX_MTD)"
+	@echo "Checking for header \"linux/spi/spidev.h\": $(HAS_LINUX_SPI)"
+	@echo "Checking for header \"linux/i2c-dev.h\": $(HAS_LINUX_I2C)"
+	@echo "Checking for header \"linux/i2c.h\": $(HAS_LINUX_I2C)"
+	@echo "Checking for header \"sys/utsname.h\": $(HAS_UTSNAME)"
+	@echo "Checking for function \"clock_gettime\": $(HAS_CLOCK_GETTIME)"
 
 $(PROGRAM).8.html: $(PROGRAM).8
 	@groff -mandoc -Thtml $< >$@

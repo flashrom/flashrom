@@ -130,44 +130,6 @@ enum ftdi_chip_type type = TYPE_232H;
 endef
 export FTDI_232H_TEST
 
-define LINUX_MTD_TEST
-#include <mtd/mtd-user.h>
-
-int main(int argc, char **argv)
-{
-	(void) argc;
-	(void) argv;
-	return 0;
-}
-endef
-export LINUX_MTD_TEST
-
-define LINUX_SPI_TEST
-#include <linux/types.h>
-#include <linux/spi/spidev.h>
-
-int main(int argc, char **argv)
-{
-	(void) argc;
-	(void) argv;
-	return 0;
-}
-endef
-export LINUX_SPI_TEST
-
-define LINUX_I2C_TEST
-#include <linux/i2c-dev.h>
-#include <linux/i2c.h>
-
-int main(int argc, char **argv)
-{
-	(void) argc;
-	(void) argv;
-	return 0;
-}
-endef
-export LINUX_I2C_TEST
-
 define NI845X_TEST
 #include <ni845x.h>
 
