@@ -34,6 +34,7 @@
 
 #include "libflashrom.h"
 #include "layout.h"
+#include "writeprotect.h"
 
 #define KiB (1024)
 #define MiB (1024 * KiB)
@@ -176,6 +177,24 @@ enum flash_reg {
 	MAX_REGISTERS
 };
 
+struct reg_bit_info {
+	/* Register containing the bit */
+	enum flash_reg reg;
+
+	/* Bit index within register */
+	uint8_t bit_index;
+
+	/*
+	 * Writability of the bit. RW does not guarantee the bit will be
+	 * writable, for example if status register protection is enabled.
+	 */
+	enum {
+		RO, /* Read only */
+		RW, /* Readable and writable */
+		OTP /* One-time programmable */
+	} writability;
+};
+
 struct flashchip {
 	const char *vendor;
 	const char *name;
@@ -255,6 +274,37 @@ struct flashchip {
 	/* SPI specific options (TODO: Make it a union in case other bustypes get specific options.) */
 	uint8_t wrea_override; /**< override opcode for write extended address register */
 
+	struct reg_bit_map {
+		/* Status register protection bit (SRP) */
+		struct reg_bit_info srp;
+
+		/* Status register lock bit (SRP) */
+		struct reg_bit_info srl;
+
+		/*
+		 * Note: some datasheets refer to configuration bits that
+		 * function like TB/SEC/CMP bits as BP bits (e.g. BP3 for a bit
+		 * that functions like TB).
+		 *
+		 * As a convention, any config bit that functions like a
+		 * TB/SEC/CMP bit should be assigned to the respective
+		 * tb/sec/cmp field in this structure, even if the datasheet
+		 * uses a different name.
+		 */
+
+		/* Block protection bits (BP) */
+		/* Extra element for terminator */
+		struct reg_bit_info bp[MAX_BP_BITS + 1];
+
+		/* Top/bottom protection bit (TB) */
+		struct reg_bit_info tb;
+
+		/* Sector/block protection bit (SEC) */
+		struct reg_bit_info sec;
+
+		/* Complement bit (CMP) */
+		struct reg_bit_info cmp;
+	} reg_bits;
 };
 
 typedef int (*chip_restore_fn_cb_t)(struct flashctx *flash, uint8_t status);

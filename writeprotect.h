@@ -18,4 +18,6 @@
 #ifndef __WRITEPROTECT_H__
 #define __WRITEPROTECT_H__ 1
 
+#define MAX_BP_BITS 4
+
 #endif /* !__WRITEPROTECT_H__ */
