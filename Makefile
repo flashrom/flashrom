@@ -989,6 +989,21 @@ ifeq ($(CHECK_LIBJAYLINK), yes)
 		rm -f .test.c .test.o .test$(EXEC_SUFFIX); exit 1; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
 	@rm -f .test.c .test.o .test$(EXEC_SUFFIX)
 endif
+ifeq ($(CONFIG_NI845X_SPI), yes)
+	@printf "Checking for NI USB-845x installation... " | tee -a $(BUILD_DETAILS_FILE)
+	@echo "$$NI845X_TEST" > .test.c
+	@printf "\nexec: %s\n" "$(CC) $(CPPFLAGS) $(CFLAGS) $(NI845X_INCLUDES) $(LDFLAGS) .test.c -o .test$(EXEC_SUFFIX) $(NI845X_LIBS) $(LIBS)" >>$(BUILD_DETAILS_FILE)
+	@ { { { { { $(CC) $(CPPFLAGS) $(CFLAGS) $(NI845X_INCLUDES) $(LDFLAGS) .test.c -o .test$(EXEC_SUFFIX) $(NI845X_LIBS) $(LIBS) >&2 && \
+		echo "yes." || { echo "no"; 				\
+		echo "Unable to find NI-845x headers or libraries.";	\
+		echo "Please pass the NI-845x library path to the make with the CONFIG_NI845X_LIBRARY_PATH parameter,"; \
+		echo "or disable the NI-845x support by specifying make CONFIG_NI845X_SPI=no"; \
+		echo "For the NI-845x 17.0 the library path is:"; \
+		echo " On 32 bit systems: C:\Program Files)\National Instruments\NI-845x\MS Visual C"; \
+		echo " On 64 bit systems: C:\Program Files (x86)\National Instruments\NI-845x\MS Visual C"; echo;\
+		rm -f .test.c .test.o; exit 1; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
+	@rm -f .test.c .test.o .test$(EXEC_SUFFIX)
+endif
 
 .features: features
 
@@ -1023,22 +1038,6 @@ ifneq ($(NEED_LIBFTDI), )
 	) || \
 	( echo "not found."; echo "FTDISUPPORT := no" >> .features.tmp ) } \
 	2>>$(BUILD_DETAILS_FILE) | tee -a $(BUILD_DETAILS_FILE)
-endif
-ifeq ($(CONFIG_NI845X_SPI), yes)
-	@printf "Checking for NI USB-845x installation... " | tee -a $(BUILD_DETAILS_FILE)
-	@echo "$$NI845X_TEST" > .featuretest.c
-	@printf "\nexec: %s\n" "$(CC) $(CPPFLAGS) $(CFLAGS) $(NI845X_INCLUDES) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) $(NI845X_LIBS) $(LIBS)" >>$(BUILD_DETAILS_FILE)
-
-	@ { { { { { $(CC) $(CPPFLAGS) $(CFLAGS) $(NI845X_INCLUDES) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) $(NI845X_LIBS) $(LIBS) >&2 && \
-		( echo "yes."; echo "NI845X_SUPPORT := yes" >> .features.tmp ) ||	\
-		{   echo -e "\nUnable to find NI-845x headers or libraries."; \
-			echo "Please pass the NI-845x library path to the make with the CONFIG_NI845X_LIBRARY_PATH parameter,"; \
-			echo "or disable the NI-845x support by specifying make CONFIG_NI845X_SPI=no"; \
-			echo "For the NI-845x 17.0 the library path is:"; \
-			echo " On 32 bit systems: C:\Program Files)\National Instruments\NI-845x\MS Visual C"; \
-			echo " On 64 bit systems: C:\Program Files (x86)\National Instruments\NI-845x\MS Visual C"; \
-			exit 1; }; } \
-		2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
 endif
 	@$(DIFF) -q .features.tmp .features >/dev/null 2>&1 && rm .features.tmp || mv .features.tmp .features
 	@rm -f .featuretest.c .featuretest$(EXEC_SUFFIX)
