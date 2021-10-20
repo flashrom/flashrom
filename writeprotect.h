@@ -22,7 +22,20 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "libflashrom.h"
+
 #define MAX_BP_BITS 4
+
+/* Chip protection range: start address and length. */
+struct wp_range {
+        size_t start, len;
+};
+
+/* Generic description of a chip's write protection configuration. */
+struct flashrom_wp_cfg {
+        enum flashrom_wp_mode mode;
+        struct wp_range range;
+};
 
 /*
  * Description of a chip's write protection configuration.
@@ -55,5 +68,13 @@ struct wp_bits  {
 	size_t bp_bit_count;
 	uint8_t bp[MAX_BP_BITS];
 };
+
+struct flashrom_flashctx;
+
+/* Write WP configuration to the chip */
+enum flashrom_wp_result wp_write_cfg(struct flashrom_flashctx *, const struct flashrom_wp_cfg *);
+
+/* Read WP configuration from the chip */
+enum flashrom_wp_result wp_read_cfg(struct flashrom_wp_cfg *, struct flashrom_flashctx *);
 
 #endif /* !__WRITEPROTECT_H__ */
