@@ -14,8 +14,6 @@
 # GNU General Public License for more details.
 #
 
-include Makefile.include
-
 PROGRAM = flashrom
 
 ###############################################################################
@@ -55,12 +53,17 @@ CONFIG_DEFAULT_PROGRAMMER_ARGS ?=
 #   make CONFIG_DEFAULT_PROGRAMMER_NAME=serprog CONFIG_DEFAULT_PROGRAMMER_ARGS="dev=/dev/ttyUSB0:1500000"
 # would make executing './flashrom' (almost) equivialent to './flashrom -p serprog:dev=/dev/ttyUSB0:1500000'.
 
+# The user can provide CPP, C and LDFLAGS and the Makefile will extend these
+override CPPFLAGS := $(CPPFLAGS)
+override CFLAGS   := $(CFLAGS)
+override LDFLAGS  := $(LDFLAGS)
+
 # If your compiler spits out excessive warnings, run make WARNERROR=no
 # You shouldn't have to change this flag.
 WARNERROR ?= yes
 
 ifeq ($(WARNERROR), yes)
-CFLAGS += -Werror
+override CFLAGS += -Werror
 endif
 
 ifdef LIBS_BASE
@@ -86,6 +89,8 @@ dummy_for_make_3_80:=$(shell printf "Build started on %s\n\n" "$$(date)" >$(BUIL
 # in the build details file together with the original stdout output.
 debug_shell = $(shell export LC_ALL=C ; { echo 'exec: export LC_ALL=C ; { $(subst ','\'',$(1)) ; }' >&2; \
     { $(1) ; } | tee -a $(BUILD_DETAILS_FILE) ; echo >&2 ; } 2>>$(BUILD_DETAILS_FILE))
+
+include Makefile.include
 
 ###############################################################################
 # Dependency handling.
@@ -129,7 +134,7 @@ DEPENDS_ON_LIBUSB1 := \
 	CONFIG_RAIDEN_DEBUG_SPI \
 	CONFIG_STLINKV3_SPI \
 
-DEPENDS_ON_LIBFTDI := \
+DEPENDS_ON_LIBFTDI1 := \
 	CONFIG_FT2232_SPI \
 	CONFIG_USBBLASTER_SPI \
 
@@ -160,6 +165,10 @@ endif
 
 CC_WORKING := $(call c_compile_test, Makefile.d/cc_test.c)
 
+# Configs for dependencies. Can be overwritten by commandline
+CONFIG_LIBFTDI1_CFLAGS  := $(call dependency_cflags, libftdi1)
+CONFIG_LIBFTDI1_LDFLAGS := $(call dependency_ldflags, libftdi1)
+
 # Determine the destination OS, architecture and endian
 # IMPORTANT: The following lines must be placed before TARGET_OS, ARCH or ENDIAN
 # is ever used (of course), but should come after any lines setting CC because
@@ -168,6 +177,10 @@ override TARGET_OS := $(call c_macro_test, Makefile.d/os_test.h)
 override ARCH      := $(call c_macro_test, Makefile.d/arch_test.h)
 override ENDIAN    := $(call c_macro_test, Makefile.d/endian_test.h)
 
+
+HAS_LIBFTDI1       := $(call find_dependency, libftdi1)
+
+HAS_FT232H         := $(call c_compile_test, Makefile.d/ft232h_test.c, $(CONFIG_LIBFTDI1_CFLAGS))
 HAS_UTSNAME        := $(call c_compile_test, Makefile.d/utsname_test.c)
 HAS_CLOCK_GETTIME  := $(call c_compile_test, Makefile.d/clock_gettime_test.c)
 HAS_LINUX_MTD      := $(call c_compile_test, Makefile.d/linux_mtd_test.c)
@@ -197,7 +210,7 @@ LIBS += -lgetopt
 # Missing serial support.
 $(call mark_unsupported,$(DEPENDS_ON_SERIAL))
 # Libraries not available for DOS
-$(call mark_unsupported,$(DEPENDS_ON_LIBUSB1) $(DEPENDS_ON_LIBFTDI) $(DEPENDS_ON_LIBJAYLINK))
+$(call mark_unsupported,$(DEPENDS_ON_LIBUSB1) $(DEPENDS_ON_LIBJAYLINK))
 endif
 
 ifeq ($(TARGET_OS), $(filter $(TARGET_OS), MinGW Cygwin))
@@ -239,7 +252,7 @@ $(call mark_unsupported,CONFIG_ATAPROMISE)
 # Bus Pirate, Serprog and PonyProg are not supported with libpayload (missing serial support).
 $(call mark_unsupported,CONFIG_BUSPIRATE_SPI CONFIG_SERPROG CONFIG_PONY_SPI)
 # Dediprog, Developerbox, USB-Blaster, PICkit2, CH341A and FT2232 are not supported with libpayload (missing libusb support).
-$(call mark_unsupported,$(DEPENDS_ON_LIBUSB1) $(DEPENDS_ON_LIBFTDI) $(DEPENDS_ON_LIBJAYLINK))
+$(call mark_unsupported,$(DEPENDS_ON_LIBUSB1) $(DEPENDS_ON_LIBJAYLINK))
 endif
 
 ifeq ($(HAS_LINUX_MTD), no)
@@ -262,6 +275,10 @@ endif
 # Disable the internal programmer on unsupported architectures (everything but x86 and mipsel)
 ifneq ($(ARCH)-little, $(filter $(ARCH), x86 mips)-$(ENDIAN))
 $(call mark_unsupported,CONFIG_INTERNAL)
+endif
+
+ifeq ($(HAS_LIBFTDI1), no)
+$(call mark_unsupported,$(DEPENDS_ON_LIBFTDI1))
 endif
 
 ifeq ($(ENDIAN), little)
@@ -591,14 +608,12 @@ PROGRAMMER_OBJS += it8212.o
 endif
 
 ifeq ($(CONFIG_FT2232_SPI), yes)
-# This is a totally ugly hack.
-FEATURE_CFLAGS += $(call debug_shell,grep -q "FTDISUPPORT := yes" .libdeps && printf "%s" "-D'CONFIG_FT2232_SPI=1'")
+FEATURE_CFLAGS += -D'CONFIG_FT2232_SPI=1'
 PROGRAMMER_OBJS += ft2232_spi.o
 endif
 
 ifeq ($(CONFIG_USBBLASTER_SPI), yes)
-# This is a totally ugly hack.
-FEATURE_CFLAGS += $(call debug_shell,grep -q "FTDISUPPORT := yes" .libdeps && printf "%s" "-D'CONFIG_USBBLASTER_SPI=1'")
+FEATURE_CFLAGS += -D'CONFIG_USBBLASTER_SPI=1'
 PROGRAMMER_OBJS += usbblaster_spi.o
 endif
 
@@ -822,15 +837,13 @@ endif
 endif
 endif
 
-NEED_LIBFTDI := $(call filter_deps,$(DEPENDS_ON_LIBFTDI))
-ifneq ($(NEED_LIBFTDI), )
-FTDILIBS := $(call debug_shell,[ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ; $(PKG_CONFIG) --libs libftdi1 || $(PKG_CONFIG) --libs libftdi || printf "%s" "-lftdi -lusb")
-FEATURE_CFLAGS += $(call debug_shell,grep -q "FT232H := yes" .libdeps && printf "%s" "-D'HAVE_FT232H=1'")
-FTDI_INCLUDES := $(call debug_shell,[ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)" ; $(PKG_CONFIG) --cflags-only-I libftdi1)
-FEATURE_CFLAGS += $(FTDI_INCLUDES)
-FEATURE_LIBS += $(call debug_shell,grep -q "FTDISUPPORT := yes" .libdeps && printf "%s" "$(FTDILIBS)")
-# We can't set NEED_LIBUSB1 here because that would transform libftdi auto-enabling
-# into a hard requirement for libusb, defeating the purpose of auto-enabling.
+USE_LIBFTDI1 := $(if $(call filter_deps,$(DEPENDS_ON_LIBFTDI1)),yes,no)
+ifeq ($(USE_LIBFTDI1), yes)
+override CFLAGS  += $(CONFIG_LIBFTDI1_CFLAGS)
+override LDFLAGS += $(CONFIG_LIBFTDI1_LDFLAGS)
+ifeq ($(HAS_FT232H), yes)
+FEATURE_CFLAGS += -D'HAVE_FT232H=1'
+endif
 endif
 
 NEED_LIBJAYLINK := $(call filter_deps,$(DEPENDS_ON_LIBJAYLINK))
@@ -866,7 +879,7 @@ ifeq ($(ARCH), x86)
 endif
 
 $(PROGRAM)$(EXEC_SUFFIX): $(OBJS)
-	$(CC) $(LDFLAGS) -o $(PROGRAM)$(EXEC_SUFFIX) $(OBJS) $(LIBS) $(PCILIBS) $(FEATURE_LIBS) $(USBLIBS) $(USB1LIBS) $(JAYLINKLIBS) $(NI845X_LIBS)
+	$(CC) -o $(PROGRAM)$(EXEC_SUFFIX) $(OBJS) $(LDFLAGS) $(LIBS) $(PCILIBS) $(FEATURE_LIBS) $(USBLIBS) $(USB1LIBS) $(JAYLINKLIBS) $(NI845X_LIBS)
 
 libflashrom.a: $(LIBFLASHROM_OBJS)
 	$(AR) rcs $@ $^
@@ -1004,23 +1017,12 @@ ifeq ($(CONFIG_NI845X_SPI), yes)
 		rm -f .test.c .test.o; exit 1; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
 	@rm -f .test.c .test.o .test$(EXEC_SUFFIX)
 endif
-ifneq ($(NEED_LIBFTDI), )
-	@printf "Checking for FTDI support... " | tee -a $(BUILD_DETAILS_FILE)
-	@echo "$$FTDI_TEST" > .test.c
-	@printf "\nexec: %s\n" "$(CC) $(CPPFLAGS) $(CFLAGS) $(FTDI_INCLUDES) $(LDFLAGS) .test.c -o .test$(EXEC_SUFFIX) $(FTDILIBS) $(LIBS)" >>$(BUILD_DETAILS_FILE)
-	@ { $(CC) $(CPPFLAGS) $(CFLAGS) $(FTDI_INCLUDES) $(LDFLAGS) .test.c -o .test$(EXEC_SUFFIX) $(FTDILIBS) $(LIBS) >&2 && \
-	(	echo "found."; echo "FTDISUPPORT := yes" >> .libdeps ; \
-		printf "Checking for FT232H support in libftdi... " ; \
-		echo "$$FTDI_232H_TEST" >> .test.c ; \
-		printf "\nexec: %s\n" "$(CC) $(CPPFLAGS) $(CFLAGS) $(FTDI_INCLUDES) $(LDFLAGS) .test.c -o .test$(EXEC_SUFFIX) $(FTDILIBS) $(LIBS)" >>$(BUILD_DETAILS_FILE) ; \
-		{ $(CC) $(CPPFLAGS) $(CFLAGS) $(FTDI_INCLUDES) $(LDFLAGS) .test.c -o .test$(EXEC_SUFFIX) $(FTDILIBS) $(LIBS) >&2 && \
-			( echo "found."; echo "FT232H := yes" >> .libdeps ) ||	\
-			( echo "not found."; echo "FT232H := no" >> .libdeps ) } \
-	) || \
-	( echo "not found."; echo "FTDISUPPORT := no" >> .libdeps ) } \
-	2>>$(BUILD_DETAILS_FILE) | tee -a $(BUILD_DETAILS_FILE)
-	@rm -f .test.c .test.o .test$(EXEC_SUFFIX)
-endif
+	@echo Dependency libftdi1 found: $(HAS_LIBFTDI1)
+	@if [ $(HAS_LIBFTDI1) = yes ]; then 			\
+		echo "  Checking for \"TYPE_232H\" in \"enum ftdi_chip_type\": $(HAS_FT232H)"; \
+		echo "  CFLAGS: $(CONFIG_LIBFTDI1_CFLAGS)";	\
+		echo "  LDFLAGS: $(CONFIG_LIBFTDI1_LDFLAGS)";	\
+	fi
 
 # If a user does not explicitly request a non-working feature, we should
 # silently disable it. However, if a non-working (does not compile) feature
