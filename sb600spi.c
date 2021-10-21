@@ -458,8 +458,8 @@ static int handle_speed(struct pci_dev *dev, enum amd_chipset amd_gen, uint8_t *
 		msg_pdbg("SPI read mode is %s (%i)\n",
 			spireadmodes[read_mode], read_mode);
 		if (spireadmode_idx < 0) {
-			msg_perr("Warning: spireadmode not set, "
-					 "leaving spireadmode unchanged.");
+			msg_pdbg("spireadmode is not set, "
+				 "leaving SPI read mode unchanged.\n");
 		}
 		else if (set_mode(dev, spireadmode_idx, sb600_spibar) != 0) {
 			return 1;
@@ -501,7 +501,7 @@ static int handle_speed(struct pci_dev *dev, enum amd_chipset amd_gen, uint8_t *
 		}
 	}
 	if (spispeed_idx < 0) {
-		msg_perr("Warning: spispeed not set, leaving spispeed unchanged.");
+		msg_pdbg("spispeed is not set, leaving SPI speed unchanged.\n");
 		return 0;
 	}
 	return set_speed(dev, amd_gen, spispeed_idx, sb600_spibar);
