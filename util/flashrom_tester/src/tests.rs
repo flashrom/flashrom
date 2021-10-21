@@ -234,13 +234,13 @@ fn lock_test(env: &mut TestEnv) -> TestResult {
 
 fn elog_sanity_test(env: &mut TestEnv) -> TestResult {
     // Check that the elog contains *something*, as an indication that Coreboot
-    // is actually able to write to the Flash. Because this invokes mosys on the
-    // host, it doesn't make sense to run for other chips.
+    // is actually able to write to the Flash. Because this invokes elogtool on
+    // the host, it doesn't make sense to run for other chips.
     if env.chip_type() != FlashChip::HOST {
         info!("Skipping ELOG sanity check for non-host chip");
         return Ok(());
     }
-    // mosys reads the flash, it should be back in the golden state
+    // elogtool reads the flash, it should be back in the golden state
     env.ensure_golden()?;
     // Output is one event per line, drop empty lines in the interest of being defensive.
     let event_count = cros_sysinfo::eventlog_list()?

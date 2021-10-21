@@ -61,13 +61,13 @@ pub fn bios_info() -> IoResult<String> {
 }
 
 pub fn eventlog_list() -> Result<String, std::io::Error> {
-    mosys_dispatch(&["eventlog", "list"])
+    elogtool_dispatch(&["list"])
 }
 
-fn mosys_dispatch<S: AsRef<OsStr> + Debug>(args: &[S]) -> IoResult<String> {
-    info!("mosys_dispatch() running: /usr/sbin/mosys {:?}", args);
+fn elogtool_dispatch<S: AsRef<OsStr> + Debug>(args: &[S]) -> IoResult<String> {
+    info!("elogtool_dispatch() running: /usr/bin/elogtool {:?}", args);
 
-    let output = Command::new("/usr/sbin/mosys")
+    let output = Command::new("/usr/bin/elogtool")
         .args(args)
         .stdin(Stdio::null())
         .output()?;
