@@ -13,6 +13,8 @@ lt_version = '@0@.@1@.@2@'.format(lt_current, lt_age, lt_revision)
 
 # hide/enable some warnings
 warning_flags = [
+  '-Wshadow',
+  '-Wmissing-prototypes',
   '-Wwrite-strings',
   '-Wno-unused-parameter',
   '-Wno-address-of-packed-member',
