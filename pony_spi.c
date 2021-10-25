@@ -145,6 +145,7 @@ static int pony_spi_init(void)
 		sp_fd = sp_openserport(arg, 9600);
 		if (sp_fd == SER_INV_FD) {
 			free(arg);
+			free(data);
 			return 1;
 		}
 		if (register_shutdown(pony_spi_shutdown, data) != 0) {
