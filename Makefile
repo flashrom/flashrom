@@ -893,17 +893,15 @@ compiler: featuresavailable
 	@if [ $(CC_WORKING) = yes ]; \
 		then $(CC) --version 2>/dev/null | head -1; \
 		else echo no; echo Aborting.; exit 1; fi
-	@echo Target arch is $(ARCH)
+	@echo "Target arch: $(ARCH)"
 	@if [ $(ARCH) = unknown ]; then echo Aborting.; exit 1; fi
-	@echo Target OS is $(TARGET_OS)
+	@echo "Target OS: $(TARGET_OS)"
 	@if [ $(TARGET_OS) = unknown ]; then echo Aborting.; exit 1; fi
-	@echo Target endian is $(ENDIAN)
+	@if [ $(TARGET_OS) = libpayload ] && ! $(CC) --version 2>&1 | grep -q coreboot; then \
+		echo "  Warning: It seems you are not using coreboot's reference compiler."; \
+		echo "  This might work but usually does not, please beware."; fi
+	@echo "Target endian: $(ENDIAN)"
 	@if [ $(ENDIAN) = unknown ]; then echo Aborting.; exit 1; fi
-ifeq ($(TARGET_OS), libpayload)
-	@$(CC) --version 2>&1 | grep -q coreboot || \
-		( echo "Warning: It seems you are not using coreboot's reference compiler."; \
-		  echo "This might work but usually does not, please beware." )
-endif
 
 hwlibs: compiler
 	@printf "" > .libdeps
