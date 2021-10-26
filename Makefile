@@ -168,6 +168,9 @@ override TARGET_OS := $(call c_macro_test, Makefile.d/os_test.h)
 override ARCH      := $(call c_macro_test, Makefile.d/arch_test.h)
 override ENDIAN    := $(call c_macro_test, Makefile.d/endian_test.h)
 
+HAS_UTSNAME        := $(call c_compile_test, Makefile.d/utsname_test.c)
+HAS_CLOCK_GETTIME  := $(call c_compile_test, Makefile.d/clock_gettime_test.c)
+
 ifeq ($(TARGET_OS), $(filter $(TARGET_OS), FreeBSD OpenBSD DragonFlyBSD))
 override CPPFLAGS += -I/usr/local/include
 override LDFLAGS += -L/usr/local/lib
@@ -841,13 +844,17 @@ FEATURE_CFLAGS += -D'CONFIG_PRINT_WIKI=1'
 CLI_OBJS += print_wiki.o
 endif
 
-FEATURE_CFLAGS += $(call debug_shell,grep -q "UTSNAME := yes" .features && printf "%s" "-D'HAVE_UTSNAME=1'")
-
 # We could use PULLED_IN_LIBS, but that would be ugly.
 FEATURE_LIBS += $(call debug_shell,grep -q "NEEDLIBZ := yes" .libdeps && printf "%s" "-lz")
 
-FEATURE_CFLAGS += $(call debug_shell,grep -q "CLOCK_GETTIME := yes" .features && printf "%s" "-D'HAVE_CLOCK_GETTIME=1'")
-FEATURE_LIBS += $(call debug_shell,grep -q "CLOCK_GETTIME := yes" .features && printf "%s" "-lrt")
+ifeq ($(HAS_UTSNAME), yes)
+FEATURE_CFLAGS += -D'HAVE_UTSNAME=1'
+endif
+
+ifeq ($(HAS_CLOCK_GETTIME), yes)
+FEATURE_CFLAGS += -D'HAVE_CLOCK_GETTIME=1'
+FEATURE_LIBS += -lrt
+endif
 
 LIBFLASHROM_OBJS = $(CHIP_OBJS) $(PROGRAMMER_OBJS) $(LIB_OBJS)
 OBJS = $(CLI_OBJS) $(LIBFLASHROM_OBJS)
@@ -1059,24 +1066,8 @@ ifeq ($(CONFIG_NI845X_SPI), yes)
 			exit 1; }; } \
 		2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
 endif
-	@printf "Checking for utsname support... " | tee -a $(BUILD_DETAILS_FILE)
-	@echo "$$UTSNAME_TEST" > .featuretest.c
-	@printf "\nexec: %s\n" "$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX)" >>$(BUILD_DETAILS_FILE)
-	@ { $(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .featuretest.c -o .featuretest$(EXEC_SUFFIX) >&2 && \
-		( echo "found."; echo "UTSNAME := yes" >> .features.tmp ) ||	\
-		( echo "not found."; echo "UTSNAME := no" >> .features.tmp ) } 2>>$(BUILD_DETAILS_FILE) | tee -a $(BUILD_DETAILS_FILE)
-	@printf "Checking for clock_gettime support... " | tee -a $(BUILD_DETAILS_FILE)
-ifeq ($(DISABLE_CLOCK_GETTIME), yes)
-	@ { ( echo "disabled."; echo "CLOCK_GETTIME := no" >>.features.tmp ) } \
-		2>>$(BUILD_DETAILS_FILE) | tee -a $(BUILD_DETAILS_FILE)
-else
-	@echo "$$CLOCK_GETTIME_TEST" >.featuretest.c
-	@printf "\nexec: %s\n" "$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -lrt .featuretest.c -o .featuretest$(EXEC_SUFFIX)" >>$(BUILD_DETAILS_FILE)
-	@ { $(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -lrt .featuretest.c -o .featuretest$(EXEC_SUFFIX) >&2 && \
-		( echo "found."; echo "CLOCK_GETTIME := yes" >>.features.tmp ) || \
-		( echo "not found."; echo "CLOCK_GETTIME := no" >>.features.tmp ) } \
-		2>>$(BUILD_DETAILS_FILE) | tee -a $(BUILD_DETAILS_FILE)
-endif
+	@echo "Checking for header \"sys/utsname.h\": $(HAS_UTSNAME)"
+	@echo "Checking for function \"clock_gettime\": $(HAS_CLOCK_GETTIME)"
 	@$(DIFF) -q .features.tmp .features >/dev/null 2>&1 && rm .features.tmp || mv .features.tmp .features
 	@rm -f .featuretest.c .featuretest$(EXEC_SUFFIX)
 
