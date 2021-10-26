@@ -86,10 +86,10 @@ int block_erase_chip(struct flashctx *flash, unsigned int blockaddr, unsigned in
 	return 0;
 }
 
-static void setup_chip(struct flashrom_flashctx *flash, struct flashrom_layout **layout,
+static void setup_chip(struct flashrom_flashctx *flashctx, struct flashrom_layout **layout,
 		struct flashchip *chip, const char *programmer_param)
 {
-	flash->chip = chip;
+	flashctx->chip = chip;
 
 	g_chip_state.unlock_calls = 0;
 
@@ -99,7 +99,7 @@ static void setup_chip(struct flashrom_flashctx *flash, struct flashrom_layout *
 	assert_int_equal(0, flashrom_layout_add_region(*layout, 0, chip->total_size * KiB - 1, "region"));
 	assert_int_equal(0, flashrom_layout_include_region(*layout, "region"));
 
-	flashrom_layout_set(flash, *layout);
+	flashrom_layout_set(flashctx, *layout);
 	printf("done\n");
 
 	/*
@@ -110,7 +110,7 @@ static void setup_chip(struct flashrom_flashctx *flash, struct flashrom_layout *
 	printf("Dummyflasher initialising with param=\"%s\"... ", programmer_param);
 	assert_int_equal(0, programmer_init(&programmer_dummy, programmer_param));
 	/* Assignment below normally happens while probing, but this test is not probing. */
-	flash->mst = &registered_masters[0];
+	flashctx->mst = &registered_masters[0];
 	printf("done\n");
 }
 
@@ -174,15 +174,15 @@ void erase_chip_test_success(void **state)
 {
 	(void) state; /* unused */
 
-	struct flashrom_flashctx flash = { 0 };
+	struct flashrom_flashctx flashctx = { 0 };
 	struct flashrom_layout *layout;
 	struct flashchip mock_chip = chip_8MiB;
 	const char *param = ""; /* Default values for all params. */
 
-	setup_chip(&flash, &layout, &mock_chip, param);
+	setup_chip(&flashctx, &layout, &mock_chip, param);
 
 	printf("Erase chip operation started.\n");
-	assert_int_equal(0, do_erase(&flash));
+	assert_int_equal(0, do_erase(&flashctx));
 	printf("Erase chip operation done.\n");
 
 	teardown(&layout);
@@ -192,7 +192,7 @@ void erase_chip_with_dummyflasher_test_success(void **state)
 {
 	(void) state; /* unused */
 
-	struct flashrom_flashctx flash = { 0 };
+	struct flashrom_flashctx flashctx = { 0 };
 	struct flashrom_layout *layout;
 	struct flashchip mock_chip = chip_W25Q128_V;
 	/*
@@ -201,10 +201,10 @@ void erase_chip_with_dummyflasher_test_success(void **state)
 	 */
 	char *param_dup = strdup("bus=spi,emulate=W25Q128FV");
 
-	setup_chip(&flash, &layout, &mock_chip, param_dup);
+	setup_chip(&flashctx, &layout, &mock_chip, param_dup);
 
 	printf("Erase chip operation started.\n");
-	assert_int_equal(0, do_erase(&flash));
+	assert_int_equal(0, do_erase(&flashctx));
 	printf("Erase chip operation done.\n");
 
 	teardown(&layout);
@@ -216,17 +216,17 @@ void read_chip_test_success(void **state)
 {
 	(void) state; /* unused */
 
-	struct flashrom_flashctx flash = { 0 };
+	struct flashrom_flashctx flashctx = { 0 };
 	struct flashrom_layout *layout;
 	struct flashchip mock_chip = chip_8MiB;
 	const char *param = ""; /* Default values for all params. */
 
-	setup_chip(&flash, &layout, &mock_chip, param);
+	setup_chip(&flashctx, &layout, &mock_chip, param);
 
 	const char *const filename = "read_chip.test";
 
 	printf("Read chip operation started.\n");
-	assert_int_equal(0, do_read(&flash, filename));
+	assert_int_equal(0, do_read(&flashctx, filename));
 	printf("Read chip operation done.\n");
 
 	teardown(&layout);
@@ -236,7 +236,7 @@ void read_chip_with_dummyflasher_test_success(void **state)
 {
 	(void) state; /* unused */
 
-	struct flashrom_flashctx flash = { 0 };
+	struct flashrom_flashctx flashctx = { 0 };
 	struct flashrom_layout *layout;
 	struct flashchip mock_chip = chip_W25Q128_V;
 	/*
@@ -245,12 +245,12 @@ void read_chip_with_dummyflasher_test_success(void **state)
 	 */
 	char *param_dup = strdup("bus=spi,emulate=W25Q128FV");
 
-	setup_chip(&flash, &layout, &mock_chip, param_dup);
+	setup_chip(&flashctx, &layout, &mock_chip, param_dup);
 
 	const char *const filename = "read_chip.test";
 
 	printf("Read chip operation started.\n");
-	assert_int_equal(0, do_read(&flash, filename));
+	assert_int_equal(0, do_read(&flashctx, filename));
 	printf("Read chip operation done.\n");
 
 	teardown(&layout);
@@ -262,12 +262,12 @@ void write_chip_test_success(void **state)
 {
 	(void) state; /* unused */
 
-	struct flashrom_flashctx flash = { 0 };
+	struct flashrom_flashctx flashctx = { 0 };
 	struct flashrom_layout *layout;
 	struct flashchip mock_chip = chip_8MiB;
 	const char *param = ""; /* Default values for all params. */
 
-	setup_chip(&flash, &layout, &mock_chip, param);
+	setup_chip(&flashctx, &layout, &mock_chip, param);
 
 	/*
 	 * Providing filename "-" means content is taken from standard input.
@@ -285,7 +285,7 @@ void write_chip_test_success(void **state)
 	const char *const filename = "-";
 
 	printf("Write chip operation started.\n");
-	assert_int_equal(0, do_write(&flash, filename, NULL));
+	assert_int_equal(0, do_write(&flashctx, filename, NULL));
 	printf("Write chip operation done.\n");
 
 	teardown(&layout);
@@ -295,7 +295,7 @@ void write_chip_with_dummyflasher_test_success(void **state)
 {
 	(void) state; /* unused */
 
-	struct flashrom_flashctx flash = { 0 };
+	struct flashrom_flashctx flashctx = { 0 };
 	struct flashrom_layout *layout;
 	struct flashchip mock_chip = chip_W25Q128_V;
 	/*
@@ -304,13 +304,13 @@ void write_chip_with_dummyflasher_test_success(void **state)
 	 */
 	char *param_dup = strdup("bus=spi,emulate=W25Q128FV");
 
-	setup_chip(&flash, &layout, &mock_chip, param_dup);
+	setup_chip(&flashctx, &layout, &mock_chip, param_dup);
 
 	/* See comment in write_chip_test_success */
 	const char *const filename = "-";
 
 	printf("Write chip operation started.\n");
-	assert_int_equal(0, do_write(&flash, filename, NULL));
+	assert_int_equal(0, do_write(&flashctx, filename, NULL));
 	printf("Write chip operation done.\n");
 
 	teardown(&layout);
