@@ -158,6 +158,8 @@ ifeq ($(findstring MINGW, $(HOST_OS)), MINGW)
 CC = gcc
 endif
 
+CC_WORKING := $(call c_compile_test, Makefile.d/cc_test.c)
+
 # Determine the destination OS, architecture and endian
 # IMPORTANT: The following lines must be placed before TARGET_OS, ARCH or ENDIAN
 # is ever used (of course), but should come after any lines setting CC because
@@ -887,13 +889,10 @@ strip: $(PROGRAM)$(EXEC_SUFFIX)
 # to environment variables and are referenced with $$<varname> later
 
 compiler: featuresavailable
-	@printf "Checking for a C compiler... " | tee -a $(BUILD_DETAILS_FILE)
-	@echo "$$COMPILER_TEST" > .test.c
-	@printf "\nexec: %s\n" "$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .test.c -o .test$(EXEC_SUFFIX)" >>$(BUILD_DETAILS_FILE)
-	@{ { { { { $(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) .test.c -o .test$(EXEC_SUFFIX) >&2 && \
-		echo "found." || { echo "not found."; \
-		rm -f .test.c .test$(EXEC_SUFFIX); exit 1; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
-	@rm -f .test.c .test$(EXEC_SUFFIX)
+	@echo -n "C compiler found: "
+	@if [ $(CC_WORKING) = yes ]; \
+		then $(CC) --version 2>/dev/null | head -1; \
+		else echo no; echo Aborting.; exit 1; fi
 	@echo Target arch is $(ARCH)
 	@if [ $(ARCH) = unknown ]; then echo Aborting.; exit 1; fi
 	@echo Target OS is $(TARGET_OS)

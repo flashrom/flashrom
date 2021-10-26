@@ -36,15 +36,9 @@ define c_macro_test
 $(strip $(shell $(CC) -E $1 2>/dev/null | tail -1 | tr -d '"'))
 endef
 
-define COMPILER_TEST
-int main(int argc, char **argv)
-{
-	(void) argc;
-	(void) argv;
-	return 0;
-}
+define c_compile_test
+$(shell $(CC) -c -Wall -Werror -o /dev/null $1 2>/dev/null && echo yes || echo no)
 endef
-export COMPILER_TEST
 
 define LIBPCI_TEST
 /* Avoid a failing test due to libpci header symbol shadowing breakage */
