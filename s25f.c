@@ -133,9 +133,14 @@ static int s25fs_software_reset(struct flashctx *flash)
 
 static int s25f_poll_status(const struct flashctx *flash)
 {
-	uint8_t tmp = spi_read_status_register(flash);
+	while (true) {
+		uint8_t tmp;
+		if (spi_read_register(flash, STATUS1, &tmp))
+			return -1;
 
-	while (tmp & SPI_SR_WIP) {
+		if ((tmp & SPI_SR_WIP) == 0)
+			break;
+
 		/*
 		 * The WIP bit on S25F chips remains set to 1 if erase or
 		 * programming errors occur, so we must check for those
@@ -156,7 +161,6 @@ static int s25f_poll_status(const struct flashctx *flash)
 		}
 
 		programmer_delay(1000 * 10);
-		tmp = spi_read_status_register(flash);
 	}
 
 	return 0;

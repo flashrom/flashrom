@@ -304,12 +304,17 @@ int probe_spi_at25f(struct flashctx *flash)
 
 static int spi_poll_wip(struct flashctx *const flash, const unsigned int poll_delay)
 {
-	/* FIXME: We can't tell if spi_read_status_register() failed. */
 	/* FIXME: We don't time out. */
-	while (spi_read_status_register(flash) & SPI_SR_WIP)
+	while (true) {
+		uint8_t status;
+		int ret = spi_read_register(flash, STATUS1, &status);
+		if (ret)
+			return ret;
+		if (!(status & SPI_SR_WIP))
+			return 0;
+
 		programmer_delay(poll_delay);
-	/* FIXME: Check the status register for errors. */
-	return 0;
+	}
 }
 
 /**

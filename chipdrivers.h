@@ -62,8 +62,6 @@ int spi_set_extended_address(struct flashctx *, uint8_t addr_high);
 
 
 /* spi25_statusreg.c */
-/* FIXME: replace spi_read_status_register() calls with spi_read_register() */
-uint8_t spi_read_status_register(const struct flashctx *flash);
 int spi_read_register(const struct flashctx *flash, enum flash_reg reg, uint8_t *value);
 int spi_write_register(const struct flashctx *flash, enum flash_reg reg, uint8_t value);
 void spi_prettyprint_status_register_bit(uint8_t status, int bit);

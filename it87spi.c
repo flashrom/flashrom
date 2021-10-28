@@ -133,9 +133,20 @@ static int it8716f_spi_page_program(struct flashctx *flash, const uint8_t *buf, 
 	OUTB(0, data->flashport);
 	/* Wait until the Write-In-Progress bit is cleared.
 	 * This usually takes 1-10 ms, so wait in 1 ms steps.
+	 *
+	 * FIXME: This should timeout after some number of retries.
 	 */
-	while (spi_read_status_register(flash) & SPI_SR_WIP)
+	while (true) {
+		uint8_t status;
+		int ret = spi_read_register(flash, STATUS1, &status);
+		if (ret)
+		       return ret;
+
+		if((status & SPI_SR_WIP) == 0)
+			return 0;
+
 		programmer_delay(1000);
+	}
 	return 0;
 }
 
@@ -277,7 +288,9 @@ static int it8716f_spi_chip_write_256(struct flashctx *flash, const uint8_t *buf
 		}
 
 		while (len >= chip->page_size) {
-			it8716f_spi_page_program(flash, buf, start);
+			int ret = it8716f_spi_page_program(flash, buf, start);
+			if (ret)
+				return ret;
 			start += chip->page_size;
 			len -= chip->page_size;
 			buf += chip->page_size;
