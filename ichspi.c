@@ -507,7 +507,7 @@ static void prettyprint_pch100_reg_dlock(const uint32_t reg_val)
 	pprint_reg(DLOCK, SSEQ_LOCKDN, reg_val, "\n");
 }
 
-static struct {
+static struct swseq_data {
 	size_t reg_ssfsc;
 	size_t reg_preop;
 	size_t reg_optype;
@@ -1784,6 +1784,61 @@ static int get_ich_spi_mode_param(enum ich_spi_mode *ich_spi_mode)
 	return 0;
 }
 
+static void init_chipset_properties(struct swseq_data *swseq, struct hwseq_data *hwseq,
+					size_t *num_freg, size_t *num_pr, size_t *reg_pr0,
+					enum ich_chipset ich_gen)
+{
+	/* Moving registers / bits */
+	switch (ich_gen) {
+	case CHIPSET_100_SERIES_SUNRISE_POINT:
+	case CHIPSET_C620_SERIES_LEWISBURG:
+	case CHIPSET_300_SERIES_CANNON_POINT:
+	case CHIPSET_400_SERIES_COMET_POINT:
+	case CHIPSET_500_SERIES_TIGER_POINT:
+	case CHIPSET_APOLLO_LAKE:
+	case CHIPSET_GEMINI_LAKE:
+		*num_pr			= 6;	/* Includes GPR0 */
+		*reg_pr0		= PCH100_REG_FPR0;
+		swseq->reg_ssfsc	= PCH100_REG_SSFSC;
+		swseq->reg_preop	= PCH100_REG_PREOP;
+		swseq->reg_optype	= PCH100_REG_OPTYPE;
+		swseq->reg_opmenu	= PCH100_REG_OPMENU;
+		hwseq->addr_mask	= PCH100_FADDR_FLA;
+		hwseq->only_4k		= true;
+		hwseq->hsfc_fcycle	= PCH100_HSFC_FCYCLE;
+		break;
+	default:
+		*num_pr			= 5;
+		*reg_pr0		= ICH9_REG_PR0;
+		swseq->reg_ssfsc	= ICH9_REG_SSFS;
+		swseq->reg_preop	= ICH9_REG_PREOP;
+		swseq->reg_optype	= ICH9_REG_OPTYPE;
+		swseq->reg_opmenu	= ICH9_REG_OPMENU;
+		hwseq->addr_mask	= ICH9_FADDR_FLA;
+		hwseq->only_4k		= false;
+		hwseq->hsfc_fcycle	= HSFC_FCYCLE;
+		break;
+	}
+
+	switch (ich_gen) {
+	case CHIPSET_100_SERIES_SUNRISE_POINT:
+		*num_freg = 10;
+		break;
+	case CHIPSET_C620_SERIES_LEWISBURG:
+		*num_freg = 12;	/* 12 MMIO regs, but 16 regions in FD spec */
+		break;
+	case CHIPSET_300_SERIES_CANNON_POINT:
+	case CHIPSET_400_SERIES_COMET_POINT:
+	case CHIPSET_500_SERIES_TIGER_POINT:
+	case CHIPSET_APOLLO_LAKE:
+	case CHIPSET_GEMINI_LAKE:
+		*num_freg = 16;
+		break;
+	default:
+		*num_freg = 5;
+		break;
+	}
+}
 
 static int init_ich_default(void *spibar, enum ich_chipset ich_gen)
 {
@@ -1796,55 +1851,7 @@ static int init_ich_default(void *spibar, enum ich_chipset ich_gen)
 	enum ich_spi_mode ich_spi_mode = ich_auto;
 	size_t num_freg, num_pr, reg_pr0;
 
-	/* Moving registers / bits */
-	switch (ich_gen) {
-	case CHIPSET_100_SERIES_SUNRISE_POINT:
-	case CHIPSET_C620_SERIES_LEWISBURG:
-	case CHIPSET_300_SERIES_CANNON_POINT:
-	case CHIPSET_400_SERIES_COMET_POINT:
-	case CHIPSET_500_SERIES_TIGER_POINT:
-	case CHIPSET_APOLLO_LAKE:
-	case CHIPSET_GEMINI_LAKE:
-		num_pr			= 6;	/* Includes GPR0 */
-		reg_pr0			= PCH100_REG_FPR0;
-		swseq_data.reg_ssfsc	= PCH100_REG_SSFSC;
-		swseq_data.reg_preop	= PCH100_REG_PREOP;
-		swseq_data.reg_optype	= PCH100_REG_OPTYPE;
-		swseq_data.reg_opmenu	= PCH100_REG_OPMENU;
-		hwseq_data.addr_mask	= PCH100_FADDR_FLA;
-		hwseq_data.only_4k	= true;
-		hwseq_data.hsfc_fcycle	= PCH100_HSFC_FCYCLE;
-		break;
-	default:
-		num_pr			= 5;
-		reg_pr0			= ICH9_REG_PR0;
-		swseq_data.reg_ssfsc	= ICH9_REG_SSFS;
-		swseq_data.reg_preop	= ICH9_REG_PREOP;
-		swseq_data.reg_optype	= ICH9_REG_OPTYPE;
-		swseq_data.reg_opmenu	= ICH9_REG_OPMENU;
-		hwseq_data.addr_mask	= ICH9_FADDR_FLA;
-		hwseq_data.only_4k	= false;
-		hwseq_data.hsfc_fcycle	= HSFC_FCYCLE;
-		break;
-	}
-	switch (ich_gen) {
-	case CHIPSET_100_SERIES_SUNRISE_POINT:
-		num_freg = 10;
-		break;
-	case CHIPSET_C620_SERIES_LEWISBURG:
-		num_freg = 12;	/* 12 MMIO regs, but 16 regions in FD spec */
-		break;
-	case CHIPSET_300_SERIES_CANNON_POINT:
-	case CHIPSET_400_SERIES_COMET_POINT:
-	case CHIPSET_500_SERIES_TIGER_POINT:
-	case CHIPSET_APOLLO_LAKE:
-	case CHIPSET_GEMINI_LAKE:
-		num_freg = 16;
-		break;
-	default:
-		num_freg = 5;
-		break;
-	}
+	init_chipset_properties(&swseq_data, &hwseq_data, &num_freg, &num_pr, &reg_pr0, ich_gen);
 
 	int ret = get_ich_spi_mode_param(&ich_spi_mode);
 	if (ret)
