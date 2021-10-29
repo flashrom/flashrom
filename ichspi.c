@@ -1752,20 +1752,48 @@ static int init_ich7_spi(void *spibar, enum ich_chipset ich_gen)
 	return 0;
 }
 
+enum ich_spi_mode {
+	ich_auto,
+	ich_hwseq,
+	ich_swseq
+};
+
+static int get_ich_spi_mode_param(enum ich_spi_mode *ich_spi_mode)
+{
+	char *const arg = extract_programmer_param("ich_spi_mode");
+	if (arg && !strcmp(arg, "hwseq")) {
+		*ich_spi_mode = ich_hwseq;
+		msg_pspew("user selected hwseq\n");
+	} else if (arg && !strcmp(arg, "swseq")) {
+		*ich_spi_mode = ich_swseq;
+		msg_pspew("user selected swseq\n");
+	} else if (arg && !strcmp(arg, "auto")) {
+		msg_pspew("user selected auto\n");
+		*ich_spi_mode = ich_auto;
+	} else if (arg && !strlen(arg)) {
+		msg_perr("Missing argument for ich_spi_mode.\n");
+		free(arg);
+		return ERROR_FATAL;
+	} else if (arg) {
+		msg_perr("Unknown argument for ich_spi_mode: %s\n", arg);
+		free(arg);
+		return ERROR_FATAL;
+	}
+	free(arg);
+
+	return 0;
+}
+
+
 static int init_ich_default(void *spibar, enum ich_chipset ich_gen)
 {
 	unsigned int i;
 	uint16_t tmp2;
 	uint32_t tmp;
-	char *arg;
 	int ich_spi_rw_restricted = 0;
 	int desc_valid = 0;
 	struct ich_descriptors desc = { 0 };
-	enum ich_spi_mode {
-		ich_auto,
-		ich_hwseq,
-		ich_swseq
-	} ich_spi_mode = ich_auto;
+	enum ich_spi_mode ich_spi_mode = ich_auto;
 	size_t num_freg, num_pr, reg_pr0;
 
 	/* Moving registers / bits */
@@ -1818,27 +1846,9 @@ static int init_ich_default(void *spibar, enum ich_chipset ich_gen)
 		break;
 	}
 
-	arg = extract_programmer_param("ich_spi_mode");
-	if (arg && !strcmp(arg, "hwseq")) {
-		ich_spi_mode = ich_hwseq;
-		msg_pspew("user selected hwseq\n");
-	} else if (arg && !strcmp(arg, "swseq")) {
-		ich_spi_mode = ich_swseq;
-		msg_pspew("user selected swseq\n");
-	} else if (arg && !strcmp(arg, "auto")) {
-		msg_pspew("user selected auto\n");
-		ich_spi_mode = ich_auto;
-	} else if (arg && !strlen(arg)) {
-		msg_perr("Missing argument for ich_spi_mode.\n");
-		free(arg);
-		return ERROR_FATAL;
-	} else if (arg) {
-		msg_perr("Unknown argument for ich_spi_mode: %s\n",
-			 arg);
-		free(arg);
-		return ERROR_FATAL;
-	}
-	free(arg);
+	int ret = get_ich_spi_mode_param(&ich_spi_mode);
+	if (ret)
+		return ret;
 
 	tmp2 = mmio_readw(spibar + ICH9_REG_HSFS);
 	msg_pdbg("0x04: 0x%04x (HSFS)\n", tmp2);
