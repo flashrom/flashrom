@@ -1377,7 +1377,6 @@ _free_ret:
  * be erased.
  *
  * @param flashctx Flash context to be used.
- * @param buffer   Buffer of full chip size to read into.
  * @return 0 on success,
  *	   1 if all available erase functions failed.
  */
