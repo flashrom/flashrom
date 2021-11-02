@@ -16,6 +16,7 @@
  */
 
 #include "ich_descriptors.h"
+#include "hwaccess.h"
 
 #ifdef ICH_DESCRIPTORS_FROM_DUMP_ONLY
 #include <stdio.h>
