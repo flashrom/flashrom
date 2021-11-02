@@ -20,6 +20,7 @@
 #include "flash.h"
 #include "programmer.h"
 #include "hwaccess.h"
+#include "platform/pci.h"
 
 int is_laptop = 0;
 int laptop_ok = 0;

@@ -20,23 +20,6 @@
 #ifndef __HWACCESS_H__
 #define __HWACCESS_H__ 1
 
-#if NEED_PCI == 1
-/*
- * libpci headers use the variable name "index" which triggers shadowing
- * warnings on systems which have the index() function in a default #include
- * or as builtin.
- */
-#define index shadow_workaround_index
-
-#if !defined (__NetBSD__)
-#include <pci/pci.h>
-#else
-#include <pciutils/pci.h>
-#endif
-
-#undef index
-#endif /* NEED_PCI == 1 */
-
 void mmio_writeb(uint8_t val, void *addr);
 void mmio_writew(uint16_t val, void *addr);
 void mmio_writel(uint32_t val, void *addr);

@@ -19,6 +19,7 @@
 #include "programmer.h"
 #include "hwaccess.h"
 #include "spi.h"
+#include "platform/pci.h"
 
 /* same as serverengines */
 static void enter_conf_mode_ec(uint16_t port)

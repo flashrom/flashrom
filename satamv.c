@@ -20,6 +20,7 @@
 #include "flash.h"
 #include "programmer.h"
 #include "hwaccess.h"
+#include "platform/pci.h"
 
 static uint8_t *mv_bar;
 static uint16_t mv_iobar;

@@ -19,6 +19,7 @@
 #include "flash.h"
 #include "programmer.h"
 #include "hwaccess.h"
+#include "platform/pci.h"
 
 static uint8_t *nicintel_bar;
 static uint8_t *nicintel_control_bar;

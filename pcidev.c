@@ -19,7 +19,7 @@
 #include <string.h>
 #include "flash.h"
 #include "programmer.h"
-#include "hwaccess.h"
+#include "platform/pci.h"
 
 struct pci_access *pacc;
 

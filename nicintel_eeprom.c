@@ -35,6 +35,7 @@
 #include "spi.h"
 #include "programmer.h"
 #include "hwaccess.h"
+#include "platform/pci.h"
 
 #define PCI_VENDOR_ID_INTEL 0x8086
 #define MEMMAP_SIZE 0x1c /* Only EEC, EERD and EEWR are needed. */

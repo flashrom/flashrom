@@ -19,6 +19,7 @@
 #include "flash.h"
 #include "programmer.h"
 #include "hwaccess.h"
+#include "platform/pci.h"
 
 #define BIOS_ROM_ADDR		0x90
 #define BIOS_ROM_DATA		0x94

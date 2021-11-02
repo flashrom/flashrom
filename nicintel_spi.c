@@ -35,6 +35,7 @@
 #include "flash.h"
 #include "programmer.h"
 #include "hwaccess.h"
+#include "platform/pci.h"
 
 #define PCI_VENDOR_ID_INTEL 0x8086
 #define MEMMAP_SIZE getpagesize()
