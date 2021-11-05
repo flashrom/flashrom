@@ -141,6 +141,9 @@ DEPENDS_ON_LIBFTDI1 := \
 DEPENDS_ON_LIBJAYLINK := \
 	CONFIG_JLINK_SPI \
 
+DEPENDS_ON_LIB_NI845X := \
+	CONFIG_NI845X_SPI \
+
 
 ifeq ($(CONFIG_ENABLE_LIBUSB1_PROGRAMMERS), no)
 $(call disable_all,$(DEPENDS_ON_LIBUSB1))
@@ -166,8 +169,22 @@ endif
 CC_WORKING := $(call c_compile_test, Makefile.d/cc_test.c)
 
 # Configs for dependencies. Can be overwritten by commandline
-CONFIG_LIBFTDI1_CFLAGS  := $(call dependency_cflags, libftdi1)
-CONFIG_LIBFTDI1_LDFLAGS := $(call dependency_ldflags, libftdi1)
+CONFIG_LIBFTDI1_CFLAGS     := $(call dependency_cflags, libftdi1)
+CONFIG_LIBFTDI1_LDFLAGS    := $(call dependency_ldflags, libftdi1)
+
+# Hack to keep legacy auto detection of Program Files (x86), Only active if none of the CONFIG_ variables for ni845x are set.
+ifeq ($(CONFIG_NI845X_LIBRARY_PATH)$(CONFIG_LIB_NI845X_CFLAGS)$(CONFIG_LIB_NI845X_LDFLAGS),)
+PROGRAMFILES_X86 = $(shell env | sed -n "s/^PROGRAMFILES(X86)=//p")
+ifneq ($(PROGRAMFILES_X86DIR),)
+ifneq ($(PROGRAMFILES_X86DIR), ${PROGRAMFILES})
+NI854_X86_LIBRARY_PATH := '${PROGRAMFILES_X86}\National Instruments\NI-845x\MS Visual C'
+endif
+endif
+endif
+
+CONFIG_NI845X_LIBRARY_PATH := '${PROGRAMFILES}\National Instruments\NI-845x\MS Visual C'
+CONFIG_LIB_NI845X_CFLAGS   := -I$(CONFIG_NI845X_LIBRARY_PATH) $(if NI854_X86_LIBRARY_PATH, -I${NI854_X86_LIBRARY_PATH})
+CONFIG_LIB_NI845X_LDFLAGS  := -L$(CONFIG_NI845X_LIBRARY_PATH) $(if NI854_X86_LIBRARY_PATH, -L${NI854_X86_LIBRARY_PATH}) -lni845x
 
 # Determine the destination OS, architecture and endian
 # IMPORTANT: The following lines must be placed before TARGET_OS, ARCH or ENDIAN
@@ -179,6 +196,7 @@ override ENDIAN    := $(call c_macro_test, Makefile.d/endian_test.h)
 
 
 HAS_LIBFTDI1       := $(call find_dependency, libftdi1)
+HAS_LIB_NI845X     := no
 
 HAS_FT232H         := $(call c_compile_test, Makefile.d/ft232h_test.c, $(CONFIG_LIBFTDI1_CFLAGS))
 HAS_UTSNAME        := $(call c_compile_test, Makefile.d/utsname_test.c)
@@ -232,12 +250,6 @@ FLASHROM_CFLAGS += -D__USE_MINGW_ANSI_STDIO=1
 $(call mark_unsupported,$(DEPENDS_ON_LIBPCI))
 # And programmers that need raw access.
 $(call mark_unsupported,CONFIG_RAYER_SPI)
-
-else # No MinGW
-
-# NI USB-845x only supported on Windows at the moment
-$(call mark_unsupported,CONFIG_NI845X_SPI)
-
 endif
 
 ifeq ($(TARGET_OS), libpayload)
@@ -279,6 +291,10 @@ endif
 
 ifeq ($(HAS_LIBFTDI1), no)
 $(call mark_unsupported,$(DEPENDS_ON_LIBFTDI1))
+endif
+
+ifeq ($(HAS_LIB_NI845X), no)
+$(call mark_unsupported,$(DEPENDS_ON_LIB_NI845X))
 endif
 
 ifeq ($(ENDIAN), little)
@@ -730,30 +746,6 @@ endif
 
 ifeq ($(CONFIG_NI845X_SPI), yes)
 FEATURE_CFLAGS += -D'CONFIG_NI845X_SPI=1'
-
-ifeq ($(CONFIG_NI845X_LIBRARY_PATH),)
-# if the user did not specified the NI-845x headers/lib path
-# do a guess for both 32 and 64 bit Windows versions
-NI845X_LIBS += -L'${PROGRAMFILES}\National Instruments\NI-845x\MS Visual C'
-NI845X_INCLUDES += -I'${PROGRAMFILES}\National Instruments\NI-845x\MS Visual C'
-
-# hack to access env variable containing brackets...
-PROGRAMFILES_X86DIR = $(shell env | sed -n "s/^PROGRAMFILES(X86)=//p")
-
-ifneq ($(PROGRAMFILES_X86DIR),)
-ifneq ($(PROGRAMFILES_X86DIR), ${PROGRAMFILES})
-NI845X_LIBS += -L'$(PROGRAMFILES_X86DIR)\National Instruments\NI-845x\MS Visual C'
-NI845X_INCLUDES += -I'$(PROGRAMFILES_X86DIR)\National Instruments\NI-845x\MS Visual C'
-endif
-endif
-
-else
-NI845X_LIBS += -L'$(CONFIG_NI845X_LIBRARY_PATH)'
-NI845X_INCLUDES += -I'$(CONFIG_NI845X_LIBRARY_PATH)'
-endif
-
-FEATURE_CFLAGS += $(NI845X_INCLUDES)
-LIBS += -lni845x
 PROGRAMMER_OBJS += ni845x_spi.o
 endif
 
@@ -846,6 +838,12 @@ FEATURE_CFLAGS += -D'HAVE_FT232H=1'
 endif
 endif
 
+USE_LIB_NI845X := $(if $(call filter_deps,$(DEPENDS_ON_LIB_NI845X)),yes,no)
+ifeq ($(USE_LIB_NI845X), yes)
+override CFLAGS += $(CONFIG_LIB_NI845X_CFLAGS)
+override LDFLAGS += $(CONFIG_LIB_NI845X_LDFLAGS)
+endif
+
 NEED_LIBJAYLINK := $(call filter_deps,$(DEPENDS_ON_LIBJAYLINK))
 ifneq ($(NEED_LIBJAYLINK), )
 CHECK_LIBJAYLINK = yes
@@ -879,7 +877,7 @@ ifeq ($(ARCH), x86)
 endif
 
 $(PROGRAM)$(EXEC_SUFFIX): $(OBJS)
-	$(CC) -o $(PROGRAM)$(EXEC_SUFFIX) $(OBJS) $(LDFLAGS) $(LIBS) $(PCILIBS) $(FEATURE_LIBS) $(USBLIBS) $(USB1LIBS) $(JAYLINKLIBS) $(NI845X_LIBS)
+	$(CC) -o $(PROGRAM)$(EXEC_SUFFIX) $(OBJS) $(LDFLAGS) $(LIBS) $(PCILIBS) $(FEATURE_LIBS) $(USBLIBS) $(USB1LIBS) $(JAYLINKLIBS)
 
 libflashrom.a: $(LIBFLASHROM_OBJS)
 	$(AR) rcs $@ $^
@@ -1002,21 +1000,11 @@ ifeq ($(CHECK_LIBJAYLINK), yes)
 		rm -f .test.c .test.o .test$(EXEC_SUFFIX); exit 1; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
 	@rm -f .test.c .test.o .test$(EXEC_SUFFIX)
 endif
-ifeq ($(CONFIG_NI845X_SPI), yes)
-	@printf "Checking for NI USB-845x installation... " | tee -a $(BUILD_DETAILS_FILE)
-	@echo "$$NI845X_TEST" > .test.c
-	@printf "\nexec: %s\n" "$(CC) $(CPPFLAGS) $(CFLAGS) $(NI845X_INCLUDES) $(LDFLAGS) .test.c -o .test$(EXEC_SUFFIX) $(NI845X_LIBS) $(LIBS)" >>$(BUILD_DETAILS_FILE)
-	@ { { { { { $(CC) $(CPPFLAGS) $(CFLAGS) $(NI845X_INCLUDES) $(LDFLAGS) .test.c -o .test$(EXEC_SUFFIX) $(NI845X_LIBS) $(LIBS) >&2 && \
-		echo "yes." || { echo "no"; 				\
-		echo "Unable to find NI-845x headers or libraries.";	\
-		echo "Please pass the NI-845x library path to the make with the CONFIG_NI845X_LIBRARY_PATH parameter,"; \
-		echo "or disable the NI-845x support by specifying make CONFIG_NI845X_SPI=no"; \
-		echo "For the NI-845x 17.0 the library path is:"; \
-		echo " On 32 bit systems: C:\Program Files)\National Instruments\NI-845x\MS Visual C"; \
-		echo " On 64 bit systems: C:\Program Files (x86)\National Instruments\NI-845x\MS Visual C"; echo;\
-		rm -f .test.c .test.o; exit 1; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
-	@rm -f .test.c .test.o .test$(EXEC_SUFFIX)
-endif
+	@echo Dependency NI-845x found: $(HAS_LIB_NI845X)
+	@if [ $(HAS_LIB_NI845X) = yes ]; then			\
+		echo "  CFLAGS: $(CONFIG_LIB_NI845X_CFLAGS)";	\
+		echo "  LDFLAGS: $(CONFIG_LIB_NI845X_LDFLAGS)";	\
+	fi
 	@echo Dependency libftdi1 found: $(HAS_LIBFTDI1)
 	@if [ $(HAS_LIBFTDI1) = yes ]; then 			\
 		echo "  Checking for \"TYPE_232H\" in \"enum ftdi_chip_type\": $(HAS_FT232H)"; \
