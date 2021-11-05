@@ -189,6 +189,9 @@ CONFIG_LIB_NI845X_LDFLAGS  := -L$(CONFIG_NI845X_LIBRARY_PATH) $(if NI854_X86_LIB
 CONFIG_LIBJAYLINK_CFLAGS   := $(call dependency_cflags, libjaylink)
 CONFIG_LIBJAYLINK_LDFLAGS  := $(call dependency_ldflags, libjaylink)
 
+CONFIG_LIBUSB1_CFLAGS      := $(call dependency_cflags, libusb-1.0)
+CONFIG_LIBUSB1_LDFLAGS     := $(call dependency_ldflags, libusb-1.0)
+
 # Determine the destination OS, architecture and endian
 # IMPORTANT: The following lines must be placed before TARGET_OS, ARCH or ENDIAN
 # is ever used (of course), but should come after any lines setting CC because
@@ -201,6 +204,7 @@ override ENDIAN    := $(call c_macro_test, Makefile.d/endian_test.h)
 HAS_LIBFTDI1       := $(call find_dependency, libftdi1)
 HAS_LIB_NI845X     := no
 HAS_LIBJAYLINK     := $(call find_dependency, libjaylink)
+HAS_LIBUSB1        := $(call find_dependency, libusb-1.0)
 
 HAS_FT232H         := $(call c_compile_test, Makefile.d/ft232h_test.c, $(CONFIG_LIBFTDI1_CFLAGS))
 HAS_UTSNAME        := $(call c_compile_test, Makefile.d/utsname_test.c)
@@ -231,8 +235,6 @@ override CFLAGS += -Wno-format
 LIBS += -lgetopt
 # Missing serial support.
 $(call mark_unsupported,$(DEPENDS_ON_SERIAL))
-# Libraries not available for DOS
-$(call mark_unsupported,$(DEPENDS_ON_LIBUSB1))
 endif
 
 ifeq ($(TARGET_OS), $(filter $(TARGET_OS), MinGW Cygwin))
@@ -267,8 +269,6 @@ $(call mark_unsupported,CONFIG_DUMMY)
 $(call mark_unsupported,CONFIG_ATAPROMISE)
 # Bus Pirate, Serprog and PonyProg are not supported with libpayload (missing serial support).
 $(call mark_unsupported,CONFIG_BUSPIRATE_SPI CONFIG_SERPROG CONFIG_PONY_SPI)
-# Dediprog, Developerbox, USB-Blaster, PICkit2, CH341A and FT2232 are not supported with libpayload (missing libusb support).
-$(call mark_unsupported,$(DEPENDS_ON_LIBUSB1))
 endif
 
 ifeq ($(HAS_LINUX_MTD), no)
@@ -303,6 +303,10 @@ endif
 
 ifeq ($(HAS_LIBJAYLINK), no)
 $(call mark_unsupported,$(DEPENDS_ON_LIBJAYLINK))
+endif
+
+ifeq ($(HAS_LIBUSB1), no)
+$(call mark_unsupported,$(DEPENDS_ON_LIBUSB1))
 endif
 
 ifeq ($(ENDIAN), little)
@@ -819,22 +823,11 @@ endif
 
 endif
 
-NEED_LIBUSB1 := $(call filter_deps,$(DEPENDS_ON_LIBUSB1))
-ifneq ($(NEED_LIBUSB1), )
-CHECK_LIBUSB1 = yes
-PROGRAMMER_OBJS += usbdev.o usb_device.o
-# FreeBSD and DragonflyBSD use a reimplementation of libusb-1.0 that is simply called libusb
-ifeq ($(TARGET_OS), $(filter $(TARGET_OS), FreeBSD DragonFlyBSD))
-USB1LIBS += -lusb
-else
-ifeq ($(TARGET_OS),NetBSD)
-override CPPFLAGS += -I/usr/pkg/include/libusb-1.0
-USB1LIBS += -lusb-1.0
-else
-USB1LIBS += $(call debug_shell,[ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)"; $(PKG_CONFIG) --libs libusb-1.0  || printf "%s" "-lusb-1.0")
-override CPPFLAGS += $(call debug_shell,[ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)"; $(PKG_CONFIG) --cflags-only-I libusb-1.0  || printf "%s" "-I/usr/include/libusb-1.0")
-endif
-endif
+USE_LIBUSB1 := $(if $(call filter_deps,$(DEPENDS_ON_LIBUSB1)),yes,no)
+ifeq ($(USE_LIBUSB1), yes)
+override CFLAGS  += $(CONFIG_LIBUSB1_CFLAGS)
+override LDFLAGS += $(CONFIG_LIBUSB1_LDFLAGS)
+PROGRAMMER_OBJS +=usbdev.o usb_device.o
 endif
 
 USE_LIBFTDI1 := $(if $(call filter_deps,$(DEPENDS_ON_LIBFTDI1)),yes,no)
@@ -884,7 +877,7 @@ ifeq ($(ARCH), x86)
 endif
 
 $(PROGRAM)$(EXEC_SUFFIX): $(OBJS)
-	$(CC) -o $(PROGRAM)$(EXEC_SUFFIX) $(OBJS) $(LDFLAGS) $(LIBS) $(PCILIBS) $(FEATURE_LIBS) $(USBLIBS) $(USB1LIBS)
+	$(CC) -o $(PROGRAM)$(EXEC_SUFFIX) $(OBJS) $(LDFLAGS) $(LIBS) $(PCILIBS) $(FEATURE_LIBS)
 
 libflashrom.a: $(LIBFLASHROM_OBJS)
 	$(AR) rcs $@ $^
@@ -963,28 +956,11 @@ ifeq ($(CHECK_LIBPCI), yes)
 		rm -f .test.c .test.o .test$(EXEC_SUFFIX); exit 1; }; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
 	@rm -f .test.c .test.o .test$(EXEC_SUFFIX)
 endif
-ifeq ($(CHECK_LIBUSB1), yes)
-	@printf "Checking for libusb-1.0 headers... " | tee -a $(BUILD_DETAILS_FILE)
-	@echo "$$LIBUSB1_TEST" > .test.c
-	@printf "\nexec: %s\n" "$(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o" >>$(BUILD_DETAILS_FILE)
-	@{ { { { { $(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o >&2 && \
-		echo "found." || { echo "not found."; echo;				\
-		echo "The following features require libusb-1.0: $(NEED_LIBUSB1).";	\
-		echo "Please install libusb-1.0 headers or disable all features"; \
-		echo "mentioned above by specifying make CONFIG_ENABLE_LIBUSB1_PROGRAMMERS=no"; \
-		echo "See README for more information."; echo;				\
-		rm -f .test.c .test.o; exit 1; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
-	@printf "Checking if libusb-1.0 is usable... " | tee -a $(BUILD_DETAILS_FILE)
-	@printf "\nexec: %s\n" "$(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) $(USB1LIBS)" >>$(BUILD_DETAILS_FILE)
-	@{ { { { { $(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) $(USB1LIBS) >&2 && \
-		echo "yes." || { echo "no.";						\
-		echo "The following features require libusb-1.0: $(NEED_LIBUSB1).";	\
-		echo "Please install libusb-1.0 or disable all features"; \
-		echo "mentioned above by specifying make CONFIG_ENABLE_LIBUSB1_PROGRAMMERS=no"; \
-		echo "See README for more information."; echo;				\
-		rm -f .test.c .test.o .test$(EXEC_SUFFIX); exit 1; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
-	@rm -f .test.c .test.o .test$(EXEC_SUFFIX)
-endif
+	@echo Dependency libusb1 found: $(HAS_LIBUSB1)
+	@if [ $(HAS_LIBUSB1) = yes ]; then			\
+		echo "  CFLAGS: $(CONFIG_LIBUSB1_CFLAGS)";	\
+		echo "  LDFLAGS: $(CONFIG_LIBUSB1_LDFLAGS)";	\
+	fi
 	@echo Dependency libjaylink found: $(HAS_LIBJAYLINK)
 	@if [ $(HAS_LIBJAYLINK) = yes ]; then			\
 		echo "  CFLAGS: $(CONFIG_LIBJAYLINK_CFLAGS)";	\
