@@ -218,26 +218,31 @@ CONFIG_LIBJAYLINK_LDFLAGS  := $(call dependency_ldflags, libjaylink)
 CONFIG_LIBUSB1_CFLAGS      := $(call dependency_cflags, libusb-1.0)
 CONFIG_LIBUSB1_LDFLAGS     := $(call dependency_ldflags, libusb-1.0)
 
+CONFIG_LIBPCI_CFLAGS       := $(call dependency_cflags, libpci)
+CONFIG_LIBPCI_LDFLAGS      := $(call dependency_ldflags, libpci)
+
 # Determine the destination OS, architecture and endian
 # IMPORTANT: The following lines must be placed before TARGET_OS, ARCH or ENDIAN
 # is ever used (of course), but should come after any lines setting CC because
 # the lines below use CC itself.
-override TARGET_OS := $(call c_macro_test, Makefile.d/os_test.h)
-override ARCH      := $(call c_macro_test, Makefile.d/arch_test.h)
-override ENDIAN    := $(call c_macro_test, Makefile.d/endian_test.h)
+override TARGET_OS  := $(call c_macro_test, Makefile.d/os_test.h)
+override ARCH       := $(call c_macro_test, Makefile.d/arch_test.h)
+override ENDIAN     := $(call c_macro_test, Makefile.d/endian_test.h)
 
 
-HAS_LIBFTDI1       := $(call find_dependency, libftdi1)
-HAS_LIB_NI845X     := no
-HAS_LIBJAYLINK     := $(call find_dependency, libjaylink)
-HAS_LIBUSB1        := $(call find_dependency, libusb-1.0)
+HAS_LIBFTDI1        := $(call find_dependency, libftdi1)
+HAS_LIB_NI845X      := no
+HAS_LIBJAYLINK      := $(call find_dependency, libjaylink)
+HAS_LIBUSB1         := $(call find_dependency, libusb-1.0)
+HAS_LIBPCI          := $(call find_dependency, libpci)
 
-HAS_FT232H         := $(call c_compile_test, Makefile.d/ft232h_test.c, $(CONFIG_LIBFTDI1_CFLAGS))
-HAS_UTSNAME        := $(call c_compile_test, Makefile.d/utsname_test.c)
-HAS_CLOCK_GETTIME  := $(call c_compile_test, Makefile.d/clock_gettime_test.c)
-HAS_LINUX_MTD      := $(call c_compile_test, Makefile.d/linux_mtd_test.c)
-HAS_LINUX_SPI      := $(call c_compile_test, Makefile.d/linux_spi_test.c)
-HAS_LINUX_I2C      := $(call c_compile_test, Makefile.d/linux_i2c_test.c)
+HAS_PCI_OLD_GET_DEV := $(call c_compile_test, Makefile.d/pci_old_get_dev_test.c, $(CONFIG_LIBPCI_CFLAGS))
+HAS_FT232H          := $(call c_compile_test, Makefile.d/ft232h_test.c, $(CONFIG_LIBFTDI1_CFLAGS))
+HAS_UTSNAME         := $(call c_compile_test, Makefile.d/utsname_test.c)
+HAS_CLOCK_GETTIME   := $(call c_compile_test, Makefile.d/clock_gettime_test.c)
+HAS_LINUX_MTD       := $(call c_compile_test, Makefile.d/linux_mtd_test.c)
+HAS_LINUX_SPI       := $(call c_compile_test, Makefile.d/linux_spi_test.c)
+HAS_LINUX_I2C       := $(call c_compile_test, Makefile.d/linux_i2c_test.c)
 
 ifeq ($(TARGET_OS), $(filter $(TARGET_OS), FreeBSD OpenBSD DragonFlyBSD))
 override CPPFLAGS += -I/usr/local/include
@@ -325,6 +330,10 @@ endif
 # Disable the internal programmer on unsupported architectures (everything but x86 and mipsel)
 ifneq ($(ARCH)-little, $(filter $(ARCH), x86 mips)-$(ENDIAN))
 $(call mark_unsupported,CONFIG_INTERNAL)
+endif
+
+ifeq ($(HAS_LIBPCI), no)
+$(call mark_unsupported,$(DEPENDS_ON_LIBPCI))
 endif
 
 ifeq ($(HAS_LIBFTDI1), no)
@@ -810,21 +819,6 @@ LIBS += -lsocket -lnsl
 endif
 endif
 
-NEED_LIBPCI := $(call filter_deps,$(DEPENDS_ON_LIBPCI))
-ifneq ($(NEED_LIBPCI), )
-CHECK_LIBPCI = yes
-FEATURE_CFLAGS += -D'NEED_PCI=1'
-FEATURE_CFLAGS += $(call debug_shell,grep -q "OLD_PCI_GET_DEV := yes" .libdeps && printf "%s" "-D'OLD_PCI_GET_DEV=1'")
-
-PROGRAMMER_OBJS += pcidev.o
-ifeq ($(TARGET_OS), NetBSD)
-# The libpci we want is called libpciutils on NetBSD and needs NetBSD libpci.
-PCILIBS += -lpciutils -lpci
-else
-PCILIBS += -lpci
-endif
-endif
-
 USE_X86_MSR := $(if $(call filter_deps,$(DEPENDS_ON_X86_MSR)),yes,no)
 ifeq ($(USE_X86_MSR), yes)
 PROGRAMMER_OBJS += hwaccess_x86_msr.o
@@ -851,6 +845,14 @@ endif
 
 ifeq (OpenBSD yes, $(TARGET_OS) $(filter $(USE_X86_MSR) $(USE_X86_PORT_IO), yes))
 override LDFLAGS += -l$(shell uname -m)
+endif
+
+USE_LIBPCI := $(if $(call filter_deps,$(DEPENDS_ON_LIBPCI)),yes,no)
+ifeq ($(USE_LIBPCI), yes)
+PROGRAMMER_OBJS += pcidev.o
+FEATURE_CFLAGS += -D'NEED_PCI=1'
+override CFLAGS  += $(CONFIG_LIBPCI_CFLAGS)
+override LDFLAGS += $(CONFIG_LIBPCI_LDFLAGS)
 endif
 
 USE_LIBUSB1 := $(if $(call filter_deps,$(DEPENDS_ON_LIBUSB1)),yes,no)
@@ -886,9 +888,6 @@ FEATURE_CFLAGS += -D'CONFIG_PRINT_WIKI=1'
 CLI_OBJS += print_wiki.o
 endif
 
-# We could use PULLED_IN_LIBS, but that would be ugly.
-FEATURE_LIBS += $(call debug_shell,grep -q "NEEDLIBZ := yes" .libdeps && printf "%s" "-lz")
-
 ifeq ($(HAS_UTSNAME), yes)
 FEATURE_CFLAGS += -D'HAVE_UTSNAME=1'
 endif
@@ -907,7 +906,7 @@ ifeq ($(ARCH), x86)
 endif
 
 $(PROGRAM)$(EXEC_SUFFIX): $(OBJS)
-	$(CC) -o $(PROGRAM)$(EXEC_SUFFIX) $(OBJS) $(LDFLAGS) $(LIBS) $(PCILIBS) $(FEATURE_LIBS)
+	$(CC) -o $(PROGRAM)$(EXEC_SUFFIX) $(OBJS) $(LDFLAGS) $(LIBS) $(FEATURE_LIBS)
 
 libflashrom.a: $(LIBFLASHROM_OBJS)
 	$(AR) rcs $@ $^
@@ -953,39 +952,12 @@ compiler: featuresavailable
 	@if [ $(ENDIAN) = unknown ]; then echo Aborting.; exit 1; fi
 
 hwlibs: compiler
-	@printf "" > .libdeps
-ifeq ($(CHECK_LIBPCI), yes)
-	@printf "Checking for libpci headers... " | tee -a $(BUILD_DETAILS_FILE)
-	@echo "$$LIBPCI_TEST" > .test.c
-	@printf "\nexec: %s\n" "$(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o" >>$(BUILD_DETAILS_FILE)
-	@{ { { { { $(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o >&2 && \
-		echo "found." || { echo "not found."; echo;			\
-		echo "The following features require libpci: $(NEED_LIBPCI).";	\
-		echo "Please install libpci headers or disable all features"; \
-		echo "mentioned above by specifying make CONFIG_ENABLE_LIBPCI_PROGRAMMERS=no"; \
-		echo "See README for more information."; echo;			\
-		rm -f .test.c .test.o; exit 1; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
-	@printf "Checking version of pci_get_dev... " | tee -a $(BUILD_DETAILS_FILE)
-	@echo "$$PCI_GET_DEV_TEST" > .test.c
-	@printf "\nexec: %s\n" "$(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o" >>$(BUILD_DETAILS_FILE)
-	@ { $(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o >&2 && \
-		( echo "new version (including PCI domain parameter)."; echo "OLD_PCI_GET_DEV := no" >> .libdeps ) ||	\
-		( echo "old version (without PCI domain parameter)."; echo "OLD_PCI_GET_DEV := yes" >> .libdeps ) } 2>>$(BUILD_DETAILS_FILE) | tee -a $(BUILD_DETAILS_FILE)
-	@printf "Checking if libpci is present and sufficient... " | tee -a $(BUILD_DETAILS_FILE)
-	@printf "\nexec: %s\n" "$(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) $(PCILIBS)" >>$(BUILD_DETAILS_FILE)
-	@{ { { { $(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) $(PCILIBS) 2>>$(BUILD_DETAILS_FILE) >&2 && \
-		echo "yes." || { echo "no.";							\
-		printf "Checking if libz+libpci are present and sufficient..." ; \
-		{ printf "\nexec: %s\n" "$(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) $(PCILIBS) -lz" >>$(BUILD_DETAILS_FILE) ; \
-		$(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) $(PCILIBS) -lz >&2 && \
-		echo "yes." && echo "NEEDLIBZ := yes" > .libdeps } || { echo "no."; echo;	\
-		echo "The following features require libpci: $(NEED_LIBPCI).";			\
-		echo "Please install libpci (package pciutils) and/or libz or disable all features"; \
-		echo "mentioned above by specifying make CONFIG_ENABLE_LIBPCI_PROGRAMMERS=no"; \
-		echo "See README for more information."; echo;				\
-		rm -f .test.c .test.o .test$(EXEC_SUFFIX); exit 1; }; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
-	@rm -f .test.c .test.o .test$(EXEC_SUFFIX)
-endif
+	@echo Dependency libpci found: $(HAS_LIBPCI)
+	@if [ $(HAS_LIBPCI) = yes ]; then			\
+		echo "  Checking for old \"pci_get_dev()\": $(HAS_PCI_OLD_GET_DEV)";\
+		echo "  CFLAGS: $(CONFIG_LIBPCI_CFLAGS)";	\
+		echo "  LDFLAGS: $(CONFIG_LIBPCI_LDFLAGS)";	\
+	fi
 	@echo Dependency libusb1 found: $(HAS_LIBUSB1)
 	@if [ $(HAS_LIBUSB1) = yes ]; then			\
 		echo "  CFLAGS: $(CONFIG_LIBUSB1_CFLAGS)";	\
