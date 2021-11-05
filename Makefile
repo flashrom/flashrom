@@ -186,6 +186,9 @@ CONFIG_NI845X_LIBRARY_PATH := '${PROGRAMFILES}\National Instruments\NI-845x\MS V
 CONFIG_LIB_NI845X_CFLAGS   := -I$(CONFIG_NI845X_LIBRARY_PATH) $(if NI854_X86_LIBRARY_PATH, -I${NI854_X86_LIBRARY_PATH})
 CONFIG_LIB_NI845X_LDFLAGS  := -L$(CONFIG_NI845X_LIBRARY_PATH) $(if NI854_X86_LIBRARY_PATH, -L${NI854_X86_LIBRARY_PATH}) -lni845x
 
+CONFIG_LIBJAYLINK_CFLAGS   := $(call dependency_cflags, libjaylink)
+CONFIG_LIBJAYLINK_LDFLAGS  := $(call dependency_ldflags, libjaylink)
+
 # Determine the destination OS, architecture and endian
 # IMPORTANT: The following lines must be placed before TARGET_OS, ARCH or ENDIAN
 # is ever used (of course), but should come after any lines setting CC because
@@ -197,6 +200,7 @@ override ENDIAN    := $(call c_macro_test, Makefile.d/endian_test.h)
 
 HAS_LIBFTDI1       := $(call find_dependency, libftdi1)
 HAS_LIB_NI845X     := no
+HAS_LIBJAYLINK     := $(call find_dependency, libjaylink)
 
 HAS_FT232H         := $(call c_compile_test, Makefile.d/ft232h_test.c, $(CONFIG_LIBFTDI1_CFLAGS))
 HAS_UTSNAME        := $(call c_compile_test, Makefile.d/utsname_test.c)
@@ -228,7 +232,7 @@ LIBS += -lgetopt
 # Missing serial support.
 $(call mark_unsupported,$(DEPENDS_ON_SERIAL))
 # Libraries not available for DOS
-$(call mark_unsupported,$(DEPENDS_ON_LIBUSB1) $(DEPENDS_ON_LIBJAYLINK))
+$(call mark_unsupported,$(DEPENDS_ON_LIBUSB1))
 endif
 
 ifeq ($(TARGET_OS), $(filter $(TARGET_OS), MinGW Cygwin))
@@ -264,7 +268,7 @@ $(call mark_unsupported,CONFIG_ATAPROMISE)
 # Bus Pirate, Serprog and PonyProg are not supported with libpayload (missing serial support).
 $(call mark_unsupported,CONFIG_BUSPIRATE_SPI CONFIG_SERPROG CONFIG_PONY_SPI)
 # Dediprog, Developerbox, USB-Blaster, PICkit2, CH341A and FT2232 are not supported with libpayload (missing libusb support).
-$(call mark_unsupported,$(DEPENDS_ON_LIBUSB1) $(DEPENDS_ON_LIBJAYLINK))
+$(call mark_unsupported,$(DEPENDS_ON_LIBUSB1))
 endif
 
 ifeq ($(HAS_LINUX_MTD), no)
@@ -295,6 +299,10 @@ endif
 
 ifeq ($(HAS_LIB_NI845X), no)
 $(call mark_unsupported,$(DEPENDS_ON_LIB_NI845X))
+endif
+
+ifeq ($(HAS_LIBJAYLINK), no)
+$(call mark_unsupported,$(DEPENDS_ON_LIBJAYLINK))
 endif
 
 ifeq ($(ENDIAN), little)
@@ -844,11 +852,10 @@ override CFLAGS += $(CONFIG_LIB_NI845X_CFLAGS)
 override LDFLAGS += $(CONFIG_LIB_NI845X_LDFLAGS)
 endif
 
-NEED_LIBJAYLINK := $(call filter_deps,$(DEPENDS_ON_LIBJAYLINK))
-ifneq ($(NEED_LIBJAYLINK), )
-CHECK_LIBJAYLINK = yes
-JAYLINKLIBS += $(call debug_shell,[ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)"; $(PKG_CONFIG) --libs libjaylink)
-override CPPFLAGS += $(call debug_shell,[ -n "$(PKG_CONFIG_LIBDIR)" ] && export PKG_CONFIG_LIBDIR="$(PKG_CONFIG_LIBDIR)"; $(PKG_CONFIG) --cflags-only-I libjaylink)
+USE_LIBJAYLINK := $(if $(call filter_deps,$(DEPENDS_ON_LIBJAYLINK)),yes,no)
+ifeq ($(USE_LIBJAYLINK), yes)
+override CFLAGS  += $(CONFIG_LIBJAYLINK_CFLAGS)
+override LDFLAGS += $(CONFIG_LIBJAYLINK_LDFLAGS)
 endif
 
 ifeq ($(CONFIG_PRINT_WIKI), yes)
@@ -877,7 +884,7 @@ ifeq ($(ARCH), x86)
 endif
 
 $(PROGRAM)$(EXEC_SUFFIX): $(OBJS)
-	$(CC) -o $(PROGRAM)$(EXEC_SUFFIX) $(OBJS) $(LDFLAGS) $(LIBS) $(PCILIBS) $(FEATURE_LIBS) $(USBLIBS) $(USB1LIBS) $(JAYLINKLIBS)
+	$(CC) -o $(PROGRAM)$(EXEC_SUFFIX) $(OBJS) $(LDFLAGS) $(LIBS) $(PCILIBS) $(FEATURE_LIBS) $(USBLIBS) $(USB1LIBS)
 
 libflashrom.a: $(LIBFLASHROM_OBJS)
 	$(AR) rcs $@ $^
@@ -978,28 +985,11 @@ ifeq ($(CHECK_LIBUSB1), yes)
 		rm -f .test.c .test.o .test$(EXEC_SUFFIX); exit 1; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
 	@rm -f .test.c .test.o .test$(EXEC_SUFFIX)
 endif
-ifeq ($(CHECK_LIBJAYLINK), yes)
-	@printf "Checking for libjaylink headers... " | tee -a $(BUILD_DETAILS_FILE)
-	@echo "$$LIBJAYLINK_TEST" > .test.c
-	@printf "\nexec: %s\n" "$(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o" >>$(BUILD_DETAILS_FILE)
-	@{ { { { { $(CC) -c $(CPPFLAGS) $(CFLAGS) .test.c -o .test.o >&2 && \
-		echo "found." || { echo "not found."; echo;				\
-		echo "The following feature requires libjaylink: $(NEED_LIBJAYLINK).";	\
-		echo "Please install libjaylink headers or disable the feature"; \
-		echo "mentioned above by specifying make CONFIG_JLINK_SPI=no"; \
-		echo "See README for more information."; echo;				\
-		rm -f .test.c .test.o; exit 1; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
-	@printf "Checking if libjaylink is usable... " | tee -a $(BUILD_DETAILS_FILE)
-	@printf "\nexec: %s\n" "$(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) $(JAYLINKLIBS)" >>$(BUILD_DETAILS_FILE)
-	@{ { { { { $(CC) $(LDFLAGS) .test.o -o .test$(EXEC_SUFFIX) $(LIBS) $(JAYLINKLIBS) >&2 && \
-		echo "yes." || { echo "no.";						\
-		echo "The following feature requires libjaylink: $(NEED_LIBJAYLINK).";	\
-		echo "Please install libjaylink or disable the feature"; \
-		echo "mentioned above by specifying make CONFIG_JLINK_SPI=no"; \
-		echo "See README for more information."; echo;				\
-		rm -f .test.c .test.o .test$(EXEC_SUFFIX); exit 1; }; } 2>>$(BUILD_DETAILS_FILE); echo $? >&3 ; } | tee -a $(BUILD_DETAILS_FILE) >&4; } 3>&1;} | { read rc ; exit ${rc}; } } 4>&1
-	@rm -f .test.c .test.o .test$(EXEC_SUFFIX)
-endif
+	@echo Dependency libjaylink found: $(HAS_LIBJAYLINK)
+	@if [ $(HAS_LIBJAYLINK) = yes ]; then			\
+		echo "  CFLAGS: $(CONFIG_LIBJAYLINK_CFLAGS)";	\
+		echo "  LDFLAGS: $(CONFIG_LIBJAYLINK_LDFLAGS)";	\
+	fi
 	@echo Dependency NI-845x found: $(HAS_LIB_NI845X)
 	@if [ $(HAS_LIB_NI845X) = yes ]; then			\
 		echo "  CFLAGS: $(CONFIG_LIB_NI845X_CFLAGS)";	\

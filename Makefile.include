@@ -104,21 +104,3 @@ int main(int argc, char **argv)
 }
 endef
 export LIBUSB1_TEST
-
-define LIBJAYLINK_TEST
-#include <stddef.h>
-#include <libjaylink/libjaylink.h>
-int main(int argc, char **argv)
-{
-	struct jaylink_context *ctx;
-
-	(void)argc;
-	(void)argv;
-
-	jaylink_init(&ctx);
-	jaylink_exit(ctx);
-
-	return 0;
-}
-endef
-export LIBJAYLINK_TEST
