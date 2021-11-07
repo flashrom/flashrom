@@ -164,13 +164,30 @@ static void dummy_chip_readn(const struct flashctx *flash, uint8_t *buf, const c
 	return;
 }
 
-static uint8_t get_reg_ro_bit_mask(enum flash_reg reg)
+static uint8_t get_reg_ro_bit_mask(const struct emu_data *data, enum flash_reg reg)
 {
 	/* Whoever adds a new register must not forget to update this function
 	   or at least shouldn't use it incorrectly. */
 	assert(reg == STATUS1 || reg == STATUS2 || reg == STATUS3);
 
-	return reg == STATUS1 ? SPI_SR_WIP : 0;
+	uint8_t ro_bits = reg == STATUS1 ? SPI_SR_WIP : 0;
+
+	if (data->emu_chip == EMULATE_WINBOND_W25Q128FV) {
+		if (reg == STATUS2) {
+			/* SUS (bit_7) and (R) (bit_2). */
+			ro_bits = 0x84;
+			/* Once any of the lock bits (LB[1..3]) are set, they
+			   can't be unset. */
+			ro_bits |= data->emu_status[1] & (1 << 3);
+			ro_bits |= data->emu_status[1] & (1 << 4);
+			ro_bits |= data->emu_status[1] & (1 << 5);
+		} else if (reg == STATUS3) {
+			/* Four reserved bits. */
+			ro_bits = 0x1b;
+		}
+	}
+
+	return ro_bits;
 }
 
 static int emulate_spi_chip_response(unsigned int writecnt,
@@ -346,11 +363,11 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 
 		/* FIXME: add some reasonable simulation of the busy flag */
 
-		ro_bits = get_reg_ro_bit_mask(STATUS1);
+		ro_bits = get_reg_ro_bit_mask(data, STATUS1);
 		data->emu_status[0] &= ro_bits;
 		data->emu_status[0] |= writearr[1] & ~ro_bits;
 		if (wrsr_ext) {
-			ro_bits = get_reg_ro_bit_mask(STATUS2);
+			ro_bits = get_reg_ro_bit_mask(data, STATUS2);
 			data->emu_status[1] &= ro_bits;
 			data->emu_status[1] |= writearr[2] & ~ro_bits;
 		}
@@ -368,7 +385,7 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 			break;
 		}
 
-		ro_bits = get_reg_ro_bit_mask(STATUS2);
+		ro_bits = get_reg_ro_bit_mask(data, STATUS2);
 		data->emu_status[1] &= ro_bits;
 		data->emu_status[1] |= (writearr[1] & ~ro_bits);
 
@@ -382,7 +399,7 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 			break;
 		}
 
-		ro_bits = get_reg_ro_bit_mask(STATUS3);
+		ro_bits = get_reg_ro_bit_mask(data, STATUS3);
 		data->emu_status[2] &= ro_bits;
 		data->emu_status[2] |= (writearr[1] & ~ro_bits);
 
@@ -932,10 +949,11 @@ static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_suppor
 	}
 	if (!strcmp(tmp, "W25Q128FV")) {
 		data->emu_chip = EMULATE_WINBOND_W25Q128FV;
+		data->emu_wrsr_ext = true;
 		data->emu_chip_size = 16 * 1024 * 1024;
 		data->emu_max_byteprogram_size = 256;
 		data->emu_max_aai_size = 0;
-		data->emu_status_len = 1;
+		data->emu_status_len = 3;
 		data->emu_jedec_se_size = 4 * 1024;
 		data->emu_jedec_be_52_size = 32 * 1024;
 		data->emu_jedec_be_d8_size = 64 * 1024;
