@@ -26,6 +26,7 @@
 #include "programmer.h"
 #include "flashchips.h"
 #include "spi.h"
+#include "writeprotect.h"
 
 enum emu_chip {
 	EMULATE_NONE,
@@ -63,6 +64,11 @@ struct emu_data {
 	unsigned char spi_ignorelist[256];
 	unsigned int spi_blacklist_size;
 	unsigned int spi_ignorelist_size;
+
+	bool hwwp;	/* state of hardware write protection */
+	/* wp_start == wp_end when write-protection is disabled */
+	uint32_t wp_start;
+	uint32_t wp_end;
 
 	unsigned int spi_write_256_chunksize;
 	uint8_t *flashchip_contents;
@@ -173,7 +179,14 @@ static uint8_t get_reg_ro_bit_mask(const struct emu_data *data, enum flash_reg r
 	uint8_t ro_bits = reg == STATUS1 ? SPI_SR_WIP : 0;
 
 	if (data->emu_chip == EMULATE_WINBOND_W25Q128FV) {
-		if (reg == STATUS2) {
+		const bool srp0 = (data->emu_status[0] >> 7);
+		const bool srp1 = (data->emu_status[1] & 1);
+
+		const bool wp_active = (srp1 || (srp0 && data->hwwp));
+
+		if (wp_active) {
+			ro_bits = 0xff;
+		} else if (reg == STATUS2) {
 			/* SUS (bit_7) and (R) (bit_2). */
 			ro_bits = 0x84;
 			/* Once any of the lock bits (LB[1..3]) are set, they
@@ -188,6 +201,79 @@ static uint8_t get_reg_ro_bit_mask(const struct emu_data *data, enum flash_reg r
 	}
 
 	return ro_bits;
+}
+
+static void update_write_protection(struct emu_data *data)
+{
+	if (data->emu_chip != EMULATE_WINBOND_W25Q128FV)
+		return;
+
+	const struct wp_bits bits = {
+		.srp = data->emu_status[0] >> 7,
+		.srl = data->emu_status[1] & 1,
+
+		.bp_bit_count = 3,
+		.bp =
+		{
+			(data->emu_status[0] >> 2) & 1,
+			(data->emu_status[0] >> 3) & 1,
+			(data->emu_status[0] >> 4) & 1
+		},
+
+		.tb_bit_present = true,
+		.tb = (data->emu_status[0] >> 5) & 1,
+
+		.sec_bit_present = true,
+		.sec = (data->emu_status[0] >> 6) & 1,
+
+		.cmp_bit_present = true,
+		.cmp = (data->emu_status[1] >> 6) & 1,
+	};
+
+	size_t start;
+	size_t len;
+	decode_range_spi25(&start, &len, &bits, data->emu_chip_size);
+
+	data->wp_start = start;
+	data->wp_end = start + len;
+}
+
+/* Checks whether range intersects a write-protected area of the flash if one is
+ * defined. */
+static bool is_write_protected(const struct emu_data *data, uint32_t start, uint32_t len)
+{
+	if (len == 0)
+		return false;
+
+	const uint32_t last = start + len - 1;
+	return (start < data->wp_end && last >= data->wp_start);
+}
+
+/* Returns non-zero on error. */
+static int write_flash_data(struct emu_data *data, uint32_t start, uint32_t len, const uint8_t *buf)
+{
+	if (is_write_protected(data, start, len)) {
+		msg_perr("At least part of the write range is write protected!\n");
+		return 1;
+	}
+
+	memcpy(data->flashchip_contents + start, buf, len);
+	data->emu_modified = 1;
+	return 0;
+}
+
+/* Returns non-zero on error. */
+static int erase_flash_data(struct emu_data *data, uint32_t start, uint32_t len)
+{
+	if (is_write_protected(data, start, len)) {
+		msg_perr("At least part of the erase range is write protected!\n");
+		return 1;
+	}
+
+	/* FIXME: take data->erase_to_zero into account. */
+	memset(data->flashchip_contents + start, 0xff, len);
+	data->emu_modified = 1;
+	return 0;
 }
 
 static int emulate_spi_chip_response(unsigned int writecnt,
@@ -376,6 +462,8 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 			msg_pdbg2("WRSR wrote 0x%02x%02x.\n", data->emu_status[1], data->emu_status[0]);
 		else
 			msg_pdbg2("WRSR wrote 0x%02x.\n", data->emu_status[0]);
+
+		update_write_protection(data);
 		break;
 	case JEDEC_WRSR2:
 		if (data->emu_status_len < 2)
@@ -390,6 +478,8 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 		data->emu_status[1] |= (writearr[1] & ~ro_bits);
 
 		msg_pdbg2("WRSR2 wrote 0x%02x.\n", data->emu_status[1]);
+
+		update_write_protection(data);
 		break;
 	case JEDEC_WRSR3:
 		if (data->emu_status_len < 3)
@@ -431,8 +521,10 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 			msg_perr("Max BYTE PROGRAM size exceeded!\n");
 			return 1;
 		}
-		memcpy(data->flashchip_contents + offs, writearr + 4, writecnt - 4);
-		data->emu_modified = 1;
+		if (write_flash_data(data, offs, writecnt - 4, writearr + 4)) {
+			msg_perr("Failed to program flash!\n");
+			return 1;
+		}
 		break;
 	case JEDEC_BYTE_PROGRAM_4BA:
 		offs = writearr[1] << 24 | writearr[2] << 16 | writearr[3] << 8 | writearr[4];
@@ -446,8 +538,10 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 			msg_perr("Max BYTE PROGRAM size exceeded!\n");
 			return 1;
 		}
-		memcpy(data->flashchip_contents + offs, writearr + 5, writecnt - 5);
-		data->emu_modified = 1;
+		if (write_flash_data(data, offs, writecnt - 5, writearr + 5)) {
+			msg_perr("Failed to program flash!\n");
+			return 1;
+		}
 		break;
 	case JEDEC_AAI_WORD_PROGRAM:
 		if (!data->emu_max_aai_size)
@@ -468,7 +562,10 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 				   writearr[3];
 			/* Truncate to emu_chip_size. */
 			aai_offs %= data->emu_chip_size;
-			memcpy(data->flashchip_contents + aai_offs, writearr + 4, 2);
+			if (write_flash_data(data, aai_offs, 2, writearr + 4)) {
+				msg_perr("Failed to program flash!\n");
+				return 1;
+			}
 			aai_offs += 2;
 		} else {
 			if (writecnt < JEDEC_AAI_WORD_PROGRAM_CONT_OUTSIZE) {
@@ -481,10 +578,12 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 					 "too long!\n");
 				return 1;
 			}
-			memcpy(data->flashchip_contents + aai_offs, writearr + 1, 2);
+			if (write_flash_data(data, aai_offs, 2, writearr + 1)) {
+				msg_perr("Failed to program flash!\n");
+				return 1;
+			}
 			aai_offs += 2;
 		}
-		data->emu_modified = 1;
 		break;
 	case JEDEC_WRDI:
 		if (data->emu_max_aai_size)
@@ -505,8 +604,10 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 		if (offs & (data->emu_jedec_se_size - 1))
 			msg_pdbg("Unaligned SECTOR ERASE 0x20: 0x%x\n", offs);
 		offs &= ~(data->emu_jedec_se_size - 1);
-		memset(data->flashchip_contents + offs, 0xff, data->emu_jedec_se_size);
-		data->emu_modified = 1;
+		if (erase_flash_data(data, offs, data->emu_jedec_se_size)) {
+			msg_perr("Failed to erase flash!\n");
+			return 1;
+		}
 		break;
 	case JEDEC_BE_52:
 		if (!data->emu_jedec_be_52_size)
@@ -523,8 +624,10 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 		if (offs & (data->emu_jedec_be_52_size - 1))
 			msg_pdbg("Unaligned BLOCK ERASE 0x52: 0x%x\n", offs);
 		offs &= ~(data->emu_jedec_be_52_size - 1);
-		memset(data->flashchip_contents + offs, 0xff, data->emu_jedec_be_52_size);
-		data->emu_modified = 1;
+		if (erase_flash_data(data, offs, data->emu_jedec_be_52_size)) {
+			msg_perr("Failed to erase flash!\n");
+			return 1;
+		}
 		break;
 	case JEDEC_BE_D8:
 		if (!data->emu_jedec_be_d8_size)
@@ -541,8 +644,10 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 		if (offs & (data->emu_jedec_be_d8_size - 1))
 			msg_pdbg("Unaligned BLOCK ERASE 0xd8: 0x%x\n", offs);
 		offs &= ~(data->emu_jedec_be_d8_size - 1);
-		memset(data->flashchip_contents + offs, 0xff, data->emu_jedec_be_d8_size);
-		data->emu_modified = 1;
+		if (erase_flash_data(data, offs, data->emu_jedec_be_d8_size)) {
+			msg_perr("Failed to erase flash!\n");
+			return 1;
+		}
 		break;
 	case JEDEC_CE_60:
 		if (!data->emu_jedec_ce_60_size)
@@ -557,8 +662,10 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 		}
 		/* JEDEC_CE_60_OUTSIZE is 1 (no address) -> no offset. */
 		/* emu_jedec_ce_60_size is emu_chip_size. */
-		memset(data->flashchip_contents, 0xff, data->emu_jedec_ce_60_size);
-		data->emu_modified = 1;
+		if (erase_flash_data(data, 0, data->emu_jedec_ce_60_size)) {
+			msg_perr("Failed to erase flash!\n");
+			return 1;
+		}
 		break;
 	case JEDEC_CE_C7:
 		if (!data->emu_jedec_ce_c7_size)
@@ -573,8 +680,10 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 		}
 		/* JEDEC_CE_C7_OUTSIZE is 1 (no address) -> no offset. */
 		/* emu_jedec_ce_c7_size is emu_chip_size. */
-		memset(data->flashchip_contents, 0xff, data->emu_jedec_ce_c7_size);
-		data->emu_modified = 1;
+		if (erase_flash_data(data, 0, data->emu_jedec_ce_c7_size)) {
+			msg_perr("Failed to erase flash!\n");
+			return 1;
+		}
 		break;
 	case JEDEC_SFDP:
 		if (data->emu_chip != EMULATE_MACRONIX_MX25L6436)
@@ -878,6 +987,21 @@ static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_suppor
 		if (size <= 0 || (size % 1024 != 0)) {
 			msg_perr("%s: Chip size is not a multiple of 1024: %s\n",
 					 __func__, tmp);
+			free(tmp);
+			return 1;
+		}
+		free(tmp);
+	}
+
+	tmp = extract_programmer_param("hwwp");
+	if (tmp) {
+		if (!strcmp(tmp, "yes")) {
+			msg_pdbg("Emulated chip will have hardware WP enabled\n");
+			data->hwwp = true;
+		} else if (!strcmp(tmp, "no")) {
+			msg_pdbg("Emulated chip will have hardware WP disabled\n");
+		} else {
+			msg_perr("hwwp can be \"yes\" or \"no\"\n");
 			free(tmp);
 			return 1;
 		}
