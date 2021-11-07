@@ -13,6 +13,7 @@
  * GNU General Public License for more details.
  */
 
+#include <assert.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -40,9 +41,14 @@ struct emu_data {
 	enum emu_chip emu_chip;
 	char *emu_persistent_image;
 	unsigned int emu_chip_size;
+	/* Note: W25Q128FV doesn't change value of SR2 if it's not provided, but
+	 *       even its previous generations do, so don't forget to update
+	 *       WRSR code on enabling WRSR_EXT for more chips. */
+	bool emu_wrsr_ext;
 	int erase_to_zero;
 	int emu_modified;	/* is the image modified since reading it? */
-	uint8_t emu_status;
+	uint8_t emu_status[3];
+	uint8_t emu_status_len;	/* number of emulated status registers */
 	/* If "freq" parameter is passed in from command line, commands will delay
 	 * for this period before returning. */
 	unsigned long int delay_us;
@@ -158,6 +164,15 @@ static void dummy_chip_readn(const struct flashctx *flash, uint8_t *buf, const c
 	return;
 }
 
+static uint8_t get_reg_ro_bit_mask(enum flash_reg reg)
+{
+	/* Whoever adds a new register must not forget to update this function
+	   or at least shouldn't use it incorrectly. */
+	assert(reg == STATUS1 || reg == STATUS2 || reg == STATUS3);
+
+	return reg == STATUS1 ? SPI_SR_WIP : 0;
+}
+
 static int emulate_spi_chip_response(unsigned int writecnt,
 				     unsigned int readcnt,
 				     const unsigned char *writearr,
@@ -165,6 +180,8 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 				     struct emu_data *data)
 {
 	unsigned int offs, i, toread;
+	uint8_t ro_bits;
+	bool wrsr_ext;
 	static int unsigned aai_offs;
 	const unsigned char sst25vf040_rems_response[2] = {0xbf, 0x44};
 	const unsigned char sst25vf032b_rems_response[2] = {0xbf, 0x4a};
@@ -194,7 +211,7 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 		}
 	}
 
-	if (data->emu_max_aai_size && (data->emu_status & SPI_SR_AAI)) {
+	if (data->emu_max_aai_size && (data->emu_status[0] & SPI_SR_AAI)) {
 		if (writearr[0] != JEDEC_AAI_WORD_PROGRAM &&
 		    writearr[0] != JEDEC_WRDI &&
 		    writearr[0] != JEDEC_RDSR) {
@@ -304,21 +321,72 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 		}
 		break;
 	case JEDEC_RDSR:
-		memset(readarr, data->emu_status, readcnt);
+		memset(readarr, data->emu_status[0], readcnt);
+		break;
+	case JEDEC_RDSR2:
+		if (data->emu_status_len >= 2)
+			memset(readarr, data->emu_status[1], readcnt);
+		break;
+	case JEDEC_RDSR3:
+		if (data->emu_status_len >= 3)
+			memset(readarr, data->emu_status[2], readcnt);
 		break;
 	/* FIXME: this should be chip-specific. */
 	case JEDEC_EWSR:
 	case JEDEC_WREN:
-		data->emu_status |= SPI_SR_WEL;
+		data->emu_status[0] |= SPI_SR_WEL;
 		break;
 	case JEDEC_WRSR:
-		if (!(data->emu_status & SPI_SR_WEL)) {
+		if (!(data->emu_status[0] & SPI_SR_WEL)) {
 			msg_perr("WRSR attempted, but WEL is 0!\n");
 			break;
 		}
+
+		wrsr_ext = (writecnt == 3 && data->emu_wrsr_ext);
+
 		/* FIXME: add some reasonable simulation of the busy flag */
-		data->emu_status = writearr[1] & ~SPI_SR_WIP;
-		msg_pdbg2("WRSR wrote 0x%02x.\n", data->emu_status);
+
+		ro_bits = get_reg_ro_bit_mask(STATUS1);
+		data->emu_status[0] &= ro_bits;
+		data->emu_status[0] |= writearr[1] & ~ro_bits;
+		if (wrsr_ext) {
+			ro_bits = get_reg_ro_bit_mask(STATUS2);
+			data->emu_status[1] &= ro_bits;
+			data->emu_status[1] |= writearr[2] & ~ro_bits;
+		}
+
+		if (wrsr_ext)
+			msg_pdbg2("WRSR wrote 0x%02x%02x.\n", data->emu_status[1], data->emu_status[0]);
+		else
+			msg_pdbg2("WRSR wrote 0x%02x.\n", data->emu_status[0]);
+		break;
+	case JEDEC_WRSR2:
+		if (data->emu_status_len < 2)
+			break;
+		if (!(data->emu_status[0] & SPI_SR_WEL)) {
+			msg_perr("WRSR2 attempted, but WEL is 0!\n");
+			break;
+		}
+
+		ro_bits = get_reg_ro_bit_mask(STATUS2);
+		data->emu_status[1] &= ro_bits;
+		data->emu_status[1] |= (writearr[1] & ~ro_bits);
+
+		msg_pdbg2("WRSR2 wrote 0x%02x.\n", data->emu_status[1]);
+		break;
+	case JEDEC_WRSR3:
+		if (data->emu_status_len < 3)
+			break;
+		if (!(data->emu_status[0] & SPI_SR_WEL)) {
+			msg_perr("WRSR3 attempted, but WEL is 0!\n");
+			break;
+		}
+
+		ro_bits = get_reg_ro_bit_mask(STATUS3);
+		data->emu_status[2] &= ro_bits;
+		data->emu_status[2] |= (writearr[1] & ~ro_bits);
+
+		msg_pdbg2("WRSR3 wrote 0x%02x.\n", data->emu_status[2]);
 		break;
 	case JEDEC_READ:
 		offs = writearr[1] << 16 | writearr[2] << 8 | writearr[3];
@@ -367,7 +435,7 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 	case JEDEC_AAI_WORD_PROGRAM:
 		if (!data->emu_max_aai_size)
 			break;
-		if (!(data->emu_status & SPI_SR_AAI)) {
+		if (!(data->emu_status[0] & SPI_SR_AAI)) {
 			if (writecnt < JEDEC_AAI_WORD_PROGRAM_OUTSIZE) {
 				msg_perr("Initial AAI WORD PROGRAM size too "
 					 "short!\n");
@@ -378,7 +446,7 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 					 "long!\n");
 				return 1;
 			}
-			data->emu_status |= SPI_SR_AAI;
+			data->emu_status[0] |= SPI_SR_AAI;
 			aai_offs = writearr[1] << 16 | writearr[2] << 8 |
 				   writearr[3];
 			/* Truncate to emu_chip_size. */
@@ -403,7 +471,7 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 		break;
 	case JEDEC_WRDI:
 		if (data->emu_max_aai_size)
-			data->emu_status &= ~SPI_SR_AAI;
+			data->emu_status[0] &= ~SPI_SR_AAI;
 		break;
 	case JEDEC_SE:
 		if (!data->emu_jedec_se_size)
@@ -531,7 +599,7 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 		break;
 	}
 	if (writearr[0] != JEDEC_WREN && writearr[0] != JEDEC_EWSR)
-		data->emu_status &= ~SPI_SR_WEL;
+		data->emu_status[0] &= ~SPI_SR_WEL;
 	return 0;
 }
 
@@ -811,6 +879,7 @@ static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_suppor
 		data->emu_chip_size = 128 * 1024;
 		data->emu_max_byteprogram_size = 128;
 		data->emu_max_aai_size = 0;
+		data->emu_status_len = 1;
 		data->emu_jedec_se_size = 0;
 		data->emu_jedec_be_52_size = 0;
 		data->emu_jedec_be_d8_size = 32 * 1024;
@@ -824,6 +893,7 @@ static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_suppor
 		data->emu_chip_size = 512 * 1024;
 		data->emu_max_byteprogram_size = 1;
 		data->emu_max_aai_size = 0;
+		data->emu_status_len = 1;
 		data->emu_jedec_se_size = 4 * 1024;
 		data->emu_jedec_be_52_size = 32 * 1024;
 		data->emu_jedec_be_d8_size = 0;
@@ -837,6 +907,7 @@ static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_suppor
 		data->emu_chip_size = 4 * 1024 * 1024;
 		data->emu_max_byteprogram_size = 1;
 		data->emu_max_aai_size = 2;
+		data->emu_status_len = 1;
 		data->emu_jedec_se_size = 4 * 1024;
 		data->emu_jedec_be_52_size = 32 * 1024;
 		data->emu_jedec_be_d8_size = 64 * 1024;
@@ -850,6 +921,7 @@ static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_suppor
 		data->emu_chip_size = 8 * 1024 * 1024;
 		data->emu_max_byteprogram_size = 256;
 		data->emu_max_aai_size = 0;
+		data->emu_status_len = 1;
 		data->emu_jedec_se_size = 4 * 1024;
 		data->emu_jedec_be_52_size = 32 * 1024;
 		data->emu_jedec_be_d8_size = 64 * 1024;
@@ -863,6 +935,7 @@ static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_suppor
 		data->emu_chip_size = 16 * 1024 * 1024;
 		data->emu_max_byteprogram_size = 256;
 		data->emu_max_aai_size = 0;
+		data->emu_status_len = 1;
 		data->emu_jedec_se_size = 4 * 1024;
 		data->emu_jedec_be_52_size = 32 * 1024;
 		data->emu_jedec_be_d8_size = 64 * 1024;
@@ -884,6 +957,7 @@ static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_suppor
 		data->emu_chip_size = size;
 		data->emu_max_byteprogram_size = 256;
 		data->emu_max_aai_size = 0;
+		data->emu_status_len = 1;
 		data->emu_jedec_se_size = 4 * 1024;
 		data->emu_jedec_be_52_size = 32 * 1024;
 		data->emu_jedec_be_d8_size = 64 * 1024;
@@ -918,8 +992,10 @@ static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_suppor
 
 	status = extract_programmer_param("spi_status");
 	if (status) {
+		unsigned int emu_status;
+
 		errno = 0;
-		data->emu_status = strtoul(status, &endptr, 0);
+		emu_status = strtoul(status, &endptr, 0);
 		if (errno != 0 || status == endptr) {
 			free(status);
 			msg_perr("Error: initial status register specified, "
@@ -927,8 +1003,26 @@ static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_suppor
 			return 1;
 		}
 		free(status);
-		msg_pdbg("Initial status register is set to 0x%02x.\n",
-			 data->emu_status);
+
+		data->emu_status[0] = emu_status;
+		data->emu_status[1] = emu_status >> 8;
+		data->emu_status[2] = emu_status >> 16;
+
+		if (data->emu_status_len == 3) {
+			msg_pdbg("Initial status registers:\n"
+				 "\tSR1 is set to 0x%02x\n"
+				 "\tSR2 is set to 0x%02x\n"
+				 "\tSR3 is set to 0x%02x\n",
+				 data->emu_status[0], data->emu_status[1], data->emu_status[2]);
+		} else if (data->emu_status_len == 2) {
+			msg_pdbg("Initial status registers:\n"
+				 "\tSR1 is set to 0x%02x\n"
+				 "\tSR2 is set to 0x%02x\n",
+				 data->emu_status[0], data->emu_status[1]);
+		} else {
+			msg_pdbg("Initial status register is set to 0x%02x.\n",
+				 data->emu_status[0]);
+		}
 	}
 
 	data->flashchip_contents = malloc(data->emu_chip_size);

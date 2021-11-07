@@ -816,7 +816,10 @@ You can specify the initial content of the chip's status register with the
 .sp
 syntax where
 .B content
-is an 8-bit hexadecimal value.
+is a hexadecimal value of up to 24 bits. For example, 0x332211 assigns 0x11 to
+SR1, 0x22 to SR2 and 0x33 to SR3. Shorter value is padded to 24 bits with
+zeroes on the left. See datasheet for chosen chip for details about the
+registers content.
 .SS
 .BR "nic3com" , " nicrealtek" , " nicnatsemi" , " nicintel", " nicintel_eeprom"\
 , " nicintel_spi" , " gfxnvidia" , " ogp_spi" , " drkaiser" , " satasii"\
