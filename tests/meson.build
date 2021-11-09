@@ -23,6 +23,7 @@ srcs = [
   'lifecycle.c',
   'layout.c',
   'chip.c',
+  'chip_wp.c',
 ]
 
 mocks = [

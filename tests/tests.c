@@ -436,5 +436,15 @@ int main(void)
 	};
 	ret |= cmocka_run_group_tests_name("chip.c tests", chip_tests, NULL, NULL);
 
+	const struct CMUnitTest chip_wp_tests[] = {
+		cmocka_unit_test(invalid_wp_range_dummyflasher_test_success),
+		cmocka_unit_test(set_wp_range_dummyflasher_test_success),
+		cmocka_unit_test(switch_wp_mode_dummyflasher_test_success),
+		cmocka_unit_test(wp_init_from_status_dummyflasher_test_success),
+		cmocka_unit_test(full_chip_erase_with_wp_dummyflasher_test_success),
+		cmocka_unit_test(partial_chip_erase_with_wp_dummyflasher_test_success),
+	};
+	ret |= cmocka_run_group_tests_name("chip_wp.c tests", chip_wp_tests, NULL, NULL);
+
 	return ret;
 }

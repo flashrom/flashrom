@@ -68,4 +68,12 @@ void write_chip_with_dummyflasher_test_success(void **state);
 void verify_chip_test_success(void **state);
 void verify_chip_with_dummyflasher_test_success(void **state);
 
+/* chip_wp.c */
+void invalid_wp_range_dummyflasher_test_success(void **state);
+void set_wp_range_dummyflasher_test_success(void **state);
+void switch_wp_mode_dummyflasher_test_success(void **state);
+void wp_init_from_status_dummyflasher_test_success(void **state);
+void full_chip_erase_with_wp_dummyflasher_test_success(void **state);
+void partial_chip_erase_with_wp_dummyflasher_test_success(void **state);
+
 #endif /* TESTS_H */
