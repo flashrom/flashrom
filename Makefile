@@ -28,7 +28,6 @@ PROGRAM = flashrom
 STRIP   ?= strip
 STRIP_ARGS = -s
 INSTALL = install
-DIFF    = diff
 PREFIX  ?= /usr/local
 MANDIR  ?= $(PREFIX)/share/man
 CFLAGS  ?= -Os -Wall -Wextra -Wno-unused-parameter -Wshadow -Wmissing-prototypes -Wwrite-strings
@@ -263,7 +262,7 @@ ifeq ($(TARGET_OS), DOS)
 EXEC_SUFFIX := .exe
 # DJGPP has odd uint*_t definitions which cause lots of format string warnings.
 override CFLAGS += -Wno-format
-LIBS += -lgetopt
+override LDFLAGS += -lgetopt
 # Missing serial support.
 $(call mark_unsupported,$(DEPENDS_ON_SERIAL))
 endif
@@ -815,7 +814,7 @@ endif
 
 ifneq ($(NEED_POSIX_SOCKETS), )
 ifeq ($(TARGET_OS), SunOS)
-LIBS += -lsocket -lnsl
+override LDFLAGS += -lsocket -lnsl
 endif
 endif
 
@@ -894,7 +893,7 @@ endif
 
 ifeq ($(HAS_CLOCK_GETTIME), yes)
 FEATURE_CFLAGS += -D'HAVE_CLOCK_GETTIME=1'
-FEATURE_LIBS += -lrt
+override LDFLAGS += -lrt
 endif
 
 LIBFLASHROM_OBJS = $(CHIP_OBJS) $(PROGRAMMER_OBJS) $(LIB_OBJS)
@@ -906,7 +905,7 @@ ifeq ($(ARCH), x86)
 endif
 
 $(PROGRAM)$(EXEC_SUFFIX): $(OBJS)
-	$(CC) -o $(PROGRAM)$(EXEC_SUFFIX) $(OBJS) $(LDFLAGS) $(LIBS) $(FEATURE_LIBS)
+	$(CC) -o $(PROGRAM)$(EXEC_SUFFIX) $(OBJS) $(LDFLAGS)
 
 libflashrom.a: $(LIBFLASHROM_OBJS)
 	$(AR) rcs $@ $^
