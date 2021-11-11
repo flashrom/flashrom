@@ -48,8 +48,10 @@ flashrom \- detect, read, write, verify and erase flash chips
           \fB\-p\fR <programmername>[:<parameters>] [\fB\-c\fR <chipname>]
             (\fB\-\-flash\-name\fR|\fB\-\-flash\-size\fR|
              [\fB\-E\fR|\fB\-x\fR|\fB\-r\fR <file>|\fB\-w\fR <file>|\fB\-v\fR <file>]
-             [(\fB\-l\fR <file>|\fB\-\-ifd|\fB \-\-fmap\fR|\fB\-\-fmap-file\fR <file>)
+             [(\fB\-l\fR <file>|\fB\-\-ifd\fR|\fB \-\-fmap\fR|\fB\-\-fmap-file\fR <file>)
                [\fB\-i\fR <image>[:<file>]]]
+             [\fB\-\-wp\-status\fR] [\fB\-\-wp\-list\fR] [\fB\-\-wp\-enable\fR|\fB\-\-wp\-disable\fR]
+             [\fB\-\-wp\-range\fR <start>,<length>|\fB\-\-wp\-region\fR <region>]
              [\fB\-n\fR] [\fB\-N\fR] [\fB\-f\fR])]
          [\fB\-V\fR[\fBV\fR[\fBV\fR]]] [\fB-o\fR <logfile>]
 .SH DESCRIPTION
@@ -285,11 +287,38 @@ to the ROM, run:
 .sp
 .B "    flashrom \-p prog \-l <layout> \-i foo:foo.bin -i bar:bar.bin -w rom.bin
 .TP
+.B "\-\-wp\-status"
+Prints the flash's current status register protection mode and write protection
+range.
+.TP
+.B "\-\-wp\-list"
+Prints a list of all protection ranges that the flash supports.
+.TP
+.B "\-\-wp\-enable"
+Enables hardware status register protection (SRP) if the flash supports it.
+Once SRP is enabled, operations that change the flash's status registers
+(including \fB\-\-wp\-disable\fR and \fB\-\-wp\-range\fR) can only be performed
+if the flash's #WP pin is at an inactive logic level.
+.TP
+.B "\-\-wp\-disable"
+Disables status register protection if the flash allows it.
+.TP
+.B "\-\-wp\-range <start>,<length>"
+Configures the flash to protect a range of addresses from <start> to (<start> +
+<length> - 1), bounds inclusive. The range must be supported by the flash, see
+\fB\-\-wp\-list\fR.
+.TP
+.B "\-\-wp\-region <region>"
+Same as \fB\-\-wp\-range\fR but protects the range occupied by an image region.
+This option requires a image layout to be specified, see \fB\-\-layout\fR. The
+region must be supported by the flash, see
+\fB\-\-wp\-list\fR.
+.TP
 .B "\-\-flash\-name"
-Prints out the detected flash chips name.
+Prints out the detected flash chip's name.
 .TP
 .B "\-\-flash\-size"
-Prints out the detected flash chips size.
+Prints out the detected flash chip's size.
 .TP
 .B "\-\-flash\-contents <ref\-file>"
 The file contents of

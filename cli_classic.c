@@ -59,6 +59,13 @@ static void cli_classic_usage(const char *name)
 	       " -N | --noverify-all                verify included regions only (cf. -i)\n"
 	       " -x | --extract                     extract regions to files\n"
 	       " -l | --layout <layoutfile>         read ROM layout from <layoutfile>\n"
+	       "      --wp-disable                  disable write protection\n"
+	       "      --wp-enable                   enable write protection\n"
+	       "      --wp-list                     list supported write protection ranges\n"
+	       "      --wp-status                   show write protection status\n"
+	       "      --wp-range=<start>,<len>      set write protection range (use --wp-range=0,0\n"
+	       "                                    to unprotect the entire flash)\n"
+	       "      --wp-region <region>          set write protection region\n"
 	       "      --flash-name                  read out the detected flash name\n"
 	       "      --flash-size                  read out the detected flash size\n"
 	       "      --fmap                        read ROM layout from fmap embedded in ROM\n"
@@ -118,6 +125,237 @@ static bool check_file(FILE *file)
 		return false;
 	return true;
 }
+
+static int parse_wp_range(uint32_t *start, uint32_t *len)
+{
+	char *endptr = NULL, *token = NULL;
+
+	if (!optarg) {
+		msg_gerr("Error: No wp-range values provided\n");
+		return -1;
+	}
+
+	token = strtok(optarg, ",");
+	if (!token) {
+		msg_gerr("Error: Invalid wp-range argument format\n");
+		return -1;
+	}
+	*start = strtoul(token, &endptr, 0);
+
+	token = strtok(NULL, ",");
+	if (!token) {
+		msg_gerr("Error: Invalid wp-range argument format\n");
+		return -1;
+	}
+	*len = strtoul(token, &endptr, 0);
+
+	return 0;
+}
+
+static int print_wp_range(struct flashrom_flashctx *flash, size_t start, size_t len)
+{
+	/* Start address and length */
+	msg_ginfo("start=0x%08zx length=0x%08zx ", start, len);
+
+	/* Easily readable description like 'none' or 'lower 1/8' */
+	size_t chip_len = flashrom_flash_getsize(flash);
+
+	if (len == 0) {
+		msg_ginfo("(none)");
+	} else if (len == chip_len) {
+		msg_ginfo("(all)");
+	} else {
+		const char *location = "";
+		if (start == 0)
+			location = "lower ";
+		if (start == chip_len - len)
+			location = "upper ";
+
+		/* Remove common factors of 2 to simplify */
+		/* the (range_len/chip_len) fraction. */
+		while ((chip_len % 2) == 0 && (len % 2) == 0) {
+			chip_len /= 2;
+			len /= 2;
+		}
+
+		msg_ginfo("(%s%zu/%zu)", location, len, chip_len);
+	}
+
+	return 0;
+}
+
+static const char *get_wp_error_str(int err)
+{
+	switch (err) {
+	case FLASHROM_WP_ERR_CHIP_UNSUPPORTED:
+		return "WP operations are not implemented for this chip";
+	case FLASHROM_WP_ERR_READ_FAILED:
+		return "failed to read the current WP configuration";
+	case FLASHROM_WP_ERR_WRITE_FAILED:
+		return "failed to write the new WP configuration";
+	case FLASHROM_WP_ERR_VERIFY_FAILED:
+		return "unexpected WP configuration read back from chip";
+	case FLASHROM_WP_ERR_MODE_UNSUPPORTED:
+		return "the requested protection mode is not supported";
+	case FLASHROM_WP_ERR_RANGE_UNSUPPORTED:
+		return "the requested protection range is not supported";
+	case FLASHROM_WP_ERR_RANGE_LIST_UNAVAILABLE:
+		return "could not determine what protection ranges are available";
+	}
+	return "unknown WP error";
+}
+
+static int wp_cli(
+		struct flashctx *flash,
+		bool enable_wp,
+		bool disable_wp,
+		bool print_wp_status,
+		bool print_wp_ranges,
+		bool set_wp_range,
+		uint32_t wp_start,
+		uint32_t wp_len)
+{
+	if (print_wp_ranges) {
+		struct flashrom_wp_ranges *list;
+		enum flashrom_wp_result ret = flashrom_wp_get_available_ranges(&list, flash);
+		if (ret != FLASHROM_WP_OK) {
+			msg_gerr("Failed to get list of protection ranges: %s\n",
+				 get_wp_error_str(ret));
+			return 1;
+		}
+		size_t count = flashrom_wp_ranges_get_count(list);
+
+		msg_ginfo("Available protection ranges:\n");
+		for (size_t i = 0; i < count; i++) {
+			size_t start, len;
+
+			flashrom_wp_ranges_get_range(&start, &len, list, i);
+			msg_ginfo("\t");
+			print_wp_range(flash, start, len);
+			msg_ginfo("\n");
+		}
+
+		flashrom_wp_ranges_release(list);
+	}
+
+	if (set_wp_range || disable_wp || enable_wp) {
+		enum flashrom_wp_mode old_mode = FLASHROM_WP_MODE_DISABLED;
+		struct flashrom_wp_cfg *cfg = NULL;
+		enum flashrom_wp_result ret = flashrom_wp_cfg_new(&cfg);
+
+		if (ret == FLASHROM_WP_OK)
+			ret = flashrom_wp_read_cfg(cfg, flash);
+
+		if (ret == FLASHROM_WP_OK) {
+			/* Store current WP mode for printing help text if */
+			/* changing the cfg fails. */
+			old_mode = flashrom_wp_get_mode(cfg);
+
+			if (set_wp_range)
+				flashrom_wp_set_range(cfg, wp_start, wp_len);
+
+			if (disable_wp)
+				flashrom_wp_set_mode(cfg, FLASHROM_WP_MODE_DISABLED);
+
+			if (enable_wp)
+				flashrom_wp_set_mode(cfg, FLASHROM_WP_MODE_HARDWARE);
+
+			ret = flashrom_wp_write_cfg(flash, cfg);
+		}
+
+		flashrom_wp_cfg_release(cfg);
+
+		if (ret != FLASHROM_WP_OK) {
+			msg_gerr("Failed to apply new WP settings: %s\n",
+				 get_wp_error_str(ret));
+
+			/* Warn user if active WP is likely to have caused failure */
+			if (ret == FLASHROM_WP_ERR_VERIFY_FAILED) {
+				switch (old_mode) {
+				case FLASHROM_WP_MODE_HARDWARE:
+					msg_gerr("Note: hardware status register protection is enabled. "
+						 "The chip's WP# pin must be set to an inactive voltage "
+						 "level to be able to change the WP settings.\n");
+					break;
+				case FLASHROM_WP_MODE_POWER_CYCLE:
+					msg_gerr("Note: power-cycle status register protection is enabled. "
+						 "A power-off, power-on cycle is usually required to change "
+						 "the chip's WP settings.\n");
+					break;
+				case FLASHROM_WP_MODE_PERMANENT:
+					msg_gerr("Note: permanent status register protection is enabled. "
+						 "The chip's WP settings cannot be modified.\n");
+					break;
+				default:
+					break;
+				}
+			}
+
+			return 1;
+		}
+
+		if (disable_wp)
+			msg_ginfo("Disabled hardware protection\n");
+
+		if (enable_wp)
+			msg_ginfo("Enabled hardware protection\n");
+
+		if (set_wp_range) {
+			msg_ginfo("Activated protection range: ");
+			print_wp_range(flash, wp_start, wp_len);
+			msg_ginfo("\n");
+		}
+	}
+
+	if (print_wp_status) {
+		size_t start, len;
+		enum flashrom_wp_mode mode;
+		struct flashrom_wp_cfg *cfg = NULL;
+		enum flashrom_wp_result ret = flashrom_wp_cfg_new(&cfg);
+
+		if (ret == FLASHROM_WP_OK)
+			ret = flashrom_wp_read_cfg(cfg, flash);
+
+		if (ret != FLASHROM_WP_OK) {
+			msg_gerr("Failed to get WP status: %s\n",
+				 get_wp_error_str(ret));
+
+			flashrom_wp_cfg_release(cfg);
+			return 1;
+		}
+
+		flashrom_wp_get_range(&start, &len, cfg);
+		mode = flashrom_wp_get_mode(cfg);
+		flashrom_wp_cfg_release(cfg);
+
+		msg_ginfo("Protection range: ");
+		print_wp_range(flash, start, len);
+		msg_ginfo("\n");
+
+		msg_ginfo("Protection mode: ");
+		switch (mode) {
+		case FLASHROM_WP_MODE_DISABLED:
+			msg_ginfo("disabled");
+			break;
+		case FLASHROM_WP_MODE_HARDWARE:
+			msg_ginfo("hardware");
+			break;
+		case FLASHROM_WP_MODE_POWER_CYCLE:
+			msg_ginfo("power_cycle");
+			break;
+		case FLASHROM_WP_MODE_PERMANENT:
+			msg_ginfo("permanent");
+			break;
+		default:
+			msg_ginfo("unknown");
+			break;
+		}
+		msg_ginfo("\n");
+	}
+
+	return 0;
+}
+
 
 static int do_read(struct flashctx *const flash, const char *const filename)
 {
@@ -229,6 +467,9 @@ int main(int argc, char *argv[])
 	int list_supported_wiki = 0;
 #endif
 	int flash_name = 0, flash_size = 0;
+	int enable_wp = 0, disable_wp = 0, print_wp_status = 0;
+	int set_wp_range = 0, set_wp_region = 0, print_wp_ranges = 0;
+	uint32_t wp_start = 0, wp_len = 0;
 	int read_it = 0, extract_it = 0, write_it = 0, erase_it = 0, verify_it = 0;
 	int dont_verify_it = 0, dont_verify_all = 0, list_supported = 0, operation_specified = 0;
 	struct flashrom_layout *layout = NULL;
@@ -240,6 +481,12 @@ int main(int argc, char *argv[])
 		OPTION_FLASH_CONTENTS,
 		OPTION_FLASH_NAME,
 		OPTION_FLASH_SIZE,
+		OPTION_WP_STATUS,
+		OPTION_WP_SET_RANGE,
+		OPTION_WP_SET_REGION,
+		OPTION_WP_ENABLE,
+		OPTION_WP_DISABLE,
+		OPTION_WP_LIST,
 	};
 	int ret = 0;
 
@@ -264,6 +511,12 @@ int main(int argc, char *argv[])
 		{"flash-name",		0, NULL, OPTION_FLASH_NAME},
 		{"flash-size",		0, NULL, OPTION_FLASH_SIZE},
 		{"get-size",		0, NULL, OPTION_FLASH_SIZE}, // (deprecated): back compatibility.
+		{"wp-status",		0, NULL, OPTION_WP_STATUS},
+		{"wp-list",		0, NULL, OPTION_WP_LIST},
+		{"wp-range",		1, NULL, OPTION_WP_SET_RANGE},
+		{"wp-region",		1, NULL, OPTION_WP_SET_REGION},
+		{"wp-enable",		0, NULL, OPTION_WP_ENABLE},
+		{"wp-disable",		0, NULL, OPTION_WP_DISABLE},
 		{"list-supported",	0, NULL, 'L'},
 		{"list-supported-wiki",	0, NULL, 'z'},
 		{"programmer",		1, NULL, 'p'},
@@ -281,6 +534,7 @@ int main(int argc, char *argv[])
 	char *tempstr = NULL;
 	char *pparam = NULL;
 	struct layout_include_args *include_args = NULL;
+	char *wp_region = NULL;
 
 	/*
 	 * Safety-guard against a user who has (mistakenly) closed
@@ -408,6 +662,28 @@ int main(int argc, char *argv[])
 		case OPTION_FLASH_SIZE:
 			cli_classic_validate_singleop(&operation_specified);
 			flash_size = 1;
+			break;
+		case OPTION_WP_STATUS:
+			print_wp_status = 1;
+			break;
+		case OPTION_WP_LIST:
+			print_wp_ranges = 1;
+			break;
+		case OPTION_WP_SET_RANGE:
+			if (parse_wp_range(&wp_start, &wp_len) < 0)
+				cli_classic_abort_usage("Incorrect wp-range arguments provided.\n");
+
+			set_wp_range = 1;
+			break;
+		case OPTION_WP_SET_REGION:
+			set_wp_region = 1;
+			wp_region = strdup(optarg);
+			break;
+		case OPTION_WP_ENABLE:
+			enable_wp = 1;
+			break;
+		case OPTION_WP_DISABLE:
+			disable_wp = 1;
 			break;
 		case 'L':
 			cli_classic_validate_singleop(&operation_specified);
@@ -681,12 +957,26 @@ int main(int argc, char *argv[])
 		goto out_shutdown;
 	}
 
-	const bool any_op = read_it || write_it || verify_it || erase_it ||
-		flash_name || flash_size || extract_it;
+	const bool any_wp_op =
+		set_wp_range || set_wp_region || enable_wp ||
+		disable_wp || print_wp_status || print_wp_ranges;
 
+	const bool any_op = read_it || write_it || verify_it || erase_it ||
+		flash_name || flash_size || extract_it || any_wp_op;
 
 	if (!any_op) {
 		msg_ginfo("No operations were specified.\n");
+		goto out_shutdown;
+	}
+
+	if (enable_wp && disable_wp) {
+		msg_ginfo("Error: --wp-enable and --wp-disable are mutually exclusive\n");
+		ret = 1;
+		goto out_shutdown;
+	}
+	if (set_wp_range && set_wp_region) {
+		msg_gerr("Error: Cannot use both --wp-range and --wp-region simultaneously.\n");
+		ret = 1;
 		goto out_shutdown;
 	}
 
@@ -744,6 +1034,28 @@ int main(int argc, char *argv[])
 		goto out_shutdown;
 	}
 	flashrom_layout_set(fill_flash, layout);
+
+	if (any_wp_op) {
+		if (set_wp_region && wp_region) {
+			ret = flashrom_layout_get_region_range(layout, wp_region, &wp_start, &wp_len);
+			if (ret)
+				goto out_release;
+			set_wp_range = true;
+		}
+		ret = wp_cli(
+			fill_flash,
+			enable_wp,
+			disable_wp,
+			print_wp_status,
+			print_wp_ranges,
+			set_wp_range,
+			wp_start,
+			wp_len
+		);
+		if (ret)
+			goto out_release;
+	}
+
 	flashrom_flag_set(fill_flash, FLASHROM_FLAG_FORCE, !!force);
 #if CONFIG_INTERNAL == 1
 	flashrom_flag_set(fill_flash, FLASHROM_FLAG_FORCE_BOARDMISMATCH, !!force_boardmismatch);
@@ -777,6 +1089,7 @@ int main(int argc, char *argv[])
 	else if (verify_it)
 		ret = do_verify(fill_flash, filename);
 
+out_release:
 	flashrom_layout_release(layout);
 out_shutdown:
 	flashrom_programmer_shutdown(NULL);
