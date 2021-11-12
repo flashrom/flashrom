@@ -11,6 +11,18 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
+ *
+ * This file contains tests for operations on flash chip.
+ *
+ * Two flash chip test variants are used:
+ *
+ * 1) Mock chip state backed by `g_chip_state`.
+ * Example of test: erase_chip_test_success.
+ *
+ * 2) Mock chip operations backed by `dummyflasher` emulation.
+ * Dummyflasher controls chip state and emulates read/write/unlock/erase.
+ * `g_chip_state` is NOT used for this type of tests.
+ * Example of test: erase_chip_with_dummyflasher_test_success.
  */
 
 #include <include/test.h>
