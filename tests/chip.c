@@ -23,6 +23,7 @@
 #include "programmer.h"
 
 #define MOCK_CHIP_SIZE (8*MiB)
+#define MOCK_CHIP_CONTENT 0xff
 
 static struct {
 	unsigned int unlock_calls; /* how many times unlock function was called */
@@ -93,6 +94,7 @@ static void setup_chip(struct flashrom_flashctx *flashctx, struct flashrom_layou
 	flashctx->chip = chip;
 
 	g_chip_state.unlock_calls = 0;
+	memset(g_chip_state.buf, MOCK_CHIP_CONTENT, sizeof(g_chip_state.buf));
 
 	printf("Creating layout with one included region... ");
 	assert_int_equal(0, flashrom_layout_new(layout));
