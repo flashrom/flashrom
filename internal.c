@@ -34,17 +34,6 @@ int force_boardmismatch = 0;
 
 enum chipbustype internal_buses_supported = BUS_NONE;
 
-struct pci_dev *pci_dev_find(uint16_t vendor, uint16_t device)
-{
-	struct pci_filter filter;
-
-	pci_filter_init(NULL, &filter);
-	filter.vendor = vendor;
-	filter.device = device;
-
-	return pcidev_scandev(&filter, NULL);
-}
-
 #if defined(__i386__) || defined(__x86_64__)
 void probe_superio(void)
 {

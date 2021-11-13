@@ -176,6 +176,17 @@ struct pci_dev *pcidev_card_find(uint16_t vendor, uint16_t device,
 	return NULL;
 }
 
+struct pci_dev *pcidev_find(uint16_t vendor, uint16_t device)
+{
+	struct pci_filter filter;
+
+	pci_filter_init(NULL, &filter);
+	filter.vendor = vendor;
+	filter.device = device;
+
+	return pcidev_scandev(&filter, NULL);
+}
+
 struct pci_dev *pcidev_getdevfn(struct pci_dev *dev, const int func)
 {
 #if !defined(OLD_PCI_GET_DEV)

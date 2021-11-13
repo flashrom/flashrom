@@ -893,7 +893,7 @@ static int board_asus_p3b_f(void)
 	uint16_t smbba;
 	uint8_t b;
 
-	dev = pci_dev_find(0x8086, 0x7113); /* Intel PIIX4, PM/SMBus function. */
+	dev = pcidev_find(0x8086, 0x7113); /* Intel PIIX4, PM/SMBus function. */
 	if (!dev) {
 		msg_perr("\nERROR: Intel PIIX4 PM not found.\n");
 		return -1;
@@ -1045,7 +1045,7 @@ static int board_ecs_geforce6100sm_m(void)
 	struct pci_dev *dev;
 	uint32_t tmp;
 
-	dev = pci_dev_find(0x10DE, 0x03EB);     /* NVIDIA MCP61 SMBus. */
+	dev = pcidev_find(0x10DE, 0x03EB);     /* NVIDIA MCP61 SMBus. */
 	if (!dev) {
 		msg_perr("\nERROR: NVIDIA MCP61 SMBus not found.\n");
 		return -1;
@@ -1273,7 +1273,7 @@ static int board_sun_ultra_40_m2(void)
 	if (ret)
 		return ret;
 
-	dev = pci_dev_find(0x10de, 0x0364); /* NVIDIA MCP55 LPC bridge */
+	dev = pcidev_find(0x10de, 0x0364); /* NVIDIA MCP55 LPC bridge */
 	if (!dev) {
 		msg_perr("\nERROR: NVIDIA MCP55 LPC bridge not found.\n");
 		return -1;
@@ -1343,7 +1343,7 @@ static int amd_sbxxx_gpio9_raise(void)
 	struct pci_dev *dev;
 	uint32_t reg;
 
-	dev = pci_dev_find(0x1002, 0x4372); /* AMD SMBus controller */
+	dev = pcidev_find(0x1002, 0x4372); /* AMD SMBus controller */
 	if (!dev) {
 		msg_perr("\nERROR: AMD SMBus Controller (0x4372) not found.\n");
 		return -1;
@@ -1407,7 +1407,7 @@ static int intel_piix4_gpo_set(unsigned int gpo, int raise)
 		{0}
 	};
 
-	dev = pci_dev_find(0x8086, 0x7110);	/* Intel PIIX4 ISA bridge */
+	dev = pcidev_find(0x8086, 0x7110);	/* Intel PIIX4 ISA bridge */
 	if (!dev) {
 		msg_perr("\nERROR: Intel PIIX4 ISA bridge not found.\n");
 		return -1;
@@ -1426,7 +1426,7 @@ static int intel_piix4_gpo_set(unsigned int gpo, int raise)
 		return -1;
 	}
 
-	dev = pci_dev_find(0x8086, 0x7113);	/* Intel PIIX4 PM */
+	dev = pcidev_find(0x8086, 0x7113);	/* Intel PIIX4 PM */
 	if (!dev) {
 		msg_perr("\nERROR: Intel PIIX4 PM not found.\n");
 		return -1;
@@ -1941,7 +1941,7 @@ static int via_apollo_gpo_set(int gpio, int raise)
 	uint32_t base, tmp;
 
 	/* VT82C686 power management */
-	dev = pci_dev_find(0x1106, 0x3057);
+	dev = pcidev_find(0x1106, 0x3057);
 	if (!dev) {
 		msg_perr("\nERROR: VT82C686 PM device not found.\n");
 		return -1;
@@ -2014,7 +2014,7 @@ static int sis_gpio0_raise_and_w836xx_memw(void)
 	struct pci_dev *dev;
 	uint16_t base, temp;
 
-	dev = pci_dev_find(0x1039, 0x0962);
+	dev = pcidev_find(0x1039, 0x0962);
 	if (!dev) {
 		msg_perr("Expected south bridge not found\n");
 		return 1;
@@ -2078,7 +2078,7 @@ static int board_mitac_6513wu(void)
 	uint16_t rt_port;
 	uint8_t val;
 
-	dev = pci_dev_find(0x8086, 0x2410);	/* Intel 82801AA ISA bridge */
+	dev = pcidev_find(0x8086, 0x2410);	/* Intel 82801AA ISA bridge */
 	if (!dev) {
 		msg_perr("\nERROR: Intel 82801AA ISA bridge not found.\n");
 		return -1;
@@ -2603,13 +2603,13 @@ static const struct board_match *board_match_name(const char *vendor, const char
 		if (!cur_model || strcasecmp(cur_model, model))
 			continue;
 
-		if (!pci_dev_find(board->first_vendor, board->first_device)) {
+		if (!pcidev_find(board->first_vendor, board->first_device)) {
 			msg_pdbg("Odd. Board name \"%s\":\"%s\" matches, but first PCI device %04x:%04x "
 				 "doesn't.\n", vendor, model, board->first_vendor, board->first_device);
 			continue;
 		}
 
-		if (!pci_dev_find(board->second_vendor, board->second_device)) {
+		if (!pcidev_find(board->second_vendor, board->second_device)) {
 			msg_pdbg("Odd. Board name \"%s\":\"%s\" matches, but second PCI device %04x:%04x "
 				 "doesn't.\n", vendor, model, board->second_vendor, board->second_device);
 			continue;
@@ -2658,7 +2658,7 @@ static const struct board_match *board_match_pci_ids(enum board_match_phase phas
 							board->second_card_device))
 					continue;
 			} else {
-				if (!pci_dev_find(board->second_vendor,
+				if (!pcidev_find(board->second_vendor,
 						  board->second_device))
 					continue;
 			}

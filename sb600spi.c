@@ -60,7 +60,7 @@ struct sb600spi_data {
 
 static int find_smbus_dev_rev(uint16_t vendor, uint16_t device)
 {
-	struct pci_dev *smbus_dev = pci_dev_find(vendor, device);
+	struct pci_dev *smbus_dev = pcidev_find(vendor, device);
 	if (!smbus_dev) {
 		msg_pdbg("No SMBus device with ID %04X:%04X found.\n", vendor, device);
 		msg_perr("ERROR: SMBus device not found. Not enabling SPI.\n");
@@ -734,11 +734,11 @@ int sb600_probe_spi(struct pci_dev *dev)
 	}
 
 	/* Look for the SMBus device. */
-	smbus_dev = pci_dev_find(0x1002, 0x4385);
+	smbus_dev = pcidev_find(0x1002, 0x4385);
 	if (!smbus_dev)
-		smbus_dev = pci_dev_find(0x1022, 0x780b); /* AMD FCH */
+		smbus_dev = pcidev_find(0x1022, 0x780b); /* AMD FCH */
 	if (!smbus_dev)
-		smbus_dev = pci_dev_find(0x1022, 0x790b); /* AMD FP4 */
+		smbus_dev = pcidev_find(0x1022, 0x790b); /* AMD FP4 */
 	if (!smbus_dev) {
 		msg_perr("ERROR: SMBus device not found. Not enabling SPI.\n");
 		return ERROR_NONFATAL;

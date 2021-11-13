@@ -1117,7 +1117,7 @@ static int enable_flash_vt823x(struct pci_dev *dev, const char *name)
 
 static int enable_flash_vt_vx(struct pci_dev *dev, const char *name)
 {
-	struct pci_dev *south_north = pci_dev_find(0x1106, 0xa353);
+	struct pci_dev *south_north = pcidev_find(0x1106, 0xa353);
 	if (south_north == NULL) {
 		msg_perr("Could not find South-North Module Interface Control device!\n");
 		return ERROR_FATAL;
@@ -1557,7 +1557,7 @@ static int enable_flash_sb400(struct pci_dev *dev, const char *name)
 	struct pci_dev *smbusdev;
 
 	/* Look for the SMBus device. */
-	smbusdev = pci_dev_find(0x1002, 0x4372);
+	smbusdev = pcidev_find(0x1002, 0x4372);
 
 	if (!smbusdev) {
 		msg_perr("ERROR: SMBus device not found. Aborting.\n");
@@ -2163,7 +2163,7 @@ int chipset_flash_enable(void)
 
 	/* Now let's try to find the chipset we have... */
 	for (i = 0; chipset_enables[i].vendor_name != NULL; i++) {
-		dev = pci_dev_find(chipset_enables[i].vendor_id,
+		dev = pcidev_find(chipset_enables[i].vendor_id,
 				   chipset_enables[i].device_id);
 		if (!dev)
 			continue;
