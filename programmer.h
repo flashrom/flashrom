@@ -126,6 +126,7 @@ int pci_init_common(void);
 uintptr_t pcidev_readbar(struct pci_dev *dev, int bar);
 struct pci_dev *pcidev_init(const struct dev_entry *devs, int bar);
 struct pci_dev *pcidev_scandev(struct pci_filter *filter, struct pci_dev *start);
+struct pci_dev *pcidev_getdevfn(struct pci_dev *dev, const int func);
 /* rpci_write_* are reversible writes. The original PCI config space register
  * contents will be restored on shutdown.
  * To clone the pci_dev instances internally, the `pacc` global
