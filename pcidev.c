@@ -157,6 +157,25 @@ struct pci_dev *pcidev_scandev(struct pci_filter *filter, struct pci_dev *start)
 	return NULL;
 }
 
+struct pci_dev *pcidev_card_find(uint16_t vendor, uint16_t device,
+				 uint16_t card_vendor, uint16_t card_device)
+{
+	struct pci_dev *temp = NULL;
+	struct pci_filter filter;
+
+	pci_filter_init(NULL, &filter);
+	filter.vendor = vendor;
+	filter.device = device;
+
+	while ((temp = pcidev_scandev(&filter, temp))) {
+		if ((card_vendor == pci_read_word(temp, PCI_SUBSYSTEM_VENDOR_ID))
+		    && (card_device == pci_read_word(temp, PCI_SUBSYSTEM_ID)))
+			return temp;
+	}
+
+	return NULL;
+}
+
 struct pci_dev *pcidev_getdevfn(struct pci_dev *dev, const int func)
 {
 #if !defined(OLD_PCI_GET_DEV)

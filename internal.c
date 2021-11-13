@@ -45,25 +45,6 @@ struct pci_dev *pci_dev_find(uint16_t vendor, uint16_t device)
 	return pcidev_scandev(&filter, NULL);
 }
 
-struct pci_dev *pci_card_find(uint16_t vendor, uint16_t device,
-			      uint16_t card_vendor, uint16_t card_device)
-{
-	struct pci_dev *temp = NULL;
-	struct pci_filter filter;
-
-	pci_filter_init(NULL, &filter);
-	filter.vendor = vendor;
-	filter.device = device;
-
-	while ((temp = pcidev_scandev(&filter, temp))) {
-		if ((card_vendor == pci_read_word(temp, PCI_SUBSYSTEM_VENDOR_ID))
-		    && (card_device == pci_read_word(temp, PCI_SUBSYSTEM_ID)))
-			return temp;
-	}
-
-	return NULL;
-}
-
 #if defined(__i386__) || defined(__x86_64__)
 void probe_superio(void)
 {

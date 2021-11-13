@@ -2645,17 +2645,17 @@ static const struct board_match *board_match_pci_ids(enum board_match_phase phas
 		if (board->phase != phase)
 			continue;
 
-		if (!pci_card_find(board->first_vendor, board->first_device,
-				   board->first_card_vendor,
-				   board->first_card_device))
+		if (!pcidev_card_find(board->first_vendor, board->first_device,
+					board->first_card_vendor,
+					board->first_card_device))
 			continue;
 
 		if (board->second_vendor) {
 			if (board->second_card_vendor) {
-				if (!pci_card_find(board->second_vendor,
-						   board->second_device,
-						   board->second_card_vendor,
-						   board->second_card_device))
+				if (!pcidev_card_find(board->second_vendor,
+							board->second_device,
+							board->second_card_vendor,
+							board->second_card_device))
 					continue;
 			} else {
 				if (!pci_dev_find(board->second_vendor,
