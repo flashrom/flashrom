@@ -148,6 +148,15 @@ uintptr_t pcidev_readbar(struct pci_dev *dev, int bar)
 	return (uintptr_t)addr;
 }
 
+struct pci_dev *pcidev_scandev(struct pci_filter *filter, struct pci_dev *start)
+{
+	struct pci_dev *temp;
+	for (temp = start ? start->next : pacc->devices; temp; temp = temp->next)
+		if (pci_filter_match(filter, temp))
+			return temp;
+	return NULL;
+}
+
 static int pcidev_shutdown(void *data)
 {
 	if (pacc == NULL) {

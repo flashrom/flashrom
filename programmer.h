@@ -117,6 +117,7 @@ struct bitbang_spi_master {
 
 #if NEED_PCI == 1
 struct pci_dev;
+struct pci_filter;
 
 /* pcidev.c */
 // FIXME: This needs to be local, not global(?)
@@ -124,6 +125,7 @@ extern struct pci_access *pacc;
 int pci_init_common(void);
 uintptr_t pcidev_readbar(struct pci_dev *dev, int bar);
 struct pci_dev *pcidev_init(const struct dev_entry *devs, int bar);
+struct pci_dev *pcidev_scandev(struct pci_filter *filter, struct pci_dev *start);
 /* rpci_write_* are reversible writes. The original PCI config space register
  * contents will be restored on shutdown.
  * To clone the pci_dev instances internally, the `pacc` global
