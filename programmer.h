@@ -245,8 +245,8 @@ int cb_check_image(const uint8_t *bios, unsigned int size);
 
 /* dmi.c */
 #if defined(__i386__) || defined(__x86_64__)
-extern int has_dmi_support;
 void dmi_init(void);
+bool dmi_is_supported(void);
 int dmi_match(const char *pattern);
 #endif // defined(__i386__) || defined(__x86_64__)
 

@@ -2666,7 +2666,7 @@ static const struct board_match *board_match_pci_ids(enum board_match_phase phas
 
 #if defined(__i386__) || defined(__x86_64__)
 		if (board->dmi_pattern) {
-			if (!has_dmi_support) {
+			if (!dmi_is_supported()) {
 				msg_pwarn("Warning: Can't autodetect %s %s, DMI info unavailable.\n",
 					  board->vendor_name, board->board_name);
 				msg_pinfo("Please supply the board vendor and model name with the "

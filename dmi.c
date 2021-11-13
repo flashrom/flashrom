@@ -40,7 +40,12 @@
 /* Strings longer than 4096 in DMI are just insane. */
 #define DMI_MAX_ANSWER_LEN 4096
 
-int has_dmi_support = 0;
+static bool g_has_dmi_support = false;
+
+bool dmi_is_supported(void)
+{
+	return g_has_dmi_support;
+}
 
 static struct {
 	const char *const keyword;
@@ -405,7 +410,7 @@ void dmi_init(void)
 		break;
 	}
 
-	has_dmi_support = 1;
+	g_has_dmi_support = true;
 	unsigned int i;
 	for (i = 0; i < ARRAY_SIZE(dmi_strings); i++) {
 		msg_pdbg("DMI string %s: \"%s\"\n", dmi_strings[i].keyword,
@@ -465,7 +470,7 @@ int dmi_match(const char *pattern)
 {
 	unsigned int i;
 
-	if (!has_dmi_support)
+	if (!dmi_is_supported())
 		return 0;
 
 	for (i = 0; i < ARRAY_SIZE(dmi_strings); i++) {
