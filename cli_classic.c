@@ -916,14 +916,9 @@ int main(int argc, char *argv[])
 				ret = 1;
 				goto out_shutdown;
 			}
-			if (map_flash(&flashes[0]) != 0) {
-				free(flashes[0].chip);
-				ret = 1;
-				goto out_shutdown;
-			}
 			msg_cinfo("Please note that forced reads most likely contain garbage.\n");
-			ret = read_flash_to_file(&flashes[0], filename);
-			unmap_flash(&flashes[0]);
+			flashrom_flag_set(&flashes[0], FLASHROM_FLAG_FORCE, !!force);
+			ret = do_read(&flashes[0], filename);
 			free(flashes[0].chip);
 			goto out_shutdown;
 		}

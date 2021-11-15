@@ -1265,7 +1265,7 @@ int probe_variable_size(struct flashctx *flash)
 	 * Once that happens, we need to have special hacks in functions:
 	 *
 	 *     erase_and_write_flash() in flashrom.c
-	 *     read_flash_to_file()
+	 *     do_read()
 	 *     handle_romentries()
 	 *     ...
 	 *

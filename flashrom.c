@@ -1070,41 +1070,6 @@ static int read_by_layout(struct flashctx *const flashctx, uint8_t *const buffer
 	return 0;
 }
 
-int read_flash_to_file(struct flashctx *flash, const char *filename)
-{
-	unsigned long size = flash->chip->total_size * 1024;
-	unsigned char *buf = calloc(size, sizeof(unsigned char));
-	int ret = 0;
-
-	msg_cinfo("Reading flash... ");
-	if (!buf) {
-		msg_gerr("Memory allocation failed!\n");
-		msg_cinfo("FAILED.\n");
-		return 1;
-	}
-	if (!flash->chip->read) {
-		msg_cerr("No read function available for this flash chip.\n");
-		ret = 1;
-		goto out_free;
-	}
-	if (read_by_layout(flash, buf)) {
-		msg_cerr("Read operation failed!\n");
-		ret = 1;
-		goto out_free;
-	}
-	if (write_buf_to_include_args(flash, buf)) {
-		ret = 1;
-		goto out_free;
-	}
-
-	if (filename)
-		ret = write_buf_to_file(buf, size, filename);
-out_free:
-	free(buf);
-	msg_cinfo("%s.\n", ret ? "FAILED" : "done");
-	return ret;
-}
-
 /* Even if an error is found, the function will keep going and check the rest. */
 static int selfcheck_eraseblocks(const struct flashchip *chip)
 {
