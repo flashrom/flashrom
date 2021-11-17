@@ -417,6 +417,13 @@ int verify_range(struct flashctx *flash, const uint8_t *cmpbuf, unsigned int sta
 	if (!len)
 		return -1;
 
+	if (start + len > flash->chip->total_size * 1024) {
+		msg_gerr("Error: %s called with start 0x%x + len 0x%x >"
+			" total_size 0x%x\n", __func__, start, len,
+			flash->chip->total_size * 1024);
+		return -1;
+	}
+
 	if (!flash->chip->read) {
 		msg_cerr("ERROR: flashrom has no read function for this flash chip.\n");
 		return -1;
@@ -427,17 +434,8 @@ int verify_range(struct flashctx *flash, const uint8_t *cmpbuf, unsigned int sta
 		msg_gerr("Could not allocate memory!\n");
 		return -1;
 	}
-	int ret = 0;
 
-	if (start + len > flash->chip->total_size * 1024) {
-		msg_gerr("Error: %s called with start 0x%x + len 0x%x >"
-			" total_size 0x%x\n", __func__, start, len,
-			flash->chip->total_size * 1024);
-		ret = -1;
-		goto out_free;
-	}
-
-	ret = flash->chip->read(flash, readbuf, start, len);
+	int ret = flash->chip->read(flash, readbuf, start, len);
 	if (ret) {
 		msg_gerr("Verification impossible because read failed "
 			 "at 0x%x (len 0x%x)\n", start, len);
