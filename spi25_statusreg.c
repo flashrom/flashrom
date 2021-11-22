@@ -22,68 +22,6 @@
 #include "spi.h"
 
 /* === Generic functions === */
-static int spi_write_register_flag(const struct flashctx *flash, uint8_t enable_opcode, uint8_t *write_cmd, size_t write_cmd_len, enum flash_reg reg)
-{
-	/*
-	 * Enabling register writes requires either EWSR or WREN depending on
-	 * chip type. The code below relies on the fact hat EWSR and WREN have
-	 * the same INSIZE and OUTSIZE.
-	 */
-
-	struct spi_command cmds[] = {
-	{
-		.writecnt	= JEDEC_WREN_OUTSIZE,
-		.writearr	= &enable_opcode,
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}, {
-		.writecnt	= write_cmd_len,
-		.writearr	= write_cmd,
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}, {
-		.writecnt	= 0,
-		.writearr	= NULL,
-		.readcnt	= 0,
-		.readarr	= NULL,
-	}};
-
-	int result = spi_send_multicommand(flash, cmds);
-	if (result) {
-		msg_cerr("%s failed during command execution\n", __func__);
-		/*
-		 * No point in waiting for the command to complete if execution
-		 * failed.
-		 */
-		return result;
-	}
-
-	/*
-	 * WRSR performs a self-timed erase before the changes take effect.
-	 * This may take 50-85 ms in most cases, and some chips apparently
-	 * allow running RDSR only once. Therefore pick an initial delay of
-	 * 100 ms, then wait in 10 ms steps until a total of 5 s have elapsed.
-	 *
-	 * Newer chips with multiple status registers (SR2 etc.) are unlikely
-	 * to have problems with multiple RDSR commands, so only wait for the
-	 * initial 100 ms if the register we wrote to was SR1.
-	 */
-	int delay_ms = 5000;
-	if (reg == STATUS1) {
-		programmer_delay(100 * 1000);
-		delay_ms -= 100;
-	}
-
-	for (; delay_ms > 0; delay_ms -= 10) {
-		if ((spi_read_status_register(flash) & SPI_SR_WIP) == 0)
-			return 0;
-		programmer_delay(10 * 1000);
-	}
-
-	msg_cerr("Error: WIP bit after WRSR never cleared\n");
-	return TIMEOUT_ERROR;
-}
-
 int spi_write_register(const struct flashctx *flash, enum flash_reg reg, uint8_t value)
 {
 	int feature_bits = flash->chip->feature_bits;
@@ -133,18 +71,66 @@ int spi_write_register(const struct flashctx *flash, enum flash_reg reg, uint8_t
 		return 1;
 	}
 
-	if (!(feature_bits & (FEATURE_WRSR_WREN | FEATURE_WRSR_EWSR))) {
+	uint8_t enable_cmd;
+	if (feature_bits & FEATURE_WRSR_WREN) {
+		enable_cmd = JEDEC_WREN;
+	} else if (feature_bits & FEATURE_WRSR_EWSR) {
+		enable_cmd = JEDEC_EWSR;
+	} else {
 		msg_cdbg("Missing status register write definition, assuming "
 			 "EWSR is needed\n");
-		feature_bits |= FEATURE_WRSR_EWSR;
+		enable_cmd = JEDEC_EWSR;
 	}
 
-	int ret = 1;
-	if (feature_bits & FEATURE_WRSR_WREN)
-		ret = spi_write_register_flag(flash, JEDEC_WREN, write_cmd, write_cmd_len, reg);
-	if (ret && (feature_bits & FEATURE_WRSR_EWSR))
-		ret = spi_write_register_flag(flash, JEDEC_EWSR, write_cmd, write_cmd_len, reg);
-	return ret;
+	struct spi_command cmds[] = {
+	{
+		.writecnt	= JEDEC_WREN_OUTSIZE,
+		.writearr	= &enable_cmd,
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= write_cmd_len,
+		.writearr	= write_cmd,
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}, {
+		.writecnt	= 0,
+		.writearr	= NULL,
+		.readcnt	= 0,
+		.readarr	= NULL,
+	}};
+
+	int result = spi_send_multicommand(flash, cmds);
+	if (result) {
+		msg_cerr("%s failed during command execution\n", __func__);
+		return result;
+	}
+
+	/*
+	 * WRSR performs a self-timed erase before the changes take effect.
+	 * This may take 50-85 ms in most cases, and some chips apparently
+	 * allow running RDSR only once. Therefore pick an initial delay of
+	 * 100 ms, then wait in 10 ms steps until a total of 5 s have elapsed.
+	 *
+	 * Newer chips with multiple status registers (SR2 etc.) are unlikely
+	 * to have problems with multiple RDSR commands, so only wait for the
+	 * initial 100 ms if the register we wrote to was SR1.
+	 */
+	int delay_ms = 5000;
+	if (reg == STATUS1) {
+		programmer_delay(100 * 1000);
+		delay_ms -= 100;
+	}
+
+	for (; delay_ms > 0; delay_ms -= 10) {
+		if ((spi_read_status_register(flash) & SPI_SR_WIP) == 0)
+			return 0;
+		programmer_delay(10 * 1000);
+	}
+
+
+	msg_cerr("Error: WIP bit after WRSR never cleared\n");
+	return TIMEOUT_ERROR;
 }
 
 int spi_read_register(const struct flashctx *flash, enum flash_reg reg, uint8_t *value)
