@@ -100,6 +100,13 @@ int spi_write_register(const struct flashctx *flash, enum flash_reg reg, uint8_t
 		}
 		msg_cerr("Cannot write SR3: unsupported by chip\n");
 		return 1;
+	case SECURITY:
+		/*
+		 * Security register doesn't have a normal write operation. Instead,
+		 * there are separate commands that set individual OTP bits.
+		 */
+		msg_cerr("Cannot write SECURITY: unsupported by design\n");
+		return 1;
 	default:
 		msg_cerr("Cannot write register: unknown register\n");
 		return 1;
@@ -194,6 +201,13 @@ int spi_read_register(const struct flashctx *flash, enum flash_reg reg, uint8_t 
 			break;
 		}
 		msg_cerr("Cannot read SR3: unsupported by chip\n");
+		return 1;
+	case SECURITY:
+		if (feature_bits & FEATURE_SCUR) {
+			read_cmd = JEDEC_RDSCUR;
+			break;
+		}
+		msg_cerr("Cannot read SECURITY: unsupported by chip\n");
 		return 1;
 	default:
 		msg_cerr("Cannot read register: unknown register\n");

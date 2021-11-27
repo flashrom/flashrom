@@ -167,6 +167,16 @@
 #define JEDEC_WRSR3_OUTSIZE	0x02
 #define JEDEC_WRSR3_INSIZE	0x00
 
+/* Read Security Register */
+#define JEDEC_RDSCUR		0x2b
+#define JEDEC_RDSCUR_OUTSIZE	0x01
+#define JEDEC_RDSCUR_INSIZE	0x01
+
+/* Write Security Register */
+#define JEDEC_WRSCUR		0x2f
+#define JEDEC_WRSCUR_OUTSIZE	0x01
+#define JEDEC_WRSCUR_INSIZE	0x00
+
 /* Enter 4-byte Address Mode */
 #define JEDEC_ENTER_4_BYTE_ADDR_MODE	0xB7
 
