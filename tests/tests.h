@@ -41,13 +41,13 @@ void probe_spi_at25f_test_success(void **state);
 void probe_spi_st95_test_success(void **state); /* spi95.c */
 
 /* lifecycle.c */
-void dummy_init_and_shutdown_test_success(void **state);
-void nicrealtek_init_and_shutdown_test_success(void **state);
-void raiden_debug_init_and_shutdown_test_success(void **state);
-void dediprog_init_and_shutdown_test_success(void **state);
-void linux_mtd_init_and_shutdown_test_success(void **state);
-void linux_spi_init_and_shutdown_test_success(void **state);
-void realtek_mst_init_and_shutdown_test_success(void **state);
+void dummy_basic_lifecycle_test_success(void **state);
+void nicrealtek_basic_lifecycle_test_success(void **state);
+void raiden_debug_basic_lifecycle_test_success(void **state);
+void dediprog_basic_lifecycle_test_success(void **state);
+void linux_mtd_basic_lifecycle_test_success(void **state);
+void linux_spi_basic_lifecycle_test_success(void **state);
+void realtek_mst_basic_lifecycle_test_success(void **state);
 
 /* layout.c */
 void included_regions_dont_overlap_test_success(void **state);
