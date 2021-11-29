@@ -20,7 +20,7 @@ srcs = [
   'helpers.c',
   'flashrom.c',
   'spi25.c',
-  'init_shutdown.c',
+  'lifecycle.c',
   'layout.c',
   'chip.c',
 ]

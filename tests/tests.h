@@ -40,7 +40,7 @@ void probe_spi_res3_test_success(void **state);
 void probe_spi_at25f_test_success(void **state);
 void probe_spi_st95_test_success(void **state); /* spi95.c */
 
-/* init_shutdown.c */
+/* lifecycle.c */
 void dummy_init_and_shutdown_test_success(void **state);
 void nicrealtek_init_and_shutdown_test_success(void **state);
 void raiden_debug_init_and_shutdown_test_success(void **state);
