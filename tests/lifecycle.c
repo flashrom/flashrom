@@ -16,30 +16,77 @@
 #include <include/test.h>
 #include <string.h>
 
+#include "libflashrom.h"
 #include "io_mock.h"
 #include "programmer.h"
+#include "spi.h"
 
-static void run_basic_lifecycle(void **state, const struct programmer_entry *prog, const char *param)
+static void probe_chip(const struct programmer_entry *prog,
+			struct flashrom_programmer *flashprog,
+			const char *const chip_name)
+{
+	struct flashrom_flashctx *flashctx;
+
+	printf("Testing flashrom_flash_probe for programmer=%s, chip=%s ... \n", prog->name, chip_name);
+	assert_int_equal(0, flashrom_flash_probe(&flashctx, flashprog, chip_name));
+	printf("... flashrom_flash_probe for programmer=%s successful\n", prog->name);
+
+	flashrom_flash_release(flashctx); /* cleanup */
+}
+
+static void run_lifecycle(void **state, const struct programmer_entry *prog,
+				const char *param, const char *const chip_name,
+				void (*action)(const struct programmer_entry *prog,
+						struct flashrom_programmer *flashprog,
+						const char *const chip_name))
 {
 	(void) state; /* unused */
 
+	struct flashrom_programmer *flashprog;
 	char *param_dup = strdup(param);
 
-	printf("Testing programmer_init for programmer=%s ...\n", prog->name);
-	assert_int_equal(0, programmer_init(prog, param_dup));
-	printf("... programmer_init for programmer=%s successful\n", prog->name);
+	printf("Testing flashrom_programmer_init for programmer=%s ...\n", prog->name);
+	assert_int_equal(0, flashrom_programmer_init(&flashprog, prog->name, param_dup));
+	printf("... flashrom_programmer_init for programmer=%s successful\n", prog->name);
 
-	printf("Testing programmer_shutdown for programmer=%s ...\n", prog->name);
-	assert_int_equal(0, programmer_shutdown());
-	printf("... programmer_shutdown for programmer=%s successful\n", prog->name);
+	if (action)
+		action(prog, flashprog, chip_name);
+
+	printf("Testing flashrom_programmer_shutdown for programmer=%s ...\n", prog->name);
+	assert_int_equal(0, flashrom_programmer_shutdown(flashprog));
+	printf("... flashrom_programmer_shutdown for programmer=%s successful\n", prog->name);
 
 	free(param_dup);
+}
+
+static void run_basic_lifecycle(void **state, const struct programmer_entry *prog, const char *param)
+{
+	/* Basic lifecycle only does init and shutdown,
+	 * so neither chip name nor action is needed. */
+	run_lifecycle(state, prog, param, NULL /* chip_name */, NULL /* action */);
+}
+
+static void run_probe_lifecycle(void **state, const struct programmer_entry *prog,
+                                 const char *param, const char *const chip_name)
+{
+	/* Each probe lifecycle should run independently, without cache. */
+	clear_spi_id_cache();
+	run_lifecycle(state, prog, param, chip_name, &probe_chip);
 }
 
 void dummy_basic_lifecycle_test_success(void **state)
 {
 #if CONFIG_DUMMY == 1
 	run_basic_lifecycle(state, &programmer_dummy, "bus=parallel+lpc+fwh+spi");
+#else
+	skip();
+#endif
+}
+
+void dummy_probe_lifecycle_test_success(void **state)
+{
+#if CONFIG_DUMMY == 1
+	run_probe_lifecycle(state, &programmer_dummy, "bus=spi,emulate=W25Q128FV", "W25Q128.V");
 #else
 	skip();
 #endif

@@ -42,6 +42,7 @@ void probe_spi_st95_test_success(void **state); /* spi95.c */
 
 /* lifecycle.c */
 void dummy_basic_lifecycle_test_success(void **state);
+void dummy_probe_lifecycle_test_success(void **state);
 void nicrealtek_basic_lifecycle_test_success(void **state);
 void raiden_debug_basic_lifecycle_test_success(void **state);
 void dediprog_basic_lifecycle_test_success(void **state);
