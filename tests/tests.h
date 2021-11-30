@@ -46,7 +46,7 @@ void dummy_probe_lifecycle_test_success(void **state);
 void nicrealtek_basic_lifecycle_test_success(void **state);
 void raiden_debug_basic_lifecycle_test_success(void **state);
 void dediprog_basic_lifecycle_test_success(void **state);
-void linux_mtd_basic_lifecycle_test_success(void **state);
+void linux_mtd_probe_lifecycle_test_success(void **state);
 void linux_spi_basic_lifecycle_test_success(void **state);
 void realtek_mst_basic_lifecycle_test_success(void **state);
 

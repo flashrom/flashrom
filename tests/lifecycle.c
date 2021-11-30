@@ -294,7 +294,7 @@ int linux_mtd_fclose(void *state, FILE *fp)
 	return 0;
 }
 
-void linux_mtd_basic_lifecycle_test_success(void **state)
+void linux_mtd_probe_lifecycle_test_success(void **state)
 {
 #if CONFIG_LINUX_MTD == 1
 	struct linux_mtd_io_state linux_mtd_io_state = { NULL };
@@ -307,7 +307,7 @@ void linux_mtd_basic_lifecycle_test_success(void **state)
 
 	io_mock_register(&linux_mtd_io);
 
-	run_basic_lifecycle(state, &programmer_linux_mtd, "");
+	run_probe_lifecycle(state, &programmer_linux_mtd, "", "Opaque flash chip");
 
 	io_mock_register(NULL);
 #else
