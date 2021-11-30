@@ -369,7 +369,7 @@ int main(void)
 		cmocka_unit_test(raiden_debug_basic_lifecycle_test_success),
 		cmocka_unit_test(dediprog_basic_lifecycle_test_success),
 		cmocka_unit_test(linux_mtd_probe_lifecycle_test_success),
-		cmocka_unit_test(linux_spi_basic_lifecycle_test_success),
+		cmocka_unit_test(linux_spi_probe_lifecycle_test_success),
 		cmocka_unit_test(realtek_mst_basic_lifecycle_test_success),
 	};
 	ret |= cmocka_run_group_tests_name("lifecycle.c tests", lifecycle_tests, NULL, NULL);

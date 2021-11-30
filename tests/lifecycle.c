@@ -15,6 +15,7 @@
 
 #include <include/test.h>
 #include <string.h>
+#include <linux/spi/spidev.h>
 
 #include "libflashrom.h"
 #include "io_mock.h"
@@ -315,6 +316,30 @@ void linux_mtd_probe_lifecycle_test_success(void **state)
 #endif
 }
 
+static int linux_spi_ioctl(void *state, int fd, unsigned long request, va_list args) {
+
+	if (request == SPI_IOC_MESSAGE(2)) { /* ioctl code for read request */
+		struct spi_ioc_transfer* msg = va_arg(args, struct spi_ioc_transfer*);
+
+		/* First message has write array and write count */
+		unsigned int writecnt = msg[0].len;
+		unsigned char *writearr = (unsigned char *)msg[0].tx_buf;
+		/* Second message has read array and read count */
+		unsigned int readcnt = msg[1].len;
+
+		/* Detect probing */
+		if (writecnt == 1 && writearr[0] == JEDEC_RDID && readcnt == 3) {
+			/* We need to populate read array. */
+			unsigned char *readarr = (unsigned char *)msg[1].rx_buf;
+			readarr[0] = 0xEF; /* WINBOND_NEX_ID */
+			readarr[1] = 0x40; /* WINBOND_NEX_W25Q128_V left byte */
+			readarr[2] = 0x18; /* WINBOND_NEX_W25Q128_V right byte */
+		}
+	}
+
+	return 0;
+}
+
 char *linux_spi_fgets(void *state, char *buf, int len, FILE *fp)
 {
 	/* Emulate reading max buffer size from sysfs. */
@@ -323,7 +348,7 @@ char *linux_spi_fgets(void *state, char *buf, int len, FILE *fp)
 	return memcpy(buf, max_buf_size, min(len, strlen(max_buf_size) + 1));
 }
 
-void linux_spi_basic_lifecycle_test_success(void **state)
+void linux_spi_probe_lifecycle_test_success(void **state)
 {
 	/*
 	 * Current implementation tests a particular path of the init procedure.
@@ -332,11 +357,12 @@ void linux_spi_basic_lifecycle_test_success(void **state)
 #if CONFIG_LINUX_SPI == 1
 	const struct io_mock linux_spi_io = {
 		.fgets	= linux_spi_fgets,
+		.ioctl	= linux_spi_ioctl,
 	};
 
 	io_mock_register(&linux_spi_io);
 
-	run_basic_lifecycle(state, &programmer_linux_spi, "dev=/dev/null");
+	run_probe_lifecycle(state, &programmer_linux_spi, "dev=/dev/null", "W25Q128.V");
 
 	io_mock_register(NULL);
 #else
