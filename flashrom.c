@@ -1098,7 +1098,8 @@ int read_flash_to_file(struct flashctx *flash, const char *filename)
 		goto out_free;
 	}
 
-	ret = write_buf_to_file(buf, size, filename);
+	if (filename)
+		ret = write_buf_to_file(buf, size, filename);
 out_free:
 	free(buf);
 	msg_cinfo("%s.\n", ret ? "FAILED" : "done");
