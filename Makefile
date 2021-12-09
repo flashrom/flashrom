@@ -899,15 +899,12 @@ endif
 LIBFLASHROM_OBJS = $(CHIP_OBJS) $(PROGRAMMER_OBJS) $(LIB_OBJS)
 OBJS = $(CLI_OBJS) $(LIBFLASHROM_OBJS)
 
-all: hwlibs features $(PROGRAM)$(EXEC_SUFFIX) $(PROGRAM).8
+all: config $(PROGRAM)$(EXEC_SUFFIX) $(PROGRAM).8
 ifeq ($(ARCH), x86)
 	@+$(MAKE) -C util/ich_descriptors_tool/ HOST_OS=$(HOST_OS) TARGET_OS=$(TARGET_OS)
 endif
 
-# to define test programs we use verbatim variables, which get exported
-# to environment variables and are referenced with $$<varname> later
-
-compiler: featuresavailable
+config:
 	@echo -n "C compiler found: "
 	@if [ $(CC_WORKING) = yes ]; \
 		then $(CC) --version 2>/dev/null | head -1; \
@@ -921,8 +918,6 @@ compiler: featuresavailable
 		echo "  This might work but usually does not, please beware."; fi
 	@echo "Target endian: $(ENDIAN)"
 	@if [ $(ENDIAN) = unknown ]; then echo Aborting.; exit 1; fi
-
-hwlibs: compiler
 	@echo Dependency libpci found: $(HAS_LIBPCI)
 	@if [ $(HAS_LIBPCI) = yes ]; then			\
 		echo "  Checking for old \"pci_get_dev()\": $(HAS_PCI_OLD_GET_DEV)";\
@@ -950,30 +945,22 @@ hwlibs: compiler
 		echo "  CFLAGS: $(CONFIG_LIBFTDI1_CFLAGS)";	\
 		echo "  LDFLAGS: $(CONFIG_LIBFTDI1_LDFLAGS)";	\
 	fi
-
-features: hwlibs
 	@echo "Checking for header \"mtd/mtd-user.h\": $(HAS_LINUX_MTD)"
 	@echo "Checking for header \"linux/spi/spidev.h\": $(HAS_LINUX_SPI)"
 	@echo "Checking for header \"linux/i2c-dev.h\": $(HAS_LINUX_I2C)"
 	@echo "Checking for header \"linux/i2c.h\": $(HAS_LINUX_I2C)"
 	@echo "Checking for header \"sys/utsname.h\": $(HAS_UTSNAME)"
 	@echo "Checking for function \"clock_gettime\": $(HAS_CLOCK_GETTIME)"
+	@if ! [ "$(PROGRAMMER_OBJS)" ]; then					\
+		echo "You have to enable at least one programmer driver!";	\
+		exit 1;								\
+	fi
+	@if [ "$(UNSUPPORTED_FEATURES)" ]; then					\
+		echo "The following features are unavailable on your machine: $(UNSUPPORTED_FEATURES)" \
+		exit 1;								\
+	fi
 
-# If a user does not explicitly request a non-working feature, we should
-# silently disable it. However, if a non-working (does not compile) feature
-# is explicitly requested, we should bail out with a descriptive error message.
-# We also have to check that at least one programmer driver is enabled.
-featuresavailable:
-ifeq ($(PROGRAMMER_OBJS),)
-	@echo "You have to enable at least one programmer driver!"
-	@false
-endif
-ifneq ($(UNSUPPORTED_FEATURES), )
-	@echo "The following features are unavailable on your machine: $(UNSUPPORTED_FEATURES)"
-	@false
-endif
-
-%.o: %.c features
+%.o: %.c config
 	$(CC) -MMD $(CFLAGS) $(CPPFLAGS) $(FLASHROM_CFLAGS) $(FEATURE_CFLAGS) $(SCMDEF) -o $@ -c $<
 
 $(PROGRAM)$(EXEC_SUFFIX): $(OBJS)
@@ -1053,7 +1040,7 @@ tarball: _export
 libpayload: clean
 	make CC="CC=i386-elf-gcc lpgcc" AR=i386-elf-ar RANLIB=i386-elf-ranlib
 
-.PHONY: all install clean distclean compiler hwlibs features _export export tarball featuresavailable libpayload
+.PHONY: all install clean distclean config _export export tarball libpayload
 
 # Disable implicit suffixes and built-in rules (for performance and profit)
 .SUFFIXES:
