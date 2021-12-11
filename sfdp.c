@@ -369,7 +369,7 @@ int probe_spi_sfdp(struct flashctx *flash)
 				msg_cdbg("The chip contains an unknown "
 					  "version of the JEDEC flash "
 					  "parameters table, skipping it.\n");
-			} else if (len != 9 * 4 && len != 4 * 4) {
+			} else if (len != 4 * 4 && len < 9 * 4) {
 				msg_cdbg("Length of the mandatory JEDEC SFDP "
 					 "parameter table is wrong (%d B), "
 					 "skipping it.\n", len);
