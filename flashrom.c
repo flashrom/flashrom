@@ -931,7 +931,7 @@ out:
  * @param buf      Chip-sized buffer to write data to
  * @return 0 on success
  */
-static int read_buf_from_include_args(const struct flashctx *const flash,
+int read_buf_from_include_args(const struct flashctx *const flash,
 				      unsigned char *buf)
 {
 	const struct flashrom_layout *const layout = get_layout(flash);
@@ -1028,7 +1028,7 @@ out:
  * @param buf      Chip-sized buffer to read data from
  * @return 0 on success
  */
-static int write_buf_to_include_args(const struct flashctx *const flash,
+int write_buf_to_include_args(const struct flashctx *const flash,
 				     unsigned char *buf)
 {
 	const struct flashrom_layout *const layout = get_layout(flash);
