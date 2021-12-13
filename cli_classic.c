@@ -840,8 +840,18 @@ int main(int argc, char *argv[])
 		ret = do_read(fill_flash, filename);
 	else if (extract_it)
 		ret = do_extract(fill_flash);
-	else if (erase_it)
-		ret = do_erase(fill_flash);
+	else if (erase_it) {
+		ret = flashrom_flash_erase(fill_flash);
+		/*
+		 * FIXME: Do we really want the scary warning if erase failed?
+		 * After all, after erase the chip is either blank or partially
+		 * blank or it has the old contents. A blank chip won't boot,
+		 * so if the user wanted erase and reboots afterwards, the user
+		 * knows very well that booting won't work.
+		 */
+		if (ret)
+			emergency_help_message();
+	}
 	else if (write_it)
 		ret = do_write(fill_flash, filename, referencefile);
 	else if (verify_it)

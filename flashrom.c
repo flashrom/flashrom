@@ -1553,7 +1553,7 @@ static void nonfatal_help_message(void)
 			 "https://www.flashrom.org/Contact for details), thanks!\n");
 }
 
-static void emergency_help_message(void)
+void emergency_help_message(void)
 {
 	msg_gerr("Your flash chip is in an unknown state.\n");
 #if CONFIG_INTERNAL == 1
@@ -2206,23 +2206,6 @@ int do_extract(struct flashctx *const flash)
 {
 	prepare_layout_for_extraction(flash);
 	return do_read(flash, NULL);
-}
-
-int do_erase(struct flashctx *const flash)
-{
-	const int ret = flashrom_flash_erase(flash);
-
-	/*
-	 * FIXME: Do we really want the scary warning if erase failed?
-	 * After all, after erase the chip is either blank or partially
-	 * blank or it has the old contents. A blank chip won't boot,
-	 * so if the user wanted erase and reboots afterwards, the user
-	 * knows very well that booting won't work.
-	 */
-	if (ret)
-		emergency_help_message();
-
-	return ret;
 }
 
 int do_write(struct flashctx *const flash, const char *const filename, const char *const referencefile)
