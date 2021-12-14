@@ -27,6 +27,7 @@
 #include "spi.h"
 #include "programmer.h"
 #include "hwaccess_x86_io.h"
+#include "hwaccess_physmap.h"
 
 #define MAX_TIMEOUT 100000
 #define MAX_TRY 5

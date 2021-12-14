@@ -23,8 +23,7 @@
 #include <string.h>
 #include <errno.h>
 #include "flash.h"
-#include "programmer.h"
-#include "hwaccess.h"
+#include "hwaccess_physmap.h"
 
 #if !defined(__DJGPP__) && !defined(__LIBPAYLOAD__)
 /* No file access needed/possible to get mmap access permissions or access MSR. */

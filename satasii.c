@@ -19,6 +19,7 @@
 #include "programmer.h"
 #include "hwaccess.h"
 #include "hwaccess_x86_io.h"
+#include "hwaccess_physmap.h"
 #include "platform/pci.h"
 
 #define PCI_VENDOR_ID_SII	0x1095

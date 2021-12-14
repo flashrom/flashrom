@@ -38,6 +38,7 @@
 #include "flashchips.h"
 #include "programmer.h"
 #include "hwaccess.h"
+#include "hwaccess_physmap.h"
 #include "chipdrivers.h"
 
 const char flashrom_version[] = FLASHROM_VERSION;

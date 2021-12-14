@@ -23,6 +23,7 @@
 #include "flash.h"
 #include "programmer.h"
 #include "hwaccess.h"
+#include "hwaccess_physmap.h"
 #include "spi.h"
 #include "platform/pci.h"
 

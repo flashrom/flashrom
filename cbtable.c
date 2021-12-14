@@ -26,6 +26,7 @@
 #include "flash.h"
 #include "programmer.h"
 #include "coreboot_tables.h"
+#include "hwaccess_physmap.h"
 
 static char *cb_vendor = NULL, *cb_model = NULL;
 

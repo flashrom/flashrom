@@ -20,6 +20,7 @@
 #include "programmer.h"
 #include "hwaccess.h"
 #include "hwaccess_x86_io.h"
+#include "hwaccess_physmap.h"
 #include "platform/pci.h"
 
 static uint8_t *nicintel_bar;

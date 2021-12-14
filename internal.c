@@ -21,6 +21,7 @@
 #include "programmer.h"
 #include "hwaccess.h"
 #include "hwaccess_x86_io.h"
+#include "hwaccess_physmap.h"
 #include "platform/pci.h"
 
 int is_laptop = 0;
