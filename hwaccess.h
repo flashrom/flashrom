@@ -124,8 +124,6 @@ cpu_to_be(64)
 
 #if NEED_RAW_ACCESS == 1 && (defined (__i386__) || defined (__x86_64__) || defined(__amd64__))
 
-#include "hwaccess_x86_io.h"
-
 #if !(defined(__MACH__) && defined(__APPLE__)) && !defined(__FreeBSD__) && !defined(__FreeBSD_kernel__) && !defined(__DragonFly__) && !defined(__LIBPAYLOAD__)
 typedef struct { uint32_t hi, lo; } msr_t;
 msr_t rdmsr(int addr);

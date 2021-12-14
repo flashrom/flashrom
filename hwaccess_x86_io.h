@@ -29,14 +29,14 @@
 #include <sys/io.h>
 #endif
 
-#define __FLASHROM_HAVE_OUTB__ 1
-
 /* for iopl and outb under Solaris */
 #if defined (__sun)
 #include <sys/sysi86.h>
 #include <sys/psw.h>
 #include <asm/sunddi.h>
 #endif
+
+int rget_io_perms(void);
 
 /* Clarification about OUTB/OUTW/OUTL argument order:
  * OUT[BWL](val, port)

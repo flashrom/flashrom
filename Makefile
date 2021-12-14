@@ -804,23 +804,22 @@ ifneq ($(NEED_RAW_ACCESS), )
 FEATURE_CFLAGS += -D'NEED_RAW_ACCESS=1'
 PROGRAMMER_OBJS += physmap.o hwaccess.o
 
-ifeq ($(TARGET_OS), NetBSD)
 ifeq ($(ARCH), x86)
+FEATURE_CFLAGS += -D'__FLASHROM_HAVE_OUTB__=1'
+PROGRAMMER_OBJS += hwaccess_x86_io.o
+
+ifeq ($(TARGET_OS), NetBSD)
 PCILIBS += -l$(shell uname -p)
 endif
-else
 ifeq ($(TARGET_OS), OpenBSD)
-ifeq ($(ARCH), x86)
 PCILIBS += -l$(shell uname -m)
 endif
-else
+endif
+
 ifeq ($(TARGET_OS), Darwin)
 # DirectHW framework can be found in the DirectHW library.
 PCILIBS += -framework IOKit -framework DirectHW
 endif
-endif
-endif
-
 endif
 
 USE_LIBUSB1 := $(if $(call filter_deps,$(DEPENDS_ON_LIBUSB1)),yes,no)

@@ -347,8 +347,10 @@ endif
 # raw memory, MSR or PCI port I/O access
 if need_raw_access
   srcs += 'hwaccess.c'
+  srcs += 'hwaccess_x86_io.c'
   srcs += 'physmap.c'
   cargs += '-DNEED_RAW_ACCESS=1'
+  cargs += '-D__FLASHROM_HAVE_OUTB__=1'
 endif
 
 # raw serial IO

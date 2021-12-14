@@ -25,16 +25,7 @@
 #include <fcntl.h>
 #endif
 #include "flash.h"
-#include "programmer.h"
 #include "hwaccess.h"
-
-#if USE_IOPERM
-#include <sys/io.h>
-#endif
-
-#if (defined (__i386__) || defined (__x86_64__) || defined(__amd64__)) && USE_DEV_IO
-int io_fd;
-#endif
 
 /* Prevent reordering and/or merging of reads/writes to hardware.
  * Such reordering and/or merging would break device accesses which depend on the exact access order.
@@ -69,59 +60,6 @@ static inline void sync_primitive(void)
 #endif
 #endif
 }
-
-#if (defined (__i386__) || defined (__x86_64__) || defined(__amd64__)) && !(defined(__DJGPP__) || defined(__LIBPAYLOAD__))
-static int release_io_perms(void *p)
-{
-#if defined (__sun)
-	sysi86(SI86V86, V86SC_IOPL, 0);
-#elif USE_DEV_IO
-	close(io_fd);
-#elif USE_IOPERM
-	ioperm(0, 65536, 0);
-#elif USE_IOPL
-	iopl(0);
-#endif
-	return 0;
-}
-
-/* Get I/O permissions with automatic permission release on shutdown. */
-int rget_io_perms(void)
-{
-	#if defined (__sun)
-	if (sysi86(SI86V86, V86SC_IOPL, PS_IOPL) != 0) {
-#elif USE_DEV_IO
-	if ((io_fd = open("/dev/io", O_RDWR)) < 0) {
-#elif USE_IOPERM
-	if (ioperm(0, 65536, 1) != 0) {
-#elif USE_IOPL
-	if (iopl(3) != 0) {
-#endif
-		msg_perr("ERROR: Could not get I/O privileges (%s).\n", strerror(errno));
-		msg_perr("You need to be root.\n");
-#if defined (__OpenBSD__)
-		msg_perr("If you are root already please set securelevel=-1 in /etc/rc.securelevel and\n"
-			 "reboot, or reboot into single user mode.\n");
-#elif defined(__NetBSD__)
-		msg_perr("If you are root already please reboot into single user mode or make sure\n"
-			 "that your kernel configuration has the option INSECURE enabled.\n");
-#endif
-		return 1;
-	} else {
-		register_shutdown(release_io_perms, NULL);
-	}
-	return 0;
-}
-
-#else
-
-/* DJGPP and libpayload environments have full PCI port I/O permissions by default. */
-/* PCI port I/O support is unimplemented on PPC/MIPS and unavailable on ARM. */
-int rget_io_perms(void)
-{
-	return 0;
-}
-#endif
 
 void mmio_writeb(uint8_t val, void *addr)
 {

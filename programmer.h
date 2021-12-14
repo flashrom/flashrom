@@ -271,7 +271,6 @@ struct pci_dev *pci_dev_find(uint16_t vendor, uint16_t device);
 struct pci_dev *pci_card_find(uint16_t vendor, uint16_t device,
 			      uint16_t card_vendor, uint16_t card_device);
 #endif
-int rget_io_perms(void);
 #if CONFIG_INTERNAL == 1
 extern int is_laptop;
 extern int laptop_ok;

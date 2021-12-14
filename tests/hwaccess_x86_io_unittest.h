@@ -39,6 +39,8 @@
 
 #include <stdint.h>
 
+int rget_io_perms(void);
+
 /*
  * Dummy implementation of iopl from sys/io.h.
  * sys/io.h by itself is platform-specific, so instead of including
