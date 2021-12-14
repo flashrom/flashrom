@@ -806,7 +806,7 @@ PROGRAMMER_OBJS += physmap.o hwaccess.o
 
 ifeq ($(ARCH), x86)
 FEATURE_CFLAGS += -D'__FLASHROM_HAVE_OUTB__=1'
-PROGRAMMER_OBJS += hwaccess_x86_io.o
+PROGRAMMER_OBJS += hwaccess_x86_io.o  hwaccess_x86_msr.o
 
 ifeq ($(TARGET_OS), NetBSD)
 PCILIBS += -l$(shell uname -p)
