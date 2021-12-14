@@ -107,6 +107,40 @@ DEPENDS_ON_BITBANG_SPI := \
 	CONFIG_PONY_SPI \
 	CONFIG_RAYER_SPI \
 
+DEPENDS_ON_RAW_MEM_ACCESS := \
+	CONFIG_ATAPROMISE \
+	CONFIG_DRKAISER \
+	CONFIG_GFXNVIDIA \
+	CONFIG_INTERNAL \
+	CONFIG_IT8212 \
+	CONFIG_NICINTEL \
+	CONFIG_NICINTEL_EEPROM \
+	CONFIG_NICINTEL_SPI \
+	CONFIG_OGP_SPI \
+	CONFIG_SATAMV \
+	CONFIG_SATASII \
+
+DEPENDS_ON_X86_MSR := \
+	CONFIG_INTERNAL \
+
+DEPENDS_ON_X86_PORT_IO := \
+	CONFIG_ATAHPT \
+	CONFIG_ATAPROMISE \
+	CONFIG_ATAVIA \
+	CONFIG_DRKAISER \
+	CONFIG_GFXNVIDIA \
+	CONFIG_INTERNAL \
+	CONFIG_NIC3COM \
+	CONFIG_NICINTEL \
+	CONFIG_NICINTEL_EEPROM \
+	CONFIG_NICINTEL_SPI \
+	CONFIG_NICNATSEMI \
+	CONFIG_NICREALTEK \
+	CONFIG_OGP_SPI \
+	CONFIG_RAYER_SPI \
+	CONFIG_SATAMV \
+	CONFIG_SATASII \
+
 DEPENDS_ON_LIBPCI := \
 	CONFIG_ATAHPT \
 	CONFIG_ATAPROMISE \
@@ -255,7 +289,13 @@ FLASHROM_CFLAGS += -D__USE_MINGW_ANSI_STDIO=1
 # For now we disable all PCI-based programmers on Windows/MinGW (no libpci).
 $(call mark_unsupported,$(DEPENDS_ON_LIBPCI))
 # And programmers that need raw access.
-$(call mark_unsupported,CONFIG_RAYER_SPI)
+$(call mark_unsupported,$(DEPENDS_ON_RAW_MEM_ACCESS))
+
+else # No MinGW
+
+# NI USB-845x only supported on Windows at the moment
+$(call mark_unsupported,CONFIG_NI845X_SPI)
+
 endif
 
 ifeq ($(TARGET_OS), libpayload)
@@ -268,7 +308,9 @@ $(call mark_unsupported,CONFIG_DUMMY)
 # libpayload does not provide the romsize field in struct pci_dev that the atapromise code requires.
 $(call mark_unsupported,CONFIG_ATAPROMISE)
 # Bus Pirate, Serprog and PonyProg are not supported with libpayload (missing serial support).
-$(call mark_unsupported,CONFIG_BUSPIRATE_SPI CONFIG_SERPROG CONFIG_PONY_SPI)
+$(call mark_unsupported,$(DEPENDS_ON_SERIAL))
+# Dediprog, Developerbox, USB-Blaster, PICkit2, CH341A and FT2232 are not supported with libpayload (missing libusb support).
+$(call mark_unsupported,$(DEPENDS_ON_LIBUSB1) $(DEPENDS_ON_LIBFTDI) $(DEPENDS_ON_LIBJAYLINK))
 endif
 
 ifeq ($(HAS_LINUX_MTD), no)
@@ -285,7 +327,7 @@ endif
 
 ifeq ($(TARGET_OS), Android)
 # Android on x86 (currently) does not provide raw PCI port I/O operations.
-$(call mark_unsupported,CONFIG_RAYER_SPI)
+$(call mark_unsupported,$(DEPENDS_ON_X86_PORT_IO))
 endif
 
 # Disable the internal programmer on unsupported architectures (everything but x86 and mipsel)
@@ -319,18 +361,15 @@ endif
 # PCI port I/O support is unimplemented on PPC/MIPS/SPARC and unavailable on ARM.
 # Right now this means the drivers below only work on x86.
 ifneq ($(ARCH), x86)
-$(call mark_unsupported,CONFIG_NIC3COM CONFIG_NICREALTEK CONFIG_NICNATSEMI)
-$(call mark_unsupported,CONFIG_RAYER_SPI CONFIG_ATAHPT CONFIG_ATAPROMISE)
-$(call mark_unsupported,CONFIG_SATAMV)
+$(call mark_unsupported,$(DEPENDS_ON_X86_MSR))
+$(call mark_unsupported,$(DEPENDS_ON_X86_PORT_IO))
 endif
 
 # Additionally disable all drivers needing raw access (memory, PCI, port I/O)
 # on architectures with unknown raw access properties.
 # Right now those architectures are alpha hppa m68k sh s390
 ifneq ($(ARCH), $(filter $(ARCH), x86 mips ppc arm sparc arc))
-$(call mark_unsupported,CONFIG_GFXNVIDIA CONFIG_SATASII CONFIG_ATAVIA)
-$(call mark_unsupported,CONFIG_DRKAISER CONFIG_NICINTEL CONFIG_NICINTEL_SPI)
-$(call mark_unsupported,CONFIG_NICINTEL_EEPROM CONFIG_OGP_SPI CONFIG_IT8212)
+$(call mark_unsupported,$(DEPENDS_ON_RAW_MEM_ACCESS))
 endif
 
 ifeq ($(TARGET_OS), $(filter $(TARGET_OS), Linux Darwin NetBSD OpenBSD))
