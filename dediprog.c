@@ -526,7 +526,7 @@ static int dediprog_spi_bulk_read(struct flashctx *flash, uint8_t *buf, unsigned
 			goto err_free;
 	}
 	/* Wait for transfers to finish. */
-	if (dediprog_bulk_read_poll(dp_data->usb_ctx, &status, 0))
+	if (dediprog_bulk_read_poll(dp_data->usb_ctx, &status, 1))
 		goto err_free;
 	/* Check if everything has been transmitted. */
 	if ((status.finished_idx < count) || status.error)
