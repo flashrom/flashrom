@@ -307,6 +307,9 @@ struct flashchip {
 
 		/* Complement bit (CMP) */
 		struct reg_bit_info cmp;
+
+		/* Write Protect Selection (per sector protection when set) */
+		struct reg_bit_info wps;
 	} reg_bits;
 
 	/* Function that takes a set of WP config bits (e.g. BP, SEC, TB, etc) */

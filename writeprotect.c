@@ -73,6 +73,8 @@ static enum flashrom_wp_result read_wp_bits(struct wp_bits *bits, struct flashct
 	if (ret != FLASHROM_WP_OK)
 		return ret;
 
+	/* Note: WPS bit isn't read here, because it's not part of any range. */
+
 	for (i = 0; i < ARRAY_SIZE(bits->bp); i++) {
 		if (bit_map->bp[i].reg == INVALID_REG)
 			break;
@@ -115,6 +117,8 @@ static enum flashrom_wp_result write_wp_bits(struct flashctx *flash, struct wp_b
 	set_reg_bit(reg_values, write_masks, reg_bits->cmp, bits.cmp);
 	set_reg_bit(reg_values, write_masks, reg_bits->srp, bits.srp);
 	set_reg_bit(reg_values, write_masks, reg_bits->srl, bits.srl);
+	/* Note: always setting WPS bit to zero until its fully supported. */
+	set_reg_bit(reg_values, write_masks, reg_bits->wps, 0);
 
 	/* Write each register */
 	for (enum flash_reg reg = STATUS1; reg < MAX_REGISTERS; reg++) {
@@ -252,6 +256,8 @@ static enum flashrom_wp_result get_ranges_and_wp_bits(struct flashctx *flash, st
 	/* Allocate output buffer */
 	*count = 1 << bit_count;
 	*ranges = calloc(*count, sizeof(struct wp_range_and_bits));
+
+	/* TODO: take WPS bit into account. */
 
 	for (size_t range_index = 0; range_index < *count; range_index++) {
 		/*
