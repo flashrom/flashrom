@@ -174,6 +174,7 @@ enum flash_reg {
 	INVALID_REG = 0,
 	STATUS1,
 	STATUS2,
+	STATUS3,
 	MAX_REGISTERS
 };
 

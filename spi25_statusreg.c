@@ -66,6 +66,11 @@ int spi_write_register(const struct flashctx *flash, enum flash_reg reg, uint8_t
 		}
 		msg_cerr("Cannot write SR2: unsupported by chip\n");
 		return 1;
+	case STATUS3:
+		write_cmd[0] = JEDEC_WRSR3;
+		write_cmd[1] = value;
+		write_cmd_len = JEDEC_WRSR3_OUTSIZE;
+		break;
 	default:
 		msg_cerr("Cannot write register: unknown register\n");
 		return 1;
@@ -153,6 +158,9 @@ int spi_read_register(const struct flashctx *flash, enum flash_reg reg, uint8_t 
 		}
 		msg_cerr("Cannot read SR2: unsupported by chip\n");
 		return 1;
+	case STATUS3:
+		read_cmd = JEDEC_RDSR3;
+		break;
 	default:
 		msg_cerr("Cannot read register: unknown register\n");
 		return 1;
