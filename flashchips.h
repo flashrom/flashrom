@@ -1030,4 +1030,7 @@
 #define ZETTADEVICE_ZD25D20     0x2012
 #define ZETTADEVICE_ZD25D40     0x2013
 
+#define XTX_ID                 0x0B    /* XTX Device */
+#define XTX_XT25F128B          0x4018
+
 #endif /* !FLASHCHIPS_H */
