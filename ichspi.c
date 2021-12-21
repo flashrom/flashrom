@@ -926,8 +926,7 @@ static int ich7_run_opcode(OPCODE op, uint32_t offset,
 		programmer_delay(10);
 	}
 	if (!timeout) {
-		msg_perr("timeout, ICH7_REG_SPIS=0x%04x\n",
-			 REGREAD16(ICH7_REG_SPIS));
+		msg_perr("timeout, ICH7_REG_SPIS=0x%04x\n", REGREAD16(ICH7_REG_SPIS));
 		return 1;
 	}
 
@@ -995,8 +994,7 @@ static int ich9_run_opcode(OPCODE op, uint32_t offset,
 	if (datalength != 0) {
 		uint32_t datatemp;
 		temp32 |= SSFC_DS;
-		datatemp = ((((uint32_t)datalength - 1) << SSFC_DBC_OFF) &
-			    SSFC_DBC);
+		datatemp = ((((uint32_t)datalength - 1) << SSFC_DBC_OFF) & SSFC_DBC);
 		temp32 |= datatemp;
 	}
 
@@ -1048,8 +1046,7 @@ static int ich9_run_opcode(OPCODE op, uint32_t offset,
 		programmer_delay(10);
 	}
 	if (!timeout) {
-		msg_perr("timeout, REG_SSFS=0x%08x\n",
-			 REGREAD32(swseq_data.reg_ssfsc));
+		msg_perr("timeout, REG_SSFS=0x%08x\n", REGREAD32(swseq_data.reg_ssfsc));
 		return 1;
 	}
 
@@ -1123,8 +1120,7 @@ static int ich_spi_send_command(const struct flashctx *flash, unsigned int write
 			msg_pdbg("OPCODE 0x%02x has unsupported length, will not execute.\n", cmd);
 			return SPI_INVALID_LENGTH;
 		} else if (opcode_index == -1) {
-			msg_pdbg("Invalid OPCODE 0x%02x, will not execute.\n",
-				 cmd);
+			msg_pdbg("Invalid OPCODE 0x%02x, will not execute.\n", cmd);
 			return SPI_INVALID_OPCODE;
 		}
 	}
@@ -1141,30 +1137,26 @@ static int ich_spi_send_command(const struct flashctx *flash, unsigned int write
 	if ((opcode->spi_type == SPI_OPCODE_TYPE_READ_WITH_ADDRESS) &&
 	    (writecnt != 4)) {
 		msg_perr("%s: Internal command size error for opcode "
-			"0x%02x, got writecnt=%i, want =4\n", __func__, cmd,
-			writecnt);
+			"0x%02x, got writecnt=%i, want =4\n", __func__, cmd, writecnt);
 		return SPI_INVALID_LENGTH;
 	}
 	if ((opcode->spi_type == SPI_OPCODE_TYPE_READ_NO_ADDRESS) &&
 	    (writecnt != 1)) {
 		msg_perr("%s: Internal command size error for opcode "
-			"0x%02x, got writecnt=%i, want =1\n", __func__, cmd,
-			writecnt);
+			"0x%02x, got writecnt=%i, want =1\n", __func__, cmd, writecnt);
 		return SPI_INVALID_LENGTH;
 	}
 	if ((opcode->spi_type == SPI_OPCODE_TYPE_WRITE_WITH_ADDRESS) &&
 	    (writecnt < 4)) {
 		msg_perr("%s: Internal command size error for opcode "
-			"0x%02x, got writecnt=%i, want >=4\n", __func__, cmd,
-			writecnt);
+			"0x%02x, got writecnt=%i, want >=4\n", __func__, cmd, writecnt);
 		return SPI_INVALID_LENGTH;
 	}
 	if (((opcode->spi_type == SPI_OPCODE_TYPE_WRITE_WITH_ADDRESS) ||
 	     (opcode->spi_type == SPI_OPCODE_TYPE_WRITE_NO_ADDRESS)) &&
 	    (readcnt)) {
 		msg_perr("%s: Internal command size error for opcode "
-			"0x%02x, got readcnt=%i, want =0\n", __func__, cmd,
-			readcnt);
+			"0x%02x, got readcnt=%i, want =0\n", __func__, cmd, readcnt);
 		return SPI_INVALID_LENGTH;
 	}
 
@@ -1356,8 +1348,7 @@ static int ich_hwseq_probe(struct flashctx *flash)
 
 		eraser->eraseblocks[0].size = erase_size_low;
 		eraser->eraseblocks[0].count = size_low / erase_size_low;
-		msg_cdbg("The first partition ranges from 0x%06x to 0x%06x.\n",
-			 0, size_low-1);
+		msg_cdbg("The first partition ranges from 0x%06x to 0x%06x.\n", 0, size_low-1);
 		msg_cdbg("In that range are %d erase blocks with %d B each.\n",
 			 size_low / erase_size_low, erase_size_low);
 
@@ -1398,8 +1389,7 @@ static int ich_hwseq_block_erase(struct flashctx *flash, unsigned int addr,
 
 	if (addr + len > flash->chip->total_size * 1024) {
 		msg_perr("Request to erase some inaccessible memory address(es)"
-			 " (addr=0x%x, len=%d). "
-			 "Not erasing anything.\n", addr, len);
+			 " (addr=0x%x, len=%d). Not erasing anything.\n", addr, len);
 		return -1;
 	}
 
@@ -1717,29 +1707,22 @@ static int init_ich7_spi(void *spibar, enum ich_chipset ich_gen)
 {
 	unsigned int i;
 
-	msg_pdbg("0x00: 0x%04x     (SPIS)\n",
-		     mmio_readw(spibar + 0));
-	msg_pdbg("0x02: 0x%04x     (SPIC)\n",
-		     mmio_readw(spibar + 2));
-	msg_pdbg("0x04: 0x%08x (SPIA)\n",
-		     mmio_readl(spibar + 4));
+	msg_pdbg("0x00: 0x%04x     (SPIS)\n",	mmio_readw(spibar + 0));
+	msg_pdbg("0x02: 0x%04x     (SPIC)\n",	mmio_readw(spibar + 2));
+	msg_pdbg("0x04: 0x%08x (SPIA)\n",	mmio_readl(spibar + 4));
+
 	ichspi_bbar = mmio_readl(spibar + 0x50);
-	msg_pdbg("0x50: 0x%08x (BBAR)\n",
-		     ichspi_bbar);
-	msg_pdbg("0x54: 0x%04x     (PREOP)\n",
-		     mmio_readw(spibar + 0x54));
-	msg_pdbg("0x56: 0x%04x     (OPTYPE)\n",
-		     mmio_readw(spibar + 0x56));
-	msg_pdbg("0x58: 0x%08x (OPMENU)\n",
-		     mmio_readl(spibar + 0x58));
-	msg_pdbg("0x5c: 0x%08x (OPMENU+4)\n",
-		     mmio_readl(spibar + 0x5c));
+
+	msg_pdbg("0x50: 0x%08x (BBAR)\n",	ichspi_bbar);
+	msg_pdbg("0x54: 0x%04x     (PREOP)\n",	mmio_readw(spibar + 0x54));
+	msg_pdbg("0x56: 0x%04x     (OPTYPE)\n",	mmio_readw(spibar + 0x56));
+	msg_pdbg("0x58: 0x%08x (OPMENU)\n",	mmio_readl(spibar + 0x58));
+	msg_pdbg("0x5c: 0x%08x (OPMENU+4)\n",	mmio_readl(spibar + 0x5c));
 
 	for (i = 0; i < 3; i++) {
 		int offs;
 		offs = 0x60 + (i * 4);
-		msg_pdbg("0x%02x: 0x%08x (PBR%u)\n", offs,
-			     mmio_readl(spibar + offs), i);
+		msg_pdbg("0x%02x: 0x%08x (PBR%u)\n", offs, mmio_readl(spibar + offs), i);
 	}
 	if (mmio_readw(spibar) & (1 << 15)) {
 		msg_pwarn("WARNING: SPI Configuration Lockdown activated.\n");
@@ -1932,8 +1915,7 @@ static int init_ich_default(void *spibar, enum ich_chipset ich_gen)
 	case LOCKED:
 		msg_pwarn("At least some flash regions are read protected. You have to use a flash\n"
 			  "layout and include only accessible regions. For write operations, you'll\n"
-			  "additionally need the --noverify-all switch. See manpage for more details.\n"
-			  );
+			  "additionally need the --noverify-all switch. See manpage for more details.\n");
 		break;
 	}
 
@@ -2016,8 +1998,7 @@ static int init_ich_default(void *spibar, enum ich_chipset ich_gen)
 		 * access the second flash device.
 		 */
 		if (ich_spi_mode == ich_auto && desc.content.NC != 0) {
-			msg_pinfo("Enabling hardware sequencing due to "
-				  "multiple flash chips detected.\n");
+			msg_pinfo("Enabling hardware sequencing due to multiple flash chips detected.\n");
 			ich_spi_mode = ich_hwseq;
 		}
 	}
@@ -2048,8 +2029,7 @@ static int init_ich_default(void *spibar, enum ich_chipset ich_gen)
 	if (ich_spi_mode == ich_hwseq) {
 		if (!desc_valid) {
 			msg_perr("Hardware sequencing was requested "
-				 "but the flash descriptor is not "
-				 "valid. Aborting.\n");
+				 "but the flash descriptor is not valid. Aborting.\n");
 			return ERROR_FATAL;
 		}
 
@@ -2115,31 +2095,29 @@ int via_init_spi(uint32_t mmio_base)
 	ich_generation = CHIPSET_ICH7;
 	register_spi_master(&spi_master_via, NULL);
 
-	msg_pdbg("0x00: 0x%04x     (SPIS)\n", mmio_readw(ich_spibar + 0));
-	msg_pdbg("0x02: 0x%04x     (SPIC)\n", mmio_readw(ich_spibar + 2));
-	msg_pdbg("0x04: 0x%08x (SPIA)\n", mmio_readl(ich_spibar + 4));
+	msg_pdbg("0x00: 0x%04x     (SPIS)\n",	mmio_readw(ich_spibar + 0));
+	msg_pdbg("0x02: 0x%04x     (SPIC)\n",	mmio_readw(ich_spibar + 2));
+	msg_pdbg("0x04: 0x%08x (SPIA)\n",	mmio_readl(ich_spibar + 4));
 	for (i = 0; i < 2; i++) {
 		int offs;
 		offs = 8 + (i * 8);
-		msg_pdbg("0x%02x: 0x%08x (SPID%d)\n", offs,
-			 mmio_readl(ich_spibar + offs), i);
+		msg_pdbg("0x%02x: 0x%08x (SPID%d)\n", offs, mmio_readl(ich_spibar + offs), i);
 		msg_pdbg("0x%02x: 0x%08x (SPID%d+4)\n", offs + 4,
 			 mmio_readl(ich_spibar + offs + 4), i);
 	}
 	ichspi_bbar = mmio_readl(ich_spibar + 0x50);
-	msg_pdbg("0x50: 0x%08x (BBAR)\n", ichspi_bbar);
-	msg_pdbg("0x54: 0x%04x     (PREOP)\n", mmio_readw(ich_spibar + 0x54));
-	msg_pdbg("0x56: 0x%04x     (OPTYPE)\n", mmio_readw(ich_spibar + 0x56));
-	msg_pdbg("0x58: 0x%08x (OPMENU)\n", mmio_readl(ich_spibar + 0x58));
-	msg_pdbg("0x5c: 0x%08x (OPMENU+4)\n", mmio_readl(ich_spibar + 0x5c));
+
+	msg_pdbg("0x50: 0x%08x (BBAR)\n",	ichspi_bbar);
+	msg_pdbg("0x54: 0x%04x     (PREOP)\n",	mmio_readw(ich_spibar + 0x54));
+	msg_pdbg("0x56: 0x%04x     (OPTYPE)\n",	mmio_readw(ich_spibar + 0x56));
+	msg_pdbg("0x58: 0x%08x (OPMENU)\n",	mmio_readl(ich_spibar + 0x58));
+	msg_pdbg("0x5c: 0x%08x (OPMENU+4)\n",	mmio_readl(ich_spibar + 0x5c));
 	for (i = 0; i < 3; i++) {
 		int offs;
 		offs = 0x60 + (i * 4);
-		msg_pdbg("0x%02x: 0x%08x (PBR%d)\n", offs,
-			 mmio_readl(ich_spibar + offs), i);
+		msg_pdbg("0x%02x: 0x%08x (PBR%d)\n", offs, mmio_readl(ich_spibar + offs), i);
 	}
-	msg_pdbg("0x6c: 0x%04x     (CLOCK/DEBUG)\n",
-		 mmio_readw(ich_spibar + 0x6c));
+	msg_pdbg("0x6c: 0x%04x     (CLOCK/DEBUG)\n", mmio_readw(ich_spibar + 0x6c));
 	if (mmio_readw(ich_spibar) & (1 << 15)) {
 		msg_pwarn("Warning: SPI Configuration Lockdown activated.\n");
 		ichspi_lock = 1;
