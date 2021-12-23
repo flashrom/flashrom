@@ -612,7 +612,6 @@ endif
 ifeq ($(CONFIG_RAYER_SPI), yes)
 FEATURE_CFLAGS += -D'CONFIG_RAYER_SPI=1'
 PROGRAMMER_OBJS += rayer_spi.o
-NEED_RAW_ACCESS += CONFIG_RAYER_SPI
 endif
 
 ifeq ($(CONFIG_RAIDEN_DEBUG_SPI), yes)
@@ -814,10 +813,6 @@ endif
 NEED_LIBPCI := $(call filter_deps,$(DEPENDS_ON_LIBPCI))
 ifneq ($(NEED_LIBPCI), )
 CHECK_LIBPCI = yes
-# This is a dirty hack, but it saves us from checking all PCI drivers and all platforms manually.
-# libpci may need raw memory, MSR or PCI port I/O on some platforms.
-# Individual drivers might have the same needs as well.
-NEED_RAW_ACCESS += $(NEED_LIBPCI)
 FEATURE_CFLAGS += -D'NEED_PCI=1'
 FEATURE_CFLAGS += $(call debug_shell,grep -q "OLD_PCI_GET_DEV := yes" .libdeps && printf "%s" "-D'OLD_PCI_GET_DEV=1'")
 
@@ -830,27 +825,32 @@ PCILIBS += -lpci
 endif
 endif
 
-ifneq ($(NEED_RAW_ACCESS), )
-# Raw memory, MSR or PCI port I/O access.
-FEATURE_CFLAGS += -D'NEED_RAW_ACCESS=1'
-PROGRAMMER_OBJS += hwaccess_physmap.o
+USE_X86_MSR := $(if $(call filter_deps,$(DEPENDS_ON_X86_MSR)),yes,no)
+ifeq ($(USE_X86_MSR), yes)
+PROGRAMMER_OBJS += hwaccess_x86_msr.o
+endif
 
-ifeq ($(ARCH), x86)
+USE_X86_PORT_IO := $(if $(call filter_deps,$(DEPENDS_ON_X86_PORT_IO)),yes,no)
+ifeq ($(USE_X86_PORT_IO), yes)
 FEATURE_CFLAGS += -D'__FLASHROM_HAVE_OUTB__=1'
-PROGRAMMER_OBJS += hwaccess_x86_io.o  hwaccess_x86_msr.o
-
-ifeq ($(TARGET_OS), NetBSD)
-PCILIBS += -l$(shell uname -p)
-endif
-ifeq ($(TARGET_OS), OpenBSD)
-PCILIBS += -l$(shell uname -m)
-endif
+PROGRAMMER_OBJS += hwaccess_x86_io.o
 endif
 
-ifeq ($(TARGET_OS), Darwin)
-# DirectHW framework can be found in the DirectHW library.
-PCILIBS += -framework IOKit -framework DirectHW
+USE_RAW_MEM_ACCESS := $(if $(call filter_deps,$(DEPENDS_ON_RAW_MEM_ACCESS)),yes,no)
+ifeq ($(USE_RAW_MEM_ACCESS), yes)
+PROGRAMMER_OBJS += hwaccess_physmap.o
 endif
+
+ifeq (Darwin yes, $(TARGET_OS) $(filter $(USE_X86_MSR) $(USE_X86_PORT_IO) $(USE_RAW_MEM_ACCESS), yes))
+override LDFLAGS += -framework IOKit -framework DirectHW
+endif
+
+ifeq (NetBSD yes, $(TARGET_OS) $(filter $(USE_X86_MSR) $(USE_X86_PORT_IO), yes))
+override LDFLAGS += -l$(shell uname -p)
+endif
+
+ifeq (OpenBSD yes, $(TARGET_OS) $(filter $(USE_X86_MSR) $(USE_X86_PORT_IO), yes))
+override LDFLAGS += -l$(shell uname -m)
 endif
 
 USE_LIBUSB1 := $(if $(call filter_deps,$(DEPENDS_ON_LIBUSB1)),yes,no)
