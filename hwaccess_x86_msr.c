@@ -204,6 +204,13 @@ void cleanup_cpu_msr(void)
 }
 
 #elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__DragonFly__)
+#include <stdint.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <string.h>
+#include <unistd.h>
+
 #include <sys/ioctl.h>
 
 typedef struct {
