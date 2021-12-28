@@ -2192,13 +2192,28 @@ _free_ret:
 
 int do_read(struct flashctx *const flash, const char *const filename)
 {
-	if (prepare_flash_access(flash, true, false, false, false))
+	int ret;
+
+	unsigned long size = flash->chip->total_size * 1024;
+	unsigned char *buf = calloc(size, sizeof(unsigned char));
+	if (!buf) {
+		msg_gerr("Memory allocation failed!\n");
 		return 1;
+	}
 
-	const int ret = read_flash_to_file(flash, filename);
+	ret = flashrom_image_read(flash, buf, size);
+	if (ret > 0)
+		goto free_out;
 
-	finalize_flash_access(flash);
+	if (write_buf_to_include_args(flash, buf)) {
+		ret = 1;
+		goto free_out;
+	}
+	if (filename)
+		ret = write_buf_to_file(buf, size, filename);
 
+free_out:
+	free(buf);
 	return ret;
 }
 
