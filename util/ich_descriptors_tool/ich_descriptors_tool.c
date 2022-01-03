@@ -238,6 +238,8 @@ int main(int argc, char *argv[])
 			cs = CHIPSET_APOLLO_LAKE;
 		else if (strcmp(csn, "gemini") == 0)
 			cs = CHIPSET_GEMINI_LAKE;
+		else if (strcmp(csn, "elkhart") == 0)
+			cs = CHIPSET_ELKHART_LAKE;
 	}
 
 	ret = read_ich_descriptors_from_dump(buf, len, &cs, &desc);

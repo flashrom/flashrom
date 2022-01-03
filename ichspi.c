@@ -427,6 +427,7 @@ static void prettyprint_ich9_reg_hsfs(uint16_t reg_val, enum ich_chipset ich_gen
 	case CHIPSET_300_SERIES_CANNON_POINT:
 	case CHIPSET_400_SERIES_COMET_POINT:
 	case CHIPSET_500_SERIES_TIGER_POINT:
+	case CHIPSET_ELKHART_LAKE:
 		break;
 	default:
 		pprint_reg(HSFS, BERASE, reg_val, ", ");
@@ -439,6 +440,7 @@ static void prettyprint_ich9_reg_hsfs(uint16_t reg_val, enum ich_chipset ich_gen
 	case CHIPSET_300_SERIES_CANNON_POINT:
 	case CHIPSET_400_SERIES_COMET_POINT:
 	case CHIPSET_500_SERIES_TIGER_POINT:
+	case CHIPSET_ELKHART_LAKE:
 		pprint_reg(HSFS, PRR34_LOCKDN, reg_val, ", ");
 		pprint_reg(HSFS, WRSDIS, reg_val, ", ");
 		break;
@@ -460,6 +462,7 @@ static void prettyprint_ich9_reg_hsfc(uint16_t reg_val, enum ich_chipset ich_gen
 	case CHIPSET_300_SERIES_CANNON_POINT:
 	case CHIPSET_400_SERIES_COMET_POINT:
 	case CHIPSET_500_SERIES_TIGER_POINT:
+	case CHIPSET_ELKHART_LAKE:
 		_pprint_reg(HSFC, PCH100_HSFC_FCYCLE, PCH100_HSFC_FCYCLE_OFF, reg_val, ", ");
 		pprint_reg(HSFC, WET, reg_val, ", ");
 		break;
@@ -1780,6 +1783,7 @@ static void init_chipset_properties(struct swseq_data *swseq, struct hwseq_data 
 	case CHIPSET_500_SERIES_TIGER_POINT:
 	case CHIPSET_APOLLO_LAKE:
 	case CHIPSET_GEMINI_LAKE:
+	case CHIPSET_ELKHART_LAKE:
 		*num_pr			= 6;	/* Includes GPR0 */
 		*reg_pr0		= PCH100_REG_FPR0;
 		swseq->reg_ssfsc	= PCH100_REG_SSFSC;
@@ -1815,6 +1819,7 @@ static void init_chipset_properties(struct swseq_data *swseq, struct hwseq_data 
 	case CHIPSET_500_SERIES_TIGER_POINT:
 	case CHIPSET_APOLLO_LAKE:
 	case CHIPSET_GEMINI_LAKE:
+	case CHIPSET_ELKHART_LAKE:
 		*num_freg = 16;
 		break;
 	default:
@@ -1872,6 +1877,7 @@ static int init_ich_default(void *spibar, enum ich_chipset ich_gen)
 	case CHIPSET_500_SERIES_TIGER_POINT:
 	case CHIPSET_APOLLO_LAKE:
 	case CHIPSET_GEMINI_LAKE:
+	case CHIPSET_ELKHART_LAKE:
 		tmp = mmio_readl(spibar + PCH100_REG_DLOCK);
 		msg_pdbg("0x0c: 0x%08x (DLOCK)\n", tmp);
 		prettyprint_pch100_reg_dlock(tmp);
@@ -1949,6 +1955,7 @@ static int init_ich_default(void *spibar, enum ich_chipset ich_gen)
 		case CHIPSET_APOLLO_LAKE:
 		case CHIPSET_GEMINI_LAKE:
 		case CHIPSET_BAYTRAIL:
+		case CHIPSET_ELKHART_LAKE:
 			break;
 		default:
 			ichspi_bbar = mmio_readl(spibar + ICH9_REG_BBAR);
@@ -1983,6 +1990,7 @@ static int init_ich_default(void *spibar, enum ich_chipset ich_gen)
 		case CHIPSET_500_SERIES_TIGER_POINT:
 		case CHIPSET_APOLLO_LAKE:
 		case CHIPSET_GEMINI_LAKE:
+		case CHIPSET_ELKHART_LAKE:
 			break;
 		default:
 			tmp = mmio_readl(spibar + ICH9_REG_FPB);
@@ -2021,8 +2029,9 @@ static int init_ich_default(void *spibar, enum ich_chipset ich_gen)
 
 	if (ich_spi_mode == ich_auto &&
 	    (ich_gen == CHIPSET_APOLLO_LAKE ||
-	     ich_gen == CHIPSET_GEMINI_LAKE)) {
-		msg_pdbg("Enabling hardware sequencing by default for Apollo/Gemini Lake.\n");
+	     ich_gen == CHIPSET_GEMINI_LAKE ||
+	     ich_gen == CHIPSET_ELKHART_LAKE)) {
+		msg_pdbg("Enabling hardware sequencing by default for Apollo/Gemini/Elkhart Lake.\n");
 		ich_spi_mode = ich_hwseq;
 	}
 

@@ -46,6 +46,7 @@ ssize_t ich_number_of_regions(const enum ich_chipset cs, const struct ich_desc_c
 	case CHIPSET_300_SERIES_CANNON_POINT:
 	case CHIPSET_400_SERIES_COMET_POINT:
 	case CHIPSET_500_SERIES_TIGER_POINT:
+	case CHIPSET_ELKHART_LAKE:
 		return 16;
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 		return 10;
@@ -72,6 +73,7 @@ ssize_t ich_number_of_masters(const enum ich_chipset cs, const struct ich_desc_c
 	case CHIPSET_C620_SERIES_LEWISBURG:
 	case CHIPSET_APOLLO_LAKE:
 	case CHIPSET_GEMINI_LAKE:
+	case CHIPSET_ELKHART_LAKE:
 		if (cont->NM <= MAX_NUM_MASTERS)
 			return cont->NM;
 		break;
@@ -109,7 +111,7 @@ void prettyprint_ich_chipset(enum ich_chipset cs)
 		"8 series Lynx Point", "Baytrail", "8 series Lynx Point LP", "8 series Wellsburg",
 		"9 series Wildcat Point", "9 series Wildcat Point LP", "100 series Sunrise Point",
 		"C620 series Lewisburg", "300 series Cannon Point", "400 series Comet Point",
-		"500 series Tiger Point", "Apollo Lake", "Gemini Lake",
+		"500 series Tiger Point", "Apollo Lake", "Gemini Lake", "Elkhart Lake",
 	};
 	if (cs < CHIPSET_ICH8 || cs - CHIPSET_ICH8 + 1 >= ARRAY_SIZE(chipset_names))
 		cs = 0;
@@ -205,7 +207,8 @@ static const char *pprint_density(enum ich_chipset cs, const struct ich_descript
 	case CHIPSET_400_SERIES_COMET_POINT:
 	case CHIPSET_500_SERIES_TIGER_POINT:
 	case CHIPSET_APOLLO_LAKE:
-	case CHIPSET_GEMINI_LAKE: {
+	case CHIPSET_GEMINI_LAKE:
+	case CHIPSET_ELKHART_LAKE: {
 		uint8_t size_enc;
 		if (idx == 0) {
 			size_enc = desc->component.dens_new.comp1_density;
@@ -224,7 +227,7 @@ static const char *pprint_density(enum ich_chipset cs, const struct ich_descript
 
 static const char *pprint_freq(enum ich_chipset cs, uint8_t value)
 {
-	static const char *const freq_str[4][8] = { {
+	static const char *const freq_str[5][8] = { {
 		"20 MHz",
 		"33 MHz",
 		"reserved",
@@ -260,6 +263,15 @@ static const char *pprint_freq(enum ich_chipset cs, uint8_t value)
 		"reserved",
 		"14 MHz",
 		"reserved"
+	}, {
+		"reserved",
+		"50 MHz",
+		"reserved",
+		"reserved",
+		"33 MHz",
+		"20 MHz",
+		"reserved",
+		"reserved",
 	}};
 
 	switch (cs) {
@@ -289,6 +301,8 @@ static const char *pprint_freq(enum ich_chipset cs, uint8_t value)
 		return freq_str[2][value];
 	case CHIPSET_500_SERIES_TIGER_POINT:
 		return freq_str[3][value];
+	case CHIPSET_ELKHART_LAKE:
+		return freq_str[4][value];
 	case CHIPSET_ICH_UNKNOWN:
 	default:
 		return "unknown";
@@ -334,6 +348,7 @@ void prettyprint_ich_descriptor_component(enum ich_chipset cs, const struct ich_
 	case CHIPSET_500_SERIES_TIGER_POINT:
 	case CHIPSET_APOLLO_LAKE:
 	case CHIPSET_GEMINI_LAKE:
+	case CHIPSET_ELKHART_LAKE:
 		has_flill1 = true;
 		break;
 	default:
@@ -513,7 +528,7 @@ void prettyprint_ich_descriptor_master(const enum ich_chipset cs, const struct i
 					  desc->master.mstr[i].write & (1 << j) ? 'w' : ' ');
 			msg_pdbg2("\n");
 		}
-	} else if (cs == CHIPSET_APOLLO_LAKE || cs == CHIPSET_GEMINI_LAKE) {
+	} else if (cs == CHIPSET_APOLLO_LAKE || cs == CHIPSET_GEMINI_LAKE || cs == CHIPSET_ELKHART_LAKE) {
 		const char *const master_names[] = { "BIOS", "TXE", };
 		if (nm > (ssize_t)ARRAY_SIZE(master_names)) {
 			msg_pdbg2("%s: number of masters too high (%d).\n", __func__, desc->content.NM);
@@ -1016,6 +1031,8 @@ static enum ich_chipset guess_ich_chipset_from_content(const struct ich_desc_con
 			return CHIPSET_300_SERIES_CANNON_POINT;
 		if (content->CSSL == 0x11)
 			return CHIPSET_500_SERIES_TIGER_POINT;
+		if (content->CSSL == 0x03)
+			return CHIPSET_ELKHART_LAKE;
 		msg_pwarn("Unknown flash descriptor, assuming 500 series compatibility.\n");
 		return CHIPSET_500_SERIES_TIGER_POINT;
 	}
@@ -1038,6 +1055,7 @@ static enum ich_chipset guess_ich_chipset(const struct ich_desc_content *const c
 	case CHIPSET_400_SERIES_COMET_POINT:
 	case CHIPSET_500_SERIES_TIGER_POINT:
 	case CHIPSET_GEMINI_LAKE:
+	case CHIPSET_ELKHART_LAKE:
 		/* `freq_read` was repurposed, so can't check on it any more. */
 		break;
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
@@ -1194,6 +1212,7 @@ int getFCBA_component_density(enum ich_chipset cs, const struct ich_descriptors 
 	case CHIPSET_500_SERIES_TIGER_POINT:
 	case CHIPSET_APOLLO_LAKE:
 	case CHIPSET_GEMINI_LAKE:
+	case CHIPSET_ELKHART_LAKE:
 		if (idx == 0) {
 			size_enc = desc->component.dens_new.comp1_density;
 		} else {
@@ -1232,6 +1251,7 @@ static uint32_t read_descriptor_reg(enum ich_chipset cs, uint8_t section, uint16
 	case CHIPSET_500_SERIES_TIGER_POINT:
 	case CHIPSET_APOLLO_LAKE:
 	case CHIPSET_GEMINI_LAKE:
+	case CHIPSET_ELKHART_LAKE:
 		mmio_le_writel(control, spibar + PCH100_REG_FDOC);
 		return mmio_le_readl(spibar + PCH100_REG_FDOD);
 	default:
