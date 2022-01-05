@@ -234,6 +234,9 @@ int main(int argc, char *argv[])
 		else if ((strcmp(csn, "500") == 0) ||
 			 (strcmp(csn, "tiger") == 0))
 			cs = CHIPSET_500_SERIES_TIGER_POINT;
+		else if ((strcmp(csn, "600") == 0) ||
+			 (strcmp(csn, "alder") == 0))
+			cs = CHIPSET_600_SERIES_ALDER_POINT;
 		else if (strcmp(csn, "apollo") == 0)
 			cs = CHIPSET_APOLLO_LAKE;
 		else if (strcmp(csn, "gemini") == 0)
