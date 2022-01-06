@@ -20,7 +20,6 @@
 #include <string.h>
 #include "flash.h"
 #include "programmer.h"
-#include "hwaccess_x86_io.h"
 #include "platform/pci.h"
 
 #define PCI_VENDOR_ID_VIA	0x1106
@@ -163,9 +162,6 @@ static int atavia_init(void)
 		msg_pinfo("Mapping addresses to base %p.\n", atavia_offset);
 	}
 	free(arg);
-
-	if (rget_io_perms())
-		return 1;
 
 	dev = pcidev_init(ata_via, PCI_ROM_ADDRESS); /* Actually no BAR setup needed at all. */
 	if (!dev)
