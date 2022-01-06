@@ -18,7 +18,6 @@
 #include "flash.h"
 #include "programmer.h"
 #include "hwaccess.h"
-#include "hwaccess_x86_io.h"
 #include "hwaccess_physmap.h"
 #include "platform/pci.h"
 
@@ -58,9 +57,6 @@ static const struct par_master par_master_it8212 = {
 
 static int it8212_init(void)
 {
-	if (rget_io_perms())
-		return 1;
-
 	struct pci_dev *dev = pcidev_init(devs_it8212, PCI_ROM_ADDRESS);
 	if (!dev)
 		return 1;
