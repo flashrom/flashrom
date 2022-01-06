@@ -904,34 +904,6 @@ ifeq ($(ARCH), x86)
 	@+$(MAKE) -C util/ich_descriptors_tool/ HOST_OS=$(HOST_OS) TARGET_OS=$(TARGET_OS)
 endif
 
-$(PROGRAM)$(EXEC_SUFFIX): $(OBJS)
-	$(CC) -o $(PROGRAM)$(EXEC_SUFFIX) $(OBJS) $(LDFLAGS)
-
-libflashrom.a: $(LIBFLASHROM_OBJS)
-	$(AR) rcs $@ $^
-	$(RANLIB) $@
-
-# TAROPTIONS reduces information leakage from the packager's system.
-# If other tar programs support command line arguments for setting uid/gid of
-# stored files, they can be handled here as well.
-TAROPTIONS = $(shell LC_ALL=C tar --version|grep -q GNU && echo "--owner=root --group=root")
-
-%.o: %.c features
-	$(CC) -MMD $(CFLAGS) $(CPPFLAGS) $(FLASHROM_CFLAGS) $(FEATURE_CFLAGS) $(SCMDEF) -o $@ -c $<
-
-# Make sure to add all names of generated binaries here.
-# This includes all frontends and libflashrom.
-# We don't use EXEC_SUFFIX here because we want to clean everything.
-clean:
-	rm -f $(PROGRAM) $(PROGRAM).exe libflashrom.a $(filter-out Makefile.d, $(wildcard *.d *.o)) $(PROGRAM).8 $(PROGRAM).8.html $(BUILD_DETAILS_FILE)
-	@+$(MAKE) -C util/ich_descriptors_tool/ clean
-
-distclean: clean
-	rm -f .libdeps
-
-strip: $(PROGRAM)$(EXEC_SUFFIX)
-	$(STRIP) $(STRIP_ARGS) $(PROGRAM)$(EXEC_SUFFIX)
-
 # to define test programs we use verbatim variables, which get exported
 # to environment variables and are referenced with $$<varname> later
 
@@ -979,6 +951,14 @@ hwlibs: compiler
 		echo "  LDFLAGS: $(CONFIG_LIBFTDI1_LDFLAGS)";	\
 	fi
 
+features: hwlibs
+	@echo "Checking for header \"mtd/mtd-user.h\": $(HAS_LINUX_MTD)"
+	@echo "Checking for header \"linux/spi/spidev.h\": $(HAS_LINUX_SPI)"
+	@echo "Checking for header \"linux/i2c-dev.h\": $(HAS_LINUX_I2C)"
+	@echo "Checking for header \"linux/i2c.h\": $(HAS_LINUX_I2C)"
+	@echo "Checking for header \"sys/utsname.h\": $(HAS_UTSNAME)"
+	@echo "Checking for function \"clock_gettime\": $(HAS_CLOCK_GETTIME)"
+
 # If a user does not explicitly request a non-working feature, we should
 # silently disable it. However, if a non-working (does not compile) feature
 # is explicitly requested, we should bail out with a descriptive error message.
@@ -993,13 +973,15 @@ ifneq ($(UNSUPPORTED_FEATURES), )
 	@false
 endif
 
-features: hwlibs
-	@echo "Checking for header \"mtd/mtd-user.h\": $(HAS_LINUX_MTD)"
-	@echo "Checking for header \"linux/spi/spidev.h\": $(HAS_LINUX_SPI)"
-	@echo "Checking for header \"linux/i2c-dev.h\": $(HAS_LINUX_I2C)"
-	@echo "Checking for header \"linux/i2c.h\": $(HAS_LINUX_I2C)"
-	@echo "Checking for header \"sys/utsname.h\": $(HAS_UTSNAME)"
-	@echo "Checking for function \"clock_gettime\": $(HAS_CLOCK_GETTIME)"
+%.o: %.c features
+	$(CC) -MMD $(CFLAGS) $(CPPFLAGS) $(FLASHROM_CFLAGS) $(FEATURE_CFLAGS) $(SCMDEF) -o $@ -c $<
+
+$(PROGRAM)$(EXEC_SUFFIX): $(OBJS)
+	$(CC) -o $(PROGRAM)$(EXEC_SUFFIX) $(OBJS) $(LDFLAGS)
+
+libflashrom.a: $(LIBFLASHROM_OBJS)
+	$(AR) rcs $@ $^
+	$(RANLIB) $@
 
 $(PROGRAM).8.html: $(PROGRAM).8
 	@groff -mandoc -Thtml $< >$@
@@ -1007,6 +989,19 @@ $(PROGRAM).8.html: $(PROGRAM).8
 $(PROGRAM).8: $(PROGRAM).8.tmpl
 	@# Add the man page change date and version to the man page
 	@sed -e 's#.TH FLASHROM 8 .*#.TH FLASHROM 8 "$(MAN_DATE)" "$(VERSION)" "$(MAN_DATE)"#' <$< >$@
+
+strip: $(PROGRAM)$(EXEC_SUFFIX)
+	$(STRIP) $(STRIP_ARGS) $(PROGRAM)$(EXEC_SUFFIX)
+
+# Make sure to add all names of generated binaries here.
+# This includes all frontends and libflashrom.
+# We don't use EXEC_SUFFIX here because we want to clean everything.
+clean:
+	rm -f $(PROGRAM) $(PROGRAM).exe libflashrom.a $(filter-out Makefile.d, $(wildcard *.d *.o)) $(PROGRAM).8 $(PROGRAM).8.html $(BUILD_DETAILS_FILE)
+	@+$(MAKE) -C util/ich_descriptors_tool/ clean
+
+distclean: clean
+	rm -f .libdeps
 
 install: $(PROGRAM)$(EXEC_SUFFIX) $(PROGRAM).8
 	mkdir -p $(DESTDIR)$(PREFIX)/sbin
@@ -1041,6 +1036,12 @@ _export: $(PROGRAM).8
 
 export: _export
 	@echo "Exported $(EXPORTDIR)/flashrom-$(RELEASENAME)/"
+
+
+# TAROPTIONS reduces information leakage from the packager's system.
+# If other tar programs support command line arguments for setting uid/gid of
+# stored files, they can be handled here as well.
+TAROPTIONS = $(shell LC_ALL=C tar --version|grep -q GNU && echo "--owner=root --group=root")
 
 tarball: _export
 	@tar -cj --format=ustar -f "$(EXPORTDIR)/flashrom-$(RELEASENAME).tar.bz2" -C $(EXPORTDIR)/ \
