@@ -18,7 +18,6 @@
 #include "flash.h"
 #include "programmer.h"
 #include "hwaccess.h"
-#include "hwaccess_x86_io.h"
 #include "hwaccess_physmap.h"
 #include "platform/pci.h"
 
@@ -67,9 +66,6 @@ static int drkaiser_init(void)
 {
 	struct pci_dev *dev = NULL;
 	uint32_t addr;
-
-	if (rget_io_perms())
-		return 1;
 
 	dev = pcidev_init(drkaiser_pcidev, PCI_BASE_ADDRESS_2);
 	if (!dev)
