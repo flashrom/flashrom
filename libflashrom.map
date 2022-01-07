@@ -14,6 +14,7 @@ LIBFLASHROM_1.0 {
     flashrom_image_verify;
     flashrom_image_write;
     flashrom_init;
+    flashrom_layout_get_region_range;
     flashrom_layout_include_region;
     flashrom_layout_read_fmap_from_buffer;
     flashrom_layout_read_fmap_from_rom;

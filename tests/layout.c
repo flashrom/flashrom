@@ -121,7 +121,7 @@ void layout_pass_sanity_checks_test_success(void **state)
 	printf("done\n");
 
 	printf("Asserting region range... ");
-	get_region_range(layout, "region", &start, &len);
+	flashrom_layout_get_region_range(layout, "region", &start, &len);
 	assert_int_equal(start, region_start);
 	assert_int_equal(len, region_end - region_start + 1);
 	printf("done\n");

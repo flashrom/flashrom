@@ -59,8 +59,6 @@ int register_include_arg(struct layout_include_args **, const char *arg);
 int process_include_args(struct flashrom_layout *, const struct layout_include_args *);
 void cleanup_include_args(struct layout_include_args **);
 
-int get_region_range(struct flashrom_layout *, const char *name,
-		     unsigned int *start, unsigned int *len);
 const struct romentry *layout_next_included_region(const struct flashrom_layout *, chipoff_t);
 const struct romentry *layout_next_included(const struct flashrom_layout *, const struct romentry *);
 const struct romentry *layout_next(const struct flashrom_layout *, const struct romentry *);

@@ -188,18 +188,6 @@ static int find_romentry(struct flashrom_layout *const l, char *name, char *file
 	return 0;
 }
 
-int get_region_range(struct flashrom_layout *const l, const char *name,
-		     unsigned int *start, unsigned int *len)
-{
-	const struct romentry *const entry = _layout_entry_by_name(l, name);
-	if (entry) {
-		*start = entry->start;
-		*len = entry->end - entry->start + 1;
-		return 0;
-	}
-	return 1;
-}
-
 /* process -i arguments
  * returns 0 to indicate success, >0 to indicate failure
  */
@@ -442,6 +430,29 @@ _err_ret:
 int flashrom_layout_include_region(struct flashrom_layout *const layout, const char *name)
 {
 	return include_region(layout, name, NULL);
+}
+
+/**
+ * @brief Get given region's offset and length.
+ *
+ * @param layout The layout to alter.
+ * @param name   The name of the region.
+ * @param start  The start address to be written.
+ * @param len    The length of the region to be written.
+ *
+ * @return 0 on success,
+ *         1 if the given name can't be found.
+ */
+int flashrom_layout_get_region_range(struct flashrom_layout *const l, const char *name,
+			      unsigned int *start, unsigned int *len)
+{
+	const struct romentry *const entry = _layout_entry_by_name(l, name);
+	if (entry) {
+		*start = entry->start;
+		*len = entry->end - entry->start + 1;
+		return 0;
+	}
+	return 1;
 }
 
 /**

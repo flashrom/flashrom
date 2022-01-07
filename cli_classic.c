@@ -782,7 +782,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (set_wp_region && wp_region) {
-		if (get_region_range(layout, wp_region, &wp_start, &wp_len)) {
+		if (flashrom_layout_get_region_range(layout, wp_region, &wp_start, &wp_len)) {
 			ret = 1;
 			goto out_release;
 		}

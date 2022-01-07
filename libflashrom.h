@@ -114,6 +114,8 @@ int flashrom_layout_read_fmap_from_buffer(struct flashrom_layout **layout,
 		struct flashrom_flashctx *, const uint8_t *buf, size_t len);
 int flashrom_layout_add_region(struct flashrom_layout *, size_t start, size_t end, const char *name);
 int flashrom_layout_include_region(struct flashrom_layout *, const char *name);
+int flashrom_layout_get_region_range(struct flashrom_layout *, const char *name,
+		     unsigned int *start, unsigned int *len);
 void flashrom_layout_release(struct flashrom_layout *);
 void flashrom_layout_set(struct flashrom_flashctx *, const struct flashrom_layout *);
 
