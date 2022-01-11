@@ -280,9 +280,11 @@ static int linux_mtd_erase(struct flashctx *flash,
 			.length = mtd_erasesize,
 		};
 
-		if (ioctl(fileno(dev_fp), MEMERASE, &erase_info) == -1) {
-			msg_perr("%s: ioctl: %s\n", __func__, strerror(errno));
-			return 1;
+		int ret = ioctl(fileno(dev_fp), MEMERASE, &erase_info);
+		if (ret < 0) {
+		        msg_perr("%s: MEMERASE ioctl call returned %d, error: %s\n",
+		                 __func__, ret, strerror(errno));
+		        return 1;
 		}
 	}
 
