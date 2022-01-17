@@ -19,6 +19,7 @@
 
 #include "chipdrivers.h"
 #include "flash.h"
+#include "libflashrom.h"
 #include "programmer.h"
 
 #define MOCK_CHIP_SIZE (8*MiB)
@@ -182,7 +183,7 @@ void erase_chip_test_success(void **state)
 	setup_chip(&flashctx, &layout, &mock_chip, param);
 
 	printf("Erase chip operation started.\n");
-	assert_int_equal(0, do_erase(&flashctx));
+	assert_int_equal(0, flashrom_flash_erase(&flashctx));
 	printf("Erase chip operation done.\n");
 
 	teardown(&layout);
@@ -204,7 +205,7 @@ void erase_chip_with_dummyflasher_test_success(void **state)
 	setup_chip(&flashctx, &layout, &mock_chip, param_dup);
 
 	printf("Erase chip operation started.\n");
-	assert_int_equal(0, do_erase(&flashctx));
+	assert_int_equal(0, flashrom_flash_erase(&flashctx));
 	printf("Erase chip operation done.\n");
 
 	teardown(&layout);
