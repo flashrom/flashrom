@@ -293,12 +293,17 @@ void write_chip_test_success(void **state)
 	 * needs to be provided and image_stat.st_size needs to be mocked.
 	 */
 	const char *const filename = "-";
+	unsigned long size = mock_chip.total_size * 1024;
+	uint8_t *const newcontents = malloc(size);
 
 	printf("Write chip operation started.\n");
-	assert_int_equal(0, do_write(&flashctx, filename, NULL));
+	assert_int_equal(0, read_buf_from_file(newcontents, size, filename));
+	assert_int_equal(0, flashrom_image_write(&flashctx, newcontents, size, NULL));
 	printf("Write chip operation done.\n");
 
 	teardown(&layout);
+
+	free(newcontents);
 }
 
 void write_chip_with_dummyflasher_test_success(void **state)
@@ -318,12 +323,16 @@ void write_chip_with_dummyflasher_test_success(void **state)
 
 	/* See comment in write_chip_test_success */
 	const char *const filename = "-";
+	unsigned long size = mock_chip.total_size * 1024;
+	uint8_t *const newcontents = malloc(size);
 
 	printf("Write chip operation started.\n");
-	assert_int_equal(0, do_write(&flashctx, filename, NULL));
+	assert_int_equal(0, read_buf_from_file(newcontents, size, filename));
+	assert_int_equal(0, flashrom_image_write(&flashctx, newcontents, size, NULL));
 	printf("Write chip operation done.\n");
 
 	teardown(&layout);
 
 	free(param_dup);
+	free(newcontents);
 }
