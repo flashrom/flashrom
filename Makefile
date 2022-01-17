@@ -833,7 +833,7 @@ endif
 ifneq ($(NEED_RAW_ACCESS), )
 # Raw memory, MSR or PCI port I/O access.
 FEATURE_CFLAGS += -D'NEED_RAW_ACCESS=1'
-PROGRAMMER_OBJS += hwaccess.o hwaccess_physmap.o
+PROGRAMMER_OBJS += hwaccess_physmap.o
 
 ifeq ($(ARCH), x86)
 FEATURE_CFLAGS += -D'__FLASHROM_HAVE_OUTB__=1'

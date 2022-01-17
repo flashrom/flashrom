@@ -29,7 +29,6 @@
 #include "fmap.h"
 #include "programmer.h"
 #include "layout.h"
-#include "hwaccess.h"
 #include "ich_descriptors.h"
 #include "libflashrom.h"
 

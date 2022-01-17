@@ -17,7 +17,6 @@
 /* Datasheets can be found on http://www.siliconimage.com. Great thanks! */
 
 #include "programmer.h"
-#include "hwaccess.h"
 #include "hwaccess_physmap.h"
 #include "platform/pci.h"
 

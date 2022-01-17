@@ -18,16 +18,20 @@
 
 #include <unistd.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 #include "flash.h"
+#include "hwaccess.h"
 #include "hwaccess_physmap.h"
 
 #if !defined(__DJGPP__) && !defined(__LIBPAYLOAD__)
 /* No file access needed/possible to get mmap access permissions or access MSR. */
+#include <unistd.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <fcntl.h>
 #endif
 
@@ -360,4 +364,213 @@ void *physmap_ro(const char *descr, uintptr_t phys_addr, size_t len)
 void *physmap_ro_unaligned(const char *descr, uintptr_t phys_addr, size_t len)
 {
 	return physmap_common(descr, phys_addr, len, PHYSM_RO, PHYSM_NOCLEANUP, PHYSM_EXACT);
+}
+
+/* Prevent reordering and/or merging of reads/writes to hardware.
+ * Such reordering and/or merging would break device accesses which depend on the exact access order.
+ */
+static inline void sync_primitive(void)
+{
+/* This is not needed for...
+ * - x86: uses uncached accesses which have a strongly ordered memory model.
+ * - MIPS: uses uncached accesses in mode 2 on /dev/mem which has also a strongly ordered memory model.
+ * - ARM: uses a strongly ordered memory model for device memories.
+ *
+ * See also https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/Documentation/memory-barriers.txt
+ */
+// cf. http://lxr.free-electrons.com/source/arch/powerpc/include/asm/barrier.h
+#if defined(__powerpc) || defined(__powerpc__) || defined(__powerpc64__) || defined(__POWERPC__) || \
+      defined(__ppc__) || defined(__ppc64__) || defined(_M_PPC) || defined(_ARCH_PPC) || \
+      defined(_ARCH_PPC64) || defined(__ppc)
+	asm("eieio" : : : "memory");
+#elif (__sparc__) || defined (__sparc)
+#if defined(__sparc_v9__) || defined(__sparcv9)
+	/* Sparc V9 CPUs support three different memory orderings that range from x86-like TSO to PowerPC-like
+	 * RMO. The modes can be switched at runtime thus to make sure we maintain the right order of access we
+	 * use the strongest hardware memory barriers that exist on Sparc V9. */
+	asm volatile ("membar #Sync" ::: "memory");
+#elif defined(__sparc_v8__) || defined(__sparcv8)
+	/* On SPARC V8 there is no RMO just PSO and that does not apply to I/O accesses... but if V8 code is run
+	 * on V9 CPUs it might apply... or not... we issue a write barrier anyway. That's the most suitable
+	 * operation in the V8 instruction set anyway. If you know better then please tell us. */
+	asm volatile ("stbar");
+#else
+	#error Unknown and/or unsupported SPARC instruction set version detected.
+#endif
+#endif
+}
+
+void mmio_writeb(uint8_t val, void *addr)
+{
+	*(volatile uint8_t *) addr = val;
+	sync_primitive();
+}
+
+void mmio_writew(uint16_t val, void *addr)
+{
+	*(volatile uint16_t *) addr = val;
+	sync_primitive();
+}
+
+void mmio_writel(uint32_t val, void *addr)
+{
+	*(volatile uint32_t *) addr = val;
+	sync_primitive();
+}
+
+uint8_t mmio_readb(const void *addr)
+{
+	return *(volatile const uint8_t *) addr;
+}
+
+uint16_t mmio_readw(const void *addr)
+{
+	return *(volatile const uint16_t *) addr;
+}
+
+uint32_t mmio_readl(const void *addr)
+{
+	return *(volatile const uint32_t *) addr;
+}
+
+void mmio_readn(const void *addr, uint8_t *buf, size_t len)
+{
+	memcpy(buf, addr, len);
+	return;
+}
+
+void mmio_le_writeb(uint8_t val, void *addr)
+{
+	mmio_writeb(cpu_to_le8(val), addr);
+}
+
+void mmio_le_writew(uint16_t val, void *addr)
+{
+	mmio_writew(cpu_to_le16(val), addr);
+}
+
+void mmio_le_writel(uint32_t val, void *addr)
+{
+	mmio_writel(cpu_to_le32(val), addr);
+}
+
+uint8_t mmio_le_readb(const void *addr)
+{
+	return le_to_cpu8(mmio_readb(addr));
+}
+
+uint16_t mmio_le_readw(const void *addr)
+{
+	return le_to_cpu16(mmio_readw(addr));
+}
+
+uint32_t mmio_le_readl(const void *addr)
+{
+	return le_to_cpu32(mmio_readl(addr));
+}
+
+enum mmio_write_type {
+	mmio_write_type_b,
+	mmio_write_type_w,
+	mmio_write_type_l,
+};
+
+struct undo_mmio_write_data {
+	void *addr;
+	int reg;
+	enum mmio_write_type type;
+	union {
+		uint8_t bdata;
+		uint16_t wdata;
+		uint32_t ldata;
+	};
+};
+
+static int undo_mmio_write(void *p)
+{
+	struct undo_mmio_write_data *data = p;
+	msg_pdbg("Restoring MMIO space at %p\n", data->addr);
+	switch (data->type) {
+	case mmio_write_type_b:
+		mmio_writeb(data->bdata, data->addr);
+		break;
+	case mmio_write_type_w:
+		mmio_writew(data->wdata, data->addr);
+		break;
+	case mmio_write_type_l:
+		mmio_writel(data->ldata, data->addr);
+		break;
+	}
+	/* p was allocated in register_undo_mmio_write. */
+	free(p);
+	return 0;
+}
+
+#define register_undo_mmio_write(a, c)					\
+{									\
+	struct undo_mmio_write_data *undo_mmio_write_data;		\
+	undo_mmio_write_data = malloc(sizeof(*undo_mmio_write_data));	\
+	if (!undo_mmio_write_data) {					\
+		msg_gerr("Out of memory!\n");				\
+		exit(1);						\
+	}								\
+	undo_mmio_write_data->addr = a;					\
+	undo_mmio_write_data->type = mmio_write_type_##c;		\
+	undo_mmio_write_data->c##data = mmio_read##c(a);		\
+	register_shutdown(undo_mmio_write, undo_mmio_write_data);	\
+}
+
+#define register_undo_mmio_writeb(a) register_undo_mmio_write(a, b)
+#define register_undo_mmio_writew(a) register_undo_mmio_write(a, w)
+#define register_undo_mmio_writel(a) register_undo_mmio_write(a, l)
+
+void rmmio_writeb(uint8_t val, void *addr)
+{
+	register_undo_mmio_writeb(addr);
+	mmio_writeb(val, addr);
+}
+
+void rmmio_writew(uint16_t val, void *addr)
+{
+	register_undo_mmio_writew(addr);
+	mmio_writew(val, addr);
+}
+
+void rmmio_writel(uint32_t val, void *addr)
+{
+	register_undo_mmio_writel(addr);
+	mmio_writel(val, addr);
+}
+
+void rmmio_le_writeb(uint8_t val, void *addr)
+{
+	register_undo_mmio_writeb(addr);
+	mmio_le_writeb(val, addr);
+}
+
+void rmmio_le_writew(uint16_t val, void *addr)
+{
+	register_undo_mmio_writew(addr);
+	mmio_le_writew(val, addr);
+}
+
+void rmmio_le_writel(uint32_t val, void *addr)
+{
+	register_undo_mmio_writel(addr);
+	mmio_le_writel(val, addr);
+}
+
+void rmmio_valb(void *addr)
+{
+	register_undo_mmio_writeb(addr);
+}
+
+void rmmio_valw(void *addr)
+{
+	register_undo_mmio_writew(addr);
+}
+
+void rmmio_vall(void *addr)
+{
+	register_undo_mmio_writel(addr);
 }

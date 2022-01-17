@@ -346,7 +346,6 @@ endif
 
 # raw memory, MSR or PCI port I/O access
 if need_raw_access
-  srcs += 'hwaccess.c'
   srcs += 'hwaccess_x86_io.c'
   srcs += 'hwaccess_x86_msr.c'
   srcs += 'hwaccess_physmap.c'

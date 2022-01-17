@@ -31,7 +31,6 @@
 #include <stdlib.h>
 
 #include "flash.h"
-#include "hwaccess.h"
 #include "hwaccess_physmap.h"
 #include "programmer.h"
 

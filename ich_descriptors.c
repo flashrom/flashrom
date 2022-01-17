@@ -15,8 +15,8 @@
  * GNU General Public License for more details.
  */
 
+#include "hwaccess_physmap.h"
 #include "ich_descriptors.h"
-#include "hwaccess.h"
 
 #ifdef ICH_DESCRIPTORS_FROM_DUMP_ONLY
 #include <stdio.h>
