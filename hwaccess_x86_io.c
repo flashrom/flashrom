@@ -79,7 +79,6 @@ int rget_io_perms(void)
 #else
 
 /* DJGPP and libpayload environments have full PCI port I/O permissions by default. */
-/* PCI port I/O support is unimplemented on PPC/MIPS and unavailable on ARM. */
 int rget_io_perms(void)
 {
 	return 0;

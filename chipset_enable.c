@@ -33,14 +33,15 @@
 #include <errno.h>
 #include "flash.h"
 #include "programmer.h"
-#include "hwaccess_x86_io.h"
-#include "hwaccess_x86_msr.h"
 #include "hwaccess_physmap.h"
 #include "platform/pci.h"
 
 #define NOT_DONE_YET 1
 
 #if defined(__i386__) || defined(__x86_64__)
+
+#include "hwaccess_x86_io.h"
+#include "hwaccess_x86_msr.h"
 
 static int enable_flash_ali_m1533(struct pci_dev *dev, const char *name)
 {
