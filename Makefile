@@ -365,25 +365,6 @@ ifneq ($(ARCH), $(filter $(ARCH), x86 mips ppc arm sparc arc))
 $(call mark_unsupported,$(DEPENDS_ON_RAW_MEM_ACCESS))
 endif
 
-ifeq ($(TARGET_OS), $(filter $(TARGET_OS), Linux Darwin NetBSD OpenBSD))
-FEATURE_FLAGS += -D'USE_IOPL=1'
-else
-FEATURE_FLAGS += -D'USE_IOPL=0'
-endif
-
-ifeq ($(TARGET_OS), $(filter $(TARGET_OS), FreeBSD FreeBSD-glibc DragonFlyBSD))
-FEATURE_FLAGS += -D'USE_DEV_IO=1'
-else
-FEATURE_FLAGS += -D'USE_DEV_IO=0'
-endif
-
-ifeq ($(TARGET_OS), $(filter $(TARGET_OS), Hurd))
-FEATURE_FLAGS += -D'USE_IOPERM=1'
-else
-FEATURE_FLAGS += -D'USE_IOPERM=0'
-endif
-
-
 ###############################################################################
 # Flash chip drivers and bus support infrastructure.
 
