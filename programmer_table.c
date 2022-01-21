@@ -128,6 +128,10 @@ const struct programmer_entry *const programmer_table[] = {
     &programmer_lspcon_i2c_spi,
 #endif
 
+#if CONFIG_MEDIATEK_I2C_SPI == 1
+    &programmer_mediatek_i2c_spi,
+#endif
+
 #if CONFIG_REALTEK_MST_I2C_SPI == 1
     &programmer_realtek_mst_i2c_spi,
 #endif

@@ -96,6 +96,7 @@ config_serprog = get_option('config_serprog')
 config_usbblaster_spi = get_option('config_usbblaster_spi')
 config_stlinkv3_spi = get_option('config_stlinkv3_spi')
 config_lspcon_i2c_spi = get_option('config_lspcon_i2c_spi')
+config_mediatek_i2c_spi = get_option('config_mediatek_i2c_spi')
 config_realtek_mst_i2c_spi = get_option('config_realtek_mst_i2c_spi')
 config_print_wiki= get_option('print_wiki')
 config_default_programmer_name = get_option('default_programmer_name')
@@ -344,6 +345,10 @@ endif
 if config_lspcon_i2c_spi
   srcs += 'lspcon_i2c_spi.c'
   cargs += '-DCONFIG_LSPCON_I2C_SPI=1'
+endif
+if config_mediatek_i2c_spi
+  srcs += 'mediatek_i2c_spi.c'
+  cargs += '-DCONFIG_MEDIATEK_I2C_SPI=1'
 endif
 if config_realtek_mst_i2c_spi
   srcs += 'realtek_mst_i2c_spi.c'
