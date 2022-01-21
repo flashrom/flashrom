@@ -105,8 +105,48 @@ cargs = []
 deps = []
 srcs = []
 
-need_raw_access = false
-need_serial = false
+host_is_x86 = ['x86', 'x86_64'].contains(host_machine.cpu_family())
+
+need_serial = [
+  config_buspirate_spi, config_pony_spi, config_serprog,
+].contains(true)
+need_bitbang_spi = [
+  config_internal, config_nicintel_spi, config_ogp_spi,
+  config_pony_spi, config_rayer_spi,
+].contains(true)
+need_raw_mem_access = [
+  config_atapromise, config_drkaiser, config_gfxnvidia, config_internal,
+  config_it8212, config_nicintel, config_nicintel_eeprom, config_nicintel_spi,
+  config_ogp_spi, config_satamv, config_satasii,
+].contains(true)
+# Internal programmer uses x86 features if the system is x86
+need_x86_msr = config_internal and host_is_x86
+need_x86_port_io = [
+  config_atahpt, config_atapromise, config_internal and host_is_x86,
+  config_nic3com, config_nicnatsemi, config_nicrealtek, config_rayer_spi,
+  config_satamv,
+].contains(true)
+need_libpci = [
+  config_atahpt, config_atapromise, config_atavia,
+  config_drkaiser, config_gfxnvidia, config_internal, config_it8212,
+  config_nic3com, config_nicintel, config_nicintel_eeprom, config_nicintel_spi,
+  config_nicnatsemi, config_nicrealtek, config_ogp_spi, config_satamv,
+  config_satasii,
+].contains(true)
+need_libusb1 = [
+  config_ch341a_spi, config_dediprog, config_developerbox_spi,
+  config_digilent_spi, config_pickit2_spi, config_raiden_debug_spi,
+  config_stlinkv3_spi,
+].contains(true)
+need_libftdi1 = [
+  config_ft2232_spi, config_usbblaster_spi,
+].contains(true)
+need_libjaylink = config_jlink_spi
+
+if (need_x86_port_io or need_x86_msr) and not host_is_x86
+  error('one or more enabled programmer only supports x86 and target is not')
+endif
+
 
 # check for required symbols
 if cc.has_function('clock_gettime')
@@ -124,38 +164,25 @@ if get_option('usb')
   srcs += 'usbdev.c'
   srcs += 'usb_device.c'
   deps += dependency('libusb-1.0')
-else
-  config_ch341a_spi = false
-  config_dediprog = false
-  config_digilent_spi = false
-  config_developerbox_spi = false
-  config_pickit2_spi = false
-  config_raiden_debug_spi = false
+elif need_libusb1
+  error('usb is disabled but one or more enabled programmer requires USB access')
 endif
 
 # some programmers require libpci
 if get_option('pciutils')
   srcs += 'pcidev.c'
   deps += dependency('libpci')
-  need_raw_access = true
   cargs += '-DNEED_PCI=1'
-else
-  config_atahpt = false
-  config_atapromise = false
-  config_atavia = false
-  config_drkaiser = false
-  config_gfxnvidia = false
-  config_internal = false
-  config_it8212 = false
-  config_nic3com = false
-  config_nicintel_eeprom = false
-  config_nicintel = false
-  config_nicintel_spi = false
-  config_nicnatsemi = false
-  config_nicrealtek = false
-  config_ogp_spi = false
-  config_satamv = false
-  config_satasii = false
+elif need_libpci
+  error('pciutils is disabled but one or more enabled programmer requires PCI access')
+endif
+
+if need_libftdi1
+  deps += dependency('libftdi1')
+endif
+
+if need_libjaylink
+  deps += dependency('libjaylink')
 endif
 
 # set defines for configured programmers
@@ -174,7 +201,6 @@ endif
 if config_buspirate_spi
   srcs += 'buspirate_spi.c'
   cargs += '-DCONFIG_BUSPIRATE_SPI=1'
-  need_serial = true
 endif
 if config_ch341a_spi
   srcs += 'ch341a_spi.c'
@@ -195,7 +221,6 @@ endif
 if config_jlink_spi
   srcs += 'jlink_spi.c'
   cargs += '-DCONFIG_JLINK_SPI=1'
-  deps += dependency('libjaylink')
 endif
 if config_drkaiser
   srcs += 'drkaiser.c'
@@ -208,7 +233,6 @@ endif
 if config_ft2232_spi
   srcs += 'ft2232_spi.c'
   cargs += '-DCONFIG_FT2232_SPI=1'
-  deps += dependency('libftdi1')
   cargs += '-DHAVE_FT232H=1'
 endif
 if config_gfxnvidia
@@ -225,7 +249,7 @@ if config_internal
   srcs += 'chipset_enable.c'
   srcs += 'internal.c'
   srcs += 'processor_enable.c'
-  if target_machine.cpu_family() == 'x86' or target_machine.cpu_family() == 'x86_64'
+  if host_is_x86
     srcs += 'amd_imc.c'
     srcs += 'dmi.c'
     srcs += 'ichspi.c'
@@ -235,7 +259,6 @@ if config_internal
     srcs += 'sb600spi.c'
     srcs += 'wbsio_spi.c'
   endif
-  config_bitbang_spi = true
   cargs += '-DCONFIG_INTERNAL=1'
   if get_option('config_internal_dmi')
     # Use internal DMI/SMBIOS decoder by default instead of relying on dmidecode.
@@ -272,7 +295,6 @@ if config_nicintel_eeprom
 endif
 if config_nicintel_spi
   srcs += 'nicintel_spi.c'
-  config_bitbang_spi = true
   cargs += '-DCONFIG_NICINTEL_SPI=1'
 endif
 if config_nicnatsemi
@@ -284,7 +306,6 @@ if config_nicrealtek
   cargs += '-DCONFIG_NICREALTEK=1'
 endif
 if config_ogp_spi
-  config_bitbang_spi = true
   srcs += 'ogp_spi.c'
   cargs += '-DCONFIG_OGP_SPI=1'
 endif
@@ -294,14 +315,10 @@ if config_pickit2_spi
 endif
 if config_pony_spi
   srcs += 'pony_spi.c'
-  need_serial = true
-  config_bitbang_spi = true
   cargs += '-DCONFIG_PONY_SPI=1'
 endif
 if config_rayer_spi
   srcs += 'rayer_spi.c'
-  config_bitbang_spi = true
-  need_raw_access = true
   cargs += '-DCONFIG_RAYER_SPI=1'
 endif
 if config_satamv
@@ -315,7 +332,6 @@ endif
 if config_serprog
   srcs += 'serprog.c'
   cargs += '-DCONFIG_SERPROG=1'
-  need_serial = true
 endif
 if config_usbblaster_spi
   srcs += 'usbblaster_spi.c'
@@ -335,7 +351,7 @@ if config_realtek_mst_i2c_spi
 endif
 
 # bitbanging SPI infrastructure
-if config_bitbang_spi
+if need_bitbang_spi
   srcs += 'bitbang_spi.c'
   cargs += '-DCONFIG_BITBANG_SPI=1'
 endif
@@ -344,12 +360,17 @@ if host_machine.system() == 'linux'
   srcs += 'i2c_helper_linux.c'
 endif
 
-# raw memory, MSR or PCI port I/O access
-if need_raw_access
-  srcs += 'hwaccess_x86_io.c'
-  srcs += 'hwaccess_x86_msr.c'
+if need_raw_mem_access
   srcs += 'hwaccess_physmap.c'
+endif
+
+if need_x86_port_io
+  srcs += 'hwaccess_x86_io.c'
   cargs += '-D__FLASHROM_HAVE_OUTB__=1'
+endif
+
+if need_x86_msr
+  srcs += 'hwaccess_x86_msr.c'
 endif
 
 # raw serial IO
