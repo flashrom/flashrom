@@ -131,10 +131,6 @@ static int sfdp_fill_flash(struct flashchip *chip, uint8_t *buf, uint16_t len)
 	int j;
 
 	msg_cdbg("Parsing JEDEC flash parameter table... ");
-	if (len != 9 * 4 && len != 4 * 4) {
-		msg_cdbg("%s: len out of spec\n", __func__);
-		return 1;
-	}
 	msg_cdbg2("\n");
 
 	/* 1. double word */
