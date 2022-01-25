@@ -380,7 +380,7 @@ void prettyprint_ich_descriptor_component(enum ich_chipset cs, const struct ich_
 			  pprint_freq(cs, desc->component.modes.freq_fastread));
 	if (cs > CHIPSET_6_SERIES_COUGAR_POINT)
 		msg_pdbg2("Dual Output Fast Read Support:  %sabled\n",
-			  desc->component.modes.dual_output ? "dis" : "en");
+			  desc->component.modes.dual_output ? "en" : "dis");
 
 	int has_forbidden_opcode = 0;
 	if (desc->component.FLILL != 0) {
