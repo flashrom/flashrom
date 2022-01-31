@@ -72,7 +72,6 @@ override LDFLAGS += -L$(LIBS_BASE)/lib -Wl,-rpath -Wl,$(LIBS_BASE)/lib
 endif
 
 ifeq ($(CONFIG_STATIC),yes)
-override PKG_CONFIG += --static
 override LDFLAGS += -static
 endif
 

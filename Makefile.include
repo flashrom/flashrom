@@ -53,5 +53,5 @@ $(call debug_shell, $(if $(PKG_CONFIG_LIBDIR),PKG_CONFIG_LIBDIR=$(PKG_CONFIG_LIB
 endef
 
 define dependency_ldflags
-$(call debug_shell, $(if $(PKG_CONFIG_LIBDIR),PKG_CONFIG_LIBDIR=$(PKG_CONFIG_LIBDIR),) $(PKG_CONFIG) --libs $1 2>/dev/null)
+$(call debug_shell, $(if $(PKG_CONFIG_LIBDIR),PKG_CONFIG_LIBDIR=$(PKG_CONFIG_LIBDIR),) $(PKG_CONFIG) --libs --static $1 2>/dev/null)
 endef
