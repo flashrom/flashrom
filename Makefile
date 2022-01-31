@@ -239,6 +239,7 @@ HAS_PCI_OLD_GET_DEV := $(call c_compile_test, Makefile.d/pci_old_get_dev_test.c,
 HAS_FT232H          := $(call c_compile_test, Makefile.d/ft232h_test.c, $(CONFIG_LIBFTDI1_CFLAGS))
 HAS_UTSNAME         := $(call c_compile_test, Makefile.d/utsname_test.c)
 HAS_CLOCK_GETTIME   := $(call c_compile_test, Makefile.d/clock_gettime_test.c)
+HAS_EXTERN_LIBRT    := $(call c_link_test, Makefile.d/clock_gettime_test.c, , -lrt)
 HAS_LINUX_MTD       := $(call c_compile_test, Makefile.d/linux_mtd_test.c)
 HAS_LINUX_SPI       := $(call c_compile_test, Makefile.d/linux_spi_test.c)
 HAS_LINUX_I2C       := $(call c_compile_test, Makefile.d/linux_i2c_test.c)
@@ -901,7 +902,9 @@ endif
 
 ifeq ($(HAS_CLOCK_GETTIME), yes)
 FEATURE_FLAGS += -D'HAVE_CLOCK_GETTIME=1'
+ifeq ($(HAS_EXTERN_LIBRT), yes)
 override LDFLAGS += -lrt
+endif
 endif
 
 LIBFLASHROM_OBJS = $(CHIP_OBJS) $(PROGRAMMER_OBJS) $(LIB_OBJS)
@@ -959,6 +962,7 @@ config:
 	@echo "Checking for header \"linux/i2c.h\": $(HAS_LINUX_I2C)"
 	@echo "Checking for header \"sys/utsname.h\": $(HAS_UTSNAME)"
 	@echo "Checking for function \"clock_gettime\": $(HAS_CLOCK_GETTIME)"
+	@echo "Checking for external \"librt\": $(HAS_EXTERN_LIBRT)"
 	@if ! [ "$(PROGRAMMER_OBJS)" ]; then					\
 		echo "You have to enable at least one programmer driver!";	\
 		exit 1;								\
