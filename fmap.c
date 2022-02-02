@@ -96,6 +96,9 @@ static off_t fmap_lsearch(const uint8_t *buf, size_t len)
 	off_t offset;
 	bool fmap_found = 0;
 
+	if (len < sizeof(struct fmap))
+		return -1;
+
 	for (offset = 0; offset <= (off_t)(len - sizeof(struct fmap)); offset++) {
 		if (is_valid_fmap((struct fmap *)&buf[offset])) {
 			fmap_found = 1;
