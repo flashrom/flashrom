@@ -350,7 +350,8 @@ int main(int argc, char *argv[])
 	print_version();
 	print_banner();
 
-	if (selfcheck())
+	/* FIXME: Delay calibration should happen in programmer code. */
+	if (flashrom_init(1))
 		exit(1);
 
 	setbuf(stdout, NULL);
@@ -660,9 +661,6 @@ int main(int argc, char *argv[])
 			goto out;
 		}
 	}
-
-	/* FIXME: Delay calibration should happen in programmer code. */
-	myusec_calibrate_delay();
 
 	if (programmer_init(prog, pparam)) {
 		msg_perr("Error: Programmer initialization failed.\n");
