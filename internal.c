@@ -174,22 +174,21 @@ static const struct par_master par_master_internal = {
 		.chip_writen		= fallback_chip_writen,
 };
 
-static int internal_init(void)
+static int get_params(int *boardenable, int *boardmismatch,
+		int *force_laptop, int *not_a_laptop,
+		char **board_vendor, char **board_model)
 {
-	int ret = 0;
-	int force_laptop = 0;
-	int not_a_laptop = 0;
-	char *board_vendor = NULL;
-	char *board_model = NULL;
-#if defined(__i386__) || defined(__x86_64__)
-	const char *cb_vendor = NULL;
-	const char *cb_model = NULL;
-#endif
 	char *arg;
+
+	/* default values. */
+	*force_laptop = 0;
+	*not_a_laptop = 0;
+	*board_vendor = NULL;
+	*board_model = NULL;
 
 	arg = extract_programmer_param("boardenable");
 	if (arg && !strcmp(arg,"force")) {
-		force_boardenable = 1;
+		*boardenable = 1;
 	} else if (arg && !strlen(arg)) {
 		msg_perr("Missing argument for boardenable.\n");
 		free(arg);
@@ -203,7 +202,7 @@ static int internal_init(void)
 
 	arg = extract_programmer_param("boardmismatch");
 	if (arg && !strcmp(arg,"force")) {
-		force_boardmismatch = 1;
+		*boardmismatch = 1;
 	} else if (arg && !strlen(arg)) {
 		msg_perr("Missing argument for boardmismatch.\n");
 		free(arg);
@@ -217,9 +216,9 @@ static int internal_init(void)
 
 	arg = extract_programmer_param("laptop");
 	if (arg && !strcmp(arg, "force_I_want_a_brick"))
-		force_laptop = 1;
+		*force_laptop = 1;
 	else if (arg && !strcmp(arg, "this_is_not_a_laptop"))
-		not_a_laptop = 1;
+		*not_a_laptop = 1;
 	else if (arg && !strlen(arg)) {
 		msg_perr("Missing argument for laptop.\n");
 		free(arg);
@@ -233,7 +232,7 @@ static int internal_init(void)
 
 	arg = extract_programmer_param("mainboard");
 	if (arg && strlen(arg)) {
-		if (board_parse_parameter(arg, &board_vendor, &board_model)) {
+		if (board_parse_parameter(arg, board_vendor, board_model)) {
 			free(arg);
 			return 1;
 		}
@@ -243,6 +242,27 @@ static int internal_init(void)
 		return 1;
 	}
 	free(arg);
+
+	return 0;
+}
+
+static int internal_init(void)
+{
+	int ret = 0;
+	int force_laptop;
+	int not_a_laptop;
+	char *board_vendor;
+	char *board_model;
+#if defined(__i386__) || defined(__x86_64__)
+	const char *cb_vendor = NULL;
+	const char *cb_model = NULL;
+#endif
+
+	ret = get_params(&force_boardenable, &force_boardmismatch,
+			 &force_laptop, &not_a_laptop,
+			 &board_vendor, &board_model);
+	if (ret)
+		return ret;
 
 	/* Default to Parallel/LPC/FWH flash devices. If a known host controller
 	 * is found, the host controller init routine sets the
