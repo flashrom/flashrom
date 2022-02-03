@@ -957,7 +957,7 @@ int main(int argc, char *argv[])
 out_release:
 	flashrom_layout_release(layout);
 out_shutdown:
-	programmer_shutdown();
+	flashrom_programmer_shutdown(NULL);
 out:
 	for (i = 0; i < chipcount; i++) {
 		flashrom_layout_release(flashes[i].default_layout);
