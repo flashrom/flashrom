@@ -158,7 +158,7 @@ static int do_read(struct flashctx *const flash, const char *const filename)
 {
 	int ret;
 
-	unsigned long size = flash->chip->total_size * 1024;
+	unsigned long size = flashrom_flash_getsize(flash);
 	unsigned char *buf = calloc(size, sizeof(unsigned char));
 	if (!buf) {
 		msg_gerr("Memory allocation failed!\n");
@@ -189,7 +189,7 @@ static int do_extract(struct flashctx *const flash)
 
 static int do_write(struct flashctx *const flash, const char *const filename, const char *const referencefile)
 {
-	const size_t flash_size = flash->chip->total_size * 1024;
+	const size_t flash_size = flashrom_flash_getsize(flash);
 	int ret = 1;
 
 	uint8_t *const newcontents = malloc(flash_size);
@@ -225,7 +225,7 @@ _free_ret:
 
 static int do_verify(struct flashctx *const flash, const char *const filename)
 {
-	const size_t flash_size = flash->chip->total_size * 1024;
+	const size_t flash_size = flashrom_flash_getsize(flash);
 	int ret = 1;
 
 	uint8_t *const newcontents = malloc(flash_size);
@@ -809,7 +809,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (flash_size) {
-		printf("%d\n", fill_flash->chip->total_size * 1024);
+		printf("%ld\n", flashrom_flash_getsize(fill_flash));
 		goto out_shutdown;
 	}
 
@@ -846,7 +846,7 @@ int main(int argc, char *argv[])
 		}
 		free(fmapfile_buffer);
 	} else if (fmap && (flashrom_layout_read_fmap_from_rom(&layout, fill_flash, 0,
-		       fill_flash->chip->total_size * 1024) || process_include_args(layout, include_args))) {
+				flashrom_flash_getsize(fill_flash)) || process_include_args(layout, include_args))) {
 		ret = 1;
 		goto out_shutdown;
 	}
