@@ -236,6 +236,20 @@ int __wrap_setvbuf(FILE *fp, char *buf, int type, size_t size)
 	return 0;
 }
 
+int __wrap_fprintf(FILE *fp, const char *fmt, ...)
+{
+	LOG_ME;
+	if (get_io() && get_io()->fprintf) {
+		va_list args;
+		int out;
+		va_start(args, fmt);
+		out = get_io()->fprintf(get_io()->state, fp, fmt, args);
+		va_end(args);
+		return out;
+	}
+	return 0;
+}
+
 int __wrap_fclose(FILE *fp)
 {
 	LOG_ME;

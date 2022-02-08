@@ -56,6 +56,7 @@ mocks = [
   '-Wl,--wrap=fsync',
   '-Wl,--wrap=fread',
   '-Wl,--wrap=fgets',
+  '-Wl,--wrap=fprintf',
   '-Wl,--wrap=fclose',
   '-Wl,--wrap=feof',
   '-Wl,--wrap=ferror',

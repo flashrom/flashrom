@@ -102,6 +102,7 @@ struct io_mock {
 	FILE* (*fopen)(void *state, const char *pathname, const char *mode);
 	char* (*fgets)(void *state, char *buf, int len, FILE *fp);
 	size_t (*fread)(void *state, void *buf, size_t size, size_t len, FILE *fp);
+	int (*fprintf)(void *state, FILE *fp, const char *fmt, va_list args);
 	int (*fclose)(void *state, FILE *fp);
 };
 
