@@ -714,13 +714,11 @@ void flashrom_wp_get_range(size_t *start, size_t *len, const struct flashrom_wp_
  */
 enum flashrom_wp_result flashrom_wp_write_cfg(struct flashctx *flash, const struct flashrom_wp_cfg *cfg)
 {
-	/*
-	 * TODO: Call custom implementation if the programmer is opaque, as
-	 * direct WP operations require SPI access. In particular, linux_mtd
-	 * has its own WP operations we should use instead.
-	 */
 	if (flash->mst->buses_supported & BUS_SPI)
 		return wp_write_cfg(flash, cfg);
+
+	if (flash->mst->buses_supported & BUS_PROG && flash->mst->opaque.wp_write_cfg)
+		return flash->mst->opaque.wp_write_cfg(flash, cfg);
 
 	return FLASHROM_WP_ERR_OTHER;
 }
@@ -736,13 +734,11 @@ enum flashrom_wp_result flashrom_wp_write_cfg(struct flashctx *flash, const stru
  */
 enum flashrom_wp_result flashrom_wp_read_cfg(struct flashrom_wp_cfg *cfg, struct flashctx *flash)
 {
-	/*
-	 * TODO: Call custom implementation if the programmer is opaque, as
-	 * direct WP operations require SPI access. In particular, linux_mtd
-	 * has its own WP operations we should use instead.
-	 */
 	if (flash->mst->buses_supported & BUS_SPI)
 		return wp_read_cfg(cfg, flash);
+
+	if (flash->mst->buses_supported & BUS_PROG && flash->mst->opaque.wp_read_cfg)
+		return flash->mst->opaque.wp_read_cfg(cfg, flash);
 
 	return FLASHROM_WP_ERR_OTHER;
 }
@@ -761,14 +757,11 @@ enum flashrom_wp_result flashrom_wp_read_cfg(struct flashrom_wp_cfg *cfg, struct
  */
 enum flashrom_wp_result flashrom_wp_get_available_ranges(struct flashrom_wp_ranges **list, struct flashrom_flashctx *flash)
 {
-	/*
-	 * TODO: Call custom implementation if the programmer is opaque, as
-	 * direct WP operations require SPI access. We actually can't implement
-	 * this in linux_mtd right now, but we should adopt a proper generic
-	 * architechure to match the read and write functions anyway.
-	 */
 	if (flash->mst->buses_supported & BUS_SPI)
 		return wp_get_available_ranges(list, flash);
+
+	if (flash->mst->buses_supported & BUS_PROG && flash->mst->opaque.wp_get_ranges)
+		return flash->mst->opaque.wp_get_ranges(list, flash);
 
 	return FLASHROM_WP_ERR_OTHER;
 }

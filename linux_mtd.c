@@ -308,6 +308,123 @@ static int linux_mtd_shutdown(void *data)
 	return 0;
 }
 
+static enum flashrom_wp_result linux_mtd_wp_read_cfg(struct flashrom_wp_cfg *cfg, struct flashctx *flash)
+{
+	struct linux_mtd_data *data = flash->mst->opaque.data;
+	bool start_found = false;
+	bool end_found = false;
+
+	cfg->mode = FLASHROM_WP_MODE_DISABLED;
+	cfg->range.start = 0;
+	cfg->range.len = 0;
+
+	/* Check protection status of each block */
+	for (size_t u = 0; u < data->total_size; u += data->erasesize) {
+		struct erase_info_user erase_info = {
+			.start = u,
+			.length = data->erasesize,
+		};
+
+		int ret = ioctl(fileno(data->dev_fp), MEMISLOCKED, &erase_info);
+		if (ret == 0) {
+			/* Block is unprotected. */
+
+			if (start_found) {
+				end_found = true;
+			}
+		} else if (ret == 1) {
+			/* Block is protected. */
+
+			if (end_found) {
+				/*
+				 * We already found the end of another
+				 * protection range, so this is the start of a
+				 * new one.
+				 */
+				return FLASHROM_WP_ERR_OTHER;
+			}
+			if (!start_found) {
+				cfg->range.start = erase_info.start;
+				cfg->mode = FLASHROM_WP_MODE_HARDWARE;
+				start_found = true;
+			}
+			cfg->range.len += data->erasesize;
+		} else {
+			msg_perr("%s: ioctl: %s\n", __func__, strerror(errno));
+			return FLASHROM_WP_ERR_READ_FAILED;
+		}
+
+	}
+
+	return FLASHROM_WP_OK;
+}
+
+static enum flashrom_wp_result linux_mtd_wp_write_cfg(struct flashctx *flash, const struct flashrom_wp_cfg *cfg)
+{
+	const struct linux_mtd_data *data = flash->mst->opaque.data;
+
+	const struct erase_info_user entire_chip = {
+		.start = 0,
+		.length = data->total_size,
+	};
+	const struct erase_info_user desired_range = {
+		.start = cfg->range.start,
+		.length = cfg->range.len,
+	};
+
+	/*
+	 * MTD ioctls will enable hardware status register protection if and
+	 * only if the protected region is non-empty. Return an error if the
+	 * cfg cannot be activated using the MTD interface.
+	 */
+	if ((cfg->range.len == 0) != (cfg->mode == FLASHROM_WP_MODE_DISABLED)) {
+		return FLASHROM_WP_ERR_OTHER;
+	}
+
+	/*
+	 * MTD handles write-protection additively, so whatever new range is
+	 * specified is added to the range which is currently protected. To
+	 * just protect the requsted range, we need to disable the current
+	 * write protection and then enable it for the desired range.
+	 */
+	int ret = ioctl(fileno(data->dev_fp), MEMUNLOCK, &entire_chip);
+	if (ret < 0) {
+		msg_perr("%s: Failed to disable write-protection, MEMUNLOCK ioctl "
+			 "retuned %d, error: %s\n", __func__, ret, strerror(errno));
+		return FLASHROM_WP_ERR_WRITE_FAILED;
+	}
+
+	if (cfg->range.len > 0) {
+		ret = ioctl(fileno(data->dev_fp), MEMLOCK, &desired_range);
+		if (ret < 0) {
+			msg_perr("%s: Failed to enable write-protection, "
+				 "MEMLOCK ioctl retuned %d, error: %s\n",
+				 __func__, ret, strerror(errno));
+			return FLASHROM_WP_ERR_WRITE_FAILED;
+		}
+	}
+
+	/* Verify */
+	struct flashrom_wp_cfg readback_cfg;
+	enum flashrom_wp_result read_ret = linux_mtd_wp_read_cfg(&readback_cfg, flash);
+	if (read_ret != FLASHROM_WP_OK)
+		return read_ret;
+
+	if (readback_cfg.mode != cfg->mode ||
+		readback_cfg.range.start != cfg->range.start ||
+		readback_cfg.range.len != cfg->range.len) {
+		return FLASHROM_WP_ERR_VERIFY_FAILED;
+	}
+
+	return FLASHROM_WP_OK;
+}
+
+static enum flashrom_wp_result linux_mtd_wp_get_available_ranges(struct flashrom_wp_ranges **list, struct flashctx *flash)
+{
+	/* Not supported by MTD interface. */
+	return FLASHROM_WP_ERR_RANGE_LIST_UNAVAILABLE;
+}
+
 static const struct opaque_master linux_mtd_opaque_master = {
 	/* max_data_{read,write} don't have any effect for this programmer */
 	.max_data_read	= MAX_DATA_UNSPECIFIED,
@@ -317,6 +434,9 @@ static const struct opaque_master linux_mtd_opaque_master = {
 	.write		= linux_mtd_write,
 	.erase		= linux_mtd_erase,
 	.shutdown	= linux_mtd_shutdown,
+	.wp_read_cfg    = linux_mtd_wp_read_cfg,
+	.wp_write_cfg   = linux_mtd_wp_write_cfg,
+	.wp_get_ranges  = linux_mtd_wp_get_available_ranges,
 };
 
 /* Returns 0 if setup is successful, non-zero to indicate error */
