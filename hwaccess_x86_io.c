@@ -62,13 +62,10 @@ int rget_io_perms(void)
 #endif
 		msg_perr("ERROR: Could not get I/O privileges (%s).\n", strerror(errno));
 		msg_perr("You need to be root.\n");
-#if defined (__OpenBSD__)
-		msg_perr("If you are root already please set securelevel=-1 in /etc/rc.securelevel and\n"
+		msg_perr("On OpenBSD set securelevel=-1 in /etc/rc.securelevel and\n"
 			 "reboot, or reboot into single user mode.\n");
-#elif defined(__NetBSD__)
-		msg_perr("If you are root already please reboot into single user mode or make sure\n"
+		msg_perr("On NetBSD reboot into single user mode or make sure\n"
 			 "that your kernel configuration has the option INSECURE enabled.\n");
-#endif
 		return 1;
 	} else {
 		register_shutdown(release_io_perms, NULL);
