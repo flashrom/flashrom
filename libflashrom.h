@@ -109,7 +109,7 @@ struct flashrom_layout;
 int flashrom_layout_new(struct flashrom_layout **);
 int flashrom_layout_read_from_ifd(struct flashrom_layout **, struct flashrom_flashctx *, const void *dump, size_t len);
 int flashrom_layout_read_fmap_from_rom(struct flashrom_layout **,
-		struct flashrom_flashctx *, off_t offset, size_t length);
+		struct flashrom_flashctx *, size_t offset, size_t length);
 int flashrom_layout_read_fmap_from_buffer(struct flashrom_layout **layout,
 		struct flashrom_flashctx *, const uint8_t *buf, size_t len);
 int flashrom_layout_add_region(struct flashrom_layout *, size_t start, size_t end, const char *name);

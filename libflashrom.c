@@ -534,7 +534,7 @@ static int flashrom_layout_parse_fmap(struct flashrom_layout **layout,
  *         1 on any other error.
  */
 int flashrom_layout_read_fmap_from_rom(struct flashrom_layout **const layout,
-		struct flashctx *const flashctx, off_t offset, size_t len)
+		struct flashctx *const flashctx, size_t offset, size_t len)
 {
 #ifndef __FLASHROM_LITTLE_ENDIAN__
 	return 3;
