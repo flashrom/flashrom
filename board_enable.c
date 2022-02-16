@@ -2482,6 +2482,7 @@ const struct board_match board_matches[] = {
 	{0x8086, 0x27b8, 0x8086, 0xd606,  0x8086, 0x2770, 0x8086, 0xd606, "^D945GCNL$", NULL, NULL,           P2, "Intel",       "D945GCNL",              0,   OK, p2_not_a_laptop},
 	{0x8086, 0x7190,      0,      0,  0x8086, 0x7110,      0,      0, "^SE440BX-2$", NULL, NULL,          P3, "Intel",       "SE440BX-2",             0,   NT, intel_piix4_gpo27_lower},
 	{0x1022, 0x7468,      0,      0,  0x1022, 0x7460,      0,      0, NULL,         "iwill", "dk8_htx",   P3, "IWILL",       "DK8-HTX",               0,   OK, w83627hf_gpio24_raise_2e},
+	{0x5333, 0x8d04, 0x1106, 0x3065,  0x1106, 0x3059, 0x1106, 0x0571, "P4M266-8235", NULL, NULL,		  P3, "Jetway",		 "P4MDPT",				  0,   OK,w836xx_memw_enable_2e},
 	{0x8086, 0x27A0, 0x8086, 0x27a0,  0x8086, 0x27b8, 0x8086, 0x27b8, NULL,        "kontron", "986lcd-m", P3, "Kontron",     "986LCD-M",              0,   OK, board_kontron_986lcd_m},
 	{0x8086, 0x2917, 0x17AA, 0x20F5,  0x8086, 0x2930, 0x17AA, 0x20F9, "^ThinkPad R400", NULL, NULL,       P2, "IBM/Lenovo",  "ThinkPad R400",         0,   OK, p2_whitelist_laptop},
 	{0x8086, 0x2917, 0x17AA, 0x20F5,  0x8086, 0x2930, 0x17AA, 0x20F9, "^ThinkPad T400", NULL, NULL,       P2, "IBM/Lenovo",  "ThinkPad T400",         0,   OK, p2_whitelist_laptop},
