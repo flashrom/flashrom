@@ -933,6 +933,7 @@ const struct board_info boards_known[] = {
 	B("IWILL",	"DK8-HTX",		OK, "http://web.archive.org/web/20060507170150/http://www.iwill.net/product_2.asp?p_id=98", NULL),
 	B("Jetway",	"J-7BXAN",		OK, "http://www.jetway.com.tw/evisn/download/d7BXAS.htm", NULL),
 	B("Jetway",	"J7F4K1G5D-PB",		OK, "http://www.jetway.com.tw/jw/ipcboard_view.asp?productid=282&proname=J7F4K1G5D", NULL),
+	B("Jetway",	"P4MDPT",		OK, "https://www.jetwaycomputer.com/spec/p4mdpt.html", NULL),
 	B("Kontron",	"986LCD-M",		OK, "http://de.kontron.com/products/boards+and+mezzanines/embedded+motherboards/miniitx+motherboards/986lcdmmitx.html", NULL),
 	B("Lanner",	"EM-8510C",		OK, NULL, NULL),
 	B("Lenovo",	"Tilapia CRB",		OK, NULL, "Used in ThinkCentre M75e."),
