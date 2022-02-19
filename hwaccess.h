@@ -2,6 +2,8 @@
  * This file is part of the flashrom project.
  *
  * Copyright (C) 2009 Carl-Daniel Hailfinger
+ * Copyright (C) 2022 secunet Security Networks AG
+ * (written by Thomas Heijligen <thomas.heijligen@secunet.com)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,74 +22,82 @@
 #ifndef __HWACCESS_H__
 #define __HWACCESS_H__ 1
 
-#define ___constant_swab8(x) ((uint8_t) (				\
-	(((uint8_t)(x) & (uint8_t)0xffU))))
+#include <stdint.h>
 
-#define ___constant_swab16(x) ((uint16_t) (				\
-	(((uint16_t)(x) & (uint16_t)0x00ffU) << 8) |			\
-	(((uint16_t)(x) & (uint16_t)0xff00U) >> 8)))
-
-#define ___constant_swab32(x) ((uint32_t) (				\
-	(((uint32_t)(x) & (uint32_t)0x000000ffUL) << 24) |		\
-	(((uint32_t)(x) & (uint32_t)0x0000ff00UL) <<  8) |		\
-	(((uint32_t)(x) & (uint32_t)0x00ff0000UL) >>  8) |		\
-	(((uint32_t)(x) & (uint32_t)0xff000000UL) >> 24)))
-
-#define ___constant_swab64(x) ((uint64_t) (				\
-	(((uint64_t)(x) & (uint64_t)0x00000000000000ffULL) << 56) |	\
-	(((uint64_t)(x) & (uint64_t)0x000000000000ff00ULL) << 40) |	\
-	(((uint64_t)(x) & (uint64_t)0x0000000000ff0000ULL) << 24) |	\
-	(((uint64_t)(x) & (uint64_t)0x00000000ff000000ULL) <<  8) |	\
-	(((uint64_t)(x) & (uint64_t)0x000000ff00000000ULL) >>  8) |	\
-	(((uint64_t)(x) & (uint64_t)0x0000ff0000000000ULL) >> 24) |	\
-	(((uint64_t)(x) & (uint64_t)0x00ff000000000000ULL) >> 40) |	\
-	(((uint64_t)(x) & (uint64_t)0xff00000000000000ULL) >> 56)))
-
-#if defined (__FLASHROM_BIG_ENDIAN__)
-
-#define cpu_to_le(bits)							\
-static inline uint##bits##_t cpu_to_le##bits(uint##bits##_t val)	\
-{									\
-	return ___constant_swab##bits(val);				\
+/* swap bytes */
+static inline uint8_t swap8(const uint8_t value)
+{
+	return  (value & (uint8_t)0xffU);
 }
 
-cpu_to_le(8)
-cpu_to_le(16)
-cpu_to_le(32)
-cpu_to_le(64)
-
-#define cpu_to_be8
-#define cpu_to_be16
-#define cpu_to_be32
-#define cpu_to_be64
-
-#elif defined (__FLASHROM_LITTLE_ENDIAN__)
-
-#define cpu_to_be(bits)							\
-static inline uint##bits##_t cpu_to_be##bits(uint##bits##_t val)	\
-{									\
-	return ___constant_swab##bits(val);				\
+static inline uint16_t swap16(const uint16_t value)
+{
+	return  ((value & (uint16_t)0x00ffU) << 8) |
+		((value & (uint16_t)0xff00U) >> 8);
 }
 
-cpu_to_be(8)
-cpu_to_be(16)
-cpu_to_be(32)
-cpu_to_be(64)
+static inline uint32_t swap32(const uint32_t value)
+{
+	return  ((value & (uint32_t)0x000000ffUL) << 24) |
+		((value & (uint32_t)0x0000ff00UL) <<  8) |
+		((value & (uint32_t)0x00ff0000UL) >>  8) |
+		((value & (uint32_t)0xff000000UL) >> 24);
+}
 
-#define cpu_to_le8
-#define cpu_to_le16
-#define cpu_to_le32
-#define cpu_to_le64
+static inline uint64_t swap64(const uint64_t value)
+{
+	return  ((value & (uint64_t)0x00000000000000ffULL) << 56) |
+		((value & (uint64_t)0x000000000000ff00ULL) << 40) |
+		((value & (uint64_t)0x0000000000ff0000ULL) << 24) |
+		((value & (uint64_t)0x00000000ff000000ULL) <<  8) |
+		((value & (uint64_t)0x000000ff00000000ULL) >>  8) |
+		((value & (uint64_t)0x0000ff0000000000ULL) >> 24) |
+		((value & (uint64_t)0x00ff000000000000ULL) >> 40) |
+		((value & (uint64_t)0xff00000000000000ULL) >> 56);
+}
 
-#endif /* __FLASHROM_BIG_ENDIAN__ / __FLASHROM_LITTLE_ENDIAN__ */
+/*
+ * macro to return the same value as passed.
+ *
+ * `___return_same(cpu_to_le, 8)`
+ *	expands to
+ * `uint8_t cpu_to_le8 (const uint8_t value) { return value; }`
+ */
+#define ___return_same(name, bits) \
+	uint##bits##_t name##bits (const uint##bits##_t value) { return value; }
 
-#define be_to_cpu8 cpu_to_be8
-#define be_to_cpu16 cpu_to_be16
-#define be_to_cpu32 cpu_to_be32
-#define be_to_cpu64 cpu_to_be64
-#define le_to_cpu8 cpu_to_le8
-#define le_to_cpu16 cpu_to_le16
-#define le_to_cpu32 cpu_to_le32
-#define le_to_cpu64 cpu_to_le64
+/*
+ * macro to return the swapped value as passed.
+ *
+ * `___return_swapped(cpu_to_be, 8)`
+ *	expands to
+ * `uint8_t cpu_to_be8 (const uint8_t value) { return swap8 (value); }`
+ */
+#define ___return_swapped(name, bits) \
+	uint##bits##_t name##bits (const uint##bits##_t value) { return swap##bits (value); }
+
+/* convert cpu native endian to little endian */
+uint8_t  cpu_to_le8 (const uint8_t  value);
+uint16_t cpu_to_le16(const uint16_t value);
+uint32_t cpu_to_le32(const uint32_t value);
+uint64_t cpu_to_le64(const uint64_t value);
+
+/* convert cpu native endian to big endian */
+uint8_t  cpu_to_be8 (const uint8_t  value);
+uint16_t cpu_to_be16(const uint16_t value);
+uint32_t cpu_to_be32(const uint32_t value);
+uint64_t cpu_to_be64(const uint64_t value);
+
+/* convert little endian to cpu native endian */
+uint8_t  le_to_cpu8 (const uint8_t  value);
+uint16_t le_to_cpu16(const uint16_t value);
+uint32_t le_to_cpu32(const uint32_t value);
+uint64_t le_to_cpu64(const uint64_t value);
+
+/* convert big endian to cpu native endian */
+uint8_t  be_to_cpu8 (const uint8_t  value);
+uint16_t be_to_cpu16(const uint16_t value);
+uint32_t be_to_cpu32(const uint32_t value);
+uint64_t be_to_cpu64(const uint64_t value);
 
 #endif /* !__HWACCESS_H__ */
