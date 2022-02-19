@@ -135,6 +135,8 @@ if cc.check_header('sys/utsname.h')
   add_project_arguments('-DHAVE_UTSNAME=1', language : 'c')
 endif
 
+srcs += 'platform/memaccess.c'
+
 if host_machine.endian() == 'little'
   srcs += 'platform/endian_little.c'
   add_project_arguments('-D__FLASHROM_LITTLE_ENDIAN__=1', language : 'c')

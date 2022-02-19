@@ -22,6 +22,7 @@
 #ifndef __PLATFORM_H__
 #define __PLATFORM_H__ 1
 
+#include <stddef.h>
 #include <stdint.h>
 
 /* swap bytes */
@@ -99,5 +100,17 @@ uint8_t  be_to_cpu8 (uint8_t  value);
 uint16_t be_to_cpu16(uint16_t value);
 uint32_t be_to_cpu32(uint32_t value);
 uint64_t be_to_cpu64(uint64_t value);
+
+/* read value from base at offset in little endian */
+uint8_t  read_le8 (const void *base, size_t offset);
+uint16_t read_le16(const void *base, size_t offset);
+uint32_t read_le32(const void *base, size_t offset);
+uint64_t read_le64(const void *base, size_t offset);
+
+/* read value from base at offset in big endian */
+uint8_t  read_be8 (const void *base, size_t offset);
+uint16_t read_be16(const void *base, size_t offset);
+uint32_t read_be32(const void *base, size_t offset);
+uint64_t read_be64(const void *base, size_t offset);
 
 #endif /* !__PLATFORM_H__ */
