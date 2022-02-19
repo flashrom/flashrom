@@ -242,9 +242,9 @@ HAS_EXTERN_LIBRT    := $(call c_link_test, Makefile.d/clock_gettime_test.c, , -l
 HAS_LINUX_MTD       := $(call c_compile_test, Makefile.d/linux_mtd_test.c)
 HAS_LINUX_SPI       := $(call c_compile_test, Makefile.d/linux_spi_test.c)
 HAS_LINUX_I2C       := $(call c_compile_test, Makefile.d/linux_i2c_test.c)
+EXEC_SUFFIX         := $(strip $(if $(filter $(TARGET_OS), DOS MinGW), .exe))
 
 ifeq ($(TARGET_OS), DOS)
-EXEC_SUFFIX := .exe
 # DJGPP has odd uint*_t definitions which cause lots of format string warnings.
 override CFLAGS += -Wno-format
 override LDFLAGS += -lgetopt
@@ -260,7 +260,6 @@ endif
 
 # FIXME: Should we check for Cygwin/MSVC as well?
 ifeq ($(TARGET_OS), MinGW)
-EXEC_SUFFIX := .exe
 # MinGW doesn't have the ffs() function, but we can use gcc's __builtin_ffs().
 FLASHROM_CFLAGS += -Dffs=__builtin_ffs
 # Some functions provided by Microsoft do not work as described in C99 specifications. This macro fixes that
