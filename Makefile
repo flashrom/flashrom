@@ -98,6 +98,9 @@ DEPENDS_ON_SERIAL := \
 	CONFIG_PONY_SPI \
 	CONFIG_SERPROG \
 
+DEPENDS_ON_SOCKETS := \
+	CONFIG_SERPROG \
+
 DEPENDS_ON_BITBANG_SPI := \
 	CONFIG_INTERNAL_X86 \
 	CONFIG_NICINTEL_SPI \
@@ -247,14 +250,13 @@ HAS_EXTERN_LIBRT    := $(call c_link_test, Makefile.d/clock_gettime_test.c, , -l
 HAS_LINUX_MTD       := $(call c_compile_test, Makefile.d/linux_mtd_test.c)
 HAS_LINUX_SPI       := $(call c_compile_test, Makefile.d/linux_spi_test.c)
 HAS_LINUX_I2C       := $(call c_compile_test, Makefile.d/linux_i2c_test.c)
+HAS_SERIAL          := $(strip $(if $(filter $(TARGET_OS), DOS libpayload), no, yes))
 EXEC_SUFFIX         := $(strip $(if $(filter $(TARGET_OS), DOS MinGW), .exe))
 
 ifeq ($(TARGET_OS), DOS)
 # DJGPP has odd uint*_t definitions which cause lots of format string warnings.
 override CFLAGS += -Wno-format
 override LDFLAGS += -lgetopt
-# Missing serial support.
-$(call mark_unsupported,$(DEPENDS_ON_SERIAL))
 endif
 
 ifeq ($(TARGET_OS), $(filter $(TARGET_OS), MinGW Cygwin))
@@ -292,8 +294,6 @@ FLASHROM_CFLAGS += -DSTANDALONE
 $(call mark_unsupported,CONFIG_DUMMY)
 # libpayload does not provide the romsize field in struct pci_dev that the atapromise code requires.
 $(call mark_unsupported,CONFIG_ATAPROMISE)
-# Bus Pirate, Serprog and PonyProg are not supported with libpayload (missing serial support).
-$(call mark_unsupported,$(DEPENDS_ON_SERIAL))
 # Dediprog, Developerbox, USB-Blaster, PICkit2, CH341A and FT2232 are not supported with libpayload (missing libusb support).
 $(call mark_unsupported,$(DEPENDS_ON_LIBUSB1) $(DEPENDS_ON_LIBFTDI) $(DEPENDS_ON_LIBJAYLINK))
 endif
@@ -338,6 +338,10 @@ endif
 
 ifeq ($(HAS_LIBUSB1), no)
 $(call mark_unsupported,$(DEPENDS_ON_LIBUSB1))
+endif
+
+ifeq ($(HAS_SERIAL), no)
+$(call mark_unsupported, $(DEPENDS_ON_SERIAL))
 endif
 
 ifeq ($(ENDIAN), little)
@@ -611,8 +615,6 @@ endif
 ifeq ($(CONFIG_SERPROG), yes)
 FEATURE_FLAGS += -D'CONFIG_SERPROG=1'
 PROGRAMMER_OBJS += serprog.o
-NEED_SERIAL += CONFIG_SERPROG
-NEED_POSIX_SOCKETS += CONFIG_SERPROG
 endif
 
 ifeq ($(CONFIG_RAYER_SPI), yes)
@@ -628,7 +630,6 @@ endif
 ifeq ($(CONFIG_PONY_SPI), yes)
 FEATURE_FLAGS += -D'CONFIG_PONY_SPI=1'
 PROGRAMMER_OBJS += pony_spi.o
-NEED_SERIAL += CONFIG_PONY_SPI
 endif
 
 ifeq ($(CONFIG_BITBANG_SPI), yes)
@@ -749,7 +750,6 @@ endif
 ifeq ($(CONFIG_BUSPIRATE_SPI), yes)
 FEATURE_FLAGS += -D'CONFIG_BUSPIRATE_SPI=1'
 PROGRAMMER_OBJS += buspirate_spi.o
-NEED_SERIAL += CONFIG_BUSPIRATE_SPI
 endif
 
 ifeq ($(CONFIG_DEDIPROG), yes)
@@ -807,7 +807,8 @@ ifeq ($(USE_LINUX_I2C), yes)
 LIB_OBJS += i2c_helper_linux.o
 endif
 
-ifneq ($(NEED_SERIAL), )
+USE_SERIAL := $(if $(call filter_deps,$(DEPENDS_ON_SERIAL)),yes,no)
+ifeq ($(USE_SERIAL), yes)
 LIB_OBJS += serial.o
 ifeq ($(TARGET_OS), Linux)
 LIB_OBJS += custom_baud_linux.o
@@ -816,7 +817,8 @@ LIB_OBJS += custom_baud.o
 endif
 endif
 
-ifneq ($(NEED_POSIX_SOCKETS), )
+USE_SOCKETS := $(if $(call filter_deps,$(DEPENDS_ON_SOCKETS)),yes,no)
+ifeq ($(USE_SOCKETS), yes)
 ifeq ($(TARGET_OS), SunOS)
 override LDFLAGS += -lsocket -lnsl
 endif
