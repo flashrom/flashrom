@@ -905,8 +905,8 @@ override LDFLAGS += -lrt
 endif
 endif
 
-LIBFLASHROM_OBJS = $(CHIP_OBJS) $(PROGRAMMER_OBJS) $(LIB_OBJS)
-OBJS = $(CLI_OBJS) $(LIBFLASHROM_OBJS)
+OBJS = $(CHIP_OBJS) $(PROGRAMMER_OBJS) $(LIB_OBJS)
+
 
 all: config $(PROGRAM)$(EXEC_SUFFIX) $(PROGRAM).8
 ifeq ($(ARCH), x86)
@@ -973,10 +973,10 @@ config:
 %.o: %.c config
 	$(CC) -MMD $(CFLAGS) $(CPPFLAGS) $(FLASHROM_CFLAGS) $(FEATURE_FLAGS) $(SCMDEF) -o $@ -c $<
 
-$(PROGRAM)$(EXEC_SUFFIX): $(OBJS)
-	$(CC) -o $(PROGRAM)$(EXEC_SUFFIX) $(OBJS) $(LDFLAGS)
+$(PROGRAM)$(EXEC_SUFFIX): $(CLI_OBJS) libflashrom.a
+	$(CC) -o $@ $^ $(LDFLAGS)
 
-libflashrom.a: $(LIBFLASHROM_OBJS)
+libflashrom.a: $(OBJS)
 	$(AR) rcs $@ $^
 	$(RANLIB) $@
 
