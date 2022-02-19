@@ -168,6 +168,10 @@ DEPENDS_ON_LIBJAYLINK := \
 DEPENDS_ON_LIB_NI845X := \
 	CONFIG_NI845X_SPI \
 
+DEPENDS_ON_LINUX_I2C := \
+	CONFIG_MSTARDDC_SPI \
+	CONFIG_LSPCON_I2C_SPI \
+	CONFIG_REALTEK_MST_I2C_SPI \
 
 ifeq ($(CONFIG_ENABLE_LIBUSB1_PROGRAMMERS), no)
 $(call disable_all,$(DEPENDS_ON_LIBUSB1))
@@ -302,7 +306,7 @@ $(call mark_unsupported,CONFIG_LINUX_SPI)
 endif
 
 ifeq ($(HAS_LINUX_I2C), no)
-$(call mark_unsupported,CONFIG_MSTARDDC_SPI CONFIG_LSPCON_I2C_SPI CONFIG_REALTEK_MST_I2C_SPI)
+$(call mark_unsupported,DEPENDS_ON_LINUX_I2C)
 endif
 
 ifeq ($(TARGET_OS), Android)
@@ -800,7 +804,8 @@ FEATURE_FLAGS += -D'CONFIG_NI845X_SPI=1'
 PROGRAMMER_OBJS += ni845x_spi.o
 endif
 
-ifeq ($(HAS_LINUX_I2C), yes)
+USE_LINUX_I2C := $(if $(call filter_deps,$(DEPENDS_ON_LINUX_I2C)),yes,no)
+ifeq ($(USE_LINUX_I2C), yes)
 LIB_OBJS += i2c_helper_linux.o
 endif
 
