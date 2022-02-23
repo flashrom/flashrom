@@ -128,6 +128,7 @@ static void usage(char *argv[], const char *error)
 "\t- \"silvermont\" for chipsets from Intel's Silvermont architecture (e.g. Bay Trail),\n"
 "\t- \"apollo\" for Intel's Apollo Lake SoC.\n"
 "\t- \"gemini\" for Intel's Gemini Lake SoC.\n"
+"\t- \"jasper\" for Intel's Jasper Lake SoC.\n"
 "\t- \"meteor\" for Intel's Meteor Lake SoC.\n"
 "\t- \"5\" or \"ibex\" for Intel's 5 series chipsets,\n"
 "\t- \"6\" or \"cougar\" for Intel's 6 series chipsets,\n"
@@ -242,6 +243,8 @@ int main(int argc, char *argv[])
 			cs = CHIPSET_APOLLO_LAKE;
 		else if (strcmp(csn, "gemini") == 0)
 			cs = CHIPSET_GEMINI_LAKE;
+		else if (strcmp(csn, "jasper") == 0)
+			cs = CHIPSET_JASPER_LAKE;
 		else if (strcmp(csn, "elkhart") == 0)
 			cs = CHIPSET_ELKHART_LAKE;
 		else if (strcmp(csn, "meteor") == 0)
