@@ -102,8 +102,10 @@ int block_erase_chip(struct flashctx *flash, unsigned int blockaddr, unsigned in
 }
 
 static void setup_chip(struct flashrom_flashctx *flashctx, struct flashrom_layout **layout,
-		struct flashchip *chip, const char *programmer_param)
+		struct flashchip *chip, const char *programmer_param, const struct io_mock *io)
 {
+	io_mock_register(io);
+
 	flashctx->chip = chip;
 
 	g_chip_state.unlock_calls = 0;
@@ -139,6 +141,8 @@ static void teardown(struct flashrom_layout **layout)
 	printf("Releasing layout... ");
 	flashrom_layout_release(*layout);
 	printf("done\n");
+
+	io_mock_register(NULL);
 }
 
 static const struct flashchip chip_8MiB = {
@@ -190,12 +194,20 @@ void erase_chip_test_success(void **state)
 {
 	(void) state; /* unused */
 
+	static struct io_mock_fallback_open_state data = {
+		.noc	= 0,
+		.paths	= { NULL },
+	};
+	const struct io_mock chip_io = {
+		.fallback_open_state = &data,
+	};
+
 	struct flashrom_flashctx flashctx = { 0 };
 	struct flashrom_layout *layout;
 	struct flashchip mock_chip = chip_8MiB;
 	const char *param = ""; /* Default values for all params. */
 
-	setup_chip(&flashctx, &layout, &mock_chip, param);
+	setup_chip(&flashctx, &layout, &mock_chip, param, &chip_io);
 
 	printf("Erase chip operation started.\n");
 	assert_int_equal(0, flashrom_flash_erase(&flashctx));
@@ -208,6 +220,14 @@ void erase_chip_with_dummyflasher_test_success(void **state)
 {
 	(void) state; /* unused */
 
+	static struct io_mock_fallback_open_state data = {
+		.noc	= 0,
+		.paths	= { NULL },
+	};
+	const struct io_mock chip_io = {
+		.fallback_open_state = &data,
+	};
+
 	struct flashrom_flashctx flashctx = { 0 };
 	struct flashrom_layout *layout;
 	struct flashchip mock_chip = chip_W25Q128_V;
@@ -217,7 +237,7 @@ void erase_chip_with_dummyflasher_test_success(void **state)
 	 */
 	char *param_dup = strdup("bus=spi,emulate=W25Q128FV");
 
-	setup_chip(&flashctx, &layout, &mock_chip, param_dup);
+	setup_chip(&flashctx, &layout, &mock_chip, param_dup, &chip_io);
 
 	printf("Erase chip operation started.\n");
 	assert_int_equal(0, flashrom_flash_erase(&flashctx));
@@ -232,12 +252,20 @@ void read_chip_test_success(void **state)
 {
 	(void) state; /* unused */
 
+	static struct io_mock_fallback_open_state data = {
+		.noc	= 0,
+		.paths	= { NULL },
+	};
+	const struct io_mock chip_io = {
+		.fallback_open_state = &data,
+	};
+
 	struct flashrom_flashctx flashctx = { 0 };
 	struct flashrom_layout *layout;
 	struct flashchip mock_chip = chip_8MiB;
 	const char *param = ""; /* Default values for all params. */
 
-	setup_chip(&flashctx, &layout, &mock_chip, param);
+	setup_chip(&flashctx, &layout, &mock_chip, param, &chip_io);
 
 	const char *const filename = "read_chip.test";
 	unsigned long size = mock_chip.total_size * 1024;
@@ -257,6 +285,14 @@ void read_chip_with_dummyflasher_test_success(void **state)
 {
 	(void) state; /* unused */
 
+	static struct io_mock_fallback_open_state data = {
+		.noc	= 0,
+		.paths	= { NULL },
+	};
+	const struct io_mock chip_io = {
+		.fallback_open_state = &data,
+	};
+
 	struct flashrom_flashctx flashctx = { 0 };
 	struct flashrom_layout *layout;
 	struct flashchip mock_chip = chip_W25Q128_V;
@@ -266,7 +302,7 @@ void read_chip_with_dummyflasher_test_success(void **state)
 	 */
 	char *param_dup = strdup("bus=spi,emulate=W25Q128FV");
 
-	setup_chip(&flashctx, &layout, &mock_chip, param_dup);
+	setup_chip(&flashctx, &layout, &mock_chip, param_dup, &chip_io);
 
 	const char *const filename = "read_chip.test";
 	unsigned long size = mock_chip.total_size * 1024;
@@ -287,12 +323,20 @@ void write_chip_test_success(void **state)
 {
 	(void) state; /* unused */
 
+	static struct io_mock_fallback_open_state data = {
+		.noc	= 0,
+		.paths	= { NULL },
+	};
+	const struct io_mock chip_io = {
+		.fallback_open_state = &data,
+	};
+
 	struct flashrom_flashctx flashctx = { 0 };
 	struct flashrom_layout *layout;
 	struct flashchip mock_chip = chip_8MiB;
 	const char *param = ""; /* Default values for all params. */
 
-	setup_chip(&flashctx, &layout, &mock_chip, param);
+	setup_chip(&flashctx, &layout, &mock_chip, param, &chip_io);
 
 	/*
 	 * Providing filename "-" means content is taken from standard input.
@@ -325,6 +369,14 @@ void write_chip_with_dummyflasher_test_success(void **state)
 {
 	(void) state; /* unused */
 
+	static struct io_mock_fallback_open_state data = {
+		.noc	= 0,
+		.paths	= { NULL },
+	};
+	const struct io_mock chip_io = {
+		.fallback_open_state = &data,
+	};
+
 	struct flashrom_flashctx flashctx = { 0 };
 	struct flashrom_layout *layout;
 	struct flashchip mock_chip = chip_W25Q128_V;
@@ -334,7 +386,7 @@ void write_chip_with_dummyflasher_test_success(void **state)
 	 */
 	char *param_dup = strdup("bus=spi,emulate=W25Q128FV");
 
-	setup_chip(&flashctx, &layout, &mock_chip, param_dup);
+	setup_chip(&flashctx, &layout, &mock_chip, param_dup, &chip_io);
 
 	/* See comment in write_chip_test_success */
 	const char *const filename = "-";
@@ -367,18 +419,21 @@ void verify_chip_test_success(void **state)
 {
 	(void) state; /* unused */
 
+	static struct io_mock_fallback_open_state data = {
+		.noc	= 0,
+		.paths	= { NULL },
+	};
 	const struct io_mock verify_chip_io = {
 		.fread = verify_chip_fread,
+		.fallback_open_state = &data,
 	};
-
-	io_mock_register(&verify_chip_io);
 
 	struct flashrom_flashctx flashctx = { 0 };
 	struct flashrom_layout *layout;
 	struct flashchip mock_chip = chip_8MiB;
 	const char *param = ""; /* Default values for all params. */
 
-	setup_chip(&flashctx, &layout, &mock_chip, param);
+	setup_chip(&flashctx, &layout, &mock_chip, param, &verify_chip_io);
 
 	/* See comment in write_chip_test_success */
 	const char *const filename = "-";
@@ -393,19 +448,20 @@ void verify_chip_test_success(void **state)
 	teardown(&layout);
 
 	free(newcontents);
-
-	io_mock_register(NULL);
 }
 
 void verify_chip_with_dummyflasher_test_success(void **state)
 {
 	(void) state; /* unused */
 
+	static struct io_mock_fallback_open_state data = {
+		.noc	= 0,
+		.paths	= { NULL },
+	};
 	const struct io_mock verify_chip_io = {
 		.fread = verify_chip_fread,
+		.fallback_open_state = &data,
 	};
-
-	io_mock_register(&verify_chip_io);
 
 	struct flashrom_flashctx flashctx = { 0 };
 	struct flashrom_layout *layout;
@@ -416,7 +472,7 @@ void verify_chip_with_dummyflasher_test_success(void **state)
 	 */
 	char *param_dup = strdup("bus=spi,emulate=W25Q128FV");
 
-	setup_chip(&flashctx, &layout, &mock_chip, param_dup);
+	setup_chip(&flashctx, &layout, &mock_chip, param_dup, &verify_chip_io);
 
 	/* See comment in write_chip_test_success */
 	const char *const filename = "-";
@@ -443,6 +499,4 @@ void verify_chip_with_dummyflasher_test_success(void **state)
 
 	free(param_dup);
 	free(newcontents);
-
-	io_mock_register(NULL);
 }

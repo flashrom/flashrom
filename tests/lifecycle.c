@@ -83,7 +83,15 @@ static void run_probe_lifecycle(void **state, const struct io_mock *io,
 void dummy_basic_lifecycle_test_success(void **state)
 {
 #if CONFIG_DUMMY == 1
-	run_basic_lifecycle(state, NULL, &programmer_dummy, "bus=parallel+lpc+fwh+spi");
+	static struct io_mock_fallback_open_state dummy_fallback_open_state = {
+		.noc = 0,
+		.paths = { NULL },
+	};
+	const struct io_mock dummy_io = {
+		.fallback_open_state = &dummy_fallback_open_state,
+	};
+
+	run_basic_lifecycle(state, &dummy_io, &programmer_dummy, "bus=parallel+lpc+fwh+spi");
 #else
 	skip();
 #endif
@@ -92,7 +100,15 @@ void dummy_basic_lifecycle_test_success(void **state)
 void dummy_probe_lifecycle_test_success(void **state)
 {
 #if CONFIG_DUMMY == 1
-	run_probe_lifecycle(state, NULL, &programmer_dummy, "bus=spi,emulate=W25Q128FV", "W25Q128.V");
+	static struct io_mock_fallback_open_state dummy_fallback_open_state = {
+		.noc = 0,
+		.paths = { NULL },
+	};
+	const struct io_mock dummy_io = {
+		.fallback_open_state = &dummy_fallback_open_state,
+	};
+
+	run_probe_lifecycle(state, &dummy_io, &programmer_dummy, "bus=spi,emulate=W25Q128FV", "W25Q128.V");
 #else
 	skip();
 #endif
@@ -101,7 +117,15 @@ void dummy_probe_lifecycle_test_success(void **state)
 void nicrealtek_basic_lifecycle_test_success(void **state)
 {
 #if CONFIG_NICREALTEK == 1
-	run_basic_lifecycle(state, NULL, &programmer_nicrealtek, "");
+	static struct io_mock_fallback_open_state nicrealtek_fallback_open_state = {
+		.noc = 0,
+		.paths = { NULL },
+	};
+	const struct io_mock nicrealtek_io = {
+		.fallback_open_state = &nicrealtek_fallback_open_state,
+	};
+
+	run_basic_lifecycle(state, &nicrealtek_io, &programmer_nicrealtek, "");
 #else
 	skip();
 #endif
@@ -178,12 +202,17 @@ static void raiden_debug_libusb_free_config_descriptor(void *state, struct libus
 void raiden_debug_basic_lifecycle_test_success(void **state)
 {
 #if CONFIG_RAIDEN_DEBUG_SPI == 1
+	static struct io_mock_fallback_open_state raiden_debug_fallback_open_state = {
+		.noc = 0,
+		.paths = { NULL },
+	};
 	const struct io_mock raiden_debug_io = {
 		.libusb_get_device_list = raiden_debug_libusb_get_device_list,
 		.libusb_free_device_list = raiden_debug_libusb_free_device_list,
 		.libusb_get_device_descriptor = raiden_debug_libusb_get_device_descriptor,
 		.libusb_get_config_descriptor = raiden_debug_libusb_get_config_descriptor,
 		.libusb_free_config_descriptor = raiden_debug_libusb_free_config_descriptor,
+		.fallback_open_state = &raiden_debug_fallback_open_state,
 	};
 
 	/*
@@ -225,9 +254,14 @@ int dediprog_libusb_control_transfer(void *state,
 void dediprog_basic_lifecycle_test_success(void **state)
 {
 #if CONFIG_DEDIPROG == 1
+	static struct io_mock_fallback_open_state dediprog_fallback_open_state = {
+		.noc = 0,
+		.paths = { NULL },
+	};
 	const struct io_mock dediprog_io = {
 		.libusb_init = dediprog_libusb_init,
 		.libusb_control_transfer = dediprog_libusb_control_transfer,
+		.fallback_open_state = &dediprog_fallback_open_state,
 	};
 
 	run_basic_lifecycle(state, &dediprog_io, &programmer_dediprog, "voltage=3.5V");
@@ -296,11 +330,16 @@ void linux_mtd_probe_lifecycle_test_success(void **state)
 {
 #if CONFIG_LINUX_MTD == 1
 	struct linux_mtd_io_state linux_mtd_io_state = { NULL };
+	static struct io_mock_fallback_open_state linux_mtd_fallback_open_state = {
+		.noc = 0,
+		.paths = { NULL },
+	};
 	const struct io_mock linux_mtd_io = {
 		.state	= &linux_mtd_io_state,
 		.fopen	= linux_mtd_fopen,
 		.fread	= linux_mtd_fread,
 		.fclose = linux_mtd_fclose,
+		.fallback_open_state = &linux_mtd_fallback_open_state,
 	};
 
 	run_probe_lifecycle(state, &linux_mtd_io, &programmer_linux_mtd, "", "Opaque flash chip");
