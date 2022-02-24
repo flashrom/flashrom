@@ -355,9 +355,15 @@ void linux_spi_probe_lifecycle_test_success(void **state)
 	 * Specifically, it is reading the buffer size from sysfs.
 	 */
 #if CONFIG_LINUX_SPI == 1
+	static struct io_mock_fallback_open_state linux_spi_fallback_open_state = {
+		.noc = 0,
+		.paths = { "/dev/null", NULL },
+		.flags = { O_RDWR },
+	};
 	const struct io_mock linux_spi_io = {
 		.fgets	= linux_spi_fgets,
 		.ioctl	= linux_spi_ioctl,
+		.fallback_open_state = &linux_spi_fallback_open_state,
 	};
 
 	io_mock_register(&linux_spi_io);
