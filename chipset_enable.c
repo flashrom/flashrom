@@ -120,11 +120,11 @@ static struct pci_dev *find_southbridge(uint16_t vendor, const char *name)
 {
 	struct pci_dev *sbdev;
 
-	sbdev = pci_dev_find_vendorclass(vendor, 0x0601);
+	sbdev = pcidev_find_vendorclass(vendor, 0x0601);
 	if (!sbdev)
-		sbdev = pci_dev_find_vendorclass(vendor, 0x0680);
+		sbdev = pcidev_find_vendorclass(vendor, 0x0680);
 	if (!sbdev)
-		sbdev = pci_dev_find_vendorclass(vendor, 0x0000);
+		sbdev = pcidev_find_vendorclass(vendor, 0x0000);
 	if (!sbdev)
 		msg_perr("No southbridge found for %s!\n", name);
 	if (sbdev)

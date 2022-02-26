@@ -782,7 +782,7 @@ static int via_vt823x_gpio_set(uint8_t gpio, int raise)
 	uint16_t base;
 	uint8_t val, bit, offset;
 
-	dev = pci_dev_find_vendorclass(0x1106, 0x0601);
+	dev = pcidev_find_vendorclass(0x1106, 0x0601);
 	switch (dev->device_id) {
 	case 0x3177:	/* VT8235 */
 	case 0x3227:	/* VT8237/VT8237R */
@@ -1073,7 +1073,7 @@ static int nvidia_mcp_gpio_set(int gpio, int raise)
 	}
 
 	/* Check for the ISA bridge first. */
-	dev = pci_dev_find_vendorclass(0x10DE, 0x0601);
+	dev = pcidev_find_vendorclass(0x10DE, 0x0601);
 	switch (dev->device_id) {
 	case 0x0030: /* CK804 */
 	case 0x0050: /* MCP04 */

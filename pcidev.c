@@ -170,6 +170,25 @@ struct pci_dev *pcidev_getdevfn(struct pci_dev *dev, const int func)
 #endif
 }
 
+struct pci_dev *pcidev_find_vendorclass(uint16_t vendor, uint16_t devclass)
+{
+	struct pci_dev *temp = NULL;
+	struct pci_filter filter;
+	uint16_t tmp2;
+
+	pci_filter_init(NULL, &filter);
+	filter.vendor = vendor;
+
+	while ((temp = pcidev_scandev(&filter, temp))) {
+		/* Read PCI class */
+		tmp2 = pci_read_word(temp, PCI_CLASS_DEVICE);
+		if (tmp2 == devclass)
+			return temp;
+	}
+
+	return NULL;
+}
+
 static int pcidev_shutdown(void *data)
 {
 	if (pacc == NULL) {
