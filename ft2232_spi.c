@@ -36,6 +36,7 @@
 #define FTDI_FT2232H_PID	0x6010
 #define FTDI_FT4232H_PID	0x6011
 #define FTDI_FT232H_PID		0x6014
+#define FTDI_FT4233H_PID	0x6041
 #define TIAO_TUMPA_PID		0x8a98
 #define TIAO_TUMPA_LITE_PID	0x8a99
 #define AMONTEC_JTAGKEY_PID	0xCFF8
@@ -61,6 +62,7 @@ static const struct dev_entry devs_ft2232spi[] = {
 	{FTDI_VID, FTDI_FT2232H_PID, OK, "FTDI", "FT2232H"},
 	{FTDI_VID, FTDI_FT4232H_PID, OK, "FTDI", "FT4232H"},
 	{FTDI_VID, FTDI_FT232H_PID, OK, "FTDI", "FT232H"},
+	{FTDI_VID, FTDI_FT4233H_PID, OK, "FTDI", "FT4233H"},
 	{FTDI_VID, TIAO_TUMPA_PID, OK, "TIAO", "USB Multi-Protocol Adapter"},
 	{FTDI_VID, TIAO_TUMPA_LITE_PID, OK, "TIAO", "USB Multi-Protocol Adapter Lite"},
 	{FTDI_VID, AMONTEC_JTAGKEY_PID, OK, "Amontec", "JTAGkey"},
@@ -344,6 +346,9 @@ static int ft2232_spi_init(void)
 		} else if (!strcasecmp(arg, "232H")) {
 			ft2232_type = FTDI_FT232H_PID;
 			channel_count = 1;
+		} else if (!strcasecmp(arg, "4233H")) {
+			ft2232_type = FTDI_FT4233H_PID;
+			channel_count = 4;
 		} else if (!strcasecmp(arg, "jtagkey")) {
 			ft2232_type = AMONTEC_JTAGKEY_PID;
 			channel_count = 2;
