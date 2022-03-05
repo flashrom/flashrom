@@ -169,7 +169,7 @@ static void dmi_table(uint32_t base, uint16_t len, uint16_t num)
 	int i = 0, j = 0;
 
 	uint8_t *dmi_table_mem = physmap_ro("DMI Table", base, len);
-	if (dmi_table_mem == NULL) {
+	if (dmi_table_mem == ERROR_PTR) {
 		msg_perr("Unable to access DMI Table\n");
 		return;
 	}
