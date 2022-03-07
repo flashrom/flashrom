@@ -351,16 +351,17 @@ static int set_wp_range(struct wp_bits *bits, struct flashctx *flash, const stru
 /** Get the mode selected by a WP configuration. */
 static int get_wp_mode(enum flashrom_wp_mode *mode, const struct wp_bits *bits)
 {
-	if (!bits->srp_bit_present)
-		return FLASHROM_WP_ERR_CHIP_UNSUPPORTED;
+	const enum flashrom_wp_mode wp_modes[2][2] = {
+		{
+			FLASHROM_WP_MODE_DISABLED,	/* srl=0, srp=0 */
+			FLASHROM_WP_MODE_HARDWARE,	/* srl=0, srp=1 */
+		}, {
+			FLASHROM_WP_MODE_POWER_CYCLE,	/* srl=1, srp=0 */
+			FLASHROM_WP_MODE_PERMANENT,	/* srl=1, srp=1 */
+		},
+	};
 
-	if (bits->srl_bit_present && bits->srl == 1) {
-		*mode = bits->srp ? FLASHROM_WP_MODE_PERMANENT :
-				    FLASHROM_WP_MODE_POWER_CYCLE;
-	} else {
-		*mode = bits->srp ? FLASHROM_WP_MODE_HARDWARE :
-				    FLASHROM_WP_MODE_DISABLED;
-	}
+	*mode = wp_modes[bits->srl][bits->srp];
 
 	return FLASHROM_WP_OK;
 }
@@ -375,6 +376,9 @@ static int set_wp_mode(struct wp_bits *bits, const enum flashrom_wp_mode mode)
 		return FLASHROM_WP_OK;
 
 	case FLASHROM_WP_MODE_HARDWARE:
+		if (!bits->srp_bit_present)
+			return FLASHROM_WP_ERR_CHIP_UNSUPPORTED;
+
 		bits->srl = 0;
 		bits->srp = 1;
 		return FLASHROM_WP_OK;
