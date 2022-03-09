@@ -715,7 +715,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (flash_size) {
-		printf("%ld\n", flashrom_flash_getsize(fill_flash));
+		printf("%zu\n", flashrom_flash_getsize(fill_flash));
 		goto out_shutdown;
 	}
 
