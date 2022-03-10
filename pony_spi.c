@@ -161,6 +161,7 @@ static int pony_spi_init(void)
 	if (!have_device) {
 		msg_perr("Error: No valid device specified.\n"
 			 "Use flashrom -p pony_spi:dev=/dev/device[,type=name]\n");
+		free(data);
 		return 1;
 	}
 
