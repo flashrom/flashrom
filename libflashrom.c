@@ -442,7 +442,7 @@ int flashrom_layout_read_from_ifd(struct flashrom_layout **const layout, struct 
 #ifndef __FLASHROM_LITTLE_ENDIAN__
 	return 6;
 #else
-	struct flashrom_layout *dump_layout, *chip_layout;
+	struct flashrom_layout *dump_layout = NULL, *chip_layout = NULL;
 	int ret = 1;
 
 	void *const desc = malloc(0x1000);
