@@ -362,16 +362,16 @@ int main(void)
 	};
 	ret |= cmocka_run_group_tests_name("spi25.c tests", spi25_tests, NULL, NULL);
 
-	const struct CMUnitTest init_shutdown_tests[] = {
-		cmocka_unit_test(dummy_init_and_shutdown_test_success),
-		cmocka_unit_test(nicrealtek_init_and_shutdown_test_success),
-		cmocka_unit_test(raiden_debug_init_and_shutdown_test_success),
-		cmocka_unit_test(dediprog_init_and_shutdown_test_success),
-		cmocka_unit_test(linux_mtd_init_and_shutdown_test_success),
-		cmocka_unit_test(linux_spi_init_and_shutdown_test_success),
-		cmocka_unit_test(realtek_mst_init_and_shutdown_test_success),
+	const struct CMUnitTest lifecycle_tests[] = {
+		cmocka_unit_test(dummy_basic_lifecycle_test_success),
+		cmocka_unit_test(nicrealtek_basic_lifecycle_test_success),
+		cmocka_unit_test(raiden_debug_basic_lifecycle_test_success),
+		cmocka_unit_test(dediprog_basic_lifecycle_test_success),
+		cmocka_unit_test(linux_mtd_basic_lifecycle_test_success),
+		cmocka_unit_test(linux_spi_basic_lifecycle_test_success),
+		cmocka_unit_test(realtek_mst_basic_lifecycle_test_success),
 	};
-	ret |= cmocka_run_group_tests_name("init_shutdown.c tests", init_shutdown_tests, NULL, NULL);
+	ret |= cmocka_run_group_tests_name("lifecycle.c tests", lifecycle_tests, NULL, NULL);
 
 	const struct CMUnitTest layout_tests[] = {
 		cmocka_unit_test(included_regions_dont_overlap_test_success),
@@ -390,6 +390,8 @@ int main(void)
 		cmocka_unit_test(read_chip_with_dummyflasher_test_success),
 		cmocka_unit_test(write_chip_test_success),
 		cmocka_unit_test(write_chip_with_dummyflasher_test_success),
+		cmocka_unit_test(verify_chip_test_success),
+		cmocka_unit_test(verify_chip_with_dummyflasher_test_success),
 	};
 	ret |= cmocka_run_group_tests_name("chip.c tests", chip_tests, NULL, NULL);
 

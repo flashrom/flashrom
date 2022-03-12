@@ -99,7 +99,7 @@ DEPENDS_ON_SERIAL := \
 	CONFIG_SERPROG \
 
 DEPENDS_ON_BITBANG_SPI := \
-	CONFIG_INTERNAL \
+	CONFIG_INTERNAL_X86 \
 	CONFIG_NICINTEL_SPI \
 	CONFIG_OGP_SPI \
 	CONFIG_PONY_SPI \
@@ -109,7 +109,7 @@ DEPENDS_ON_RAW_MEM_ACCESS := \
 	CONFIG_ATAPROMISE \
 	CONFIG_DRKAISER \
 	CONFIG_GFXNVIDIA \
-	CONFIG_INTERNAL \
+	CONFIG_INTERNAL_X86 \
 	CONFIG_IT8212 \
 	CONFIG_NICINTEL \
 	CONFIG_NICINTEL_EEPROM \
@@ -119,12 +119,12 @@ DEPENDS_ON_RAW_MEM_ACCESS := \
 	CONFIG_SATASII \
 
 DEPENDS_ON_X86_MSR := \
-	CONFIG_INTERNAL \
+	CONFIG_INTERNAL_X86 \
 
 DEPENDS_ON_X86_PORT_IO := \
 	CONFIG_ATAHPT \
 	CONFIG_ATAPROMISE \
-	CONFIG_INTERNAL \
+	CONFIG_INTERNAL_X86 \
 	CONFIG_NIC3COM \
 	CONFIG_NICNATSEMI \
 	CONFIG_NICREALTEK \
@@ -168,6 +168,11 @@ DEPENDS_ON_LIBJAYLINK := \
 DEPENDS_ON_LIB_NI845X := \
 	CONFIG_NI845X_SPI \
 
+DEPENDS_ON_LINUX_I2C := \
+	CONFIG_MSTARDDC_SPI \
+	CONFIG_LSPCON_I2C_SPI \
+	CONFIG_REALTEK_MST_I2C_SPI \
+	CONFIG_MEDIATEK_I2C_SPI \
 
 ifeq ($(CONFIG_ENABLE_LIBUSB1_PROGRAMMERS), no)
 $(call disable_all,$(DEPENDS_ON_LIBUSB1))
@@ -242,24 +247,9 @@ HAS_EXTERN_LIBRT    := $(call c_link_test, Makefile.d/clock_gettime_test.c, , -l
 HAS_LINUX_MTD       := $(call c_compile_test, Makefile.d/linux_mtd_test.c)
 HAS_LINUX_SPI       := $(call c_compile_test, Makefile.d/linux_spi_test.c)
 HAS_LINUX_I2C       := $(call c_compile_test, Makefile.d/linux_i2c_test.c)
-
-ifeq ($(TARGET_OS), $(filter $(TARGET_OS), FreeBSD OpenBSD DragonFlyBSD))
-override CPPFLAGS += -I/usr/local/include
-override LDFLAGS += -L/usr/local/lib
-endif
-
-ifeq ($(TARGET_OS), Darwin)
-override CPPFLAGS += -I/opt/local/include -I/usr/local/include
-override LDFLAGS += -L/opt/local/lib -L/usr/local/lib
-endif
-
-ifeq ($(TARGET_OS), NetBSD)
-override CPPFLAGS += -I/usr/pkg/include
-override LDFLAGS += -L/usr/pkg/lib
-endif
+EXEC_SUFFIX         := $(strip $(if $(filter $(TARGET_OS), DOS MinGW), .exe))
 
 ifeq ($(TARGET_OS), DOS)
-EXEC_SUFFIX := .exe
 # DJGPP has odd uint*_t definitions which cause lots of format string warnings.
 override CFLAGS += -Wno-format
 override LDFLAGS += -lgetopt
@@ -275,7 +265,6 @@ endif
 
 # FIXME: Should we check for Cygwin/MSVC as well?
 ifeq ($(TARGET_OS), MinGW)
-EXEC_SUFFIX := .exe
 # MinGW doesn't have the ffs() function, but we can use gcc's __builtin_ffs().
 FLASHROM_CFLAGS += -Dffs=__builtin_ffs
 # Some functions provided by Microsoft do not work as described in C99 specifications. This macro fixes that
@@ -318,7 +307,7 @@ $(call mark_unsupported,CONFIG_LINUX_SPI)
 endif
 
 ifeq ($(HAS_LINUX_I2C), no)
-$(call mark_unsupported,CONFIG_MSTARDDC_SPI CONFIG_LSPCON_I2C_SPI CONFIG_REALTEK_MST_I2C_SPI)
+$(call mark_unsupported,DEPENDS_ON_LINUX_I2C)
 endif
 
 ifeq ($(TARGET_OS), Android)
@@ -326,8 +315,8 @@ ifeq ($(TARGET_OS), Android)
 $(call mark_unsupported,$(DEPENDS_ON_X86_PORT_IO))
 endif
 
-# Disable the internal programmer on unsupported architectures (everything but x86 and mipsel)
-ifneq ($(ARCH)-little, $(filter $(ARCH), x86 mips)-$(ENDIAN))
+# Disable the internal programmer on unsupported architectures or systems
+ifeq ($(or $(filter $(ARCH), x86), $(filter $(TARGET_OS), Linux)), )
 $(call mark_unsupported,CONFIG_INTERNAL)
 endif
 
@@ -397,7 +386,8 @@ endif
 CHIP_OBJS = jedec.o stm50.o w39.o w29ee011.o \
 	sst28sf040.o 82802ab.o \
 	sst49lfxxxc.o sst_fwhub.o edi.o flashchips.o spi.o spi25.o spi25_statusreg.o \
-	spi95.o opaque.o sfdp.o en29lv640b.o at45db.o writeprotect.o s25f.o
+	spi95.o opaque.o sfdp.o en29lv640b.o at45db.o s25f.o \
+	writeprotect.o writeprotect_ranges.o
 
 ###############################################################################
 # Library code.
@@ -421,9 +411,6 @@ SCMDEF := -D'FLASHROM_VERSION="$(VERSION)"'
 # No spaces in release names unless set explicitly
 RELEASENAME ?= $(shell echo "$(VERSION)" | sed -e 's/ /_/')
 
-# Inform user of the version string
-$(info Replacing all version templates with $(VERSION).)
-
 # If a VCS is found then try to install hooks.
 $(shell ./util/getrevision.sh -c 2>/dev/null && ./util/git-hooks/install.sh)
 
@@ -432,6 +419,7 @@ $(shell ./util/getrevision.sh -c 2>/dev/null && ./util/git-hooks/install.sh)
 
 # Always enable internal/onboard support for now.
 CONFIG_INTERNAL ?= yes
+CONFIG_INTERNAL_X86 ?= yes
 
 # Always enable serprog for now.
 CONFIG_SERPROG ?= yes
@@ -600,17 +588,24 @@ endif
 
 FEATURE_FLAGS += -D'CONFIG_DEFAULT_PROGRAMMER_ARGS="$(CONFIG_DEFAULT_PROGRAMMER_ARGS)"'
 
+################################################################################
+
+ifeq ($(ARCH), x86)
+ifeq ($(CONFIG_INTERNAL) $(CONFIG_INTERNAL_X86), yes yes)
+FEATURE_FLAGS += -D'CONFIG_INTERNAL=1'
+PROGRAMMER_OBJS += processor_enable.o chipset_enable.o board_enable.o cbtable.o \
+	internal.o it87spi.o it85spi.o sb600spi.o amd_imc.o wbsio_spi.o mcp6x_spi.o \
+	ichspi.o dmi.o
+endif
+else
 ifeq ($(CONFIG_INTERNAL), yes)
 FEATURE_FLAGS += -D'CONFIG_INTERNAL=1'
 PROGRAMMER_OBJS += processor_enable.o chipset_enable.o board_enable.o cbtable.o internal.o
-ifeq ($(ARCH), x86)
-PROGRAMMER_OBJS += it87spi.o it85spi.o sb600spi.o amd_imc.o wbsio_spi.o mcp6x_spi.o
-PROGRAMMER_OBJS += ichspi.o dmi.o
+endif
+endif
+
 ifeq ($(CONFIG_INTERNAL_DMI), yes)
 FEATURE_FLAGS += -D'CONFIG_INTERNAL_DMI=1'
-endif
-else
-endif
 endif
 
 ifeq ($(CONFIG_SERPROG), yes)
@@ -807,7 +802,8 @@ FEATURE_FLAGS += -D'CONFIG_NI845X_SPI=1'
 PROGRAMMER_OBJS += ni845x_spi.o
 endif
 
-ifeq ($(HAS_LINUX_I2C), yes)
+USE_LINUX_I2C := $(if $(call filter_deps,$(DEPENDS_ON_LINUX_I2C)),yes,no)
+ifeq ($(USE_LINUX_I2C), yes)
 LIB_OBJS += i2c_helper_linux.o
 endif
 
@@ -906,8 +902,8 @@ override LDFLAGS += -lrt
 endif
 endif
 
-LIBFLASHROM_OBJS = $(CHIP_OBJS) $(PROGRAMMER_OBJS) $(LIB_OBJS)
-OBJS = $(CLI_OBJS) $(LIBFLASHROM_OBJS)
+OBJS = $(CHIP_OBJS) $(PROGRAMMER_OBJS) $(LIB_OBJS)
+
 
 all: config $(PROGRAM)$(EXEC_SUFFIX) $(PROGRAM).8
 ifeq ($(ARCH), x86)
@@ -915,6 +911,7 @@ ifeq ($(ARCH), x86)
 endif
 
 config:
+	@echo Building flashrom version $(VERSION)
 	@echo -n "C compiler found: "
 	@if [ $(CC_WORKING) = yes ]; \
 		then $(CC) --version 2>/dev/null | head -1; \
@@ -974,10 +971,10 @@ config:
 %.o: %.c config
 	$(CC) -MMD $(CFLAGS) $(CPPFLAGS) $(FLASHROM_CFLAGS) $(FEATURE_FLAGS) $(SCMDEF) -o $@ -c $<
 
-$(PROGRAM)$(EXEC_SUFFIX): $(OBJS)
-	$(CC) -o $(PROGRAM)$(EXEC_SUFFIX) $(OBJS) $(LDFLAGS)
+$(PROGRAM)$(EXEC_SUFFIX): $(CLI_OBJS) libflashrom.a
+	$(CC) -o $@ $^ $(LDFLAGS)
 
-libflashrom.a: $(LIBFLASHROM_OBJS)
+libflashrom.a: $(OBJS)
 	$(AR) rcs $@ $^
 	$(RANLIB) $@
 

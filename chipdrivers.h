@@ -62,8 +62,10 @@ int spi_set_extended_address(struct flashctx *, uint8_t addr_high);
 
 
 /* spi25_statusreg.c */
+/* FIXME: replace spi_read_status_register() calls with spi_read_register() */
 uint8_t spi_read_status_register(const struct flashctx *flash);
-int spi_write_status_register(const struct flashctx *flash, int status);
+int spi_read_register(const struct flashctx *flash, enum flash_reg reg, uint8_t *value);
+int spi_write_register(const struct flashctx *flash, enum flash_reg reg, uint8_t value);
 void spi_prettyprint_status_register_bit(uint8_t status, int bit);
 int spi_prettyprint_status_register_plain(struct flashctx *flash);
 int spi_prettyprint_status_register_default_welwip(struct flashctx *flash);
@@ -213,5 +215,8 @@ int edi_probe_kb9012(struct flashctx *flash);
 /* spi95.c */
 int probe_spi_st95(struct flashctx *flash);
 int spi_block_erase_emulation(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
+
+/* writeprotect_ranges.c */
+void decode_range_spi25(size_t *start, size_t *len, const struct wp_bits *, size_t chip_len);
 
 #endif /* !__CHIPDRIVERS_H__ */

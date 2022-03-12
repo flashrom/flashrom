@@ -19,7 +19,7 @@
 #include "io_mock.h"
 #include "programmer.h"
 
-static void run_lifecycle(void **state, const struct programmer_entry *prog, const char *param)
+static void run_basic_lifecycle(void **state, const struct programmer_entry *prog, const char *param)
 {
 	(void) state; /* unused */
 
@@ -36,19 +36,19 @@ static void run_lifecycle(void **state, const struct programmer_entry *prog, con
 	free(param_dup);
 }
 
-void dummy_init_and_shutdown_test_success(void **state)
+void dummy_basic_lifecycle_test_success(void **state)
 {
 #if CONFIG_DUMMY == 1
-	run_lifecycle(state, &programmer_dummy, "bus=parallel+lpc+fwh+spi");
+	run_basic_lifecycle(state, &programmer_dummy, "bus=parallel+lpc+fwh+spi");
 #else
 	skip();
 #endif
 }
 
-void nicrealtek_init_and_shutdown_test_success(void **state)
+void nicrealtek_basic_lifecycle_test_success(void **state)
 {
 #if CONFIG_NICREALTEK == 1
-	run_lifecycle(state, &programmer_nicrealtek, "");
+	run_basic_lifecycle(state, &programmer_nicrealtek, "");
 #else
 	skip();
 #endif
@@ -122,7 +122,7 @@ static void raiden_debug_libusb_free_config_descriptor(void *state, struct libus
 	free(config);
 }
 
-void raiden_debug_init_and_shutdown_test_success(void **state)
+void raiden_debug_basic_lifecycle_test_success(void **state)
 {
 #if CONFIG_RAIDEN_DEBUG_SPI == 1
 	const struct io_mock raiden_debug_io = {
@@ -142,7 +142,7 @@ void raiden_debug_init_and_shutdown_test_success(void **state)
 
 	io_mock_register(&raiden_debug_io);
 
-	run_lifecycle(state, &programmer_raiden_debug_spi, raiden_debug_param);
+	run_basic_lifecycle(state, &programmer_raiden_debug_spi, raiden_debug_param);
 
 	io_mock_register(NULL);
 #else
@@ -173,7 +173,7 @@ int dediprog_libusb_control_transfer(void *state,
 	return wLength;
 }
 
-void dediprog_init_and_shutdown_test_success(void **state)
+void dediprog_basic_lifecycle_test_success(void **state)
 {
 #if CONFIG_DEDIPROG == 1
 	const struct io_mock dediprog_io = {
@@ -183,7 +183,7 @@ void dediprog_init_and_shutdown_test_success(void **state)
 
 	io_mock_register(&dediprog_io);
 
-	run_lifecycle(state, &programmer_dediprog, "voltage=3.5V");
+	run_basic_lifecycle(state, &programmer_dediprog, "voltage=3.5V");
 
 	io_mock_register(NULL);
 #else
@@ -247,7 +247,7 @@ int linux_mtd_fclose(void *state, FILE *fp)
 	return 0;
 }
 
-void linux_mtd_init_and_shutdown_test_success(void **state)
+void linux_mtd_basic_lifecycle_test_success(void **state)
 {
 #if CONFIG_LINUX_MTD == 1
 	struct linux_mtd_io_state linux_mtd_io_state = { NULL };
@@ -260,7 +260,7 @@ void linux_mtd_init_and_shutdown_test_success(void **state)
 
 	io_mock_register(&linux_mtd_io);
 
-	run_lifecycle(state, &programmer_linux_mtd, "");
+	run_basic_lifecycle(state, &programmer_linux_mtd, "");
 
 	io_mock_register(NULL);
 #else
@@ -276,7 +276,7 @@ char *linux_spi_fgets(void *state, char *buf, int len, FILE *fp)
 	return memcpy(buf, max_buf_size, min(len, strlen(max_buf_size) + 1));
 }
 
-void linux_spi_init_and_shutdown_test_success(void **state)
+void linux_spi_basic_lifecycle_test_success(void **state)
 {
 	/*
 	 * Current implementation tests a particular path of the init procedure.
@@ -289,7 +289,7 @@ void linux_spi_init_and_shutdown_test_success(void **state)
 
 	io_mock_register(&linux_spi_io);
 
-	run_lifecycle(state, &programmer_linux_spi, "dev=/dev/null");
+	run_basic_lifecycle(state, &programmer_linux_spi, "dev=/dev/null");
 
 	io_mock_register(NULL);
 #else
@@ -332,7 +332,7 @@ static int realtek_mst_write(void *state, int fd, const void *buf, size_t sz)
 	return sz;
 }
 
-void realtek_mst_init_and_shutdown_test_success(void **state)
+void realtek_mst_basic_lifecycle_test_success(void **state)
 {
 #if CONFIG_REALTEK_MST_I2C_SPI == 1
 	const struct io_mock realtek_mst_io = {
@@ -343,7 +343,7 @@ void realtek_mst_init_and_shutdown_test_success(void **state)
 	};
 	io_mock_register(&realtek_mst_io);
 
-	run_lifecycle(state, &programmer_realtek_mst_i2c_spi, "bus=254,enter-isp=0");
+	run_basic_lifecycle(state, &programmer_realtek_mst_i2c_spi, "bus=254,enter-isp=0");
 
 	io_mock_register(NULL);
 #else

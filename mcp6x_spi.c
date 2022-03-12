@@ -124,7 +124,7 @@ int mcp6x_spi_init(int want_spi)
 	uint8_t mcp_gpiostate;
 
 	/* Look for the SMBus device (SMBus PCI class) */
-	smbusdev = pci_dev_find_vendorclass(0x10de, 0x0c05);
+	smbusdev = pcidev_find_vendorclass(0x10de, 0x0c05);
 	if (!smbusdev) {
 		if (want_spi) {
 			msg_perr("ERROR: SMBus device not found. Not enabling "

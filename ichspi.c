@@ -1402,6 +1402,11 @@ static int ich_hwseq_block_erase(struct flashctx *flash, unsigned int addr,
 	/* make sure FDONE, FCERR, AEL are cleared by writing 1 to them */
 	REGWRITE16(ICH9_REG_HSFS, REGREAD16(ICH9_REG_HSFS));
 
+	if (REGREAD8(ICH9_REG_HSFS) & HSFS_SCIP) {
+		msg_perr("Error: SCIP bit is unexpectedly set.\n");
+		return -1;
+	}
+
 	hsfc = REGREAD16(ICH9_REG_HSFC);
 	hsfc &= ~hwseq_data.hsfc_fcycle; /* clear operation */
 	hsfc |= (0x3 << HSFC_FCYCLE_OFF); /* set erase operation */
@@ -1439,6 +1444,12 @@ static int ich_hwseq_read(struct flashctx *flash, uint8_t *buf,
 		block_len = min(block_len, 256 - (addr & 0xFF));
 
 		ich_hwseq_set_addr(addr);
+
+		if (REGREAD8(ICH9_REG_HSFS) & HSFS_SCIP) {
+			msg_perr("Error: SCIP bit is unexpectedly set.\n");
+			return -1;
+		}
+
 		hsfc = REGREAD16(ICH9_REG_HSFC);
 		hsfc &= ~hwseq_data.hsfc_fcycle; /* set read operation */
 		hsfc &= ~HSFC_FDBC; /* clear byte count */
@@ -1480,6 +1491,12 @@ static int ich_hwseq_write(struct flashctx *flash, const uint8_t *buf, unsigned 
 		/* as well as flash chip page borders as demanded in the Intel datasheets. */
 		block_len = min(block_len, 256 - (addr & 0xFF));
 		ich_fill_data(buf, block_len, ICH9_REG_FDATA0);
+
+		if (REGREAD8(ICH9_REG_HSFS) & HSFS_SCIP) {
+			msg_perr("Error: SCIP bit is unexpectedly set.\n");
+			return -1;
+		}
+
 		hsfc = REGREAD16(ICH9_REG_HSFC);
 		hsfc &= ~hwseq_data.hsfc_fcycle; /* clear operation */
 		hsfc |= (0x2 << HSFC_FCYCLE_OFF); /* set write operation */
@@ -1781,6 +1798,7 @@ static void init_chipset_properties(struct swseq_data *swseq, struct hwseq_data 
 	case CHIPSET_300_SERIES_CANNON_POINT:
 	case CHIPSET_400_SERIES_COMET_POINT:
 	case CHIPSET_500_SERIES_TIGER_POINT:
+	case CHIPSET_600_SERIES_ALDER_POINT:
 	case CHIPSET_APOLLO_LAKE:
 	case CHIPSET_GEMINI_LAKE:
 	case CHIPSET_ELKHART_LAKE:
@@ -1817,6 +1835,7 @@ static void init_chipset_properties(struct swseq_data *swseq, struct hwseq_data 
 	case CHIPSET_300_SERIES_CANNON_POINT:
 	case CHIPSET_400_SERIES_COMET_POINT:
 	case CHIPSET_500_SERIES_TIGER_POINT:
+	case CHIPSET_600_SERIES_ALDER_POINT:
 	case CHIPSET_APOLLO_LAKE:
 	case CHIPSET_GEMINI_LAKE:
 	case CHIPSET_ELKHART_LAKE:
@@ -1875,6 +1894,7 @@ static int init_ich_default(void *spibar, enum ich_chipset ich_gen)
 	case CHIPSET_300_SERIES_CANNON_POINT:
 	case CHIPSET_400_SERIES_COMET_POINT:
 	case CHIPSET_500_SERIES_TIGER_POINT:
+	case CHIPSET_600_SERIES_ALDER_POINT:
 	case CHIPSET_APOLLO_LAKE:
 	case CHIPSET_GEMINI_LAKE:
 	case CHIPSET_ELKHART_LAKE:
@@ -1952,6 +1972,7 @@ static int init_ich_default(void *spibar, enum ich_chipset ich_gen)
 		case CHIPSET_300_SERIES_CANNON_POINT:
 		case CHIPSET_400_SERIES_COMET_POINT:
 		case CHIPSET_500_SERIES_TIGER_POINT:
+		case CHIPSET_600_SERIES_ALDER_POINT:
 		case CHIPSET_APOLLO_LAKE:
 		case CHIPSET_GEMINI_LAKE:
 		case CHIPSET_BAYTRAIL:
@@ -1988,6 +2009,7 @@ static int init_ich_default(void *spibar, enum ich_chipset ich_gen)
 		case CHIPSET_300_SERIES_CANNON_POINT:
 		case CHIPSET_400_SERIES_COMET_POINT:
 		case CHIPSET_500_SERIES_TIGER_POINT:
+		case CHIPSET_600_SERIES_ALDER_POINT:
 		case CHIPSET_APOLLO_LAKE:
 		case CHIPSET_GEMINI_LAKE:
 		case CHIPSET_ELKHART_LAKE:
@@ -2022,7 +2044,8 @@ static int init_ich_default(void *spibar, enum ich_chipset ich_gen)
 	    (ich_gen == CHIPSET_100_SERIES_SUNRISE_POINT ||
 	     ich_gen == CHIPSET_300_SERIES_CANNON_POINT ||
 	     ich_gen == CHIPSET_400_SERIES_COMET_POINT ||
-	     ich_gen == CHIPSET_500_SERIES_TIGER_POINT)) {
+	     ich_gen == CHIPSET_500_SERIES_TIGER_POINT ||
+	     ich_gen == CHIPSET_600_SERIES_ALDER_POINT)) {
 		msg_pdbg("Enabling hardware sequencing by default for 100+ series PCH.\n");
 		ich_spi_mode = ich_hwseq;
 	}

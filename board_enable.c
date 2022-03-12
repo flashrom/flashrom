@@ -782,7 +782,7 @@ static int via_vt823x_gpio_set(uint8_t gpio, int raise)
 	uint16_t base;
 	uint8_t val, bit, offset;
 
-	dev = pci_dev_find_vendorclass(0x1106, 0x0601);
+	dev = pcidev_find_vendorclass(0x1106, 0x0601);
 	switch (dev->device_id) {
 	case 0x3177:	/* VT8235 */
 	case 0x3227:	/* VT8237/VT8237R */
@@ -1073,7 +1073,7 @@ static int nvidia_mcp_gpio_set(int gpio, int raise)
 	}
 
 	/* Check for the ISA bridge first. */
-	dev = pci_dev_find_vendorclass(0x10DE, 0x0601);
+	dev = pcidev_find_vendorclass(0x10DE, 0x0601);
 	switch (dev->device_id) {
 	case 0x0030: /* CK804 */
 	case 0x0050: /* MCP04 */
@@ -1094,15 +1094,7 @@ static int nvidia_mcp_gpio_set(int gpio, int raise)
 			return -1;
 		}
 
-#if !defined(OLD_PCI_GET_DEV)
-		dev = pci_get_dev(pacc, dev->domain, dev->bus, dev->dev, 1);
-#else
-		/* pciutils/libpci before version 2.2 is too old to support
-		 * PCI domains. Such old machines usually don't have domains
-		 * besides domain 0, so this is not a problem.
-		 */
-		dev = pci_get_dev(pacc, dev->bus, dev->dev, 1);
-#endif
+		dev = pcidev_getdevfn(dev, 1);
 		if (!dev) {
 			msg_perr("MCP SMBus controller could not be found\n");
 			return -1;

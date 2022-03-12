@@ -18,34 +18,72 @@
 #ifndef __WRITEPROTECT_H__
 #define __WRITEPROTECT_H__ 1
 
-enum wp_mode {
-	WP_MODE_UNKNOWN = -1,
-	WP_MODE_HARDWARE,	/* hardware WP pin determines status */
-	WP_MODE_POWER_CYCLE,	/* WP active until power off/on cycle */
-	WP_MODE_PERMANENT,	/* status register permanently locked,
-				   WP permanently enabled */
+#include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
+
+#include "libflashrom.h"
+
+#define MAX_BP_BITS 4
+
+/* Chip protection range: start address and length. */
+struct wp_range {
+        size_t start, len;
 };
 
-struct wp {
-	int (*list_ranges)(const struct flashctx *flash);
-	int (*set_range)(const struct flashctx *flash,
-			 unsigned int start, unsigned int len);
-	int (*enable)(const struct flashctx *flash, enum wp_mode mode);
-	int (*disable)(const struct flashctx *flash);
-	int (*wp_status)(const struct flashctx *flash);
+/* Generic description of a chip's write protection configuration. */
+struct flashrom_wp_cfg {
+        enum flashrom_wp_mode mode;
+        struct wp_range range;
 };
 
-extern struct wp wp_generic;
-
-enum wp_mode get_wp_mode(const char *mode_str);
+/* Collection of multiple write protection ranges. */
+struct flashrom_wp_ranges {
+	struct wp_range *ranges;
+	size_t count;
+};
 
 /*
- * Generic write-protect stuff
+ * Description of a chip's write protection configuration.
+ *
+ * It allows most WP code to store and manipulate a chip's configuration
+ * without knowing the exact layout of bits in the chip's status registers.
  */
+struct wp_bits  {
+	/* Status register protection bit (SRP) */
+	bool srp_bit_present;
+	uint8_t srp;
 
-struct modifier_bits {
-	int sec;	/* if 1, bp bits describe sectors */
-	int tb;		/* value of top/bottom select bit */
+	/* Status register lock bit (SRL) */
+	bool srl_bit_present;
+	uint8_t srl;
+
+	/* Complement bit (CMP) */
+	bool cmp_bit_present;
+	uint8_t cmp;
+
+	/* Sector/block protection bit (SEC) */
+	bool sec_bit_present;
+	uint8_t sec;
+
+	/* Top/bottom protection bit (TB) */
+	bool tb_bit_present;
+	uint8_t tb;
+
+	/* Block protection bits (BP) */
+	size_t bp_bit_count;
+	uint8_t bp[MAX_BP_BITS];
 };
+
+struct flashrom_flashctx;
+
+/* Write WP configuration to the chip */
+enum flashrom_wp_result wp_write_cfg(struct flashrom_flashctx *, const struct flashrom_wp_cfg *);
+
+/* Read WP configuration from the chip */
+enum flashrom_wp_result wp_read_cfg(struct flashrom_wp_cfg *, struct flashrom_flashctx *);
+
+/* Get a list of protection ranges supported by the chip */
+enum flashrom_wp_result wp_get_available_ranges(struct flashrom_wp_ranges **, struct flashrom_flashctx *);
 
 #endif /* !__WRITEPROTECT_H__ */

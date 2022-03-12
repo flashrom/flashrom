@@ -1,6 +1,7 @@
 /*
  * This file is part of the flashrom project.
  *
+ * Copyright (C) 2010 Google Inc.
  * Copyright (C) 2012 secunet Security Networks AG
  * (Written by Nico Huber <nico.huber@secunet.com> for secunet)
  *
@@ -109,7 +110,7 @@ struct flashrom_layout;
 int flashrom_layout_new(struct flashrom_layout **);
 int flashrom_layout_read_from_ifd(struct flashrom_layout **, struct flashrom_flashctx *, const void *dump, size_t len);
 int flashrom_layout_read_fmap_from_rom(struct flashrom_layout **,
-		struct flashrom_flashctx *, off_t offset, size_t length);
+		struct flashrom_flashctx *, size_t offset, size_t length);
 int flashrom_layout_read_fmap_from_buffer(struct flashrom_layout **layout,
 		struct flashrom_flashctx *, const uint8_t *buf, size_t len);
 int flashrom_layout_add_region(struct flashrom_layout *, size_t start, size_t end, const char *name);
@@ -118,5 +119,42 @@ int flashrom_layout_get_region_range(struct flashrom_layout *, const char *name,
 		     unsigned int *start, unsigned int *len);
 void flashrom_layout_release(struct flashrom_layout *);
 void flashrom_layout_set(struct flashrom_flashctx *, const struct flashrom_layout *);
+
+/** @ingroup flashrom-wp */
+enum flashrom_wp_result {
+	FLASHROM_WP_OK = 0,
+	FLASHROM_WP_ERR_CHIP_UNSUPPORTED = 1,
+	FLASHROM_WP_ERR_OTHER = 2,
+	FLASHROM_WP_ERR_READ_FAILED = 3,
+	FLASHROM_WP_ERR_WRITE_FAILED = 4,
+	FLASHROM_WP_ERR_VERIFY_FAILED = 5,
+	FLASHROM_WP_ERR_RANGE_UNSUPPORTED = 6,
+	FLASHROM_WP_ERR_MODE_UNSUPPORTED = 7,
+	FLASHROM_WP_ERR_RANGE_LIST_UNAVAILABLE = 8
+};
+
+enum flashrom_wp_mode {
+	FLASHROM_WP_MODE_DISABLED,
+	FLASHROM_WP_MODE_HARDWARE,
+	FLASHROM_WP_MODE_POWER_CYCLE,
+	FLASHROM_WP_MODE_PERMANENT
+};
+struct flashrom_wp_cfg;
+struct flashrom_wp_ranges;
+
+enum flashrom_wp_result flashrom_wp_cfg_new(struct flashrom_wp_cfg **);
+void flashrom_wp_cfg_release(struct flashrom_wp_cfg *);
+void flashrom_wp_set_mode(struct flashrom_wp_cfg *, enum flashrom_wp_mode);
+enum flashrom_wp_mode flashrom_wp_get_mode(const struct flashrom_wp_cfg *);
+void flashrom_wp_set_range(struct flashrom_wp_cfg *, size_t start, size_t len);
+void flashrom_wp_get_range(size_t *start, size_t *len, const struct flashrom_wp_cfg *);
+
+enum flashrom_wp_result flashrom_wp_read_cfg(struct flashrom_wp_cfg *, struct flashrom_flashctx *);
+enum flashrom_wp_result flashrom_wp_write_cfg(struct flashrom_flashctx *, const struct flashrom_wp_cfg *);
+
+enum flashrom_wp_result flashrom_wp_get_available_ranges(struct flashrom_wp_ranges **, struct flashrom_flashctx *);
+size_t flashrom_wp_ranges_get_count(const struct flashrom_wp_ranges *);
+enum flashrom_wp_result flashrom_wp_ranges_get_range(size_t *start, size_t *len, const struct flashrom_wp_ranges *, unsigned int index);
+void flashrom_wp_ranges_release(struct flashrom_wp_ranges *);
 
 #endif				/* !__LIBFLASHROM_H__ */

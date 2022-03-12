@@ -1,5 +1,5 @@
 project('flashromutils', 'c',
-  version : run_command('util/getversion.sh', '-v').stdout().strip(),
+  version : run_command('util/getversion.sh', '--version').stdout().strip(),
   license : 'GPL-2.0',
   meson_version : '>=0.50.0',
   default_options : ['warning_level=2', 'c_std=c99'],
@@ -429,6 +429,7 @@ srcs += 'udelay.c'
 srcs += 'w29ee011.c'
 srcs += 'w39.c'
 srcs += 'writeprotect.c'
+srcs += 'writeprotect_ranges.c'
 
 mapfile = 'libflashrom.map'
 vflag = '-Wl,--version-script,@0@/@1@'.format(meson.current_source_dir(), mapfile)
@@ -469,7 +470,7 @@ pkgg.generate(
 )
 
 conf.set('VERSION', version)
-conf.set('MAN_DATE', run_command('util/getrevision.sh', '--date', 'flashrom.8.tmpl').stdout().strip())
+conf.set('MAN_DATE', run_command('util/getversion.sh', '--man-date').stdout().strip())
 configure_file(
   input : 'flashrom.8.tmpl',
   output : 'flashrom.8',

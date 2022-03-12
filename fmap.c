@@ -91,15 +91,15 @@ static int is_valid_fmap(const struct fmap *fmap)
  *         -1 to indicate that fmap was not found
  *         -2 to indicate fmap is truncated or exceeds buffer + len
  */
-static off_t fmap_lsearch(const uint8_t *buf, size_t len)
+static ssize_t fmap_lsearch(const uint8_t *buf, size_t len)
 {
-	off_t offset;
+	ssize_t offset;
 	bool fmap_found = 0;
 
 	if (len < sizeof(struct fmap))
 		return -1;
 
-	for (offset = 0; offset <= (off_t)(len - sizeof(struct fmap)); offset++) {
+	for (offset = 0; offset <= (ssize_t)(len - sizeof(struct fmap)); offset++) {
 		if (is_valid_fmap((struct fmap *)&buf[offset])) {
 			fmap_found = 1;
 			break;
@@ -131,7 +131,7 @@ static off_t fmap_lsearch(const uint8_t *buf, size_t len)
  */
 int fmap_read_from_buffer(struct fmap **fmap_out, const uint8_t *const buf, size_t len)
 {
-	off_t offset = fmap_lsearch(buf, len);
+	ssize_t offset = fmap_lsearch(buf, len);
 	if (offset < 0) {
 		msg_gdbg("Unable to find fmap in provided buffer.\n");
 		return 2;

@@ -117,6 +117,7 @@ struct bitbang_spi_master {
 
 #if NEED_PCI == 1
 struct pci_dev;
+struct pci_filter;
 
 /* pcidev.c */
 // FIXME: This needs to be local, not global(?)
@@ -124,6 +125,9 @@ extern struct pci_access *pacc;
 int pci_init_common(void);
 uintptr_t pcidev_readbar(struct pci_dev *dev, int bar);
 struct pci_dev *pcidev_init(const struct dev_entry *devs, int bar);
+struct pci_dev *pcidev_scandev(struct pci_filter *filter, struct pci_dev *start);
+struct pci_dev *pcidev_getdevfn(struct pci_dev *dev, const int func);
+struct pci_dev *pcidev_find_vendorclass(uint16_t vendor, uint16_t devclass);
 /* rpci_write_* are reversible writes. The original PCI config space register
  * contents will be restored on shutdown.
  * To clone the pci_dev instances internally, the `pacc` global
@@ -257,7 +261,6 @@ extern int superio_count;
 #define SUPERIO_VENDOR_WINBOND	0x2
 #endif
 #if NEED_PCI == 1
-struct pci_dev *pci_dev_find_vendorclass(uint16_t vendor, uint16_t devclass);
 struct pci_dev *pci_dev_find(uint16_t vendor, uint16_t device);
 struct pci_dev *pci_card_find(uint16_t vendor, uint16_t device,
 			      uint16_t card_vendor, uint16_t card_device);
@@ -350,6 +353,7 @@ enum ich_chipset {
 	CHIPSET_300_SERIES_CANNON_POINT,
 	CHIPSET_400_SERIES_COMET_POINT,
 	CHIPSET_500_SERIES_TIGER_POINT,
+	CHIPSET_600_SERIES_ALDER_POINT,
 	CHIPSET_APOLLO_LAKE,
 	CHIPSET_GEMINI_LAKE,
 	CHIPSET_ELKHART_LAKE,

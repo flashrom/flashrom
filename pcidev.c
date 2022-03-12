@@ -148,6 +148,47 @@ uintptr_t pcidev_readbar(struct pci_dev *dev, int bar)
 	return (uintptr_t)addr;
 }
 
+struct pci_dev *pcidev_scandev(struct pci_filter *filter, struct pci_dev *start)
+{
+	struct pci_dev *temp;
+	for (temp = start ? start->next : pacc->devices; temp; temp = temp->next)
+		if (pci_filter_match(filter, temp))
+			return temp;
+	return NULL;
+}
+
+struct pci_dev *pcidev_getdevfn(struct pci_dev *dev, const int func)
+{
+#if !defined(OLD_PCI_GET_DEV)
+	return pci_get_dev(pacc, dev->domain, dev->bus, dev->dev, func);
+#else
+	/* pciutils/libpci before version 2.2 is too old to support
+	 * PCI domains. Such old machines usually don't have domains
+	 * besides domain 0, so this is not a problem.
+	 */
+	return pci_get_dev(pacc, dev->bus, dev->dev, func);
+#endif
+}
+
+struct pci_dev *pcidev_find_vendorclass(uint16_t vendor, uint16_t devclass)
+{
+	struct pci_dev *temp = NULL;
+	struct pci_filter filter;
+	uint16_t tmp2;
+
+	pci_filter_init(NULL, &filter);
+	filter.vendor = vendor;
+
+	while ((temp = pcidev_scandev(&filter, temp))) {
+		/* Read PCI class */
+		tmp2 = pci_read_word(temp, PCI_CLASS_DEVICE);
+		if (tmp2 == devclass)
+			return temp;
+	}
+
+	return NULL;
+}
+
 static int pcidev_shutdown(void *data)
 {
 	if (pacc == NULL) {

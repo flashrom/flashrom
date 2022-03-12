@@ -31,6 +31,7 @@
 #include "layout.h"
 #include "ich_descriptors.h"
 #include "libflashrom.h"
+#include "writeprotect.h"
 
 /**
  * @defgroup flashrom-general General
@@ -361,6 +362,9 @@ size_t flashrom_flash_getsize(const struct flashrom_flashctx *const flashctx)
  */
 void flashrom_flash_release(struct flashrom_flashctx *const flashctx)
 {
+	if (!flashctx)
+		return;
+
 	flashrom_layout_release(flashctx->default_layout);
 	free(flashctx->chip);
 	free(flashctx);
@@ -534,7 +538,7 @@ static int flashrom_layout_parse_fmap(struct flashrom_layout **layout,
  *         1 on any other error.
  */
 int flashrom_layout_read_fmap_from_rom(struct flashrom_layout **const layout,
-		struct flashctx *const flashctx, off_t offset, size_t len)
+		struct flashctx *const flashctx, size_t offset, size_t len)
 {
 #ifndef __FLASHROM_LITTLE_ENDIAN__
 	return 3;
@@ -620,3 +624,200 @@ void flashrom_layout_set(struct flashrom_flashctx *const flashctx, const struct 
 }
 
 /** @} */ /* end flashrom-layout */
+
+
+/**
+ * @defgroup flashrom-wp
+ * @{
+ */
+
+/**
+ * @brief Create a new empty WP configuration.
+ *
+ * @param[out] cfg Points to a pointer of type struct flashrom_wp_cfg that will
+ *                 be set if creation succeeds. *cfg has to be freed by the
+ *                 caller with @ref flashrom_wp_cfg_release.
+ * @return  0 on success
+ *         >0 on failure
+ */
+enum flashrom_wp_result flashrom_wp_cfg_new(struct flashrom_wp_cfg **cfg)
+{
+	*cfg = calloc(1, sizeof(**cfg));
+	return *cfg ? 0 : FLASHROM_WP_ERR_OTHER;
+}
+
+/**
+ * @brief Free a WP configuration.
+ *
+ * @param[out] cfg Pointer to the flashrom_wp_cfg to free.
+ */
+void flashrom_wp_cfg_release(struct flashrom_wp_cfg *cfg)
+{
+	free(cfg);
+}
+
+/**
+ * @brief Set the protection mode for a WP configuration.
+ *
+ * @param[in]  mode The protection mode to set.
+ * @param[out] cfg  Pointer to the flashrom_wp_cfg structure to modify.
+ */
+void flashrom_wp_set_mode(struct flashrom_wp_cfg *cfg, enum flashrom_wp_mode mode)
+{
+	cfg->mode = mode;
+}
+
+/**
+ * @brief Get the protection mode from a WP configuration.
+ *
+ * @param[in] cfg The WP configuration to get the protection mode from.
+ * @return        The configuration's protection mode.
+ */
+enum flashrom_wp_mode flashrom_wp_get_mode(const struct flashrom_wp_cfg *cfg)
+{
+	return cfg->mode;
+}
+
+/**
+ * @brief Set the protection range for a WP configuration.
+ *
+ * @param[out] cfg   Pointer to the flashrom_wp_cfg structure to modify.
+ * @param[in]  start The range's start address.
+ * @param[in]  len   The range's length.
+ */
+void flashrom_wp_set_range(struct flashrom_wp_cfg *cfg, size_t start, size_t len)
+{
+	cfg->range.start = start;
+	cfg->range.len = len;
+}
+
+/**
+ * @brief Get the protection range from a WP configuration.
+ *
+ * @param[out] start Points to a size_t to write the range start to.
+ * @param[out] len   Points to a size_t to write the range length to.
+ * @param[in]  cfg   The WP configuration to get the range from.
+ */
+void flashrom_wp_get_range(size_t *start, size_t *len, const struct flashrom_wp_cfg *cfg)
+{
+	*start = cfg->range.start;
+	*len = cfg->range.len;
+}
+
+/**
+ * @brief Write a WP configuration to a flash chip.
+ *
+ * @param[in] flash The flash context used to access the chip.
+ * @param[in] cfg   The WP configuration to write to the chip.
+ * @return  0 on success
+ *         >0 on failure
+ */
+enum flashrom_wp_result flashrom_wp_write_cfg(struct flashctx *flash, const struct flashrom_wp_cfg *cfg)
+{
+	/*
+	 * TODO: Call custom implementation if the programmer is opaque, as
+	 * direct WP operations require SPI access. In particular, linux_mtd
+	 * has its own WP operations we should use instead.
+	 */
+	if (flash->mst->buses_supported & BUS_SPI)
+		return wp_write_cfg(flash, cfg);
+
+	return FLASHROM_WP_ERR_OTHER;
+}
+
+/**
+ * @brief Read the current WP configuration from a flash chip.
+ *
+ * @param[out] cfg   Pointer to a struct flashrom_wp_cfg to store the chip's
+ *                   configuration in.
+ * @param[in]  flash The flash context used to access the chip.
+ * @return  0 on success
+ *         >0 on failure
+ */
+enum flashrom_wp_result flashrom_wp_read_cfg(struct flashrom_wp_cfg *cfg, struct flashctx *flash)
+{
+	/*
+	 * TODO: Call custom implementation if the programmer is opaque, as
+	 * direct WP operations require SPI access. In particular, linux_mtd
+	 * has its own WP operations we should use instead.
+	 */
+	if (flash->mst->buses_supported & BUS_SPI)
+		return wp_read_cfg(cfg, flash);
+
+	return FLASHROM_WP_ERR_OTHER;
+}
+
+/**
+ * @brief Get a list of protection ranges supported by the flash chip.
+ *
+ * @param[out] ranges Points to a pointer of type struct flashrom_wp_ranges
+ *                    that will be set if available ranges are found. Finding
+ *                    available ranges may not always be possible, even if the
+ *                    chip's protection range can be read or modified. *ranges
+ *                    must be freed using @ref flashrom_wp_ranges_free.
+ * @param[in] flash   The flash context used to access the chip.
+ * @return  0 on success
+ *         >0 on failure
+ */
+enum flashrom_wp_result flashrom_wp_get_available_ranges(struct flashrom_wp_ranges **list, struct flashrom_flashctx *flash)
+{
+	/*
+	 * TODO: Call custom implementation if the programmer is opaque, as
+	 * direct WP operations require SPI access. We actually can't implement
+	 * this in linux_mtd right now, but we should adopt a proper generic
+	 * architechure to match the read and write functions anyway.
+	 */
+	if (flash->mst->buses_supported & BUS_SPI)
+		return wp_get_available_ranges(list, flash);
+
+	return FLASHROM_WP_ERR_OTHER;
+}
+
+/**
+ * @brief Get a number of protection ranges in a range list.
+ *
+ * @param[in]  ranges The range list to get the count from.
+ * @return Number of ranges in the list.
+ */
+size_t flashrom_wp_ranges_get_count(const struct flashrom_wp_ranges *list)
+{
+	return list->count;
+}
+
+/**
+ * @brief Get a protection range from a range list.
+ *
+ * @param[out] start  Points to a size_t to write the range's start to.
+ * @param[out] len    Points to a size_t to write the range's length to.
+ * @param[in]  ranges The range list to get the range from.
+ * @param[in]  index  Index of the range to get.
+ * @return  0 on success
+ *         >0 on failure
+ */
+enum flashrom_wp_result flashrom_wp_ranges_get_range(size_t *start, size_t *len, const struct flashrom_wp_ranges *list, unsigned int index)
+{
+	if (index >= list->count)
+		return FLASHROM_WP_ERR_OTHER;
+
+	*start = list->ranges[index].start;
+	*len = list->ranges[index].len;
+
+	return 0;
+}
+
+/**
+ * @brief Free a WP range list.
+ *
+ * @param[out] cfg Pointer to the flashrom_wp_ranges to free.
+ */
+void flashrom_wp_ranges_release(struct flashrom_wp_ranges *list)
+{
+	if (!list)
+		return;
+
+	free(list->ranges);
+	free(list);
+}
+
+
+/** @} */ /* end flashrom-wp */

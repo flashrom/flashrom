@@ -131,6 +131,11 @@
 #define JEDEC_RDSR_OUTSIZE	0x01
 #define JEDEC_RDSR_INSIZE	0x01
 
+/* Read Status Register 2 */
+#define JEDEC_RDSR2		0x35
+#define JEDEC_RDSR2_OUTSIZE	0x01
+#define JEDEC_RDSR2_INSIZE	0x01
+
 /* Status Register Bits */
 #define SPI_SR_WIP	(0x01 << 0)
 #define SPI_SR_WEL	(0x01 << 1)
@@ -146,6 +151,12 @@
 #define JEDEC_WRSR		0x01
 #define JEDEC_WRSR_OUTSIZE	0x02
 #define JEDEC_WRSR_INSIZE	0x00
+#define JEDEC_WRSR_EXT_OUTSIZE	0x03
+
+/* Write Status Register 2 */
+#define JEDEC_WRSR2		0x31
+#define JEDEC_WRSR2_OUTSIZE	0x02
+#define JEDEC_WRSR2_INSIZE	0x00
 
 /* Enter 4-byte Address Mode */
 #define JEDEC_ENTER_4_BYTE_ADDR_MODE	0xB7

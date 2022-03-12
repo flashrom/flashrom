@@ -31,6 +31,7 @@
 
 #include "chipdrivers.h"
 #include "flash.h"
+#include "io_mock.h"
 #include "libflashrom.h"
 #include "programmer.h"
 
@@ -349,4 +350,99 @@ void write_chip_with_dummyflasher_test_success(void **state)
 
 	free(param_dup);
 	free(newcontents);
+}
+
+size_t verify_chip_fread(void *state, void *buf, size_t size, size_t len, FILE *fp)
+{
+	/*
+	 * Verify operation compares contents of the file vs contents on the chip.
+	 * To emulate successful verification we emulate file contents to be the
+	 * same as what is on the chip.
+	 */
+	memset(buf, MOCK_CHIP_CONTENT, len);
+	return len;
+}
+
+void verify_chip_test_success(void **state)
+{
+	(void) state; /* unused */
+
+	const struct io_mock verify_chip_io = {
+		.fread = verify_chip_fread,
+	};
+
+	io_mock_register(&verify_chip_io);
+
+	struct flashrom_flashctx flashctx = { 0 };
+	struct flashrom_layout *layout;
+	struct flashchip mock_chip = chip_8MiB;
+	const char *param = ""; /* Default values for all params. */
+
+	setup_chip(&flashctx, &layout, &mock_chip, param);
+
+	/* See comment in write_chip_test_success */
+	const char *const filename = "-";
+	unsigned long size = mock_chip.total_size * 1024;
+	uint8_t *const newcontents = malloc(size);
+
+	printf("Verify chip operation started.\n");
+	assert_int_equal(0, read_buf_from_file(newcontents, size, filename));
+	assert_int_equal(0, flashrom_image_verify(&flashctx, newcontents, size));
+	printf("Verify chip operation done.\n");
+
+	teardown(&layout);
+
+	free(newcontents);
+
+	io_mock_register(NULL);
+}
+
+void verify_chip_with_dummyflasher_test_success(void **state)
+{
+	(void) state; /* unused */
+
+	const struct io_mock verify_chip_io = {
+		.fread = verify_chip_fread,
+	};
+
+	io_mock_register(&verify_chip_io);
+
+	struct flashrom_flashctx flashctx = { 0 };
+	struct flashrom_layout *layout;
+	struct flashchip mock_chip = chip_W25Q128_V;
+	/*
+	 * Dummyflasher is capable to emulate W25Q128.V, so we ask it to do this.
+	 * Nothing to mock, dummy is taking care of this already.
+	 */
+	char *param_dup = strdup("bus=spi,emulate=W25Q128FV");
+
+	setup_chip(&flashctx, &layout, &mock_chip, param_dup);
+
+	/* See comment in write_chip_test_success */
+	const char *const filename = "-";
+	unsigned long size = mock_chip.total_size * 1024;
+	uint8_t *const newcontents = malloc(size);
+
+	/*
+	 * Dummyflasher controls chip state and fully emulates reads and writes,
+	 * so to set up initial chip state we need to write on chip. Write
+	 * operation takes content from file and writes on chip. File content is
+	 * emulated in verify_chip_fread mock.
+	 */
+
+	printf("Write chip operation started.\n");
+	assert_int_equal(0, read_buf_from_file(newcontents, size, filename));
+	assert_int_equal(0, flashrom_image_write(&flashctx, newcontents, size, NULL));
+	printf("Write chip operation done.\n");
+
+	printf("Verify chip operation started.\n");
+	assert_int_equal(0, flashrom_image_verify(&flashctx, newcontents, size));
+	printf("Verify chip operation done.\n");
+
+	teardown(&layout);
+
+	free(param_dup);
+	free(newcontents);
+
+	io_mock_register(NULL);
 }
