@@ -910,7 +910,7 @@ static int board_asus_p3b_f(void)
 	/* Wait until SMBus transaction is complete. */
 	b = 0x1;
 	while (b & 0x01) {
-		b = INB(0x80);
+		INB(0x80);
 		b = INB(smbba);
 	}
 
