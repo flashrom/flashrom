@@ -393,6 +393,8 @@ including some Arduino-based devices)."
 .sp
 .BR "* rayer_spi" " (for SPI flash ROMs attached to a parallel port by one of various cable types)"
 .sp
+.BR "* raiden_debug_spi" " (For Chrome EC based debug tools - SuzyQable, Servo V4, C2D2 & uServo)"
+.sp
 .BR "* pony_spi" " (for SPI flash ROMs attached to a SI-Prog serial port "
 bitbanging adapter)
 .sp
@@ -1163,6 +1165,50 @@ For more information about the Macraigor Wiggler see
 The schematic of the Xilinx DLC 5 was published in
 .URLB "http://www.xilinx.com/support/documentation/user_guides/xtp029.pdf" "a Xilinx user guide" .
 .SS
+.BR "raiden_debug_spi " programmer
+.IP
+The target of the SPI flashing mux must be specified with the
+.B target
+parameter with the
+.sp
+.B "  flashrom \-p raiden_debug_spi:target=chip"
+.sp
+syntax, where
+.B chip
+is either the
+.B ap
+or
+.B ec
+to flash, otherwise a unspecified target terminates at the end-point.
+.sp
+The default is to use the first available servo. You can use the optional
+.B serial
+parameter to specify the servo USB device serial number to use specifically with
+.sp
+.B "  flashrom \-p raiden_debug_spi:serial=XXX"
+.sp
+The servo device serial number can be found via
+.B lsusb.
+.sp
+Raiden will poll the
+.B
+ap
+target waiting for the system power to settle on the AP and EC flash devices.
+.sp
+The optional
+.B custom_rst=true
+parameter changes the timeout value from 3ms to 10ms.
+.sp
+.B "  flashrom \-p raiden_debug_spi:custom_rst=<true|false>"
+.sp
+syntax, where
+.B custom_rst=false
+is the implicit default timeout of 3ms.
+.sp
+More information about the ChromiumOS servo hardware is available at
+.nh
+.URLB "https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/HEAD/docs/servo_v4.md" "servo website" .
+.SS
 .BR "pony_spi " programmer
 .IP
 The serial port (like /dev/ttyS0, /dev/ttyUSB0 on Linux or COM3 on windows) is
@@ -1543,6 +1589,9 @@ need PCI configuration space access and raw memory access.
 .sp
 .B rayer_spi
 needs raw I/O port access.
+.sp
+.B raiden_debug_spi
+need access to the respective USB device via libusb API version 1.0.
 .sp
 .BR satasii ", " nicintel ", " nicintel_eeprom " and " nicintel_spi
 need PCI configuration space read access and raw memory access.
