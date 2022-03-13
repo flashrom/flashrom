@@ -502,16 +502,17 @@ void prettyprint_ich_descriptor_master(const enum ich_chipset cs, const struct i
 			msg_pdbg2(" RegA RegB RegC RegD RegE RegF\n");
 		}
 		for (i = 0; i < nm; i++) {
+			const unsigned int ext_region_start = 12;
 			size_t j;
 			msg_pdbg2("%-4s", master_names[i]);
-			for (j = 0; j < (size_t)min(num_regions, 12); j++)
+			for (j = 0; j < (size_t)min(num_regions, ext_region_start); j++)
 				msg_pdbg2("  %c%c ",
 					  desc->master.mstr[i].read & (1 << j) ? 'r' : ' ',
 					  desc->master.mstr[i].write & (1 << j) ? 'w' : ' ');
-			for (; j < num_regions; j++)
+			for (j = ext_region_start; j < num_regions; j++)
 				msg_pdbg2("  %c%c ",
-					  desc->master.mstr[i].ext_read & (1 << (j - 12)) ? 'r' : ' ',
-					  desc->master.mstr[i].ext_write & (1 << (j - 12)) ? 'w' : ' ');
+					  desc->master.mstr[i].ext_read & (1 << (j - ext_region_start)) ? 'r' : ' ',
+					  desc->master.mstr[i].ext_write & (1 << (j - ext_region_start)) ? 'w' : ' ');
 			msg_pdbg2("\n");
 		}
 	} else if (cs == CHIPSET_C620_SERIES_LEWISBURG) {
