@@ -383,18 +383,18 @@ static inline void sync_primitive(void)
 #if defined(__powerpc) || defined(__powerpc__) || defined(__powerpc64__) || defined(__POWERPC__) || \
       defined(__ppc__) || defined(__ppc64__) || defined(_M_PPC) || defined(_ARCH_PPC) || \
       defined(_ARCH_PPC64) || defined(__ppc)
-	asm("eieio" : : : "memory");
+	__asm__("eieio" : : : "memory");
 #elif (__sparc__) || defined (__sparc)
 #if defined(__sparc_v9__) || defined(__sparcv9)
 	/* Sparc V9 CPUs support three different memory orderings that range from x86-like TSO to PowerPC-like
 	 * RMO. The modes can be switched at runtime thus to make sure we maintain the right order of access we
 	 * use the strongest hardware memory barriers that exist on Sparc V9. */
-	asm volatile ("membar #Sync" ::: "memory");
+	__asm__ volatile ("membar #Sync" ::: "memory");
 #elif defined(__sparc_v8__) || defined(__sparcv8)
 	/* On SPARC V8 there is no RMO just PSO and that does not apply to I/O accesses... but if V8 code is run
 	 * on V9 CPUs it might apply... or not... we issue a write barrier anyway. That's the most suitable
 	 * operation in the V8 instruction set anyway. If you know better then please tell us. */
-	asm volatile ("stbar");
+	__asm__ volatile ("stbar");
 #else
 	#error Unknown and/or unsupported SPARC instruction set version detected.
 #endif
