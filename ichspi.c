@@ -1799,6 +1799,7 @@ static void init_chipset_properties(struct swseq_data *swseq, struct hwseq_data 
 	case CHIPSET_400_SERIES_COMET_POINT:
 	case CHIPSET_500_SERIES_TIGER_POINT:
 	case CHIPSET_600_SERIES_ALDER_POINT:
+	case CHIPSET_METEOR_LAKE:
 	case CHIPSET_APOLLO_LAKE:
 	case CHIPSET_GEMINI_LAKE:
 	case CHIPSET_ELKHART_LAKE:
@@ -1836,6 +1837,7 @@ static void init_chipset_properties(struct swseq_data *swseq, struct hwseq_data 
 	case CHIPSET_400_SERIES_COMET_POINT:
 	case CHIPSET_500_SERIES_TIGER_POINT:
 	case CHIPSET_600_SERIES_ALDER_POINT:
+	case CHIPSET_METEOR_LAKE:
 	case CHIPSET_APOLLO_LAKE:
 	case CHIPSET_GEMINI_LAKE:
 	case CHIPSET_ELKHART_LAKE:
@@ -1895,6 +1897,7 @@ static int init_ich_default(void *spibar, enum ich_chipset ich_gen)
 	case CHIPSET_400_SERIES_COMET_POINT:
 	case CHIPSET_500_SERIES_TIGER_POINT:
 	case CHIPSET_600_SERIES_ALDER_POINT:
+	case CHIPSET_METEOR_LAKE:
 	case CHIPSET_APOLLO_LAKE:
 	case CHIPSET_GEMINI_LAKE:
 	case CHIPSET_ELKHART_LAKE:
@@ -1973,6 +1976,7 @@ static int init_ich_default(void *spibar, enum ich_chipset ich_gen)
 		case CHIPSET_400_SERIES_COMET_POINT:
 		case CHIPSET_500_SERIES_TIGER_POINT:
 		case CHIPSET_600_SERIES_ALDER_POINT:
+		case CHIPSET_METEOR_LAKE:
 		case CHIPSET_APOLLO_LAKE:
 		case CHIPSET_GEMINI_LAKE:
 		case CHIPSET_BAYTRAIL:
@@ -2010,6 +2014,7 @@ static int init_ich_default(void *spibar, enum ich_chipset ich_gen)
 		case CHIPSET_400_SERIES_COMET_POINT:
 		case CHIPSET_500_SERIES_TIGER_POINT:
 		case CHIPSET_600_SERIES_ALDER_POINT:
+		case CHIPSET_METEOR_LAKE:
 		case CHIPSET_APOLLO_LAKE:
 		case CHIPSET_GEMINI_LAKE:
 		case CHIPSET_ELKHART_LAKE:
@@ -2053,8 +2058,9 @@ static int init_ich_default(void *spibar, enum ich_chipset ich_gen)
 	if (ich_spi_mode == ich_auto &&
 	    (ich_gen == CHIPSET_APOLLO_LAKE ||
 	     ich_gen == CHIPSET_GEMINI_LAKE ||
-	     ich_gen == CHIPSET_ELKHART_LAKE)) {
-		msg_pdbg("Enabling hardware sequencing by default for Apollo/Gemini/Elkhart Lake.\n");
+	     ich_gen == CHIPSET_ELKHART_LAKE ||
+	     ich_gen == CHIPSET_METEOR_LAKE)) {
+		msg_pdbg("Enabling hardware sequencing by default for Apollo/Gemini/Elkhart/Meteor Lake.\n");
 		ich_spi_mode = ich_hwseq;
 	}
 

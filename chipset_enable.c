@@ -606,6 +606,7 @@ static enum chipbustype enable_flash_ich_report_gcs(
 	case CHIPSET_400_SERIES_COMET_POINT:
 	case CHIPSET_500_SERIES_TIGER_POINT:
 	case CHIPSET_600_SERIES_ALDER_POINT:
+	case CHIPSET_METEOR_LAKE:
 	case CHIPSET_ELKHART_LAKE:
 	case CHIPSET_APOLLO_LAKE:
 	case CHIPSET_GEMINI_LAKE:
@@ -711,6 +712,7 @@ static enum chipbustype enable_flash_ich_report_gcs(
 		break;
 	case CHIPSET_500_SERIES_TIGER_POINT:
 	case CHIPSET_600_SERIES_ALDER_POINT:
+	case CHIPSET_METEOR_LAKE:
 		boot_straps = boot_straps_pch500;
 		break;
 	case CHIPSET_APOLLO_LAKE:
@@ -744,6 +746,7 @@ static enum chipbustype enable_flash_ich_report_gcs(
 	case CHIPSET_400_SERIES_COMET_POINT:
 	case CHIPSET_500_SERIES_TIGER_POINT:
 	case CHIPSET_600_SERIES_ALDER_POINT:
+	case CHIPSET_METEOR_LAKE:
 	case CHIPSET_APOLLO_LAKE:
 	case CHIPSET_GEMINI_LAKE:
 	case CHIPSET_ELKHART_LAKE:
@@ -1000,6 +1003,11 @@ static int enable_flash_pch500(struct pci_dev *const dev, const char *const name
 static int enable_flash_pch600(struct pci_dev *const dev, const char *const name)
 {
 	return enable_flash_pch100_or_c620(dev, name, 0x1f, 5, CHIPSET_600_SERIES_ALDER_POINT);
+}
+
+static int enable_flash_mtl(struct pci_dev *const dev, const char *const name)
+{
+	return enable_flash_pch100_or_c620(dev, name, 0x1f, 5, CHIPSET_METEOR_LAKE);
 }
 
 static int enable_flash_mcc(struct pci_dev *const dev, const char *const name)
@@ -2151,6 +2159,7 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x438b, B_S,    DEP, "Intel", "HM570",				enable_flash_pch500},
 	{0x8086, 0x54a4, B_S,    DEP, "Intel", "Alder Lake-N",			enable_flash_pch600},
 	{0x8086, 0x51a4, B_S,    DEP, "Intel", "Alder Lake-P",			enable_flash_pch600},
+	{0x8086, 0x7e23, B_S,    DEP, "Intel", "Meteor Lake-P/M",		enable_flash_mtl},
 #endif
 	{0},
 };
