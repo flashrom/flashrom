@@ -1646,13 +1646,6 @@ static void print_sysinfo(void)
 void print_buildinfo(void)
 {
 	msg_gdbg("flashrom was built with");
-#if NEED_PCI == 1
-#ifdef PCILIB_VERSION
-	msg_gdbg(" libpci %s,", PCILIB_VERSION);
-#else
-	msg_gdbg(" unknown PCI library,");
-#endif
-#endif
 #ifdef __clang__
 	msg_gdbg(" LLVM Clang");
 #ifdef __clang_version__
