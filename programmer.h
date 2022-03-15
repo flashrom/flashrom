@@ -115,7 +115,6 @@ struct bitbang_spi_master {
 	unsigned int half_period;
 };
 
-#if NEED_PCI == 1
 struct pci_dev;
 struct pci_filter;
 
@@ -141,7 +140,6 @@ struct pci_dev *pcidev_find(uint16_t vendor, uint16_t device);
 int rpci_write_byte(struct pci_dev *dev, int reg, uint8_t data);
 int rpci_write_word(struct pci_dev *dev, int reg, uint16_t data);
 int rpci_write_long(struct pci_dev *dev, int reg, uint32_t data);
-#endif
 
 #if CONFIG_INTERNAL == 1
 struct penable {

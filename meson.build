@@ -159,7 +159,6 @@ endif
 if get_option('pciutils')
   srcs += 'pcidev.c'
   deps += dependency('libpci')
-  cargs += '-DNEED_PCI=1'
 elif need_libpci
   error('pciutils is disabled but one or more enabled programmer requires PCI access')
 endif

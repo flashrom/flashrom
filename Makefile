@@ -838,7 +838,6 @@ endif
 USE_LIBPCI := $(if $(call filter_deps,$(DEPENDS_ON_LIBPCI)),yes,no)
 ifeq ($(USE_LIBPCI), yes)
 PROGRAMMER_OBJS += pcidev.o
-FEATURE_FLAGS += -D'NEED_PCI=1'
 override CFLAGS  += $(CONFIG_LIBPCI_CFLAGS)
 override LDFLAGS += $(CONFIG_LIBPCI_LDFLAGS)
 endif
