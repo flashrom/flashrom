@@ -411,7 +411,7 @@ static int stlinkv3_spi_transmit(const struct flashctx *flash,
 					  &actual_length,
 					  USB_TIMEOUT_IN_MS);
 		if (rc != LIBUSB_TRANSFER_COMPLETED || (unsigned int)actual_length != read_cnt) {
-			msg_perr("Failed to retrive the STLINK_BRIDGE_READ_SPI answer: '%s'\n",
+			msg_perr("Failed to retrieve the STLINK_BRIDGE_READ_SPI answer: '%s'\n",
 				 libusb_error_name(rc));
 			goto transmit_err;
 		}

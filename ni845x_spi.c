@@ -146,7 +146,7 @@ static int32 ni845x_spi_open_resource(char *resource_handle, uInt32 *opened_hand
 
 /**
  * @param serial a null terminated string containing the serial number of the specific device or NULL
- * @return the 0 on successful completition, negative error code on failure
+ * @return the 0 on successful completion, negative error code on failure
  */
 static int ni845x_spi_open(const char *serial, uInt32 *return_handle)
 {
@@ -161,7 +161,7 @@ static int ni845x_spi_open(const char *serial, uInt32 *return_handle)
 
 	tmp = ni845xFindDevice(resource_name, &device_find_handle, &found_devices_count);
 	if (tmp != 0) {
-		// supress warning if no device found
+		// suppress warning if no device found
 		if (tmp != NI845x_FIND_DEVICE_NO_DEVICE_FOUND)
 			ni845x_report_error("ni845xFindDevice", tmp);
 		return -1;
@@ -214,7 +214,7 @@ _close_ret:
  * @param requested_io_voltage_mV the desired IO voltage in mVolts
  * @param set_io_voltage_mV the IO voltage which was set in mVolts
  * @param coerce_mode if set to USE_LOWER the closest supported IO voltage which is lower or equal to
- * the requested_io_voltage_mV will be selected. Otherwise the next closest supported voltage will be choosen
+ * the requested_io_voltage_mV will be selected. Otherwise the next closest supported voltage will be chosen
  * which is higher or equal to the requested_io_voltage_mV.
  * @return 0 on success, negative on error, positive on warning
  */
@@ -340,7 +340,7 @@ static void ni845x_spi_print_available_devices(void)
 
 	tmp = ni845xFindDevice(resource_handle, &device_find_handle, &found_devices_count);
 	if (tmp != 0) {
-		// supress warning if no device found
+		// suppress warning if no device found
 		if (tmp != NI845x_FIND_DEVICE_NO_DEVICE_FOUND)
 			ni845x_report_error("ni845xFindDevice", tmp);
 		return;
@@ -517,7 +517,7 @@ static int ni845x_spi_transmit(const struct flashctx *flash,
 
 	if (read_cnt != 0 && read_arr != NULL) {
 		if ((read_cnt + write_cnt) != read_size) {
-			msg_perr("%s: expected and returned read count mismatch: %u expected, %ld recieved\n",
+			msg_perr("%s: expected and returned read count mismatch: %u expected, %ld received\n",
 					 __func__, read_cnt, read_size);
 			free(transfer_buffer);
 			return -1;

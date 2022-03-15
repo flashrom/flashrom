@@ -271,7 +271,7 @@ static int lspcon_i2c_spi_send_command(const struct flashctx *flash,
 	ret |= lspcon_i2c_spi_enable_write_status_register(fd);
 	ret |= lspcon_i2c_spi_toggle_register_protection(fd, 1);
 
-	/* First byte of writearr shuld be the command value, followed by the value to write.
+	/* First byte of writearr should be the command value, followed by the value to write.
 	   Read length occupies 4 bit and represents 16 level, thus if read 1 byte,
            read length should be set 0. */
 	packet_t packet = {

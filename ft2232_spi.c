@@ -483,7 +483,7 @@ static int ft2232_spi_init(void)
 	arg = extract_programmer_param("csgpiol");
 	if (arg) {
 		csgpiol_set = true;
-		msg_pwarn("Deprecation warning: `csgpiol` is deprectated and will be removed "
+		msg_pwarn("Deprecation warning: `csgpiol` is deprecated and will be removed "
 			 "in the future.\nUse `gpiolX=C` instead.\n");
 
 		char *endptr;

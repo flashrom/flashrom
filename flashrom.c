@@ -623,7 +623,7 @@ static unsigned int get_next_write(const uint8_t *have, const uint8_t *want, uns
 	return first_len;
 }
 
-/* Returns the number of busses commonly supported by the current programmer and flash chip where the latter
+/* Returns the number of buses commonly supported by the current programmer and flash chip where the latter
  * can not be completely accessed due to size/address limits of the programmer. */
 unsigned int count_max_decode_exceedings(const struct flashctx *flash)
 {

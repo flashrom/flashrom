@@ -71,7 +71,7 @@ enum chipbustype {
 
 /*
  * The following enum defines possible write granularities of flash chips. These tend to reflect the properties
- * of the actual hardware not necesserily the write function(s) defined by the respective struct flashchip.
+ * of the actual hardware not necessarily the write function(s) defined by the respective struct flashchip.
  * The latter might (and should) be more precisely specified, e.g. they might bail out early if their execution
  * would result in undefined chip contents.
  */
@@ -167,7 +167,7 @@ enum test_state {
 #define TEST_BAD_PREW	(struct tested){ .probe = BAD, .read = BAD, .erase = BAD, .write = BAD }
 
 struct flashrom_flashctx;
-#define flashctx flashrom_flashctx /* TODO: Agree on a name and convert all occurences. */
+#define flashctx flashrom_flashctx /* TODO: Agree on a name and convert all occurrences. */
 typedef int (erasefunc_t)(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 
 enum flash_reg {

@@ -20,7 +20,7 @@
 #include <inttypes.h>
 
 /**
- * An convinent structure that contains the buffer size and the buffer
+ * An convenient structure that contains the buffer size and the buffer
  * pointer. Used to wrap buffer details while doing the I2C data
  * transfer on both input and output. It is the client's responsibility
  * to use i2c_buffer_t_fill to initialize this struct instead of
@@ -118,7 +118,7 @@ int i2c_read(int fd, uint16_t addr, i2c_buffer_t *buf_read);
  *
  * @fd:		file descriptor of the target device.
  * @addr:	I2C slave address of the target device.
- * @buf_write:	data struct includes writting buffer and size.
+ * @buf_write:	data struct includes writing buffer and size.
  *
  * This function does accept empty write and do nothing on such case.
  *

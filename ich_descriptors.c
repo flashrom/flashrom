@@ -983,9 +983,9 @@ void prettyprint_ich_descriptor_upper_map(const struct ich_desc_upper_map *umap)
 		uint32_t vscc = umap->vscc_table[i].VSCC;
 		msg_pdbg2("  JID%d  = 0x%08x\n", i, jid);
 		msg_pdbg2("  VSCC%d = 0x%08x\n", i, vscc);
-		msg_pdbg2("    "); /* indention */
+		msg_pdbg2("    "); /* indentation */
 		prettyprint_rdid(jid);
-		msg_pdbg2("    "); /* indention */
+		msg_pdbg2("    "); /* indentation */
 		prettyprint_ich_reg_vscc(vscc, 0, false);
 	}
 	msg_pdbg2("\n");

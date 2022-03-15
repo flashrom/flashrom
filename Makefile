@@ -77,7 +77,7 @@ endif
 
 # Set LC_ALL=C to minimize influences of the locale.
 # However, this won't work for the majority of relevant commands because they use the $(shell) function and
-# GNU make does not relay variables exported within the makefile to their evironment.
+# GNU make does not relay variables exported within the makefile to their environment.
 LC_ALL=C
 export LC_ALL
 

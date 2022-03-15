@@ -17,7 +17,7 @@
 /*
  * s25f.c - Helper functions for Spansion S25FL and S25FS SPI flash chips.
  * Uses 24 bit addressing for the FS chips and 32 bit addressing for the FL
- * chips (which is required by the overlayed sector size devices).
+ * chips (which is required by the overlaid sector size devices).
  * TODO: Implement fancy hybrid sector architecture helpers.
  */
 
@@ -368,7 +368,7 @@ int probe_spi_big_spansion(struct flashctx *flash)
 	 *       04h     00h       FS: 256-kB physical sectors
 	 *       04h     01h       FS: 64-kB physical sectors
 	 *       04h     00h       FL: 256-kB physical sectors
-	 *       04h     01h       FL: Mix of 64-kB and 4KB overlayed sectors
+	 *       04h     01h       FL: Mix of 64-kB and 4KB overlaid sectors
 	 *       05h     80h       FL family
 	 *       05h     81h       FS family
 	 *

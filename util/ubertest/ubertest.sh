@@ -312,7 +312,7 @@ LOGS="logs"
 # Setup temporary working directories:
 # LOCAL_TMPDIR:  Working directory on local host.
 # REMOTE_TMPDIR: Working directory on remote host.
-# TMPDIR:        The temporary directy in which we do most of the work. This is
+# TMPDIR:        The temporary directory in which we do most of the work. This is
 #                convenient for commands that depend on $DO_REMOTE.
 LOCAL_TMPDIR=$(mktemp -d --tmpdir flashrom_test.XXXXXXXX)
 if [ $? -ne 0 ] ; then
@@ -827,7 +827,7 @@ partial_write_test()
 	return $EXIT_SUCCESS
 }
 
-# Before anything else, check to see if Flashrom can succesfully probe
+# Before anything else, check to see if Flashrom can successfully probe
 # for and find the flash chips. If not, we will abort.
 flashrom_log_scmd $DO_REMOTE "$NEW_FLASHROM $PRIMARY_OPTS" "verify_probe"
 if [ $? -ne 0 ]; then

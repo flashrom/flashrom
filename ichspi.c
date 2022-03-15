@@ -996,7 +996,7 @@ static int ich9_run_opcode(OPCODE op, uint32_t offset,
 	}
 
 	/* Program offset in flash into FADDR while preserve the reserved bits
-	 * and clearing the 25. address bit which is only useable in hwseq. */
+	 * and clearing the 25. address bit which is only usable in hwseq. */
 	temp32 = REGREAD32(ICH9_REG_FADDR) & ~0x01FFFFFF;
 	REGWRITE32(ICH9_REG_FADDR, (offset & 0x00FFFFFF) | temp32);
 
