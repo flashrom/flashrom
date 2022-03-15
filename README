@@ -47,6 +47,9 @@ Build Instructions
 
 To build flashrom you need to install the following software:
 
+ * C compiler (GCC / clang)
+ * pkg-config
+
  * pciutils+libpci (if you want support for mainboard or PCI device flashing)
  * libusb (if you want FT2232, Dediprog or USB-Blaster support)
  * libftdi (if you want FT2232 or USB-Blaster support)
