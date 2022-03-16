@@ -25,7 +25,7 @@
 uint32_t address_to_bits(uint32_t addr)
 {
 	unsigned int lzb = 0;
-	while (((1 << (31 - lzb)) & ~addr) != 0)
+	while (((1u << (31 - lzb)) & ~addr) != 0)
 		lzb++;
 	return 32 - lzb;
 }
