@@ -45,6 +45,7 @@
 
 /* Define struct pci_dev to avoid dependency on pci.h */
 struct pci_dev {
+	char padding[18];
 	unsigned int device_id;
 };
 
