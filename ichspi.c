@@ -1282,20 +1282,24 @@ static uint32_t ich_hwseq_get_erase_block_size(unsigned int addr)
    Resets all error flags in HSFS.
    Returns 0 if the cycle completes successfully without errors within
    timeout us, 1 on errors. */
-static int ich_hwseq_wait_for_cycle_complete(unsigned int timeout,
-					     unsigned int len)
+static int ich_hwseq_wait_for_cycle_complete(unsigned int len)
 {
+	/*
+	 * The SPI bus may be busy due to performing operations from other masters, hence
+	 * introduce the long timeout of 30s to cover the worst case scenarios as well.
+	 */
+	unsigned int timeout_us = 30 * 1000 * 1000;
 	uint16_t hsfs;
 	uint32_t addr;
 
-	timeout /= 8; /* scale timeout duration to counter */
+	timeout_us /= 8; /* scale timeout duration to counter */
 	while ((((hsfs = REGREAD16(ICH9_REG_HSFS)) &
 		 (HSFS_FDONE | HSFS_FCERR)) == 0) &&
-	       --timeout) {
+	       --timeout_us) {
 		programmer_delay(8);
 	}
 	REGWRITE16(ICH9_REG_HSFS, REGREAD16(ICH9_REG_HSFS));
-	if (!timeout) {
+	if (!timeout_us) {
 		addr = REGREAD32(ICH9_REG_FADDR) & hwseq_data.addr_mask;
 		msg_perr("Timeout error between offset 0x%08x and "
 			 "0x%08x (= 0x%08x + %d)!\n",
@@ -1378,7 +1382,6 @@ static int ich_hwseq_block_erase(struct flashctx *flash, unsigned int addr,
 {
 	uint32_t erase_block;
 	uint16_t hsfc;
-	uint32_t timeout = 5000 * 1000; /* 5 s for max 64 kB */
 
 	erase_block = ich_hwseq_get_erase_block_size(addr);
 	if (len != erase_block) {
@@ -1418,7 +1421,7 @@ static int ich_hwseq_block_erase(struct flashctx *flash, unsigned int addr,
 	prettyprint_ich9_reg_hsfc(hsfc);
 	REGWRITE16(ICH9_REG_HSFC, hsfc);
 
-	if (ich_hwseq_wait_for_cycle_complete(timeout, len))
+	if (ich_hwseq_wait_for_cycle_complete(len))
 		return -1;
 	return 0;
 }
@@ -1427,7 +1430,6 @@ static int ich_hwseq_read(struct flashctx *flash, uint8_t *buf,
 			  unsigned int addr, unsigned int len)
 {
 	uint16_t hsfc;
-	uint16_t timeout = 100 * 60;
 	uint8_t block_len;
 
 	if (addr + len > flash->chip->total_size * 1024) {
@@ -1455,7 +1457,7 @@ static int ich_hwseq_read(struct flashctx *flash, uint8_t *buf,
 		hsfc |= HSFC_FGO; /* start */
 		REGWRITE16(ICH9_REG_HSFC, hsfc);
 
-		if (ich_hwseq_wait_for_cycle_complete(timeout, block_len))
+		if (ich_hwseq_wait_for_cycle_complete(block_len))
 			return 1;
 		ich_read_data(buf, block_len, ICH9_REG_FDATA0);
 		addr += block_len;
@@ -1468,7 +1470,6 @@ static int ich_hwseq_read(struct flashctx *flash, uint8_t *buf,
 static int ich_hwseq_write(struct flashctx *flash, const uint8_t *buf, unsigned int addr, unsigned int len)
 {
 	uint16_t hsfc;
-	uint16_t timeout = 100 * 60;
 	uint8_t block_len;
 
 	if (addr + len > flash->chip->total_size * 1024) {
@@ -1497,7 +1498,7 @@ static int ich_hwseq_write(struct flashctx *flash, const uint8_t *buf, unsigned 
 		hsfc |= HSFC_FGO; /* start */
 		REGWRITE16(ICH9_REG_HSFC, hsfc);
 
-		if (ich_hwseq_wait_for_cycle_complete(timeout, block_len))
+		if (ich_hwseq_wait_for_cycle_complete(block_len))
 			return -1;
 		addr += block_len;
 		buf += block_len;
