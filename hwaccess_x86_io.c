@@ -66,6 +66,7 @@
 
 #if defined(__linux__) && !defined(__ANDROID__)
 #include <sys/io.h>
+#include <unistd.h>
 
 #define IO_PORT_PERMISSION USE_IOPL
 #define IO_PORT_FUNCTION USE_LIBC_TARGET_LAST
@@ -263,13 +264,24 @@ int rget_io_perms(void)
 		register_shutdown(platform_release_io_perms, NULL);
 		return 0;
 	}
+
 	msg_perr("ERROR: Could not get I/O privileges (%s).\n", strerror(errno));
-	msg_perr("Make sure you are root. If you are root, your kernel may still\n"
-		 "prevent access based on security policies.\n");
+#if defined(__linux__) && !defined(__ANDROID__)
+	if (getuid() != 0) {
+		msg_perr("Make sure you are running flashrom with root privileges.\n");
+	} else {
+		msg_perr("Your kernel may prevent access based on security policies.\n"
+		 "Issue a 'dmesg | grep flashrom' for further information\n");
+	}
+#elif defined(__OpenBSD__)
 	msg_perr("On OpenBSD set securelevel=-1 in /etc/rc.securelevel and\n"
 		 "reboot, or reboot into single user mode.\n");
+#elif defined(__NetBSD__)
 	msg_perr("On NetBSD reboot into single user mode or make sure\n"
 		 "that your kernel configuration has the option INSECURE enabled.\n");
+#else
+	msg_perr("Make sure you are running flashrom with root privileges.\n");
+#endif
 	return 1;
 }
 
