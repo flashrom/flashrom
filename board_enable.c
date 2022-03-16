@@ -1310,10 +1310,10 @@ static int board_artecgroup_dbe6x(void)
 	unsigned long boot_loc;
 
 	/* Geode only has a single core */
-	if (setup_cpu_msr(0))
+	if (msr_setup(0))
 		return -1;
 
-	msr = rdmsr(DBE6x_MSR_DIVIL_BALL_OPTS);
+	msr = msr_read(DBE6x_MSR_DIVIL_BALL_OPTS);
 
 	if ((msr.lo & (DBE6x_BOOT_OP_LATCHED)) ==
 	    (DBE6x_BOOT_LOC_FWHUB << DBE6x_BOOT_OP_LATCHED_SHIFT))
@@ -1325,9 +1325,9 @@ static int board_artecgroup_dbe6x(void)
 	msr.lo |= ((boot_loc << DBE6x_PRI_BOOT_LOC_SHIFT) |
 		   (boot_loc << DBE6x_SEC_BOOT_LOC_SHIFT));
 
-	wrmsr(DBE6x_MSR_DIVIL_BALL_OPTS, msr);
+	msr_write(DBE6x_MSR_DIVIL_BALL_OPTS, msr);
 
-	cleanup_cpu_msr();
+	msr_cleanup();
 
 	return 0;
 }

@@ -18,35 +18,11 @@
 
 #include <stdint.h>
 
-#if !(defined(__MACH__) && defined(__APPLE__)) && !defined(__FreeBSD__) && !defined(__FreeBSD_kernel__) && !defined(__DragonFly__) && !defined(__LIBPAYLOAD__)
 typedef struct { uint32_t hi, lo; } msr_t;
-msr_t rdmsr(int addr);
-int wrmsr(int addr, msr_t msr);
-#endif
 
-#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__) || defined(__DragonFly__)
-/* FreeBSD already has conflicting definitions for wrmsr/rdmsr. */
-#undef rdmsr
-#undef wrmsr
-#define rdmsr freebsd_rdmsr
-#define wrmsr freebsd_wrmsr
-typedef struct { uint32_t hi, lo; } msr_t;
-msr_t freebsd_rdmsr(int addr);
-int freebsd_wrmsr(int addr, msr_t msr);
-#endif
-
-#if defined(__LIBPAYLOAD__)
-#include <arch/io.h>
-#include <arch/msr.h>
-typedef struct { uint32_t hi, lo; } msr_t;
-msr_t libpayload_rdmsr(int addr);
-int libpayload_wrmsr(int addr, msr_t msr);
-#undef rdmsr
-#define rdmsr libpayload_rdmsr
-#define wrmsr libpayload_wrmsr
-#endif
-
-int setup_cpu_msr(int cpu);
-void cleanup_cpu_msr(void);
+msr_t msr_read(int addr);
+int msr_write(int addr, msr_t msr);
+int msr_setup(int cpu);
+void msr_cleanup(void);
 
 #endif /* __HWACCESS_X86_MSR_H__ */

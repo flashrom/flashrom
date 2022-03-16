@@ -1264,21 +1264,21 @@ static int enable_flash_cs5536(struct pci_dev *dev, const char *name)
 	msr_t msr;
 
 	/* Geode only has a single core */
-	if (setup_cpu_msr(0))
+	if (msr_setup(0))
 		return -1;
 
-	msr = rdmsr(MSR_RCONF_DEFAULT);
+	msr = msr_read(MSR_RCONF_DEFAULT);
 	if ((msr.hi >> 24) != 0x22) {
 		msr.hi &= 0xfbffffff;
-		wrmsr(MSR_RCONF_DEFAULT, msr);
+		msr_write(MSR_RCONF_DEFAULT, msr);
 	}
 
-	msr = rdmsr(MSR_NORF_CTL);
+	msr = msr_read(MSR_NORF_CTL);
 	/* Raise WE_CS3 bit. */
 	msr.lo |= 0x08;
-	wrmsr(MSR_NORF_CTL, msr);
+	msr_write(MSR_NORF_CTL, msr);
 
-	cleanup_cpu_msr();
+	msr_cleanup();
 
 #undef MSR_RCONF_DEFAULT
 #undef MSR_NORF_CTL
