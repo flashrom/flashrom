@@ -343,6 +343,7 @@
 #include "usb_device.h"
 
 #include <libusb.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -981,6 +982,22 @@ static int get_spi_config_v2(struct raiden_debug_spi_data *ctx_data)
 			ctx_data->max_spi_read_count =
 				rsp_config.packet_v2.rsp_config.max_read_count;
 			return status;
+		}
+
+		/*
+		 * Check if we received an error from the device. An error will have no
+		 * response data, just the packet_id and status_code.
+		 */
+		const size_t err_packet_size = sizeof(struct usb_spi_response_v2) -
+			USB_SPI_PAYLOAD_SIZE_V2_RESPONSE;
+		if (rsp_config.packet_size == err_packet_size &&
+				rsp_config.packet_v2.rsp_start.status_code !=
+				USB_SPI_SUCCESS) {
+			status = rsp_config.packet_v2.rsp_start.status_code;
+			if (status == USB_SPI_DISABLED) {
+				msg_perr("Raiden: Target SPI bridge is disabled (is WP enabled?)\n");
+				return status;
+			}
 		}
 
 		msg_perr("Raiden: Packet is not a valid config\n"
