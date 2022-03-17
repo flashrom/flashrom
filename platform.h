@@ -16,11 +16,11 @@
  */
 
 /*
- * Header file for hardware access and OS abstraction. Included from flash.h.
+ * Header file for platform abstraction.
  */
 
-#ifndef __HWACCESS_H__
-#define __HWACCESS_H__ 1
+#ifndef __PLATFORM_H__
+#define __PLATFORM_H__ 1
 
 #include <stdint.h>
 
@@ -100,4 +100,4 @@ uint16_t be_to_cpu16(const uint16_t value);
 uint32_t be_to_cpu32(const uint32_t value);
 uint64_t be_to_cpu64(const uint64_t value);
 
-#endif /* !__HWACCESS_H__ */
+#endif /* !__PLATFORM_H__ */

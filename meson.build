@@ -136,11 +136,11 @@ if cc.check_header('sys/utsname.h')
 endif
 
 if host_machine.endian() == 'little'
-  srcs += 'hwaccess_endian_little.c'
+  srcs += 'platform/endian_little.c'
   add_project_arguments('-D__FLASHROM_LITTLE_ENDIAN__=1', language : 'c')
 endif
 if host_machine.endian() == 'big'
-  srcs += 'hwaccess_endian_big.c'
+  srcs += 'platform/endian_big.c'
   add_project_arguments('-D__FLASHROM_BIG_ENDIAN__=1', language : 'c')
 endif
 

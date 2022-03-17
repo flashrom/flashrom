@@ -24,7 +24,7 @@
 #include <string.h>
 #include <errno.h>
 #include "flash.h"
-#include "hwaccess.h"
+#include "platform.h"
 #include "hwaccess_physmap.h"
 
 #if !defined(__DJGPP__) && !defined(__LIBPAYLOAD__)
