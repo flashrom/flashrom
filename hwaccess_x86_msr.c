@@ -17,7 +17,7 @@
  */
 
 /* MSR abstraction implementations for Linux, OpenBSD, FreeBSD/Dragonfly, OSX, libpayload
- * and a non-working default implementation on the bottom. See also hwaccess.h for some (re)declarations.
+ * and a non-working default implementation on the bottom.
  */
 
 #include "hwaccess_x86_msr.h"
