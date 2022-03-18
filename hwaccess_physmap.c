@@ -133,6 +133,7 @@ static void sys_physunmap_unaligned(void *virt_addr, size_t len)
 {
 }
 #elif defined(__MACH__) && defined(__APPLE__)
+#include <DirectHW/DirectHW.h>
 
 #define MEM_DEV "DirectHW"
 
