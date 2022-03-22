@@ -386,6 +386,7 @@ static int dmi_shutdown(void *data)
 		free(dmi_strings[i].value);
 		dmi_strings[i].value = NULL;
 	}
+	g_has_dmi_support = false;
 	return 0;
 }
 
