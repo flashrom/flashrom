@@ -393,6 +393,8 @@ bitbanging adapter)
 .sp
 .BR "* stlinkv3_spi" " (for SPI flash ROMs attached to STMicroelectronics STLINK V3 devices)"
 .sp
+.BR "* realtek_mst_i2c_spi" " (for SPI flash ROMs attached to Realtek DisplayPort hubs accessible through I2C)"
+.sp
 Some programmers have optional or mandatory parameters which are described
 in detail in the
 .B PROGRAMMER-SPECIFIC INFORMATION
@@ -1415,6 +1417,46 @@ syntax where \fBfrequency\fP is the SPI clock frequency in kHz.
 If the passed frequency is not supported by the adapter the nearest lower
 supported frequency will be used.
 .SS
+.BR "realtek_mst_i2c_spi " programmer
+.IP
+This programmer supports SPI flash programming for chips attached to Realtek
+DisplayPort MST hubs, themselves accessed through I2C (tunneling SPI flash
+commands through the MST hub's I2C connection with the host).
+
+The I2C bus on which the hub is reachable must be specified by either a device
+path with the \fBdevpath\fP option:
+.sp
+.B "  flashrom \-p realtek_mst_i2c_spi:devpath=/dev/i2c-8"
+.sp
+or by a bus number with the \fBbus\fP option, which implies a device path like
+/dev/i2c-N where N is the specified bus number:
+.sp
+.B "  flashrom \-p realtek_mst_i2c_spi:bus=8"
+.TP
+.B In-system programming (ISP) mode
+.sp
+The \fBreset-mcu\fP and \fBenter-isp\fP options provide control over device
+mode changes, where each can be set to 0 or 1 to enable or disable the
+corresponding mode transition.
+
+\fBenter-isp\fP defaults to 1, and if enabled will issue commands to the MST
+hub when beginning operation to put it into ISP mode.
+
+\fBreset-mcu\fP defaults to 0, and if enabled will issue a reset command to
+the MST hub on programming completion, causing it to exit ISP mode and to
+reload its own firmware from flash.
+
+The hub must be in ISP mode for SPI flash access to be possible, so it is
+usually only useful to disable \fBenter-isp\fP if an earlier invocation avoided
+resetting it on completion. For instance, to erase the flash and
+rewrite it with the contents of a file without resetting in between (which
+could render it nonfunctional if attempting to load firmware from a blank
+flash):
+.sp
+.B "  flashrom -p realtek_mst_i2c_spi:bus=0,enter-isp=1,reset-mcu=0 -E"
+.br
+.B "  flashrom -p realtek_mst_i2c_spi:bus=0,enter-isp=0,reset-mcu=1 -w new.bin"
+.sp
 
 .SH EXAMPLES
 To back up and update your BIOS, run
@@ -1492,6 +1534,9 @@ permissions are set.
 .sp
 .B ogp
 needs PCI configuration space read access and raw memory access.
+.sp
+.B realtek_mst_i2c_spi
+needs userspace access to the selected I2C bus.
 .sp
 On OpenBSD, you can obtain raw access permission by setting
 .B "securelevel=-1"
