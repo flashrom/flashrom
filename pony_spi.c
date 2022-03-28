@@ -120,18 +120,68 @@ static int pony_spi_shutdown(void *data)
 	return ret;
 }
 
+static int get_params(enum pony_type *type, int *have_device)
+{
+	char *arg = NULL;
+	int ret = 0;
+
+	/* defaults */
+	*type = TYPE_SI_PROG;
+	*have_device = 0;
+
+	/* The parameter is in format "dev=/dev/device,type=serbang" */
+	arg = extract_programmer_param("dev");
+	if (arg && strlen(arg)) {
+		sp_fd = sp_openserport(arg, 9600);
+		if (sp_fd == SER_INV_FD)
+			ret = 1;
+		else
+			(*have_device)++;
+	}
+	free(arg);
+
+	arg = extract_programmer_param("type");
+	if (arg && !strcasecmp(arg, "serbang")) {
+		*type = TYPE_SERBANG;
+	} else if (arg && !strcasecmp(arg, "si_prog")) {
+		*type = TYPE_SI_PROG;
+	} else if (arg && !strcasecmp( arg, "ajawe")) {
+		*type = TYPE_AJAWE;
+	} else if (arg && !strlen(arg)) {
+		msg_perr("Error: Missing argument for programmer type.\n");
+		ret = 1;
+	} else if (arg) {
+		msg_perr("Error: Invalid programmer type specified.\n");
+		ret = 1;
+	}
+	free(arg);
+
+	return ret;
+}
+
 static int pony_spi_init(void)
 {
 	int i, data_out;
-	char *arg = NULL;
-	enum pony_type type = TYPE_SI_PROG;
+	enum pony_type type;
 	const char *name;
-	int have_device = 0;
+	int have_device;
 	int have_prog = 0;
+
+	if (get_params(&type, &have_device)) {
+		serialport_shutdown(NULL);
+		return 1;
+	}
+	if (!have_device) {
+		msg_perr("Error: No valid device specified.\n"
+			 "Use flashrom -p pony_spi:dev=/dev/device[,type=name]\n");
+		serialport_shutdown(NULL);
+		return 1;
+	}
 
 	struct pony_spi_data *data = calloc(1, sizeof(*data));
 	if (!data) {
 		msg_perr("Unable to allocate space for SPI master data\n");
+		serialport_shutdown(NULL);
 		return 1;
 	}
 	data->negate_cs = 1;
@@ -139,49 +189,11 @@ static int pony_spi_init(void)
 	data->negate_mosi = 0;
 	data->negate_miso = 0;
 
-	/* The parameter is in format "dev=/dev/device,type=serbang" */
-	arg = extract_programmer_param("dev");
-	if (arg && strlen(arg)) {
-		sp_fd = sp_openserport(arg, 9600);
-		if (sp_fd == SER_INV_FD) {
-			free(arg);
-			free(data);
-			return 1;
-		}
-		if (register_shutdown(pony_spi_shutdown, data) != 0) {
-			free(arg);
-			free(data);
-			serialport_shutdown(NULL);
-			return 1;
-		}
-		have_device++;
-	}
-	free(arg);
-
-	if (!have_device) {
-		msg_perr("Error: No valid device specified.\n"
-			 "Use flashrom -p pony_spi:dev=/dev/device[,type=name]\n");
+	if (register_shutdown(pony_spi_shutdown, data) != 0) {
 		free(data);
+		serialport_shutdown(NULL);
 		return 1;
 	}
-
-	arg = extract_programmer_param("type");
-	if (arg && !strcasecmp(arg, "serbang")) {
-		type = TYPE_SERBANG;
-	} else if (arg && !strcasecmp(arg, "si_prog")) {
-		type = TYPE_SI_PROG;
-	} else if (arg && !strcasecmp( arg, "ajawe")) {
-		type = TYPE_AJAWE;
-	} else if (arg && !strlen(arg)) {
-		msg_perr("Error: Missing argument for programmer type.\n");
-		free(arg);
-		return 1;
-	} else if (arg){
-		msg_perr("Error: Invalid programmer type specified.\n");
-		free(arg);
-		return 1;
-	}
-	free(arg);
 
 	/*
 	 * Configure the serial port pins, depending on the used programmer.
