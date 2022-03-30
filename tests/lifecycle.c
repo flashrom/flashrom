@@ -370,13 +370,6 @@ void linux_spi_probe_lifecycle_test_success(void **state)
 #endif
 }
 
-static int realtek_mst_open(void *state, const char *pathname, int flags)
-{
-	assert_string_equal(pathname, "/dev/i2c-254");
-	assert_int_equal(flags & O_RDWR, O_RDWR);
-	return MOCK_FD;
-}
-
 static int realtek_mst_ioctl(void *state, int fd, unsigned long request, va_list args)
 {
 	assert_int_equal(fd, MOCK_FD);
@@ -406,11 +399,16 @@ static int realtek_mst_write(void *state, int fd, const void *buf, size_t sz)
 void realtek_mst_basic_lifecycle_test_success(void **state)
 {
 #if CONFIG_REALTEK_MST_I2C_SPI == 1
+	static struct io_mock_fallback_open_state realtek_mst_fallback_open_state = {
+		.noc = 0,
+		.paths = { "/dev/i2c-254", NULL },
+		.flags = { O_RDWR },
+	};
 	const struct io_mock realtek_mst_io = {
-		.open = realtek_mst_open,
 		.ioctl = realtek_mst_ioctl,
 		.read = realtek_mst_read,
 		.write = realtek_mst_write,
+		.fallback_open_state = &realtek_mst_fallback_open_state,
 	};
 	io_mock_register(&realtek_mst_io);
 

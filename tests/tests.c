@@ -74,28 +74,43 @@ uint8_t __wrap_sio_read(uint16_t port, uint8_t reg)
 	return (uint8_t)mock();
 }
 
+static int mock_open(const char *pathname, int flags)
+{
+	if (get_io() && get_io()->open)
+		return get_io()->open(get_io()->state, pathname, flags);
+
+	if (get_io() && get_io()->fallback_open_state) {
+		struct io_mock_fallback_open_state *io_state;
+		unsigned int open_state_flags;
+
+		io_state = get_io()->fallback_open_state;
+		assert_true(io_state->noc < MAX_MOCK_OPEN);
+		assert_non_null(io_state->paths[io_state->noc]);
+		assert_string_equal(pathname, io_state->paths[io_state->noc]);
+		open_state_flags = io_state->flags[io_state->noc];
+		assert_int_equal(flags & open_state_flags, open_state_flags);
+		io_state->noc++; // proceed to the next path upon next call.
+	}
+
+	return MOCK_FD;
+}
+
 int __wrap_open(const char *pathname, int flags)
 {
 	LOG_ME;
-	if (get_io() && get_io()->open)
-		return get_io()->open(get_io()->state, pathname, flags);
-	return MOCK_FD;
+	return mock_open(pathname, flags);
 }
 
 int __wrap_open64(const char *pathname, int flags)
 {
 	LOG_ME;
-	if (get_io() && get_io()->open)
-		return get_io()->open(get_io()->state, pathname, flags);
-	return MOCK_FD;
+	return mock_open(pathname, flags);
 }
 
 int __wrap___open64_2(const char *pathname, int flags)
 {
 	LOG_ME;
-	if (get_io() && get_io()->open)
-		return get_io()->open(get_io()->state, pathname, flags);
-	return MOCK_FD;
+	return mock_open(pathname, flags);
 }
 
 int __wrap_ioctl(int fd, unsigned long int request, ...)
