@@ -35,13 +35,15 @@ static void probe_chip(const struct programmer_entry *prog,
 	flashrom_flash_release(flashctx); /* cleanup */
 }
 
-static void run_lifecycle(void **state, const struct programmer_entry *prog,
+static void run_lifecycle(void **state, const struct io_mock *io, const struct programmer_entry *prog,
 				const char *param, const char *const chip_name,
 				void (*action)(const struct programmer_entry *prog,
 						struct flashrom_programmer *flashprog,
 						const char *const chip_name))
 {
 	(void) state; /* unused */
+
+	io_mock_register(io);
 
 	struct flashrom_programmer *flashprog;
 	char *param_dup = strdup(param);
@@ -58,27 +60,30 @@ static void run_lifecycle(void **state, const struct programmer_entry *prog,
 	printf("... flashrom_programmer_shutdown for programmer=%s successful\n", prog->name);
 
 	free(param_dup);
+
+	io_mock_register(NULL);
 }
 
-static void run_basic_lifecycle(void **state, const struct programmer_entry *prog, const char *param)
+static void run_basic_lifecycle(void **state, const struct io_mock *io,
+		const struct programmer_entry *prog, const char *param)
 {
 	/* Basic lifecycle only does init and shutdown,
 	 * so neither chip name nor action is needed. */
-	run_lifecycle(state, prog, param, NULL /* chip_name */, NULL /* action */);
+	run_lifecycle(state, io, prog, param, NULL /* chip_name */, NULL /* action */);
 }
 
-static void run_probe_lifecycle(void **state, const struct programmer_entry *prog,
-                                 const char *param, const char *const chip_name)
+static void run_probe_lifecycle(void **state, const struct io_mock *io,
+		const struct programmer_entry *prog, const char *param, const char *const chip_name)
 {
 	/* Each probe lifecycle should run independently, without cache. */
 	clear_spi_id_cache();
-	run_lifecycle(state, prog, param, chip_name, &probe_chip);
+	run_lifecycle(state, io, prog, param, chip_name, &probe_chip);
 }
 
 void dummy_basic_lifecycle_test_success(void **state)
 {
 #if CONFIG_DUMMY == 1
-	run_basic_lifecycle(state, &programmer_dummy, "bus=parallel+lpc+fwh+spi");
+	run_basic_lifecycle(state, NULL, &programmer_dummy, "bus=parallel+lpc+fwh+spi");
 #else
 	skip();
 #endif
@@ -87,7 +92,7 @@ void dummy_basic_lifecycle_test_success(void **state)
 void dummy_probe_lifecycle_test_success(void **state)
 {
 #if CONFIG_DUMMY == 1
-	run_probe_lifecycle(state, &programmer_dummy, "bus=spi,emulate=W25Q128FV", "W25Q128.V");
+	run_probe_lifecycle(state, NULL, &programmer_dummy, "bus=spi,emulate=W25Q128FV", "W25Q128.V");
 #else
 	skip();
 #endif
@@ -96,7 +101,7 @@ void dummy_probe_lifecycle_test_success(void **state)
 void nicrealtek_basic_lifecycle_test_success(void **state)
 {
 #if CONFIG_NICREALTEK == 1
-	run_basic_lifecycle(state, &programmer_nicrealtek, "");
+	run_basic_lifecycle(state, NULL, &programmer_nicrealtek, "");
 #else
 	skip();
 #endif
@@ -188,11 +193,7 @@ void raiden_debug_basic_lifecycle_test_success(void **state)
 	char raiden_debug_param[12];
 	snprintf(raiden_debug_param, 12, "address=%d", USB_DEVICE_ADDRESS);
 
-	io_mock_register(&raiden_debug_io);
-
-	run_basic_lifecycle(state, &programmer_raiden_debug_spi, raiden_debug_param);
-
-	io_mock_register(NULL);
+	run_basic_lifecycle(state, &raiden_debug_io, &programmer_raiden_debug_spi, raiden_debug_param);
 #else
 	skip();
 #endif
@@ -229,11 +230,7 @@ void dediprog_basic_lifecycle_test_success(void **state)
 		.libusb_control_transfer = dediprog_libusb_control_transfer,
 	};
 
-	io_mock_register(&dediprog_io);
-
-	run_basic_lifecycle(state, &programmer_dediprog, "voltage=3.5V");
-
-	io_mock_register(NULL);
+	run_basic_lifecycle(state, &dediprog_io, &programmer_dediprog, "voltage=3.5V");
 #else
 	skip();
 #endif
@@ -306,11 +303,7 @@ void linux_mtd_probe_lifecycle_test_success(void **state)
 		.fclose = linux_mtd_fclose,
 	};
 
-	io_mock_register(&linux_mtd_io);
-
-	run_probe_lifecycle(state, &programmer_linux_mtd, "", "Opaque flash chip");
-
-	io_mock_register(NULL);
+	run_probe_lifecycle(state, &linux_mtd_io, &programmer_linux_mtd, "", "Opaque flash chip");
 #else
 	skip();
 #endif
@@ -366,11 +359,7 @@ void linux_spi_probe_lifecycle_test_success(void **state)
 		.fallback_open_state = &linux_spi_fallback_open_state,
 	};
 
-	io_mock_register(&linux_spi_io);
-
-	run_probe_lifecycle(state, &programmer_linux_spi, "dev=/dev/null", "W25Q128.V");
-
-	io_mock_register(NULL);
+	run_probe_lifecycle(state, &linux_spi_io, &programmer_linux_spi, "dev=/dev/null", "W25Q128.V");
 #else
 	skip();
 #endif
@@ -416,11 +405,8 @@ void realtek_mst_basic_lifecycle_test_success(void **state)
 		.write = realtek_mst_write,
 		.fallback_open_state = &realtek_mst_fallback_open_state,
 	};
-	io_mock_register(&realtek_mst_io);
 
-	run_basic_lifecycle(state, &programmer_realtek_mst_i2c_spi, "bus=254,enter-isp=0");
-
-	io_mock_register(NULL);
+	run_basic_lifecycle(state, &realtek_mst_io, &programmer_realtek_mst_i2c_spi, "bus=254,enter-isp=0");
 #else
 	skip();
 #endif /* CONFIG_REALTEK_I2C_SPI */
