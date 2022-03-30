@@ -79,7 +79,7 @@ int __wrap_open(const char *pathname, int flags)
 	LOG_ME;
 	if (get_io() && get_io()->open)
 		return get_io()->open(get_io()->state, pathname, flags);
-	return NON_ZERO;
+	return MOCK_FD;
 }
 
 int __wrap_open64(const char *pathname, int flags)
@@ -87,7 +87,7 @@ int __wrap_open64(const char *pathname, int flags)
 	LOG_ME;
 	if (get_io() && get_io()->open)
 		return get_io()->open(get_io()->state, pathname, flags);
-	return NON_ZERO;
+	return MOCK_FD;
 }
 
 int __wrap___open64_2(const char *pathname, int flags)
@@ -95,7 +95,7 @@ int __wrap___open64_2(const char *pathname, int flags)
 	LOG_ME;
 	if (get_io() && get_io()->open)
 		return get_io()->open(get_io()->state, pathname, flags);
-	return NON_ZERO;
+	return MOCK_FD;
 }
 
 int __wrap_ioctl(int fd, unsigned long int request, ...)

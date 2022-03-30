@@ -370,18 +370,16 @@ void linux_spi_probe_lifecycle_test_success(void **state)
 #endif
 }
 
-#define REALTEK_MST_MOCK_FD 0x10ec
-
 static int realtek_mst_open(void *state, const char *pathname, int flags)
 {
 	assert_string_equal(pathname, "/dev/i2c-254");
 	assert_int_equal(flags & O_RDWR, O_RDWR);
-	return REALTEK_MST_MOCK_FD;
+	return MOCK_FD;
 }
 
 static int realtek_mst_ioctl(void *state, int fd, unsigned long request, va_list args)
 {
-	assert_int_equal(fd, REALTEK_MST_MOCK_FD);
+	assert_int_equal(fd, MOCK_FD);
 	assert_int_equal(request, I2C_SLAVE);
 	/* Only access to I2C address 0x4a is expected */
 	unsigned long addr = va_arg(args, unsigned long);
@@ -392,14 +390,14 @@ static int realtek_mst_ioctl(void *state, int fd, unsigned long request, va_list
 
 static int realtek_mst_read(void *state, int fd, void *buf, size_t sz)
 {
-	assert_int_equal(fd, REALTEK_MST_MOCK_FD);
+	assert_int_equal(fd, MOCK_FD);
 	assert_int_equal(sz, 1);
 	return sz;
 }
 
 static int realtek_mst_write(void *state, int fd, const void *buf, size_t sz)
 {
-	assert_int_equal(fd, REALTEK_MST_MOCK_FD);
+	assert_int_equal(fd, MOCK_FD);
 	const LargestIntegralType accepted_sizes[] = {1, 2};
 	assert_in_set(sz, accepted_sizes, ARRAY_SIZE(accepted_sizes));
 	return sz;
