@@ -53,6 +53,10 @@ enum amd_chipset {
 #define FIFO_SIZE_OLD		8
 #define FIFO_SIZE_YANGTZE	71
 
+#define SPI100_CMD_CODE_REG	0x45
+#define SPI100_CMD_TRIGGER_REG	0x47
+#define   SPI100_EXECUTE_CMD	(1 << 7)
+
 struct sb600spi_data {
 	struct flashctx *flash;
 	uint8_t *spibar;
@@ -200,6 +204,16 @@ static void execute_command(uint8_t *sb600_spibar)
 	msg_pspew("done\n");
 }
 
+static void execute_spi100_command(uint8_t *sb600_spibar)
+{
+	msg_pspew("Executing... ");
+	mmio_writeb(mmio_readb(sb600_spibar + SPI100_CMD_TRIGGER_REG) | SPI100_EXECUTE_CMD,
+			sb600_spibar + SPI100_CMD_TRIGGER_REG);
+	while (mmio_readb(sb600_spibar + SPI100_CMD_TRIGGER_REG) & SPI100_CMD_TRIGGER_REG)
+		;
+	msg_pspew("done\n");
+}
+
 static int sb600_spi_send_command(const struct flashctx *flash, unsigned int writecnt,
 				  unsigned int readcnt,
 				  const unsigned char *writearr,
@@ -299,7 +313,7 @@ static int spi100_spi_send_command(const struct flashctx *flash, unsigned int wr
 	unsigned char cmd = *writearr++;
 	writecnt--;
 	msg_pspew("%s, cmd=0x%02x, writecnt=%d, readcnt=%d\n", __func__, cmd, writecnt, readcnt);
-	mmio_writeb(cmd, sb600_spibar + 0);
+	mmio_writeb(cmd, sb600_spibar + SPI100_CMD_CODE_REG);
 
 	int ret = check_readwritecnt(flash, writecnt, readcnt);
 	if (ret != 0)
@@ -317,7 +331,7 @@ static int spi100_spi_send_command(const struct flashctx *flash, unsigned int wr
 	}
 	msg_pspew("\n");
 
-	execute_command(sb600_spibar);
+	execute_spi100_command(sb600_spibar);
 
 	msg_pspew("Reading buffer: ");
 	for (count = 0; count < readcnt; count++) {
