@@ -30,7 +30,6 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <ctype.h>
-#include <getopt.h>
 #if HAVE_UTSNAME == 1
 #include <sys/utsname.h>
 #endif
