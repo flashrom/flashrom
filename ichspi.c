@@ -46,8 +46,19 @@
  */
 
 /* Changed HSFC Control bits */
+/*
+ * 4 bits to represents the FCYCLE operation for PCH as:
+ * 0: SPI Read
+ * 2: SPI Write
+ * 3: SPI Erase 4K
+ * 4: SPI Erase 64K
+ * 6: SPI RDID
+ * 7: SPI Write Status
+ * 8: SPI Read Status
+  */
+#define PCH100_HSFC_FCYCLE_BIT_WIDTH	0xf
 #define PCH100_HSFC_FCYCLE_OFF	(17 - 16)	/* 1-4: FLASH Cycle */
-#define PCH100_HSFC_FCYCLE	(0xf << PCH100_HSFC_FCYCLE_OFF)
+#define PCH100_HSFC_FCYCLE	HSFC_FCYCLE_MASK(PCH100_HSFC_FCYCLE_BIT_WIDTH)
 /* New HSFC Control bit */
 #define PCH100_HSFC_WET_OFF	(21 - 16)	/* 5: Write Enable Type */
 #define PCH100_HSFC_WET		(0x1 << PCH100_HSFC_WET_OFF)
@@ -107,8 +118,16 @@
 #define ICH9_REG_HSFC		0x06	/* 16 Bits Hardware Sequencing Flash Control */
 #define HSFC_FGO_OFF		0	/* 0: Flash Cycle Go */
 #define HSFC_FGO		(0x1 << HSFC_FGO_OFF)
+/*
+ * 2 bits to represents the FCYCLE operation for ICH9 as:
+ * 0: SPI Read
+ * 2: SPI Write
+ * 3: SPI Block Erase
+ */
+#define ICH9_HSFC_FCYCLE_BIT_WIDTH	3
 #define HSFC_FCYCLE_OFF		1	/* 1-2: FLASH Cycle */
-#define HSFC_FCYCLE		(0x3 << HSFC_FCYCLE_OFF)
+#define HSFC_FCYCLE_MASK(n)	((n) << HSFC_FCYCLE_OFF)
+#define HSFC_FCYCLE		HSFC_FCYCLE_MASK(ICH9_HSFC_FCYCLE_BIT_WIDTH)
 					/* 3-7: reserved */
 #define HSFC_FDBC_OFF		8	/* 8-13: Flash Data Byte Count */
 #define HSFC_FDBC		(0x3f << HSFC_FDBC_OFF)
