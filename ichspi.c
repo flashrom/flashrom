@@ -463,7 +463,7 @@ static void prettyprint_ich9_reg_hsfc(uint16_t reg_val, enum ich_chipset ich_gen
 	case CHIPSET_400_SERIES_COMET_POINT:
 	case CHIPSET_500_SERIES_TIGER_POINT:
 	case CHIPSET_ELKHART_LAKE:
-		_pprint_reg(HSFC, PCH100_HSFC_FCYCLE, PCH100_HSFC_FCYCLE_OFF, reg_val, ", ");
+		pprint_reg(PCH100_HSFC, FCYCLE, reg_val, ", ");
 		pprint_reg(PCH100_HSFC, WET, reg_val, ", ");
 		break;
 	default:
