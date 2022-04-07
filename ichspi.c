@@ -49,8 +49,8 @@
 #define PCH100_HSFC_FCYCLE_OFF	(17 - 16)	/* 1-4: FLASH Cycle */
 #define PCH100_HSFC_FCYCLE	(0xf << PCH100_HSFC_FCYCLE_OFF)
 /* New HSFC Control bit */
-#define HSFC_WET_OFF		(21 - 16)	/* 5: Write Enable Type */
-#define HSFC_WET		(0x1 << HSFC_WET_OFF)
+#define PCH100_HSFC_WET_OFF	(21 - 16)	/* 5: Write Enable Type */
+#define PCH100_HSFC_WET		(0x1 << PCH100_HSFC_WET_OFF)
 
 #define PCH100_FADDR_FLA	0x07ffffff
 
@@ -464,7 +464,7 @@ static void prettyprint_ich9_reg_hsfc(uint16_t reg_val, enum ich_chipset ich_gen
 	case CHIPSET_500_SERIES_TIGER_POINT:
 	case CHIPSET_ELKHART_LAKE:
 		_pprint_reg(HSFC, PCH100_HSFC_FCYCLE, PCH100_HSFC_FCYCLE_OFF, reg_val, ", ");
-		pprint_reg(HSFC, WET, reg_val, ", ");
+		pprint_reg(PCH100_HSFC, WET, reg_val, ", ");
 		break;
 	default:
 		pprint_reg(HSFC, FCYCLE, reg_val, ", ");
