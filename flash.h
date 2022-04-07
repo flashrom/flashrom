@@ -442,11 +442,9 @@ void print_chip_support_status(const struct flashchip *chip);
 /* cli_output.c */
 extern enum flashrom_log_level verbose_screen;
 extern enum flashrom_log_level verbose_logfile;
-#ifndef STANDALONE
 int open_logfile(const char * const filename);
 int close_logfile(void);
 void start_logging(void);
-#endif
 int flashrom_print_cb(enum flashrom_log_level level, const char *fmt, va_list ap);
 /* Let gcc and clang check for correct printf-style format strings. */
 int print(enum flashrom_log_level level, const char *fmt, ...)

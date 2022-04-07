@@ -24,7 +24,6 @@
 enum flashrom_log_level verbose_screen = FLASHROM_MSG_INFO;
 enum flashrom_log_level verbose_logfile = FLASHROM_MSG_DEBUG2;
 
-#ifndef STANDALONE
 static FILE *logfile = NULL;
 
 int close_logfile(void)
@@ -64,7 +63,6 @@ void start_logging(void)
 	print_version();
 	verbose_screen = oldverbose_screen;
 }
-#endif /* !STANDALONE */
 
 /* Please note that level is the verbosity, not the importance of the message. */
 int flashrom_print_cb(enum flashrom_log_level level, const char *fmt, va_list ap)
@@ -85,13 +83,13 @@ int flashrom_print_cb(enum flashrom_log_level level, const char *fmt, va_list ap
 		if (level != FLASHROM_MSG_SPEW)
 			fflush(output_type);
 	}
-#ifndef STANDALONE
+
 	if ((level <= verbose_logfile) && logfile) {
 		ret = vfprintf(logfile, fmt, logfile_args);
 		if (level != FLASHROM_MSG_SPEW)
 			fflush(logfile);
 	}
-#endif /* !STANDALONE */
+
 	va_end(logfile_args);
 	return ret;
 }

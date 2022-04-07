@@ -290,7 +290,6 @@ ifeq ($(MAKECMDGOALS),)
 .DEFAULT_GOAL := libflashrom.a
 $(info Setting default goal to libflashrom.a)
 endif
-FLASHROM_CFLAGS += -DSTANDALONE
 $(call mark_unsupported,CONFIG_DUMMY)
 # libpayload does not provide the romsize field in struct pci_dev that the atapromise code requires.
 $(call mark_unsupported,CONFIG_ATAPROMISE)
