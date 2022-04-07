@@ -131,6 +131,7 @@
 					/* 3-7: reserved */
 #define HSFC_FDBC_OFF		8	/* 8-13: Flash Data Byte Count */
 #define HSFC_FDBC		(0x3f << HSFC_FDBC_OFF)
+#define HSFC_FDBC_VAL(n)	(((n) << HSFC_FDBC_OFF) & HSFC_FDBC)
 					/* 14: reserved */
 #define HSFC_SME_OFF		15	/* 15: SPI SMI# Enable */
 #define HSFC_SME		(0x1 << HSFC_SME_OFF)
@@ -1473,7 +1474,7 @@ static int ich_hwseq_read(struct flashctx *flash, uint8_t *buf,
 		hsfc &= ~hwseq_data.hsfc_fcycle; /* set read operation */
 		hsfc &= ~HSFC_FDBC; /* clear byte count */
 		/* set byte count */
-		hsfc |= (((block_len - 1) << HSFC_FDBC_OFF) & HSFC_FDBC);
+		hsfc |= HSFC_FDBC_VAL(block_len - 1);
 		hsfc |= HSFC_FGO; /* start */
 		REGWRITE16(ICH9_REG_HSFC, hsfc);
 
@@ -1520,7 +1521,7 @@ static int ich_hwseq_write(struct flashctx *flash, const uint8_t *buf, unsigned 
 		hsfc |= (0x2 << HSFC_FCYCLE_OFF); /* set write operation */
 		hsfc &= ~HSFC_FDBC; /* clear byte count */
 		/* set byte count */
-		hsfc |= (((block_len - 1) << HSFC_FDBC_OFF) & HSFC_FDBC);
+		hsfc |= HSFC_FDBC_VAL(block_len - 1);
 		hsfc |= HSFC_FGO; /* start */
 		REGWRITE16(ICH9_REG_HSFC, hsfc);
 
