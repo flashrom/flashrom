@@ -128,6 +128,9 @@
 #define HSFC_FCYCLE_OFF		1	/* 1-2: FLASH Cycle */
 #define HSFC_FCYCLE_MASK(n)	((n) << HSFC_FCYCLE_OFF)
 #define HSFC_FCYCLE		HSFC_FCYCLE_MASK(ICH9_HSFC_FCYCLE_BIT_WIDTH)
+#define HSFC_CYCLE_READ		HSFC_FCYCLE_MASK(0)
+#define HSFC_CYCLE_WRITE	HSFC_FCYCLE_MASK(2)
+#define HSFC_CYCLE_BLOCK_ERASE	HSFC_FCYCLE_MASK(3)
 					/* 3-7: reserved */
 #define HSFC_FDBC_OFF		8	/* 8-13: Flash Data Byte Count */
 #define HSFC_FDBC		(0x3f << HSFC_FDBC_OFF)
@@ -1430,7 +1433,7 @@ static int ich_hwseq_block_erase(struct flashctx *flash, unsigned int addr,
 
 	hsfc = REGREAD16(ICH9_REG_HSFC);
 	hsfc &= ~hwseq_data.hsfc_fcycle; /* clear operation */
-	hsfc |= (0x3 << HSFC_FCYCLE_OFF); /* set erase operation */
+	hsfc |= HSFC_CYCLE_BLOCK_ERASE; /* set erase operation */
 	hsfc |= HSFC_FGO; /* start */
 	msg_pdbg("HSFC used for block erasing: ");
 	prettyprint_ich9_reg_hsfc(hsfc, ich_generation);
@@ -1473,6 +1476,7 @@ static int ich_hwseq_read(struct flashctx *flash, uint8_t *buf,
 		hsfc = REGREAD16(ICH9_REG_HSFC);
 		hsfc &= ~hwseq_data.hsfc_fcycle; /* set read operation */
 		hsfc &= ~HSFC_FDBC; /* clear byte count */
+		hsfc |= HSFC_CYCLE_READ; /* set read operation */
 		/* set byte count */
 		hsfc |= HSFC_FDBC_VAL(block_len - 1);
 		hsfc |= HSFC_FGO; /* start */
@@ -1518,7 +1522,7 @@ static int ich_hwseq_write(struct flashctx *flash, const uint8_t *buf, unsigned 
 
 		hsfc = REGREAD16(ICH9_REG_HSFC);
 		hsfc &= ~hwseq_data.hsfc_fcycle; /* clear operation */
-		hsfc |= (0x2 << HSFC_FCYCLE_OFF); /* set write operation */
+		hsfc |= HSFC_CYCLE_WRITE; /* set write operation */
 		hsfc &= ~HSFC_FDBC; /* clear byte count */
 		/* set byte count */
 		hsfc |= HSFC_FDBC_VAL(block_len - 1);
