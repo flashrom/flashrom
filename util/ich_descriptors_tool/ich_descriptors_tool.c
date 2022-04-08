@@ -46,7 +46,6 @@ static const char *const region_names[] = {
 static void dump_file(const char *prefix, const uint32_t *dump, unsigned int len,
 		      const struct ich_desc_region *const reg, unsigned int i)
 {
-	int ret;
 	char *fn;
 	const char *reg_name;
 	uint32_t file_len;
@@ -85,8 +84,8 @@ static void dump_file(const char *prefix, const uint32_t *dump, unsigned int len
 	}
 	free(fn);
 
-	ret = write(fh, &dump[base >> 2], file_len);
-	if (ret != file_len) {
+	const ssize_t ret = write(fh, &dump[base >> 2], file_len);
+	if (ret < 0 || ((size_t) ret) != file_len) {
 		fprintf(stderr, "FAILED.\n");
 		exit(1);
 	}
@@ -270,7 +269,8 @@ int main(int argc, char *argv[])
 	prettyprint_ich_descriptors(cs, &desc);
 
 	pMAC = (uint8_t *) &buf[ICH_FREG_BASE(desc.region.FLREGs[3]) >> 2];
-	if (len >= ICH_FREG_BASE(desc.region.FLREGs[3]) + 6 && pMAC[0] != 0xff)
+	/* The case len < 0 is handled above as error. At this point len is non-negative. */
+	if (((size_t) len) >= ICH_FREG_BASE(desc.region.FLREGs[3]) + 6 && pMAC[0] != 0xff)
 		printf("The MAC address might be at offset 0x%x: "
 		       "%02x:%02x:%02x:%02x:%02x:%02x\n",
 		       ICH_FREG_BASE(desc.region.FLREGs[3]),
