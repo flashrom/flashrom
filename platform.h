@@ -77,27 +77,27 @@ static inline uint64_t swap64(const uint64_t value)
 	uint##bits##_t name##bits (const uint##bits##_t value) { return swap##bits (value); }
 
 /* convert cpu native endian to little endian */
-uint8_t  cpu_to_le8 (const uint8_t  value);
-uint16_t cpu_to_le16(const uint16_t value);
-uint32_t cpu_to_le32(const uint32_t value);
-uint64_t cpu_to_le64(const uint64_t value);
+uint8_t  cpu_to_le8 (uint8_t  value);
+uint16_t cpu_to_le16(uint16_t value);
+uint32_t cpu_to_le32(uint32_t value);
+uint64_t cpu_to_le64(uint64_t value);
 
 /* convert cpu native endian to big endian */
-uint8_t  cpu_to_be8 (const uint8_t  value);
-uint16_t cpu_to_be16(const uint16_t value);
-uint32_t cpu_to_be32(const uint32_t value);
-uint64_t cpu_to_be64(const uint64_t value);
+uint8_t  cpu_to_be8 (uint8_t  value);
+uint16_t cpu_to_be16(uint16_t value);
+uint32_t cpu_to_be32(uint32_t value);
+uint64_t cpu_to_be64(uint64_t value);
 
 /* convert little endian to cpu native endian */
-uint8_t  le_to_cpu8 (const uint8_t  value);
-uint16_t le_to_cpu16(const uint16_t value);
-uint32_t le_to_cpu32(const uint32_t value);
-uint64_t le_to_cpu64(const uint64_t value);
+uint8_t  le_to_cpu8 (uint8_t  value);
+uint16_t le_to_cpu16(uint16_t value);
+uint32_t le_to_cpu32(uint32_t value);
+uint64_t le_to_cpu64(uint64_t value);
 
 /* convert big endian to cpu native endian */
-uint8_t  be_to_cpu8 (const uint8_t  value);
-uint16_t be_to_cpu16(const uint16_t value);
-uint32_t be_to_cpu32(const uint32_t value);
-uint64_t be_to_cpu64(const uint64_t value);
+uint8_t  be_to_cpu8 (uint8_t  value);
+uint16_t be_to_cpu16(uint16_t value);
+uint32_t be_to_cpu32(uint32_t value);
+uint64_t be_to_cpu64(uint64_t value);
 
 #endif /* !__PLATFORM_H__ */
