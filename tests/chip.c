@@ -46,7 +46,7 @@ static struct {
 	.buf = { 0 },
 };
 
-int read_chip(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len)
+static int read_chip(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len)
 {
 	printf("Read chip called with start=0x%x, len=0x%x\n", start, len);
 	if (!g_chip_state.unlock_calls) {
@@ -60,7 +60,7 @@ int read_chip(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned
 	return 0;
 }
 
-int write_chip(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len)
+static int write_chip(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len)
 {
 	printf("Write chip called with start=0x%x, len=0x%x\n", start, len);
 	if (!g_chip_state.unlock_calls) {
@@ -74,7 +74,7 @@ int write_chip(struct flashctx *flash, const uint8_t *buf, unsigned int start, u
 	return 0;
 }
 
-int unlock_chip(struct flashctx *flash)
+static int unlock_chip(struct flashctx *flash)
 {
 	printf("Unlock chip called\n");
 	g_chip_state.unlock_calls++;
@@ -87,7 +87,7 @@ int unlock_chip(struct flashctx *flash)
 	return 0;
 }
 
-int block_erase_chip(struct flashctx *flash, unsigned int blockaddr, unsigned int blocklen)
+static int block_erase_chip(struct flashctx *flash, unsigned int blockaddr, unsigned int blocklen)
 {
 	printf("Block erase called with blockaddr=0x%x, blocklen=0x%x\n", blockaddr, blocklen);
 	if (!g_chip_state.unlock_calls) {
@@ -404,7 +404,7 @@ void write_chip_with_dummyflasher_test_success(void **state)
 	free(newcontents);
 }
 
-size_t verify_chip_fread(void *state, void *buf, size_t size, size_t len, FILE *fp)
+static size_t verify_chip_fread(void *state, void *buf, size_t size, size_t len, FILE *fp)
 {
 	/*
 	 * Verify operation compares contents of the file vs contents on the chip.

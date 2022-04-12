@@ -228,13 +228,13 @@ void raiden_debug_basic_lifecycle_test_success(void **state)
 #endif
 }
 
-int dediprog_libusb_init(void *state, libusb_context **ctx)
+static int dediprog_libusb_init(void *state, libusb_context **ctx)
 {
 	*ctx = not_null();
 	return 0;
 }
 
-int dediprog_libusb_control_transfer(void *state,
+static int dediprog_libusb_control_transfer(void *state,
 					libusb_device_handle *devh,
 					uint8_t bmRequestType,
 					uint8_t bRequest,
@@ -274,7 +274,7 @@ struct linux_mtd_io_state {
 	char *fopen_path;
 };
 
-FILE *linux_mtd_fopen(void *state, const char *pathname, const char *mode)
+static FILE *linux_mtd_fopen(void *state, const char *pathname, const char *mode)
 {
 	struct linux_mtd_io_state *io_state = state;
 
@@ -283,7 +283,7 @@ FILE *linux_mtd_fopen(void *state, const char *pathname, const char *mode)
 	return not_null();
 }
 
-size_t linux_mtd_fread(void *state, void *buf, size_t size, size_t len, FILE *fp)
+static size_t linux_mtd_fread(void *state, void *buf, size_t size, size_t len, FILE *fp)
 {
 	struct linux_mtd_fread_mock_entry {
 		const char *path;
@@ -317,7 +317,7 @@ size_t linux_mtd_fread(void *state, void *buf, size_t size, size_t len, FILE *fp
 	return 0;
 }
 
-int linux_mtd_fclose(void *state, FILE *fp)
+static int linux_mtd_fclose(void *state, FILE *fp)
 {
 	struct linux_mtd_io_state *io_state = state;
 
@@ -372,7 +372,7 @@ static int linux_spi_ioctl(void *state, int fd, unsigned long request, va_list a
 	return 0;
 }
 
-char *linux_spi_fgets(void *state, char *buf, int len, FILE *fp)
+static char *linux_spi_fgets(void *state, char *buf, int len, FILE *fp)
 {
 	/* Emulate reading max buffer size from sysfs. */
 	const char *max_buf_size = "1048576";
