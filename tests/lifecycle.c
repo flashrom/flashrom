@@ -17,6 +17,7 @@
 #include <string.h>
 #include <linux/spi/spidev.h>
 
+#include "tests.h"
 #include "libflashrom.h"
 #include "io_mock.h"
 #include "programmer.h"

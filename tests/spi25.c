@@ -15,6 +15,8 @@
 
 #include <include/test.h>
 
+#include "wraps.h"
+#include "tests.h"
 #include "programmer.h"
 #include "flashchips.h"
 #include "chipdrivers.h"

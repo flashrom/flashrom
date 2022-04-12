@@ -15,6 +15,7 @@
 
 #include <include/test.h>
 
+#include "tests.h"
 #include "flash.h"
 
 #include <stdint.h>

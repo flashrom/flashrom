@@ -16,6 +16,7 @@
 #include <include/test.h>
 #include <stdio.h>
 
+#include "tests.h"
 #include "flash.h"
 #include "layout.h"
 #include "libflashrom.h"

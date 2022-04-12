@@ -17,6 +17,7 @@
 
 #include <include/test.h>
 #include "io_mock.h"
+#include "libusb_wraps.h"
 
 void *__wrap_usb_dev_get_by_vid_pid_number(
 		libusb_context *usb_ctx, uint16_t vid, uint16_t pid, unsigned int num)

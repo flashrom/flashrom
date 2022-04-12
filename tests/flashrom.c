@@ -14,6 +14,7 @@
  */
 
 #include <include/test.h>
+#include "tests.h"
 
 #include "programmer.h"
 

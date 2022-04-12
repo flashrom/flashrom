@@ -16,6 +16,7 @@
 #include <include/test.h>
 #include "io_mock.h"
 #include "tests.h"
+#include "wraps.h"
 
 #include <stdio.h>
 #include <string.h>

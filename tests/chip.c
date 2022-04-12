@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "tests.h"
 #include "chipdrivers.h"
 #include "flash.h"
 #include "io_mock.h"
