@@ -1412,9 +1412,11 @@ static int get_ap_request_type(void)
 	int ap_request = RAIDEN_DEBUG_SPI_REQ_ENABLE_AP;
 	char *custom_rst_str = extract_programmer_param("custom_rst");
 	if (custom_rst_str) {
-		if (!strcasecmp(custom_rst_str, "true"))
+		if (!strcasecmp(custom_rst_str, "true")) {
 			ap_request = RAIDEN_DEBUG_SPI_REQ_ENABLE_AP_CUSTOM;
-		else {
+		} else if (!strcasecmp(custom_rst_str, "false")) {
+			ap_request = RAIDEN_DEBUG_SPI_REQ_ENABLE_AP;
+		} else {
 			msg_perr("Invalid custom rst param: %s\n",
 			         custom_rst_str);
 			ap_request = -1;
