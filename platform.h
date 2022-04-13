@@ -26,18 +26,19 @@
 #include <stdint.h>
 
 /* swap bytes */
-static inline uint8_t swap8(const uint8_t value)
+/* OpenBSD has conflicting definitions for swapX and __swapX */
+static inline uint8_t ___swap8(const uint8_t value)
 {
 	return  (value & (uint8_t)0xffU);
 }
 
-static inline uint16_t swap16(const uint16_t value)
+static inline uint16_t ___swap16(const uint16_t value)
 {
 	return  ((value & (uint16_t)0x00ffU) << 8) |
 		((value & (uint16_t)0xff00U) >> 8);
 }
 
-static inline uint32_t swap32(const uint32_t value)
+static inline uint32_t ___swap32(const uint32_t value)
 {
 	return  ((value & (uint32_t)0x000000ffUL) << 24) |
 		((value & (uint32_t)0x0000ff00UL) <<  8) |
@@ -45,7 +46,7 @@ static inline uint32_t swap32(const uint32_t value)
 		((value & (uint32_t)0xff000000UL) >> 24);
 }
 
-static inline uint64_t swap64(const uint64_t value)
+static inline uint64_t ___swap64(const uint64_t value)
 {
 	return  ((value & (uint64_t)0x00000000000000ffULL) << 56) |
 		((value & (uint64_t)0x000000000000ff00ULL) << 40) |
@@ -72,10 +73,10 @@ static inline uint64_t swap64(const uint64_t value)
  *
  * `___return_swapped(cpu_to_be, 8)`
  *	expands to
- * `uint8_t cpu_to_be8 (const uint8_t value) { return swap8 (value); }`
+ * `uint8_t cpu_to_be8 (const uint8_t value) { return ___swap8 (value); }`
  */
 #define ___return_swapped(name, bits) \
-	uint##bits##_t name##bits (const uint##bits##_t value) { return swap##bits (value); }
+	uint##bits##_t name##bits (const uint##bits##_t value) { return ___swap##bits (value); }
 
 /* convert cpu native endian to little endian */
 uint8_t  cpu_to_le8 (uint8_t  value);
