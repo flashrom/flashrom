@@ -15,7 +15,7 @@
  * GNU General Public License for more details.
  */
 
-#include "../platform.h"
+#include "platform.h"
 
 /* convert cpu native endian to little endian */
 ___return_same(cpu_to_le, 8)

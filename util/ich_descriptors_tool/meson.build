@@ -7,7 +7,7 @@ executable(
   dependencies : [
     deps,
   ],
-  include_directories : include_directories('../..'),
+  include_directories : include_dir,
   c_args : [
     '-DICH_DESCRIPTORS_FROM_DUMP_ONLY',
   ],

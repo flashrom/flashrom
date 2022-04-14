@@ -253,6 +253,8 @@ HAS_LINUX_I2C       := $(call c_compile_test, Makefile.d/linux_i2c_test.c)
 HAS_SERIAL          := $(strip $(if $(filter $(TARGET_OS), DOS libpayload), no, yes))
 EXEC_SUFFIX         := $(strip $(if $(filter $(TARGET_OS), DOS MinGW), .exe))
 
+override CFLAGS += -Iinclude
+
 ifeq ($(TARGET_OS), DOS)
 # DJGPP has odd uint*_t definitions which cause lots of format string warnings.
 override CFLAGS += -Wno-format
@@ -985,11 +987,11 @@ install: $(PROGRAM)$(EXEC_SUFFIX) $(PROGRAM).8
 	$(INSTALL) -m 0755 $(PROGRAM)$(EXEC_SUFFIX) $(DESTDIR)$(PREFIX)/sbin
 	$(INSTALL) -m 0644 $(PROGRAM).8 $(DESTDIR)$(MANDIR)/man8
 
-libinstall: libflashrom.a libflashrom.h
+libinstall: libflashrom.a include/libflashrom.h
 	mkdir -p $(DESTDIR)$(PREFIX)/lib
 	$(INSTALL) -m 0644 libflashrom.a $(DESTDIR)$(PREFIX)/lib
 	mkdir -p $(DESTDIR)$(PREFIX)/include
-	$(INSTALL) -m 0644 libflashrom.h $(DESTDIR)$(PREFIX)/include
+	$(INSTALL) -m 0644 include/libflashrom.h $(DESTDIR)$(PREFIX)/include
 
 _export: $(PROGRAM).8
 	@rm -rf "$(EXPORTDIR)/flashrom-$(RELEASENAME)"

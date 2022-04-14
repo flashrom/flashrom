@@ -15,7 +15,7 @@
  * GNU General Public License for more details.
  */
 
-#include "../platform.h"
+#include "platform.h"
 
 /*
  * macro to return endian aware read function

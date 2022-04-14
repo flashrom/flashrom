@@ -21,6 +21,7 @@ SRC = $(wildcard *.c)
 # If the user has specified custom CFLAGS, all CFLAGS settings below will be
 # completely ignored by gnumake.
 CFLAGS ?= -Os -Wall -Wshadow
+CFLAGS += -I$(SHAREDSRCDIR)/include
 
 # Auto determine HOST_OS and TARGET_OS if they are not set as argument
 HOST_OS ?= $(shell uname)
