@@ -1,0 +1,36 @@
+name: 'Close issues and PRs'
+
+on:
+  issues:
+    types: opened
+  pull_request_target:
+    types: opened
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  action:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: dessant/repo-lockdown@0b093279a77b44bbc38e85089b5463dd06b4aea4
+        with:
+          issue-comment: >
+            Thank you for your contribution. The flashrom project does not handle
+            GitHub issues or pull requests, since this repository on GitHub is
+            just a mirror of our actual repository. Thus, we would like to
+            encourage you to have a look at on our [development guidelines](https://www.flashrom.org/Development_Guidelines)
+            and submit your patch to [review.coreboot.org](https://review.coreboot.org/q/project:flashrom).
+            Issues are handled over our [ticket system](https://ticket.coreboot.org/projects/flashrom).
+            If you have questions, feel free to reach out to us. There are
+            multiple ways to [contact us](https://www.flashrom.org/Contact).
+          pr-comment: >
+            Thank you for your contribution. The flashrom project does not handle
+            GitHub issues or pull requests, since this repository on GitHub is
+            just a mirror of our actual repository. Thus, we would like to
+            encourage you to have a look at on our [development guidelines](https://www.flashrom.org/Development_Guidelines)
+            and submit your patch to [review.coreboot.org](https://review.coreboot.org/q/project:flashrom).
+            Issues are handled over our [ticket system](https://ticket.coreboot.org/projects/flashrom).
+            If you have questions, feel free to reach out to us. There are
+            multiple ways to [contact us](https://www.flashrom.org/Contact).
