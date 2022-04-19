@@ -77,7 +77,14 @@ static uint16_t probe_id_ite(uint16_t port)
 	enter_conf_mode_ite(port);
 	id = sio_read(port, CHIP_ID_BYTE1_REG) << 8;
 	id |= sio_read(port, CHIP_ID_BYTE2_REG);
-	exit_conf_mode_ite(port);
+
+// modification to prevent console kill on NetBoard-A8 (Microchip SCH3221 LPC UART)
+	if (id == 0x3C00) {
+		msg_pdbg("Found SMSC SCH3221 chip. Closing config mode alternatively.\n");
+		OUTB(0xAA, port); // Exit config mode of SCH3221
+	}
+	else
+		exit_conf_mode_ite(port); // normal exit for ITE devices
 
 	return id;
 }
