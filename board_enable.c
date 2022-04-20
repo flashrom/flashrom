@@ -1701,6 +1701,7 @@ static int intel_ich_gpio_set(int gpio, int raise)
  *  - ASUS P5LD2-MQ
  *  - ASUS P5LD2-VM
  *  - ASUS P5LD2-VM DH
+ *  - ASUS P5W DH Deluxe
  */
 static int intel_ich_gpio16_raise(void)
 {
@@ -2425,6 +2426,7 @@ const struct board_match board_matches[] = {
 	{0x10DE, 0x0260, 0x1043, 0x81BC,  0x10DE, 0x026C, 0x1043, 0x829E, "^P5N-D$",    NULL, NULL,           P3, "ASUS",        "P5N-D",                 0,   OK, it8718f_gpio63_raise},
 	{0x10DE, 0x0260, 0x1043, 0x81BC,  0x10DE, 0x026C, 0x1043, 0x8249, "^P5N-E SLI$",NULL, NULL,           P3, "ASUS",        "P5N-E SLI",             0,   NT, it8718f_gpio63_raise},
 	{0x8086, 0x24dd, 0x1043, 0x80a6,  0x8086, 0x2570, 0x1043, 0x8157, NULL,         NULL, NULL,           P3, "ASUS",        "P5PE-VM",               0,   OK, intel_ich_gpio21_raise},
+	{0x8086, 0x27da, 0x1043, 0x8179,  0x8086, 0x27b8, 0x1043, 0x8179, "^P5W DH Deluxe$", NULL, NULL,      P3, "ASUS",        "P5W DH Deluxe",         0,   OK, intel_ich_gpio16_raise},
 	{0x8086, 0x2443, 0x1043, 0x8027,  0x8086, 0x1130, 0x1043, 0x8027, "^CUSL2-C",   NULL, NULL,           P3, "ASUS",        "CUSL2-C",               0,   OK, intel_ich_gpio21_raise},
 	{0x8086, 0x2443, 0x1043, 0x8027,  0x8086, 0x1130, 0x1043, 0x8027, "^TUSL2-C",   NULL, NULL,           P3, "ASUS",        "TUSL2-C",               0,   NT, intel_ich_gpio21_raise},
 	{0x1022, 0x780E, 0x1043, 0x1437,  0x1022, 0x780B, 0x1043, 0x1437, "^U38N$",     NULL, NULL,           P2, "ASUS",        "U38N",                  0,   OK, p2_whitelist_laptop},

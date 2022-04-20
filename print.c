@@ -722,6 +722,7 @@ const struct board_info boards_known[] = {
 	B("ASUS",	"P5QPL-AM",		OK, "https://www.asus.com/Motherboards/Intel_Socket_775/P5QPLAM/", NULL),
 	B("ASUS",	"P5VD1-X",		OK, "https://www.asus.com/Motherboards/Intel_Socket_775/P5VD1X/", NULL),
 	B("ASUS",	"P5VD2-MX",		OK, "https://www.asus.com/Motherboards/Intel_Socket_775/P5VD2MX/", "The MAC address of the onboard LAN NIC is stored in flash, hence overwritten by flashrom; see https://flashrom.org/pipermail/flashrom/2012-March/009014.html"),
+	B("ASUS",	"P5W DH Deluxe",	OK, "https://www.asus.com/SupportOnly/P5W_DH_Deluxe/HelpDesk_Knowledge/", NULL),
 	B("ASUS",	"P6T SE",		OK, "https://www.asus.com/Motherboards/Intel_Socket_1366/P6T_SE/", NULL),
 	B("ASUS",	"P6T Deluxe",		OK, "https://www.asus.com/Motherboards/Intel_Socket_1366/P6T_Deluxe/", NULL),
 	B("ASUS",	"P6T Deluxe V2",	OK, "https://www.asus.com/Motherboards/Intel_Socket_1366/P6T_Deluxe_V2/", NULL),
