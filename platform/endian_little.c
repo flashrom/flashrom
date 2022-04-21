@@ -16,6 +16,7 @@
  */
 
 #include "platform.h"
+#include "platform/swap.h"
 
 /* convert cpu native endian to little endian */
 ___return_same(cpu_to_le, 8)
