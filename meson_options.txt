@@ -42,3 +42,4 @@ option('config_stlinkv3_spi', type : 'boolean', value : true, description : 'STM
 option('config_lspcon_i2c_spi', type : 'boolean', value : false, description : 'Parade lspcon USB-C to HDMI protocol translator')
 option('config_mediatek_i2c_spi', type : 'boolean', value : false, description : 'MediaTek LCD controller')
 option('config_realtek_mst_i2c_spi', type : 'boolean', value : true, description : 'Realtek MultiStream Transport MST')
+option('tests', type : 'feature', value : 'auto', description : 'Build unit tests')
