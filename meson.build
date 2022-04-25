@@ -36,12 +36,6 @@ add_project_arguments('-D_POSIX_C_SOURCE=200809L', language : 'c') # required fo
 add_project_arguments('-D_BSD_SOURCE', language : 'c') # required for glibc < v2.19
 add_project_arguments('-DFLASHROM_VERSION="' + meson.project_version() + '"', language : 'c')
 
-if host_machine.system() in ['cygwin', 'windows']
-  add_project_arguments('-DIS_WINDOWS=1', language : 'c')
-else
-  add_project_arguments('-DIS_WINDOWS=0', language : 'c')
-endif
-
 # get defaults from configure
 config_atahpt = get_option('config_atahpt')
 config_atapromise = get_option('config_atapromise')
@@ -173,6 +167,11 @@ if cc.has_function('strnlen')
 endif
 if cc.check_header('sys/utsname.h')
   add_project_arguments('-DHAVE_UTSNAME=1', language : 'c')
+endif
+if host_machine.system() in ['cygwin', 'windows']
+  add_project_arguments('-DIS_WINDOWS=1', language : 'c')
+else
+  add_project_arguments('-DIS_WINDOWS=0', language : 'c')
 endif
 
 srcs += 'platform/memaccess.c'
