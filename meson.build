@@ -115,6 +115,8 @@ srcs = files(
   'writeprotect_ranges.c',
 )
 
+subdir('platform')
+
 host_is_x86 = ['x86', 'x86_64'].contains(host_machine.cpu_family())
 
 need_serial = [
@@ -172,17 +174,6 @@ if host_machine.system() in ['cygwin', 'windows']
   add_project_arguments('-DIS_WINDOWS=1', language : 'c')
 else
   add_project_arguments('-DIS_WINDOWS=0', language : 'c')
-endif
-
-srcs += 'platform/memaccess.c'
-
-if host_machine.endian() == 'little'
-  srcs += 'platform/endian_little.c'
-  add_project_arguments('-D__FLASHROM_LITTLE_ENDIAN__=1', language : 'c')
-endif
-if host_machine.endian() == 'big'
-  srcs += 'platform/endian_big.c'
-  add_project_arguments('-D__FLASHROM_BIG_ENDIAN__=1', language : 'c')
 endif
 
 # some programmers require libusb
