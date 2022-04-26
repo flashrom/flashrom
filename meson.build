@@ -5,6 +5,7 @@ project('flashromutils', 'c',
   default_options : [
     'warning_level=2',
     'c_std=c99',
+    'werror=true',
     'optimization=s',
     'debug=false'],
 )
