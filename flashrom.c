@@ -1825,6 +1825,9 @@ int prepare_flash_access(struct flashctx *const flash,
 	if (map_flash(flash) != 0)
 		return 1;
 
+	/* Initialize chip_restore_fn_count before chip unlock calls. */
+	flash->chip_restore_fn_count = 0;
+
 	/* Given the existence of read locks, we want to unlock for read,
 	   erase and write. */
 	if (flash->chip->unlock)
@@ -1832,7 +1835,6 @@ int prepare_flash_access(struct flashctx *const flash,
 
 	flash->address_high_byte = -1;
 	flash->in_4ba_mode = false;
-	flash->chip_restore_fn_count = 0;
 
 	/* Be careful about 4BA chips and broken masters */
 	if (flash->chip->total_size > 16 * 1024 && spi_master_no_4ba_modes(flash)) {
