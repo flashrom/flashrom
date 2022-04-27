@@ -539,14 +539,6 @@ $(foreach var, $(filter CONFIG_%, $(.VARIABLES)),\
 		$(eval $(var)=yes)))
 endif
 
-# Bitbanging SPI infrastructure, default off unless needed.
-
-ifneq ($(call filter_deps,$(DEPENDS_ON_BITBANG_SPI)), )
-override CONFIG_BITBANG_SPI = yes
-else
-CONFIG_BITBANG_SPI ?= no
-endif
-
 ###############################################################################
 # Handle CONFIG_* variables that depend on others set (and verified) above.
 
@@ -614,11 +606,6 @@ endif
 ifeq ($(CONFIG_PONY_SPI), yes)
 FEATURE_FLAGS += -D'CONFIG_PONY_SPI=1'
 PROGRAMMER_OBJS += pony_spi.o
-endif
-
-ifeq ($(CONFIG_BITBANG_SPI), yes)
-FEATURE_FLAGS += -D'CONFIG_BITBANG_SPI=1'
-PROGRAMMER_OBJS += bitbang_spi.o
 endif
 
 ifeq ($(CONFIG_NIC3COM), yes)
@@ -784,6 +771,11 @@ endif
 ifeq ($(CONFIG_NI845X_SPI), yes)
 FEATURE_FLAGS += -D'CONFIG_NI845X_SPI=1'
 PROGRAMMER_OBJS += ni845x_spi.o
+endif
+
+USE_BITBANG_SPI := $(if $(call filter_deps,$(DEPENDS_ON_BITBANG_SPI)),yes,no)
+ifeq ($(USE_BITBANG_SPI), yes)
+LIB_OBJS += bitbang_spi.o
 endif
 
 USE_LINUX_I2C := $(if $(call filter_deps,$(DEPENDS_ON_LINUX_I2C)),yes,no)
