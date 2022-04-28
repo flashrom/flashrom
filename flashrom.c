@@ -1901,20 +1901,6 @@ void finalize_flash_access(struct flashctx *const flash)
 	unmap_flash(flash);
 }
 
-/**
- * @addtogroup flashrom-flash
- * @{
- */
-
-/**
- * @brief Erase the specified ROM chip.
- *
- * If a layout is set in the given flash context, only included regions
- * will be erased.
- *
- * @param flashctx The context of the flash chip to erase.
- * @return 0 on success.
- */
 int flashrom_flash_erase(struct flashctx *const flashctx)
 {
 	if (prepare_flash_access(flashctx, false, false, true, false))
@@ -1927,26 +1913,6 @@ int flashrom_flash_erase(struct flashctx *const flashctx)
 	return ret;
 }
 
-/** @} */ /* end flashrom-flash */
-
-/**
- * @defgroup flashrom-ops Operations
- * @{
- */
-
-/**
- * @brief Read the current image from the specified ROM chip.
- *
- * If a layout is set in the specified flash context, only included regions
- * will be read.
- *
- * @param flashctx The context of the flash chip.
- * @param buffer Target buffer to write image to.
- * @param buffer_len Size of target buffer in bytes.
- * @return 0 on success,
- *         2 if buffer_len is too short for the flash chip's contents,
- *         or 1 on any other failure.
- */
 int flashrom_image_read(struct flashctx *const flashctx, void *const buffer, const size_t buffer_len)
 {
 	const size_t flash_size = flashctx->chip->total_size * 1024;
@@ -1996,22 +1962,6 @@ static void combine_image_by_layout(const struct flashctx *const flashctx,
 	memcpy(newcontents + start, oldcontents + start, copy_len);
 }
 
-/**
- * @brief Write the specified image to the ROM chip.
- *
- * If a layout is set in the specified flash context, only erase blocks
- * containing included regions will be touched.
- *
- * @param flashctx The context of the flash chip.
- * @param buffer Source buffer to read image from (may be altered for full verification).
- * @param buffer_len Size of source buffer in bytes.
- * @param refbuffer If given, assume flash chip contains same data as `refbuffer`.
- * @return 0 on success,
- *         4 if buffer_len doesn't match the size of the flash chip,
- *         3 if write was tried but nothing has changed,
- *         2 if write failed and flash contents changed,
- *         or 1 on any other failure.
- */
 int flashrom_image_write(struct flashctx *const flashctx, void *const buffer, const size_t buffer_len,
                          const void *const refbuffer)
 {
@@ -2135,20 +2085,6 @@ _free_ret:
 	return ret;
 }
 
-/**
- * @brief Verify the ROM chip's contents with the specified image.
- *
- * If a layout is set in the specified flash context, only included regions
- * will be verified.
- *
- * @param flashctx The context of the flash chip.
- * @param buffer Source buffer to verify with.
- * @param buffer_len Size of source buffer in bytes.
- * @return 0 on success,
- *         3 if the chip's contents don't match,
- *         2 if buffer_len doesn't match the size of the flash chip,
- *         or 1 on any other failure.
- */
 int flashrom_image_verify(struct flashctx *const flashctx, const void *const buffer, const size_t buffer_len)
 {
 	const struct flashrom_layout *const layout = get_layout(flashctx);
@@ -2179,5 +2115,3 @@ _free_ret:
 	free(curcontents);
 	return ret;
 }
-
-/** @} */ /* end flashrom-ops */

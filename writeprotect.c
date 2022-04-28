@@ -489,5 +489,3 @@ out:
 	free(range_pairs);
 	return ret;
 }
-
-/** @} */ /* end flashrom-wp */
