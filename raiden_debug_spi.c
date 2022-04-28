@@ -399,6 +399,10 @@ enum usb_spi_error {
 	USB_SPI_UNKNOWN_ERROR           = 0x8000,
 };
 
+/* Corresponds with 'enum usb_spi_request' in,
+ * platform/cr50/chip/g/usb_spi.h and,
+ * platform/ec/chip/stm32/usb_spi.h.
+ */
 enum raiden_debug_spi_request {
 	RAIDEN_DEBUG_SPI_REQ_ENABLE           = 0x0000,
 	RAIDEN_DEBUG_SPI_REQ_DISABLE          = 0x0001,
@@ -1445,6 +1449,10 @@ static int get_ap_request_type(void)
 
 static int get_target(void)
 {
+	/**
+	 * REQ_ENABLE doesn't specify a target bus, and will be rejected
+	 * by adapters that support more than one target.
+	 */
 	int request_enable = RAIDEN_DEBUG_SPI_REQ_ENABLE;
 
 	char *target_str = extract_programmer_param("target");
