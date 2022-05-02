@@ -247,7 +247,6 @@ void *physmap_ro(const char *descr, uintptr_t phys_addr, size_t len);
 void *physmap_ro_unaligned(const char *descr, uintptr_t phys_addr, size_t len);
 void physunmap(void *virt_addr, size_t len);
 void physunmap_unaligned(void *virt_addr, size_t len);
->>>>>>> 43085b3a9d88... ite_ec: Implement support for flashing ITE ECs found on TUXEDO laptops
 #if CONFIG_INTERNAL == 1
 /* cbtable.c */
 int cb_parse_table(const char **vendor, const char **model);
