@@ -32,7 +32,7 @@ int force_boardmismatch = 0;
 
 enum chipbustype internal_buses_supported = BUS_NONE;
 
-#if IS_X86
+#if defined(__i386__) || defined(__x86_64__)
 void probe_superio(void)
 {
 	probe_superio_winbond();
