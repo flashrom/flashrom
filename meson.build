@@ -425,7 +425,7 @@ include_dir = include_directories('include')
 
 mapfile = 'libflashrom.map'
 vflag = '-Wl,--version-script,@0@/@1@'.format(meson.current_source_dir(), mapfile)
-flashrom = library(
+libflashrom = both_libraries(
   'flashrom',
   sources : [
     srcs,
@@ -455,7 +455,7 @@ endif
 
 pkgg = import('pkgconfig')
 pkgg.generate(
-  libraries : flashrom,
+  libraries : libflashrom,
   version : version,
   name : 'flashrom',
   filebase : 'flashrom',
@@ -472,31 +472,18 @@ configure_file(
   install_dir: join_paths(get_option('mandir'), 'man8'),
 )
 
-flashrom_dep = declare_dependency(
-  link_with : flashrom,
-  include_directories : include_dir,
-  dependencies : deps
-)
-
-# we can't just link_with libflashrom as we require all the internal symbols...
 executable(
   'flashrom',
-  sources : [
-    srcs,
+  files(
     'cli_classic.c',
     'cli_common.c',
     'cli_output.c',
-    'flashrom.c',
-  ],
+  ),
+  c_args : cargs,
   include_directories : include_dir,
-  dependencies : [
-    deps,
-  ],
-  c_args : [
-    cargs
-  ],
   install : true,
-  install_dir : get_option('sbindir')
+  install_dir : get_option('sbindir'),
+  link_with : libflashrom.get_static_lib(), # flashrom needs internal symbols of libflashrom
 )
 
 subdir('util')
