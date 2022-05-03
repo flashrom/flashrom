@@ -403,11 +403,6 @@ if need_serial
   endif
 endif
 
-prefix = get_option('prefix')
-sbindir = join_paths(prefix, get_option('sbindir'))
-libdir = join_paths(prefix, get_option('libdir'))
-mandir = join_paths(prefix, get_option('mandir'))
-
 install_headers([
     'include/libflashrom.h',
   ],
@@ -461,7 +456,7 @@ configure_file(
   output : 'flashrom.8',
   configuration : conf,
   install: true,
-  install_dir: join_paths(mandir, 'man8'),
+  install_dir: join_paths(get_option('mandir'), 'man8'),
 )
 
 flashrom_dep = declare_dependency(
@@ -501,7 +496,7 @@ executable(
     cargs
   ],
   install : true,
-  install_dir : sbindir,
+  install_dir : get_option('sbindir')
 )
 
 subdir('util')
