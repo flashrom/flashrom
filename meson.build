@@ -403,6 +403,19 @@ if need_serial
   endif
 endif
 
+if config_print_wiki
+  srcs += 'print_wiki.c'
+  cargs += '-DCONFIG_PRINT_WIKI=1'
+endif
+
+if config_default_programmer_name != ''
+  cargs += '-DCONFIG_DEFAULT_PROGRAMMER_NAME=&programmer_' + config_default_programmer_name
+else
+  cargs += '-DCONFIG_DEFAULT_PROGRAMMER_NAME=NULL'
+endif
+
+cargs += '-DCONFIG_DEFAULT_PROGRAMMER_ARGS="' + config_default_programmer_args + '"'
+
 install_headers([
     'include/libflashrom.h',
   ],
@@ -464,19 +477,6 @@ flashrom_dep = declare_dependency(
   include_directories : include_dir,
   dependencies : deps
 )
-
-if config_print_wiki
-  srcs += 'print_wiki.c'
-  cargs += '-DCONFIG_PRINT_WIKI=1'
-endif
-
-if config_default_programmer_name != ''
-  cargs += '-DCONFIG_DEFAULT_PROGRAMMER_NAME=&programmer_' + config_default_programmer_name
-else
-  cargs += '-DCONFIG_DEFAULT_PROGRAMMER_NAME=NULL'
-endif
-
-cargs += '-DCONFIG_DEFAULT_PROGRAMMER_ARGS="' + config_default_programmer_args + '"'
 
 # we can't just link_with libflashrom as we require all the internal symbols...
 executable(
