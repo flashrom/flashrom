@@ -23,6 +23,9 @@
 #include "programmer.h"
 #include "spi.h"
 
+#define SKIP_TEST(name) \
+	void name (void **state) { skip(); }
+
 static void probe_chip(const struct programmer_entry *prog,
 			struct flashrom_programmer *flashprog,
 			const char *const chip_name)
@@ -65,7 +68,7 @@ static void run_lifecycle(void **state, const struct io_mock *io, const struct p
 	io_mock_register(NULL);
 }
 
-static void run_basic_lifecycle(void **state, const struct io_mock *io,
+void run_basic_lifecycle(void **state, const struct io_mock *io,
 		const struct programmer_entry *prog, const char *param)
 {
 	/* Basic lifecycle only does init and shutdown,
@@ -73,7 +76,7 @@ static void run_basic_lifecycle(void **state, const struct io_mock *io,
 	run_lifecycle(state, io, prog, param, NULL /* chip_name */, NULL /* action */);
 }
 
-static void run_probe_lifecycle(void **state, const struct io_mock *io,
+void run_probe_lifecycle(void **state, const struct io_mock *io,
 		const struct programmer_entry *prog, const char *param, const char *const chip_name)
 {
 	/* Each probe lifecycle should run independently, without cache. */
@@ -81,9 +84,9 @@ static void run_probe_lifecycle(void **state, const struct io_mock *io,
 	run_lifecycle(state, io, prog, param, chip_name, &probe_chip);
 }
 
+#if CONFIG_DUMMY == 1
 void dummy_basic_lifecycle_test_success(void **state)
 {
-#if CONFIG_DUMMY == 1
 	static struct io_mock_fallback_open_state dummy_fallback_open_state = {
 		.noc = 0,
 		.paths = { NULL },
@@ -93,14 +96,10 @@ void dummy_basic_lifecycle_test_success(void **state)
 	};
 
 	run_basic_lifecycle(state, &dummy_io, &programmer_dummy, "bus=parallel+lpc+fwh+spi");
-#else
-	skip();
-#endif
 }
 
 void dummy_probe_lifecycle_test_success(void **state)
 {
-#if CONFIG_DUMMY == 1
 	static struct io_mock_fallback_open_state dummy_fallback_open_state = {
 		.noc = 0,
 		.paths = { NULL },
@@ -110,14 +109,16 @@ void dummy_probe_lifecycle_test_success(void **state)
 	};
 
 	run_probe_lifecycle(state, &dummy_io, &programmer_dummy, "bus=spi,emulate=W25Q128FV", "W25Q128.V");
-#else
-	skip();
-#endif
 }
 
+#else
+	SKIP_TEST(dummy_basic_lifecycle_test_success)
+	SKIP_TEST(dummy_probe_lifecycle_test_success)
+#endif /* CONFIG_DUMMY */
+
+#if CONFIG_NICREALTEK == 1
 void nicrealtek_basic_lifecycle_test_success(void **state)
 {
-#if CONFIG_NICREALTEK == 1
 	static struct io_mock_fallback_open_state nicrealtek_fallback_open_state = {
 		.noc = 0,
 		.paths = { NULL },
@@ -127,11 +128,12 @@ void nicrealtek_basic_lifecycle_test_success(void **state)
 	};
 
 	run_basic_lifecycle(state, &nicrealtek_io, &programmer_nicrealtek, "");
-#else
-	skip();
-#endif
 }
+#else
+	SKIP_TEST(nicrealtek_basic_lifecycle_test_success)
+#endif /* CONFIG_NICREALTEK */
 
+#if CONFIG_RAIDEN_DEBUG_SPI == 1
 static ssize_t raiden_debug_libusb_get_device_list(void *state, libusb_context *ctx, libusb_device ***list)
 {
 	*list = calloc(1, sizeof(**list));
@@ -202,7 +204,6 @@ static void raiden_debug_libusb_free_config_descriptor(void *state, struct libus
 
 void raiden_debug_basic_lifecycle_test_success(void **state)
 {
-#if CONFIG_RAIDEN_DEBUG_SPI == 1
 	static struct io_mock_fallback_open_state raiden_debug_fallback_open_state = {
 		.noc = 0,
 		.paths = { NULL },
@@ -224,11 +225,12 @@ void raiden_debug_basic_lifecycle_test_success(void **state)
 	snprintf(raiden_debug_param, 12, "address=%d", USB_DEVICE_ADDRESS);
 
 	run_basic_lifecycle(state, &raiden_debug_io, &programmer_raiden_debug_spi, raiden_debug_param);
-#else
-	skip();
-#endif
 }
+#else
+	SKIP_TEST(raiden_debug_basic_lifecycle_test_success)
+#endif /* CONFIG_RAIDEN_DEBUG_SPI */
 
+#if CONFIG_DEDIPROG == 1
 static int dediprog_libusb_init(void *state, libusb_context **ctx)
 {
 	*ctx = not_null();
@@ -254,7 +256,6 @@ static int dediprog_libusb_control_transfer(void *state,
 
 void dediprog_basic_lifecycle_test_success(void **state)
 {
-#if CONFIG_DEDIPROG == 1
 	static struct io_mock_fallback_open_state dediprog_fallback_open_state = {
 		.noc = 0,
 		.paths = { NULL },
@@ -266,11 +267,12 @@ void dediprog_basic_lifecycle_test_success(void **state)
 	};
 
 	run_basic_lifecycle(state, &dediprog_io, &programmer_dediprog, "voltage=3.5V");
-#else
-	skip();
-#endif
 }
+#else
+	SKIP_TEST(dediprog_basic_lifecycle_test_success)
+#endif /* CONFIG_DEDIPROG */
 
+#if CONFIG_LINUX_MTD == 1
 struct linux_mtd_io_state {
 	char *fopen_path;
 };
@@ -329,7 +331,6 @@ static int linux_mtd_fclose(void *state, FILE *fp)
 
 void linux_mtd_probe_lifecycle_test_success(void **state)
 {
-#if CONFIG_LINUX_MTD == 1
 	struct linux_mtd_io_state linux_mtd_io_state = { NULL };
 	static struct io_mock_fallback_open_state linux_mtd_fallback_open_state = {
 		.noc = 0,
@@ -344,11 +345,12 @@ void linux_mtd_probe_lifecycle_test_success(void **state)
 	};
 
 	run_probe_lifecycle(state, &linux_mtd_io, &programmer_linux_mtd, "", "Opaque flash chip");
-#else
-	skip();
-#endif
 }
+#else
+	SKIP_TEST(linux_mtd_probe_lifecycle_test_success)
+#endif /* CONFIG_LINUX_MTD */
 
+#if CONFIG_LINUX_SPI == 1
 static int linux_spi_ioctl(void *state, int fd, unsigned long request, va_list args) {
 
 	if (request == SPI_IOC_MESSAGE(2)) { /* ioctl code for read request */
@@ -387,7 +389,6 @@ void linux_spi_probe_lifecycle_test_success(void **state)
 	 * Current implementation tests a particular path of the init procedure.
 	 * Specifically, it is reading the buffer size from sysfs.
 	 */
-#if CONFIG_LINUX_SPI == 1
 	static struct io_mock_fallback_open_state linux_spi_fallback_open_state = {
 		.noc = 0,
 		.paths = { "/dev/null", NULL },
@@ -400,11 +401,12 @@ void linux_spi_probe_lifecycle_test_success(void **state)
 	};
 
 	run_probe_lifecycle(state, &linux_spi_io, &programmer_linux_spi, "dev=/dev/null", "W25Q128.V");
-#else
-	skip();
-#endif
 }
+#else
+	SKIP_TEST(linux_spi_probe_lifecycle_test_success)
+#endif /* CONFIG_LINUX_SPI */
 
+#if CONFIG_REALTEK_MST_I2C_SPI == 1
 static int realtek_mst_ioctl(void *state, int fd, unsigned long request, va_list args)
 {
 	assert_int_equal(fd, MOCK_FD);
@@ -433,7 +435,6 @@ static int realtek_mst_write(void *state, int fd, const void *buf, size_t sz)
 
 void realtek_mst_basic_lifecycle_test_success(void **state)
 {
-#if CONFIG_REALTEK_MST_I2C_SPI == 1
 	static struct io_mock_fallback_open_state realtek_mst_fallback_open_state = {
 		.noc = 0,
 		.paths = { "/dev/i2c-254", NULL },
@@ -447,7 +448,7 @@ void realtek_mst_basic_lifecycle_test_success(void **state)
 	};
 
 	run_basic_lifecycle(state, &realtek_mst_io, &programmer_realtek_mst_i2c_spi, "bus=254,enter-isp=0");
-#else
-	skip();
-#endif /* CONFIG_REALTEK_I2C_SPI */
 }
+#else
+	SKIP_TEST(realtek_mst_basic_lifecycle_test_success)
+#endif /* CONFIG_REALTEK_I2C_SPI */

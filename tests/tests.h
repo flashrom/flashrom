@@ -41,6 +41,13 @@ void probe_spi_at25f_test_success(void **state);
 void probe_spi_st95_test_success(void **state); /* spi95.c */
 
 /* lifecycle.c */
+struct io_mock;
+struct programmer_entry;
+void run_basic_lifecycle(void **state, const struct io_mock *io,
+		const struct programmer_entry *prog, const char *param);
+void run_probe_lifecycle(void **state, const struct io_mock *io,
+		const struct programmer_entry *prog, const char *param, const char *chip_name);
+
 void dummy_basic_lifecycle_test_success(void **state);
 void dummy_probe_lifecycle_test_success(void **state);
 void nicrealtek_basic_lifecycle_test_success(void **state);
