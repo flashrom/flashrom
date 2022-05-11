@@ -452,6 +452,7 @@ int init_superio_ite(void)
 		case 0x8705:
 			ret |= it8705f_write_enable(superios[i].port);
 			break;
+		case 0x8686:
 		case 0x8716:
 		case 0x8718:
 		case 0x8720:
