@@ -1048,8 +1048,12 @@ static enum ich_chipset guess_ich_chipset_from_content(const struct ich_desc_con
 	} else {
 		if (content->ICCRIBA == 0x34)
 			return CHIPSET_300_SERIES_CANNON_POINT;
-		if (content->CSSL == 0x11)
-			return CHIPSET_500_SERIES_TIGER_POINT;
+		if (content->CSSL == 0x11) {
+			if (content->CSSO == 0x68)
+				return CHIPSET_500_SERIES_TIGER_POINT;
+			else if (content->CSSO == 0x5c)
+				return CHIPSET_600_SERIES_ALDER_POINT;
+		}
 		if (content->CSSL == 0x14)
 			return CHIPSET_600_SERIES_ALDER_POINT;
 		if (content->CSSL == 0x03) {
