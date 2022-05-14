@@ -1100,6 +1100,7 @@ out:
 	free(referencefile);
 	free(layoutfile);
 	free(pparam);
+	free(wp_region);
 	/* clean up global variables */
 	free((char *)chip_to_probe); /* Silence! Freeing is not modifying contents. */
 	chip_to_probe = NULL;
