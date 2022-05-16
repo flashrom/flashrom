@@ -266,8 +266,6 @@ struct flashchip {
 	int (*unlock) (struct flashctx *flash);
 	int (*write) (struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 	int (*read) (struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
-	uint8_t (*read_status) (const struct flashctx *flash);
-	int (*write_status) (const struct flashctx *flash, int status);
 	struct voltage {
 		uint16_t min;
 		uint16_t max;
