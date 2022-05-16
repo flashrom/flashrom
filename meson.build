@@ -178,8 +178,7 @@ endif
 
 # some programmers require libusb
 if get_option('usb')
-  srcs += 'usbdev.c'
-  srcs += 'usb_device.c'
+  srcs += files('usbdev.c', 'usb_device.c')
   deps += dependency('libusb-1.0')
 elif need_libusb1
   error('usb is disabled but one or more enabled programmer requires USB access')
@@ -187,7 +186,7 @@ endif
 
 # some programmers require libpci
 if get_option('pciutils')
-  srcs += 'pcidev.c'
+  srcs += files('pcidev.c')
   deps += dependency('libpci')
 elif need_libpci
   error('pciutils is disabled but one or more enabled programmer requires PCI access')
@@ -203,77 +202,81 @@ endif
 
 # set defines for configured programmers
 if config_atahpt
-  srcs += 'atahpt.c'
+  srcs += files('atahpt.c')
   cargs += '-DCONFIG_ATAHPT=1'
 endif
 if config_atapromise
-  srcs += 'atapromise.c'
+  srcs += files('atapromise.c')
   cargs += '-DCONFIG_ATAPROMISE=1'
 endif
 if config_atavia
-  srcs += 'atavia.c'
+  srcs += files('atavia.c')
   cargs += '-DCONFIG_ATAVIA=1'
 endif
 if config_buspirate_spi
-  srcs += 'buspirate_spi.c'
+  srcs += files('buspirate_spi.c')
   cargs += '-DCONFIG_BUSPIRATE_SPI=1'
 endif
 if config_ch341a_spi
-  srcs += 'ch341a_spi.c'
+  srcs += files('ch341a_spi.c')
   cargs += '-DCONFIG_CH341A_SPI=1'
 endif
 if config_dediprog
-  srcs += 'dediprog.c'
+  srcs += files('dediprog.c')
   cargs += '-DCONFIG_DEDIPROG=1'
 endif
 if config_developerbox_spi
-  srcs += 'developerbox_spi.c'
+  srcs += files('developerbox_spi.c')
   cargs += '-DCONFIG_DEVELOPERBOX_SPI=1'
 endif
 if config_digilent_spi
-  srcs += 'digilent_spi.c'
+  srcs += files('digilent_spi.c')
   cargs += '-DCONFIG_DIGILENT_SPI=1'
 endif
 if config_jlink_spi
-  srcs += 'jlink_spi.c'
+  srcs += files('jlink_spi.c')
   cargs += '-DCONFIG_JLINK_SPI=1'
 endif
 if config_drkaiser
-  srcs += 'drkaiser.c'
+  srcs += files('drkaiser.c')
   cargs += '-DCONFIG_DRKAISER=1'
 endif
 if config_dummy
-  srcs += 'dummyflasher.c'
+  srcs += files('dummyflasher.c')
   cargs += '-DCONFIG_DUMMY=1'
 endif
 if config_ft2232_spi
-  srcs += 'ft2232_spi.c'
+  srcs += files('ft2232_spi.c')
   cargs += '-DCONFIG_FT2232_SPI=1'
   cargs += '-DHAVE_FT232H=1'
 endif
 if config_gfxnvidia
-  srcs += 'gfxnvidia.c'
+  srcs += files('gfxnvidia.c')
   cargs += '-DCONFIG_GFXNVIDIA=1'
 endif
 if config_raiden_debug_spi
-  srcs += 'raiden_debug_spi.c'
+  srcs += files('raiden_debug_spi.c')
   cargs += '-DCONFIG_RAIDEN_DEBUG_SPI=1'
 endif
 if config_internal
-  srcs += 'board_enable.c'
-  srcs += 'cbtable.c'
-  srcs += 'chipset_enable.c'
-  srcs += 'internal.c'
-  srcs += 'processor_enable.c'
+  srcs += files(
+    'board_enable.c',
+    'cbtable.c',
+    'chipset_enable.c',
+    'internal.c',
+    'processor_enable.c',
+  )
   if host_is_x86
-    srcs += 'amd_imc.c'
-    srcs += 'dmi.c'
-    srcs += 'ichspi.c'
-    srcs += 'it85spi.c'
-    srcs += 'it87spi.c'
-    srcs += 'mcp6x_spi.c'
-    srcs += 'sb600spi.c'
-    srcs += 'wbsio_spi.c'
+    srcs += files(
+      'amd_imc.c',
+      'dmi.c',
+      'ichspi.c',
+      'it85spi.c',
+      'it87spi.c',
+      'mcp6x_spi.c',
+      'sb600spi.c',
+      'wbsio_spi.c',
+    )
   endif
   cargs += '-DCONFIG_INTERNAL=1'
   if get_option('config_internal_dmi')
@@ -282,129 +285,129 @@ if config_internal
   endif
 endif
 if config_it8212
-  srcs += 'it8212.c'
+  srcs += files('it8212.c')
   cargs += '-DCONFIG_IT8212=1'
 endif
 if config_linux_mtd
-  srcs += 'linux_mtd.c'
+  srcs += files('linux_mtd.c')
   cargs += '-DCONFIG_LINUX_MTD=1'
 endif
 if config_linux_spi
-  srcs += 'linux_spi.c'
+  srcs += files('linux_spi.c')
   cargs += '-DCONFIG_LINUX_SPI=1'
 endif
 if config_mstarddc_spi
-  srcs += 'mstarddc_spi.c'
+  srcs += files('mstarddc_spi.c')
   cargs += '-DCONFIG_MSTARDDC_SPI=1'
 endif
 if config_nic3com
-  srcs += 'nic3com.c'
+  srcs += files('nic3com.c')
   cargs += '-DCONFIG_NIC3COM=1'
 endif
 if config_nicintel
-  srcs += 'nicintel.c'
+  srcs += files('nicintel.c')
   cargs += '-DCONFIG_NICINTEL=1'
 endif
 if config_nicintel_eeprom
-  srcs += 'nicintel_eeprom.c'
+  srcs += files('nicintel_eeprom.c')
   cargs += '-DCONFIG_NICINTEL_EEPROM=1'
 endif
 if config_nicintel_spi
-  srcs += 'nicintel_spi.c'
+  srcs += files('nicintel_spi.c')
   cargs += '-DCONFIG_NICINTEL_SPI=1'
 endif
 if config_nicnatsemi
-  srcs += 'nicnatsemi.c'
+  srcs += files('nicnatsemi.c')
   cargs += '-DCONFIG_NICNATSEMI=1'
 endif
 if config_nicrealtek
-  srcs += 'nicrealtek.c'
+  srcs += files('nicrealtek.c')
   cargs += '-DCONFIG_NICREALTEK=1'
 endif
 if config_ogp_spi
-  srcs += 'ogp_spi.c'
+  srcs += files('ogp_spi.c')
   cargs += '-DCONFIG_OGP_SPI=1'
 endif
 if config_pickit2_spi
-  srcs += 'pickit2_spi.c'
+  srcs += files('pickit2_spi.c')
   cargs += '-DCONFIG_PICKIT2_SPI=1'
 endif
 if config_pony_spi
-  srcs += 'pony_spi.c'
+  srcs += files('pony_spi.c')
   cargs += '-DCONFIG_PONY_SPI=1'
 endif
 if config_rayer_spi
-  srcs += 'rayer_spi.c'
+  srcs += files('rayer_spi.c')
   cargs += '-DCONFIG_RAYER_SPI=1'
 endif
 if config_satamv
-  srcs += 'satamv.c'
+  srcs += files('satamv.c')
   cargs += '-DCONFIG_SATAMV=1'
 endif
 if config_satasii
-  srcs += 'satasii.c'
+  srcs += files('satasii.c')
   cargs += '-DCONFIG_SATASII=1'
 endif
 if config_serprog
-  srcs += 'serprog.c'
+  srcs += files('serprog.c')
   cargs += '-DCONFIG_SERPROG=1'
 endif
 if config_usbblaster_spi
-  srcs += 'usbblaster_spi.c'
+  srcs += files('usbblaster_spi.c')
   cargs += '-DCONFIG_USBBLASTER_SPI=1'
 endif
 if config_stlinkv3_spi
-  srcs += 'stlinkv3_spi.c'
+  srcs += files('stlinkv3_spi.c')
   cargs += '-DCONFIG_STLINKV3_SPI=1'
 endif
 if config_lspcon_i2c_spi
-  srcs += 'lspcon_i2c_spi.c'
+  srcs += files('lspcon_i2c_spi.c')
   cargs += '-DCONFIG_LSPCON_I2C_SPI=1'
 endif
 if config_mediatek_i2c_spi
-  srcs += 'mediatek_i2c_spi.c'
+  srcs += files('mediatek_i2c_spi.c')
   cargs += '-DCONFIG_MEDIATEK_I2C_SPI=1'
 endif
 if config_realtek_mst_i2c_spi
-  srcs += 'realtek_mst_i2c_spi.c'
+  srcs += files('realtek_mst_i2c_spi.c')
   cargs += '-DCONFIG_REALTEK_MST_I2C_SPI=1'
 endif
 
 # bitbanging SPI infrastructure
 if need_bitbang_spi
-  srcs += 'bitbang_spi.c'
+  srcs += files('bitbang_spi.c')
   cargs += '-DCONFIG_BITBANG_SPI=1'
 endif
 
 if host_machine.system() == 'linux'
-  srcs += 'i2c_helper_linux.c'
+  srcs += files('i2c_helper_linux.c')
 endif
 
 if need_raw_mem_access
-  srcs += 'hwaccess_physmap.c'
+  srcs += files('hwaccess_physmap.c')
 endif
 
 if need_x86_port_io
-  srcs += 'hwaccess_x86_io.c'
+  srcs += files('hwaccess_x86_io.c')
   cargs += '-D__FLASHROM_HAVE_OUTB__=1'
 endif
 
 if need_x86_msr
-  srcs += 'hwaccess_x86_msr.c'
+  srcs += files('hwaccess_x86_msr.c')
 endif
 
 # raw serial IO
 if need_serial
-  srcs += 'serial.c'
+  srcs += files('serial.c')
   if host_machine.system() == 'linux'
-    srcs += 'custom_baud_linux.c'
+    srcs += files('custom_baud_linux.c')
   else
-    srcs += 'custom_baud.c'
+    srcs += files('custom_baud.c')
   endif
 endif
 
 if config_print_wiki
-  srcs += 'print_wiki.c'
+  srcs += files('print_wiki.c')
   cargs += '-DCONFIG_PRINT_WIKI=1'
 endif
 
