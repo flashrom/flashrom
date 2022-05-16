@@ -23,13 +23,33 @@
 #include "libflashrom.h"
 #include "chipdrivers.h"
 #include "writeprotect.h"
+#include "programmer.h"
+
+/*
+ * Allow specialisation in opaque masters, such as ichspi hwseq, to r/w to status registers.
+ */
+static int wp_write_register(const struct flashctx *flash, enum flash_reg reg, uint8_t value)
+{
+	if ((flash->mst->buses_supported & BUS_PROG) && flash->mst->opaque.write_register) {
+		return flash->mst->opaque.write_register(flash, reg, value);
+	}
+	return spi_write_register(flash, reg, value);
+}
+
+static int wp_read_register(const struct flashctx *flash, enum flash_reg reg, uint8_t *value)
+{
+	if ((flash->mst->buses_supported & BUS_PROG) && flash->mst->opaque.read_register) {
+		return flash->mst->opaque.read_register(flash, reg, value);
+	}
+	return spi_read_register(flash, reg, value);
+}
 
 /** Read and extract a single bit from the chip's registers */
 static enum flashrom_wp_result read_bit(uint8_t *value, bool *present, struct flashctx *flash, struct reg_bit_info bit)
 {
 	*present = bit.reg != INVALID_REG;
 	if (*present) {
-		if (spi_read_register(flash, bit.reg, value))
+		if (wp_read_register(flash, bit.reg, value))
 			return FLASHROM_WP_ERR_READ_FAILED;
 		*value = (*value >> bit.bit_index) & 1;
 	} else {
@@ -126,12 +146,12 @@ static enum flashrom_wp_result write_wp_bits(struct flashctx *flash, struct wp_b
 			continue;
 
 		uint8_t value;
-		if (spi_read_register(flash, reg, &value))
+		if (wp_read_register(flash, reg, &value))
 			return FLASHROM_WP_ERR_READ_FAILED;
 
 		value = (value & ~write_masks[reg]) | (reg_values[reg] & write_masks[reg]);
 
-		if (spi_write_register(flash, reg, value))
+		if (wp_write_register(flash, reg, value))
 			return FLASHROM_WP_ERR_WRITE_FAILED;
 	}
 
@@ -141,7 +161,7 @@ static enum flashrom_wp_result write_wp_bits(struct flashctx *flash, struct wp_b
 			continue;
 
 		uint8_t value;
-		if (spi_read_register(flash, reg, &value))
+		if (wp_read_register(flash, reg, &value))
 			return FLASHROM_WP_ERR_READ_FAILED;
 
 		uint8_t actual = value & write_masks[reg];
@@ -405,6 +425,15 @@ static int set_wp_mode(struct wp_bits *bits, const enum flashrom_wp_mode mode)
 static bool chip_supported(struct flashctx *flash)
 {
 	return (flash->chip != NULL) && (flash->chip->decode_range != NULL);
+}
+
+
+bool wp_operations_available(struct flashrom_flashctx *flash)
+{
+	return (flash->mst->buses_supported & BUS_SPI) ||
+		((flash->mst->buses_supported & BUS_PROG) &&
+			flash->mst->opaque.read_register &&
+			flash->mst->opaque.write_register);
 }
 
 enum flashrom_wp_result wp_read_cfg(struct flashrom_wp_cfg *cfg, struct flashctx *flash)

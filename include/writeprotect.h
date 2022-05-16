@@ -86,4 +86,7 @@ enum flashrom_wp_result wp_read_cfg(struct flashrom_wp_cfg *, struct flashrom_fl
 /* Get a list of protection ranges supported by the chip */
 enum flashrom_wp_result wp_get_available_ranges(struct flashrom_wp_ranges **, struct flashrom_flashctx *);
 
+/* Checks if writeprotect functions can be used with the current flash/programmer */
+bool wp_operations_available(struct flashrom_flashctx *);
+
 #endif /* !__WRITEPROTECT_H__ */

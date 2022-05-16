@@ -470,33 +470,33 @@ void flashrom_wp_get_range(size_t *start, size_t *len, const struct flashrom_wp_
 
 enum flashrom_wp_result flashrom_wp_write_cfg(struct flashctx *flash, const struct flashrom_wp_cfg *cfg)
 {
-	if (flash->mst->buses_supported & BUS_SPI)
-		return wp_write_cfg(flash, cfg);
-
 	if (flash->mst->buses_supported & BUS_PROG && flash->mst->opaque.wp_write_cfg)
 		return flash->mst->opaque.wp_write_cfg(flash, cfg);
+
+	if (wp_operations_available(flash))
+		return wp_write_cfg(flash, cfg);
 
 	return FLASHROM_WP_ERR_OTHER;
 }
 
 enum flashrom_wp_result flashrom_wp_read_cfg(struct flashrom_wp_cfg *cfg, struct flashctx *flash)
 {
-	if (flash->mst->buses_supported & BUS_SPI)
-		return wp_read_cfg(cfg, flash);
-
 	if (flash->mst->buses_supported & BUS_PROG && flash->mst->opaque.wp_read_cfg)
 		return flash->mst->opaque.wp_read_cfg(cfg, flash);
+
+	if (wp_operations_available(flash))
+		return wp_read_cfg(cfg, flash);
 
 	return FLASHROM_WP_ERR_OTHER;
 }
 
 enum flashrom_wp_result flashrom_wp_get_available_ranges(struct flashrom_wp_ranges **list, struct flashrom_flashctx *flash)
 {
-	if (flash->mst->buses_supported & BUS_SPI)
-		return wp_get_available_ranges(list, flash);
-
 	if (flash->mst->buses_supported & BUS_PROG && flash->mst->opaque.wp_get_ranges)
 		return flash->mst->opaque.wp_get_ranges(list, flash);
+
+	if (wp_operations_available(flash))
+		return wp_get_available_ranges(list, flash);
 
 	return FLASHROM_WP_ERR_OTHER;
 }

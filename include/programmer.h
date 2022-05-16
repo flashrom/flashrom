@@ -402,6 +402,14 @@ struct opaque_master {
 	int (*read) (struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 	int (*write) (struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 	int (*erase) (struct flashctx *flash, unsigned int blockaddr, unsigned int blocklen);
+	/*
+	 * Callbacks for accessing flash registers. An opaque programmer must
+	 * provide these functions for writeprotect operations to be available,
+	 * unless it provides custom wp operations instead.
+	 */
+	int (*read_register)(const struct flashctx *flash, enum flash_reg reg, uint8_t *value);
+	int (*write_register)(const struct flashctx *flash, enum flash_reg reg, uint8_t value);
+	/* Callbacks for overiding default writeprotect operations with custom ones. */
 	enum flashrom_wp_result (*wp_write_cfg)(struct flashctx *, const struct flashrom_wp_cfg *);
 	enum flashrom_wp_result (*wp_read_cfg)(struct flashrom_wp_cfg *, struct flashctx *);
 	enum flashrom_wp_result (*wp_get_ranges)(struct flashrom_wp_ranges **, struct flashctx *);
