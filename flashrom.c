@@ -480,7 +480,7 @@ static int need_erase_gran_bytes(const uint8_t *have, const uint8_t *want, unsig
  * @gran	write granularity (enum, not count)
  * @return      0 if no erase is needed, 1 otherwise
  */
-int need_erase(const uint8_t *have, const uint8_t *want, unsigned int len,
+static int need_erase(const uint8_t *have, const uint8_t *want, unsigned int len,
                enum write_granularity gran, const uint8_t erased_value)
 {
 	int result = 0;
