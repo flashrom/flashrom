@@ -62,6 +62,10 @@ ATTRS{idVendor}=="18d1", ATTRS{idProduct}=="5001", MODE="664", GROUP="plugdev"
 ATTRS{idVendor}=="18d1", ATTRS{idProduct}=="5002", MODE="664", GROUP="plugdev"
 ATTRS{idVendor}=="18d1", ATTRS{idProduct}=="5003", MODE="664", GROUP="plugdev"
 
+# Kristech KT-LINK
+# https://kristech.pl/files/KT-LINK-UM-ENG.pdf
+ATTRS{idVendor}=="0403", ATTRS{idProduct}=="bbe2", MODE="664", GROUP="plugdev"
+
 # Olimex ARM-USB-OCD
 # http://olimex.com/dev/arm-usb-ocd.html
 ATTRS{idVendor}=="15ba", ATTRS{idProduct}=="0003", MODE="664", GROUP="plugdev"

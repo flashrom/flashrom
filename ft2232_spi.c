@@ -39,6 +39,7 @@
 #define FTDI_FT4233H_PID	0x6041
 #define TIAO_TUMPA_PID		0x8a98
 #define TIAO_TUMPA_LITE_PID	0x8a99
+#define KT_LINK_PID		0xbbe2
 #define AMONTEC_JTAGKEY_PID	0xCFF8
 
 #define GOEPEL_VID		0x096C
@@ -65,6 +66,7 @@ static const struct dev_entry devs_ft2232spi[] = {
 	{FTDI_VID, FTDI_FT4233H_PID, OK, "FTDI", "FT4233H"},
 	{FTDI_VID, TIAO_TUMPA_PID, OK, "TIAO", "USB Multi-Protocol Adapter"},
 	{FTDI_VID, TIAO_TUMPA_LITE_PID, OK, "TIAO", "USB Multi-Protocol Adapter Lite"},
+	{FTDI_VID, KT_LINK_PID, OK, "Kristech", "KT-LINK"},
 	{FTDI_VID, AMONTEC_JTAGKEY_PID, OK, "Amontec", "JTAGkey"},
 	{GOEPEL_VID, GOEPEL_PICOTAP_PID, OK, "GOEPEL", "PicoTAP"},
 	{GOOGLE_VID, GOOGLE_SERVO_PID, OK, "Google", "Servo"},
@@ -333,6 +335,8 @@ static int ft2232_spi_init(void)
 	uint8_t cs_bits = 0x08;
 	uint8_t aux_bits = 0x00;
 	uint8_t pindir = 0x0b;
+	uint8_t aux_bits_high = 0x00;
+	uint8_t pindir_high = 0x00;
 	struct ftdi_context ftdic;
 	struct ft2232_data *spi_data;
 
@@ -421,6 +425,17 @@ static int ft2232_spi_init(void)
 			/* Flyswatter and Flyswatter-2 require GPIO bits 0x80
 			 * and 0x40 to be driven low to enable output buffers */
 			pindir = 0xcb;
+		} else if (!strcasecmp(arg, "kt-link")) {
+			ft2232_type = KT_LINK_PID;
+			/* port B is used as uart */
+			channel_count = 1;
+			/* Set GPIOL1 output high - route TMS and TDO through multiplexers */
+			aux_bits = 0x20;
+			pindir = 0x2b;
+			/* Set GPIOH4 output low - enable TMS output buffer */
+			/* Set GPIOH5 output low - enable TDI output buffer */
+			/* Set GPIOH6 output low - enable TCK output buffer */
+			pindir_high = 0x70;
 		} else {
 			msg_perr("Error: Invalid device type specified.\n");
 			free(arg);
@@ -657,6 +672,17 @@ format_error:
 	if (send_buf(&ftdic, buf, 3)) {
 		ret = -8;
 		goto ftdi_err;
+	}
+
+	if (pindir_high) {
+		msg_pdbg("Set data bits HighByte\n");
+		buf[0] = SET_BITS_HIGH;
+		buf[1] = aux_bits_high;
+		buf[2] = pindir_high;
+		if (send_buf(&ftdic, buf, 3)) {
+			ret = -8;
+			goto ftdi_err;
+		}
 	}
 
 	spi_data = calloc(1, sizeof(*spi_data));
