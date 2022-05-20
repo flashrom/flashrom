@@ -131,6 +131,8 @@
 #define HSFC_CYCLE_READ		HSFC_FCYCLE_MASK(0)
 #define HSFC_CYCLE_WRITE	HSFC_FCYCLE_MASK(2)
 #define HSFC_CYCLE_BLOCK_ERASE	HSFC_FCYCLE_MASK(3)
+#define HSFC_CYCLE_WR_STATUS	HSFC_FCYCLE_MASK(7)
+#define HSFC_CYCLE_RD_STATUS	HSFC_FCYCLE_MASK(8)
 					/* 3-7: reserved */
 #define HSFC_FDBC_OFF		8	/* 8-13: Flash Data Byte Count */
 #define HSFC_FDBC		(0x3f << HSFC_FDBC_OFF)
@@ -1336,6 +1338,76 @@ static int ich_hwseq_wait_for_cycle_complete(unsigned int len, enum ich_chipset 
 	return 0;
 }
 
+static int ich_hwseq_read_status(const struct flashctx *flash, enum flash_reg reg, uint8_t *value)
+{
+	uint16_t hsfc;
+	const int len = 1;
+
+	if (reg != STATUS1) {
+		msg_perr("%s: only supports STATUS1\n", __func__);
+		return -1;
+	}
+	msg_pdbg("Reading Status register\n");
+
+	/* clear FDONE, FCERR, AEL by writing 1 to them (if they are set) */
+	REGWRITE16(ICH9_REG_HSFS, REGREAD16(ICH9_REG_HSFS));
+
+	hsfc = REGREAD16(ICH9_REG_HSFC);
+	hsfc &= ~hwseq_data.hsfc_fcycle; /* set read operation */
+
+	/* read status register */
+	hsfc |= HSFC_CYCLE_RD_STATUS;
+	hsfc &= ~HSFC_FDBC; /* clear byte count */
+
+	/* set byte count */
+	hsfc |= HSFC_FDBC_VAL(len - 1);
+	hsfc |= HSFC_FGO; /* start */
+	REGWRITE16(ICH9_REG_HSFC, hsfc);
+
+	if (ich_hwseq_wait_for_cycle_complete(len, ich_generation)) {
+		msg_perr("Reading Status register failed\n!!");
+		return -1;
+	}
+	ich_read_data(value, len, ICH9_REG_FDATA0);
+
+	return 0;
+}
+
+static int ich_hwseq_write_status(const struct flashctx *flash, enum flash_reg reg, uint8_t value)
+{
+	uint16_t hsfc;
+	const int len = 1;
+
+	if (reg != STATUS1) {
+		msg_perr("%s: only supports STATUS1\n", __func__);
+		return -1;
+	}
+	msg_pdbg("Writing status register\n");
+
+	/* clear FDONE, FCERR, AEL by writing 1 to them (if they are set) */
+	REGWRITE16(ICH9_REG_HSFS, REGREAD16(ICH9_REG_HSFS));
+
+	ich_fill_data(&value, len, ICH9_REG_FDATA0);
+	hsfc = REGREAD16(ICH9_REG_HSFC);
+	hsfc &= ~hwseq_data.hsfc_fcycle; /* clear operation */
+
+	/* write status register */
+	hsfc |= HSFC_CYCLE_WR_STATUS;
+	hsfc &= ~HSFC_FDBC; /* clear byte count */
+
+	/* set byte count */
+	hsfc |= HSFC_FDBC_VAL(len - 1);
+	hsfc |= HSFC_FGO; /* start */
+	REGWRITE16(ICH9_REG_HSFC, hsfc);
+
+	if (ich_hwseq_wait_for_cycle_complete(len, ich_generation)) {
+		msg_perr("Writing Status register failed\n!!");
+		return -1;
+	}
+
+	return 0;
+}
+
 static int ich_hwseq_probe(struct flashctx *flash)
 {
 	uint32_t total_size, boundary;
@@ -1744,6 +1816,8 @@ static const struct opaque_master opaque_master_ich_hwseq = {
 	.read = ich_hwseq_read,
 	.write = ich_hwseq_write,
 	.erase = ich_hwseq_block_erase,
+	.read_register = ich_hwseq_read_status,
+	.write_register = ich_hwseq_write_status,
 };
 
 static int init_ich7_spi(void *spibar, enum ich_chipset ich_gen)
