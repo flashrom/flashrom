@@ -463,17 +463,20 @@ int main(int argc, char *argv[])
 	struct flashctx *fill_flash;
 	const char *name;
 	int namelen, opt, i, j;
-	int startchip = -1, chipcount = 0, option_index = 0, force = 0, ifd = 0, fmap = 0;
-#if CONFIG_PRINT_WIKI == 1
-	int list_supported_wiki = 0;
-#endif
-	int flash_name = 0, flash_size = 0;
-	int enable_wp = 0, disable_wp = 0, print_wp_status = 0;
-	int set_wp_range = 0, set_wp_region = 0, print_wp_ranges = 0;
+	int startchip = -1, chipcount = 0, option_index = 0;
+	int operation_specified = 0;
 	uint32_t wp_start = 0, wp_len = 0;
-	int read_it = 0, extract_it = 0, write_it = 0, erase_it = 0, verify_it = 0;
-	int dont_verify_it = 0, dont_verify_all = 0, list_supported = 0, operation_specified = 0;
-	int show_progress = 0;
+	bool force = false, ifd = false, fmap = false;
+#if CONFIG_PRINT_WIKI == 1
+	bool list_supported_wiki = false;
+#endif
+	bool flash_name = false, flash_size = false;
+	bool enable_wp = false, disable_wp = false, print_wp_status = false;
+	bool set_wp_range = false, set_wp_region = false, print_wp_ranges = false;
+	bool read_it = false, extract_it = false, write_it = false, erase_it = false, verify_it = false;
+	bool dont_verify_it = false, dont_verify_all = false;
+	bool list_supported = false;
+	bool show_progress = false;
 	struct flashrom_layout *layout = NULL;
 	static const struct programmer_entry *prog = NULL;
 	enum {
@@ -568,12 +571,12 @@ int main(int argc, char *argv[])
 		case 'r':
 			cli_classic_validate_singleop(&operation_specified);
 			filename = strdup(optarg);
-			read_it = 1;
+			read_it = true;
 			break;
 		case 'w':
 			cli_classic_validate_singleop(&operation_specified);
 			filename = strdup(optarg);
-			write_it = 1;
+			write_it = true;
 			break;
 		case 'v':
 			//FIXME: gracefully handle superfluous -v
@@ -582,20 +585,20 @@ int main(int argc, char *argv[])
 				cli_classic_abort_usage("--verify and --noverify are mutually exclusive. Aborting.\n");
 			}
 			filename = strdup(optarg);
-			verify_it = 1;
+			verify_it = true;
 			break;
 		case 'n':
 			if (verify_it) {
 				cli_classic_abort_usage("--verify and --noverify are mutually exclusive. Aborting.\n");
 			}
-			dont_verify_it = 1;
+			dont_verify_it = true;
 			break;
 		case 'N':
-			dont_verify_all = 1;
+			dont_verify_all = true;
 			break;
 		case 'x':
 			cli_classic_validate_singleop(&operation_specified);
-			extract_it = 1;
+			extract_it = true;
 			break;
 		case 'c':
 			chip_to_probe = strdup(optarg);
@@ -607,10 +610,10 @@ int main(int argc, char *argv[])
 			break;
 		case 'E':
 			cli_classic_validate_singleop(&operation_specified);
-			erase_it = 1;
+			erase_it = true;
 			break;
 		case 'f':
-			force = 1;
+			force = true;
 			break;
 		case 'l':
 			if (layoutfile)
@@ -626,7 +629,7 @@ int main(int argc, char *argv[])
 				cli_classic_abort_usage("Error: --layout and --ifd both specified. Aborting.\n");
 			if (fmap)
 				cli_classic_abort_usage("Error: --fmap-file and --ifd both specified. Aborting.\n");
-			ifd = 1;
+			ifd = true;
 			break;
 		case OPTION_FMAP_FILE:
 			if (fmap)
@@ -637,7 +640,7 @@ int main(int argc, char *argv[])
 			if (layoutfile)
 				cli_classic_abort_usage("Error: --fmap-file and --layout both specified. Aborting.\n");
 			fmapfile = strdup(optarg);
-			fmap = 1;
+			fmap = true;
 			break;
 		case OPTION_FMAP:
 			if (fmap)
@@ -647,7 +650,7 @@ int main(int argc, char *argv[])
 				cli_classic_abort_usage("Error: --fmap and --ifd both specified. Aborting.\n");
 			if (layoutfile)
 				cli_classic_abort_usage("Error: --layout and --fmap both specified. Aborting.\n");
-			fmap = 1;
+			fmap = true;
 			break;
 		case 'i':
 			if (register_include_arg(&include_args, optarg))
@@ -661,42 +664,42 @@ int main(int argc, char *argv[])
 			break;
 		case OPTION_FLASH_NAME:
 			cli_classic_validate_singleop(&operation_specified);
-			flash_name = 1;
+			flash_name = true;
 			break;
 		case OPTION_FLASH_SIZE:
 			cli_classic_validate_singleop(&operation_specified);
-			flash_size = 1;
+			flash_size = true;
 			break;
 		case OPTION_WP_STATUS:
-			print_wp_status = 1;
+			print_wp_status = true;
 			break;
 		case OPTION_WP_LIST:
-			print_wp_ranges = 1;
+			print_wp_ranges = true;
 			break;
 		case OPTION_WP_SET_RANGE:
 			if (parse_wp_range(&wp_start, &wp_len) < 0)
 				cli_classic_abort_usage("Incorrect wp-range arguments provided.\n");
 
-			set_wp_range = 1;
+			set_wp_range = true;
 			break;
 		case OPTION_WP_SET_REGION:
-			set_wp_region = 1;
+			set_wp_region = true;
 			wp_region = strdup(optarg);
 			break;
 		case OPTION_WP_ENABLE:
-			enable_wp = 1;
+			enable_wp = true;
 			break;
 		case OPTION_WP_DISABLE:
-			disable_wp = 1;
+			disable_wp = true;
 			break;
 		case 'L':
 			cli_classic_validate_singleop(&operation_specified);
-			list_supported = 1;
+			list_supported = true;
 			break;
 		case 'z':
 #if CONFIG_PRINT_WIKI == 1
 			cli_classic_validate_singleop(&operation_specified);
-			list_supported_wiki = 1;
+			list_supported_wiki = true;
 #else
 			cli_classic_abort_usage("Error: Wiki output was not "
 					"compiled in. Aborting.\n");
@@ -768,7 +771,7 @@ int main(int argc, char *argv[])
 			}
 			break;
 		case OPTION_PROGRESS:
-			show_progress = 1;
+			show_progress = true;
 			break;
 		default:
 			cli_classic_abort_usage(NULL);
@@ -924,7 +927,7 @@ int main(int argc, char *argv[])
 				goto out_shutdown;
 			}
 			msg_cinfo("Please note that forced reads most likely contain garbage.\n");
-			flashrom_flag_set(&flashes[0], FLASHROM_FLAG_FORCE, !!force);
+			flashrom_flag_set(&flashes[0], FLASHROM_FLAG_FORCE, force);
 			ret = do_read(&flashes[0], filename);
 			free(flashes[0].chip);
 			goto out_shutdown;
@@ -1065,9 +1068,9 @@ int main(int argc, char *argv[])
 			goto out_release;
 	}
 
-	flashrom_flag_set(fill_flash, FLASHROM_FLAG_FORCE, !!force);
+	flashrom_flag_set(fill_flash, FLASHROM_FLAG_FORCE, force);
 #if CONFIG_INTERNAL == 1
-	flashrom_flag_set(fill_flash, FLASHROM_FLAG_FORCE_BOARDMISMATCH, !!force_boardmismatch);
+	flashrom_flag_set(fill_flash, FLASHROM_FLAG_FORCE_BOARDMISMATCH, force_boardmismatch);
 #endif
 	flashrom_flag_set(fill_flash, FLASHROM_FLAG_VERIFY_AFTER_WRITE, !dont_verify_it);
 	flashrom_flag_set(fill_flash, FLASHROM_FLAG_VERIFY_WHOLE_CHIP, !dont_verify_all);
