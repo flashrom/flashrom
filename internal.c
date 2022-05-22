@@ -25,9 +25,12 @@ struct pci_dev *pci_dev_find_filter(struct pci_filter filter)
 {
 	struct pci_dev *temp;
 
-	for (temp = pacc->devices; temp; temp = temp->next)
-		if (pci_filter_match(&filter, temp))
+	for (temp = pacc->devices; temp; temp = temp->next) {
+		if (pci_filter_match(&filter, temp)) {
+			pci_fill_info(temp, PCI_FILL_IDENT);
 			return temp;
+		}
+	}
 
 	return NULL;
 }
@@ -45,8 +48,10 @@ struct pci_dev *pci_dev_find_vendorclass(uint16_t vendor, uint16_t devclass)
 		if (pci_filter_match(&filter, temp)) {
 			/* Read PCI class */
 			tmp2 = pci_read_word(temp, 0x0a);
-			if (tmp2 == devclass)
+			if (tmp2 == devclass) {
+				pci_fill_info(temp, PCI_FILL_IDENT);
 				return temp;
+			}
 		}
 
 	return NULL;
@@ -61,9 +66,12 @@ struct pci_dev *pci_dev_find(uint16_t vendor, uint16_t device)
 	filter.vendor = vendor;
 	filter.device = device;
 
-	for (temp = pacc->devices; temp; temp = temp->next)
-		if (pci_filter_match(&filter, temp))
+	for (temp = pacc->devices; temp; temp = temp->next) {
+		if (pci_filter_match(&filter, temp)) {
+			pci_fill_info(temp, PCI_FILL_IDENT);
 			return temp;
+		}
+	}
 
 	return NULL;
 }
@@ -83,8 +91,10 @@ struct pci_dev *pci_card_find(uint16_t vendor, uint16_t device,
 			if ((card_vendor ==
 			     pci_read_word(temp, PCI_SUBSYSTEM_VENDOR_ID))
 			    && (card_device ==
-				pci_read_word(temp, PCI_SUBSYSTEM_ID)))
+				pci_read_word(temp, PCI_SUBSYSTEM_ID))) {
+				pci_fill_info(temp, PCI_FILL_IDENT);
 				return temp;
+			}
 		}
 
 	return NULL;
