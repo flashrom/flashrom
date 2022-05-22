@@ -1514,6 +1514,7 @@ static int intel_ich_gpio_set(int gpio, int raise)
 
 	/* First, look for a known LPC bridge */
 	for (dev = pacc->devices; dev; dev = dev->next) {
+		pci_fill_info(dev, PCI_FILL_IDENT);
 		uint16_t device_class;
 		/* libpci before version 2.2.4 does not store class info. */
 		device_class = pci_read_word(dev, PCI_CLASS_DEVICE);
