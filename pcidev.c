@@ -151,9 +151,12 @@ uintptr_t pcidev_readbar(struct pci_dev *dev, int bar)
 struct pci_dev *pcidev_scandev(struct pci_filter *filter, struct pci_dev *start)
 {
 	struct pci_dev *temp;
-	for (temp = start ? start->next : pacc->devices; temp; temp = temp->next)
-		if (pci_filter_match(filter, temp))
+	for (temp = start ? start->next : pacc->devices; temp; temp = temp->next) {
+		if (pci_filter_match(filter, temp)) {
+			pci_fill_info(temp, PCI_FILL_IDENT);
 			return temp;
+		}
+	}
 	return NULL;
 }
 
@@ -190,14 +193,17 @@ struct pci_dev *pcidev_find(uint16_t vendor, uint16_t device)
 struct pci_dev *pcidev_getdevfn(struct pci_dev *dev, const int func)
 {
 #if !defined(OLD_PCI_GET_DEV)
-	return pci_get_dev(pacc, dev->domain, dev->bus, dev->dev, func);
+	struct pci_dev *const new = pci_get_dev(pacc, dev->domain, dev->bus, dev->dev, func);
 #else
 	/* pciutils/libpci before version 2.2 is too old to support
 	 * PCI domains. Such old machines usually don't have domains
 	 * besides domain 0, so this is not a problem.
 	 */
-	return pci_get_dev(pacc, dev->bus, dev->dev, func);
+	struct pci_dev *const new = pci_get_dev(pacc, dev->bus, dev->dev, func);
 #endif
+	if (new)
+		pci_fill_info(new, PCI_FILL_IDENT);
+	return new;
 }
 
 struct pci_dev *pcidev_find_vendorclass(uint16_t vendor, uint16_t devclass)
