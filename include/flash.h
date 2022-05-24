@@ -129,10 +129,12 @@ enum write_granularity {
 #define FEATURE_4BA_EAR_C5C8	(1 << 13) /**< Regular 3-byte operations can be used by writing the most
 					       significant address byte into an extended address register
 					       (using 0xc5/0xc8 instructions). */
-#define FEATURE_4BA_READ	(1 << 14) /**< Native 4BA read instruction (0x13) is supported. */
-#define FEATURE_4BA_FAST_READ	(1 << 15) /**< Native 4BA fast read instruction (0x0c) is supported. */
-#define FEATURE_4BA_WRITE	(1 << 16) /**< Native 4BA byte program (0x12) is supported. */
+#define FEATURE_4BA_EAR_1716	(1 << 14) /**< Like FEATURE_4BA_EAR_C5C8 but with 0x17/0x16 instructions. */
+#define FEATURE_4BA_READ	(1 << 15) /**< Native 4BA read instruction (0x13) is supported. */
+#define FEATURE_4BA_FAST_READ	(1 << 16) /**< Native 4BA fast read instruction (0x0c) is supported. */
+#define FEATURE_4BA_WRITE	(1 << 17) /**< Native 4BA byte program (0x12) is supported. */
 /* 4BA Shorthands */
+#define FEATURE_4BA_EAR_ANY	(FEATURE_4BA_EAR_C5C8 | FEATURE_4BA_EAR_1716)
 #define FEATURE_4BA_NATIVE	(FEATURE_4BA_READ | FEATURE_4BA_FAST_READ | FEATURE_4BA_WRITE)
 #define FEATURE_4BA		(FEATURE_4BA_ENTER | FEATURE_4BA_EAR_C5C8 | FEATURE_4BA_NATIVE)
 #define FEATURE_4BA_WREN	(FEATURE_4BA_ENTER_WREN | FEATURE_4BA_EAR_C5C8 | FEATURE_4BA_NATIVE)
@@ -141,13 +143,13 @@ enum write_granularity {
  * Most flash chips are erased to ones and programmed to zeros. However, some
  * other flash chips, such as the ENE KB9012 internal flash, work the opposite way.
  */
-#define FEATURE_ERASED_ZERO	(1 << 17)
-#define FEATURE_NO_ERASE	(1 << 18)
+#define FEATURE_ERASED_ZERO	(1 << 18)
+#define FEATURE_NO_ERASE	(1 << 19)
 
-#define FEATURE_WRSR_EXT2	(1 << 19)
-#define FEATURE_WRSR2		(1 << 20)
-#define FEATURE_WRSR_EXT3	((1 << 21) | FEATURE_WRSR_EXT2)
-#define FEATURE_WRSR3		(1 << 22)
+#define FEATURE_WRSR_EXT2	(1 << 20)
+#define FEATURE_WRSR2		(1 << 21)
+#define FEATURE_WRSR_EXT3	((1 << 22) | FEATURE_WRSR_EXT2)
+#define FEATURE_WRSR3		(1 << 23)
 
 #define ERASED_VALUE(flash)	(((flash)->chip->feature_bits & FEATURE_ERASED_ZERO) ? 0x00 : 0xff)
 
@@ -276,9 +278,6 @@ struct flashchip {
 		uint16_t max;
 	} voltage;
 	enum write_granularity gran;
-
-	/* SPI specific options (TODO: Make it a union in case other bustypes get specific options.) */
-	uint8_t wrea_override; /**< override opcode for write extended address register */
 
 	struct reg_bit_map {
 		/* Status register protection bit (SRP) */

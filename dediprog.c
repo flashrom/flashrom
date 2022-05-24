@@ -416,7 +416,7 @@ static int prepare_rw_cmd(
 			}
 		}
 	} else {
-		if (flash->chip->feature_bits & FEATURE_4BA_EAR_C5C8) {
+		if (flash->chip->feature_bits & FEATURE_4BA_EAR_ANY) {
 			if (spi_set_extended_address(flash, start >> 24))
 				return 1;
 		} else if (start >> 24) {

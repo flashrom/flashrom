@@ -175,9 +175,11 @@
 
 /* Write Extended Address Register */
 #define JEDEC_WRITE_EXT_ADDR_REG	0xC5
+#define ALT_WRITE_EXT_ADDR_REG_17	0x17
 
 /* Read Extended Address Register */
 #define JEDEC_READ_EXT_ADDR_REG		0xC8
+#define ALT_READ_EXT_ADDR_REG_16	0x16
 
 /* Read the memory */
 #define JEDEC_READ		0x03

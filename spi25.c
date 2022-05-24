@@ -351,7 +351,16 @@ static int spi_simple_write_cmd(struct flashctx *const flash, const uint8_t op, 
 
 static int spi_write_extended_address_register(struct flashctx *const flash, const uint8_t regdata)
 {
-	const uint8_t op = flash->chip->wrea_override ? : JEDEC_WRITE_EXT_ADDR_REG;
+	uint8_t op;
+	if (flash->chip->feature_bits & FEATURE_4BA_EAR_C5C8) {
+		op = JEDEC_WRITE_EXT_ADDR_REG;
+	} else if (flash->chip->feature_bits & FEATURE_4BA_EAR_1716) {
+		op = ALT_WRITE_EXT_ADDR_REG_17;
+	} else {
+		msg_cerr("Flash misses feature flag for extended-address register.\n");
+		return -1;
+	}
+
 	struct spi_command cmds[] = {
 	{
 		.readarr = 0,
@@ -394,7 +403,7 @@ static int spi_prepare_address(struct flashctx *const flash, uint8_t cmd_buf[],
 		cmd_buf[4] = (addr >>  0) & 0xff;
 		return 4;
 	} else {
-		if (flash->chip->feature_bits & FEATURE_4BA_EAR_C5C8) {
+		if (flash->chip->feature_bits & FEATURE_4BA_EAR_ANY) {
 			if (spi_set_extended_address(flash, addr >> 24))
 				return -1;
 		} else if (addr >> 24) {
