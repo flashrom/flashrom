@@ -126,16 +126,17 @@ enum write_granularity {
 #define FEATURE_4BA_ENTER	(1 << 10) /**< Can enter/exit 4BA mode with instructions 0xb7/0xe9 w/o WREN */
 #define FEATURE_4BA_ENTER_WREN	(1 << 11) /**< Can enter/exit 4BA mode with instructions 0xb7/0xe9 after WREN */
 #define FEATURE_4BA_ENTER_EAR7	(1 << 12) /**< Can enter/exit 4BA mode by setting bit7 of the ext addr reg */
-#define FEATURE_4BA_EXT_ADDR	(1 << 13) /**< Regular 3-byte operations can be used by writing the most
-					       significant address byte into an extended address register. */
+#define FEATURE_4BA_EAR_C5C8	(1 << 13) /**< Regular 3-byte operations can be used by writing the most
+					       significant address byte into an extended address register
+					       (using 0xc5/0xc8 instructions). */
 #define FEATURE_4BA_READ	(1 << 14) /**< Native 4BA read instruction (0x13) is supported. */
 #define FEATURE_4BA_FAST_READ	(1 << 15) /**< Native 4BA fast read instruction (0x0c) is supported. */
 #define FEATURE_4BA_WRITE	(1 << 16) /**< Native 4BA byte program (0x12) is supported. */
 /* 4BA Shorthands */
 #define FEATURE_4BA_NATIVE	(FEATURE_4BA_READ | FEATURE_4BA_FAST_READ | FEATURE_4BA_WRITE)
-#define FEATURE_4BA		(FEATURE_4BA_ENTER | FEATURE_4BA_EXT_ADDR | FEATURE_4BA_NATIVE)
-#define FEATURE_4BA_WREN	(FEATURE_4BA_ENTER_WREN | FEATURE_4BA_EXT_ADDR | FEATURE_4BA_NATIVE)
-#define FEATURE_4BA_EAR7	(FEATURE_4BA_ENTER_EAR7 | FEATURE_4BA_EXT_ADDR | FEATURE_4BA_NATIVE)
+#define FEATURE_4BA		(FEATURE_4BA_ENTER | FEATURE_4BA_EAR_C5C8 | FEATURE_4BA_NATIVE)
+#define FEATURE_4BA_WREN	(FEATURE_4BA_ENTER_WREN | FEATURE_4BA_EAR_C5C8 | FEATURE_4BA_NATIVE)
+#define FEATURE_4BA_EAR7	(FEATURE_4BA_ENTER_EAR7 | FEATURE_4BA_EAR_C5C8 | FEATURE_4BA_NATIVE)
 /*
  * Most flash chips are erased to ones and programmed to zeros. However, some
  * other flash chips, such as the ENE KB9012 internal flash, work the opposite way.

@@ -394,7 +394,7 @@ static int spi_prepare_address(struct flashctx *const flash, uint8_t cmd_buf[],
 		cmd_buf[4] = (addr >>  0) & 0xff;
 		return 4;
 	} else {
-		if (flash->chip->feature_bits & FEATURE_4BA_EXT_ADDR) {
+		if (flash->chip->feature_bits & FEATURE_4BA_EAR_C5C8) {
 			if (spi_set_extended_address(flash, addr >> 24))
 				return -1;
 		} else if (addr >> 24) {

@@ -17620,7 +17620,7 @@ const struct flashchip flashchips[] = {
 		/* supports SFDP */
 		/* OTP: 1024B total, 256B reserved; read 0x48; write 0x42, erase 0x44, read ID 0x4B */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_4BA_ENTER_WREN |
-				  FEATURE_4BA_EXT_ADDR | FEATURE_4BA_READ | FEATURE_4BA_FAST_READ |
+				  FEATURE_4BA_EAR_C5C8 | FEATURE_4BA_READ | FEATURE_4BA_FAST_READ |
 				  FEATURE_WRSR2,
 		.tested		= TEST_OK_PREW,
 		.probe		= probe_spi_rdid,
@@ -19800,7 +19800,7 @@ const struct flashchip flashchips[] = {
 		/* supports SFDP */
 		/* OTP: 1024B total, 256B reserved; read 0x48; write 0x42, erase 0x44, read ID 0x4B */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_4BA_ENTER_WREN |
-				  FEATURE_4BA_EXT_ADDR | FEATURE_4BA_READ | FEATURE_4BA_FAST_READ |
+				  FEATURE_4BA_EAR_C5C8 | FEATURE_4BA_READ | FEATURE_4BA_FAST_READ |
 				  FEATURE_WRSR2,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
@@ -19850,7 +19850,7 @@ const struct flashchip flashchips[] = {
 		/* supports SFDP */
 		/* OTP: 1024B total, 256B reserved; read 0x48; write 0x42, erase 0x44, read ID 0x4B */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_4BA_ENTER_WREN
-			| FEATURE_4BA_EXT_ADDR | FEATURE_4BA_READ | FEATURE_4BA_FAST_READ,
+			| FEATURE_4BA_EAR_C5C8 | FEATURE_4BA_READ | FEATURE_4BA_FAST_READ,
 		.tested		= TEST_UNTESTED,
 		.probe		= probe_spi_rdid,
 		.probe_timing	= TIMING_ZERO,
