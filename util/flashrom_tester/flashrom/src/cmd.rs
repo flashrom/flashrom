@@ -33,9 +33,38 @@
 // Software Foundation.
 //
 
-use crate::{FlashChip, FlashromError, FlashromOpt};
+use crate::{FlashChip, FlashromError, ROMWriteSpecifics};
 
 use std::process::Command;
+
+#[derive(Default)]
+pub struct FlashromOpt<'a> {
+    pub wp_opt: WPOpt,
+    pub io_opt: IOOpt<'a>,
+
+    pub layout: Option<&'a str>, // -l <file>
+    pub image: Option<&'a str>,  // -i <name>
+
+    pub flash_name: bool, // --flash-name
+    pub verbose: bool,    // -V
+}
+
+#[derive(Default)]
+pub struct WPOpt {
+    pub range: Option<(i64, i64)>, // --wp-range x0 x1
+    pub status: bool,              // --wp-status
+    pub list: bool,                // --wp-list
+    pub enable: bool,              // --wp-enable
+    pub disable: bool,             // --wp-disable
+}
+
+#[derive(Default)]
+pub struct IOOpt<'a> {
+    pub read: Option<&'a str>,   // -r <file>
+    pub write: Option<&'a str>,  // -w <file>
+    pub verify: Option<&'a str>, // -v <file>
+    pub erase: bool,             // -E
+}
 
 #[derive(PartialEq, Debug)]
 pub struct FlashromCmd {
@@ -65,6 +94,13 @@ fn flashrom_extract_size(stdout: &str) -> Result<i64, FlashromError> {
     }
 }
 
+impl FlashromCmd {
+    fn dispatch(&self, fropt: FlashromOpt) -> Result<(Vec<u8>, Vec<u8>), FlashromError> {
+        let params = flashrom_decode_opts(fropt);
+        flashrom_dispatch(self.path.as_str(), &params, self.fc)
+    }
+}
+
 impl crate::Flashrom for FlashromCmd {
     fn get_size(&self) -> Result<i64, FlashromError> {
         let (stdout, _) = flashrom_dispatch(self.path.as_str(), &["--flash-size"], self.fc)?;
@@ -73,9 +109,208 @@ impl crate::Flashrom for FlashromCmd {
         flashrom_extract_size(&sz)
     }
 
-    fn dispatch(&self, fropt: FlashromOpt) -> Result<(Vec<u8>, Vec<u8>), FlashromError> {
-        let params = flashrom_decode_opts(fropt);
-        flashrom_dispatch(self.path.as_str(), &params, self.fc)
+    fn name(&self) -> Result<(String, String), FlashromError> {
+        let opts = FlashromOpt {
+            io_opt: IOOpt {
+                ..Default::default()
+            },
+
+            flash_name: true,
+
+            ..Default::default()
+        };
+
+        let (stdout, stderr) = self.dispatch(opts)?;
+        let output = String::from_utf8_lossy(stdout.as_slice());
+        let eoutput = String::from_utf8_lossy(stderr.as_slice());
+        debug!("name()'stdout: {:#?}.", output);
+        debug!("name()'stderr: {:#?}.", eoutput);
+
+        match extract_flash_name(&output) {
+            None => Err("Didn't find chip vendor/name in flashrom output".into()),
+            Some((vendor, name)) => Ok((vendor.into(), name.into())),
+        }
+    }
+
+    fn write_file_with_layout(&self, rws: &ROMWriteSpecifics) -> Result<bool, FlashromError> {
+        let opts = FlashromOpt {
+            io_opt: IOOpt {
+                write: rws.write_file,
+                ..Default::default()
+            },
+
+            layout: rws.layout_file,
+            image: rws.name_file,
+
+            ..Default::default()
+        };
+
+        let (stdout, stderr) = self.dispatch(opts)?;
+        let output = String::from_utf8_lossy(stdout.as_slice());
+        let eoutput = String::from_utf8_lossy(stderr.as_slice());
+        debug!("write_file_with_layout()'stdout:\n{}.", output);
+        debug!("write_file_with_layout()'stderr:\n{}.", eoutput);
+        Ok(true)
+    }
+
+    fn wp_range(&self, range: (i64, i64), wp_enable: bool) -> Result<bool, FlashromError> {
+        let opts = FlashromOpt {
+            wp_opt: WPOpt {
+                range: Some(range),
+                enable: wp_enable,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+
+        let (stdout, stderr) = self.dispatch(opts)?;
+        let output = String::from_utf8_lossy(stdout.as_slice());
+        let eoutput = String::from_utf8_lossy(stderr.as_slice());
+        debug!("wp_range()'stdout:\n{}.", output);
+        debug!("wp_range()'stderr:\n{}.", eoutput);
+        Ok(true)
+    }
+
+    fn wp_list(&self) -> Result<String, FlashromError> {
+        let opts = FlashromOpt {
+            wp_opt: WPOpt {
+                list: true,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+
+        let (stdout, _) = self.dispatch(opts)?;
+        let output = String::from_utf8_lossy(stdout.as_slice());
+        if output.len() == 0 {
+            return Err(
+                "wp_list isn't supported on platforms using the Linux kernel SPI driver wp_list"
+                    .into(),
+            );
+        }
+        Ok(output.to_string())
+    }
+
+    fn wp_status(&self, en: bool) -> Result<bool, FlashromError> {
+        let status = if en { "en" } else { "dis" };
+        info!("See if chip write protect is {}abled", status);
+
+        let opts = FlashromOpt {
+            wp_opt: WPOpt {
+                status: true,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+
+        let (stdout, _) = self.dispatch(opts)?;
+        let output = String::from_utf8_lossy(stdout.as_slice());
+
+        debug!("wp_status():\n{}", output);
+
+        let s = std::format!("write protect is {}abled", status);
+        Ok(output.contains(&s))
+    }
+
+    fn wp_toggle(&self, en: bool) -> Result<bool, FlashromError> {
+        let status = if en { "en" } else { "dis" };
+
+        // For MTD, --wp-range and --wp-enable must be used simultaneously.
+        let range = if en {
+            let rom_sz: i64 = self.get_size()?;
+            Some((0, rom_sz)) // (start, len)
+        } else {
+            None
+        };
+
+        let opts = FlashromOpt {
+            wp_opt: WPOpt {
+                range: range,
+                enable: en,
+                disable: !en,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+
+        let (stdout, stderr) = self.dispatch(opts)?;
+        let output = String::from_utf8_lossy(stdout.as_slice());
+        let eoutput = String::from_utf8_lossy(stderr.as_slice());
+
+        debug!("wp_toggle()'stdout:\n{}.", output);
+        debug!("wp_toggle()'stderr:\n{}.", eoutput);
+
+        match self.wp_status(true) {
+            Ok(_ret) => {
+                info!("Successfully {}abled write-protect", status);
+                Ok(true)
+            }
+            Err(e) => Err(format!("Cannot {}able write-protect: {}", status, e)),
+        }
+    }
+
+    fn read(&self, path: &str) -> Result<(), FlashromError> {
+        let opts = FlashromOpt {
+            io_opt: IOOpt {
+                read: Some(path),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+
+        let (stdout, _) = self.dispatch(opts)?;
+        let output = String::from_utf8_lossy(stdout.as_slice());
+        debug!("read():\n{}", output);
+        Ok(())
+    }
+
+    fn write(&self, path: &str) -> Result<(), FlashromError> {
+        let opts = FlashromOpt {
+            io_opt: IOOpt {
+                write: Some(path),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+
+        let (stdout, _) = self.dispatch(opts)?;
+        let output = String::from_utf8_lossy(stdout.as_slice());
+        debug!("write():\n{}", output);
+        Ok(())
+    }
+
+    fn verify(&self, path: &str) -> Result<(), FlashromError> {
+        let opts = FlashromOpt {
+            io_opt: IOOpt {
+                verify: Some(path),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+
+        let (stdout, _) = self.dispatch(opts)?;
+        let output = String::from_utf8_lossy(stdout.as_slice());
+        debug!("verify():\n{}", output);
+        Ok(())
+    }
+
+    fn erase(&self) -> Result<(), FlashromError> {
+        let opts = FlashromOpt {
+            io_opt: IOOpt {
+                erase: true,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+
+        let (stdout, _) = self.dispatch(opts)?;
+        let output = String::from_utf8_lossy(stdout.as_slice());
+        debug!("erase():\n{}", output);
+        Ok(())
+    }
+
+    fn can_control_hw_wp(&self) -> bool {
+        self.fc.can_control_hw_wp()
     }
 }
 
@@ -209,10 +444,33 @@ fn hex_range_string(s: i64, l: i64) -> String {
     format!("{:#08X},{:#08X}", s, l).to_string()
 }
 
+/// Get a flash vendor and name from the first matching line of flashrom output.
+///
+/// The target line looks like 'vendor="foo" name="bar"', as output by flashrom --flash-name.
+/// This is usually the last line of output.
+fn extract_flash_name(stdout: &str) -> Option<(&str, &str)> {
+    for line in stdout.lines() {
+        if !line.starts_with("vendor=\"") {
+            continue;
+        }
+
+        let tail = line.trim_start_matches("vendor=\"");
+        let mut split = tail.splitn(2, "\" name=\"");
+        let vendor = split.next();
+        let name = split.next().map(|s| s.trim_end_matches('"'));
+
+        match (vendor, name) {
+            (Some(v), Some(n)) => return Some((v, n)),
+            _ => continue,
+        }
+    }
+    None
+}
+
 #[cfg(test)]
 mod tests {
     use super::flashrom_decode_opts;
-    use crate::{FlashromOpt, IOOpt, WPOpt};
+    use super::{FlashromOpt, IOOpt, WPOpt};
 
     #[test]
     fn decode_wp_opt() {
@@ -346,5 +604,27 @@ mod tests {
             flashrom_extract_size("There was a catastrophic error."),
             Err("Found no purely-numeric lines in flashrom output".into())
         );
+    }
+
+    #[test]
+    fn extract_flash_name() {
+        use super::extract_flash_name;
+
+        assert_eq!(
+            extract_flash_name(
+                "coreboot table found at 0x7cc13000\n\
+                 Found chipset \"Intel Braswell\". Enabling flash write... OK.\n\
+                 vendor=\"Winbond\" name=\"W25Q64DW\"\n"
+            ),
+            Some(("Winbond", "W25Q64DW"))
+        );
+
+        assert_eq!(
+            extract_flash_name(
+                "vendor name is TEST\n\
+                 Something failed!"
+            ),
+            None
+        )
     }
 }

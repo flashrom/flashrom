@@ -83,296 +83,46 @@ impl FlashChip {
 
 pub type FlashromError = String;
 
-#[derive(Default)]
-pub struct FlashromOpt<'a> {
-    pub wp_opt: WPOpt,
-    pub io_opt: IOOpt<'a>,
-
-    pub layout: Option<&'a str>, // -l <file>
-    pub image: Option<&'a str>,  // -i <name>
-
-    pub flash_name: bool, // --flash-name
-    pub verbose: bool,    // -V
-}
-
-#[derive(Default)]
-pub struct WPOpt {
-    pub range: Option<(i64, i64)>, // --wp-range x0 x1
-    pub status: bool,              // --wp-status
-    pub list: bool,                // --wp-list
-    pub enable: bool,              // --wp-enable
-    pub disable: bool,             // --wp-disable
-}
-
-#[derive(Default)]
-pub struct IOOpt<'a> {
-    pub read: Option<&'a str>,   // -r <file>
-    pub write: Option<&'a str>,  // -w <file>
-    pub verify: Option<&'a str>, // -v <file>
-    pub erase: bool,             // -E
-}
-
-pub trait Flashrom {
-    fn get_size(&self) -> Result<i64, FlashromError>;
-    fn dispatch(&self, fropt: FlashromOpt) -> Result<(Vec<u8>, Vec<u8>), FlashromError>;
-}
-
-pub fn name(cmd: &cmd::FlashromCmd) -> Result<(String, String), FlashromError> {
-    let opts = FlashromOpt {
-        io_opt: IOOpt {
-            ..Default::default()
-        },
-
-        flash_name: true,
-
-        ..Default::default()
-    };
-
-    let (stdout, stderr) = cmd.dispatch(opts)?;
-    let output = String::from_utf8_lossy(stdout.as_slice());
-    let eoutput = String::from_utf8_lossy(stderr.as_slice());
-    debug!("name()'stdout: {:#?}.", output);
-    debug!("name()'stderr: {:#?}.", eoutput);
-
-    match extract_flash_name(&output) {
-        None => Err("Didn't find chip vendor/name in flashrom output".into()),
-        Some((vendor, name)) => Ok((vendor.into(), name.into())),
-    }
-}
-
-/// Get a flash vendor and name from the first matching line of flashrom output.
-///
-/// The target line looks like 'vendor="foo" name="bar"', as output by flashrom --flash-name.
-/// This is usually the last line of output.
-fn extract_flash_name(stdout: &str) -> Option<(&str, &str)> {
-    for line in stdout.lines() {
-        if !line.starts_with("vendor=\"") {
-            continue;
-        }
-
-        let tail = line.trim_start_matches("vendor=\"");
-        let mut split = tail.splitn(2, "\" name=\"");
-        let vendor = split.next();
-        let name = split.next().map(|s| s.trim_end_matches('"'));
-
-        match (vendor, name) {
-            (Some(v), Some(n)) => return Some((v, n)),
-            _ => continue,
-        }
-    }
-    None
-}
-
 pub struct ROMWriteSpecifics<'a> {
     pub layout_file: Option<&'a str>,
     pub write_file: Option<&'a str>,
     pub name_file: Option<&'a str>,
 }
 
-pub fn write_file_with_layout(
-    cmd: &cmd::FlashromCmd,
-    rws: &ROMWriteSpecifics,
-) -> Result<bool, FlashromError> {
-    let opts = FlashromOpt {
-        io_opt: IOOpt {
-            write: rws.write_file,
-            ..Default::default()
-        },
+pub trait Flashrom {
+    /// Returns the size of the flash in bytes.
+    fn get_size(&self) -> Result<i64, FlashromError>;
 
-        layout: rws.layout_file,
-        image: rws.name_file,
+    /// Returns the vendor name and the flash name.
+    fn name(&self) -> Result<(String, String), FlashromError>;
 
-        ..Default::default()
-    };
+    /// Write only a region of the flash.
+    fn write_file_with_layout(&self, rws: &ROMWriteSpecifics) -> Result<bool, FlashromError>;
 
-    let (stdout, stderr) = cmd.dispatch(opts)?;
-    let output = String::from_utf8_lossy(stdout.as_slice());
-    let eoutput = String::from_utf8_lossy(stderr.as_slice());
-    debug!("write_file_with_layout()'stdout:\n{}.", output);
-    debug!("write_file_with_layout()'stderr:\n{}.", eoutput);
-    Ok(true)
-}
+    /// Set write protect status for a range.
+    fn wp_range(&self, range: (i64, i64), wp_enable: bool) -> Result<bool, FlashromError>;
 
-pub fn wp_range(
-    cmd: &cmd::FlashromCmd,
-    range: (i64, i64),
-    wp_enable: bool,
-) -> Result<bool, FlashromError> {
-    let opts = FlashromOpt {
-        wp_opt: WPOpt {
-            range: Some(range),
-            enable: wp_enable,
-            ..Default::default()
-        },
-        ..Default::default()
-    };
+    /// Read the write protect regions for the flash.
+    fn wp_list(&self) -> Result<String, FlashromError>;
 
-    let (stdout, stderr) = cmd.dispatch(opts)?;
-    let output = String::from_utf8_lossy(stdout.as_slice());
-    let eoutput = String::from_utf8_lossy(stderr.as_slice());
-    debug!("wp_range()'stdout:\n{}.", output);
-    debug!("wp_range()'stderr:\n{}.", eoutput);
-    Ok(true)
-}
+    /// Return true if the flash write protect status matches `en`.
+    fn wp_status(&self, en: bool) -> Result<bool, FlashromError>;
 
-pub fn wp_list(cmd: &cmd::FlashromCmd) -> Result<String, FlashromError> {
-    let opts = FlashromOpt {
-        wp_opt: WPOpt {
-            list: true,
-            ..Default::default()
-        },
-        ..Default::default()
-    };
+    /// Set write protect status.
+    fn wp_toggle(&self, en: bool) -> Result<bool, FlashromError>;
 
-    let (stdout, _) = cmd.dispatch(opts)?;
-    let output = String::from_utf8_lossy(stdout.as_slice());
-    if output.len() == 0 {
-        return Err(
-            "wp_list isn't supported on platforms using the Linux kernel SPI driver wp_list".into(),
-        );
-    }
-    Ok(output.to_string())
-}
+    /// Read the whole flash to the file specified by `path`.
+    fn read(&self, path: &str) -> Result<(), FlashromError>;
 
-pub fn wp_status(cmd: &cmd::FlashromCmd, en: bool) -> Result<bool, FlashromError> {
-    let status = if en { "en" } else { "dis" };
-    info!("See if chip write protect is {}abled", status);
+    /// Write the whole flash to the file specified by `path`.
+    fn write(&self, path: &str) -> Result<(), FlashromError>;
 
-    let opts = FlashromOpt {
-        wp_opt: WPOpt {
-            status: true,
-            ..Default::default()
-        },
-        ..Default::default()
-    };
+    /// Verify the whole flash against the file specified by `path`.
+    fn verify(&self, path: &str) -> Result<(), FlashromError>;
 
-    let (stdout, _) = cmd.dispatch(opts)?;
-    let output = String::from_utf8_lossy(stdout.as_slice());
+    /// Erase the whole flash.
+    fn erase(&self) -> Result<(), FlashromError>;
 
-    debug!("wp_status():\n{}", output);
-
-    let s = std::format!("write protect is {}abled", status);
-    Ok(output.contains(&s))
-}
-
-pub fn wp_toggle(cmd: &cmd::FlashromCmd, en: bool) -> Result<bool, FlashromError> {
-    let status = if en { "en" } else { "dis" };
-
-    // For MTD, --wp-range and --wp-enable must be used simultaneously.
-    let range = if en {
-        let rom_sz: i64 = cmd.get_size()?;
-        Some((0, rom_sz)) // (start, len)
-    } else {
-        None
-    };
-
-    let opts = FlashromOpt {
-        wp_opt: WPOpt {
-            range: range,
-            enable: en,
-            disable: !en,
-            ..Default::default()
-        },
-        ..Default::default()
-    };
-
-    let (stdout, stderr) = cmd.dispatch(opts)?;
-    let output = String::from_utf8_lossy(stdout.as_slice());
-    let eoutput = String::from_utf8_lossy(stderr.as_slice());
-
-    debug!("wp_toggle()'stdout:\n{}.", output);
-    debug!("wp_toggle()'stderr:\n{}.", eoutput);
-
-    match wp_status(&cmd, true) {
-        Ok(_ret) => {
-            info!("Successfully {}abled write-protect", status);
-            Ok(true)
-        }
-        Err(e) => Err(format!("Cannot {}able write-protect: {}", status, e)),
-    }
-}
-
-pub fn read(cmd: &cmd::FlashromCmd, path: &str) -> Result<(), FlashromError> {
-    let opts = FlashromOpt {
-        io_opt: IOOpt {
-            read: Some(path),
-            ..Default::default()
-        },
-        ..Default::default()
-    };
-
-    let (stdout, _) = cmd.dispatch(opts)?;
-    let output = String::from_utf8_lossy(stdout.as_slice());
-    debug!("read():\n{}", output);
-    Ok(())
-}
-
-pub fn write(cmd: &cmd::FlashromCmd, path: &str) -> Result<(), FlashromError> {
-    let opts = FlashromOpt {
-        io_opt: IOOpt {
-            write: Some(path),
-            ..Default::default()
-        },
-        ..Default::default()
-    };
-
-    let (stdout, _) = cmd.dispatch(opts)?;
-    let output = String::from_utf8_lossy(stdout.as_slice());
-    debug!("write():\n{}", output);
-    Ok(())
-}
-
-pub fn verify(cmd: &cmd::FlashromCmd, path: &str) -> Result<(), FlashromError> {
-    let opts = FlashromOpt {
-        io_opt: IOOpt {
-            verify: Some(path),
-            ..Default::default()
-        },
-        ..Default::default()
-    };
-
-    let (stdout, _) = cmd.dispatch(opts)?;
-    let output = String::from_utf8_lossy(stdout.as_slice());
-    debug!("verify():\n{}", output);
-    Ok(())
-}
-
-pub fn erase(cmd: &cmd::FlashromCmd) -> Result<(), FlashromError> {
-    let opts = FlashromOpt {
-        io_opt: IOOpt {
-            erase: true,
-            ..Default::default()
-        },
-        ..Default::default()
-    };
-
-    let (stdout, _) = cmd.dispatch(opts)?;
-    let output = String::from_utf8_lossy(stdout.as_slice());
-    debug!("erase():\n{}", output);
-    Ok(())
-}
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn extract_flash_name() {
-        use super::extract_flash_name;
-
-        assert_eq!(
-            extract_flash_name(
-                "coreboot table found at 0x7cc13000\n\
-                 Found chipset \"Intel Braswell\". Enabling flash write... OK.\n\
-                 vendor=\"Winbond\" name=\"W25Q64DW\"\n"
-            ),
-            Some(("Winbond", "W25Q64DW"))
-        );
-
-        assert_eq!(
-            extract_flash_name(
-                "vendor name is TEST\n\
-                 Something failed!"
-            ),
-            None
-        )
-    }
+    /// Return true if the hardware write protect of this flash can be controlled.
+    fn can_control_hw_wp(&self) -> bool;
 }

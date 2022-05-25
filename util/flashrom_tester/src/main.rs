@@ -39,7 +39,7 @@ extern crate log;
 mod logger;
 
 use clap::{App, Arg};
-use flashrom::FlashChip;
+use flashrom::{FlashChip, Flashrom, FlashromCmd};
 use flashrom_tester::{tester, tests};
 use std::path::PathBuf;
 use std::sync::atomic::AtomicBool;
@@ -123,6 +123,11 @@ fn main() {
     )
     .expect("ccd_target_type should admit only known types");
 
+    let cmd: Box<dyn Flashrom> = Box::new(FlashromCmd {
+        path: flashrom_path.to_string(),
+        fc: ccd_type,
+    });
+
     let print_layout = matches.is_present("print-layout");
     let output_format = matches
         .value_of("output-format")
@@ -132,7 +137,7 @@ fn main() {
     let test_names = matches.values_of("test_name");
 
     if let Err(e) = tests::generic(
-        flashrom_path,
+        cmd.as_ref(),
         ccd_type,
         print_layout,
         output_format,

@@ -36,7 +36,7 @@
 use super::rand_util;
 use super::types;
 use super::utils::{self, LayoutSizes};
-use flashrom::{FlashChip, Flashrom, FlashromCmd};
+use flashrom::{FlashChip, Flashrom};
 use serde_json::json;
 use std::mem::MaybeUninit;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -52,7 +52,7 @@ pub struct TestEnv<'a> {
     ///
     /// Where possible, prefer to use methods on the TestEnv rather than delegating
     /// to the raw flashrom functions.
-    pub cmd: &'a FlashromCmd,
+    pub cmd: &'a dyn Flashrom,
     layout: LayoutSizes,
 
     pub wp: WriteProtectState<'a, 'static>,
@@ -65,20 +65,20 @@ pub struct TestEnv<'a> {
 }
 
 impl<'a> TestEnv<'a> {
-    pub fn create(chip_type: FlashChip, cmd: &'a FlashromCmd) -> Result<Self, String> {
+    pub fn create(chip_type: FlashChip, cmd: &'a dyn Flashrom) -> Result<Self, String> {
         let rom_sz = cmd.get_size()?;
         let out = TestEnv {
             chip_type: chip_type,
             cmd: cmd,
             layout: utils::get_layout_sizes(rom_sz)?,
-            wp: WriteProtectState::from_hardware(cmd)?,
+            wp: WriteProtectState::from_hardware(cmd, chip_type)?,
             original_flash_contents: "/tmp/flashrom_tester_golden.bin".into(),
             random_data: "/tmp/random_content.bin".into(),
         };
 
         info!("Stashing golden image for verification/recovery on completion");
-        flashrom::read(&out.cmd, &out.original_flash_contents)?;
-        flashrom::verify(&out.cmd, &out.original_flash_contents)?;
+        out.cmd.read(&out.original_flash_contents)?;
+        out.cmd.verify(&out.original_flash_contents)?;
 
         info!("Generating random flash-sized data");
         rand_util::gen_rand_testdata(&out.random_data, rom_sz as usize)
@@ -123,19 +123,19 @@ impl<'a> TestEnv<'a> {
     /// Return true if the current Flash contents are the same as the golden image
     /// that was present at the start of testing.
     pub fn is_golden(&self) -> bool {
-        flashrom::verify(&self.cmd, &self.original_flash_contents).is_ok()
+        self.cmd.verify(&self.original_flash_contents).is_ok()
     }
 
     /// Do whatever is necessary to make the current Flash contents the same as they
     /// were at the start of testing.
     pub fn ensure_golden(&mut self) -> Result<(), String> {
         self.wp.set_hw(false)?.set_sw(false)?;
-        flashrom::write(&self.cmd, &self.original_flash_contents)
+        self.cmd.write(&self.original_flash_contents)
     }
 
     /// Attempt to erase the flash.
     pub fn erase(&self) -> Result<(), String> {
-        flashrom::erase(self.cmd)
+        self.cmd.erase()
     }
 
     /// Verify that the current Flash contents are the same as the file at the given
@@ -143,11 +143,11 @@ impl<'a> TestEnv<'a> {
     ///
     /// Returns Err if they are not the same.
     pub fn verify(&self, contents_path: &str) -> Result<(), String> {
-        flashrom::verify(self.cmd, contents_path)
+        self.cmd.verify(contents_path)
     }
 }
 
-impl Drop for TestEnv<'_> {
+impl<'a> Drop for TestEnv<'a> {
     fn drop(&mut self) {
         info!("Verifying flash remains unmodified");
         if !self.is_golden() {
@@ -177,7 +177,8 @@ pub struct WriteProtectState<'a, 'p> {
     initial: InitialState<'p>,
     // Tuples are (hardware, software)
     current: (bool, bool),
-    cmd: &'a FlashromCmd,
+    cmd: &'a dyn Flashrom,
+    fc: FlashChip,
 }
 
 enum InitialState<'p> {
@@ -199,7 +200,7 @@ impl<'a> WriteProtectState<'a, 'static> {
     ///
     /// Panics if there is already a live state derived from hardware. In such a situation the
     /// new state must be derived from the live one, or the live one must be dropped first.
-    pub fn from_hardware(cmd: &'a FlashromCmd) -> Result<Self, String> {
+    pub fn from_hardware(cmd: &'a dyn Flashrom, fc: FlashChip) -> Result<Self, String> {
         let mut lock = Self::get_liveness_lock()
             .lock()
             .expect("Somebody panicked during WriteProtectState init from hardware");
@@ -217,12 +218,13 @@ impl<'a> WriteProtectState<'a, 'static> {
             initial: InitialState::Hardware(hw, sw),
             current: (hw, sw),
             cmd,
+            fc,
         })
     }
 
     /// Get the actual hardware write protect state.
-    fn get_hw(cmd: &FlashromCmd) -> Result<bool, String> {
-        if cmd.fc.can_control_hw_wp() {
+    fn get_hw(cmd: &dyn Flashrom) -> Result<bool, String> {
+        if cmd.can_control_hw_wp() {
             super::utils::get_hardware_wp()
         } else {
             Ok(false)
@@ -230,8 +232,8 @@ impl<'a> WriteProtectState<'a, 'static> {
     }
 
     /// Get the actual software write protect state.
-    fn get_sw(cmd: &FlashromCmd) -> Result<bool, String> {
-        flashrom::wp_status(cmd, true)
+    fn get_sw(cmd: &dyn Flashrom) -> Result<bool, String> {
+        cmd.wp_status(true)
     }
 }
 
@@ -241,14 +243,14 @@ impl<'a, 'p> WriteProtectState<'a, 'p> {
     ///
     /// If false, calls to set_hw() will do nothing.
     pub fn can_control_hw_wp(&self) -> bool {
-        self.cmd.fc.can_control_hw_wp()
+        self.cmd.can_control_hw_wp()
     }
 
     /// Set the software write protect.
     pub fn set_sw(&mut self, enable: bool) -> Result<&mut Self, String> {
         info!("request={}, current={}", enable, self.current.1);
         if self.current.1 != enable {
-            flashrom::wp_toggle(self.cmd, /* en= */ enable)?;
+            self.cmd.wp_toggle(/* en= */ enable)?;
             self.current.1 = enable;
         }
         Ok(self)
@@ -263,7 +265,7 @@ impl<'a, 'p> WriteProtectState<'a, 'p> {
             } else if enable {
                 info!(
                     "Ignoring attempt to enable hardware WP with {:?} programmer",
-                    self.cmd.fc
+                    self.fc
                 );
             }
         }
@@ -277,7 +279,7 @@ impl<'a, 'p> WriteProtectState<'a, 'p> {
     /// ```no_run
     /// # fn main() -> Result<(), String> {
     /// # let cmd: flashrom::FlashromCmd = unimplemented!();
-    /// let wp = flashrom_tester::tester::WriteProtectState::from_hardware(&cmd)?;
+    /// let wp = flashrom_tester::tester::WriteProtectState::from_hardware(&cmd, flashrom::FlashChip::SERVO)?;
     /// {
     ///     let mut wp = wp.push();
     ///     wp.set_sw(false)?;
@@ -297,6 +299,7 @@ impl<'a, 'p> WriteProtectState<'a, 'p> {
             initial: InitialState::Previous(self),
             current: self.current,
             cmd: self.cmd,
+            fc: self.fc,
         }
     }
 
@@ -376,7 +379,7 @@ impl<'a, 'p> WriteProtectState<'a, 'p> {
                     )
                 })?;
             }
-            flashrom::wp_toggle(self.cmd, /* en= */ sw).map_err(|e| {
+            self.cmd.wp_toggle(/* en= */ sw).map_err(|e| {
                 format!(
                     "Failed to {}able software write protect: {}",
                     enable_str(sw),
@@ -386,7 +389,7 @@ impl<'a, 'p> WriteProtectState<'a, 'p> {
         }
 
         assert!(
-            self.cmd.fc.can_control_hw_wp() || (!self.current.0 && !hw),
+            self.cmd.can_control_hw_wp() || (!self.current.0 && !hw),
             "HW WP must be disabled if it cannot be controlled"
         );
         if hw != self.current.0 {
@@ -479,7 +482,7 @@ fn decode_test_result(res: TestResult, con: TestConclusion) -> (TestConclusion, 
 
 pub fn run_all_tests<T, TS>(
     chip: FlashChip,
-    cmd: &FlashromCmd,
+    cmd: &dyn Flashrom,
     ts: TS,
     terminate_flag: Option<&AtomicBool>,
 ) -> Vec<(String, (TestConclusion, Option<TestError>))>

@@ -36,7 +36,7 @@
 use super::cros_sysinfo;
 use super::tester::{self, OutputFormat, TestCase, TestEnv, TestResult};
 use super::utils::{self, LayoutNames};
-use flashrom::{FlashChip, Flashrom, FlashromCmd};
+use flashrom::{FlashChip, Flashrom};
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::{BufRead, Write};
@@ -78,16 +78,13 @@ fn filter_tests<'n, 't: 'n, T: TestCase>(
 /// tests are run. Provided names that don't match any known test will be logged
 /// as a warning.
 pub fn generic<'a, TN: Iterator<Item = &'a str>>(
-    path: &str,
+    cmd: &dyn Flashrom,
     fc: FlashChip,
     print_layout: bool,
     output_format: OutputFormat,
     test_names: Option<TN>,
     terminate_flag: Option<&AtomicBool>,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let p = path.to_string();
-    let cmd = FlashromCmd { path: p, fc };
-
     utils::ac_power_warning();
 
     info!("Calculate ROM partition sizes & Create the layout file.");
@@ -142,18 +139,20 @@ pub fn generic<'a, TN: Iterator<Item = &'a str>>(
     };
     let tests = filter_tests(tests, &mut filter_names);
 
+    let chip_name = cmd
+        .name()
+        .map(|x| format!("vendor=\"{}\" name=\"{}\"", x.0, x.1))
+        .unwrap_or("<Unknown chip>".into());
+
     // ------------------------.
     // Run all the tests and collate the findings:
-    let results = tester::run_all_tests(fc, &cmd, tests, terminate_flag);
+    let results = tester::run_all_tests(fc, cmd, tests, terminate_flag);
 
     // Any leftover filtered names were specified to be run but don't exist
     for leftover in filter_names.iter().flatten() {
         warn!("No test matches filter name \"{}\"", leftover);
     }
 
-    let chip_name = flashrom::name(&cmd)
-        .map(|x| format!("vendor=\"{}\" name=\"{}\"", x.0, x.1))
-        .unwrap_or("<Unknown chip>".into());
     let os_rel = sys_info::os_release().unwrap_or("<Unknown OS>".to_string());
     let system_info = cros_sysinfo::system_info().unwrap_or("<Unknown System>".to_string());
     let bios_info = cros_sysinfo::bios_info().unwrap_or("<Unknown BIOS>".to_string());
@@ -170,7 +169,7 @@ pub fn generic<'a, TN: Iterator<Item = &'a str>>(
 
 fn get_device_name_test(env: &mut TestEnv) -> TestResult {
     // Success means we got something back, which is good enough.
-    flashrom::name(env.cmd)?;
+    env.cmd.name()?;
     Ok(())
 }
 
@@ -178,7 +177,7 @@ fn wp_toggle_test(env: &mut TestEnv) -> TestResult {
     // NOTE: This is not strictly a 'test' as it is allowed to fail on some platforms.
     //       However, we will warn when it does fail.
     // List the write-protected regions of flash.
-    match flashrom::wp_list(env.cmd) {
+    match env.cmd.wp_list() {
         Ok(list_str) => info!("\n{}", list_str),
         Err(e) => warn!("{}", e),
     };
@@ -289,7 +288,7 @@ fn partial_lock_test(section: LayoutNames) -> impl Fn(&mut TestEnv) -> TestResul
         // Disable software WP so we can do range protection, but hardware WP
         // must remain enabled for (most) range protection to do anything.
         env.wp.set_hw(false)?.set_sw(false)?;
-        flashrom::wp_range(env.cmd, (start, len), true)?;
+        env.cmd.wp_range((start, len), true)?;
         env.wp.set_hw(true)?;
 
         let rws = flashrom::ROMWriteSpecifics {
@@ -297,7 +296,7 @@ fn partial_lock_test(section: LayoutNames) -> impl Fn(&mut TestEnv) -> TestResul
             write_file: Some(env.random_data_file()),
             name_file: Some(name),
         };
-        if flashrom::write_file_with_layout(env.cmd, &rws).is_ok() {
+        if env.cmd.write_file_with_layout(&rws).is_ok() {
             return Err(
                 "Section should be locked, should not have been overwritable with random data"
                     .into(),
