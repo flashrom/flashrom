@@ -41,6 +41,7 @@ int spi_block_erase_20(struct flashctx *flash, unsigned int addr, unsigned int b
 int spi_block_erase_21(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 int spi_block_erase_50(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 int spi_block_erase_52(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
+int spi_block_erase_53(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 int spi_block_erase_5c(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 int spi_block_erase_60(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 int spi_block_erase_62(struct flashctx *flash, unsigned int addr, unsigned int blocklen);

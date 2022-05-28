@@ -589,6 +589,13 @@ int spi_block_erase_21(struct flashctx *flash, unsigned int addr, unsigned int b
 }
 
 /* Erase 32 KB of flash with 4-bytes address from ANY mode (3-bytes or 4-bytes) */
+int spi_block_erase_53(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
+{
+	/* This usually takes 100-4000ms, so wait in 100ms steps. */
+	return spi_write_cmd(flash, 0x53, true, addr, NULL, 0, 100 * 1000);
+}
+
+/* Erase 32 KB of flash with 4-bytes address from ANY mode (3-bytes or 4-bytes) */
 int spi_block_erase_5c(struct flashctx *flash, unsigned int addr, unsigned int blocklen)
 {
 	/* This usually takes 100-4000ms, so wait in 100ms steps. */
@@ -617,6 +624,8 @@ erasefunc_t *spi_get_erasefn_from_opcode(uint8_t opcode)
 		return &spi_block_erase_50;
 	case 0x52:
 		return &spi_block_erase_52;
+	case 0x53:
+		return &spi_block_erase_53;
 	case 0x5c:
 		return &spi_block_erase_5c;
 	case 0x60:
