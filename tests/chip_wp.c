@@ -67,7 +67,7 @@ static const struct flashchip chip_W25Q128_V = {
 	.read		= spi_chip_read,
 	.write		= spi_chip_write_256,
 	.unlock         = spi_disable_blockprotect,
-	.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_WRSR2,
+	.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_WRSR_EXT2 | FEATURE_WRSR2 | FEATURE_WRSR3,
 	.block_erasers  =
 	{
 		{

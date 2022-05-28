@@ -44,8 +44,9 @@ struct emu_data {
 	unsigned int emu_chip_size;
 	/* Note: W25Q128FV doesn't change value of SR2 if it's not provided, but
 	 *       even its previous generations do, so don't forget to update
-	 *       WRSR code on enabling WRSR_EXT for more chips. */
-	bool emu_wrsr_ext;
+	 *       WRSR code on enabling WRSR_EXT2 for more chips. */
+	bool emu_wrsr_ext2;
+	bool emu_wrsr_ext3;
 	int erase_to_zero;
 	int emu_modified;	/* is the image modified since reading it? */
 	uint8_t emu_status[3];
@@ -350,7 +351,7 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 {
 	unsigned int offs, i, toread;
 	uint8_t ro_bits;
-	bool wrsr_ext;
+	bool wrsr_ext2, wrsr_ext3;
 	static int unsigned aai_offs;
 	const unsigned char sst25vf040_rems_response[2] = {0xbf, 0x44};
 	const unsigned char sst25vf032b_rems_response[2] = {0xbf, 0x4a};
@@ -511,20 +512,28 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 			break;
 		}
 
-		wrsr_ext = (writecnt == 3 && data->emu_wrsr_ext);
+		wrsr_ext2 = (writecnt == 3 && data->emu_wrsr_ext2);
+		wrsr_ext3 = (writecnt == 4 && data->emu_wrsr_ext3);
 
 		/* FIXME: add some reasonable simulation of the busy flag */
 
 		ro_bits = get_reg_ro_bit_mask(data, STATUS1);
 		data->emu_status[0] &= ro_bits;
 		data->emu_status[0] |= writearr[1] & ~ro_bits;
-		if (wrsr_ext) {
+		if (wrsr_ext2 || wrsr_ext3) {
 			ro_bits = get_reg_ro_bit_mask(data, STATUS2);
 			data->emu_status[1] &= ro_bits;
 			data->emu_status[1] |= writearr[2] & ~ro_bits;
 		}
+		if (wrsr_ext3) {
+			ro_bits = get_reg_ro_bit_mask(data, STATUS3);
+			data->emu_status[2] &= ro_bits;
+			data->emu_status[2] |= writearr[3] & ~ro_bits;
+		}
 
-		if (wrsr_ext)
+		if (wrsr_ext3)
+			msg_pdbg2("WRSR wrote 0x%02x%02x%02x.\n", data->emu_status[2], data->emu_status[1], data->emu_status[0]);
+		else if (wrsr_ext2)
 			msg_pdbg2("WRSR wrote 0x%02x%02x.\n", data->emu_status[1], data->emu_status[0]);
 		else
 			msg_pdbg2("WRSR wrote 0x%02x.\n", data->emu_status[0]);
@@ -1154,7 +1163,7 @@ static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_suppor
 	}
 	if (!strcmp(tmp, "W25Q128FV")) {
 		data->emu_chip = EMULATE_WINBOND_W25Q128FV;
-		data->emu_wrsr_ext = true;
+		data->emu_wrsr_ext2 = true;
 		data->emu_chip_size = 16 * 1024 * 1024;
 		data->emu_max_byteprogram_size = 256;
 		data->emu_max_aai_size = 0;

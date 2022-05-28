@@ -143,8 +143,10 @@ enum write_granularity {
 #define FEATURE_ERASED_ZERO	(1 << 17)
 #define FEATURE_NO_ERASE	(1 << 18)
 
-#define FEATURE_WRSR_EXT	(1 << 19)
+#define FEATURE_WRSR_EXT2	(1 << 19)
 #define FEATURE_WRSR2		(1 << 20)
+#define FEATURE_WRSR_EXT3	((1 << 21) | FEATURE_WRSR_EXT2)
+#define FEATURE_WRSR3		(1 << 22)
 
 #define ERASED_VALUE(flash)	(((flash)->chip->feature_bits & FEATURE_ERASED_ZERO) ? 0x00 : 0xff)
 

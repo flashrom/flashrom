@@ -156,7 +156,6 @@
 #define JEDEC_WRSR		0x01
 #define JEDEC_WRSR_OUTSIZE	0x02
 #define JEDEC_WRSR_INSIZE	0x00
-#define JEDEC_WRSR_EXT_OUTSIZE	0x03
 
 /* Write Status Register 2 */
 #define JEDEC_WRSR2		0x31
