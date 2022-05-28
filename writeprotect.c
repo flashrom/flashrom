@@ -289,7 +289,7 @@ static enum flashrom_wp_result get_ranges_and_wp_bits(struct flashctx *flash, st
 			size_t j = bits.bp_bit_count - i - 1;
 			msg_gspew("BP%zu=%u ", j, bits.bp[j]);
 		}
-		msg_gspew(" start=0x%08zx length=0x%08zx ",
+		msg_gspew(" start=0x%08zx length=0x%08zx\n",
 			  output->range.start, output->range.len);
 	}
 
