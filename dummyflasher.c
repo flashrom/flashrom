@@ -35,6 +35,7 @@ enum emu_chip {
 	EMULATE_SST_SST25VF032B,
 	EMULATE_MACRONIX_MX25L6436,
 	EMULATE_WINBOND_W25Q128FV,
+	EMULATE_SPANSION_S25FL128L,
 	EMULATE_VARIABLE_SIZE,
 };
 
@@ -267,12 +268,36 @@ static uint8_t get_reg_ro_bit_mask(const struct emu_data *data, enum flash_reg r
 		}
 	}
 
+	if (data->emu_chip == EMULATE_SPANSION_S25FL128L) {
+		const bool srp0 = (data->emu_status[0] >> 7);
+		const bool srp1 = (data->emu_status[1] & 1);
+
+		const bool wp_active = (srp1 || (srp0 && data->hwwp));
+
+		if (wp_active) {
+			ro_bits = 0xff;
+		} else if (reg == STATUS2) {
+			/* SUS (bit_7) */
+			ro_bits = 0x80;
+			/* Once any of the lock bits (LB[0..3]) are set, they
+			   can't be unset. */
+			ro_bits |= data->emu_status[1] & (1 << 2);
+			ro_bits |= data->emu_status[1] & (1 << 3);
+			ro_bits |= data->emu_status[1] & (1 << 4);
+			ro_bits |= data->emu_status[1] & (1 << 5);
+		} else if (reg == STATUS3) {
+			/* Two reserved bits. */
+			ro_bits = 0x11;
+		}
+	}
+
 	return ro_bits;
 }
 
 static void update_write_protection(struct emu_data *data)
 {
-	if (data->emu_chip != EMULATE_WINBOND_W25Q128FV)
+	if (data->emu_chip != EMULATE_WINBOND_W25Q128FV &&
+	    data->emu_chip != EMULATE_SPANSION_S25FL128L)
 		return;
 
 	const struct wp_bits bits = {
@@ -419,6 +444,12 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 			if (readcnt > 0)
 				memset(readarr, 0x17, readcnt);
 			break;
+		case EMULATE_SPANSION_S25FL128L:
+			if (readcnt > 0)
+				readarr[0] = 0x60;
+			if (readcnt > 1)
+				readarr[1] = 0x18;
+			break;
 		default: /* ignore */
 			break;
 		}
@@ -473,6 +504,14 @@ static int emulate_spi_chip_response(unsigned int writecnt,
 				readarr[0] = 0xef;
 			if (readcnt > 1)
 				readarr[1] = 0x40;
+			if (readcnt > 2)
+				readarr[2] = 0x18;
+			break;
+		case EMULATE_SPANSION_S25FL128L:
+			if (readcnt > 0)
+				readarr[0] = 0x01;
+			if (readcnt > 1)
+				readarr[1] = 0x60;
 			if (readcnt > 2)
 				readarr[2] = 0x18;
 			break;
@@ -830,6 +869,7 @@ static int dummy_spi_send_command(const struct flashctx *flash, unsigned int wri
 	case EMULATE_SST_SST25VF032B:
 	case EMULATE_MACRONIX_MX25L6436:
 	case EMULATE_WINBOND_W25Q128FV:
+	case EMULATE_SPANSION_S25FL128L:
 	case EMULATE_VARIABLE_SIZE:
 		if (emulate_spi_chip_response(writecnt, readcnt, writearr,
 					      readarr, emu_data)) {
@@ -1174,6 +1214,21 @@ static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_suppor
 		data->emu_jedec_ce_60_size = data->emu_chip_size;
 		data->emu_jedec_ce_c7_size = data->emu_chip_size;
 		msg_pdbg("Emulating Winbond W25Q128FV SPI flash chip (RDID)\n");
+	}
+	if (!strcmp(tmp, "S25FL128L")) {
+		data->emu_chip = EMULATE_SPANSION_S25FL128L;
+		data->emu_wrsr_ext2 = true;
+		data->emu_wrsr_ext3 = true;
+		data->emu_chip_size = 16 * 1024 * 1024;
+		data->emu_max_byteprogram_size = 256;
+		data->emu_max_aai_size = 0;
+		data->emu_status_len = 3;
+		data->emu_jedec_se_size = 4 * 1024;
+		data->emu_jedec_be_52_size = 32 * 1024;
+		data->emu_jedec_be_d8_size = 64 * 1024;
+		data->emu_jedec_ce_60_size = data->emu_chip_size;
+		data->emu_jedec_ce_c7_size = data->emu_chip_size;
+		msg_pdbg("Emulating Spansion S25FL128L SPI flash chip (RES, RDID, WP)\n");
 	}
 
 	/* The name of variable-size virtual chip. A 4 MiB flash example:
