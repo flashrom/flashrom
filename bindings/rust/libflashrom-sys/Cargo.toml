@@ -1,0 +1,10 @@
+[package]
+name = "libflashrom-sys"
+version = "0.1.0"
+links = "flashrom"
+build = "build.rs"
+edition = "2021"
+
+[build-dependencies]
+pkg-config = "0.3.19"
+bindgen = "0.59.2"

@@ -1,5 +1,7 @@
 .gitattributes export-ignore
 .gitignore export-ignore
+/bindings export-ignore
+/bindings/** export-ignore
 /util/getrevision.sh export-ignore
 /util/git-hooks export-ignore
 /util/git-hooks/** export-ignore
