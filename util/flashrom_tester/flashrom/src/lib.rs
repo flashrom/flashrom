@@ -37,10 +37,17 @@
 extern crate log;
 
 mod cmd;
+mod flashromlib;
 
 use std::{error, fmt};
 
 pub use cmd::{dut_ctrl_toggle_wp, FlashromCmd};
+pub use flashromlib::FlashromLib;
+
+pub use libflashrom::{
+    flashrom_log_level, FLASHROM_MSG_DEBUG, FLASHROM_MSG_DEBUG2, FLASHROM_MSG_ERROR,
+    FLASHROM_MSG_INFO, FLASHROM_MSG_SPEW, FLASHROM_MSG_WARN,
+};
 
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub enum FlashChip {
@@ -69,6 +76,13 @@ impl FlashChip {
             FlashChip::DEDIPROG => "dediprog",
         };
         return r;
+    }
+
+    /// Return the programmer string and optional programmer options
+    pub fn to_split(fc: FlashChip) -> (&'static str, Option<&'static str>) {
+        let programmer = FlashChip::to(fc);
+        let mut bits = programmer.splitn(2, ':');
+        (bits.next().unwrap(), bits.next())
     }
 
     /// Return whether the hardware write protect signal can be controlled.

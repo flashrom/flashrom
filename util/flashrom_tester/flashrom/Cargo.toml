@@ -7,3 +7,4 @@ edition = "2018"
 
 [dependencies]
 log = "0.4"
+libflashrom = { path = "../../../bindings/rust/libflashrom" }

@@ -39,7 +39,7 @@ extern crate log;
 mod logger;
 
 use clap::{App, Arg};
-use flashrom::{FlashChip, Flashrom, FlashromCmd};
+use flashrom::{FlashChip, Flashrom, FlashromCmd, FlashromLib};
 use flashrom_tester::{tester, tests};
 use std::path::PathBuf;
 use std::sync::atomic::AtomicBool;
@@ -65,7 +65,21 @@ fn main() {
             built_info::BUILT_TIME_UTC,
             built_info::RUSTC_VERSION,
         ))
-        .arg(Arg::with_name("flashrom_binary").required(true))
+        .arg(
+            Arg::with_name("libflashrom")
+                .long("libflashrom")
+                .takes_value(false)
+                .help("Test the flashrom library instead of a binary"),
+        )
+        .arg(
+            Arg::with_name("flashrom_binary")
+                .long("flashrom_binary")
+                .short("b")
+                .takes_value(true)
+                .required_unless("libflashrom")
+                .conflicts_with("libflashrom")
+                .help("Path to flashrom binary to test"),
+        )
         .arg(
             Arg::with_name("ccd_target_type")
                 .required(true)
@@ -117,9 +131,6 @@ fn main() {
     let crossystem =
         flashrom_tester::utils::collect_crosssystem(&[]).expect("could not run crossystem");
 
-    let flashrom_path = matches
-        .value_of("flashrom_binary")
-        .expect("flashrom_binary should be required");
     let ccd_type = FlashChip::from(
         matches
             .value_of("ccd_target_type")
@@ -127,10 +138,24 @@ fn main() {
     )
     .expect("ccd_target_type should admit only known types");
 
-    let cmd: Box<dyn Flashrom> = Box::new(FlashromCmd {
-        path: flashrom_path.to_string(),
-        fc: ccd_type,
-    });
+    let cmd: Box<dyn Flashrom> = if matches.is_present("libflashrom") {
+        Box::new(FlashromLib::new(
+            ccd_type,
+            if matches.is_present("log_debug") {
+                flashrom::FLASHROM_MSG_DEBUG
+            } else {
+                flashrom::FLASHROM_MSG_WARN
+            },
+        ))
+    } else {
+        Box::new(FlashromCmd {
+            path: matches
+                .value_of("flashrom_binary")
+                .expect("flashrom_binary is required")
+                .to_string(),
+            fc: ccd_type,
+        })
+    };
 
     let print_layout = matches.is_present("print-layout");
     let output_format = matches
