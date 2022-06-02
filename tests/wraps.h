@@ -58,12 +58,12 @@ int __wrap_feof(FILE *fp);
 int __wrap_ferror(FILE *fp);
 void __wrap_clearerr(FILE *fp);
 int __wrap_rget_io_perms(void);
-void __wrap_test_outb(unsigned char value, unsigned short port);
-unsigned char __wrap_test_inb(unsigned short port);
-void __wrap_test_outw(unsigned short value, unsigned short port);
-unsigned short __wrap_test_inw(unsigned short port);
-void __wrap_test_outl(unsigned int value, unsigned short port);
-unsigned int __wrap_test_inl(unsigned short port);
+void __wrap_OUTB(unsigned char value, unsigned short port);
+unsigned char __wrap_INB(unsigned short port);
+void __wrap_OUTW(unsigned short value, unsigned short port);
+unsigned short __wrap_INW(unsigned short port);
+void __wrap_OUTL(unsigned int value, unsigned short port);
+unsigned int __wrap_INL(unsigned short port);
 int __wrap_spi_send_command(const struct flashctx *flash,
 		unsigned int writecnt, unsigned int readcnt,
 		const unsigned char *writearr, unsigned char *readarr);

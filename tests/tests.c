@@ -321,14 +321,14 @@ int __wrap_rget_io_perms(void)
 	return 0;
 }
 
-void __wrap_test_outb(unsigned char value, unsigned short port)
+void __wrap_OUTB(unsigned char value, unsigned short port)
 {
 	/* LOG_ME; */
 	if (get_io() && get_io()->outb)
 		get_io()->outb(get_io()->state, value, port);
 }
 
-unsigned char __wrap_test_inb(unsigned short port)
+unsigned char __wrap_INB(unsigned short port)
 {
 	/* LOG_ME; */
 	if (get_io() && get_io()->inb)
@@ -336,14 +336,14 @@ unsigned char __wrap_test_inb(unsigned short port)
 	return 0;
 }
 
-void __wrap_test_outw(unsigned short value, unsigned short port)
+void __wrap_OUTW(unsigned short value, unsigned short port)
 {
 	/* LOG_ME; */
 	if (get_io() && get_io()->outw)
 		get_io()->outw(get_io()->state, value, port);
 }
 
-unsigned short __wrap_test_inw(unsigned short port)
+unsigned short __wrap_INW(unsigned short port)
 {
 	/* LOG_ME; */
 	if (get_io() && get_io()->inw)
@@ -351,14 +351,14 @@ unsigned short __wrap_test_inw(unsigned short port)
 	return 0;
 }
 
-void __wrap_test_outl(unsigned int value, unsigned short port)
+void __wrap_OUTL(unsigned int value, unsigned short port)
 {
 	/* LOG_ME; */
 	if (get_io() && get_io()->outl)
 		get_io()->outl(get_io()->state, value, port);
 }
 
-unsigned int __wrap_test_inl(unsigned short port)
+unsigned int __wrap_INL(unsigned short port)
 {
 	/* LOG_ME; */
 	if (get_io() && get_io()->inl)
