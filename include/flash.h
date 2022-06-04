@@ -39,6 +39,8 @@
 #define KiB (1024)
 #define MiB (1024 * KiB)
 
+#define BIT(x) (1<<(x))
+
 /* Assumes `n` and `a` are at most 64-bit wide (to avoid typeof() operator). */
 #define ALIGN_DOWN(n, a) ((n) & ~((uint64_t)(a) - 1))
 

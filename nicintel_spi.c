@@ -74,8 +74,6 @@
 // #define FL_BUSY	30
 // #define FL_ER	31
 
-#define BIT(x) (1<<(x))
-
 struct nicintel_spi_data {
 	uint8_t *spibar;
 };

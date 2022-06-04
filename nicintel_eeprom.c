@@ -69,7 +69,6 @@
 #define EEWR_ADDR 2
 #define EEWR_DATA 16
 
-#define BIT(x) (1<<x)
 #define EE_PAGE_MASK 0x3f
 
 static uint8_t *nicintel_eebar;
