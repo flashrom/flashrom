@@ -28,7 +28,9 @@
 
 #define PCI_VENDOR_ID_HPT	0x1103
 
-static uint32_t io_base_addr = 0;
+struct atahpt_data {
+	uint32_t io_base_addr;
+};
 
 static const struct dev_entry ata_hpt[] = {
 	{0x1103, 0x0004, NT, "Highpoint", "HPT366/368/370/370A/372/372N"},
@@ -41,15 +43,25 @@ static const struct dev_entry ata_hpt[] = {
 static void atahpt_chip_writeb(const struct flashctx *flash, uint8_t val,
 			       chipaddr addr)
 {
-	OUTL((uint32_t)addr, io_base_addr + BIOS_ROM_ADDR);
-	OUTB(val, io_base_addr + BIOS_ROM_DATA);
+	struct atahpt_data *data = flash->mst->par.data;
+
+	OUTL((uint32_t)addr, data->io_base_addr + BIOS_ROM_ADDR);
+	OUTB(val, data->io_base_addr + BIOS_ROM_DATA);
 }
 
 static uint8_t atahpt_chip_readb(const struct flashctx *flash,
 				 const chipaddr addr)
 {
-	OUTL((uint32_t)addr, io_base_addr + BIOS_ROM_ADDR);
-	return INB(io_base_addr + BIOS_ROM_DATA);
+	struct atahpt_data *data = flash->mst->par.data;
+
+	OUTL((uint32_t)addr, data->io_base_addr + BIOS_ROM_ADDR);
+	return INB(data->io_base_addr + BIOS_ROM_DATA);
+}
+
+static int atahpt_shutdown(void *par_data)
+{
+	free(par_data);
+	return 0;
 }
 
 static const struct par_master par_master_atahpt = {
@@ -61,11 +73,13 @@ static const struct par_master par_master_atahpt = {
 		.chip_writew		= fallback_chip_writew,
 		.chip_writel		= fallback_chip_writel,
 		.chip_writen		= fallback_chip_writen,
+		.shutdown		= atahpt_shutdown,
 };
 
 static int atahpt_init(void)
 {
 	struct pci_dev *dev = NULL;
+	uint32_t io_base_addr;
 	uint32_t reg32;
 
 	if (rget_io_perms())
@@ -84,7 +98,14 @@ static int atahpt_init(void)
 	reg32 |= (1 << 24);
 	rpci_write_long(dev, REG_FLASH_ACCESS, reg32);
 
-	return register_par_master(&par_master_atahpt, BUS_PARALLEL, NULL);
+	struct atahpt_data *data = calloc(1, sizeof(*data));
+	if (!data) {
+		msg_perr("Unable to allocate space for PAR master data\n");
+		return 1;
+	}
+	data->io_base_addr = io_base_addr;
+
+	return register_par_master(&par_master_atahpt, BUS_PARALLEL, data);
 }
 
 const struct programmer_entry programmer_atahpt = {
