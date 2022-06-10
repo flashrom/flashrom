@@ -114,6 +114,9 @@ pub trait Flashrom {
     /// Read the whole flash to the file specified by `path`.
     fn read(&self, path: &str) -> Result<(), FlashromError>;
 
+    /// Read only a region of the flash.
+    fn read_region(&self, path: &str, region: &str) -> Result<(), FlashromError>;
+
     /// Write the whole flash to the file specified by `path`.
     fn write(&self, path: &str) -> Result<(), FlashromError>;
 

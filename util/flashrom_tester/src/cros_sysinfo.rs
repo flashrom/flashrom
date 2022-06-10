@@ -59,22 +59,3 @@ pub fn system_info() -> IoResult<String> {
 pub fn bios_info() -> IoResult<String> {
     dmidecode_dispatch(&["-q", "-t0"])
 }
-
-pub fn eventlog_list() -> Result<String, std::io::Error> {
-    elogtool_dispatch(&["list"])
-}
-
-fn elogtool_dispatch<S: AsRef<OsStr> + Debug>(args: &[S]) -> IoResult<String> {
-    info!("elogtool_dispatch() running: /usr/bin/elogtool {:?}", args);
-
-    let output = Command::new("/usr/bin/elogtool")
-        .args(args)
-        .stdin(Stdio::null())
-        .output()?;
-    if !output.status.success() {
-        return Err(utils::translate_command_error(&output));
-    }
-
-    let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
-    Ok(stdout)
-}

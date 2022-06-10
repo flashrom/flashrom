@@ -38,11 +38,13 @@ use super::tester::{self, OutputFormat, TestCase, TestEnv, TestResult};
 use super::utils::{self, LayoutNames};
 use flashrom::{FlashChip, Flashrom};
 use std::collections::{HashMap, HashSet};
-use std::fs::File;
+use std::convert::TryInto;
+use std::fs::{self, File};
 use std::io::{BufRead, Write};
 use std::sync::atomic::AtomicBool;
 
 const LAYOUT_FILE: &'static str = "/tmp/layout.file";
+const ELOG_FILE: &'static str = "/tmp/elog.file";
 
 /// Iterate over tests, yielding only those tests with names matching filter_names.
 ///
@@ -233,25 +235,28 @@ fn lock_test(env: &mut TestEnv) -> TestResult {
 
 fn elog_sanity_test(env: &mut TestEnv) -> TestResult {
     // Check that the elog contains *something*, as an indication that Coreboot
-    // is actually able to write to the Flash. Because this invokes elogtool on
-    // the host, it doesn't make sense to run for other chips.
+    // is actually able to write to the Flash. This only makes sense for chips
+    // running Coreboot, which we assume is just host.
     if env.chip_type() != FlashChip::HOST {
         info!("Skipping ELOG sanity check for non-host chip");
         return Ok(());
     }
-    // elogtool reads the flash, it should be back in the golden state
+    // flash should be back in the golden state
     env.ensure_golden()?;
-    // Output is one event per line, drop empty lines in the interest of being defensive.
-    let event_count = cros_sysinfo::eventlog_list()?
-        .lines()
-        .filter(|l| !l.is_empty())
-        .count();
 
-    if event_count == 0 {
-        Err("ELOG contained no events".into())
-    } else {
-        Ok(())
+    const ELOG_RW_REGION_NAME: &str = "RW_ELOG";
+    env.cmd.read_region(ELOG_FILE, ELOG_RW_REGION_NAME)?;
+
+    // Just checking for the magic numer
+    // TODO: improve this test to read the events
+    if fs::metadata(ELOG_FILE)?.len() < 4 {
+        return Err("ELOG contained no data".into());
     }
+    let data = fs::read(ELOG_FILE)?;
+    if u32::from_be_bytes(data[0..4].try_into()?) != 0x474f4c45 {
+        return Err("ELOG had bad magic number".into());
+    }
+    Ok(())
 }
 
 fn host_is_chrome_test(_env: &mut TestEnv) -> TestResult {

@@ -64,6 +64,7 @@ pub struct IOOpt<'a> {
     pub write: Option<&'a str>,  // -w <file>
     pub verify: Option<&'a str>, // -v <file>
     pub erase: bool,             // -E
+    pub region: Option<&'a str>, // --image
 }
 
 #[derive(PartialEq, Debug)]
@@ -264,6 +265,22 @@ impl crate::Flashrom for FlashromCmd {
         Ok(())
     }
 
+    fn read_region(&self, path: &str, region: &str) -> Result<(), FlashromError> {
+        let opts = FlashromOpt {
+            io_opt: IOOpt {
+                read: Some(path),
+                region: Some(region),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+
+        let (stdout, _) = self.dispatch(opts)?;
+        let output = String::from_utf8_lossy(stdout.as_slice());
+        debug!("read():\n{}", output);
+        Ok(())
+    }
+
     fn write(&self, path: &str) -> Result<(), FlashromError> {
         let opts = FlashromOpt {
             io_opt: IOOpt {
@@ -338,6 +355,10 @@ fn flashrom_decode_opts(opts: FlashromOpt) -> Vec<String> {
     }
 
     // io_opt
+    if let Some(region) = opts.io_opt.region {
+        params.push("--image".to_string());
+        params.push(region.to_string());
+    }
     if opts.io_opt.read.is_some() {
         params.push("-r".to_string());
         params.push(opts.io_opt.read.unwrap().to_string());
