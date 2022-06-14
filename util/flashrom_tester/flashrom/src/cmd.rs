@@ -93,18 +93,21 @@ fn flashrom_extract_size(stdout: &str) -> Result<i64, FlashromError> {
 }
 
 impl FlashromCmd {
-    fn dispatch(&self, fropt: FlashromOpt) -> Result<(Vec<u8>, Vec<u8>), FlashromError> {
+    fn dispatch(
+        &self,
+        fropt: FlashromOpt,
+        debug_name: &str,
+    ) -> Result<(String, String), FlashromError> {
         let params = flashrom_decode_opts(fropt);
-        flashrom_dispatch(self.path.as_str(), &params, self.fc)
+        flashrom_dispatch(self.path.as_str(), &params, self.fc, debug_name)
     }
 }
 
 impl crate::Flashrom for FlashromCmd {
     fn get_size(&self) -> Result<i64, FlashromError> {
-        let (stdout, _) = flashrom_dispatch(self.path.as_str(), &["--flash-size"], self.fc)?;
-        let sz = String::from_utf8_lossy(&stdout);
-
-        flashrom_extract_size(&sz)
+        let (stdout, _) =
+            flashrom_dispatch(self.path.as_str(), &["--flash-size"], self.fc, "get_size")?;
+        flashrom_extract_size(&stdout)
     }
 
     fn name(&self) -> Result<(String, String), FlashromError> {
@@ -118,13 +121,8 @@ impl crate::Flashrom for FlashromCmd {
             ..Default::default()
         };
 
-        let (stdout, stderr) = self.dispatch(opts)?;
-        let output = String::from_utf8_lossy(stdout.as_slice());
-        let eoutput = String::from_utf8_lossy(stderr.as_slice());
-        debug!("name()'stdout: {:#?}.", output);
-        debug!("name()'stderr: {:#?}.", eoutput);
-
-        match extract_flash_name(&output) {
+        let (stdout, _) = self.dispatch(opts, "name")?;
+        match extract_flash_name(&stdout) {
             None => Err("Didn't find chip vendor/name in flashrom output".into()),
             Some((vendor, name)) => Ok((vendor.into(), name.into())),
         }
@@ -143,11 +141,7 @@ impl crate::Flashrom for FlashromCmd {
             ..Default::default()
         };
 
-        let (stdout, stderr) = self.dispatch(opts)?;
-        let output = String::from_utf8_lossy(stdout.as_slice());
-        let eoutput = String::from_utf8_lossy(stderr.as_slice());
-        debug!("write_file_with_layout()'stdout:\n{}.", output);
-        debug!("write_file_with_layout()'stderr:\n{}.", eoutput);
+        self.dispatch(opts, "write_file_with_layout")?;
         Ok(true)
     }
 
@@ -161,11 +155,7 @@ impl crate::Flashrom for FlashromCmd {
             ..Default::default()
         };
 
-        let (stdout, stderr) = self.dispatch(opts)?;
-        let output = String::from_utf8_lossy(stdout.as_slice());
-        let eoutput = String::from_utf8_lossy(stderr.as_slice());
-        debug!("wp_range()'stdout:\n{}.", output);
-        debug!("wp_range()'stderr:\n{}.", eoutput);
+        self.dispatch(opts, "wp_range")?;
         Ok(true)
     }
 
@@ -178,15 +168,14 @@ impl crate::Flashrom for FlashromCmd {
             ..Default::default()
         };
 
-        let (stdout, _) = self.dispatch(opts)?;
-        let output = String::from_utf8_lossy(stdout.as_slice());
-        if output.len() == 0 {
+        let (stdout, _) = self.dispatch(opts, "wp_list")?;
+        if stdout.len() == 0 {
             return Err(
                 "wp_list isn't supported on platforms using the Linux kernel SPI driver wp_list"
                     .into(),
             );
         }
-        Ok(output.to_string())
+        Ok(stdout)
     }
 
     fn wp_status(&self, en: bool) -> Result<bool, FlashromError> {
@@ -201,13 +190,9 @@ impl crate::Flashrom for FlashromCmd {
             ..Default::default()
         };
 
-        let (stdout, _) = self.dispatch(opts)?;
-        let output = String::from_utf8_lossy(stdout.as_slice());
-
-        debug!("wp_status():\n{}", output);
-
+        let (stdout, _) = self.dispatch(opts, "wp_status")?;
         let s = std::format!("write protect is {}abled", status);
-        Ok(output.contains(&s))
+        Ok(stdout.contains(&s))
     }
 
     fn wp_toggle(&self, en: bool) -> Result<bool, FlashromError> {
@@ -231,12 +216,7 @@ impl crate::Flashrom for FlashromCmd {
             ..Default::default()
         };
 
-        let (stdout, stderr) = self.dispatch(opts)?;
-        let output = String::from_utf8_lossy(stdout.as_slice());
-        let eoutput = String::from_utf8_lossy(stderr.as_slice());
-
-        debug!("wp_toggle()'stdout:\n{}.", output);
-        debug!("wp_toggle()'stderr:\n{}.", eoutput);
+        self.dispatch(opts, "wp_toggle")?;
 
         match self.wp_status(true) {
             Ok(_ret) => {
@@ -256,9 +236,7 @@ impl crate::Flashrom for FlashromCmd {
             ..Default::default()
         };
 
-        let (stdout, _) = self.dispatch(opts)?;
-        let output = String::from_utf8_lossy(stdout.as_slice());
-        debug!("read():\n{}", output);
+        self.dispatch(opts, "read")?;
         Ok(())
     }
 
@@ -272,9 +250,7 @@ impl crate::Flashrom for FlashromCmd {
             ..Default::default()
         };
 
-        let (stdout, _) = self.dispatch(opts)?;
-        let output = String::from_utf8_lossy(stdout.as_slice());
-        debug!("read():\n{}", output);
+        let (stdout, _) = self.dispatch(opts, "read_region")?;
         Ok(())
     }
 
@@ -287,9 +263,7 @@ impl crate::Flashrom for FlashromCmd {
             ..Default::default()
         };
 
-        let (stdout, _) = self.dispatch(opts)?;
-        let output = String::from_utf8_lossy(stdout.as_slice());
-        debug!("write():\n{}", output);
+        self.dispatch(opts, "write")?;
         Ok(())
     }
 
@@ -302,9 +276,7 @@ impl crate::Flashrom for FlashromCmd {
             ..Default::default()
         };
 
-        let (stdout, _) = self.dispatch(opts)?;
-        let output = String::from_utf8_lossy(stdout.as_slice());
-        debug!("verify():\n{}", output);
+        self.dispatch(opts, "verify")?;
         Ok(())
     }
 
@@ -317,9 +289,7 @@ impl crate::Flashrom for FlashromCmd {
             ..Default::default()
         };
 
-        let (stdout, _) = self.dispatch(opts)?;
-        let output = String::from_utf8_lossy(stdout.as_slice());
-        debug!("erase():\n{}", output);
+        self.dispatch(opts, "erase")?;
         Ok(())
     }
 
@@ -393,7 +363,8 @@ fn flashrom_dispatch<S: AsRef<str>>(
     path: &str,
     params: &[S],
     fc: FlashChip,
-) -> Result<(Vec<u8>, Vec<u8>), FlashromError> {
+    debug_name: &str,
+) -> Result<(String, String), FlashromError> {
     // from man page:
     //  ' -p, --programmer <name>[:parameter[,parameter[,parameter]]] '
     let mut args: Vec<&str> = vec!["-p", FlashChip::to(fc)];
@@ -405,24 +376,25 @@ fn flashrom_dispatch<S: AsRef<str>>(
         Ok(x) => x,
         Err(e) => return Err(format!("Failed to run flashrom: {}", e).into()),
     };
+
+    let stdout = String::from_utf8_lossy(output.stdout.as_slice());
+    let stderr = String::from_utf8_lossy(output.stderr.as_slice());
+    debug!("{}()'stdout: {}.", debug_name, stdout);
+    debug!("{}()'stderr: {}.", debug_name, stderr);
+
     if !output.status.success() {
         // There is two cases on failure;
         //  i. ) A bad exit code,
         //  ii.) A SIG killed us.
         match output.status.code() {
             Some(code) => {
-                return Err(format!(
-                    "{}\nExited with error code: {}",
-                    String::from_utf8_lossy(&output.stderr),
-                    code
-                )
-                .into());
+                return Err(format!("{}\nExited with error code: {}", stderr, code).into());
             }
             None => return Err("Process terminated by a signal".into()),
         }
     }
 
-    Ok((output.stdout, output.stderr))
+    Ok((stdout.into(), stderr.into()))
 }
 
 pub fn dut_ctrl_toggle_wp(en: bool) -> Result<(Vec<u8>, Vec<u8>), FlashromError> {
