@@ -44,6 +44,18 @@ pub enum LayoutNames {
     BottomQuad,
 }
 
+impl LayoutNames {
+    // Return a section that does not overlap
+    pub fn get_non_overlapping_section(&self) -> LayoutNames {
+        match self {
+            LayoutNames::TopQuad => LayoutNames::BottomQuad,
+            LayoutNames::TopHalf => LayoutNames::BottomHalf,
+            LayoutNames::BottomHalf => LayoutNames::TopHalf,
+            LayoutNames::BottomQuad => LayoutNames::TopQuad,
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct LayoutSizes {
     half_sz: i64,
