@@ -36,6 +36,7 @@
 use super::rand_util;
 use super::types;
 use super::utils::{self, LayoutSizes};
+use flashrom::FlashromError;
 use flashrom::{FlashChip, Flashrom};
 use serde_json::json;
 use std::mem::MaybeUninit;
@@ -65,7 +66,7 @@ pub struct TestEnv<'a> {
 }
 
 impl<'a> TestEnv<'a> {
-    pub fn create(chip_type: FlashChip, cmd: &'a dyn Flashrom) -> Result<Self, String> {
+    pub fn create(chip_type: FlashChip, cmd: &'a dyn Flashrom) -> Result<Self, FlashromError> {
         let rom_sz = cmd.get_size()?;
         let out = TestEnv {
             chip_type: chip_type,
@@ -128,22 +129,25 @@ impl<'a> TestEnv<'a> {
 
     /// Do whatever is necessary to make the current Flash contents the same as they
     /// were at the start of testing.
-    pub fn ensure_golden(&mut self) -> Result<(), String> {
+    pub fn ensure_golden(&mut self) -> Result<(), FlashromError> {
         self.wp.set_hw(false)?.set_sw(false)?;
-        self.cmd.write(&self.original_flash_contents)
+        self.cmd.write(&self.original_flash_contents)?;
+        Ok(())
     }
 
     /// Attempt to erase the flash.
-    pub fn erase(&self) -> Result<(), String> {
-        self.cmd.erase()
+    pub fn erase(&self) -> Result<(), FlashromError> {
+        self.cmd.erase()?;
+        Ok(())
     }
 
     /// Verify that the current Flash contents are the same as the file at the given
     /// path.
     ///
     /// Returns Err if they are not the same.
-    pub fn verify(&self, contents_path: &str) -> Result<(), String> {
-        self.cmd.verify(contents_path)
+    pub fn verify(&self, contents_path: &str) -> Result<(), FlashromError> {
+        self.cmd.verify(contents_path)?;
+        Ok(())
     }
 }
 
@@ -200,7 +204,7 @@ impl<'a> WriteProtectState<'a, 'static> {
     ///
     /// Panics if there is already a live state derived from hardware. In such a situation the
     /// new state must be derived from the live one, or the live one must be dropped first.
-    pub fn from_hardware(cmd: &'a dyn Flashrom, fc: FlashChip) -> Result<Self, String> {
+    pub fn from_hardware(cmd: &'a dyn Flashrom, fc: FlashChip) -> Result<Self, FlashromError> {
         let mut lock = Self::get_liveness_lock()
             .lock()
             .expect("Somebody panicked during WriteProtectState init from hardware");
@@ -232,8 +236,9 @@ impl<'a> WriteProtectState<'a, 'static> {
     }
 
     /// Get the actual software write protect state.
-    fn get_sw(cmd: &dyn Flashrom) -> Result<bool, String> {
-        cmd.wp_status(true)
+    fn get_sw(cmd: &dyn Flashrom) -> Result<bool, FlashromError> {
+        let b = cmd.wp_status(true)?;
+        Ok(b)
     }
 }
 
@@ -247,7 +252,7 @@ impl<'a, 'p> WriteProtectState<'a, 'p> {
     }
 
     /// Set the software write protect.
-    pub fn set_sw(&mut self, enable: bool) -> Result<&mut Self, String> {
+    pub fn set_sw(&mut self, enable: bool) -> Result<&mut Self, FlashromError> {
         info!("request={}, current={}", enable, self.current.1);
         if self.current.1 != enable {
             self.cmd.wp_toggle(/* en= */ enable)?;
@@ -277,7 +282,7 @@ impl<'a, 'p> WriteProtectState<'a, 'p> {
     /// This is useful if you need to temporarily make a change to write protection:
     ///
     /// ```no_run
-    /// # fn main() -> Result<(), String> {
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// # let cmd: flashrom::FlashromCmd = unimplemented!();
     /// let wp = flashrom_tester::tester::WriteProtectState::from_hardware(&cmd, flashrom::FlashChip::SERVO)?;
     /// {

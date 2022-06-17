@@ -38,6 +38,8 @@ extern crate log;
 
 mod cmd;
 
+use std::{error, fmt};
+
 pub use cmd::{dut_ctrl_toggle_wp, FlashromCmd};
 
 #[derive(Copy, Clone, PartialEq, Debug)]
@@ -81,7 +83,27 @@ impl FlashChip {
     }
 }
 
-pub type FlashromError = String;
+#[derive(Debug, PartialEq)]
+pub struct FlashromError {
+    msg: String,
+}
+
+impl fmt::Display for FlashromError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.msg)
+    }
+}
+
+impl error::Error for FlashromError {}
+
+impl<T> From<T> for FlashromError
+where
+    T: Into<String>,
+{
+    fn from(msg: T) -> Self {
+        FlashromError { msg: msg.into() }
+    }
+}
 
 pub struct ROMWriteSpecifics<'a> {
     pub layout_file: Option<&'a str>,

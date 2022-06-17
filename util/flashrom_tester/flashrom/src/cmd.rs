@@ -86,10 +86,7 @@ fn flashrom_extract_size(stdout: &str) -> Result<i64, FlashromError> {
     {
         None => return Err("Found no purely-numeric lines in flashrom output".into()),
         Some(Err(e)) => {
-            return Err(format!(
-                "Failed to parse flashrom size output as integer: {}",
-                e
-            ))
+            return Err(format!("Failed to parse flashrom size output as integer: {}", e).into())
         }
         Some(Ok(sz)) => Ok(sz),
     }
@@ -246,7 +243,7 @@ impl crate::Flashrom for FlashromCmd {
                 info!("Successfully {}abled write-protect", status);
                 Ok(true)
             }
-            Err(e) => Err(format!("Cannot {}able write-protect: {}", status, e)),
+            Err(e) => Err(format!("Cannot {}able write-protect: {}", status, e).into()),
         }
     }
 
@@ -406,7 +403,7 @@ fn flashrom_dispatch<S: AsRef<str>>(
 
     let output = match Command::new(path).args(&args).output() {
         Ok(x) => x,
-        Err(e) => return Err(format!("Failed to run flashrom: {}", e)),
+        Err(e) => return Err(format!("Failed to run flashrom: {}", e).into()),
     };
     if !output.status.success() {
         // There is two cases on failure;
@@ -418,7 +415,8 @@ fn flashrom_dispatch<S: AsRef<str>>(
                     "{}\nExited with error code: {}",
                     String::from_utf8_lossy(&output.stderr),
                     code
-                ));
+                )
+                .into());
             }
             None => return Err("Process terminated by a signal".into()),
         }
@@ -444,7 +442,7 @@ pub fn dut_ctrl_servo_type() -> Result<(Vec<u8>, Vec<u8>), FlashromError> {
 fn dut_ctrl(args: &[&str]) -> Result<(Vec<u8>, Vec<u8>), FlashromError> {
     let output = match Command::new("dut-control").args(args).output() {
         Ok(x) => x,
-        Err(e) => return Err(format!("Failed to run dut-control: {}", e)),
+        Err(e) => return Err(format!("Failed to run dut-control: {}", e).into()),
     };
     if !output.status.success() {
         // There is two cases on failure;
