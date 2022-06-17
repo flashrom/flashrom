@@ -1679,12 +1679,11 @@ static const enum ich_access_protection access_perms_to_protection[] = {
 	LOCKED, WRITE_PROT, READ_PROT, NO_PROT
 };
 static const char *const access_names[] = {
-	"locked", "read-only", "write-only", "read-write"
+	"read-write", "write-only", "read-only", "locked"
 };
 
 static enum ich_access_protection ich9_handle_frap(uint32_t frap, unsigned int i)
 {
-	const int rwperms_unknown = ARRAY_SIZE(access_names);
 	static const char *const region_names[] = {
 		"Flash Descriptor", "BIOS", "Management Engine",
 		"Gigabit Ethernet", "Platform Data", "Device Expansion",
@@ -1693,22 +1692,12 @@ static enum ich_access_protection ich9_handle_frap(uint32_t frap, unsigned int i
 	const char *const region_name = i < ARRAY_SIZE(region_names) ? region_names[i] : "unknown";
 
 	uint32_t base, limit;
-	int rwperms;
+	unsigned int rwperms_idx;
+	enum ich_access_protection rwperms;
 	const int offset = i < 12
 		? ICH9_REG_FREG0 + i * 4
 		: APL_REG_FREG12 + (i - 12) * 4;
 	uint32_t freg = mmio_readl(ich_spibar + offset);
-
-	if (i < 8) {
-		rwperms = (((ICH_BRWA(frap) >> i) & 1) << 1) |
-			  (((ICH_BRRA(frap) >> i) & 1) << 0);
-	} else {
-		/* Datasheets don't define any access bits for regions > 7. We
-		   can't rely on the actual descriptor settings either as there
-		   are several overrides for them (those by other masters are
-		   not even readable by us, *shrug*). */
-		rwperms = rwperms_unknown;
-	}
 
 	base  = ICH_FREG_BASE(freg);
 	limit = ICH_FREG_LIMIT(freg);
@@ -1719,20 +1708,24 @@ static enum ich_access_protection ich9_handle_frap(uint32_t frap, unsigned int i
 		return NO_PROT;
 	}
 	msg_pdbg("0x%02X: 0x%08x ", offset, freg);
-	if (rwperms == 0x3) {
-		msg_pdbg("FREG%u: %s region (0x%08x-0x%08x) is %s.\n", i,
-			 region_name, base, limit, access_names[rwperms]);
-		return NO_PROT;
-	}
-	if (rwperms == rwperms_unknown) {
-		msg_pdbg("FREG%u: %s region (0x%08x-0x%08x) has unknown permissions.\n",
-			 i, region_name, base, limit);
-		return NO_PROT;
-	}
 
+	if (i < 8) {
+		rwperms_idx = (((ICH_BRWA(frap) >> i) & 1) << 1) |
+			      (((ICH_BRRA(frap) >> i) & 1) << 0);
+		rwperms = access_perms_to_protection[rwperms_idx];
+	} else {
+		/* Datasheets don't define any access bits for regions > 7. We
+		   can't rely on the actual descriptor settings either as there
+		   are several overrides for them (those by other masters are
+		   not even readable by us, *shrug*). */
+		msg_pdbg("FREG%u: %s region (0x%08x-0x%08x) has unknown permissions.\n",
+				i, region_name, base, limit);
+		return NO_PROT;
+	}
 	msg_pinfo("FREG%u: %s region (0x%08x-0x%08x) is %s.\n", i,
 		  region_name, base, limit, access_names[rwperms]);
-	return access_perms_to_protection[rwperms];
+
+	return rwperms;
 }
 
 	/* In contrast to FRAP and the master section of the descriptor the bits
@@ -1748,14 +1741,15 @@ static enum ich_access_protection ich9_handle_pr(const size_t reg_pr0, unsigned 
 {
 	uint8_t off = reg_pr0 + (i * 4);
 	uint32_t pr = mmio_readl(ich_spibar + off);
-	unsigned int rwperms = ICH_PR_PERMS(pr);
+	unsigned int rwperms_idx = ICH_PR_PERMS(pr);
+	enum ich_access_protection rwperms = access_perms_to_protection[rwperms_idx];
 
 	/* From 5 on we have GPR registers and start from 0 again. */
 	const char *const prefix = i >= 5 ? "G" : "";
 	if (i >= 5)
 		i -= 5;
 
-	if (rwperms == 0x3) {
+	if (rwperms == NO_PROT) {
 		msg_pdbg2("0x%02X: 0x%08x (%sPR%u is unused)\n", off, pr, prefix, i);
 		return NO_PROT;
 	}
@@ -1763,7 +1757,8 @@ static enum ich_access_protection ich9_handle_pr(const size_t reg_pr0, unsigned 
 	msg_pdbg("0x%02X: 0x%08x ", off, pr);
 	msg_pwarn("%sPR%u: Warning: 0x%08x-0x%08x is %s.\n", prefix, i, ICH_FREG_BASE(pr),
 		  ICH_FREG_LIMIT(pr), access_names[rwperms]);
-	return access_perms_to_protection[rwperms];
+
+	return rwperms;
 }
 
 /* Set/Clear the read and write protection enable bits of PR register @i
