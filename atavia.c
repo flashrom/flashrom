@@ -46,7 +46,7 @@
 /* Select the byte we want to access. This is done by clearing the bit corresponding to the byte we want to
  * access, leaving the others set (yes, really). */
 #define ENABLE_BYTE(address)	((~(1 << ((address) & 3))) & BROM_BYTE_ENABLE_MASK)
-#define BYTE_OFFSET(address)	(((addr) & 3) * 8)
+#define BYTE_OFFSET(address)	(((address) & 3) * 8)
 
 static const struct dev_entry ata_via[] = {
 	{PCI_VENDOR_ID_VIA, 0x3249, DEP, "VIA", "VT6421A"},
