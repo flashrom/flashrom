@@ -1276,7 +1276,7 @@ static void ich_hwseq_set_addr(uint32_t addr, uint32_t mask)
  * by UVSCC and LVSCC respectively. An alternative to implement this method
  * would be by querying FPB and the respective VSCC register directly.
  */
-static uint32_t ich_hwseq_get_erase_block_size(unsigned int addr)
+static uint32_t ich_hwseq_get_erase_block_size(unsigned int addr, uint32_t addr_mask, bool only_4k)
 {
 	uint8_t enc_berase;
 	static const uint32_t dec_berase[4] = {
@@ -1286,11 +1286,11 @@ static uint32_t ich_hwseq_get_erase_block_size(unsigned int addr)
 		64 * 1024
 	};
 
-	if (hwseq_data.only_4k) {
+	if (only_4k) {
 		return 4 * 1024;
 	}
 
-	ich_hwseq_set_addr(addr, hwseq_data.addr_mask);
+	ich_hwseq_set_addr(addr, addr_mask);
 	enc_berase = (REGREAD16(ICH9_REG_HSFS) & HSFS_BERASE) >> HSFS_BERASE_OFF;
 	return dec_berase[enc_berase];
 }
@@ -1432,7 +1432,7 @@ static int ich_hwseq_probe(struct flashctx *flash)
 	else
 		boundary = 0;
 	size_high = total_size - boundary;
-	erase_size_high = ich_hwseq_get_erase_block_size(boundary);
+	erase_size_high = ich_hwseq_get_erase_block_size(boundary, hwseq_data.addr_mask, hwseq_data.only_4k);
 
 	if (boundary == 0) {
 		msg_cdbg2("There is only one partition containing the whole "
@@ -1446,7 +1446,7 @@ static int ich_hwseq_probe(struct flashctx *flash)
 			 "at address 0x%06x in two partitions.\n",
 			 0, total_size-1, boundary);
 		size_low = total_size - size_high;
-		erase_size_low = ich_hwseq_get_erase_block_size(0);
+		erase_size_low = ich_hwseq_get_erase_block_size(0, hwseq_data.addr_mask, hwseq_data.only_4k);
 
 		eraser->eraseblocks[0].size = erase_size_low;
 		eraser->eraseblocks[0].count = size_low / erase_size_low;
@@ -1471,7 +1471,7 @@ static int ich_hwseq_block_erase(struct flashctx *flash, unsigned int addr,
 	uint32_t erase_block;
 	uint16_t hsfc;
 
-	erase_block = ich_hwseq_get_erase_block_size(addr);
+	erase_block = ich_hwseq_get_erase_block_size(addr, hwseq_data.addr_mask, hwseq_data.only_4k);
 	if (len != erase_block) {
 		msg_cerr("Erase block size for address 0x%06x is %d B, "
 			 "but requested erase block size is %d B. "
