@@ -1263,10 +1263,10 @@ static struct hwseq_data {
 } hwseq_data;
 
 /* Sets FLA in FADDR to (addr & hwseq_data.addr_mask) without touching other bits. */
-static void ich_hwseq_set_addr(uint32_t addr)
+static void ich_hwseq_set_addr(uint32_t addr, uint32_t mask)
 {
-	uint32_t addr_old = REGREAD32(ICH9_REG_FADDR) & ~hwseq_data.addr_mask;
-	REGWRITE32(ICH9_REG_FADDR, (addr & hwseq_data.addr_mask) | addr_old);
+	uint32_t addr_old = REGREAD32(ICH9_REG_FADDR) & ~mask;
+	REGWRITE32(ICH9_REG_FADDR, (addr & mask) | addr_old);
 }
 
 /* Sets FADDR.FLA to 'addr' and returns the erase block size in bytes
@@ -1290,7 +1290,7 @@ static uint32_t ich_hwseq_get_erase_block_size(unsigned int addr)
 		return 4 * 1024;
 	}
 
-	ich_hwseq_set_addr(addr);
+	ich_hwseq_set_addr(addr, hwseq_data.addr_mask);
 	enc_berase = (REGREAD16(ICH9_REG_HSFS) & HSFS_BERASE) >> HSFS_BERASE_OFF;
 	return dec_berase[enc_berase];
 }
@@ -1348,7 +1348,7 @@ static int ich_hwseq_read_status(const struct flashctx *flash, enum flash_reg re
 		return -1;
 	}
 	msg_pdbg("Reading Status register\n");
-	ich_hwseq_set_addr(0);
+	ich_hwseq_set_addr(0, hwseq_data.addr_mask);
 
 	/* clear FDONE, FCERR, AEL by writing 1 to them (if they are set) */
 	REGWRITE16(ICH9_REG_HSFS, REGREAD16(ICH9_REG_HSFS));
@@ -1384,7 +1384,7 @@ static int ich_hwseq_write_status(const struct flashctx *flash, enum flash_reg r
 		return -1;
 	}
 	msg_pdbg("Writing status register\n");
-	ich_hwseq_set_addr(0);
+	ich_hwseq_set_addr(0, hwseq_data.addr_mask);
 
 	/* clear FDONE, FCERR, AEL by writing 1 to them (if they are set) */
 	REGWRITE16(ICH9_REG_HSFS, REGREAD16(ICH9_REG_HSFS));
@@ -1495,7 +1495,7 @@ static int ich_hwseq_block_erase(struct flashctx *flash, unsigned int addr,
 	}
 
 	msg_pdbg("Erasing %d bytes starting at 0x%06x.\n", len, addr);
-	ich_hwseq_set_addr(addr);
+	ich_hwseq_set_addr(addr, hwseq_data.addr_mask);
 
 	/* make sure FDONE, FCERR, AEL are cleared by writing 1 to them */
 	REGWRITE16(ICH9_REG_HSFS, REGREAD16(ICH9_REG_HSFS));
@@ -1540,7 +1540,7 @@ static int ich_hwseq_read(struct flashctx *flash, uint8_t *buf,
 		/* as well as flash chip page borders as demanded in the Intel datasheets. */
 		block_len = min(block_len, 256 - (addr & 0xFF));
 
-		ich_hwseq_set_addr(addr);
+		ich_hwseq_set_addr(addr, hwseq_data.addr_mask);
 
 		if (REGREAD8(ICH9_REG_HSFS) & HSFS_SCIP) {
 			msg_perr("Error: SCIP bit is unexpectedly set.\n");
@@ -1582,7 +1582,7 @@ static int ich_hwseq_write(struct flashctx *flash, const uint8_t *buf, unsigned 
 	REGWRITE16(ICH9_REG_HSFS, REGREAD16(ICH9_REG_HSFS));
 
 	while (len > 0) {
-		ich_hwseq_set_addr(addr);
+		ich_hwseq_set_addr(addr, hwseq_data.addr_mask);
 		/* Obey programmer limit... */
 		block_len = min(len, flash->mst->opaque.max_data_write);
 		/* as well as flash chip page borders as demanded in the Intel datasheets. */
