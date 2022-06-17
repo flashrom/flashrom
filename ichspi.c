@@ -1260,7 +1260,12 @@ static struct hwseq_data {
 	uint32_t addr_mask;
 	bool only_4k;
 	uint32_t hsfc_fcycle;
-} hwseq_data;
+} g_hwseq_data;
+
+static struct hwseq_data *get_hwseq_data_from_context(const struct flashctx *flash)
+{
+	return flash->mst->opaque.data;
+}
 
 /* Sets FLA in FADDR to (addr & hwseq_data.addr_mask) without touching other bits. */
 static void ich_hwseq_set_addr(uint32_t addr, uint32_t mask)
@@ -1342,19 +1347,20 @@ static int ich_hwseq_read_status(const struct flashctx *flash, enum flash_reg re
 {
 	uint16_t hsfc;
 	const int len = 1;
+	const struct hwseq_data *hwseq_data = get_hwseq_data_from_context(flash);
 
 	if (reg != STATUS1) {
 		msg_perr("%s: only supports STATUS1\n", __func__);
 		return -1;
 	}
 	msg_pdbg("Reading Status register\n");
-	ich_hwseq_set_addr(0, hwseq_data.addr_mask);
+	ich_hwseq_set_addr(0, hwseq_data->addr_mask);
 
 	/* clear FDONE, FCERR, AEL by writing 1 to them (if they are set) */
 	REGWRITE16(ICH9_REG_HSFS, REGREAD16(ICH9_REG_HSFS));
 
 	hsfc = REGREAD16(ICH9_REG_HSFC);
-	hsfc &= ~hwseq_data.hsfc_fcycle; /* set read operation */
+	hsfc &= ~hwseq_data->hsfc_fcycle; /* set read operation */
 
 	/* read status register */
 	hsfc |= HSFC_CYCLE_RD_STATUS;
@@ -1365,7 +1371,7 @@ static int ich_hwseq_read_status(const struct flashctx *flash, enum flash_reg re
 	hsfc |= HSFC_FGO; /* start */
 	REGWRITE16(ICH9_REG_HSFC, hsfc);
 
-	if (ich_hwseq_wait_for_cycle_complete(len, ich_generation, hwseq_data.addr_mask)) {
+	if (ich_hwseq_wait_for_cycle_complete(len, ich_generation, hwseq_data->addr_mask)) {
 		msg_perr("Reading Status register failed\n!!");
 		return -1;
 	}
@@ -1378,20 +1384,21 @@ static int ich_hwseq_write_status(const struct flashctx *flash, enum flash_reg r
 {
 	uint16_t hsfc;
 	const int len = 1;
+	const struct hwseq_data *hwseq_data = get_hwseq_data_from_context(flash);
 
 	if (reg != STATUS1) {
 		msg_perr("%s: only supports STATUS1\n", __func__);
 		return -1;
 	}
 	msg_pdbg("Writing status register\n");
-	ich_hwseq_set_addr(0, hwseq_data.addr_mask);
+	ich_hwseq_set_addr(0, hwseq_data->addr_mask);
 
 	/* clear FDONE, FCERR, AEL by writing 1 to them (if they are set) */
 	REGWRITE16(ICH9_REG_HSFS, REGREAD16(ICH9_REG_HSFS));
 
 	ich_fill_data(&value, len, ICH9_REG_FDATA0);
 	hsfc = REGREAD16(ICH9_REG_HSFC);
-	hsfc &= ~hwseq_data.hsfc_fcycle; /* clear operation */
+	hsfc &= ~hwseq_data->hsfc_fcycle; /* clear operation */
 
 	/* write status register */
 	hsfc |= HSFC_CYCLE_WR_STATUS;
@@ -1402,7 +1409,7 @@ static int ich_hwseq_write_status(const struct flashctx *flash, enum flash_reg r
 	hsfc |= HSFC_FGO; /* start */
 	REGWRITE16(ICH9_REG_HSFC, hsfc);
 
-	if (ich_hwseq_wait_for_cycle_complete(len, ich_generation, hwseq_data.addr_mask)) {
+	if (ich_hwseq_wait_for_cycle_complete(len, ich_generation, hwseq_data->addr_mask)) {
 		msg_perr("Writing Status register failed\n!!");
 		return -1;
 	}
@@ -1415,11 +1422,12 @@ static int ich_hwseq_probe(struct flashctx *flash)
 	uint32_t total_size, boundary;
 	uint32_t erase_size_low, size_low, erase_size_high, size_high;
 	struct block_eraser *eraser;
+	const struct hwseq_data *hwseq_data = get_hwseq_data_from_context(flash);
 
-	total_size = hwseq_data.size_comp0 + hwseq_data.size_comp1;
+	total_size = hwseq_data->size_comp0 + hwseq_data->size_comp1;
 	msg_cdbg("Hardware sequencing reports %d attached SPI flash chip",
-		 (hwseq_data.size_comp1 != 0) ? 2 : 1);
-	if (hwseq_data.size_comp1 != 0)
+		 (hwseq_data->size_comp1 != 0) ? 2 : 1);
+	if (hwseq_data->size_comp1 != 0)
 		msg_cdbg("s with a combined");
 	else
 		msg_cdbg(" with a");
@@ -1427,12 +1435,12 @@ static int ich_hwseq_probe(struct flashctx *flash)
 	flash->chip->total_size = total_size / 1024;
 
 	eraser = &(flash->chip->block_erasers[0]);
-	if (!hwseq_data.only_4k)
+	if (!hwseq_data->only_4k)
 		boundary = (REGREAD32(ICH9_REG_FPB) & FPB_FPBA) << 12;
 	else
 		boundary = 0;
 	size_high = total_size - boundary;
-	erase_size_high = ich_hwseq_get_erase_block_size(boundary, hwseq_data.addr_mask, hwseq_data.only_4k);
+	erase_size_high = ich_hwseq_get_erase_block_size(boundary, hwseq_data->addr_mask, hwseq_data->only_4k);
 
 	if (boundary == 0) {
 		msg_cdbg2("There is only one partition containing the whole "
@@ -1446,7 +1454,7 @@ static int ich_hwseq_probe(struct flashctx *flash)
 			 "at address 0x%06x in two partitions.\n",
 			 0, total_size-1, boundary);
 		size_low = total_size - size_high;
-		erase_size_low = ich_hwseq_get_erase_block_size(0, hwseq_data.addr_mask, hwseq_data.only_4k);
+		erase_size_low = ich_hwseq_get_erase_block_size(0, hwseq_data->addr_mask, hwseq_data->only_4k);
 
 		eraser->eraseblocks[0].size = erase_size_low;
 		eraser->eraseblocks[0].count = size_low / erase_size_low;
@@ -1470,8 +1478,9 @@ static int ich_hwseq_block_erase(struct flashctx *flash, unsigned int addr,
 {
 	uint32_t erase_block;
 	uint16_t hsfc;
+	const struct hwseq_data *hwseq_data = get_hwseq_data_from_context(flash);
 
-	erase_block = ich_hwseq_get_erase_block_size(addr, hwseq_data.addr_mask, hwseq_data.only_4k);
+	erase_block = ich_hwseq_get_erase_block_size(addr, hwseq_data->addr_mask, hwseq_data->only_4k);
 	if (len != erase_block) {
 		msg_cerr("Erase block size for address 0x%06x is %d B, "
 			 "but requested erase block size is %d B. "
@@ -1495,7 +1504,7 @@ static int ich_hwseq_block_erase(struct flashctx *flash, unsigned int addr,
 	}
 
 	msg_pdbg("Erasing %d bytes starting at 0x%06x.\n", len, addr);
-	ich_hwseq_set_addr(addr, hwseq_data.addr_mask);
+	ich_hwseq_set_addr(addr, hwseq_data->addr_mask);
 
 	/* make sure FDONE, FCERR, AEL are cleared by writing 1 to them */
 	REGWRITE16(ICH9_REG_HSFS, REGREAD16(ICH9_REG_HSFS));
@@ -1506,14 +1515,14 @@ static int ich_hwseq_block_erase(struct flashctx *flash, unsigned int addr,
 	}
 
 	hsfc = REGREAD16(ICH9_REG_HSFC);
-	hsfc &= ~hwseq_data.hsfc_fcycle; /* clear operation */
+	hsfc &= ~hwseq_data->hsfc_fcycle; /* clear operation */
 	hsfc |= HSFC_CYCLE_BLOCK_ERASE; /* set erase operation */
 	hsfc |= HSFC_FGO; /* start */
 	msg_pdbg("HSFC used for block erasing: ");
 	prettyprint_ich9_reg_hsfc(hsfc, ich_generation);
 	REGWRITE16(ICH9_REG_HSFC, hsfc);
 
-	if (ich_hwseq_wait_for_cycle_complete(len, ich_generation, hwseq_data.addr_mask))
+	if (ich_hwseq_wait_for_cycle_complete(len, ich_generation, hwseq_data->addr_mask))
 		return -1;
 	return 0;
 }
@@ -1523,6 +1532,7 @@ static int ich_hwseq_read(struct flashctx *flash, uint8_t *buf,
 {
 	uint16_t hsfc;
 	uint8_t block_len;
+	const struct hwseq_data *hwseq_data = get_hwseq_data_from_context(flash);
 
 	if (addr + len > flash->chip->total_size * 1024) {
 		msg_perr("Request to read from an inaccessible memory address "
@@ -1540,7 +1550,7 @@ static int ich_hwseq_read(struct flashctx *flash, uint8_t *buf,
 		/* as well as flash chip page borders as demanded in the Intel datasheets. */
 		block_len = min(block_len, 256 - (addr & 0xFF));
 
-		ich_hwseq_set_addr(addr, hwseq_data.addr_mask);
+		ich_hwseq_set_addr(addr, hwseq_data->addr_mask);
 
 		if (REGREAD8(ICH9_REG_HSFS) & HSFS_SCIP) {
 			msg_perr("Error: SCIP bit is unexpectedly set.\n");
@@ -1548,7 +1558,7 @@ static int ich_hwseq_read(struct flashctx *flash, uint8_t *buf,
 		}
 
 		hsfc = REGREAD16(ICH9_REG_HSFC);
-		hsfc &= ~hwseq_data.hsfc_fcycle; /* set read operation */
+		hsfc &= ~hwseq_data->hsfc_fcycle; /* set read operation */
 		hsfc &= ~HSFC_FDBC; /* clear byte count */
 		hsfc |= HSFC_CYCLE_READ; /* set read operation */
 		/* set byte count */
@@ -1556,7 +1566,7 @@ static int ich_hwseq_read(struct flashctx *flash, uint8_t *buf,
 		hsfc |= HSFC_FGO; /* start */
 		REGWRITE16(ICH9_REG_HSFC, hsfc);
 
-		if (ich_hwseq_wait_for_cycle_complete(block_len, ich_generation, hwseq_data.addr_mask))
+		if (ich_hwseq_wait_for_cycle_complete(block_len, ich_generation, hwseq_data->addr_mask))
 			return 1;
 		ich_read_data(buf, block_len, ICH9_REG_FDATA0);
 		addr += block_len;
@@ -1570,6 +1580,7 @@ static int ich_hwseq_write(struct flashctx *flash, const uint8_t *buf, unsigned 
 {
 	uint16_t hsfc;
 	uint8_t block_len;
+	const struct hwseq_data *hwseq_data = get_hwseq_data_from_context(flash);
 
 	if (addr + len > flash->chip->total_size * 1024) {
 		msg_perr("Request to write to an inaccessible memory address "
@@ -1582,7 +1593,7 @@ static int ich_hwseq_write(struct flashctx *flash, const uint8_t *buf, unsigned 
 	REGWRITE16(ICH9_REG_HSFS, REGREAD16(ICH9_REG_HSFS));
 
 	while (len > 0) {
-		ich_hwseq_set_addr(addr, hwseq_data.addr_mask);
+		ich_hwseq_set_addr(addr, hwseq_data->addr_mask);
 		/* Obey programmer limit... */
 		block_len = min(len, flash->mst->opaque.max_data_write);
 		/* as well as flash chip page borders as demanded in the Intel datasheets. */
@@ -1595,7 +1606,7 @@ static int ich_hwseq_write(struct flashctx *flash, const uint8_t *buf, unsigned 
 		}
 
 		hsfc = REGREAD16(ICH9_REG_HSFC);
-		hsfc &= ~hwseq_data.hsfc_fcycle; /* clear operation */
+		hsfc &= ~hwseq_data->hsfc_fcycle; /* clear operation */
 		hsfc |= HSFC_CYCLE_WRITE; /* set write operation */
 		hsfc &= ~HSFC_FDBC; /* clear byte count */
 		/* set byte count */
@@ -1603,7 +1614,7 @@ static int ich_hwseq_write(struct flashctx *flash, const uint8_t *buf, unsigned 
 		hsfc |= HSFC_FGO; /* start */
 		REGWRITE16(ICH9_REG_HSFC, hsfc);
 
-		if (ich_hwseq_wait_for_cycle_complete(block_len, ich_generation, hwseq_data.addr_mask))
+		if (ich_hwseq_wait_for_cycle_complete(block_len, ich_generation, hwseq_data->addr_mask))
 			return -1;
 		addr += block_len;
 		buf += block_len;
@@ -1962,7 +1973,7 @@ static int init_ich_default(void *spibar, enum ich_chipset ich_gen)
 	enum ich_spi_mode ich_spi_mode = ich_auto;
 	size_t num_freg, num_pr, reg_pr0;
 
-	init_chipset_properties(&swseq_data, &hwseq_data, &num_freg, &num_pr, &reg_pr0, ich_gen);
+	init_chipset_properties(&swseq_data, &g_hwseq_data, &num_freg, &num_pr, &reg_pr0, ich_gen);
 
 	int ret = get_ich_spi_mode_param(&ich_spi_mode);
 	if (ret)
@@ -2182,16 +2193,16 @@ static int init_ich_default(void *spibar, enum ich_chipset ich_gen)
 			msg_perr("Could not determine density of flash component %d.\n", 0);
 			return ERROR_FATAL;
 		}
-		hwseq_data.size_comp0 = tmpi;
+		g_hwseq_data.size_comp0 = tmpi;
 
 		tmpi = getFCBA_component_density(ich_gen, &desc, 1);
 		if (tmpi < 0) {
 			msg_perr("Could not determine density of flash component %d.\n", 1);
 			return ERROR_FATAL;
 		}
-		hwseq_data.size_comp1 = tmpi;
+		g_hwseq_data.size_comp1 = tmpi;
 
-		register_opaque_master(&opaque_master_ich_hwseq, NULL);
+		register_opaque_master(&opaque_master_ich_hwseq, &g_hwseq_data);
 	} else {
 		register_spi_master(&spi_master_ich9, NULL);
 	}
