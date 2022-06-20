@@ -95,7 +95,7 @@ void dummy_basic_lifecycle_test_success(void **state)
 		.fallback_open_state = &dummy_fallback_open_state,
 	};
 
-	run_basic_lifecycle(state, &dummy_io, &programmer_dummy, "bus=parallel+lpc+fwh+spi");
+	run_basic_lifecycle(state, &dummy_io, &programmer_dummy, "bus=parallel+lpc+fwh+spi+prog");
 }
 
 void dummy_probe_lifecycle_test_success(void **state)
@@ -111,9 +111,23 @@ void dummy_probe_lifecycle_test_success(void **state)
 	run_probe_lifecycle(state, &dummy_io, &programmer_dummy, "bus=spi,emulate=W25Q128FV", "W25Q128.V");
 }
 
+void dummy_probe_variable_size_test_success(void **state)
+{
+	static struct io_mock_fallback_open_state dummy_fallback_open_state = {
+		.noc = 0,
+		.paths = { NULL },
+	};
+	const struct io_mock dummy_io = {
+		.fallback_open_state = &dummy_fallback_open_state,
+	};
+
+	run_probe_lifecycle(state, &dummy_io, &programmer_dummy, "size=8388608,emulate=VARIABLE_SIZE", "Opaque flash chip");
+}
+
 #else
 	SKIP_TEST(dummy_basic_lifecycle_test_success)
 	SKIP_TEST(dummy_probe_lifecycle_test_success)
+	SKIP_TEST(dummy_probe_variable_size_test_success)
 #endif /* CONFIG_DUMMY */
 
 #if CONFIG_NICREALTEK == 1

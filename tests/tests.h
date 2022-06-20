@@ -51,6 +51,7 @@ void run_probe_lifecycle(void **state, const struct io_mock *io,
 
 void dummy_basic_lifecycle_test_success(void **state);
 void dummy_probe_lifecycle_test_success(void **state);
+void dummy_probe_variable_size_test_success(void **state);
 void nicrealtek_basic_lifecycle_test_success(void **state);
 void raiden_debug_basic_lifecycle_test_success(void **state);
 void dediprog_basic_lifecycle_test_success(void **state);
