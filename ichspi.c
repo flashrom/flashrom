@@ -1875,20 +1875,22 @@ enum ich_spi_mode {
 static int get_ich_spi_mode_param(enum ich_spi_mode *ich_spi_mode)
 {
 	char *const arg = extract_programmer_param_str("ich_spi_mode");
-	if (arg && !strcmp(arg, "hwseq")) {
+	if (!arg) {
+		return 0;
+	} else if (!strcmp(arg, "hwseq")) {
 		*ich_spi_mode = ich_hwseq;
 		msg_pspew("user selected hwseq\n");
-	} else if (arg && !strcmp(arg, "swseq")) {
+	} else if (!strcmp(arg, "swseq")) {
 		*ich_spi_mode = ich_swseq;
 		msg_pspew("user selected swseq\n");
-	} else if (arg && !strcmp(arg, "auto")) {
+	} else if (!strcmp(arg, "auto")) {
 		msg_pspew("user selected auto\n");
 		*ich_spi_mode = ich_auto;
-	} else if (arg && !strlen(arg)) {
+	} else if (!strlen(arg)) {
 		msg_perr("Missing argument for ich_spi_mode.\n");
 		free(arg);
 		return ERROR_FATAL;
-	} else if (arg) {
+	} else {
 		msg_perr("Unknown argument for ich_spi_mode: %s\n", arg);
 		free(arg);
 		return ERROR_FATAL;
