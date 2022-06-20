@@ -1102,6 +1102,11 @@ static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_suppor
 			}
 		}
 
+		if (freq == 0) {
+			msg_perr("%s: invalid value 0 for freq parameter\n", __func__);
+			free(tmp);
+			return 1;
+		}
 		/* Assume we only work with bytes and transfer at 1 bit/Hz */
 		data->delay_us = (1000000 * 8) / freq;
 	}
