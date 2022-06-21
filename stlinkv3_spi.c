@@ -115,7 +115,10 @@ enum spi_nss_level {
 #define USB_TIMEOUT_IN_MS					5000
 
 static const struct dev_entry devs_stlinkv3_spi[] = {
-	{0x0483, 0x374F, OK, "STMicroelectronics", "STLINK-V3"},
+	{0x0483, 0x374E, NT, "STMicroelectronics", "STLINK-V3E"},
+	{0x0483, 0x374F, OK, "STMicroelectronics", "STLINK-V3S"},
+	{0x0483, 0x3753, OK, "STMicroelectronics", "STLINK-V3 dual VCP"},
+	{0x0483, 0x3754, NT, "STMicroelectronics", "STLINK-V3 no MSD"},
 	{0}
 };
 
@@ -478,6 +481,7 @@ static int stlinkv3_spi_init(void)
 	char *serialno = NULL;
 	char *endptr = NULL;
 	int ret = 1;
+	int devIndex = 0;
 	struct libusb_context *usb_ctx;
 	libusb_device_handle *stlinkv3_handle;
 	struct stlinkv3_spi_data *stlinkv3_data;
@@ -491,10 +495,17 @@ static int stlinkv3_spi_init(void)
 	serialno = extract_programmer_param_str("serial");
 	if (serialno)
 		msg_pdbg("Opening STLINK-V3 with serial: %s\n", serialno);
-	stlinkv3_handle = usb_dev_get_by_vid_pid_serial(usb_ctx,
-							devs_stlinkv3_spi[0].vendor_id,
-							devs_stlinkv3_spi[0].device_id,
-							serialno);
+
+
+	while (devs_stlinkv3_spi[devIndex].vendor_id != 0) {
+		stlinkv3_handle = usb_dev_get_by_vid_pid_serial(usb_ctx,
+								devs_stlinkv3_spi[devIndex].vendor_id,
+								devs_stlinkv3_spi[devIndex].device_id,
+								serialno);
+		if (stlinkv3_handle)
+			break;
+		devIndex++;
+	}
 
 	if (!stlinkv3_handle) {
 		if (serialno)
