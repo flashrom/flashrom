@@ -87,7 +87,7 @@ void run_probe_lifecycle(void **state, const struct io_mock *io,
 #if CONFIG_DUMMY == 1
 void dummy_basic_lifecycle_test_success(void **state)
 {
-	static struct io_mock_fallback_open_state dummy_fallback_open_state = {
+	struct io_mock_fallback_open_state dummy_fallback_open_state = {
 		.noc = 0,
 		.paths = { NULL },
 	};
@@ -100,7 +100,7 @@ void dummy_basic_lifecycle_test_success(void **state)
 
 void dummy_probe_lifecycle_test_success(void **state)
 {
-	static struct io_mock_fallback_open_state dummy_fallback_open_state = {
+	struct io_mock_fallback_open_state dummy_fallback_open_state = {
 		.noc = 0,
 		.paths = { NULL },
 	};
@@ -113,7 +113,7 @@ void dummy_probe_lifecycle_test_success(void **state)
 
 void dummy_probe_variable_size_test_success(void **state)
 {
-	static struct io_mock_fallback_open_state dummy_fallback_open_state = {
+	struct io_mock_fallback_open_state dummy_fallback_open_state = {
 		.noc = 0,
 		.paths = { NULL },
 	};
@@ -133,7 +133,7 @@ void dummy_probe_variable_size_test_success(void **state)
 #if CONFIG_NICREALTEK == 1
 void nicrealtek_basic_lifecycle_test_success(void **state)
 {
-	static struct io_mock_fallback_open_state nicrealtek_fallback_open_state = {
+	struct io_mock_fallback_open_state nicrealtek_fallback_open_state = {
 		.noc = 0,
 		.paths = { NULL },
 	};
@@ -218,7 +218,7 @@ static void raiden_debug_libusb_free_config_descriptor(void *state, struct libus
 
 void raiden_debug_basic_lifecycle_test_success(void **state)
 {
-	static struct io_mock_fallback_open_state raiden_debug_fallback_open_state = {
+	struct io_mock_fallback_open_state raiden_debug_fallback_open_state = {
 		.noc = 0,
 		.paths = { NULL },
 	};
@@ -270,7 +270,7 @@ static int dediprog_libusb_control_transfer(void *state,
 
 void dediprog_basic_lifecycle_test_success(void **state)
 {
-	static struct io_mock_fallback_open_state dediprog_fallback_open_state = {
+	struct io_mock_fallback_open_state dediprog_fallback_open_state = {
 		.noc = 0,
 		.paths = { NULL },
 	};
@@ -346,7 +346,7 @@ static int linux_mtd_fclose(void *state, FILE *fp)
 void linux_mtd_probe_lifecycle_test_success(void **state)
 {
 	struct linux_mtd_io_state linux_mtd_io_state = { NULL };
-	static struct io_mock_fallback_open_state linux_mtd_fallback_open_state = {
+	struct io_mock_fallback_open_state linux_mtd_fallback_open_state = {
 		.noc = 0,
 		.paths = { NULL },
 	};
@@ -403,7 +403,7 @@ void linux_spi_probe_lifecycle_test_success(void **state)
 	 * Current implementation tests a particular path of the init procedure.
 	 * Specifically, it is reading the buffer size from sysfs.
 	 */
-	static struct io_mock_fallback_open_state linux_spi_fallback_open_state = {
+	struct io_mock_fallback_open_state linux_spi_fallback_open_state = {
 		.noc = 0,
 		.paths = { "/dev/null", NULL },
 		.flags = { O_RDWR },
@@ -449,7 +449,7 @@ static int realtek_mst_write(void *state, int fd, const void *buf, size_t sz)
 
 void realtek_mst_basic_lifecycle_test_success(void **state)
 {
-	static struct io_mock_fallback_open_state realtek_mst_fallback_open_state = {
+	struct io_mock_fallback_open_state realtek_mst_fallback_open_state = {
 		.noc = 0,
 		.paths = { "/dev/i2c-254", NULL },
 		.flags = { O_RDWR },
