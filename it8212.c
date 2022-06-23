@@ -44,14 +44,14 @@ static uint8_t it8212_chip_readb(const struct flashctx *flash, const chipaddr ad
 }
 
 static const struct par_master par_master_it8212 = {
-		.chip_readb		= it8212_chip_readb,
-		.chip_readw		= fallback_chip_readw,
-		.chip_readl		= fallback_chip_readl,
-		.chip_readn		= fallback_chip_readn,
-		.chip_writeb		= it8212_chip_writeb,
-		.chip_writew		= fallback_chip_writew,
-		.chip_writel		= fallback_chip_writel,
-		.chip_writen		= fallback_chip_writen,
+	.chip_readb	= it8212_chip_readb,
+	.chip_readw	= fallback_chip_readw,
+	.chip_readl	= fallback_chip_readl,
+	.chip_readn	= fallback_chip_readn,
+	.chip_writeb	= it8212_chip_writeb,
+	.chip_writew	= fallback_chip_writew,
+	.chip_writel	= fallback_chip_writel,
+	.chip_writen	= fallback_chip_writen,
 };
 
 static int it8212_init(void)

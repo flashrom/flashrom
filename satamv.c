@@ -75,14 +75,14 @@ static uint8_t satamv_chip_readb(const struct flashctx *flash,
 }
 
 static const struct par_master par_master_satamv = {
-		.chip_readb		= satamv_chip_readb,
-		.chip_readw		= fallback_chip_readw,
-		.chip_readl		= fallback_chip_readl,
-		.chip_readn		= fallback_chip_readn,
-		.chip_writeb		= satamv_chip_writeb,
-		.chip_writew		= fallback_chip_writew,
-		.chip_writel		= fallback_chip_writel,
-		.chip_writen		= fallback_chip_writen,
+	.chip_readb	= satamv_chip_readb,
+	.chip_readw	= fallback_chip_readw,
+	.chip_readl	= fallback_chip_readl,
+	.chip_readn	= fallback_chip_readn,
+	.chip_writeb	= satamv_chip_writeb,
+	.chip_writew	= fallback_chip_writew,
+	.chip_writel	= fallback_chip_writel,
+	.chip_writen	= fallback_chip_writen,
 };
 
 /*

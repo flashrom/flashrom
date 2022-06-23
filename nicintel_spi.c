@@ -200,15 +200,15 @@ static int nicintel_bitbang_set_sck_get_miso(int sck, void *spi_data)
 }
 
 static const struct bitbang_spi_master bitbang_spi_master_nicintel = {
-	.set_cs = nicintel_bitbang_set_cs,
-	.set_sck = nicintel_bitbang_set_sck,
-	.set_mosi = nicintel_bitbang_set_mosi,
-	.set_sck_set_mosi = nicintel_bitbang_set_sck_set_mosi,
-	.set_sck_get_miso = nicintel_bitbang_set_sck_get_miso,
-	.get_miso = nicintel_bitbang_get_miso,
-	.request_bus = nicintel_request_spibus,
-	.release_bus = nicintel_release_spibus,
-	.half_period = 1,
+	.set_cs			= nicintel_bitbang_set_cs,
+	.set_sck		= nicintel_bitbang_set_sck,
+	.set_mosi		= nicintel_bitbang_set_mosi,
+	.set_sck_set_mosi	= nicintel_bitbang_set_sck_set_mosi,
+	.set_sck_get_miso	= nicintel_bitbang_set_sck_get_miso,
+	.get_miso		= nicintel_bitbang_get_miso,
+	.request_bus		= nicintel_request_spibus,
+	.release_bus		= nicintel_release_spibus,
+	.half_period		= 1,
 };
 
 static int nicintel_spi_shutdown(void *spi_data)

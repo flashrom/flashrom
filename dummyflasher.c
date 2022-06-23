@@ -919,21 +919,21 @@ static const struct spi_master spi_master_dummyflasher = {
 };
 
 static const struct par_master par_master_dummyflasher = {
-		.chip_readb		= dummy_chip_readb,
-		.chip_readw		= dummy_chip_readw,
-		.chip_readl		= dummy_chip_readl,
-		.chip_readn		= dummy_chip_readn,
-		.chip_writeb		= dummy_chip_writeb,
-		.chip_writew		= dummy_chip_writew,
-		.chip_writel		= dummy_chip_writel,
-		.chip_writen		= dummy_chip_writen,
+	.chip_readb	= dummy_chip_readb,
+	.chip_readw	= dummy_chip_readw,
+	.chip_readl	= dummy_chip_readl,
+	.chip_readn	= dummy_chip_readn,
+	.chip_writeb	= dummy_chip_writeb,
+	.chip_writew	= dummy_chip_writew,
+	.chip_writel	= dummy_chip_writel,
+	.chip_writen	= dummy_chip_writen,
 };
 
 static const struct opaque_master opaque_master_dummyflasher = {
-	.probe          = probe_variable_size,
-	.read           = dummy_opaque_read,
-	.write          = dummy_opaque_write,
-	.erase          = dummy_opaque_erase,
+	.probe	= probe_variable_size,
+	.read	= dummy_opaque_read,
+	.write	= dummy_opaque_write,
+	.erase	= dummy_opaque_erase,
 };
 
 static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_supported)

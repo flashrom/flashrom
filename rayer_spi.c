@@ -228,11 +228,11 @@ static int rayer_shutdown(void *spi_data)
 }
 
 static const struct bitbang_spi_master bitbang_spi_master_rayer = {
-	.set_cs = rayer_bitbang_set_cs,
-	.set_sck = rayer_bitbang_set_sck,
-	.set_mosi = rayer_bitbang_set_mosi,
-	.get_miso = rayer_bitbang_get_miso,
-	.half_period = 0,
+	.set_cs		= rayer_bitbang_set_cs,
+	.set_sck	= rayer_bitbang_set_sck,
+	.set_mosi	= rayer_bitbang_set_mosi,
+	.get_miso	= rayer_bitbang_get_miso,
+	.half_period	= 0,
 };
 
 static int rayer_spi_init(void)

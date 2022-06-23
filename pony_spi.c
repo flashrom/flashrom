@@ -100,11 +100,11 @@ static int pony_bitbang_get_miso(void *spi_data)
 }
 
 static const struct bitbang_spi_master bitbang_spi_master_pony = {
-	.set_cs = pony_bitbang_set_cs,
-	.set_sck = pony_bitbang_set_sck,
-	.set_mosi = pony_bitbang_set_mosi,
-	.get_miso = pony_bitbang_get_miso,
-	.half_period = 0,
+	.set_cs		= pony_bitbang_set_cs,
+	.set_sck	= pony_bitbang_set_sck,
+	.set_mosi	= pony_bitbang_set_mosi,
+	.get_miso	= pony_bitbang_get_miso,
+	.half_period	= 0,
 };
 
 static int pony_spi_shutdown(void *data)

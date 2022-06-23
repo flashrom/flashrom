@@ -100,13 +100,13 @@ static int mcp6x_bitbang_get_miso(void *spi_data)
 }
 
 static const struct bitbang_spi_master bitbang_spi_master_mcp6x = {
-	.set_cs = mcp6x_bitbang_set_cs,
-	.set_sck = mcp6x_bitbang_set_sck,
-	.set_mosi = mcp6x_bitbang_set_mosi,
-	.get_miso = mcp6x_bitbang_get_miso,
-	.request_bus = mcp6x_request_spibus,
-	.release_bus = mcp6x_release_spibus,
-	.half_period = 0,
+	.set_cs		= mcp6x_bitbang_set_cs,
+	.set_sck	= mcp6x_bitbang_set_sck,
+	.set_mosi	= mcp6x_bitbang_set_mosi,
+	.get_miso	= mcp6x_bitbang_get_miso,
+	.request_bus	= mcp6x_request_spibus,
+	.release_bus	= mcp6x_release_spibus,
+	.half_period	= 0,
 };
 
 static int mcp6x_shutdown(void *spi_data)

@@ -1311,14 +1311,14 @@ static int raiden_debug_spi_shutdown(void * data)
 }
 
 static const struct spi_master spi_master_raiden_debug = {
-	.features       = SPI_MASTER_4BA,
-	.max_data_read  = 0,
-	.max_data_write = 0,
-	.command        = NULL,
-	.multicommand   = default_spi_send_multicommand,
-	.read           = default_spi_read,
-	.write_256      = default_spi_write_256,
-	.write_aai      = default_spi_write_aai,
+	.features	= SPI_MASTER_4BA,
+	.max_data_read	= 0,
+	.max_data_write	= 0,
+	.command	= NULL,
+	.multicommand	= default_spi_send_multicommand,
+	.read		= default_spi_read,
+	.write_256	= default_spi_write_256,
+	.write_aai	= default_spi_write_aai,
 	.shutdown	= raiden_debug_spi_shutdown,
 };
 

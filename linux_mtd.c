@@ -437,9 +437,9 @@ static const struct opaque_master linux_mtd_opaque_master = {
 	.write		= linux_mtd_write,
 	.erase		= linux_mtd_erase,
 	.shutdown	= linux_mtd_shutdown,
-	.wp_read_cfg    = linux_mtd_wp_read_cfg,
-	.wp_write_cfg   = linux_mtd_wp_write_cfg,
-	.wp_get_ranges  = linux_mtd_wp_get_available_ranges,
+	.wp_read_cfg	= linux_mtd_wp_read_cfg,
+	.wp_write_cfg	= linux_mtd_wp_write_cfg,
+	.wp_get_ranges	= linux_mtd_wp_get_available_ranges,
 };
 
 /* Returns 0 if setup is successful, non-zero to indicate error */

@@ -64,14 +64,14 @@ static uint8_t nicnatsemi_chip_readb(const struct flashctx *flash,
 }
 
 static const struct par_master par_master_nicnatsemi = {
-		.chip_readb		= nicnatsemi_chip_readb,
-		.chip_readw		= fallback_chip_readw,
-		.chip_readl		= fallback_chip_readl,
-		.chip_readn		= fallback_chip_readn,
-		.chip_writeb		= nicnatsemi_chip_writeb,
-		.chip_writew		= fallback_chip_writew,
-		.chip_writel		= fallback_chip_writel,
-		.chip_writen		= fallback_chip_writen,
+	.chip_readb	= nicnatsemi_chip_readb,
+	.chip_readw	= fallback_chip_readw,
+	.chip_readl	= fallback_chip_readl,
+	.chip_readn	= fallback_chip_readn,
+	.chip_writeb	= nicnatsemi_chip_writeb,
+	.chip_writew	= fallback_chip_writew,
+	.chip_writel	= fallback_chip_writel,
+	.chip_writen	= fallback_chip_writen,
 };
 
 static int nicnatsemi_init(void)

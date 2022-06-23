@@ -551,14 +551,14 @@ static void serprog_chip_readn(const struct flashctx *flash, uint8_t * buf,
 }
 
 static const struct par_master par_master_serprog = {
-		.chip_readb		= serprog_chip_readb,
-		.chip_readw		= fallback_chip_readw,
-		.chip_readl		= fallback_chip_readl,
-		.chip_readn		= serprog_chip_readn,
-		.chip_writeb		= serprog_chip_writeb,
-		.chip_writew		= fallback_chip_writew,
-		.chip_writel		= fallback_chip_writel,
-		.chip_writen		= fallback_chip_writen,
+	.chip_readb	= serprog_chip_readb,
+	.chip_readw	= fallback_chip_readw,
+	.chip_readl	= fallback_chip_readl,
+	.chip_readn	= serprog_chip_readn,
+	.chip_writeb	= serprog_chip_writeb,
+	.chip_writew	= fallback_chip_writew,
+	.chip_writel	= fallback_chip_writel,
+	.chip_writen	= fallback_chip_writen,
 };
 
 static enum chipbustype serprog_buses_supported = BUS_NONE;

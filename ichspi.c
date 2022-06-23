@@ -1785,34 +1785,34 @@ static void ich9_set_pr(const size_t reg_pr0, int i, int read_prot, int write_pr
 }
 
 static const struct spi_master spi_master_ich7 = {
-	.max_data_read = 64,
-	.max_data_write = 64,
-	.command = ich_spi_send_command,
-	.multicommand = ich_spi_send_multicommand,
-	.read = default_spi_read,
-	.write_256 = default_spi_write_256,
-	.write_aai = default_spi_write_aai,
+	.max_data_read	= 64,
+	.max_data_write	= 64,
+	.command	= ich_spi_send_command,
+	.multicommand	= ich_spi_send_multicommand,
+	.read		= default_spi_read,
+	.write_256	= default_spi_write_256,
+	.write_aai	= default_spi_write_aai,
 };
 
 static const struct spi_master spi_master_ich9 = {
-	.max_data_read = 64,
-	.max_data_write = 64,
-	.command = ich_spi_send_command,
-	.multicommand = ich_spi_send_multicommand,
-	.read = default_spi_read,
-	.write_256 = default_spi_write_256,
-	.write_aai = default_spi_write_aai,
+	.max_data_read	= 64,
+	.max_data_write	= 64,
+	.command	= ich_spi_send_command,
+	.multicommand	= ich_spi_send_multicommand,
+	.read		= default_spi_read,
+	.write_256	= default_spi_write_256,
+	.write_aai	= default_spi_write_aai,
 };
 
 static const struct opaque_master opaque_master_ich_hwseq = {
-	.max_data_read = 64,
-	.max_data_write = 64,
-	.probe = ich_hwseq_probe,
-	.read = ich_hwseq_read,
-	.write = ich_hwseq_write,
-	.erase = ich_hwseq_block_erase,
-	.read_register = ich_hwseq_read_status,
-	.write_register = ich_hwseq_write_status,
+	.max_data_read	= 64,
+	.max_data_write	= 64,
+	.probe		= ich_hwseq_probe,
+	.read		= ich_hwseq_read,
+	.write		= ich_hwseq_write,
+	.erase		= ich_hwseq_block_erase,
+	.read_register	= ich_hwseq_read_status,
+	.write_register	= ich_hwseq_write_status,
 };
 
 static int init_ich7_spi(void *spibar, enum ich_chipset ich_gen)
@@ -2208,13 +2208,13 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 }
 
 static const struct spi_master spi_master_via = {
-	.max_data_read = 16,
-	.max_data_write = 16,
-	.command = ich_spi_send_command,
-	.multicommand = ich_spi_send_multicommand,
-	.read = default_spi_read,
-	.write_256 = default_spi_write_256,
-	.write_aai = default_spi_write_aai,
+	.max_data_read	= 16,
+	.max_data_write	= 16,
+	.command	= ich_spi_send_command,
+	.multicommand	= ich_spi_send_multicommand,
+	.read		= default_spi_read,
+	.write_256	= default_spi_write_256,
+	.write_aai	= default_spi_write_aai,
 };
 
 int via_init_spi(uint32_t mmio_base)

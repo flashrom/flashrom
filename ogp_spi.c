@@ -92,13 +92,13 @@ static int ogp_bitbang_get_miso(void *spi_data)
 }
 
 static const struct bitbang_spi_master bitbang_spi_master_ogp = {
-	.set_cs = ogp_bitbang_set_cs,
-	.set_sck = ogp_bitbang_set_sck,
-	.set_mosi = ogp_bitbang_set_mosi,
-	.get_miso = ogp_bitbang_get_miso,
-	.request_bus = ogp_request_spibus,
-	.release_bus = ogp_release_spibus,
-	.half_period = 0,
+	.set_cs		= ogp_bitbang_set_cs,
+	.set_sck	= ogp_bitbang_set_sck,
+	.set_mosi	= ogp_bitbang_set_mosi,
+	.get_miso	= ogp_bitbang_get_miso,
+	.request_bus	= ogp_request_spibus,
+	.release_bus	= ogp_release_spibus,
+	.half_period	= 0,
 };
 
 static int ogp_spi_shutdown(void *data)

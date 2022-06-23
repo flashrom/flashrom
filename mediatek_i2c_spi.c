@@ -440,14 +440,14 @@ static int mediatek_send_command(const struct flashctx *flash,
 }
 
 static const struct spi_master spi_master_i2c_mediatek = {
-	.max_data_read = I2C_SMBUS_BLOCK_MAX,
+	.max_data_read	= I2C_SMBUS_BLOCK_MAX,
 	// Leave room for 1-byte command and up to a 4-byte address.
-	.max_data_write = I2C_SMBUS_BLOCK_MAX - 5,
-	.command = mediatek_send_command,
-	.multicommand = default_spi_send_multicommand,
-	.read = default_spi_read,
-	.write_256 = default_spi_write_256,
-	.write_aai = default_spi_write_aai,
+	.max_data_write	= I2C_SMBUS_BLOCK_MAX - 5,
+	.command	= mediatek_send_command,
+	.multicommand	= default_spi_send_multicommand,
+	.read		= default_spi_read,
+	.write_256	= default_spi_write_256,
+	.write_aai	= default_spi_write_aai,
 };
 
 static int mediatek_shutdown(void *data)

@@ -138,14 +138,14 @@ static int mstarddc_spi_send_command(const struct flashctx *flash,
 }
 
 static const struct spi_master spi_master_mstarddc = {
-	.max_data_read = 256,
-	.max_data_write = 256,
-	.command = mstarddc_spi_send_command,
-	.multicommand = default_spi_send_multicommand,
-	.read = default_spi_read,
-	.write_256 = default_spi_write_256,
-	.write_aai = default_spi_write_aai,
-	.shutdown = mstarddc_spi_shutdown,
+	.max_data_read	= 256,
+	.max_data_write	= 256,
+	.command	= mstarddc_spi_send_command,
+	.multicommand	= default_spi_send_multicommand,
+	.read		= default_spi_read,
+	.write_256	= default_spi_write_256,
+	.write_aai	= default_spi_write_aai,
+	.shutdown	= mstarddc_spi_shutdown,
 };
 
 /* Returns 0 upon success, a negative number upon errors. */
