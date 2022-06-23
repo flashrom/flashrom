@@ -618,48 +618,37 @@ int spi_block_erase_dc(struct flashctx *flash, unsigned int addr, unsigned int b
 	return spi_write_cmd(flash, 0xdc, true, addr, NULL, 0, 100 * 1000);
 }
 
+static const struct {
+	erasefunc_t *func;
+	uint8_t opcode;
+} function_opcode_list[] = {
+	{&spi_block_erase_20, 0x20},
+	{&spi_block_erase_21, 0x21},
+	{&spi_block_erase_50, 0x50},
+	{&spi_block_erase_52, 0x52},
+	{&spi_block_erase_53, 0x53},
+	{&spi_block_erase_5c, 0x5c},
+	{&spi_block_erase_60, 0x60},
+	{&spi_block_erase_62, 0x62},
+	{&spi_block_erase_81, 0x81},
+	{&spi_block_erase_c4, 0xc4},
+	{&spi_block_erase_c7, 0xc7},
+	{&spi_block_erase_d7, 0xd7},
+	{&spi_block_erase_d8, 0xd8},
+	{&spi_block_erase_db, 0xdb},
+	{&spi_block_erase_dc, 0xdc},
+};
+
 erasefunc_t *spi_get_erasefn_from_opcode(uint8_t opcode)
 {
-	switch(opcode){
-	case 0xff:
-	case 0x00:
-		/* Not specified, assuming "not supported". */
-		return NULL;
-	case 0x20:
-		return &spi_block_erase_20;
-	case 0x21:
-		return &spi_block_erase_21;
-	case 0x50:
-		return &spi_block_erase_50;
-	case 0x52:
-		return &spi_block_erase_52;
-	case 0x53:
-		return &spi_block_erase_53;
-	case 0x5c:
-		return &spi_block_erase_5c;
-	case 0x60:
-		return &spi_block_erase_60;
-	case 0x62:
-		return &spi_block_erase_62;
-	case 0x81:
-		return &spi_block_erase_81;
-	case 0xc4:
-		return &spi_block_erase_c4;
-	case 0xc7:
-		return &spi_block_erase_c7;
-	case 0xd7:
-		return &spi_block_erase_d7;
-	case 0xd8:
-		return &spi_block_erase_d8;
-	case 0xdb:
-		return &spi_block_erase_db;
-	case 0xdc:
-		return &spi_block_erase_dc;
-	default:
-		msg_cinfo("%s: unknown erase opcode (0x%02x). Please report "
-			  "this at flashrom@flashrom.org\n", __func__, opcode);
-		return NULL;
+	size_t i;
+	for (i = 0; i < ARRAY_SIZE(function_opcode_list); i++) {
+		if (function_opcode_list[i].opcode == opcode)
+			return function_opcode_list[i].func;
 	}
+	msg_cinfo("%s: unknown erase opcode (0x%02x). Please report "
+			  "this at flashrom@flashrom.org\n", __func__, opcode);
+	return NULL;
 }
 
 static int spi_nbyte_program(struct flashctx *flash, unsigned int addr, const uint8_t *bytes, unsigned int len)
