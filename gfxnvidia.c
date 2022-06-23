@@ -29,7 +29,9 @@
 #define GFXNVIDIA_MEMMAP_MASK		((1 << 17) - 1)
 #define GFXNVIDIA_MEMMAP_SIZE		(16 * 1024 * 1024)
 
-static uint8_t *nvidia_bar;
+struct gfxnvidia_data {
+	uint8_t *nvidia_bar;
+};
 
 static const struct dev_entry gfx_nvidia[] = {
 	{0x10de, 0x0010, NT, "NVIDIA", "Mutara V08 [NV2]" },
@@ -62,13 +64,23 @@ static const struct dev_entry gfx_nvidia[] = {
 static void gfxnvidia_chip_writeb(const struct flashctx *flash, uint8_t val,
 				  chipaddr addr)
 {
-	pci_mmio_writeb(val, nvidia_bar + (addr & GFXNVIDIA_MEMMAP_MASK));
+	const struct gfxnvidia_data *data = flash->mst->par.data;
+
+	pci_mmio_writeb(val, data->nvidia_bar + (addr & GFXNVIDIA_MEMMAP_MASK));
 }
 
 static uint8_t gfxnvidia_chip_readb(const struct flashctx *flash,
 				    const chipaddr addr)
 {
-	return pci_mmio_readb(nvidia_bar + (addr & GFXNVIDIA_MEMMAP_MASK));
+	const struct gfxnvidia_data *data = flash->mst->par.data;
+
+	return pci_mmio_readb(data->nvidia_bar + (addr & GFXNVIDIA_MEMMAP_MASK));
+}
+
+static int gfxnvidia_shutdown(void *par_data)
+{
+	free(par_data);
+	return 0;
 }
 
 static const struct par_master par_master_gfxnvidia = {
@@ -80,12 +92,14 @@ static const struct par_master par_master_gfxnvidia = {
 	.chip_writew	= fallback_chip_writew,
 	.chip_writel	= fallback_chip_writel,
 	.chip_writen	= fallback_chip_writen,
+	.shutdown	= gfxnvidia_shutdown,
 };
 
 static int gfxnvidia_init(void)
 {
 	struct pci_dev *dev = NULL;
 	uint32_t reg32;
+	uint8_t *bar;
 
 	dev = pcidev_init(gfx_nvidia, PCI_BASE_ADDRESS_0);
 	if (!dev)
@@ -98,9 +112,16 @@ static int gfxnvidia_init(void)
 	io_base_addr += 0x300000;
 	msg_pinfo("Detected NVIDIA I/O base address: 0x%x.\n", io_base_addr);
 
-	nvidia_bar = rphysmap("NVIDIA", io_base_addr, GFXNVIDIA_MEMMAP_SIZE);
-	if (nvidia_bar == ERROR_PTR)
+	bar = rphysmap("NVIDIA", io_base_addr, GFXNVIDIA_MEMMAP_SIZE);
+	if (bar == ERROR_PTR)
 		return 1;
+
+	struct gfxnvidia_data *data = calloc(1, sizeof(*data));
+	if (!data) {
+		msg_perr("Unable to allocate space for PAR master data\n");
+		return 1;
+	}
+	data->nvidia_bar = bar;
 
 	/* Allow access to flash interface (will disable screen). */
 	reg32 = pci_read_long(dev, 0x50);
@@ -109,7 +130,7 @@ static int gfxnvidia_init(void)
 
 	/* Write/erase doesn't work. */
 	programmer_may_write = 0;
-	return register_par_master(&par_master_gfxnvidia, BUS_PARALLEL, NULL);
+	return register_par_master(&par_master_gfxnvidia, BUS_PARALLEL, data);
 }
 
 const struct programmer_entry programmer_gfxnvidia = {
