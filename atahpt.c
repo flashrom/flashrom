@@ -25,11 +25,14 @@
 #define BIOS_ROM_DATA		0x94
 
 #define REG_FLASH_ACCESS	0x58
+#define BIT_FLASH_ACCESS	BIT(24)
 
 #define PCI_VENDOR_ID_HPT	0x1103
 
 struct atahpt_data {
+	struct pci_dev *dev;
 	uint32_t io_base_addr;
+	uint32_t flash_access;
 };
 
 static const struct dev_entry ata_hpt[] = {
@@ -60,6 +63,11 @@ static uint8_t atahpt_chip_readb(const struct flashctx *flash,
 
 static int atahpt_shutdown(void *par_data)
 {
+	struct atahpt_data *data = par_data;
+
+	/* Restore original flash access state. */
+	pci_write_long(data->dev, REG_FLASH_ACCESS, data->flash_access);
+
 	free(par_data);
 	return 0;
 }
@@ -80,7 +88,6 @@ static int atahpt_init(void)
 {
 	struct pci_dev *dev = NULL;
 	uint32_t io_base_addr;
-	uint32_t reg32;
 
 	if (rget_io_perms())
 		return 1;
@@ -93,17 +100,17 @@ static int atahpt_init(void)
 	if (!io_base_addr)
 		return 1;
 
-	/* Enable flash access. */
-	reg32 = pci_read_long(dev, REG_FLASH_ACCESS);
-	reg32 |= (1 << 24);
-	rpci_write_long(dev, REG_FLASH_ACCESS, reg32);
-
 	struct atahpt_data *data = calloc(1, sizeof(*data));
 	if (!data) {
 		msg_perr("Unable to allocate space for PAR master data\n");
 		return 1;
 	}
+	data->dev = dev;
 	data->io_base_addr = io_base_addr;
+
+	/* Enable flash access. */
+	data->flash_access = pci_read_long(dev, REG_FLASH_ACCESS);
+	pci_write_long(dev, REG_FLASH_ACCESS, data->flash_access | BIT_FLASH_ACCESS);
 
 	return register_par_master(&par_master_atahpt, BUS_PARALLEL, data);
 }
