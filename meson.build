@@ -271,7 +271,6 @@ if config_internal
       'amd_imc.c',
       'dmi.c',
       'ichspi.c',
-      'it85spi.c',
       'it87spi.c',
       'mcp6x_spi.c',
       'sb600spi.c',

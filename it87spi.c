@@ -449,18 +449,6 @@ int init_superio_ite(void)
 			continue;
 
 		switch (superios[i].model) {
-		case 0x8500:
-		case 0x8502:
-		case 0x8510:
-		case 0x8511:
-		case 0x8512:
-			/* FIXME: This should be enabled, but we need a check
-			 * for laptop whitelisting due to the amount of things
-			 * which can go wrong if the EC firmware does not
-			 * implement the interface we want.
-			 */
-			//it85xx_spi_init(superios[i]);
-			break;
 		case 0x8705:
 			ret |= it8705f_write_enable(superios[i].port);
 			break;
