@@ -1247,14 +1247,6 @@ static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_suppor
 		}
 		data->emu_chip = EMULATE_VARIABLE_SIZE;
 		data->emu_chip_size = size;
-		data->emu_max_byteprogram_size = 256;
-		data->emu_max_aai_size = 0;
-		data->emu_status_len = 1;
-		data->emu_jedec_se_size = 4 * 1024;
-		data->emu_jedec_be_52_size = 32 * 1024;
-		data->emu_jedec_be_d8_size = 64 * 1024;
-		data->emu_jedec_ce_60_size = data->emu_chip_size;
-		data->emu_jedec_ce_c7_size = data->emu_chip_size;
 		msg_pdbg("Emulating generic SPI flash chip (size=%d bytes)\n",
 		         data->emu_chip_size);
 	} else if (size != -1) {
