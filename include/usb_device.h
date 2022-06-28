@@ -99,7 +99,7 @@ struct usb_match {
  * Initialize a usb_match structure so that each value's name matches the
  * values name in the usb_match structure (so bus.name == "bus"...), and
  * look for each value in the flashrom command line via
- * extract_programmer_param.  If the value is found convert it to an integer
+ * extract_programmer_param_str.  If the value is found convert it to an integer
  * using strtol, accepting hex, decimal and octal encoding.
  */
 void usb_match_init(struct usb_match *match);

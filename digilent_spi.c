@@ -407,7 +407,7 @@ static int digilent_spi_init(void)
 		goto close_handle;
 	}
 
-	p = extract_programmer_param("spispeed");
+	p = extract_programmer_param_str("spispeed");
 	if (p) {
 		for (i = 0; spispeeds[i].name; ++i) {
 			if (!strcasecmp(spispeeds[i].name, p)) {
@@ -423,7 +423,7 @@ static int digilent_spi_init(void)
 		free(p);
 	}
 
-	p = extract_programmer_param("reset");
+	p = extract_programmer_param_str("reset");
 	if (p && strlen(p))
 		reset_board = (p[0] == '1');
 	else

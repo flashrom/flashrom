@@ -487,7 +487,7 @@ static int stlinkv3_spi_init(void)
 		return 1;
 	}
 
-	serialno = extract_programmer_param("serial");
+	serialno = extract_programmer_param_str("serial");
 	if (serialno)
 		msg_pdbg("Opening STLINK-V3 with serial: %s\n", serialno);
 	stlinkv3_handle = usb_dev_get_by_vid_pid_serial(usb_ctx,
@@ -505,7 +505,7 @@ static int stlinkv3_spi_init(void)
 	}
 	free(serialno);
 
-	speed_str = extract_programmer_param("spispeed");
+	speed_str = extract_programmer_param_str("spispeed");
 	if (speed_str) {
 		sck_freq_kHz = strtoul(speed_str, &endptr, 0);
 		if (*endptr || sck_freq_kHz == 0) {

@@ -153,7 +153,7 @@ static int developerbox_spi_init(void)
 		return 1;
 	}
 
-	char *serialno = extract_programmer_param("serial");
+	char *serialno = extract_programmer_param_str("serial");
 	if (serialno)
 		msg_pdbg("Looking for serial number commencing %s\n", serialno);
 	cp210x_handle = usb_dev_get_by_vid_pid_serial(usb_ctx,

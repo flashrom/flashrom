@@ -552,7 +552,7 @@ static int ni845x_spi_init(void)
 	int32 tmp = 0;
 
 	// read the cs parameter (which Chip select should we use)
-	CS_str = extract_programmer_param("cs");
+	CS_str = extract_programmer_param_str("cs");
 	if (CS_str) {
 		CS_number = CS_str[0] - '0';
 		free(CS_str);
@@ -562,7 +562,7 @@ static int ni845x_spi_init(void)
 		}
 	}
 
-	voltage = extract_programmer_param("voltage");
+	voltage = extract_programmer_param_str("voltage");
 	if (voltage != NULL) {
 		requested_io_voltage_mV = parse_voltage(voltage);
 		free(voltage);
@@ -570,9 +570,9 @@ static int ni845x_spi_init(void)
 			return 1;
 	}
 
-	serial_number = extract_programmer_param("serial");
+	serial_number = extract_programmer_param_str("serial");
 
-	speed_str = extract_programmer_param("spispeed");
+	speed_str = extract_programmer_param_str("spispeed");
 	if (speed_str) {
 		spi_speed_KHz = strtoul(speed_str, &endptr, 0);
 		if (*endptr) {
@@ -585,7 +585,7 @@ static int ni845x_spi_init(void)
 	}
 
 	ignore_io_voltage_limits = false;
-	ignore_io_voltage_limits_str = extract_programmer_param("ignore_io_voltage_limits");
+	ignore_io_voltage_limits_str = extract_programmer_param_str("ignore_io_voltage_limits");
 	if (ignore_io_voltage_limits_str
 		&& strcmp(ignore_io_voltage_limits_str, "yes") == 0) {
 		ignore_io_voltage_limits = true;

@@ -449,7 +449,7 @@ static int get_params(int *reset, int *enter_isp)
 	char *reset_str = NULL, *isp_str = NULL;
 	int ret = 0;
 
-	reset_str = extract_programmer_param("reset-mcu");
+	reset_str = extract_programmer_param_str("reset-mcu");
 	if (reset_str) {
 		if (reset_str[0] == '1') {
 			*reset = 1;
@@ -464,7 +464,7 @@ static int get_params(int *reset, int *enter_isp)
 	}
 	free(reset_str);
 
-	isp_str = extract_programmer_param("enter-isp");
+	isp_str = extract_programmer_param_str("enter-isp");
 	if (isp_str) {
 		if (isp_str[0] == '1') {
 			*enter_isp = 1;

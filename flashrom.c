@@ -325,7 +325,7 @@ static char *extract_param(const char *const *haystack, const char *needle, cons
 	return opt;
 }
 
-char *extract_programmer_param(const char *param_name)
+char *extract_programmer_param_str(const char *param_name)
 {
 	return extract_param(&programmer_param, param_name, ",");
 }

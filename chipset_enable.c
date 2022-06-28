@@ -428,7 +428,7 @@ static int enable_flash_ich_fwh_decode(struct pci_dev *dev, enum ich_chipset ich
 		break;
 	}
 
-	char *idsel = extract_programmer_param("fwh_idsel");
+	char *idsel = extract_programmer_param_str("fwh_idsel");
 	if (idsel && strlen(idsel)) {
 		if (!implemented) {
 			msg_perr("Error: fwh_idsel= specified, but (yet) unsupported on this chipset.\n");

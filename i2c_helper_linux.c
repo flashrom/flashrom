@@ -100,8 +100,8 @@ int i2c_open_from_programmer_params(uint16_t addr, int force)
 {
 	int fd = -1;
 
-	char *bus_str = extract_programmer_param("bus");
-	char *device_path = extract_programmer_param("devpath");
+	char *bus_str = extract_programmer_param_str("bus");
+	char *device_path = extract_programmer_param_str("devpath");
 
 	if (device_path != NULL && bus_str != NULL) {
 		msg_perr("%s: only one of bus and devpath may be specified\n", __func__);

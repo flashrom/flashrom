@@ -130,7 +130,7 @@ static int get_params(enum pony_type *type, int *have_device)
 	*have_device = 0;
 
 	/* The parameter is in format "dev=/dev/device,type=serbang" */
-	arg = extract_programmer_param("dev");
+	arg = extract_programmer_param_str("dev");
 	if (arg && strlen(arg)) {
 		sp_fd = sp_openserport(arg, 9600);
 		if (sp_fd == SER_INV_FD)
@@ -140,7 +140,7 @@ static int get_params(enum pony_type *type, int *have_device)
 	}
 	free(arg);
 
-	arg = extract_programmer_param("type");
+	arg = extract_programmer_param_str("type");
 	if (arg && !strcasecmp(arg, "serbang")) {
 		*type = TYPE_SERBANG;
 	} else if (arg && !strcasecmp(arg, "si_prog")) {

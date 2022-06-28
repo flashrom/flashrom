@@ -176,7 +176,7 @@ static int linux_spi_init(void)
 	size_t max_kernel_buf_size;
 	struct linux_spi_data *spi_data;
 
-	p = extract_programmer_param("spispeed");
+	p = extract_programmer_param_str("spispeed");
 	if (p && strlen(p)) {
 		speed_hz = (uint32_t)strtoul(p, &endp, 10) * 1000;
 		if (p == endp || speed_hz == 0) {
@@ -191,7 +191,7 @@ static int linux_spi_init(void)
 	}
 	free(p);
 
-	dev = extract_programmer_param("dev");
+	dev = extract_programmer_param_str("dev");
 	if (!dev || !strlen(dev)) {
 		msg_perr("No SPI device given. Use flashrom -p "
 			 "linux_spi:dev=/dev/spidevX.Y\n");

@@ -500,7 +500,7 @@ static int linux_mtd_init(void)
 	int ret = 1;
 	struct linux_mtd_data *data = NULL;
 
-	param = extract_programmer_param("dev");
+	param = extract_programmer_param_str("dev");
 	if (param) {
 		char *endptr;
 
