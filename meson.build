@@ -71,7 +71,7 @@ config_satasii = get_option('config_satasii')
 config_serprog = get_option('config_serprog')
 config_usbblaster_spi = get_option('config_usbblaster_spi')
 config_stlinkv3_spi = get_option('config_stlinkv3_spi')
-config_lspcon_i2c_spi = get_option('config_lspcon_i2c_spi')
+config_parade_lspcon = get_option('config_parade_lspcon')
 config_mediatek_i2c_spi = get_option('config_mediatek_i2c_spi')
 config_realtek_mst_i2c_spi = get_option('config_realtek_mst_i2c_spi')
 config_print_wiki= get_option('print_wiki')
@@ -359,9 +359,9 @@ if config_stlinkv3_spi
   srcs += files('stlinkv3_spi.c')
   cargs += '-DCONFIG_STLINKV3_SPI=1'
 endif
-if config_lspcon_i2c_spi
-  srcs += files('lspcon_i2c_spi.c')
-  cargs += '-DCONFIG_LSPCON_I2C_SPI=1'
+if config_parade_lspcon
+  srcs += files('parade_lspcon.c')
+  cargs += '-DCONFIG_PARADE_LSPCON=1'
 endif
 if config_mediatek_i2c_spi
   srcs += files('mediatek_i2c_spi.c')

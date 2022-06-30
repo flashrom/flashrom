@@ -173,7 +173,7 @@ DEPENDS_ON_LIB_NI845X := \
 
 DEPENDS_ON_LINUX_I2C := \
 	CONFIG_MSTARDDC_SPI \
-	CONFIG_LSPCON_I2C_SPI \
+	CONFIG_PARADE_LSPCON \
 	CONFIG_REALTEK_MST_I2C_SPI \
 	CONFIG_MEDIATEK_I2C_SPI \
 
@@ -455,8 +455,8 @@ CONFIG_PICKIT2_SPI ?= yes
 # Always enable STLink V3
 CONFIG_STLINKV3_SPI ?= yes
 
-# Disables LSPCON support until the i2c helper supports multiple systems.
-CONFIG_LSPCON_I2C_SPI ?= no
+# Disables Parade LSPCON support until the i2c helper supports multiple systems.
+CONFIG_PARASE_LSPCON ?= no
 
 # Disables MediaTek support until the i2c helper supports multiple systems.
 CONFIG_MEDIATEK_I2C_SPI ?= no
@@ -663,9 +663,9 @@ FEATURE_FLAGS += -D'CONFIG_STLINKV3_SPI=1'
 PROGRAMMER_OBJS += stlinkv3_spi.o
 endif
 
-ifeq ($(CONFIG_LSPCON_I2C_SPI), yes)
-FEATURE_FLAGS += -D'CONFIG_LSPCON_I2C_SPI=1'
-PROGRAMMER_OBJS += lspcon_i2c_spi.o
+ifeq ($(CONFIG_PARADE_LSPCON), yes)
+FEATURE_FLAGS += -D'CONFIG_PARADE_LSPCON=1'
+PROGRAMMER_OBJS += parade_lspcon.o
 endif
 
 ifeq ($(CONFIG_MEDIATEK_I2C_SPI), yes)

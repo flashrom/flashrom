@@ -124,8 +124,8 @@ const struct programmer_entry *const programmer_table[] = {
     &programmer_linux_spi,
 #endif
 
-#if CONFIG_LSPCON_I2C_SPI == 1
-    &programmer_lspcon_i2c_spi,
+#if CONFIG_PARADE_LSPCON == 1
+    &programmer_parade_lspcon,
 #endif
 
 #if CONFIG_MEDIATEK_I2C_SPI == 1

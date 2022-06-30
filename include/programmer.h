@@ -75,7 +75,7 @@ extern const struct programmer_entry programmer_it8212;
 extern const struct programmer_entry programmer_jlink_spi;
 extern const struct programmer_entry programmer_linux_mtd;
 extern const struct programmer_entry programmer_linux_spi;
-extern const struct programmer_entry programmer_lspcon_i2c_spi;
+extern const struct programmer_entry programmer_parade_lspcon;
 extern const struct programmer_entry programmer_mediatek_i2c_spi;
 extern const struct programmer_entry programmer_mstarddc_spi;
 extern const struct programmer_entry programmer_ni845x_spi;

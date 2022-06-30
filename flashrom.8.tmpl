@@ -427,7 +427,7 @@ bitbanging adapter)
 .sp
 .BR "* realtek_mst_i2c_spi" " (for SPI flash ROMs attached to Realtek DisplayPort hubs accessible through I2C)"
 .sp
-.BR "* lspcon_i2c_spi" " (for SPI flash ROMs attached to Parade Technologies LSPCONs)"
+.BR "* parade_lspcon" " (for SPI flash ROMs attached to Parade Technologies LSPCONs (PS175))"
 .sp
 Some programmers have optional or mandatory parameters which are described
 in detail in the
@@ -1521,7 +1521,7 @@ syntax where \fBfrequency\fP is the SPI clock frequency in kHz.
 If the passed frequency is not supported by the adapter the nearest lower
 supported frequency will be used.
 .SS
-.BR "realtek_mst_i2c_spi " and " lspcon_i2c_spi " programmers
+.BR "realtek_mst_i2c_spi " and " parade_lspcon " programmers
 .IP
 These programmers tunnel SPI commands through I2C-connected devices. The I2C
 bus over which communication occurs must be specified either by device path
@@ -1532,7 +1532,7 @@ with the \fBdevpath\fP option:
 or by a bus number with the \fBbus\fP option, which implies a device path like
 /dev/i2c-N where N is the specified bus number:
 .sp
-.B "  flashrom \-p lspcon_i2c_spi:bus=8"
+.B "  flashrom \-p parade_lspcon:bus=8"
 
 .SS
 .BR "realtek_mst_i2c_spi " programmer
@@ -1565,11 +1565,12 @@ flash):
 .br
 .B "  flashrom -p realtek_mst_i2c_spi:bus=0,enter-isp=0,reset-mcu=1 -w new.bin"
 .SS
-.BR "lspcon_i2c_spi " programmer
+.BR "parade_lspcon " programmer
 .IP
 This programmer supports SPI flash programming for chips attached to Parade
-Technologies DisplayPort-to-HDMI level shifter/protocol converters (LSPCONs).
-Communication to the SPI flash is tunneled through the LSPCON over I2C.
+Technologies DisplayPort-to-HDMI level shifter/protocol converters (LSPCONs),
+e.g. the PS175. Communication to the SPI flash is tunneled through the LSPCON
+over I2C.
 
 .SH EXAMPLES
 To back up and update your BIOS, run
@@ -1651,7 +1652,7 @@ permissions are set.
 .B ogp
 needs PCI configuration space read access and raw memory access.
 .sp
-.BR realtek_mst_i2c_spi " and " lspcon_i2c_spi
+.BR realtek_mst_i2c_spi " and " parade_lspcon
 need userspace access to the selected I2C bus.
 .sp
 On OpenBSD, you can obtain raw access permission by setting
