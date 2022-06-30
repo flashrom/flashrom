@@ -1,0 +1,81 @@
+
+
+		    List of upstream flashrom maintainers
+
+This represents the list of maintainers that work on the upstream flashrom
+code base (on flashrom.org).  Maintainers are assigned to topics and when
+applicable to subtrees of the source tree. You'll find some subtrees that
+don't have a maintainer. If you are looking for reviewers for such a subtree,
+it's often a good choice to look at the git history to see who worked on
+it last.
+
+Please try to follow our [development guidelines]. This will make things
+easier on the maintainers. Not all of these guidelines matter for every
+trivial patch. So apply some common sense.
+
+[development guidelines]: https://www.flashrom.org/Development_Guidelines
+
+Happy hacking!
+
+Descriptions of section entries:
+
+	M: Maintainer: FullName <address@domain>
+	   Must be registered to Gerrit (https://review.coreboot.org) and
+	   must have experience with upstream flashrom development.
+	R: Designated reviewer: FullName <address@domain>
+	   These reviewers are CCed on patches.
+	L: Mailing list that is relevant to this area
+	W: Web-page with status/info
+	S: Status, one of the following:
+	   Supported:	Someone is continuously paid to look after this and
+			a reaction to review requests can be expected
+			within a few days, a month at most.
+	   Maintained:	Someone actually looks after it and a reaction to
+			review requests can usually be expected within a
+			few weeks.
+	   Odd Fixes:	It has a maintainer but they don't have time to do
+			much other than throw the odd patch in. See below..
+	   Orphan:	No current maintainer [but maybe you could take the
+			role as you write your new code].
+	   Obsolete:	Old code. Something tagged obsolete generally means
+			it has been replaced by a better system and you
+			should be using that.
+	F: Files and directories with wildcard patterns.
+	   A trailing slash includes all files and subdirectory files.
+	   F:	drivers/net/	all files in and below drivers/net
+	   F:	drivers/net/*	all files in drivers/net, but not below
+	   F:	*/net/*		all files in "any top level directory"/net
+	   One pattern per line.  Multiple F: lines acceptable.
+	N: Files and directories with regex patterns.
+	   N:	[^a-z]tegra	all files whose path contains the word tegra
+	   One pattern per line.  Multiple N: lines acceptable.
+	   scripts/get_maintainer.pl has different behavior for files that
+	   match F: pattern and matches of N: patterns.  By default,
+	   get_maintainer will not look at git log history when an F: pattern
+	   match occurs.  When an N: match occurs, git log history is used
+	   to also notify the people that have git commit signatures.
+	X: Files and directories that are NOT maintained, same rules as F:
+	   Files exclusions are tested before file matches.
+	   Can be useful for excluding a specific subdirectory, for instance:
+	   F:	net/
+	   X:	net/ipv6/
+	   matches all files in and below net excluding net/ipv6/
+	K: Keyword perl extended regex pattern to match content in a
+	   patch or file.  For instance:
+	   K: of_get_profile
+	      matches patches or files that contain "of_get_profile"
+	   K: \b(printk|pr_(info|err))\b
+	      matches patches or files that contain one or more of the words
+	      printk, pr_info or pr_err
+	   One regex pattern per line.  Multiple K: lines acceptable.
+
+Note: The categories and topics in this list are meant to remain in alphabetical
+      order. Please keep them sorted when you change them.
+
+Maintainers List (try to look for most precise areas first)
+
+		-----------------------------------
+
+################################################################################
+# First category
+################################################################################
