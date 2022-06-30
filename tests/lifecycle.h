@@ -29,4 +29,10 @@
 #define SKIP_TEST(name) \
 	void name (void **state) { skip(); }
 
+void run_basic_lifecycle(void **state, const struct io_mock *io,
+		const struct programmer_entry *prog, const char *param);
+
+void run_probe_lifecycle(void **state, const struct io_mock *io,
+		const struct programmer_entry *prog, const char *param, const char *const chip_name);
+
 #endif /* __LIFECYCLE_H__ */
