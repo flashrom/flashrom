@@ -439,8 +439,45 @@ static const struct spi_master spi_master_parade_lspcon = {
 	.probe_opcode	= default_spi_probe_opcode,
 };
 
+static int get_params(bool *allow_brick)
+{
+	char *brick_str = NULL;
+	int ret = 0;
+
+	*allow_brick = false; /* Default behaviour is to bail. */
+	brick_str = extract_programmer_param_str("allow_brick");
+	if (brick_str) {
+		if (!strcmp(brick_str, "yes")) {
+			*allow_brick = true;
+		} else {
+			msg_perr("%s: Incorrect param format, allow_brick=yes.\n", __func__);
+			ret = SPI_GENERIC_ERROR;
+		}
+	}
+	free(brick_str);
+
+	return ret;
+}
+
 static int parade_lspcon_init(void)
 {
+	bool allow_brick;
+
+	if (get_params(&allow_brick))
+		return SPI_GENERIC_ERROR;
+
+	/*
+	 * TODO: Once board_enable can facilitate safe i2c allow listing
+	 * 	 then this can be removed.
+	 */
+	if (!allow_brick) {
+		msg_perr("%s: For i2c drivers you must explicitly 'allow_brick=yes'. ", __func__);
+		msg_perr("There is currently no way to determine if the programmer works on a board "
+			 "as i2c device address space can be overloaded. Set 'allow_brick=yes' if "
+			 "you are sure you know what you are doing.\n");
+		return SPI_GENERIC_ERROR;
+	}
+
 	int fd = i2c_open_from_programmer_params(REGISTER_ADDRESS, 0);
 	if (fd < 0)
 		return fd;
