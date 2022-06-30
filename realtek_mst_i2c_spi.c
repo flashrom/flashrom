@@ -191,8 +191,7 @@ static int realtek_mst_i2c_spi_read_indexed_register(int fd, uint16_t address, u
 }
 
 
-/* Toggle the GPIO pin 88, this could be routed to different controls like write
- * protection or a led. */
+/* Toggle the GPIO pin 88, reserved for write protection pin of the external flash. */
 static int realtek_mst_i2c_spi_toggle_gpio_88_strap(int fd, bool toggle)
 {
 	int ret = 0;
