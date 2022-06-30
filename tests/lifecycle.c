@@ -13,18 +13,7 @@
  * GNU General Public License for more details.
  */
 
-#include <include/test.h>
-#include <string.h>
-#include <linux/spi/spidev.h>
-
-#include "tests.h"
-#include "libflashrom.h"
-#include "io_mock.h"
-#include "programmer.h"
-#include "spi.h"
-
-#define SKIP_TEST(name) \
-	void name (void **state) { skip(); }
+#include "lifecycle.h"
 
 static void probe_chip(const struct programmer_entry *prog,
 			struct flashrom_programmer *flashprog,
