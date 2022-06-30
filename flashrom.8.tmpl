@@ -1554,6 +1554,9 @@ hub when beginning operation to put it into ISP mode.
 the MST hub on programming completion, causing it to exit ISP mode and to
 reload its own firmware from flash.
 
+\fBallow-brick\fP defaults to no, however must be set explicitly to "yes"
+to allow the driver to run if you are sure you have a MST chip.
+
 The hub must be in ISP mode for SPI flash access to be possible, so it is
 usually only useful to disable \fBenter-isp\fP if an earlier invocation avoided
 resetting it on completion. For instance, to erase the flash and

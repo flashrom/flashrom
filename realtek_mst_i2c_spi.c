@@ -444,10 +444,23 @@ static const struct spi_master spi_master_i2c_realtek_mst = {
 	.probe_opcode	= default_spi_probe_opcode,
 };
 
-static int get_params(int *reset, int *enter_isp)
+static int get_params(int *reset, int *enter_isp, int *allow_brick)
 {
-	char *reset_str = NULL, *isp_str = NULL;
+	char *reset_str = NULL, *isp_str = NULL, *brick_str = NULL;
 	int ret = 0;
+
+	brick_str = extract_programmer_param_str("allow-brick");
+	if (brick_str) {
+		if (!strcmp(brick_str, "yes")) {
+			*allow_brick = 1;
+		} else {
+			msg_perr("%s: Incorrect param format, allow_brick=yes.\n", __func__);
+			ret = SPI_GENERIC_ERROR;
+		}
+	} else {
+		*allow_brick = 0; /* Default behaviour is to bail. */
+	}
+	free(brick_str);
 
 	reset_str = extract_programmer_param_str("reset-mcu");
 	if (reset_str) {
@@ -485,10 +498,22 @@ static int get_params(int *reset, int *enter_isp)
 static int realtek_mst_i2c_spi_init(void)
 {
 	int ret = 0;
-	int reset = 0, enter_isp = 0;
+	int reset = 0, enter_isp = 0, allow_brick = 0;
 
-	if (get_params(&reset, &enter_isp))
+	if (get_params(&reset, &enter_isp, &allow_brick))
 		return SPI_GENERIC_ERROR;
+
+	/*
+	 * TODO: Once board_enable can facilitate safe i2c allow listing
+	 * 	 then this can be removed.
+	 */
+	if (!allow_brick) {
+		msg_perr("%s: For i2c drivers you must explicitly 'allow-brick=yes'. ", __func__);
+		msg_perr("There is currently no way to determine if the programmer works on a board "
+			 "as i2c device address space can be overloaded. Set 'allow-brick=yes' if "
+			 "you are sure you know what you are doing.\n");
+		return SPI_GENERIC_ERROR;
+	}
 
 	int fd = i2c_open_from_programmer_params(REGISTER_ADDRESS, 0);
 	if (fd < 0)
