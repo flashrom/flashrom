@@ -31,7 +31,7 @@
 #define DRKAISER_MEMMAP_MASK		((1 << 17) - 1)
 
 struct drkaiser_data {
-	uint8_t *drkaiser_bar;
+	uint8_t *bar;
 };
 
 static const struct dev_entry drkaiser_pcidev[] = {
@@ -45,7 +45,7 @@ static void drkaiser_chip_writeb(const struct flashctx *flash, uint8_t val,
 {
 	struct drkaiser_data *data = flash->mst->par.data;
 
-	pci_mmio_writeb(val, data->drkaiser_bar + (addr & DRKAISER_MEMMAP_MASK));
+	pci_mmio_writeb(val, data->bar + (addr & DRKAISER_MEMMAP_MASK));
 }
 
 static uint8_t drkaiser_chip_readb(const struct flashctx *flash,
@@ -53,7 +53,7 @@ static uint8_t drkaiser_chip_readb(const struct flashctx *flash,
 {
 	struct drkaiser_data *data = flash->mst->par.data;
 
-	return pci_mmio_readb(data->drkaiser_bar + (addr & DRKAISER_MEMMAP_MASK));
+	return pci_mmio_readb(data->bar + (addr & DRKAISER_MEMMAP_MASK));
 }
 
 static int drkaiser_shutdown(void *par_data)
@@ -101,7 +101,7 @@ static int drkaiser_init(void)
 		msg_perr("Unable to allocate space for PAR master data\n");
 		return 1;
 	}
-	data->drkaiser_bar = bar;
+	data->bar = bar;
 
 	max_rom_decode.parallel = 128 * 1024;
 
