@@ -16,7 +16,7 @@
 #ifndef LIBUSB_WRAPS_H
 #define LIBUSB_WRAPS_H
 
-#include <libusb.h>
+#include "usb_unittests.h"
 
 void *__wrap_usb_dev_get_by_vid_pid_number(
 		libusb_context *usb_ctx, uint16_t vid, uint16_t pid, unsigned int num);

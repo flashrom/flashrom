@@ -34,11 +34,9 @@
 /* Required for `FILE *` */
 #include <stdio.h>
 
-/*
- * Explicitly including the header because some tests are using libusb structs
- * in depth, opaque symbols are not sufficient.
- */
-#include <libusb.h>
+#include <stdint.h>
+
+#include "usb_unittests.h"
 
 /* Address value needs fit into uint8_t. */
 #define USB_DEVICE_ADDRESS 19
