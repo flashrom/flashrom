@@ -298,6 +298,7 @@ static const struct spi_master spi_master_ft2232 = {
 	.write_256	= default_spi_write_256,
 	.write_aai	= default_spi_write_aai,
 	.shutdown	= ft2232_shutdown,
+	.probe_opcode	= default_spi_probe_opcode,
 };
 
 /* Returns 0 upon success, a negative number upon errors. */

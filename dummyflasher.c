@@ -121,6 +121,17 @@ static int dummy_spi_write_256(struct flashctx *flash, const uint8_t *buf, unsig
 				 emu_data->spi_write_256_chunksize);
 }
 
+static bool dummy_spi_probe_opcode(struct flashctx *flash, uint8_t opcode)
+{
+	size_t i;
+	struct emu_data *emu_data = flash->mst->spi.data;
+	for (i = 0; i < emu_data->spi_blacklist_size; i++) {
+		if (emu_data->spi_blacklist[i] == opcode)
+			return false;
+	}
+	return true;
+}
+
 static int probe_variable_size(struct flashctx *flash)
 {
 	const struct emu_data *emu_data = flash->mst->opaque.data;
@@ -916,6 +927,7 @@ static const struct spi_master spi_master_dummyflasher = {
 	.read		= default_spi_read,
 	.write_256	= dummy_spi_write_256,
 	.write_aai	= default_spi_write_aai,
+	.probe_opcode	= dummy_spi_probe_opcode,
 };
 
 static const struct par_master par_master_dummyflasher = {

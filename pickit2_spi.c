@@ -385,6 +385,7 @@ static const struct spi_master spi_master_pickit2 = {
 	.write_256	= default_spi_write_256,
 	.write_aai	= default_spi_write_aai,
 	.shutdown	= pickit2_shutdown,
+	.probe_opcode	= default_spi_probe_opcode,
 };
 
 static int pickit2_spi_init(void)

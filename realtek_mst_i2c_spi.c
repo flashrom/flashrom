@@ -441,6 +441,7 @@ static const struct spi_master spi_master_i2c_realtek_mst = {
 	.write_256	= realtek_mst_i2c_spi_write_256,
 	.write_aai	= realtek_mst_i2c_spi_write_aai,
 	.shutdown	= realtek_mst_i2c_spi_shutdown,
+	.probe_opcode	= default_spi_probe_opcode,
 };
 
 static int get_params(int *reset, int *enter_isp)

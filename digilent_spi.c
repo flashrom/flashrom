@@ -338,6 +338,7 @@ static const struct spi_master spi_master_digilent_spi = {
 	.write_256	= default_spi_write_256,
 	.write_aai	= default_spi_write_aai,
 	.shutdown	= digilent_spi_shutdown,
+	.probe_opcode	= default_spi_probe_opcode,
 };
 
 static bool default_reset(struct libusb_device_handle *handle)

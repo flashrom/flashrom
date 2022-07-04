@@ -148,6 +148,7 @@ static const struct spi_master spi_master_bitbang = {
 	.write_256	= default_spi_write_256,
 	.write_aai	= default_spi_write_aai,
 	.shutdown	= bitbang_spi_shutdown,
+	.probe_opcode	= default_spi_probe_opcode,
 };
 
 int register_spi_bitbang_master(const struct bitbang_spi_master *master, void *spi_data)

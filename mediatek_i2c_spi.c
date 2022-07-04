@@ -448,6 +448,7 @@ static const struct spi_master spi_master_i2c_mediatek = {
 	.read		= default_spi_read,
 	.write_256	= default_spi_write_256,
 	.write_aai	= default_spi_write_aai,
+	.probe_opcode	= default_spi_probe_opcode,
 };
 
 static int mediatek_shutdown(void *data)

@@ -1039,6 +1039,7 @@ static struct spi_master spi_master_dediprog = {
 	.write_256	= dediprog_spi_write_256,
 	.write_aai	= dediprog_spi_write_aai,
 	.shutdown	= dediprog_shutdown,
+	.probe_opcode	= default_spi_probe_opcode,
 };
 
 /*

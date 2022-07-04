@@ -1320,6 +1320,7 @@ static const struct spi_master spi_master_raiden_debug = {
 	.write_256	= default_spi_write_256,
 	.write_aai	= default_spi_write_aai,
 	.shutdown	= raiden_debug_spi_shutdown,
+	.probe_opcode	= default_spi_probe_opcode,
 };
 
 static int match_endpoint(struct libusb_endpoint_descriptor const *descriptor,

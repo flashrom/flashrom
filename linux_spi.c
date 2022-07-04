@@ -121,6 +121,7 @@ static const struct spi_master spi_master_linux = {
 	.write_256	= linux_spi_write_256,
 	.write_aai	= default_spi_write_aai,
 	.shutdown	= linux_spi_shutdown,
+	.probe_opcode	= default_spi_probe_opcode,
 };
 
 /* Read max buffer size from sysfs, or use page size as fallback. */

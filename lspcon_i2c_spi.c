@@ -437,6 +437,7 @@ static const struct spi_master spi_master_i2c_lspcon = {
 	.write_256	= lspcon_i2c_spi_write_256,
 	.write_aai	= lspcon_i2c_spi_write_aai,
 	.shutdown	= lspcon_i2c_spi_shutdown,
+	.probe_opcode	= default_spi_probe_opcode,
 };
 
 static int lspcon_i2c_spi_init(void)

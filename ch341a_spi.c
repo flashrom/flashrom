@@ -417,6 +417,7 @@ static const struct spi_master spi_master_ch341a_spi = {
 	.write_256	= default_spi_write_256,
 	.write_aai	= default_spi_write_aai,
 	.shutdown	= ch341a_spi_shutdown,
+	.probe_opcode	= default_spi_probe_opcode,
 };
 
 static int ch341a_spi_init(void)
