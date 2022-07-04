@@ -1,22 +1,22 @@
-FROM debian:stable
+FROM debian:bullseye
 
 ARG PKG_PATH=http://cdn.netbsd.org/pub/pkgsrc/packages/NetBSD/amd64/7.1/All
 ARG INST_IMG=http://ftp.de.netbsd.org/pub/NetBSD/NetBSD-7.1/amd64/
-ARG DISK_SIZE=1G
-ARG INSTALL_MEM=128M
-ARG EXTRA_PKG=""
 
 RUN \
 	useradd -p locked -m mani && \
 	apt-get -qq update && \
 	apt-get -qq upgrade && \
 	apt-get -qq dist-upgrade && \
-	apt-get -qqy install git python python-pexpect \
-			     genisoimage qemu-system && \
-	apt-get clean && \
-	git clone https://github.com/gson1703/anita.git && \
-	cd anita && python setup.py install
+	apt-get -qqy install git python-is-python3 python3-pexpect \
+			     python3-distutils genisoimage qemu-system && \
+	apt-get clean
 
+RUN	git clone https://github.com/gson1703/anita.git
+RUN	cd anita && python setup.py install
+
+ARG DISK_SIZE=1G
+ARG INSTALL_MEM=128M
 USER mani
 RUN cd && mkdir .ccache && chown mani:mani .ccache && \
 	  anita --sets kern-GENERIC,modules,base,etc,comp \
@@ -24,6 +24,7 @@ RUN cd && mkdir .ccache && chown mani:mani .ccache && \
 		install ${INST_IMG} && \
 	  rm -rf work-*/download
 
+ARG EXTRA_PKG=""
 ARG RUNTIME_MEM=128M
 RUN cd && anita --persist --memory-size=${RUNTIME_MEM} --run \
 "echo 'dhcpcd'                                   >init && \
