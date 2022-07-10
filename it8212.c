@@ -20,7 +20,9 @@
 #include "hwaccess_physmap.h"
 #include "platform/pci.h"
 
-static uint8_t *it8212_bar = NULL;
+struct it8212_data {
+	uint8_t *it8212_bar;
+};
 
 #define PCI_VENDOR_ID_ITE 0x1283
 
@@ -35,12 +37,22 @@ static const struct dev_entry devs_it8212[] = {
 
 static void it8212_chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr)
 {
-	pci_mmio_writeb(val, it8212_bar + (addr & IT8212_MEMMAP_MASK));
+	const struct it8212_data *data = flash->mst->par.data;
+
+	pci_mmio_writeb(val, data->it8212_bar + (addr & IT8212_MEMMAP_MASK));
 }
 
 static uint8_t it8212_chip_readb(const struct flashctx *flash, const chipaddr addr)
 {
-	return pci_mmio_readb(it8212_bar + (addr & IT8212_MEMMAP_MASK));
+	const struct it8212_data *data = flash->mst->par.data;
+
+	return pci_mmio_readb(data->it8212_bar + (addr & IT8212_MEMMAP_MASK));
+}
+
+static int it8212_shutdown(void *par_data)
+{
+	free(par_data);
+	return 0;
 }
 
 static const struct par_master par_master_it8212 = {
@@ -52,10 +64,13 @@ static const struct par_master par_master_it8212 = {
 	.chip_writew	= fallback_chip_writew,
 	.chip_writel	= fallback_chip_writel,
 	.chip_writen	= fallback_chip_writen,
+	.shutdown	= it8212_shutdown,
 };
 
 static int it8212_init(void)
 {
+	uint8_t *bar;
+
 	struct pci_dev *dev = pcidev_init(devs_it8212, PCI_ROM_ADDRESS);
 	if (!dev)
 		return 1;
@@ -65,15 +80,22 @@ static int it8212_init(void)
 	if (!io_base_addr)
 		return 1;
 
-	it8212_bar = rphysmap("IT8212F flash", io_base_addr, IT8212_MEMMAP_SIZE);
-	if (it8212_bar == ERROR_PTR)
+	bar = rphysmap("IT8212F flash", io_base_addr, IT8212_MEMMAP_SIZE);
+	if (bar == ERROR_PTR)
 		return 1;
+
+	struct it8212_data *data = calloc(1, sizeof(*data));
+	if (!data) {
+		msg_perr("Unable to allocate space for PAR master data\n");
+		return 1;
+	}
+	data->it8212_bar = bar;
 
 	/* Restore ROM BAR decode state automatically at shutdown. */
 	rpci_write_long(dev, PCI_ROM_ADDRESS, io_base_addr | 0x01);
 
 	max_rom_decode.parallel = IT8212_MEMMAP_SIZE;
-	return register_par_master(&par_master_it8212, BUS_PARALLEL, NULL);
+	return register_par_master(&par_master_it8212, BUS_PARALLEL, data);
 }
 const struct programmer_entry programmer_it8212 = {
 	.name			= "it8212",
