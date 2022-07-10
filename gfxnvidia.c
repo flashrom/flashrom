@@ -30,7 +30,7 @@
 #define GFXNVIDIA_MEMMAP_SIZE		(16 * 1024 * 1024)
 
 struct gfxnvidia_data {
-	uint8_t *nvidia_bar;
+	uint8_t *bar;
 };
 
 static const struct dev_entry gfx_nvidia[] = {
@@ -66,7 +66,7 @@ static void gfxnvidia_chip_writeb(const struct flashctx *flash, uint8_t val,
 {
 	const struct gfxnvidia_data *data = flash->mst->par.data;
 
-	pci_mmio_writeb(val, data->nvidia_bar + (addr & GFXNVIDIA_MEMMAP_MASK));
+	pci_mmio_writeb(val, data->bar + (addr & GFXNVIDIA_MEMMAP_MASK));
 }
 
 static uint8_t gfxnvidia_chip_readb(const struct flashctx *flash,
@@ -74,7 +74,7 @@ static uint8_t gfxnvidia_chip_readb(const struct flashctx *flash,
 {
 	const struct gfxnvidia_data *data = flash->mst->par.data;
 
-	return pci_mmio_readb(data->nvidia_bar + (addr & GFXNVIDIA_MEMMAP_MASK));
+	return pci_mmio_readb(data->bar + (addr & GFXNVIDIA_MEMMAP_MASK));
 }
 
 static int gfxnvidia_shutdown(void *par_data)
@@ -121,7 +121,7 @@ static int gfxnvidia_init(void)
 		msg_perr("Unable to allocate space for PAR master data\n");
 		return 1;
 	}
-	data->nvidia_bar = bar;
+	data->bar = bar;
 
 	/* Allow access to flash interface (will disable screen). */
 	reg32 = pci_read_long(dev, 0x50);
