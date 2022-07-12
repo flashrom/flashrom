@@ -16,6 +16,7 @@
 
 /* Datasheets can be found on http://www.siliconimage.com. Great thanks! */
 
+#include <stdlib.h>
 #include "programmer.h"
 #include "hwaccess_physmap.h"
 #include "platform/pci.h"
@@ -24,8 +25,10 @@
 
 #define SATASII_MEMMAP_SIZE	0x100
 
-static uint8_t *sii_bar;
-static uint16_t id;
+struct satasii_data {
+	uint8_t *sii_bar;
+	uint16_t id;
+};
 
 static const struct dev_entry satas_sii[] = {
 	{0x1095, 0x0680, OK, "Silicon Image", "PCI0680 Ultra ATA-133 Host Ctrl"},
@@ -38,14 +41,14 @@ static const struct dev_entry satas_sii[] = {
 	{0},
 };
 
-static uint32_t satasii_wait_done(void)
+static uint32_t satasii_wait_done(const uint8_t *bar)
 {
 	uint32_t ctrl_reg;
 	int i = 0;
-	while ((ctrl_reg = pci_mmio_readl(sii_bar)) & (1 << 25)) {
+	while ((ctrl_reg = pci_mmio_readl(bar)) & (1 << 25)) {
 		if (++i > 10000) {
 			msg_perr("%s: control register stuck at %08x, ignoring.\n",
-				 __func__, pci_mmio_readl(sii_bar));
+				 __func__, pci_mmio_readl(bar));
 			break;
 		}
 	}
@@ -54,33 +57,41 @@ static uint32_t satasii_wait_done(void)
 
 static void satasii_chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr)
 {
+	const struct satasii_data *data = flash->mst->par.data;
 	uint32_t data_reg;
-	uint32_t ctrl_reg = satasii_wait_done();
+	uint32_t ctrl_reg = satasii_wait_done(data->sii_bar);
 
 	/* Mask out unused/reserved bits, set writes and start transaction. */
 	ctrl_reg &= 0xfcf80000;
 	ctrl_reg |= (1 << 25) | (0 << 24) | ((uint32_t) addr & 0x7ffff);
 
-	data_reg = (pci_mmio_readl((sii_bar + 4)) & ~0xff) | val;
-	pci_mmio_writel(data_reg, (sii_bar + 4));
-	pci_mmio_writel(ctrl_reg, sii_bar);
+	data_reg = (pci_mmio_readl((data->sii_bar + 4)) & ~0xff) | val;
+	pci_mmio_writel(data_reg, (data->sii_bar + 4));
+	pci_mmio_writel(ctrl_reg, data->sii_bar);
 
-	satasii_wait_done();
+	satasii_wait_done(data->sii_bar);
 }
 
 static uint8_t satasii_chip_readb(const struct flashctx *flash, const chipaddr addr)
 {
-	uint32_t ctrl_reg = satasii_wait_done();
+	const struct satasii_data *data = flash->mst->par.data;
+	uint32_t ctrl_reg = satasii_wait_done(data->sii_bar);
 
 	/* Mask out unused/reserved bits, set reads and start transaction. */
 	ctrl_reg &= 0xfcf80000;
 	ctrl_reg |= (1 << 25) | (1 << 24) | ((uint32_t) addr & 0x7ffff);
 
-	pci_mmio_writel(ctrl_reg, sii_bar);
+	pci_mmio_writel(ctrl_reg, data->sii_bar);
 
-	satasii_wait_done();
+	satasii_wait_done(data->sii_bar);
 
-	return (pci_mmio_readl(sii_bar + 4)) & 0xff;
+	return (pci_mmio_readl(data->sii_bar + 4)) & 0xff;
+}
+
+static int satasii_shutdown(void *par_data)
+{
+	free(par_data);
+	return 0;
 }
 
 static const struct par_master par_master_satasii = {
@@ -92,13 +103,15 @@ static const struct par_master par_master_satasii = {
 	.chip_writew	= fallback_chip_writew,
 	.chip_writel	= fallback_chip_writel,
 	.chip_writen	= fallback_chip_writen,
+	.shutdown	= satasii_shutdown,
 };
 
 static int satasii_init(void)
 {
 	struct pci_dev *dev = NULL;
 	uint32_t addr;
-	uint16_t reg_offset;
+	uint16_t reg_offset, id;
+	uint8_t *bar;
 
 	dev = pcidev_init(satas_sii, PCI_BASE_ADDRESS_0);
 	if (!dev)
@@ -118,16 +131,24 @@ static int satasii_init(void)
 		reg_offset = 0x50;
 	}
 
-	sii_bar = rphysmap("SATA SiI registers", addr, SATASII_MEMMAP_SIZE);
-	if (sii_bar == ERROR_PTR)
+	bar = rphysmap("SATA SiI registers", addr, SATASII_MEMMAP_SIZE);
+	if (bar == ERROR_PTR)
 		return 1;
-	sii_bar += reg_offset;
+	bar += reg_offset;
 
 	/* Check if ROM cycle are OK. */
-	if ((id != 0x0680) && (!(pci_mmio_readl(sii_bar) & (1 << 26))))
+	if ((id != 0x0680) && (!(pci_mmio_readl(bar) & (1 << 26))))
 		msg_pwarn("Warning: Flash seems unconnected.\n");
 
-	return register_par_master(&par_master_satasii, BUS_PARALLEL, NULL);
+	struct satasii_data *data = calloc(1, sizeof(*data));
+	if (!data) {
+		msg_perr("Unable to allocate space for PAR master data\n");
+		return 1;
+	}
+	data->sii_bar = bar;
+	data->id = id;
+
+	return register_par_master(&par_master_satasii, BUS_PARALLEL, data);
 }
 const struct programmer_entry programmer_satasii = {
 	.name			= "satasii",
