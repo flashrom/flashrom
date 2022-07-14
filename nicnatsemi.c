@@ -25,7 +25,10 @@
 #define BOOT_ROM_ADDR		0x50
 #define BOOT_ROM_DATA		0x54
 
-static uint32_t io_base_addr = 0;
+struct nicnatsemi_data {
+	uint32_t io_base_addr;
+};
+
 static const struct dev_entry nics_natsemi[] = {
 	{0x100b, 0x0020, NT, "National Semiconductor", "DP83815/DP83816"},
 	{0x100b, 0x0022, NT, "National Semiconductor", "DP83820"},
@@ -36,7 +39,9 @@ static const struct dev_entry nics_natsemi[] = {
 static void nicnatsemi_chip_writeb(const struct flashctx *flash, uint8_t val,
 				   chipaddr addr)
 {
-	OUTL((uint32_t)addr & 0x0001FFFF, io_base_addr + BOOT_ROM_ADDR);
+	const struct nicnatsemi_data *data = flash->mst->par.data;
+
+	OUTL((uint32_t)addr & 0x0001FFFF, data->io_base_addr + BOOT_ROM_ADDR);
 	/*
 	 * The datasheet requires 32 bit accesses to this register, but it seems
 	 * that requirement might only apply if the register is memory mapped.
@@ -45,13 +50,15 @@ static void nicnatsemi_chip_writeb(const struct flashctx *flash, uint8_t val,
 	 * register seem to work fine. Due to that, we ignore the advice in the
 	 * data sheet.
 	 */
-	OUTB(val, io_base_addr + BOOT_ROM_DATA);
+	OUTB(val, data->io_base_addr + BOOT_ROM_DATA);
 }
 
 static uint8_t nicnatsemi_chip_readb(const struct flashctx *flash,
 				     const chipaddr addr)
 {
-	OUTL(((uint32_t)addr & 0x0001FFFF), io_base_addr + BOOT_ROM_ADDR);
+	const struct nicnatsemi_data *data = flash->mst->par.data;
+
+	OUTL(((uint32_t)addr & 0x0001FFFF), data->io_base_addr + BOOT_ROM_ADDR);
 	/*
 	 * The datasheet requires 32 bit accesses to this register, but it seems
 	 * that requirement might only apply if the register is memory mapped.
@@ -60,7 +67,13 @@ static uint8_t nicnatsemi_chip_readb(const struct flashctx *flash,
 	 * register seem to work fine. Due to that, we ignore the advice in the
 	 * data sheet.
 	 */
-	return INB(io_base_addr + BOOT_ROM_DATA);
+	return INB(data->io_base_addr + BOOT_ROM_DATA);
+}
+
+static int nicnatsemi_shutdown(void *par_data)
+{
+	free(par_data);
+	return 0;
 }
 
 static const struct par_master par_master_nicnatsemi = {
@@ -72,11 +85,13 @@ static const struct par_master par_master_nicnatsemi = {
 	.chip_writew	= fallback_chip_writew,
 	.chip_writel	= fallback_chip_writel,
 	.chip_writen	= fallback_chip_writen,
+	.shutdown	= nicnatsemi_shutdown,
 };
 
 static int nicnatsemi_init(void)
 {
 	struct pci_dev *dev = NULL;
+	uint32_t io_base_addr;
 
 	if (rget_io_perms())
 		return 1;
@@ -89,6 +104,13 @@ static int nicnatsemi_init(void)
 	if (!io_base_addr)
 		return 1;
 
+	struct nicnatsemi_data *data = calloc(1, sizeof(*data));
+	if (!data) {
+		msg_perr("Unable to allocate space for PAR master data\n");
+		return 1;
+	}
+	data->io_base_addr = io_base_addr;
+
 	/* The datasheet shows address lines MA0-MA16 in one place and MA0-MA15
 	 * in another. My NIC has MA16 connected to A16 on the boot ROM socket
 	 * so I'm assuming it is accessible. If not then next line wants to be
@@ -96,7 +118,7 @@ static int nicnatsemi_init(void)
 	 * functions below wants to be 0x0000FFFF.
 	 */
 	max_rom_decode.parallel = 131072;
-	return register_par_master(&par_master_nicnatsemi, BUS_PARALLEL, NULL);
+	return register_par_master(&par_master_nicnatsemi, BUS_PARALLEL, data);
 }
 
 
