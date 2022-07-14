@@ -21,8 +21,10 @@
 #include "hwaccess_physmap.h"
 #include "platform/pci.h"
 
-static uint8_t *nicintel_bar;
-static uint8_t *nicintel_control_bar;
+struct nicintel_data {
+	uint8_t *nicintel_bar;
+	uint8_t *nicintel_control_bar;
+};
 
 static const struct dev_entry nics_intel[] = {
 	{PCI_VENDOR_ID_INTEL, 0x1209, NT, "Intel", "8255xER/82551IT Fast Ethernet Controller"},
@@ -44,13 +46,23 @@ static const struct dev_entry nics_intel[] = {
 static void nicintel_chip_writeb(const struct flashctx *flash, uint8_t val,
 				 chipaddr addr)
 {
-	pci_mmio_writeb(val, nicintel_bar + (addr & NICINTEL_MEMMAP_MASK));
+	const struct nicintel_data *data = flash->mst->par.data;
+
+	pci_mmio_writeb(val, data->nicintel_bar + (addr & NICINTEL_MEMMAP_MASK));
 }
 
 static uint8_t nicintel_chip_readb(const struct flashctx *flash,
 				   const chipaddr addr)
 {
-	return pci_mmio_readb(nicintel_bar + (addr & NICINTEL_MEMMAP_MASK));
+	const struct nicintel_data *data = flash->mst->par.data;
+
+	return pci_mmio_readb(data->nicintel_bar + (addr & NICINTEL_MEMMAP_MASK));
+}
+
+static int nicintel_shutdown(void *par_data)
+{
+	free(par_data);
+	return 0;
 }
 
 static const struct par_master par_master_nicintel = {
@@ -62,12 +74,15 @@ static const struct par_master par_master_nicintel = {
 	.chip_writew	= fallback_chip_writew,
 	.chip_writel	= fallback_chip_writel,
 	.chip_writen	= fallback_chip_writen,
+	.shutdown	= nicintel_shutdown,
 };
 
 static int nicintel_init(void)
 {
 	struct pci_dev *dev = NULL;
 	uintptr_t addr;
+	uint8_t *bar;
+	uint8_t *control_bar;
 
 	/* FIXME: BAR2 is not available if the device uses the CardBus function. */
 	dev = pcidev_init(nics_intel, PCI_BASE_ADDRESS_2);
@@ -78,16 +93,16 @@ static int nicintel_init(void)
 	if (!addr)
 		return 1;
 
-	nicintel_bar = rphysmap("Intel NIC flash", addr, NICINTEL_MEMMAP_SIZE);
-	if (nicintel_bar == ERROR_PTR)
+	bar = rphysmap("Intel NIC flash", addr, NICINTEL_MEMMAP_SIZE);
+	if (bar == ERROR_PTR)
 		return 1;
 
 	addr = pcidev_readbar(dev, PCI_BASE_ADDRESS_0);
 	if (!addr)
 		return 1;
 
-	nicintel_control_bar = rphysmap("Intel NIC control/status reg", addr, NICINTEL_CONTROL_MEMMAP_SIZE);
-	if (nicintel_control_bar == ERROR_PTR)
+	control_bar = rphysmap("Intel NIC control/status reg", addr, NICINTEL_CONTROL_MEMMAP_SIZE);
+	if (control_bar == ERROR_PTR)
 		return 1;
 
 	/* FIXME: This register is pretty undocumented in all publicly available
@@ -99,10 +114,18 @@ static int nicintel_init(void)
 	 * what we should do with it. Write 0x0001 because we have nothing
 	 * better to do with our time.
 	 */
-	pci_rmmio_writew(0x0001, nicintel_control_bar + CSR_FCR);
+	pci_rmmio_writew(0x0001, control_bar + CSR_FCR);
+
+	struct nicintel_data *data = calloc(1, sizeof(*data));
+	if (!data) {
+		msg_perr("Unable to allocate space for PAR master data\n");
+		return 1;
+	}
+	data->nicintel_bar = bar;
+	data->nicintel_control_bar = control_bar;
 
 	max_rom_decode.parallel = NICINTEL_MEMMAP_SIZE;
-	return register_par_master(&par_master_nicintel, BUS_PARALLEL, NULL);
+	return register_par_master(&par_master_nicintel, BUS_PARALLEL, data);
 }
 
 const struct programmer_entry programmer_nicintel = {
