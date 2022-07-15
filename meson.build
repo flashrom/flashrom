@@ -53,6 +53,7 @@ srcs = files(
   'bitbang_spi.c',
   'edi.c',
   'en29lv640b.c',
+  'erasure_layout.c',
   'flashchips.c',
   'flashrom.c',
   'fmap.c',
