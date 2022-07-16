@@ -89,20 +89,25 @@ struct pickit2_spi_data {
 #define SCR_VDD_OFF             0xFE
 #define SCR_VDD_ON              0xFF
 
+static int pickit2_interrupt_transfer(libusb_device_handle *handle, unsigned char endpoint, unsigned char *data)
+{
+	int transferred;
+	return libusb_interrupt_transfer(handle, endpoint, data, CMD_LENGTH, &transferred, DFLT_TIMEOUT);
+}
+
 static int pickit2_get_firmware_version(libusb_device_handle *pickit2_handle)
 {
 	int ret;
 	uint8_t command[CMD_LENGTH] = {CMD_GET_VERSION, CMD_END_OF_BUFFER};
-	int transferred;
 
-	ret = libusb_interrupt_transfer(pickit2_handle, ENDPOINT_OUT, command, CMD_LENGTH, &transferred, DFLT_TIMEOUT);
+	ret = pickit2_interrupt_transfer(pickit2_handle, ENDPOINT_OUT, command);
 
 	if (ret != 0) {
 		msg_perr("Command Get Firmware Version failed!\n");
 		return 1;
 	}
 
-	ret = libusb_interrupt_transfer(pickit2_handle, ENDPOINT_IN, command, CMD_LENGTH, &transferred, DFLT_TIMEOUT);
+	ret = pickit2_interrupt_transfer(pickit2_handle, ENDPOINT_IN, command);
 
 	if (ret != 0) {
 		msg_perr("Command Get Firmware Version failed!\n");
@@ -148,8 +153,7 @@ static int pickit2_set_spi_voltage(libusb_device_handle *pickit2_handle, int mil
 		voltage_selector * 13,
 		CMD_END_OF_BUFFER
 	};
-	int transferred;
-	int ret = libusb_interrupt_transfer(pickit2_handle, ENDPOINT_OUT, command, CMD_LENGTH, &transferred, DFLT_TIMEOUT);
+	int ret = pickit2_interrupt_transfer(pickit2_handle, ENDPOINT_OUT, command);
 
 	if (ret != 0) {
 		msg_perr("Command Set Voltage failed!\n");
@@ -184,8 +188,7 @@ static int pickit2_set_spi_speed(libusb_device_handle *pickit2_handle, unsigned 
 		CMD_END_OF_BUFFER
 	};
 
-	int transferred;
-	int ret = libusb_interrupt_transfer(pickit2_handle, ENDPOINT_OUT, command, CMD_LENGTH, &transferred, DFLT_TIMEOUT);
+	int ret = pickit2_interrupt_transfer(pickit2_handle, ENDPOINT_OUT, command);
 
 	if (ret != 0) {
 		msg_perr("Command Set SPI Speed failed!\n");
@@ -255,9 +258,7 @@ static int pickit2_spi_send_command(const struct flashctx *flash, unsigned int w
 	buf[i++] = CMD_UPLOAD_DATA;
 	buf[i++] = CMD_END_OF_BUFFER;
 
-	int transferred;
-	int ret = libusb_interrupt_transfer(pickit2_data->pickit2_handle,
-					ENDPOINT_OUT, buf, CMD_LENGTH, &transferred, DFLT_TIMEOUT);
+	int ret = pickit2_interrupt_transfer(pickit2_data->pickit2_handle, ENDPOINT_OUT, buf);
 
 	if (ret != 0) {
 		msg_perr("Send SPI failed!\n");
@@ -357,9 +358,7 @@ static int pickit2_shutdown(void *data)
 		CMD_END_OF_BUFFER
 	};
 
-	int transferred;
-	int ret = libusb_interrupt_transfer(pickit2_data->pickit2_handle,
-					ENDPOINT_OUT, command, CMD_LENGTH, &transferred, DFLT_TIMEOUT);
+	int ret = pickit2_interrupt_transfer(pickit2_data->pickit2_handle, ENDPOINT_OUT, command);
 
 	if (ret != 0) {
 		msg_perr("Command Shutdown failed!\n");
@@ -492,8 +491,7 @@ static int pickit2_spi_init(void)
 
 	/* Perform basic setup.
 	 * Configure pin directions and logic levels, turn Vdd on, turn busy LED on and clear buffers. */
-	int transferred;
-	if (libusb_interrupt_transfer(pickit2_handle, ENDPOINT_OUT, buf, CMD_LENGTH, &transferred, DFLT_TIMEOUT) != 0) {
+	if (pickit2_interrupt_transfer(pickit2_handle, ENDPOINT_OUT, buf) != 0) {
 		msg_perr("Command Setup failed!\n");
 		goto init_err_cleanup_exit;
 	}
