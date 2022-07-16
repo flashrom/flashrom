@@ -477,8 +477,7 @@ static const struct spi_master spi_programmer_stlinkv3 = {
 static int stlinkv3_spi_init(void)
 {
 	uint16_t sck_freq_kHz = 1000;	// selecting 1 MHz SCK is a good bet
-	char *speed_str = NULL;
-	char *serialno = NULL;
+	char *param_str;
 	char *endptr = NULL;
 	int ret = 1;
 	int devIndex = 0;
@@ -492,44 +491,44 @@ static int stlinkv3_spi_init(void)
 		return 1;
 	}
 
-	serialno = extract_programmer_param_str("serial");
-	if (serialno)
-		msg_pdbg("Opening STLINK-V3 with serial: %s\n", serialno);
+	param_str = extract_programmer_param_str("serial");
+	if (param_str)
+		msg_pdbg("Opening STLINK-V3 with serial: %s\n", param_str);
 
 
 	while (devs_stlinkv3_spi[devIndex].vendor_id != 0) {
 		stlinkv3_handle = usb_dev_get_by_vid_pid_serial(usb_ctx,
 								devs_stlinkv3_spi[devIndex].vendor_id,
 								devs_stlinkv3_spi[devIndex].device_id,
-								serialno);
+								param_str);
 		if (stlinkv3_handle)
 			break;
 		devIndex++;
 	}
 
 	if (!stlinkv3_handle) {
-		if (serialno)
-			msg_perr("No STLINK-V3 seems to be connected with serial %s\n", serialno);
+		if (param_str)
+			msg_perr("No STLINK-V3 seems to be connected with serial %s\n", param_str);
 		else
 			msg_perr("Could not find any connected STLINK-V3\n");
-		free(serialno);
+		free(param_str);
 		goto init_err_exit;
 	}
-	free(serialno);
+	free(param_str);
 
-	speed_str = extract_programmer_param_str("spispeed");
-	if (speed_str) {
-		sck_freq_kHz = strtoul(speed_str, &endptr, 0);
+	param_str = extract_programmer_param_str("spispeed");
+	if (param_str) {
+		sck_freq_kHz = strtoul(param_str, &endptr, 0);
 		if (*endptr || sck_freq_kHz == 0) {
 			msg_perr("The spispeed parameter passed with invalid format: %s\n",
-				 speed_str);
+				 param_str);
 			msg_perr("Please pass the parameter "
 				 "with a simple non-zero number in kHz\n");
-			free(speed_str);
+			free(param_str);
 			ret = -1;
 			goto init_err_exit;
 		}
-		free(speed_str);
+		free(param_str);
 	}
 
 	if (stlinkv3_spi_open(sck_freq_kHz, stlinkv3_handle))
