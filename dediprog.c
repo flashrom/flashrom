@@ -1078,7 +1078,7 @@ static int dediprog_open(int index, struct dediprog_data *dp_data)
 
 static int dediprog_init(void)
 {
-	char *voltage, *id_str, *device, *spispeed, *target_str;
+	char *param_str;
 	int spispeed_idx = 1;
 	int millivolt = 3500;
 	int id = -1; /* -1 defaults to enumeration order */
@@ -1087,99 +1087,99 @@ static int dediprog_init(void)
 	long target = FLASH_TYPE_APPLICATION_FLASH_1;
 	int i, ret;
 
-	spispeed = extract_programmer_param_str("spispeed");
-	if (spispeed) {
+	param_str = extract_programmer_param_str("spispeed");
+	if (param_str) {
 		for (i = 0; spispeeds[i].name; ++i) {
-			if (!strcasecmp(spispeeds[i].name, spispeed)) {
+			if (!strcasecmp(spispeeds[i].name, param_str)) {
 				spispeed_idx = i;
 				break;
 			}
 		}
 		if (!spispeeds[i].name) {
-			msg_perr("Error: Invalid spispeed value: '%s'.\n", spispeed);
-			free(spispeed);
+			msg_perr("Error: Invalid spispeed value: '%s'.\n", param_str);
+			free(param_str);
 			return 1;
 		}
-		free(spispeed);
+		free(param_str);
 	}
 
-	voltage = extract_programmer_param_str("voltage");
-	if (voltage) {
-		millivolt = parse_voltage(voltage);
-		free(voltage);
+	param_str = extract_programmer_param_str("voltage");
+	if (param_str) {
+		millivolt = parse_voltage(param_str);
+		free(param_str);
 		if (millivolt < 0)
 			return 1;
 		msg_pinfo("Setting voltage to %i mV\n", millivolt);
 	}
 
-	id_str = extract_programmer_param_str("id");
-	if (id_str) {
+	param_str = extract_programmer_param_str("id");
+	if (param_str) {
 		char prefix0, prefix1;
-		if (sscanf(id_str, "%c%c%d", &prefix0, &prefix1, &id) != 3) {
+		if (sscanf(param_str, "%c%c%d", &prefix0, &prefix1, &id) != 3) {
 			msg_perr("Error: Could not parse dediprog 'id'.\n");
 			msg_perr("Expected a string like SF012345 or DP012345.\n");
-			free(id_str);
+			free(param_str);
 			return 1;
 		}
 		if (id < 0 || id >= 0x1000000) {
-			msg_perr("Error: id %s is out of range!\n", id_str);
-			free(id_str);
+			msg_perr("Error: id %s is out of range!\n", param_str);
+			free(param_str);
 			return 1;
 		}
 		if (!(prefix0 == 'S' && prefix1 == 'F') && !(prefix0 == 'D' && prefix1 == 'P')) {
-			msg_perr("Error: %s is an invalid id!\n", id_str);
-			free(id_str);
+			msg_perr("Error: %s is an invalid id!\n", param_str);
+			free(param_str);
 			return 1;
 		}
-		msg_pinfo("Will search for dediprog id %s.\n", id_str);
+		msg_pinfo("Will search for dediprog id %s.\n", param_str);
 	}
-	free(id_str);
+	free(param_str);
 
-	device = extract_programmer_param_str("device");
-	if (device) {
+	param_str = extract_programmer_param_str("device");
+	if (param_str) {
 		char *dev_suffix;
 		if (id != -1) {
 			msg_perr("Error: Cannot use 'id' and 'device'.\n");
 		}
 		errno = 0;
-		usedevice = strtol(device, &dev_suffix, 10);
-		if (errno != 0 || device == dev_suffix) {
+		usedevice = strtol(param_str, &dev_suffix, 10);
+		if (errno != 0 || param_str == dev_suffix) {
 			msg_perr("Error: Could not convert 'device'.\n");
-			free(device);
+			free(param_str);
 			return 1;
 		}
 		if (usedevice < 0 || usedevice > INT_MAX) {
 			msg_perr("Error: Value for 'device' is out of range.\n");
-			free(device);
+			free(param_str);
 			return 1;
 		}
 		if (strlen(dev_suffix) > 0) {
 			msg_perr("Error: Garbage following 'device' value.\n");
-			free(device);
+			free(param_str);
 			return 1;
 		}
 		msg_pinfo("Using device %li.\n", usedevice);
 	}
-	free(device);
+	free(param_str);
 
-	target_str = extract_programmer_param_str("target");
-	if (target_str) {
+	param_str = extract_programmer_param_str("target");
+	if (param_str) {
 		char *target_suffix;
 		errno = 0;
-		target = strtol(target_str, &target_suffix, 10);
-		if (errno != 0 || target_str == target_suffix) {
+		target = strtol(param_str, &target_suffix, 10);
+		if (errno != 0 || param_str == target_suffix) {
 			msg_perr("Error: Could not convert 'target'.\n");
-			free(target_str);
+			free(param_str);
 			return 1;
 		}
 		if (target < 1 || target > 2) {
 			msg_perr("Error: Value for 'target' is out of range.\n");
-			free(target_str);
+			free(param_str);
 			return 1;
 		}
 		if (strlen(target_suffix) > 0) {
 			msg_perr("Error: Garbage following 'target' value.\n");
-			free(target_str);
+			free(param_str);
 			return 1;
 		}
 		switch (target) {
@@ -1195,7 +1195,7 @@ static int dediprog_init(void)
 			break;
 		}
 	}
-	free(target_str);
+	free(param_str);
 
 	struct dediprog_data *dp_data = calloc(1, sizeof(*dp_data));
 	if (!dp_data) {
