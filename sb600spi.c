@@ -413,14 +413,13 @@ static int handle_speed(struct pci_dev *dev, enum amd_chipset amd_gen, uint8_t *
 	uint32_t tmp;
 	int16_t spispeed_idx = -1;
 	int16_t spireadmode_idx = -1;
-	char *spispeed;
-	char *spireadmode;
+	char *param_str;
 
-	spispeed = extract_programmer_param_str("spispeed");
-	if (spispeed != NULL) {
+	param_str = extract_programmer_param_str("spispeed");
+	if (param_str != NULL) {
 		unsigned int i;
 		for (i = 0; i < ARRAY_SIZE(spispeeds); i++) {
-			if (strcasecmp(spispeeds[i], spispeed) == 0) {
+			if (strcasecmp(spispeeds[i], param_str) == 0) {
 				spispeed_idx = i;
 				break;
 			}
@@ -429,36 +428,36 @@ static int handle_speed(struct pci_dev *dev, enum amd_chipset amd_gen, uint8_t *
 		 * Error out on speeds not present in the spispeeds array.
 		 * Only Yangtze supports the second half of indices.
 		 * No 66 MHz before SB8xx. */
-		if ((strcasecmp(spispeed, "reserved") == 0) ||
+		if ((strcasecmp(param_str, "reserved") == 0) ||
 		    (i == ARRAY_SIZE(spispeeds)) ||
 		    (amd_gen < CHIPSET_YANGTZE && spispeed_idx > 3) ||
 		    (amd_gen < CHIPSET_SB89XX && spispeed_idx == 0)) {
-			msg_perr("Error: Invalid spispeed value: '%s'.\n", spispeed);
-			free(spispeed);
+			msg_perr("Error: Invalid spispeed value: '%s'.\n", param_str);
+			free(param_str);
 			return 1;
 		}
-		free(spispeed);
+		free(param_str);
 	}
 
-	spireadmode = extract_programmer_param_str("spireadmode");
-	if (spireadmode != NULL) {
+	param_str = extract_programmer_param_str("spireadmode");
+	if (param_str != NULL) {
 		unsigned int i;
 		for (i = 0; i < ARRAY_SIZE(spireadmodes); i++) {
-			if (strcasecmp(spireadmodes[i], spireadmode) == 0) {
+			if (strcasecmp(spireadmodes[i], param_str) == 0) {
 				spireadmode_idx = i;
 				break;
 			}
 		}
-		if ((strcasecmp(spireadmode, "reserved") == 0) ||
+		if ((strcasecmp(param_str, "reserved") == 0) ||
 		    (i == ARRAY_SIZE(spireadmodes))) {
-			msg_perr("Error: Invalid spireadmode value: '%s'.\n", spireadmode);
-			free(spireadmode);
+			msg_perr("Error: Invalid spireadmode value: '%s'.\n", param_str);
+			free(param_str);
 			return 1;
 		}
 		if (amd_gen < CHIPSET_BOLTON) {
 			msg_perr("Warning: spireadmode not supported for this chipset.");
 		}
-		free(spireadmode);
+		free(param_str);
 	}
 
 	/* See the chipset support matrix for SPI Base_Addr below for an explanation of the symbols used.
@@ -529,20 +528,20 @@ static int handle_imc(struct pci_dev *dev, enum amd_chipset amd_gen)
 		return 0;
 
 	bool amd_imc_force = false;
-	char *arg = extract_programmer_param_str("amd_imc_force");
-	if (arg && !strcmp(arg, "yes")) {
+	char *param_value = extract_programmer_param_str("amd_imc_force");
+	if (param_value && !strcmp(param_value, "yes")) {
 		amd_imc_force = true;
 		msg_pspew("amd_imc_force enabled.\n");
-	} else if (arg && !strlen(arg)) {
+	} else if (param_value && !strlen(param_value)) {
 		msg_perr("Missing argument for amd_imc_force.\n");
-		free(arg);
+		free(param_value);
 		return 1;
-	} else if (arg) {
-		msg_perr("Unknown argument for amd_imc_force: \"%s\" (not \"yes\").\n", arg);
-		free(arg);
+	} else if (param_value) {
+		msg_perr("Unknown argument for amd_imc_force: \"%s\" (not \"yes\").\n", param_value);
+		free(param_value);
 		return 1;
 	}
-	free(arg);
+	free(param_value);
 
 	/* TODO: we should not only look at IntegratedImcPresent (LPC Dev 20, Func 3, 40h) but also at
 	 * IMCEnable(Strap) and Override EcEnable(Strap) (sb8xx, sb9xx?, a50, Bolton: Misc_Reg: 80h-87h;
