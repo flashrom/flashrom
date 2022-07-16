@@ -376,7 +376,7 @@ static const struct digilent_spispeeds spispeeds[] = {
 
 static int digilent_spi_init(void)
 {
-	char *p;
+	char *param_str;
 	uint32_t speed_hz = spispeeds[0].speed;
 	int i;
 	struct libusb_device_handle *handle = NULL;
@@ -408,28 +408,28 @@ static int digilent_spi_init(void)
 		goto close_handle;
 	}
 
-	p = extract_programmer_param_str("spispeed");
-	if (p) {
+	param_str = extract_programmer_param_str("spispeed");
+	if (param_str) {
 		for (i = 0; spispeeds[i].name; ++i) {
-			if (!strcasecmp(spispeeds[i].name, p)) {
+			if (!strcasecmp(spispeeds[i].name, param_str)) {
 				speed_hz = spispeeds[i].speed;
 				break;
 			}
 		}
 		if (!spispeeds[i].name) {
-			msg_perr("Error: Invalid spispeed value: '%s'.\n", p);
-			free(p);
+			msg_perr("Error: Invalid spispeed value: '%s'.\n", param_str);
+			free(param_str);
 			goto close_handle;
 		}
-		free(p);
+		free(param_str);
 	}
 
-	p = extract_programmer_param_str("reset");
-	if (p && strlen(p))
-		reset_board = (p[0] == '1');
+	param_str = extract_programmer_param_str("reset");
+	if (param_str && strlen(param_str))
+		reset_board = (param_str[0] == '1');
 	else
 		reset_board = default_reset(handle);
-	free(p);
+	free(param_str);
 
 
 	if (reset_board) {
