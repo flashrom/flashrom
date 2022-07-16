@@ -446,48 +446,48 @@ static const struct spi_master spi_master_i2c_realtek_mst = {
 
 static int get_params(bool *reset, bool *enter_isp, bool *allow_brick)
 {
-	char *reset_str = NULL, *isp_str = NULL, *brick_str = NULL;
+	char *param_str;
 	int ret = 0;
 
 	*allow_brick = false; /* Default behaviour is to bail. */
-	brick_str = extract_programmer_param_str("allow_brick");
-	if (brick_str) {
-		if (!strcmp(brick_str, "yes")) {
+	param_str = extract_programmer_param_str("allow_brick");
+	if (param_str) {
+		if (!strcmp(param_str, "yes")) {
 			*allow_brick = true;
 		} else {
 			msg_perr("%s: Incorrect param format, allow_brick=yes.\n", __func__);
 			ret = SPI_GENERIC_ERROR;
 		}
 	}
-	free(brick_str);
+	free(param_str);
 
 	*reset = false; /* Default behaviour is no MCU reset on tear-down. */
-	reset_str = extract_programmer_param_str("reset_mcu");
-	if (reset_str) {
-		if (reset_str[0] == '1') {
+	param_str = extract_programmer_param_str("reset_mcu");
+	if (param_str) {
+		if (param_str[0] == '1') {
 			*reset = true;
-		} else if (reset_str[0] == '0') {
+		} else if (param_str[0] == '0') {
 			*reset = false;
 		} else {
 			msg_perr("%s: Incorrect param format, reset_mcu=1 or 0.\n", __func__);
 			ret = SPI_GENERIC_ERROR;
 		}
 	}
-	free(reset_str);
+	free(param_str);
 
 	*enter_isp = true; /* Default behaviour is enter ISP on setup. */
-	isp_str = extract_programmer_param_str("enter_isp");
-	if (isp_str) {
-		if (isp_str[0] == '1') {
+	param_str = extract_programmer_param_str("enter_isp");
+	if (param_str) {
+		if (param_str[0] == '1') {
 			*enter_isp = true;
-		} else if (isp_str[0] == '0') {
+		} else if (param_str[0] == '0') {
 			*enter_isp = false;
 		} else {
 			msg_perr("%s: Incorrect param format, enter_isp=1 or 0.\n", __func__);
 			ret = SPI_GENERIC_ERROR;
 		}
 	}
-	free(isp_str);
+	free(param_str);
 
 	return ret;
 }
