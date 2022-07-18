@@ -51,7 +51,7 @@
 
 struct realtek_mst_i2c_spi_data {
 	int fd;
-	int reset;
+	bool reset;
 };
 
 static int realtek_mst_i2c_spi_write_data(int fd, uint16_t addr, void *buf, uint16_t len)
@@ -444,16 +444,16 @@ static const struct spi_master spi_master_i2c_realtek_mst = {
 	.probe_opcode	= default_spi_probe_opcode,
 };
 
-static int get_params(int *reset, int *enter_isp, int *allow_brick)
+static int get_params(bool *reset, bool *enter_isp, bool *allow_brick)
 {
 	char *reset_str = NULL, *isp_str = NULL, *brick_str = NULL;
 	int ret = 0;
 
-	*allow_brick = 0; /* Default behaviour is to bail. */
+	*allow_brick = false; /* Default behaviour is to bail. */
 	brick_str = extract_programmer_param_str("allow_brick");
 	if (brick_str) {
 		if (!strcmp(brick_str, "yes")) {
-			*allow_brick = 1;
+			*allow_brick = true;
 		} else {
 			msg_perr("%s: Incorrect param format, allow_brick=yes.\n", __func__);
 			ret = SPI_GENERIC_ERROR;
@@ -461,13 +461,13 @@ static int get_params(int *reset, int *enter_isp, int *allow_brick)
 	}
 	free(brick_str);
 
-	*reset = 0; /* Default behaviour is no MCU reset on tear-down. */
+	*reset = false; /* Default behaviour is no MCU reset on tear-down. */
 	reset_str = extract_programmer_param_str("reset_mcu");
 	if (reset_str) {
 		if (reset_str[0] == '1') {
-			*reset = 1;
+			*reset = true;
 		} else if (reset_str[0] == '0') {
-			*reset = 0;
+			*reset = false;
 		} else {
 			msg_perr("%s: Incorrect param format, reset_mcu=1 or 0.\n", __func__);
 			ret = SPI_GENERIC_ERROR;
@@ -475,13 +475,13 @@ static int get_params(int *reset, int *enter_isp, int *allow_brick)
 	}
 	free(reset_str);
 
-	*enter_isp = 1; /* Default behaviour is enter ISP on setup. */
+	*enter_isp = true; /* Default behaviour is enter ISP on setup. */
 	isp_str = extract_programmer_param_str("enter_isp");
 	if (isp_str) {
 		if (isp_str[0] == '1') {
-			*enter_isp = 1;
+			*enter_isp = true;
 		} else if (isp_str[0] == '0') {
-			*enter_isp = 0;
+			*enter_isp = false;
 		} else {
 			msg_perr("%s: Incorrect param format, enter_isp=1 or 0.\n", __func__);
 			ret = SPI_GENERIC_ERROR;
@@ -495,7 +495,7 @@ static int get_params(int *reset, int *enter_isp, int *allow_brick)
 static int realtek_mst_i2c_spi_init(void)
 {
 	int ret = 0;
-	int reset = 0, enter_isp = 0, allow_brick = 0;
+	bool reset = false, enter_isp = false, allow_brick = false;
 
 	if (get_params(&reset, &enter_isp, &allow_brick))
 		return SPI_GENERIC_ERROR;
