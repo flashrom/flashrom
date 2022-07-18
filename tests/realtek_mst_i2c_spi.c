@@ -56,7 +56,7 @@ void realtek_mst_basic_lifecycle_test_success(void **state)
 		.fallback_open_state = &realtek_mst_fallback_open_state,
 	};
 
-	run_basic_lifecycle(state, &realtek_mst_io, &programmer_realtek_mst_i2c_spi, "bus=254,enter-isp=0,allow-brick=yes");
+	run_basic_lifecycle(state, &realtek_mst_io, &programmer_realtek_mst_i2c_spi, "bus=254,enter_isp=0,allow_brick=yes");
 }
 #else
 	SKIP_TEST(realtek_mst_basic_lifecycle_test_success)

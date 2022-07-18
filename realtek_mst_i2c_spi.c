@@ -449,7 +449,7 @@ static int get_params(int *reset, int *enter_isp, int *allow_brick)
 	char *reset_str = NULL, *isp_str = NULL, *brick_str = NULL;
 	int ret = 0;
 
-	brick_str = extract_programmer_param_str("allow-brick");
+	brick_str = extract_programmer_param_str("allow_brick");
 	if (brick_str) {
 		if (!strcmp(brick_str, "yes")) {
 			*allow_brick = 1;
@@ -462,14 +462,14 @@ static int get_params(int *reset, int *enter_isp, int *allow_brick)
 	}
 	free(brick_str);
 
-	reset_str = extract_programmer_param_str("reset-mcu");
+	reset_str = extract_programmer_param_str("reset_mcu");
 	if (reset_str) {
 		if (reset_str[0] == '1') {
 			*reset = 1;
 		} else if (reset_str[0] == '0') {
 			*reset = 0;
 		} else {
-			msg_perr("%s: Incorrect param format, reset-mcu=1 or 0.\n", __func__);
+			msg_perr("%s: Incorrect param format, reset_mcu=1 or 0.\n", __func__);
 			ret = SPI_GENERIC_ERROR;
 		}
 	} else {
@@ -477,14 +477,14 @@ static int get_params(int *reset, int *enter_isp, int *allow_brick)
 	}
 	free(reset_str);
 
-	isp_str = extract_programmer_param_str("enter-isp");
+	isp_str = extract_programmer_param_str("enter_isp");
 	if (isp_str) {
 		if (isp_str[0] == '1') {
 			*enter_isp = 1;
 		} else if (isp_str[0] == '0') {
 			*enter_isp = 0;
 		} else {
-			msg_perr("%s: Incorrect param format, enter-isp=1 or 0.\n", __func__);
+			msg_perr("%s: Incorrect param format, enter_isp=1 or 0.\n", __func__);
 			ret = SPI_GENERIC_ERROR;
 		}
 	} else {
@@ -508,9 +508,9 @@ static int realtek_mst_i2c_spi_init(void)
 	 * 	 then this can be removed.
 	 */
 	if (!allow_brick) {
-		msg_perr("%s: For i2c drivers you must explicitly 'allow-brick=yes'. ", __func__);
+		msg_perr("%s: For i2c drivers you must explicitly 'allow_brick=yes'. ", __func__);
 		msg_perr("There is currently no way to determine if the programmer works on a board "
-			 "as i2c device address space can be overloaded. Set 'allow-brick=yes' if "
+			 "as i2c device address space can be overloaded. Set 'allow_brick=yes' if "
 			 "you are sure you know what you are doing.\n");
 		return SPI_GENERIC_ERROR;
 	}

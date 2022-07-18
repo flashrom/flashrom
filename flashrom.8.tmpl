@@ -1543,30 +1543,30 @@ commands through the MST hub's I2C connection with the host).
 .TP
 .B In-system programming (ISP) mode
 .sp
-The \fBreset-mcu\fP and \fBenter-isp\fP options provide control over device
+The \fBreset_mcu\fP and \fBenter_isp\fP options provide control over device
 mode changes, where each can be set to 0 or 1 to enable or disable the
 corresponding mode transition.
 
-\fBenter-isp\fP defaults to 1, and if enabled will issue commands to the MST
+\fBenter_isp\fP defaults to 1, and if enabled will issue commands to the MST
 hub when beginning operation to put it into ISP mode.
 
-\fBreset-mcu\fP defaults to 0, and if enabled will issue a reset command to
+\fBreset_mcu\fP defaults to 0, and if enabled will issue a reset command to
 the MST hub on programming completion, causing it to exit ISP mode and to
 reload its own firmware from flash.
 
-\fBallow-brick\fP defaults to no, however must be set explicitly to "yes"
+\fBallow_brick\fP defaults to no, however must be set explicitly to "yes"
 to allow the driver to run if you are sure you have a MST chip.
 
 The hub must be in ISP mode for SPI flash access to be possible, so it is
-usually only useful to disable \fBenter-isp\fP if an earlier invocation avoided
+usually only useful to disable \fBenter_isp\fP if an earlier invocation avoided
 resetting it on completion. For instance, to erase the flash and
 rewrite it with the contents of a file without resetting in between (which
 could render it nonfunctional if attempting to load firmware from a blank
 flash):
 .sp
-.B "  flashrom -p realtek_mst_i2c_spi:bus=0,enter-isp=1,reset-mcu=0 -E"
+.B "  flashrom -p realtek_mst_i2c_spi:bus=0,enter_isp=1,reset_mcu=0 -E"
 .br
-.B "  flashrom -p realtek_mst_i2c_spi:bus=0,enter-isp=0,reset-mcu=1 -w new.bin"
+.B "  flashrom -p realtek_mst_i2c_spi:bus=0,enter_isp=0,reset_mcu=1 -w new.bin"
 .SS
 .BR "parade_lspcon " programmer
 .IP
