@@ -111,3 +111,13 @@ LINUX MTD
 M:	Nikolai Artemiev <nartemiev@google.com>
 S:	Supported
 F:	linux_mtd.c
+
+################################################################################
+# TESTS
+################################################################################
+
+UNIT TESTS
+M:	Anastasia Klimchuk <aklm@chromium.org>
+S:	Supported
+F:	tests/
+F:	subprojects/cmocka.wrap
