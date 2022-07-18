@@ -96,6 +96,12 @@ M:	Peter Marheine <pmarheine@chromium.org>
 S:	Supported
 F:	i2c_helper_linux.c
 
+WRITEPROTECT
+M:	Nikolai Artemiev <nartemiev@google.com>
+S:	Supported
+F:	writeprotect*
+F:	include/writeprotect*
+
 ################################################################################
 # PROGRAMMERS
 ################################################################################
