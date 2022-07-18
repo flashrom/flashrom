@@ -474,6 +474,7 @@ static const struct opaque_master opaque_master_nicintel_ee_i210 = {
 
 static int nicintel_ee_init(void)
 {
+	const struct opaque_master *mst;
 	uint32_t eec = 0;
 
 	struct pci_dev *dev = pcidev_init(nics_intel_ee, PCI_BASE_ADDRESS_0);
@@ -502,32 +503,25 @@ static int nicintel_ee_init(void)
 			}
 		}
 
-		struct nicintel_eeprom_data *data = calloc(1, sizeof(*data));
-		if (!data) {
-			msg_perr("Unable to allocate space for OPAQUE master data\n");
-			return 1;
-		}
-		data->eec = eec;
-
-		return register_opaque_master(&opaque_master_nicintel_ee_82580, data);
+		mst = &opaque_master_nicintel_ee_82580;
 	} else {
 		nicintel_eebar = rphysmap("Intel i210 NIC w/ emulated EEPROM",
 					  io_base_addr + 0x12000, MEMMAP_SIZE);
 		if (!nicintel_eebar)
 			return 1;
 
-		struct nicintel_eeprom_data *data = calloc(1, sizeof(*data));
-		if (!data) {
-			msg_perr("Unable to allocate space for OPAQUE master data\n");
-			return 1;
-		}
-		data->eec = eec;
-		data->done_i20_write = false;
-
-		return register_opaque_master(&opaque_master_nicintel_ee_i210, data);
+		mst = &opaque_master_nicintel_ee_i210;
 	}
 
-	return 1;
+	struct nicintel_eeprom_data *data = calloc(1, sizeof(*data));
+	if (!data) {
+		msg_perr("Unable to allocate space for OPAQUE master data\n");
+		return 1;
+	}
+	data->eec = eec;
+	data->done_i20_write = false;
+
+	return register_opaque_master(mst, data);
 }
 
 const struct programmer_entry programmer_nicintel_eeprom = {
