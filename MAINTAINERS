@@ -77,5 +77,16 @@ Maintainers List (try to look for most precise areas first)
 		-----------------------------------
 
 ################################################################################
-# First category
+# CORE
 ################################################################################
+
+BUILD SYSTEM
+M:	Thomas Heijligen <src@posteo.de>
+S:	Maintained
+F:	Makefile*
+F:	meson*
+F:	Makefile*/
+F:	*/meson*
+F:	*/Makefile*
+F:	util/ich_descriptors_tool/meson*
+F:	util/ich_descriptors_tool/Makefile*
