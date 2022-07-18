@@ -449,6 +449,7 @@ static int get_params(int *reset, int *enter_isp, int *allow_brick)
 	char *reset_str = NULL, *isp_str = NULL, *brick_str = NULL;
 	int ret = 0;
 
+	*allow_brick = 0; /* Default behaviour is to bail. */
 	brick_str = extract_programmer_param_str("allow_brick");
 	if (brick_str) {
 		if (!strcmp(brick_str, "yes")) {
@@ -457,11 +458,10 @@ static int get_params(int *reset, int *enter_isp, int *allow_brick)
 			msg_perr("%s: Incorrect param format, allow_brick=yes.\n", __func__);
 			ret = SPI_GENERIC_ERROR;
 		}
-	} else {
-		*allow_brick = 0; /* Default behaviour is to bail. */
 	}
 	free(brick_str);
 
+	*reset = 0; /* Default behaviour is no MCU reset on tear-down. */
 	reset_str = extract_programmer_param_str("reset_mcu");
 	if (reset_str) {
 		if (reset_str[0] == '1') {
@@ -472,11 +472,10 @@ static int get_params(int *reset, int *enter_isp, int *allow_brick)
 			msg_perr("%s: Incorrect param format, reset_mcu=1 or 0.\n", __func__);
 			ret = SPI_GENERIC_ERROR;
 		}
-	} else {
-		*reset = 0; /* Default behaviour is no MCU reset on tear-down. */
 	}
 	free(reset_str);
 
+	*enter_isp = 1; /* Default behaviour is enter ISP on setup. */
 	isp_str = extract_programmer_param_str("enter_isp");
 	if (isp_str) {
 		if (isp_str[0] == '1') {
@@ -487,8 +486,6 @@ static int get_params(int *reset, int *enter_isp, int *allow_brick)
 			msg_perr("%s: Incorrect param format, enter_isp=1 or 0.\n", __func__);
 			ret = SPI_GENERIC_ERROR;
 		}
-	} else {
-		*enter_isp = 1; /* Default behaviour is enter ISP on setup. */
 	}
 	free(isp_str);
 
