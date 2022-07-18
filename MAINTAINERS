@@ -90,3 +90,8 @@ F:	*/meson*
 F:	*/Makefile*
 F:	util/ich_descriptors_tool/meson*
 F:	util/ich_descriptors_tool/Makefile*
+
+I2C HELPERS
+M:	Peter Marheine <pmarheine@chromium.org>
+S:	Supported
+F:	i2c_helper_linux.c
