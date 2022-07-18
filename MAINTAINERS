@@ -106,3 +106,8 @@ S:	Supported
 F:	mediatek_i2c_spi.c
 F:	parade_lspcon.c
 F:	realtek_mst_i2c_spi.c
+
+LINUX MTD
+M:	Nikolai Artemiev <nartemiev@google.com>
+S:	Supported
+F:	linux_mtd.c
