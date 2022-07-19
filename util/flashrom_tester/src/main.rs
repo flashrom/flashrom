@@ -113,6 +113,10 @@ fn main() {
     );
     debug!("Args parsed and logging initialized OK");
 
+    debug!("Collecting crossystem info");
+    let crossystem =
+        flashrom_tester::utils::collect_crosssystem(&[]).expect("could not run crossystem");
+
     let flashrom_path = matches
         .value_of("flashrom_binary")
         .expect("flashrom_binary should be required");
@@ -143,6 +147,7 @@ fn main() {
         output_format,
         test_names,
         Some(handle_sigint()),
+        crossystem,
     ) {
         eprintln!("Failed to run tests: {:?}", e);
         std::process::exit(1);

@@ -86,6 +86,7 @@ pub fn generic<'a, TN: Iterator<Item = &'a str>>(
     output_format: OutputFormat,
     test_names: Option<TN>,
     terminate_flag: Option<&AtomicBool>,
+    crossystem: String,
 ) -> Result<(), Box<dyn std::error::Error>> {
     utils::ac_power_warning();
 
@@ -106,10 +107,7 @@ pub fn generic<'a, TN: Iterator<Item = &'a str>>(
         }
     }
 
-    info!(
-        "Record crossystem information.\n{}",
-        utils::collect_crosssystem()?
-    );
+    info!("Record crossystem information.\n{}", crossystem);
 
     // Register tests to run:
     let tests: &[&dyn TestCase] = &[

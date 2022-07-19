@@ -139,12 +139,23 @@ fn pause() {
 }
 
 pub fn get_hardware_wp() -> std::result::Result<bool, String> {
-    let (_, wp) = parse_crosssystem(&collect_crosssystem()?)?;
-    Ok(wp)
+    let wp_s_val = collect_crosssystem(&["wpsw_cur"])?.parse::<u32>();
+    match wp_s_val {
+        Ok(v) => {
+            if v == 1 {
+                return Ok(true);
+            } else if v == 0 {
+                return Ok(false);
+            } else {
+                return Err("Unknown write protect value".into());
+            }
+        }
+        Err(_) => return Err("Cannot parse write protect value".into()),
+    }
 }
 
-pub fn collect_crosssystem() -> Result<String, String> {
-    let cmd = match Command::new("crossystem").output() {
+pub fn collect_crosssystem(args: &[&str]) -> Result<String, String> {
+    let cmd = match Command::new("crossystem").args(args).output() {
         Ok(x) => x,
         Err(e) => return Err(format!("Failed to run crossystem: {}", e)),
     };
@@ -154,39 +165,6 @@ pub fn collect_crosssystem() -> Result<String, String> {
     };
 
     Ok(String::from_utf8_lossy(&cmd.stdout).into_owned())
-}
-
-fn parse_crosssystem(s: &str) -> Result<(Vec<&str>, bool), &'static str> {
-    // grep -v 'fwid +=' | grep -v 'hwid +='
-    let sysinfo = s
-        .split_terminator("\n")
-        .filter(|s| !s.contains("fwid +=") && !s.contains("hwid +="));
-
-    let state_line = match sysinfo.clone().filter(|s| s.starts_with("wpsw_cur")).next() {
-        None => return Err("No wpsw_cur in system info"),
-        Some(line) => line,
-    };
-    let wp_s_val = state_line
-        .trim_start_matches("wpsw_cur")
-        .trim_start_matches(' ')
-        .trim_start_matches('=')
-        .trim_start_matches(' ')
-        .get(..1)
-        .unwrap()
-        .parse::<u32>();
-
-    match wp_s_val {
-        Ok(v) => {
-            if v == 1 {
-                return Ok((sysinfo.collect(), true));
-            } else if v == 0 {
-                return Ok((sysinfo.collect(), false));
-            } else {
-                return Err("Unknown state value");
-            }
-        }
-        Err(_) => return Err("Cannot parse state value"),
-    }
 }
 
 pub fn translate_command_error(output: &std::process::Output) -> std::io::Error {
@@ -258,57 +236,6 @@ mod tests {
                 bottom_quad_top: 0x3FFF,
                 top_quad_bottom: 0xC000,
             }
-        );
-    }
-
-    #[test]
-    fn parse_crosssystem() {
-        use super::parse_crosssystem;
-
-        assert_eq!(
-            parse_crosssystem("This is not the tool you are looking for").err(),
-            Some("No wpsw_cur in system info")
-        );
-
-        assert_eq!(
-            parse_crosssystem("wpsw_cur = ERROR").err(),
-            Some("Cannot parse state value")
-        );
-
-        assert_eq!(
-            parse_crosssystem("wpsw_cur = 3").err(),
-            Some("Unknown state value")
-        );
-
-        assert_eq!(
-            parse_crosssystem("wpsw_cur = 0"),
-            Ok((vec!["wpsw_cur = 0"], false))
-        );
-
-        assert_eq!(
-            parse_crosssystem("wpsw_cur = 1"),
-            Ok((vec!["wpsw_cur = 1"], true))
-        );
-
-        assert_eq!(
-            parse_crosssystem("wpsw_cur=1"),
-            Ok((vec!["wpsw_cur=1"], true))
-        );
-
-        assert_eq!(
-            parse_crosssystem(
-                "fwid += 123wpsw_cur\n\
-                 hwid += aaaaa\n\
-                 wpsw_boot                  = 0                      # [RO/int]\n\
-                 wpsw_cur                   = 1                      # [RO/int]\n"
-            ),
-            Ok((
-                vec![
-                    "wpsw_boot                  = 0                      # [RO/int]",
-                    "wpsw_cur                   = 1                      # [RO/int]"
-                ],
-                true
-            ))
         );
     }
 }
