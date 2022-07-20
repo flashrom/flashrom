@@ -108,6 +108,7 @@ F:	include/writeprotect*
 
 MAINTAINERS
 M:	Felix Singer <felixsinger@posteo.net>
+M:	Anastasia Klimchuk <aklm@chromium.org>
 S:	Maintained
 F:	MAINTAINERS
 
