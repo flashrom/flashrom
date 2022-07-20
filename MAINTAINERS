@@ -137,3 +137,12 @@ M:	Anastasia Klimchuk <aklm@chromium.org>
 S:	Supported
 F:	tests/
 F:	subprojects/cmocka.wrap
+
+################################################################################
+# UTILS
+################################################################################
+
+NIX SHELL
+M:	Felix Singer <felixsinger@posteo.net>
+S:	Maintained
+F:	util/shell.nix
