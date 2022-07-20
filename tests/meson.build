@@ -25,6 +25,7 @@ srcs = [
   'dediprog.c',
   'linux_mtd.c',
   'linux_spi.c',
+  'parade_lspcon.c',
   'realtek_mst_i2c_spi.c',
   'layout.c',
   'chip.c',
