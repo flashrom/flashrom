@@ -366,9 +366,12 @@ unsigned int __wrap_INL(unsigned short port)
 	return 0;
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
 	int ret = 0;
+
+	if (argc > 1)
+		cmocka_set_test_filter(argv[1]);
 
 	cmocka_set_message_output(CM_OUTPUT_STDOUT);
 
