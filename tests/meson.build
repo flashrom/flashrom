@@ -11,8 +11,6 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-root_includes = include_directories('../subprojects')
-
 srcs = [
   'io_mock.c',
   'tests.c',
@@ -105,7 +103,6 @@ mocks = [
 
 flashrom_tests = executable('flashrom_unit_tests',
   srcs,
-  include_directories : root_includes,
   c_args : [
     cargs,
     '-ffunction-sections',
