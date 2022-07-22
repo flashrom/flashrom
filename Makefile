@@ -735,7 +735,11 @@ else
 ifeq ($(CONFIG_OGP_SPI), yes)
 override CONFIG_BITBANG_SPI = yes
 else
+ifeq ($(CONFIG_DEVELOPERBOX_SPI), yes)
+override CONFIG_BITBANG_SPI = yes
+else
 CONFIG_BITBANG_SPI ?= no
+endif
 endif
 endif
 endif
