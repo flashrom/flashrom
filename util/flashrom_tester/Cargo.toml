@@ -14,7 +14,7 @@ name = "flashrom_tester"
 required-features = ["cli"]
 
 [dependencies]
-built = { version = "0.3", default-features = false, features = ["serialized_time", "serialized_version"] }
+built = { version = "0.5", features = ["chrono"] }
 chrono = { version = "0.4", optional = true }
 clap = { version = "2.33", default-features = false, optional = true }
 flashrom = { path = "flashrom/" }
@@ -25,7 +25,7 @@ serde_json = "1"
 sys-info = "0.9"
 
 [build-dependencies]
-built = { version = "0.3", default-features = false, features = ["serialized_time", "serialized_version"] }
+built = { version = "0.5", features = ["chrono"] }
 
 [features]
 # Features required to build the CLI binary but not the library
