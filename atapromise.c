@@ -43,7 +43,7 @@
 struct atapromise_data {
 	uint32_t io_base_addr;
 	uint32_t rom_base_addr;
-	uint8_t *atapromise_bar;
+	uint8_t *bar;
 	size_t rom_size;
 };
 
@@ -108,7 +108,7 @@ static uint8_t atapromise_chip_readb(const struct flashctx *flash, const chipadd
 	const struct atapromise_data *data = flash->mst->par.data;
 
 	atapromise_limit_chip(flash->chip, data->rom_size);
-	return pci_mmio_readb(data->atapromise_bar + (addr & ADDR_MASK));
+	return pci_mmio_readb(data->bar + (addr & ADDR_MASK));
 }
 
 static int atapromise_shutdown(void *par_data)
@@ -178,7 +178,7 @@ static int atapromise_init(void)
 	}
 	data->io_base_addr = io_base_addr;
 	data->rom_base_addr = rom_base_addr;
-	data->atapromise_bar = bar;
+	data->bar = bar;
 	data->rom_size = rom_size;
 
 	max_rom_decode.parallel = rom_size;
