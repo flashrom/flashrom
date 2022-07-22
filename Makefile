@@ -456,7 +456,7 @@ CONFIG_PICKIT2_SPI ?= yes
 CONFIG_STLINKV3_SPI ?= yes
 
 # Disables Parade LSPCON support until the i2c helper supports multiple systems.
-CONFIG_PARASE_LSPCON ?= no
+CONFIG_PARADE_LSPCON ?= no
 
 # Disables MediaTek support until the i2c helper supports multiple systems.
 CONFIG_MEDIATEK_I2C_SPI ?= no
