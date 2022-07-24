@@ -107,6 +107,23 @@ int spi_write_register(const struct flashctx *flash, enum flash_reg reg, uint8_t
 		 */
 		msg_cerr("Cannot write SECURITY: unsupported by design\n");
 		return 1;
+	case CONFIG:
+		/*
+		 * This one is read via a separate command, but written as if it's SR2
+		 * in FEATURE_WRSR_EXT2 case of WRSR command.
+		 */
+		if (feature_bits & FEATURE_CFGR) {
+			write_cmd[0] = JEDEC_WRSR;
+			if (spi_read_register(flash, STATUS1, &write_cmd[1])) {
+				msg_cerr("Writing CONFIG failed: failed to read SR1 for writeback.\n");
+				return 1;
+			}
+			write_cmd[2] = value;
+			write_cmd_len = 3;
+			break;
+		}
+		msg_cerr("Cannot write CONFIG: unsupported by chip\n");
+		return 1;
 	default:
 		msg_cerr("Cannot write register: unknown register\n");
 		return 1;
@@ -208,6 +225,13 @@ int spi_read_register(const struct flashctx *flash, enum flash_reg reg, uint8_t 
 			break;
 		}
 		msg_cerr("Cannot read SECURITY: unsupported by chip\n");
+		return 1;
+	case CONFIG:
+		if (feature_bits & FEATURE_CFGR) {
+			read_cmd = JEDEC_RDCR;
+			break;
+		}
+		msg_cerr("Cannot read CONFIG: unsupported by chip\n");
 		return 1;
 	default:
 		msg_cerr("Cannot read register: unknown register\n");

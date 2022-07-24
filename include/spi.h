@@ -177,6 +177,11 @@
 #define JEDEC_WRSCUR_OUTSIZE	0x01
 #define JEDEC_WRSCUR_INSIZE	0x00
 
+/* Read Configuration Register */
+#define JEDEC_RDCR		0x15
+#define JEDEC_RDCR_OUTSIZE	0x01
+#define JEDEC_RDCR_INSIZE	0x01
+
 /* Enter 4-byte Address Mode */
 #define JEDEC_ENTER_4_BYTE_ADDR_MODE	0xB7
 

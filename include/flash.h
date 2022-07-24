@@ -161,6 +161,9 @@ enum write_granularity {
  */
 #define FEATURE_SCUR		(1 << 24)
 
+/* Whether chip has configuration register (RDCR/WRSR_EXT2 commands) */
+#define FEATURE_CFGR	    (1 << 25)
+
 #define ERASED_VALUE(flash)	(((flash)->chip->feature_bits & FEATURE_ERASED_ZERO) ? 0x00 : 0xff)
 #define UNERASED_VALUE(flash)	(((flash)->chip->feature_bits & FEATURE_ERASED_ZERO) ? 0xff : 0x00)
 
@@ -196,6 +199,7 @@ enum flash_reg {
 	STATUS2,
 	STATUS3,
 	SECURITY,
+	CONFIG,
 	MAX_REGISTERS
 };
 
