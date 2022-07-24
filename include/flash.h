@@ -224,8 +224,11 @@ struct reg_bit_info {
 struct wp_bits;
 
 enum decode_range_func {
-	NO_DECODE_RANGE_FUNC = 0, /* 0 indicates no range decode funciton is set. */
+	NO_DECODE_RANGE_FUNC = 0, /* 0 indicates no range decode function is set. */
 	DECODE_RANGE_SPI25 = 1,
+	DECODE_RANGE_SPI25_64K_BLOCK = 2,
+	DECODE_RANGE_SPI25_BIT_CMP = 3,
+	DECODE_RANGE_SPI25_2X_BLOCK = 4,
 };
 typedef void (decode_range_func_t)(size_t *start, size_t *len, const struct wp_bits *, size_t chip_len);
 

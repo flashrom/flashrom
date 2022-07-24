@@ -211,6 +211,9 @@ static decode_range_func_t *lookup_decode_range_func_ptr(const struct flashchip 
 {
 	switch (chip->decode_range) {
 		case DECODE_RANGE_SPI25: return &decode_range_spi25;
+		case DECODE_RANGE_SPI25_64K_BLOCK: return &decode_range_spi25_64k_block;
+		case DECODE_RANGE_SPI25_BIT_CMP: return &decode_range_spi25_bit_cmp;
+		case DECODE_RANGE_SPI25_2X_BLOCK: return &decode_range_spi25_2x_block;
 	/* default: total function, 0 indicates no decode range function set. */
 		case NO_DECODE_RANGE_FUNC: return NULL;
 	};
