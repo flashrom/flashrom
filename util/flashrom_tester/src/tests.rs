@@ -253,7 +253,7 @@ fn elog_sanity_test(env: &mut TestEnv) -> TestResult {
         return Err("ELOG contained no data".into());
     }
     let data = fs::read(ELOG_FILE)?;
-    if u32::from_be_bytes(data[0..4].try_into()?) != 0x474f4c45 {
+    if u32::from_le_bytes(data[0..4].try_into()?) != 0x474f4c45 {
         return Err("ELOG had bad magic number".into());
     }
     Ok(())
