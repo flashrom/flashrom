@@ -883,7 +883,7 @@ endif
 OBJS = $(CHIP_OBJS) $(PROGRAMMER_OBJS) $(LIB_OBJS)
 
 
-all: config $(PROGRAM)$(EXEC_SUFFIX) $(PROGRAM).8
+all: $(PROGRAM)$(EXEC_SUFFIX) $(PROGRAM).8
 ifeq ($(ARCH), x86)
 	@+$(MAKE) -C util/ich_descriptors_tool/ HOST_OS=$(HOST_OS) TARGET_OS=$(TARGET_OS)
 endif
@@ -946,7 +946,7 @@ config:
 		exit 1;								\
 	fi
 
-%.o: %.c config
+%.o: %.c | config
 	$(CC) -MMD $(CFLAGS) $(CPPFLAGS) $(FLASHROM_CFLAGS) $(FEATURE_FLAGS) $(SCMDEF) -o $@ -c $<
 
 $(PROGRAM)$(EXEC_SUFFIX): $(CLI_OBJS) libflashrom.a
