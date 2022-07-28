@@ -103,17 +103,17 @@ pub fn toggle_hw_wp(dis: bool) -> Result<(), String> {
     // The easist way to toggle the hardware write-protect is
     // to {dis}connect the battery (and/or open the WP screw).
     let s = if dis { "dis" } else { "" };
-    info!("Prompt for hardware WP {}able", s);
-    eprintln!(" > {}connect the battery (and/or open the WP screw)", s);
-    pause();
-    let wp = get_hardware_wp()?;
-    if wp && dis {
-        eprintln!("Hardware write protect is still ENABLED!");
-        return toggle_hw_wp(dis);
-    }
-    if !wp && !dis {
-        eprintln!("Hardware write protect is still DISABLED!");
-        return toggle_hw_wp(dis);
+    // Print a failure message, but not on the first try.
+    let mut fail_msg = None;
+    while dis == get_hardware_wp()? {
+        if let Some(msg) = fail_msg {
+            eprintln!("{msg}");
+        }
+        fail_msg = Some(format!("Hardware write protect is still {}!", !dis));
+        // The following message is read by the tast test. Do not modify.
+        info!("Prompt for hardware WP {}able", s);
+        eprintln!(" > {}connect the battery (and/or open the WP screw)", s);
+        pause();
     }
     Ok(())
 }
@@ -126,12 +126,16 @@ pub fn ac_power_warning() {
 }
 
 fn pause() {
-    let mut stdout = std::io::stdout();
-    // We want the cursor to stay at the end of the line, so we print without a newline
-    // and flush manually.
-    stdout.write(b"Press any key to continue...").unwrap();
-    stdout.flush().unwrap();
-    std::io::stdin().read(&mut [0]).unwrap();
+    // The following message is read by the tast test. Do not modify.
+    println!("Press enter to continue...");
+    // Rust stdout is always LineBuffered at time of writing.
+    // But this is not guaranteed, so flush anyway.
+    std::io::stdout().flush().unwrap();
+    // This reads one line, there is no guarantee the line came
+    // after the above prompt. But it is good enough.
+    if std::io::stdin().read_line(&mut String::new()).unwrap() == 0 {
+        panic!("stdin closed");
+    }
 }
 
 pub fn get_hardware_wp() -> std::result::Result<bool, String> {
