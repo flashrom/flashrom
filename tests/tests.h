@@ -51,6 +51,7 @@ void dediprog_basic_lifecycle_test_success(void **state);
 void linux_mtd_probe_lifecycle_test_success(void **state);
 void linux_spi_probe_lifecycle_test_success(void **state);
 void parade_lspcon_basic_lifecycle_test_success(void **state);
+void mediatek_i2c_spi_basic_lifecycle_test_success(void **state);
 void realtek_mst_basic_lifecycle_test_success(void **state);
 
 /* layout.c */
