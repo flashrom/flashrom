@@ -202,13 +202,14 @@ static int pickit2_spi_send_command(const struct flashctx *flash, unsigned int w
 				     const unsigned char *writearr, unsigned char *readarr)
 {
 	struct pickit2_spi_data *pickit2_data = flash->mst->spi.data;
+	const unsigned int total_packetsize = writecnt + readcnt + 20;
 
 	/* Maximum number of bytes per transaction (including command overhead) is 64. Lets play it safe
 	 * and always assume the worst case scenario of 20 bytes command overhead.
 	 */
-	if (writecnt + readcnt + 20 > CMD_LENGTH) {
+	if (total_packetsize > CMD_LENGTH) {
 		msg_perr("\nTotal packetsize (%i) is greater than %i supported, aborting.\n",
-			 writecnt + readcnt + 20, CMD_LENGTH);
+			 total_packetsize, CMD_LENGTH);
 		return 1;
 	}
 
