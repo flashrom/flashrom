@@ -207,8 +207,8 @@ static int pickit2_spi_send_command(const struct flashctx *flash, unsigned int w
 	 * and always assume the worst case scenario of 20 bytes command overhead.
 	 */
 	if (writecnt + readcnt + 20 > CMD_LENGTH) {
-		msg_perr("\nTotal packetsize (%i) is greater than 64 supported, aborting.\n",
-			 writecnt + readcnt + 20);
+		msg_perr("\nTotal packetsize (%i) is greater than %i supported, aborting.\n",
+			 writecnt + readcnt + 20, CMD_LENGTH);
 		return 1;
 	}
 
