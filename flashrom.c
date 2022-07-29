@@ -253,7 +253,7 @@ static bool master_uses_physmap(const struct registered_master *mst)
 	return false;
 }
 
-void programmer_delay(unsigned int usecs)
+void programmer_delay(const struct flashctx *flash, unsigned int usecs)
 {
 	if (usecs > 0) {
 		if (programmer->delay)
@@ -1794,7 +1794,7 @@ int flashrom_image_write(struct flashctx *const flashctx, void *const buffer, co
 		msg_cinfo("Verifying flash... ");
 
 		/* Work around chips which need some time to calm down. */
-		programmer_delay(1000*1000);
+		programmer_delay(flashctx, 1000*1000);
 
 		if (verify_all)
 			combine_image_by_layout(flashctx, newcontents, oldcontents);

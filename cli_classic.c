@@ -1148,7 +1148,7 @@ int main(int argc, char *argv[])
 	 * done once we have a .reset function in struct flashchip.
 	 * Give the chip time to settle.
 	 */
-	programmer_delay(100000);
+	programmer_delay(fill_flash, 100000);
 	if (read_it)
 		ret = do_read(fill_flash, filename);
 	else if (extract_it)

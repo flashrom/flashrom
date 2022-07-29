@@ -45,11 +45,11 @@ int probe_82802ab(struct flashctx *flash)
 
 	/* Reset to get a clean state */
 	chip_writeb(flash, 0xFF, bios);
-	programmer_delay(10);
+	programmer_delay(flash, 10);
 
 	/* Enter ID mode */
 	chip_writeb(flash, 0x90, bios);
-	programmer_delay(10);
+	programmer_delay(flash, 10);
 
 	id1 = chip_readb(flash, bios + (0x00 << shifted));
 	id2 = chip_readb(flash, bios + (0x01 << shifted));
@@ -57,7 +57,7 @@ int probe_82802ab(struct flashctx *flash)
 	/* Leave ID mode */
 	chip_writeb(flash, 0xFF, bios);
 
-	programmer_delay(10);
+	programmer_delay(flash, 10);
 
 	msg_cdbg("%s: id1 0x%02x, id2 0x%02x", __func__, id1, id2);
 
@@ -114,7 +114,7 @@ int erase_block_82802ab(struct flashctx *flash, unsigned int page,
 	// now start it
 	chip_writeb(flash, 0x20, bios + page);
 	chip_writeb(flash, 0xd0, bios + page);
-	programmer_delay(10);
+	programmer_delay(flash, 10);
 
 	// now let's see what the register is
 	status = wait_82802ab(flash);

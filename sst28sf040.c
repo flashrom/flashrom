@@ -105,7 +105,7 @@ static int erase_28sf040(struct flashctx *flash)
 	chip_writeb(flash, CHIP_ERASE, bios);
 	chip_writeb(flash, CHIP_ERASE, bios);
 
-	programmer_delay(10);
+	programmer_delay(flash, 10);
 	toggle_ready_jedec(flash, bios);
 
 	/* FIXME: Check the status register for errors. */

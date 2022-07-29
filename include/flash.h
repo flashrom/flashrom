@@ -60,7 +60,8 @@ void *master_map_flash_region(const struct registered_master *mast,
 			      const char *descr, uintptr_t phys_addr, size_t len);
 void master_unmap_flash_region(const struct registered_master *mast,
 			       void *virt_addr, size_t len);
-void programmer_delay(unsigned int usecs);
+/* NOTE: flashctx is not used in internal_delay. In this case, a context should be NULL. */
+void programmer_delay(const struct flashrom_flashctx *flash, unsigned int usecs);
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 

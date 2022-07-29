@@ -152,7 +152,7 @@ int spi_write_register(const struct flashctx *flash, enum flash_reg reg, uint8_t
 	 */
 	int delay_ms = 5000;
 	if (reg == STATUS1) {
-		programmer_delay(100 * 1000);
+		programmer_delay(flash, 100 * 1000);
 		delay_ms -= 100;
 	}
 
@@ -163,7 +163,7 @@ int spi_write_register(const struct flashctx *flash, enum flash_reg reg, uint8_t
 			return result;
 		if ((status & SPI_SR_WIP) == 0)
 			return 0;
-		programmer_delay(10 * 1000);
+		programmer_delay(flash, 10 * 1000);
 	}
 
 

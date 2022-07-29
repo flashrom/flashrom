@@ -36,17 +36,17 @@ int probe_w29ee011(struct flashctx *flash)
 
 	/* Issue JEDEC Product ID Entry command */
 	chip_writeb(flash, 0xAA, bios + 0x5555);
-	programmer_delay(10);
+	programmer_delay(flash, 10);
 	chip_writeb(flash, 0x55, bios + 0x2AAA);
-	programmer_delay(10);
+	programmer_delay(flash, 10);
 	chip_writeb(flash, 0x80, bios + 0x5555);
-	programmer_delay(10);
+	programmer_delay(flash, 10);
 	chip_writeb(flash, 0xAA, bios + 0x5555);
-	programmer_delay(10);
+	programmer_delay(flash, 10);
 	chip_writeb(flash, 0x55, bios + 0x2AAA);
-	programmer_delay(10);
+	programmer_delay(flash, 10);
 	chip_writeb(flash, 0x60, bios + 0x5555);
-	programmer_delay(10);
+	programmer_delay(flash, 10);
 
 	/* Read product ID */
 	id1 = chip_readb(flash, bios);
@@ -54,11 +54,11 @@ int probe_w29ee011(struct flashctx *flash)
 
 	/* Issue JEDEC Product ID Exit command */
 	chip_writeb(flash, 0xAA, bios + 0x5555);
-	programmer_delay(10);
+	programmer_delay(flash, 10);
 	chip_writeb(flash, 0x55, bios + 0x2AAA);
-	programmer_delay(10);
+	programmer_delay(flash, 10);
 	chip_writeb(flash, 0xF0, bios + 0x5555);
-	programmer_delay(10);
+	programmer_delay(flash, 10);
 
 	msg_cdbg("%s: id1 0x%02x, id2 0x%02x\n", __func__, id1, id2);
 

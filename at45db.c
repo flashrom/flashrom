@@ -309,7 +309,7 @@ static int at45db_wait_ready (struct flashctx *flash, unsigned int us, unsigned 
 			return 0;
 		if (ret != 0 || retries-- == 0)
 			return 1;
-		programmer_delay(us);
+		programmer_delay(flash, us);
 	}
 }
 

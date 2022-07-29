@@ -34,7 +34,7 @@ static int stm50_erase_sector(struct flashctx *flash, unsigned int addr)
 	// now start it
 	chip_writeb(flash, 0x32, bios);
 	chip_writeb(flash, 0xd0, bios);
-	programmer_delay(10);
+	programmer_delay(flash, 10);
 
 	uint8_t status = wait_82802ab(flash);
 	print_status_82802ab(status);

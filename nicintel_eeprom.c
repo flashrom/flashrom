@@ -213,7 +213,7 @@ static int nicintel_ee_write_word_i210(uint8_t *eebar, unsigned int addr, uint16
 	eewr |= BIT(EEWR_CMDV);
 	pci_mmio_writel(eewr, eebar + EEWR);
 
-	programmer_delay(5);
+	programmer_delay(NULL, 5);
 	int i;
 	for (i = 0; i < MAX_ATTEMPTS; i++)
 		if (pci_mmio_readl(eebar + EEWR) & BIT(EEWR_DONE))
@@ -338,7 +338,7 @@ static int nicintel_ee_ready(uint8_t *eebar)
 		nicintel_ee_bitbang(eebar, 0x00, &rdsr);
 
 		nicintel_ee_bitset(eebar, EEC, EE_CS, 1);
-		programmer_delay(1);
+		programmer_delay(NULL, 1);
 		if (!(rdsr & SPI_SR_WIP)) {
 			return 0;
 		}
@@ -379,7 +379,7 @@ static int nicintel_ee_write_82580(struct flashctx *flash, const uint8_t *buf, u
 		nicintel_ee_bitset(eebar, EEC, EE_CS, 0);
 		nicintel_ee_bitbang(eebar, JEDEC_WREN, NULL);
 		nicintel_ee_bitset(eebar, EEC, EE_CS, 1);
-		programmer_delay(1);
+		programmer_delay(NULL, 1);
 
 		/* data */
 		nicintel_ee_bitset(eebar, EEC, EE_CS, 0);
@@ -394,7 +394,7 @@ static int nicintel_ee_write_82580(struct flashctx *flash, const uint8_t *buf, u
 				break;
 		}
 		nicintel_ee_bitset(eebar, EEC, EE_CS, 1);
-		programmer_delay(1);
+		programmer_delay(NULL, 1);
 		if (nicintel_ee_ready(eebar))
 			goto out;
 	}

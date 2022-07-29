@@ -313,7 +313,7 @@ static int spi_poll_wip(struct flashctx *const flash, const unsigned int poll_de
 		if (!(status & SPI_SR_WIP))
 			return 0;
 
-		programmer_delay(poll_delay);
+		programmer_delay(flash, poll_delay);
 	}
 }
 

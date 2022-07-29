@@ -897,7 +897,7 @@ static int dummy_spi_send_command(const struct flashctx *flash, unsigned int wri
 		msg_pspew(" 0x%02x", readarr[i]);
 	msg_pspew("\n");
 
-	programmer_delay((writecnt + readcnt) * emu_data->delay_us);
+	programmer_delay(NULL, (writecnt + readcnt) * emu_data->delay_us);
 	return 0;
 }
 

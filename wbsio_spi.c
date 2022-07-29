@@ -155,7 +155,7 @@ static int wbsio_spi_send_command(const struct flashctx *flash, unsigned int wri
 
 	OUTB(writearr[0], data->spibase);
 	OUTB(mode, data->spibase + 1);
-	programmer_delay(10);
+	programmer_delay(NULL, 10);
 
 	if (!readcnt)
 		return 0;

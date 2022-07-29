@@ -93,7 +93,7 @@ static int s25f_legacy_software_reset(const struct flashctx *flash)
 
 	/* Allow time for reset command to execute. The datasheet specifies
 	 * Trph = 35us, double that to be safe. */
-	programmer_delay(T_RPH * 2);
+	programmer_delay(flash, T_RPH * 2);
 
 	return 0;
 }
@@ -126,7 +126,7 @@ static int s25fs_software_reset(struct flashctx *flash)
 	}
 
 	/* Allow time for reset command to execute. Double tRPH to be safe. */
-	programmer_delay(T_RPH * 2);
+	programmer_delay(flash, T_RPH * 2);
 
 	return 0;
 }
@@ -160,7 +160,7 @@ static int s25f_poll_status(const struct flashctx *flash)
 			return -1;
 		}
 
-		programmer_delay(1000 * 10);
+		programmer_delay(flash, 1000 * 10);
 	}
 
 	return 0;
@@ -226,7 +226,7 @@ static int s25fs_write_cr(const struct flashctx *flash,
 		return -1;
 	}
 
-	programmer_delay(T_W);
+	programmer_delay(flash, T_W);
 	return s25f_poll_status(flash);
 }
 
@@ -299,7 +299,7 @@ int s25fs_block_erase_d8(struct flashctx *flash, unsigned int addr, unsigned int
 		return result;
 	}
 
-	programmer_delay(S25FS_T_SE);
+	programmer_delay(flash, S25FS_T_SE);
 	return s25f_poll_status(flash);
 }
 
@@ -337,7 +337,7 @@ int s25fl_block_erase(struct flashctx *flash, unsigned int addr, unsigned int bl
 		return result;
 	}
 
-	programmer_delay(S25FL_T_SE);
+	programmer_delay(flash, S25FL_T_SE);
 	return s25f_poll_status(flash);
 }
 

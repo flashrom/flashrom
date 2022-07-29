@@ -27,7 +27,7 @@ static uint8_t w39_idmode_readb(struct flashctx *flash, unsigned int offset)
 	chip_writeb(flash, 0xAA, bios + 0x5555);
 	chip_writeb(flash, 0x55, bios + 0x2AAA);
 	chip_writeb(flash, 0x90, bios + 0x5555);
-	programmer_delay(10);
+	programmer_delay(flash, 10);
 
 	/* Read something, maybe hardware lock bits */
 	val = chip_readb(flash, bios + offset);
@@ -36,7 +36,7 @@ static uint8_t w39_idmode_readb(struct flashctx *flash, unsigned int offset)
 	chip_writeb(flash, 0xAA, bios + 0x5555);
 	chip_writeb(flash, 0x55, bios + 0x2AAA);
 	chip_writeb(flash, 0xF0, bios + 0x5555);
-	programmer_delay(10);
+	programmer_delay(flash, 10);
 
 	return val;
 }
