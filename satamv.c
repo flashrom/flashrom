@@ -24,8 +24,8 @@
 #include "platform/pci.h"
 
 struct satamv_data {
-	uint8_t *mv_bar;
-	uint16_t mv_iobar;
+	uint8_t *bar;
+	uint16_t iobar;
 };
 
 static const struct dev_entry satas_mv[] = {
@@ -68,7 +68,7 @@ static void satamv_chip_writeb(const struct flashctx *flash, uint8_t val,
 {
 	const struct satamv_data *data = flash->mst->par.data;
 
-	satamv_indirect_chip_writeb(val, addr, data->mv_iobar);
+	satamv_indirect_chip_writeb(val, addr, data->iobar);
 }
 
 /* FIXME: Prefer direct access to BAR2 if BAR2 is active. */
@@ -77,7 +77,7 @@ static uint8_t satamv_chip_readb(const struct flashctx *flash,
 {
 	const struct satamv_data *data = flash->mst->par.data;
 
-	return satamv_indirect_chip_readb(addr, data->mv_iobar);
+	return satamv_indirect_chip_readb(addr, data->iobar);
 }
 
 static int satamv_shutdown(void *par_data)
@@ -197,8 +197,8 @@ static int satamv_init(void)
 		msg_perr("Unable to allocate space for PAR master data\n");
 		return 1;
 	}
-	data->mv_bar = bar;
-	data->mv_iobar = iobar;
+	data->bar = bar;
+	data->iobar = iobar;
 
 	/* 512 kByte with two 8-bit latches, and
 	 * 4 MByte with additional 3-bit latch. */
