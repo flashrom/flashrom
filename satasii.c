@@ -27,7 +27,6 @@
 
 struct satasii_data {
 	uint8_t *bar;
-	uint16_t id;
 };
 
 static const struct dev_entry satas_sii[] = {
@@ -146,7 +145,6 @@ static int satasii_init(void)
 		return 1;
 	}
 	data->bar = bar;
-	data->id = id;
 
 	return register_par_master(&par_master_satasii, BUS_PARALLEL, data);
 }
