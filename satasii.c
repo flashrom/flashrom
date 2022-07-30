@@ -26,7 +26,7 @@
 #define SATASII_MEMMAP_SIZE	0x100
 
 struct satasii_data {
-	uint8_t *sii_bar;
+	uint8_t *bar;
 	uint16_t id;
 };
 
@@ -59,33 +59,33 @@ static void satasii_chip_writeb(const struct flashctx *flash, uint8_t val, chipa
 {
 	const struct satasii_data *data = flash->mst->par.data;
 	uint32_t data_reg;
-	uint32_t ctrl_reg = satasii_wait_done(data->sii_bar);
+	uint32_t ctrl_reg = satasii_wait_done(data->bar);
 
 	/* Mask out unused/reserved bits, set writes and start transaction. */
 	ctrl_reg &= 0xfcf80000;
 	ctrl_reg |= (1 << 25) | (0 << 24) | ((uint32_t) addr & 0x7ffff);
 
-	data_reg = (pci_mmio_readl((data->sii_bar + 4)) & ~0xff) | val;
-	pci_mmio_writel(data_reg, (data->sii_bar + 4));
-	pci_mmio_writel(ctrl_reg, data->sii_bar);
+	data_reg = (pci_mmio_readl((data->bar + 4)) & ~0xff) | val;
+	pci_mmio_writel(data_reg, (data->bar + 4));
+	pci_mmio_writel(ctrl_reg, data->bar);
 
-	satasii_wait_done(data->sii_bar);
+	satasii_wait_done(data->bar);
 }
 
 static uint8_t satasii_chip_readb(const struct flashctx *flash, const chipaddr addr)
 {
 	const struct satasii_data *data = flash->mst->par.data;
-	uint32_t ctrl_reg = satasii_wait_done(data->sii_bar);
+	uint32_t ctrl_reg = satasii_wait_done(data->bar);
 
 	/* Mask out unused/reserved bits, set reads and start transaction. */
 	ctrl_reg &= 0xfcf80000;
 	ctrl_reg |= (1 << 25) | (1 << 24) | ((uint32_t) addr & 0x7ffff);
 
-	pci_mmio_writel(ctrl_reg, data->sii_bar);
+	pci_mmio_writel(ctrl_reg, data->bar);
 
-	satasii_wait_done(data->sii_bar);
+	satasii_wait_done(data->bar);
 
-	return (pci_mmio_readl(data->sii_bar + 4)) & 0xff;
+	return (pci_mmio_readl(data->bar + 4)) & 0xff;
 }
 
 static int satasii_shutdown(void *par_data)
@@ -145,7 +145,7 @@ static int satasii_init(void)
 		msg_perr("Unable to allocate space for PAR master data\n");
 		return 1;
 	}
-	data->sii_bar = bar;
+	data->bar = bar;
 	data->id = id;
 
 	return register_par_master(&par_master_satasii, BUS_PARALLEL, data);
