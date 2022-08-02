@@ -1278,8 +1278,11 @@ int getFCBA_component_density(enum ich_chipset cs, const struct ich_descriptors 
 static uint32_t read_descriptor_reg(enum ich_chipset cs, uint8_t section, uint16_t offset, void *spibar)
 {
 	uint32_t control = 0;
+	uint32_t woffset, roffset;
+
 	control |= (section << FDOC_FDSS_OFF) & FDOC_FDSS;
 	control |= (offset << FDOC_FDSI_OFF) & FDOC_FDSI;
+
 	switch (cs) {
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 	case CHIPSET_C620_SERIES_LEWISBURG:
@@ -1292,12 +1295,16 @@ static uint32_t read_descriptor_reg(enum ich_chipset cs, uint8_t section, uint16
 	case CHIPSET_GEMINI_LAKE:
 	case CHIPSET_JASPER_LAKE:
 	case CHIPSET_ELKHART_LAKE:
-		mmio_le_writel(control, spibar + PCH100_REG_FDOC);
-		return mmio_le_readl(spibar + PCH100_REG_FDOD);
+		woffset = PCH100_REG_FDOC;
+		roffset = PCH100_REG_FDOD;
+		break;
 	default:
-		mmio_le_writel(control, spibar + ICH9_REG_FDOC);
-		return mmio_le_readl(spibar + ICH9_REG_FDOD);
+		woffset = ICH9_REG_FDOC;
+		roffset = ICH9_REG_FDOD;
 	}
+
+	mmio_le_writel(control, spibar + woffset);
+	return mmio_le_readl(spibar + roffset);
 }
 
 int read_ich_descriptors_via_fdo(enum ich_chipset cs, void *spibar, struct ich_descriptors *desc)
