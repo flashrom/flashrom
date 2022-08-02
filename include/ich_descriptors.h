@@ -20,6 +20,7 @@
 
 #include <sys/types.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include "programmer.h" /* for enum ich_chipset */
 
 /* FIXME: Replace with generic return codes */
