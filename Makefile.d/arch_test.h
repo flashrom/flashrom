@@ -45,6 +45,8 @@
 	#define __FLASHROM_ARCH__ "s390"
 #elif defined(__arc__)
 	#define __FLASHROM_ARCH__ "arc"
+#elif defined(__e2k__)
+	#define __FLASHROM_ARCH__ "e2k"
 #else
 	#define __FLASHROM_ARCH__ "unknown"
 #endif
