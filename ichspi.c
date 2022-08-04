@@ -1268,7 +1268,7 @@ static struct hwseq_data *get_hwseq_data_from_context(const struct flashctx *fla
 	return flash->mst->opaque.data;
 }
 
-/* Sets FLA in FADDR to (addr & hwseq_data.addr_mask) without touching other bits. */
+/* Sets FLA in FADDR to (addr & hwseq_data->addr_mask) without touching other bits. */
 static void ich_hwseq_set_addr(uint32_t addr, uint32_t mask)
 {
 	uint32_t addr_old = REGREAD32(ICH9_REG_FADDR) & ~mask;
@@ -1344,9 +1344,52 @@ static int ich_hwseq_wait_for_cycle_complete(unsigned int len, enum ich_chipset 
 	return 0;
 }
 
-static int ich_hwseq_read_status(const struct flashctx *flash, enum flash_reg reg, uint8_t *value)
+/* Fire up a transfer using the hardware sequencer. */
+static void ich_start_hwseq_xfer(uint32_t hsfc_cycle, uint32_t flash_addr, size_t len,
+		uint32_t addr_mask)
 {
 	uint16_t hsfc;
+
+	/* Sets flash_addr in FADDR */
+	ich_hwseq_set_addr(flash_addr, addr_mask);
+
+	/* make sure FDONE, FCERR, AEL are cleared by writing 1 to them */
+	REGWRITE16(ICH9_REG_HSFS, REGREAD16(ICH9_REG_HSFS));
+
+	/* Set up transaction parameters. */
+	hsfc = REGREAD16(ICH9_REG_HSFC);
+	hsfc &= ~g_hwseq_data.hsfc_fcycle; /* clear operation */
+	hsfc |= hsfc_cycle;
+	hsfc |= HSFC_FDBC_VAL(len - 1);
+	hsfc |= HSFC_FGO; /* start */
+	prettyprint_ich9_reg_hsfc(hsfc, ich_generation);
+	REGWRITE16(ICH9_REG_HSFC, hsfc);
+}
+
+static int ich_wait_for_hwseq_spi_cycle_complete(void)
+{
+	if (REGREAD8(ICH9_REG_HSFS) & HSFS_SCIP) {
+		msg_perr("Error: SCIP bit is unexpectedly set.\n");
+		return 1;
+	}
+	return 0;
+}
+
+/* Execute SPI flash transfer */
+static int ich_exec_sync_hwseq_xfer(uint32_t hsfc_cycle, uint32_t flash_addr,
+				size_t len, enum ich_chipset ich_gen, uint32_t addr_mask)
+{
+	if (ich_wait_for_hwseq_spi_cycle_complete()) {
+		msg_perr("SPI Transaction Timeout due to previous operation in process!\n");
+		return 1;
+	}
+
+	ich_start_hwseq_xfer(hsfc_cycle, flash_addr, len, addr_mask);
+	return ich_hwseq_wait_for_cycle_complete(len, ich_gen, addr_mask);
+}
+
+static int ich_hwseq_read_status(const struct flashctx *flash, enum flash_reg reg, uint8_t *value)
+{
 	const int len = 1;
 	const struct hwseq_data *hwseq_data = get_hwseq_data_from_context(flash);
 
@@ -1355,24 +1398,9 @@ static int ich_hwseq_read_status(const struct flashctx *flash, enum flash_reg re
 		return -1;
 	}
 	msg_pdbg("Reading Status register\n");
-	ich_hwseq_set_addr(0, hwseq_data->addr_mask);
 
-	/* clear FDONE, FCERR, AEL by writing 1 to them (if they are set) */
-	REGWRITE16(ICH9_REG_HSFS, REGREAD16(ICH9_REG_HSFS));
-
-	hsfc = REGREAD16(ICH9_REG_HSFC);
-	hsfc &= ~hwseq_data->hsfc_fcycle; /* set read operation */
-
-	/* read status register */
-	hsfc |= HSFC_CYCLE_RD_STATUS;
-	hsfc &= ~HSFC_FDBC; /* clear byte count */
-
-	/* set byte count */
-	hsfc |= HSFC_FDBC_VAL(len - 1);
-	hsfc |= HSFC_FGO; /* start */
-	REGWRITE16(ICH9_REG_HSFC, hsfc);
-
-	if (ich_hwseq_wait_for_cycle_complete(len, ich_generation, hwseq_data->addr_mask)) {
+	if (ich_exec_sync_hwseq_xfer(HSFC_CYCLE_RD_STATUS, 0, len, ich_generation,
+		hwseq_data->addr_mask)) {
 		msg_perr("Reading Status register failed\n!!");
 		return -1;
 	}
@@ -1383,7 +1411,6 @@ static int ich_hwseq_read_status(const struct flashctx *flash, enum flash_reg re
 
 static int ich_hwseq_write_status(const struct flashctx *flash, enum flash_reg reg, uint8_t value)
 {
-	uint16_t hsfc;
 	const int len = 1;
 	const struct hwseq_data *hwseq_data = get_hwseq_data_from_context(flash);
 
@@ -1392,25 +1419,11 @@ static int ich_hwseq_write_status(const struct flashctx *flash, enum flash_reg r
 		return -1;
 	}
 	msg_pdbg("Writing status register\n");
-	ich_hwseq_set_addr(0, hwseq_data->addr_mask);
-
-	/* clear FDONE, FCERR, AEL by writing 1 to them (if they are set) */
-	REGWRITE16(ICH9_REG_HSFS, REGREAD16(ICH9_REG_HSFS));
 
 	ich_fill_data(&value, len, ICH9_REG_FDATA0);
-	hsfc = REGREAD16(ICH9_REG_HSFC);
-	hsfc &= ~hwseq_data->hsfc_fcycle; /* clear operation */
 
-	/* write status register */
-	hsfc |= HSFC_CYCLE_WR_STATUS;
-	hsfc &= ~HSFC_FDBC; /* clear byte count */
-
-	/* set byte count */
-	hsfc |= HSFC_FDBC_VAL(len - 1);
-	hsfc |= HSFC_FGO; /* start */
-	REGWRITE16(ICH9_REG_HSFC, hsfc);
-
-	if (ich_hwseq_wait_for_cycle_complete(len, ich_generation, hwseq_data->addr_mask)) {
+	if (ich_exec_sync_hwseq_xfer(HSFC_CYCLE_WR_STATUS, 0, len, ich_generation,
+		hwseq_data->addr_mask)) {
 		msg_perr("Writing Status register failed\n!!");
 		return -1;
 	}
@@ -1478,7 +1491,6 @@ static int ich_hwseq_block_erase(struct flashctx *flash, unsigned int addr,
 				 unsigned int len)
 {
 	uint32_t erase_block;
-	uint16_t hsfc;
 	const struct hwseq_data *hwseq_data = get_hwseq_data_from_context(flash);
 
 	erase_block = ich_hwseq_get_erase_block_size(addr, hwseq_data->addr_mask, hwseq_data->only_4k);
@@ -1505,25 +1517,9 @@ static int ich_hwseq_block_erase(struct flashctx *flash, unsigned int addr,
 	}
 
 	msg_pdbg("Erasing %d bytes starting at 0x%06x.\n", len, addr);
-	ich_hwseq_set_addr(addr, hwseq_data->addr_mask);
 
-	/* make sure FDONE, FCERR, AEL are cleared by writing 1 to them */
-	REGWRITE16(ICH9_REG_HSFS, REGREAD16(ICH9_REG_HSFS));
-
-	if (REGREAD8(ICH9_REG_HSFS) & HSFS_SCIP) {
-		msg_perr("Error: SCIP bit is unexpectedly set.\n");
-		return -1;
-	}
-
-	hsfc = REGREAD16(ICH9_REG_HSFC);
-	hsfc &= ~hwseq_data->hsfc_fcycle; /* clear operation */
-	hsfc |= HSFC_CYCLE_BLOCK_ERASE; /* set erase operation */
-	hsfc |= HSFC_FGO; /* start */
-	msg_pdbg("HSFC used for block erasing: ");
-	prettyprint_ich9_reg_hsfc(hsfc, ich_generation);
-	REGWRITE16(ICH9_REG_HSFC, hsfc);
-
-	if (ich_hwseq_wait_for_cycle_complete(len, ich_generation, hwseq_data->addr_mask))
+	if (ich_exec_sync_hwseq_xfer(HSFC_CYCLE_BLOCK_ERASE, addr, 0, ich_generation,
+		hwseq_data->addr_mask))
 		return -1;
 	return 0;
 }
@@ -1531,7 +1527,6 @@ static int ich_hwseq_block_erase(struct flashctx *flash, unsigned int addr,
 static int ich_hwseq_read(struct flashctx *flash, uint8_t *buf,
 			  unsigned int addr, unsigned int len)
 {
-	uint16_t hsfc;
 	uint8_t block_len;
 	const struct hwseq_data *hwseq_data = get_hwseq_data_from_context(flash);
 
@@ -1551,23 +1546,8 @@ static int ich_hwseq_read(struct flashctx *flash, uint8_t *buf,
 		/* as well as flash chip page borders as demanded in the Intel datasheets. */
 		block_len = min(block_len, 256 - (addr & 0xFF));
 
-		ich_hwseq_set_addr(addr, hwseq_data->addr_mask);
-
-		if (REGREAD8(ICH9_REG_HSFS) & HSFS_SCIP) {
-			msg_perr("Error: SCIP bit is unexpectedly set.\n");
-			return -1;
-		}
-
-		hsfc = REGREAD16(ICH9_REG_HSFC);
-		hsfc &= ~hwseq_data->hsfc_fcycle; /* set read operation */
-		hsfc &= ~HSFC_FDBC; /* clear byte count */
-		hsfc |= HSFC_CYCLE_READ; /* set read operation */
-		/* set byte count */
-		hsfc |= HSFC_FDBC_VAL(block_len - 1);
-		hsfc |= HSFC_FGO; /* start */
-		REGWRITE16(ICH9_REG_HSFC, hsfc);
-
-		if (ich_hwseq_wait_for_cycle_complete(block_len, ich_generation, hwseq_data->addr_mask))
+		if (ich_exec_sync_hwseq_xfer(HSFC_CYCLE_READ, addr, block_len, ich_generation,
+			hwseq_data->addr_mask))
 			return 1;
 		ich_read_data(buf, block_len, ICH9_REG_FDATA0);
 		addr += block_len;
@@ -1579,7 +1559,6 @@ static int ich_hwseq_read(struct flashctx *flash, uint8_t *buf,
 
 static int ich_hwseq_write(struct flashctx *flash, const uint8_t *buf, unsigned int addr, unsigned int len)
 {
-	uint16_t hsfc;
 	uint8_t block_len;
 	const struct hwseq_data *hwseq_data = get_hwseq_data_from_context(flash);
 
@@ -1594,28 +1573,14 @@ static int ich_hwseq_write(struct flashctx *flash, const uint8_t *buf, unsigned 
 	REGWRITE16(ICH9_REG_HSFS, REGREAD16(ICH9_REG_HSFS));
 
 	while (len > 0) {
-		ich_hwseq_set_addr(addr, hwseq_data->addr_mask);
 		/* Obey programmer limit... */
 		block_len = min(len, flash->mst->opaque.max_data_write);
 		/* as well as flash chip page borders as demanded in the Intel datasheets. */
 		block_len = min(block_len, 256 - (addr & 0xFF));
 		ich_fill_data(buf, block_len, ICH9_REG_FDATA0);
 
-		if (REGREAD8(ICH9_REG_HSFS) & HSFS_SCIP) {
-			msg_perr("Error: SCIP bit is unexpectedly set.\n");
-			return -1;
-		}
-
-		hsfc = REGREAD16(ICH9_REG_HSFC);
-		hsfc &= ~hwseq_data->hsfc_fcycle; /* clear operation */
-		hsfc |= HSFC_CYCLE_WRITE; /* set write operation */
-		hsfc &= ~HSFC_FDBC; /* clear byte count */
-		/* set byte count */
-		hsfc |= HSFC_FDBC_VAL(block_len - 1);
-		hsfc |= HSFC_FGO; /* start */
-		REGWRITE16(ICH9_REG_HSFC, hsfc);
-
-		if (ich_hwseq_wait_for_cycle_complete(block_len, ich_generation, hwseq_data->addr_mask))
+		if (ich_exec_sync_hwseq_xfer(HSFC_CYCLE_WRITE, addr, block_len, ich_generation,
+			hwseq_data->addr_mask))
 			return -1;
 		addr += block_len;
 		buf += block_len;
