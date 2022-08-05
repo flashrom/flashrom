@@ -485,8 +485,7 @@ static int stlinkv3_spi_init(void)
 	libusb_device_handle *stlinkv3_handle;
 	struct stlinkv3_spi_data *stlinkv3_data;
 
-	libusb_init(&usb_ctx);
-	if (!usb_ctx) {
+	if (libusb_init(&usb_ctx)) {
 		msg_perr("Could not initialize libusb!\n");
 		return 1;
 	}

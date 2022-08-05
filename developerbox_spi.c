@@ -147,8 +147,7 @@ static int developerbox_spi_init(void)
 	struct libusb_context *usb_ctx;
 	libusb_device_handle *cp210x_handle;
 
-	libusb_init(&usb_ctx);
-	if (!usb_ctx) {
+	if (libusb_init(&usb_ctx)) {
 		msg_perr("Could not initialize libusb!\n");
 		return 1;
 	}

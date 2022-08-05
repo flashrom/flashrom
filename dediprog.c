@@ -1206,8 +1206,8 @@ static int dediprog_init(void)
 	dp_data->devicetype = DEV_UNKNOWN;
 
 	/* Here comes the USB stuff. */
-	libusb_init(&dp_data->usb_ctx);
-	if (!dp_data->usb_ctx) {
+	ret = libusb_init(&dp_data->usb_ctx);
+	if (ret) {
 		msg_perr("Could not initialize libusb!\n");
 		goto init_err_exit;
 	}
