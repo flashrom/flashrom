@@ -12,6 +12,14 @@ make_programmer_opts="INTERNAL INTERNAL_X86 SERPROG RAYER_SPI RAIDEN_DEBUG_SPI P
 		      BUSPIRATE_SPI DEDIPROG DEVELOPERBOX_SPI SATAMV LINUX_MTD LINUX_SPI IT8212		\
 		      CH341A_SPI DIGILENT_SPI JLINK_SPI"
 
+meson_programmer_opts="all auto group_ftdi group_i2c group_jlink group_pci group_serial group_usb		\
+			atahpt atapromise atavia buspirate_spi ch341a_spi dediprog developerbox_spi	\
+			digilent_spi drkaiser dummy ft2232_spi gfxnvidia internal it8212		\
+			jlink_spi linux_mtd linux_spi parade_lspcon mediatek_i2c_spi mstarddc_spi	\
+			nic3com nicintel nicintel_eeprom nicintel_spi nicnatsemi nicrealtek		\
+			ogp_spi pickit2_spi pony_spi raiden_debug_spi rayer_spi realtek_mst_i2c_spi	\
+			satamv satasii serprog stlinkv3_spi usbblaster_spi"
+
 
 if [ "$(basename "${CC}")" = "ccc-analyzer" ] || [ -n "${COVERITY_OUTPUT}" ]; then
 	is_scan_build_env=1
@@ -38,12 +46,24 @@ build_make () {
 
 build_meson () {
 	build_dir=out
+	meson_opts="-Dtests=enabled"
+	ninja_opts="-j $(nproc)"
 
 	rm -rf ${build_dir}
 
-	meson $build_dir -Dtests=enabled
-	ninja -C $build_dir
-	ninja -C $build_dir test
+	for programmer in ${meson_programmer_opts}; do
+		programmer_dir="${build_dir}/${programmer}"
+
+		# In case of clang analyzer we don't want to run it on
+		# each programmer individually. Thus, just return here.
+		if [ ${is_scan_build_env} -eq 1 ] && [ "${programmer}" != "all" ]; then
+			return
+		fi
+
+		meson ${programmer_dir} ${meson_opts} -Dprogrammer=${programmer}
+		ninja ${ninja_opts} -C ${programmer_dir}
+		ninja ${ninja_opts} -C ${programmer_dir} test
+	done
 }
 
 
