@@ -76,4 +76,4 @@ void realtek_mst_no_allow_brick_test_success(void **state)
 #else
 	SKIP_TEST(realtek_mst_basic_lifecycle_test_success)
 	SKIP_TEST(realtek_mst_no_allow_brick_test_success)
-#endif /* CONFIG_REALTEK_I2C_SPI */
+#endif /* CONFIG_REALTEK_MST_I2C_SPI */
