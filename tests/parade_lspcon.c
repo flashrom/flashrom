@@ -31,6 +31,22 @@ void parade_lspcon_basic_lifecycle_test_success(void **state)
 	run_basic_lifecycle(state, &parade_lspcon_io, &programmer_parade_lspcon, "bus=254,allow_brick=yes");
 }
 
+void parade_lspcon_no_allow_brick_test_success(void **state)
+{
+	struct io_mock_fallback_open_state parade_lspcon_fallback_open_state = {
+		.noc = 0,
+		.paths = { "/dev/i2c-254", NULL },
+		.flags = { O_RDWR },
+	};
+	const struct io_mock parade_lspcon_io = {
+		.fallback_open_state = &parade_lspcon_fallback_open_state,
+	};
+
+	run_init_error_path(state, &parade_lspcon_io, &programmer_parade_lspcon,
+				"bus=254", SPI_GENERIC_ERROR);
+}
+
 #else
 	SKIP_TEST(parade_lspcon_basic_lifecycle_test_success)
+	SKIP_TEST(parade_lspcon_no_allow_brick_test_success)
 #endif /* CONFIG_PARADE_LSPCON */

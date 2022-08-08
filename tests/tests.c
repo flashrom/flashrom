@@ -416,8 +416,11 @@ int main(int argc, char *argv[])
 		cmocka_unit_test(linux_mtd_probe_lifecycle_test_success),
 		cmocka_unit_test(linux_spi_probe_lifecycle_test_success),
 		cmocka_unit_test(parade_lspcon_basic_lifecycle_test_success),
+		cmocka_unit_test(parade_lspcon_no_allow_brick_test_success),
 		cmocka_unit_test(mediatek_i2c_spi_basic_lifecycle_test_success),
+		cmocka_unit_test(mediatek_i2c_no_allow_brick_test_success),
 		cmocka_unit_test(realtek_mst_basic_lifecycle_test_success),
+		cmocka_unit_test(realtek_mst_no_allow_brick_test_success),
 	};
 	ret |= cmocka_run_group_tests_name("lifecycle.c tests", lifecycle_tests, NULL, NULL);
 

@@ -58,6 +58,22 @@ void realtek_mst_basic_lifecycle_test_success(void **state)
 
 	run_basic_lifecycle(state, &realtek_mst_io, &programmer_realtek_mst_i2c_spi, "bus=254,enter_isp=0,allow_brick=yes");
 }
+
+void realtek_mst_no_allow_brick_test_success(void **state)
+{
+	struct io_mock_fallback_open_state realtek_mst_fallback_open_state = {
+		.noc = 0,
+		.paths = { "/dev/i2c-254", NULL },
+		.flags = { O_RDWR },
+	};
+	const struct io_mock realtek_mst_io = {
+		.fallback_open_state = &realtek_mst_fallback_open_state,
+	};
+
+	run_init_error_path(state, &realtek_mst_io, &programmer_realtek_mst_i2c_spi,
+				"bus=254,enter_isp=0", SPI_GENERIC_ERROR);
+}
 #else
 	SKIP_TEST(realtek_mst_basic_lifecycle_test_success)
+	SKIP_TEST(realtek_mst_no_allow_brick_test_success)
 #endif /* CONFIG_REALTEK_I2C_SPI */
