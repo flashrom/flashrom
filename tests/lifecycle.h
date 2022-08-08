@@ -35,4 +35,6 @@ void run_basic_lifecycle(void **state, const struct io_mock *io,
 void run_probe_lifecycle(void **state, const struct io_mock *io,
 		const struct programmer_entry *prog, const char *param, const char *const chip_name);
 
+void run_init_error_path(void **state, const struct io_mock *io,
+		const struct programmer_entry *prog, const char *param, const int error_code);
 #endif /* __LIFECYCLE_H__ */

@@ -72,3 +72,22 @@ void run_probe_lifecycle(void **state, const struct io_mock *io,
 	clear_spi_id_cache();
 	run_lifecycle(state, io, prog, param, chip_name, &probe_chip);
 }
+
+void run_init_error_path(void **state, const struct io_mock *io, const struct programmer_entry *prog,
+				const char *param, const int error_code)
+{
+	(void) state; /* unused */
+
+	io_mock_register(io);
+
+	struct flashrom_programmer *flashprog;
+	char *param_dup = strdup(param);
+
+	printf("Testing init error path for programmer=%s with params: %s ...\n", prog->name, param_dup);
+	assert_int_equal(error_code, flashrom_programmer_init(&flashprog, prog->name, param_dup));
+	printf("... init failed with error code %i as expected\n", error_code);
+
+	free(param_dup);
+
+	io_mock_register(NULL);
+}
