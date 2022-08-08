@@ -312,7 +312,7 @@ void prepare_layout_for_extraction(struct flashctx *flash)
 			entry->file = strdup(entry->name);
 
 		for (i = 0; entry->file[i]; ++i) {
-			if (isspace(entry->file[i]))
+			if (isspace((unsigned char)entry->file[i]))
 				entry->file[i] = '_';
 		}
 	}
