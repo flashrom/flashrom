@@ -524,7 +524,8 @@ static void print_sysinfo(void)
 	/* Tell Windows which version of the structure we want. */
 	osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
 	if (GetVersionEx((OSVERSIONINFO*) &osvi))
-		msg_ginfo(" %lu.%lu", osvi.dwMajorVersion, osvi.dwMinorVersion);
+		msg_ginfo(" %lu.%lu", (unsigned long)osvi.dwMajorVersion,
+			(unsigned long)osvi.dwMinorVersion);
 	else
 		msg_ginfo(" unknown version");
 	GetSystemInfo(&si);
