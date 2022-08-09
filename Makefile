@@ -369,6 +369,14 @@ override CONFIG_RAYER_SPI = no
 endif
 endif
 
+ifneq ($(TARGET_OS), FreeBSD)
+ifeq ($(CONFIG_FREEBSD_SPI), yes)
+UNSUPPORTED_FEATURES += CONFIG_FREEBSD_SPI=yes
+else
+override CONFIG_FREEBSD_SPI = no
+endif
+endif
+
 ###############################################################################
 # General architecture-specific settings.
 # Like above for the OS, below we verify user-supplied options depending on the target architecture.
@@ -633,6 +641,9 @@ CONFIG_SATAMV ?= yes
 # Enable Linux spidev and MTD interfaces by default. We disable them on non-Linux targets.
 CONFIG_LINUX_MTD ?= yes
 CONFIG_LINUX_SPI ?= yes
+
+# Enable FreeBSD spigen interface by default. We disable them on non-FreeBSD targets.
+CONFIG_FREEBSD_SPI ?= yes
 
 # Always enable ITE IT8212F PATA controllers for now.
 CONFIG_IT8212 ?= yes
@@ -923,6 +934,11 @@ ifeq ($(CONFIG_LINUX_SPI), yes)
 # This is a totally ugly hack.
 FEATURE_CFLAGS += $(call debug_shell,grep -q "LINUX_SPI_SUPPORT := yes" .features && printf "%s" "-D'CONFIG_LINUX_SPI=1'")
 PROGRAMMER_OBJS += linux_spi.o
+endif
+
+ifeq ($(CONFIG_FREEBSD_SPI), yes)
+FEATURE_CFLAGS += -D'CONFIG_FREEBSD_SPI=1'
+PROGRAMMER_OBJS += freebsd_spi.o
 endif
 
 ifeq ($(CONFIG_MSTARDDC_SPI), yes)

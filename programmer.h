@@ -100,6 +100,9 @@ enum programmer {
 #if CONFIG_LINUX_SPI == 1
 	PROGRAMMER_LINUX_SPI,
 #endif
+#if CONFIG_FREEBSD_SPI == 1
+	PROGRAMMER_FREEBSD_SPI,
+#endif
 #if CONFIG_USBBLASTER_SPI == 1
 	PROGRAMMER_USBBLASTER_SPI,
 #endif
@@ -539,6 +542,11 @@ int linux_mtd_init(void);
 int linux_spi_init(void);
 #endif
 
+/* freebsd_spi.c */
+#if CONFIG_FREEBSD_SPI == 1
+int freebsd_spi_init(void);
+#endif
+
 /* dediprog.c */
 #if CONFIG_DEDIPROG == 1
 int dediprog_init(void);
@@ -607,6 +615,9 @@ enum spi_controller {
 #endif
 #if CONFIG_LINUX_SPI == 1
 	SPI_CONTROLLER_LINUX,
+#endif
+#if CONFIG_FREEBSD_SPI == 1
+	SPI_CONTROLLER_FREEBSD,
 #endif
 #if CONFIG_SERPROG == 1
 	SPI_CONTROLLER_SERPROG,

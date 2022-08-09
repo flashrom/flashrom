@@ -365,6 +365,18 @@ const struct programmer_entry programmer_table[] = {
 	},
 #endif
 
+#if CONFIG_FREEBSD_SPI == 1
+	{
+		.name			= "freebsd_spi",
+		.type			= OTHER,
+		.devs.note		= "Device files /dev/spigen*.*\n",
+		.init			= freebsd_spi_init,
+		.map_flash_region	= fallback_map,
+		.unmap_flash_region	= fallback_unmap,
+		.delay			= internal_delay,
+	},
+#endif
+
 #if CONFIG_USBBLASTER_SPI == 1
 	{
 		.name			= "usbblaster_spi",

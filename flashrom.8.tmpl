@@ -293,6 +293,8 @@ bitbanging adapter)
 .sp
 .BR "* linux_spi" " (for SPI flash ROMs accessible via /dev/spidevX.Y on Linux)"
 .sp
+.BR "* freebsd_spi" " (for SPI flash ROMs accessible via /dev/spigenX.Y on FreeBSD)"
+.sp
 .BR "* usbblaster_spi" " (for SPI flash ROMs attached to an Altera USB-Blaster compatible cable)"
 .sp
 .BR "* nicintel_eeprom" " (for SPI EEPROMs on Intel Gigabit network cards)"
@@ -1035,6 +1037,25 @@ Example that sets the frequency to 8 MHz:
 .B "  flashrom \-p linux_spi:dev=/dev/spidevX.Y,spispeed=8000"
 .sp
 Please note that the linux_spi driver only works on Linux.
+.SS
+.BR "freebsd_spi " programmer
+.IP
+You have to specify the SPI controller to use with the
+.sp
+.B "  flashrom \-p freebsd_spi:dev=/dev/spigenX.Y"
+.sp
+syntax where
+.B /dev/spigenX.Y
+is the FreeBSD device node for your SPI controller.
+.sp
+In case the device supports it, you can set the SPI clock frequency with the optional
+.B spispeed
+parameter. The frequency is parsed as kilohertz.
+Example that sets the frequency to 8 MHz:
+.sp
+.B "  flashrom \-p freebsd_spi:dev=/dev/spigenX.Y,spispeed=8000"
+.sp
+Please note that the freebsd_spi driver only works on FreeBSD.
 .SS
 .BR "mstarddc_spi " programmer
 .IP
