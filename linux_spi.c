@@ -167,7 +167,7 @@ out:
 
 static int linux_spi_init(void)
 {
-	char *p, *endp, *dev;
+	char *param_str, *endp;
 	uint32_t speed_hz = 2 * 1000 * 1000;
 	/* FIXME: make the following configurable by CLI options. */
 	/* SPI mode 0 (beware this also includes: MSB first, CS active low and others */
@@ -177,12 +177,12 @@ static int linux_spi_init(void)
 	size_t max_kernel_buf_size;
 	struct linux_spi_data *spi_data;
 
-	p = extract_programmer_param_str("spispeed");
-	if (p && strlen(p)) {
-		speed_hz = (uint32_t)strtoul(p, &endp, 10) * 1000;
-		if (p == endp || speed_hz == 0) {
-			msg_perr("%s: invalid clock: %s kHz\n", __func__, p);
-			free(p);
+	param_str = extract_programmer_param_str("spispeed");
+	if (param_str && strlen(param_str)) {
+		speed_hz = (uint32_t)strtoul(param_str, &endp, 10) * 1000;
+		if (param_str == endp || speed_hz == 0) {
+			msg_perr("%s: invalid clock: %s kHz\n", __func__, param_str);
+			free(param_str);
 			return 1;
 		}
 	} else {
@@ -190,24 +190,24 @@ static int linux_spi_init(void)
 			  "kHz clock. Use 'spispeed' parameter to override.\n",
 			  speed_hz / 1000);
 	}
-	free(p);
+	free(param_str);
 
-	dev = extract_programmer_param_str("dev");
-	if (!dev || !strlen(dev)) {
+	param_str = extract_programmer_param_str("dev");
+	if (!param_str || !strlen(param_str)) {
 		msg_perr("No SPI device given. Use flashrom -p "
 			 "linux_spi:dev=/dev/spidevX.Y\n");
-		free(dev);
+		free(param_str);
 		return 1;
 	}
 
-	msg_pdbg("Using device %s\n", dev);
-	if ((fd = open(dev, O_RDWR)) == -1) {
+	msg_pdbg("Using device %s\n", param_str);
+	if ((fd = open(param_str, O_RDWR)) == -1) {
 		msg_perr("%s: failed to open %s: %s\n", __func__,
-			 dev, strerror(errno));
-		free(dev);
+			 param_str, strerror(errno));
+		free(param_str);
 		return 1;
 	}
-	free(dev);
+	free(param_str);
 
 	if (ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &speed_hz) == -1) {
 		msg_perr("%s: failed to set speed to %"PRIu32"Hz: %s\n",
