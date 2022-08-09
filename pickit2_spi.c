@@ -410,28 +410,30 @@ static int pickit2_spi_init(void)
 	libusb_device_handle *pickit2_handle;
 	struct pickit2_spi_data *pickit2_data;
 	int spispeed_idx = 0;
-	char *spispeed = extract_programmer_param_str("spispeed");
-	if (spispeed != NULL) {
+	char *param_str;
+
+	param_str = extract_programmer_param_str("spispeed");
+	if (param_str != NULL) {
 		int i = 0;
 		for (; spispeeds[i].name; i++) {
-			if (strcasecmp(spispeeds[i].name, spispeed) == 0) {
+			if (strcasecmp(spispeeds[i].name, param_str) == 0) {
 				spispeed_idx = i;
 				break;
 			}
 		}
 		if (spispeeds[i].name == NULL) {
 			msg_perr("Error: Invalid 'spispeed' value.\n");
-			free(spispeed);
+			free(param_str);
 			return 1;
 		}
-		free(spispeed);
+		free(param_str);
 	}
 
 	int millivolt = 3500;
-	char *voltage = extract_programmer_param_str("voltage");
-	if (voltage != NULL) {
-		millivolt = parse_voltage(voltage);
-		free(voltage);
+	param_str = extract_programmer_param_str("voltage");
+	if (param_str != NULL) {
+		millivolt = parse_voltage(param_str);
+		free(param_str);
 		if (millivolt < 0)
 			return 1;
 	}
