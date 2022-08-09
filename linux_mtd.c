@@ -495,20 +495,20 @@ linux_mtd_setup_exit:
 
 static int linux_mtd_init(void)
 {
-	char *param;
+	char *param_str;
 	int dev_num = 0;
 	int ret = 1;
 	struct linux_mtd_data *data = NULL;
 
-	param = extract_programmer_param_str("dev");
-	if (param) {
+	param_str = extract_programmer_param_str("dev");
+	if (param_str) {
 		char *endptr;
 
-		dev_num = strtol(param, &endptr, 0);
+		dev_num = strtol(param_str, &endptr, 0);
 		if ((*endptr != '\0') || (dev_num < 0)) {
 			msg_perr("Invalid device number %s. Use flashrom -p "
 				"linux_mtd:dev=N where N is a valid MTD\n"
-				"device number.\n", param);
+				"device number.\n", param_str);
 			goto linux_mtd_init_exit;
 		}
 	}
@@ -524,13 +524,13 @@ static int linux_mtd_init(void)
 
 	struct stat s;
 	if (stat(sysfs_path, &s) < 0) {
-		if (param)
+		if (param_str)
 			msg_perr("%s does not exist\n", sysfs_path);
 		else
 			msg_pdbg("%s does not exist\n", sysfs_path);
 		goto linux_mtd_init_exit;
 	}
-	free(param);
+	free(param_str);
 
 	data = calloc(1, sizeof(*data));
 	if (!data) {
@@ -547,7 +547,7 @@ static int linux_mtd_init(void)
 	return register_opaque_master(&linux_mtd_opaque_master, data);
 
 linux_mtd_init_exit:
-	free(param);
+	free(param_str);
 	return ret;
 }
 
