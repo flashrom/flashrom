@@ -950,7 +950,6 @@ static const struct opaque_master opaque_master_dummyflasher = {
 
 static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_supported)
 {
-
 	char *bustext = NULL;
 	char *tmp = NULL;
 	unsigned int i;
