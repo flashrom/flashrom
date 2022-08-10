@@ -1,0 +1,32 @@
+-------------------------------------------------------------------------------
+flashrom rust bindings README
+-------------------------------------------------------------------------------
+
+Included within this folder are rust foreign function interface bindings for the
+libflashrom API. libflashrom-sys is an automatically generated binding built
+from the header file by the rust `bindgen` utility. It can be used for 'unsafe'
+raw access to the libflashrom API. libflashrom is a library built on
+libflashrom-sys, exporting a convential rust API.
+
+See the /util/flashrom_tester/flashrom/src/flashromlib.rs file for an example of
+usage.
+
+Build Instructions
+------------------
+
+A rust toolchain is required, rustup is one source for that: https://rustup.rs/
+
+From within child folders of this directory, where the Cargo.toml files live,
+run:
+
+ cargo build
+ cargo test
+ cargo doc --open
+
+The build process uses pkg-config to find the installed version of libflashrom.
+To override the desired version you wish to compile against pkg-config can be
+told where to find the desired header and library, for example:
+
+ env PKG_CONFIG_PATH=$HOME/src/flashrom/build/install/lib/x86_64-linux-gnu/pkgconfig \
+    LD_LIBRARY_PATH=$HOME/src/flashrom/build/install/lib/x86_64-linux-gnu \
+    cargo test

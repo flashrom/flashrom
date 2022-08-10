@@ -39,7 +39,8 @@ page.
 it with bzip2.
 
 The snapshot tarballs are the result of 'make tarball' and require no
-further processing.
+further processing. Some git files (for example the rust bindings) are omitted
+from the tarball, as controlled by the .gitattributes files.
 
 
 Build Instructions
@@ -163,6 +164,12 @@ Compiler quirks:
 If you are using clang and if you want to enable only one driver, you may hit an
 overzealous compiler warning from clang. Compile with "make WARNERROR=no" to
 force it to continue and enjoy.
+
+Bindings:
+
+ Foreign function interface bindings for the rust language are included in the
+ bindings folder. These are not compiled as part of the normal build process.
+ See the readme under bindings/rust for more information.
 
 Installation
 ------------
