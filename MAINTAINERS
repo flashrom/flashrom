@@ -142,6 +142,11 @@ F:	subprojects/cmocka.wrap
 # UTILS
 ################################################################################
 
+FLASHROM TESTER
+M:	Evan Benn <evanbenn@chromium.org>
+S:	Supported
+F:	util/flashrom_tester/
+
 NIX SHELL
 M:	Felix Singer <felixsinger@posteo.net>
 S:	Maintained
