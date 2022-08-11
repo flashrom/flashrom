@@ -411,7 +411,7 @@ static int do_write(struct flashctx *const flash, const char *const filename, co
 	 * ... then update newcontents with contents from files provided to '-i'
 	 * args if needed.
 	 */
-	if (read_buf_from_include_args(flash, newcontents))
+	if (read_buf_from_include_args(get_layout(flash), newcontents))
 		goto _free_ret;
 
 	if (referencefile) {
@@ -445,7 +445,7 @@ static int do_verify(struct flashctx *const flash, const char *const filename)
 	 * ... then update newcontents with contents from files provided to '-i'
 	 * args if needed.
 	 */
-	if (read_buf_from_include_args(flash, newcontents))
+	if (read_buf_from_include_args(get_layout(flash), newcontents))
 		goto _free_ret;
 
 	ret = flashrom_image_verify(flash, newcontents, flash_size);
