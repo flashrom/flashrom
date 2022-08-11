@@ -77,6 +77,11 @@ static bool done_i20_write = false;
 
 #define UNPROG_DEVICE 0x1509
 
+struct nicintel_eeprom_data {
+	/* Intel 82580 variable(s) */
+	uint32_t eec;
+};
+
 /*
  * Warning: is_i210() below makes assumptions on these PCI ids.
  *          It may have to be updated when this list is extended.
@@ -419,12 +424,13 @@ out:
 	return ret;
 }
 
-static int nicintel_ee_shutdown_82580(void *eecp)
+static int nicintel_ee_shutdown_82580(void *opaque_data)
 {
+	struct nicintel_eeprom_data *data = opaque_data;
 	int ret = 0;
 
 	if (nicintel_pci->device_id != UNPROG_DEVICE) {
-		uint32_t old_eec = *(uint32_t *)eecp;
+		uint32_t old_eec = data->eec;
 		/* Request bitbanging and unselect the chip first to be safe. */
 		if (nicintel_ee_req() || nicintel_ee_bitset(EEC, EE_CS, 1)) {
 			ret = -1;
@@ -441,7 +447,7 @@ static int nicintel_ee_shutdown_82580(void *eecp)
 	}
 
 out:
-	free(eecp);
+	free(data);
 	return ret;
 }
 
@@ -463,6 +469,8 @@ static const struct opaque_master opaque_master_nicintel_ee_i210 = {
 
 static int nicintel_ee_init(void)
 {
+	uint32_t eec = 0;
+
 	struct pci_dev *dev = pcidev_init(nics_intel_ee, PCI_BASE_ADDRESS_0);
 	if (!dev)
 		return 1;
@@ -476,11 +484,9 @@ static int nicintel_ee_init(void)
 		if (!nicintel_eebar)
 			return 1;
 
-		uint32_t *eecp = NULL;
-
 		nicintel_pci = dev;
 		if (dev->device_id != UNPROG_DEVICE) {
-			uint32_t eec = pci_mmio_readl(nicintel_eebar + EEC);
+			eec = pci_mmio_readl(nicintel_eebar + EEC);
 
 			/* C.f. 3.3.1.5 for the detection mechanism (maybe? contradicting
 			                the EE_PRES definition),
@@ -489,14 +495,16 @@ static int nicintel_ee_init(void)
 				msg_perr("Controller reports no EEPROM is present.\n");
 				return 1;
 			}
-
-			eecp = malloc(sizeof(uint32_t));
-			if (eecp == NULL)
-				return 1;
-			*eecp = eec;
 		}
 
-		return register_opaque_master(&opaque_master_nicintel_ee_82580, eecp);
+		struct nicintel_eeprom_data *data = calloc(1, sizeof(*data));
+		if (!data) {
+			msg_perr("Unable to allocate space for OPAQUE master data\n");
+			return 1;
+		}
+		data->eec = eec;
+
+		return register_opaque_master(&opaque_master_nicintel_ee_82580, data);
 	} else {
 		nicintel_eebar = rphysmap("Intel i210 NIC w/ emulated EEPROM",
 					  io_base_addr + 0x12000, MEMMAP_SIZE);
