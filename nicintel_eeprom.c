@@ -73,13 +73,15 @@
 
 static uint8_t *nicintel_eebar;
 static struct pci_dev *nicintel_pci;
-static bool done_i20_write = false;
 
 #define UNPROG_DEVICE 0x1509
 
 struct nicintel_eeprom_data {
 	/* Intel 82580 variable(s) */
 	uint32_t eec;
+
+	/* Intel I210 variable(s) */
+	bool done_i20_write;
 };
 
 /*
@@ -219,7 +221,8 @@ static int nicintel_ee_write_word_i210(unsigned int addr, uint16_t data)
 static int nicintel_ee_write_i210(struct flashctx *flash, const uint8_t *buf,
 				  unsigned int addr, unsigned int len)
 {
-	done_i20_write = true;
+	struct nicintel_eeprom_data *opaque_data = flash->mst->opaque.data;
+	opaque_data->done_i20_write = true;
 
 	if (addr & 1) {
 		uint16_t data;
@@ -400,11 +403,12 @@ static int nicintel_ee_erase_82580(struct flashctx *flash, unsigned int addr, un
 	return nicintel_ee_write_82580(flash, NULL, addr, len);
 }
 
-static int nicintel_ee_shutdown_i210(void *arg)
+static int nicintel_ee_shutdown_i210(void *opaque_data)
 {
+	struct nicintel_eeprom_data *data = opaque_data;
 	int ret = 0;
 
-	if (!done_i20_write)
+	if (!data->done_i20_write)
 		goto out;
 
 	uint32_t flup = pci_mmio_readl(nicintel_eebar + EEC);
@@ -421,6 +425,7 @@ static int nicintel_ee_shutdown_i210(void *arg)
 	msg_perr("Flash update failed\n");
 
 out:
+	free(data);
 	return ret;
 }
 
@@ -511,7 +516,15 @@ static int nicintel_ee_init(void)
 		if (!nicintel_eebar)
 			return 1;
 
-		return register_opaque_master(&opaque_master_nicintel_ee_i210, NULL);
+		struct nicintel_eeprom_data *data = calloc(1, sizeof(*data));
+		if (!data) {
+			msg_perr("Unable to allocate space for OPAQUE master data\n");
+			return 1;
+		}
+		data->eec = eec;
+		data->done_i20_write = false;
+
+		return register_opaque_master(&opaque_master_nicintel_ee_i210, data);
 	}
 
 	return 1;
