@@ -231,7 +231,7 @@ void board_handle_before_laptop(void);
 int board_flash_enable(const char *vendor, const char *model, const char *cb_vendor, const char *cb_model);
 
 /* chipset_enable.c */
-int chipset_flash_enable(void);
+int chipset_flash_enable(const struct programmer_cfg *cfg);
 
 /* processor_enable.c */
 int processor_flash_enable(void);

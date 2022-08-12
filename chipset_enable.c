@@ -2182,7 +2182,7 @@ const struct penable chipset_enables[] = {
 	{0},
 };
 
-int chipset_flash_enable(void)
+int chipset_flash_enable(const struct programmer_cfg *cfg)
 {
 	struct pci_dev *dev = NULL;
 	int ret = -2;		/* Nothing! */
@@ -2231,7 +2231,7 @@ int chipset_flash_enable(void)
 			continue;
 		}
 		msg_pinfo("Enabling flash write... ");
-		ret = chipset_enables[i].doit(NULL, dev, chipset_enables[i].device_name);
+		ret = chipset_enables[i].doit(cfg, dev, chipset_enables[i].device_name);
 		if (ret == NOT_DONE_YET) {
 			ret = -2;
 			msg_pinfo("OK - searching further chips.\n");
