@@ -92,7 +92,7 @@ static int atahpt_init(const struct programmer_cfg *cfg)
 	if (rget_io_perms())
 		return 1;
 
-	dev = pcidev_init(ata_hpt, PCI_BASE_ADDRESS_4);
+	dev = pcidev_init(cfg, ata_hpt, PCI_BASE_ADDRESS_4);
 	if (!dev)
 		return 1;
 

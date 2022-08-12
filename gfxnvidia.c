@@ -111,7 +111,7 @@ static int gfxnvidia_init(const struct programmer_cfg *cfg)
 	uint32_t reg32;
 	uint8_t *bar;
 
-	dev = pcidev_init(gfx_nvidia, PCI_BASE_ADDRESS_0);
+	dev = pcidev_init(cfg, gfx_nvidia, PCI_BASE_ADDRESS_0);
 	if (!dev)
 		return 1;
 

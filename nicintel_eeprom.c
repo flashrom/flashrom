@@ -485,7 +485,7 @@ static int nicintel_ee_init(const struct programmer_cfg *cfg)
 	uint32_t eec = 0;
 	uint8_t *eebar;
 
-	struct pci_dev *dev = pcidev_init(nics_intel_ee, PCI_BASE_ADDRESS_0);
+	struct pci_dev *dev = pcidev_init(cfg, nics_intel_ee, PCI_BASE_ADDRESS_0);
 	if (!dev)
 		return 1;
 

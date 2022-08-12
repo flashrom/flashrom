@@ -140,7 +140,7 @@ static int ogp_spi_init(const struct programmer_cfg *cfg)
 	}
 	free(type);
 
-	dev = pcidev_init(ogp_spi, PCI_BASE_ADDRESS_0);
+	dev = pcidev_init(cfg, ogp_spi, PCI_BASE_ADDRESS_0);
 	if (!dev)
 		return 1;
 

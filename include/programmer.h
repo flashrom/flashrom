@@ -124,7 +124,7 @@ struct pci_filter;
 extern struct pci_access *pacc;
 int pci_init_common(void);
 uintptr_t pcidev_readbar(struct pci_dev *dev, int bar);
-struct pci_dev *pcidev_init(const struct dev_entry *devs, int bar);
+struct pci_dev *pcidev_init(const struct programmer_cfg *cfg, const struct dev_entry *devs, int bar);
 struct pci_dev *pcidev_scandev(struct pci_filter *filter, struct pci_dev *start);
 struct pci_dev *pcidev_getdevfn(struct pci_dev *dev, const int func);
 struct pci_dev *pcidev_find_vendorclass(uint16_t vendor, uint16_t devclass);

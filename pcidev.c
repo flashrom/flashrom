@@ -257,7 +257,7 @@ int pci_init_common(void)
  * also matches the specified bus:device.function.
  * For convenience, this function also registers its own undo handlers.
  */
-struct pci_dev *pcidev_init(const struct dev_entry *devs, int bar)
+struct pci_dev *pcidev_init(const struct programmer_cfg *cfg, const struct dev_entry *devs, int bar)
 {
 	struct pci_dev *dev;
 	struct pci_dev *found_dev = NULL;
@@ -272,7 +272,7 @@ struct pci_dev *pcidev_init(const struct dev_entry *devs, int bar)
 	pci_filter_init(pacc, &filter);
 
 	/* Filter by bb:dd.f (if supplied by the user). */
-	pcidev_bdf = extract_programmer_param_str(NULL, "pci"); /* TODO(quasisec): pass prog_param */
+	pcidev_bdf = extract_programmer_param_str(cfg, "pci");
 	if (pcidev_bdf != NULL) {
 		if ((msg = pci_filter_parse_slot(&filter, pcidev_bdf))) {
 			msg_perr("Error: %s\n", msg);

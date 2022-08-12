@@ -87,7 +87,7 @@ static int drkaiser_init(const struct programmer_cfg *cfg)
 	uint32_t addr;
 	uint8_t *bar;
 
-	dev = pcidev_init(drkaiser_pcidev, PCI_BASE_ADDRESS_2);
+	dev = pcidev_init(cfg, drkaiser_pcidev, PCI_BASE_ADDRESS_2);
 	if (!dev)
 		return 1;
 

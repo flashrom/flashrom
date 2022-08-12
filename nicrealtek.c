@@ -107,7 +107,7 @@ static int nicrealtek_init(const struct programmer_cfg *cfg)
 	if (rget_io_perms())
 		return 1;
 
-	dev = pcidev_init(nics_realtek, PCI_BASE_ADDRESS_0);
+	dev = pcidev_init(cfg, nics_realtek, PCI_BASE_ADDRESS_0);
 	if (!dev)
 		return 1;
 

@@ -85,7 +85,7 @@ static int nicintel_init(const struct programmer_cfg *cfg)
 	uint8_t *control_bar;
 
 	/* FIXME: BAR2 is not available if the device uses the CardBus function. */
-	dev = pcidev_init(nics_intel, PCI_BASE_ADDRESS_2);
+	dev = pcidev_init(cfg, nics_intel, PCI_BASE_ADDRESS_2);
 	if (!dev)
 		return 1;
 

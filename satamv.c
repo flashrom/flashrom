@@ -126,7 +126,7 @@ static int satamv_init(const struct programmer_cfg *cfg)
 		return 1;
 
 	/* BAR0 has all internal registers memory mapped. */
-	dev = pcidev_init(satas_mv, PCI_BASE_ADDRESS_0);
+	dev = pcidev_init(cfg, satas_mv, PCI_BASE_ADDRESS_0);
 	if (!dev)
 		return 1;
 

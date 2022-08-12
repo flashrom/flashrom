@@ -289,7 +289,7 @@ static int nicintel_spi_init(const struct programmer_cfg *cfg)
 {
 	struct pci_dev *dev = NULL;
 
-	dev = pcidev_init(nics_intel_spi, PCI_BASE_ADDRESS_0);
+	dev = pcidev_init(cfg, nics_intel_spi, PCI_BASE_ADDRESS_0);
 	if (!dev)
 		return 1;
 

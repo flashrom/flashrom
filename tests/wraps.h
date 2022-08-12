@@ -19,10 +19,12 @@
 #include <stdio.h>
 #include "flash.h"
 
+struct programmer_cfg; /* defined in programmer.h */
+
 char *__wrap_strdup(const char *s);
 void __wrap_physunmap(void *virt_addr, size_t len);
 void *__wrap_physmap(const char *descr, uintptr_t phys_addr, size_t len);
-struct pci_dev *__wrap_pcidev_init(void *devs, int bar);
+struct pci_dev *__wrap_pcidev_init(const struct programmer_cfg *cfg, void *devs, int bar);
 uintptr_t __wrap_pcidev_readbar(void *dev, int bar);
 void __wrap_sio_write(uint16_t port, uint8_t reg, uint8_t data);
 uint8_t __wrap_sio_read(uint16_t port, uint8_t reg);

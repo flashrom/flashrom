@@ -52,7 +52,7 @@ struct pci_dev mock_pci_dev = {
 	.device_id = NON_ZERO,
 };
 
-struct pci_dev *__wrap_pcidev_init(void *devs, int bar)
+struct pci_dev *__wrap_pcidev_init(const struct programmer_cfg *cfg, void *devs, int bar)
 {
 	LOG_ME;
 	return &mock_pci_dev;

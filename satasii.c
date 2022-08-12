@@ -112,7 +112,7 @@ static int satasii_init(const struct programmer_cfg *cfg)
 	uint16_t reg_offset, id;
 	uint8_t *bar;
 
-	dev = pcidev_init(satas_sii, PCI_BASE_ADDRESS_0);
+	dev = pcidev_init(cfg, satas_sii, PCI_BASE_ADDRESS_0);
 	if (!dev)
 		return 1;
 

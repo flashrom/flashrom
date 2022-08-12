@@ -111,7 +111,7 @@ static int nic3com_init(const struct programmer_cfg *cfg)
 	if (rget_io_perms())
 		return 1;
 
-	dev = pcidev_init(nics_3com, PCI_BASE_ADDRESS_0);
+	dev = pcidev_init(cfg, nics_3com, PCI_BASE_ADDRESS_0);
 	if (!dev)
 		return 1;
 

@@ -78,7 +78,7 @@ static int it8212_init(const struct programmer_cfg *cfg)
 {
 	uint8_t *bar;
 
-	struct pci_dev *dev = pcidev_init(devs_it8212, PCI_ROM_ADDRESS);
+	struct pci_dev *dev = pcidev_init(cfg, devs_it8212, PCI_ROM_ADDRESS);
 	if (!dev)
 		return 1;
 

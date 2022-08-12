@@ -163,7 +163,7 @@ static int atavia_init(const struct programmer_cfg *cfg)
 	}
 	free(arg);
 
-	dev = pcidev_init(ata_via, PCI_ROM_ADDRESS); /* Actually no BAR setup needed at all. */
+	dev = pcidev_init(cfg, ata_via, PCI_ROM_ADDRESS); /* Actually no BAR setup needed at all. */
 	if (!dev)
 		return 1;
 

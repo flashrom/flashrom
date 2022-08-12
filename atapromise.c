@@ -140,7 +140,7 @@ static int atapromise_init(const struct programmer_cfg *cfg)
 	if (rget_io_perms())
 		return 1;
 
-	dev = pcidev_init(ata_promise, PCI_BASE_ADDRESS_4);
+	dev = pcidev_init(cfg, ata_promise, PCI_BASE_ADDRESS_4);
 	if (!dev)
 		return 1;
 
