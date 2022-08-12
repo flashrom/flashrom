@@ -392,6 +392,33 @@ static int read_buf_from_include_args(const struct flashrom_layout *const layout
 	return 0;
 }
 
+/**
+ * @brief Writes content from buffer to one or more files.
+ *
+ * Writes content from supplied buffer to files. If a filename is specified for
+ * individual regions using the partial read syntax ('-i <region>[:<filename>]')
+ * then this will write files using data from the corresponding region in the
+ * supplied buffer.
+ *
+ * @param layout   The layout to be used.
+ * @param buf      Chip-sized buffer to read data from
+ * @return 0 on success
+ */
+static int write_buf_to_include_args(const struct flashrom_layout *const layout, unsigned char *buf)
+{
+	const struct romentry *entry = NULL;
+
+	while ((entry = layout_next_included(layout, entry))) {
+		if (!entry->file)
+			continue;
+		if (write_buf_to_file(buf + entry->start,
+				      entry->end - entry->start + 1, entry->file))
+			return 1;
+	}
+
+	return 0;
+}
+
 static int do_read(struct flashctx *const flash, const char *const filename)
 {
 	int ret;

@@ -424,7 +424,6 @@ void list_programmers_linebreak(int startcol, int cols, int paren);
 int selfcheck(void);
 int read_buf_from_file(unsigned char *buf, unsigned long size, const char *filename);
 int write_buf_to_file(const unsigned char *buf, unsigned long size, const char *filename);
-int write_buf_to_include_args(const struct flashrom_layout *const layout, unsigned char *buf);
 int prepare_flash_access(struct flashctx *, bool read_it, bool write_it, bool erase_it, bool verify_it);
 void finalize_flash_access(struct flashctx *);
 int register_chip_restore(chip_restore_fn_cb_t func, struct flashctx *flash, uint8_t status);
