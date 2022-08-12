@@ -871,41 +871,6 @@ notfound:
 }
 
 /**
- * @brief Reads content to buffer from one or more files.
- *
- * Reads content to supplied buffer from files. If a filename is specified for
- * individual regions using the partial read syntax ('-i <region>[:<filename>]')
- * then this will read file data into the corresponding region in the
- * supplied buffer.
- *
- * @param layout   The layout to be used.
- * @param buf      Chip-sized buffer to write data to
- * @return 0 on success
- */
-int read_buf_from_include_args(const struct flashrom_layout *const layout, unsigned char *buf)
-{
-	const struct romentry *entry = NULL;
-
-	/*
-	 * Content will be read from -i args, so they must not overlap since
-	 * we need to know exactly what content to write to the ROM.
-	 */
-	if (included_regions_overlap(layout)) {
-		msg_gerr("Error: Included regions must not overlap when writing.\n");
-		return 1;
-	}
-
-	while ((entry = layout_next_included(layout, entry))) {
-		if (!entry->file)
-			continue;
-		if (read_buf_from_file(buf + entry->start,
-				       entry->end - entry->start + 1, entry->file))
-			return 1;
-	}
-	return 0;
-}
-
-/**
  * @brief Writes content from buffer to one or more files.
  *
  * Writes content from supplied buffer to files. If a filename is specified for
