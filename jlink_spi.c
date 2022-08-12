@@ -193,7 +193,7 @@ static const struct spi_master spi_master_jlink_spi = {
 	.probe_opcode	= default_spi_probe_opcode,
 };
 
-static int jlink_spi_init(void)
+static int jlink_spi_init(const struct programmer_cfg *cfg)
 {
 	char *arg;
 	unsigned long speed = 0;

@@ -120,7 +120,7 @@ static int pony_spi_shutdown(void *data)
 	return ret;
 }
 
-static int get_params(enum pony_type *type, int *have_device)
+static int get_params(const struct programmer_cfg *cfg, enum pony_type *type, int *have_device)
 {
 	char *arg = NULL;
 	int ret = 0;
@@ -159,7 +159,7 @@ static int get_params(enum pony_type *type, int *have_device)
 	return ret;
 }
 
-static int pony_spi_init(void)
+static int pony_spi_init(const struct programmer_cfg *cfg)
 {
 	int i, data_out;
 	enum pony_type type;
@@ -167,7 +167,7 @@ static int pony_spi_init(void)
 	int have_device;
 	int have_prog = 0;
 
-	if (get_params(&type, &have_device)) {
+	if (get_params(cfg, &type, &have_device)) {
 		serialport_shutdown(NULL);
 		return 1;
 	}

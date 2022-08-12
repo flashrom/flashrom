@@ -101,7 +101,7 @@ static const struct par_master par_master_nic3com = {
 	.shutdown	= nic3com_shutdown,
 };
 
-static int nic3com_init(void)
+static int nic3com_init(const struct programmer_cfg *cfg)
 {
 	struct pci_dev *dev = NULL;
 	uint32_t io_base_addr = 0;

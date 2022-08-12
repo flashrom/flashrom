@@ -142,7 +142,7 @@ static int developerbox_spi_shutdown(void *spi_data)
 	return 0;
 }
 
-static int developerbox_spi_init(void)
+static int developerbox_spi_init(const struct programmer_cfg *cfg)
 {
 	struct libusb_context *usb_ctx;
 	libusb_device_handle *cp210x_handle;

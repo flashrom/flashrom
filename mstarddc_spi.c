@@ -150,7 +150,7 @@ static const struct spi_master spi_master_mstarddc = {
 };
 
 /* Returns 0 upon success, a negative number upon errors. */
-static int mstarddc_spi_init(void)
+static int mstarddc_spi_init(const struct programmer_cfg *cfg)
 {
 	int ret = 0;
 	int mstarddc_fd = -1;

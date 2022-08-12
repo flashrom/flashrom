@@ -105,7 +105,7 @@ static const struct par_master par_master_satasii = {
 	.shutdown	= satasii_shutdown,
 };
 
-static int satasii_init(void)
+static int satasii_init(const struct programmer_cfg *cfg)
 {
 	struct pci_dev *dev = NULL;
 	uint32_t addr;

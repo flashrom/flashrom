@@ -47,7 +47,7 @@ struct programmer_entry {
 		const char *const note;
 	} devs;
 
-	int (*init) (void);
+	int (*init) (const struct programmer_cfg *cfg);
 
 	void *(*map_flash_region) (const char *descr, uintptr_t phys_addr, size_t len);
 	void (*unmap_flash_region) (void *virt_addr, size_t len);
@@ -376,7 +376,7 @@ int init_superio_ite(void);
 
 #if CONFIG_LINUX_MTD == 1
 /* trivial wrapper to avoid cluttering internal_init() with #if */
-static inline int try_mtd(void) { return programmer_linux_mtd.init(); };
+static inline int try_mtd(void) { return programmer_linux_mtd.init(NULL); };
 #else
 static inline int try_mtd(void) { return 1; };
 #endif

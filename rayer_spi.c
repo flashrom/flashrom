@@ -235,7 +235,7 @@ static const struct bitbang_spi_master bitbang_spi_master_rayer = {
 	.half_period	= 0,
 };
 
-static int rayer_spi_init(void)
+static int rayer_spi_init(const struct programmer_cfg *cfg)
 {
 	const struct rayer_programmer *prog = rayer_spi_types;
 	char *arg = NULL;

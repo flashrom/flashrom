@@ -116,7 +116,8 @@ static const struct par_master par_master_internal = {
 	.chip_writen	= fallback_chip_writen,
 };
 
-static int get_params(int *boardenable, int *boardmismatch,
+static int get_params(const struct programmer_cfg *cfg,
+		int *boardenable, int *boardmismatch,
 		int *force_laptop, int *not_a_laptop,
 		char **board_vendor, char **board_model)
 {
@@ -188,7 +189,7 @@ static int get_params(int *boardenable, int *boardmismatch,
 	return 0;
 }
 
-static int internal_init(void)
+static int internal_init(const struct programmer_cfg *cfg)
 {
 	int ret = 0;
 	int force_laptop;
@@ -200,7 +201,8 @@ static int internal_init(void)
 	const char *cb_model = NULL;
 #endif
 
-	ret = get_params(&force_boardenable, &force_boardmismatch,
+	ret = get_params(cfg,
+			 &force_boardenable, &force_boardmismatch,
 			 &force_laptop, &not_a_laptop,
 			 &board_vendor, &board_model);
 	if (ret)

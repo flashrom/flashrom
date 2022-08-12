@@ -464,7 +464,7 @@ static const struct spi_master spi_master_i2c_mediatek = {
 	.probe_opcode	= default_spi_probe_opcode,
 };
 
-static int get_params(bool *allow_brick)
+static int get_params(const struct programmer_cfg *cfg, bool *allow_brick)
 {
 	char *brick_str = NULL;
 	int ret = 0;
@@ -484,12 +484,12 @@ static int get_params(bool *allow_brick)
 	return ret;
 }
 
-static int mediatek_init(void)
+static int mediatek_init(const struct programmer_cfg *cfg)
 {
 	int ret;
 	bool allow_brick;
 
-	if (get_params(&allow_brick))
+	if (get_params(cfg, &allow_brick))
 		return SPI_GENERIC_ERROR;
 
 	/*

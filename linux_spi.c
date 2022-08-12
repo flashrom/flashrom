@@ -165,7 +165,7 @@ out:
 	return result;
 }
 
-static int linux_spi_init(void)
+static int linux_spi_init(const struct programmer_cfg *cfg)
 {
 	char *param_str, *endp;
 	uint32_t speed_hz = 2 * 1000 * 1000;

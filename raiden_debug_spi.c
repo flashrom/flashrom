@@ -1482,7 +1482,7 @@ static void free_dev_list(struct usb_device **dev_lst)
 		dev = usb_device_free(dev);
 }
 
-static int raiden_debug_spi_init(void)
+static int raiden_debug_spi_init(const struct programmer_cfg *cfg)
 {
 	struct usb_match match;
 	char *serial = extract_programmer_param_str(NULL, "serial");

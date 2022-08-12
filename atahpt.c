@@ -84,7 +84,7 @@ static const struct par_master par_master_atahpt = {
 	.shutdown	= atahpt_shutdown,
 };
 
-static int atahpt_init(void)
+static int atahpt_init(const struct programmer_cfg *cfg)
 {
 	struct pci_dev *dev = NULL;
 	uint32_t io_base_addr;

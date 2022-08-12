@@ -314,7 +314,7 @@ static int buspirate_spi_send_command_v2(const struct flashctx *flash, unsigned 
  */
 #define BP_DIVISOR(baud) ((4000000/(baud)) - 1)
 
-static int buspirate_spi_init(void)
+static int buspirate_spi_init(const struct programmer_cfg *cfg)
 {
 	char *tmp;
 	char *dev;

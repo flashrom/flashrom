@@ -540,7 +540,7 @@ static const struct spi_master spi_programmer_ni845x = {
 	.probe_opcode	= default_spi_probe_opcode,
 };
 
-static int ni845x_spi_init(void)
+static int ni845x_spi_init(const struct programmer_cfg *cfg)
 {
 	char *speed_str = NULL;
 	char *CS_str = NULL;

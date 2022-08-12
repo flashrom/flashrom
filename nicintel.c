@@ -77,7 +77,7 @@ static const struct par_master par_master_nicintel = {
 	.shutdown	= nicintel_shutdown,
 };
 
-static int nicintel_init(void)
+static int nicintel_init(const struct programmer_cfg *cfg)
 {
 	struct pci_dev *dev = NULL;
 	uintptr_t addr;

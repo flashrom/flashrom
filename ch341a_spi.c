@@ -420,7 +420,7 @@ static const struct spi_master spi_master_ch341a_spi = {
 	.probe_opcode	= default_spi_probe_opcode,
 };
 
-static int ch341a_spi_init(void)
+static int ch341a_spi_init(const struct programmer_cfg *cfg)
 {
 	if (handle != NULL) {
 		msg_cerr("%s: handle already set! Please report a bug at flashrom@flashrom.org\n", __func__);

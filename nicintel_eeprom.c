@@ -479,7 +479,7 @@ static const struct opaque_master opaque_master_nicintel_ee_i210 = {
 	.shutdown	= nicintel_ee_shutdown_i210,
 };
 
-static int nicintel_ee_init(void)
+static int nicintel_ee_init(const struct programmer_cfg *cfg)
 {
 	const struct opaque_master *mst;
 	uint32_t eec = 0;

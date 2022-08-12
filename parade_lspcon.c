@@ -440,7 +440,7 @@ static const struct spi_master spi_master_parade_lspcon = {
 	.probe_opcode	= default_spi_probe_opcode,
 };
 
-static int get_params(bool *allow_brick)
+static int get_params(const struct programmer_cfg *cfg, bool *allow_brick)
 {
 	char *brick_str = NULL;
 	int ret = 0;
@@ -460,11 +460,11 @@ static int get_params(bool *allow_brick)
 	return ret;
 }
 
-static int parade_lspcon_init(void)
+static int parade_lspcon_init(const struct programmer_cfg *cfg)
 {
 	bool allow_brick;
 
-	if (get_params(&allow_brick))
+	if (get_params(cfg, &allow_brick))
 		return SPI_GENERIC_ERROR;
 
 	/*

@@ -444,7 +444,7 @@ static const struct spi_master spi_master_i2c_realtek_mst = {
 	.probe_opcode	= default_spi_probe_opcode,
 };
 
-static int get_params(bool *reset, bool *enter_isp, bool *allow_brick)
+static int get_params(const struct programmer_cfg *cfg, bool *reset, bool *enter_isp, bool *allow_brick)
 {
 	char *param_str;
 	int ret = 0;
@@ -492,12 +492,12 @@ static int get_params(bool *reset, bool *enter_isp, bool *allow_brick)
 	return ret;
 }
 
-static int realtek_mst_i2c_spi_init(void)
+static int realtek_mst_i2c_spi_init(const struct programmer_cfg *cfg)
 {
 	int ret = 0;
 	bool reset, enter_isp, allow_brick;
 
-	if (get_params(&reset, &enter_isp, &allow_brick))
+	if (get_params(cfg, &reset, &enter_isp, &allow_brick))
 		return SPI_GENERIC_ERROR;
 
 	/*

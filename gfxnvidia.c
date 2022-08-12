@@ -105,7 +105,7 @@ static const struct par_master par_master_gfxnvidia = {
 	.shutdown	= gfxnvidia_shutdown,
 };
 
-static int gfxnvidia_init(void)
+static int gfxnvidia_init(const struct programmer_cfg *cfg)
 {
 	struct pci_dev *dev = NULL;
 	uint32_t reg32;

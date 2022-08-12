@@ -129,7 +129,7 @@ static const struct par_master par_master_atapromise = {
 	.shutdown	= atapromise_shutdown,
 };
 
-static int atapromise_init(void)
+static int atapromise_init(const struct programmer_cfg *cfg)
 {
 	struct pci_dev *dev = NULL;
 	uint32_t io_base_addr;

@@ -493,7 +493,7 @@ linux_mtd_setup_exit:
 	return ret;
 }
 
-static int linux_mtd_init(void)
+static int linux_mtd_init(const struct programmer_cfg *cfg)
 {
 	char *param_str;
 	int dev_num = 0;

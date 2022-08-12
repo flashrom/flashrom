@@ -388,7 +388,7 @@ static const struct spi_master spi_master_pickit2 = {
 	.probe_opcode	= default_spi_probe_opcode,
 };
 
-static int pickit2_spi_init(void)
+static int pickit2_spi_init(const struct programmer_cfg *cfg)
 {
 	uint8_t buf[CMD_LENGTH] = {
 		CMD_EXEC_SCRIPT,

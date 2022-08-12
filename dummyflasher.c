@@ -1338,7 +1338,7 @@ static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_suppor
 	return 0;
 }
 
-static int dummy_init(void)
+static int dummy_init(const struct programmer_cfg *cfg)
 {
 	struct stat image_stat;
 

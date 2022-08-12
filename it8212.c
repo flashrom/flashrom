@@ -74,7 +74,7 @@ static const struct par_master par_master_it8212 = {
 	.shutdown	= it8212_shutdown,
 };
 
-static int it8212_init(void)
+static int it8212_init(const struct programmer_cfg *cfg)
 {
 	uint8_t *bar;
 

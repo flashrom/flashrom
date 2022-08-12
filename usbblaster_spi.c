@@ -177,7 +177,7 @@ static const struct spi_master spi_master_usbblaster = {
 };
 
 /* Returns 0 upon success, a negative number upon errors. */
-static int usbblaster_spi_init(void)
+static int usbblaster_spi_init(const struct programmer_cfg *cfg)
 {
 	uint8_t buf[BUF_SIZE + 1] = { 0 };
 	struct ftdi_context ftdic;

@@ -1076,7 +1076,7 @@ static int dediprog_open(int index, struct dediprog_data *dp_data)
 	return 0;
 }
 
-static int dediprog_init(void)
+static int dediprog_init(const struct programmer_cfg *cfg)
 {
 	char *param_str;
 	int spispeed_idx = 1;

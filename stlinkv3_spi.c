@@ -474,7 +474,7 @@ static const struct spi_master spi_programmer_stlinkv3 = {
 	.probe_opcode	= default_spi_probe_opcode,
 };
 
-static int stlinkv3_spi_init(void)
+static int stlinkv3_spi_init(const struct programmer_cfg *cfg)
 {
 	uint16_t sck_freq_kHz = 1000;	// selecting 1 MHz SCK is a good bet
 	char *param_str;

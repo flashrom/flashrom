@@ -81,7 +81,7 @@ static const struct par_master par_master_drkaiser = {
 	.shutdown	= drkaiser_shutdown,
 };
 
-static int drkaiser_init(void)
+static int drkaiser_init(const struct programmer_cfg *cfg)
 {
 	struct pci_dev *dev = NULL;
 	uint32_t addr;

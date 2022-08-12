@@ -107,7 +107,7 @@ static int ogp_spi_shutdown(void *data)
 	return 0;
 }
 
-static int ogp_spi_init(void)
+static int ogp_spi_init(const struct programmer_cfg *cfg)
 {
 	struct pci_dev *dev = NULL;
 	char *type;

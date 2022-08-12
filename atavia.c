@@ -143,7 +143,7 @@ static const struct par_master lpc_master_atavia = {
 	.chip_writen	= fallback_chip_writen,
 };
 
-static int atavia_init(void)
+static int atavia_init(const struct programmer_cfg *cfg)
 {
 	char *arg = extract_programmer_param_str(NULL, "offset");
 	if (arg) {

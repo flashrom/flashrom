@@ -374,7 +374,7 @@ static const struct digilent_spispeeds spispeeds[] = {
 	{ NULL,		0 },
 };
 
-static int digilent_spi_init(void)
+static int digilent_spi_init(const struct programmer_cfg *cfg)
 {
 	char *param_str;
 	uint32_t speed_hz = spispeeds[0].speed;

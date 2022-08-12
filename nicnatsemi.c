@@ -88,7 +88,7 @@ static const struct par_master par_master_nicnatsemi = {
 	.shutdown	= nicnatsemi_shutdown,
 };
 
-static int nicnatsemi_init(void)
+static int nicnatsemi_init(const struct programmer_cfg *cfg)
 {
 	struct pci_dev *dev = NULL;
 	uint32_t io_base_addr;

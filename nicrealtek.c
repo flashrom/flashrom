@@ -97,7 +97,7 @@ static const struct par_master par_master_nicrealtek = {
 	.shutdown	= nicrealtek_shutdown,
 };
 
-static int nicrealtek_init(void)
+static int nicrealtek_init(const struct programmer_cfg *cfg)
 {
 	struct pci_dev *dev = NULL;
 	uint32_t io_base_addr = 0;

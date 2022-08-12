@@ -285,7 +285,7 @@ static int nicintel_spi_i210_enable_flash(struct nicintel_spi_data *data)
 	return 0;
 }
 
-static int nicintel_spi_init(void)
+static int nicintel_spi_init(const struct programmer_cfg *cfg)
 {
 	struct pci_dev *dev = NULL;
 
