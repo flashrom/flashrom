@@ -26,9 +26,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <ctype.h>
-#if HAVE_UTSNAME == 1
-#include <sys/utsname.h>
-#endif
+
 #include "flash.h"
 #include "flashchips.h"
 #include "programmer.h"
@@ -1365,86 +1363,6 @@ void list_programmers_linebreak(int startcol, int cols, int paren)
 				msg_ginfo(")");
 		}
 	}
-}
-
-static void print_sysinfo(void)
-{
-#if IS_WINDOWS
-	SYSTEM_INFO si = { 0 };
-	OSVERSIONINFOEX osvi = { 0 };
-
-	msg_ginfo(" on Windows");
-	/* Tell Windows which version of the structure we want. */
-	osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
-	if (GetVersionEx((OSVERSIONINFO*) &osvi))
-		msg_ginfo(" %lu.%lu", osvi.dwMajorVersion, osvi.dwMinorVersion);
-	else
-		msg_ginfo(" unknown version");
-	GetSystemInfo(&si);
-	switch (si.wProcessorArchitecture) {
-	case PROCESSOR_ARCHITECTURE_AMD64:
-		msg_ginfo(" (x86_64)");
-		break;
-	case PROCESSOR_ARCHITECTURE_INTEL:
-		msg_ginfo(" (x86)");
-		break;
-	default:
-		msg_ginfo(" (unknown arch)");
-		break;
-	}
-#elif HAVE_UTSNAME == 1
-	struct utsname osinfo;
-
-	uname(&osinfo);
-	msg_ginfo(" on %s %s (%s)", osinfo.sysname, osinfo.release,
-		  osinfo.machine);
-#else
-	msg_ginfo(" on unknown machine");
-#endif
-}
-
-void print_buildinfo(void)
-{
-	msg_gdbg("flashrom was built with");
-#ifdef __clang__
-	msg_gdbg(" LLVM Clang");
-#ifdef __clang_version__
-	msg_gdbg(" %s,", __clang_version__);
-#else
-	msg_gdbg(" unknown version (before r102686),");
-#endif
-#elif defined(__GNUC__)
-	msg_gdbg(" GCC");
-#ifdef __VERSION__
-	msg_gdbg(" %s,", __VERSION__);
-#else
-	msg_gdbg(" unknown version,");
-#endif
-#else
-	msg_gdbg(" unknown compiler,");
-#endif
-#if defined (__FLASHROM_LITTLE_ENDIAN__)
-	msg_gdbg(" little endian");
-#elif defined (__FLASHROM_BIG_ENDIAN__)
-	msg_gdbg(" big endian");
-#else
-#error Endianness could not be determined
-#endif
-	msg_gdbg("\n");
-}
-
-void print_version(void)
-{
-	msg_ginfo("flashrom %s", flashrom_version);
-	print_sysinfo();
-	msg_ginfo("\n");
-}
-
-void print_banner(void)
-{
-	msg_ginfo("flashrom is free software, get the source code at "
-		  "https://flashrom.org\n");
-	msg_ginfo("\n");
 }
 
 int selfcheck(void)
