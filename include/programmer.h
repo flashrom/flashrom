@@ -362,7 +362,7 @@ enum ich_chipset {
 
 /* ichspi.c */
 #if CONFIG_INTERNAL == 1
-int ich_init_spi(void *spibar, enum ich_chipset ich_generation);
+int ich_init_spi(const struct programmer_cfg *cfg, void *spibar, enum ich_chipset ich_generation);
 int via_init_spi(uint32_t mmio_base);
 
 /* amd_imc.c */

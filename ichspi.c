@@ -1872,9 +1872,9 @@ enum ich_spi_mode {
 	ich_swseq
 };
 
-static int get_ich_spi_mode_param(enum ich_spi_mode *ich_spi_mode)
+static int get_ich_spi_mode_param(const struct programmer_cfg *cfg, enum ich_spi_mode *ich_spi_mode)
 {
-	char *const arg = extract_programmer_param_str(NULL, "ich_spi_mode");
+	char *const arg = extract_programmer_param_str(cfg, "ich_spi_mode");
 	if (!arg) {
 		return 0;
 	} else if (!strcmp(arg, "hwseq")) {
@@ -1964,7 +1964,7 @@ static void init_chipset_properties(struct swseq_data *swseq, struct hwseq_data 
 	}
 }
 
-static int init_ich_default(void *spibar, enum ich_chipset ich_gen)
+static int init_ich_default(const struct programmer_cfg *cfg, void *spibar, enum ich_chipset ich_gen)
 {
 	unsigned int i;
 	uint16_t tmp2;
@@ -1977,7 +1977,7 @@ static int init_ich_default(void *spibar, enum ich_chipset ich_gen)
 
 	init_chipset_properties(&swseq_data, &g_hwseq_data, &num_freg, &num_pr, &reg_pr0, ich_gen);
 
-	int ret = get_ich_spi_mode_param(&ich_spi_mode);
+	int ret = get_ich_spi_mode_param(cfg, &ich_spi_mode);
 	if (ret)
 		return ret;
 
@@ -2212,7 +2212,7 @@ static int init_ich_default(void *spibar, enum ich_chipset ich_gen)
 	return 0;
 }
 
-int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
+int ich_init_spi(const struct programmer_cfg *cfg, void *spibar, enum ich_chipset ich_gen)
 {
 	ich_generation = ich_gen;
 	ich_spibar = spibar;
@@ -2224,7 +2224,7 @@ int ich_init_spi(void *spibar, enum ich_chipset ich_gen)
 		return init_ich7_spi(spibar, ich_gen);
 	case CHIPSET_ICH8:
 	default:	/* Future version might behave the same */
-		return init_ich_default(spibar, ich_gen);
+		return init_ich_default(cfg, spibar, ich_gen);
 	}
 }
 

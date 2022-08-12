@@ -816,7 +816,7 @@ static int enable_flash_ich_spi(const struct programmer_cfg *cfg, struct pci_dev
 	void *spibar = rcrb + spibar_offset;
 
 	/* This adds BUS_SPI */
-	int ret_spi = ich_init_spi(spibar, ich_generation);
+	int ret_spi = ich_init_spi(NULL, spibar, ich_generation); /* TODO(quasisec): pass prog_param */
 	if (ret_spi == ERROR_FATAL)
 		return ret_spi;
 
@@ -960,7 +960,7 @@ static int enable_flash_pch100_or_c620(const struct programmer_cfg *cfg,
 	msg_pdbg("SPIBAR = 0x%0*" PRIxPTR " (phys = 0x%08x)\n", PRIxPTR_WIDTH, (uintptr_t)spibar, phys_spibar);
 
 	/* This adds BUS_SPI */
-	const int ret_spi = ich_init_spi(spibar, pch_generation);
+	const int ret_spi = ich_init_spi(NULL, spibar, pch_generation); /* TODO(quasisec): pass prog_param */
 	if (ret_spi != ERROR_FATAL) {
 		if (ret_bc || ret_spi)
 			ret = ERROR_NONFATAL;
@@ -1077,7 +1077,7 @@ static int enable_flash_silvermont(const struct programmer_cfg *cfg, struct pci_
 	 */
 	enable_flash_ich_bios_cntl_memmapped(ich_generation, spibar + 0xFC);
 
-	int ret_spi = ich_init_spi(spibar, ich_generation);
+	int ret_spi = ich_init_spi(NULL, spibar, ich_generation); /* TODO(quasisec): pass prog_param */
 	if (ret_spi == ERROR_FATAL)
 		return ret_spi;
 
