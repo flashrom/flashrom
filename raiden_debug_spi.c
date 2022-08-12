@@ -1497,7 +1497,7 @@ static int raiden_debug_spi_init(const struct programmer_cfg *cfg)
 		return 1;
 	}
 
-	usb_match_init(&match);
+	usb_match_init(cfg, &match);
 
 	usb_match_value_default(&match.vid,      GOOGLE_VID);
 	usb_match_value_default(&match.class,    LIBUSB_CLASS_VENDOR_SPEC);

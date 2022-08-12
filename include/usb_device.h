@@ -102,7 +102,7 @@ struct usb_match {
  * extract_programmer_param_str.  If the value is found convert it to an integer
  * using strtol, accepting hex, decimal and octal encoding.
  */
-void usb_match_init(struct usb_match *match);
+void usb_match_init(const struct programmer_cfg *cfg, struct usb_match *match);
 
 /*
  * Add a default value to a usb_match_value.  This must be done after calling

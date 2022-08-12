@@ -28,10 +28,11 @@
  * Possibly extract a programmer parameter and use it to initialize the given
  * match value structure.
  */
-static void usb_match_value_init(struct usb_match_value *match,
+static void usb_match_value_init(const struct programmer_cfg *cfg,
+				 struct usb_match_value *match,
 				 char const *parameter)
 {
-	char *string = extract_programmer_param_str(NULL, parameter); /* TODO(quasisec): pass prog_param */
+	char *string = extract_programmer_param_str(cfg, parameter);
 
 	match->name = parameter;
 
@@ -45,21 +46,21 @@ static void usb_match_value_init(struct usb_match_value *match,
 	free(string);
 }
 
-#define USB_MATCH_VALUE_INIT(NAME)			\
-	usb_match_value_init(&match->NAME, #NAME)
+#define USB_MATCH_VALUE_INIT(PPARAM, NAME)			\
+	usb_match_value_init(PPARAM, &match->NAME, #NAME)
 
-void usb_match_init(struct usb_match *match)
+void usb_match_init(const struct programmer_cfg *cfg, struct usb_match *match)
 {
-	USB_MATCH_VALUE_INIT(vid);
-	USB_MATCH_VALUE_INIT(pid);
-	USB_MATCH_VALUE_INIT(bus);
-	USB_MATCH_VALUE_INIT(address);
-	USB_MATCH_VALUE_INIT(config);
-	USB_MATCH_VALUE_INIT(interface);
-	USB_MATCH_VALUE_INIT(altsetting);
-	USB_MATCH_VALUE_INIT(class);
-	USB_MATCH_VALUE_INIT(subclass);
-	USB_MATCH_VALUE_INIT(protocol);
+	USB_MATCH_VALUE_INIT(cfg, vid);
+	USB_MATCH_VALUE_INIT(cfg, pid);
+	USB_MATCH_VALUE_INIT(cfg, bus);
+	USB_MATCH_VALUE_INIT(cfg, address);
+	USB_MATCH_VALUE_INIT(cfg, config);
+	USB_MATCH_VALUE_INIT(cfg, interface);
+	USB_MATCH_VALUE_INIT(cfg, altsetting);
+	USB_MATCH_VALUE_INIT(cfg, class);
+	USB_MATCH_VALUE_INIT(cfg, subclass);
+	USB_MATCH_VALUE_INIT(cfg, protocol);
 }
 
 void usb_match_value_default(struct usb_match_value *value,
