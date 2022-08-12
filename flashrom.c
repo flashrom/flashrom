@@ -1345,18 +1345,25 @@ static int verify_by_layout(
 	return 0;
 }
 
+static bool is_internal_programmer()
+{
+#if CONFIG_INTERNAL == 1
+	return programmer == &programmer_internal;
+#else
+	return false;
+#endif
+}
+
 static void nonfatal_help_message(void)
 {
 	msg_gerr("Good, writing to the flash chip apparently didn't do anything.\n");
-#if CONFIG_INTERNAL == 1
-	if (programmer == &programmer_internal)
+	if (is_internal_programmer())
 		msg_gerr("This means we have to add special support for your board, programmer or flash\n"
 			 "chip. Please report this to the mailing list at flashrom@flashrom.org or on\n"
 			 "IRC (see https://www.flashrom.org/Contact for details), thanks!\n"
 			 "-------------------------------------------------------------------------------\n"
 			 "You may now reboot or simply leave the machine running.\n");
 	else
-#endif
 		msg_gerr("Please check the connections (especially those to write protection pins) between\n"
 			 "the programmer and the flash chip. If you think the error is caused by flashrom\n"
 			 "please report this to the mailing list at flashrom@flashrom.org or on IRC (see\n"
@@ -1366,14 +1373,12 @@ static void nonfatal_help_message(void)
 void emergency_help_message(void)
 {
 	msg_gerr("Your flash chip is in an unknown state.\n");
-#if CONFIG_INTERNAL == 1
-	if (programmer == &programmer_internal)
+	if (is_internal_programmer())
 		msg_gerr("Get help on IRC (see https://www.flashrom.org/Contact) or mail\n"
 			"flashrom@flashrom.org with the subject \"FAILED: <your board name>\"!"
 			"-------------------------------------------------------------------------------\n"
 			"DO NOT REBOOT OR POWEROFF!\n");
 	else
-#endif
 		msg_gerr("Please report this to the mailing list at flashrom@flashrom.org or\n"
 			 "on IRC (see https://www.flashrom.org/Contact for details), thanks!\n");
 }
@@ -1709,7 +1714,7 @@ int flashrom_image_write(struct flashctx *const flashctx, void *const buffer, co
 	}
 
 #if CONFIG_INTERNAL == 1
-	if (programmer == &programmer_internal && cb_check_image(newcontents, flash_size) < 0) {
+	if (is_internal_programmer() && cb_check_image(newcontents, flash_size) < 0) {
 		if (flashctx->flags.force_boardmismatch) {
 			msg_pinfo("Proceeding anyway because user forced us to.\n");
 		} else {
