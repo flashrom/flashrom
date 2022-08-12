@@ -80,35 +80,6 @@ void fallback_chip_readn(const struct flashctx *flash, uint8_t *buf,
 	return;
 }
 
-int register_par_master(const struct par_master *mst,
-			    const enum chipbustype buses,
-			    void *data)
-{
-	struct registered_master rmst = {0};
-
-	if (mst->shutdown) {
-		if (register_shutdown(mst->shutdown, data)) {
-			mst->shutdown(data); /* cleanup */
-			return 1;
-		}
-	}
-
-	if (!mst->chip_writeb || !mst->chip_writew || !mst->chip_writel ||
-	    !mst->chip_writen || !mst->chip_readb || !mst->chip_readw ||
-	    !mst->chip_readl || !mst->chip_readn) {
-		msg_perr("%s called with incomplete master definition. "
-			 "Please report a bug at flashrom@flashrom.org\n",
-			 __func__);
-		return ERROR_FLASHROM_BUG;
-	}
-
-	rmst.buses_supported = buses;
-	rmst.par = *mst;
-	if (data)
-		rmst.par.data = data;
-	return register_master(&rmst);
-}
-
 /* The limit of 4 is totally arbitrary. */
 #define MASTERS_MAX 4
 struct registered_master registered_masters[MASTERS_MAX];

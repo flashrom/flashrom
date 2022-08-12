@@ -97,6 +97,7 @@ srcs = files(
   'layout.c',
   'libflashrom.c',
   'opaque.c',
+  'parallel.c',
   'print.c',
   'programmer.c',
   'programmer_table.c',
