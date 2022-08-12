@@ -38,7 +38,6 @@ const char flashrom_version[] = FLASHROM_VERSION;
 const char *chip_to_probe = NULL;
 
 static const struct programmer_entry *programmer = NULL;
-static const char *programmer_param = NULL;
 
 /*
  * Programmers supporting multiple buses can have differing size limits on
@@ -126,10 +125,28 @@ static int deregister_chip_restore(struct flashctx *flash)
 	return rc;
 }
 
+static int get_param_residue(const char *prog_params, int ret)
+{
+	if (prog_params && strlen(prog_params)) {
+		if (ret != 0) {
+			/* It is quite possible that any unhandled programmer parameter would have been valid,
+			 * but an error in actual programmer init happened before the parameter was evaluated.
+			 */
+			msg_pwarn("Unhandled programmer parameters (possibly due to another failure): %s\n", prog_params);
+		} else {
+			/* Actual programmer init was successful, but the user specified an invalid or unusable
+			 * (for the current programmer configuration) parameter.
+			 */
+			msg_perr("Unhandled programmer parameters: %s\n", prog_params);
+			msg_perr("Aborting.\n");
+			ret = ERROR_FATAL;
+		}
+	}
+	return ret;
+}
+
 int programmer_init(const struct programmer_entry *prog, const char *param)
 {
-	int ret;
-
 	if (prog == NULL) {
 		msg_perr("Invalid programmer specified!\n");
 		return -1;
@@ -150,25 +167,11 @@ int programmer_init(const struct programmer_entry *prog, const char *param)
 	/* Default to allowing writes. Broken programmers set this to 0. */
 	programmer_may_write = true;
 
-	programmer_param = param;
-	msg_pdbg("Initializing %s programmer\n", programmer->name);
-	ret = programmer->init(NULL);
-	if (programmer_param && strlen(programmer_param)) {
-		if (ret != 0) {
-			/* It is quite possible that any unhandled programmer parameter would have been valid,
-			 * but an error in actual programmer init happened before the parameter was evaluated.
-			 */
-			msg_pwarn("Unhandled programmer parameters (possibly due to another failure): %s\n",
-				  programmer_param);
-		} else {
-			/* Actual programmer init was successful, but the user specified an invalid or unusable
-			 * (for the current programmer configuration) parameter.
-			 */
-			msg_perr("Unhandled programmer parameters: %s\n", programmer_param);
-			msg_perr("Aborting.\n");
-			ret = ERROR_FATAL;
-		}
-	}
+	msg_pdbg("Initializing %s programmer\n", prog->name);
+	const struct programmer_cfg cfg = { .params = strdup(param) };
+	int ret = prog->init(&cfg);
+	ret = get_param_residue(cfg.params, ret);
+	free(cfg.params);
 	return ret;
 }
 
@@ -188,7 +191,6 @@ int programmer_shutdown(void)
 		ret |= shutdown_fn[i].func(shutdown_fn[i].data);
 	}
 
-	programmer_param = NULL;
 	registered_master_count = 0;
 
 	return ret;
@@ -227,7 +229,7 @@ int read_memmapped(struct flashctx *flash, uint8_t *buf, unsigned int start,
  * needle and remove everything from the first occurrence of needle to the next
  * delimiter from haystack.
  */
-static char *extract_param(const char *const *haystack, const char *needle, const char *delim)
+static char *extract_param(char *const *haystack, const char *needle, const char *delim)
 {
 	char *param_pos, *opt_pos, *rest;
 	char *opt = NULL;
@@ -285,7 +287,7 @@ static char *extract_param(const char *const *haystack, const char *needle, cons
 
 char *extract_programmer_param_str(const struct programmer_cfg *cfg, const char *param_name)
 {
-	return extract_param(&programmer_param, param_name, ",");
+	return extract_param(&cfg->params, param_name, ",");
 }
 
 static int check_block_eraser(const struct flashctx *flash, int k, int log)
