@@ -948,7 +948,8 @@ static const struct opaque_master opaque_master_dummyflasher = {
 	.erase	= dummy_opaque_erase,
 };
 
-static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_supported)
+static int init_data(const struct programmer_cfg *cfg,
+		struct emu_data *data, enum chipbustype *dummy_buses_supported)
 {
 	char *bustext = NULL;
 	char *tmp = NULL;
@@ -1354,7 +1355,7 @@ static int dummy_init(const struct programmer_cfg *cfg)
 	msg_pspew("%s\n", __func__);
 
 	enum chipbustype dummy_buses_supported;
-	if (init_data(data, &dummy_buses_supported)) {
+	if (init_data(cfg, data, &dummy_buses_supported)) {
 		free(data);
 		return 1;
 	}
