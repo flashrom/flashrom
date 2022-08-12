@@ -372,7 +372,7 @@ int amd_imc_shutdown(struct pci_dev *dev);
 void enter_conf_mode_ite(uint16_t port);
 void exit_conf_mode_ite(uint16_t port);
 void probe_superio_ite(void);
-int init_superio_ite(void);
+int init_superio_ite(const struct programmer_cfg *cfg);
 
 #if CONFIG_LINUX_MTD == 1
 /* trivial wrapper to avoid cluttering internal_init() with #if */

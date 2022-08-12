@@ -321,7 +321,7 @@ static const struct spi_master spi_master_it87xx = {
 	.probe_opcode	= default_spi_probe_opcode,
 };
 
-static uint16_t it87spi_probe(uint16_t port)
+static uint16_t it87spi_probe(const struct programmer_cfg *cfg, uint16_t port)
 {
 	uint8_t tmp = 0;
 	uint16_t flashport = 0;
@@ -440,7 +440,7 @@ static uint16_t it87spi_probe(uint16_t port)
 	return register_spi_master(&spi_master_it87xx, data);
 }
 
-int init_superio_ite(void)
+int init_superio_ite(const struct programmer_cfg *cfg)
 {
 	int i;
 	int ret = 0;
@@ -458,7 +458,7 @@ int init_superio_ite(void)
 		case 0x8718:
 		case 0x8720:
 		case 0x8728:
-			ret |= it87spi_probe(superios[i].port);
+			ret |= it87spi_probe(cfg, superios[i].port);
 			break;
 		default:
 			msg_pdbg2("Super I/O ID 0x%04hx is not on the list of flash-capable controllers.\n",

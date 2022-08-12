@@ -293,7 +293,7 @@ static int internal_init(const struct programmer_cfg *cfg)
 #if defined(__i386__) || defined(__x86_64__)
 	/* Probe unconditionally for ITE Super I/O chips. This enables LPC->SPI translation on IT87* and
 	 * parallel writes on IT8705F. Also, this handles the manual chip select for Gigabyte's DualBIOS. */
-	init_superio_ite();
+	init_superio_ite(cfg);
 
 	if (board_flash_enable(board_vendor, board_model, cb_vendor, cb_model)) {
 		msg_perr("Aborting to be safe.\n");
