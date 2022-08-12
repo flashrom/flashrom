@@ -1429,7 +1429,7 @@ static int configure_protocol(struct raiden_debug_spi_data *ctx_data)
 	return 0;
 }
 
-static int get_ap_request_type(void)
+static int get_ap_request_type(const struct programmer_cfg *cfg)
 {
 	int ap_request = RAIDEN_DEBUG_SPI_REQ_ENABLE_AP;
 	char *custom_rst_str = extract_programmer_param_str(NULL, "custom_rst");
@@ -1448,7 +1448,7 @@ static int get_ap_request_type(void)
 	return ap_request;
 }
 
-static int get_target(void)
+static int get_target(const struct programmer_cfg *cfg)
 {
 	/**
 	 * REQ_ENABLE doesn't specify a target bus, and will be rejected
@@ -1459,7 +1459,7 @@ static int get_target(void)
 	char *target_str = extract_programmer_param_str(NULL, "target");
 	if (target_str) {
 		if (!strcasecmp(target_str, "ap"))
-			request_enable = get_ap_request_type();
+			request_enable = get_ap_request_type(cfg);
 		else if (!strcasecmp(target_str, "ec"))
 			request_enable = RAIDEN_DEBUG_SPI_REQ_ENABLE_EC;
 		else {
@@ -1491,7 +1491,7 @@ static int raiden_debug_spi_init(const struct programmer_cfg *cfg)
 	int found = 0;
 	int ret;
 
-	int request_enable = get_target();
+	int request_enable = get_target(cfg);
 	if (request_enable < 0) {
 		free(serial);
 		return 1;
