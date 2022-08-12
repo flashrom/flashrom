@@ -48,6 +48,10 @@ define find_dependency
 $(call debug_shell, $(if $(PKG_CONFIG_LIBDIR),PKG_CONFIG_LIBDIR=$(PKG_CONFIG_LIBDIR),) $(PKG_CONFIG) --exists $1 && echo yes || echo no)
 endef
 
+define dependency_version
+$(call debug_shell, $(if $(PKG_CONFIG_LIBDIR),PKG_CONFIG_LIBDIR=$(PKG_CONFIG_LIBDIR),) $(PKG_CONFIG) --modversion $1 2>/dev/null)
+endef
+
 define dependency_cflags
 $(call debug_shell, $(if $(PKG_CONFIG_LIBDIR),PKG_CONFIG_LIBDIR=$(PKG_CONFIG_LIBDIR),) $(PKG_CONFIG) --cflags $1 2>/dev/null)
 endef

@@ -202,6 +202,7 @@ endif
 CC_WORKING := $(call c_compile_test, Makefile.d/cc_test.c)
 
 # Configs for dependencies. Can be overwritten by commandline
+CONFIG_LIBFTDI1_VERSION    := $(call dependency_version, libftdi1)
 CONFIG_LIBFTDI1_CFLAGS     := $(call dependency_cflags, libftdi1)
 CONFIG_LIBFTDI1_LDFLAGS    := $(call dependency_ldflags, libftdi1)
 
@@ -219,12 +220,15 @@ CONFIG_NI845X_LIBRARY_PATH := '${PROGRAMFILES}\National Instruments\NI-845x\MS V
 CONFIG_LIB_NI845X_CFLAGS   := -I$(CONFIG_NI845X_LIBRARY_PATH) $(if NI854_X86_LIBRARY_PATH, -I${NI854_X86_LIBRARY_PATH})
 CONFIG_LIB_NI845X_LDFLAGS  := -L$(CONFIG_NI845X_LIBRARY_PATH) $(if NI854_X86_LIBRARY_PATH, -L${NI854_X86_LIBRARY_PATH}) -lni845x
 
+CONFIG_LIBJAYLINK_VERSION  := $(call dependency_version, libjaylink)
 CONFIG_LIBJAYLINK_CFLAGS   := $(call dependency_cflags, libjaylink)
 CONFIG_LIBJAYLINK_LDFLAGS  := $(call dependency_ldflags, libjaylink)
 
+CONFIG_LIBUSB1_VERSION     := $(call dependency_version, libusb-1.0)
 CONFIG_LIBUSB1_CFLAGS      := $(call dependency_cflags, libusb-1.0)
 CONFIG_LIBUSB1_LDFLAGS     := $(call dependency_ldflags, libusb-1.0)
 
+CONFIG_LIBPCI_VERSION      := $(call dependency_version, libpci)
 CONFIG_LIBPCI_CFLAGS       := $(call dependency_cflags, libpci)
 CONFIG_LIBPCI_LDFLAGS      := $(call dependency_ldflags, libpci)
 
@@ -906,18 +910,18 @@ config:
 		echo "  This might work but usually does not, please beware."; fi
 	@echo "Target endian: $(ENDIAN)"
 	@if [ $(ENDIAN) = unknown ]; then echo Aborting.; exit 1; fi
-	@echo Dependency libpci found: $(HAS_LIBPCI)
+	@echo Dependency libpci found: $(HAS_LIBPCI) $(CONFIG_LIBPCI_VERSION)
 	@if [ $(HAS_LIBPCI) = yes ]; then			\
 		echo "  Checking for old \"pci_get_dev()\": $(HAS_PCI_OLD_GET_DEV)";\
 		echo "  CFLAGS: $(CONFIG_LIBPCI_CFLAGS)";	\
 		echo "  LDFLAGS: $(CONFIG_LIBPCI_LDFLAGS)";	\
 	fi
-	@echo Dependency libusb1 found: $(HAS_LIBUSB1)
+	@echo Dependency libusb1 found: $(HAS_LIBUSB1) $(CONFIG_LIBUSB1_VERSION)
 	@if [ $(HAS_LIBUSB1) = yes ]; then			\
 		echo "  CFLAGS: $(CONFIG_LIBUSB1_CFLAGS)";	\
 		echo "  LDFLAGS: $(CONFIG_LIBUSB1_LDFLAGS)";	\
 	fi
-	@echo Dependency libjaylink found: $(HAS_LIBJAYLINK)
+	@echo Dependency libjaylink found: $(HAS_LIBJAYLINK) $(CONFIG_LIBJAYLINK_VERSION)
 	@if [ $(HAS_LIBJAYLINK) = yes ]; then			\
 		echo "  CFLAGS: $(CONFIG_LIBJAYLINK_CFLAGS)";	\
 		echo "  LDFLAGS: $(CONFIG_LIBJAYLINK_LDFLAGS)";	\
@@ -927,7 +931,7 @@ config:
 		echo "  CFLAGS: $(CONFIG_LIB_NI845X_CFLAGS)";	\
 		echo "  LDFLAGS: $(CONFIG_LIB_NI845X_LDFLAGS)";	\
 	fi
-	@echo Dependency libftdi1 found: $(HAS_LIBFTDI1)
+	@echo Dependency libftdi1 found: $(HAS_LIBFTDI1) $(CONFIG_LIBFTDI1_VERSION)
 	@if [ $(HAS_LIBFTDI1) = yes ]; then 			\
 		echo "  Checking for \"TYPE_232H\" in \"enum ftdi_chip_type\": $(HAS_FT232H)"; \
 		echo "  CFLAGS: $(CONFIG_LIBFTDI1_CFLAGS)";	\
