@@ -156,15 +156,15 @@ static int nicintel_ee_probe_82580(struct flashctx *flash)
 }
 
 #define MAX_ATTEMPTS 10000000
-static int nicintel_ee_read_word(unsigned int addr, uint16_t *data)
+static int nicintel_ee_read_word(uint8_t *eebar, unsigned int addr, uint16_t *data)
 {
 	uint32_t tmp = BIT(EERD_START) | (addr << EERD_ADDR);
-	pci_mmio_writel(tmp, nicintel_eebar + EERD);
+	pci_mmio_writel(tmp, eebar + EERD);
 
 	/* Poll done flag. 10.000.000 cycles seem to be enough. */
 	uint32_t i;
 	for (i = 0; i < MAX_ATTEMPTS; i++) {
-		tmp = pci_mmio_readl(nicintel_eebar + EERD);
+		tmp = pci_mmio_readl(eebar + EERD);
 		if (tmp & BIT(EERD_DONE)) {
 			*data = (tmp >> EERD_DATA) & 0xffff;
 			return 0;
@@ -181,7 +181,7 @@ static int nicintel_ee_read(struct flashctx *flash, uint8_t *buf, unsigned int a
 	/* The NIC interface always reads 16 b words so we need to convert the address and handle odd address
 	 * explicitly at the start (and also at the end in the loop below). */
 	if (addr & 1) {
-		if (nicintel_ee_read_word(addr / 2, &data))
+		if (nicintel_ee_read_word(nicintel_eebar, addr / 2, &data))
 			return -1;
 		*buf++ = data & 0xff;
 		addr++;
@@ -189,7 +189,7 @@ static int nicintel_ee_read(struct flashctx *flash, uint8_t *buf, unsigned int a
 	}
 
 	while (len > 0) {
-		if (nicintel_ee_read_word(addr / 2, &data))
+		if (nicintel_ee_read_word(nicintel_eebar, addr / 2, &data))
 			return -1;
 		*buf++ = data & 0xff;
 		addr++;
@@ -204,19 +204,19 @@ static int nicintel_ee_read(struct flashctx *flash, uint8_t *buf, unsigned int a
 	return 0;
 }
 
-static int nicintel_ee_write_word_i210(unsigned int addr, uint16_t data)
+static int nicintel_ee_write_word_i210(uint8_t *eebar, unsigned int addr, uint16_t data)
 {
 	uint32_t eewr;
 
 	eewr = addr << EEWR_ADDR;
 	eewr |= data << EEWR_DATA;
 	eewr |= BIT(EEWR_CMDV);
-	pci_mmio_writel(eewr, nicintel_eebar + EEWR);
+	pci_mmio_writel(eewr, eebar + EEWR);
 
 	programmer_delay(5);
 	int i;
 	for (i = 0; i < MAX_ATTEMPTS; i++)
-		if (pci_mmio_readl(nicintel_eebar + EEWR) & BIT(EEWR_DONE))
+		if (pci_mmio_readl(eebar + EEWR) & BIT(EEWR_DONE))
 			return 0;
 	return -1;
 }
@@ -230,7 +230,7 @@ static int nicintel_ee_write_i210(struct flashctx *flash, const uint8_t *buf,
 	if (addr & 1) {
 		uint16_t data;
 
-		if (nicintel_ee_read_word(addr / 2, &data)) {
+		if (nicintel_ee_read_word(nicintel_eebar, addr / 2, &data)) {
 			msg_perr("Timeout reading heading byte\n");
 			return -1;
 		}
@@ -238,7 +238,7 @@ static int nicintel_ee_write_i210(struct flashctx *flash, const uint8_t *buf,
 		data &= 0xff;
 		data |= (buf ? (buf[0]) : 0xff) << 8;
 
-		if (nicintel_ee_write_word_i210(addr / 2, data)) {
+		if (nicintel_ee_write_word_i210(nicintel_eebar, addr / 2, data)) {
 			msg_perr("Timeout writing heading word\n");
 			return -1;
 		}
@@ -253,7 +253,7 @@ static int nicintel_ee_write_i210(struct flashctx *flash, const uint8_t *buf,
 		uint16_t data;
 
 		if (len == 1) {
-			if (nicintel_ee_read_word(addr / 2, &data)) {
+			if (nicintel_ee_read_word(nicintel_eebar, addr / 2, &data)) {
 				msg_perr("Timeout reading tail byte\n");
 				return -1;
 			}
@@ -267,7 +267,7 @@ static int nicintel_ee_write_i210(struct flashctx *flash, const uint8_t *buf,
 				data = 0xffff;
 		}
 
-		if (nicintel_ee_write_word_i210(addr / 2, data)) {
+		if (nicintel_ee_write_word_i210(nicintel_eebar, addr / 2, data)) {
 			msg_perr("Timeout writing Shadow RAM\n");
 			return -1;
 		}
@@ -289,35 +289,35 @@ static int nicintel_ee_erase_i210(struct flashctx *flash, unsigned int addr, uns
 	return nicintel_ee_write_i210(flash, NULL, addr, len);
 }
 
-static int nicintel_ee_bitset(int reg, int bit, bool val)
+static int nicintel_ee_bitset(uint8_t *eebar, int reg, int bit, bool val)
 {
 	uint32_t tmp;
 
-	tmp = pci_mmio_readl(nicintel_eebar + reg);
+	tmp = pci_mmio_readl(eebar + reg);
 	if (val)
 		tmp |= BIT(bit);
 	else
 		tmp &= ~BIT(bit);
-	pci_mmio_writel(tmp, nicintel_eebar + reg);
+	pci_mmio_writel(tmp, eebar + reg);
 
 	return -1;
 }
 
 /* Shifts one byte out while receiving another one by bitbanging (denoted "direct access" in the datasheet). */
-static int nicintel_ee_bitbang(uint8_t mosi, uint8_t *miso)
+static int nicintel_ee_bitbang(uint8_t *eebar, uint8_t mosi, uint8_t *miso)
 {
 	uint8_t out = 0x0;
 
 	int i;
 	for (i = 7; i >= 0; i--) {
-		nicintel_ee_bitset(EEC, EE_SI, mosi & BIT(i));
-		nicintel_ee_bitset(EEC, EE_SCK, 1);
+		nicintel_ee_bitset(eebar, EEC, EE_SI, mosi & BIT(i));
+		nicintel_ee_bitset(eebar, EEC, EE_SCK, 1);
 		if (miso != NULL) {
-			uint32_t tmp = pci_mmio_readl(nicintel_eebar + EEC);
+			uint32_t tmp = pci_mmio_readl(eebar + EEC);
 			if (tmp & BIT(EE_SO))
 				out |= BIT(i);
 		}
-		nicintel_ee_bitset(EEC, EE_SCK, 0);
+		nicintel_ee_bitset(eebar, EEC, EE_SCK, 0);
 	}
 
 	if (miso != NULL)
@@ -327,17 +327,17 @@ static int nicintel_ee_bitbang(uint8_t mosi, uint8_t *miso)
 }
 
 /* Polls the WIP bit of the status register of the attached EEPROM via bitbanging. */
-static int nicintel_ee_ready(void)
+static int nicintel_ee_ready(uint8_t *eebar)
 {
 	unsigned int i;
 	for (i = 0; i < 1000; i++) {
-		nicintel_ee_bitset(EEC, EE_CS, 0);
+		nicintel_ee_bitset(eebar, EEC, EE_CS, 0);
 
-		nicintel_ee_bitbang(JEDEC_RDSR, NULL);
+		nicintel_ee_bitbang(eebar, JEDEC_RDSR, NULL);
 		uint8_t rdsr;
-		nicintel_ee_bitbang(0x00, &rdsr);
+		nicintel_ee_bitbang(eebar, 0x00, &rdsr);
 
-		nicintel_ee_bitset(EEC, EE_CS, 1);
+		nicintel_ee_bitset(eebar, EEC, EE_CS, 1);
 		programmer_delay(1);
 		if (!(rdsr & SPI_SR_WIP)) {
 			return 0;
@@ -347,57 +347,59 @@ static int nicintel_ee_ready(void)
 }
 
 /* Requests direct access to the SPI pins. */
-static int nicintel_ee_req(void)
+static int nicintel_ee_req(uint8_t *eebar)
 {
 	uint32_t tmp;
-	nicintel_ee_bitset(EEC, EE_REQ, 1);
+	nicintel_ee_bitset(eebar, EEC, EE_REQ, 1);
 
-	tmp = pci_mmio_readl(nicintel_eebar + EEC);
+	tmp = pci_mmio_readl(eebar + EEC);
 	if (!(tmp & BIT(EE_GNT))) {
 		msg_perr("Enabling eeprom access failed.\n");
 		return 1;
 	}
 
-	nicintel_ee_bitset(EEC, EE_SCK, 0);
+	nicintel_ee_bitset(eebar, EEC, EE_SCK, 0);
 	return 0;
 }
 
 static int nicintel_ee_write_82580(struct flashctx *flash, const uint8_t *buf, unsigned int addr, unsigned int len)
 {
-	if (nicintel_ee_req())
+	uint8_t *eebar = nicintel_eebar;
+
+	if (nicintel_ee_req(eebar))
 		return -1;
 
 	int ret = -1;
-	if (nicintel_ee_ready())
+	if (nicintel_ee_ready(eebar))
 		goto out;
 
 	while (len > 0) {
 		/* WREN */
-		nicintel_ee_bitset(EEC, EE_CS, 0);
-		nicintel_ee_bitbang(JEDEC_WREN, NULL);
-		nicintel_ee_bitset(EEC, EE_CS, 1);
+		nicintel_ee_bitset(eebar, EEC, EE_CS, 0);
+		nicintel_ee_bitbang(eebar, JEDEC_WREN, NULL);
+		nicintel_ee_bitset(eebar, EEC, EE_CS, 1);
 		programmer_delay(1);
 
 		/* data */
-		nicintel_ee_bitset(EEC, EE_CS, 0);
-		nicintel_ee_bitbang(JEDEC_BYTE_PROGRAM, NULL);
-		nicintel_ee_bitbang((addr >> 8) & 0xff, NULL);
-		nicintel_ee_bitbang(addr & 0xff, NULL);
+		nicintel_ee_bitset(eebar, EEC, EE_CS, 0);
+		nicintel_ee_bitbang(eebar, JEDEC_BYTE_PROGRAM, NULL);
+		nicintel_ee_bitbang(eebar, (addr >> 8) & 0xff, NULL);
+		nicintel_ee_bitbang(eebar, addr & 0xff, NULL);
 		while (len > 0) {
-			nicintel_ee_bitbang((buf) ? *buf++ : 0xff, NULL);
+			nicintel_ee_bitbang(eebar, (buf) ? *buf++ : 0xff, NULL);
 			len--;
 			addr++;
 			if (!(addr & EE_PAGE_MASK))
 				break;
 		}
-		nicintel_ee_bitset(EEC, EE_CS, 1);
+		nicintel_ee_bitset(eebar, EEC, EE_CS, 1);
 		programmer_delay(1);
-		if (nicintel_ee_ready())
+		if (nicintel_ee_ready(eebar))
 			goto out;
 	}
 	ret = 0;
 out:
-	nicintel_ee_bitset(EEC, EE_REQ, 0); /* Give up direct access. */
+	nicintel_ee_bitset(eebar, EEC, EE_REQ, 0); /* Give up direct access. */
 	return ret;
 }
 
@@ -435,23 +437,24 @@ out:
 static int nicintel_ee_shutdown_82580(void *opaque_data)
 {
 	struct nicintel_eeprom_data *data = opaque_data;
+	uint8_t *eebar = nicintel_eebar;
 	int ret = 0;
 
 	if (data->nicintel_pci->device_id != UNPROG_DEVICE) {
 		uint32_t old_eec = data->eec;
 		/* Request bitbanging and unselect the chip first to be safe. */
-		if (nicintel_ee_req() || nicintel_ee_bitset(EEC, EE_CS, 1)) {
+		if (nicintel_ee_req(eebar) || nicintel_ee_bitset(eebar, EEC, EE_CS, 1)) {
 			ret = -1;
 			goto out;
 		}
 
 		/* Try to restore individual bits we care about. */
-		ret = nicintel_ee_bitset(EEC, EE_SCK, old_eec & BIT(EE_SCK));
-		ret |= nicintel_ee_bitset(EEC, EE_SI, old_eec & BIT(EE_SI));
-		ret |= nicintel_ee_bitset(EEC, EE_CS, old_eec & BIT(EE_CS));
+		ret = nicintel_ee_bitset(eebar, EEC, EE_SCK, old_eec & BIT(EE_SCK));
+		ret |= nicintel_ee_bitset(eebar, EEC, EE_SI, old_eec & BIT(EE_SI));
+		ret |= nicintel_ee_bitset(eebar, EEC, EE_CS, old_eec & BIT(EE_CS));
 		/* REQ will be cleared by hardware anyway after 2 seconds of inactivity
 		 * on the SPI pins (3.3.2.1). */
-		ret |= nicintel_ee_bitset(EEC, EE_REQ, old_eec & BIT(EE_REQ));
+		ret |= nicintel_ee_bitset(eebar, EEC, EE_REQ, old_eec & BIT(EE_REQ));
 	}
 
 out:
