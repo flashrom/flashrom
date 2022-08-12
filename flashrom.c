@@ -874,50 +874,6 @@ notfound:
 	return chip - flashchips;
 }
 
-int read_buf_from_file(unsigned char *buf, unsigned long size,
-		       const char *filename)
-{
-#ifdef __LIBPAYLOAD__
-	msg_gerr("Error: No file I/O support in libpayload\n");
-	return 1;
-#else
-	int ret = 0;
-
-	FILE *image;
-	if (!strcmp(filename, "-"))
-		image = fdopen(fileno(stdin), "rb");
-	else
-		image = fopen(filename, "rb");
-	if (image == NULL) {
-		msg_gerr("Error: opening file \"%s\" failed: %s\n", filename, strerror(errno));
-		return 1;
-	}
-
-	struct stat image_stat;
-	if (fstat(fileno(image), &image_stat) != 0) {
-		msg_gerr("Error: getting metadata of file \"%s\" failed: %s\n", filename, strerror(errno));
-		ret = 1;
-		goto out;
-	}
-	if ((image_stat.st_size != (intmax_t)size) && strcmp(filename, "-")) {
-		msg_gerr("Error: Image size (%jd B) doesn't match the expected size (%lu B)!\n",
-			 (intmax_t)image_stat.st_size, size);
-		ret = 1;
-		goto out;
-	}
-
-	unsigned long numbytes = fread(buf, 1, size, image);
-	if (numbytes != size) {
-		msg_gerr("Error: Failed to read complete file. Got %ld bytes, "
-			 "wanted %ld!\n", numbytes, size);
-		ret = 1;
-	}
-out:
-	(void)fclose(image);
-	return ret;
-#endif
-}
-
 /**
  * @brief Reads content to buffer from one or more files.
  *

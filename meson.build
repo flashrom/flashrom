@@ -91,6 +91,7 @@ srcs = files(
   'flashrom.c',
   'fmap.c',
   'helpers.c',
+  'helpers_fileio.c',
   'ich_descriptors.c',
   'jedec.c',
   'layout.c',
