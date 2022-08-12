@@ -957,7 +957,7 @@ static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_suppor
 	char *status = NULL;
 	int size = -1;  /* size for VARIABLE_SIZE chip device */
 
-	bustext = extract_programmer_param_str("bus");
+	bustext = extract_programmer_param_str(NULL, "bus");
 	msg_pdbg("Requested buses are: %s\n", bustext ? bustext : "default");
 	if (!bustext)
 		bustext = strdup("parallel+lpc+fwh+spi+prog");
@@ -989,7 +989,7 @@ static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_suppor
 		msg_pdbg("Support for all flash bus types disabled.\n");
 	free(bustext);
 
-	tmp = extract_programmer_param_str("spi_write_256_chunksize");
+	tmp = extract_programmer_param_str(NULL, "spi_write_256_chunksize");
 	if (tmp) {
 		data->spi_write_256_chunksize = strtoul(tmp, &endptr, 0);
 		if (*endptr != '\0' || data->spi_write_256_chunksize < 1) {
@@ -1000,7 +1000,7 @@ static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_suppor
 	}
 	free(tmp);
 
-	tmp = extract_programmer_param_str("spi_blacklist");
+	tmp = extract_programmer_param_str(NULL, "spi_blacklist");
 	if (tmp) {
 		i = strlen(tmp);
 		if (!strncmp(tmp, "0x", 2)) {
@@ -1036,7 +1036,7 @@ static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_suppor
 	}
 	free(tmp);
 
-	tmp = extract_programmer_param_str("spi_ignorelist");
+	tmp = extract_programmer_param_str(NULL, "spi_ignorelist");
 	if (tmp) {
 		i = strlen(tmp);
 		if (!strncmp(tmp, "0x", 2)) {
@@ -1073,7 +1073,7 @@ static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_suppor
 	free(tmp);
 
 	/* frequency to emulate in Hz (default), KHz, or MHz */
-	tmp = extract_programmer_param_str("freq");
+	tmp = extract_programmer_param_str(NULL, "freq");
 	if (tmp) {
 		unsigned long int freq;
 		char *units = tmp;
@@ -1123,7 +1123,7 @@ static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_suppor
 	}
 	free(tmp);
 
-	tmp = extract_programmer_param_str("size");
+	tmp = extract_programmer_param_str(NULL, "size");
 	if (tmp) {
 		size = strtol(tmp, NULL, 10);
 		if (size <= 0 || (size % 1024 != 0)) {
@@ -1135,7 +1135,7 @@ static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_suppor
 		free(tmp);
 	}
 
-	tmp = extract_programmer_param_str("hwwp");
+	tmp = extract_programmer_param_str(NULL, "hwwp");
 	if (tmp) {
 		if (!strcmp(tmp, "yes")) {
 			msg_pdbg("Emulated chip will have hardware WP enabled\n");
@@ -1150,7 +1150,7 @@ static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_suppor
 		free(tmp);
 	}
 
-	tmp = extract_programmer_param_str("emulate");
+	tmp = extract_programmer_param_str(NULL, "emulate");
 	if (!tmp) {
 		if (size != -1) {
 			msg_perr("%s: size parameter is only valid for VARIABLE_SIZE chip.\n", __func__);
@@ -1274,7 +1274,7 @@ static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_suppor
 	free(tmp);
 
 	/* Should emulated flash erase to zero (yes/no)? */
-	tmp = extract_programmer_param_str("erase_to_zero");
+	tmp = extract_programmer_param_str(NULL, "erase_to_zero");
 	if (tmp) {
 		if (data->emu_chip != EMULATE_VARIABLE_SIZE) {
 			msg_perr("%s: erase_to_zero parameter is not valid for real chip.\n", __func__);
@@ -1294,7 +1294,7 @@ static int init_data(struct emu_data *data, enum chipbustype *dummy_buses_suppor
 	}
 	free(tmp);
 
-	status = extract_programmer_param_str("spi_status");
+	status = extract_programmer_param_str(NULL, "spi_status");
 	if (status) {
 		unsigned int emu_status;
 
@@ -1370,7 +1370,7 @@ static int dummy_init(void)
 	memset(data->flashchip_contents, data->erase_to_zero ? 0x00 : 0xff, data->emu_chip_size);
 
 	/* Will be freed by shutdown function if necessary. */
-	data->emu_persistent_image = extract_programmer_param_str("image");
+	data->emu_persistent_image = extract_programmer_param_str(NULL, "image");
 	if (!data->emu_persistent_image) {
 		/* Nothing else to do. */
 		goto dummy_init_out;

@@ -159,7 +159,7 @@ static int mstarddc_spi_init(void)
 	struct mstarddc_spi_data *mstarddc_data;
 
 	// Get device, address from command-line
-	char *i2c_device = extract_programmer_param_str("dev");
+	char *i2c_device = extract_programmer_param_str(NULL, "dev");
 	if (i2c_device != NULL && strlen(i2c_device) > 0) {
 		char *i2c_address = strchr(i2c_device, ':');
 		if (i2c_address != NULL) {
@@ -182,7 +182,7 @@ static int mstarddc_spi_init(void)
 	msg_pinfo("Info: Will try to use device %s and address 0x%02x.\n", i2c_device, mstarddc_addr);
 
 	// Get noreset=1 option from command-line
-	char *noreset = extract_programmer_param_str("noreset");
+	char *noreset = extract_programmer_param_str(NULL, "noreset");
 	if (noreset != NULL && noreset[0] == '1')
 		mstarddc_doreset = 0;
 	free(noreset);

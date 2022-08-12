@@ -66,6 +66,10 @@ static int may_register_shutdown = 0;
 /* Did we change something or was every erase/write skipped (if any)? */
 static bool all_skipped = true;
 
+struct programmer_cfg {
+	char *params;
+};
+
 /* Register a function to be executed on programmer shutdown.
  * The advantage over atexit() is that you can supply a void pointer which will
  * be used as parameter to the registered function upon programmer shutdown.
@@ -278,7 +282,7 @@ static char *extract_param(const char *const *haystack, const char *needle, cons
 	return opt;
 }
 
-char *extract_programmer_param_str(const char *param_name)
+char *extract_programmer_param_str(const struct programmer_cfg *cfg, const char *param_name)
 {
 	return extract_param(&programmer_param, param_name, ",");
 }

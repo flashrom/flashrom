@@ -490,7 +490,7 @@ static int stlinkv3_spi_init(void)
 		return 1;
 	}
 
-	param_str = extract_programmer_param_str("serial");
+	param_str = extract_programmer_param_str(NULL, "serial");
 	if (param_str)
 		msg_pdbg("Opening STLINK-V3 with serial: %s\n", param_str);
 
@@ -515,7 +515,7 @@ static int stlinkv3_spi_init(void)
 	}
 	free(param_str);
 
-	param_str = extract_programmer_param_str("spispeed");
+	param_str = extract_programmer_param_str(NULL, "spispeed");
 	if (param_str) {
 		sck_freq_kHz = strtoul(param_str, &endptr, 0);
 		if (*endptr || sck_freq_kHz == 0) {

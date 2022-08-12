@@ -574,7 +574,7 @@ static int serprog_init(void)
 	int have_device = 0;
 
 	/* the parameter is either of format "dev=/dev/device[:baud]" or "ip=ip:port" */
-	device = extract_programmer_param_str("dev");
+	device = extract_programmer_param_str(NULL, "dev");
 	if (device && strlen(device)) {
 		char *baud_str = strstr(device, ":");
 		if (baud_str != NULL) {
@@ -611,7 +611,7 @@ static int serprog_init(void)
 	}
 	free(device);
 
-	device = extract_programmer_param_str("ip");
+	device = extract_programmer_param_str(NULL, "ip");
 	if (have_device && device) {
 		msg_perr("Error: Both host and device specified.\n"
 			 "Please use either dev= or ip= but not both.\n");
@@ -739,7 +739,7 @@ static int serprog_init(void)
 			spi_master_serprog.max_data_read = v;
 			msg_pdbg(MSGHEADER "Maximum read-n length is %d\n", v);
 		}
-		spispeed = extract_programmer_param_str("spispeed");
+		spispeed = extract_programmer_param_str(NULL, "spispeed");
 		if (spispeed && strlen(spispeed)) {
 			uint32_t f_spi_req, f_spi;
 			uint8_t buf[4];

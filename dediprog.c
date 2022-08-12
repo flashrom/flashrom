@@ -1087,7 +1087,7 @@ static int dediprog_init(void)
 	long target = FLASH_TYPE_APPLICATION_FLASH_1;
 	int i, ret;
 
-	param_str = extract_programmer_param_str("spispeed");
+	param_str = extract_programmer_param_str(NULL, "spispeed");
 	if (param_str) {
 		for (i = 0; spispeeds[i].name; ++i) {
 			if (!strcasecmp(spispeeds[i].name, param_str)) {
@@ -1103,7 +1103,7 @@ static int dediprog_init(void)
 		free(param_str);
 	}
 
-	param_str = extract_programmer_param_str("voltage");
+	param_str = extract_programmer_param_str(NULL, "voltage");
 	if (param_str) {
 		millivolt = parse_voltage(param_str);
 		free(param_str);
@@ -1112,7 +1112,7 @@ static int dediprog_init(void)
 		msg_pinfo("Setting voltage to %i mV\n", millivolt);
 	}
 
-	param_str = extract_programmer_param_str("id");
+	param_str = extract_programmer_param_str(NULL, "id");
 	if (param_str) {
 		char prefix0, prefix1;
 		if (sscanf(param_str, "%c%c%d", &prefix0, &prefix1, &id) != 3) {
@@ -1135,7 +1135,7 @@ static int dediprog_init(void)
 	}
 	free(param_str);
 
-	param_str = extract_programmer_param_str("device");
+	param_str = extract_programmer_param_str(NULL, "device");
 	if (param_str) {
 		char *dev_suffix;
 		if (id != -1) {
@@ -1162,7 +1162,7 @@ static int dediprog_init(void)
 	}
 	free(param_str);
 
-	param_str = extract_programmer_param_str("target");
+	param_str = extract_programmer_param_str(NULL, "target");
 	if (param_str) {
 		char *target_suffix;
 		errno = 0;

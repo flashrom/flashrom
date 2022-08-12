@@ -450,7 +450,7 @@ static int get_params(bool *reset, bool *enter_isp, bool *allow_brick)
 	int ret = 0;
 
 	*allow_brick = false; /* Default behaviour is to bail. */
-	param_str = extract_programmer_param_str("allow_brick");
+	param_str = extract_programmer_param_str(NULL, "allow_brick");
 	if (param_str) {
 		if (!strcmp(param_str, "yes")) {
 			*allow_brick = true;
@@ -462,7 +462,7 @@ static int get_params(bool *reset, bool *enter_isp, bool *allow_brick)
 	free(param_str);
 
 	*reset = false; /* Default behaviour is no MCU reset on tear-down. */
-	param_str = extract_programmer_param_str("reset_mcu");
+	param_str = extract_programmer_param_str(NULL, "reset_mcu");
 	if (param_str) {
 		if (param_str[0] == '1') {
 			*reset = true;
@@ -476,7 +476,7 @@ static int get_params(bool *reset, bool *enter_isp, bool *allow_brick)
 	free(param_str);
 
 	*enter_isp = true; /* Default behaviour is enter ISP on setup. */
-	param_str = extract_programmer_param_str("enter_isp");
+	param_str = extract_programmer_param_str(NULL, "enter_isp");
 	if (param_str) {
 		if (param_str[0] == '1') {
 			*enter_isp = true;

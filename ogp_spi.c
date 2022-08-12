@@ -117,7 +117,7 @@ static int ogp_spi_init(void)
 	uint32_t ogp_reg__ce;
 	uint32_t ogp_reg_sck;
 
-	type = extract_programmer_param_str("rom");
+	type = extract_programmer_param_str(NULL, "rom");
 
 	if (!type) {
 		msg_perr("Please use flashrom -p ogp_spi:rom=... to specify "

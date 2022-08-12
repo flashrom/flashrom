@@ -145,7 +145,7 @@ static const struct par_master lpc_master_atavia = {
 
 static int atavia_init(void)
 {
-	char *arg = extract_programmer_param_str("offset");
+	char *arg = extract_programmer_param_str(NULL, "offset");
 	if (arg) {
 		if (strlen(arg) == 0) {
 			msg_perr("Missing argument for offset.\n");

@@ -1432,7 +1432,7 @@ static int configure_protocol(struct raiden_debug_spi_data *ctx_data)
 static int get_ap_request_type(void)
 {
 	int ap_request = RAIDEN_DEBUG_SPI_REQ_ENABLE_AP;
-	char *custom_rst_str = extract_programmer_param_str("custom_rst");
+	char *custom_rst_str = extract_programmer_param_str(NULL, "custom_rst");
 	if (custom_rst_str) {
 		if (!strcasecmp(custom_rst_str, "true")) {
 			ap_request = RAIDEN_DEBUG_SPI_REQ_ENABLE_AP_CUSTOM;
@@ -1456,7 +1456,7 @@ static int get_target(void)
 	 */
 	int request_enable = RAIDEN_DEBUG_SPI_REQ_ENABLE;
 
-	char *target_str = extract_programmer_param_str("target");
+	char *target_str = extract_programmer_param_str(NULL, "target");
 	if (target_str) {
 		if (!strcasecmp(target_str, "ap"))
 			request_enable = get_ap_request_type();
@@ -1485,7 +1485,7 @@ static void free_dev_list(struct usb_device **dev_lst)
 static int raiden_debug_spi_init(void)
 {
 	struct usb_match match;
-	char *serial = extract_programmer_param_str("serial");
+	char *serial = extract_programmer_param_str(NULL, "serial");
 	struct usb_device *current;
 	struct usb_device *device = NULL;
 	int found = 0;

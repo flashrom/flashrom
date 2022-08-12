@@ -415,7 +415,7 @@ static int handle_speed(struct pci_dev *dev, enum amd_chipset amd_gen, uint8_t *
 	int16_t spireadmode_idx = -1;
 	char *param_str;
 
-	param_str = extract_programmer_param_str("spispeed");
+	param_str = extract_programmer_param_str(NULL, "spispeed");
 	if (param_str != NULL) {
 		unsigned int i;
 		for (i = 0; i < ARRAY_SIZE(spispeeds); i++) {
@@ -439,7 +439,7 @@ static int handle_speed(struct pci_dev *dev, enum amd_chipset amd_gen, uint8_t *
 		free(param_str);
 	}
 
-	param_str = extract_programmer_param_str("spireadmode");
+	param_str = extract_programmer_param_str(NULL, "spireadmode");
 	if (param_str != NULL) {
 		unsigned int i;
 		for (i = 0; i < ARRAY_SIZE(spireadmodes); i++) {
@@ -528,7 +528,7 @@ static int handle_imc(struct pci_dev *dev, enum amd_chipset amd_gen)
 		return 0;
 
 	bool amd_imc_force = false;
-	char *param_value = extract_programmer_param_str("amd_imc_force");
+	char *param_value = extract_programmer_param_str(NULL, "amd_imc_force");
 	if (param_value && !strcmp(param_value, "yes")) {
 		amd_imc_force = true;
 		msg_pspew("amd_imc_force enabled.\n");

@@ -332,7 +332,7 @@ static int buspirate_spi_init(void)
 	unsigned char *bp_commbuf;
 	int bp_commbufsize;
 
-	dev = extract_programmer_param_str("dev");
+	dev = extract_programmer_param_str(NULL, "dev");
 	if (dev && !strlen(dev)) {
 		free(dev);
 		dev = NULL;
@@ -342,7 +342,7 @@ static int buspirate_spi_init(void)
 		return 1;
 	}
 
-	tmp = extract_programmer_param_str("spispeed");
+	tmp = extract_programmer_param_str(NULL, "spispeed");
 	if (tmp) {
 		for (i = 0; spispeeds[i].name; i++) {
 			if (!strncasecmp(spispeeds[i].name, tmp, strlen(spispeeds[i].name))) {
@@ -356,7 +356,7 @@ static int buspirate_spi_init(void)
 	free(tmp);
 
 	/* Extract serialspeed parameter */
-	tmp = extract_programmer_param_str("serialspeed");
+	tmp = extract_programmer_param_str(NULL, "serialspeed");
 	if (tmp) {
 		for (i = 0; serialspeeds[i].name; i++) {
 			if (!strncasecmp(serialspeeds[i].name, tmp, strlen(serialspeeds[i].name))) {
@@ -369,7 +369,7 @@ static int buspirate_spi_init(void)
 	}
 	free(tmp);
 
-	tmp = extract_programmer_param_str("pullups");
+	tmp = extract_programmer_param_str(NULL, "pullups");
 	if (tmp) {
 		if (strcasecmp("on", tmp) == 0)
 			pullup = 1;
@@ -380,7 +380,7 @@ static int buspirate_spi_init(void)
 	}
 	free(tmp);
 
-	tmp = extract_programmer_param_str("psus");
+	tmp = extract_programmer_param_str(NULL, "psus");
 	if (tmp) {
 		if (strcasecmp("on", tmp) == 0)
 			psu = 1;

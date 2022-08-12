@@ -470,7 +470,7 @@ static int get_params(bool *allow_brick)
 	int ret = 0;
 
 	*allow_brick = false; /* Default behaviour is to bail. */
-	brick_str = extract_programmer_param_str("allow_brick");
+	brick_str = extract_programmer_param_str(NULL, "allow_brick");
 	if (brick_str) {
 		if (!strcmp(brick_str, "yes")) {
 			*allow_brick = true;

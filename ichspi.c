@@ -1874,7 +1874,7 @@ enum ich_spi_mode {
 
 static int get_ich_spi_mode_param(enum ich_spi_mode *ich_spi_mode)
 {
-	char *const arg = extract_programmer_param_str("ich_spi_mode");
+	char *const arg = extract_programmer_param_str(NULL, "ich_spi_mode");
 	if (!arg) {
 		return 0;
 	} else if (!strcmp(arg, "hwseq")) {
