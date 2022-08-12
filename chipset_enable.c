@@ -428,7 +428,7 @@ static int enable_flash_ich_fwh_decode(const struct programmer_cfg *cfg, struct 
 		break;
 	}
 
-	char *idsel = extract_programmer_param_str(NULL, "fwh_idsel"); /* TODO(quasisec): pass prog_param */
+	char *idsel = extract_programmer_param_str(cfg, "fwh_idsel");
 	if (idsel && strlen(idsel)) {
 		if (!implemented) {
 			msg_perr("Error: fwh_idsel= specified, but (yet) unsupported on this chipset.\n");
@@ -816,7 +816,7 @@ static int enable_flash_ich_spi(const struct programmer_cfg *cfg, struct pci_dev
 	void *spibar = rcrb + spibar_offset;
 
 	/* This adds BUS_SPI */
-	int ret_spi = ich_init_spi(NULL, spibar, ich_generation); /* TODO(quasisec): pass prog_param */
+	int ret_spi = ich_init_spi(cfg, spibar, ich_generation);
 	if (ret_spi == ERROR_FATAL)
 		return ret_spi;
 
@@ -960,7 +960,7 @@ static int enable_flash_pch100_or_c620(const struct programmer_cfg *cfg,
 	msg_pdbg("SPIBAR = 0x%0*" PRIxPTR " (phys = 0x%08x)\n", PRIxPTR_WIDTH, (uintptr_t)spibar, phys_spibar);
 
 	/* This adds BUS_SPI */
-	const int ret_spi = ich_init_spi(NULL, spibar, pch_generation); /* TODO(quasisec): pass prog_param */
+	const int ret_spi = ich_init_spi(cfg, spibar, pch_generation);
 	if (ret_spi != ERROR_FATAL) {
 		if (ret_bc || ret_spi)
 			ret = ERROR_NONFATAL;
@@ -1077,7 +1077,7 @@ static int enable_flash_silvermont(const struct programmer_cfg *cfg, struct pci_
 	 */
 	enable_flash_ich_bios_cntl_memmapped(ich_generation, spibar + 0xFC);
 
-	int ret_spi = ich_init_spi(NULL, spibar, ich_generation); /* TODO(quasisec): pass prog_param */
+	int ret_spi = ich_init_spi(cfg, spibar, ich_generation);
 	if (ret_spi == ERROR_FATAL)
 		return ret_spi;
 
@@ -1407,7 +1407,7 @@ static int enable_flash_sb600(const struct programmer_cfg *cfg, struct pci_dev *
 
 	internal_buses_supported &= BUS_LPC | BUS_FWH;
 
-	ret = sb600_probe_spi(NULL, dev); /* TODO(quasisec): pass prog_param */
+	ret = sb600_probe_spi(cfg, dev);
 
 	/* Read ROM strap override register. */
 	OUTB(0x8f, 0xcd6);
