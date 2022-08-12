@@ -71,12 +71,11 @@
 
 #define EE_PAGE_MASK 0x3f
 
-static uint8_t *nicintel_eebar;
-
 #define UNPROG_DEVICE 0x1509
 
 struct nicintel_eeprom_data {
 	struct pci_dev *nicintel_pci;
+	uint8_t *nicintel_eebar;
 
 	/* Intel 82580 variable(s) */
 	uint32_t eec;
@@ -131,7 +130,7 @@ static int nicintel_ee_probe_82580(struct flashctx *flash)
 	if (data->nicintel_pci->device_id == UNPROG_DEVICE)
 		flash->chip->total_size = 16; /* Fall back to minimum supported size. */
 	else {
-		uint32_t tmp = pci_mmio_readl(nicintel_eebar + EEC);
+		uint32_t tmp = pci_mmio_readl(data->nicintel_eebar + EEC);
 		tmp = ((tmp >> EE_SIZE) & EE_SIZE_MASK);
 		switch (tmp) {
 		case 7:
@@ -176,12 +175,13 @@ static int nicintel_ee_read_word(uint8_t *eebar, unsigned int addr, uint16_t *da
 
 static int nicintel_ee_read(struct flashctx *flash, uint8_t *buf, unsigned int addr, unsigned int len)
 {
+	const struct nicintel_eeprom_data *opaque_data = flash->mst->opaque.data;
 	uint16_t data;
 
 	/* The NIC interface always reads 16 b words so we need to convert the address and handle odd address
 	 * explicitly at the start (and also at the end in the loop below). */
 	if (addr & 1) {
-		if (nicintel_ee_read_word(nicintel_eebar, addr / 2, &data))
+		if (nicintel_ee_read_word(opaque_data->nicintel_eebar, addr / 2, &data))
 			return -1;
 		*buf++ = data & 0xff;
 		addr++;
@@ -189,7 +189,7 @@ static int nicintel_ee_read(struct flashctx *flash, uint8_t *buf, unsigned int a
 	}
 
 	while (len > 0) {
-		if (nicintel_ee_read_word(nicintel_eebar, addr / 2, &data))
+		if (nicintel_ee_read_word(opaque_data->nicintel_eebar, addr / 2, &data))
 			return -1;
 		*buf++ = data & 0xff;
 		addr++;
@@ -230,7 +230,7 @@ static int nicintel_ee_write_i210(struct flashctx *flash, const uint8_t *buf,
 	if (addr & 1) {
 		uint16_t data;
 
-		if (nicintel_ee_read_word(nicintel_eebar, addr / 2, &data)) {
+		if (nicintel_ee_read_word(opaque_data->nicintel_eebar, addr / 2, &data)) {
 			msg_perr("Timeout reading heading byte\n");
 			return -1;
 		}
@@ -238,7 +238,7 @@ static int nicintel_ee_write_i210(struct flashctx *flash, const uint8_t *buf,
 		data &= 0xff;
 		data |= (buf ? (buf[0]) : 0xff) << 8;
 
-		if (nicintel_ee_write_word_i210(nicintel_eebar, addr / 2, data)) {
+		if (nicintel_ee_write_word_i210(opaque_data->nicintel_eebar, addr / 2, data)) {
 			msg_perr("Timeout writing heading word\n");
 			return -1;
 		}
@@ -253,7 +253,7 @@ static int nicintel_ee_write_i210(struct flashctx *flash, const uint8_t *buf,
 		uint16_t data;
 
 		if (len == 1) {
-			if (nicintel_ee_read_word(nicintel_eebar, addr / 2, &data)) {
+			if (nicintel_ee_read_word(opaque_data->nicintel_eebar, addr / 2, &data)) {
 				msg_perr("Timeout reading tail byte\n");
 				return -1;
 			}
@@ -267,7 +267,7 @@ static int nicintel_ee_write_i210(struct flashctx *flash, const uint8_t *buf,
 				data = 0xffff;
 		}
 
-		if (nicintel_ee_write_word_i210(nicintel_eebar, addr / 2, data)) {
+		if (nicintel_ee_write_word_i210(opaque_data->nicintel_eebar, addr / 2, data)) {
 			msg_perr("Timeout writing Shadow RAM\n");
 			return -1;
 		}
@@ -364,7 +364,8 @@ static int nicintel_ee_req(uint8_t *eebar)
 
 static int nicintel_ee_write_82580(struct flashctx *flash, const uint8_t *buf, unsigned int addr, unsigned int len)
 {
-	uint8_t *eebar = nicintel_eebar;
+	const struct nicintel_eeprom_data *opaque_data = flash->mst->opaque.data;
+	uint8_t *eebar = opaque_data->nicintel_eebar;
 
 	if (nicintel_ee_req(eebar))
 		return -1;
@@ -416,14 +417,14 @@ static int nicintel_ee_shutdown_i210(void *opaque_data)
 	if (!data->done_i20_write)
 		goto out;
 
-	uint32_t flup = pci_mmio_readl(nicintel_eebar + EEC);
+	uint32_t flup = pci_mmio_readl(data->nicintel_eebar + EEC);
 
 	flup |= BIT(EE_FLUPD);
-	pci_mmio_writel(flup, nicintel_eebar + EEC);
+	pci_mmio_writel(flup, data->nicintel_eebar + EEC);
 
 	int i;
 	for (i = 0; i < MAX_ATTEMPTS; i++)
-		if (pci_mmio_readl(nicintel_eebar + EEC) & BIT(EE_FLUDONE))
+		if (pci_mmio_readl(data->nicintel_eebar + EEC) & BIT(EE_FLUDONE))
 			goto out;
 
 	ret = -1;
@@ -437,7 +438,7 @@ out:
 static int nicintel_ee_shutdown_82580(void *opaque_data)
 {
 	struct nicintel_eeprom_data *data = opaque_data;
-	uint8_t *eebar = nicintel_eebar;
+	uint8_t *eebar = data->nicintel_eebar;
 	int ret = 0;
 
 	if (data->nicintel_pci->device_id != UNPROG_DEVICE) {
@@ -482,6 +483,7 @@ static int nicintel_ee_init(void)
 {
 	const struct opaque_master *mst;
 	uint32_t eec = 0;
+	uint8_t *eebar;
 
 	struct pci_dev *dev = pcidev_init(nics_intel_ee, PCI_BASE_ADDRESS_0);
 	if (!dev)
@@ -492,12 +494,12 @@ static int nicintel_ee_init(void)
 		return 1;
 
 	if (!is_i210(dev->device_id)) {
-		nicintel_eebar = rphysmap("Intel Gigabit NIC w/ SPI EEPROM", io_base_addr, MEMMAP_SIZE);
-		if (!nicintel_eebar)
+		eebar = rphysmap("Intel Gigabit NIC w/ SPI EEPROM", io_base_addr, MEMMAP_SIZE);
+		if (!eebar)
 			return 1;
 
 		if (dev->device_id != UNPROG_DEVICE) {
-			eec = pci_mmio_readl(nicintel_eebar + EEC);
+			eec = pci_mmio_readl(eebar + EEC);
 
 			/* C.f. 3.3.1.5 for the detection mechanism (maybe? contradicting
 			                the EE_PRES definition),
@@ -510,9 +512,9 @@ static int nicintel_ee_init(void)
 
 		mst = &opaque_master_nicintel_ee_82580;
 	} else {
-		nicintel_eebar = rphysmap("Intel i210 NIC w/ emulated EEPROM",
+		eebar = rphysmap("Intel i210 NIC w/ emulated EEPROM",
 					  io_base_addr + 0x12000, MEMMAP_SIZE);
-		if (!nicintel_eebar)
+		if (!eebar)
 			return 1;
 
 		mst = &opaque_master_nicintel_ee_i210;
@@ -524,6 +526,7 @@ static int nicintel_ee_init(void)
 		return 1;
 	}
 	data->nicintel_pci = dev;
+	data->nicintel_eebar = eebar;
 	data->eec = eec;
 	data->done_i20_write = false;
 
