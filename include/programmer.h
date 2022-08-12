@@ -150,7 +150,7 @@ struct penable {
 	const enum test_state status;
 	const char *vendor_name;
 	const char *device_name;
-	int (*doit) (struct pci_dev *dev, const char *name);
+	int (*doit) (const struct programmer_cfg *cfg, struct pci_dev *dev, const char *name);
 };
 
 extern const struct penable chipset_enables[];
