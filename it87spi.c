@@ -328,7 +328,7 @@ static uint16_t it87spi_probe(const struct programmer_cfg *cfg, uint16_t port)
 
 	enter_conf_mode_ite(port);
 
-	char *param = extract_programmer_param_str(NULL, "dualbiosindex");
+	char *param = extract_programmer_param_str(cfg, "dualbiosindex");
 	if (param != NULL) {
 		sio_write(port, 0x07, 0x07); /* Select GPIO LDN */
 		tmp = sio_read(port, 0xEF);
@@ -394,7 +394,7 @@ static uint16_t it87spi_probe(const struct programmer_cfg *cfg, uint16_t port)
 	flashport |= sio_read(port, 0x65);
 	msg_pdbg("Serial flash port 0x%04x\n", flashport);
 	/* Non-default port requested? */
-	param = extract_programmer_param_str(NULL, "it87spiport");
+	param = extract_programmer_param_str(cfg, "it87spiport");
 	if (param) {
 		char *endptr = NULL;
 		unsigned long forced_flashport;

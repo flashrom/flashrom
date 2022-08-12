@@ -129,7 +129,7 @@ static int get_params(const struct programmer_cfg *cfg,
 	*board_vendor = NULL;
 	*board_model = NULL;
 
-	arg = extract_programmer_param_str(NULL, "boardenable");
+	arg = extract_programmer_param_str(cfg, "boardenable");
 	if (arg && !strcmp(arg,"force")) {
 		*boardenable = 1;
 	} else if (arg && !strlen(arg)) {
@@ -143,7 +143,7 @@ static int get_params(const struct programmer_cfg *cfg,
 	}
 	free(arg);
 
-	arg = extract_programmer_param_str(NULL, "boardmismatch");
+	arg = extract_programmer_param_str(cfg, "boardmismatch");
 	if (arg && !strcmp(arg,"force")) {
 		*boardmismatch = 1;
 	} else if (arg && !strlen(arg)) {
@@ -157,7 +157,7 @@ static int get_params(const struct programmer_cfg *cfg,
 	}
 	free(arg);
 
-	arg = extract_programmer_param_str(NULL, "laptop");
+	arg = extract_programmer_param_str(cfg, "laptop");
 	if (arg && !strcmp(arg, "force_I_want_a_brick"))
 		*force_laptop = 1;
 	else if (arg && !strcmp(arg, "this_is_not_a_laptop"))
@@ -173,7 +173,7 @@ static int get_params(const struct programmer_cfg *cfg,
 	}
 	free(arg);
 
-	arg = extract_programmer_param_str(NULL, "mainboard");
+	arg = extract_programmer_param_str(cfg, "mainboard");
 	if (arg && strlen(arg)) {
 		if (board_parse_parameter(arg, board_vendor, board_model)) {
 			free(arg);

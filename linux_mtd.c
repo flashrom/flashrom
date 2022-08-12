@@ -500,7 +500,7 @@ static int linux_mtd_init(const struct programmer_cfg *cfg)
 	int ret = 1;
 	struct linux_mtd_data *data = NULL;
 
-	param_str = extract_programmer_param_str(NULL, "dev");
+	param_str = extract_programmer_param_str(cfg, "dev");
 	if (param_str) {
 		char *endptr;
 

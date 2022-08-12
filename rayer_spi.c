@@ -244,7 +244,7 @@ static int rayer_spi_init(const struct programmer_cfg *cfg)
 	uint8_t lpt_outbyte;
 
 	/* Non-default port requested? */
-	arg = extract_programmer_param_str(NULL, "iobase");
+	arg = extract_programmer_param_str(cfg, "iobase");
 	if (arg) {
 		char *endptr = NULL;
 		unsigned long tmp;
@@ -277,7 +277,7 @@ static int rayer_spi_init(const struct programmer_cfg *cfg)
 	msg_pdbg("Using address 0x%x as I/O base for parallel port access.\n",
 		 lpt_iobase);
 
-	arg = extract_programmer_param_str(NULL, "type");
+	arg = extract_programmer_param_str(cfg, "type");
 	if (arg) {
 		for (; prog->type != NULL; prog++) {
 			if (strcasecmp(arg, prog->type) == 0) {

@@ -412,7 +412,7 @@ static int pickit2_spi_init(const struct programmer_cfg *cfg)
 	int spispeed_idx = 0;
 	char *param_str;
 
-	param_str = extract_programmer_param_str(NULL, "spispeed");
+	param_str = extract_programmer_param_str(cfg, "spispeed");
 	if (param_str != NULL) {
 		int i = 0;
 		for (; spispeeds[i].name; i++) {
@@ -430,7 +430,7 @@ static int pickit2_spi_init(const struct programmer_cfg *cfg)
 	}
 
 	int millivolt = 3500;
-	param_str = extract_programmer_param_str(NULL, "voltage");
+	param_str = extract_programmer_param_str(cfg, "voltage");
 	if (param_str != NULL) {
 		millivolt = parse_voltage(param_str);
 		free(param_str);

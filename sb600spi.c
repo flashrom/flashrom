@@ -416,7 +416,7 @@ static int handle_speed(const struct programmer_cfg *cfg,
 	int16_t spireadmode_idx = -1;
 	char *param_str;
 
-	param_str = extract_programmer_param_str(NULL, "spispeed");
+	param_str = extract_programmer_param_str(cfg, "spispeed");
 	if (param_str != NULL) {
 		unsigned int i;
 		for (i = 0; i < ARRAY_SIZE(spispeeds); i++) {
@@ -440,7 +440,7 @@ static int handle_speed(const struct programmer_cfg *cfg,
 		free(param_str);
 	}
 
-	param_str = extract_programmer_param_str(NULL, "spireadmode");
+	param_str = extract_programmer_param_str(cfg, "spireadmode");
 	if (param_str != NULL) {
 		unsigned int i;
 		for (i = 0; i < ARRAY_SIZE(spireadmodes); i++) {
@@ -529,7 +529,7 @@ static int handle_imc(const struct programmer_cfg *cfg, struct pci_dev *dev, enu
 		return 0;
 
 	bool amd_imc_force = false;
-	char *param_value = extract_programmer_param_str(NULL, "amd_imc_force");
+	char *param_value = extract_programmer_param_str(cfg, "amd_imc_force");
 	if (param_value && !strcmp(param_value, "yes")) {
 		amd_imc_force = true;
 		msg_pspew("amd_imc_force enabled.\n");

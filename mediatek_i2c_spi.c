@@ -470,7 +470,7 @@ static int get_params(const struct programmer_cfg *cfg, bool *allow_brick)
 	int ret = 0;
 
 	*allow_brick = false; /* Default behaviour is to bail. */
-	brick_str = extract_programmer_param_str(NULL, "allow_brick");
+	brick_str = extract_programmer_param_str(cfg, "allow_brick");
 	if (brick_str) {
 		if (!strcmp(brick_str, "yes")) {
 			*allow_brick = true;
@@ -504,7 +504,7 @@ static int mediatek_init(const struct programmer_cfg *cfg)
 		return SPI_GENERIC_ERROR;
 	}
 
-	int fd = i2c_open_from_programmer_params(ISP_PORT, 0);
+	int fd = i2c_open_from_programmer_params(cfg, ISP_PORT, 0);
 	if (fd < 0) {
 		msg_perr("Failed to open i2c\n");
 		return fd;

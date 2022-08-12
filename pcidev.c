@@ -272,7 +272,7 @@ struct pci_dev *pcidev_init(const struct dev_entry *devs, int bar)
 	pci_filter_init(pacc, &filter);
 
 	/* Filter by bb:dd.f (if supplied by the user). */
-	pcidev_bdf = extract_programmer_param_str(NULL, "pci");
+	pcidev_bdf = extract_programmer_param_str(NULL, "pci"); /* TODO(quasisec): pass prog_param */
 	if (pcidev_bdf != NULL) {
 		if ((msg = pci_filter_parse_slot(&filter, pcidev_bdf))) {
 			msg_perr("Error: %s\n", msg);

@@ -340,7 +340,7 @@ static int ft2232_spi_init(const struct programmer_cfg *cfg)
 	struct ftdi_context ftdic;
 	struct ft2232_data *spi_data;
 
-	arg = extract_programmer_param_str(NULL, "type");
+	arg = extract_programmer_param_str(cfg, "type");
 	if (arg) {
 		if (!strcasecmp(arg, "2232H")) {
 			ft2232_type = FTDI_FT2232H_PID;
@@ -447,7 +447,7 @@ static int ft2232_spi_init(const struct programmer_cfg *cfg)
 	/* Remember reserved pins before pindir gets modified. */
 	const uint8_t rsv_bits = pindir & 0xf0;
 
-	arg = extract_programmer_param_str(NULL, "port");
+	arg = extract_programmer_param_str(cfg, "port");
 	if (arg) {
 		switch (toupper((unsigned char)*arg)) {
 		case 'A':
@@ -480,7 +480,7 @@ static int ft2232_spi_init(const struct programmer_cfg *cfg)
 	}
 	free(arg);
 
-	arg = extract_programmer_param_str(NULL, "divisor");
+	arg = extract_programmer_param_str(cfg, "divisor");
 	if (arg && strlen(arg)) {
 		unsigned int temp = 0;
 		char *endptr;
@@ -496,7 +496,7 @@ static int ft2232_spi_init(const struct programmer_cfg *cfg)
 	free(arg);
 
 	bool csgpiol_set = false;
-	arg = extract_programmer_param_str(NULL, "csgpiol");
+	arg = extract_programmer_param_str(cfg, "csgpiol");
 	if (arg) {
 		csgpiol_set = true;
 		msg_pwarn("Deprecation warning: `csgpiol` is deprecated and will be removed "
@@ -529,7 +529,7 @@ static int ft2232_spi_init(const struct programmer_cfg *cfg)
 	for (int pin = 0; pin < 4; pin++) {
 		char gpiol_param[7];
 		snprintf(gpiol_param, sizeof(gpiol_param), "gpiol%d", pin);
-		arg = extract_programmer_param_str(NULL, gpiol_param);
+		arg = extract_programmer_param_str(cfg, gpiol_param);
 
 		if (!arg)
 			continue;
@@ -602,8 +602,8 @@ format_error:
 		msg_perr("Unable to select channel (%s).\n", ftdi_get_error_string(&ftdic));
 	}
 
-	arg = extract_programmer_param_str(NULL, "serial");
-	arg2 = extract_programmer_param_str(NULL, "description");
+	arg = extract_programmer_param_str(cfg, "serial");
+	arg2 = extract_programmer_param_str(cfg, "description");
 
 	f = ftdi_usb_open_desc(&ftdic, ft2232_vid, ft2232_type, arg2, arg);
 

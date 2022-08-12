@@ -203,7 +203,7 @@ static int jlink_spi_init(const struct programmer_cfg *cfg)
 	struct jlink_spi_data *jlink_data = NULL;
 	bool enable_target_power;
 
-	arg = extract_programmer_param_str(NULL, "spispeed");
+	arg = extract_programmer_param_str(cfg, "spispeed");
 
 	if (arg) {
 		char *endptr;
@@ -230,7 +230,7 @@ static int jlink_spi_init(const struct programmer_cfg *cfg)
 	bool use_serial_number;
 	uint32_t serial_number;
 
-	arg = extract_programmer_param_str(NULL, "serial");
+	arg = extract_programmer_param_str(cfg, "serial");
 
 	if (arg) {
 		if (!strlen(arg)) {
@@ -259,7 +259,7 @@ static int jlink_spi_init(const struct programmer_cfg *cfg)
 	free(arg);
 
 	reset_cs = true;
-	arg = extract_programmer_param_str(NULL, "cs");
+	arg = extract_programmer_param_str(cfg, "cs");
 
 	if (arg) {
 		if (!strcasecmp(arg, "reset")) {
@@ -281,7 +281,7 @@ static int jlink_spi_init(const struct programmer_cfg *cfg)
 		msg_pdbg("Using TRST as chip select signal.\n");
 
 	enable_target_power = false;
-	arg = extract_programmer_param_str(NULL, "power");
+	arg = extract_programmer_param_str(cfg, "power");
 
 	if (arg) {
 		if (!strcasecmp(arg, "on")) {

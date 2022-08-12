@@ -450,7 +450,7 @@ static int get_params(const struct programmer_cfg *cfg, bool *reset, bool *enter
 	int ret = 0;
 
 	*allow_brick = false; /* Default behaviour is to bail. */
-	param_str = extract_programmer_param_str(NULL, "allow_brick");
+	param_str = extract_programmer_param_str(cfg, "allow_brick");
 	if (param_str) {
 		if (!strcmp(param_str, "yes")) {
 			*allow_brick = true;
@@ -462,7 +462,7 @@ static int get_params(const struct programmer_cfg *cfg, bool *reset, bool *enter
 	free(param_str);
 
 	*reset = false; /* Default behaviour is no MCU reset on tear-down. */
-	param_str = extract_programmer_param_str(NULL, "reset_mcu");
+	param_str = extract_programmer_param_str(cfg, "reset_mcu");
 	if (param_str) {
 		if (param_str[0] == '1') {
 			*reset = true;
@@ -476,7 +476,7 @@ static int get_params(const struct programmer_cfg *cfg, bool *reset, bool *enter
 	free(param_str);
 
 	*enter_isp = true; /* Default behaviour is enter ISP on setup. */
-	param_str = extract_programmer_param_str(NULL, "enter_isp");
+	param_str = extract_programmer_param_str(cfg, "enter_isp");
 	if (param_str) {
 		if (param_str[0] == '1') {
 			*enter_isp = true;
@@ -512,7 +512,7 @@ static int realtek_mst_i2c_spi_init(const struct programmer_cfg *cfg)
 		return SPI_GENERIC_ERROR;
 	}
 
-	int fd = i2c_open_from_programmer_params(REGISTER_ADDRESS, 0);
+	int fd = i2c_open_from_programmer_params(cfg, REGISTER_ADDRESS, 0);
 	if (fd < 0)
 		return fd;
 

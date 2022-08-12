@@ -96,12 +96,12 @@ static int get_bus_number(char *bus_str)
 	return bus;
 }
 
-int i2c_open_from_programmer_params(uint16_t addr, int force)
+int i2c_open_from_programmer_params(const struct programmer_cfg *cfg, uint16_t addr, int force)
 {
 	int fd = -1;
 
-	char *bus_str = extract_programmer_param_str(NULL, "bus");
-	char *device_path = extract_programmer_param_str(NULL, "devpath");
+	char *bus_str = extract_programmer_param_str(cfg, "bus");
+	char *device_path = extract_programmer_param_str(cfg, "devpath");
 
 	if (device_path != NULL && bus_str != NULL) {
 		msg_perr("%s: only one of bus and devpath may be specified\n", __func__);

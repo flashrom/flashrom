@@ -408,7 +408,7 @@ static int digilent_spi_init(const struct programmer_cfg *cfg)
 		goto close_handle;
 	}
 
-	param_str = extract_programmer_param_str(NULL, "spispeed");
+	param_str = extract_programmer_param_str(cfg, "spispeed");
 	if (param_str) {
 		for (i = 0; spispeeds[i].name; ++i) {
 			if (!strcasecmp(spispeeds[i].name, param_str)) {
@@ -424,7 +424,7 @@ static int digilent_spi_init(const struct programmer_cfg *cfg)
 		free(param_str);
 	}
 
-	param_str = extract_programmer_param_str(NULL, "reset");
+	param_str = extract_programmer_param_str(cfg, "reset");
 	if (param_str && strlen(param_str))
 		reset_board = (param_str[0] == '1');
 	else

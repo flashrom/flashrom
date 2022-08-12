@@ -31,7 +31,7 @@
 static void usb_match_value_init(struct usb_match_value *match,
 				 char const *parameter)
 {
-	char *string = extract_programmer_param_str(NULL, parameter);
+	char *string = extract_programmer_param_str(NULL, parameter); /* TODO(quasisec): pass prog_param */
 
 	match->name = parameter;
 

@@ -19,6 +19,8 @@
 
 #include <inttypes.h>
 
+struct programmer_cfg; /* defined in programmer.h */
+
 /**
  * An convenient structure that contains the buffer size and the buffer
  * pointer. Used to wrap buffer details while doing the I2C data
@@ -86,7 +88,7 @@ int i2c_open_path(const char *path, uint16_t addr, int force);
  * I2C device to use from programmer parameters. It is meant to be called
  * from I2C-based programmers to avoid repeating parameter parsing code.
  */
-int i2c_open_from_programmer_params(uint16_t addr, int force);
+int i2c_open_from_programmer_params(const struct programmer_cfg *cfg, uint16_t addr, int force);
 
 /**
  * i2c_close - closes the file descriptor returned by i2c_open
