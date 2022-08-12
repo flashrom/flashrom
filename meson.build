@@ -495,11 +495,7 @@ subdir('util')
 # `.allowed()` gets introduced in 0.59.0
 if get_option('tests').auto() or get_option('tests').enabled()
   # unit-test framework
-  cmocka_dep = dependency(
-    'cmocka',
-    fallback: ['cmocka', 'cmocka_dep'],
-    required : get_option('tests')
-  )
+  cmocka = dependency('cmocka', required : get_option('tests'))
 
   flashrom_test_dep = declare_dependency(
     include_directories : include_dir,
@@ -518,7 +514,7 @@ if get_option('tests').auto() or get_option('tests').enabled()
     ],
   )
 
-  if cmocka_dep.found()
+  if cmocka.found()
     subdir('tests')
   endif
 endif
