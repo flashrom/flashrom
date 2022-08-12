@@ -72,11 +72,12 @@
 #define EE_PAGE_MASK 0x3f
 
 static uint8_t *nicintel_eebar;
-static struct pci_dev *nicintel_pci;
 
 #define UNPROG_DEVICE 0x1509
 
 struct nicintel_eeprom_data {
+	struct pci_dev *nicintel_pci;
+
 	/* Intel 82580 variable(s) */
 	uint32_t eec;
 
@@ -125,7 +126,9 @@ static int nicintel_ee_probe_i210(struct flashctx *flash)
 
 static int nicintel_ee_probe_82580(struct flashctx *flash)
 {
-	if (nicintel_pci->device_id == UNPROG_DEVICE)
+	const struct nicintel_eeprom_data *data = flash->mst->opaque.data;
+
+	if (data->nicintel_pci->device_id == UNPROG_DEVICE)
 		flash->chip->total_size = 16; /* Fall back to minimum supported size. */
 	else {
 		uint32_t tmp = pci_mmio_readl(nicintel_eebar + EEC);
@@ -434,7 +437,7 @@ static int nicintel_ee_shutdown_82580(void *opaque_data)
 	struct nicintel_eeprom_data *data = opaque_data;
 	int ret = 0;
 
-	if (nicintel_pci->device_id != UNPROG_DEVICE) {
+	if (data->nicintel_pci->device_id != UNPROG_DEVICE) {
 		uint32_t old_eec = data->eec;
 		/* Request bitbanging and unselect the chip first to be safe. */
 		if (nicintel_ee_req() || nicintel_ee_bitset(EEC, EE_CS, 1)) {
@@ -490,7 +493,6 @@ static int nicintel_ee_init(void)
 		if (!nicintel_eebar)
 			return 1;
 
-		nicintel_pci = dev;
 		if (dev->device_id != UNPROG_DEVICE) {
 			eec = pci_mmio_readl(nicintel_eebar + EEC);
 
@@ -518,6 +520,7 @@ static int nicintel_ee_init(void)
 		msg_perr("Unable to allocate space for OPAQUE master data\n");
 		return 1;
 	}
+	data->nicintel_pci = dev;
 	data->eec = eec;
 	data->done_i20_write = false;
 
