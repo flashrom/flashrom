@@ -387,7 +387,7 @@ int mcp6x_spi_init(int want_spi);
 
 
 /* sb600spi.c */
-int sb600_probe_spi(struct pci_dev *dev);
+int sb600_probe_spi(const struct programmer_cfg *cfg, struct pci_dev *dev);
 
 /* wbsio_spi.c */
 int wbsio_check_for_spi(void);

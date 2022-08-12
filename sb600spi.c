@@ -408,7 +408,8 @@ static int set_mode(struct pci_dev *dev, uint8_t mode, uint8_t *sb600_spibar)
 	return 0;
 }
 
-static int handle_speed(struct pci_dev *dev, enum amd_chipset amd_gen, uint8_t *sb600_spibar)
+static int handle_speed(const struct programmer_cfg *cfg,
+		struct pci_dev *dev, enum amd_chipset amd_gen, uint8_t *sb600_spibar)
 {
 	uint32_t tmp;
 	int16_t spispeed_idx = -1;
@@ -521,7 +522,7 @@ static int handle_speed(struct pci_dev *dev, enum amd_chipset amd_gen, uint8_t *
 	return set_speed(dev, amd_gen, spispeed_idx, sb600_spibar);
 }
 
-static int handle_imc(struct pci_dev *dev, enum amd_chipset amd_gen)
+static int handle_imc(const struct programmer_cfg *cfg, struct pci_dev *dev, enum amd_chipset amd_gen)
 {
 	/* Handle IMC everywhere but sb600 which does not have one. */
 	if (amd_gen == CHIPSET_SB6XX)
@@ -629,7 +630,7 @@ static const struct spi_master spi_master_promontory = {
 	.probe_opcode	= default_spi_probe_opcode,
 };
 
-int sb600_probe_spi(struct pci_dev *dev)
+int sb600_probe_spi(const struct programmer_cfg *cfg, struct pci_dev *dev)
 {
 	struct pci_dev *smbus_dev;
 	uint32_t tmp;
@@ -789,10 +790,10 @@ int sb600_probe_spi(struct pci_dev *dev)
 		return 0;
 	}
 
-	if (handle_speed(dev, amd_gen, sb600_spibar) != 0)
+	if (handle_speed(cfg, dev, amd_gen, sb600_spibar) != 0)
 		return ERROR_FATAL;
 
-	if (handle_imc(dev, amd_gen) != 0)
+	if (handle_imc(cfg, dev, amd_gen) != 0)
 		return ERROR_FATAL;
 
 	struct sb600spi_data *data = calloc(1, sizeof(*data));

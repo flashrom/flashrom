@@ -1407,7 +1407,7 @@ static int enable_flash_sb600(struct pci_dev *dev, const char *name)
 
 	internal_buses_supported &= BUS_LPC | BUS_FWH;
 
-	ret = sb600_probe_spi(dev);
+	ret = sb600_probe_spi(NULL, dev); /* TODO(quasisec): pass prog_param */
 
 	/* Read ROM strap override register. */
 	OUTB(0x8f, 0xcd6);
