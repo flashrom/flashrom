@@ -373,7 +373,7 @@ static int do_read(struct flashctx *const flash, const char *const filename)
 	if (ret > 0)
 		goto free_out;
 
-	if (write_buf_to_include_args(flash, buf)) {
+	if (write_buf_to_include_args(get_layout(flash), buf)) {
 		ret = 1;
 		goto free_out;
 	}

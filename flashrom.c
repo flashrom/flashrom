@@ -1021,14 +1021,12 @@ out:
  * then this will write files using data from the corresponding region in the
  * supplied buffer.
  *
- * @param flashctx Flash context to be used.
+ * @param layout   The layout to be used.
  * @param buf      Chip-sized buffer to read data from
  * @return 0 on success
  */
-int write_buf_to_include_args(const struct flashctx *const flash,
-				     unsigned char *buf)
+int write_buf_to_include_args(const struct flashrom_layout *const layout, unsigned char *buf)
 {
-	const struct flashrom_layout *const layout = get_layout(flash);
 	const struct romentry *entry = NULL;
 
 	while ((entry = layout_next_included(layout, entry))) {
