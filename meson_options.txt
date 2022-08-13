@@ -1,5 +1,6 @@
 option('pciutils', type : 'boolean', value : true, description : 'use pciutils')
 option('usb', type : 'boolean', value : true, description : 'use libusb1')
+option('classic_cli', type : 'feature', value : 'enabled', description : 'classic flashrom cli binary')
 option('print_wiki', type : 'boolean', value : true,  description : 'Print Wiki')
 option('default_programmer_name', type : 'string', description : 'default programmer')
 option('default_programmer_args', type : 'string', description : 'default programmer arguments')

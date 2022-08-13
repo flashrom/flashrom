@@ -478,19 +478,21 @@ configure_file(
   install_dir: join_paths(get_option('mandir'), 'man8'),
 )
 
-executable(
-  'flashrom',
-  files(
-    'cli_classic.c',
-    'cli_common.c',
-    'cli_output.c',
-  ),
-  c_args : cargs,
-  include_directories : include_dir,
-  install : true,
-  install_dir : get_option('sbindir'),
-  link_with : libflashrom.get_static_lib(), # flashrom needs internal symbols of libflashrom
-)
+if get_option('classic_cli').auto() or get_option('classic_cli').enabled()
+  executable(
+    'flashrom',
+    files(
+      'cli_classic.c',
+      'cli_common.c',
+      'cli_output.c',
+    ),
+    c_args : cargs,
+    include_directories : include_dir,
+    install : true,
+    install_dir : get_option('sbindir'),
+    link_with : libflashrom.get_static_lib(), # flashrom needs internal symbols of libflashrom
+  )
+endif
 
 if get_option('ich_descriptors_tool').auto() or get_option('ich_descriptors_tool').enabled()
   subdir('util/ich_descriptors_tool')
