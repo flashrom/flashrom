@@ -75,7 +75,7 @@ config_stlinkv3_spi = get_option('config_stlinkv3_spi')
 config_parade_lspcon = get_option('config_parade_lspcon')
 config_mediatek_i2c_spi = get_option('config_mediatek_i2c_spi')
 config_realtek_mst_i2c_spi = get_option('config_realtek_mst_i2c_spi')
-config_print_wiki= get_option('print_wiki')
+config_print_wiki= get_option('classic_cli_print_wiki')
 config_default_programmer_name = get_option('default_programmer_name')
 config_default_programmer_args = get_option('default_programmer_args')
 
@@ -409,9 +409,15 @@ if need_serial
   endif
 endif
 
-if config_print_wiki
-  srcs += files('print_wiki.c')
-  cargs += '-DCONFIG_PRINT_WIKI=1'
+
+
+if config_print_wiki.enabled()
+  if get_option('classic_cli').disabled()
+    error('`classic_cli_print_wiki` can not be enabled without `classic_cli`')
+  else
+    srcs += files('print_wiki.c')
+    cargs += '-DCONFIG_PRINT_WIKI=1'
+  endif
 endif
 
 if config_default_programmer_name != ''
