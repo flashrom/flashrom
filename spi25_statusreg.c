@@ -93,7 +93,7 @@ int spi_write_register(const struct flashctx *flash, enum flash_reg reg, uint8_t
 			write_cmd_len = JEDEC_WRSR3_OUTSIZE;
 			break;
 		}
-		if (feature_bits & FEATURE_WRSR_EXT3) {
+		if ((feature_bits & FEATURE_WRSR_EXT3) == FEATURE_WRSR_EXT3) {
 			if (spi_prepare_wrsr_ext(write_cmd, &write_cmd_len, flash, reg, value))
 				return 1;
 			break;
@@ -188,7 +188,8 @@ int spi_read_register(const struct flashctx *flash, enum flash_reg reg, uint8_t 
 		msg_cerr("Cannot read SR2: unsupported by chip\n");
 		return 1;
 	case STATUS3:
-		if (feature_bits & (FEATURE_WRSR_EXT3 | FEATURE_WRSR3)) {
+		if ((feature_bits & FEATURE_WRSR_EXT3) == FEATURE_WRSR_EXT3
+		    || (feature_bits & FEATURE_WRSR3)) {
 			read_cmd = JEDEC_RDSR3;
 			break;
 		}
