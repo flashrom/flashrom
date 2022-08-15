@@ -27,7 +27,7 @@
 
 #define REGISTER_ADDRESS	(0x94 >> 1)
 #define PAGE_ADDRESS		(0x9e >> 1)
-#define PAGE_SIZE		256
+#define TUNNEL_PAGE_SIZE	256
 #define MAX_SPI_WAIT_RETRIES	1000
 
 #define CLT2_SPI		0x82
@@ -332,7 +332,7 @@ static int parade_lspcon_set_mpu_active(int fd, int running)
 static int parade_lspcon_map_page(int fd, unsigned int offset)
 {
 	int ret = 0;
-	/* Page number byte, need to / PAGE_SIZE. */
+	/* Page number byte, need to / TUNNEL_PAGE_SIZE. */
 	ret |= parade_lspcon_write_register(fd, ROMADDR_BYTE1, (offset >> 8) & 0xff);
 	ret |= parade_lspcon_write_register(fd, ROMADDR_BYTE2, (offset >> 16));
 
@@ -351,10 +351,10 @@ static int parade_lspcon_read(struct flashctx *flash, uint8_t *buf,
 	if (fd < 0)
 		return SPI_GENERIC_ERROR;
 
-	for (i = 0; i < len; i += PAGE_SIZE) {
+	for (i = 0; i < len; i += TUNNEL_PAGE_SIZE) {
 		ret |= parade_lspcon_map_page(fd, start + i);
-		ret |= parade_lspcon_read_data(fd, PAGE_ADDRESS, buf + i, min(len - i, PAGE_SIZE));
-		update_progress(flash, FLASHROM_PROGRESS_READ, i + PAGE_SIZE, len);
+		ret |= parade_lspcon_read_data(fd, PAGE_ADDRESS, buf + i, min(len - i, TUNNEL_PAGE_SIZE));
+		update_progress(flash, FLASHROM_PROGRESS_READ, i + TUNNEL_PAGE_SIZE, len);
 	}
 
 	return ret;
@@ -366,8 +366,8 @@ static int parade_lspcon_write_page(int fd, const uint8_t *buf, unsigned int len
          * Using static buffer with maximum possible size,
          * extra byte is needed for prefixing zero at index 0.
          */
-	uint8_t write_buffer[PAGE_SIZE + 1] = { 0 };
-	if (len > PAGE_SIZE)
+	uint8_t write_buffer[TUNNEL_PAGE_SIZE + 1] = { 0 };
+	if (len > TUNNEL_PAGE_SIZE)
 		return SPI_GENERIC_ERROR;
 
 	/* First byte represents the writing offset and should always be zero. */
@@ -392,10 +392,10 @@ static int parade_lspcon_write_256(struct flashctx *flash, const uint8_t *buf,
 	ret |= parade_lspcon_enable_hw_write(fd);
 	ret |= parade_lspcon_i2c_clt2_spi_reset(fd);
 
-	for (unsigned int i = 0; i < len; i += PAGE_SIZE) {
+	for (unsigned int i = 0; i < len; i += TUNNEL_PAGE_SIZE) {
 		ret |= parade_lspcon_map_page(fd, start + i);
-		ret |= parade_lspcon_write_page(fd, buf + i, min(len - i, PAGE_SIZE));
-		update_progress(flash, FLASHROM_PROGRESS_WRITE, i + PAGE_SIZE, len);
+		ret |= parade_lspcon_write_page(fd, buf + i, min(len - i, TUNNEL_PAGE_SIZE));
+		update_progress(flash, FLASHROM_PROGRESS_WRITE, i + TUNNEL_PAGE_SIZE, len);
 	}
 
 	ret |= parade_lspcon_enable_write_protection(fd);
