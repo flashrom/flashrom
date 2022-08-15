@@ -217,6 +217,27 @@ enum decode_range_func {
 };
 typedef void (decode_range_func_t)(size_t *start, size_t *len, const struct wp_bits *, size_t chip_len);
 
+enum probe_func {
+	NO_PROBE_FUNC = 0, /* 0 indicates no probe function set. */
+	PROBE_JEDEC = 1,
+	PROBE_JEDEC_29GL,
+	PROBE_OPAQUE,
+	PROBE_EDI_KB9012,
+	PROBE_AT82802AB,
+	PROBE_W29EE011,
+	PROBE_EN29LV640B,
+	PROBE_SPI_AT25F,
+	PROBE_SPI_AT45DB,
+	PROBE_SPI_BIG_SPANSION,
+	PROBE_SPI_RDID,
+	PROBE_SPI_RDID4,
+	PROBE_SPI_REMS,
+	PROBE_SPI_RES1,
+	PROBE_SPI_RES2,
+	PROBE_SPI_SFDP,
+	PROBE_SPI_ST95,
+};
+
 struct flashchip {
 	const char *vendor;
 	const char *name;
@@ -258,7 +279,7 @@ struct flashchip {
 		SPI_EDI = 1,
 	} spi_cmd_set;
 
-	int (*probe) (struct flashctx *flash);
+	enum probe_func probe;
 
 	/* Delay after "enter/exit ID mode" commands in microseconds.
 	 * NB: negative values have special meanings, see TIMING_* below.

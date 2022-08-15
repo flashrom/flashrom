@@ -729,6 +729,38 @@ static int init_default_layout(struct flashctx *flash)
 	return 0;
 }
 
+typedef int (probe_func_t)(struct flashctx *flash);
+
+static probe_func_t *lookup_probe_func_ptr(const struct flashchip *chip)
+{
+	switch (chip->probe) {
+		case PROBE_JEDEC: return &probe_jedec;
+		case PROBE_JEDEC_29GL: return &probe_jedec_29gl;
+		case PROBE_OPAQUE: return &probe_opaque;
+		case PROBE_EDI_KB9012: return &edi_probe_kb9012;
+		case PROBE_AT82802AB: return &probe_82802ab;
+		case PROBE_W29EE011: return &probe_w29ee011;
+		case PROBE_EN29LV640B: return &probe_en29lv640b;
+		case PROBE_SPI_AT25F: return &probe_spi_at25f;
+		case PROBE_SPI_AT45DB: return &probe_spi_at45db;
+		case PROBE_SPI_BIG_SPANSION: return &probe_spi_big_spansion;
+		case PROBE_SPI_RDID: return &probe_spi_rdid;
+		case PROBE_SPI_RDID4: return &probe_spi_rdid4;
+		case PROBE_SPI_REMS: return &probe_spi_rems;
+		case PROBE_SPI_RES1: return &probe_spi_res1;
+		case PROBE_SPI_RES2: return &probe_spi_res2;
+		case PROBE_SPI_SFDP: return &probe_spi_sfdp;
+		case PROBE_SPI_ST95: return &probe_spi_st95;
+		/* default: total function, 0 indicates no probe function set.
+		 * We explicitly do not want a default catch-all case in the switch
+		 * to ensure unhandled enum's are compiler warnings.
+		 */
+		case NO_PROBE_FUNC: return NULL;
+	};
+
+	return NULL;
+}
+
 int probe_flash(struct registered_master *mst, int startchip, struct flashctx *flash, int force)
 {
 	const struct flashchip *chip;
@@ -745,7 +777,8 @@ int probe_flash(struct registered_master *mst, int startchip, struct flashctx *f
 		if (chip->bustype == BUS_SPI && !chip_to_probe && chip->spi_cmd_set != SPI25)
 			continue;
 		msg_gdbg("Probing for %s %s, %d kB: ", chip->vendor, chip->name, chip->total_size);
-		if (!chip->probe && !force) {
+		probe_func_t *probe_func = lookup_probe_func_ptr(chip);
+		if (!probe_func && !force) {
 			msg_gdbg("failed! flashrom has no probe function for this flash chip.\n");
 			continue;
 		}
@@ -768,7 +801,7 @@ int probe_flash(struct registered_master *mst, int startchip, struct flashctx *f
 		if (force)
 			break;
 
-		if (flash->chip->probe(flash) != 1)
+		if (probe_func(flash) != 1)
 			goto notfound;
 
 		/* If this is the first chip found, accept it.
