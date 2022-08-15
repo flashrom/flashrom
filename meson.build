@@ -268,6 +268,7 @@ if config_internal
     'chipset_enable.c',
     'internal.c',
     'processor_enable.c',
+    'known_boards.c',
   )
   if host_is_x86
     srcs += files(

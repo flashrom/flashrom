@@ -583,12 +583,12 @@ ifeq ($(CONFIG_INTERNAL) $(CONFIG_INTERNAL_X86), yes yes)
 FEATURE_FLAGS += -D'CONFIG_INTERNAL=1'
 PROGRAMMER_OBJS += processor_enable.o chipset_enable.o board_enable.o cbtable.o \
 	internal.o it87spi.o sb600spi.o amd_imc.o wbsio_spi.o mcp6x_spi.o \
-	ichspi.o dmi.o
+	ichspi.o dmi.o known_boards.o
 endif
 else
 ifeq ($(CONFIG_INTERNAL), yes)
 FEATURE_FLAGS += -D'CONFIG_INTERNAL=1'
-PROGRAMMER_OBJS += processor_enable.o chipset_enable.o board_enable.o cbtable.o internal.o
+PROGRAMMER_OBJS += processor_enable.o chipset_enable.o board_enable.o cbtable.o internal.o known_boards.o
 endif
 endif
 
