@@ -32,7 +32,7 @@ struct flashchip mock_chip = {
 	.page_size	= 256,
 	.tested		= TEST_BAD_PREW,
 	.probe		= PROBE_SPI_RDID,
-	.write		= NULL,
+	.write		= NO_WRITE_FUNC,
 };
 
 /*

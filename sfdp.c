@@ -179,11 +179,11 @@ static int sfdp_fill_flash(struct flashchip *chip, uint8_t *buf, uint16_t len)
 	if (tmp32 & (1 << 2)) {
 		msg_cdbg2("at least 64 B.\n");
 		chip->page_size = 64;
-		chip->write = spi_chip_write_256;
+		chip->write = SPI_CHIP_WRITE256;
 	} else {
 		msg_cdbg2("1 B only.\n");
 		chip->page_size = 256;
-		chip->write = spi_chip_write_1;
+		chip->write = SPI_CHIP_WRITE1;
 	}
 
 	if ((tmp32 & 0x3) == 0x1) {

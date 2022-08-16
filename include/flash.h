@@ -238,6 +238,23 @@ enum probe_func {
 	PROBE_SPI_ST95,
 };
 
+enum write_func {
+	NO_WRITE_FUNC = 0, /* 0 indicates no write function set. */
+	WRITE_JEDEC = 1,
+	WRITE_JEDEC1,
+	WRITE_OPAQUE,
+	SPI_CHIP_WRITE1,
+	SPI_CHIP_WRITE256,
+	SPI_WRITE_AAI,
+	SPI_WRITE_AT45DB,
+	WRITE_28SF040,
+	WRITE_82802AB,
+	WRITE_EN29LV640B,
+	EDI_CHIP_WRITE,
+	TEST_WRITE_INJECTOR, /* special case must come last. */
+};
+typedef int (write_func_t)(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
+
 struct flashchip {
 	const char *vendor;
 	const char *name;
@@ -305,7 +322,7 @@ struct flashchip {
 
 	int (*printlock) (struct flashctx *flash);
 	int (*unlock) (struct flashctx *flash);
-	int (*write) (struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
+	enum write_func write;
 	int (*read) (struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 	struct voltage {
 		uint16_t min;
