@@ -299,7 +299,7 @@ int flashrom_layout_read_from_ifd(struct flashrom_layout **const layout, struct 
 		goto _free_ret;
 
 	msg_cinfo("Reading ich descriptor... ");
-	if (flashctx->chip->read(flashctx, desc, 0, 0x1000)) {
+	if (read_flash(flashctx, desc, 0, 0x1000)) {
 		msg_cerr("Read operation failed!\n");
 		msg_cinfo("FAILED.\n");
 		ret = 2;

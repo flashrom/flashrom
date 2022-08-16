@@ -411,6 +411,35 @@ static int check_erased_range(struct flashctx *flash, unsigned int start, unsign
 	return ret;
 }
 
+/* special unit-test hook */
+read_func_t *g_test_read_injector;
+
+static read_func_t *lookup_read_func_ptr(const struct flashchip *chip)
+{
+	switch (chip->read) {
+		case SPI_CHIP_READ: return &spi_chip_read;
+		case READ_OPAQUE: return &read_opaque;
+		case READ_MEMMAPPED: return &read_memmapped;
+		case EDI_CHIP_READ: return &edi_chip_read;
+		case SPI_READ_AT45DB: return spi_read_at45db;
+		case SPI_READ_AT45DB_E8: return spi_read_at45db_e8;
+		case TEST_READ_INJECTOR: return g_test_read_injector;
+	/* default: total function, 0 indicates no read function set.
+	 * We explicitly do not want a default catch-all case in the switch
+	 * to ensure unhandled enum's are compiler warnings.
+	 */
+		case NO_READ_FUNC: return NULL;
+	};
+
+	return NULL;
+}
+
+int read_flash(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len)
+{
+	read_func_t *read_func = lookup_read_func_ptr(flash->chip);
+	return read_func(flash, buf, start, len);
+}
+
 /*
  * @cmpbuf	buffer to compare against, cmpbuf[0] is expected to match the
  *		flash content at location start
@@ -430,7 +459,7 @@ int verify_range(struct flashctx *flash, const uint8_t *cmpbuf, unsigned int sta
 		return -1;
 	}
 
-	if (!flash->chip->read) {
+	if (!lookup_read_func_ptr(flash->chip)) {
 		msg_cerr("ERROR: flashrom has no read function for this flash chip.\n");
 		return -1;
 	}
@@ -441,7 +470,7 @@ int verify_range(struct flashctx *flash, const uint8_t *cmpbuf, unsigned int sta
 		return -1;
 	}
 
-	int ret = flash->chip->read(flash, readbuf, start, len);
+	int ret = read_flash(flash, readbuf, start, len);
 	if (ret) {
 		msg_gerr("Verification impossible because read failed "
 			 "at 0x%x (len 0x%x)\n", start, len);
@@ -930,7 +959,7 @@ static int read_by_layout(struct flashctx *const flashctx, uint8_t *const buffer
 		const chipoff_t region_start	= entry->start;
 		const chipsize_t region_len	= entry->end - entry->start + 1;
 
-		if (flashctx->chip->read(flashctx, buffer + region_start, region_start, region_len))
+		if (read_flash(flashctx, buffer + region_start, region_start, region_len))
 			return 1;
 	}
 	return 0;
@@ -1159,7 +1188,7 @@ static int erase_block(struct flashctx *const flashctx,
 		if (info->region_start > info->erase_start) {
 			const chipoff_t start	= info->erase_start;
 			const chipsize_t len	= info->region_start - info->erase_start;
-			if (flashctx->chip->read(flashctx, backup_contents, start, len)) {
+			if (read_flash(flashctx, backup_contents, start, len)) {
 				msg_cerr("Can't read! Aborting.\n");
 				goto _free_ret;
 			}
@@ -1169,7 +1198,7 @@ static int erase_block(struct flashctx *const flashctx,
 			const chipoff_t start     = info->region_end + 1;
 			const chipoff_t rel_start = start - info->erase_start; /* within this erase block */
 			const chipsize_t len      = info->erase_end - info->region_end;
-			if (flashctx->chip->read(flashctx, backup_contents + rel_start, start, len)) {
+			if (read_flash(flashctx, backup_contents + rel_start, start, len)) {
 				msg_cerr("Can't read! Aborting.\n");
 				goto _free_ret;
 			}
@@ -1256,7 +1285,7 @@ static int read_erase_write_block(struct flashctx *const flashctx,
 		if (info->region_start > info->erase_start) {
 			const chipoff_t start	= info->erase_start;
 			const chipsize_t len	= info->region_start - info->erase_start;
-			if (flashctx->chip->read(flashctx, newc, start, len)) {
+			if (read_flash(flashctx, newc, start, len)) {
 				msg_cerr("Can't read! Aborting.\n");
 				goto _free_ret;
 			}
@@ -1267,7 +1296,7 @@ static int read_erase_write_block(struct flashctx *const flashctx,
 			const chipoff_t start     = info->region_end + 1;
 			const chipoff_t rel_start = start - info->erase_start; /* within this erase block */
 			const chipsize_t len      = info->erase_end - info->region_end;
-			if (flashctx->chip->read(flashctx, newc + rel_start, start, len)) {
+			if (read_flash(flashctx, newc + rel_start, start, len)) {
 				msg_cerr("Can't read! Aborting.\n");
 				goto _free_ret;
 			}
@@ -1367,7 +1396,7 @@ static int verify_by_layout(
 		const chipoff_t region_start	= entry->start;
 		const chipsize_t region_len	= entry->end - entry->start + 1;
 
-		if (flashctx->chip->read(flashctx, curcontents + region_start, region_start, region_len))
+		if (read_flash(flashctx, curcontents + region_start, region_start, region_len))
 			return 1;
 		if (compare_range(newcontents + region_start, curcontents + region_start,
 				  region_start, region_len))
@@ -1554,7 +1583,7 @@ static int chip_safety_check(const struct flashctx *flash, int force,
 				return 1;
 			msg_cerr("Continuing anyway.\n");
 		}
-		if (!chip->read) {
+		if (!lookup_read_func_ptr(chip)) {
 			msg_cerr("flashrom has no read function for this "
 				 "flash chip.\n");
 			return 1;
@@ -1775,7 +1804,7 @@ int flashrom_image_write(struct flashctx *const flashctx, void *const buffer, co
 		 */
 		msg_cinfo("Reading old flash chip contents... ");
 		if (verify_all) {
-			if (flashctx->chip->read(flashctx, oldcontents, 0, flash_size)) {
+			if (read_flash(flashctx, oldcontents, 0, flash_size)) {
 				msg_cinfo("FAILED.\n");
 				goto _finalize_ret;
 			}
@@ -1795,7 +1824,7 @@ int flashrom_image_write(struct flashctx *const flashctx, void *const buffer, co
 		if (verify_all) {
 			msg_cerr("Checking if anything has changed.\n");
 			msg_cinfo("Reading current flash chip contents... ");
-			if (!flashctx->chip->read(flashctx, curcontents, 0, flash_size)) {
+			if (!read_flash(flashctx, curcontents, 0, flash_size)) {
 				msg_cinfo("done.\n");
 				if (!memcmp(oldcontents, curcontents, flash_size)) {
 					nonfatal_help_message();

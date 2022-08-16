@@ -255,6 +255,19 @@ enum write_func {
 };
 typedef int (write_func_t)(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 
+enum read_func {
+	NO_READ_FUNC = 0, /* 0 indicates no read function set. */
+	SPI_CHIP_READ = 1,
+	READ_OPAQUE,
+	READ_MEMMAPPED,
+	EDI_CHIP_READ,
+	SPI_READ_AT45DB,
+	SPI_READ_AT45DB_E8,
+	TEST_READ_INJECTOR, /* special case must come last. */
+};
+typedef int (read_func_t)(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
+int read_flash(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
+
 struct flashchip {
 	const char *vendor;
 	const char *name;
@@ -323,7 +336,7 @@ struct flashchip {
 	int (*printlock) (struct flashctx *flash);
 	int (*unlock) (struct flashctx *flash);
 	enum write_func write;
-	int (*read) (struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
+	enum read_func read;
 	struct voltage {
 		uint16_t min;
 		uint16_t max;

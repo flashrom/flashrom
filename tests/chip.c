@@ -147,12 +147,13 @@ static void teardown(struct flashrom_layout **layout)
 }
 
 extern write_func_t *g_test_write_injector;
+extern read_func_t *g_test_read_injector;
 
 static const struct flashchip chip_8MiB = {
 	.vendor		= "aklm",
 	.total_size	= MOCK_CHIP_SIZE / KiB,
 	.tested		= TEST_OK_PREW,
-	.read		= read_chip,
+	.read		= TEST_READ_INJECTOR,
 	.write		= TEST_WRITE_INJECTOR,
 	.unlock		= unlock_chip,
 	.block_erasers	=
@@ -168,7 +169,7 @@ static const struct flashchip chip_W25Q128_V = {
 	.vendor		= "aklm&dummyflasher",
 	.total_size	= 16 * 1024,
 	.tested		= TEST_OK_PREW,
-	.read		= spi_chip_read,
+	.read		= SPI_CHIP_READ,
 	.write		= SPI_CHIP_WRITE256,
 	.unlock         = spi_disable_blockprotect,
 	.page_size	= 256,
@@ -206,6 +207,7 @@ void erase_chip_test_success(void **state)
 	};
 
 	g_test_write_injector = write_chip;
+	g_test_read_injector = read_chip;
 	struct flashrom_flashctx flashctx = { 0 };
 	struct flashrom_layout *layout;
 	struct flashchip mock_chip = chip_8MiB;
@@ -265,6 +267,7 @@ void read_chip_test_success(void **state)
 	};
 
 	g_test_write_injector = write_chip;
+	g_test_read_injector = read_chip;
 	struct flashrom_flashctx flashctx = { 0 };
 	struct flashrom_layout *layout;
 	struct flashchip mock_chip = chip_8MiB;
@@ -337,6 +340,7 @@ void write_chip_test_success(void **state)
 	};
 
 	g_test_write_injector = write_chip;
+	g_test_read_injector = read_chip;
 	struct flashrom_flashctx flashctx = { 0 };
 	struct flashrom_layout *layout;
 	struct flashchip mock_chip = chip_8MiB;
@@ -435,6 +439,7 @@ void verify_chip_test_success(void **state)
 	};
 
 	g_test_write_injector = write_chip;
+	g_test_read_injector = read_chip;
 	struct flashrom_flashctx flashctx = { 0 };
 	struct flashrom_layout *layout;
 	struct flashchip mock_chip = chip_8MiB;
