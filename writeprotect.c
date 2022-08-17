@@ -73,6 +73,25 @@ static enum flashrom_wp_result read_wp_bits(struct wp_bits *bits, struct flashct
 	size_t i;
 	enum flashrom_wp_result ret;
 
+	/*
+	 * Write protection select bit (WPS) controls kind of write protection
+	 * that is used by the chip. When set, BP bits are ignored and each
+	 * block/sector has its own WP bit managed by special commands. When
+	 * the bit is set and we can't change it, just bail out until
+	 * implementation is extended to handle this kind of WP.
+	 */
+	if (bit_map->wps.reg != INVALID_REG && bit_map->wps.writability != RW) {
+		bool wps_bit_present;
+		uint8_t wps;
+
+		ret = read_bit(&wps, &wps_bit_present, flash, bit_map->wps);
+		if (ret != FLASHROM_WP_OK)
+			return ret;
+
+		if (wps_bit_present && wps)
+			return FLASHROM_WP_ERR_UNSUPPORTED_STATE;
+	}
+
 	ret = read_bit(&bits->tb,  &bits->tb_bit_present,  flash, bit_map->tb);
 	if (ret != FLASHROM_WP_OK)
 		return ret;
@@ -92,8 +111,6 @@ static enum flashrom_wp_result read_wp_bits(struct wp_bits *bits, struct flashct
 	ret = read_bit(&bits->srl, &bits->srl_bit_present, flash, bit_map->srl);
 	if (ret != FLASHROM_WP_OK)
 		return ret;
-
-	/* Note: WPS bit isn't read here, because it's not part of any range. */
 
 	for (i = 0; i < ARRAY_SIZE(bits->bp); i++) {
 		if (bit_map->bp[i].reg == INVALID_REG)

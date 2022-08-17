@@ -202,6 +202,8 @@ static const char *get_wp_error_str(int err)
 		return "the requested protection range is not supported";
 	case FLASHROM_WP_ERR_RANGE_LIST_UNAVAILABLE:
 		return "could not determine what protection ranges are available";
+	case FLASHROM_WP_ERR_UNSUPPORTED_STATE:
+		return "can't operate on current WP configuration of the chip";
 	}
 	return "unknown WP error";
 }
