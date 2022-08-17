@@ -21,7 +21,9 @@
 #include "platform/pci.h"
 
 struct it8212_data {
+	struct pci_dev *dev;
 	uint8_t *bar;
+	uint32_t decode_access;
 };
 
 #define PCI_VENDOR_ID_ITE 0x1283
@@ -51,6 +53,11 @@ static uint8_t it8212_chip_readb(const struct flashctx *flash, const chipaddr ad
 
 static int it8212_shutdown(void *par_data)
 {
+	struct it8212_data *data = par_data;
+
+	/* Restore ROM BAR decode state. */
+	pci_write_long(data->dev, PCI_ROM_ADDRESS, data->decode_access);
+
 	free(par_data);
 	return 0;
 }
@@ -89,10 +96,12 @@ static int it8212_init(void)
 		msg_perr("Unable to allocate space for PAR master data\n");
 		return 1;
 	}
+	data->dev = dev;
 	data->bar = bar;
 
-	/* Restore ROM BAR decode state automatically at shutdown. */
-	rpci_write_long(dev, PCI_ROM_ADDRESS, io_base_addr | 0x01);
+	/* Enable ROM BAR decoding. */
+	data->decode_access = pci_read_long(dev, PCI_ROM_ADDRESS);
+	pci_write_long(dev, PCI_ROM_ADDRESS, io_base_addr | 0x01);
 
 	max_rom_decode.parallel = IT8212_MEMMAP_SIZE;
 	return register_par_master(&par_master_it8212, BUS_PARALLEL, data);
