@@ -31,7 +31,9 @@
 #define DRKAISER_MEMMAP_MASK		((1 << 17) - 1)
 
 struct drkaiser_data {
+	struct pci_dev *dev;
 	uint8_t *bar;
+	uint16_t flash_access;
 };
 
 static const struct dev_entry drkaiser_pcidev[] = {
@@ -58,6 +60,11 @@ static uint8_t drkaiser_chip_readb(const struct flashctx *flash,
 
 static int drkaiser_shutdown(void *par_data)
 {
+	struct drkaiser_data *data = par_data;
+
+	/* Restore original flash writing state. */
+	pci_write_word(data->dev, PCI_MAGIC_DRKAISER_ADDR, data->flash_access);
+
 	free(par_data);
 	return 0;
 }
@@ -88,9 +95,6 @@ static int drkaiser_init(void)
 	if (!addr)
 		return 1;
 
-	/* Write magic register to enable flash write. */
-	rpci_write_word(dev, PCI_MAGIC_DRKAISER_ADDR, PCI_MAGIC_DRKAISER_VALUE);
-
 	/* Map 128kB flash memory window. */
 	bar = rphysmap("Dr. Kaiser PC-Waechter flash memory", addr, DRKAISER_MEMMAP_SIZE);
 	if (bar == ERROR_PTR)
@@ -101,7 +105,12 @@ static int drkaiser_init(void)
 		msg_perr("Unable to allocate space for PAR master data\n");
 		return 1;
 	}
+	data->dev = dev;
 	data->bar = bar;
+
+	/* Write magic register to enable flash write. */
+	data->flash_access = pci_read_word(dev, PCI_MAGIC_DRKAISER_ADDR);
+	pci_write_word(dev, PCI_MAGIC_DRKAISER_ADDR, PCI_MAGIC_DRKAISER_VALUE);
 
 	max_rom_decode.parallel = 128 * 1024;
 
