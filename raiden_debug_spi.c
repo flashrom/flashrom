@@ -343,6 +343,7 @@
 #include "usb_device.h"
 
 #include <libusb.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -1488,7 +1489,7 @@ static int raiden_debug_spi_init(const struct programmer_cfg *cfg)
 	char *serial = extract_programmer_param_str(cfg, "serial");
 	struct usb_device *current;
 	struct usb_device *device = NULL;
-	int found = 0;
+	bool found = false;
 	int ret;
 
 	int request_enable = get_target(cfg);
@@ -1535,7 +1536,7 @@ static int raiden_debug_spi_init(const struct programmer_cfg *cfg)
 		}
 
 		if (!serial) {
-			found = 1;
+			found = true;
 			goto loop_end;
 		} else {
 			unsigned char dev_serial[32] = { 0 };
@@ -1560,7 +1561,7 @@ static int raiden_debug_spi_init(const struct programmer_cfg *cfg)
 				} else {
 					msg_pinfo("Raiden: Serial number %s matched device", serial);
 					usb_device_show(" ", current);
-					found = 1;
+					found = true;
 				}
 			}
 		}
