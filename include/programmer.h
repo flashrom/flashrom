@@ -20,6 +20,7 @@
 #ifndef __PROGRAMMER_H__
 #define __PROGRAMMER_H__ 1
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "flash.h"	/* for chipaddr and flashctx */
@@ -265,8 +266,8 @@ extern int superio_count;
 #if CONFIG_INTERNAL == 1
 extern int is_laptop;
 extern int laptop_ok;
-extern int force_boardenable;
-extern int force_boardmismatch;
+extern bool force_boardenable;
+extern bool force_boardmismatch;
 void probe_superio(void);
 int register_superio(struct superio s);
 extern enum chipbustype internal_buses_supported;

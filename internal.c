@@ -16,6 +16,7 @@
 
 #include <strings.h>
 #include <string.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include "flash.h"
 #include "programmer.h"
@@ -29,8 +30,8 @@
 int is_laptop = 0;
 int laptop_ok = 0;
 
-int force_boardenable = 0;
-int force_boardmismatch = 0;
+bool force_boardenable = false;
+bool force_boardmismatch = false;
 
 enum chipbustype internal_buses_supported = BUS_NONE;
 
@@ -117,21 +118,21 @@ static const struct par_master par_master_internal = {
 };
 
 static int get_params(const struct programmer_cfg *cfg,
-		int *boardenable, int *boardmismatch,
-		int *force_laptop, int *not_a_laptop,
+		bool *boardenable, bool *boardmismatch,
+		bool *force_laptop, bool *not_a_laptop,
 		char **board_vendor, char **board_model)
 {
 	char *arg;
 
 	/* default values. */
-	*force_laptop = 0;
-	*not_a_laptop = 0;
+	*force_laptop = false;
+	*not_a_laptop = false;
 	*board_vendor = NULL;
 	*board_model = NULL;
 
 	arg = extract_programmer_param_str(cfg, "boardenable");
 	if (arg && !strcmp(arg,"force")) {
-		*boardenable = 1;
+		*boardenable = true;
 	} else if (arg && !strlen(arg)) {
 		msg_perr("Missing argument for boardenable.\n");
 		free(arg);
@@ -145,7 +146,7 @@ static int get_params(const struct programmer_cfg *cfg,
 
 	arg = extract_programmer_param_str(cfg, "boardmismatch");
 	if (arg && !strcmp(arg,"force")) {
-		*boardmismatch = 1;
+		*boardmismatch = true;
 	} else if (arg && !strlen(arg)) {
 		msg_perr("Missing argument for boardmismatch.\n");
 		free(arg);
@@ -159,9 +160,9 @@ static int get_params(const struct programmer_cfg *cfg,
 
 	arg = extract_programmer_param_str(cfg, "laptop");
 	if (arg && !strcmp(arg, "force_I_want_a_brick"))
-		*force_laptop = 1;
+		*force_laptop = true;
 	else if (arg && !strcmp(arg, "this_is_not_a_laptop"))
-		*not_a_laptop = 1;
+		*not_a_laptop = true;
 	else if (arg && !strlen(arg)) {
 		msg_perr("Missing argument for laptop.\n");
 		free(arg);
@@ -192,8 +193,8 @@ static int get_params(const struct programmer_cfg *cfg,
 static int internal_init(const struct programmer_cfg *cfg)
 {
 	int ret = 0;
-	int force_laptop;
-	int not_a_laptop;
+	bool force_laptop;
+	bool not_a_laptop;
 	char *board_vendor;
 	char *board_model;
 #if defined(__i386__) || defined(__x86_64__)
