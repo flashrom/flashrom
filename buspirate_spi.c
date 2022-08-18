@@ -16,6 +16,7 @@
 #include <stdio.h>
 #include <strings.h>
 #include <string.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <unistd.h>
@@ -327,8 +328,8 @@ static int buspirate_spi_init(const struct programmer_cfg *cfg)
 	int spispeed = 0x7;
 	int serialspeed_index = -1;
 	int ret = 0;
-	int pullup = 0;
-	int psu = 0;
+	bool pullup = false;
+	bool psu = false;
 	unsigned char *bp_commbuf;
 	int bp_commbufsize;
 
@@ -372,7 +373,7 @@ static int buspirate_spi_init(const struct programmer_cfg *cfg)
 	tmp = extract_programmer_param_str(cfg, "pullups");
 	if (tmp) {
 		if (strcasecmp("on", tmp) == 0)
-			pullup = 1;
+			pullup = true;
 		else if (strcasecmp("off", tmp) == 0)
 			; // ignore
 		else
@@ -383,7 +384,7 @@ static int buspirate_spi_init(const struct programmer_cfg *cfg)
 	tmp = extract_programmer_param_str(cfg, "psus");
 	if (tmp) {
 		if (strcasecmp("on", tmp) == 0)
-			psu = 1;
+			psu = true;
 		else if (strcasecmp("off", tmp) == 0)
 			; // ignore
 		else
@@ -646,11 +647,11 @@ static int buspirate_spi_init(const struct programmer_cfg *cfg)
 
 	/* Initial setup (SPI peripherals config): Enable power, CS high, AUX */
 	bp_commbuf[0] = 0x40 | 0x0b;
-	if (pullup == 1) {
+	if (pullup) {
 		bp_commbuf[0] |= (1 << 2);
 		msg_pdbg("Enabling pull-up resistors.\n");
 	}
-	if (psu == 1) {
+	if (psu) {
 		bp_commbuf[0] |= (1 << 3);
 		msg_pdbg("Enabling PSUs.\n");
 	}
@@ -676,7 +677,7 @@ static int buspirate_spi_init(const struct programmer_cfg *cfg)
 
 	/* Set SPI config: output type, idle, clock edge, sample */
 	bp_commbuf[0] = 0x80 | 0xa;
-	if (pullup == 1) {
+	if (pullup) {
 		bp_commbuf[0] &= ~(1 << 3);
 		msg_pdbg("Pull-ups enabled, so using HiZ pin output! (Open-Drain mode)\n");
 	}
