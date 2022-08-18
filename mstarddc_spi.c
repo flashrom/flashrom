@@ -15,6 +15,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <sys/types.h>
@@ -32,7 +33,7 @@
 struct mstarddc_spi_data {
 	int fd;
 	int addr;
-	int doreset;
+	bool doreset;
 };
 
 // MSTAR DDC Commands
@@ -47,7 +48,7 @@ static int mstarddc_spi_shutdown(void *data)
 	struct mstarddc_spi_data *mstarddc_data = data;
 
 	// Reset, disables ISP mode
-	if (mstarddc_data->doreset == 1) {
+	if (mstarddc_data->doreset) {
 		uint8_t cmd = MSTARDDC_SPI_RESET;
 		if (write(mstarddc_data->fd, &cmd, 1) < 0) {
 			msg_perr("Error sending reset command: errno %d.\n",
@@ -129,7 +130,7 @@ static int mstarddc_spi_send_command(const struct flashctx *flash,
 	/* Do not reset if something went wrong, as it might prevent from
 	 * retrying flashing. */
 	if (ret != 0)
-		mstarddc_data->doreset = 0;
+		mstarddc_data->doreset = false;
 
 	if (cmd)
 		free(cmd);
@@ -155,7 +156,7 @@ static int mstarddc_spi_init(const struct programmer_cfg *cfg)
 	int ret = 0;
 	int mstarddc_fd = -1;
 	int mstarddc_addr;
-	int mstarddc_doreset = 1;
+	bool mstarddc_doreset = true;
 	struct mstarddc_spi_data *mstarddc_data;
 
 	// Get device, address from command-line
@@ -184,7 +185,7 @@ static int mstarddc_spi_init(const struct programmer_cfg *cfg)
 	// Get noreset=1 option from command-line
 	char *noreset = extract_programmer_param_str(cfg, "noreset");
 	if (noreset != NULL && noreset[0] == '1')
-		mstarddc_doreset = 0;
+		mstarddc_doreset = false;
 	free(noreset);
 	msg_pinfo("Info: Will %sreset the device at the end.\n", mstarddc_doreset ? "" : "NOT ");
 	// Open device
