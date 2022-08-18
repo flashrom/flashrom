@@ -1,7 +1,7 @@
 project('flashromutils', 'c',
   version : run_command('util/getversion.sh', '--version', check : true).stdout().strip(),
   license : 'GPL-2.0',
-  meson_version : '>=0.50.0',
+  meson_version : '>=0.53.0',
   default_options : [
     'warning_level=2',
     'c_std=c99',
@@ -35,46 +35,13 @@ add_project_arguments(cc.get_supported_arguments(warning_flags), language : 'c')
 add_project_arguments('-D_DEFAULT_SOURCE', language : 'c')
 add_project_arguments('-D_POSIX_C_SOURCE=200809L', language : 'c') # required for fileno, nanosleep, and strndup
 add_project_arguments('-D_BSD_SOURCE', language : 'c') # required for glibc < v2.19
+add_project_arguments('-D__BSD_VISIBLE', language : 'c') # required for u_char, u_int, u_long on FreeBSD
+add_project_arguments('-D__XSI_VISIBLE', language : 'c') # required for gettimeofday() on FreeBSD
+add_project_arguments('-D_NETBSD_SOURCE', language : 'c') # required for indirect include of strings.h on NetBSD
+add_project_arguments('-D_DARWIN_C_SOURCE', language : 'c') # required for indirect include of strings.h on MacOS
 add_project_arguments('-DFLASHROM_VERSION="' + meson.project_version() + '"', language : 'c')
 
 # get defaults from configure
-config_atahpt = get_option('config_atahpt')
-config_atapromise = get_option('config_atapromise')
-config_atavia = get_option('config_atavia')
-config_buspirate_spi = get_option('config_buspirate_spi')
-config_ch341a_spi = get_option('config_ch341a_spi')
-config_dediprog = get_option('config_dediprog')
-config_developerbox_spi = get_option('config_developerbox_spi')
-config_digilent_spi = get_option('config_digilent_spi')
-config_jlink_spi = get_option('config_jlink_spi')
-config_drkaiser = get_option('config_drkaiser')
-config_dummy = get_option('config_dummy')
-config_ft2232_spi = get_option('config_ft2232_spi')
-config_gfxnvidia = get_option('config_gfxnvidia')
-config_raiden_debug_spi = get_option('config_raiden_debug_spi')
-config_internal = get_option('config_internal')
-config_it8212 = get_option('config_it8212')
-config_linux_mtd = get_option('config_linux_mtd')
-config_linux_spi = get_option('config_linux_spi')
-config_mstarddc_spi = get_option('config_mstarddc_spi')
-config_nic3com = get_option('config_nic3com')
-config_nicintel_eeprom = get_option('config_nicintel_eeprom')
-config_nicintel = get_option('config_nicintel')
-config_nicintel_spi = get_option('config_nicintel_spi')
-config_nicnatsemi = get_option('config_nicnatsemi')
-config_nicrealtek = get_option('config_nicrealtek')
-config_ogp_spi = get_option('config_ogp_spi')
-config_pickit2_spi = get_option('config_pickit2_spi')
-config_pony_spi = get_option('config_pony_spi')
-config_rayer_spi = get_option('config_rayer_spi')
-config_satamv = get_option('config_satamv')
-config_satasii = get_option('config_satasii')
-config_serprog = get_option('config_serprog')
-config_usbblaster_spi = get_option('config_usbblaster_spi')
-config_stlinkv3_spi = get_option('config_stlinkv3_spi')
-config_parade_lspcon = get_option('config_parade_lspcon')
-config_mediatek_i2c_spi = get_option('config_mediatek_i2c_spi')
-config_realtek_mst_i2c_spi = get_option('config_realtek_mst_i2c_spi')
 config_print_wiki= get_option('classic_cli_print_wiki')
 config_default_programmer_name = get_option('default_programmer_name')
 config_default_programmer_args = get_option('default_programmer_args')
@@ -118,51 +85,6 @@ srcs = files(
   'writeprotect_ranges.c',
 )
 
-subdir('platform')
-
-host_is_x86 = ['x86', 'x86_64'].contains(host_machine.cpu_family())
-
-need_serial = [
-  config_buspirate_spi, config_pony_spi, config_serprog,
-].contains(true)
-need_bitbang_spi = [
-  config_internal, config_nicintel_spi, config_ogp_spi,
-  config_pony_spi, config_rayer_spi,
-].contains(true)
-need_raw_mem_access = [
-  config_atapromise, config_drkaiser, config_gfxnvidia, config_internal,
-  config_it8212, config_nicintel, config_nicintel_eeprom, config_nicintel_spi,
-  config_ogp_spi, config_satamv, config_satasii,
-].contains(true)
-# Internal programmer uses x86 features if the system is x86
-need_x86_msr = config_internal and host_is_x86
-need_x86_port_io = [
-  config_atahpt, config_atapromise, config_internal and host_is_x86,
-  config_nic3com, config_nicnatsemi, config_nicrealtek, config_rayer_spi,
-  config_satamv,
-].contains(true)
-need_libpci = [
-  config_atahpt, config_atapromise, config_atavia,
-  config_drkaiser, config_gfxnvidia, config_internal, config_it8212,
-  config_nic3com, config_nicintel, config_nicintel_eeprom, config_nicintel_spi,
-  config_nicnatsemi, config_nicrealtek, config_ogp_spi, config_satamv,
-  config_satasii,
-].contains(true)
-need_libusb1 = [
-  config_ch341a_spi, config_dediprog, config_developerbox_spi,
-  config_digilent_spi, config_pickit2_spi, config_raiden_debug_spi,
-  config_stlinkv3_spi,
-].contains(true)
-need_libftdi1 = [
-  config_ft2232_spi, config_usbblaster_spi,
-].contains(true)
-need_libjaylink = config_jlink_spi
-
-if (need_x86_port_io or need_x86_msr) and not host_is_x86
-  error('one or more enabled programmer only supports x86 and target is not')
-endif
-
-
 # check for required symbols
 if cc.has_function('clock_gettime')
   add_project_arguments('-DHAVE_CLOCK_GETTIME=1', language : 'c')
@@ -179,237 +101,411 @@ else
   add_project_arguments('-DIS_WINDOWS=0', language : 'c')
 endif
 
-# some programmers require libusb
-if get_option('usb')
-  srcs += files('usbdev.c', 'usb_device.c')
-  deps += dependency('libusb-1.0')
-elif need_libusb1
-  error('usb is disabled but one or more enabled programmer requires USB access')
-endif
+systems_hwaccess   = [ 'linux', 'openbsd', 'freebsd', 'dragonfly', 'netbsd' ]
+systems_serial     = [ 'linux', 'openbsd', 'freebsd', 'dragonfly', 'netbsd', 'darwin' ]
 
-# some programmers require libpci
-if get_option('pciutils')
-  srcs += files('pcidev.c')
-  deps += dependency('libpci')
-elif need_libpci
-  error('pciutils is disabled but one or more enabled programmer requires PCI access')
-endif
+cpus_port_io = [ 'x86', 'x86_64' ]
 
-if need_libftdi1
-  deps += dependency('libftdi1')
-endif
+group_ftdi   = get_option('programmer').contains('group_ftdi')
+group_pci    = get_option('programmer').contains('group_pci')
+group_usb    = get_option('programmer').contains('group_usb')
+group_i2c    = get_option('programmer').contains('group_i2c')
+group_serial = get_option('programmer').contains('group_serial')
+group_jlink  = get_option('programmer').contains('group_jlink')
+group_internal = get_option('programmer').contains('group_internal')
+group_external = get_option('programmer').contains('group_external')
 
-if need_libjaylink
-  deps += dependency('libjaylink')
-endif
+libpci     = dependency('libpci', required : group_pci, static : (host_machine.system() == 'openbsd' ? true : false)) # On openbsd a static version of libpci is needed to get also -libz
+libusb1    = dependency('libusb-1.0', required : group_usb)
+libftdi1   = dependency('libftdi1', required : group_ftdi)
+libjaylink = dependency('libjaylink', required : group_jlink)
 
-# set defines for configured programmers
-if config_atahpt
-  srcs += files('atahpt.c')
-  cargs += '-DCONFIG_ATAHPT=1'
-endif
-if config_atapromise
-  srcs += files('atapromise.c')
-  cargs += '-DCONFIG_ATAPROMISE=1'
-endif
-if config_atavia
-  srcs += files('atavia.c')
-  cargs += '-DCONFIG_ATAVIA=1'
-endif
-if config_buspirate_spi
-  srcs += files('buspirate_spi.c')
-  cargs += '-DCONFIG_BUSPIRATE_SPI=1'
-endif
-if config_ch341a_spi
-  srcs += files('ch341a_spi.c')
-  cargs += '-DCONFIG_CH341A_SPI=1'
-endif
-if config_dediprog
-  srcs += files('dediprog.c')
-  cargs += '-DCONFIG_DEDIPROG=1'
-endif
-if config_developerbox_spi
-  srcs += files('developerbox_spi.c')
-  cargs += '-DCONFIG_DEVELOPERBOX_SPI=1'
-endif
-if config_digilent_spi
-  srcs += files('digilent_spi.c')
-  cargs += '-DCONFIG_DIGILENT_SPI=1'
-endif
-if config_jlink_spi
-  srcs += files('jlink_spi.c')
-  cargs += '-DCONFIG_JLINK_SPI=1'
-endif
-if config_drkaiser
-  srcs += files('drkaiser.c')
-  cargs += '-DCONFIG_DRKAISER=1'
-endif
-if config_dummy
-  srcs += files('dummyflasher.c')
-  cargs += '-DCONFIG_DUMMY=1'
-endif
-if config_ft2232_spi
-  srcs += files('ft2232_spi.c')
-  cargs += '-DCONFIG_FT2232_SPI=1'
-  cargs += '-DHAVE_FT232H=1'
-endif
-if config_gfxnvidia
-  srcs += files('gfxnvidia.c')
-  cargs += '-DCONFIG_GFXNVIDIA=1'
-endif
-if config_raiden_debug_spi
-  srcs += files('raiden_debug_spi.c')
-  cargs += '-DCONFIG_RAIDEN_DEBUG_SPI=1'
-endif
-if config_internal
-  srcs += files(
-    'board_enable.c',
-    'cbtable.c',
-    'chipset_enable.c',
-    'internal.c',
-    'processor_enable.c',
-    'known_boards.c',
-  )
-  if host_is_x86
-    srcs += files(
-      'amd_imc.c',
-      'dmi.c',
-      'ichspi.c',
-      'it87spi.c',
-      'mcp6x_spi.c',
-      'sb600spi.c',
-      'wbsio_spi.c',
-    )
-  endif
-  cargs += '-DCONFIG_INTERNAL=1'
-  if get_option('config_internal_dmi')
-    # Use internal DMI/SMBIOS decoder by default instead of relying on dmidecode.
-    cargs += '-DCONFIG_INTERNAL_DMI=1'
-  endif
-endif
-if config_it8212
-  srcs += files('it8212.c')
-  cargs += '-DCONFIG_IT8212=1'
-endif
-if config_linux_mtd
-  srcs += files('linux_mtd.c')
-  cargs += '-DCONFIG_LINUX_MTD=1'
-endif
-if config_linux_spi
-  srcs += files('linux_spi.c')
-  cargs += '-DCONFIG_LINUX_SPI=1'
-endif
-if config_mstarddc_spi
-  srcs += files('mstarddc_spi.c')
-  cargs += '-DCONFIG_MSTARDDC_SPI=1'
-endif
-if config_nic3com
-  srcs += files('nic3com.c')
-  cargs += '-DCONFIG_NIC3COM=1'
-endif
-if config_nicintel
-  srcs += files('nicintel.c')
-  cargs += '-DCONFIG_NICINTEL=1'
-endif
-if config_nicintel_eeprom
-  srcs += files('nicintel_eeprom.c')
-  cargs += '-DCONFIG_NICINTEL_EEPROM=1'
-endif
-if config_nicintel_spi
-  srcs += files('nicintel_spi.c')
-  cargs += '-DCONFIG_NICINTEL_SPI=1'
-endif
-if config_nicnatsemi
-  srcs += files('nicnatsemi.c')
-  cargs += '-DCONFIG_NICNATSEMI=1'
-endif
-if config_nicrealtek
-  srcs += files('nicrealtek.c')
-  cargs += '-DCONFIG_NICREALTEK=1'
-endif
-if config_ogp_spi
-  srcs += files('ogp_spi.c')
-  cargs += '-DCONFIG_OGP_SPI=1'
-endif
-if config_pickit2_spi
-  srcs += files('pickit2_spi.c')
-  cargs += '-DCONFIG_PICKIT2_SPI=1'
-endif
-if config_pony_spi
-  srcs += files('pony_spi.c')
-  cargs += '-DCONFIG_PONY_SPI=1'
-endif
-if config_rayer_spi
-  srcs += files('rayer_spi.c')
-  cargs += '-DCONFIG_RAYER_SPI=1'
-endif
-if config_satamv
-  srcs += files('satamv.c')
-  cargs += '-DCONFIG_SATAMV=1'
-endif
-if config_satasii
-  srcs += files('satasii.c')
-  cargs += '-DCONFIG_SATASII=1'
-endif
-if config_serprog
-  srcs += files('serprog.c')
-  cargs += '-DCONFIG_SERPROG=1'
-endif
-if config_usbblaster_spi
-  srcs += files('usbblaster_spi.c')
-  cargs += '-DCONFIG_USBBLASTER_SPI=1'
-endif
-if config_stlinkv3_spi
-  srcs += files('stlinkv3_spi.c')
-  cargs += '-DCONFIG_STLINKV3_SPI=1'
-endif
-if config_parade_lspcon
-  srcs += files('parade_lspcon.c')
-  cargs += '-DCONFIG_PARADE_LSPCON=1'
-endif
-if config_mediatek_i2c_spi
-  srcs += files('mediatek_i2c_spi.c')
-  cargs += '-DCONFIG_MEDIATEK_I2C_SPI=1'
-endif
-if config_realtek_mst_i2c_spi
-  srcs += files('realtek_mst_i2c_spi.c')
-  cargs += '-DCONFIG_REALTEK_MST_I2C_SPI=1'
-endif
+subdir('platform')
 
-# bitbanging SPI infrastructure
-if need_bitbang_spi
-  srcs += files('bitbang_spi.c')
-  cargs += '-DCONFIG_BITBANG_SPI=1'
-endif
-
-if host_machine.system() == 'linux'
-  srcs += files('i2c_helper_linux.c')
-endif
-
-if need_raw_mem_access
+if systems_hwaccess.contains(host_machine.system())
   srcs += files('hwaccess_physmap.c')
-endif
-
-if need_x86_port_io
-  srcs += files('hwaccess_x86_io.c')
-  cargs += '-D__FLASHROM_HAVE_OUTB__=1'
-endif
-
-if need_x86_msr
-  srcs += files('hwaccess_x86_msr.c')
-endif
-
-# raw serial IO
-if need_serial
-  srcs += files('serial.c')
-  if host_machine.system() == 'linux'
-    srcs += files('custom_baud_linux.c')
-  else
-    srcs += files('custom_baud.c')
+  if ['x86', 'x86_64'].contains(host_machine.cpu_family())
+    srcs += files('hwaccess_x86_msr.c', 'hwaccess_x86_io.c')
   endif
 endif
 
+# Pseudo dependencies
+linux_headers = \
+  cc.has_header('linux/i2c.h')     and \
+  cc.has_header('linux/i2c-dev.h') and \
+  cc.has_header('mtd/mtd-user.h')  and \
+  cc.has_header('linux/spi/spidev.h') ? declare_dependency() : dependency('', required : false)
 
+# '<programmer_name>' : {
+#   'system'      : list[string],  # default: ['all']
+#   'cpu_families : list[string],  # default: ['all']
+#   'deps'        : list[dep],     # default: []
+#   'groups       : list[boolean], # default: []
+#   'srcs'        : list[file],    # default: []
+#   'flags'       : list[string],  # default: []
+#   'default'     : boolean,       # default: true
+#   'active'      : boolean,       # added on runtime
+# }
+programmer = {
+  'atahpt' : {
+    'systems' : systems_hwaccess,
+    'cpu_families' : cpus_port_io,
+    'deps'    : [ libpci ],
+    'groups'  : [ group_pci, group_internal ],
+    'srcs'    : files('atahpt.c', 'pcidev.c'),
+    'flags'   : [ '-DCONFIG_ATAHPT=1' ],
+    'default' : false, # not yet working
+  },
+  'atapromise' : {
+    'systems' : systems_hwaccess,
+    'cpu_families' : cpus_port_io,
+    'deps'    : [ libpci ],
+    'groups'  : [ group_pci, group_internal ],
+    'srcs'    : files('atapromise.c', 'pcidev.c'),
+    'flags'   : [ '-DCONFIG_ATAPROMISE=1' ],
+    'default' : false,
+  },
+  'atavia' : {
+    'systems' : systems_hwaccess,
+    'deps'    : [ libpci ],
+    'groups'  : [ group_pci, group_internal ],
+    'srcs'    : files('atavia.c', 'pcidev.c'),
+    'flags'   : [ '-DCONFIG_ATAVIA=1' ],
+  },
+  'buspirate_spi' : {
+    'systems' : systems_serial,
+    'groups'  : [ group_serial, group_external ],
+    'srcs'    : files('buspirate_spi.c', 'serial.c', (host_machine.system() == 'linux' ? 'custom_baud_linux.c' : 'custom_baud.c')),
+    'flags'   : [ '-DCONFIG_BUSPIRATE_SPI=1' ],
+  },
+  'ch341a_spi' : {
+    'deps'    : [ libusb1 ],
+    'groups'  : [ group_usb, group_external ],
+    'srcs'    : files('ch341a_spi.c'),
+    'flags'   : [ '-DCONFIG_CH341A_SPI=1' ],
+  },
+  'dediprog' : {
+    'deps'    : [ libusb1 ],
+    'groups'  : [ group_usb, group_external ],
+    'srcs'    : files('dediprog.c', 'usbdev.c'),
+    'flags'   : [ '-DCONFIG_DEDIPROG=1' ],
+  },
+  'developerbox_spi' : {
+    'deps'    : [ libusb1 ],
+    'groups'  : [ group_usb, group_external ],
+    'srcs'    : files('developerbox_spi.c', 'usbdev.c'),
+    'flags'   : [ '-DCONFIG_DEVELOPERBOX_SPI=1' ],
+  },
+  'digilent_spi' : {
+    'deps'    : [ libusb1 ],
+    'groups'  : [ group_usb, group_external ],
+    'srcs'    : files('digilent_spi.c'),
+    'flags'   : [ '-DCONFIG_DIGILENT_SPI=1' ],
+  },
+  'drkaiser' : {
+    'systems' : systems_hwaccess,
+    'deps'    : [ libpci ],
+    'groups'  : [ group_pci, group_internal ],
+    'srcs'    : files('drkaiser.c', 'pcidev.c'),
+    'flags'   : [ '-DCONFIG_DRKAISER=1' ],
+  },
+  'dummy'     : {
+    'srcs'    : files('dummyflasher.c'),
+    'flags'   : [ '-DCONFIG_DUMMY=1' ],
+  },
+  'ft2232_spi' : {
+    'deps'    : [ libftdi1 ],
+    'groups'  : [ group_ftdi, group_external ],
+    'srcs'    : files('ft2232_spi.c' ),
+    'flags'   : [ '-DCONFIG_FT2232_SPI=1' ],
+  },
+  'gfxnvidia' : {
+    'systems' : systems_hwaccess,
+    'deps'    : [ libpci ],
+    'groups'  : [ group_pci, group_internal ],
+    'srcs'    : files('gfxnvidia.c', 'pcidev.c'),
+    'flags'   : [ '-DCONFIG_GFXNVIDIA=1' ],
+  },
+  'internal' : {
+    'systems' : systems_hwaccess + ['linux'],
+    'cpu_families' : (host_machine.system() == 'linux' ? [host_machine.cpu_family()] : ['x86', 'x86_64']),
+    'deps'    : [ libpci ],
+    'groups'  : [ group_internal ],
+    'srcs'    : (host_machine.cpu_family() in ['x86', 'x86_64'] ? files(
+      'processor_enable.c',
+      'chipset_enable.c',
+      'board_enable.c',
+      'cbtable.c',
+      'internal.c',
+      'it87spi.c',
+      'sb600spi.c',
+      'amd_imc.c',
+      'wbsio_spi.c',
+      'mcp6x_spi.c',
+      'ichspi.c',
+      'dmi.c',
+      'pcidev.c',
+      'known_boards.c',
+    ) : files(
+      'board_enable.c',
+      'cbtable.c',
+      'chipset_enable.c',
+      'internal.c',
+      'processor_enable.c',
+      'pcidev.c',
+      'known_boards.c',
+    )),
+    'flags' : [
+      '-DCONFIG_INTERNAL=1',
+      '-DCONFIG_INTERNAL_DMI=' + (get_option('use_internal_dmi') ? '1' : '0'),
+    ]
+  },
+  'it8212' : {
+    'systems' : systems_hwaccess,
+    'deps'    : [ libpci ],
+    'groups'  : [ group_pci, group_internal ],
+    'srcs'    : files('it8212.c', 'pcidev.c'),
+    'flags'   : [ '-DCONFIG_IT8212=1' ],
+  },
+  'jlink_spi' : {
+    'deps'    : [ libjaylink ],
+    'groups'  : [ group_jlink, group_external ],
+    'srcs'    : files('jlink_spi.c'),
+    'flags'   : [ '-DCONFIG_JLINK_SPI=1' ],
+    'default' : false,
+  },
+  'linux_mtd' : {
+    'systems' : [ 'linux' ],
+    'deps'    : [ linux_headers ],
+    'groups'  : [ group_internal ],
+    'srcs'    : files('linux_mtd.c'),
+    'flags'   : [ '-DCONFIG_LINUX_MTD=1' ],
+  },
+  'linux_spi' : {
+    'systems' : [ 'linux' ],
+    'deps'    : [ linux_headers ],
+              # internal / external?
+    'srcs'    : files('linux_spi.c'),
+    'flags'   : [ '-DCONFIG_LINUX_SPI=1' ],
+  },
+  'parade_lspcon' : {
+    'systems' : [ 'linux' ],
+    'deps'    : [ linux_headers ],
+    'groups'  : [ group_i2c ],
+    'srcs'    : files('parade_lspcon.c', 'i2c_helper_linux.c'),
+    'flags'   : [ '-DCONFIG_PARADE_LSPCON=1' ],
+    'default' : false
+  },
+  'mediatek_i2c_spi' : {
+    'systems' : [ 'linux' ],
+    'deps'    : [ linux_headers ],
+    'groups'  : [ group_i2c ],
+    'srcs'    : files('mediatek_i2c_spi.c', 'i2c_helper_linux.c'),
+    'flags'   : [ '-DCONFIG_MEDIATEK_I2C_SPI=1' ],
+    'default' : false,
+  },
+    'mstarddc_spi' : {
+    'systems' : [ 'linux' ],
+    'deps'    : [ linux_headers ],
+    'groups'  : [ group_i2c ],
+    'srcs'    : files('mstarddc_spi.c', 'i2c_helper_linux.c'),
+    'flags'   : [ '-DCONFIG_MSTARDDC_SPI=1' ],
+    'default' : false
+  },
+  'nic3com' : {
+    'systems' : systems_hwaccess,
+    'cpu_families' : cpus_port_io,
+    'deps'    : [ libpci ],
+    'groups'  : [ group_pci, group_internal ],
+    'srcs'    : files('nic3com.c', 'pcidev.c'),
+    'flags'   : [ '-DCONFIG_NIC3COM=1' ],
+  },
+  'nicintel' : {
+    'systems' : systems_hwaccess,
+    'deps'    : [ libpci ],
+    'groups'  : [ group_pci, group_internal ],
+    'srcs'    : files('nicintel.c', 'pcidev.c'),
+    'flags'   : [ '-DCONFIG_NICINTEL=1' ],
+  },
+  'nicintel_eeprom' : {
+    'systems' : systems_hwaccess,
+    'deps'    : [ libpci ],
+    'groups'  : [ group_pci, group_internal ],
+    'srcs'    : files('nicintel_eeprom.c', 'pcidev.c'),
+    'flags'   : [ '-DCONFIG_NICINTEL_EEPROM=1' ],
+  },
+  'nicintel_spi' : {
+    'systems' : systems_hwaccess,
+    'deps'    : [ libpci ],
+    'groups'  : [ group_pci, group_internal ],
+    'srcs'    : files('nicintel_spi.c', 'pcidev.c'),
+    'flags'   : [ '-DCONFIG_NICINTEL_SPI=1' ],
+  },
+  'nicnatsemi' : {
+    'systems' : systems_hwaccess,
+    'cpu_families' : cpus_port_io,
+    'deps'    : [ libpci ],
+    'groups'  : [ group_pci, group_internal ],
+    'srcs'    : files('nicnatsemi.c', 'pcidev.c'),
+    'flags'   : [ '-DCONFIG_NICNATSEMI=1' ],
+    'default' : false, # not complete nor tested
+  },
+  'nicrealtek' : {
+    'systems' : systems_hwaccess,
+    'cpu_families' : cpus_port_io,
+    'deps'    : [ libpci ],
+    'groups'  : [ group_pci, group_internal ],
+    'srcs'    : files('nicrealtek.c', 'pcidev.c'),
+    'flags'   : [ '-DCONFIG_NICREALTEK=1' ],
+  },
+  'ogp_spi' : {
+    'systems' : systems_hwaccess,
+    'deps'    : [ libpci ],
+    'groups'  : [ group_pci, group_internal ],
+    'srcs'    : files('ogp_spi.c', 'pcidev.c'),
+    'flags'   : [ '-DCONFIG_OGP_SPI=1' ],
+  },
+  'pickit2_spi' : {
+    'deps'    : [ libusb1 ],
+    'groups'  : [ group_usb, group_external ],
+    'srcs'    : files('pickit2_spi.c'),
+    'flags'   : [ '-DCONFIG_PICKIT2_SPI=1' ],
+  },
+  'pony_spi' : {
+    'systems' : systems_serial,
+    'groups'  : [ group_serial, group_external ],
+    'srcs'    : files('pony_spi.c', 'serial.c', (host_machine.system() == 'linux' ? 'custom_baud_linux.c' : 'custom_baud.c')),
+    'flags'   : [ '-DCONFIG_PONY_SPI=1' ],
+  },
+  'raiden_debug_spi' : {
+    'deps'    : [ libusb1 ],
+    'groups'  : [ group_usb, group_external ],
+    'srcs'    : files('raiden_debug_spi.c', 'usb_device.c'),
+    'flags'   : [ '-DCONFIG_RAIDEN_DEBUG_SPI=1' ],
+  },
+  'rayer_spi' : {
+    'systems' : systems_hwaccess,
+    'cpu_families' : cpus_port_io,
+    'groups'  : [ group_internal ],
+    'srcs'    : files('rayer_spi.c'),
+    'flags'   : [ '-DCONFIG_RAYER_SPI=1' ],
+  },
+  'realtek_mst_i2c_spi' : {
+    'systems' : [ 'linux' ],
+    'deps'    : [ linux_headers ],
+    'groups'  : [ group_i2c ],
+    'srcs'    : files('realtek_mst_i2c_spi.c', 'i2c_helper_linux.c'),
+    'flags'   : [ '-DCONFIG_REALTEK_MST_I2C_SPI=1' ],
+    'default' : false,
+  },
+  'satamv' : {
+    'systems' : systems_hwaccess,
+    'cpu_families' : cpus_port_io,
+    'deps'    : [ libpci ],
+    'groups'  : [ group_pci, group_internal ],
+    'srcs'    : files('satamv.c', 'pcidev.c'),
+    'flags'   : ['-DCONFIG_SATAMV=1'],
+  },
+  'satasii' : {
+    'systems' : systems_hwaccess,
+    'deps'    : [ libpci ],
+    'groups'  : [ group_pci, group_internal ],
+    'srcs'    : files('satasii.c', 'pcidev.c'),
+    'flags'   : [ '-DCONFIG_SATASII=1' ],
+  },
+  'serprog' : {
+    'systems' : systems_serial,
+    'groups'  : [ group_serial, group_external ],
+    'srcs'    : files('serprog.c', 'serial.c', (host_machine.system() == 'linux' ? 'custom_baud_linux.c' : 'custom_baud.c')),
+    'flags'   : [ '-DCONFIG_SERPROG=1' ],
+  },
+  'stlinkv3_spi' : {
+    'deps'    : [ libusb1 ],
+    'groups'  : [ group_usb, group_external ],
+    'srcs'    : files('stlinkv3_spi.c', 'usbdev.c'),
+    'flags'   : [ '-DCONFIG_STLINKV3_SPI=1' ],
+  },
+  'usbblaster_spi' : {
+    'deps'    : [ libftdi1 ],
+    'groups'  : [ group_ftdi, group_external ],
+    'srcs'    : files('usbblaster_spi.c'),
+    'flags'   : [ '-DCONFIG_USBBLASTER_SPI=1' ],
+  },
+}
+
+active_programmer_count = 0
+foreach p_name, p_data : programmer
+  p_data += {
+    'systems' : p_data.get('systems', ['all']),
+    'cpu_families' : p_data.get('cpu_families', ['all']),
+    'deps' : p_data.get('deps', []),
+    'groups' : p_data.get('groups', []),
+    'srcs' : p_data.get('srcs', []),
+    'flags' : p_data.get('flags', []),
+    'default' : p_data.get('default', true),
+  }
+
+  active        = false
+  deps_found    = true
+  not_found_dep = ''
+  not_active_message = ''
+  selected_hard = p_name in get_option('programmer')
+  selected_soft = p_data.get('groups').contains(true) or \
+                  'all' in get_option('programmer') or \
+                  'auto' in get_option('programmer') and p_data.get('default')
+  available     = (p_data.get('systems').contains('all') or p_data.get('systems').contains(host_machine.system())) \
+                  and (p_data.get('cpu_families').contains('all') or p_data.get('cpu_families').contains(host_machine.cpu_family()))
+
+  foreach dep : p_data.get('deps')
+    if not dep.found()
+      deps_found = false
+      not_found_dep = dep.name()
+      break
+    endif
+  endforeach
+
+  if selected_hard
+    if not available
+      error(p_name + ' selected but not supported on this platform')
+    elif not deps_found
+      error(p_name + ' selected but dependency ' + not_found_dep +'not found')
+    else
+      active = true
+    endif
+  elif selected_soft
+    if not available
+      not_active_message = 'Not available on platform'
+    elif not deps_found
+      not_active_message = 'dependency ' + not_found_dep + ' not found'
+    else
+      active = true
+    endif
+  else
+    not_active_message = 'not selected'
+  endif
+
+  p_data += {
+    'active' : active,
+    'summary' : not_active_message,
+  }
+  programmer += {p_name : p_data}
+  if active
+    active_programmer_count += 1
+  endif
+endforeach
+
+if active_programmer_count == 0
+  error('At least one programmer must be selected')
+endif
+
+# add srcs, cargs & deps from active programmer to global srcs, cargs & deps
+foreach p_name, p_data : programmer
+  if p_data.get('active')
+    srcs += p_data.get('srcs')
+    cargs += p_data.get('flags')
+    deps += p_data.get('deps')
+  endif
+endforeach
 
 if config_print_wiki.enabled()
   if get_option('classic_cli').disabled()
@@ -436,7 +532,11 @@ install_headers([
 include_dir = include_directories('include')
 
 mapfile = 'libflashrom.map'
-vflag = '-Wl,--version-script,@0@/@1@'.format(meson.current_source_dir(), mapfile)
+if host_machine.system() == 'darwin'
+  vflag = ''
+else
+  vflag = '-Wl,--version-script,@0@/@1@'.format(meson.current_source_dir(), mapfile)
+endif
 libflashrom = both_libraries(
   'flashrom',
   sources : [
@@ -535,3 +635,18 @@ if get_option('tests').auto() or get_option('tests').enabled()
     subdir('tests')
   endif
 endif
+
+programmer_names_active     = []
+programmer_names_not_active = []
+foreach p_name, p_data : programmer
+  if p_data.get('active')
+    programmer_names_active += p_name
+  else
+    programmer_names_not_active += p_name + ' (' + p_data.get('summary', '') + ')'
+  endif
+endforeach
+
+summary({
+  'active' : [programmer_names_active],
+  'non active' : [programmer_names_not_active],
+}, section : 'Programmer')

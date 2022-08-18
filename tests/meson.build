@@ -33,6 +33,10 @@ srcs = [
   'chip_wp.c',
 ]
 
+if not programmer.get('dummy').get('active')
+  srcs += programmer.get('dummy').get('srcs')
+endif
+
 mocks = [
   '-Wl,--wrap=strdup',
   '-Wl,--wrap=physunmap',
