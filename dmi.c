@@ -27,6 +27,7 @@
 #include <strings.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -432,7 +433,7 @@ void dmi_init(void)
  */
 static int dmi_compare(const char *value, const char *pattern)
 {
-	int anchored = 0;
+	bool anchored = false;
 	int patternlen;
 
 	msg_pspew("matching %s against %s\n", value, pattern);
@@ -441,7 +442,7 @@ static int dmi_compare(const char *value, const char *pattern)
 		return 1;
 
 	if (pattern[0] == '^') {
-		anchored = 1;
+		anchored = true;
 		pattern++;
 	}
 
@@ -458,7 +459,7 @@ static int dmi_compare(const char *value, const char *pattern)
 
 		/* start character to make ends match */
 		value += valuelen - patternlen;
-		anchored = 1;
+		anchored = true;
 	}
 
 	if (anchored)
