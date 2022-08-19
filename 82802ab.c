@@ -22,6 +22,7 @@
  *  - Order number: 290658-004
  */
 
+#include <stdbool.h>
 #include "flash.h"
 #include "chipdrivers.h"
 
@@ -144,7 +145,8 @@ int write_82802ab(struct flashctx *flash, const uint8_t *src, unsigned int start
 int unlock_28f004s5(struct flashctx *flash)
 {
 	chipaddr bios = flash->virtual_memory;
-	uint8_t mcfg, bcfg, need_unlock = 0, can_unlock = 0;
+	uint8_t mcfg, bcfg;
+	bool need_unlock = false, can_unlock = false;
 	unsigned int i;
 
 	/* Clear status register */
@@ -160,7 +162,7 @@ int unlock_28f004s5(struct flashctx *flash)
 		msg_cdbg("locked!\n");
 	} else {
 		msg_cdbg("unlocked!\n");
-		can_unlock = 1;
+		can_unlock = true;
 	}
 
 	/* Read block lock-bits */
@@ -168,7 +170,7 @@ int unlock_28f004s5(struct flashctx *flash)
 		bcfg = chip_readb(flash, bios + i + 2); // read block lock config
 		msg_cdbg("block lock at %06x is %slocked!\n", i, bcfg ? "" : "un");
 		if (bcfg) {
-			need_unlock = 1;
+			need_unlock = true;
 		}
 	}
 
@@ -197,7 +199,7 @@ int unlock_lh28f008bjt(struct flashctx *flash)
 {
 	chipaddr bios = flash->virtual_memory;
 	uint8_t mcfg, bcfg;
-	uint8_t need_unlock = 0, can_unlock = 0;
+	bool need_unlock = false, can_unlock = false;
 	unsigned int i;
 
 	/* Wait if chip is busy */
@@ -213,7 +215,7 @@ int unlock_lh28f008bjt(struct flashctx *flash)
 		msg_cdbg("locked!\n");
 	} else {
 		msg_cdbg("unlocked!\n");
-		can_unlock = 1;
+		can_unlock = true;
 	}
 
 	/* Read block lock-bits, 8 * 8 KB + 15 * 64 KB */
@@ -223,7 +225,7 @@ int unlock_lh28f008bjt(struct flashctx *flash)
 		msg_cdbg("block lock at %06x is %slocked!\n", i,
 			 bcfg ? "" : "un");
 		if (bcfg)
-			need_unlock = 1;
+			need_unlock = true;
 	}
 
 	/* Reset chip */
