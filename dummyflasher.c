@@ -15,6 +15,7 @@
 
 #include <assert.h>
 #include <string.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -48,8 +49,8 @@ struct emu_data {
 	 *       WRSR code on enabling WRSR_EXT2 for more chips. */
 	bool emu_wrsr_ext2;
 	bool emu_wrsr_ext3;
-	int erase_to_zero;
-	int emu_modified;	/* is the image modified since reading it? */
+	bool erase_to_zero;
+	bool emu_modified;	/* is the image modified since reading it? */
 	uint8_t emu_status[3];
 	uint8_t emu_status_len;	/* number of emulated status registers */
 	/* If "freq" parameter is passed in from command line, commands will delay
@@ -183,7 +184,7 @@ static int dummy_opaque_write(struct flashctx *flash, const uint8_t *buf, unsign
 	struct emu_data *emu_data = flash->mst->opaque.data;
 
 	memcpy(emu_data->flashchip_contents + start, buf, len);
-	emu_data->emu_modified = 1;
+	emu_data->emu_modified = true;
 
 	return 0;
 }
@@ -193,7 +194,7 @@ static int dummy_opaque_erase(struct flashctx *flash, unsigned int blockaddr, un
 	struct emu_data *emu_data = flash->mst->opaque.data;
 
 	memset(emu_data->flashchip_contents + blockaddr, emu_data->erase_to_zero ? 0x00 : 0xff, blocklen);
-	emu_data->emu_modified = 1;
+	emu_data->emu_modified = true;
 
 	return 0;
 }
@@ -361,7 +362,7 @@ static int write_flash_data(struct emu_data *data, uint32_t start, uint32_t len,
 	}
 
 	memcpy(data->flashchip_contents + start, buf, len);
-	data->emu_modified = 1;
+	data->emu_modified = true;
 	return 0;
 }
 
@@ -375,7 +376,7 @@ static int erase_flash_data(struct emu_data *data, uint32_t start, uint32_t len)
 
 	/* FIXME: Maybe use ERASED_VALUE(flash) instead of 0xff ? */
 	memset(data->flashchip_contents + start, 0xff, len);
-	data->emu_modified = 1;
+	data->emu_modified = true;
 	return 0;
 }
 
@@ -1090,20 +1091,20 @@ static int init_data(const struct programmer_cfg *cfg,
 		}
 
 		if ((units > tmp) && (units < end)) {
-			int units_valid = 0;
+			bool units_valid = false;
 
 			if (units < end - 3) {
 				;
 			} else if (units == end - 2) {
 				if (!strcasecmp(units, "hz"))
-					units_valid = 1;
+					units_valid = true;
 			} else if (units == end - 3) {
 				if (!strcasecmp(units, "khz")) {
 					freq *= 1000;
-					units_valid = 1;
+					units_valid = true;
 				} else if (!strcasecmp(units, "mhz")) {
 					freq *= 1000000;
-					units_valid = 1;
+					units_valid = true;
 				}
 			}
 
@@ -1284,7 +1285,7 @@ static int init_data(const struct programmer_cfg *cfg,
 		}
 		if (!strcmp(tmp, "yes")) {
 			msg_pdbg("Emulated chip will erase to 0x00\n");
-			data->erase_to_zero = 1;
+			data->erase_to_zero = true;
 		} else if (!strcmp(tmp, "no")) {
 			msg_pdbg("Emulated chip will erase to 0xff\n");
 		} else {
