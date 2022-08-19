@@ -495,7 +495,7 @@ static int get_params(bool *reset, bool *enter_isp, bool *allow_brick)
 static int realtek_mst_i2c_spi_init(void)
 {
 	int ret = 0;
-	bool reset = false, enter_isp = false, allow_brick = false;
+	bool reset, enter_isp, allow_brick;
 
 	if (get_params(&reset, &enter_isp, &allow_brick))
 		return SPI_GENERIC_ERROR;
