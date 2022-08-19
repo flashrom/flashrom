@@ -17,6 +17,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <mtd/mtd-user.h>
@@ -33,8 +34,8 @@
 
 struct linux_mtd_data {
 	FILE *dev_fp;
-	int device_is_writeable;
-	int no_erase;
+	bool device_is_writeable;
+	bool no_erase;
 	/* Size info is presented in bytes in sysfs. */
 	unsigned long int total_size;
 	unsigned long int numeraseregions;
@@ -130,10 +131,10 @@ static int get_mtd_info(const char *sysfs_path, struct linux_mtd_data *data)
 		return 1;
 	if (tmp & MTD_WRITEABLE) {
 		/* cache for later use by write function */
-		data->device_is_writeable = 1;
+		data->device_is_writeable = true;
 	}
 	if (tmp & MTD_NO_ERASE) {
-		data->no_erase = 1;
+		data->no_erase = true;
 	}
 
 	/* Device name */
