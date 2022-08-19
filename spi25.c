@@ -37,7 +37,7 @@ enum id_type {
 };
 
 static struct {
-	int is_cached;
+	bool is_cached;
 	unsigned char bytes[4];		/* enough to hold largest ID type */
 } id_cache[NUM_ID_TYPES];
 
@@ -167,7 +167,7 @@ static int probe_spi_rdid_generic(struct flashctx *flash, int bytes)
 			msg_cinfo("%d byte RDID not supported on this SPI controller\n", bytes);
 		if (ret)
 			return 0;
-		id_cache[idty].is_cached = 1;
+		id_cache[idty].is_cached = true;
 	}
 
 	rdid_get_ids(id_cache[idty].bytes, bytes, &id1, &id2);
@@ -191,7 +191,7 @@ int probe_spi_rems(struct flashctx *flash)
 	if (!id_cache[REMS].is_cached) {
 		if (spi_rems(flash, id_cache[REMS].bytes))
 			return 0;
-		id_cache[REMS].is_cached = 1;
+		id_cache[REMS].is_cached = true;
 	}
 
 	id1 = id_cache[REMS].bytes[0];
@@ -247,7 +247,7 @@ int probe_spi_res2(struct flashctx *flash)
 	if (!id_cache[RES2].is_cached) {
 		if (spi_res(flash, id_cache[RES2].bytes, 2))
 			return 0;
-		id_cache[RES2].is_cached = 1;
+		id_cache[RES2].is_cached = true;
 	}
 
 	id1 = id_cache[RES2].bytes[0];
@@ -267,7 +267,7 @@ int probe_spi_res3(struct flashctx *flash)
 	if (!id_cache[RES3].is_cached) {
 		if (spi_res(flash, id_cache[RES3].bytes, 3))
 			return 0;
-		id_cache[RES3].is_cached = 1;
+		id_cache[RES3].is_cached = true;
 	}
 
 	id1 = (id_cache[RES3].bytes[0] << 8) | id_cache[RES3].bytes[1];
