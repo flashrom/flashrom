@@ -19,6 +19,7 @@
  * GNU General Public License for more details.
  */
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <sys/types.h>
 #include <string.h>
@@ -61,7 +62,7 @@ static struct shutdown_func_data {
 /* Initialize to 0 to make sure nobody registers a shutdown function before
  * programmer init.
  */
-static int may_register_shutdown = 0;
+static bool may_register_shutdown = false;
 
 /* Did we change something or was every erase/write skipped (if any)? */
 static bool all_skipped = true;
@@ -145,7 +146,7 @@ int programmer_init(const struct programmer_entry *prog, const char *param)
 	/* Default to top aligned flash at 4 GB. */
 	flashbase = 0;
 	/* Registering shutdown functions is now allowed. */
-	may_register_shutdown = 1;
+	may_register_shutdown = true;
 	/* Default to allowing writes. Broken programmers set this to 0. */
 	programmer_may_write = 1;
 
@@ -181,7 +182,7 @@ int programmer_shutdown(void)
 	int ret = 0;
 
 	/* Registering shutdown functions is no longer allowed. */
-	may_register_shutdown = 0;
+	may_register_shutdown = false;
 	while (shutdown_fn_count > 0) {
 		int i = --shutdown_fn_count;
 		ret |= shutdown_fn[i].func(shutdown_fn[i].data);
@@ -517,7 +518,7 @@ static unsigned int get_next_write(const uint8_t *have, const uint8_t *want, uns
 			  unsigned int *first_start,
 			  enum write_granularity gran)
 {
-	int need_write = 0;
+	bool need_write = false;
 	unsigned int rel_start = 0, first_len = 0;
 	unsigned int i, limit, stride;
 
@@ -562,7 +563,7 @@ static unsigned int get_next_write(const uint8_t *have, const uint8_t *want, uns
 		if (memcmp(have + i * stride, want + i * stride, limit)) {
 			if (!need_write) {
 				/* First location where have and want differ. */
-				need_write = 1;
+				need_write = true;
 				rel_start = i * stride;
 			}
 		} else {
