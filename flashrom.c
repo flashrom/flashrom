@@ -50,7 +50,7 @@ struct decode_sizes max_rom_decode;
 unsigned long flashbase;
 
 /* Is writing allowed with this programmer? */
-int programmer_may_write;
+bool programmer_may_write;
 
 #define SHUTDOWN_MAXFN 32
 static int shutdown_fn_count = 0;
@@ -148,7 +148,7 @@ int programmer_init(const struct programmer_entry *prog, const char *param)
 	/* Registering shutdown functions is now allowed. */
 	may_register_shutdown = true;
 	/* Default to allowing writes. Broken programmers set this to 0. */
-	programmer_may_write = 1;
+	programmer_may_write = true;
 
 	programmer_param = param;
 	msg_pdbg("Initializing %s programmer\n", programmer->name);

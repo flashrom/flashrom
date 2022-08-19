@@ -18,6 +18,7 @@
  * GNU General Public License for more details.
  */
 
+#include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
 #include "flash.h"
@@ -554,7 +555,7 @@ static int handle_imc(const struct programmer_cfg *cfg, struct pci_dev *dev, enu
 	}
 
 	if (!amd_imc_force)
-		programmer_may_write = 0;
+		programmer_may_write = false;
 	msg_pinfo("Writes have been disabled for safety reasons because the presence of the IMC\n"
 		  "was detected and it could interfere with accessing flash memory. Flashrom will\n"
 		  "try to disable it temporarily but even then this might not be safe:\n"
