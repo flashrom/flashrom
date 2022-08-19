@@ -20,6 +20,7 @@
  */
 
 #include <string.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include "flash.h"
 #include "programmer.h"
@@ -255,7 +256,7 @@ enum ich_access_protection {
 };
 
 /* ICH SPI configuration lock-down. May be set during chipset enabling. */
-static int ichspi_lock = 0;
+static bool ichspi_lock = false;
 
 static enum ich_chipset ich_generation = CHIPSET_ICH_UNKNOWN;
 static uint32_t ichspi_bbar;
@@ -859,7 +860,7 @@ static void ich_read_data(uint8_t *data, int len, int reg0_off)
 static int ich7_run_opcode(OPCODE op, uint32_t offset,
 			   uint8_t datalength, uint8_t * data, int maxdata)
 {
-	int write_cmd = 0;
+	bool write_cmd = false;
 	int timeout;
 	uint32_t temp32;
 	uint16_t temp16;
@@ -869,7 +870,7 @@ static int ich7_run_opcode(OPCODE op, uint32_t offset,
 	/* Is it a write command? */
 	if ((op.spi_type == SPI_OPCODE_TYPE_WRITE_NO_ADDRESS)
 	    || (op.spi_type == SPI_OPCODE_TYPE_WRITE_WITH_ADDRESS)) {
-		write_cmd = 1;
+		write_cmd = true;
 	}
 
 	timeout = 100 * 60;	/* 60 ms are 9.6 million cycles at 16 MHz. */
@@ -976,7 +977,7 @@ static int ich7_run_opcode(OPCODE op, uint32_t offset,
 static int ich9_run_opcode(OPCODE op, uint32_t offset,
 			   uint8_t datalength, uint8_t * data)
 {
-	int write_cmd = 0;
+	bool write_cmd = false;
 	int timeout;
 	uint32_t temp32;
 	uint64_t opmenu;
@@ -985,7 +986,7 @@ static int ich9_run_opcode(OPCODE op, uint32_t offset,
 	/* Is it a write command? */
 	if ((op.spi_type == SPI_OPCODE_TYPE_WRITE_NO_ADDRESS)
 	    || (op.spi_type == SPI_OPCODE_TYPE_WRITE_WITH_ADDRESS)) {
-		write_cmd = 1;
+		write_cmd = true;
 	}
 
 	timeout = 100 * 60;	/* 60 ms are 9.6 million cycles at 16 MHz. */
@@ -1857,7 +1858,7 @@ static int init_ich7_spi(void *spibar, enum ich_chipset ich_gen)
 	}
 	if (mmio_readw(spibar) & (1 << 15)) {
 		msg_pwarn("WARNING: SPI Configuration Lockdown activated.\n");
-		ichspi_lock = 1;
+		ichspi_lock = true;
 	}
 	ich_init_opcodes(ich_gen);
 	ich_set_bbar(0, ich_gen);
@@ -1970,7 +1971,7 @@ static int init_ich_default(const struct programmer_cfg *cfg, void *spibar, enum
 	uint16_t tmp2;
 	uint32_t tmp;
 	int ich_spi_rw_restricted = 0;
-	int desc_valid = 0;
+	bool desc_valid = false;
 	struct ich_descriptors desc = { 0 };
 	enum ich_spi_mode ich_spi_mode = ich_auto;
 	size_t num_freg, num_pr, reg_pr0;
@@ -1986,10 +1987,10 @@ static int init_ich_default(const struct programmer_cfg *cfg, void *spibar, enum
 	prettyprint_ich9_reg_hsfs(tmp2, ich_gen);
 	if (tmp2 & HSFS_FLOCKDN) {
 		msg_pinfo("SPI Configuration is locked down.\n");
-		ichspi_lock = 1;
+		ichspi_lock = true;
 	}
 	if (tmp2 & HSFS_FDV)
-		desc_valid = 1;
+		desc_valid = true;
 	if (!(tmp2 & HSFS_FDOPSS) && desc_valid)
 		msg_pinfo("The Flash Descriptor Override Strap-Pin is set. Restrictions implied by\n"
 			  "the Master Section of the flash descriptor are NOT in effect. Please note\n"
@@ -2278,7 +2279,7 @@ int via_init_spi(uint32_t mmio_base)
 	msg_pdbg("0x6c: 0x%04x     (CLOCK/DEBUG)\n", mmio_readw(ich_spibar + 0x6c));
 	if (mmio_readw(ich_spibar) & (1 << 15)) {
 		msg_pwarn("Warning: SPI Configuration Lockdown activated.\n");
-		ichspi_lock = 1;
+		ichspi_lock = true;
 	}
 
 	ich_set_bbar(0, ich_generation);
