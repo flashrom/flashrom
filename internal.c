@@ -28,7 +28,7 @@
 #endif
 
 int is_laptop = 0;
-int laptop_ok = 0;
+bool laptop_ok = false;
 
 bool force_boardenable = false;
 bool force_boardmismatch = false;

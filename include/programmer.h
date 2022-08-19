@@ -265,7 +265,7 @@ extern int superio_count;
 
 #if CONFIG_INTERNAL == 1
 extern int is_laptop;
-extern int laptop_ok;
+extern bool laptop_ok;
 extern bool force_boardenable;
 extern bool force_boardmismatch;
 void probe_superio(void);

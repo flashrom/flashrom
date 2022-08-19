@@ -22,6 +22,7 @@
 
 #include <strings.h>
 #include <string.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include "flash.h"
 #include "programmer.h"
@@ -2292,7 +2293,7 @@ static int p2_not_a_laptop(void)
 static int p2_whitelist_laptop(void)
 {
 	is_laptop = 1;
-	laptop_ok = 1;
+	laptop_ok = true;
 	msg_pdbg("Whitelisted laptop detected.\n");
 	return 0;
 }
