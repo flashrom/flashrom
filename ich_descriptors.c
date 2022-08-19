@@ -31,6 +31,7 @@
 #define UPPER_MAP_OFFSET (4096 - 256 - 4)
 #define getVTBA(flumap)	(((flumap)->FLUMAP1 << 4) & 0x00000ff0)
 
+#include <stdbool.h>
 #include <sys/types.h>
 #include <string.h>
 #include "flash.h" /* for msg_* */
@@ -398,9 +399,9 @@ void prettyprint_ich_descriptor_component(enum ich_chipset cs, const struct ich_
 		msg_pdbg2("Dual Output Fast Read Support:  %sabled\n",
 			  desc->component.modes.dual_output ? "en" : "dis");
 
-	int has_forbidden_opcode = 0;
+	bool has_forbidden_opcode = false;
 	if (desc->component.FLILL != 0) {
-		has_forbidden_opcode = 1;
+		has_forbidden_opcode = true;
 		msg_pdbg2("Invalid instruction 0:          0x%02x\n",
 			  desc->component.invalid_instr0);
 		msg_pdbg2("Invalid instruction 1:          0x%02x\n",
@@ -412,7 +413,7 @@ void prettyprint_ich_descriptor_component(enum ich_chipset cs, const struct ich_
 	}
 	if (has_flill1) {
 		if (desc->component.FLILL1 != 0) {
-			has_forbidden_opcode = 1;
+			has_forbidden_opcode = true;
 			msg_pdbg2("Invalid instruction 4:          0x%02x\n",
 				  desc->component.invalid_instr4);
 			msg_pdbg2("Invalid instruction 5:          0x%02x\n",
