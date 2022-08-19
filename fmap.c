@@ -35,6 +35,7 @@
  */
 
 #include <ctype.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
@@ -94,14 +95,14 @@ static int is_valid_fmap(const struct fmap *fmap)
 static ssize_t fmap_lsearch(const uint8_t *buf, size_t len)
 {
 	ssize_t offset;
-	bool fmap_found = 0;
+	bool fmap_found = false;
 
 	if (len < sizeof(struct fmap))
 		return -1;
 
 	for (offset = 0; offset <= (ssize_t)(len - sizeof(struct fmap)); offset++) {
 		if (is_valid_fmap((struct fmap *)&buf[offset])) {
-			fmap_found = 1;
+			fmap_found = true;
 			break;
 		}
 	}
@@ -184,7 +185,9 @@ static int fmap_bsearch_rom(struct fmap **fmap_out, struct flashctx *const flash
 		size_t rom_offset, size_t len, size_t min_stride)
 {
 	size_t stride, fmap_len = 0;
-	int ret = 1, fmap_found = 0, check_offset_0 = 1;
+	int ret = 1;
+	bool fmap_found = false;
+	bool check_offset_0 = true;
 	struct fmap *fmap;
 	const unsigned int chip_size = flashctx->chip->total_size * 1024;
 	const int sig_len = strlen(FMAP_SIGNATURE);
@@ -225,7 +228,7 @@ static int fmap_bsearch_rom(struct fmap **fmap_out, struct flashctx *const flash
 				continue;
 			if (offset == 0 && !check_offset_0)
 				continue;
-			check_offset_0 = 0;
+			check_offset_0 = false;
 
 			/* Read errors are considered non-fatal since we may
 			 * encounter locked regions and want to continue. */
@@ -251,7 +254,7 @@ static int fmap_bsearch_rom(struct fmap **fmap_out, struct flashctx *const flash
 
 			if (is_valid_fmap(fmap)) {
 				msg_gdbg("fmap found at offset 0x%06zx\n", offset);
-				fmap_found = 1;
+				fmap_found = true;
 				break;
 			}
 			msg_gerr("fmap signature found at %zu but header is invalid.\n", offset);
