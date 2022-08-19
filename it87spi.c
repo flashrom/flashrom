@@ -20,6 +20,7 @@
  */
 
 #include <string.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <errno.h>
 #include "flash.h"
@@ -39,7 +40,7 @@
 struct it8716f_spi_data {
 	uint16_t flashport;
 	/* use fast 33MHz SPI (<>0) or slow 16MHz (0) */
-	int fast_spi;
+	bool fast_spi;
 };
 
 static int get_data_from_context(const struct flashctx *flash, struct it8716f_spi_data **data)
@@ -242,7 +243,7 @@ static int it8716f_spi_chip_read(struct flashctx *flash, uint8_t *buf,
 	if (get_data_from_context(flash, &data) < 0)
 		return SPI_GENERIC_ERROR;
 
-	data->fast_spi = 0;
+	data->fast_spi = false;
 
 	/* FIXME: Check if someone explicitly requested to use IT87 SPI although
 	 * the mainboard does not use IT87 SPI translation. This should be done
@@ -432,7 +433,7 @@ static uint16_t it87spi_probe(const struct programmer_cfg *cfg, uint16_t port)
 	}
 
 	data->flashport = flashport;
-	data->fast_spi = 1;
+	data->fast_spi = true;
 
 	if (internal_buses_supported & BUS_SPI)
 		msg_pdbg("Overriding chipset SPI with IT87 SPI.\n");
