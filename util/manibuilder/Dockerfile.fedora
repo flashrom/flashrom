@@ -2,7 +2,7 @@ FROM manibase
 
 RUN \
 	useradd -p locked -m mani && \
-	dnf install -q -y git gcc ccache make \
+	dnf install -q -y git gcc ccache make systemd-devel \
 		pciutils-devel libusb-devel libusbx-devel libftdi-devel \
 		libjaylink-devel && \
 	dnf clean -q -y all
