@@ -2,7 +2,7 @@ FROM manibase
 
 RUN \
 	useradd -p locked -m mani && \
-	yum install -q -y ca-certificates git gcc \
+	yum install -q -y ca-certificates git gcc systemd-devel \
 			  pciutils-devel libusb-devel libusbx-devel && \
 	yum clean -q -y all
 
