@@ -38,6 +38,12 @@ OTHER_TAGS := djgpp\:6.1.0
 
 ALL_TAGS := $(ANITA_TAGS) $(MULTIARCH_TAGS) $(OTHER_TAGS)
 
+BROKEN_TAGS := anita\:7.1-amd64 anita\:7.1-i386 \
+	       centos\:7.6-armhfp-clean \
+	       fedora\:30-s390x fedora\:28-armhfp \
+
+WORKING_TAGS := $(filter-out $(BROKEN_TAGS),$(ALL_TAGS))
+
 arch_filter = $(sort \
 	$(foreach arch,$(1), \
 	  $(filter-out $(subst $(arch),,$(MULTIARCH_TAGS)),$(MULTIARCH_TAGS))))
@@ -184,6 +190,8 @@ default: $(DEFAULT_TAGS)
 
 native: $(NATIVE_TAGS)
 
+working: $(WORKING_TAGS)
+
 all: $(ALL_TAGS)
 
 1.0.x: export TEST_REVISION=refs/heads/1.0.x
@@ -197,6 +205,9 @@ show-default:
 
 show-native:
 	@printf "%s\n" $(NATIVE_TAGS)
+
+show-working:
+	@printf "%s\n" $(WORKING_TAGS)
 
 show-all:
 	@printf "%s\n" $(ALL_TAGS)
