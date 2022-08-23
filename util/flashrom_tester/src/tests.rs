@@ -243,7 +243,8 @@ fn elog_sanity_test(env: &mut TestEnv) -> TestResult {
     env.ensure_golden()?;
 
     const ELOG_RW_REGION_NAME: &str = "RW_ELOG";
-    env.cmd.read_region(ELOG_FILE, ELOG_RW_REGION_NAME)?;
+    env.cmd
+        .read_region_into_file(ELOG_FILE, ELOG_RW_REGION_NAME)?;
 
     // Just checking for the magic numer
     // TODO: improve this test to read the events

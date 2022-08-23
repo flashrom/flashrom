@@ -134,16 +134,16 @@ pub trait Flashrom {
     fn wp_toggle(&self, en: bool) -> Result<bool, FlashromError>;
 
     /// Read the whole flash to the file specified by `path`.
-    fn read(&self, path: &str) -> Result<(), FlashromError>;
+    fn read_into_file(&self, path: &str) -> Result<(), FlashromError>;
 
     /// Read only a region of the flash.
-    fn read_region(&self, path: &str, region: &str) -> Result<(), FlashromError>;
+    fn read_region_into_file(&self, path: &str, region: &str) -> Result<(), FlashromError>;
 
     /// Write the whole flash to the file specified by `path`.
-    fn write(&self, path: &str) -> Result<(), FlashromError>;
+    fn write_from_file(&self, path: &str) -> Result<(), FlashromError>;
 
     /// Verify the whole flash against the file specified by `path`.
-    fn verify(&self, path: &str) -> Result<(), FlashromError>;
+    fn verify_from_file(&self, path: &str) -> Result<(), FlashromError>;
 
     /// Erase the whole flash.
     fn erase(&self) -> Result<(), FlashromError>;

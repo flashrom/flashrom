@@ -78,8 +78,8 @@ impl<'a> TestEnv<'a> {
         };
 
         info!("Stashing golden image for verification/recovery on completion");
-        out.cmd.read(&out.original_flash_contents)?;
-        out.cmd.verify(&out.original_flash_contents)?;
+        out.cmd.read_into_file(&out.original_flash_contents)?;
+        out.cmd.verify_from_file(&out.original_flash_contents)?;
 
         info!("Generating random flash-sized data");
         rand_util::gen_rand_testdata(&out.random_data, rom_sz as usize)
@@ -124,14 +124,16 @@ impl<'a> TestEnv<'a> {
     /// Return true if the current Flash contents are the same as the golden image
     /// that was present at the start of testing.
     pub fn is_golden(&self) -> bool {
-        self.cmd.verify(&self.original_flash_contents).is_ok()
+        self.cmd
+            .verify_from_file(&self.original_flash_contents)
+            .is_ok()
     }
 
     /// Do whatever is necessary to make the current Flash contents the same as they
     /// were at the start of testing.
     pub fn ensure_golden(&mut self) -> Result<(), FlashromError> {
         self.wp.set_hw(false)?.set_sw(false)?;
-        self.cmd.write(&self.original_flash_contents)?;
+        self.cmd.write_from_file(&self.original_flash_contents)?;
         Ok(())
     }
 
@@ -146,7 +148,7 @@ impl<'a> TestEnv<'a> {
     ///
     /// Returns Err if they are not the same.
     pub fn verify(&self, contents_path: &str) -> Result<(), FlashromError> {
-        self.cmd.verify(contents_path)?;
+        self.cmd.verify_from_file(contents_path)?;
         Ok(())
     }
 }

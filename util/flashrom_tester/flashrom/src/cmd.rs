@@ -227,7 +227,7 @@ impl crate::Flashrom for FlashromCmd {
         }
     }
 
-    fn read(&self, path: &str) -> Result<(), FlashromError> {
+    fn read_into_file(&self, path: &str) -> Result<(), FlashromError> {
         let opts = FlashromOpt {
             io_opt: IOOpt {
                 read: Some(path),
@@ -236,11 +236,11 @@ impl crate::Flashrom for FlashromCmd {
             ..Default::default()
         };
 
-        self.dispatch(opts, "read")?;
+        self.dispatch(opts, "read_into_file")?;
         Ok(())
     }
 
-    fn read_region(&self, path: &str, region: &str) -> Result<(), FlashromError> {
+    fn read_region_into_file(&self, path: &str, region: &str) -> Result<(), FlashromError> {
         let opts = FlashromOpt {
             io_opt: IOOpt {
                 region: Some((region, path)),
@@ -249,11 +249,11 @@ impl crate::Flashrom for FlashromCmd {
             ..Default::default()
         };
 
-        let (stdout, _) = self.dispatch(opts, "read_region")?;
+        let (stdout, _) = self.dispatch(opts, "read_region_into_file")?;
         Ok(())
     }
 
-    fn write(&self, path: &str) -> Result<(), FlashromError> {
+    fn write_from_file(&self, path: &str) -> Result<(), FlashromError> {
         let opts = FlashromOpt {
             io_opt: IOOpt {
                 write: Some(path),
@@ -262,11 +262,11 @@ impl crate::Flashrom for FlashromCmd {
             ..Default::default()
         };
 
-        self.dispatch(opts, "write")?;
+        self.dispatch(opts, "write_from_file")?;
         Ok(())
     }
 
-    fn verify(&self, path: &str) -> Result<(), FlashromError> {
+    fn verify_from_file(&self, path: &str) -> Result<(), FlashromError> {
         let opts = FlashromOpt {
             io_opt: IOOpt {
                 verify: Some(path),
@@ -275,7 +275,7 @@ impl crate::Flashrom for FlashromCmd {
             ..Default::default()
         };
 
-        self.dispatch(opts, "verify")?;
+        self.dispatch(opts, "verify_from_file")?;
         Ok(())
     }
 
