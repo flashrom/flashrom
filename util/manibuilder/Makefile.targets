@@ -7,12 +7,16 @@ MULTIARCH_TAGS := \
 	centos\:7.6-armhfp-clean centos\:7.6-amd64-clean \
 	centos\:7.3-aarch64-clean centos\:7.3-amd64-clean \
 	centos\:7.2-amd64-clean \
-	$(foreach a,x86_64 s390x aarch64, fedora\:30-$(a)) \
-	$(foreach a,x86_64 s390x ppc64le aarch64, fedora\:29-$(a)) \
-	fedora\:28-armhfp \
-	$(foreach a,x86_64 ppc64le aarch64, \
-	  $(foreach v,25 24, \
+	$(foreach a,x86_64 aarch64, \
+	  $(foreach v,34 33 32 31 30 29 25 24, \
 	    fedora\:$(v)-$(a))) \
+	$(foreach a,ppc64le, \
+	  $(foreach v,34 33 29 25 24, \
+	    fedora\:$(v)-$(a))) \
+	$(foreach a,s390x, \
+	  $(foreach v,34 33 32 31 30 29, \
+	    fedora\:$(v)-$(a))) \
+	fedora\:28-armhfp \
 	$(foreach a,ppc64el arm64 armhf mips mipsel amd64 i386, \
 	  $(foreach v,sid buster stretch, \
 	    debian-debootstrap\:$(a)-$(v))) \
