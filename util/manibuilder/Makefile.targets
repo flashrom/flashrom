@@ -21,7 +21,7 @@ MULTIARCH_TAGS := \
 	    ubuntu-debootstrap\:$(a)-$(v))) \
 	ubuntu-debootstrap\:powerpc-xenial \
 	$(foreach a,aarch64 armhf amd64 i386, \
-	  $(foreach v,v3.9 v3.8 v3.7 v3.6, \
+	  $(foreach v,v3.14 v3.13 v3.12 v3.11 v3.10 v3.9 v3.8 v3.7 v3.6, \
 	    alpine\:$(a)-$(v))) \
 
 OTHER_TAGS := djgpp\:6.1.0
