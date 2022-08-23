@@ -18,7 +18,7 @@ MULTIARCH_TAGS := \
 	    fedora\:$(v)-$(a))) \
 	fedora\:28-armhfp \
 	$(foreach a,ppc64el arm64 armhf mips mipsel amd64 i386, \
-	  $(foreach v,sid buster stretch, \
+	  $(foreach v,buster stretch, \
 	    debian-debootstrap\:$(a)-$(v))) \
 	$(foreach a,ppc64el arm64 armhf amd64 i386, \
 	  $(foreach v,bionic xenial, \
@@ -69,7 +69,6 @@ DEFAULT_TAGS := \
 	debian-debootstrap\:mipsel-stretch \
 	debian-debootstrap\:amd64-stretch \
 	debian-debootstrap\:i386-stretch \
-	debian-debootstrap\:amd64-sid \
 	ubuntu-debootstrap\:arm64-xenial \
 	ubuntu-debootstrap\:amd64-xenial \
 	ubuntu-debootstrap\:powerpc-xenial \
