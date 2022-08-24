@@ -17,7 +17,10 @@ MULTIARCH_TAGS := \
 	  $(foreach v,34 33 32 31 30 29, \
 	    fedora\:$(v)-$(a))) \
 	fedora\:28-armhfp \
-	$(foreach a,ppc64el arm64 armhf mips mipsel amd64 i386, \
+	$(foreach a,ppc64el armhf mipsel amd64 i386, \
+	  $(foreach v,bullseye buster stretch, \
+	    debian-debootstrap\:$(a)-$(v))) \
+	$(foreach a,arm64 mips, \
 	  $(foreach v,buster stretch, \
 	    debian-debootstrap\:$(a)-$(v))) \
 	$(foreach a,ppc64el arm64 armhf amd64 i386, \
