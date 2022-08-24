@@ -23,7 +23,10 @@ MULTIARCH_TAGS := \
 	$(foreach a,arm64 mips, \
 	  $(foreach v,buster stretch, \
 	    debian-debootstrap\:$(a)-$(v))) \
-	$(foreach a,ppc64el arm64 armhf amd64 i386, \
+	$(foreach a,ppc64el arm64 armhf amd64, \
+	  $(foreach v,jammy focal bionic xenial, \
+	    ubuntu-debootstrap\:$(a)-$(v))) \
+	$(foreach a,i386, \
 	  $(foreach v,bionic xenial, \
 	    ubuntu-debootstrap\:$(a)-$(v))) \
 	ubuntu-debootstrap\:powerpc-xenial \
