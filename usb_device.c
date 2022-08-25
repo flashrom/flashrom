@@ -342,9 +342,11 @@ int usb_device_claim(struct usb_device *device)
 		}
 	}
 
-	ret = LIBUSB(libusb_set_auto_detach_kernel_driver(device->handle, 1));
-	if (ret != 0) {
-		msg_perr("USB: Failed to enable auto kernel driver detach\n");
+	ret = LIBUSB(libusb_detach_kernel_driver(device->handle,
+		device->interface_descriptor->bInterfaceNumber));
+	if (ret != 0 && ret != LIBUSB_ERROR_NOT_FOUND && ret != LIBUSB_ERROR_NOT_SUPPORTED) {
+		msg_perr("Cannot detach the existing usb driver. %s\n",
+				libusb_error_name(ret));
 		return ret;
 	}
 
@@ -355,6 +357,8 @@ int usb_device_claim(struct usb_device *device)
 	if (ret != 0) {
 		msg_perr("USB: Could not claim device interface %d\n",
 				device->interface_descriptor->bInterfaceNumber);
+		libusb_attach_kernel_driver(device->handle,
+			device->interface_descriptor->bInterfaceNumber);
 		return ret;
 	}
 
@@ -383,6 +387,8 @@ struct usb_device *usb_device_free(struct usb_device *device)
 
 	if (device->handle != NULL) {
 		libusb_release_interface(device->handle,
+			device->interface_descriptor->bInterfaceNumber);
+		libusb_attach_kernel_driver(device->handle,
 			device->interface_descriptor->bInterfaceNumber);
 		libusb_close(device->handle);
 	}
