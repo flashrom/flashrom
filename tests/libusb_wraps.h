@@ -23,6 +23,8 @@ void *__wrap_usb_dev_get_by_vid_pid_number(
 int __wrap_libusb_init(libusb_context **ctx);
 int __wrap_libusb_open(libusb_device *dev, libusb_device_handle **devh);
 int __wrap_libusb_set_auto_detach_kernel_driver(libusb_device_handle *devh, int enable);
+int __wrap_libusb_detach_kernel_driver(libusb_device_handle *dev_handle, int interface_number);
+int __wrap_libusb_attach_kernel_driver(libusb_device_handle *dev_handle, int interface_number);
 ssize_t __wrap_libusb_get_device_list(libusb_context *ctx, libusb_device ***list);
 void __wrap_libusb_free_device_list(libusb_device **list, int unref_devices);
 uint8_t __wrap_libusb_get_bus_number(libusb_device *dev);

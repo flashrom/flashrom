@@ -46,6 +46,18 @@ int __wrap_libusb_set_auto_detach_kernel_driver(libusb_device_handle *devh, int 
 	return 0;
 }
 
+int __wrap_libusb_detach_kernel_driver(libusb_device_handle *dev_handle, int interface_number)
+{
+	LOG_ME;
+	return 0;
+}
+
+int __wrap_libusb_attach_kernel_driver(libusb_device_handle *dev_handle, int interface_number)
+{
+	LOG_ME;
+	return 0;
+}
+
 ssize_t __wrap_libusb_get_device_list(libusb_context *ctx, libusb_device ***list)
 {
 	LOG_ME;
