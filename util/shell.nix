@@ -5,6 +5,8 @@ stdenv.mkDerivation {
 
 	buildInputs = [
 		cmocka
+		gcc
+		gnumake
 		libftdi1
 		libjaylink
 		libusb1
