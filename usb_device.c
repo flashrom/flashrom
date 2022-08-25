@@ -381,8 +381,11 @@ struct usb_device *usb_device_free(struct usb_device *device)
 {
 	struct usb_device *next = device->next;
 
-	if (device->handle != NULL)
+	if (device->handle != NULL) {
+		libusb_release_interface(device->handle,
+			device->interface_descriptor->bInterfaceNumber);
 		libusb_close(device->handle);
+	}
 
 	/*
 	 * This unref balances the ref added in the add_device function.
