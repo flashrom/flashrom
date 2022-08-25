@@ -195,6 +195,7 @@ int printlock_at49f(struct flashctx *flash);
 
 /* w29ee011.c */
 int probe_w29ee011(struct flashctx *flash);
+bool w29ee011_can_override(const char *const chip_name, const char *const override_chip);
 
 /* stm50.c */
 int erase_sector_stm50(struct flashctx *flash, unsigned int block, unsigned int blocksize);

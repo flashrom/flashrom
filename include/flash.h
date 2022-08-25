@@ -475,13 +475,12 @@ size_t strnlen(const char *str, size_t n);
 
 /* flashrom.c */
 extern const char flashrom_version[];
-extern const char *chip_to_probe;
 char *flashbuses_to_text(enum chipbustype bustype);
 int map_flash(struct flashctx *flash);
 void unmap_flash(struct flashctx *flash);
 int read_memmapped(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 int erase_flash(struct flashctx *flash);
-int probe_flash(struct registered_master *mst, int startchip, struct flashctx *fill_flash, int force);
+int probe_flash(struct registered_master *mst, int startchip, struct flashctx *flash, int force, const char *const chip_to_probe);
 int verify_range(struct flashctx *flash, const uint8_t *cmpbuf, unsigned int start, unsigned int len);
 void emergency_help_message(void);
 void print_version(void);

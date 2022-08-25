@@ -221,8 +221,6 @@ int flashrom_flash_probe(struct flashrom_flashctx **const flashctx,
 	int i, ret = 2;
 	struct flashrom_flashctx second_flashctx = { 0, };
 
-	chip_to_probe = chip_name; /* chip_to_probe is global in flashrom.c */
-
 	*flashctx = malloc(sizeof(**flashctx));
 	if (!*flashctx)
 		return 1;
@@ -230,10 +228,10 @@ int flashrom_flash_probe(struct flashrom_flashctx **const flashctx,
 
 	for (i = 0; i < registered_master_count; ++i) {
 		int flash_idx = -1;
-		if (!ret || (flash_idx = probe_flash(&registered_masters[i], 0, *flashctx, 0)) != -1) {
+		if (!ret || (flash_idx = probe_flash(&registered_masters[i], 0, *flashctx, 0, chip_name)) != -1) {
 			ret = 0;
 			/* We found one chip, now check that there is no second match. */
-			if (probe_flash(&registered_masters[i], flash_idx + 1, &second_flashctx, 0) != -1) {
+			if (probe_flash(&registered_masters[i], flash_idx + 1, &second_flashctx, 0, chip_name) != -1) {
 				flashrom_layout_release(second_flashctx.default_layout);
 				free(second_flashctx.chip);
 				ret = 3;

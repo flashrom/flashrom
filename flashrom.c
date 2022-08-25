@@ -35,7 +35,6 @@
 #include "chipdrivers.h"
 
 const char flashrom_version[] = FLASHROM_VERSION;
-const char *chip_to_probe = NULL;
 
 static const struct programmer_entry *programmer = NULL;
 
@@ -824,7 +823,7 @@ static probe_func_t *lookup_probe_func_ptr(const struct flashchip *chip)
 	return NULL;
 }
 
-int probe_flash(struct registered_master *mst, int startchip, struct flashctx *flash, int force)
+int probe_flash(struct registered_master *mst, int startchip, struct flashctx *flash, int force, const char *const chip_to_probe)
 {
 	const struct flashchip *chip;
 	enum chipbustype buses_common;
@@ -863,6 +862,10 @@ int probe_flash(struct registered_master *mst, int startchip, struct flashctx *f
 		 */
 		if (force)
 			break;
+
+		if (probe_func == &probe_w29ee011)
+			if (!w29ee011_can_override(flash->chip->name, chip_to_probe))
+				goto notfound;
 
 		if (probe_func(flash) != 1)
 			goto notfound;
