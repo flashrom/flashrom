@@ -398,6 +398,7 @@ static int ch341a_spi_shutdown(void *data)
 		transfer_ins[i] = NULL;
 	}
 	libusb_release_interface(handle, 0);
+	libusb_attach_kernel_driver(handle, 0);
 	libusb_close(handle);
 	libusb_exit(NULL);
 	handle = NULL;
@@ -448,11 +449,10 @@ static int ch341a_spi_init(const struct programmer_cfg *cfg)
 		return -1;
 	}
 
-	ret = libusb_set_auto_detach_kernel_driver(handle, 1);
-	if (ret != 0) {
-		msg_pwarn("Platform does not support detaching of USB kernel drivers.\n"
-			  "If an unsupported driver is active, claiming the interface may fail.\n");
-	}
+	ret = libusb_detach_kernel_driver(handle, 0);
+	if (ret != 0 && ret != LIBUSB_ERROR_NOT_FOUND)
+		msg_pwarn("Cannot detach the existing USB driver. Claiming the interface may fail. %s\n",
+			libusb_error_name(ret));
 
 	ret = libusb_claim_interface(handle, 0);
 	if (ret != 0) {
@@ -514,6 +514,7 @@ dealloc_transfers:
 release_interface:
 	libusb_release_interface(handle, 0);
 close_handle:
+	libusb_attach_kernel_driver(handle, 0);
 	libusb_close(handle);
 	handle = NULL;
 	return -1;
