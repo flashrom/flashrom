@@ -38,7 +38,7 @@ const char flashrom_version[] = FLASHROM_VERSION;
 const char *chip_to_probe = NULL;
 
 static const struct programmer_entry *programmer = NULL;
-static const char *programmer_param = NULL;
+static char *programmer_param = NULL;
 
 /*
  * Programmers supporting multiple buses can have differing size limits on
@@ -150,7 +150,16 @@ int programmer_init(const struct programmer_entry *prog, const char *param)
 	/* Default to allowing writes. Broken programmers set this to 0. */
 	programmer_may_write = true;
 
-	programmer_param = param;
+	if (param) {
+		programmer_param = strdup(param);
+		if (!programmer_param) {
+			msg_perr("Out of memory!\n");
+			return ERROR_FATAL;
+		}
+	} else {
+		programmer_param = NULL;
+	}
+
 	msg_pdbg("Initializing %s programmer\n", programmer->name);
 	ret = programmer->init(NULL);
 	if (programmer_param && strlen(programmer_param)) {
@@ -169,6 +178,8 @@ int programmer_init(const struct programmer_entry *prog, const char *param)
 			ret = ERROR_FATAL;
 		}
 	}
+	free(programmer_param);
+	programmer_param = NULL;
 	return ret;
 }
 
@@ -187,8 +198,6 @@ int programmer_shutdown(void)
 		int i = --shutdown_fn_count;
 		ret |= shutdown_fn[i].func(shutdown_fn[i].data);
 	}
-
-	programmer_param = NULL;
 	registered_master_count = 0;
 
 	return ret;
@@ -227,7 +236,7 @@ int read_memmapped(struct flashctx *flash, uint8_t *buf, unsigned int start,
  * needle and remove everything from the first occurrence of needle to the next
  * delimiter from haystack.
  */
-static char *extract_param(const char *const *haystack, const char *needle, const char *delim)
+static char *extract_param(char *const *haystack, const char *needle, const char *delim)
 {
 	char *param_pos, *opt_pos, *rest;
 	char *opt = NULL;
