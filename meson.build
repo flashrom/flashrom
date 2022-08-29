@@ -41,6 +41,7 @@ add_project_arguments('-DFLASHROM_VERSION="' + meson.project_version() + '"', la
 config_atahpt = get_option('config_atahpt')
 config_atapromise = get_option('config_atapromise')
 config_atavia = get_option('config_atavia')
+config_bitbang_spi = get_option('config_bitbang_spi')
 config_buspirate_spi = get_option('config_buspirate_spi')
 config_ch341a_spi = get_option('config_ch341a_spi')
 config_dediprog = get_option('config_dediprog')
@@ -207,14 +208,17 @@ endif
 if config_atahpt
   srcs += files('atahpt.c')
   cargs += '-DCONFIG_ATAHPT=1'
+  need_raw_access = true
 endif
 if config_atapromise
   srcs += files('atapromise.c')
   cargs += '-DCONFIG_ATAPROMISE=1'
+  need_raw_access = true
 endif
 if config_atavia
   srcs += files('atavia.c')
   cargs += '-DCONFIG_ATAVIA=1'
+  need_raw_access = true
 endif
 if config_buspirate_spi
   srcs += files('buspirate_spi.c')
@@ -243,6 +247,7 @@ endif
 if config_drkaiser
   srcs += files('drkaiser.c')
   cargs += '-DCONFIG_DRKAISER=1'
+  need_raw_access = true
 endif
 if config_dummy
   srcs += files('dummyflasher.c')
@@ -256,6 +261,7 @@ endif
 if config_gfxnvidia
   srcs += files('gfxnvidia.c')
   cargs += '-DCONFIG_GFXNVIDIA=1'
+  need_raw_access = true
 endif
 if config_raiden_debug_spi
   srcs += files('raiden_debug_spi.c')
@@ -281,6 +287,8 @@ if config_internal
       'wbsio_spi.c',
     )
   endif
+  config_bitbang_spi = true
+  need_raw_access = true
   cargs += '-DCONFIG_INTERNAL=1'
   if get_option('config_internal_dmi')
     # Use internal DMI/SMBIOS decoder by default instead of relying on dmidecode.
@@ -290,6 +298,7 @@ endif
 if config_it8212
   srcs += files('it8212.c')
   cargs += '-DCONFIG_IT8212=1'
+  need_raw_access = true
 endif
 if config_linux_mtd
   srcs += files('linux_mtd.c')
@@ -306,30 +315,37 @@ endif
 if config_nic3com
   srcs += files('nic3com.c')
   cargs += '-DCONFIG_NIC3COM=1'
+  need_raw_access = true
 endif
 if config_nicintel
   srcs += files('nicintel.c')
   cargs += '-DCONFIG_NICINTEL=1'
+  need_raw_access = true
 endif
 if config_nicintel_eeprom
   srcs += files('nicintel_eeprom.c')
   cargs += '-DCONFIG_NICINTEL_EEPROM=1'
+  need_raw_access = true
 endif
 if config_nicintel_spi
   srcs += files('nicintel_spi.c')
   cargs += '-DCONFIG_NICINTEL_SPI=1'
+  need_raw_access = true
 endif
 if config_nicnatsemi
   srcs += files('nicnatsemi.c')
   cargs += '-DCONFIG_NICNATSEMI=1'
+  need_raw_access = true
 endif
 if config_nicrealtek
   srcs += files('nicrealtek.c')
   cargs += '-DCONFIG_NICREALTEK=1'
+  need_raw_access = true
 endif
 if config_ogp_spi
   srcs += files('ogp_spi.c')
   cargs += '-DCONFIG_OGP_SPI=1'
+  need_raw_access = true
 endif
 if config_pickit2_spi
   srcs += files('pickit2_spi.c')
@@ -346,6 +362,7 @@ endif
 if config_satamv
   srcs += files('satamv.c')
   cargs += '-DCONFIG_SATAMV=1'
+  need_raw_access = true
 endif
 if config_satasii
   srcs += files('satasii.c')
@@ -354,6 +371,8 @@ endif
 if config_serprog
   srcs += files('serprog.c')
   cargs += '-DCONFIG_SERPROG=1'
+  need_serial = true
+  need_raw_access = true
 endif
 if config_usbblaster_spi
   srcs += files('usbblaster_spi.c')
