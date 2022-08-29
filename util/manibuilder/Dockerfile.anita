@@ -7,7 +7,6 @@ RUN \
 	useradd -p locked -m mani && \
 	apt-get -qq update && \
 	apt-get -qq upgrade && \
-	apt-get -qq dist-upgrade && \
 	apt-get -qqy install git python-is-python3 python3-pexpect \
 			     python3-distutils genisoimage qemu-system && \
 	apt-get clean
