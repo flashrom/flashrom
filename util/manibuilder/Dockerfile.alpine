@@ -1,7 +1,9 @@
 FROM manibase
 
+ARG PROTO=https
 RUN \
 	adduser -D mani mani && \
+	sed -i "s/https/${PROTO}/" /etc/apk/repositories && \
 	apk update && \
 	apk add ca-certificates build-base linux-headers git ccache \
 		pciutils-dev libusb-compat-dev libusb-dev
