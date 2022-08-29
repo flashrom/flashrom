@@ -619,7 +619,7 @@ int spi_block_erase_dc(struct flashctx *flash, unsigned int addr, unsigned int b
 }
 
 static const struct {
-	erasefunc_t *func;
+	enum block_erase_func func;
 	uint8_t opcode;
 } function_opcode_list[] = {
 	{SPI_BLOCK_ERASE_20, 0x20},
@@ -639,7 +639,7 @@ static const struct {
 	{SPI_BLOCK_ERASE_DC, 0xdc},
 };
 
-erasefunc_t *spi_get_erasefn_from_opcode(uint8_t opcode)
+enum block_erase_func spi_get_erasefn_from_opcode(uint8_t opcode)
 {
 	size_t i;
 	for (i = 0; i < ARRAY_SIZE(function_opcode_list); i++) {
@@ -651,14 +651,14 @@ erasefunc_t *spi_get_erasefn_from_opcode(uint8_t opcode)
 	return NO_BLOCK_ERASE_FUNC;
 }
 
-uint8_t spi_get_opcode_from_erasefn(erasefunc_t *func)
+uint8_t spi_get_opcode_from_erasefn(enum block_erase_func func)
 {
 	size_t i;
 	for (i = 0; i < ARRAY_SIZE(function_opcode_list); i++) {
 		if (function_opcode_list[i].func == func)
 			return function_opcode_list[i].opcode;
 	}
-	msg_cinfo("%s: unknown erase function (0x%p). Please report "
+	msg_cinfo("%s: unknown erase function (0x%d). Please report "
 			"this at flashrom@flashrom.org\n", __func__, func);
 	return 0x00; //Assuming 0x00 is not a erase function opcode
 }

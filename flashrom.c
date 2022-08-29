@@ -336,6 +336,57 @@ char *extract_programmer_param_str(const struct programmer_cfg *cfg, const char 
 	return extract_param(&cfg->params, param_name, ",");
 }
 
+/* special unit-test hook */
+erasefunc_t *g_test_erase_injector;
+
+static erasefunc_t *lookup_erase_func_ptr(const struct block_eraser *const eraser)
+{
+	switch (eraser->block_erase) {
+		case SPI_BLOCK_ERASE_EMULATION: return &spi_block_erase_emulation;
+		case SPI_BLOCK_ERASE_20: return &spi_block_erase_20;
+		case SPI_BLOCK_ERASE_21: return &spi_block_erase_21;
+		case SPI_BLOCK_ERASE_40: return NULL; // FIXME unhandled &spi_block_erase_40;
+		case SPI_BLOCK_ERASE_50: return &spi_block_erase_50;
+		case SPI_BLOCK_ERASE_52: return &spi_block_erase_52;
+		case SPI_BLOCK_ERASE_53: return &spi_block_erase_53;
+		case SPI_BLOCK_ERASE_5C: return &spi_block_erase_5c;
+		case SPI_BLOCK_ERASE_60: return &spi_block_erase_60;
+		case SPI_BLOCK_ERASE_62: return &spi_block_erase_62;
+		case SPI_BLOCK_ERASE_81: return &spi_block_erase_81;
+		case SPI_BLOCK_ERASE_C4: return &spi_block_erase_c4;
+		case SPI_BLOCK_ERASE_C7: return &spi_block_erase_c7;
+		case SPI_BLOCK_ERASE_D7: return &spi_block_erase_d7;
+		case SPI_BLOCK_ERASE_D8: return &spi_block_erase_d8;
+		case SPI_BLOCK_ERASE_DB: return &spi_block_erase_db;
+		case SPI_BLOCK_ERASE_DC: return &spi_block_erase_dc;
+		case S25FL_BLOCK_ERASE: return &s25fl_block_erase;
+		case S25FS_BLOCK_ERASE_D8: return &s25fs_block_erase_d8;
+		case JEDEC_SECTOR_ERASE: return &erase_sector_jedec; // TODO rename to &jedec_sector_erase;
+		case JEDEC_BLOCK_ERASE: return &erase_block_jedec; // TODO rename to &jedec_block_erase;
+		case JEDEC_CHIP_BLOCK_ERASE: return &erase_chip_block_jedec; // TODO rename to &jedec_chip_block_erase;
+		case OPAQUE_ERASE: return &erase_opaque; // TODO rename to &opqaue_erase;
+		case SPI_ERASE_AT45CS_SECTOR: return &spi_erase_at45cs_sector;
+		case SPI_ERASE_AT45DB_BLOCK: return &spi_erase_at45db_block;
+		case SPI_ERASE_AT45DB_CHIP: return &spi_erase_at45db_chip;
+		case SPI_ERASE_AT45DB_PAGE: return &spi_erase_at45db_page;
+		case SPI_ERASE_AT45DB_SECTOR: return &spi_erase_at45db_sector;
+		case ERASE_CHIP_28SF040: return &erase_chip_28sf040;
+		case ERASE_SECTOR_28SF040: return &erase_sector_28sf040;
+		case ERASE_BLOCK_82802AB: return &erase_block_82802ab;
+		case ERASE_SECTOR_49LFXXXC: return &erase_sector_49lfxxxc;
+		case STM50_SECTOR_ERASE: return &erase_sector_stm50; // TODO rename to &stm50_sector_erase;
+		case EDI_CHIP_BLOCK_ERASE: return &edi_chip_block_erase;
+		case TEST_ERASE_INJECTOR: return g_test_erase_injector;
+	/* default: total function, 0 indicates no erase function set.
+	 * We explicitly do not want a default catch-all case in the switch
+	 * to ensure unhandled enum's are compiler warnings.
+	 */
+		case NO_BLOCK_ERASE_FUNC: return NULL;
+	};
+
+	return NULL;
+}
+
 static int check_block_eraser(const struct flashctx *flash, int k, int log)
 {
 	struct block_eraser eraser = flash->chip->block_erasers[k];
@@ -1099,7 +1150,8 @@ static int walk_eraseblocks(struct flashctx *const flashctx,
 				msg_cdbg(", ");
 			msg_cdbg("0x%06x-0x%06x:", info->erase_start, info->erase_end);
 
-			ret = per_blockfn(flashctx, info, eraser->block_erase);
+			erasefunc_t *erase_func = lookup_erase_func_ptr(eraser);
+			ret = per_blockfn(flashctx, info, erase_func);
 			if (ret)
 				return ret;
 		}

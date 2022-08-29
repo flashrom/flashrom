@@ -81,7 +81,7 @@ static int sfdp_add_uniform_eraser(struct flashchip *chip, uint8_t opcode, uint3
 {
 	int i;
 	uint32_t total_size = chip->total_size * 1024;
-	erasefunc_t *erasefn = spi_get_erasefn_from_opcode(opcode);
+	enum block_erase_func erasefn = spi_get_erasefn_from_opcode(opcode);
 
 	if (erasefn == NO_BLOCK_ERASE_FUNC || total_size == 0 || block_size == 0 ||
 	    total_size % block_size != 0) {
