@@ -87,6 +87,17 @@ void run_init_error_path(void **state, const struct io_mock *io, const struct pr
 	assert_int_equal(error_code, flashrom_programmer_init(&flashprog, prog->name, param_dup));
 	printf("... init failed with error code %i as expected\n", error_code);
 
+	/*
+	 * `flashrom_programmer_shutdown` runs only registered shutdown functions, which means
+	 * if nothing has been registered then nothing runs.
+	 * Since this is testing error path on initialisation and error can happen at different
+	 * phases of init, we don't know whether shutdown function has already been registered
+	 * or not yet. Running `flashrom_programmer_shutdown` covers both situations.
+	 */
+	printf("Running programmer shutdown in case anything got registered...\n");
+	assert_int_equal(0, flashrom_programmer_shutdown(flashprog));
+	printf("... completed\n");
+
 	free(param_dup);
 
 	io_mock_register(NULL);
