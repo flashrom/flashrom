@@ -97,7 +97,7 @@ static const struct flashchip chip_W25Q128_V = {
 		.cmp    = {STATUS2, 6, RW},
 		.wps    = {STATUS3, 2, RW},
 	},
-	.decode_range	= decode_range_spi25,
+	.decode_range	= DECODE_RANGE_SPI25,
 };
 
 /* Trying to set an unsupported WP range fails */

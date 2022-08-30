@@ -174,11 +174,26 @@ static enum flashrom_wp_result write_wp_bits(struct flashctx *flash, struct wp_b
 	return FLASHROM_WP_OK;
 }
 
+static decode_range_func_t *lookup_decode_range_func_ptr(const struct flashchip *chip)
+{
+	switch (chip->decode_range) {
+		case DECODE_RANGE_SPI25: return &decode_range_spi25;
+	/* default: total function, 0 indicates no decode range function set. */
+		case NO_DECODE_RANGE_FUNC: return NULL;
+	};
+
+	return NULL;
+}
+
+
 /** Get the range selected by a WP configuration. */
 static enum flashrom_wp_result get_wp_range(struct wp_range *range, struct flashctx *flash, const struct wp_bits *bits)
 {
-	flash->chip->decode_range(&range->start, &range->len, bits, flashrom_flash_getsize(flash));
+	decode_range_func_t *decode_range = lookup_decode_range_func_ptr(flash->chip);
+	if (decode_range == NULL)
+		return FLASHROM_WP_ERR_OTHER;
 
+	decode_range(&range->start, &range->len, bits, flashrom_flash_getsize(flash));
 	return FLASHROM_WP_OK;
 }
 
@@ -424,7 +439,7 @@ static int set_wp_mode(struct wp_bits *bits, const enum flashrom_wp_mode mode)
 
 static bool chip_supported(struct flashctx *flash)
 {
-	return (flash->chip != NULL) && (flash->chip->decode_range != NULL);
+	return (flash->chip != NULL) && (flash->chip->decode_range != NO_DECODE_RANGE_FUNC);
 }
 
 

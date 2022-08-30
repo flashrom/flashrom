@@ -2451,7 +2451,7 @@ const struct flashchip flashchips[] = {
 			.sec    = {STATUS1, 6, RW},
 			.cmp    = {STATUS2, 6, RW},
 		},
-		.decode_range	= decode_range_spi25,
+		.decode_range	= DECODE_RANGE_SPI25,
 	},
 
 	{
@@ -5183,7 +5183,7 @@ const struct flashchip flashchips[] = {
 			.bp     = {{STATUS1, 2, RW}, {STATUS1, 3, RW}, {STATUS1, 4, RW}},
 			.tb     = {STATUS1, 5, RW}, /* Called BP3 in datasheet, acts like TB */
 		},
-		.decode_range	= decode_range_spi25,
+		.decode_range	= DECODE_RANGE_SPI25,
 	},
 
 	{
@@ -6371,7 +6371,7 @@ const struct flashchip flashchips[] = {
 			.sec    = {STATUS1, 6, RW}, /* Called BP4 in datasheet, acts like SEC */
 			.cmp    = {STATUS2, 6, RW},
 		},
-		.decode_range	= decode_range_spi25,
+		.decode_range	= DECODE_RANGE_SPI25,
 	},
 
 	{
@@ -6537,7 +6537,7 @@ const struct flashchip flashchips[] = {
 			.sec    = {STATUS1, 6, RW}, /* Called BP4 in datasheet, acts like SEC */
 			.cmp    = {STATUS2, 6, RW},
 		},
-		.decode_range	= decode_range_spi25,
+		.decode_range	= DECODE_RANGE_SPI25,
 	},
 
 	{
@@ -6665,7 +6665,7 @@ const struct flashchip flashchips[] = {
 			.sec    = {STATUS1, 6, RW}, /* Called BP4 in datasheet, acts like SEC */
 			.cmp    = {STATUS2, 6, RW},
 		},
-		.decode_range	= decode_range_spi25,
+		.decode_range	= DECODE_RANGE_SPI25,
 	},
 
 	{
@@ -6798,7 +6798,7 @@ const struct flashchip flashchips[] = {
 			.bp     = {{STATUS1, 2, RW}, {STATUS1, 3, RW}, {STATUS1, 4, RW}, {STATUS1, 5, RW}},
 			.tb     = {STATUS1, 6, RW},
 		},
-		.decode_range	= decode_range_spi25,
+		.decode_range	= DECODE_RANGE_SPI25,
 	},
 
 	{
@@ -6847,7 +6847,7 @@ const struct flashchip flashchips[] = {
 			.sec    = {STATUS1, 6, RW}, /* Called BP4 in datasheet, acts like SEC */
 			.cmp    = {STATUS2, 6, RW},
 		},
-		.decode_range	= decode_range_spi25,
+		.decode_range	= DECODE_RANGE_SPI25,
 	},
 
 	{
@@ -6969,7 +6969,7 @@ const struct flashchip flashchips[] = {
 			.sec    = {STATUS1, 6, RW}, /* Called BP4 in datasheet, acts like SEC */
 			.cmp    = {STATUS2, 6, RW},
 		},
-		.decode_range	= decode_range_spi25,
+		.decode_range	= DECODE_RANGE_SPI25,
 	},
 
 	{
@@ -16236,7 +16236,7 @@ const struct flashchip flashchips[] = {
 			.cmp	= {STATUS2, 6, RW},
 			.wps	= {STATUS3, 2, RW},
 		},
-		.decode_range	= decode_range_spi25,
+		.decode_range	= DECODE_RANGE_SPI25,
 	},
 
 	{
@@ -16729,7 +16729,7 @@ const struct flashchip flashchips[] = {
 			.cmp	= {STATUS2, 6, RW},
 			.wps	= {STATUS3, 2, RW},
 		},
-		.decode_range	= decode_range_spi25,
+		.decode_range	= DECODE_RANGE_SPI25,
 	},
 
 	{
@@ -17347,7 +17347,7 @@ const struct flashchip flashchips[] = {
 			.cmp	= {STATUS2, 6, RW},
 			.wps	= {STATUS3, 2, RW},
 		},
-		.decode_range	= decode_range_spi25,
+		.decode_range	= DECODE_RANGE_SPI25,
 	},
 
 	{
@@ -17395,7 +17395,7 @@ const struct flashchip flashchips[] = {
 			.sec    = {STATUS1, 6, RW},
 			.cmp    = {STATUS2, 6, RW},
 		},
-		.decode_range	= decode_range_spi25,
+		.decode_range	= DECODE_RANGE_SPI25,
 	},
 
 	{
@@ -17445,7 +17445,7 @@ const struct flashchip flashchips[] = {
 			.sec    = {STATUS1, 6, RW},
 			.cmp    = {STATUS2, 6, RW},
 		},
-		.decode_range	= decode_range_spi25,
+		.decode_range	= DECODE_RANGE_SPI25,
 	},
 
 	{
@@ -17493,7 +17493,7 @@ const struct flashchip flashchips[] = {
 			.sec    = {STATUS1, 6, RW},
 			.cmp    = {STATUS2, 6, RW},
 		},
-		.decode_range	= decode_range_spi25,
+		.decode_range	= DECODE_RANGE_SPI25,
 	},
 
 	{
@@ -17663,7 +17663,7 @@ const struct flashchip flashchips[] = {
 			.tb     = {STATUS1, 6, RW},
 			.cmp    = {STATUS2, 6, RW},
 		},
-		.decode_range	= decode_range_spi25,
+		.decode_range	= DECODE_RANGE_SPI25,
 	},
 
 	{
@@ -17718,7 +17718,7 @@ const struct flashchip flashchips[] = {
 			.tb     = {STATUS1, 6, RW},
 			.cmp    = {STATUS2, 6, RW},
 		},
-		.decode_range	= decode_range_spi25,
+		.decode_range	= DECODE_RANGE_SPI25,
 	},
 
 	{
@@ -17773,7 +17773,7 @@ const struct flashchip flashchips[] = {
 			.tb     = {STATUS1, 6, RW},
 			.cmp    = {STATUS2, 6, RW},
 		},
-		.decode_range	= decode_range_spi25,
+		.decode_range	= DECODE_RANGE_SPI25,
 	},
 
 	{
@@ -18238,7 +18238,7 @@ const struct flashchip flashchips[] = {
 			.sec	= {STATUS1, 6, RW},
 			.cmp	= {STATUS2, 6, RW},
 		},
-		.decode_range	= decode_range_spi25,
+		.decode_range	= DECODE_RANGE_SPI25,
 	},
 
 	{
@@ -18290,7 +18290,7 @@ const struct flashchip flashchips[] = {
 			.cmp	= {STATUS2, 6, RW},
 			.wps	= {STATUS3, 2, RW},
 		},
-		.decode_range	= decode_range_spi25,
+		.decode_range	= DECODE_RANGE_SPI25,
 	},
 
 	{
@@ -18380,7 +18380,7 @@ const struct flashchip flashchips[] = {
 			.sec    = {STATUS1, 6, RW},
 			.cmp    = {STATUS2, 6, RW},
 		},
-		.decode_range	= decode_range_spi25,
+		.decode_range	= DECODE_RANGE_SPI25,
 	},
 
 	{
@@ -19752,7 +19752,7 @@ const struct flashchip flashchips[] = {
 			.sec    = {STATUS1, 6, RW},
 			.cmp    = {STATUS2, 6, RW},
 		},
-		.decode_range	= decode_range_spi25,
+		.decode_range	= DECODE_RANGE_SPI25,
 	},
 
 	{
@@ -19842,7 +19842,7 @@ const struct flashchip flashchips[] = {
 			.bp     = {{STATUS1, 2, RW}, {STATUS1, 3, RW}, {STATUS1, 4, RW}, {STATUS1, 5, RW}},
 			.tb     = {STATUS1, 6, RW},
 		},
-		.decode_range	= decode_range_spi25,
+		.decode_range	= DECODE_RANGE_SPI25,
 	},
 
 	{

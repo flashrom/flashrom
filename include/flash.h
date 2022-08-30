@@ -211,6 +211,12 @@ struct reg_bit_info {
 
 struct wp_bits;
 
+enum decode_range_func {
+	NO_DECODE_RANGE_FUNC = 0, /* 0 indicates no range decode funciton is set. */
+	DECODE_RANGE_SPI25 = 1,
+};
+typedef void (decode_range_func_t)(size_t *start, size_t *len, const struct wp_bits *, size_t chip_len);
+
 struct flashchip {
 	const char *vendor;
 	const char *name;
@@ -321,9 +327,11 @@ struct flashchip {
 		struct reg_bit_info wps;
 	} reg_bits;
 
-	/* Function that takes a set of WP config bits (e.g. BP, SEC, TB, etc) */
-	/* and determines what protection range they select. */
-	void (*decode_range)(size_t *start, size_t *len, const struct wp_bits *, size_t chip_len);
+	/*
+	 * Function that takes a set of WP config bits (e.g. BP, SEC, TB, etc)
+	 * and determines what protection range they select.
+	 */
+	enum decode_range_func decode_range;
 };
 
 typedef int (*chip_restore_fn_cb_t)(struct flashctx *flash, uint8_t status);
