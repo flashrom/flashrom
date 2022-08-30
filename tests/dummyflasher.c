@@ -55,8 +55,66 @@ void dummy_probe_variable_size_test_success(void **state)
 	run_probe_lifecycle(state, &dummy_io, &programmer_dummy, "size=8388608,emulate=VARIABLE_SIZE", "Opaque flash chip");
 }
 
+void dummy_init_fails_unhandled_param_test_success(void **state)
+{
+	struct io_mock_fallback_open_state dummy_fallback_open_state = {
+		.noc = 0,
+		.paths = { NULL },
+	};
+	const struct io_mock dummy_io = {
+		.fallback_open_state = &dummy_fallback_open_state,
+	};
+
+	/*
+	 * Programmer init should fail due to `dummy_init` failure caused by
+	 * invalid value of `emulate` param. There is unhandled param left
+	 * at the end of param string.
+	 */
+	run_init_error_path(state, &dummy_io, &programmer_dummy, "bus=spi,emulate=INVALID,unhandled=value", 1);
+}
+
+void dummy_init_success_invalid_param_test_success(void **state)
+{
+	struct io_mock_fallback_open_state dummy_fallback_open_state = {
+		.noc = 0,
+		.paths = { NULL },
+	};
+	const struct io_mock dummy_io = {
+		.fallback_open_state = &dummy_fallback_open_state,
+	};
+
+	/*
+	 * Programmer init should fail despite of the fact that `dummy_init`
+	 * is successful, due to invalid param at the end of param string.
+	 */
+	run_init_error_path(state, &dummy_io, &programmer_dummy,
+				"bus=spi,emulate=W25Q128FV,invalid=value", ERROR_FATAL);
+}
+
+void dummy_init_success_unhandled_param_test_success(void **state)
+{
+	struct io_mock_fallback_open_state dummy_fallback_open_state = {
+		.noc = 0,
+		.paths = { NULL },
+	};
+	const struct io_mock dummy_io = {
+		.fallback_open_state = &dummy_fallback_open_state,
+	};
+
+	/*
+	 * Programmer init should fail despite of the fact that `dummy_init`
+	 * is successful, due to unhandled param at the end of param string.
+	 * Unhandled param `voltage` is not used for dummyflasher.
+	 */
+	run_init_error_path(state, &dummy_io, &programmer_dummy,
+				"bus=spi,emulate=W25Q128FV,voltage=3.5V", ERROR_FATAL);
+}
+
 #else
 	SKIP_TEST(dummy_basic_lifecycle_test_success)
 	SKIP_TEST(dummy_probe_lifecycle_test_success)
 	SKIP_TEST(dummy_probe_variable_size_test_success)
+	SKIP_TEST(dummy_init_fails_unhandled_param_test_success)
+	SKIP_TEST(dummy_init_success_invalid_param_test_success)
+	SKIP_TEST(dummy_init_success_unhandled_param_test_success)
 #endif /* CONFIG_DUMMY */
