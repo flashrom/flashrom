@@ -38,7 +38,7 @@ build_make () {
 
 build_meson () {
 	builddir=out
-	meson $builddir
+	meson $builddir -Dtests=enabled
 	ninja -C $builddir
 	ninja -C $builddir test
 }
