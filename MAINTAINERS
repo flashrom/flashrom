@@ -142,6 +142,11 @@ F:	subprojects/cmocka.wrap
 # UTILS
 ################################################################################
 
+TEST BUILD SCRIPT
+M:	Felix Singer <felixsinger@posteo.net>
+S:	Supported
+F:	test_build.sh
+
 FLASHROM TESTER
 M:	Evan Benn <evanbenn@chromium.org>
 S:	Supported
