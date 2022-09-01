@@ -28,7 +28,7 @@ fi
 
 build_make () {
 	make clean
-	make CONFIG_EVERYTHING=yes
+	make -j $(nproc) CONFIG_EVERYTHING=yes
 
 	# In case of clang analyzer we don't want to run it on
 	# each programmer individually. Thus, just return here.
@@ -39,7 +39,7 @@ build_make () {
 	for option in ${make_programmer_opts}; do
 		echo "Building ${option}"
 		make clean
-		make CONFIG_NOTHING=yes CONFIG_${option}=yes
+		make -j $(nproc) CONFIG_NOTHING=yes CONFIG_${option}=yes
 	done
 }
 
