@@ -24,7 +24,7 @@
 
 void *not_null(void)
 {
-	return (void *)NON_ZERO;
+	return (void *)MOCK_FD;
 }
 
 /* Workaround for https://github.com/clibs/cmocka/issues/17 */
@@ -253,7 +253,7 @@ int __wrap_fflush(FILE *fp)
 int __wrap_fileno(FILE *fp)
 {
 	LOG_ME;
-	return NON_ZERO;
+	return MOCK_FD;
 }
 
 int __wrap_fsync(int fd)
