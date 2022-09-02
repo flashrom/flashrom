@@ -370,6 +370,17 @@ int main(int argc, char *argv[])
 {
 	int ret = 0;
 
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+	/*
+	 * Pretending to be a multithreaded environment so that `fileno`
+	 * is called as a function (and not as a macro).
+	 * fileno macro in FreeBSD is expanded into inline access of
+	 * private field of file descriptor, which is impossible to mock.
+	 * Calling fileno as a function allows the test to mock it.
+	 */
+	__isthreaded = 1;
+#endif
+
 	if (argc > 1)
 		cmocka_set_test_filter(argv[1]);
 
