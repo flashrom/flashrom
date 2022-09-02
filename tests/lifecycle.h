@@ -18,7 +18,9 @@
 
 #include <include/test.h>
 #include <string.h>
+#if defined(__linux__) && !defined(__ANDROID__)
 #include <linux/spi/spidev.h>
+#endif
 
 #include "tests.h"
 #include "libflashrom.h"
