@@ -114,6 +114,6 @@ flashrom_tests = executable('flashrom_unit_tests',
   ],
   export_dynamic : true,
   link_args : mocks,
-  dependencies : [cmocka, flashrom_test_dep],
+  dependencies : [cmocka_dep, flashrom_test_dep],
 )
 test('cmocka test flashrom', flashrom_tests)
