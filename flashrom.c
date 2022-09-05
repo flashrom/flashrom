@@ -630,49 +630,6 @@ static unsigned int get_next_write(const uint8_t *have, const uint8_t *want, uns
 	return first_len;
 }
 
-/* Returns the number of buses commonly supported by the current programmer and flash chip where the latter
- * can not be completely accessed due to size/address limits of the programmer. */
-unsigned int count_max_decode_exceedings(const struct flashctx *flash)
-{
-	unsigned int limitexceeded = 0;
-	uint32_t size = flash->chip->total_size * 1024;
-	enum chipbustype buses = flash->mst->buses_supported & flash->chip->bustype;
-
-	if ((buses & BUS_PARALLEL) && (max_rom_decode.parallel < size)) {
-		limitexceeded++;
-		msg_pdbg("Chip size %u kB is bigger than supported "
-			 "size %u kB of chipset/board/programmer "
-			 "for %s interface, "
-			 "probe/read/erase/write may fail. ", size / 1024,
-			 max_rom_decode.parallel / 1024, "Parallel");
-	}
-	if ((buses & BUS_LPC) && (max_rom_decode.lpc < size)) {
-		limitexceeded++;
-		msg_pdbg("Chip size %u kB is bigger than supported "
-			 "size %u kB of chipset/board/programmer "
-			 "for %s interface, "
-			 "probe/read/erase/write may fail. ", size / 1024,
-			 max_rom_decode.lpc / 1024, "LPC");
-	}
-	if ((buses & BUS_FWH) && (max_rom_decode.fwh < size)) {
-		limitexceeded++;
-		msg_pdbg("Chip size %u kB is bigger than supported "
-			 "size %u kB of chipset/board/programmer "
-			 "for %s interface, "
-			 "probe/read/erase/write may fail. ", size / 1024,
-			 max_rom_decode.fwh / 1024, "FWH");
-	}
-	if ((buses & BUS_SPI) && (max_rom_decode.spi < size)) {
-		limitexceeded++;
-		msg_pdbg("Chip size %u kB is bigger than supported "
-			 "size %u kB of chipset/board/programmer "
-			 "for %s interface, "
-			 "probe/read/erase/write may fail. ", size / 1024,
-			 max_rom_decode.spi / 1024, "SPI");
-	}
-	return limitexceeded;
-}
-
 void unmap_flash(struct flashctx *flash)
 {
 	if (flash->virtual_registers != (chipaddr)ERROR_PTR) {

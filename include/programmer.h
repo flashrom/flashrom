@@ -286,7 +286,6 @@ struct decode_sizes {
 extern struct decode_sizes max_rom_decode;
 extern bool programmer_may_write;
 extern unsigned long flashbase;
-unsigned int count_max_decode_exceedings(const struct flashctx *flash);
 char *extract_programmer_param_str(const struct programmer_cfg *cfg, const char *param_name);
 
 /* spi.c */
