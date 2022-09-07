@@ -453,6 +453,8 @@ static void *serprog_map(const char *descr, uintptr_t phys_addr, size_t len)
 	return NULL;
 }
 
+static void serprog_delay(const struct flashctx *flash, unsigned int usecs);
+
 static struct spi_master spi_master_serprog = {
 	.map_flash_region	= serprog_map,
 	.features	= SPI_MASTER_4BA,
@@ -464,6 +466,7 @@ static struct spi_master spi_master_serprog = {
 	.write_256	= default_spi_write_256,
 	.write_aai	= default_spi_write_aai,
 	.probe_opcode	= default_spi_probe_opcode,
+	.delay		= serprog_delay,
 };
 
 static int sp_check_opbuf_usage(int bytes_to_be_added)
@@ -568,6 +571,27 @@ static void serprog_chip_readn(const struct flashctx *flash, uint8_t * buf,
 		sp_do_read_n(&(buf[addrm-addr]), addrm, lenm); // FIXME: return error
 }
 
+static void serprog_delay(const struct flashctx *flash, unsigned int usecs)
+{
+	unsigned char buf[4];
+	msg_pspew("%s usecs=%d\n", __func__, usecs);
+	if (!sp_check_commandavail(S_CMD_O_DELAY)) {
+		msg_pdbg2("serprog_delay used, but programmer doesn't support delays natively - emulating\n");
+		internal_delay(usecs);
+		return;
+	}
+	if ((sp_max_write_n) && (sp_write_n_bytes))
+		sp_pass_writen();
+	sp_check_opbuf_usage(5);
+	buf[0] = ((usecs >> 0) & 0xFF);
+	buf[1] = ((usecs >> 8) & 0xFF);
+	buf[2] = ((usecs >> 16) & 0xFF);
+	buf[3] = ((usecs >> 24) & 0xFF);
+	sp_stream_buffer_op(S_CMD_O_DELAY, 4, buf);
+	sp_opbuf_usage += 5;
+	sp_prev_was_write = 0;
+}
+
 static const struct par_master par_master_serprog = {
 	.map_flash_region	= serprog_map,
 	.chip_readb	= serprog_chip_readb,
@@ -578,6 +602,7 @@ static const struct par_master par_master_serprog = {
 	.chip_writew	= fallback_chip_writew,
 	.chip_writel	= fallback_chip_writel,
 	.chip_writen	= fallback_chip_writen,
+	.delay		= serprog_delay,
 };
 
 static enum chipbustype serprog_buses_supported = BUS_NONE;
@@ -941,32 +966,10 @@ init_err_cleanup_exit:
 	return 1;
 }
 
-static void serprog_delay(unsigned int usecs)
-{
-	unsigned char buf[4];
-	msg_pspew("%s usecs=%d\n", __func__, usecs);
-	if (!sp_check_commandavail(S_CMD_O_DELAY)) {
-		msg_pdbg2("serprog_delay used, but programmer doesn't support delays natively - emulating\n");
-		internal_delay(usecs);
-		return;
-	}
-	if ((sp_max_write_n) && (sp_write_n_bytes))
-		sp_pass_writen();
-	sp_check_opbuf_usage(5);
-	buf[0] = ((usecs >> 0) & 0xFF);
-	buf[1] = ((usecs >> 8) & 0xFF);
-	buf[2] = ((usecs >> 16) & 0xFF);
-	buf[3] = ((usecs >> 24) & 0xFF);
-	sp_stream_buffer_op(S_CMD_O_DELAY, 4, buf);
-	sp_opbuf_usage += 5;
-	sp_prev_was_write = 0;
-}
-
 const struct programmer_entry programmer_serprog = {
 	.name			= "serprog",
 	.type			= OTHER,
 				/* FIXME */
 	.devs.note		= "All programmer devices speaking the serprog protocol\n",
 	.init			= serprog_init,
-	.delay			= serprog_delay,
 };

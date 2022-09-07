@@ -49,8 +49,6 @@ struct programmer_entry {
 	} devs;
 
 	int (*init) (const struct programmer_cfg *cfg);
-
-	void (*delay) (unsigned int usecs);
 };
 
 extern const struct programmer_entry *const programmer_table[];
@@ -314,6 +312,7 @@ struct spi_master {
 	int (*write_aai)(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 	int (*shutdown)(void *data);
 	bool (*probe_opcode)(const struct flashctx *flash, uint8_t opcode);
+	void (*delay) (const struct flashctx *flash, unsigned int usecs);
 	void *data;
 };
 
@@ -435,6 +434,7 @@ struct par_master {
 	uint32_t (*chip_readl) (const struct flashctx *flash, const chipaddr addr);
 	void (*chip_readn) (const struct flashctx *flash, uint8_t *buf, const chipaddr addr, size_t len);
 	int (*shutdown)(void *data);
+	void (*delay) (const struct flashctx *flash, unsigned int usecs);
 	void *data;
 };
 int register_par_master(const struct par_master *mst, const enum chipbustype buses, void *data);

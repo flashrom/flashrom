@@ -322,7 +322,7 @@ static void pluck_cs(uint8_t *ptr)
 	*ptr++ = CH341A_CMD_UIO_STM_END;
 }
 
-static void ch341a_spi_delay(unsigned int usecs)
+static void ch341a_spi_delay(const struct flashctx *flash, unsigned int usecs)
 {
 	/* There is space for 28 bytes instructions of 750 ns each in the CS packet (32 - 4 for the actual CS
 	 * instructions), thus max 21 us, but we avoid getting too near to this boundary and use
@@ -419,6 +419,7 @@ static const struct spi_master spi_master_ch341a_spi = {
 	.write_aai	= default_spi_write_aai,
 	.shutdown	= ch341a_spi_shutdown,
 	.probe_opcode	= default_spi_probe_opcode,
+	.delay		= ch341a_spi_delay,
 };
 
 static int ch341a_spi_init(const struct programmer_cfg *cfg)
@@ -525,5 +526,4 @@ const struct programmer_entry programmer_ch341a_spi = {
 	.type			= USB,
 	.devs.dev		= devs_ch341a_spi,
 	.init			= ch341a_spi_init,
-	.delay			= ch341a_spi_delay,
 };

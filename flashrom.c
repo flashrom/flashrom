@@ -256,12 +256,21 @@ static bool master_uses_physmap(const struct registered_master *mst)
 
 void programmer_delay(const struct flashctx *flash, unsigned int usecs)
 {
-	if (usecs > 0) {
-		if (programmer->delay)
-			programmer->delay(usecs);
-		else
-			internal_delay(usecs);
+	if (usecs == 0)
+		return;
+
+	if (!flash)
+		return internal_delay(usecs);
+
+	if (flash->mst->buses_supported & BUS_SPI) {
+		if (flash->mst->spi.delay)
+			return flash->mst->spi.delay(flash, usecs);
+	} else if (flash->mst->buses_supported & BUS_PARALLEL) {
+		if (flash->mst->par.delay)
+			return flash->mst->par.delay(flash, usecs);
 	}
+
+	return internal_delay(usecs);
 }
 
 int read_memmapped(struct flashctx *flash, uint8_t *buf, unsigned int start,
