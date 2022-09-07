@@ -211,6 +211,4 @@ const struct programmer_entry programmer_satamv = {
 	.type			= PCI,
 	.devs.dev		= satas_mv,
 	.init			= satamv_init,
-	.map_flash_region	= fallback_map,
-	.unmap_flash_region	= fallback_unmap,
 };

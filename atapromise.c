@@ -184,6 +184,4 @@ const struct programmer_entry programmer_atapromise = {
 	.type			= PCI,
 	.devs.dev		= ata_promise,
 	.init			= atapromise_init,
-	.map_flash_region	= fallback_map,
-	.unmap_flash_region	= fallback_unmap,
 };

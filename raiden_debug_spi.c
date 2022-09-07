@@ -1649,6 +1649,4 @@ const struct programmer_entry programmer_raiden_debug_spi = {
 	.type			= USB,
 	.devs.dev		= devs_raiden,
 	.init			= raiden_debug_spi_init,
-	.map_flash_region	= fallback_map,
-	.unmap_flash_region	= fallback_unmap,
 };

@@ -329,6 +329,4 @@ const struct programmer_entry programmer_rayer_spi = {
 				/* FIXME */
 	.devs.note		= "RayeR parallel port programmer\n",
 	.init			= rayer_spi_init,
-	.map_flash_region	= fallback_map,
-	.unmap_flash_region	= fallback_unmap,
 };

@@ -150,6 +150,4 @@ const struct programmer_entry programmer_gfxnvidia = {
 	.type			= PCI,
 	.devs.dev		= gfx_nvidia,
 	.init			= gfxnvidia_init,
-	.map_flash_region	= fallback_map,
-	.unmap_flash_region	= fallback_unmap,
 };

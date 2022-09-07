@@ -635,6 +635,4 @@ const struct programmer_entry programmer_ni845x_spi = {
 	.type			= OTHER, // choose other because NI-845x uses own USB implementation
 	.devs.note		= "National Instruments USB-845x\n",
 	.init			= ni845x_spi_init,
-	.map_flash_region	= fallback_map,
-	.unmap_flash_region	= fallback_unmap,
 };

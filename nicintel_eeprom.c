@@ -538,6 +538,4 @@ const struct programmer_entry programmer_nicintel_eeprom = {
 	.type			= PCI,
 	.devs.dev		= nics_intel_ee,
 	.init			= nicintel_ee_init,
-	.map_flash_region	= fallback_map,
-	.unmap_flash_region	= fallback_unmap,
 };

@@ -205,7 +205,11 @@ int programmer_shutdown(void)
 
 void *programmer_map_flash_region(const char *descr, uintptr_t phys_addr, size_t len)
 {
-	void *ret = programmer->map_flash_region(descr, phys_addr, len);
+	void *ret;
+	if (programmer->map_flash_region)
+		ret = programmer->map_flash_region(descr, phys_addr, len);
+	else
+		ret = fallback_map(descr, phys_addr, len);
 	msg_gspew("%s: mapping %s from 0x%0*" PRIxPTR " to 0x%0*" PRIxPTR "\n",
 		  __func__, descr, PRIxPTR_WIDTH, phys_addr, PRIxPTR_WIDTH, (uintptr_t) ret);
 	return ret;
@@ -213,7 +217,10 @@ void *programmer_map_flash_region(const char *descr, uintptr_t phys_addr, size_t
 
 void programmer_unmap_flash_region(void *virt_addr, size_t len)
 {
-	programmer->unmap_flash_region(virt_addr, len);
+	if (programmer->unmap_flash_region)
+		programmer->unmap_flash_region(virt_addr, len);
+	else
+		fallback_unmap(virt_addr, len);
 	msg_gspew("%s: unmapped 0x%0*" PRIxPTR "\n", __func__, PRIxPTR_WIDTH, (uintptr_t)virt_addr);
 }
 
@@ -1421,14 +1428,6 @@ int selfcheck(void)
 		}
 		if (p->init == NULL) {
 			msg_gerr("Programmer %s does not have a valid init function!\n", p->name);
-			ret = 1;
-		}
-		if (p->map_flash_region == NULL) {
-			msg_gerr("Programmer %s does not have a valid map_flash_region function!\n", p->name);
-			ret = 1;
-		}
-		if (p->unmap_flash_region == NULL) {
-			msg_gerr("Programmer %s does not have a valid unmap_flash_region function!\n", p->name);
 			ret = 1;
 		}
 	}

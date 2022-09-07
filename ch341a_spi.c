@@ -525,7 +525,5 @@ const struct programmer_entry programmer_ch341a_spi = {
 	.type			= USB,
 	.devs.dev		= devs_ch341a_spi,
 	.init			= ch341a_spi_init,
-	.map_flash_region	= fallback_map,
-	.unmap_flash_region	= fallback_unmap,
 	.delay			= ch341a_spi_delay,
 };

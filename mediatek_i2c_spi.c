@@ -542,6 +542,4 @@ const struct programmer_entry programmer_mediatek_i2c_spi = {
 	.type			= OTHER,
 	.devs.note		= "Device files /dev/i2c-*\n",
 	.init			= mediatek_init,
-	.map_flash_region	= fallback_map,
-	.unmap_flash_region	= fallback_unmap,
 };

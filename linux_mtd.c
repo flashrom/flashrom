@@ -557,6 +557,4 @@ const struct programmer_entry programmer_linux_mtd = {
 	.type			= OTHER,
 	.devs.note		= "Device files /dev/mtd*\n",
 	.init			= linux_mtd_init,
-	.map_flash_region	= fallback_map,
-	.unmap_flash_region	= fallback_unmap,
 };

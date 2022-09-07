@@ -967,6 +967,5 @@ const struct programmer_entry programmer_serprog = {
 	.devs.note		= "All programmer devices speaking the serprog protocol\n",
 	.init			= serprog_init,
 	.map_flash_region	= serprog_map,
-	.unmap_flash_region	= fallback_unmap,
 	.delay			= serprog_delay,
 };

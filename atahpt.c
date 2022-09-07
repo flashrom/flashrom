@@ -120,6 +120,4 @@ const struct programmer_entry programmer_atahpt = {
 	.type			= PCI,
 	.devs.dev		= ata_hpt,
 	.init			= atahpt_init,
-	.map_flash_region	= fallback_map,
-	.unmap_flash_region	= fallback_unmap,
 };

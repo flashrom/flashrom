@@ -507,6 +507,4 @@ const struct programmer_entry programmer_parade_lspcon = {
 	.type			= OTHER,
 	.devs.note		= "Device files /dev/i2c-*.\n",
 	.init			= parade_lspcon_init,
-	.map_flash_region	= fallback_map,
-	.unmap_flash_region	= fallback_unmap,
 };
