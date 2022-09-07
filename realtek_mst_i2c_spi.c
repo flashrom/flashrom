@@ -546,5 +546,4 @@ const struct programmer_entry programmer_realtek_mst_i2c_spi = {
 	.init			= realtek_mst_i2c_spi_init,
 	.map_flash_region	= fallback_map,
 	.unmap_flash_region	= fallback_unmap,
-	.delay			= internal_delay,
 };

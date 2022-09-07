@@ -349,5 +349,4 @@ const struct programmer_entry programmer_internal = {
 	.init			= internal_init,
 	.map_flash_region	= physmap,
 	.unmap_flash_region	= physunmap,
-	.delay			= internal_delay,
 };

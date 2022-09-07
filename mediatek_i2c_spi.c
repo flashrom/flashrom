@@ -544,5 +544,4 @@ const struct programmer_entry programmer_mediatek_i2c_spi = {
 	.init			= mediatek_init,
 	.map_flash_region	= fallback_map,
 	.unmap_flash_region	= fallback_unmap,
-	.delay			= internal_delay,
 };

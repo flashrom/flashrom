@@ -509,5 +509,4 @@ const struct programmer_entry programmer_parade_lspcon = {
 	.init			= parade_lspcon_init,
 	.map_flash_region	= fallback_map,
 	.unmap_flash_region	= fallback_unmap,
-	.delay			= internal_delay,
 };

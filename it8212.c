@@ -113,5 +113,4 @@ const struct programmer_entry programmer_it8212 = {
 	.init			= it8212_init,
 	.map_flash_region	= fallback_map,
 	.unmap_flash_region	= fallback_unmap,
-	.delay			= internal_delay,
 };

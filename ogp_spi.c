@@ -180,5 +180,4 @@ const struct programmer_entry programmer_ogp_spi = {
 	.init			= ogp_spi_init,
 	.map_flash_region	= fallback_map,
 	.unmap_flash_region	= fallback_unmap,
-	.delay			= internal_delay,
 };
