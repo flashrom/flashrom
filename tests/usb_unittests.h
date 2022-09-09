@@ -25,7 +25,7 @@
 #ifndef _USB_UNITTESTS_H_
 #define _USB_UNITTESTS_H_
 
-#if CONFIG_RAIDEN_DEBUG_SPI == 1 || CONFIG_DEDIPROG == 1
+#if CONFIG_RAIDEN_DEBUG_SPI == 1 || CONFIG_DEDIPROG == 1 || CONFIG_CH341A_SPI == 1
 
 #include <libusb.h>
 
