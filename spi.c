@@ -131,7 +131,9 @@ int spi_chip_write_256(struct flashctx *flash, const uint8_t *buf, unsigned int 
 
 int spi_aai_write(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len)
 {
-	return flash->mst->spi.write_aai(flash, buf, start, len);
+	if (flash->mst->spi.write_aai)
+		return flash->mst->spi.write_aai(flash, buf, start, len);
+	return default_spi_write_aai(flash, buf, start, len);
 }
 
 bool default_spi_probe_opcode(const struct flashctx *flash, uint8_t opcode)
@@ -150,7 +152,7 @@ int register_spi_master(const struct spi_master *mst, void *data)
 		}
 	}
 
-	if (!mst->write_aai || !mst->write_256 || !mst->read || !mst->command ||
+	if (!mst->write_256 || !mst->read || !mst->command ||
 	    !mst->multicommand || !mst->probe_opcode ||
 	    ((mst->command == default_spi_send_command) &&
 	     (mst->multicommand == default_spi_send_multicommand))) {

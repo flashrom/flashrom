@@ -1947,7 +1947,6 @@ static const struct spi_master spi_master_ich7 = {
 	.unmap_flash_region	= physunmap,
 	.read		= default_spi_read,
 	.write_256	= default_spi_write_256,
-	.write_aai	= default_spi_write_aai,
 };
 
 static const struct spi_master spi_master_ich9 = {
@@ -1959,7 +1958,6 @@ static const struct spi_master spi_master_ich9 = {
 	.unmap_flash_region	= physunmap,
 	.read		= default_spi_read,
 	.write_256	= default_spi_write_256,
-	.write_aai	= default_spi_write_aai,
 	.probe_opcode	= ich_spi_probe_opcode,
 };
 
@@ -2383,7 +2381,6 @@ static const struct spi_master spi_master_via = {
 	.unmap_flash_region	= physunmap,
 	.read		= default_spi_read,
 	.write_256	= default_spi_write_256,
-	.write_aai	= default_spi_write_aai,
 	.probe_opcode	= ich_spi_probe_opcode,
 };
 
