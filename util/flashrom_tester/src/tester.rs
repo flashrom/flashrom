@@ -69,8 +69,8 @@ impl<'a> TestEnv<'a> {
     pub fn create(chip_type: FlashChip, cmd: &'a dyn Flashrom) -> Result<Self, FlashromError> {
         let rom_sz = cmd.get_size()?;
         let out = TestEnv {
-            chip_type: chip_type,
-            cmd: cmd,
+            chip_type,
+            cmd,
             layout: utils::get_layout_sizes(rom_sz)?,
             wp: WriteProtectState::from_hardware(cmd, chip_type)?,
             original_flash_contents: "/tmp/flashrom_tester_golden.bin".into(),
@@ -462,7 +462,7 @@ impl<T: TestCase + ?Sized> TestCase for &T {
 }
 
 #[allow(dead_code)]
-#[derive(Copy, Clone, PartialEq, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum TestConclusion {
     Pass,
     Fail,
@@ -514,7 +514,7 @@ where
     results
 }
 
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum OutputFormat {
     Pretty,
     Json,

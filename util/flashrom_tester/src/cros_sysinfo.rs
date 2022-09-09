@@ -34,7 +34,6 @@
 //
 
 use std::ffi::OsStr;
-use std::fmt::Debug;
 use std::io::Result as IoResult;
 use std::process::{Command, Stdio};
 

@@ -143,14 +143,14 @@ pub fn get_hardware_wp() -> std::result::Result<bool, String> {
     match wp_s_val {
         Ok(v) => {
             if v == 1 {
-                return Ok(true);
+                Ok(true)
             } else if v == 0 {
-                return Ok(false);
+                Ok(false)
             } else {
-                return Err("Unknown write protect value".into());
+                Err("Unknown write protect value".into())
             }
         }
-        Err(_) => return Err("Cannot parse write protect value".into()),
+        Err(_) => Err("Cannot parse write protect value".into()),
     }
 }
 

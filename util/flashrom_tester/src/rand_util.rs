@@ -42,9 +42,7 @@ use rand::prelude::*;
 pub fn gen_rand_testdata(path: &str, size: usize) -> std::io::Result<()> {
     let mut buf = BufWriter::new(File::create(path)?);
 
-    let mut a: Vec<u8> = Vec::with_capacity(size);
-    // Pad out array to be filled in by Rng::fill().
-    a.resize(size, 0b0);
+    let mut a: Vec<u8> = vec![0; size];
     thread_rng().fill(a.as_mut_slice());
 
     buf.write_all(a.as_slice())?;

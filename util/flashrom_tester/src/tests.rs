@@ -43,8 +43,8 @@ use std::fs::{self, File};
 use std::io::{BufRead, Write};
 use std::sync::atomic::AtomicBool;
 
-const LAYOUT_FILE: &'static str = "/tmp/layout.file";
-const ELOG_FILE: &'static str = "/tmp/elog.file";
+const LAYOUT_FILE: &str = "/tmp/layout.file";
+const ELOG_FILE: &str = "/tmp/elog.file";
 
 /// Iterate over tests, yielding only those tests with names matching filter_names.
 ///
@@ -79,6 +79,7 @@ fn filter_tests<'n, 't: 'n, T: TestCase>(
 /// test_names is the case-insensitive names of tests to run; if None, then all
 /// tests are run. Provided names that don't match any known test will be logged
 /// as a warning.
+#[allow(clippy::or_fun_call)] // This is used for to_string here and we don't care.
 pub fn generic<'a, TN: Iterator<Item = &'a str>>(
     cmd: &dyn Flashrom,
     fc: FlashChip,
@@ -132,11 +133,8 @@ pub fn generic<'a, TN: Iterator<Item = &'a str>>(
 
     // Limit the tests to only those requested, unless none are requested
     // in which case all tests are included.
-    let mut filter_names: Option<HashSet<String>> = if let Some(names) = test_names {
-        Some(names.map(|s| s.to_lowercase()).collect())
-    } else {
-        None
-    };
+    let mut filter_names: Option<HashSet<String>> =
+        test_names.map(|names| names.map(|s| s.to_lowercase()).collect());
     let tests = filter_tests(tests, &mut filter_names);
 
     let chip_name = cmd
@@ -153,15 +151,15 @@ pub fn generic<'a, TN: Iterator<Item = &'a str>>(
         warn!("No test matches filter name \"{}\"", leftover);
     }
 
-    let os_rel = sys_info::os_release().unwrap_or("<Unknown OS>".to_string());
+    let os_release = sys_info::os_release().unwrap_or("<Unknown OS>".to_string());
     let system_info = cros_sysinfo::system_info().unwrap_or("<Unknown System>".to_string());
     let bios_info = cros_sysinfo::bios_info().unwrap_or("<Unknown BIOS>".to_string());
 
     let meta_data = tester::ReportMetaData {
-        chip_name: chip_name,
-        os_release: os_rel,
-        system_info: system_info,
-        bios_info: bios_info,
+        chip_name,
+        os_release,
+        system_info,
+        bios_info,
     };
     tester::collate_all_test_runs(&results, meta_data, output_format);
     Ok(())

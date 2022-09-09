@@ -67,7 +67,7 @@ pub struct IOOpt<'a> {
     pub region: Option<(&'a str, &'a str)>, // --image
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Eq, Debug)]
 pub struct FlashromCmd {
     pub path: String,
     pub fc: FlashChip,
@@ -84,9 +84,9 @@ fn flashrom_extract_size(stdout: &str) -> Result<i64, FlashromError> {
         .last()
         .map(str::parse::<i64>)
     {
-        None => return Err("Found no purely-numeric lines in flashrom output".into()),
+        None => Err("Found no purely-numeric lines in flashrom output".into()),
         Some(Err(e)) => {
-            return Err(format!("Failed to parse flashrom size output as integer: {}", e).into())
+            Err(format!("Failed to parse flashrom size output as integer: {}", e).into())
         }
         Some(Ok(sz)) => Ok(sz),
     }
@@ -169,7 +169,7 @@ impl crate::Flashrom for FlashromCmd {
         };
 
         let (stdout, _) = self.dispatch(opts, "wp_list")?;
-        if stdout.len() == 0 {
+        if stdout.is_empty() {
             return Err(
                 "wp_list isn't supported on platforms using the Linux kernel SPI driver wp_list"
                     .into(),
@@ -208,7 +208,7 @@ impl crate::Flashrom for FlashromCmd {
 
         let opts = FlashromOpt {
             wp_opt: WPOpt {
-                range: range,
+                range,
                 enable: en,
                 disable: !en,
                 ..Default::default()
@@ -249,7 +249,7 @@ impl crate::Flashrom for FlashromCmd {
             ..Default::default()
         };
 
-        let (stdout, _) = self.dispatch(opts, "read_region_into_file")?;
+        self.dispatch(opts, "read_region_into_file")?;
         Ok(())
     }
 
@@ -405,11 +405,6 @@ pub fn dut_ctrl_toggle_wp(en: bool) -> Result<(Vec<u8>, Vec<u8>), FlashromError>
     dut_ctrl(&args)
 }
 
-pub fn dut_ctrl_servo_type() -> Result<(Vec<u8>, Vec<u8>), FlashromError> {
-    let args = ["servo_type"];
-    dut_ctrl(&args)
-}
-
 fn dut_ctrl(args: &[&str]) -> Result<(Vec<u8>, Vec<u8>), FlashromError> {
     let output = match Command::new("dut-control").args(args).output() {
         Ok(x) => x,
@@ -431,7 +426,7 @@ fn dut_ctrl(args: &[&str]) -> Result<(Vec<u8>, Vec<u8>), FlashromError> {
 }
 
 fn hex_range_string(s: i64, l: i64) -> String {
-    format!("{:#08X},{:#08X}", s, l).to_string()
+    format!("{:#08X},{:#08X}", s, l)
 }
 
 /// Get a flash vendor and name from the first matching line of flashrom output.

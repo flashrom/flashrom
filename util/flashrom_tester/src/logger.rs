@@ -129,7 +129,7 @@ mod tests {
 
             for record in records {
                 if logger.enabled(record.metadata()) {
-                    logger.log(&record);
+                    logger.log(record);
                 }
             }
         }

@@ -49,7 +49,7 @@ pub use libflashrom::{
     FLASHROM_MSG_INFO, FLASHROM_MSG_SPEW, FLASHROM_MSG_WARN,
 };
 
-#[derive(Copy, Clone, PartialEq, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum FlashChip {
     EC,
     HOST,
@@ -59,23 +59,21 @@ pub enum FlashChip {
 
 impl FlashChip {
     pub fn from(s: &str) -> Result<FlashChip, &str> {
-        let r = match s {
+        match s {
             "ec" => Ok(FlashChip::EC),
             "host" => Ok(FlashChip::HOST),
             "servo" => Ok(FlashChip::SERVO),
             "dediprog" => Ok(FlashChip::DEDIPROG),
             _ => Err("cannot convert str to enum"),
-        };
-        return r;
+        }
     }
     pub fn to(fc: FlashChip) -> &'static str {
-        let r = match fc {
+        match fc {
             FlashChip::EC => "ec",
             FlashChip::HOST => "host",
             FlashChip::SERVO => "ft2231_spi:type=servo-v2",
             FlashChip::DEDIPROG => "dediprog",
-        };
-        return r;
+        }
     }
 
     /// Return the programmer string and optional programmer options
@@ -97,7 +95,7 @@ impl FlashChip {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct FlashromError {
     msg: String,
 }
