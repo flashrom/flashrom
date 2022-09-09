@@ -184,7 +184,6 @@ static const struct spi_master spi_master_jlink_spi = {
 	/* Maximum data write size in one go (excluding opcode+address). */
 	.max_data_write	= JTAG_MAX_TRANSFER_SIZE - 5,
 	.command	= jlink_spi_send_command,
-	.multicommand	= default_spi_send_multicommand,
 	.read		= default_spi_read,
 	.write_256	= default_spi_write_256,
 	.features	= SPI_MASTER_4BA,

@@ -432,7 +432,6 @@ static const struct spi_master spi_master_parade_lspcon = {
 	.max_data_read	= 16,
 	.max_data_write	= 12,
 	.command	= parade_lspcon_send_command,
-	.multicommand	= default_spi_send_multicommand,
 	.read		= parade_lspcon_read,
 	.write_256	= parade_lspcon_write_256,
 	.write_aai	= parade_lspcon_write_aai,

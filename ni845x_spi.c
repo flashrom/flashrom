@@ -532,7 +532,6 @@ static const struct spi_master spi_programmer_ni845x = {
 	.max_data_read	= MAX_DATA_READ_UNLIMITED,
 	.max_data_write	= MAX_DATA_WRITE_UNLIMITED,
 	.command	= ni845x_spi_transmit,
-	.multicommand	= default_spi_send_multicommand,
 	.read		= default_spi_read,
 	.write_256	= default_spi_write_256,
 	.shutdown	= ni845x_spi_shutdown,

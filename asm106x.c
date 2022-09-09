@@ -123,7 +123,6 @@ static const struct spi_master asm106x_spi_master = {
 	.max_data_write	= MAX_DATA_WRITE_UNLIMITED,
 	.command	= asm106x_command,
 	.shutdown	= asm106x_shutdown,
-	.multicommand	= default_spi_send_multicommand,
 	.read		= default_spi_read,
 	.write_256	= default_spi_write_256,
 	.probe_opcode	= default_spi_probe_opcode,

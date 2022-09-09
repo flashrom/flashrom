@@ -461,7 +461,6 @@ static struct spi_master spi_master_serprog = {
 	.max_data_read	= MAX_DATA_READ_UNLIMITED,
 	.max_data_write	= MAX_DATA_WRITE_UNLIMITED,
 	.command	= serprog_spi_send_command,
-	.multicommand	= default_spi_send_multicommand,
 	.read		= default_spi_read,
 	.write_256	= default_spi_write_256,
 	.probe_opcode	= default_spi_probe_opcode,

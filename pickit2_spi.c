@@ -380,7 +380,6 @@ static const struct spi_master spi_master_pickit2 = {
 	.max_data_read	= 40,
 	.max_data_write	= 40,
 	.command	= pickit2_spi_send_command,
-	.multicommand	= default_spi_send_multicommand,
 	.read		= default_spi_read,
 	.write_256	= default_spi_write_256,
 	.shutdown	= pickit2_shutdown,

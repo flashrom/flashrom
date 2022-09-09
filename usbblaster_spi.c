@@ -168,7 +168,6 @@ static const struct spi_master spi_master_usbblaster = {
 	.max_data_read	= 256,
 	.max_data_write	= 256,
 	.command	= usbblaster_spi_send_command,
-	.multicommand	= default_spi_send_multicommand,
 	.read		= default_spi_read,
 	.write_256	= default_spi_write_256,
 	.shutdown	= usbblaster_shutdown,

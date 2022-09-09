@@ -37,7 +37,9 @@ int spi_send_command(const struct flashctx *flash, unsigned int writecnt,
 
 int spi_send_multicommand(const struct flashctx *flash, struct spi_command *cmds)
 {
-	return flash->mst->spi.multicommand(flash, cmds);
+	if (flash->mst->spi.multicommand)
+		return flash->mst->spi.multicommand(flash, cmds);
+	return default_spi_send_multicommand(flash, cmds);
 }
 
 int default_spi_send_command(const struct flashctx *flash, unsigned int writecnt,
@@ -153,10 +155,9 @@ int register_spi_master(const struct spi_master *mst, void *data)
 		}
 	}
 
-	if (!mst->write_256 || !mst->read ||
-	    !mst->multicommand || !mst->probe_opcode ||
+	if (!mst->write_256 || !mst->read || !mst->probe_opcode ||
 	    ((mst->command == default_spi_send_command || !mst->command) &&
-	     (mst->multicommand == default_spi_send_multicommand))) {
+	     (mst->multicommand == default_spi_send_multicommand || !mst->multicommand))) {
 		msg_perr("%s called with incomplete master definition. "
 			 "Please report a bug at flashrom@flashrom.org\n",
 			 __func__);

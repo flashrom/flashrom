@@ -413,7 +413,6 @@ static const struct spi_master spi_master_ch341a_spi = {
 	.max_data_read	= 4 * 1024,
 	.max_data_write	= 4 * 1024,
 	.command	= ch341a_spi_spi_send_command,
-	.multicommand	= default_spi_send_multicommand,
 	.read		= default_spi_read,
 	.write_256	= default_spi_write_256,
 	.shutdown	= ch341a_spi_shutdown,

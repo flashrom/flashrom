@@ -314,7 +314,6 @@ static const struct spi_master spi_master_it87xx = {
 	.max_data_read	= 3,
 	.max_data_write	= MAX_DATA_UNSPECIFIED,
 	.command	= it8716f_spi_send_command,
-	.multicommand	= default_spi_send_multicommand,
 	.map_flash_region	= physmap,
 	.unmap_flash_region	= physunmap,
 	.read		= it8716f_spi_chip_read,

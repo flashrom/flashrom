@@ -178,7 +178,6 @@ static struct spi_master spi_master_buspirate = {
 	.max_data_read	= MAX_DATA_UNSPECIFIED,
 	.max_data_write	= MAX_DATA_UNSPECIFIED,
 	.command	= NULL,
-	.multicommand	= default_spi_send_multicommand,
 	.read		= default_spi_read,
 	.write_256	= default_spi_write_256,
 	.shutdown	= buspirate_spi_shutdown,

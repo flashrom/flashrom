@@ -333,7 +333,6 @@ static const struct spi_master spi_master_digilent_spi = {
 	.max_data_read	= 252,
 	.max_data_write	= 252,
 	.command	= digilent_spi_send_command,
-	.multicommand	= default_spi_send_multicommand,
 	.read		= default_spi_read,
 	.write_256	= default_spi_write_256,
 	.shutdown	= digilent_spi_shutdown,

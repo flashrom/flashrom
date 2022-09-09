@@ -1320,7 +1320,6 @@ static const struct spi_master spi_master_raiden_debug = {
 	.max_data_read	= 0,
 	.max_data_write	= 0,
 	.command	= NULL,
-	.multicommand	= default_spi_send_multicommand,
 	.read		= default_spi_read,
 	.write_256	= default_spi_write_256,
 	.shutdown	= raiden_debug_spi_shutdown,

@@ -116,7 +116,6 @@ static const struct spi_master spi_master_linux = {
 	.max_data_read	= MAX_DATA_UNSPECIFIED, /* TODO? */
 	.max_data_write	= MAX_DATA_UNSPECIFIED, /* TODO? */
 	.command	= linux_spi_send_command,
-	.multicommand	= default_spi_send_multicommand,
 	.read		= linux_spi_read,
 	.write_256	= linux_spi_write_256,
 	.shutdown	= linux_spi_shutdown,
