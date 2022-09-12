@@ -17,6 +17,7 @@
 #define TESTS_H
 
 #include <fcntl.h>
+#include <include/test.h>
 
 /* helpers.c */
 void address_to_bits_test_success(void **state);
@@ -103,5 +104,10 @@ void selfcheck_programmer_table(void **state);
 void selfcheck_flashchips_table(void **state);
 void selfcheck_eraseblocks(void **state);
 void selfcheck_board_matches_table(void **state);
+
+/* erase_func_algo.c */
+struct CMUnitTest *get_erase_func_algo_tests(size_t *num_tests);
+void erase_function_algo_test_success(void **state);
+void write_function_algo_test_success(void **state);
 
 #endif /* TESTS_H */
