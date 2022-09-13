@@ -48,6 +48,7 @@ void dummy_probe_variable_size_test_success(void **state);
 void dummy_init_fails_unhandled_param_test_success(void **state);
 void dummy_init_success_invalid_param_test_success(void **state);
 void dummy_init_success_unhandled_param_test_success(void **state);
+void dummy_null_prog_param_test_success(void **state);
 void nicrealtek_basic_lifecycle_test_success(void **state);
 void raiden_debug_basic_lifecycle_test_success(void **state);
 void dediprog_basic_lifecycle_test_success(void **state);

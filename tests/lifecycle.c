@@ -39,7 +39,8 @@ static void run_lifecycle(void **state, const struct io_mock *io, const struct p
 	io_mock_register(io);
 
 	struct flashrom_programmer *flashprog;
-	char *param_dup = strdup(param);
+
+	char *param_dup = param ? strdup(param) : NULL;
 
 	printf("Testing flashrom_programmer_init for programmer=%s ...\n", prog->name);
 	assert_int_equal(0, flashrom_programmer_init(&flashprog, prog->name, param_dup));
