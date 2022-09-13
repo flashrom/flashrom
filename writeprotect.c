@@ -155,6 +155,7 @@ static enum flashrom_wp_result write_wp_bits(struct flashctx *flash, struct wp_b
 			return FLASHROM_WP_ERR_WRITE_FAILED;
 	}
 
+	enum flashrom_wp_result ret = FLASHROM_WP_OK;
 	/* Verify each register */
 	for (enum flash_reg reg = STATUS1; reg < MAX_REGISTERS; reg++) {
 		if (!write_masks[reg])
@@ -164,14 +165,18 @@ static enum flashrom_wp_result write_wp_bits(struct flashctx *flash, struct wp_b
 		if (wp_read_register(flash, reg, &value))
 			return FLASHROM_WP_ERR_READ_FAILED;
 
+		msg_cdbg2("%s: wp_verify reg:%u value:0x%x\n", __func__, reg, value);
 		uint8_t actual = value & write_masks[reg];
 		uint8_t expected = reg_values[reg] & write_masks[reg];
 
-		if (actual != expected)
-			return FLASHROM_WP_ERR_VERIFY_FAILED;
+		if (actual != expected) {
+			msg_cdbg("%s: wp_verify failed: reg:%u actual:0x%x expected:0x%x\n",
+				 __func__, reg, actual, expected);
+			ret = FLASHROM_WP_ERR_VERIFY_FAILED;
+		}
 	}
 
-	return FLASHROM_WP_OK;
+	return ret;
 }
 
 static decode_range_func_t *lookup_decode_range_func_ptr(const struct flashchip *chip)
