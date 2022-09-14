@@ -38,7 +38,6 @@ const char flashrom_version[] = FLASHROM_VERSION;
 const char *chip_to_probe = NULL;
 
 static const struct programmer_entry *programmer = NULL;
-static char *programmer_param = NULL;
 
 /*
  * Programmers supporting multiple buses can have differing size limits on
@@ -150,36 +149,37 @@ int programmer_init(const struct programmer_entry *prog, const char *param)
 	/* Default to allowing writes. Broken programmers set this to 0. */
 	programmer_may_write = true;
 
+	struct programmer_cfg cfg;
+
 	if (param) {
-		programmer_param = strdup(param);
-		if (!programmer_param) {
+		cfg.params = strdup(param);
+		if (!cfg.params) {
 			msg_perr("Out of memory!\n");
 			return ERROR_FATAL;
 		}
 	} else {
-		programmer_param = NULL;
+		cfg.params = NULL;
 	}
 
 	msg_pdbg("Initializing %s programmer\n", programmer->name);
-	ret = programmer->init(NULL);
-	if (programmer_param && strlen(programmer_param)) {
+	ret = programmer->init(&cfg);
+	if (cfg.params && strlen(cfg.params)) {
 		if (ret != 0) {
 			/* It is quite possible that any unhandled programmer parameter would have been valid,
 			 * but an error in actual programmer init happened before the parameter was evaluated.
 			 */
 			msg_pwarn("Unhandled programmer parameters (possibly due to another failure): %s\n",
-				  programmer_param);
+				  cfg.params);
 		} else {
 			/* Actual programmer init was successful, but the user specified an invalid or unusable
 			 * (for the current programmer configuration) parameter.
 			 */
-			msg_perr("Unhandled programmer parameters: %s\n", programmer_param);
+			msg_perr("Unhandled programmer parameters: %s\n", cfg.params);
 			msg_perr("Aborting.\n");
 			ret = ERROR_FATAL;
 		}
 	}
-	free(programmer_param);
-	programmer_param = NULL;
+	free(cfg.params);
 	return ret;
 }
 
@@ -294,7 +294,7 @@ static char *extract_param(char *const *haystack, const char *needle, const char
 
 char *extract_programmer_param_str(const struct programmer_cfg *cfg, const char *param_name)
 {
-	return extract_param(&programmer_param, param_name, ",");
+	return extract_param(&cfg->params, param_name, ",");
 }
 
 static int check_block_eraser(const struct flashctx *flash, int k, int log)
