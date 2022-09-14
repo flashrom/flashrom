@@ -19,19 +19,19 @@
 
 /* Same macros as in parade_lspcon.c programmer. */
 /* FIXME(aklm): should driver register maps be defined in `include/drivers/` for sharing with tests? */
-#define REGISTER_ADDRESS                        0x4a
-#define SPISTATUS                               0x9e
-#define SPISTATUS_SECTOR_ERASE_FINISHED         0
-#define SWSPICTL                                0x93
-#define SWSPICTL_ENABLE_READBACK                0x8
-#define SWSPI_RDATA                             0x91
+#define REGISTER_ADDRESS			0x4a
+#define SPISTATUS				0x9e
+#define SPISTATUS_SECTOR_ERASE_FINISHED		0
+#define SWSPICTL				0x93
+#define SWSPICTL_ENABLE_READBACK		0x8
+#define SWSPI_RDATA				0x91
 /* Macros for test run. */
-#define DATA_TO_READ                            0
-#define MAX_REG_BUF_LEN                         2
+#define DATA_TO_READ				0
+#define MAX_REG_BUF_LEN				2
 
 struct parade_lspcon_io_state {
-	unsigned long addr;                     /* Address to read and write */
-	uint8_t reg_buf[MAX_REG_BUF_LEN];       /* Last value written to the register address */
+	unsigned long addr;			/* Address to read and write */
+	uint8_t reg_buf[MAX_REG_BUF_LEN];	/* Last value written to the register address */
 };
 
 static int parade_lspcon_ioctl(void *state, int fd, unsigned long request, va_list args)
