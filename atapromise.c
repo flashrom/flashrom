@@ -54,12 +54,6 @@ static const struct dev_entry ata_promise[] = {
 	{0},
 };
 
-static void *atapromise_map(const char *descr, uintptr_t phys_addr, size_t len)
-{
-	/* In case fallback_map ever returns something other than NULL. */
-	return NULL;
-}
-
 static void atapromise_limit_chip(struct flashchip *chip, size_t rom_size)
 {
 	unsigned int i, size;
@@ -190,7 +184,7 @@ const struct programmer_entry programmer_atapromise = {
 	.type			= PCI,
 	.devs.dev		= ata_promise,
 	.init			= atapromise_init,
-	.map_flash_region	= atapromise_map,
+	.map_flash_region	= fallback_map,
 	.unmap_flash_region	= fallback_unmap,
 	.delay			= internal_delay,
 };
