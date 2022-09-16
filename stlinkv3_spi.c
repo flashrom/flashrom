@@ -482,7 +482,8 @@ static int stlinkv3_spi_init(const struct programmer_cfg *cfg)
 	int ret = 1;
 	int devIndex = 0;
 	struct libusb_context *usb_ctx;
-	libusb_device_handle *stlinkv3_handle;
+	/* Initialize stlinkv3_handle to NULL for suppressing scan-build false positive core.uninitialized.Branch */
+	libusb_device_handle *stlinkv3_handle = NULL;
 	struct stlinkv3_spi_data *stlinkv3_data;
 
 	if (libusb_init(&usb_ctx)) {
