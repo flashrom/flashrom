@@ -920,6 +920,8 @@ static int dummy_shutdown(void *data)
 }
 
 static const struct spi_master spi_master_dummyflasher = {
+	.map_flash_region	= dummy_map,
+	.unmap_flash_region	= dummy_unmap,
 	.features	= SPI_MASTER_4BA,
 	.max_data_read	= MAX_DATA_READ_UNLIMITED,
 	.max_data_write	= MAX_DATA_UNSPECIFIED,
@@ -932,6 +934,8 @@ static const struct spi_master spi_master_dummyflasher = {
 };
 
 static const struct par_master par_master_dummyflasher = {
+	.map_flash_region	= dummy_map,
+	.unmap_flash_region	= dummy_unmap,
 	.chip_readb	= dummy_chip_readb,
 	.chip_readw	= dummy_chip_readw,
 	.chip_readl	= dummy_chip_readl,
@@ -943,6 +947,8 @@ static const struct par_master par_master_dummyflasher = {
 };
 
 static const struct opaque_master opaque_master_dummyflasher = {
+	.map_flash_region	= dummy_map,
+	.unmap_flash_region	= dummy_unmap,
 	.probe	= probe_variable_size,
 	.read	= dummy_opaque_read,
 	.write	= dummy_opaque_write,
@@ -1424,6 +1430,4 @@ const struct programmer_entry programmer_dummy = {
 				/* FIXME */
 	.devs.note		= "Dummy device, does nothing and logs all accesses\n",
 	.init			= dummy_init,
-	.map_flash_region	= dummy_map,
-	.unmap_flash_region	= dummy_unmap,
 };

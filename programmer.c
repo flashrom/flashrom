@@ -20,7 +20,12 @@
 /* Fallback map() for programmers which don't need special handling */
 void *fallback_map(const char *descr, uintptr_t phys_addr, size_t len)
 {
-	/* FIXME: Should return phys_addr. */
+	/* A result of NULL causes mapped addresses to be chip physical
+	 * addresses, assuming only a single region is mapped (the entire flash
+	 * space).  Chips with a second region (like a register map) require a
+	 * real memory mapping to distinguish the different ranges.  Those chips
+	 * are FWH/LPC, so the bus master provides a real mapping.
+	 */
 	return NULL;
 }
 

@@ -133,6 +133,7 @@ static uint8_t atavia_chip_readb(const struct flashctx *flash, const chipaddr ad
 }
 
 static const struct par_master lpc_master_atavia = {
+	.map_flash_region	= atavia_map,
 	.chip_readb	= atavia_chip_readb,
 	.chip_readw	= fallback_chip_readw,
 	.chip_readl	= fallback_chip_readl,
@@ -189,5 +190,4 @@ const struct programmer_entry programmer_atavia = {
 	.type			= PCI,
 	.devs.dev		= ata_via,
 	.init			= atavia_init,
-	.map_flash_region	= atavia_map,
 };

@@ -203,25 +203,60 @@ int programmer_shutdown(void)
 	return ret;
 }
 
-void *programmer_map_flash_region(const char *descr, uintptr_t phys_addr, size_t len)
+void *master_map_flash_region(const struct registered_master *mst,
+			      const char *descr, uintptr_t phys_addr,
+			      size_t len)
 {
+	/* Check the bus master for a specialized map_flash_region; default to
+	 * fallback if it does not specialize it
+	 */
+	void *(*map_flash_region) (const char *descr, uintptr_t phys_addr, size_t len) = NULL;
+	if (mst->buses_supported & BUS_PROG)
+		map_flash_region = mst->opaque.map_flash_region;
+	else if (mst->buses_supported & BUS_SPI)
+		map_flash_region = mst->spi.map_flash_region;
+	else if (mst->buses_supported & BUS_NONSPI)
+		map_flash_region = mst->par.map_flash_region;
+
 	void *ret;
-	if (programmer->map_flash_region)
-		ret = programmer->map_flash_region(descr, phys_addr, len);
+	if (map_flash_region)
+		ret = map_flash_region(descr, phys_addr, len);
 	else
 		ret = fallback_map(descr, phys_addr, len);
 	msg_gspew("%s: mapping %s from 0x%0*" PRIxPTR " to 0x%0*" PRIxPTR "\n",
-		  __func__, descr, PRIxPTR_WIDTH, phys_addr, PRIxPTR_WIDTH, (uintptr_t) ret);
+		__func__, descr, PRIxPTR_WIDTH, phys_addr, PRIxPTR_WIDTH, (uintptr_t) ret);
 	return ret;
 }
 
-void programmer_unmap_flash_region(void *virt_addr, size_t len)
+void master_unmap_flash_region(const struct registered_master *mst,
+			       void *virt_addr, size_t len)
 {
-	if (programmer->unmap_flash_region)
-		programmer->unmap_flash_region(virt_addr, len);
+	void (*unmap_flash_region) (void *virt_addr, size_t len) = NULL;
+	if (mst->buses_supported & BUS_PROG)
+		unmap_flash_region = mst->opaque.unmap_flash_region;
+	else if (mst->buses_supported & BUS_SPI)
+		unmap_flash_region = mst->spi.unmap_flash_region;
+	else if (mst->buses_supported & BUS_NONSPI)
+		unmap_flash_region = mst->par.unmap_flash_region;
+
+	if (unmap_flash_region)
+		unmap_flash_region(virt_addr, len);
 	else
 		fallback_unmap(virt_addr, len);
 	msg_gspew("%s: unmapped 0x%0*" PRIxPTR "\n", __func__, PRIxPTR_WIDTH, (uintptr_t)virt_addr);
+}
+
+static bool master_uses_physmap(const struct registered_master *mst)
+{
+#if CONFIG_INTERNAL == 1
+	if (mst->buses_supported & BUS_PROG)
+		return mst->opaque.map_flash_region == physmap;
+	else if (mst->buses_supported & BUS_SPI)
+		return mst->spi.map_flash_region == physmap;
+	else if (mst->buses_supported & BUS_NONSPI)
+		return mst->par.map_flash_region == physmap;
+#endif
+	return false;
 }
 
 void programmer_delay(unsigned int usecs)
@@ -647,13 +682,13 @@ unsigned int count_max_decode_exceedings(const struct flashctx *flash)
 void unmap_flash(struct flashctx *flash)
 {
 	if (flash->virtual_registers != (chipaddr)ERROR_PTR) {
-		programmer_unmap_flash_region((void *)flash->virtual_registers, flash->chip->total_size * 1024);
+		master_unmap_flash_region(flash->mst, (void *)flash->virtual_registers, flash->chip->total_size * 1024);
 		flash->physical_registers = 0;
 		flash->virtual_registers = (chipaddr)ERROR_PTR;
 	}
 
 	if (flash->virtual_memory != (chipaddr)ERROR_PTR) {
-		programmer_unmap_flash_region((void *)flash->virtual_memory, flash->chip->total_size * 1024);
+		master_unmap_flash_region(flash->mst, (void *)flash->virtual_memory, flash->chip->total_size * 1024);
 		flash->physical_memory = 0;
 		flash->virtual_memory = (chipaddr)ERROR_PTR;
 	}
@@ -673,7 +708,7 @@ int map_flash(struct flashctx *flash)
 
 	const chipsize_t size = flash->chip->total_size * 1024;
 	uintptr_t base = flashbase ? flashbase : (0xffffffff - size + 1);
-	void *addr = programmer_map_flash_region(flash->chip->name, base, size);
+	void *addr = master_map_flash_region(flash->mst, flash->chip->name, base, size);
 	if (addr == ERROR_PTR) {
 		msg_perr("Could not map flash chip %s at 0x%0*" PRIxPTR ".\n",
 			 flash->chip->name, PRIxPTR_WIDTH, base);
@@ -687,7 +722,7 @@ int map_flash(struct flashctx *flash)
 	 * Ignore these problems for now and always report success. */
 	if (flash->chip->feature_bits & FEATURE_REGISTERMAP) {
 		base = 0xffffffff - size - 0x400000 + 1;
-		addr = programmer_map_flash_region("flash chip registers", base, size);
+		addr = master_map_flash_region(flash->mst, "flash chip registers", base, size);
 		if (addr == ERROR_PTR) {
 			msg_pdbg2("Could not map flash chip registers %s at 0x%0*" PRIxPTR ".\n",
 				 flash->chip->name, PRIxPTR_WIDTH, base);
@@ -831,12 +866,10 @@ notfound:
 	msg_cinfo("%s %s flash chip \"%s\" (%d kB, %s) ", force ? "Assuming" : "Found",
 		  flash->chip->vendor, flash->chip->name, flash->chip->total_size, tmp);
 	free(tmp);
-#if CONFIG_INTERNAL == 1
-	if (programmer->map_flash_region == physmap)
+	if (master_uses_physmap(mst))
 		msg_cinfo("mapped at physical address 0x%0*" PRIxPTR ".\n",
 			  PRIxPTR_WIDTH, flash->physical_memory);
 	else
-#endif
 		msg_cinfo("on %s.\n", programmer->name);
 
 	/* Flash registers may more likely not be mapped if the chip was forced.

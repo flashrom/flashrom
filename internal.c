@@ -107,6 +107,8 @@ static void internal_chip_readn(const struct flashctx *flash, uint8_t *buf,
 }
 
 static const struct par_master par_master_internal = {
+	.map_flash_region	= physmap,
+	.unmap_flash_region	= physunmap,
 	.chip_readb	= internal_chip_readb,
 	.chip_readw	= internal_chip_readw,
 	.chip_readl	= internal_chip_readl,
@@ -347,6 +349,4 @@ const struct programmer_entry programmer_internal = {
 	.type			= OTHER,
 	.devs.note		= NULL,
 	.init			= internal_init,
-	.map_flash_region	= physmap,
-	.unmap_flash_region	= physunmap,
 };

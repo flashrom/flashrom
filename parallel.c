@@ -76,6 +76,17 @@ int register_par_master(const struct par_master *mst,
 		}
 	}
 
+	/* Bus masters supporting FWH/LPC cannot use fallback_map(), distinct
+	 * mappings are needed to support chips with FEATURE_REGISTERMAP
+	 */
+	if ((buses & (BUS_FWH | BUS_LPC)) && !mst->map_flash_region) {
+		msg_perr("%s called with incomplete master definition. "
+			 "FWH/LPC masters must provide memory mappings. "
+			 "Please report a bug at flashrom@flashrom.org\n",
+			 __func__);
+		return ERROR_FLASHROM_BUG;
+	}
+
 	if (!mst->chip_writeb || !mst->chip_writew || !mst->chip_writel ||
 	    !mst->chip_writen || !mst->chip_readb || !mst->chip_readw ||
 	    !mst->chip_readl || !mst->chip_readn) {

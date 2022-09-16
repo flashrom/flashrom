@@ -438,7 +438,23 @@ static int serprog_shutdown(void *data)
 	return 0;
 }
 
+static void *serprog_map(const char *descr, uintptr_t phys_addr, size_t len)
+{
+	/* Serprog transmits 24 bits only and assumes the underlying implementation handles any remaining bits
+	 * correctly (usually setting them to one either in software (for FWH/LPC) or relying on the fact that
+	 * the hardware observes a subset of the address bits only). Combined with the standard mapping of
+	 * flashrom this creates a 16 MB-wide window just below the 4 GB boundary where serprog can operate (as
+	 * needed for non-SPI chips). Below we make sure that the requested range is within this window. */
+	if ((phys_addr & 0xFF000000) == 0xFF000000) {
+		return (void*)phys_addr;
+	}
+	msg_pwarn(MSGHEADER "requested mapping %s is incompatible: 0x%zx bytes at 0x%0*" PRIxPTR ".\n",
+		  descr, len, PRIxPTR_WIDTH, phys_addr);
+	return NULL;
+}
+
 static struct spi_master spi_master_serprog = {
+	.map_flash_region	= serprog_map,
 	.features	= SPI_MASTER_4BA,
 	.max_data_read	= MAX_DATA_READ_UNLIMITED,
 	.max_data_write	= MAX_DATA_WRITE_UNLIMITED,
@@ -553,6 +569,7 @@ static void serprog_chip_readn(const struct flashctx *flash, uint8_t * buf,
 }
 
 static const struct par_master par_master_serprog = {
+	.map_flash_region	= serprog_map,
 	.chip_readb	= serprog_chip_readb,
 	.chip_readw	= fallback_chip_readw,
 	.chip_readl	= fallback_chip_readl,
@@ -945,27 +962,11 @@ static void serprog_delay(unsigned int usecs)
 	sp_prev_was_write = 0;
 }
 
-static void *serprog_map(const char *descr, uintptr_t phys_addr, size_t len)
-{
-	/* Serprog transmits 24 bits only and assumes the underlying implementation handles any remaining bits
-	 * correctly (usually setting them to one either in software (for FWH/LPC) or relying on the fact that
-	 * the hardware observes a subset of the address bits only). Combined with the standard mapping of
-	 * flashrom this creates a 16 MB-wide window just below the 4 GB boundary where serprog can operate (as
-	 * needed for non-SPI chips). Below we make sure that the requested range is within this window. */
-	if ((phys_addr & 0xFF000000) == 0xFF000000) {
-		return (void*)phys_addr;
-	}
-	msg_pwarn(MSGHEADER "requested mapping %s is incompatible: 0x%zx bytes at 0x%0*" PRIxPTR ".\n",
-		  descr, len, PRIxPTR_WIDTH, phys_addr);
-	return NULL;
-}
-
 const struct programmer_entry programmer_serprog = {
 	.name			= "serprog",
 	.type			= OTHER,
 				/* FIXME */
 	.devs.note		= "All programmer devices speaking the serprog protocol\n",
 	.init			= serprog_init,
-	.map_flash_region	= serprog_map,
 	.delay			= serprog_delay,
 };
