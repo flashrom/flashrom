@@ -168,28 +168,56 @@ int register_spi_master(const struct spi_master *mst, void *data)
 	return register_master(&rmst);
 }
 
+/*
+ * The following array has erasefn and opcode list pair. The opcode list pair is
+ * 0 termintated and must have size one more than the maximum number of opcodes
+ * used by any erasefn. Also the opcodes must be in increasing order.
+ */
 static const struct {
 	enum block_erase_func func;
-	uint8_t opcode;
+	uint8_t opcode[3];
 } function_opcode_list[] = {
-	{SPI_BLOCK_ERASE_20, 0x20},
-	{SPI_BLOCK_ERASE_21, 0x21},
-	{SPI_BLOCK_ERASE_50, 0x50},
-	{SPI_BLOCK_ERASE_52, 0x52},
-	{SPI_BLOCK_ERASE_53, 0x53},
-	{SPI_BLOCK_ERASE_5C, 0x5c},
-	{SPI_BLOCK_ERASE_60, 0x60},
-	{SPI_BLOCK_ERASE_62, 0x62},
-	{SPI_BLOCK_ERASE_81, 0x81},
-	{SPI_BLOCK_ERASE_C4, 0xc4},
-	{SPI_BLOCK_ERASE_C7, 0xc7},
-	{SPI_BLOCK_ERASE_D7, 0xd7},
-	{SPI_BLOCK_ERASE_D8, 0xd8},
-	{SPI_BLOCK_ERASE_DB, 0xdb},
-	{SPI_BLOCK_ERASE_DC, 0xdc},
+	{SPI_BLOCK_ERASE_20, {0x20}},
+	{SPI_BLOCK_ERASE_21, {0x21}},
+	{SPI_BLOCK_ERASE_50, {0x50}},
+	{SPI_BLOCK_ERASE_52, {0x52}},
+	{SPI_BLOCK_ERASE_53, {0x53}},
+	{SPI_BLOCK_ERASE_5C, {0x5c}},
+	{SPI_BLOCK_ERASE_60, {0x60}},
+	{SPI_BLOCK_ERASE_62, {0x62}},
+	{SPI_BLOCK_ERASE_81, {0x81}},
+	{SPI_BLOCK_ERASE_C4, {0xc4}},
+	{SPI_BLOCK_ERASE_C7, {0xc7}},
+	{SPI_BLOCK_ERASE_D7, {0xd7}},
+	{SPI_BLOCK_ERASE_D8, {0xd8}},
+	{SPI_BLOCK_ERASE_DB, {0xdb}},
+	{SPI_BLOCK_ERASE_DC, {0xdc}},
+	//AT45CS1282
+	{SPI_ERASE_AT45CS_SECTOR, {0x50, 0x7c, 0}},
+	//AT45DB**
+	{SPI_ERASE_AT45DB_PAGE, {0x81}},
+	{SPI_ERASE_AT45DB_BLOCK, {0x50}},
+	{SPI_ERASE_AT45DB_SECTOR, {0x7c}},
+	{SPI_ERASE_AT45DB_CHIP, {0xc7}},
+	//SF25F**
+	{S25FL_BLOCK_ERASE, {0xdc}},
+	{S25FS_BLOCK_ERASE_D8, {0xd8}},
 };
 
-uint8_t spi_get_opcode_from_erasefn(enum block_erase_func func)
+/*
+ * @brief Get erase function pointer from passed opcode list.
+ *
+ * Get the pointer to the erase function which uses passed opcodes and is used
+ * by the passed flashcip. The passed opcode_list must have opcodes in
+ * increasing order.
+ *
+ * @param chip Pointer to the flashchip structure.
+ * @param opcode_list Pointer to the array of opcodes.
+ * @param opcode_count Number of opcodes in 'opcode_list'
+ *
+ * @result Pointer to erase function matching 'chip' and 'opcode_list' or NULL on failure
+ */
+const uint8_t *spi_get_opcode_from_erasefn(enum block_erase_func func)
 {
 	size_t i;
 	for (i = 0; i < ARRAY_SIZE(function_opcode_list); i++) {
@@ -198,6 +226,6 @@ uint8_t spi_get_opcode_from_erasefn(enum block_erase_func func)
 	}
 	msg_cinfo("%s: unknown erase function (0x%d). Please report "
 			"this at flashrom@flashrom.org\n", __func__, func);
-	return 0x00; //Assuming 0x00 is not a erase function opcode
+	return NULL;
 }
 

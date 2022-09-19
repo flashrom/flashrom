@@ -53,7 +53,7 @@ int spi_block_erase_d8(struct flashctx *flash, unsigned int addr, unsigned int b
 int spi_block_erase_db(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 int spi_block_erase_dc(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 enum block_erase_func spi25_get_erasefn_from_opcode(uint8_t opcode);
-uint8_t spi_get_opcode_from_erasefn(enum block_erase_func func);
+const uint8_t *spi_get_opcode_from_erasefn(enum block_erase_func func);
 int spi_chip_write_1(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 int spi_nbyte_read(struct flashctx *flash, unsigned int addr, uint8_t *bytes, unsigned int len);
 int spi_read_chunked(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len, unsigned int chunksize);
