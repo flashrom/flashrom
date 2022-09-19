@@ -651,18 +651,6 @@ enum block_erase_func spi_get_erasefn_from_opcode(uint8_t opcode)
 	return NO_BLOCK_ERASE_FUNC;
 }
 
-uint8_t spi_get_opcode_from_erasefn(enum block_erase_func func)
-{
-	size_t i;
-	for (i = 0; i < ARRAY_SIZE(function_opcode_list); i++) {
-		if (function_opcode_list[i].func == func)
-			return function_opcode_list[i].opcode;
-	}
-	msg_cinfo("%s: unknown erase function (0x%d). Please report "
-			"this at flashrom@flashrom.org\n", __func__, func);
-	return 0x00; //Assuming 0x00 is not a erase function opcode
-}
-
 static int spi_nbyte_program(struct flashctx *flash, unsigned int addr, const uint8_t *bytes, unsigned int len)
 {
 	const bool native_4ba = flash->chip->feature_bits & FEATURE_4BA_WRITE && spi_master_4ba(flash);

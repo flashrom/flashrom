@@ -167,3 +167,37 @@ int register_spi_master(const struct spi_master *mst, void *data)
 		rmst.spi.data = data;
 	return register_master(&rmst);
 }
+
+static const struct {
+	enum block_erase_func func;
+	uint8_t opcode;
+} function_opcode_list[] = {
+	{SPI_BLOCK_ERASE_20, 0x20},
+	{SPI_BLOCK_ERASE_21, 0x21},
+	{SPI_BLOCK_ERASE_50, 0x50},
+	{SPI_BLOCK_ERASE_52, 0x52},
+	{SPI_BLOCK_ERASE_53, 0x53},
+	{SPI_BLOCK_ERASE_5C, 0x5c},
+	{SPI_BLOCK_ERASE_60, 0x60},
+	{SPI_BLOCK_ERASE_62, 0x62},
+	{SPI_BLOCK_ERASE_81, 0x81},
+	{SPI_BLOCK_ERASE_C4, 0xc4},
+	{SPI_BLOCK_ERASE_C7, 0xc7},
+	{SPI_BLOCK_ERASE_D7, 0xd7},
+	{SPI_BLOCK_ERASE_D8, 0xd8},
+	{SPI_BLOCK_ERASE_DB, 0xdb},
+	{SPI_BLOCK_ERASE_DC, 0xdc},
+};
+
+uint8_t spi_get_opcode_from_erasefn(enum block_erase_func func)
+{
+	size_t i;
+	for (i = 0; i < ARRAY_SIZE(function_opcode_list); i++) {
+		if (function_opcode_list[i].func == func)
+			return function_opcode_list[i].opcode;
+	}
+	msg_cinfo("%s: unknown erase function (0x%d). Please report "
+			"this at flashrom@flashrom.org\n", __func__, func);
+	return 0x00; //Assuming 0x00 is not a erase function opcode
+}
+
