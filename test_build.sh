@@ -13,7 +13,7 @@ make_programmer_opts="INTERNAL INTERNAL_X86 SERPROG RAYER_SPI RAIDEN_DEBUG_SPI P
 		      CH341A_SPI DIGILENT_SPI JLINK_SPI"
 
 
-if [ $(basename "${CC}") = "ccc-analyzer" ]; then
+if [ $(basename "${CC}") = "ccc-analyzer" ] || [ -n "${COVERITY_OUTPUT}" ]; then
 	is_scan_build_env=1
 fi
 
