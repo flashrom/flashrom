@@ -1110,9 +1110,17 @@ int main(int argc, char *argv[])
 
 	if (any_wp_op) {
 		if (set_wp_region && wp_region) {
-			ret = flashrom_layout_get_region_range(layout, wp_region, &wp_start, &wp_len);
-			if (ret)
+			if (!layout) {
+				msg_gerr("Error: A flash layout must be specified to use --wp-region.\n");
+				ret = 1;
 				goto out_release;
+			}
+
+			ret = flashrom_layout_get_region_range(layout, wp_region, &wp_start, &wp_len);
+			if (ret) {
+				msg_gerr("Error: Region %s not found in flash layout.\n", wp_region);
+				goto out_release;
+			}
 			set_wp_range = true;
 		}
 		ret = wp_cli(
