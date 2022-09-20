@@ -58,6 +58,8 @@ static struct romentry *_layout_entry_by_name(
 		const struct flashrom_layout *const layout, const char *name)
 {
 	struct romentry *entry = NULL;
+	if (!layout || !name)
+		return NULL;
 	while ((entry = mutable_layout_next(layout, entry))) {
 		if (!strcmp(entry->name, name))
 			return entry;
