@@ -215,7 +215,7 @@ static int internal_init(const struct programmer_cfg *cfg)
 	 */
 	internal_buses_supported = BUS_NONSPI;
 
-	if (try_mtd() == 0) {
+	if (try_mtd(cfg) == 0) {
 		ret = 0;
 		goto internal_init_exit;
 	}

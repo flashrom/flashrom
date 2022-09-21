@@ -375,12 +375,15 @@ void exit_conf_mode_ite(uint16_t port);
 void probe_superio_ite(void);
 int init_superio_ite(const struct programmer_cfg *cfg);
 
-#if CONFIG_LINUX_MTD == 1
 /* trivial wrapper to avoid cluttering internal_init() with #if */
-static inline int try_mtd(void) { return programmer_linux_mtd.init(NULL); };
+static inline int try_mtd(const struct programmer_cfg *cfg)
+{
+#if CONFIG_LINUX_MTD == 1
+	return programmer_linux_mtd.init(cfg);
 #else
-static inline int try_mtd(void) { return 1; };
+	return 1;
 #endif
+}
 
 /* mcp6x_spi.c */
 int mcp6x_spi_init(int want_spi);
