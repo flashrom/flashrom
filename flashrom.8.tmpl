@@ -429,6 +429,8 @@ bitbanging adapter)
 .sp
 .BR "* parade_lspcon" " (for SPI flash ROMs attached to Parade Technologies LSPCONs (PS175))"
 .sp
+.BR "* mediatek_i2c_spi" " (for SPI flash ROMs attached to some Mediatek display devices accessible over I2C)"
+.sp
 Some programmers have optional or mandatory parameters which are described
 in detail in the
 .B PROGRAMMER-SPECIFIC INFORMATION
@@ -1521,7 +1523,7 @@ syntax where \fBfrequency\fP is the SPI clock frequency in kHz.
 If the passed frequency is not supported by the adapter the nearest lower
 supported frequency will be used.
 .SS
-.BR "realtek_mst_i2c_spi " and " parade_lspcon " programmers
+.BR "realtek_mst_i2c_spi ", " parade_lspcon ", and " mediatek_i2c_spi " programmers
 .IP
 These programmers tunnel SPI commands through I2C-connected devices. The I2C
 bus over which communication occurs must be specified either by device path
@@ -1574,6 +1576,27 @@ This programmer supports SPI flash programming for chips attached to Parade
 Technologies DisplayPort-to-HDMI level shifter/protocol converters (LSPCONs),
 e.g. the PS175. Communication to the SPI flash is tunneled through the LSPCON
 over I2C.
+
+.SS
+.BR "mediatek_i2c_spi " programmer
+.IP
+This programmer supports SPI flash programming for chips attached to some
+Mediatek display controllers, themselves accessed through I2C (tunneling
+SPI flash commands through an I2C connection with the host).
+.sp
+The programmer is designed to support the TSUMOP82JUQ integrated display driver
+and scaler as used in the Google Meet Series One Desk 27 (which runs a version
+of ChromeOS and uses flashrom in its \fBtsum-scaler-updater\fP scripts that
+ship with the OS). Other chips may use compatible protocols but have not been
+tested with this programmer, and external chip IOs may need to be controlled
+through other non-flashrom means to configure the chip in order for it to
+operate as expected.
+.sp
+\fBdevpath\fP and \fBbus\fP options select the I2C bus to use, as described
+previously. \fBallow_brick\fP defaults to no, and must explicitly be set to
+"yes" in order for the programmer to operate. This is required because there is
+no mechanism in the driver to positively identify that a given I2C bus is
+actually connected to a supported device.
 
 .SH EXAMPLES
 To back up and update your BIOS, run
