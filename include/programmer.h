@@ -398,8 +398,6 @@ int wbsio_check_for_spi(void);
 
 /* opaque.c */
 struct opaque_master {
-	void *(*map_flash_region) (const char *descr, uintptr_t phys_addr, size_t len);
-	void (*unmap_flash_region) (void *virt_addr, size_t len);
 	int max_data_read;
 	int max_data_write;
 	/* Specific functions for this master */

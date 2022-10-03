@@ -211,9 +211,7 @@ void *master_map_flash_region(const struct registered_master *mst,
 	 * fallback if it does not specialize it
 	 */
 	void *(*map_flash_region) (const char *descr, uintptr_t phys_addr, size_t len) = NULL;
-	if (mst->buses_supported & BUS_PROG)
-		map_flash_region = mst->opaque.map_flash_region;
-	else if (mst->buses_supported & BUS_SPI)
+	if (mst->buses_supported & BUS_SPI)
 		map_flash_region = mst->spi.map_flash_region;
 	else if (mst->buses_supported & BUS_NONSPI)
 		map_flash_region = mst->par.map_flash_region;
@@ -232,9 +230,7 @@ void master_unmap_flash_region(const struct registered_master *mst,
 			       void *virt_addr, size_t len)
 {
 	void (*unmap_flash_region) (void *virt_addr, size_t len) = NULL;
-	if (mst->buses_supported & BUS_PROG)
-		unmap_flash_region = mst->opaque.unmap_flash_region;
-	else if (mst->buses_supported & BUS_SPI)
+	if (mst->buses_supported & BUS_SPI)
 		unmap_flash_region = mst->spi.unmap_flash_region;
 	else if (mst->buses_supported & BUS_NONSPI)
 		unmap_flash_region = mst->par.unmap_flash_region;
@@ -249,9 +245,7 @@ void master_unmap_flash_region(const struct registered_master *mst,
 static bool master_uses_physmap(const struct registered_master *mst)
 {
 #if CONFIG_INTERNAL == 1
-	if (mst->buses_supported & BUS_PROG)
-		return mst->opaque.map_flash_region == physmap;
-	else if (mst->buses_supported & BUS_SPI)
+	if (mst->buses_supported & BUS_SPI)
 		return mst->spi.map_flash_region == physmap;
 	else if (mst->buses_supported & BUS_NONSPI)
 		return mst->par.map_flash_region == physmap;
