@@ -947,8 +947,6 @@ static const struct par_master par_master_dummyflasher = {
 };
 
 static const struct opaque_master opaque_master_dummyflasher = {
-	.map_flash_region	= dummy_map,
-	.unmap_flash_region	= dummy_unmap,
 	.probe	= probe_variable_size,
 	.read	= dummy_opaque_read,
 	.write	= dummy_opaque_write,
