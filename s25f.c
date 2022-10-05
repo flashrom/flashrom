@@ -380,10 +380,10 @@ int probe_spi_big_spansion(struct flashctx *flash)
 	 */
 
 	uint32_t model_id =
-		dev_id[1] << 24 |
-		dev_id[2] << 16 |
-		dev_id[4] << 8  |
-		dev_id[5] << 0;
+		(uint32_t)dev_id[1] << 24 |
+		(uint32_t)dev_id[2] << 16 |
+		(uint32_t)dev_id[4] << 8  |
+		(uint32_t)dev_id[5] << 0;
 
 	if (dev_id[0] == flash->chip->manufacture_id && model_id == flash->chip->model_id)
 		return 1;
