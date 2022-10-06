@@ -19,15 +19,6 @@ test_srcs = files(
   'flashrom.c',
   'spi25.c',
   'lifecycle.c',
-  'dummyflasher.c',
-  'nicrealtek.c',
-  'raiden_debug_spi.c',
-  'dediprog.c',
-  'linux_mtd.c',
-  'linux_spi.c',
-  'parade_lspcon.c',
-  'mediatek_i2c_spi.c',
-  'realtek_mst_i2c_spi.c',
   'layout.c',
   'chip.c',
   'chip_wp.c',
@@ -36,6 +27,10 @@ test_srcs = files(
 if not programmer.get('dummy').get('active')
   test_srcs += programmer.get('dummy').get('srcs')
 endif
+
+foreach p_name, p_data : programmer
+  test_srcs += p_data.get('test_srcs')
+endforeach
 
 mocks = [
   '-Wl,--wrap=strdup',
