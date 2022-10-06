@@ -304,7 +304,7 @@ programmer = {
     'flags'   : [ '-DCONFIG_MEDIATEK_I2C_SPI=1' ],
     'default' : false,
   },
-    'mstarddc_spi' : {
+  'mstarddc_spi' : {
     'systems' : [ 'linux' ],
     'deps'    : [ linux_headers ],
     'groups'  : [ group_i2c ],
