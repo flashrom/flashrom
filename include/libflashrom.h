@@ -121,6 +121,7 @@ struct flashrom_flashchip_info {
 		enum flashrom_test_state read;
 		enum flashrom_test_state erase;
 		enum flashrom_test_state write;
+		enum flashrom_test_state wp;
 	} tested;
 };
 

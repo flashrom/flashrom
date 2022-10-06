@@ -35,12 +35,14 @@ void print_chip_support_status(const struct flashchip *chip)
 	if ((chip->tested.probe == BAD) || (chip->tested.probe == NT) ||
 	    (chip->tested.read == BAD)  || (chip->tested.read == NT) ||
 	    (chip->tested.erase == BAD) || (chip->tested.erase == NT) ||
-	    (chip->tested.write == BAD) || (chip->tested.write == NT)){
+	    (chip->tested.write == BAD) || (chip->tested.write == NT) ||
+	    (chip->tested.wp == BAD) || (chip->tested.wp == NT)){
 		msg_cinfo("===\n");
 		if ((chip->tested.probe == BAD) ||
 		    (chip->tested.read == BAD) ||
 		    (chip->tested.erase == BAD) ||
-		    (chip->tested.write == BAD)) {
+		    (chip->tested.write == BAD) ||
+		    (chip->tested.wp == BAD)) {
 			msg_cinfo("This flash part has status NOT WORKING for operations:");
 			if (chip->tested.probe == BAD)
 				msg_cinfo(" PROBE");
@@ -50,12 +52,15 @@ void print_chip_support_status(const struct flashchip *chip)
 				msg_cinfo(" ERASE");
 			if (chip->tested.write == BAD)
 				msg_cinfo(" WRITE");
+			if (chip->tested.wp == BAD)
+				msg_cinfo(" WP");
 			msg_cinfo("\n");
 		}
 		if ((chip->tested.probe == NT) ||
 		    (chip->tested.read == NT) ||
 		    (chip->tested.erase == NT) ||
-		    (chip->tested.write == NT)) {
+		    (chip->tested.write == NT) ||
+		    (chip->tested.wp == NT)) {
 			msg_cinfo("This flash part has status UNTESTED for operations:");
 			if (chip->tested.probe == NT)
 				msg_cinfo(" PROBE");
@@ -65,6 +70,8 @@ void print_chip_support_status(const struct flashchip *chip)
 				msg_cinfo(" ERASE");
 			if (chip->tested.write == NT)
 				msg_cinfo(" WRITE");
+			if (chip->tested.wp == NT)
+				msg_cinfo(" WP");
 			msg_cinfo("\n");
 		}
 		msg_cinfo("The test status of this chip may have been updated in the latest development\n"
