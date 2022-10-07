@@ -11,7 +11,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-srcs = files(
+test_srcs = files(
   'io_mock.c',
   'tests.c',
   'libusb_wraps.c',
@@ -34,7 +34,7 @@ srcs = files(
 )
 
 if not programmer.get('dummy').get('active')
-  srcs += programmer.get('dummy').get('srcs')
+  test_srcs += programmer.get('dummy').get('srcs')
 endif
 
 mocks = [
@@ -110,7 +110,7 @@ mocks = [
 ]
 
 flashrom_tests = executable('flashrom_unit_tests',
-  srcs,
+  test_srcs,
   c_args : [
     cargs,
     '-ffunction-sections',
