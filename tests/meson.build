@@ -11,7 +11,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-srcs = [
+srcs = files(
   'io_mock.c',
   'tests.c',
   'libusb_wraps.c',
@@ -31,7 +31,7 @@ srcs = [
   'layout.c',
   'chip.c',
   'chip_wp.c',
-]
+)
 
 if not programmer.get('dummy').get('active')
   srcs += programmer.get('dummy').get('srcs')
