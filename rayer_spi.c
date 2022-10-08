@@ -174,16 +174,6 @@ static const struct rayer_pinout spi_tt = {
 	.miso_bit = 7,
 };
 
-static const struct rayer_programmer rayer_spi_types[] = {
-	{"rayer",		NT,	"RayeR SPIPGM",					&rayer_spipgm},
-	{"xilinx",		NT,	"Xilinx Parallel Cable III (DLC 5)",		&xilinx_dlc5},
-	{"byteblastermv",	OK,	"Altera ByteBlasterMV",				&altera_byteblastermv},
-	{"stk200",		NT,	"Atmel STK200/300 adapter",			&atmel_stk200},
-	{"wiggler",		OK,	"Wiggler LPT",					&wiggler_lpt},
-	{"spi_tt",		NT,	"SPI Tiny Tools (SPI_TT LPT)",			&spi_tt},
-	{0},
-};
-
 static void rayer_bitbang_set_cs(int val, void *spi_data)
 {
 	struct rayer_spi_data *data = spi_data;
@@ -235,6 +225,35 @@ static const struct bitbang_spi_master bitbang_spi_master_rayer = {
 	.half_period	= 0,
 };
 
+static const struct rayer_programmer *find_progtype(const char *prog_type)
+{
+	static const struct rayer_programmer rayer_spi_types[] = {
+		{"rayer",		NT,	"RayeR SPIPGM",					&rayer_spipgm},
+		{"xilinx",		NT,	"Xilinx Parallel Cable III (DLC 5)",		&xilinx_dlc5},
+		{"byteblastermv",	OK,	"Altera ByteBlasterMV",				&altera_byteblastermv},
+		{"stk200",		NT,	"Atmel STK200/300 adapter",			&atmel_stk200},
+		{"wiggler",		OK,	"Wiggler LPT",					&wiggler_lpt},
+		{"spi_tt",		NT,	"SPI Tiny Tools (SPI_TT LPT)",			&spi_tt},
+		{0},
+	};
+	if (!prog_type)
+		return &rayer_spi_types[0];
+
+	const struct rayer_programmer *prog = rayer_spi_types;
+	for (; prog->type != NULL; prog++) {
+		if (strcasecmp(prog_type, prog->type) == 0) {
+			break;
+		}
+	}
+
+	if (!prog->type) {
+		msg_perr("Error: Invalid device type specified.\n");
+		return NULL;
+	}
+
+	return prog;
+}
+
 static int get_params(const struct programmer_cfg *cfg, uint16_t *lpt_iobase, char **prog_type)
 {
 	/* Pick a default value for the I/O base. */
@@ -280,7 +299,6 @@ static int get_params(const struct programmer_cfg *cfg, uint16_t *lpt_iobase, ch
 
 static int rayer_spi_init(const struct programmer_cfg *cfg)
 {
-	const struct rayer_programmer *prog = rayer_spi_types;
 	struct rayer_pinout *pinout = NULL;
 	uint16_t lpt_iobase;
 	char *prog_type;
@@ -288,19 +306,10 @@ static int rayer_spi_init(const struct programmer_cfg *cfg)
 	if (get_params(cfg, &lpt_iobase, &prog_type) < 0)
 		return 1;
 
-	if (prog_type) {
-		for (; prog->type != NULL; prog++) {
-			if (strcasecmp(prog_type, prog->type) == 0) {
-				break;
-			}
-		}
-		free(prog_type);
-
-		if (prog->type == NULL) {
-			msg_perr("Error: Invalid device type specified.\n");
-			return 1;
-		}
-	}
+	const struct rayer_programmer *prog = find_progtype(prog_type);
+	free(prog_type);
+	if (!prog)
+		return 1;
 
 	msg_pdbg("Using address 0x%x as I/O base for parallel port access.\n",
 		 lpt_iobase);
