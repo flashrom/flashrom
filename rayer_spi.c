@@ -254,12 +254,13 @@ static const struct rayer_programmer *find_progtype(const char *prog_type)
 	return prog;
 }
 
-static int get_params(const struct programmer_cfg *cfg, uint16_t *lpt_iobase, char **prog_type)
+static int get_params(const struct programmer_cfg *cfg, uint16_t *lpt_iobase,
+		      const struct rayer_programmer **prog)
 {
 	/* Pick a default value for the I/O base. */
 	*lpt_iobase = 0x378;
 	/* no programmer type specified. */
-	*prog_type = NULL;
+	*prog = NULL;
 
 	/* Non-default port requested? */
 	char *arg = extract_programmer_param_str(cfg, "iobase");
@@ -289,26 +290,19 @@ static int get_params(const struct programmer_cfg *cfg, uint16_t *lpt_iobase, ch
 	}
 
 	arg = extract_programmer_param_str(cfg, "type");
-	if (arg) {
-		*prog_type = strdup(arg);
-		free(arg);
-	}
+	*prog = find_progtype(arg);
+	free(arg);
 
-	return 0;
+	return *prog ? 0 : -1;
 }
 
 static int rayer_spi_init(const struct programmer_cfg *cfg)
 {
+	const struct rayer_programmer *prog;
 	struct rayer_pinout *pinout = NULL;
 	uint16_t lpt_iobase;
-	char *prog_type;
 
-	if (get_params(cfg, &lpt_iobase, &prog_type) < 0)
-		return 1;
-
-	const struct rayer_programmer *prog = find_progtype(prog_type);
-	free(prog_type);
-	if (!prog)
+	if (get_params(cfg, &lpt_iobase, &prog) < 0)
 		return 1;
 
 	msg_pdbg("Using address 0x%x as I/O base for parallel port access.\n",
