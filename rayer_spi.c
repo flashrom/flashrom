@@ -235,20 +235,18 @@ static const struct bitbang_spi_master bitbang_spi_master_rayer = {
 	.half_period	= 0,
 };
 
-static int rayer_spi_init(const struct programmer_cfg *cfg)
+static int get_params(const struct programmer_cfg *cfg, uint16_t *lpt_iobase, char **prog_type)
 {
-	const struct rayer_programmer *prog = rayer_spi_types;
-	char *arg = NULL;
-	struct rayer_pinout *pinout = NULL;
-	uint16_t lpt_iobase;
-	uint8_t lpt_outbyte;
+	/* Pick a default value for the I/O base. */
+	*lpt_iobase = 0x378;
+	/* no programmer type specified. */
+	*prog_type = NULL;
 
 	/* Non-default port requested? */
-	arg = extract_programmer_param_str(cfg, "iobase");
+	char *arg = extract_programmer_param_str(cfg, "iobase");
 	if (arg) {
 		char *endptr = NULL;
-		unsigned long tmp;
-		tmp = strtoul(arg, &endptr, 0);
+		unsigned long tmp = strtoul(arg, &endptr, 0);
 		/* Port 0, port >0x10000, unaligned ports and garbage strings
 		 * are rejected.
 		 */
@@ -262,35 +260,52 @@ static int rayer_spi_init(const struct programmer_cfg *cfg)
 				 "given was invalid.\nIt must be a multiple of "
 				 "0x4 and lie between 0x100 and 0xfffc.\n");
 			free(arg);
-			return 1;
+			return -1;
 		} else {
-			lpt_iobase = (uint16_t)tmp;
+			*lpt_iobase = (uint16_t)tmp;
 			msg_pinfo("Non-default I/O base requested. This will "
 				  "not change the hardware settings.\n");
 		}
-	} else {
-		/* Pick a default value for the I/O base. */
-		lpt_iobase = 0x378;
+		free(arg);
 	}
-	free(arg);
+
+	arg = extract_programmer_param_str(cfg, "type");
+	if (arg) {
+		*prog_type = strdup(arg);
+		free(arg);
+	}
+
+	return 0;
+}
+
+static int rayer_spi_init(const struct programmer_cfg *cfg)
+{
+	const struct rayer_programmer *prog = rayer_spi_types;
+	struct rayer_pinout *pinout = NULL;
+	uint16_t lpt_iobase;
+	uint8_t lpt_outbyte;
+	char *prog_type;
+
+	if (get_params(cfg, &lpt_iobase, &prog_type) < 0)
+		return 1;
+
+	if (prog_type) {
+		for (; prog->type != NULL; prog++) {
+			if (strcasecmp(prog_type, prog->type) == 0) {
+				break;
+			}
+		}
+		free(prog_type);
+
+		if (prog->type == NULL) {
+			msg_perr("Error: Invalid device type specified.\n");
+			return 1;
+		}
+	}
 
 	msg_pdbg("Using address 0x%x as I/O base for parallel port access.\n",
 		 lpt_iobase);
 
-	arg = extract_programmer_param_str(cfg, "type");
-	if (arg) {
-		for (; prog->type != NULL; prog++) {
-			if (strcasecmp(arg, prog->type) == 0) {
-				break;
-			}
-		}
-		if (prog->type == NULL) {
-			msg_perr("Error: Invalid device type specified.\n");
-			free(arg);
-			return 1;
-		}
-		free(arg);
-	}
 	msg_pinfo("Using %s pinout.\n", prog->description);
 	pinout = (struct rayer_pinout *)prog->dev_data;
 
