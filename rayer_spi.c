@@ -283,7 +283,6 @@ static int rayer_spi_init(const struct programmer_cfg *cfg)
 	const struct rayer_programmer *prog = rayer_spi_types;
 	struct rayer_pinout *pinout = NULL;
 	uint16_t lpt_iobase;
-	uint8_t lpt_outbyte;
 	char *prog_type;
 
 	if (get_params(cfg, &lpt_iobase, &prog_type) < 0)
@@ -312,9 +311,6 @@ static int rayer_spi_init(const struct programmer_cfg *cfg)
 	if (rget_io_perms())
 		return 1;
 
-	/* Get the initial value before writing to any line. */
-	lpt_outbyte = INB(lpt_iobase);
-
 	struct rayer_spi_data *data = calloc(1, sizeof(*data));
 	if (!data) {
 		msg_perr("Unable to allocate space for SPI master data\n");
@@ -322,7 +318,8 @@ static int rayer_spi_init(const struct programmer_cfg *cfg)
 	}
 	data->pinout = pinout;
 	data->lpt_iobase = lpt_iobase;
-	data->lpt_outbyte = lpt_outbyte;
+	/* Get the initial value before writing to any line. */
+	data->lpt_outbyte = INB(lpt_iobase);
 
 	if (pinout->shutdown)
 		register_shutdown(pinout->shutdown, data);
