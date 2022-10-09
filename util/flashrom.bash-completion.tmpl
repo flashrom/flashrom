@@ -1,0 +1,77 @@
+# Completion file for bash
+#
+# This file is part of the flashrom project.
+#
+# Copyright 2022 Alexander Goncharov <chat@joursoir.net>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+
+_flashrom()
+{
+	local cur prev OPTS
+	COMPREPLY=()
+	cur="${COMP_WORDS[COMP_CWORD]}"
+	prev="${COMP_WORDS[COMP_CWORD-1]}"
+	case $prev in
+		'-r'|'--read'|'-w'|'--write'|'-v'|'--verify'|'-l'|'--layout'| \
+		'--fmap-file'|'-o'|'--output'|'--flash-contents')
+			local IFS=$'\n'
+			compopt -o filenames
+			COMPREPLY=( $(compgen -f -- $cur) )
+			return 0
+			;;
+		'-c'|'--chip'|'--wp-range'|'--wp-region'|'-i'|'--include')
+			return 0
+			;;
+		'-p'|'--programmer')
+			COMPREPLY=( $(compgen -W "@PROGRAMMERS@" -- $cur) )
+			return 0
+			;;
+		'-h'|'--help'|'-R'|'--version'|'-L'|'--list-supported')
+			return 0
+			;;
+	esac
+	OPTS="--help
+		--version
+		--read
+		--write
+		--verify
+		--erase
+		--verbose
+		--chip
+		--force
+		--noverify
+		--noverify-all
+		--extract
+		--layout
+		--wp-disable
+		--wp-enable
+		--wp-list
+		--wp-status
+		--wp-range
+		--wp-region
+		--flash-name
+		--flash-size
+		--fmap
+		--fmap-file
+		--ifd
+		--include
+		--output
+		--flash-contents
+		--list-supported
+		--progress
+		--programmer"
+	COMPREPLY=( $(compgen -W "${OPTS[*]}" -- $cur) )
+	return 0
+}
+
+complete -F _flashrom flashrom

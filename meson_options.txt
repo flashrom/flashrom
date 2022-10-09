@@ -3,6 +3,7 @@ option('classic_cli_print_wiki', type : 'feature', value : 'disabled',  descript
 option('default_programmer_name', type : 'string', description : 'default programmer')
 option('default_programmer_args', type : 'string', description : 'default programmer arguments')
 option('ich_descriptors_tool', type : 'feature', value : 'auto', description : 'Build ich_descriptors_tool')
+option('bash_completion', type : 'feature', value : 'auto', description : 'Install bash completion')
 option('tests', type : 'feature', value : 'auto', description : 'Build unit tests')
 option('use_internal_dmi', type : 'boolean', value : 'true')
 option('programmer', type : 'array', value : ['auto'], choices : [

@@ -630,6 +630,41 @@ if get_option('ich_descriptors_tool').auto() or get_option('ich_descriptors_tool
   subdir('util/ich_descriptors_tool')
 endif
 
+if get_option('bash_completion').auto() or get_option('bash_completion').enabled()
+  if get_option('classic_cli').disabled()
+    if get_option('bash_completion').enabled()
+      error('`bash_completion` can not be enabled without `classic_cli`')
+    endif
+  else
+    bash_comp = dependency('bash-completion', required : false)
+    if bash_comp.found()
+      bash_comp_install_dir = bash_comp.get_variable(
+        pkgconfig : 'completionsdir',
+        pkgconfig_define : ['datadir', get_option('datadir')]
+      )
+    else
+      bash_comp_install_dir = join_paths(get_option('datadir'), 'bash-completion', 'completions')
+    endif
+
+    programmer_names_active_str = ''
+    foreach p_name, p_data : programmer
+      if p_data.get('active')
+        programmer_names_active_str += p_name + ' '
+      endif
+    endforeach
+
+    configure_file(
+      input : 'util/flashrom.bash-completion.tmpl',
+      output : 'flashrom.bash',
+      configuration : {
+        'PROGRAMMERS' : programmer_names_active_str,
+      },
+      install: true,
+      install_dir: bash_comp_install_dir,
+    )
+  endif
+endif
+
 # Use `.auto() or .enabled()` instead of `.allowed()` to keep the minimum meson version as low as possible.
 # `.allowed()` gets introduced in 0.59.0
 if get_option('tests').auto() or get_option('tests').enabled()

@@ -9,6 +9,7 @@
 /flashrom-*
 /flashrom.exe
 /flashrom.8
+/flashrom.bash
 /libflashrom.a
 /libflashrom-doc/
 

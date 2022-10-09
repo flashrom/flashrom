@@ -30,6 +30,7 @@ STRIP_ARGS = -s
 INSTALL = install
 PREFIX  ?= /usr/local
 MANDIR  ?= $(PREFIX)/share/man
+BASHCOMPDIR ?= $(PREFIX)/share/bash-completion/completions
 CFLAGS  ?= -Os -Wall -Wextra -Wno-unused-parameter -Wshadow -Wmissing-prototypes -Wwrite-strings
 EXPORTDIR ?= .
 RANLIB  ?= ranlib
@@ -585,11 +586,13 @@ FEATURE_FLAGS += -D'CONFIG_INTERNAL=1'
 PROGRAMMER_OBJS += processor_enable.o chipset_enable.o board_enable.o cbtable.o \
 	internal.o it87spi.o sb600spi.o amd_imc.o wbsio_spi.o mcp6x_spi.o \
 	ichspi.o dmi.o known_boards.o
+ACTIVE_PROGRAMMERS += internal
 endif
 else
 ifeq ($(CONFIG_INTERNAL), yes)
 FEATURE_FLAGS += -D'CONFIG_INTERNAL=1'
 PROGRAMMER_OBJS += processor_enable.o chipset_enable.o board_enable.o cbtable.o internal.o known_boards.o
+ACTIVE_PROGRAMMERS += internal
 endif
 endif
 
@@ -600,191 +603,229 @@ endif
 ifeq ($(CONFIG_SERPROG), yes)
 FEATURE_FLAGS += -D'CONFIG_SERPROG=1'
 PROGRAMMER_OBJS += serprog.o
+ACTIVE_PROGRAMMERS += serprog
 endif
 
 ifeq ($(CONFIG_RAYER_SPI), yes)
 FEATURE_FLAGS += -D'CONFIG_RAYER_SPI=1'
 PROGRAMMER_OBJS += rayer_spi.o
+ACTIVE_PROGRAMMERS += rayer_spi
 endif
 
 ifeq ($(CONFIG_RAIDEN_DEBUG_SPI), yes)
 FEATURE_FLAGS += -D'CONFIG_RAIDEN_DEBUG_SPI=1'
 PROGRAMMER_OBJS += raiden_debug_spi.o
+ACTIVE_PROGRAMMERS += raiden_debug_spi
 endif
 
 ifeq ($(CONFIG_PONY_SPI), yes)
 FEATURE_FLAGS += -D'CONFIG_PONY_SPI=1'
 PROGRAMMER_OBJS += pony_spi.o
+ACTIVE_PROGRAMMERS += pony_spi
 endif
 
 ifeq ($(CONFIG_NIC3COM), yes)
 FEATURE_FLAGS += -D'CONFIG_NIC3COM=1'
 PROGRAMMER_OBJS += nic3com.o
+ACTIVE_PROGRAMMERS += nic3com
 endif
 
 ifeq ($(CONFIG_GFXNVIDIA), yes)
 FEATURE_FLAGS += -D'CONFIG_GFXNVIDIA=1'
 PROGRAMMER_OBJS += gfxnvidia.o
+ACTIVE_PROGRAMMERS += gfxnvidia
 endif
 
 ifeq ($(CONFIG_SATASII), yes)
 FEATURE_FLAGS += -D'CONFIG_SATASII=1'
 PROGRAMMER_OBJS += satasii.o
+ACTIVE_PROGRAMMERS += satasii
 endif
 
 ifeq ($(CONFIG_ATAHPT), yes)
 FEATURE_FLAGS += -D'CONFIG_ATAHPT=1'
 PROGRAMMER_OBJS += atahpt.o
+ACTIVE_PROGRAMMERS += atahpt
 endif
 
 ifeq ($(CONFIG_ATAVIA), yes)
 FEATURE_FLAGS += -D'CONFIG_ATAVIA=1'
 PROGRAMMER_OBJS += atavia.o
+ACTIVE_PROGRAMMERS += atavia
 endif
 
 ifeq ($(CONFIG_ATAPROMISE), yes)
 FEATURE_FLAGS += -D'CONFIG_ATAPROMISE=1'
 PROGRAMMER_OBJS += atapromise.o
+ACTIVE_PROGRAMMERS += atapromise
 endif
 
 ifeq ($(CONFIG_IT8212), yes)
 FEATURE_FLAGS += -D'CONFIG_IT8212=1'
 PROGRAMMER_OBJS += it8212.o
+ACTIVE_PROGRAMMERS += it8212
 endif
 
 ifeq ($(CONFIG_FT2232_SPI), yes)
 FEATURE_FLAGS += -D'CONFIG_FT2232_SPI=1'
 PROGRAMMER_OBJS += ft2232_spi.o
+ACTIVE_PROGRAMMERS += ft2232_spi
 endif
 
 ifeq ($(CONFIG_USBBLASTER_SPI), yes)
 FEATURE_FLAGS += -D'CONFIG_USBBLASTER_SPI=1'
 PROGRAMMER_OBJS += usbblaster_spi.o
+ACTIVE_PROGRAMMERS += usbblaster_spi
 endif
 
 ifeq ($(CONFIG_PICKIT2_SPI), yes)
 FEATURE_FLAGS += -D'CONFIG_PICKIT2_SPI=1'
 PROGRAMMER_OBJS += pickit2_spi.o
+ACTIVE_PROGRAMMERS += pickit2_spi
 endif
 
 ifeq ($(CONFIG_STLINKV3_SPI), yes)
 FEATURE_FLAGS += -D'CONFIG_STLINKV3_SPI=1'
 PROGRAMMER_OBJS += stlinkv3_spi.o
+ACTIVE_PROGRAMMERS += stlinkv3_spi
 endif
 
 ifeq ($(CONFIG_PARADE_LSPCON), yes)
 FEATURE_FLAGS += -D'CONFIG_PARADE_LSPCON=1'
 PROGRAMMER_OBJS += parade_lspcon.o
+ACTIVE_PROGRAMMERS += parade_lspcon
 endif
 
 ifeq ($(CONFIG_MEDIATEK_I2C_SPI), yes)
 FEATURE_FLAGS += -D'CONFIG_MEDIATEK_I2C_SPI=1'
 PROGRAMMER_OBJS += mediatek_i2c_spi.o
+ACTIVE_PROGRAMMERS += mediatek_i2c_spi
 endif
 
 ifeq ($(CONFIG_REALTEK_MST_I2C_SPI), yes)
 FEATURE_FLAGS += -D'CONFIG_REALTEK_MST_I2C_SPI=1'
 PROGRAMMER_OBJS += realtek_mst_i2c_spi.o
+ACTIVE_PROGRAMMERS += realtek_mst_i2c_spi
 endif
 
 ifeq ($(CONFIG_DUMMY), yes)
 FEATURE_FLAGS += -D'CONFIG_DUMMY=1'
 PROGRAMMER_OBJS += dummyflasher.o
+ACTIVE_PROGRAMMERS += dummyflasher
 endif
 
 ifeq ($(CONFIG_DRKAISER), yes)
 FEATURE_FLAGS += -D'CONFIG_DRKAISER=1'
 PROGRAMMER_OBJS += drkaiser.o
+ACTIVE_PROGRAMMERS += drkaiser
 endif
 
 ifeq ($(CONFIG_NICREALTEK), yes)
 FEATURE_FLAGS += -D'CONFIG_NICREALTEK=1'
 PROGRAMMER_OBJS += nicrealtek.o
+ACTIVE_PROGRAMMERS += nicrealtek
 endif
 
 ifeq ($(CONFIG_NICNATSEMI), yes)
 FEATURE_FLAGS += -D'CONFIG_NICNATSEMI=1'
 PROGRAMMER_OBJS += nicnatsemi.o
+ACTIVE_PROGRAMMERS += nicnatsemi
 endif
 
 ifeq ($(CONFIG_NICINTEL), yes)
 FEATURE_FLAGS += -D'CONFIG_NICINTEL=1'
 PROGRAMMER_OBJS += nicintel.o
+ACTIVE_PROGRAMMERS += nicintel
 endif
 
 ifeq ($(CONFIG_NICINTEL_SPI), yes)
 FEATURE_FLAGS += -D'CONFIG_NICINTEL_SPI=1'
 PROGRAMMER_OBJS += nicintel_spi.o
+ACTIVE_PROGRAMMERS += nicintel_spi
 endif
 
 ifeq ($(CONFIG_NICINTEL_EEPROM), yes)
 FEATURE_FLAGS += -D'CONFIG_NICINTEL_EEPROM=1'
 PROGRAMMER_OBJS += nicintel_eeprom.o
+ACTIVE_PROGRAMMERS += nicintel_eeprom
 endif
 
 ifeq ($(CONFIG_OGP_SPI), yes)
 FEATURE_FLAGS += -D'CONFIG_OGP_SPI=1'
 PROGRAMMER_OBJS += ogp_spi.o
+ACTIVE_PROGRAMMERS += ogp_spi
 endif
 
 ifeq ($(CONFIG_BUSPIRATE_SPI), yes)
 FEATURE_FLAGS += -D'CONFIG_BUSPIRATE_SPI=1'
 PROGRAMMER_OBJS += buspirate_spi.o
+ACTIVE_PROGRAMMERS += buspirate_spi
 endif
 
 ifeq ($(CONFIG_DEDIPROG), yes)
 FEATURE_FLAGS += -D'CONFIG_DEDIPROG=1'
 PROGRAMMER_OBJS += dediprog.o
+ACTIVE_PROGRAMMERS += dediprog
 endif
 
 ifeq ($(CONFIG_DEVELOPERBOX_SPI), yes)
 FEATURE_FLAGS += -D'CONFIG_DEVELOPERBOX_SPI=1'
 PROGRAMMER_OBJS += developerbox_spi.o
+ACTIVE_PROGRAMMERS += developerbox_spi
 endif
 
 ifeq ($(CONFIG_SATAMV), yes)
 FEATURE_FLAGS += -D'CONFIG_SATAMV=1'
 PROGRAMMER_OBJS += satamv.o
+ACTIVE_PROGRAMMERS += satamv
 endif
 
 ifeq ($(CONFIG_LINUX_MTD), yes)
 FEATURE_FLAGS += -D'CONFIG_LINUX_MTD=1'
 PROGRAMMER_OBJS += linux_mtd.o
+ACTIVE_PROGRAMMERS += linux_mtd
 endif
 
 ifeq ($(CONFIG_LINUX_SPI), yes)
 FEATURE_FLAGS += -D'CONFIG_LINUX_SPI=1'
 PROGRAMMER_OBJS += linux_spi.o
+ACTIVE_PROGRAMMERS += linux_spi
 endif
 
 ifeq ($(CONFIG_MSTARDDC_SPI), yes)
 FEATURE_FLAGS += -D'CONFIG_MSTARDDC_SPI=1'
 PROGRAMMER_OBJS += mstarddc_spi.o
+ACTIVE_PROGRAMMERS += mstarddc_spi
 endif
 
 ifeq ($(CONFIG_CH341A_SPI), yes)
 FEATURE_FLAGS += -D'CONFIG_CH341A_SPI=1'
 PROGRAMMER_OBJS += ch341a_spi.o
+ACTIVE_PROGRAMMERS += ch341a_spi
 endif
 
 ifeq ($(CONFIG_DIGILENT_SPI), yes)
 FEATURE_FLAGS += -D'CONFIG_DIGILENT_SPI=1'
 PROGRAMMER_OBJS += digilent_spi.o
+ACTIVE_PROGRAMMERS += digilent_spi
 endif
 
 ifeq ($(CONFIG_DIRTYJTAG_SPI), yes)
 FEATURE_CFLAGS += -D'CONFIG_DIRTYJTAG_SPI=1'
 PROGRAMMER_OBJS += dirtyjtag_spi.o
+ACTIVE_PROGRAMMERS += dirtyjtag_spi
 endif
 
 ifeq ($(CONFIG_JLINK_SPI), yes)
 FEATURE_FLAGS += -D'CONFIG_JLINK_SPI=1'
 PROGRAMMER_OBJS += jlink_spi.o
+ACTIVE_PROGRAMMERS += jlink_spi
 endif
 
 ifeq ($(CONFIG_NI845X_SPI), yes)
 FEATURE_FLAGS += -D'CONFIG_NI845X_SPI=1'
 PROGRAMMER_OBJS += ni845x_spi.o
+ACTIVE_PROGRAMMERS += ni845x_spi
 endif
 
 USE_BITBANG_SPI := $(if $(call filter_deps,$(DEPENDS_ON_BITBANG_SPI)),yes,no)
@@ -976,6 +1017,10 @@ $(PROGRAM).8: $(PROGRAM).8.tmpl
 	@# Add the man page change date and version to the man page
 	@sed -e 's#.TH FLASHROM 8 .*#.TH FLASHROM 8 "$(MAN_DATE)" "$(VERSION)" "$(MAN_DATE)"#' <$< >$@
 
+$(PROGRAM).bash: util/$(PROGRAM).bash-completion.tmpl
+	@# Add to the bash completion file a list of enabled programmers.
+	sed -e 's/@PROGRAMMERS@/$(ACTIVE_PROGRAMMERS)/g' <$< >$@
+
 strip: $(PROGRAM)$(EXEC_SUFFIX)
 	$(STRIP) $(STRIP_ARGS) $(PROGRAM)$(EXEC_SUFFIX)
 
@@ -984,14 +1029,16 @@ strip: $(PROGRAM)$(EXEC_SUFFIX)
 # We don't use EXEC_SUFFIX here because we want to clean everything.
 clean:
 	rm -f $(PROGRAM) $(PROGRAM).exe libflashrom.a $(filter-out Makefile.d, $(wildcard *.d *.o platform/*.d platform/*.o)) \
-		$(PROGRAM).8 $(PROGRAM).8.html $(BUILD_DETAILS_FILE)
+		$(PROGRAM).8 $(PROGRAM).8.html $(PROGRAM).bash $(BUILD_DETAILS_FILE)
 	@+$(MAKE) -C util/ich_descriptors_tool/ clean
 
-install: $(PROGRAM)$(EXEC_SUFFIX) $(PROGRAM).8
+install: $(PROGRAM)$(EXEC_SUFFIX) $(PROGRAM).8 $(PROGRAM).bash
 	mkdir -p $(DESTDIR)$(PREFIX)/sbin
 	mkdir -p $(DESTDIR)$(MANDIR)/man8
+	mkdir -p $(DESTDIR)$(BASHCOMPDIR)
 	$(INSTALL) -m 0755 $(PROGRAM)$(EXEC_SUFFIX) $(DESTDIR)$(PREFIX)/sbin
 	$(INSTALL) -m 0644 $(PROGRAM).8 $(DESTDIR)$(MANDIR)/man8
+	$(INSTALL) -m 0644 $(PROGRAM).bash $(DESTDIR)$(BASHCOMPDIR)
 
 libinstall: libflashrom.a include/libflashrom.h
 	mkdir -p $(DESTDIR)$(PREFIX)/lib
