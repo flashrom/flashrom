@@ -161,8 +161,8 @@ int programmer_init(const struct programmer_entry *prog, const char *param)
 		cfg.params = NULL;
 	}
 
-	msg_pdbg("Initializing %s programmer\n", programmer->name);
-	ret = programmer->init(&cfg);
+	msg_pdbg("Initializing %s programmer\n", prog->name);
+	ret = prog->init(&cfg);
 	if (cfg.params && strlen(cfg.params)) {
 		if (ret != 0) {
 			/* It is quite possible that any unhandled programmer parameter would have been valid,
