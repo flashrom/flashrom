@@ -761,6 +761,17 @@ char *flashbuses_to_text(enum chipbustype bustype)
 	return ret;
 }
 
+static int init_default_layout(struct flashctx *flash)
+{
+	/* Fill default layout covering the whole chip. */
+	if (flashrom_layout_new(&flash->default_layout) ||
+	    flashrom_layout_add_region(flash->default_layout,
+			0, flash->chip->total_size * 1024 - 1, "complete flash") ||
+	    flashrom_layout_include_region(flash->default_layout, "complete flash"))
+	        return -1;
+	return 0;
+}
+
 int probe_flash(struct registered_master *mst, int startchip, struct flashctx *flash, int force)
 {
 	const struct flashchip *chip;
@@ -849,12 +860,8 @@ notfound:
 	if (!flash->chip)
 		return -1;
 
-	/* Fill default layout covering the whole chip. */
-	if (flashrom_layout_new(&flash->default_layout) ||
-	    flashrom_layout_add_region(flash->default_layout,
-			0, flash->chip->total_size * 1024 - 1, "complete flash") ||
-	    flashrom_layout_include_region(flash->default_layout, "complete flash"))
-	        return -1;
+	if (init_default_layout(flash) < 0)
+		return -1;
 
 	tmp = flashbuses_to_text(flash->chip->bustype);
 	msg_cinfo("%s %s flash chip \"%s\" (%d kB, %s) ", force ? "Assuming" : "Found",
