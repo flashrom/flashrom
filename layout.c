@@ -355,14 +355,12 @@ const struct romentry *layout_next(
 
 int flashrom_layout_new(struct flashrom_layout **const layout)
 {
-	*layout = malloc(sizeof(**layout));
+	*layout = calloc(1, sizeof(**layout));
 	if (!*layout) {
 		msg_gerr("Error creating layout: %s\n", strerror(errno));
 		return 1;
 	}
 
-	const struct flashrom_layout tmp = { 0 };
-	**layout = tmp;
 	return 0;
 }
 
