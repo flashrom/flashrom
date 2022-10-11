@@ -474,6 +474,7 @@
 
 #define ISSI_ID			0xD5	/* ISSI Integrated Silicon Solutions, see also PMC. */
 #define ISSI_ID_SPI		0x9D	/* ISSI ID used for SPI flash, see also PMC_ID_NOPREFIX */
+#define ISSI_IS25LP016		0x6015
 #define ISSI_IS25LP064		0x6017
 #define ISSI_IS25LP128		0x6018
 #define ISSI_IS25LP256		0x6019
