@@ -431,6 +431,8 @@ bitbanging adapter)
 .sp
 .BR "* mediatek_i2c_spi" " (for SPI flash ROMs attached to some Mediatek display devices accessible over I2C)"
 .sp
+.BR "* dirtyjtag_spi" " (for SPI flash ROMs attached to DirtyJTAG-compatible devices)"
+.sp
 Some programmers have optional or mandatory parameters which are described
 in detail in the
 .B PROGRAMMER-SPECIFIC INFORMATION
@@ -1441,6 +1443,22 @@ can be
 .BR 62.5k ", " 125k ", " 250k ", " 500k ", " 1M ", " 2M " or " 4M
 (in Hz). The default is a frequency of 4 MHz.
 .sp
+.BR "dirtyjtag_spi " programmer
+.IP
+An optional
+.B freq
+parameter specifies the frequency of the SPI bus.
+Syntax is
+.sp
+.B "  flashrom \-p dirtyjtag_spi:spispeed=frequency"
+.sp
+where
+.B spispeed
+can be
+.BR any value in hertz, kilohertz or megahertz supported by the
+programmer. The default is a frequency of 100 KHz.
+.sp
+.SS
 .SS
 .BR "jlink_spi " programmer
 .IP
@@ -1671,7 +1689,7 @@ needs no access permissions at all.
 have to be run as superuser/root, and need additional raw access permission.
 .sp
 .BR serprog ", " buspirate_spi ", " dediprog ", " usbblaster_spi ", " ft2232_spi ", " pickit2_spi ", " \
-ch341a_spi " and " digilent_spi
+ch341a_spi ", " digilent_spi " and " dirtyjtag_spi
 can be run as normal user on most operating systems if appropriate device
 permissions are set.
 .sp

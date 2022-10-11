@@ -202,6 +202,12 @@ programmer = {
     'srcs'    : files('digilent_spi.c'),
     'flags'   : [ '-DCONFIG_DIGILENT_SPI=1' ],
   },
+  'dirtyjtag_spi' : {
+    'deps'    : [ libusb1 ],
+    'groups'  : [ group_usb, group_external ],
+    'srcs'    : files('dirtyjtag_spi.c'),
+    'flags'   : [ '-DCONFIG_DIRTYJTAG_SPI=1' ],
+  },
   'drkaiser' : {
     'systems' : systems_hwaccess,
     'deps'    : [ libpci ],
