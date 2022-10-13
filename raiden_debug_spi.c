@@ -350,7 +350,11 @@
 #include <string.h>
 #include <unistd.h>
 
-/* FIXME: Add some programmer IDs here */
+/*
+ * Table is empty as raiden_debug_spi matches against the class and
+ * subclass of the connected USB devices, rather than looking for a
+ * device with a specific vid:pid.
+ */
 static const struct dev_entry devs_raiden[] = {
 	{0},
 };
