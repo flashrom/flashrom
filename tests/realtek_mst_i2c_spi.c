@@ -50,9 +50,9 @@ void realtek_mst_basic_lifecycle_test_success(void **state)
 		.flags = { O_RDWR },
 	};
 	const struct io_mock realtek_mst_io = {
-		.ioctl = realtek_mst_ioctl,
-		.read = realtek_mst_read,
-		.write = realtek_mst_write,
+		.iom_ioctl = realtek_mst_ioctl,
+		.iom_read = realtek_mst_read,
+		.iom_write = realtek_mst_write,
 		.fallback_open_state = &realtek_mst_fallback_open_state,
 	};
 

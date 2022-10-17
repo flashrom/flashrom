@@ -108,9 +108,9 @@ void parade_lspcon_basic_lifecycle_test_success(void **state)
 	};
 	const struct io_mock parade_lspcon_io = {
 		.state = &parade_lspcon_io_state,
-		.ioctl = parade_lspcon_ioctl,
-		.read = parade_lspcon_read,
-		.write = parade_lspcon_write,
+		.iom_ioctl = parade_lspcon_ioctl,
+		.iom_read = parade_lspcon_read,
+		.iom_write = parade_lspcon_write,
 		.fallback_open_state = &parade_lspcon_fallback_open_state,
 	};
 

@@ -77,8 +77,8 @@ uint8_t __wrap_sio_read(uint16_t port, uint8_t reg)
 
 static int mock_open(const char *pathname, int flags)
 {
-	if (get_io() && get_io()->open)
-		return get_io()->open(get_io()->state, pathname, flags);
+	if (get_io() && get_io()->iom_open)
+		return get_io()->iom_open(get_io()->state, pathname, flags);
 
 	if (get_io() && get_io()->fallback_open_state) {
 		struct io_mock_fallback_open_state *io_state;
@@ -117,11 +117,11 @@ int __wrap___open64_2(const char *pathname, int flags)
 int __wrap_ioctl(int fd, unsigned long int request, ...)
 {
 	LOG_ME;
-	if (get_io() && get_io()->ioctl) {
+	if (get_io() && get_io()->iom_ioctl) {
 		va_list args;
 		int out;
 		va_start(args, request);
-		out = get_io()->ioctl(get_io()->state, fd, request, args);
+		out = get_io()->iom_ioctl(get_io()->state, fd, request, args);
 		va_end(args);
 		return out;
 	}
@@ -131,32 +131,32 @@ int __wrap_ioctl(int fd, unsigned long int request, ...)
 int __wrap_write(int fd, const void *buf, size_t sz)
 {
 	LOG_ME;
-	if (get_io() && get_io()->write)
-		return get_io()->write(get_io()->state, fd, buf, sz);
+	if (get_io() && get_io()->iom_write)
+		return get_io()->iom_write(get_io()->state, fd, buf, sz);
 	return sz;
 }
 
 int __wrap_read(int fd, void *buf, size_t sz)
 {
 	LOG_ME;
-	if (get_io() && get_io()->read)
-		return get_io()->read(get_io()->state, fd, buf, sz);
+	if (get_io() && get_io()->iom_read)
+		return get_io()->iom_read(get_io()->state, fd, buf, sz);
 	return sz;
 }
 
 FILE *__wrap_fopen(const char *pathname, const char *mode)
 {
 	LOG_ME;
-	if (get_io() && get_io()->fopen)
-		return get_io()->fopen(get_io()->state, pathname, mode);
+	if (get_io() && get_io()->iom_fopen)
+		return get_io()->iom_fopen(get_io()->state, pathname, mode);
 	return not_null();
 }
 
 FILE *__wrap_fopen64(const char *pathname, const char *mode)
 {
 	LOG_ME;
-	if (get_io() && get_io()->fopen)
-		return get_io()->fopen(get_io()->state, pathname, mode);
+	if (get_io() && get_io()->iom_fopen)
+		return get_io()->iom_fopen(get_io()->state, pathname, mode);
 	return not_null();
 }
 
@@ -217,16 +217,16 @@ int __wrap___fxstat64(int fd, void *buf)
 char *__wrap_fgets(char *buf, int len, FILE *fp)
 {
 	LOG_ME;
-	if (get_io() && get_io()->fgets)
-		return get_io()->fgets(get_io()->state, buf, len, fp);
+	if (get_io() && get_io()->iom_fgets)
+		return get_io()->iom_fgets(get_io()->state, buf, len, fp);
 	return NULL;
 }
 
 size_t __wrap_fread(void *ptr, size_t size, size_t nmemb, FILE *fp)
 {
 	LOG_ME;
-	if (get_io() && get_io()->fread)
-		return get_io()->fread(get_io()->state, ptr, size, nmemb, fp);
+	if (get_io() && get_io()->iom_fread)
+		return get_io()->iom_fread(get_io()->state, ptr, size, nmemb, fp);
 	return nmemb;
 }
 
@@ -263,11 +263,11 @@ int __wrap_setvbuf(FILE *fp, char *buf, int type, size_t size)
 int __wrap_fprintf(FILE *fp, const char *fmt, ...)
 {
 	LOG_ME;
-	if (get_io() && get_io()->fprintf) {
+	if (get_io() && get_io()->iom_fprintf) {
 		va_list args;
 		int out;
 		va_start(args, fmt);
-		out = get_io()->fprintf(get_io()->state, fp, fmt, args);
+		out = get_io()->iom_fprintf(get_io()->state, fp, fmt, args);
 		va_end(args);
 		return out;
 	}
@@ -277,8 +277,8 @@ int __wrap_fprintf(FILE *fp, const char *fmt, ...)
 int __wrap_fclose(FILE *fp)
 {
 	LOG_ME;
-	if (get_io() && get_io()->fclose)
-		return get_io()->fclose(get_io()->state, fp);
+	if (get_io() && get_io()->iom_fclose)
+		return get_io()->iom_fclose(get_io()->state, fp);
 	return 0;
 }
 

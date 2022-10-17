@@ -434,7 +434,7 @@ void verify_chip_test_success(void **state)
 		.paths	= { NULL },
 	};
 	const struct io_mock verify_chip_io = {
-		.fread = verify_chip_fread,
+		.iom_fread = verify_chip_fread,
 		.fallback_open_state = &data,
 	};
 
@@ -471,7 +471,7 @@ void verify_chip_with_dummyflasher_test_success(void **state)
 		.paths	= { NULL },
 	};
 	const struct io_mock verify_chip_io = {
-		.fread = verify_chip_fread,
+		.iom_fread = verify_chip_fread,
 		.fallback_open_state = &data,
 	};
 

@@ -60,8 +60,8 @@ void linux_spi_probe_lifecycle_test_success(void **state)
 		.flags = { O_RDWR },
 	};
 	const struct io_mock linux_spi_io = {
-		.fgets	= linux_spi_fgets,
-		.ioctl	= linux_spi_ioctl,
+		.iom_fgets	= linux_spi_fgets,
+		.iom_ioctl	= linux_spi_ioctl,
 		.fallback_open_state = &linux_spi_fallback_open_state,
 	};
 
