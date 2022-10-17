@@ -135,7 +135,6 @@ int write_82802ab(struct flashctx *flash, const uint8_t *src, unsigned int start
 		chip_writeb(flash, 0x40, dst);
 		chip_writeb(flash, *src++, dst++);
 		wait_82802ab(flash);
-		update_progress(flash, FLASHROM_PROGRESS_WRITE, i + 1, len);
 	}
 
 	/* FIXME: Ignore errors for now. */

@@ -65,25 +65,6 @@ int print(const enum flashrom_log_level level, const char *const fmt, ...)
 	return 0;
 }
 
-void flashrom_set_progress_callback(struct flashrom_flashctx *flashctx, flashrom_progress_callback *progress_callback, struct flashrom_progress *progress_state)
-{
-	flashctx->progress_callback = progress_callback;
-	flashctx->progress_state = progress_state;
-}
-/** @private */
-void update_progress(struct flashrom_flashctx *flashctx, enum flashrom_progress_stage stage, size_t current, size_t total)
-{
-	if (flashctx->progress_callback == NULL)
-		return;
-	if (current > total)
-		current = total;
-
-	flashctx->progress_state->stage = stage;
-	flashctx->progress_state->current = current;
-	flashctx->progress_state->total = total;
-	flashctx->progress_callback(flashctx);
-}
-
 const char *flashrom_version_info(void)
 {
 	return flashrom_version;

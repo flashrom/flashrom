@@ -69,34 +69,6 @@ typedef int(flashrom_log_callback)(enum flashrom_log_level, const char *format, 
  */
 void flashrom_set_log_callback(flashrom_log_callback *log_callback);
 
-enum flashrom_progress_stage {
-	FLASHROM_PROGRESS_READ,
-	FLASHROM_PROGRESS_WRITE,
-	FLASHROM_PROGRESS_ERASE,
-	FLASHROM_PROGRESS_NR,
-};
-struct flashrom_progress {
-	enum flashrom_progress_stage stage;
-	size_t current;
-	size_t total;
-	void *user_data;
-};
-struct flashrom_flashctx;
-typedef void(flashrom_progress_callback)(struct flashrom_flashctx *flashctx);
-/**
- * @brief Set the progress callback function.
- *
- * Set a callback function which will be invoked whenever libflashrom wants
- * to indicate the progress has changed. This allows frontends to do whatever
- * they see fit with such values, e.g. update a progress bar in a GUI tool.
- *
- * @param progress_callback Pointer to the new progress callback function.
- * @param progress_state Pointer to progress state to include with the progress
- * callback.
- */
-void flashrom_set_progress_callback(struct flashrom_flashctx *const flashctx,
-		flashrom_progress_callback *progress_callback, struct flashrom_progress *progress_state);
-
 /** @} */ /* end flashrom-general */
 
 /**
@@ -203,6 +175,7 @@ int flashrom_programmer_shutdown(struct flashrom_programmer *flashprog);
  * @{
  */
 
+struct flashrom_flashctx;
 /**
  * @brief Probe for a flash chip.
  *

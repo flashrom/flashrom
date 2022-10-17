@@ -64,31 +64,6 @@ void start_logging(void)
 	verbose_screen = oldverbose_screen;
 }
 
-static const char *flashrom_progress_stage_to_string(enum flashrom_progress_stage stage)
-{
-	if (stage == FLASHROM_PROGRESS_READ)
-		return "READ";
-	if (stage == FLASHROM_PROGRESS_WRITE)
-		return "WRITE";
-	if (stage == FLASHROM_PROGRESS_ERASE)
-		return "ERASE";
-	return "UNKNOWN";
-}
-
-void flashrom_progress_cb(struct flashrom_flashctx *flashctx)
-{
-	struct flashrom_progress *progress_state = flashctx->progress_state;
-	unsigned int pc = 0;
-	unsigned int *percentages = progress_state->user_data;
-	if (progress_state->current > 0 && progress_state->total > 0)
-		pc = ((unsigned long long) progress_state->current * 10000llu) /
-		     ((unsigned long long) progress_state->total * 100llu);
-	if (percentages[progress_state->stage] != pc) {
-		percentages[progress_state->stage] = pc;
-		msg_ginfo("[%s] %u%% complete... ", flashrom_progress_stage_to_string(progress_state->stage), pc);
-	}
-}
-
 /* Please note that level is the verbosity, not the importance of the message. */
 int flashrom_print_cb(enum flashrom_log_level level, const char *fmt, va_list ap)
 {

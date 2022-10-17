@@ -421,7 +421,6 @@ int write_jedec_1(struct flashctx *flash, const uint8_t *src, unsigned int start
 		if (write_byte_program_jedec_common(flash, src, dst, mask))
 			failed = 1;
 		dst++, src++;
-		update_progress(flash, FLASHROM_PROGRESS_WRITE, i + 1, len);
 	}
 	if (failed)
 		msg_cerr(" writing sector at 0x%" PRIxPTR " failed!\n", olddst);
@@ -488,7 +487,6 @@ int write_jedec(struct flashctx *flash, const uint8_t *buf, unsigned int start,
 	 * we're OK for now.
 	 */
 	unsigned int page_size = flash->chip->page_size;
-	unsigned int nwrites = (start + len - 1) / page_size;
 
 	/* Warning: This loop has a very unusual condition and body.
 	 * The loop needs to go through each page with at least one affected
@@ -499,7 +497,7 @@ int write_jedec(struct flashctx *flash, const uint8_t *buf, unsigned int start,
 	 * (start + len - 1) / page_size. Since we want to include that last
 	 * page as well, the loop condition uses <=.
 	 */
-	for (i = start / page_size; i <= nwrites; i++) {
+	for (i = start / page_size; i <= (start + len - 1) / page_size; i++) {
 		/* Byte position of the first byte in the range in this page. */
 		/* starthere is an offset to the base address of the chip. */
 		starthere = max(start, i * page_size);
@@ -508,7 +506,6 @@ int write_jedec(struct flashctx *flash, const uint8_t *buf, unsigned int start,
 
 		if (write_page_write_jedec_common(flash, buf + starthere - start, starthere, lenhere))
 			return 1;
-		update_progress(flash, FLASHROM_PROGRESS_WRITE, i + 1, nwrites + 1);
 	}
 
 	return 0;

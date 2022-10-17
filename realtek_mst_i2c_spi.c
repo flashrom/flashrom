@@ -397,7 +397,6 @@ static int realtek_mst_i2c_spi_write_256(struct flashctx *flash, const uint8_t *
 		ret |= realtek_mst_i2c_execute_write(fd);
 		if (ret)
 			break;
-		update_progress(flash, FLASHROM_PROGRESS_WRITE, i + RTK_PAGE_SIZE, len);
 	}
 
 	return ret;
