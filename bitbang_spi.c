@@ -76,10 +76,10 @@ static uint8_t bitbang_spi_read_byte(const struct bitbang_spi_master *master, vo
 			bitbang_spi_set_sck_set_mosi(master, 0, 0, spi_data);
 		else
 			bitbang_spi_set_sck(master, 0, spi_data);
-		programmer_delay(NULL, master->half_period);
+		internal_delay(master->half_period);
 		ret <<= 1;
 		ret |= bitbang_spi_set_sck_get_miso(master, 1, spi_data);
-		programmer_delay(NULL, master->half_period);
+		internal_delay(master->half_period);
 	}
 	return ret;
 }
@@ -90,9 +90,9 @@ static void bitbang_spi_write_byte(const struct bitbang_spi_master *master, uint
 
 	for (i = 7; i >= 0; i--) {
 		bitbang_spi_set_sck_set_mosi(master, 0, (val >> i) & 1, spi_data);
-		programmer_delay(NULL, master->half_period);
+		internal_delay(master->half_period);
 		bitbang_spi_set_sck(master, 1, spi_data);
-		programmer_delay(NULL, master->half_period);
+		internal_delay(master->half_period);
 	}
 }
 
@@ -122,9 +122,9 @@ static int bitbang_spi_send_command(const struct flashctx *flash,
 		readarr[i] = bitbang_spi_read_byte(master, data->spi_data);
 
 	bitbang_spi_set_sck(master, 0, data->spi_data);
-	programmer_delay(NULL, master->half_period);
+	internal_delay(master->half_period);
 	bitbang_spi_set_cs(master, 1, data->spi_data);
-	programmer_delay(NULL, master->half_period);
+	internal_delay(master->half_period);
 	/* FIXME: Run bitbang_spi_release_bus here or in programmer init? */
 	bitbang_spi_release_bus(master, data->spi_data);
 

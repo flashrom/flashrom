@@ -875,7 +875,7 @@ static int ich7_run_opcode(OPCODE op, uint32_t offset,
 
 	timeout = 100 * 60;	/* 60 ms are 9.6 million cycles at 16 MHz. */
 	while ((REGREAD16(ICH7_REG_SPIS) & SPIS_SCIP) && --timeout) {
-		programmer_delay(NULL, 10);
+		internal_delay(10);
 	}
 	if (!timeout) {
 		msg_perr("Error: SCIP never cleared!\n");
@@ -951,7 +951,7 @@ static int ich7_run_opcode(OPCODE op, uint32_t offset,
 	/* Wait for Cycle Done Status or Flash Cycle Error. */
 	while (((REGREAD16(ICH7_REG_SPIS) & (SPIS_CDS | SPIS_FCERR)) == 0) &&
 	       --timeout) {
-		programmer_delay(NULL, 10);
+		internal_delay(10);
 	}
 	if (!timeout) {
 		msg_perr("timeout, ICH7_REG_SPIS=0x%04x\n", REGREAD16(ICH7_REG_SPIS));
@@ -991,7 +991,7 @@ static int ich9_run_opcode(OPCODE op, uint32_t offset,
 
 	timeout = 100 * 60;	/* 60 ms are 9.6 million cycles at 16 MHz. */
 	while ((REGREAD8(swseq_data.reg_ssfsc) & SSFS_SCIP) && --timeout) {
-		programmer_delay(NULL, 10);
+		internal_delay(10);
 	}
 	if (!timeout) {
 		msg_perr("Error: SCIP never cleared!\n");
@@ -1071,7 +1071,7 @@ static int ich9_run_opcode(OPCODE op, uint32_t offset,
 	/* Wait for Cycle Done Status or Flash Cycle Error. */
 	while (((REGREAD32(swseq_data.reg_ssfsc) & (SSFS_FDONE | SSFS_FCERR)) == 0) &&
 	       --timeout) {
-		programmer_delay(NULL, 10);
+		internal_delay(10);
 	}
 	if (!timeout) {
 		msg_perr("timeout, REG_SSFS=0x%08x\n", REGREAD32(swseq_data.reg_ssfsc));
@@ -1319,7 +1319,7 @@ static int ich_hwseq_wait_for_cycle_complete(unsigned int len, enum ich_chipset 
 	while ((((hsfs = REGREAD16(ICH9_REG_HSFS)) &
 		 (HSFS_FDONE | HSFS_FCERR)) == 0) &&
 	       --timeout_us) {
-		programmer_delay(NULL, 8);
+		internal_delay(8);
 	}
 	REGWRITE16(ICH9_REG_HSFS, REGREAD16(ICH9_REG_HSFS));
 	if (!timeout_us) {

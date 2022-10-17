@@ -259,8 +259,20 @@ void programmer_delay(const struct flashctx *flash, unsigned int usecs)
 	if (usecs == 0)
 		return;
 
-	if (!flash)
+	/**
+	 * Drivers should either use internal_delay() directly or their
+	 * own custom delay. Only core flashrom logic calls programmer_delay()
+	 * which should always have a valid flash context. A NULL context
+	 * more than likely indicates a layering violation or BUG however
+	 * for now dispatch a internal_delay() as a safe default for the NULL
+	 * base case.
+	 */
+	if (!flash) {
+		msg_perr("%s called with NULL flash context. "
+			 "Please report a bug at flashrom@flashrom.org\n",
+			 __func__);
 		return internal_delay(usecs);
+	}
 
 	if (flash->mst->buses_supported & BUS_SPI) {
 		if (flash->mst->spi.delay)
