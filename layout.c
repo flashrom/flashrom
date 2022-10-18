@@ -235,7 +235,7 @@ int process_include_args(struct flashrom_layout *l, const struct layout_include_
 	return 0;
 }
 
-/* returns boolean 1 if any regions overlap, 0 otherwise */
+/* returns boolean 1 if any regions overlap and neither fully contains the other, 0 otherwise */
 int included_regions_overlap(const struct flashrom_layout *const l)
 {
 	const struct romentry *lhs = NULL;
@@ -254,6 +254,12 @@ int included_regions_overlap(const struct flashrom_layout *const l)
 				continue;
 
 			if (lhs->end < rhs->start)
+				continue;
+
+			if (lhs->start <= rhs->start && lhs->end >= rhs->end)
+				continue;
+
+			if (rhs->start <= lhs->start && rhs->end >= lhs->end)
 				continue;
 
 			msg_gwarn("Regions %s [0x%08x-0x%08x] and %s [0x%08x-0x%08x] overlap\n",
