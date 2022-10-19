@@ -81,7 +81,7 @@ struct nicintel_eeprom_data {
 	uint32_t eec;
 
 	/* Intel I210 variable(s) */
-	bool done_i20_write;
+	bool done_i210_write;
 };
 
 /*
@@ -225,7 +225,7 @@ static int nicintel_ee_write_i210(struct flashctx *flash, const uint8_t *buf,
 				  unsigned int addr, unsigned int len)
 {
 	struct nicintel_eeprom_data *opaque_data = flash->mst->opaque.data;
-	opaque_data->done_i20_write = true;
+	opaque_data->done_i210_write = true;
 
 	if (addr & 1) {
 		uint16_t data;
@@ -414,7 +414,7 @@ static int nicintel_ee_shutdown_i210(void *opaque_data)
 	struct nicintel_eeprom_data *data = opaque_data;
 	int ret = 0;
 
-	if (!data->done_i20_write)
+	if (!data->done_i210_write)
 		goto out;
 
 	uint32_t flup = pci_mmio_readl(data->nicintel_eebar + EEC);
@@ -528,7 +528,7 @@ static int nicintel_ee_init(const struct programmer_cfg *cfg)
 	data->nicintel_pci = dev;
 	data->nicintel_eebar = eebar;
 	data->eec = eec;
-	data->done_i20_write = false;
+	data->done_i210_write = false;
 
 	return register_opaque_master(mst, data);
 }
