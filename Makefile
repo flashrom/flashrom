@@ -408,9 +408,6 @@ SCMDEF := -D'FLASHROM_VERSION="$(VERSION)"'
 # No spaces in release names unless set explicitly
 RELEASENAME ?= $(shell echo "$(VERSION)" | sed -e 's/ /_/')
 
-# If a VCS is found then try to install hooks.
-$(shell ./util/getrevision.sh -c 2>/dev/null && ./util/git-hooks/install.sh)
-
 ###############################################################################
 # Default settings of CONFIG_* variables.
 
@@ -1039,6 +1036,9 @@ tarball: _export
 
 libpayload: clean
 	make CC="CC=i386-elf-gcc lpgcc" AR=i386-elf-ar RANLIB=i386-elf-ranlib
+
+gitconfig:
+	./util/getrevision.sh -c 2>/dev/null && ./util/git-hooks/install.sh
 
 .PHONY: all install clean distclean config _export export tarball libpayload
 
