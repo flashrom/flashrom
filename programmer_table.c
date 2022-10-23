@@ -156,6 +156,10 @@ const struct programmer_entry *const programmer_table[] = {
     &programmer_ch341a_spi,
 #endif
 
+#if CONFIG_CH347_SPI == 1
+    &programmer_ch347_spi,
+#endif
+
 #if CONFIG_DIGILENT_SPI == 1
     &programmer_digilent_spi,
 #endif

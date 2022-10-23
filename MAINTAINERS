@@ -122,6 +122,11 @@ M:	Arthur Heymans <arthur@aheymans.xyz>
 S:	Maintained
 F:	sb600spi.c
 
+CH347
+M:	Nicholas Chin <nic.c3.14@gmail.com>
+S:	Maintained
+F:	ch347_spi.c
+
 I2C PROGRAMMERS
 M:	Peter Marheine <pmarheine@chromium.org>
 S:	Supported

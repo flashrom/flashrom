@@ -201,6 +201,12 @@ programmer = {
     'test_srcs' : files('tests/ch341a_spi.c'),
     'flags'   : [ '-DCONFIG_CH341A_SPI=1' ],
   },
+  'ch347_spi' : {
+    'deps'    : [ libusb1 ],
+    'groups'  : [ group_usb, group_external ],
+    'srcs'    : files('ch347_spi.c'),
+    'flags'   : [ '-DCONFIG_CH347_SPI=1' ],
+  },
   'dediprog' : {
     'deps'    : [ libusb1 ],
     'groups'  : [ group_usb, group_external ],

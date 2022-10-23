@@ -10,15 +10,15 @@ make_programmer_opts="INTERNAL INTERNAL_X86 SERPROG RAYER_SPI RAIDEN_DEBUG_SPI P
 		      PICKIT2_SPI STLINKV3_SPI PARADE_LSPCON MEDIATEK_I2C_SPI REALTEK_MST_I2C_SPI DUMMY	\
 		      DRKAISER NICREALTEK NICNATSEMI NICINTEL NICINTEL_SPI NICINTEL_EEPROM OGP_SPI	\
 		      BUSPIRATE_SPI DEDIPROG DEVELOPERBOX_SPI SATAMV LINUX_MTD LINUX_SPI IT8212		\
-		      CH341A_SPI DIGILENT_SPI DIRTYJTAG_SPI JLINK_SPI ASM106X"
+		      CH341A_SPI CH347_SPI DIGILENT_SPI DIRTYJTAG_SPI JLINK_SPI ASM106X"
 
-meson_programmer_opts="all auto group_ftdi group_i2c group_jlink group_pci group_serial group_usb		\
-			atahpt atapromise atavia buspirate_spi ch341a_spi dediprog developerbox_spi	\
-			digilent_spi dirtyjtag_spi drkaiser dummy ft2232_spi gfxnvidia internal it8212	\
-			jlink_spi linux_mtd linux_spi parade_lspcon mediatek_i2c_spi mstarddc_spi	\
-			nic3com nicintel nicintel_eeprom nicintel_spi nicnatsemi nicrealtek		\
-			ogp_spi pickit2_spi pony_spi raiden_debug_spi rayer_spi realtek_mst_i2c_spi	\
-			satamv satasii serprog stlinkv3_spi usbblaster_spi asm106x"
+meson_programmer_opts="all auto group_ftdi group_i2c group_jlink group_pci group_serial group_usb	\
+			atahpt atapromise atavia buspirate_spi ch341a_spi ch347_spi dediprog		\
+			developerbox_spi digilent_spi dirtyjtag_spi drkaiser dummy ft2232_spi		\
+			gfxnvidia internal it8212 jlink_spi linux_mtd linux_spi parade_lspcon		\
+			mediatek_i2c_spi mstarddc_spi nic3com nicintel nicintel_eeprom nicintel_spi	\
+			nicnatsemi nicrealtek ogp_spi pickit2_spi pony_spi raiden_debug_spi rayer_spi	\
+			realtek_mst_i2c_spi satamv satasii serprog stlinkv3_spi usbblaster_spi asm106x"
 
 
 if [ "$(basename "${CC}")" = "ccc-analyzer" ] || [ -n "${COVERITY_OUTPUT}" ]; then

@@ -417,6 +417,8 @@ bitbanging adapter)
 .sp
 .BR "* ch341a_spi" " (for SPI flash ROMs attached to WCH CH341A)"
 .sp
+.BR "* ch347_spi" " (for SPI flash ROMs attached to WCH CH347)"
+.sp
 .BR "* digilent_spi" " (for SPI flash ROMs attached to iCEblink40 development boards)"
 .sp
 .BR "* jlink_spi" " (for SPI flash ROMs attached to SEGGER J-Link and compatible devices)"
@@ -1366,6 +1368,10 @@ Please also note that the mstarddc_spi driver only works on Linux.
 .SS
 .BR "ch341a_spi " programmer
 The WCH CH341A programmer does not support any parameters currently. SPI frequency is fixed at 2 MHz, and CS0 is
+used as per the device.
+.SS
+.BR "ch347_spi " programmer
+The WCH CH347 programmer does not currently support any parameters. SPI frequency is fixed at 2 MHz, and CS0 is
 used as per the device.
 .SS
 .BR "ni845x_spi " programmer
