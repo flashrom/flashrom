@@ -665,7 +665,7 @@ int sb600_probe_spi(const struct programmer_cfg *cfg, struct pci_dev *dev)
 
 	enum amd_chipset amd_gen = determine_generation(dev);
 	if (amd_gen == CHIPSET_AMD_UNKNOWN)
-		return ERROR_NONFATAL;
+		return ERROR_FLASHROM_NONFATAL;
 
 	/* How to read the following table and similar ones in this file:
 	 * "?" means we have no datasheet for this chipset generation or it doesn't have any relevant info.
@@ -748,7 +748,7 @@ int sb600_probe_spi(const struct programmer_cfg *cfg, struct pci_dev *dev)
 
 	if (((tmp >> 22) & 0x1) == 0 || ((tmp >> 23) & 0x1) == 0) {
 		msg_perr("ERROR: State of SpiAccessMacRomEn or SpiHostAccessRomEn prohibits full access.\n");
-		return ERROR_NONFATAL;
+		return ERROR_FLASHROM_NONFATAL;
 	}
 
 	if (amd_gen >= CHIPSET_SB89XX) {
@@ -765,7 +765,7 @@ int sb600_probe_spi(const struct programmer_cfg *cfg, struct pci_dev *dev)
 		smbus_dev = pcidev_find(0x1022, 0x790b); /* AMD FP4 */
 	if (!smbus_dev) {
 		msg_perr("ERROR: SMBus device not found. Not enabling SPI.\n");
-		return ERROR_NONFATAL;
+		return ERROR_FLASHROM_NONFATAL;
 	}
 
 	/* Note about the bit tests below: If a bit is zero, the GPIO is SPI. */

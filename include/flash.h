@@ -495,7 +495,7 @@ void finalize_flash_access(struct flashctx *);
 int register_chip_restore(chip_restore_fn_cb_t func, struct flashctx *flash, uint8_t status);
 
 /* Something happened that shouldn't happen, but we can go on. */
-#define ERROR_NONFATAL 0x100
+#define ERROR_FLASHROM_NONFATAL 0x100
 
 /* Something happened that shouldn't happen, we'll abort. */
 #define ERROR_FLASHROM_FATAL -0xee

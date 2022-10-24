@@ -822,7 +822,7 @@ static int enable_flash_ich_spi(const struct programmer_cfg *cfg, struct pci_dev
 		return ret_spi;
 
 	if (((boot_buses & BUS_FWH) && ret_fwh) || ((boot_buses & BUS_SPI) && ret_spi))
-		return ERROR_NONFATAL;
+		return ERROR_FLASHROM_NONFATAL;
 
 	/* Suppress unknown laptop warning if we booted from SPI. */
 	if (boot_buses & BUS_SPI)
@@ -964,7 +964,7 @@ static int enable_flash_pch100_or_c620(const struct programmer_cfg *cfg,
 	const int ret_spi = ich_init_spi(cfg, spibar, pch_generation);
 	if (ret_spi != ERROR_FLASHROM_FATAL) {
 		if (ret_bc || ret_spi)
-			ret = ERROR_NONFATAL;
+			ret = ERROR_FLASHROM_NONFATAL;
 		else
 			ret = 0;
 	}
@@ -1083,7 +1083,7 @@ static int enable_flash_silvermont(const struct programmer_cfg *cfg, struct pci_
 		return ret_spi;
 
 	if (((boot_buses & BUS_FWH) && ret_fwh) || ((boot_buses & BUS_SPI) && ret_spi))
-		return ERROR_NONFATAL;
+		return ERROR_FLASHROM_NONFATAL;
 
 	/* Suppress unknown laptop warning if we booted from SPI. */
 	if (boot_buses & BUS_SPI)
@@ -1346,7 +1346,7 @@ static int enable_flash_amd_via(const struct programmer_cfg *cfg, struct pci_dev
 	if (pci_read_byte(dev, AMD_ENREG) != new) {
 		msg_pwarn("Setting register 0x%x to 0x%02x on %s failed (WARNING ONLY).\n",
 			  AMD_ENREG, new, name);
-		return ERROR_NONFATAL;
+		return ERROR_FLASHROM_NONFATAL;
 	}
 	msg_pdbg2("Set ROM enable bit successfully.\n");
 
@@ -1470,7 +1470,7 @@ static int enable_flash_nvidia_nforce2(const struct programmer_cfg *cfg, struct 
 {
 	rpci_write_byte(dev, 0x92, 0);
 	if (enable_flash_nvidia_common(cfg, dev, name))
-		return ERROR_NONFATAL;
+		return ERROR_FLASHROM_NONFATAL;
 	else
 		return 0;
 }
@@ -1545,7 +1545,7 @@ static int enable_flash_ck804(const struct programmer_cfg *cfg, struct pci_dev *
 		err++;
 
 	if (err > 0)
-		return ERROR_NONFATAL;
+		return ERROR_FLASHROM_NONFATAL;
 	else
 		return 0;
 }
@@ -1620,7 +1620,7 @@ static int enable_flash_mcp55(const struct programmer_cfg *cfg, struct pci_dev *
 	rpci_write_word(dev, 0x90, wordval);
 
 	if (enable_flash_nvidia_common(cfg, dev, name))
-		return ERROR_NONFATAL;
+		return ERROR_FLASHROM_NONFATAL;
 	else
 		return 0;
 }
@@ -1661,7 +1661,7 @@ static int enable_flash_mcp6x_7x(const struct programmer_cfg *cfg, struct pci_de
 		msg_pinfo("Please send the log files created by \"flashrom -p internal -o logfile\" to\n"
 			  "flashrom@flashrom.org with \"your board name: flashrom -V\" as the subject to\n"
 			  "help us finish support for your chipset. Thanks.\n");
-		return ERROR_NONFATAL;
+		return ERROR_FLASHROM_NONFATAL;
 	}
 
 	/* Force enable SPI and disable LPC? Not a good idea. */
@@ -2240,7 +2240,7 @@ int chipset_flash_enable(const struct programmer_cfg *cfg)
 			msg_pinfo("FAILED!\n");
 		else if (ret == 0)
 			msg_pinfo("OK.\n");
-		else if (ret == ERROR_NONFATAL)
+		else if (ret == ERROR_FLASHROM_NONFATAL)
 			msg_pinfo("PROBLEMS, continuing anyway\n");
 		if (ret == ERROR_FLASHROM_FATAL) {
 			msg_perr("FATAL ERROR!\n");
