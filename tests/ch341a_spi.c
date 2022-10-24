@@ -19,9 +19,15 @@
 
 /* Same macro as in ch341a_spi.c programmer. */
 #define WRITE_EP 0x02
+#define READ_EP 0x82
 
 struct ch341a_spi_io_state {
 	struct libusb_transfer *transfer_out;
+	/*
+	 * Since the test transfers a data that fits in one CH341 packet, we
+	 * don't need an array of these transfers (as is done in the driver code).
+	 */
+	struct libusb_transfer *transfer_in;
 };
 
 static struct libusb_transfer *ch341a_libusb_alloc_transfer(void *state, int iso_packets)
@@ -39,10 +45,15 @@ static int ch341a_libusb_submit_transfer(void *state, struct libusb_transfer *tr
 {
 	struct ch341a_spi_io_state *io_state = state;
 
-	assert_true(transfer->endpoint == WRITE_EP);
+	assert_true(transfer->endpoint == WRITE_EP || transfer->endpoint == READ_EP);
 
-	assert_null(io_state->transfer_out);
-	io_state->transfer_out = transfer;
+	if (transfer->endpoint == WRITE_EP) {
+		assert_null(io_state->transfer_out);
+		io_state->transfer_out = transfer;
+	} else if (transfer->endpoint == READ_EP) {
+		assert_null(io_state->transfer_in);
+		io_state->transfer_in = transfer;
+	}
 
 	return 0;
 }
@@ -67,6 +78,17 @@ static int ch341a_libusb_handle_events_timeout(void *state, libusb_context *ctx,
 		io_state->transfer_out = NULL;
 	}
 
+	if (io_state->transfer_in) {
+		io_state->transfer_in->buffer[1] = reverse_byte(0xEF); /* WINBOND_NEX_ID */
+		io_state->transfer_in->buffer[2] = reverse_byte(0x40); /* WINBOND_NEX_W25Q128_V left byte */
+		io_state->transfer_in->buffer[3] = reverse_byte(0x18); /* WINBOND_NEX_W25Q128_V right byte */
+
+		io_state->transfer_in->status = LIBUSB_TRANSFER_COMPLETED;
+		io_state->transfer_in->actual_length = io_state->transfer_in->length;
+		io_state->transfer_in->callback(io_state->transfer_in);
+		io_state->transfer_in = NULL;
+	}
+
 	return 0;
 }
 
@@ -89,6 +111,26 @@ void ch341a_spi_basic_lifecycle_test_success(void **state)
 	run_basic_lifecycle(state, &ch341a_spi_io, &programmer_ch341a_spi, "");
 }
 
+void ch341a_spi_probe_lifecycle_test_success(void **state)
+{
+	struct ch341a_spi_io_state ch341a_spi_io_state = { 0 };
+	struct io_mock_fallback_open_state ch341a_spi_fallback_open_state = {
+		.noc = 0,
+		.paths = { NULL },
+	};
+	const struct io_mock ch341a_spi_io = {
+		.state = &ch341a_spi_io_state,
+		.libusb_alloc_transfer = &ch341a_libusb_alloc_transfer,
+		.libusb_submit_transfer = &ch341a_libusb_submit_transfer,
+		.libusb_free_transfer = &ch341a_libusb_free_transfer,
+		.libusb_handle_events_timeout = &ch341a_libusb_handle_events_timeout,
+		.fallback_open_state = &ch341a_spi_fallback_open_state,
+	};
+
+	run_probe_lifecycle(state, &ch341a_spi_io, &programmer_ch341a_spi, "", "W25Q128.V");
+}
+
 #else
 	SKIP_TEST(ch341a_spi_basic_lifecycle_test_success)
+	SKIP_TEST(ch341a_spi_probe_lifecycle_test_success)
 #endif /* CONFIG_CH341A_SPI */

@@ -421,6 +421,7 @@ int main(int argc, char *argv[])
 		cmocka_unit_test(realtek_mst_basic_lifecycle_test_success),
 		cmocka_unit_test(realtek_mst_no_allow_brick_test_success),
 		cmocka_unit_test(ch341a_spi_basic_lifecycle_test_success),
+		cmocka_unit_test(ch341a_spi_probe_lifecycle_test_success),
 	};
 	ret |= cmocka_run_group_tests_name("lifecycle.c tests", lifecycle_tests, NULL, NULL);
 

@@ -61,6 +61,7 @@ void mediatek_i2c_no_allow_brick_test_success(void **state);
 void realtek_mst_basic_lifecycle_test_success(void **state);
 void realtek_mst_no_allow_brick_test_success(void **state);
 void ch341a_spi_basic_lifecycle_test_success(void **state);
+void ch341a_spi_probe_lifecycle_test_success(void **state);
 
 /* layout.c */
 void included_regions_dont_overlap_test_success(void **state);
