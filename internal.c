@@ -289,7 +289,7 @@ static int internal_init(const struct programmer_cfg *cfg)
 	if (ret == -2) {
 		msg_perr("WARNING: No chipset found. Flash detection "
 			 "will most likely fail.\n");
-	} else if (ret == ERROR_FATAL) {
+	} else if (ret == ERROR_FLASHROM_FATAL) {
 		goto internal_init_exit;
 	}
 

@@ -656,7 +656,7 @@ int sb600_probe_spi(const struct programmer_cfg *cfg, struct pci_dev *dev)
 	/* Physical memory has to be mapped at page (4k) boundaries. */
 	sb600_spibar = rphysmap("SB600 SPI registers", tmp & 0xfffff000, 0x1000);
 	if (sb600_spibar == ERROR_PTR)
-		return ERROR_FATAL;
+		return ERROR_FLASHROM_FATAL;
 
 	/* The low bits of the SPI base address are used as offset into
 	 * the mapped page.
@@ -798,10 +798,10 @@ int sb600_probe_spi(const struct programmer_cfg *cfg, struct pci_dev *dev)
 	}
 
 	if (handle_speed(cfg, dev, amd_gen, sb600_spibar) != 0)
-		return ERROR_FATAL;
+		return ERROR_FLASHROM_FATAL;
 
 	if (handle_imc(cfg, dev, amd_gen) != 0)
-		return ERROR_FATAL;
+		return ERROR_FLASHROM_FATAL;
 
 	struct sb600spi_data *data = calloc(1, sizeof(*data));
 	if (!data) {

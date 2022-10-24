@@ -154,7 +154,7 @@ int programmer_init(const struct programmer_entry *prog, const char *param)
 		cfg.params = strdup(param);
 		if (!cfg.params) {
 			msg_perr("Out of memory!\n");
-			return ERROR_FATAL;
+			return ERROR_FLASHROM_FATAL;
 		}
 	} else {
 		cfg.params = NULL;
@@ -175,7 +175,7 @@ int programmer_init(const struct programmer_entry *prog, const char *param)
 			 */
 			msg_perr("Unhandled programmer parameters: %s\n", cfg.params);
 			msg_perr("Aborting.\n");
-			ret = ERROR_FATAL;
+			ret = ERROR_FLASHROM_FATAL;
 		}
 	}
 	free(cfg.params);

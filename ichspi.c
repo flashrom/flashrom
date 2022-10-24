@@ -1868,11 +1868,11 @@ static int get_ich_spi_mode_param(const struct programmer_cfg *cfg, enum ich_spi
 	} else if (!strlen(arg)) {
 		msg_perr("Missing argument for ich_spi_mode.\n");
 		free(arg);
-		return ERROR_FATAL;
+		return ERROR_FLASHROM_FATAL;
 	} else {
 		msg_perr("Unknown argument for ich_spi_mode: %s\n", arg);
 		free(arg);
-		return ERROR_FATAL;
+		return ERROR_FLASHROM_FATAL;
 	}
 	free(arg);
 
@@ -2167,26 +2167,26 @@ static int init_ich_default(const struct programmer_cfg *cfg, void *spibar, enum
 		if (!desc_valid) {
 			msg_perr("Hardware sequencing was requested "
 				 "but the flash descriptor is not valid. Aborting.\n");
-			return ERROR_FATAL;
+			return ERROR_FLASHROM_FATAL;
 		}
 
 		int tmpi = getFCBA_component_density(ich_gen, &desc, 0);
 		if (tmpi < 0) {
 			msg_perr("Could not determine density of flash component %d.\n", 0);
-			return ERROR_FATAL;
+			return ERROR_FLASHROM_FATAL;
 		}
 		hwseq_data.size_comp0 = tmpi;
 
 		tmpi = getFCBA_component_density(ich_gen, &desc, 1);
 		if (tmpi < 0) {
 			msg_perr("Could not determine density of flash component %d.\n", 1);
-			return ERROR_FATAL;
+			return ERROR_FLASHROM_FATAL;
 		}
 		hwseq_data.size_comp1 = tmpi;
 
 		struct hwseq_data *opaque_hwseq_data = calloc(1, sizeof(struct hwseq_data));
 		if (!opaque_hwseq_data)
-			return ERROR_FATAL;
+			return ERROR_FLASHROM_FATAL;
 		memcpy(opaque_hwseq_data, &hwseq_data, sizeof(*opaque_hwseq_data));
 		register_opaque_master(&opaque_master_ich_hwseq, opaque_hwseq_data);
 	} else {
@@ -2231,7 +2231,7 @@ int via_init_spi(uint32_t mmio_base)
 
 	ich_spibar = rphysmap("VIA SPI MMIO registers", mmio_base, 0x70);
 	if (ich_spibar == ERROR_PTR)
-		return ERROR_FATAL;
+		return ERROR_FLASHROM_FATAL;
 	/* Do we really need no write enable? Like the LPC one at D17F0 0x40 */
 
 	/* Not sure if it speaks all these bus protocols. */

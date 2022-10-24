@@ -151,14 +151,14 @@ static int atavia_init(const struct programmer_cfg *cfg)
 		if (strlen(arg) == 0) {
 			msg_perr("Missing argument for offset.\n");
 			free(arg);
-			return ERROR_FATAL;
+			return ERROR_FLASHROM_FATAL;
 		}
 		char *endptr;
 		atavia_offset = (void *)strtoul(arg, &endptr, 0);
 		if (*endptr) {
 			msg_perr("Error: Invalid offset specified: \"%s\".\n", arg);
 			free(arg);
-			return ERROR_FATAL;
+			return ERROR_FLASHROM_FATAL;
 		}
 		msg_pinfo("Mapping addresses to base %p.\n", atavia_offset);
 	}

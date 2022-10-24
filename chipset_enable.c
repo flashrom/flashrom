@@ -275,7 +275,7 @@ static int enable_flash_ich_bios_cntl_common(enum ich_chipset ich_generation, vo
 
 	switch (ich_generation) {
 	case CHIPSET_ICH_UNKNOWN:
-		return ERROR_FATAL;
+		return ERROR_FLASHROM_FATAL;
 	/* Non-SPI-capable */
 	case CHIPSET_ICH:
 	case CHIPSET_ICH2345:
@@ -409,7 +409,7 @@ static int enable_flash_ich_fwh_decode(const struct programmer_cfg *cfg, struct 
 		uint32_t ilb_base = pci_read_long(dev, 0x50) & 0xfffffe00; /* bits 31:9 */
 		if (ilb_base == 0) {
 			msg_perr("Error: Invalid ILB_BASE_ADDRESS\n");
-			return ERROR_FATAL;
+			return ERROR_FLASHROM_FATAL;
 		}
 		ilb = rphysmap("BYT IBASE", ilb_base, 512);
 		fwh_sel1 = 0x18;
@@ -468,7 +468,7 @@ static int enable_flash_ich_fwh_decode(const struct programmer_cfg *cfg, struct 
 		msg_perr("Error: fwh_idsel= specified, but no value given.\n");
 idsel_garbage_out:
 		free(idsel);
-		return ERROR_FATAL;
+		return ERROR_FLASHROM_FATAL;
 	}
 	free(idsel);
 
@@ -779,13 +779,13 @@ static int enable_flash_ich_spi(const struct programmer_cfg *cfg, struct pci_dev
 	/* Map RCBA to virtual memory */
 	void *rcrb = rphysmap("ICH RCRB", rcra, 0x4000);
 	if (rcrb == ERROR_PTR)
-		return ERROR_FATAL;
+		return ERROR_FLASHROM_FATAL;
 
 	const enum chipbustype boot_buses = enable_flash_ich_report_gcs(dev, ich_generation, rcrb);
 
 	/* Handle FWH-related parameters and initialization */
 	int ret_fwh = enable_flash_ich_fwh(cfg, dev, ich_generation, bios_cntl);
-	if (ret_fwh == ERROR_FATAL)
+	if (ret_fwh == ERROR_FLASHROM_FATAL)
 		return ret_fwh;
 
 	/*
@@ -801,7 +801,7 @@ static int enable_flash_ich_spi(const struct programmer_cfg *cfg, struct pci_dev
 	switch (ich_generation) {
 	case CHIPSET_BAYTRAIL:
 	case CHIPSET_ICH_UNKNOWN:
-		return ERROR_FATAL;
+		return ERROR_FLASHROM_FATAL;
 	case CHIPSET_ICH7:
 	case CHIPSET_ICH8:
 	case CHIPSET_TUNNEL_CREEK:
@@ -818,7 +818,7 @@ static int enable_flash_ich_spi(const struct programmer_cfg *cfg, struct pci_dev
 
 	/* This adds BUS_SPI */
 	int ret_spi = ich_init_spi(cfg, spibar, ich_generation);
-	if (ret_spi == ERROR_FATAL)
+	if (ret_spi == ERROR_FLASHROM_FATAL)
 		return ret_spi;
 
 	if (((boot_buses & BUS_FWH) && ret_fwh) || ((boot_buses & BUS_SPI) && ret_spi))
@@ -920,7 +920,7 @@ static int enable_flash_pch100_or_c620(const struct programmer_cfg *cfg,
 		struct pci_dev *const dev, const char *const name,
 		const int slot, const int func, const enum ich_chipset pch_generation)
 {
-	int ret = ERROR_FATAL;
+	int ret = ERROR_FLASHROM_FATAL;
 
 	/*
 	 * The SPI PCI device is usually hidden (by hiding PCI vendor
@@ -951,7 +951,7 @@ static int enable_flash_pch100_or_c620(const struct programmer_cfg *cfg,
 	const enum chipbustype boot_buses = enable_flash_ich_report_gcs(spi_dev, pch_generation, NULL);
 
 	const int ret_bc = enable_flash_ich_bios_cntl_config_space(spi_dev, pch_generation, 0xdc);
-	if (ret_bc == ERROR_FATAL)
+	if (ret_bc == ERROR_FLASHROM_FATAL)
 		goto _freepci_ret;
 
 	const uint32_t phys_spibar = pci_read_long(spi_dev, PCI_BASE_ADDRESS_0) & 0xfffff000;
@@ -962,7 +962,7 @@ static int enable_flash_pch100_or_c620(const struct programmer_cfg *cfg,
 
 	/* This adds BUS_SPI */
 	const int ret_spi = ich_init_spi(cfg, spibar, pch_generation);
-	if (ret_spi != ERROR_FATAL) {
+	if (ret_spi != ERROR_FLASHROM_FATAL) {
 		if (ret_bc || ret_spi)
 			ret = ERROR_NONFATAL;
 		else
@@ -1055,13 +1055,13 @@ static int enable_flash_silvermont(const struct programmer_cfg *cfg, struct pci_
 	/* Handle GCS (in RCRB) */
 	void *rcrb = physmap("BYT RCRB", rcba, 4);
 	if (rcrb == ERROR_PTR)
-		return ERROR_FATAL;
+		return ERROR_FLASHROM_FATAL;
 	const enum chipbustype boot_buses = enable_flash_ich_report_gcs(dev, ich_generation, rcrb);
 	physunmap(rcrb, 4);
 
 	/* Handle fwh_idsel parameter */
 	int ret_fwh = enable_flash_ich_fwh_decode(cfg, dev, ich_generation);
-	if (ret_fwh == ERROR_FATAL)
+	if (ret_fwh == ERROR_FLASHROM_FATAL)
 		return ret_fwh;
 
 	internal_buses_supported &= BUS_FWH;
@@ -1071,7 +1071,7 @@ static int enable_flash_silvermont(const struct programmer_cfg *cfg, struct pci_
 	msg_pdbg("SPI_BASE_ADDRESS = 0x%x\n", sbase);
 	void *spibar = rphysmap("BYT SBASE", sbase, 512); /* Last defined address on Bay Trail is 0x100 */
 	if (spibar == ERROR_PTR)
-		return ERROR_FATAL;
+		return ERROR_FLASHROM_FATAL;
 
 	/* Enable Flash Writes.
 	 * Silvermont-based: BCR at SBASE + 0xFC (some bits of BCR are also accessible via BC at IBASE + 0x1C).
@@ -1079,7 +1079,7 @@ static int enable_flash_silvermont(const struct programmer_cfg *cfg, struct pci_
 	enable_flash_ich_bios_cntl_memmapped(ich_generation, spibar + 0xFC);
 
 	int ret_spi = ich_init_spi(cfg, spibar, ich_generation);
-	if (ret_spi == ERROR_FATAL)
+	if (ret_spi == ERROR_FLASHROM_FATAL)
 		return ret_spi;
 
 	if (((boot_buses & BUS_FWH) && ret_fwh) || ((boot_buses & BUS_SPI) && ret_spi))
@@ -1137,7 +1137,7 @@ static int enable_flash_vt_vx(const struct programmer_cfg *cfg, struct pci_dev *
 	struct pci_dev *south_north = pcidev_find(0x1106, 0xa353);
 	if (south_north == NULL) {
 		msg_perr("Could not find South-North Module Interface Control device!\n");
-		return ERROR_FATAL;
+		return ERROR_FLASHROM_FATAL;
 	}
 
 	msg_pdbg("Strapped to ");
@@ -1157,7 +1157,7 @@ static int enable_flash_vt_vx(const struct programmer_cfg *cfg, struct pci_dev *
 			spi0_mm_base = pci_read_long(dev, 0xbc) << 8;
 			if (spi0_mm_base == 0x0) {
 				msg_pdbg ("MMIO not enabled!\n");
-				return ERROR_FATAL;
+				return ERROR_FLASHROM_FATAL;
 			}
 			break;
 		case 0x8409: /* VX855/VX875 */
@@ -1165,18 +1165,18 @@ static int enable_flash_vt_vx(const struct programmer_cfg *cfg, struct pci_dev *
 			mmio_base = pci_read_long(dev, 0xbc) << 8;
 			if (mmio_base == 0x0) {
 				msg_pdbg ("MMIO not enabled!\n");
-				return ERROR_FATAL;
+				return ERROR_FLASHROM_FATAL;
 			}
 			mmio_base_physmapped = physmap("VIA VX MMIO register", mmio_base, SPI_CNTL_LEN);
 			if (mmio_base_physmapped == ERROR_PTR)
-				return ERROR_FATAL;
+				return ERROR_FLASHROM_FATAL;
 
 			/* Offset 0 - Bit 0 holds SPI Bus0 Enable Bit. */
 			spi_cntl = mmio_readl(mmio_base_physmapped) + 0x00;
 			if ((spi_cntl & 0x01) == 0) {
 				msg_pdbg ("SPI Bus0 disabled!\n");
 				physunmap(mmio_base_physmapped, SPI_CNTL_LEN);
-				return ERROR_FATAL;
+				return ERROR_FLASHROM_FATAL;
 			}
 			/* Offset 1-3 has  SPI Bus Memory Map Base Address: */
 			spi0_mm_base = spi_cntl & 0xFFFFFF00;
@@ -1190,7 +1190,7 @@ static int enable_flash_vt_vx(const struct programmer_cfg *cfg, struct pci_dev *
 			break;
 		default:
 			msg_perr("%s: Unsupported chipset %x:%x!\n", __func__, dev->vendor_id, dev->device_id);
-			return ERROR_FATAL;
+			return ERROR_FLASHROM_FATAL;
 	}
 
 	return via_init_spi(spi0_mm_base);
@@ -1578,7 +1578,7 @@ static int enable_flash_sb400(const struct programmer_cfg *cfg, struct pci_dev *
 
 	if (!smbusdev) {
 		msg_perr("ERROR: SMBus device not found. Aborting.\n");
-		return ERROR_FATAL;
+		return ERROR_FLASHROM_FATAL;
 	}
 
 	/* Enable some SMBus stuff. */
@@ -1713,7 +1713,7 @@ static int get_flashbase_sc520(const struct programmer_cfg *cfg, struct pci_dev 
 	/* 1. Map MMCR */
 	mmcr = physmap("Elan SC520 MMCR", 0xfffef000, getpagesize());
 	if (mmcr == ERROR_PTR)
-		return ERROR_FATAL;
+		return ERROR_FLASHROM_FATAL;
 
 	/* 2. Scan PAR0 (0x88) - PAR15 (0xc4) for
 	 *    BOOTCS region (PARx[31:29] = 100b)e
@@ -2216,7 +2216,7 @@ int chipset_flash_enable(const struct programmer_cfg *cfg)
 
 		if (chipset_enables[i].status == BAD) {
 			msg_perr("ERROR: This chipset is not supported yet.\n");
-			return ERROR_FATAL;
+			return ERROR_FLASHROM_FATAL;
 		}
 		if (chipset_enables[i].status == NT) {
 			msg_pinfo("This chipset is marked as untested. If "
@@ -2242,7 +2242,7 @@ int chipset_flash_enable(const struct programmer_cfg *cfg)
 			msg_pinfo("OK.\n");
 		else if (ret == ERROR_NONFATAL)
 			msg_pinfo("PROBLEMS, continuing anyway\n");
-		if (ret == ERROR_FATAL) {
+		if (ret == ERROR_FLASHROM_FATAL) {
 			msg_perr("FATAL ERROR!\n");
 			return ret;
 		}

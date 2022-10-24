@@ -88,7 +88,7 @@ void dummy_init_success_invalid_param_test_success(void **state)
 	 * is successful, due to invalid param at the end of param string.
 	 */
 	run_init_error_path(state, &dummy_io, &programmer_dummy,
-				"bus=spi,emulate=W25Q128FV,invalid=value", ERROR_FATAL);
+				"bus=spi,emulate=W25Q128FV,invalid=value", ERROR_FLASHROM_FATAL);
 }
 
 void dummy_init_success_unhandled_param_test_success(void **state)
@@ -107,7 +107,7 @@ void dummy_init_success_unhandled_param_test_success(void **state)
 	 * Unhandled param `voltage` is not used for dummyflasher.
 	 */
 	run_init_error_path(state, &dummy_io, &programmer_dummy,
-				"bus=spi,emulate=W25Q128FV,voltage=3.5V", ERROR_FATAL);
+				"bus=spi,emulate=W25Q128FV,voltage=3.5V", ERROR_FLASHROM_FATAL);
 }
 
 void dummy_null_prog_param_test_success(void **state)
