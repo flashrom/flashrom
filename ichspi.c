@@ -1345,7 +1345,8 @@ static int ich_hwseq_wait_for_cycle_complete(unsigned int len, enum ich_chipset 
 }
 
 /* Fire up a transfer using the hardware sequencer. */
-static void ich_start_hwseq_xfer(uint32_t hsfc_cycle, uint32_t flash_addr, size_t len,
+static void ich_start_hwseq_xfer(const struct flashctx *flash,
+		uint32_t hsfc_cycle, uint32_t flash_addr, size_t len,
 		uint32_t addr_mask)
 {
 	uint16_t hsfc;
@@ -1376,7 +1377,7 @@ static int ich_wait_for_hwseq_spi_cycle_complete(void)
 }
 
 /* Execute SPI flash transfer */
-static int ich_exec_sync_hwseq_xfer(uint32_t hsfc_cycle, uint32_t flash_addr,
+static int ich_exec_sync_hwseq_xfer(const struct flashctx *flash, uint32_t hsfc_cycle, uint32_t flash_addr,
 				size_t len, enum ich_chipset ich_gen, uint32_t addr_mask)
 {
 	if (ich_wait_for_hwseq_spi_cycle_complete()) {
@@ -1384,7 +1385,7 @@ static int ich_exec_sync_hwseq_xfer(uint32_t hsfc_cycle, uint32_t flash_addr,
 		return 1;
 	}
 
-	ich_start_hwseq_xfer(hsfc_cycle, flash_addr, len, addr_mask);
+	ich_start_hwseq_xfer(flash, hsfc_cycle, flash_addr, len, addr_mask);
 	return ich_hwseq_wait_for_cycle_complete(len, ich_gen, addr_mask);
 }
 
@@ -1399,7 +1400,7 @@ static int ich_hwseq_read_status(const struct flashctx *flash, enum flash_reg re
 	}
 	msg_pdbg("Reading Status register\n");
 
-	if (ich_exec_sync_hwseq_xfer(HSFC_CYCLE_RD_STATUS, 0, len, ich_generation,
+	if (ich_exec_sync_hwseq_xfer(flash, HSFC_CYCLE_RD_STATUS, 0, len, ich_generation,
 		hwseq_data->addr_mask)) {
 		msg_perr("Reading Status register failed\n!!");
 		return -1;
@@ -1422,7 +1423,7 @@ static int ich_hwseq_write_status(const struct flashctx *flash, enum flash_reg r
 
 	ich_fill_data(&value, len, ICH9_REG_FDATA0);
 
-	if (ich_exec_sync_hwseq_xfer(HSFC_CYCLE_WR_STATUS, 0, len, ich_generation,
+	if (ich_exec_sync_hwseq_xfer(flash, HSFC_CYCLE_WR_STATUS, 0, len, ich_generation,
 		hwseq_data->addr_mask)) {
 		msg_perr("Writing Status register failed\n!!");
 		return -1;
@@ -1518,7 +1519,7 @@ static int ich_hwseq_block_erase(struct flashctx *flash, unsigned int addr,
 
 	msg_pdbg("Erasing %d bytes starting at 0x%06x.\n", len, addr);
 
-	if (ich_exec_sync_hwseq_xfer(HSFC_CYCLE_BLOCK_ERASE, addr, 0, ich_generation,
+	if (ich_exec_sync_hwseq_xfer(flash, HSFC_CYCLE_BLOCK_ERASE, addr, 0, ich_generation,
 		hwseq_data->addr_mask))
 		return -1;
 	return 0;
@@ -1546,7 +1547,7 @@ static int ich_hwseq_read(struct flashctx *flash, uint8_t *buf,
 		/* as well as flash chip page borders as demanded in the Intel datasheets. */
 		block_len = min(block_len, 256 - (addr & 0xFF));
 
-		if (ich_exec_sync_hwseq_xfer(HSFC_CYCLE_READ, addr, block_len, ich_generation,
+		if (ich_exec_sync_hwseq_xfer(flash, HSFC_CYCLE_READ, addr, block_len, ich_generation,
 			hwseq_data->addr_mask))
 			return 1;
 		ich_read_data(buf, block_len, ICH9_REG_FDATA0);
@@ -1579,7 +1580,7 @@ static int ich_hwseq_write(struct flashctx *flash, const uint8_t *buf, unsigned 
 		block_len = min(block_len, 256 - (addr & 0xFF));
 		ich_fill_data(buf, block_len, ICH9_REG_FDATA0);
 
-		if (ich_exec_sync_hwseq_xfer(HSFC_CYCLE_WRITE, addr, block_len, ich_generation,
+		if (ich_exec_sync_hwseq_xfer(flash, HSFC_CYCLE_WRITE, addr, block_len, ich_generation,
 			hwseq_data->addr_mask))
 			return -1;
 		addr += block_len;
