@@ -1350,6 +1350,7 @@ static void ich_start_hwseq_xfer(const struct flashctx *flash,
 		uint32_t addr_mask)
 {
 	uint16_t hsfc;
+	struct hwseq_data *hwseq_data = get_hwseq_data_from_context(flash);
 
 	/* Sets flash_addr in FADDR */
 	ich_hwseq_set_addr(flash_addr, addr_mask);
@@ -1359,7 +1360,7 @@ static void ich_start_hwseq_xfer(const struct flashctx *flash,
 
 	/* Set up transaction parameters. */
 	hsfc = REGREAD16(ICH9_REG_HSFC);
-	hsfc &= ~g_hwseq_data.hsfc_fcycle; /* clear operation */
+	hsfc &= ~hwseq_data->hsfc_fcycle; /* clear operation */
 	hsfc |= hsfc_cycle;
 	hsfc |= HSFC_FDBC_VAL(len - 1);
 	hsfc |= HSFC_FGO; /* start */
