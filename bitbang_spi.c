@@ -165,6 +165,9 @@ int register_spi_bitbang_master(const struct bitbang_spi_master *master, void *s
 	}
 
 	struct bitbang_spi_master_data *data = calloc(1, sizeof(*data));
+	if (!data)
+		return ERROR_FATAL;
+
 	data->master = master;
 	if (spi_data)
 		data->spi_data = spi_data;
