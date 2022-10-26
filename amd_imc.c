@@ -60,7 +60,7 @@ static int mbox_wait_ack(uint16_t mbox_port)
 			msg_pwarn("IMC MBOX: Timeout!\n");
 			return 1;
 		}
-		internal_delay(1000);
+		default_delay(1000);
 	}
 	return 0;
 }

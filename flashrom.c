@@ -260,18 +260,18 @@ void programmer_delay(const struct flashctx *flash, unsigned int usecs)
 		return;
 
 	/**
-	 * Drivers should either use internal_delay() directly or their
+	 * Drivers should either use default_delay() directly or their
 	 * own custom delay. Only core flashrom logic calls programmer_delay()
 	 * which should always have a valid flash context. A NULL context
 	 * more than likely indicates a layering violation or BUG however
-	 * for now dispatch a internal_delay() as a safe default for the NULL
+	 * for now dispatch a default_delay() as a safe default for the NULL
 	 * base case.
 	 */
 	if (!flash) {
 		msg_perr("%s called with NULL flash context. "
 			 "Please report a bug at flashrom@flashrom.org\n",
 			 __func__);
-		return internal_delay(usecs);
+		return default_delay(usecs);
 	}
 
 	if (flash->mst->buses_supported & BUS_SPI) {
@@ -282,7 +282,7 @@ void programmer_delay(const struct flashctx *flash, unsigned int usecs)
 			return flash->mst->par.delay(flash, usecs);
 	}
 
-	return internal_delay(usecs);
+	return default_delay(usecs);
 }
 
 int read_memmapped(struct flashctx *flash, uint8_t *buf, unsigned int start,

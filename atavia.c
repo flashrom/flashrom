@@ -90,7 +90,7 @@ static bool atavia_ready(struct pci_dev *pcidev_dev)
 			ready = true;
 			break;
 		} else {
-			internal_delay(1);
+			default_delay(1);
 			continue;
 		}
 	}
@@ -170,7 +170,7 @@ static int atavia_init(const struct programmer_cfg *cfg)
 
 	/* Test if a flash chip is attached. */
 	pci_write_long(dev, PCI_ROM_ADDRESS, (uint32_t)PCI_ROM_ADDRESS_MASK);
-	internal_delay(90);
+	default_delay(90);
 	uint32_t base = pci_read_long(dev, PCI_ROM_ADDRESS);
 	msg_pdbg2("BROM base=0x%08x\n", base);
 	if ((base & PCI_ROM_ADDRESS_MASK) == 0) {

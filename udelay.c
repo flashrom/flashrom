@@ -235,7 +235,7 @@ void internal_sleep(unsigned int usecs)
 }
 
 /* Precise delay. */
-void internal_delay(unsigned int usecs)
+void default_delay(unsigned int usecs)
 {
 	/* If the delay is >1 s, use internal_sleep because timing does not need to be so precise. */
 	if (usecs > 1000000) {
@@ -255,7 +255,7 @@ void myusec_calibrate_delay(void)
 	get_cpu_speed();
 }
 
-void internal_delay(unsigned int usecs)
+void default_delay(unsigned int usecs)
 {
 	udelay(usecs);
 }

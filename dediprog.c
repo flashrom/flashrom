@@ -316,7 +316,7 @@ static int dediprog_set_spi_voltage(libusb_device_handle *dediprog_handle, int m
 
 	if (voltage_selector == 0) {
 		/* Wait some time as the original driver does. */
-		internal_delay(200 * 1000);
+		default_delay(200 * 1000);
 	}
 	ret = dediprog_write(dediprog_handle, CMD_SET_VCC, voltage_selector, 0, NULL, 0);
 	if (ret != 0x0) {
@@ -326,7 +326,7 @@ static int dediprog_set_spi_voltage(libusb_device_handle *dediprog_handle, int m
 	}
 	if (voltage_selector != 0) {
 		/* Wait some time as the original driver does. */
-		internal_delay(200 * 1000);
+		default_delay(200 * 1000);
 	}
 	return 0;
 }

@@ -892,7 +892,7 @@ static int send_command_v1(const struct flashctx *flash,
 				/* Reattempting will not result in a recovery. */
 				return status;
 			}
-			internal_delay(RETRY_INTERVAL_US);
+			default_delay(RETRY_INTERVAL_US);
 			continue;
 		}
 
@@ -927,7 +927,7 @@ static int send_command_v1(const struct flashctx *flash,
 				/* Reattempting will not result in a recovery. */
 				return status;
 			}
-			internal_delay(RETRY_INTERVAL_US);
+			default_delay(RETRY_INTERVAL_US);
 		}
 	}
 
@@ -962,7 +962,7 @@ static int get_spi_config_v2(struct raiden_debug_spi_data *ctx_data)
 			         "    config attempt = %d\n"
 			         "    status         = 0x%05x\n",
 			         config_attempt + 1, status);
-			internal_delay(RETRY_INTERVAL_US);
+			default_delay(RETRY_INTERVAL_US);
 			continue;
 		}
 
@@ -972,7 +972,7 @@ static int get_spi_config_v2(struct raiden_debug_spi_data *ctx_data)
 			         "    config attempt = %d\n"
 			         "    status         = 0x%05x\n",
 			         config_attempt + 1, status);
-			internal_delay(RETRY_INTERVAL_US);
+			default_delay(RETRY_INTERVAL_US);
 			continue;
 		}
 
@@ -1016,7 +1016,7 @@ static int get_spi_config_v2(struct raiden_debug_spi_data *ctx_data)
 		         config_attempt + 1,
 		         rsp_config.packet_v2.packet_id,
 		         rsp_config.packet_size);
-		internal_delay(RETRY_INTERVAL_US);
+		default_delay(RETRY_INTERVAL_US);
 	}
 	return USB_SPI_HOST_INIT_FAILURE;
 }
@@ -1240,7 +1240,7 @@ static int send_command_v2(const struct flashctx *flash,
 				/* Reattempting will not result in a recovery. */
 				return status;
 			}
-			internal_delay(RETRY_INTERVAL_US);
+			default_delay(RETRY_INTERVAL_US);
 			continue;
 		}
 		for (read_attempt = 0; read_attempt < READ_RETRY_ATTEMPTS;
@@ -1277,7 +1277,7 @@ static int send_command_v2(const struct flashctx *flash,
 				}
 				/* Device needs to reset its transmit index. */
 				restart_response_v2(ctx_data);
-				internal_delay(RETRY_INTERVAL_US);
+				default_delay(RETRY_INTERVAL_US);
 			}
 		}
 	}

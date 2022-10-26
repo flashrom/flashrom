@@ -326,10 +326,10 @@ static void ch341a_spi_delay(const struct flashctx *flash, unsigned int usecs)
 {
 	/* There is space for 28 bytes instructions of 750 ns each in the CS packet (32 - 4 for the actual CS
 	 * instructions), thus max 21 us, but we avoid getting too near to this boundary and use
-	 * internal_delay() for durations over 20 us. */
+	 * default_delay() for durations over 20 us. */
 	if ((usecs + stored_delay_us) > 20) {
 		unsigned int inc = 20 - stored_delay_us;
-		internal_delay(usecs - inc);
+		default_delay(usecs - inc);
 		usecs = inc;
 	}
 	stored_delay_us += usecs;

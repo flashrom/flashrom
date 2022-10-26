@@ -403,7 +403,7 @@ int serialport_write(const unsigned char *buf, unsigned int writecnt)
 		if (!tmp) {
 			msg_pdbg2("Empty write\n");
 			empty_writes--;
-			internal_delay(500);
+			default_delay(500);
 			if (empty_writes == 0) {
 				msg_perr("Serial port is unresponsive!\n");
 				return 1;
@@ -510,7 +510,7 @@ int serialport_read_nonblock(unsigned char *c, unsigned int readcnt, unsigned in
 			ret = 0;
 			break;
 		}
-		internal_delay(1000);	/* 1ms units */
+		default_delay(1000);	/* 1ms units */
 	}
 	if (really_read != NULL)
 		*really_read = rd_bytes;
@@ -596,7 +596,7 @@ int serialport_write_nonblock(const unsigned char *buf, unsigned int writecnt, u
 				break;
 			}
 		}
-		internal_delay(1000);	/* 1ms units */
+		default_delay(1000);	/* 1ms units */
 	}
 	if (really_wrote != NULL)
 		*really_wrote = wr_bytes;

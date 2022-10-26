@@ -146,7 +146,7 @@ static int it8716f_spi_page_program(struct flashctx *flash, const uint8_t *buf, 
 		if((status & SPI_SR_WIP) == 0)
 			return 0;
 
-		internal_delay(1000);
+		default_delay(1000);
 	}
 	return 0;
 }

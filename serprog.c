@@ -157,7 +157,7 @@ static int sp_synchronize(void)
 		goto err_out;
 	}
 	/* A second should be enough to get all the answers to the buffer */
-	internal_delay(1000 * 1000);
+	default_delay(1000 * 1000);
 	sp_flush_incoming();
 
 	/* Then try up to 8 times to send syncnop and get the correct special *
@@ -577,7 +577,7 @@ static void serprog_delay(const struct flashctx *flash, unsigned int usecs)
 	msg_pspew("%s usecs=%d\n", __func__, usecs);
 	if (!sp_check_commandavail(S_CMD_O_DELAY)) {
 		msg_pdbg2("serprog_delay used, but programmer doesn't support delays natively - emulating\n");
-		internal_delay(usecs);
+		default_delay(usecs);
 		return;
 	}
 	if ((sp_max_write_n) && (sp_write_n_bytes))

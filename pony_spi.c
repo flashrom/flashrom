@@ -244,7 +244,7 @@ static int pony_spi_init(const struct programmer_cfg *cfg)
 		for (i = 1; i <= 10; i++) {
 			data_out = i & 1;
 			sp_set_pin(PIN_RTS, data_out);
-			internal_delay(1000);
+			default_delay(1000);
 
 			/* If DSR does not change, we are not connected to what we think */
 			if (data_out != sp_get_pin(PIN_DSR)) {
