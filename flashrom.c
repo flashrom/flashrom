@@ -215,11 +215,15 @@ void *master_map_flash_region(const struct registered_master *mst,
 	else if (mst->buses_supported & BUS_NONSPI)
 		map_flash_region = mst->par.map_flash_region;
 
-	void *ret;
+	/* A result of NULL causes mapped addresses to be chip physical
+	 * addresses, assuming only a single region is mapped (the entire flash
+	 * space).  Chips with a second region (like a register map) require a
+	 * real memory mapping to distinguish the different ranges.  Those chips
+	 * are FWH/LPC, so the bus master provides a real mapping.
+	 */
+	void *ret = NULL;
 	if (map_flash_region)
 		ret = map_flash_region(descr, phys_addr, len);
-	else
-		ret = fallback_map(descr, phys_addr, len);
 	msg_gspew("%s: mapping %s from 0x%0*" PRIxPTR " to 0x%0*" PRIxPTR "\n",
 		__func__, descr, PRIxPTR_WIDTH, phys_addr, PRIxPTR_WIDTH, (uintptr_t) ret);
 	return ret;
@@ -236,8 +240,6 @@ void master_unmap_flash_region(const struct registered_master *mst,
 
 	if (unmap_flash_region)
 		unmap_flash_region(virt_addr, len);
-	else
-		fallback_unmap(virt_addr, len);
 	msg_gspew("%s: unmapped 0x%0*" PRIxPTR "\n", __func__, PRIxPTR_WIDTH, (uintptr_t)virt_addr);
 }
 

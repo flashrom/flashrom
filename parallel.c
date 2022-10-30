@@ -76,7 +76,7 @@ int register_par_master(const struct par_master *mst,
 		}
 	}
 
-	/* Bus masters supporting FWH/LPC cannot use fallback_map(), distinct
+	/* Bus masters supporting FWH/LPC cannot use chip physical maps, distinct
 	 * mappings are needed to support chips with FEATURE_REGISTERMAP
 	 */
 	if ((buses & (BUS_FWH | BUS_LPC)) && !mst->map_flash_region) {

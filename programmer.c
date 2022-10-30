@@ -17,23 +17,6 @@
 #include "flash.h"
 #include "programmer.h"
 
-/* Fallback map() for programmers which don't need special handling */
-void *fallback_map(const char *descr, uintptr_t phys_addr, size_t len)
-{
-	/* A result of NULL causes mapped addresses to be chip physical
-	 * addresses, assuming only a single region is mapped (the entire flash
-	 * space).  Chips with a second region (like a register map) require a
-	 * real memory mapping to distinguish the different ranges.  Those chips
-	 * are FWH/LPC, so the bus master provides a real mapping.
-	 */
-	return NULL;
-}
-
-/* No-op/fallback unmap() for programmers which don't need special handling */
-void fallback_unmap(void *virt_addr, size_t len)
-{
-}
-
 /* Little-endian fallback for drivers not supporting 16 bit accesses */
 void fallback_chip_writew(const struct flashctx *flash, uint16_t val,
 			  chipaddr addr)
