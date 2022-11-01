@@ -40,10 +40,9 @@ use flashrom::{FlashChip, Flashrom};
 use std::collections::{HashMap, HashSet};
 use std::convert::TryInto;
 use std::fs::{self, File};
-use std::io::{BufRead, Write};
+use std::io::BufRead;
 use std::sync::atomic::AtomicBool;
 
-const LAYOUT_FILE: &str = "/tmp/layout.file";
 const ELOG_FILE: &str = "/tmp/elog.file";
 
 /// Iterate over tests, yielding only those tests with names matching filter_names.
@@ -91,23 +90,6 @@ pub fn generic<'a, TN: Iterator<Item = &'a str>>(
 ) -> Result<(), Box<dyn std::error::Error>> {
     utils::ac_power_warning();
 
-    info!("Calculate ROM partition sizes & Create the layout file.");
-    let rom_sz: i64 = cmd.get_size()?;
-    let layout_sizes = utils::get_layout_sizes(rom_sz)?;
-    {
-        let mut f = File::create(LAYOUT_FILE)?;
-        let mut buf: Vec<u8> = vec![];
-        utils::construct_layout_file(&mut buf, &layout_sizes)?;
-
-        f.write_all(&buf)?;
-        if print_layout {
-            info!(
-                "Dumping layout file as requested:\n{}",
-                String::from_utf8_lossy(&buf)
-            );
-        }
-    }
-
     info!("Record crossystem information.\n{}", crossystem);
 
     // Register tests to run:
@@ -144,7 +126,7 @@ pub fn generic<'a, TN: Iterator<Item = &'a str>>(
 
     // ------------------------.
     // Run all the tests and collate the findings:
-    let results = tester::run_all_tests(fc, cmd, tests, terminate_flag);
+    let results = tester::run_all_tests(fc, cmd, tests, terminate_flag, print_layout);
 
     // Any leftover filtered names were specified to be run but don't exist
     for leftover in filter_names.iter().flatten() {
@@ -295,7 +277,7 @@ fn partial_lock_test(section: LayoutNames) -> impl Fn(&mut TestEnv) -> TestResul
 
         // Check that we cannot write to the protected region.
         let rws = flashrom::ROMWriteSpecifics {
-            layout_file: Some(LAYOUT_FILE),
+            layout_file: Some(&env.layout_file),
             write_file: Some(env.random_data_file()),
             name_file: Some(wp_section_name),
         };
@@ -313,7 +295,7 @@ fn partial_lock_test(section: LayoutNames) -> impl Fn(&mut TestEnv) -> TestResul
         let (non_wp_section_name, _, _) =
             utils::layout_section(env.layout(), section.get_non_overlapping_section());
         let rws = flashrom::ROMWriteSpecifics {
-            layout_file: Some(LAYOUT_FILE),
+            layout_file: Some(&env.layout_file),
             write_file: Some(env.random_data_file()),
             name_file: Some(non_wp_section_name),
         };

@@ -39,6 +39,8 @@ use super::utils::{self, LayoutSizes};
 use flashrom::FlashromError;
 use flashrom::{FlashChip, Flashrom};
 use serde_json::json;
+use std::fs::File;
+use std::io::Write;
 use std::mem::MaybeUninit;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
@@ -63,10 +65,16 @@ pub struct TestEnv<'a> {
     /// The path to a file containing flash-sized random data
     // TODO(pmarheine) make this a PathBuf too
     random_data: String,
+    /// The path to a file containing layout data.
+    pub layout_file: String,
 }
 
 impl<'a> TestEnv<'a> {
-    pub fn create(chip_type: FlashChip, cmd: &'a dyn Flashrom) -> Result<Self, FlashromError> {
+    pub fn create(
+        chip_type: FlashChip,
+        cmd: &'a dyn Flashrom,
+        print_layout: bool,
+    ) -> Result<Self, FlashromError> {
         let rom_sz = cmd.get_size()?;
         let out = TestEnv {
             chip_type,
@@ -75,6 +83,7 @@ impl<'a> TestEnv<'a> {
             wp: WriteProtectState::from_hardware(cmd, chip_type)?,
             original_flash_contents: "/tmp/flashrom_tester_golden.bin".into(),
             random_data: "/tmp/random_content.bin".into(),
+            layout_file: create_layout_file(rom_sz, "/tmp/", print_layout),
         };
 
         info!("Stashing golden image for verification/recovery on completion");
@@ -487,17 +496,39 @@ fn decode_test_result(res: TestResult, con: TestConclusion) -> (TestConclusion, 
     }
 }
 
+fn create_layout_file(rom_sz: i64, tmp_dir: &str, print_layout: bool) -> String {
+    info!("Calculate ROM partition sizes & Create the layout file.");
+    let layout_sizes = utils::get_layout_sizes(rom_sz).expect("Could not partition rom");
+
+    let mut layout_file = tmp_dir.to_string();
+    layout_file.push_str("/layout.file");
+    let mut f = File::create(&layout_file).expect("Could not create layout file");
+    let mut buf: Vec<u8> = vec![];
+    utils::construct_layout_file(&mut buf, &layout_sizes).expect("Could not construct layout file");
+
+    f.write_all(&buf).expect("Writing layout file failed");
+    if print_layout {
+        info!(
+            "Dumping layout file as requested:\n{}",
+            String::from_utf8_lossy(&buf)
+        );
+    }
+    layout_file
+}
+
 pub fn run_all_tests<T, TS>(
     chip: FlashChip,
     cmd: &dyn Flashrom,
     ts: TS,
     terminate_flag: Option<&AtomicBool>,
+    print_layout: bool,
 ) -> Vec<(String, (TestConclusion, Option<TestError>))>
 where
     T: TestCase + Copy,
     TS: IntoIterator<Item = T>,
 {
-    let mut env = TestEnv::create(chip, cmd).expect("Failed to set up test environment");
+    let mut env =
+        TestEnv::create(chip, cmd, print_layout).expect("Failed to set up test environment");
 
     let mut results = Vec::new();
     for t in ts {
