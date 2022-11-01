@@ -34,7 +34,7 @@
 
 use libflashrom::{Chip, Programmer};
 
-use std::{cell::RefCell, convert::TryFrom, fs};
+use std::{cell::RefCell, convert::TryFrom, fs, path::Path};
 
 use crate::{FlashChip, FlashromError, ROMWriteSpecifics};
 
@@ -108,13 +108,13 @@ impl crate::Flashrom for FlashromLib {
         self.wp_range((0, self.get_size()?), en)
     }
 
-    fn read_into_file(&self, path: &str) -> Result<(), FlashromError> {
+    fn read_into_file(&self, path: &Path) -> Result<(), FlashromError> {
         let buf = self.flashrom.borrow_mut().image_read(None)?;
         fs::write(path, buf).map_err(|error| error.to_string())?;
         Ok(())
     }
 
-    fn read_region_into_file(&self, path: &str, region: &str) -> Result<(), FlashromError> {
+    fn read_region_into_file(&self, path: &Path, region: &str) -> Result<(), FlashromError> {
         let mut layout = self.flashrom.borrow_mut().layout_read_fmap_from_rom()?;
         layout.include_region(region)?;
         let range = layout.get_region_range(region)?;
@@ -123,7 +123,7 @@ impl crate::Flashrom for FlashromLib {
         Ok(())
     }
 
-    fn write_from_file(&self, path: &str) -> Result<(), FlashromError> {
+    fn write_from_file(&self, path: &Path) -> Result<(), FlashromError> {
         let mut buf = fs::read(path).map_err(|error| error.to_string())?;
         self.flashrom.borrow_mut().image_write(&mut buf, None)?;
         Ok(())
@@ -143,7 +143,7 @@ impl crate::Flashrom for FlashromLib {
         Ok(true)
     }
 
-    fn verify_from_file(&self, path: &str) -> Result<(), FlashromError> {
+    fn verify_from_file(&self, path: &Path) -> Result<(), FlashromError> {
         let buf = fs::read(path).map_err(|error| error.to_string())?;
         self.flashrom.borrow_mut().image_verify(&buf, None)?;
         Ok(())

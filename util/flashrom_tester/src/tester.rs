@@ -42,6 +42,8 @@ use serde_json::json;
 use std::fs::File;
 use std::io::Write;
 use std::mem::MaybeUninit;
+use std::path::Path;
+use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
 
@@ -60,13 +62,11 @@ pub struct TestEnv<'a> {
 
     pub wp: WriteProtectState<'a, 'static>,
     /// The path to a file containing the flash contents at test start.
-    // TODO(pmarheine) migrate this to a PathBuf for clarity
-    original_flash_contents: String,
+    original_flash_contents: PathBuf,
     /// The path to a file containing flash-sized random data
-    // TODO(pmarheine) make this a PathBuf too
-    random_data: String,
+    random_data: PathBuf,
     /// The path to a file containing layout data.
-    pub layout_file: String,
+    pub layout_file: PathBuf,
 }
 
 impl<'a> TestEnv<'a> {
@@ -83,7 +83,7 @@ impl<'a> TestEnv<'a> {
             wp: WriteProtectState::from_hardware(cmd, chip_type)?,
             original_flash_contents: "/tmp/flashrom_tester_golden.bin".into(),
             random_data: "/tmp/random_content.bin".into(),
-            layout_file: create_layout_file(rom_sz, "/tmp/", print_layout),
+            layout_file: create_layout_file(rom_sz, Path::new("/tmp/"), print_layout),
         };
 
         info!("Stashing golden image for verification/recovery on completion");
@@ -122,7 +122,7 @@ impl<'a> TestEnv<'a> {
 
     /// Return the path to a file that contains random data and is the same size
     /// as the flash chip.
-    pub fn random_data_file(&self) -> &str {
+    pub fn random_data_file(&self) -> &Path {
         &self.random_data
     }
 
@@ -156,7 +156,7 @@ impl<'a> TestEnv<'a> {
     /// path.
     ///
     /// Returns Err if they are not the same.
-    pub fn verify(&self, contents_path: &str) -> Result<(), FlashromError> {
+    pub fn verify(&self, contents_path: &Path) -> Result<(), FlashromError> {
         self.cmd.verify_from_file(contents_path)?;
         Ok(())
     }
@@ -496,12 +496,11 @@ fn decode_test_result(res: TestResult, con: TestConclusion) -> (TestConclusion, 
     }
 }
 
-fn create_layout_file(rom_sz: i64, tmp_dir: &str, print_layout: bool) -> String {
+fn create_layout_file(rom_sz: i64, tmp_dir: &Path, print_layout: bool) -> PathBuf {
     info!("Calculate ROM partition sizes & Create the layout file.");
     let layout_sizes = utils::get_layout_sizes(rom_sz).expect("Could not partition rom");
 
-    let mut layout_file = tmp_dir.to_string();
-    layout_file.push_str("/layout.file");
+    let layout_file = tmp_dir.join("layout.file");
     let mut f = File::create(&layout_file).expect("Could not create layout file");
     let mut buf: Vec<u8> = vec![];
     utils::construct_layout_file(&mut buf, &layout_sizes).expect("Could not construct layout file");

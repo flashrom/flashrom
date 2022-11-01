@@ -36,10 +36,11 @@
 use std::fs::File;
 use std::io::prelude::*;
 use std::io::BufWriter;
+use std::path::Path;
 
 use rand::prelude::*;
 
-pub fn gen_rand_testdata(path: &str, size: usize) -> std::io::Result<()> {
+pub fn gen_rand_testdata(path: &Path, size: usize) -> std::io::Result<()> {
     let mut buf = BufWriter::new(File::create(path)?);
 
     let mut a: Vec<u8> = vec![0; size];
@@ -58,8 +59,8 @@ mod tests {
     fn gen_rand_testdata() {
         use super::gen_rand_testdata;
 
-        let path0 = "/tmp/idk_test00";
-        let path1 = "/tmp/idk_test01";
+        let path0 = Path::new("/tmp/idk_test00");
+        let path1 = Path::new("/tmp/idk_test01");
         let sz = 1024;
 
         gen_rand_testdata(path0, sz).unwrap();

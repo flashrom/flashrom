@@ -224,7 +224,7 @@ fn elog_sanity_test(env: &mut TestEnv) -> TestResult {
 
     const ELOG_RW_REGION_NAME: &str = "RW_ELOG";
     env.cmd
-        .read_region_into_file(ELOG_FILE, ELOG_RW_REGION_NAME)?;
+        .read_region_into_file(ELOG_FILE.as_ref(), ELOG_RW_REGION_NAME)?;
 
     // Just checking for the magic numer
     // TODO: improve this test to read the events

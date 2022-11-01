@@ -35,15 +35,19 @@
 
 use crate::{FlashChip, FlashromError, ROMWriteSpecifics};
 
-use std::process::Command;
+use std::{
+    ffi::{OsStr, OsString},
+    path::Path,
+    process::Command,
+};
 
 #[derive(Default)]
 pub struct FlashromOpt<'a> {
     pub wp_opt: WPOpt,
     pub io_opt: IOOpt<'a>,
 
-    pub layout: Option<&'a str>, // -l <file>
-    pub image: Option<&'a str>,  // -i <name>
+    pub layout: Option<&'a Path>, // -l <file>
+    pub image: Option<&'a str>,   // -i <name>
 
     pub flash_name: bool, // --flash-name
     pub verbose: bool,    // -V
@@ -60,11 +64,11 @@ pub struct WPOpt {
 
 #[derive(Default)]
 pub struct IOOpt<'a> {
-    pub read: Option<&'a str>,              // -r <file>
-    pub write: Option<&'a str>,             // -w <file>
-    pub verify: Option<&'a str>,            // -v <file>
-    pub erase: bool,                        // -E
-    pub region: Option<(&'a str, &'a str)>, // --image
+    pub read: Option<&'a Path>,              // -r <file>
+    pub write: Option<&'a Path>,             // -w <file>
+    pub verify: Option<&'a Path>,            // -v <file>
+    pub erase: bool,                         // -E
+    pub region: Option<(&'a str, &'a Path)>, // --image
 }
 
 #[derive(PartialEq, Eq, Debug)]
@@ -227,7 +231,7 @@ impl crate::Flashrom for FlashromCmd {
         }
     }
 
-    fn read_into_file(&self, path: &str) -> Result<(), FlashromError> {
+    fn read_into_file(&self, path: &Path) -> Result<(), FlashromError> {
         let opts = FlashromOpt {
             io_opt: IOOpt {
                 read: Some(path),
@@ -240,7 +244,7 @@ impl crate::Flashrom for FlashromCmd {
         Ok(())
     }
 
-    fn read_region_into_file(&self, path: &str, region: &str) -> Result<(), FlashromError> {
+    fn read_region_into_file(&self, path: &Path, region: &str) -> Result<(), FlashromError> {
         let opts = FlashromOpt {
             io_opt: IOOpt {
                 region: Some((region, path)),
@@ -253,7 +257,7 @@ impl crate::Flashrom for FlashromCmd {
         Ok(())
     }
 
-    fn write_from_file(&self, path: &str) -> Result<(), FlashromError> {
+    fn write_from_file(&self, path: &Path) -> Result<(), FlashromError> {
         let opts = FlashromOpt {
             io_opt: IOOpt {
                 write: Some(path),
@@ -266,7 +270,7 @@ impl crate::Flashrom for FlashromCmd {
         Ok(())
     }
 
-    fn verify_from_file(&self, path: &str) -> Result<(), FlashromError> {
+    fn verify_from_file(&self, path: &Path) -> Result<(), FlashromError> {
         let opts = FlashromOpt {
             io_opt: IOOpt {
                 verify: Some(path),
@@ -297,8 +301,8 @@ impl crate::Flashrom for FlashromCmd {
     }
 }
 
-fn flashrom_decode_opts(opts: FlashromOpt) -> Vec<String> {
-    let mut params = Vec::<String>::new();
+fn flashrom_decode_opts(opts: FlashromOpt) -> Vec<OsString> {
+    let mut params = Vec::<OsString>::new();
 
     // ------------ WARNING !!! ------------
     // each param must NOT contain spaces!
@@ -307,58 +311,62 @@ fn flashrom_decode_opts(opts: FlashromOpt) -> Vec<String> {
     // wp_opt
     if opts.wp_opt.range.is_some() {
         let (x0, x1) = opts.wp_opt.range.unwrap();
-        params.push("--wp-range".to_string());
-        params.push(hex_range_string(x0, x1));
+        params.push("--wp-range".into());
+        params.push(hex_range_string(x0, x1).into());
     }
     if opts.wp_opt.status {
-        params.push("--wp-status".to_string());
+        params.push("--wp-status".into());
     } else if opts.wp_opt.list {
-        params.push("--wp-list".to_string());
+        params.push("--wp-list".into());
     } else if opts.wp_opt.enable {
-        params.push("--wp-enable".to_string());
+        params.push("--wp-enable".into());
     } else if opts.wp_opt.disable {
-        params.push("--wp-disable".to_string());
+        params.push("--wp-disable".into());
     }
 
     // io_opt
     if let Some((region, path)) = opts.io_opt.region {
-        params.push("--image".to_string());
-        params.push(format!("{}:{}", region, path));
-        params.push("-r".to_string());
+        params.push("--image".into());
+        let mut p = OsString::new();
+        p.push(region);
+        p.push(":");
+        p.push(path);
+        params.push(p);
+        params.push("-r".into());
     } else if opts.io_opt.read.is_some() {
-        params.push("-r".to_string());
-        params.push(opts.io_opt.read.unwrap().to_string());
+        params.push("-r".into());
+        params.push(opts.io_opt.read.unwrap().into());
     } else if opts.io_opt.write.is_some() {
-        params.push("-w".to_string());
-        params.push(opts.io_opt.write.unwrap().to_string());
+        params.push("-w".into());
+        params.push(opts.io_opt.write.unwrap().into());
     } else if opts.io_opt.verify.is_some() {
-        params.push("-v".to_string());
-        params.push(opts.io_opt.verify.unwrap().to_string());
+        params.push("-v".into());
+        params.push(opts.io_opt.verify.unwrap().into());
     } else if opts.io_opt.erase {
-        params.push("-E".to_string());
+        params.push("-E".into());
     }
 
     // misc_opt
     if opts.layout.is_some() {
-        params.push("-l".to_string());
-        params.push(opts.layout.unwrap().to_string());
+        params.push("-l".into());
+        params.push(opts.layout.unwrap().into());
     }
     if opts.image.is_some() {
-        params.push("-i".to_string());
-        params.push(opts.image.unwrap().to_string());
+        params.push("-i".into());
+        params.push(opts.image.unwrap().into());
     }
 
     if opts.flash_name {
-        params.push("--flash-name".to_string());
+        params.push("--flash-name".into());
     }
     if opts.verbose {
-        params.push("-V".to_string());
+        params.push("-V".into());
     }
 
     params
 }
 
-fn flashrom_dispatch<S: AsRef<str>>(
+fn flashrom_dispatch<S: AsRef<OsStr>>(
     path: &str,
     params: &[S],
     fc: FlashChip,
@@ -366,7 +374,7 @@ fn flashrom_dispatch<S: AsRef<str>>(
 ) -> Result<(String, String), FlashromError> {
     // from man page:
     //  ' -p, --programmer <name>[:parameter[,parameter[,parameter]]] '
-    let mut args: Vec<&str> = vec!["-p", FlashChip::to(fc)];
+    let mut args: Vec<&OsStr> = vec![OsStr::new("-p"), OsStr::new(FlashChip::to(fc))];
     args.extend(params.iter().map(S::as_ref));
 
     info!("flashrom_dispatch() running: {} {:?}", path, args);
@@ -454,6 +462,8 @@ fn extract_flash_name(stdout: &str) -> Option<(&str, &str)> {
 
 #[cfg(test)]
 mod tests {
+    use std::path::Path;
+
     use super::flashrom_decode_opts;
     use super::{FlashromOpt, IOOpt, WPOpt};
 
@@ -515,21 +525,21 @@ mod tests {
 
         test_io_opt(
             IOOpt {
-                read: Some("foo.bin"),
+                read: Some(Path::new("foo.bin")),
                 ..Default::default()
             },
             &["-r", "foo.bin"],
         );
         test_io_opt(
             IOOpt {
-                write: Some("bar.bin"),
+                write: Some(Path::new("bar.bin")),
                 ..Default::default()
             },
             &["-w", "bar.bin"],
         );
         test_io_opt(
             IOOpt {
-                verify: Some("/tmp/baz.bin"),
+                verify: Some(Path::new("/tmp/baz.bin")),
                 ..Default::default()
             },
             &["-v", "/tmp/baz.bin"],
@@ -548,7 +558,7 @@ mod tests {
         //use Default::default;
         assert_eq!(
             flashrom_decode_opts(FlashromOpt {
-                layout: Some("TestLayout"),
+                layout: Some(Path::new("TestLayout")),
                 ..Default::default()
             }),
             &["-l", "TestLayout"]

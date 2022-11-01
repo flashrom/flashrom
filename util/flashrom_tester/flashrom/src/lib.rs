@@ -39,7 +39,7 @@ extern crate log;
 mod cmd;
 mod flashromlib;
 
-use std::{error, fmt};
+use std::{error, fmt, path::Path};
 
 pub use cmd::{dut_ctrl_toggle_wp, FlashromCmd};
 pub use flashromlib::FlashromLib;
@@ -118,8 +118,8 @@ where
 }
 
 pub struct ROMWriteSpecifics<'a> {
-    pub layout_file: Option<&'a str>,
-    pub write_file: Option<&'a str>,
+    pub layout_file: Option<&'a Path>,
+    pub write_file: Option<&'a Path>,
     pub name_file: Option<&'a str>,
 }
 
@@ -146,16 +146,16 @@ pub trait Flashrom {
     fn wp_toggle(&self, en: bool) -> Result<bool, FlashromError>;
 
     /// Read the whole flash to the file specified by `path`.
-    fn read_into_file(&self, path: &str) -> Result<(), FlashromError>;
+    fn read_into_file(&self, path: &Path) -> Result<(), FlashromError>;
 
     /// Read only a region of the flash.
-    fn read_region_into_file(&self, path: &str, region: &str) -> Result<(), FlashromError>;
+    fn read_region_into_file(&self, path: &Path, region: &str) -> Result<(), FlashromError>;
 
     /// Write the whole flash to the file specified by `path`.
-    fn write_from_file(&self, path: &str) -> Result<(), FlashromError>;
+    fn write_from_file(&self, path: &Path) -> Result<(), FlashromError>;
 
     /// Verify the whole flash against the file specified by `path`.
-    fn verify_from_file(&self, path: &str) -> Result<(), FlashromError>;
+    fn verify_from_file(&self, path: &Path) -> Result<(), FlashromError>;
 
     /// Erase the whole flash.
     fn erase(&self) -> Result<(), FlashromError>;
