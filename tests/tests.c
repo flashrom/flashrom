@@ -222,14 +222,6 @@ char *__wrap_fgets(char *buf, int len, FILE *fp)
 	return NULL;
 }
 
-char *__wrap___fgets_chk(char *buf, int len, FILE *fp)
-{
-	LOG_ME;
-	if (get_io() && get_io()->fgets)
-		return get_io()->fgets(get_io()->state, buf, len, fp);
-	return NULL;
-}
-
 size_t __wrap_fread(void *ptr, size_t size, size_t nmemb, FILE *fp)
 {
 	LOG_ME;
@@ -279,14 +271,6 @@ int __wrap_fprintf(FILE *fp, const char *fmt, ...)
 		va_end(args);
 		return out;
 	}
-	return 0;
-}
-
-int __wrap___vfprintf_chk(FILE *fp, const char *fmt, va_list args)
-{
-	LOG_ME;
-	if (get_io() && get_io()->fprintf)
-		return get_io()->fprintf(get_io()->state, fp, fmt, args);
 	return 0;
 }
 
