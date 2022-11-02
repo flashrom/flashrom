@@ -83,7 +83,7 @@ static int sfdp_add_uniform_eraser(struct flashchip *chip, uint8_t opcode, uint3
 	uint32_t total_size = chip->total_size * 1024;
 	erasefunc_t *erasefn = spi_get_erasefn_from_opcode(opcode);
 
-	if (erasefn == NULL || total_size == 0 || block_size == 0 ||
+	if (erasefn == NO_BLOCK_ERASE_FUNC || total_size == 0 || block_size == 0 ||
 	    total_size % block_size != 0) {
 		msg_cdbg("%s: invalid input, please report to "
 			 "flashrom@flashrom.org\n", __func__);
@@ -101,7 +101,7 @@ static int sfdp_add_uniform_eraser(struct flashchip *chip, uint8_t opcode, uint3
 			return 1;
 		}
 		if (eraser->eraseblocks[0].size != 0 ||
-		    eraser->block_erase != NULL) {
+		    eraser->block_erase != NO_BLOCK_ERASE_FUNC) {
 			msg_cspew("  Block Eraser %d is already occupied.\n",
 				  i);
 			continue;

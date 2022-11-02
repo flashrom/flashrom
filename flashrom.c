@@ -340,18 +340,18 @@ static int check_block_eraser(const struct flashctx *flash, int k, int log)
 {
 	struct block_eraser eraser = flash->chip->block_erasers[k];
 
-	if (!eraser.block_erase && !eraser.eraseblocks[0].count) {
+	if (eraser.block_erase == NO_BLOCK_ERASE_FUNC && !eraser.eraseblocks[0].count) {
 		if (log)
 			msg_cdbg("not defined. ");
 		return 1;
 	}
-	if (!eraser.block_erase && eraser.eraseblocks[0].count) {
+	if (eraser.block_erase == NO_BLOCK_ERASE_FUNC && eraser.eraseblocks[0].count) {
 		if (log)
 			msg_cdbg("eraseblock layout is known, but matching "
 				 "block erase function is not implemented. ");
 		return 1;
 	}
-	if (eraser.block_erase && !eraser.eraseblocks[0].count) {
+	if (eraser.block_erase != NO_BLOCK_ERASE_FUNC && !eraser.eraseblocks[0].count) {
 		if (log)
 			msg_cdbg("block erase function found, but "
 				 "eraseblock layout is not defined. ");

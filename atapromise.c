@@ -71,7 +71,7 @@ static void atapromise_limit_chip(struct flashchip *chip, size_t rom_size)
 	for (i = 0; i < NUM_ERASEFUNCTIONS; ++i) {
 		if (chip->block_erasers[i].eraseblocks[0].size != size) {
 			chip->block_erasers[i].eraseblocks[0].count = 0;
-			chip->block_erasers[i].block_erase = NULL;
+			chip->block_erasers[i].block_erase = NO_BLOCK_ERASE_FUNC;
 		} else {
 			chip->block_erasers[i].eraseblocks[0].size = rom_size;
 			usable_erasers++;

@@ -268,6 +268,42 @@ enum read_func {
 typedef int (read_func_t)(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 int read_flash(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 
+#define NO_BLOCK_ERASE_FUNC NULL
+#define SPI_BLOCK_ERASE_EMULATION &spi_block_erase_emulation
+#define SPI_BLOCK_ERASE_20 &spi_block_erase_20
+#define SPI_BLOCK_ERASE_21 &spi_block_erase_21
+#define SPI_BLOCK_ERASE_40 &spi_block_erase_40
+#define SPI_BLOCK_ERASE_50 &spi_block_erase_50
+#define SPI_BLOCK_ERASE_52 &spi_block_erase_52
+#define SPI_BLOCK_ERASE_53 &spi_block_erase_53
+#define SPI_BLOCK_ERASE_5C &spi_block_erase_5c
+#define SPI_BLOCK_ERASE_60 &spi_block_erase_60
+#define SPI_BLOCK_ERASE_62 &spi_block_erase_62
+#define SPI_BLOCK_ERASE_81 &spi_block_erase_81
+#define SPI_BLOCK_ERASE_C4 &spi_block_erase_c4
+#define SPI_BLOCK_ERASE_C7 &spi_block_erase_c7
+#define SPI_BLOCK_ERASE_D7 &spi_block_erase_d7
+#define SPI_BLOCK_ERASE_D8 &spi_block_erase_d8
+#define SPI_BLOCK_ERASE_DB &spi_block_erase_db
+#define SPI_BLOCK_ERASE_DC &spi_block_erase_dc
+#define S25FL_BLOCK_ERASE &s25fl_block_erase
+#define S25FS_BLOCK_ERASE_D8 &s25fs_block_erase_d8
+#define JEDEC_SECTOR_ERASE &erase_sector_jedec
+#define JEDEC_BLOCK_ERASE &erase_block_jedec
+#define JEDEC_CHIP_BLOCK_ERASE &erase_chip_block_jedec
+#define OPAQUE_ERASE &erase_opaque
+#define SPI_ERASE_AT45CS_SECTOR &spi_erase_at45cs_sector
+#define SPI_ERASE_AT45DB_BLOCK &spi_erase_at45db_block
+#define SPI_ERASE_AT45DB_CHIP &spi_erase_at45db_chip
+#define SPI_ERASE_AT45DB_PAGE &spi_erase_at45db_page
+#define SPI_ERASE_AT45DB_SECTOR &spi_erase_at45db_sector
+#define ERASE_CHIP_28SF040 &erase_chip_28sf040
+#define ERASE_SECTOR_28SF040 &erase_sector_28sf040
+#define ERASE_BLOCK_82802AB &erase_block_82802ab
+#define ERASE_SECTOR_49LFXXXC &erase_sector_49lfxxxc
+#define STM50_SECTOR_ERASE &erase_sector_stm50
+#define EDI_CHIP_BLOCK_ERASE &edi_chip_block_erase
+
 struct flashchip {
 	const char *vendor;
 	const char *name;

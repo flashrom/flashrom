@@ -77,10 +77,10 @@ const struct flashchip flashchips[] = {
 					{32 * 1024, 1},
 					{64 * 1024, 3},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -109,10 +109,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -136,10 +136,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {16 * 1024, 8} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -163,10 +163,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {16 * 1024, 8} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -190,10 +190,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {2048 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -217,10 +217,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -244,10 +244,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -271,10 +271,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -298,10 +298,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -329,10 +329,10 @@ const struct flashchip flashchips[] = {
 					{4 * 1024, 2},
 					{16 * 1024, 7},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -360,10 +360,10 @@ const struct flashchip flashchips[] = {
 					{4 * 1024, 2},
 					{8 * 1024, 1},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -392,10 +392,10 @@ const struct flashchip flashchips[] = {
 					{32 * 1024, 1},
 					{64 * 1024, 3},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -424,10 +424,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -456,10 +456,10 @@ const struct flashchip flashchips[] = {
 					{32 * 1024, 1},
 					{64 * 1024, 7},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -488,10 +488,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -520,10 +520,10 @@ const struct flashchip flashchips[] = {
 					{32 * 1024, 1},
 					{64 * 1024, 15},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -552,10 +552,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -579,10 +579,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -606,10 +606,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -633,13 +633,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { { 4 * 1024, 32 } },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { { 64 * 1024, 2 } },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { { 128 * 1024, 1 } },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -665,13 +665,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { { 4 * 1024, 512 } },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { { 64 * 1024, 32 } },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { { 2048 * 1024, 1 } },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -697,13 +697,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { { 4 * 1024, 64 } },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { { 64 * 1024, 4 } },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { { 256 * 1024, 1 } },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -730,19 +730,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { { 4 * 1024, 1024 } },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { { 64 * 1024, 64 } },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { { 64 * 1024, 64 } },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { { 4096 * 1024, 1 } },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { { 4096 * 1024, 1 } },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_amic_a25l032, /* bit5: T/B, bit6: prot size */
@@ -768,13 +768,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { { 4 * 1024, 128 } },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { { 64 * 1024, 8 } },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { { 512 * 1024, 1 } },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -805,10 +805,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 1},
 					{4 * 1024, 2},
 				},
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp1_srwd,
@@ -839,10 +839,10 @@ const struct flashchip flashchips[] = {
 					{16 * 1024, 1},
 					{32 * 1024, 1},
 				},
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp1_srwd,
@@ -868,13 +868,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { { 4 * 1024, 256 } },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { { 64 * 1024, 16 } },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { { 1024 * 1024, 1 } },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -906,10 +906,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 1},
 					{4 * 1024, 2},
 				},
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp1_srwd,
@@ -941,10 +941,10 @@ const struct flashchip flashchips[] = {
 					{32 * 1024, 1},
 					{64 * 1024, 1},
 				},
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp1_srwd,
@@ -976,13 +976,13 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 1},
 					{4 * 1024, 2},
 				},
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2048 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {2048 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -1014,13 +1014,13 @@ const struct flashchip flashchips[] = {
 					{32 * 1024, 1},
 					{64 * 1024, 31},
 				},
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2048 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {2048 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -1052,10 +1052,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 1},
 					{4 * 1024, 2},
 				},
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp1_srwd,
@@ -1087,10 +1087,10 @@ const struct flashchip flashchips[] = {
 					{32 * 1024, 1},
 					{64 * 1024, 3},
 				},
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp1_srwd,
@@ -1127,10 +1127,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 1},
 					{4 * 1024, 2},
 				},
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -1162,10 +1162,10 @@ const struct flashchip flashchips[] = {
 					{32 * 1024, 1},
 					{64 * 1024, 7},
 				},
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -1191,13 +1191,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { { 4 * 1024, 16 } },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { { 64 * 1024, 1 } },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { { 64 * 1024, 1 } },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -1229,10 +1229,10 @@ const struct flashchip flashchips[] = {
 					{32 * 1024, 1},
 					{64 * 1024, 15},
 				},
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -1260,19 +1260,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { { 4 * 1024, 1024 } },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { { 64 * 1024, 64 } },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { { 64 * 1024, 64 } },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { { 4096 * 1024, 1 } },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { { 4096 * 1024, 1 } },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_amic_a25l032, /* bit5: T/B, bit6: prot size */
@@ -1300,19 +1300,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { { 4 * 1024, 512 } },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { { 64 * 1024, 32 } },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { { 64 * 1024, 32 } },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { { 2048 * 1024, 1 } },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { { 2048 * 1024, 1 } },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_amic_a25l032, /* bit5: T/B, bit6: prot size */
@@ -1341,19 +1341,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { { 4 * 1024, 2048 } },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { { 32 * 1024, 256 } },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { { 64 * 1024, 128 } },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { { 8192 * 1024, 1 } },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { { 8192 * 1024, 1 } },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd, /* bit6 is quad enhance (sic!) */
@@ -1384,10 +1384,10 @@ const struct flashchip flashchips[] = {
 					{32 * 1024, 1},
 					{64 * 1024, 3},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -1416,10 +1416,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -1443,10 +1443,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -1470,10 +1470,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = erase_block_jedec,
+				.block_erase = JEDEC_BLOCK_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.unlock		= unlock_regspace2_uniform_64k,
@@ -1499,19 +1499,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 64} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 8} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 4} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at25df,
@@ -1538,19 +1538,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 64} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 8} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 4} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at25df,
@@ -1576,19 +1576,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 16} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at25df,
@@ -1614,19 +1614,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 32} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at25df,
@@ -1652,19 +1652,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 32} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at25df_sec,
@@ -1690,19 +1690,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 512} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 64} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at25df_sec,
@@ -1729,19 +1729,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 1024} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 128} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at25df,
@@ -1768,19 +1768,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 1024} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 128} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at25df_sec,
@@ -1806,19 +1806,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 2048} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 256} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at25df_sec,
@@ -1845,19 +1845,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 32} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {1 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at25df_sec,
@@ -1884,19 +1884,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 512} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 64} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at25df_sec,
@@ -1923,19 +1923,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 512} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 64} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at25df_sec,
@@ -1963,10 +1963,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {32 * 1024, 4} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = spi_block_erase_62,
+				.block_erase = SPI_BLOCK_ERASE_62,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at25f,
@@ -1992,10 +1992,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 4} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_62,
+				.block_erase = SPI_BLOCK_ERASE_62,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at25f,
@@ -2021,10 +2021,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_62,
+				.block_erase = SPI_BLOCK_ERASE_62,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at25f4096,
@@ -2051,10 +2051,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {32 * 1024, 2} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = spi_block_erase_62,
+				.block_erase = SPI_BLOCK_ERASE_62,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at25f,
@@ -2080,10 +2080,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {32 * 1024, 2} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = spi_block_erase_62,
+				.block_erase = SPI_BLOCK_ERASE_62,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at25f512a,
@@ -2111,22 +2111,22 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 16} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 2} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {32 * 1024, 2} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = spi_block_erase_62,
+				.block_erase = SPI_BLOCK_ERASE_62,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at25f512b,
@@ -2152,22 +2152,22 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 32} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {4 * 1024, 32} },
-				.block_erase = spi_block_erase_d7,
+				.block_erase = SPI_BLOCK_ERASE_D7,
 			}, {
 				.eraseblocks = { {32 * 1024, 4} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {32 * 1024, 4} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at25fs010,
@@ -2193,19 +2193,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at25fs040,
@@ -2231,19 +2231,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 16} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain,
@@ -2269,19 +2269,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 32} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain,
@@ -2307,19 +2307,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 4096} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 512} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 256} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp4_srwd,
@@ -2345,19 +2345,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 512} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 64} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2048 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {2048 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain,
@@ -2383,19 +2383,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 1024} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 128} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {4096 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {4096 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain,
@@ -2422,19 +2422,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 4096} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 512} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 256} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -2470,13 +2470,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {256, 2048} },
-				.block_erase = spi_block_erase_81,
+				.block_erase = SPI_BLOCK_ERASE_81,
 			}, {
 				.eraseblocks = { {2 * 1024, 256} },
-				.block_erase = spi_block_erase_50,
+				.block_erase = SPI_BLOCK_ERASE_50,
 			}, {
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain,
@@ -2502,19 +2502,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 32} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at26df081a,
@@ -2540,19 +2540,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 512} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 64} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at25df,
@@ -2578,19 +2578,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 512} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 64} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at26df081a,
@@ -2616,19 +2616,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 16} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -2653,7 +2653,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC,	/* FIXME */
@@ -2677,7 +2677,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC,
@@ -2701,7 +2701,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC,
@@ -2725,7 +2725,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC,
@@ -2755,7 +2755,7 @@ const struct flashchip flashchips[] = {
 					{248 * 1056, 1},  /* sector 0b:      opcode 7Ch */
 					{256 * 1056, 63}, /* sectors 1 - 63: opcode 7Ch */
 				},
-				.block_erase = spi_erase_at45cs_sector,
+				.block_erase = SPI_ERASE_AT45CS_SECTOR,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain,
@@ -2783,20 +2783,20 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {256, 512} },
-				.block_erase = spi_erase_at45db_page,
+				.block_erase = SPI_ERASE_AT45DB_PAGE,
 			}, {
 				.eraseblocks = { {8 * 256, 512/8} },
-				.block_erase = spi_erase_at45db_block,
+				.block_erase = SPI_ERASE_AT45DB_BLOCK,
 			}, {
 				.eraseblocks = {
 					{8 * 256, 1},
 					{120 * 256, 1},
 					{128 * 256, 3},
 				},
-				.block_erase = spi_erase_at45db_sector
+				.block_erase = SPI_ERASE_AT45DB_SECTOR
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = spi_erase_at45db_chip,
+				.block_erase = SPI_ERASE_AT45DB_CHIP,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at45db,
@@ -2825,20 +2825,20 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {256, 1024} },
-				.block_erase = spi_erase_at45db_page,
+				.block_erase = SPI_ERASE_AT45DB_PAGE,
 			}, {
 				.eraseblocks = { {8 * 256, 1024/8} },
-				.block_erase = spi_erase_at45db_block,
+				.block_erase = SPI_ERASE_AT45DB_BLOCK,
 			}, {
 				.eraseblocks = {
 					{8 * 256, 1},
 					{120 * 256, 1},
 					{128 * 256, 7},
 				},
-				.block_erase = spi_erase_at45db_sector
+				.block_erase = SPI_ERASE_AT45DB_SECTOR
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_erase_at45db_chip,
+				.block_erase = SPI_ERASE_AT45DB_CHIP,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at45db,
@@ -2867,20 +2867,20 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {256, 2048} },
-				.block_erase = spi_erase_at45db_page,
+				.block_erase = SPI_ERASE_AT45DB_PAGE,
 			}, {
 				.eraseblocks = { {8 * 256, 2048/8} },
-				.block_erase = spi_erase_at45db_block,
+				.block_erase = SPI_ERASE_AT45DB_BLOCK,
 			}, {
 				.eraseblocks = {
 					{8 * 256, 1},
 					{248 * 256, 1},
 					{256 * 256, 7},
 				},
-				.block_erase = spi_erase_at45db_sector
+				.block_erase = SPI_ERASE_AT45DB_SECTOR
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_erase_at45db_chip,
+				.block_erase = SPI_ERASE_AT45DB_CHIP,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at45db,
@@ -2909,20 +2909,20 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {256, 4096} },
-				.block_erase = spi_erase_at45db_page,
+				.block_erase = SPI_ERASE_AT45DB_PAGE,
 			}, {
 				.eraseblocks = { {8 * 256, 4096/8} },
-				.block_erase = spi_erase_at45db_block,
+				.block_erase = SPI_ERASE_AT45DB_BLOCK,
 			}, {
 				.eraseblocks = {
 					{8 * 256, 1},
 					{248 * 256, 1},
 					{256 * 256, 15},
 				},
-				.block_erase = spi_erase_at45db_sector
+				.block_erase = SPI_ERASE_AT45DB_SECTOR
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_erase_at45db_chip,
+				.block_erase = SPI_ERASE_AT45DB_CHIP,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at45db,
@@ -2951,20 +2951,20 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {512, 4096} },
-				.block_erase = spi_erase_at45db_page,
+				.block_erase = SPI_ERASE_AT45DB_PAGE,
 			}, {
 				.eraseblocks = { {8 * 512, 4096/8} },
-				.block_erase = spi_erase_at45db_block,
+				.block_erase = SPI_ERASE_AT45DB_BLOCK,
 			}, {
 				.eraseblocks = {
 					{8 * 512, 1},
 					{248 * 512, 1},
 					{256 * 512, 15},
 				},
-				.block_erase = spi_erase_at45db_sector
+				.block_erase = SPI_ERASE_AT45DB_SECTOR
 			}, {
 				.eraseblocks = { {2048 * 1024, 1} },
-				.block_erase = spi_erase_at45db_chip,
+				.block_erase = SPI_ERASE_AT45DB_CHIP,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at45db,
@@ -2993,10 +2993,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {528, 8192} },
-				.block_erase = spi_erase_at45db_page,
+				.block_erase = SPI_ERASE_AT45DB_PAGE,
 			}, {
 				.eraseblocks = { {8 * 528, 8192/8} },
-				.block_erase = spi_erase_at45db_block,
+				.block_erase = SPI_ERASE_AT45DB_BLOCK,
 			}, /* Although the datasheets describes sectors (which can be write protected)
 			    * there seems to be no erase functions for them.
 			{
@@ -3005,10 +3005,10 @@ const struct flashchip flashchips[] = {
 					{120 * 528, 1},
 					{128 * 528, 63},
 				},
-				.block_erase = spi_erase_at45db_sector
+				.block_erase = SPI_ERASE_AT45DB_SECTOR
 			}, */ {
 				.eraseblocks = { {4224 * 1024, 1} },
-				.block_erase = spi_erase_at45db_chip,
+				.block_erase = SPI_ERASE_AT45DB_CHIP,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at45db, /* Bit 0 is undefined, no lockdown */
@@ -3036,20 +3036,20 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {512, 8192} },
-				.block_erase = spi_erase_at45db_page,
+				.block_erase = SPI_ERASE_AT45DB_PAGE,
 			}, {
 				.eraseblocks = { {8 * 512, 8192/8} },
-				.block_erase = spi_erase_at45db_block,
+				.block_erase = SPI_ERASE_AT45DB_BLOCK,
 			}, {
 				.eraseblocks = {
 					{8 * 512, 1},
 					{120 * 512, 1},
 					{128 * 512, 63},
 				},
-				.block_erase = spi_erase_at45db_sector
+				.block_erase = SPI_ERASE_AT45DB_SECTOR
 			}, {
 				.eraseblocks = { {4096 * 1024, 1} },
-				.block_erase = spi_erase_at45db_chip,
+				.block_erase = SPI_ERASE_AT45DB_CHIP,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at45db,
@@ -3078,20 +3078,20 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {512, 8192} },
-				.block_erase = spi_erase_at45db_page,
+				.block_erase = SPI_ERASE_AT45DB_PAGE,
 			}, {
 				.eraseblocks = { {8 * 512, 8192/8} },
-				.block_erase = spi_erase_at45db_block,
+				.block_erase = SPI_ERASE_AT45DB_BLOCK,
 			}, {
 				.eraseblocks = {
 					{8 * 512, 1},
 					{120 * 512, 1},
 					{128 * 512, 63},
 				},
-				.block_erase = spi_erase_at45db_sector
+				.block_erase = SPI_ERASE_AT45DB_SECTOR
 			}, {
 				.eraseblocks = { {4096 * 1024, 1} },
-				.block_erase = spi_erase_at45db_chip,
+				.block_erase = SPI_ERASE_AT45DB_CHIP,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at45db, /* has a 2nd status register */
@@ -3120,20 +3120,20 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {1024, 8192} },
-				.block_erase = spi_erase_at45db_page,
+				.block_erase = SPI_ERASE_AT45DB_PAGE,
 			}, {
 				.eraseblocks = { {8 * 1024, 8192/8} },
-				.block_erase = spi_erase_at45db_block,
+				.block_erase = SPI_ERASE_AT45DB_BLOCK,
 			}, {
 				.eraseblocks = {
 					{8 * 1024, 1},
 					{248 * 1024, 1},
 					{256 * 1024, 31},
 				},
-				.block_erase = spi_erase_at45db_sector
+				.block_erase = SPI_ERASE_AT45DB_SECTOR
 			}, {
 				.eraseblocks = { {8192 * 1024, 1} },
-				.block_erase = spi_erase_at45db_chip,
+				.block_erase = SPI_ERASE_AT45DB_CHIP,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_at45db,
@@ -3160,7 +3160,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.printlock	= printlock_at49f,
@@ -3185,7 +3185,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC1,
@@ -3214,10 +3214,10 @@ const struct flashchip flashchips[] = {
 					{96 * 1024, 1},
 					{128 * 1024, 1},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC1,
@@ -3246,10 +3246,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC1,
@@ -3273,7 +3273,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 			/* Chip features an optional permanent write protection
 			 * of the first 8 kB. The erase function is the same as
@@ -3304,7 +3304,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 			/* Chip features an optional permanent write protection
 			 * of the first 16 kB. The erase function is the same as
@@ -3335,7 +3335,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 			/* Chip features an optional permanent write protection
 			 * of the first 16 kB. The erase function is the same as
@@ -3367,7 +3367,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 			/* Chip features an optional permanent write protection
 			 * of the first 16 kB. The erase function is the same as
@@ -3403,12 +3403,12 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = NULL, /* TODO: Implement. */
+				.block_erase = NO_BLOCK_ERASE_FUNC, /* TODO: Implement. */
 			}, {
 				.eraseblocks = {
 					{64 * 1024, 4},
 				},
-				.block_erase = erase_block_82802ab,
+				.block_erase = ERASE_BLOCK_82802AB,
 			},
 		},
 		.printlock	= printlock_regspace2_block_eraser_0,
@@ -3439,12 +3439,12 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = erase_block_82802ab,
+				.block_erase = ERASE_BLOCK_82802AB,
 			}, {
 				.eraseblocks = {
 					{64 * 1024, 8},
 				},
-				.block_erase = NULL, /* TODO: Implement. */
+				.block_erase = NO_BLOCK_ERASE_FUNC, /* TODO: Implement. */
 			},
 		},
 		.printlock	= printlock_regspace2_block_eraser_0,
@@ -3475,12 +3475,12 @@ const struct flashchip flashchips[] = {
 					{32 * 1024, 1},
 					{64 * 1024, 7},
 				},
-				.block_erase = NULL, /* TODO: Implement. */
+				.block_erase = NO_BLOCK_ERASE_FUNC, /* TODO: Implement. */
 			}, {
 				.eraseblocks = {
 					{64 * 1024, 8},
 				},
-				.block_erase = erase_block_82802ab,
+				.block_erase = ERASE_BLOCK_82802AB,
 			},
 		},
 		.printlock	= printlock_regspace2_block_eraser_0,
@@ -3506,19 +3506,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 512} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 64} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -3544,19 +3544,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 4096} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 512} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 256} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain,
@@ -3582,10 +3582,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -3609,7 +3609,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = NULL, /* TODO */
+				.block_erase = NO_BLOCK_ERASE_FUNC, /* TODO */
 			},
 		},
 		.write		= 0, /* TODO */
@@ -3632,7 +3632,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {128, 1024} },
-				.block_erase = edi_chip_block_erase,
+				.block_erase = EDI_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= EDI_CHIP_WRITE,
@@ -3659,10 +3659,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -3690,10 +3690,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -3721,10 +3721,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -3750,16 +3750,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -3785,16 +3785,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 1024} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_bpl,
@@ -3825,10 +3825,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC1,
@@ -3857,10 +3857,10 @@ const struct flashchip flashchips[] = {
 					{16 * 1024, 1},
 					{32 * 1024, 1},
 				},
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -3891,10 +3891,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 1},
 					{4 * 1024, 2},
 				},
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -3925,10 +3925,10 @@ const struct flashchip flashchips[] = {
 					{16 * 1024, 1},
 					{32 * 1024, 3},
 				},
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -3959,10 +3959,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 1},
 					{4 * 1024, 2},
 				},
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -3994,10 +3994,10 @@ const struct flashchip flashchips[] = {
 					{32 * 1024, 1},
 					{64 * 1024, 31},
 				},
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -4029,10 +4029,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 1},
 					{4 * 1024, 2},
 				},
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -4064,10 +4064,10 @@ const struct flashchip flashchips[] = {
 					{32 * 1024, 1},
 					{64 * 1024, 3}
 				},
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -4099,10 +4099,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 1},
 					{4 * 1024, 2},
 				},
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -4135,10 +4135,10 @@ const struct flashchip flashchips[] = {
 					{32 * 1024, 1},
 					{64 * 1024, 63},
 				},
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -4171,10 +4171,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 1},
 					{4 * 1024, 2},
 				},
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -4206,10 +4206,10 @@ const struct flashchip flashchips[] = {
 					{32 * 1024, 1},
 					{64 * 1024, 7}
 				},
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -4241,10 +4241,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 1},
 					{4 * 1024, 2},
 				},
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -4277,10 +4277,10 @@ const struct flashchip flashchips[] = {
 					{32 * 1024, 1},
 					{64 * 1024, 127},
 				},
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -4313,10 +4313,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 1},
 					{4 * 1024, 2},
 				},
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -4348,10 +4348,10 @@ const struct flashchip flashchips[] = {
 					{32 * 1024, 1},
 					{64 * 1024, 15}
 				},
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -4383,10 +4383,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 1},
 					{4 * 1024, 2},
 				},
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -4412,19 +4412,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 16} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 2} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {32 * 1024, 2} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -4450,19 +4450,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 32} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 4} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {32 * 1024, 4} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -4488,16 +4488,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 512} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -4523,19 +4523,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 64} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 4} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {64 * 1024, 4} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -4561,16 +4561,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 1024} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -4596,16 +4596,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -4631,16 +4631,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 2048} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -4666,16 +4666,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -4702,10 +4702,10 @@ const struct flashchip flashchips[] = {
 			{
 				.eraseblocks = {
 					{32 * 1024, 2} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -4731,10 +4731,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {32 * 1024, 4} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -4760,10 +4760,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -4789,10 +4789,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 4} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -4819,10 +4819,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -4848,10 +4848,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -4878,10 +4878,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -4907,10 +4907,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -4937,16 +4937,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 4096} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 256} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -4974,20 +4974,20 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 512} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				/* not supported by Q16 version */
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -5014,16 +5014,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 1024} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -5050,16 +5050,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -5086,16 +5086,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 2048} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -5122,16 +5122,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -5160,16 +5160,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 4096} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 256} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { { 16384 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { { 16384 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd, /* bit6 is quad enable */
@@ -5205,16 +5205,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 512} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 2048, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {1024 * 2048, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd, /* bit6 is quad enable */
@@ -5243,16 +5243,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 1024} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 4096, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {1024 * 4096, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd, /* bit6 is quad enable */
@@ -5281,16 +5281,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 2048} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { { 8192 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { { 8192 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd, /* bit6 is quad enable */
@@ -5317,16 +5317,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 32} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			},  {
 				.eraseblocks = { {32 * 1024, 4} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -5353,19 +5353,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 512} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {2048 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {2048 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_en25s_wp,
@@ -5392,16 +5392,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 64} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 4} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -5428,19 +5428,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 1024} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 128} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {4096 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {4096 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_en25s_wp,
@@ -5467,16 +5467,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -5503,16 +5503,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 2048} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {8192 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {8192 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_en25s_wp,
@@ -5539,16 +5539,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -5579,10 +5579,10 @@ const struct flashchip flashchips[] = {
 					{32 * 1024, 1},
 					{64 * 1024, 3},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -5611,10 +5611,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -5638,11 +5638,11 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {16 * 1024, 8} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			},
 			{
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -5669,10 +5669,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 8},
 					{64 * 1024, 127},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -5699,10 +5699,10 @@ const struct flashchip flashchips[] = {
 					{64 * 1024, 127},
 					{8 * 1024, 8},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -5726,10 +5726,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -5753,10 +5753,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {128 * 1024, 128} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -5779,11 +5779,11 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			},
 			{
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -5810,10 +5810,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 8},
 					{64 * 1024, 127},
 				},
-				.block_erase = erase_block_jedec,
+				.block_erase = JEDEC_BLOCK_ERASE,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_EN29LV640B,
@@ -5837,19 +5837,19 @@ const struct flashchip flashchips[] = {
 		.block_erasers	= {
 			{
 				.eraseblocks = { {4 * 1024, 16} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 2} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_tb_bpl,
@@ -5875,19 +5875,19 @@ const struct flashchip flashchips[] = {
 		.block_erasers	= {
 			{
 				.eraseblocks = { {4 * 1024, 32} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 4} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 2} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_tb_bpl,
@@ -5913,19 +5913,19 @@ const struct flashchip flashchips[] = {
 		.block_erasers	= {
 			{
 				.eraseblocks = { {4 * 1024, 64} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 8} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 4} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 256, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {1024 * 256, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_tb_bpl,
@@ -5951,19 +5951,19 @@ const struct flashchip flashchips[] = {
 		.block_erasers	= {
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 16} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 512, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {1024 * 512, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_tb_bpl,
@@ -5991,19 +5991,19 @@ const struct flashchip flashchips[] = {
 		.block_erasers	= {
 			{
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 32} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_tb_bpl, /* bit6 selects size of protected blocks; TODO: SR2 */
@@ -6031,19 +6031,19 @@ const struct flashchip flashchips[] = {
 		.block_erasers	= {
 			{
 				.eraseblocks = { {4 * 1024, 512} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 64} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_tb_bpl, /* bit6 selects size of protected blocks; TODO: SR2 */
@@ -6071,19 +6071,19 @@ const struct flashchip flashchips[] = {
 		.block_erasers	= {
 			{
 				.eraseblocks = { {4 * 1024, 1024} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 128} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_tb_bpl, /* bit6 selects size of protected blocks; TODO: SR2 */
@@ -6114,10 +6114,10 @@ const struct flashchip flashchips[] = {
 					{32 * 1024, 1},
 					{64 * 1024, 7},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= 0,
@@ -6146,10 +6146,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= 0,
@@ -6179,10 +6179,10 @@ const struct flashchip flashchips[] = {
 					{32 * 1024, 1},
 					{64 * 1024, 7},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -6211,10 +6211,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -6243,10 +6243,10 @@ const struct flashchip flashchips[] = {
 					{32 * 1024, 1},
 					{64 * 1024, 31},
 				},
-				.block_erase = erase_block_jedec,
+				.block_erase = JEDEC_BLOCK_ERASE,
 			}, {
 				.eraseblocks = { {2048 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1, /* Supports a fast mode too */
@@ -6275,10 +6275,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = erase_block_jedec,
+				.block_erase = JEDEC_BLOCK_ERASE,
 			}, {
 				.eraseblocks = { {2048 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1, /* Supports a fast mode too */
@@ -6303,19 +6303,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 4096} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 512} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 256} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp4_srwd,
@@ -6342,19 +6342,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 4096} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 512} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 256} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp4_srwd,
@@ -6391,19 +6391,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 512} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 64} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp4_srwd,
@@ -6430,19 +6430,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 1024} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 128} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp4_srwd,
@@ -6469,19 +6469,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 16} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp4_srwd,
@@ -6508,19 +6508,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 2048} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 256} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp4_srwd,
@@ -6557,19 +6557,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 32} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {1 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp4_srwd,
@@ -6595,19 +6595,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 32} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 4} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 2} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp4_srwd,
@@ -6635,19 +6635,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 4096} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 512} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 256} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		/* TODO: 2nd status reg (read 0x35, write 0x31) and 3rd status reg (read 0x15, write 0x11) */
@@ -6685,19 +6685,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 512} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 64} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp4_srwd,
@@ -6723,19 +6723,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 64} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 8} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 4} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp4_srwd,
@@ -6762,28 +6762,28 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 8192} },
-				.block_erase = spi_block_erase_21,
+				.block_erase = SPI_BLOCK_ERASE_21,
 			}, {
 				.eraseblocks = { {4 * 1024, 8192} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 1024} },
-				.block_erase = spi_block_erase_5c,
+				.block_erase = SPI_BLOCK_ERASE_5C,
 			}, {
 				.eraseblocks = { {32 * 1024, 1024} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 512} },
-				.block_erase = spi_block_erase_dc,
+				.block_erase = SPI_BLOCK_ERASE_DC,
 			}, {
 				.eraseblocks = { {64 * 1024, 512} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {32 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {32 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd,
@@ -6818,19 +6818,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 1024} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 128} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp4_srwd,
@@ -6866,19 +6866,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 16} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp4_srwd,
@@ -6904,16 +6904,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 16} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 2} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp4_srwd,
@@ -6940,19 +6940,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 2048} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 256} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp4_srwd,
@@ -6989,19 +6989,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 32} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp4_srwd,
@@ -7028,19 +7028,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -7068,19 +7068,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { { 4 * 1024, 512} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { { 32 * 1024, 64} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { { 64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp4_srwd,
@@ -7107,19 +7107,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { { 4 * 1024, 64} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { { 32 * 1024, 8} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { { 64 * 1024, 4} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp4_srwd,
@@ -7147,19 +7147,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { { 4 * 1024, 128} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { { 32 * 1024, 16} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { { 64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp4_srwd,
@@ -7186,19 +7186,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { { 4 * 1024, 128} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { { 32 * 1024, 16} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { { 64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp4_srwd,
@@ -7226,19 +7226,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { { 4 * 1024, 256} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { { 32 * 1024, 32} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { { 64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp4_srwd,
@@ -7264,19 +7264,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 32} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {1 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp4_srwd,
@@ -7307,10 +7307,10 @@ const struct flashchip flashchips[] = {
 					{32 * 1024, 1},
 					{64 * 1024, 3},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -7339,10 +7339,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -7366,10 +7366,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -7394,22 +7394,22 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 2048} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {4 * 1024, 2048} },
-				.block_erase = spi_block_erase_d7,
+				.block_erase = SPI_BLOCK_ERASE_D7,
 			}, {
 				.eraseblocks = { {32 * 1024, 256} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.unlock		= spi_disable_blockprotect,
@@ -7435,22 +7435,22 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 4096} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {4 * 1024, 4096} },
-				.block_erase = spi_block_erase_d7,
+				.block_erase = SPI_BLOCK_ERASE_D7,
 			}, {
 				.eraseblocks = { {32 * 1024, 512} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 256} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.unlock		= spi_disable_blockprotect,
@@ -7478,29 +7478,29 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 8192} },
-				.block_erase = spi_block_erase_21,
+				.block_erase = SPI_BLOCK_ERASE_21,
 			}, {
 				.eraseblocks = { {4 * 1024, 8192} },
-				.block_erase = spi_block_erase_20,
-				/* could also use spi_block_erase_d7 */
+				.block_erase = SPI_BLOCK_ERASE_20,
+				/* could also use SPI_BLOCK_ERASE_D7 */
 			}, {
 				.eraseblocks = { {32 * 1024, 1024} },
-				.block_erase = spi_block_erase_5c,
+				.block_erase = SPI_BLOCK_ERASE_5C,
 			}, {
 				.eraseblocks = { {32 * 1024, 1024} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 512} },
-				.block_erase = spi_block_erase_dc,
+				.block_erase = SPI_BLOCK_ERASE_DC,
 			}, {
 				.eraseblocks = { {64 * 1024, 512} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {32 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {32 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.unlock		= spi_disable_blockprotect,
@@ -7527,22 +7527,22 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 1024} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {4 * 1024, 1024} },
-				.block_erase = spi_block_erase_d7,
+				.block_erase = SPI_BLOCK_ERASE_D7,
 			}, {
 				.eraseblocks = { {32 * 1024, 128} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.unlock		= spi_disable_blockprotect,
@@ -7569,22 +7569,22 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 2048} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {4 * 1024, 2048} },
-				.block_erase = spi_block_erase_d7,
+				.block_erase = SPI_BLOCK_ERASE_D7,
 			}, {
 				.eraseblocks = { {32 * 1024, 256} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.unlock		= spi_disable_blockprotect,
@@ -7611,22 +7611,22 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 4096} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {4 * 1024, 4096} },
-				.block_erase = spi_block_erase_d7,
+				.block_erase = SPI_BLOCK_ERASE_D7,
 			}, {
 				.eraseblocks = { {32 * 1024, 512} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 256} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.unlock		= spi_disable_blockprotect,
@@ -7654,29 +7654,29 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 8192} },
-				.block_erase = spi_block_erase_21,
+				.block_erase = SPI_BLOCK_ERASE_21,
 			}, {
 				.eraseblocks = { {4 * 1024, 8192} },
-				.block_erase = spi_block_erase_20,
-				/* could also use spi_block_erase_d7 */
+				.block_erase = SPI_BLOCK_ERASE_20,
+				/* could also use SPI_BLOCK_ERASE_D7 */
 			}, {
 				.eraseblocks = { {32 * 1024, 1024} },
-				.block_erase = spi_block_erase_5c,
+				.block_erase = SPI_BLOCK_ERASE_5C,
 			}, {
 				.eraseblocks = { {32 * 1024, 1024} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 512} },
-				.block_erase = spi_block_erase_dc,
+				.block_erase = SPI_BLOCK_ERASE_DC,
 			}, {
 				.eraseblocks = { {64 * 1024, 512} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {32 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {32 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.unlock		= spi_disable_blockprotect,
@@ -7704,10 +7704,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 8},
 					{64 * 1024, 127},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -7731,10 +7731,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -7761,10 +7761,10 @@ const struct flashchip flashchips[] = {
 					{64 * 1024, 127},
 					{8 * 1024, 8},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -7788,10 +7788,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {128 * 1024, 128} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -7822,13 +7822,13 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 8},
 					{64 * 1024, 31} // inaccessible
 				},
-				.block_erase = spi_block_erase_40,
+				.block_erase = SPI_BLOCK_ERASE_40,
 			}, { */
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_ep_srwd,
@@ -7861,13 +7861,13 @@ const struct flashchip flashchips[] = {
 					{64 * 1024, 31}, // inaccessible
 					{8 * 1024, 8}
 				},
-				.block_erase = spi_block_erase_40,
+				.block_erase = SPI_BLOCK_ERASE_40,
 			}, { */
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_ep_srwd,
@@ -7900,13 +7900,13 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 8},
 					{64 * 1024, 63} // inaccessible
 				},
-				.block_erase = spi_block_erase_40,
+				.block_erase = SPI_BLOCK_ERASE_40,
 			}, { */
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_ep_srwd,
@@ -7939,13 +7939,13 @@ const struct flashchip flashchips[] = {
 					{64 * 1024, 63}, // inaccessible
 					{8 * 1024, 8}
 				},
-				.block_erase = spi_block_erase_40,
+				.block_erase = SPI_BLOCK_ERASE_40,
 			}, { */
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_ep_srwd,
@@ -7978,13 +7978,13 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 8},
 					{64 * 1024, 127} // inaccessible
 				},
-				.block_erase = spi_block_erase_40,
+				.block_erase = SPI_BLOCK_ERASE_40,
 			}, { */
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_ep_srwd,
@@ -8017,13 +8017,13 @@ const struct flashchip flashchips[] = {
 					{64 * 1024, 127}, // inaccessible
 					{8 * 1024, 8}
 				},
-				.block_erase = spi_block_erase_40,
+				.block_erase = SPI_BLOCK_ERASE_40,
 			}, { */
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_ep_srwd,
@@ -8052,7 +8052,7 @@ const struct flashchip flashchips[] = {
 					{4 * 1024, 2},
 					{112 * 1024, 1},
 				},
-				.block_erase = erase_block_82802ab,
+				.block_erase = ERASE_BLOCK_82802AB,
 			},
 		},
 		.write		= WRITE_82802AB,
@@ -8079,7 +8079,7 @@ const struct flashchip flashchips[] = {
 					{4 * 1024, 2},
 					{8 * 1024, 1},
 				},
-				.block_erase = erase_block_82802ab,
+				.block_erase = ERASE_BLOCK_82802AB,
 			},
 		},
 		.write		= WRITE_82802AB,
@@ -8107,7 +8107,7 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = erase_block_82802ab,
+				.block_erase = ERASE_BLOCK_82802AB,
 			},
 		},
 		.write		= WRITE_82802AB,
@@ -8134,7 +8134,7 @@ const struct flashchip flashchips[] = {
 					{96 * 1024, 1},
 					{128 * 1024, 3},
 				},
-				.block_erase = erase_block_82802ab,
+				.block_erase = ERASE_BLOCK_82802AB,
 			},
 		},
 		.write		= WRITE_82802AB,
@@ -8161,7 +8161,7 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = erase_block_82802ab,
+				.block_erase = ERASE_BLOCK_82802AB,
 			},
 		},
 		.write		= WRITE_82802AB,
@@ -8183,7 +8183,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = erase_block_82802ab,
+				.block_erase = ERASE_BLOCK_82802AB,
 			},
 		},
 		.unlock		= unlock_28f004s5,
@@ -8212,7 +8212,7 @@ const struct flashchip flashchips[] = {
 					{96 * 1024, 1},
 					{128 * 1024, 3},
 				},
-				.block_erase = erase_block_82802ab,
+				.block_erase = ERASE_BLOCK_82802AB,
 			},
 		},
 		.write		= WRITE_82802AB,
@@ -8240,7 +8240,7 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = erase_block_82802ab,
+				.block_erase = ERASE_BLOCK_82802AB,
 			},
 		},
 		.write		= WRITE_82802AB,
@@ -8263,7 +8263,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = erase_block_82802ab,
+				.block_erase = ERASE_BLOCK_82802AB,
 			},
 		},
 		.unlock		= unlock_regspace2_uniform_64k,
@@ -8288,7 +8288,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = erase_block_82802ab,
+				.block_erase = ERASE_BLOCK_82802AB,
 			},
 		},
 		.unlock		= unlock_regspace2_uniform_64k,
@@ -8378,16 +8378,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 32} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 2} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_bp1_srwd,
@@ -8414,16 +8414,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 4096} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 256} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd,
@@ -8450,19 +8450,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 4096} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 512} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 256} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		/* TODO: security register and SBLK/SBULK; MX25L12835F: configuration register */
@@ -8489,16 +8489,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd, /* bit6: error flag */
@@ -8525,19 +8525,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 512} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd, /* MX25L1605A bp2 only */
@@ -8563,16 +8563,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 512} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd, /* bit6: Continuously Program (CP) mode, for 73E is quad enable */
@@ -8599,16 +8599,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 512} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd, /* bit6 is quad enable */
@@ -8635,16 +8635,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 512} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd, /* bit6 is quad enable */
@@ -8670,19 +8670,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 64} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 4} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 4} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_bp1_srwd,
@@ -8709,28 +8709,28 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 8192} },
-				.block_erase = spi_block_erase_21,
+				.block_erase = SPI_BLOCK_ERASE_21,
 			}, {
 				.eraseblocks = { {4 * 1024, 8192} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 1024} },
-				.block_erase = spi_block_erase_5c,
+				.block_erase = SPI_BLOCK_ERASE_5C,
 			}, {
 				.eraseblocks = { {32 * 1024, 1024} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 512} },
-				.block_erase = spi_block_erase_dc,
+				.block_erase = SPI_BLOCK_ERASE_DC,
 			}, {
 				.eraseblocks = { {64 * 1024, 512} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {32 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {32 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		/* TODO: security register and SBLK/SBULK; MX25L12835F: configuration register */
@@ -8757,16 +8757,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd, /* bit6: error flag */
@@ -8793,16 +8793,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 1024} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd, /* bit6: continuously program mode */
@@ -8829,19 +8829,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 1024} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd,
@@ -8868,16 +8868,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 1024} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd, /* bit6 is quad enable */
@@ -8904,19 +8904,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 1024} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 128} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd,
@@ -8942,19 +8942,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -8981,19 +8981,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 16} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_bp1_srwd,
@@ -9019,19 +9019,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 16} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_bp1_srwd,
@@ -9058,16 +9058,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd, /* bit6: error flag */
@@ -9094,16 +9094,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 2048} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd, /* bit6: continuously program mode */
@@ -9131,19 +9131,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 2048} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd,
@@ -9171,19 +9171,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 2048} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 256} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd, /* bit6 is quad enable */
@@ -9210,19 +9210,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 2048} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 256} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.unlock		= spi_disable_blockprotect,
@@ -9249,19 +9249,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -9288,19 +9288,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 1024} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 128} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd, /* bit 6 is quad enable */
@@ -9327,19 +9327,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 2048} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 256} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd, /* bit6 is quad enable */
@@ -9366,19 +9366,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 4096} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 512} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 256} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		/* TODO: security register */
@@ -9407,19 +9407,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 512} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 64} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		/* TODO: security register */
@@ -9447,28 +9447,28 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 8192} },
-				.block_erase = spi_block_erase_21,
+				.block_erase = SPI_BLOCK_ERASE_21,
 			}, {
 				.eraseblocks = { {4 * 1024, 8192} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 1024} },
-				.block_erase = spi_block_erase_5c,
+				.block_erase = SPI_BLOCK_ERASE_5C,
 			}, {
 				.eraseblocks = { {32 * 1024, 1024} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 512} },
-				.block_erase = spi_block_erase_dc,
+				.block_erase = SPI_BLOCK_ERASE_DC,
 			}, {
 				.eraseblocks = { {64 * 1024, 512} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {32 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {32 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		/* TODO: security register */
@@ -9498,19 +9498,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 1024} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 128} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		/* TODO: security register */
@@ -9538,28 +9538,28 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 16384} },
-				.block_erase = spi_block_erase_21,
+				.block_erase = SPI_BLOCK_ERASE_21,
 			}, {
 				.eraseblocks = { {4 * 1024, 16384} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 2048} },
-				.block_erase = spi_block_erase_5c,
+				.block_erase = SPI_BLOCK_ERASE_5C,
 			}, {
 				.eraseblocks = { {32 * 1024, 2048} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 1024} },
-				.block_erase = spi_block_erase_dc,
+				.block_erase = SPI_BLOCK_ERASE_DC,
 			}, {
 				.eraseblocks = { {64 * 1024, 1024} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {64 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {64 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		/* TODO: security register */
@@ -9589,19 +9589,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 2048} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 256} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		/* TODO: security register */
@@ -9629,19 +9629,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 32} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		/* TODO: security register */
@@ -9674,10 +9674,10 @@ const struct flashchip flashchips[] = {
 					{32 * 1024, 1},
 					{64 * 1024, 1},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC1,
@@ -9707,10 +9707,10 @@ const struct flashchip flashchips[] = {
 					{4 * 1024, 2},
 					{8 * 1024, 1},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC1,
@@ -9739,10 +9739,10 @@ const struct flashchip flashchips[] = {
 					{32 * 1024, 1},
 					{64 * 1024, 3},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -9771,10 +9771,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -9803,10 +9803,10 @@ const struct flashchip flashchips[] = {
 					{32 * 1024, 1},
 					{64 * 1024, 3},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC1,
@@ -9835,10 +9835,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC1,
@@ -9862,10 +9862,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -9889,10 +9889,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {128 * 1024, 128} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -9919,10 +9919,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 8},
 					{64 * 1024, 63},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -9946,10 +9946,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -9976,10 +9976,10 @@ const struct flashchip flashchips[] = {
 					{64 * 1024, 63},
 					{8 * 1024, 8},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -10006,10 +10006,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 8},
 					{64 * 1024, 127},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -10033,10 +10033,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -10063,10 +10063,10 @@ const struct flashchip flashchips[] = {
 					{64 * 1024, 127},
 					{8 * 1024, 8},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -10090,10 +10090,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -10118,28 +10118,28 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 16384} },
-				.block_erase = spi_block_erase_21,
+				.block_erase = SPI_BLOCK_ERASE_21,
 			}, {
 				.eraseblocks = { {4 * 1024, 16384} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 2048} },
-				.block_erase = spi_block_erase_5c,
+				.block_erase = SPI_BLOCK_ERASE_5C,
 			}, {
 				.eraseblocks = { {32 * 1024, 2048} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 1024} },
-				.block_erase = spi_block_erase_dc,
+				.block_erase = SPI_BLOCK_ERASE_DC,
 			}, {
 				.eraseblocks = { {64 * 1024, 1024} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {64 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {64 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		/* TODO: security register and SBLK/SBULK; MX25L12835F: configuration register */
@@ -10167,28 +10167,28 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 32768} },
-				.block_erase = spi_block_erase_21,
+				.block_erase = SPI_BLOCK_ERASE_21,
 			}, {
 				.eraseblocks = { {4 * 1024, 32768} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 4096} },
-				.block_erase = spi_block_erase_5c,
+				.block_erase = SPI_BLOCK_ERASE_5C,
 			}, {
 				.eraseblocks = { {32 * 1024, 4096} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 2048} },
-				.block_erase = spi_block_erase_dc,
+				.block_erase = SPI_BLOCK_ERASE_DC,
 			}, {
 				.eraseblocks = { {64 * 1024, 2048} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {128 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {128 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		/* TODO: security register and SBLK/SBULK, configuration register */
@@ -10220,10 +10220,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {32 * 1024, 2} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd, /* TODO: check */
@@ -10249,10 +10249,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {32 * 1024, 2} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd, /* TODO: check */
@@ -10279,10 +10279,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {32 * 1024, 4} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd, /* TODO: check */
@@ -10308,10 +10308,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {32 * 1024, 4} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd, /* TODO: check */
@@ -10337,10 +10337,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {256 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd, /* TODO: check */
@@ -10366,10 +10366,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd, /* TODO: check */
@@ -10395,10 +10395,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 4} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp1_srwd,
@@ -10424,10 +10424,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 4} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp1_srwd,
@@ -10453,10 +10453,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd, /* TODO: check */
@@ -10482,10 +10482,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd, /* TODO: check */
@@ -10511,10 +10511,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd, /* TODO: check */
@@ -10539,10 +10539,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd, /* TODO: check */
@@ -10568,10 +10568,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd, /* TODO: check */
@@ -10597,13 +10597,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 32} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 2} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -10629,13 +10629,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 512} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -10661,13 +10661,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 64} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 4} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -10693,13 +10693,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -10725,13 +10725,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -10758,13 +10758,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { { 4 * 1024, 512 } },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd, /* bit5: T/B */
@@ -10791,13 +10791,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { { 4 * 1024, 1024 } },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd, /* bit5: T/B */
@@ -10824,13 +10824,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { { 4 * 1024, 2048 } },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd, /* bit5: T/B */
@@ -10857,13 +10857,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { { 4 * 1024, 256 } },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd, /* bit5: T/B */
@@ -10888,10 +10888,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {256, 512} },
-				.block_erase = spi_block_erase_db,
+				.block_erase = SPI_BLOCK_ERASE_DB,
 			}, {
 				.eraseblocks = { {64 * 1024, 2} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_default_welwip,
@@ -10916,10 +10916,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {256, 8192} },
-				.block_erase = spi_block_erase_db,
+				.block_erase = SPI_BLOCK_ERASE_DB,
 			}, {
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_default_welwip,
@@ -10944,10 +10944,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {256, 1024} },
-				.block_erase = spi_block_erase_db,
+				.block_erase = SPI_BLOCK_ERASE_DB,
 			}, {
 				.eraseblocks = { {64 * 1024, 4} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_default_welwip,
@@ -10972,10 +10972,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {256, 2048} },
-				.block_erase = spi_block_erase_db,
+				.block_erase = SPI_BLOCK_ERASE_DB,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_default_welwip,
@@ -11000,10 +11000,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {256, 4096} },
-				.block_erase = spi_block_erase_db,
+				.block_erase = SPI_BLOCK_ERASE_DB,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_default_welwip,
@@ -11031,19 +11031,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 32768} },
-				.block_erase = spi_block_erase_21,
+				.block_erase = SPI_BLOCK_ERASE_21,
 			}, {
 				.eraseblocks = { {4 * 1024, 32768} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 2048} },
-				.block_erase = spi_block_erase_dc,
+				.block_erase = SPI_BLOCK_ERASE_DC,
 			}, {
 				.eraseblocks = { {64 * 1024, 2048} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {32768 * 1024, 4} },
-				.block_erase = spi_block_erase_c4,
+				.block_erase = SPI_BLOCK_ERASE_C4,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_n25q, /* TODO: config, lock, flag regs */
@@ -11071,19 +11071,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 32768} },
-				.block_erase = spi_block_erase_21,
+				.block_erase = SPI_BLOCK_ERASE_21,
 			}, {
 				.eraseblocks = { {4 * 1024, 32768} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 2048} },
-				.block_erase = spi_block_erase_dc,
+				.block_erase = SPI_BLOCK_ERASE_DC,
 			}, {
 				.eraseblocks = { {64 * 1024, 2048} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {32768 * 1024, 4} },
-				.block_erase = spi_block_erase_c4,
+				.block_erase = SPI_BLOCK_ERASE_C4,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_n25q, /* TODO: config, lock, flag regs */
@@ -11111,16 +11111,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 512} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 64} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_n25q, /* TODO: config, lock, flag regs */
@@ -11148,13 +11148,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 1024} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_n25q, /* TODO: config, lock, flag regs */
@@ -11182,13 +11182,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 1024} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_n25q, /* TODO: config, lock, flag regs */
@@ -11216,13 +11216,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 2048 } },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_n25q, /* TODO: config, lock, flag regs */
@@ -11250,13 +11250,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 2048 } },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_n25q, /* TODO: config, lock, flag regs */
@@ -11284,13 +11284,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 4096 } },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 256} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {16384 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_n25q, /* TODO: config, lock, flag regs */
@@ -11318,13 +11318,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 4096 } },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 256} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {16384 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_n25q, /* TODO: config, lock, flag regs */
@@ -11352,19 +11352,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 8192} },
-				.block_erase = spi_block_erase_21,
+				.block_erase = SPI_BLOCK_ERASE_21,
 			}, {
 				.eraseblocks = { {4 * 1024, 8192} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 512} },
-				.block_erase = spi_block_erase_dc,
+				.block_erase = SPI_BLOCK_ERASE_DC,
 			}, {
 				.eraseblocks = { {64 * 1024, 512} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {32768 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_n25q, /* TODO: config, lock, flag regs */
@@ -11392,19 +11392,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 8192} },
-				.block_erase = spi_block_erase_21,
+				.block_erase = SPI_BLOCK_ERASE_21,
 			}, {
 				.eraseblocks = { {4 * 1024, 8192} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 512} },
-				.block_erase = spi_block_erase_dc,
+				.block_erase = SPI_BLOCK_ERASE_DC,
 			}, {
 				.eraseblocks = { {64 * 1024, 512} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {32768 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_n25q, /* TODO: config, lock, flag regs */
@@ -11432,19 +11432,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 16384} },
-				.block_erase = spi_block_erase_21,
+				.block_erase = SPI_BLOCK_ERASE_21,
 			}, {
 				.eraseblocks = { {4 * 1024, 16384} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 1024} },
-				.block_erase = spi_block_erase_dc,
+				.block_erase = SPI_BLOCK_ERASE_DC,
 			}, {
 				.eraseblocks = { {64 * 1024, 1024} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {32768 * 1024, 2} },
-				.block_erase = spi_block_erase_c4,
+				.block_erase = SPI_BLOCK_ERASE_C4,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_n25q, /* TODO: config, lock, flag regs */
@@ -11472,19 +11472,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 16384} },
-				.block_erase = spi_block_erase_21,
+				.block_erase = SPI_BLOCK_ERASE_21,
 			}, {
 				.eraseblocks = { {4 * 1024, 16384} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 1024} },
-				.block_erase = spi_block_erase_dc,
+				.block_erase = SPI_BLOCK_ERASE_DC,
 			}, {
 				.eraseblocks = { {64 * 1024, 1024} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {32768 * 1024, 2} },
-				.block_erase = spi_block_erase_c4,
+				.block_erase = SPI_BLOCK_ERASE_C4,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_n25q, /* TODO: config, lock, flag regs */
@@ -11512,25 +11512,25 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 32768} },
-				.block_erase = spi_block_erase_21,
+				.block_erase = SPI_BLOCK_ERASE_21,
 			}, {
 				.eraseblocks = { {4 * 1024, 32768} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 4096} },
-				.block_erase = spi_block_erase_5c,
+				.block_erase = SPI_BLOCK_ERASE_5C,
 			}, {
 				.eraseblocks = { {32 * 1024, 4096} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 2048} },
-				.block_erase = spi_block_erase_dc,
+				.block_erase = SPI_BLOCK_ERASE_DC,
 			}, {
 				.eraseblocks = { {64 * 1024, 2048} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {65536 * 1024, 2} },
-				.block_erase = spi_block_erase_c4,
+				.block_erase = SPI_BLOCK_ERASE_C4,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_n25q, /* TODO: config, lock, flag regs */
@@ -11558,25 +11558,25 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 32768} },
-				.block_erase = spi_block_erase_21,
+				.block_erase = SPI_BLOCK_ERASE_21,
 			}, {
 				.eraseblocks = { {4 * 1024, 32768} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 4096} },
-				.block_erase = spi_block_erase_5c,
+				.block_erase = SPI_BLOCK_ERASE_5C,
 			}, {
 				.eraseblocks = { {32 * 1024, 4096} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 2048} },
-				.block_erase = spi_block_erase_dc,
+				.block_erase = SPI_BLOCK_ERASE_DC,
 			}, {
 				.eraseblocks = { {64 * 1024, 2048} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {65536 * 1024, 2} },
-				.block_erase = spi_block_erase_c4,
+				.block_erase = SPI_BLOCK_ERASE_C4,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_n25q, /* TODO: config, lock, flag regs */
@@ -11604,25 +11604,25 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 65536} },
-				.block_erase = spi_block_erase_21,
+				.block_erase = SPI_BLOCK_ERASE_21,
 			}, {
 				.eraseblocks = { {4 * 1024, 65536} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 8192} },
-				.block_erase = spi_block_erase_5c,
+				.block_erase = SPI_BLOCK_ERASE_5C,
 			}, {
 				.eraseblocks = { {32 * 1024, 8192} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 4096} },
-				.block_erase = spi_block_erase_dc,
+				.block_erase = SPI_BLOCK_ERASE_DC,
 			}, {
 				.eraseblocks = { {64 * 1024, 4096} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {65536 * 1024, 4} },
-				.block_erase = spi_block_erase_c4,
+				.block_erase = SPI_BLOCK_ERASE_C4,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_n25q, /* TODO: config, lock, flag regs */
@@ -11650,25 +11650,25 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 65536} },
-				.block_erase = spi_block_erase_21,
+				.block_erase = SPI_BLOCK_ERASE_21,
 			}, {
 				.eraseblocks = { {4 * 1024, 65536} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 8192} },
-				.block_erase = spi_block_erase_5c,
+				.block_erase = SPI_BLOCK_ERASE_5C,
 			}, {
 				.eraseblocks = { {32 * 1024, 8192} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 4096} },
-				.block_erase = spi_block_erase_dc,
+				.block_erase = SPI_BLOCK_ERASE_DC,
 			}, {
 				.eraseblocks = { {64 * 1024, 4096} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {65536 * 1024, 4} },
-				.block_erase = spi_block_erase_c4,
+				.block_erase = SPI_BLOCK_ERASE_C4,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_n25q, /* TODO: config, lock, flag regs */
@@ -11696,19 +11696,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 4096} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 512} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 256} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {16384 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}, {
 				.eraseblocks = { {16384 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_n25q, /* TODO: config, lock, flag regs */
@@ -11736,19 +11736,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 4096} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 512} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 256} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {16384 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}, {
 				.eraseblocks = { {16384 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_n25q, /* TODO: config, lock, flag regs */
@@ -11776,28 +11776,28 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 8192} },
-				.block_erase = spi_block_erase_21,
+				.block_erase = SPI_BLOCK_ERASE_21,
 			}, {
 				.eraseblocks = { {4 * 1024, 8192} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 1024} },
-				.block_erase = spi_block_erase_5c,
+				.block_erase = SPI_BLOCK_ERASE_5C,
 			}, {
 				.eraseblocks = { {32 * 1024, 1024} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 512} },
-				.block_erase = spi_block_erase_dc,
+				.block_erase = SPI_BLOCK_ERASE_DC,
 			}, {
 				.eraseblocks = { {64 * 1024, 512} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {32768 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}, {
 				.eraseblocks = { {32768 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_n25q, /* TODO: config, lock, flag regs */
@@ -11825,28 +11825,28 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 8192} },
-				.block_erase = spi_block_erase_21,
+				.block_erase = SPI_BLOCK_ERASE_21,
 			}, {
 				.eraseblocks = { {4 * 1024, 8192} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 1024} },
-				.block_erase = spi_block_erase_5c,
+				.block_erase = SPI_BLOCK_ERASE_5C,
 			}, {
 				.eraseblocks = { {32 * 1024, 1024} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 512} },
-				.block_erase = spi_block_erase_dc,
+				.block_erase = SPI_BLOCK_ERASE_DC,
 			}, {
 				.eraseblocks = { {64 * 1024, 512} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {32768 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}, {
 				.eraseblocks = { {32768 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_n25q, /* TODO: config, lock, flag regs */
@@ -11874,28 +11874,28 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 16384} },
-				.block_erase = spi_block_erase_21,
+				.block_erase = SPI_BLOCK_ERASE_21,
 			}, {
 				.eraseblocks = { {4 * 1024, 16384} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 2048} },
-				.block_erase = spi_block_erase_5c,
+				.block_erase = SPI_BLOCK_ERASE_5C,
 			}, {
 				.eraseblocks = { {32 * 1024, 2048} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 1024} },
-				.block_erase = spi_block_erase_dc,
+				.block_erase = SPI_BLOCK_ERASE_DC,
 			}, {
 				.eraseblocks = { {64 * 1024, 1024} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {65536 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}, {
 				.eraseblocks = { {65536 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_n25q, /* TODO: config, lock, flag regs */
@@ -11923,28 +11923,28 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 16384} },
-				.block_erase = spi_block_erase_21,
+				.block_erase = SPI_BLOCK_ERASE_21,
 			}, {
 				.eraseblocks = { {4 * 1024, 16384} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 2048} },
-				.block_erase = spi_block_erase_5c,
+				.block_erase = SPI_BLOCK_ERASE_5C,
 			}, {
 				.eraseblocks = { {32 * 1024, 2048} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 1024} },
-				.block_erase = spi_block_erase_dc,
+				.block_erase = SPI_BLOCK_ERASE_DC,
 			}, {
 				.eraseblocks = { {64 * 1024, 1024} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {65536 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}, {
 				.eraseblocks = { {65536 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_n25q, /* TODO: config, lock, flag regs */
@@ -11970,10 +11970,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {512, 128} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -11997,10 +11997,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {512, 128} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -12024,10 +12024,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {1024, 512} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -12051,10 +12051,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {1024, 512} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -12078,10 +12078,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {512, 128} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -12105,10 +12105,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {512, 256} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -12132,10 +12132,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {512, 512} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -12159,22 +12159,22 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 32} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {4 * 1024, 32} },
-				.block_erase = spi_block_erase_d7,
+				.block_erase = SPI_BLOCK_ERASE_D7,
 			}, {
 				.eraseblocks = { {32 * 1024, 4} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 2} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd,
@@ -12200,16 +12200,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 512} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2048 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {2048 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd,
@@ -12235,22 +12235,22 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 64} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {4 * 1024, 64} },
-				.block_erase = spi_block_erase_d7,
+				.block_erase = SPI_BLOCK_ERASE_D7,
 			}, {
 				.eraseblocks = { {32 * 1024, 8} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 4} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd,
@@ -12276,22 +12276,22 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_d7,
+				.block_erase = SPI_BLOCK_ERASE_D7,
 			}, {
 				.eraseblocks = { {32 * 1024, 16} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd,
@@ -12317,19 +12317,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 32} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd,
@@ -12355,19 +12355,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 32} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {4 * 1024, 32} },
-				.block_erase = spi_block_erase_d7,
+				.block_erase = SPI_BLOCK_ERASE_D7,
 			}, {
 				.eraseblocks = { {32 * 1024, 4} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -12393,19 +12393,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 64} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {4 * 1024, 64} },
-				.block_erase = spi_block_erase_d7,
+				.block_erase = SPI_BLOCK_ERASE_D7,
 			}, {
 				.eraseblocks = { {64 * 1024, 4} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -12431,19 +12431,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_d7,
+				.block_erase = SPI_BLOCK_ERASE_D7,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -12469,19 +12469,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 8} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {4 * 1024, 8} },
-				.block_erase = spi_block_erase_d7,
+				.block_erase = SPI_BLOCK_ERASE_D7,
 			}, {
 				.eraseblocks = { {32 * 1024, 1} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {32 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {32 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -12507,19 +12507,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 16} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {4 * 1024, 16} },
-				.block_erase = spi_block_erase_d7,
+				.block_erase = SPI_BLOCK_ERASE_D7,
 			}, {
 				.eraseblocks = { {32 * 1024, 2} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -12546,19 +12546,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 512} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {4 * 1024, 512} },
-				.block_erase = spi_block_erase_d7,
+				.block_erase = SPI_BLOCK_ERASE_D7,
 			}, {
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2048 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {2048 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd, /* bit6 is quad enable */
@@ -12585,19 +12585,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 64} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {4 * 1024, 64} },
-				.block_erase = spi_block_erase_d7,
+				.block_erase = SPI_BLOCK_ERASE_D7,
 			}, {
 				.eraseblocks = { {64 * 1024, 4} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd, /* bit6 is quad enable */
@@ -12624,19 +12624,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 1024} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {4 * 1024, 1024} },
-				.block_erase = spi_block_erase_d7,
+				.block_erase = SPI_BLOCK_ERASE_D7,
 			}, {
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {4096 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {4096 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd, /* bit6 is quad enable */
@@ -12663,19 +12663,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_d7,
+				.block_erase = SPI_BLOCK_ERASE_D7,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd, /* bit6 is quad enable */
@@ -12702,19 +12702,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = spi_block_erase_d7,
+				.block_erase = SPI_BLOCK_ERASE_D7,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd, /* bit6 is quad enable */
@@ -12740,13 +12740,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 32} },
-				.block_erase = spi_block_erase_d7,
+				.block_erase = SPI_BLOCK_ERASE_D7,
 			}, {
 				.eraseblocks = { {32 * 1024, 4} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp1_srwd,
@@ -12772,13 +12772,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 32} },
-				.block_erase = spi_block_erase_d7,
+				.block_erase = SPI_BLOCK_ERASE_D7,
 			}, {
 				.eraseblocks = { {32 * 1024, 4} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp1_srwd,
@@ -12804,19 +12804,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 512} },
-				.block_erase = spi_block_erase_d7,
+				.block_erase = SPI_BLOCK_ERASE_D7,
 			}, {
 				.eraseblocks = { {4 * 1024, 512} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -12842,13 +12842,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 64} },
-				.block_erase = spi_block_erase_d7,
+				.block_erase = SPI_BLOCK_ERASE_D7,
 			}, {
 				.eraseblocks = { {64 * 1024, 4} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -12874,13 +12874,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_d7,
+				.block_erase = SPI_BLOCK_ERASE_D7,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -12906,19 +12906,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = spi_block_erase_d7,
+				.block_erase = SPI_BLOCK_ERASE_D7,
 			}, {
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -12944,13 +12944,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 16} },
-				.block_erase = spi_block_erase_d7,
+				.block_erase = SPI_BLOCK_ERASE_D7,
 			}, {
 				.eraseblocks = { {32 * 1024, 2} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp1_srwd,
@@ -12981,10 +12981,10 @@ const struct flashchip flashchips[] = {
 					{96 * 1024, 1},
 					{128 * 1024, 1},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -13013,10 +13013,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -13040,13 +13040,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 32} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {64 * 1024, 2} },
-				.block_erase = erase_block_jedec,
+				.block_erase = JEDEC_BLOCK_ERASE,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC1,
@@ -13070,13 +13070,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 64} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {64 * 1024, 4} },
-				.block_erase = erase_block_jedec,
+				.block_erase = JEDEC_BLOCK_ERASE,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC1,
@@ -13100,13 +13100,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = erase_block_jedec,
+				.block_erase = JEDEC_BLOCK_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC1,
@@ -13130,13 +13130,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 16} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = erase_block_jedec,
+				.block_erase = JEDEC_BLOCK_ERASE,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC1,
@@ -13160,13 +13160,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 64} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {16 * 1024, 16} },
-				.block_erase = erase_block_jedec,
+				.block_erase = JEDEC_BLOCK_ERASE,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.unlock		= unlock_regspace2_uniform_32k,
@@ -13191,13 +13191,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = erase_block_jedec,
+				.block_erase = JEDEC_BLOCK_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.unlock		= unlock_regspace2_uniform_64k,
@@ -13222,13 +13222,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 64} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 8} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_sst25, /* FIXME: No BP2 & 3 */
@@ -13254,13 +13254,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 16} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_sst25, /* TODO: check */
@@ -13286,13 +13286,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 32} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_sst25, /* TODO: check */
@@ -13318,19 +13318,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 32} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 4} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {32 * 1024, 4} },
-				.block_erase = spi_block_erase_d8, /* Supported by SST25VF010A only */
+				.block_erase = SPI_BLOCK_ERASE_D8, /* Supported by SST25VF010A only */
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = spi_block_erase_c7, /* Supported by SST25VF010A only */
+				.block_erase = SPI_BLOCK_ERASE_C7, /* Supported by SST25VF010A only */
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_sst25, /* FIXME: No BP2 & 3 */
@@ -13356,19 +13356,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 512} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 64} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_sst25vf016,
@@ -13394,13 +13394,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 64} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 8} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_sst25, /* FIXME: No BP2 & 3 */
@@ -13426,19 +13426,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 64} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 8} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 4} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_sst25, /* FIXME: No BP2 & 3 and 2nd SR */
@@ -13464,19 +13464,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 1024} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 128} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_sst25, /* TODO: check */
@@ -13502,13 +13502,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 16} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_sst25, /* TODO: check */
@@ -13534,19 +13534,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 16} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_sst25vf040b,
@@ -13572,19 +13572,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 16} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_sst25vf040b,
@@ -13610,19 +13610,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 2048} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 256} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_sst25, /* TODO: check */
@@ -13648,19 +13648,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 32} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_sst25, /* TODO: check */
@@ -13686,19 +13686,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 16} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 2} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {32 * 1024, 2} },
-				.block_erase = spi_block_erase_d8, /* Supported by SST25VF512A only */
+				.block_erase = SPI_BLOCK_ERASE_D8, /* Supported by SST25VF512A only */
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = spi_block_erase_c7, /* Supported by SST25VF512A only */
+				.block_erase = SPI_BLOCK_ERASE_C7, /* Supported by SST25VF512A only */
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_sst25, /* FIXME: No BP2 & 3 */
@@ -13724,16 +13724,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 32} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 4} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {1024 * 128, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {1024 * 128, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_sst25, /* FIXME: does not have a BP3 */
@@ -13759,19 +13759,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 64} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 8} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 4} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 256, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {1024 * 256, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_sst25, /* FIXME: does not have a BP3 */
@@ -13797,16 +13797,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 64} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 4} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_tb_bpl,
@@ -13832,19 +13832,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 16} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 512, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {1024 * 512, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_sst25, /* FIXME: does not have a BP3 */
@@ -13870,16 +13870,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_tb_bpl,
@@ -13905,19 +13905,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 32} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_sst25, /* *does* have a BP3 but it is useless */
@@ -13943,16 +13943,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_tb_bpl,
@@ -13978,16 +13978,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 16} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 2} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {1024 * 64, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {1024 * 64, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_sst25, /* FIXME: does not have a BP3 */
@@ -14013,7 +14013,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 512} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = {
 					{8 * 1024, 4},
@@ -14022,10 +14022,10 @@ const struct flashchip flashchips[] = {
 					{32 * 1024, 1},
 					{8 * 1024, 4},
 				},
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -14051,7 +14051,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 1024} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = {
 					{8 * 1024, 4},
@@ -14060,10 +14060,10 @@ const struct flashchip flashchips[] = {
 					{32 * 1024, 1},
 					{8 * 1024, 4},
 				},
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -14089,7 +14089,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 2048} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = {
 					{8 * 1024, 4},
@@ -14098,10 +14098,10 @@ const struct flashchip flashchips[] = {
 					{32 * 1024, 1},
 					{8 * 1024, 4},
 				},
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -14127,10 +14127,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {128, 4096} },
-				.block_erase = erase_sector_28sf040,
+				.block_erase = ERASE_SECTOR_28SF040,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_28sf040,
+				.block_erase = ERASE_CHIP_28SF040,
 			}
 		},
 		.unlock		= unprotect_28sf040,
@@ -14155,7 +14155,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC,
@@ -14179,7 +14179,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC,
@@ -14203,7 +14203,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC,
@@ -14227,7 +14227,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC,
@@ -14251,10 +14251,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 32} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC1,
@@ -14278,10 +14278,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 64} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC1,
@@ -14305,10 +14305,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC1,
@@ -14332,10 +14332,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 16} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC1,
@@ -14359,10 +14359,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 32} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC1,
@@ -14386,10 +14386,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 64} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC1,
@@ -14413,10 +14413,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC1,
@@ -14440,13 +14440,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = erase_block_jedec,
+				.block_erase = JEDEC_BLOCK_ERASE,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC1,
@@ -14470,10 +14470,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 16} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC1,
@@ -14497,13 +14497,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 64} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {16 * 1024, 16} },
-				.block_erase = erase_block_jedec,
+				.block_erase = JEDEC_BLOCK_ERASE,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = NULL, /* AA 55 80 AA 55 10, only in A/A mux mode */
+				.block_erase = NO_BLOCK_ERASE_FUNC, /* AA 55 80 AA 55 10, only in A/A mux mode */
 			}
 		},
 		.printlock	= printlock_sst_fwhub,
@@ -14529,13 +14529,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 96} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {64 * 1024, 6} },
-				.block_erase = erase_block_jedec,
+				.block_erase = JEDEC_BLOCK_ERASE,
 			}, {
 				.eraseblocks = { {384 * 1024, 1} },
-				.block_erase = NULL, /* AA 55 80 AA 55 10, only in A/A mux mode */
+				.block_erase = NO_BLOCK_ERASE_FUNC, /* AA 55 80 AA 55 10, only in A/A mux mode */
 			}
 		},
 		.printlock	= printlock_sst_fwhub,
@@ -14564,13 +14564,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = erase_block_jedec,
+				.block_erase = JEDEC_BLOCK_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = NULL, /* AA 55 80 AA 55 10, only in A/A mux mode */
+				.block_erase = NO_BLOCK_ERASE_FUNC, /* AA 55 80 AA 55 10, only in A/A mux mode */
 			},
 		},
 		.printlock	= printlock_sst_fwhub,
@@ -14596,7 +14596,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = erase_sector_49lfxxxc,
+				.block_erase = ERASE_SECTOR_49LFXXXC,
 			}, {
 				.eraseblocks = {
 					{64 * 1024, 7},
@@ -14604,7 +14604,7 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = erase_block_82802ab,
+				.block_erase = ERASE_BLOCK_82802AB,
 			}
 		},
 		.printlock	= printlock_regspace2_block_eraser_1,
@@ -14630,13 +14630,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = erase_block_jedec,
+				.block_erase = JEDEC_BLOCK_ERASE,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = NULL, /* AA 55 80 AA 55 10, only in A/A mux mode */
+				.block_erase = NO_BLOCK_ERASE_FUNC, /* AA 55 80 AA 55 10, only in A/A mux mode */
 			}
 		},
 		.printlock	= printlock_sst_fwhub,
@@ -14662,7 +14662,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = erase_sector_49lfxxxc,
+				.block_erase = ERASE_SECTOR_49LFXXXC,
 			}, {
 				.eraseblocks = {
 					{64 * 1024, 15},
@@ -14670,7 +14670,7 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = erase_block_82802ab,
+				.block_erase = ERASE_BLOCK_82802AB,
 			}
 		},
 		.printlock	= printlock_regspace2_block_eraser_1,
@@ -14696,7 +14696,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 512} },
-				.block_erase = erase_sector_49lfxxxc,
+				.block_erase = ERASE_SECTOR_49LFXXXC,
 			}, {
 				.eraseblocks = {
 					{64 * 1024, 31},
@@ -14704,7 +14704,7 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = erase_block_82802ab,
+				.block_erase = ERASE_BLOCK_82802AB,
 			}
 		},
 		.printlock	= printlock_regspace2_block_eraser_1,
@@ -14730,13 +14730,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 64} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {16 * 1024, 16} },
-				.block_erase = erase_block_jedec,
+				.block_erase = JEDEC_BLOCK_ERASE,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = NULL,
+				.block_erase = NO_BLOCK_ERASE_FUNC,
 			}
 		},
 		.write		= WRITE_JEDEC1,
@@ -14760,13 +14760,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 64} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {16 * 1024, 16} },
-				.block_erase = erase_block_jedec,
+				.block_erase = JEDEC_BLOCK_ERASE,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = NULL,
+				.block_erase = NO_BLOCK_ERASE_FUNC,
 			}
 		},
 		.write		= WRITE_JEDEC1,
@@ -14790,13 +14790,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = erase_block_jedec,
+				.block_erase = JEDEC_BLOCK_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = NULL,
+				.block_erase = NO_BLOCK_ERASE_FUNC,
 			}
 		},
 		.write		= WRITE_JEDEC1,
@@ -14820,13 +14820,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = erase_block_jedec,
+				.block_erase = JEDEC_BLOCK_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = NULL,
+				.block_erase = NO_BLOCK_ERASE_FUNC,
 			}
 		},
 		.unlock		= unlock_regspace2_uniform_64k,
@@ -14851,13 +14851,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = erase_block_jedec,
+				.block_erase = JEDEC_BLOCK_ERASE,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = NULL,
+				.block_erase = NO_BLOCK_ERASE_FUNC,
 			}
 		},
 		.write		= WRITE_JEDEC1,
@@ -14881,7 +14881,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 512} },
-				.block_erase = erase_sector_49lfxxxc,
+				.block_erase = ERASE_SECTOR_49LFXXXC,
 			}, {
 				.eraseblocks = {
 					{64 * 1024, 31},
@@ -14889,7 +14889,7 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = erase_block_82802ab,
+				.block_erase = ERASE_BLOCK_82802AB,
 			}
 		},
 		.printlock	= printlock_regspace2_block_eraser_1,
@@ -14920,10 +14920,10 @@ const struct flashchip flashchips[] = {
 					{32 * 1024, 1},
 					{64 * 1024, 3},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC1,
@@ -14952,10 +14952,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC1,
@@ -14979,10 +14979,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC1,
@@ -15012,10 +15012,10 @@ const struct flashchip flashchips[] = {
 					{32 * 1024, 1},
 					{64 * 1024, 7},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC1,
@@ -15045,10 +15045,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC1,
@@ -15072,10 +15072,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {16 * 1024, 8} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC1,
@@ -15099,10 +15099,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC1,
@@ -15126,7 +15126,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC1,
@@ -15155,10 +15155,10 @@ const struct flashchip flashchips[] = {
 					{4 * 1024, 16}, /* sector */
 					{4 * 1024, 16}, /* sector */
 				},
-				.block_erase = erase_sector_stm50,
+				.block_erase = STM50_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = erase_block_82802ab,
+				.block_erase = ERASE_BLOCK_82802AB,
 			}
 		},
 		.unlock		= unlock_regspace2_uniform_64k,
@@ -15188,10 +15188,10 @@ const struct flashchip flashchips[] = {
 					{64 * 1024, 5}, /* block */
 					{4 * 1024, 16}, /* sector */
 				},
-				.block_erase = erase_sector_stm50,
+				.block_erase = STM50_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = erase_block_82802ab,
+				.block_erase = ERASE_BLOCK_82802AB,
 			}
 		},
 		.unlock		= unlock_regspace2_uniform_64k,
@@ -15221,10 +15221,10 @@ const struct flashchip flashchips[] = {
 					{4 * 1024, 16}, /* sector */
 					{4 * 1024, 16}, /* sector */
 				},
-				.block_erase = erase_sector_stm50,
+				.block_erase = STM50_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = erase_block_82802ab,
+				.block_erase = ERASE_BLOCK_82802AB,
 			}
 		},
 		.printlock	= printlock_regspace2_block_eraser_0,
@@ -15255,10 +15255,10 @@ const struct flashchip flashchips[] = {
 					{64 * 1024, 13}, /* block */
 					{4 * 1024, 16}, /* sector */
 				},
-				.block_erase = erase_sector_stm50,
+				.block_erase = STM50_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = erase_block_82802ab,
+				.block_erase = ERASE_BLOCK_82802AB,
 			}
 		},
 		.printlock	= printlock_regspace2_block_eraser_0,
@@ -15289,10 +15289,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = erase_block_82802ab,
+				.block_erase = ERASE_BLOCK_82802AB,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = NULL, /* Only in A/A mux mode */
+				.block_erase = NO_BLOCK_ERASE_FUNC, /* Only in A/A mux mode */
 			}
 		},
 		.printlock	= printlock_regspace2_block_eraser_0,
@@ -15318,7 +15318,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = erase_block_82802ab,
+				.block_erase = ERASE_BLOCK_82802AB,
 			}
 		},
 		.unlock		= unlock_regspace2_uniform_64k,
@@ -15343,7 +15343,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = erase_block_82802ab,
+				.block_erase = ERASE_BLOCK_82802AB,
 			}
 		},
 		.unlock		= unlock_regspace2_uniform_64k,
@@ -15368,7 +15368,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = erase_block_82802ab,
+				.block_erase = ERASE_BLOCK_82802AB,
 			}
 		},
 		.unlock		= unlock_regspace2_uniform_64k,
@@ -15393,7 +15393,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = erase_block_82802ab,
+				.block_erase = ERASE_BLOCK_82802AB,
 			}
 		},
 		.unlock		= unlock_regspace2_uniform_64k,
@@ -15424,7 +15424,7 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = erase_block_82802ab,
+				.block_erase = ERASE_BLOCK_82802AB,
 			}
 		},
 		.printlock	= printlock_regspace2_block_eraser_0,
@@ -15450,7 +15450,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_emulation,
+				.block_erase = SPI_BLOCK_ERASE_EMULATION,
 			}
 		},
 
@@ -15478,14 +15478,14 @@ const struct flashchip flashchips[] = {
 			/* FIXME: Is this correct?
 			{
 				.eraseblocks = { {2 * 1024, 64} },
-				.block_erase = spi_block_erase_d7,
+				.block_erase = SPI_BLOCK_ERASE_D7,
 			},*/
 			{
 				.eraseblocks = { {32 * 1024, 4} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp1_srwd,
@@ -15511,13 +15511,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 64} },
-				.block_erase = spi_block_erase_d7,
+				.block_erase = SPI_BLOCK_ERASE_D7,
 			}, {
 				.eraseblocks = { {64 * 1024, 4} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp1_srwd,
@@ -15542,19 +15542,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 64} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {4 * 1024, 64} },
-				.block_erase = spi_block_erase_d7,
+				.block_erase = SPI_BLOCK_ERASE_D7,
 			}, {
 				.eraseblocks = { {64 * 1024, 4} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -15580,13 +15580,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_d7,
+				.block_erase = SPI_BLOCK_ERASE_D7,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 				}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -15612,19 +15612,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_d7,
+				.block_erase = SPI_BLOCK_ERASE_D7,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 				}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -15650,13 +15650,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {2 * 1024, 64} },
-				.block_erase = spi_block_erase_d7,
+				.block_erase = SPI_BLOCK_ERASE_D7,
 			}, {
 				.eraseblocks = { {32 * 1024, 4} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp1_srwd, /* FIXME: Add ERSER error flag. */
@@ -15681,13 +15681,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {256, 1024} },
-				.block_erase = spi_block_erase_db,
+				.block_erase = SPI_BLOCK_ERASE_DB,
 			}, {
 				.eraseblocks = { {64 * 1024, 4} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_default_welwip,
@@ -15712,13 +15712,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {256, 2 * 1024} },
-				.block_erase = spi_block_erase_db,
+				.block_erase = SPI_BLOCK_ERASE_DB,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_default_welwip,
@@ -15744,13 +15744,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_d7,
+				.block_erase = SPI_BLOCK_ERASE_D7,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain,
@@ -15776,13 +15776,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_d7,
+				.block_erase = SPI_BLOCK_ERASE_D7,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -15808,16 +15808,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = spi_block_erase_d7,
+				.block_erase = SPI_BLOCK_ERASE_D7,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -15843,13 +15843,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {8 * 1024, 128} },
-				.block_erase = spi_block_erase_d7,
+				.block_erase = SPI_BLOCK_ERASE_D7,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -15877,10 +15877,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 8},
 					{64 * 1024, 15}
 				 },
-				.block_erase = erase_block_82802ab,
+				.block_erase = ERASE_BLOCK_82802AB,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = erase_sector_49lfxxxc,
+				.block_erase = ERASE_SECTOR_49LFXXXC,
 			}
 		},
 		.unlock		= unlock_lh28f008bjt,
@@ -15908,12 +15908,12 @@ const struct flashchip flashchips[] = {
 					{64 * 1024, 15},
 					{8 * 1024, 8}
 				 },
-				.block_erase = erase_block_82802ab,
+				.block_erase = ERASE_BLOCK_82802AB,
 			}, {
 				.eraseblocks = {
 					{1024 * 1024, 1}
 				},
-				.block_erase = NULL, /* 30 D0, only in A/A mux mode */
+				.block_erase = NO_BLOCK_ERASE_FUNC, /* 30 D0, only in A/A mux mode */
 			},
 		},
 		.unlock		= unlock_regspace2_uniform_64k,
@@ -15938,10 +15938,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -15967,10 +15967,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -15996,10 +15996,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -16025,10 +16025,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -16054,10 +16054,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -16084,16 +16084,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 512} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { { 2048 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { { 2048 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd,
@@ -16121,13 +16121,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {256 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { { 16384 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { { 16384 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -16163,16 +16163,16 @@ const struct flashchip flashchips[] = {
 					{4 * 1024, 32},
 					{64 * 1024, 254} // inaccessible
 				},
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, { */
 				.eraseblocks = { { 64 * 1024, 256} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { { 16384 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { { 16384 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -16199,19 +16199,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 4096} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 512} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 256} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {16384 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {16384 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -16255,16 +16255,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 256} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 256} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { { 16384 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { { 16384 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd,
@@ -16290,10 +16290,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {256 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { { 16384 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd,
@@ -16327,16 +16327,16 @@ const struct flashchip flashchips[] = {
 					{4 * 1024, 32},
 					{64 * 1024, 254} // inaccessible
 				},
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, { */
 				.eraseblocks = { { 64 * 1024, 256} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { { 16384 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { { 16384 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_ep_srwd, /* TODO: SR2 and many others */
@@ -16364,13 +16364,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {256 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { { 16384 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { { 16384 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_ep_srwd, /* TODO: SR2 and many others */
@@ -16396,13 +16396,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {128 * 1024, 128} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.unlock		= spi_disable_blockprotect,
@@ -16427,13 +16427,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 256} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.unlock		= spi_disable_blockprotect,
@@ -16465,23 +16465,23 @@ const struct flashchip flashchips[] = {
 					{4 * 1024, 32},
 					{64 * 1024, 254} // inaccessible
 				},
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, { */
 			/* FIXME: Additionally it also supports erase opcode 40h for the respective 2*4 kB pairs
 				.eraseblocks = {
 					{8 * 1024, 16},
 					{64 * 1024, 254} // inaccessible
 				},
-				.block_erase = spi_block_erase_40,
+				.block_erase = SPI_BLOCK_ERASE_40,
 			}, { */
 				.eraseblocks = { { 64 * 1024, 256} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { { 16384 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { { 16384 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_ep_srwd, /* TODO: Configuration register */
@@ -16508,13 +16508,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {256 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { { 16384 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { { 16384 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_ep_srwd, /* TODO: Configuration register */
@@ -16541,16 +16541,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 1024} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { { 4096 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { { 4096 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd, /* TODO: improve */
@@ -16577,16 +16577,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 2048} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { { 8192 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { { 8192 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_srwd, /* TODO: improve */
@@ -16612,16 +16612,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { { 512 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { { 512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd,
@@ -16647,16 +16647,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { { 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { { 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd,
@@ -16684,28 +16684,28 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 8192} },
-				.block_erase = spi_block_erase_21,
+				.block_erase = SPI_BLOCK_ERASE_21,
 			}, {
 				.eraseblocks = { {4 * 1024, 8192} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 1024} },
-				.block_erase = spi_block_erase_53,
+				.block_erase = SPI_BLOCK_ERASE_53,
 			}, {
 				.eraseblocks = { {32 * 1024, 1024} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 512} },
-				.block_erase = spi_block_erase_dc,
+				.block_erase = SPI_BLOCK_ERASE_DC,
 			}, {
 				.eraseblocks = { {64 * 1024, 512} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {32768 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {32768 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp3_srwd,
@@ -16748,10 +16748,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {256 * 1024, 64} },
-				.block_erase = s25fl_block_erase,
+				.block_erase = S25FL_BLOCK_ERASE,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			},
 		},
 		.unlock		= spi_disable_blockprotect,
@@ -16776,10 +16776,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 256} },
-				.block_erase = s25fl_block_erase,
+				.block_erase = S25FL_BLOCK_ERASE,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			},
 		},
 		.unlock		= spi_disable_blockprotect,
@@ -16812,19 +16812,19 @@ const struct flashchip flashchips[] = {
 					{4 * 1024, 32},
 					{64 * 1024, 254} // inaccessible
 				},
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, { */
 				.eraseblocks = { { 64 * 1024, 512} },
-				.block_erase = spi_block_erase_dc,
+				.block_erase = SPI_BLOCK_ERASE_DC,
 			}, {
 				.eraseblocks = { { 64 * 1024, 512} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { { 32768 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { { 32768 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_ep_srwd, /* TODO: SR2 and many others */
@@ -16852,16 +16852,16 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { { 256 * 1024, 256} },
-				.block_erase = spi_block_erase_dc,
+				.block_erase = SPI_BLOCK_ERASE_DC,
 			}, {
 				.eraseblocks = { { 256 * 1024, 256} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { { 65536 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { { 65536 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_ep_srwd, /* TODO: SR2 and many others */
@@ -16887,13 +16887,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 256} },
-				.block_erase = s25fs_block_erase_d8,
+				.block_erase = S25FS_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.unlock		= spi_disable_blockprotect,
@@ -16918,13 +16918,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 256} },
-				.block_erase = s25fs_block_erase_d8,
+				.block_erase = S25FS_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			},
 		},
 		.unlock		= spi_disable_blockprotect,
@@ -16949,10 +16949,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {512, 256} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -16976,10 +16976,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {512, 256} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -17003,10 +17003,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {512, 512} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -17029,10 +17029,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {512, 512} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -17055,10 +17055,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {1024, 512} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -17082,10 +17082,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {1024, 512} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -17109,10 +17109,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {1024, 512} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -17136,10 +17136,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {1024, 512} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -17168,10 +17168,10 @@ const struct flashchip flashchips[] = {
 					{32 * 1024, 1},
 					{64 * 1024, 3},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -17200,10 +17200,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -17227,10 +17227,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2048 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -17256,10 +17256,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {4096 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -17285,10 +17285,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -17317,19 +17317,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 4096} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 512} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 256} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -17366,19 +17366,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 4096} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 512} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 256} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain,
@@ -17416,19 +17416,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 4096} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 512} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 256} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -17464,19 +17464,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 4096} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 512} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 256} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock      = spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -17514,19 +17514,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 512} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 64} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -17554,19 +17554,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 512} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 64} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -17593,19 +17593,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 64} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 8} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 4} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -17635,19 +17635,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 8192} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 1024} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 512} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {32 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {32 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -17684,25 +17684,25 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 8192} },
-				.block_erase = spi_block_erase_21,
+				.block_erase = SPI_BLOCK_ERASE_21,
 			}, {
 				.eraseblocks = { {4 * 1024, 8192} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 1024} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 512} },
-				.block_erase = spi_block_erase_dc,
+				.block_erase = SPI_BLOCK_ERASE_DC,
 			}, {
 				.eraseblocks = { {64 * 1024, 512} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {32 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {32 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -17739,25 +17739,25 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 8192} },
-				.block_erase = spi_block_erase_21,
+				.block_erase = SPI_BLOCK_ERASE_21,
 			}, {
 				.eraseblocks = { {4 * 1024, 8192} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 1024} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 512} },
-				.block_erase = spi_block_erase_dc,
+				.block_erase = SPI_BLOCK_ERASE_DC,
 			}, {
 				.eraseblocks = { {64 * 1024, 512} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {32 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {32 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -17794,25 +17794,25 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 8192} },
-				.block_erase = spi_block_erase_21,
+				.block_erase = SPI_BLOCK_ERASE_21,
 			}, {
 				.eraseblocks = { {4 * 1024, 8192} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 1024} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 512} },
-				.block_erase = spi_block_erase_dc,
+				.block_erase = SPI_BLOCK_ERASE_DC,
 			}, {
 				.eraseblocks = { {64 * 1024, 512} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {32 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {32 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -17840,25 +17840,25 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 8192} },
-				.block_erase = spi_block_erase_21,
+				.block_erase = SPI_BLOCK_ERASE_21,
 			}, {
 				.eraseblocks = { {4 * 1024, 8192} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 1024} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 512} },
-				.block_erase = spi_block_erase_dc,
+				.block_erase = SPI_BLOCK_ERASE_DC,
 			}, {
 				.eraseblocks = { {64 * 1024, 512} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {32 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {32 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -17886,19 +17886,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 1024} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 128} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -17926,19 +17926,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 1024} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 128} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -17964,19 +17964,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 1024} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 128} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock      = spi_prettyprint_status_register_bp2_tb_bpl,
@@ -18004,19 +18004,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 16} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -18043,19 +18043,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 16} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -18082,19 +18082,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 16} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -18120,25 +18120,25 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 16384} },
-				.block_erase = spi_block_erase_21,
+				.block_erase = SPI_BLOCK_ERASE_21,
 			}, {
 				.eraseblocks = { {4 * 1024, 16384} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 2048} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 1024} },
-				.block_erase = spi_block_erase_dc,
+				.block_erase = SPI_BLOCK_ERASE_DC,
 			}, {
 				.eraseblocks = { {64 * 1024, 1024} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {64 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {64 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain,
@@ -18164,25 +18164,25 @@ const struct flashchip flashchips[] = {
 	{
 		{
 			.eraseblocks = { {4 * 1024, 16384} },
-			.block_erase = spi_block_erase_21,
+			.block_erase = SPI_BLOCK_ERASE_21,
 		}, {
 			.eraseblocks = { {4 * 1024, 16384} },
-			.block_erase = spi_block_erase_20,
+			.block_erase = SPI_BLOCK_ERASE_20,
 		}, {
 			.eraseblocks = { {32 * 1024, 2048} },
-			.block_erase = spi_block_erase_52,
+			.block_erase = SPI_BLOCK_ERASE_52,
 		}, {
 			.eraseblocks = { {64 * 1024, 1024} },
-			.block_erase = spi_block_erase_dc,
+			.block_erase = SPI_BLOCK_ERASE_DC,
 		}, {
 			.eraseblocks = { {64 * 1024, 1024} },
-			.block_erase = spi_block_erase_d8,
+			.block_erase = SPI_BLOCK_ERASE_D8,
 		}, {
 			.eraseblocks = { {64 * 1024 * 1024, 1} },
-			.block_erase = spi_block_erase_60,
+			.block_erase = SPI_BLOCK_ERASE_60,
 		}, {
 			.eraseblocks = { {64 * 1024 * 1024, 1} },
-			.block_erase = spi_block_erase_c7,
+			.block_erase = SPI_BLOCK_ERASE_C7,
 		}
 	},
 	.unlock         = spi_disable_blockprotect,
@@ -18209,19 +18209,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 2048} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 256} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -18260,19 +18260,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 2048} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 256} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -18311,19 +18311,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 2048} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 256} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_bp2_tb_bpl,
@@ -18351,19 +18351,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 2048} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 256} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -18401,19 +18401,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 2048} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 256} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -18452,19 +18452,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 32} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -18491,19 +18491,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 32} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {1 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -18530,19 +18530,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 32} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {1 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -18568,13 +18568,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 16} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 2} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain,
@@ -18600,13 +18600,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 32} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 2} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -18632,19 +18632,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 512} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 64} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 32} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {2 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -18670,13 +18670,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 64} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 4} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -18702,19 +18702,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 1024} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 128} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -18740,13 +18740,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -18772,19 +18772,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 2048} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 256} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -18810,13 +18810,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 256} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -18843,7 +18843,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC,
@@ -18866,7 +18866,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC,
@@ -18889,7 +18889,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC,
@@ -18913,7 +18913,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC,
@@ -18937,7 +18937,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC,
@@ -18964,10 +18964,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 8},
 					{64 * 1024, 63},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -18991,10 +18991,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 64} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -19021,10 +19021,10 @@ const struct flashchip flashchips[] = {
 					{64 * 1024, 63},
 					{8 * 1024, 8},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {4 * 1024 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -19051,10 +19051,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 8},
 					{64 * 1024, 127},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -19078,10 +19078,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -19108,10 +19108,10 @@ const struct flashchip flashchips[] = {
 					{64 * 1024, 127},
 					{8 * 1024, 8},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -19135,10 +19135,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {128 * 1024, 128} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			},
 		},
 		.write		= WRITE_JEDEC1,
@@ -19162,10 +19162,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 32} },
-				.block_erase = erase_block_jedec,
+				.block_erase = JEDEC_BLOCK_ERASE,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.printlock	= printlock_w39f010,
@@ -19190,10 +19190,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 32} },
-				.block_erase = erase_block_jedec,
+				.block_erase = JEDEC_BLOCK_ERASE,
 			}, {
 				.eraseblocks = { {128 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.printlock	= printlock_w39l010,
@@ -19218,13 +19218,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 64} },
-				.block_erase = erase_block_jedec,
+				.block_erase = JEDEC_BLOCK_ERASE,
 			}, {
 				.eraseblocks = { {64 * 1024, 4} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.printlock	= printlock_w39l020,
@@ -19249,13 +19249,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = erase_block_jedec,
+				.block_erase = JEDEC_BLOCK_ERASE,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.printlock	= printlock_w39l040,
@@ -19280,10 +19280,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.printlock	= printlock_w39v040a,
@@ -19308,10 +19308,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.printlock	= printlock_w39v040b,
@@ -19336,10 +19336,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.printlock	= printlock_w39v040c,
@@ -19364,13 +19364,13 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = erase_block_jedec,
+				.block_erase = JEDEC_BLOCK_ERASE,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.printlock	= printlock_w39v040fa,
@@ -19396,10 +19396,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.printlock	= printlock_w39v040fb,
@@ -19425,10 +19425,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.printlock	= printlock_w39v040fc,
@@ -19453,10 +19453,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.printlock	= printlock_w39v080a,
@@ -19481,10 +19481,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 16} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {1024 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.printlock	= printlock_w39v080fa,
@@ -19510,10 +19510,10 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.printlock	= printlock_w39v080fa_dual,
@@ -19543,10 +19543,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC1,
@@ -19570,7 +19570,7 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC1,
@@ -19599,10 +19599,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC1,
@@ -19631,10 +19631,10 @@ const struct flashchip flashchips[] = {
 					{8 * 1024, 2},
 					{16 * 1024, 1},
 				},
-				.block_erase = erase_sector_jedec,
+				.block_erase = JEDEC_SECTOR_ERASE,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = erase_chip_block_jedec,
+				.block_erase = JEDEC_CHIP_BLOCK_ERASE,
 			}
 		},
 		.write		= WRITE_JEDEC1,
@@ -19658,19 +19658,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 2048} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 256} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain,
@@ -19696,19 +19696,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 2048} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 256} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 128} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {8 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain,
@@ -19734,19 +19734,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 4096} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 512} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 256} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain,
@@ -19784,19 +19784,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 4096} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 512} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 256} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {16 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -19826,19 +19826,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 8192} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 1024} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 512} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {32 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {32 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -19875,19 +19875,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 8192} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 1024} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 512} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {32 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {32 * 1024 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -19913,19 +19913,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 64} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 8} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 4} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {256 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -19951,19 +19951,19 @@ const struct flashchip flashchips[] = {
 		{
 			{
 				.eraseblocks = { {4 * 1024, 128} },
-				.block_erase = spi_block_erase_20,
+				.block_erase = SPI_BLOCK_ERASE_20,
 			}, {
 				.eraseblocks = { {32 * 1024, 16} },
-				.block_erase = spi_block_erase_52,
+				.block_erase = SPI_BLOCK_ERASE_52,
 			}, {
 				.eraseblocks = { {64 * 1024, 8} },
-				.block_erase = spi_block_erase_d8,
+				.block_erase = SPI_BLOCK_ERASE_D8,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_60,
+				.block_erase = SPI_BLOCK_ERASE_60,
 			}, {
 				.eraseblocks = { {512 * 1024, 1} },
-				.block_erase = spi_block_erase_c7,
+				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
 		.printlock	= spi_prettyprint_status_register_plain, /* TODO: improve */
@@ -20010,7 +20010,7 @@ const struct flashchip flashchips[] = {
 		.block_erasers	=
 		{
 			{
-				.block_erase = erase_opaque,
+				.block_erase = OPAQUE_ERASE,
 			}
 		},
 		.write		= WRITE_OPAQUE,

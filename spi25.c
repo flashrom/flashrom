@@ -622,21 +622,21 @@ static const struct {
 	erasefunc_t *func;
 	uint8_t opcode;
 } function_opcode_list[] = {
-	{&spi_block_erase_20, 0x20},
-	{&spi_block_erase_21, 0x21},
-	{&spi_block_erase_50, 0x50},
-	{&spi_block_erase_52, 0x52},
-	{&spi_block_erase_53, 0x53},
-	{&spi_block_erase_5c, 0x5c},
-	{&spi_block_erase_60, 0x60},
-	{&spi_block_erase_62, 0x62},
-	{&spi_block_erase_81, 0x81},
-	{&spi_block_erase_c4, 0xc4},
-	{&spi_block_erase_c7, 0xc7},
-	{&spi_block_erase_d7, 0xd7},
-	{&spi_block_erase_d8, 0xd8},
-	{&spi_block_erase_db, 0xdb},
-	{&spi_block_erase_dc, 0xdc},
+	{SPI_BLOCK_ERASE_20, 0x20},
+	{SPI_BLOCK_ERASE_21, 0x21},
+	{SPI_BLOCK_ERASE_50, 0x50},
+	{SPI_BLOCK_ERASE_52, 0x52},
+	{SPI_BLOCK_ERASE_53, 0x53},
+	{SPI_BLOCK_ERASE_5C, 0x5c},
+	{SPI_BLOCK_ERASE_60, 0x60},
+	{SPI_BLOCK_ERASE_62, 0x62},
+	{SPI_BLOCK_ERASE_81, 0x81},
+	{SPI_BLOCK_ERASE_C4, 0xc4},
+	{SPI_BLOCK_ERASE_C7, 0xc7},
+	{SPI_BLOCK_ERASE_D7, 0xd7},
+	{SPI_BLOCK_ERASE_D8, 0xd8},
+	{SPI_BLOCK_ERASE_DB, 0xdb},
+	{SPI_BLOCK_ERASE_DC, 0xdc},
 };
 
 erasefunc_t *spi_get_erasefn_from_opcode(uint8_t opcode)
@@ -648,7 +648,7 @@ erasefunc_t *spi_get_erasefn_from_opcode(uint8_t opcode)
 	}
 	msg_cinfo("%s: unknown erase opcode (0x%02x). Please report "
 			  "this at flashrom@flashrom.org\n", __func__, opcode);
-	return NULL;
+	return NO_BLOCK_ERASE_FUNC;
 }
 
 uint8_t spi_get_opcode_from_erasefn(erasefunc_t *func)

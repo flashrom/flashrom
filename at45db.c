@@ -80,7 +80,7 @@ static unsigned int at45db_get_sector_count(struct flashctx *flash)
 	unsigned int i, j;
 	unsigned int cnt = 0;
 	for (i = 0; i < NUM_ERASEFUNCTIONS; i++) {
-		if (flash->chip->block_erasers[i].block_erase == &spi_erase_at45db_sector) {
+		if (flash->chip->block_erasers[i].block_erase == SPI_ERASE_AT45DB_SECTOR) {
 			for (j = 0; j < NUM_ERASEREGIONS; j++) {
 				cnt += flash->chip->block_erasers[i].eraseblocks[j].count;
 			}
