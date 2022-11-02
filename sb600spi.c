@@ -48,7 +48,6 @@ enum amd_chipset {
 	CHIPSET_HUDSON234,
 	CHIPSET_BOLTON,
 	CHIPSET_YANGTZE,
-	CHIPSET_PROMONTORY,
 };
 
 #define FIFO_SIZE_OLD		8
@@ -124,18 +123,6 @@ static enum amd_chipset determine_generation(struct pci_dev *dev)
 		if (rev == 0x4a) {
 			msg_pdbg("Yangtze detected.\n");
 			return CHIPSET_YANGTZE;
-		/**
-		 * FCH chipsets called 'Promontory' are one's with the
-		 * so-called SPI100 ip core that uses memory mapping and
-		 * not a ring buffer for transactions. Typically this is
-		 * found on both Stoney Ridge and Zen platforms.
-		 *
-		 * The revisions I have found by searching various lspci
-		 * outputs are as follows: 0x4b, 0x59, 0x61 & 0x71.
-		 */
-		} else if (rev == 0x4b || rev == 0x51 || rev == 0x59 || rev == 0x61 || rev == 0x71) {
-			msg_pdbg("Promontory (rev 0x%02x) detected.\n", rev);
-			return CHIPSET_PROMONTORY;
 		} else {
 			msg_pwarn("FCH device found but SMBus revision 0x%02x does not match known values.\n"
 				  "Please report this to flashrom@flashrom.org and include this log and\n"
@@ -572,18 +559,6 @@ static int handle_imc(const struct programmer_cfg *cfg, struct pci_dev *dev, enu
 	return amd_imc_shutdown(dev);
 }
 
-static int promontory_read_memmapped(struct flashctx *flash, uint8_t *buf,
-		unsigned int start, unsigned int len)
-{
-	struct sb600spi_data * data = (struct sb600spi_data *)flash->mst->spi.data;
-	if (!data->flash) {
-		map_flash(flash);
-		data->flash = flash; /* keep a copy of flashctx for unmap() on tear-down. */
-	}
-	mmio_readn((void *)(flash->virtual_memory + start), buf, len);
-	return 0;
-}
-
 static int sb600spi_shutdown(void *data)
 {
 	struct sb600spi_data *sb600_data = data;
@@ -617,20 +592,6 @@ static const struct spi_master spi_master_yangtze = {
 	.map_flash_region	= physmap,
 	.unmap_flash_region	= physunmap,
 	.read		= default_spi_read,
-	.write_256	= default_spi_write_256,
-	.write_aai	= default_spi_write_aai,
-	.shutdown	= sb600spi_shutdown,
-	.probe_opcode	= default_spi_probe_opcode,
-};
-
-static const struct spi_master spi_master_promontory = {
-	.max_data_read	= MAX_DATA_READ_UNLIMITED,
-	.max_data_write	= FIFO_SIZE_YANGTZE - 3,
-	.command	= spi100_spi_send_command,
-	.multicommand	= default_spi_send_multicommand,
-	.map_flash_region	= physmap,
-	.unmap_flash_region	= physunmap,
-	.read		= promontory_read_memmapped,
 	.write_256	= default_spi_write_256,
 	.write_aai	= default_spi_write_aai,
 	.shutdown	= sb600spi_shutdown,
@@ -740,7 +701,6 @@ int sb600_probe_spi(const struct programmer_cfg *cfg, struct pci_dev *dev)
 	case CHIPSET_SB89XX:
 	case CHIPSET_HUDSON234:
 	case CHIPSET_YANGTZE:
-	case CHIPSET_PROMONTORY:
 		msg_pdbg(", SpiBusy=%i", (tmp >> 31) & 0x1);
 	default: break;
 	}
@@ -817,8 +777,6 @@ int sb600_probe_spi(const struct programmer_cfg *cfg, struct pci_dev *dev)
 		register_spi_master(&spi_master_sb600, data);
 	else if (amd_gen == CHIPSET_YANGTZE)
 		register_spi_master(&spi_master_yangtze, data);
-	else
-		register_spi_master(&spi_master_promontory, data);
 
 	return 0;
 }
