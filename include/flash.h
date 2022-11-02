@@ -156,6 +156,7 @@ enum write_granularity {
 #define FEATURE_WRSR3		(1 << 23)
 
 #define ERASED_VALUE(flash)	(((flash)->chip->feature_bits & FEATURE_ERASED_ZERO) ? 0x00 : 0xff)
+#define UNERASED_VALUE(flash)	(((flash)->chip->feature_bits & FEATURE_ERASED_ZERO) ? 0xff : 0x00)
 
 enum test_state {
 	OK = 0,

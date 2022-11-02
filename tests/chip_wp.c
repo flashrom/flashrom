@@ -63,6 +63,7 @@ static void teardown(struct flashrom_layout **layout)
 static const struct flashchip chip_W25Q128_V = {
 	.vendor		= "aklm&dummyflasher",
 	.total_size	= 16 * 1024,
+	.page_size	= 1024,
 	.tested		= TEST_OK_PREW,
 	.read		= SPI_CHIP_READ,
 	.write		= SPI_CHIP_WRITE256,
@@ -267,6 +268,14 @@ void full_chip_erase_with_wp_dummyflasher_test_success(void **state)
 	/* Write protection takes effect only after changing SRP values, so at
 	   this stage WP is not enabled and erase completes successfully. */
 	assert_int_equal(0, flashrom_flash_erase(&flash));
+
+	/* Write non-erased value to entire chip so that erase operations cannot
+	 * be optimized away. */
+	unsigned long size = flashrom_flash_getsize(&flash);
+	uint8_t *const contents = malloc(size);
+	memset(contents, UNERASED_VALUE(&flash), size);
+	assert_int_equal(0, flashrom_image_write(&flash, contents, size, NULL));
+	free(contents);
 
 	assert_int_equal(0, flashrom_wp_read_cfg(wp_cfg, &flash));
 
