@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "spi.h"
 #include "flash.h"
 #include "libflashrom.h"
 #include "chipdrivers.h"
@@ -30,18 +31,38 @@
  */
 static int wp_write_register(const struct flashctx *flash, enum flash_reg reg, uint8_t value)
 {
+	int ret;
 	if ((flash->mst->buses_supported & BUS_PROG) && flash->mst->opaque.write_register) {
-		return flash->mst->opaque.write_register(flash, reg, value);
+		ret = flash->mst->opaque.write_register(flash, reg, value);
+	} else {
+		ret = spi_write_register(flash, reg, value);
 	}
-	return spi_write_register(flash, reg, value);
+
+	/* Writing SR1 should always be supported, ignore errors for other registers. */
+	if (ret == SPI_INVALID_OPCODE && reg != STATUS1) {
+		msg_pdbg("%s: write to register %d not supported by programmer, ignoring.\n", __func__, reg);
+		ret = 0;
+	}
+	return ret;
 }
 
 static int wp_read_register(const struct flashctx *flash, enum flash_reg reg, uint8_t *value)
 {
+	int ret;
 	if ((flash->mst->buses_supported & BUS_PROG) && flash->mst->opaque.read_register) {
-		return flash->mst->opaque.read_register(flash, reg, value);
+		ret = flash->mst->opaque.read_register(flash, reg, value);
+	} else {
+		ret = spi_read_register(flash, reg, value);
 	}
-	return spi_read_register(flash, reg, value);
+
+	/* Reading SR1 should always be supported, ignore errors for other registers. */
+	if (ret == SPI_INVALID_OPCODE && reg != STATUS1) {
+		msg_pdbg("%s: read from register %d not is supported by programmer, "
+			  "writeprotect operations will assume it contains 0x00.\n", __func__, reg);
+		*value = 0;
+		ret = 0;
+	}
+	return ret;
 }
 
 /** Read and extract a single bit from the chip's registers */

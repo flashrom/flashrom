@@ -19,6 +19,7 @@
 
 #include "flash.h"
 #include "chipdrivers.h"
+#include "programmer.h"
 #include "spi.h"
 
 /* === Generic functions === */
@@ -129,6 +130,11 @@ int spi_write_register(const struct flashctx *flash, enum flash_reg reg, uint8_t
 		return 1;
 	}
 
+	if (!flash->mst->spi.probe_opcode(flash, write_cmd[0])) {
+		msg_pdbg("%s: write to register %d not supported by programmer, ignoring.\n", __func__, reg);
+		return SPI_INVALID_OPCODE;
+	}
+
 	uint8_t enable_cmd;
 	if (feature_bits & FEATURE_WRSR_WREN) {
 		enable_cmd = JEDEC_WREN;
@@ -236,6 +242,11 @@ int spi_read_register(const struct flashctx *flash, enum flash_reg reg, uint8_t 
 	default:
 		msg_cerr("Cannot read register: unknown register\n");
 		return 1;
+	}
+
+	if (!flash->mst->spi.probe_opcode(flash, read_cmd)) {
+		msg_pdbg("%s: read from register %d not supported by programmer.\n", __func__, reg);
+		return SPI_INVALID_OPCODE;
 	}
 
 	/* FIXME: No workarounds for driver/hardware bugs in generic code. */
