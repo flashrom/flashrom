@@ -170,6 +170,7 @@ int __wrap_read(int fd, void *buf, size_t sz)
 FILE *__wrap_fopen(const char *pathname, const char *mode)
 {
 	LOG_ME;
+	maybe_unmock_io(pathname);
 	if (get_io() && get_io()->iom_fopen)
 		return get_io()->iom_fopen(get_io()->state, pathname, mode);
 	return not_null();
@@ -178,6 +179,7 @@ FILE *__wrap_fopen(const char *pathname, const char *mode)
 FILE *__wrap_fopen64(const char *pathname, const char *mode)
 {
 	LOG_ME;
+	maybe_unmock_io(pathname);
 	if (get_io() && get_io()->iom_fopen)
 		return get_io()->iom_fopen(get_io()->state, pathname, mode);
 	return not_null();
