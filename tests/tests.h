@@ -16,6 +16,8 @@
 #ifndef TESTS_H
 #define TESTS_H
 
+#include <fcntl.h>
+
 /* helpers.c */
 void address_to_bits_test_success(void **state);
 void bitcount_test_success(void **state);

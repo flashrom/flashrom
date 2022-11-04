@@ -75,10 +75,10 @@ uint8_t __wrap_sio_read(uint16_t port, uint8_t reg)
 	return (uint8_t)mock();
 }
 
-static int mock_open(const char *pathname, int flags)
+static int mock_open(const char *pathname, int flags, mode_t mode)
 {
 	if (get_io() && get_io()->iom_open)
-		return get_io()->iom_open(get_io()->state, pathname, flags);
+		return get_io()->iom_open(get_io()->state, pathname, flags, mode);
 
 	if (get_io() && get_io()->fallback_open_state) {
 		struct io_mock_fallback_open_state *io_state;
@@ -96,22 +96,43 @@ static int mock_open(const char *pathname, int flags)
 	return MOCK_FD;
 }
 
-int __wrap_open(const char *pathname, int flags)
+int __wrap_open(const char *pathname, int flags, ...)
 {
 	LOG_ME;
-	return mock_open(pathname, flags);
+	mode_t mode = 0;
+	if (flags & O_CREAT) {
+		va_list ap;
+		va_start(ap, flags);
+		mode = va_arg(ap, mode_t);
+		va_end(ap);
+	}
+	return mock_open(pathname, flags, mode);
 }
 
-int __wrap_open64(const char *pathname, int flags)
+int __wrap_open64(const char *pathname, int flags, ...)
 {
 	LOG_ME;
-	return mock_open(pathname, flags);
+	mode_t mode = 0;
+	if (flags & O_CREAT) {
+		va_list ap;
+		va_start(ap, flags);
+		mode = va_arg(ap, mode_t);
+		va_end(ap);
+	}
+	return mock_open(pathname, flags, mode);
 }
 
-int __wrap___open64_2(const char *pathname, int flags)
+int __wrap___open64_2(const char *pathname, int flags, ...)
 {
 	LOG_ME;
-	return mock_open(pathname, flags);
+	mode_t mode = 0;
+	if (flags & O_CREAT) {
+		va_list ap;
+		va_start(ap, flags);
+		mode = va_arg(ap, mode_t);
+		va_end(ap);
+	}
+	return mock_open(pathname, flags, mode);
 }
 
 int __wrap_ioctl(int fd, unsigned long int request, ...)

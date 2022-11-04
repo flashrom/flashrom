@@ -49,11 +49,6 @@ struct pci_dev {
 	unsigned int device_id;
 };
 
-/* POSIX open() flags, avoiding dependency on fcntl.h */
-#define O_RDONLY 0
-#define O_WRONLY 1
-#define O_RDWR 2
-
 /* Linux I2C interface constants, avoiding linux/i2c-dev.h */
 #define I2C_SLAVE 0x0703
 
@@ -107,7 +102,7 @@ struct io_mock {
 	int (*libusb_handle_events_timeout)(void *state, libusb_context *ctx, struct timeval *tv);
 
 	/* POSIX File I/O */
-	int (*iom_open)(void *state, const char *pathname, int flags);
+	int (*iom_open)(void *state, const char *pathname, int flags, mode_t mode);
 	int (*iom_ioctl)(void *state, int fd, unsigned long request, va_list args);
 	int (*iom_read)(void *state, int fd, void *buf, size_t sz);
 	int (*iom_write)(void *state, int fd, const void *buf, size_t sz);

@@ -28,9 +28,9 @@ struct pci_dev *__wrap_pcidev_init(const struct programmer_cfg *cfg, void *devs,
 uintptr_t __wrap_pcidev_readbar(void *dev, int bar);
 void __wrap_sio_write(uint16_t port, uint8_t reg, uint8_t data);
 uint8_t __wrap_sio_read(uint16_t port, uint8_t reg);
-int __wrap_open(const char *pathname, int flags);
-int __wrap_open64(const char *pathname, int flags);
-int __wrap___open64_2(const char *pathname, int flags);
+int __wrap_open(const char *pathname, int flags, ...);
+int __wrap_open64(const char *pathname, int flags, ...);
+int __wrap___open64_2(const char *pathname, int flags, ...);
 int __wrap_ioctl(int fd, unsigned long int request, ...);
 int __wrap_write(int fd, const void *buf, size_t sz);
 int __wrap_read(int fd, void *buf, size_t sz);
