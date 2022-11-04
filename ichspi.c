@@ -1401,6 +1401,22 @@ static int ich_exec_sync_hwseq_xfer(const struct flashctx *flash, uint32_t hsfc_
 	return ich_hwseq_wait_for_cycle_complete(len, ich_gen, addr_mask);
 }
 
+/* Given RDID info, return pointer to entry in flashchips[] */
+static const struct flashchip *flash_id_to_entry(uint32_t mfg_id, uint32_t model_id)
+{
+	const struct flashchip *chip;
+
+	for (chip = &flashchips[0]; chip->vendor; chip++) {
+		if ((chip->manufacture_id == mfg_id) &&
+		    (chip->model_id == model_id) &&
+		    (chip->probe == PROBE_SPI_RDID) &&
+		    ((chip->bustype & BUS_SPI) == BUS_SPI))
+			return chip;
+	}
+
+	return NULL;
+}
+
 static int ich_hwseq_read_status(const struct flashctx *flash, enum flash_reg reg, uint8_t *value)
 {
 	const int len = 1;
@@ -1450,6 +1466,60 @@ static int ich_hwseq_write_status(const struct flashctx *flash, enum flash_reg r
 	}
 
 	return 0;
+}
+
+static void ich_hwseq_get_flash_id(struct flashctx *flash, enum ich_chipset ich_gen)
+{
+	const struct hwseq_data *hwseq_data = get_hwseq_data_from_context(flash);
+	if (hwseq_data->size_comp1 != 0) {
+		msg_pinfo("Multiple flash components detected, skipping flash identification.\n");
+		return;
+	}
+
+	/* PCH100 or above is required for RDID, ICH9 does not support it. */
+	if (hwseq_data->hsfc_fcycle != PCH100_HSFC_FCYCLE) {
+		msg_pinfo("RDID cycle not supported, skipping flash identification.\n");
+		return;
+	}
+
+	/*
+	 * RDID gives 3 byte output:
+	 *     Byte 0: Manufacturer ID
+	 *     Byte 1: Model ID (MSB)
+	 *     Byte 2: Model ID (LSB)
+	 */
+	const int len = 3;
+	uint8_t data[len];
+
+	if (ich_exec_sync_hwseq_xfer(flash, HSFC_CYCLE_RDID, 1, len, ich_gen,
+		hwseq_data->addr_mask)) {
+		msg_perr("Timed out waiting for RDID to complete.\n");
+	}
+
+	ich_read_data(data, len, ICH9_REG_FDATA0);
+	uint32_t mfg_id = data[0];
+	uint32_t model_id = (data[1] << 8) | data[2];
+
+	const struct flashchip *entry = flash_id_to_entry(mfg_id, model_id);
+	if (!entry) {
+		msg_pwarn("Unable to identify chip, mfg_id: 0x%02x, "
+				"model_id: 0x%02x\n", mfg_id, model_id);
+	}
+
+	msg_pdbg("Chip identified: %s\n", entry->name);
+
+	/* Update informational flash chip entries only */
+	flash->chip->vendor = entry->vendor;
+	flash->chip->name = entry->name;
+	flash->chip->manufacture_id = entry->manufacture_id;
+	flash->chip->model_id = entry->model_id;
+	/* total_size read from flash descriptor */
+	flash->chip->page_size = entry->page_size;
+	flash->chip->feature_bits = entry->feature_bits;
+	flash->chip->tested = entry->tested;
+	/* Support writeprotect */
+	flash->chip->reg_bits = entry->reg_bits;
+	flash->chip->decode_range = entry->decode_range;
 }
 
 static int ich_hwseq_probe(struct flashctx *flash)
@@ -1504,7 +1574,12 @@ static int ich_hwseq_probe(struct flashctx *flash)
 		msg_cdbg("In that range are %d erase blocks with %d B each.\n",
 			 size_high / erase_size_high, erase_size_high);
 	}
+
+	/* May be overwritten by ich_hwseq_get_flash_id(). */
 	flash->chip->tested = TEST_OK_PREWB;
+
+	ich_hwseq_get_flash_id(flash, ich_generation);
+
 	return 1;
 }
 
