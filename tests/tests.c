@@ -17,6 +17,7 @@
 #include "io_mock.h"
 #include "tests.h"
 #include "wraps.h"
+#include "io_real.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -77,6 +78,7 @@ uint8_t __wrap_sio_read(uint16_t port, uint8_t reg)
 
 static int mock_open(const char *pathname, int flags, mode_t mode)
 {
+	maybe_unmock_io(pathname);
 	if (get_io() && get_io()->iom_open)
 		return get_io()->iom_open(get_io()->state, pathname, flags, mode);
 

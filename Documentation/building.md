@@ -48,6 +48,18 @@ ninja -C builddir install
 ninja -C builddir test
 ```
 
+### Run unit tests with code coverage
+#### gcov
+Due to a bug in lcov, the html file will only be correct if lcov is not
+installed and gcovr is installed. See
+https://github.com/linux-test-project/lcov/issues/168
+https://github.com/mesonbuild/meson/issues/6747
+```
+meson setup buildcov -Db_coverage=true
+ninja -C buildcov test
+ninja -C buildcov coverage
+```
+
 ## System specific information
 ### Ubuntu / Debian (Linux)
   * __linux-headers__ are version specific
