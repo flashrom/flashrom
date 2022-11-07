@@ -14,6 +14,7 @@ name = "flashrom_tester"
 required-features = ["cli"]
 
 [dependencies]
+atty = "0.2"
 built = { version = "0.5", features = ["chrono"] }
 chrono = { version = "0.4", optional = true }
 clap = { version = "2.33", default-features = false, optional = true }

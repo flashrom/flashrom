@@ -41,6 +41,7 @@ use std::sync::Mutex;
 struct Logger<W: Write + Send> {
     level: log::LevelFilter,
     target: LogTarget<W>,
+    color: types::Color,
 }
 
 enum LogTarget<W>
@@ -57,16 +58,14 @@ impl<W: Write + Send> log::Log for Logger<W> {
     }
 
     fn log(&self, record: &log::Record) {
-        fn log_internal<W: Write>(mut w: W, record: &log::Record) -> std::io::Result<()> {
+        fn log_internal<W: Write>(
+            mut w: W,
+            record: &log::Record,
+            color: &types::Color,
+        ) -> std::io::Result<()> {
             let now = chrono::Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Micros, true);
-            write!(w, "{}{} ", types::MAGENTA, now)?;
-            write!(
-                w,
-                "{}[ {} ]{} ",
-                types::YELLOW,
-                record.level(),
-                types::RESET
-            )?;
+            write!(w, "{}{} ", color.magenta, now)?;
+            write!(w, "{}[ {} ]{} ", color.yellow, record.level(), color.reset)?;
             writeln!(w, "{}", record.args())
         }
 
@@ -75,11 +74,11 @@ impl<W: Write + Send> log::Log for Logger<W> {
             LogTarget::Terminal => {
                 let stdout = std::io::stdout();
                 let mut lock = stdout.lock();
-                log_internal(&mut lock, record)
+                log_internal(&mut lock, record, &self.color)
             }
             LogTarget::Write(ref mutex) => {
                 let mut lock = mutex.lock().unwrap();
-                log_internal(&mut *lock, record)
+                log_internal(&mut *lock, record, &self.color)
             }
         };
     }
@@ -97,6 +96,11 @@ pub fn init(to_file: Option<PathBuf>, debug: bool) {
     let mut logger = Logger {
         level: log::LevelFilter::Info,
         target: LogTarget::Terminal,
+        color: if atty::is(atty::Stream::Stdout) {
+            types::COLOR
+        } else {
+            types::NOCOLOR
+        },
     };
 
     if debug {
@@ -106,6 +110,7 @@ pub fn init(to_file: Option<PathBuf>, debug: bool) {
         logger.target = LogTarget::Write(Mutex::new(
             std::fs::File::create(path).expect("Unable to open log file for writing"),
         ));
+        logger.color = types::NOCOLOR;
     }
 
     log::set_max_level(logger.level);
@@ -115,6 +120,7 @@ pub fn init(to_file: Option<PathBuf>, debug: bool) {
 #[cfg(test)]
 mod tests {
     use super::{LogTarget, Logger};
+    use flashrom_tester::types;
     use log::{Level, LevelFilter, Log, Record};
     use std::sync::Mutex;
 
@@ -125,6 +131,7 @@ mod tests {
             let logger = Logger {
                 level: LevelFilter::Info,
                 target: LogTarget::Write(lock),
+                color: types::COLOR,
             };
 
             for record in records {
