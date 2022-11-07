@@ -16,3 +16,4 @@ option('programmer', type : 'array', value : ['auto'], choices : [
         'pickit2_spi', 'pony_spi', 'raiden_debug_spi', 'rayer_spi', 'realtek_mst_i2c_spi', 'satamv',
         'satasii', 'serprog',  'stlinkv3_spi', 'usbblaster_spi',
 ], description: 'Active programmers')
+option('llvm_cov', type : 'feature', value : 'disabled', description : 'build for llvm code coverage')

@@ -1,0 +1,6 @@
+#!/bin/sh
+
+cd "${MESON_BUILD_ROOT}"
+llvm-profdata merge -sparse default.profraw -o default.profdata
+llvm-cov show -instr-profile=default.profdata -format=html -output-dir=. "$@"
+echo "file://${MESON_BUILD_ROOT}/index.html"

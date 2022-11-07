@@ -121,7 +121,11 @@ flashrom_tests = executable('flashrom_unit_tests',
     '-U_FORTIFY_SOURCE',
   ],
   export_dynamic : true,
-  link_args : mocks,
+  link_args : mocks + link_args,
   dependencies : [cmocka_dep, flashrom_test_dep],
 )
 test('cmocka test flashrom', flashrom_tests)
+
+if get_option('llvm_cov').enabled()
+  run_target('llvm-cov-tests', command : ['../scripts/llvm-cov', flashrom_tests])
+endif

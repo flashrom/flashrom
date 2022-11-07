@@ -63,12 +63,9 @@ ninja -C buildcov coverage
 #### llvm
 https://clang.llvm.org/docs/SourceBasedCodeCoverage.html
 ```
-env CFLAGS="-fprofile-instr-generate -fcoverage-mapping" CC=clang meson setup buildclangcov
-env LLVM_PROFILE_FILE=default.profraw ninja -C buildclangcov test
-cd buildclangcov
-llvm-profdata merge -sparse default.profraw -o default.profdata
-llvm-cov show ./flashrom_unit_tests -instr-profile=default.profdata --format=html --output-dir=.
-open index.html
+env CC=clang meson setup buildclangcov -Dllvm_cov=enabled
+ninja -C buildclangcov test
+ninja -C buildclangcov llvm-cov-tests
 ```
 
 ## System specific information
