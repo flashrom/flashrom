@@ -58,8 +58,8 @@ impl<W: Write + Send> log::Log for Logger<W> {
 
     fn log(&self, record: &log::Record) {
         fn log_internal<W: Write>(mut w: W, record: &log::Record) -> std::io::Result<()> {
-            let now = chrono::Local::now();
-            write!(w, "{}{} ", types::MAGENTA, now.format("%Y-%m-%dT%H:%M:%S"))?;
+            let now = chrono::Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Micros, true);
+            write!(w, "{}{} ", types::MAGENTA, now)?;
             write!(
                 w,
                 "{}[ {} ]{} ",
