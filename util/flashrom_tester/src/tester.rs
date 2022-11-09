@@ -348,6 +348,7 @@ pub enum TestConclusion {
 pub struct ReportMetaData {
     pub chip_name: String,
     pub os_release: String,
+    pub cros_release: String,
     pub system_info: String,
     pub bios_info: String,
 }
@@ -451,6 +452,7 @@ pub fn collate_all_test_runs(
             println!();
             println!("  %---------------------------%");
             println!("   os release: {}", meta_data.os_release);
+            println!("   cros release: {}", meta_data.cros_release);
             println!("   chip name: {}", meta_data.chip_name);
             println!("   system info: \n{}", meta_data.system_info);
             println!("   bios info: \n{}", meta_data.bios_info);

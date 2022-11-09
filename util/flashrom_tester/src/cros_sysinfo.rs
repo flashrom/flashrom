@@ -34,6 +34,7 @@
 //
 
 use std::ffi::OsStr;
+use std::fs;
 use std::io::Result as IoResult;
 use std::process::{Command, Stdio};
 
@@ -57,4 +58,13 @@ pub fn system_info() -> IoResult<String> {
 
 pub fn bios_info() -> IoResult<String> {
     dmidecode_dispatch(&["-q", "-t0"])
+}
+
+pub fn release_description() -> IoResult<String> {
+    for l in fs::read_to_string("/etc/lsb-release")?.lines() {
+        if l.starts_with("CHROMEOS_RELEASE_DESCRIPTION") {
+            return Ok(l.to_string());
+        }
+    }
+    Err(std::io::ErrorKind::NotFound.into())
 }

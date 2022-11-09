@@ -134,12 +134,15 @@ pub fn generic<'a, TN: Iterator<Item = &'a str>>(
     }
 
     let os_release = sys_info::os_release().unwrap_or("<Unknown OS>".to_string());
+    let cros_release = cros_sysinfo::release_description()
+        .unwrap_or("<Unknown or not a ChromeOS release>".to_string());
     let system_info = cros_sysinfo::system_info().unwrap_or("<Unknown System>".to_string());
     let bios_info = cros_sysinfo::bios_info().unwrap_or("<Unknown BIOS>".to_string());
 
     let meta_data = tester::ReportMetaData {
         chip_name,
         os_release,
+        cros_release,
         system_info,
         bios_info,
     };
