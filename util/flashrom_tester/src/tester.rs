@@ -229,28 +229,44 @@ impl<'a> WriteProtectState<'a> {
 
     /// Set the software write protect and check that the state is as expected.
     pub fn set_sw(&mut self, enable: bool) -> Result<&mut Self, String> {
-        info!("request={}, current={}", enable, self.current.sw);
+        info!("set_sw request={}, current={}", enable, self.current.sw);
         if self.current.sw != enable {
             self.cmd
                 .wp_toggle(/* en= */ enable)
                 .map_err(|e| e.to_string())?;
         }
-        Ok(self)
+        if Self::get_sw(self.cmd).map_err(|e| e.to_string())? != enable {
+            Err(format!(
+                "Software write protect did not change state to {} when requested",
+                enable
+            ))
+        } else {
+            self.current.sw = enable;
+            Ok(self)
+        }
     }
 
-    /// Set the hardware write protect.
+    /// Set the hardware write protect if supported and check that the state is as expected.
     pub fn set_hw(&mut self, enable: bool) -> Result<&mut Self, String> {
+        info!("set_hw request={}, current={}", enable, self.current.hw);
         if self.can_control_hw_wp() {
             if self.current.hw != enable {
                 super::utils::toggle_hw_wp(/* dis= */ !enable)?;
-                self.current.hw = enable;
-            } else if enable {
-                info!(
-                    "Ignoring attempt to enable hardware WP with {:?} programmer",
-                    self.fc
-                );
             }
+            // toggle_hw_wp does check this, but we might not have called toggle_hw_wp so check again.
+            if Self::get_hw(self.cmd)? != enable {
+                return Err(format!(
+                    "Hardware write protect did not change state to {} when requested",
+                    enable
+                ));
+            }
+        } else {
+            info!(
+                "Ignoring attempt to set hardware WP with {:?} programmer",
+                self.fc
+            );
         }
+        self.current.hw = enable;
         Ok(self)
     }
 
