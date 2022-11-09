@@ -199,12 +199,12 @@ fn lock_test(env: &mut TestEnv) -> TestResult {
     }
 
     env.wp.set_hw(false)?.set_sw(true)?;
-    // Toggling software WP off should work when hardware is off.
-    // Then enable again for another go.
-    env.wp.push().set_sw(false)?;
+    // Toggling software WP off should work when hardware WP is off.
+    // Then enable software WP again for the next test.
+    env.wp.set_sw(false)?.set_sw(true)?;
 
+    // Toggling software WP off should not work when hardware WP is on.
     env.wp.set_hw(true)?;
-    // Clearing should fail when hardware is enabled
     if env.wp.set_sw(false).is_ok() {
         return Err("Software WP was reset despite hardware WP being enabled".into());
     }
