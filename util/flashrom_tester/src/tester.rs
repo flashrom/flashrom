@@ -41,11 +41,9 @@ use flashrom::{FlashChip, Flashrom};
 use serde_json::json;
 use std::fs::File;
 use std::io::Write;
-use std::mem::MaybeUninit;
 use std::path::Path;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Mutex;
 
 // type-signature comes from the return type of lib.rs workers.
 type TestError = Box<dyn std::error::Error>;
@@ -60,7 +58,7 @@ pub struct TestEnv<'a> {
     pub cmd: &'a dyn Flashrom,
     layout: LayoutSizes,
 
-    pub wp: WriteProtectState<'a, 'static>,
+    pub wp: WriteProtectState<'a>,
     /// The path to a file containing the flash contents at test start.
     original_flash_contents: PathBuf,
     /// The path to a file containing flash-sized random data
@@ -174,64 +172,33 @@ impl<'a> Drop for TestEnv<'a> {
     }
 }
 
+struct WriteProtect {
+    hw: bool,
+    sw: bool,
+}
+
 /// RAII handle for setting write protect in either hardware or software.
 ///
 /// Given an instance, the state of either write protect can be modified by calling
-/// `set` or `push`. When it goes out of scope, the write protects will be returned
+/// `set`. When it goes out of scope, the write protects will be returned
 /// to the state they had then it was created.
-///
-/// The lifetime `'p` on this struct is the parent state it derives from; `'static`
-/// implies it is derived from hardware, while anything else is part of a stack
-/// created by `push`ing states. An initial state is always static, and the stack
-/// forms a lifetime chain `'static -> 'p -> 'p1 -> ... -> 'pn`.
-pub struct WriteProtectState<'a, 'p> {
-    /// The parent state this derives from.
-    ///
-    /// If it's a root (gotten via `from_hardware`), then this is Hardware and the
-    /// liveness flag will be reset on drop.
-    initial: InitialState<'p>,
-    // Tuples are (hardware, software)
-    current: (bool, bool),
+pub struct WriteProtectState<'a> {
+    current: WriteProtect,
+    initial: WriteProtect,
     cmd: &'a dyn Flashrom,
     fc: FlashChip,
 }
 
-enum InitialState<'p> {
-    Hardware(bool, bool),
-    Previous(&'p WriteProtectState<'p, 'p>),
-}
-
-impl InitialState<'_> {
-    fn get_target(&self) -> (bool, bool) {
-        match self {
-            InitialState::Hardware(hw, sw) => (*hw, *sw),
-            InitialState::Previous(s) => s.current,
-        }
-    }
-}
-
-impl<'a> WriteProtectState<'a, 'static> {
+impl<'a> WriteProtectState<'a> {
     /// Initialize a state from the current state of the hardware.
-    ///
-    /// Panics if there is already a live state derived from hardware. In such a situation the
-    /// new state must be derived from the live one, or the live one must be dropped first.
     pub fn from_hardware(cmd: &'a dyn Flashrom, fc: FlashChip) -> Result<Self, FlashromError> {
-        let mut lock = Self::get_liveness_lock()
-            .lock()
-            .expect("Somebody panicked during WriteProtectState init from hardware");
-        if *lock {
-            drop(lock); // Don't poison the lock
-            panic!("Attempted to create a new WriteProtectState when one is already live");
-        }
-
         let hw = Self::get_hw(cmd)?;
         let sw = Self::get_sw(cmd)?;
-        info!("Initial hardware write protect: HW={} SW={}", hw, sw);
+        info!("Initial write protect state: HW={} SW={}", hw, sw);
 
-        *lock = true;
         Ok(WriteProtectState {
-            initial: InitialState::Hardware(hw, sw),
-            current: (hw, sw),
+            current: WriteProtect { hw, sw },
+            initial: WriteProtect { hw, sw },
             cmd,
             fc,
         })
@@ -251,9 +218,7 @@ impl<'a> WriteProtectState<'a, 'static> {
         let b = cmd.wp_status(true)?;
         Ok(b)
     }
-}
 
-impl<'a, 'p> WriteProtectState<'a, 'p> {
     /// Return true if the current programmer supports setting the hardware
     /// write protect.
     ///
@@ -262,22 +227,23 @@ impl<'a, 'p> WriteProtectState<'a, 'p> {
         self.cmd.can_control_hw_wp()
     }
 
-    /// Set the software write protect.
-    pub fn set_sw(&mut self, enable: bool) -> Result<&mut Self, FlashromError> {
-        info!("request={}, current={}", enable, self.current.1);
-        if self.current.1 != enable {
-            self.cmd.wp_toggle(/* en= */ enable)?;
-            self.current.1 = enable;
+    /// Set the software write protect and check that the state is as expected.
+    pub fn set_sw(&mut self, enable: bool) -> Result<&mut Self, String> {
+        info!("request={}, current={}", enable, self.current.sw);
+        if self.current.sw != enable {
+            self.cmd
+                .wp_toggle(/* en= */ enable)
+                .map_err(|e| e.to_string())?;
         }
         Ok(self)
     }
 
     /// Set the hardware write protect.
     pub fn set_hw(&mut self, enable: bool) -> Result<&mut Self, String> {
-        if self.current.0 != enable {
-            if self.can_control_hw_wp() {
+        if self.can_control_hw_wp() {
+            if self.current.hw != enable {
                 super::utils::toggle_hw_wp(/* dis= */ !enable)?;
-                self.current.0 = enable;
+                self.current.hw = enable;
             } else if enable {
                 info!(
                     "Ignoring attempt to enable hardware WP with {:?} programmer",
@@ -288,151 +254,35 @@ impl<'a, 'p> WriteProtectState<'a, 'p> {
         Ok(self)
     }
 
-    /// Stack a new write protect state on top of the current one.
-    ///
-    /// This is useful if you need to temporarily make a change to write protection:
-    ///
-    /// ```no_run
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// # let cmd: flashrom::FlashromCmd = unimplemented!();
-    /// let wp = flashrom_tester::tester::WriteProtectState::from_hardware(&cmd, flashrom::FlashChip::SERVO)?;
-    /// {
-    ///     let mut wp = wp.push();
-    ///     wp.set_sw(false)?;
-    ///     // Do something with software write protect disabled
-    /// }
-    /// // Now software write protect returns to its original state, even if
-    /// // set_sw() failed.
-    /// # Ok(())
-    /// # }
-    /// ```
-    ///
-    /// This returns a new state which restores the original when it is dropped- the new state
-    /// refers to the old, so the compiler enforces that states are disposed of in the reverse
-    /// order of their creation and correctly restore the original state.
-    pub fn push<'p1>(&'p1 self) -> WriteProtectState<'a, 'p1> {
-        WriteProtectState {
-            initial: InitialState::Previous(self),
-            current: self.current,
-            cmd: self.cmd,
-            fc: self.fc,
-        }
-    }
-
-    fn get_liveness_lock() -> &'static Mutex<bool> {
-        static INIT: std::sync::Once = std::sync::Once::new();
-        /// Value becomes true when there is a live WriteProtectState derived `from_hardware`,
-        /// blocking duplicate initialization.
-        ///
-        /// This is required because hardware access is not synchronized; it's possible to leave the
-        /// hardware in an unintended state by creating a state handle from it, modifying the state,
-        /// creating another handle from the hardware then dropping the first handle- then on drop
-        /// of the second handle it will restore the state to the modified one rather than the initial.
-        ///
-        /// This flag ensures that a duplicate root state cannot be created.
-        ///
-        /// This is a Mutex<bool> rather than AtomicBool because acquiring the flag needs to perform
-        /// several operations that may themselves fail- acquisitions must be fully synchronized.
-        static mut LIVE_FROM_HARDWARE: MaybeUninit<Mutex<bool>> = MaybeUninit::uninit();
-
-        unsafe {
-            INIT.call_once(|| {
-                LIVE_FROM_HARDWARE.as_mut_ptr().write(Mutex::new(false));
-            });
-            &*LIVE_FROM_HARDWARE.as_ptr()
-        }
-    }
-
     /// Reset the hardware to what it was when this state was created, reporting errors.
     ///
     /// This behaves exactly like allowing a state to go out of scope, but it can return
     /// errors from that process rather than panicking.
     pub fn close(mut self) -> Result<(), String> {
-        unsafe {
-            let out = self.drop_internal();
-            // We just ran drop, don't do it again
-            std::mem::forget(self);
-            out
-        }
+        let out = self.drop_internal();
+        // We just ran drop, don't do it again
+        std::mem::forget(self);
+        out
     }
 
-    /// Internal Drop impl.
-    ///
-    /// This is unsafe because it effectively consumes self when clearing the
-    /// liveness lock. Callers must be able to guarantee that self will be forgotten
-    /// if the state was constructed from hardware in order to uphold the liveness
-    /// invariant (that only a single state constructed from hardware exists at any
-    /// time).
-    unsafe fn drop_internal(&mut self) -> Result<(), String> {
-        let lock = match self.initial {
-            InitialState::Hardware(_, _) => Some(
-                Self::get_liveness_lock()
-                    .lock()
-                    .expect("Somebody panicked during WriteProtectState drop from hardware"),
-            ),
-            _ => None,
-        };
-        let (hw, sw) = self.initial.get_target();
-
-        fn enable_str(enable: bool) -> &'static str {
-            if enable {
-                "en"
-            } else {
-                "dis"
-            }
-        }
-
+    /// Sets both write protects to the state they had when this state was created.
+    fn drop_internal(&mut self) -> Result<(), String> {
         // Toggle both protects back to their initial states.
         // Software first because we can't change it once hardware is enabled.
-        if sw != self.current.1 {
-            // Is the hw wp currently enabled?
-            if self.current.0 {
-                super::utils::toggle_hw_wp(/* dis= */ true).map_err(|e| {
-                    format!(
-                        "Failed to {}able hardware write protect: {}",
-                        enable_str(false),
-                        e
-                    )
-                })?;
-            }
-            self.cmd.wp_toggle(/* en= */ sw).map_err(|e| {
-                format!(
-                    "Failed to {}able software write protect: {}",
-                    enable_str(sw),
-                    e
-                )
-            })?;
+        if self.set_sw(self.initial.sw).is_err() {
+            self.set_hw(false)?;
+            self.set_sw(self.initial.sw)?;
         }
+        self.set_hw(self.initial.hw)?;
 
-        assert!(
-            self.cmd.can_control_hw_wp() || (!self.current.0 && !hw),
-            "HW WP must be disabled if it cannot be controlled"
-        );
-        if hw != self.current.0 {
-            super::utils::toggle_hw_wp(/* dis= */ !hw).map_err(|e| {
-                format!(
-                    "Failed to {}able hardware write protect: {}",
-                    enable_str(hw),
-                    e
-                )
-            })?;
-        }
-
-        if let Some(mut lock) = lock {
-            // Initial state was constructed via from_hardware, now we can clear the liveness
-            // lock since reset is complete.
-            *lock = false;
-        }
         Ok(())
     }
 }
 
-impl<'a, 'p> Drop for WriteProtectState<'a, 'p> {
-    /// Sets both write protects to the state they had when this state was created.
-    ///
-    /// Panics on error because there is no mechanism to report errors in Drop.
+impl<'a> Drop for WriteProtectState<'a> {
     fn drop(&mut self) {
-        unsafe { self.drop_internal() }.expect("Error while dropping WriteProtectState")
+        self.drop_internal()
+            .expect("Error while dropping WriteProtectState")
     }
 }
 
