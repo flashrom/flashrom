@@ -133,7 +133,7 @@ pub trait Flashrom {
     /// Write only a region of the flash.
     fn write_file_with_layout(&self, rws: &ROMWriteSpecifics) -> Result<bool, FlashromError>;
 
-    /// Set write protect status for a range.
+    /// Set write protect status and range.
     fn wp_range(&self, range: (i64, i64), wp_enable: bool) -> Result<bool, FlashromError>;
 
     /// Read the write protect regions for the flash.
@@ -143,6 +143,10 @@ pub trait Flashrom {
     fn wp_status(&self, en: bool) -> Result<bool, FlashromError>;
 
     /// Set write protect status.
+    /// If en=true sets wp_range to the whole chip (0,getsize()).
+    /// If en=false sets wp_range to (0,0).
+    /// This is due to the MTD driver, which requires wp enable to use a range
+    /// length != 0 and wp disable to have the range 0,0.
     fn wp_toggle(&self, en: bool) -> Result<bool, FlashromError>;
 
     /// Read the whole flash to the file specified by `path`.

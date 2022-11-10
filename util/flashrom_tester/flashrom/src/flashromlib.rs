@@ -102,10 +102,8 @@ impl crate::Flashrom for FlashromLib {
     }
 
     fn wp_toggle(&self, en: bool) -> Result<bool, FlashromError> {
-        // TODO why does the cmd impl not do this?
-        // for cmd, range is only set for enable
-        // and disable is not sent for the wp_range command
-        self.wp_range((0, self.get_size()?), en)
+        let range = if en { (0, self.get_size()?) } else { (0, 0) };
+        self.wp_range(range, en)
     }
 
     fn read_into_file(&self, path: &Path) -> Result<(), FlashromError> {

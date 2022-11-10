@@ -149,11 +149,12 @@ impl crate::Flashrom for FlashromCmd {
         Ok(true)
     }
 
-    fn wp_range(&self, range: (i64, i64), wp_enable: bool) -> Result<bool, FlashromError> {
+    fn wp_range(&self, range: (i64, i64), en: bool) -> Result<bool, FlashromError> {
         let opts = FlashromOpt {
             wp_opt: WPOpt {
+                enable: en,
+                disable: !en,
                 range: Some(range),
-                enable: wp_enable,
                 ..Default::default()
             },
             ..Default::default()
@@ -200,28 +201,14 @@ impl crate::Flashrom for FlashromCmd {
     }
 
     fn wp_toggle(&self, en: bool) -> Result<bool, FlashromError> {
-        let status = if en { "en" } else { "dis" };
-
-        // For MTD, --wp-range and --wp-enable must be used simultaneously.
         let range = if en {
             let rom_sz: i64 = self.get_size()?;
-            Some((0, rom_sz)) // (start, len)
+            (0, rom_sz) // (start, len)
         } else {
-            None
+            (0, 0)
         };
-
-        let opts = FlashromOpt {
-            wp_opt: WPOpt {
-                range,
-                enable: en,
-                disable: !en,
-                ..Default::default()
-            },
-            ..Default::default()
-        };
-
-        self.dispatch(opts, "wp_toggle")?;
-
+        self.wp_range(range, en)?;
+        let status = if en { "en" } else { "dis" };
         match self.wp_status(true) {
             Ok(_ret) => {
                 info!("Successfully {}abled write-protect", status);
