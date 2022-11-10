@@ -246,6 +246,24 @@ impl<'a> WriteProtectState<'a> {
         }
     }
 
+    // Set software write protect with a custom range
+    pub fn set_range(&mut self, range: (i64, i64), enable: bool) -> Result<&mut Self, String> {
+        info!("set_range request={}, current={}", enable, self.current.sw);
+        self.cmd
+            .wp_range(range, enable)
+            .map_err(|e| e.to_string())?;
+        let actual_state = Self::get_sw(self.cmd).map_err(|e| e.to_string())?;
+        if actual_state != enable {
+            Err(format!(
+                "set_range request={}, real={}",
+                enable, actual_state
+            ))
+        } else {
+            self.current.sw = enable;
+            Ok(self)
+        }
+    }
+
     /// Set the hardware write protect if supported and check that the state is as expected.
     pub fn set_hw(&mut self, enable: bool) -> Result<&mut Self, String> {
         info!("set_hw request={}, current={}", enable, self.current.hw);

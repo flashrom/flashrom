@@ -272,10 +272,12 @@ fn partial_lock_test(section: LayoutNames) -> impl Fn(&mut TestEnv) -> TestResul
         env.ensure_golden()?;
 
         let (wp_section_name, start, len) = utils::layout_section(env.layout(), section);
-        // Disable software WP so we can do range protection, but hardware WP
-        // must remain enabled for (most) range protection to do anything.
-        env.wp.set_hw(false)?.set_sw(false)?;
-        env.cmd.wp_range((start, len), true)?;
+        // Disable hardware WP so we can modify the protected range.
+        env.wp.set_hw(false)?;
+        // Then enable software WP so the range is enforced and enable hardware
+        // WP so that flashrom does not disable software WP during the
+        // operation.
+        env.wp.set_range((start, len), true)?;
         env.wp.set_hw(true)?;
 
         // Check that we cannot write to the protected region.
