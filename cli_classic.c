@@ -126,7 +126,7 @@ static bool check_file(FILE *file)
 	return true;
 }
 
-static int parse_wp_range(uint32_t *start, uint32_t *len)
+static int parse_wp_range(unsigned int *start, unsigned int *len)
 {
 	char *endptr = NULL, *token = NULL;
 
@@ -568,7 +568,7 @@ int main(int argc, char *argv[])
 	int namelen, opt, i, j;
 	int startchip = -1, chipcount = 0, option_index = 0;
 	int operation_specified = 0;
-	uint32_t wp_start = 0, wp_len = 0;
+	unsigned int wp_start = 0, wp_len = 0;
 	bool force = false, ifd = false, fmap = false;
 #if CONFIG_PRINT_WIKI == 1
 	bool list_supported_wiki = false;
