@@ -319,7 +319,7 @@ static char *extract_param(char *const *haystack, const char *needle, const char
 		opt = malloc(optlen + 1);
 		if (!opt) {
 			msg_gerr("Out of memory!\n");
-			exit(1);
+			return NULL;
 		}
 		strncpy(opt, opt_pos, optlen);
 		opt[optlen] = '\0';
@@ -455,7 +455,7 @@ static int check_erased_range(struct flashctx *flash, unsigned int start, unsign
 
 	if (!cmpbuf) {
 		msg_gerr("Out of memory!\n");
-		exit(1);
+		return -1;
 	}
 	memset(cmpbuf, erased_value, len);
 	ret = verify_range(flash, cmpbuf, start, len);
@@ -897,7 +897,7 @@ int probe_flash(struct registered_master *mst, int startchip, struct flashctx *f
 		flash->chip = calloc(1, sizeof(*flash->chip));
 		if (!flash->chip) {
 			msg_gerr("Out of memory!\n");
-			exit(1);
+			return -1;
 		}
 		*flash->chip = *chip;
 		flash->mst = mst;
