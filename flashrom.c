@@ -511,11 +511,6 @@ int verify_range(struct flashctx *flash, const uint8_t *cmpbuf, unsigned int sta
 		return -1;
 	}
 
-	if (!lookup_read_func_ptr(flash->chip)) {
-		msg_cerr("ERROR: flashrom has no read function for this flash chip.\n");
-		return -1;
-	}
-
 	uint8_t *readbuf = malloc(len);
 	if (!readbuf) {
 		msg_gerr("Could not allocate memory!\n");
