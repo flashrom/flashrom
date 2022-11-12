@@ -471,15 +471,16 @@ static int compare_range(const uint8_t *wantbuf, const uint8_t *havebuf, unsigne
 static int check_erased_range(struct flashctx *flash, unsigned int start, unsigned int len)
 {
 	int ret;
-	uint8_t *cmpbuf = malloc(len);
 	const uint8_t erased_value = ERASED_VALUE(flash);
 
+	uint8_t *cmpbuf = malloc(len);
 	if (!cmpbuf) {
 		msg_gerr("Out of memory!\n");
 		return -1;
 	}
 	memset(cmpbuf, erased_value, len);
 	ret = verify_range(flash, cmpbuf, start, len);
+
 	free(cmpbuf);
 	return ret;
 }
