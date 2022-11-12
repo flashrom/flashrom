@@ -145,7 +145,7 @@ int register_include_arg(struct layout_include_args **args, const char *arg)
 
 	tmp = malloc(sizeof(*tmp));
 	if (tmp == NULL) {
-		msg_gerr("Could not allocate memory");
+		msg_gerr("Out of memory");
 		goto error;
 	}
 

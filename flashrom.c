@@ -454,7 +454,7 @@ static int check_erased_range(struct flashctx *flash, unsigned int start, unsign
 	const uint8_t erased_value = ERASED_VALUE(flash);
 
 	if (!cmpbuf) {
-		msg_gerr("Could not allocate memory!\n");
+		msg_gerr("Out of memory!\n");
 		exit(1);
 	}
 	memset(cmpbuf, erased_value, len);
@@ -513,7 +513,7 @@ int verify_range(struct flashctx *flash, const uint8_t *cmpbuf, unsigned int sta
 
 	uint8_t *readbuf = malloc(len);
 	if (!readbuf) {
-		msg_gerr("Could not allocate memory!\n");
+		msg_gerr("Out of memory!\n");
 		return -1;
 	}
 
