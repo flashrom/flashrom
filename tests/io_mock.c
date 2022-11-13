@@ -14,7 +14,6 @@
  * GNU General Public License for more details.
  */
 
-#include <include/test.h>
 #include "io_mock.h"
 
 static const struct io_mock *current_io = NULL;

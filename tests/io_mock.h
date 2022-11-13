@@ -31,6 +31,8 @@
 #ifndef _IO_MOCK_H_
 #define _IO_MOCK_H_
 
+#include <include/test.h>
+
 /* Required for `FILE *` */
 #include <stdio.h>
 
