@@ -111,8 +111,10 @@ struct io_mock {
 	FILE* (*iom_fopen)(void *state, const char *pathname, const char *mode);
 	char* (*iom_fgets)(void *state, char *buf, int len, FILE *fp);
 	size_t (*iom_fread)(void *state, void *buf, size_t size, size_t len, FILE *fp);
+	size_t (*iom_fwrite)(void *state, const void *buf, size_t size, size_t len, FILE *fp);
 	int (*iom_fprintf)(void *state, FILE *fp, const char *fmt, va_list args);
 	int (*iom_fclose)(void *state, FILE *fp);
+	FILE *(*iom_fdopen)(void *state, int fd, const char *mode);
 
 	/*
 	 * An alternative to custom open mock. A test can either register its

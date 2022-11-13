@@ -184,6 +184,8 @@ FILE *__wrap_fopen64(const char *pathname, const char *mode)
 FILE *__wrap_fdopen(int fd, const char *mode)
 {
 	LOG_ME;
+	if (get_io() && get_io()->iom_fdopen)
+		return get_io()->iom_fdopen(get_io()->state, fd, mode);
 	return not_null();
 }
 
@@ -254,6 +256,8 @@ size_t __wrap_fread(void *ptr, size_t size, size_t nmemb, FILE *fp)
 size_t __wrap_fwrite(const void *ptr, size_t size, size_t nmemb, FILE *fp)
 {
 	LOG_ME;
+	if (get_io() && get_io()->iom_fwrite)
+		return get_io()->iom_fwrite(get_io()->state, ptr, size, nmemb, fp);
 	return nmemb;
 }
 
