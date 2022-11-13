@@ -1907,6 +1907,53 @@ static int chip_safety_check(const struct flashctx *flash, int force,
 	return 0;
 }
 
+static int restore_flash_wp(struct flashctx *const flash, void *data)
+{
+	struct flashrom_wp_cfg *wp_cfg = data;
+	enum flashrom_wp_result ret = flashrom_wp_write_cfg(flash, wp_cfg);
+	flashrom_wp_cfg_release(wp_cfg);
+
+	return (ret == FLASHROM_WP_OK) ? 0 : -1;
+}
+
+static int save_initial_flash_wp(struct flashctx *const flash)
+{
+	struct flashrom_wp_cfg *initial_wp_cfg;
+	if (flashrom_wp_cfg_new(&initial_wp_cfg) != FLASHROM_WP_OK)
+		return -1;
+
+	if (flashrom_wp_read_cfg(initial_wp_cfg, flash) != FLASHROM_WP_OK) {
+		flashrom_wp_cfg_release(initial_wp_cfg);
+		return -1;
+	}
+
+	if (register_chip_restore(restore_flash_wp, flash, initial_wp_cfg)) {
+		flashrom_wp_cfg_release(initial_wp_cfg);
+		return -1;
+	}
+	return 0;
+}
+
+static int unlock_flash_wp(struct flashctx *const flash)
+{
+	/* Save original WP state to be restored later */
+	if (save_initial_flash_wp(flash))
+		return -1;
+
+	/* Disable WP */
+	struct flashrom_wp_cfg *unlocked_wp_cfg;
+	if (flashrom_wp_cfg_new(&unlocked_wp_cfg) != FLASHROM_WP_OK)
+		return -1;
+
+	flashrom_wp_set_range(unlocked_wp_cfg, 0, 0);
+	flashrom_wp_set_mode(unlocked_wp_cfg, FLASHROM_WP_MODE_DISABLED);
+	enum flashrom_wp_result ret = flashrom_wp_write_cfg(flash, unlocked_wp_cfg);
+
+	flashrom_wp_cfg_release(unlocked_wp_cfg);
+
+	return (ret == FLASHROM_WP_OK) ? 0 : -1;
+}
+
 int prepare_flash_access(struct flashctx *const flash,
 			 const bool read_it, const bool write_it,
 			 const bool erase_it, const bool verify_it)
@@ -1927,10 +1974,16 @@ int prepare_flash_access(struct flashctx *const flash,
 	/* Initialize chip_restore_fn_count before chip unlock calls. */
 	flash->chip_restore_fn_count = 0;
 
-	/* Given the existence of read locks, we want to unlock for read,
-	   erase and write. */
-	if (flash->chip->unlock)
+	/* Given the existence of read locks, we want to unlock for read, erase and write. */
+	int ret = 1;
+	if (flash->chip->decode_range != NO_DECODE_RANGE_FUNC) {
+		ret = unlock_flash_wp(flash);
+		if (ret)
+			msg_cerr("Failed to unlock flash status reg with wp support.\n");
+	}
+	if (ret && flash->chip->unlock) {
 		flash->chip->unlock(flash);
+	}
 
 	flash->address_high_byte = -1;
 	flash->in_4ba_mode = false;
@@ -1947,7 +2000,6 @@ int prepare_flash_access(struct flashctx *const flash,
 
 	/* Enable/disable 4-byte addressing mode if flash chip supports it */
 	if (spi_chip_4ba(flash)) {
-		int ret;
 		if (spi_master_4ba(flash))
 			ret = spi_enter_4ba(flash);
 		else
