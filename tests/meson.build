@@ -23,6 +23,7 @@ test_srcs = files(
   'chip.c',
   'chip_wp.c',
   'selfcheck.c',
+  'io_real.c',
 )
 
 if not programmer.get('dummy').get('active')
