@@ -2524,6 +2524,7 @@ const struct board_match board_matches[] = {
 #endif
 	{     0,      0,      0,      0,       0,      0,      0,      0, NULL,         NULL, NULL,           P3, NULL,          NULL,                    0,   NT, NULL}, /* end marker */
 };
+const size_t board_matches_size = ARRAY_SIZE(board_matches);
 
 int selfcheck_board_enables(void)
 {

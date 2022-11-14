@@ -193,6 +193,7 @@ struct board_match {
 };
 
 extern const struct board_match board_matches[];
+extern const size_t board_matches_size;
 
 struct board_info {
 	const char *vendor;

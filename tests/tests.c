@@ -381,6 +381,15 @@ int main(int argc, char *argv[])
 	};
 	ret |= cmocka_run_group_tests_name("helpers.c tests", helpers_tests, NULL, NULL);
 
+	const struct CMUnitTest selfcheck[] = {
+		cmocka_unit_test(selfcheck_programmer_table),
+		cmocka_unit_test(selfcheck_flashchips_table),
+		cmocka_unit_test(selfcheck_eraseblocks),
+		cmocka_unit_test(selfcheck_board_matches_table),
+	};
+	ret |= cmocka_run_group_tests_name("selfcheck.c tests", selfcheck,
+					   NULL, NULL);
+
 	const struct CMUnitTest flashrom_tests[] = {
 		cmocka_unit_test(flashbuses_to_text_test_success),
 	};
