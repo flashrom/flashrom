@@ -31,6 +31,9 @@
 
 #define MOCK_FD (0x10ec)
 
+#define SKIP_TEST(name) \
+	void name (void **state) { skip(); }
+
 /*
  * Having this as function allows to set a breakpoint on the address,
  * as it has a named symbol associated with the address number.

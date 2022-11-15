@@ -28,9 +28,6 @@
 #include "programmer.h"
 #include "spi.h"
 
-#define SKIP_TEST(name) \
-	void name (void **state) { skip(); }
-
 void run_basic_lifecycle(void **state, const struct io_mock *io,
 		const struct programmer_entry *prog, const char *param);
 
