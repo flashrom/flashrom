@@ -153,9 +153,10 @@ mod tests {
 
         assert_eq!(&buf[..5], "\x1b[35m");
         // Time is difficult to test, assume it's formatted okay
+        // Split on the UTC timezone char
         assert_eq!(
-            &buf[24..],
-            " \x1b[33m[ INFO ]\x1b[0m Test message at INFO\n"
+            buf.split_once("Z ").unwrap().1,
+            "\x1b[33m[ INFO ]\x1b[0m Test message at INFO\n"
         );
     }
 
