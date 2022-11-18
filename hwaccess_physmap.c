@@ -121,7 +121,7 @@ static void sys_physunmap_unaligned(void *virt_addr, size_t len)
 
 #define MEM_DEV ""
 
-void *sys_physmap(uintptr_t phys_addr, size_t len)
+static void *sys_physmap(uintptr_t phys_addr, size_t len)
 {
 	return (void *)phys_to_virt(phys_addr);
 }

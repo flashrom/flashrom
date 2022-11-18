@@ -134,6 +134,8 @@
 #endif
 
 #if defined(__LIBPAYLOAD__)
+#include <arch/io.h>
+
 #define IO_PORT_PERMISSION USE_DUMMY
 #define IO_PORT_FUNCTION USE_LIBC_TARGET_LAST
 #endif
