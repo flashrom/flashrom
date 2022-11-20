@@ -21,10 +21,15 @@
 void *__wrap_usb_dev_get_by_vid_pid_number(
 		libusb_context *usb_ctx, uint16_t vid, uint16_t pid, unsigned int num);
 int __wrap_libusb_init(libusb_context **ctx);
+void __wrap_libusb_set_debug(libusb_context *ctx, int level);
+int __wrap_libusb_set_option(libusb_context *ctx, int option, ...);
 int __wrap_libusb_open(libusb_device *dev, libusb_device_handle **devh);
 int __wrap_libusb_set_auto_detach_kernel_driver(libusb_device_handle *devh, int enable);
 int __wrap_libusb_detach_kernel_driver(libusb_device_handle *dev_handle, int interface_number);
 int __wrap_libusb_attach_kernel_driver(libusb_device_handle *dev_handle, int interface_number);
+struct libusb_device_handle *__wrap_libusb_open_device_with_vid_pid(
+		libusb_context *ctx, uint16_t vendor_id, uint16_t product_id);
+libusb_device *__wrap_libusb_get_device(libusb_device_handle *dev_handle);
 ssize_t __wrap_libusb_get_device_list(libusb_context *ctx, libusb_device ***list);
 void __wrap_libusb_free_device_list(libusb_device **list, int unref_devices);
 uint8_t __wrap_libusb_get_bus_number(libusb_device *dev);
@@ -43,6 +48,10 @@ int __wrap_libusb_release_interface(libusb_device_handle *devh, int interface_nu
 void __wrap_libusb_close(libusb_device_handle *devh);
 libusb_device *__wrap_libusb_ref_device(libusb_device *dev);
 void __wrap_libusb_unref_device(libusb_device *dev);
+struct libusb_transfer *__wrap_libusb_alloc_transfer(int iso_packets);
+int __wrap_libusb_submit_transfer(struct libusb_transfer *transfer);
+void __wrap_libusb_free_transfer(struct libusb_transfer *transfer);
+int __wrap_libusb_handle_events_timeout(libusb_context *ctx, struct timeval *tv);
 void __wrap_libusb_exit(libusb_context *ctx);
 
 #endif /* LIBUSB_WRAPS_H */

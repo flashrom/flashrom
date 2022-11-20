@@ -34,6 +34,17 @@ int __wrap_libusb_init(libusb_context **ctx)
 	return 0;
 }
 
+void __wrap_libusb_set_debug(libusb_context *ctx, int level)
+{
+	LOG_ME;
+}
+
+int __wrap_libusb_set_option(libusb_context *ctx, int option, ...)
+{
+	LOG_ME;
+	return 0;
+}
+
 int __wrap_libusb_open(libusb_device *dev, libusb_device_handle **devh)
 {
 	LOG_ME;
@@ -56,6 +67,19 @@ int __wrap_libusb_attach_kernel_driver(libusb_device_handle *dev_handle, int int
 {
 	LOG_ME;
 	return 0;
+}
+
+struct libusb_device_handle *__wrap_libusb_open_device_with_vid_pid(
+		libusb_context *ctx, uint16_t vendor_id, uint16_t product_id)
+{
+	LOG_ME;
+	return not_null();
+}
+
+libusb_device *__wrap_libusb_get_device(libusb_device_handle *dev_handle)
+{
+	LOG_ME;
+	return not_null();
 }
 
 ssize_t __wrap_libusb_get_device_list(libusb_context *ctx, libusb_device ***list)
@@ -159,6 +183,29 @@ libusb_device *__wrap_libusb_ref_device(libusb_device *dev)
 void __wrap_libusb_unref_device(libusb_device *dev)
 {
 	LOG_ME;
+}
+
+struct libusb_transfer *__wrap_libusb_alloc_transfer(int iso_packets)
+{
+	LOG_ME;
+	return not_null();
+}
+
+int __wrap_libusb_submit_transfer(struct libusb_transfer *transfer)
+{
+	LOG_ME;
+	return 0;
+}
+
+void __wrap_libusb_free_transfer(struct libusb_transfer *transfer)
+{
+	LOG_ME;
+}
+
+int __wrap_libusb_handle_events_timeout(libusb_context *ctx, struct timeval *tv)
+{
+	LOG_ME;
+	return 0;
 }
 
 void __wrap_libusb_exit(libusb_context *ctx)

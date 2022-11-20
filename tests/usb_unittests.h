@@ -55,6 +55,8 @@ typedef struct libusb_interface_descriptor libusb_interface_descriptor;
 struct libusb_endpoint_descriptor;
 typedef struct libusb_endpoint_descriptor libusb_endpoint_descriptor;
 
+struct libusb_transfer;
+
 #endif
 
 #endif /* _USB_UNITTESTS_H_ */
