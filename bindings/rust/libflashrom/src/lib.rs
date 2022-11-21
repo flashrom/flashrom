@@ -312,6 +312,7 @@ pub enum WPError {
     WpErrRangeUnsupported,
     WpErrModeUnsupported,
     WpErrRangeListUnavailable,
+    WpErrUnsupportedState,
     WpErrUnknown(libflashrom_sys::flashrom_wp_result),
 }
 
@@ -340,6 +341,9 @@ impl From<libflashrom_sys::flashrom_wp_result> for WPError {
             }
             libflashrom_sys::flashrom_wp_result::FLASHROM_WP_ERR_RANGE_LIST_UNAVAILABLE => {
                 WPError::WpErrRangeListUnavailable
+            }
+            libflashrom_sys::flashrom_wp_result::FLASHROM_WP_ERR_UNSUPPORTED_STATE => {
+                WPError::WpErrUnsupportedState
             }
             _ => WPError::WpErrUnknown(e), // this could also be a panic
         }
