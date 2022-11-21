@@ -125,7 +125,7 @@ static enum flashrom_wp_result read_wp_bits(struct wp_bits *bits, struct flashct
 	return ret;
 }
 
-/** Helper function for write_wp_bits(). */
+/** Helper function for get_wp_bits_reg_values(). */
 static void set_reg_bit(
 		uint8_t *reg_values, uint8_t *bit_masks, uint8_t *write_masks,
 		struct reg_bit_info bit, uint8_t value)
@@ -140,18 +140,16 @@ static void set_reg_bit(
 	}
 }
 
-/** Write WP configuration bits to the flash's registers. */
-static enum flashrom_wp_result write_wp_bits(struct flashctx *flash, struct wp_bits bits)
+/** Convert wp_bits to register values and write masks */
+static void get_wp_bits_reg_values(
+		uint8_t *reg_values, uint8_t *bit_masks, uint8_t *write_masks,
+		const struct reg_bit_map *reg_bits, struct wp_bits bits)
 {
-	size_t i;
-	const struct reg_bit_map *reg_bits = &flash->chip->reg_bits;
+	memset(reg_values, 0, sizeof(uint8_t) * MAX_REGISTERS);
+	memset(bit_masks, 0, sizeof(uint8_t) * MAX_REGISTERS);
+	memset(write_masks, 0, sizeof(uint8_t) * MAX_REGISTERS);
 
-	/* Convert wp_bits to register values and masks */
-	uint8_t reg_values[MAX_REGISTERS] = {0};
-	uint8_t bit_masks[MAX_REGISTERS] = {0};		/* masks of valid bits */
-	uint8_t write_masks[MAX_REGISTERS] = {0};	/* masks of written bits */
-
-	for (i = 0; i < bits.bp_bit_count; i++)
+	for (size_t i = 0; i < bits.bp_bit_count; i++)
 		set_reg_bit(reg_values, bit_masks, write_masks, reg_bits->bp[i], bits.bp[i]);
 
 	set_reg_bit(reg_values, bit_masks, write_masks, reg_bits->tb,  bits.tb);
@@ -161,6 +159,15 @@ static enum flashrom_wp_result write_wp_bits(struct flashctx *flash, struct wp_b
 	set_reg_bit(reg_values, bit_masks, write_masks, reg_bits->srl, bits.srl);
 	/* Note: always setting WPS bit to zero until its fully supported. */
 	set_reg_bit(reg_values, bit_masks, write_masks, reg_bits->wps, 0);
+}
+
+/** Write WP configuration bits to the flash's registers. */
+static enum flashrom_wp_result write_wp_bits(struct flashctx *flash, struct wp_bits bits)
+{
+	uint8_t reg_values[MAX_REGISTERS];
+	uint8_t bit_masks[MAX_REGISTERS];	/* masks of valid bits */
+	uint8_t write_masks[MAX_REGISTERS];	/* masks of written bits */
+	get_wp_bits_reg_values(reg_values, bit_masks, write_masks, &flash->chip->reg_bits, bits);
 
 	/* Write each register whose value was updated */
 	for (enum flash_reg reg = STATUS1; reg < MAX_REGISTERS; reg++) {
