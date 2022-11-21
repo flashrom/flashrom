@@ -99,6 +99,10 @@ struct io_mock {
 						uint8_t config_index,
 						struct libusb_config_descriptor **);
 	void (*libusb_free_config_descriptor)(void *state, struct libusb_config_descriptor *);
+	struct libusb_transfer* (*libusb_alloc_transfer)(void *state, int iso_packets);
+	int (*libusb_submit_transfer)(void *state, struct libusb_transfer *transfer);
+	void (*libusb_free_transfer)(void *state, struct libusb_transfer *transfer);
+	int (*libusb_handle_events_timeout)(void *state, libusb_context *ctx, struct timeval *tv);
 
 	/* POSIX File I/O */
 	int (*iom_open)(void *state, const char *pathname, int flags);

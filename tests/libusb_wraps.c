@@ -188,23 +188,31 @@ void __wrap_libusb_unref_device(libusb_device *dev)
 struct libusb_transfer *__wrap_libusb_alloc_transfer(int iso_packets)
 {
 	LOG_ME;
+	if (get_io() && get_io()->libusb_alloc_transfer)
+		return get_io()->libusb_alloc_transfer(get_io()->state, iso_packets);
 	return not_null();
 }
 
 int __wrap_libusb_submit_transfer(struct libusb_transfer *transfer)
 {
 	LOG_ME;
+	if (get_io() && get_io()->libusb_submit_transfer)
+		return get_io()->libusb_submit_transfer(get_io()->state, transfer);
 	return 0;
 }
 
 void __wrap_libusb_free_transfer(struct libusb_transfer *transfer)
 {
 	LOG_ME;
+	if (get_io() && get_io()->libusb_free_transfer)
+		get_io()->libusb_free_transfer(get_io()->state, transfer);
 }
 
 int __wrap_libusb_handle_events_timeout(libusb_context *ctx, struct timeval *tv)
 {
 	LOG_ME;
+	if (get_io() && get_io()->libusb_handle_events_timeout)
+		get_io()->libusb_handle_events_timeout(get_io()->state, ctx, tv);
 	return 0;
 }
 
