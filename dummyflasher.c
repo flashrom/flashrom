@@ -145,7 +145,7 @@ static int probe_variable_size(struct flashctx *flash)
 	msg_cdbg("%s: set flash->total_size to %dK bytes.\n", __func__,
 	         flash->chip->total_size);
 
-	flash->chip->tested = TEST_OK_PREW;
+	flash->chip->tested = TEST_OK_PREWB;
 
 	if (emu_data->erase_to_zero)
 		flash->chip->feature_bits |= FEATURE_ERASED_ZERO;

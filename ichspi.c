@@ -1485,7 +1485,7 @@ static int ich_hwseq_probe(struct flashctx *flash)
 		msg_cdbg("In that range are %d erase blocks with %d B each.\n",
 			 size_high / erase_size_high, erase_size_high);
 	}
-	flash->chip->tested = TEST_OK_PREW;
+	flash->chip->tested = TEST_OK_PREWB;
 	return 1;
 }
 
