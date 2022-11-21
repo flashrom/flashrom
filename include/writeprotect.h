@@ -89,4 +89,10 @@ enum flashrom_wp_result wp_get_available_ranges(struct flashrom_wp_ranges **, st
 /* Checks if writeprotect functions can be used with the current flash/programmer */
 bool wp_operations_available(struct flashrom_flashctx *);
 
+/*
+ * Converts a writeprotect config to register values and masks that indicate which register bits affect WP state.
+ * reg_values, bit_masks, and write_masks must all have length of at least MAX_REGISTERS.
+ */
+enum flashrom_wp_result wp_cfg_to_reg_values(uint8_t *reg_values, uint8_t *bit_masks, uint8_t *write_masks, struct flashrom_flashctx *, const struct flashrom_wp_cfg *);
+
 #endif /* !__WRITEPROTECT_H__ */

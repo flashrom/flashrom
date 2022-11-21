@@ -327,3 +327,68 @@ void partial_chip_erase_with_wp_dummyflasher_test_success(void **state)
 
 	flashrom_wp_cfg_release(wp_cfg);
 }
+
+/* Chip register values & masks are calculated correctly by WP */
+void wp_get_register_values_and_masks(void **state)
+{
+	(void) state; /* unused */
+
+	/*
+	 * Test with range: start = 0x004000, lengh = 0xffc000
+	 *
+	 * WP should use these bit values:
+	 * WPS  (S17) = 0 (write protect scheme)
+	 * CMP  (S14) = 1 (range complement)
+	 * SRP1 (S8)  = 0
+	 * SRP0 (S7)  = 1 (`SRP1 == 1 && SRP0 == 1` is permanent mode)
+	 * SEC  (S6)  = 1 (base unit is a 4 KiB sector)
+	 * TB   (S5)  = 1 (bottom up range)
+	 * BP2  (S4)  = 0
+	 * BP1  (S3)  = 1
+	 * BP0  (S2)  = 1 (bp: BP2-0 == 0b011 == 3)
+	 *
+	 * Register values:
+	 * SR1 = 0b11101100 = 0xec
+	 * SR2 = 0b01000000 = 0x40
+	 * SR3 = 0b00000000 = 0x00
+	 *
+	 * Masks for WP bits in registers:
+	 * SR1: 0b11111100 = 0xfc
+	 * SR2: 0b01000000 = 0x41
+	 * SR3: 0b00000100 = 0x04
+	 *
+	 * All WP bits are RW so write masks should be the same as the bit masks.
+	 *
+	 */
+	struct flashrom_flashctx flash = { 0 };
+	struct flashchip mock_chip = chip_W25Q128_V;
+	struct flashrom_wp_cfg *wp_cfg;
+
+	uint8_t reg_values[MAX_REGISTERS];
+	uint8_t bit_masks[MAX_REGISTERS];
+	uint8_t write_masks[MAX_REGISTERS];
+
+	setup_chip(&flash, NULL, &mock_chip, "bus=spi,emulate=W25Q128FV");
+
+	assert_int_equal(0, flashrom_wp_cfg_new(&wp_cfg));
+	flashrom_wp_set_mode(wp_cfg, FLASHROM_WP_MODE_HARDWARE);
+	flashrom_wp_set_range(wp_cfg, 0x004000, 0xffc000);
+
+	assert_int_equal(0, wp_cfg_to_reg_values(reg_values, bit_masks, write_masks, &flash, wp_cfg));
+
+	assert_int_equal(0xec, reg_values[STATUS1]);
+	assert_int_equal(0x40, reg_values[STATUS2]);
+	assert_int_equal(0x00, reg_values[STATUS3]);
+
+	assert_int_equal(0xfc, bit_masks[STATUS1]);
+	assert_int_equal(0x41, bit_masks[STATUS2]);
+	assert_int_equal(0x04, bit_masks[STATUS3]);
+
+	assert_int_equal(0xfc, write_masks[STATUS1]);
+	assert_int_equal(0x41, write_masks[STATUS2]);
+	assert_int_equal(0x04, write_masks[STATUS3]);
+
+	teardown(NULL);
+
+	flashrom_wp_cfg_release(wp_cfg);
+}

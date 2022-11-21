@@ -597,3 +597,31 @@ out:
 	free(range_pairs);
 	return ret;
 }
+
+enum flashrom_wp_result wp_cfg_to_reg_values(
+		uint8_t *reg_values, uint8_t *bit_masks, uint8_t *write_masks,
+		struct flashctx *flash, const struct flashrom_wp_cfg *cfg)
+{
+	struct wp_bits bits;
+
+	if (!chip_supported(flash))
+		return FLASHROM_WP_ERR_CHIP_UNSUPPORTED;
+
+	enum flashrom_wp_result ret = read_wp_bits(&bits, flash);
+	if (ret != FLASHROM_WP_OK)
+		return ret;
+
+	/* Set protection range */
+	ret = set_wp_range(&bits, flash, cfg->range);
+	if (ret != FLASHROM_WP_OK)
+		return ret;
+
+	/* Set protection mode */
+	ret = set_wp_mode(&bits, cfg->mode);
+	if (ret != FLASHROM_WP_OK)
+		return ret;
+
+	get_wp_bits_reg_values(reg_values, bit_masks, write_masks, &flash->chip->reg_bits, bits);
+
+	return FLASHROM_WP_OK;
+}
