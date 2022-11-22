@@ -41,7 +41,7 @@ mod flashromlib;
 
 use std::{error, fmt, path::Path};
 
-pub use cmd::{dut_ctrl_toggle_wp, FlashromCmd};
+pub use cmd::FlashromCmd;
 pub use flashromlib::FlashromLib;
 
 pub use libflashrom::{
@@ -51,28 +51,19 @@ pub use libflashrom::{
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum FlashChip {
-    EC,
     HOST,
-    SERVO,
-    DEDIPROG,
 }
 
 impl FlashChip {
     pub fn from(s: &str) -> Result<FlashChip, &str> {
         match s {
-            "ec" => Ok(FlashChip::EC),
             "host" => Ok(FlashChip::HOST),
-            "servo" => Ok(FlashChip::SERVO),
-            "dediprog" => Ok(FlashChip::DEDIPROG),
             _ => Err("cannot convert str to enum"),
         }
     }
     pub fn to(fc: FlashChip) -> &'static str {
         match fc {
-            FlashChip::EC => "ec",
             FlashChip::HOST => "host",
-            FlashChip::SERVO => "ft2231_spi:type=servo-v2",
-            FlashChip::DEDIPROG => "dediprog",
         }
     }
 
@@ -89,8 +80,7 @@ impl FlashChip {
     /// disabled.
     pub fn can_control_hw_wp(&self) -> bool {
         match self {
-            FlashChip::HOST | FlashChip::EC => true,
-            FlashChip::SERVO | FlashChip::DEDIPROG => false,
+            FlashChip::HOST => true,
         }
     }
 }

@@ -391,35 +391,6 @@ fn flashrom_dispatch<S: AsRef<OsStr>>(
     Ok((stdout.into(), stderr.into()))
 }
 
-pub fn dut_ctrl_toggle_wp(en: bool) -> Result<(Vec<u8>, Vec<u8>), FlashromError> {
-    let args = if en {
-        ["fw_wp_en:off", "fw_wp:on"]
-    } else {
-        ["fw_wp_en:on", "fw_wp:off"]
-    };
-    dut_ctrl(&args)
-}
-
-fn dut_ctrl(args: &[&str]) -> Result<(Vec<u8>, Vec<u8>), FlashromError> {
-    let output = match Command::new("dut-control").args(args).output() {
-        Ok(x) => x,
-        Err(e) => return Err(format!("Failed to run dut-control: {}", e).into()),
-    };
-    if !output.status.success() {
-        // There is two cases on failure;
-        //  i. ) A bad exit code,
-        //  ii.) A SIG killed us.
-        match output.status.code() {
-            Some(code) => {
-                return Err(format!("Exited with error code: {}", code).into());
-            }
-            None => return Err("Process terminated by a signal".into()),
-        }
-    }
-
-    Ok((output.stdout, output.stderr))
-}
-
 fn hex_range_string(s: i64, l: i64) -> String {
     format!("{:#08X},{:#08X}", s, l)
 }

@@ -96,19 +96,10 @@ impl<'a> TestEnv<'a> {
     }
 
     pub fn run_test<T: TestCase>(&mut self, test: T) -> TestResult {
-        let use_dut_control = self.chip_type == FlashChip::SERVO;
-        if use_dut_control && flashrom::dut_ctrl_toggle_wp(false).is_err() {
-            error!("failed to dispatch dut_ctrl_toggle_wp()!");
-        }
-
         let name = test.get_name();
         info!("Beginning test: {}", name);
         let out = test.run(self);
         info!("Completed test: {}; result {:?}", name, out);
-
-        if use_dut_control && flashrom::dut_ctrl_toggle_wp(true).is_err() {
-            error!("failed to dispatch dut_ctrl_toggle_wp()!");
-        }
         out
     }
 
