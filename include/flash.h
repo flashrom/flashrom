@@ -322,31 +322,34 @@ enum block_erase_func {
 	TEST_ERASE_INJECTOR, /* special case must come last. */
 };
 
-#define NO_BLOCKPROTECT_FUNC NULL
-#define SPI_DISABLE_BLOCKPROTECT spi_disable_blockprotect
-#define SPI_DISABLE_BLOCKPROTECT_BP2_EP_SRWD spi_disable_blockprotect_bp2_ep_srwd
-#define SPI_DISABLE_BLOCKPROTECT_BP1_SRWD spi_disable_blockprotect_bp1_srwd
-#define SPI_DISABLE_BLOCKPROTECT_BP2_SRWD spi_disable_blockprotect_bp2_srwd
-#define SPI_DISABLE_BLOCKPROTECT_BP3_SRWD spi_disable_blockprotect_bp3_srwd
-#define SPI_DISABLE_BLOCKPROTECT_BP4_SRWD spi_disable_blockprotect_bp4_srwd
-#define SPI_DISABLE_BLOCKPROTECT_AT45DB spi_disable_blockprotect_at45db
-#define SPI_DISABLE_BLOCKPROTECT_AT25F spi_disable_blockprotect_at25f
-#define SPI_DISABLE_BLOCKPROTECT_AT25FS010 spi_disable_blockprotect_at25fs010
-#define SPI_DISABLE_BLOCKPROTECT_AT25FS040 spi_disable_blockprotect_at25fs040
-#define SPI_DISABLE_BLOCKPROTECT_AT25F512A spi_disable_blockprotect_at25f512a
-#define SPI_DISABLE_BLOCKPROTECT_AT25F512B spi_disable_blockprotect_at25f512b
-#define SPI_DISABLE_BLOCKPROTECT_AT2X_GLOBAL_UNPROTECT spi_disable_blockprotect_at2x_global_unprotect
-#define SPI_DISABLE_BLOCKPROTECT_AT2X_GLOBAL_UNPROTECT_SEC spi_disable_blockprotect_at2x_global_unprotect_sec
-#define SPI_DISABLE_BLOCKPROTECT_SST26_GLOBAL_UNPROTECT spi_disable_blockprotect_sst26_global_unprotect
-#define SPI_DISABLE_BLOCKPROTECT_N25Q spi_disable_blockprotect_n25q
-#define UNLOCK_REGSPACE2_BLOCK_ERASER_0 unlock_regspace2_block_eraser_0
-#define UNLOCK_REGSPACE2_BLOCK_ERASER_1 unlock_regspace2_block_eraser_1
-#define UNLOCK_REGSPACE2_UNIFORM_32K unlock_regspace2_uniform_32k
-#define UNLOCK_REGSPACE2_UNIFORM_64K unlock_regspace2_uniform_64k
-#define UNLOCK_28F004S5 unlock_28f004s5
-#define UNLOCK_LH28F008BJT unlock_lh28f008bjt
-#define UNLOCK_SST_FWHUB unlock_sst_fwhub
-#define UNPROTECT_28SF040 unprotect_28sf040
+enum blockprotect_func {
+	NO_BLOCKPROTECT_FUNC = 0, /* 0 indicates no unlock function set. */
+	SPI_DISABLE_BLOCKPROTECT,
+	SPI_DISABLE_BLOCKPROTECT_BP2_EP_SRWD,
+	SPI_DISABLE_BLOCKPROTECT_BP1_SRWD,
+	SPI_DISABLE_BLOCKPROTECT_BP2_SRWD,
+	SPI_DISABLE_BLOCKPROTECT_BP3_SRWD,
+	SPI_DISABLE_BLOCKPROTECT_BP4_SRWD,
+	SPI_DISABLE_BLOCKPROTECT_AT45DB,
+	SPI_DISABLE_BLOCKPROTECT_AT25F,
+	SPI_DISABLE_BLOCKPROTECT_AT25FS010,
+	SPI_DISABLE_BLOCKPROTECT_AT25FS040,
+	SPI_DISABLE_BLOCKPROTECT_AT25F512A,
+	SPI_DISABLE_BLOCKPROTECT_AT25F512B,
+	SPI_DISABLE_BLOCKPROTECT_AT2X_GLOBAL_UNPROTECT,
+	SPI_DISABLE_BLOCKPROTECT_AT2X_GLOBAL_UNPROTECT_SEC,
+	SPI_DISABLE_BLOCKPROTECT_SST26_GLOBAL_UNPROTECT,
+	SPI_DISABLE_BLOCKPROTECT_N25Q,
+	UNLOCK_REGSPACE2_BLOCK_ERASER_0,
+	UNLOCK_REGSPACE2_BLOCK_ERASER_1,
+	UNLOCK_REGSPACE2_UNIFORM_32K,
+	UNLOCK_REGSPACE2_UNIFORM_64K,
+	UNLOCK_28F004S5,
+	UNLOCK_LH28F008BJT,
+	UNLOCK_SST_FWHUB,
+	UNPROTECT_28SF040,
+	TEST_UNLOCK_INJECTOR, /* special case must come last. */
+};
 
 #define NO_PRINTLOCK_FUNC NULL
 #define PRINTLOCK_AT49F printlock_at49f
@@ -458,7 +461,7 @@ struct flashchip {
 	} block_erasers[NUM_ERASEFUNCTIONS];
 
 	int (*printlock) (struct flashctx *flash);
-	int (*unlock) (struct flashctx *flash);
+	enum blockprotect_func unlock;
 	enum write_func write;
 	enum read_func read;
 	struct voltage {
@@ -510,6 +513,8 @@ struct flashchip {
 };
 
 typedef int (*chip_restore_fn_cb_t)(struct flashctx *flash, void *data);
+typedef int (blockprotect_func_t)(struct flashctx *flash);
+blockprotect_func_t *lookup_blockprotect_func_ptr(const struct flashchip *const chip);
 
 struct flashrom_flashctx {
 	struct flashchip *chip;

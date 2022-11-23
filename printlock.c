@@ -186,17 +186,17 @@ static int unlock_regspace2_uniform(struct flashctx *flash, unsigned long block_
 	return regspace2_walk_unlockblocks(flash, blocks, &unlock_regspace2_block_generic);
 }
 
-int unlock_regspace2_uniform_64k(struct flashctx *flash)
+static int unlock_regspace2_uniform_64k(struct flashctx *flash)
 {
 	return unlock_regspace2_uniform(flash, 64 * 1024);
 }
 
-int unlock_regspace2_uniform_32k(struct flashctx *flash)
+static int unlock_regspace2_uniform_32k(struct flashctx *flash)
 {
 	return unlock_regspace2_uniform(flash, 32 * 1024);
 }
 
-int unlock_regspace2_block_eraser_0(struct flashctx *flash)
+static int unlock_regspace2_block_eraser_0(struct flashctx *flash)
 {
 	// FIXME: this depends on the eraseblocks not to be filled up completely (i.e. to be null-terminated).
 	const struct unlockblock *unlockblocks =
@@ -204,10 +204,21 @@ int unlock_regspace2_block_eraser_0(struct flashctx *flash)
 	return regspace2_walk_unlockblocks(flash, unlockblocks, &unlock_regspace2_block_generic);
 }
 
-int unlock_regspace2_block_eraser_1(struct flashctx *flash)
+static int unlock_regspace2_block_eraser_1(struct flashctx *flash)
 {
 	// FIXME: this depends on the eraseblocks not to be filled up completely (i.e. to be null-terminated).
 	const struct unlockblock *unlockblocks =
 		(const struct unlockblock *)flash->chip->block_erasers[1].eraseblocks;
 	return regspace2_walk_unlockblocks(flash, unlockblocks, &unlock_regspace2_block_generic);
+}
+
+blockprotect_func_t *lookup_jedec_blockprotect_func_ptr(const struct flashchip *const chip)
+{
+	switch (chip->unlock) {
+		case UNLOCK_REGSPACE2_BLOCK_ERASER_0: return unlock_regspace2_block_eraser_0;
+		case UNLOCK_REGSPACE2_BLOCK_ERASER_1: return unlock_regspace2_block_eraser_1;
+		case UNLOCK_REGSPACE2_UNIFORM_32K: return unlock_regspace2_uniform_32k;
+		case UNLOCK_REGSPACE2_UNIFORM_64K: return unlock_regspace2_uniform_64k;
+		default: return NULL; /* fallthough */
+	};
 }

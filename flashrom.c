@@ -2080,9 +2080,9 @@ int prepare_flash_access(struct flashctx *const flash,
 		if (ret)
 			msg_cerr("Failed to unlock flash status reg with wp support.\n");
 	}
-	if (ret && flash->chip->unlock) {
-		flash->chip->unlock(flash);
-	}
+	blockprotect_func_t *bp_func = lookup_blockprotect_func_ptr(flash->chip);
+	if (ret && bp_func)
+		bp_func(flash);
 
 	flash->address_high_byte = -1;
 	flash->in_4ba_mode = false;

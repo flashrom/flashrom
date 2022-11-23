@@ -142,7 +142,7 @@ int write_82802ab(struct flashctx *flash, const uint8_t *src, unsigned int start
 	return 0;
 }
 
-int unlock_28f004s5(struct flashctx *flash)
+static int unlock_28f004s5(struct flashctx *flash)
 {
 	chipaddr bios = flash->virtual_memory;
 	uint8_t mcfg, bcfg;
@@ -195,7 +195,7 @@ int unlock_28f004s5(struct flashctx *flash)
 	return 0;
 }
 
-int unlock_lh28f008bjt(struct flashctx *flash)
+static int unlock_lh28f008bjt(struct flashctx *flash)
 {
 	chipaddr bios = flash->virtual_memory;
 	uint8_t mcfg, bcfg;
@@ -248,4 +248,13 @@ int unlock_lh28f008bjt(struct flashctx *flash)
 	}
 
 	return 0;
+}
+
+blockprotect_func_t *lookup_82802ab_blockprotect_func_ptr(const struct flashchip *const chip)
+{
+	switch (chip->unlock) {
+		case UNLOCK_28F004S5: return unlock_28f004s5;
+		case UNLOCK_LH28F008BJT: return unlock_lh28f008bjt;
+		default: return NULL; /* fallthough */
+	};
 }

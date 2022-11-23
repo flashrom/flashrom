@@ -363,12 +363,12 @@ static int spi_disable_blockprotect_generic(struct flashctx *flash, uint8_t bp_m
 }
 
 /* A common block protection disable that tries to unset the status register bits masked by 0x3C. */
-int spi_disable_blockprotect(struct flashctx *flash)
+static int spi_disable_blockprotect(struct flashctx *flash)
 {
 	return spi_disable_blockprotect_generic(flash, 0x3C, 0, 0, 0xFF);
 }
 
-int spi_disable_blockprotect_sst26_global_unprotect(struct flashctx *flash)
+static int spi_disable_blockprotect_sst26_global_unprotect(struct flashctx *flash)
 {
 	int result = spi_write_enable(flash);
 	if (result)
@@ -383,7 +383,7 @@ int spi_disable_blockprotect_sst26_global_unprotect(struct flashctx *flash)
 
 /* A common block protection disable that tries to unset the status register bits masked by 0x0C (BP0-1) and
  * protected/locked by bit #7. Useful when bits 4-5 may be non-0). */
-int spi_disable_blockprotect_bp1_srwd(struct flashctx *flash)
+static int spi_disable_blockprotect_bp1_srwd(struct flashctx *flash)
 {
 	return spi_disable_blockprotect_generic(flash, 0x0C, 1 << 7, 0, 0xFF);
 }
@@ -391,21 +391,21 @@ int spi_disable_blockprotect_bp1_srwd(struct flashctx *flash)
 /* A common block protection disable that tries to unset the status register bits masked by 0x1C (BP0-2) and
  * protected/locked by bit #7. Useful when bit #5 is neither a protection bit nor reserved (and hence possibly
  * non-0). */
-int spi_disable_blockprotect_bp2_srwd(struct flashctx *flash)
+static int spi_disable_blockprotect_bp2_srwd(struct flashctx *flash)
 {
 	return spi_disable_blockprotect_generic(flash, 0x1C, 1 << 7, 0, 0xFF);
 }
 
 /* A common block protection disable that tries to unset the status register bits masked by 0x3C (BP0-3) and
  * protected/locked by bit #7. */
-int spi_disable_blockprotect_bp3_srwd(struct flashctx *flash)
+static int spi_disable_blockprotect_bp3_srwd(struct flashctx *flash)
 {
 	return spi_disable_blockprotect_generic(flash, 0x3C, 1 << 7, 0, 0xFF);
 }
 
 /* A common block protection disable that tries to unset the status register bits masked by 0x7C (BP0-4) and
  * protected/locked by bit #7. */
-int spi_disable_blockprotect_bp4_srwd(struct flashctx *flash)
+static int spi_disable_blockprotect_bp4_srwd(struct flashctx *flash)
 {
 	return spi_disable_blockprotect_generic(flash, 0x7C, 1 << 7, 0, 0xFF);
 }
@@ -825,39 +825,39 @@ int spi_prettyprint_status_register_at26df081a(struct flashctx *flash)
  * sectors at once by writing 0 not only the protection bits (2 and 3) but also completely unrelated bits (4 and
  * 5) which normally are not touched.
  * Affected are all known Atmel chips matched by AT2[56]D[FLQ]..1A? but the AT26DF041. */
-int spi_disable_blockprotect_at2x_global_unprotect(struct flashctx *flash)
+static int spi_disable_blockprotect_at2x_global_unprotect(struct flashctx *flash)
 {
 	return spi_disable_blockprotect_generic(flash, 0x0C, 1 << 7, 1 << 4, 0x00);
 }
 
-int spi_disable_blockprotect_at2x_global_unprotect_sec(struct flashctx *flash)
+static int spi_disable_blockprotect_at2x_global_unprotect_sec(struct flashctx *flash)
 {
 	/* FIXME: We should check the security lockdown. */
 	msg_cinfo("Ignoring security lockdown (if present)\n");
 	return spi_disable_blockprotect_at2x_global_unprotect(flash);
 }
 
-int spi_disable_blockprotect_at25f(struct flashctx *flash)
+static int spi_disable_blockprotect_at25f(struct flashctx *flash)
 {
 	return spi_disable_blockprotect_generic(flash, 0x0C, 1 << 7, 0, 0xFF);
 }
 
-int spi_disable_blockprotect_at25f512a(struct flashctx *flash)
+static int spi_disable_blockprotect_at25f512a(struct flashctx *flash)
 {
 	return spi_disable_blockprotect_generic(flash, 0x04, 1 << 7, 0, 0xFF);
 }
 
-int spi_disable_blockprotect_at25f512b(struct flashctx *flash)
+static int spi_disable_blockprotect_at25f512b(struct flashctx *flash)
 {
 	return spi_disable_blockprotect_generic(flash, 0x04, 1 << 7, 1 << 4, 0xFF);
 }
 
-int spi_disable_blockprotect_at25fs010(struct flashctx *flash)
+static int spi_disable_blockprotect_at25fs010(struct flashctx *flash)
 {
 	return spi_disable_blockprotect_generic(flash, 0x6C, 1 << 7, 0, 0xFF);
  }
 
-int spi_disable_blockprotect_at25fs040(struct flashctx *flash)
+static int spi_disable_blockprotect_at25fs040(struct flashctx *flash)
 {
 	return spi_disable_blockprotect_generic(flash, 0x7C, 1 << 7, 0, 0xFF);
 }
@@ -881,7 +881,7 @@ int spi_prettyprint_status_register_en25s_wp(struct flashctx *flash)
 
 /* === Intel/Numonyx/Micron - Spansion === */
 
-int spi_disable_blockprotect_n25q(struct flashctx *flash)
+static int spi_disable_blockprotect_n25q(struct flashctx *flash)
 {
 	return spi_disable_blockprotect_generic(flash, 0x5C, 1 << 7, 0, 0xFF);
 }
@@ -908,9 +908,54 @@ int spi_prettyprint_status_register_n25q(struct flashctx *flash)
 
 /* Used by Intel/Numonyx S33 and Spansion S25FL-S chips */
 /* TODO: Clear P_FAIL and E_FAIL with Clear SR Fail Flags Command (30h) here? */
-int spi_disable_blockprotect_bp2_ep_srwd(struct flashctx *flash)
+static int spi_disable_blockprotect_bp2_ep_srwd(struct flashctx *flash)
 {
 	return spi_disable_blockprotect_bp2_srwd(flash);
+}
+
+/* special unit-test hook */
+blockprotect_func_t *g_test_unlock_injector;
+
+blockprotect_func_t *lookup_blockprotect_func_ptr(const struct flashchip *const chip)
+{
+	switch (chip->unlock) {
+		case SPI_DISABLE_BLOCKPROTECT: return spi_disable_blockprotect;
+		case SPI_DISABLE_BLOCKPROTECT_BP2_EP_SRWD: return spi_disable_blockprotect_bp2_ep_srwd;
+		case SPI_DISABLE_BLOCKPROTECT_BP1_SRWD: return spi_disable_blockprotect_bp1_srwd;
+		case SPI_DISABLE_BLOCKPROTECT_BP2_SRWD: return spi_disable_blockprotect_bp2_srwd;
+		case SPI_DISABLE_BLOCKPROTECT_BP3_SRWD: return spi_disable_blockprotect_bp3_srwd;
+		case SPI_DISABLE_BLOCKPROTECT_BP4_SRWD: return spi_disable_blockprotect_bp4_srwd;
+		case SPI_DISABLE_BLOCKPROTECT_AT45DB: return spi_disable_blockprotect_at45db; /* at45db.c */
+		case SPI_DISABLE_BLOCKPROTECT_AT25F: return spi_disable_blockprotect_at25f;
+		case SPI_DISABLE_BLOCKPROTECT_AT25FS010: return spi_disable_blockprotect_at25fs010;
+		case SPI_DISABLE_BLOCKPROTECT_AT25FS040: return spi_disable_blockprotect_at25fs040;
+		case SPI_DISABLE_BLOCKPROTECT_AT25F512A: return spi_disable_blockprotect_at25f512a;
+		case SPI_DISABLE_BLOCKPROTECT_AT25F512B: return spi_disable_blockprotect_at25f512b;
+		case SPI_DISABLE_BLOCKPROTECT_AT2X_GLOBAL_UNPROTECT: return spi_disable_blockprotect_at2x_global_unprotect;
+		case SPI_DISABLE_BLOCKPROTECT_AT2X_GLOBAL_UNPROTECT_SEC: return spi_disable_blockprotect_at2x_global_unprotect_sec;
+		case SPI_DISABLE_BLOCKPROTECT_SST26_GLOBAL_UNPROTECT: return spi_disable_blockprotect_sst26_global_unprotect;
+		case SPI_DISABLE_BLOCKPROTECT_N25Q: return spi_disable_blockprotect_n25q;
+		/* fallthough to lookup_jedec_blockprotect_func_ptr() */
+		case UNLOCK_REGSPACE2_BLOCK_ERASER_0:
+		case UNLOCK_REGSPACE2_BLOCK_ERASER_1:
+		case UNLOCK_REGSPACE2_UNIFORM_32K:
+		case UNLOCK_REGSPACE2_UNIFORM_64K:
+			return lookup_jedec_blockprotect_func_ptr(chip);
+		/* fallthough to lookup_82802ab_blockprotect_func_ptr() */
+		case UNLOCK_28F004S5:
+		case UNLOCK_LH28F008BJT:
+			return lookup_82802ab_blockprotect_func_ptr(chip);
+		case UNLOCK_SST_FWHUB: return unlock_sst_fwhub; /* sst_fwhub.c */
+		case UNPROTECT_28SF040: return unprotect_28sf040; /* sst28sf040.c */
+		case TEST_UNLOCK_INJECTOR: return g_test_unlock_injector;
+	/* default: non-total function, 0 indicates no unlock function set.
+	 * We explicitly do not want a default catch-all case in the switch
+	 * to ensure unhandled enum's are compiler warnings.
+	 */
+		case NO_BLOCKPROTECT_FUNC: return NULL;
+	};
+
+	return NULL;
 }
 
 /* Used by Intel/Numonyx S33 and Spansion S25FL-S chips */
