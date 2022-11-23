@@ -1179,9 +1179,11 @@ notfound:
 
 	/* Flash registers may more likely not be mapped if the chip was forced.
 	 * Lock info may be stored in registers, so avoid lock info printing. */
-	if (!force)
-		if (flash->chip->printlock)
-			flash->chip->printlock(flash);
+	if (!force) {
+		printlockfunc_t *printlock = lookup_printlock_func_ptr(flash);
+		if (printlock)
+			printlock(flash);
+	}
 
 	/* Get out of the way for later runs. */
 	unmap_flash(flash);

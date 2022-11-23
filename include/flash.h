@@ -351,49 +351,53 @@ enum blockprotect_func {
 	TEST_UNLOCK_INJECTOR, /* special case must come last. */
 };
 
-#define NO_PRINTLOCK_FUNC NULL
-#define PRINTLOCK_AT49F printlock_at49f
-#define PRINTLOCK_REGSPACE2_BLOCK_ERASER_0 printlock_regspace2_block_eraser_0
-#define PRINTLOCK_REGSPACE2_BLOCK_ERASER_1 printlock_regspace2_block_eraser_1
-#define PRINTLOCK_SST_FWHUB printlock_sst_fwhub
-#define PRINTLOCK_W39F010 printlock_w39f010
-#define PRINTLOCK_W39L010 printlock_w39l010
-#define PRINTLOCK_W39L020 printlock_w39l020
-#define PRINTLOCK_W39L040 printlock_w39l040
-#define PRINTLOCK_W39V040A printlock_w39v040a
-#define PRINTLOCK_W39V040B printlock_w39v040b
-#define PRINTLOCK_W39V040C printlock_w39v040c
-#define PRINTLOCK_W39V040FA printlock_w39v040fa
-#define PRINTLOCK_W39V040FB printlock_w39v040fb
-#define PRINTLOCK_W39V040FC printlock_w39v040fc
-#define PRINTLOCK_W39V080A printlock_w39v080a
-#define PRINTLOCK_W39V080FA printlock_w39v080fa
-#define PRINTLOCK_W39V080FA_DUAL printlock_w39v080fa_dual
-#define SPI_PRETTYPRINT_STATUS_REGISTER_AMIC_A25L032 spi_prettyprint_status_register_amic_a25l032
-#define SPI_PRETTYPRINT_STATUS_REGISTER_AT25DF spi_prettyprint_status_register_at25df
-#define SPI_PRETTYPRINT_STATUS_REGISTER_AT25DF_SEC spi_prettyprint_status_register_at25df_sec
-#define SPI_PRETTYPRINT_STATUS_REGISTER_AT25F spi_prettyprint_status_register_at25f
-#define SPI_PRETTYPRINT_STATUS_REGISTER_AT25F4096 spi_prettyprint_status_register_at25f4096
-#define SPI_PRETTYPRINT_STATUS_REGISTER_AT25F512A spi_prettyprint_status_register_at25f512a
-#define SPI_PRETTYPRINT_STATUS_REGISTER_AT25F512B spi_prettyprint_status_register_at25f512b
-#define SPI_PRETTYPRINT_STATUS_REGISTER_AT25FS010 spi_prettyprint_status_register_at25fs010
-#define SPI_PRETTYPRINT_STATUS_REGISTER_AT25FS040 spi_prettyprint_status_register_at25fs040
-#define SPI_PRETTYPRINT_STATUS_REGISTER_AT26DF081A spi_prettyprint_status_register_at26df081a
-#define SPI_PRETTYPRINT_STATUS_REGISTER_AT45DB spi_prettyprint_status_register_at45db
-#define SPI_PRETTYPRINT_STATUS_REGISTER_BP1_SRWD spi_prettyprint_status_register_bp1_srwd
-#define SPI_PRETTYPRINT_STATUS_REGISTER_BP2_BPL spi_prettyprint_status_register_bp2_bpl
-#define SPI_PRETTYPRINT_STATUS_REGISTER_BP2_EP_SRWD spi_prettyprint_status_register_bp2_ep_srwd
-#define SPI_PRETTYPRINT_STATUS_REGISTER_BP2_SRWD spi_prettyprint_status_register_bp2_srwd
-#define SPI_PRETTYPRINT_STATUS_REGISTER_BP2_TB_BPL spi_prettyprint_status_register_bp2_tb_bpl
-#define SPI_PRETTYPRINT_STATUS_REGISTER_BP3_SRWD spi_prettyprint_status_register_bp3_srwd
-#define SPI_PRETTYPRINT_STATUS_REGISTER_BP4_SRWD spi_prettyprint_status_register_bp4_srwd
-#define SPI_PRETTYPRINT_STATUS_REGISTER_DEFAULT_WELWIP spi_prettyprint_status_register_default_welwip
-#define SPI_PRETTYPRINT_STATUS_REGISTER_EN25S_WP spi_prettyprint_status_register_en25s_wp
-#define SPI_PRETTYPRINT_STATUS_REGISTER_N25Q spi_prettyprint_status_register_n25q
-#define SPI_PRETTYPRINT_STATUS_REGISTER_PLAIN spi_prettyprint_status_register_plain
-#define SPI_PRETTYPRINT_STATUS_REGISTER_SST25 spi_prettyprint_status_register_sst25
-#define SPI_PRETTYPRINT_STATUS_REGISTER_SST25VF016 spi_prettyprint_status_register_sst25vf016
-#define SPI_PRETTYPRINT_STATUS_REGISTER_SST25VF040B spi_prettyprint_status_register_sst25vf040b
+enum printlock_func {
+	NO_PRINTLOCK_FUNC,
+	PRINTLOCK_AT49F,
+	PRINTLOCK_REGSPACE2_BLOCK_ERASER_0,
+	PRINTLOCK_REGSPACE2_BLOCK_ERASER_1,
+	PRINTLOCK_SST_FWHUB,
+	PRINTLOCK_W39F010,
+	PRINTLOCK_W39L010,
+	PRINTLOCK_W39L020,
+	PRINTLOCK_W39L040,
+	PRINTLOCK_W39V040A,
+	PRINTLOCK_W39V040B,
+	PRINTLOCK_W39V040C,
+	PRINTLOCK_W39V040FA,
+	PRINTLOCK_W39V040FB,
+	PRINTLOCK_W39V040FC,
+	PRINTLOCK_W39V080A,
+	PRINTLOCK_W39V080FA,
+	PRINTLOCK_W39V080FA_DUAL,
+	SPI_PRETTYPRINT_STATUS_REGISTER_AMIC_A25L032,
+	SPI_PRETTYPRINT_STATUS_REGISTER_AT25DF,
+	SPI_PRETTYPRINT_STATUS_REGISTER_AT25DF_SEC,
+	SPI_PRETTYPRINT_STATUS_REGISTER_AT25F,
+	SPI_PRETTYPRINT_STATUS_REGISTER_AT25F4096,
+	SPI_PRETTYPRINT_STATUS_REGISTER_AT25F512A,
+	SPI_PRETTYPRINT_STATUS_REGISTER_AT25F512B,
+	SPI_PRETTYPRINT_STATUS_REGISTER_AT25FS010,
+	SPI_PRETTYPRINT_STATUS_REGISTER_AT25FS040,
+	SPI_PRETTYPRINT_STATUS_REGISTER_AT26DF081A,
+	SPI_PRETTYPRINT_STATUS_REGISTER_AT45DB,
+	SPI_PRETTYPRINT_STATUS_REGISTER_BP1_SRWD,
+	SPI_PRETTYPRINT_STATUS_REGISTER_BP2_BPL,
+	SPI_PRETTYPRINT_STATUS_REGISTER_BP2_EP_SRWD,
+	SPI_PRETTYPRINT_STATUS_REGISTER_BP2_SRWD,
+	SPI_PRETTYPRINT_STATUS_REGISTER_BP2_TB_BPL,
+	SPI_PRETTYPRINT_STATUS_REGISTER_BP3_SRWD,
+	SPI_PRETTYPRINT_STATUS_REGISTER_BP4_SRWD,
+	SPI_PRETTYPRINT_STATUS_REGISTER_DEFAULT_WELWIP,
+	SPI_PRETTYPRINT_STATUS_REGISTER_EN25S_WP,
+	SPI_PRETTYPRINT_STATUS_REGISTER_N25Q,
+	SPI_PRETTYPRINT_STATUS_REGISTER_PLAIN,
+	SPI_PRETTYPRINT_STATUS_REGISTER_SST25,
+	SPI_PRETTYPRINT_STATUS_REGISTER_SST25VF016,
+	SPI_PRETTYPRINT_STATUS_REGISTER_SST25VF040B,
+};
+typedef int (printlockfunc_t)(struct flashctx *flash);
+printlockfunc_t *lookup_printlock_func_ptr(struct flashctx *flash);
 
 struct flashchip {
 	const char *vendor;
@@ -460,7 +464,7 @@ struct flashchip {
 		enum block_erase_func block_erase;
 	} block_erasers[NUM_ERASEFUNCTIONS];
 
-	int (*printlock) (struct flashctx *flash);
+	enum printlock_func printlock;
 	enum blockprotect_func unlock;
 	enum write_func write;
 	enum read_func read;

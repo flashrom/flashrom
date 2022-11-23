@@ -354,8 +354,9 @@ static int spi_disable_blockprotect_generic(struct flashctx *flash, uint8_t bp_m
 
 	if ((status & bp_mask) != 0) {
 		msg_cerr("Block protection could not be disabled!\n");
-		if (flash->chip->printlock)
-			flash->chip->printlock(flash);
+		printlockfunc_t *printlock = lookup_printlock_func_ptr(flash);
+		if (printlock)
+			printlock(flash);
 		return 1;
 	}
 	msg_cdbg("disabled.\n");
@@ -470,7 +471,7 @@ void spi_prettyprint_status_register_bit(uint8_t status, int bit)
 	msg_cdbg("Chip status register: Bit %i is %sset\n", bit, (status & (1 << bit)) ? "" : "not ");
 }
 
-int spi_prettyprint_status_register_plain(struct flashctx *flash)
+static int spi_prettyprint_status_register_plain(struct flashctx *flash)
 {
 	uint8_t status;
 	int ret = spi_read_register(flash, STATUS1, &status);
@@ -481,7 +482,7 @@ int spi_prettyprint_status_register_plain(struct flashctx *flash)
 }
 
 /* Print the plain hex value and the welwip bits only. */
-int spi_prettyprint_status_register_default_welwip(struct flashctx *flash)
+static int spi_prettyprint_status_register_default_welwip(struct flashctx *flash)
 {
 	uint8_t status;
 	int ret = spi_read_register(flash, STATUS1, &status);
@@ -497,7 +498,7 @@ int spi_prettyprint_status_register_default_welwip(struct flashctx *flash)
  * AMIC A25L series
  * and MX MX25L512
  */
-int spi_prettyprint_status_register_bp1_srwd(struct flashctx *flash)
+static int spi_prettyprint_status_register_bp1_srwd(struct flashctx *flash)
 {
 	uint8_t status;
 	int ret = spi_read_register(flash, STATUS1, &status);
@@ -518,7 +519,7 @@ int spi_prettyprint_status_register_bp1_srwd(struct flashctx *flash)
  * AMIC A25L series
  * PMC Pm25LD series
  */
-int spi_prettyprint_status_register_bp2_srwd(struct flashctx *flash)
+static int spi_prettyprint_status_register_bp2_srwd(struct flashctx *flash)
 {
 	uint8_t status;
 	int ret = spi_read_register(flash, STATUS1, &status);
@@ -538,7 +539,7 @@ int spi_prettyprint_status_register_bp2_srwd(struct flashctx *flash)
  * ST M25P series
  * MX MX25L series
  */
-int spi_prettyprint_status_register_bp3_srwd(struct flashctx *flash)
+static int spi_prettyprint_status_register_bp3_srwd(struct flashctx *flash)
 {
 	uint8_t status;
 	int ret = spi_read_register(flash, STATUS1, &status);
@@ -553,7 +554,7 @@ int spi_prettyprint_status_register_bp3_srwd(struct flashctx *flash)
 	return 0;
 }
 
-int spi_prettyprint_status_register_bp4_srwd(struct flashctx *flash)
+static int spi_prettyprint_status_register_bp4_srwd(struct flashctx *flash)
 {
 	uint8_t status;
 	int ret = spi_read_register(flash, STATUS1, &status);
@@ -567,7 +568,7 @@ int spi_prettyprint_status_register_bp4_srwd(struct flashctx *flash)
 	return 0;
 }
 
-int spi_prettyprint_status_register_bp2_bpl(struct flashctx *flash)
+static int spi_prettyprint_status_register_bp2_bpl(struct flashctx *flash)
 {
 	uint8_t status;
 	int ret = spi_read_register(flash, STATUS1, &status);
@@ -583,7 +584,7 @@ int spi_prettyprint_status_register_bp2_bpl(struct flashctx *flash)
 	return 0;
 }
 
-int spi_prettyprint_status_register_bp2_tb_bpl(struct flashctx *flash)
+static int spi_prettyprint_status_register_bp2_tb_bpl(struct flashctx *flash)
 {
 	uint8_t status;
 	int ret = spi_read_register(flash, STATUS1, &status);
@@ -608,7 +609,7 @@ int spi_prettyprint_status_register_bp2_tb_bpl(struct flashctx *flash)
  * by the second status register.
  */
 
-int spi_prettyprint_status_register_amic_a25l032(struct flashctx *flash)
+static int spi_prettyprint_status_register_amic_a25l032(struct flashctx *flash)
 {
 	uint8_t status;
 	int ret = spi_read_register(flash, STATUS1, &status);
@@ -667,7 +668,7 @@ static void spi_prettyprint_status_register_atmel_at25_swp(uint8_t status)
 	}
 }
 
-int spi_prettyprint_status_register_at25df(struct flashctx *flash)
+static int spi_prettyprint_status_register_at25df(struct flashctx *flash)
 {
 	uint8_t status;
 	int ret = spi_read_register(flash, STATUS1, &status);
@@ -684,7 +685,7 @@ int spi_prettyprint_status_register_at25df(struct flashctx *flash)
 	return 0;
 }
 
-int spi_prettyprint_status_register_at25df_sec(struct flashctx *flash)
+static int spi_prettyprint_status_register_at25df_sec(struct flashctx *flash)
 {
 	/* FIXME: We should check the security lockdown. */
 	msg_cdbg("Ignoring security lockdown (if present)\n");
@@ -693,7 +694,7 @@ int spi_prettyprint_status_register_at25df_sec(struct flashctx *flash)
 }
 
 /* used for AT25F512, AT25F1024(A), AT25F2048 */
-int spi_prettyprint_status_register_at25f(struct flashctx *flash)
+static int spi_prettyprint_status_register_at25f(struct flashctx *flash)
 {
 	uint8_t status;
 	int ret = spi_read_register(flash, STATUS1, &status);
@@ -711,7 +712,7 @@ int spi_prettyprint_status_register_at25f(struct flashctx *flash)
 	return 0;
 }
 
-int spi_prettyprint_status_register_at25f512a(struct flashctx *flash)
+static int spi_prettyprint_status_register_at25f512a(struct flashctx *flash)
 {
 	uint8_t status;
 	int ret = spi_read_register(flash, STATUS1, &status);
@@ -730,7 +731,7 @@ int spi_prettyprint_status_register_at25f512a(struct flashctx *flash)
 	return 0;
 }
 
-int spi_prettyprint_status_register_at25f512b(struct flashctx *flash)
+static int spi_prettyprint_status_register_at25f512b(struct flashctx *flash)
 {
 	uint8_t status;
 	int ret = spi_read_register(flash, STATUS1, &status);
@@ -747,7 +748,7 @@ int spi_prettyprint_status_register_at25f512b(struct flashctx *flash)
 	return 0;
 }
 
-int spi_prettyprint_status_register_at25f4096(struct flashctx *flash)
+static int spi_prettyprint_status_register_at25f4096(struct flashctx *flash)
 {
 	uint8_t status;
 
@@ -765,7 +766,7 @@ int spi_prettyprint_status_register_at25f4096(struct flashctx *flash)
 	return 0;
 }
 
-int spi_prettyprint_status_register_at25fs010(struct flashctx *flash)
+static int spi_prettyprint_status_register_at25fs010(struct flashctx *flash)
 {
 	uint8_t status;
 	int ret = spi_read_register(flash, STATUS1, &status);
@@ -788,7 +789,7 @@ int spi_prettyprint_status_register_at25fs010(struct flashctx *flash)
 	return 0;
 }
 
-int spi_prettyprint_status_register_at25fs040(struct flashctx *flash)
+static int spi_prettyprint_status_register_at25fs040(struct flashctx *flash)
 {
 	uint8_t status;
 	int ret = spi_read_register(flash, STATUS1, &status);
@@ -803,7 +804,7 @@ int spi_prettyprint_status_register_at25fs040(struct flashctx *flash)
 	return 0;
 }
 
-int spi_prettyprint_status_register_at26df081a(struct flashctx *flash)
+static int spi_prettyprint_status_register_at26df081a(struct flashctx *flash)
 {
 	uint8_t status;
 	int ret = spi_read_register(flash, STATUS1, &status);
@@ -864,7 +865,7 @@ static int spi_disable_blockprotect_at25fs040(struct flashctx *flash)
 
 /* === Eon === */
 
-int spi_prettyprint_status_register_en25s_wp(struct flashctx *flash)
+static int spi_prettyprint_status_register_en25s_wp(struct flashctx *flash)
 {
 	uint8_t status;
 	int ret = spi_read_register(flash, STATUS1, &status);
@@ -886,7 +887,7 @@ static int spi_disable_blockprotect_n25q(struct flashctx *flash)
 	return spi_disable_blockprotect_generic(flash, 0x5C, 1 << 7, 0, 0xFF);
 }
 
-int spi_prettyprint_status_register_n25q(struct flashctx *flash)
+static int spi_prettyprint_status_register_n25q(struct flashctx *flash)
 {
 	uint8_t status;
 	int ret = spi_read_register(flash, STATUS1, &status);
@@ -959,7 +960,7 @@ blockprotect_func_t *lookup_blockprotect_func_ptr(const struct flashchip *const 
 }
 
 /* Used by Intel/Numonyx S33 and Spansion S25FL-S chips */
-int spi_prettyprint_status_register_bp2_ep_srwd(struct flashctx *flash)
+static int spi_prettyprint_status_register_bp2_ep_srwd(struct flashctx *flash)
 {
 	uint8_t status;
 	int ret = spi_read_register(flash, STATUS1, &status);
@@ -990,7 +991,7 @@ static void spi_prettyprint_status_register_sst25_common(uint8_t status)
 	spi_prettyprint_status_register_welwip(status);
 }
 
-int spi_prettyprint_status_register_sst25(struct flashctx *flash)
+static int spi_prettyprint_status_register_sst25(struct flashctx *flash)
 {
 	uint8_t status;
 	int ret = spi_read_register(flash, STATUS1, &status);
@@ -1000,7 +1001,7 @@ int spi_prettyprint_status_register_sst25(struct flashctx *flash)
 	return 0;
 }
 
-int spi_prettyprint_status_register_sst25vf016(struct flashctx *flash)
+static int spi_prettyprint_status_register_sst25vf016(struct flashctx *flash)
 {
 	static const char *const bpt[] = {
 		"none",
@@ -1020,7 +1021,7 @@ int spi_prettyprint_status_register_sst25vf016(struct flashctx *flash)
 	return 0;
 }
 
-int spi_prettyprint_status_register_sst25vf040b(struct flashctx *flash)
+static int spi_prettyprint_status_register_sst25vf040b(struct flashctx *flash)
 {
 	static const char *const bpt[] = {
 		"none",
@@ -1036,4 +1037,59 @@ int spi_prettyprint_status_register_sst25vf040b(struct flashctx *flash)
 	spi_prettyprint_status_register_sst25_common(status);
 	msg_cdbg("Resulting block protection : %s\n", bpt[(status & 0x1c) >> 2]);
 	return 0;
+}
+
+printlockfunc_t *lookup_printlock_func_ptr(struct flashctx *flash)
+{
+	switch (flash->chip->printlock) {
+		case PRINTLOCK_AT49F: return &printlock_at49f;
+		case PRINTLOCK_REGSPACE2_BLOCK_ERASER_0: return &printlock_regspace2_block_eraser_0;
+		case PRINTLOCK_REGSPACE2_BLOCK_ERASER_1: return &printlock_regspace2_block_eraser_1;
+		case PRINTLOCK_SST_FWHUB: return &printlock_sst_fwhub;
+		case PRINTLOCK_W39F010: return &printlock_w39f010;
+		case PRINTLOCK_W39L010: return &printlock_w39l010;
+		case PRINTLOCK_W39L020: return &printlock_w39l020;
+		case PRINTLOCK_W39L040: return &printlock_w39l040;
+		case PRINTLOCK_W39V040A: return &printlock_w39v040a;
+		case PRINTLOCK_W39V040B: return &printlock_w39v040b;
+		case PRINTLOCK_W39V040C: return &printlock_w39v040c;
+		case PRINTLOCK_W39V040FA: return &printlock_w39v040fa;
+		case PRINTLOCK_W39V040FB: return &printlock_w39v040fb;
+		case PRINTLOCK_W39V040FC: return &printlock_w39v040fc;
+		case PRINTLOCK_W39V080A: return &printlock_w39v080a;
+		case PRINTLOCK_W39V080FA: return &printlock_w39v080fa;
+		case PRINTLOCK_W39V080FA_DUAL: return &printlock_w39v080fa_dual;
+		case SPI_PRETTYPRINT_STATUS_REGISTER_AMIC_A25L032: return &spi_prettyprint_status_register_amic_a25l032;
+		case SPI_PRETTYPRINT_STATUS_REGISTER_AT25DF: return &spi_prettyprint_status_register_at25df;
+		case SPI_PRETTYPRINT_STATUS_REGISTER_AT25DF_SEC: return &spi_prettyprint_status_register_at25df_sec;
+		case SPI_PRETTYPRINT_STATUS_REGISTER_AT25F: return &spi_prettyprint_status_register_at25f;
+		case SPI_PRETTYPRINT_STATUS_REGISTER_AT25F4096: return &spi_prettyprint_status_register_at25f4096;
+		case SPI_PRETTYPRINT_STATUS_REGISTER_AT25F512A: return &spi_prettyprint_status_register_at25f512a;
+		case SPI_PRETTYPRINT_STATUS_REGISTER_AT25F512B: return &spi_prettyprint_status_register_at25f512b;
+		case SPI_PRETTYPRINT_STATUS_REGISTER_AT25FS010: return &spi_prettyprint_status_register_at25fs010;
+		case SPI_PRETTYPRINT_STATUS_REGISTER_AT25FS040: return &spi_prettyprint_status_register_at25fs040;
+		case SPI_PRETTYPRINT_STATUS_REGISTER_AT26DF081A: return &spi_prettyprint_status_register_at26df081a;
+		case SPI_PRETTYPRINT_STATUS_REGISTER_AT45DB: return &spi_prettyprint_status_register_at45db;
+		case SPI_PRETTYPRINT_STATUS_REGISTER_BP1_SRWD: return &spi_prettyprint_status_register_bp1_srwd;
+		case SPI_PRETTYPRINT_STATUS_REGISTER_BP2_BPL: return &spi_prettyprint_status_register_bp2_bpl;
+		case SPI_PRETTYPRINT_STATUS_REGISTER_BP2_EP_SRWD: return &spi_prettyprint_status_register_bp2_ep_srwd;
+		case SPI_PRETTYPRINT_STATUS_REGISTER_BP2_SRWD: return &spi_prettyprint_status_register_bp2_srwd;
+		case SPI_PRETTYPRINT_STATUS_REGISTER_BP2_TB_BPL: return &spi_prettyprint_status_register_bp2_tb_bpl;
+		case SPI_PRETTYPRINT_STATUS_REGISTER_BP3_SRWD: return &spi_prettyprint_status_register_bp3_srwd;
+		case SPI_PRETTYPRINT_STATUS_REGISTER_BP4_SRWD: return &spi_prettyprint_status_register_bp4_srwd;
+		case SPI_PRETTYPRINT_STATUS_REGISTER_DEFAULT_WELWIP: return &spi_prettyprint_status_register_default_welwip;
+		case SPI_PRETTYPRINT_STATUS_REGISTER_EN25S_WP: return &spi_prettyprint_status_register_en25s_wp;
+		case SPI_PRETTYPRINT_STATUS_REGISTER_N25Q: return &spi_prettyprint_status_register_n25q;
+		case SPI_PRETTYPRINT_STATUS_REGISTER_PLAIN: return &spi_prettyprint_status_register_plain;
+		case SPI_PRETTYPRINT_STATUS_REGISTER_SST25: return &spi_prettyprint_status_register_sst25;
+		case SPI_PRETTYPRINT_STATUS_REGISTER_SST25VF016: return &spi_prettyprint_status_register_sst25vf016;
+		case SPI_PRETTYPRINT_STATUS_REGISTER_SST25VF040B: return &spi_prettyprint_status_register_sst25vf040b;
+	/* default: non-total function, 0 indicates no unlock function set.
+	 * We explicitly do not want a default catch-all case in the switch
+	 * to ensure unhandled enum's are compiler warnings.
+	 */
+		case NO_PRINTLOCK_FUNC: return NULL;
+	};
+
+	return NULL;
 }
