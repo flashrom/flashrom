@@ -1,3 +1,4 @@
+*.swp
 *.d
 *.o
 /.features
