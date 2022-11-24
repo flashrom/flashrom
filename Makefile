@@ -263,6 +263,16 @@ UNSUPPORTED_FEATURES += CONFIG_GFXNVIDIA=yes
 else
 override CONFIG_GFXNVIDIA = no
 endif
+ifeq ($(CONFIG_AST1100), yes)
+UNSUPPORTED_FEATURES += CONFIG_AST1100=yes
+else
+override CONFIG_AST1100 = no
+endif
+ifeq ($(CONFIG_AST2400), yes)
+UNSUPPORTED_FEATURES += CONFIG_AST2400=yes
+else
+override CONFIG_AST2400 = no
+endif
 ifeq ($(CONFIG_SATASII), yes)
 UNSUPPORTED_FEATURES += CONFIG_SATASII=yes
 else
@@ -565,6 +575,16 @@ UNSUPPORTED_FEATURES += CONFIG_GFXNVIDIA=yes
 else
 override CONFIG_GFXNVIDIA = no
 endif
+ifeq ($(CONFIG_AST1100), yes)
+UNSUPPORTED_FEATURES += CONFIG_AST1100=yes
+else
+override CONFIG_AST1100 = no
+endif
+ifeq ($(CONFIG_AST2400), yes)
+UNSUPPORTED_FEATURES += CONFIG_AST2400=yes
+else
+override CONFIG_AST2400 = no
+endif
 ifeq ($(CONFIG_SATASII), yes)
 UNSUPPORTED_FEATURES += CONFIG_SATASII=yes
 else
@@ -691,6 +711,12 @@ CONFIG_NIC3COM ?= yes
 
 # Enable NVIDIA graphics cards. Note: write and erase do not work properly.
 CONFIG_GFXNVIDIA ?= yes
+
+# Enable AST1100 BMC SoCs.
+CONFIG_AST1100 ?= yes
+
+# Enable AST2400 BMC SoCs.
+CONFIG_AST2400 ?= yes
 
 # Always enable SiI SATA controllers for now.
 CONFIG_SATASII ?= yes
@@ -819,6 +845,8 @@ ifeq ($(CONFIG_ENABLE_LIBPCI_PROGRAMMERS), no)
 override CONFIG_INTERNAL = no
 override CONFIG_NIC3COM = no
 override CONFIG_GFXNVIDIA = no
+override CONFIG_AST1100 = no
+override CONFIG_AST2400 = no
 override CONFIG_SATASII = no
 override CONFIG_ATAHPT = no
 override CONFIG_ATAVIA = no
@@ -944,6 +972,18 @@ ifeq ($(CONFIG_GFXNVIDIA), yes)
 FEATURE_CFLAGS += -D'CONFIG_GFXNVIDIA=1'
 PROGRAMMER_OBJS += gfxnvidia.o
 NEED_LIBPCI += CONFIG_GFXNVIDIA
+endif
+
+ifeq ($(CONFIG_AST1100), yes)
+FEATURE_CFLAGS += -D'CONFIG_AST1100=1'
+PROGRAMMER_OBJS += ast1100.o
+NEED_LIBPCI += CONFIG_AST1100
+endif
+
+ifeq ($(CONFIG_AST2400), yes)
+FEATURE_CFLAGS += -D'CONFIG_AST2400=1'
+PROGRAMMER_OBJS += ast2400.o
+NEED_LIBPCI += CONFIG_AST2400
 endif
 
 ifeq ($(CONFIG_SATASII), yes)

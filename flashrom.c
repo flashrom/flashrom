@@ -6,6 +6,7 @@
  * Copyright (C) 2005-2008 coresystems GmbH
  * Copyright (C) 2008,2009 Carl-Daniel Hailfinger
  * Copyright (C) 2016 secunet Security Networks AG
+ * Copyright (C) 2016-2017 Raptor Engineering, LLC
  * (Written by Nico Huber <nico.huber@secunet.com> for secunet)
  *
  * This program is free software; you can redistribute it and/or modify
@@ -151,6 +152,30 @@ const struct programmer_entry programmer_table[] = {
 		.type			= USB,
 		.devs.dev		= devs_raiden,
 		.init			= raiden_debug_spi_init,
+		.map_flash_region	= fallback_map,
+		.unmap_flash_region	= fallback_unmap,
+		.delay			= internal_delay,
+	},
+#endif
+
+#if CONFIG_AST1100 == 1
+	{
+		.name			= "ast1100",
+		.type			= PCI,
+		.devs.dev		= bmc_aspeed_ast1100,
+		.init			= ast1100_init,
+		.map_flash_region	= fallback_map,
+		.unmap_flash_region	= fallback_unmap,
+		.delay			= internal_delay,
+	},
+#endif
+
+#if CONFIG_AST2400 == 1
+	{
+		.name			= "ast2400",
+		.type			= PCI,
+		.devs.dev		= bmc_aspeed_ast2400,
+		.init			= ast2400_init,
 		.map_flash_region	= fallback_map,
 		.unmap_flash_region	= fallback_unmap,
 		.delay			= internal_delay,

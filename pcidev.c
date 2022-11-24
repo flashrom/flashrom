@@ -33,11 +33,13 @@ enum pci_bartype {
 uintptr_t pcidev_readbar(struct pci_dev *dev, int bar)
 {
 	uint64_t addr;
-	uint32_t upperaddr;
 	uint8_t headertype;
 	uint16_t supported_cycles;
 	enum pci_bartype bartype = TYPE_UNKNOWN;
 
+#ifndef __PPC64__
+	uint32_t upperaddr;
+#endif
 
 	headertype = pci_read_byte(dev, PCI_HEADER_TYPE) & 0x7f;
 	msg_pspew("PCI header type 0x%02x\n", headertype);
@@ -93,6 +95,12 @@ uintptr_t pcidev_readbar(struct pci_dev *dev, int bar)
 	switch (bartype) {
 	case TYPE_MEMBAR:
 		msg_pdbg("MEM");
+#ifdef __PPC64__
+		/* PowerPC is able to translate 32-bit BARs into 64-bit host windows.
+		 * Use the dev->base_addr[x] mechanism to handle mapping.
+		 */
+		addr = dev->base_addr[(bar - 0x10) / 0x4] & PCI_BASE_ADDRESS_MEM_MASK;
+#else
 		if (!(supported_cycles & PCI_COMMAND_MEMORY)) {
 			msg_perr("MEM BAR access requested, but device has MEM space accesses disabled.\n");
 			/* TODO: Abort here? */
@@ -118,6 +126,7 @@ uintptr_t pcidev_readbar(struct pci_dev *dev, int bar)
 			}
 		}
 		addr &= PCI_BASE_ADDRESS_MEM_MASK;
+#endif
 		break;
 	case TYPE_IOBAR:
 		msg_pdbg("I/O\n");

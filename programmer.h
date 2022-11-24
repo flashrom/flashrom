@@ -5,6 +5,7 @@
  * Copyright (C) 2000 Ronald G. Minnich <rminnich@gmail.com>
  * Copyright (C) 2005-2009 coresystems GmbH
  * Copyright (C) 2006-2009 Carl-Daniel Hailfinger
+ * Copyright (C) 2016-2017 Raptor Engineering, LLC
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,6 +43,12 @@ enum programmer {
 #endif
 #if CONFIG_GFXNVIDIA == 1
 	PROGRAMMER_GFXNVIDIA,
+#endif
+#if CONFIG_AST1100 == 1
+	PROGRAMMER_AST1100,
+#endif
+#if CONFIG_AST2400 == 1
+	PROGRAMMER_AST2400,
 #endif
 #if CONFIG_RAIDEN == 1
 	PROGRAMMER_RAIDEN,
@@ -414,6 +421,18 @@ extern const struct dev_entry nics_3com[];
 #if CONFIG_GFXNVIDIA == 1
 int gfxnvidia_init(void);
 extern const struct dev_entry gfx_nvidia[];
+#endif
+
+/* ast1100.c */
+#if CONFIG_AST1100 == 1
+int ast1100_init(void);
+extern const struct dev_entry bmc_aspeed_ast1100[];
+#endif
+
+/* ast2400.c */
+#if CONFIG_AST2400 == 1
+int ast2400_init(void);
+extern const struct dev_entry bmc_aspeed_ast2400[];
 #endif
 
 /* raiden_debug_spi.c */
