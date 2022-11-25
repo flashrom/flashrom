@@ -71,8 +71,9 @@ static void cli_classic_usage(const char *name)
 	       "      --fmap                        read ROM layout from fmap embedded in ROM\n"
 	       "      --fmap-file <fmapfile>        read ROM layout from fmap in <fmapfile>\n"
 	       "      --ifd                         read layout from an Intel Firmware Descriptor\n"
-	       " -i | --image <region>[:<file>]     only read/write image <region> from layout\n"
+	       " -i | --include <region>[:<file>]   only read/write image <region> from layout\n"
 	       "                                    (optionally with data from <file>)\n"
+	       "      --image <region>[:<file>]     deprecated, please use --include\n"
 	       " -o | --output <logfile>            log output to <logfile>\n"
 	       "      --flash-contents <ref-file>   assume flash contents to be <ref-file>\n"
 	       " -L | --list-supported              print supported devices\n"
@@ -613,7 +614,8 @@ int main(int argc, char *argv[])
 		{"ifd",			0, NULL, OPTION_IFD},
 		{"fmap",		0, NULL, OPTION_FMAP},
 		{"fmap-file",		1, NULL, OPTION_FMAP_FILE},
-		{"image",		1, NULL, 'i'},
+		{"image",		1, NULL, 'i'}, // (deprecated): back compatibility.
+		{"include",		1, NULL, 'i'},
 		{"flash-contents",	1, NULL, OPTION_FLASH_CONTENTS},
 		{"flash-name",		0, NULL, OPTION_FLASH_NAME},
 		{"flash-size",		0, NULL, OPTION_FLASH_SIZE},
