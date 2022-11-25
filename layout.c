@@ -120,7 +120,7 @@ int register_include_arg(struct layout_include_args **args, const char *arg)
 	struct layout_include_args *tmp;
 	char *colon;
 	char *name;
-	char *file;
+	char *file = NULL; /* file is optional, so defaults to NULL */
 
 	if (arg == NULL) {
 		msg_gerr("<NULL> is a bad region name.\n");
@@ -133,8 +133,22 @@ int register_include_arg(struct layout_include_args **args, const char *arg)
 		msg_gerr("Missing filename parameter in %s\n", arg);
 		return 1;
 	}
-	name = colon ? strndup(arg, colon - arg) : strdup(arg);
-	file = colon ? strdup(colon + 1) : NULL;
+
+	if (colon) {
+		name = strndup(arg, colon - arg);
+		if (!name) {
+			msg_gerr("Out of memory");
+			goto error;
+		}
+
+		file = strdup(colon + 1);
+		if (!file) {
+			msg_gerr("Out of memory");
+			goto error;
+		}
+	} else {
+		name = strdup(arg);
+	}
 
 	for (tmp = *args; tmp; tmp = tmp->next) {
 		if (!strcmp(tmp->name, name)) {
