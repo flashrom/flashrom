@@ -91,26 +91,26 @@ const char *flashrom_version_info(void)
 
 struct flashrom_flashchip_info *flashrom_supported_flash_chips(void)
 {
-	unsigned int i = 0;
 	struct flashrom_flashchip_info *supported_flashchips =
 		malloc(flashchips_size * sizeof(*supported_flashchips));
 
-	if (supported_flashchips != NULL) {
-		for (; i < flashchips_size; ++i) {
-			supported_flashchips[i].vendor = flashchips[i].vendor;
-			supported_flashchips[i].name = flashchips[i].name;
-			supported_flashchips[i].tested.erase =
-				(enum flashrom_test_state)flashchips[i].tested.erase;
-			supported_flashchips[i].tested.probe =
-				(enum flashrom_test_state)flashchips[i].tested.probe;
-			supported_flashchips[i].tested.read =
-				(enum flashrom_test_state)flashchips[i].tested.read;
-			supported_flashchips[i].tested.write =
-				(enum flashrom_test_state)flashchips[i].tested.write;
-			supported_flashchips[i].total_size = flashchips[i].total_size;
-		}
-	} else {
+	if (!supported_flashchips) {
 		msg_gerr("Memory allocation error!\n");
+		return NULL;
+	}
+
+	for (unsigned int i = 0; i < flashchips_size; ++i) {
+		supported_flashchips[i].vendor = flashchips[i].vendor;
+		supported_flashchips[i].name = flashchips[i].name;
+		supported_flashchips[i].tested.erase =
+			(enum flashrom_test_state)flashchips[i].tested.erase;
+		supported_flashchips[i].tested.probe =
+			(enum flashrom_test_state)flashchips[i].tested.probe;
+		supported_flashchips[i].tested.read =
+			(enum flashrom_test_state)flashchips[i].tested.read;
+		supported_flashchips[i].tested.write =
+			(enum flashrom_test_state)flashchips[i].tested.write;
+		supported_flashchips[i].total_size = flashchips[i].total_size;
 	}
 
 	return supported_flashchips;
@@ -120,7 +120,6 @@ struct flashrom_board_info *flashrom_supported_boards(void)
 {
 #if CONFIG_INTERNAL == 1
 	int boards_known_size = 0;
-	int i = 0;
 	const struct board_info *binfo = boards_known;
 
 	while ((binfo++)->vendor)
@@ -132,15 +131,16 @@ struct flashrom_board_info *flashrom_supported_boards(void)
 	struct flashrom_board_info *supported_boards =
 		malloc(boards_known_size * sizeof(*supported_boards));
 
-	if (supported_boards != NULL) {
-		for (; i < boards_known_size; ++i) {
-			supported_boards[i].vendor = binfo[i].vendor;
-			supported_boards[i].name = binfo[i].name;
-			supported_boards[i].working =
-				(enum flashrom_test_state) binfo[i].working;
-		}
-	} else {
+	if (!supported_boards) {
 		msg_gerr("Memory allocation error!\n");
+		return NULL;
+	}
+
+	for (int i = 0; i < boards_known_size; ++i) {
+		supported_boards[i].vendor = binfo[i].vendor;
+		supported_boards[i].name = binfo[i].name;
+		supported_boards[i].working =
+			(enum flashrom_test_state) binfo[i].working;
 	}
 
 	return supported_boards;
@@ -153,7 +153,6 @@ struct flashrom_chipset_info *flashrom_supported_chipsets(void)
 {
 #if CONFIG_INTERNAL == 1
 	int chipset_enables_size = 0;
-	int i = 0;
 	const struct penable *chipset = chipset_enables;
 
 	while ((chipset++)->vendor_name)
@@ -165,17 +164,18 @@ struct flashrom_chipset_info *flashrom_supported_chipsets(void)
 	struct flashrom_chipset_info *supported_chipsets =
 		malloc(chipset_enables_size * sizeof(*supported_chipsets));
 
-	if (supported_chipsets != NULL) {
-		for (; i < chipset_enables_size; ++i) {
-			supported_chipsets[i].vendor = chipset[i].vendor_name;
-			supported_chipsets[i].chipset = chipset[i].device_name;
-			supported_chipsets[i].vendor_id = chipset[i].vendor_id;
-			supported_chipsets[i].chipset_id = chipset[i].device_id;
-			supported_chipsets[i].status =
-				(enum flashrom_test_state) chipset[i].status;
-		}
-	} else {
+	if (!supported_chipsets) {
 		msg_gerr("Memory allocation error!\n");
+		return NULL;
+	}
+
+	for (int i = 0; i < chipset_enables_size; ++i) {
+		supported_chipsets[i].vendor = chipset[i].vendor_name;
+		supported_chipsets[i].chipset = chipset[i].device_name;
+		supported_chipsets[i].vendor_id = chipset[i].vendor_id;
+		supported_chipsets[i].chipset_id = chipset[i].device_id;
+		supported_chipsets[i].status =
+			(enum flashrom_test_state) chipset[i].status;
 	}
 
 	return supported_chipsets;
