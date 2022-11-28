@@ -224,9 +224,9 @@ int it8705f_write_enable(uint8_t port);
 uint8_t sio_read(uint16_t port, uint8_t reg);
 void sio_write(uint16_t port, uint8_t reg, uint8_t data);
 void sio_mask(uint16_t port, uint8_t reg, uint8_t data, uint8_t mask);
-void board_handle_before_superio(void);
-void board_handle_before_laptop(void);
-int board_flash_enable(const char *vendor, const char *model, const char *cb_vendor, const char *cb_model);
+void board_handle_before_superio(bool force_boardenable);
+void board_handle_before_laptop(bool force_boardenable);
+int board_flash_enable(const char *vendor, const char *model, const char *cb_vendor, const char *cb_model, bool force_boardenable);
 
 /* chipset_enable.c */
 int chipset_flash_enable(const struct programmer_cfg *cfg);
@@ -263,7 +263,6 @@ extern int superio_count;
 #if CONFIG_INTERNAL == 1
 extern int is_laptop;
 extern bool laptop_ok;
-extern bool force_boardenable;
 extern bool force_boardmismatch;
 void probe_superio(void);
 int register_superio(struct superio s);

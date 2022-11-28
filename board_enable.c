@@ -2683,7 +2683,7 @@ static const struct board_match *board_match_pci_ids(enum board_match_phase phas
 	return NULL;
 }
 
-static int board_enable_safetycheck(const struct board_match *board)
+static int board_enable_safetycheck(const struct board_match *board, bool force_boardenable)
 {
 	if (!board)
 		return 1;
@@ -2705,7 +2705,7 @@ static int board_enable_safetycheck(const struct board_match *board)
 }
 
 /* FIXME: Should this be identical to board_flash_enable? */
-static int board_handle_phase(enum board_match_phase phase)
+static int board_handle_phase(enum board_match_phase phase, bool force_boardenable)
 {
 	const struct board_match *board = NULL;
 
@@ -2714,7 +2714,7 @@ static int board_handle_phase(enum board_match_phase phase)
 	if (!board)
 		return 0;
 
-	if (board_enable_safetycheck(board))
+	if (board_enable_safetycheck(board, force_boardenable))
 		return 0;
 
 	if (!board->enable) {
@@ -2726,17 +2726,18 @@ static int board_handle_phase(enum board_match_phase phase)
 	return board->enable();
 }
 
-void board_handle_before_superio(void)
+void board_handle_before_superio(bool force_boardenable)
 {
-	board_handle_phase(P1);
+	board_handle_phase(P1, force_boardenable);
 }
 
-void board_handle_before_laptop(void)
+void board_handle_before_laptop(bool force_boardenable)
 {
-	board_handle_phase(P2);
+	board_handle_phase(P2, force_boardenable);
 }
 
-int board_flash_enable(const char *vendor, const char *model, const char *cb_vendor, const char *cb_model)
+int board_flash_enable(const char *vendor, const char *model, const char *cb_vendor, const char *cb_model,
+		bool force_boardenable)
 {
 	const struct board_match *board = NULL;
 	int ret = 0;
@@ -2762,7 +2763,7 @@ int board_flash_enable(const char *vendor, const char *model, const char *cb_ven
 			return 0;
 	}
 
-	if (board_enable_safetycheck(board))
+	if (board_enable_safetycheck(board, force_boardenable))
 		return 1;
 
 	/* limit the maximum size of the parallel bus */
