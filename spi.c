@@ -134,7 +134,7 @@ int spi_aai_write(struct flashctx *flash, const uint8_t *buf, unsigned int start
 	return flash->mst->spi.write_aai(flash, buf, start, len);
 }
 
-bool default_spi_probe_opcode(struct flashctx *flash, uint8_t opcode)
+bool default_spi_probe_opcode(const struct flashctx *flash, uint8_t opcode)
 {
 	return true;
 }

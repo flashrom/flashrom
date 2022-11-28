@@ -312,7 +312,7 @@ struct spi_master {
 	int (*write_256)(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 	int (*write_aai)(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 	int (*shutdown)(void *data);
-	bool (*probe_opcode)(struct flashctx *flash, uint8_t opcode);
+	bool (*probe_opcode)(const struct flashctx *flash, uint8_t opcode);
 	void *data;
 };
 
@@ -322,7 +322,7 @@ int default_spi_send_multicommand(const struct flashctx *flash, struct spi_comma
 int default_spi_read(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 int default_spi_write_256(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 int default_spi_write_aai(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
-bool default_spi_probe_opcode(struct flashctx *flash, uint8_t opcode);
+bool default_spi_probe_opcode(const struct flashctx *flash, uint8_t opcode);
 int register_spi_master(const struct spi_master *mst, void *data);
 
 /* The following enum is needed by ich_descriptor_tool and ich* code as well as in chipset_enable.c. */

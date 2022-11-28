@@ -1661,7 +1661,7 @@ static int ich_spi_send_multicommand(const struct flashctx *flash,
 	return ret;
 }
 
-static bool ich_spi_probe_opcode(struct flashctx *flash, uint8_t opcode)
+static bool ich_spi_probe_opcode(const struct flashctx *flash, uint8_t opcode)
 {
 	return find_opcode(curopcodes, opcode) >= 0;
 }
