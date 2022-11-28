@@ -26,6 +26,11 @@ if [ "$(basename "${CC}")" = "ccc-analyzer" ] || [ -n "${COVERITY_OUTPUT}" ]; th
 fi
 
 
+run_linter() {
+	./util/lint/lint-extended-020-signed-off-by
+}
+
+
 build_make () {
 	make clean
 	make -j $(nproc) CONFIG_EVERYTHING=yes
@@ -66,6 +71,8 @@ build_meson () {
 	done
 }
 
+
+run_linter
 
 build_make
 build_meson
