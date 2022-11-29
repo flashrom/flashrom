@@ -1262,12 +1262,22 @@ static int ich_spi_send_command(const struct flashctx *flash, unsigned int write
 	return result;
 }
 
+#define MAX_FD_REGIONS 16
+struct fd_region {
+	const char* name;
+	enum ich_access_protection level;
+	uint32_t base;
+	uint32_t limit;
+};
+
 struct hwseq_data {
 	uint32_t size_comp0;
 	uint32_t size_comp1;
 	uint32_t addr_mask;
 	bool only_4k;
 	uint32_t hsfc_fcycle;
+
+	struct fd_region fd_regions[MAX_FD_REGIONS];
 };
 
 static struct hwseq_data *get_hwseq_data_from_context(const struct flashctx *flash)
@@ -1399,6 +1409,57 @@ static int ich_exec_sync_hwseq_xfer(const struct flashctx *flash, uint32_t hsfc_
 
 	ich_start_hwseq_xfer(flash, hsfc_cycle, flash_addr, len, addr_mask);
 	return ich_hwseq_wait_for_cycle_complete(len, ich_gen, addr_mask);
+}
+
+static void ich_get_region(const struct flashctx *flash, unsigned int addr, struct flash_region *region)
+{
+	struct ich_descriptors desc = { 0 };
+	const ssize_t nr = ich_number_of_regions(ich_generation, &desc.content);
+	const struct hwseq_data *hwseq_data = get_hwseq_data_from_context(flash);
+	const struct fd_region *fd_regions = hwseq_data->fd_regions;
+
+	/*
+	 * Set default values for the region. If no flash descriptor containing
+	 * addr is found, these values will be used instead.
+	 *
+	 * The region start and end are constrained so that they do not overlap
+	 * any flash descriptor regions.
+	 */
+	const char *name = "";
+	region->read_prot  = false;
+	region->write_prot = false;
+	region->start = 0;
+	region->end = flashrom_flash_getsize(flash);
+
+	for (ssize_t i = 0; i < nr; i++) {
+		uint32_t base = fd_regions[i].base;
+		uint32_t limit = fd_regions[i].limit;
+		enum ich_access_protection level = fd_regions[i].level;
+
+		if (addr < base) {
+			/*
+			 * fd_regions[i] starts after addr, constrain
+			 * region->end so that it does not overlap.
+			 */
+			region->end = min(region->end, base);
+		} else if (addr > limit) {
+			/*
+			 * fd_regions[i] ends before addr, constrain
+			 * region->start so that it does not overlap.
+			 */
+			region->start = max(region->start, limit + 1);
+		} else {
+			/* fd_regions[i] contains addr, copy to *region. */
+			name = fd_regions[i].name;
+			region->start = base;
+			region->end = limit + 1;
+			region->read_prot  = (level == LOCKED) || (level == READ_PROT);
+			region->write_prot = (level == LOCKED) || (level == WRITE_PROT);
+			break;
+		}
+	}
+
+	region->name = strdup(name);
 }
 
 /* Given RDID info, return pointer to entry in flashchips[] */
@@ -1768,7 +1829,8 @@ static const char *const access_names[] = {
 	"read-write", "write-only", "read-only", "locked"
 };
 
-static enum ich_access_protection ich9_handle_frap(uint32_t frap, unsigned int i)
+static enum ich_access_protection ich9_handle_frap(struct fd_region *fd_regions,
+						   uint32_t frap, unsigned int i)
 {
 	static const char *const region_names[] = {
 		"Flash Descriptor", "BIOS", "Management Engine",
@@ -1810,6 +1872,12 @@ static enum ich_access_protection ich9_handle_frap(uint32_t frap, unsigned int i
 	}
 	msg_pinfo("FREG%u: %s region (0x%08x-0x%08x) is %s.\n", i,
 		  region_name, base, limit, access_names[rwperms]);
+
+	/* Save region attributes for use by ich_get_region(). */
+	fd_regions[i].base = base;
+	fd_regions[i].limit = limit;
+	fd_regions[i].level = rwperms;
+	fd_regions[i].name = region_name;
 
 	return rwperms;
 }
@@ -1904,6 +1972,7 @@ static const struct opaque_master opaque_master_ich_hwseq = {
 	.erase		= ich_hwseq_block_erase,
 	.read_register	= ich_hwseq_read_status,
 	.write_register	= ich_hwseq_write_status,
+	.get_region	= ich_get_region,
 	.shutdown	= ich_hwseq_shutdown,
 };
 
@@ -2047,8 +2116,7 @@ static int init_ich_default(const struct programmer_cfg *cfg, void *spibar, enum
 	struct ich_descriptors desc = { 0 };
 	enum ich_spi_mode ich_spi_mode = ich_auto;
 	size_t num_freg, num_pr, reg_pr0;
-
-	struct hwseq_data hwseq_data;
+	struct hwseq_data hwseq_data = { 0 };
 	init_chipset_properties(&swseq_data, &hwseq_data, &num_freg, &num_pr, &reg_pr0, ich_gen);
 
 	int ret = get_ich_spi_mode_param(cfg, &ich_spi_mode);
@@ -2109,7 +2177,7 @@ static int init_ich_default(const struct programmer_cfg *cfg, void *spibar, enum
 
 		/* Handle FREGx and FRAP registers */
 		for (i = 0; i < num_freg; i++)
-			ich_spi_rw_restricted |= ich9_handle_frap(tmp, i);
+			ich_spi_rw_restricted |= ich9_handle_frap(hwseq_data.fd_regions, tmp, i);
 		if (ich_spi_rw_restricted)
 			msg_pinfo("Not all flash regions are freely accessible by flashrom. This is "
 				  "most likely\ndue to an active ME. Please see "
