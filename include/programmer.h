@@ -313,6 +313,7 @@ struct spi_master {
 	int (*shutdown)(void *data);
 	bool (*probe_opcode)(const struct flashctx *flash, uint8_t opcode);
 	void (*delay) (const struct flashctx *flash, unsigned int usecs);
+	void (*get_region)(const struct flashctx *flash, unsigned int addr, struct flash_region *region);
 	void *data;
 };
 
@@ -416,6 +417,7 @@ struct opaque_master {
 	enum flashrom_wp_result (*wp_write_cfg)(struct flashctx *, const struct flashrom_wp_cfg *);
 	enum flashrom_wp_result (*wp_read_cfg)(struct flashrom_wp_cfg *, struct flashctx *);
 	enum flashrom_wp_result (*wp_get_ranges)(struct flashrom_wp_ranges **, struct flashctx *);
+	void (*get_region)(const struct flashctx *flash, unsigned int addr, struct flash_region *region);
 	int (*shutdown)(void *data);
 	void *data;
 };
