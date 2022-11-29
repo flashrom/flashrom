@@ -7645,6 +7645,48 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "ISSI",
+		.name		= "IS25WP016",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= ISSI_ID_SPI,
+		.model_id	= ISSI_IS25WP016,
+		.total_size	= 2048,
+		.page_size	= 256,
+		/* OTP: 1024B total; read 0x48; write 0x42 */
+		/* QPI enable 0x35, disable 0xF5 */
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI,
+		.tested		= TEST_OK_PREW,
+		.probe		= PROBE_SPI_RDID,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 512} },
+				.block_erase = SPI_BLOCK_ERASE_20,
+			}, {
+				.eraseblocks = { {4 * 1024, 512} },
+				.block_erase = SPI_BLOCK_ERASE_D7,
+			}, {
+				.eraseblocks = { {32 * 1024, 64} },
+				.block_erase = SPI_BLOCK_ERASE_52,
+			}, {
+				.eraseblocks = { {64 * 1024, 32} },
+				.block_erase = SPI_BLOCK_ERASE_D8,
+			}, {
+				.eraseblocks = { {2 * 1024 * 1024, 1} },
+				.block_erase = SPI_BLOCK_ERASE_60,
+			}, {
+				.eraseblocks = { {2 * 1024 * 1024, 1} },
+				.block_erase = SPI_BLOCK_ERASE_C7,
+			}
+		},
+		.unlock		= SPI_DISABLE_BLOCKPROTECT,
+		.write		= SPI_CHIP_WRITE256,
+		.read		= SPI_CHIP_READ,
+		.voltage	= {1650, 1950},
+	},
+
+	{
+		.vendor		= "ISSI",
 		.name		= "IS25WP032",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ISSI_ID_SPI,
