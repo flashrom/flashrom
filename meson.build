@@ -28,8 +28,6 @@ warning_flags = [
   '-Wno-missing-braces',
 ]
 
-conf = configuration_data()
-
 cc = meson.get_compiler('c')
 add_project_arguments(cc.get_supported_arguments(warning_flags), language : 'c')
 add_project_arguments('-D_DEFAULT_SOURCE', language : 'c')
@@ -591,12 +589,13 @@ pkgg.generate(
   description : 'library to interact with flashrom',
 )
 
-conf.set('VERSION', version)
-conf.set('MAN_DATE', run_command('util/getversion.sh', '--man-date', check : true).stdout().strip())
+config_manfile = configuration_data()
+config_manfile.set('VERSION', version)
+config_manfile.set('MAN_DATE', run_command('util/getversion.sh', '--man-date', check : true).stdout().strip())
 configure_file(
   input : 'flashrom.8.tmpl',
   output : 'flashrom.8',
-  configuration : conf,
+  configuration : config_manfile,
   install: true,
   install_dir: join_paths(get_option('mandir'), 'man8'),
 )
