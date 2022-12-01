@@ -65,7 +65,7 @@ build_meson () {
 			return
 		fi
 
-		meson ${programmer_dir} ${meson_opts} -Dprogrammer=${programmer}
+		meson setup ${programmer_dir} ${meson_opts} -Dprogrammer=${programmer}
 		ninja ${ninja_opts} -C ${programmer_dir}
 		ninja ${ninja_opts} -C ${programmer_dir} test
 	done
