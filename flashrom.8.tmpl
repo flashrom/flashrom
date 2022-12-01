@@ -939,8 +939,8 @@ All models supported by the ft2232_spi driver can configure the SPI clock rate b
 expressible divisors are all
 .B even
 numbers between 2 and 2^17 (=131072) resulting in SPI clock frequencies of
-6 MHz down to about 92 Hz for 12 MHz inputs. The default divisor is set to 2, but you can use another one by
-specifying the optional
+6 MHz down to about 92 Hz for 12 MHz inputs (non-H chips) and 30 MHz down to about 458 Hz for 60 MHz inputs ('H' chips). The default
+divisor is set to 2, but you can use another one by specifying the optional
 .B divisor
 parameter with the
 .sp
