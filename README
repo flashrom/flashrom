@@ -46,6 +46,18 @@ from the tarball, as controlled by the .gitattributes files.
 Build Instructions
 ------------------
 
+flashrom supports building with make and meson.
+
+Meson build system supports almost all the environments, although not exactly
+all of them. Full meson support is on the roadmap in the nearest future.
+To build flashrom with meson, follow the instruction and information in
+/Documentation/building.md
+
+If you are unsure which build system to use, and/or don't know what's the
+difference, use make for now.
+
+The rest of Build Instructions below refers to building flashrom with make.
+
 To build flashrom you need to install the following software:
 
  * C compiler (GCC / clang)
