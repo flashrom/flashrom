@@ -295,13 +295,10 @@ static struct lb_record *next_record(struct lb_record *rec)
 static void search_lb_records(struct lb_record *rec, struct lb_record *last, unsigned long addr)
 {
 	struct lb_record *next;
-	int count;
-	count = 0;
 
 	for (next = next_record(rec); (rec < last) && (next <= last);
 	     rec = next, addr += rec->size) {
 		next = next_record(rec);
-		count++;
 		if (rec->tag == LB_TAG_MAINBOARD) {
 			find_mainboard(rec, addr);
 			break;
