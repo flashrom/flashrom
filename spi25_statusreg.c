@@ -17,6 +17,8 @@
  * GNU General Public License for more details.
  */
 
+#include <stdlib.h>
+
 #include "flash.h"
 #include "chipdrivers.h"
 #include "programmer.h"
@@ -263,8 +265,11 @@ int spi_read_register(const struct flashctx *flash, enum flash_reg reg, uint8_t 
 	return 0;
 }
 
-static int spi_restore_status(struct flashctx *flash, uint8_t status)
+static int spi_restore_status(struct flashctx *flash, void *data)
 {
+	uint8_t status = *(uint8_t *)data;
+	free(data);
+
 	msg_cdbg("restoring chip status (0x%02x)\n", status);
 	return spi_write_register(flash, STATUS1, status);
 }
@@ -304,7 +309,13 @@ static int spi_disable_blockprotect_generic(struct flashctx *flash, uint8_t bp_m
 	}
 
 	/* Restore status register content upon exit in finalize_flash_access(). */
-	register_chip_restore(spi_restore_status, flash, status);
+	uint8_t *data = calloc(sizeof(uint8_t), 1);
+	if (!data) {
+		msg_cerr("Out of memory!\n");
+		return 1;
+	}
+	*data = status;
+	register_chip_restore(spi_restore_status, flash, data);
 
 	msg_cdbg("Some block protection in effect, disabling... ");
 	if ((status & lock_mask) != 0) {

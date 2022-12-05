@@ -509,7 +509,7 @@ struct flashchip {
 	enum decode_range_func decode_range;
 };
 
-typedef int (*chip_restore_fn_cb_t)(struct flashctx *flash, uint8_t status);
+typedef int (*chip_restore_fn_cb_t)(struct flashctx *flash, void *data);
 
 struct flashrom_flashctx {
 	struct flashchip *chip;
@@ -544,7 +544,7 @@ struct flashrom_flashctx {
 	int chip_restore_fn_count;
 	struct chip_restore_func_data {
 		chip_restore_fn_cb_t func;
-		uint8_t status;
+		void *data;
 	} chip_restore_fn[MAX_CHIP_RESTORE_FUNCTIONS];
 	/* Progress reporting */
 	flashrom_progress_callback *progress_callback;
@@ -618,7 +618,7 @@ int read_buf_from_file(unsigned char *buf, unsigned long size, const char *filen
 int write_buf_to_file(const unsigned char *buf, unsigned long size, const char *filename);
 int prepare_flash_access(struct flashctx *, bool read_it, bool write_it, bool erase_it, bool verify_it);
 void finalize_flash_access(struct flashctx *);
-int register_chip_restore(chip_restore_fn_cb_t func, struct flashctx *flash, uint8_t status);
+int register_chip_restore(chip_restore_fn_cb_t func, struct flashctx *flash, void *data);
 int check_block_eraser(const struct flashctx *flash, int k, int log);
 unsigned int count_usable_erasers(const struct flashctx *flash);
 int need_erase(const uint8_t *have, const uint8_t *want, unsigned int len, enum write_granularity gran, const uint8_t erased_value);

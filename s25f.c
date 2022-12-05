@@ -21,6 +21,7 @@
  * TODO: Implement fancy hybrid sector architecture helpers.
  */
 
+#include <stdlib.h>
 #include <string.h>
 
 #include "chipdrivers.h"
@@ -230,9 +231,12 @@ static int s25fs_write_cr(const struct flashctx *flash,
 	return s25f_poll_status(flash);
 }
 
-static int s25fs_restore_cr3nv(struct flashctx *flash, uint8_t cfg)
+static int s25fs_restore_cr3nv(struct flashctx *flash, void *data)
 {
 	int ret = 0;
+
+	uint8_t cfg = *(uint8_t *)data;
+	free(data);
 
 	msg_cdbg("Restoring CR3NV value to 0x%02x\n", cfg);
 	ret |= s25fs_write_cr(flash, CR3NV_ADDR, cfg);
@@ -285,8 +289,15 @@ int s25fs_block_erase_d8(struct flashctx *flash, unsigned int addr, unsigned int
 			msg_cdbg("\n%s: CR3NV updated (0x%02x -> 0x%02x)\n",
 					__func__, cfg,
 					s25fs_read_cr(flash, CR3NV_ADDR));
+
 			/* Restore CR3V when flashrom exits */
-			register_chip_restore(s25fs_restore_cr3nv, flash, cfg);
+			uint8_t *data = calloc(sizeof(uint8_t), 1);
+			if (!data) {
+				msg_cerr("Out of memory!\n");
+				return 1;
+			}
+			*data = cfg;
+			register_chip_restore(s25fs_restore_cr3nv, flash, data);
 		}
 
 		cr3nv_checked = 1;

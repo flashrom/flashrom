@@ -94,7 +94,7 @@ int register_shutdown(int (*function) (void *data), void *data)
 }
 
 int register_chip_restore(chip_restore_fn_cb_t func,
-			  struct flashctx *flash, uint8_t status)
+			  struct flashctx *flash, void *data)
 {
 	if (flash->chip_restore_fn_count >= MAX_CHIP_RESTORE_FUNCTIONS) {
 		msg_perr("Tried to register more than %i chip restore"
@@ -102,7 +102,7 @@ int register_chip_restore(chip_restore_fn_cb_t func,
 		return 1;
 	}
 	flash->chip_restore_fn[flash->chip_restore_fn_count].func = func;
-	flash->chip_restore_fn[flash->chip_restore_fn_count].status = status;
+	flash->chip_restore_fn[flash->chip_restore_fn_count].data = data;
 	flash->chip_restore_fn_count++;
 
 	return 0;
@@ -115,7 +115,7 @@ static int deregister_chip_restore(struct flashctx *flash)
 	while (flash->chip_restore_fn_count > 0) {
 		int i = --flash->chip_restore_fn_count;
 		rc |= flash->chip_restore_fn[i].func(
-			flash, flash->chip_restore_fn[i].status);
+			flash, flash->chip_restore_fn[i].data);
 	}
 
 	return rc;
