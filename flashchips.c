@@ -6849,7 +6849,7 @@ const struct flashchip flashchips[] = {
 		.model_id	= GIGADEVICE_GD25Q256D,
 		.total_size	= 32768,
 		.page_size	= 256,
-		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_4BA_WREN |
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_4BA |
 				  FEATURE_WRSR_EXT2 | FEATURE_WRSR2 | FEATURE_WRSR3,
 		.tested		= TEST_OK_PREWB,
 		.probe		= PROBE_SPI_RDID,
