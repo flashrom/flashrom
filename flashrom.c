@@ -1029,8 +1029,9 @@ static int read_by_layout(struct flashctx *const flashctx, uint8_t *const buffer
 	const struct romentry *entry = NULL;
 
 	while ((entry = layout_next_included(layout, entry))) {
-		const chipoff_t region_start	= entry->start;
-		const chipsize_t region_len	= entry->end - entry->start + 1;
+		const struct flash_region *region = &entry->region;
+		const chipoff_t region_start	= region->start;
+		const chipsize_t region_len	= region->end - region->start + 1;
 
 		if (read_flash(flashctx, buffer + region_start, region_start, region_len))
 			return 1;
@@ -1191,8 +1192,9 @@ static int walk_by_layout(struct flashctx *const flashctx, struct walk_info *con
 	msg_cinfo("Erasing and writing flash chip... ");
 
 	while ((entry = layout_next_included(layout, entry))) {
-		info->region_start = entry->start;
-		info->region_end   = entry->end;
+		const struct flash_region *region = &entry->region;
+		info->region_start = region->start;
+		info->region_end   = region->end;
 
 		size_t j;
 		int error = 1; /* retry as long as it's 1 */
@@ -1467,8 +1469,9 @@ static int verify_by_layout(
 	const struct romentry *entry = NULL;
 
 	while ((entry = layout_next_included(layout, entry))) {
-		const chipoff_t region_start	= entry->start;
-		const chipsize_t region_len	= entry->end - entry->start + 1;
+		const struct flash_region *region = &entry->region;
+		const chipoff_t region_start	= region->start;
+		const chipsize_t region_len	= region->end - region->start + 1;
 
 		if (read_flash(flashctx, curcontents + region_start, region_start, region_len))
 			return 1;
@@ -1807,12 +1810,13 @@ static void combine_image_by_layout(const struct flashctx *const flashctx,
 	chipoff_t start = 0;
 
 	while ((included = layout_next_included_region(layout, start))) {
-		if (included->start > start) {
+		const struct flash_region *region = &included->region;
+		if (region->start > start) {
 			/* copy everything up to the start of this included region */
-			memcpy(newcontents + start, oldcontents + start, included->start - start);
+			memcpy(newcontents + start, oldcontents + start, region->start - start);
 		}
 		/* skip this included region */
-		start = included->end + 1;
+		start = region->end + 1;
 		if (start == 0)
 			return;
 	}

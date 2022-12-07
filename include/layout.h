@@ -35,14 +35,19 @@ typedef uint32_t chipsize_t; /* Able to store the number of bytes of any support
 
 #define MAX_ROMLAYOUT	128
 
+struct flash_region {
+	char *name;
+	chipoff_t start;
+	chipoff_t end;
+};
+
 struct romentry {
 	struct romentry *next;
 
-	chipoff_t start;
-	chipoff_t end;
 	bool included;
-	char *name;
 	char *file;
+
+	struct flash_region region;
 };
 
 struct flashrom_layout;
