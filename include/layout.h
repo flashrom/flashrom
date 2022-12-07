@@ -39,6 +39,8 @@ struct flash_region {
 	char *name;
 	chipoff_t start;
 	chipoff_t end;
+	bool read_prot;
+	bool write_prot;
 };
 
 struct romentry {
