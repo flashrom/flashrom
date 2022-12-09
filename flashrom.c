@@ -1460,12 +1460,38 @@ static int erase_block(struct flashctx *const flashctx,
 	all_skipped = false;
 
 	msg_cdbg("E");
-	if (erasefn(flashctx, info->erase_start, erase_len))
-		goto _free_ret;
-	if (check_erased_range(flashctx, info->erase_start, erase_len)) {
-		msg_cerr("ERASE FAILED!\n");
-		goto _free_ret;
+
+	if (!flashctx->flags.skip_unwritable_regions) {
+		if (check_for_unwritable_regions(flashctx, info->erase_start, erase_len))
+			goto _free_ret;
 	}
+
+	unsigned int len;
+	for (unsigned int addr = info->erase_start; addr < info->erase_start + erase_len; addr += len) {
+		struct flash_region region;
+		get_flash_region(flashctx, addr, &region);
+
+		len = min(info->erase_start + erase_len, region.end) - addr;
+
+		if (region.write_prot) {
+			msg_gdbg("%s: cannot erase inside %s region (%#08x..%#08x), skipping range (%#08x..%#08x).\n",
+				 __func__, region.name, region.start, region.end - 1, addr, addr + len - 1);
+			free(region.name);
+			continue;
+		}
+
+		msg_gdbg("%s: %s region (%#08x..%#08x) is writable, erasing range (%#08x..%#08x).\n",
+			 __func__, region.name, region.start, region.end - 1, addr, addr + len - 1);
+		free(region.name);
+
+		if (erasefn(flashctx, addr, len))
+			goto _free_ret;
+		if (check_erased_range(flashctx, addr, len)) {
+			msg_cerr("ERASE FAILED!\n");
+			goto _free_ret;
+		}
+	}
+
 
 	if (region_unaligned) {
 		unsigned int starthere = 0, lenhere = 0, writecount = 0;
