@@ -359,6 +359,21 @@ char *extract_programmer_param_str(const struct programmer_cfg *cfg, const char 
 	return extract_param(&cfg->params, param_name, ",");
 }
 
+static void get_flash_region(const struct flashctx *flash, int addr, struct flash_region *region)
+{
+	if ((flash->mst->buses_supported & BUS_PROG) && flash->mst->opaque.get_region) {
+		flash->mst->opaque.get_region(flash, addr, region);
+	} else if (flash->mst->buses_supported & BUS_SPI && flash->mst->spi.get_region) {
+		flash->mst->spi.get_region(flash, addr, region);
+	} else {
+		region->name = strdup("");
+		region->start = 0;
+		region->end = flashrom_flash_getsize(flash);
+		region->read_prot = false;
+		region->write_prot = false;
+	}
+}
+
 /* special unit-test hook */
 erasefunc_t *g_test_erase_injector;
 
@@ -508,10 +523,60 @@ static read_func_t *lookup_read_func_ptr(const struct flashchip *chip)
 	return NULL;
 }
 
+/*
+ * @brief Wrapper for flash->read() with additional high-level policy.
+ *
+ * @param flash flash chip
+ * @param buf   buffer to store data in
+ * @param start start address
+ * @param len   number of bytes to read
+ * @return      0 on success,
+ *              -1 if any read fails.
+ *
+ * This wrapper simplifies most cases when the flash chip needs to be read
+ * since policy decisions such as non-fatal error handling is centralized.
+ */
 int read_flash(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len)
 {
-	read_func_t *read_func = lookup_read_func_ptr(flash->chip);
-	return read_func(flash, buf, start, len);
+	unsigned int read_len;
+	for (unsigned int addr = start; addr < start + len; addr += read_len) {
+		struct flash_region region;
+		get_flash_region(flash, addr, &region);
+
+		read_len = min(start + len, region.end) - addr;
+		uint8_t *rbuf = buf + addr - start;
+
+		if (region.read_prot) {
+			if (flash->flags.skip_unwritable_regions) {
+				msg_gdbg("%s: cannot read inside %s region (%#08x..%#08x), "
+					 "filling (%#08x..%#08x) with erased value instead.\n",
+					 __func__, region.name, region.start, region.end - 1,
+					 addr, addr + read_len - 1);
+				free(region.name);
+
+				memset(rbuf, ERASED_VALUE(flash), read_len);
+				continue;
+			}
+
+			msg_gerr("%s: cannot read inside %s region (%#08x..%#08x).\n",
+				 __func__, region.name, region.start, region.end - 1);
+			free(region.name);
+			return -1;
+		}
+		msg_gdbg("%s: %s region (%#08x..%#08x) is readable, reading range (%#08x..%#08x).\n",
+			 __func__, region.name, region.start, region.end - 1, addr, addr + read_len - 1);
+		free(region.name);
+
+		read_func_t *read_func = lookup_read_func_ptr(flash->chip);
+		int ret = read_func(flash, rbuf, addr, read_len);
+		if (ret) {
+			msg_gerr("%s: failed to read (%#08x..%#08x).\n", __func__, addr, addr + read_len - 1);
+			return -1;
+		}
+
+	}
+
+	return 0;
 }
 
 /*
