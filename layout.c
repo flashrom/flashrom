@@ -114,41 +114,60 @@ _close_ret:
 }
 #endif
 
-/* register an include argument (-i) for later processing */
-int register_include_arg(struct layout_include_args **args, const char *arg)
+static bool parse_include_args(const char *arg, char **name, char **file)
 {
-	struct layout_include_args *tmp;
 	char *colon;
-	char *name;
-	char *file = NULL; /* file is optional, so defaults to NULL */
+	char *tmp_name;
+	char *tmp_file = NULL; /* file is optional, so defaults to NULL */
 
 	if (arg == NULL) {
 		msg_gerr("<NULL> is a bad region name.\n");
-		return 1;
+		return false;
 	}
 
 	/* -i <image>[:<file>] */
 	colon = strchr(arg, ':');
 	if (colon && !colon[1]) {
 		msg_gerr("Missing filename parameter in %s\n", arg);
-		return 1;
+		return false;
 	}
 
 	if (colon) {
-		name = strndup(arg, colon - arg);
-		if (!name) {
+		tmp_name = strndup(arg, colon - arg);
+		if (!tmp_name) {
 			msg_gerr("Out of memory");
 			goto error;
 		}
 
-		file = strdup(colon + 1);
-		if (!file) {
+		tmp_file = strdup(colon + 1);
+		if (!tmp_file) {
 			msg_gerr("Out of memory");
 			goto error;
 		}
 	} else {
-		name = strdup(arg);
+		tmp_name = strdup(arg);
 	}
+
+	*name = tmp_name;
+	*file = tmp_file;
+
+	return true;
+
+error:
+	free(tmp_name);
+	free(tmp_file);
+	return false;
+}
+
+/* register an include argument (-i) for later processing */
+int register_include_arg(struct layout_include_args **args, const char *arg)
+{
+	struct layout_include_args *tmp;
+	char *name;
+	char *file;
+
+	if (!parse_include_args(arg, &name, &file))
+		return 1;
 
 	for (tmp = *args; tmp; tmp = tmp->next) {
 		if (!strcmp(tmp->name, name)) {
