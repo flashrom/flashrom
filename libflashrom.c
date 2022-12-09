@@ -265,21 +265,25 @@ void flashrom_flag_set(struct flashrom_flashctx *const flashctx,
 		       const enum flashrom_flag flag, const bool value)
 {
 	switch (flag) {
-		case FLASHROM_FLAG_FORCE:		flashctx->flags.force = value; break;
-		case FLASHROM_FLAG_FORCE_BOARDMISMATCH:	flashctx->flags.force_boardmismatch = value; break;
-		case FLASHROM_FLAG_VERIFY_AFTER_WRITE:	flashctx->flags.verify_after_write = value; break;
-		case FLASHROM_FLAG_VERIFY_WHOLE_CHIP:	flashctx->flags.verify_whole_chip = value; break;
+		case FLASHROM_FLAG_FORCE:			flashctx->flags.force = value; break;
+		case FLASHROM_FLAG_FORCE_BOARDMISMATCH:		flashctx->flags.force_boardmismatch = value; break;
+		case FLASHROM_FLAG_VERIFY_AFTER_WRITE:		flashctx->flags.verify_after_write = value; break;
+		case FLASHROM_FLAG_VERIFY_WHOLE_CHIP:		flashctx->flags.verify_whole_chip = value; break;
+		case FLASHROM_FLAG_SKIP_UNREADABLE_REGIONS:	flashctx->flags.skip_unreadable_regions = value; break;
+		case FLASHROM_FLAG_SKIP_UNWRITABLE_REGIONS:	flashctx->flags.skip_unwritable_regions = value; break;
 	}
 }
 
 bool flashrom_flag_get(const struct flashrom_flashctx *const flashctx, const enum flashrom_flag flag)
 {
 	switch (flag) {
-		case FLASHROM_FLAG_FORCE:		return flashctx->flags.force;
-		case FLASHROM_FLAG_FORCE_BOARDMISMATCH:	return flashctx->flags.force_boardmismatch;
-		case FLASHROM_FLAG_VERIFY_AFTER_WRITE:	return flashctx->flags.verify_after_write;
-		case FLASHROM_FLAG_VERIFY_WHOLE_CHIP:	return flashctx->flags.verify_whole_chip;
-		default:				return false;
+		case FLASHROM_FLAG_FORCE:			return flashctx->flags.force;
+		case FLASHROM_FLAG_FORCE_BOARDMISMATCH:		return flashctx->flags.force_boardmismatch;
+		case FLASHROM_FLAG_VERIFY_AFTER_WRITE:		return flashctx->flags.verify_after_write;
+		case FLASHROM_FLAG_VERIFY_WHOLE_CHIP:		return flashctx->flags.verify_whole_chip;
+		case FLASHROM_FLAG_SKIP_UNREADABLE_REGIONS:	return flashctx->flags.skip_unreadable_regions;
+		case FLASHROM_FLAG_SKIP_UNWRITABLE_REGIONS:	return flashctx->flags.skip_unwritable_regions;
+		default:					return false;
 	}
 }
 
