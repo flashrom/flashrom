@@ -604,15 +604,49 @@ int verify_range(struct flashctx *flash, const uint8_t *cmpbuf, unsigned int sta
 		return -1;
 	}
 
-	int ret = read_flash(flash, readbuf, start, len);
-	if (ret) {
-		msg_gerr("Verification impossible because read failed "
-			 "at 0x%x (len 0x%x)\n", start, len);
-		ret = -1;
-		goto out_free;
+	int ret = 0;
+
+	msg_gdbg("%#06x..%#06x ", start, start + len - 1);
+
+	unsigned int read_len;
+	for (size_t addr = start; addr < start + len; addr += read_len) {
+		struct flash_region region;
+		get_flash_region(flash, addr, &region);
+		read_len = min(start + len, region.end) - addr;
+
+		if ((region.write_prot && flash->flags.skip_unwritable_regions) ||
+		    (region.read_prot  && flash->flags.skip_unreadable_regions)) {
+			msg_gdbg("%s: Skipping verification of %s region (%#08x..%#08x)\n",
+				 __func__, region.name, region.start, region.end - 1);
+			free(region.name);
+			continue;
+		}
+
+		if (region.read_prot) {
+			msg_gerr("%s: Verification imposible because %s region (%#08x..%#08x) is unreadable.\n",
+				 __func__, region.name, region.start, region.end - 1);
+			free(region.name);
+			goto out_free;
+		}
+
+		msg_gdbg("%s: Verifying %s region (%#08x..%#08x)\n",
+			 __func__, region.name, region.start, region.end - 1);
+		free(region.name);
+
+		ret = read_flash(flash, readbuf, addr, read_len);
+		if (ret) {
+			msg_gerr("Verification impossible because read failed "
+				 "at 0x%x (len 0x%x)\n", start, len);
+			ret = -1;
+			goto out_free;
+		}
+
+		ret = compare_range(cmpbuf + (addr - start), readbuf, addr, read_len);
+		if (ret)
+			goto out_free;
+
 	}
 
-	ret = compare_range(cmpbuf, readbuf, start, len);
 out_free:
 	free(readbuf);
 	return ret;
