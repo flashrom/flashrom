@@ -135,13 +135,13 @@ static bool parse_include_args(const char *arg, char **name, char **file)
 	if (colon) {
 		tmp_name = strndup(arg, colon - arg);
 		if (!tmp_name) {
-			msg_gerr("Out of memory");
+			msg_gerr("Out of memory\n");
 			goto error;
 		}
 
 		tmp_file = strdup(colon + 1);
 		if (!tmp_file) {
-			msg_gerr("Out of memory");
+			msg_gerr("Out of memory\n");
 			goto error;
 		}
 	} else {
@@ -178,7 +178,7 @@ int register_include_arg(struct layout_include_args **args, const char *arg)
 
 	tmp = malloc(sizeof(*tmp));
 	if (tmp == NULL) {
-		msg_gerr("Out of memory");
+		msg_gerr("Out of memory\n");
 		goto error;
 	}
 
