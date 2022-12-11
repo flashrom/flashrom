@@ -103,6 +103,8 @@ endif
 
 if host_machine.system() == 'linux'
   custom_baud_c = 'custom_baud_linux.c'
+elif host_machine.system() == 'darwin'
+  custom_baud_c = 'custom_baud_darwin.c'
 else
   custom_baud_c = 'custom_baud.c'
 endif

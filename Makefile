@@ -844,7 +844,11 @@ LIB_OBJS += serial.o
 ifeq ($(TARGET_OS), Linux)
 LIB_OBJS += custom_baud_linux.o
 else
+ifeq ($(TARGET_OS), Darwin)
+LIB_OBJS += custom_baud_darwin.o
+else
 LIB_OBJS += custom_baud.o
+endif
 endif
 endif
 

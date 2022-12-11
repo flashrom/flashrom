@@ -47,6 +47,10 @@ fdtype sp_fd = SER_INV_FD;
  * On Linux there is a non-standard way to use arbitrary baud rates that we use if there is no
  * matching standard rate, see custom_baud.c
  *
+ * On Darwin there is also a non-standard ioctl() to set arbitrary baud rates
+ * and any above 230400, see custom_baud_darwin.c and
+ * https://opensource.apple.com/source/IOSerialFamily/IOSerialFamily-91/tests/IOSerialTestLib.c.auto.html
+ *
  * On Windows there exist similar macros (starting with CBR_ instead of B) but they are only defined for
  * backwards compatibility and the API supports arbitrary baud rates in the same manner as the macros, see
  * http://msdn.microsoft.com/en-us/library/windows/desktop/aa363214(v=vs.85).aspx
