@@ -139,7 +139,7 @@ void selfcheck_board_matches_table(void **state)
 
 	size_t i;
 
-	assert_true(board_matches_size > 1);
+	assert_true(board_matches_size > 0);
 	assert_true(board_matches[board_matches_size - 1].vendor_name == NULL);
 	for (i = 0; i < board_matches_size - 1; i++) {
 		const struct board_match *b = &board_matches[i];
