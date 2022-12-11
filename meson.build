@@ -101,6 +101,12 @@ else
   add_project_arguments('-DIS_WINDOWS=0', language : 'c')
 endif
 
+if host_machine.system() == 'linux'
+  custom_baud_c = 'custom_baud_linux.c'
+else
+  custom_baud_c = 'custom_baud.c'
+endif
+
 systems_hwaccess   = [ 'linux', 'openbsd', 'freebsd', 'dragonfly', 'netbsd' ]
 systems_serial     = [ 'linux', 'openbsd', 'freebsd', 'dragonfly', 'netbsd', 'darwin' ]
 
@@ -175,7 +181,7 @@ programmer = {
   'buspirate_spi' : {
     'systems' : systems_serial,
     'groups'  : [ group_serial, group_external ],
-    'srcs'    : files('buspirate_spi.c', 'serial.c', (host_machine.system() == 'linux' ? 'custom_baud_linux.c' : 'custom_baud.c')),
+    'srcs'    : files('buspirate_spi.c', 'serial.c', custom_baud_c),
     'flags'   : [ '-DCONFIG_BUSPIRATE_SPI=1' ],
   },
   'ch341a_spi' : {
@@ -391,7 +397,7 @@ programmer = {
   'pony_spi' : {
     'systems' : systems_serial,
     'groups'  : [ group_serial, group_external ],
-    'srcs'    : files('pony_spi.c', 'serial.c', (host_machine.system() == 'linux' ? 'custom_baud_linux.c' : 'custom_baud.c')),
+    'srcs'    : files('pony_spi.c', 'serial.c', custom_baud_c),
     'flags'   : [ '-DCONFIG_PONY_SPI=1' ],
   },
   'raiden_debug_spi' : {
@@ -435,7 +441,7 @@ programmer = {
   'serprog' : {
     'systems' : systems_serial,
     'groups'  : [ group_serial, group_external ],
-    'srcs'    : files('serprog.c', 'serial.c', (host_machine.system() == 'linux' ? 'custom_baud_linux.c' : 'custom_baud.c')),
+    'srcs'    : files('serprog.c', 'serial.c', custom_baud_c),
     'flags'   : [ '-DCONFIG_SERPROG=1' ],
   },
   'stlinkv3_spi' : {
