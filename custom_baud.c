@@ -19,7 +19,7 @@
 #include "custom_baud.h"
 
 /* Stub, should not get called. */
-int set_custom_baudrate(int fd, unsigned int baud)
+int set_custom_baudrate(int fd, unsigned int baud, const enum custom_baud_stage stage, void *tio_wanted)
 {
 	errno = ENOSYS; /* Hoping "Function not supported" will make you look here. */
 	return -1;

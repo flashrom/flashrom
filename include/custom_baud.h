@@ -22,7 +22,13 @@ struct baudentry {
 	unsigned int baud;
 };
 
-int set_custom_baudrate(int fd, unsigned int baud);
+enum custom_baud_stage {
+	BEFORE_FLAGS = 0,
+	WITH_FLAGS,
+	AFTER_FLAGS
+};
+
+int set_custom_baudrate(int fd, unsigned int baud, const enum custom_baud_stage stage, void *tio_wanted);
 
 /* Returns 1 if non-exact rate would be used, and setting a custom rate is supported.
    The baudtable must be in ascending order and terminated with a 0-baud entry. */

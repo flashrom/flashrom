@@ -29,9 +29,13 @@
  * for more info.
  */
 
-int set_custom_baudrate(int fd, unsigned int baud)
+int set_custom_baudrate(int fd, unsigned int baud, const enum custom_baud_stage stage, void *tio_wanted)
 {
 	struct termios2 tio;
+
+	if (stage != BEFORE_FLAGS)
+		return 0;
+
 	if (ioctl(fd, TCGETS2, &tio)) {
 		return -1;
 	}
