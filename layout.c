@@ -209,7 +209,7 @@ static int include_region(struct flashrom_layout *const l, const char *name,
 }
 
 /* returns -1 if an entry is not found, 0 if found. */
-static int find_romentry(struct flashrom_layout *const l, char *name, char *file)
+static int romentry_exists(struct flashrom_layout *const l, char *name, char *file)
 {
 	if (!l->head)
 		return -1;
@@ -244,7 +244,7 @@ int process_include_args(struct flashrom_layout *l, const struct layout_include_
 
 	tmp = args;
 	while (tmp) {
-		if (find_romentry(l, tmp->name, tmp->file) < 0) {
+		if (romentry_exists(l, tmp->name, tmp->file) < 0) {
 			msg_gerr("Invalid region specified: \"%s\".\n",
 				 tmp->name);
 			return 1;
