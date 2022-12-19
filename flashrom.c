@@ -34,6 +34,8 @@
 #include "hwaccess_physmap.h"
 #include "chipdrivers.h"
 
+static bool use_legacy_erase_path = true;
+
 const char flashrom_version[] = FLASHROM_VERSION;
 
 static const struct programmer_entry *programmer = NULL;
@@ -1528,11 +1530,18 @@ _free_ret:
  * @return 0 on success,
  *	   1 if all available erase functions failed.
  */
-static int erase_by_layout(struct flashctx *const flashctx)
+static int erase_by_layout_legacy(struct flashctx *const flashctx)
 {
 	struct walk_info info = { 0 };
 	bool all_skipped = true;
 	return walk_by_layout(flashctx, &info, &erase_block, &all_skipped);
+}
+
+static int erase_by_layout(struct flashctx *const flashctx)
+{
+	if (use_legacy_erase_path)
+		return erase_by_layout_legacy(flashctx);
+	return 1; /* unimplemented. */
 }
 
 static int read_erase_write_block(struct flashctx *const flashctx,
@@ -1643,7 +1652,7 @@ _free_ret:
  * @return 0 on success,
  *	   1 if anything has gone wrong.
  */
-static int write_by_layout(struct flashctx *const flashctx,
+static int write_by_layout_legacy(struct flashctx *const flashctx,
 			   void *const curcontents, const void *const newcontents,
 			   bool *all_skipped)
 {
@@ -1651,6 +1660,15 @@ static int write_by_layout(struct flashctx *const flashctx,
 	info.curcontents = curcontents;
 	info.newcontents = newcontents;
 	return walk_by_layout(flashctx, &info, read_erase_write_block, all_skipped);
+}
+
+static int write_by_layout(struct flashctx *const flashctx,
+			   uint8_t *const curcontents, const uint8_t *const newcontents,
+			   bool *all_skipped)
+{
+	if (use_legacy_erase_path)
+		return write_by_layout_legacy(flashctx, curcontents, newcontents, all_skipped);
+	return 1; /* unimplemented. */
 }
 
 /**
