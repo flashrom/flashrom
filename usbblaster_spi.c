@@ -171,7 +171,6 @@ static const struct spi_master spi_master_usbblaster = {
 	.read		= default_spi_read,
 	.write_256	= default_spi_write_256,
 	.shutdown	= usbblaster_shutdown,
-	.probe_opcode	= default_spi_probe_opcode,
 };
 
 /* Returns 0 upon success, a negative number upon errors. */

@@ -436,7 +436,6 @@ static const struct spi_master spi_master_parade_lspcon = {
 	.write_256	= parade_lspcon_write_256,
 	.write_aai	= parade_lspcon_write_aai,
 	.shutdown	= parade_lspcon_shutdown,
-	.probe_opcode	= default_spi_probe_opcode,
 };
 
 static int get_params(const struct programmer_cfg *cfg, bool *allow_brick)

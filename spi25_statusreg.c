@@ -132,7 +132,7 @@ int spi_write_register(const struct flashctx *flash, enum flash_reg reg, uint8_t
 		return 1;
 	}
 
-	if (!flash->mst->spi.probe_opcode(flash, write_cmd[0])) {
+	if (!spi_probe_opcode(flash, write_cmd[0])) {
 		msg_pdbg("%s: write to register %d not supported by programmer, ignoring.\n", __func__, reg);
 		return SPI_INVALID_OPCODE;
 	}
@@ -246,7 +246,7 @@ int spi_read_register(const struct flashctx *flash, enum flash_reg reg, uint8_t 
 		return 1;
 	}
 
-	if (!flash->mst->spi.probe_opcode(flash, read_cmd)) {
+	if (!spi_probe_opcode(flash, read_cmd)) {
 		msg_pdbg("%s: read from register %d not supported by programmer.\n", __func__, reg);
 		return SPI_INVALID_OPCODE;
 	}

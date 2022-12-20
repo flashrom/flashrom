@@ -125,7 +125,6 @@ static const struct spi_master asm106x_spi_master = {
 	.shutdown	= asm106x_shutdown,
 	.read		= default_spi_read,
 	.write_256	= default_spi_write_256,
-	.probe_opcode	= default_spi_probe_opcode,
 };
 
 static int asm106x_init(const struct programmer_cfg *cfg)

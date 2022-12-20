@@ -463,7 +463,6 @@ static struct spi_master spi_master_serprog = {
 	.command	= serprog_spi_send_command,
 	.read		= default_spi_read,
 	.write_256	= default_spi_write_256,
-	.probe_opcode	= default_spi_probe_opcode,
 	.delay		= serprog_delay,
 };
 

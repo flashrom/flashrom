@@ -535,7 +535,6 @@ static const struct spi_master spi_programmer_ni845x = {
 	.read		= default_spi_read,
 	.write_256	= default_spi_write_256,
 	.shutdown	= ni845x_spi_shutdown,
-	.probe_opcode	= default_spi_probe_opcode,
 };
 
 static int ni845x_spi_init(const struct programmer_cfg *cfg)

@@ -188,7 +188,6 @@ static const struct spi_master spi_master_jlink_spi = {
 	.write_256	= default_spi_write_256,
 	.features	= SPI_MASTER_4BA,
 	.shutdown	= jlink_spi_shutdown,
-	.probe_opcode	= default_spi_probe_opcode,
 };
 
 static int jlink_spi_init(const struct programmer_cfg *cfg)

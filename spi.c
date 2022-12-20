@@ -139,9 +139,11 @@ int spi_aai_write(struct flashctx *flash, const uint8_t *buf, unsigned int start
 	return default_spi_write_aai(flash, buf, start, len);
 }
 
-bool default_spi_probe_opcode(const struct flashctx *flash, uint8_t opcode)
+bool spi_probe_opcode(const struct flashctx *flash, uint8_t opcode)
 {
-	return true;
+	if (!flash->mst->spi.probe_opcode)
+		return true; /* no probe_opcode implies default of supported. */
+	return flash->mst->spi.probe_opcode(flash, opcode);
 }
 
 int register_spi_master(const struct spi_master *mst, void *data)
@@ -155,8 +157,7 @@ int register_spi_master(const struct spi_master *mst, void *data)
 		}
 	}
 
-	if (!mst->write_256 || !mst->read || !mst->probe_opcode ||
-	    (!mst->command && !mst->multicommand)) {
+	if (!mst->write_256 || !mst->read || (!mst->command && !mst->multicommand)) {
 		msg_perr("%s called with incomplete master definition. "
 			 "Please report a bug at flashrom@flashrom.org\n",
 			 __func__);

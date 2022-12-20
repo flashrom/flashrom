@@ -197,7 +197,6 @@ static const struct spi_master spi_master_dirtyjtag_spi = {
 	.write_256	= default_spi_write_256,
 	.write_aai	= default_spi_write_aai,
 	.shutdown	= dirtyjtag_spi_shutdown,
-	.probe_opcode	= default_spi_probe_opcode,
 };
 
 static int dirtyjtag_spi_init(const struct programmer_cfg *cfg)

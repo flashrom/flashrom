@@ -604,7 +604,6 @@ static const struct spi_master spi_master_sb600 = {
 	.read		= default_spi_read,
 	.write_256	= default_spi_write_256,
 	.shutdown	= sb600spi_shutdown,
-	.probe_opcode	= default_spi_probe_opcode,
 };
 
 static const struct spi_master spi_master_yangtze = {
@@ -616,7 +615,6 @@ static const struct spi_master spi_master_yangtze = {
 	.read		= default_spi_read,
 	.write_256	= default_spi_write_256,
 	.shutdown	= sb600spi_shutdown,
-	.probe_opcode	= default_spi_probe_opcode,
 };
 
 static const struct spi_master spi_master_promontory = {
@@ -628,7 +626,6 @@ static const struct spi_master spi_master_promontory = {
 	.read		= promontory_read_memmapped,
 	.write_256	= default_spi_write_256,
 	.shutdown	= sb600spi_shutdown,
-	.probe_opcode	= default_spi_probe_opcode,
 };
 
 int sb600_probe_spi(const struct programmer_cfg *cfg, struct pci_dev *dev)

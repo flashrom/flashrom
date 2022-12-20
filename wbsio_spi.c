@@ -192,7 +192,6 @@ static const struct spi_master spi_master_wbsio = {
 	.write_256	= spi_chip_write_1,
 	.write_aai	= spi_chip_write_1,
 	.shutdown	= wbsio_spi_shutdown,
-	.probe_opcode	= default_spi_probe_opcode,
 };
 
 int wbsio_check_for_spi(void)

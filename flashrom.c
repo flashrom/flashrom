@@ -470,7 +470,7 @@ int check_block_eraser(const struct flashctx *flash, int k, int log)
 	if (flash->mst->buses_supported & BUS_SPI) {
 		const uint8_t *opcode = spi_get_opcode_from_erasefn(eraser.block_erase);
 		for (int i = 0; opcode[i]; i++) {
-			if (!flash->mst->spi.probe_opcode(flash, opcode[i])) {
+			if (!spi_probe_opcode(flash, opcode[i])) {
 				if (log)
 					msg_cdbg("block erase function and layout found "
 						 "but SPI master doesn't support the function. ");

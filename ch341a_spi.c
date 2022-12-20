@@ -416,7 +416,6 @@ static const struct spi_master spi_master_ch341a_spi = {
 	.read		= default_spi_read,
 	.write_256	= default_spi_write_256,
 	.shutdown	= ch341a_spi_shutdown,
-	.probe_opcode	= default_spi_probe_opcode,
 	.delay		= ch341a_spi_delay,
 };
 
