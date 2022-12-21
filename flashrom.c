@@ -33,6 +33,7 @@
 #include "programmer.h"
 #include "hwaccess_physmap.h"
 #include "chipdrivers.h"
+#include "erasure_layout.h"
 
 static bool use_legacy_erase_path = true;
 
@@ -1537,11 +1538,54 @@ static int erase_by_layout_legacy(struct flashctx *const flashctx)
 	return walk_by_layout(flashctx, &info, &erase_block, &all_skipped);
 }
 
+static int erase_by_layout_new(struct flashctx *const flashctx)
+{
+	bool all_skipped = true;
+	const uint32_t flash_size = flashctx->chip->total_size * 1024;
+	uint8_t* curcontents = malloc(flash_size);
+	uint8_t* newcontents = malloc(flash_size);
+	struct erase_layout *erase_layout;
+	create_erase_layout(flashctx, &erase_layout);
+	int ret = 0;
+
+	//erase layout creation failed
+	if (!erase_layout) {
+		ret = 1;
+		goto _ret;
+	}
+
+	//not enough memory
+	if (!curcontents || !newcontents) {
+		ret = 1;
+		goto _ret;
+	}
+
+	memset(curcontents, ~ERASED_VALUE(flashctx), flash_size);
+	memset(newcontents, ERASED_VALUE(flashctx), flash_size);
+
+	const struct flashrom_layout *const flash_layout = get_layout(flashctx);
+	const struct romentry *entry = NULL;
+	while ((entry = layout_next_included(flash_layout, entry))) {
+		ret = erase_write(flashctx, entry->region.start, entry->region.end, curcontents, newcontents, erase_layout, &all_skipped);
+		if (ret) {
+			ret = 1;
+			msg_cerr("Erase Failed");
+			goto _ret;
+		}
+	}
+
+_ret:
+	free(curcontents);
+	free(newcontents);
+	free_erase_layout(erase_layout, count_usable_erasers(flashctx));
+	return ret;
+}
+
 static int erase_by_layout(struct flashctx *const flashctx)
 {
 	if (use_legacy_erase_path)
 		return erase_by_layout_legacy(flashctx);
-	return 1; /* unimplemented. */
+	return erase_by_layout_new(flashctx);
 }
 
 static int read_erase_write_block(struct flashctx *const flashctx,
@@ -1662,13 +1706,48 @@ static int write_by_layout_legacy(struct flashctx *const flashctx,
 	return walk_by_layout(flashctx, &info, read_erase_write_block, all_skipped);
 }
 
+static int write_by_layout_new(struct flashctx *const flashctx,
+			   void *const curcontents, const void *const newcontents,
+			   bool *all_skipped)
+{
+	const int erasefn_count = count_usable_erasers(flashctx);
+	int ret = 1;
+
+	const struct flashrom_layout *const flash_layout = get_layout(flashctx);
+	struct erase_layout *erase_layout;
+	create_erase_layout(flashctx, &erase_layout);
+
+	if (!flash_layout) {
+		goto _ret;
+	}
+	if (!erase_layout) {
+		goto _ret;
+	}
+
+	const struct romentry *entry = NULL;
+	while ((entry = layout_next_included(flash_layout, entry))) {
+		ret = erase_write(flashctx, entry->region.start,
+						entry->region.end,
+						curcontents,
+						(uint8_t *)newcontents,
+						erase_layout, all_skipped);
+		if (ret) {
+			msg_cerr("Write Failed!");
+			goto _ret;
+		}
+	}
+_ret:
+	free_erase_layout(erase_layout, erasefn_count);
+	return ret;
+}
+
 static int write_by_layout(struct flashctx *const flashctx,
 			   uint8_t *const curcontents, const uint8_t *const newcontents,
 			   bool *all_skipped)
 {
 	if (use_legacy_erase_path)
 		return write_by_layout_legacy(flashctx, curcontents, newcontents, all_skipped);
-	return 1; /* unimplemented. */
+	return write_by_layout_new(flashctx, curcontents, newcontents, all_skipped);
 }
 
 /**
