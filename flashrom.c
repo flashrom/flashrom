@@ -356,7 +356,7 @@ char *extract_programmer_param_str(const struct programmer_cfg *cfg, const char 
 	return extract_param(&cfg->params, param_name, ",");
 }
 
-static void get_flash_region(const struct flashctx *flash, int addr, struct flash_region *region)
+void get_flash_region(const struct flashctx *flash, int addr, struct flash_region *region)
 {
 	if ((flash->mst->buses_supported & BUS_PROG) && flash->mst->opaque.get_region) {
 		flash->mst->opaque.get_region(flash, addr, region);
@@ -371,7 +371,7 @@ static void get_flash_region(const struct flashctx *flash, int addr, struct flas
 	}
 }
 
-static int check_for_unwritable_regions(const struct flashctx *flash, unsigned int start, unsigned int len)
+int check_for_unwritable_regions(const struct flashctx *flash, unsigned int start, unsigned int len)
 {
 	struct flash_region region;
 	for (unsigned int addr = start; addr < start + len; addr = region.end) {
@@ -391,7 +391,7 @@ static int check_for_unwritable_regions(const struct flashctx *flash, unsigned i
 /* special unit-test hook */
 erasefunc_t *g_test_erase_injector;
 
-static erasefunc_t *lookup_erase_func_ptr(const struct block_eraser *const eraser)
+erasefunc_t *lookup_erase_func_ptr(const struct block_eraser *const eraser)
 {
 	switch (eraser->block_erase) {
 		case SPI_BLOCK_ERASE_EMULATION: return &spi_block_erase_emulation;
@@ -439,7 +439,7 @@ static erasefunc_t *lookup_erase_func_ptr(const struct block_eraser *const erase
 	return NULL;
 }
 
-static int check_block_eraser(const struct flashctx *flash, int k, int log)
+int check_block_eraser(const struct flashctx *flash, int k, int log)
 {
 	struct block_eraser eraser = flash->chip->block_erasers[k];
 
@@ -477,7 +477,7 @@ static int check_block_eraser(const struct flashctx *flash, int k, int log)
 }
 
 /* Returns the number of well-defined erasers for a chip. */
-static unsigned int count_usable_erasers(const struct flashctx *flash)
+unsigned int count_usable_erasers(const struct flashctx *flash)
 {
 	unsigned int usable_erasefunctions = 0;
 	int k;
@@ -509,7 +509,7 @@ static int compare_range(const uint8_t *wantbuf, const uint8_t *havebuf, unsigne
 }
 
 /* start is an offset to the base address of the flash chip */
-static int check_erased_range(struct flashctx *flash, unsigned int start, unsigned int len)
+int check_erased_range(struct flashctx *flash, unsigned int start, unsigned int len)
 {
 	int ret;
 	const uint8_t erased_value = ERASED_VALUE(flash);
@@ -710,7 +710,7 @@ static int need_erase_gran_bytes(const uint8_t *have, const uint8_t *want, unsig
  * @gran	write granularity (enum, not count)
  * @return      0 if no erase is needed, 1 otherwise
  */
-static int need_erase(const uint8_t *have, const uint8_t *want, unsigned int len,
+int need_erase(const uint8_t *have, const uint8_t *want, unsigned int len,
                enum write_granularity gran, const uint8_t erased_value)
 {
 	int result = 0;
@@ -786,7 +786,7 @@ static int need_erase(const uint8_t *have, const uint8_t *want, unsigned int len
  * in relation to the max write length of the programmer and the max write
  * length of the chip.
  */
-static unsigned int get_next_write(const uint8_t *have, const uint8_t *want, unsigned int len,
+unsigned int get_next_write(const uint8_t *have, const uint8_t *want, unsigned int len,
 			  unsigned int *first_start,
 			  enum write_granularity gran)
 {
@@ -993,7 +993,7 @@ static write_func_t *lookup_write_func_ptr(const struct flashchip *chip)
  * This wrapper simplifies most cases when the flash chip needs to be written
  * since policy decisions such as non-fatal error handling is centralized.
  */
-static int write_flash(struct flashctx *flash, const uint8_t *buf,
+int write_flash(struct flashctx *flash, const uint8_t *buf,
 		       unsigned int start, unsigned int len)
 {
 	if (!flash->flags.skip_unwritable_regions) {

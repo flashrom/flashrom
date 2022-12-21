@@ -72,5 +72,7 @@ const struct romentry *layout_next(const struct flashrom_layout *, const struct 
 int included_regions_overlap(const struct flashrom_layout *);
 void prepare_layout_for_extraction(struct flashrom_flashctx *);
 int layout_sanity_checks(const struct flashrom_flashctx *);
+int check_for_unwritable_regions(const struct flashrom_flashctx *flash, unsigned int start, unsigned int len);
+void get_flash_region(const struct flashrom_flashctx *flash, int addr, struct flash_region *region);
 
 #endif /* !__LAYOUT_H__ */

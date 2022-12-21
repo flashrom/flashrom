@@ -619,6 +619,13 @@ int write_buf_to_file(const unsigned char *buf, unsigned long size, const char *
 int prepare_flash_access(struct flashctx *, bool read_it, bool write_it, bool erase_it, bool verify_it);
 void finalize_flash_access(struct flashctx *);
 int register_chip_restore(chip_restore_fn_cb_t func, struct flashctx *flash, uint8_t status);
+int check_block_eraser(const struct flashctx *flash, int k, int log);
+unsigned int count_usable_erasers(const struct flashctx *flash);
+int need_erase(const uint8_t *have, const uint8_t *want, unsigned int len, enum write_granularity gran, const uint8_t erased_value);
+erasefunc_t *lookup_erase_func_ptr(const struct block_eraser *const eraser);
+int check_erased_range(struct flashctx *flash, unsigned int start, unsigned int len);
+unsigned int get_next_write(const uint8_t *have, const uint8_t *want, unsigned int len, unsigned int *first_start, enum write_granularity gran);
+int write_flash(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 
 /* Something happened that shouldn't happen, but we can go on. */
 #define ERROR_FLASHROM_NONFATAL 0x100
