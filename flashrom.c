@@ -62,9 +62,6 @@ static struct shutdown_func_data {
  */
 static bool may_register_shutdown = false;
 
-/* Did we change something or was every erase/write skipped (if any)? */
-static bool all_skipped = true;
-
 struct programmer_cfg {
 	char *params;
 };
@@ -1314,11 +1311,12 @@ struct walk_info {
 	chipoff_t erase_end;
 };
 /* returns 0 on success, 1 to retry with another erase function, 2 for immediate abort */
-typedef int (*per_blockfn_t)(struct flashctx *, const struct walk_info *, erasefn_t);
+typedef int (*per_blockfn_t)(struct flashctx *, const struct walk_info *, erasefn_t, bool *);
 
 static int walk_eraseblocks(struct flashctx *const flashctx,
 			    struct walk_info *const info,
-			    const size_t erasefunction, const per_blockfn_t per_blockfn)
+			    const size_t erasefunction, const per_blockfn_t per_blockfn,
+			    bool *all_skipped)
 {
 	int ret;
 	size_t i, j;
@@ -1346,7 +1344,7 @@ static int walk_eraseblocks(struct flashctx *const flashctx,
 			msg_cdbg("0x%06x-0x%06x:", info->erase_start, info->erase_end);
 
 			erasefunc_t *erase_func = lookup_erase_func_ptr(eraser);
-			ret = per_blockfn(flashctx, info, erase_func);
+			ret = per_blockfn(flashctx, info, erase_func, all_skipped);
 			if (ret)
 				return ret;
 		}
@@ -1358,12 +1356,12 @@ static int walk_eraseblocks(struct flashctx *const flashctx,
 }
 
 static int walk_by_layout(struct flashctx *const flashctx, struct walk_info *const info,
-			  const per_blockfn_t per_blockfn)
+			  const per_blockfn_t per_blockfn, bool *all_skipped)
 {
 	const struct flashrom_layout *const layout = get_layout(flashctx);
 	const struct romentry *entry = NULL;
 
-	all_skipped = true;
+	*all_skipped = true;
 	msg_cinfo("Erasing and writing flash chip... ");
 
 	while ((entry = layout_next_included(layout, entry))) {
@@ -1380,7 +1378,7 @@ static int walk_by_layout(struct flashctx *const flashctx, struct walk_info *con
 			if (check_block_eraser(flashctx, j, 1))
 				continue;
 
-			error = walk_eraseblocks(flashctx, info, j, per_blockfn);
+			error = walk_eraseblocks(flashctx, info, j, per_blockfn, all_skipped);
 			if (error != 1)
 				break;
 
@@ -1404,14 +1402,15 @@ static int walk_by_layout(struct flashctx *const flashctx, struct walk_info *con
 			return 1;
 		}
 	}
-	if (all_skipped)
+	if (*all_skipped)
 		msg_cinfo("\nWarning: Chip content is identical to the requested image.\n");
 	msg_cinfo("Erase/write done.\n");
 	return 0;
 }
 
 static int erase_block(struct flashctx *const flashctx,
-		       const struct walk_info *const info, const erasefn_t erasefn)
+		       const struct walk_info *const info, const erasefn_t erasefn,
+		       bool *all_skipped)
 {
 	const unsigned int erase_len = info->erase_end + 1 - info->erase_start;
 	const bool region_unaligned = info->region_start > info->erase_start ||
@@ -1457,7 +1456,7 @@ static int erase_block(struct flashctx *const flashctx,
 	}
 
 	ret = 1;
-	all_skipped = false;
+	*all_skipped = false;
 
 	msg_cdbg("E");
 
@@ -1529,11 +1528,13 @@ _free_ret:
 static int erase_by_layout(struct flashctx *const flashctx)
 {
 	struct walk_info info = { 0 };
-	return walk_by_layout(flashctx, &info, &erase_block);
+	bool all_skipped = true;
+	return walk_by_layout(flashctx, &info, &erase_block, &all_skipped);
 }
 
 static int read_erase_write_block(struct flashctx *const flashctx,
-				  const struct walk_info *const info, const erasefn_t erasefn)
+				  const struct walk_info *const info, const erasefn_t erasefn,
+				  bool *all_skipped)
 {
 	const chipsize_t erase_len = info->erase_end + 1 - info->erase_start;
 	const bool region_unaligned = info->region_start > info->erase_start ||
@@ -1591,7 +1592,7 @@ static int read_erase_write_block(struct flashctx *const flashctx,
 	const uint8_t erased_value = ERASED_VALUE(flashctx);
 	if (!(flashctx->chip->feature_bits & FEATURE_NO_ERASE) &&
 			need_erase(curcontents, newcontents, erase_len, flashctx->chip->gran, erased_value)) {
-		if (erase_block(flashctx, info, erasefn))
+		if (erase_block(flashctx, info, erasefn, all_skipped))
 			goto _free_ret;
 		/* Erase was successful. Adjust curcontents. */
 		memset(curcontents, erased_value, erase_len);
@@ -1614,7 +1615,7 @@ static int read_erase_write_block(struct flashctx *const flashctx,
 	if (skipped)
 		msg_cdbg("S");
 	else
-		all_skipped = false;
+		*all_skipped = false;
 
 	/* Update curcontents, other regions with overlapping erase blocks
 	   might rely on this. */
@@ -1640,12 +1641,13 @@ _free_ret:
  *	   1 if anything has gone wrong.
  */
 static int write_by_layout(struct flashctx *const flashctx,
-			   void *const curcontents, const void *const newcontents)
+			   void *const curcontents, const void *const newcontents,
+			   bool *all_skipped)
 {
 	struct walk_info info;
 	info.curcontents = curcontents;
 	info.newcontents = newcontents;
-	return walk_by_layout(flashctx, &info, read_erase_write_block);
+	return walk_by_layout(flashctx, &info, read_erase_write_block, all_skipped);
 }
 
 /**
@@ -2097,7 +2099,9 @@ int flashrom_image_write(struct flashctx *const flashctx, void *const buffer, co
 		msg_cinfo("done.\n");
 	}
 
-	if (write_by_layout(flashctx, curcontents, newcontents)) {
+	bool all_skipped = true;
+
+	if (write_by_layout(flashctx, curcontents, newcontents, &all_skipped)) {
 		msg_cerr("Uh oh. Erase/write failed. ");
 		ret = 2;
 		if (verify_all) {
