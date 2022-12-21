@@ -122,7 +122,7 @@ static int imc_resume(void *data)
 	int ret = imc_send_cmd(dev, 0xb5);
 
 	if (ret != 0)
-		msg_pinfo("Resuming IMC failed)\n");
+		msg_pinfo("Resuming IMC failed.\n");
 	else
 		msg_pdbg2("IMC resumed.\n");
 	return ret;
