@@ -1944,7 +1944,7 @@ int prepare_flash_access(struct flashctx *const flash,
 	}
 
 	/* Enable/disable 4-byte addressing mode if flash chip supports it */
-	if (flash->chip->feature_bits & (FEATURE_4BA_ENTER | FEATURE_4BA_ENTER_WREN | FEATURE_4BA_ENTER_EAR7)) {
+	if (spi_chip_4ba(flash)) {
 		int ret;
 		if (spi_master_4ba(flash))
 			ret = spi_enter_4ba(flash);

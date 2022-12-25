@@ -513,6 +513,12 @@ static inline bool spi_master_no_4ba_modes(const struct flashctx *const flash)
 	return flash->mst->buses_supported & BUS_SPI &&
 		flash->mst->spi.features & SPI_MASTER_NO_4BA_MODES;
 }
+/* spi_chip feature checks */
+static inline bool spi_chip_4ba(const struct flashctx *const flash)
+{
+	return flash->chip->bustype == BUS_SPI &&
+		(flash->chip->feature_bits & (FEATURE_4BA_ENTER | FEATURE_4BA_ENTER_WREN | FEATURE_4BA_ENTER_EAR7));
+}
 
 /* usbdev.c */
 struct libusb_device_handle;
