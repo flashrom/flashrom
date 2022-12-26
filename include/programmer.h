@@ -160,6 +160,9 @@ enum board_match_phase {
 	P3
 };
 
+struct board_cfg {
+};
+
 struct board_match {
 	/* Any device, but make it sensible, like the ISA bridge. */
 	uint16_t first_vendor;
@@ -189,7 +192,7 @@ struct board_match {
 
 	int max_rom_decode_parallel;
 	const enum test_state status;
-	int (*enable) (void); /* May be NULL. */
+	int (*enable) (struct board_cfg *cfg); /* May be NULL. */
 };
 
 extern const struct board_match board_matches[];
@@ -226,9 +229,9 @@ int it8705f_write_enable(uint8_t port);
 uint8_t sio_read(uint16_t port, uint8_t reg);
 void sio_write(uint16_t port, uint8_t reg, uint8_t data);
 void sio_mask(uint16_t port, uint8_t reg, uint8_t data, uint8_t mask);
-void board_handle_before_superio(bool force_boardenable);
-void board_handle_before_laptop(bool force_boardenable);
-int board_flash_enable(const char *vendor, const char *model, const char *cb_vendor, const char *cb_model, bool force_boardenable);
+void board_handle_before_superio(struct board_cfg *cfg, bool force_boardenable);
+void board_handle_before_laptop(struct board_cfg *cfg, bool force_boardenable);
+int board_flash_enable(struct board_cfg *cfg, const char *vendor, const char *model, const char *cb_vendor, const char *cb_model, bool force_boardenable);
 
 /* chipset_enable.c */
 int chipset_flash_enable(const struct programmer_cfg *cfg);
@@ -392,7 +395,7 @@ void internal_par_init(enum chipbustype buses);
 int sb600_probe_spi(const struct programmer_cfg *cfg, struct pci_dev *dev);
 
 /* wbsio_spi.c */
-int wbsio_check_for_spi(void);
+int wbsio_check_for_spi(struct board_cfg *);
 #endif
 
 /* opaque.c */

@@ -194,7 +194,7 @@ static const struct spi_master spi_master_wbsio = {
 	.shutdown	= wbsio_spi_shutdown,
 };
 
-int wbsio_check_for_spi(void)
+int wbsio_check_for_spi(struct board_cfg *cfg)
 {
 	uint16_t wbsio_spibase = 0;
 

@@ -146,7 +146,7 @@ static int fdc37b787_gpio50_raise(uint16_t port)
  * Suited for:
  *  - Nokia IP530: Intel 440BX + PIIX4 + FDC37B787
  */
-static int fdc37b787_gpio50_raise_3f0(void)
+static int fdc37b787_gpio50_raise_3f0(struct board_cfg *cfg)
 {
 	return fdc37b787_gpio50_raise(0x3f0);
 }
@@ -457,7 +457,7 @@ static int winbond_gpio_set(uint16_t base, enum winbond_id chipid,
  *  - Agami Aruma
  *  - IWILL DK8-HTX
  */
-static int w83627hf_gpio24_raise_2e(void)
+static int w83627hf_gpio24_raise_2e(struct board_cfg *cfg)
 {
 	return winbond_gpio_set(0x2e, WINBOND_W83627HF_ID, 24, 1);
 }
@@ -468,7 +468,7 @@ static int w83627hf_gpio24_raise_2e(void)
  * Suited for:
  *  - MSI MS-6577
  */
-static int w83627hf_gpio25_raise_2e(void)
+static int w83627hf_gpio25_raise_2e(struct board_cfg *cfg)
 {
 	return winbond_gpio_set(0x2e, WINBOND_W83627HF_ID, 25, 1);
 }
@@ -479,7 +479,7 @@ static int w83627hf_gpio25_raise_2e(void)
  * Suited for:
  *  - ASUS A8N-VM CSM: AMD Socket 939 + GeForce 6150 (C51) + MCP51
  */
-static int w83627ehf_gpio22_raise_2e(void)
+static int w83627ehf_gpio22_raise_2e(struct board_cfg *cfg)
 {
 	return winbond_gpio_set(0x2e, WINBOND_W83627EHF_ID, 22, 1);
 }
@@ -490,7 +490,7 @@ static int w83627ehf_gpio22_raise_2e(void)
  * Suited for:
  *  - MSI K8T Neo2-F V2.0
  */
-static int w83627thf_gpio44_raise_2e(void)
+static int w83627thf_gpio44_raise_2e(struct board_cfg *cfg)
 {
 	return winbond_gpio_set(0x2e, WINBOND_W83627THF_ID, 44, 1);
 }
@@ -501,7 +501,7 @@ static int w83627thf_gpio44_raise_2e(void)
  * Suited for:
  *  - MSI K8N Neo3
  */
-static int w83627thf_gpio44_raise_4e(void)
+static int w83627thf_gpio44_raise_4e(struct board_cfg *cfg)
 {
 	return winbond_gpio_set(0x4e, WINBOND_W83627THF_ID, 44, 1);
 }
@@ -557,7 +557,7 @@ static void w83697xx_memw_enable(uint16_t port)
  * Suited for:
  *  - Biostar M7VIQ: VIA KM266 + VT8235
  */
-static int w83697xx_memw_enable_2e(void)
+static int w83697xx_memw_enable_2e(struct board_cfg *cfg)
 {
 	w83697xx_memw_enable(0x2E);
 
@@ -579,7 +579,7 @@ static int w83697xx_memw_enable_2e(void)
  *  - ASRock K7S41: SiS 741 + SiS 963 + W83697HF
  *  - ASRock K7S41GX: SiS 741GX + SiS 963L + W83697HF
  */
-static int w836xx_memw_enable_2e(void)
+static int w836xx_memw_enable_2e(struct board_cfg *cfg)
 {
 	w836xx_memw_enable(0x2E);
 
@@ -590,7 +590,7 @@ static int w836xx_memw_enable_2e(void)
  * Suited for:
  *  - Termtek TK-3370 (rev. 2.5b)
  */
-static int w836xx_memw_enable_4e(void)
+static int w836xx_memw_enable_4e(struct board_cfg *cfg)
 {
 	w836xx_memw_enable(0x4E);
 
@@ -725,7 +725,7 @@ static int it8707f_write_enable(uint8_t port)
  * Suited for:
  *  - ASUS P4SC-E: SiS 651 + 962 + ITE IT8707F
  */
-static int it8707f_write_enable_2e(void)
+static int it8707f_write_enable_2e(struct board_cfg *cfg)
 {
 	return it8707f_write_enable(0x2e);
 }
@@ -834,7 +834,7 @@ static int via_vt823x_gpio_set(uint8_t gpio, int raise)
  * Suited for:
  *  - ASUS M2V-MX: VIA K8M890 + VT8237A + IT8716F
  */
-static int via_vt823x_gpio5_raise(void)
+static int via_vt823x_gpio5_raise(struct board_cfg *cfg)
 {
 	/* On M2V-MX: GPO5 is connected to WP# and TBL#. */
 	return via_vt823x_gpio_set(5, 1);
@@ -844,7 +844,7 @@ static int via_vt823x_gpio5_raise(void)
  * Suited for:
  *  - VIA EPIA EK & N & NL
  */
-static int via_vt823x_gpio9_raise(void)
+static int via_vt823x_gpio9_raise(struct board_cfg *cfg)
 {
 	return via_vt823x_gpio_set(9, 1);
 }
@@ -856,7 +856,7 @@ static int via_vt823x_gpio9_raise(void)
  * We don't need to do this for EPIA M when using coreboot, GPIO15 is never
  * lowered there.
  */
-static int via_vt823x_gpio15_raise(void)
+static int via_vt823x_gpio15_raise(struct board_cfg *cfg)
 {
 	return via_vt823x_gpio_set(15, 1);
 }
@@ -868,7 +868,7 @@ static int via_vt823x_gpio15_raise(void)
  *  - MSI KT4V and KT4V-L: AMD K7 + VIA KT400 + VT8235
  *  - MSI KT4 Ultra: AMD K7 + VIA KT400 + VT8235
  */
-static int board_msi_kt4v(void)
+static int board_msi_kt4v(struct board_cfg *cfg)
 {
 	int ret;
 
@@ -885,7 +885,7 @@ static int board_msi_kt4v(void)
  * We are talking to a proprietary device on SMBus: the AS99127F which does
  * much more than the Winbond W83781D it tries to be compatible with.
  */
-static int board_asus_p3b_f(void)
+static int board_asus_p3b_f(struct board_cfg *cfg)
 {
 	/*
 	 * Find where the SMBus host is. ASUS sets it to 0xE800; coreboot sets it to 0x0F00.
@@ -932,7 +932,7 @@ static int board_asus_p3b_f(void)
  * We're basically talking to some unknown device on SMBus, my guess
  * is that it is the Winbond W83781D that lives near the DIP BIOS.
  */
-static int board_asus_p5a(void)
+static int board_asus_p5a(struct board_cfg *cfg)
 {
 	uint8_t tmp;
 	int i;
@@ -1006,7 +1006,7 @@ static int board_asus_p5a(void)
  *
  * It's not a Super I/O but it uses the same index/data port method.
  */
-static int board_hp_dl145_g3_enable(void)
+static int board_hp_dl145_g3_enable(struct board_cfg *cfg)
 {
 	/* GPIO 0 reg from PM regs */
 	/* Set GPIO 2 and 5 high, connected to flash WP# and TBL# pins. */
@@ -1020,7 +1020,7 @@ static int board_hp_dl145_g3_enable(void)
  *
  * It's not a Super I/O but it uses the same index/data port method.
  */
-static int board_hp_dl165_g6_enable(void)
+static int board_hp_dl165_g6_enable(struct board_cfg *cfg)
 {
 	/* Variant of DL145, with slightly different pin placement. */
 	sio_mask(0xcd6, 0x44, 0x80, 0x80); /* TBL# */
@@ -1029,7 +1029,7 @@ static int board_hp_dl165_g6_enable(void)
 	return 0;
 }
 
-static int board_ibm_x3455(void)
+static int board_ibm_x3455(struct board_cfg *cfg)
 {
 	/* Raise GPIO13. */
 	sio_mask(0xcd6, 0x45, 0x20, 0x20);
@@ -1041,7 +1041,7 @@ static int board_ibm_x3455(void)
  * Suited for:
  * - Elitegroup GeForce6100SM-M: NVIDIA MCP61 + ITE IT8726F
  */
-static int board_ecs_geforce6100sm_m(void)
+static int board_ecs_geforce6100sm_m(struct board_cfg *cfg)
 {
 	struct pci_dev *dev;
 	uint32_t tmp;
@@ -1131,7 +1131,7 @@ static int nvidia_mcp_gpio_set(int gpio, int raise)
  *  - ASUS A8N-LA (HP OEM "Nagami-GL8E"): NVIDIA MCP51
  *  - ASUS M2NBP-VM CSM: NVIDIA MCP51
  */
-static int nvidia_mcp_gpio0_raise(void)
+static int nvidia_mcp_gpio0_raise(struct board_cfg *cfg)
 {
 	return nvidia_mcp_gpio_set(0x00, 1);
 }
@@ -1141,7 +1141,7 @@ static int nvidia_mcp_gpio0_raise(void)
  *  - abit KN8 Ultra: NVIDIA CK804
  *  - abit KN9 Ultra: NVIDIA MCP55
  */
-static int nvidia_mcp_gpio2_lower(void)
+static int nvidia_mcp_gpio2_lower(struct board_cfg *cfg)
 {
 	return nvidia_mcp_gpio_set(0x02, 0);
 }
@@ -1153,7 +1153,7 @@ static int nvidia_mcp_gpio2_lower(void)
  *  - MSI K8NGM2-L: NVIDIA MCP51
  *  - MSI K9N SLI: NVIDIA MCP55
  */
-static int nvidia_mcp_gpio2_raise(void)
+static int nvidia_mcp_gpio2_raise(struct board_cfg *cfg)
 {
 	return nvidia_mcp_gpio_set(0x02, 1);
 }
@@ -1162,7 +1162,7 @@ static int nvidia_mcp_gpio2_raise(void)
  * Suited for:
  *  - EPoX EP-8NPA7I: Socket 754 + NVIDIA nForce4 4X
  */
-static int nvidia_mcp_gpio4_raise(void)
+static int nvidia_mcp_gpio4_raise(struct board_cfg *cfg)
 {
 	return nvidia_mcp_gpio_set(0x04, 1);
 }
@@ -1179,7 +1179,7 @@ static int nvidia_mcp_gpio4_raise(void)
  *        b) #TBL is hardwired on that board to a pull-down. It can be
  *           overridden by connecting the two solder points next to F2.
  */
-static int nvidia_mcp_gpio5_raise(void)
+static int nvidia_mcp_gpio5_raise(struct board_cfg *cfg)
 {
 	return nvidia_mcp_gpio_set(0x05, 1);
 }
@@ -1188,7 +1188,7 @@ static int nvidia_mcp_gpio5_raise(void)
  * Suited for:
  *  - abit NF7-S: NVIDIA CK804
  */
-static int nvidia_mcp_gpio8_raise(void)
+static int nvidia_mcp_gpio8_raise(struct board_cfg *cfg)
 {
 	return nvidia_mcp_gpio_set(0x08, 1);
 }
@@ -1198,7 +1198,7 @@ static int nvidia_mcp_gpio8_raise(void)
  *  - GIGABYTE GA-K8NS Pro-939: Socket 939 + NVIDIA nForce3  + CK8
  *  - Probably other versions of the GA-K8NS
  */
-static int nvidia_mcp_gpio0a_raise(void)
+static int nvidia_mcp_gpio0a_raise(struct board_cfg *cfg)
 {
 	return nvidia_mcp_gpio_set(0x0a, 1);
 }
@@ -1208,7 +1208,7 @@ static int nvidia_mcp_gpio0a_raise(void)
  *  - MSI K8N Neo Platinum: Socket 754 + nForce3 Ultra + CK8
  *  - MSI K8N Neo2 Platinum: Socket 939 + nForce3 Ultra + CK8
  */
-static int nvidia_mcp_gpio0c_raise(void)
+static int nvidia_mcp_gpio0c_raise(struct board_cfg *cfg)
 {
 	return nvidia_mcp_gpio_set(0x0c, 1);
 }
@@ -1217,7 +1217,7 @@ static int nvidia_mcp_gpio0c_raise(void)
  * Suited for:
  *  - abit NF-M2 nView: Socket AM2 + NVIDIA MCP51
  */
-static int nvidia_mcp_gpio4_lower(void)
+static int nvidia_mcp_gpio4_lower(struct board_cfg *cfg)
 {
 	return nvidia_mcp_gpio_set(0x04, 0);
 }
@@ -1226,7 +1226,7 @@ static int nvidia_mcp_gpio4_lower(void)
  * Suited for:
  *  - ASUS P5ND2-SLI Deluxe: LGA775 + nForce4 SLI + MCP04
  */
-static int nvidia_mcp_gpio10_raise(void)
+static int nvidia_mcp_gpio10_raise(struct board_cfg *cfg)
 {
 	return nvidia_mcp_gpio_set(0x10, 1);
 }
@@ -1235,7 +1235,7 @@ static int nvidia_mcp_gpio10_raise(void)
  * Suited for:
  *  - GIGABYTE GA-K8N-SLI: AMD socket 939 + NVIDIA CK804 + ITE IT8712F
  */
-static int nvidia_mcp_gpio21_raise(void)
+static int nvidia_mcp_gpio21_raise(struct board_cfg *cfg)
 {
 	return nvidia_mcp_gpio_set(0x21, 0x01);
 }
@@ -1244,7 +1244,7 @@ static int nvidia_mcp_gpio21_raise(void)
  * Suited for:
  *  - EPoX EP-8RDA3+: Socket A + nForce2 Ultra 400 + MCP2
  */
-static int nvidia_mcp_gpio31_raise(void)
+static int nvidia_mcp_gpio31_raise(struct board_cfg *cfg)
 {
 	return nvidia_mcp_gpio_set(0x31, 0x01);
 }
@@ -1254,7 +1254,7 @@ static int nvidia_mcp_gpio31_raise(void)
  *  - GIGABYTE GA-K8N51GMF: Socket 754 + Geforce 6100 + MCP51
  *  - GIGABYTE GA-K8N51GMF-9: Socket 939 + Geforce 6100 + MCP51
  */
-static int nvidia_mcp_gpio3b_raise(void)
+static int nvidia_mcp_gpio3b_raise(struct board_cfg *cfg)
 {
 	return nvidia_mcp_gpio_set(0x3b, 1);
 }
@@ -1263,14 +1263,14 @@ static int nvidia_mcp_gpio3b_raise(void)
  * Suited for:
  *  - Sun Ultra 40 M2: Dual Socket F (1207) + MCP55
  */
-static int board_sun_ultra_40_m2(void)
+static int board_sun_ultra_40_m2(struct board_cfg *cfg)
 {
 	int ret;
 	uint8_t reg;
 	uint16_t base;
 	struct pci_dev *dev;
 
-	ret = nvidia_mcp_gpio4_lower();
+	ret = nvidia_mcp_gpio4_lower(cfg);
 	if (ret)
 		return ret;
 
@@ -1295,7 +1295,7 @@ static int board_sun_ultra_40_m2(void)
  * Suited for:
  *  - Artec Group DBE61 and DBE62
  */
-static int board_artecgroup_dbe6x(void)
+static int board_artecgroup_dbe6x(struct board_cfg *cfg)
 {
 #define DBE6x_MSR_DIVIL_BALL_OPTS	0x51400015
 #define DBE6x_PRI_BOOT_LOC_SHIFT	2
@@ -1339,7 +1339,7 @@ static int board_artecgroup_dbe6x(void)
  * Datasheet(s) used:
  *  - AMD document 43009 "AMD SB700/710/750 Register Reference Guide" rev. 1.00
  */
-static int amd_sbxxx_gpio9_raise(void)
+static int amd_sbxxx_gpio9_raise(struct board_cfg *cfg)
 {
 	struct pci_dev *dev;
 	uint32_t reg;
@@ -1453,7 +1453,7 @@ static int intel_piix4_gpo_set(unsigned int gpo, int raise)
  *  - ASUS OPLX-M
  *  - ASUS P2B-N
  */
-static int intel_piix4_gpo18_lower(void)
+static int intel_piix4_gpo18_lower(struct board_cfg *cfg)
 {
 	return intel_piix4_gpo_set(18, 0);
 }
@@ -1462,7 +1462,7 @@ static int intel_piix4_gpo18_lower(void)
  * Suited for:
  *  - MSI MS-6163 v2 (MS-6163 Pro): Intel 440BX + PIIX4E + Winbond W83977EF
  */
-static int intel_piix4_gpo14_raise(void)
+static int intel_piix4_gpo14_raise(struct board_cfg *cfg)
 {
 	return intel_piix4_gpo_set(14, 1);
 }
@@ -1471,7 +1471,7 @@ static int intel_piix4_gpo14_raise(void)
  * Suited for:
  *  - EPoX EP-BX3
  */
-static int intel_piix4_gpo22_raise(void)
+static int intel_piix4_gpo22_raise(struct board_cfg *cfg)
 {
 	return intel_piix4_gpo_set(22, 1);
 }
@@ -1480,7 +1480,7 @@ static int intel_piix4_gpo22_raise(void)
  * Suited for:
  *  - abit BM6
  */
-static int intel_piix4_gpo26_lower(void)
+static int intel_piix4_gpo26_lower(struct board_cfg *cfg)
 {
 	return intel_piix4_gpo_set(26, 0);
 }
@@ -1489,7 +1489,7 @@ static int intel_piix4_gpo26_lower(void)
  * Suited for:
  *  - Intel SE440BX-2
  */
-static int intel_piix4_gpo27_lower(void)
+static int intel_piix4_gpo27_lower(struct board_cfg *cfg)
 {
 	return intel_piix4_gpo_set(27, 0);
 }
@@ -1498,7 +1498,7 @@ static int intel_piix4_gpo27_lower(void)
  * Suited for:
  *  - Dell OptiPlex GX1
  */
-static int intel_piix4_gpo30_lower(void)
+static int intel_piix4_gpo30_lower(struct board_cfg *cfg)
 {
 	return intel_piix4_gpo_set(30, 0);
 }
@@ -1704,7 +1704,7 @@ static int intel_ich_gpio_set(int gpio, int raise)
  *  - ASUS P5LD2-VM DH
  *  - ASUS P5W DH Deluxe
  */
-static int intel_ich_gpio16_raise(void)
+static int intel_ich_gpio16_raise(struct board_cfg *cfg)
 {
 	return intel_ich_gpio_set(16, 1);
 }
@@ -1713,7 +1713,7 @@ static int intel_ich_gpio16_raise(void)
  * Suited for:
  *  - HP Puffer2-UL8E (ASUS PTGD-LA OEM): LGA775 + 915 + ICH6
  */
-static int intel_ich_gpio18_raise(void)
+static int intel_ich_gpio18_raise(struct board_cfg *cfg)
 {
 	return intel_ich_gpio_set(18, 1);
 }
@@ -1722,7 +1722,7 @@ static int intel_ich_gpio18_raise(void)
  * Suited for:
  *  - MSI MS-7046: LGA775 + 915P + ICH6
  */
-static int intel_ich_gpio19_raise(void)
+static int intel_ich_gpio19_raise(struct board_cfg *cfg)
 {
 	return intel_ich_gpio_set(19, 1);
 }
@@ -1732,7 +1732,7 @@ static int intel_ich_gpio19_raise(void)
  *  - ASUS P5BV-R: LGA775 + 3200 + ICH7
  *  - AOpen i965GMt-LA: Intel Socket479 + 965GM + ICH8M
  */
-static int intel_ich_gpio20_raise(void)
+static int intel_ich_gpio20_raise(struct board_cfg *cfg)
 {
 	return intel_ich_gpio_set(20, 1);
 }
@@ -1754,7 +1754,7 @@ static int intel_ich_gpio20_raise(void)
  *  - ASUS TUSL2-C: Intel socket370 + 815 + ICH2
  *  - Samsung Polaris 32: socket478 + 865P + ICH5
  */
-static int intel_ich_gpio21_raise(void)
+static int intel_ich_gpio21_raise(struct board_cfg *cfg)
 {
 	return intel_ich_gpio_set(21, 1);
 }
@@ -1766,7 +1766,7 @@ static int intel_ich_gpio21_raise(void)
  *  - ASUS P4B-MX variant in HP Vectra VL420 SFF: socket478 + 845D + ICH2
  *  - TriGem Anaheim-3: socket370 + Intel 810 + ICH
  */
-static int intel_ich_gpio22_raise(void)
+static int intel_ich_gpio22_raise(struct board_cfg *cfg)
 {
 	return intel_ich_gpio_set(22, 1);
 }
@@ -1778,7 +1778,7 @@ static int intel_ich_gpio22_raise(void)
  *    - HP Media Center m7270.fr Desktop PC as "Lithium-UL8E"
  *    - Epson Endeavor MT7700
  */
-static int intel_ich_gpio34_raise(void)
+static int intel_ich_gpio34_raise(struct board_cfg *cfg)
 {
 	return intel_ich_gpio_set(34, 1);
 }
@@ -1788,7 +1788,7 @@ static int intel_ich_gpio34_raise(void)
  *  - AOpen i945GMx-VFX: Intel 945GM + ICH7-M used in ...
  *    - FSC ESPRIMO Q5010 (SMBIOS: D2544-B1)
  */
-static int intel_ich_gpio38_raise(void)
+static int intel_ich_gpio38_raise(struct board_cfg *cfg)
 {
 	return intel_ich_gpio_set(38, 1);
 }
@@ -1797,7 +1797,7 @@ static int intel_ich_gpio38_raise(void)
  * Suited for:
  *  - ASUS M6Ne (laptop): socket 479M (guessed) + Intel 855PM + ICH4-M
  */
-static int intel_ich_gpio43_raise(void)
+static int intel_ich_gpio43_raise(struct board_cfg *cfg)
 {
 	return intel_ich_gpio_set(43, 1);
 }
@@ -1806,7 +1806,7 @@ static int intel_ich_gpio43_raise(void)
  * Suited for:
  *  - HP Vectra VL400: 815 + ICH + PC87360
  */
-static int board_hp_vl400(void)
+static int board_hp_vl400(struct board_cfg *cfg)
 {
 	int ret;
 	ret = intel_ich_gpio_set(25, 1);	/* Master write enable ? */
@@ -1821,7 +1821,7 @@ static int board_hp_vl400(void)
  * Suited for:
  *  - HP e-Vectra P2706T: 810E + ICH + PC87364
  */
-static int board_hp_p2706t(void)
+static int board_hp_p2706t(struct board_cfg *cfg)
 {
 	int ret;
 	ret = pc8736x_gpio_set(PC87364_ID, 0x25, 1);
@@ -1837,7 +1837,7 @@ static int board_hp_p2706t(void)
  *  - ASRock 775i65G: Intel LGA 775 + 865G + ICH5
  *  - MSI MS-6391 (845 Pro4): Intel Socket478 + 845 + ICH2
  */
-static int intel_ich_gpio23_raise(void)
+static int intel_ich_gpio23_raise(struct board_cfg *cfg)
 {
 	return intel_ich_gpio_set(23, 1);
 }
@@ -1847,7 +1847,7 @@ static int intel_ich_gpio23_raise(void)
  *  - GIGABYTE GA-6IEM: Intel Socket370 + i815 + ICH2
  *  - GIGABYTE GA-8IRML: Intel Socket478 + i845 + ICH2
  */
-static int intel_ich_gpio25_raise(void)
+static int intel_ich_gpio25_raise(struct board_cfg *cfg)
 {
 	return intel_ich_gpio_set(25, 1);
 }
@@ -1856,7 +1856,7 @@ static int intel_ich_gpio25_raise(void)
  * Suited for:
  *  - IBASE MB899: i945GM + ICH7
  */
-static int intel_ich_gpio26_raise(void)
+static int intel_ich_gpio26_raise(struct board_cfg *cfg)
 {
 	return intel_ich_gpio_set(26, 1);
 }
@@ -1869,7 +1869,7 @@ static int intel_ich_gpio26_raise(void)
  *  - GIGABYTE GA-8PE667 Ultra 2: socket 478 + i845PE + ICH4
  *  - MSI MS-6788-40 (aka 848P Neo-V)
  */
-static int intel_ich_gpio32_raise(void)
+static int intel_ich_gpio32_raise(struct board_cfg *cfg)
 {
 	return intel_ich_gpio_set(32, 1);
 }
@@ -1878,7 +1878,7 @@ static int intel_ich_gpio32_raise(void)
  * Suited for:
  *  - AOpen i975Xa-YDG: i975X + ICH7 + W83627EHF
  */
-static int board_aopen_i975xa_ydg(void)
+static int board_aopen_i975xa_ydg(struct board_cfg *cfg)
 {
 	int ret;
 
@@ -1900,7 +1900,7 @@ static int board_aopen_i975xa_ydg(void)
  * Suited for:
  *  - Acorp 6A815EPD: socket 370 + intel 815 + ICH2
  */
-static int board_acorp_6a815epd(void)
+static int board_acorp_6a815epd(struct board_cfg *cfg)
 {
 	int ret;
 
@@ -1916,7 +1916,7 @@ static int board_acorp_6a815epd(void)
  * Suited for:
  *  - Kontron 986LCD-M: Socket478 + 915GM + ICH7R
  */
-static int board_kontron_986lcd_m(void)
+static int board_kontron_986lcd_m(struct board_cfg *cfg)
 {
 	int ret;
 
@@ -1983,7 +1983,7 @@ static int via_apollo_gpo_set(int gpio, int raise)
  *  - abit VT6X4: Pro133x + VT82C686A
  *  - abit VA6: Pro133x + VT82C686A
  */
-static int via_apollo_gpo4_lower(void)
+static int via_apollo_gpo4_lower(struct board_cfg *cfg)
 {
 	return via_apollo_gpo_set(4, 0);
 }
@@ -1992,7 +1992,7 @@ static int via_apollo_gpo4_lower(void)
  * Suited for:
  *  - Soyo SY-7VCA: Pro133A + VT82C686
  */
-static int via_apollo_gpo0_lower(void)
+static int via_apollo_gpo0_lower(struct board_cfg *cfg)
 {
 	return via_apollo_gpo_set(0, 0);
 }
@@ -2005,7 +2005,7 @@ static int via_apollo_gpo0_lower(void)
  *  - GIGABYTE GA-8SIMLFS 2.0
  *  - GIGABYTE GA-8SIMLH
  */
-static int sis_gpio0_raise_and_w836xx_memw(void)
+static int sis_gpio0_raise_and_w836xx_memw(struct board_cfg *cfg)
 {
 	struct pci_dev *dev;
 	uint16_t base, temp;
@@ -2068,7 +2068,7 @@ out:
  * Disable write protection on the Mitac 6513WU. WP# on the FWH is
  * connected to GP30 on the Super I/O, and TBL# is always high.
  */
-static int board_mitac_6513wu(void)
+static int board_mitac_6513wu(struct board_cfg *cfg)
 {
 	struct pci_dev *dev;
 	uint16_t rt_port;
@@ -2101,7 +2101,7 @@ static int board_mitac_6513wu(void)
  * Suited for:
  *  - abit AV8: Socket939 + K8T800Pro + VT8237
  */
-static int board_abit_av8(void)
+static int board_abit_av8(struct board_cfg *cfg)
 {
 	uint8_t val;
 
@@ -2118,7 +2118,7 @@ static int board_abit_av8(void)
  *  - ASUS A7V333: VIA KT333 + VT8233A + IT8703F
  *  - ASUS A7V8X: VIA KT400 + VT8235 + IT8703F
  */
-static int it8703f_gpio51_raise(void)
+static int it8703f_gpio51_raise(struct board_cfg *cfg)
 {
 	uint16_t id, base;
 	uint8_t tmp;
@@ -2247,7 +2247,7 @@ found:
  * Suited for:
  * - ASUS A7N8X-VM/400: NVIDIA nForce2 IGP2 + IT8712F
  */
-static int it8712f_gpio12_raise(void)
+static int it8712f_gpio12_raise(struct board_cfg *cfg)
 {
 	return it87_gpio_set(12, 1);
 }
@@ -2257,7 +2257,7 @@ static int it8712f_gpio12_raise(void)
  * - ASUS A7V600-X: VIA KT600 + VT8237 + IT8712F
  * - ASUS A7V8X-X: VIA KT400 + VT8235 + IT8712F
  */
-static int it8712f_gpio31_raise(void)
+static int it8712f_gpio31_raise(struct board_cfg *cfg)
 {
 	return it87_gpio_set(32, 1);
 }
@@ -2267,7 +2267,7 @@ static int it8712f_gpio31_raise(void)
  * - ASUS P5N-D: NVIDIA MCP51 + IT8718F
  * - ASUS P5N-E SLI: NVIDIA MCP51 + IT8718F
  */
-static int it8718f_gpio63_raise(void)
+static int it8718f_gpio63_raise(struct board_cfg *cfg)
 {
 	return it87_gpio_set(63, 1);
 }
@@ -2279,7 +2279,7 @@ static int it8718f_gpio63_raise(void)
  * - Intel D945GCNL
  * - MSC Q7 Tunnel Creek Module (Q7-TCTC)
  */
-static int p2_not_a_laptop(void)
+static int p2_not_a_laptop(struct board_cfg *cfg)
 {
 	/* label this board as not a laptop */
 	g_is_laptop = 0;
@@ -2290,7 +2290,7 @@ static int p2_not_a_laptop(void)
 /*
  * Suited for all laptops, which are known to *not* have interfering embedded controllers.
  */
-static int p2_whitelist_laptop(void)
+static int p2_whitelist_laptop(struct board_cfg *cfg)
 {
 	g_is_laptop = 1;
 	g_laptop_ok = true;
@@ -2705,7 +2705,8 @@ static int board_enable_safetycheck(const struct board_match *board, bool force_
 }
 
 /* FIXME: Should this be identical to board_flash_enable? */
-static int board_handle_phase(enum board_match_phase phase, bool force_boardenable)
+static int board_handle_phase(struct board_cfg *cfg,
+                              enum board_match_phase phase, bool force_boardenable)
 {
 	const struct board_match *board = board_match_pci_ids(phase);
 
@@ -2718,20 +2719,21 @@ static int board_handle_phase(enum board_match_phase phase, bool force_boardenab
 		return 0;
 	}
 
-	return board->enable();
+	return board->enable(cfg);
 }
 
-void board_handle_before_superio(bool force_boardenable)
+void board_handle_before_superio(struct board_cfg *cfg, bool force_boardenable)
 {
-	board_handle_phase(P1, force_boardenable);
+	board_handle_phase(cfg, P1, force_boardenable);
 }
 
-void board_handle_before_laptop(bool force_boardenable)
+void board_handle_before_laptop(struct board_cfg *cfg, bool force_boardenable)
 {
-	board_handle_phase(P2, force_boardenable);
+	board_handle_phase(cfg, P2, force_boardenable);
 }
 
-int board_flash_enable(const char *vendor, const char *model, const char *cb_vendor, const char *cb_model,
+int board_flash_enable(struct board_cfg *cfg,
+		const char *vendor, const char *model, const char *cb_vendor, const char *cb_model,
 		bool force_boardenable)
 {
 	const struct board_match *board = NULL;
@@ -2769,7 +2771,7 @@ int board_flash_enable(const char *vendor, const char *model, const char *cb_ven
 		msg_pinfo("Enabling full flash access for board \"%s %s\"... ",
 			  board->vendor_name, board->board_name);
 
-		ret = board->enable();
+		ret = board->enable(cfg);
 		if (ret)
 			msg_pinfo("FAILED!\n");
 		else

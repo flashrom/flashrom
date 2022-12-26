@@ -149,6 +149,7 @@ static int internal_init(const struct programmer_cfg *cfg)
 	const char *cb_model = NULL;
 #endif
 	bool force_boardenable = false;
+	struct board_cfg bcfg;
 
 	ret = get_params(cfg,
 			 &force_boardenable, &force_boardmismatch,
@@ -208,7 +209,7 @@ static int internal_init(const struct programmer_cfg *cfg)
 	dmi_init(&g_is_laptop);
 
 	/* In case Super I/O probing would cause pretty explosions. */
-	board_handle_before_superio(force_boardenable);
+	board_handle_before_superio(&bcfg, force_boardenable);
 
 	/* Probe for the Super I/O chip and fill global struct superio. */
 	probe_superio();
@@ -221,7 +222,7 @@ static int internal_init(const struct programmer_cfg *cfg)
 #endif
 
 	/* Check laptop whitelist. */
-	board_handle_before_laptop(force_boardenable);
+	board_handle_before_laptop(&bcfg, force_boardenable);
 
 	/*
 	 * Disable all internal buses by default if we are not sure
@@ -247,7 +248,8 @@ static int internal_init(const struct programmer_cfg *cfg)
 	 * parallel writes on IT8705F. Also, this handles the manual chip select for Gigabyte's DualBIOS. */
 	init_superio_ite(cfg);
 
-	if (board_flash_enable(board_vendor, board_model, cb_vendor, cb_model, force_boardenable)) {
+	if (board_flash_enable(&bcfg,
+            board_vendor, board_model, cb_vendor, cb_model, force_boardenable)) {
 		msg_perr("Aborting to be safe.\n");
 		ret = 1;
 		goto internal_init_exit;
