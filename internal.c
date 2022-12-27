@@ -162,6 +162,36 @@ static int get_params(const struct programmer_cfg *cfg,
 	return 0;
 }
 
+// FIXME: remove '_' suffix from parameters once global shadowing is fixed.
+static void report_nonwl_laptop_detected(int is_laptop_, bool laptop_ok_)
+{
+	if (is_laptop_ && !laptop_ok_) {
+		msg_pinfo("========================================================================\n");
+		if (is_laptop_ == 1) {
+			msg_pinfo("You seem to be running flashrom on an unknown laptop. Some\n"
+				  "internal buses have been disabled for safety reasons.\n\n");
+		} else {
+			msg_pinfo("You may be running flashrom on an unknown laptop. We could not\n"
+				  "detect this for sure because your vendor has not set up the SMBIOS\n"
+				  "tables correctly. Some internal buses have been disabled for\n"
+				  "safety reasons. You can enforce using all buses by adding\n"
+				  "  -p internal:laptop=this_is_not_a_laptop\n"
+				  "to the command line, but please read the following warning if you\n"
+				  "are not sure.\n\n");
+		}
+		msg_perr("Laptops, notebooks and netbooks are difficult to support and we\n"
+			 "recommend to use the vendor flashing utility. The embedded controller\n"
+			 "(EC) in these machines often interacts badly with flashing.\n"
+			 "See the manpage and https://flashrom.org/Laptops for details.\n\n"
+			 "If flash is shared with the EC, erase is guaranteed to brick your laptop\n"
+			 "and write may brick your laptop.\n"
+			 "Read and probe may irritate your EC and cause fan failure, backlight\n"
+			 "failure and sudden poweroff.\n"
+			 "You have been warned.\n"
+			 "========================================================================\n");
+	}
+}
+
 static int internal_init(const struct programmer_cfg *cfg)
 {
 	int ret = 0;
@@ -283,31 +313,7 @@ static int internal_init(const struct programmer_cfg *cfg)
 		register_par_master(&par_master_internal, internal_buses_supported, NULL);
 
 	/* Report if a non-whitelisted laptop is detected that likely uses a legacy bus. */
-	if (is_laptop && !laptop_ok) {
-		msg_pinfo("========================================================================\n");
-		if (is_laptop == 1) {
-			msg_pinfo("You seem to be running flashrom on an unknown laptop. Some\n"
-				  "internal buses have been disabled for safety reasons.\n\n");
-		} else {
-			msg_pinfo("You may be running flashrom on an unknown laptop. We could not\n"
-				  "detect this for sure because your vendor has not set up the SMBIOS\n"
-				  "tables correctly. Some internal buses have been disabled for\n"
-				  "safety reasons. You can enforce using all buses by adding\n"
-				  "  -p internal:laptop=this_is_not_a_laptop\n"
-				  "to the command line, but please read the following warning if you\n"
-				  "are not sure.\n\n");
-		}
-		msg_perr("Laptops, notebooks and netbooks are difficult to support and we\n"
-			 "recommend to use the vendor flashing utility. The embedded controller\n"
-			 "(EC) in these machines often interacts badly with flashing.\n"
-			 "See the manpage and https://flashrom.org/Laptops for details.\n\n"
-			 "If flash is shared with the EC, erase is guaranteed to brick your laptop\n"
-			 "and write may brick your laptop.\n"
-			 "Read and probe may irritate your EC and cause fan failure, backlight\n"
-			 "failure and sudden poweroff.\n"
-			 "You have been warned.\n"
-			 "========================================================================\n");
-	}
+	report_nonwl_laptop_detected(is_laptop, laptop_ok);
 
 	ret = 0;
 
