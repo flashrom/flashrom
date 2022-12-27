@@ -151,11 +151,11 @@ static char *dmi_string(const char *buf, uint8_t string_id, const char *limit)
 	return newbuf;
 }
 
-static void dmi_chassis_type(uint8_t code)
+static int dmi_chassis_type(uint8_t code)
 {
 	unsigned int i;
 	code &= 0x7f; /* bits 6:0 are chassis type, 7th bit is the lock bit */
-	is_laptop = 2;
+	int is_laptop = 2;
 	for (i = 0; i < ARRAY_SIZE(dmi_chassis_types); i++) {
 		if (code == dmi_chassis_types[i].type) {
 			msg_pdbg("DMI string chassis-type: \"%s\"\n", dmi_chassis_types[i].name);
@@ -163,9 +163,10 @@ static void dmi_chassis_type(uint8_t code)
 			break;
 		}
 	}
+	return is_laptop;
 }
 
-static void dmi_table(uint32_t base, uint16_t len, uint16_t num)
+static void dmi_table(uint32_t base, uint16_t len, uint16_t num, int *is_laptop)
 {
 	unsigned int i = 0, j = 0;
 
@@ -198,7 +199,7 @@ static void dmi_table(uint32_t base, uint16_t len, uint16_t num)
 
 		if(data[0] == 3) {
 			if (data + 5 < limit)
-				dmi_chassis_type(data[5]);
+				*is_laptop = dmi_chassis_type(data[5]);
 			else /* the table is broken, but laptop detection is optional, hence continue. */
 				msg_pwarn("DMI table is broken (chassis_type out of bounds)!\n");
 		} else
@@ -232,7 +233,7 @@ out:
 }
 
 #if SM_SUPPORT
-static int smbios_decode(uint8_t *buf)
+static int smbios_decode(uint8_t *buf, int *is_laptop)
 {
 	/* TODO: other checks mentioned in the conformance guidelines? */
 	if (!dmi_checksum(buf, buf[0x05]) ||
@@ -240,23 +241,23 @@ static int smbios_decode(uint8_t *buf)
 	    !dmi_checksum(buf + 0x10, 0x0F))
 			return 0;
 
-	dmi_table(mmio_readl(buf + 0x18), mmio_readw(buf + 0x16), mmio_readw(buf + 0x1C));
+	dmi_table(mmio_readl(buf + 0x18), mmio_readw(buf + 0x16), mmio_readw(buf + 0x1C), is_laptop);
 
 	return 1;
 }
 #endif
 
-static int legacy_decode(uint8_t *buf)
+static int legacy_decode(uint8_t *buf, int *is_laptop)
 {
 	if (!dmi_checksum(buf, 0x0F))
 		return 1;
 
-	dmi_table(mmio_readl(buf + 0x08), mmio_readw(buf + 0x06), mmio_readw(buf + 0x0C));
+	dmi_table(mmio_readl(buf + 0x08), mmio_readw(buf + 0x06), mmio_readw(buf + 0x0C), is_laptop);
 
 	return 0;
 }
 
-static int dmi_fill(void)
+static int dmi_fill(int *is_laptop)
 {
 	size_t fp;
 	uint8_t *dmi_mem;
@@ -274,12 +275,12 @@ static int dmi_fill(void)
 	for (fp = 0; fp <= 0xFFF0; fp += 16) {
 #if SM_SUPPORT
 		if (memcmp(dmi_mem + fp, "_SM_", 4) == 0 && fp <= 0xFFE0) {
-			if (smbios_decode(dmi_mem + fp)) // FIXME: length check
+			if (smbios_decode(dmi_mem + fp), is_laptop) // FIXME: length check
 				goto out;
 		} else
 #endif
 		if (memcmp(dmi_mem + fp, "_DMI_", 5) == 0)
-			if (legacy_decode(dmi_mem + fp) == 0) {
+			if (legacy_decode(dmi_mem + fp, is_laptop) == 0) {
 				ret = 0;
 				goto out;
 			}
@@ -350,7 +351,7 @@ static char *get_dmi_string(const char *string_name)
 	return result;
 }
 
-static int dmi_fill(void)
+static int dmi_fill(int *is_laptop)
 {
 	unsigned int i;
 	char *chassis_type;
@@ -367,10 +368,10 @@ static int dmi_fill(void)
 		return 0; /* chassis-type handling is optional anyway */
 
 	msg_pdbg("DMI string chassis-type: \"%s\"\n", chassis_type);
-	is_laptop = 2;
+	*is_laptop = 2;
 	for (i = 0; i < ARRAY_SIZE(dmi_chassis_types); i++) {
 		if (strcasecmp(chassis_type, dmi_chassis_types[i].name) == 0) {
-			is_laptop = dmi_chassis_types[i].is_laptop;
+			*is_laptop = dmi_chassis_types[i].is_laptop;
 			break;
 		}
 	}
@@ -391,7 +392,7 @@ static int dmi_shutdown(void *data)
 	return 0;
 }
 
-void dmi_init(void)
+void dmi_init(int *is_laptop)
 {
 	/* Register shutdown function before we allocate anything. */
 	if (register_shutdown(dmi_shutdown, NULL)) {
@@ -399,11 +400,11 @@ void dmi_init(void)
 		return;
 	}
 
-	/* dmi_fill fills the dmi_strings array, and if possible sets the global is_laptop variable. */
-	if (dmi_fill() != 0)
+	/* dmi_fill fills the dmi_strings array, and if possible set the is_laptop parameter. */
+	if (dmi_fill(is_laptop) != 0)
 		return;
 
-	switch (is_laptop) {
+	switch (*is_laptop) {
 	case 1:
 		msg_pdbg("Laptop detected via DMI.\n");
 		break;

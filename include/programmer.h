@@ -244,7 +244,7 @@ int cb_check_image(const uint8_t *bios, unsigned int size);
 
 /* dmi.c */
 #if defined(__i386__) || defined(__x86_64__)
-void dmi_init(void);
+void dmi_init(int *is_laptop);
 bool dmi_is_supported(void);
 int dmi_match(const char *pattern);
 #endif // defined(__i386__) || defined(__x86_64__)
@@ -263,7 +263,7 @@ extern int superio_count;
 #endif
 
 #if CONFIG_INTERNAL == 1
-extern int is_laptop;
+extern int g_is_laptop;
 extern bool g_laptop_ok;
 extern bool force_boardmismatch;
 void probe_superio(void);

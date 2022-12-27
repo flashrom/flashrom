@@ -27,7 +27,7 @@
 #include "hwaccess_x86_io.h"
 #endif
 
-int is_laptop = 0;
+int g_is_laptop = 0;
 bool g_laptop_ok = false;
 
 bool force_boardmismatch = false;
@@ -108,12 +108,11 @@ static int get_params(const struct programmer_cfg *cfg,
 	return 0;
 }
 
-// FIXME: remove '_' suffix from parameters once global shadowing is fixed.
-static void report_nonwl_laptop_detected(int is_laptop_, bool laptop_ok)
+static void report_nonwl_laptop_detected(int is_laptop, bool laptop_ok)
 {
-	if (is_laptop_ && !laptop_ok) {
+	if (is_laptop && !laptop_ok) {
 		msg_pinfo("========================================================================\n");
-		if (is_laptop_ == 1) {
+		if (is_laptop == 1) {
 			msg_pinfo("You seem to be running flashrom on an unknown laptop. Some\n"
 				  "internal buses have been disabled for safety reasons.\n\n");
 		} else {
@@ -204,9 +203,9 @@ static int internal_init(const struct programmer_cfg *cfg)
 		}
 	}
 
-	is_laptop = 2; /* Assume that we don't know by default. */
+	g_is_laptop = 2; /* Assume that we don't know by default. */
 
-	dmi_init();
+	dmi_init(&g_is_laptop);
 
 	/* In case Super I/O probing would cause pretty explosions. */
 	board_handle_before_superio(force_boardenable);
@@ -229,7 +228,7 @@ static int internal_init(const struct programmer_cfg *cfg)
 	 * this isn't a laptop. Board-enables may override this,
 	 * non-legacy buses (SPI and opaque atm) are probed anyway.
 	 */
-	if (is_laptop && !(g_laptop_ok || force_laptop || (not_a_laptop && is_laptop == 2)))
+	if (g_is_laptop && !(g_laptop_ok || force_laptop || (not_a_laptop && g_is_laptop == 2)))
 		internal_buses_supported = BUS_NONE;
 
 	/* try to enable it. Failure IS an option, since not all motherboards
@@ -258,7 +257,7 @@ static int internal_init(const struct programmer_cfg *cfg)
 	internal_par_init(internal_buses_supported);
 
 	/* Report if a non-whitelisted laptop is detected that likely uses a legacy bus. */
-	report_nonwl_laptop_detected(is_laptop, g_laptop_ok);
+	report_nonwl_laptop_detected(g_is_laptop, g_laptop_ok);
 
 	ret = 0;
 
