@@ -247,6 +247,7 @@ programmer = {
       'internal.c',
       'it87spi.c',
       'sb600spi.c',
+      'superio.c',
       'amd_imc.c',
       'wbsio_spi.c',
       'mcp6x_spi.c',
