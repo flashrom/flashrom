@@ -3,6 +3,8 @@ name = "flashrom_tester"
 version = "1.6.0"
 authors = ["Edward O'Callaghan <quasisec@chromium.org>",
            "Peter Marheine <pmarheine@chromium.org>"]
+description = "A tool to verify flashrom and flash chip behaviour."
+license = "GPL-2.0-only"
 edition = "2018"
 build = "build.rs"
 

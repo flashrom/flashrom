@@ -1,9 +1,13 @@
 [package]
 name = "libflashrom"
 version = "0.1.0"
+description = "Bindings to the libflashrom library."
+readme = "../README"
+homepage = "https://www.flashrom.org/"
+repository = "https://review.coreboot.org/plugins/gitiles/flashrom/"
+license = "GPL-2.0-only"
+categories = ["api-bindings", "hardware-support"]
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 libflashrom-sys = { path = "../libflashrom-sys" }

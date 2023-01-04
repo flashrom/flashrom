@@ -1,6 +1,12 @@
 [package]
 name = "libflashrom-sys"
 version = "0.1.0"
+description = "Native bindings to the libflashrom library."
+readme = "../README"
+homepage = "https://www.flashrom.org/"
+repository = "https://review.coreboot.org/plugins/gitiles/flashrom/"
+license = "GPL-2.0-only"
+categories = ["external-ffi-bindings", "hardware-support"]
 links = "flashrom"
 build = "build.rs"
 edition = "2021"

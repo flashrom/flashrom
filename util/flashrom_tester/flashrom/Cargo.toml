@@ -3,6 +3,8 @@ name = "flashrom"
 version = "1.0.0"
 authors = ["Edward O'Callaghan <quasisec@chromium.org>",
            "Peter Marheine <pmarheine@chromium.org>"]
+description = "Flashrom abstraction for the flashrom_tester tool."
+license = "GPL-2.0-only"
 edition = "2018"
 
 [dependencies]
