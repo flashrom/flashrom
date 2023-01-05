@@ -418,6 +418,97 @@ void write_chip_with_dummyflasher_test_success(void **state)
 	free(newcontents);
 }
 
+void write_nonaligned_region_with_dummyflasher_test_success(void **state)
+{
+	(void) state; /* unused */
+
+	static struct io_mock_fallback_open_state data = {
+		.noc	= 0,
+		.paths	= { NULL },
+	};
+	const struct io_mock chip_io = {
+		.fallback_open_state = &data,
+	};
+
+	struct flashrom_flashctx flashctx = { 0 };
+	struct flashrom_layout *layout;
+	struct flashchip mock_chip = chip_W25Q128_V;
+	const uint32_t mock_chip_size = mock_chip.total_size * KiB;
+	/*
+	 * Dummyflasher is capable to emulate W25Q128.V, so we ask it to do this.
+	 * Nothing to mock, dummy is taking care of this already.
+	 */
+	char *param_dup = strdup("bus=spi,emulate=W25Q128FV");
+
+	/* FIXME: MOCK_CHIP_CONTENT is buggy within setup_chip, it should also
+	 * not be either 0x00 or 0xFF as those are specific values related to
+	 * either a erased chip or zero'ed heap thus ambigous.
+	 */
+#define MOCK_CHIP_SUBREGION_CONTENTS 0xCC
+	/**
+	 * Step 0 - Prepare newcontents as contiguous sample data bytes as follows:
+	 * {MOCK_CHIP_SUBREGION_CONTENTS, [..]}.
+	 */
+	uint8_t *newcontents = calloc(1, mock_chip_size);
+	assert_non_null(newcontents);
+	memset(newcontents, MOCK_CHIP_SUBREGION_CONTENTS, mock_chip_size);
+
+	setup_chip(&flashctx, &layout, &mock_chip, param_dup, &chip_io);
+	/* Expect to verify only the non-aligned write operation within the region. */
+	flashrom_flag_set(&flashctx, FLASHROM_FLAG_VERIFY_AFTER_WRITE, true);
+	flashrom_flag_set(&flashctx, FLASHROM_FLAG_VERIFY_WHOLE_CHIP, false);
+
+	/**
+	 * Prepare mock chip content and release setup_chip() layout for our
+	 * custom ones.
+	 */
+	assert_int_equal(0, flashrom_image_write(&flashctx, newcontents, mock_chip_size, NULL));
+	flashrom_layout_release(layout);
+
+	/**
+	 * Create region smaller than erase granularity of chip.
+	 */
+	printf("Creating custom region layout... ");
+	assert_int_equal(0, flashrom_layout_new(&layout));
+	printf("Adding and including region0... ");
+	assert_int_equal(0, flashrom_layout_add_region(layout, 0, (1 * KiB), "region0"));
+	assert_int_equal(0, flashrom_layout_include_region(layout, "region0"));
+	flashrom_layout_set(&flashctx, layout);
+	printf("Subregion layout configuration done.\n");
+
+	/**
+	 * Step 1 - Modify newcontents as non-contiguous sample data bytes as follows:
+	 * 0xAA 0xAA {MOCK_CHIP_SUBREGION_CONTENTS}, [..]}.
+	 */
+	printf("Subregion chip write op..\n");
+	memset(newcontents, 0xAA, 2);
+	assert_int_equal(0, flashrom_image_write(&flashctx, newcontents, mock_chip_size, NULL));
+	printf("Subregion chip write op done.\n");
+
+	/**
+	 * FIXME: A 'NULL' layout should indicate a default layout however this
+	 * causes a crash for a unknown reason. For now prepare a new default
+	 * layout of the entire chip. flashrom_layout_set(&flashctx, NULL); // use default layout.
+	 */
+	flashrom_layout_release(layout);
+	assert_int_equal(0, flashrom_layout_new(&layout));
+	assert_int_equal(0, flashrom_layout_add_region(layout, 0, mock_chip_size - 1, "entire"));
+	assert_int_equal(0, flashrom_layout_include_region(layout, "entire"));
+	flashrom_layout_set(&flashctx, layout);
+
+	/**
+	 * Expect a verification pass that the previous content within the region, however
+	 * outside the region write length, is untouched.
+	 */
+	printf("Entire chip verify op..\n");
+	assert_int_equal(0, flashrom_image_verify(&flashctx, newcontents, mock_chip_size));
+	printf("Entire chip verify op done.\n");
+
+	teardown(&layout);
+	free(param_dup);
+	free(newcontents);
+}
+
 static size_t verify_chip_fread(void *state, void *buf, size_t size, size_t len, FILE *fp)
 {
 	/*
