@@ -27,19 +27,49 @@ void chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr)
 	flash->mst->par.chip_writeb(flash, val, addr);
 }
 
+/* Little-endian fallback for drivers not supporting 16 bit accesses */
+static void fallback_chip_writew(const struct flashctx *flash, uint16_t val,
+			  chipaddr addr)
+{
+	chip_writeb(flash, val & 0xff, addr);
+	chip_writeb(flash, (val >> 8) & 0xff, addr + 1);
+}
+
 void chip_writew(const struct flashctx *flash, uint16_t val, chipaddr addr)
 {
-	flash->mst->par.chip_writew(flash, val, addr);
+	if (flash->mst->par.chip_writew)
+		flash->mst->par.chip_writew(flash, val, addr);
+	fallback_chip_writew(flash, val, addr);
+}
+
+/* Little-endian fallback for drivers not supporting 32 bit accesses */
+static void fallback_chip_writel(const struct flashctx *flash, uint32_t val,
+			  chipaddr addr)
+{
+	chip_writew(flash, val & 0xffff, addr);
+	chip_writew(flash, (val >> 16) & 0xffff, addr + 2);
 }
 
 void chip_writel(const struct flashctx *flash, uint32_t val, chipaddr addr)
 {
-	flash->mst->par.chip_writel(flash, val, addr);
+	if (flash->mst->par.chip_writel)
+		flash->mst->par.chip_writel(flash, val, addr);
+	fallback_chip_writel(flash, val, addr);
+}
+
+static void fallback_chip_writen(const struct flashctx *flash, const uint8_t *buf, chipaddr addr, size_t len)
+{
+	size_t i;
+	for (i = 0; i < len; i++)
+		chip_writeb(flash, buf[i], addr + i);
+	return;
 }
 
 void chip_writen(const struct flashctx *flash, const uint8_t *buf, chipaddr addr, size_t len)
 {
-	flash->mst->par.chip_writen(flash, buf, addr, len);
+	if (flash->mst->par.chip_writen)
+		flash->mst->par.chip_writen(flash, buf, addr, len);
+	fallback_chip_writen(flash, buf, addr, len);
 }
 
 uint8_t chip_readb(const struct flashctx *flash, const chipaddr addr)
@@ -47,20 +77,53 @@ uint8_t chip_readb(const struct flashctx *flash, const chipaddr addr)
 	return flash->mst->par.chip_readb(flash, addr);
 }
 
+/* Little-endian fallback for drivers not supporting 16 bit accesses */
+static uint16_t fallback_chip_readw(const struct flashctx *flash, const chipaddr addr)
+{
+	uint16_t val;
+	val = chip_readb(flash, addr);
+	val |= chip_readb(flash, addr + 1) << 8;
+	return val;
+}
+
 uint16_t chip_readw(const struct flashctx *flash, const chipaddr addr)
 {
-	return flash->mst->par.chip_readw(flash, addr);
+	if (flash->mst->par.chip_readw)
+		return flash->mst->par.chip_readw(flash, addr);
+	return fallback_chip_readw(flash, addr);
+}
+
+/* Little-endian fallback for drivers not supporting 32 bit accesses */
+static uint32_t fallback_chip_readl(const struct flashctx *flash, const chipaddr addr)
+{
+	uint32_t val;
+	val = chip_readw(flash, addr);
+	val |= chip_readw(flash, addr + 2) << 16;
+	return val;
 }
 
 uint32_t chip_readl(const struct flashctx *flash, const chipaddr addr)
 {
-	return flash->mst->par.chip_readl(flash, addr);
+	if (flash->mst->par.chip_readl)
+		return flash->mst->par.chip_readl(flash, addr);
+	return fallback_chip_readl(flash, addr);
+}
+
+static void fallback_chip_readn(const struct flashctx *flash, uint8_t *buf,
+			 chipaddr addr, size_t len)
+{
+	size_t i;
+	for (i = 0; i < len; i++)
+		buf[i] = chip_readb(flash, addr + i);
+	return;
 }
 
 void chip_readn(const struct flashctx *flash, uint8_t *buf, chipaddr addr,
 		size_t len)
 {
-	flash->mst->par.chip_readn(flash, buf, addr, len);
+	if (flash->mst->par.chip_readn)
+		flash->mst->par.chip_readn(flash, buf, addr, len);
+	fallback_chip_readn(flash, buf, addr, len);
 }
 
 int register_par_master(const struct par_master *mst,
@@ -87,9 +150,7 @@ int register_par_master(const struct par_master *mst,
 		return ERROR_FLASHROM_BUG;
 	}
 
-	if (!mst->chip_writeb || !mst->chip_writew || !mst->chip_writel ||
-	    !mst->chip_writen || !mst->chip_readb || !mst->chip_readw ||
-	    !mst->chip_readl || !mst->chip_readn) {
+	if (!mst->chip_writeb || !mst->chip_readb) {
 		msg_perr("%s called with incomplete master definition. "
 			 "Please report a bug at flashrom@flashrom.org\n",
 			 __func__);

@@ -135,13 +135,7 @@ static uint8_t atavia_chip_readb(const struct flashctx *flash, const chipaddr ad
 static const struct par_master lpc_master_atavia = {
 	.map_flash_region	= atavia_map,
 	.chip_readb	= atavia_chip_readb,
-	.chip_readw	= fallback_chip_readw,
-	.chip_readl	= fallback_chip_readl,
-	.chip_readn	= fallback_chip_readn,
 	.chip_writeb	= atavia_chip_writeb,
-	.chip_writew	= fallback_chip_writew,
-	.chip_writel	= fallback_chip_writel,
-	.chip_writen	= fallback_chip_writen,
 };
 
 static int atavia_init(const struct programmer_cfg *cfg)

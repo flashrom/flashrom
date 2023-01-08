@@ -96,13 +96,7 @@ static int gfxnvidia_shutdown(void *par_data)
 
 static const struct par_master par_master_gfxnvidia = {
 	.chip_readb	= gfxnvidia_chip_readb,
-	.chip_readw	= fallback_chip_readw,
-	.chip_readl	= fallback_chip_readl,
-	.chip_readn	= fallback_chip_readn,
 	.chip_writeb	= gfxnvidia_chip_writeb,
-	.chip_writew	= fallback_chip_writew,
-	.chip_writel	= fallback_chip_writel,
-	.chip_writen	= fallback_chip_writen,
 	.shutdown	= gfxnvidia_shutdown,
 };
 

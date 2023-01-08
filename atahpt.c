@@ -74,13 +74,7 @@ static int atahpt_shutdown(void *par_data)
 
 static const struct par_master par_master_atahpt = {
 	.chip_readb	= atahpt_chip_readb,
-	.chip_readw	= fallback_chip_readw,
-	.chip_readl	= fallback_chip_readl,
-	.chip_readn	= fallback_chip_readn,
 	.chip_writeb	= atahpt_chip_writeb,
-	.chip_writew	= fallback_chip_writew,
-	.chip_writel	= fallback_chip_writel,
-	.chip_writen	= fallback_chip_writen,
 	.shutdown	= atahpt_shutdown,
 };
 

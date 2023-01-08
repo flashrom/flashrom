@@ -442,12 +442,6 @@ struct par_master {
 int register_par_master(const struct par_master *mst, const enum chipbustype buses, void *data);
 
 /* programmer.c */
-void fallback_chip_writew(const struct flashctx *flash, uint16_t val, chipaddr addr);
-void fallback_chip_writel(const struct flashctx *flash, uint32_t val, chipaddr addr);
-void fallback_chip_writen(const struct flashctx *flash, const uint8_t *buf, chipaddr addr, size_t len);
-uint16_t fallback_chip_readw(const struct flashctx *flash, const chipaddr addr);
-uint32_t fallback_chip_readl(const struct flashctx *flash, const chipaddr addr);
-void fallback_chip_readn(const struct flashctx *flash, uint8_t *buf, const chipaddr addr, size_t len);
 struct registered_master {
 	enum chipbustype buses_supported;
 	struct {

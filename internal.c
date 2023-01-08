@@ -116,7 +116,6 @@ static const struct par_master par_master_internal = {
 	.chip_writeb	= internal_chip_writeb,
 	.chip_writew	= internal_chip_writew,
 	.chip_writel	= internal_chip_writel,
-	.chip_writen	= fallback_chip_writen,
 };
 
 static int get_params(const struct programmer_cfg *cfg,

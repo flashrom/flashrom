@@ -594,13 +594,8 @@ static void serprog_delay(const struct flashctx *flash, unsigned int usecs)
 static const struct par_master par_master_serprog = {
 	.map_flash_region	= serprog_map,
 	.chip_readb	= serprog_chip_readb,
-	.chip_readw	= fallback_chip_readw,
-	.chip_readl	= fallback_chip_readl,
 	.chip_readn	= serprog_chip_readn,
 	.chip_writeb	= serprog_chip_writeb,
-	.chip_writew	= fallback_chip_writew,
-	.chip_writel	= fallback_chip_writel,
-	.chip_writen	= fallback_chip_writen,
 	.delay		= serprog_delay,
 };
 
