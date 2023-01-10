@@ -30,6 +30,9 @@ sys-info = "0.9"
 [build-dependencies]
 built = { version = "0.5", features = ["chrono"] }
 
+[dev-dependencies]
+gag = "1"
+
 [features]
 # Features required to build the CLI binary but not the library
 cli = ["chrono", "clap"]
