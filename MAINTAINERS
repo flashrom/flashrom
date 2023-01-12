@@ -98,6 +98,7 @@ F:	i2c_helper_linux.c
 
 WRITEPROTECT
 M:	Nikolai Artemiev <nartemiev@google.com>
+M:	Sergii Dmytruk <sergii.dmytruk@3mdeb.com>
 S:	Supported
 F:	writeprotect*
 F:	include/writeprotect*
