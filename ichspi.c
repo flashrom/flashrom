@@ -1566,6 +1566,7 @@ static void ich_hwseq_get_flash_id(struct flashctx *flash, enum ich_chipset ich_
 	if (!entry) {
 		msg_pwarn("Unable to identify chip, mfg_id: 0x%02"PRIx32", "
 				"model_id: 0x%02"PRIx32"\n", mfg_id, model_id);
+		return;
 	}
 
 	msg_pdbg("Chip identified: %s\n", entry->name);
