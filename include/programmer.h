@@ -387,7 +387,8 @@ static inline int try_mtd(const struct programmer_cfg *cfg)
 /* mcp6x_spi.c */
 int mcp6x_spi_init(int want_spi);
 
-
+/* internal_par.c */
+void internal_par_init(enum chipbustype buses);
 
 /* sb600spi.c */
 int sb600_probe_spi(const struct programmer_cfg *cfg, struct pci_dev *dev);
