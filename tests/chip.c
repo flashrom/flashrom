@@ -37,7 +37,7 @@
 #include "programmer.h"
 
 #define MOCK_CHIP_SIZE (8*MiB)
-#define MOCK_CHIP_CONTENT 0xff
+#define MOCK_CHIP_CONTENT 0xCC /* 0x00 is a zeroed heap and 0xFF is an erased chip. */
 
 static struct {
 	unsigned int unlock_calls; /* how many times unlock function was called */
