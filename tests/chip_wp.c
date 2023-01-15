@@ -106,7 +106,7 @@ void invalid_wp_range_dummyflasher_test_success(void **state)
 {
 	(void) state; /* unused */
 
-	char *param_dup = strdup("bus=spi,emulate=W25Q128FV,hwwp=no");
+	const char *param_dup = "bus=spi,emulate=W25Q128FV,hwwp=no";
 
 	struct flashrom_flashctx flash = { 0 };
 	struct flashchip mock_chip = chip_W25Q128_V;
@@ -123,7 +123,6 @@ void invalid_wp_range_dummyflasher_test_success(void **state)
 	teardown(NULL);
 
 	flashrom_wp_cfg_release(wp_cfg);
-	free(param_dup);
 }
 
 /* Enabling hardware WP with a valid range succeeds */
@@ -131,7 +130,7 @@ void set_wp_range_dummyflasher_test_success(void **state)
 {
 	(void) state; /* unused */
 
-	char *param_dup = strdup("bus=spi,emulate=W25Q128FV,hwwp=no");
+	const char *param_dup = "bus=spi,emulate=W25Q128FV,hwwp=no";
 
 	struct flashrom_flashctx flash = { 0 };
 	struct flashchip mock_chip = chip_W25Q128_V;
@@ -158,7 +157,6 @@ void set_wp_range_dummyflasher_test_success(void **state)
 	teardown(NULL);
 
 	flashrom_wp_cfg_release(wp_cfg);
-	free(param_dup);
 }
 
 /* Enable hardware WP and verify that it can not be unset */
@@ -166,7 +164,7 @@ void switch_wp_mode_dummyflasher_test_success(void **state)
 {
 	(void) state; /* unused */
 
-	char *param_dup = strdup("bus=spi,emulate=W25Q128FV,hwwp=yes");
+	const char *param_dup = "bus=spi,emulate=W25Q128FV,hwwp=yes";
 
 	struct flashrom_flashctx flash = { 0 };
 	struct flashchip mock_chip = chip_W25Q128_V;
@@ -198,7 +196,6 @@ void switch_wp_mode_dummyflasher_test_success(void **state)
 	teardown(NULL);
 
 	flashrom_wp_cfg_release(wp_cfg);
-	free(param_dup);
 }
 
 /* WP state is decoded correctly from status registers */
@@ -220,7 +217,7 @@ void wp_init_from_status_dummyflasher_test_success(void **state)
 	 * Multiplaying that by base unit gives 16 KiB protected region at the
 	 * bottom (start of the chip), which is then complemented.
 	 */
-	char *param_dup = strdup("bus=spi,emulate=W25Q128FV,spi_status=0x41ec");
+	const char *param_dup = "bus=spi,emulate=W25Q128FV,spi_status=0x41ec";
 
 	struct flashrom_flashctx flash = { 0 };
 	struct flashchip mock_chip = chip_W25Q128_V;
@@ -243,7 +240,6 @@ void wp_init_from_status_dummyflasher_test_success(void **state)
 	teardown(NULL);
 
 	flashrom_wp_cfg_release(wp_cfg);
-	free(param_dup);
 }
 
 /* Enabled WP makes full chip erasure fail */
@@ -256,7 +252,7 @@ void full_chip_erase_with_wp_dummyflasher_test_success(void **state)
 	struct flashchip mock_chip = chip_W25Q128_V;
 	struct flashrom_wp_cfg *wp_cfg;
 
-	char *param_dup = strdup("bus=spi,emulate=W25Q128FV,hwwp=yes");
+	const char *param_dup = "bus=spi,emulate=W25Q128FV,hwwp=yes";
 
 	setup_chip(&flash, &layout, &mock_chip, param_dup);
 	/* Layout regions are created by setup_chip(). */
@@ -293,7 +289,6 @@ void full_chip_erase_with_wp_dummyflasher_test_success(void **state)
 	teardown(&layout);
 
 	flashrom_wp_cfg_release(wp_cfg);
-	free(param_dup);
 }
 
 /* Enabled WP does not block erasing unprotected parts of the chip */
@@ -306,7 +301,7 @@ void partial_chip_erase_with_wp_dummyflasher_test_success(void **state)
 	struct flashchip mock_chip = chip_W25Q128_V;
 	struct flashrom_wp_cfg *wp_cfg;
 
-	char *param_dup = strdup("bus=spi,emulate=W25Q128FV,hwwp=yes");
+	const char *param_dup = "bus=spi,emulate=W25Q128FV,hwwp=yes";
 
 	setup_chip(&flash, &layout, &mock_chip, param_dup);
 	/* Layout region is created by setup_chip(). */
@@ -330,5 +325,4 @@ void partial_chip_erase_with_wp_dummyflasher_test_success(void **state)
 	teardown(&layout);
 
 	flashrom_wp_cfg_release(wp_cfg);
-	free(param_dup);
 }

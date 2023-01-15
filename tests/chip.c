@@ -243,7 +243,7 @@ void erase_chip_with_dummyflasher_test_success(void **state)
 	 * Dummyflasher is capable to emulate W25Q128.V, so we ask it to do this.
 	 * Nothing to mock, dummy is taking care of this already.
 	 */
-	char *param_dup = strdup("bus=spi,emulate=W25Q128FV");
+	const char *param_dup = "bus=spi,emulate=W25Q128FV";
 
 	setup_chip(&flashctx, &layout, &mock_chip, param_dup, &chip_io);
 
@@ -252,8 +252,6 @@ void erase_chip_with_dummyflasher_test_success(void **state)
 	printf("Erase chip operation done.\n");
 
 	teardown(&layout);
-
-	free(param_dup);
 }
 
 void read_chip_test_success(void **state)
@@ -311,7 +309,7 @@ void read_chip_with_dummyflasher_test_success(void **state)
 	 * Dummyflasher is capable to emulate W25Q128.V, so we ask it to do this.
 	 * Nothing to mock, dummy is taking care of this already.
 	 */
-	char *param_dup = strdup("bus=spi,emulate=W25Q128FV");
+	const char *param_dup = "bus=spi,emulate=W25Q128FV";
 
 	setup_chip(&flashctx, &layout, &mock_chip, param_dup, &chip_io);
 
@@ -326,7 +324,6 @@ void read_chip_with_dummyflasher_test_success(void **state)
 
 	teardown(&layout);
 
-	free(param_dup);
 	free(buf);
 }
 
@@ -398,7 +395,7 @@ void write_chip_with_dummyflasher_test_success(void **state)
 	 * Dummyflasher is capable to emulate W25Q128.V, so we ask it to do this.
 	 * Nothing to mock, dummy is taking care of this already.
 	 */
-	char *param_dup = strdup("bus=spi,emulate=W25Q128FV");
+	const char *param_dup = "bus=spi,emulate=W25Q128FV";
 
 	setup_chip(&flashctx, &layout, &mock_chip, param_dup, &chip_io);
 
@@ -414,7 +411,6 @@ void write_chip_with_dummyflasher_test_success(void **state)
 
 	teardown(&layout);
 
-	free(param_dup);
 	free(newcontents);
 }
 
@@ -438,7 +434,7 @@ void write_nonaligned_region_with_dummyflasher_test_success(void **state)
 	 * Dummyflasher is capable to emulate W25Q128.V, so we ask it to do this.
 	 * Nothing to mock, dummy is taking care of this already.
 	 */
-	char *param_dup = strdup("bus=spi,emulate=W25Q128FV");
+	const char *param_dup = "bus=spi,emulate=W25Q128FV";
 
 	/* FIXME: MOCK_CHIP_CONTENT is buggy within setup_chip, it should also
 	 * not be either 0x00 or 0xFF as those are specific values related to
@@ -505,7 +501,6 @@ void write_nonaligned_region_with_dummyflasher_test_success(void **state)
 	printf("Entire chip verify op done.\n");
 
 	teardown(&layout);
-	free(param_dup);
 	free(newcontents);
 }
 
@@ -578,7 +573,7 @@ void verify_chip_with_dummyflasher_test_success(void **state)
 	 * Dummyflasher is capable to emulate W25Q128.V, so we ask it to do this.
 	 * Nothing to mock, dummy is taking care of this already.
 	 */
-	char *param_dup = strdup("bus=spi,emulate=W25Q128FV");
+	const char *param_dup = "bus=spi,emulate=W25Q128FV";
 
 	setup_chip(&flashctx, &layout, &mock_chip, param_dup, &verify_chip_io);
 
@@ -605,6 +600,5 @@ void verify_chip_with_dummyflasher_test_success(void **state)
 
 	teardown(&layout);
 
-	free(param_dup);
 	free(newcontents);
 }
