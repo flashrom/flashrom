@@ -45,6 +45,7 @@ void strcat_realloc_test_success(void **state)
 	const char src0[] = "hello";
 	const char src1[] = " world";
 	char *dest = calloc(1, 1);
+	assert_non_null(dest);
 	dest = strcat_realloc(dest, src0);
 	dest = strcat_realloc(dest, src1);
 	assert_string_equal("hello world", dest);

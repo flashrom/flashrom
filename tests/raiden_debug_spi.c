@@ -19,6 +19,7 @@
 static ssize_t raiden_debug_libusb_get_device_list(void *state, libusb_context *ctx, libusb_device ***list)
 {
 	*list = calloc(1, sizeof(**list));
+	assert_non_null(*list);
 
 	/*
 	 * libusb_device is opaque type, it is tossed around between libusb functions but always
@@ -48,10 +49,14 @@ static int raiden_debug_libusb_get_config_descriptor(
 		void *state, libusb_device *dev, uint8_t config_index, struct libusb_config_descriptor **config)
 {
 	*config = calloc(1, sizeof(**config));
+	assert_non_null(*config);
 
 	struct libusb_endpoint_descriptor *tmp_endpoint = calloc(2, sizeof(*tmp_endpoint));
+	assert_non_null(tmp_endpoint);
 	struct libusb_interface_descriptor *tmp_interface_desc = calloc(1, sizeof(*tmp_interface_desc));
+	assert_non_null(tmp_interface_desc);
 	struct libusb_interface *tmp_interface = calloc(1, sizeof(*tmp_interface));
+	assert_non_null(tmp_interface);
 
 	/* in endpoint */
 	tmp_endpoint[0].bEndpointAddress = 0x80;

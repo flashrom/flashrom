@@ -269,6 +269,7 @@ void full_chip_erase_with_wp_dummyflasher_test_success(void **state)
 	 * be optimized away. */
 	unsigned long size = flashrom_flash_getsize(&flash);
 	uint8_t *const contents = malloc(size);
+	assert_non_null(contents);
 	memset(contents, UNERASED_VALUE(&flash), size);
 	assert_int_equal(0, flashrom_image_write(&flash, contents, size, NULL));
 	free(contents);

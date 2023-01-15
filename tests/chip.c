@@ -279,6 +279,7 @@ void read_chip_test_success(void **state)
 	const char *const filename = "read_chip.test";
 	unsigned long size = mock_chip.total_size * 1024;
 	unsigned char *buf = calloc(size, sizeof(unsigned char));
+	assert_non_null(buf);
 
 	printf("Read chip operation started.\n");
 	assert_int_equal(0, flashrom_image_read(&flashctx, buf, size));
@@ -316,6 +317,7 @@ void read_chip_with_dummyflasher_test_success(void **state)
 	const char *const filename = "read_chip.test";
 	unsigned long size = mock_chip.total_size * 1024;
 	unsigned char *buf = calloc(size, sizeof(unsigned char));
+	assert_non_null(buf);
 
 	printf("Read chip operation started.\n");
 	assert_int_equal(0, flashrom_image_read(&flashctx, buf, size));
@@ -365,6 +367,7 @@ void write_chip_test_success(void **state)
 	const char *const filename = "-";
 	unsigned long size = mock_chip.total_size * 1024;
 	uint8_t *const newcontents = malloc(size);
+	assert_non_null(newcontents);
 
 	printf("Write chip operation started.\n");
 	assert_int_equal(0, read_buf_from_file(newcontents, size, filename));
@@ -403,6 +406,7 @@ void write_chip_with_dummyflasher_test_success(void **state)
 	const char *const filename = "-";
 	unsigned long size = mock_chip.total_size * 1024;
 	uint8_t *const newcontents = malloc(size);
+	assert_non_null(newcontents);
 
 	printf("Write chip operation started.\n");
 	assert_int_equal(0, read_buf_from_file(newcontents, size, filename));
@@ -542,6 +546,7 @@ void verify_chip_test_success(void **state)
 	const char *const filename = "-";
 	unsigned long size = mock_chip.total_size * 1024;
 	uint8_t *const newcontents = malloc(size);
+	assert_non_null(newcontents);
 
 	printf("Verify chip operation started.\n");
 	assert_int_equal(0, read_buf_from_file(newcontents, size, filename));
@@ -581,6 +586,7 @@ void verify_chip_with_dummyflasher_test_success(void **state)
 	const char *const filename = "-";
 	unsigned long size = mock_chip.total_size * 1024;
 	uint8_t *const newcontents = malloc(size);
+	assert_non_null(newcontents);
 
 	/*
 	 * Dummyflasher controls chip state and fully emulates reads and writes,
