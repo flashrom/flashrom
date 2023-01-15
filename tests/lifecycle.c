@@ -40,10 +40,8 @@ static void run_lifecycle(void **state, const struct io_mock *io, const struct p
 
 	struct flashrom_programmer *flashprog;
 
-	char *param_dup = param ? strdup(param) : NULL;
-
 	printf("Testing flashrom_programmer_init for programmer=%s ...\n", prog->name);
-	assert_int_equal(0, flashrom_programmer_init(&flashprog, prog->name, param_dup));
+	assert_int_equal(0, flashrom_programmer_init(&flashprog, prog->name, param));
 	printf("... flashrom_programmer_init for programmer=%s successful\n", prog->name);
 
 	if (action)
@@ -52,8 +50,6 @@ static void run_lifecycle(void **state, const struct io_mock *io, const struct p
 	printf("Testing flashrom_programmer_shutdown for programmer=%s ...\n", prog->name);
 	assert_int_equal(0, flashrom_programmer_shutdown(flashprog));
 	printf("... flashrom_programmer_shutdown for programmer=%s successful\n", prog->name);
-
-	free(param_dup);
 
 	io_mock_register(NULL);
 }
@@ -82,10 +78,9 @@ void run_init_error_path(void **state, const struct io_mock *io, const struct pr
 	io_mock_register(io);
 
 	struct flashrom_programmer *flashprog;
-	char *param_dup = strdup(param);
 
-	printf("Testing init error path for programmer=%s with params: %s ...\n", prog->name, param_dup);
-	assert_int_equal(error_code, flashrom_programmer_init(&flashprog, prog->name, param_dup));
+	printf("Testing init error path for programmer=%s with params: %s ...\n", prog->name, param);
+	assert_int_equal(error_code, flashrom_programmer_init(&flashprog, prog->name, param));
 	printf("... init failed with error code %i as expected\n", error_code);
 
 	/*
@@ -98,8 +93,6 @@ void run_init_error_path(void **state, const struct io_mock *io, const struct pr
 	printf("Running programmer shutdown in case anything got registered...\n");
 	assert_int_equal(0, flashrom_programmer_shutdown(flashprog));
 	printf("... completed\n");
-
-	free(param_dup);
 
 	io_mock_register(NULL);
 }
