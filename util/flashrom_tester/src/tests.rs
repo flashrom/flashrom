@@ -97,7 +97,7 @@ pub fn generic<'a, TN: Iterator<Item = &'a str>>(
         &("Get_device_name", get_device_name_test),
         &("Coreboot_ELOG_sanity", elog_sanity_test),
         &("Host_is_ChromeOS", host_is_chrome_test),
-        &("Toggle_WP", wp_toggle_test),
+        &("WP_Region_List", wp_region_list_test),
         &("Erase_and_Write", erase_write_test),
         &("Fail_to_verify", verify_fail_test),
         &("Lock", lock_test),
@@ -160,14 +160,11 @@ fn get_device_name_test(env: &mut TestEnv) -> TestResult {
 /// List the write-protectable regions of flash.
 /// NOTE: This is not strictly a 'test' as it is allowed to fail on some platforms.
 ///       However, we will warn when it does fail.
-fn wp_toggle_test(env: &mut TestEnv) -> TestResult {
+fn wp_region_list_test(env: &mut TestEnv) -> TestResult {
     match env.cmd.wp_list() {
         Ok(list_str) => info!("\n{}", list_str),
         Err(e) => warn!("{}", e),
     };
-    // Fails if unable to set either one
-    env.wp.set_hw(false)?;
-    env.wp.set_sw(false)?;
     Ok(())
 }
 
