@@ -36,7 +36,7 @@ use libflashrom::{Chip, Programmer};
 
 use std::{cell::RefCell, convert::TryFrom, fs, path::Path};
 
-use crate::{FlashChip, FlashromError, ROMWriteSpecifics};
+use crate::{FlashChip, FlashromError};
 
 #[derive(Debug)]
 pub struct FlashromLib {
@@ -127,14 +127,19 @@ impl crate::Flashrom for FlashromLib {
         Ok(())
     }
 
-    fn write_file_with_layout(&self, rws: &ROMWriteSpecifics) -> Result<bool, FlashromError> {
-        let buf = fs::read(rws.layout_file.unwrap()).map_err(|error| error.to_string())?;
+    fn write_from_file_region(
+        &self,
+        path: &Path,
+        region: &str,
+        layout: &Path,
+    ) -> Result<bool, FlashromError> {
+        let buf = fs::read(layout).map_err(|error| error.to_string())?;
         let buf = String::from_utf8(buf).unwrap();
         let mut layout: libflashrom::Layout = buf
             .parse()
             .map_err(|e: Box<dyn std::error::Error>| e.to_string())?;
-        layout.include_region(rws.name_file.unwrap())?;
-        let mut buf = fs::read(rws.write_file.unwrap()).map_err(|error| error.to_string())?;
+        layout.include_region(region)?;
+        let mut buf = fs::read(path).map_err(|error| error.to_string())?;
         self.flashrom
             .borrow_mut()
             .image_write(&mut buf, Some(layout))?;

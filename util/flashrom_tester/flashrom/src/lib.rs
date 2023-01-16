@@ -107,21 +107,12 @@ where
     }
 }
 
-pub struct ROMWriteSpecifics<'a> {
-    pub layout_file: Option<&'a Path>,
-    pub write_file: Option<&'a Path>,
-    pub name_file: Option<&'a str>,
-}
-
 pub trait Flashrom {
     /// Returns the size of the flash in bytes.
     fn get_size(&self) -> Result<i64, FlashromError>;
 
     /// Returns the vendor name and the flash name.
     fn name(&self) -> Result<(String, String), FlashromError>;
-
-    /// Write only a region of the flash.
-    fn write_file_with_layout(&self, rws: &ROMWriteSpecifics) -> Result<bool, FlashromError>;
 
     /// Set write protect status and range.
     fn wp_range(&self, range: (i64, i64), wp_enable: bool) -> Result<bool, FlashromError>;
@@ -147,6 +138,16 @@ pub trait Flashrom {
 
     /// Write the whole flash to the file specified by `path`.
     fn write_from_file(&self, path: &Path) -> Result<(), FlashromError>;
+
+    /// Write only a region of the flash.
+    /// `path` is a file of the size of the whole flash.
+    /// The `region` name corresponds to a region name in the `layout` file, not the flash.
+    fn write_from_file_region(
+        &self,
+        path: &Path,
+        region: &str,
+        layout: &Path,
+    ) -> Result<bool, FlashromError>;
 
     /// Verify the whole flash against the file specified by `path`.
     fn verify_from_file(&self, path: &Path) -> Result<(), FlashromError>;

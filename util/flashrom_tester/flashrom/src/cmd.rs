@@ -33,7 +33,7 @@
 // Software Foundation.
 //
 
-use crate::{FlashChip, FlashromError, ROMWriteSpecifics};
+use crate::{FlashChip, FlashromError};
 
 use std::{
     ffi::{OsStr, OsString},
@@ -44,10 +44,7 @@ use std::{
 #[derive(Default)]
 pub struct FlashromOpt<'a> {
     pub wp_opt: WPOpt,
-    pub io_opt: IOOpt<'a>,
-
-    pub layout: Option<&'a Path>, // -l <file>
-    pub image: Option<&'a str>,   // -i <name>
+    pub io_opt: Option<IOOpt<'a>>,
 
     pub flash_name: bool, // --flash-name
     pub verbose: bool,    // -V
@@ -62,13 +59,28 @@ pub struct WPOpt {
     pub disable: bool,             // --wp-disable
 }
 
-#[derive(Default)]
-pub struct IOOpt<'a> {
-    pub read: Option<&'a Path>,              // -r <file>
-    pub write: Option<&'a Path>,             // -w <file>
-    pub verify: Option<&'a Path>,            // -v <file>
-    pub erase: bool,                         // -E
-    pub region: Option<(&'a str, &'a Path)>, // --image
+pub enum OperationArgs<'a> {
+    /// The file is the whole chip.
+    EntireChip(&'a Path),
+    /// File is the size of the full chip, limited to a single named region.
+    ///
+    /// The required path is the file to use, and the optional path is a layout file
+    /// specifying how to locate regions (if unspecified, flashrom will attempt
+    /// to discover the layout itself).
+    FullFileRegion(&'a str, &'a Path, Option<&'a Path>),
+    /// File is the size of the single named region only.
+    ///
+    /// The required path is the file to use, and the optional path is a layout file
+    /// specifying how to locate regions (if unspecified, flashrom will attempt
+    /// to discover the layout itself).
+    RegionFileRegion(&'a str, &'a Path, Option<&'a Path>), // The file contains only the region
+}
+
+pub enum IOOpt<'a> {
+    Read(OperationArgs<'a>),   // -r <file>
+    Write(OperationArgs<'a>),  // -w <file>
+    Verify(OperationArgs<'a>), // -v <file>
+    Erase,                     // -E
 }
 
 #[derive(PartialEq, Eq, Debug)]
@@ -116,12 +128,7 @@ impl crate::Flashrom for FlashromCmd {
 
     fn name(&self) -> Result<(String, String), FlashromError> {
         let opts = FlashromOpt {
-            io_opt: IOOpt {
-                ..Default::default()
-            },
-
             flash_name: true,
-
             ..Default::default()
         };
 
@@ -132,16 +139,18 @@ impl crate::Flashrom for FlashromCmd {
         }
     }
 
-    fn write_file_with_layout(&self, rws: &ROMWriteSpecifics) -> Result<bool, FlashromError> {
+    fn write_from_file_region(
+        &self,
+        path: &Path,
+        region: &str,
+        layout: &Path,
+    ) -> Result<bool, FlashromError> {
         let opts = FlashromOpt {
-            io_opt: IOOpt {
-                write: rws.write_file,
-                ..Default::default()
-            },
-
-            layout: rws.layout_file,
-            image: rws.name_file,
-
+            io_opt: Some(IOOpt::Write(OperationArgs::FullFileRegion(
+                region,
+                path,
+                Some(layout),
+            ))),
             ..Default::default()
         };
 
@@ -220,10 +229,7 @@ impl crate::Flashrom for FlashromCmd {
 
     fn read_into_file(&self, path: &Path) -> Result<(), FlashromError> {
         let opts = FlashromOpt {
-            io_opt: IOOpt {
-                read: Some(path),
-                ..Default::default()
-            },
+            io_opt: Some(IOOpt::Read(OperationArgs::EntireChip(path))),
             ..Default::default()
         };
 
@@ -233,10 +239,9 @@ impl crate::Flashrom for FlashromCmd {
 
     fn read_region_into_file(&self, path: &Path, region: &str) -> Result<(), FlashromError> {
         let opts = FlashromOpt {
-            io_opt: IOOpt {
-                region: Some((region, path)),
-                ..Default::default()
-            },
+            io_opt: Some(IOOpt::Read(OperationArgs::RegionFileRegion(
+                region, path, None,
+            ))),
             ..Default::default()
         };
 
@@ -246,10 +251,7 @@ impl crate::Flashrom for FlashromCmd {
 
     fn write_from_file(&self, path: &Path) -> Result<(), FlashromError> {
         let opts = FlashromOpt {
-            io_opt: IOOpt {
-                write: Some(path),
-                ..Default::default()
-            },
+            io_opt: Some(IOOpt::Write(OperationArgs::EntireChip(path))),
             ..Default::default()
         };
 
@@ -259,10 +261,7 @@ impl crate::Flashrom for FlashromCmd {
 
     fn verify_from_file(&self, path: &Path) -> Result<(), FlashromError> {
         let opts = FlashromOpt {
-            io_opt: IOOpt {
-                verify: Some(path),
-                ..Default::default()
-            },
+            io_opt: Some(IOOpt::Verify(OperationArgs::EntireChip(path))),
             ..Default::default()
         };
 
@@ -272,10 +271,7 @@ impl crate::Flashrom for FlashromCmd {
 
     fn erase(&self) -> Result<(), FlashromError> {
         let opts = FlashromOpt {
-            io_opt: IOOpt {
-                erase: true,
-                ..Default::default()
-            },
+            io_opt: Some(IOOpt::Erase),
             ..Default::default()
         };
 
@@ -312,37 +308,49 @@ fn flashrom_decode_opts(opts: FlashromOpt) -> Vec<OsString> {
     }
 
     // io_opt
-    if let Some((region, path)) = opts.io_opt.region {
-        params.push("--image".into());
-        let mut p = OsString::new();
-        p.push(region);
-        p.push(":");
-        p.push(path);
-        params.push(p);
-        params.push("-r".into());
-    } else if opts.io_opt.read.is_some() {
-        params.push("-r".into());
-        params.push(opts.io_opt.read.unwrap().into());
-    } else if opts.io_opt.write.is_some() {
-        params.push("-w".into());
-        params.push(opts.io_opt.write.unwrap().into());
-    } else if opts.io_opt.verify.is_some() {
-        params.push("-v".into());
-        params.push(opts.io_opt.verify.unwrap().into());
-    } else if opts.io_opt.erase {
-        params.push("-E".into());
+    fn add_operation_args(opts: OperationArgs, params: &mut Vec<OsString>) {
+        let (file, region, layout) = match opts {
+            OperationArgs::EntireChip(file) => (Some(file), None, None),
+            OperationArgs::FullFileRegion(region, file, layout) => {
+                (Some(file), Some(region.to_string()), layout)
+            }
+            OperationArgs::RegionFileRegion(region, file, layout) => (
+                None,
+                Some(format!("{region}:{}", file.to_string_lossy())),
+                layout,
+            ),
+        };
+        if let Some(file) = file {
+            params.push(file.into())
+        }
+        if let Some(region) = region {
+            params.push("--include".into());
+            params.push(region.into())
+        }
+        if let Some(layout) = layout {
+            params.push("--layout".into());
+            params.push(layout.into())
+        }
+    }
+    if let Some(io) = opts.io_opt {
+        match io {
+            IOOpt::Read(args) => {
+                params.push("-r".into());
+                add_operation_args(args, &mut params);
+            }
+            IOOpt::Write(args) => {
+                params.push("-w".into());
+                add_operation_args(args, &mut params);
+            }
+            IOOpt::Verify(args) => {
+                params.push("-v".into());
+                add_operation_args(args, &mut params);
+            }
+            IOOpt::Erase => params.push("-E".into()),
+        }
     }
 
     // misc_opt
-    if opts.layout.is_some() {
-        params.push("-l".into());
-        params.push(opts.layout.unwrap().into());
-    }
-    if opts.image.is_some() {
-        params.push("-i".into());
-        params.push(opts.image.unwrap().into());
-    }
-
     if opts.flash_name {
         params.push("--flash-name".into());
     }
@@ -474,7 +482,7 @@ mod tests {
         fn test_io_opt(opts: IOOpt, expected: &[&str]) {
             assert_eq!(
                 flashrom_decode_opts(FlashromOpt {
-                    io_opt: opts,
+                    io_opt: Some(opts),
                     ..Default::default()
                 }),
                 expected
@@ -482,53 +490,40 @@ mod tests {
         }
 
         test_io_opt(
-            IOOpt {
-                read: Some(Path::new("foo.bin")),
-                ..Default::default()
-            },
+            IOOpt::Read(crate::cmd::OperationArgs::EntireChip(Path::new("foo.bin"))),
             &["-r", "foo.bin"],
         );
         test_io_opt(
-            IOOpt {
-                write: Some(Path::new("bar.bin")),
-                ..Default::default()
-            },
+            IOOpt::Write(crate::cmd::OperationArgs::EntireChip(Path::new("bar.bin"))),
             &["-w", "bar.bin"],
         );
         test_io_opt(
-            IOOpt {
-                verify: Some(Path::new("/tmp/baz.bin")),
-                ..Default::default()
-            },
-            &["-v", "/tmp/baz.bin"],
+            IOOpt::Verify(crate::cmd::OperationArgs::EntireChip(Path::new("baz.bin"))),
+            &["-v", "baz.bin"],
         );
+        test_io_opt(IOOpt::Erase, &["-E"]);
         test_io_opt(
-            IOOpt {
-                erase: true,
-                ..Default::default()
-            },
-            &["-E"],
+            IOOpt::Read(crate::cmd::OperationArgs::FullFileRegion(
+                "RO",
+                Path::new("foo.bin"),
+                Some(Path::new("baz.bin")),
+            )),
+            &["-r", "foo.bin", "--include", "RO", "--layout", "baz.bin"],
         );
+
+        test_io_opt(
+            IOOpt::Read(crate::cmd::OperationArgs::RegionFileRegion(
+                "foo",
+                Path::new("bar.bin"),
+                None,
+            )),
+            &["-r", "--include", "foo:bar.bin"],
+        )
     }
 
     #[test]
     fn decode_misc() {
         //use Default::default;
-        assert_eq!(
-            flashrom_decode_opts(FlashromOpt {
-                layout: Some(Path::new("TestLayout")),
-                ..Default::default()
-            }),
-            &["-l", "TestLayout"]
-        );
-
-        assert_eq!(
-            flashrom_decode_opts(FlashromOpt {
-                image: Some("TestImage"),
-                ..Default::default()
-            }),
-            &["-i", "TestImage"]
-        );
 
         assert_eq!(
             flashrom_decode_opts(FlashromOpt {
