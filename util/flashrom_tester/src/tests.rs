@@ -150,16 +150,17 @@ pub fn generic<'a, TN: Iterator<Item = &'a str>>(
     Ok(())
 }
 
+/// Query the programmer and chip name.
+/// Success means we got something back, which is good enough.
 fn get_device_name_test(env: &mut TestEnv) -> TestResult {
-    // Success means we got something back, which is good enough.
     env.cmd.name()?;
     Ok(())
 }
 
+/// List the write-protectable regions of flash.
+/// NOTE: This is not strictly a 'test' as it is allowed to fail on some platforms.
+///       However, we will warn when it does fail.
 fn wp_toggle_test(env: &mut TestEnv) -> TestResult {
-    // NOTE: This is not strictly a 'test' as it is allowed to fail on some platforms.
-    //       However, we will warn when it does fail.
-    // List the write-protected regions of flash.
     match env.cmd.wp_list() {
         Ok(list_str) => info!("\n{}", list_str),
         Err(e) => warn!("{}", e),
@@ -170,6 +171,7 @@ fn wp_toggle_test(env: &mut TestEnv) -> TestResult {
     Ok(())
 }
 
+/// Verify that enabling hardware and software write protect prevents chip erase.
 fn erase_write_test(env: &mut TestEnv) -> TestResult {
     if !env.is_golden() {
         info!("Memory has been modified; reflashing to ensure erasure can be detected");
@@ -196,6 +198,7 @@ fn erase_write_test(env: &mut TestEnv) -> TestResult {
     Ok(())
 }
 
+/// Verify that enabling hardware write protect prevents disabling software write protect.
 fn lock_test(env: &mut TestEnv) -> TestResult {
     if !env.wp.can_control_hw_wp() {
         return Err("Lock test requires ability to control hardware write protect".into());
@@ -214,10 +217,10 @@ fn lock_test(env: &mut TestEnv) -> TestResult {
     Ok(())
 }
 
+/// Check that the elog contains *something*, as an indication that Coreboot
+/// is actually able to write to the Flash. This only makes sense for chips
+/// running Coreboot, which we assume is just host.
 fn elog_sanity_test(env: &mut TestEnv) -> TestResult {
-    // Check that the elog contains *something*, as an indication that Coreboot
-    // is actually able to write to the Flash. This only makes sense for chips
-    // running Coreboot, which we assume is just host.
     if env.chip_type() != FlashChip::HOST {
         info!("Skipping ELOG sanity check for non-host chip");
         return Ok(());
@@ -241,6 +244,7 @@ fn elog_sanity_test(env: &mut TestEnv) -> TestResult {
     Ok(())
 }
 
+/// Check that we are running ChromiumOS.
 fn host_is_chrome_test(_env: &mut TestEnv) -> TestResult {
     let release_info = if let Ok(f) = File::open("/etc/os-release") {
         let buf = std::io::BufReader::new(f);
@@ -266,6 +270,7 @@ fn host_is_chrome_test(_env: &mut TestEnv) -> TestResult {
     }
 }
 
+/// Verify that software write protect for a range protects only the requested range.
 fn partial_lock_test(section: LayoutNames) -> impl Fn(&mut TestEnv) -> TestResult {
     move |env: &mut TestEnv| {
         // Need a clean image for verification
@@ -310,6 +315,7 @@ fn partial_lock_test(section: LayoutNames) -> impl Fn(&mut TestEnv) -> TestResul
     }
 }
 
+/// Check that flashrom 'verify' will fail if the provided data does not match the chip data.
 fn verify_fail_test(env: &mut TestEnv) -> TestResult {
     // Comparing the flash contents to random data says they're not the same.
     match env.verify(env.random_data_file()) {
