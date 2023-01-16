@@ -100,7 +100,7 @@ pub fn generic<'a, TN: Iterator<Item = &'a str>>(
         &("WP_Region_List", wp_region_list_test),
         &("Erase_and_Write", erase_write_test),
         &("Fail_to_verify", verify_fail_test),
-        &("Lock", lock_test),
+        &("HWWP_Locks_SWWP", hwwp_locks_swwp_test),
         &("Lock_top_quad", partial_lock_test(LayoutNames::TopQuad)),
         &(
             "Lock_bottom_quad",
@@ -196,7 +196,7 @@ fn erase_write_test(env: &mut TestEnv) -> TestResult {
 }
 
 /// Verify that enabling hardware write protect prevents disabling software write protect.
-fn lock_test(env: &mut TestEnv) -> TestResult {
+fn hwwp_locks_swwp_test(env: &mut TestEnv) -> TestResult {
     if !env.wp.can_control_hw_wp() {
         return Err("Lock test requires ability to control hardware write protect".into());
     }
