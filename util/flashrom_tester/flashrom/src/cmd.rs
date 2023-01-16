@@ -269,6 +269,18 @@ impl crate::Flashrom for FlashromCmd {
         Ok(())
     }
 
+    fn verify_region_from_file(&self, path: &Path, region: &str) -> Result<(), FlashromError> {
+        let opts = FlashromOpt {
+            io_opt: Some(IOOpt::Verify(OperationArgs::RegionFileRegion(
+                region, path, None,
+            ))),
+            ..Default::default()
+        };
+
+        self.dispatch(opts, "verify_region_from_file")?;
+        Ok(())
+    }
+
     fn erase(&self) -> Result<(), FlashromError> {
         let opts = FlashromOpt {
             io_opt: Some(IOOpt::Erase),

@@ -133,7 +133,8 @@ pub trait Flashrom {
     /// Read the whole flash to the file specified by `path`.
     fn read_into_file(&self, path: &Path) -> Result<(), FlashromError>;
 
-    /// Read only a region of the flash.
+    /// Read only a region of the flash into the file specified by `path`. Note
+    /// the first byte written to the file is the first byte from the region.
     fn read_region_into_file(&self, path: &Path, region: &str) -> Result<(), FlashromError>;
 
     /// Write the whole flash to the file specified by `path`.
@@ -151,6 +152,10 @@ pub trait Flashrom {
 
     /// Verify the whole flash against the file specified by `path`.
     fn verify_from_file(&self, path: &Path) -> Result<(), FlashromError>;
+
+    /// Verify only the region against the file specified by `path`.
+    /// Note the first byte in the file is matched against the first byte of the region.
+    fn verify_region_from_file(&self, path: &Path, region: &str) -> Result<(), FlashromError>;
 
     /// Erase the whole flash.
     fn erase(&self) -> Result<(), FlashromError>;

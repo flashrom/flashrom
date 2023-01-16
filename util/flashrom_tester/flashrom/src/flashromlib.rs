@@ -152,6 +152,27 @@ impl crate::Flashrom for FlashromLib {
         Ok(())
     }
 
+    fn verify_region_from_file(&self, path: &Path, region: &str) -> Result<(), FlashromError> {
+        let mut layout = self.flashrom.borrow_mut().layout_read_fmap_from_rom()?;
+        layout.include_region(region)?;
+        let range = layout.get_region_range(region)?;
+        let region_data = fs::read(path).map_err(|error| error.to_string())?;
+        if region_data.len() != range.len() {
+            return Err(format!(
+                "verify region range ({}) does not match provided file size ({})",
+                range.len(),
+                region_data.len()
+            )
+            .into());
+        }
+        let mut buf = vec![0; self.get_size()? as usize];
+        buf[range].copy_from_slice(&region_data);
+        self.flashrom
+            .borrow_mut()
+            .image_verify(&buf, Some(layout))?;
+        Ok(())
+    }
+
     fn erase(&self) -> Result<(), FlashromError> {
         self.flashrom.borrow_mut().erase()?;
         Ok(())

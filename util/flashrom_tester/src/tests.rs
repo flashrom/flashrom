@@ -44,6 +44,7 @@ use std::io::BufRead;
 use std::sync::atomic::AtomicBool;
 
 const ELOG_FILE: &str = "/tmp/elog.file";
+const FW_MAIN_B_PATH: &str = "/tmp/FW_MAIN_B.bin";
 
 /// Iterate over tests, yielding only those tests with names matching filter_names.
 ///
@@ -312,7 +313,16 @@ fn partial_lock_test(section: LayoutNames) -> impl Fn(&mut TestEnv) -> TestResul
 
 /// Check that flashrom 'verify' will fail if the provided data does not match the chip data.
 fn verify_fail_test(env: &mut TestEnv) -> TestResult {
-    // Comparing the flash contents to random data says they're not the same.
+    env.ensure_golden()?;
+    // Verify that verify is Ok when the data matches. We verify only a region
+    // and not the whole chip because coprocessors or firmware may have written
+    // some data in other regions.
+    env.cmd
+        .read_region_into_file(FW_MAIN_B_PATH.as_ref(), "FW_MAIN_B")?;
+    env.cmd
+        .verify_region_from_file(FW_MAIN_B_PATH.as_ref(), "FW_MAIN_B")?;
+
+    // Verify that verify is false when the data does not match
     match env.verify(env.random_data_file()) {
         Ok(_) => Err("Verification says flash is full of random data".into()),
         Err(_) => Ok(()),
