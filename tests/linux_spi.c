@@ -23,14 +23,14 @@ static int linux_spi_ioctl(void *state, int fd, unsigned long request, va_list a
 
 		/* First message has write array and write count */
 		unsigned int writecnt = msg[0].len;
-		unsigned char *writearr = (unsigned char *)msg[0].tx_buf;
+		unsigned char *writearr = (unsigned char *)(uintptr_t)msg[0].tx_buf;
 		/* Second message has read array and read count */
 		unsigned int readcnt = msg[1].len;
 
 		/* Detect probing */
 		if (writecnt == 1 && writearr[0] == JEDEC_RDID && readcnt == 3) {
 			/* We need to populate read array. */
-			unsigned char *readarr = (unsigned char *)msg[1].rx_buf;
+			unsigned char *readarr = (unsigned char *)(uintptr_t)msg[1].rx_buf;
 			readarr[0] = 0xEF; /* WINBOND_NEX_ID */
 			readarr[1] = 0x40; /* WINBOND_NEX_W25Q128_V left byte */
 			readarr[2] = 0x18; /* WINBOND_NEX_W25Q128_V right byte */
