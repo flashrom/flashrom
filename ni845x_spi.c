@@ -135,11 +135,11 @@ static void ni845x_report_warning(const char *const func, const int32 err)
  * @param opened_handle the opened handle from the ni845xOpen
  * @return the 0 on successful competition, negative error code on failure positive code on warning
  */
-static int32 ni845x_spi_open_resource(char *resource_handle, uInt32 *opened_handle)
+static int32 ni845x_spi_open_resource(char *resource_handle, uInt32 *opened_handle, enum USB845x_type pid)
 {
 	// NI-845x driver loads the FPGA bitfile at the first time
 	// which can take couple seconds
-	if (device_pid == USB8452)
+	if (pid == USB8452)
 		msg_pwarn("Opening NI-8452, this might take a while for the first time\n");
 
 	int32 tmp = ni845xOpen(resource_handle, opened_handle);
@@ -155,14 +155,14 @@ static int32 ni845x_spi_open_resource(char *resource_handle, uInt32 *opened_hand
  * @param serial a null terminated string containing the serial number of the specific device or NULL
  * @return the 0 on successful completion, negative error code on failure
  */
-static int ni845x_spi_open(const char *serial, uInt32 *return_handle)
+static int ni845x_spi_open(const char *serial, uInt32 *return_handle, enum USB845x_type *pid)
 {
 	char resource_name[256];
 	NiHandle device_find_handle;
 	uInt32 found_devices_count = 0;
 	int32 tmp = 0;
 
-	unsigned int vid, pid, usb_bus;
+	unsigned int vid, dev_pid, usb_bus;
 	unsigned long int serial_as_number;
 	int ret = -1;
 
@@ -182,7 +182,7 @@ static int ni845x_spi_open(const char *serial, uInt32 *return_handle)
 		// and the DEADBEEF is the serial of the device
 		if (sscanf(resource_name,
 			   "USB%u::0x%04X::0x%04X::%08lX::RAW",
-			   &usb_bus, &vid, &pid, &serial_as_number) != 4) {
+			   &usb_bus, &vid, &dev_pid, &serial_as_number) != 4) {
 			// malformed resource string detected
 			msg_pwarn("Warning: Unable to parse the %s NI-845x resource string.\n",
 				  resource_name);
@@ -190,7 +190,7 @@ static int ni845x_spi_open(const char *serial, uInt32 *return_handle)
 			continue;
 		}
 
-		device_pid = pid;
+		*pid = dev_pid;
 
 		if (!serial || strtoul(serial, NULL, 16) == serial_as_number)
 			break;
@@ -205,7 +205,7 @@ static int ni845x_spi_open(const char *serial, uInt32 *return_handle)
 	}
 
 	if (found_devices_count)
-		ret = ni845x_spi_open_resource(resource_name, return_handle);
+		ret = ni845x_spi_open_resource(resource_name, return_handle, *pid);
 
 _close_ret:
 	tmp = ni845xCloseFindDeviceHandle(device_find_handle);
@@ -227,14 +227,16 @@ _close_ret:
  */
 static int usb8452_spi_set_io_voltage(uint16_t requested_io_voltage_mV,
 				      uint16_t *set_io_voltage_mV,
-				      enum voltage_coerce_mode coerce_mode)
+				      enum voltage_coerce_mode coerce_mode,
+				      enum USB845x_type pid,
+				      uInt32 device_handle)
 {
 	unsigned int i = 0;
 	uint8_t selected_voltage_100mV = 0;
 	uint8_t requested_io_voltage_100mV = 0;
 
-	if (device_pid == USB8451) {
-		io_voltage_in_mV = 3300;
+	if (pid == USB8451) {
+		*set_io_voltage_mV = 3300;
 		msg_pwarn("USB-8451 does not support the changing of the SPI IO voltage\n");
 		return 0;
 	}
@@ -307,7 +309,7 @@ static int usb8452_spi_set_io_voltage(uint16_t requested_io_voltage_mV,
  * @param SCK_freq_in_KHz SCK speed in KHz
  * @return
  */
-static int ni845x_spi_set_speed(uint16_t SCK_freq_in_KHz)
+static int ni845x_spi_set_speed(NiHandle configuration_handle, uint16_t SCK_freq_in_KHz)
 {
 	int32 i = ni845xSpiConfigurationSetClockRate(configuration_handle, SCK_freq_in_KHz);
 	uInt16 clock_freq_read_KHz;
@@ -452,7 +454,9 @@ static int ni845x_spi_io_voltage_check(const struct flashctx *flash)
 					 io_voltage_in_mV / 1000.0f);
 				if (usb8452_spi_set_io_voltage(flash->chip->voltage.max,
 							       &io_voltage_in_mV,
-							       USE_LOWER)) {
+							       USE_LOWER,
+							       device_pid,
+							       device_handle)) {
 					msg_perr("Unable to lower the IO voltage below "
 						 "the chip's maximum voltage\n");
 					return -1;
@@ -475,7 +479,9 @@ static int ni845x_spi_io_voltage_check(const struct flashctx *flash)
 					  io_voltage_in_mV / 1000.0f);
 				if (usb8452_spi_set_io_voltage(flash->chip->voltage.min,
 							       &io_voltage_in_mV,
-							       USE_HIGHER)) {
+							       USE_HIGHER,
+							       device_pid,
+							       device_handle)) {
 					msg_pwarn("Unable to raise the IO voltage above the chip's "
 						  "minimum voltage\n"
 						  "Flash operations might be unreliable.\n");
@@ -596,7 +602,7 @@ static int ni845x_spi_init(const struct programmer_cfg *cfg)
 		ignore_io_voltage_limits = true;
 	}
 
-	if (ni845x_spi_open(serial_number, &device_handle)) {
+	if (ni845x_spi_open(serial_number, &device_handle, &device_pid)) {
 		if (serial_number) {
 			msg_pinfo("Could not find any connected NI USB-8451/8452 with serialnumber: %s!\n",
 				  serial_number);
@@ -620,12 +626,12 @@ static int ni845x_spi_init(const struct programmer_cfg *cfg)
 		return 1;
 	}
 
-	if (usb8452_spi_set_io_voltage(requested_io_voltage_mV, &io_voltage_in_mV, USE_LOWER) < 0) {
+	if (usb8452_spi_set_io_voltage(requested_io_voltage_mV, &io_voltage_in_mV, USE_LOWER, device_pid, device_handle) < 0) {
 		ni845x_spi_shutdown(NULL);
 		return 1;	// no alert here usb8452_spi_set_io_voltage already printed that
 	}
 
-	if (ni845x_spi_set_speed(spi_speed_KHz)) {
+	if (ni845x_spi_set_speed(configuration_handle, spi_speed_KHz)) {
 		msg_perr("Unable to set SPI speed\n");
 		ni845x_spi_shutdown(NULL);
 		return 1;
