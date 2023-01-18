@@ -2152,6 +2152,7 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0xa30d, B_S,    NT,  "Intel", "HM370",				enable_flash_pch300},
 	{0x8086, 0xa30e, B_S,    DEP, "Intel", "CM246",				enable_flash_pch300},
 	{0x8086, 0x3482, B_S,    DEP, "Intel", "Ice Lake U Premium",		enable_flash_pch300},
+	{0x8086, 0xa3c8, B_S,    OK,  "Intel", "B460",				enable_flash_pch400},
 	{0x8086, 0x0684, B_S,    NT,  "Intel", "H470",				enable_flash_pch400},
 	{0x8086, 0x0685, B_S,    NT,  "Intel", "Z490",				enable_flash_pch400},
 	{0x8086, 0x0687, B_S,    NT,  "Intel", "Q470",				enable_flash_pch400},
