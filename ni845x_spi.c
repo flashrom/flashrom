@@ -47,13 +47,14 @@ enum voltage_coerce_mode {
 	USE_HIGHER
 };
 
-static unsigned char CS_number;	// use chip select 0 as default
-static enum USB845x_type device_pid = Unknown_NI845X_Device;
-
-static uInt32 device_handle;
-static NiHandle configuration_handle;
-static uint16_t io_voltage_in_mV;
-static bool ignore_io_voltage_limits;
+struct ni845x_spi_data {
+	unsigned char CS_number; // use chip select 0 as default
+	enum USB845x_type device_pid;
+	uInt32 device_handle;
+	NiHandle configuration_handle;
+	uint16_t io_voltage_in_mV;
+	bool ignore_io_voltage_limits;
+};
 
 // USB-8452 supported voltages, keep this array in ascending order!
 static const uint8_t usb8452_io_voltages_in_100mV[5] = {
@@ -394,98 +395,104 @@ static void ni845x_spi_print_available_devices(void)
 
 static int ni845x_spi_shutdown(void *data)
 {
+	struct ni845x_spi_data *ni_data = data;
 	int32 ret = 0;
 
-	if (configuration_handle != 0) {
-		ret = ni845xSpiConfigurationClose(configuration_handle);
+	if (ni_data->configuration_handle != 0) {
+		ret = ni845xSpiConfigurationClose(ni_data->configuration_handle);
 		if (ret)
 			ni845x_report_error("ni845xSpiConfigurationClose", ret);
 	}
 
-	if (device_handle != 0) {
-		ret = ni845xClose(device_handle);
+	if (ni_data->device_handle != 0) {
+		ret = ni845xClose(ni_data->device_handle);
 		if (ret)
 			ni845x_report_error("ni845xClose", ret);
 	}
-	return 0;
+
+	free(data);
+	return ret;
 }
 
 static void ni845x_warn_over_max_voltage(const struct flashctx *flash)
 {
-	if (device_pid == USB8451) {
+	const struct ni845x_spi_data *data = flash->mst->spi.data;
+
+	if (data->device_pid == USB8451) {
 		msg_pwarn("The %s chip maximum voltage is %.1fV, while the USB-8451 "
 			  "IO voltage levels are 3.3V.\n"
 			  "Ignoring this because ignore_io_voltage_limits parameter is set.\n",
 			 flash->chip->name,
 			 flash->chip->voltage.max / 1000.0f);
-	} else if (device_pid == USB8452) {
+	} else if (data->device_pid == USB8452) {
 		msg_pwarn("The %s chip maximum voltage is %.1fV, while the USB-8452 "
 			  "IO voltage is set to %.1fV.\n"
 			  "Ignoring this because ignore_io_voltage_limits parameter is set.\n",
 			  flash->chip->name,
 			  flash->chip->voltage.max / 1000.0f,
-			  io_voltage_in_mV / 1000.0f);
+			  data->io_voltage_in_mV / 1000.0f);
 	}
 }
 
 static int ni845x_spi_io_voltage_check(const struct flashctx *flash)
 {
+	struct ni845x_spi_data *data = flash->mst->spi.data;
 	static bool first_transmit = true;
 
 	if (first_transmit && flash->chip) {
 		first_transmit = false;
-		if (io_voltage_in_mV > flash->chip->voltage.max) {
-			if (ignore_io_voltage_limits) {
+		if (data->io_voltage_in_mV > flash->chip->voltage.max) {
+			if (data->ignore_io_voltage_limits) {
 				ni845x_warn_over_max_voltage(flash);
 				return 0;
 			}
 
-			if (device_pid == USB8451) {
+			if (data->device_pid == USB8451) {
 				msg_perr("The %s chip maximum voltage is %.1fV, while the USB-8451 "
 					 "IO voltage levels are 3.3V.\nAborting operations\n",
 					 flash->chip->name,
 					 flash->chip->voltage.max / 1000.0f);
 				return -1;
-			} else if (device_pid == USB8452) {
+			} else if (data->device_pid == USB8452) {
 				msg_perr("Lowering IO voltage because the %s chip maximum voltage is %.1fV, "
 					 "(%.1fV was set)\n",
 					 flash->chip->name,
 					 flash->chip->voltage.max / 1000.0f,
-					 io_voltage_in_mV / 1000.0f);
+					 data->io_voltage_in_mV / 1000.0f);
 				if (usb8452_spi_set_io_voltage(flash->chip->voltage.max,
-							       &io_voltage_in_mV,
+							       &data->io_voltage_in_mV,
 							       USE_LOWER,
-							       device_pid,
-							       device_handle)) {
+							       data->device_pid,
+							       data->device_handle)) {
 					msg_perr("Unable to lower the IO voltage below "
 						 "the chip's maximum voltage\n");
 					return -1;
 				}
 			}
-		} else if (io_voltage_in_mV < flash->chip->voltage.min) {
-			if (device_pid == USB8451) {
+		} else if (data->io_voltage_in_mV < flash->chip->voltage.min) {
+			if (data->device_pid == USB8451) {
 				msg_pwarn("Flash operations might be unreliable, because the %s chip's "
 					  "minimum voltage is %.1fV, while the USB-8451's "
 					  "IO voltage levels are 3.3V.\n",
 					  flash->chip->name,
 					  flash->chip->voltage.min / 1000.0f);
-				return ignore_io_voltage_limits ? 0 : -1;
-			} else if (device_pid == USB8452) {
+				return data->ignore_io_voltage_limits ? 0 : -1;
+			} else if (data->device_pid == USB8452) {
 				msg_pwarn("Raising the IO voltage because the %s chip's "
 					  "minimum voltage is %.1fV, "
 					  "(%.1fV was set)\n",
 					  flash->chip->name,
 					  flash->chip->voltage.min / 1000.0f,
-					  io_voltage_in_mV / 1000.0f);
+					  data->io_voltage_in_mV / 1000.0f);
 				if (usb8452_spi_set_io_voltage(flash->chip->voltage.min,
-							       &io_voltage_in_mV,
+							       &data->io_voltage_in_mV,
 							       USE_HIGHER,
-							       device_pid,
-							       device_handle)) {
+							       data->device_pid,
+							       data->device_handle)) {
 					msg_pwarn("Unable to raise the IO voltage above the chip's "
 						  "minimum voltage\n"
 						  "Flash operations might be unreliable.\n");
-					return ignore_io_voltage_limits ? 0 : -1;
+					return data->ignore_io_voltage_limits ? 0 : -1;
 				}
 			}
 		}
@@ -499,6 +506,7 @@ static int ni845x_spi_transmit(const struct flashctx *flash,
 			       const unsigned char *write_arr,
 			       unsigned char *read_arr)
 {
+	const struct ni845x_spi_data *data = flash->mst->spi.data;
 	uInt32 read_size = 0;
 	uInt8 *transfer_buffer = NULL;
 	int32 ret = 0;
@@ -514,8 +522,8 @@ static int ni845x_spi_transmit(const struct flashctx *flash,
 
 	memcpy(transfer_buffer, write_arr, write_cnt);
 
-	ret = ni845xSpiWriteRead(device_handle,
-				 configuration_handle,
+	ret = ni845xSpiWriteRead(data->device_handle,
+				 data->configuration_handle,
 				 (write_cnt + read_cnt), transfer_buffer, &read_size, transfer_buffer);
 	if (ret < 0) {
 		// Negative specifies an error, meaning the function did not perform the expected behavior.
@@ -560,6 +568,10 @@ static int ni845x_spi_init(const struct programmer_cfg *cfg)
 	int spi_speed_KHz = 1000;		// selecting 1 MHz SCK is a good bet
 	char *serial_number = NULL;		// by default open the first connected device
 	char *ignore_io_voltage_limits_str = NULL;
+	bool ignore_io_voltage_limits;
+	unsigned char CS_number = 0;
+	enum USB845x_type device_pid = Unknown_NI845X_Device;
+	uInt32 device_handle;
 	int32 tmp = 0;
 
 	// read the cs parameter (which Chip select should we use)
@@ -618,27 +630,38 @@ static int ni845x_spi_init(const struct programmer_cfg *cfg)
 	}
 	free(serial_number);
 
+	struct ni845x_spi_data *data = calloc(1, sizeof(*data));
+	if (!data) {
+		msg_perr("Unable to allocate space for SPI master data\n");
+		return 1;
+	}
+	data->CS_number = CS_number;
+	data->device_pid = device_pid;
+	data->device_handle = device_handle;
+	data->ignore_io_voltage_limits = ignore_io_voltage_limits;
+
 	// open the SPI config handle
-	tmp = ni845xSpiConfigurationOpen(&configuration_handle);
+	tmp = ni845xSpiConfigurationOpen(&data->configuration_handle);
 	if (tmp != 0) {
 		ni845x_report_error("ni845xSpiConfigurationOpen", tmp);
 		goto err;
 	}
 
-	if (usb8452_spi_set_io_voltage(requested_io_voltage_mV, &io_voltage_in_mV, USE_LOWER, device_pid, device_handle) < 0) {
+	if (usb8452_spi_set_io_voltage(requested_io_voltage_mV, &data->io_voltage_in_mV,
+				       USE_LOWER, data->device_pid, data->device_handle) < 0) {
 		// no alert here usb8452_spi_set_io_voltage already printed that
 		goto err;
 	}
 
-	if (ni845x_spi_set_speed(configuration_handle, spi_speed_KHz)) {
+	if (ni845x_spi_set_speed(data->configuration_handle, spi_speed_KHz)) {
 		msg_perr("Unable to set SPI speed\n");
 		goto err;
 	}
 
-	return register_spi_master(&spi_programmer_ni845x, NULL);
+	return register_spi_master(&spi_programmer_ni845x, data);
 
 err:
-	ni845x_spi_shutdown(NULL);
+	ni845x_spi_shutdown(data);
 	return 1;
 }
 
