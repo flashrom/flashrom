@@ -134,6 +134,11 @@ M:	Nikolai Artemiev <nartemiev@google.com>
 S:	Supported
 F:	linux_mtd.c
 
+STLINK-V3
+M:	Miklos Marton <martonmiklosqdev@gmail.com>
+S:	Maintained
+F:	stlinkv3_spi.c
+
 ################################################################################
 # TESTS
 ################################################################################
