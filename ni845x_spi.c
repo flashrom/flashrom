@@ -622,22 +622,24 @@ static int ni845x_spi_init(const struct programmer_cfg *cfg)
 	tmp = ni845xSpiConfigurationOpen(&configuration_handle);
 	if (tmp != 0) {
 		ni845x_report_error("ni845xSpiConfigurationOpen", tmp);
-		ni845x_spi_shutdown(NULL);
-		return 1;
+		goto err;
 	}
 
 	if (usb8452_spi_set_io_voltage(requested_io_voltage_mV, &io_voltage_in_mV, USE_LOWER, device_pid, device_handle) < 0) {
-		ni845x_spi_shutdown(NULL);
-		return 1;	// no alert here usb8452_spi_set_io_voltage already printed that
+		// no alert here usb8452_spi_set_io_voltage already printed that
+		goto err;
 	}
 
 	if (ni845x_spi_set_speed(configuration_handle, spi_speed_KHz)) {
 		msg_perr("Unable to set SPI speed\n");
-		ni845x_spi_shutdown(NULL);
-		return 1;
+		goto err;
 	}
 
 	return register_spi_master(&spi_programmer_ni845x, NULL);
+
+err:
+	ni845x_spi_shutdown(NULL);
+	return 1;
 }
 
 const struct programmer_entry programmer_ni845x_spi = {
