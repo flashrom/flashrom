@@ -17,6 +17,7 @@
  * GNU General Public License for more details.
  */
 
+#include <stdlib.h>
 #include <string.h>
 #include <libusb.h>
 #include "flash.h"
@@ -72,16 +73,18 @@
 /* Number of parallel IN transfers. 32 seems to produce the most stable throughput on Windows. */
 #define USB_IN_TRANSFERS 32
 
-/* We need to use many queued IN transfers for any resemblance of performance (especially on Windows)
- * because USB spec says that transfers end on non-full packets and the device sends the 31 reply
- * data bytes to each 32-byte packet with command + 31 bytes of data... */
-static struct libusb_transfer *transfer_out = NULL;
-static struct libusb_transfer *transfer_ins[USB_IN_TRANSFERS] = {0};
+struct ch341a_spi_data {
+	struct libusb_device_handle *handle;
 
-/* Accumulate delays to be plucked between CS deassertion and CS assertions. */
-static unsigned int stored_delay_us = 0;
+	/* We need to use many queued IN transfers for any resemblance of performance (especially on Windows)
+	 * because USB spec says that transfers end on non-full packets and the device sends the 31 reply
+	 * data bytes to each 32-byte packet with command + 31 bytes of data... */
+	struct libusb_transfer *transfer_out;
+	struct libusb_transfer *transfer_ins[USB_IN_TRANSFERS];
 
-static struct libusb_device_handle *handle = NULL;
+	/* Accumulate delays to be plucked between CS deassertion and CS assertions. */
+	unsigned int stored_delay_us;
+};
 
 static const struct dev_entry devs_ch341a_spi[] = {
 	{0x1A86, 0x5512, OK, "Winchiphead (WCH)", "CH341A"},
@@ -131,20 +134,21 @@ static void LIBUSB_CALL cb_in(struct libusb_transfer *transfer)
 	cb_common(__func__, transfer);
 }
 
-static int32_t usb_transfer(const char *func, unsigned int writecnt, unsigned int readcnt, const uint8_t *writearr, uint8_t *readarr)
+static int32_t usb_transfer(const struct ch341a_spi_data *data, const char *func,
+			    unsigned int writecnt, unsigned int readcnt, const uint8_t *writearr, uint8_t *readarr)
 {
-	if (handle == NULL)
+	if (data->handle == NULL)
 		return -1;
 
 	int state_out = TRANS_IDLE;
-	transfer_out->buffer = (uint8_t*)writearr;
-	transfer_out->length = writecnt;
-	transfer_out->user_data = &state_out;
+	data->transfer_out->buffer = (uint8_t*)writearr;
+	data->transfer_out->length = writecnt;
+	data->transfer_out->user_data = &state_out;
 
 	/* Schedule write first */
 	if (writecnt > 0) {
 		state_out = TRANS_ACTIVE;
-		int ret = libusb_submit_transfer(transfer_out);
+		int ret = libusb_submit_transfer(data->transfer_out);
 		if (ret) {
 			msg_perr("%s: failed to submit OUT transfer: %s\n", func, libusb_error_name(ret));
 			state_out = TRANS_ERR;
@@ -165,10 +169,10 @@ static int32_t usb_transfer(const char *func, unsigned int writecnt, unsigned in
 		/* Schedule new reads as long as there are free transfers and unscheduled bytes to read. */
 		while ((in_done + in_active) < readcnt && state_in[free_idx] == TRANS_IDLE) {
 			unsigned int cur_todo = min(CH341_PACKET_LENGTH - 1, readcnt - in_done - in_active);
-			transfer_ins[free_idx]->length = cur_todo;
-			transfer_ins[free_idx]->buffer = in_buf;
-			transfer_ins[free_idx]->user_data = &state_in[free_idx];
-			int ret = libusb_submit_transfer(transfer_ins[free_idx]);
+			data->transfer_ins[free_idx]->length = cur_todo;
+			data->transfer_ins[free_idx]->buffer = in_buf;
+			data->transfer_ins[free_idx]->user_data = &state_in[free_idx];
+			int ret = libusb_submit_transfer(data->transfer_ins[free_idx]);
 			if (ret) {
 				state_in[free_idx] = TRANS_ERR;
 				msg_perr("%s: failed to submit IN transfer: %s\n",
@@ -223,14 +227,14 @@ err:
 		 (state_out == TRANS_ERR) ? writecnt : readcnt);
 	/* First, we must cancel any ongoing requests and wait for them to be canceled. */
 	if ((writecnt > 0) && (state_out == TRANS_ACTIVE)) {
-		if (libusb_cancel_transfer(transfer_out) != 0)
+		if (libusb_cancel_transfer(data->transfer_out) != 0)
 			state_out = TRANS_ERR;
 	}
 	if (readcnt > 0) {
 		unsigned int i;
 		for (i = 0; i < USB_IN_TRANSFERS; i++) {
 			if (state_in[i] == TRANS_ACTIVE)
-				if (libusb_cancel_transfer(transfer_ins[i]) != 0)
+				if (libusb_cancel_transfer(data->transfer_ins[i]) != 0)
 					state_in[i] = TRANS_ERR;
 		}
 	}
@@ -256,9 +260,9 @@ err:
 
 /*   Set the I2C bus speed (speed(b1b0): 0 = 20kHz; 1 = 100kHz, 2 = 400kHz, 3 = 750kHz).
  *   Set the SPI bus data width (speed(b2): 0 = Single, 1 = Double).  */
-static int32_t config_stream(uint32_t speed)
+static int32_t config_stream(const struct ch341a_spi_data *data, uint32_t speed)
 {
-	if (handle == NULL)
+	if (data->handle == NULL)
 		return -1;
 
 	uint8_t buf[] = {
@@ -267,7 +271,7 @@ static int32_t config_stream(uint32_t speed)
 		CH341A_CMD_I2C_STM_END
 	};
 
-	int32_t ret = usb_transfer(__func__, sizeof(buf), 0, buf, NULL);
+	int32_t ret = usb_transfer(data, __func__, sizeof(buf), 0, buf, NULL);
 	if (ret < 0) {
 		msg_perr("Could not configure stream interface.\n");
 	}
@@ -287,7 +291,7 @@ static int32_t config_stream(uint32_t speed)
  *	D6/21	unused	(DIN2)
  *	D7/22	SO/2	(DIN)
  */
-static int32_t enable_pins(bool enable)
+static int32_t enable_pins(const struct ch341a_spi_data *data, bool enable)
 {
 	uint8_t buf[] = {
 		CH341A_CMD_UIO_STREAM,
@@ -296,7 +300,7 @@ static int32_t enable_pins(bool enable)
 		CH341A_CMD_UIO_STM_END,
 	};
 
-	int32_t ret = usb_transfer(__func__, sizeof(buf), 0, buf, NULL);
+	int32_t ret = usb_transfer(data, __func__, sizeof(buf), 0, buf, NULL);
 	if (ret < 0) {
 		msg_perr("Could not %sable output pins.\n", enable ? "en" : "dis");
 	}
@@ -304,14 +308,14 @@ static int32_t enable_pins(bool enable)
 }
 
 /* De-assert and assert CS in one operation. */
-static void pluck_cs(uint8_t *ptr)
+static void pluck_cs(uint8_t *ptr, unsigned int *stored_delay_us)
 {
 	/* This was measured to give a minimum deassertion time of 2.25 us,
 	 * >20x more than needed for most SPI chips (100ns). */
 	int delay_cnt = 2;
-	if (stored_delay_us) {
-		delay_cnt = (stored_delay_us * 4) / 3;
-		stored_delay_us = 0;
+	if (*stored_delay_us) {
+		delay_cnt = (*stored_delay_us * 4) / 3;
+		*stored_delay_us = 0;
 	}
 	*ptr++ = CH341A_CMD_UIO_STREAM;
 	*ptr++ = CH341A_CMD_UIO_STM_OUT | 0x37; /* deasserted */
@@ -324,20 +328,23 @@ static void pluck_cs(uint8_t *ptr)
 
 static void ch341a_spi_delay(const struct flashctx *flash, unsigned int usecs)
 {
+	struct ch341a_spi_data *data = flash->mst->spi.data;
+
 	/* There is space for 28 bytes instructions of 750 ns each in the CS packet (32 - 4 for the actual CS
 	 * instructions), thus max 21 us, but we avoid getting too near to this boundary and use
 	 * default_delay() for durations over 20 us. */
-	if ((usecs + stored_delay_us) > 20) {
-		unsigned int inc = 20 - stored_delay_us;
+	if ((usecs + data->stored_delay_us) > 20) {
+		unsigned int inc = 20 - data->stored_delay_us;
 		default_delay(usecs - inc);
 		usecs = inc;
 	}
-	stored_delay_us += usecs;
+	data->stored_delay_us += usecs;
 }
 
 static int ch341a_spi_spi_send_command(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr)
 {
-	if (handle == NULL)
+	struct ch341a_spi_data *data = flash->mst->spi.data;
+	if (data->handle == NULL)
 		return -1;
 
 	/* How many packets ... */
@@ -352,7 +359,7 @@ static int ch341a_spi_spi_send_command(const struct flashctx *flash, unsigned in
 	uint8_t *ptr = wbuf[0];
 	/* CS usage is optimized by doing both transitions in one packet.
 	 * Final transition to deselected state is in the pin disable. */
-	pluck_cs(ptr);
+	pluck_cs(ptr, &data->stored_delay_us);
 	unsigned int write_left = writecnt;
 	unsigned int read_left = readcnt;
 	unsigned int p;
@@ -371,7 +378,7 @@ static int ch341a_spi_spi_send_command(const struct flashctx *flash, unsigned in
 		write_left -= write_now;
 	}
 
-	int32_t ret = usb_transfer(__func__, CH341_PACKET_LENGTH + packets + writecnt + readcnt,
+	int32_t ret = usb_transfer(data, __func__, CH341_PACKET_LENGTH + packets + writecnt + readcnt,
 				    writecnt + readcnt, wbuf[0], rbuf);
 	if (ret < 0)
 		return -1;
@@ -386,22 +393,21 @@ static int ch341a_spi_spi_send_command(const struct flashctx *flash, unsigned in
 
 static int ch341a_spi_shutdown(void *data)
 {
-	if (handle == NULL)
+	struct ch341a_spi_data *ch341a_data = data;
+	if (ch341a_data->handle == NULL)
 		return -1;
 
-	enable_pins(false);
-	libusb_free_transfer(transfer_out);
-	transfer_out = NULL;
+	enable_pins(ch341a_data, false);
+	libusb_free_transfer(ch341a_data->transfer_out);
 	int i;
-	for (i = 0; i < USB_IN_TRANSFERS; i++) {
-		libusb_free_transfer(transfer_ins[i]);
-		transfer_ins[i] = NULL;
-	}
-	libusb_release_interface(handle, 0);
-	libusb_attach_kernel_driver(handle, 0);
-	libusb_close(handle);
+	for (i = 0; i < USB_IN_TRANSFERS; i++)
+		libusb_free_transfer(ch341a_data->transfer_ins[i]);
+	libusb_release_interface(ch341a_data->handle, 0);
+	libusb_attach_kernel_driver(ch341a_data->handle, 0);
+	libusb_close(ch341a_data->handle);
 	libusb_exit(NULL);
-	handle = NULL;
+
+	free(data);
 	return 0;
 }
 
@@ -421,11 +427,6 @@ static const struct spi_master spi_master_ch341a_spi = {
 
 static int ch341a_spi_init(const struct programmer_cfg *cfg)
 {
-	if (handle != NULL) {
-		msg_cerr("%s: handle already set! Please report a bug at flashrom@flashrom.org\n", __func__);
-		return -1;
-	}
-
 	int32_t ret = libusb_init(NULL);
 	if (ret < 0) {
 		msg_perr("Couldn't initialize libusb!\n");
@@ -439,27 +440,33 @@ static int ch341a_spi_init(const struct programmer_cfg *cfg)
 	libusb_set_option(NULL, LIBUSB_OPTION_LOG_LEVEL, LIBUSB_LOG_LEVEL_INFO);
 #endif
 
-	uint16_t vid = devs_ch341a_spi[0].vendor_id;
-	uint16_t pid = devs_ch341a_spi[0].device_id;
-	handle = libusb_open_device_with_vid_pid(NULL, vid, pid);
-	if (handle == NULL) {
-		msg_perr("Couldn't open device %04x:%04x.\n", vid, pid);
-		return -1;
+	struct ch341a_spi_data *data = calloc(1, sizeof(*data));
+	if (!data) {
+		msg_perr("Out of memory!\n");
+		return 1;
 	}
 
-	ret = libusb_detach_kernel_driver(handle, 0);
+	uint16_t vid = devs_ch341a_spi[0].vendor_id;
+	uint16_t pid = devs_ch341a_spi[0].device_id;
+	data->handle = libusb_open_device_with_vid_pid(NULL, vid, pid);
+	if (data->handle == NULL) {
+		msg_perr("Couldn't open device %04x:%04x.\n", vid, pid);
+		goto free_data;
+	}
+
+	ret = libusb_detach_kernel_driver(data->handle, 0);
 	if (ret != 0 && ret != LIBUSB_ERROR_NOT_FOUND)
 		msg_pwarn("Cannot detach the existing USB driver. Claiming the interface may fail. %s\n",
 			libusb_error_name(ret));
 
-	ret = libusb_claim_interface(handle, 0);
+	ret = libusb_claim_interface(data->handle, 0);
 	if (ret != 0) {
 		msg_perr("Failed to claim interface 0: '%s'\n", libusb_error_name(ret));
 		goto close_handle;
 	}
 
 	struct libusb_device *dev;
-	if (!(dev = libusb_get_device(handle))) {
+	if (!(dev = libusb_get_device(data->handle))) {
 		msg_perr("Failed to get device from device handle.\n");
 		goto close_handle;
 	}
@@ -477,44 +484,43 @@ static int ch341a_spi_init(const struct programmer_cfg *cfg)
 		(desc.bcdDevice >> 0) & 0x000F);
 
 	/* Allocate and pre-fill transfer structures. */
-	transfer_out = libusb_alloc_transfer(0);
-	if (!transfer_out) {
+	data->transfer_out = libusb_alloc_transfer(0);
+	if (!data->transfer_out) {
 		msg_perr("Failed to alloc libusb OUT transfer\n");
 		goto release_interface;
 	}
 	int i;
 	for (i = 0; i < USB_IN_TRANSFERS; i++) {
-		transfer_ins[i] = libusb_alloc_transfer(0);
-		if (transfer_ins[i] == NULL) {
+		data->transfer_ins[i] = libusb_alloc_transfer(0);
+		if (data->transfer_ins[i] == NULL) {
 			msg_perr("Failed to alloc libusb IN transfer %d\n", i);
 			goto dealloc_transfers;
 		}
 	}
 	/* We use these helpers but dont fill the actual buffer yet. */
-	libusb_fill_bulk_transfer(transfer_out, handle, WRITE_EP, NULL, 0, cb_out, NULL, USB_TIMEOUT);
+	libusb_fill_bulk_transfer(data->transfer_out, data->handle, WRITE_EP, NULL, 0, cb_out, NULL, USB_TIMEOUT);
 	for (i = 0; i < USB_IN_TRANSFERS; i++)
-		libusb_fill_bulk_transfer(transfer_ins[i], handle, READ_EP, NULL, 0, cb_in, NULL, USB_TIMEOUT);
+		libusb_fill_bulk_transfer(data->transfer_ins[i], data->handle, READ_EP, NULL, 0, cb_in, NULL, USB_TIMEOUT);
 
-	if ((config_stream(CH341A_STM_I2C_100K) < 0) || (enable_pins(true) < 0))
+	if ((config_stream(data, CH341A_STM_I2C_100K) < 0) || (enable_pins(data, true) < 0))
 		goto dealloc_transfers;
 
-	return register_spi_master(&spi_master_ch341a_spi, NULL);
+	return register_spi_master(&spi_master_ch341a_spi, data);
 
 dealloc_transfers:
 	for (i = 0; i < USB_IN_TRANSFERS; i++) {
-		if (transfer_ins[i] == NULL)
+		if (data->transfer_ins[i] == NULL)
 			break;
-		libusb_free_transfer(transfer_ins[i]);
-		transfer_ins[i] = NULL;
+		libusb_free_transfer(data->transfer_ins[i]);
 	}
-	libusb_free_transfer(transfer_out);
-	transfer_out = NULL;
+	libusb_free_transfer(data->transfer_out);
 release_interface:
-	libusb_release_interface(handle, 0);
+	libusb_release_interface(data->handle, 0);
 close_handle:
-	libusb_attach_kernel_driver(handle, 0);
-	libusb_close(handle);
-	handle = NULL;
+	libusb_attach_kernel_driver(data->handle, 0);
+	libusb_close(data->handle);
+free_data:
+	free(data);
 	return -1;
 }
 
