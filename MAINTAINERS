@@ -139,6 +139,11 @@ M:	Miklos Marton <martonmiklosqdev@gmail.com>
 S:	Maintained
 F:	stlinkv3_spi.c
 
+National Instruments USB-845x
+M:	Miklos Marton <martonmiklosqdev@gmail.com>
+S:	Maintained
+F:	ni845x_spi.c
+
 ################################################################################
 # TESTS
 ################################################################################
