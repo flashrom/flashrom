@@ -158,6 +158,11 @@ F:	subprojects/cmocka.wrap
 # UTILS
 ################################################################################
 
+BASH COMPLETION
+M:	Alexander Goncharov <chat@joursoir.net>
+S:	Maintained
+F:	util/flashrom.bash-completion.tmpl
+
 TEST BUILD SCRIPT
 M:	Felix Singer <felixsinger@posteo.net>
 S:	Supported
