@@ -1345,6 +1345,7 @@ static int init_data(const struct programmer_cfg *cfg,
 
 static int dummy_init(const struct programmer_cfg *cfg)
 {
+	int ret = 0;
 	struct stat image_stat;
 
 	struct emu_data *data = calloc(1, sizeof(*data));
@@ -1410,15 +1411,15 @@ dummy_init_out:
 	}
 
 	if (dummy_buses_supported & BUS_PROG)
-		register_opaque_master(&opaque_master_dummyflasher, data);
+		ret |= register_opaque_master(&opaque_master_dummyflasher, data);
 	if (dummy_buses_supported & BUS_NONSPI)
-		register_par_master(&par_master_dummyflasher,
-				    dummy_buses_supported & BUS_NONSPI,
-				    data);
+		ret |= register_par_master(&par_master_dummyflasher,
+					   dummy_buses_supported & BUS_NONSPI,
+					   data);
 	if (dummy_buses_supported & BUS_SPI)
-		register_spi_master(&spi_master_dummyflasher, data);
+		ret |= register_spi_master(&spi_master_dummyflasher, data);
 
-	return 0;
+	return ret;
 }
 
 const struct programmer_entry programmer_dummy = {
