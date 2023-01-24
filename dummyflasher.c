@@ -75,6 +75,10 @@ struct emu_data {
 
 	unsigned int spi_write_256_chunksize;
 	uint8_t *flashchip_contents;
+
+	/* An instance of this structure is shared between multiple masters, so
+	 * store the number of references to clean up only once at shutdown time. */
+	uint8_t refs_cnt;
 };
 
 /* A legit complete SFDP table based on the MX25L6436E (rev. 1.8) datasheet. */
@@ -905,6 +909,11 @@ static int dummy_shutdown(void *data)
 {
 	msg_pspew("%s\n", __func__);
 	struct emu_data *emu_data = (struct emu_data *)data;
+
+	emu_data->refs_cnt--;
+	if (emu_data->refs_cnt != 0)
+		return 0;
+
 	if (emu_data->emu_chip != EMULATE_NONE) {
 		if (emu_data->emu_persistent_image && emu_data->emu_modified) {
 			msg_pdbg("Writing %s\n", emu_data->emu_persistent_image);
@@ -933,6 +942,7 @@ static const struct spi_master spi_master_dummyflasher = {
 	.multicommand	= default_spi_send_multicommand,
 	.read		= default_spi_read,
 	.write_256	= dummy_spi_write_256,
+	.shutdown	= dummy_shutdown,
 	.probe_opcode	= dummy_spi_probe_opcode,
 	.delay		= dummy_nop_delay,
 };
@@ -948,15 +958,17 @@ static const struct par_master par_master_dummyflasher = {
 	.chip_writew	= dummy_chip_writew,
 	.chip_writel	= dummy_chip_writel,
 	.chip_writen	= dummy_chip_writen,
+	.shutdown	= dummy_shutdown,
 	.delay		= dummy_nop_delay,
 };
 
 static const struct opaque_master opaque_master_dummyflasher = {
-	.probe	= probe_variable_size,
-	.read	= dummy_opaque_read,
-	.write	= dummy_opaque_write,
-	.erase	= dummy_opaque_erase,
-	.delay	= dummy_nop_delay,
+	.probe		= probe_variable_size,
+	.read		= dummy_opaque_read,
+	.write		= dummy_opaque_write,
+	.erase		= dummy_opaque_erase,
+	.shutdown	= dummy_shutdown,
+	.delay		= dummy_nop_delay,
 };
 
 static int init_data(const struct programmer_cfg *cfg,
@@ -1410,21 +1422,20 @@ static int dummy_init(const struct programmer_cfg *cfg)
 	}
 
 dummy_init_out:
-	if (register_shutdown(dummy_shutdown, data)) {
-		free(data->emu_persistent_image);
-		free(data->flashchip_contents);
-		free(data);
-		return 1;
-	}
-
-	if (dummy_buses_supported & BUS_PROG)
+	if (dummy_buses_supported & BUS_PROG) {
+		data->refs_cnt++;
 		ret |= register_opaque_master(&opaque_master_dummyflasher, data);
-	if (dummy_buses_supported & BUS_NONSPI)
+	}
+	if ((dummy_buses_supported & BUS_NONSPI) && !ret) {
+		data->refs_cnt++;
 		ret |= register_par_master(&par_master_dummyflasher,
 					   dummy_buses_supported & BUS_NONSPI,
 					   data);
-	if (dummy_buses_supported & BUS_SPI)
+	}
+	if ((dummy_buses_supported & BUS_SPI) && !ret) {
+		data->refs_cnt++;
 		ret |= register_spi_master(&spi_master_dummyflasher, data);
+	}
 
 	return ret;
 }
