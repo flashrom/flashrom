@@ -573,7 +573,7 @@ int read_flash(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigne
 		uint8_t *rbuf = buf + addr - start;
 
 		if (region.read_prot) {
-			if (flash->flags.skip_unwritable_regions) {
+			if (flash->flags.skip_unreadable_regions) {
 				msg_gdbg("%s: cannot read inside %s region (%#08x..%#08x), "
 					 "filling (%#08x..%#08x) with erased value instead.\n",
 					 __func__, region.name, region.start, region.end - 1,
