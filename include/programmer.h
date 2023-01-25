@@ -418,6 +418,7 @@ struct opaque_master {
 	enum flashrom_wp_result (*wp_get_ranges)(struct flashrom_wp_ranges **, struct flashctx *);
 	void (*get_region)(const struct flashctx *flash, unsigned int addr, struct flash_region *region);
 	int (*shutdown)(void *data);
+	void (*delay) (const struct flashctx *flash, unsigned int usecs);
 	void *data;
 };
 int register_opaque_master(const struct opaque_master *mst, void *data);

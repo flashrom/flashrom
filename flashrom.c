@@ -277,6 +277,9 @@ void programmer_delay(const struct flashctx *flash, unsigned int usecs)
 	} else if (flash->mst->buses_supported & BUS_PARALLEL) {
 		if (flash->mst->par.delay)
 			return flash->mst->par.delay(flash, usecs);
+	} else if (flash->mst->buses_supported & BUS_PROG) {
+		if (flash->mst->opaque.delay)
+			return flash->mst->opaque.delay(flash, usecs);
 	}
 
 	return default_delay(usecs);
