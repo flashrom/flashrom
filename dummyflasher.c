@@ -919,6 +919,10 @@ static int dummy_shutdown(void *data)
 	return 0;
 }
 
+static void dummy_nop_delay(const struct flashctx *flash, unsigned int usecs)
+{
+}
+
 static const struct spi_master spi_master_dummyflasher = {
 	.map_flash_region	= dummy_map,
 	.unmap_flash_region	= dummy_unmap,
@@ -930,6 +934,7 @@ static const struct spi_master spi_master_dummyflasher = {
 	.read		= default_spi_read,
 	.write_256	= dummy_spi_write_256,
 	.probe_opcode	= dummy_spi_probe_opcode,
+	.delay		= dummy_nop_delay,
 };
 
 static const struct par_master par_master_dummyflasher = {
@@ -943,6 +948,7 @@ static const struct par_master par_master_dummyflasher = {
 	.chip_writew	= dummy_chip_writew,
 	.chip_writel	= dummy_chip_writel,
 	.chip_writen	= dummy_chip_writen,
+	.delay		= dummy_nop_delay,
 };
 
 static const struct opaque_master opaque_master_dummyflasher = {
@@ -950,6 +956,7 @@ static const struct opaque_master opaque_master_dummyflasher = {
 	.read	= dummy_opaque_read,
 	.write	= dummy_opaque_write,
 	.erase	= dummy_opaque_erase,
+	.delay	= dummy_nop_delay,
 };
 
 static int init_data(const struct programmer_cfg *cfg,
