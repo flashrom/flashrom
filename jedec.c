@@ -121,7 +121,7 @@ static void start_program_jedec_common(const struct flashctx *flash, unsigned in
 
 int probe_jedec_29gl(struct flashctx *flash)
 {
-	unsigned int mask = getaddrmask(flash->chip);
+	const unsigned int mask = getaddrmask(flash->chip);
 	chipaddr bios = flash->virtual_memory;
 	const struct flashchip *chip = flash->chip;
 
@@ -412,9 +412,7 @@ int write_jedec_1(struct flashctx *flash, const uint8_t *src, unsigned int start
 	int failed = 0;
 	chipaddr dst = flash->virtual_memory + start;
 	chipaddr olddst;
-	unsigned int mask;
-
-	mask = getaddrmask(flash->chip);
+	const unsigned int mask = getaddrmask(flash->chip);
 
 	olddst = dst;
 	for (i = 0; i < len; i++) {
@@ -438,9 +436,7 @@ static int write_page_write_jedec_common(struct flashctx *flash, const uint8_t *
 	chipaddr bios = flash->virtual_memory;
 	chipaddr dst = bios + start;
 	chipaddr d = dst;
-	unsigned int mask;
-
-	mask = getaddrmask(flash->chip);
+	const unsigned int mask = getaddrmask(flash->chip);
 
 retry:
 	/* Issue JEDEC Start Program command */
@@ -518,9 +514,7 @@ int write_jedec(struct flashctx *flash, const uint8_t *buf, unsigned int start,
 int erase_chip_block_jedec(struct flashctx *flash, unsigned int addr,
 			   unsigned int blocksize)
 {
-	unsigned int mask;
-
-	mask = getaddrmask(flash->chip);
+	const unsigned int mask = getaddrmask(flash->chip);
 	if ((addr != 0) || (blocksize != flash->chip->total_size * 1024)) {
 		msg_cerr("%s called with incorrect arguments\n",
 			__func__);
@@ -531,27 +525,21 @@ int erase_chip_block_jedec(struct flashctx *flash, unsigned int addr,
 
 int probe_jedec(struct flashctx *flash)
 {
-	unsigned int mask;
-
-	mask = getaddrmask(flash->chip);
+	const unsigned int mask = getaddrmask(flash->chip);
 	return probe_jedec_common(flash, mask);
 }
 
 int erase_sector_jedec(struct flashctx *flash, unsigned int page,
 		       unsigned int size)
 {
-	unsigned int mask;
-
-	mask = getaddrmask(flash->chip);
+	const unsigned int mask = getaddrmask(flash->chip);
 	return erase_sector_jedec_common(flash, page, size, mask);
 }
 
 int erase_block_jedec(struct flashctx *flash, unsigned int page,
 		      unsigned int size)
 {
-	unsigned int mask;
-
-	mask = getaddrmask(flash->chip);
+	const unsigned int mask = getaddrmask(flash->chip);
 	return erase_block_jedec_common(flash, page, size, mask);
 }
 
