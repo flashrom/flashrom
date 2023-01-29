@@ -313,11 +313,11 @@ int erase_sector_jedec(struct flashctx *flash, unsigned int page, unsigned int s
 	return 0;
 }
 
-static int erase_block_jedec_common(struct flashctx *flash, unsigned int block,
-				    unsigned int blocksize, unsigned int mask)
+int erase_block_jedec(struct flashctx *flash, unsigned int block, unsigned int size)
 {
 	chipaddr bios = flash->virtual_memory;
 	bool shifted = (flash->chip->feature_bits & FEATURE_ADDR_SHIFTED);
+	const unsigned int mask = getaddrmask(flash->chip);
 	unsigned int delay_us = 0;
 
 	if(flash->chip->probe_timing != TIMING_ZERO)
@@ -527,13 +527,6 @@ int probe_jedec(struct flashctx *flash)
 {
 	const unsigned int mask = getaddrmask(flash->chip);
 	return probe_jedec_common(flash, mask);
-}
-
-int erase_block_jedec(struct flashctx *flash, unsigned int page,
-		      unsigned int size)
-{
-	const unsigned int mask = getaddrmask(flash->chip);
-	return erase_block_jedec_common(flash, page, size, mask);
 }
 
 struct unlockblock {
