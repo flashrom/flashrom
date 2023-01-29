@@ -345,11 +345,19 @@ int erase_block_jedec(struct flashctx *flash, unsigned int block, unsigned int s
 	return 0;
 }
 
-static int erase_chip_jedec_common(struct flashctx *flash, unsigned int mask)
+/* erase chip with block_erase() prototype */
+int erase_chip_block_jedec(struct flashctx *flash, unsigned int addr, unsigned int blocksize)
 {
-	chipaddr bios = flash->virtual_memory;
-	bool shifted = (flash->chip->feature_bits & FEATURE_ADDR_SHIFTED);
+	const unsigned int mask = getaddrmask(flash->chip);
+	const chipaddr bios = flash->virtual_memory;
+	const bool shifted = (flash->chip->feature_bits & FEATURE_ADDR_SHIFTED);
 	unsigned int delay_us = 0;
+
+	if ((addr != 0) || (blocksize != flash->chip->total_size * 1024)) {
+		msg_cerr("%s called with incorrect arguments\n",
+			__func__);
+		return -1;
+	}
 
 	if(flash->chip->probe_timing != TIMING_ZERO)
 		delay_us = 10;
@@ -508,19 +516,6 @@ int write_jedec(struct flashctx *flash, const uint8_t *buf, unsigned int start,
 	}
 
 	return 0;
-}
-
-/* erase chip with block_erase() prototype */
-int erase_chip_block_jedec(struct flashctx *flash, unsigned int addr,
-			   unsigned int blocksize)
-{
-	const unsigned int mask = getaddrmask(flash->chip);
-	if ((addr != 0) || (blocksize != flash->chip->total_size * 1024)) {
-		msg_cerr("%s called with incorrect arguments\n",
-			__func__);
-		return -1;
-	}
-	return erase_chip_jedec_common(flash, mask);
 }
 
 int probe_jedec(struct flashctx *flash)
