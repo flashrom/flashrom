@@ -110,10 +110,11 @@ static unsigned int getaddrmask(const struct flashchip *chip)
 	}
 }
 
-static void start_program_jedec_common(const struct flashctx *flash, unsigned int mask)
+static void start_program_jedec_common(const struct flashctx *flash)
 {
-	chipaddr bios = flash->virtual_memory;
-	bool shifted = (flash->chip->feature_bits & FEATURE_ADDR_SHIFTED);
+	const chipaddr bios = flash->virtual_memory;
+	const bool shifted = (flash->chip->feature_bits & FEATURE_ADDR_SHIFTED);
+	const unsigned int mask = getaddrmask(flash->chip);
 
 	chip_writeb(flash, 0xAA, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
 	chip_writeb(flash, 0x55, bios + ((shifted ? 0x5555 : 0x2AAA) & mask));
@@ -345,7 +346,7 @@ int erase_chip_block_jedec(struct flashctx *flash, unsigned int addr, unsigned i
 }
 
 static int write_byte_program_jedec_common(const struct flashctx *flash, const uint8_t *src,
-					   chipaddr dst, unsigned int mask)
+					   chipaddr dst)
 {
 	int tries = 0;
 
@@ -357,7 +358,7 @@ static int write_byte_program_jedec_common(const struct flashctx *flash, const u
 	for (; tries < MAX_REFLASH_TRIES; tries++) {
 		const chipaddr bios = flash->virtual_memory;
 		/* Issue JEDEC Byte Program command */
-		start_program_jedec_common(flash, mask);
+		start_program_jedec_common(flash);
 
 		/* transfer data from source to destination */
 		chip_writeb(flash, *src, dst);
@@ -378,11 +379,10 @@ int write_jedec_1(struct flashctx *flash, const uint8_t *src, unsigned int start
 	int failed = 0;
 	chipaddr dst = flash->virtual_memory + start;
 	chipaddr olddst;
-	const unsigned int mask = getaddrmask(flash->chip);
 
 	olddst = dst;
 	for (i = 0; i < len; i++) {
-		if (write_byte_program_jedec_common(flash, src, dst, mask))
+		if (write_byte_program_jedec_common(flash, src, dst))
 			failed = 1;
 		dst++, src++;
 		update_progress(flash, FLASHROM_PROGRESS_WRITE, i + 1, len);
@@ -401,11 +401,10 @@ static int write_page_write_jedec_common(struct flashctx *flash, const uint8_t *
 	const chipaddr bios = flash->virtual_memory;
 	chipaddr dst = bios + start;
 	chipaddr d = dst;
-	const unsigned int mask = getaddrmask(flash->chip);
 
 	for (; tries < MAX_REFLASH_TRIES; tries++) {
 		/* Issue JEDEC Start Program command */
-		start_program_jedec_common(flash, mask);
+		start_program_jedec_common(flash);
 
 		/* transfer data from source to destination */
 		for (unsigned int i = 0; i < page_size; i++) {
