@@ -347,30 +347,27 @@ int erase_chip_block_jedec(struct flashctx *flash, unsigned int addr, unsigned i
 static int write_byte_program_jedec_common(const struct flashctx *flash, const uint8_t *src,
 					   chipaddr dst, unsigned int mask)
 {
-	int tried = 0, failed = 0;
-	chipaddr bios = flash->virtual_memory;
+	int tries = 0;
 
 	/* If the data is 0xFF, don't program it and don't complain. */
 	if (*src == 0xFF) {
 		return 0;
 	}
 
-retry:
-	/* Issue JEDEC Byte Program command */
-	start_program_jedec_common(flash, mask);
+	for (; tries < MAX_REFLASH_TRIES; tries++) {
+		const chipaddr bios = flash->virtual_memory;
+		/* Issue JEDEC Byte Program command */
+		start_program_jedec_common(flash, mask);
 
-	/* transfer data from source to destination */
-	chip_writeb(flash, *src, dst);
-	toggle_ready_jedec(flash, bios);
+		/* transfer data from source to destination */
+		chip_writeb(flash, *src, dst);
+		toggle_ready_jedec(flash, bios);
 
-	if (chip_readb(flash, dst) != *src && tried++ < MAX_REFLASH_TRIES) {
-		goto retry;
+		if (chip_readb(flash, dst) == *src)
+			break;
 	}
 
-	if (tried >= MAX_REFLASH_TRIES)
-		failed = 1;
-
-	return failed;
+	return (tries >= MAX_REFLASH_TRIES) ? 1 : 0;
 }
 
 /* chunksize is 1 */
@@ -399,40 +396,41 @@ int write_jedec_1(struct flashctx *flash, const uint8_t *src, unsigned int start
 static int write_page_write_jedec_common(struct flashctx *flash, const uint8_t *src,
 					 unsigned int start, unsigned int page_size)
 {
-	unsigned int i;
-	int tried = 0, failed;
+	int tries = 0, failed;
 	const uint8_t *s = src;
-	chipaddr bios = flash->virtual_memory;
+	const chipaddr bios = flash->virtual_memory;
 	chipaddr dst = bios + start;
 	chipaddr d = dst;
 	const unsigned int mask = getaddrmask(flash->chip);
 
-retry:
-	/* Issue JEDEC Start Program command */
-	start_program_jedec_common(flash, mask);
+	for (; tries < MAX_REFLASH_TRIES; tries++) {
+		/* Issue JEDEC Start Program command */
+		start_program_jedec_common(flash, mask);
 
-	/* transfer data from source to destination */
-	for (i = 0; i < page_size; i++) {
-		/* If the data is 0xFF, don't program it */
-		if (*src != 0xFF)
-			chip_writeb(flash, *src, dst);
-		dst++;
-		src++;
-	}
+		/* transfer data from source to destination */
+		for (unsigned int i = 0; i < page_size; i++) {
+			/* If the data is 0xFF, don't program it */
+			if (*src != 0xFF)
+				chip_writeb(flash, *src, dst);
+			dst++;
+			src++;
+		}
 
-	toggle_ready_jedec(flash, dst - 1);
+		toggle_ready_jedec(flash, dst - 1);
 
-	dst = d;
-	src = s;
-	failed = verify_range(flash, src, start, page_size);
+		dst = d;
+		src = s;
+		failed = verify_range(flash, src, start, page_size);
+		if (!failed)
+			break;
 
-	if (failed && tried++ < MAX_REFLASH_TRIES) {
 		msg_cerr("retrying.\n");
-		goto retry;
 	}
+
 	if (failed) {
 		msg_cerr(" page 0x%" PRIxPTR " failed!\n", (d - bios) / page_size);
 	}
+
 	return failed;
 }
 
