@@ -1,6 +1,7 @@
 *.d
 !Makefile.d/
 *.o
+/.doctrees
 /.features
 /.dependencies
 /.libdeps
@@ -12,6 +13,7 @@
 /flashrom.bash
 /libflashrom.a
 /libflashrom-doc/
+/man8
 
 /util/ich_descriptors_tool/ich_descriptors_tool
 /util/ich_descriptors_tool/ich_descriptors_tool.exe

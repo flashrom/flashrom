@@ -404,7 +404,6 @@ CLI_OBJS = cli_classic.o cli_output.o cli_common.o print.o
 # be obtained using util/getrevision.sh, which is the common case during development.
 -include versioninfo.inc
 VERSION ?= $(shell ./util/getrevision.sh --revision)
-MAN_DATE ?= $(shell ./util/getrevision.sh --date $(PROGRAM).8.tmpl 2>/dev/null)
 
 SCMDEF := -D'FLASHROM_VERSION="$(VERSION)"'
 
@@ -960,7 +959,7 @@ endif
 OBJS = $(CHIP_OBJS) $(PROGRAMMER_OBJS) $(LIB_OBJS)
 
 
-all: $(PROGRAM)$(EXEC_SUFFIX) $(PROGRAM).8
+all: $(PROGRAM)$(EXEC_SUFFIX) man8/$(PROGRAM).8
 ifeq ($(ARCH), x86)
 	@+$(MAKE) -C util/ich_descriptors_tool/ HOST_OS=$(HOST_OS) TARGET_OS=$(TARGET_OS)
 endif
@@ -1033,12 +1032,9 @@ libflashrom.a: $(OBJS)
 	$(AR) rcs $@ $^
 	$(RANLIB) $@
 
-$(PROGRAM).8.html: $(PROGRAM).8
-	@groff -mandoc -Thtml $< >$@
-
-$(PROGRAM).8: $(PROGRAM).8.tmpl
-	@# Add the man page change date and version to the man page
-	@sed -e 's#.TH FLASHROM 8 .*#.TH FLASHROM 8 "$(MAN_DATE)" "$(VERSION)" "$(MAN_DATE)"#' <$< >$@
+SPHINXBUILD ?= sphinx-build
+man8/$(PROGRAM).8: doc/*
+	@FLASHROM_VERSION=$(VERSION) $(SPHINXBUILD) -b man doc .
 
 $(PROGRAM).bash: util/$(PROGRAM).bash-completion.tmpl
 	@# Add to the bash completion file a list of enabled programmers.
@@ -1051,16 +1047,16 @@ strip: $(PROGRAM)$(EXEC_SUFFIX)
 # This includes all frontends and libflashrom.
 # We don't use EXEC_SUFFIX here because we want to clean everything.
 clean:
-	rm -f $(PROGRAM) $(PROGRAM).exe libflashrom.a $(filter-out Makefile.d, $(wildcard *.d *.o platform/*.d platform/*.o)) \
-		$(PROGRAM).8 $(PROGRAM).8.html $(PROGRAM).bash $(BUILD_DETAILS_FILE)
+	rm -rf $(PROGRAM) $(PROGRAM).exe libflashrom.a $(filter-out Makefile.d, $(wildcard *.d *.o platform/*.d platform/*.o)) \
+		man8 .doctrees $(PROGRAM).bash $(BUILD_DETAILS_FILE)
 	@+$(MAKE) -C util/ich_descriptors_tool/ clean
 
-install: $(PROGRAM)$(EXEC_SUFFIX) $(PROGRAM).8 $(PROGRAM).bash
+install: $(PROGRAM)$(EXEC_SUFFIX) man8/$(PROGRAM).8 $(PROGRAM).bash
 	mkdir -p $(DESTDIR)$(PREFIX)/sbin
 	mkdir -p $(DESTDIR)$(MANDIR)/man8
 	mkdir -p $(DESTDIR)$(BASHCOMPDIR)
 	$(INSTALL) -m 0755 $(PROGRAM)$(EXEC_SUFFIX) $(DESTDIR)$(PREFIX)/sbin
-	$(INSTALL) -m 0644 $(PROGRAM).8 $(DESTDIR)$(MANDIR)/man8
+	$(INSTALL) -m 0644 man8/$(PROGRAM).8 $(DESTDIR)$(MANDIR)/man8
 	$(INSTALL) -m 0644 $(PROGRAM).bash $(DESTDIR)$(BASHCOMPDIR)
 
 libinstall: libflashrom.a include/libflashrom.h
@@ -1069,13 +1065,12 @@ libinstall: libflashrom.a include/libflashrom.h
 	mkdir -p $(DESTDIR)$(PREFIX)/include
 	$(INSTALL) -m 0644 include/libflashrom.h $(DESTDIR)$(PREFIX)/include
 
-_export: $(PROGRAM).8
+_export: man8/$(PROGRAM).8
 	@rm -rf "$(EXPORTDIR)/flashrom-$(RELEASENAME)"
 	@mkdir -p "$(EXPORTDIR)/flashrom-$(RELEASENAME)"
 	@git archive HEAD | tar -x -C "$(EXPORTDIR)/flashrom-$(RELEASENAME)"
 #	Generate versioninfo.inc containing metadata that would not be available in exported sources otherwise.
 	@echo "VERSION = $(VERSION)" > "$(EXPORTDIR)/flashrom-$(RELEASENAME)/versioninfo.inc"
-	@echo "MAN_DATE = $(MAN_DATE)" >> "$(EXPORTDIR)/flashrom-$(RELEASENAME)/versioninfo.inc"
 #	Restore modification date of all tracked files not marked 'export-ignore' in .gitattributes.
 #	sed is required to filter out file names having the attribute set.
 #	The sed program saves the file name in the hold buffer and then checks if the respective value is 'set'.

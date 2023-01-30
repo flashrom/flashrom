@@ -1,7 +1,7 @@
 project('flashromutils', 'c',
   version : run_command('util/getversion.sh', '--version', check : true).stdout().strip(),
   license : 'GPL-2.0',
-  meson_version : '>=0.53.0',
+  meson_version : '>=0.57.0',
   default_options : [
     'warning_level=2',
     'c_std=c99',
@@ -10,6 +10,8 @@ project('flashromutils', 'c',
     'debug=false',
   ],
 )
+
+subdir('doc')
 
 # libtool versioning
 lt_current = '1'
@@ -619,17 +621,6 @@ pkgg.generate(
   name : 'flashrom',
   filebase : 'flashrom',
   description : 'library to interact with flashrom',
-)
-
-config_manfile = configuration_data()
-config_manfile.set('VERSION', version)
-config_manfile.set('MAN_DATE', run_command('util/getversion.sh', '--man-date', check : true).stdout().strip())
-configure_file(
-  input : 'flashrom.8.tmpl',
-  output : 'flashrom.8',
-  configuration : config_manfile,
-  install: true,
-  install_dir: join_paths(get_option('mandir'), 'man8'),
 )
 
 if get_option('classic_cli').auto() or get_option('classic_cli').enabled()
