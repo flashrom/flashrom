@@ -165,11 +165,12 @@ int probe_jedec_29gl(struct flashctx *flash)
 	return 1;
 }
 
-static int probe_jedec_common(struct flashctx *flash, unsigned int mask)
+int probe_jedec(struct flashctx *flash)
 {
-	chipaddr bios = flash->virtual_memory;
+	const chipaddr bios = flash->virtual_memory;
 	const struct flashchip *chip = flash->chip;
-	bool shifted = (flash->chip->feature_bits & FEATURE_ADDR_SHIFTED);
+	const bool shifted = (flash->chip->feature_bits & FEATURE_ADDR_SHIFTED);
+	const unsigned int mask = getaddrmask(flash->chip);
 	uint8_t id1, id2;
 	uint32_t largeid1, largeid2;
 	uint32_t flashcontent1, flashcontent2;
@@ -516,12 +517,6 @@ int write_jedec(struct flashctx *flash, const uint8_t *buf, unsigned int start,
 	}
 
 	return 0;
-}
-
-int probe_jedec(struct flashctx *flash)
-{
-	const unsigned int mask = getaddrmask(flash->chip);
-	return probe_jedec_common(flash, mask);
 }
 
 struct unlockblock {
