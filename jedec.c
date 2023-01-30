@@ -196,8 +196,7 @@ int probe_jedec(struct flashctx *flash)
 	if (probe_timing_enter)
 		programmer_delay(flash, probe_timing_enter);
 	/* Reset chip to a clean slate */
-	if ((chip->feature_bits & FEATURE_RESET_MASK) == FEATURE_LONG_RESET)
-	{
+	if ((chip->feature_bits & FEATURE_RESET_MASK) == FEATURE_LONG_RESET) {
 		chip_writeb(flash, 0xAA, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
 		if (probe_timing_exit)
 			programmer_delay(flash, 10);
@@ -239,8 +238,7 @@ int probe_jedec(struct flashctx *flash)
 	}
 
 	/* Issue JEDEC Product ID Exit command */
-	if ((chip->feature_bits & FEATURE_RESET_MASK) == FEATURE_LONG_RESET)
-	{
+	if ((chip->feature_bits & FEATURE_RESET_MASK) == FEATURE_LONG_RESET) {
 		chip_writeb(flash, 0xAA, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
 		if (probe_timing_exit)
 			programmer_delay(flash, 10);
