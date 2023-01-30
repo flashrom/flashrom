@@ -61,6 +61,7 @@ srcs = files(
   'helpers_fileio.c',
   'ich_descriptors.c',
   'jedec.c',
+  'printlock.c',
   'layout.c',
   'libflashrom.c',
   'opaque.c',
