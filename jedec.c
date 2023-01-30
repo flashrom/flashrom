@@ -167,6 +167,24 @@ int probe_jedec_29gl(struct flashctx *flash)
 	return 1;
 }
 
+static int probe_timings(const struct flashchip *chip, unsigned int *tenter, unsigned int *texit)
+{
+	if (chip->probe_timing > 0) {
+		*tenter = *texit = chip->probe_timing;
+	} else if (chip->probe_timing == TIMING_ZERO) { /* No delay. */
+		*tenter = *texit = 0;
+	} else if (chip->probe_timing == TIMING_FIXME) { /* == _IGNORED */
+		msg_cdbg("Chip lacks correct probe timing information, using default 10ms/40us. ");
+		*tenter = 10000;
+		*texit = 40;
+	} else {
+		msg_cerr("Chip has negative value in probe_timing, failing without chip access\n");
+		return -1;
+	}
+
+	return 0;
+}
+
 int probe_jedec(struct flashctx *flash)
 {
 	const chipaddr bios = flash->virtual_memory;
@@ -178,18 +196,8 @@ int probe_jedec(struct flashctx *flash)
 	uint32_t flashcontent1, flashcontent2;
 	unsigned int probe_timing_enter, probe_timing_exit;
 
-	if (chip->probe_timing > 0)
-		probe_timing_enter = probe_timing_exit = chip->probe_timing;
-	else if (chip->probe_timing == TIMING_ZERO) { /* No delay. */
-		probe_timing_enter = probe_timing_exit = 0;
-	} else if (chip->probe_timing == TIMING_FIXME) { /* == _IGNORED */
-		msg_cdbg("Chip lacks correct probe timing information, using default 10ms/40us. ");
-		probe_timing_enter = 10000;
-		probe_timing_exit = 40;
-	} else {
-		msg_cerr("Chip has negative value in probe_timing, failing without chip access\n");
+	if (probe_timings(chip, &probe_timing_enter, &probe_timing_exit) < 0)
 		return 0;
-	}
 
 	/* Earlier probes might have been too fast for the chip to enter ID
 	 * mode completely. Allow the chip to finish this before seeing a
