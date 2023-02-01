@@ -14,7 +14,7 @@ if sphinx.found()
 
     custom_target(
       'man-pages',
-      command : [sphinx, '-b', 'man', '-q', '-d', '@PRIVATE_DIR@', '-Drelease=' + meson.project_version(),'@CURRENT_SOURCE_DIR@', '@OUTDIR@'],
+      command : [sphinx, '-b', 'man', '-q', '-d', '@PRIVATE_DIR@', '-Drelease=' + flashrom_version,'@CURRENT_SOURCE_DIR@', '@OUTDIR@'],
       build_always_stale : true, # sphinx handles rebuilds
       output  : man_outputs,
       install : true,
@@ -25,7 +25,7 @@ if sphinx.found()
   if get_option('documentation').auto() or get_option('documentation').enabled()
     custom_target(
       'documentation',
-      command : [sphinx, '-b', 'html', '-q', '-d', '@PRIVATE_DIR@', '-Drelease=' + meson.project_version(),'@CURRENT_SOURCE_DIR@', '@OUTDIR@/html'],
+      command : [sphinx, '-b', 'html', '-q', '-d', '@PRIVATE_DIR@', '-Drelease=' + flashrom_version,'@CURRENT_SOURCE_DIR@', '@OUTDIR@/html'],
       build_always_stale : true, # sphinx handles rebuilds
       output  : 'html',
       install : true,

@@ -1,5 +1,5 @@
 project('flashromutils', 'c',
-  version : run_command('util/getversion.sh', '--version', check : true).stdout().strip(),
+  version : run_command('cat', 'VERSION', check: true).stdout().strip(),
   license : 'GPL-2.0',
   meson_version : '>=0.53.0',
   default_options : [
@@ -19,13 +19,22 @@ if get_option('classic_cli').enabled() and get_option('default_library') == 'sha
   ''')
 endif
 
-subdir('doc')
-
 # libtool versioning
 lt_current = '1'
 lt_revision = '0'
 lt_age = '0'
 lt_version = '@0@.@1@.@2@'.format(lt_current, lt_age, lt_revision)
+
+flashrom_version = meson.project_version()
+git = find_program('git', native : true, required : false)
+if git.found()
+  version_git = run_command('git', 'describe', check : false)
+  if version_git.returncode() == 0
+    flashrom_version += ' (git:@0@)'.format(version_git.stdout().strip())
+  endif
+endif
+
+subdir('doc')
 
 # hide/enable some warnings
 warning_flags = [
@@ -47,7 +56,7 @@ add_project_arguments('-D__BSD_VISIBLE', language : 'c') # required for u_char, 
 add_project_arguments('-D__XSI_VISIBLE', language : 'c') # required for gettimeofday() on FreeBSD
 add_project_arguments('-D_NETBSD_SOURCE', language : 'c') # required for indirect include of strings.h on NetBSD
 add_project_arguments('-D_DARWIN_C_SOURCE', language : 'c') # required for indirect include of strings.h on MacOS
-add_project_arguments('-DFLASHROM_VERSION="' + meson.project_version() + '"', language : 'c')
+add_project_arguments('-DFLASHROM_VERSION="' + flashrom_version + '"', language : 'c')
 
 # get defaults from configure
 config_print_wiki= get_option('classic_cli_print_wiki')
@@ -614,19 +623,10 @@ libflashrom = library(
   link_depends : mapfile,
 )
 
-version = meson.project_version()
-#strip leading characters
-if version.startswith('v')
-  version = version.split('v')[1]
-endif
-if version.startswith('p')
-  version = version.split('p')[1]
-endif
-
 pkgg = import('pkgconfig')
 pkgg.generate(
   libraries : libflashrom,
-  version : version,
+  version : flashrom_version.split()[0], # cut off the git version
   name : 'flashrom',
   filebase : 'flashrom',
   description : 'library to interact with flashrom',
