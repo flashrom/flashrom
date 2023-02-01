@@ -67,8 +67,9 @@ void toggle_ready_jedec(const struct flashctx *flash, chipaddr dst)
  * Given that erase is slow on all chips, it is recommended to use
  * toggle_ready_jedec_slow in erase functions.
  */
-static void toggle_ready_jedec_slow(const struct flashctx *flash, chipaddr dst)
+static void toggle_ready_jedec_slow(const struct flashctx *flash)
 {
+	const chipaddr dst = flash->virtual_memory;
 	toggle_ready_jedec_common(flash, dst, 8 * 1000);
 }
 
@@ -300,14 +301,12 @@ static void issuecmd(const struct flashctx *flash, uint8_t op, unsigned int oper
 
 int erase_sector_jedec(struct flashctx *flash, unsigned int page, unsigned int size)
 {
-	const chipaddr bios = flash->virtual_memory;
-
 	/*  Issue the Sector Erase command   */
 	issuecmd(flash, 0x80, 0);
 	issuecmd(flash, 0x30, page);
 
 	/* wait for Toggle bit ready         */
-	toggle_ready_jedec_slow(flash, bios);
+	toggle_ready_jedec_slow(flash);
 
 	/* FIXME: Check the status register for errors. */
 	return 0;
@@ -315,14 +314,12 @@ int erase_sector_jedec(struct flashctx *flash, unsigned int page, unsigned int s
 
 int erase_block_jedec(struct flashctx *flash, unsigned int block, unsigned int size)
 {
-	const chipaddr bios = flash->virtual_memory;
-
 	/*  Issue the Sector Erase command   */
 	issuecmd(flash, 0x80, 0);
 	issuecmd(flash, 0x50, block);
 
 	/* wait for Toggle bit ready         */
-	toggle_ready_jedec_slow(flash, bios);
+	toggle_ready_jedec_slow(flash);
 
 	/* FIXME: Check the status register for errors. */
 	return 0;
@@ -331,8 +328,6 @@ int erase_block_jedec(struct flashctx *flash, unsigned int block, unsigned int s
 /* erase chip with block_erase() prototype */
 int erase_chip_block_jedec(struct flashctx *flash, unsigned int addr, unsigned int blocksize)
 {
-	const chipaddr bios = flash->virtual_memory;
-
 	if ((addr != 0) || (blocksize != flash->chip->total_size * 1024)) {
 		msg_cerr("%s called with incorrect arguments\n",
 			__func__);
@@ -343,7 +338,7 @@ int erase_chip_block_jedec(struct flashctx *flash, unsigned int addr, unsigned i
 	issuecmd(flash, 0x80, 0);
 	issuecmd(flash, 0x10, 0);
 
-	toggle_ready_jedec_slow(flash, bios);
+	toggle_ready_jedec_slow(flash);
 
 	/* FIXME: Check the status register for errors. */
 	return 0;
