@@ -123,6 +123,24 @@ void dummy_null_prog_param_test_success(void **state)
 	run_basic_lifecycle(state, &dummy_io, &programmer_dummy, NULL);
 }
 
+void dummy_all_buses_test_success(void **state)
+{
+	struct io_mock_fallback_open_state dummy_fallback_open_state = {
+		.noc = 0,
+		.paths = { NULL },
+	};
+	const struct io_mock dummy_io = {
+		.fallback_open_state = &dummy_fallback_open_state,
+	};
+
+	run_basic_lifecycle(state, &dummy_io, &programmer_dummy, "bus=lpc+fwh");
+	run_basic_lifecycle(state, &dummy_io, &programmer_dummy, "bus=spi");
+	run_basic_lifecycle(state, &dummy_io, &programmer_dummy, "bus=prog");
+	run_basic_lifecycle(state, &dummy_io, &programmer_dummy, "bus=parallel+fwh+prog");
+	run_basic_lifecycle(state, &dummy_io, &programmer_dummy, "bus=spi+prog");
+	run_basic_lifecycle(state, &dummy_io, &programmer_dummy, "bus=parallel+lpc+spi");
+}
+
 #else
 	SKIP_TEST(dummy_basic_lifecycle_test_success)
 	SKIP_TEST(dummy_probe_lifecycle_test_success)
@@ -131,4 +149,5 @@ void dummy_null_prog_param_test_success(void **state)
 	SKIP_TEST(dummy_init_success_invalid_param_test_success)
 	SKIP_TEST(dummy_init_success_unhandled_param_test_success)
 	SKIP_TEST(dummy_null_prog_param_test_success)
+	SKIP_TEST(dummy_all_buses_test_success)
 #endif /* CONFIG_DUMMY */

@@ -447,6 +447,7 @@ int main(int argc, char *argv[])
 		cmocka_unit_test(dummy_init_success_invalid_param_test_success),
 		cmocka_unit_test(dummy_init_success_unhandled_param_test_success),
 		cmocka_unit_test(dummy_null_prog_param_test_success),
+		cmocka_unit_test(dummy_all_buses_test_success),
 		cmocka_unit_test(nicrealtek_basic_lifecycle_test_success),
 		cmocka_unit_test(raiden_debug_basic_lifecycle_test_success),
 		cmocka_unit_test(dediprog_basic_lifecycle_test_success),
