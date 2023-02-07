@@ -137,9 +137,6 @@ static void LIBUSB_CALL cb_in(struct libusb_transfer *transfer)
 static int32_t usb_transfer(const struct ch341a_spi_data *data, const char *func,
 			    unsigned int writecnt, unsigned int readcnt, const uint8_t *writearr, uint8_t *readarr)
 {
-	if (data->handle == NULL)
-		return -1;
-
 	int state_out = TRANS_IDLE;
 	data->transfer_out->buffer = (uint8_t*)writearr;
 	data->transfer_out->length = writecnt;
@@ -262,9 +259,6 @@ err:
  *   Set the SPI bus data width (speed(b2): 0 = Single, 1 = Double).  */
 static int32_t config_stream(const struct ch341a_spi_data *data, uint32_t speed)
 {
-	if (data->handle == NULL)
-		return -1;
-
 	uint8_t buf[] = {
 		CH341A_CMD_I2C_STREAM,
 		CH341A_CMD_I2C_STM_SET | (speed & 0x7),
@@ -344,8 +338,6 @@ static void ch341a_spi_delay(const struct flashctx *flash, unsigned int usecs)
 static int ch341a_spi_spi_send_command(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr)
 {
 	struct ch341a_spi_data *data = flash->mst->spi.data;
-	if (data->handle == NULL)
-		return -1;
 
 	/* How many packets ... */
 	const size_t packets = (writecnt + readcnt + CH341_PACKET_LENGTH - 2) / (CH341_PACKET_LENGTH - 1);
@@ -394,8 +386,6 @@ static int ch341a_spi_spi_send_command(const struct flashctx *flash, unsigned in
 static int ch341a_spi_shutdown(void *data)
 {
 	struct ch341a_spi_data *ch341a_data = data;
-	if (ch341a_data->handle == NULL)
-		return -1;
 
 	enable_pins(ch341a_data, false);
 	libusb_free_transfer(ch341a_data->transfer_out);
