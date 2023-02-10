@@ -194,6 +194,15 @@ error:
 	return 1;
 }
 
+static char *sanitise_filename(char *filename)
+{
+	for (unsigned i = 0; filename[i]; i++) {
+		if (isspace((unsigned char)filename[i]))
+			filename[i] = '_';
+	}
+	return filename;
+}
+
 /* returns 0 to indicate success, 1 to indicate failure */
 static int include_region(struct flashrom_layout *const l, const char *name,
 			  const char *file)
@@ -202,7 +211,7 @@ static int include_region(struct flashrom_layout *const l, const char *name,
 	if (entry) {
 		entry->included = true;
 		if (file)
-			entry->file = strdup(file);
+			entry->file = sanitise_filename(strdup(file));
 		return 0;
 	}
 	return 1;
@@ -342,18 +351,12 @@ void prepare_layout_for_extraction(struct flashctx *flash)
 {
 	const struct flashrom_layout *const l = get_layout(flash);
 	struct romentry *entry = NULL;
-	unsigned int i;
 
 	while ((entry = mutable_layout_next(l, entry))) {
 		entry->included = true;
 
 		if (!entry->file)
-			entry->file = strdup(entry->region.name);
-
-		for (i = 0; entry->file[i]; ++i) {
-			if (isspace((unsigned char)entry->file[i]))
-				entry->file[i] = '_';
-		}
+			entry->file = sanitise_filename(strdup(entry->region.name));
 	}
 }
 
