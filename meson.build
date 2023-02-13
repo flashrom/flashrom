@@ -156,6 +156,13 @@ linux_headers = \
 #   'active'      : boolean,       # added on runtime
 # }
 programmer = {
+  'asm106x' : {
+    'systems' : systems_hwaccess,
+    'deps'    : [ libpci ],
+    'groups'  : [ group_pci, group_internal ],
+    'srcs'    : files('asm106x.c', 'pcidev.c'),
+    'flags'   : [ '-DCONFIG_ASM106X=1' ],
+  },
   'atahpt' : {
     'systems' : systems_hwaccess,
     'cpu_families' : cpus_port_io,

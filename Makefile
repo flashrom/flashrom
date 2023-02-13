@@ -137,6 +137,7 @@ DEPENDS_ON_X86_PORT_IO := \
 	CONFIG_SATAMV \
 
 DEPENDS_ON_LIBPCI := \
+	CONFIG_ASM106X \
 	CONFIG_ATAHPT \
 	CONFIG_ATAPROMISE \
 	CONFIG_ATAVIA \
@@ -437,6 +438,9 @@ CONFIG_GFXNVIDIA ?= yes
 # Always enable SiI SATA controllers for now.
 CONFIG_SATASII ?= yes
 
+# ASMedia ASM106x
+CONFIG_ASM106X ?= yes
+
 # Highpoint (HPT) ATA/RAID controller support.
 # IMPORTANT: This code is not yet working!
 CONFIG_ATAHPT ?= no
@@ -640,6 +644,12 @@ ifeq ($(CONFIG_SATASII), yes)
 FEATURE_FLAGS += -D'CONFIG_SATASII=1'
 PROGRAMMER_OBJS += satasii.o
 ACTIVE_PROGRAMMERS += satasii
+endif
+
+ifeq ($(CONFIG_ASM106X), yes)
+FEATURE_FLAGS += -D'CONFIG_ASM106X=1'
+PROGRAMMER_OBJS += asm106x.o
+ACTIVE_PROGRAMMERS += asm106x
 endif
 
 ifeq ($(CONFIG_ATAHPT), yes)

@@ -10,11 +10,11 @@ option('programmer', type : 'array', value : ['auto'], choices : [
         'auto', 'all',
         'group_internal', 'group_external',
         'group_ftdi', 'group_i2c', 'group_jlink', 'group_pci', 'group_serial', 'group_usb',
-        'atahpt', 'atapromise', 'atavia', 'buspirate_spi', 'ch341a_spi', 'dediprog', 'developerbox_spi',
-        'digilent_spi', 'dirtyjtag_spi', 'drkaiser', 'dummy', 'ft2232_spi', 'gfxnvidia', 'internal', 'it8212',
-        'jlink_spi', 'linux_mtd', 'linux_spi', 'mediatek_i2c_spi', 'mstarddc_spi', 'nic3com', 'nicintel',
-        'nicintel_eeprom', 'nicintel_spi', 'nicnatsemi', 'nicrealtek', 'ogp_spi', 'parade_lspcon',
-        'pickit2_spi', 'pony_spi', 'raiden_debug_spi', 'rayer_spi', 'realtek_mst_i2c_spi', 'satamv',
-        'satasii', 'serprog',  'stlinkv3_spi', 'usbblaster_spi',
+        'asm106x', 'atahpt', 'atapromise', 'atavia', 'buspirate_spi', 'ch341a_spi', 'dediprog',
+        'developerbox_spi', 'digilent_spi', 'dirtyjtag_spi', 'drkaiser', 'dummy', 'ft2232_spi',
+        'gfxnvidia', 'internal', 'it8212', 'jlink_spi', 'linux_mtd', 'linux_spi', 'mediatek_i2c_spi',
+        'mstarddc_spi', 'nic3com', 'nicintel', 'nicintel_eeprom', 'nicintel_spi', 'nicnatsemi',
+        'nicrealtek', 'ogp_spi', 'parade_lspcon', 'pickit2_spi', 'pony_spi', 'raiden_debug_spi',
+        'rayer_spi', 'realtek_mst_i2c_spi', 'satamv', 'satasii', 'serprog',  'stlinkv3_spi', 'usbblaster_spi',
 ], description: 'Active programmers')
 option('llvm_cov', type : 'feature', value : 'disabled', description : 'build for llvm code coverage')

@@ -433,6 +433,8 @@ bitbanging adapter)
 .sp
 .BR "* dirtyjtag_spi" " (for SPI flash ROMs attached to DirtyJTAG-compatible devices)"
 .sp
+.BR "* asm106x" " (for SPI flash ROMs attached to ASM106x PCIe SATA controllers)"
+.sp
 Some programmers have optional or mandatory parameters which are described
 in detail in the
 .B PROGRAMMER-SPECIFIC INFORMATION
@@ -1685,7 +1687,8 @@ need access to the respective USB device via libusb API version 1.0.
 needs no access permissions at all.
 .sp
 .BR internal ", " nic3com ", " nicrealtek ", " nicnatsemi ", "
-.BR gfxnvidia ", " drkaiser ", " satasii ", " satamv ", " atahpt ", " atavia " and " atapromise
+.BR gfxnvidia ", " drkaiser ", " satasii ", " satamv ", " asm106x ", "
+.BR atahpt ", " atavia " and " atapromise
 have to be run as superuser/root, and need additional raw access permission.
 .sp
 .BR serprog ", " buspirate_spi ", " dediprog ", " usbblaster_spi ", " ft2232_spi ", " pickit2_spi ", " \
