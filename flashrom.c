@@ -1282,8 +1282,7 @@ static int selfcheck_eraseblocks(const struct flashchip *chip)
 				ret = 1;
 			}
 		}
-		if(curr_eraseblock_count > prev_eraseblock_count)
-		{
+		if (curr_eraseblock_count > prev_eraseblock_count) {
 			msg_gerr("ERROR: Flash chip %s erase function %i is not "
 					"in order. Please report a bug at flashrom@flashrom.org\n",
 					chip->name, k);
