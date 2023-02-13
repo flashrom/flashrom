@@ -662,8 +662,7 @@ int main(int argc, char *argv[])
 	 * chip when a flash device gets opened with fd 1 or 2.
 	 */
 	if (check_file(stdout) && check_file(stderr)) {
-		flashrom_set_log_callback(
-			(flashrom_log_callback *)&flashrom_print_cb);
+		flashrom_set_log_callback(&flashrom_print_cb);
 	}
 
 	print_version();
