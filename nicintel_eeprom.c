@@ -140,7 +140,7 @@ static int nicintel_ee_probe_82580(struct flashctx *flash)
 			flash->chip->total_size = 32;
 			break;
 		default:
-			msg_cerr("Unsupported chip size 0x%x\n", tmp);
+			msg_cerr("Unsupported chip size 0x%"PRIx32"\n", tmp);
 			return 0;
 		}
 	}

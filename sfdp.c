@@ -35,7 +35,7 @@ static int spi_sfdp_read_sfdp_chunk(struct flashctx *flash, uint32_t address, ui
 		 */
 		0
 	};
-	msg_cspew("%s: addr=0x%x, len=%d, data:\n", __func__, address, len);
+	msg_cspew("%s: addr=0x%"PRIx32", len=%d, data:\n", __func__, address, len);
 	newbuf = malloc(len + 1);
 	if (!newbuf)
 		return SPI_PROGRAMMER_ERROR;
@@ -96,7 +96,7 @@ static int sfdp_add_uniform_eraser(struct flashchip *chip, uint8_t opcode, uint3
 		if (eraser->eraseblocks[0].size == block_size &&
 		    eraser->block_erase == erasefn) {
 			msg_cdbg2("  Tried to add a duplicate block eraser: "
-				  "%d x %d B with opcode 0x%02x.\n",
+				  "%"PRId32" x %"PRId32" B with opcode 0x%02x.\n",
 				  total_size/block_size, block_size, opcode);
 			return 1;
 		}
@@ -110,7 +110,7 @@ static int sfdp_add_uniform_eraser(struct flashchip *chip, uint8_t opcode, uint3
 		eraser->block_erase = erasefn;
 		eraser->eraseblocks[0].size = block_size;
 		eraser->eraseblocks[0].count = total_size/block_size;
-		msg_cdbg2("  Block eraser %d: %d x %d B with opcode "
+		msg_cdbg2("  Block eraser %d: %"PRId32" x %"PRId32" B with opcode "
 			  "0x%02x\n", i, total_size/block_size, block_size,
 			  opcode);
 		return 0;
@@ -274,7 +274,7 @@ int probe_spi_sfdp(struct flashctx *flash)
 	tmp32 |= ((unsigned int)buf[3]) << 24;
 
 	if (tmp32 != 0x50444653) {
-		msg_cdbg2("Signature = 0x%08x (should be 0x50444653)\n", tmp32);
+		msg_cdbg2("Signature = 0x%08"PRIx32" (should be 0x50444653)\n", tmp32);
 		msg_cdbg("No SFDP signature found.\n");
 		return 0;
 	}
@@ -320,7 +320,7 @@ int probe_spi_sfdp(struct flashctx *flash)
 			  hdrs[i].v_major, hdrs[i].v_minor);
 		len = hdrs[i].len * 4;
 		tmp32 = hdrs[i].ptp;
-		msg_cdbg2("  Length %d B, Parameter Table Pointer 0x%06x\n",
+		msg_cdbg2("  Length %d B, Parameter Table Pointer 0x%06"PRIx32"\n",
 			  len, tmp32);
 
 		if (tmp32 + len >= (1 << 24)) {
@@ -345,7 +345,7 @@ int probe_spi_sfdp(struct flashctx *flash)
 		msg_cspew("  Parameter table contents:\n");
 		for (tmp32 = 0; tmp32 < len; tmp32++) {
 			if ((tmp32 % 8) == 0) {
-				msg_cspew("    0x%04x: ", tmp32);
+				msg_cspew("    0x%04"PRIx32": ", tmp32);
 			}
 			msg_cspew(" %02x", tbuf[tmp32]);
 			if ((tmp32 % 8) == 7) {

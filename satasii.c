@@ -46,7 +46,7 @@ static uint32_t satasii_wait_done(const uint8_t *bar)
 	int i = 0;
 	while ((ctrl_reg = pci_mmio_readl(bar)) & (1 << 25)) {
 		if (++i > 10000) {
-			msg_perr("%s: control register stuck at %08x, ignoring.\n",
+			msg_perr("%s: control register stuck at %08"PRIx32", ignoring.\n",
 				 __func__, pci_mmio_readl(bar));
 			break;
 		}

@@ -301,7 +301,7 @@ int included_regions_overlap(const struct flashrom_layout *const l)
 			if (lhsr->end < rhsr->start)
 				continue;
 
-			msg_gwarn("Regions %s [0x%08x-0x%08x] and %s [0x%08x-0x%08x] overlap\n",
+			msg_gwarn("Regions %s [0x%08"PRIx32"-0x%08"PRIx32"] and %s [0x%08"PRIx32"-0x%08"PRIx32"] overlap\n",
 				  lhsr->name, lhsr->start, lhsr->end, rhsr->name, rhsr->start, rhsr->end);
 			overlap_detected = 1;
 		}

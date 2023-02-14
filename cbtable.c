@@ -159,7 +159,7 @@ static int lb_header_valid(struct lb_header *head, unsigned long addr)
 	msg_pdbg("Found candidate at: %08lx-%08lx\n",
 		     addr, addr + sizeof(*head) + head->table_bytes);
 	if (head->header_bytes != sizeof(*head)) {
-		msg_perr("Header bytes of %d are incorrect.\n",
+		msg_perr("Header bytes of %"PRId32" are incorrect.\n",
 			head->header_bytes);
 		return 0;
 	}
@@ -175,12 +175,12 @@ static int lb_table_valid(struct lb_header *head, struct lb_record *recs)
 {
 	if (compute_checksum(recs, head->table_bytes)
 	    != head->table_checksum) {
-		msg_perr("Bad table checksum: %04x.\n",
+		msg_perr("Bad table checksum: %04"PRIx32".\n",
 			head->table_checksum);
 		return 0;
 	}
 	if (count_lb_records(head) != head->table_entries) {
-		msg_perr("Bad record count: %d.\n",
+		msg_perr("Bad record count: %"PRId32".\n",
 			head->table_entries);
 		return 0;
 	}
@@ -352,7 +352,7 @@ int cb_parse_table(const char **vendor, const char **model)
 		(unsigned long)lb_table - (unsigned long)table_area + start);
 	rec = (struct lb_record *)(((char *)lb_table) + lb_table->header_bytes);
 	last = (struct lb_record *)(((char *)rec) + lb_table->table_bytes);
-	msg_pdbg("coreboot header(%d) checksum: %04x table(%d) checksum: %04x entries: %d\n",
+	msg_pdbg("coreboot header(%"PRId32") checksum: %04"PRIx32" table(%"PRId32") checksum: %04"PRIx32" entries: %"PRId32"\n",
 	     lb_table->header_bytes, lb_table->header_checksum,
 	     lb_table->table_bytes, lb_table->table_checksum,
 	     lb_table->table_entries);

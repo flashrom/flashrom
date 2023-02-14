@@ -141,7 +141,7 @@ static int compare_id(const struct flashctx *flash, uint32_t id1, uint32_t id2)
 {
 	const struct flashchip *chip = flash->chip;
 
-	msg_cdbg("%s: id1 0x%02x, id2 0x%02x\n", __func__, id1, id2);
+	msg_cdbg("%s: id1 0x%02"PRIx32", id2 0x%02"PRIx32"\n", __func__, id1, id2);
 	if (id1 == chip->manufacture_id && id2 == chip->model_id)
 		return 1;
 
@@ -232,7 +232,7 @@ int probe_spi_res1(struct flashctx *flash)
 
 	id2 = readarr[0];
 
-	msg_cdbg("%s: id 0x%x\n", __func__, id2);
+	msg_cdbg("%s: id 0x%"PRIx32"\n", __func__, id2);
 
 	if (id2 != flash->chip->model_id)
 		return 0;
@@ -252,7 +252,7 @@ int probe_spi_res2(struct flashctx *flash)
 
 	id1 = id_cache[RES2].bytes[0];
 	id2 = id_cache[RES2].bytes[1];
-	msg_cdbg("%s: id1 0x%x, id2 0x%x\n", __func__, id1, id2);
+	msg_cdbg("%s: id1 0x%"PRIx32", id2 0x%"PRIx32"\n", __func__, id1, id2);
 
 	if (id1 != flash->chip->manufacture_id || id2 != flash->chip->model_id)
 		return 0;
@@ -272,7 +272,7 @@ int probe_spi_res3(struct flashctx *flash)
 
 	id1 = (id_cache[RES3].bytes[0] << 8) | id_cache[RES3].bytes[1];
 	id2 = id_cache[RES3].bytes[3];
-	msg_cdbg("%s: id1 0x%x, id2 0x%x\n", __func__, id1, id2);
+	msg_cdbg("%s: id1 0x%"PRIx32", id2 0x%"PRIx32"\n", __func__, id1, id2);
 
 	if (id1 != flash->chip->manufacture_id || id2 != flash->chip->model_id)
 		return 0;
@@ -294,7 +294,7 @@ int probe_spi_at25f(struct flashctx *flash)
 	id1 = readarr[0];
 	id2 = readarr[1];
 
-	msg_cdbg("%s: id1 0x%02x, id2 0x%02x\n", __func__, id1, id2);
+	msg_cdbg("%s: id1 0x%02"PRIx32", id2 0x%02"PRIx32"\n", __func__, id1, id2);
 
 	if (id1 == flash->chip->manufacture_id && id2 == flash->chip->model_id)
 		return 1;

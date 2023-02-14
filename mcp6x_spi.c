@@ -146,7 +146,7 @@ int mcp6x_spi_init(int want_spi)
 	 * 32-bit non-prefetchable memory BAR.
 	 */
 	mcp6x_spibaraddr &= ~0xffff;
-	msg_pdbg("MCP SPI BAR is at 0x%08x\n", mcp6x_spibaraddr);
+	msg_pdbg("MCP SPI BAR is at 0x%08"PRIx32"\n", mcp6x_spibaraddr);
 
 	/* Accessing a NULL pointer BAR is evil. Don't do it. */
 	if (!mcp6x_spibaraddr && want_spi) {

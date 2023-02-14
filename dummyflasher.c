@@ -215,7 +215,7 @@ static void dummy_chip_writew(const struct flashctx *flash, uint16_t val, chipad
 
 static void dummy_chip_writel(const struct flashctx *flash, uint32_t val, chipaddr addr)
 {
-	msg_pspew("%s: addr=0x%" PRIxPTR ", val=0x%08x\n", __func__, addr, val);
+	msg_pspew("%s: addr=0x%" PRIxPTR ", val=0x%08"PRIx32"\n", __func__, addr, val);
 }
 
 static void dummy_chip_writen(const struct flashctx *flash, const uint8_t *buf, chipaddr addr, size_t len)

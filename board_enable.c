@@ -672,7 +672,7 @@ int it8705f_write_enable(uint8_t port)
 			 */
 			ret = 1;
 		}
-		msg_pdbg("Maximum IT8705F parallel flash decode size is %u.\n",
+		msg_pdbg("Maximum IT8705F parallel flash decode size is %"PRIu32".\n",
 			max_rom_decode.parallel);
 		if (ret) {
 			msg_pinfo("Not enabling IT8705F flash write.\n");

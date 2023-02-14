@@ -141,7 +141,7 @@ int probe_jedec_29gl(struct flashctx *flash)
 	/* Issue JEDEC Product ID Exit command */
 	chip_writeb(flash, 0xF0, bios + (0x5555 & mask));
 
-	msg_cdbg("%s: man_id 0x%02x, dev_id 0x%06x", __func__, man_id, dev_id);
+	msg_cdbg("%s: man_id 0x%02"PRIx32", dev_id 0x%06"PRIx32"", __func__, man_id, dev_id);
 	if (!oddparity(man_id))
 		msg_cdbg(", man_id parity violation");
 
@@ -252,7 +252,7 @@ int probe_jedec(struct flashctx *flash)
 	chip_writeb(flash, 0xF0, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
 	programmer_delay(flash, probe_timing_exit);
 
-	msg_cdbg("%s: id1 0x%02x, id2 0x%02x", __func__, largeid1, largeid2);
+	msg_cdbg("%s: id1 0x%02"PRIx32", id2 0x%02"PRIx32"", __func__, largeid1, largeid2);
 	if (!oddparity(id1))
 		msg_cdbg(", id1 parity violation");
 

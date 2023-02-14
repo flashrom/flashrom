@@ -638,7 +638,7 @@ int sb600_probe_spi(const struct programmer_cfg *cfg, struct pci_dev *dev)
 	/* Read SPI_BaseAddr */
 	tmp = pci_read_long(dev, 0xa0);
 	tmp &= 0xffffffe0;	/* remove bits 4-0 (reserved) */
-	msg_pdbg("SPI base address is at 0x%x\n", tmp);
+	msg_pdbg("SPI base address is at 0x%"PRIx32"\n", tmp);
 
 	/* If the BAR has address 0, it is unlikely SPI is used. */
 	if (!tmp)
@@ -676,14 +676,14 @@ int sb600_probe_spi(const struct programmer_cfg *cfg, struct pci_dev *dev)
 	 */
 	if (amd_gen >= CHIPSET_SB7XX) {
 		tmp = pci_read_long(dev, 0xa0);
-		msg_pdbg("SpiRomEnable=%i", (tmp >> 1) & 0x1);
+		msg_pdbg("SpiRomEnable=%"PRIi32"", (tmp >> 1) & 0x1);
 		if (amd_gen == CHIPSET_SB7XX)
-			msg_pdbg(", AltSpiCSEnable=%i, AbortEnable=%i", tmp & 0x1, (tmp >> 2) & 0x1);
+			msg_pdbg(", AltSpiCSEnable=%"PRIi32", AbortEnable=%"PRIi32"", tmp & 0x1, (tmp >> 2) & 0x1);
 		else if (amd_gen >= CHIPSET_YANGTZE)
-			msg_pdbg(", RouteTpm2Sp=%i", (tmp >> 3) & 0x1);
+			msg_pdbg(", RouteTpm2Sp=%"PRIi32"", (tmp >> 3) & 0x1);
 
 		tmp = pci_read_byte(dev, 0xba);
-		msg_pdbg(", PrefetchEnSPIFromIMC=%i", (tmp & 0x4) >> 2);
+		msg_pdbg(", PrefetchEnSPIFromIMC=%"PRIi32"", (tmp & 0x4) >> 2);
 
 		tmp = pci_read_byte(dev, 0xbb);
 		/* FIXME: Set bit 3,6,7 if not already set.
@@ -691,8 +691,8 @@ int sb600_probe_spi(const struct programmer_cfg *cfg, struct pci_dev *dev)
 		 * See doc 42413 AMD SB700/710/750 RPR.
 		 */
 		if (amd_gen == CHIPSET_SB7XX)
-			msg_pdbg(", SpiOpEnInLpcMode=%i", (tmp >> 5) & 0x1);
-		msg_pdbg(", PrefetchEnSPIFromHost=%i\n", tmp & 0x1);
+			msg_pdbg(", SpiOpEnInLpcMode=%"PRIi32"", (tmp >> 5) & 0x1);
+		msg_pdbg(", PrefetchEnSPIFromHost=%"PRIi32"\n", tmp & 0x1);
 	}
 
 	/* Chipset support matrix for SPI_Cntrl0 (spibar + 0x0)
@@ -714,25 +714,25 @@ int sb600_probe_spi(const struct programmer_cfg *cfg, struct pci_dev *dev)
 	 *  <1> see handle_speed
 	 */
 	tmp = mmio_readl(sb600_spibar + 0x00);
-	msg_pdbg("(0x%08" PRIx32 ") SpiArbEnable=%i", tmp, (tmp >> 19) & 0x1);
+	msg_pdbg("(0x%08" PRIx32 ") SpiArbEnable=%"PRIi32"", tmp, (tmp >> 19) & 0x1);
 	if (amd_gen >= CHIPSET_YANGTZE)
-		msg_pdbg(", IllegalAccess=%i", (tmp >> 21) & 0x1);
+		msg_pdbg(", IllegalAccess=%"PRIi32"", (tmp >> 21) & 0x1);
 
-	msg_pdbg(", SpiAccessMacRomEn=%i, SpiHostAccessRomEn=%i, ArbWaitCount=%i",
+	msg_pdbg(", SpiAccessMacRomEn=%"PRIi32", SpiHostAccessRomEn=%"PRIi32", ArbWaitCount=%"PRIi32"",
 		 (tmp >> 22) & 0x1, (tmp >> 23) & 0x1, (tmp >> 24) & 0x7);
 
 	if (amd_gen < CHIPSET_YANGTZE)
-		msg_pdbg(", SpiBridgeDisable=%i", (tmp >> 27) & 0x1);
+		msg_pdbg(", SpiBridgeDisable=%"PRIi32"", (tmp >> 27) & 0x1);
 
 	switch (amd_gen) {
 	case CHIPSET_SB7XX:
-		msg_pdbg(", DropOneClkOnRd/SpiClkGate=%i", (tmp >> 28) & 0x1);
+		msg_pdbg(", DropOneClkOnRd/SpiClkGate=%"PRIi32"", (tmp >> 28) & 0x1);
 		/* Fall through. */
 	case CHIPSET_SB89XX:
 	case CHIPSET_HUDSON234:
 	case CHIPSET_YANGTZE:
 	case CHIPSET_PROMONTORY:
-		msg_pdbg(", SpiBusy=%i", (tmp >> 31) & 0x1);
+		msg_pdbg(", SpiBusy=%"PRIi32"", (tmp >> 31) & 0x1);
 	default: break;
 	}
 	msg_pdbg("\n");
@@ -744,7 +744,7 @@ int sb600_probe_spi(const struct programmer_cfg *cfg, struct pci_dev *dev)
 
 	if (amd_gen >= CHIPSET_SB89XX) {
 		tmp = mmio_readb(sb600_spibar + 0x1D);
-		msg_pdbg("Using SPI_CS%d\n", tmp & 0x3);
+		msg_pdbg("Using SPI_CS%"PRId32"\n", tmp & 0x3);
 		/* FIXME: Handle SpiProtect* configuration on Yangtze. */
 	}
 

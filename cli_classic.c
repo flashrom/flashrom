@@ -579,32 +579,32 @@ static unsigned int count_max_decode_exceedings(const struct flashctx *flash,
 
 	if ((buses & BUS_PARALLEL) && (max_rom_decode_->parallel < size)) {
 		limitexceeded++;
-		msg_pdbg("Chip size %u kB is bigger than supported "
-			 "size %u kB of chipset/board/programmer "
+		msg_pdbg("Chip size %"PRIu32" kB is bigger than supported "
+			 "size %"PRIu32" kB of chipset/board/programmer "
 			 "for %s interface, "
 			 "probe/read/erase/write may fail. ", size / 1024,
 			 max_rom_decode_->parallel / 1024, "Parallel");
 	}
 	if ((buses & BUS_LPC) && (max_rom_decode_->lpc < size)) {
 		limitexceeded++;
-		msg_pdbg("Chip size %u kB is bigger than supported "
-			 "size %u kB of chipset/board/programmer "
+		msg_pdbg("Chip size %"PRIu32" kB is bigger than supported "
+			 "size %"PRIu32" kB of chipset/board/programmer "
 			 "for %s interface, "
 			 "probe/read/erase/write may fail. ", size / 1024,
 			 max_rom_decode_->lpc / 1024, "LPC");
 	}
 	if ((buses & BUS_FWH) && (max_rom_decode_->fwh < size)) {
 		limitexceeded++;
-		msg_pdbg("Chip size %u kB is bigger than supported "
-			 "size %u kB of chipset/board/programmer "
+		msg_pdbg("Chip size %"PRIu32" kB is bigger than supported "
+			 "size %"PRIu32" kB of chipset/board/programmer "
 			 "for %s interface, "
 			 "probe/read/erase/write may fail. ", size / 1024,
 			 max_rom_decode_->fwh / 1024, "FWH");
 	}
 	if ((buses & BUS_SPI) && (max_rom_decode_->spi < size)) {
 		limitexceeded++;
-		msg_pdbg("Chip size %u kB is bigger than supported "
-			 "size %u kB of chipset/board/programmer "
+		msg_pdbg("Chip size %"PRIu32" kB is bigger than supported "
+			 "size %"PRIu32" kB of chipset/board/programmer "
 			 "for %s interface, "
 			 "probe/read/erase/write may fail. ", size / 1024,
 			 max_rom_decode_->spi / 1024, "SPI");

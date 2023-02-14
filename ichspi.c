@@ -445,14 +445,15 @@ static void prettyprint_opcodes(OPCODES *ops)
 		 ops->preop[1]);
 }
 
-#define pprint_reg(reg, bit, val, sep) msg_pdbg("%s=%d" sep, #bit, (val & reg##_##bit) >> reg##_##bit##_OFF)
+#define pprint_reg16(reg, bit, val, sep) msg_pdbg("%s=%"PRId16"" sep, #bit, (val & reg##_##bit) >> reg##_##bit##_OFF)
+#define pprint_reg32(reg, bit, val, sep) msg_pdbg("%s=%"PRId32"" sep, #bit, (val & reg##_##bit) >> reg##_##bit##_OFF)
 
 static void prettyprint_ich9_reg_hsfs(uint16_t reg_val, enum ich_chipset ich_gen)
 {
 	msg_pdbg("HSFS: ");
-	pprint_reg(HSFS, FDONE, reg_val, ", ");
-	pprint_reg(HSFS, FCERR, reg_val, ", ");
-	pprint_reg(HSFS, AEL, reg_val, ", ");
+	pprint_reg16(HSFS, FDONE, reg_val, ", ");
+	pprint_reg16(HSFS, FCERR, reg_val, ", ");
+	pprint_reg16(HSFS, AEL, reg_val, ", ");
 	switch (ich_gen) {
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 	case CHIPSET_C620_SERIES_LEWISBURG:
@@ -462,10 +463,10 @@ static void prettyprint_ich9_reg_hsfs(uint16_t reg_val, enum ich_chipset ich_gen
 	case CHIPSET_ELKHART_LAKE:
 		break;
 	default:
-		pprint_reg(HSFS, BERASE, reg_val, ", ");
+		pprint_reg16(HSFS, BERASE, reg_val, ", ");
 		break;
 	}
-	pprint_reg(HSFS, SCIP, reg_val, ", ");
+	pprint_reg16(HSFS, SCIP, reg_val, ", ");
 	switch (ich_gen) {
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 	case CHIPSET_C620_SERIES_LEWISBURG:
@@ -473,21 +474,21 @@ static void prettyprint_ich9_reg_hsfs(uint16_t reg_val, enum ich_chipset ich_gen
 	case CHIPSET_400_SERIES_COMET_POINT:
 	case CHIPSET_500_SERIES_TIGER_POINT:
 	case CHIPSET_ELKHART_LAKE:
-		pprint_reg(HSFS, PRR34_LOCKDN, reg_val, ", ");
-		pprint_reg(HSFS, WRSDIS, reg_val, ", ");
+		pprint_reg16(HSFS, PRR34_LOCKDN, reg_val, ", ");
+		pprint_reg16(HSFS, WRSDIS, reg_val, ", ");
 		break;
 	default:
 		break;
 	}
-	pprint_reg(HSFS, FDOPSS, reg_val, ", ");
-	pprint_reg(HSFS, FDV, reg_val, ", ");
-	pprint_reg(HSFS, FLOCKDN, reg_val, "\n");
+	pprint_reg16(HSFS, FDOPSS, reg_val, ", ");
+	pprint_reg16(HSFS, FDV, reg_val, ", ");
+	pprint_reg16(HSFS, FLOCKDN, reg_val, "\n");
 }
 
 static void prettyprint_ich9_reg_hsfc(uint16_t reg_val, enum ich_chipset ich_gen)
 {
 	msg_pdbg("HSFC: ");
-	pprint_reg(HSFC, FGO, reg_val, ", ");
+	pprint_reg16(HSFC, FGO, reg_val, ", ");
 	switch (ich_gen) {
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 	case CHIPSET_C620_SERIES_LEWISBURG:
@@ -495,51 +496,51 @@ static void prettyprint_ich9_reg_hsfc(uint16_t reg_val, enum ich_chipset ich_gen
 	case CHIPSET_400_SERIES_COMET_POINT:
 	case CHIPSET_500_SERIES_TIGER_POINT:
 	case CHIPSET_ELKHART_LAKE:
-		pprint_reg(PCH100_HSFC, FCYCLE, reg_val, ", ");
-		pprint_reg(PCH100_HSFC, WET, reg_val, ", ");
+		pprint_reg16(PCH100_HSFC, FCYCLE, reg_val, ", ");
+		pprint_reg16(PCH100_HSFC, WET, reg_val, ", ");
 		break;
 	default:
-		pprint_reg(ICH9_HSFC, FCYCLE, reg_val, ", ");
+		pprint_reg16(ICH9_HSFC, FCYCLE, reg_val, ", ");
 		break;
 	}
-	pprint_reg(HSFC, FDBC, reg_val, ", ");
-	pprint_reg(HSFC, SME, reg_val, "\n");
+	pprint_reg16(HSFC, FDBC, reg_val, ", ");
+	pprint_reg16(HSFC, SME, reg_val, "\n");
 }
 
 static void prettyprint_ich9_reg_ssfs(uint32_t reg_val)
 {
 	msg_pdbg("SSFS: ");
-	pprint_reg(SSFS, SCIP, reg_val, ", ");
-	pprint_reg(SSFS, FDONE, reg_val, ", ");
-	pprint_reg(SSFS, FCERR, reg_val, ", ");
-	pprint_reg(SSFS, AEL, reg_val, "\n");
+	pprint_reg32(SSFS, SCIP, reg_val, ", ");
+	pprint_reg32(SSFS, FDONE, reg_val, ", ");
+	pprint_reg32(SSFS, FCERR, reg_val, ", ");
+	pprint_reg32(SSFS, AEL, reg_val, "\n");
 }
 
 static void prettyprint_ich9_reg_ssfc(uint32_t reg_val)
 {
 	msg_pdbg("SSFC: ");
-	pprint_reg(SSFC, SCGO, reg_val, ", ");
-	pprint_reg(SSFC, ACS, reg_val, ", ");
-	pprint_reg(SSFC, SPOP, reg_val, ", ");
-	pprint_reg(SSFC, COP, reg_val, ", ");
-	pprint_reg(SSFC, DBC, reg_val, ", ");
-	pprint_reg(SSFC, SME, reg_val, ", ");
-	pprint_reg(SSFC, SCF, reg_val, "\n");
+	pprint_reg32(SSFC, SCGO, reg_val, ", ");
+	pprint_reg32(SSFC, ACS, reg_val, ", ");
+	pprint_reg32(SSFC, SPOP, reg_val, ", ");
+	pprint_reg32(SSFC, COP, reg_val, ", ");
+	pprint_reg32(SSFC, DBC, reg_val, ", ");
+	pprint_reg32(SSFC, SME, reg_val, ", ");
+	pprint_reg32(SSFC, SCF, reg_val, "\n");
 }
 
 static void prettyprint_pch100_reg_dlock(const uint32_t reg_val)
 {
 	msg_pdbg("DLOCK: ");
-	pprint_reg(DLOCK, BMWAG_LOCKDN, reg_val, ", ");
-	pprint_reg(DLOCK, BMRAG_LOCKDN, reg_val, ", ");
-	pprint_reg(DLOCK, SBMWAG_LOCKDN, reg_val, ", ");
-	pprint_reg(DLOCK, SBMRAG_LOCKDN, reg_val, ",\n       ");
-	pprint_reg(DLOCK, PR0_LOCKDN, reg_val, ", ");
-	pprint_reg(DLOCK, PR1_LOCKDN, reg_val, ", ");
-	pprint_reg(DLOCK, PR2_LOCKDN, reg_val, ", ");
-	pprint_reg(DLOCK, PR3_LOCKDN, reg_val, ", ");
-	pprint_reg(DLOCK, PR4_LOCKDN, reg_val, ",\n       ");
-	pprint_reg(DLOCK, SSEQ_LOCKDN, reg_val, "\n");
+	pprint_reg32(DLOCK, BMWAG_LOCKDN, reg_val, ", ");
+	pprint_reg32(DLOCK, BMRAG_LOCKDN, reg_val, ", ");
+	pprint_reg32(DLOCK, SBMWAG_LOCKDN, reg_val, ", ");
+	pprint_reg32(DLOCK, SBMRAG_LOCKDN, reg_val, ",\n       ");
+	pprint_reg32(DLOCK, PR0_LOCKDN, reg_val, ", ");
+	pprint_reg32(DLOCK, PR1_LOCKDN, reg_val, ", ");
+	pprint_reg32(DLOCK, PR2_LOCKDN, reg_val, ", ");
+	pprint_reg32(DLOCK, PR3_LOCKDN, reg_val, ", ");
+	pprint_reg32(DLOCK, PR4_LOCKDN, reg_val, ",\n       ");
+	pprint_reg32(DLOCK, SSEQ_LOCKDN, reg_val, "\n");
 }
 
 static struct swseq_data {
@@ -591,7 +592,7 @@ static int program_opcodes(OPCODES *op, int enable_undo, enum ich_chipset ich_ge
 		opmenu[1] |= ((uint32_t) op->opcode[a].opcode) << ((a - 4) * 8);
 	}
 
-	msg_pdbg2("\n%s: preop=%04x optype=%04x opmenu=%08x%08x\n", __func__, preop, optype, opmenu[0], opmenu[1]);
+	msg_pdbg2("\n%s: preop=%04x optype=%04x opmenu=%08"PRIx32"%08"PRIx32"\n", __func__, preop, optype, opmenu[0], opmenu[1]);
 	switch (ich_gen) {
 	case CHIPSET_ICH7:
 	case CHIPSET_TUNNEL_CREEK:
@@ -713,7 +714,7 @@ static void ich_set_bbar(uint32_t min_addr, enum ich_chipset ich_gen)
 
 	ichspi_bbar = mmio_readl(ich_spibar + bbar_off) & ~BBAR_MASK;
 	if (ichspi_bbar) {
-		msg_pdbg("Reserved bits in BBAR not zero: 0x%08x\n",
+		msg_pdbg("Reserved bits in BBAR not zero: 0x%08"PRIx32"\n",
 			 ichspi_bbar);
 	}
 	min_addr &= BBAR_MASK;
@@ -725,7 +726,7 @@ static void ich_set_bbar(uint32_t min_addr, enum ich_chipset ich_gen)
 	 * failed, the restore will fail as well, so no problem there.
 	 */
 	if (ichspi_bbar != min_addr)
-		msg_perr("Setting BBAR to 0x%08x failed! New value: 0x%08x.\n",
+		msg_perr("Setting BBAR to 0x%08"PRIx32" failed! New value: 0x%08"PRIx32".\n",
 			 min_addr, ichspi_bbar);
 }
 
@@ -1081,7 +1082,7 @@ static int ich9_run_opcode(OPCODE op, uint32_t offset,
 		default_delay(10);
 	}
 	if (!timeout) {
-		msg_perr("timeout, REG_SSFS=0x%08x\n", REGREAD32(swseq_data.reg_ssfsc));
+		msg_perr("timeout, REG_SSFS=0x%08"PRIx32"\n", REGREAD32(swseq_data.reg_ssfsc));
 		return 1;
 	}
 
@@ -1230,7 +1231,7 @@ static int ich_spi_send_command(const struct flashctx *flash, unsigned int write
 		if (addr < valid_base ||
 		    addr_end < addr || /* integer overflow check */
 		    addr_end > valid_end) {
-			msg_perr("%s: Addressed region 0x%06x-0x%06x not in allowed range 0x%06x-0x%06x\n",
+			msg_perr("%s: Addressed region 0x%06"PRIx32"-0x%06"PRIx32" not in allowed range 0x%06"PRIx32"-0x%06"PRIx32"\n",
 				 __func__, addr, addr_end - 1, valid_base, valid_end - 1);
 			return SPI_INVALID_ADDRESS;
 		}
@@ -1242,7 +1243,7 @@ static int ich_spi_send_command(const struct flashctx *flash, unsigned int write
 		msg_pdbg("Running OPCODE 0x%02x failed ", opcode->opcode);
 		if ((opcode->spi_type == SPI_OPCODE_TYPE_WRITE_WITH_ADDRESS) ||
 		    (opcode->spi_type == SPI_OPCODE_TYPE_READ_WITH_ADDRESS)) {
-			msg_pdbg("at address 0x%06x ", addr);
+			msg_pdbg("at address 0x%06"PRIx32" ", addr);
 		}
 		msg_pdbg("(payload length was %d).\n", count);
 
@@ -1254,7 +1255,7 @@ static int ich_spi_send_command(const struct flashctx *flash, unsigned int write
 			int i;
 			msg_pspew("The data was:\n");
 			for (i = 0; i < count; i++){
-				msg_pspew("%3d: 0x%02x\n", i, data[i]);
+				msg_pspew("%3d: 0x%02"PRIx8"\n", i, data[i]);
 			}
 		}
 	}
@@ -1341,8 +1342,8 @@ static int ich_hwseq_wait_for_cycle_complete(unsigned int len, enum ich_chipset 
 	REGWRITE16(ICH9_REG_HSFS, REGREAD16(ICH9_REG_HSFS));
 	if (!timeout_us) {
 		addr = REGREAD32(ICH9_REG_FADDR) & addr_mask;
-		msg_perr("Timeout error between offset 0x%08x and "
-			 "0x%08x (= 0x%08x + %d)!\n",
+		msg_perr("Timeout error between offset 0x%08"PRIx32" and "
+			 "0x%08"PRIx32" (= 0x%08"PRIx32" + %d)!\n",
 			 addr, addr + len - 1, addr, len - 1);
 		prettyprint_ich9_reg_hsfs(hsfs, ich_gen);
 		prettyprint_ich9_reg_hsfc(REGREAD16(ICH9_REG_HSFC), ich_gen);
@@ -1351,8 +1352,8 @@ static int ich_hwseq_wait_for_cycle_complete(unsigned int len, enum ich_chipset 
 
 	if (hsfs & HSFS_FCERR) {
 		addr = REGREAD32(ICH9_REG_FADDR) & addr_mask;
-		msg_perr("Transaction error between offset 0x%08x and "
-			 "0x%08x (= 0x%08x + %d)!\n",
+		msg_perr("Transaction error between offset 0x%08"PRIx32" and "
+			 "0x%08"PRIx32" (= 0x%08"PRIx32" + %d)!\n",
 			 addr, addr + len - 1, addr, len - 1);
 		prettyprint_ich9_reg_hsfs(hsfs, ich_gen);
 		prettyprint_ich9_reg_hsfc(REGREAD16(ICH9_REG_HSFC), ich_gen);
@@ -1563,8 +1564,8 @@ static void ich_hwseq_get_flash_id(struct flashctx *flash, enum ich_chipset ich_
 
 	const struct flashchip *entry = flash_id_to_entry(mfg_id, model_id);
 	if (!entry) {
-		msg_pwarn("Unable to identify chip, mfg_id: 0x%02x, "
-				"model_id: 0x%02x\n", mfg_id, model_id);
+		msg_pwarn("Unable to identify chip, mfg_id: 0x%02"PRIx32", "
+				"model_id: 0x%02"PRIx32"\n", mfg_id, model_id);
 	}
 
 	msg_pdbg("Chip identified: %s\n", entry->name);
@@ -1597,7 +1598,7 @@ static int ich_hwseq_probe(struct flashctx *flash)
 		msg_cdbg("s with a combined");
 	else
 		msg_cdbg(" with a");
-	msg_cdbg(" density of %d kB.\n", total_size / 1024);
+	msg_cdbg(" density of %"PRId32" kB.\n", total_size / 1024);
 	flash->chip->total_size = total_size / 1024;
 
 	eraser = &(flash->chip->block_erasers[0]);
@@ -1610,29 +1611,29 @@ static int ich_hwseq_probe(struct flashctx *flash)
 
 	if (boundary == 0) {
 		msg_cdbg2("There is only one partition containing the whole "
-			 "address space (0x%06x - 0x%06x).\n", 0, size_high-1);
+			 "address space (0x%06x - 0x%06"PRIx32").\n", 0, size_high-1);
 		eraser->eraseblocks[0].size = erase_size_high;
 		eraser->eraseblocks[0].count = size_high / erase_size_high;
-		msg_cdbg2("There are %d erase blocks with %d B each.\n",
+		msg_cdbg2("There are %"PRId32" erase blocks with %"PRId32" B each.\n",
 			 size_high / erase_size_high, erase_size_high);
 	} else {
-		msg_cdbg2("The flash address space (0x%06x - 0x%06x) is divided "
-			 "at address 0x%06x in two partitions.\n",
+		msg_cdbg2("The flash address space (0x%06x - 0x%06"PRIx32") is divided "
+			 "at address 0x%06"PRIx32" in two partitions.\n",
 			 0, total_size-1, boundary);
 		size_low = total_size - size_high;
 		erase_size_low = ich_hwseq_get_erase_block_size(0, hwseq_data->addr_mask, hwseq_data->only_4k);
 
 		eraser->eraseblocks[0].size = erase_size_low;
 		eraser->eraseblocks[0].count = size_low / erase_size_low;
-		msg_cdbg("The first partition ranges from 0x%06x to 0x%06x.\n", 0, size_low-1);
-		msg_cdbg("In that range are %d erase blocks with %d B each.\n",
+		msg_cdbg("The first partition ranges from 0x%06x to 0x%06"PRIx32".\n", 0, size_low-1);
+		msg_cdbg("In that range are %"PRId32" erase blocks with %"PRId32" B each.\n",
 			 size_low / erase_size_low, erase_size_low);
 
 		eraser->eraseblocks[1].size = erase_size_high;
 		eraser->eraseblocks[1].count = size_high / erase_size_high;
-		msg_cdbg("The second partition ranges from 0x%06x to 0x%06x.\n",
+		msg_cdbg("The second partition ranges from 0x%06"PRIx32" to 0x%06"PRIx32".\n",
 			 boundary, total_size-1);
-		msg_cdbg("In that range are %d erase blocks with %d B each.\n",
+		msg_cdbg("In that range are %"PRId32" erase blocks with %"PRId32" B each.\n",
 			 size_high / erase_size_high, erase_size_high);
 	}
 
@@ -1652,7 +1653,7 @@ static int ich_hwseq_block_erase(struct flashctx *flash, unsigned int addr,
 
 	erase_block = ich_hwseq_get_erase_block_size(addr, hwseq_data->addr_mask, hwseq_data->only_4k);
 	if (len != erase_block) {
-		msg_cerr("Erase block size for address 0x%06x is %d B, "
+		msg_cerr("Erase block size for address 0x%06x is %"PRId32" B, "
 			 "but requested erase block size is %d B. "
 			 "Not erasing anything.\n", addr, erase_block, len);
 		return -1;
@@ -1662,7 +1663,7 @@ static int ich_hwseq_block_erase(struct flashctx *flash, unsigned int addr,
 	 * containing the address) we play safe here. */
 	if (addr % erase_block != 0) {
 		msg_cerr("Erase address 0x%06x is not aligned to the erase "
-			 "block boundary (any multiple of %d). "
+			 "block boundary (any multiple of %"PRId32"). "
 			 "Not erasing anything.\n", addr, erase_block);
 		return -1;
 	}
@@ -1851,11 +1852,11 @@ static enum ich_access_protection ich9_handle_frap(struct fd_region *fd_regions,
 	limit = ICH_FREG_LIMIT(freg);
 	if (base > limit || (freg == 0 && i > 0)) {
 		/* this FREG is disabled */
-		msg_pdbg2("0x%02X: 0x%08x FREG%u: %s region is unused.\n",
+		msg_pdbg2("0x%02X: 0x%08"PRIx32" FREG%u: %s region is unused.\n",
 			  offset, freg, i, region_name);
 		return NO_PROT;
 	}
-	msg_pdbg("0x%02X: 0x%08x ", offset, freg);
+	msg_pdbg("0x%02X: 0x%08"PRIx32" ", offset, freg);
 
 	if (i < 8) {
 		rwperms_idx = (((ICH_BRWA(frap) >> i) & 1) << 1) |
@@ -1866,11 +1867,11 @@ static enum ich_access_protection ich9_handle_frap(struct fd_region *fd_regions,
 		   can't rely on the actual descriptor settings either as there
 		   are several overrides for them (those by other masters are
 		   not even readable by us, *shrug*). */
-		msg_pdbg("FREG%u: %s region (0x%08x-0x%08x) has unknown permissions.\n",
+		msg_pdbg("FREG%u: %s region (0x%08"PRIx32"-0x%08"PRIx32") has unknown permissions.\n",
 				i, region_name, base, limit);
 		return NO_PROT;
 	}
-	msg_pinfo("FREG%u: %s region (0x%08x-0x%08x) is %s.\n", i,
+	msg_pinfo("FREG%u: %s region (0x%08"PRIx32"-0x%08"PRIx32") is %s.\n", i,
 		  region_name, base, limit, access_names[rwperms]);
 
 	/* Save region attributes for use by ich_get_region(). */
@@ -1904,12 +1905,12 @@ static enum ich_access_protection ich9_handle_pr(const size_t reg_pr0, unsigned 
 		i -= 5;
 
 	if (rwperms == NO_PROT) {
-		msg_pdbg2("0x%02X: 0x%08x (%sPR%u is unused)\n", off, pr, prefix, i);
+		msg_pdbg2("0x%02"PRIX8": 0x%08"PRIx32" (%sPR%u is unused)\n", off, pr, prefix, i);
 		return NO_PROT;
 	}
 
-	msg_pdbg("0x%02X: 0x%08x ", off, pr);
-	msg_pwarn("%sPR%u: Warning: 0x%08x-0x%08x is %s.\n", prefix, i, ICH_FREG_BASE(pr),
+	msg_pdbg("0x%02"PRIX8": 0x%08"PRIx32" ", off, pr);
+	msg_pwarn("%sPR%u: Warning: 0x%08"PRIx32"-0x%08"PRIx32" is %s.\n", prefix, i, ICH_FREG_BASE(pr),
 		  ICH_FREG_LIMIT(pr), access_names[rwperms]);
 
 	return rwperms;
@@ -1923,7 +1924,7 @@ static void ich9_set_pr(const size_t reg_pr0, int i, int read_prot, int write_pr
 	uint32_t old = mmio_readl(addr);
 	uint32_t new;
 
-	msg_gspew("PR%u is 0x%08x", i, old);
+	msg_gspew("PR%u is 0x%08"PRIx32"", i, old);
 	new = old & ~((1 << PR_RP_OFF) | (1 << PR_WP_OFF));
 	if (read_prot)
 		new |= (1 << PR_RP_OFF);
@@ -1933,9 +1934,9 @@ static void ich9_set_pr(const size_t reg_pr0, int i, int read_prot, int write_pr
 		msg_gspew(" already.\n");
 		return;
 	}
-	msg_gspew(", trying to set it to 0x%08x ", new);
+	msg_gspew(", trying to set it to 0x%08"PRIx32" ", new);
 	rmmio_writel(new, addr);
-	msg_gspew("resulted in 0x%08x.\n", mmio_readl(addr));
+	msg_gspew("resulted in 0x%08"PRIx32".\n", mmio_readl(addr));
 }
 
 static const struct spi_master spi_master_ich7 = {
@@ -1978,22 +1979,22 @@ static int init_ich7_spi(void *spibar, enum ich_chipset ich_gen)
 {
 	unsigned int i;
 
-	msg_pdbg("0x00: 0x%04x     (SPIS)\n",	mmio_readw(spibar + 0));
-	msg_pdbg("0x02: 0x%04x     (SPIC)\n",	mmio_readw(spibar + 2));
-	msg_pdbg("0x04: 0x%08x (SPIA)\n",	mmio_readl(spibar + 4));
+	msg_pdbg("0x00: 0x%04"PRIx16"     (SPIS)\n",	mmio_readw(spibar + 0));
+	msg_pdbg("0x02: 0x%04"PRIx16"     (SPIC)\n",	mmio_readw(spibar + 2));
+	msg_pdbg("0x04: 0x%08"PRIx32" (SPIA)\n",	mmio_readl(spibar + 4));
 
 	ichspi_bbar = mmio_readl(spibar + 0x50);
 
-	msg_pdbg("0x50: 0x%08x (BBAR)\n",	ichspi_bbar);
-	msg_pdbg("0x54: 0x%04x     (PREOP)\n",	mmio_readw(spibar + 0x54));
-	msg_pdbg("0x56: 0x%04x     (OPTYPE)\n",	mmio_readw(spibar + 0x56));
-	msg_pdbg("0x58: 0x%08x (OPMENU)\n",	mmio_readl(spibar + 0x58));
-	msg_pdbg("0x5c: 0x%08x (OPMENU+4)\n",	mmio_readl(spibar + 0x5c));
+	msg_pdbg("0x50: 0x%08"PRIx32" (BBAR)\n",	ichspi_bbar);
+	msg_pdbg("0x54: 0x%04"PRIx16"     (PREOP)\n",	mmio_readw(spibar + 0x54));
+	msg_pdbg("0x56: 0x%04"PRIx16"     (OPTYPE)\n",	mmio_readw(spibar + 0x56));
+	msg_pdbg("0x58: 0x%08"PRIx32" (OPMENU)\n",	mmio_readl(spibar + 0x58));
+	msg_pdbg("0x5c: 0x%08"PRIx32" (OPMENU+4)\n",	mmio_readl(spibar + 0x5c));
 
 	for (i = 0; i < 3; i++) {
 		int offs;
 		offs = 0x60 + (i * 4);
-		msg_pdbg("0x%02x: 0x%08x (PBR%u)\n", offs, mmio_readl(spibar + offs), i);
+		msg_pdbg("0x%02x: 0x%08"PRIx32" (PBR%u)\n", offs, mmio_readl(spibar + offs), i);
 	}
 	if (mmio_readw(spibar) & (1 << 15)) {
 		msg_pwarn("WARNING: SPI Configuration Lockdown activated.\n");
@@ -2138,12 +2139,12 @@ static int init_ich_default(const struct programmer_cfg *cfg, void *spibar, enum
 
 	if (desc_valid) {
 		tmp2 = mmio_readw(spibar + ICH9_REG_HSFC);
-		msg_pdbg("0x06: 0x%04x (HSFC)\n", tmp2);
+		msg_pdbg("0x06: 0x%04"PRIx16" (HSFC)\n", tmp2);
 		prettyprint_ich9_reg_hsfc(tmp2, ich_gen);
 	}
 
 	tmp = mmio_readl(spibar + ICH9_REG_FADDR);
-	msg_pdbg2("0x08: 0x%08x (FADDR)\n", tmp);
+	msg_pdbg2("0x08: 0x%08"PRIx32" (FADDR)\n", tmp);
 
 	switch (ich_gen) {
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
@@ -2158,7 +2159,7 @@ static int init_ich_default(const struct programmer_cfg *cfg, void *spibar, enum
 	case CHIPSET_JASPER_LAKE:
 	case CHIPSET_ELKHART_LAKE:
 		tmp = mmio_readl(spibar + PCH100_REG_DLOCK);
-		msg_pdbg("0x0c: 0x%08x (DLOCK)\n", tmp);
+		msg_pdbg("0x0c: 0x%08"PRIx32" (DLOCK)\n", tmp);
 		prettyprint_pch100_reg_dlock(tmp);
 		break;
 	default:
@@ -2167,11 +2168,11 @@ static int init_ich_default(const struct programmer_cfg *cfg, void *spibar, enum
 
 	if (desc_valid) {
 		tmp = mmio_readl(spibar + ICH9_REG_FRAP);
-		msg_pdbg("0x50: 0x%08x (FRAP)\n", tmp);
-		msg_pdbg("BMWAG 0x%02x, ", ICH_BMWAG(tmp));
-		msg_pdbg("BMRAG 0x%02x, ", ICH_BMRAG(tmp));
-		msg_pdbg("BRWA 0x%02x, ", ICH_BRWA(tmp));
-		msg_pdbg("BRRA 0x%02x\n", ICH_BRRA(tmp));
+		msg_pdbg("0x50: 0x%08"PRIx32" (FRAP)\n", tmp);
+		msg_pdbg("BMWAG 0x%02"PRIx32", ", ICH_BMWAG(tmp));
+		msg_pdbg("BMRAG 0x%02"PRIx32", ", ICH_BMRAG(tmp));
+		msg_pdbg("BRWA 0x%02"PRIx32", ", ICH_BRWA(tmp));
+		msg_pdbg("BRRA 0x%02"PRIx32"\n", ICH_BRRA(tmp));
 
 		/* Handle FREGx and FRAP registers */
 		for (i = 0; i < num_freg; i++)
@@ -2205,22 +2206,22 @@ static int init_ich_default(const struct programmer_cfg *cfg, void *spibar, enum
 	}
 
 	tmp = mmio_readl(spibar + swseq_data.reg_ssfsc);
-	msg_pdbg("0x%zx: 0x%02x (SSFS)\n", swseq_data.reg_ssfsc, tmp & 0xff);
+	msg_pdbg("0x%zx: 0x%02"PRIx32" (SSFS)\n", swseq_data.reg_ssfsc, tmp & 0xff);
 	prettyprint_ich9_reg_ssfs(tmp);
 	if (tmp & SSFS_FCERR) {
 		msg_pdbg("Clearing SSFS.FCERR\n");
 		mmio_writeb(SSFS_FCERR, spibar + swseq_data.reg_ssfsc);
 	}
-	msg_pdbg("0x%zx: 0x%06x (SSFC)\n", swseq_data.reg_ssfsc + 1, tmp >> 8);
+	msg_pdbg("0x%zx: 0x%06"PRIx32" (SSFC)\n", swseq_data.reg_ssfsc + 1, tmp >> 8);
 	prettyprint_ich9_reg_ssfc(tmp);
 
-	msg_pdbg("0x%zx: 0x%04x     (PREOP)\n",
+	msg_pdbg("0x%zx: 0x%04"PRIx16" (PREOP)\n",
 		 swseq_data.reg_preop, mmio_readw(spibar + swseq_data.reg_preop));
-	msg_pdbg("0x%zx: 0x%04x     (OPTYPE)\n",
+	msg_pdbg("0x%zx: 0x%04"PRIx16" (OPTYPE)\n",
 		 swseq_data.reg_optype, mmio_readw(spibar + swseq_data.reg_optype));
-	msg_pdbg("0x%zx: 0x%08x (OPMENU)\n",
+	msg_pdbg("0x%zx: 0x%08"PRIx32" (OPMENU)\n",
 		 swseq_data.reg_opmenu, mmio_readl(spibar + swseq_data.reg_opmenu));
-	msg_pdbg("0x%zx: 0x%08x (OPMENU+4)\n",
+	msg_pdbg("0x%zx: 0x%08"PRIx32" (OPMENU+4)\n",
 		 swseq_data.reg_opmenu + 4, mmio_readl(spibar + swseq_data.reg_opmenu + 4));
 
 	if (desc_valid) {
@@ -2241,24 +2242,24 @@ static int init_ich_default(const struct programmer_cfg *cfg, void *spibar, enum
 			break;
 		default:
 			ichspi_bbar = mmio_readl(spibar + ICH9_REG_BBAR);
-			msg_pdbg("0x%x: 0x%08x (BBAR)\n", ICH9_REG_BBAR, ichspi_bbar);
+			msg_pdbg("0x%x: 0x%08"PRIx32" (BBAR)\n", ICH9_REG_BBAR, ichspi_bbar);
 			ich_set_bbar(0, ich_gen);
 			break;
 		}
 
 		if (ich_gen == CHIPSET_ICH8) {
 			tmp = mmio_readl(spibar + ICH8_REG_VSCC);
-			msg_pdbg("0x%x: 0x%08x (VSCC)\n", ICH8_REG_VSCC, tmp);
+			msg_pdbg("0x%x: 0x%08"PRIx32" (VSCC)\n", ICH8_REG_VSCC, tmp);
 			msg_pdbg("VSCC: ");
 			prettyprint_ich_reg_vscc(tmp, FLASHROM_MSG_DEBUG, true);
 		} else {
 			tmp = mmio_readl(spibar + ICH9_REG_LVSCC);
-			msg_pdbg("0x%x: 0x%08x (LVSCC)\n", ICH9_REG_LVSCC, tmp);
+			msg_pdbg("0x%x: 0x%08"PRIx32" (LVSCC)\n", ICH9_REG_LVSCC, tmp);
 			msg_pdbg("LVSCC: ");
 			prettyprint_ich_reg_vscc(tmp, FLASHROM_MSG_DEBUG, true);
 
 			tmp = mmio_readl(spibar + ICH9_REG_UVSCC);
-			msg_pdbg("0x%x: 0x%08x (UVSCC)\n", ICH9_REG_UVSCC, tmp);
+			msg_pdbg("0x%x: 0x%08"PRIx32" (UVSCC)\n", ICH9_REG_UVSCC, tmp);
 			msg_pdbg("UVSCC: ");
 			prettyprint_ich_reg_vscc(tmp, FLASHROM_MSG_DEBUG, false);
 		}
@@ -2279,7 +2280,7 @@ static int init_ich_default(const struct programmer_cfg *cfg, void *spibar, enum
 			break;
 		default:
 			tmp = mmio_readl(spibar + ICH9_REG_FPB);
-			msg_pdbg("0x%x: 0x%08x (FPB)\n", ICH9_REG_FPB, tmp);
+			msg_pdbg("0x%x: 0x%08"PRIx32" (FPB)\n", ICH9_REG_FPB, tmp);
 			break;
 		}
 
@@ -2398,27 +2399,27 @@ int via_init_spi(uint32_t mmio_base)
 	ich_generation = CHIPSET_ICH7;
 	register_spi_master(&spi_master_via, NULL);
 
-	msg_pdbg("0x00: 0x%04x     (SPIS)\n",	mmio_readw(ich_spibar + 0));
-	msg_pdbg("0x02: 0x%04x     (SPIC)\n",	mmio_readw(ich_spibar + 2));
-	msg_pdbg("0x04: 0x%08x (SPIA)\n",	mmio_readl(ich_spibar + 4));
+	msg_pdbg("0x00: 0x%04"PRIx16" (SPIS)\n",	mmio_readw(ich_spibar + 0));
+	msg_pdbg("0x02: 0x%04"PRIx16" (SPIC)\n",	mmio_readw(ich_spibar + 2));
+	msg_pdbg("0x04: 0x%08"PRIx32" (SPIA)\n",	mmio_readl(ich_spibar + 4));
 	for (i = 0; i < 2; i++) {
 		int offs;
 		offs = 8 + (i * 8);
-		msg_pdbg("0x%02x: 0x%08x (SPID%d)\n", offs, mmio_readl(ich_spibar + offs), i);
-		msg_pdbg("0x%02x: 0x%08x (SPID%d+4)\n", offs + 4,
+		msg_pdbg("0x%02x: 0x%08"PRIx32" (SPID%d)\n", offs, mmio_readl(ich_spibar + offs), i);
+		msg_pdbg("0x%02x: 0x%08"PRIx32" (SPID%d+4)\n", offs + 4,
 			 mmio_readl(ich_spibar + offs + 4), i);
 	}
 	ichspi_bbar = mmio_readl(ich_spibar + 0x50);
 
-	msg_pdbg("0x50: 0x%08x (BBAR)\n",	ichspi_bbar);
-	msg_pdbg("0x54: 0x%04x     (PREOP)\n",	mmio_readw(ich_spibar + 0x54));
-	msg_pdbg("0x56: 0x%04x     (OPTYPE)\n",	mmio_readw(ich_spibar + 0x56));
-	msg_pdbg("0x58: 0x%08x (OPMENU)\n",	mmio_readl(ich_spibar + 0x58));
-	msg_pdbg("0x5c: 0x%08x (OPMENU+4)\n",	mmio_readl(ich_spibar + 0x5c));
+	msg_pdbg("0x50: 0x%08"PRIx32" (BBAR)\n",	ichspi_bbar);
+	msg_pdbg("0x54: 0x%04"PRIx16" (PREOP)\n",	mmio_readw(ich_spibar + 0x54));
+	msg_pdbg("0x56: 0x%04"PRIx16" (OPTYPE)\n",	mmio_readw(ich_spibar + 0x56));
+	msg_pdbg("0x58: 0x%08"PRIx32" (OPMENU)\n",	mmio_readl(ich_spibar + 0x58));
+	msg_pdbg("0x5c: 0x%08"PRIx32" (OPMENU+4)\n",	mmio_readl(ich_spibar + 0x5c));
 	for (i = 0; i < 3; i++) {
 		int offs;
 		offs = 0x60 + (i * 4);
-		msg_pdbg("0x%02x: 0x%08x (PBR%d)\n", offs, mmio_readl(ich_spibar + offs), i);
+		msg_pdbg("0x%02x: 0x%08"PRIx32" (PBR%d)\n", offs, mmio_readl(ich_spibar + offs), i);
 	}
 	msg_pdbg("0x6c: 0x%04x     (CLOCK/DEBUG)\n", mmio_readw(ich_spibar + 0x6c));
 	if (mmio_readw(ich_spibar) & (1 << 15)) {

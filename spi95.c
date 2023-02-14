@@ -46,7 +46,7 @@ int probe_spi_st95(struct flashctx *flash)
 	id1 = readarr[0]; // manufacture id
 	id2 = (readarr[1] << 8) | readarr[2]; // SPI family code + model id
 
-	msg_cdbg("%s: id1 0x%02x, id2 0x%02x\n", __func__, id1, id2);
+	msg_cdbg("%s: id1 0x%02"PRIx32", id2 0x%02"PRIx32"\n", __func__, id1, id2);
 
 	if (id1 == flash->chip->manufacture_id && id2 == flash->chip->model_id)
 		return 1;

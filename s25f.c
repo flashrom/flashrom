@@ -184,7 +184,7 @@ static int s25fs_read_cr(const struct flashctx *flash, uint32_t addr)
 
 	int result = spi_send_command(flash, sizeof(read_cr_cmd), 1, read_cr_cmd, &cfg);
 	if (result) {
-		msg_cerr("%s failed during command execution at address 0x%x\n",
+		msg_cerr("%s failed during command execution at address 0x%"PRIx32"\n",
 			__func__, addr);
 		return -1;
 	}
@@ -222,7 +222,7 @@ static int s25fs_write_cr(const struct flashctx *flash,
 
 	int result = spi_send_multicommand(flash, cmds);
 	if (result) {
-		msg_cerr("%s failed during command execution at address 0x%x\n",
+		msg_cerr("%s failed during command execution at address 0x%"PRIx32"\n",
 			__func__, addr);
 		return -1;
 	}

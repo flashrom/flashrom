@@ -166,7 +166,7 @@ static int atavia_init(const struct programmer_cfg *cfg)
 	pci_write_long(dev, PCI_ROM_ADDRESS, (uint32_t)PCI_ROM_ADDRESS_MASK);
 	default_delay(90);
 	uint32_t base = pci_read_long(dev, PCI_ROM_ADDRESS);
-	msg_pdbg2("BROM base=0x%08x\n", base);
+	msg_pdbg2("BROM base=0x%08"PRIx32"\n", base);
 	if ((base & PCI_ROM_ADDRESS_MASK) == 0) {
 		msg_pwarn("Controller thinks there is no ROM attached.\n");
 	}

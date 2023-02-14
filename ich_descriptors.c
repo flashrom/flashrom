@@ -94,13 +94,13 @@ ssize_t ich_number_of_masters(const enum ich_chipset cs, const struct ich_desc_c
 
 void prettyprint_ich_reg_vscc(uint32_t reg_val, int verbosity, bool print_vcl)
 {
-	print(verbosity, "BES=0x%x, ",	(reg_val & VSCC_BES)  >> VSCC_BES_OFF);
-	print(verbosity, "WG=%d, ",	(reg_val & VSCC_WG)   >> VSCC_WG_OFF);
-	print(verbosity, "WSR=%d, ",	(reg_val & VSCC_WSR)  >> VSCC_WSR_OFF);
-	print(verbosity, "WEWS=%d, ",	(reg_val & VSCC_WEWS) >> VSCC_WEWS_OFF);
-	print(verbosity, "EO=0x%x",	(reg_val & VSCC_EO)   >> VSCC_EO_OFF);
+	print(verbosity, "BES=0x%"PRIx32", ",	(reg_val & VSCC_BES)  >> VSCC_BES_OFF);
+	print(verbosity, "WG=%"PRId32", ",	(reg_val & VSCC_WG)   >> VSCC_WG_OFF);
+	print(verbosity, "WSR=%"PRId32", ",	(reg_val & VSCC_WSR)  >> VSCC_WSR_OFF);
+	print(verbosity, "WEWS=%"PRId32", ",	(reg_val & VSCC_WEWS) >> VSCC_WEWS_OFF);
+	print(verbosity, "EO=0x%"PRIx32"",	(reg_val & VSCC_EO)   >> VSCC_EO_OFF);
 	if (print_vcl)
-		print(verbosity, ", VCL=%d", (reg_val & VSCC_VCL)  >> VSCC_VCL_OFF);
+		print(verbosity, ", VCL=%"PRId32"", (reg_val & VSCC_VCL)  >> VSCC_VCL_OFF);
 	print(verbosity, "\n");
 }
 
@@ -145,23 +145,23 @@ void prettyprint_ich_descriptors(enum ich_chipset cs, const struct ich_descripto
 void prettyprint_ich_descriptor_content(enum ich_chipset cs, const struct ich_desc_content *cont)
 {
 	msg_pdbg2("=== Content Section ===\n");
-	msg_pdbg2("FLVALSIG 0x%08x\n", cont->FLVALSIG);
-	msg_pdbg2("FLMAP0   0x%08x\n", cont->FLMAP0);
-	msg_pdbg2("FLMAP1   0x%08x\n", cont->FLMAP1);
-	msg_pdbg2("FLMAP2   0x%08x\n", cont->FLMAP2);
+	msg_pdbg2("FLVALSIG 0x%08"PRIx32"\n", cont->FLVALSIG);
+	msg_pdbg2("FLMAP0   0x%08"PRIx32"\n", cont->FLMAP0);
+	msg_pdbg2("FLMAP1   0x%08"PRIx32"\n", cont->FLMAP1);
+	msg_pdbg2("FLMAP2   0x%08"PRIx32"\n", cont->FLMAP2);
 	msg_pdbg2("\n");
 
 	msg_pdbg2("--- Details ---\n");
 	msg_pdbg2("NR          (Number of Regions):                 %5zd\n",   ich_number_of_regions(cs, cont));
-	msg_pdbg2("FRBA        (Flash Region Base Address):         0x%03x\n", getFRBA(cont));
+	msg_pdbg2("FRBA        (Flash Region Base Address):         0x%03"PRIx32"\n", getFRBA(cont));
 	msg_pdbg2("NC          (Number of Components):              %5d\n",    cont->NC + 1);
-	msg_pdbg2("FCBA        (Flash Component Base Address):      0x%03x\n", getFCBA(cont));
+	msg_pdbg2("FCBA        (Flash Component Base Address):      0x%03"PRIx32"\n", getFCBA(cont));
 	msg_pdbg2("ISL         (ICH/PCH/SoC Strap Length):          %5d\n",    cont->ISL);
-	msg_pdbg2("FISBA/FPSBA (Flash ICH/PCH/SoC Strap Base Addr): 0x%03x\n", getFISBA(cont));
+	msg_pdbg2("FISBA/FPSBA (Flash ICH/PCH/SoC Strap Base Addr): 0x%03"PRIx32"\n", getFISBA(cont));
 	msg_pdbg2("NM          (Number of Masters):                 %5zd\n",   ich_number_of_masters(cs, cont));
-	msg_pdbg2("FMBA        (Flash Master Base Address):         0x%03x\n", getFMBA(cont));
+	msg_pdbg2("FMBA        (Flash Master Base Address):         0x%03"PRIx32"\n", getFMBA(cont));
 	msg_pdbg2("MSL/PSL     (MCH/PROC Strap Length):             %5d\n",    cont->MSL);
-	msg_pdbg2("FMSBA       (Flash MCH/PROC Strap Base Address): 0x%03x\n", getFMSBA(cont));
+	msg_pdbg2("FMSBA       (Flash MCH/PROC Strap Base Address): 0x%03"PRIx32"\n", getFMSBA(cont));
 	msg_pdbg2("\n");
 }
 
@@ -374,10 +374,10 @@ void prettyprint_ich_descriptor_component(enum ich_chipset cs, const struct ich_
 	}
 
 	msg_pdbg2("=== Component Section ===\n");
-	msg_pdbg2("FLCOMP   0x%08x\n", desc->component.FLCOMP);
-	msg_pdbg2("FLILL    0x%08x\n", desc->component.FLILL );
+	msg_pdbg2("FLCOMP   0x%08"PRIx32"\n", desc->component.FLCOMP);
+	msg_pdbg2("FLILL    0x%08"PRIx32"\n", desc->component.FLILL );
 	if (has_flill1)
-		msg_pdbg2("FLILL1   0x%08x\n", desc->component.FLILL1);
+		msg_pdbg2("FLILL1   0x%08"PRIx32"\n", desc->component.FLILL1);
 	msg_pdbg2("\n");
 
 	msg_pdbg2("--- Details ---\n");
@@ -442,11 +442,11 @@ static void pprint_freg(const struct ich_desc_region *reg, uint32_t i)
 	}
 	uint32_t base = ICH_FREG_BASE(reg->FLREGs[i]);
 	uint32_t limit = ICH_FREG_LIMIT(reg->FLREGs[i]);
-	msg_pdbg2("Region %d (%-7s) ", i, region_names[i]);
+	msg_pdbg2("Region %"PRId32" (%-7s) ", i, region_names[i]);
 	if (base > limit)
 		msg_pdbg2("is unused.\n");
 	else
-		msg_pdbg2("0x%08x - 0x%08x\n", base, limit);
+		msg_pdbg2("0x%08"PRIx32" - 0x%08"PRIx32"\n", base, limit);
 }
 
 void prettyprint_ich_descriptor_region(const enum ich_chipset cs, const struct ich_descriptors *const desc)
@@ -460,7 +460,7 @@ void prettyprint_ich_descriptor_region(const enum ich_chipset cs, const struct i
 		return;
 	}
 	for (i = 0; i < nr; i++)
-		msg_pdbg2("FLREG%zd   0x%08x\n", i, desc->region.FLREGs[i]);
+		msg_pdbg2("FLREG%zd   0x%08"PRIx32"\n", i, desc->region.FLREGs[i]);
 	msg_pdbg2("\n");
 
 	msg_pdbg2("--- Details ---\n");
@@ -480,7 +480,7 @@ void prettyprint_ich_descriptor_master(const enum ich_chipset cs, const struct i
 		return;
 	}
 	for (i = 0; i < nm; i++)
-		msg_pdbg2("FLMSTR%zd  0x%08x\n", i + 1, desc->master.FLMSTRs[i]);
+		msg_pdbg2("FLMSTR%zd  0x%08"PRIx32"\n", i + 1, desc->master.FLMSTRs[i]);
 	msg_pdbg2("\n");
 
 	msg_pdbg2("--- Details ---\n");
@@ -912,7 +912,7 @@ void prettyprint_ich_descriptor_straps(enum ich_chipset cs, const struct ich_des
 
 	msg_pdbg2("--- North/MCH/PROC (%d entries) ---\n", max_count);
 	for (i = 0; i < max_count; i++)
-		msg_pdbg2("STRP%-2d = 0x%08x\n", i, desc->north.STRPs[i]);
+		msg_pdbg2("STRP%-2d = 0x%08"PRIx32"\n", i, desc->north.STRPs[i]);
 	msg_pdbg2("\n");
 
 	max_count = MIN(ARRAY_SIZE(desc->south.STRPs), desc->content.ISL);
@@ -924,7 +924,7 @@ void prettyprint_ich_descriptor_straps(enum ich_chipset cs, const struct ich_des
 
 	msg_pdbg2("--- South/ICH/PCH (%d entries) ---\n", max_count);
 	for (i = 0; i < max_count; i++)
-		msg_pdbg2("STRP%-2d = 0x%08x\n", i, desc->south.STRPs[i]);
+		msg_pdbg2("STRP%-2d = 0x%08"PRIx32"\n", i, desc->south.STRPs[i]);
 	msg_pdbg2("\n");
 
 	switch (cs) {
@@ -970,20 +970,20 @@ void prettyprint_ich_descriptor_upper_map(const struct ich_desc_upper_map *umap)
 {
 	int i;
 	msg_pdbg2("=== Upper Map Section ===\n");
-	msg_pdbg2("FLUMAP1  0x%08x\n", umap->FLUMAP1);
+	msg_pdbg2("FLUMAP1  0x%08"PRIx32"\n", umap->FLUMAP1);
 	msg_pdbg2("\n");
 
 	msg_pdbg2("--- Details ---\n");
 	msg_pdbg2("VTL (length in DWORDS) = %d\n", umap->VTL);
-	msg_pdbg2("VTBA (base address)    = 0x%6.6x\n", getVTBA(umap));
+	msg_pdbg2("VTBA (base address)    = 0x%6.6"PRIx32"\n", getVTBA(umap));
 	msg_pdbg2("\n");
 
 	msg_pdbg2("VSCC Table: %d entries\n", umap->VTL/2);
 	for (i = 0; i < umap->VTL/2; i++) {
 		uint32_t jid = umap->vscc_table[i].JID;
 		uint32_t vscc = umap->vscc_table[i].VSCC;
-		msg_pdbg2("  JID%d  = 0x%08x\n", i, jid);
-		msg_pdbg2("  VSCC%d = 0x%08x\n", i, vscc);
+		msg_pdbg2("  JID%d  = 0x%08"PRIx32"\n", i, jid);
+		msg_pdbg2("  VSCC%d = 0x%08"PRIx32"\n", i, vscc);
 		msg_pdbg2("    "); /* indentation */
 		prettyprint_rdid(jid);
 		msg_pdbg2("    "); /* indentation */

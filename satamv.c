@@ -134,38 +134,38 @@ static int satamv_init(const struct programmer_cfg *cfg)
 
 	tmp = pci_mmio_readl(bar + FLASH_PARAM);
 	msg_pspew("Flash Parameters:\n");
-	msg_pspew("TurnOff=0x%01x\n", (tmp >> 0) & 0x7);
-	msg_pspew("Acc2First=0x%01x\n", (tmp >> 3) & 0xf);
-	msg_pspew("Acc2Next=0x%01x\n", (tmp >> 7) & 0xf);
-	msg_pspew("ALE2Wr=0x%01x\n", (tmp >> 11) & 0x7);
-	msg_pspew("WrLow=0x%01x\n", (tmp >> 14) & 0x7);
-	msg_pspew("WrHigh=0x%01x\n", (tmp >> 17) & 0x7);
-	msg_pspew("Reserved[21:20]=0x%01x\n", (tmp >> 20) & 0x3);
-	msg_pspew("TurnOffExt=0x%01x\n", (tmp >> 22) & 0x1);
-	msg_pspew("Acc2FirstExt=0x%01x\n", (tmp >> 23) & 0x1);
-	msg_pspew("Acc2NextExt=0x%01x\n", (tmp >> 24) & 0x1);
-	msg_pspew("ALE2WrExt=0x%01x\n", (tmp >> 25) & 0x1);
-	msg_pspew("WrLowExt=0x%01x\n", (tmp >> 26) & 0x1);
-	msg_pspew("WrHighExt=0x%01x\n", (tmp >> 27) & 0x1);
-	msg_pspew("Reserved[31:28]=0x%01x\n", (tmp >> 28) & 0xf);
+	msg_pspew("TurnOff=0x%01"PRIx32"\n", (tmp >> 0) & 0x7);
+	msg_pspew("Acc2First=0x%01"PRIx32"\n", (tmp >> 3) & 0xf);
+	msg_pspew("Acc2Next=0x%01"PRIx32"\n", (tmp >> 7) & 0xf);
+	msg_pspew("ALE2Wr=0x%01"PRIx32"\n", (tmp >> 11) & 0x7);
+	msg_pspew("WrLow=0x%01"PRIx32"\n", (tmp >> 14) & 0x7);
+	msg_pspew("WrHigh=0x%01"PRIx32"\n", (tmp >> 17) & 0x7);
+	msg_pspew("Reserved[21:20]=0x%01"PRIx32"\n", (tmp >> 20) & 0x3);
+	msg_pspew("TurnOffExt=0x%01"PRIx32"\n", (tmp >> 22) & 0x1);
+	msg_pspew("Acc2FirstExt=0x%01"PRIx32"\n", (tmp >> 23) & 0x1);
+	msg_pspew("Acc2NextExt=0x%01"PRIx32"\n", (tmp >> 24) & 0x1);
+	msg_pspew("ALE2WrExt=0x%01"PRIx32"\n", (tmp >> 25) & 0x1);
+	msg_pspew("WrLowExt=0x%01"PRIx32"\n", (tmp >> 26) & 0x1);
+	msg_pspew("WrHighExt=0x%01"PRIx32"\n", (tmp >> 27) & 0x1);
+	msg_pspew("Reserved[31:28]=0x%01"PRIx32"\n", (tmp >> 28) & 0xf);
 
 	tmp = pci_mmio_readl(bar + EXPANSION_ROM_BAR_CONTROL);
 	msg_pspew("Expansion ROM BAR Control:\n");
-	msg_pspew("ExpROMSz=0x%01x\n", (tmp >> 19) & 0x7);
+	msg_pspew("ExpROMSz=0x%01"PRIx32"\n", (tmp >> 19) & 0x7);
 
 	/* Enable BAR2 mapping to flash */
 	tmp = pci_mmio_readl(bar + PCI_BAR2_CONTROL);
 	msg_pspew("PCI BAR2 (Flash/NVRAM) Control:\n");
-	msg_pspew("Bar2En=0x%01x\n", (tmp >> 0) & 0x1);
-	msg_pspew("BAR2TransAttr=0x%01x\n", (tmp >> 1) & 0x1f);
-	msg_pspew("BAR2Sz=0x%01x\n", (tmp >> 19) & 0x7);
+	msg_pspew("Bar2En=0x%01"PRIx32"\n", (tmp >> 0) & 0x1);
+	msg_pspew("BAR2TransAttr=0x%01"PRIx32"\n", (tmp >> 1) & 0x1f);
+	msg_pspew("BAR2Sz=0x%01"PRIx32"\n", (tmp >> 19) & 0x7);
 	tmp &= 0xffffffc0;
 	tmp |= 0x0000001f;
 	pci_rmmio_writel(tmp, bar + PCI_BAR2_CONTROL);
 
 	/* Enable flash: GPIO Port Control Register 0x104f0 */
 	tmp = pci_mmio_readl(bar + GPIO_PORT_CONTROL);
-	msg_pspew("GPIOPortMode=0x%01x\n", (tmp >> 0) & 0x3);
+	msg_pspew("GPIOPortMode=0x%01"PRIx32"\n", (tmp >> 0) & 0x3);
 	if (((tmp >> 0) & 0x3) != 0x2)
 		msg_pinfo("Warning! Either the straps are incorrect or you "
 			  "have no flash or someone overwrote the strap "
