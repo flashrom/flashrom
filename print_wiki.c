@@ -325,7 +325,7 @@ static void print_supported_chips_wiki(int cols)
 		       "|| %s || {{%s}} || {{%s}} || {{%s}} || {{%s}}"
 		       "|| %s || %s\n",
 		       (c == 1) ? "eeeeee" : "dddddd", f->vendor, f->name,
-		       f->total_size, s,
+		       f->total_size, s ? s : "?",
 		       test_state_to_template(f->tested.probe),
 		       test_state_to_template(f->tested.read),
 		       test_state_to_template(f->tested.erase),

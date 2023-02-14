@@ -65,6 +65,17 @@ static struct shutdown_func_data {
  */
 static bool may_register_shutdown = false;
 
+static struct bus_type_info {
+	enum chipbustype type;
+	const char *name;
+} bustypes[] = {
+	{ BUS_PARALLEL, "Parallel, " },
+	{ BUS_LPC, "LPC, " },
+	{ BUS_FWH, "FWH, " },
+	{ BUS_SPI, "SPI, " },
+	{ BUS_PROG, "Programmer-specific, " },
+};
+
 /* Register a function to be executed on programmer shutdown.
  * The advantage over atexit() is that you can supply a void pointer which will
  * be used as parameter to the registered function upon programmer shutdown.
@@ -912,35 +923,44 @@ int map_flash(struct flashctx *flash)
 
 /*
  * Return a string corresponding to the bustype parameter.
- * Memory is obtained with malloc() and must be freed with free() by the caller.
+ * Memory to store the string is allocated. The caller is responsible to free memory.
+ * If there is not enough memory remaining, then NULL is returned.
  */
 char *flashbuses_to_text(enum chipbustype bustype)
 {
-	char *ret = calloc(1, 1);
+	char *ret, *ptr;
+
 	/*
 	 * FIXME: Once all chipsets and flash chips have been updated, NONSPI
 	 * will cease to exist and should be eliminated here as well.
 	 */
-	if (bustype == BUS_NONSPI) {
-		ret = strcat_realloc(ret, "Non-SPI, ");
-	} else {
-		if (bustype & BUS_PARALLEL)
-			ret = strcat_realloc(ret, "Parallel, ");
-		if (bustype & BUS_LPC)
-			ret = strcat_realloc(ret, "LPC, ");
-		if (bustype & BUS_FWH)
-			ret = strcat_realloc(ret, "FWH, ");
-		if (bustype & BUS_SPI)
-			ret = strcat_realloc(ret, "SPI, ");
-		if (bustype & BUS_PROG)
-			ret = strcat_realloc(ret, "Programmer-specific, ");
-		if (bustype == BUS_NONE)
-			ret = strcat_realloc(ret, "None, ");
+	if (bustype == BUS_NONSPI)
+		return strdup("Non-SPI");
+	if (bustype == BUS_NONE)
+		return strdup("None");
+
+	ret = calloc(1, 1);
+	if (!ret)
+		return NULL;
+
+	for (unsigned int i = 0; i < ARRAY_SIZE(bustypes); i++)
+	{
+		if (bustype & bustypes[i].type) {
+			ptr = strcat_realloc(ret, bustypes[i].name);
+			if (!ptr) {
+				free(ret);
+				return NULL;
+			}
+			ret = ptr;
+		}
 	}
+
 	/* Kill last comma. */
 	ret[strlen(ret) - 2] = '\0';
-	ret = realloc(ret, strlen(ret) + 1);
-	return ret;
+	ptr = realloc(ret, strlen(ret) + 1);
+	if (!ptr)
+		free(ret);
+	return ptr;
 }
 
 static int init_default_layout(struct flashctx *flash)
@@ -1165,7 +1185,7 @@ notfound:
 
 	tmp = flashbuses_to_text(flash->chip->bustype);
 	msg_cinfo("%s %s flash chip \"%s\" (%d kB, %s) ", force ? "Assuming" : "Found",
-		  flash->chip->vendor, flash->chip->name, flash->chip->total_size, tmp);
+		  flash->chip->vendor, flash->chip->name, flash->chip->total_size, tmp ? tmp : "?");
 	free(tmp);
 	if (master_uses_physmap(mst))
 		msg_cinfo("mapped at physical address 0x%0*" PRIxPTR ".\n",

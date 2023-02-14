@@ -1011,7 +1011,7 @@ int main(int argc, char *argv[])
 		goto out_shutdown;
 	}
 	tempstr = flashbuses_to_text(get_buses_supported());
-	msg_pdbg("The following protocols are supported: %s.\n", tempstr);
+	msg_pdbg("The following protocols are supported: %s.\n", tempstr ? tempstr : "?");
 	free(tempstr);
 
 	for (j = 0; j < registered_master_count; j++) {
@@ -1082,7 +1082,8 @@ int main(int argc, char *argv[])
 		/* repeat for convenience when looking at foreign logs */
 		tempstr = flashbuses_to_text(flashes[0].chip->bustype);
 		msg_gdbg("Found %s flash chip \"%s\" (%d kB, %s).\n",
-			 flashes[0].chip->vendor, flashes[0].chip->name, flashes[0].chip->total_size, tempstr);
+			 flashes[0].chip->vendor, flashes[0].chip->name, flashes[0].chip->total_size,
+			 tempstr ? tempstr : "?");
 		free(tempstr);
 	}
 

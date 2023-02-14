@@ -103,6 +103,10 @@ static int print_supported_chips(void)
 		} while (1);
 
 		s = flashbuses_to_text(chip->bustype);
+		if (s == NULL) {
+			msg_gerr("Out of memory!\n");
+			return 1;
+		}
 		maxtypelen = max(maxtypelen, strlen(s));
 		free(s);
 	}
@@ -265,6 +269,12 @@ static int print_supported_chips(void)
 			msg_ginfo(" ");
 
 		s = flashbuses_to_text(chip->bustype);
+		if (s == NULL) {
+			msg_gerr("Out of memory!\n");
+			free(ven);
+			free(dev);
+			return 1;
+		}
 		msg_ginfo("%s", s);
 		for (i = strlen(s); i < maxtypelen; i++)
 			msg_ginfo(" ");
