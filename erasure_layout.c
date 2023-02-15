@@ -93,16 +93,15 @@ int create_erase_layout(struct flashctx *const flashctx, struct erase_layout **e
 {
 	const struct flashchip *chip = flashctx->chip;
 	const size_t erasefn_count = count_usable_erasers(flashctx);
-	struct erase_layout *layout = calloc(erasefn_count, sizeof(struct erase_layout));
-
-	if (!layout) {
-		msg_gerr("Out of memory!\n");
-		return -1;
-	}
-
 	if (!erasefn_count) {
 		msg_gerr("No erase functions supported\n");
 		return 0;
+	}
+
+	struct erase_layout *layout = calloc(erasefn_count, sizeof(struct erase_layout));
+	if (!layout) {
+		msg_gerr("Out of memory!\n");
+		return -1;
 	}
 
 	size_t layout_idx = 0;
