@@ -633,13 +633,20 @@ pkgg.generate(
 )
 
 if get_option('classic_cli').enabled() or get_option('classic_cli').auto() and not get_option('default_library') == 'shared'
+
+  cli_srcs = files(
+    'cli_classic.c',
+    'cli_common.c',
+    'cli_output.c'
+  )
+
+  if not cc.has_function('getopt_long')
+    cli_srcs += files('cli_getopt.c')
+  endif
+
   classic_cli = executable(
     'flashrom',
-    files(
-      'cli_classic.c',
-      'cli_common.c',
-      'cli_output.c',
-    ),
+    cli_srcs,
     c_args : cargs,
     include_directories : include_dir,
     install : true,
