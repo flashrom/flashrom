@@ -169,7 +169,7 @@ S:	Supported
 F:	test_build.sh
 
 FLASHROM TESTER
-M:	Evan Benn <evanbenn@chromium.org>
+R:	Evan Benn <evanbenn@gmail.com>
 S:	Supported
 F:	util/flashrom_tester/
 
