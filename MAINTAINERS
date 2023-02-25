@@ -150,7 +150,7 @@ F:	ni845x_spi.c
 
 UNIT TESTS
 M:	Anastasia Klimchuk <aklm@chromium.org>
-S:	Supported
+S:	Maintained
 F:	tests/
 F:	subprojects/cmocka.wrap
 
