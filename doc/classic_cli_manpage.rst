@@ -30,7 +30,7 @@ DESCRIPTION
 It's often used to flash BIOS/EFI/coreboot/firmware images in-system using a supported mainboard.
 However, it also supports various external PCI/USB/parallel-port/serial-port based devices which can program flash
 chips, including some network cards (NICs), SATA/IDE controller cards, graphics cards, the Bus Pirate device,
-various FTDI FT2232/FT4232H/FT232H based USB devices, and more.
+various FTDI FT2232/FT4232H/FT4233H/FT232H based USB devices, and more.
 
 It supports a wide range of DIP32, PLCC32, DIP8, SO8/SOIC8, TSOP32, TSOP40, TSOP48, and BGA chips,
 which use various protocols such as LPC, FWH, parallel flash, or SPI.
