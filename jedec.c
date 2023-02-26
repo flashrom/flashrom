@@ -38,13 +38,11 @@ uint8_t oddparity(uint8_t val)
 static void toggle_ready_jedec_common(const struct flashctx *flash, chipaddr dst, unsigned int delay)
 {
 	unsigned int i = 0;
-	uint8_t tmp1, tmp2;
-
-	tmp1 = chip_readb(flash, dst) & 0x40;
+	uint8_t tmp1 = chip_readb(flash, dst) & 0x40;
 
 	while (i++ < 0xFFFFFFF) {
 		programmer_delay(flash, delay);
-		tmp2 = chip_readb(flash, dst) & 0x40;
+		uint8_t tmp2 = chip_readb(flash, dst) & 0x40;
 		if (tmp1 == tmp2) {
 			break;
 		}
@@ -76,12 +74,11 @@ void data_polling_jedec(const struct flashctx *flash, chipaddr dst,
 			uint8_t data)
 {
 	unsigned int i = 0;
-	uint8_t tmp;
 
 	data &= 0x80;
 
 	while (i++ < 0xFFFFFFF) {
-		tmp = chip_readb(flash, dst) & 0x80;
+		uint8_t tmp = chip_readb(flash, dst) & 0x80;
 		if (tmp == data) {
 			break;
 		}
@@ -377,12 +374,11 @@ static int write_byte_program_jedec_common(const struct flashctx *flash, const u
 int write_jedec_1(struct flashctx *flash, const uint8_t *src, unsigned int start,
 		  unsigned int len)
 {
-	unsigned int i;
 	int failed = 0;
 	chipaddr dst = flash->virtual_memory + start;
 	const chipaddr olddst = dst;
 
-	for (i = 0; i < len; i++) {
+	for (unsigned int i = 0; i < len; i++) {
 		if (write_byte_program_jedec_common(flash, src, dst))
 			failed = 1;
 		dst++, src++;
@@ -444,7 +440,7 @@ static int jedec_write_page(struct flashctx *flash, const uint8_t *src,
 int write_jedec(struct flashctx *flash, const uint8_t *buf, unsigned int start,
 		int unsigned len)
 {
-	unsigned int i, starthere, lenhere;
+	unsigned int starthere, lenhere;
 	/* FIXME: page_size is the wrong variable. We need max_writechunk_size
 	 * in struct flashctx to do this properly. All chips using
 	 * write_jedec have page_size set to max_writechunk_size, so
@@ -462,7 +458,7 @@ int write_jedec(struct flashctx *flash, const uint8_t *buf, unsigned int start,
 	 * (start + len - 1) / page_size. Since we want to include that last
 	 * page as well, the loop condition uses <=.
 	 */
-	for (i = start / page_size; i <= nwrites; i++) {
+	for (unsigned int i = start / page_size; i <= nwrites; i++) {
 		/* Byte position of the first byte in the range in this page. */
 		/* starthere is an offset to the base address of the chip. */
 		starthere = max(start, i * page_size);
