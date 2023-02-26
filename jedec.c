@@ -305,11 +305,11 @@ static void issuecmd(const struct flashctx *flash, uint8_t op, unsigned int oper
 
 int erase_sector_jedec(struct flashctx *flash, unsigned int page, unsigned int size)
 {
-	/*  Issue the Sector Erase command   */
+	/* Issue the Sector Erase command */
 	issuecmd(flash, 0x80, 0);
 	issuecmd(flash, 0x30, page);
 
-	/* wait for Toggle bit ready         */
+	/* Wait for Toggle bit ready */
 	toggle_ready_jedec_slow(flash);
 
 	/* FIXME: Check the status register for errors. */
@@ -318,11 +318,11 @@ int erase_sector_jedec(struct flashctx *flash, unsigned int page, unsigned int s
 
 int erase_block_jedec(struct flashctx *flash, unsigned int block, unsigned int size)
 {
-	/*  Issue the Sector Erase command   */
+	/* Issue the Block Erase command */
 	issuecmd(flash, 0x80, 0);
 	issuecmd(flash, 0x50, block);
 
-	/* wait for Toggle bit ready         */
+	/* Wait for Toggle bit ready */
 	toggle_ready_jedec_slow(flash);
 
 	/* FIXME: Check the status register for errors. */
@@ -333,12 +333,11 @@ int erase_block_jedec(struct flashctx *flash, unsigned int block, unsigned int s
 int erase_chip_block_jedec(struct flashctx *flash, unsigned int addr, unsigned int blocksize)
 {
 	if ((addr != 0) || (blocksize != flash->chip->total_size * 1024)) {
-		msg_cerr("%s called with incorrect arguments\n",
-			__func__);
+		msg_cerr("%s called with incorrect arguments\n", __func__);
 		return -1;
 	}
 
-	/*  Issue the JEDEC Chip Erase command   */
+	/* Issue the JEDEC Chip Erase command */
 	issuecmd(flash, 0x80, 0);
 	issuecmd(flash, 0x10, 0);
 
