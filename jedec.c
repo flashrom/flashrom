@@ -123,7 +123,7 @@ static void start_program_jedec_common(const struct flashctx *flash)
 int probe_jedec_29gl(struct flashctx *flash)
 {
 	const unsigned int mask = getaddrmask(flash->chip);
-	chipaddr bios = flash->virtual_memory;
+	const chipaddr bios = flash->virtual_memory;
 	const struct flashchip *chip = flash->chip;
 
 	/* Reset chip to a clean slate */
@@ -381,9 +381,8 @@ int write_jedec_1(struct flashctx *flash, const uint8_t *src, unsigned int start
 	unsigned int i;
 	int failed = 0;
 	chipaddr dst = flash->virtual_memory + start;
-	chipaddr olddst;
+	const chipaddr olddst = dst;
 
-	olddst = dst;
 	for (i = 0; i < len; i++) {
 		if (write_byte_program_jedec_common(flash, src, dst))
 			failed = 1;
@@ -452,8 +451,8 @@ int write_jedec(struct flashctx *flash, const uint8_t *buf, unsigned int start,
 	 * write_jedec have page_size set to max_writechunk_size, so
 	 * we're OK for now.
 	 */
-	unsigned int page_size = flash->chip->page_size;
-	unsigned int nwrites = (start + len - 1) / page_size;
+	const unsigned int page_size = flash->chip->page_size;
+	const unsigned int nwrites = (start + len - 1) / page_size;
 
 	/* Warning: This loop has a very unusual condition and body.
 	 * The loop needs to go through each page with at least one affected
