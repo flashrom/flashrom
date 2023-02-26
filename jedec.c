@@ -43,8 +43,7 @@ static void toggle_ready_jedec_common(const struct flashctx *flash, chipaddr dst
 	tmp1 = chip_readb(flash, dst) & 0x40;
 
 	while (i++ < 0xFFFFFFF) {
-		if (delay)
-			programmer_delay(flash, delay);
+		programmer_delay(flash, delay);
 		tmp2 = chip_readb(flash, dst) & 0x40;
 		if (tmp1 == tmp2) {
 			break;
@@ -203,8 +202,7 @@ int probe_jedec(struct flashctx *flash)
 	 * mode completely. Allow the chip to finish this before seeing a
 	 * reset command.
 	 */
-	if (probe_timing_enter)
-		programmer_delay(flash, probe_timing_enter);
+	programmer_delay(flash, probe_timing_enter);
 	/* Reset chip to a clean slate */
 	if ((chip->feature_bits & FEATURE_RESET_MASK) == FEATURE_LONG_RESET) {
 		chip_writeb(flash, 0xAA, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
@@ -215,8 +213,7 @@ int probe_jedec(struct flashctx *flash)
 			programmer_delay(flash, 10);
 	}
 	chip_writeb(flash, 0xF0, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
-	if (probe_timing_exit)
-		programmer_delay(flash, probe_timing_exit);
+	programmer_delay(flash, probe_timing_exit);
 
 	/* Issue JEDEC Product ID Entry command */
 	chip_writeb(flash, 0xAA, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
@@ -226,8 +223,7 @@ int probe_jedec(struct flashctx *flash)
 	if (probe_timing_enter)
 		programmer_delay(flash, 10);
 	chip_writeb(flash, 0x90, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
-	if (probe_timing_enter)
-		programmer_delay(flash, probe_timing_enter);
+	programmer_delay(flash, probe_timing_enter);
 
 	/* Read product ID */
 	id1 = chip_readb(flash, bios + (0x00 << shifted));
@@ -257,8 +253,7 @@ int probe_jedec(struct flashctx *flash)
 			programmer_delay(flash, 10);
 	}
 	chip_writeb(flash, 0xF0, bios + ((shifted ? 0x2AAA : 0x5555) & mask));
-	if (probe_timing_exit)
-		programmer_delay(flash, probe_timing_exit);
+	programmer_delay(flash, probe_timing_exit);
 
 	msg_cdbg("%s: id1 0x%02x, id2 0x%02x", __func__, largeid1, largeid2);
 	if (!oddparity(id1))
