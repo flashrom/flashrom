@@ -396,7 +396,7 @@ int write_jedec_1(struct flashctx *flash, const uint8_t *src, unsigned int start
 	return failed;
 }
 
-static int write_page_write_jedec_common(struct flashctx *flash, const uint8_t *src,
+static int jedec_write_page(struct flashctx *flash, const uint8_t *src,
 					 unsigned int start, unsigned int page_size)
 {
 	int tries = 0, failed;
@@ -471,7 +471,7 @@ int write_jedec(struct flashctx *flash, const uint8_t *buf, unsigned int start,
 		/* Length of bytes in the range in this page. */
 		lenhere = min(start + len, (i + 1) * page_size) - starthere;
 
-		if (write_page_write_jedec_common(flash, buf + starthere - start, starthere, lenhere))
+		if (jedec_write_page(flash, buf + starthere - start, starthere, lenhere))
 			return 1;
 		update_progress(flash, FLASHROM_PROGRESS_WRITE, i + 1, nwrites + 1);
 	}
