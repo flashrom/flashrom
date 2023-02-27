@@ -932,6 +932,33 @@ static void dummy_nop_delay(const struct flashctx *flash, unsigned int usecs)
 {
 }
 
+static enum flashrom_wp_result dummy_wp_read_cfg(struct flashrom_wp_cfg *cfg, struct flashctx *flash)
+{
+	cfg->mode = FLASHROM_WP_MODE_DISABLED;
+	cfg->range.start = 0;
+	cfg->range.len = 0;
+
+	return FLASHROM_WP_OK;
+}
+
+static enum flashrom_wp_result dummy_wp_write_cfg(struct flashctx *flash, const struct flashrom_wp_cfg *cfg)
+{
+	if (cfg->mode != FLASHROM_WP_MODE_DISABLED)
+		return FLASHROM_WP_ERR_MODE_UNSUPPORTED;
+
+	if (cfg->range.start != 0 || cfg->range.len != 0)
+		return FLASHROM_WP_ERR_RANGE_UNSUPPORTED;
+
+	return FLASHROM_WP_OK;
+}
+
+static enum flashrom_wp_result dummy_wp_get_available_ranges(struct flashrom_wp_ranges **list, struct flashctx *flash)
+{
+	/* Not supported */
+	return FLASHROM_WP_ERR_RANGE_LIST_UNAVAILABLE;
+}
+
+
 static const struct spi_master spi_master_dummyflasher = {
 	.map_flash_region	= dummy_map,
 	.unmap_flash_region	= dummy_unmap,
@@ -968,6 +995,9 @@ static const struct opaque_master opaque_master_dummyflasher = {
 	.erase		= dummy_opaque_erase,
 	.shutdown	= dummy_shutdown,
 	.delay		= dummy_nop_delay,
+	.wp_read_cfg	= dummy_wp_read_cfg,
+	.wp_write_cfg	= dummy_wp_write_cfg,
+	.wp_get_ranges	= dummy_wp_get_available_ranges,
 };
 
 static int init_data(const struct programmer_cfg *cfg,
