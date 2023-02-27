@@ -192,15 +192,7 @@ struct pci_dev *pcidev_find(uint16_t vendor, uint16_t device)
 
 struct pci_dev *pcidev_getdevfn(struct pci_dev *dev, const int func)
 {
-#if !defined(OLD_PCI_GET_DEV)
 	struct pci_dev *const new = pci_get_dev(pacc, dev->domain, dev->bus, dev->dev, func);
-#else
-	/* pciutils/libpci before version 2.2 is too old to support
-	 * PCI domains. Such old machines usually don't have domains
-	 * besides domain 0, so this is not a problem.
-	 */
-	struct pci_dev *const new = pci_get_dev(pacc, dev->bus, dev->dev, func);
-#endif
 	if (new)
 		pci_fill_info(new, PCI_FILL_IDENT);
 	return new;

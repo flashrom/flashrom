@@ -1,18 +1,22 @@
 /*
- * This is a wrapper for libpci.
- * ...
+ * This file is part of the flashrom project.
+ *
+ * Copyright (C) 2022 secunet Security Networks AG
+ * (written by Thomas Heijligen <thomas.heijligen@secunet.com)
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  */
-
 
 #ifndef __PLATFORM_PCI_H__
 #define __PLATFORM_PCI_H__
-
-/*
- * An old libpci version seems to use the variable name "index" which triggers
- * shadowing warnings on systems which have the index() function in a default
- * #include or as builtin.
- */
-#define index shadow_workaround_index
 
 /* Some NetBSDs are using an other include path for pci.h
  * e.g. NetBSD 9.0 on sparc64 pciutils-3.7.0nb2.
@@ -23,7 +27,5 @@
 #else
 #include <pci/pci.h>
 #endif
-
-#undef index
 
 #endif /* __PLATFORM_PCI_H__ */

@@ -251,7 +251,6 @@ HAS_LIBJAYLINK      := $(call find_dependency, libjaylink)
 HAS_LIBUSB1         := $(call find_dependency, libusb-1.0)
 HAS_LIBPCI          := $(call find_dependency, libpci)
 
-HAS_PCI_OLD_GET_DEV := $(call c_compile_test, Makefile.d/pci_old_get_dev_test.c, $(CONFIG_LIBPCI_CFLAGS))
 HAS_FT232H          := $(call c_compile_test, Makefile.d/ft232h_test.c, $(CONFIG_LIBFTDI1_CFLAGS))
 HAS_UTSNAME         := $(call c_compile_test, Makefile.d/utsname_test.c)
 HAS_CLOCK_GETTIME   := $(call c_compile_test, Makefile.d/clock_gettime_test.c)
@@ -981,7 +980,6 @@ config:
 	@if [ $(ENDIAN) = unknown ]; then echo Aborting.; exit 1; fi
 	@echo Dependency libpci found: $(HAS_LIBPCI) $(CONFIG_LIBPCI_VERSION)
 	@if [ $(HAS_LIBPCI) = yes ]; then			\
-		echo "  Checking for old \"pci_get_dev()\": $(HAS_PCI_OLD_GET_DEV)";\
 		echo "  CFLAGS: $(CONFIG_LIBPCI_CFLAGS)";	\
 		echo "  LDFLAGS: $(CONFIG_LIBPCI_LDFLAGS)";	\
 	fi
