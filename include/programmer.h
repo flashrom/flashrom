@@ -318,9 +318,6 @@ struct spi_master {
 	void *data;
 };
 
-int default_spi_send_command(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt,
-			     const unsigned char *writearr, unsigned char *readarr);
-int default_spi_send_multicommand(const struct flashctx *flash, struct spi_command *cmds);
 int default_spi_read(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 int default_spi_write_256(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
 int default_spi_write_aai(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
