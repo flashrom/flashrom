@@ -11,7 +11,6 @@ import os
 project = 'flashrom'
 # copyright = '2023, The flashrom authors'
 author = 'The flashrom authors'
-release = os.getenv('FLASHROM_VERSION')
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
