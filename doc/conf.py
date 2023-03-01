@@ -17,10 +17,18 @@ author = 'The flashrom authors'
 
 master_doc = 'index' # this is needed for old versions
 
-extensions = []
+extensions = [
+    'sphinx.ext.todo'
+]
 
 #templates_path = ['_templates']
 exclude_patterns = []
+
+# -- Options for Todo extension ----------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/extensions/todo.html
+
+# If this is True, todo and todolist produce output, else they produce nothing. The default is False.
+todo_include_todos = False
 
 
 

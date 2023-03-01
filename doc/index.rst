@@ -6,6 +6,7 @@
 .. toctree::
   :hidden:
 
+  dev_guide/index
   classic_cli_manpage
 
 .. include:: ../README
