@@ -1,0 +1,29 @@
+# This file is for cross compiling flashrom for DOS with DJGPP.
+#
+# Make sure the program names match your toolchain
+#
+# Make sure pkg-config can find your self compiles libpci
+# or add the path of your libpci.pc as 'pkg_config_libdir'
+# under [properies] below.
+
+[binaries]
+c     = 'i586-pc-msdosdjgpp-gcc'
+ar    = 'i586-pc-msdosdjgpp-ar'
+strip = 'i586-pc-msdosdjgpp-strip'
+pkgconfig = 'pkg-config'
+
+[host_machine]
+system     = 'dos'
+cpu_family = 'x86'
+cpu        = 'i586'
+endian     = 'little'
+
+[built-in options]
+c_std = 'gnu99'
+default_library = 'static'
+
+[project options]
+tests = 'disabled'
+ich_descriptors_tool = 'disabled'
+
+[properties]
