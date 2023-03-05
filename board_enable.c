@@ -2707,12 +2707,7 @@ static int board_enable_safetycheck(const struct board_match *board, bool force_
 /* FIXME: Should this be identical to board_flash_enable? */
 static int board_handle_phase(enum board_match_phase phase, bool force_boardenable)
 {
-	const struct board_match *board = NULL;
-
-	board = board_match_pci_ids(phase);
-
-	if (!board)
-		return 0;
+	const struct board_match *board = board_match_pci_ids(phase);
 
 	if (board_enable_safetycheck(board, force_boardenable))
 		return 0;
