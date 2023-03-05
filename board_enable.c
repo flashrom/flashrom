@@ -2737,7 +2737,7 @@ int board_flash_enable(const char *vendor, const char *model, const char *cb_ven
 	const struct board_match *board = NULL;
 	int ret = 0;
 
-	if (vendor != NULL  && model != NULL) {
+	if (vendor && model) {
 		board = board_match_name(vendor, model, false);
 		if (!board) { /* If a board was given by the user it has to match, else we abort here. */
 			msg_perr("No suitable board enable found for vendor=\"%s\", model=\"%s\".\n",
@@ -2745,14 +2745,14 @@ int board_flash_enable(const char *vendor, const char *model, const char *cb_ven
 			return 1;
 		}
 	}
-	if (board == NULL && cb_vendor != NULL && cb_model != NULL) {
+	if (!board && cb_vendor && cb_model) {
 		board = board_match_name(cb_vendor, cb_model, true);
 		if (!board) { /* Failure is an option here, because many cb boards don't require an enable. */
 			msg_pdbg2("No board enable found matching coreboot IDs vendor=\"%s\", model=\"%s\".\n",
 				  cb_vendor, cb_model);
 		}
 	}
-	if (board == NULL) {
+	if (!board) {
 		board = board_match_pci_ids(P3);
 		if (!board) /* i.e. there is just no board enable available for this board */
 			return 0;
@@ -2765,7 +2765,7 @@ int board_flash_enable(const char *vendor, const char *model, const char *cb_ven
 	if (board->max_rom_decode_parallel)
 		max_rom_decode.parallel = board->max_rom_decode_parallel * 1024;
 
-	if (board->enable != NULL) {
+	if (board->enable) {
 		msg_pinfo("Enabling full flash access for board \"%s %s\"... ",
 			  board->vendor_name, board->board_name);
 
