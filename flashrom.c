@@ -65,10 +65,6 @@ static struct shutdown_func_data {
  */
 static bool may_register_shutdown = false;
 
-struct programmer_cfg {
-	char *params;
-};
-
 /* Register a function to be executed on programmer shutdown.
  * The advantage over atexit() is that you can supply a void pointer which will
  * be used as parameter to the registered function upon programmer shutdown.

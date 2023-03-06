@@ -27,8 +27,6 @@
 #include "hwaccess_x86_io.h"
 #endif
 
-bool g_laptop_ok = false;
-
 bool force_boardmismatch = false;
 
 enum chipbustype internal_buses_supported = BUS_NONE;
@@ -107,33 +105,37 @@ static int get_params(const struct programmer_cfg *cfg,
 	return 0;
 }
 
-static void report_nonwl_laptop_detected(int is_laptop, bool laptop_ok)
+static void report_nonwl_laptop_detected(const struct board_cfg *bcfg)
 {
-	if (is_laptop && !laptop_ok) {
-		msg_pinfo("========================================================================\n");
-		if (is_laptop == 1) {
-			msg_pinfo("You seem to be running flashrom on an unknown laptop. Some\n"
-				  "internal buses have been disabled for safety reasons.\n\n");
-		} else {
-			msg_pinfo("You may be running flashrom on an unknown laptop. We could not\n"
-				  "detect this for sure because your vendor has not set up the SMBIOS\n"
-				  "tables correctly. Some internal buses have been disabled for\n"
-				  "safety reasons. You can enforce using all buses by adding\n"
-				  "  -p internal:laptop=this_is_not_a_laptop\n"
-				  "to the command line, but please read the following warning if you\n"
-				  "are not sure.\n\n");
-		}
-		msg_perr("Laptops, notebooks and netbooks are difficult to support and we\n"
-			 "recommend to use the vendor flashing utility. The embedded controller\n"
-			 "(EC) in these machines often interacts badly with flashing.\n"
-			 "See the manpage and https://flashrom.org/Laptops for details.\n\n"
-			 "If flash is shared with the EC, erase is guaranteed to brick your laptop\n"
-			 "and write may brick your laptop.\n"
-			 "Read and probe may irritate your EC and cause fan failure, backlight\n"
-			 "failure and sudden poweroff.\n"
-			 "You have been warned.\n"
-			 "========================================================================\n");
+	const int is_laptop = bcfg->is_laptop;
+	const bool laptop_ok = bcfg->laptop_ok;
+
+	if (!is_laptop || laptop_ok)
+		return;
+
+	msg_pinfo("========================================================================\n");
+	if (is_laptop == 1) {
+		msg_pinfo("You seem to be running flashrom on an unknown laptop. Some\n"
+			  "internal buses have been disabled for safety reasons.\n\n");
+	} else {
+		msg_pinfo("You may be running flashrom on an unknown laptop. We could not\n"
+			  "detect this for sure because your vendor has not set up the SMBIOS\n"
+			  "tables correctly. Some internal buses have been disabled for\n"
+			  "safety reasons. You can enforce using all buses by adding\n"
+			  "  -p internal:laptop=this_is_not_a_laptop\n"
+			  "to the command line, but please read the following warning if you\n"
+			  "are not sure.\n\n");
 	}
+	msg_perr("Laptops, notebooks and netbooks are difficult to support and we\n"
+		 "recommend to use the vendor flashing utility. The embedded controller\n"
+		 "(EC) in these machines often interacts badly with flashing.\n"
+		 "See the manpage and https://flashrom.org/Laptops for details.\n\n"
+		 "If flash is shared with the EC, erase is guaranteed to brick your laptop\n"
+		 "and write may brick your laptop.\n"
+		 "Read and probe may irritate your EC and cause fan failure, backlight\n"
+		 "failure and sudden poweroff.\n"
+		 "You have been warned.\n"
+		 "========================================================================\n");
 }
 
 static int internal_init(const struct programmer_cfg *cfg)
@@ -156,9 +158,6 @@ static int internal_init(const struct programmer_cfg *cfg)
 			 &board_vendor, &board_model);
 	if (ret)
 		return ret;
-
-	/* Unconditionally reset global state from previous operation. */
-	g_laptop_ok = false;
 
 	/* Default to Parallel/LPC/FWH flash devices. If a known host controller
 	 * is found, the host controller init routine sets the
@@ -228,13 +227,15 @@ static int internal_init(const struct programmer_cfg *cfg)
 	 * this isn't a laptop. Board-enables may override this,
 	 * non-legacy buses (SPI and opaque atm) are probed anyway.
 	 */
-	if (bcfg.is_laptop && !(g_laptop_ok || force_laptop || (not_a_laptop && bcfg.is_laptop == 2)))
+	if (bcfg.is_laptop && !(bcfg.laptop_ok || force_laptop || (not_a_laptop && bcfg.is_laptop == 2)))
 		internal_buses_supported = BUS_NONE;
 
 	/* try to enable it. Failure IS an option, since not all motherboards
 	 * really need this to be done, etc., etc.
 	 */
-	ret = chipset_flash_enable(cfg);
+	struct programmer_cfg icfg = *cfg;
+	icfg.bcfg = &bcfg;
+	ret = chipset_flash_enable(&icfg);
 	if (ret == -2) {
 		msg_perr("WARNING: No chipset found. Flash detection "
 			 "will most likely fail.\n");
@@ -258,7 +259,7 @@ static int internal_init(const struct programmer_cfg *cfg)
 	internal_par_init(internal_buses_supported);
 
 	/* Report if a non-whitelisted laptop is detected that likely uses a legacy bus. */
-	report_nonwl_laptop_detected(bcfg.is_laptop, g_laptop_ok);
+	report_nonwl_laptop_detected(&bcfg);
 
 	ret = 0;
 

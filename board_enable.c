@@ -2293,7 +2293,7 @@ static int p2_not_a_laptop(struct board_cfg *cfg)
 static int p2_whitelist_laptop(struct board_cfg *cfg)
 {
 	cfg->is_laptop = 1;
-	g_laptop_ok = true;
+	cfg->laptop_ok = true;
 	msg_pdbg("Whitelisted laptop detected.\n");
 	return 0;
 }

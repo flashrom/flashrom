@@ -30,7 +30,11 @@ enum programmer_type {
 	USB,
 	OTHER,
 };
-struct programmer_cfg;
+struct board_cfg;
+struct programmer_cfg {
+	char *params;
+	struct board_cfg *bcfg;
+};
 
 struct dev_entry {
 	uint16_t vendor_id;
@@ -162,6 +166,7 @@ enum board_match_phase {
 
 struct board_cfg {
 	int is_laptop;
+	bool laptop_ok;
 };
 
 struct board_match {
@@ -267,7 +272,6 @@ extern int superio_count;
 #endif
 
 #if CONFIG_INTERNAL == 1
-extern bool g_laptop_ok;
 extern bool force_boardmismatch;
 void probe_superio(void);
 int register_superio(struct superio s);
