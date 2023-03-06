@@ -161,6 +161,7 @@ enum board_match_phase {
 };
 
 struct board_cfg {
+	int is_laptop;
 };
 
 struct board_match {
@@ -266,7 +267,6 @@ extern int superio_count;
 #endif
 
 #if CONFIG_INTERNAL == 1
-extern int g_is_laptop;
 extern bool g_laptop_ok;
 extern bool force_boardmismatch;
 void probe_superio(void);

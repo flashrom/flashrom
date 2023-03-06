@@ -2282,7 +2282,7 @@ static int it8718f_gpio63_raise(struct board_cfg *cfg)
 static int p2_not_a_laptop(struct board_cfg *cfg)
 {
 	/* label this board as not a laptop */
-	g_is_laptop = 0;
+	cfg->is_laptop = 0;
 	msg_pdbg("Laptop detection overridden by P2 board enable.\n");
 	return 0;
 }
@@ -2292,7 +2292,7 @@ static int p2_not_a_laptop(struct board_cfg *cfg)
  */
 static int p2_whitelist_laptop(struct board_cfg *cfg)
 {
-	g_is_laptop = 1;
+	cfg->is_laptop = 1;
 	g_laptop_ok = true;
 	msg_pdbg("Whitelisted laptop detected.\n");
 	return 0;

@@ -27,7 +27,6 @@
 #include "hwaccess_x86_io.h"
 #endif
 
-int g_is_laptop = 0;
 bool g_laptop_ok = false;
 
 bool force_boardmismatch = false;
@@ -149,7 +148,7 @@ static int internal_init(const struct programmer_cfg *cfg)
 	const char *cb_model = NULL;
 #endif
 	bool force_boardenable = false;
-	struct board_cfg bcfg;
+	struct board_cfg bcfg = {0};
 
 	ret = get_params(cfg,
 			 &force_boardenable, &force_boardmismatch,
@@ -204,9 +203,9 @@ static int internal_init(const struct programmer_cfg *cfg)
 		}
 	}
 
-	g_is_laptop = 2; /* Assume that we don't know by default. */
+	bcfg.is_laptop = 2; /* Assume that we don't know by default. */
 
-	dmi_init(&g_is_laptop);
+	dmi_init(&bcfg.is_laptop);
 
 	/* In case Super I/O probing would cause pretty explosions. */
 	board_handle_before_superio(&bcfg, force_boardenable);
@@ -229,7 +228,7 @@ static int internal_init(const struct programmer_cfg *cfg)
 	 * this isn't a laptop. Board-enables may override this,
 	 * non-legacy buses (SPI and opaque atm) are probed anyway.
 	 */
-	if (g_is_laptop && !(g_laptop_ok || force_laptop || (not_a_laptop && g_is_laptop == 2)))
+	if (bcfg.is_laptop && !(g_laptop_ok || force_laptop || (not_a_laptop && bcfg.is_laptop == 2)))
 		internal_buses_supported = BUS_NONE;
 
 	/* try to enable it. Failure IS an option, since not all motherboards
@@ -259,7 +258,7 @@ static int internal_init(const struct programmer_cfg *cfg)
 	internal_par_init(internal_buses_supported);
 
 	/* Report if a non-whitelisted laptop is detected that likely uses a legacy bus. */
-	report_nonwl_laptop_detected(g_is_laptop, g_laptop_ok);
+	report_nonwl_laptop_detected(bcfg.is_laptop, g_laptop_ok);
 
 	ret = 0;
 
