@@ -362,6 +362,16 @@ static int flashrom_layout_parse_fmap(struct flashrom_layout **layout,
 		return 1;
 
 	for (i = 0, area = fmap->areas; i < fmap->nareas; i++, area++) {
+		if (area->size == 0) {
+			/* Layout regions use inclusive upper and lower bounds,
+			 * so it's impossible to represent a region with zero
+			 * size although it's allowed in fmap. */
+			msg_gwarn("Ignoring zero-size fmap region \"%s\";"
+				  " empty regions are unsupported.\n",
+				  area->name);
+			continue;
+		}
+
 		snprintf(name, sizeof(name), "%s", area->name);
 		if (flashrom_layout_add_region(l, area->offset, area->offset + area->size - 1, name)) {
 			flashrom_layout_release(l);
