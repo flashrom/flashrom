@@ -127,6 +127,11 @@ M:	Nicholas Chin <nic.c3.14@gmail.com>
 S:	Maintained
 F:	ch347_spi.c
 
+DirtyJTAG
+M:	Jean THOMAS <virgule@jeanthomas.me>
+S:	Maintained
+F:	dirtyjtag_spi.c
+
 I2C PROGRAMMERS
 M:	Peter Marheine <pmarheine@chromium.org>
 S:	Supported
