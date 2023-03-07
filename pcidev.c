@@ -190,14 +190,6 @@ struct pci_dev *pcidev_find(uint16_t vendor, uint16_t device)
 	return pcidev_scandev(&filter, NULL);
 }
 
-struct pci_dev *pcidev_getdevfn(struct pci_dev *dev, const int func)
-{
-	struct pci_dev *const new = pci_get_dev(pacc, dev->domain, dev->bus, dev->dev, func);
-	if (new)
-		pci_fill_info(new, PCI_FILL_IDENT);
-	return new;
-}
-
 struct pci_dev *pcidev_find_vendorclass(uint16_t vendor, uint16_t devclass)
 {
 	struct pci_dev *temp = NULL;
