@@ -826,7 +826,7 @@ static int enable_flash_ich_spi(const struct programmer_cfg *cfg, struct pci_dev
 
 	/* Suppress unknown laptop warning if we booted from SPI. */
 	if (boot_buses & BUS_SPI)
-		laptop_ok = true;
+		g_laptop_ok = true;
 
 	return 0;
 }
@@ -971,7 +971,7 @@ static int enable_flash_pch100_or_c620(const struct programmer_cfg *cfg,
 
 	/* Suppress unknown laptop warning if we booted from SPI. */
 	if (!ret && (boot_buses & BUS_SPI))
-		laptop_ok = true;
+		g_laptop_ok = true;
 
 _freepci_ret:
 	pci_free_dev(spi_dev);
@@ -1087,7 +1087,7 @@ static int enable_flash_silvermont(const struct programmer_cfg *cfg, struct pci_
 
 	/* Suppress unknown laptop warning if we booted from SPI. */
 	if (boot_buses & BUS_SPI)
-		laptop_ok = true;
+		g_laptop_ok = true;
 
 	return 0;
 }
@@ -1676,7 +1676,7 @@ static int enable_flash_mcp6x_7x(const struct programmer_cfg *cfg, struct pci_de
 
 	/* Suppress unknown laptop warning if we booted from SPI. */
 	if (!ret && want_spi)
-		laptop_ok = true;
+		g_laptop_ok = true;
 
 	return ret;
 }

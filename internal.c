@@ -28,7 +28,7 @@
 #endif
 
 int is_laptop = 0;
-bool laptop_ok = false;
+bool g_laptop_ok = false;
 
 bool force_boardmismatch = false;
 
@@ -109,9 +109,9 @@ static int get_params(const struct programmer_cfg *cfg,
 }
 
 // FIXME: remove '_' suffix from parameters once global shadowing is fixed.
-static void report_nonwl_laptop_detected(int is_laptop_, bool laptop_ok_)
+static void report_nonwl_laptop_detected(int is_laptop_, bool laptop_ok)
 {
-	if (is_laptop_ && !laptop_ok_) {
+	if (is_laptop_ && !laptop_ok) {
 		msg_pinfo("========================================================================\n");
 		if (is_laptop_ == 1) {
 			msg_pinfo("You seem to be running flashrom on an unknown laptop. Some\n"
@@ -159,7 +159,7 @@ static int internal_init(const struct programmer_cfg *cfg)
 		return ret;
 
 	/* Unconditionally reset global state from previous operation. */
-	laptop_ok = false;
+	g_laptop_ok = false;
 
 	/* Default to Parallel/LPC/FWH flash devices. If a known host controller
 	 * is found, the host controller init routine sets the
@@ -229,7 +229,7 @@ static int internal_init(const struct programmer_cfg *cfg)
 	 * this isn't a laptop. Board-enables may override this,
 	 * non-legacy buses (SPI and opaque atm) are probed anyway.
 	 */
-	if (is_laptop && !(laptop_ok || force_laptop || (not_a_laptop && is_laptop == 2)))
+	if (is_laptop && !(g_laptop_ok || force_laptop || (not_a_laptop && is_laptop == 2)))
 		internal_buses_supported = BUS_NONE;
 
 	/* try to enable it. Failure IS an option, since not all motherboards
@@ -258,7 +258,7 @@ static int internal_init(const struct programmer_cfg *cfg)
 	internal_par_init(internal_buses_supported);
 
 	/* Report if a non-whitelisted laptop is detected that likely uses a legacy bus. */
-	report_nonwl_laptop_detected(is_laptop, laptop_ok);
+	report_nonwl_laptop_detected(is_laptop, g_laptop_ok);
 
 	ret = 0;
 

@@ -2293,7 +2293,7 @@ static int p2_not_a_laptop(void)
 static int p2_whitelist_laptop(void)
 {
 	is_laptop = 1;
-	laptop_ok = true;
+	g_laptop_ok = true;
 	msg_pdbg("Whitelisted laptop detected.\n");
 	return 0;
 }
