@@ -91,6 +91,12 @@ F:	*/Makefile*
 F:	util/ich_descriptors_tool/meson*
 F:	util/ich_descriptors_tool/Makefile*
 
+ERASE/WRITE ALGORITHM
+M:	Aarya Chaumal <aarya.chaumal@gmail.com>
+S:	Maintained
+F:	erasure_layout*
+F:	include/erasure_layout*
+
 I2C HELPERS
 M:	Peter Marheine <pmarheine@chromium.org>
 S:	Supported
