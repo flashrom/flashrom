@@ -229,6 +229,12 @@ int __wrap_fstat64(int fd, void *buf)
 	return 0;
 }
 
+int __wrap___fstat50(int fd, void *buf)
+{
+	LOG_ME;
+	return 0;
+}
+
 int __wrap___fxstat(int fd, void *buf)
 {
 	LOG_ME;

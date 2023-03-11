@@ -46,6 +46,7 @@ int __wrap___xstat(const char *path, void *buf);
 int __wrap___xstat64(const char *path, void *buf);
 int __wrap_fstat(int fd, void *buf);
 int __wrap_fstat64(int fd, void *buf);
+int __wrap___fstat50(int fd, void *buf);
 int __wrap___fxstat(int fd, void *buf);
 int __wrap___fxstat64(int fd, void *buf);
 char *__wrap_fgets(char *buf, int len, FILE *fp);

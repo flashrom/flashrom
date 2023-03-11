@@ -60,6 +60,7 @@ mocks = [
   '-Wl,--wrap=__xstat64',
   '-Wl,--wrap=fstat',
   '-Wl,--wrap=fstat64',
+  '-Wl,--wrap=__fstat50',
   '-Wl,--wrap=__fxstat',
   '-Wl,--wrap=__fxstat64',
   '-Wl,--wrap=fileno',
