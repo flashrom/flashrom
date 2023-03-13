@@ -150,6 +150,11 @@ M:	Nikolai Artemiev <nartemiev@google.com>
 S:	Supported
 F:	linux_mtd.c
 
+RAIDEN DEBUG SPI
+M:	Nikolai Artemiev <nartemiev@google.com>
+S:	Maintained
+F:	raiden_debug_spi.c
+
 STLINK-V3
 M:	Miklos Marton <martonmiklosqdev@gmail.com>
 S:	Maintained
