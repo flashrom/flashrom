@@ -1095,12 +1095,11 @@ static int nvidia_mcp_gpio_set(int gpio, int raise)
 			return -1;
 		}
 
-		dev = pci_get_dev(pacc, dev->domain, dev->bus, dev->dev, 1);
+		dev = pcidev_getdevfn(dev, 1);
 		if (!dev) {
 			msg_perr("MCP SMBus controller could not be found\n");
 			return -1;
 		}
-		pci_fill_info(dev, PCI_FILL_IDENT);
 		devclass = pci_read_word(dev, PCI_CLASS_DEVICE);
 		if (devclass != 0x0C05) {
 			msg_perr("Unexpected device class %04x for SMBus"
