@@ -8,5 +8,6 @@
 
   dev_guide/index
   classic_cli_manpage
+  contact
 
 .. include:: ../README
