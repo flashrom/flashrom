@@ -150,6 +150,11 @@ M:	Nikolai Artemiev <nartemiev@google.com>
 S:	Supported
 F:	linux_mtd.c
 
+National Instruments USB-845x
+M:	Miklos Marton <martonmiklosqdev@gmail.com>
+S:	Maintained
+F:	ni845x_spi.c
+
 RAIDEN DEBUG SPI
 M:	Nikolai Artemiev <nartemiev@google.com>
 S:	Maintained
@@ -159,11 +164,6 @@ STLINK-V3
 M:	Miklos Marton <martonmiklosqdev@gmail.com>
 S:	Maintained
 F:	stlinkv3_spi.c
-
-National Instruments USB-845x
-M:	Miklos Marton <martonmiklosqdev@gmail.com>
-S:	Maintained
-F:	ni845x_spi.c
 
 ################################################################################
 # TESTS
