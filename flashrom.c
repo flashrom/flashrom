@@ -719,42 +719,42 @@ int need_erase(const uint8_t *have, const uint8_t *want, unsigned int len,
 	unsigned int i;
 
 	switch (gran) {
-	case write_gran_1bit:
+	case WRITE_GRAN_1BIT:
 		for (i = 0; i < len; i++)
 			if ((have[i] & want[i]) != want[i]) {
 				result = 1;
 				break;
 			}
 		break;
-	case write_gran_1byte:
+	case WRITE_GRAN_1BYTE:
 		for (i = 0; i < len; i++)
 			if ((have[i] != want[i]) && (have[i] != erased_value)) {
 				result = 1;
 				break;
 			}
 		break;
-	case write_gran_128bytes:
+	case WRITE_GRAN_128BYTES:
 		result = need_erase_gran_bytes(have, want, len, 128, erased_value);
 		break;
-	case write_gran_256bytes:
+	case WRITE_GRAN_256BYTES:
 		result = need_erase_gran_bytes(have, want, len, 256, erased_value);
 		break;
-	case write_gran_264bytes:
+	case WRITE_GRAN_264BYTES:
 		result = need_erase_gran_bytes(have, want, len, 264, erased_value);
 		break;
-	case write_gran_512bytes:
+	case WRITE_GRAN_512BYTES:
 		result = need_erase_gran_bytes(have, want, len, 512, erased_value);
 		break;
-	case write_gran_528bytes:
+	case WRITE_GRAN_528BYTES:
 		result = need_erase_gran_bytes(have, want, len, 528, erased_value);
 		break;
-	case write_gran_1024bytes:
+	case WRITE_GRAN_1024BYTES:
 		result = need_erase_gran_bytes(have, want, len, 1024, erased_value);
 		break;
-	case write_gran_1056bytes:
+	case WRITE_GRAN_1056BYTES:
 		result = need_erase_gran_bytes(have, want, len, 1056, erased_value);
 		break;
-	case write_gran_1byte_implicit_erase:
+	case WRITE_GRAN_1BYTE_IMPLICIT_ERASE:
 		/* Do not erase, handle content changes from anything->0xff by writing 0xff. */
 		result = 0;
 		break;
@@ -797,30 +797,30 @@ unsigned int get_next_write(const uint8_t *have, const uint8_t *want, unsigned i
 	unsigned int i, limit, stride;
 
 	switch (gran) {
-	case write_gran_1bit:
-	case write_gran_1byte:
-	case write_gran_1byte_implicit_erase:
+	case WRITE_GRAN_1BIT:
+	case WRITE_GRAN_1BYTE:
+	case WRITE_GRAN_1BYTE_IMPLICIT_ERASE:
 		stride = 1;
 		break;
-	case write_gran_128bytes:
+	case WRITE_GRAN_128BYTES:
 		stride = 128;
 		break;
-	case write_gran_256bytes:
+	case WRITE_GRAN_256BYTES:
 		stride = 256;
 		break;
-	case write_gran_264bytes:
+	case WRITE_GRAN_264BYTES:
 		stride = 264;
 		break;
-	case write_gran_512bytes:
+	case WRITE_GRAN_512BYTES:
 		stride = 512;
 		break;
-	case write_gran_528bytes:
+	case WRITE_GRAN_528BYTES:
 		stride = 528;
 		break;
-	case write_gran_1024bytes:
+	case WRITE_GRAN_1024BYTES:
 		stride = 1024;
 		break;
-	case write_gran_1056bytes:
+	case WRITE_GRAN_1056BYTES:
 		stride = 1056;
 		break;
 	default:

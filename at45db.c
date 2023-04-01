@@ -200,12 +200,12 @@ int probe_spi_at45db(struct flashctx *flash)
 	}
 
 	switch (chip->page_size) {
-	case 256: chip->gran = write_gran_256bytes; break;
-	case 264: chip->gran = write_gran_264bytes; break;
-	case 512: chip->gran = write_gran_512bytes; break;
-	case 528: chip->gran = write_gran_528bytes; break;
-	case 1024: chip->gran = write_gran_1024bytes; break;
-	case 1056: chip->gran = write_gran_1056bytes; break;
+	case 256: chip->gran = WRITE_GRAN_256BYTES; break;
+	case 264: chip->gran = WRITE_GRAN_264BYTES; break;
+	case 512: chip->gran = WRITE_GRAN_512BYTES; break;
+	case 528: chip->gran = WRITE_GRAN_528BYTES; break;
+	case 1024: chip->gran = WRITE_GRAN_1024BYTES; break;
+	case 1056: chip->gran = WRITE_GRAN_1056BYTES; break;
 	default:
 		msg_cerr("%s: unknown page size %d.\n", __func__, chip->page_size);
 		return 0;

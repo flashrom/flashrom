@@ -83,17 +83,17 @@ enum chipbustype {
  */
 enum write_granularity {
 	/* We assume 256 byte granularity by default. */
-	write_gran_256bytes = 0,/* If less than 256 bytes are written, the unwritten bytes are undefined. */
-	write_gran_1bit,	/* Each bit can be cleared individually. */
-	write_gran_1byte,	/* A byte can be written once. Further writes to an already written byte cause
+	WRITE_GRAN_256BYTES = 0,/* If less than 256 bytes are written, the unwritten bytes are undefined. */
+	WRITE_GRAN_1BIT,	/* Each bit can be cleared individually. */
+	WRITE_GRAN_1BYTE,	/* A byte can be written once. Further writes to an already written byte cause
 				 * its contents to be either undefined or to stay unchanged. */
-	write_gran_128bytes,	/* If less than 128 bytes are written, the unwritten bytes are undefined. */
-	write_gran_264bytes,	/* If less than 264 bytes are written, the unwritten bytes are undefined. */
-	write_gran_512bytes,	/* If less than 512 bytes are written, the unwritten bytes are undefined. */
-	write_gran_528bytes,	/* If less than 528 bytes are written, the unwritten bytes are undefined. */
-	write_gran_1024bytes,	/* If less than 1024 bytes are written, the unwritten bytes are undefined. */
-	write_gran_1056bytes,	/* If less than 1056 bytes are written, the unwritten bytes are undefined. */
-	write_gran_1byte_implicit_erase, /* EEPROMs and other chips with implicit erase and 1-byte writes. */
+	WRITE_GRAN_128BYTES,	/* If less than 128 bytes are written, the unwritten bytes are undefined. */
+	WRITE_GRAN_264BYTES,	/* If less than 264 bytes are written, the unwritten bytes are undefined. */
+	WRITE_GRAN_512BYTES,	/* If less than 512 bytes are written, the unwritten bytes are undefined. */
+	WRITE_GRAN_528BYTES,	/* If less than 528 bytes are written, the unwritten bytes are undefined. */
+	WRITE_GRAN_1024BYTES,	/* If less than 1024 bytes are written, the unwritten bytes are undefined. */
+	WRITE_GRAN_1056BYTES,	/* If less than 1056 bytes are written, the unwritten bytes are undefined. */
+	WRITE_GRAN_1BYTE_IMPLICIT_ERASE, /* EEPROMs and other chips with implicit erase and 1-byte writes. */
 };
 
 /*

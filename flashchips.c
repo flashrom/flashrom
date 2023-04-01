@@ -2762,7 +2762,7 @@ const struct flashchip flashchips[] = {
 		.write		= SPI_WRITE_AT45DB,
 		.read		= SPI_READ_AT45DB,
 		.voltage	= {2700, 3600},
-		.gran		= write_gran_1056bytes,
+		.gran		= WRITE_GRAN_1056BYTES,
 	},
 
 	{
@@ -3015,7 +3015,7 @@ const struct flashchip flashchips[] = {
 		.write		= SPI_WRITE_AT45DB,
 		.read		= SPI_READ_AT45DB_E8, /* 3 address and 4 dummy bytes */
 		.voltage	= {2700, 3600},
-		.gran		= write_gran_528bytes,
+		.gran		= WRITE_GRAN_528BYTES,
 	},
 
 	{
@@ -3638,7 +3638,7 @@ const struct flashchip flashchips[] = {
 		.write		= EDI_CHIP_WRITE,
 		.read		= EDI_CHIP_READ,
 		.voltage	= {2700, 3600},
-		.gran		= write_gran_128bytes,
+		.gran		= WRITE_GRAN_128BYTES,
 	},
 
 	{
