@@ -113,6 +113,8 @@ mocks = [
   '-Wl,--gc-sections',
 ]
 
+threads_dep = dependency('threads')
+
 flashrom_tests = executable('flashrom_unit_tests',
   test_srcs,
   c_args : [
@@ -123,7 +125,7 @@ flashrom_tests = executable('flashrom_unit_tests',
   ],
   export_dynamic : true,
   link_args : mocks + link_args,
-  dependencies : [cmocka_dep, flashrom_test_dep],
+  dependencies : [cmocka_dep, flashrom_test_dep, threads_dep],
 )
 test('cmocka test flashrom', flashrom_tests)
 

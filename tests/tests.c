@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#include <pthread.h>
 
 void *not_null(void)
 {
@@ -385,25 +386,31 @@ unsigned int __wrap_INL(unsigned short port)
 	return 0;
 }
 
+static void *doing_nothing(void *vargp) {
+	return NULL;
+}
+
 int main(int argc, char *argv[])
 {
 	int ret = 0;
-
-#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
-	/*
-	 * Pretending to be a multithreaded environment so that `fileno`
-	 * is called as a function (and not as a macro).
-	 * fileno macro in FreeBSD is expanded into inline access of
-	 * private field of file descriptor, which is impossible to mock.
-	 * Calling fileno as a function allows the test to mock it.
-	 */
-	__isthreaded = 1;
-#endif
 
 	if (argc > 1)
 		cmocka_set_test_filter(argv[1]);
 
 	cmocka_set_message_output(CM_OUTPUT_STDOUT);
+
+	/*
+	 * Creating new thread which is doing nothing, to trigger __isthreaded being 1.
+	 * This is a workaround for BSD family. In multi-threaded environment fileno
+	 * macro is expanded into a function which is possible to mock in unit tests.
+	 * Without this workaround, on a single-thread environment, fileno macro is
+	 * expanded into an inline access of a private field of a file descriptor,
+	 * which is impossible to mock.
+	 *
+	 * In other OSes this is just creating a thread which is doing nothing.
+	 */
+	pthread_t thread_id;
+	pthread_create(&thread_id, NULL, doing_nothing, NULL);
 
 	const struct CMUnitTest helpers_tests[] = {
 		cmocka_unit_test(address_to_bits_test_success),
