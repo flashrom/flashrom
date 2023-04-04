@@ -101,40 +101,40 @@ static int mock_open(const char *pathname, int flags, mode_t mode)
 int __wrap_open(const char *pathname, int flags, ...)
 {
 	LOG_ME;
-	mode_t mode = 0;
+	int mode = 0;
 	if (flags & O_CREAT) {
 		va_list ap;
 		va_start(ap, flags);
-		mode = va_arg(ap, mode_t);
+		mode = va_arg(ap, int);
 		va_end(ap);
 	}
-	return mock_open(pathname, flags, mode);
+	return mock_open(pathname, flags, (mode_t) mode);
 }
 
 int __wrap_open64(const char *pathname, int flags, ...)
 {
 	LOG_ME;
-	mode_t mode = 0;
+	int mode = 0;
 	if (flags & O_CREAT) {
 		va_list ap;
 		va_start(ap, flags);
-		mode = va_arg(ap, mode_t);
+		mode = va_arg(ap, int);
 		va_end(ap);
 	}
-	return mock_open(pathname, flags, mode);
+	return mock_open(pathname, flags, (mode_t) mode);
 }
 
 int __wrap___open64_2(const char *pathname, int flags, ...)
 {
 	LOG_ME;
-	mode_t mode = 0;
+	int mode = 0;
 	if (flags & O_CREAT) {
 		va_list ap;
 		va_start(ap, flags);
-		mode = va_arg(ap, mode_t);
+		mode = va_arg(ap, int);
 		va_end(ap);
 	}
-	return mock_open(pathname, flags, mode);
+	return mock_open(pathname, flags, (mode_t) mode);
 }
 
 int __wrap_ioctl(int fd, unsigned long int request, ...)
