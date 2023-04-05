@@ -10,4 +10,4 @@
   classic_cli_manpage
   contact
 
-.. include:: ../README
+.. include:: ../README.rst
