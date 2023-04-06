@@ -120,6 +120,7 @@ F:	MAINTAINERS
 
 SPHINX DOCS
 M:	Thomas Heijligen <src@posteo.de>
+M:	Anastasia Klimchuk <aklm@chromium.org>
 S:	Maintained
 F:	doc/
 
