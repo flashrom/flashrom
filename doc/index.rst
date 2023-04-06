@@ -9,5 +9,6 @@
   dev_guide/index
   classic_cli_manpage
   contact
+  how_to_add_docs
 
 .. include:: ../README.rst
