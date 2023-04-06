@@ -114,7 +114,6 @@ F:	include/writeprotect*
 ################################################################################
 
 MAINTAINERS
-M:	Felix Singer <felixsinger@posteo.net>
 M:	Anastasia Klimchuk <aklm@chromium.org>
 S:	Maintained
 F:	MAINTAINERS
@@ -184,17 +183,7 @@ M:	Alexander Goncharov <chat@joursoir.net>
 S:	Maintained
 F:	util/flashrom.bash-completion.tmpl
 
-TEST BUILD SCRIPT
-M:	Felix Singer <felixsinger@posteo.net>
-S:	Supported
-F:	test_build.sh
-
 FLASHROM TESTER
 R:	Evan Benn <evanbenn@gmail.com>
 S:	Supported
 F:	util/flashrom_tester/
-
-NIX SHELL
-M:	Felix Singer <felixsinger@posteo.net>
-S:	Maintained
-F:	util/shell.nix
