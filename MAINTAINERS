@@ -118,6 +118,11 @@ M:	Anastasia Klimchuk <aklm@chromium.org>
 S:	Maintained
 F:	MAINTAINERS
 
+SPHINX DOCS
+M:	Thomas Heijligen <src@posteo.de>
+S:	Maintained
+F:	doc/
+
 ################################################################################
 # PROGRAMMERS
 ################################################################################
