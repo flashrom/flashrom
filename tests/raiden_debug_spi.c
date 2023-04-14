@@ -104,15 +104,100 @@ void raiden_debug_basic_lifecycle_test_success(void **state)
 		.fallback_open_state = &raiden_debug_fallback_open_state,
 	};
 
-	/*
-	 * 12 is the length of programmer param string for 3-digit address.
-	 * Address can be max 3-digit because it needs to fit into uint8_t.
-	 */
-	char raiden_debug_param[12];
-	snprintf(raiden_debug_param, 12, "address=%d", USB_DEVICE_ADDRESS);
+	char raiden_debug_param[32];
 
+	snprintf(raiden_debug_param, sizeof(raiden_debug_param),
+                 "address=%d", USB_DEVICE_ADDRESS);
+	run_basic_lifecycle(state, &raiden_debug_io, &programmer_raiden_debug_spi, raiden_debug_param);
+}
+
+void raiden_debug_targetAP_basic_lifecycle_test_success(void **state)
+{
+	struct io_mock_fallback_open_state raiden_debug_fallback_open_state = {
+		.noc = 0,
+		.paths = { NULL },
+	};
+	const struct io_mock raiden_debug_io = {
+		.libusb_get_device_list = raiden_debug_libusb_get_device_list,
+		.libusb_free_device_list = raiden_debug_libusb_free_device_list,
+		.libusb_get_device_descriptor = raiden_debug_libusb_get_device_descriptor,
+		.libusb_get_config_descriptor = raiden_debug_libusb_get_config_descriptor,
+		.libusb_free_config_descriptor = raiden_debug_libusb_free_config_descriptor,
+		.fallback_open_state = &raiden_debug_fallback_open_state,
+	};
+
+	char raiden_debug_param[32];
+	snprintf(raiden_debug_param, sizeof(raiden_debug_param),
+                 "address=%d,target=AP", USB_DEVICE_ADDRESS);
+	run_basic_lifecycle(state, &raiden_debug_io, &programmer_raiden_debug_spi, raiden_debug_param);
+}
+
+void raiden_debug_targetEC_basic_lifecycle_test_success(void **state)
+{
+	struct io_mock_fallback_open_state raiden_debug_fallback_open_state = {
+		.noc = 0,
+		.paths = { NULL },
+	};
+	const struct io_mock raiden_debug_io = {
+		.libusb_get_device_list = raiden_debug_libusb_get_device_list,
+		.libusb_free_device_list = raiden_debug_libusb_free_device_list,
+		.libusb_get_device_descriptor = raiden_debug_libusb_get_device_descriptor,
+		.libusb_get_config_descriptor = raiden_debug_libusb_get_config_descriptor,
+		.libusb_free_config_descriptor = raiden_debug_libusb_free_config_descriptor,
+		.fallback_open_state = &raiden_debug_fallback_open_state,
+	};
+
+	char raiden_debug_param[32];
+	snprintf(raiden_debug_param, sizeof(raiden_debug_param),
+                 "address=%d,target=ec", USB_DEVICE_ADDRESS);
+	run_basic_lifecycle(state, &raiden_debug_io, &programmer_raiden_debug_spi, raiden_debug_param);
+}
+
+void raiden_debug_target0_basic_lifecycle_test_success(void **state)
+{
+	struct io_mock_fallback_open_state raiden_debug_fallback_open_state = {
+		.noc = 0,
+		.paths = { NULL },
+	};
+	const struct io_mock raiden_debug_io = {
+		.libusb_get_device_list = raiden_debug_libusb_get_device_list,
+		.libusb_free_device_list = raiden_debug_libusb_free_device_list,
+		.libusb_get_device_descriptor = raiden_debug_libusb_get_device_descriptor,
+		.libusb_get_config_descriptor = raiden_debug_libusb_get_config_descriptor,
+		.libusb_free_config_descriptor = raiden_debug_libusb_free_config_descriptor,
+		.fallback_open_state = &raiden_debug_fallback_open_state,
+	};
+
+	char raiden_debug_param[32];
+	snprintf(raiden_debug_param, sizeof(raiden_debug_param),
+                 "address=%d,target=0", USB_DEVICE_ADDRESS);
+	run_basic_lifecycle(state, &raiden_debug_io, &programmer_raiden_debug_spi, raiden_debug_param);
+}
+
+void raiden_debug_target1_basic_lifecycle_test_success(void **state)
+{
+	struct io_mock_fallback_open_state raiden_debug_fallback_open_state = {
+		.noc = 0,
+		.paths = { NULL },
+	};
+	const struct io_mock raiden_debug_io = {
+		.libusb_get_device_list = raiden_debug_libusb_get_device_list,
+		.libusb_free_device_list = raiden_debug_libusb_free_device_list,
+		.libusb_get_device_descriptor = raiden_debug_libusb_get_device_descriptor,
+		.libusb_get_config_descriptor = raiden_debug_libusb_get_config_descriptor,
+		.libusb_free_config_descriptor = raiden_debug_libusb_free_config_descriptor,
+		.fallback_open_state = &raiden_debug_fallback_open_state,
+	};
+
+	char raiden_debug_param[32];
+	snprintf(raiden_debug_param, sizeof(raiden_debug_param),
+                 "address=%d,target=1", USB_DEVICE_ADDRESS);
 	run_basic_lifecycle(state, &raiden_debug_io, &programmer_raiden_debug_spi, raiden_debug_param);
 }
 #else
 	SKIP_TEST(raiden_debug_basic_lifecycle_test_success)
+	SKIP_TEST(raiden_debug_targetAP_basic_lifecycle_test_success)
+	SKIP_TEST(raiden_debug_targetEC_basic_lifecycle_test_success)
+	SKIP_TEST(raiden_debug_target0_basic_lifecycle_test_success)
+	SKIP_TEST(raiden_debug_target1_basic_lifecycle_test_success)
 #endif /* CONFIG_RAIDEN_DEBUG_SPI */

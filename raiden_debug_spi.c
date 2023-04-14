@@ -1450,29 +1450,43 @@ static int get_ap_request_type(const struct programmer_cfg *cfg)
 	return ap_request;
 }
 
-static int get_target(const struct programmer_cfg *cfg)
+static int decode_programmer_param(const struct programmer_cfg *cfg, uint8_t *request,
+                                   uint16_t *request_parameter)
 {
 	/**
 	 * REQ_ENABLE doesn't specify a target bus, and will be rejected
 	 * by adapters that support more than one target.
 	 */
-	int request_enable = RAIDEN_DEBUG_SPI_REQ_ENABLE;
+	uint8_t request_enable = RAIDEN_DEBUG_SPI_REQ_ENABLE;
+        uint16_t parameter = 0;
+        int ret = 0;
 
 	char *target_str = extract_programmer_param_str(cfg, "target");
+        printf("FISK: %s\n", target_str);
+
 	if (target_str) {
-		if (!strcasecmp(target_str, "ap"))
+		char *endptr;
+		int index = strtol(target_str, &endptr, 0);
+		if (*target_str && !*endptr && index >= 0 && index < 256) {
+			request_enable = RAIDEN_DEBUG_SPI_REQ_ENABLE;
+                        parameter = index;
+		} else if (!strcasecmp(target_str, "ap"))
 			request_enable = get_ap_request_type(cfg);
 		else if (!strcasecmp(target_str, "ec"))
 			request_enable = RAIDEN_DEBUG_SPI_REQ_ENABLE_EC;
 		else {
 			msg_perr("Invalid target: %s\n", target_str);
-			request_enable = -1;
+			ret = 1;
 		}
 	}
 	free(target_str);
-	msg_pinfo("Raiden target: %d\n", request_enable);
+	if (ret == 0) {
+		msg_pinfo("Raiden target: %d,%d\n", request_enable, parameter);
 
-	return request_enable;
+                *request = request_enable;
+                *request_parameter = parameter;
+        }
+        return ret;
 }
 
 static void free_dev_list(struct usb_device **dev_lst)
@@ -1493,10 +1507,12 @@ static int raiden_debug_spi_init(const struct programmer_cfg *cfg)
 	bool found = false;
 	int ret;
 
-	int request_enable = get_target(cfg);
-	if (request_enable < 0) {
+	uint8_t request_enable;
+        uint16_t request_parameter;
+        ret = decode_programmer_param(cfg, &request_enable, &request_parameter);
+	if (ret != 0) {
 		free(serial);
-		return 1;
+		return ret;
 	}
 
 	usb_match_init(cfg, &match);
@@ -1588,7 +1604,7 @@ loop_end:
 				LIBUSB_REQUEST_TYPE_VENDOR |
 				LIBUSB_RECIPIENT_INTERFACE,
 				request_enable,
-				0,
+				request_parameter,
 				device->interface_descriptor->bInterfaceNumber,
 				NULL,
 				0,

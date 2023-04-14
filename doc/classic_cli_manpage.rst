@@ -865,11 +865,15 @@ The schematic of the Xilinx DLC 5 was published in `a Xilinx guide <http://www.x
 raiden_debug_spi programmer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The target of the SPI flashing mux must be specified with the ``target`` parameter with the::
+Some devices such as the GSC knows how it is wired to AP and EC flash chips, and can be told which specific device to talk to using the ``target`` parameter::
 
-        flashrom -p raiden_debug_spi:target=chip
+        flashrom -p raiden_debug_spi:target={ap,ec}
 
-syntax, where ``chip`` is either the ``ap`` or ``ec`` to flash, otherwise a unspecified target terminates at the end-point.
+Other devices such as Servo Micro and HyperDebug are generic, and do not know how they are wired, the caller is responsible for first configure the appropriate MUXes or buffers, and then tell the debugger which port to use (Servo Micro has just one SPI port, HyperDebug is the first of this kind to have multiple)::
+
+        flashrom -p raiden_debug_spi:target=N
+
+where ``N`` is an non-negative integer (default ``0``).
 
 The default is to use the first available servo. You can use the optional ``serial`` parameter to specify the servo
 USB device serial number to use specifically with::
