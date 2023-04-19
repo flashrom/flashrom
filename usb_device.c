@@ -342,8 +342,8 @@ int usb_device_claim(struct usb_device *device)
 		}
 	}
 
-	ret = LIBUSB(libusb_detach_kernel_driver(device->handle,
-		device->interface_descriptor->bInterfaceNumber));
+	ret = libusb_detach_kernel_driver(device->handle,
+		device->interface_descriptor->bInterfaceNumber);
 	if (ret != 0 && ret != LIBUSB_ERROR_NOT_FOUND && ret != LIBUSB_ERROR_NOT_SUPPORTED) {
 		msg_perr("Cannot detach the existing usb driver. %s\n",
 				libusb_error_name(ret));
