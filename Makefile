@@ -36,6 +36,7 @@ EXPORTDIR ?= .
 RANLIB  ?= ranlib
 PKG_CONFIG ?= pkg-config
 BUILD_DETAILS_FILE ?= build_details.txt
+SPHINXBUILD ?= sphinx-build
 
 # The following parameter changes the default programmer that will be used if there is no -p/--programmer
 # argument given when running flashrom. The predefined setting does not enable any default so that every
@@ -259,6 +260,7 @@ HAS_LINUX_MTD       := $(call c_compile_test, Makefile.d/linux_mtd_test.c)
 HAS_LINUX_SPI       := $(call c_compile_test, Makefile.d/linux_spi_test.c)
 HAS_LINUX_I2C       := $(call c_compile_test, Makefile.d/linux_i2c_test.c)
 HAS_SERIAL          := $(strip $(if $(filter $(TARGET_OS), DOS libpayload), no, yes))
+HAS_SPHINXBUILD     := $(shell command -v $(SPHINXBUILD) &>/dev/null && echo yes || echo no)
 EXEC_SUFFIX         := $(strip $(if $(filter $(TARGET_OS), DOS MinGW), .exe))
 
 override CFLAGS += -Iinclude
@@ -956,7 +958,7 @@ endif
 OBJS = $(CHIP_OBJS) $(PROGRAMMER_OBJS) $(LIB_OBJS)
 
 
-all: $(PROGRAM)$(EXEC_SUFFIX) man8/$(PROGRAM).8
+all: $(PROGRAM)$(EXEC_SUFFIX) $(call has_dependency, $(HAS_SPHINXBUILD), man8/$(PROGRAM).8)
 ifeq ($(ARCH), x86)
 	@+$(MAKE) -C util/ich_descriptors_tool/ HOST_OS=$(HOST_OS) TARGET_OS=$(TARGET_OS)
 endif
@@ -1017,6 +1019,7 @@ config:
 		echo "The following features are unavailable on your machine: $(UNSUPPORTED_FEATURES)" \
 		exit 1;								\
 	fi
+	@echo "Checking for program \"sphinx-build\": $(HAS_SPHINXBUILD)"
 
 %.o: %.c | config
 	$(CC) -MMD $(CFLAGS) $(CPPFLAGS) $(FLASHROM_CFLAGS) $(FEATURE_FLAGS) -D'FLASHROM_VERSION=$(VERSION)'  -o $@ -c $<
@@ -1028,9 +1031,13 @@ libflashrom.a: $(OBJS)
 	$(AR) rcs $@ $^
 	$(RANLIB) $@
 
-SPHINXBUILD ?= sphinx-build
 man8/$(PROGRAM).8: doc/*
-	@FLASHROM_VERSION=$(VERSION) $(SPHINXBUILD) -b man doc .
+	@if [ "$(HAS_SPHINXBUILD)" = "yes" ]; then			\
+		$(SPHINXBUILD) -Drelease=$(VERSION) -b man doc .;	\
+	else								\
+		echo "$(SPHINXBUILD) not found. Can't build man-page";	\
+		exit 1;							\
+	fi
 
 $(PROGRAM).bash: util/$(PROGRAM).bash-completion.tmpl
 	@# Add to the bash completion file a list of enabled programmers.
@@ -1047,13 +1054,15 @@ clean:
 		man8 .doctrees $(PROGRAM).bash $(BUILD_DETAILS_FILE)
 	@+$(MAKE) -C util/ich_descriptors_tool/ clean
 
-install: $(PROGRAM)$(EXEC_SUFFIX) man8/$(PROGRAM).8 $(PROGRAM).bash
+install: $(PROGRAM)$(EXEC_SUFFIX) $(call has_dependency, $(HAS_SPHINXBUILD), man8/$(PROGRAM).8) $(PROGRAM).bash
 	mkdir -p $(DESTDIR)$(PREFIX)/sbin
-	mkdir -p $(DESTDIR)$(MANDIR)/man8
-	mkdir -p $(DESTDIR)$(BASHCOMPDIR)
 	$(INSTALL) -m 0755 $(PROGRAM)$(EXEC_SUFFIX) $(DESTDIR)$(PREFIX)/sbin
-	$(INSTALL) -m 0644 man8/$(PROGRAM).8 $(DESTDIR)$(MANDIR)/man8
+	mkdir -p $(DESTDIR)$(BASHCOMPDIR)
 	$(INSTALL) -m 0644 $(PROGRAM).bash $(DESTDIR)$(BASHCOMPDIR)
+ifeq ($(HAS_SPHINXBUILD), yes)
+	mkdir -p $(DESTDIR)$(MANDIR)/man8
+	$(INSTALL) -m 0644 man8/$(PROGRAM).8 $(DESTDIR)$(MANDIR)/man8
+endif
 
 libinstall: libflashrom.a include/libflashrom.h
 	mkdir -p $(DESTDIR)$(PREFIX)/lib
