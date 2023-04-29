@@ -1032,6 +1032,9 @@
 #define WINBOND_W49V002A	0xB0
 #define WINBOND_W49V002FA	0x32
 
+#define XTXTECH_ID          	0x0B	/* XTX Technology Inc.  */
+#define XTXTECH_XT25F64B    	0x4017
+
 #define ZETTADEVICE_ID          0xBA	/* Zetta Device */
 #define ZETTADEVICE_ZD25D20     0x2012
 #define ZETTADEVICE_ZD25D40     0x2013
