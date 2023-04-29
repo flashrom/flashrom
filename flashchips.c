@@ -20545,6 +20545,25 @@ const struct flashchip flashchips[] = {
 	},
 
 	{
+		.vendor		= "XTXTECH",
+		.name		= "XT25F64B",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= XTXTECH_ID,
+		.model_id	= XTXTECH_XT25F64B,
+		.total_size	= 8192,
+		.page_size	= 256,
+		.feature_bits	= 0, /* set by probing function */
+		.tested		= TEST_OK_PREW,
+		.probe		= probe_spi_sfdp,
+		.block_erasers	= {}, /* set by probing function */
+		.unlock		= spi_disable_blockprotect, /* is this safe? */
+		.write		= NULL, /* set by probing function */
+		.read		= spi_chip_read,
+		/* FIXME: some vendor extensions define this */
+		.voltage	= {1650,3600},
+	},
+		
+	{
 		.vendor		= "Zetta Device",
 		.name		= "ZD25D20",
 		.bustype	= BUS_SPI,
