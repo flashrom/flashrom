@@ -35,7 +35,7 @@
 #include "chipdrivers.h"
 #include "erasure_layout.h"
 
-static bool use_legacy_erase_path = true;
+static bool use_legacy_erase_path = false;
 
 const char flashrom_version[] = FLASHROM_VERSION;
 
