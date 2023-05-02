@@ -328,9 +328,12 @@ int erase_write(struct flashctx *const flashctx, chipoff_t region_start, chipoff
 					 addr, addr + len - 1);
 				free(region.name);
 
-				if (erasefn(flashctx, addr, len))
+				if (erasefn(flashctx, addr, len)) {
+					ret = -1;
 					goto _end;
+				}
 				if (check_erased_range(flashctx, addr, len)) {
+					ret = - 1;
 					msg_cerr("ERASE FAILED!\n");
 					goto _end;
 				}
