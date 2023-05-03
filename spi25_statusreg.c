@@ -914,9 +914,6 @@ static int spi_disable_blockprotect_bp2_ep_srwd(struct flashctx *flash)
 	return spi_disable_blockprotect_bp2_srwd(flash);
 }
 
-/* special unit-test hook */
-blockprotect_func_t *g_test_unlock_injector;
-
 blockprotect_func_t *lookup_blockprotect_func_ptr(const struct flashchip *const chip)
 {
 	switch (chip->unlock) {
@@ -948,7 +945,6 @@ blockprotect_func_t *lookup_blockprotect_func_ptr(const struct flashchip *const 
 			return lookup_82802ab_blockprotect_func_ptr(chip);
 		case UNLOCK_SST_FWHUB: return unlock_sst_fwhub; /* sst_fwhub.c */
 		case UNPROTECT_28SF040: return unprotect_28sf040; /* sst28sf040.c */
-		case TEST_UNLOCK_INJECTOR: return g_test_unlock_injector;
 	/* default: non-total function, 0 indicates no unlock function set.
 	 * We explicitly do not want a default catch-all case in the switch
 	 * to ensure unhandled enum's are compiler warnings.

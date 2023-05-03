@@ -2093,7 +2093,8 @@ int prepare_flash_access(struct flashctx *const flash,
 
 	/* Given the existence of read locks, we want to unlock for read, erase and write. */
 	int ret = 1;
-	if (flash->chip->decode_range != NO_DECODE_RANGE_FUNC) {
+	if (flash->chip->decode_range != NO_DECODE_RANGE_FUNC ||
+	   (flash->mst->buses_supported & BUS_PROG && flash->mst->opaque.wp_write_cfg)) {
 		ret = unlock_flash_wp(flash);
 		if (ret)
 			msg_cerr("Failed to unlock flash status reg with wp support.\n");

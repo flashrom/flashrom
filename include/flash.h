@@ -348,7 +348,6 @@ enum blockprotect_func {
 	UNLOCK_LH28F008BJT,
 	UNLOCK_SST_FWHUB,
 	UNPROTECT_28SF040,
-	TEST_UNLOCK_INJECTOR, /* special case must come last. */
 };
 
 enum printlock_func {

@@ -20,7 +20,7 @@
  * Example of test: erase_chip_test_success.
  *
  * 2) Mock chip operations backed by `dummyflasher` emulation.
- * Dummyflasher controls chip state and emulates read/write/unlock/erase.
+ * Dummyflasher controls chip state and emulates read/write/erase.
  * `g_chip_state` is NOT used for this type of tests.
  * Example of test: erase_chip_with_dummyflasher_test_success.
  */
@@ -40,20 +40,14 @@
 #define MOCK_CHIP_CONTENT 0xCC /* 0x00 is a zeroed heap and 0xFF is an erased chip. */
 
 static struct {
-	unsigned int unlock_calls; /* how many times unlock function was called */
 	uint8_t buf[MOCK_CHIP_SIZE]; /* buffer of total size of chip, to emulate a chip */
 } g_chip_state = {
-	.unlock_calls = 0,
 	.buf = { 0 },
 };
 
 static int read_chip(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len)
 {
 	printf("Read chip called with start=0x%x, len=0x%x\n", start, len);
-	if (!g_chip_state.unlock_calls) {
-		printf("Error while reading chip: unlock was not called.\n");
-		return 1;
-	}
 
 	assert_in_range(start + len, 0, MOCK_CHIP_SIZE);
 
@@ -64,10 +58,6 @@ static int read_chip(struct flashctx *flash, uint8_t *buf, unsigned int start, u
 static int write_chip(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len)
 {
 	printf("Write chip called with start=0x%x, len=0x%x\n", start, len);
-	if (!g_chip_state.unlock_calls) {
-		printf("Error while writing chip: unlock was not called.\n");
-		return 1;
-	}
 
 	assert_in_range(start + len, 0, MOCK_CHIP_SIZE);
 
@@ -75,26 +65,9 @@ static int write_chip(struct flashctx *flash, const uint8_t *buf, unsigned int s
 	return 0;
 }
 
-static int unlock_chip(struct flashctx *flash)
-{
-	printf("Unlock chip called\n");
-	g_chip_state.unlock_calls++;
-
-	if (g_chip_state.unlock_calls > 1) {
-		printf("Error: Unlock called twice\n");
-		return -1;
-	}
-
-	return 0;
-}
-
 static int block_erase_chip(struct flashctx *flash, unsigned int blockaddr, unsigned int blocklen)
 {
 	printf("Block erase called with blockaddr=0x%x, blocklen=0x%x\n", blockaddr, blocklen);
-	if (!g_chip_state.unlock_calls) {
-		printf("Error while erasing chip: unlock was not called.\n");
-		return 1;
-	}
 
 	assert_in_range(blockaddr + blocklen, 0, MOCK_CHIP_SIZE);
 
@@ -109,7 +82,6 @@ static void setup_chip(struct flashrom_flashctx *flashctx, struct flashrom_layou
 
 	flashctx->chip = chip;
 
-	g_chip_state.unlock_calls = 0;
 	memset(g_chip_state.buf, MOCK_CHIP_CONTENT, sizeof(g_chip_state.buf));
 
 	printf("Creating layout with one included region... ");
@@ -149,7 +121,6 @@ static void teardown(struct flashrom_layout **layout)
 extern write_func_t *g_test_write_injector;
 extern read_func_t *g_test_read_injector;
 extern erasefunc_t *g_test_erase_injector;
-extern blockprotect_func_t *g_test_unlock_injector;
 
 static const struct flashchip chip_8MiB = {
 	.vendor		= "aklm",
@@ -157,7 +128,6 @@ static const struct flashchip chip_8MiB = {
 	.tested		= TEST_OK_PREW,
 	.read		= TEST_READ_INJECTOR,
 	.write		= TEST_WRITE_INJECTOR,
-	.unlock		= TEST_UNLOCK_INJECTOR,
 	.block_erasers	=
 	{{
 		 /* All blocks within total size of the chip. */
@@ -173,7 +143,6 @@ static const struct flashchip chip_W25Q128_V = {
 	.tested		= TEST_OK_PREW,
 	.read		= SPI_CHIP_READ,
 	.write		= SPI_CHIP_WRITE256,
-	.unlock         = SPI_DISABLE_BLOCKPROTECT,
 	.page_size	= 256,
 	.block_erasers  =
 	{
@@ -211,7 +180,6 @@ void erase_chip_test_success(void **state)
 	g_test_write_injector = write_chip;
 	g_test_read_injector = read_chip;
 	g_test_erase_injector = block_erase_chip;
-	g_test_unlock_injector = unlock_chip;
 	struct flashrom_flashctx flashctx = { 0 };
 	struct flashrom_layout *layout;
 	struct flashchip mock_chip = chip_8MiB;
@@ -271,7 +239,6 @@ void read_chip_test_success(void **state)
 	g_test_write_injector = write_chip;
 	g_test_read_injector = read_chip;
 	g_test_erase_injector = block_erase_chip;
-	g_test_unlock_injector = unlock_chip;
 	struct flashrom_flashctx flashctx = { 0 };
 	struct flashrom_layout *layout;
 	struct flashchip mock_chip = chip_8MiB;
@@ -347,7 +314,6 @@ void write_chip_test_success(void **state)
 	g_test_write_injector = write_chip;
 	g_test_read_injector = read_chip;
 	g_test_erase_injector = block_erase_chip;
-	g_test_unlock_injector = unlock_chip;
 	struct flashrom_flashctx flashctx = { 0 };
 	struct flashrom_layout *layout;
 	struct flashchip mock_chip = chip_8MiB;
@@ -539,7 +505,6 @@ void verify_chip_test_success(void **state)
 	g_test_write_injector = write_chip;
 	g_test_read_injector = read_chip;
 	g_test_erase_injector = block_erase_chip;
-	g_test_unlock_injector = unlock_chip;
 	struct flashrom_flashctx flashctx = { 0 };
 	struct flashrom_layout *layout;
 	struct flashchip mock_chip = chip_8MiB;
