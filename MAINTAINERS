@@ -133,6 +133,11 @@ F:	README.rst
 # PROGRAMMERS
 ################################################################################
 
+AMD SB600SPI
+M:	Martin Roth <gaumless@tutanota.com>
+S:	Maintained
+F:	sb600spi.c
+
 CH347
 M:	Nicholas Chin <nic.c3.14@gmail.com>
 S:	Maintained
