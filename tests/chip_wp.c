@@ -24,6 +24,12 @@
 #include "programmer.h"
 #include "tests.h"
 
+static int unittest_print_cb(enum flashrom_log_level level, const char *fmt, va_list ap)
+{
+	if (level > FLASHROM_MSG_INFO) return 0;
+	return vfprintf(stderr, fmt, ap);
+}
+
 /*
  * Tests in this file do not use any mocking, because using write-protect
  * emulation in dummyflasher programmer is sufficient
@@ -46,6 +52,8 @@ static void setup_chip(struct flashrom_flashctx *flash, struct flashrom_layout *
 
 		flashrom_layout_set(flash, *layout);
 	}
+
+	flashrom_set_log_callback((flashrom_log_callback *)&unittest_print_cb);
 
 	assert_int_equal(0, programmer_init(&programmer_dummy, programmer_param));
 	/* Assignment below normally happens while probing, but this test is not probing. */
