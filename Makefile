@@ -1098,9 +1098,6 @@ tarball: _export
 libpayload: clean
 	make CC="CC=i386-elf-gcc lpgcc" AR=i386-elf-ar RANLIB=i386-elf-ranlib
 
-gitconfig:
-	git rev-parse 2>/dev/null && ./util/git-hooks/install.sh
-
 .PHONY: all install clean distclean config _export export tarball libpayload
 
 # Disable implicit suffixes and built-in rules (for performance and profit)
