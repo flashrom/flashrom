@@ -51,10 +51,16 @@
 /* Minimum target voltage required for operation in mV. */
 #define MIN_TARGET_VOLTAGE	1200
 
+enum cs_wiring {
+	CS_RESET, /* nCS is wired to nRESET(pin 15) */
+	CS_TRST, /* nCS is wired to nTRST(pin 3) */
+	CS_TMS, /* nCS is wired to TMS/nCS(pin 7) */
+};
+
 struct jlink_spi_data {
 	struct jaylink_context *ctx;
 	struct jaylink_device_handle *devh;
-	bool reset_cs;
+	enum cs_wiring cs;
 	bool enable_target_power;
 };
 
@@ -62,18 +68,25 @@ static bool assert_cs(struct jlink_spi_data *jlink_data)
 {
 	int ret;
 
-	if (jlink_data->reset_cs) {
+	if (jlink_data->cs == CS_RESET) {
 		ret = jaylink_clear_reset(jlink_data->devh);
 
 		if (ret != JAYLINK_OK) {
 			msg_perr("jaylink_clear_reset() failed: %s.\n", jaylink_strerror(ret));
 			return false;
 		}
-	} else {
+	} else if (jlink_data->cs == CS_TRST) {
 		ret = jaylink_jtag_clear_trst(jlink_data->devh);
 
 		if (ret != JAYLINK_OK) {
 			msg_perr("jaylink_jtag_clear_trst() failed: %s.\n", jaylink_strerror(ret));
+			return false;
+		}
+	} else {
+		ret = jaylink_jtag_clear_tms(jlink_data->devh);
+
+		if (ret != JAYLINK_OK) {
+			msg_perr("jaylink_jtag_clear_tms() failed: %s.\n", jaylink_strerror(ret));
 			return false;
 		}
 	}
@@ -85,18 +98,25 @@ static bool deassert_cs(struct jlink_spi_data *jlink_data)
 {
 	int ret;
 
-	if (jlink_data->reset_cs) {
+	if (jlink_data->cs == CS_RESET) {
 		ret = jaylink_set_reset(jlink_data->devh);
 
 		if (ret != JAYLINK_OK) {
 			msg_perr("jaylink_set_reset() failed: %s.\n", jaylink_strerror(ret));
 			return false;
 		}
-	} else {
+	} else if (jlink_data->cs == CS_TRST) {
 		ret = jaylink_jtag_set_trst(jlink_data->devh);
 
 		if (ret != JAYLINK_OK) {
 			msg_perr("jaylink_jtag_set_trst() failed: %s.\n", jaylink_strerror(ret));
+			return false;
+		}
+	} else {
+		ret = jaylink_jtag_set_tms(jlink_data->devh);
+
+		if (ret != JAYLINK_OK) {
+			msg_perr("jaylink_jtag_set_tms() failed: %s.\n", jaylink_strerror(ret));
 			return false;
 		}
 	}
@@ -109,6 +129,7 @@ static int jlink_spi_send_command(const struct flashctx *flash, unsigned int wri
 {
 	uint32_t length;
 	uint8_t *buffer;
+	static const uint8_t zeros[JTAG_MAX_TRANSFER_SIZE] = {0};
 	struct jlink_spi_data *jlink_data = flash->mst->spi.data;
 
 	length = writecnt + readcnt;
@@ -133,10 +154,13 @@ static int jlink_spi_send_command(const struct flashctx *flash, unsigned int wri
 		return SPI_PROGRAMMER_ERROR;
 	}
 
+	/* If CS is wired to TMS, TMS should remain zero. */
+	const uint8_t *tms_buffer = jlink_data->cs == CS_TMS ? zeros : buffer;
+
 	int ret;
 
 	ret = jaylink_jtag_io(jlink_data->devh,
-				buffer, buffer, buffer, length * 8, JAYLINK_JTAG_VERSION_2);
+				tms_buffer, buffer, buffer, length * 8, JAYLINK_JTAG_VERSION_2);
 
 	if (ret != JAYLINK_OK) {
 		msg_perr("jaylink_jtag_io() failed: %s.\n", jaylink_strerror(ret));
@@ -196,7 +220,7 @@ static int jlink_spi_init(const struct programmer_cfg *cfg)
 	unsigned long speed = 0;
 	struct jaylink_context *jaylink_ctx = NULL;
 	struct jaylink_device_handle *jaylink_devh = NULL;
-	bool reset_cs;
+	enum cs_wiring cs;
 	struct jlink_spi_data *jlink_data = NULL;
 	bool enable_target_power;
 
@@ -255,14 +279,16 @@ static int jlink_spi_init(const struct programmer_cfg *cfg)
 
 	free(arg);
 
-	reset_cs = true;
+	cs = CS_RESET;
 	arg = extract_programmer_param_str(cfg, "cs");
 
 	if (arg) {
 		if (!strcasecmp(arg, "reset")) {
-			reset_cs = true;
+			cs = CS_RESET;
 		} else if (!strcasecmp(arg, "trst")) {
-			reset_cs = false;
+			cs = CS_TRST;
+		} else if (!strcasecmp(arg, "tms")) {
+			cs = CS_TMS;
 		} else {
 			msg_perr("Invalid chip select pin specified: '%s'.\n", arg);
 			free(arg);
@@ -272,10 +298,12 @@ static int jlink_spi_init(const struct programmer_cfg *cfg)
 
 	free(arg);
 
-	if (reset_cs)
+	if (cs == CS_RESET)
 		msg_pdbg("Using RESET as chip select signal.\n");
-	else
+	else if (cs == CS_TRST)
 		msg_pdbg("Using TRST as chip select signal.\n");
+	else
+		msg_pdbg("Using TMS/CS as chip select signal.\n");
 
 	enable_target_power = false;
 	arg = extract_programmer_param_str(cfg, "power");
@@ -506,7 +534,7 @@ static int jlink_spi_init(const struct programmer_cfg *cfg)
 	/* jaylink_ctx, jaylink_devh are allocated by jaylink_init and jaylink_open */
 	jlink_data->ctx = jaylink_ctx;
 	jlink_data->devh = jaylink_devh;
-	jlink_data->reset_cs = reset_cs;
+	jlink_data->cs = cs;
 	jlink_data->enable_target_power = enable_target_power;
 
 	/* Ensure that the CS signal is not active initially. */

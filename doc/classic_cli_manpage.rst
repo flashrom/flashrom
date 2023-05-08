@@ -1066,7 +1066,7 @@ programmer which can be selected with the::
 
         flashrom -p jlink_spi:cs=pin
 
-syntax where ``pin`` can be either ``TRST`` or ``RESET``. The default pin for chip select is ``RESET``.
+syntax where ``pin`` can be either ``TRST``, ``RESET`` or ``TMS``. The default pin for chip select is ``RESET``.
 Note that, when using ``RESET``, it is normal that the indicator LED blinks orange or red.
 
 Additionally, the ``Tref`` pin of the programmer must be attached to the logic level of the flash chip.
@@ -1079,7 +1079,7 @@ Pinout for devices with 20-pin JTAG connector::
           |  1  2 |     1: VTref     2:
           |  3  4 |     3: TRST      4: GND
           |  5  6 |     5: TDI       6: GND
-        +-+  7  8 |     7:           8: GND
+        +-+  7  8 |     7: TMS       8: GND
         |    9 10 |     9: TCK      10: GND
         |   11 12 |    11:          12: GND
         +-+ 13 14 |    13: TDO      14:
