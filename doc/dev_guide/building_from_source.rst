@@ -240,15 +240,27 @@ For additional information see `the meson documentation <https://mesonbuild.com/
 
 Installing
 ----------
-Run::
+To install flashrom and documentation, run::
 
     meson install -C <builddir>
 
 This will install flashrom under the PREFIX selected in the configuration phase. Default is ``/usr/local``.
 
+To install into a different directory use DESTDIR, like this::
+
+	DESTDIR=/your/destination/directory meson install -C <your_build_dir>
+
+You can also set the prefix during configuration with::
+
+	meson setup --prefix <DESTDIR> <your_build_dir>
 
 Create distribution package
 ---------------------------
-To create a distribution tarball from your <builddir>, run::
+To create a distribution tarball from your ``builddir``, run::
 
     meson dist -C <builddir>
+
+This will collect all git tracked files and pack them into an archive.
+
+Current flashrom version is in the VERSION file. To release a new flashrom
+version you need to change VERSION file and tag the changing commit.
