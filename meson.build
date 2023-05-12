@@ -130,7 +130,7 @@ else
 endif
 
 systems_hwaccess   = [ 'linux', 'openbsd', 'freebsd', 'dragonfly', 'netbsd', 'dos' ]
-systems_serial     = [ 'linux', 'openbsd', 'freebsd', 'dragonfly', 'netbsd', 'darwin' ]
+systems_serial     = [ 'linux', 'openbsd', 'freebsd', 'dragonfly', 'netbsd', 'darwin', 'windows' ]
 
 cpus_port_io = [ 'x86', 'x86_64' ]
 
