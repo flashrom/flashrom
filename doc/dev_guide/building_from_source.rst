@@ -81,7 +81,22 @@ Installing dependencies
             cmocka-dev pciutils-dev libusb-dev libjaylink-dev
 
 * Windows
-    .. todo:: Add build instructions to build under MSYS2, CYGWIN or cross compiling from Linux
+    * MSYS2
+        Install `MSYS2 <https://www.msys2.org/>`_ and ensure it is `fully updated <https://www.msys2.org/docs/updating/>`_.
+
+        * ``libpci`` is not available through the package manager and pci based programmer are not supported on Windows.
+
+        In the MINGW64 shell run::
+
+            pacman -Sy \
+            mingw-w64-x86_64-gcc mingw-w64-x86_64-meson mingw-w64-x86_64-ninja mingw-w64-x86_64-pkg-config mingw-w64-x86_64-python-sphinx \
+            mingw-w64-x86_64-cmocka mingw-w64-x86_64-libusb mingw-w64-x86_64-libftdi mingw-w64-x86_64-libjaylink-git
+
+        For building flashrom as 32-bit application, use the MSYS2 MINGW32 shell and run::
+
+            pacman -Sy \
+            mingw-w64-i686-gcc mingw-w64-i686-meson mingw-w64-i686-ninja mingw-w64-i686-pkg-config mingw-w64-i686-python-sphinx \
+            mingw-w64-i686-cmocka mingw-w64-i686-libusb mingw-w64-i686-libftdi mingw-w64-i686-libjaylink-git
 
 * MacOS
     * Homebrew
