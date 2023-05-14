@@ -147,7 +147,7 @@ libpci     = dependency('libpci', required : group_pci, version : '>=2.2.0',
   static : (host_machine.system() == 'openbsd' ? true : false)) # On openbsd a static version of libpci is needed to get also -libz
 libusb1    = dependency('libusb-1.0', required : group_usb)
 libftdi1   = dependency('libftdi1', required : group_ftdi)
-libjaylink = dependency('libjaylink', required : group_jlink)
+libjaylink = dependency('libjaylink', required : group_jlink, version : '>=0.3.0')
 
 subdir('platform')
 
