@@ -31,25 +31,38 @@ If your mail is too big (the current limit is 256 kB) or if you're not on the su
 If your mail contains any BIOS images or F segment dumps (instead of links which are fine), the mail will be rejected for legal reasons
 (we do not have the right to distribute BIOS images).
 
+Real time chats
+---------------
+
+Flashrom has real time channels where you have the chance to talk to people being involved or interested in the project.
+Most of the discussion is about flashrom development, contributions, tech talk and user help.
+
+You are welcome to join and discuss current and future flashrom development, ideas and contributions.
+
+If you have a problem and would like to get help, don't ask for help. Instead, just **explain** your problem right away,
+and make sure to **describe** the situation as much as possible, so that other people can understand you and provide meaningful answers.
+Otherwise, others have to ask or guess the details of your problem, which is frustrating for both parties.
+
+Should you need to paste lots of text (more than three lines), please use a `paste service <https://en.wikipedia.org/wiki/Pastebin>`_.
+For flashrom logs, feel free to use `paste.flashrom.org <https://paste.flashrom.org>`_.
+Other good paste services are `ix.io <http://ix.io/>`_, `paste.rs <https://paste.rs/>`_, `bpaste.net <https://bpaste.net/>`_,
+`gist.github.com <https://gist.github.com/>`_  and `dpaste.com <http://dpaste.com/>`_.
+
+Questions on `coreboot <https://coreboot.org>`_, `OpenBIOS <http://www.openbios.info/>`_, firmware and related topics are welcome in **#coreboot** on the same server.
+
 IRC
----
-Some of the flashrom developers and users hang out in the `#flashrom <irc://irc.libera.chat/#flashrom>`_
+"""
+
+You can join `#flashrom <irc://irc.libera.chat/#flashrom>`_
 channel on the `Libera.chat <https://www.libera.chat/>`_ `IRC <https://en.wikipedia.org/wiki/Internet_Relay_Chat>`_ network.
 If you don't have an IRC client, you can use the Libera.chat `webchat <https://web.libera.chat/#flashrom>`_.
 
 **#flashrom** channel is bridged to `Matrix <https://matrix.org/>`_.
 If you would like to join, you can use `this invite link <https://matrix.to/#/#flashrom:libera.chat>`_.
 
-Here you have the chance to talk to people being involved or interested in this project.
-Most of the discussion is tech talk and user help.
-
 Do note that IRC's nature has a significant effect on conversations. People from all over the world can join this channel
 with many different cultures and timezones. Most people are in the `CET timezone <https://en.wikipedia.org/wiki/Central_European_Time>`_,
 so the channel may be very quiet during `CET nighttime <https://time.is/CET>`_.
-
-If you have a problem and would like to get help, don't ask for help. Instead, just **explain** your problem right away,
-and make sure to **describe** the situation as much as possible, so that other people can understand you and provide meaningful answers.
-Otherwise, others have to ask or guess the details of your problem, which is frustrating for both parties.
 
 If you receive no replies, **please be patient**.
 After all, silence is better than getting replied with `"IDK" <https://en.wiktionary.org/wiki/IDK>`_.
@@ -64,12 +77,11 @@ Most of the time, people use IRC on wider-than-tall screens. Because of this, co
 Instead of sending lots of tiny messages with only about two words, prefer using longer sentences, spaces and punctuation symbols.
 If reading and understanding your messages is easy, replying to them is also easy.
 
-Should you need to paste lots of text (more than three lines), please use a `paste service <https://en.wikipedia.org/wiki/Pastebin>`_.
-For flashrom logs, feel free to use `paste.flashrom.org <https://paste.flashrom.org>`_.
-Other good paste services are `ix.io <http://ix.io/>`_, `paste.rs <https://paste.rs/>`_, `bpaste.net <https://bpaste.net/>`_,
-`gist.github.com <https://gist.github.com/>`_  and `dpaste.com <http://dpaste.com/>`_.
+Discord
+"""""""
 
-Questions on `coreboot <https://coreboot.org>`_, `OpenBIOS <http://www.openbios.info/>`_, firmware and related topics are welcome in **#coreboot** on the same server.
+Flashrom Discord channel is hosted on coreboot's server. Once you join, you will be able to see all coreboot's and flashrom's channels in one place.
+To join, use the `invite link <https://discord.gg/dgcrkwVyeR>`_.
 
 Dev meeting
 -----------
