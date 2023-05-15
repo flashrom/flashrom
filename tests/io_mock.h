@@ -38,6 +38,10 @@
 
 #include <stdint.h>
 
+/* Required for struct timeval and mode_t */
+#include <sys/types.h>
+#include <sys/time.h>
+
 #include "usb_unittests.h"
 
 /* Address value needs fit into uint8_t. */
