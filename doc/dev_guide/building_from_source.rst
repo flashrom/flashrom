@@ -13,15 +13,17 @@ You're going to need the following tools to get started:
 
 And the following dependencies:
 
-* cmocka*
-* linux-headers**
-* libpci**
-* libusb1**
-* libftdi1**
-* libjaylink**
+* cmocka [#b1]_
+* linux-headers [#b2]_
+* libpci [#b2]_
+* libusb1 [#b2]_
+* libftdi1 [#b2]_
+* libjaylink [#b2]_
+* NI-845x driver & library package [#b3]_
 
-| \*  optional, for building unit testing
-| \** optional, depending on the selected programmer
+.. [#b1] | optional, for building unit testing
+.. [#b2] | optional, depending on the selected programmer
+.. [#b3] | optional, proprietary and Windows only. (See Windows build instructions)
 
 If you are cross compiling, install the dependencies for your target.
 
@@ -33,6 +35,8 @@ TL;DR
     meson compile -C builddir
     meson install -C builddir
 
+
+.. _installing-dependencies:
 
 Installing dependencies
 -----------------------
@@ -85,6 +89,9 @@ Installing dependencies
         Install `MSYS2 <https://www.msys2.org/>`_ and ensure it is `fully updated <https://www.msys2.org/docs/updating/>`_.
 
         * ``libpci`` is not available through the package manager and pci based programmer are not supported on Windows.
+        * ``ni845x_spi`` is only available with the proprietary library from National Instruments. Download and install the driver
+          from `ni.com <https://www.ni.com/en-us/support/downloads/drivers/download.ni-845x-driver-software.html>`_ and build flashrom
+          for **32-bit**. Add ``-Dprogrammer=ni845x_spi`` to your meson configuration.
 
         In the MINGW64 shell run::
 

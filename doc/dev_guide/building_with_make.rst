@@ -21,6 +21,7 @@ Build instructions
  * libusb (if you want FT2232, Dediprog or USB-Blaster support)
  * libftdi (if you want FT2232 or USB-Blaster support)
  * libjaylink (if you want support for SEGGER J-Link and compatible devices)
+ * NI-845x driver & library package (if you want support for NI-845x devices; uses a proprietary driver)
 
 **Linux et al:**
 
@@ -62,6 +63,15 @@ Build instructions
 
 Install DirectHW from coresystems GmbH.
 DirectHW is available at https://www.coreboot.org/DirectHW .
+
+**To compile on Windows:**
+
+Install MSYS tools (and the NI-845x drivers if desired) as described in
+:ref:`installing-dependencies`.
+
+To build with support for NI-845x::
+
+	make HAS_LIB_NI845X=yes CONFIG_NI845X_SPI=yes
 
 **To cross-compile on Linux for DOS:**
 
