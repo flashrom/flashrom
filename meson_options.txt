@@ -13,10 +13,12 @@ option('programmer', type : 'array', value : ['auto'], choices : [
         'asm106x', 'atahpt', 'atapromise', 'atavia', 'buspirate_spi', 'ch341a_spi', 'ch347_spi','dediprog',
         'developerbox_spi', 'digilent_spi', 'dirtyjtag_spi', 'drkaiser', 'dummy', 'ft2232_spi',
         'gfxnvidia', 'internal', 'it8212', 'jlink_spi', 'linux_mtd', 'linux_spi', 'mediatek_i2c_spi',
-        'mstarddc_spi', 'nic3com', 'nicintel', 'nicintel_eeprom', 'nicintel_spi', 'nicnatsemi',
+        'mstarddc_spi', 'ni845x_spi', 'nic3com', 'nicintel', 'nicintel_eeprom', 'nicintel_spi', 'nicnatsemi',
         'nicrealtek', 'ogp_spi', 'parade_lspcon', 'pickit2_spi', 'pony_spi', 'raiden_debug_spi',
         'rayer_spi', 'realtek_mst_i2c_spi', 'satamv', 'satasii', 'serprog',  'stlinkv3_spi', 'usbblaster_spi',
 ], description: 'Active programmers')
 option('llvm_cov', type : 'feature', value : 'disabled', description : 'build for llvm code coverage')
 option('man-pages', type : 'feature', value : 'auto', description : 'build the man-page for classic_cli')
 option('documentation', type : 'feature', value : 'auto', description : 'build the html documentation')
+option('ni845x_search_path', type : 'string', value : 'C:\Program Files (x86)\National Instruments\Ni-845x\MS Visual C',
+       description : 'Path to search for the proprietary ni845x library and header (32-bit Windows only)')

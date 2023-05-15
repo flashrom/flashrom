@@ -12,6 +12,8 @@ project('flashromutils', 'c',
   ],
 )
 
+fs = import('fs')
+
 if get_option('classic_cli').enabled() and get_option('default_library') == 'shared'
   error('''
     Cannot build cli_classic with shared libflashrom. Use \'-Dclassic_cli=disabled\' to disable the cli,
@@ -148,6 +150,30 @@ libpci     = dependency('libpci', required : group_pci, version : '>=2.2.0',
 libusb1    = dependency('libusb-1.0', required : group_usb)
 libftdi1   = dependency('libftdi1', required : group_ftdi)
 libjaylink = dependency('libjaylink', required : group_jlink, version : '>=0.3.0')
+
+if host_machine.system() == 'windows'
+  # Specifying an include_path that doesn't exist is an error,
+  # but we only use this if the library is found in the same directory.
+  ni845x_search_path = get_option('ni845x_search_path')
+  if fs.is_dir(ni845x_search_path)
+    ni845x_include_path = [ni845x_search_path]
+  else
+    ni845x_include_path = []
+  endif
+
+  libni845x = declare_dependency(
+    dependencies : [
+      cc.find_library(
+        'ni845x',
+        dirs : get_option('ni845x_search_path'),
+        required : get_option('programmer').contains('ni845x_spi')
+      ),
+    ],
+    include_directories : ni845x_include_path,
+  )
+else
+  libni845x = dependency('', required : false)
+endif
 
 subdir('platform')
 
@@ -368,6 +394,14 @@ programmer = {
     'srcs'    : files('mstarddc_spi.c', 'i2c_helper_linux.c'),
     'flags'   : [ '-DCONFIG_MSTARDDC_SPI=1' ],
     'default' : false
+  },
+  'ni845x_spi' : {
+    'systems' : [ 'windows' ],
+    'cpu_families' : [ 'x86' ], # The required ni845x library is 32-bit only
+    'deps'    : [ libni845x ],
+    'srcs'    : files('ni845x_spi.c'),
+    'flags'   : [ '-DCONFIG_NI845X_SPI=1' ],
+    'default' : false,
   },
   'nic3com' : {
     'systems' : systems_hwaccess,

@@ -15,6 +15,13 @@
  *
  */
 
+/* The ni845x header does need the WIN32 symbol to be defined and meson does not do it.
+ * Define it just here, since this driver will only work on 32-bit Windows.
+ */
+#ifndef WIN32
+#define WIN32
+#endif
+
 #include <ctype.h>
 #include <inttypes.h>
 #include <string.h>
