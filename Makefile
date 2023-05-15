@@ -211,19 +211,9 @@ CONFIG_LIBFTDI1_VERSION    := $(call dependency_version, libftdi1)
 CONFIG_LIBFTDI1_CFLAGS     := $(call dependency_cflags, libftdi1)
 CONFIG_LIBFTDI1_LDFLAGS    := $(call dependency_ldflags, libftdi1)
 
-# Hack to keep legacy auto detection of Program Files (x86), Only active if none of the CONFIG_ variables for ni845x are set.
-ifeq ($(CONFIG_NI845X_LIBRARY_PATH)$(CONFIG_LIB_NI845X_CFLAGS)$(CONFIG_LIB_NI845X_LDFLAGS),)
-PROGRAMFILES_X86 = $(shell env | sed -n "s/^PROGRAMFILES(X86)=//p")
-ifneq ($(PROGRAMFILES_X86DIR),)
-ifneq ($(PROGRAMFILES_X86DIR), ${PROGRAMFILES})
-NI854_X86_LIBRARY_PATH := '${PROGRAMFILES_X86}\National Instruments\NI-845x\MS Visual C'
-endif
-endif
-endif
-
-CONFIG_NI845X_LIBRARY_PATH := '${PROGRAMFILES}\National Instruments\NI-845x\MS Visual C'
-CONFIG_LIB_NI845X_CFLAGS   := -I$(CONFIG_NI845X_LIBRARY_PATH) $(if NI854_X86_LIBRARY_PATH, -I${NI854_X86_LIBRARY_PATH})
-CONFIG_LIB_NI845X_LDFLAGS  := -L$(CONFIG_NI845X_LIBRARY_PATH) $(if NI854_X86_LIBRARY_PATH, -L${NI854_X86_LIBRARY_PATH}) -lni845x
+CONFIG_NI845X_LIBRARY_PATH := 'C:\Program Files (x86)\National Instruments\NI-845x\MS Visual C'
+CONFIG_LIB_NI845X_CFLAGS   := -I$(CONFIG_NI845X_LIBRARY_PATH)
+CONFIG_LIB_NI845X_LDFLAGS  := -L$(CONFIG_NI845X_LIBRARY_PATH) -lni845x
 
 CONFIG_LIBJAYLINK_VERSION  := $(call dependency_version, libjaylink)
 CONFIG_LIBJAYLINK_CFLAGS   := $(call dependency_cflags, libjaylink)
