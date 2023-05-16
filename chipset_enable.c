@@ -24,8 +24,6 @@
  * Contains the chipset specific flash enables.
  */
 
-#define _LARGEFILE64_SOURCE
-
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
