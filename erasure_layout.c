@@ -20,9 +20,9 @@
 #include <limits.h>
 #include <string.h>
 
-#include "include/flash.h"
-#include "include/layout.h"
-#include "include/erasure_layout.h"
+#include "flash.h"
+#include "layout.h"
+#include "erasure_layout.h"
 
 static size_t calculate_block_count(const struct flashchip *chip, size_t eraser_idx)
 {
