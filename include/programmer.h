@@ -292,7 +292,7 @@ struct decode_sizes {
 // FIXME: These need to be local, not global
 extern struct decode_sizes max_rom_decode;
 extern bool programmer_may_write;
-extern unsigned long flashbase;
+extern uintptr_t flashbase; /* used in programmer_enable.c */
 char *extract_programmer_param_str(const struct programmer_cfg *cfg, const char *param_name);
 
 /* spi.c */

@@ -21,6 +21,7 @@
 
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <sys/types.h>
 #include <string.h>
 #include <unistd.h>
@@ -48,7 +49,7 @@ static const struct programmer_entry *programmer = NULL;
 struct decode_sizes max_rom_decode;
 
 /* If nonzero, used as the start address of bottom-aligned flash. */
-unsigned long flashbase;
+uintptr_t flashbase;
 
 /* Is writing allowed with this programmer? */
 bool programmer_may_write;
