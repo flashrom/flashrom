@@ -127,7 +127,7 @@ The last week of March and 4 weeks of October there are no meetings
 This is because daylight saving time changes are happening on different dates in different locations, and setting up meeting time becomes too complicated.
 
 FAQ
----
+"""
 **When is the next meeting?**
 
 Look into the meeting notes `document <https://docs.google.com/document/d/18qKvEbfPszjsJJGJhwi8kRVDUG3GZkADzQSH6WFsKqw/edit?usp=sharing>`_.
