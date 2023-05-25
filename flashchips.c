@@ -20799,6 +20799,20 @@ const struct flashchip flashchips[] = {
 		.read		= 0,
 	},
 
+	{  /* parameters set by probing function */
+		.vendor		= "Generic",          
+		.name		= "Generic NAND chip",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= GENERIC_MANUF_ID,
+		.model_id	= GENERIC_DEVICE_ID,
+		.total_size	= 0,
+		.page_size	= 0,
+		.tested		= TEST_OK_PR,
+		.probe		= probe_spi_nand,
+		.write		= 0, // spi_nand_write
+		.read		= spi_nand_read
+	},
+
 	{
 		.vendor		= "Generic",
 		.name		= "unknown SPI chip (RDID)",
