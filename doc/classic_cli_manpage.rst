@@ -323,7 +323,7 @@ All operations involving any chip access (probe/read/write/...) require the ``-p
 
 
 **--progress**
-        Show progress percentage of operations on the standard output.
+        [Experimental feature] Show progress percentage of operations on the standard output.
 
 
 **-R, --version**
