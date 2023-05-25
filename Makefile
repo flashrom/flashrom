@@ -386,6 +386,7 @@ CHIP_OBJS = jedec.o printlock.o stm50.o w39.o w29ee011.o \
 	sst28sf040.o 82802ab.o \
 	sst49lfxxxc.o sst_fwhub.o edi.o flashchips.o spi.o spi25.o spi25_statusreg.o \
 	spi95.o opaque.o sfdp.o en29lv640b.o at45db.o s25f.o \
+	spi_nand.o spi_nand_ecc.o bch.o \
 	writeprotect.o writeprotect_ranges.o
 
 ###############################################################################
