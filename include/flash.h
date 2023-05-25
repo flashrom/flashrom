@@ -164,6 +164,9 @@ enum write_granularity {
 /* Whether chip has configuration register (RDCR/WRSR_EXT2 commands) */
 #define FEATURE_CFGR	    (1 << 25)
 
+/* Feature bits used for SPI NAND only */
+#define FEATURE_NAND_HW_ECC	(1 << 26)
+
 #define ERASED_VALUE(flash)	(((flash)->chip->feature_bits & FEATURE_ERASED_ZERO) ? 0x00 : 0xff)
 #define UNERASED_VALUE(flash)	(((flash)->chip->feature_bits & FEATURE_ERASED_ZERO) ? 0xff : 0x00)
 
@@ -508,6 +511,8 @@ struct flashchip {
 		struct reg_bit_info wps;
 	} reg_bits;
 
+	/* NAND internal processing data */
+	void *data;
 	/*
 	 * Function that takes a set of WP config bits (e.g. BP, SEC, TB, etc)
 	 * and determines what protection range they select.

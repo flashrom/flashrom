@@ -172,6 +172,18 @@ int edi_probe_kb9012(struct flashctx *flash);
 int probe_spi_st95(struct flashctx *flash);
 int spi_block_erase_emulation(struct flashctx *flash, unsigned int addr, unsigned int blocklen);
 
+/* spi_nand.c */
+int probe_spi_nand(struct flashctx *flash);
+int spi_nand_read(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
+int spi_nand_write(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
+
+int spi_nand_set_ecc_mode(struct flashctx *flash, int ecc_mode);
+/* spi_nand_ecc.c */
+void *spi_nand_ecc_init(uint8_t mode);
+void spi_nand_ecc_done(void *ecc_ctx);
+int spi_nand_ecc_encode(void *ecc_ctx, uint8_t *page_buffer, uint8_t mode);
+int spi_nand_ecc_decode(void *ecc_ctx, uint8_t *page_buffer, uint8_t mode);
+
 /* writeprotect_ranges.c */
 void decode_range_spi25(size_t *start, size_t *len, const struct wp_bits *, size_t chip_len);
 void decode_range_spi25_64k_block(size_t *start, size_t *len, const struct wp_bits *, size_t chip_len);

@@ -467,6 +467,10 @@
 #define INTEL_25F320S33T8	0x8916
 #define INTEL_25F640S33T8	0x8917
 
+#define KIOXIA_ID		0x98	/* Kioxia (Toshiba Memory) */
+
+#define MACRONIX_ID		0xC2	/* Macronix (MX) */
+
 #define SHARP_LH28F008SA	0xA2	/* Sharp chip, Intel Vendor ID */
 #define SHARP_LH28F008SC	0xA6	/* Sharp chip, Intel Vendor ID */
 
