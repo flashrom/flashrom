@@ -194,3 +194,8 @@ FLASHROM TESTER
 R:	Evan Benn <evanbenn@gmail.com>
 S:	Supported
 F:	util/flashrom_tester/
+
+FLASHROM DOCKER
+M:	Stefan Reinauer <stefan.reinauer@coreboot.org>
+S:	Maintained
+F:	util/docker/
