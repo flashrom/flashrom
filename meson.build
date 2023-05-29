@@ -561,7 +561,13 @@ foreach p_name, p_data : programmer
 
   if selected_hard
     if not available
-      error(p_name + ' selected but not supported on this platform')
+      error('programmer @0@ was selected but is not supported on this platform (needs @1@/@2@, but system is @3@/@4@)'.format(
+        p_name,
+        p_data.get('systems'),
+        p_data.get('cpu_families'),
+        host_machine.system(),
+        host_machine.cpu_family()
+      ))
     elif not deps_found
       error(p_name + ' selected but dependency ' + not_found_dep +'not found')
     else
