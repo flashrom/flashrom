@@ -11,4 +11,6 @@
   contact
   how_to_add_docs
 
+.. include:: intro.rst
+
 .. include:: ../README.rst
