@@ -449,9 +449,7 @@ struct flashchip {
 	/*
 	 * Erase blocks and associated erase function. Any chip erase function
 	 * is stored as chip-sized virtual block together with said function.
-	 * The first one that fits will be chosen. There is currently no way to
-	 * influence that behaviour. For testing just comment out the other
-	 * elements or set the function pointer to NULL.
+	 * The logic for how to optimally select erase functions is in erasure_layout.c
 	 */
 	struct block_eraser {
 		struct eraseblock {
