@@ -38,7 +38,7 @@ Usage example
 -------------
 
 The most common use case may be testing the current upstream
-*master* branch which is the default for `$(TEST_REVISION)`.
+*main* branch which is the default for `$(TEST_REVISION)`.
 You'll need roughly 20GiB for the *Docker* images. Might look
 like this:
 

@@ -56,7 +56,7 @@ $(ALL_TAGS): %: %-check-build
 		--env IDENT=$(call ident,$*) \
 		--volume manicache:/home/mani/.ccache \
 		--name mani_$(call ident,$*) mani/$* \
-		"git fetch origin $${TEST_REVISION:-master} && \
+		"git fetch origin $${TEST_REVISION:-main} && \
 		 git checkout FETCH_HEAD && \
 		 $(MAKECMD) clean && $(MAKECMD) -j$${CPUS:-1} CC='$(CC)' \
 		 $(if $(STRIP),STRIP='$(STRIP)') \

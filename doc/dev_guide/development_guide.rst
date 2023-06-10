@@ -32,7 +32,7 @@ Set up the git repository and dev environment
    * If using https: :code:`git remote add -f upstream https://review.coreboot.org/flashrom`
    * If using ssh: :code:`git remote add -f upstream ssh://<gerrit_username>@review.coreboot.org:29418/flashrom`
 
-#. Check out a new local branch that tracks :code:`upstream/master`: :code:`git checkout -b <branch_name> upstream/master`
+#. Check out a new local branch that tracks :code:`upstream/main`: :code:`git checkout -b <branch_name> upstream/main`
 
 #. Every patch is required to be signed-off (see also :ref:`sign-off`).
    Set up your ``user.name`` and ``user.email`` in git config, and don't forget
@@ -191,7 +191,7 @@ Creating an account
 Pushing a patch
 ---------------
 
-To push patch to Gerrit, use the follow command: :code:`git push upstream HEAD:refs/for/master`.
+To push patch to Gerrit, use the follow command: :code:`git push upstream HEAD:refs/for/main`.
 
 * If using HTTPS you will be prompted for the username and password you
   set in the Gerrit UI.
@@ -205,7 +205,7 @@ to a certain topic.
 Adding a topic makes it easy to search "all the patches by the topic", even if the patches
 have been authored by multiple people.
 
-To add a topic, push with the command: :code:`git push upstream HEAD:refs/for/master%topic=example_topic`.
+To add a topic, push with the command: :code:`git push upstream HEAD:refs/for/main%topic=example_topic`.
 Alternatively, you can add a topic from a Gerrit UI after the patch in pushed
 (on the top-left section) of patch UI.
 
