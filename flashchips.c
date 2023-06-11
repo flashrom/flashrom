@@ -15924,6 +15924,45 @@ const struct flashchip flashchips[] = {
 	},
 
 	{
+		.vendor		= "ST",
+		.name		= "M95P16",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= ST_ID,
+		.model_id	= ST_M95P16,
+		.total_size	= 2048,
+		.page_size	= 512,
+		.feature_bits	= FEATURE_WRSR_WREN,
+		.tested		= TEST_UNTESTED,
+		.probe		= PROBE_SPI_ST95,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {512, 4096} },
+				.block_erase = SPI_BLOCK_ERASE_DB,
+			},
+			{
+				.eraseblocks = { {4 * 1024, 512} },
+				.block_erase = SPI_BLOCK_ERASE_20,
+			},
+			{
+				.eraseblocks = { {64 * 1024, 32} },
+				.block_erase = SPI_BLOCK_ERASE_D8,
+			},
+			{
+				.eraseblocks = { {2 * 1024 * 1024, 1} },
+				.block_erase = SPI_BLOCK_ERASE_C7,
+			}
+
+		},
+		.printlock	= SPI_PRETTYPRINT_STATUS_REGISTER_BP1_SRWD,
+		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP1_SRWD,
+		.write		= SPI_CHIP_WRITE256,
+		.read		= SPI_CHIP_READ,
+		.voltage	= {2500, 5500},
+	},
+
+	{
 		.vendor		= "Sanyo",
 		.name		= "LE25FU106B",
 		.bustype	= BUS_SPI,

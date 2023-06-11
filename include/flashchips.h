@@ -897,6 +897,7 @@
 #define ST_M58WR064KT		0x8810
 
 #define ST_M95M02		0x0012	/* ST M95XXX 2Mbit (256KiB) */
+#define ST_M95P16		0x0015	/* ST M95P16 16Mbit (4096KiB) */
 
 #define ST_MT28GU01G___1	0x88B0
 #define ST_MT28GU01G___2	0x88B1
