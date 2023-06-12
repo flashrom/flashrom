@@ -8039,7 +8039,8 @@ const struct flashchip flashchips[] = {
 			},
 		},
 		.write		= write_82802ab,
-		.read		= read_memmapped,
+		.read		= read_memmapped
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -8067,6 +8068,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_82802ab,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -8094,6 +8096,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_82802ab,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -8117,6 +8120,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= unlock_28f004s5,
 		.write		= write_82802ab,
 		.read		= read_memmapped,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -8145,6 +8149,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_82802ab,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -8173,6 +8178,7 @@ const struct flashchip flashchips[] = {
 		},
 		.write		= write_82802ab,
 		.read		= read_memmapped,
+		.voltage	= {4500, 5500},
 	},
 
 	{
@@ -10444,6 +10450,7 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect_bp3_srwd,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
+		.voltage	= {2700, 3600},
 	},
 
 	{
@@ -18343,7 +18350,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = erase_chip_block_jedec,
 			}
 		},
-		.write		= write_jedec,
+				.voltage	= {2700, 3600},
 		.read		= read_memmapped,
 	},
 
