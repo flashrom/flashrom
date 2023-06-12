@@ -8039,7 +8039,7 @@ const struct flashchip flashchips[] = {
 			},
 		},
 		.write		= write_82802ab,
-		.read		= read_memmapped
+		.read		= read_memmapped,
 		.voltage	= {4500, 5500},
 	},
 
@@ -10450,7 +10450,6 @@ const struct flashchip flashchips[] = {
 		.unlock		= spi_disable_blockprotect_bp3_srwd,
 		.write		= spi_chip_write_256,
 		.read		= spi_chip_read,
-		.voltage	= {2700, 3600},
 	},
 
 	{
