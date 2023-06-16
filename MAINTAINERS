@@ -97,6 +97,12 @@ S:	Maintained
 F:	erasure_layout*
 F:	include/erasure_layout*
 
+FLASHCHIPS
+M:	Anastasia Klimchuk <aklm@chromium.org>
+S:	Maintained
+F:	flashchips*
+F:	include/flashchips*
+
 I2C HELPERS
 M:	Peter Marheine <pmarheine@chromium.org>
 S:	Supported
