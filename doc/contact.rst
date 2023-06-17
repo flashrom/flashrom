@@ -3,6 +3,8 @@ Contact
 .. The extra = is needed to prevent git from throwing a `leftover conflict marker`
    error when commiting.
 
+.. _mailing list:
+
 Mailing List
 ------------
 Flashrom related mails are welcome on the flashrom mailing list at `flashrom@flashrom.org <mailto:flashrom@flashrom.org>`_.
