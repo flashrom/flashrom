@@ -129,11 +129,6 @@ F:	README.rst
 # PROGRAMMERS
 ################################################################################
 
-AMD SB600SPI
-M:	Arthur Heymans <arthur@aheymans.xyz>
-S:	Maintained
-F:	sb600spi.c
-
 CH347
 M:	Nicholas Chin <nic.c3.14@gmail.com>
 S:	Maintained
