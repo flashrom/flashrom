@@ -31,3 +31,7 @@ be moved to ECAM from IO port 0xcf8/0xcfc if the libpci version is >= 3.13.0.
 The ECAM has been supported for a very long time, most platforms should support
 it. For those platforms don't support ECAM, libpci will terminate the process by
 exit.
+
+Chipset support
+===============
+Added Raptor Point PCH support.

@@ -606,6 +606,7 @@ static enum chipbustype enable_flash_ich_report_gcs(
 	case CHIPSET_400_SERIES_COMET_POINT:
 	case CHIPSET_500_SERIES_TIGER_POINT:
 	case CHIPSET_600_SERIES_ALDER_POINT:
+	case CHIPSET_700_SERIES_RAPTOR_POINT:
 	case CHIPSET_METEOR_LAKE:
 	case CHIPSET_PANTHER_LAKE:
 	case CHIPSET_ELKHART_LAKE:
@@ -714,6 +715,7 @@ static enum chipbustype enable_flash_ich_report_gcs(
 		break;
 	case CHIPSET_500_SERIES_TIGER_POINT:
 	case CHIPSET_600_SERIES_ALDER_POINT:
+	case CHIPSET_700_SERIES_RAPTOR_POINT:
 	case CHIPSET_C740_SERIES_EMMITSBURG:
 	case CHIPSET_METEOR_LAKE:
 	case CHIPSET_PANTHER_LAKE:
@@ -751,6 +753,7 @@ static enum chipbustype enable_flash_ich_report_gcs(
 	case CHIPSET_400_SERIES_COMET_POINT:
 	case CHIPSET_500_SERIES_TIGER_POINT:
 	case CHIPSET_600_SERIES_ALDER_POINT:
+	case CHIPSET_700_SERIES_RAPTOR_POINT:
 	case CHIPSET_METEOR_LAKE:
 	case CHIPSET_PANTHER_LAKE:
 	case CHIPSET_APOLLO_LAKE:
@@ -1021,6 +1024,11 @@ static int enable_flash_pch500(const struct programmer_cfg *cfg, struct pci_dev 
 static int enable_flash_pch600(const struct programmer_cfg *cfg, struct pci_dev *const dev, const char *const name)
 {
 	return enable_flash_pch100_or_c620(cfg, dev, name, 0x1f, 5, CHIPSET_600_SERIES_ALDER_POINT);
+}
+
+static int enable_flash_pch700(const struct programmer_cfg *cfg, struct pci_dev *const dev, const char *const name)
+{
+	return enable_flash_pch100_or_c620(cfg, dev, name, 0x1f, 5, CHIPSET_700_SERIES_RAPTOR_POINT);
 }
 
 static int enable_flash_mtl(const struct programmer_cfg *cfg, struct pci_dev *const dev, const char *const name)
@@ -2196,9 +2204,19 @@ const struct penable chipset_enables[] = {
 	{0x8086, 0x7a83, B_S,    NT,  "Intel", "Q670",				enable_flash_pch600},
 	{0x8086, 0x7a84, B_S,    DEP, "Intel", "Z690",				enable_flash_pch600},
 	{0x8086, 0x7a88, B_S,    NT,  "Intel", "W680",				enable_flash_pch600},
-	{0x8086, 0x7a8a, B_S,    NT,  "Intel", "W685",				enable_flash_pch600},
 	{0x8086, 0x7a8d, B_S,    NT,  "Intel", "WM690",				enable_flash_pch600},
 	{0x8086, 0x7a8c, B_S,    NT,  "Intel", "HM670",				enable_flash_pch600},
+	{0x8086, 0x7a90, B_S,    NT,  "Intel", "R680E",				enable_flash_pch600},
+	{0x8086, 0x7a91, B_S,    NT,  "Intel", "Q670E",				enable_flash_pch600},
+	{0x8086, 0x7a92, B_S,    NT,  "Intel", "H610E",				enable_flash_pch600},
+	{0x8086, 0x7a8a, B_S,    NT,  "Intel", "W790",				enable_flash_pch700},
+	{0x8086, 0x7a04, B_S,    DEP, "Intel", "Z790",				enable_flash_pch700},
+	{0x8086, 0x7a05, B_S,    NT,  "Intel", "H770",				enable_flash_pch700},
+	{0x8086, 0x7a06, B_S,    NT,  "Intel", "B760",				enable_flash_pch700},
+	{0x8086, 0x7a0c, B_S,    NT,  "Intel", "HM770",				enable_flash_pch700},
+	{0x8086, 0x7a0d, B_S,    NT,  "Intel", "WM790",				enable_flash_pch700},
+	{0x8086, 0x7a14, B_S,    NT,  "Intel", "C262",				enable_flash_pch700},
+	{0x8086, 0x7a13, B_S,    NT,  "Intel", "C266",				enable_flash_pch700},
 	{0x8086, 0x7e23, B_S,    DEP, "Intel", "Meteor Lake-P/M",		enable_flash_mtl},
 	{0x8086, 0xe323, B_S,    DEP, "Intel", "Panther Lake-U/H 12Xe",		enable_flash_ptl},
 	{0x8086, 0xe423, B_S,    DEP, "Intel", "Panther Lake-H 4Xe",		enable_flash_ptl},
