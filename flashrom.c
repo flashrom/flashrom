@@ -2052,24 +2052,49 @@ static int save_initial_flash_wp(struct flashctx *const flash)
 	return 0;
 }
 
-static int unlock_flash_wp(struct flashctx *const flash)
+static int unlock_flash_wp(struct flashctx *const flash,
+			   const bool write_it, const bool erase_it)
+
 {
-	/* Save original WP state to be restored later */
-	if (save_initial_flash_wp(flash))
+	int ret = 0;
+
+	/* WP only disables write protection, so only use WP to unlock
+	 * for write/erase operations.
+	 *
+	 * For read/verify operations, we still call the chip's unlock
+	 * function, which may disable read locks if the chip has them.
+	 */
+	if (!write_it && !erase_it) {
+		msg_cdbg("Skipping writeprotect-based unlocking for read/verify operations.\n");
 		return -1;
+	}
+
+	/* Save original WP state to be restored later */
+	if (save_initial_flash_wp(flash)) {
+		ret = -1;
+		goto warn_out;
+	}
 
 	/* Disable WP */
 	struct flashrom_wp_cfg *unlocked_wp_cfg;
-	if (flashrom_wp_cfg_new(&unlocked_wp_cfg) != FLASHROM_WP_OK)
-		return -1;
+	if (flashrom_wp_cfg_new(&unlocked_wp_cfg) != FLASHROM_WP_OK) {
+		ret = -1;
+		goto warn_out;
+	}
 
 	flashrom_wp_set_range(unlocked_wp_cfg, 0, 0);
 	flashrom_wp_set_mode(unlocked_wp_cfg, FLASHROM_WP_MODE_DISABLED);
-	enum flashrom_wp_result ret = flashrom_wp_write_cfg(flash, unlocked_wp_cfg);
+	if (flashrom_wp_write_cfg(flash, unlocked_wp_cfg) != FLASHROM_WP_OK) {
+		ret = -1;
+	}
 
 	flashrom_wp_cfg_release(unlocked_wp_cfg);
 
-	return (ret == FLASHROM_WP_OK) ? 0 : -1;
+warn_out:
+	if (ret)
+		msg_cerr("Failed to unlock flash status reg with wp support.\n");
+
+	return ret;
 }
 
 int prepare_flash_access(struct flashctx *const flash,
@@ -2092,14 +2117,19 @@ int prepare_flash_access(struct flashctx *const flash,
 	/* Initialize chip_restore_fn_count before chip unlock calls. */
 	flash->chip_restore_fn_count = 0;
 
-	/* Given the existence of read locks, we want to unlock for read, erase and write. */
 	int ret = 1;
 	if (flash->chip->decode_range != NO_DECODE_RANGE_FUNC ||
 	   (flash->mst->buses_supported & BUS_PROG && flash->mst->opaque.wp_write_cfg)) {
-		ret = unlock_flash_wp(flash);
-		if (ret)
-			msg_cerr("Failed to unlock flash status reg with wp support.\n");
+		ret = unlock_flash_wp(flash, write_it, erase_it);
 	}
+	/*
+	 * Fall back to chip unlock function if we haven't already successfully
+	 * unlocked using WP (e.g. WP unlocking failed, chip had no WP support,
+	 * WP was skipped for read/verify ops).
+	 *
+	 * Given the existence of read locks, we want to unlock for read,
+	 * erase, write, and verify.
+	 */
 	blockprotect_func_t *bp_func = lookup_blockprotect_func_ptr(flash->chip);
 	if (ret && bp_func)
 		bp_func(flash);
