@@ -217,6 +217,17 @@ static int include_region(struct flashrom_layout *const l, const char *name,
 	return 1;
 }
 
+/* returns 0 to indicate success, 1 to indicate failure */
+static int exclude_region(struct flashrom_layout *const l, const char *name)
+{
+	struct romentry *const entry = _layout_entry_by_name(l, name);
+	if (entry) {
+		entry->included = false;
+		return 0;
+	}
+	return 1;
+}
+
 /* returns -1 if an entry is not found, 0 if found. */
 static int romentry_exists(struct flashrom_layout *const l, char *name, char *file)
 {
@@ -439,6 +450,11 @@ _err_ret:
 int flashrom_layout_include_region(struct flashrom_layout *const layout, const char *name)
 {
 	return include_region(layout, name, NULL);
+}
+
+int flashrom_layout_exclude_region(struct flashrom_layout *const layout, const char *name)
+{
+	return exclude_region(layout, name);
 }
 
 int flashrom_layout_get_region_range(struct flashrom_layout *const l, const char *name,

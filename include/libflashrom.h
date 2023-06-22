@@ -421,6 +421,16 @@ int flashrom_layout_add_region(struct flashrom_layout *layout, size_t start, siz
  */
 int flashrom_layout_include_region(struct flashrom_layout *layout, const char *name);
 /**
+ * @brief Mark given region as not included.
+ *
+ * @param layout The layout to alter.
+ * @param name   The name of the region to exclude.
+ *
+ * @return 0 on success,
+ *         1 if the given name can't be found.
+ */
+int flashrom_layout_exclude_region(struct flashrom_layout *layout, const char *name);
+/**
  * @brief Get given region's offset and length.
  *
  * @param[in]  layout The existing layout.

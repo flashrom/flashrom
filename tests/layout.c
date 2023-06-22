@@ -110,6 +110,8 @@ void layout_pass_sanity_checks_test_success(void **state)
 
 	unsigned int region_start = 0x00021000;
 	unsigned int region_end = 0x00031000;
+	unsigned int region2_start = 0x00041000;
+	unsigned int region2_end = 0x00051000;
 	unsigned int start = 0;
 	unsigned int len = 0;
 
@@ -119,6 +121,9 @@ void layout_pass_sanity_checks_test_success(void **state)
 	assert_int_equal(0, flashrom_layout_new(&layout));
 	assert_int_equal(0, flashrom_layout_add_region(layout, region_start, region_end, "region"));
 	assert_int_equal(0, flashrom_layout_include_region(layout, "region"));
+	assert_int_equal(0, flashrom_layout_add_region(layout, region2_start, region2_end, "region2"));
+	assert_int_equal(0, flashrom_layout_include_region(layout, "region2"));
+	assert_int_equal(0, flashrom_layout_exclude_region(layout, "region2"));
 	printf("done\n");
 
 	printf("Asserting region range... ");

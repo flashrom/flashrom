@@ -879,6 +879,32 @@ impl Layout {
         }
     }
 
+    /// Exclude a region
+    ///
+    /// # Errors
+    ///
+    /// This function will return an error if the region is not a valid CString,
+    /// or if libflashrom returns an error.
+    pub fn exclude_region(&mut self, region: &str) -> std::result::Result<(), RegionError> {
+        let err = {
+            let region = CString::new(region)?;
+            unsafe {
+                libflashrom_sys::flashrom_layout_exclude_region(
+                    self.layout.as_mut(),
+                    region.as_ptr(),
+                )
+            }
+        };
+        if err != 0 {
+            Err(RegionError::ErrorCode(ErrorCode {
+                function: "flashrom_layout_exclude_region",
+                code: err,
+            }))
+        } else {
+            Ok(())
+        }
+    }
+
     /// Get the [`Range`] for the given region
     ///
     /// # Errors
