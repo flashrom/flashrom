@@ -10,6 +10,7 @@
   classic_cli_manpage
   contact
   how_to_add_docs
+  documentation_license
 
 .. include:: intro.rst
 
