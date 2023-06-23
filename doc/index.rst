@@ -9,6 +9,7 @@
   dev_guide/index
   classic_cli_manpage
   contact
+  about_flashrom/index
   how_to_add_docs
   documentation_license
 
