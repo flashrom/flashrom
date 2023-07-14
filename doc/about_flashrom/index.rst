@@ -5,3 +5,4 @@ About flashrom
     :maxdepth: 1
 
     team
+    code_of_conduct

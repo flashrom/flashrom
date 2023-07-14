@@ -6,8 +6,8 @@ flashrom development process is happening in Gerrit.
 All contributors and users who have a Gerrit account can send patches,
 add comments to patches and vote +1..-1 on patches.
 
-All contributors and users are expected to follow Development guidelines,
-Code of Conduct and Friendliness guidelines.
+All contributors and users are expected to follow Development guidelines and
+:doc:`code_of_conduct`.
 
 There are two special groups in Gerrit.
 
@@ -55,7 +55,7 @@ especially without a warning: you implicitly agree that the others will handle t
 
 * From time to time show up in real-time channel(s) and/or dev meetings.
 
-* Follow the Code of Conduct and Friendliness guidelines, be a good example for others.
+* Follow the :doc:`code_of_conduct`, be a good example for others.
 
 * Bonus point: if you work in a [software] company, educate and help contributors from your company
   with upstream culture and dev guidelines.
