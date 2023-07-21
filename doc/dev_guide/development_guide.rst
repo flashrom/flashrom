@@ -87,9 +87,7 @@ We employ a similar sign-off procedure as the `Linux kernel developers
 <http://web.archive.org/web/20070306195036/http://osdlab.org/newsroom/press_releases/2004/2004_05_24_dco.html>`_
 do. Add a note such as
 
-.. code-block::
-
-    Signed-off-by: Random J Developer <random@developer.example.org>
+:code:`Signed-off-by: Random J Developer <random@developer.example.org>`
 
 to your email/patch if you agree with the Developer's Certificate of Origin 1.1
 printed below. Read `this post on the LKML
