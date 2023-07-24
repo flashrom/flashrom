@@ -55,6 +55,4 @@ The official flashrom website is:
 
   https://www.flashrom.org/
 
-Available contact methods are
-
-  https://www.flashrom.org/Contact
+For available contact methods see :doc:`contact`
