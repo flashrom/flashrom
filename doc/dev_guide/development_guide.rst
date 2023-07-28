@@ -13,6 +13,7 @@ can avoid duplicated work and know about how flashrom internals need to be
 adjusted and you avoid frustration if there is some disagreement about the
 design.
 
+You can `look at the latest flashrom development efforts in Gerrit <https://review.coreboot.org/q/project:flashrom>`_.
 
 Set up the git repository and dev environment
 =============================================
