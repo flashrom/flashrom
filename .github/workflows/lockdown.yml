@@ -20,17 +20,17 @@ jobs:
             Thank you for your contribution. The flashrom project does not handle
             GitHub issues or pull requests, since this repository on GitHub is
             just a mirror of our actual repository. Thus, we would like to
-            encourage you to have a look at on our [development guidelines](https://www.flashrom.org/Development_Guidelines)
+            encourage you to have a look at on our [development guide](https://www.flashrom.org/dev_guide/development_guide.html)
             and submit your patch to [review.coreboot.org](https://review.coreboot.org/q/project:flashrom).
             Issues are handled over our [ticket system](https://ticket.coreboot.org/projects/flashrom).
             If you have questions, feel free to reach out to us. There are
-            multiple ways to [contact us](https://www.flashrom.org/Contact).
+            multiple ways to [contact us](https://www.flashrom.org/contact.html).
           pr-comment: >
             Thank you for your contribution. The flashrom project does not handle
             GitHub issues or pull requests, since this repository on GitHub is
             just a mirror of our actual repository. Thus, we would like to
-            encourage you to have a look at on our [development guidelines](https://www.flashrom.org/Development_Guidelines)
+            encourage you to have a look at on our [development guide](https://www.flashrom.org/dev_guide/development_guide.html)
             and submit your patch to [review.coreboot.org](https://review.coreboot.org/q/project:flashrom).
             Issues are handled over our [ticket system](https://ticket.coreboot.org/projects/flashrom).
             If you have questions, feel free to reach out to us. There are
-            multiple ways to [contact us](https://www.flashrom.org/Contact).
+            multiple ways to [contact us](https://www.flashrom.org/contact.html).
