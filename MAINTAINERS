@@ -9,11 +9,8 @@ don't have a maintainer. If you are looking for reviewers for such a subtree,
 it's often a good choice to look at the git history to see who worked on
 it last.
 
-Please try to follow our [development guidelines]. This will make things
-easier on the maintainers. Not all of these guidelines matter for every
-trivial patch. So apply some common sense.
-
-[development guidelines]: https://www.flashrom.org/Development_Guidelines
+Please follow our development guide:
+https://www.flashrom.org/dev_guide/development_guide.html
 
 Happy hacking!
 
