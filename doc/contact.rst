@@ -23,7 +23,7 @@ https://mail.coreboot.org/postorius/lists/flashrom.flashrom.org/
 Archives
 """"""""
 | https://mail.coreboot.org/hyperkitty/list/flashrom@flashrom.org/
-| https://www.flashrom.org/pipermail/flashrom/ (Up to Dec. 2018)
+| https://mail.coreboot.org/pipermail/flashrom/ (Up to Dec. 2018)
 | https://marc.info/?l=flashrom
 | https://www.mail-archive.com/flashrom@flashrom.org/
 
