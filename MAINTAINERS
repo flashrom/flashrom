@@ -96,6 +96,7 @@ F:	include/erasure_layout*
 
 FLASHCHIPS
 M:	Anastasia Klimchuk <aklm@chromium.org>
+M:	Nikolai Artemiev <nartemiev@google.com>
 S:	Maintained
 F:	flashchips*
 F:	include/flashchips*
