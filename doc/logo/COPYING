@@ -1,0 +1,12 @@
+The flashrom logo and icons in this directory were originally designed by Stefan Tauner in 2015.
+The lettering is based on the "Free Mono" font of the GNU FreeFont family.
+The SOIC chip seen in the lettering is based on the SOIC08 narrow STL CAD file from
+https://grabcad.com/library/soic-package-narrow-8-10-14-and-16-pins-1
+It was rendered by Blender with the Freestyle SVG plugin from
+https://github.com/hvfrancesco/freestylesvg
+
+All source image files within this directory (i.e. all with names ending with ".svg" or ."xcf")
+are licensed under the Creative Commons Attribution-NoDerivatives 4.0 license (CC BY-ND 4.0):
+http://creativecommons.org/licenses/by-nd/4.0/
+All image files produced from the source image files mentioned above and included in this
+directory are in the public domain.
