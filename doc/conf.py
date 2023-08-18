@@ -38,6 +38,7 @@ todo_include_todos = False
 html_theme = 'alabaster'
 #html_static_path = ['_static']
 
+html_favicon = 'logo/flashrom_icon_color-32x32.ico'
 
 
 # -- Options for manual page output --------------------------------------------
