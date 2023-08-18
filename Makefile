@@ -250,7 +250,7 @@ HAS_LINUX_MTD       := $(call c_compile_test, Makefile.d/linux_mtd_test.c)
 HAS_LINUX_SPI       := $(call c_compile_test, Makefile.d/linux_spi_test.c)
 HAS_LINUX_I2C       := $(call c_compile_test, Makefile.d/linux_i2c_test.c)
 HAS_SERIAL          := $(strip $(if $(filter $(TARGET_OS), DOS libpayload), no, yes))
-HAS_SPHINXBUILD     := $(shell command -v $(SPHINXBUILD) &>/dev/null && echo yes || echo no)
+HAS_SPHINXBUILD     := $(shell command -v $(SPHINXBUILD) >/dev/null 2>/dev/null && echo yes || echo no)
 EXEC_SUFFIX         := $(strip $(if $(filter $(TARGET_OS), DOS MinGW), .exe))
 
 override CFLAGS += -Iinclude
