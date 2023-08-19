@@ -22,3 +22,13 @@ network/graphics/storage controller cards, and various other programmer devices.
   no "BIOS flashing").
 
 .. todo:: Convert Technology page and add links here
+
+.. container:: danger, admonition
+
+   **Emergency help**
+
+   IMPORTANT: If something went wrong during flashing, do NOT turn off/reboot your computer.
+   Instead, let us help you recover. We can be contacted via `IRC <https://www.flashrom.org/contact.html#irc>`_
+   (#flashrom on `libera.chat <irc://irc.libera.chat/#flashrom>`_, `webchat <https://web.libera.chat/#flashrom>`_),
+   `Discord <https://www.flashrom.org/contact.html#discord>`_, or `email <https://www.flashrom.org/contact.html#mailing-list-1>`_.
+   Please allow some time until someone responds, we're all volunteers.
