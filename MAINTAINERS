@@ -1,5 +1,4 @@
 
-
 		    List of upstream flashrom maintainers
 
 This represents the list of maintainers that work on the upstream flashrom
@@ -97,6 +96,7 @@ F:	include/erasure_layout*
 FLASHCHIPS
 M:	Anastasia Klimchuk <aklm@chromium.org>
 M:	Nikolai Artemiev <nartemiev@google.com>
+M:	Stefan Reinauer <stefan.reinauer@coreboot.org>
 S:	Maintained
 F:	flashchips*
 F:	include/flashchips*
