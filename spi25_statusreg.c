@@ -262,6 +262,7 @@ int spi_read_register(const struct flashctx *flash, enum flash_reg reg, uint8_t 
 	}
 
 	*value = readarr[0];
+	msg_cspew("%s: read_cmd 0x%02x returned 0x%02x\n", __func__, read_cmd, readarr[0]);
 	return 0;
 }
 
