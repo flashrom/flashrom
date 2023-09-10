@@ -339,15 +339,6 @@ int erase_write(struct flashctx *const flashctx, chipoff_t region_start, chipoff
 				}
 			}
 
-			ret = erasefn(flashctx, start_addr, block_len);
-			if (ret) {
-				msg_cerr("Failed to execute erase command "
-					"for offset %#"PRIx32" to %#"PRIx32".\n",
-					start_addr, start_addr + block_len);
-				ret = -1;
-				goto _end;
-			}
-
 			// adjust curcontents
 			memset(curcontents+start_addr, erased_value, block_len);
 			// after erase make it unselected again
