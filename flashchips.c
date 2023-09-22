@@ -2685,7 +2685,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 128,
 		.page_size	= 128,
 		.feature_bits	= FEATURE_LONG_RESET,
-		.tested		= TEST_OK_PRE,
+		.tested		= TEST_OK_PREW,
 		.probe		= PROBE_JEDEC,
 		.probe_timing	= 10000, /* 10mS, Enter=Exec */
 		.block_erasers	=
