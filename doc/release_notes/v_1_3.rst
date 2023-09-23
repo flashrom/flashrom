@@ -1,0 +1,214 @@
+===============
+v1.3 (Feb 2023)
+===============
+
+It has been almost three years since our last release. All this time we have been working
+on enhancing the flashrom code base. This new release comes with a lot of new features, programmers,
+improvements, and bug fixes. A detailed but not exhaustive change log is presented below.
+
+New major user-visible features
+===============================
+
+* Support for the Linux I2C subsystem
+* Option to read/write only region to/from ROM is renamed to :code:`--include` (:code:`--image` option
+  is deprecated and exist only for back compatibility). An optional sub-parameter
+  (:code:`--include <region>[:<file>]`) to allow building the image to be written from multiple files is added
+* Support different SPI modes (Dual IO, Quad IO, Normal, Fast Read) for AMD’s chipsets (>= Bolton)
+* Support for Write Protection configuration (:code:`--wp-disable`, :code:`--wp-enable`, :code:`--wp-list`,
+  :code:`--wp-status`, :code:`--wp-range`, :code:`--wp-region`)
+* Add SPI SR2/SR3 read/write support
+* The Intel chipset detection has been improved
+* Bus Pirate SPI
+
+  * New parameter to control the external Vcc state (:code:`psus=<on|off>`)
+
+* Dediprog
+
+  * Add 4BA support on SF600 protocol version 3
+
+* Dummyflasher
+
+  * New parameter to allows emulating a bus/chip frequency (:code:`freq`)
+  * New parameter to emulate flash erase with either 0x00 or 0xff (:code:`erase_to_zero`)
+  * Add emulation for S25FL128L chip
+  * SR2, SR3 and WP is emulated for W25Q128FV
+  * Emulate variable-size SPI flash chip (4-byte address format is supported)
+
+* FT2232 SPI dongles
+
+  * New parameter to search FTDI by description, i.e. product string (:code:`description`)
+
+* SEGGER J-Link and compatible devices
+
+  * New parameter to active the 5V power supply during a flash operation (:code:`power`)
+
+* Drop "Promontory" architecture (AMD) support
+* End Of Life (EOL) for ITE IT85* specific code
+* README and man page updated with additional information
+
+The greatest increase in the speed of operations can be seen on the following programmers:
+SPI on Intel NICs, FT2232 SPI dongles
+
+Libflashrom
+===========
+
+* Add Write Protect functions to the API
+* Add rust Foreign Function Interface bindings for the libflashrom API
+* Move documentation from source file to header
+* Drop :code:`flashrom_system_info()`
+* Drop :code:`flashrom_supported_programmers()`
+* Add :code:`flashrom_layout_get_region_range()`
+* Declaration change from :code:`flashrom_layout_read_fmap_from_rom(struct flashrom_layout **const, struct flashctx *const, off_t, size_t)`
+  to :code:`flashrom_layout_read_fmap_from_rom(struct flashrom_layout **const, struct flashctx *const, size_t, size_t)`
+* Allow NULL-pointer argument in :code:`flashrom_flash_release()`
+
+Infrastructure expansion
+========================
+
+* Add blackbox test uber-script
+* Add E2E tester for a specific chip/chipset combo
+* Build script for Jenkins was upgraded and move to repository - :code:`test_build.sh`
+* Add a set of Dockerfiles for build testing - :code:`util/manibuilder`
+* Add a Nix shell file which is able to compile flashrom - :code:`util/shell.nix`
+* Add CMocka unit-test infrastructure into the meson build system (test for drivers available only
+  if its driver is built). The following tests are included:
+
+  * Core logic tests
+  * Basic lifecycle for :code:`dediprog`, :code:`nicrealtek`, :code:`raiden_debug_spi`, :code:`parade_lspcon`,
+    :code:`mediatek_i2c_spi`, :code:`realtek_mst_i2c_spi`
+  * Basic lifecycle + chip probe for :code:`dummyflasher`, :code:`linux_mtd`, :code:`linux_spi`
+  * Layout tests (overlapping, sanity checks, invalid range/address)
+  * Erasing/reading/writing/verifying chip tests
+  * Write Protect tests
+  * And others!
+
+* Introduce :code:`MAINTAINERS` file
+* Rename :code:`z60_flashrom.rules` to :code:`flashrom_udev.rules`
+* Introduce linter for git sign-off-by line
+* Move all header files to the new :code:`include` directory.
+
+Meson
+-----
+
+The minimum version has been increased. Requires at least :code:`0.53.0`.
+
+* Added build instructions - :code:`Documentation/building.md`
+* Allow libflashrom to be built as a static or shared library.
+* Add new options: :code:`print_wiki`, :code:`ich_descriptors_tool`, :code:`classic_cli`
+* Rename :code:`print_wiki` to :code:`classic_cli_print_wiki` option
+* Install the man file
+* Fix compilation under uClibc-ng
+* Add missing config option for J-Link SPI
+* Treat warnings as errors and use the same warning options as in Makefile.
+
+Makefile
+--------
+
+* Add support for Elbrus (e2k) architecture
+* Make pkg-config mandatory to find :code:`libftdi1`, :code:`libjaylink`,
+  :code:`libusb1`, :code:`libpci`
+  (you still can override detection and set cflags and ldflags manually)
+* Merge :code:`compiler`, :code:`hwlibs`, :code:`features` targets into :code:`config` target
+* Drop :code:`distclean` target
+* Drop STANDALONE mode
+* Summarize systems with the same CPPFLAGS and LDFLAGS
+* Only enable I2C programmers on Linux (linux-specific code)
+* Revise C compiler check, utsname and clock_gettime test, detection of Linux specific headers
+* Since the NI-845x is a Windows only proprietary library, disable it by default.
+* Enable the internal programmer on x86 or linux.
+* Fix building on AArch64 NixOS
+
+Various broken and missing dependencies have been fixed for these two build systems.
+
+New programmers
+===============
+
+* Chrome EC based debug tools - SuzyQable, Servo V4, C2D2 & uServo
+* Realtek RTD2142 MST
+* Parade lspcon USB-C to HDMI protocol translator
+* DirtyJTAG (a USB-JTAG firmware for STM32 MCUs)
+* MediaTek LCD controller
+* Programmers based on FT4233H FTDI
+* Kristech KT-LINK
+* Variants of STLINK-V3: STLINK-V3E, STLINK-V3S, STLINK-V3 With dual VCP, STLINK-V3 Without MSD
+* Intel Gemini Lake PCH
+* Intel Meteor Lake PCH
+* Intel Elkhart Lake PCH
+* Intel Emmitsburg PCH
+* Intel Comet Lake-U/400-series PCH
+* Intel Tiger Point/500-series PCH
+* Intel Jasper Lake PCH
+* Intel Alder Lake/600-series PCH
+* Intel PCH7 Desktop/Mobile/SFF Sample
+* More Intel PCHs variants (Apollo Lake, Cannon Point, Union Point, Lewisburg)
+
+At some point, flashrom supported ENE LPC interface keyboard controller and Microchip MEC1308 embedded controller.
+But they were dropped before the release because the code was no longer maintained by anyone. If you're interested,
+take a look at git history.
+
+New Boards
+==========
+
+* ASUS P3B-F
+* Jetway P4MDPT
+* ASUS P5W DH Deluxe
+
+New chips
+=========
+
+* AT25SF128A
+* B.25D16A
+* BY25Q128AS
+* FM25F01
+* FM25F02(A)
+* FM25F04(A)
+* FM25F005
+* FM25Q08
+* FM25Q16
+* FM25Q32
+* F29C51001B
+* GD25LQ128E
+* GD25Q256E
+* GD25WQ80E
+* MX25L12833F
+* MX25L12873F
+* MX25L3233F
+* MX25L5121E
+* MX25R3235F
+* MX66L1G45G
+* S25FL128L
+* S25FL128S
+* S25FL129P
+* S25FL256L
+* S25FL256S
+* S25FS128S
+* S29C51001B
+* V29C51001B
+* W25Q32JW...M
+* W25Q64JV
+* W25Q64JW...M
+* W25Q256JW
+* W25Q256JW_DTR
+* W25Q512JV
+* W25Q512NW-IM
+* W25X05(CL)
+* XM25QU64C
+* XM25QU128C
+* XM25QU256C
+* XM25QH64C
+* XM25QH128C
+* XM25QH256C
+
+Download
+========
+
+flashrom 1.3 can be downloaded in various ways:
+
+Anonymous checkout from the git repository at `<https://review.coreboot.org/flashrom.git>`_ (tag v1.3.0)
+
+A tarball is available for download at
+
+`<https://download.flashrom.org/releases/flashrom-v1.3.0.tar.bz2>`_ (GPG signature),
+fingerprint: :code:`6E6E F9A0 BA47 8006 E277 6E4C C037 BB41 3134 D111`
+
+and more in the "Tags" section of CGit at `<https://review.coreboot.org/cgit/flashrom.git>`_
