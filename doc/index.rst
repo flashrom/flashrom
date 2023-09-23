@@ -10,6 +10,7 @@
   :hidden:
 
   dev_guide/index
+  user_docs/index
   classic_cli_manpage
   contact
   about_flashrom/index
