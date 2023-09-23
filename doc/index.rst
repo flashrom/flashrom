@@ -11,6 +11,7 @@
 
   dev_guide/index
   user_docs/index
+  contrib_howtos/index
   classic_cli_manpage
   contact
   release_notes/index
