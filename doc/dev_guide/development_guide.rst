@@ -51,9 +51,7 @@ on the commit (``git commit -s``).
 Commit message
 --------------
 
-Commit messages shall have the following format:
-
-.. code-block::
+Commit messages shall have the following format::
 
     <component>: Short description (up to 72 characters)
 
