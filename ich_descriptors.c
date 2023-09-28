@@ -44,6 +44,7 @@ ssize_t ich_number_of_regions(const enum ich_chipset cs, const struct ich_desc_c
 	case CHIPSET_GEMINI_LAKE:
 		return 6;
 	case CHIPSET_C620_SERIES_LEWISBURG:
+	case CHIPSET_C740_SERIES_EMMITSBURG:
 	case CHIPSET_300_SERIES_CANNON_POINT:
 	case CHIPSET_400_SERIES_COMET_POINT:
 	case CHIPSET_500_SERIES_TIGER_POINT:
@@ -75,6 +76,7 @@ ssize_t ich_number_of_masters(const enum ich_chipset cs, const struct ich_desc_c
 {
 	switch (cs) {
 	case CHIPSET_C620_SERIES_LEWISBURG:
+	case CHIPSET_C740_SERIES_EMMITSBURG:
 	case CHIPSET_APOLLO_LAKE:
 	case CHIPSET_600_SERIES_ALDER_POINT:
 	case CHIPSET_METEOR_LAKE:
@@ -117,9 +119,9 @@ void prettyprint_ich_chipset(enum ich_chipset cs)
 		"5 series Ibex Peak", "6 series Cougar Point", "7 series Panther Point",
 		"8 series Lynx Point", "Baytrail", "8 series Lynx Point LP", "8 series Wellsburg",
 		"9 series Wildcat Point", "9 series Wildcat Point LP", "100 series Sunrise Point",
-		"C620 series Lewisburg", "300 series Cannon Point", "400 series Comet Point",
-		"500 series Tiger Point", "600 series Alder Point", "Meteor Lake",
-		"Apollo Lake", "Gemini Lake", "Jasper Lake", "Elkhart Lake",
+		"C620 series Lewisburg", "C740 series Emmitsburg", "300 series Cannon Point",
+		"400 series Comet Point", "500 series Tiger Point", "600 series Alder Point",
+		"Meteor Lake", "Apollo Lake", "Gemini Lake", "Jasper Lake", "Elkhart Lake",
 	};
 	if (cs < CHIPSET_ICH8 || cs - CHIPSET_ICH8 + 1 >= ARRAY_SIZE(chipset_names))
 		cs = 0;
@@ -211,6 +213,7 @@ static const char *pprint_density(enum ich_chipset cs, const struct ich_descript
 	case CHIPSET_9_SERIES_WILDCAT_POINT_LP:
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 	case CHIPSET_C620_SERIES_LEWISBURG:
+	case CHIPSET_C740_SERIES_EMMITSBURG:
 	case CHIPSET_300_SERIES_CANNON_POINT:
 	case CHIPSET_400_SERIES_COMET_POINT:
 	case CHIPSET_500_SERIES_TIGER_POINT:
@@ -313,6 +316,7 @@ static const char *pprint_freq(enum ich_chipset cs, uint8_t value)
 		return freq_str[2][value];
 	case CHIPSET_500_SERIES_TIGER_POINT:
 	case CHIPSET_600_SERIES_ALDER_POINT:
+	case CHIPSET_C740_SERIES_EMMITSBURG:
 	case CHIPSET_METEOR_LAKE:
 		return freq_str[3][value];
 	case CHIPSET_ELKHART_LAKE:
@@ -357,6 +361,7 @@ void prettyprint_ich_descriptor_component(enum ich_chipset cs, const struct ich_
 	switch (cs) {
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 	case CHIPSET_C620_SERIES_LEWISBURG:
+	case CHIPSET_C740_SERIES_EMMITSBURG:
 	case CHIPSET_300_SERIES_CANNON_POINT:
 	case CHIPSET_400_SERIES_COMET_POINT:
 	case CHIPSET_500_SERIES_TIGER_POINT:
@@ -472,15 +477,27 @@ void prettyprint_ich_descriptor_region(const enum ich_chipset cs, const struct i
 void prettyprint_ich_descriptor_master(const enum ich_chipset cs, const struct ich_descriptors *const desc)
 {
 	ssize_t i;
-	const ssize_t nm = ich_number_of_masters(cs, &desc->content);
+	ssize_t nm = ich_number_of_masters(cs, &desc->content);
 	msg_pdbg2("=== Master Section ===\n");
 	if (nm < 0) {
 		msg_pdbg2("%s: number of masters too high (%d).\n", __func__,
 			  desc->content.NM + 1);
 		return;
 	}
+	if (cs == CHIPSET_C740_SERIES_EMMITSBURG) {
+		/*
+		 * The SPI programming guide says there are 6 masters (thus NM=6), but it
+		 * can only name 5. If there's a 6th then it's undocumented.
+		 * However the first 5 are matching '500 Series PCH' and since C740 is a
+		 * 500 Series clone, this field probably was not updated when writing the
+		 * document.
+		 * Hardcode to 5 to be compatible with '500 Series PCH' below.
+		 */
+		nm = 5;
+	}
 	for (i = 0; i < nm; i++)
 		msg_pdbg2("FLMSTR%zd  0x%08"PRIx32"\n", i + 1, desc->master.FLMSTRs[i]);
+
 	msg_pdbg2("\n");
 
 	msg_pdbg2("--- Details ---\n");
@@ -489,6 +506,7 @@ void prettyprint_ich_descriptor_master(const enum ich_chipset cs, const struct i
 	    cs == CHIPSET_400_SERIES_COMET_POINT ||
 	    cs == CHIPSET_500_SERIES_TIGER_POINT ||
 	    cs == CHIPSET_600_SERIES_ALDER_POINT ||
+	    cs == CHIPSET_C740_SERIES_EMMITSBURG ||
 	    cs == CHIPSET_JASPER_LAKE || cs == CHIPSET_METEOR_LAKE) {
 		const char *const master_names[] = {
 			"BIOS", "ME", "GbE", "DevE", "EC",
@@ -1021,8 +1039,8 @@ static enum ich_chipset guess_ich_chipset_from_content(const struct ich_desc_con
 			warn_peculiar_desc("Gemini Lake");
 			return CHIPSET_GEMINI_LAKE;
 		}
-		if (content->ISL <= 80)
-			return CHIPSET_C620_SERIES_LEWISBURG;
+		if (content->ISL == 0x50)
+			return CHIPSET_C740_SERIES_EMMITSBURG;
 		warn_peculiar_desc("Ibex Peak");
 		return CHIPSET_5_SERIES_IBEX_PEAK;
 	} else if (upper->MDTBA == 0x00) {
@@ -1095,6 +1113,7 @@ static enum ich_chipset guess_ich_chipset(const struct ich_desc_content *const c
 		break;
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 	case CHIPSET_C620_SERIES_LEWISBURG:
+	case CHIPSET_C740_SERIES_EMMITSBURG:
 	case CHIPSET_APOLLO_LAKE:
 		if (component->modes.freq_read != 6) {
 			msg_pwarn("\nThe flash descriptor looks like a Skylake/Sunrise Point descriptor.\n"
@@ -1242,6 +1261,7 @@ int getFCBA_component_density(enum ich_chipset cs, const struct ich_descriptors 
 	case CHIPSET_9_SERIES_WILDCAT_POINT_LP:
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 	case CHIPSET_C620_SERIES_LEWISBURG:
+	case CHIPSET_C740_SERIES_EMMITSBURG:
 	case CHIPSET_300_SERIES_CANNON_POINT:
 	case CHIPSET_400_SERIES_COMET_POINT:
 	case CHIPSET_500_SERIES_TIGER_POINT:
@@ -1287,6 +1307,7 @@ static uint32_t read_descriptor_reg(enum ich_chipset cs, uint8_t section, uint16
 	switch (cs) {
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 	case CHIPSET_C620_SERIES_LEWISBURG:
+	case CHIPSET_C740_SERIES_EMMITSBURG:
 	case CHIPSET_300_SERIES_CANNON_POINT:
 	case CHIPSET_400_SERIES_COMET_POINT:
 	case CHIPSET_500_SERIES_TIGER_POINT:

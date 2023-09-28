@@ -457,6 +457,7 @@ static void prettyprint_ich9_reg_hsfs(uint16_t reg_val, enum ich_chipset ich_gen
 	switch (ich_gen) {
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 	case CHIPSET_C620_SERIES_LEWISBURG:
+	case CHIPSET_C740_SERIES_EMMITSBURG:
 	case CHIPSET_300_SERIES_CANNON_POINT:
 	case CHIPSET_400_SERIES_COMET_POINT:
 	case CHIPSET_500_SERIES_TIGER_POINT:
@@ -470,6 +471,7 @@ static void prettyprint_ich9_reg_hsfs(uint16_t reg_val, enum ich_chipset ich_gen
 	switch (ich_gen) {
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 	case CHIPSET_C620_SERIES_LEWISBURG:
+	case CHIPSET_C740_SERIES_EMMITSBURG:
 	case CHIPSET_300_SERIES_CANNON_POINT:
 	case CHIPSET_400_SERIES_COMET_POINT:
 	case CHIPSET_500_SERIES_TIGER_POINT:
@@ -492,6 +494,7 @@ static void prettyprint_ich9_reg_hsfc(uint16_t reg_val, enum ich_chipset ich_gen
 	switch (ich_gen) {
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 	case CHIPSET_C620_SERIES_LEWISBURG:
+	case CHIPSET_C740_SERIES_EMMITSBURG:
 	case CHIPSET_300_SERIES_CANNON_POINT:
 	case CHIPSET_400_SERIES_COMET_POINT:
 	case CHIPSET_500_SERIES_TIGER_POINT:
@@ -2050,6 +2053,7 @@ static void init_chipset_properties(struct swseq_data *swseq, struct hwseq_data 
 	switch (ich_gen) {
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 	case CHIPSET_C620_SERIES_LEWISBURG:
+	case CHIPSET_C740_SERIES_EMMITSBURG:
 	case CHIPSET_300_SERIES_CANNON_POINT:
 	case CHIPSET_400_SERIES_COMET_POINT:
 	case CHIPSET_500_SERIES_TIGER_POINT:
@@ -2087,6 +2091,7 @@ static void init_chipset_properties(struct swseq_data *swseq, struct hwseq_data 
 		*num_freg = 10;
 		break;
 	case CHIPSET_C620_SERIES_LEWISBURG:
+	case CHIPSET_C740_SERIES_EMMITSBURG:
 		*num_freg = 12;	/* 12 MMIO regs, but 16 regions in FD spec */
 		break;
 	case CHIPSET_300_SERIES_CANNON_POINT:
@@ -2150,6 +2155,7 @@ static int init_ich_default(const struct programmer_cfg *cfg, void *spibar, enum
 	switch (ich_gen) {
 	case CHIPSET_100_SERIES_SUNRISE_POINT:
 	case CHIPSET_C620_SERIES_LEWISBURG:
+	case CHIPSET_C740_SERIES_EMMITSBURG:
 	case CHIPSET_300_SERIES_CANNON_POINT:
 	case CHIPSET_400_SERIES_COMET_POINT:
 	case CHIPSET_500_SERIES_TIGER_POINT:
@@ -2230,6 +2236,7 @@ static int init_ich_default(const struct programmer_cfg *cfg, void *spibar, enum
 		case CHIPSET_ICH8:
 		case CHIPSET_100_SERIES_SUNRISE_POINT:
 		case CHIPSET_C620_SERIES_LEWISBURG:
+		case CHIPSET_C740_SERIES_EMMITSBURG:
 		case CHIPSET_300_SERIES_CANNON_POINT:
 		case CHIPSET_400_SERIES_COMET_POINT:
 		case CHIPSET_500_SERIES_TIGER_POINT:
@@ -2269,6 +2276,7 @@ static int init_ich_default(const struct programmer_cfg *cfg, void *spibar, enum
 		case CHIPSET_ICH8:
 		case CHIPSET_100_SERIES_SUNRISE_POINT:
 		case CHIPSET_C620_SERIES_LEWISBURG:
+		case CHIPSET_C740_SERIES_EMMITSBURG:
 		case CHIPSET_300_SERIES_CANNON_POINT:
 		case CHIPSET_400_SERIES_COMET_POINT:
 		case CHIPSET_500_SERIES_TIGER_POINT:
@@ -2310,7 +2318,8 @@ static int init_ich_default(const struct programmer_cfg *cfg, void *spibar, enum
 	     ich_gen == CHIPSET_300_SERIES_CANNON_POINT ||
 	     ich_gen == CHIPSET_400_SERIES_COMET_POINT ||
 	     ich_gen == CHIPSET_500_SERIES_TIGER_POINT ||
-	     ich_gen == CHIPSET_600_SERIES_ALDER_POINT)) {
+	     ich_gen == CHIPSET_600_SERIES_ALDER_POINT ||
+	     ich_gen == CHIPSET_C740_SERIES_EMMITSBURG)) {
 		msg_pdbg("Enabling hardware sequencing by default for 100+ series PCH.\n");
 		ich_spi_mode = ich_hwseq;
 	}
