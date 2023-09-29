@@ -111,19 +111,19 @@ Between November and March (inclusive)
 
     also known as
 
-    | Wednesday 13.00-14.00 Pacific Standard Time UTC-8
-    | Wednesday 22.00-23.00 Central European Time UTC+1
-    | Thursday 8.00-9.00am Australian Eastern Daylight Time UTC+11
+    | Wednesday 13:00-14:00 Pacific Standard Time UTC-8
+    | Wednesday 22:00-23:00 Central European Time UTC+1
+    | Thursday 8:00-9:00 Australian Eastern Daylight Time UTC+11
 
 Between April and September (inclusive)
 
-    **Thursday 6.00-7.00am UTC+0**
+    **Thursday 6:00-7:00 UTC+0**
 
     also known as
 
-    | Wednesday 11pm-midnight Pacific Daylight Time UTC-7
-    | Thursday 8.00-9.00am Central European Summer Time UTC+2
-    | Thursday 16.00-17.00 Australian Eastern Standard Time UTC+10
+    | Wednesday 23:00-midnight Pacific Daylight Time UTC-7
+    | Thursday 8:00-9:00 Central European Summer Time UTC+2
+    | Thursday 16:00-17:00 Australian Eastern Standard Time UTC+10
 
 The last week of March and 4 weeks of October there are no meetings
 This is because daylight saving time changes are happening on different dates in different locations, and setting up meeting time becomes too complicated.
