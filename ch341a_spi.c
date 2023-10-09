@@ -425,7 +425,7 @@ static int ch341a_spi_init(const struct programmer_cfg *cfg)
 
 	/* Enable information, warning, and error messages (only). */
 #if LIBUSB_API_VERSION < 0x01000106
-	libusb_set_debug(NULL, 3);
+	libusb_set_option(NULL, 3);
 #else
 	libusb_set_option(NULL, LIBUSB_OPTION_LOG_LEVEL, LIBUSB_LOG_LEVEL_INFO);
 #endif
