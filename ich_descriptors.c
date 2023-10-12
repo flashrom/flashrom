@@ -491,7 +491,7 @@ void prettyprint_ich_descriptor_master(const enum ich_chipset cs, const struct i
 	    cs == CHIPSET_600_SERIES_ALDER_POINT ||
 	    cs == CHIPSET_JASPER_LAKE || cs == CHIPSET_METEOR_LAKE) {
 		const char *const master_names[] = {
-			"BIOS", "ME", "GbE", "unknown", "EC",
+			"BIOS", "ME", "GbE", "DevE", "EC",
 		};
 
 		if (nm > (ssize_t)ARRAY_SIZE(master_names)) {
