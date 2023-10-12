@@ -493,9 +493,9 @@ void prettyprint_ich_descriptor_master(const enum ich_chipset cs, const struct i
 		const char *const master_names[] = {
 			"BIOS", "ME", "GbE", "unknown", "EC",
 		};
-		if (nm >= (ssize_t)ARRAY_SIZE(master_names)) {
-			msg_pdbg2("%s: number of masters too high (%d).\n", __func__,
-				  desc->content.NM + 1);
+
+		if (nm > (ssize_t)ARRAY_SIZE(master_names)) {
+			msg_pdbg2("%s: number of masters too high (%zd).\n", __func__, nm);
 			return;
 		}
 
