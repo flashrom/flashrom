@@ -174,11 +174,17 @@ static void align_region(const struct erase_layout *layout, struct flashctx *con
 	}
 
 	if (start_diff) {
-		msg_cinfo("Region start not sector aligned! Extending start boundaries...\n");
+		msg_cinfo("Region [0x%08x - 0x%08x] is not sector aligned! "
+			  "Extending start boundaries by 0x%08x bytes, from 0x%08x -> 0x%08x\n",
+				*region_start, *region_end,
+				start_diff, *region_start, *region_start - start_diff);
 		*region_start = *region_start - start_diff;
 	}
 	if (end_diff) {
-		msg_cinfo("Region end not sector aligned! Extending end boundaries...\n");
+		msg_cinfo("Region [0x%08x - 0x%08x] is not sector aligned! "
+			  "Extending end boundaries by 0x%08x bytes, from 0x%08x -> 0x%08x\n",
+				*region_start, *region_end,
+				end_diff, *region_end, *region_end + end_diff);
 		*region_end = *region_end + end_diff;
 	}
 }
