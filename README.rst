@@ -32,6 +32,7 @@ TLDR, building with meson
 
     meson setup builddir
     meson compile -C builddir
+    meson test -C builddir
     meson install -C builddir
 
 For full detailed instructions, follow the information in
