@@ -745,7 +745,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
-		.printlock	= SPI_PRETTYPRINT_STATUS_REGISTER_AMIC_A25L032, /* bit5: T/B, bit6: prot size */
+		.printlock	= SPI_PRETTYPRINT_STATUS_REGISTER_SRWD_SEC_TB_BP2_WELWIP,
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP2_SRWD, /* TODO: 2nd status reg (read with 0x35) */
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
@@ -1275,7 +1275,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
-		.printlock	= SPI_PRETTYPRINT_STATUS_REGISTER_AMIC_A25L032, /* bit5: T/B, bit6: prot size */
+		.printlock	= SPI_PRETTYPRINT_STATUS_REGISTER_SRWD_SEC_TB_BP2_WELWIP,
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP2_SRWD, /* TODO: 2nd status reg (read with 0x35) */
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
@@ -1315,7 +1315,7 @@ const struct flashchip flashchips[] = {
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
-		.printlock	= SPI_PRETTYPRINT_STATUS_REGISTER_AMIC_A25L032, /* bit5: T/B, bit6: prot size */
+		.printlock	= SPI_PRETTYPRINT_STATUS_REGISTER_SRWD_SEC_TB_BP2_WELWIP,
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP2_SRWD, /* TODO: 2nd status reg (read with 0x35) */
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,

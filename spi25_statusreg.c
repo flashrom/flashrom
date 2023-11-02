@@ -601,16 +601,7 @@ static int spi_prettyprint_status_register_bp2_tb_bpl(struct flashctx *flash)
 	return 0;
 }
 
-/* === Amic ===
- * FIXME: spi_disable_blockprotect is incorrect but works fine for chips using
- * spi_prettyprint_status_register_bp1_srwd or
- * spi_prettyprint_status_register_bp2_srwd.
- * FIXME: spi_disable_blockprotect is incorrect and will fail for chips using
- * spi_prettyprint_status_register_amic_a25l032 if those have locks controlled
- * by the second status register.
- */
-
-static int spi_prettyprint_status_register_amic_a25l032(struct flashctx *flash)
+static int spi_prettyprint_status_register_srwd_sec_tb_bp2_welwip(struct flashctx *flash)
 {
 	uint8_t status;
 	int ret = spi_read_register(flash, STATUS1, &status);
@@ -1056,7 +1047,6 @@ printlockfunc_t *lookup_printlock_func_ptr(struct flashctx *flash)
 		case PRINTLOCK_W39V080A: return &printlock_w39v080a;
 		case PRINTLOCK_W39V080FA: return &printlock_w39v080fa;
 		case PRINTLOCK_W39V080FA_DUAL: return &printlock_w39v080fa_dual;
-		case SPI_PRETTYPRINT_STATUS_REGISTER_AMIC_A25L032: return &spi_prettyprint_status_register_amic_a25l032;
 		case SPI_PRETTYPRINT_STATUS_REGISTER_AT25DF: return &spi_prettyprint_status_register_at25df;
 		case SPI_PRETTYPRINT_STATUS_REGISTER_AT25DF_SEC: return &spi_prettyprint_status_register_at25df_sec;
 		case SPI_PRETTYPRINT_STATUS_REGISTER_AT25F: return &spi_prettyprint_status_register_at25f;
@@ -1072,6 +1062,7 @@ printlockfunc_t *lookup_printlock_func_ptr(struct flashctx *flash)
 		case SPI_PRETTYPRINT_STATUS_REGISTER_BP2_EP_SRWD: return &spi_prettyprint_status_register_bp2_ep_srwd;
 		case SPI_PRETTYPRINT_STATUS_REGISTER_BP2_SRWD: return &spi_prettyprint_status_register_bp2_srwd;
 		case SPI_PRETTYPRINT_STATUS_REGISTER_BP2_TB_BPL: return &spi_prettyprint_status_register_bp2_tb_bpl;
+		case SPI_PRETTYPRINT_STATUS_REGISTER_SRWD_SEC_TB_BP2_WELWIP: return &spi_prettyprint_status_register_srwd_sec_tb_bp2_welwip;
 		case SPI_PRETTYPRINT_STATUS_REGISTER_BP3_SRWD: return &spi_prettyprint_status_register_bp3_srwd;
 		case SPI_PRETTYPRINT_STATUS_REGISTER_BP4_SRWD: return &spi_prettyprint_status_register_bp4_srwd;
 		case SPI_PRETTYPRINT_STATUS_REGISTER_DEFAULT_WELWIP: return &spi_prettyprint_status_register_default_welwip;
