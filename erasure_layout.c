@@ -279,9 +279,10 @@ int erase_write(struct flashctx *const flashctx, chipoff_t region_start, chipoff
 		memcpy(newcontents + region_start, curcontents + region_start, old_start - region_start);
 	}
 	if (region_end - old_end) {
-		read_flash(flashctx, curcontents + old_end, old_end, region_end - old_end);
-		memcpy(old_end_buf, newcontents + old_end, region_end - old_end);
-		memcpy(newcontents + old_end, curcontents + old_end, region_end - old_end);
+		chipoff_t end_offset = old_end + 1;
+		read_flash(flashctx, curcontents + end_offset, end_offset, region_end - old_end);
+		memcpy(old_end_buf, newcontents + end_offset, region_end - old_end);
+		memcpy(newcontents + end_offset, curcontents + end_offset, region_end - old_end);
 	}
 
 	// select erase functions
