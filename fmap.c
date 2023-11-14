@@ -47,14 +47,13 @@ static size_t fmap_size(const struct fmap *fmap)
 	return sizeof(*fmap) + (fmap->nareas * sizeof(struct fmap_area));
 }
 
+/* Make a best-effort assessment if the given fmap is real */
 static int is_valid_fmap(const struct fmap *fmap)
 {
 	if (memcmp(fmap, FMAP_SIGNATURE, strlen(FMAP_SIGNATURE)) != 0)
 		return 0;
 	/* strings containing the magic tend to fail here */
-	if (fmap->ver_major > FMAP_VER_MAJOR)
-		return 0;
-	if (fmap->ver_minor > FMAP_VER_MINOR)
+	if (fmap->ver_major != FMAP_VER_MAJOR)
 		return 0;
 	/* a basic consistency check: flash address space size should be larger
 	 * than the size of the fmap data structure */
