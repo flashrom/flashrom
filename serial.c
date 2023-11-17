@@ -377,10 +377,26 @@ void sp_flush_incoming(void)
 #if IS_WINDOWS
 	PurgeComm(sp_fd, PURGE_RXCLEAR);
 #else
-	/* FIXME: error handling */
-	tcflush(sp_fd, TCIFLUSH);
+	if (!tcflush(sp_fd, TCIFLUSH))
+		return;
+
+	if (errno == ENOTTY) { // TCP socket case: sp_fd is not a terminal descriptor - tcflush is not supported
+		unsigned char c;
+		int ret;
+
+		do {
+			ret = serialport_read_nonblock(&c, 1, 1, NULL);
+		} while (ret == 0);
+
+		// positive error code indicates no data available immediately - similar to EAGAIN/EWOULDBLOCK
+		//   i.e. all buffered data was read
+		// negative error code indicates a permanent error
+		if (ret < 0)
+			msg_perr("Could not flush serial port incoming buffer: read has failed");
+	} else { // any other errno indicates an unrecoverable sp_fd state
+		msg_perr_strerror("Could not flush serial port incoming buffer: ");
+	}
 #endif
-	return;
 }
 
 int serialport_shutdown(void *data)
