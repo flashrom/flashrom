@@ -242,6 +242,7 @@ HAS_LIBJAYLINK      := $(call find_dependency, libjaylink)
 HAS_LIBUSB1         := $(call find_dependency, libusb-1.0)
 HAS_LIBPCI          := $(call find_dependency, libpci)
 
+HAS_GETOPT          := $(call c_compile_test, Makefile.d/getopt_test.c)
 HAS_FT232H          := $(call c_compile_test, Makefile.d/ft232h_test.c, $(CONFIG_LIBFTDI1_CFLAGS))
 HAS_UTSNAME         := $(call c_compile_test, Makefile.d/utsname_test.c)
 HAS_CLOCK_GETTIME   := $(call c_compile_test, Makefile.d/clock_gettime_test.c)
@@ -249,6 +250,7 @@ HAS_EXTERN_LIBRT    := $(call c_link_test, Makefile.d/clock_gettime_test.c, , -l
 HAS_LINUX_MTD       := $(call c_compile_test, Makefile.d/linux_mtd_test.c)
 HAS_LINUX_SPI       := $(call c_compile_test, Makefile.d/linux_spi_test.c)
 HAS_LINUX_I2C       := $(call c_compile_test, Makefile.d/linux_i2c_test.c)
+HAS_PCIUTILS        := $(call c_compile_test, Makefile.d/pciutils_test.c)
 HAS_SERIAL          := $(strip $(if $(filter $(TARGET_OS), DOS libpayload), no, yes))
 HAS_SPHINXBUILD     := $(shell command -v $(SPHINXBUILD) >/dev/null 2>/dev/null && echo yes || echo no)
 EXEC_SUFFIX         := $(strip $(if $(filter $(TARGET_OS), DOS MinGW), .exe))
@@ -945,6 +947,14 @@ override LDFLAGS += -lrt
 endif
 endif
 
+ifeq ($(HAS_GETOPT), yes)
+override CFLAGS  += -D'HAVE_GETOPT_H=1'
+endif
+
+ifeq ($(HAS_PCIUTILS), yes)
+override CFLAGS  += -D'HAVE_PCIUTILS_PCI_H=1'
+endif
+
 OBJS = $(CHIP_OBJS) $(PROGRAMMER_OBJS) $(LIB_OBJS)
 
 
@@ -994,11 +1004,13 @@ config:
 		echo "  CFLAGS: $(CONFIG_LIBFTDI1_CFLAGS)";	\
 		echo "  LDFLAGS: $(CONFIG_LIBFTDI1_LDFLAGS)";	\
 	fi
+	@echo "Checking for header \"getopt.h\": $(HAS_GETOPT)"
 	@echo "Checking for header \"mtd/mtd-user.h\": $(HAS_LINUX_MTD)"
 	@echo "Checking for header \"linux/spi/spidev.h\": $(HAS_LINUX_SPI)"
 	@echo "Checking for header \"linux/i2c-dev.h\": $(HAS_LINUX_I2C)"
 	@echo "Checking for header \"linux/i2c.h\": $(HAS_LINUX_I2C)"
 	@echo "Checking for header \"sys/utsname.h\": $(HAS_UTSNAME)"
+	@echo "Checking for header \"pciutils/pci.h\": $(HAS_PCIUTILS)"
 	@echo "Checking for function \"clock_gettime\": $(HAS_CLOCK_GETTIME)"
 	@echo "Checking for external \"librt\": $(HAS_EXTERN_LIBRT)"
 	@if ! [ "$(PROGRAMMER_OBJS)" ]; then					\

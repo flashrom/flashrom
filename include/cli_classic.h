@@ -15,7 +15,7 @@
 #ifndef CLI_CLASSIC_H
 #define CLI_CLASSIC_H
 
-#if __has_include(<getopt.h>)
+#ifdef HAVE_GETOPT_H
 #include <getopt.h>
 #else
 
@@ -39,5 +39,5 @@ int getopt_long (int argc, char *const *argv, const char *shortopts,
 int getopt_long_only (int argc, char *const *argv, const char *shortopts,
 			const struct option *longopts, int *longind);
 
-#endif /* __has_include() */
+#endif /* HAVE_GETOPT_H */
 #endif /* CLI_CLASSIC_H */

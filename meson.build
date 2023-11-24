@@ -114,6 +114,12 @@ endif
 if cc.has_function('strnlen')
   add_project_arguments('-DHAVE_STRNLEN=1', language : 'c')
 endif
+if cc.check_header('getopt.h')
+  add_project_arguments('-DHAVE_GETOPT_H=1', language : 'c')
+endif
+if cc.check_header('pciutils/pci.h')
+  add_project_arguments('-DHAVE_PCIUTILS_PCI_H=1', language : 'c')
+endif
 if cc.check_header('sys/utsname.h')
   add_project_arguments('-DHAVE_UTSNAME=1', language : 'c')
 endif

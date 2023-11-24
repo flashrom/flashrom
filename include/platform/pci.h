@@ -22,10 +22,10 @@
  * e.g. NetBSD 9.0 on sparc64 pciutils-3.7.0nb2.
  * Other NetBSD platforms and versions uses the default path under pci/pci.h
  */
-#if __has_include(<pciutils/pci.h>)
+#ifdef HAVE_PCIUTILS_PCI_H
 #include <pciutils/pci.h>
 #else
 #include <pci/pci.h>
-#endif
+#endif /* HAVE_PCIUTILS_PCI_H */
 
 #endif /* __PLATFORM_PCI_H__ */
