@@ -183,6 +183,8 @@ Creating an account
 #. Add an e-mail address so that Gerrit can send notifications to you about
    your patch.
 #. Upload an SSH public key, or click the button to generate an HTTPS password.
+#. After account created, set either "Full name" or "Display name", it is used by Gerrit
+   for code review emails.
 
 .. _pushing-a-patch:
 
