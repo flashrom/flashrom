@@ -38,6 +38,7 @@ use super::types;
 use super::utils::{self, LayoutSizes};
 use flashrom::FlashromError;
 use flashrom::{FlashChip, Flashrom};
+use libflashrom::FlashromFlags;
 use serde_json::json;
 use std::fs::File;
 use std::io::Write;
@@ -83,6 +84,9 @@ impl<'a> TestEnv<'a> {
             random_data: "/tmp/random_content.bin".into(),
             layout_file: create_layout_file(rom_sz, Path::new("/tmp/"), print_layout),
         };
+        let flags = FlashromFlags::default();
+        info!("Set flags: {}", flags);
+        out.cmd.set_flags(&flags);
 
         info!("Stashing golden image for verification/recovery on completion");
         out.cmd.read_into_file(&out.original_flash_contents)?;

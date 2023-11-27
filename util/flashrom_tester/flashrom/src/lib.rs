@@ -45,7 +45,7 @@ pub use cmd::FlashromCmd;
 pub use flashromlib::FlashromLib;
 
 pub use libflashrom::{
-    flashrom_log_level, FLASHROM_MSG_DEBUG, FLASHROM_MSG_DEBUG2, FLASHROM_MSG_ERROR,
+    flashrom_log_level, FlashromFlags, FLASHROM_MSG_DEBUG, FLASHROM_MSG_DEBUG2, FLASHROM_MSG_ERROR,
     FLASHROM_MSG_INFO, FLASHROM_MSG_SPEW, FLASHROM_MSG_WARN,
 };
 
@@ -162,4 +162,7 @@ pub trait Flashrom {
 
     /// Return true if the hardware write protect of this flash can be controlled.
     fn can_control_hw_wp(&self) -> bool;
+
+    /// Set flags used by the flashrom cli.
+    fn set_flags(&self, flags: &FlashromFlags) -> ();
 }
