@@ -51,19 +51,19 @@ pub use libflashrom::{
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum FlashChip {
-    HOST,
+    INTERNAL,
 }
 
 impl FlashChip {
     pub fn from(s: &str) -> Result<FlashChip, &str> {
         match s {
-            "host" => Ok(FlashChip::HOST),
+            "internal" => Ok(FlashChip::INTERNAL),
             _ => Err("cannot convert str to enum"),
         }
     }
     pub fn to(fc: FlashChip) -> &'static str {
         match fc {
-            FlashChip::HOST => "host",
+            FlashChip::INTERNAL => "internal",
         }
     }
 
@@ -80,7 +80,7 @@ impl FlashChip {
     /// disabled.
     pub fn can_control_hw_wp(&self) -> bool {
         match self {
-            FlashChip::HOST => true,
+            FlashChip::INTERNAL => true,
         }
     }
 }

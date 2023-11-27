@@ -82,7 +82,7 @@ fn main() {
         .arg(
             Arg::with_name("ccd_target_type")
                 .required(true)
-                .possible_values(&["host"]),
+                .possible_values(&["internal"]),
         )
         .arg(
             Arg::with_name("print-layout")
