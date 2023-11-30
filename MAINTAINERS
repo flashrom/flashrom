@@ -195,6 +195,7 @@ S:	Maintained
 F:	util/flashrom.bash-completion.tmpl
 
 FLASHROM TESTER
+M:	Hsuan Ting Chen <roccochen@google.com>
 R:	Evan Benn <evanbenn@gmail.com>
 S:	Supported
 F:	util/flashrom_tester/
