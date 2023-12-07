@@ -772,6 +772,14 @@ where ``state`` can be ``on`` or ``off``.
 More information about the Bus Pirate pull-up resistors and their purpose is available
 `in a guide by dangerousprototypes <http://dangerousprototypes.com/docs/Practical_guide_to_Bus_Pirate_pull-up_resistors>`_.
 
+When working with low-voltage chips, the internal 10k pull-ups of the Bus Pirate might be too high. In such cases, it's necessary to create an external pull-up using lower-value resistors.
+
+For this, you can use the ``hiz`` parameter. This way, the Bus Pirate will operate as an open drain. Syntax is::
+
+        flashrom -p buspirate_spi:hiz=state
+
+where ``state`` can be ``on`` or ``off``.
+
 The state of the Bus Pirate power supply pins is controllable through an optional ``psus`` parameter. Syntax is::
 
         flashrom -p buspirate_spi:psus=state
