@@ -1,0 +1,28 @@
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+name: Create Branch Artifact
+
+jobs:
+  generate:
+    name: Create Branch Artifact
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Update Packages
+        run: sudo apt-get update -y
+      - name: Install Dependencies   
+        run: sudo apt-get install -y build-essential libpci-dev libftdi1-dev
+      - name: Run Make
+        run: make CONFIG_INTERNAL=yes
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: flashrom-binary
+          path: flashrom
+          retention-days: 3
