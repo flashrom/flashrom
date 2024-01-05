@@ -7,5 +7,5 @@ COPY build-alma-rpms.sh flashrom.spec .github/
 RUN .github/build-alma-rpms.sh
 
 FROM base
-COPY --from=flashrom /root/rpmbuild/RPMS/x86_64/flashrom*.rpm /tmp
+COPY --from=flashrom /root/rpmbuild/RPMS/x86_64/flashrom*.rpm /tmp/
 RUN dnf install -y /tmp/flashrom*.rpm

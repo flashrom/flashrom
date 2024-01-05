@@ -22,8 +22,6 @@ Requires:	dmidecode
 %endif
 Requires:	udev
 
-%global debug_package %{nil}
-
 %description
 flashrom is a utility for identifying, reading, writing, verifying and erasing
 flash chips. It is designed to flash BIOS/EFI/coreboot/firmware/optionROM
@@ -34,10 +32,10 @@ other programmer devices.
 %autosetup -p1 -n %{name}-%{version}
 
 %build
-make PREFIX=/usr CONFIG_INTERNAL=yes %{?_smp_mflags}
+CFLAGS=-g %{__make} PREFIX=/usr CONFIG_INTERNAL=yes %{?_smp_mflags}
 
 %install
-make PREFIX=/usr DESTDIR=$RPM_BUILD_ROOT install
+%{__make} PREFIX=/usr DESTDIR=$RPM_BUILD_ROOT install
 
 %files
 %license COPYING
