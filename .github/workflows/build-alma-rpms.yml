@@ -1,0 +1,29 @@
+name: Build Alma RPMs
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: almalinux:9-minimal
+    name: Build Alma RPMs
+    steps:
+      - name: Install tar
+        run: microdnf install -y tar gzip
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build RPMs
+        run: .github/build-alma-rpms.sh
+
+      - name: Create Release
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          files: |
+            /github/home/rpmbuild/RPMS/x86_64/*.rpm
