@@ -741,6 +741,14 @@ Example that sets the frequency to 2 MHz::
 
         flashrom -p serprog:dev=/dev/device:baud,spispeed=2M
 
+Optional ``cs`` parameter can be used to switch which chip select number is used. This allows connecting multiple
+chips at once and selecting which one to flash by software means (rather than rewiring)::
+
+        flashrom -p serprog:dev=/dev/device:baud,cs=0
+
+The particular programmer implementation needs to support this feature, for it to work. If the requested chip
+select isn't available, flashrom will fail safely.
+
 More information about serprog is available in **serprog-protocol.txt** in the source distribution.
 
 

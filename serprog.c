@@ -3,6 +3,7 @@
  *
  * Copyright (C) 2009, 2011 Urja Rannikko <urjaman@gmail.com>
  * Copyright (C) 2009 Carl-Daniel Hailfinger
+ * Copyright (C) 2024 Riku Viitanen <riku.viitanen@protonmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -63,6 +64,7 @@
 #define S_CMD_O_SPIOP		0x13	/* Perform SPI operation.			*/
 #define S_CMD_S_SPI_FREQ	0x14	/* Set SPI clock frequency			*/
 #define S_CMD_S_PIN_STATE	0x15	/* Enable/disable output drivers		*/
+#define S_CMD_S_SPI_CS		0x16	/* Set SPI chip select to use			*/
 
 #define MSGHEADER "serprog: "
 
@@ -742,7 +744,7 @@ static int serprog_init(const struct programmer_cfg *cfg)
 	/* Check for the minimum operational set of commands. */
 	if (serprog_buses_supported & BUS_SPI) {
 		uint8_t bt = BUS_SPI;
-		char *spispeed;
+		char *spispeed, *cs;
 		if (sp_check_commandavail(S_CMD_O_SPIOP) == 0) {
 			msg_perr("Error: SPI operation not supported while the "
 				 "bustype is SPI\n");
@@ -822,6 +824,30 @@ static int serprog_init(const struct programmer_cfg *cfg)
 			}
 		}
 		free(spispeed);
+		cs = extract_programmer_param_str(cfg, "cs");
+		if (cs && strlen(cs)) {
+			char *endptr = NULL;
+			errno = 0;
+			unsigned long cs_num = strtoul(cs, &endptr, 0);
+			if (errno || *endptr || cs_num > 255) {
+				msg_perr("Error: Invalid chip select requested! "
+				         "Only 0-255 are valid.\n");
+				free(cs);
+				goto init_err_cleanup_exit;
+			}
+			free(cs);
+			if (!sp_check_commandavail(S_CMD_S_SPI_CS)) {
+				msg_perr("Error: Setting SPI chip select is not supported!\n");
+				goto init_err_cleanup_exit;
+			}
+			msg_pdbg(MSGHEADER "Requested to use chip select %lu.\n", cs_num);
+			uint8_t cs_num8 = cs_num;
+			if (sp_docommand(S_CMD_S_SPI_CS, 1, &cs_num8, 0, NULL)) {
+				msg_perr("Error: Chip select %u not supported "
+				         "by programmer!\n", cs_num8);
+				goto init_err_cleanup_exit;
+			}
+		}
 		bt = serprog_buses_supported;
 		if (sp_docommand(S_CMD_S_BUSTYPE, 1, &bt, 0, NULL))
 			goto init_err_cleanup_exit;

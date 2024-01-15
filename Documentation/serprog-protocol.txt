@@ -35,6 +35,7 @@ COMMAND	Description			Parameters			Return Value
 					 + slen bytes of data
 0x14	Set SPI clock frequency in Hz	32-bit requested frequency	ACK + 32-bit set frequency / NAK
 0x15	Toggle flash chip pin drivers	8-bit (0 disable, else enable)	ACK / NAK
+0x16	Set SPI Chip Select		8-bit				ACK / NAK
 0x??	unimplemented command - invalid.
 
 
@@ -89,6 +90,9 @@ Additional information of the above commands:
 		remain attached to the flash chip even when the board is running. The user is responsible to
 		NOT connect VCC and other permanently externally driven signals to the programmer as needed.
 		If the value is 0, then the drivers should be disabled, otherwise they should be enabled.
+	0x16 (S_SPI_CS):
+		Set which SPI Chip Select pin to use. This operation is immediate,
+		meaning it doesn't use the operation buffer.
 	About mandatory commands:
 		The only truly mandatory commands for any device are 0x00, 0x01, 0x02 and 0x10,
 		but one can't really do anything with these commands.
