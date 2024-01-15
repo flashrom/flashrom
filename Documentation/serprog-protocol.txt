@@ -84,7 +84,7 @@ Additional information of the above commands:
 		lower than the one requested. If there is no lower frequency
 		available the lowest possible should be used. The value
 		chosen is sent back in the reply with an ACK.
-	0x15 (S_CMD_S_PIN_STATE):
+	0x15 (S_PIN_STATE):
 		Sets the state of the pin drivers connected to the flash chip. Disabling them allows other
 		devices (e.g. a mainboard's chipset) to access the chip. This way the serprog controller can
 		remain attached to the flash chip even when the board is running. The user is responsible to
@@ -103,4 +103,4 @@ Additional information of the above commands:
 		In addition, support for these commands is recommended:
 		S_CMD_Q_PGMNAME, S_CMD_Q_BUSTYPE, S_CMD_Q_CHIPSIZE (if parallel).
 
-See also serprog.h.
+See also serprog.c
