@@ -224,6 +224,7 @@ If you want to change your initial configuration for some reason
 
     meson configure [updated builtin options] [updated flashrom options] <builddir>
 
+.. _unit tests:
 
 Unit Tests
 ----------

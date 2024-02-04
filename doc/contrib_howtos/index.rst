@@ -6,3 +6,4 @@ Contributors howtos
 
     how_to_add_new_chip
     how_to_mark_chip_tested
+    how_to_add_unit_test
