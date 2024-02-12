@@ -1,5 +1,6 @@
 
 sphinx = find_program('sphinx-build', native : true, required : get_option('man-pages').enabled() or get_option('documentation').enabled())
+sphinx_wrapper = meson.current_source_dir() / 'sphinx-wrapper.sh'
 
 man_pages = [
   'flashrom.8'
@@ -14,7 +15,7 @@ if sphinx.found()
 
     custom_target(
       'man-pages',
-      command : [sphinx, '-b', 'man', '-q', '-d', '@PRIVATE_DIR@', '-Drelease=' + flashrom_version,'@CURRENT_SOURCE_DIR@', '@OUTDIR@'],
+      command : [sphinx_wrapper, '@OUTDIR@', ' '.join(man_outputs), sphinx, '-b', 'man', '-q', '-d', '@PRIVATE_DIR@', '-Drelease=' + flashrom_version, '@CURRENT_SOURCE_DIR@', '@OUTDIR@'],
       build_always_stale : true, # sphinx handles rebuilds
       output  : man_outputs,
       install : true,

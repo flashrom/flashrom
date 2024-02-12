@@ -228,6 +228,10 @@ CONFIG_LIBPCI_VERSION      := $(call dependency_version, libpci)
 CONFIG_LIBPCI_CFLAGS       := $(call dependency_cflags, libpci)
 CONFIG_LIBPCI_LDFLAGS      := $(call dependency_ldflags, libpci)
 
+CONFIG_SPHINXBUILD_VERSION :=
+CONFIG_SPHINXBUILD_MAJOR   := 0
+
+
 # Determine the destination OS, architecture and endian
 # IMPORTANT: The following lines must be placed before TARGET_OS, ARCH or ENDIAN
 # is ever used (of course), but should come after any lines setting CC because
@@ -958,6 +962,11 @@ endif
 
 OBJS = $(CHIP_OBJS) $(PROGRAMMER_OBJS) $(LIB_OBJS)
 
+ifeq ($(HAS_SPHINXBUILD), yes)
+override CONFIG_SPHINXBUILD_VERSION := $(shell $(SPHINXBUILD) --version | cut -d' ' -f2 )
+override CONFIG_SPHINXBUILD_MAJOR   := $(shell echo "$(CONFIG_SPHINXBUILD_VERSION)" | cut -d'.' -f1 )
+endif
+
 
 all: $(PROGRAM)$(EXEC_SUFFIX) $(call has_dependency, $(HAS_SPHINXBUILD), man8/$(PROGRAM).8)
 ifeq ($(ARCH), x86)
@@ -1022,7 +1031,7 @@ config:
 		echo "The following features are unavailable on your machine: $(UNSUPPORTED_FEATURES)" \
 		exit 1;								\
 	fi
-	@echo "Checking for program \"sphinx-build\": $(HAS_SPHINXBUILD)"
+	@echo "Checking for program \"sphinx-build\": $(HAS_SPHINXBUILD) $(CONFIG_SPHINXBUILD_VERSION)"
 
 %.o: %.c | config
 	$(CC) -MMD $(CFLAGS) $(CPPFLAGS) $(FLASHROM_CFLAGS) $(FEATURE_FLAGS) -D'FLASHROM_VERSION=$(VERSION)'  -o $@ -c $<
@@ -1035,8 +1044,18 @@ libflashrom.a: $(OBJS)
 	$(RANLIB) $@
 
 man8/$(PROGRAM).8: doc/*
+#	When using sphinx-build prior to version 4.x, man pages are output
+#	to a directory named "8" instead of expected "man8". We fix that
+#	by renaming "8" to "man8" and creating symlink "8" pointing to "man8".
 	@if [ "$(HAS_SPHINXBUILD)" = "yes" ]; then			\
 		$(SPHINXBUILD) -Drelease=$(VERSION) -b man doc .;	\
+		if [ "$(CONFIG_SPHINXBUILD_MAJOR)" -lt 4 ]; then	\
+			if [ -d 8 -a ! -L 8 ]; then			\
+				rm -rf man8;				\
+				mv 8 man8;				\
+				ln -s man8 8;				\
+			fi						\
+		fi							\
 	else								\
 		echo "$(SPHINXBUILD) not found. Can't build man-page";	\
 		exit 1;							\
