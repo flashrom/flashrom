@@ -399,8 +399,10 @@ CLI_OBJS = cli_classic.o cli_output.o cli_common.o print.o
 
 VERSION ?= $(shell cat ./VERSION)
 VERSION_GIT ?= $(shell git describe 2>/dev/null)
-ifdef VERSION_GIT
+ifneq ($(VERSION_GIT),)
   VERSION := "$(VERSION) (git:$(VERSION_GIT))"
+else
+  VERSION := "$(VERSION)"
 endif
 
 # No spaces in release names unless set explicitly
