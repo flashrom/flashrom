@@ -153,6 +153,9 @@
 #define ICH9_FADDR_FLA		0x01ffffff
 #define ICH9_REG_FDATA0		0x10	/* 64 Bytes */
 
+#define ICH_REG_BIOS_BM_RAP	0x118	/* 16 Bits BIOS Master Read Access Permissions */
+#define ICH_REG_BIOS_BM_WAP	0x11c	/* 16 Bits BIOS Master Write Access Permissions */
+
 #define ICH9_REG_FRAP		0x50	/* 32 Bytes Flash Region Access Permissions */
 #define ICH9_REG_FREG0		0x54	/* 32 Bytes Flash Region 0 */
 
@@ -1834,8 +1837,52 @@ static const char *const access_names[] = {
 	"read-write", "write-only", "read-only", "locked"
 };
 
-static enum ich_access_protection ich9_handle_frap(struct fd_region *fd_regions,
-						   uint32_t frap, unsigned int i)
+static void ich_get_bios_region_access(uint16_t *region_read_access,
+				       uint16_t *region_write_access)
+{
+	uint32_t tmp;
+	*region_read_access = 0;
+	*region_write_access = 0;
+
+	if (ich_generation >= CHIPSET_METEOR_LAKE) {
+		/*
+		 * Starting from Meteor Lake, we need to fetch the region
+		 * read/write access permissions from the BIOS_BM registers
+		 * because we need to support FREG9 or above.
+		 */
+		*region_read_access = mmio_readw(ich_spibar + ICH_REG_BIOS_BM_RAP);
+		*region_write_access = mmio_readw(ich_spibar + ICH_REG_BIOS_BM_WAP);
+		msg_pdbg("0x118: 0x%04"PRIx16" (BIOS_BM_RAP)\n", *region_read_access);
+		msg_pdbg("0x11a: 0x%04"PRIx16" (BIOS_BM_WAP)\n", *region_write_access);
+	} else {
+		/*
+		 * FRAP - Flash Regions Access Permissions Register
+		 * Bit Descriptions:
+		 * 31:24 BIOS Master Write Access Grant (BMWAG)
+		 * 23:16 BIOS Master Read Access Grant (BMRAG)
+		 * 15:8 BIOS Region Write Access (BRWA)
+		 * 7:0 BIOS Region Read Access (BRRA)
+		 */
+		tmp = mmio_readl(ich_spibar + ICH9_REG_FRAP);
+		msg_pdbg("0x50: 0x%08"PRIx32" (FRAP)\n", tmp);
+		msg_pdbg("BMWAG 0x%02"PRIx32", ", ICH_BMWAG(tmp));
+		msg_pdbg("BMRAG 0x%02"PRIx32", ", ICH_BMRAG(tmp));
+		msg_pdbg("BRWA 0x%02"PRIx32", ", ICH_BRWA(tmp));
+		msg_pdbg("BRRA 0x%02"PRIx32"\n", ICH_BRRA(tmp));
+
+		*region_read_access = (uint16_t)ICH_BRRA(tmp);
+		*region_write_access = (uint16_t)ICH_BRWA(tmp);
+	}
+}
+
+static unsigned int ich_get_defined_region_count(void) {
+	return (ich_generation >= CHIPSET_METEOR_LAKE) ? 16 : 8;
+}
+
+static enum ich_access_protection ich9_handle_region_access(struct fd_region *fd_regions,
+							    uint16_t region_read_access,
+							    uint16_t region_write_access,
+							    unsigned int i)
 {
 	static const char *const region_names[] = {
 		"Flash Descriptor", "BIOS", "Management Engine",
@@ -1863,12 +1910,12 @@ static enum ich_access_protection ich9_handle_frap(struct fd_region *fd_regions,
 	}
 	msg_pdbg("0x%02X: 0x%08"PRIx32" ", offset, freg);
 
-	if (i < 8) {
-		rwperms_idx = (((ICH_BRWA(frap) >> i) & 1) << 1) |
-			      (((ICH_BRRA(frap) >> i) & 1) << 0);
+	if (i < ich_get_defined_region_count()) {
+		rwperms_idx = (((region_write_access >> i) & 1) << 1) |
+			      (((region_read_access >> i) & 1) << 0);
 		rwperms = access_perms_to_protection[rwperms_idx];
 	} else {
-		/* Datasheets don't define any access bits for regions > 7. We
+		/* Datasheets might not define all the access bits for regions. We
 		   can't rely on the actual descriptor settings either as there
 		   are several overrides for them (those by other masters are
 		   not even readable by us, *shrug*). */
@@ -2059,11 +2106,11 @@ static void init_chipset_properties(struct swseq_data *swseq, struct hwseq_data 
 	case CHIPSET_400_SERIES_COMET_POINT:
 	case CHIPSET_500_SERIES_TIGER_POINT:
 	case CHIPSET_600_SERIES_ALDER_POINT:
-	case CHIPSET_METEOR_LAKE:
 	case CHIPSET_APOLLO_LAKE:
 	case CHIPSET_GEMINI_LAKE:
 	case CHIPSET_JASPER_LAKE:
 	case CHIPSET_ELKHART_LAKE:
+	case CHIPSET_METEOR_LAKE:
 		*num_pr			= 6;	/* Includes GPR0 */
 		*reg_pr0		= PCH100_REG_FPR0;
 		swseq->reg_ssfsc	= PCH100_REG_SSFSC;
@@ -2099,11 +2146,11 @@ static void init_chipset_properties(struct swseq_data *swseq, struct hwseq_data 
 	case CHIPSET_400_SERIES_COMET_POINT:
 	case CHIPSET_500_SERIES_TIGER_POINT:
 	case CHIPSET_600_SERIES_ALDER_POINT:
-	case CHIPSET_METEOR_LAKE:
 	case CHIPSET_APOLLO_LAKE:
 	case CHIPSET_GEMINI_LAKE:
 	case CHIPSET_JASPER_LAKE:
 	case CHIPSET_ELKHART_LAKE:
+	case CHIPSET_METEOR_LAKE:
 		*num_freg = 16;
 		break;
 	default:
@@ -2161,11 +2208,11 @@ static int init_ich_default(const struct programmer_cfg *cfg, void *spibar, enum
 	case CHIPSET_400_SERIES_COMET_POINT:
 	case CHIPSET_500_SERIES_TIGER_POINT:
 	case CHIPSET_600_SERIES_ALDER_POINT:
-	case CHIPSET_METEOR_LAKE:
 	case CHIPSET_APOLLO_LAKE:
 	case CHIPSET_GEMINI_LAKE:
 	case CHIPSET_JASPER_LAKE:
 	case CHIPSET_ELKHART_LAKE:
+	case CHIPSET_METEOR_LAKE:
 		tmp = mmio_readl(spibar + PCH100_REG_DLOCK);
 		msg_pdbg("0x0c: 0x%08"PRIx32" (DLOCK)\n", tmp);
 		prettyprint_pch100_reg_dlock(tmp);
@@ -2175,16 +2222,15 @@ static int init_ich_default(const struct programmer_cfg *cfg, void *spibar, enum
 	}
 
 	if (desc_valid) {
-		tmp = mmio_readl(spibar + ICH9_REG_FRAP);
-		msg_pdbg("0x50: 0x%08"PRIx32" (FRAP)\n", tmp);
-		msg_pdbg("BMWAG 0x%02"PRIx32", ", ICH_BMWAG(tmp));
-		msg_pdbg("BMRAG 0x%02"PRIx32", ", ICH_BMRAG(tmp));
-		msg_pdbg("BRWA 0x%02"PRIx32", ", ICH_BRWA(tmp));
-		msg_pdbg("BRRA 0x%02"PRIx32"\n", ICH_BRRA(tmp));
+		/* Get the region access data from FRAP/BIOS_BM */
+		uint16_t region_read_access, region_write_access;
+		ich_get_bios_region_access(&region_read_access, &region_write_access);
 
-		/* Handle FREGx and FRAP registers */
+		/* Handle FREGx and region access registers */
 		for (i = 0; i < num_freg; i++)
-			ich_spi_rw_restricted |= ich9_handle_frap(hwseq_data.fd_regions, tmp, i);
+			ich_spi_rw_restricted |= ich9_handle_region_access(hwseq_data.fd_regions,
+									   region_read_access,
+									   region_write_access, i);
 		if (ich_spi_rw_restricted)
 			msg_pinfo("Not all flash regions are freely accessible by flashrom. This is "
 				  "most likely\ndue to an active ME. Please see "
@@ -2242,12 +2288,12 @@ static int init_ich_default(const struct programmer_cfg *cfg, void *spibar, enum
 		case CHIPSET_400_SERIES_COMET_POINT:
 		case CHIPSET_500_SERIES_TIGER_POINT:
 		case CHIPSET_600_SERIES_ALDER_POINT:
-		case CHIPSET_METEOR_LAKE:
 		case CHIPSET_APOLLO_LAKE:
 		case CHIPSET_GEMINI_LAKE:
 		case CHIPSET_JASPER_LAKE:
 		case CHIPSET_BAYTRAIL:
 		case CHIPSET_ELKHART_LAKE:
+		case CHIPSET_METEOR_LAKE:
 			break;
 		default:
 			ichspi_bbar = mmio_readl(spibar + ICH9_REG_BBAR);
@@ -2282,11 +2328,11 @@ static int init_ich_default(const struct programmer_cfg *cfg, void *spibar, enum
 		case CHIPSET_400_SERIES_COMET_POINT:
 		case CHIPSET_500_SERIES_TIGER_POINT:
 		case CHIPSET_600_SERIES_ALDER_POINT:
-		case CHIPSET_METEOR_LAKE:
 		case CHIPSET_APOLLO_LAKE:
 		case CHIPSET_GEMINI_LAKE:
 		case CHIPSET_JASPER_LAKE:
 		case CHIPSET_ELKHART_LAKE:
+		case CHIPSET_METEOR_LAKE:
 			break;
 		default:
 			tmp = mmio_readl(spibar + ICH9_REG_FPB);
