@@ -8,3 +8,4 @@ Contributors howtos
     how_to_mark_chip_tested
     how_to_add_unit_test
     ../how_to_add_docs
+    ../how_to_support_flashrom

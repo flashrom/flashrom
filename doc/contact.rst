@@ -33,8 +33,10 @@ If your mail is too big (the current limit is 256 kB) or if you're not on the su
 If your mail contains any BIOS images or F segment dumps (instead of links which are fine), the mail will be rejected for legal reasons
 (we do not have the right to distribute BIOS images).
 
-Real time chats
----------------
+.. _real time channels:
+
+Real time channels
+------------------
 
 Flashrom has real time channels where you have the chance to talk to people being involved or interested in the project.
 Most of the discussion is about flashrom development, contributions, tech talk and user help.

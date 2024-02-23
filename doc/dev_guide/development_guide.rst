@@ -323,6 +323,8 @@ To help search for patches which are potential candidates for merging, you can t
 
 Note the search is not a replacement for Merge checklist, but it can help find candidates for merging.
 
+.. _bugtracker:
+
 Bugtracker
 ==========
 
