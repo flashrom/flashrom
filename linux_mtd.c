@@ -429,6 +429,14 @@ static enum flashrom_wp_result linux_mtd_wp_get_available_ranges(struct flashrom
 	return FLASHROM_WP_ERR_RANGE_LIST_UNAVAILABLE;
 }
 
+static void linux_mtd_nop_delay(const struct flashctx *flash, unsigned int usecs)
+{
+	/*
+	 * Ignore delay requests. The Linux MTD framework brokers all flash
+	 * protocol, including timing, resets, etc.
+	 */
+}
+
 static const struct opaque_master linux_mtd_opaque_master = {
 	/* max_data_{read,write} don't have any effect for this programmer */
 	.max_data_read	= MAX_DATA_UNSPECIFIED,
@@ -441,6 +449,7 @@ static const struct opaque_master linux_mtd_opaque_master = {
 	.wp_read_cfg	= linux_mtd_wp_read_cfg,
 	.wp_write_cfg	= linux_mtd_wp_write_cfg,
 	.wp_get_ranges	= linux_mtd_wp_get_available_ranges,
+	.delay		= linux_mtd_nop_delay,
 };
 
 /* Returns 0 if setup is successful, non-zero to indicate error */
