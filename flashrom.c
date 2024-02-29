@@ -2330,8 +2330,31 @@ int flashrom_image_write(struct flashctx *const flashctx, void *const buffer, co
 	if (verify && !all_skipped) {
 		msg_cinfo("Verifying flash... ");
 
-		/* Work around chips which need some time to calm down. */
-		programmer_delay(flashctx, 1000*1000);
+		/*
+		 * Work around chips which "need some time to calm down."
+		 *
+		 * Frankly, it's not 100% clear why this delay is here at all,
+		 * except for a terse message from 2009 of "a few reports where
+		 * verify directly after erase had unpleasant side effects like
+		 * corrupting flash or at least getting incorrect verify
+		 * results". Ideally, if there were a few known problematic
+		 * chips or programmers, we could add quirks flags for those
+		 * specific implementations without penalizing all other
+		 * flashrom users. But alas, we don't know which systems
+		 * experienced those issues.
+		 *
+		 * Out of an extreme abundance of caution, we retain this
+		 * delay, but only for a few non-SPI bus types that were the
+		 * likely prevalent targets at the time. This is a complete
+		 * guess, which conveniently avoids wasting time on common
+		 * BUS_SPI and BUS_PROG systems.
+		 *
+		 * Background thread:
+		 * Subject: RFC: removing 1 second verification delay
+		 * https://mail.coreboot.org/hyperkitty/list/flashrom@flashrom.org/thread/SFV3OJBVVMDKRLI3FQA3DDDGEXJ7W4ED/
+		 */
+		if (flashctx->chip->bustype & (BUS_PARALLEL | BUS_LPC | BUS_FWH))
+			programmer_delay(flashctx, 1000*1000);
 
 		if (verify_all)
 			combine_image_by_layout(flashctx, newcontents, oldcontents);
