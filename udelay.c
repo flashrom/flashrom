@@ -237,8 +237,8 @@ void internal_sleep(unsigned int usecs)
 /* Precise delay. */
 void default_delay(unsigned int usecs)
 {
-	/* If the delay is >1 s, use internal_sleep because timing does not need to be so precise. */
-	if (usecs > 1000000) {
+	/* If the delay is >0.1 s, use internal_sleep because timing does not need to be so precise. */
+	if (usecs > 100000) {
 		internal_sleep(usecs);
 	} else if (use_clock_gettime) {
 		clock_usec_delay(usecs);
