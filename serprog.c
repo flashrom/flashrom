@@ -835,9 +835,9 @@ static int serprog_init(const struct programmer_cfg *cfg)
 				free(cs);
 				goto init_err_cleanup_exit;
 			}
-			free(cs);
 			if (!sp_check_commandavail(S_CMD_S_SPI_CS)) {
 				msg_perr("Error: Setting SPI chip select is not supported!\n");
+				free(cs);
 				goto init_err_cleanup_exit;
 			}
 			msg_pdbg(MSGHEADER "Requested to use chip select %lu.\n", cs_num);
@@ -845,9 +845,12 @@ static int serprog_init(const struct programmer_cfg *cfg)
 			if (sp_docommand(S_CMD_S_SPI_CS, 1, &cs_num8, 0, NULL)) {
 				msg_perr("Error: Chip select %u not supported "
 				         "by programmer!\n", cs_num8);
+				free(cs);
 				goto init_err_cleanup_exit;
 			}
 		}
+		free(cs);
+
 		bt = serprog_buses_supported;
 		if (sp_docommand(S_CMD_S_BUSTYPE, 1, &bt, 0, NULL))
 			goto init_err_cleanup_exit;
