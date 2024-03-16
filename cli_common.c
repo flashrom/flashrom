@@ -80,6 +80,8 @@ void print_chip_support_status(const struct flashchip *chip)
 			  "work correctly for you with this flash chip. Please include the flashrom log\n"
 			  "file for all operations you tested (see the man page for details), and mention\n"
 			  "which mainboard or programmer you tested in the subject line.\n"
+			  "You can also try to follow the instructions here:\n"
+			  "https://www.flashrom.org/contrib_howtos/how_to_mark_chip_tested.html\n"
 			  "Thanks for your help!\n");
 	}
 }
