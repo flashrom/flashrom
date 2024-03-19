@@ -1840,7 +1840,8 @@ static enum ich_access_protection ich9_handle_frap(struct fd_region *fd_regions,
 	static const char *const region_names[] = {
 		"Flash Descriptor", "BIOS", "Management Engine",
 		"Gigabit Ethernet", "Platform Data", "Device Expansion",
-		"BIOS2", "unknown", "EC/BMC",
+		"BIOS2", "unknown", "EC/BMC", "Device Expansion 2",
+		"Innovation Engine", "10GbE0", "10GbE1", "unknown", "unknown", "PTT",
 	};
 	const char *const region_name = i < ARRAY_SIZE(region_names) ? region_names[i] : "unknown";
 

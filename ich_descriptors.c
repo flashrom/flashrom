@@ -439,7 +439,7 @@ static void pprint_freg(const struct ich_desc_region *reg, uint32_t i)
 {
 	static const char *const region_names[] = {
 		"Descr.", "BIOS", "ME", "GbE", "Platf.", "DevExp", "BIOS2", "unknown",
-		"EC/BMC", "unknown", "IE", "10GbE", "unknown", "unknown", "unknown", "unknown"
+		"EC/BMC", "unknown", "IE", "10GbE0", "10GbE1", "unknown", "unknown", "PTT"
 	};
 	if (i >= ARRAY_SIZE(region_names)) {
 		msg_pdbg2("%s: region index too high.\n", __func__);
@@ -518,24 +518,24 @@ void prettyprint_ich_descriptor_master(const enum ich_chipset cs, const struct i
 		}
 
 		size_t num_regions;
-		msg_pdbg2("      FD  BIOS  ME  GbE  Pltf Reg5 Reg6 Reg7  EC  Reg9");
+		msg_pdbg2("       FD    BIOS    ME    GbE    Pltf    DE   BIOS2   Reg7    EC    DE2  ");
 		if (cs == CHIPSET_100_SERIES_SUNRISE_POINT) {
 			num_regions = 10;
 			msg_pdbg2("\n");
 		} else {
 			num_regions = 16;
-			msg_pdbg2(" RegA RegB RegC RegD RegE RegF\n");
+			msg_pdbg2("  IE   10GbE0 10GbE1  RegD   RegE   PTT  \n");
 		}
 		for (i = 0; i < nm; i++) {
 			const unsigned int ext_region_start = 12;
 			size_t j;
 			msg_pdbg2("%-4s", master_names[i]);
 			for (j = 0; j < (size_t)min(num_regions, ext_region_start); j++)
-				msg_pdbg2("  %c%c ",
+				msg_pdbg2("   %c%c  ",
 					  desc->master.mstr[i].read & (1 << j) ? 'r' : ' ',
 					  desc->master.mstr[i].write & (1 << j) ? 'w' : ' ');
 			for (j = ext_region_start; j < num_regions; j++)
-				msg_pdbg2("  %c%c ",
+				msg_pdbg2("   %c%c  ",
 					  desc->master.mstr[i].ext_read & (1 << (j - ext_region_start)) ? 'r' : ' ',
 					  desc->master.mstr[i].ext_write & (1 << (j - ext_region_start)) ? 'w' : ' ');
 			msg_pdbg2("\n");
