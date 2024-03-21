@@ -1055,8 +1055,9 @@
 #define XTX_XT25F02E		0x4012
 #define XTX_XT25F64B		0x4017
 
-#define ZETTADEVICE_ID          0xBA	/* Zetta Device */
-#define ZETTADEVICE_ZD25D20     0x2012
-#define ZETTADEVICE_ZD25D40     0x2013
+#define ZETTA_ID		0xBA	/* Zetta Device */
+#define ZETTA_ZD25D20		0x2012
+#define ZETTA_ZD25D40		0x2013
+#define ZETTA_ZD25LQ128_REMS	0x17	/* RDID = 0x4218 */
 
 #endif /* !FLASHCHIPS_H */
