@@ -260,29 +260,31 @@ int erase_write(struct flashctx *const flashctx, chipoff_t region_start, chipoff
 	align_region(erase_layout, flashctx, &region_start, &region_end);
 
 	uint8_t *old_start_buf = NULL, *old_end_buf = NULL;
-	old_start_buf = (uint8_t *)malloc(old_start - region_start);
-	if (!old_start_buf) {
-		msg_cerr("Not enough memory!\n");
-		ret = -1;
-		goto _end;
-	}
-	old_end_buf = (uint8_t *)malloc(region_end - old_end);
-	if (!old_end_buf) {
-		msg_cerr("Not enough memory!\n");
-		ret = -1;
-		goto _end;
-	}
+	const size_t start_buf_len = old_start - region_start;
+	const size_t end_buf_len = region_end - old_end;
 
-	if (old_start - region_start) {
-		read_flash(flashctx, curcontents + region_start, region_start, old_start - region_start);
-		memcpy(old_start_buf, newcontents + region_start, old_start - region_start);
-		memcpy(newcontents + region_start, curcontents + region_start, old_start - region_start);
+	if (start_buf_len) {
+		old_start_buf = (uint8_t *)malloc(start_buf_len);
+		if (!old_start_buf) {
+			msg_cerr("Not enough memory!\n");
+			ret = -1;
+			goto _end;
+		}
+		read_flash(flashctx, curcontents + region_start, region_start, start_buf_len);
+		memcpy(old_start_buf, newcontents + region_start, start_buf_len);
+		memcpy(newcontents + region_start, curcontents + region_start, start_buf_len);
 	}
-	if (region_end - old_end) {
+	if (end_buf_len) {
 		chipoff_t end_offset = old_end + 1;
-		read_flash(flashctx, curcontents + end_offset, end_offset, region_end - old_end);
-		memcpy(old_end_buf, newcontents + end_offset, region_end - old_end);
-		memcpy(newcontents + end_offset, curcontents + end_offset, region_end - old_end);
+		old_end_buf = (uint8_t *)malloc(end_buf_len);
+		if (!old_end_buf) {
+			msg_cerr("Not enough memory!\n");
+			ret = -1;
+			goto _end;
+		}
+		read_flash(flashctx, curcontents + end_offset, end_offset, end_buf_len);
+		memcpy(old_end_buf, newcontents + end_offset, end_buf_len);
+		memcpy(newcontents + end_offset, curcontents + end_offset, end_buf_len);
 	}
 
 	// select erase functions
@@ -381,11 +383,15 @@ int erase_write(struct flashctx *const flashctx, chipoff_t region_start, chipoff
 	}
 
 _end:
-	memcpy(newcontents + region_start, old_start_buf, old_start - region_start);
-	memcpy(newcontents + old_end, old_end_buf, region_end - old_end);
+	if (old_start_buf) {
+		memcpy(newcontents + region_start, old_start_buf, start_buf_len);
+		free(old_start_buf);
+	}
 
-	free(old_start_buf);
-	free(old_end_buf);
+	if (old_end_buf) {
+		memcpy(newcontents + old_end, old_end_buf, end_buf_len);
+		free(old_end_buf);
+	}
 
 	msg_cinfo("Erase/write done from %"PRIx32" to %"PRIx32"\n", region_start, region_end);
 	return ret;
