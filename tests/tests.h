@@ -110,4 +110,7 @@ struct CMUnitTest *get_erase_func_algo_tests(size_t *num_tests);
 void erase_function_algo_test_success(void **state);
 void write_function_algo_test_success(void **state);
 
+/* udelay.c */
+void udelay_test_short(void **state);
+
 #endif /* TESTS_H */

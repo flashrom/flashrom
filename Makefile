@@ -388,9 +388,14 @@ CHIP_OBJS = jedec.o printlock.o stm50.o w39.o w29ee011.o \
 ###############################################################################
 # Library code.
 
-LIB_OBJS = libflashrom.o layout.o erasure_layout.o flashrom.o udelay.o parallel.o programmer.o programmer_table.o \
+LIB_OBJS = libflashrom.o layout.o erasure_layout.o flashrom.o parallel.o programmer.o programmer_table.o \
 	helpers.o helpers_fileio.o ich_descriptors.o fmap.o platform/endian_$(ENDIAN).o platform/memaccess.o
 
+ifeq ($(TARGET_OS), DOS)
+  LIB_OBJS += udelay_dos.o
+else
+  LIB_OBJS += udelay.o
+endif
 
 ###############################################################################
 # Frontend related stuff.

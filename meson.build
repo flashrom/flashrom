@@ -100,12 +100,18 @@ srcs = files(
   'sst49lfxxxc.c',
   'sst_fwhub.c',
   'stm50.c',
-  'udelay.c',
   'w29ee011.c',
   'w39.c',
   'writeprotect.c',
   'writeprotect_ranges.c',
 )
+
+# Select an appropriate delay implementation for the target OS
+delay_src = files('udelay.c')
+if target_machine.system() == 'dos'
+  delay_src = files('udelay_dos.c')
+endif
+srcs += delay_src
 
 # check for required symbols
 if cc.has_function('clock_gettime')
