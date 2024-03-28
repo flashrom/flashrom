@@ -542,6 +542,11 @@ CONFIG_NI845X_SPI ?= no
 # Disable wiki printing by default. It is only useful if you have wiki access.
 CONFIG_PRINT_WIKI ?= no
 
+# Minimum time in microseconds to suspend execution for (rather than polling)
+# when a delay is required. Larger values may perform better on machines with
+# low timer resolution, at the cost of increased power.
+CONFIG_DELAY_MINIMUM_SLEEP_US ?= 100000
+
 # Disable all features if CONFIG_NOTHING=yes is given unless CONFIG_EVERYTHING was also set
 ifeq ($(CONFIG_NOTHING), yes)
   ifeq ($(CONFIG_EVERYTHING), yes)
@@ -587,6 +592,7 @@ FEATURE_FLAGS += -D'CONFIG_DEFAULT_PROGRAMMER_NAME=NULL'
 endif
 
 FEATURE_FLAGS += -D'CONFIG_DEFAULT_PROGRAMMER_ARGS="$(CONFIG_DEFAULT_PROGRAMMER_ARGS)"'
+FEATURE_FLAGS += -D'CONFIG_DELAY_MINIMUM_SLEEP_US=$(CONFIG_DELAY_MINIMUM_SLEEP_US)'
 
 ################################################################################
 

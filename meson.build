@@ -112,6 +112,9 @@ if target_machine.system() == 'dos'
   delay_src = files('udelay_dos.c')
 endif
 srcs += delay_src
+cargs += ['-DCONFIG_DELAY_MINIMUM_SLEEP_US=@0@'.format(
+  get_option('delay_minimum_sleep_us')
+)]
 
 # check for required symbols
 if cc.has_function('clock_gettime')
