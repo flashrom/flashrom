@@ -30,6 +30,8 @@ default_library = 'static'
 [project options]
 tests = 'disabled'
 ich_descriptors_tool = 'disabled'
+# DOS time resolution is only about 50ms
+delay_minimum_sleep_us = 50000
 
 [properties]
 sys_root = '/usr/local/djgpp'
