@@ -51,7 +51,7 @@ build_make () {
 
 build_meson () {
 	build_dir=out
-	meson_opts="-Dtests=enabled"
+	meson_opts="-Dtests=enabled -Dman-pages=enabled -Ddocumentation=enabled"
 	ninja_opts="-j $(nproc)"
 
 	rm -rf ${build_dir}
