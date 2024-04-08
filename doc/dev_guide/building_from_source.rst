@@ -47,141 +47,165 @@ Installing dependencies
     * No external dependencies (documentation should be build without fetching all of pypi)
     * No Javascript?
 
-* Linux
-    * Debian / Ubuntu
-        ::
+Linux
+"""""
 
-            apt-get install -y \
-            gcc meson ninja-build pkg-config python3-sphinx \
-            libcmocka-dev libpci-dev libusb-1.0-0-dev libftdi1-dev libjaylink-dev
+* Debian / Ubuntu
 
-    * ArchLinux / Manjaro
-        ::
+  ::
 
-            pacman -S --noconfirm \
-            gcc meson ninja pkg-config python-sphinx cmocka \
-            pciutils libusb libftdi libjaylink
+      apt-get install -y \
+      gcc meson ninja-build pkg-config python3-sphinx \
+      libcmocka-dev libpci-dev libusb-1.0-0-dev libftdi1-dev libjaylink-dev
 
-    * openSUSE / SUSE
-        ::
+* ArchLinux / Manjaro
 
-            zypper install -y \
-            gcc meson ninja pkg-config python3-Sphinx \
-            libcmocka-devel pciutils-devel libusb-1_0-devel libftdi1-devel libjaylink-devel
+  ::
 
-    * NixOS / nixpkgs
-        * There is a ``shell.nix`` under ``scripts/``
+      pacman -S --noconfirm \
+      gcc meson ninja pkg-config python-sphinx cmocka \
+      pciutils libusb libftdi libjaylink
 
-        ::
+* openSUSE / SUSE
 
-            nix-shell -p \
-            gcc meson ninja pkg-config sphinx \
-            cmocka pciutils libusb1 libftdi1 libjaylink
+  ::
 
-    * Alpine Linux
-        ::
+      zypper install -y \
+      gcc meson ninja pkg-config python3-Sphinx \
+      libcmocka-devel pciutils-devel libusb-1_0-devel libftdi1-devel libjaylink-devel
 
-            apk add \
-            build-base meson ninja pkgconf py3-sphinx \
-            cmocka-dev pciutils-dev libusb-dev libjaylink-dev
+* NixOS / nixpkgs
 
-* Windows
-    * MSYS2
-        Install `MSYS2 <https://www.msys2.org/>`_ and ensure it is `fully updated <https://www.msys2.org/docs/updating/>`_.
+  * There is a ``shell.nix`` under ``scripts/``
 
-        * ``libpci`` is not available through the package manager and pci based programmer are not supported on Windows.
-        * ``ni845x_spi`` is only available with the proprietary library from National Instruments. Download and install the driver
-          from `ni.com <https://www.ni.com/en-us/support/downloads/drivers/download.ni-845x-driver-software.html>`_ and build flashrom
-          for **32-bit**. Add ``-Dprogrammer=ni845x_spi`` to your meson configuration.
+  ::
 
-        In the MINGW64 shell run::
+      nix-shell -p \
+      gcc meson ninja pkg-config sphinx \
+      cmocka pciutils libusb1 libftdi1 libjaylink
 
-            pacman -Sy \
-            mingw-w64-x86_64-gcc mingw-w64-x86_64-meson mingw-w64-x86_64-ninja mingw-w64-x86_64-pkg-config mingw-w64-x86_64-python-sphinx \
-            mingw-w64-x86_64-cmocka mingw-w64-x86_64-libusb mingw-w64-x86_64-libftdi mingw-w64-x86_64-libjaylink-git
+* Alpine Linux
 
-        For building flashrom as 32-bit application, use the MSYS2 MINGW32 shell and run::
+  ::
 
-            pacman -Sy \
-            mingw-w64-i686-gcc mingw-w64-i686-meson mingw-w64-i686-ninja mingw-w64-i686-pkg-config mingw-w64-i686-python-sphinx \
-            mingw-w64-i686-cmocka mingw-w64-i686-libusb mingw-w64-i686-libftdi mingw-w64-i686-libjaylink-git
+      apk add \
+      build-base meson ninja pkgconf py3-sphinx \
+      cmocka-dev pciutils-dev libusb-dev libjaylink-dev
 
-* MacOS
-    * Homebrew
-        * ``libpci`` is not available through the package manager
-        * ``libjaylink`` is not available through the package manager
+Windows
+"""""""
 
-        ::
+* MSYS2
 
-            brew install \
-            meson ninja pkg-config sphinx-doc \
-            libusb libftdi
+  Install `MSYS2 <https://www.msys2.org/>`_ and ensure it is `fully updated <https://www.msys2.org/docs/updating/>`_.
 
-* BSD
-    * FreeBSD / DragonFlyBSD
-        * ``libusb1`` is part of the system
-        * ``libjaylink`` is not available through the package manager
+  * ``libpci`` is not available through the package manager and pci based programmer are not supported on Windows.
+  * ``ni845x_spi`` is only available with the proprietary library from National Instruments. Download and install the driver
+    from `ni.com <https://www.ni.com/en-us/support/downloads/drivers/download.ni-845x-driver-software.html>`_ and build flashrom
+    for **32-bit**. Add ``-Dprogrammer=ni845x_spi`` to your meson configuration.
 
-        ::
+  In the MINGW64 shell run::
 
-            pkg install \
-            meson ninja pkgconf py39-sphinx \
-            cmocka libpci libftdi1
+      pacman -Sy \
+      mingw-w64-x86_64-gcc mingw-w64-x86_64-meson mingw-w64-x86_64-ninja mingw-w64-x86_64-pkg-config mingw-w64-x86_64-python-sphinx \
+      mingw-w64-x86_64-cmocka mingw-w64-x86_64-libusb mingw-w64-x86_64-libftdi mingw-w64-x86_64-libjaylink-git
 
-    * OpenBSD
-        * ``libjaylink`` is not available through the package manager
+  For building flashrom as 32-bit application, use the MSYS2 MINGW32 shell and run::
 
-        ::
+      pacman -Sy \
+      mingw-w64-i686-gcc mingw-w64-i686-meson mingw-w64-i686-ninja mingw-w64-i686-pkg-config mingw-w64-i686-python-sphinx \
+      mingw-w64-i686-cmocka mingw-w64-i686-libusb mingw-w64-i686-libftdi mingw-w64-i686-libjaylink-git
 
-            pkg_add \
-            meson ninja pkg-config py39-sphinx\
-            cmocka pciutils libusb1 libftdi1
+MacOS
+"""""
 
-    * NetBSD
-        * ``libjaylink`` is not available through the package manager
-        * note: https://www.cambus.net/installing-ca-certificates-on-netbsd/
+* Homebrew
 
-        ::
+  * ``libpci`` is not available through the package manager
+  * ``libjaylink`` is not available through the package manager
 
-            pkgin install \
-            meson ninja pkg-config py39-sphinx \
-            cmocka pciutils libusb1 libftdi1
+  ::
 
-* OpenIndiana (Illumos, Solaris, SunOS)
-    * ``libpci`` missing, pciutils is build without it
-    * ``libftdi1`` & ``libjaylink`` are not available through the package manager
-    * TODO: replace ``build-essential`` with the default compiler
+      brew install \
+      meson ninja pkg-config sphinx-doc \
+      libusb libftdi
 
-    ::
+BSD
+"""
 
-        pkg install build-essential meson ninja cmocka libusb-1
+* FreeBSD / DragonFlyBSD
 
-* DJGPP-DOS
-    * Get `DJGPP <https://www.delorie.com/djgpp/>`_
-        * A great build script can be found `here <https://github.com/andrewwutw/build-djgpp>`_
-    * Download the `pciutils <https://mj.ucw.cz/sw/pciutils/>`_ sources
+  * ``libusb1`` is part of the system
+  * ``libjaylink`` is not available through the package manager
 
-    | Run the following commands in the the pciutils directory to build libpci for DOS.
-    | Replace ``<DOS_INSTALL_ROOT>`` with your cross-compile install root.
+  ::
 
-    ::
+      pkg install \
+      meson ninja pkgconf py39-sphinx \
+      cmocka libpci libftdi1
 
-        make install-lib \
-            ZLIB=no \
-            DNS=no \
-            HOST=i386-djgpp-djgpp \
-            CROSS_COMPILE=i586-pc-msdosdjgpp- \
-            STRIP="--strip-program=i586-pc-msdosdjgpp-strip -s" \
-            PREFIX=<DOS_INSTALL_ROOT>
+* OpenBSD
 
-    Point pkg-config to the ``<DOS_INSTALL_ROOT>`` ::
+  * ``libjaylink`` is not available through the package manager
 
-        export PKG_CONFIG_SYSROOT=<DOS_INSTALL_ROOT>
+  ::
 
-    * To compile flashrom use the ``meson_cross/i586_djgpp_dos.txt`` cross-file
-    * You will need `CWSDPMI.EXE <https://sandmann.dotster.com/cwsdpmi/>`_ to run flashrom
+      pkg_add \
+      meson ninja pkg-config py39-sphinx\
+      cmocka pciutils libusb1 libftdi1
 
-* libpayload
+* NetBSD
+
+  * ``libjaylink`` is not available through the package manager
+  * note: https://www.cambus.net/installing-ca-certificates-on-netbsd/
+
+  ::
+
+      pkgin install \
+      meson ninja pkg-config py39-sphinx \
+      cmocka pciutils libusb1 libftdi1
+
+OpenIndiana (Illumos, Solaris, SunOS)
+"""""""""""""""""""""""""""""""""""""
+
+* ``libpci`` missing, pciutils is build without it
+* ``libftdi1`` & ``libjaylink`` are not available through the package manager
+* TODO: replace ``build-essential`` with the default compiler
+
+::
+
+     pkg install build-essential meson ninja cmocka libusb-1
+
+DJGPP-DOS
+"""""""""
+
+* Get `DJGPP <https://www.delorie.com/djgpp/>`_
+* A great build script can be found `here <https://github.com/andrewwutw/build-djgpp>`_
+* Download the `pciutils <https://mj.ucw.cz/sw/pciutils/>`_ sources
+
+| Run the following commands in the the pciutils directory to build libpci for DOS.
+| Replace ``<DOS_INSTALL_ROOT>`` with your cross-compile install root.
+
+::
+
+    make install-lib \
+        ZLIB=no \
+        DNS=no \
+        HOST=i386-djgpp-djgpp \
+        CROSS_COMPILE=i586-pc-msdosdjgpp- \
+        STRIP="--strip-program=i586-pc-msdosdjgpp-strip -s" \
+        PREFIX=<DOS_INSTALL_ROOT>
+
+Point pkg-config to the ``<DOS_INSTALL_ROOT>`` ::
+
+    export PKG_CONFIG_SYSROOT=<DOS_INSTALL_ROOT>
+
+* To compile flashrom use the ``meson_cross/i586_djgpp_dos.txt`` cross-file
+* You will need `CWSDPMI.EXE <https://sandmann.dotster.com/cwsdpmi/>`_ to run flashrom
+
+libpayload
+""""""""""
+
     .. todo:: Add building instructions for libpayload
 
 
