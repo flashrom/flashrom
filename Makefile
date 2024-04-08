@@ -1075,7 +1075,7 @@ strip: $(PROGRAM)$(EXEC_SUFFIX)
 # We don't use EXEC_SUFFIX here because we want to clean everything.
 clean:
 	rm -rf $(PROGRAM) $(PROGRAM).exe libflashrom.a $(filter-out Makefile.d, $(wildcard *.d *.o platform/*.d platform/*.o)) \
-		man8 .doctrees $(PROGRAM).bash $(BUILD_DETAILS_FILE)
+		man8 8 .doctrees $(PROGRAM).bash $(BUILD_DETAILS_FILE)
 	@+$(MAKE) -C util/ich_descriptors_tool/ clean
 
 install: $(PROGRAM)$(EXEC_SUFFIX) $(call has_dependency, $(HAS_SPHINXBUILD), man8/$(PROGRAM).8) $(PROGRAM).bash
