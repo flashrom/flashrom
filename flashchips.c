@@ -10103,8 +10103,8 @@ const struct flashchip flashchips[] = {
 		.total_size	= 2048,
 		.page_size	= 256,
 		/* OTP: 1024B total; enter 0xB1, exit 0xC1 */
-		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
-		.tested		= TEST_OK_PREW,
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_CFGR,
+		.tested		= TEST_OK_PREWB,
 		.probe		= PROBE_SPI_RDID,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
@@ -10131,6 +10131,14 @@ const struct flashchip flashchips[] = {
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ, /* Fast read (0x0B) and multi I/O supported */
 		.voltage	= {1650, 3600},
+		.reg_bits	=
+		{
+			.srp    = {STATUS1, 7, RW},
+			.bp     = {{STATUS1, 2, RW}, {STATUS1, 3, RW}, {STATUS1, 4, RW},  {STATUS1, 5, RW}},
+			.tb     = {CONFIG, 3, OTP}
+		},
+
+		.decode_range	= DECODE_RANGE_SPI25,
 	},
 
 	{
