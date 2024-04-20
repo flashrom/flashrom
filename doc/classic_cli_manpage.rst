@@ -749,7 +749,7 @@ chips at once and selecting which one to flash by software means (rather than re
 The particular programmer implementation needs to support this feature, for it to work. If the requested chip
 select isn't available, flashrom will fail safely.
 
-More information about serprog is available in **serprog-protocol.txt** in the source distribution.
+More information about serprog is available in this document: :doc:`/supported_hw/supported_prog/serprog/serprog-protocol`.
 
 
 buspirate_spi programmer

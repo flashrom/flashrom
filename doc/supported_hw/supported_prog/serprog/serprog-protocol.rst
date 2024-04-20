@@ -1,83 +1,103 @@
-Serial Flasher Protocol Specification - version 1 (0x01 return value == 1)
+=====================================
+Serial Flasher Protocol Specification
+=====================================
+
+Version 1 (0x01 return value == 1)
+==================================
 
 Command And Answer Sequence - all commands give an answer.
+
 PC: COMMAND(8bit) <parameters determined by opcode>
+
 DEV: ACK/NAK(8bit) <OPTIONAL RETURN BYTES (only if ACK)> / nothing
+
 Command 0x10 (SYNCNOP) has a special return of NAK+ACK for synchronization.
 
 ACK = 0x06
+
 NAK = 0x15
 
 All multibyte values are little-endian. Addresses and lengths are 24-bit.
 
-COMMAND	Description			Parameters			Return Value
-0x00	NOP				none				ACK
-0x01	Query programmer iface version	none				ACK + 16bit version (nonzero)
-0x02	Query supported commands bitmap	none				ACK + 32 bytes (256 bits) of supported cmds flags
-0x03	Query programmer name		none				ACK + 16 bytes string (null padding) / NAK
-0x04	Query serial buffer size	none				ACK + 16bit size / NAK
-0x05	Query supported bustypes	none				ACK + 8-bit flags (as per flashrom) / NAK
-0x06	Query connected address lines	none				ACK + 8bit line count / NAK
-0x07	Query operation buffer size	none				ACK + 16bit size / NAK
-0x08	Query maximum write-n length	none				ACK + 24bit length (0==2^24) / NAK
-0x09	Read byte			24-bit addr			ACK + BYTE / NAK
-0x0A	Read n bytes			24-bit addr + 24-bit length	ACK + length bytes / NAK
-0x0B	Initialize operation buffer	none				ACK / NAK
-0x0C	Write to opbuf: Write byte	24-bit addr + 8-bit byte	ACK / NAK (NOTE: takes 5 bytes in opbuf)
-0x0D	Write to opbuf: Write n		24-bit length + 24-bit addr +	ACK / NAK (NOTE: takes 7+n bytes in opbuf)
-					 + length bytes of data
-0x0E	Write to opbuf: delay		32-bit usecs			ACK / NAK (NOTE: takes 5 bytes in opbuf)
-0x0F	Execute operation buffer	none				ACK / NAK
-0x10	Sync NOP			none				NAK + ACK (for synchronization)
-0x11	Query maximum read-n length	none				ACK + 24-bit length (0==2^24) / NAK
-0x12	Set used bustype		8-bit flags (as with 0x05)	ACK / NAK
-0x13	Perform SPI operation		24-bit slen + 24-bit rlen	ACK + rlen bytes of data / NAK
-					 + slen bytes of data
-0x14	Set SPI clock frequency in Hz	32-bit requested frequency	ACK + 32-bit set frequency / NAK
-0x15	Toggle flash chip pin drivers	8-bit (0 disable, else enable)	ACK / NAK
-0x16	Set SPI Chip Select		8-bit				ACK / NAK
-0x17	Set SPI Mode			8-bit				ACK / NAK
-0x18	Set CS Mode			8-bit				ACK / NAK
-0x??	unimplemented command - invalid.
-
+======== =============================== ================================================== =================================================
+COMMAND 	Description			Parameters					   Return Value
+======== =============================== ================================================== =================================================
+0x00	 NOP				 none						    ACK
+0x01	 Query programmer iface version	 none						    ACK + 16bit version (nonzero)
+0x02	 Query supported commands bitmap none						    ACK + 32 bytes (256 bits) of supported cmds flags
+0x03	 Query programmer name		 none						    ACK + 16 bytes string (null padding) / NAK
+0x04	 Query serial buffer size	 none						    ACK + 16bit size / NAK
+0x05	 Query supported bustypes	 none						    ACK + 8-bit flags (as per flashrom) / NAK
+0x06	 Query connected address lines	 none						    ACK + 8bit line count / NAK
+0x07	 Query operation buffer size	 none						    ACK + 16bit size / NAK
+0x08	 Query maximum write-n length	 none						    ACK + 24bit length (0==2^24) / NAK
+0x09	 Read byte			 24-bit addr					    ACK + BYTE / NAK
+0x0A	 Read n bytes			 24-bit addr + 24-bit length			    ACK + length bytes / NAK
+0x0B	 Initialize operation buffer	 none						    ACK / NAK
+0x0C	 Write to opbuf: Write byte	 24-bit addr + 8-bit byte			    ACK / NAK (NOTE: takes 5 bytes in opbuf)
+0x0D	 Write to opbuf: Write n	 24-bit length + 24-bit addr + length bytes of data ACK / NAK (NOTE: takes 7+n bytes in opbuf)
+0x0E	 Write to opbuf: delay		 32-bit usecs					    ACK / NAK (NOTE: takes 5 bytes in opbuf)
+0x0F	 Execute operation buffer	 none						    ACK / NAK
+0x10	 Sync NOP			 none						    NAK + ACK (for synchronization)
+0x11	 Query maximum read-n length	 none						    ACK + 24-bit length (0==2^24) / NAK
+0x12	 Set used bustype		 8-bit flags (as with 0x05)			    ACK / NAK
+0x13	 Perform SPI operation		 24-bit slen + 24-bit rlen + slen bytes of data	    ACK + rlen bytes of data / NAK
+0x14	 Set SPI clock frequency in Hz	 32-bit requested frequency			    ACK + 32-bit set frequency / NAK
+0x15	 Toggle flash chip pin drivers	 8-bit (0 disable, else enable)			    ACK / NAK
+0x16	 Set SPI Chip Select		 8-bit						    ACK / NAK
+0x17	 Set SPI Mode			 8-bit						    ACK / NAK
+0x18	 Set CS Mode			 8-bit						    ACK / NAK
+0x??	 unimplemented command - invalid
+======== =============================== ================================================== =================================================
 
 Additional information of the above commands:
+
 	About unimplemented commands / startup sequence:
 		Only commands allowed to be used without checking anything are 0x00,0x10 and 0x01 (NOP,SYNCNOP,Q_IFACE).
 		If 0x01 doesn't return 1, dont do anything if you dont support a newer protocol.
 		Then, check support for any other opcode (except 0x02) by using 0x02 (Q_CMDMAP).
+
 	0x02 (Q_CMDMAP):
 		The map's bits are mapped as follows:
 		cmd 0 support: byte 0 bit 0
 		cmd 1 support: byte 0 bit 1
 		cmd 7 support: byte 0 bit 7
 		cmd 8 support: byte 1 bit 0, and so on.
+
 	0x04 (Q_SERBUF):
 		If the programmer has a guaranteed working flow control,
 		it should return a big bogus value - eg 0xFFFF.
+
 	0x05 (Q_BUSTYPE):
 		The bit's are defined as follows:
 		bit 0: PARALLEL, bit 1: LPC, bit 2: FWH, bit 3: SPI.
+
 	0x06 (Q_CHIPSIZE):
 		Only applicable to parallel programmers.
 		An LPC/FWH/SPI-programmer can report this as not supported in the command bitmap.
+
 	0x08 (Q_WRNMAXLEN):
 		If a programmer reports a bigger maximum write-n length than the serial buffer size,
 		it is assumed that the programmer can process the data fast enough to take in the
 		reported maximum write-n without problems.
+
 	0x0F (O_EXEC):
 		Execute operation buffer will also clear it, regardless of the return value.
+
 	0x11 (Q_RDNMAXLEN):
 		If this command is not supported, assume return of 0 (2^24).
+
 	0x12 (S_BUSTYPE):
 		Set's the used bustype if the programmer can support more than one flash protocol.
 		Sending a byte with more than 1 bit set will make the programmer decide among them
 		on it's own. Bit values as with Q_BUSTYPE.
+
 	0x13 (O_SPIOP):
 		Send and receive bytes via SPI.
 		Maximum slen is Q_WRNMAXLEN in case Q_BUSTYPE returns SPI only or S_BUSTYPE was used
 		to set SPI exclusively before. Same for rlen and Q_RDNMAXLEN.
 		This operation is immediate, meaning it doesn't use the operation buffer.
+
 	0x14 (S_SPI_FREQ):
 		Set the SPI clock frequency. The 32-bit value indicates the
 		requested frequency in Hertz. Value 0 is reserved and should
@@ -86,30 +106,37 @@ Additional information of the above commands:
 		lower than the one requested. If there is no lower frequency
 		available the lowest possible should be used. The value
 		chosen is sent back in the reply with an ACK.
+
 	0x15 (S_PIN_STATE):
 		Sets the state of the pin drivers connected to the flash chip. Disabling them allows other
 		devices (e.g. a mainboard's chipset) to access the chip. This way the serprog controller can
 		remain attached to the flash chip even when the board is running. The user is responsible to
 		NOT connect VCC and other permanently externally driven signals to the programmer as needed.
 		If the value is 0, then the drivers should be disabled, otherwise they should be enabled.
+
 	0x16 (S_SPI_CS):
 		Set which SPI Chip Select pin to use. This operation is immediate,
 		meaning it doesn't use the operation buffer.
+
 	0x17 (S_SPI_MODE):
 		Set which SPI Mode to use for 0x13 O_SPIOP commands.
 		This operation is immediate, meaning it doesn't use the operation buffer.
 		The current defined modes are:
-			0x00: SPI Half Duplex (default)
-			0x01: SPI Full Duplex
+
+			* 0x00: SPI Half Duplex (default)
+			* 0x01: SPI Full Duplex
+
 	0x18 (S_CS_MODE):
 		Set which CS Mode to use. The CS Mode determines the CS behaviour.
 		This allows manual control over the CS.
 		This operation is immediate, meaning it doesn't use the operation buffer.
 		The current defined modes are:
-			0x00: CS Auto Mode. The CS gets selected before 0x13 O_SPIOP commands and
-			      deselected afterwards. (default)
-			0x01: CS Selected. The CS will be selected until another mode is set.
-			0x02: CS Deselected. The CS will be deselected until another mode is set.
+
+			* 0x00: CS Auto Mode. The CS gets selected before 0x13 O_SPIOP commands and
+			  deselected afterwards. (default)
+			* 0x01: CS Selected. The CS will be selected until another mode is set.
+			* 0x02: CS Deselected. The CS will be deselected until another mode is set.
+
 	About mandatory commands:
 		The only truly mandatory commands for any device are 0x00, 0x01, 0x02 and 0x10,
 		but one can't really do anything with these commands.
@@ -120,4 +147,4 @@ Additional information of the above commands:
 		In addition, support for these commands is recommended:
 		S_CMD_Q_PGMNAME, S_CMD_Q_BUSTYPE, S_CMD_Q_CHIPSIZE (if parallel).
 
-See also serprog.c
+See also ``serprog.c``
