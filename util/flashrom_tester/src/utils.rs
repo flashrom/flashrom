@@ -101,8 +101,9 @@ pub fn construct_layout_file<F: Write>(mut target: F, ls: &LayoutSizes) -> std::
 
 pub fn toggle_hw_wp(dis: bool) -> Result<(), String> {
     // The easist way to toggle the hardware write-protect is
-    // to {dis}connect the battery (and/or open the WP screw).
+    // to {dis}connect the battery (and/or {open,close} the WP screw).
     let s = if dis { "dis" } else { "" };
+    let screw_state = if dis { "open" } else { "close" };
     // Print a failure message, but not on the first try.
     let mut fail_msg = None;
     while dis == get_hardware_wp()? {
@@ -112,7 +113,7 @@ pub fn toggle_hw_wp(dis: bool) -> Result<(), String> {
         fail_msg = Some(format!("Hardware write protect is still {}!", !dis));
         // The following message is read by the tast test. Do not modify.
         info!("Prompt for hardware WP {}able", s);
-        eprintln!(" > {}connect the battery (and/or open the WP screw)", s);
+        eprintln!(" > {}connect the battery (and/or {} the WP screw)", s, screw_state);
         pause();
     }
     Ok(())
