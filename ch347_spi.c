@@ -7,7 +7,25 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- *
+ *                                                                         
+ *   CH347 is a high-speed USB bus converter chip that provides UART, I2C  
+ *   and SPI synchronous serial ports and JTAG interface through USB bus.  
+ *                                                                         
+ *   The SPI interface by CH347 can supports transmission frequency       
+ *   configuration up to 60MHz.                                            
+ *                                                                         
+ *   The USB2.0 to spi scheme based on CH347 can be used to build         
+ *   customized USB high-speed spi debugger and other products.           
+ *                                                                         
+ *            _____________                                                
+ *           |             |____SPI (MISO,MOSI,SCK,CSC0,CSC1)            
+ *      USB__|   CH347T/F  |                                               
+ *           |_____________|____(UART/I2C/JTAG/SWD/GPIO)             
+ *            ______|______                                                
+ *           |             |                                               
+ *           | 8 MHz XTAL  |                                               
+ *           |_____________|     
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -36,8 +54,8 @@
 #define WRITE_EP	0x06
 #define READ_EP 	0x86
 
-#define MODE_1_IFACE 2
-#define MODE_2_IFACE 1
+#define CH347T_IFACE 2
+#define CH347F_IFACE 4
 
 /* The USB descriptor says the max transfer size is 512 bytes, but the
  * vendor driver only seems to transfer a maximum of 510 bytes at once,
@@ -48,12 +66,18 @@
 
 struct ch347_spi_data {
 	struct libusb_device_handle *handle;
+	int interface;
 };
 
 /* TODO: Add support for HID mode */
 static const struct dev_entry devs_ch347_spi[] = {
-	{0x1A86, 0x55DB, OK, "QinHeng Electronics", "USB To UART+SPI+I2C"},
+	{0x1A86, 0x55DD, OK, "QinHeng Electronics", "USB To UART+SPI+I2C"},   //CH347T
+	{0x1A86, 0x55DE, OK, "QinHeng Electronics", "USB To UART+SPI+I2C"},   //CH347F
 	{0}
+};
+int ch347_interface[] = {
+	2,       //CH347T interface number
+	4,       //CH347F interface number
 };
 
 static int ch347_spi_shutdown(void *data)
@@ -61,7 +85,7 @@ static int ch347_spi_shutdown(void *data)
 	struct ch347_spi_data *ch347_data = data;
 
 	/* TODO: Set this depending on the mode */
-	int spi_interface = MODE_1_IFACE;
+	int spi_interface = ch347_data->interface;
 	libusb_release_interface(ch347_data->handle, spi_interface);
 	libusb_attach_kernel_driver(ch347_data->handle, spi_interface);
 	libusb_close(ch347_data->handle);
@@ -215,6 +239,8 @@ static int32_t ch347_spi_config(struct ch347_spi_data *ch347_data, uint8_t divis
 		/* Not sure what these two bytes do, but the vendor
 		 * drivers seem to unconditionally set these values
 		 */
+		[3] = 0,
+		[4] = 0,
 		[5] = 4,
 		[6] = 1,
 		/* Clock polarity: bit 1 */
@@ -262,6 +288,9 @@ static const struct spi_master spi_master_ch347_spi = {
 /* Largely copied from ch341a_spi.c */
 static int ch347_spi_init(const struct programmer_cfg *cfg)
 {
+	uint16_t vid = devs_ch347_spi[0].vendor_id;
+	uint16_t pid = 0;
+	int index = 0;
 	struct ch347_spi_data *ch347_data = calloc(1, sizeof(*ch347_data));
 	if (!ch347_data) {
 		msg_perr("Could not allocate space for SPI data\n");
@@ -281,26 +310,28 @@ static int ch347_spi_init(const struct programmer_cfg *cfg)
 #else
 	libusb_set_option(NULL, LIBUSB_OPTION_LOG_LEVEL, LIBUSB_LOG_LEVEL_INFO);
 #endif
-
-	uint16_t vid = devs_ch347_spi[0].vendor_id;
-	uint16_t pid = devs_ch347_spi[0].device_id;
-	ch347_data->handle = libusb_open_device_with_vid_pid(NULL, vid, pid);
-	if (ch347_data->handle == NULL) {
-		msg_perr("Couldn't open device %04x:%04x.\n", vid, pid);
-		free(ch347_data);
-		return 1;
+	while (devs_ch347_spi[index].vendor_id != 0) {
+		vid = devs_ch347_spi[index].vendor_id;
+		pid = devs_ch347_spi[index].device_id;
+		ch347_data->handle = libusb_open_device_with_vid_pid(NULL, vid, pid);
+		if (ch347_data->handle) {
+			ch347_data->interface = ch347_interface[index];
+			break;
+		}
+		index++;
 	}
+	if (!ch347_data->handle){
+		msg_perr("Couldn't open device %04x:%04x.\n", vid, pid);
+			free(ch347_data);
+			return 1;
+	} 
 
-	/* TODO: set based on mode */
-	/* Mode 1 uses interface 2 for the SPI interface */
-	int spi_interface = MODE_1_IFACE;
-
-	ret = libusb_detach_kernel_driver(ch347_data->handle, spi_interface);
+	ret = libusb_detach_kernel_driver(ch347_data->handle, ch347_data->interface);
 	if (ret != 0 && ret != LIBUSB_ERROR_NOT_FOUND)
 		msg_pwarn("Cannot detach the existing USB driver. Claiming the interface may fail. %s\n",
 			libusb_error_name(ret));
 
-	ret = libusb_claim_interface(ch347_data->handle, spi_interface);
+	ret = libusb_claim_interface(ch347_data->handle, ch347_data->interface);
 	if (ret != 0) {
 		msg_perr("Failed to claim interface 2: '%s'\n", libusb_error_name(ret));
 		goto error_exit;
