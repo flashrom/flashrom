@@ -14,9 +14,11 @@ There are two special groups in Gerrit.
 "flashrom reviewers" group
 ==========================
 
-Members of the group can do full approval of patches (i.e. vote +2).
+Members of the group (see `flashrom reviewers <https://review.coreboot.org/admin/groups/25cadc351dd0492fd2a2a1b1a8e5bb08c29e411f,members>`_)
+can do full approval of patches (i.e. vote +2).
 
-In general, members of the group have some area of responsibility in the MAINTAINERS file,
+In general, members of the group have some area of responsibility in the
+`MAINTAINERS <https://review.coreboot.org/plugins/gitiles/flashrom/+/refs/heads/main/MAINTAINERS>`_ file,
 and are automatically added as reviewers to patches when the patch touches this area.
 
 The responsibilities are the following.
@@ -31,7 +33,8 @@ The responsibilities are the following.
 "flashrom developers" group
 ===========================
 
-Members of the group can merge patches.
+Members of the group (see `flashrom developers <https://review.coreboot.org/admin/groups/db95ce11b379445ac8c5806ea0b61195555b338d,members>`_)
+can merge patches.
 The responsibilities for the members of the group are described in more details below.
 
 There is no expectation on how much time you spend on your duties, some non-zero amount of time,

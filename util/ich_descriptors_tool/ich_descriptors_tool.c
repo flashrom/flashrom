@@ -38,9 +38,9 @@
 
 static const char *const region_names[] = {
 	"Descriptor", "BIOS", "ME", "GbE", "Platform",
-	"Region5", "BIOS2", "Region7", "EC/BMC", "Region9",
-	"IE", "10GbE", "Region12", "Region13", "Region14",
-	"Region15"
+	"DevExp", "BIOS2", "Region7", "EC/BMC", "DevExp2",
+	"IE", "10GbE0", "10GbE1", "Region13", "Region14",
+	"PTT"
 };
 
 static void dump_file(const char *prefix, const uint32_t *dump, unsigned int len,

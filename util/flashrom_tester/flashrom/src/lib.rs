@@ -45,25 +45,25 @@ pub use cmd::FlashromCmd;
 pub use flashromlib::FlashromLib;
 
 pub use libflashrom::{
-    flashrom_log_level, FLASHROM_MSG_DEBUG, FLASHROM_MSG_DEBUG2, FLASHROM_MSG_ERROR,
+    flashrom_log_level, FlashromFlags, FLASHROM_MSG_DEBUG, FLASHROM_MSG_DEBUG2, FLASHROM_MSG_ERROR,
     FLASHROM_MSG_INFO, FLASHROM_MSG_SPEW, FLASHROM_MSG_WARN,
 };
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub enum FlashChip {
-    HOST,
+    INTERNAL,
 }
 
 impl FlashChip {
     pub fn from(s: &str) -> Result<FlashChip, &str> {
         match s {
-            "host" => Ok(FlashChip::HOST),
+            "internal" => Ok(FlashChip::INTERNAL),
             _ => Err("cannot convert str to enum"),
         }
     }
     pub fn to(fc: FlashChip) -> &'static str {
         match fc {
-            FlashChip::HOST => "host",
+            FlashChip::INTERNAL => "internal",
         }
     }
 
@@ -80,7 +80,7 @@ impl FlashChip {
     /// disabled.
     pub fn can_control_hw_wp(&self) -> bool {
         match self {
-            FlashChip::HOST => true,
+            FlashChip::INTERNAL => true,
         }
     }
 }
@@ -162,4 +162,7 @@ pub trait Flashrom {
 
     /// Return true if the hardware write protect of this flash can be controlled.
     fn can_control_hw_wp(&self) -> bool;
+
+    /// Set flags used by the flashrom cli.
+    fn set_flags(&self, flags: &FlashromFlags) -> ();
 }

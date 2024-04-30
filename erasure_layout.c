@@ -279,9 +279,10 @@ int erase_write(struct flashctx *const flashctx, chipoff_t region_start, chipoff
 		memcpy(newcontents + region_start, curcontents + region_start, old_start - region_start);
 	}
 	if (region_end - old_end) {
-		read_flash(flashctx, curcontents + old_end, old_end, region_end - old_end);
-		memcpy(old_end_buf, newcontents + old_end, region_end - old_end);
-		memcpy(newcontents + old_end, curcontents + old_end, region_end - old_end);
+		chipoff_t end_offset = old_end + 1;
+		read_flash(flashctx, curcontents + end_offset, end_offset, region_end - old_end);
+		memcpy(old_end_buf, newcontents + end_offset, region_end - old_end);
+		memcpy(newcontents + end_offset, curcontents + end_offset, region_end - old_end);
 	}
 
 	// select erase functions
@@ -350,13 +351,6 @@ int erase_write(struct flashctx *const flashctx, chipoff_t region_start, chipoff
 			// after erase make it unselected again
 			erase_layout[i].layout_list[j].selected = false;
 			msg_cdbg("E(%"PRIx32":%"PRIx32")", start_addr, start_addr + block_len - 1);
-			// verify erase
-			ret = check_erased_range(flashctx, start_addr, block_len);
-			if (ret) {
-				msg_cerr("Verifying flash. Erase failed for range %#"PRIx32" : %#"PRIx32", Abort.\n",
-					start_addr, start_addr + block_len - 1);
-				goto _end;
-			}
 
 			*all_skipped = false;
 		}
@@ -384,13 +378,6 @@ int erase_write(struct flashctx *const flashctx, chipoff_t region_start, chipoff
 		msg_cdbg("W(%"PRIx32":%"PRIx32")", region_start + start_here, region_start + start_here + len_here - 1);
 
 		*all_skipped = false;
-	}
-	// verify write
-	ret = verify_range(flashctx, newcontents + region_start, region_start, region_end - region_start);
-	if (ret) {
-		msg_cerr("Verifying flash. Write failed for range %#"PRIx32" : %#"PRIx32", Abort.\n",
-			region_start, region_end);
-		goto _end;
 	}
 
 _end:

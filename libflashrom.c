@@ -36,7 +36,6 @@ int flashrom_init(const int perform_selfcheck)
 {
 	if (perform_selfcheck && selfcheck())
 		return 1;
-	myusec_calibrate_delay();
 	return 0;
 }
 

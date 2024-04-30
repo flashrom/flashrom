@@ -35,6 +35,8 @@
 
 use crate::{FlashChip, FlashromError};
 
+use libflashrom::FlashromFlags;
+
 use std::{
     ffi::{OsStr, OsString},
     path::Path,
@@ -194,6 +196,7 @@ impl crate::Flashrom for FlashromCmd {
 
     fn wp_status(&self, en: bool) -> Result<bool, FlashromError> {
         let status = if en { "en" } else { "dis" };
+        let protection_mode = if en { "hardware" } else { "disable" };
         info!("See if chip write protect is {}abled", status);
 
         let opts = FlashromOpt {
@@ -205,7 +208,7 @@ impl crate::Flashrom for FlashromCmd {
         };
 
         let (stdout, _) = self.dispatch(opts, "wp_status")?;
-        let s = std::format!("write protect is {}abled", status);
+        let s = std::format!("Protection mode: {}", protection_mode);
         Ok(stdout.contains(&s))
     }
 
@@ -293,6 +296,12 @@ impl crate::Flashrom for FlashromCmd {
 
     fn can_control_hw_wp(&self) -> bool {
         self.fc.can_control_hw_wp()
+    }
+
+    fn set_flags(&self, flags: &FlashromFlags) -> () {
+        // The flashrom CLI sets its own default flags,
+        // and we currently have no need for custom flags,
+        // so this set_flags function is intentionally a no-op.
     }
 }
 

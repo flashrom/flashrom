@@ -35,6 +35,9 @@ COMMAND	Description			Parameters			Return Value
 					 + slen bytes of data
 0x14	Set SPI clock frequency in Hz	32-bit requested frequency	ACK + 32-bit set frequency / NAK
 0x15	Toggle flash chip pin drivers	8-bit (0 disable, else enable)	ACK / NAK
+0x16	Set SPI Chip Select		8-bit				ACK / NAK
+0x17	Set SPI Mode			8-bit				ACK / NAK
+0x18	Set CS Mode			8-bit				ACK / NAK
 0x??	unimplemented command - invalid.
 
 
@@ -83,12 +86,30 @@ Additional information of the above commands:
 		lower than the one requested. If there is no lower frequency
 		available the lowest possible should be used. The value
 		chosen is sent back in the reply with an ACK.
-	0x15 (S_CMD_S_PIN_STATE):
+	0x15 (S_PIN_STATE):
 		Sets the state of the pin drivers connected to the flash chip. Disabling them allows other
 		devices (e.g. a mainboard's chipset) to access the chip. This way the serprog controller can
 		remain attached to the flash chip even when the board is running. The user is responsible to
 		NOT connect VCC and other permanently externally driven signals to the programmer as needed.
 		If the value is 0, then the drivers should be disabled, otherwise they should be enabled.
+	0x16 (S_SPI_CS):
+		Set which SPI Chip Select pin to use. This operation is immediate,
+		meaning it doesn't use the operation buffer.
+	0x17 (S_SPI_MODE):
+		Set which SPI Mode to use for 0x13 O_SPIOP commands.
+		This operation is immediate, meaning it doesn't use the operation buffer.
+		The current defined modes are:
+			0x00: SPI Half Duplex (default)
+			0x01: SPI Full Duplex
+	0x18 (S_CS_MODE):
+		Set which CS Mode to use. The CS Mode determines the CS behaviour.
+		This allows manual control over the CS.
+		This operation is immediate, meaning it doesn't use the operation buffer.
+		The current defined modes are:
+			0x00: CS Auto Mode. The CS gets selected before 0x13 O_SPIOP commands and
+			      deselected afterwards. (default)
+			0x01: CS Selected. The CS will be selected until another mode is set.
+			0x02: CS Deselected. The CS will be deselected until another mode is set.
 	About mandatory commands:
 		The only truly mandatory commands for any device are 0x00, 0x01, 0x02 and 0x10,
 		but one can't really do anything with these commands.
@@ -99,4 +120,4 @@ Additional information of the above commands:
 		In addition, support for these commands is recommended:
 		S_CMD_Q_PGMNAME, S_CMD_Q_BUSTYPE, S_CMD_Q_CHIPSIZE (if parallel).
 
-See also serprog.h.
+See also serprog.c

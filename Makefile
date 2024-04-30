@@ -228,6 +228,10 @@ CONFIG_LIBPCI_VERSION      := $(call dependency_version, libpci)
 CONFIG_LIBPCI_CFLAGS       := $(call dependency_cflags, libpci)
 CONFIG_LIBPCI_LDFLAGS      := $(call dependency_ldflags, libpci)
 
+CONFIG_SPHINXBUILD_VERSION :=
+CONFIG_SPHINXBUILD_MAJOR   := 0
+
+
 # Determine the destination OS, architecture and endian
 # IMPORTANT: The following lines must be placed before TARGET_OS, ARCH or ENDIAN
 # is ever used (of course), but should come after any lines setting CC because
@@ -384,9 +388,14 @@ CHIP_OBJS = jedec.o printlock.o stm50.o w39.o w29ee011.o \
 ###############################################################################
 # Library code.
 
-LIB_OBJS = libflashrom.o layout.o erasure_layout.o flashrom.o udelay.o parallel.o programmer.o programmer_table.o \
+LIB_OBJS = libflashrom.o layout.o erasure_layout.o flashrom.o parallel.o programmer.o programmer_table.o \
 	helpers.o helpers_fileio.o ich_descriptors.o fmap.o platform/endian_$(ENDIAN).o platform/memaccess.o
 
+ifeq ($(TARGET_OS), DOS)
+  LIB_OBJS += udelay_dos.o
+else
+  LIB_OBJS += udelay.o
+endif
 
 ###############################################################################
 # Frontend related stuff.
@@ -395,8 +404,10 @@ CLI_OBJS = cli_classic.o cli_output.o cli_common.o print.o
 
 VERSION ?= $(shell cat ./VERSION)
 VERSION_GIT ?= $(shell git describe 2>/dev/null)
-ifdef VERSION_GIT
+ifneq ($(VERSION_GIT),)
   VERSION := "$(VERSION) (git:$(VERSION_GIT))"
+else
+  VERSION := "$(VERSION)"
 endif
 
 # No spaces in release names unless set explicitly
@@ -958,6 +969,11 @@ endif
 
 OBJS = $(CHIP_OBJS) $(PROGRAMMER_OBJS) $(LIB_OBJS)
 
+ifeq ($(HAS_SPHINXBUILD), yes)
+override CONFIG_SPHINXBUILD_VERSION := $(shell $(SPHINXBUILD) --version | cut -d' ' -f2 )
+override CONFIG_SPHINXBUILD_MAJOR   := $(shell echo "$(CONFIG_SPHINXBUILD_VERSION)" | cut -d'.' -f1 )
+endif
+
 
 all: $(PROGRAM)$(EXEC_SUFFIX) $(call has_dependency, $(HAS_SPHINXBUILD), man8/$(PROGRAM).8)
 ifeq ($(ARCH), x86)
@@ -1022,7 +1038,7 @@ config:
 		echo "The following features are unavailable on your machine: $(UNSUPPORTED_FEATURES)" \
 		exit 1;								\
 	fi
-	@echo "Checking for program \"sphinx-build\": $(HAS_SPHINXBUILD)"
+	@echo "Checking for program \"sphinx-build\": $(HAS_SPHINXBUILD) $(CONFIG_SPHINXBUILD_VERSION)"
 
 %.o: %.c | config
 	$(CC) -MMD $(CFLAGS) $(CPPFLAGS) $(FLASHROM_CFLAGS) $(FEATURE_FLAGS) -D'FLASHROM_VERSION=$(VERSION)'  -o $@ -c $<
@@ -1035,8 +1051,18 @@ libflashrom.a: $(OBJS)
 	$(RANLIB) $@
 
 man8/$(PROGRAM).8: doc/*
+#	When using sphinx-build prior to version 4.x, man pages are output
+#	to a directory named "8" instead of expected "man8". We fix that
+#	by renaming "8" to "man8" and creating symlink "8" pointing to "man8".
 	@if [ "$(HAS_SPHINXBUILD)" = "yes" ]; then			\
 		$(SPHINXBUILD) -Drelease=$(VERSION) -b man doc .;	\
+		if [ "$(CONFIG_SPHINXBUILD_MAJOR)" -lt 4 ]; then	\
+			if [ -d 8 -a ! -L 8 ]; then			\
+				rm -rf man8;				\
+				mv 8 man8;				\
+				ln -s man8 8;				\
+			fi						\
+		fi							\
 	else								\
 		echo "$(SPHINXBUILD) not found. Can't build man-page";	\
 		exit 1;							\
@@ -1054,7 +1080,7 @@ strip: $(PROGRAM)$(EXEC_SUFFIX)
 # We don't use EXEC_SUFFIX here because we want to clean everything.
 clean:
 	rm -rf $(PROGRAM) $(PROGRAM).exe libflashrom.a $(filter-out Makefile.d, $(wildcard *.d *.o platform/*.d platform/*.o)) \
-		man8 .doctrees $(PROGRAM).bash $(BUILD_DETAILS_FILE)
+		man8 8 .doctrees $(PROGRAM).bash $(BUILD_DETAILS_FILE)
 	@+$(MAKE) -C util/ich_descriptors_tool/ clean
 
 install: $(PROGRAM)$(EXEC_SUFFIX) $(call has_dependency, $(HAS_SPHINXBUILD), man8/$(PROGRAM).8) $(PROGRAM).bash

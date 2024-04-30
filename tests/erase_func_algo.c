@@ -27,8 +27,6 @@
 
 #define ERASE_VALUE		0xff
 #define MOCK_CHIP_SIZE		16
-/* How many small chip test cases. */
-#define TEST_CASES_NUM		16
 #define MIN_BUF_SIZE		1024 /* Minimum buffer size flashrom operates for chip operations. */
 #define MIN_REAL_CHIP_SIZE	1024 /* Minimum chip size that can be defined for real chip in flashchips */
 
@@ -169,6 +167,26 @@ static struct flashchip chip_1_8_16 = {
 	},
 };
 
+static struct flashchip chip_8_16 = {
+	.vendor		= "aklm",
+	/* See comment on previous chip. */
+	.total_size	= 1,
+	.tested		= TEST_OK_PREW,
+	.gran		= WRITE_GRAN_1BYTE,
+	.read		= TEST_READ_INJECTOR,
+	.write		= TEST_WRITE_INJECTOR,
+	.block_erasers	=
+	{
+		{
+			.eraseblocks = { {8, MIN_REAL_CHIP_SIZE / 8} },
+			.block_erase = TEST_ERASE_INJECTOR,
+		}, {
+			.eraseblocks = { {16, MIN_REAL_CHIP_SIZE / 16} },
+			.block_erase = TEST_ERASE_INJECTOR,
+		}
+	},
+};
+
 static void setup_chip(struct flashrom_flashctx *flashctx, struct flashrom_layout **layout,
 			const char *programmer_param, struct test_case *current_test_case)
 {
@@ -230,8 +248,9 @@ static void teardown_chip(struct flashrom_layout **layout)
 /*
  * Setup all test cases.
  *
- * First half of test cases (0 - (size(testcases)/2-1)) set up for a chip with erasers: 1, 2, 4, 8, 16 bytes.
- * Second half (size(testcases)/2 - size(testcases)) repeates the same test cases for a chip with erasers: 1, 8, 16 bytes.
+ * First half of test cases is set up for a chip with erasers: 1, 2, 4, 8, 16 bytes.
+ * Second half repeates the same test cases for a chip with erasers: 1, 8, 16 bytes.
+ * Tests from #16 onwards use the chip with erasers: 8, 16 bytes, to test unaligned layout regions.
  */
 static struct test_case test_cases[] = {
 	{
@@ -593,6 +612,94 @@ static struct test_case test_cases[] = {
 		.eraseblocks_expected_ind = 16,
 		.erase_test_name = "Erase test case #15",
 		.write_test_name = "Write test case #15",
+	}, {
+		/*
+		 * Test case #16
+		 *
+		 * Initial vs written: all 16 bytes are different.
+		 * Layout with unaligned regions 2+4+9+1b which are smaller than the smallest eraseblock.
+		 * Chip with eraseblocks 8, 16.
+		 */
+		.chip =		&chip_8_16,
+		.regions =	{{0, 1, "reg2"}, {2, 5, "reg4"}, {6, 14, "reg9"},
+				 {15, MIN_REAL_CHIP_SIZE - 1, "reg1"}},
+		.initial_buf =	{0x4, 0x4, 0x5, 0x5, 0x5, 0x5, 0x6, 0x6,
+				 0x6, 0x6, 0x6, 0x6, 0x6, 0x6, 0x6, 0x7},
+		.erased_buf =	{ERASE_VALUE, ERASE_VALUE, ERASE_VALUE, ERASE_VALUE,
+					ERASE_VALUE, ERASE_VALUE, ERASE_VALUE, ERASE_VALUE,
+					ERASE_VALUE, ERASE_VALUE, ERASE_VALUE, ERASE_VALUE,
+					ERASE_VALUE, ERASE_VALUE, ERASE_VALUE, ERASE_VALUE},
+		.written_buf =  {0x14, 0x14, 0x15, 0x15, 0x15, 0x15, 0x16, 0x16,
+				 0x16, 0x16, 0x16, 0x16, 0x16, 0x16, 0x16, 0x17},
+		.eraseblocks_expected = {{0x8, 0x8}, {0x0, 0x10}, {0x0, 0x8}, {0x0, 0x8}},
+		.eraseblocks_expected_ind = 4,
+		.erase_test_name = "Erase test case #16",
+		.write_test_name = "Write test case #16",
+	}, {
+		/*
+		 * Test case #17
+		 *
+		 * Initial vs written: all 16 bytes are different.
+		 * Layout with unaligned region 3+13b which are smaller than the smallest eraseblock.
+		 * Chip with eraseblocks 8, 16.
+		 */
+		.chip =		&chip_8_16,
+		.regions =	{{0, 2, "reg3"}, {3, MIN_REAL_CHIP_SIZE - 1, "tail"}},
+		.initial_buf =	{0x4, 0x4, 0x4, 0x6, 0x6, 0x6, 0x6, 0x6,
+				 0x6, 0x6, 0x6, 0x6, 0x6, 0x6, 0x6, 0x6},
+		.erased_buf =	{ERASE_VALUE, ERASE_VALUE, ERASE_VALUE, ERASE_VALUE,
+					ERASE_VALUE, ERASE_VALUE, ERASE_VALUE, ERASE_VALUE,
+					ERASE_VALUE, ERASE_VALUE, ERASE_VALUE, ERASE_VALUE,
+					ERASE_VALUE, ERASE_VALUE, ERASE_VALUE, ERASE_VALUE},
+		.written_buf =  {0x14, 0x14, 0x14, 0x16, 0x16, 0x16, 0x16, 0x16,
+				 0x16, 0x16, 0x16, 0x16, 0x16, 0x16, 0x16, 0x16},
+		.eraseblocks_expected = {{0x0, 0x10}, {0x0, 0x8}},
+		.eraseblocks_expected_ind = 2,
+		.erase_test_name = "Erase test case #17",
+		.write_test_name = "Write test case #17",
+	}, {
+		/*
+		 * Test case #18
+		 *
+		 * Initial vs written: all 16 bytes are different.
+		 * Layout with unaligned region 9+7b.
+		 * Chip with eraseblocks 8, 16.
+		 */
+		.chip =		&chip_8_16,
+		.regions =	{{0, 8, "reg9"}, {9, MIN_REAL_CHIP_SIZE - 1, "tail"}},
+		.initial_buf =	{0x4, 0x4, 0x4, 0x4, 0x4, 0x4, 0x4, 0x4,
+				 0x4, 0x6, 0x6, 0x6, 0x6, 0x6, 0x6, 0x6},
+		.erased_buf =	{ERASE_VALUE, ERASE_VALUE, ERASE_VALUE, ERASE_VALUE,
+					ERASE_VALUE, ERASE_VALUE, ERASE_VALUE, ERASE_VALUE,
+					ERASE_VALUE, ERASE_VALUE, ERASE_VALUE, ERASE_VALUE,
+					ERASE_VALUE, ERASE_VALUE, ERASE_VALUE, ERASE_VALUE},
+		.written_buf =  {0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14,
+				 0x14, 0x16, 0x16, 0x16, 0x16, 0x16, 0x16, 0x16},
+		.eraseblocks_expected = {{0x8, 0x8}, {0x0, 0x10}},
+		.eraseblocks_expected_ind = 2,
+		.erase_test_name = "Erase test case #18",
+		.write_test_name = "Write test case #18",
+	}, {
+		/*
+		 * Test case #19
+		 *
+		 * Initial vs written: 3 bytes of the logical layout are different, rest is the same.
+		 * Layout with unaligned region 3 bytes. Layout does not cover the whole chip memory.
+		 * Chip memory outside of logical layout is skipped by both erase and write ops.
+		 * Chip with eraseblocks 8, 16.
+		 */
+		.chip =		&chip_8_16,
+		.regions =	{{0, 2, "reg3"}},
+		.initial_buf =	{0x4, 0x4, 0x4, 0x0, 0x0, 0x0, 0x0, 0x0,
+				 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0},
+		.erased_buf =	{ERASE_VALUE, ERASE_VALUE, ERASE_VALUE, 0x0,
+					0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0},
+		.written_buf =  {0x14, 0x14, 0x14, 0x0, 0x0, 0x0, 0x0, 0x0,
+				 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0},
+		.eraseblocks_expected = {{0x0, 0x8}},
+		.eraseblocks_expected_ind = 1,
+		.erase_test_name = "Erase test case #19",
+		.write_test_name = "Write test case #19",
 	},
 };
 
@@ -612,11 +719,13 @@ static int teardown(void **state) {
  * The caller needs to free the allocated memory.
  */
 struct CMUnitTest *get_erase_func_algo_tests(size_t *num_tests) {
-	// Twice the number of test cases, because each test case is run twice: for erase and write.
-	struct CMUnitTest *all_cases = calloc(TEST_CASES_NUM * 2, sizeof(struct CMUnitTest));
-	*num_tests = TEST_CASES_NUM * 2;
+	const size_t test_cases_num = ARRAY_SIZE(test_cases);
 
-	for (size_t i = 0; i < TEST_CASES_NUM; i++) {
+	// Twice the number of test cases, because each test case is run twice: for erase and write.
+	struct CMUnitTest *all_cases = calloc(test_cases_num * 2, sizeof(struct CMUnitTest));
+	*num_tests = test_cases_num * 2;
+
+	for (size_t i = 0; i < test_cases_num; i++) {
 		all_cases[i] = (struct CMUnitTest) {
 				.name		= test_cases[i].erase_test_name,
 				.setup_func	= setup,
@@ -624,7 +733,7 @@ struct CMUnitTest *get_erase_func_algo_tests(size_t *num_tests) {
 				.initial_state	= &test_cases[i],
 				.test_func	= erase_function_algo_test_success,
 		};
-		all_cases[i + TEST_CASES_NUM] = (struct CMUnitTest) {
+		all_cases[i + test_cases_num] = (struct CMUnitTest) {
 				.name		= test_cases[i].write_test_name,
 				.setup_func	= setup,
 				.teardown_func	= teardown,

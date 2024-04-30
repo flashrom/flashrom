@@ -1,6 +1,11 @@
 How to add or update docs
 =========================
 
+Documentation files live in ``/doc`` directory in the source tree, so
+adding or updating documentation follows the same process as changing
+the code. If you've never done it before, start by carefully
+reading the :doc:`/dev_guide/development_guide`.
+
 To add or update a documentation page, you need to create or modify
 an ``.rst`` file in the ``/doc`` directory and send a patch for
 review.

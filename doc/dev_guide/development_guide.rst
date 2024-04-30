@@ -191,6 +191,8 @@ Creating an account
 Pushing a patch
 ---------------
 
+Before pushing a patch, make sure it builds on your environment and all unit tests pass (see :doc:`building_from_source`).
+
 To push patch to Gerrit, use the follow command: :code:`git push upstream HEAD:refs/for/main`.
 
 * If using HTTPS you will be prompted for the username and password you
@@ -208,6 +210,21 @@ have been authored by multiple people.
 To add a topic, push with the command: :code:`git push upstream HEAD:refs/for/main%topic=example_topic`.
 Alternatively, you can add a topic from a Gerrit UI after the patch in pushed
 (on the top-left section) of patch UI.
+
+Checking the CI
+---------------
+
+Every patch needs to get a ``Verified +1`` label, typically from Jenkins. Once the patch is pushed
+to Gerrit, Jenkins is added automatically and runs its build script. The script builds the patch with
+various config options, and runs unit tests (for more details see source code of ``test_build.sh``).
+Then, Jenkins gives the patch ``+1`` or ``-1`` vote, indicating success or fail.
+
+In case of failure, follow Jenkins link (which it adds as a comment to the patch), open Console output,
+find the error and try to fix it.
+
+In addition to building and running unit tests, Jenkins also runs a scan-build over the patch. Ideally
+you should check that your patch does not introduce new warnings. To see scan-build report, follow
+Jenkins link -> Build artifacts -> scan build link for the given run.
 
 Adding reviewers to the patch
 -----------------------------
@@ -322,6 +339,8 @@ To help search for patches which are potential candidates for merging, you can t
    status:open project:flashrom -is:wip -label:Verified-1 label:Verified+1 -label:Code-Review<0 age:3d is:mergeable is:submittable -has:unresolved
 
 Note the search is not a replacement for Merge checklist, but it can help find candidates for merging.
+
+.. _bugtracker:
 
 Bugtracker
 ==========

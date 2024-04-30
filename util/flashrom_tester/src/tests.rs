@@ -219,8 +219,8 @@ fn hwwp_locks_swwp_test(env: &mut TestEnv) -> TestResult {
 /// is actually able to write to the Flash. This only makes sense for chips
 /// running Coreboot, which we assume is just host.
 fn elog_sanity_test(env: &mut TestEnv) -> TestResult {
-    if env.chip_type() != FlashChip::HOST {
-        info!("Skipping ELOG sanity check for non-host chip");
+    if env.chip_type() != FlashChip::INTERNAL {
+        info!("Skipping ELOG sanity check for non-internal chip");
         return Ok(());
     }
     // flash should be back in the golden state

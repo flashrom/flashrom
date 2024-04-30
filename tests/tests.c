@@ -504,6 +504,11 @@ int main(int argc, char *argv[])
 	};
 	ret |= cmocka_run_group_tests_name("chip.c tests", chip_tests, NULL, NULL);
 
+	const struct CMUnitTest delay_tests[] = {
+		cmocka_unit_test(udelay_test_short),
+	};
+	ret |= cmocka_run_group_tests_name("udelay.c tests", delay_tests, NULL, NULL);
+
 	size_t n_erase_tests;
 	struct CMUnitTest *erase_func_algo_tests = get_erase_func_algo_tests(&n_erase_tests);
 	ret |= _cmocka_run_group_tests("erase_func_algo.c tests", erase_func_algo_tests, n_erase_tests, NULL, NULL);

@@ -741,6 +741,14 @@ Example that sets the frequency to 2 MHz::
 
         flashrom -p serprog:dev=/dev/device:baud,spispeed=2M
 
+Optional ``cs`` parameter can be used to switch which chip select number is used. This allows connecting multiple
+chips at once and selecting which one to flash by software means (rather than rewiring)::
+
+        flashrom -p serprog:dev=/dev/device:baud,cs=0
+
+The particular programmer implementation needs to support this feature, for it to work. If the requested chip
+select isn't available, flashrom will fail safely.
+
 More information about serprog is available in **serprog-protocol.txt** in the source distribution.
 
 
@@ -891,11 +899,19 @@ USB device serial number to use specifically with::
 The servo device serial number can be found via ``lsusb``.
 Raiden will poll the ``ap`` target waiting for the system power to settle on the AP and EC flash devices.
 
-The optional ``custom_rst=true`` parameter changes the timeout value from 3ms to 10ms::
+The optional ``custom_rst=true`` parameter alters the behavior of the reset process::
 
         flashrom -p raiden_debug_spi:custom_rst=<true|false>
 
-syntax, where ``custom_rst=false`` is the implicit default timeout of 3ms. More information about the ChromiumOS servo
+syntax, where:
+
+``custom_rst=false`` is the implicit default timeout of 3ms
+
+and ``custom_rst=true`` set ``RAIDEN_DEBUG_SPI_REQ_ENABLE_AP_CUSTOM`` instead of ``RAIDEN_DEBUG_SPI_REQ_ENABLE_AP``.
+This custom reset will modify the timeout from 3ms to 10ms and will not set ``EC_RST_L``, meaning neither the EC nor the AP will be reset. With this setting, it's the user's responsibility to manage the reset signal manually or by configuring the GPIO.
+Failure to handle the reset signal appropriately will likely result in flashing errors.
+
+More information about the ChromiumOS servo
 hardware is available at `servos website <https://chromium.googlesource.com/chromiumos/third_party/hdctools/+/HEAD/docs/servo_v4.md>`_.
 
 

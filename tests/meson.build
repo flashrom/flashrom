@@ -25,6 +25,7 @@ test_srcs = files(
   'selfcheck.c',
   'io_real.c',
   'erase_func_algo.c',
+  'udelay.c',
 )
 
 if not programmer.get('dummy').get('active')

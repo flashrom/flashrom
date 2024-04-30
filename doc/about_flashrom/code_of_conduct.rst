@@ -126,10 +126,8 @@ Contact info
 
 Our arbitration team consists of the following people
 
+* Anastasia Klimchuk <aklm@flashrom.org> (Australia)
 * Stefan Reinauer <stefan.reinauer@coreboot.org> (USA)
-* Patrick Georgi <patrick@coreboot.org> (Germany)
-* Ronald Minnich <rminnich@coreboot.org> (USA)
-* Martin Roth <martin@coreboot.org> (USA)
 
 License and attribution
 =======================
