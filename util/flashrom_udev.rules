@@ -93,4 +93,7 @@ ATTRS{idVendor}=="0403", ATTRS{idProduct}=="8a99", MODE="664", GROUP="plugdev"
 # Winchiphead (WCH) CH341a based programmer
 ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="5512", MODE="664", GROUP="plugdev"
 
+# Winchiphead (WCH) CH347 based programmer
+ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="55db", MODE="664", GROUP="plugdev"
+
 LABEL="flashrom_rules_end"
