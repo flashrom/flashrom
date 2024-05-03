@@ -2092,7 +2092,7 @@ static int unlock_flash_wp(struct flashctx *const flash,
 
 warn_out:
 	if (ret)
-		msg_cerr("Failed to unlock flash status reg with wp support.\n");
+		msg_cwarn("Failed to unlock flash status reg with wp support.\n");
 
 	return ret;
 }
