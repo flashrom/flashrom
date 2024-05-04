@@ -7,3 +7,4 @@ Supported hardware
 
     supported_flashchips
     supported_prog/index
+    supported_chipsets
