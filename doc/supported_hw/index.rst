@@ -3,6 +3,6 @@ Supported hardware
 ==================
 
 .. toctree::
-    :maxdepth: 3
+    :maxdepth: 1
 
     supported_prog/index
