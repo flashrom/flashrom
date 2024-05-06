@@ -15,6 +15,9 @@ name = "flashrom_tester"
 name = "flashrom_tester"
 required-features = ["cli"]
 
+[workspace]
+members = [".", "flashrom"]
+
 [dependencies]
 atty = "0.2"
 built = { version = "0.5", features = ["chrono"] }
