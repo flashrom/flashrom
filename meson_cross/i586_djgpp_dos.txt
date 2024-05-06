@@ -5,6 +5,11 @@
 # Make sure pkg-config can find your self compiles libpci
 # or add the path of your libpci.pc as 'pkg_config_libdir'
 # under [properies] below.
+#
+# If cross-compiling, you may need to set sys_root in the [properties]
+# section because meson otherwise assumes the same sysroot as the
+# system on which you're building and will get the wrong include files
+# (from /usr/include/x86_64 for example) among other possible issues.
 
 [binaries]
 c     = 'i586-pc-msdosdjgpp-gcc'
@@ -27,3 +32,4 @@ tests = 'disabled'
 ich_descriptors_tool = 'disabled'
 
 [properties]
+sys_root = '/usr/local/djgpp'
