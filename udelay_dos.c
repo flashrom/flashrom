@@ -28,7 +28,7 @@
 /* loops per microsecond */
 static unsigned long micro = 1;
 
-__attribute__ ((noinline)) void myusec_delay(unsigned int usecs)
+__attribute__ ((noinline)) static void myusec_delay(unsigned int usecs)
 {
 	unsigned long i;
 	for (i = 0; i < usecs * micro; i++) {
