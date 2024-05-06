@@ -81,3 +81,15 @@ stm32-vserprog by Chi Zhang
 
 A powerful option is `stm32-vserprog <https://github.com/dword1511/stm32-vserprog#stm32-vserprog>`_, a firmware for various STM32-based boards
 that turns them into serprog-based programmers with SPI clock speeds up to 36 MHz.
+
+pico-serprog
+------------
+
+`pico-serprog <https://github.com/stacksmashing/pico-serprog>`_ by stacksmashing is a firmware for
+`Raspberry Pi Picos <https://www.raspberrypi.com/documentation/microcontrollers/raspberry-pi-pico.html>`_ and other RP2040 based boards which turns them
+into a serprog programmer.
+
+Notable forks are:
+
+`Riku_V's fork <https://codeberg.org/Riku_V/pico-serprog>`_ which uses the hardware SPI implementation instead of SPI over PIO (programmable IO) which
+sacrifices arbitrary pinouts. The fork also implements custom USB descriptors which allow for custom udev-rules.
