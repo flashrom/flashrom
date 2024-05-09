@@ -78,6 +78,7 @@ Maintainers List (try to look for most precise areas first)
 
 BUILD SYSTEM
 M:	Thomas Heijligen <src@posteo.de>
+M:	Peter Marheine <pmarheine@chromium.org>
 S:	Maintained
 F:	Makefile*
 F:	meson*
