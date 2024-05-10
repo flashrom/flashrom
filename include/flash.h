@@ -266,9 +266,15 @@ enum write_func {
 	WRITE_82802AB,
 	WRITE_EN29LV640B,
 	EDI_CHIP_WRITE,
+#ifdef FLASHROM_TEST
 	TEST_WRITE_INJECTOR, /* special case must come last. */
+#endif
 };
 typedef int (write_func_t)(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
+
+#ifdef FLASHROM_TEST
+extern write_func_t *g_test_write_injector;
+#endif
 
 enum read_func {
 	NO_READ_FUNC = 0, /* 0 indicates no read function set. */
@@ -278,10 +284,16 @@ enum read_func {
 	EDI_CHIP_READ,
 	SPI_READ_AT45DB,
 	SPI_READ_AT45DB_E8,
+#ifdef FLASHROM_TEST
 	TEST_READ_INJECTOR, /* special case must come last. */
+#endif
 };
 typedef int (read_func_t)(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
 int read_flash(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
+
+#ifdef FLASHROM_TEST
+extern read_func_t *g_test_read_injector;
+#endif
 
 enum block_erase_func {
 	NO_BLOCK_ERASE_FUNC = 0, /* 0 indicates no block erase function set. */
@@ -319,8 +331,20 @@ enum block_erase_func {
 	ERASE_SECTOR_49LFXXXC,
 	STM50_SECTOR_ERASE,
 	EDI_CHIP_BLOCK_ERASE,
-	TEST_ERASE_INJECTOR, /* special case must come last. */
+#ifdef FLASHROM_TEST
+	/* special cases must come last. */
+	TEST_ERASE_INJECTOR_1,
+	TEST_ERASE_INJECTOR_2,
+	TEST_ERASE_INJECTOR_3,
+	TEST_ERASE_INJECTOR_4,
+	TEST_ERASE_INJECTOR_5,
+#endif
 };
+
+#ifdef FLASHROM_TEST
+#define NUM_TEST_ERASE_INJECTORS 5
+extern erasefunc_t *g_test_erase_injector[NUM_TEST_ERASE_INJECTORS];
+#endif
 
 enum blockprotect_func {
 	NO_BLOCKPROTECT_FUNC = 0, /* 0 indicates no unlock function set. */

@@ -118,10 +118,6 @@ static void teardown(struct flashrom_layout **layout)
 	io_mock_register(NULL);
 }
 
-extern write_func_t *g_test_write_injector;
-extern read_func_t *g_test_read_injector;
-extern erasefunc_t *g_test_erase_injector;
-
 static const struct flashchip chip_8MiB = {
 	.vendor		= "aklm",
 	.total_size	= MOCK_CHIP_SIZE / KiB,
@@ -132,7 +128,7 @@ static const struct flashchip chip_8MiB = {
 	{{
 		 /* All blocks within total size of the chip. */
 		.eraseblocks = { {2 * MiB, 4} },
-		.block_erase = TEST_ERASE_INJECTOR,
+		.block_erase = TEST_ERASE_INJECTOR_1,
 	 }},
 };
 
@@ -179,7 +175,7 @@ void erase_chip_test_success(void **state)
 
 	g_test_write_injector = write_chip;
 	g_test_read_injector = read_chip;
-	g_test_erase_injector = block_erase_chip;
+	g_test_erase_injector[0] = block_erase_chip;
 	struct flashrom_flashctx flashctx = { 0 };
 	struct flashrom_layout *layout;
 	struct flashchip mock_chip = chip_8MiB;
@@ -238,7 +234,7 @@ void read_chip_test_success(void **state)
 
 	g_test_write_injector = write_chip;
 	g_test_read_injector = read_chip;
-	g_test_erase_injector = block_erase_chip;
+	g_test_erase_injector[0] = block_erase_chip;
 	struct flashrom_flashctx flashctx = { 0 };
 	struct flashrom_layout *layout;
 	struct flashchip mock_chip = chip_8MiB;
@@ -313,7 +309,7 @@ void write_chip_test_success(void **state)
 
 	g_test_write_injector = write_chip;
 	g_test_read_injector = read_chip;
-	g_test_erase_injector = block_erase_chip;
+	g_test_erase_injector[0] = block_erase_chip;
 	struct flashrom_flashctx flashctx = { 0 };
 	struct flashrom_layout *layout;
 	struct flashchip mock_chip = chip_8MiB;
@@ -504,7 +500,7 @@ void verify_chip_test_success(void **state)
 
 	g_test_write_injector = write_chip;
 	g_test_read_injector = read_chip;
-	g_test_erase_injector = block_erase_chip;
+	g_test_erase_injector[0] = block_erase_chip;
 	struct flashrom_flashctx flashctx = { 0 };
 	struct flashrom_layout *layout;
 	struct flashchip mock_chip = chip_8MiB;

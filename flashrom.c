@@ -402,8 +402,10 @@ int check_for_unwritable_regions(const struct flashctx *flash, unsigned int star
 	return 0;
 }
 
-/* special unit-test hook */
-erasefunc_t *g_test_erase_injector;
+#ifdef FLASHROM_TEST
+/* special unit-test hooks */
+erasefunc_t *g_test_erase_injector[NUM_TEST_ERASE_INJECTORS];
+#endif
 
 erasefunc_t *lookup_erase_func_ptr(const struct block_eraser *const eraser)
 {
@@ -442,7 +444,14 @@ erasefunc_t *lookup_erase_func_ptr(const struct block_eraser *const eraser)
 		case ERASE_SECTOR_49LFXXXC: return &erase_sector_49lfxxxc;
 		case STM50_SECTOR_ERASE: return &erase_sector_stm50; // TODO rename to &stm50_sector_erase;
 		case EDI_CHIP_BLOCK_ERASE: return &edi_chip_block_erase;
-		case TEST_ERASE_INJECTOR: return g_test_erase_injector;
+#ifdef FLASHROM_TEST
+		case TEST_ERASE_INJECTOR_1:
+		case TEST_ERASE_INJECTOR_2:
+		case TEST_ERASE_INJECTOR_3:
+		case TEST_ERASE_INJECTOR_4:
+		case TEST_ERASE_INJECTOR_5:
+			return g_test_erase_injector[eraser->block_erase - TEST_ERASE_INJECTOR_1];
+#endif
 	/* default: total function, 0 indicates no erase function set.
 	 * We explicitly do not want a default catch-all case in the switch
 	 * to ensure unhandled enum's are compiler warnings.
@@ -540,8 +549,10 @@ int check_erased_range(struct flashctx *flash, unsigned int start, unsigned int 
 	return ret;
 }
 
+#ifdef FLASHROM_TEST
 /* special unit-test hook */
 read_func_t *g_test_read_injector;
+#endif
 
 static read_func_t *lookup_read_func_ptr(const struct flashchip *chip)
 {
@@ -552,7 +563,9 @@ static read_func_t *lookup_read_func_ptr(const struct flashchip *chip)
 		case EDI_CHIP_READ: return &edi_chip_read;
 		case SPI_READ_AT45DB: return spi_read_at45db;
 		case SPI_READ_AT45DB_E8: return spi_read_at45db_e8;
+#ifdef FLASHROM_TEST
 		case TEST_READ_INJECTOR: return g_test_read_injector;
+#endif
 	/* default: total function, 0 indicates no read function set.
 	 * We explicitly do not want a default catch-all case in the switch
 	 * to ensure unhandled enum's are compiler warnings.
@@ -976,7 +989,9 @@ static int init_default_layout(struct flashctx *flash)
 }
 
 /* special unit-test hook */
+#ifdef FLASHROM_TEST
 write_func_t *g_test_write_injector;
+#endif
 
 static write_func_t *lookup_write_func_ptr(const struct flashchip *chip)
 {
@@ -992,7 +1007,9 @@ static write_func_t *lookup_write_func_ptr(const struct flashchip *chip)
 		case WRITE_82802AB: return &write_82802ab;
 		case WRITE_EN29LV640B: return &write_en29lv640b;
 		case EDI_CHIP_WRITE: return &edi_chip_write;
+#ifdef FLASHROM_TEST
 		case TEST_WRITE_INJECTOR: return g_test_write_injector;
+#endif
 	/* default: total function, 0 indicates no write function set.
 	 * We explicitly do not want a default catch-all case in the switch
 	 * to ensure unhandled enum's are compiler warnings.
