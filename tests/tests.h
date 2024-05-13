@@ -107,6 +107,7 @@ void selfcheck_board_matches_table(void **state);
 
 /* erase_func_algo.c */
 struct CMUnitTest *get_erase_func_algo_tests(size_t *num_tests);
+struct CMUnitTest *get_erase_protected_region_algo_tests(size_t *num_tests);
 void erase_function_algo_test_success(void **state);
 void write_function_algo_test_success(void **state);
 

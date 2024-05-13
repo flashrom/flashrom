@@ -22,7 +22,7 @@
 #include "libflashrom.h"
 #include "programmer.h"
 
-#define LOG_ERASE_FUNC printf("Eraser called with blockaddr=0x%x, blocklen=0x%x\n", blockaddr, blocklen)
+#define LOG_ERASE_FUNC		printf("Eraser called with blockaddr=0x%x, blocklen=0x%x, erase_func=%d\n", blockaddr, blocklen, erase_func - TEST_ERASE_INJECTOR_1 + 1)
 #define LOG_READ_WRITE_FUNC printf("%s called with start=0x%x, len=0x%x\n", __func__, start, len)
 
 #define ERASE_VALUE		0xff
@@ -48,10 +48,11 @@ struct test_case {
 	uint8_t initial_buf[MOCK_CHIP_SIZE]; /* Initial state of chip memory. */
 	uint8_t erased_buf[MOCK_CHIP_SIZE]; /* Expected content after erase. */
 	uint8_t written_buf[MOCK_CHIP_SIZE]; /* Expected content after write. */
+	uint8_t written_protected_buf[MOCK_CHIP_SIZE]; /* Expected content after write with protected region. */
 	struct erase_invoke eraseblocks_expected[MOCK_CHIP_SIZE]; /* Expected order of eraseblocks invocations. */
 	unsigned int eraseblocks_expected_ind; /* Expected number of eraseblocks invocations. */
-	char erase_test_name[20]; /* Test case display name for testing erase operation. */
-	char write_test_name[20]; /* Test case display name for testing write operation. */
+	char erase_test_name[40]; /* Test case display name for testing erase operation. */
+	char write_test_name[40]; /* Test case display name for testing write operation. */
 };
 
 struct all_state {
@@ -764,6 +765,181 @@ static struct test_case test_cases[] = {
 	},
 };
 
+
+#define START_PROTECTED_REGION 6
+#define END_PROTECTED_REGION 13
+
+/*
+ * Setup all test cases with protected region.
+ * Protected region is the same for all test cases, between bytes 8 - 15.
+ */
+static struct test_case test_cases_protected_region[] = {
+	{
+		/*
+		 * Test case #0
+		 *
+		 * Initial vs written: all 16 bytes are different.
+		 * One layout region for the whole chip.
+		 * Chip with eraseblocks 1, 2, 4, 8, 16.
+		 */
+		.chip =		&chip_1_2_4_8_16,
+		.regions =	{{0, MIN_REAL_CHIP_SIZE - 1, "whole chip"}},
+		.initial_buf =	{0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7,
+				 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf},
+		.erased_buf =	{ERASE_VALUE, ERASE_VALUE, ERASE_VALUE, ERASE_VALUE,
+					ERASE_VALUE, ERASE_VALUE, 0x6, 0x7,
+					0x8, 0x9, 0xa, 0xb, 0xc, 0xd, ERASE_VALUE, ERASE_VALUE},
+		.written_buf =  {0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7,
+				 0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff},
+		.written_protected_buf =  {0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0x6, 0x7,
+						0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xfe, 0xff},
+		.eraseblocks_expected = {{0x4, 0x2, TEST_ERASE_INJECTOR_2}, {0x0, 0x4, TEST_ERASE_INJECTOR_3},
+					{0xe, 0x2, TEST_ERASE_INJECTOR_2}},
+		.eraseblocks_expected_ind = 3,
+		.erase_test_name = "Erase protected region test case #0",
+		.write_test_name = "Write protected region test case #0",
+	}, {
+		/*
+		 * Test case #1
+		 *
+		 * Initial vs written: all 16 bytes are different.
+		 * Two layout regions each one 8 bytes, which is 1/2 size of chip.
+		 * Chip with eraseblocks 1, 2, 4, 8, 16.
+		 */
+		.chip =		&chip_1_2_4_8_16,
+		.regions =	{{0, MOCK_CHIP_SIZE/2 - 1, "part1"}, {MOCK_CHIP_SIZE/2, MIN_REAL_CHIP_SIZE - 1, "part2"}},
+		.initial_buf =	{0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7,
+				 0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff},
+		.erased_buf =	{ERASE_VALUE, ERASE_VALUE, ERASE_VALUE, ERASE_VALUE,
+					ERASE_VALUE, ERASE_VALUE, 0xf6, 0xf7,
+					0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, ERASE_VALUE, ERASE_VALUE},
+		.written_buf =  {0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7,
+				 0xa8, 0xa9, 0xaa, 0xab, 0xac, 0xad, 0xae, 0xaf},
+		.written_protected_buf =  {0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xf6, 0xf7,
+						0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xae, 0xaf},
+		.eraseblocks_expected = {{0xe, 0x2, TEST_ERASE_INJECTOR_2}, {0x4, 0x2, TEST_ERASE_INJECTOR_2},
+					{0x0, 0x4, TEST_ERASE_INJECTOR_3}},
+		.eraseblocks_expected_ind = 3,
+		.erase_test_name = "Erase protected region test case #1",
+		.write_test_name = "Write protected region test case #1",
+	}, {
+		/*
+		 * Test case #2
+		 *
+		 * Initial vs written: all 16 bytes are different.
+		 * Three layout regions 8+4+4b
+		 * Chip with eraseblocks 1, 2, 4, 8, 16.
+		 */
+		.chip =		&chip_1_2_4_8_16,
+		.regions =	{{0, 7, "odd1"}, {8, 11, "odd2"}, {12, 15, "odd3"},
+				{MOCK_CHIP_SIZE, MIN_REAL_CHIP_SIZE - 1, "longtail"}},
+		.initial_buf =	{0xff, 0xff, 0x0, 0xff, 0x0, 0xff, 0x0, 0xff,
+				 0x0, 0xff, 0x0, 0xff, 0xff, 0xff, 0xff, 0xff},
+		.erased_buf =	{ERASE_VALUE, ERASE_VALUE, ERASE_VALUE, ERASE_VALUE,
+					ERASE_VALUE, ERASE_VALUE, 0x0, 0xff,
+					0x0, 0xff, 0x0, 0xff, 0xff, 0xff, ERASE_VALUE, ERASE_VALUE},
+		.written_buf =  {0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7,
+				 0xa8, 0xa9, 0xaa, 0xab, 0xac, 0xad, 0xae, 0xaf},
+		.written_protected_buf =  {0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0x0, 0xff,
+						0x0, 0xff, 0x0, 0xff, 0xff, 0xff, 0xae, 0xaf},
+		.eraseblocks_expected = {{0xe, 0x2, TEST_ERASE_INJECTOR_2}, {0x4, 0x2, TEST_ERASE_INJECTOR_2},
+					{0x0, 0x4, TEST_ERASE_INJECTOR_3}},
+		.eraseblocks_expected_ind = 3,
+		.erase_test_name = "Erase protected region test case #2",
+		.write_test_name = "Write protected region test case #2",
+	},  {
+		/*
+		 * Test case #3
+		 *
+		 * Initial vs written: all 16 bytes are different.
+		 * Layout with unaligned regions 2+4+9+1b which require use of the 1-byte erase block.
+		 * Chip with eraseblocks 1, 2, 4, 8, 16.
+		 */
+		.chip =		&chip_1_2_4_8_16,
+		.regions =	{{0, 1, "reg2"}, {2, 5, "reg4"}, {6, 14, "reg9"},
+				 {15, MIN_REAL_CHIP_SIZE - 1, "reg1"}},
+		.initial_buf =	{0x4, 0x4, 0x5, 0x5, 0x5, 0x5, 0x6, 0x6,
+				 0x6, 0x6, 0x6, 0x6, 0x6, 0x6, 0x6, 0x7},
+		.erased_buf =	{ERASE_VALUE, ERASE_VALUE, ERASE_VALUE, ERASE_VALUE,
+					ERASE_VALUE, ERASE_VALUE, 0x6, 0x6,
+					0x6, 0x6, 0x6, 0x6, 0x6, 0x6, ERASE_VALUE, ERASE_VALUE},
+		.written_buf =  {0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7,
+				 0xa8, 0xa9, 0xaa, 0xab, 0xac, 0xad, 0xae, 0xaf},
+		.written_protected_buf =  {0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0x6, 0x6,
+						0x6, 0x6, 0x6, 0x6, 0x6, 0x6, 0xae, 0xaf},
+		.eraseblocks_expected = {{0xf, 0x1, TEST_ERASE_INJECTOR_1}, {0xe, 0x1, TEST_ERASE_INJECTOR_1},
+					{0x2, 0x2, TEST_ERASE_INJECTOR_2}, {0x4, 0x2, TEST_ERASE_INJECTOR_2},
+					{0x0, 0x2, TEST_ERASE_INJECTOR_2}},
+		.eraseblocks_expected_ind = 5,
+		.erase_test_name = "Erase protected region test case #3",
+		.write_test_name = "Write protected region test case #3",
+	}, {
+		/*
+		 * Test case #4
+		 *
+		 * Initial vs written: all 16 bytes are different.
+		 * Layout with unaligned region 3+13b which require use of the 1-byte erase block.
+		 * Chip with eraseblocks 1, 8, 16.
+		 */
+		.chip =		&chip_1_8_16,
+		.regions =	{{0, 2, "reg3"}, {3, MIN_REAL_CHIP_SIZE - 1, "tail"}},
+		.initial_buf =	{0x4, 0x4, 0x4, 0x6, 0x6, 0x6, 0x6, 0x6,
+				 0x6, 0x6, 0x6, 0x6, 0x6, 0x6, 0x6, 0x6},
+		.erased_buf =	{ERASE_VALUE, ERASE_VALUE, ERASE_VALUE, ERASE_VALUE,
+					ERASE_VALUE, ERASE_VALUE, 0x6, 0x6,
+					0x6, 0x6, 0x6, 0x6, 0x6, 0x6, ERASE_VALUE, ERASE_VALUE},
+		.written_buf =  {0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7,
+				 0xa8, 0xa9, 0xaa, 0xab, 0xac, 0xad, 0xae, 0xaf},
+		.written_protected_buf =  {0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0x6, 0x6,
+						0x6, 0x6, 0x6, 0x6, 0x6, 0x6, 0xae, 0xaf},
+		.eraseblocks_expected = {
+			{0x3, 0x1, TEST_ERASE_INJECTOR_1},
+			{0x4, 0x1, TEST_ERASE_INJECTOR_1},
+			{0x5, 0x1, TEST_ERASE_INJECTOR_1},
+			{0xe, 0x1, TEST_ERASE_INJECTOR_1},
+			{0xf, 0x1, TEST_ERASE_INJECTOR_1},
+			{0x0, 0x1, TEST_ERASE_INJECTOR_1},
+			{0x1, 0x1, TEST_ERASE_INJECTOR_1},
+			{0x2, 0x1, TEST_ERASE_INJECTOR_1},
+		},
+		.eraseblocks_expected_ind = 8,
+		.erase_test_name = "Erase protected region test case #4",
+		.write_test_name = "Write protected region test case #4",
+	}, {
+		/*
+		 * Test case #5
+		 *
+		 * Initial vs written: all 16 bytes are different.
+		 * Layout with unaligned region 9+7b.
+		 * Chip with eraseblocks 1, 8, 16.
+		 */
+		.chip =		&chip_1_8_16,
+		.regions =	{{0, 8, "reg9"}, {9, MIN_REAL_CHIP_SIZE - 1, "tail"}},
+		.initial_buf =	{0x4, 0x4, 0x4, 0x4, 0x4, 0x4, 0x4, 0x4,
+				 0x4, 0x6, 0x6, 0x6, 0x6, 0x6, 0x6, 0x6},
+		.erased_buf =	{ERASE_VALUE, ERASE_VALUE, ERASE_VALUE, ERASE_VALUE,
+					ERASE_VALUE, ERASE_VALUE, 0x4, 0x4,
+					0x4, 0x6, 0x6, 0x6, 0x6, 0x6, ERASE_VALUE, ERASE_VALUE},
+		.written_buf =  {0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7,
+				 0xa8, 0xa9, 0xaa, 0xab, 0xac, 0xad, 0xae, 0xaf},
+		.written_protected_buf =  {0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0x4, 0x4,
+						0x4, 0x6, 0x6, 0x6, 0x6, 0x6, 0xae, 0xaf},
+		.eraseblocks_expected = {
+			{0xe, 0x1, TEST_ERASE_INJECTOR_1},
+			{0xf, 0x1, TEST_ERASE_INJECTOR_1},
+			{0x0, 0x1, TEST_ERASE_INJECTOR_1},
+			{0x1, 0x1, TEST_ERASE_INJECTOR_1},
+			{0x2, 0x1, TEST_ERASE_INJECTOR_1},
+			{0x3, 0x1, TEST_ERASE_INJECTOR_1},
+			{0x4, 0x1, TEST_ERASE_INJECTOR_1},
+			{0x5, 0x1, TEST_ERASE_INJECTOR_1},
+		},
+		.eraseblocks_expected_ind = 8,
+		.erase_test_name = "Erase protected region test case #5",
+		.write_test_name = "Write protected region test case #5",
+	},
+};
+
 static int setup(void **state) {
 	struct test_case *current_test_case = *state;
 	g_state.current_test_case = current_test_case;
@@ -802,6 +978,55 @@ struct CMUnitTest *get_erase_func_algo_tests(size_t *num_tests) {
 				.test_func	= write_function_algo_test_success,
 		};
 	}
+
+	return all_cases;
+}
+
+static void test_erase_fails_for_unwritable_region(void **);
+static void erase_unwritable_regions_skipflag_on_test_success(void **);
+static void write_unwritable_regions_skipflag_on_test_success(void **);
+
+/*
+ * Creates the array of tests for each test case in test_cases_protected_region[].
+ * The caller needs to free the allocated memory.
+ */
+struct CMUnitTest *get_erase_protected_region_algo_tests(size_t *num_tests) {
+	const size_t num_parameterized = ARRAY_SIZE(test_cases_protected_region);
+	const size_t num_unparameterized = 1;
+	// Twice the number of parameterized test cases, because each test case is run twice:
+	// for erase and write.
+	const size_t num_cases = num_parameterized * 2 + num_unparameterized;
+
+	struct CMUnitTest *all_cases = calloc(num_cases, sizeof(struct CMUnitTest));
+	*num_tests = num_cases;
+
+	for (size_t i = 0; i < num_parameterized; i++) {
+		all_cases[i] = (struct CMUnitTest) {
+				.name		= test_cases_protected_region[i].erase_test_name,
+				.setup_func	= setup,
+				.teardown_func	= teardown,
+				.initial_state	= &test_cases_protected_region[i],
+				.test_func	= erase_unwritable_regions_skipflag_on_test_success,
+		};
+		all_cases[i + num_parameterized] = (struct CMUnitTest) {
+				.name		= test_cases_protected_region[i].write_test_name,
+				.setup_func	= setup,
+				.teardown_func	= teardown,
+				.initial_state	= &test_cases_protected_region[i],
+				.test_func	= write_unwritable_regions_skipflag_on_test_success,
+		};
+	}
+
+	memcpy(
+		&all_cases[num_parameterized * 2],
+		(const struct CMUnitTest[]){
+			(const struct CMUnitTest) {
+				.name = "erase failure for unskipped unwritable regions",
+				.test_func = test_erase_fails_for_unwritable_region,
+			}
+		},
+		sizeof(*all_cases) * num_unparameterized
+	);
 
 	return all_cases;
 }
@@ -905,4 +1130,265 @@ void write_function_algo_test_success(void **state)
 	teardown_chip(&layout);
 
 	assert_int_equal(0, all_write_test_result);
+}
+
+static void get_protected_region(const struct flashctx *flash, unsigned int addr, struct flash_region *region)
+{
+	if (addr < 20)
+		printf("Inside test get_protected_region for addr=0x%x\n", addr);
+
+	if (addr < START_PROTECTED_REGION) {
+		region->name		= strdup("not protected");
+		region->start		= 0;
+		region->end		= START_PROTECTED_REGION - 1;
+		region->read_prot	= false;
+		region->write_prot	= false;
+	} else if (addr <= END_PROTECTED_REGION) {
+		region->name		= strdup("protected");
+		region->start		= START_PROTECTED_REGION;
+		region->end		= END_PROTECTED_REGION;
+		region->read_prot	= true;
+		region->write_prot	= true;
+	} else {
+		region->name		= strdup("tail");
+		region->start		= END_PROTECTED_REGION + 1;
+		region->end		= flashrom_flash_getsize(flash) - 1;
+		region->read_prot	= false;
+		region->write_prot	= false;
+	}
+}
+
+static int block_erase_chip_with_protected_region(struct flashctx *flash, enum block_erase_func erase_func, unsigned int blockaddr, unsigned int blocklen)
+{
+	if (blockaddr + blocklen <= MOCK_CHIP_SIZE) {
+		LOG_ERASE_FUNC;
+
+		/* Register eraseblock invocation. */
+		g_state.eraseblocks_actual[g_state.eraseblocks_actual_ind] = (struct erase_invoke){
+			.erase_func = erase_func,
+			.blocklen = blocklen,
+			.blockaddr = blockaddr,
+		};
+		g_state.eraseblocks_actual_ind++;
+	}
+
+	assert_in_range(blockaddr + blocklen, 0, MIN_REAL_CHIP_SIZE);
+
+	// Check we are not trying to erase protected region. This should not happen,
+	// because the logic should handle protected regions and never invoke erasefn
+	// for them. If this happens, means there is a bug in erasure logic, and test fails.
+	//
+	// Note: returning 1 instead of assert, so that the flow goes back to erasure code
+	// to clean up the memory after failed erase. Memory leaks are also tested by unit tests.
+	const unsigned int erase_op_size = 1 << (erase_func - TEST_ERASE_INJECTOR_1);
+	if (blocklen < erase_op_size) {
+		printf("Error: block length %d is smaller than erase_func length %d\n", blocklen, erase_op_size);
+		return 1;
+	}
+
+	if ((blockaddr >= START_PROTECTED_REGION && blockaddr <= END_PROTECTED_REGION)
+		|| (blockaddr + blocklen - 1 >= START_PROTECTED_REGION
+			&& blockaddr + blocklen - 1 <= END_PROTECTED_REGION)
+		|| (blockaddr < START_PROTECTED_REGION
+		    && blockaddr + blocklen + 1 > END_PROTECTED_REGION)) {
+		printf("Error: block with start=%d, len=%d overlaps protected region %d-%d\n",
+			   blockaddr, blocklen, START_PROTECTED_REGION, END_PROTECTED_REGION);
+		return 1;
+	}
+
+	memset(&g_state.buf[blockaddr], ERASE_VALUE, blocklen);
+	return 0;
+}
+
+#define BLOCK_ERASE_PROTECTED_FUNC(i) static int block_erase_chip_with_protected_region_ ## i \
+	(struct flashctx *flash, unsigned int blockaddr, unsigned int blocklen) { \
+	    return block_erase_chip_with_protected_region(flash, TEST_ERASE_INJECTOR_ ## i, blockaddr, blocklen); \
+	}
+BLOCK_ERASE_PROTECTED_FUNC(1)
+BLOCK_ERASE_PROTECTED_FUNC(2)
+BLOCK_ERASE_PROTECTED_FUNC(3)
+BLOCK_ERASE_PROTECTED_FUNC(4)
+BLOCK_ERASE_PROTECTED_FUNC(5)
+
+/*
+ * Runs the test cases that use protected flash regions (regions returned from
+ * get_flash_region() where write_prot is true) when the runtime flag to avoid
+ * writing to those regions is enabled.
+ *
+ * These tests verify that no protected region is erased, and that the erase
+ * commands used match the expected erase size (ensuring for example that a
+ * command erasing 16 bytes is not used when only 8 should be erased).
+ */
+static void erase_unwritable_regions_skipflag_on_test_success(void **state)
+{
+	struct test_case* current_test_case = *state;
+
+	int all_erase_tests_result = 0;
+	struct flashrom_flashctx flashctx = { 0 };
+	const char *param = ""; /* Default values for all params. */
+
+	struct flashrom_layout *layout;
+
+	setup_chip(&flashctx, &layout, param, current_test_case);
+
+	// This test needs special block erase to emulate protected regions.
+	memcpy(g_test_erase_injector,
+		(erasefunc_t *const[]){
+			block_erase_chip_with_protected_region_1,
+			block_erase_chip_with_protected_region_2,
+			block_erase_chip_with_protected_region_3,
+			block_erase_chip_with_protected_region_4,
+			block_erase_chip_with_protected_region_5,
+		},
+		sizeof(g_test_erase_injector)
+	);
+
+	flashrom_flag_set(&flashctx, FLASHROM_FLAG_SKIP_UNWRITABLE_REGIONS, true);
+
+	// We use dummyflasher programmer in tests, but for this test we need to
+	// replace dummyflasher's default get_region fn with test one.
+	// The rest of master struct is fine for this test.
+	// Note dummyflasher registers multiple masters by default, so replace
+	// get_region for each of them.
+	flashctx.mst->spi.get_region = &get_protected_region;
+	flashctx.mst->opaque.get_region = &get_protected_region;
+
+	printf("%s started.\n", current_test_case->erase_test_name);
+	int ret = flashrom_flash_erase(&flashctx);
+	printf("%s returned %d.\n", current_test_case->erase_test_name, ret);
+
+	int chip_erased = !memcmp(g_state.buf, current_test_case->erased_buf, MOCK_CHIP_SIZE);
+
+	int eraseblocks_in_order = !memcmp(g_state.eraseblocks_actual,
+					current_test_case->eraseblocks_expected,
+					current_test_case->eraseblocks_expected_ind * sizeof(struct erase_invoke));
+
+	int eraseblocks_invocations = (g_state.eraseblocks_actual_ind ==
+					current_test_case->eraseblocks_expected_ind);
+
+	if (chip_erased)
+		printf("Erased chip memory state for %s is CORRECT\n",
+			current_test_case->erase_test_name);
+	else
+		printf("Erased chip memory state for %s is WRONG\n",
+			current_test_case->erase_test_name);
+
+	if (eraseblocks_in_order)
+		printf("Eraseblocks order of invocation for %s is CORRECT\n",
+			current_test_case->erase_test_name);
+	else
+		printf("Eraseblocks order of invocation for %s is WRONG\n",
+			current_test_case->erase_test_name);
+
+	if (eraseblocks_invocations)
+		printf("Eraseblocks number of invocations for %s is CORRECT\n",
+			current_test_case->erase_test_name);
+	else
+		printf("Eraseblocks number of invocations for %s is WRONG, expected %d actual %d\n",
+			current_test_case->erase_test_name,
+			current_test_case->eraseblocks_expected_ind,
+			g_state.eraseblocks_actual_ind);
+
+	all_erase_tests_result |= ret;
+	all_erase_tests_result |= !chip_erased;
+	all_erase_tests_result |= !eraseblocks_in_order;
+	all_erase_tests_result |= !eraseblocks_invocations;
+
+	teardown_chip(&layout);
+
+	assert_int_equal(0, all_erase_tests_result);
+}
+
+/*
+ * Runs the test cases that use protected flash regions (regions returned from
+ * get_flash_region() where write_prot is true) when the runtime flag to avoid
+ * writing to those regions is enabled.
+ *
+ * These tests verify that no protected region is written, i.e. protected region
+ * memory state stays untouched.
+ */
+static void write_unwritable_regions_skipflag_on_test_success(void **state) {
+	struct test_case* current_test_case = *state;
+
+	int all_write_tests_result = 0;
+	struct flashrom_flashctx flashctx = { 0 };
+	uint8_t newcontents[MIN_BUF_SIZE];
+	const char *param = ""; /* Default values for all params. */
+
+	struct flashrom_layout *layout;
+
+	setup_chip(&flashctx, &layout, param, current_test_case);
+	memcpy(&newcontents, current_test_case->written_buf, MOCK_CHIP_SIZE);
+
+	// This test needs special block erase to emulate protected regions.
+	memcpy(g_test_erase_injector,
+		(erasefunc_t *const[]){
+			block_erase_chip_with_protected_region_1,
+			block_erase_chip_with_protected_region_2,
+			block_erase_chip_with_protected_region_3,
+			block_erase_chip_with_protected_region_4,
+			block_erase_chip_with_protected_region_5,
+		},
+		sizeof(g_test_erase_injector)
+	);
+
+	flashrom_flag_set(&flashctx, FLASHROM_FLAG_SKIP_UNWRITABLE_REGIONS, true);
+	flashrom_flag_set(&flashctx, FLASHROM_FLAG_SKIP_UNREADABLE_REGIONS, true);
+
+	// We use dummyflasher programmer in tests, but for this test we need to
+	// replace dummyflasher's default get_region fn with test one.
+	// The rest of master struct is fine for this test.
+	// Note dummyflasher registers multiple masters by default, so replace
+	// get_region for each of them.
+	flashctx.mst->spi.get_region = &get_protected_region;
+	flashctx.mst->opaque.get_region = &get_protected_region;
+
+	printf("%s started.\n", current_test_case->write_test_name);
+	int ret = flashrom_image_write(&flashctx, &newcontents, MIN_BUF_SIZE, NULL);
+	printf("%s returned %d.\n", current_test_case->write_test_name, ret);
+
+	int chip_written = !memcmp(g_state.buf, current_test_case->written_protected_buf, MOCK_CHIP_SIZE);
+
+	if (chip_written)
+		printf("Written chip memory state for %s is CORRECT\n",
+			current_test_case->write_test_name);
+	else
+		printf("Written chip memory state for %s is WRONG\n",
+			current_test_case->write_test_name);
+
+	all_write_tests_result |= ret;
+	all_write_tests_result |= !chip_written;
+
+	teardown_chip(&layout);
+
+	assert_int_equal(0, all_write_tests_result);
+}
+
+static void test_erase_fails_for_unwritable_region(void **state) {
+	struct flashrom_flashctx flashctx = {
+		.chip = &chip_1_2_4_8_16,
+	};
+	assert_int_equal(0, programmer_init(&programmer_dummy, ""));
+	flashctx.mst = &registered_masters[0];
+
+	flashctx.mst->spi.get_region = &get_protected_region;
+	flashctx.mst->opaque.get_region = &get_protected_region;
+	flashrom_flag_set(&flashctx, FLASHROM_FLAG_SKIP_UNWRITABLE_REGIONS, false);
+
+	/* Ask to erase one byte at the end of the unprotected region and one byte
+	 * at the beginning of the protected one. If the check for unwritable regions
+	 * wrongly treats the upper bound as exclusive, it will incorrectly try
+	 * to erase inside the protected region. */
+	struct flashrom_layout *layout;
+	flashrom_layout_new(&layout);
+	flashrom_layout_add_region(layout, 7, 8, "protected");
+	flashrom_layout_include_region(layout, "protected");
+	flashrom_layout_set(&flashctx, layout);
+
+	int ret = flashrom_flash_erase(&flashctx);
+
+	assert_int_equal(0, programmer_shutdown());
+	flashrom_layout_release(layout);
+
+	assert_int_not_equal(ret, 0);
 }

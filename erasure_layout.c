@@ -238,6 +238,80 @@ static void select_erase_functions(struct flashctx *flashctx, const struct erase
 	}
 }
 
+static int erase_write_helper(struct flashctx *const flashctx, chipoff_t region_start, chipoff_t region_end,
+		uint8_t *curcontents, uint8_t *newcontents,
+		struct erase_layout *erase_layout, bool *all_skipped)
+{
+	const size_t erasefn_count = count_usable_erasers(flashctx);
+
+	// select erase functions
+	for (size_t i = 0; i < erase_layout[erasefn_count - 1].block_count; i++) {
+		if (erase_layout[erasefn_count - 1].layout_list[i].start_addr <= region_end &&
+			region_start <= erase_layout[erasefn_count - 1].layout_list[i].end_addr)
+			select_erase_functions(flashctx, erase_layout,
+						erasefn_count - 1, i,
+						curcontents, newcontents,
+						region_start, region_end);
+	}
+
+	// erase
+	for (size_t i = 0; i < erasefn_count; i++) {
+		for (size_t j = 0; j < erase_layout[i].block_count; j++) {
+			if (!erase_layout[i].layout_list[j].selected)
+				continue;
+
+			chipoff_t start_addr = erase_layout[i].layout_list[j].start_addr;
+			unsigned int block_len = erase_layout[i].layout_list[j].end_addr - start_addr + 1;
+			const uint8_t erased_value = ERASED_VALUE(flashctx);
+			// execute erase
+			erasefunc_t *erasefn = lookup_erase_func_ptr(erase_layout[i].eraser);
+
+
+			if (erasefn(flashctx, start_addr, block_len)) {
+				return -1;
+			}
+			if (check_erased_range(flashctx, start_addr, block_len)) {
+				return -1;
+				msg_cerr("ERASE FAILED!\n");
+			}
+
+			// adjust curcontents
+			memset(curcontents+start_addr, erased_value, block_len);
+			// after erase make it unselected again
+			erase_layout[i].layout_list[j].selected = false;
+			msg_cdbg("E(%"PRIx32":%"PRIx32")", start_addr, start_addr + block_len - 1);
+
+			*all_skipped = false;
+		}
+	}
+
+	// write
+	unsigned int start_here = 0, len_here = 0, erase_len = region_end - region_start + 1;
+	while ((len_here = get_next_write(curcontents + region_start + start_here,
+					newcontents + region_start + start_here,
+					erase_len - start_here, &start_here,
+					flashctx->chip->gran))) {
+		// execute write
+		int ret = write_flash(flashctx,
+				newcontents + region_start + start_here,
+				region_start + start_here, len_here);
+		if (ret) {
+			msg_cerr("Write failed at %#x, Abort.\n", region_start + start_here);
+			return -1;
+		}
+
+		// adjust curcontents
+		memcpy(curcontents + region_start + start_here,
+			newcontents + region_start + start_here, len_here);
+		msg_cdbg("W(%"PRIx32":%"PRIx32")", region_start + start_here, region_start + start_here + len_here - 1);
+
+		*all_skipped = false;
+	}
+
+	return 0;
+}
+
+
 /*
  * @brief	wrapper to use the erase algorithm
  *
@@ -253,11 +327,14 @@ int erase_write(struct flashctx *const flashctx, chipoff_t region_start, chipoff
 		uint8_t *curcontents, uint8_t *newcontents,
 		struct erase_layout *erase_layout, bool *all_skipped)
 {
-	const size_t erasefn_count = count_usable_erasers(flashctx);
 	int ret = 0;
-	size_t i;
 	chipoff_t old_start = region_start, old_end = region_end;
 	align_region(erase_layout, flashctx, &region_start, &region_end);
+
+	if (!flashctx->flags.skip_unwritable_regions) {
+		if (check_for_unwritable_regions(flashctx, region_start, region_end - region_start + 1))
+			return -1;
+	}
 
 	uint8_t *old_start_buf = NULL, *old_end_buf = NULL;
 	const size_t start_buf_len = old_start - region_start;
@@ -287,101 +364,34 @@ int erase_write(struct flashctx *const flashctx, chipoff_t region_start, chipoff
 		memcpy(newcontents + end_offset, curcontents + end_offset, end_buf_len);
 	}
 
-	// select erase functions
-	for (i = 0; i < erase_layout[erasefn_count - 1].block_count; i++) {
-		if (erase_layout[erasefn_count - 1].layout_list[i].start_addr <= region_end &&
-			region_start <= erase_layout[erasefn_count - 1].layout_list[i].end_addr)
-			select_erase_functions(flashctx, erase_layout,
-						erasefn_count - 1, i,
-						curcontents, newcontents,
-						region_start, region_end);
-	}
+	unsigned int len;
+	for (unsigned int addr = region_start; addr <= region_end; addr += len) {
+		struct flash_region region;
+		get_flash_region(flashctx, addr, &region);
+		len = min(region_end, region.end) - addr + 1;
 
-	for (i = 0; i < erasefn_count; i++) {
-		for (size_t j = 0; j < erase_layout[i].block_count; j++) {
-			if (!erase_layout[i].layout_list[j].selected)	continue;
-
-			// erase
-			chipoff_t start_addr = erase_layout[i].layout_list[j].start_addr;
-			unsigned int block_len = erase_layout[i].layout_list[j].end_addr - start_addr + 1;
-			const uint8_t erased_value = ERASED_VALUE(flashctx);
-			// execute erase
-			erasefunc_t *erasefn = lookup_erase_func_ptr(erase_layout[i].eraser);
-
-			if (!flashctx->flags.skip_unwritable_regions) {
-				if (check_for_unwritable_regions(flashctx, start_addr, block_len))
-					goto _end;
-			}
-
-			unsigned int len;
-			for (unsigned int addr = start_addr; addr < start_addr + block_len; addr += len) {
-				struct flash_region region;
-				get_flash_region(flashctx, addr, &region);
-
-				len = min(start_addr + block_len, region.end + 1) - addr;
-
-				if (region.write_prot) {
-					msg_gdbg("%s: cannot erase inside %s "
-						"region (%#08"PRIx32"..%#08"PRIx32"), skipping range (%#08x..%#08x).\n",
-						 __func__, region.name,
-						 region.start, region.end,
-						 addr, addr + len - 1);
-					free(region.name);
-					continue;
-				}
-
-				msg_gdbg("%s: %s region (%#08"PRIx32"..%#08"PRIx32") is "
-					"writable, erasing range (%#08x..%#08x).\n",
-					 __func__, region.name,
-					 region.start, region.end,
-					 addr, addr + len - 1);
-				free(region.name);
-
-				if (erasefn(flashctx, addr, len)) {
-					ret = -1;
-					goto _end;
-				}
-				if (check_erased_range(flashctx, addr, len)) {
-					ret = - 1;
-					msg_cerr("ERASE FAILED!\n");
-					goto _end;
-				}
-			}
-
-			// adjust curcontents
-			memset(curcontents+start_addr, erased_value, block_len);
-			// after erase make it unselected again
-			erase_layout[i].layout_list[j].selected = false;
-			msg_cdbg("E(%"PRIx32":%"PRIx32")", start_addr, start_addr + block_len - 1);
-
-			*all_skipped = false;
+		if (region.write_prot) {
+			msg_gdbg("%s: cannot erase inside %s "
+				"region (%#08"PRIx32"..%#08"PRIx32"), skipping range (%#08x..%#08x).\n",
+				 __func__, region.name,
+				 region.start, region.end,
+				 addr, addr + len - 1);
+			free(region.name);
+			continue;
 		}
-	}
 
-	// write
-	unsigned int start_here = 0, len_here = 0, erase_len = region_end - region_start + 1;
-	while ((len_here = get_next_write(curcontents + region_start + start_here,
-					newcontents + region_start + start_here,
-					erase_len - start_here, &start_here,
-					flashctx->chip->gran))) {
-		// execute write
-		ret = write_flash(flashctx,
-				newcontents + region_start + start_here,
-				region_start + start_here, len_here);
-		if (ret) {
-			msg_cerr("Write failed at %#zx, Abort.\n", i);
-			ret = -1;
+		msg_gdbg("%s: %s region (%#08"PRIx32"..%#08"PRIx32") is "
+			"writable, erasing range (%#08x..%#08x).\n",
+			 __func__, region.name,
+			 region.start, region.end,
+			 addr, addr + len - 1);
+		free(region.name);
+
+
+		ret = erase_write_helper(flashctx, addr, addr + len - 1, curcontents, newcontents, erase_layout, all_skipped);
+		if (ret)
 			goto _end;
-		}
-
-		// adjust curcontents
-		memcpy(curcontents + region_start + start_here,
-			newcontents + region_start + start_here, len_here);
-		msg_cdbg("W(%"PRIx32":%"PRIx32")", region_start + start_here, region_start + start_here + len_here - 1);
-
-		*all_skipped = false;
 	}
-
 _end:
 	if (old_start_buf) {
 		memcpy(newcontents + region_start, old_start_buf, start_buf_len);

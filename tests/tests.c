@@ -514,6 +514,16 @@ int main(int argc, char *argv[])
 	ret |= _cmocka_run_group_tests("erase_func_algo.c tests", erase_func_algo_tests, n_erase_tests, NULL, NULL);
 	free(erase_func_algo_tests);
 
+	size_t n_erase_protected_region_tests;
+	struct CMUnitTest *erase_protected_region_algo_tests
+				= get_erase_protected_region_algo_tests(&n_erase_protected_region_tests);
+	ret |= _cmocka_run_group_tests("erase_func_algo.c protected region tests",
+					erase_protected_region_algo_tests,
+					n_erase_protected_region_tests,
+					NULL,
+					NULL);
+	free(erase_protected_region_algo_tests);
+
 	// Write-protect group should run last.
 	const struct CMUnitTest chip_wp_tests[] = {
 		cmocka_unit_test(invalid_wp_range_dummyflasher_test_success),
