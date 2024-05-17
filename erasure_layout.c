@@ -318,13 +318,13 @@ int erase_write(struct flashctx *const flashctx, chipoff_t region_start, chipoff
 				struct flash_region region;
 				get_flash_region(flashctx, addr, &region);
 
-				len = min(start_addr + block_len, region.end) - addr;
+				len = min(start_addr + block_len, region.end + 1) - addr;
 
 				if (region.write_prot) {
 					msg_gdbg("%s: cannot erase inside %s "
 						"region (%#08"PRIx32"..%#08"PRIx32"), skipping range (%#08x..%#08x).\n",
 						 __func__, region.name,
-						 region.start, region.end - 1,
+						 region.start, region.end,
 						 addr, addr + len - 1);
 					free(region.name);
 					continue;
@@ -333,7 +333,7 @@ int erase_write(struct flashctx *const flashctx, chipoff_t region_start, chipoff
 				msg_gdbg("%s: %s region (%#08"PRIx32"..%#08"PRIx32") is "
 					"writable, erasing range (%#08x..%#08x).\n",
 					 __func__, region.name,
-					 region.start, region.end - 1,
+					 region.start, region.end,
 					 addr, addr + len - 1);
 				free(region.name);
 

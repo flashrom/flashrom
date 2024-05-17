@@ -1436,7 +1436,7 @@ static void ich_get_region(const struct flashctx *flash, unsigned int addr, stru
 	region->read_prot  = false;
 	region->write_prot = false;
 	region->start = 0;
-	region->end = flashrom_flash_getsize(flash);
+	region->end = flashrom_flash_getsize(flash) - 1;
 
 	for (ssize_t i = 0; i < nr; i++) {
 		uint32_t base = fd_regions[i].base;
@@ -1459,7 +1459,7 @@ static void ich_get_region(const struct flashctx *flash, unsigned int addr, stru
 			/* fd_regions[i] contains addr, copy to *region. */
 			name = fd_regions[i].name;
 			region->start = base;
-			region->end = limit + 1;
+			region->end = limit;
 			region->read_prot  = (level == LOCKED) || (level == READ_PROT);
 			region->write_prot = (level == LOCKED) || (level == WRITE_PROT);
 			break;

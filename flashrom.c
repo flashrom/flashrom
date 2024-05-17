@@ -379,7 +379,7 @@ void get_flash_region(const struct flashctx *flash, int addr, struct flash_regio
 	} else {
 		region->name = strdup("");
 		region->start = 0;
-		region->end = flashrom_flash_getsize(flash);
+		region->end = flashrom_flash_getsize(flash) - 1;
 		region->read_prot = false;
 		region->write_prot = false;
 	}
@@ -388,12 +388,12 @@ void get_flash_region(const struct flashctx *flash, int addr, struct flash_regio
 int check_for_unwritable_regions(const struct flashctx *flash, unsigned int start, unsigned int len)
 {
 	struct flash_region region;
-	for (unsigned int addr = start; addr < start + len; addr = region.end) {
+	for (unsigned int addr = start; addr < start + len; addr = region.end + 1) {
 		get_flash_region(flash, addr, &region);
 
 		if (region.write_prot) {
 			msg_gerr("%s: cannot write/erase inside %s region (%#08"PRIx32"..%#08"PRIx32").\n",
-				 __func__, region.name, region.start, region.end - 1);
+				 __func__, region.name, region.start, region.end);
 			free(region.name);
 			return -1;
 		}
@@ -596,14 +596,14 @@ int read_flash(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigne
 		struct flash_region region;
 		get_flash_region(flash, addr, &region);
 
-		read_len = min(start + len, region.end) - addr;
+		read_len = min(start + len, region.end + 1) - addr;
 		uint8_t *rbuf = buf + addr - start;
 
 		if (region.read_prot) {
 			if (flash->flags.skip_unreadable_regions) {
 				msg_gdbg("%s: cannot read inside %s region (%#08"PRIx32"..%#08"PRIx32"), "
 					 "filling (%#08x..%#08x) with erased value instead.\n",
-					 __func__, region.name, region.start, region.end - 1,
+					 __func__, region.name, region.start, region.end,
 					 addr, addr + read_len - 1);
 				free(region.name);
 
@@ -612,12 +612,12 @@ int read_flash(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigne
 			}
 
 			msg_gerr("%s: cannot read inside %s region (%#08"PRIx32"..%#08"PRIx32").\n",
-				 __func__, region.name, region.start, region.end - 1);
+				 __func__, region.name, region.start, region.end);
 			free(region.name);
 			return -1;
 		}
 		msg_gdbg("%s: %s region (%#08"PRIx32"..%#08"PRIx32") is readable, reading range (%#08x..%#08x).\n",
-			 __func__, region.name, region.start, region.end - 1, addr, addr + read_len - 1);
+			 __func__, region.name, region.start, region.end, addr, addr + read_len - 1);
 		free(region.name);
 
 		read_func_t *read_func = lookup_read_func_ptr(flash->chip);
@@ -665,25 +665,25 @@ int verify_range(struct flashctx *flash, const uint8_t *cmpbuf, unsigned int sta
 	for (size_t addr = start; addr < start + len; addr += read_len) {
 		struct flash_region region;
 		get_flash_region(flash, addr, &region);
-		read_len = min(start + len, region.end) - addr;
+		read_len = min(start + len, region.end + 1) - addr;
 
 		if ((region.write_prot && flash->flags.skip_unwritable_regions) ||
 		    (region.read_prot  && flash->flags.skip_unreadable_regions)) {
 			msg_gdbg("%s: Skipping verification of %s region (%#08"PRIx32"..%#08"PRIx32")\n",
-				 __func__, region.name, region.start, region.end - 1);
+				 __func__, region.name, region.start, region.end);
 			free(region.name);
 			continue;
 		}
 
 		if (region.read_prot) {
 			msg_gerr("%s: Verification imposible because %s region (%#08"PRIx32"..%#08"PRIx32") is unreadable.\n",
-				 __func__, region.name, region.start, region.end - 1);
+				 __func__, region.name, region.start, region.end);
 			free(region.name);
 			goto out_free;
 		}
 
 		msg_gdbg("%s: Verifying %s region (%#08"PRIx32"..%#08"PRIx32")\n",
-			 __func__, region.name, region.start, region.end - 1);
+			 __func__, region.name, region.start, region.end);
 		free(region.name);
 
 		ret = read_flash(flash, readbuf, addr, read_len);
@@ -1046,18 +1046,18 @@ int write_flash(struct flashctx *flash, const uint8_t *buf,
 		struct flash_region region;
 		get_flash_region(flash, addr, &region);
 
-		write_len = min(start + len, region.end) - addr;
+		write_len = min(start + len, region.end + 1) - addr;
 		const uint8_t *rbuf = buf + addr - start;
 
 		if (region.write_prot) {
 			msg_gdbg("%s: cannot write inside %s region (%#08"PRIx32"..%#08"PRIx32"), skipping (%#08x..%#08x).\n",
-				 __func__, region.name, region.start, region.end - 1, addr, addr + write_len - 1);
+				 __func__, region.name, region.start, region.end, addr, addr + write_len - 1);
 			free(region.name);
 			continue;
 		}
 
 		msg_gdbg("%s: %s region (%#08"PRIx32"..%#08"PRIx32") is writable, writing range (%#08x..%#08x).\n",
-			 __func__, region.name, region.start, region.end - 1, addr, addr + write_len - 1);
+			 __func__, region.name, region.start, region.end, addr, addr + write_len - 1);
 
 		write_func_t *write_func = lookup_write_func_ptr(flash->chip);
 		int ret = write_func(flash, rbuf, addr, write_len);
@@ -1511,17 +1511,17 @@ static int erase_block(struct flashctx *const flashctx,
 		struct flash_region region;
 		get_flash_region(flashctx, addr, &region);
 
-		len = min(info->erase_start + erase_len, region.end) - addr;
+		len = min(info->erase_start + erase_len, region.end + 1) - addr;
 
 		if (region.write_prot) {
 			msg_gdbg("%s: cannot erase inside %s region (%#08"PRIx32"..%#08"PRIx32"), skipping range (%#08x..%#08x).\n",
-				 __func__, region.name, region.start, region.end - 1, addr, addr + len - 1);
+				 __func__, region.name, region.start, region.end, addr, addr + len - 1);
 			free(region.name);
 			continue;
 		}
 
 		msg_gdbg("%s: %s region (%#08"PRIx32"..%#08"PRIx32") is writable, erasing range (%#08x..%#08x).\n",
-			 __func__, region.name, region.start, region.end - 1, addr, addr + len - 1);
+			 __func__, region.name, region.start, region.end, addr, addr + len - 1);
 		free(region.name);
 
 		if (erasefn(flashctx, addr, len))
