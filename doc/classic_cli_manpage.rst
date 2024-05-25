@@ -329,6 +329,7 @@ All operations involving any chip access (probe/read/write/...) require the ``-p
 **-R, --version**
         Show version information and exit.
 
+.. _programmer-specific information:
 
 PROGRAMMER-SPECIFIC INFORMATION
 -------------------------------
