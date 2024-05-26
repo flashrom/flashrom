@@ -291,7 +291,7 @@ int s25fs_block_erase_d8(struct flashctx *flash, unsigned int addr, unsigned int
 					s25fs_read_cr(flash, CR3NV_ADDR));
 
 			/* Restore CR3V when flashrom exits */
-			uint8_t *data = calloc(sizeof(uint8_t), 1);
+			uint8_t *data = calloc(1, sizeof(uint8_t));
 			if (!data) {
 				msg_cerr("Out of memory!\n");
 				return 1;

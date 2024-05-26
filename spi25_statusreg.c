@@ -310,7 +310,7 @@ static int spi_disable_blockprotect_generic(struct flashctx *flash, uint8_t bp_m
 	}
 
 	/* Restore status register content upon exit in finalize_flash_access(). */
-	uint8_t *data = calloc(sizeof(uint8_t), 1);
+	uint8_t *data = calloc(1, sizeof(uint8_t));
 	if (!data) {
 		msg_cerr("Out of memory!\n");
 		return 1;
