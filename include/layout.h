@@ -37,6 +37,11 @@ typedef uint32_t chipsize_t; /* Able to store the number of bytes of any support
 
 struct flash_region {
 	char *name;
+	/*
+	 * Note that because start and end are chipoff_t, end is an inclusive upper
+	 * bound: the length of a region is (end - start + 1) bytes and it is
+	 * impossible to represent a region with zero length.
+	 */
 	chipoff_t start;
 	chipoff_t end;
 	bool read_prot;
