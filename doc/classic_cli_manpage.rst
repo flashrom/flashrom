@@ -1035,8 +1035,14 @@ as per the device.
 ch347_spi programmer
 ^^^^^^^^^^^^^^^^^^^^
 
-The WCH CH347 programmer does not currently support any parameters. SPI frequency is fixed at 2 MHz, and CS0 is used
-as per the device.
+An optional ``spispeed`` parameter could be used to specify the SPI speed. This parameter is available for the CH347T and CH347F device.
+The default SPI speed is 15MHz if no value is specified.
+Syntax is::
+
+        flashrom -p ch347_spi:spispeed=value
+
+where ``value`` can be ``60M``, ``30M``, ``15M``, ``7.5M``, ``3.75M``, ``1.875M``, ``937.5K``, ``468.75K``.
+
 
 ni845x_spi programmer
 ^^^^^^^^^^^^^^^^^^^^^

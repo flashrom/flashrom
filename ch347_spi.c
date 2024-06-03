@@ -51,6 +51,11 @@ struct ch347_spi_data {
 	int interface;
 };
 
+struct device_speeds {
+	const char *name;
+	const int divisor;
+};
+
 /* TODO: Add support for HID mode */
 static const struct dev_entry devs_ch347_spi[] = {
 	{0x1A86, 0x55DB, OK, "QinHeng Electronics", "USB To UART+SPI+I2C"},   /* CH347T */
@@ -61,6 +66,18 @@ static const struct dev_entry devs_ch347_spi[] = {
 static int ch347_interface[] = {
 	CH347T_IFACE,
 	CH347F_IFACE,
+};
+
+static const struct device_speeds spispeeds[] = {
+	{"60M",     0},
+	{"30M",     1},
+	{"15M",     2},
+	{"7.5M",    3},
+	{"3.75M",   4},
+	{"1.875M",  5},
+	{"937.5K",  6},
+	{"468.75K", 7},
+	{NULL,      0}
 };
 
 static int ch347_spi_shutdown(void *data)
@@ -266,9 +283,11 @@ static const struct spi_master spi_master_ch347_spi = {
 /* Largely copied from ch341a_spi.c */
 static int ch347_spi_init(const struct programmer_cfg *cfg)
 {
+	char *arg;
 	uint16_t vid = devs_ch347_spi[0].vendor_id;
 	uint16_t pid = 0;
 	int index = 0;
+	int speed_index = 2;
 	struct ch347_spi_data *ch347_data = calloc(1, sizeof(*ch347_data));
 	if (!ch347_data) {
 		msg_perr("Could not allocate space for SPI data\n");
@@ -332,9 +351,25 @@ static int ch347_spi_init(const struct programmer_cfg *cfg)
 		(desc.bcdDevice >> 4) & 0x000F,
 		(desc.bcdDevice >> 0) & 0x000F);
 
-	/* TODO: add programmer cfg for things like CS pin and divisor */
-	if (ch347_spi_config(ch347_data, 2) < 0)
+	/* set CH347 clock division */
+	arg = extract_programmer_param_str(cfg, "spispeed");
+	if (arg) {
+		for (speed_index = 0; spispeeds[speed_index].name; speed_index++) {
+			if (!strncasecmp(spispeeds[speed_index].name, arg, strlen(spispeeds[speed_index].name))) {
+				break;
+			}
+		}
+	}
+	if (!spispeeds[speed_index].name || !arg) {
+		msg_perr("Unknown value of spispeed parameter, using default 15MHz clock spi.\n");
+		speed_index = 2;
+	}
+	free(arg);
+	if (ch347_spi_config(ch347_data, spispeeds[speed_index].divisor) < 0) {
 		goto error_exit;
+	} else {
+		msg_pinfo("CH347 SPI clock set to %sHz.\n", spispeeds[speed_index].name);
+	}
 
 	return register_spi_master(&spi_master_ch347_spi, ch347_data);
 
