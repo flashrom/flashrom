@@ -96,11 +96,35 @@ Properties
 * ``.page_size`` is really hard.
   Please read this `long explanation <https://mail.coreboot.org/pipermail/flashrom/2013-April/010817.html>`_,
   or ignore it for now and set it to 256.
-* We encode various features of flash chips in a bitmask named ``.feature_bits``.
-  Available options can be found in ``include/flash.h``, look for macros defined by the pattern ``#define FEATURE_XXX``.
 * ``.tested`` is used to indicate if the code was tested to work with real hardware, its possible values are defined
   in ``include/flash.h``. Without any tests it should be set to ``TEST_UNTESTED``.
   See also another doc :doc:`how_to_mark_chip_tested`.
+
+Feature Bits
+============
+
+We encode various features of flash chips in a bitmask named ``.feature_bits``.
+Available options can be found in ``include/flash.h``, look for macros defined by the pattern ``#define FEATURE_XXX``.
+
+Some of the feature bits have more detailed docs, see below.
+
+Write-Status-Register (WRSR) Handling
+-------------------------------------
+
+The Write Status Register (WRSR) is used exclusively in SPI flash chips to configure various settings within the flash chip,
+including write protection and other features.
+The way WRSR is accessed varies between SPI flash chips, leading to the need for these feature bits.
+
+* ``FEATURE_WRSR_EWSR``
+  indicates that we need an **Enable-Write-Status-Register** (EWSR) instruction which opens the status register for the
+  immediately-followed next WRSR instruction. Usually, the opcode is **0x50**.
+
+* ``FEATURE_WRSR_WREN``
+  indicates that we need an **Write-Enable** (WREN) instruction to set the Write Enable Latch (WEL) bit. The WEL bit
+  must be set prior to every WRSR command. Usually, the opcode is **0x06**.
+
+* ``FEATURE_WRSR_EITHER``
+  indicates that either EWSR or WREN is supported in this chip.
 
 Operations
 ==========
