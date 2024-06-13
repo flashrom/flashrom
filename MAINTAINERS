@@ -195,6 +195,11 @@ M:	Alexander Goncharov <chat@joursoir.net>
 S:	Maintained
 F:	util/flashrom.bash-completion.tmpl
 
+CONTINUOUS INTEGRATION SCRIPT
+M:	Anastasia Klimchuk <aklm@chromium.org>
+S:	Maintained
+F:	test_build.sh
+
 FLASHROM TESTER
 M:	Hsuan Ting Chen <roccochen@google.com>
 R:	Evan Benn <evanbenn@gmail.com>
