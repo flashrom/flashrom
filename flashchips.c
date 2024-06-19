@@ -2648,7 +2648,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 512,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN,
-		.tested		= {.probe = NT, .read = NT, .erase = NT, .write = BAD},
+		.tested		= {.probe = NT, .read = NT, .erase = NT, .write = BAD, .wp = NA},
 		.probe		= PROBE_SPI_RDID,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
@@ -3717,7 +3717,7 @@ const struct flashchip flashchips[] = {
 		.total_size	= 64,
 		.page_size	= 0, /* unused */
 		.feature_bits	= 0,
-		.tested		= {.probe = OK, .read = OK, .erase = BAD, .write = BAD},
+		.tested		= {.probe = OK, .read = OK, .erase = BAD, .write = BAD, .wp = NA},
 		.probe		= PROBE_JEDEC, /* FIXME! */
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
@@ -9072,7 +9072,7 @@ const struct flashchip flashchips[] = {
 		.model_id	= MACRONIX_MX23L12854,
 		.total_size	= 16384,
 		.page_size	= 256,
-		.tested		= {.probe = NT, .read = NT, .erase = NA, .write = NA},
+		.tested		= {.probe = NT, .read = NT, .erase = NA, .write = NA, .wp = NA},
 		.probe		= PROBE_SPI_RDID,
 		.probe_timing	= TIMING_ZERO,
 		.write		= 0, /* MX23L12854 is a mask ROM, so it is read-only */
@@ -9088,7 +9088,7 @@ const struct flashchip flashchips[] = {
 		.model_id	= MACRONIX_MX23L1654,
 		.total_size	= 2048,
 		.page_size	= 256,
-		.tested		= {.probe = NT, .read = NT, .erase = NA, .write = NA},
+		.tested		= {.probe = NT, .read = NT, .erase = NA, .write = NA, .wp = NA},
 		.probe		= PROBE_SPI_RDID,
 		.probe_timing	= TIMING_ZERO,
 		.write		= 0, /* MX23L1654 is a mask ROM, so it is read-only */
@@ -9104,7 +9104,7 @@ const struct flashchip flashchips[] = {
 		.model_id	= MACRONIX_MX23L3254,
 		.total_size	= 4096,
 		.page_size	= 256,
-		.tested		= {.probe = OK, .read = OK, .erase = NA, .write = NA},
+		.tested		= {.probe = OK, .read = OK, .erase = NA, .write = NA, .wp = NA},
 		.probe		= PROBE_SPI_RDID,
 		.probe_timing	= TIMING_ZERO,
 		.write		= 0, /* MX23L3254 is a mask ROM, so it is read-only */
@@ -9120,7 +9120,7 @@ const struct flashchip flashchips[] = {
 		.model_id	= MACRONIX_MX23L6454,
 		.total_size	= 8192,
 		.page_size	= 256,
-		.tested		= {.probe = OK, .read = OK, .erase = NA, .write = NA},
+		.tested		= {.probe = OK, .read = OK, .erase = NA, .write = NA, .wp = NA},
 		.probe		= PROBE_SPI_RDID,
 		.probe_timing	= TIMING_ZERO,
 		.write		= 0, /* MX23L6454 is a mask ROM, so it is read-only */
