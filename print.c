@@ -444,7 +444,8 @@ static void print_supported_boards_helper(const struct board_info *boards,
 }
 #endif
 
-static void print_supported_devs(const struct programmer_entry *const prog, const char *const type)
+static void print_supported_devs(const struct programmer_entry *const prog, const char *const type,
+				int* num_devs)
 {
 	const struct dev_entry *const devs = prog->devs.dev;
 	msg_ginfo("\nSupported %s devices for the %s programmer:\n", type, prog->name);
@@ -480,12 +481,17 @@ static void print_supported_devs(const struct programmer_entry *const prog, cons
 
 		msg_pinfo(" %04x:%04x  %s\n", devs[i].vendor_id, devs[i].device_id,
 			  test_state_to_text(devs[i].status));
+		if (devs[i].status == OK || devs[i].status == NT || devs[i].status == DEP)
+			*num_devs += 1;
 	}
 }
 
 int print_supported(void)
 {
 	unsigned int i;
+	int num_pci_devs = 0;
+	int num_usb_devs = 0;
+
 	if (print_supported_chips())
 		return 1;
 
@@ -504,10 +510,10 @@ int print_supported(void)
 		const struct programmer_entry *const prog = programmer_table[i];
 		switch (prog->type) {
 		case USB:
-			print_supported_devs(prog, "USB");
+			print_supported_devs(prog, "USB", &num_usb_devs);
 			break;
 		case PCI:
-			print_supported_devs(prog, "PCI");
+			print_supported_devs(prog, "PCI", &num_pci_devs);
 			break;
 		case OTHER:
 			if (prog->devs.note != NULL) {
@@ -521,6 +527,10 @@ int print_supported(void)
 			break;
 		}
 	}
+
+	msg_ginfo("\nSupported USB devices, total %d\nSupported PCI devices, total %d\n",
+			num_usb_devs, num_pci_devs);
+
 	return 0;
 }
 
