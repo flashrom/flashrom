@@ -58,10 +58,11 @@
 #define USE_IOPERM		9
 
 #if defined(__ANDROID__)
-#include <sys/glibc-syscalls.h>
+#include <sys/io.h>
+#include <unistd.h>
 
-#define IO_PORT_PERMISSION USE_IOPL
-#define IO_PORT_FUNCTION USE_LIBC_TARGET_LAST
+#define IO_PORT_PERMISSION USE_IOPERM
+#define IO_PORT_FUNCTION USE_ASM
 #endif
 
 #if defined(__linux__) && !defined(__ANDROID__)
