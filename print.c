@@ -122,7 +122,7 @@ static int print_supported_chips(void)
 	for (i = strlen("Device"); i < maxchiplen; i++)
 		msg_ginfo(" ");
 
-	msg_ginfo("Test");
+	msg_ginfo("Test ");
 	for (i = 0; i < border; i++)
 		msg_ginfo(" ");
 	msg_ginfo("Known");
@@ -140,7 +140,7 @@ static int print_supported_chips(void)
 
 	for (i = 0; i < maxvendorlen + maxchiplen; i++)
 		msg_ginfo(" ");
-	msg_ginfo("OK  ");
+	msg_ginfo("OK   ");
 	for (i = 0; i < border; i++)
 		msg_ginfo(" ");
 	msg_ginfo("Broken");
@@ -151,7 +151,7 @@ static int print_supported_chips(void)
 		msg_ginfo(" ");
 	msg_gdbg("range [V]");
 	msg_ginfo("\n\n");
-	msg_ginfo("(P = PROBE, R = READ, E = ERASE, W = WRITE, - = N/A)\n\n");
+	msg_ginfo("(P = PROBE, R = READ, E = ERASE, W = WRITE, B = block-protect, - = N/A)\n\n");
 
 	for (chip = flashchips; chip->name != NULL; chip++) {
 		/* Don't print generic entries. */
@@ -242,6 +242,12 @@ static int print_supported_chips(void)
 			msg_ginfo("-");
 		else
 			msg_ginfo(" ");
+		if (chip->tested.wp == OK)
+			msg_ginfo("B");
+		else if (chip->tested.wp == NA)
+			msg_ginfo("-");
+		else
+			msg_ginfo(" ");
 		for (i = 0; i < border; i++)
 			msg_ginfo(" ");
 
@@ -259,6 +265,10 @@ static int print_supported_chips(void)
 			msg_ginfo(" ");
 		if (chip->tested.write == BAD)
 			msg_ginfo("W");
+		else
+			msg_ginfo(" ");
+		if (chip->tested.wp == BAD)
+			msg_ginfo("B");
 		else
 			msg_ginfo(" ");
 		for (i = 0; i < border + 1; i++)
