@@ -121,7 +121,8 @@ void prettyprint_ich_chipset(enum ich_chipset cs)
 		"9 series Wildcat Point", "9 series Wildcat Point LP", "100 series Sunrise Point",
 		"C620 series Lewisburg", "C740 series Emmitsburg", "300 series Cannon Point",
 		"400 series Comet Point", "500 series Tiger Point", "600 series Alder Point",
-		"Meteor Lake", "Apollo Lake", "Gemini Lake", "Jasper Lake", "Elkhart Lake",
+		"Apollo Lake", "Gemini Lake", "Jasper Lake", "Elkhart Lake",
+		"Meteor Lake",
 	};
 	if (cs < CHIPSET_ICH8 || cs - CHIPSET_ICH8 + 1 >= ARRAY_SIZE(chipset_names))
 		cs = 0;
