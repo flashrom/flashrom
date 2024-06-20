@@ -6899,14 +6899,14 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor         = "GigaDevice",
-		.name           = "GD25LR256E",
+		.name           = "GD25LB256E/GD25LR256E",
 		.bustype        = BUS_SPI,
 		.manufacture_id = GIGADEVICE_ID,
 		.model_id       = GIGADEVICE_GD25LR256E,
 		.total_size     = 32768,
 		.page_size      = 256,
 		.feature_bits   = FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI | FEATURE_4BA,
-		.tested         = TEST_OK_PREW,
+		.tested         = TEST_OK_PREWB,
 		.probe          = PROBE_SPI_RDID,
 		.probe_timing   = TIMING_ZERO,
 		.block_erasers  =
