@@ -2111,6 +2111,7 @@ static void init_chipset_properties(struct swseq_data *swseq, struct hwseq_data 
 	case CHIPSET_JASPER_LAKE:
 	case CHIPSET_ELKHART_LAKE:
 	case CHIPSET_METEOR_LAKE:
+	case CHIPSET_PANTHER_LAKE:
 		*num_pr			= 6;	/* Includes GPR0 */
 		*reg_pr0		= PCH100_REG_FPR0;
 		swseq->reg_ssfsc	= PCH100_REG_SSFSC;
@@ -2151,6 +2152,7 @@ static void init_chipset_properties(struct swseq_data *swseq, struct hwseq_data 
 	case CHIPSET_JASPER_LAKE:
 	case CHIPSET_ELKHART_LAKE:
 	case CHIPSET_METEOR_LAKE:
+	case CHIPSET_PANTHER_LAKE:
 		*num_freg = 16;
 		break;
 	default:
@@ -2213,6 +2215,7 @@ static int init_ich_default(const struct programmer_cfg *cfg, void *spibar, enum
 	case CHIPSET_JASPER_LAKE:
 	case CHIPSET_ELKHART_LAKE:
 	case CHIPSET_METEOR_LAKE:
+	case CHIPSET_PANTHER_LAKE:
 		tmp = mmio_readl(spibar + PCH100_REG_DLOCK);
 		msg_pdbg("0x0c: 0x%08"PRIx32" (DLOCK)\n", tmp);
 		prettyprint_pch100_reg_dlock(tmp);
@@ -2294,6 +2297,7 @@ static int init_ich_default(const struct programmer_cfg *cfg, void *spibar, enum
 		case CHIPSET_BAYTRAIL:
 		case CHIPSET_ELKHART_LAKE:
 		case CHIPSET_METEOR_LAKE:
+		case CHIPSET_PANTHER_LAKE:
 			break;
 		default:
 			ichspi_bbar = mmio_readl(spibar + ICH9_REG_BBAR);
@@ -2333,6 +2337,7 @@ static int init_ich_default(const struct programmer_cfg *cfg, void *spibar, enum
 		case CHIPSET_JASPER_LAKE:
 		case CHIPSET_ELKHART_LAKE:
 		case CHIPSET_METEOR_LAKE:
+		case CHIPSET_PANTHER_LAKE:
 			break;
 		default:
 			tmp = mmio_readl(spibar + ICH9_REG_FPB);
@@ -2376,8 +2381,9 @@ static int init_ich_default(const struct programmer_cfg *cfg, void *spibar, enum
 	     ich_gen == CHIPSET_GEMINI_LAKE ||
 	     ich_gen == CHIPSET_JASPER_LAKE ||
 	     ich_gen == CHIPSET_ELKHART_LAKE ||
-	     ich_gen == CHIPSET_METEOR_LAKE)) {
-		msg_pdbg("Enabling hardware sequencing by default for Apollo/Gemini/Jasper/Elkhart/Meteor Lake.\n");
+	     ich_gen == CHIPSET_METEOR_LAKE ||
+	     ich_gen == CHIPSET_PANTHER_LAKE)) {
+		msg_pdbg("Enabling hardware sequencing by default for Apollo/Gemini/Jasper/Elkhart/Meteor/Panther Lake.\n");
 		ich_spi_mode = ich_hwseq;
 	}
 

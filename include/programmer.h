@@ -363,6 +363,7 @@ enum ich_chipset {
 	CHIPSET_ELKHART_LAKE,
 	/* All chipsets after METEOR_LAKE should support checking BIOS_BM to get read/write access to of FREG0~15 */
 	CHIPSET_METEOR_LAKE,
+	CHIPSET_PANTHER_LAKE,
 };
 
 /* ichspi.c */
