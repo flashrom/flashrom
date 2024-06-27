@@ -22326,14 +22326,14 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "XMC",
-		.name		= "XM25QH128C",
+		.name		= "XM25QH128C/XM25QH128D",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= XMC_XM25QH128C,
 		.total_size	= 16384,
 		.page_size	= 256,
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI | FEATURE_WRSR2,
-		.tested		= TEST_UNTESTED,
+		.tested		= TEST_OK_PREW,
 		.probe		= PROBE_SPI_RDID,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
