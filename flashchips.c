@@ -22464,7 +22464,7 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "XMC",
-		.name		= "XM25QU256C",
+		.name		= "XM25QU256C/XM25QU256D",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= ST_ID,
 		.model_id	= XMC_XM25QU256C,
