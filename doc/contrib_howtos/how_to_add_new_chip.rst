@@ -12,7 +12,7 @@ Typically, you would add all the models covered by the datasheet you have, but o
 To begin with, make sure you have a link to the publicly available datasheet for the chip you want to add. Publicly
 available datasheet is a requirement for adding a new chip.
 
-Open the datasheet, ``flashchips.c`` and ``include/flashchips.h``, and then
+Open the datasheet, ``flashchips/`` directory, ``include/flashchips.h``, and then
 
 Model ID and vendor ID
 ======================
@@ -23,7 +23,7 @@ These values come in combination with commands used for probing the chip (more o
 probing SPI chips is ``0x9f`` which corresponds to ``PROBE_SPI_RDID``.
 
 At this point you need to double-check if exact same chip is already defined. Search for the ``.name`` and ``.vendor`` of the chip
-you have in ``flashchips.c`` and if found, compare values of ``.manufacture_id`` and ``.model_id``. If all 4 values match, it
+you have in the files in ``flashchips/`` directory and if found, compare values of ``.manufacture_id`` and ``.model_id``. If all 4 values match, it
 seems like the chip already defined. In this case you can try using it. Possibly, only the testing status of the chip needs to be
 updated, in this case see :doc:`how_to_mark_chip_tested` for instructions.
 
@@ -52,8 +52,8 @@ and continue with the next section "Properties".
 Model ID already exists
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-It is possible that model ID already exists in the header. Then find the corresponding definition in ``flashchips.c`` and inspect
-it carefully. Is it the same chip that you have or a different one?
+It is possible that model ID already exists in the header. Then find the corresponding definition in file in ``flashchips/`` directory
+and inspect it carefully. Is it the same chip that you have or a different one?
 
 The question you need to figure out is: whether existing definition can work for your chip or not. You figure that out by
 reading the rest of instructions and comparing the values from the datasheet with existing definition.

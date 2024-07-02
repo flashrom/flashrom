@@ -95,6 +95,7 @@ M:	Nikolai Artemiev <nartemiev@google.com>
 M:	Stefan Reinauer <stefan.reinauer@coreboot.org>
 S:	Maintained
 F:	flashchips*
+F:	flashchips/
 F:	include/flashchips*
 
 I2C HELPERS
