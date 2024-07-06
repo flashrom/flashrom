@@ -1,0 +1,328 @@
+================
+v1.4 (July 2024)
+================
+
+This document describes the major changes in flashrom version 1.4.0,
+from more than 400 patches contributed by more than 70 authors (thank you!)
+in the 18 months since version 1.3.0 was branched.
+
+Download
+========
+
+flashrom 1.4 can be downloaded in various ways:
+
+Anonymous checkout from the git repository at https://review.coreboot.org/flashrom.git
+(tag v1.4.0)
+
+A tarball is available for download at
+<TODO add link>,
+
+fingerprint: <TODO add>
+
+Known issue
+===========
+
+AMD-based PCs with FCH are unable to read flash contents for internal (BIOS flash)
+chips larger than 16 MB, and attempting to do so may crash the system.
+Systems with AMD "Promontory" IO extenders (mostly "Zen" desktop platforms) are not currently
+supported.
+
+https://ticket.coreboot.org/issues/370
+
+Major updates
+=============
+
+Optimised erase and write logic
+-------------------------------
+
+Significant performance improvements with new logic which is based on:
+the optimal selection of erase blocks for the given logical layout,
+available erase functions, and size of memory area to erase/write.
+
+**Legacy code path still exists in the source tree, but it will be deleted by the next release.**
+
+Optimised delays logic
+----------------------
+
+Optimised logic and refactorings of delays functionality, in particular for SPI chips.
+
+* Flashrom now sleeps more aggressively when a delay is required, rather than
+  polling in a loop. This should reduce power consumption significantly, but
+  may require more time to complete operations on systems experiencing high
+  CPU load.
+* An unconditional 1-second delay was removed for SPI flashes. This is not
+  believed to be needed for any SPI flashes, but may be needed for some old
+  parallel flashes (where it remains in use).
+* Cycle-counting busy loops are now only used on DOS builds of flashrom. All
+  other platforms use OS timers for timed delays, which are expected to be
+  more accurate.
+* Tree-wide refactorings around programmer_delay and internal_delay
+
+Documentation is in the git tree
+--------------------------------
+
+Docs are available in the same repository as the code, in ``doc/`` directory.
+
+Website content is automatically generated from docs in the git tree.
+
+**Patches with code changes and new features can (and should) update documentation
+in the same patch, which makes it a lot easier to maintain up-to-date docs.**
+
+Note: the migration process for documents from flashrom wiki to the git tree is half way.
+Wiki is deprecated now, and will go away once the migration process complete.
+
+Makefile scheduled for removal
+------------------------------
+
+**Future versions of flashrom will drop support for building via Makefile**:
+Meson will become the only supported build system.
+
+The Makefile and meson build systems are currently at feature parity,
+except automated testing is supported only with meson.
+To reduce the maintenance burden, we plan to remove the Makefile after this release.
+
+Write-protect updates
+---------------------
+
+* Support reading security register
+* Support reading/writing configuration register
+* More range functions (with different block sizes and handling of CMP bit)
+
+Protected regions support
+-------------------------
+
+* Support to allow programmers to handle protected regions on the flash.
+* get_region() function is added so that programmers can expose access permissions
+  for multiple regions within the flash.
+* A get_region() implementation is added for the ichspi driver
+
+Chipset support added
+=====================
+
+* Tiger Lake
+* Emmitsburg Chipset SKU
+* Meteor Lake-P/M
+* Panther Lake-U/H 12Xe
+* Panther Lake-H 4Xe
+
+Chip models support added or updated
+====================================
+
+New models support
+------------------
+
+* AT25DF011
+
+* B.25D80A
+* B25Q64AS
+
+* GD25LB128E/GD25LR128E
+* GD25LB256E
+* GD25LF128E
+* GD25Q127C/GD25Q128E
+* GD25LQ255E
+* GD25LR256E
+* GD251R512ME
+
+* IS25LP016
+* IS25LQ016
+* IS25WP016
+* IS25WP020
+* IS25WP040
+* IS25WP080
+* IS25WQ040
+
+* MX25L1633E
+* MX25L1636E
+* MX25L3239E
+* MX25L3255E
+* MX25L3273F
+* MX25L6473F
+* MX25L6436E/MX25L6445E/MX25L6465E
+* MX25L6473E
+* MX25L12850F
+* MX77L25650F
+* MX25R2035F
+* MX25R4035F
+* MX25R8035F
+* MX25U25643G
+* MX25V16066
+
+* P25Q06H
+* P25Q11H
+* P25Q21H
+
+* W25Q16JV_M
+
+* XM25QH128A
+* XM25QH80B
+* XM25QH16C/XM25QH16D
+* XM25QU80B
+* XM25RU256C
+
+* XT25F02E
+* XT25F64B
+* XT25F128B
+
+* ZD25D20
+
+Added write-protect support
+---------------------------
+
+* EN25QH32
+* EN25QH64
+
+* MX25L3206E/MX25L3208E
+* MX25L6405
+* MX25L6405D
+* MX25L6406E/MX25L6408E
+* MX25L12833F
+* MT25QL512
+* MX25R1635F
+* MX25R1635F
+* MX25U25643G
+* MX25V1635F
+* MX25V4035F
+* MX25V8035F
+
+* N25Q032..1E
+* N25Q032..3E
+* N25Q064..1E
+* N25Q064..3E
+
+* W25Q16.V
+* W25Q32BV/W25Q32CV/W25Q32DV
+* W25Q32FV
+* W25Q32JV
+* W25Q32BW/W25Q32CW/W25Q32DW
+* W25Q32FW
+* W25Q32JW...Q
+* W25Q32JW...M
+* W25Q64JW...M
+* W25Q256JW_DTR
+* W25Q512NW-IM
+* W25X05
+* W25X10
+* W25X16
+* W25X20
+* W25X32
+* W25X40
+* W25X64
+* W25X80
+
+Marked as tested
+----------------
+
+* AM29LV040B
+
+* AT29C010A
+
+* FM25F01
+* FM25Q16
+
+* MT25QL128
+
+* S25FL128L
+
+* W25Q128.V
+
+* XM25QH64C
+* XM25QH256C
+* XM25QU256C
+
+Programmers support added or updated
+====================================
+
+* New programmer for ASM106x SATA controllers
+* New programmer for WCH CH347, supports CH347T and CH347F packaging.
+
+* buspirate: Add option for setting the aux pin
+* jlink_spi: add cs=tms option to jlink_spi programmer
+* raiden: Support target index with generic REQ_ENABLE
+* buspirate_spi: add support for hiz output with pullups=off
+* serprog: Add support for multiple SPI chip selects
+
+Utilities
+=========
+
+* Bash completion (enabled by default with command line interface)
+
+* CI checks for Signed-off-by line in commit message
+
+* CI builds documentation
+
+Unit tests
+==========
+
+Added coverage for erase and write logic
+----------------------------------------
+
+20 test cases for each operation, with various logical layouts and chip memory states,
+and additional 6 for each, with protected regions configured.
+The test for erase and write is set up so that new test cases can be added whenever needed.
+
+selfcheck
+---------
+
+selfcheck is now also implemented as a unit test.
+
+selfcheck provides critical sanity checks for the programmer table, board matches table,
+and array of flashchip definitions.
+
+Note that selfcheck currently, by default, still runs on flashrom init,
+because at the moment we can't run unit tests on all supported platforms,
+and we don't have continuous integration for all platforms.
+
+This gives an opportunity for performance improvement for developers or companies
+who build their own flashrom binary and, importantly,
+can run unit tests with the build (Linux, BSD).
+For their own binary, it is possible to disable selfcheck on init and save some time
+(**under their own responsibility to run unit tests**).
+
+Coverage report
+---------------
+
+Unit tests coverage report can be generated with gcov or lcov / llvm.
+
+ch341a_spi test
+---------------
+
+Unit test which covers initialization-probing-shutdown of ch341a_spi.
+
+Reduces the risk of breakage for the very popular programmer.
+
+Write-protect
+-------------
+
+Added coverage for write-protect operation
+
+Some of the other misc fixes and improvements
+=============================================
+
+* bitbang_spi.c: Fix unchecked heap allocation
+* writeprotect.c: skip unnecessary writes
+* writeprotect.c: refuse to work with chip if OTP WPS == 1
+* flashrom.c: Drop redundant chip read validation in verify_range()
+* ichspi: Clear Fast SPI HSFC register before HW seq operation
+* ichspi: Fix number of bytes for HW seq operations
+* writeprotect,ichspi,spi25: handle register access constraints
+* tree/: Make heap alloc checks err msg consistent
+* flashrom.c: Replace 'exit(1)' leaks with return codes on err paths
+* flashrom: Check for flash access restricitons in read_flash()
+* flashrom: Check for flash access restricitons in verify_range()
+* flashrom: Check for flash access restricitons in write_flash()
+* flashrom: Check for flash access restrictions in erase path
+* flashrom: Use WP-based unlocking on opaque masters
+* ni845x_spi: Fix signed - unsigned comparisons
+* flashrom: only perform WP unlock for write/erase operations
+* tree: Rename master branch to main
+* serial: Fix sp_flush_incoming for serprog TCP connections
+* Makefile,meson.build: Add support for Sphinx versions prior to 4.x
+* Makefile: Fix cleanup for Sphinx versions prior to 4.x
+* Makefile: Fix version string for non-Git builds
+* serprog protocol: Add SPI Mode and CS Mode commands
+* util/list_yet_unsupported_chips.h: Fix path
+* flashrom_udev.rules: Add rule for CH347
+* Add documentation for pico-serprog
+* cli_classic: Defer flashrom_init calibration until after options parsing
+* hwaccess_x86_io: Fix Android compilation with bionic libc
