@@ -9,4 +9,5 @@ Users documentation
     chromebooks
     management_engine
     misc_intel
+    in_system
     misc_notes
