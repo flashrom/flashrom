@@ -636,6 +636,7 @@ is the PCI function number of the desired device. Example::
 
         flashrom -p nic3com:pci=05:04.0
 
+Some of these programmers have more info below.
 
 atavia programmer
 ^^^^^^^^^^^^^^^^^
@@ -655,6 +656,13 @@ This programmer is currently limited to 32 kB, regardless of the actual size of 
 fact that, on the tested device (a Promise Ultra100), not all of the chip's address lines were actually connected.
 You may use this programmer to flash firmware updates, since these are only 16 kB in size (padding to 32 kB is required).
 
+nic3com programmer
+^^^^^^^^^^^^^^^^^^
+
+flashrom supports some 3Com network cards to reflash the (parallel) flash attached to these cards,
+but it is also possible to use these cards to reflash other chips which fit in there electrically.
+Please note that the small number of address lines connected to the chip may make accessing large chips impossible.
+The maximum supported chip size is 128KB.
 
 nicintel_eeprom programmer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -666,6 +674,18 @@ themselves to be identified, the controller relies on correct size values writte
 Intel specifies following EEPROMs to be compatible:
 Atmel AT25128, AT25256, Micron (ST) M95128, M95256 and OnSemi (Catalyst) CAT25CS128.
 
+gfxnvidia programmer
+^^^^^^^^^^^^^^^^^^^^
+
+Flashrom supports some Nvidia graphic cards to reflash the (parallel) flash attached to these cards,
+but it is also possible to use these cards to reflash other chips which fit in there electrically.
+
+satasii programmer
+^^^^^^^^^^^^^^^^^^
+
+Flashrom supports some SiI ATA/SATA controllers to reflash the flash attached to these controller cards,
+but it is also possible to use these cards to reflash other chips which fit in there electrically.
+Please note that the small number of address lines connected to the chip may make accessing large chips impossible.
 
 ft2232_spi programmer
 ^^^^^^^^^^^^^^^^^^^^^
