@@ -15,5 +15,6 @@ Patches to add/update documentation, or migrate docs from `old wiki website <htt
 .. toctree::
     :maxdepth: 1
 
+    buspirate
     dummyflasher
     serprog/index
