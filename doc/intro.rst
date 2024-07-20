@@ -7,7 +7,7 @@ network/graphics/storage controller cards, and various other programmer devices.
   For more information, see the pages under :doc:`/supported_hw/index`.
 
 * Supports parallel, LPC, FWH and SPI flash interfaces and various chip packages (DIP32,
-  PLCC32, DIP8, SO8/SOIC8, TSOP32, TSOP40, TSOP48, BGA and more).
+  PLCC32, DIP8, SO8/SOIC8, TSOP32, TSOP40, TSOP48, BGA and more), see :doc:`user_docs/overview`.
 
 * No physical access needed, root access is sufficient (not needed for some programmers).
 
