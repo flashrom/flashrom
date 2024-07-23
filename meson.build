@@ -1,4 +1,4 @@
-project('flashromutils', 'c',
+project('flashrom', 'c',
   version : run_command('cat', 'VERSION', check: true).stdout().strip(),
   license : 'GPL-2.0',
   meson_version : '>=0.56.0',
