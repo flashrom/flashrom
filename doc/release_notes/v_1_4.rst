@@ -15,9 +15,10 @@ Anonymous checkout from the git repository at https://review.coreboot.org/flashr
 (tag v1.4.0)
 
 A tarball is available for download at
-<TODO add link>,
+https://download.flashrom.org/releases/flashrom-1.4.0.tar.xz
+(signature https://download.flashrom.org/releases/flashrom-1.4.0.tar.xz.asc)
 
-fingerprint: <TODO add>
+fingerprint: 6E6E F9A0 BA47 8006 E277 6E4C C037 BB41 3134 D111
 
 Known issue
 ===========
