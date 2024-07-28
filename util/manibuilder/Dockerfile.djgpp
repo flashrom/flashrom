@@ -14,14 +14,14 @@ RUN cd && \
 	git clone https://git.kernel.org/pub/scm/utils/pciutils/pciutils.git && \
 	cd pciutils && \
 		git checkout v3.5.6 && \
-		curl --insecure https://flashrom.org/images/6/6a/Pciutils-3.5.6.patch.gz | zcat | git apply && \
+		curl -L --insecure https://flashrom.org/images/6/6a/Pciutils-3.5.6.patch.gz | zcat | git apply && \
 		make ZLIB=no DNS=no HOST=i386-djgpp-djgpp \
 			CROSS_COMPILE=i586-pc-msdosdjgpp- \
 			PREFIX=/ DESTDIR=$PWD/../ \
 			STRIP="--strip-program=i586-pc-msdosdjgpp-strip -s" \
 			install install-lib && \
 		cd ../ && \
-	curl --insecure https://flashrom.org/images/3/3d/Libgetopt.tar.gz | zcat | tar x && \
+	curl -L --insecure https://flashrom.org/images/3/3d/Libgetopt.tar.gz | zcat | tar x && \
 	cd libgetopt && \
 		make && cp libgetopt.a ../lib/ && cp getopt.h ../include/
 
