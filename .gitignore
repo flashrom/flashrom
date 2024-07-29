@@ -1,5 +1,4 @@
 *.d
-!Makefile.d/
 *.o
 /.doctrees
 /.features

@@ -79,13 +79,9 @@ Maintainers List (try to look for most precise areas first)
 BUILD SYSTEM
 M:	Peter Marheine <pmarheine@chromium.org>
 S:	Maintained
-F:	Makefile*
 F:	meson*
-F:	Makefile*/
 F:	*/meson*
-F:	*/Makefile*
 F:	util/ich_descriptors_tool/meson*
-F:	util/ich_descriptors_tool/Makefile*
 
 ERASE/WRITE ALGORITHM
 M:	Aarya Chaumal <aarya.chaumal@gmail.com>

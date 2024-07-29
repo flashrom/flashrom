@@ -5,13 +5,6 @@ set -e
 
 is_scan_build_env=0
 
-make_programmer_opts="INTERNAL INTERNAL_X86 SERPROG RAYER_SPI RAIDEN_DEBUG_SPI PONY_SPI NIC3COM		\
-		      GFXNVIDIA SATASII ATAHPT ATAVIA ATAPROMISE FT2232_SPI USBBLASTER_SPI MSTARDDC_SPI	\
-		      PICKIT2_SPI STLINKV3_SPI PARADE_LSPCON MEDIATEK_I2C_SPI REALTEK_MST_I2C_SPI DUMMY	\
-		      DRKAISER NICREALTEK NICNATSEMI NICINTEL NICINTEL_SPI NICINTEL_EEPROM OGP_SPI	\
-		      BUSPIRATE_SPI DEDIPROG DEVELOPERBOX_SPI SATAMV LINUX_MTD LINUX_SPI IT8212		\
-		      CH341A_SPI CH347_SPI DIGILENT_SPI DIRTYJTAG_SPI JLINK_SPI ASM106X"
-
 meson_programmer_opts="all auto group_ftdi group_i2c group_jlink group_pci group_serial group_usb	\
 			atahpt atapromise atavia buspirate_spi ch341a_spi ch347_spi dediprog		\
 			developerbox_spi digilent_spi dirtyjtag_spi drkaiser dummy ft2232_spi		\
@@ -28,24 +21,6 @@ fi
 
 run_linter() {
 	./util/lint/lint-extended-020-signed-off-by
-}
-
-
-build_make () {
-	make clean
-	make -j $(nproc) CONFIG_EVERYTHING=yes
-
-	# In case of clang analyzer we don't want to run it on
-	# each programmer individually. Thus, just return here.
-	if [ ${is_scan_build_env} -eq 1 ]; then
-		return
-	fi
-
-	for option in ${make_programmer_opts}; do
-		echo "Building ${option}"
-		make clean
-		make -j $(nproc) CONFIG_NOTHING=yes CONFIG_${option}=yes
-	done
 }
 
 
@@ -74,5 +49,4 @@ build_meson () {
 
 run_linter
 
-build_make
 build_meson
