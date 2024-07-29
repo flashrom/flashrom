@@ -137,6 +137,11 @@ M:	Martin Roth <gaumless@tutanota.com>
 S:	Maintained
 F:	sb600spi.c
 
+BUS PIRATE
+M:	David Reguera <regueragarciadavid@gmail.com>
+S:	Maintained
+F:	buspirate_spi.c
+
 CH347
 M:	Nicholas Chin <nic.c3.14@gmail.com>
 S:	Maintained
