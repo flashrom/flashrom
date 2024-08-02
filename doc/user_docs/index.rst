@@ -11,4 +11,7 @@ Users documentation
     management_engine
     misc_intel
     in_system
+    msi_jspi1
     misc_notes
+
+.. Keep misc notes last
