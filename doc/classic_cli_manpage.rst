@@ -670,6 +670,11 @@ but it is also possible to use these cards to reflash other chips which fit in t
 Please note that the small number of address lines connected to the chip may make accessing large chips impossible.
 The maximum supported chip size is 128KB.
 
+nicintel_spi programmer
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Programmer for SPI flash ROMs on Intel Gigabit network cards. Tested on 32-bit hardware/PCI only.
+
 nicintel_eeprom programmer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
