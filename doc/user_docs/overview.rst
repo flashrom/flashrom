@@ -185,7 +185,7 @@ Another type of SOIC8 adapter
 
 Similarly to the DIP8 chips, these always use the SPI protocol.
 However, SO8/SOIC8 chips are most often soldered onto the board directly without a socket.
-In that case a few boards have a header to allow :doc:`in-system`. You can also desolder
+In that case a few boards have a header to allow :doc:`in_system`. You can also desolder
 a soldered SO8 chip and solder an SO8 socket/adapter in its place, or build
 a `SOIC-to-DIP adapter <http://blogs.coreboot.org/blog/2013/07/16/gsoc-2013-flashrom-week-4/>`_.
 Some of the cheapest SOIC ZIF sockets are made by `Wieson <https://www.wieson.com/go/en/wieson/index.php?lang=en>`_.
