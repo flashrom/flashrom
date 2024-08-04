@@ -63,6 +63,8 @@ in the reviewed patch. Approving the patch is much easier when the code reviews 
 You can check pending patches under review `in Gerrit <https://review.coreboot.org/q/status:open+project:flashrom>`_
 and help with code review if a patch looks useful, you understand what it is about, and want to have it submitted.
 
+.. _building-and-testing:
+
 Building and testing
 ====================
 

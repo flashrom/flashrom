@@ -6,3 +6,4 @@ Developers documentation
 
     building_from_source
     development_guide
+    release_process
