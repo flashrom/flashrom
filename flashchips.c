@@ -7068,7 +7068,7 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor         = "GigaDevice",
-		.name           = "GD25LR512ME",
+		.name           = "GD25LB512ME/GD25LR512ME",
 		.bustype        = BUS_SPI,
 		.manufacture_id = GIGADEVICE_ID,
 		.model_id       = GIGADEVICE_GD25LR512ME,
@@ -7076,7 +7076,7 @@ const struct flashchip flashchips[] = {
 		.page_size      = 256,
 		/* OTP: 4096B total; read 0x48; write 0x42, erase 0x44 */
 		.feature_bits   = FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI | FEATURE_4BA,
-		.tested         = TEST_OK_PREW,
+		.tested         = TEST_OK_PREWB,
 		.probe          = PROBE_SPI_RDID,
 		.probe_timing   = TIMING_ZERO,
 		.block_erasers  =
