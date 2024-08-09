@@ -1327,7 +1327,7 @@ static int selfcheck_eraseblocks(const struct flashchip *chip)
 	return ret;
 }
 
-static int erase_by_layout_new(struct flashctx *const flashctx)
+static int erase_by_layout(struct flashctx *const flashctx)
 {
 	bool all_skipped = true;
 	const uint32_t flash_size = flashctx->chip->total_size * 1024;
@@ -1370,12 +1370,7 @@ _ret:
 	return ret;
 }
 
-static int erase_by_layout(struct flashctx *const flashctx)
-{
-	return erase_by_layout_new(flashctx);
-}
-
-static int write_by_layout_new(struct flashctx *const flashctx,
+static int write_by_layout(struct flashctx *const flashctx,
 			   void *const curcontents, const void *const newcontents,
 			   bool *all_skipped)
 {
@@ -1408,13 +1403,6 @@ static int write_by_layout_new(struct flashctx *const flashctx,
 _ret:
 	free_erase_layout(erase_layout, erasefn_count);
 	return ret;
-}
-
-static int write_by_layout(struct flashctx *const flashctx,
-			   uint8_t *const curcontents, const uint8_t *const newcontents,
-			   bool *all_skipped)
-{
-	return write_by_layout_new(flashctx, curcontents, newcontents, all_skipped);
 }
 
 /**
