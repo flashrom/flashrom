@@ -151,7 +151,7 @@ int create_erase_layout(struct flashctx *const flashctx, struct erase_layout **e
  * @param	region_start	pointer to start address of the region to align
  * @param	region_end	pointer to end address of the region to align
  *
- * This function aligns start and end address of the region (in struct walk_info)
+ * This function aligns start and end address of the region
  * to some erase sector boundaries and modify the region start and end addresses
  * to match nearest erase sector boundaries. This function will be used in the
  * new algorithm for erase function selection.
