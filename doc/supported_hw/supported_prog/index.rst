@@ -17,4 +17,5 @@ Patches to add/update documentation, or migrate docs from `old wiki website <htt
 
     buspirate
     dummyflasher
+    ft2232_spi
     serprog/index
