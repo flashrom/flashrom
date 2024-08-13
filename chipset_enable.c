@@ -938,7 +938,13 @@ static int enable_flash_pch100_or_c620(const struct programmer_cfg *cfg,
 		msg_perr("Can't allocate PCI accessor.\n");
 		return ret;
 	}
+#if CONFIG_USE_LIBPCI_ECAM == 1
+	pci_acc->method = PCI_ACCESS_ECAM;
+	msg_pdbg("Using libpci PCI_ACCESS_ECAM\n");
+#else
 	pci_acc->method = PCI_ACCESS_I386_TYPE1;
+	msg_pdbg("Using libpci PCI_ACCESS_I386_TYPE1\n");
+#endif
 	pci_init(pci_acc);
 	register_shutdown(enable_flash_pch100_shutdown, pci_acc);
 
