@@ -115,7 +115,7 @@ enum spi_nss_level {
 #define USB_TIMEOUT_IN_MS					5000
 
 static const struct dev_entry devs_stlinkv3_spi[] = {
-	{0x0483, 0x374E, NT, "STMicroelectronics", "STLINK-V3E"},
+	{0x0483, 0x374E, BAD, "STMicroelectronics", "STLINK-V3E"},
 	{0x0483, 0x374F, OK, "STMicroelectronics", "STLINK-V3S"},
 	{0x0483, 0x3753, OK, "STMicroelectronics", "STLINK-V3 dual VCP"},
 	{0x0483, 0x3754, NT, "STMicroelectronics", "STLINK-V3 no MSD"},
@@ -498,8 +498,14 @@ static int stlinkv3_spi_init(const struct programmer_cfg *cfg)
 								devs_stlinkv3_spi[devIndex].vendor_id,
 								devs_stlinkv3_spi[devIndex].device_id,
 								param_str);
-		if (stlinkv3_handle)
+		if (stlinkv3_handle) {
+			if (devs_stlinkv3_spi[devIndex].status == BAD) {
+				msg_perr("The STLINK-V3 Mini/MiniE does not support the bridge interface\n");
+				free(param_str);
+				goto init_err_exit;
+			}
 			break;
+		}
 		devIndex++;
 	}
 
