@@ -14,8 +14,8 @@ Version of flashrom
 
 Write-protect manipulation functionality is included in flashrom since release v1.3.0.
 If for any reasons you need the latest code from head, you might need to build :code:`flashrom`
-from scratch. The following docs describe how to do this :doc:`/dev_guide/building_from_source` and
-:doc:`/dev_guide/building_with_make`. See also :doc:`/dev_guide/development_guide`.
+from scratch. The following doc describe how to do this: :doc:`/dev_guide/building_from_source`.
+See also :doc:`/dev_guide/development_guide`.
 
 Alternatively, your operating system might provide development version of :code:`flashrom` as a package.
 
