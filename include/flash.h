@@ -606,7 +606,6 @@ void chip_readn(const struct flashctx *flash, uint8_t *buf, const chipaddr addr,
 
 /* print.c */
 int print_supported(void);
-void print_supported_wiki(void);
 
 /* helpers.c */
 uint32_t address_to_bits(uint32_t addr);

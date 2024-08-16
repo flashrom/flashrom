@@ -11,7 +11,7 @@ NAME
 SYNOPSIS
 --------
 
-| **flashrom** [-h|-R|-L|-z|
+| **flashrom** [-h|-R|-L|
 |          -p <programmername>[:<parameters>] [-c <chipname>]
 |            (--flash-name|--flash-size|
 |             [-E|-x|-r <file>|-w <file>|-v <file>]
@@ -39,7 +39,7 @@ which use various protocols such as LPC, FWH, parallel flash, or SPI.
 OPTIONS
 -------
 
-You can specify one of ``-h``, ``-R``, ``-L``, ``-z``, ``-E``, ``-r``, ``-w``, ``-v`` or no operation.
+You can specify one of ``-h``, ``-R``, ``-L``, ``-E``, ``-r``, ``-w``, ``-v`` or no operation.
 If no operation is specified, **flashrom** will only probe for flash chips. It is recommended that if you try **flashrom** the
 first time on a system, you run it in probe-only mode and check the output.
 Also you are advised to make a backup of your current ROM contents with ``-r`` before you try to write a new image.
@@ -254,12 +254,6 @@ All operations involving any chip access (probe/read/write/...) require the ``-p
 
         **IMPORTANT**:
         For verification you have to test an ERASE and/or WRITE operation, so make sure you only do that if you have proper means to recover from failure!
-
-
-**-z, --list-supported-wiki**
-        Same as ``--list-supported``, but outputs the supported hardware in MediaWiki syntax,
-        so that it can be easily pasted into the `supported hardware wiki page <https://flashrom.org/Supported_hardware>`_.
-        Please note that MediaWiki output is not compiled in by default.
 
 
 **-p, --programmer <name>[:parameter[,parameter[,parameter]]]**

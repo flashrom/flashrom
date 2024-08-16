@@ -208,10 +208,8 @@ struct board_info {
 	const char *vendor;
 	const char *name;
 	const enum test_state working;
-#ifdef CONFIG_PRINT_WIKI
 	const char *url;
 	const char *note;
-#endif
 };
 
 extern const struct board_info boards_known[];

@@ -51,9 +51,6 @@ struct cli_options {
 	bool read_it, extract_it, write_it, erase_it, verify_it;
 	bool dont_verify_it, dont_verify_all;
 	bool list_supported;
-#if CONFIG_PRINT_WIKI == 1
-	bool list_supported_wiki;
-#endif
 	char *filename;
 
 	const struct programmer_entry *prog;
@@ -81,9 +78,6 @@ struct cli_options {
 static void cli_classic_usage(const char *name)
 {
 	printf("Usage: %s [-h|-R|-L|"
-#if CONFIG_PRINT_WIKI == 1
-	       "-z|"
-#endif
 	       "\n\t-p <programmername>[:<parameters>] [-c <chipname>]\n"
 	       "\t\t(--flash-name|--flash-size|\n"
 	       "\t\t [-E|-x|(-r|-w|-v) <file>]\n"
@@ -124,16 +118,10 @@ static void cli_classic_usage(const char *name)
 	       " -o | --output <logfile>            log output to <logfile>\n"
 	       "      --flash-contents <ref-file>   assume flash contents to be <ref-file>\n"
 	       " -L | --list-supported              print supported devices\n"
-#if CONFIG_PRINT_WIKI == 1
-	       " -z | --list-supported-wiki         print supported devices in wiki syntax\n"
-#endif
 	       "      --progress                    show progress percentage on the standard output\n"
 	       " -p | --programmer <name>[:<param>] specify the programmer device. One of\n");
 	list_programmers_linebreak(4, 80, 0);
 	printf(".\n\nYou can specify one of -h, -R, -L, "
-#if CONFIG_PRINT_WIKI == 1
-	         "-z, "
-#endif
 	         "-E, -r, -w, -v or no operation.\n"
 	       "If no operation is specified, flashrom will only probe for flash chips.\n");
 }
@@ -754,15 +742,6 @@ static void parse_options(int argc, char **argv, const char *optstring,
 			cli_classic_validate_singleop(&operation_specified);
 			options->list_supported = true;
 			break;
-		case 'z':
-#if CONFIG_PRINT_WIKI == 1
-			cli_classic_validate_singleop(&operation_specified);
-			options->list_supported_wiki = true;
-#else
-			cli_classic_abort_usage("Error: Wiki output was not "
-					"compiled in. Aborting.\n");
-#endif
-			break;
 		case 'p':
 			if (options->prog != NULL) {
 				cli_classic_abort_usage("Error: --programmer specified "
@@ -895,7 +874,6 @@ int main(int argc, char *argv[])
 		{"wp-enable",		0, NULL, OPTION_WP_ENABLE},
 		{"wp-disable",		0, NULL, OPTION_WP_DISABLE},
 		{"list-supported",	0, NULL, 'L'},
-		{"list-supported-wiki",	0, NULL, 'z'},
 		{"programmer",		1, NULL, 'p'},
 		{"help",		0, NULL, 'h'},
 		{"version",		0, NULL, 'R'},
@@ -933,13 +911,6 @@ int main(int argc, char *argv[])
 		cli_classic_abort_usage(NULL);
 	if (options.logfile && open_logfile(options.logfile))
 		cli_classic_abort_usage(NULL);
-
-#if CONFIG_PRINT_WIKI == 1
-	if (options.list_supported_wiki) {
-		print_supported_wiki();
-		goto out;
-	}
-#endif
 
 	if (options.list_supported) {
 		if (print_supported())

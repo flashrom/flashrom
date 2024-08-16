@@ -61,7 +61,6 @@ add_project_arguments('-D_DARWIN_C_SOURCE', language : 'c') # required for indir
 add_project_arguments('-DFLASHROM_VERSION="' + flashrom_version + '"', language : 'c')
 
 # get defaults from configure
-config_print_wiki= get_option('classic_cli_print_wiki')
 config_default_programmer_name = get_option('default_programmer_name')
 config_default_programmer_args = get_option('default_programmer_args')
 
@@ -622,15 +621,6 @@ foreach p_name, p_data : programmer
     deps += p_data.get('deps')
   endif
 endforeach
-
-if config_print_wiki.enabled()
-  if get_option('classic_cli').disabled()
-    error('`classic_cli_print_wiki` can not be enabled without `classic_cli`')
-  else
-    srcs += files('print_wiki.c')
-    cargs += '-DCONFIG_PRINT_WIKI=1'
-  endif
-endif
 
 if config_default_programmer_name != ''
   cargs += '-DCONFIG_DEFAULT_PROGRAMMER_NAME=&programmer_' + config_default_programmer_name

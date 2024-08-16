@@ -18,12 +18,7 @@
 
 #include "programmer.h"
 
-
-#ifdef CONFIG_PRINT_WIKI
 #define B(vendor, name, status, url, note) { vendor, name, status, url, note }
-#else
-#define B(vendor, name, status, url, note) { vendor, name, status }
-#endif
 
 /* Please keep this list alphabetically ordered by vendor/board. */
 const struct board_info boards_known[] = {

@@ -1,5 +1,4 @@
 option('classic_cli', type : 'feature', value : 'enabled', description : 'classic flashrom cli binary')
-option('classic_cli_print_wiki', type : 'feature', value : 'disabled',  description : 'Print Wiki')
 option('default_programmer_name', type : 'string', description : 'default programmer')
 option('default_programmer_args', type : 'string', description : 'default programmer arguments')
 option('ich_descriptors_tool', type : 'feature', value : 'auto', description : 'Build ich_descriptors_tool')
