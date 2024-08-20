@@ -7583,14 +7583,13 @@ const struct flashchip flashchips[] = {
 
 	{
 		.vendor		= "GigaDevice",
-		.name		= "GD25Q256D/GD25Q256E",
+		.name		= "GD25Q256E/GD25B256E/GD25R256E/GD25Q256D",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= GIGADEVICE_ID,
 		.model_id	= GIGADEVICE_GD25Q256D,
 		.total_size	= 32768,
 		.page_size	= 256,
-		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_4BA |
-				  FEATURE_WRSR_EXT2 | FEATURE_WRSR2 | FEATURE_WRSR3,
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_4BA | FEATURE_WRSR2 | FEATURE_WRSR3,
 		.tested		= TEST_OK_PREWB,
 		.probe		= PROBE_SPI_RDID,
 		.probe_timing	= TIMING_ZERO,
@@ -7622,8 +7621,8 @@ const struct flashchip flashchips[] = {
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
-		.printlock	= SPI_PRETTYPRINT_STATUS_REGISTER_BP3_SRWD,
-		.unlock		= SPI_DISABLE_BLOCKPROTECT,
+		.printlock	= SPI_PRETTYPRINT_STATUS_REGISTER_BP4_SRWD,
+		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP4_SRWD, /* TODO: 2nd status reg (read with 0x35) */
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
 		.voltage	= {2700, 3600},
@@ -7632,7 +7631,7 @@ const struct flashchip flashchips[] = {
 			.srp    = {STATUS1, 7, RW},
 			.srl    = {STATUS2, 6, RW},
 			.bp     = {{STATUS1, 2, RW}, {STATUS1, 3, RW}, {STATUS1, 4, RW}, {STATUS1, 5, RW}},
-			.tb     = {STATUS1, 6, RW},
+			.tb     = {STATUS1, 6, RW},	/* Called BP4 in datasheet, acts like TB */
 		},
 		.decode_range	= DECODE_RANGE_SPI25,
 	},
