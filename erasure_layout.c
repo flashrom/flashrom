@@ -399,7 +399,7 @@ _end:
 	}
 
 	if (old_end_buf) {
-		memcpy(newcontents + old_end, old_end_buf, end_buf_len);
+		memcpy(newcontents + old_end + 1, old_end_buf, end_buf_len);
 		free(old_end_buf);
 	}
 

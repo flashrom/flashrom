@@ -57,6 +57,8 @@ struct test_case {
 
 struct all_state {
 	uint8_t buf[MIN_REAL_CHIP_SIZE]; /* Buffer emulating the memory of the mock chip. */
+	bool was_modified[MIN_REAL_CHIP_SIZE]; /* Which bytes were modified, 0x1 if byte was modified. */
+	bool was_verified[MIN_REAL_CHIP_SIZE]; /* Which bytes were verified, 0x1 if byte was verified. */
 	struct erase_invoke eraseblocks_actual[MOCK_CHIP_SIZE]; /* The actual order of eraseblocks invocations. */
 	unsigned int eraseblocks_actual_ind; /* Actual number of eraseblocks invocations. */
 	const struct test_case* current_test_case; /* Currently executed test case. */
@@ -64,29 +66,46 @@ struct all_state {
 
 static int read_chip(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len)
 {
-	if (start + len <= MOCK_CHIP_SIZE)
+	if (start < MOCK_CHIP_SIZE)
 		LOG_READ_WRITE_FUNC;
 
 	assert_in_range(start + len, 0, MIN_REAL_CHIP_SIZE);
 
 	memcpy(buf, &g_state.buf[start], len);
+
+	/* If these bytes were modified before => current read op is verify op, track it */
+	bool bytes_modified = false;
+	for (unsigned int i = start; i < start + len; i++)
+		if (g_state.was_modified[i]) {
+			bytes_modified = true;
+			break;
+		}
+	if (bytes_modified)
+		memset(&g_state.was_verified[start], true, len);
+
 	return 0;
 }
 
 static int write_chip(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len)
 {
-	if (start + len <= MOCK_CHIP_SIZE)
+	if (start < MOCK_CHIP_SIZE)
 		LOG_READ_WRITE_FUNC;
 
 	assert_in_range(start + len, 0, MIN_REAL_CHIP_SIZE);
 
 	memcpy(&g_state.buf[start], buf, len);
+
+	/* Track the bytes were written */
+	memset(&g_state.was_modified[start], true, len);
+	/* Clear the records of previous verification, if there were any */
+	memset(&g_state.was_verified[start], false, len);
+
 	return 0;
 }
 
 static int block_erase_chip_tagged(struct flashctx *flash, enum block_erase_func erase_func, unsigned int blockaddr, unsigned int blocklen)
 {
-	if (blockaddr + blocklen <= MOCK_CHIP_SIZE) {
+	if (blockaddr < MOCK_CHIP_SIZE) {
 		LOG_ERASE_FUNC;
 
 		/* Register eraseblock invocation. */
@@ -101,6 +120,12 @@ static int block_erase_chip_tagged(struct flashctx *flash, enum block_erase_func
 	assert_in_range(blockaddr + blocklen, 0, MIN_REAL_CHIP_SIZE);
 
 	memset(&g_state.buf[blockaddr], ERASE_VALUE, blocklen);
+
+	/* Track the bytes were erased */
+	memset(&g_state.was_modified[blockaddr], true, blocklen);
+	/* Clear the records of previous verification, if there were any */
+	memset(&g_state.was_verified[blockaddr], false, blocklen);
+
 	return 0;
 }
 
@@ -196,9 +221,15 @@ BLOCK_ERASE_FUNC(3)
 BLOCK_ERASE_FUNC(4)
 BLOCK_ERASE_FUNC(5)
 
-static void setup_chip(struct flashrom_flashctx *flashctx, struct flashrom_layout **layout,
+/*
+ * Returns the offset how far we need to verify mock chip memory.
+ * Which is minimum out of MOCK_CHIP_SIZE and the end of the logical layout.
+ */
+static chipoff_t setup_chip(struct flashrom_flashctx *flashctx, struct flashrom_layout **layout,
 			const char *programmer_param, struct test_case *current_test_case)
 {
+	chipoff_t verify_end_boundary = MOCK_CHIP_SIZE - 1;
+
 	g_test_write_injector = write_chip;
 	g_test_read_injector = read_chip;
 	/* Each erasefunc corresponds to an operation that erases a block of
@@ -223,6 +254,14 @@ static void setup_chip(struct flashrom_flashctx *flashctx, struct flashrom_layou
 	memset(g_state.eraseblocks_actual, 0, MOCK_CHIP_SIZE * sizeof(struct erase_invoke));
 	g_state.eraseblocks_actual_ind = 0;
 
+	/* Clear the tracking of each byte modified. */
+	memset(g_state.was_modified, false, MIN_REAL_CHIP_SIZE);
+	/* Clear the tracking of each byte verified. */
+	memset(g_state.was_verified, false, MIN_REAL_CHIP_SIZE);
+
+	/* Set the flag to verify after writing on chip */
+	flashrom_flag_set(flashctx, FLASHROM_FLAG_VERIFY_AFTER_WRITE, true);
+
 	flashctx->chip = current_test_case->chip;
 
 	printf("Creating layout ... ");
@@ -236,6 +275,12 @@ static void setup_chip(struct flashrom_flashctx *flashctx, struct flashrom_layou
 					current_test_case->regions[i].end,
 					current_test_case->regions[i].name));
 		assert_int_equal(0, flashrom_layout_include_region(*layout, current_test_case->regions[i].name));
+
+		if (current_test_case->regions[i].end < MOCK_CHIP_SIZE - 1)
+			verify_end_boundary = current_test_case->regions[i].end;
+		else
+			verify_end_boundary = MOCK_CHIP_SIZE - 1;
+
 		i++;
 	}
 
@@ -252,6 +297,8 @@ static void setup_chip(struct flashrom_flashctx *flashctx, struct flashrom_layou
 	/* Assignment below normally happens while probing, but this test is not probing. */
 	flashctx->mst = &registered_masters[0];
 	printf("done\n");
+
+	return verify_end_boundary;
 }
 
 static void teardown_chip(struct flashrom_layout **layout)
@@ -771,7 +818,7 @@ static struct test_case test_cases[] = {
 
 /*
  * Setup all test cases with protected region.
- * Protected region is the same for all test cases, between bytes 8 - 15.
+ * Protected region is the same for all test cases, between bytes START_PROTECTED_REGION and up to END_PROTECTED_REGION.
  */
 static struct test_case test_cases_protected_region[] = {
 	{
@@ -1045,7 +1092,7 @@ void erase_function_algo_test_success(void **state)
 
 	struct flashrom_layout *layout;
 
-	setup_chip(&flashctx, &layout, param, current_test_case);
+	const chipoff_t verify_end_boundary = setup_chip(&flashctx, &layout, param, current_test_case);
 
 	printf("%s started.\n", current_test_case->erase_test_name);
 	int ret = flashrom_flash_erase(&flashctx);
@@ -1059,6 +1106,13 @@ void erase_function_algo_test_success(void **state)
 
 	int eraseblocks_invocations = (g_state.eraseblocks_actual_ind ==
 					current_test_case->eraseblocks_expected_ind);
+
+	int chip_verified = 1;
+	for (unsigned int i = 0; i <= verify_end_boundary; i++)
+		if (g_state.was_modified[i] && !g_state.was_verified[i]) {
+			chip_verified = 0; /* byte was modified, but not verified after */
+			printf("Error: byte 0x%x, modified: %d, verified: %d\n", i, g_state.was_modified[i], g_state.was_verified[i]);
+		}
 
 	if (chip_erased)
 		printf("Erased chip memory state for %s is CORRECT\n",
@@ -1083,10 +1137,18 @@ void erase_function_algo_test_success(void **state)
 			current_test_case->eraseblocks_expected_ind,
 			g_state.eraseblocks_actual_ind);
 
+	if (chip_verified)
+		printf("Erased chip memory state for %s was verified successfully\n",
+			current_test_case->erase_test_name);
+	else
+		printf("Erased chip memory state for %s was NOT verified completely\n",
+			current_test_case->erase_test_name);
+
 	all_erase_tests_result |= ret;
 	all_erase_tests_result |= !chip_erased;
 	all_erase_tests_result |= !eraseblocks_in_order;
 	all_erase_tests_result |= !eraseblocks_invocations;
+	all_erase_tests_result |= !chip_verified;
 
 	teardown_chip(&layout);
 
@@ -1108,7 +1170,7 @@ void write_function_algo_test_success(void **state)
 
 	struct flashrom_layout *layout;
 
-	setup_chip(&flashctx, &layout, param, current_test_case);
+	const chipoff_t verify_end_boundary = setup_chip(&flashctx, &layout, param, current_test_case);
 	memcpy(&newcontents, current_test_case->written_buf, MOCK_CHIP_SIZE);
 
 	printf("%s started.\n", current_test_case->write_test_name);
@@ -1117,6 +1179,13 @@ void write_function_algo_test_success(void **state)
 
 	int chip_written = !memcmp(g_state.buf, current_test_case->written_buf, MOCK_CHIP_SIZE);
 
+	int chip_verified = 1;
+	for (unsigned int i = 0; i <= verify_end_boundary; i++)
+		if (g_state.was_modified[i] && !g_state.was_verified[i]) {
+			chip_verified = 0; /* the byte was modified, but not verified after */
+			printf("Error: byte 0x%x, modified: %d, verified: %d\n", i, g_state.was_modified[i], g_state.was_verified[i]);
+		}
+
 	if (chip_written)
 		printf("Written chip memory state for %s is CORRECT\n",
 			current_test_case->write_test_name);
@@ -1124,8 +1193,16 @@ void write_function_algo_test_success(void **state)
 		printf("Written chip memory state for %s is WRONG\n",
 			current_test_case->write_test_name);
 
+	if (chip_verified)
+		printf("Written chip memory state for %s was verified successfully\n",
+			current_test_case->write_test_name);
+	else
+		printf("Written chip memory state for %s was NOT verified completely\n",
+			current_test_case->write_test_name);
+
 	all_write_test_result |= ret;
 	all_write_test_result |= !chip_written;
+	all_write_test_result |= !chip_verified;
 
 	teardown_chip(&layout);
 
@@ -1147,7 +1224,7 @@ static void get_protected_region(const struct flashctx *flash, unsigned int addr
 		region->name		= strdup("protected");
 		region->start		= START_PROTECTED_REGION;
 		region->end		= END_PROTECTED_REGION;
-		region->read_prot	= true;
+		region->read_prot	= false;
 		region->write_prot	= true;
 	} else {
 		region->name		= strdup("tail");
@@ -1197,6 +1274,12 @@ static int block_erase_chip_with_protected_region(struct flashctx *flash, enum b
 	}
 
 	memset(&g_state.buf[blockaddr], ERASE_VALUE, blocklen);
+
+	/* Track the bytes were erased */
+	memset(&g_state.was_modified[blockaddr], true, blocklen);
+	/* Clear the records of previous verification, if there were any */
+	memset(&g_state.was_verified[blockaddr], false, blocklen);
+
 	return 0;
 }
 
@@ -1229,7 +1312,7 @@ static void erase_unwritable_regions_skipflag_on_test_success(void **state)
 
 	struct flashrom_layout *layout;
 
-	setup_chip(&flashctx, &layout, param, current_test_case);
+	const chipoff_t verify_end_boundary = setup_chip(&flashctx, &layout, param, current_test_case);
 
 	// This test needs special block erase to emulate protected regions.
 	memcpy(g_test_erase_injector,
@@ -1266,6 +1349,13 @@ static void erase_unwritable_regions_skipflag_on_test_success(void **state)
 	int eraseblocks_invocations = (g_state.eraseblocks_actual_ind ==
 					current_test_case->eraseblocks_expected_ind);
 
+	int chip_verified = 1;
+	for (unsigned int i = 0; i <= verify_end_boundary; i++)
+		if (g_state.was_modified[i] && !g_state.was_verified[i]) {
+			chip_verified = 0; /* byte was modified, but not verified after */
+			printf("Error: byte 0x%x, modified: %d, verified: %d\n", i, g_state.was_modified[i], g_state.was_verified[i]);
+		}
+
 	if (chip_erased)
 		printf("Erased chip memory state for %s is CORRECT\n",
 			current_test_case->erase_test_name);
@@ -1289,10 +1379,18 @@ static void erase_unwritable_regions_skipflag_on_test_success(void **state)
 			current_test_case->eraseblocks_expected_ind,
 			g_state.eraseblocks_actual_ind);
 
+	if (chip_verified)
+		printf("Erased chip memory state for %s was verified successfully\n",
+			current_test_case->erase_test_name);
+	else
+		printf("Erased chip memory state for %s was NOT verified completely\n",
+			current_test_case->erase_test_name);
+
 	all_erase_tests_result |= ret;
 	all_erase_tests_result |= !chip_erased;
 	all_erase_tests_result |= !eraseblocks_in_order;
 	all_erase_tests_result |= !eraseblocks_invocations;
+	all_erase_tests_result |= !chip_verified;
 
 	teardown_chip(&layout);
 
@@ -1313,11 +1411,12 @@ static void write_unwritable_regions_skipflag_on_test_success(void **state) {
 	int all_write_tests_result = 0;
 	struct flashrom_flashctx flashctx = { 0 };
 	uint8_t newcontents[MIN_BUF_SIZE];
+	uint8_t newcontents_protected[MIN_BUF_SIZE];
 	const char *param = ""; /* Default values for all params. */
 
 	struct flashrom_layout *layout;
 
-	setup_chip(&flashctx, &layout, param, current_test_case);
+	const chipoff_t verify_end_boundary = setup_chip(&flashctx, &layout, param, current_test_case);
 	memcpy(&newcontents, current_test_case->written_buf, MOCK_CHIP_SIZE);
 
 	// This test needs special block erase to emulate protected regions.
@@ -1334,6 +1433,9 @@ static void write_unwritable_regions_skipflag_on_test_success(void **state) {
 
 	flashrom_flag_set(&flashctx, FLASHROM_FLAG_SKIP_UNWRITABLE_REGIONS, true);
 	flashrom_flag_set(&flashctx, FLASHROM_FLAG_SKIP_UNREADABLE_REGIONS, true);
+	flashrom_flag_set(&flashctx, FLASHROM_FLAG_VERIFY_WHOLE_CHIP, false);
+	/* We need to manually trigger verify op after write, because of protected regions */
+	flashrom_flag_set(&flashctx, FLASHROM_FLAG_VERIFY_AFTER_WRITE, false);
 
 	// We use dummyflasher programmer in tests, but for this test we need to
 	// replace dummyflasher's default get_region fn with test one.
@@ -1347,7 +1449,24 @@ static void write_unwritable_regions_skipflag_on_test_success(void **state) {
 	int ret = flashrom_image_write(&flashctx, &newcontents, MIN_BUF_SIZE, NULL);
 	printf("%s returned %d.\n", current_test_case->write_test_name, ret);
 
+	/* Expected end result leaves protected region untouched */
+	memcpy(&newcontents_protected, current_test_case->written_protected_buf, MOCK_CHIP_SIZE);
+	/* Outside of MOCK_CHIP_SIZE newcontents are not initialised in test cases, so just copy */
+	memcpy(&newcontents_protected[MOCK_CHIP_SIZE],
+		&newcontents[MOCK_CHIP_SIZE],
+		MIN_BUF_SIZE - MOCK_CHIP_SIZE);
+	printf("%s verification started.\n", current_test_case->write_test_name);
+	ret = flashrom_image_verify(&flashctx, &newcontents_protected, MIN_BUF_SIZE);
+	printf("%s verification returned %d.\n", current_test_case->write_test_name, ret);
+
 	int chip_written = !memcmp(g_state.buf, current_test_case->written_protected_buf, MOCK_CHIP_SIZE);
+
+	int chip_verified = 1;
+	for (unsigned int i = 0; i <= verify_end_boundary; i++)
+		if (g_state.was_modified[i] && !g_state.was_verified[i]) {
+			chip_verified = 0; /* byte was modified, but not verified after */
+			printf("Error: byte 0x%x, modified: %d, verified: %d\n", i, g_state.was_modified[i], g_state.was_verified[i]);
+		}
 
 	if (chip_written)
 		printf("Written chip memory state for %s is CORRECT\n",
@@ -1356,8 +1475,16 @@ static void write_unwritable_regions_skipflag_on_test_success(void **state) {
 		printf("Written chip memory state for %s is WRONG\n",
 			current_test_case->write_test_name);
 
+	if (chip_verified)
+		printf("Written chip memory state for %s was verified successfully\n",
+			current_test_case->write_test_name);
+	else
+		printf("Written chip memory state for %s was NOT verified completely\n",
+			current_test_case->write_test_name);
+
 	all_write_tests_result |= ret;
 	all_write_tests_result |= !chip_written;
+	all_write_tests_result |= !chip_verified;
 
 	teardown_chip(&layout);
 
