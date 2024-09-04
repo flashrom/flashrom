@@ -498,6 +498,7 @@ int main(int argc, char *argv[])
 		cmocka_unit_test(read_chip_with_dummyflasher_test_success),
 		cmocka_unit_test(write_chip_test_success),
 		cmocka_unit_test(write_chip_with_dummyflasher_test_success),
+		cmocka_unit_test(write_chip_feature_no_erase),
 		cmocka_unit_test(write_nonaligned_region_with_dummyflasher_test_success),
 		cmocka_unit_test(verify_chip_test_success),
 		cmocka_unit_test(verify_chip_with_dummyflasher_test_success),

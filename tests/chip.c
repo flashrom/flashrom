@@ -27,6 +27,7 @@
 
 #include <include/test.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "tests.h"
@@ -130,6 +131,25 @@ static const struct flashchip chip_8MiB = {
 		.eraseblocks = { {2 * MiB, 4} },
 		.block_erase = TEST_ERASE_INJECTOR_1,
 	 }},
+};
+
+/* Chip expected to be processed with dummyflasher, so using real op functions. */
+static const struct flashchip chip_no_erase = {
+	.vendor		= "aklm&dummyflasher",
+	.total_size	= 16 * 1024,
+	.tested		= TEST_OK_PREW,
+	.read		= SPI_CHIP_READ,
+	.write		= SPI_CHIP_WRITE256,
+	.page_size	= 256,
+	.feature_bits   = FEATURE_NO_ERASE | FEATURE_ERASED_ZERO,
+	.block_erasers  =
+	{
+		{
+			.eraseblocks = { {16 * 1024 * 1024, 1} },
+			/* Special erase fn for chips without erase capability. */
+			.block_erase = SPI_BLOCK_ERASE_EMULATION,
+		}
+	},
 };
 
 /* Setup the struct for W25Q128.V, all values come from flashchips.c */
@@ -377,6 +397,48 @@ void write_chip_with_dummyflasher_test_success(void **state)
 	printf("Write chip operation started.\n");
 	assert_int_equal(0, read_buf_from_file(newcontents, size, filename));
 	assert_int_equal(0, flashrom_image_write(&flashctx, newcontents, size, NULL));
+	printf("Write chip operation done.\n");
+
+	teardown(&layout);
+
+	free(newcontents);
+}
+
+void write_chip_feature_no_erase(void **state)
+{
+	(void) state; /* unused */
+
+	static struct io_mock_fallback_open_state data = {
+		.noc	= 0,
+		.paths	= { NULL },
+	};
+	const struct io_mock chip_io = {
+		.fallback_open_state = &data,
+	};
+
+	struct flashrom_flashctx flashctx = { 0 };
+	struct flashrom_layout *layout;
+
+	/*
+	 * Tricking the dummyflasher by asking to emulate W25Q128FV but giving to it
+	 * mock chip with FEATURE_NO_ERASE.
+	 * As long as chip size is the same, this is fine.
+	 */
+	struct flashchip mock_chip = chip_no_erase;
+	const char *param_dup = "bus=spi,emulate=W25Q128FV";
+
+	setup_chip(&flashctx, &layout, &mock_chip, param_dup, &chip_io);
+
+	/* See comment in write_chip_test_success */
+	const char *const filename = "-";
+	unsigned long size = mock_chip.total_size * 1024;
+	uint8_t *const newcontents = malloc(size);
+	assert_non_null(newcontents);
+
+	printf("Write chip operation started.\n");
+	assert_int_equal(0, read_buf_from_file(newcontents, size, filename));
+	assert_int_equal(0, flashrom_image_write(&flashctx, newcontents, size, NULL));
+	assert_int_equal(0, flashrom_image_verify(&flashctx, newcontents, size));
 	printf("Write chip operation done.\n");
 
 	teardown(&layout);

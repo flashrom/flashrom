@@ -148,6 +148,14 @@ enum write_granularity {
  * other flash chips, such as the ENE KB9012 internal flash, work the opposite way.
  */
 #define FEATURE_ERASED_ZERO	(1 << 18)
+/*
+ * Feature indicates that the chip does not require erase before writing:
+ * write operations can set any bit to any value without first doing an erase,
+ * but bulk erase operations may still be supported.
+ *
+ * EEPROMs usually behave this way (compare to Flash, which requires erase),
+ * for example the ST M95M02.
+ */
 #define FEATURE_NO_ERASE	(1 << 19)
 
 #define FEATURE_WRSR_EXT2	(1 << 20)
