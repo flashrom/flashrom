@@ -52,8 +52,8 @@ static void init_eraseblock(struct erase_layout *layout, size_t idx, size_t bloc
 
 	edata->first_sub_block_index = *sub_block_index;
 	struct eraseblock_data *subedata = &layout[idx - 1].layout_list[*sub_block_index];
-	while (subedata->start_addr >= start_addr && subedata->end_addr <= end_addr &&
-		*sub_block_index < layout[idx-1].block_count) {
+	while (*sub_block_index < layout[idx-1].block_count &&
+		subedata->start_addr >= start_addr && subedata->end_addr <= end_addr) {
 		(*sub_block_index)++;
 		subedata++;
 	}
