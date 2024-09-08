@@ -1822,7 +1822,11 @@ static int ich_spi_send_multicommand(const struct flashctx *flash,
 
 static bool ich_spi_probe_opcode(const struct flashctx *flash, uint8_t opcode)
 {
-	return find_opcode(curopcodes, opcode) >= 0;
+	int ret = find_opcode(curopcodes, opcode);
+	if ((ret == -1) && (lookup_spi_type(opcode) <= 3))
+		/* opcode is in POSSIBLE_OPCODES, report supported. */
+		return true;
+	return ret >= 0;
 }
 
 #define ICH_BMWAG(x) ((x >> 24) & 0xff)
