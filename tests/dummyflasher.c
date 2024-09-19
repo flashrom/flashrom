@@ -141,6 +141,25 @@ void dummy_all_buses_test_success(void **state)
 	run_basic_lifecycle(state, &dummy_io, &programmer_dummy, "bus=parallel+lpc+spi");
 }
 
+void dummy_freq_param_init(void **state)
+{
+	struct io_mock_fallback_open_state dummy_fallback_open_state = {
+		.noc = 0,
+		.paths = { NULL },
+	};
+	const struct io_mock dummy_io = {
+		.fallback_open_state = &dummy_fallback_open_state,
+	};
+
+	run_basic_lifecycle(state, &dummy_io, &programmer_dummy, "bus=spi,freq=12Hz");
+	run_basic_lifecycle(state, &dummy_io, &programmer_dummy, "bus=spi,freq=123KHz");
+	run_basic_lifecycle(state, &dummy_io, &programmer_dummy, "bus=spi,freq=345MHz");
+	run_basic_lifecycle(state, &dummy_io, &programmer_dummy, "bus=spi,freq=8000MHz");
+	/* Valid values for freq param are within the range [1Hz, 8000Mhz] */
+	run_init_error_path(state, &dummy_io, &programmer_dummy, "bus=spi,freq=0Hz", 0x1);
+	run_init_error_path(state, &dummy_io, &programmer_dummy, "bus=spi,freq=8001Mhz", 0x1);
+}
+
 #else
 	SKIP_TEST(dummy_basic_lifecycle_test_success)
 	SKIP_TEST(dummy_probe_lifecycle_test_success)
@@ -150,4 +169,5 @@ void dummy_all_buses_test_success(void **state)
 	SKIP_TEST(dummy_init_success_unhandled_param_test_success)
 	SKIP_TEST(dummy_null_prog_param_test_success)
 	SKIP_TEST(dummy_all_buses_test_success)
+	SKIP_TEST(dummy_freq_param_init)
 #endif /* CONFIG_DUMMY */

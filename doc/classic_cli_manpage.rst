@@ -616,6 +616,18 @@ Example::
         syntax where ``state`` is ``yes`` or ``no`` (default value). ``yes`` means active state of the pin implies that chip is
         write-protected (on real hardware the pin is usually negated, but not here).
 
+**Frequency**
+	Frequency can be specified in ``Hz`` (default), ``KHz``, or ``MHz`` (not case sensitive).
+	If ``freq`` parameter is passed in from command line, commands will delay for certain time before returning,
+	so that to emulate the requested frequency.
+
+	Valid range is [1Hz, 8000Mhz] and there is no delay by default.
+
+	The delay of an SPI command is proportional to the number of bits send over SPI bus in both directions
+	and is calculated based on the assumption that we transfer at 1 bit/Hz::
+
+		flashrom -p dummy:emulate=W25Q128FV,freq=64mhz
+
 
 nic3com, nicrealtek, nicnatsemi, nicintel, nicintel_eeprom, nicintel_spi, gfxnvidia, ogp_spi, drkaiser, satasii, satamv, atahpt, atavia, atapromise, it8212 programmers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

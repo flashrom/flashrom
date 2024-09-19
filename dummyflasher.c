@@ -55,7 +55,7 @@ struct emu_data {
 	uint8_t emu_status_len;	/* number of emulated status registers */
 	/* If "freq" parameter is passed in from command line, commands will delay
 	 * for this period before returning. */
-	unsigned long int delay_us;
+	unsigned long long delay_ns;
 	unsigned int emu_max_byteprogram_size;
 	unsigned int emu_max_aai_size;
 	unsigned int emu_jedec_se_size;
@@ -901,7 +901,7 @@ static int dummy_spi_send_command(const struct flashctx *flash, unsigned int wri
 		msg_pspew(" 0x%02x", readarr[i]);
 	msg_pspew("\n");
 
-	default_delay((writecnt + readcnt) * emu_data->delay_us);
+	default_delay(((writecnt + readcnt) * emu_data->delay_ns) / 1000);
 	return 0;
 }
 
@@ -1128,7 +1128,7 @@ static int init_data(const struct programmer_cfg *cfg,
 	/* frequency to emulate in Hz (default), KHz, or MHz */
 	tmp = extract_programmer_param_str(cfg, "freq");
 	if (tmp) {
-		unsigned long int freq;
+		unsigned long long freq;
 		char *units = tmp;
 		char *end = tmp + strlen(tmp);
 
@@ -1166,13 +1166,13 @@ static int init_data(const struct programmer_cfg *cfg,
 			}
 		}
 
-		if (freq == 0) {
-			msg_perr("%s: invalid value 0 for freq parameter\n", __func__);
+		if (freq == 0 || freq > 8000000000) {
+			msg_perr("%s: invalid value %llu for freq parameter\n", __func__, freq);
 			free(tmp);
 			return 1;
 		}
 		/* Assume we only work with bytes and transfer at 1 bit/Hz */
-		data->delay_us = (1000000 * 8) / freq;
+		data->delay_ns = (1000000000ull * 8) / freq;
 	}
 	free(tmp);
 
@@ -1402,7 +1402,7 @@ static int dummy_init(const struct programmer_cfg *cfg)
 		return 1;
 	}
 	data->emu_chip = EMULATE_NONE;
-	data->delay_us = 0;
+	data->delay_ns = 0;
 	data->spi_write_256_chunksize = 256;
 
 	msg_pspew("%s\n", __func__);
