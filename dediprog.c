@@ -593,7 +593,7 @@ err:
 static int dediprog_spi_bulk_write(struct flashctx *flash, const uint8_t *buf, unsigned int chunksize,
 				   unsigned int start, unsigned int len, uint8_t dedi_spi_cmd)
 {
-	/* USB transfer size must be 512, other sizes will NOT work at all.
+	/* USB transfer size must be 256, other sizes will NOT work at all.
 	 * chunksize is the real data size per USB bulk transfer. The remaining
 	 * space in a USB bulk transfer must be filled with 0xff padding.
 	 */
