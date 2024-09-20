@@ -46,6 +46,10 @@ static struct {
 	.buf = { 0 },
 };
 
+struct progress_user_data {
+	size_t last_seen; /* % of progress last reported, to be asserted in the progress callback. */
+};
+
 static int read_chip(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len)
 {
 	printf("Read chip called with start=0x%x, len=0x%x\n", start, len);
@@ -74,6 +78,21 @@ static int block_erase_chip(struct flashctx *flash, unsigned int blockaddr, unsi
 
 	memset(&g_chip_state.buf[blockaddr], 0xff, blocklen);
 	return 0;
+}
+
+static void progress_callback(struct flashctx *flash) {
+	struct progress_user_data *progress_user_data = flash->progress_state->user_data;
+	if (flash->progress_state->current == 0) {
+		printf("Progress started for stage %d, initial callback call\n", flash->progress_state->stage);
+	} else {
+		/* Progress cannot go backwards. */
+		assert_true(flash->progress_state->current >= progress_user_data->last_seen);
+	}
+
+	if (flash->progress_state->current >= flash->progress_state->total)
+		printf("Progress complete for stage %d, final callback call\n", flash->progress_state->stage);
+
+	progress_user_data->last_seen = flash->progress_state->current;
 }
 
 static void setup_chip(struct flashrom_flashctx *flashctx, struct flashrom_layout **layout,
@@ -210,6 +229,41 @@ void erase_chip_test_success(void **state)
 	teardown(&layout);
 }
 
+void erase_chip_with_progress(void **state)
+{
+	(void) state; /* unused */
+
+	static struct io_mock_fallback_open_state data = {
+		.noc	= 0,
+		.paths	= { NULL },
+	};
+	const struct io_mock chip_io = {
+		.fallback_open_state = &data,
+	};
+
+	g_test_write_injector = write_chip;
+	g_test_read_injector = read_chip;
+	g_test_erase_injector[0] = block_erase_chip;
+	struct flashrom_flashctx flashctx = { 0 };
+	struct flashrom_layout *layout;
+	struct flashchip mock_chip = chip_8MiB;
+	const char *param = ""; /* Default values for all params. */
+
+	setup_chip(&flashctx, &layout, &mock_chip, param, &chip_io);
+
+	struct progress_user_data progress_user_data = {0};
+	struct flashrom_progress progress_state = {
+		.user_data = &progress_user_data
+	};
+	flashrom_set_progress_callback(&flashctx, progress_callback, &progress_state);
+
+	printf("Erase chip operation started.\n");
+	assert_int_equal(0, flashrom_flash_erase(&flashctx));
+	printf("Erase chip operation done.\n");
+
+	teardown(&layout);
+}
+
 void erase_chip_with_dummyflasher_test_success(void **state)
 {
 	(void) state; /* unused */
@@ -261,6 +315,49 @@ void read_chip_test_success(void **state)
 	const char *param = ""; /* Default values for all params. */
 
 	setup_chip(&flashctx, &layout, &mock_chip, param, &chip_io);
+
+	const char *const filename = "read_chip.test";
+	unsigned long size = mock_chip.total_size * 1024;
+	unsigned char *buf = calloc(size, sizeof(unsigned char));
+	assert_non_null(buf);
+
+	printf("Read chip operation started.\n");
+	assert_int_equal(0, flashrom_image_read(&flashctx, buf, size));
+	assert_int_equal(0, write_buf_to_file(buf, size, filename));
+	printf("Read chip operation done.\n");
+
+	teardown(&layout);
+
+	free(buf);
+}
+
+void read_chip_with_progress(void **state)
+{
+	(void) state; /* unused */
+
+	static struct io_mock_fallback_open_state data = {
+		.noc	= 0,
+		.paths	= { NULL },
+	};
+	const struct io_mock chip_io = {
+		.fallback_open_state = &data,
+	};
+
+	g_test_write_injector = write_chip;
+	g_test_read_injector = read_chip;
+	g_test_erase_injector[0] = block_erase_chip;
+	struct flashrom_flashctx flashctx = { 0 };
+	struct flashrom_layout *layout;
+	struct flashchip mock_chip = chip_8MiB;
+	const char *param = ""; /* Default values for all params. */
+
+	setup_chip(&flashctx, &layout, &mock_chip, param, &chip_io);
+
+	struct progress_user_data progress_user_data = {0};
+	struct flashrom_progress progress_state = {
+		.user_data = &progress_user_data
+	};
+	flashrom_set_progress_callback(&flashctx, progress_callback, &progress_state);
 
 	const char *const filename = "read_chip.test";
 	unsigned long size = mock_chip.total_size * 1024;
@@ -350,6 +447,49 @@ void write_chip_test_success(void **state)
 	 * To cover error path of image_stat.st_size != flash size, filename
 	 * needs to be provided and image_stat.st_size needs to be mocked.
 	 */
+	const char *const filename = "-";
+	unsigned long size = mock_chip.total_size * 1024;
+	uint8_t *const newcontents = malloc(size);
+	assert_non_null(newcontents);
+
+	printf("Write chip operation started.\n");
+	assert_int_equal(0, read_buf_from_file(newcontents, size, filename));
+	assert_int_equal(0, flashrom_image_write(&flashctx, newcontents, size, NULL));
+	printf("Write chip operation done.\n");
+
+	teardown(&layout);
+
+	free(newcontents);
+}
+
+void write_chip_with_progress(void **state)
+{
+	(void) state; /* unused */
+
+	static struct io_mock_fallback_open_state data = {
+		.noc	= 0,
+		.paths	= { NULL },
+	};
+	const struct io_mock chip_io = {
+		.fallback_open_state = &data,
+	};
+
+	g_test_write_injector = write_chip;
+	g_test_read_injector = read_chip;
+	g_test_erase_injector[0] = block_erase_chip;
+	struct flashrom_flashctx flashctx = { 0 };
+	struct flashrom_layout *layout;
+	struct flashchip mock_chip = chip_8MiB;
+	const char *param = ""; /* Default values for all params. */
+
+	setup_chip(&flashctx, &layout, &mock_chip, param, &chip_io);
+
+	struct progress_user_data progress_user_data = {0};
+	struct flashrom_progress progress_state = {
+		.user_data = &progress_user_data
+	};
+	flashrom_set_progress_callback(&flashctx, progress_callback, &progress_state);
+
 	const char *const filename = "-";
 	unsigned long size = mock_chip.total_size * 1024;
 	uint8_t *const newcontents = malloc(size);

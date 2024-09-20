@@ -1060,9 +1060,9 @@ int main(int argc, char *argv[])
 
 	fill_flash = &flashes[0];
 
-	unsigned int progress_user_data[FLASHROM_PROGRESS_NR];
+	struct cli_progress cli_progress = {0};
 	struct flashrom_progress progress_state = {
-		 .user_data = progress_user_data
+		 .user_data = &cli_progress
 	};
 	if (options.show_progress)
 		flashrom_set_progress_callback(fill_flash, &flashrom_progress_cb, &progress_state);

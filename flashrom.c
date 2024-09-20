@@ -1225,6 +1225,24 @@ notfound:
 	return chip - flashchips;
 }
 
+static void setup_progress_from_layout(struct flashctx *flashctx,
+				       enum flashrom_progress_stage stage)
+{
+	if (!flashctx->progress_callback)
+		return;
+
+	const struct flashrom_layout *const flash_layout = get_layout(flashctx);
+
+	size_t total = 0;
+	const struct romentry *entry = NULL;
+	while ((entry = layout_next_included(flash_layout, entry))) {
+		const struct flash_region *region = &entry->region;
+		total += region->end - region->start + 1;
+	}
+
+	init_progress(flashctx, stage, total);
+}
+
 /**
  * @brief Reads the included layout regions into a buffer.
  *
@@ -1240,6 +1258,8 @@ static int read_by_layout(struct flashctx *const flashctx, uint8_t *const buffer
 {
 	const struct flashrom_layout *const layout = get_layout(flashctx);
 	const struct romentry *entry = NULL;
+
+	setup_progress_from_layout(flashctx, FLASHROM_PROGRESS_READ);
 
 	while ((entry = layout_next_included(layout, entry))) {
 		const struct flash_region *region = &entry->region;
@@ -1353,6 +1373,9 @@ static int erase_by_layout(struct flashctx *const flashctx)
 	memset(curcontents, ~ERASED_VALUE(flashctx), flash_size);
 	memset(newcontents, ERASED_VALUE(flashctx), flash_size);
 
+	setup_progress_from_layout(flashctx, FLASHROM_PROGRESS_READ);
+	setup_progress_from_layout(flashctx, FLASHROM_PROGRESS_ERASE);
+
 	const struct flashrom_layout *const flash_layout = get_layout(flashctx);
 	const struct romentry *entry = NULL;
 	while ((entry = layout_next_included(flash_layout, entry))) {
@@ -1388,6 +1411,10 @@ static int write_by_layout(struct flashctx *const flashctx,
 	if (!erase_layout) {
 		goto _ret;
 	}
+
+	setup_progress_from_layout(flashctx, FLASHROM_PROGRESS_READ);
+	setup_progress_from_layout(flashctx, FLASHROM_PROGRESS_WRITE);
+	setup_progress_from_layout(flashctx, FLASHROM_PROGRESS_ERASE);
 
 	const struct romentry *entry = NULL;
 	while ((entry = layout_next_included(flash_layout, entry))) {
@@ -1426,6 +1453,8 @@ static int verify_by_layout(
 		void *const curcontents, const uint8_t *const newcontents)
 {
 	const struct romentry *entry = NULL;
+
+	setup_progress_from_layout(flashctx, FLASHROM_PROGRESS_READ);
 
 	while ((entry = layout_next_included(layout, entry))) {
 		const struct flash_region *region = &entry->region;
@@ -1924,6 +1953,7 @@ int flashrom_image_write(struct flashctx *const flashctx, void *const buffer, co
 		 */
 		msg_cinfo("Reading old flash chip contents... ");
 		if (verify_all) {
+			init_progress(flashctx, FLASHROM_PROGRESS_READ, flash_size);
 			if (read_flash(flashctx, oldcontents, 0, flash_size)) {
 				msg_cinfo("FAILED.\n");
 				goto _finalize_ret;
@@ -1940,12 +1970,14 @@ int flashrom_image_write(struct flashctx *const flashctx, void *const buffer, co
 
 	bool all_skipped = true;
 
+	msg_cinfo("Updating flash chip contents... ");
 	if (write_by_layout(flashctx, curcontents, newcontents, &all_skipped)) {
 		msg_cerr("Uh oh. Erase/write failed. ");
 		ret = 2;
 		if (verify_all) {
 			msg_cerr("Checking if anything has changed.\n");
 			msg_cinfo("Reading current flash chip contents... ");
+			init_progress(flashctx, FLASHROM_PROGRESS_READ, flash_size);
 			if (!read_flash(flashctx, curcontents, 0, flash_size)) {
 				msg_cinfo("done.\n");
 				if (!memcmp(oldcontents, curcontents, flash_size)) {

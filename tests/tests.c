@@ -441,7 +441,7 @@ int main(int argc, char *argv[])
 	const struct CMUnitTest spi25_tests[] = {
 		cmocka_unit_test(spi_write_enable_test_success),
 		cmocka_unit_test(spi_write_disable_test_success),
-		cmocka_unit_test(spi_read_chunked_test_success),
+		cmocka_unit_test(default_spi_read_test_success),
 		cmocka_unit_test(probe_spi_rdid_test_success),
 		cmocka_unit_test(probe_spi_rdid4_test_success),
 		cmocka_unit_test(probe_spi_rems_test_success),
@@ -495,10 +495,13 @@ int main(int argc, char *argv[])
 
 	const struct CMUnitTest chip_tests[] = {
 		cmocka_unit_test(erase_chip_test_success),
+		cmocka_unit_test(erase_chip_with_progress),
 		cmocka_unit_test(erase_chip_with_dummyflasher_test_success),
 		cmocka_unit_test(read_chip_test_success),
+		cmocka_unit_test(read_chip_with_progress),
 		cmocka_unit_test(read_chip_with_dummyflasher_test_success),
 		cmocka_unit_test(write_chip_test_success),
+		cmocka_unit_test(write_chip_with_progress),
 		cmocka_unit_test(write_chip_with_dummyflasher_test_success),
 		cmocka_unit_test(write_chip_feature_no_erase),
 		cmocka_unit_test(write_nonaligned_region_with_dummyflasher_test_success),

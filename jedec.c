@@ -382,7 +382,7 @@ int write_jedec_1(struct flashctx *flash, const uint8_t *src, unsigned int start
 		if (write_byte_program_jedec_common(flash, src, dst))
 			failed = 1;
 		dst++, src++;
-		update_progress(flash, FLASHROM_PROGRESS_WRITE, i + 1, len);
+		update_progress(flash, FLASHROM_PROGRESS_WRITE, 1);
 	}
 	if (failed)
 		msg_cerr(" writing sector at 0x%" PRIxPTR " failed!\n", olddst);
@@ -467,7 +467,7 @@ int write_jedec(struct flashctx *flash, const uint8_t *buf, unsigned int start,
 
 		if (jedec_write_page(flash, buf + starthere - start, starthere, lenhere))
 			return 1;
-		update_progress(flash, FLASHROM_PROGRESS_WRITE, i + 1, nwrites + 1);
+		update_progress(flash, FLASHROM_PROGRESS_WRITE, lenhere);
 	}
 
 	return 0;

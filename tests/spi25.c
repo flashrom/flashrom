@@ -55,7 +55,9 @@ int __wrap_spi_send_command(const struct flashctx *flash,
 		*/
 		return __real_spi_send_command(flash, writecnt, readcnt, writearr, readarr);
 
-	check_expected_ptr(flash);
+	if (!flash->progress_callback)
+		check_expected_ptr(flash);
+
 	assert_int_equal(writecnt,    mock_type(int));
 	assert_int_equal(writearr[0], mock_type(int));
 
@@ -71,22 +73,22 @@ static void spi_read_progress_cb(struct flashrom_flashctx *flashctx)
 {
 	struct flashrom_progress *progress_state = flashctx->progress_state;
 	uint32_t *cnt = (uint32_t *) progress_state->user_data;
-	assert_int_equal(0x300, progress_state->total);
+	assert_int_equal(0x400, progress_state->total);
 	switch (*cnt) {
 		case 0:
-			assert_int_equal(0x100, progress_state->current);
+			assert_int_equal(0x0, progress_state->current);
 			break;
 		case 1:
-			assert_int_equal(0x200, progress_state->current);
+			assert_int_equal(0x100, progress_state->current);
 			break;
 		case 2:
-			assert_int_equal(0x300, progress_state->current);
+			assert_int_equal(0x200, progress_state->current);
 			break;
 		case 3:
 			assert_int_equal(0x300, progress_state->current);
 			break;
 		case 4:
-			assert_int_equal(0x300, progress_state->current);
+			assert_int_equal(0x400, progress_state->current);
 			break;
 		default:
 			fail();
@@ -94,7 +96,7 @@ static void spi_read_progress_cb(struct flashrom_flashctx *flashctx)
 	(*cnt)++;
 }
 
-void spi_read_chunked_test_success(void **state)
+void default_spi_read_test_success(void **state)
 {
 	(void) state; /* unused */
 	uint8_t buf[0x400] = { 0x0 };
@@ -115,15 +117,16 @@ void spi_read_chunked_test_success(void **state)
 		.user_data = (void *) &cnt,
 	};
 	flashrom_set_progress_callback(&flashctx, spi_read_progress_cb, &progress_state);
+	init_progress(&flashctx, FLASHROM_PROGRESS_READ, 0x400);
 	for (int i = 0; i < 4; i++) {
-		expect_memory(__wrap_spi_send_command, flash,
-				&flashctx, sizeof(flashctx));
 		will_return(__wrap_spi_send_command, JEDEC_WRDI);
 		will_return(__wrap_spi_send_command, JEDEC_READ);
 		will_return(__wrap_spi_send_command, max_data_read);
 	}
-	assert_int_equal(0, spi_chip_read(&flashctx, buf, offset, sizeof(buf)));
+	assert_int_equal(0, default_spi_read(&flashctx, buf, offset, sizeof(buf)));
 	assert_int_equal(5, cnt);
+
+	flashrom_set_progress_callback(&flashctx, NULL, NULL);
 }
 
 void spi_write_enable_test_success(void **state)

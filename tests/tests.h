@@ -34,7 +34,7 @@ void flashbuses_to_text_test_success(void **state);
 /* spi25.c */
 void spi_write_enable_test_success(void **state);
 void spi_write_disable_test_success(void **state);
-void spi_read_chunked_test_success(void **state);
+void default_spi_read_test_success(void **state);
 void probe_spi_rdid_test_success(void **state);
 void probe_spi_rdid4_test_success(void **state);
 void probe_spi_rems_test_success(void **state);
@@ -82,10 +82,13 @@ void layout_region_invalid_range_test_success(void **state);
 
 /* chip.c */
 void erase_chip_test_success(void **state);
+void erase_chip_with_progress(void **state);
 void erase_chip_with_dummyflasher_test_success(void **state);
 void read_chip_test_success(void **state);
+void read_chip_with_progress(void **state);
 void read_chip_with_dummyflasher_test_success(void **state);
 void write_chip_test_success(void **state);
+void write_chip_with_progress(void **state);
 void write_chip_with_dummyflasher_test_success(void **state);
 void write_chip_feature_no_erase(void **state);
 void write_nonaligned_region_with_dummyflasher_test_success(void **state);

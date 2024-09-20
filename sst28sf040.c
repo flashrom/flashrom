@@ -92,7 +92,7 @@ int write_28sf040(struct flashctx *flash, const uint8_t *src, unsigned int start
 
 		/* wait for Toggle bit ready */
 		toggle_ready_jedec(flash, bios);
-		update_progress(flash, FLASHROM_PROGRESS_WRITE, i + 1, len);
+		update_progress(flash, FLASHROM_PROGRESS_WRITE, 1);
 	}
 
 	return 0;

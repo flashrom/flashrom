@@ -354,7 +354,7 @@ static int parade_lspcon_read(struct flashctx *flash, uint8_t *buf,
 	for (i = 0; i < len; i += TUNNEL_PAGE_SIZE) {
 		ret |= parade_lspcon_map_page(fd, start + i);
 		ret |= parade_lspcon_read_data(fd, PAGE_ADDRESS, buf + i, min(len - i, TUNNEL_PAGE_SIZE));
-		update_progress(flash, FLASHROM_PROGRESS_READ, i + TUNNEL_PAGE_SIZE, len);
+		update_progress(flash, FLASHROM_PROGRESS_READ, TUNNEL_PAGE_SIZE);
 	}
 
 	return ret;
@@ -395,7 +395,7 @@ static int parade_lspcon_write_256(struct flashctx *flash, const uint8_t *buf,
 	for (unsigned int i = 0; i < len; i += TUNNEL_PAGE_SIZE) {
 		ret |= parade_lspcon_map_page(fd, start + i);
 		ret |= parade_lspcon_write_page(fd, buf + i, min(len - i, TUNNEL_PAGE_SIZE));
-		update_progress(flash, FLASHROM_PROGRESS_WRITE, i + TUNNEL_PAGE_SIZE, len);
+		update_progress(flash, FLASHROM_PROGRESS_WRITE, TUNNEL_PAGE_SIZE);
 	}
 
 	ret |= parade_lspcon_enable_write_protection(fd);

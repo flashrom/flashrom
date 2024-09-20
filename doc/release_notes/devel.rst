@@ -32,6 +32,11 @@ The ECAM has been supported for a very long time, most platforms should support
 it. For those platforms don't support ECAM, libpci will terminate the process by
 exit.
 
+Progress display
+================
+
+Progress display feature is now working for all operations: read, erase, write.
+
 Chipset support
 ===============
 Added Raptor Point PCH support.

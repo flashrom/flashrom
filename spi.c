@@ -104,8 +104,6 @@ int spi_chip_read(struct flashctx *flash, uint8_t *buf, unsigned int start,
 {
 	int ret;
 	size_t to_read;
-	size_t start_address = start;
-	size_t end_address = len - start;
 	for (; len; len -= to_read, buf += to_read, start += to_read) {
 		/* Do not cross 16MiB boundaries in a single transfer.
 		   This helps with
@@ -115,7 +113,6 @@ int spi_chip_read(struct flashctx *flash, uint8_t *buf, unsigned int start,
 		ret = flash->mst->spi.read(flash, buf, start, to_read);
 		if (ret)
 			return ret;
-		update_progress(flash, FLASHROM_PROGRESS_READ, start - start_address + to_read, end_address);
 	}
 	return 0;
 }

@@ -549,6 +549,11 @@ typedef int (*chip_restore_fn_cb_t)(struct flashctx *flash, void *data);
 typedef int (blockprotect_func_t)(struct flashctx *flash);
 blockprotect_func_t *lookup_blockprotect_func_ptr(const struct flashchip *const chip);
 
+struct stage_progress {
+	size_t current;
+	size_t total;
+};
+
 struct flashrom_flashctx {
 	struct flashchip *chip;
 	/* FIXME: The memory mappings should be saved in a more structured way. */
@@ -587,6 +592,7 @@ struct flashrom_flashctx {
 	/* Progress reporting */
 	flashrom_progress_callback *progress_callback;
 	struct flashrom_progress *progress_state;
+	struct stage_progress stage_progress[FLASHROM_PROGRESS_NR];
 };
 
 /* Timing used in probe routines. ZERO is -2 to differentiate between an unset
@@ -677,6 +683,12 @@ int write_flash(struct flashctx *flash, const uint8_t *buf, unsigned int start, 
  */
 #define ERROR_FLASHROM_LIMIT -201
 
+struct cli_progress {
+	unsigned int stage_pc[FLASHROM_PROGRESS_NR];
+	unsigned int visible_stages; /* Bitmask of stages with non-zero progress. */
+	bool stage_setup; /* Flag to know when to reset progress data. */
+};
+
 /* cli_common.c */
 void print_chip_support_status(const struct flashchip *chip);
 
@@ -716,7 +728,8 @@ __attribute__((format(printf, 2, 3)));
 #define msg_gspew(...)	print(FLASHROM_MSG_SPEW, __VA_ARGS__)	/* general debug spew  */
 #define msg_pspew(...)	print(FLASHROM_MSG_SPEW, __VA_ARGS__)	/* programmer debug spew  */
 #define msg_cspew(...)	print(FLASHROM_MSG_SPEW, __VA_ARGS__)	/* chip debug spew  */
-void update_progress(struct flashctx *flash, enum flashrom_progress_stage stage, size_t current, size_t total);
+void init_progress(struct flashctx *flash, enum flashrom_progress_stage stage, size_t total);
+void update_progress(struct flashctx *flash, enum flashrom_progress_stage stage, size_t increment);
 
 /* spi.c */
 struct spi_command {
@@ -730,4 +743,5 @@ int spi_send_command(const struct flashctx *flash, unsigned int writecnt, unsign
 int spi_send_multicommand(const struct flashctx *flash, struct spi_command *cmds);
 
 enum chipbustype get_buses_supported(void);
+
 #endif				/* !__FLASH_H__ */

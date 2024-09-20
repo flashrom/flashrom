@@ -70,16 +70,36 @@ void flashrom_set_progress_callback(struct flashrom_flashctx *flashctx, flashrom
 	flashctx->progress_state = progress_state;
 }
 /** @private */
-void update_progress(struct flashrom_flashctx *flashctx, enum flashrom_progress_stage stage, size_t current, size_t total)
+void init_progress(struct flashrom_flashctx *flashctx, enum flashrom_progress_stage stage, size_t total)
 {
 	if (flashctx->progress_callback == NULL)
 		return;
-	if (current > total)
-		current = total;
+
+	struct stage_progress *stage_progress = &flashctx->stage_progress[stage];
+	stage_progress->current = 0;
+	stage_progress->total = total;
+
+	/* This is used to trigger callback invocation, with 0 current state and 0 increment: as an init call. */
+	update_progress(flashctx, stage, 0);
+}
+/** @private */
+void update_progress(struct flashrom_flashctx *flashctx, enum flashrom_progress_stage stage, size_t increment)
+{
+	if (flashctx->progress_callback == NULL)
+		return;
+
+	struct stage_progress *stage_progress = &flashctx->stage_progress[stage];
+
+	stage_progress->current += increment;
+	if (stage_progress->current > stage_progress->total) {
+		msg_gwarn("Fixing total value of stage %d progress on the fly.", stage);
+		stage_progress->total = stage_progress->current;
+	}
 
 	flashctx->progress_state->stage = stage;
-	flashctx->progress_state->current = current;
-	flashctx->progress_state->total = total;
+	flashctx->progress_state->current = stage_progress->current;
+	flashctx->progress_state->total = stage_progress->total;
+
 	flashctx->progress_callback(flashctx);
 }
 

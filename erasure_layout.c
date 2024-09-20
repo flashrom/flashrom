@@ -304,6 +304,8 @@ static int erase_write_helper(struct flashctx *const flashctx, chipoff_t region_
 				msg_cerr("ERASE FAILED!\n");
 			}
 
+			update_progress(flashctx, FLASHROM_PROGRESS_ERASE, block_len);
+
 			// adjust curcontents
 			memset(curcontents+start_addr, erased_value, block_len);
 			// after erase make it unselected again

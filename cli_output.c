@@ -24,6 +24,14 @@
 enum flashrom_log_level verbose_screen = FLASHROM_MSG_INFO;
 enum flashrom_log_level verbose_logfile = FLASHROM_MSG_DEBUG2;
 
+/* Enum to indicate what was the latest printed char prior to a progress indicator. */
+enum line_state {
+	NEWLINE,
+	MIDLINE,
+	PROGRESS
+};
+static enum line_state line_state = NEWLINE;
+
 static FILE *logfile = NULL;
 
 int close_logfile(void)
@@ -75,18 +83,75 @@ static const char *flashrom_progress_stage_to_string(enum flashrom_progress_stag
 	return "UNKNOWN";
 }
 
+static void print_progress(const struct cli_progress *cli_progress, enum flashrom_progress_stage stage)
+{
+	if (!(cli_progress->visible_stages & (1 << stage)))
+		return;
+
+	msg_ginfo("[%s: %2u%%]", flashrom_progress_stage_to_string(stage), cli_progress->stage_pc[stage]);
+}
+
 void flashrom_progress_cb(struct flashrom_flashctx *flashctx)
 {
 	struct flashrom_progress *progress_state = flashctx->progress_state;
 	unsigned int pc = 0;
-	unsigned int *percentages = progress_state->user_data;
-	if (progress_state->current > 0 && progress_state->total > 0)
-		pc = ((unsigned long long) progress_state->current * 10000llu) /
-		     ((unsigned long long) progress_state->total * 100llu);
-	if (percentages[progress_state->stage] != pc) {
-		percentages[progress_state->stage] = pc;
-		msg_ginfo("[%s] %u%% complete... ", flashrom_progress_stage_to_string(progress_state->stage), pc);
+	struct cli_progress *cli_progress = progress_state->user_data;
+
+	/* The expectation is that initial progress of zero is reported before doing anything. */
+	if (progress_state->current == 0) {
+		if (!cli_progress->stage_setup) {
+			cli_progress->stage_setup = true;
+
+			/* Initialization of some stage doesn't imply that it will make any progress,
+			 * only show stages which have progressed. */
+			cli_progress->visible_stages = 0;
+
+			if (line_state != NEWLINE) {
+				/* We're going to clear and replace ongoing progress output, so make a new line. */
+				msg_ginfo("\n");
+			}
+		}
+
+		cli_progress->stage_pc[progress_state->stage] = 0;
+	} else {
+		cli_progress->stage_setup = false;
+		cli_progress->visible_stages |= 1 << progress_state->stage;
 	}
+
+	if (progress_state->current > 0 && progress_state->total > 0)
+		pc = ((unsigned long long) progress_state->current * 100llu) /
+		     ((unsigned long long) progress_state->total);
+	if (cli_progress->stage_pc[progress_state->stage] != pc) {
+		cli_progress->stage_pc[progress_state->stage] = pc;
+
+		if (line_state == PROGRESS) {
+			/* Erase previous output, because it was previous progress step. */
+			int i;
+			for (i = 0; i < 16 * FLASHROM_PROGRESS_NR; ++i)
+				msg_ginfo("\b \b");
+		} else if (line_state == MIDLINE) {
+			/* Start with new line, to preserve some other previous message */
+			msg_ginfo("\n");
+		} // Remaining option is NEWLINE, which means nothing to do: newline has been printed already.
+
+		/* The order is deliberate, the operations typically follow this sequence. */
+		print_progress(cli_progress, FLASHROM_PROGRESS_READ);
+		print_progress(cli_progress, FLASHROM_PROGRESS_ERASE);
+		print_progress(cli_progress, FLASHROM_PROGRESS_WRITE);
+
+		/* There can be output right after the progress, this acts as a separator. */
+		msg_ginfo("...");
+
+		/* Reset the flag, because now the latest message is a progress one. */
+		line_state = PROGRESS;
+	}
+}
+
+static void update_line_state(const char *fmt)
+{
+	size_t len = strlen(fmt);
+	if (len > 0)
+		line_state = (fmt[len - 1] == '\n' ? NEWLINE : MIDLINE);
 }
 
 /* Please note that level is the verbosity, not the importance of the message. */
@@ -103,6 +168,7 @@ int flashrom_print_cb(enum flashrom_log_level level, const char *fmt, va_list ap
 
 	if (level <= verbose_screen) {
 		ret = vfprintf(output_type, fmt, ap);
+		update_line_state(fmt);
 		/* msg_*spew often happens inside chip accessors in possibly
 		 * time-critical operations. Don't slow them down by flushing. */
 		if (level != FLASHROM_MSG_SPEW)
@@ -111,6 +177,7 @@ int flashrom_print_cb(enum flashrom_log_level level, const char *fmt, va_list ap
 
 	if ((level <= verbose_logfile) && logfile) {
 		ret = vfprintf(logfile, fmt, logfile_args);
+		update_line_state(fmt);
 		if (level != FLASHROM_MSG_SPEW)
 			fflush(logfile);
 	}
