@@ -317,7 +317,7 @@ All operations involving any chip access (probe/read/write/...) require the ``-p
 
 
 **--progress**
-        [Experimental feature] Show progress percentage of operations on the standard output.
+	Show progress percentage of operations on the standard output.
 
 **--sacrifice-ratio <ratio>**
 	Fraction (as a percentage, 0-50) of an erase block that may be erased even if unmodified.

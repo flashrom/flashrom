@@ -47,7 +47,8 @@ static struct {
 };
 
 struct progress_user_data {
-	size_t last_seen; /* % of progress last reported, to be asserted in the progress callback. */
+	/* % of progress last reported for each operation, to be asserted in the progress callback. */
+	size_t last_seen[FLASHROM_PROGRESS_NR];
 };
 
 static int read_chip(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len)
@@ -86,13 +87,14 @@ static void progress_callback(struct flashctx *flash) {
 		printf("Progress started for stage %d, initial callback call\n", flash->progress_state->stage);
 	} else {
 		/* Progress cannot go backwards. */
-		assert_true(flash->progress_state->current >= progress_user_data->last_seen);
+		assert_true(flash->progress_state->current >= progress_user_data->last_seen[flash->progress_state->stage]);
 	}
 
-	if (flash->progress_state->current >= flash->progress_state->total)
-		printf("Progress complete for stage %d, final callback call\n", flash->progress_state->stage);
+	if (flash->progress_state->current >= flash->progress_state->total - 1)
+		printf("Progress almost complete for stage %d, current %ld, total %ld\n",
+			flash->progress_state->stage, flash->progress_state->current, flash->progress_state->total);
 
-	progress_user_data->last_seen = flash->progress_state->current;
+	progress_user_data->last_seen[flash->progress_state->stage] = flash->progress_state->current;
 }
 
 static void setup_chip(struct flashrom_flashctx *flashctx, struct flashrom_layout **layout,
@@ -144,6 +146,7 @@ static const struct flashchip chip_8MiB = {
 	.tested		= TEST_OK_PREW,
 	.read		= TEST_READ_INJECTOR,
 	.write		= TEST_WRITE_INJECTOR,
+	.page_size	= 256,
 	.block_erasers	=
 	{{
 		 /* All blocks within total size of the chip. */
@@ -585,6 +588,55 @@ void write_chip_feature_no_erase(void **state)
 
 	free(newcontents);
 }
+
+void write_chip_feature_no_erase_with_progress(void **state)
+{
+	(void) state; /* unused */
+
+	static struct io_mock_fallback_open_state data = {
+		.noc	= 0,
+		.paths	= { NULL },
+	};
+	const struct io_mock chip_io = {
+		.fallback_open_state = &data,
+	};
+
+	struct flashrom_flashctx flashctx = { 0 };
+	struct flashrom_layout *layout;
+
+	/*
+	 * Tricking the dummyflasher by asking to emulate W25Q128FV but giving to it
+	 * mock chip with FEATURE_NO_ERASE.
+	 * As long as chip size is the same, this is fine.
+	 */
+	struct flashchip mock_chip = chip_no_erase;
+	const char *param_dup = "bus=spi,emulate=W25Q128FV";
+
+	setup_chip(&flashctx, &layout, &mock_chip, param_dup, &chip_io);
+
+	/* See comment in write_chip_test_success */
+	const char *const filename = "-";
+	unsigned long size = mock_chip.total_size * 1024;
+	uint8_t *const newcontents = malloc(size);
+	assert_non_null(newcontents);
+
+	struct progress_user_data progress_user_data = {0};
+	struct flashrom_progress progress_state = {
+		.user_data = &progress_user_data
+	};
+	flashrom_set_progress_callback(&flashctx, progress_callback, &progress_state);
+
+	printf("Write chip operation started.\n");
+	assert_int_equal(0, read_buf_from_file(newcontents, size, filename));
+	assert_int_equal(0, flashrom_image_write(&flashctx, newcontents, size, NULL));
+	assert_int_equal(0, flashrom_image_verify(&flashctx, newcontents, size));
+	printf("Write chip operation done.\n");
+
+	teardown(&layout);
+
+	free(newcontents);
+}
+
 
 void write_nonaligned_region_with_dummyflasher_test_success(void **state)
 {
