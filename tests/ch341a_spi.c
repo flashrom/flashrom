@@ -13,6 +13,8 @@
  * GNU General Public License for more details.
  */
 
+#include <stdlib.h>
+
 #include "lifecycle.h"
 
 #if CONFIG_CH341A_SPI == 1

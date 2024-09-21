@@ -13,6 +13,8 @@
  * GNU General Public License for more details.
  */
 
+#include <stdlib.h>
+
 #include "lifecycle.h"
 
 #if CONFIG_RAIDEN_DEBUG_SPI == 1

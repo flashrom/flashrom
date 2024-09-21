@@ -13,6 +13,8 @@
  * GNU General Public License for more details.
  */
 
+#include <stdlib.h>
+
 #include "lifecycle.h"
 
 #if CONFIG_LINUX_MTD == 1

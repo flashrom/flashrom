@@ -13,9 +13,10 @@
  * GNU General Public License for more details.
  */
 
+#include <stdlib.h>
+
 #include <include/test.h>
 #include "tests.h"
-
 #include "programmer.h"
 
 #define assert_equal_and_free(text, expected)	\
