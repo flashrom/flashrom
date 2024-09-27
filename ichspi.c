@@ -661,7 +661,7 @@ static int reprogram_opcode_on_the_fly(uint8_t opcode, unsigned int writecnt, un
 		else // we have an invalid case
 			return SPI_INVALID_LENGTH;
 	}
-	int oppos = 2;	// use original JEDEC_BE_D8 offset
+	int oppos = 4;	// use the original position of JEDEC_REMS
 	curopcodes->opcode[oppos].opcode = opcode;
 	curopcodes->opcode[oppos].spi_type = spi_type;
 	program_opcodes(curopcodes, 0, ich_generation);
