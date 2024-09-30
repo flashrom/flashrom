@@ -1991,18 +1991,7 @@ static void ich9_set_pr(const size_t reg_pr0, int i, int read_prot, int write_pr
 	msg_gspew("resulted in 0x%08"PRIx32".\n", mmio_readl(addr));
 }
 
-static const struct spi_master spi_master_ich7 = {
-	.max_data_read	= 64,
-	.max_data_write	= 64,
-	.command	= ich_spi_send_command,
-	.multicommand	= ich_spi_send_multicommand,
-	.map_flash_region	= physmap,
-	.unmap_flash_region	= physunmap,
-	.read		= default_spi_read,
-	.write_256	= default_spi_write_256,
-};
-
-static const struct spi_master spi_master_ich9 = {
+static const struct spi_master spi_master_ich = {
 	.max_data_read	= 64,
 	.max_data_write	= 64,
 	.command	= ich_spi_send_command,
@@ -2054,7 +2043,7 @@ static int init_ich7_spi(void *spibar, enum ich_chipset ich_gen)
 	}
 	ich_init_opcodes(ich_gen);
 	ich_set_bbar(0, ich_gen);
-	register_spi_master(&spi_master_ich7, NULL);
+	register_spi_master(&spi_master_ich, NULL);
 
 	return 0;
 }
@@ -2420,7 +2409,7 @@ static int init_ich_default(const struct programmer_cfg *cfg, void *spibar, enum
 		memcpy(opaque_hwseq_data, &hwseq_data, sizeof(*opaque_hwseq_data));
 		register_opaque_master(&opaque_master_ich_hwseq, opaque_hwseq_data);
 	} else {
-		register_spi_master(&spi_master_ich9, NULL);
+		register_spi_master(&spi_master_ich, NULL);
 	}
 
 	return 0;
