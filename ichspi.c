@@ -399,7 +399,7 @@ static OPCODES O_ST_M25P = {
  * It is used to reprogram the chipset OPCODE table on-the-fly if an opcode
  * is needed which is currently not in the chipset OPCODE table
  */
-static OPCODE POSSIBLE_OPCODES[] = {
+static const OPCODE POSSIBLE_OPCODES[] = {
 	 {JEDEC_BYTE_PROGRAM, SPI_OPCODE_TYPE_WRITE_WITH_ADDRESS, 0},	// Write Byte
 	 {JEDEC_READ, SPI_OPCODE_TYPE_READ_WITH_ADDRESS, 0},	// Read Data
 	 {JEDEC_BE_D8, SPI_OPCODE_TYPE_WRITE_WITH_ADDRESS, 0},	// Erase Sector
