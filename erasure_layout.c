@@ -228,7 +228,7 @@ static void select_erase_functions(struct flashctx *flashctx, const struct erase
 		}
 
 		const int total_blocks = sub_block_end - sub_block_start + 1;
-		if (count && count > total_blocks/2) {
+		if (count == total_blocks) {
 			if (ll->start_addr >= rstart && ll->end_addr <= rend) {
 				for (int j = sub_block_start; j <= sub_block_end; j++)
 					layout[findex - 1].layout_list[j].selected = false;
