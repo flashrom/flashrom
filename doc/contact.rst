@@ -43,8 +43,8 @@ Most of the discussion is about flashrom development, contributions, tech talk a
 
 You are welcome to join and discuss current and future flashrom development, ideas and contributions.
 
-If you have a problem and would like to get help, don't ask for help. Instead, just **explain** your problem right away,
-and make sure to **describe** the situation as much as possible, so that other people can understand you and provide meaningful answers.
+If you have a problem and would like to get help, don't ask for help. Instead, just explain your problem right away,
+and make sure to describe the situation as much as possible, so that other people can understand you and provide meaningful answers.
 Otherwise, others have to ask or guess the details of your problem, which is frustrating for both parties.
 
 Should you need to paste lots of text (more than three lines), please use a `paste service <https://en.wikipedia.org/wiki/Pastebin>`_.
@@ -53,6 +53,12 @@ Other good paste services are `ix.io <http://ix.io/>`_, `paste.rs <https://paste
 `gist.github.com <https://gist.github.com/>`_  and `dpaste.com <http://dpaste.com/>`_.
 
 Questions on `coreboot <https://coreboot.org>`_, `OpenBIOS <http://www.openbios.info/>`_, firmware and related topics are welcome in **#coreboot** on the same server.
+
+Discord
+"""""""
+
+Flashrom Discord channel is hosted on coreboot's server. Once you join, you will be able to see all coreboot's and flashrom's channels in one place.
+To join, use the `invite link <https://discord.gg/dgcrkwVyeR>`_.
 
 IRC
 """
@@ -68,10 +74,10 @@ Do note that IRC's nature has a significant effect on conversations. People from
 with many different cultures and timezones. Most people are in the `CET timezone <https://en.wikipedia.org/wiki/Central_European_Time>`_,
 so the channel may be very quiet during `CET nighttime <https://time.is/CET>`_.
 
-If you receive no replies, **please be patient**.
+If you receive no replies, *please be patient*.
 After all, silence is better than getting replied with `"IDK" <https://en.wiktionary.org/wiki/IDK>`_.
-Frequently, somebody knows the answer, but hasn't checked IRC yet. In any case, please **do not leave the channel while waiting for an answer!**
-Since IRC does not store messages, replying to somebody who left the channel is **impossible**.
+Frequently, somebody knows the answer, but hasn't checked IRC yet. In any case, please *do not leave the channel while waiting for an answer!*
+Since IRC does not store messages, replying to somebody who left the channel is *impossible*.
 
 To have persistence on IRC, you can set up an `IRC bouncer <https://en.wikipedia.org/wiki/Internet_Relay_Chat#Bouncer>`_
 like `ZNC <https://en.wikipedia.org/wiki/ZNC>`_, or use `IRCCloud <https://www.irccloud.com/>`_.
@@ -81,11 +87,7 @@ Most of the time, people use IRC on wider-than-tall screens. Because of this, co
 Instead of sending lots of tiny messages with only about two words, prefer using longer sentences, spaces and punctuation symbols.
 If reading and understanding your messages is easy, replying to them is also easy.
 
-Discord
-"""""""
-
-Flashrom Discord channel is hosted on coreboot's server. Once you join, you will be able to see all coreboot's and flashrom's channels in one place.
-To join, use the `invite link <https://discord.gg/dgcrkwVyeR>`_.
+*Note: the channel is not moderated or monitored by any of the current active maintainers.*
 
 Dev meeting
 -----------
