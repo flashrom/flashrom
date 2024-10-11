@@ -300,8 +300,8 @@ static int erase_write_helper(struct flashctx *const flashctx, chipoff_t region_
 				return -1;
 			}
 			if (check_erased_range(flashctx, start_addr, block_len)) {
-				return -1;
 				msg_cerr("ERASE FAILED!\n");
+				return -1;
 			}
 
 			update_progress(flashctx, FLASHROM_PROGRESS_ERASE, block_len);
