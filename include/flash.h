@@ -593,6 +593,9 @@ struct flashrom_flashctx {
 	flashrom_progress_callback *progress_callback;
 	struct flashrom_progress *progress_state;
 	struct stage_progress stage_progress[FLASHROM_PROGRESS_NR];
+
+	/* Maximum allowed % of redundant erase */
+	int sacrifice_ratio;
 };
 
 /* Timing used in probe routines. ZERO is -2 to differentiate between an unset

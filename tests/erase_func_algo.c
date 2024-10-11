@@ -1191,6 +1191,7 @@ struct CMUnitTest *get_erase_func_algo_tests(size_t *num_tests) {
 }
 
 static void test_erase_fails_for_unwritable_region(void **);
+static void test_write_with_sacrifice_ratio50(void **);
 static void erase_unwritable_regions_skipflag_on_test_success(void **);
 static void write_unwritable_regions_skipflag_on_test_success(void **);
 
@@ -1200,7 +1201,7 @@ static void write_unwritable_regions_skipflag_on_test_success(void **);
  */
 struct CMUnitTest *get_erase_protected_region_algo_tests(size_t *num_tests) {
 	const size_t num_parameterized = ARRAY_SIZE(test_cases_protected_region);
-	const size_t num_unparameterized = 1;
+	const size_t num_unparameterized = 2;
 	// Twice the number of parameterized test cases, because each test case is run twice:
 	// for erase and write.
 	const size_t num_cases = num_parameterized * 2 + num_unparameterized;
@@ -1231,7 +1232,11 @@ struct CMUnitTest *get_erase_protected_region_algo_tests(size_t *num_tests) {
 			(const struct CMUnitTest) {
 				.name = "erase failure for unskipped unwritable regions",
 				.test_func = test_erase_fails_for_unwritable_region,
-			}
+			},
+			(const struct CMUnitTest) {
+				.name = "write with sacrifice ratio 50",
+				.test_func = test_write_with_sacrifice_ratio50,
+			},
 		},
 		sizeof(*all_cases) * num_unparameterized
 	);
@@ -1704,4 +1709,77 @@ static void test_erase_fails_for_unwritable_region(void **state) {
 	flashrom_layout_release(layout);
 
 	assert_int_not_equal(ret, 0);
+}
+
+static void test_write_with_sacrifice_ratio50(void **state) {
+	struct test_case* current_test_case = &test_cases[20];
+
+	int all_write_test_result = 0;
+	struct flashrom_flashctx flashctx = {
+		/* If eraseblocks of smaller size fill in more than a half of the area,
+		 * erase one larger size block instead. */
+		.sacrifice_ratio = 50,
+	};
+	/* Custom expectations because sacrifice ratio is modified (not default).  */
+	struct erase_invoke eraseblocks_expected = {0x0, 0x10, TEST_ERASE_INJECTOR_5};
+	unsigned int eraseblocks_expected_ind = 1;
+
+	uint8_t newcontents[MIN_BUF_SIZE];
+	const char *param = ""; /* Default values for all params. */
+
+	struct flashrom_layout *layout;
+
+	const chipoff_t verify_end_boundary = setup_chip(&flashctx, &layout, param, current_test_case);
+	memcpy(&newcontents, current_test_case->written_buf, MOCK_CHIP_SIZE);
+
+	printf("%s started.\n", __func__);
+	int ret = flashrom_image_write(&flashctx, &newcontents, MIN_BUF_SIZE, NULL);
+	printf("%s returned %d.\n", __func__, ret);
+
+	int chip_written = !memcmp(g_state.buf, current_test_case->written_buf, MOCK_CHIP_SIZE);
+
+	int eraseblocks_in_order = !memcmp(g_state.eraseblocks_actual, &eraseblocks_expected,
+						eraseblocks_expected_ind * sizeof(struct erase_invoke));
+
+	int eraseblocks_invocations = (g_state.eraseblocks_actual_ind == eraseblocks_expected_ind);
+
+	int chip_verified = 1;
+	for (unsigned int i = 0; i <= verify_end_boundary; i++)
+		if (g_state.was_modified[i] && !g_state.was_verified[i]) {
+			chip_verified = 0; /* the byte was modified, but not verified after */
+			printf("Error: byte 0x%x, modified: %d, verified: %d\n", i, g_state.was_modified[i], g_state.was_verified[i]);
+		}
+
+	if (chip_written)
+		printf("Written chip memory state for %s is CORRECT\n", __func__);
+	else
+		printf("Written chip memory state for %s is WRONG\n", __func__);
+
+	if (eraseblocks_in_order)
+		printf("Eraseblocks order of invocation for %s is CORRECT\n", __func__);
+	else
+		printf("Eraseblocks order of invocation for %s is WRONG\n", __func__);
+
+	if (eraseblocks_invocations)
+		printf("Eraseblocks number of invocations for %s is CORRECT\n", __func__);
+	else
+		printf("Eraseblocks number of invocations for %s is WRONG, expected %d actual %d\n",
+			__func__,
+			eraseblocks_expected_ind,
+			g_state.eraseblocks_actual_ind);
+
+	if (chip_verified)
+		printf("Written chip memory state for %s was verified successfully\n", __func__);
+	else
+		printf("Written chip memory state for %s was NOT verified completely\n", __func__);
+
+	all_write_test_result |= ret;
+	all_write_test_result |= !chip_written;
+	all_write_test_result |= !eraseblocks_in_order;
+	all_write_test_result |= !eraseblocks_invocations;
+	all_write_test_result |= !chip_verified;
+
+	teardown_chip(&layout);
+
+	assert_int_equal(0, all_write_test_result);
 }

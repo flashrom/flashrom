@@ -20,7 +20,7 @@ SYNOPSIS
 |             [--wp-status] [--wp-list] [--wp-enable|--wp-disable]
 |             [--wp-range <start>,<length>|--wp-region <region>]
 |             [-n] [-N] [-f])]
-|         [-V[V[V]]] [-o <logfile>] [--progress]
+|         [-V[V[V]]] [-o <logfile>] [--progress] [--sacrifice-ratio <ratio>]
 
 
 DESCRIPTION
@@ -318,6 +318,17 @@ All operations involving any chip access (probe/read/write/...) require the ``-p
 
 **--progress**
         [Experimental feature] Show progress percentage of operations on the standard output.
+
+**--sacrifice-ratio <ratio>**
+	Fraction (as a percentage, 0-50) of an erase block that may be erased even if unmodified.
+	Larger values may complete programming faster, but may also hurt chip longevity by erasing cells unnecessarily.
+
+	Default is 0, S+1 size block only selected if all the S size blocks inside it need to be erased in full.
+	50 means that if more than a half of the area needs to be erased,
+	a S+1 size block can be selected to cover all the area with one erase.
+	The tradeoff is the speed of programming operation VS the longevity of the chip. Default is longevity.
+
+	DANGEROUS! It wears your chip faster!
 
 
 **-R, --version**

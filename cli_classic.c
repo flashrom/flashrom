@@ -45,6 +45,7 @@ enum {
 	OPTION_WP_DISABLE,
 	OPTION_WP_LIST,
 	OPTION_PROGRESS,
+	OPTION_SACRIFICE_RATIO,
 };
 
 struct cli_options {
@@ -73,6 +74,7 @@ struct cli_options {
 	char *logfile;
 	char *referencefile;
 	const char *chip_to_probe;
+	int sacrifice_ratio;
 };
 
 static void cli_classic_usage(const char *name)
@@ -119,6 +121,14 @@ static void cli_classic_usage(const char *name)
 	       "      --flash-contents <ref-file>   assume flash contents to be <ref-file>\n"
 	       " -L | --list-supported              print supported devices\n"
 	       "      --progress                    show progress percentage on the standard output\n"
+	       "      --sacrifice-ratio <ratio>     Fraction (as a percentage, 0-50) of an erase block\n"
+	       "                                    that may be erased even if unmodified. Larger values\n"
+	       "				    may complete programming faster, but may also hurt\n"
+	       "				    chip longevity by erasing cells unnecessarily.\n"
+	       "				    Default is 0, tradeoff is the speed of programming\n"
+	       "                                    operation VS the longevity of the chip. Default is\n"
+	       "                                    longevity.\n"
+	       "                                    DANGEROUS! It wears your chip faster!\n"
 	       " -p | --programmer <name>[:<param>] specify the programmer device. One of\n");
 	list_programmers_linebreak(4, 80, 0);
 	printf(".\n\nYou can specify one of -h, -R, -L, "
@@ -810,6 +820,10 @@ static void parse_options(int argc, char **argv, const char *optstring,
 		case OPTION_PROGRESS:
 			options->show_progress = true;
 			break;
+		case OPTION_SACRIFICE_RATIO:
+			/* It is okay to convert invalid input to 0. */
+			options->sacrifice_ratio = atoi(optarg);
+			break;
 		default:
 			cli_classic_abort_usage(NULL);
 			break;
@@ -879,6 +893,7 @@ int main(int argc, char *argv[])
 		{"version",		0, NULL, 'R'},
 		{"output",		1, NULL, 'o'},
 		{"progress",		0, NULL, OPTION_PROGRESS},
+		{"sacrifice-ratio",	1, NULL, OPTION_SACRIFICE_RATIO},
 		{NULL,			0, NULL, 0},
 	};
 
@@ -1123,6 +1138,14 @@ int main(int argc, char *argv[])
 	if (options.flash_size) {
 		printf("%zu\n", flashrom_flash_getsize(fill_flash));
 		goto out_shutdown;
+	}
+
+	if (options.sacrifice_ratio) {
+		if (options.sacrifice_ratio < 0 || options.sacrifice_ratio > 50) {
+			msg_ginfo("Invalid input of sacrifice ratio, valid 0-50. Fallback to default value 0.\n");
+			options.sacrifice_ratio = 0;
+		}
+		fill_flash->sacrifice_ratio = options.sacrifice_ratio;
 	}
 
 	if (options.ifd && (flashrom_layout_read_from_ifd(&options.layout, fill_flash, NULL, 0) ||

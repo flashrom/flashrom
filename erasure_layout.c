@@ -249,9 +249,11 @@ static void select_erase_functions(struct flashctx *flashctx, const struct erase
 		}
 
 		const int total_blocks = sub_block_end - sub_block_start + 1;
-		if (count == total_blocks) {
-			/* We are selecting one large block instead, so send opcode once
-			 * instead of sending many smaller ones.
+		if (total_blocks - count <= total_blocks * flashctx->sacrifice_ratio / 100) {
+			/* Number of smaller blocks not needed to change is lower than the
+			 * sacrifice ratio, so we can sacrifice them.
+			 * We are selecting one large block to cover the area, so
+			 * send opcode once instead of sending many smaller ones.
 			 */
 			if (ll->start_addr >= rstart && ll->end_addr <= rend) {
 				/* Deselect all smaller blocks covering the same region. */
