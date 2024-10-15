@@ -856,7 +856,7 @@
 #define ST_M45PE80		0x4014	/* Same as XM25QH80B */
 #define ST_M45PE16		0x4015
 #define XMC_XM25QH64C		0x4017	/* Same as XM25QH64D */
-#define XMC_XM25QU64C		0x4117
+#define XMC_XM25QU64C		0x4117	/* Same as XM25LU64C */
 #define XMC_XM25QU80B		0x5014
 #define XMC_XM25QH16C		0x4015	/* Same as XM25QH16D */
 #define XMC_XM25QU16C		0x5015
