@@ -52,6 +52,8 @@ struct test_case {
 	uint8_t written_protected_buf[MOCK_CHIP_SIZE]; /* Expected content after write with protected region. */
 	struct erase_invoke eraseblocks_expected[MOCK_CHIP_SIZE]; /* Expected order of eraseblocks invocations. */
 	unsigned int eraseblocks_expected_ind; /* Expected number of eraseblocks invocations. */
+	struct erase_invoke write_eraseblocks_expected[MOCK_CHIP_SIZE]; /* Expected order of eraseblocks invocations. */
+	unsigned int write_eraseblocks_expected_ind; /* Expected number of eraseblocks invocations. */
 	char erase_test_name[40]; /* Test case display name for testing erase operation. */
 	char write_test_name[40]; /* Test case display name for testing write operation. */
 };
@@ -212,6 +214,29 @@ static struct flashchip chip_8_16 = {
 	},
 };
 
+static struct flashchip chip_1_4_16 = {
+	.vendor		= "aklm",
+	/* See comment on previous chip. */
+	.total_size	= 1,
+	.tested		= TEST_OK_PREW,
+	.gran		= WRITE_GRAN_1BYTE,
+	.read		= TEST_READ_INJECTOR,
+	.write		= TEST_WRITE_INJECTOR,
+	.block_erasers	=
+	{
+		{
+			.eraseblocks = { {1, MIN_REAL_CHIP_SIZE} },
+			.block_erase = TEST_ERASE_INJECTOR_1,
+		}, {
+			.eraseblocks = { {4, MIN_REAL_CHIP_SIZE / 4} },
+			.block_erase = TEST_ERASE_INJECTOR_3,
+		}, {
+			.eraseblocks = { {16, MIN_REAL_CHIP_SIZE / 16} },
+			.block_erase = TEST_ERASE_INJECTOR_5,
+		}
+	},
+};
+
 #define BLOCK_ERASE_FUNC(n) \
 	static int block_erase_chip_ ## n (struct flashctx *flash, unsigned int blockaddr, unsigned int blocklen) { \
 		return block_erase_chip_tagged(flash, TEST_ERASE_INJECTOR_ ## n, blockaddr, blocklen); \
@@ -341,6 +366,8 @@ static struct test_case test_cases[] = {
 				 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f},
 		.eraseblocks_expected = {{0x0, 0x10, TEST_ERASE_INJECTOR_5}},
 		.eraseblocks_expected_ind = 1,
+		.write_eraseblocks_expected = {{0x0, 0x10, TEST_ERASE_INJECTOR_5}},
+		.write_eraseblocks_expected_ind = 1,
 		.erase_test_name = "Erase test case #0",
 		.write_test_name = "Write test case #0",
 	}, {
@@ -354,7 +381,7 @@ static struct test_case test_cases[] = {
 		.chip =		&chip_1_2_4_8_16,
 		.regions =	{{0, MOCK_CHIP_SIZE/2 - 1, "part1"}, {MOCK_CHIP_SIZE/2, MIN_REAL_CHIP_SIZE - 1, "part2"}},
 		.initial_buf =	{0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7,
-				 0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff},
+				 0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xf1},
 		.erased_buf =	{ERASE_VALUE, ERASE_VALUE, ERASE_VALUE, ERASE_VALUE,
 					ERASE_VALUE, ERASE_VALUE, ERASE_VALUE, ERASE_VALUE,
 					ERASE_VALUE, ERASE_VALUE, ERASE_VALUE, ERASE_VALUE,
@@ -363,6 +390,10 @@ static struct test_case test_cases[] = {
 				 0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x2f},
 		.eraseblocks_expected = {{0x8, 0x8, TEST_ERASE_INJECTOR_4}, {0x0, 0x8, TEST_ERASE_INJECTOR_4}},
 		.eraseblocks_expected_ind = 2,
+		.write_eraseblocks_expected = {{0x9, 0x1, TEST_ERASE_INJECTOR_1},
+						{0xa, 0x2, TEST_ERASE_INJECTOR_2},
+						{0xc, 0x4, TEST_ERASE_INJECTOR_3}},
+		.write_eraseblocks_expected_ind = 3,
 		.erase_test_name = "Erase test case #1",
 		.write_test_name = "Write test case #1",
 	}, {
@@ -391,6 +422,11 @@ static struct test_case test_cases[] = {
 			{0x0, 0x8, TEST_ERASE_INJECTOR_4}
 		},
 		.eraseblocks_expected_ind = 5,
+		.write_eraseblocks_expected = {
+			{0x6, 0x1, TEST_ERASE_INJECTOR_1},
+			{0x8, 0x1, TEST_ERASE_INJECTOR_1}
+		},
+		.write_eraseblocks_expected_ind = 2,
 		.erase_test_name = "Erase test case #2",
 		.write_test_name = "Write test case #2",
 	}, {
@@ -413,6 +449,8 @@ static struct test_case test_cases[] = {
 				 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff},
 		.eraseblocks_expected = {{0x0, 0x10, TEST_ERASE_INJECTOR_5}},
 		.eraseblocks_expected_ind = 1,
+		.write_eraseblocks_expected = {{0x4, 0x4, TEST_ERASE_INJECTOR_3}},
+		.write_eraseblocks_expected_ind = 1,
 		.erase_test_name = "Erase test case #3",
 		.write_test_name = "Write test case #3",
 	}, {
@@ -435,6 +473,8 @@ static struct test_case test_cases[] = {
 				 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7, 0xa8},
 		.eraseblocks_expected = {{0x0, 0x10, TEST_ERASE_INJECTOR_5}},
 		.eraseblocks_expected_ind = 1,
+		.write_eraseblocks_expected = {{0x0, 0x4, TEST_ERASE_INJECTOR_3}, {0x8, 0x8, TEST_ERASE_INJECTOR_4}},
+		.write_eraseblocks_expected_ind = 2,
 		.erase_test_name = "Erase test case #4",
 		.write_test_name = "Write test case #4",
 	}, {
@@ -457,6 +497,11 @@ static struct test_case test_cases[] = {
 				 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7, 0xa8},
 		.eraseblocks_expected = {{0x0, 0x10, TEST_ERASE_INJECTOR_5}},
 		.eraseblocks_expected_ind = 1,
+		.write_eraseblocks_expected = {{0x6, 0x1, TEST_ERASE_INJECTOR_1},
+						{0x4, 0x2, TEST_ERASE_INJECTOR_2},
+						{0x0, 0x4, TEST_ERASE_INJECTOR_3},
+						{0x8, 0x8, TEST_ERASE_INJECTOR_4}},
+		.write_eraseblocks_expected_ind = 4,
 		.erase_test_name = "Erase test case #5",
 		.write_test_name = "Write test case #5",
 	}, {
@@ -479,6 +524,8 @@ static struct test_case test_cases[] = {
 				 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7, 0xa8},
 		.eraseblocks_expected = {{0x0, 0x10, TEST_ERASE_INJECTOR_5}},
 		.eraseblocks_expected_ind = 1,
+		.write_eraseblocks_expected = {{0x7, 0x1, TEST_ERASE_INJECTOR_1}},
+		.write_eraseblocks_expected_ind = 1,
 		.erase_test_name = "Erase test case #6",
 		.write_test_name = "Write test case #6",
 	}, {
@@ -510,6 +557,17 @@ static struct test_case test_cases[] = {
 			{0x0, 0x2, TEST_ERASE_INJECTOR_2}
 		},
 		.eraseblocks_expected_ind = 8,
+		.write_eraseblocks_expected = {
+			{0xf, 0x1, TEST_ERASE_INJECTOR_1},
+			{0xe, 0x1, TEST_ERASE_INJECTOR_1},
+			{0xc, 0x2, TEST_ERASE_INJECTOR_2},
+			{0x8, 0x4, TEST_ERASE_INJECTOR_3},
+			{0x3, 0x1, TEST_ERASE_INJECTOR_1},
+			{0x4, 0x4, TEST_ERASE_INJECTOR_3},
+			{0x2, 0x1, TEST_ERASE_INJECTOR_1},
+			{0x0, 0x2, TEST_ERASE_INJECTOR_2}
+		},
+		.write_eraseblocks_expected_ind = 8,
 		.erase_test_name = "Erase test case #7",
 		.write_test_name = "Write test case #7",
 	}, {
@@ -532,6 +590,8 @@ static struct test_case test_cases[] = {
 				 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f},
 		.eraseblocks_expected = {{0x0, 0x10, TEST_ERASE_INJECTOR_5}},
 		.eraseblocks_expected_ind = 1,
+		.write_eraseblocks_expected = {{0x0, 0x10, TEST_ERASE_INJECTOR_5}},
+		.write_eraseblocks_expected_ind = 1,
 		.erase_test_name = "Erase test case #8",
 		.write_test_name = "Write test case #8",
 	}, {
@@ -546,7 +606,7 @@ static struct test_case test_cases[] = {
 		.regions =	{{0, MOCK_CHIP_SIZE/2 - 1, "part1"}, {MOCK_CHIP_SIZE/2, MOCK_CHIP_SIZE - 1, "part2"},
 					{MOCK_CHIP_SIZE, MIN_REAL_CHIP_SIZE - 1, "longtail"}},
 		.initial_buf =	{0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7,
-				 0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff},
+				 0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xf1},
 		.erased_buf =	{ERASE_VALUE, ERASE_VALUE, ERASE_VALUE, ERASE_VALUE,
 					ERASE_VALUE, ERASE_VALUE, ERASE_VALUE, ERASE_VALUE,
 					ERASE_VALUE, ERASE_VALUE, ERASE_VALUE, ERASE_VALUE,
@@ -555,6 +615,14 @@ static struct test_case test_cases[] = {
 				 0xf8, 0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x2f},
 		.eraseblocks_expected = {{0x8, 0x8, TEST_ERASE_INJECTOR_4}, {0x0, 0x8, TEST_ERASE_INJECTOR_4}},
 		.eraseblocks_expected_ind = 2,
+		.write_eraseblocks_expected = {{0x9, 0x1, TEST_ERASE_INJECTOR_1},
+						{0xa, 0x1, TEST_ERASE_INJECTOR_1},
+						{0xb, 0x1, TEST_ERASE_INJECTOR_1},
+						{0xc, 0x1, TEST_ERASE_INJECTOR_1},
+						{0xd, 0x1, TEST_ERASE_INJECTOR_1},
+						{0xe, 0x1, TEST_ERASE_INJECTOR_1},
+						{0xf, 0x1, TEST_ERASE_INJECTOR_1}},
+		.write_eraseblocks_expected_ind = 7,
 		.erase_test_name = "Erase test case #9",
 		.write_test_name = "Write test case #9",
 	}, {
@@ -587,6 +655,11 @@ static struct test_case test_cases[] = {
 			{0x0, 0x8, TEST_ERASE_INJECTOR_4}
 		},
 		.eraseblocks_expected_ind = 9,
+		.write_eraseblocks_expected = {
+			{0x6, 0x1, TEST_ERASE_INJECTOR_1},
+			{0x8, 0x1, TEST_ERASE_INJECTOR_1}
+		},
+		.write_eraseblocks_expected_ind = 2,
 		.erase_test_name = "Erase test case #10",
 		.write_test_name = "Write test case #10",
 	}, {
@@ -609,6 +682,11 @@ static struct test_case test_cases[] = {
 				 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff},
 		.eraseblocks_expected = {{0x0, 0x10, TEST_ERASE_INJECTOR_5}},
 		.eraseblocks_expected_ind = 1,
+		.write_eraseblocks_expected = {{0x4, 0x1, TEST_ERASE_INJECTOR_1},
+						{0x5, 0x1, TEST_ERASE_INJECTOR_1},
+						{0x6, 0x1, TEST_ERASE_INJECTOR_1},
+						{0x7, 0x1, TEST_ERASE_INJECTOR_1}},
+		.write_eraseblocks_expected_ind = 4,
 		.erase_test_name = "Erase test case #11",
 		.write_test_name = "Write test case #11",
 	}, {
@@ -631,6 +709,12 @@ static struct test_case test_cases[] = {
 				 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7, 0xa8},
 		.eraseblocks_expected = {{0x0, 0x10, TEST_ERASE_INJECTOR_5}},
 		.eraseblocks_expected_ind = 1,
+		.write_eraseblocks_expected = {{0x0, 0x1, TEST_ERASE_INJECTOR_1},
+						{0x1, 0x1, TEST_ERASE_INJECTOR_1},
+						{0x2, 0x1, TEST_ERASE_INJECTOR_1},
+						{0x3, 0x1, TEST_ERASE_INJECTOR_1},
+						{0x8, 0x8, TEST_ERASE_INJECTOR_4}},
+		.write_eraseblocks_expected_ind = 5,
 		.erase_test_name = "Erase test case #12",
 		.write_test_name = "Write test case #12",
 	}, {
@@ -653,6 +737,15 @@ static struct test_case test_cases[] = {
 				 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7, 0xa8},
 		.eraseblocks_expected = {{0x0, 0x10, TEST_ERASE_INJECTOR_5}},
 		.eraseblocks_expected_ind = 1,
+		.write_eraseblocks_expected = {{0x0, 0x1, TEST_ERASE_INJECTOR_1},
+						{0x1, 0x1, TEST_ERASE_INJECTOR_1},
+						{0x2, 0x1, TEST_ERASE_INJECTOR_1},
+						{0x3, 0x1, TEST_ERASE_INJECTOR_1},
+						{0x4, 0x1, TEST_ERASE_INJECTOR_1},
+						{0x5, 0x1, TEST_ERASE_INJECTOR_1},
+						{0x6, 0x1, TEST_ERASE_INJECTOR_1},
+						{0x8, 0x8, TEST_ERASE_INJECTOR_4}},
+		.write_eraseblocks_expected_ind = 8,
 		.erase_test_name = "Erase test case #13",
 		.write_test_name = "Write test case #13",
 	}, {
@@ -675,6 +768,8 @@ static struct test_case test_cases[] = {
 				 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7, 0xa8},
 		.eraseblocks_expected = {{0x0, 0x10, TEST_ERASE_INJECTOR_5}},
 		.eraseblocks_expected_ind = 1,
+		.write_eraseblocks_expected = {{0x7, 0x1, TEST_ERASE_INJECTOR_1}},
+		.write_eraseblocks_expected_ind = 1,
 		.erase_test_name = "Erase test case #14",
 		.write_test_name = "Write test case #14",
 	}, {
@@ -715,6 +810,25 @@ static struct test_case test_cases[] = {
 			{0x2, 0x1, TEST_ERASE_INJECTOR_1},
 		},
 		.eraseblocks_expected_ind = 16,
+		.write_eraseblocks_expected = {
+			{0xf, 0x1, TEST_ERASE_INJECTOR_1},
+			{0x8, 0x1, TEST_ERASE_INJECTOR_1},
+			{0x9, 0x1, TEST_ERASE_INJECTOR_1},
+			{0xa, 0x1, TEST_ERASE_INJECTOR_1},
+			{0xb, 0x1, TEST_ERASE_INJECTOR_1},
+			{0xc, 0x1, TEST_ERASE_INJECTOR_1},
+			{0xd, 0x1, TEST_ERASE_INJECTOR_1},
+			{0xe, 0x1, TEST_ERASE_INJECTOR_1},
+			{0x3, 0x1, TEST_ERASE_INJECTOR_1},
+			{0x4, 0x1, TEST_ERASE_INJECTOR_1},
+			{0x5, 0x1, TEST_ERASE_INJECTOR_1},
+			{0x6, 0x1, TEST_ERASE_INJECTOR_1},
+			{0x7, 0x1, TEST_ERASE_INJECTOR_1},
+			{0x0, 0x1, TEST_ERASE_INJECTOR_1},
+			{0x1, 0x1, TEST_ERASE_INJECTOR_1},
+			{0x2, 0x1, TEST_ERASE_INJECTOR_1},
+		},
+		.write_eraseblocks_expected_ind = 16,
 		.erase_test_name = "Erase test case #15",
 		.write_test_name = "Write test case #15",
 	}, {
@@ -743,6 +857,13 @@ static struct test_case test_cases[] = {
 			{0x0, 0x8, TEST_ERASE_INJECTOR_4},
 		},
 		.eraseblocks_expected_ind = 4,
+		.write_eraseblocks_expected = {
+			{0x8, 0x8, TEST_ERASE_INJECTOR_4},
+			{0x0, 0x10, TEST_ERASE_INJECTOR_5},
+			{0x0, 0x8, TEST_ERASE_INJECTOR_4},
+			{0x0, 0x8, TEST_ERASE_INJECTOR_4},
+		},
+		.write_eraseblocks_expected_ind = 4,
 		.erase_test_name = "Erase test case #16",
 		.write_test_name = "Write test case #16",
 	}, {
@@ -765,6 +886,8 @@ static struct test_case test_cases[] = {
 				 0x16, 0x16, 0x16, 0x16, 0x16, 0x16, 0x16, 0x16},
 		.eraseblocks_expected = {{0x0, 0x10, TEST_ERASE_INJECTOR_5}, {0x0, 0x8, TEST_ERASE_INJECTOR_4}},
 		.eraseblocks_expected_ind = 2,
+		.write_eraseblocks_expected = {{0x0, 0x10, TEST_ERASE_INJECTOR_5}, {0x0, 0x8, TEST_ERASE_INJECTOR_4}},
+		.write_eraseblocks_expected_ind = 2,
 		.erase_test_name = "Erase test case #17",
 		.write_test_name = "Write test case #17",
 	}, {
@@ -787,6 +910,8 @@ static struct test_case test_cases[] = {
 				 0x14, 0x16, 0x16, 0x16, 0x16, 0x16, 0x16, 0x16},
 		.eraseblocks_expected = {{0x8, 0x8, TEST_ERASE_INJECTOR_4}, {0x0, 0x10, TEST_ERASE_INJECTOR_5}},
 		.eraseblocks_expected_ind = 2,
+		.write_eraseblocks_expected = {{0x8, 0x8, TEST_ERASE_INJECTOR_4}, {0x0, 0x10, TEST_ERASE_INJECTOR_5}},
+		.write_eraseblocks_expected_ind = 2,
 		.erase_test_name = "Erase test case #18",
 		.write_test_name = "Write test case #18",
 	}, {
@@ -808,8 +933,43 @@ static struct test_case test_cases[] = {
 				 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0},
 		.eraseblocks_expected = {{0x0, 0x8, TEST_ERASE_INJECTOR_4}},
 		.eraseblocks_expected_ind = 1,
+		.write_eraseblocks_expected = {{0x0, 0x8, TEST_ERASE_INJECTOR_4}},
+		.write_eraseblocks_expected_ind = 1,
 		.erase_test_name = "Erase test case #19",
 		.write_test_name = "Write test case #19",
+	}, {
+		/*
+		 * Test case #20
+		 *
+		 * Initial vs written: 3s+1d+3s+1d+3s+1d+3d+1s
+		 * Layout with one region covering the whole chip
+		 * Chip with eraseblocks 1, 4, 16.
+		 */
+		.chip =		&chip_1_4_16,
+		.regions =	{{0, MOCK_CHIP_SIZE - 1, "mock chip"}, {MOCK_CHIP_SIZE, MIN_REAL_CHIP_SIZE - 1, "longtail"}},
+		.initial_buf =	{0x0, 0x1, 0x2, 0xf, 0x4, 0x5, 0x6, 0xf,
+				 0x8, 0x9, 0xa, 0xf, 0xf, 0xf, 0xf, 0x1f},
+		.erased_buf =	{ERASE_VALUE, ERASE_VALUE, ERASE_VALUE, ERASE_VALUE,
+					ERASE_VALUE, ERASE_VALUE, ERASE_VALUE, ERASE_VALUE,
+					ERASE_VALUE, ERASE_VALUE, ERASE_VALUE, ERASE_VALUE,
+					ERASE_VALUE, ERASE_VALUE, ERASE_VALUE, ERASE_VALUE},
+		.written_buf =	{0x01, 0x11, 0x22, 0xf, 0x44, 0x55, 0x66, 0xf,
+				 0x88, 0x99, 0xaa, 0xf, 0xf, 0xf, 0xf, 0xf1},
+		.eraseblocks_expected = {{0x0, 0x10, TEST_ERASE_INJECTOR_5}},
+		.eraseblocks_expected_ind = 1,
+		.write_eraseblocks_expected = {{0x0, 0x1, TEST_ERASE_INJECTOR_1},
+						{0x1, 0x1, TEST_ERASE_INJECTOR_1},
+						{0x2, 0x1, TEST_ERASE_INJECTOR_1},
+						{0x4, 0x1, TEST_ERASE_INJECTOR_1},
+						{0x5, 0x1, TEST_ERASE_INJECTOR_1},
+						{0x6, 0x1, TEST_ERASE_INJECTOR_1},
+						{0x8, 0x1, TEST_ERASE_INJECTOR_1},
+						{0x9, 0x1, TEST_ERASE_INJECTOR_1},
+						{0xa, 0x1, TEST_ERASE_INJECTOR_1},
+						{0xf, 0x1, TEST_ERASE_INJECTOR_1}},
+		.write_eraseblocks_expected_ind = 10,
+		.erase_test_name = "Erase test case #20",
+		.write_test_name = "Write test case #20",
 	},
 };
 
@@ -1180,6 +1340,13 @@ void write_function_algo_test_success(void **state)
 
 	int chip_written = !memcmp(g_state.buf, current_test_case->written_buf, MOCK_CHIP_SIZE);
 
+	int eraseblocks_in_order = !memcmp(g_state.eraseblocks_actual,
+					current_test_case->write_eraseblocks_expected,
+					current_test_case->write_eraseblocks_expected_ind * sizeof(struct erase_invoke));
+
+	int eraseblocks_invocations = (g_state.eraseblocks_actual_ind ==
+					current_test_case->write_eraseblocks_expected_ind);
+
 	int chip_verified = 1;
 	for (unsigned int i = 0; i <= verify_end_boundary; i++)
 		if (g_state.was_modified[i] && !g_state.was_verified[i]) {
@@ -1194,6 +1361,22 @@ void write_function_algo_test_success(void **state)
 		printf("Written chip memory state for %s is WRONG\n",
 			current_test_case->write_test_name);
 
+	if (eraseblocks_in_order)
+		printf("Eraseblocks order of invocation for %s is CORRECT\n",
+			current_test_case->write_test_name);
+	else
+		printf("Eraseblocks order of invocation for %s is WRONG\n",
+			current_test_case->write_test_name);
+
+	if (eraseblocks_invocations)
+		printf("Eraseblocks number of invocations for %s is CORRECT\n",
+			current_test_case->write_test_name);
+	else
+		printf("Eraseblocks number of invocations for %s is WRONG, expected %d actual %d\n",
+			current_test_case->write_test_name,
+			current_test_case->write_eraseblocks_expected_ind,
+			g_state.eraseblocks_actual_ind);
+
 	if (chip_verified)
 		printf("Written chip memory state for %s was verified successfully\n",
 			current_test_case->write_test_name);
@@ -1203,6 +1386,8 @@ void write_function_algo_test_success(void **state)
 
 	all_write_test_result |= ret;
 	all_write_test_result |= !chip_written;
+	all_write_test_result |= !eraseblocks_in_order;
+	all_write_test_result |= !eraseblocks_invocations;
 	all_write_test_result |= !chip_verified;
 
 	teardown_chip(&layout);
