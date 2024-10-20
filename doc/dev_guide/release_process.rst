@@ -24,14 +24,13 @@ Start testing and bug-fixing window
 
 * Double-check and merge all the patches that are fully ready (see also :ref:`merge-checklist`)
 
-* Update VERSION file to first release candidate. Check the git history of VERSION file for a version name pattern.
+* Update VERSION file to first release candidate. The name pattern is: ``v{version_number}-rc{rc_number}``.
 
-  * As an example at the time of writing, the version name of the first release candidate was ``1.4.0-rc1``.
+  * As an example, the version name of the first release candidate can be ``v1.4.0-rc1``.
   * To update the VERSION file, push a patch to Gerrit, and another maintainer should review and approve.
 
-* After submitting the change to the VERSION file, tag this commit.
-  You can check `flashrom tags in Gerrit <https://review.coreboot.org/admin/repos/flashrom,tags,25>`_
-  for tag name pattern. As an example at the time of writing, the tag name was ``v1.4.0-rc1``.
+* After submitting the change to the VERSION file, tag this commit. Tag name should be the same as
+  version name, for example above ``v1.4.0-rc1``.
 
 * Write an announcement on the mailing list. Be very clear about:
 
@@ -74,13 +73,19 @@ Wait for at least a week (or two) since the last release candidate. if everythin
 * Submit the release notes, and in the same patch restart :doc:`/release_notes/devel` document.
   This way everyone who is syncing the repository by the release tag will have release notes in the tree.
 
-* Update VERSION file to release version (for example, at the time of writing ``1.4.0``), and submit this
+* Update VERSION file to release version, name pattern is: ``v{version_name}``
+  (for example, it can be ``v1.4.0``), and submit this.
 
-* Tag the commit which updates the VERSION file. You can check
-  `flashrom tags in Gerrit <https://review.coreboot.org/admin/repos/flashrom,tags,25>`_ for tag name pattern.
-  As an example at the time of writing, the tag name was ``v1.4.0``.
+* Tag the commit which updates the VERSION file. Tag name should be the same as version name,
+  for example above ``v1.4.0``.
 
-* Create the tarball, sign it, and upload to the server together with the signature.
+* Create the tarball:
+
+  * At the moment of writing, the command we use ``meson dist --include-subprojects``,
+    more details are in `meson docs <https://mesonbuild.com/Creating-releases.html#creating-releases>`_.
+  * Check that tarball name follows the pattern ``flashrom-v{version_name}.tar.xz``, for example ``flashrom-v1.4.0.tar.xz``.
+
+* Sign the tarball, and upload to the server together with the signature.
 
 * Update release notes with the link to download tarball, signature, and fingerprint. Submit this and check that final release notes are published on the website.
 
@@ -93,7 +98,8 @@ Wait for at least a week (or two) since the last release candidate. if everythin
 Start the next cycle of development
 ===================================
 
-* Update the VERSION file to the development version. For example, at the time of writing ``1.5.0-devel``, and submit this.
+* Update the VERSION file to the development version. For example, the name pattern is: ``v{version_name}-devel``,
+  for example ``v1.5.0-devel``, and submit this.
 
 * Submit all the patches that have been ready and waiting.
 
