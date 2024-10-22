@@ -482,7 +482,7 @@ static int set_wp_mode(struct wp_bits *bits, const enum flashrom_wp_mode mode)
 
 	case FLASHROM_WP_MODE_HARDWARE:
 		if (!bits->srp_bit_present)
-			return FLASHROM_WP_ERR_CHIP_UNSUPPORTED;
+			return FLASHROM_WP_ERR_MODE_UNSUPPORTED;
 
 		bits->srl = 0;
 		bits->srp = 1;
