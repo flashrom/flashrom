@@ -19,7 +19,11 @@ SYNOPSIS
 |               [-i <include>[:<file>]]]
 |             [--wp-status] [--wp-list] [--wp-enable|--wp-disable]
 |             [--wp-range <start>,<length>|--wp-region <region>]
-|             [-n] [-N] [-f])]
+|             [-n] [-N] [-f]
+|             [--rpmc-root-key <keyfile>] [--key-data <value>]
+|             [--counter-address <address>]
+|             [--get-rpmc-status] [--write-root-key] [--update-hmac-key]
+|             [--increment-counter <current>] [--get-counter])]
 |         [-V[V[V]]] [-o <logfile>] [--progress] [--sacrifice-ratio <ratio>]
 
 
@@ -39,7 +43,7 @@ which use various protocols such as LPC, FWH, parallel flash, or SPI.
 OPTIONS
 -------
 
-You can specify one of ``-h``, ``-R``, ``-L``, ``-E``, ``-r``, ``-w``, ``-v`` or no operation.
+You can specify one of ``-h``, ``-R``, ``-L``, ``-E``, ``-r``, ``-w``, ``-v``, a RPMC command or no operation.
 If no operation is specified, **flashrom** will only probe for flash chips. It is recommended that if you try **flashrom** the
 first time on a system, you run it in probe-only mode and check the output.
 Also you are advised to make a backup of your current ROM contents with ``-r`` before you try to write a new image.
@@ -333,6 +337,81 @@ All operations involving any chip access (probe/read/write/...) require the ``-p
 
 **-R, --version**
         Show version information and exit.
+
+RPMC commands
+^^^^^^^^^^^^^
+
+This section describes the commands added in JESD260. They are only supported on specific chip models.
+If the chip is detected correctly but you still get ``Error: RPMC commands are not supported on this device``,
+try using ``-c "SFDP-capable chip"`` for automatic feature detection.
+
+**--get-rpmc-status**
+        Read the extended RPMC status by issuing a OP2 command
+
+        Example::
+
+                flashrom -p prog --get-rpmc-status
+
+
+**--write-root-key**
+        Write new root key from **--rpmc-root-key**  file for **--counter-address**.
+
+        Example::
+
+                flashrom -p prog --rpmc-root-key <keyfile> --counter-address <address> --write-root-key
+
+**--update-hmac-key**
+        Update the hmac key register for **--counter-address** with the provided **--key-data**.
+        Requires valid **--rpmc-root-key**.
+
+        Example::
+
+                flashrom -p prog --rpmc-root-key <keyfile> --counter-address <address> --key-data <value> --update-hmac-key
+
+**--increment-counter <current>**
+        Increments the counter at **--counter-address** by one above the **<current>**.
+        Requires previously updated **--key-data** and valid **--rpmc-root-key**.
+
+        Examples::
+
+                flashrom -p prog --rpmc-root-key <keyfile> --counter-address <address> --key-data <value> --increment-counter 12
+                flashrom -p prog --rpmc-root-key <keyfile> --counter-address <address> --key-data <value> -w rom.bin --update-hmac-key --increment-counter 25
+
+**--get-counter**
+        Get the current counter value for **--counter-address**.
+        Requires previously updated **--key-data** and valid **--rpmc-root-key**.
+
+        Examples::
+
+                flashrom -p prog --rpmc-root-key <keyfile> --counter-address <address> --key-data <value> --get-counter
+                flashrom -p prog --rpmc-root-key <keyfile> --counter-address <address> --key-data <value> --update-hmac-key --get-counter
+
+RPMC options
+^^^^^^^^^^^^
+
+**--counter-address <address>**
+        Target the counter at **<address>** for any RPMC operations.
+        Addressing starts at 0.
+        Defaults to 0.
+
+        Example::
+
+                flashrom --counter-address 2
+
+**--rpmc-root-key <keyfile>**
+        Use **<keyfile>** as location of 32-byte root key.
+
+        Example::
+
+                flashrom --rpmc-root-key /home/user/some_key.bin
+
+**--key-data <value>**
+        Hexadecimal **<value>** will be used as 4-byte key data in RPMC operations.
+        Defaults to 0.
+
+        Example::
+
+                flashrom --key-data 12abc
 
 .. _programmer-specific information:
 

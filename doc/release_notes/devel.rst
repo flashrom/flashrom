@@ -67,6 +67,16 @@ the entire area with one block.
 The tradeoff is the speed of programming operation VS the longevity of
 the chip. Default is longevity.
 
+RPMC support added
+==================
+
+Adding support for RPMC commands as specified by JESD260 to the cli_client. Main
+implementation is in rpmc.c. Also adds new parsing capabilities for the sfdp
+page carrying the necessary information. All the features are optional and
+depend on libcrypto.
+It currently uses automatic feature detection through the corresponding
+sfdp page.
+
 Chipset support
 ===============
 

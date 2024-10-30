@@ -24,12 +24,17 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <cli_classic.h>
 #include "flash.h"
 #include "flashchips.h"
 #include "fmap.h"
 #include "programmer.h"
 #include "libflashrom.h"
+
+#if CONFIG_RPMC_ENABLED == 1
+#include "rpmc.h"
+#endif /* CONFIG_RPMC_ENABLED */
 
 enum {
 	OPTION_IFD = 0x0100,
@@ -46,6 +51,16 @@ enum {
 	OPTION_WP_LIST,
 	OPTION_PROGRESS,
 	OPTION_SACRIFICE_RATIO,
+#if CONFIG_RPMC_ENABLED == 1
+	OPTION_RPMC_READ_DATA,
+	OPTION_RPMC_WRITE_ROOT_KEY,
+	OPTION_RPMC_UPDATE_HMAC_KEY,
+	OPTION_RPMC_INCREMENT_COUNTER,
+	OPTION_RPMC_GET_COUNTER,
+	OPTION_RPMC_COUNTER_ADDRESS,
+	OPTION_RPMC_KEY_DATA,
+	OPTION_RPMC_KEY_FILE,
+#endif /* CONFIG_RPMC_ENABLED */
 };
 
 struct cli_options {
@@ -75,6 +90,17 @@ struct cli_options {
 	char *referencefile;
 	const char *chip_to_probe;
 	int sacrifice_ratio;
+
+#if CONFIG_RPMC_ENABLED == 1
+	bool rpmc_read_data;
+	bool rpmc_write_root_key;
+	bool rpmc_update_hmac_key;
+	bool rpmc_increment_counter;
+	bool rpmc_get_counter;
+	unsigned int rpmc_counter_address;
+	uint32_t rpmc_key_data, rpmc_previous_counter_value;
+	const char *rpmc_root_key_file;
+#endif /* CONFIG_RPMC_ENABLED */
 };
 
 static void cli_classic_usage(const char *name)
@@ -129,10 +155,27 @@ static void cli_classic_usage(const char *name)
 	       "                                    operation VS the longevity of the chip. Default is\n"
 	       "                                    longevity.\n"
 	       "                                    DANGEROUS! It wears your chip faster!\n"
+#if CONFIG_RPMC_ENABLED == 1
+	       "RPMC COMMANDS\n"
+	       "      --get-rpmc-status             read the extended status\n"
+	       "      --write-root-key              write the root key register\n"
+	       "      --update-hmac-key             update the hmac key register\n"
+	       "      --increment-counter <current>\n"
+	       "                                    increment rpmc counter\n"
+	       "      --get-counter                 get rpmc counter\n"
+	       "RPMC OPTIONS\n"
+	       "      --counter-address <address>   counter address (default: 0)\n"
+	       "      --rpmc-root-key <keyfile>     rpmc root key file\n"
+	       "      --key-data <value>            hex number to use as key data (default: 0)\n"
+#endif /* CONFIG_RPMC_ENABLED */
+	       "PROGRAMMER SELECTION OPTIONS\n"
 	       " -p | --programmer <name>[:<param>] specify the programmer device. One of\n");
 	list_programmers_linebreak(4, 80, 0);
-	printf(".\n\nYou can specify one of -h, -R, -L, "
-	         "-E, -r, -w, -v or no operation.\n"
+	printf(".\n\nYou can specify one of -h, -R, -L, -E, -r, -w, -v"
+#if CONFIG_RPMC_ENABLED == 1
+		 ", a RPMC command"
+#endif /* CONFIG_RPMC_ENABLED */
+		 " or no operation.\n"
 	       "If no operation is specified, flashrom will only probe for flash chips.\n");
 }
 
@@ -404,6 +447,110 @@ static int wp_cli(
 
 	return 0;
 }
+
+#if CONFIG_RPMC_ENABLED == 1
+static int rpmc_cli(struct flashctx *flash,
+		    const char *const key_file,
+		    const uint32_t key_data,
+		    const unsigned int counter_address,
+		    const uint32_t previous_counter,
+		    const bool op_read_data,
+		    const bool op_write_root_key,
+		    const bool op_update_hmac_key,
+		    const bool op_increment_counter,
+		    const bool op_get_counter)
+{
+	if (op_write_root_key) {
+		enum rpmc_result result = rpmc_write_root_key(flash, key_file, counter_address);
+		if (result != RPMC_SUCCESS) {
+			msg_gerr("Failed to write root key\n%s", rpmc_describe_result(result));
+			return 1;
+		}
+
+		msg_ginfo("Successfully wrote new root key for counter %u.\n", counter_address);
+	}
+
+	if (op_update_hmac_key) {
+		enum rpmc_result result = rpmc_update_hmac_key(flash,
+							       key_file,
+							       key_data,
+							       counter_address);
+		if (result != RPMC_SUCCESS) {
+			msg_gerr("Failed to update hmac key\n%s", rpmc_describe_result(result));
+			return 1;
+		}
+
+		msg_ginfo("Successfully updated hmac key to 0x%08x for counter %u.\n",
+			  key_data,
+			  counter_address);
+	}
+
+	if (op_increment_counter) {
+		enum rpmc_result result = rpmc_increment_counter(flash,
+								 key_file,
+								 key_data,
+								 counter_address,
+								 previous_counter);
+		if (result != RPMC_SUCCESS) {
+			msg_gerr("Failed to increment the counter\n%s", rpmc_describe_result(result));
+			return 1;
+		}
+
+		msg_ginfo("Successfully incremented counter %u.\n", counter_address);
+	}
+
+	if (op_get_counter) {
+		uint32_t counter_value;
+		enum rpmc_result result = rpmc_get_monotonic_counter(flash,
+								     key_file,
+								     key_data,
+								     counter_address,
+								     &counter_value);
+		if (result != RPMC_SUCCESS) {
+			msg_gerr("Failed to get the counter value\n%s", rpmc_describe_result(result));
+			return 1;
+		}
+
+		msg_ginfo("Returned counter value %u for counter %u\n",	counter_value, counter_address);
+	}
+
+	if (op_read_data) {
+		struct rpmc_status_register status;
+		enum rpmc_result result = rpmc_read_data(flash, &status);
+		if (result != RPMC_SUCCESS) {
+			msg_gerr("Failed to read read rpmc data\n%s", rpmc_describe_result(result));
+			return 1;
+		}
+
+		msg_ginfo("Reading rpmc data returned:\n");
+
+		char bin_buffer[9];
+		uint8_t status_bits = status.status;
+		for (int i = 7; i >= 0; i--){
+			bin_buffer[i] = '0' + (status_bits & 1);
+			status_bits = status_bits >> 1;
+		}
+		bin_buffer[8] = '\0';
+		msg_ginfo("Extended Status: 0b%s\n", bin_buffer);
+
+		msg_ginfo("Tag:\n");
+		for (size_t i = 0; i < RPMC_TAG_LENGTH; i++){
+			msg_ginfo("0x%02x ", status.tag[i]);
+		}
+		msg_ginfo("\n");
+
+		msg_ginfo("Counter: %u\n", status.counter_data);
+
+		msg_ginfo("Signature:\n");
+		for (size_t i = 0; i < RPMC_SIGNATURE_LENGTH; i++){
+			msg_ginfo("0x%02x ", status.signature[i]);
+		}
+		msg_ginfo("\n");
+	}
+
+	return 0;
+}
+#endif /* CONFIG_RPMC_ENABLED */
 
 /**
  * @brief Reads content to buffer from one or more files.
@@ -824,6 +971,33 @@ static void parse_options(int argc, char **argv, const char *optstring,
 			/* It is okay to convert invalid input to 0. */
 			options->sacrifice_ratio = atoi(optarg);
 			break;
+#if CONFIG_RPMC_ENABLED == 1
+		case OPTION_RPMC_READ_DATA:
+			options->rpmc_read_data = true;
+			break;
+		case OPTION_RPMC_WRITE_ROOT_KEY:
+			options->rpmc_write_root_key = true;
+			break;
+		case OPTION_RPMC_UPDATE_HMAC_KEY:
+			options->rpmc_update_hmac_key = true;
+			break;
+		case OPTION_RPMC_INCREMENT_COUNTER:
+			options->rpmc_increment_counter = true;
+			options->rpmc_previous_counter_value = strtoumax(optarg, NULL, 10);
+			break;
+		case OPTION_RPMC_GET_COUNTER:
+			options->rpmc_get_counter = true;
+			break;
+		case OPTION_RPMC_COUNTER_ADDRESS:
+			options->rpmc_counter_address = strtoumax(optarg, NULL, 10);
+			break;
+		case OPTION_RPMC_KEY_DATA:
+			options->rpmc_key_data = strtoumax(optarg, NULL, 16);
+			break;
+		case OPTION_RPMC_KEY_FILE:
+			options->rpmc_root_key_file = strdup(optarg);
+			break;
+#endif /* CONFIG_RPMC_ENABLED */
 		default:
 			cli_classic_abort_usage(NULL);
 			break;
@@ -894,6 +1068,16 @@ int main(int argc, char *argv[])
 		{"output",		1, NULL, 'o'},
 		{"progress",		0, NULL, OPTION_PROGRESS},
 		{"sacrifice-ratio",	1, NULL, OPTION_SACRIFICE_RATIO},
+#if CONFIG_RPMC_ENABLED == 1
+		{"get-rpmc-status",	0, NULL, OPTION_RPMC_READ_DATA},
+		{"write-root-key",	0, NULL, OPTION_RPMC_WRITE_ROOT_KEY},
+		{"update-hmac-key",	0, NULL, OPTION_RPMC_UPDATE_HMAC_KEY},
+		{"increment-counter",	1, NULL, OPTION_RPMC_INCREMENT_COUNTER},
+		{"get-counter",		0, NULL, OPTION_RPMC_GET_COUNTER},
+		{"counter-address",	1, NULL, OPTION_RPMC_COUNTER_ADDRESS},
+		{"key-data",		1, NULL, OPTION_RPMC_KEY_DATA},
+		{"rpmc-root-key",	1, NULL, OPTION_RPMC_KEY_FILE},
+#endif /* CONFIG_RPMC_ENABLED */
 		{NULL,			0, NULL, 0},
 	};
 
@@ -1104,9 +1288,17 @@ int main(int argc, char *argv[])
 		options.set_wp_range || options.set_wp_region || options.enable_wp ||
 		options.disable_wp || options.print_wp_status || options.print_wp_ranges;
 
+	const bool any_rpmc_op =
+#if CONFIG_RPMC_ENABLED == 1
+		options.rpmc_read_data || options.rpmc_write_root_key || options.rpmc_update_hmac_key ||
+		options.rpmc_increment_counter || options.rpmc_get_counter;
+#else
+		false;
+#endif /* CONFIG_RPMC_ENABLED */
+
 	const bool any_op = options.read_it || options.write_it || options.verify_it ||
 		options.erase_it || options.flash_name || options.flash_size ||
-		options.extract_it || any_wp_op;
+		options.extract_it || any_wp_op || any_rpmc_op;
 
 	if (!any_op) {
 		msg_ginfo("No operations were specified.\n");
@@ -1249,6 +1441,21 @@ int main(int argc, char *argv[])
 		ret = do_write(fill_flash, options.filename, options.referencefile);
 	else if (options.verify_it)
 		ret = do_verify(fill_flash, options.filename);
+
+#if CONFIG_RPMC_ENABLED == 1
+	if (any_rpmc_op && ret == 0) {
+		ret = rpmc_cli(fill_flash,
+			       options.rpmc_root_key_file,
+			       options.rpmc_key_data,
+			       options.rpmc_counter_address,
+			       options.rpmc_previous_counter_value,
+			       options.rpmc_read_data,
+			       options.rpmc_write_root_key,
+			       options.rpmc_update_hmac_key,
+			       options.rpmc_increment_counter,
+			       options.rpmc_get_counter);
+	}
+#endif /* CONFIG_RPMC_ENABLED */
 
 out_release:
 	flashrom_layout_release(options.layout);
