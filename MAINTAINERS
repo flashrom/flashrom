@@ -102,6 +102,12 @@ M:	Peter Marheine <pmarheine@chromium.org>
 S:	Supported
 F:	i2c_helper_linux.c
 
+REPLAY PROTECTED MONOTONIC COUNTER
+M:	Matti Finder <matti.finder@gmail.com>
+S:	Maintained
+F:	rpmc.c
+F:	include/rpmc.h
+
 WRITEPROTECT
 M:	Nikolai Artemiev <nartemiev@google.com>
 M:	Sergii Dmytruk <sergii.dmytruk@3mdeb.com>

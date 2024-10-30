@@ -172,6 +172,11 @@ enum write_granularity {
 /* Whether chip has configuration register (RDCR/WRSR_EXT2 commands) */
 #define FEATURE_CFGR	    (1 << 25)
 
+/*
+ * Whether the chip supports serial flash hardening specified in JESD260
+ */
+#define FEATURE_FLASH_HARDENING (1 << 26)
+
 #define ERASED_VALUE(flash)	(((flash)->chip->feature_bits & FEATURE_ERASED_ZERO) ? 0x00 : 0xff)
 #define UNERASED_VALUE(flash)	(((flash)->chip->feature_bits & FEATURE_ERASED_ZERO) ? 0xff : 0x00)
 
@@ -543,6 +548,32 @@ struct flashchip {
 	 * and determines what protection range they select.
 	 */
 	enum decode_range_func decode_range;
+
+	struct rpmc_config {
+		uint8_t op1_opcode;
+		uint8_t op2_opcode;
+
+		unsigned int num_counters;
+
+		/*
+		 * Busy Polling Method :
+		 * ‘0’: Poll for OP1 busy using OP2 Extended Status[0].
+		 *      No OP1 Suspended State Support.
+		 * ‘1’: Poll for OP1 busy using Read Status (05H).
+		 *      Suspended State is supported.
+		 */
+		enum busy_polling_methods {
+			POLL_OP2_EXTENDED_STATUS = 0,
+			POLL_READ_STATUS = 1
+		} busy_polling_method;
+
+		unsigned int update_rate;
+
+		/* All times in microsecond (us) */
+		unsigned int polling_delay_read_counter_us;
+		unsigned int polling_short_delay_write_counter_us;
+		unsigned int polling_long_delay_write_counter_us;
+	} rpmc_ctx;
 };
 
 typedef int (*chip_restore_fn_cb_t)(struct flashctx *flash, void *data);
