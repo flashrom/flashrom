@@ -77,6 +77,75 @@ depend on libcrypto.
 It currently uses automatic feature detection through the corresponding
 sfdp page.
 
+Programmer updates
+===================
+
+* ch347_spi: Add spi clock frequency selection ("spispeed" option)
+* dummyflasher: Enable higher frequency emulation, add docs and tests
+* ichspi: Change the opcode position for reprogramming on the fly 2->4
+* ichspi: Merge spi_master implementations for Intel ich
+
+Bugs fixed
+==========
+
+* Modified bytes would sometimes not be verified after writing
+
+  In some situations an off-by-one error would cause the last byte
+  of memory that was modified by an operation to not be verified.
+  This could prevent some erase or write errors from being detected,
+  or in other cases could make verification appear false-negative.
+
+  Fixed by https://review.coreboot.org/c/flashrom/+/84078.
+
+* Possible crashes while preparing erase operations
+
+  An out-of-bounds memory read was found in the algorithm that selects methods
+  to erase memory, which could cause flashrom to crash. This issue was first
+  introduced in release 1.4, and crashes were observed when running on OpenBSD.
+
+  See https://ticket.coreboot.org/issues/555, and fixed by
+  https://review.coreboot.org/c/flashrom/+/84234.
+
+* Crash when attempting to erase FEATURE_NO_ERASE chips
+
+  When attempting to erase a chip that doesn't need to be erased before
+  being written, flashrom could attempt to read through a null pointer
+  and crash. The only supported chip that is affected is the M95M02
+  EEPROM.
+
+  See https://ticket.coreboot.org/issues/553, and fixed by
+  https://review.coreboot.org/c/flashrom/+/84203.
+
+* install failures related to libcmocka
+
+  In some configurations, the install target provided by the buildsystem (like
+  meson install) would fail to execute successfully due to a missing libcmocka
+  file. This is fixed by not installing libcmocka, because it is a third-party
+  library used by flashrom only for testing.
+
+  See https://ticket.coreboot.org/issues/561, and fixed by
+  https://review.coreboot.org/c/flashrom/+/84557.
+
+* Excess erase of automatically-probed chips on Intel chipsets
+
+  When erasing some chips using the ichspi programmer (for Intel ICH chipsets),
+  the entire chip would be erased and rewritten even when the hardware supported
+  erasing smaller blocks, causing operations to take longer to complete and
+  negatively impacting chip longevity. This issue was first introduced in version
+  1.4.
+
+  See https://ticket.coreboot.org/issues/556, and fixed by
+  https://review.coreboot.org/c/flashrom/+/84253.
+
+* Unnecessary erases
+
+  When erasing parts of a memory, some blocks could be erased and rewritten
+  unnecessarily or erased multiple times which could hurt the longevity of
+  the memory chip. This behavior was introduced in version 1.4.
+
+  Fixed by https://review.coreboot.org/c/flashrom/+/84614 and
+  https://review.coreboot.org/c/flashrom/+/84686.
+
 Chipset support
 ===============
 
@@ -124,3 +193,12 @@ Chip model support added
 * XM25QU256D
 * XM25QU512C
 * XM25QU512D
+
+Misc
+=========
+
+* reduce DELAY_MINIMUM_SLEEP_US to 100 by default
+* tests: Add assert for eraseblocks order of invocations for write op
+* VERSION: Change name pattern to match tag name from now on
+* writeprotect: Fix inaccurate return code
+* erasure_layout: Fix unreachable error message
