@@ -6,7 +6,7 @@ flashrom development process is happening in Gerrit.
 All contributors and users who have a Gerrit account can send patches,
 add comments to patches and vote +1..-1 on patches.
 
-All contributors and users are expected to follow Development guidelines and
+All contributors and users are expected to follow :doc:`/dev_guide/development_guide` and
 :doc:`code_of_conduct`.
 
 There are two special groups in Gerrit.
@@ -18,7 +18,7 @@ Members of the group (see `flashrom reviewers <https://review.coreboot.org/admin
 can do full approval of patches (i.e. vote +2).
 
 In general, members of the group have some area of responsibility in the
-`MAINTAINERS <https://review.coreboot.org/plugins/gitiles/flashrom/+/refs/heads/main/MAINTAINERS>`_ file,
+`MAINTAINERS <https://github.com/flashrom/flashrom/blob/main/MAINTAINERS>`_ file,
 and are automatically added as reviewers to patches when the patch touches this area.
 
 The responsibilities are the following.
