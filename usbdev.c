@@ -15,11 +15,13 @@
  * GNU General Public License for more details.
  */
 
+
+#include "usbdev.h"
+
+#include "flash.h" // msg_perr, msg_pdbg...
 #include <inttypes.h>
 #include <stdbool.h>
 #include <string.h>
-#include <libusb.h>
-#include "programmer.h"
 
 /*
  * Check whether we should filter the current device.

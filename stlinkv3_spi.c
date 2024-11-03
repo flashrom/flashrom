@@ -26,6 +26,7 @@
 #include "flash.h"
 #include "programmer.h"
 #include "spi.h"
+#include "usbdev.h"
 
 #include <libusb.h>
 #include <limits.h>

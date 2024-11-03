@@ -526,13 +526,4 @@ static inline bool spi_chip_4ba(const struct flashctx *const flash)
 		(flash->chip->feature_bits & (FEATURE_4BA_ENTER | FEATURE_4BA_ENTER_WREN | FEATURE_4BA_ENTER_EAR7));
 }
 
-/* usbdev.c */
-struct libusb_device_handle;
-struct libusb_context;
-struct libusb_device_handle *usb_dev_get_by_vid_pid_serial(
-		struct libusb_context *usb_ctx, uint16_t vid, uint16_t pid, const char *serialno);
-struct libusb_device_handle *usb_dev_get_by_vid_pid_number(
-		struct libusb_context *usb_ctx, uint16_t vid, uint16_t pid, unsigned int num);
-
-
 #endif				/* !__PROGRAMMER_H__ */
