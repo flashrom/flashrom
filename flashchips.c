@@ -23522,7 +23522,7 @@ const struct flashchip flashchips[] = {
 		/* We present our own "report this" text hence we do not */
 		/* want the default "This flash part has status UNTESTED..." */
 		/* text to be printed. */
-		.tested		= TEST_OK_PREW,
+		.tested		= { .probe = OK, .read = OK, .erase = OK, .write = OK, .wp = NA },
 		.probe		= PROBE_SPI_SFDP,
 		.block_erasers	= {}, /* set by probing function */
 		.unlock		= SPI_DISABLE_BLOCKPROTECT, /* is this safe? */
