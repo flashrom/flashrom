@@ -25,7 +25,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <cli_classic.h>
+#include <cli_getopt.h>
 #include "flash.h"
 #include "flashchips.h"
 #include "fmap.h"

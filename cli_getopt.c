@@ -25,12 +25,13 @@
  * SOFTWARE.
  */
 
+#include <cli_getopt.h>
+
 #include <unistd.h>
 #include <wchar.h>
 #include <string.h>
 #include <limits.h>
 #include <stdlib.h>
-#include "cli_classic.h"
 #include "flash.h"
 
 char *optarg;

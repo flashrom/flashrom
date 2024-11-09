@@ -12,8 +12,13 @@
  * GNU General Public License for more details.
  */
 
-#ifndef CLI_CLASSIC_H
-#define CLI_CLASSIC_H
+#ifndef __CLI_GETOPT_H__
+#define __CLI_GETOPT_H__
+
+/**
+ * This header is responsible for either including a standard getop
+ * implementation header or to provide a compatible one.
+ */
 
 #ifdef HAVE_GETOPT_H
 #include <getopt.h>
@@ -40,4 +45,4 @@ int getopt_long_only (int argc, char *const *argv, const char *shortopts,
 			const struct option *longopts, int *longind);
 
 #endif /* HAVE_GETOPT_H */
-#endif /* CLI_CLASSIC_H */
+#endif /* __CLI_GETOPT_H__ */
