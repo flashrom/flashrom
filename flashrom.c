@@ -1159,25 +1159,18 @@ int probe_flash(struct registered_master *mst, int startchip, struct flashctx *f
 		 * been found on this interface.
 		 */
 		if (startchip == 0 && flash->chip->model_id == SFDP_DEVICE_ID) {
-			msg_cinfo("===\n"
-				  "SFDP has autodetected a flash chip which is "
-				  "not natively supported by flashrom yet.\n");
+			msg_cinfo("===\nSFDP has autodetected a flash chip.\n");
 			if (count_usable_erasers(flash) == 0)
 				msg_cinfo("The standard operations read and "
-					  "verify should work, but to support "
-					  "erase, write and all other "
-					  "possible features");
+					  "verify should work, but support for "
+					  "erase and write needs to be added manually.\n");
 			else
 				msg_cinfo("All standard operations (read, "
-					  "verify, erase and write) should "
-					  "work, but to support all possible "
-					  "features");
+					  "verify, erase and write) should work.\n");
 
-			msg_cinfo(" we need to add them manually.\n"
-				  "You can help us by mailing us the output of the following command to "
-				  "flashrom@flashrom.org:\n"
-				  "'flashrom -VV [plus the -p/--programmer parameter]'\n"
-				  "Thanks for your help!\n"
+			msg_cinfo("Additionally, flashrom supports RPMC commands via SFDP autodetection.\n"
+				  "We may add support for more features via SFDP in future.\n"
+				  "If you are interested, join us on the mailing list https://flashrom.org/contact.html#mailing-list-1\n"
 				  "===\n");
 		}
 
