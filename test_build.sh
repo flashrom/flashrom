@@ -26,7 +26,7 @@ run_linter() {
 
 build_meson () {
 	build_dir=out
-	meson_opts="-Dtests=enabled -Dman-pages=enabled -Ddocumentation=enabled"
+	meson_opts="-Dtests=enabled -Drpmc=enabled -Dman-pages=enabled -Ddocumentation=enabled"
 	ninja_opts="-j $(nproc)"
 
 	rm -rf ${build_dir}
