@@ -15,11 +15,12 @@
  * GNU General Public License for more details.
  */
 
+#include <cli_output.h>
+
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
 #include <errno.h>
-#include "flash.h"
 
 enum flashrom_log_level verbose_screen = FLASHROM_MSG_INFO;
 enum flashrom_log_level verbose_logfile = FLASHROM_MSG_DEBUG2;

@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <cli_getopt.h>
+#include <cli_output.h>
 #include "flash.h"
 #include "flashchips.h"
 #include "fmap.h"

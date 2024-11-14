@@ -726,14 +726,7 @@ struct cli_progress {
 /* cli_common.c */
 void print_chip_support_status(const struct flashchip *chip);
 
-/* cli_output.c */
-extern enum flashrom_log_level verbose_screen;
-extern enum flashrom_log_level verbose_logfile;
-int open_logfile(const char * const filename);
-int close_logfile(void);
-void start_logging(void);
-int flashrom_print_cb(enum flashrom_log_level level, const char *fmt, va_list ap);
-void flashrom_progress_cb(struct flashrom_flashctx *flashctx);
+/* libflashrom.c */
 /* Let gcc and clang check for correct printf-style format strings. */
 int print(enum flashrom_log_level level, const char *fmt, ...)
 #ifdef __MINGW32__
