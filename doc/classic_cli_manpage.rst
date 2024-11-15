@@ -14,7 +14,7 @@ SYNOPSIS
 | **flashrom** [-h|-R|-L|
 |          -p <programmername>[:<parameters>] [-c <chipname>]
 |            (--flash-name|--flash-size|
-|             [-E|-x|-r <file>|-w <file>|-v <file>]
+|             [-E|-x|-r [<file>]|-w [<file>]|-v [<file>]]
 |             [(-l <file>|--ifd|--fmap|--fmap-file <file>)
 |               [-i <include>[:<file>]]]
 |             [--wp-status] [--wp-list] [--wp-enable|--wp-disable]
@@ -50,9 +50,12 @@ Also you are advised to make a backup of your current ROM contents with ``-r`` b
 All operations involving any chip access (probe/read/write/...) require the ``-p/--programmer`` option to be used (please see below).
 
 
-**-r, --read <file>**
+**-r, --read [<file>]**
         Read flash ROM contents and save them into the given **<file>**.
         If the file already exists, it will be overwritten.
+
+        The **<file>** parameter is required here unless reading is restricted to one or more flash regions via the ``-i/--include`` parameter
+        and the file is specified there. See the ``--include`` section below for examples.
 
 
 **-w, --write (<file>|-)**
@@ -63,6 +66,9 @@ All operations involving any chip access (probe/read/write/...) require the ``-p
         able to skip regions that are already equal to the image file.
         This copy is updated along with the write operation. In case of erase errors it is even re-read completely.
         After writing has finished and if verification is enabled, the whole flash chip is read out and compared with the input image.
+
+        The **<file>** parameter is required here unless writing is restricted to one or more flash regions via the ``-i/--include`` parameter
+        and the file is specified there. See the ``--include`` section below for examples.
 
 
 **-n, --noverify**
@@ -90,6 +96,9 @@ All operations involving any chip access (probe/read/write/...) require the ``-p
 **-v, --verify (<file>|-)**
         Verify the flash ROM contents against the given **<file>**.
         If **-** is provided instead, contents will be written to the stdout.
+
+        The **<file>** parameter is required here unless verification is restricted to one or more flash regions via the ``-i/--include`` parameter
+        and the file is specified there. See the ``--include`` section below for examples.
 
 
 **-E, --erase**
@@ -187,23 +196,66 @@ All operations involving any chip access (probe/read/write/...) require the ``-p
 
 
 **-i, --include <region>[:<file>]**
-        Read or write only **<region>** to or from ROM.
-        The **-i** option may be used multiple times if the user wishes to read or write multiple regions using a single command.
+        Read, write, or verify only **<region>** to or from ROM.
+        The **-i** option may be used multiple times if the user wishes to read, write, or verify multiple regions using a single command.
 
         The user may optionally specify a corresponding **<file>** for any region they wish to read or write.
         A read operation will read the corresponding regions from ROM and write individual files for each one.
         A write option will read file(s) and write to the corresponding region(s) in ROM.
 
-        For write operations, files specified using ``-i`` take precedence over content from the argument to ``-w``.
+        For all read/write/verify operations, the **<file>** parameter following those operations becomes optional and will be ignored
+        if present whenever the <file> is specified following the region.
+
+        Common rules for -r/-w/-v syntax parsing:
+
+         - If no filename is specified at all, quit.
+
+         - If a file is specified for -r/-w/-v and no files are specified with
+           -i args (or -i is not used), then that file will be used for reading/
+           writing/verifying the entire ROM.
+
+         - If no filename is specified for -r/-w/-v, but files are specified
+           for -i, then the number of file arguments for -i options must be
+           equal to the total number of -i options.
+
+        Rules for reading:
+
+         - If files are specified for -i args but not -r, do partial reads for
+           each -i arg, creating a new file for each region. Each -i option
+           must specify a filename.
+
+         - If filenames are specified for -r and -i args, then:
+
+             - Do partial read for each -i arg, creating a new file for
+               each region where a filename is provided (-i region:filename).
+             - Create a ROM-sized file with partially filled content. For each
+               -i arg, fill the corresponding offset with content from ROM.
+
+        Rules for writing and verifying:
+
+         - If files are specified for both -w/-v and -i args, -i files take
+           priority (files specified for -w/-v are unused).
+
+         - If files are specified for -i args but not -w, do partial writes
+           for each -i arg. Likewise for -v and -i args. All -i args must
+           supply a filename. Any omission is considered ambiguous.
+
+         - Regions with a filename associated must not overlap. This is also
+           considered ambiguous. Note: This is checked later since it requires
+           processing the layout/fmap first.
 
         Examples:
                 To read regions named **foo** and **bar** in layout file **<layout>** into region-sized files **foo.bin** and **bar.bin**, run::
 
-                        flashrom -p prog -l <layout> -i foo:foo.bin -i bar:bar.bin -r rom.bin
+                        flashrom -p prog -r -l <layout> -i foo:foo.bin -i bar:bar.bin
 
                 To write files **foo.bin** and **bar.bin** into regions named **foo** and **bar** in layout file **<layout>** to the ROM, run::
 
-                        flashrom -p prog -l <layout> -i foo:foo.bin -i bar:bar.bin -w rom.bin
+                        flashrom -p prog -w -l <layout> -i foo:foo.bin -i bar:bar.bin
+
+                To verify regions named **foo** and **bar** using layout file **<layout>** and files **foo.bin** and **bar.bin**, run::
+
+                        flashrom -p prog -v -l <layout> -i foo:foo.bin -i bar:bar.bin
 
 
 **--wp-status**
@@ -321,18 +373,18 @@ All operations involving any chip access (probe/read/write/...) require the ``-p
 
 
 **--progress**
-	Show progress percentage of operations on the standard output.
+        Show progress percentage of operations on the standard output.
 
 **--sacrifice-ratio <ratio>**
-	Fraction (as a percentage, 0-50) of an erase block that may be erased even if unmodified.
-	Larger values may complete programming faster, but may also hurt chip longevity by erasing cells unnecessarily.
+        Fraction (as a percentage, 0-50) of an erase block that may be erased even if unmodified.
+        Larger values may complete programming faster, but may also hurt chip longevity by erasing cells unnecessarily.
 
-	Default is 0, S+1 size block only selected if all the S size blocks inside it need to be erased in full.
-	50 means that if more than a half of the area needs to be erased,
-	a S+1 size block can be selected to cover all the area with one erase.
-	The tradeoff is the speed of programming operation VS the longevity of the chip. Default is longevity.
+        Default is 0, S+1 size block only selected if all the S size blocks inside it need to be erased in full.
+        50 means that if more than a half of the area needs to be erased,
+        a S+1 size block can be selected to cover all the area with one erase.
+        The tradeoff is the speed of programming operation VS the longevity of the chip. Default is longevity.
 
-	DANGEROUS! It wears your chip faster!
+        DANGEROUS! It wears your chip faster!
 
 
 **-R, --version**
@@ -707,16 +759,16 @@ Example::
         write-protected (on real hardware the pin is usually negated, but not here).
 
 **Frequency**
-	Frequency can be specified in ``Hz`` (default), ``KHz``, or ``MHz`` (not case sensitive).
-	If ``freq`` parameter is passed in from command line, commands will delay for certain time before returning,
-	so that to emulate the requested frequency.
+        Frequency can be specified in ``Hz`` (default), ``KHz``, or ``MHz`` (not case sensitive).
+        If ``freq`` parameter is passed in from command line, commands will delay for certain time before returning,
+        so that to emulate the requested frequency.
 
-	Valid range is [1Hz, 8000Mhz] and there is no delay by default.
+        Valid range is [1Hz, 8000Mhz] and there is no delay by default.
 
-	The delay of an SPI command is proportional to the number of bits send over SPI bus in both directions
-	and is calculated based on the assumption that we transfer at 1 bit/Hz::
+        The delay of an SPI command is proportional to the number of bits send over SPI bus in both directions
+        and is calculated based on the assumption that we transfer at 1 bit/Hz::
 
-		flashrom -p dummy:emulate=W25Q128FV,freq=64mhz
+                flashrom -p dummy:emulate=W25Q128FV,freq=64mhz
 
 
 nic3com, nicrealtek, nicnatsemi, nicintel, nicintel_eeprom, nicintel_spi, gfxnvidia, ogp_spi, drkaiser, satasii, satamv, atahpt, atavia, atapromise, it8212 programmers

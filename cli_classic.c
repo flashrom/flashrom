@@ -108,17 +108,17 @@ static void cli_classic_usage(const char *name)
 	printf("Usage: %s [-h|-R|-L|"
 	       "\n\t-p <programmername>[:<parameters>] [-c <chipname>]\n"
 	       "\t\t(--flash-name|--flash-size|\n"
-	       "\t\t [-E|-x|(-r|-w|-v) <file>]\n"
+	       "\t\t [-E|-x|(-r|-w|-v) [<file>]]\n"
 	       "\t\t [(-l <layoutfile>|--ifd| --fmap|--fmap-file <file>) [-i <region>[:<file>]]...]\n"
 	       "\t\t [-n] [-N] [-f])]\n"
 	       "\t[-V[V[V]]] [-o <logfile>]\n\n", name);
 
 	printf(" -h | --help                        print this help text\n"
 	       " -R | --version                     print version (release)\n"
-	       " -r | --read <file>                 read flash and save to <file>\n"
-	       " -w | --write (<file>|-)            write <file> or the content provided\n"
+	       " -r | --read [<file>]               read flash and save to <file>\n"
+	       " -w | --write [<file>|-]            write <file> or the content provided\n"
 	       "                                    on the standard input to flash\n"
-	       " -v | --verify (<file>|-)           verify flash against <file>\n"
+	       " -v | --verify [<file>|-]           verify flash against <file>\n"
 	       "                                    or the content provided on the standard input\n"
 	       " -E | --erase                       erase flash memory\n"
 	       " -V | --verbose                     more verbose output\n"
@@ -616,6 +616,23 @@ static int write_buf_to_include_args(const struct flashrom_layout *const layout,
 	return 0;
 }
 
+static char *get_optional_filename(char *argv[])
+{
+	char *filename = NULL;
+
+	/* filename was supplied in optarg (i.e. -rfilename) */
+	if (optarg != NULL)
+		filename = strdup(optarg);
+	/* filename is on optind if it is not another flag (i.e. -r filename)
+	 * - is treated as stdin, so we still strdup in this case
+	 */
+	else if (optarg == NULL && argv[optind] != NULL &&
+		 (argv[optind][0] != '-' || argv[optind][1] == '\0'))
+		filename = strdup(argv[optind++]);
+
+	return filename;
+}
+
 static int do_read(struct flashctx *const flash, const char *const filename)
 {
 	int ret;
@@ -663,8 +680,10 @@ static int do_write(struct flashctx *const flash, const char *const filename, co
 	}
 
 	/* Read '-w' argument first... */
-	if (read_buf_from_file(newcontents, flash_size, filename))
-		goto _free_ret;
+	if (filename) {
+		if (read_buf_from_file(newcontents, flash_size, filename))
+			goto _free_ret;
+	}
 	/*
 	 * ... then update newcontents with contents from files provided to '-i'
 	 * args if needed.
@@ -697,8 +716,10 @@ static int do_verify(struct flashctx *const flash, const char *const filename)
 	}
 
 	/* Read '-v' argument first... */
-	if (read_buf_from_file(newcontents, flash_size, filename))
-		goto _free_ret;
+	if (filename) {
+		if (read_buf_from_file(newcontents, flash_size, filename))
+			goto _free_ret;
+	}
 	/*
 	 * ... then update newcontents with contents from files provided to '-i'
 	 * args if needed.
@@ -773,12 +794,12 @@ static void parse_options(int argc, char **argv, const char *optstring,
 		switch (opt) {
 		case 'r':
 			cli_classic_validate_singleop(&operation_specified);
-			options->filename = strdup(optarg);
+			options->filename = get_optional_filename(argv);
 			options->read_it = true;
 			break;
 		case 'w':
 			cli_classic_validate_singleop(&operation_specified);
-			options->filename = strdup(optarg);
+			options->filename = get_optional_filename(argv);
 			options->write_it = true;
 			break;
 		case 'v':
@@ -787,7 +808,7 @@ static void parse_options(int argc, char **argv, const char *optstring,
 			if (options->dont_verify_it) {
 				cli_classic_abort_usage("--verify and --noverify are mutually exclusive. Aborting.\n");
 			}
-			options->filename = strdup(optarg);
+			options->filename = get_optional_filename(argv);
 			options->verify_it = true;
 			break;
 		case 'n':
@@ -1033,12 +1054,12 @@ int main(int argc, char *argv[])
 	int ret = 0;
 
 	struct cli_options options = { 0 };
-	static const char optstring[] = "r:Rw:v:nNVEfc:l:i:p:Lzho:x";
+	static const char optstring[] = "r::Rw::v::nNVEfc:l:i:p:Lzho:x";
 	static const struct option long_options[] = {
-		{"read",		1, NULL, 'r'},
-		{"write",		1, NULL, 'w'},
+		{"read",		2, NULL, 'r'},
+		{"write",		2, NULL, 'w'},
 		{"erase",		0, NULL, 'E'},
-		{"verify",		1, NULL, 'v'},
+		{"verify",		2, NULL, 'v'},
 		{"noverify",		0, NULL, 'n'},
 		{"noverify-all",	0, NULL, 'N'},
 		{"extract",		0, NULL, 'x'},
@@ -1098,7 +1119,7 @@ int main(int argc, char *argv[])
 
 	parse_options(argc, argv, optstring, long_options, &options);
 
-	if ((options.read_it | options.write_it | options.verify_it) && check_filename(options.filename, "image"))
+	if (options.filename && check_filename(options.filename, "image"))
 		cli_classic_abort_usage(NULL);
 	if (options.layoutfile && check_filename(options.layoutfile, "layout"))
 		cli_classic_abort_usage(NULL);
@@ -1314,6 +1335,57 @@ int main(int argc, char *argv[])
 		msg_gerr("Error: Cannot use both --wp-range and --wp-region simultaneously.\n");
 		ret = 1;
 		goto out_shutdown;
+	}
+
+	/*
+	 * Common rules for -r/-w/-v syntax parsing:
+	 *
+	 * - If no filename is specified at all, quit.
+	 *
+	 * - If a file is specified for -r/-w/-v and no files are specified with
+	 *   -i args (or -i is not used), then that file will be used for reading/
+	 *   writing/verifying the entire ROM.
+	 *
+	 * - If no filename is specified for -r/-w/-v, but files are specified
+	 *   for -i, then the number of file arguments for -i options must be
+	 *   equal to the total number of -i options.
+	 *
+	 * Rules for reading:
+	 *
+	 * - If files are specified for -i args but not -r, do partial reads for
+	 *   each -i arg, creating a new file for each region. Each -i option
+	 *   must specify a filename.
+	 *
+	 * - If filenames are specified for -r and -i args, then:
+	 *     - Do partial read for each -i arg, creating a new file for
+	 *       each region where a filename is provided (-i region:filename).
+	 *     - Create a ROM-sized file with partially filled content. For each
+	 *       -i arg, fill the corresponding offset with content from ROM.
+	 *
+	 * Rules for writing and verifying:
+	 *
+	 * - If files are specified for both -w/-v and -i args, -i files take
+	 *   priority (files specified for -w/-v are unused).
+	 *
+	 * - If files are specified for -i args but not -w, do partial writes
+	 *   for each -i arg. Likewise for -v and -i args. All -i args must
+	 *   supply a filename. Any omission is considered ambiguous.
+	 *
+	 * - Regions with a filename associated must not overlap. This is also
+	 *   considered ambiguous. Note: This is checked later since it requires
+	 *   processing the layout/fmap first.
+	 */
+	if ((options.read_it | options.write_it | options.verify_it) && !options.filename) {
+		if (!options.include_args) {
+			msg_gerr("Error: No image file specified.\n");
+			ret = 1;
+			goto out_shutdown;
+		}
+
+		if (check_include_args_filename(options.include_args)) {
+			ret = 1;
+			goto out_shutdown;
+		}
 	}
 
 	if (options.flash_name) {

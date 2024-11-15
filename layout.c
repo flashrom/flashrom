@@ -288,6 +288,19 @@ int process_include_args(struct flashrom_layout *l, const struct layout_include_
 	return 0;
 }
 
+int check_include_args_filename(const struct layout_include_args *include_args)
+{
+	const struct layout_include_args *arg;
+	for (arg = include_args; arg; arg = arg->next) {
+		if (!arg->file || (arg->file[0] == '\0')) {
+			fprintf(stderr, "Error: No region file specified for -i/--include option.\n");
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
 /* returns boolean 1 if any regions overlap, 0 otherwise */
 int included_regions_overlap(const struct flashrom_layout *const l)
 {

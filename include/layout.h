@@ -69,6 +69,7 @@ int layout_from_file(struct flashrom_layout **, const char *name);
 
 int register_include_arg(struct layout_include_args **, const char *arg);
 int process_include_args(struct flashrom_layout *, const struct layout_include_args *);
+int check_include_args_filename(const struct layout_include_args *);
 void cleanup_include_args(struct layout_include_args **);
 
 const struct romentry *layout_next_included_region(const struct flashrom_layout *, chipoff_t);
