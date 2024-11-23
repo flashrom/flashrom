@@ -16,6 +16,11 @@ This prevents the photo URL from being abused for malicious or inappropriate con
 
 Please note that the list is moderated for non-subscribers and we recommend to subscribe first.
 
+Our mailing list is public and archived, see below for the links to the archives.
+There are also a bunch of independent public archives services that are not operated by the flashrom team.
+All those archives are also public, everyone on the internet can read them,
+please be careful what kind of information you are sending to the mailing list.
+
 Subscription
 """"""""""""
 https://mail.coreboot.org/postorius/lists/flashrom.flashrom.org/
