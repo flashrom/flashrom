@@ -306,6 +306,15 @@ bool flashrom_flag_get(const struct flashrom_flashctx *const flashctx, const enu
 	}
 }
 
+static int compare_region_with_dump(const struct romentry *const a, const struct romentry *const b)
+{
+	if (a->region.start != b->region.end
+		|| a->region.end != b->region.end
+		|| strcmp(a->region.name, b->region.name))
+			return 1;
+	return 0;
+}
+
 int flashrom_layout_read_from_ifd(struct flashrom_layout **const layout, struct flashctx *const flashctx,
 				  const void *const dump, const size_t len)
 {
@@ -343,7 +352,7 @@ int flashrom_layout_read_from_ifd(struct flashrom_layout **const layout, struct 
 
 		const struct romentry *chip_entry = layout_next(chip_layout, NULL);
 		const struct romentry *dump_entry = layout_next(dump_layout, NULL);
-		while (chip_entry && dump_entry && !memcmp(chip_entry, dump_entry, sizeof(*chip_entry))) {
+		while (chip_entry && dump_entry && !compare_region_with_dump(chip_entry, dump_entry)) {
 			chip_entry = layout_next(chip_layout, chip_entry);
 			dump_entry = layout_next(dump_layout, dump_entry);
 		}
