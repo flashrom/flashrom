@@ -241,11 +241,11 @@ Pin (JTAG Name)	SPI/Voltage Source		BIOS Chip connector name
 Pictures
 --------
 
-.. image:: Openmoko_0001.jpeg
+.. image:: Openmoko_0001.jpg
 
-.. image:: Openmoko_0002.jpeg
+.. image:: Openmoko_0002.jpg
 
-.. image:: Openmoko_0003.jpeg
+.. image:: Openmoko_0003.jpg
 
 Performances
 ------------
