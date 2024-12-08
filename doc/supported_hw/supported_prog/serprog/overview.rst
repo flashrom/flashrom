@@ -93,3 +93,14 @@ Notable forks are:
 
 `Riku_V's fork <https://codeberg.org/Riku_V/pico-serprog>`_ which uses the hardware SPI implementation instead of SPI over PIO (programmable IO) which
 sacrifices arbitrary pinouts. The fork also implements custom USB descriptors which allow for custom udev-rules.
+
+Glasgow Interface Explorer by Whitequark
+========================================
+
+.. image:: 300px-glasgow-in-case.png
+.. image:: 300px-glasgow-pcba.png
+
+The Glasgow Interface Explorer is a tool for programming, debugging, and analysing digital electronics.
+It is based on an FPGA and a microcontroller, and can be used as a serprog programmer.
+Source for the Glasgow Project can be found here: `Glasgow Project Souce <https://github.com/GlasgowEmbedded/glasgow>`_.
+For example use with Flashrom and serprog, see `this blog post <https://cattusqq.github.io/posts/Firmware_Dumping_with_SPI/>`_.
