@@ -20,7 +20,6 @@
 #include <string.h>
 
 #include "spi.h"
-#include "flash.h"
 #include "libflashrom.h"
 #include "chipdrivers.h"
 #include "writeprotect.h"

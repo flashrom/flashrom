@@ -24,7 +24,6 @@
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <linux/types.h>
-#include "flash.h"
 #include "chipdrivers.h"
 #include "programmer.h"
 #include "spi.h"

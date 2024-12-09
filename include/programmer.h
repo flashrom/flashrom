@@ -23,7 +23,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "flash.h"	/* for chipaddr and flashctx */
+#include "spi.h"
 
 enum programmer_type {
 	PCI = 1, /* to detect uninitialized values */

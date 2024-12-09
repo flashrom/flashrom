@@ -35,7 +35,6 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <ftdi.h>
-#include "flash.h"
 #include "programmer.h"
 #include "spi.h"
 

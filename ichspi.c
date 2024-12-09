@@ -22,7 +22,6 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include "flash.h"
 #include "programmer.h"
 #include "hwaccess_physmap.h"
 #include "spi.h"

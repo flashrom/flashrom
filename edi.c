@@ -15,7 +15,7 @@
  */
 
 #include <string.h>
-#include "flash.h"
+#include "spi.h"
 #include "chipdrivers.h"
 #include "ene.h"
 #include "edi.h"

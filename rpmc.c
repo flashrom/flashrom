@@ -15,7 +15,6 @@
  */
 
 #include "rpmc.h"
-#include "flash.h"
 #include <stdint.h>
 #include <stddef.h>
 #include <unistd.h>
@@ -23,6 +22,7 @@
 #include <openssl/evp.h>
 #include <openssl/rand.h>
 #include <string.h>
+#include "spi.h"
 
 // OP1 commands
 #define RPMC_WRITE_ROOT_KEY_MSG_LENGTH (RPMC_OP1_MSG_HEADER_LENGTH + RPMC_HMAC_KEY_LENGTH + RPMC_TRUNCATED_SIG_LENGTH)

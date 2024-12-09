@@ -29,8 +29,6 @@
 #include <stdlib.h>
 #include <ni845x.h>
 #include <unistd.h>
-
-#include "flash.h"
 #include "programmer.h"
 #include "spi.h"
 

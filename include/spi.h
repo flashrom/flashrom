@@ -16,6 +16,8 @@
 #ifndef __SPI_H__
 #define __SPI_H__ 1
 
+#include "flash.h"
+
 /*
  * Contains the generic SPI headers
  */
@@ -234,6 +236,16 @@
 #define SPI_INVALID_LENGTH	-4
 #define SPI_FLASHROM_BUG	-5
 #define SPI_PROGRAMMER_ERROR	-6
+
+struct spi_command {
+	unsigned int writecnt;
+	unsigned int readcnt;
+	const unsigned char *writearr;
+	unsigned char *readarr;
+};
+#define NULL_SPI_CMD { 0, 0, NULL, NULL, }
+int spi_send_command(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr);
+int spi_send_multicommand(const struct flashctx *flash, struct spi_command *cmds);
 
 void clear_spi_id_cache(void);
 

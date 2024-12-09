@@ -26,7 +26,6 @@
 #include <errno.h>
 #include <libjaylink/libjaylink.h>
 
-#include "flash.h"
 #include "programmer.h"
 #include "spi.h"
 

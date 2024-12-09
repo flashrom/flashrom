@@ -17,7 +17,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include "flash.h"
 #include "programmer.h"
 #include "spi.h"
 

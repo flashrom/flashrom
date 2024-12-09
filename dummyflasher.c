@@ -22,7 +22,6 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include "flash.h"
 #include "chipdrivers.h"
 #include "programmer.h"
 #include "flashchips.h"

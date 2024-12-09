@@ -18,7 +18,7 @@
 #define __CLI_OUTPUT_H__
 
 #include <stdarg.h>
-#include <flash.h>
+#include "flash.h"
 
 extern enum flashrom_log_level verbose_screen;
 extern enum flashrom_log_level verbose_logfile;

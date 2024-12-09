@@ -21,7 +21,6 @@
 #include <stddef.h>
 #include <string.h>
 #include <stdbool.h>
-#include "flash.h"
 #include "flashchips.h"
 #include "chipdrivers.h"
 #include "programmer.h"

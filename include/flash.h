@@ -758,15 +758,4 @@ __attribute__((format(printf, 2, 3)));
 void init_progress(struct flashctx *flash, enum flashrom_progress_stage stage, size_t total);
 void update_progress(struct flashctx *flash, enum flashrom_progress_stage stage, size_t increment);
 
-/* spi.c */
-struct spi_command {
-	unsigned int writecnt;
-	unsigned int readcnt;
-	const unsigned char *writearr;
-	unsigned char *readarr;
-};
-#define NULL_SPI_CMD { 0, 0, NULL, NULL, }
-int spi_send_command(const struct flashctx *flash, unsigned int writecnt, unsigned int readcnt, const unsigned char *writearr, unsigned char *readarr);
-int spi_send_multicommand(const struct flashctx *flash, struct spi_command *cmds);
-
 #endif				/* !__FLASH_H__ */

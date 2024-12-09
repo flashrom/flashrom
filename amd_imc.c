@@ -15,7 +15,6 @@
  * GNU General Public License for more details.
  */
 
-#include "flash.h"
 #include "programmer.h"
 #include "hwaccess_x86_io.h"
 #include "spi.h"

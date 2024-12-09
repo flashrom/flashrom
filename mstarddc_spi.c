@@ -26,7 +26,6 @@
 #include <sys/ioctl.h>
 #include <linux/i2c-dev.h>
 #include <linux/i2c.h>
-#include "flash.h"
 #include "programmer.h"
 #include "spi.h"
 

@@ -18,13 +18,13 @@
  * Contains the generic SPI framework
  */
 
+#include "spi.h"
+
 #include <strings.h>
 #include <string.h>
-#include "flash.h"
 #include "flashchips.h"
 #include "chipdrivers.h"
 #include "programmer.h"
-#include "spi.h"
 
 static int default_spi_send_command(const struct flashctx *flash, unsigned int writecnt,
 			     unsigned int readcnt,
