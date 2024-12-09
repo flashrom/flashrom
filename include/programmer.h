@@ -526,4 +526,6 @@ static inline bool spi_chip_4ba(const struct flashctx *const flash)
 		(flash->chip->feature_bits & (FEATURE_4BA_ENTER | FEATURE_4BA_ENTER_WREN | FEATURE_4BA_ENTER_EAR7));
 }
 
+enum chipbustype get_buses_supported(void);
+
 #endif				/* !__PROGRAMMER_H__ */
