@@ -1823,8 +1823,12 @@ static int ich_spi_send_multicommand(const struct flashctx *flash,
 static bool ich_spi_probe_opcode(const struct flashctx *flash, uint8_t opcode)
 {
 	int ret = find_opcode(curopcodes, opcode);
-	if ((ret == -1) && (lookup_spi_type(opcode) <= 3))
-		/* opcode is in POSSIBLE_OPCODES, report supported. */
+	if ((ret == -1) && (lookup_spi_type(opcode) <= 3) && (!ichspi_lock))
+		/* opcode is in POSSIBLE_OPCODES, report supported.
+		 * Relying on reprogramming on-the-fly
+		 * when opcode is not in curopcodes, but is in POSSIBLE_OPCODES.
+		 *
+		 * on-the-fly does not work for locked chipsets, therefore checking ichspi_lock. */
 		return true;
 	return ret >= 0;
 }
