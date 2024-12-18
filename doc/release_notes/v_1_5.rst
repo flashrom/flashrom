@@ -10,15 +10,42 @@ And we all did it in just ~4 months since previous release.
 Download
 ========
 
-flashrom v1.5.0 can be downloaded in various ways:
+flashrom v1.5 can be downloaded either via anonymous git at https://review.coreboot.org/flashrom.git,
+or as signed source tarballs.
 
-Anonymous checkout from the git repository at https://review.coreboot.org/flashrom.git
-(tag v1.5.0)
+The key fingerprint for source tarballs is
 
-A tarball is available for download at https://download.flashrom.org/releases/flashrom-v1.5.0.tar.xz
-(signature https://download.flashrom.org/releases/flashrom-v1.5.0.tar.xz.asc)
+6E6E F9A0 BA47 8006 E277 6E4C C037 BB41 3134 D111
 
-fingerprint: 6E6E F9A0 BA47 8006 E277 6E4C C037 BB41 3134 D111
+Version  v1.5.1
+---------------
+
+Version 1.5.1 fixed an issue flashing some Intel-based platforms with the internal programmer
+that was introduced in 1.5.0.
+Users with older Intel-based platforms (Broadwell/Braswell and earlier) flashing using the internal
+programmer option might encounter an 'Invalid OPCODE' error when erasing/writing which would lead to an
+incomplete flash and potentially a bricked device. External flashing was not affected at all.
+
+All users are encouraged to update.
+
+Ticket: https://ticket.coreboot.org/issues/573
+
+Patch: https://review.coreboot.org/c/flashrom/+/85612
+
+Git tag: ``v1.5.1``
+
+Tarball: https://download.flashrom.org/releases/flashrom-v1.5.1.tar.xz
+
+Signature: https://download.flashrom.org/releases/flashrom-v1.5.1.tar.xz.asc
+
+Version v1.5.0
+--------------
+
+Git tag: ``v1.5.0``
+
+Tarball: https://download.flashrom.org/releases/flashrom-v1.5.0.tar.xz
+
+Signature: https://download.flashrom.org/releases/flashrom-v1.5.0.tar.xz.asc
 
 Known issues
 ============
