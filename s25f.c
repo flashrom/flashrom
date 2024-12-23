@@ -371,10 +371,8 @@ int probe_spi_big_spansion(struct flashctx *flash)
 	 *
 	 *     offset   value              meaning
 	 *       00h     01h      Manufacturer ID for Spansion
-	 *       01h     20h           128 Mb capacity
-	 *       01h     02h           256 Mb capacity
-	 *       02h     18h           128 Mb capacity
-	 *       02h     19h           256 Mb capacity
+	 *       01h      *       Memory interface type (02h, 20h, 40h, 60h)
+	 *       02h      *       Memory capacity (18h = 128 Mb, 19h = 256 Mb, 20h = 512 Mb)
 	 *       03h     4Dh       Full size of the RDID output (ignored)
 	 *       04h     00h       FS: 256-kB physical sectors
 	 *       04h     01h       FS: 64-kB physical sectors

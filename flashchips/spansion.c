@@ -935,14 +935,14 @@
 		.name		= "S25FL512S",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= SPANSION_ID,
-		.model_id	= SPANSION_S25FL512,
+		.model_id	= SPANSION_S25FL512S_UL,
 		.total_size	= 65536, /* 512 Mb (=> 64 MB)) */
 		.page_size	= 256,
 		/* OTP: 1024B total, 32B reserved; read 0x4B; write 0x42 */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP |
 				  FEATURE_4BA_NATIVE | FEATURE_4BA_ENTER_EAR7 | FEATURE_4BA_EAR_1716,
 		.tested		= TEST_UNTESTED,
-		.probe		= PROBE_SPI_RDID,
+		.probe		= PROBE_SPI_BIG_SPANSION,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
 		{
@@ -1024,6 +1024,52 @@
 			},
 		},
 		.unlock		= SPI_DISABLE_BLOCKPROTECT,
+		.write		= SPI_CHIP_WRITE256,
+		.read		= SPI_CHIP_READ,
+		.voltage	= {1700, 2000},
+	},
+
+	{
+		.vendor		= "Spansion",
+		.name		= "S25FS512S",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= SPANSION_ID,
+		.model_id	= SPANSION_S25FS512S_UL,
+		.total_size	= 65536,
+		.page_size	= 256, /* 256 or 512 bytes page programming buffer */
+		/* OTP: 1024B total, 32B reserved; read 0x4B; write 0x42 */
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI |
+				  FEATURE_4BA_NATIVE | FEATURE_4BA_ENTER,
+				  /* Note on FEATURE_4BA_ENTER: the command set only defines command 0xB7
+				     to enter 4BA mode, but there is no counterpart command "Exit 4BA mode",
+				     and the code 0xE9 is assigned to another command ("Password unlock"). */
+				  /* Note on FEATURE_4BA_ENTER_EAR7 (not set): the "Extended address mode" bit
+				     is stored in configuration register CR2V[7], which can only be read / written
+				     by generic commands ("Read any register" / "Write any register"), that itself
+				     expect a 3- or 4-byte address of register in question, which in turn depends on
+				     the same register, that is initially set from non-volatile register CR2NV[7]
+				     that defaults to 0, but can be programmed to 1 for starting in 32-bit mode. */
+		.tested		= TEST_OK_PREW,
+		.probe		= PROBE_SPI_BIG_SPANSION,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { { 256 * 1024, 256} },
+				.block_erase = SPI_BLOCK_ERASE_DC,
+			}, {
+				.eraseblocks = { { 256 * 1024, 256} },
+				.block_erase = SPI_BLOCK_ERASE_D8,
+			}, {
+				.eraseblocks = { { 65536 * 1024, 1} },
+				.block_erase = SPI_BLOCK_ERASE_60,
+			}, {
+				.eraseblocks = { { 65536 * 1024, 1} },
+				.block_erase = SPI_BLOCK_ERASE_C7,
+			}
+		},
+		.printlock	= SPI_PRETTYPRINT_STATUS_REGISTER_BP2_EP_SRWD, /* TODO: SR2 and many others */
+		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP2_SRWD, /* TODO: various other locks */
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
 		.voltage	= {1700, 2000},
