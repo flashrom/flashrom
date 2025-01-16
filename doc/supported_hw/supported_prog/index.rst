@@ -16,6 +16,7 @@ Patches to add/update documentation, or migrate docs from `old wiki website <htt
     :maxdepth: 1
 
     buspirate
+    ch341ab
     dummyflasher
     ft2232_spi
     serprog/index
