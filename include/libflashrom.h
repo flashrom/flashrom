@@ -75,14 +75,31 @@ enum flashrom_progress_stage {
 	FLASHROM_PROGRESS_ERASE,
 	FLASHROM_PROGRESS_NR,
 };
+
 struct flashrom_progress {
 	enum flashrom_progress_stage stage;
 	size_t current;
 	size_t total;
 	void *user_data;
 };
+
 struct flashrom_flashctx;
 typedef void(flashrom_progress_callback)(struct flashrom_flashctx *flashctx);
+
+/**
+ * @deprecated Use flashrom_set_progress_callback_v2 instead
+ */
+void flashrom_set_progress_callback(
+  struct flashrom_flashctx *const flashctx,
+  flashrom_progress_callback *progress_callback,
+  struct flashrom_progress *progress_state)
+__attribute__((deprecated("Use flashrom_set_progress_callback_v2 instead")));
+
+typedef void(flashrom_progress_callback_v2)(enum flashrom_progress_stage stage,
+						size_t current,
+						size_t total,
+						void *user_data);
+
 /**
  * @brief Set the progress callback function.
  *
@@ -90,12 +107,12 @@ typedef void(flashrom_progress_callback)(struct flashrom_flashctx *flashctx);
  * to indicate the progress has changed. This allows frontends to do whatever
  * they see fit with such values, e.g. update a progress bar in a GUI tool.
  *
- * @param progress_callback Pointer to the new progress callback function.
- * @param progress_state Pointer to progress state to include with the progress
- * callback.
+ * @param flashrom_progress_callback_v2 Pointer to the new progress callback function.
+ * @param user_data A pointer to a piece of data which is managed by progress caller
  */
-void flashrom_set_progress_callback(struct flashrom_flashctx *const flashctx,
-		flashrom_progress_callback *progress_callback, struct flashrom_progress *progress_state);
+void flashrom_set_progress_callback_v2(struct flashrom_flashctx *const flashctx,
+					flashrom_progress_callback_v2 *progress_callback,
+					void* user_data);
 
 /** @} */ /* end flashrom-general */
 

@@ -25,6 +25,7 @@ LIBFLASHROM_1.0 {
     flashrom_programmer_shutdown;
     flashrom_set_log_callback;
     flashrom_set_progress_callback;
+    flashrom_set_progress_callback_v2;
     flashrom_shutdown;
     flashrom_supported_boards;
     flashrom_supported_chipsets;

@@ -92,14 +92,13 @@ static void print_progress(const struct cli_progress *cli_progress, enum flashro
 	msg_ginfo("[%s: %2u%%]", flashrom_progress_stage_to_string(stage), cli_progress->stage_pc[stage]);
 }
 
-void flashrom_progress_cb(struct flashrom_flashctx *flashctx)
+void flashrom_progress_cb(enum flashrom_progress_stage stage, size_t current, size_t total, void* user_data)
 {
-	struct flashrom_progress *progress_state = flashctx->progress_state;
 	unsigned int pc = 0;
-	struct cli_progress *cli_progress = progress_state->user_data;
+	struct cli_progress *cli_progress = user_data;
 
 	/* The expectation is that initial progress of zero is reported before doing anything. */
-	if (progress_state->current == 0) {
+	if (current == 0) {
 		if (!cli_progress->stage_setup) {
 			cli_progress->stage_setup = true;
 
@@ -113,17 +112,17 @@ void flashrom_progress_cb(struct flashrom_flashctx *flashctx)
 			}
 		}
 
-		cli_progress->stage_pc[progress_state->stage] = 0;
+		cli_progress->stage_pc[stage] = 0;
 	} else {
 		cli_progress->stage_setup = false;
-		cli_progress->visible_stages |= 1 << progress_state->stage;
+		cli_progress->visible_stages |= 1 << stage;
 	}
 
-	if (progress_state->current > 0 && progress_state->total > 0)
-		pc = ((unsigned long long) progress_state->current * 100llu) /
-		     ((unsigned long long) progress_state->total);
-	if (cli_progress->stage_pc[progress_state->stage] != pc) {
-		cli_progress->stage_pc[progress_state->stage] = pc;
+	if (current > 0 && total > 0)
+		pc = ((unsigned long long) current * 100llu) /
+		     ((unsigned long long) total);
+	if (cli_progress->stage_pc[stage] != pc) {
+		cli_progress->stage_pc[stage] = pc;
 
 		if (line_state == PROGRESS) {
 			/* Erase previous output, because it was previous progress step. */

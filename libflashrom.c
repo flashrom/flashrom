@@ -64,15 +64,42 @@ int print(const enum flashrom_log_level level, const char *const fmt, ...)
 	return 0;
 }
 
-void flashrom_set_progress_callback(struct flashrom_flashctx *flashctx, flashrom_progress_callback *progress_callback, struct flashrom_progress *progress_state)
+void flashrom_set_progress_callback(struct flashrom_flashctx *flashctx,
+					flashrom_progress_callback *progress_callback,
+					struct flashrom_progress *progress_state)
 {
+	msg_gwarn("%s: this function is deprecated (for developers: call %s_v2 instead)\n",
+		 __func__, __func__);
+
+	if (flashctx->progress_callback) {
+		msg_gwarn("Progress callback already set by %s_v2, "
+			  "ignoring this call since only one progress callback can be registered.\n",
+			  __func__);
+		return;
+	}
+
+	flashctx->deprecated_progress_callback = progress_callback;
+	flashctx->deprecated_progress_state = progress_state;
+	flashctx->progress_state = *progress_state;
+}
+
+void flashrom_set_progress_callback_v2(struct flashrom_flashctx *flashctx,
+					flashrom_progress_callback_v2 *progress_callback,
+					void *user_data)
+{
+	if (flashctx->deprecated_progress_callback) {
+		msg_gwarn("Deprecated progress callback already set by flashrom_set_progress_callback, "
+			  "ignoring this call since only one progress callback can be registered.\n");
+		return;
+	}
+
 	flashctx->progress_callback = progress_callback;
-	flashctx->progress_state = progress_state;
+	flashctx->progress_state.user_data = user_data;
 }
 /** @private */
 void init_progress(struct flashrom_flashctx *flashctx, enum flashrom_progress_stage stage, size_t total)
 {
-	if (flashctx->progress_callback == NULL)
+	if (!flashctx->progress_callback && !flashctx->deprecated_progress_callback)
 		return;
 
 	struct stage_progress *stage_progress = &flashctx->stage_progress[stage];
@@ -85,7 +112,7 @@ void init_progress(struct flashrom_flashctx *flashctx, enum flashrom_progress_st
 /** @private */
 void update_progress(struct flashrom_flashctx *flashctx, enum flashrom_progress_stage stage, size_t increment)
 {
-	if (flashctx->progress_callback == NULL)
+	if (!flashctx->progress_callback && !flashctx->deprecated_progress_callback)
 		return;
 
 	struct stage_progress *stage_progress = &flashctx->stage_progress[stage];
@@ -96,11 +123,20 @@ void update_progress(struct flashrom_flashctx *flashctx, enum flashrom_progress_
 		stage_progress->total = stage_progress->current;
 	}
 
-	flashctx->progress_state->stage = stage;
-	flashctx->progress_state->current = stage_progress->current;
-	flashctx->progress_state->total = stage_progress->total;
+	flashctx->progress_state.stage = stage;
+	flashctx->progress_state.current = stage_progress->current;
+	flashctx->progress_state.total = stage_progress->total;
 
-	flashctx->progress_callback(flashctx);
+	if (flashctx->progress_callback) {
+		flashctx->progress_callback(stage, stage_progress->current, stage_progress->total,
+						flashctx->progress_state.user_data);
+	} else if (flashctx->deprecated_progress_callback) {
+		*(flashctx->deprecated_progress_state) = flashctx->progress_state;
+		flashctx->deprecated_progress_callback(flashctx);
+		memcpy(&flashctx->progress_state.user_data,
+			flashctx->deprecated_progress_state->user_data,
+			sizeof(flashctx->progress_state.user_data));
+	}
 }
 
 const char *flashrom_version_info(void)

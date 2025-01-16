@@ -81,20 +81,20 @@ static int block_erase_chip(struct flashctx *flash, unsigned int blockaddr, unsi
 	return 0;
 }
 
-static void progress_callback(struct flashctx *flash) {
-	struct progress_user_data *progress_user_data = flash->progress_state->user_data;
-	if (flash->progress_state->current == 0) {
-		printf("Progress started for stage %d, initial callback call\n", flash->progress_state->stage);
+static void progress_callback(enum flashrom_progress_stage stage, size_t current, size_t total, void* user_data) {
+	struct progress_user_data *progress_user_data = user_data;
+
+	if (current == 0) {
+		printf("Progress started for stage %d, initial callback call\n", stage);
 	} else {
 		/* Progress cannot go backwards. */
-		assert_true(flash->progress_state->current >= progress_user_data->last_seen[flash->progress_state->stage]);
+		assert_true(current >= progress_user_data->last_seen[stage]);
 	}
 
-	if (flash->progress_state->current >= flash->progress_state->total - 1)
-		printf("Progress almost complete for stage %d, current %ld, total %ld\n",
-			flash->progress_state->stage, flash->progress_state->current, flash->progress_state->total);
+	if (current >= total - 1)
+		printf("Progress almost complete for stage %d, current %ld, total %ld\n", stage, current, total);
 
-	progress_user_data->last_seen[flash->progress_state->stage] = flash->progress_state->current;
+	progress_user_data->last_seen[stage] = current;
 }
 
 static void setup_chip(struct flashrom_flashctx *flashctx, struct flashrom_layout **layout,
@@ -255,10 +255,7 @@ void erase_chip_with_progress(void **state)
 	setup_chip(&flashctx, &layout, &mock_chip, param, &chip_io);
 
 	struct progress_user_data progress_user_data = {0};
-	struct flashrom_progress progress_state = {
-		.user_data = &progress_user_data
-	};
-	flashrom_set_progress_callback(&flashctx, progress_callback, &progress_state);
+	flashrom_set_progress_callback_v2(&flashctx, progress_callback, &progress_user_data);
 
 	printf("Erase chip operation started.\n");
 	assert_int_equal(0, flashrom_flash_erase(&flashctx));
@@ -357,10 +354,7 @@ void read_chip_with_progress(void **state)
 	setup_chip(&flashctx, &layout, &mock_chip, param, &chip_io);
 
 	struct progress_user_data progress_user_data = {0};
-	struct flashrom_progress progress_state = {
-		.user_data = &progress_user_data
-	};
-	flashrom_set_progress_callback(&flashctx, progress_callback, &progress_state);
+	flashrom_set_progress_callback_v2(&flashctx, progress_callback, &progress_user_data);
 
 	const char *const filename = "read_chip.test";
 	unsigned long size = mock_chip.total_size * 1024;
@@ -488,10 +482,7 @@ void write_chip_with_progress(void **state)
 	setup_chip(&flashctx, &layout, &mock_chip, param, &chip_io);
 
 	struct progress_user_data progress_user_data = {0};
-	struct flashrom_progress progress_state = {
-		.user_data = &progress_user_data
-	};
-	flashrom_set_progress_callback(&flashctx, progress_callback, &progress_state);
+	flashrom_set_progress_callback_v2(&flashctx, progress_callback, &progress_user_data);
 
 	const char *const filename = "-";
 	unsigned long size = mock_chip.total_size * 1024;
@@ -621,10 +612,7 @@ void write_chip_feature_no_erase_with_progress(void **state)
 	assert_non_null(newcontents);
 
 	struct progress_user_data progress_user_data = {0};
-	struct flashrom_progress progress_state = {
-		.user_data = &progress_user_data
-	};
-	flashrom_set_progress_callback(&flashctx, progress_callback, &progress_state);
+	flashrom_set_progress_callback_v2(&flashctx, progress_callback, &progress_user_data);
 
 	printf("Write chip operation started.\n");
 	assert_int_equal(0, read_buf_from_file(newcontents, size, filename));

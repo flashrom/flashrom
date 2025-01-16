@@ -26,6 +26,6 @@ int open_logfile(const char * const filename);
 int close_logfile(void);
 void start_logging(void);
 int flashrom_print_cb(enum flashrom_log_level level, const char *fmt, va_list ap);
-void flashrom_progress_cb(struct flashrom_flashctx *flashctx);
+void flashrom_progress_cb(enum flashrom_progress_stage stage, size_t current, size_t total, void* user_data);
 
 #endif /* __CLI_OUTPUT_H__ */

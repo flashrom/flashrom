@@ -621,9 +621,12 @@ struct flashrom_flashctx {
 		void *data;
 	} chip_restore_fn[MAX_CHIP_RESTORE_FUNCTIONS];
 	/* Progress reporting */
-	flashrom_progress_callback *progress_callback;
-	struct flashrom_progress *progress_state;
+	flashrom_progress_callback_v2 *progress_callback;
+	struct flashrom_progress progress_state;
 	struct stage_progress stage_progress[FLASHROM_PROGRESS_NR];
+	/* deprecated, do not use */
+	flashrom_progress_callback *deprecated_progress_callback;
+	struct flashrom_progress *deprecated_progress_state;
 
 	/* Maximum allowed % of redundant erase */
 	int sacrifice_ratio;

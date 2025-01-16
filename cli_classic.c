@@ -1282,11 +1282,8 @@ int main(int argc, char *argv[])
 	fill_flash = &flashes[0];
 
 	struct cli_progress cli_progress = {0};
-	struct flashrom_progress progress_state = {
-		 .user_data = &cli_progress
-	};
 	if (options.show_progress)
-		flashrom_set_progress_callback(fill_flash, &flashrom_progress_cb, &progress_state);
+		flashrom_set_progress_callback_v2(fill_flash, &flashrom_progress_cb, &cli_progress);
 
 	print_chip_support_status(fill_flash->chip);
 

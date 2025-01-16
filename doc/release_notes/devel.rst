@@ -51,3 +51,16 @@ requirements are not satisfied or the option is disabled, the authors lists will
 be replaced with placeholders unless the ``generate_authors_list`` option is set
 to ``enabled`` in which case the build will fail if the requirements are not
 satisfied.
+
+New libflashrom API for progress reporting
+------------------------------------------
+
+The old ``flashrom_set_progress_callback`` function for requesting progress updates
+during library operations is now deprecated. Users should call
+``flashrom_set_progress_callback_v2`` instead, which also changes the signature
+of the callback function. Specifically, new function type ``flashrom_progress_callback_v2``
+should be used from now on.
+
+This new API fixes limitations with the old one where most users would need to
+define their own global state to track progress, and it was impossible to fix that
+issue while maintaining binary compatibility without adding a new API.

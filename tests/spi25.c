@@ -69,26 +69,25 @@ int __wrap_spi_send_command(const struct flashctx *flash,
 	return 0;
 }
 
-static void spi_read_progress_cb(struct flashrom_flashctx *flashctx)
+static void spi_read_progress_cb(enum flashrom_progress_stage stage, size_t current, size_t total, void* user_data)
 {
-	struct flashrom_progress *progress_state = flashctx->progress_state;
-	uint32_t *cnt = (uint32_t *) progress_state->user_data;
-	assert_int_equal(0x400, progress_state->total);
+	uint32_t *cnt = (uint32_t *) user_data;
+	assert_int_equal(0x400, total);
 	switch (*cnt) {
 		case 0:
-			assert_int_equal(0x0, progress_state->current);
+			assert_int_equal(0x0, current);
 			break;
 		case 1:
-			assert_int_equal(0x100, progress_state->current);
+			assert_int_equal(0x100, current);
 			break;
 		case 2:
-			assert_int_equal(0x200, progress_state->current);
+			assert_int_equal(0x200, current);
 			break;
 		case 3:
-			assert_int_equal(0x300, progress_state->current);
+			assert_int_equal(0x300, current);
 			break;
 		case 4:
-			assert_int_equal(0x400, progress_state->current);
+			assert_int_equal(0x400, current);
 			break;
 		default:
 			fail();
@@ -113,10 +112,7 @@ void default_spi_read_test_success(void **state)
 		.chip = &mock_chip,
 		.mst = &mst
 	};
-	struct flashrom_progress progress_state = {
-		.user_data = (void *) &cnt,
-	};
-	flashrom_set_progress_callback(&flashctx, spi_read_progress_cb, &progress_state);
+	flashrom_set_progress_callback_v2(&flashctx, spi_read_progress_cb, (void *) &cnt);
 	init_progress(&flashctx, FLASHROM_PROGRESS_READ, 0x400);
 	for (int i = 0; i < 4; i++) {
 		will_return(__wrap_spi_send_command, JEDEC_WRDI);
@@ -126,7 +122,7 @@ void default_spi_read_test_success(void **state)
 	assert_int_equal(0, default_spi_read(&flashctx, buf, offset, sizeof(buf)));
 	assert_int_equal(5, cnt);
 
-	flashrom_set_progress_callback(&flashctx, NULL, NULL);
+	flashrom_set_progress_callback_v2(&flashctx, NULL, NULL);
 }
 
 void spi_write_enable_test_success(void **state)

@@ -1221,7 +1221,7 @@ notfound:
 static void setup_progress_from_layout(struct flashctx *flashctx,
 				       enum flashrom_progress_stage stage)
 {
-	if (!flashctx->progress_callback)
+	if (!flashctx->progress_callback && !flashctx->deprecated_progress_callback)
 		return;
 
 	const struct flashrom_layout *const flash_layout = get_layout(flashctx);
@@ -1242,7 +1242,7 @@ static void setup_progress_from_layout_and_diff(struct flashctx *flashctx,
 						const void *want,
 						enum flashrom_progress_stage stage)
 {
-	if (!flashctx->progress_callback)
+	if (!flashctx->progress_callback && !flashctx->deprecated_progress_callback)
 		return;
 
 	const struct flashrom_layout *flash_layout = get_layout(flashctx);
