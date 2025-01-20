@@ -16,3 +16,22 @@ Systems with AMD "Promontory" IO extenders (mostly "Zen" desktop platforms) are
 not currently supported.
 
 https://ticket.coreboot.org/issues/370
+
+flashchips.c split into separate files by vendor
+================================================
+
+``flashchips.c`` file was split into separate files per vendor. flashchips.c still exists in the source
+code but it is much smaller and only contain "generic" chip entries.
+
+With this, instead of one file ``flashchips.c`` we now have a ``flashchips/`` directory which contains
+all the files.
+
+There are no changes to the usage, and everything that's supported stays the same.
+
+New features
+============
+
+-r/-w/-v argument is optional when using -i
+-------------------------------------------
+
+See :doc:`/classic_cli_manpage` for details.
