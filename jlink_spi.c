@@ -465,7 +465,7 @@ static int jlink_spi_init(const struct programmer_cfg *cfg)
 		}
 
 		/* Wait some time until the target is powered up. */
-		internal_sleep(10000);
+		internal_sleep(100000);
 	}
 
 	struct jaylink_hardware_status hwstat;
