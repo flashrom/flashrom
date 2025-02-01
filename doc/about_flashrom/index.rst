@@ -6,3 +6,4 @@ About flashrom
 
     team
     code_of_conduct
+    privacy_policy
