@@ -12,6 +12,7 @@ Users documentation
     misc_intel
     in_system
     msi_jspi1
+    raspberry_pi
     misc_notes
 
 .. Keep misc notes last
