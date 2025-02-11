@@ -39,6 +39,8 @@ for examples on how the dev process works.
 
 For some types of contributions we have more detailed guidelines, check the list :doc:`/contrib_howtos/index`.
 
+.. _support-code-reviews:
+
 Code reviews
 ============
 

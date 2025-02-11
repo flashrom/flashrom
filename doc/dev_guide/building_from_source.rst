@@ -216,8 +216,11 @@ libpayload
     .. todo:: Add building instructions for libpayload
 
 
+.. _meson_configuration:
+
 Configuration
 -------------
+
 In the flashrom repository run::
 
     meson setup [builtin options] [flashrom options] <builddir>

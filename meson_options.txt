@@ -19,6 +19,7 @@ option('programmer', type : 'array', value : ['auto'], choices : [
 option('llvm_cov', type : 'feature', value : 'disabled', description : 'build for llvm code coverage')
 option('man-pages', type : 'feature', value : 'auto', description : 'build the man-page for classic_cli')
 option('documentation', type : 'feature', value : 'auto', description : 'build the html documentation')
+option('generate_authors_list', type : 'feature', value : 'auto', description : 'include automatically-generated lists of authors in the HTML documentation')
 option('ni845x_search_path', type : 'string', value : 'C:\Program Files (x86)\National Instruments\Ni-845x\MS Visual C',
        description : 'Path to search for the proprietary ni845x library and header (32-bit Windows only)')
 option('delay_minimum_sleep_us', type : 'integer', min : 0, value : 100,

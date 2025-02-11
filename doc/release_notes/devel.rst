@@ -35,3 +35,19 @@ New features
 -------------------------------------------
 
 See :doc:`/classic_cli_manpage` for details.
+
+Hall of Fame added to documentation
+-----------------------------------
+
+The flashrom HTML documentation (and web site) now includes an
+automatically-generated list of historical contributors, to acknowledge
+everybody who has made flashrom into what it is:
+:doc:`../about_flashrom/hall_of_fame`.
+
+When building the documentation, the ``generate_authors_list`` Meson option will
+cause the lists to be generated, requiring a runnable copy of Git on the system
+and that the source tree being built is a Git working copy. If those
+requirements are not satisfied or the option is disabled, the authors lists will
+be replaced with placeholders unless the ``generate_authors_list`` option is set
+to ``enabled`` in which case the build will fail if the requirements are not
+satisfied.

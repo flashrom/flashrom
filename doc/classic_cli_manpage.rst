@@ -1565,14 +1565,12 @@ Please see the individual files.
 AUTHORS
 -------
 
-Andrew Morgan, Anastasia Klimchuk, Carl-Daniel Hailfinger, Claus Gindhart, David Borg, David Hendricks, Dominik Geyer,
-Edward O'Callaghan, Eric Biederman, Giampiero Giancipoli, Helge Wagner, Idwer Vollering, Joe Bao, Joerg Fischer,
-Joshua Roys, Kyösti Mälkki, Luc Verhaegen, Li-Ta Lo, Mark Marshall, Markus Boas, Mattias Mattsson, Michael Karcher,
-Nikolay Petukhov, Patrick Georgi, Peter Lemenkov, Peter Stuge, Reinder E.N. de Haan, Ronald G. Minnich, Ronald Hoogenboom,
-Sean Nelson, Stefan Reinauer, Stefan Tauner, Stefan Wildemann, Stephan Guilloux, Steven James, Urja Rannikko, Uwe Hermann,
-Wang Qingpei, Yinghai Lu and others, please see the **flashrom** git history for details.
+More than 350 authors have contributed to Flashrom over its life. Each individual
+is credited in the `hall of fame <https://flashrom.org/about_flashrom/hall_of_fame.html>`_,
+or author metadata can be found in the git history.
 
 All still active authors can be reached via `the mailing list <flashrom\@flashrom.org>`_.
 
-This manual page was written by `Uwe Hermann <uwe\@hermann-uwe.de>`_, Carl-Daniel Hailfinger, Stefan Tauner and others.
-It is licensed under the terms of the GNU GPL (version 2 or later).
+This manual page was written by `Uwe Hermann <uwe\@hermann-uwe.de>`_,
+Carl-Daniel Hailfinger, Stefan Tauner and others.  It is licensed under the
+terms of the GNU GPL (version 2 or later).
