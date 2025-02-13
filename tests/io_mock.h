@@ -107,6 +107,7 @@ struct io_mock {
 
 	/* POSIX File I/O */
 	int (*iom_open)(void *state, const char *pathname, int flags, mode_t mode);
+	int (*iom_fcntl)(void *state, int fd, unsigned long cmd, va_list args);
 	int (*iom_ioctl)(void *state, int fd, unsigned long request, va_list args);
 	int (*iom_read)(void *state, int fd, void *buf, size_t sz);
 	int (*iom_write)(void *state, int fd, const void *buf, size_t sz);

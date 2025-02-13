@@ -542,6 +542,13 @@ programmer = {
     'srcs'    : files('serprog.c', 'serial.c', custom_baud_c),
     'flags'   : [ '-DCONFIG_SERPROG=1' ],
   },
+  'spidriver' : {
+    'systems' : systems_serial,
+    'groups'  : [ group_serial, group_external ],
+    'srcs'    : files('spidriver.c', 'serial.c', custom_baud_c),
+    'test_srcs' : files('tests/spidriver.c'),
+    'flags'   : [ '-DCONFIG_SPIDRIVER=1' ],
+  },
   'stlinkv3_spi' : {
     'deps'    : [ libusb1 ],
     'groups'  : [ group_usb, group_external ],

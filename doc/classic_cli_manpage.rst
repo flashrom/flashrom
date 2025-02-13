@@ -356,6 +356,7 @@ All operations involving any chip access (probe/read/write/...) require the ``-p
         * ``mediatek_i2c_spi``    (for SPI flash ROMs attached to some Mediatek display devices accessible over I2C)
         * ``dirtyjtag_spi``       (for SPI flash ROMs attached to DirtyJTAG-compatible devices)
         * ``asm106x``             (for SPI flash ROMs attached to asm106x PCI SATA controllers)
+        * ``spidriver``           (for SPI flash ROMs attached to an Excamera Labs SPIDriver)
 
         Some programmers have optional or mandatory parameters which are described in detail in the
         **PROGRAMMER-SPECIFIC INFORMATION** section. Support for some programmers can be disabled at compile time.
@@ -1434,6 +1435,32 @@ and must explicitly be set to ``yes`` in order for the programmer to operate. Th
 mechanism in the driver to positively identify that a given I2C bus is actually connected to a supported device.
 
 
+spidriver programmer
+^^^^^^^^^^^^^^^^^^^^
+
+This is a SPI hardware interface with a display (https://spidriver.com/),
+connected as an FT230X USB serial device at a fixed baud rate of 460800.
+
+Firmware: https://github.com/jamesbowman/spidriver
+
+A required ``dev`` parameter specifies the Excamera Labs SPIDriver device node
+and an optional ``mode`` parameter specifies the mode of the SPI bus. The
+parameter delimiter is a comma. Syntax is::
+
+        flashrom -p spidriver:dev=/dev/device,mode=0
+
+where ``mode`` can be ``0``, ``1``, ``2`` or ``3``. The default is mode 0.
+Setting the SPI mode requires version 2 of the device firmware.
+
+An optional A and/or B parameter specifies the state of the SPIDriver A and B pins.
+This may be used to drive the A or B pins high or low before a transfer.
+Syntax is::
+
+        flashrom -p spidriver:a=state,b=state
+
+where ``state`` can be ``high`` or ``low``. The default ``state`` is ``high``.
+
+
 EXAMPLES
 --------
 
@@ -1512,7 +1539,7 @@ REQUIREMENTS
 
         * needs TCP access to the network or userspace access to a serial port
 
-* buspirate_spi
+* buspirate_spi, spidriver
 
         * needs userspace access to a serial port
 
@@ -1533,7 +1560,7 @@ REQUIREMENTS
         * have to be run as superuser/root
         * need raw access permission
 
-* serprog, buspirate_spi, dediprog, usbblaster_spi, ft2232_spi, pickit2_spi, ch341a_spi, digilent_spi, dirtyjtag_spi
+* serprog, buspirate_spi, dediprog, usbblaster_spi, ft2232_spi, pickit2_spi, ch341a_spi, digilent_spi, dirtyjtag_spi, spidriver
 
         * can be run as normal user on most operating systems if appropriate device permissions are set
 

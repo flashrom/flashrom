@@ -20,6 +20,7 @@
 #include "flash.h"
 
 struct programmer_cfg; /* defined in programmer.h */
+struct termios;
 
 char *__wrap_strdup(const char *s);
 void __wrap_physunmap(void *virt_addr, size_t len);
@@ -32,6 +33,8 @@ int __wrap_open(const char *pathname, int flags, ...);
 int __real_open(const char *pathname, int flags, ...);
 int __wrap_open64(const char *pathname, int flags, ...);
 int __wrap___open64_2(const char *pathname, int flags, ...);
+int __wrap_fcntl(int fd, int cmd, ...);
+int __wrap_fcntl64(int fd, int cmd, ...);
 int __wrap_ioctl(int fd, unsigned long int request, ...);
 int __wrap_write(int fd, const void *buf, size_t sz);
 int __wrap_read(int fd, void *buf, size_t sz);
@@ -72,6 +75,8 @@ void __wrap_OUTW(unsigned short value, unsigned short port);
 unsigned short __wrap_INW(unsigned short port);
 void __wrap_OUTL(unsigned int value, unsigned short port);
 unsigned int __wrap_INL(unsigned short port);
+int __wrap_tcgetattr(int fd, struct termios *termios_p);
+int __wrap_tcsetattr(int fd, int optional_actions, const struct termios *termios_p);
 int __wrap_spi_send_command(const struct flashctx *flash,
 		unsigned int writecnt, unsigned int readcnt,
 		const unsigned char *writearr, unsigned char *readarr);

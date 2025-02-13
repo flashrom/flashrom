@@ -139,6 +139,34 @@ int __wrap___open64_2(const char *pathname, int flags, ...)
 	return mock_open(pathname, flags, (mode_t) mode);
 }
 
+int __wrap_fcntl(int fd, int cmd, ...)
+{
+	LOG_ME;
+	if (get_io() && get_io()->iom_ioctl) {
+		va_list args;
+		int out;
+		va_start(args, cmd);
+		out = get_io()->iom_fcntl(get_io()->state, fd, cmd, args);
+		va_end(args);
+		return out;
+	}
+	return 0;
+}
+
+int __wrap_fcntl64(int fd, int cmd, ...)
+{
+	LOG_ME;
+	if (get_io() && get_io()->iom_ioctl) {
+		va_list args;
+		int out;
+		va_start(args, cmd);
+		out = get_io()->iom_fcntl(get_io()->state, fd, cmd, args);
+		va_end(args);
+		return out;
+	}
+	return 0;
+}
+
 int __wrap_ioctl(int fd, unsigned long int request, ...)
 {
 	LOG_ME;
@@ -387,6 +415,18 @@ unsigned int __wrap_INL(unsigned short port)
 	return 0;
 }
 
+int __wrap_tcgetattr(int fd, struct termios *termios_p)
+{
+	LOG_ME;
+	return 0;
+}
+
+int __wrap_tcsetattr(int fd, int optional_actions, const struct termios *termios_p)
+{
+	LOG_ME;
+	return 0;
+}
+
 static void *doing_nothing(void *vargp) {
 	return NULL;
 }
@@ -480,6 +520,7 @@ int main(int argc, char *argv[])
 		cmocka_unit_test(realtek_mst_no_allow_brick_test_success),
 		cmocka_unit_test(ch341a_spi_basic_lifecycle_test_success),
 		cmocka_unit_test(ch341a_spi_probe_lifecycle_test_success),
+		cmocka_unit_test(spidriver_probe_lifecycle_test_success),
 	};
 	ret |= cmocka_run_group_tests_name("lifecycle.c tests", lifecycle_tests, NULL, NULL);
 

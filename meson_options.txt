@@ -14,7 +14,8 @@ option('programmer', type : 'array', value : ['auto'], choices : [
         'gfxnvidia', 'internal', 'it8212', 'jlink_spi', 'linux_mtd', 'linux_spi', 'mediatek_i2c_spi',
         'mstarddc_spi', 'ni845x_spi', 'nic3com', 'nicintel', 'nicintel_eeprom', 'nicintel_spi', 'nicnatsemi',
         'nicrealtek', 'ogp_spi', 'parade_lspcon', 'pickit2_spi', 'pony_spi', 'raiden_debug_spi',
-        'rayer_spi', 'realtek_mst_i2c_spi', 'satamv', 'satasii', 'serprog',  'stlinkv3_spi', 'usbblaster_spi',
+        'rayer_spi', 'realtek_mst_i2c_spi', 'satamv', 'satasii', 'serprog', 'spidriver', 'stlinkv3_spi',
+        'usbblaster_spi',
 ], description: 'Active programmers')
 option('llvm_cov', type : 'feature', value : 'disabled', description : 'build for llvm code coverage')
 option('man-pages', type : 'feature', value : 'auto', description : 'build the man-page for classic_cli')

@@ -97,6 +97,7 @@ extern const struct programmer_entry programmer_realtek_mst_i2c_spi;
 extern const struct programmer_entry programmer_satamv;
 extern const struct programmer_entry programmer_satasii;
 extern const struct programmer_entry programmer_serprog;
+extern const struct programmer_entry programmer_spidriver;
 extern const struct programmer_entry programmer_stlinkv3_spi;
 extern const struct programmer_entry programmer_usbblaster_spi;
 extern const struct programmer_entry programmer_dirtyjtag_spi;

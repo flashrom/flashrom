@@ -64,3 +64,8 @@ should be used from now on.
 This new API fixes limitations with the old one where most users would need to
 define their own global state to track progress, and it was impossible to fix that
 issue while maintaining binary compatibility without adding a new API.
+
+Programmer updates
+------------------
+
+* spidriver: Add support for the Excamera Labs SPIDriver
