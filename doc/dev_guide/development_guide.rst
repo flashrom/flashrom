@@ -15,6 +15,8 @@ design.
 
 You can `look at the latest flashrom development efforts in Gerrit <https://review.coreboot.org/q/project:flashrom>`_.
 
+.. _git repo setup:
+
 Set up the git repository and dev environment
 =============================================
 

@@ -1,6 +1,9 @@
 Building from source
 ====================
 
+First thing, clone git repository for yourself (if you haven't done it already),
+see :ref:`git repo setup`.
+
 You're going to need the following tools to get started:
 
 * gcc or clang
