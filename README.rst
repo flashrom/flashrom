@@ -19,6 +19,9 @@ Please make a backup of your flash chip before writing to it.
 
 Please see the flashrom(8) manpage :doc:`classic_cli_manpage`.
 
+The list of platforms that package flashrom can be found on `repology.org <https://repology.org/project/flashrom/versions>`_.
+
+Information about recent releases can be found in :doc:`/release_notes/index`.
 
 Building / installing / packaging
 ---------------------------------
@@ -33,7 +36,9 @@ flashrom is built with **meson**. TLDR:
     meson install -C builddir
 
 For full detailed instructions, follow the information in
-:doc:`dev_guide/building_from_source`
+:doc:`dev_guide/building_from_source`.
+
+If you are interested in development, have a look at :doc:`dev_guide/development_guide`.
 
 Contact
 -------
