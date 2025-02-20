@@ -216,7 +216,7 @@
 		/* supports SFDP */
 		/* OTP: 1024B total, 256B reserved; read 0x48; write 0x42, erase 0x44, read ID 0x4B */
 		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI | FEATURE_WRSR2,
-		.tested		= TEST_OK_PREW,
+		.tested		= TEST_OK_PREWB,
 		.probe		= PROBE_SPI_RDID,
 		.probe_timing	= TIMING_ZERO,
 		.block_erasers	=
