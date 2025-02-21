@@ -130,7 +130,7 @@ Coding style
 ------------
 
 Flashrom generally follows Linux kernel style:
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/process/coding-style.rst
+https://docs.kernel.org/process/coding-style.html
 
 The notable exception is line length limit. Our guidelines are:
 
