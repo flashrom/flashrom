@@ -789,13 +789,43 @@ Some of these programmers have more info below.
 atavia programmer
 ^^^^^^^^^^^^^^^^^
 
+The VT6421A is a PATA/SATA PCI controller that can be found on various cheap PCI cards.
+Currently there is a `datasheet <http://spacehopper.org/mirrors/ftp.vtbridge.org/Docs/Storage/DS_VT6421A_100_CCPL.PDF>`_.
+
+There exists a patch for flashrom that makes it possible to access the attached flash chip,
+but it has problems with some cards. They seem to need an offset added to the chip address for unknown reasons.
+
 Due to the mysterious address handling of the VIA VT6421A controller the user can specify an offset with the::
 
         flashrom -p atavia:offset=addr
 
 syntax where ``addr`` will be interpreted as usual (leading 0x (0) for hexadecimal (octal) values, or else decimal).
-For more information please see `its wiki page <https://flashrom.org/VT6421A "its wiki page>`_.
 
+Cards found in the wild:
+
++----------------+----------------------+--------+---------+------------+-------------+----------+----------------------+-------+
+| Vendor	 | Model	        | rev.	 | country | lot code	| Chip	      |	Size [B] | Offset		| lspci |
++================+======================+========+=========+============+=============+==========+======================+=======+
+|		 |		        |	 |	   |		| W39V040BPZ  |	512k	 |			|	|
++----------------+----------------------+--------+---------+------------+-------------+----------+----------------------+-------+
+| Eminent	 | EM2001	        | 0910CD | Taiwan  | 2IA0022481	| SST49LF020A |	256k	 | 0xfff00000		| [2]	|
++----------------+----------------------+--------+---------+------------+-------------+----------+----------------------+-------+
+| "SATA CONNECT" | "High speed 2/4-port	| 0901CD | Taiwan  | 2IA0022471	| Pm49FL004   |	512k	 | 0xfff80000 =		| [3]	|
+|		 | Serial ATA card"     |	 |	   |		|	      |		 | 0xffffffff - size    |	|
+| 		 |		        |	 |	   |		|	      |		 | + 1 (aka phys_addr)	|	|
++----------------+----------------------+--------+---------+------------+-------------+----------+----------------------+-------+
+| Gembird	 |	SATA-3	        |	 |	   |		| W39V040C    |	512k	 |			|	|
++----------------+----------------------+--------+---------+------------+-------------+----------+----------------------+-------+
+|		 |	HZ-006	        |	 |	   |		| Pm39LV512   |	64k	 |			| [4]	|
++----------------+----------------------+--------+---------+------------+-------------+----------+----------------------+-------+
+
+* `[2] <http://paste.flashrom.org/view.php?id=1369>`_
+* `[3] <http://www.flashrom.org/pipermail/flashrom/2012-September/009992.html>`_
+* `[4] <http://www.flashrom.org/pipermail/flashrom/2012-December/010318.html>`_
+
+The revision consists of two characters that are printed below the "VT6421A" string on the chip
+prefixed by 4 numbers that encode the production year and week.
+The country is noted right of the revision.
 
 atapromise programmer
 ^^^^^^^^^^^^^^^^^^^^^

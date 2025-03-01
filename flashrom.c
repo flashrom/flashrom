@@ -1528,27 +1528,27 @@ static void nonfatal_help_message(void)
 	if (is_internal_programmer())
 		msg_gerr("This means we have to add special support for your board, programmer or flash\n"
 			 "chip. Please report this to the mailing list at flashrom@flashrom.org or on\n"
-			 "IRC (see https://www.flashrom.org/Contact for details), thanks!\n"
+			 "chat channels (see https://flashrom.org/contact.html for details), thanks!\n"
 			 "-------------------------------------------------------------------------------\n"
 			 "You may now reboot or simply leave the machine running.\n");
 	else
 		msg_gerr("Please check the connections (especially those to write protection pins) between\n"
 			 "the programmer and the flash chip. If you think the error is caused by flashrom\n"
-			 "please report this to the mailing list at flashrom@flashrom.org or on IRC (see\n"
-			 "https://www.flashrom.org/Contact for details), thanks!\n");
+			 "please report this to the mailing list at flashrom@flashrom.org or on chat (see\n"
+			 "https://flashrom.org/contact.html for details), thanks!\n");
 }
 
 void emergency_help_message(void)
 {
 	msg_gerr("Your flash chip is in an unknown state.\n");
 	if (is_internal_programmer())
-		msg_gerr("Get help on IRC (see https://www.flashrom.org/Contact) or mail\n"
+		msg_gerr("Get help on chat (see https://flashrom.org/contact.html) or mail\n"
 			"flashrom@flashrom.org with the subject \"FAILED: <your board name>\"!"
 			"-------------------------------------------------------------------------------\n"
 			"DO NOT REBOOT OR POWEROFF!\n");
 	else
 		msg_gerr("Please report this to the mailing list at flashrom@flashrom.org or\n"
-			 "on IRC (see https://www.flashrom.org/Contact for details), thanks!\n");
+			 "on chat (see https://flashrom.org/contact.html for details), thanks!\n");
 }
 
 void list_programmers_linebreak(int startcol, int cols, int paren)

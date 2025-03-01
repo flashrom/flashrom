@@ -20,7 +20,6 @@
   how_to_support_flashrom
   how_to_add_docs
   documentation_license
-  Old wiki website <https://wiki.flashrom.org/>
 
 .. include:: intro.rst
 

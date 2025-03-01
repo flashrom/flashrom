@@ -94,11 +94,8 @@ As for specific ideas:
 #. If there is an announcement on the mailing list about new doc under review,
    have a look and you can join the review
 
-#. Help migrate information from `old website <https://wiki.flashrom.org/>`_ to `new website <https://www.flashrom.org/>`_.
-   The rule is, all useful docs need to be migrated but they should be reviewed. Concrete example,
-   there are docs for programmers, written a while ago. If you are using the programmer regularly
-   you can review the existing doc and help update it (if needed) and then the updated doc will
-   go to the new website.
+#. If you have been following the document and discovered something incorrect there, or outdated,
+   send a patch to update the document.
 
 #. New documentation welcome.
 

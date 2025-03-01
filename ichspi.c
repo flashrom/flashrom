@@ -2236,7 +2236,7 @@ static int init_ich_default(const struct programmer_cfg *cfg, void *spibar, enum
 		if (ich_spi_rw_restricted)
 			msg_pinfo("Not all flash regions are freely accessible by flashrom. This is "
 				  "most likely\ndue to an active ME. Please see "
-				  "https://flashrom.org/ME for details.\n");
+				  "https://flashrom.org/user_docs/management_engine.html for details.\n");
 	}
 
 	/* Handle PR registers */

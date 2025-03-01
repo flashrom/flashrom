@@ -10,7 +10,7 @@ If you can run flashrom locally, the command ``flashrom -L`` prints all devices 
 (see :doc:`/classic_cli_manpage` for more details on command line options). The output of this command is long, so you might
 want to save it to file or grep.
 
-Patches to add/update documentation, or migrate docs from `old wiki website <https://wiki.flashrom.org/Supported_programmers>`_ are very much appreciated.
+Patches to add/update documentation are very much appreciated.
 
 .. toctree::
     :maxdepth: 1

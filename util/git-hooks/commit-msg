@@ -28,7 +28,7 @@ unset GREP_OPTIONS
 CHANGE_ID_AFTER="Bug|Depends-On|Issue|Test|Feature|Fixes|Fixed|Staging-ID"
 MSG="$1"
 
-DEV_GUIDELINES_URL="https://www.flashrom.org/Development_Guidelines"
+DEV_GUIDELINES_URL="https://flashrom.org/dev_guide/development_guide.html"
 
 # Check for, and add if missing, a unique Change-Id
 #
