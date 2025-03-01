@@ -92,7 +92,7 @@ static void progress_callback(enum flashrom_progress_stage stage, size_t current
 	}
 
 	if (current >= total - 1)
-		printf("Progress almost complete for stage %d, current %ld, total %ld\n", stage, current, total);
+		printf("Progress almost complete for stage %d, current %zu, total %zu\n", stage, current, total);
 
 	progress_user_data->last_seen[stage] = current;
 }
