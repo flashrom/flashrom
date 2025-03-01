@@ -19,6 +19,7 @@
 #include <ctype.h>
 #include "programmer.h"
 #include "spi.h"
+#include "platform/udelay.h"
 
 /* Note that CS# is active low, so val=0 means the chip is active. */
 static void bitbang_spi_set_cs(const struct bitbang_spi_master * const master, int val, void *spi_data)

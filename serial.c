@@ -35,6 +35,7 @@
 #include "flash.h"
 #include "programmer.h"
 #include "custom_baud.h"
+#include "platform/udelay.h"
 
 fdtype sp_fd = SER_INV_FD;
 

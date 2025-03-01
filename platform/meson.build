@@ -10,6 +10,16 @@ if host_machine.endian() == 'big'
   add_project_arguments('-D__FLASHROM_BIG_ENDIAN__=1', language : 'c')
 endif
 
+# Select an appropriate delay implementation for the target OS
+delay_src = files('udelay.c')
+if target_machine.system() == 'dos'
+  delay_src = files('udelay_dos.c')
+endif
+srcs += delay_src
+cargs += ['-DCONFIG_DELAY_MINIMUM_SLEEP_US=@0@'.format(
+  get_option('delay_minimum_sleep_us')
+)]
+
 # OpenBSD requires libi386 or libamd64 for I/O port handling
 if host_machine.system() == 'openbsd'
   if host_machine.cpu_family() == 'x86'
@@ -31,7 +41,6 @@ if host_machine.system() == 'netbsd'
     deps += libx86_64
   endif
 endif
-
 
 # SunOS requires external libraries for network sockets
 # they are used to support serial devices via network

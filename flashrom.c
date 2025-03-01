@@ -35,6 +35,7 @@
 #include "hwaccess_physmap.h"
 #include "chipdrivers.h"
 #include "erasure_layout.h"
+#include "platform/udelay.h"
 
 const char flashrom_version[] = FLASHROM_VERSION;
 

@@ -30,6 +30,7 @@
 #include "flash.h"
 #include "programmer.h"
 #include "spi.h"
+#include "platform/udelay.h"
 
 static int spidriver_serialport_setup(char *dev)
 {

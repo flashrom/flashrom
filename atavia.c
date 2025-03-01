@@ -21,6 +21,7 @@
 #include "flash.h"
 #include "programmer.h"
 #include "platform/pci.h"
+#include "platform/udelay.h"
 
 #define PCI_VENDOR_ID_VIA	0x1106
 

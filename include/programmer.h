@@ -217,10 +217,6 @@ extern const struct board_info boards_known[];
 extern const struct board_info laptops_known[];
 #endif
 
-/* udelay.c */
-void internal_sleep(unsigned int usecs);
-void default_delay(unsigned int usecs);
-
 #if CONFIG_INTERNAL == 1
 /* board_enable.c */
 int selfcheck_board_enables(void);

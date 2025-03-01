@@ -17,7 +17,7 @@
 #include <sys/time.h>
 #include <time.h>
 
-#include "programmer.h"
+#include "platform/udelay.h"
 #include "tests.h"
 
 static uint64_t now_us(void) {

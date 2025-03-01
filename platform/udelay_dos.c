@@ -15,6 +15,8 @@
  * GNU General Public License for more details.
  */
 
+#include "platform/udelay.h"
+
 #include <stdbool.h>
 #include <unistd.h>
 #include <errno.h>

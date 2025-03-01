@@ -341,6 +341,7 @@
 #include "programmer.h"
 #include "spi.h"
 #include "usb_device.h"
+#include "platform/udelay.h"
 
 #include <libusb.h>
 #include <stdbool.h>

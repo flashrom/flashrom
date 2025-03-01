@@ -38,6 +38,7 @@
 #include "flash.h"
 #include "programmer.h"
 #include "chipdrivers.h"
+#include "platform/udelay.h"
 
 /* According to Serial Flasher Protocol Specification - version 1 */
 #define S_ACK			0x06

@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include "programmer.h"
 #include "platform/pci.h"
+#include "platform/udelay.h"
 
 #define PCI_VENDOR_ID_ASMEDIA	0x1b21
 

@@ -105,16 +105,6 @@ srcs = files(
   'writeprotect_ranges.c',
 )
 
-# Select an appropriate delay implementation for the target OS
-delay_src = files('udelay.c')
-if target_machine.system() == 'dos'
-  delay_src = files('udelay_dos.c')
-endif
-srcs += delay_src
-cargs += ['-DCONFIG_DELAY_MINIMUM_SLEEP_US=@0@'.format(
-  get_option('delay_minimum_sleep_us')
-)]
-
 # check for required symbols
 if cc.has_function('clock_gettime')
   add_project_arguments('-DHAVE_CLOCK_GETTIME=1', language : 'c')

@@ -18,6 +18,8 @@
 
 #ifndef __LIBPAYLOAD__
 
+#include "platform/udelay.h"
+
 #include <stdbool.h>
 #include <unistd.h>
 #include <errno.h>
