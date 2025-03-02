@@ -1,12 +1,8 @@
 #!/usr/bin/env bash
-
-if [ "$1" == "livehtml" ]; then
-  echo "Starting live documentation build"
-  cd /data-in/ && sphinx-autobuild -b html doc /tmp/build/html
-else
-  echo "Starting production documentation build"
-  cd /data-in/ \
-    && sphinx-build -b html doc /tmp/build/html \
-    && rm -rf /data-out/* \
-    && mv /tmp/build/html/* /data-out/
-fi
+set -e
+cd /data-in/
+meson setup /tmp/build -Ddocumentation=enabled -Dgenerate_authors_list=enabled
+ninja -C /tmp/build doc/html
+rm -rf /data-out/*
+mv /tmp/build/doc/html/* /data-out/
+rm -rf /tmp/build
