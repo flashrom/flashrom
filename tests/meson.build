@@ -17,6 +17,7 @@ test_srcs = files(
   'libusb_wraps.c',
   'helpers.c',
   'flashrom.c',
+  'libflashrom.c',
   'spi25.c',
   'lifecycle.c',
   'layout.c',

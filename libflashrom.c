@@ -31,6 +31,8 @@
 
 /** Pointer to log callback function. */
 static flashrom_log_callback *global_log_callback = NULL;
+static flashrom_log_callback_v2 *global_log_callback_v2 = NULL;
+static void *global_log_user_data = NULL;
 
 int flashrom_init(const int perform_selfcheck)
 {
@@ -50,6 +52,49 @@ void flashrom_set_log_callback(flashrom_log_callback *const log_callback)
 {
 	global_log_callback = log_callback;
 }
+
+/** @private */
+static int format_message_and_invoke_log_callback_v2(enum flashrom_log_level level,
+						const char *format, va_list args)
+{
+	char message[LOG_MESSAGE_LENGTH_LIMIT] = {0};
+	int actual_len;
+
+	/* sanity check */
+	if (!global_log_callback_v2)
+		return -EINVAL;
+
+	actual_len = vsnprintf(message, sizeof(message), format, args);
+
+	if (actual_len < 0)
+		return actual_len;
+
+	global_log_callback_v2(level, message, global_log_user_data);
+
+	if ((size_t)actual_len >= sizeof(message)) {
+		snprintf(message, sizeof(message),
+			"%zu characters were truncated from the previous log message",
+			(size_t)actual_len - sizeof(message) + 1);
+		global_log_callback_v2(FLASHROM_MSG_WARN, message, global_log_user_data);
+		return -ERANGE;
+	}
+	return 0;
+}
+
+void flashrom_set_log_callback_v2(flashrom_log_callback_v2 *const log_callback, void* user_data)
+{
+	if (!log_callback) {
+		/* Reset v1 callback only if it was installed by flashrom_set_log_callback_v2 op */
+		if (global_log_callback == format_message_and_invoke_log_callback_v2) {
+			global_log_callback = NULL;
+		}
+	}
+	else
+		global_log_callback = format_message_and_invoke_log_callback_v2;
+	global_log_callback_v2 = log_callback;
+	global_log_user_data = user_data;
+}
+
 /** @private */
 int print(const enum flashrom_log_level level, const char *const fmt, ...)
 {

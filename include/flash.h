@@ -730,7 +730,14 @@ struct cli_progress {
 void print_chip_support_status(const struct flashchip *chip);
 
 /* libflashrom.c */
-/* Let gcc and clang check for correct printf-style format strings. */
+/*
+ * Let gcc and clang check for correct printf-style format strings.
+ * Avoid using formatted messages longer than 256 characters.
+ * The new public logging API formats messages and passes a ready-to-print
+ * string  to the user callback for performance reasons.
+ * Therefore, any message exceeding 256 characters will be truncated,
+ * and an ERANGE error code will be returned.
+ */
 int print(enum flashrom_log_level level, const char *fmt, ...)
 #ifdef __MINGW32__
 #  ifndef __MINGW_PRINTF_FORMAT

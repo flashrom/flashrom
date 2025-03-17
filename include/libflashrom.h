@@ -69,6 +69,24 @@ typedef int(flashrom_log_callback)(enum flashrom_log_level, const char *format, 
  */
 void flashrom_set_log_callback(flashrom_log_callback *log_callback);
 
+typedef void (flashrom_log_callback_v2)(
+	enum flashrom_log_level,
+	const char* message,
+	void* user_data);
+/**
+ * @brief Set the log callback function.
+ *
+ * Set a callback function which will be invoked whenever libflashrom wants
+ * to output messages. This allows frontends to do whatever they see fit with
+ * such messages, e.g. write them to syslog, or to a file, or print them in a
+ * GUI window, etc.
+ * The message is formatted using vsnprintf
+ *
+ * @param log_callback Pointer to the new log callback function.
+ * @param user_data A pointer to data managed by the caller.
+ */
+void flashrom_set_log_callback_v2(flashrom_log_callback_v2 *log_callback, void* user_data);
+
 enum flashrom_progress_stage {
 	FLASHROM_PROGRESS_READ,
 	FLASHROM_PROGRESS_WRITE,

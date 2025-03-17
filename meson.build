@@ -652,6 +652,8 @@ endif
 
 cargs += '-DCONFIG_DEFAULT_PROGRAMMER_ARGS="' + config_default_programmer_args + '"'
 
+cargs += '-DLOG_MESSAGE_LENGTH_LIMIT=' + get_option('log_message_length_limit').to_string()
+
 if get_option('llvm_cov').enabled()
   cargs += ['-fprofile-instr-generate', '-fcoverage-mapping']
   link_args += ['-fprofile-instr-generate', '-fcoverage-mapping']
