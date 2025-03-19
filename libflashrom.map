@@ -32,6 +32,7 @@ LIBFLASHROM_1.0 {
     flashrom_supported_boards;
     flashrom_supported_chipsets;
     flashrom_supported_flash_chips;
+    flashrom_supported_programmers;
     flashrom_version_info;
     flashrom_wp_cfg_new;
     flashrom_wp_cfg_release;

@@ -194,6 +194,18 @@ const char *flashrom_version_info(void)
 	return flashrom_version;
 }
 
+const char **flashrom_supported_programmers(void)
+{
+	const char **result = malloc(sizeof(char*) * (programmer_table_size + 1));
+	if (!result)
+		return NULL;
+	for (unsigned int i = 0; i < programmer_table_size; ++i) {
+		result[i] = programmer_table[i]->name;
+	}
+	result[programmer_table_size] = 0;
+	return result;
+}
+
 struct flashrom_flashchip_info *flashrom_supported_flash_chips(void)
 {
 	struct flashrom_flashchip_info *supported_flashchips =

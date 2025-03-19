@@ -1,7 +1,7 @@
 /*
  * This file is part of the flashrom project.
  *
- * Copyright 2025 Dmitry Zhadinets (dzhadinets@gmail.com)
+ * Copyright 2025 Dmitry Zhadinets <dzhadinets@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -96,4 +96,21 @@ void flashrom_set_log_level_test_success(void **state)
 	/* check that callback is called after the change*/
 	assert_int_equal(print(FLASHROM_MSG_INFO, "1%s", "\n"), 0x666 + (int)FLASHROM_MSG_INFO);
 	flashrom_set_log_callback(NULL);
+}
+
+void flashrom_supported_programmers_test_success(void **state)
+{
+	(void) state; /* unused */
+	const char **array = flashrom_supported_programmers();
+	const char **ptr = array;
+
+	assert_non_null(array);
+
+	do {
+		assert_non_null(*ptr);
+	}while (*(++ptr));
+
+	flashrom_data_free(array);
+
+	assert_int_not_equal(ptr - array, 0);
 }

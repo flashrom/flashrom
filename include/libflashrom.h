@@ -194,6 +194,14 @@ struct flashrom_chipset_info {
  */
 const char *flashrom_version_info(void);
 /**
+ * @brief Returns list of supported programmers
+ * The last entry in the returned list is followed by a NULL.
+ *
+ * @return List of supported programmers, or NULL if an error occurred.
+ *  The pointer must be freed after using flashrom_data_free
+ */
+const char **flashrom_supported_programmers(void);
+/**
  * @brief Returns list of supported flash chips
  * @return List of supported flash chips, or NULL if an error occurred
  */
