@@ -2,10 +2,13 @@
 Supported flash chips
 =====================
 
-The list of all supported flash chips is in ``flashchips.c`` file in the source tree.
-If you have a flashrom repo cloned locally, you can look at the file in your repo.
+The info about all supported flash chips is in the ``/flashchips`` directory in the source tree.
+If you have a flashrom repo cloned locally, you can look at this directory in your repo.
 
-Alternatively inspect the file on the `web UI of our GitHub mirror <https://github.com/flashrom/flashrom/blob/main/flashchips.c>`_.
+Alternatively inspect it on the `web UI of our GitHub mirror <https://github.com/flashrom/flashrom/tree/main/flashchips>`_.
+
+All the files in the ``/flashchips`` directory are included in parent file ``flashchips.c``. You can inspect the source
+`here <https://github.com/flashrom/flashrom/blob/main/flashchips.c>`_.
 
 If you can run flashrom locally, the command ``flashrom -L`` prints the list of all supported flash chips
 (see :doc:`/classic_cli_manpage` for more details on command line options). The output of this command is long, so you might
