@@ -57,6 +57,20 @@ enum flashrom_log_level {
 	FLASHROM_MSG_SPEW	= 5,
 };
 typedef int(flashrom_log_callback)(enum flashrom_log_level, const char *format, va_list);
+
+/**
+ * @brief Set the log level.
+ *
+ * Set a log level for messages from libflashrom.
+ * The print callback will be invoked only for messages
+ * with a log level less than or equal to the configured value.
+ * The default log level is FLASHROM_MSG_INFO.
+ *
+ * @param level The log level to be set.
+ */
+
+ void flashrom_set_log_level(enum flashrom_log_level level);
+
 /**
  * @brief Set the log callback function.
  *

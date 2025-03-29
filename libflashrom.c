@@ -3,6 +3,7 @@
  *
  * Copyright (C) 2012, 2016 secunet Security Networks AG
  * (Written by Nico Huber <nico.huber@secunet.com> for secunet)
+ * Copyright (C) 2025 Dmitry Zhadinets <dzhadinets@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,6 +34,7 @@
 static flashrom_log_callback *global_log_callback = NULL;
 static flashrom_log_callback_v2 *global_log_callback_v2 = NULL;
 static void *global_log_user_data = NULL;
+static enum flashrom_log_level global_log_level = FLASHROM_MSG_INFO;
 
 int flashrom_init(const int perform_selfcheck)
 {
@@ -46,8 +48,11 @@ int flashrom_shutdown(void)
 	return 0; /* TODO: nothing to do? */
 }
 
-/* TODO: flashrom_set_loglevel()? do we need it?
-         For now, let the user decide in their callback. */
+void flashrom_set_log_level(enum flashrom_log_level level)
+{
+	global_log_level = level;
+}
+
 void flashrom_set_log_callback(flashrom_log_callback *const log_callback)
 {
 	global_log_callback = log_callback;
@@ -98,7 +103,7 @@ void flashrom_set_log_callback_v2(flashrom_log_callback_v2 *const log_callback, 
 /** @private */
 int print(const enum flashrom_log_level level, const char *const fmt, ...)
 {
-	if (global_log_callback) {
+	if (global_log_callback && level <= global_log_level) {
 		int ret;
 		va_list args;
 		va_start(args, fmt);

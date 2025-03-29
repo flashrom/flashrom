@@ -481,6 +481,7 @@ int main(int argc, char *argv[])
 	const struct CMUnitTest libflashrom_tests[] = {
 		cmocka_unit_test(flashrom_set_log_callback_test_success),
 		cmocka_unit_test(flashrom_set_log_callback_v2_test_success),
+		cmocka_unit_test(flashrom_set_log_level_test_success),
 	};
 	ret |= cmocka_run_group_tests_name("libflashrom.c tests", libflashrom_tests, NULL, NULL);
 

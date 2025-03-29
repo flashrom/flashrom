@@ -34,6 +34,7 @@ void flashbuses_to_text_test_success(void **state);
 /* libflashrom.c */
 void flashrom_set_log_callback_test_success(void **state);
 void flashrom_set_log_callback_v2_test_success(void **state);
+void flashrom_set_log_level_test_success(void **state);
 
 /* spi25.c */
 void spi_write_enable_test_success(void **state);
