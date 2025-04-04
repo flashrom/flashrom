@@ -1110,6 +1110,9 @@ int main(int argc, char *argv[])
 	 * chip when a flash device gets opened with fd 1 or 2.
 	 */
 	if (check_file(stdout) && check_file(stderr)) {
+		/* This is maximum log level for callback to be invoked,
+		 * and cli wants callback to be always invoked. */
+		flashrom_set_log_level(FLASHROM_MSG_SPEW);
 		flashrom_set_log_callback(&flashrom_print_cb);
 	}
 
