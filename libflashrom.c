@@ -34,7 +34,7 @@
 static flashrom_log_callback *global_log_callback = NULL;
 static flashrom_log_callback_v2 *global_log_callback_v2 = NULL;
 static void *global_log_user_data = NULL;
-static enum flashrom_log_level global_log_level = FLASHROM_MSG_INFO;
+static enum flashrom_log_level global_log_level = FLASHROM_MSG_SPEW;
 
 int flashrom_init(const int perform_selfcheck)
 {
