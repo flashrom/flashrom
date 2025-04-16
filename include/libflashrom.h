@@ -279,6 +279,45 @@ int flashrom_programmer_shutdown(struct flashrom_programmer *flashprog);
  *         or 1 on any other error.
  */
 int flashrom_flash_probe(struct flashrom_flashctx **flashctx, const struct flashrom_programmer *flashprog, const char *chip_name);
+
+/**
+ * @brief Probe for a flash chip, v2
+ *
+ * Probes for a flash chip and returns a flash context, that can be used
+ * later with flash chip and @ref flashrom-ops "image operations", if
+ * exactly one matching chip is found.
+ *
+ * Returns the list of names for all chips that matched, and the count of
+ * how many chips matched.
+ *
+ * Memory for the list of chips is dynamically allocated according to the
+ * number of chips found, and always needs to be freed with flashrom_data_free
+ * afterwards (including when no matches found or error happened).
+ *
+ * Note that if chip_name param is set, then probing happens only once, only
+ * for this one requested chip name. So the number of matches that can be
+ * returned in this case will be either 1 or 0 (and -1 for error).
+ *
+ * @param[out] flashctx Points to a struct flashrom_flashctx
+ *                      that will be set if exactly one chip is found. *flashctx
+ *                      has to be freed by the caller with @ref flashrom_flash_release.
+ * @param[out] all_matched_names pointer to an array containing the names of all chips
+ *				 that were successfully probed, terminated with a NULL pointer.
+ *				 If no chips are found, the returned array contains
+ *				 a single NULL element. Callers must free the array once unused
+ *				 by calling `flashrom_data_free`.
+ * @param[in] flashprog The flash programmer used to access the chip,
+ *			currently unused.
+ * @param[in] chip_name Name of a chip to probe for, or NULL to probe for
+ *                      all known chips.
+ * @return the number of matched chips (which can be 0) on success,
+ *         -1 if error happened during probing.
+ */
+int flashrom_flash_probe_v2(struct flashrom_flashctx *flashctx,
+				const char *** const all_matched_names,
+				const struct flashrom_programmer *flashprog,
+				const char *chip_name);
+
 /**
  * @brief Returns the size of the specified flash chip in bytes.
  *

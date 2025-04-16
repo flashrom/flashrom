@@ -53,6 +53,9 @@ void probe_spi_st95_test_success(void **state); /* spi95.c */
 /* lifecycle.c */
 void dummy_basic_lifecycle_test_success(void **state);
 void dummy_probe_lifecycle_test_success(void **state);
+void dummy_probe_v2_one_match_for_W25Q128FV(void **state);
+void dummy_probe_v2_six_matches_for_MX25L6436(void **state);
+void dummy_probe_v2_no_matches_found(void **state);
 void dummy_probe_variable_size_test_success(void **state);
 void dummy_init_fails_unhandled_param_test_success(void **state);
 void dummy_init_success_invalid_param_test_success(void **state);

@@ -6,6 +6,7 @@ LIBFLASHROM_1.0 {
     flashrom_flash_erase;
     flashrom_flash_getsize;
     flashrom_flash_probe;
+    flashrom_flash_probe_v2;
     flashrom_flash_release;
     flashrom_image_read;
     flashrom_image_verify;

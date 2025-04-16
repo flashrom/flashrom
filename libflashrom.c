@@ -329,8 +329,6 @@ int flashrom_programmer_shutdown(struct flashrom_programmer *const flashprog)
 	return programmer_shutdown();
 }
 
-/* TODO: flashrom_programmer_capabilities()? */
-
 int flashrom_flash_probe(struct flashrom_flashctx **const flashctx,
 			 const struct flashrom_programmer *const flashprog,
 			 const char *const chip_name)
@@ -362,6 +360,56 @@ int flashrom_flash_probe(struct flashrom_flashctx **const flashctx,
 	}
 	return ret;
 }
+
+int flashrom_flash_probe_v2(struct flashrom_flashctx *flashctx,
+				const char *** const all_matched_names,
+				const struct flashrom_programmer *flashprog,
+				const char *chip_name)
+{
+	int startchip;
+	unsigned int all_matched_count = 0; // start with no match found
+	const char **matched_names = calloc(flashchips_size + 1, sizeof(char*));
+
+	for (int i = 0; i < registered_master_count; i++) {
+		startchip = 0;
+		while (all_matched_count < flashchips_size) {
+			struct flashrom_flashctx second_flashctx = { 0, }; // used for second and more matches
+			struct flashctx *context_for_probing = (all_matched_count > 0) ? &second_flashctx : flashctx;
+			startchip = probe_flash(&registered_masters[i], startchip, context_for_probing, 0, chip_name);
+
+			if (startchip == -1)
+				break;
+
+			matched_names[all_matched_count] = context_for_probing->chip->name;
+			all_matched_count++;
+			startchip++;
+
+			if (all_matched_count > 1) {
+				/* It's used for the second and subsequent probing. */
+				flashrom_layout_release(second_flashctx.default_layout);
+				free(second_flashctx.chip);
+			}
+		}
+	}
+
+	matched_names[all_matched_count] = NULL;
+	matched_names = realloc(matched_names, (all_matched_count + 1) * sizeof(char*));
+	*all_matched_names = matched_names;
+
+	/* The return value should be the number of matched chips, or -1 on error.
+	 * However, currently the error is never returned, because probe_flash return code
+	 * is -1 for both cases of error and no match found, so there is no way
+	 * to distinguish between probing error (e.g. error talking to hw, or out of memory)
+	 * and no match.
+	 * (no match can happen if chip is not in our database, even if hw work perfectly).
+	 *
+	 * TODO improve probe_flash return code to distinguish between
+	 * probing error and no match found. */
+	int ret = (int) all_matched_count;
+
+	return ret;
+}
+
 
 size_t flashrom_flash_getsize(const struct flashrom_flashctx *const flashctx)
 {

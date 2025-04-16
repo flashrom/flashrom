@@ -1050,9 +1050,10 @@ int main(int argc, char *argv[])
 	struct flashctx flashes[8] = {{0}};
 	struct flashctx *fill_flash;
 	char *tempstr = NULL;
-	int startchip = -1, chipcount = 0;
 	int i, j;
 	int ret = 0;
+	int all_matched_count = 0;
+	const char **all_matched_names = NULL;
 
 	struct cli_options options = { 0 };
 	static const char optstring[] = "r::Rw::v::nNVEfc:l:i:p:Lzho:x";
@@ -1209,26 +1210,26 @@ int main(int argc, char *argv[])
 	msg_pdbg("The following protocols are supported: %s.\n", tempstr ? tempstr : "?");
 	free(tempstr);
 
-	for (j = 0; j < registered_master_count; j++) {
-		startchip = 0;
-		while (chipcount < (int)ARRAY_SIZE(flashes)) {
-			startchip = probe_flash(&registered_masters[j], startchip, &flashes[chipcount], 0, options.chip_to_probe);
-			if (startchip == -1)
-				break;
-			chipcount++;
-			startchip++;
-		}
+	all_matched_count = flashrom_flash_probe_v2(&flashes[0], &all_matched_names,
+                                NULL, options.chip_to_probe);
+	if (all_matched_count == -1) {
+		/* -1 is the ret code which means "something went wrong".
+		 * Multiple match and no match are different ret codes.
+		 * More details about the error were printed during actual probing. */
+		msg_cerr("Error: probing failed.\n");
+		ret = 1;
+		goto out_shutdown;
 	}
 
-	if (chipcount > 1) {
+	if (all_matched_count > 1) {
 		msg_cinfo("Multiple flash chip definitions match the detected chip(s): \"%s\"",
 			  flashes[0].chip->name);
-		for (i = 1; i < chipcount; i++)
-			msg_cinfo(", \"%s\"", flashes[i].chip->name);
+		for (int ind = 1; ind < all_matched_count; ind++)
+			msg_cinfo(", \"%s\"", all_matched_names[ind]);
 		msg_cinfo("\nPlease specify which chip definition to use with the -c <chipname> option.\n");
 		ret = 1;
 		goto out_shutdown;
-	} else if (!chipcount) {
+	} else if (!all_matched_count) {
 		msg_cinfo("No EEPROM/flash device found.\n");
 		if (!options.force || !options.chip_to_probe) {
 			msg_cinfo("Note: flashrom can never write if the flash chip isn't found "
@@ -1253,6 +1254,8 @@ int main(int argc, char *argv[])
 			if (compatible_masters > 1)
 				msg_cinfo("More than one compatible controller found for the requested flash "
 					  "chip, using the first one.\n");
+
+			int startchip = -1;
 			for (j = 0; j < registered_master_count; j++) {
 				mst = &registered_masters[j];
 				startchip = probe_flash(mst, 0, &flashes[0], 1, options.chip_to_probe);
@@ -1535,10 +1538,11 @@ out_release:
 out_shutdown:
 	flashrom_programmer_shutdown(NULL);
 out:
-	for (i = 0; i < chipcount; i++) {
-		flashrom_layout_release(flashes[i].default_layout);
-		free(flashes[i].chip);
+	for (int ind = 0; ind < all_matched_count; ind++) {
+		flashrom_layout_release(flashes[ind].default_layout);
+		free(flashes[ind].chip);
 	}
+	flashrom_data_free(all_matched_names);
 
 	free_options(&options);
 	ret |= close_logfile();
