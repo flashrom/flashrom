@@ -1046,9 +1046,7 @@ static void free_options(struct cli_options *options)
 int main(int argc, char *argv[])
 {
 	const struct flashchip *chip = NULL;
-	/* Probe for up to eight flash chips. */
-	struct flashctx flashes[8] = {{0}};
-	struct flashctx *fill_flash;
+	struct flashctx context = {0}; /* holds the active detected chip and other info */
 	char *tempstr = NULL;
 	int i, j;
 	int ret = 0;
@@ -1210,7 +1208,7 @@ int main(int argc, char *argv[])
 	msg_pdbg("The following protocols are supported: %s.\n", tempstr ? tempstr : "?");
 	free(tempstr);
 
-	all_matched_count = flashrom_flash_probe_v2(&flashes[0], &all_matched_names,
+	all_matched_count = flashrom_flash_probe_v2(&context, &all_matched_names,
                                 NULL, options.chip_to_probe);
 	if (all_matched_count == -1) {
 		/* -1 is the ret code which means "something went wrong".
@@ -1223,7 +1221,7 @@ int main(int argc, char *argv[])
 
 	if (all_matched_count > 1) {
 		msg_cinfo("Multiple flash chip definitions match the detected chip(s): \"%s\"",
-			  flashes[0].chip->name);
+			  context.chip->name);
 		for (int ind = 1; ind < all_matched_count; ind++)
 			msg_cinfo(", \"%s\"", all_matched_names[ind]);
 		msg_cinfo("\nPlease specify which chip definition to use with the -c <chipname> option.\n");
@@ -1258,7 +1256,7 @@ int main(int argc, char *argv[])
 			int startchip = -1;
 			for (j = 0; j < registered_master_count; j++) {
 				mst = &registered_masters[j];
-				startchip = probe_flash(mst, 0, &flashes[0], 1, options.chip_to_probe);
+				startchip = probe_flash(mst, 0, &context, 1, options.chip_to_probe);
 				if (startchip != -1)
 					break;
 			}
@@ -1269,33 +1267,31 @@ int main(int argc, char *argv[])
 				goto out_shutdown;
 			}
 			msg_cinfo("Please note that forced reads most likely contain garbage.\n");
-			flashrom_flag_set(&flashes[0], FLASHROM_FLAG_FORCE, options.force);
-			ret = do_read(&flashes[0], options.filename);
-			free(flashes[0].chip);
+			flashrom_flag_set(&context, FLASHROM_FLAG_FORCE, options.force);
+			ret = do_read(&context, options.filename);
+			free(context.chip);
 			goto out_shutdown;
 		}
 		ret = 1;
 		goto out_shutdown;
 	} else if (!options.chip_to_probe) {
 		/* repeat for convenience when looking at foreign logs */
-		tempstr = flashbuses_to_text(flashes[0].chip->bustype);
+		tempstr = flashbuses_to_text(context.chip->bustype);
 		msg_gdbg("Found %s flash chip \"%s\" (%d kB, %s).\n",
-			 flashes[0].chip->vendor, flashes[0].chip->name, flashes[0].chip->total_size,
+			 context.chip->vendor, context.chip->name, context.chip->total_size,
 			 tempstr ? tempstr : "?");
 		free(tempstr);
 	}
 
-	fill_flash = &flashes[0];
-
 	struct cli_progress cli_progress = {0};
 	if (options.show_progress)
-		flashrom_set_progress_callback_v2(fill_flash, &flashrom_progress_cb, &cli_progress);
+		flashrom_set_progress_callback_v2(&context, &flashrom_progress_cb, &cli_progress);
 
-	print_chip_support_status(fill_flash->chip);
+	print_chip_support_status(context.chip);
 
-	unsigned int limitexceeded = count_max_decode_exceedings(fill_flash, &max_rom_decode);
+	unsigned int limitexceeded = count_max_decode_exceedings(&context, &max_rom_decode);
 	if (limitexceeded > 0 && !options.force) {
-		enum chipbustype commonbuses = fill_flash->mst->buses_supported & fill_flash->chip->bustype;
+		enum chipbustype commonbuses = context.mst->buses_supported & context.chip->bustype;
 
 		/* Sometimes chip and programmer have more than one bus in common,
 		 * and the limit is not exceeded on all buses. Tell the user. */
@@ -1393,10 +1389,10 @@ int main(int argc, char *argv[])
 	}
 
 	if (options.flash_name) {
-		if (fill_flash->chip->vendor && fill_flash->chip->name) {
+		if (context.chip->vendor && context.chip->name) {
 			printf("vendor=\"%s\" name=\"%s\"\n",
-				fill_flash->chip->vendor,
-				fill_flash->chip->name);
+				context.chip->vendor,
+				context.chip->name);
 		} else {
 			ret = -1;
 		}
@@ -1404,7 +1400,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (options.flash_size) {
-		printf("%zu\n", flashrom_flash_getsize(fill_flash));
+		printf("%zu\n", flashrom_flash_getsize(&context));
 		goto out_shutdown;
 	}
 
@@ -1413,10 +1409,10 @@ int main(int argc, char *argv[])
 			msg_ginfo("Invalid input of sacrifice ratio, valid 0-50. Fallback to default value 0.\n");
 			options.sacrifice_ratio = 0;
 		}
-		fill_flash->sacrifice_ratio = options.sacrifice_ratio;
+		context.sacrifice_ratio = options.sacrifice_ratio;
 	}
 
-	if (options.ifd && (flashrom_layout_read_from_ifd(&options.layout, fill_flash, NULL, 0) ||
+	if (options.ifd && (flashrom_layout_read_from_ifd(&options.layout, &context, NULL, 0) ||
 			   process_include_args(options.layout, options.include_args))) {
 		ret = 1;
 		goto out_shutdown;
@@ -1441,20 +1437,20 @@ int main(int argc, char *argv[])
 			goto out_shutdown;
 		}
 
-		if (flashrom_layout_read_fmap_from_buffer(&options.layout, fill_flash, fmapfile_buffer, fmapfile_size) ||
+		if (flashrom_layout_read_fmap_from_buffer(&options.layout, &context, fmapfile_buffer, fmapfile_size) ||
 		    process_include_args(options.layout, options.include_args)) {
 			ret = 1;
 			free(fmapfile_buffer);
 			goto out_shutdown;
 		}
 		free(fmapfile_buffer);
-	} else if (options.fmap && (flashrom_layout_read_fmap_from_rom(&options.layout, fill_flash, 0,
-				flashrom_flash_getsize(fill_flash)) ||
+	} else if (options.fmap && (flashrom_layout_read_fmap_from_rom(&options.layout, &context, 0,
+				flashrom_flash_getsize(&context)) ||
 				process_include_args(options.layout, options.include_args))) {
 		ret = 1;
 		goto out_shutdown;
 	}
-	flashrom_layout_set(fill_flash, options.layout);
+	flashrom_layout_set(&context, options.layout);
 
 	if (any_wp_op) {
 		if (options.set_wp_region && options.wp_region) {
@@ -1472,7 +1468,7 @@ int main(int argc, char *argv[])
 			options.set_wp_range = true;
 		}
 		ret = wp_cli(
-			fill_flash,
+			&context,
 			options.enable_wp,
 			options.disable_wp,
 			options.print_wp_status,
@@ -1485,24 +1481,24 @@ int main(int argc, char *argv[])
 			goto out_release;
 	}
 
-	flashrom_flag_set(fill_flash, FLASHROM_FLAG_FORCE, options.force);
+	flashrom_flag_set(&context, FLASHROM_FLAG_FORCE, options.force);
 #if CONFIG_INTERNAL == 1
-	flashrom_flag_set(fill_flash, FLASHROM_FLAG_FORCE_BOARDMISMATCH, force_boardmismatch);
+	flashrom_flag_set(&context, FLASHROM_FLAG_FORCE_BOARDMISMATCH, force_boardmismatch);
 #endif
-	flashrom_flag_set(fill_flash, FLASHROM_FLAG_VERIFY_AFTER_WRITE, !options.dont_verify_it);
-	flashrom_flag_set(fill_flash, FLASHROM_FLAG_VERIFY_WHOLE_CHIP, !options.dont_verify_all);
+	flashrom_flag_set(&context, FLASHROM_FLAG_VERIFY_AFTER_WRITE, !options.dont_verify_it);
+	flashrom_flag_set(&context, FLASHROM_FLAG_VERIFY_WHOLE_CHIP, !options.dont_verify_all);
 
 	/* FIXME: We should issue an unconditional chip reset here. This can be
 	 * done once we have a .reset function in struct flashchip.
 	 * Give the chip time to settle.
 	 */
-	programmer_delay(fill_flash, 100000);
+	programmer_delay(&context, 100000);
 	if (options.read_it)
-		ret = do_read(fill_flash, options.filename);
+		ret = do_read(&context, options.filename);
 	else if (options.extract_it)
-		ret = do_extract(fill_flash);
+		ret = do_extract(&context);
 	else if (options.erase_it) {
-		ret = flashrom_flash_erase(fill_flash);
+		ret = flashrom_flash_erase(&context);
 		/*
 		 * FIXME: Do we really want the scary warning if erase failed?
 		 * After all, after erase the chip is either blank or partially
@@ -1514,13 +1510,13 @@ int main(int argc, char *argv[])
 			emergency_help_message();
 	}
 	else if (options.write_it)
-		ret = do_write(fill_flash, options.filename, options.referencefile);
+		ret = do_write(&context, options.filename, options.referencefile);
 	else if (options.verify_it)
-		ret = do_verify(fill_flash, options.filename);
+		ret = do_verify(&context, options.filename);
 
 #if CONFIG_RPMC_ENABLED == 1
 	if (any_rpmc_op && ret == 0) {
-		ret = rpmc_cli(fill_flash,
+		ret = rpmc_cli(&context,
 			       options.rpmc_root_key_file,
 			       options.rpmc_key_data,
 			       options.rpmc_counter_address,
@@ -1538,10 +1534,8 @@ out_release:
 out_shutdown:
 	flashrom_programmer_shutdown(NULL);
 out:
-	for (int ind = 0; ind < all_matched_count; ind++) {
-		flashrom_layout_release(flashes[ind].default_layout);
-		free(flashes[ind].chip);
-	}
+	flashrom_layout_release(context.default_layout);
+	free(context.chip);
 	flashrom_data_free(all_matched_names);
 
 	free_options(&options);
