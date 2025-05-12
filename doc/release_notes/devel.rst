@@ -52,7 +52,15 @@ be replaced with placeholders unless the ``generate_authors_list`` option is set
 to ``enabled`` in which case the build will fail if the requirements are not
 satisfied.
 
-New libflashrom API for progress reporting
+Programmer updates
+------------------
+
+* spidriver: Add support for the Excamera Labs SPIDriver
+
+libflashrom API updates
+=======================
+
+New API for progress reporting
 ------------------------------------------
 
 The old ``flashrom_set_progress_callback`` function for requesting progress updates
@@ -65,7 +73,34 @@ This new API fixes limitations with the old one where most users would need to
 define their own global state to track progress, and it was impossible to fix that
 issue while maintaining binary compatibility without adding a new API.
 
-Programmer updates
-------------------
+New API for logging and setting log level
+-----------------------------------------
 
-* spidriver: Add support for the Excamera Labs SPIDriver
+New API ``flashrom_set_log_callback_v2`` is added which allows the users to provide
+a pointer to user data, the latter is managed by the caller of the API. New API also
+introduces a new signature for log callback function, ``flashrom_log_callback_v2``.
+
+New API supports setting the log level for messages from libflashrom, ``flashrom_set_log_level``.
+The log callback is invoked only for the messages with log level less or equal than the one
+requested (i.e. only for the messages at least as urgent as the level requested).
+
+Old API ``flashrom_set_log_callback`` without user data continues to work as before.
+
+New API for probing flashchips
+------------------------------
+
+New API for probing is added ``flashrom_flash_probe_v2`` which can (if requested)
+go through all known flashchips and find all matches. v2 returns the number of matches
+found (or 0 if none found) and the list of names of all matched entries.
+
+``flashrom_flash_probe_v2`` continues to support an optional parameter ``chip_name``
+if the caller want to probe for only one specific chip with given name.
+
+Old API ``flashrom_flash_probe`` which stops probing if more than one chip entry matches
+continues to work as before.
+
+New API to get list of supported programmers
+--------------------------------------------
+
+New API ``flashrom_supported_programmers`` returns the list of all programmers that are
+supported on a current run environment.
