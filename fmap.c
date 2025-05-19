@@ -190,6 +190,7 @@ static int fmap_bsearch_rom(struct fmap **fmap_out, struct flashctx *const flash
 	struct fmap *fmap;
 	const unsigned int chip_size = flashctx->chip->total_size * 1024;
 	const int sig_len = strlen(FMAP_SIGNATURE);
+	bool skip_unreadable_orig = flashctx->flags.skip_unreadable_regions;
 
 	if (rom_offset + len > flashctx->chip->total_size * 1024)
 		return 1;
@@ -205,6 +206,13 @@ static int fmap_bsearch_rom(struct fmap **fmap_out, struct flashctx *const flash
 		msg_gerr("Out of memory.\n");
 		goto _free_ret;
 	}
+
+	/*
+	 * Ignore unreadable regions when trying to locate the FMAP, in order
+	 * to avoid a large amount of false-error prints to stderr. Unreadable
+	 * regions have already reported so errors here are redundant.
+	 */
+	flashctx->flags.skip_unreadable_regions = true;
 
 	/*
 	 * For efficient operation, we start with the largest stride possible
@@ -263,6 +271,9 @@ static int fmap_bsearch_rom(struct fmap **fmap_out, struct flashctx *const flash
 		if (fmap_found)
 			break;
 	}
+
+	/* Restore original flag, since we're done searching */
+	flashctx->flags.skip_unreadable_regions = skip_unreadable_orig;
 
 	if (!fmap_found)
 		goto _free_ret;
