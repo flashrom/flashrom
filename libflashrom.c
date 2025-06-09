@@ -4,6 +4,7 @@
  * Copyright (C) 2012, 2016 secunet Security Networks AG
  * (Written by Nico Huber <nico.huber@secunet.com> for secunet)
  * Copyright (C) 2025 Dmitry Zhadinets <dzhadinets@gmail.com>
+ * Copyright 2025 Google LLC
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -342,11 +343,22 @@ int flashrom_flash_probe(struct flashrom_flashctx **const flashctx,
 	memset(*flashctx, 0, sizeof(**flashctx));
 
 	for (i = 0; i < registered_master_count; ++i) {
-		int flash_idx = -1;
-		if (!ret || (flash_idx = probe_flash(&registered_masters[i], 0, *flashctx, 0, chip_name)) != -1) {
+		int flash_idx = ERROR_FLASHROM_PROBE_NO_CHIPS_FOUND;
+		if (!ret || (flash_idx = probe_flash(&registered_masters[i], 0, *flashctx, 0, chip_name))
+				!= ERROR_FLASHROM_PROBE_NO_CHIPS_FOUND) {
+			if (flash_idx == ERROR_FLASHROM_PROBE_INTERNAL_ERROR) {
+				ret = 1;
+				break;
+			}
 			ret = 0;
 			/* We found one chip, now check that there is no second match. */
-			if (probe_flash(&registered_masters[i], flash_idx + 1, &second_flashctx, 0, chip_name) != -1) {
+			int second_flash_idx =
+				probe_flash(&registered_masters[i], flash_idx + 1, &second_flashctx, 0, chip_name);
+			if (second_flash_idx == ERROR_FLASHROM_PROBE_INTERNAL_ERROR) {
+				ret = 1;
+				break;
+			}
+			if (second_flash_idx != ERROR_FLASHROM_PROBE_NO_CHIPS_FOUND) {
 				flashrom_layout_release(second_flashctx.default_layout);
 				free(second_flashctx.chip);
 				ret = 3;
@@ -366,7 +378,7 @@ int flashrom_flash_probe_v2(struct flashrom_flashctx *flashctx,
 				const struct flashrom_programmer *flashprog,
 				const char *chip_name)
 {
-	int startchip;
+	int startchip = 0;
 	unsigned int all_matched_count = 0; // start with no match found
 	const char **matched_names = calloc(flashchips_size + 1, sizeof(char*));
 
@@ -377,7 +389,7 @@ int flashrom_flash_probe_v2(struct flashrom_flashctx *flashctx,
 			struct flashctx *context_for_probing = (all_matched_count > 0) ? &second_flashctx : flashctx;
 			startchip = probe_flash(&registered_masters[i], startchip, context_for_probing, 0, chip_name);
 
-			if (startchip == -1)
+			if (startchip < 0)
 				break;
 
 			matched_names[all_matched_count] = context_for_probing->chip->name;
@@ -396,16 +408,7 @@ int flashrom_flash_probe_v2(struct flashrom_flashctx *flashctx,
 	matched_names = realloc(matched_names, (all_matched_count + 1) * sizeof(char*));
 	*all_matched_names = matched_names;
 
-	/* The return value should be the number of matched chips, or -1 on error.
-	 * However, currently the error is never returned, because probe_flash return code
-	 * is -1 for both cases of error and no match found, so there is no way
-	 * to distinguish between probing error (e.g. error talking to hw, or out of memory)
-	 * and no match.
-	 * (no match can happen if chip is not in our database, even if hw work perfectly).
-	 *
-	 * TODO improve probe_flash return code to distinguish between
-	 * probing error and no match found. */
-	int ret = (int) all_matched_count;
+	int ret = (startchip == ERROR_FLASHROM_PROBE_INTERNAL_ERROR) ? -1 : (int) all_matched_count;
 
 	return ret;
 }

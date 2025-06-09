@@ -1250,14 +1250,14 @@ int main(int argc, char *argv[])
 				msg_cinfo("More than one compatible controller found for the requested flash "
 					  "chip, using the first one.\n");
 
-			int startchip = -1;
+			int force_probe_ret = ERROR_FLASHROM_PROBE_NO_CHIPS_FOUND;
 			for (j = 0; j < registered_master_count; j++) {
 				mst = &registered_masters[j];
-				startchip = probe_flash(mst, 0, &context, 1, options.chip_to_probe);
-				if (startchip != -1)
+				force_probe_ret = probe_flash(mst, 0, &context, 1, options.chip_to_probe);
+				if (force_probe_ret >= 0)
 					break;
 			}
-			if (startchip == -1) {
+			if (force_probe_ret < 0) {
 				// FIXME: This should never happen! Ask for a bug report?
 				msg_cinfo("Probing for flash chip '%s' failed.\n", options.chip_to_probe);
 				ret = 1;

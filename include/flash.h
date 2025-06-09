@@ -720,6 +720,9 @@ int write_flash(struct flashctx *flash, const uint8_t *buf, unsigned int start, 
  */
 #define ERROR_FLASHROM_LIMIT -201
 
+#define ERROR_FLASHROM_PROBE_NO_CHIPS_FOUND -1
+#define ERROR_FLASHROM_PROBE_INTERNAL_ERROR -2
+
 struct cli_progress {
 	unsigned int stage_pc[FLASHROM_PROGRESS_NR];
 	unsigned int visible_stages; /* Bitmask of stages with non-zero progress. */

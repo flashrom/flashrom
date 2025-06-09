@@ -4,6 +4,8 @@
  * Copyright (C) 2010 Google Inc.
  * Copyright (C) 2012 secunet Security Networks AG
  * (Written by Nico Huber <nico.huber@secunet.com> for secunet)
+ * Copyright (C) 2025 Dmitry Zhadinets <dzhadinets@gmail.com>
+ * Copyright (C) 2025 Google LLC
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

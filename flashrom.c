@@ -1104,6 +1104,15 @@ static probe_func_t *lookup_probe_func_ptr(const struct flashchip *chip)
 	return NULL;
 }
 
+/*
+ * Probes the entries in flashchips array one by one, starting from `startchip` index.
+ * Probing keeps going until first match found or end of array reached.
+ *
+ * Returns:
+ * the position of the matched chip, i.e. index of the entry in flashchips array
+ * ERROR_FLASHROM_PROBE_NO_CHIPS_FOUND if no matches found
+ * ERROR_FLASHROM_PROBE_INTERNAL_ERROR if some unexpected error happened during this operation
+*/
 int probe_flash(struct registered_master *mst, int startchip, struct flashctx *flash, int force, const char *const chip_to_probe)
 {
 	const struct flashchip *chip;
@@ -1130,7 +1139,7 @@ int probe_flash(struct registered_master *mst, int startchip, struct flashctx *f
 		flash->chip = calloc(1, sizeof(*flash->chip));
 		if (!flash->chip) {
 			msg_gerr("Out of memory!\n");
-			return -1;
+			return ERROR_FLASHROM_PROBE_INTERNAL_ERROR;
 		}
 		*flash->chip = *chip;
 		flash->mst = mst;
@@ -1188,10 +1197,10 @@ notfound:
 	}
 
 	if (!flash->chip)
-		return -1;
+		return ERROR_FLASHROM_PROBE_NO_CHIPS_FOUND;
 
 	if (init_default_layout(flash) < 0)
-		return -1;
+		return ERROR_FLASHROM_PROBE_INTERNAL_ERROR;
 
 	tmp = flashbuses_to_text(flash->chip->bustype);
 	msg_cinfo("%s %s flash chip \"%s\" (%d kB, %s) ", force ? "Assuming" : "Found",
