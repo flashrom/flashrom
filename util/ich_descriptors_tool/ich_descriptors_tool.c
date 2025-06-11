@@ -130,6 +130,7 @@ static void usage(char *argv[], const char *error)
 "\t- \"jasper\" for Intel's Jasper Lake SoC.\n"
 "\t- \"meteor\" for Intel's Meteor Lake SoC.\n"
 "\t- \"panther\" for Intel's Panther Lake SoC.\n"
+"\t- \"wildcat\" for Intel's Wildcat Lake SoC.\n"
 "\t- \"5\" or \"ibex\" for Intel's 5 series chipsets,\n"
 "\t- \"6\" or \"cougar\" for Intel's 6 series chipsets,\n"
 "\t- \"7\" or \"panther\" for Intel's 7 series chipsets.\n"
@@ -256,6 +257,8 @@ int main(int argc, char *argv[])
 			cs = CHIPSET_METEOR_LAKE;
 		else if (strcmp(csn, "panther") == 0)
 			cs = CHIPSET_PANTHER_LAKE;
+		else if (strcmp(csn, "wildcat") == 0)
+			cs = CHIPSET_WILDCAT_LAKE;
 	}
 
 	ret = read_ich_descriptors_from_dump(buf, len, &cs, &desc);
