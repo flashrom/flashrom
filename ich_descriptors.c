@@ -52,6 +52,7 @@ ssize_t ich_number_of_regions(const enum ich_chipset cs, const struct ich_desc_c
 	case CHIPSET_700_SERIES_RAPTOR_POINT:
 	case CHIPSET_METEOR_LAKE:
 	case CHIPSET_PANTHER_LAKE:
+	case CHIPSET_WILDCAT_LAKE:
 	case CHIPSET_ELKHART_LAKE:
 	case CHIPSET_JASPER_LAKE:
 		return 16;
@@ -84,6 +85,7 @@ ssize_t ich_number_of_masters(const enum ich_chipset cs, const struct ich_desc_c
 	case CHIPSET_700_SERIES_RAPTOR_POINT:
 	case CHIPSET_METEOR_LAKE:
 	case CHIPSET_PANTHER_LAKE:
+	case CHIPSET_WILDCAT_LAKE:
 	case CHIPSET_GEMINI_LAKE:
 	case CHIPSET_JASPER_LAKE:
 	case CHIPSET_ELKHART_LAKE:
@@ -126,7 +128,7 @@ void prettyprint_ich_chipset(enum ich_chipset cs)
 		"C620 series Lewisburg", "C740 series Emmitsburg", "300 series Cannon Point",
 		"400 series Comet Point", "500 series Tiger Point", "600 series Alder Point",
 		"Apollo Lake", "Gemini Lake", "Jasper Lake", "Elkhart Lake",
-		"Meteor Lake", "Panther Lake",
+		"Meteor Lake", "Panther Lake", "Wildcat Lake",
 	};
 	if (cs < CHIPSET_ICH8 || cs - CHIPSET_ICH8 + 1 >= ARRAY_SIZE(chipset_names))
 		cs = 0;
@@ -226,6 +228,7 @@ static const char *pprint_density(enum ich_chipset cs, const struct ich_descript
 	case CHIPSET_700_SERIES_RAPTOR_POINT:
 	case CHIPSET_METEOR_LAKE:
 	case CHIPSET_PANTHER_LAKE:
+	case CHIPSET_WILDCAT_LAKE:
 	case CHIPSET_APOLLO_LAKE:
 	case CHIPSET_GEMINI_LAKE:
 	case CHIPSET_JASPER_LAKE:
@@ -327,6 +330,7 @@ static const char *pprint_freq(enum ich_chipset cs, uint8_t value)
 	case CHIPSET_C740_SERIES_EMMITSBURG:
 	case CHIPSET_METEOR_LAKE:
 	case CHIPSET_PANTHER_LAKE:
+	case CHIPSET_WILDCAT_LAKE:
 		return freq_str[3][value];
 	case CHIPSET_ELKHART_LAKE:
 		return freq_str[4][value];
@@ -378,6 +382,7 @@ void prettyprint_ich_descriptor_component(enum ich_chipset cs, const struct ich_
 	case CHIPSET_700_SERIES_RAPTOR_POINT:
 	case CHIPSET_METEOR_LAKE:
 	case CHIPSET_PANTHER_LAKE:
+	case CHIPSET_WILDCAT_LAKE:
 	case CHIPSET_APOLLO_LAKE:
 	case CHIPSET_GEMINI_LAKE:
 	case CHIPSET_JASPER_LAKE:
@@ -521,6 +526,7 @@ void prettyprint_ich_descriptor_master(const enum ich_chipset cs, const struct i
 	    cs == CHIPSET_C740_SERIES_EMMITSBURG ||
 	    cs == CHIPSET_JASPER_LAKE ||
 	    cs == CHIPSET_METEOR_LAKE ||
+	    cs == CHIPSET_WILDCAT_LAKE ||
 	    cs == CHIPSET_PANTHER_LAKE) {
 		const char *const master_names[] = {
 			"BIOS", "ME", "GbE", "DevE", "EC",
@@ -1124,6 +1130,7 @@ static enum ich_chipset guess_ich_chipset(const struct ich_desc_content *const c
 	case CHIPSET_700_SERIES_RAPTOR_POINT:
 	case CHIPSET_METEOR_LAKE:
 	case CHIPSET_PANTHER_LAKE:
+	case CHIPSET_WILDCAT_LAKE:
 	case CHIPSET_GEMINI_LAKE:
 	case CHIPSET_JASPER_LAKE:
 	case CHIPSET_ELKHART_LAKE:
@@ -1287,6 +1294,7 @@ int getFCBA_component_density(enum ich_chipset cs, const struct ich_descriptors 
 	case CHIPSET_700_SERIES_RAPTOR_POINT:
 	case CHIPSET_METEOR_LAKE:
 	case CHIPSET_PANTHER_LAKE:
+	case CHIPSET_WILDCAT_LAKE:
 	case CHIPSET_APOLLO_LAKE:
 	case CHIPSET_GEMINI_LAKE:
 	case CHIPSET_JASPER_LAKE:
@@ -1335,6 +1343,7 @@ static uint32_t read_descriptor_reg(enum ich_chipset cs, uint8_t section, uint16
 	case CHIPSET_700_SERIES_RAPTOR_POINT:
 	case CHIPSET_METEOR_LAKE:
 	case CHIPSET_PANTHER_LAKE:
+	case CHIPSET_WILDCAT_LAKE:
 	case CHIPSET_APOLLO_LAKE:
 	case CHIPSET_GEMINI_LAKE:
 	case CHIPSET_JASPER_LAKE:
