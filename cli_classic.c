@@ -219,26 +219,23 @@ static bool check_file(FILE *file)
 
 static int parse_wp_range(unsigned int *start, unsigned int *len)
 {
-	char *endptr = NULL, *token = NULL;
+	char *delim = NULL;
 
 	if (!optarg) {
 		msg_gerr("Error: No wp-range values provided\n");
 		return -1;
 	}
 
-	token = strtok(optarg, ",");
-	if (!token) {
-		msg_gerr("Error: Invalid wp-range argument format\n");
+	if ((delim = strchr(optarg, ',')) != strrchr(optarg, ',') ||
+			delim == NULL ||
+			delim == optarg ||
+			*(delim + 1) == '\0') {
+		msg_gerr("Error: Invalid wp-range argument format. Valid format is --wp-range <start>,<end>\n");
 		return -1;
 	}
-	*start = strtoul(token, &endptr, 0);
 
-	token = strtok(NULL, ",");
-	if (!token) {
-		msg_gerr("Error: Invalid wp-range argument format\n");
-		return -1;
-	}
-	*len = strtoul(token, &endptr, 0);
+	*start = strtoul(optarg, NULL, 0);
+	*len = strtoul(delim+1, NULL, 0);
 
 	return 0;
 }
