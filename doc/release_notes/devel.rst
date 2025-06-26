@@ -96,8 +96,17 @@ found (or 0 if none found) and the list of names of all matched entries.
 ``flashrom_flash_probe_v2`` continues to support an optional parameter ``chip_name``
 if the caller want to probe for only one specific chip with given name.
 
-Old API ``flashrom_flash_probe`` which stops probing if more than one chip entry matches
-continues to work as before.
+Command line interface is now using ``flashrom_flash_probe_v2``.
+
+Old API ``flashrom_flash_probe`` is deprecated. It stays available "as is" for now,
+however will be removed at some point in future. Users should switch to v2.
+
+The main reason for deprecation is that it was returning incomplete information in
+case when multiple matching chips were found during probing. Specifically, the only
+info returned was error code of "multiple chips match" with no details of which are
+the matches and how many. This left the caller unable to proceed further. Consequently,
+even flashrom's own command line interface was unable to use old libflashrom probing API,
+and had to maintain separate logic for probing.
 
 New API to get list of supported programmers
 --------------------------------------------

@@ -212,7 +212,9 @@ void spidriver_probe_lifecycle_test_success(void **state)
 		.fallback_open_state = &spidriver_fallback_open_state,
 	};
 
-	run_probe_lifecycle(state, &spidriver_io, &programmer_spidriver, "dev=/dev/null", "W25Q128.V");
+	const char *expected_matched_names[1] = {"W25Q128.V"};
+	run_probe_v2_lifecycle(state, &spidriver_io, &programmer_spidriver, "dev=/dev/null", "W25Q128.V",
+				expected_matched_names, 1);
 }
 #else
 	SKIP_TEST(spidriver_probe_lifecycle_test_success)

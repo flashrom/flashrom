@@ -129,7 +129,9 @@ void ch341a_spi_probe_lifecycle_test_success(void **state)
 		.fallback_open_state = &ch341a_spi_fallback_open_state,
 	};
 
-	run_probe_lifecycle(state, &ch341a_spi_io, &programmer_ch341a_spi, "", "W25Q128.V");
+	const char *expected_matched_names[1] = {"W25Q128.V"};
+	run_probe_v2_lifecycle(state, &ch341a_spi_io, &programmer_ch341a_spi, "", "W25Q128.V",
+				expected_matched_names, 1);
 }
 
 #else

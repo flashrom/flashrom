@@ -89,7 +89,9 @@ void linux_mtd_probe_lifecycle_test_success(void **state)
 		.fallback_open_state = &linux_mtd_fallback_open_state,
 	};
 
-	run_probe_lifecycle(state, &linux_mtd_io, &programmer_linux_mtd, "", "Opaque flash chip");
+	const char *expected_matched_names[1] = {"Opaque flash chip"};
+	run_probe_v2_lifecycle(state, &linux_mtd_io, &programmer_linux_mtd, "", "Opaque flash chip",
+				expected_matched_names, 1);
 }
 #else
 	SKIP_TEST(linux_mtd_probe_lifecycle_test_success)

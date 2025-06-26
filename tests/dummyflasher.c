@@ -39,7 +39,9 @@ void dummy_probe_lifecycle_test_success(void **state)
 		.fallback_open_state = &dummy_fallback_open_state,
 	};
 
-	run_probe_lifecycle(state, &dummy_io, &programmer_dummy, "bus=spi,emulate=W25Q128FV", "W25Q128.V");
+	const char *expected_matched_names[1] = {"W25Q128.V"};
+	run_probe_v2_lifecycle(state, &dummy_io, &programmer_dummy, "bus=spi,emulate=W25Q128FV", "W25Q128.V",
+				expected_matched_names, 1);
 }
 
 void dummy_probe_v2_one_match_for_W25Q128FV(void **state)
@@ -103,7 +105,9 @@ void dummy_probe_variable_size_test_success(void **state)
 		.fallback_open_state = &dummy_fallback_open_state,
 	};
 
-	run_probe_lifecycle(state, &dummy_io, &programmer_dummy, "size=8388608,emulate=VARIABLE_SIZE", "Opaque flash chip");
+	const char *expected_matched_names[1] = {"Opaque flash chip"};
+	run_probe_v2_lifecycle(state, &dummy_io, &programmer_dummy, "size=8388608,emulate=VARIABLE_SIZE", "Opaque flash chip",
+				expected_matched_names, 1);
 }
 
 void dummy_init_fails_unhandled_param_test_success(void **state)

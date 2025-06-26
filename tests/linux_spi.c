@@ -65,7 +65,9 @@ void linux_spi_probe_lifecycle_test_success(void **state)
 		.fallback_open_state = &linux_spi_fallback_open_state,
 	};
 
-	run_probe_lifecycle(state, &linux_spi_io, &programmer_linux_spi, "dev=/dev/null", "W25Q128.V");
+	const char *expected_matched_names[1] = {"W25Q128.V"};
+	run_probe_v2_lifecycle(state, &linux_spi_io, &programmer_linux_spi, "dev=/dev/null", "W25Q128.V",
+				expected_matched_names, 1);
 }
 #else
 	SKIP_TEST(linux_spi_probe_lifecycle_test_success)

@@ -15,25 +15,6 @@
 
 #include "lifecycle.h"
 
-static void probe_chip(const struct programmer_entry *prog,
-			struct flashrom_programmer *flashprog,
-			const char *const chip_name,
-			const char **expected_matched_names, /* unused in probe v1 */
-			unsigned int expected_matched_count /* unused in probe v1 */)
-{
-	struct flashrom_flashctx *flashctx;
-
-	printf("Testing flashrom_flash_probe for programmer=%s, chip=%s ... \n", prog->name, chip_name);
-
-	assert_int_equal(0, flashrom_flash_probe(&flashctx, flashprog, chip_name));
-	if (chip_name)
-		assert_int_equal(0, strcmp(chip_name, flashctx->chip->name));
-
-	printf("... flashrom_flash_probe for programmer=%s successful\n", prog->name);
-
-	flashrom_flash_release(flashctx); /* cleanup */
-}
-
 static void probe_chip_v2(const struct programmer_entry *prog,
 			struct flashrom_programmer *flashprog,
 			const char *const chip_name,
@@ -101,16 +82,6 @@ void run_basic_lifecycle(void **state, const struct io_mock *io,
 	run_lifecycle(state, io, prog, param, NULL /* chip_name */,
 			NULL /* expected_matched_names, */, 0 /* expected_matched_count, */,
 			NULL /* action */);
-}
-
-void run_probe_lifecycle(void **state, const struct io_mock *io,
-		const struct programmer_entry *prog, const char *param, const char *const chip_name)
-{
-	/* Each probe lifecycle should run independently, without cache. */
-	clear_spi_id_cache();
-	run_lifecycle(state, io, prog, param, chip_name,
-			NULL /* expected_matched_names, */, 0 /* expected_matched_count, */,
-			&probe_chip);
 }
 
 void run_probe_v2_lifecycle(void **state, const struct io_mock *io,

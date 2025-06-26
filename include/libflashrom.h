@@ -261,6 +261,8 @@ int flashrom_programmer_shutdown(struct flashrom_programmer *flashprog);
  */
 
 /**
+ * @deprecated Use flashrom_flash_probe_v2 instead
+ *
  * @brief Probe for a flash chip.
  *
  * Probes for a flash chip and returns a flash context, that can be used
@@ -278,7 +280,8 @@ int flashrom_programmer_shutdown(struct flashrom_programmer *flashprog);
  *         2 if no chip was found,
  *         or 1 on any other error.
  */
-int flashrom_flash_probe(struct flashrom_flashctx **flashctx, const struct flashrom_programmer *flashprog, const char *chip_name);
+int flashrom_flash_probe(struct flashrom_flashctx **flashctx, const struct flashrom_programmer *flashprog, const char *chip_name)
+__attribute__((deprecated("Use flashrom_flash_probe_v2 instead")));
 
 /**
  * @brief Probe for a flash chip, v2
