@@ -298,7 +298,7 @@ int probe_jedec(struct flashctx *flash)
 static void issuecmd(const struct flashctx *flash, uint8_t op, unsigned int operand)
 {
 	const chipaddr bios = flash->virtual_memory;
-	bool shifted = (flash->chip->feature_bits & FEATURE_ADDR_SHIFTED);
+	const bool shifted = (flash->chip->feature_bits & FEATURE_ADDR_SHIFTED);
 	const unsigned int mask = getaddrmask(flash->chip);
 	unsigned int delay_us = (flash->chip->probe_timing == TIMING_ZERO) ? 0 : 10;
 

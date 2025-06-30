@@ -34,7 +34,7 @@ int probe_82802ab(struct flashctx *flash)
 {
 	chipaddr bios = flash->virtual_memory;
 	uint8_t id1, id2, flashcontent1, flashcontent2;
-	int shifted = (flash->chip->feature_bits & FEATURE_ADDR_SHIFTED) ? 1 : 0;
+	const int shifted_bit = (flash->chip->feature_bits & FEATURE_ADDR_SHIFTED) ? 1 : 0;
 
 	/* Reset to get a clean state */
 	chip_writeb(flash, 0xFF, bios);
@@ -44,8 +44,8 @@ int probe_82802ab(struct flashctx *flash)
 	chip_writeb(flash, 0x90, bios);
 	programmer_delay(flash, 10);
 
-	id1 = chip_readb(flash, bios + (0x00 << shifted));
-	id2 = chip_readb(flash, bios + (0x01 << shifted));
+	id1 = chip_readb(flash, bios + (0x00 << shifted_bit));
+	id2 = chip_readb(flash, bios + (0x01 << shifted_bit));
 
 	/* Leave ID mode */
 	chip_writeb(flash, 0xFF, bios);
@@ -61,8 +61,8 @@ int probe_82802ab(struct flashctx *flash)
 	 * Read the product ID location again. We should now see normal
 	 * flash contents.
 	 */
-	flashcontent1 = chip_readb(flash, bios + (0x00 << shifted));
-	flashcontent2 = chip_readb(flash, bios + (0x01 << shifted));
+	flashcontent1 = chip_readb(flash, bios + (0x00 << shifted_bit));
+	flashcontent2 = chip_readb(flash, bios + (0x01 << shifted_bit));
 
 	if (id1 == flashcontent1)
 		msg_cdbg(", id1 is normal flash content");
