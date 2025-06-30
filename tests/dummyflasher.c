@@ -215,6 +215,120 @@ void dummy_freq_param_init(void **state)
 	run_init_error_path(state, &dummy_io, &programmer_dummy, "bus=spi,freq=8001Mhz", 0x1);
 }
 
+/*
+ * Initialize the programmer and probe, failing the test if either step returns an error,
+ * the probed chip is not the expected one, or its size is not the expected size.
+ */
+static void dummy_test_init_and_probe(struct flashrom_flashctx *flashctx,
+					struct flashrom_programmer *flashprog)
+{
+	struct io_mock_fallback_open_state dummy_fallback_open_state = {
+		.noc = 0,
+		.paths = { NULL },
+	};
+	const struct io_mock dummy_io = {
+		.fallback_open_state = &dummy_fallback_open_state,
+	};
+
+	io_mock_register(&dummy_io);
+
+	const char *param = "bus=spi,emulate=W25Q128FV";
+	const unsigned long chip_size = 16384 * KiB; // emulated chip size
+	const char **all_matched_names = NULL;
+
+	printf("Testing flashrom_programmer_init for programmer=%s with param=%s ...\n",
+		programmer_dummy.name, param);
+	assert_int_equal(0, flashrom_programmer_init(&flashprog, programmer_dummy.name, param));
+	printf("... flashrom_programmer_init for programmer=%s with param=%s successful\n",
+		programmer_dummy.name, param);
+
+	printf("Testing flashrom_flash_probe_v2 for programmer=%s ... \n", programmer_dummy.name);
+	assert_int_equal(1, flashrom_flash_probe_v2(flashctx, &all_matched_names,
+							flashprog, NULL));
+	assert_int_equal(0, strcmp("W25Q128.V", all_matched_names[0]));
+
+	assert_int_equal(chip_size, flashrom_flash_getsize(flashctx));
+	printf("... flashrom_flash_probe_v2 for programmer=%s successful\n", programmer_dummy.name);
+
+	flashrom_data_free(all_matched_names);
+}
+
+/*
+ * Shuts down the programmer and frees memory for layout and chip in flash context.
+ */
+static void dummy_test_shutdown(struct flashrom_flashctx *flashctx,
+				struct flashrom_programmer *flashprog)
+{
+	printf("Testing flashrom_programmer_shutdown for programmer=%s ...\n", programmer_dummy.name);
+	assert_int_equal(0, flashrom_programmer_shutdown(flashprog));
+	printf("... flashrom_programmer_shutdown for programmer=%s successful\n", programmer_dummy.name);
+
+	io_mock_register(NULL);
+
+	flashrom_layout_release(flashctx->default_layout);
+	free(flashctx->chip);
+}
+
+void dummy_probe_and_read(void **state)
+{
+	(void) state; /* unused */
+
+	struct flashrom_programmer *flashprog = NULL;
+	struct flashrom_flashctx flashctx = { 0 };
+
+	dummy_test_init_and_probe(&flashctx, flashprog);
+
+	const unsigned long image_size = 16384 * KiB;
+	unsigned char *buf = calloc(image_size, sizeof(unsigned char));
+	assert_non_null(buf);
+
+	printf("Testing flashrom_image_read ...\n");
+	assert_int_equal(0, flashrom_image_read(&flashctx, buf, image_size));
+	printf("... flashrom_image_read is successful.\n");
+
+	free(buf);
+
+	dummy_test_shutdown(&flashctx, flashprog);
+}
+
+void dummy_probe_and_write(void **state)
+{
+	(void) state; /* unused */
+
+	struct flashrom_programmer *flashprog = NULL;
+	struct flashrom_flashctx flashctx = { 0 };
+
+	dummy_test_init_and_probe(&flashctx, flashprog);
+
+	const unsigned long image_size = 16384 * KiB;
+	uint8_t *const newcontents = malloc(image_size);
+	assert_non_null(newcontents);
+
+	printf("Testing flashrom_image_write ...\n");
+	assert_int_equal(0, flashrom_image_write(&flashctx, newcontents, image_size, NULL));
+	printf("... flashrom_image_write is successful.\n");
+
+	free(newcontents);
+
+	dummy_test_shutdown(&flashctx, flashprog);
+}
+
+void dummy_probe_and_erase(void **state)
+{
+	(void) state; /* unused */
+
+	struct flashrom_programmer *flashprog = NULL;
+	struct flashrom_flashctx flashctx = { 0 };
+
+	dummy_test_init_and_probe(&flashctx, flashprog);
+
+	printf("Testing flashrom_flash_erase ...\n");
+	assert_int_equal(0, flashrom_flash_erase(&flashctx));
+	printf("... flashrom_flash_erase is successful.\n");
+
+	dummy_test_shutdown(&flashctx, flashprog);
+}
+
 #else
 	SKIP_TEST(dummy_basic_lifecycle_test_success)
 	SKIP_TEST(dummy_probe_lifecycle_test_success)
@@ -228,4 +342,7 @@ void dummy_freq_param_init(void **state)
 	SKIP_TEST(dummy_null_prog_param_test_success)
 	SKIP_TEST(dummy_all_buses_test_success)
 	SKIP_TEST(dummy_freq_param_init)
+	SKIP_TEST(dummy_probe_and_read)
+	SKIP_TEST(dummy_probe_and_write)
+	SKIP_TEST(dummy_probe_and_erase)
 #endif /* CONFIG_DUMMY */
