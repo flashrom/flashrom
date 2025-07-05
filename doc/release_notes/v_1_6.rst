@@ -1,0 +1,182 @@
+================
+v1.6 (July 2025)
+================
+
+This document describes the major changes in flashrom version v1.6.0,
+which covers the work done in 56+ commits by 18 authors during 6 months time
+since previous release. Thank you!
+
+Download
+========
+
+flashrom 1.6 can be downloaded in various ways:
+
+Anonymous checkout from the git repository at https://review.coreboot.org/flashrom.git
+(tag v1.6.0)
+
+A tarball is available for download at
+<TODO add link to tarball>
+(signature <TODO add signature>)
+
+fingerprint: <TODO add fingerprint>
+
+Known issue
+===========
+
+AMD-based PCs with FCH are unable to read flash contents for internal (BIOS
+flash) chips larger than 16 MB, and attempting to do so may crash the system.
+Systems with AMD "Promontory" IO extenders (mostly "Zen" desktop platforms) are
+not currently supported.
+
+https://ticket.coreboot.org/issues/370
+
+New features
+============
+
+-r/-w/-v argument is optional when using -i
+-------------------------------------------
+
+See :doc:`/classic_cli_manpage` for details.
+
+Added support for the Excamera Labs SPIDriver
+---------------------------------------------
+
+New programmer ``spidriver`` supports Excamera Labs SPIDriver device
+which is a SPI hardware interface with a display,
+connected as an FT230X USB serial device at a fixed baud rate of 460800.
+
+More details can be found by the links:
+
+Website: https://spidriver.com/
+
+Firmware: https://github.com/jamesbowman/spidriver
+
+Protocol: https://github.com/jamesbowman/spidriver/blob/master/protocol.md
+
+New documentation
+=================
+
+An important note on documentation: all documentation is now contained in the git tree
+in ``/doc`` directory and flashrom website is generated from it. Old wiki
+website has retired and no longer supported, old wiki content can be browsed in web archive.
+
+Hall of Fame
+------------
+
+The flashrom HTML documentation (and web site) now includes an
+automatically-generated list of historical contributors, to acknowledge
+everybody who has made flashrom into what it is:
+:doc:`../about_flashrom/hall_of_fame`.
+
+When building the documentation, the ``generate_authors_list`` Meson option will
+cause the lists to be generated, requiring a runnable copy of Git on the system
+and that the source tree being built is a Git working copy. If those
+requirements are not satisfied or the option is disabled, the authors lists will
+be replaced with placeholders unless the ``generate_authors_list`` option is set
+to ``enabled`` in which case the build will fail if the requirements are not
+satisfied.
+
+CH341A and CH341B
+-----------------
+
+The document :doc:`/supported_hw/supported_prog/ch341ab` gives information about
+using CH341A and CH341B devices with flashrom programmer ``ch341a_spi``.
+
+Chip/chipset support added or updated
+=====================================
+
+* MX77U25650F
+* S25FL512S - probing function changed
+* S25FS512S
+* W25Q64JV-.Q - mark as tested for write-protect operations
+* W25Q256JV_M - marked as fully tested
+* W25Q256JV_Q - marked as tested for read/write/erase
+* W25Q128.W - marked as fully tested
+* W25Q256JW - added support for write-protect operations
+* XM25QH64A
+* Intel B150 and Q170 - marked as tested
+
+libflashrom API updates
+=======================
+
+New API for progress reporting
+------------------------------------------
+
+The old ``flashrom_set_progress_callback`` function for requesting progress updates
+during library operations is now deprecated. Users should call
+``flashrom_set_progress_callback_v2`` instead, which also changes the signature
+of the callback function. Specifically, new function type ``flashrom_progress_callback_v2``
+should be used from now on.
+
+This new API fixes limitations with the old one where most users would need to
+define their own global state to track progress, and it was impossible to fix that
+issue while maintaining binary compatibility without adding a new API.
+
+New API for logging and setting log level
+-----------------------------------------
+
+New API ``flashrom_set_log_callback_v2`` is added which allows the users to provide
+a pointer to user data, the latter is managed by the caller of the API. New API also
+introduces a new signature for log callback function, ``flashrom_log_callback_v2``.
+
+New API supports setting the log level for messages from libflashrom, ``flashrom_set_log_level``.
+The log callback is invoked only for the messages with log level less or equal than the one
+requested (i.e. only for the messages at least as urgent as the level requested).
+
+Old API ``flashrom_set_log_callback`` without user data continues to work as before and it is
+supported as before. Old API supports ``flashrom_set_log_level`` as well.
+
+New API for probing flashchips
+------------------------------
+
+New API for probing is added ``flashrom_flash_probe_v2`` which can (if requested)
+go through all known flashchips and find all matches. v2 returns the number of matches
+found (or 0 if none found) and the list of names of all matched entries.
+
+``flashrom_flash_probe_v2`` continues to support an optional parameter ``chip_name``
+if the caller want to probe for only one specific chip with given name.
+
+Command line interface is now using ``flashrom_flash_probe_v2``.
+
+Old API ``flashrom_flash_probe`` is deprecated. It stays available "as is" for now,
+however will be removed at some point in future. Users should switch to v2.
+
+The main reason for deprecation is that it was returning incomplete information in
+case when multiple matching chips were found during probing. Specifically, the only
+info returned was error code of "multiple chips match" with no details of which are
+the matches and how many. This left the caller unable to proceed further. Consequently,
+even flashrom's own command line interface was unable to use old libflashrom probing API,
+and had to maintain separate logic for probing.
+
+New API to get list of supported programmers
+--------------------------------------------
+
+New API ``flashrom_supported_programmers`` returns the list of all programmers that are
+supported on a current run environment.
+
+
+flashchips.c split into separate files by vendor
+================================================
+
+``flashchips.c`` file was split into separate files per vendor. flashchips.c still exists in the source
+code but it is much smaller and only contain "generic" chip entries.
+
+With this, instead of one file ``flashchips.c`` we now have a ``flashchips/`` directory which contains
+all the files.
+
+There are no changes to the usage, and everything that's supported stays the same.
+
+Misc updates
+============
+
+* Extract cli_output declarations to a separate header
+* Extract programmer declarations to the correct header
+* Add Glasgow to supported serprog programmers documentation
+* Move SPI declarations from flash.h to spi.h
+* tests/chip: fix print format errors in gcc 14.2.0
+* cli: Remove array of flash contexts, use one active context instead
+* fmap: Skip unreadable regions when attempting to locate FMAP
+* jlink_spi: Increase delay on power-on feature from 10 to 100 millisec
+* cli_classic.c: Reimplement parse_wp_range
+* probe_flash: Introduce an error code for "other" probing errors
+* udelay: move into platform folder
