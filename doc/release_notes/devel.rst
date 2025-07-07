@@ -153,6 +153,10 @@ Programmers updates
   have a physical switch to select between IDE and AHCI. For IDE the
   device ID is 0x0611.
 
+* Move all programmers into their own folder
+
+  Closes https://ticket.coreboot.org/issues/603.
+
 libflashrom
 ===========
 
