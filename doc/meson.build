@@ -29,6 +29,14 @@ if sphinx.found()
     git = find_program('git', native : true, required : with_authors_list)
     git_dir = meson.project_source_root() / '.git'
 
+    # TODO: investigate whether this version can be lowered.
+    version_for_authors_list = '7.2.0'
+    # TODO: use sphinx.version().version_compare() instead, after we increase min required meson version to 0.62
+    sphinx_for_authors_list = find_program('sphinx-build',
+						native : true,
+						required : false,
+						version : '>=' + version_for_authors_list)
+
     # When with_authors_list is requested, unsatisfied requirements are an error.
     if with_authors_list.enabled()
       if not git.found()
@@ -37,11 +45,16 @@ if sphinx.found()
       if not fs.is_dir(git_dir)
         error('generate_authors_list was force-enabled but a .git directory was not found in the source tree')
       endif
+      if not sphinx_for_authors_list.found()
+	error('generate_authors_list was force-enabled but sphinx version is too old, min required is '
+		+ version_for_authors_list)
+      endif
     endif
 
     if (
       (with_authors_list.enabled() or with_authors_list.auto())
       and git.found() and fs.is_dir(git_dir)
+      and sphinx_for_authors_list.found()
     )
       # If requirements are met and authors list is allowed, generate it.
       authors_lst = custom_target(
