@@ -18,7 +18,7 @@
 #include "flash.h"
 #include "programmer.h"
 #include "hwaccess_physmap.h"
-#include "platform/pci.h"
+#include "pcidev.h"
 
 #define PCI_VENDOR_ID_DRKAISER		0x1803
 

@@ -15,11 +15,13 @@
  * GNU General Public License for more details.
  */
 
+#include "pcidev.h"
+
 #include <stdlib.h>
 #include <string.h>
+
 #include "flash.h"
 #include "programmer.h"
-#include "platform/pci.h"
 
 struct pci_access *pacc;
 

@@ -26,7 +26,7 @@
 #include <stdlib.h>
 #include "flash.h"
 #include "programmer.h"
-#include "platform/pci.h"
+#include "pcidev.h"
 
 #if defined(__i386__) || defined(__x86_64__)
 

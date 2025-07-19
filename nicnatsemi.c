@@ -18,7 +18,7 @@
 #include "flash.h"
 #include "programmer.h"
 #include "hwaccess_x86_io.h"
-#include "platform/pci.h"
+#include "pcidev.h"
 
 #define PCI_VENDOR_ID_NATSEMI	0x100b
 

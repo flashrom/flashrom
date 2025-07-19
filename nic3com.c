@@ -18,7 +18,7 @@
 #include "flash.h"
 #include "programmer.h"
 #include "hwaccess_x86_io.h"
-#include "platform/pci.h"
+#include "pcidev.h"
 
 #define BIOS_ROM_ADDR		0x04
 #define BIOS_ROM_DATA		0x08

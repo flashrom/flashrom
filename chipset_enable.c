@@ -33,7 +33,7 @@
 #include "flash.h"
 #include "programmer.h"
 #include "hwaccess_physmap.h"
-#include "platform/pci.h"
+#include "pcidev.h"
 
 #define NOT_DONE_YET 1
 

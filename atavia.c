@@ -20,8 +20,8 @@
 #include <string.h>
 #include "flash.h"
 #include "programmer.h"
-#include "platform/pci.h"
 #include "platform/udelay.h"
+#include "pcidev.h"
 
 #define PCI_VENDOR_ID_VIA	0x1106
 

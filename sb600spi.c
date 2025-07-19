@@ -24,7 +24,7 @@
 #include "programmer.h"
 #include "hwaccess_physmap.h"
 #include "spi.h"
-#include "platform/pci.h"
+#include "pcidev.h"
 
 /* This struct is unused, but helps visualize the SB600 SPI BAR layout.
  *struct sb600_spi_controller {

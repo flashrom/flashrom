@@ -19,7 +19,7 @@
 #include "flash.h"
 #include "programmer.h"
 #include "hwaccess_physmap.h"
-#include "platform/pci.h"
+#include "pcidev.h"
 
 struct nicintel_data {
 	uint8_t *nicintel_bar;

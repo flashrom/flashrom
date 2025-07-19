@@ -21,7 +21,7 @@
 #include "programmer.h"
 #include "hwaccess_x86_io.h"
 #include "hwaccess_physmap.h"
-#include "platform/pci.h"
+#include "pcidev.h"
 
 struct satamv_data {
 	uint8_t *bar;
