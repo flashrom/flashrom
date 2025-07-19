@@ -103,6 +103,14 @@ M:	Peter Marheine <pmarheine@chromium.org>
 S:	Supported
 F:	i2c_helper_linux.c
 
+LOGIC
+M:	Anastasia Klimchuk <aklm@chromium.org>
+S:	Maintained
+F:	flashrom*
+F:	libflashrom*
+F:	include/flash.h
+F:	include/libflashrom.h
+
 REPLAY PROTECTED MONOTONIC COUNTER
 M:	Matti Finder <matti.finder@gmail.com>
 S:	Maintained
