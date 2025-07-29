@@ -875,9 +875,9 @@ ft2232_spi programmer
 ^^^^^^^^^^^^^^^^^^^^^
 
 This module supports various programmers based on FTDI FT2232/FT4232H/FT232H chips including the DLP Design DLP-USB1232H,
-openbiosprog-spi, Amontec JTAGkey/JTAGkey-tiny/JTAGkey-2, Dangerous Prototypes Bus Blaster, Olimex ARM-USB-TINY/-H,
-Olimex ARM-USB-OCD/-H, OpenMoko Neo1973 Debug board (V2+), TIAO/DIYGADGET USB Multi-Protocol Adapter (TUMPA), TUMPA Lite,
-GOEPEL PicoTAP, Google Servo v1/v2, Tin Can Tools Flyswatter/Flyswatter 2 and Kristech KT-LINK.
+openbiosprog-spi, Amontec JTAGkey/JTAGkey-tiny/JTAGkey-2, Dangerous Prototypes Bus Blaster, Digilent JTAG-SMT2/-NC,
+Olimex ARM-USB-TINY/-H, Olimex ARM-USB-OCD/-H, OpenMoko Neo1973 Debug board (V2+), TIAO/DIYGADGET USB Multi-Protocol
+Adapter (TUMPA), TUMPA Lite, GOEPEL PicoTAP, Google Servo v1/v2, Tin Can Tools Flyswatter/Flyswatter 2 and Kristech KT-LINK.
 
 An optional parameter specifies the controller type, channel/interface/port it should support. For that you have to use the::
 

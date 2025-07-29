@@ -68,6 +68,7 @@ static const struct dev_entry devs_ft2232spi[] = {
 	{FTDI_VID, TIAO_TUMPA_LITE_PID, OK, "TIAO", "USB Multi-Protocol Adapter Lite"},
 	{FTDI_VID, KT_LINK_PID, OK, "Kristech", "KT-LINK"},
 	{FTDI_VID, AMONTEC_JTAGKEY_PID, OK, "Amontec", "JTAGkey"},
+	{FTDI_VID, FTDI_FT232H_PID, OK, "Digilent", "JTAG-SMT2"},
 	{GOEPEL_VID, GOEPEL_PICOTAP_PID, OK, "GOEPEL", "PicoTAP"},
 	{GOOGLE_VID, GOOGLE_SERVO_PID, OK, "Google", "Servo"},
 	{GOOGLE_VID, GOOGLE_SERVO_V2_PID0, OK, "Google", "Servo V2 Legacy"},
@@ -351,6 +352,31 @@ static int ft2232_spi_init(const struct programmer_cfg *cfg)
 		} else if (!strcasecmp(arg, "4233H")) {
 			ft2232_type = FTDI_FT4233H_PID;
 			channel_count = 4;
+		} else if (!strcasecmp(arg, "jtag-smt2")) {
+			ft2232_type = FTDI_FT232H_PID;
+			channel_count = 1;
+			/*
+			 * Digilent JTAG-SMT2 / JTAG-SMT2-NC
+			 * https://digilent.com/shop/jtag-smt2-surface-mount-programming-module/
+			 * https://forum.digilent.com/topic/4745-pin-mapping-for-jtag-smt2-nc/
+			 *
+			 * Main JTAG/SPI port
+			 *	 SCLK <- TCK = ADBUS0 (TCK/SK)
+			 *	 MOSI <- TDI = ADBUS1 (TDI/DO) + OETDI = ADBUS6 (GPIOL2)
+			 *	 MISO -> TDO = ADBUS2 (TDO/DI) + OETCK = ADBUS7 (GPIOL3)
+			 *	 CS#  <- TMS = ADBUS3 (TMS/CS) + OETMS = ADBUS5 (GPIOL1)
+			 *
+			 * Extra GPIOs:
+			 *   GPIO0 = ACBUS0 (GPIOH0) + OE0 = ACBUS2 (GPIOH2)
+			 *   GPIO1 = ACBUS1 (GPIOH1) + OE1 = ACBUS3 (GPIOH3)
+			 *   GPIO2 = ACBUS5 (GPIOH5) + OE2 = ACBUS4 (GPIOH4)
+			 */
+			/* OE[TCK,TDI,TMS] driven High */
+			aux_bits = 0xe0;
+			/* CS# @ TMS/CS (ADBUS3) */
+			cs_bits = 0x08;
+			/* OE[TCK,TDI,TMS]:out, GPIOL0/ADBUS4:in, CS:out, DI:in, DO:out, SK:out */
+			pindir = 0xeb;
 		} else if (!strcasecmp(arg, "jtagkey")) {
 			ft2232_type = AMONTEC_JTAGKEY_PID;
 			channel_count = 2;
