@@ -16,3 +16,10 @@ Systems with AMD "Promontory" IO extenders (mostly "Zen" desktop platforms) are
 not currently supported.
 
 https://ticket.coreboot.org/issues/370
+
+Added support
+=============
+
+* Intel Wildcat Lake chipset
+* Eon EN25QX128A
+* PUYA P25D80H
