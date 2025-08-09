@@ -72,14 +72,14 @@ All operations involving any chip access (probe/read/write/...) require the ``-p
 
 
 **-n, --noverify**
-        Skip the automatic verification of flash ROM contents after writing. Using this option is **not** recommended,
+        Skip the automatic verification of flash ROM contents after writing or erasing. Using this option is **not** recommended,
         you should only use it if you know what you are doing and if you feel that the time for verification takes too long.
 
         Typical usage is::
 
                 flashrom -p prog -n -w <file>
 
-        This option is only useful in combination with ``--write``.
+        This option is only useful in combination with ``--write`` or ``--erase``.
 
 
 **-N, --noverify-all**

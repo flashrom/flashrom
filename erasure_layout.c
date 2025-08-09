@@ -301,7 +301,8 @@ static int erase_write_helper(struct flashctx *const flashctx, chipoff_t region_
 			if (erasefn(flashctx, start_addr, block_len)) {
 				return -1;
 			}
-			if (check_erased_range(flashctx, start_addr, block_len)) {
+			if (flashctx->flags.verify_after_write
+				&& check_erased_range(flashctx, start_addr, block_len)) {
 				msg_cerr("ERASE FAILED!\n");
 				return -1;
 			}

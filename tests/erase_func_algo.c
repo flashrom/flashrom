@@ -1194,6 +1194,7 @@ static void test_erase_fails_for_unwritable_region(void **);
 static void test_write_with_sacrifice_ratio50(void **);
 static void erase_unwritable_regions_skipflag_on_test_success(void **);
 static void write_unwritable_regions_skipflag_on_test_success(void **);
+static void test_erase_with_noverify(void **);
 
 /*
  * Creates the array of tests for each test case in test_cases_protected_region[].
@@ -1201,7 +1202,7 @@ static void write_unwritable_regions_skipflag_on_test_success(void **);
  */
 struct CMUnitTest *get_erase_protected_region_algo_tests(size_t *num_tests) {
 	const size_t num_parameterized = ARRAY_SIZE(test_cases_protected_region);
-	const size_t num_unparameterized = 2;
+	const size_t num_unparameterized = 3;
 	// Twice the number of parameterized test cases, because each test case is run twice:
 	// for erase and write.
 	const size_t num_cases = num_parameterized * 2 + num_unparameterized;
@@ -1236,6 +1237,10 @@ struct CMUnitTest *get_erase_protected_region_algo_tests(size_t *num_tests) {
 			(const struct CMUnitTest) {
 				.name = "write with sacrifice ratio 50",
 				.test_func = test_write_with_sacrifice_ratio50,
+			},
+			(const struct CMUnitTest) {
+				.name = "erase with noverify",
+				.test_func = test_erase_with_noverify,
 			},
 		},
 		sizeof(*all_cases) * num_unparameterized
@@ -1782,4 +1787,80 @@ static void test_write_with_sacrifice_ratio50(void **state) {
 	teardown_chip(&layout);
 
 	assert_int_equal(0, all_write_test_result);
+}
+
+static void test_erase_with_noverify(void **state)
+{
+	/* The exact test case doesn't matter that much, because we only want to test
+	 * that verification was NOT invoked. */
+	struct test_case* current_test_case = &test_cases[2];
+
+	int all_erase_tests_result = 0;
+	struct flashrom_flashctx flashctx = { 0 };
+	const char *param = ""; /* Default values for all params. */
+
+	struct flashrom_layout *layout;
+
+	const chipoff_t verify_end_boundary = setup_chip(&flashctx, &layout, param, current_test_case);
+
+	/* We want to test that verify NOT performed. */
+	flashrom_flag_set(&flashctx, FLASHROM_FLAG_VERIFY_AFTER_WRITE, false);
+
+	printf("%s started.\n", current_test_case->erase_test_name);
+	int ret = flashrom_flash_erase(&flashctx);
+	printf("%s returned %d.\n", current_test_case->erase_test_name, ret);
+
+	int chip_erased = !memcmp(g_state.buf, current_test_case->erased_buf, MOCK_CHIP_SIZE);
+
+	int eraseblocks_in_order = !memcmp(g_state.eraseblocks_actual,
+					current_test_case->eraseblocks_expected,
+					current_test_case->eraseblocks_expected_ind * sizeof(struct erase_invoke));
+
+	int eraseblocks_invocations = (g_state.eraseblocks_actual_ind ==
+					current_test_case->eraseblocks_expected_ind);
+
+	int chip_verified = 0;
+	for (unsigned int i = 0; i <= verify_end_boundary; i++)
+		if (g_state.was_modified[i] && g_state.was_verified[i]) {
+			chip_verified = 1; /* byte was verified, but we disabled verification! */
+			printf("Error: byte 0x%x was verified, but verification is disabled\n", i);
+		}
+
+	if (chip_erased)
+		printf("Erased chip memory state for %s is CORRECT\n",
+			current_test_case->erase_test_name);
+	else
+		printf("Erased chip memory state for %s is WRONG\n",
+			current_test_case->erase_test_name);
+
+	if (eraseblocks_in_order)
+		printf("Eraseblocks order of invocation for %s is CORRECT\n",
+			current_test_case->erase_test_name);
+	else
+		printf("Eraseblocks order of invocation for %s is WRONG\n",
+			current_test_case->erase_test_name);
+
+	if (eraseblocks_invocations)
+		printf("Eraseblocks number of invocations for %s is CORRECT\n",
+			current_test_case->erase_test_name);
+	else
+		printf("Eraseblocks number of invocations for %s is WRONG, expected %d actual %d\n",
+			current_test_case->erase_test_name,
+			current_test_case->eraseblocks_expected_ind,
+			g_state.eraseblocks_actual_ind);
+
+	if (!chip_verified)
+		printf("Verification was not performed, as it was disabled.\n");
+	else
+		printf("ERROR: verify operation was disabled, but it was performed.\n");
+
+	all_erase_tests_result |= ret;
+	all_erase_tests_result |= !chip_erased;
+	all_erase_tests_result |= !eraseblocks_in_order;
+	all_erase_tests_result |= !eraseblocks_invocations;
+	all_erase_tests_result |= chip_verified;
+
+	teardown_chip(&layout);
+
+	assert_int_equal(0, all_erase_tests_result);
 }
