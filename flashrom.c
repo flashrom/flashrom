@@ -1890,7 +1890,7 @@ void finalize_flash_access(struct flashctx *const flash)
 
 int flashrom_flash_erase(struct flashctx *const flashctx)
 {
-	if (prepare_flash_access(flashctx, false, false, true, false))
+	if (prepare_flash_access(flashctx, false, false, true, flashctx->flags.verify_after_write))
 		return 1;
 
 	const int ret = erase_by_layout(flashctx);
