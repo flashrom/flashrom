@@ -128,10 +128,9 @@ static int it8716f_spi_page_program(struct flashctx *flash, const uint8_t *buf, 
 	OUTB(0, data->flashport);
 	/* Wait until the Write-In-Progress bit is cleared.
 	 * This usually takes 1-10 ms, so wait in 1 ms steps.
-	 *
-	 * FIXME: This should timeout after some number of retries.
+	 * Timeout after 1000 retries (1 second) to avoid infinite loop.
 	 */
-	while (true) {
+	for (int timeout = 0; timeout < 1000; timeout++) {
 		uint8_t status;
 		int ret = spi_read_register(flash, STATUS1, &status);
 		if (ret)
@@ -142,7 +141,9 @@ static int it8716f_spi_page_program(struct flashctx *flash, const uint8_t *buf, 
 
 		default_delay(1000);
 	}
-	return 0;
+
+	msg_cerr("IT87 SPI write timeout: Write-In-Progress bit never cleared\n");
+	return SPI_GENERIC_ERROR;
 }
 
 /*
