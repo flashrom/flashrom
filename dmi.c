@@ -218,10 +218,11 @@ out:
 }
 
 #if SM_SUPPORT
-static int smbios_decode(uint8_t *buf, int *is_laptop)
+static int smbios_decode(uint8_t *buf, size_t len, int *is_laptop)
 {
 	/* TODO: other checks mentioned in the conformance guidelines? */
-	if (!dmi_checksum(buf, buf[0x05]) ||
+	if (len < 0x1f || buf[0x05] < 0x1f || buf[0x05] > len ||
+	    !dmi_checksum(buf, buf[0x05]) ||
 	    (memcmp(buf + 0x10, "_DMI_", 5) != 0) ||
 	    !dmi_checksum(buf + 0x10, 0x0F))
 			return 0;
@@ -259,8 +260,8 @@ static int dmi_fill(int *is_laptop)
 
 	for (fp = 0; fp <= 0xFFF0; fp += 16) {
 #if SM_SUPPORT
-		if (memcmp(dmi_mem + fp, "_SM_", 4) == 0 && fp <= 0xFFE0) {
-			if (smbios_decode(dmi_mem + fp), is_laptop) // FIXME: length check
+		if (memcmp(dmi_mem + fp, "_SM_", 4) == 0) {
+			if (smbios_decode(dmi_mem + fp, 0x10000 - fp, is_laptop))
 				goto out;
 		} else
 #endif
