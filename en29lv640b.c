@@ -34,17 +34,13 @@ int write_en29lv640b(struct flashctx *flash, const uint8_t *src, unsigned int st
 		/* Transfer data from source to destination. */
 		chip_writew(flash, (*src) | ((*(src + 1)) << 8 ), dst);
 		toggle_ready_jedec(flash, dst);
-#if 0
-		/* We only want to print something in the error case. */
-		msg_cerr("Value in the flash at address 0x%lx = %#x, want %#x\n",
-			 (dst - bios), chip_readb(flash, dst), *src);
-#endif
+
 		dst += 2;
 		src += 2;
 		update_progress(flash, FLASHROM_PROGRESS_WRITE, 2);
 	}
 
-	/* FIXME: Ignore errors for now. */
+	/* Write verification is handled by the generic write path when requested. */
 	return 0;
 }
 
