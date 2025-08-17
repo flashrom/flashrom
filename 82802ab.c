@@ -17,7 +17,12 @@
 #include "log.h"
 #include <stdbool.h>
 
-void print_status_82802ab(uint8_t status)
+#define STATUS_82802AB_READY		(1U << 7)
+/* SR.0 is reserved; SR.1 and SR.3--SR.5 report operation failures. */
+#define STATUS_82802AB_ERROR_MASK	((1U << 5) | (1U << 4) | (1U << 3) | (1U << 1))
+#define WAIT_82802AB_TIMEOUT_US		(1000U * 1000U)
+
+static void print_status_82802ab(uint8_t status)
 {
 	msg_cdbg("%s", status & 0x80 ? "Ready:" : "Busy:");
 	msg_cdbg("%s", status & 0x40 ? "BE SUSPEND:" : "BE RUN/FINISH:");
@@ -74,30 +79,42 @@ int probe_82802ab(struct flashctx *flash)
 	return 1;
 }
 
-/* FIXME: needs timeout */
-uint8_t wait_82802ab(struct flashctx *flash)
+int wait_82802ab(struct flashctx *flash)
 {
 	uint8_t status;
 	chipaddr bios = flash->virtual_memory;
+	unsigned int timeout = WAIT_82802AB_TIMEOUT_US;
 
 	chip_writeb(flash, 0x70, bios);
 
-	while ((chip_readb(flash, bios) & 0x80) == 0)	// it's busy
-		;
-
-	status = chip_readb(flash, bios);
+	do {
+		status = chip_readb(flash, bios);
+		if (status & STATUS_82802AB_READY)
+			break;
+		programmer_delay(flash, 1);
+	} while (--timeout);
 
 	/* Reset to get a clean state */
 	chip_writeb(flash, 0xFF, bios);
 
-	return status;
+	if (!(status & STATUS_82802AB_READY)) {
+		msg_cerr("82802AB operation timed out\n");
+		return 1;
+	}
+
+	print_status_82802ab(status);
+	if (status & STATUS_82802AB_ERROR_MASK) {
+		msg_cerr("82802AB operation failed with status 0x%02x\n", status);
+		return 1;
+	}
+
+	return 0;
 }
 
 int erase_block_82802ab(struct flashctx *flash, unsigned int page,
 			unsigned int pagesize)
 {
 	chipaddr bios = flash->virtual_memory;
-	uint8_t status;
 
 	// clear status register
 	chip_writeb(flash, 0x50, bios + page);
@@ -107,11 +124,11 @@ int erase_block_82802ab(struct flashctx *flash, unsigned int page,
 	chip_writeb(flash, 0xd0, bios + page);
 	programmer_delay(flash, 10);
 
-	// now let's see what the register is
-	status = wait_82802ab(flash);
-	print_status_82802ab(status);
+	if (wait_82802ab(flash)) {
+		msg_cerr("82802AB block erase failed\n");
+		return -1;
+	}
 
-	/* FIXME: Check the status register for errors. */
 	return 0;
 }
 
@@ -124,12 +141,16 @@ int write_82802ab(struct flashctx *flash, const uint8_t *src, unsigned int start
 	for (i = 0; i < len; i++) {
 		/* transfer data from source to destination */
 		chip_writeb(flash, 0x40, dst);
-		chip_writeb(flash, *src++, dst++);
-		wait_82802ab(flash);
+		chip_writeb(flash, *src, dst);
+		if (wait_82802ab(flash)) {
+			msg_cerr("82802AB write failed at address 0x%06x\n", start + i);
+			return -1;
+		}
+		dst++;
+		src++;
 		update_progress(flash, FLASHROM_PROGRESS_WRITE, 1);
 	}
 
-	/* FIXME: Ignore errors for now. */
 	return 0;
 }
 
@@ -194,7 +215,8 @@ static int unlock_lh28f008bjt(struct flashctx *flash)
 	unsigned int i;
 
 	/* Wait if chip is busy */
-	wait_82802ab(flash);
+	if (wait_82802ab(flash))
+		return -1;
 
 	/* Read identifier codes */
 	chip_writeb(flash, 0x90, bios);
@@ -228,7 +250,8 @@ static int unlock_lh28f008bjt(struct flashctx *flash)
 		chip_writeb(flash, 0x60, bios);
 		chip_writeb(flash, 0xD0, bios);
 		chip_writeb(flash, 0xFF, bios);
-		wait_82802ab(flash);
+		if (wait_82802ab(flash))
+			return -1;
 		msg_cdbg("Done!\n");
 	}
 

@@ -26,10 +26,7 @@ static int stm50_erase_sector(struct flashctx *flash, unsigned int addr)
 	chip_writeb(flash, 0xd0, bios);
 	programmer_delay(flash, 10);
 
-	uint8_t status = wait_82802ab(flash);
-	print_status_82802ab(status);
-
-	return status == 0x80;
+	return wait_82802ab(flash);
 }
 
 /* Some ST M50* chips do support erasing of sectors. This function will derive the erase function to use from
