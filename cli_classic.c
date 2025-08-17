@@ -1331,8 +1331,10 @@ int main(int argc, char *argv[])
 					break;
 			}
 			if (force_probe_ret < 0) {
-				// FIXME: This should never happen! Ask for a bug report?
-				msg_cinfo("Probing for flash chip '%s' failed.\n", options.chip_to_probe);
+				msg_cerr("Critical error: Force probing for flash chip '%s' failed on all compatible controllers.\n", options.chip_to_probe);
+				msg_cerr("This indicates a serious problem with chip detection or controller communication.\n");
+				msg_cerr("Please report this issue with your hardware details and command line arguments "
+					 "(see https://flashrom.org/contact.html).\n");
 				ret = 1;
 				goto out_shutdown;
 			}
