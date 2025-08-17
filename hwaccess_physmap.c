@@ -133,11 +133,18 @@ static void sys_physunmap_unaligned(void *virt_addr, size_t len)
 static void *sys_physmap(uintptr_t phys_addr, size_t len)
 {
 	/* The short form of ?: is a GNU extension.
-	 * FIXME: map_physical returns NULL both for errors and for success
-	 * if the region is mapped at virtual address zero. If in doubt, report
-	 * an error until a better interface exists.
+	 * Note: map_physical returns NULL both for errors and for success
+	 * if the region is mapped at virtual address zero. Since virtual
+	 * address zero is extremely unlikely in user space, we treat NULL
+	 * as an error to maintain consistent error handling.
 	 */
-	return map_physical(phys_addr, len) ? : ERROR_PTR;
+	void *result = map_physical(phys_addr, len);
+	if (result == NULL) {
+		msg_perr("map_physical failed for address 0x%" PRIxPTR ", length %zu\n",
+		         phys_addr, len);
+		return ERROR_PTR;
+	}
+	return result;
 }
 
 /* The OS X driver does not differentiate between mapping types. */
