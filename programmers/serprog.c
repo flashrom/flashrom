@@ -496,25 +496,36 @@ static void serprog_chip_writeb(const struct flashctx *flash, uint8_t val,
 		    && (addr == (sp_write_n_addr + sp_write_n_bytes))) {
 			sp_write_n_buf[sp_write_n_bytes++] = val;
 		} else {
-			if ((sp_prev_was_write) && (sp_write_n_bytes))
-				sp_pass_writen();
+			if ((sp_prev_was_write) && (sp_write_n_bytes) && sp_pass_writen() != 0) {
+				msg_perr(MSGHEADER "Error: cannot transfer pending write buffer\n");
+				return;
+			}
 			sp_prev_was_write = 1;
 			sp_write_n_addr = addr;
 			sp_write_n_bytes = 1;
 			sp_write_n_buf[0] = val;
 		}
-		sp_check_opbuf_usage(7 + sp_write_n_bytes);
-		if (sp_write_n_bytes >= sp_max_write_n)
-			sp_pass_writen();
+		if (sp_check_opbuf_usage(7 + sp_write_n_bytes) != 0) {
+			msg_perr(MSGHEADER "Error: cannot make room in operation buffer\n");
+			return;
+		}
+		if (sp_write_n_bytes >= sp_max_write_n && sp_pass_writen() != 0)
+			msg_perr(MSGHEADER "Error: cannot transfer full write buffer\n");
 	} else {
 		/* We will have to do single writeb ops. */
 		unsigned char writeb_parm[4];
-		sp_check_opbuf_usage(6);
+		if (sp_check_opbuf_usage(6) != 0) {
+			msg_perr(MSGHEADER "Error: cannot make room in operation buffer\n");
+			return;
+		}
 		writeb_parm[0] = (addr >> 0) & 0xFF;
 		writeb_parm[1] = (addr >> 8) & 0xFF;
 		writeb_parm[2] = (addr >> 16) & 0xFF;
 		writeb_parm[3] = val;
-		sp_stream_buffer_op(S_CMD_O_WRITEB, 4, writeb_parm); // FIXME: return error
+		if (sp_stream_buffer_op(S_CMD_O_WRITEB, 4, writeb_parm) != 0) {
+			msg_perr(MSGHEADER "Error: cannot buffer write byte command\n");
+			return;
+		}
 		sp_opbuf_usage += 5;
 	}
 }
@@ -522,19 +533,30 @@ static void serprog_chip_writeb(const struct flashctx *flash, uint8_t val,
 static uint8_t serprog_chip_readb(const struct flashctx *flash,
 				  const chipaddr addr)
 {
-	unsigned char c;
+	unsigned char c = 0xff;
 	unsigned char buf[3];
 	/* Will stream the read operation - eg. add it to the stream buffer, *
 	 * then flush the buffer, then read the read answer.		     */
-	if ((sp_opbuf_usage) || (sp_max_write_n && sp_write_n_bytes))
-		sp_execute_opbuf_noflush();
+	if (((sp_opbuf_usage) || (sp_max_write_n && sp_write_n_bytes)) &&
+	    sp_execute_opbuf_noflush() != 0) {
+		msg_perr(MSGHEADER "Error: cannot execute pending operation buffer before byte read\n");
+		return c;
+	}
 	buf[0] = ((addr >> 0) & 0xFF);
 	buf[1] = ((addr >> 8) & 0xFF);
 	buf[2] = ((addr >> 16) & 0xFF);
-	sp_stream_buffer_op(S_CMD_R_BYTE, 3, buf); // FIXME: return error
-	sp_flush_stream(); // FIXME: return error
-	if (serialport_read(&c, 1) != 0)
-		msg_perr(MSGHEADER "readb byteread");  // FIXME: return error
+	if (sp_stream_buffer_op(S_CMD_R_BYTE, 3, buf) != 0) {
+		msg_perr(MSGHEADER "Error: cannot buffer read byte command\n");
+		return c;
+	}
+	if (sp_flush_stream() != 0) {
+		msg_perr(MSGHEADER "Error: cannot flush stream for byte read\n");
+		return c;
+	}
+	if (serialport_read(&c, 1) != 0) {
+		msg_perr(MSGHEADER "Error: cannot read byte data\n");
+		return c;
+	}
 	msg_pspew("%s addr=0x%" PRIxPTR " returning 0x%02X\n", __func__, addr, c);
 	return c;
 }
@@ -545,15 +567,17 @@ static int sp_do_read_n(uint8_t * buf, const chipaddr addr, size_t len)
 	unsigned char sbuf[6];
 	msg_pspew("%s: addr=0x%" PRIxPTR " len=%zu\n", __func__, addr, len);
 	/* Stream the read-n -- as above. */
-	if ((sp_opbuf_usage) || (sp_max_write_n && sp_write_n_bytes))
-		sp_execute_opbuf_noflush();
+	if (((sp_opbuf_usage) || (sp_max_write_n && sp_write_n_bytes)) &&
+	    sp_execute_opbuf_noflush() != 0)
+		return 1;
 	sbuf[0] = ((addr >> 0) & 0xFF);
 	sbuf[1] = ((addr >> 8) & 0xFF);
 	sbuf[2] = ((addr >> 16) & 0xFF);
 	sbuf[3] = ((len >> 0) & 0xFF);
 	sbuf[4] = ((len >> 8) & 0xFF);
 	sbuf[5] = ((len >> 16) & 0xFF);
-	sp_stream_buffer_op(S_CMD_R_NBYTES, 6, sbuf);
+	if (sp_stream_buffer_op(S_CMD_R_NBYTES, 6, sbuf) != 0)
+		return 1;
 	if (sp_flush_stream() != 0)
 		return 1;
 	if (serialport_read(buf, len) != 0) {
@@ -570,12 +594,18 @@ static void serprog_chip_readn(const struct flashctx *flash, uint8_t * buf,
 	size_t lenm = len;
 	chipaddr addrm = addr;
 	while ((sp_max_read_n != 0) && (lenm > sp_max_read_n)) {
-		sp_do_read_n(&(buf[addrm-addr]), addrm, sp_max_read_n); // FIXME: return error
+		if (sp_do_read_n(&(buf[addrm-addr]), addrm, sp_max_read_n) != 0) {
+			msg_perr(MSGHEADER "Read operation failed at address 0x%" PRIxPTR "\n", addrm);
+			return;
+		}
 		addrm += sp_max_read_n;
 		lenm -= sp_max_read_n;
 	}
-	if (lenm)
-		sp_do_read_n(&(buf[addrm-addr]), addrm, lenm); // FIXME: return error
+	if (lenm) {
+		if (sp_do_read_n(&(buf[addrm-addr]), addrm, lenm) != 0) {
+			msg_perr(MSGHEADER "Read operation failed at address 0x%" PRIxPTR "\n", addrm);
+		}
+	}
 }
 
 static void serprog_delay(const struct flashctx *flash, unsigned int usecs)
