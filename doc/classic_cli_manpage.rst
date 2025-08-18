@@ -357,6 +357,7 @@ All operations involving any chip access (probe/read/write/...) require the ``-p
         * ``dirtyjtag_spi``       (for SPI flash ROMs attached to DirtyJTAG-compatible devices)
         * ``asm106x``             (for SPI flash ROMs attached to asm106x PCI SATA controllers)
         * ``spidriver``           (for SPI flash ROMs attached to an Excamera Labs SPIDriver)
+        * ``nv_sma_spi``          (for SPI flash ROMs attached to an Nvidia System Management Agent)
 
         Some programmers have optional or mandatory parameters which are described in detail in the
         **PROGRAMMER-SPECIFIC INFORMATION** section. Support for some programmers can be disabled at compile time.
@@ -1460,6 +1461,24 @@ Syntax is::
 
 where ``state`` can be ``high`` or ``low``. The default ``state`` is ``high``.
 
+nv_sma_spi programmer
+^^^^^^^^^^^^^^^^^^^^^
+
+The Optional ``cs`` parameter can be used to switch which chip select number is used. This allows connecting multiple
+chips at once and selecting which one to flash.::
+
+        flashrom -p nv_sma_spi:cs=0
+
+The optional ``bus`` and ``devnum`` parameters indicate which Nvidia System Management Agent is selected when multiple
+SMAs are present. Both parameters must be specified simultaneously.::
+
+        flashrom -p nv_sma_spi:bus=0,devnum=1
+
+The optional ``spispeed`` parameter sets the target frequency in Hz. The Nvidia System Management Agent selects the closest
+supported frequency based on its capabilities. If the spispeed is not provided, the device default frequncy is used. An example
+to set target frequency at 15MHz.::
+
+        flashrom -p nv_sma_spi:spispeed=15000000
 
 EXAMPLES
 --------
@@ -1547,7 +1566,7 @@ REQUIREMENTS
 
         * need access to the respective USB device via libusb API version 1.0
 
-* ch341a_spi, dediprog
+* ch341a_spi, dediprog, nv_sma_spi
 
         * need access to the respective USB device via libusb API version 1.0
 

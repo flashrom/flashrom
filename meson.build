@@ -469,6 +469,13 @@ programmer = {
     'test_srcs' : files('tests/nicrealtek.c'),
     'flags'   : [ '-DCONFIG_NICREALTEK=1' ],
   },
+  'nv_sma_spi' : {
+    'deps'    : [ libusb1 ],
+    'groups'  : [ group_usb, group_external ],
+    'srcs'    : files('nv_sma_spi.c', 'usb_device.c'),
+    'test_srcs' : files('tests/nv_sma_spi.c'),
+    'flags'   : [ '-DCONFIG_NV_SMA_SPI=1' ],
+  },
   'ogp_spi' : {
     'systems' : systems_hwaccess,
     'deps'    : [ libpci ],

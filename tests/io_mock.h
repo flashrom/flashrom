@@ -81,6 +81,8 @@ struct io_mock {
 	int (*libusb_submit_transfer)(void *state, struct libusb_transfer *transfer);
 	void (*libusb_free_transfer)(void *state, struct libusb_transfer *transfer);
 	int (*libusb_handle_events_timeout)(void *state, libusb_context *ctx, struct timeval *tv);
+	int (*libusb_bulk_transfer)(void *state, libusb_device_handle *devh, unsigned char endpoint,
+							unsigned char *data, int length, int *actual_length, unsigned int timeout);
 
 	/* POSIX File I/O */
 	int (*iom_open)(void *state, const char *pathname, int flags, mode_t mode);

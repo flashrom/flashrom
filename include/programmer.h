@@ -79,6 +79,7 @@ extern const struct programmer_entry programmer_nicintel_eeprom;
 extern const struct programmer_entry programmer_nicintel_spi;
 extern const struct programmer_entry programmer_nicnatsemi;
 extern const struct programmer_entry programmer_nicrealtek;
+extern const struct programmer_entry programmer_nv_sma_spi;
 extern const struct programmer_entry programmer_ogp_spi;
 extern const struct programmer_entry programmer_pickit2_spi;
 extern const struct programmer_entry programmer_pony_spi;

@@ -77,6 +77,7 @@ void realtek_mst_no_allow_brick_test_success(void **state);
 void ch341a_spi_basic_lifecycle_test_success(void **state);
 void ch341a_spi_probe_lifecycle_test_success(void **state);
 void spidriver_probe_lifecycle_test_success(void **state);
+void nv_sma_spi_basic_lifecycle_test_success(void **state);
 
 /* layout.c */
 void included_regions_dont_overlap_test_success(void **state);

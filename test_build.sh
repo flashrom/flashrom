@@ -10,7 +10,7 @@ meson_programmer_opts="all auto group_ftdi group_i2c group_jlink group_pci group
 			developerbox_spi digilent_spi dirtyjtag_spi drkaiser dummy ft2232_spi		\
 			gfxnvidia internal it8212 jlink_spi linux_mtd linux_spi parade_lspcon		\
 			mediatek_i2c_spi mstarddc_spi nic3com nicintel nicintel_eeprom nicintel_spi	\
-			nicnatsemi nicrealtek ogp_spi pickit2_spi pony_spi raiden_debug_spi rayer_spi	\
+			nicnatsemi nicrealtek nv_sma_spi ogp_spi pickit2_spi pony_spi raiden_debug_spi rayer_spi	\
 			realtek_mst_i2c_spi satamv satasii serprog spidriver stlinkv3_spi usbblaster_spi\
 			asm106x"
 

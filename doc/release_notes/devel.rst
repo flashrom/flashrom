@@ -37,3 +37,8 @@ range, especially if using different names for those regions.
 If you are flashing multiple regions or ones that partially overlap with
 read-only parts then that could result in flashrom failing in the
 middle, leaving you in unknown state.
+
+New programmers
+===============
+
+* Nvidia System Management Agent

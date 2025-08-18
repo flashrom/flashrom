@@ -29,6 +29,7 @@ uint8_t __wrap_libusb_get_device_address(libusb_device *dev);
 int __wrap_libusb_get_device_descriptor(libusb_device *dev, struct libusb_device_descriptor *desc);
 int __wrap_libusb_get_config_descriptor(
 		libusb_device *dev, uint8_t config_index, struct libusb_config_descriptor **config);
+int __wrap_libusb_get_active_config_descriptor(libusb_device *dev, struct libusb_config_descriptor **config);
 void __wrap_libusb_free_config_descriptor(struct libusb_config_descriptor *config);
 int __wrap_libusb_get_configuration(libusb_device_handle *devh, int *config);
 int __wrap_libusb_set_configuration(libusb_device_handle *devh, int config);
@@ -36,6 +37,8 @@ int __wrap_libusb_claim_interface(libusb_device_handle *devh, int interface_numb
 int __wrap_libusb_control_transfer(libusb_device_handle *devh, uint8_t bmRequestType,
 		uint8_t bRequest, uint16_t wValue, uint16_t wIndex, unsigned char *data,
 		uint16_t wLength, unsigned int timeout);
+int __wrap_libusb_bulk_transfer(libusb_device_handle *devh, unsigned char endpoint,
+		unsigned char *data, int length, int *actual_length, unsigned int timeout);
 int __wrap_libusb_release_interface(libusb_device_handle *devh, int interface_number);
 void __wrap_libusb_close(libusb_device_handle *devh);
 libusb_device *__wrap_libusb_ref_device(libusb_device *dev);

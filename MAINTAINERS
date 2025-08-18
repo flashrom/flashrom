@@ -181,6 +181,12 @@ M:	Miklos Marton <martonmiklosqdev@gmail.com>
 S:	Maintained
 F:	ni845x_spi.c
 
+NVIDIA SMA SPI
+M:	Willie Thai <wthai@nvidia.com>
+M:	Gilbert Chen <gilbertc@nvidia.com>
+S:	Maintained
+F:	nv_sma_spi.c
+
 RAIDEN DEBUG SPI
 M:	Nikolai Artemiev <nartemiev@google.com>
 S:	Maintained
