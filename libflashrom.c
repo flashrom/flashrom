@@ -525,7 +525,7 @@ _free_ret:
 		flashrom_layout_release(chip_layout);
 	free(desc);
 	return ret;
-#endif
+#endif /* __FLASHROM_LITTLE_ENDIAN__ */
 }
 
 #ifdef __FLASHROM_LITTLE_ENDIAN__
