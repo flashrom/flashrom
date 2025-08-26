@@ -29,7 +29,7 @@ lt_version = '@0@.@1@.@2@'.format(lt_current, lt_age, lt_revision)
 
 flashrom_version = meson.project_version()
 git = find_program('git', native : true, required : false)
-if git.found()
+if git.found() and fs.is_dir(meson.project_source_root()/'.git')
   version_git = run_command('git', 'describe', check : false)
   if version_git.returncode() == 0
     flashrom_version += ' (git:@0@)'.format(version_git.stdout().strip())
