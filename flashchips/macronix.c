@@ -1854,7 +1854,7 @@
 
 	{
 		.vendor		= "Macronix",
-		.name		= "MX25U12835F",
+		.name		= "MX25U12835F/MX25U12873F",
 		.bustype	= BUS_SPI,
 		.manufacture_id	= MACRONIX_ID,
 		.model_id	= MACRONIX_MX25U12835E,
