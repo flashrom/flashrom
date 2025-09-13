@@ -664,6 +664,81 @@ void probe_st95_no_matches_found(void **state)
 	assert_true((probe_io_state.counter >= PROBE_COUNT_ALL_SPI_OPCODES)
 		       && (probe_io_state.counter <= flashchips_size));
 }
+
+void probe_at25f_rdid_fixed_chipname(void **state)
+{
+	struct probe_io_state probe_io_state = {
+		.opcode			= AT25F_RDID,
+		.readcount		= AT25F_RDID_INSIZE,
+		.writecount		= AT25F_RDID_OUTSIZE,
+		.vendor_id		= 0x1F, /* Atmel */
+		.model_id_left_byte	= 0x63, /* ATMEL_AT25F2048 */
+		.model_id_right_byte	= 0x00, /* Not used for ATMEL_AT25F2048 */
+	};
+	MOCK_LINUX_SPI(&probe_io_state);
+
+	const char *expected_matched_names[1] = {"AT25F2048"};
+	run_probe_v2_lifecycle(state, &linux_spi_io, &programmer_linux_spi, "dev=/dev/null",
+				"AT25F2048", expected_matched_names, 1);
+
+	print_probing_results(probe_io_state);
+
+	/* Since fixed chip name was given, probing should happen only once, for that name. */
+	assert_int_equal(1, probe_io_state.opcode_counter);
+	assert_int_equal(1, probe_io_state.counter);
+}
+
+void probe_at25f_rdid_try_all_flashchips(void **state)
+{
+	struct probe_io_state probe_io_state = {
+		.opcode			= AT25F_RDID,
+		.readcount		= AT25F_RDID_INSIZE,
+		.writecount		= AT25F_RDID_OUTSIZE,
+		.vendor_id		= 0x1F, /* Atmel */
+		.model_id_left_byte	= 0x63, /* ATMEL_AT25F2048 */
+		.model_id_right_byte	= 0x00, /* Not used for ATMEL_AT25F2048 */
+	};
+	MOCK_LINUX_SPI(&probe_io_state);
+
+	const char *expected_matched_names[1] = {"AT25F2048"};
+	run_probe_v2_lifecycle(state, &linux_spi_io, &programmer_linux_spi, "dev=/dev/null",
+				NULL, /* no fixed name, go through all flashchips */
+				expected_matched_names, 1);
+
+	print_probing_results(probe_io_state);
+
+	assert_int_equal(PROBE_COUNT_AT25F_RDID, probe_io_state.opcode_counter);
+
+	// Uncomment when caching is fixed for all opcodes
+	// assert_int_equal(PROBE_COUNT_ALL_SPI_OPCODES, probe_io_state.counter);
+}
+
+void probe_at25f_rdid_no_matches_found(void **state)
+{
+	struct probe_io_state probe_io_state = {
+		.opcode			= AT25F_RDID,
+		.readcount		= AT25F_RDID_INSIZE,
+		.writecount		= AT25F_RDID_OUTSIZE,
+		/* The values below represent non-existent chip. */
+		.vendor_id		= 0x00,
+		.model_id_left_byte	= 0xff,
+		.model_id_right_byte	= 0xff,
+	};
+	MOCK_LINUX_SPI(&probe_io_state);
+
+	run_probe_v2_lifecycle(state, &linux_spi_io, &programmer_linux_spi, "dev=/dev/null",
+				NULL, /* no fixed name, go through all flashchips */
+				NULL, 0);
+
+	print_probing_results(probe_io_state);
+
+	/* No matches, but we need to go through everything to find that out. */
+	assert_int_equal(PROBE_COUNT_AT25F_RDID, probe_io_state.opcode_counter);
+
+	// Uncomment when caching is fixed for all opcodes
+	// assert_int_equal(PROBE_COUNT_ALL_SPI_OPCODES, probe_io_state.counter);
+}
+
 #else
 	SKIP_TEST(probe_jedec_rdid3_fixed_chipname)
 	SKIP_TEST(probe_jedec_rdid3_try_all_flashchips)
@@ -683,4 +758,7 @@ void probe_st95_no_matches_found(void **state)
 	SKIP_TEST(probe_st95_fixed_chipname)
 	SKIP_TEST(probe_st95_try_all_flashchips)
 	SKIP_TEST(probe_st95_no_matches_found)
+	SKIP_TEST(probe_at25f_rdid_fixed_chipname)
+	SKIP_TEST(probe_at25f_rdid_try_all_flashchips)
+	SKIP_TEST(probe_at25f_rdid_no_matches_found)
 #endif /* CONFIG_LINUX_SPI */

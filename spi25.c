@@ -23,6 +23,7 @@ enum id_type {
 	RDID4,
 	REMS,
 	RES2,
+	AT25F,
 	NUM_ID_TYPES,
 };
 
@@ -254,15 +255,17 @@ int probe_spi_res2(struct flashctx *flash)
 int probe_spi_at25f(struct flashctx *flash)
 {
 	static const unsigned char cmd[AT25F_RDID_OUTSIZE] = { AT25F_RDID };
-	unsigned char readarr[AT25F_RDID_INSIZE];
 	uint32_t id1;
 	uint32_t id2;
 
-	if (spi_send_command(flash, sizeof(cmd), sizeof(readarr), cmd, readarr))
-		return 0;
+	if (!id_cache[AT25F].is_cached) {
+		if (spi_send_command(flash, sizeof(cmd), AT25F_RDID_INSIZE, cmd, id_cache[AT25F].bytes))
+			return 0;
+		id_cache[AT25F].is_cached = true;
+	}
 
-	id1 = readarr[0];
-	id2 = readarr[1];
+	id1 = id_cache[AT25F].bytes[0];
+	id2 = id_cache[AT25F].bytes[1];
 
 	msg_cdbg("%s: id1 0x%02"PRIx32", id2 0x%02"PRIx32"\n", __func__, id1, id2);
 

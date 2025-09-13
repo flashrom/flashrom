@@ -69,6 +69,9 @@ void probe_big_spansion_no_matches_found(void **state);
 void probe_st95_fixed_chipname(void **state);
 void probe_st95_try_all_flashchips(void **state);
 void probe_st95_no_matches_found(void **state);
+void probe_at25f_rdid_fixed_chipname(void **state);
+void probe_at25f_rdid_try_all_flashchips(void **state);
+void probe_at25f_rdid_no_matches_found(void **state);
 
 /* lifecycle.c */
 void dummy_basic_lifecycle_test_success(void **state);
