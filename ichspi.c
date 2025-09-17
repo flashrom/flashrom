@@ -1287,6 +1287,13 @@ struct hwseq_data {
 	struct fd_region fd_regions[MAX_FD_REGIONS];
 };
 
+#define MAX_PR_REGISTERS 6
+struct flash_region ranges_data[MAX_PR_REGISTERS];
+struct protected_ranges ranges = {
+	.count = 0,
+	.ranges = ranges_data,
+};
+
 static struct hwseq_data *get_hwseq_data_from_context(const struct flashctx *flash)
 {
 	return flash->mst->opaque.data;
@@ -1467,6 +1474,21 @@ static void ich_get_region(const struct flashctx *flash, unsigned int addr, stru
 	}
 
 	region->name = strdup(name);
+}
+
+static void ich_get_protected_ranges(struct protected_ranges *protected_ranges) {
+	protected_ranges->count = ranges.count;
+	protected_ranges->ranges = malloc(sizeof(*ranges.ranges) * ranges.count);
+	for (int i = 0; i < ranges.count; ++i) {
+		if (ranges.ranges[i].name == NULL)
+			protected_ranges->ranges[i].name = strdup("");
+		else
+			protected_ranges->ranges[i].name = strdup(ranges.ranges[i].name);
+		protected_ranges->ranges[i].start = ranges.ranges[i].start;
+		protected_ranges->ranges[i].end = ranges.ranges[i].end;
+		protected_ranges->ranges[i].read_prot = ranges.ranges[i].read_prot;
+		protected_ranges->ranges[i].write_prot = ranges.ranges[i].write_prot;
+	}
 }
 
 /* Given RDID info, return pointer to entry in flashchips[] */
@@ -1952,12 +1974,18 @@ static enum ich_access_protection ich9_handle_region_access(struct fd_region *fd
 #define ICH_PR_PERMS(pr)	(((~((pr) >> PR_RP_OFF) & 1) << 0) | \
 				 ((~((pr) >> PR_WP_OFF) & 1) << 1))
 
-static enum ich_access_protection ich9_handle_pr(const size_t reg_pr0, unsigned int i)
+static enum ich_access_protection ich9_handle_pr(const size_t reg_pr0, unsigned int i, struct flash_region *prot)
 {
 	uint8_t off = reg_pr0 + (i * 4);
 	uint32_t pr = mmio_readl(ich_spibar + off);
 	unsigned int rwperms_idx = ICH_PR_PERMS(pr);
 	enum ich_access_protection rwperms = access_perms_to_protection[rwperms_idx];
+
+	prot->name = NULL;
+	prot->start = ICH_FREG_BASE(pr);
+	prot->end = ICH_FREG_LIMIT(pr);
+	prot->write_prot = (rwperms == WRITE_PROT) || (rwperms == LOCKED);
+	prot->read_prot = (rwperms == READ_PROT) || (rwperms == LOCKED);
 
 	/* From 5 on we have GPR registers and start from 0 again. */
 	const char *const prefix = i >= 5 ? "G" : "";
@@ -2012,16 +2040,17 @@ static const struct spi_master spi_master_ich = {
 };
 
 static const struct opaque_master opaque_master_ich_hwseq = {
-	.max_data_read	= 64,
-	.max_data_write	= 64,
-	.probe		= ich_hwseq_probe,
-	.read		= ich_hwseq_read,
-	.write		= ich_hwseq_write,
-	.erase		= ich_hwseq_block_erase,
-	.read_register	= ich_hwseq_read_status,
-	.write_register	= ich_hwseq_write_status,
-	.get_region	= ich_get_region,
-	.shutdown	= ich_hwseq_shutdown,
+	.max_data_read		= 64,
+	.max_data_write		= 64,
+	.probe			= ich_hwseq_probe,
+	.read			= ich_hwseq_read,
+	.write			= ich_hwseq_write,
+	.erase			= ich_hwseq_block_erase,
+	.read_register		= ich_hwseq_read_status,
+	.write_register		= ich_hwseq_write_status,
+	.get_region		= ich_get_region,
+	.get_protected_ranges	= ich_get_protected_ranges,
+	.shutdown		= ich_hwseq_shutdown,
 };
 
 static int init_ich7_spi(void *spibar, enum ich_chipset ich_gen)
@@ -2248,7 +2277,13 @@ static int init_ich_default(const struct programmer_cfg *cfg, void *spibar, enum
 		/* if not locked down try to disable PR locks first */
 		if (!ichspi_lock)
 			ich9_set_pr(reg_pr0, i, 0, 0);
-		ich_spi_rw_restricted |= ich9_handle_pr(reg_pr0, i);
+		struct flash_region pr_region = { 0 };
+		enum ich_access_protection rwperms = ich9_handle_pr(reg_pr0, i, &pr_region);
+		ich_spi_rw_restricted |= rwperms;
+		if (rwperms != NO_PROT) {
+			ranges_data[ranges.count] = pr_region;
+			ranges.count += 1;
+		}
 	}
 
 	switch (ich_spi_rw_restricted) {

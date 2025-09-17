@@ -23,3 +23,18 @@ Added support
 * Intel Wildcat Lake chipset
 * Eon EN25QX128A
 * PUYA P25D80H
+
+New features
+============
+
+Fail immediately when trying to write/erase wp regions
+------------------------------------------------------
+
+This change is done so it's harder for user to brick his own platform.
+Information about read-only regions can easily be missed as flashrom
+can output a lot of information on screen. Even if you notice you might
+not know if one of the regions you requested falls inside read-only
+range, especially if using different names for those regions.
+If you are flashing multiple regions or ones that partially overlap with
+read-only parts then that could result in flashrom failing in the
+middle, leaving you in unknown state.

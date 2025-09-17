@@ -384,6 +384,22 @@ void get_flash_region(const struct flashctx *flash, int addr, struct flash_regio
 	}
 }
 
+void get_protected_ranges(const struct flashctx *flash, struct protected_ranges *ranges) {
+	if ((flash->mst->buses_supported & BUS_PROG) && flash->mst->opaque.get_protected_ranges) {
+		flash->mst->opaque.get_protected_ranges(ranges);
+	} else {
+		*ranges = (const struct protected_ranges){ 0 };
+	}
+}
+
+void release_protected_ranges(const struct flashctx *flash, struct protected_ranges *ranges) {
+	for (int i = 0; i < ranges->count; ++i) {
+		free(ranges->ranges[i].name);
+	}
+	free(ranges->ranges);
+	*ranges = (const struct protected_ranges){ 0 };
+}
+
 int check_for_unwritable_regions(const struct flashctx *flash, unsigned int start, unsigned int len)
 {
 	struct flash_region region;
@@ -1817,6 +1833,58 @@ warn_out:
 	return ret;
 }
 
+static bool can_change_target_regions(struct flashctx *flash) {
+	bool check_wp = false;
+	size_t wp_start, wp_len;
+	enum flashrom_wp_mode mode;
+	struct flashrom_wp_cfg *cfg = NULL;
+	const struct romentry *entry = NULL;
+	const struct flashrom_layout *const layout = get_layout(flash);
+	struct protected_ranges ranges;
+	get_protected_ranges(flash, &ranges);
+
+	if (flashrom_wp_cfg_new(&cfg) == FLASHROM_WP_OK &&
+		flashrom_wp_read_cfg(cfg, flash) == FLASHROM_WP_OK)
+	{
+		flashrom_wp_get_range(&wp_start, &wp_len, cfg);
+		mode = flashrom_wp_get_mode(cfg);
+		if (mode != FLASHROM_WP_MODE_DISABLED && wp_len != 0)
+			check_wp = true;
+	}
+	flashrom_wp_cfg_release(cfg);
+
+	while ((entry = layout_next_included(layout, entry))) {
+		if (!flash->flags.skip_unwritable_regions &&
+			check_for_unwritable_regions(flash, entry->region.start,
+						     entry->region.end - entry->region.start + 1))
+		{
+			release_protected_ranges(flash, &ranges);
+			return false;
+		}
+		if (check_wp && entry->region.start < wp_start + wp_len && wp_start <= entry->region.end) {
+			msg_gerr("%s: cannot fully update %s region (%#08"PRIx32"..%#08"PRIx32")"
+				 " due to chip's write-protection.\n", __func__,
+				 entry->region.name, entry->region.start, entry->region.end);
+			release_protected_ranges(flash, &ranges);
+			return false;
+		}
+		for (int i = 0; i < ranges.count; ++i) {
+			struct flash_region prot = ranges.ranges[i];
+			if (prot.write_prot && prot.start <= entry->region.end &&
+			    prot.end >= entry->region.start) {
+				msg_gerr("%s: cannot fully update %s region (%#08"PRIx32"..%#08"PRIx32")"
+					 " due to chipset write-protection.\n", __func__,
+					 entry->region.name, entry->region.start, entry->region.end);
+				release_protected_ranges(flash, &ranges);
+				return false;
+			}
+		}
+	}
+
+	release_protected_ranges(flash, &ranges);
+	return true;
+}
+
 int prepare_flash_access(struct flashctx *const flash,
 			 const bool read_it, const bool write_it,
 			 const bool erase_it, const bool verify_it)
@@ -1829,6 +1897,13 @@ int prepare_flash_access(struct flashctx *const flash,
 	if (layout_sanity_checks(flash)) {
 		msg_cerr("Requested regions can not be handled. Aborting.\n");
 		return 1;
+	}
+
+	if ((write_it || erase_it) && !flash->flags.force) {
+		if (!can_change_target_regions(flash)) {
+			msg_cerr("At least one target region is not fully writable. Aborting.\n");
+			return 1;
+		}
 	}
 
 	if (map_flash(flash) != 0)
