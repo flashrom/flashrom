@@ -1,20 +1,11 @@
 /*
  * This file is part of the flashrom project.
  *
- * Copyright (C) 2000 Silicon Integrated System Corporation
- * Copyright (C) 2000 Ronald G. Minnich <rminnich@gmail.com>
- * Copyright (C) 2005-2007 coresystems GmbH <stepan@coresystems.de>
- * Copyright (C) 2006-2009 Carl-Daniel Hailfinger
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * SPDX-License-Identifier: GPL-2.0-or-later
+ * SPDX-FileCopyrightText: 2000 Silicon Integrated System Corporation
+ * SPDX-FileCopyrightText: 2000 Ronald G. Minnich <rminnich@gmail.com>
+ * SPDX-FileCopyrightText: 2005-2007 coresystems GmbH <stepan@coresystems.de>
+ * SPDX-FileCopyrightText: 2006-2009 Carl-Daniel Hailfinger
  */
 
 #ifndef __FLASHCHIPS_H__
