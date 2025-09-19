@@ -22,12 +22,6 @@
 
 #include "flash.h"	/* for chipaddr and flashctx */
 
-/* spi.c */
-int spi_aai_write(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
-int spi_chip_write_256(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
-int spi_chip_read(struct flashctx *flash, uint8_t *buf, unsigned int start, int unsigned len);
-bool spi_probe_opcode(const struct flashctx *flash, uint8_t opcode);
-
 /* spi25.c */
 int probe_spi_rdid(struct flashctx *flash);
 int probe_spi_rdid4(struct flashctx *flash);

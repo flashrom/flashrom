@@ -249,4 +249,9 @@ int spi_send_multicommand(const struct flashctx *flash, struct spi_command *cmds
 
 void clear_spi_id_cache(void);
 
+int spi_aai_write(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
+int spi_chip_write_256(struct flashctx *flash, const uint8_t *buf, unsigned int start, unsigned int len);
+int spi_chip_read(struct flashctx *flash, uint8_t *buf, unsigned int start, int unsigned len);
+bool spi_probe_opcode(const struct flashctx *flash, uint8_t opcode);
+
 #endif		/* !__SPI_H__ */
