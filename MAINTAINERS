@@ -138,6 +138,7 @@ M:	Anastasia Klimchuk <aklm@chromium.org>
 S:	Maintained
 F:	doc/
 F:	README.rst
+F:	COPYING.rst
 
 ################################################################################
 # PROGRAMMERS
