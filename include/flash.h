@@ -712,6 +712,7 @@ int write_flash(struct flashctx *flash, const uint8_t *buf, unsigned int start, 
 
 #define ERROR_FLASHROM_PROBE_NO_CHIPS_FOUND -1
 #define ERROR_FLASHROM_PROBE_INTERNAL_ERROR -2
+#define ERROR_FLASHROM_PREPARE_FLASH_ACCESS -3
 
 struct cli_progress {
 	unsigned int stage_pc[FLASHROM_PROGRESS_NR];

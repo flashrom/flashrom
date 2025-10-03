@@ -1966,12 +1966,26 @@ void finalize_flash_access(struct flashctx *const flash)
 
 int flashrom_flash_erase(struct flashctx *const flashctx)
 {
-	if (prepare_flash_access(flashctx, false, false, true, flashctx->flags.verify_after_write))
-		return 1;
+	if (prepare_flash_access(flashctx, false, false, true, flashctx->flags.verify_after_write)) {
+		msg_gerr("Error: some of the required checks to prepare flash access failed. "
+			 "Earlier messages should give more details.\n"
+			 "Erase operation has not started.\n");
+		return ERROR_FLASHROM_PREPARE_FLASH_ACCESS;
+	}
 
 	const int ret = erase_by_layout(flashctx);
 
 	finalize_flash_access(flashctx);
+
+	/*
+	 * FIXME: Do we really want the scary warning if erase failed?
+	 * After all, after erase the chip is either blank or partially
+	 * blank or it has the old contents. A blank chip won't boot,
+	 * so if the user wanted erase and reboots afterwards, the user
+	 * knows very well that booting won't work.
+	 */
+	if (ret)
+		emergency_help_message();
 
 	return ret;
 }
@@ -2063,8 +2077,12 @@ int flashrom_image_write(struct flashctx *const flashctx, void *const buffer, co
 	}
 #endif
 
-	if (prepare_flash_access(flashctx, false, true, false, verify))
+	if (prepare_flash_access(flashctx, false, true, false, verify)) {
+		msg_gerr("Error: some of the required checks to prepare flash access failed. "
+			 "Earlier messages should give more details.\n"
+			 "Write operation has not started.\n");
 		goto _free_ret;
+	}
 
 	/* If given, assume flash chip contains same data as `refcontents`. */
 	if (refcontents) {

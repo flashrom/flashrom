@@ -1491,15 +1491,6 @@ int main(int argc, char *argv[])
 		ret = do_extract(&context);
 	else if (options.erase_it) {
 		ret = flashrom_flash_erase(&context);
-		/*
-		 * FIXME: Do we really want the scary warning if erase failed?
-		 * After all, after erase the chip is either blank or partially
-		 * blank or it has the old contents. A blank chip won't boot,
-		 * so if the user wanted erase and reboots afterwards, the user
-		 * knows very well that booting won't work.
-		 */
-		if (ret)
-			emergency_help_message();
 	}
 	else if (options.write_it)
 		ret = do_write(&context, options.filename, options.referencefile);

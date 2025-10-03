@@ -285,7 +285,7 @@ void full_chip_erase_with_wp_dummyflasher_test_success(void **state)
 	/* Try erasing the chip again. Now that WP is active, the first 4 KiB is
 	   protected and we're trying to erase the whole chip, erase should
 	   fail. */
-	assert_int_equal(1, flashrom_flash_erase(&flash));
+	assert_int_equal(ERROR_FLASHROM_PREPARE_FLASH_ACCESS, flashrom_flash_erase(&flash));
 
 	teardown(&layout);
 
