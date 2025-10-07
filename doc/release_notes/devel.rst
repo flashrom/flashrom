@@ -7,13 +7,12 @@ the next release of flashrom and which are currently only available by source
 code checkout (see :doc:`../dev_guide/building_from_source`). These changes
 may be further revised before the next release.
 
-Known issues
-============
+Bugs fixed
+==========
 
-AMD-based PCs with FCH are unable to read flash contents for internal (BIOS
-flash) chips larger than 16 MB, and attempting to do so may crash the system.
-Systems with AMD "Promontory" IO extenders (mostly "Zen" desktop platforms) are
-not currently supported.
+AMD-based PCs with FCH were unable to read flash contents for internal (BIOS
+flash) chips larger than 16 MB, and attempting to do so could crash the
+system.
 
 https://ticket.coreboot.org/issues/370
 
