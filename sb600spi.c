@@ -636,6 +636,13 @@ int sb600_probe_spi(const struct programmer_cfg *cfg, struct pci_dev *dev)
 
 	/* Read SPI_BaseAddr */
 	tmp = pci_read_long(dev, 0xa0);
+	/* If the BAR register is 0xffffffff, ROM Armor is likely active. */
+	if (tmp == UINT32_MAX) {
+		msg_perr("SPI BAR register is invalid.\n"
+			 "ROM Armor is possibly active and prevents SPI access.\n");
+		return ERROR_FLASHROM_NONFATAL;
+	}
+
 	tmp &= 0xffffffe0;	/* remove bits 4-0 (reserved) */
 	msg_pdbg("SPI base address is at 0x%"PRIx32"\n", tmp);
 
