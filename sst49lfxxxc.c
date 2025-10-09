@@ -17,6 +17,7 @@
  */
 
 #include "flash.h"
+#include "parallel.h"
 #include "chipdrivers.h"
 
 int erase_sector_49lfxxxc(struct flashctx *flash, unsigned int address,

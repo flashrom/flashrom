@@ -16,6 +16,7 @@
  */
 
 #include "flash.h"
+#include "parallel.h"
 #include "chipdrivers.h"
 
 /*

@@ -20,6 +20,7 @@
  */
 
 #include "flash.h"
+#include "parallel.h"
 #include "chipdrivers.h"
 
 #define MAX_REFLASH_TRIES 0x10

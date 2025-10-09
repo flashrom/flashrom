@@ -23,6 +23,7 @@
  */
 
 #include "flash.h"
+#include "parallel.h"
 #include "chipdrivers.h"
 
 static int stm50_erase_sector(struct flashctx *flash, unsigned int addr)

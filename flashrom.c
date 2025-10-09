@@ -30,6 +30,7 @@
 #include <ctype.h>
 
 #include "flash.h"
+#include "parallel.h"
 #include "flashchips.h"
 #include "programmer.h"
 #include "hwaccess_physmap.h"

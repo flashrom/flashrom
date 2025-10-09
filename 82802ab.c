@@ -24,6 +24,7 @@
 
 #include <stdbool.h>
 #include "flash.h"
+#include "parallel.h"
 #include "chipdrivers.h"
 
 void print_status_82802ab(uint8_t status)

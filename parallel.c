@@ -19,7 +19,7 @@
  * GNU General Public License for more details.
  */
 
-#include "flash.h"
+#include "parallel.h"
 #include "programmer.h"
 
 void chip_writeb(const struct flashctx *flash, uint8_t val, chipaddr addr)

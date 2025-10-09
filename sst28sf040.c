@@ -17,6 +17,7 @@
  */
 
 #include "flash.h"
+#include "parallel.h"
 #include "chipdrivers.h"
 
 #define AUTO_PG_ERASE1		0x20

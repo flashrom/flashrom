@@ -16,6 +16,7 @@
  */
 
 #include "flash.h"
+#include "parallel.h"
 #include "chipdrivers.h"
 
 static uint8_t w39_idmode_readb(struct flashctx *flash, unsigned int offset)
