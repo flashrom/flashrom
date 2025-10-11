@@ -1,19 +1,11 @@
 /*
  * This file is part of the flashrom project.
  *
- * Copyright (C) 2013 Ricardo Ribalda - Qtechnology A/S
- * Copyright (C) 2011, 2014 Stefan Tauner
+ * SPDX-License-Identifier: GPL-2.0-only
+ * SPDX-FileCopyrightText: 2013 Ricardo Ribalda - Qtechnology A/S
+ * SPDX-FileCopyrightText: 2011, 2014 Stefan Tauner
  *
  * Based on nicinctel_spi.c and ichspi.c
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; version 2 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
  */
 
 /*

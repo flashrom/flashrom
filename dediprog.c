@@ -1,18 +1,10 @@
 /*
  * This file is part of the flashrom project.
  *
- * Copyright (C) 2010 Carl-Daniel Hailfinger
- * Copyright (C) 2015 Simon Glass
- * Copyright (C) 2015 Stefan Tauner
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; version 2 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * SPDX-License-Identifier: GPL-2.0-only
+ * SPDX-FileCopyrightText: 2010 Carl-Daniel Hailfinger
+ * SPDX-FileCopyrightText: 2015 Simon Glass
+ * SPDX-FileCopyrightText: 2015 Stefan Tauner
  */
 
 #include <sys/types.h>
