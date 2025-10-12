@@ -33,6 +33,7 @@ enum {
 	OPTION_IFD = 0x0100,
 	OPTION_FMAP,
 	OPTION_FMAP_FILE,
+	OPTION_FMAP_VERIFY,
 	OPTION_FLASH_CONTENTS,
 	OPTION_FLASH_NAME,
 	OPTION_FLASH_SIZE,
@@ -65,7 +66,7 @@ struct cli_options {
 	const struct programmer_entry *prog;
 	char *pparam;
 
-	bool ifd, fmap;
+	bool ifd, fmap, fmap_verify;
 	struct flashrom_layout *layout;
 	struct layout_include_args *include_args;
 	char *layoutfile;
@@ -132,6 +133,7 @@ static void cli_classic_usage(const char *name)
 	       "      --flash-size                  read out the detected flash size\n"
 	       "      --fmap                        read ROM layout from fmap embedded in ROM\n"
 	       "      --fmap-file <fmapfile>        read ROM layout from fmap in <fmapfile>\n"
+	       "      --fmap-verify                 read ROM layout from fmap and verify it matches file fmap\n"
 	       "      --ifd                         read layout from an Intel Firmware Descriptor\n"
 	       " -i | --include <region>[:<file>]   only read/write image <region> from layout\n"
 	       "                                    (optionally with data from <file>)\n"
@@ -847,7 +849,7 @@ static void parse_options(int argc, char **argv, const char *optstring,
 			break;
 		case OPTION_FMAP_FILE:
 			if (options->fmap)
-				cli_classic_abort_usage("Error: --fmap or --fmap-file specified "
+				cli_classic_abort_usage("Error: --fmap, --fmap-file, or --fmap-verify specified "
 					"more than once. Aborting.\n");
 			if (options->ifd)
 				cli_classic_abort_usage("Error: --fmap-file and --ifd both specified. Aborting.\n");
@@ -858,13 +860,26 @@ static void parse_options(int argc, char **argv, const char *optstring,
 			break;
 		case OPTION_FMAP:
 			if (options->fmap)
-				cli_classic_abort_usage("Error: --fmap or --fmap-file specified "
+				cli_classic_abort_usage("Error: --fmap, --fmap-file, or --fmap-verify specified "
 					"more than once. Aborting.\n");
 			if (options->ifd)
 				cli_classic_abort_usage("Error: --fmap and --ifd both specified. Aborting.\n");
 			if (options->layoutfile)
 				cli_classic_abort_usage("Error: --layout and --fmap both specified. Aborting.\n");
 			options->fmap = true;
+			break;
+		case OPTION_FMAP_VERIFY:
+			if (options->fmap)
+				cli_classic_abort_usage("Error: --fmap, --fmap-file, or --fmap-verify specified "
+					"more than once. Aborting.\n");
+			if (options->ifd)
+				cli_classic_abort_usage("Error: --fmap-verify and --ifd both specified. Aborting.\n");
+			if (options->layoutfile)
+				cli_classic_abort_usage("Error: --fmap-verify and --layout both specified. Aborting.\n");
+			if (options->read_it || options->verify_it)
+				cli_classic_abort_usage("Error: --fmap-verify cannot be used with read or verify operations. Aborting.\n");
+			options->fmap = true;
+			options->fmap_verify = true;
 			break;
 		case 'i':
 			if (register_include_arg(&options->include_args, optarg))
@@ -1060,6 +1075,7 @@ int main(int argc, char *argv[])
 		{"ifd",			0, NULL, OPTION_IFD},
 		{"fmap",		0, NULL, OPTION_FMAP},
 		{"fmap-file",		1, NULL, OPTION_FMAP_FILE},
+		{"fmap-verify",		0, NULL, OPTION_FMAP_VERIFY},
 		{"image",		1, NULL, 'i'}, // (deprecated): back compatibility.
 		{"include",		1, NULL, 'i'},
 		{"flash-contents",	1, NULL, OPTION_FLASH_CONTENTS},
@@ -1436,11 +1452,54 @@ int main(int argc, char *argv[])
 			goto out_shutdown;
 		}
 		free(fmapfile_buffer);
-	} else if (options.fmap && (flashrom_layout_read_fmap_from_rom(&options.layout, &context, 0,
+	} else if (options.fmap) {
+		/* Read layout from ROM fmap */
+		if (flashrom_layout_read_fmap_from_rom(&options.layout, &context, 0,
 				flashrom_flash_getsize(&context)) ||
-				process_include_args(options.layout, options.include_args))) {
-		ret = 1;
-		goto out_shutdown;
+				process_include_args(options.layout, options.include_args)) {
+			ret = 1;
+			goto out_shutdown;
+		}
+		if (options.fmap_verify) {
+			struct flashrom_layout *file_layout = NULL;
+			struct stat s;
+			if (stat(options.filename, &s) != 0) {
+				msg_gerr("Failed to stat the file \"%s\"\n", options.filename);
+				ret = 1;
+				goto out_release;
+			}
+
+			size_t fmapfile_size = s.st_size;
+			uint8_t *file_buffer = malloc(fmapfile_size);
+			if (!file_buffer) {
+				ret = 1;
+				goto out_release;
+			}
+
+			if (read_buf_from_file(file_buffer, fmapfile_size, options.filename)) {
+				ret = 1;
+				free(file_buffer);
+				goto out_release;
+			}
+			/* Read layout from file fmap */
+			if (flashrom_layout_read_fmap_from_buffer(&file_layout, &context, file_buffer,
+					flashrom_flash_getsize(&context)) ||
+					process_include_args(file_layout, options.include_args)) {
+				ret = 1;
+				free(file_buffer);
+				goto out_release;
+			}
+			free(file_buffer);
+			/* compare the two layouts */
+			if (flashrom_layout_compare(options.layout, file_layout)) {
+				msg_cerr("FMAP layouts do not match! Aborting.\n");
+				flashrom_layout_release(file_layout);
+				ret = 1;
+				goto out_release;
+			}
+			flashrom_layout_release(file_layout);
+			msg_cinfo("FMAP layouts match.\n");
+		}
 	}
 	flashrom_layout_set(&context, options.layout);
 

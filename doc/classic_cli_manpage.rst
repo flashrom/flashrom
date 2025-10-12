@@ -15,7 +15,7 @@ SYNOPSIS
 |          -p <programmername>[:<parameters>] [-c <chipname>]
 |            (--flash-name|--flash-size|
 |             [-E|-x|-r [<file>]|-w [<file>]|-v [<file>]]
-|             [(-l <file>|--ifd|--fmap|--fmap-file <file>)
+|             [(-l <file>|--ifd|--fmap|--fmap-file <file>|--fmap-verify)
 |               [-i <include>[:<file>]]]
 |             [--wp-status] [--wp-list] [--wp-enable|--wp-disable]
 |             [--wp-range <start>,<length>|--wp-region <region>]
@@ -177,6 +177,21 @@ All operations involving any chip access (probe/read/write/...) require the ``-p
         If you only want to update the **COREBOOT** region defined in the binary fmap file, run::
 
                 flashrom -p prog --fmap-file some.rom --image COREBOOT -w some.rom
+
+
+**--fmap-verify**
+        Read ROM layout from fmap embedded in the ROM and verify that it matches the fmap in the file to be written.
+
+        This option is mutually exclusive with **--fmap**, **--fmap-file**, **--layout**, and **--ifd**.
+        It can only be used with write operations, as it does not make sense otherwise. Before writing, **flashrom**
+        will read the fmap from both the flash chip and the file to be written, then compare them. If the fmaps do
+        not match, the write operation will be aborted.
+
+        This is useful to prevent accidentally writing a ROM image with an incompatible layout to a flash chip.
+
+        If you only want to update the **COREBOOT** region defined in the fmap, and verify that the fmap matches, run::
+
+                flashrom -p prog --fmap-verify -w new.rom --image COREBOOT
 
 
 **--ifd**
