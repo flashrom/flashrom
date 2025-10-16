@@ -50,6 +50,19 @@ int flashrom_init(int perform_selfcheck);
  * @return 0 on success
  */
 int flashrom_shutdown(void);
+
+struct flashrom_flashctx;
+
+/**
+ * @brief Create flash context.
+ *
+ * @param[out] flashctx Points to a pointer of type struct flashrom_flashctx
+ *                      that will be initialised to be used for further operations. *flashctx
+ *                      has to be freed by the caller with @ref flashrom_flash_release.*
+ * @return 0 on success
+ */
+int flashrom_create_context(struct flashrom_flashctx **const flashctx);
+
 enum flashrom_log_level {
 	FLASHROM_MSG_ERROR	= 0,
 	FLASHROM_MSG_WARN	= 1,
@@ -117,7 +130,6 @@ struct flashrom_progress {
 	void *user_data;
 };
 
-struct flashrom_flashctx;
 typedef void(flashrom_progress_callback)(struct flashrom_flashctx *flashctx);
 
 /**

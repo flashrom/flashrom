@@ -134,3 +134,18 @@ test('cmocka test flashrom', flashrom_tests)
 if get_option('llvm_cov').enabled()
   run_target('llvm-cov-tests', command : ['../scripts/llvm-cov', flashrom_tests])
 endif
+
+# Creating a second test executable which runs tests as if it is an external
+# flashrom client using libflashrom via public API.
+
+client_test_srcs = files(
+  'external_client.c',
+  'client_tests.c',
+  )
+
+flashrom_client_tests = executable('flashrom_client_tests',
+  client_test_srcs,
+  export_dynamic : true,
+  dependencies : [cmocka_dep, libflashrom_test_dep],
+)
+test('flashrom client tests', flashrom_client_tests)

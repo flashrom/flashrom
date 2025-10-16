@@ -791,6 +791,14 @@ if get_option('tests').auto() or get_option('tests').enabled()
     ],
   )
 
+  # This is a special dependency for tests that run as external client of libflashrom
+  # External client does not know internal symbols, includes libflashrom.h,
+  # and only uses what is in the public API.
+  libflashrom_test_dep = declare_dependency(
+    include_directories : include_dir,
+    link_with : libflashrom
+  )
+
   if cmocka_dep.found()
     subdir('tests')
   endif

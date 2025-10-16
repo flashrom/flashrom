@@ -133,7 +133,9 @@ void probe_v2_error_code_propagation(void **state)
 {
 	(void) state; /* unused */
 
-	struct flashrom_flashctx flashctx = { 0 };
+	struct flashrom_flashctx *flashctx = NULL;
+	assert_int_equal(0, flashrom_create_context(&flashctx));
+
 	struct flashrom_programmer *flashprog;
 	const char **all_matched_names = NULL;
 
@@ -148,7 +150,7 @@ void probe_v2_error_code_propagation(void **state)
 	registered_masters[0].spi.command = &always_fail_spi_send_command;
 
 	assert_int_equal(0 /* no chips found */,
-			flashrom_flash_probe_v2(&flashctx, &all_matched_names,
+			flashrom_flash_probe_v2(flashctx, &all_matched_names,
 			flashprog,
 			NULL));
 
@@ -159,6 +161,7 @@ void probe_v2_error_code_propagation(void **state)
 	assert_int_equal(0, flashrom_programmer_shutdown(flashprog));
 
 	flashrom_data_free(all_matched_names);
+	flashrom_flash_release(flashctx);
 }
 #else
 	SKIP_TEST(probe_v2_error_code_propagation)

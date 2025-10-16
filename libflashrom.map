@@ -1,5 +1,6 @@
 LIBFLASHROM_1.0 {
   global:
+    flashrom_create_context;
     flashrom_data_free;
     flashrom_flag_get;
     flashrom_flag_set;

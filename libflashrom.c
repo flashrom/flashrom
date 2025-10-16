@@ -49,6 +49,23 @@ int flashrom_shutdown(void)
 	return 0; /* TODO: nothing to do? */
 }
 
+int flashrom_create_context(struct flashrom_flashctx **const flashctx)
+{
+	struct flashrom_flashctx *const out = malloc(sizeof(struct flashrom_flashctx));
+	if (!out)
+		return 1;
+
+	/* Init of values inside context. */
+	*out = (struct flashrom_flashctx) {
+		.virtual_memory = (chipaddr)ERROR_PTR,
+		.virtual_registers = (chipaddr)ERROR_PTR,
+	};
+
+	*flashctx = out;
+
+	return 0;
+}
+
 void flashrom_set_log_level(enum flashrom_log_level level)
 {
 	global_log_level = level;

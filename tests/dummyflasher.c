@@ -257,8 +257,7 @@ static void dummy_test_shutdown(struct flashrom_flashctx *flashctx,
 
 	io_mock_register(NULL);
 
-	flashrom_layout_release(flashctx->default_layout);
-	free(flashctx->chip);
+	flashrom_flash_release(flashctx);
 }
 
 void dummy_probe_and_read(void **state)
@@ -266,21 +265,22 @@ void dummy_probe_and_read(void **state)
 	(void) state; /* unused */
 
 	struct flashrom_programmer *flashprog = NULL;
-	struct flashrom_flashctx flashctx = { 0 };
+	struct flashrom_flashctx *flashctx = NULL;
+	assert_int_equal(0, flashrom_create_context(&flashctx));
 
-	dummy_test_init_and_probe(&flashctx, flashprog);
+	dummy_test_init_and_probe(flashctx, flashprog);
 
 	const unsigned long image_size = 16384 * KiB;
 	unsigned char *buf = calloc(image_size, sizeof(unsigned char));
 	assert_non_null(buf);
 
 	printf("Testing flashrom_image_read ...\n");
-	assert_int_equal(0, flashrom_image_read(&flashctx, buf, image_size));
+	assert_int_equal(0, flashrom_image_read(flashctx, buf, image_size));
 	printf("... flashrom_image_read is successful.\n");
 
 	free(buf);
 
-	dummy_test_shutdown(&flashctx, flashprog);
+	dummy_test_shutdown(flashctx, flashprog);
 }
 
 void dummy_probe_and_write(void **state)
@@ -288,21 +288,22 @@ void dummy_probe_and_write(void **state)
 	(void) state; /* unused */
 
 	struct flashrom_programmer *flashprog = NULL;
-	struct flashrom_flashctx flashctx = { 0 };
+	struct flashrom_flashctx *flashctx = NULL;
+	assert_int_equal(0, flashrom_create_context(&flashctx));
 
-	dummy_test_init_and_probe(&flashctx, flashprog);
+	dummy_test_init_and_probe(flashctx, flashprog);
 
 	const unsigned long image_size = 16384 * KiB;
 	uint8_t *const newcontents = malloc(image_size);
 	assert_non_null(newcontents);
 
 	printf("Testing flashrom_image_write ...\n");
-	assert_int_equal(0, flashrom_image_write(&flashctx, newcontents, image_size, NULL));
+	assert_int_equal(0, flashrom_image_write(flashctx, newcontents, image_size, NULL));
 	printf("... flashrom_image_write is successful.\n");
 
 	free(newcontents);
 
-	dummy_test_shutdown(&flashctx, flashprog);
+	dummy_test_shutdown(flashctx, flashprog);
 }
 
 void dummy_probe_and_erase(void **state)
@@ -310,15 +311,16 @@ void dummy_probe_and_erase(void **state)
 	(void) state; /* unused */
 
 	struct flashrom_programmer *flashprog = NULL;
-	struct flashrom_flashctx flashctx = { 0 };
+	struct flashrom_flashctx *flashctx = NULL;
+	assert_int_equal(0, flashrom_create_context(&flashctx));
 
-	dummy_test_init_and_probe(&flashctx, flashprog);
+	dummy_test_init_and_probe(flashctx, flashprog);
 
 	printf("Testing flashrom_flash_erase ...\n");
-	assert_int_equal(0, flashrom_flash_erase(&flashctx));
+	assert_int_equal(0, flashrom_flash_erase(flashctx));
 	printf("... flashrom_flash_erase is successful.\n");
 
-	dummy_test_shutdown(&flashctx, flashprog);
+	dummy_test_shutdown(flashctx, flashprog);
 }
 
 #else

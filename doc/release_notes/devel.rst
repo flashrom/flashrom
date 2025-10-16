@@ -63,3 +63,19 @@ New programmers
 ===============
 
 * Nvidia System Management Agent
+
+libflashrom
+===========
+
+The real life usage of ``flashrom_flash_probe_v2`` discovered the issue, the error messages as below::
+
+    error: variable 'flashctx' has initializer but incomplete type
+    error: storage size of 'flashctx' isn't known
+
+New API method ``flashrom_create_context`` is created to fix this.
+``flashrom_create_context`` does create and all initialisations needed for flash context.
+It need to be called prior to any other API calls that require flash context.
+
+The issue was a good motivation to write a new test which is built and runs as an external
+client of libflashrom. The test runs in a separate test executable to achieve this.
+As a bonus, test code in ``tests/external_client.c`` is an example how to use libflashrom API.

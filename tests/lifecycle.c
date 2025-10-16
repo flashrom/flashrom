@@ -13,11 +13,12 @@ static void probe_chip_v2(const struct programmer_entry *prog,
 			const char **expected_matched_names,
 			unsigned int expected_matched_count)
 {
-	struct flashrom_flashctx flashctx = { 0 };
+	struct flashrom_flashctx *flashctx = NULL;
+	assert_int_equal(0, flashrom_create_context(&flashctx));
 	const char **all_matched_names = NULL;
 
 	printf("Testing flashrom_flash_probe_v2 for programmer=%s, chip=%s ... \n", prog->name, chip_name);
-	assert_int_equal(expected_matched_count, flashrom_flash_probe_v2(&flashctx, &all_matched_names,
+	assert_int_equal(expected_matched_count, flashrom_flash_probe_v2(flashctx, &all_matched_names,
 						 flashprog, chip_name));
 
 	for (unsigned int i = 0; i < expected_matched_count; i++)
@@ -26,14 +27,13 @@ static void probe_chip_v2(const struct programmer_entry *prog,
 	assert_null(all_matched_names[expected_matched_count]);
 
 	if (chip_name && expected_matched_count > 0)
-		assert_int_equal(0, strcmp(chip_name, flashctx.chip->name));
+		assert_int_equal(0, strcmp(chip_name, flashctx->chip->name));
 
 	printf("... flashrom_flash_probe_v2 for programmer=%s successful\n", prog->name);
 
 	/* cleanup */
 	flashrom_data_free(all_matched_names);
-	flashrom_layout_release(flashctx.default_layout);
-	free(flashctx.chip);
+	flashrom_flash_release(flashctx);
 }
 
 static void run_lifecycle(void **state, const struct io_mock *io, const struct programmer_entry *prog,
