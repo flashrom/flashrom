@@ -458,10 +458,47 @@ bool flashrom_flag_get(const struct flashrom_flashctx *const flashctx, const enu
 #ifdef __FLASHROM_LITTLE_ENDIAN__
 static int compare_region_with_dump(const struct romentry *const a, const struct romentry *const b)
 {
-	if (a->region.start != b->region.end
+	if (a->region.start != b->region.start
 		|| a->region.end != b->region.end
 		|| strcmp(a->region.name, b->region.name))
 			return 1;
+	return 0;
+}
+
+int flashrom_layout_compare(const struct flashrom_layout *layout1,
+			    const struct flashrom_layout *layout2)
+{
+	if (!layout1 || !layout2) {
+		msg_gerr("Error: NULL layout pointer in comparison.\n");
+		return 1;
+	}
+
+	const struct romentry *entry1 = layout_next(layout1, NULL);
+	const struct romentry *entry2 = layout_next(layout2, NULL);
+
+	while (entry1 && entry2) {
+		if (compare_region_with_dump(entry1, entry2)) {
+			msg_gerr("Layout region mismatch:\n");
+			msg_gerr("  Region 1: '%s' [0x%08" PRIx32 ":0x%08" PRIx32 "]\n",
+				entry1->region.name, entry1->region.start, entry1->region.end);
+			msg_gerr("  Region 2: '%s' [0x%08" PRIx32 ":0x%08" PRIx32 "]\n",
+				entry2->region.name, entry2->region.start, entry2->region.end);
+			return 1;
+		}
+		entry1 = layout_next(layout1, entry1);
+		entry2 = layout_next(layout2, entry2);
+	}
+
+	/* If one layout has more regions than the other */
+	if (entry1 || entry2) {
+		msg_gerr("Layout region count mismatch.\n");
+		if (entry1)
+			msg_gerr("  Extra region in layout 1: '%s'\n", entry1->region.name);
+		if (entry2)
+			msg_gerr("  Extra region in layout 2: '%s'\n", entry2->region.name);
+		return 1;
+	}
+
 	return 0;
 }
 #endif /* __FLASHROM_LITTLE_ENDIAN__ */

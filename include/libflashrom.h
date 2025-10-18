@@ -551,6 +551,21 @@ int flashrom_layout_get_region_range(struct flashrom_layout *layout, const char 
  */
 void flashrom_layout_release(struct flashrom_layout *layout);
 /**
+ * @brief Compare two flashrom layouts for equality.
+ *
+ * Compares all regions in both layouts. Two layouts are considered equal if they
+ * contain the same number of regions, in the same order, with identical start/end
+ * addresses and names.
+ *
+ * @param layout1 First layout to compare.
+ * @param layout2 Second layout to compare.
+ *
+ * @return 0 if layouts are identical,
+ *         1 if they differ or if either layout is NULL.
+ */
+int flashrom_layout_compare(const struct flashrom_layout *layout1,
+			    const struct flashrom_layout *layout2);
+/**
  * @brief Set the active layout for a flash context.
  *
  * Note: The caller must not release the layout as long as it is used through

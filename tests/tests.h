@@ -29,6 +29,7 @@ void flashrom_set_log_callback_v2_test_success(void **state);
 void flashrom_set_log_level_test_success(void **state);
 void flashrom_supported_programmers_test_success(void **state);
 void probe_v2_error_code_propagation(void **state);
+void flashrom_layout_compare_test_success(void **state);
 
 /* spi25.c */
 void spi_write_enable_test_success(void **state);

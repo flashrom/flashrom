@@ -163,3 +163,60 @@ void probe_v2_error_code_propagation(void **state)
 #else
 	SKIP_TEST(probe_v2_error_code_propagation)
 #endif /* CONFIG_DUMMY */
+
+void flashrom_layout_compare_test_success(void **state)
+{
+	(void)state; /* unused */
+	struct flashrom_layout *layout1 = NULL;
+	struct flashrom_layout *layout2 = NULL;
+	struct flashrom_layout *layout3 = NULL;
+
+	/* Create three layouts */
+	assert_int_equal(0, flashrom_layout_new(&layout1));
+	assert_int_equal(0, flashrom_layout_new(&layout2));
+	assert_int_equal(0, flashrom_layout_new(&layout3));
+
+	/* Test 1: NULL pointer handling */
+	assert_int_not_equal(0, flashrom_layout_compare(NULL, layout1));
+	assert_int_not_equal(0, flashrom_layout_compare(layout1, NULL));
+	assert_int_not_equal(0, flashrom_layout_compare(NULL, NULL));
+
+	/* Test 2: Empty layouts should match */
+	assert_int_equal(0, flashrom_layout_compare(layout1, layout2));
+
+	/* Test 3: Add same regions to layout1 and layout2 */
+	assert_int_equal(0, flashrom_layout_add_region(layout1, 0x00000000, 0x000fffff, "REGION1"));
+	assert_int_equal(0, flashrom_layout_add_region(layout1, 0x00100000, 0x001fffff, "REGION2"));
+
+	assert_int_equal(0, flashrom_layout_add_region(layout2, 0x00000000, 0x000fffff, "REGION1"));
+	assert_int_equal(0, flashrom_layout_add_region(layout2, 0x00100000, 0x001fffff, "REGION2"));
+
+	/* Identical layouts should match */
+	assert_int_equal(0, flashrom_layout_compare(layout1, layout2));
+
+	/* Test 4: Add different region to layout3 */
+	assert_int_equal(0, flashrom_layout_add_region(layout3, 0x00000000, 0x000fffff, "REGION1"));
+	assert_int_equal(0, flashrom_layout_add_region(layout3, 0x00100000, 0x002fffff, "REGION2")); /* different end */
+
+	/* Different layouts should not match */
+	assert_int_not_equal(0, flashrom_layout_compare(layout1, layout3));
+
+	/* Test 5: Different number of regions */
+	flashrom_layout_release(layout3);
+	assert_int_equal(0, flashrom_layout_new(&layout3));
+	assert_int_equal(0, flashrom_layout_add_region(layout3, 0x00000000, 0x000fffff, "REGION1"));
+	/* layout3 has only 1 region, layout1 has 2 */
+	assert_int_not_equal(0, flashrom_layout_compare(layout1, layout3));
+
+	/* Test 6: Same regions but different names */
+	flashrom_layout_release(layout3);
+	assert_int_equal(0, flashrom_layout_new(&layout3));
+	assert_int_equal(0, flashrom_layout_add_region(layout3, 0x00000000, 0x000fffff, "DIFFERENT_NAME"));
+	assert_int_equal(0, flashrom_layout_add_region(layout3, 0x00100000, 0x001fffff, "REGION2"));
+	assert_int_not_equal(0, flashrom_layout_compare(layout1, layout3));
+
+	/* Cleanup */
+	flashrom_layout_release(layout1);
+	flashrom_layout_release(layout2);
+	flashrom_layout_release(layout3);
+}
