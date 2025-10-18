@@ -47,6 +47,8 @@ html_theme = 'alabaster'
 
 html_favicon = 'logo/flashrom_icon_color-32x32.ico'
 
+# This disables auto-converting -- to en-dash, which we don't want for classic_cli_manpage.html
+smartquotes = False
 
 # -- Options for manual page output --------------------------------------------
 man_make_section_directory = True
