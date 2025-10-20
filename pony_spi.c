@@ -36,6 +36,7 @@
 #include "flash.h"
 #include "programmer.h"
 #include "platform/udelay.h"
+#include "serial.h"
 
 enum pony_type {
 	TYPE_SI_PROG,

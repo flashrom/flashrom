@@ -15,6 +15,8 @@
  * GNU General Public License for more details.
  */
 
+#include "serial.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
