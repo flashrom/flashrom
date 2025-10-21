@@ -954,6 +954,30 @@ static int spi_prettyprint_status_register_bp2_ep_srwd(struct flashctx *flash)
 		 (status & (1 << 5)) ? "" : "not ");
 	spi_prettyprint_status_register_bp(status, 2);
 	spi_prettyprint_status_register_welwip(status);
+
+	return 0;
+}
+
+/* Used by Spansion S25FL-S chips with second status register. The
+   data sheet names the register as Configuration Register 1. However,
+   the op-codes to access it, read = 0x35, maps to JEDEC_RDSR2. Hence
+   this code uses _sr2. */
+static int spi_prettyprint_status_register_bp2_ep_srwd_sr2(struct flashctx *flash)
+{
+	uint8_t status;
+
+	spi_prettyprint_status_register_bp2_ep_srwd(flash);
+
+	int ret = spi_read_register(flash, STATUS2, &status);
+	if (ret)
+		return ret;
+
+	msg_cdbg("Chip status register 2 is 0x%02x.\n", status);
+	msg_cdbg("Chip status register 2: Top/Bottom (TB) is %s\n", (status & (1 << 5)) ? "bottom" : "top");
+	msg_cdbg("Chip status register 2: BPNV is %s\n", (status & (1 << 3)) ? "volatitle" : "non-volatile");
+	msg_cdbg("Chip status register 2: QUAD is %s\n", (status & (1 << 1)) ? "Quad" : "dual or serial");
+	msg_cdbg("Chip status register 2: freeze is %s\n", (status & (1 << 0)) ? "locked" : "unlocked");
+
 	return 0;
 }
 
@@ -1051,6 +1075,7 @@ printlockfunc_t *lookup_printlock_func_ptr(struct flashctx *flash)
 		case SPI_PRETTYPRINT_STATUS_REGISTER_BP1_SRWD: return &spi_prettyprint_status_register_bp1_srwd;
 		case SPI_PRETTYPRINT_STATUS_REGISTER_BP2_BPL: return &spi_prettyprint_status_register_bp2_bpl;
 		case SPI_PRETTYPRINT_STATUS_REGISTER_BP2_EP_SRWD: return &spi_prettyprint_status_register_bp2_ep_srwd;
+		case SPI_PRETTYPRINT_STATUS_REGISTER_BP2_EP_SRWD_SR2: return &spi_prettyprint_status_register_bp2_ep_srwd_sr2;
 		case SPI_PRETTYPRINT_STATUS_REGISTER_BP2_SRWD: return &spi_prettyprint_status_register_bp2_srwd;
 		case SPI_PRETTYPRINT_STATUS_REGISTER_BP2_TB_BPL: return &spi_prettyprint_status_register_bp2_tb_bpl;
 		case SPI_PRETTYPRINT_STATUS_REGISTER_SRWD_SEC_TB_BP2_WELWIP: return &spi_prettyprint_status_register_srwd_sec_tb_bp2_welwip;

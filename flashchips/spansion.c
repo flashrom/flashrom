@@ -427,7 +427,7 @@
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
-		.printlock	= SPI_PRETTYPRINT_STATUS_REGISTER_BP2_EP_SRWD, /* TODO: SR2 and many others */
+		.printlock	= SPI_PRETTYPRINT_STATUS_REGISTER_BP2_EP_SRWD_SR2,
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP2_SRWD, /* TODO: various other locks */
 		.write		= SPI_CHIP_WRITE256, /* Multi I/O supported */
 		.read		= SPI_CHIP_READ, /* Fast read (0x0B) and multi I/O supported */
@@ -461,7 +461,7 @@
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
-		.printlock	= SPI_PRETTYPRINT_STATUS_REGISTER_BP2_EP_SRWD, /* TODO: SR2 and many others */
+		.printlock	= SPI_PRETTYPRINT_STATUS_REGISTER_BP2_EP_SRWD_SR2,
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP2_SRWD, /* TODO: various other locks */
 		.write		= SPI_CHIP_WRITE256, /* Multi I/O supported */
 		.read		= SPI_CHIP_READ, /* Fast read (0x0B) and multi I/O supported */
@@ -842,6 +842,7 @@
 				.block_erase = SPI_BLOCK_ERASE_60,
 			},
 		},
+		.printlock	= SPI_PRETTYPRINT_STATUS_REGISTER_BP2_EP_SRWD_SR2,
 		.unlock		= SPI_DISABLE_BLOCKPROTECT,
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
@@ -915,7 +916,7 @@
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
-		.printlock	= SPI_PRETTYPRINT_STATUS_REGISTER_BP2_EP_SRWD, /* TODO: SR2 and many others */
+		.printlock	= SPI_PRETTYPRINT_STATUS_REGISTER_BP2_EP_SRWD_SR2,
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP2_SRWD, /* TODO: various other locks */
 		.write		= SPI_CHIP_WRITE256, /* Multi I/O supported */
 		.read		= SPI_CHIP_READ, /* Fast read (0x0B) and multi I/O supported */
@@ -952,7 +953,7 @@
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
-		.printlock	= SPI_PRETTYPRINT_STATUS_REGISTER_BP2_EP_SRWD, /* TODO: SR2 and many others */
+		.printlock	= SPI_PRETTYPRINT_STATUS_REGISTER_BP2_EP_SRWD_SR2,
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP2_SRWD, /* TODO: various other locks */
 		.write		= SPI_CHIP_WRITE256, /* Multi I/O supported, IGNORE for now */
 		.read		= SPI_CHIP_READ, /* Fast read (0x0B) and multi I/O supported */
@@ -1060,7 +1061,7 @@
 				.block_erase = SPI_BLOCK_ERASE_C7,
 			}
 		},
-		.printlock	= SPI_PRETTYPRINT_STATUS_REGISTER_BP2_EP_SRWD, /* TODO: SR2 and many others */
+		.printlock	= SPI_PRETTYPRINT_STATUS_REGISTER_BP2_EP_SRWD_SR2,
 		.unlock		= SPI_DISABLE_BLOCKPROTECT_BP2_SRWD, /* TODO: various other locks */
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
