@@ -161,3 +161,38 @@
 		.read		= SPI_CHIP_READ,
 		.voltage	= {2700, 3600},
 	},
+    /* JEDEC ID 0x684017 - Huahong/Bohong BH25Q64BS (8MByte / 64Mbit) */
+{
+    .vendor = "Huahong/Bohong Microelectronics",
+    .name = "BH25Q64BS",
+    .bustype = BUS_SPI,
+    .manufacture_id = 0x68,
+    .model_id = BOYA_BOHONG_B_25Q64AS,         /* Memory Type 0x40, Capacity 0x17 */
+    .total_size = 8192,         /* 8MB in kB */
+    .page_size = 256,
+    .feature_bits = FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI, 
+    .tested = TEST_UNTESTED,    /* Change to TEST_OK_PREW after verification */
+    .probe = PROBE_SPI_RDID,
+    .probe_timing = TIMING_ZERO,
+    .block_erasers =
+    {
+        {
+            .eraseblocks = { {4 * 1024, 2048} },    /* 4KB Sector Erase (20H) */
+            .block_erase = SPI_BLOCK_ERASE_20,
+        }, {
+            .eraseblocks = { {32 * 1024, 256} },    /* 32KB Block Erase (52H) */
+            .block_erase = SPI_BLOCK_ERASE_52,
+        }, {
+            .eraseblocks = { {64 * 1024, 128} },    /* 64KB Block Erase (D8H) */
+            .block_erase = SPI_BLOCK_ERASE_D8,
+        }, {
+            .eraseblocks = { {8192 * 1024, 1} },    /* Full Chip Erase (60H or C7H) */
+            .block_erase = SPI_BLOCK_ERASE_60,
+        }
+    },
+    .printlock = SPI_PRETTYPRINT_STATUS_REGISTER_PLAIN,
+    .unlock = SPI_DISABLE_BLOCKPROTECT_BP4_SRWD,
+    .write = SPI_CHIP_WRITE256, /* Page Program size 256 bytes */
+    .read = SPI_CHIP_READ,
+    .voltage = {2700, 3600},    /* 2.7V to 3.6V */
+},
