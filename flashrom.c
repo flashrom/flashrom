@@ -1970,6 +1970,7 @@ int flashrom_flash_erase(struct flashctx *const flashctx)
 		msg_gerr("Error: some of the required checks to prepare flash access failed. "
 			 "Earlier messages should give more details.\n"
 			 "Erase operation has not started.\n");
+		finalize_flash_access(flashctx);
 		return ERROR_FLASHROM_PREPARE_FLASH_ACCESS;
 	}
 
@@ -2081,7 +2082,7 @@ int flashrom_image_write(struct flashctx *const flashctx, void *const buffer, co
 		msg_gerr("Error: some of the required checks to prepare flash access failed. "
 			 "Earlier messages should give more details.\n"
 			 "Write operation has not started.\n");
-		goto _free_ret;
+		goto _finalize_ret;
 	}
 
 	/* If given, assume flash chip contains same data as `refcontents`. */
