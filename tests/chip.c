@@ -183,6 +183,22 @@ static const struct flashchip chip_no_erase = {
 	},
 };
 
+/* Chip with tested status known BAD for all operations, expected to fail chip_safety_check. */
+static const struct flashchip chip_bad = {
+	.vendor		= "aklm",
+	.total_size	= MOCK_CHIP_SIZE / KiB,
+	.tested		= TEST_BAD_PREWB,
+	.read		= TEST_READ_INJECTOR,
+	.write		= TEST_WRITE_INJECTOR,
+	.page_size	= 256,
+	.block_erasers	=
+	{{
+		 /* All blocks within total size of the chip. */
+		.eraseblocks = { {2 * MiB, 4} },
+		.block_erase = TEST_ERASE_INJECTOR_1,
+	 }},
+};
+
 /* Setup the struct for W25Q128.V, all values come from flashchips.c */
 static const struct flashchip chip_dual_die_c2 = {
 	.vendor		= "aklm&dummyflasher",
@@ -864,6 +880,85 @@ void verify_chip_with_dummyflasher_test_success(void **state)
 	printf("Verify chip operation started.\n");
 	assert_int_equal(0, flashrom_image_verify(&flashctx, newcontents, size));
 	printf("Verify chip operation done.\n");
+
+	teardown(&flashctx);
+
+	free(newcontents);
+}
+
+static void setup_bad_chip(struct flashrom_flashctx *flashctx)
+{
+	static struct io_mock_fallback_open_state data = {
+		.noc	= 0,
+		.paths	= { NULL },
+	};
+	const struct io_mock chip_io = {
+		.fallback_open_state = &data,
+	};
+
+	/* This test injectors are not expected to be called, because the
+	 * chip has known bad test status and chip_safety_check should fail
+	 * before any operation has started. */
+	g_test_write_injector = NULL;
+	g_test_read_injector = NULL;
+	g_test_erase_injector[0] = NULL;
+
+	struct flashchip mock_chip = chip_bad;
+	const char *param = ""; /* Default values for all params. */
+
+	setup_chip(flashctx, &mock_chip, param, &chip_io);
+}
+
+void erase_chip_bad_status_test(void **state)
+{
+	(void) state; /* unused */
+
+	struct flashrom_flashctx flashctx = {0};
+	setup_bad_chip(&flashctx);
+
+	printf("flashrom_flash_erase called: ");
+	assert_int_equal(ERROR_FLASHROM_PREPARE_FLASH_ACCESS, flashrom_flash_erase(&flashctx));
+	printf("failed as expected.\n");
+
+	teardown(&flashctx);
+}
+
+void read_chip_bad_status_test(void **state)
+{
+	(void) state; /* unused */
+
+	struct flashrom_flashctx flashctx = {0};
+	setup_bad_chip(&flashctx);
+
+	unsigned long size = chip_bad.total_size * 1024;
+	unsigned char *buf = calloc(size, sizeof(unsigned char));
+	assert_non_null(buf);
+
+	printf("flashrom_image_read called: ");
+	assert_int_equal(ERROR_FLASHROM_PREPARE_FLASH_ACCESS,
+			flashrom_image_read(&flashctx, buf, size));
+	printf("failed as expected.\n");
+
+	teardown(&flashctx);
+
+	free(buf);
+}
+
+void write_chip_bad_status_test(void **state)
+{
+	(void) state; /* unused */
+
+	struct flashrom_flashctx flashctx = {0};
+	setup_bad_chip(&flashctx);
+
+	unsigned long size = chip_bad.total_size * 1024;
+	uint8_t *const newcontents = malloc(size);
+	assert_non_null(newcontents);
+
+	printf("flashrom_image_write called: ");
+	assert_int_equal(ERROR_FLASHROM_PREPARE_FLASH_ACCESS,
+			flashrom_image_write(&flashctx, newcontents, size, NULL));
+	printf("failed as expected.\n");
 
 	teardown(&flashctx);
 

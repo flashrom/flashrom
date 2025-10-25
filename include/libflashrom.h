@@ -340,6 +340,7 @@ size_t flashrom_flash_getsize(const struct flashrom_flashctx *flashctx);
  *
  * @param flashctx The context of the flash chip to erase.
  * @return 0 on success.
+ *         -3 if prepare_flash_access check failed and operation has not started
  */
 int flashrom_flash_erase(struct flashrom_flashctx *flashctx);
 /**
@@ -392,6 +393,7 @@ bool flashrom_flag_get(const struct flashrom_flashctx *flashctx, enum flashrom_f
  * @param buffer Target buffer to write image to.
  * @param buffer_len Size of target buffer in bytes.
  * @return 0 on success,
+ *         -3 if prepare_flash_access check failed and operation has not started
  *         2 if buffer_len is too small for the flash chip's contents,
  *         or 1 on any other failure.
  */
@@ -407,6 +409,7 @@ int flashrom_image_read(struct flashrom_flashctx *flashctx, void *buffer, size_t
  * @param buffer_len Size of source buffer in bytes.
  * @param refbuffer If given, assume flash chip contains same data as `refbuffer`.
  * @return 0 on success,
+ *         -3 if prepare_flash_access check failed and operation has not started
  *         4 if buffer_len doesn't match the size of the flash chip,
  *         3 if write was tried but nothing has changed,
  *         2 if write failed and flash contents changed,
@@ -423,6 +426,7 @@ int flashrom_image_write(struct flashrom_flashctx *flashctx, void *buffer, size_
  * @param buffer Source buffer to verify with.
  * @param buffer_len Size of source buffer in bytes.
  * @return 0 on success,
+ *         -3 if prepare_flash_access check failed and operation has not started
  *         3 if the chip's contents don't match,
  *         2 if buffer_len doesn't match the size of the flash chip,
  *         or 1 on any other failure.

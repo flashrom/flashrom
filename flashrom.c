@@ -2073,7 +2073,7 @@ int flashrom_image_read(struct flashctx *const flashctx, void *const buffer, con
 		return 2;
 
 	if (prepare_flash_access(flashctx, true, false, false, false))
-		return 1;
+		return ERROR_FLASHROM_PREPARE_FLASH_ACCESS;
 
 	msg_cinfo("Reading flash... ");
 
@@ -2156,6 +2156,7 @@ int flashrom_image_write(struct flashctx *const flashctx, void *const buffer, co
 		msg_gerr("Error: some of the required checks to prepare flash access failed. "
 			 "Earlier messages should give more details.\n"
 			 "Write operation has not started.\n");
+		ret = ERROR_FLASHROM_PREPARE_FLASH_ACCESS;
 		goto _finalize_ret;
 	}
 
@@ -2287,8 +2288,10 @@ int flashrom_image_verify(struct flashctx *const flashctx, const void *const buf
 
 	int ret = 1;
 
-	if (prepare_flash_access(flashctx, false, false, false, true))
+	if (prepare_flash_access(flashctx, false, false, false, true)) {
+		ret = ERROR_FLASHROM_PREPARE_FLASH_ACCESS;
 		goto _free_ret;
+	}
 
 	msg_cinfo("Verifying flash... ");
 	ret = verify_by_layout(flashctx, layout, curcontents, newcontents);

@@ -594,6 +594,9 @@ int main(int argc, char *argv[])
 		cmocka_unit_test(write_nonaligned_region_with_dummyflasher_test_success),
 		cmocka_unit_test(verify_chip_test_success),
 		cmocka_unit_test(verify_chip_with_dummyflasher_test_success),
+		cmocka_unit_test(erase_chip_bad_status_test),
+		cmocka_unit_test(read_chip_bad_status_test),
+		cmocka_unit_test(write_chip_bad_status_test),
 	};
 	ret |= cmocka_run_group_tests_name("chip.c tests", chip_tests, NULL, NULL);
 

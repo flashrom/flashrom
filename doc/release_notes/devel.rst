@@ -86,3 +86,19 @@ New options
   connections. Deduplicates read results to minimise memory usage. If a file
   is given and a strict majority is found, saves the majority content to it.
   Useful for diagnosing flaky SPI wiring or unreliable programmers.
+
+libflashrom
+-----------
+
+The error code ``ERROR_FLASHROM_PREPARE_FLASH_ACCESS`` (-3) is now returned
+for all operations in case when ``prepare_flash_access`` failed and the operation itself has not started.
+
+``libflashrom.h`` updated to document the error code for:
+
+``flashrom_flash_erase``
+
+``flashrom_image_read``
+
+``flashrom_image_write``
+
+``flashrom_image_verify``
