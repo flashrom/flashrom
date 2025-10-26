@@ -1900,6 +1900,13 @@ int prepare_flash_access(struct flashctx *const flash,
 		return 1;
 	}
 
+	if ((write_it || erase_it) && !flash->flags.force) {
+		if (!can_change_target_regions(flash)) {
+			msg_cerr("At least one target region is not fully writable. Aborting.\n");
+			return 1;
+		}
+	}
+
 	if (map_flash(flash) != 0)
 		return 1;
 
@@ -1922,13 +1929,6 @@ int prepare_flash_access(struct flashctx *const flash,
 	blockprotect_func_t *bp_func = lookup_blockprotect_func_ptr(flash->chip);
 	if (ret && bp_func)
 		bp_func(flash);
-
-	if ((write_it || erase_it) && !flash->flags.force) {
-		if (!can_change_target_regions(flash)) {
-			msg_cerr("At least one target region is not fully writable. Aborting.\n");
-			return 1;
-		}
-	}
 
 	flash->address_high_byte = -1;
 	flash->in_4ba_mode = false;
