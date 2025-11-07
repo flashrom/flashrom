@@ -1,19 +1,11 @@
 /*
  * This file is part of the flashrom project.
  *
- * Copyright (C) 2005-2007 coresystems GmbH <stepan@coresystems.de>
- * Copyright (C) 2006 Uwe Hermann <uwe@hermann-uwe.de>
- * Copyright (C) 2007-2009 Luc Verhaegen <libv@skynet.be>
- * Copyright (C) 2007 Carl-Daniel Hailfinger
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; version 2 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * SPDX-License-Identifier: GPL-2.0-only
+ * SPDX-FileCopyrightText: 2005-2007 coresystems GmbH <stepan@coresystems.de>
+ * SPDX-FileCopyrightText: 2006 Uwe Hermann <uwe@hermann-uwe.de>
+ * SPDX-FileCopyrightText: 2007-2009 Luc Verhaegen <libv@skynet.be>
+ * SPDX-FileCopyrightText: 2007 Carl-Daniel Hailfinger
  */
 
 /*

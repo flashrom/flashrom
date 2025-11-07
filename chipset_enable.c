@@ -1,23 +1,14 @@
 /*
  * This file is part of the flashrom project.
  *
- * Copyright (C) 2000 Silicon Integrated System Corporation
- * Copyright (C) 2005-2009 coresystems GmbH
- * Copyright (C) 2006 Uwe Hermann <uwe@hermann-uwe.de>
- * Copyright (C) 2007,2008,2009 Carl-Daniel Hailfinger
- * Copyright (C) 2009 Kontron Modular Computers GmbH
- * Copyright (C) 2011, 2012 Stefan Tauner
- * Copyright (C) 2017 secunet Security Networks AG
- * (Written by Nico Huber <nico.huber@secunet.com> for secunet)
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; version 2 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * SPDX-License-Identifier: GPL-2.0-only
+ * SPDX-FileCopyrightText: 2000 Silicon Integrated System Corporation
+ * SPDX-FileCopyrightText: 2005-2009 coresystems GmbH
+ * SPDX-FileCopyrightText: 2006 Uwe Hermann <uwe@hermann-uwe.de>
+ * SPDX-FileCopyrightText: 2007,2008,2009 Carl-Daniel Hailfinger
+ * SPDX-FileCopyrightText: 2009 Kontron Modular Computers GmbH
+ * SPDX-FileCopyrightText: 2011, 2012 Stefan Tauner
+ * SPDX-FileCopyrightText: 2017 secunet Security Networks AG (Written by Nico Huber <nico.huber@secunet.com> for secunet)
  */
 
 /*
