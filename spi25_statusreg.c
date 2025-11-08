@@ -2,19 +2,11 @@
  * This file is part of the flashrom project.
  * It handles everything related to status registers of the JEDEC family 25.
  *
- * Copyright (C) 2007, 2008, 2009, 2010 Carl-Daniel Hailfinger
- * Copyright (C) 2008 coresystems GmbH
- * Copyright (C) 2008 Ronald Hoogenboom <ronald@zonnet.nl>
- * Copyright (C) 2012 Stefan Tauner
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; version 2 of the License.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * SPDX-License-Identifier: GPL-2.0-only
+ * SPDX-FileCopyrightText: 2007, 2008, 2009, 2010 Carl-Daniel Hailfinger
+ * SPDX-FileCopyrightText: 2008 coresystems GmbH
+ * SPDX-FileCopyrightText: 2008 Ronald Hoogenboom <ronald@zonnet.nl>
+ * SPDX-FileCopyrightText: 2012 Stefan Tauner
  */
 
 #include <stdlib.h>
