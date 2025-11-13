@@ -79,3 +79,18 @@ It need to be called prior to any other API calls that require flash context.
 The issue was a good motivation to write a new test which is built and runs as an external
 client of libflashrom. The test runs in a separate test executable to achieve this.
 As a bonus, test code in ``tests/external_client.c`` is an example how to use libflashrom API.
+
+SPDX tags for license and copyright
+===================================
+
+From now on, flashrom is using SPDX tags in source files to indicate license and copyright information.
+
+Specifically ``SPDX-License-Identifier`` tag is used for license info, and
+``SPDX-FileCopyrightText`` tag is used for copyright info.
+
+Existing source files in the tree have been converted to use SPDX tags. New files should be
+created with SPDX tags. For examples, look at any source file in the tree.
+
+Note that source files in directory ``subprojects/packagefiles/cmocka-1.1.5`` haven't been changed,
+and won't be. Those files are unpacked from cmocka wrap, so that's the exact copy from another project,
+and should stay as is.
