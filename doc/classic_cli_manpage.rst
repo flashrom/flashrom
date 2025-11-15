@@ -1479,6 +1479,9 @@ where ``state`` can be ``high`` or ``low``. The default ``state`` is ``high``.
 nv_sma_spi programmer
 ^^^^^^^^^^^^^^^^^^^^^
 
+System Management Agent (SMA) programmer is a SoC which is working as a side band management on Nvidia server board.
+One of its functions is to flash firmware to other components.
+
 The Optional ``cs`` parameter can be used to switch which chip select number is used. This allows connecting multiple
 chips at once and selecting which one to flash.::
 

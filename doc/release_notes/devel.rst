@@ -20,14 +20,35 @@ Added support
 =============
 
 * Intel Wildcat Lake chipset
-* Eon EN25QX128A
-* PUYA P25D80H
+* EN25QX128A
+* MT25QU02G, MT25QL02G marked as tested
+* MT35XU02G
+* MX25U12873F
+* P25D80H
+* W35T02NW
 
 New features
 ============
 
 Fail immediately when trying to write/erase wp regions
 ------------------------------------------------------
+
+One more check has been added before performing erase/write operations.
+It aborts writing to flash if any of the requested regions are
+write-protected by chip, dynamically by a chipset, or are defined as
+read-only.
+
+A new message is now printed for the user to explain what happened,
+example::
+
+  can_change_target_regions: cannot fully update part1 region
+  (00000000..0x04ffff) due to chip's write-protection.
+  At least one target region is not fully writable. Aborting.
+  Error: some of the required checks to prepare flash access failed.
+  Earlier messages should give more details.
+  Erase operation has not started.
+
+For write, the last line would be ``Write operation has not started.``
 
 This change is done so it's harder for user to brick his own platform.
 Information about read-only regions can easily be missed as flashrom
@@ -59,10 +80,32 @@ Example usage::
 If the FMAP layouts don't match, the operation will abort with a detailed error
 message showing which regions differ.
 
+Erase now respects --noverify option
+-------------------------------------
+
+The option ``--noverify`` is now respected during erase operation,
+and verification is not performed if the option is set.
+
+Corresponding libflashrom flag is ``FLASHROM_FLAG_VERIFY_AFTER_WRITE``.
+
+Default behaviour stays the same, by default verification is performed.
+
+Previously, erase operation ignored ``--noverify`` option and always
+performed verification.
+
+For more details, see https://ticket.coreboot.org/issues/520
+
+Note there are still some remaining cases for non-spi chips,
+when ``--noverify`` is ignored, more details and disussion
+is here: https://ticket.coreboot.org/issues/605
+
 New programmers
 ===============
 
 * Nvidia System Management Agent
+
+  System Management Agent (SMA) programmer is a SoC which is working as a side band management
+  on Nvidia server board. One of its functions is to flash firmware to other components.
 
 libflashrom
 ===========
