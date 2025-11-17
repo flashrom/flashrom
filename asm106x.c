@@ -126,8 +126,7 @@ static int asm106x_init(const struct programmer_cfg *cfg)
 	struct pci_dev *pci;
 	struct asm106x_data *data;
 
-	/* TODO: no BAR required (just config space) */
-	pci = pcidev_init(cfg, asm106x_devs, PCI_ROM_ADDRESS);
+	pci = pcidev_init(cfg, asm106x_devs, PCIDEV_NO_BAR_ACCESS_NEEDED);
 	if (!pci)
 		return 1;
 

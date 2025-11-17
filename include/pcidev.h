@@ -11,6 +11,9 @@
 #include "platform/pci.h"
 #include "programmer.h"
 
+/* e.g. config space only */
+#define PCIDEV_NO_BAR_ACCESS_NEEDED	(-1)
+
 // FIXME: This needs to be local, not global(?)
 extern struct pci_access *pacc;
 

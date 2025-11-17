@@ -291,7 +291,7 @@ struct pci_dev *pcidev_init(const struct programmer_cfg *cfg, const struct dev_e
 			/* FIXME: We should count all matching devices, not
 			 * just those with a valid BAR.
 			 */
-			if (pcidev_readbar(dev, bar) != 0) {
+			if (bar == PCIDEV_NO_BAR_ACCESS_NEEDED || pcidev_readbar(dev, bar) != 0) {
 				found_dev = dev;
 				found++;
 			}
