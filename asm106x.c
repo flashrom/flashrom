@@ -25,7 +25,8 @@ struct asm106x_data {
 };
 
 static const struct dev_entry asm106x_devs[] = {
-	{PCI_VENDOR_ID_ASMEDIA, 0x0612, OK, "ASMedia", "ASM106x"},
+	{PCI_VENDOR_ID_ASMEDIA, 0x0611, OK, "ASMedia", "ASM106x (IDE)"},
+	{PCI_VENDOR_ID_ASMEDIA, 0x0612, OK, "ASMedia", "ASM106x (AHCI)"},
 
 	{0},
 };
