@@ -112,6 +112,20 @@ static int sfdp_add_uniform_eraser(struct flashchip *chip, uint8_t opcode, uint3
 	return 1;
 }
 
+static int compare_erasers(const void *aptr, const void *bptr)
+{
+	const struct block_eraser *a = aptr;
+	const struct block_eraser *b = bptr;
+
+	/* unused erasers, sort last */
+	if (a->block_erase == NO_BLOCK_ERASE_FUNC)
+		return 1;
+	if (b->block_erase == NO_BLOCK_ERASE_FUNC)
+		return -1;
+	/* sort by block size, ascending */
+	return ((int) a->eraseblocks[0].size) - ((int) b->eraseblocks[0].size);
+}
+
 static int sfdp_fill_flash(struct flashchip *chip, uint8_t *buf, uint16_t len)
 {
 	uint8_t opcode_4k_erase = 0xFF;
@@ -236,6 +250,18 @@ static int sfdp_fill_flash(struct flashchip *chip, uint8_t *buf, uint16_t len)
 		msg_cspew("   Erase Sector Type %d Opcode: 0x%02x\n", j + 1,
 			  tmp8);
 		sfdp_add_uniform_eraser(chip, tmp8, block_size);
+	}
+
+	/* Sort block erasers in ascending order by size; this is required
+	 * for erase logic, see erasure_layout.c */
+	qsort(chip->block_erasers, NUM_ERASEFUNCTIONS,
+		sizeof(chip->block_erasers[0]), compare_erasers);
+	for (j = 0; j < NUM_ERASEFUNCTIONS; j++) {
+		const struct block_eraser *eraser = &chip->block_erasers[j];
+		msg_cdbg2("  Sorted eraser #%u: %"PRId32" x %"PRId32" B\n",
+			j,
+			eraser->eraseblocks[0].count,
+			eraser->eraseblocks[0].size);
 	}
 
 done:

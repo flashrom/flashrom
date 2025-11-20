@@ -10,11 +10,16 @@ may be further revised before the next release.
 Bugs fixed
 ==========
 
-AMD-based PCs with FCH were unable to read flash contents for internal (BIOS
-flash) chips larger than 16 MB, and attempting to do so could crash the
-system.
+* AMD-based PCs with FCH were unable to read flash contents for internal (BIOS
+  flash) chips larger than 16 MB, and attempting to do so could crash the
+  system.
 
-https://ticket.coreboot.org/issues/370
+  https://ticket.coreboot.org/issues/370
+
+* Erasing generic SFDP chips was unreliable or could crash if the SFDP
+  erase definitions were not in ascending order of sector sizes.
+
+  See https://review.coreboot.org/c/flashrom/+/90131
 
 Added support
 =============
