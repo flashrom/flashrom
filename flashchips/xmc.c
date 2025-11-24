@@ -284,7 +284,7 @@
 		.model_id	= XMC_XM25QU64C,
 		.total_size	= 8192,
 		.page_size	= 256,
-		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI,
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI | FEATURE_WRSR2,
 		.tested		= TEST_OK_PREW,
 		.probe		= PROBE_SPI_RDID,
 		.probe_timing	= TIMING_ZERO,
@@ -312,6 +312,16 @@
 		.write		= SPI_CHIP_WRITE256,
 		.read		= SPI_CHIP_READ,
 		.voltage	= {1650, 1950},
+		.reg_bits	=
+		{
+			.srp    = {STATUS1, 7, RW},
+			.srl    = {STATUS2, 0, RW},
+			.bp     = {{STATUS1, 2, RW}, {STATUS1, 3, RW}, {STATUS1, 4, RW}},
+			.tb     = {STATUS1, 5, RW},
+			.sec    = {STATUS1, 6, RW},
+			.cmp    = {STATUS2, 6, RW},
+		},
+		.decode_range	= DECODE_RANGE_SPI25,
 	},
 
 	{
