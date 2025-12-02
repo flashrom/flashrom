@@ -1257,6 +1257,8 @@ int probe_flash(struct registered_master *mst, int startchip, struct flashctx *f
 				msg_cinfo("The standard operations read and "
 					  "verify should work, but support for "
 					  "erase and write needs to be added manually.\n");
+			else if (selfcheck_eraseblocks(flash->chip))
+				return ERROR_FLASHROM_PROBE_INTERNAL_ERROR;
 			else
 				msg_cinfo("All standard operations (read, "
 					  "verify, erase and write) should work.\n");
