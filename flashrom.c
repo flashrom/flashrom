@@ -1156,6 +1156,29 @@ static int selfcheck_eraseblocks(const struct flashchip *chip)
 	return ret;
 }
 
+static int selfcheck_chip(const struct flashchip *chip)
+{
+	const char *name = chip->name;
+	int ret = 0;
+
+	if (name == NULL) {
+		ret = 1;
+		name = "unnamed";
+		msg_gerr("ERROR: flash chip name is not set.\n");
+	}
+	if (chip->vendor == NULL) {
+		ret = 1;
+		msg_gerr("ERROR: vendor for flash chip '%s' is not set.\n", name);
+	}
+	if (chip->bustype == BUS_NONE) {
+		ret = 1;
+		msg_gerr("ERROR: bustype for flash chip '%s' is not set.\n", name);
+	}
+	if (selfcheck_eraseblocks(chip))
+		ret = 1;
+	return ret;
+}
+
 typedef int (probe_func_t)(struct flashctx *flash);
 
 static probe_func_t *lookup_probe_func_ptr(const struct flashchip *chip)
@@ -1257,7 +1280,7 @@ int probe_flash(struct registered_master *mst, int startchip, struct flashctx *f
 				msg_cinfo("The standard operations read and "
 					  "verify should work, but support for "
 					  "erase and write needs to be added manually.\n");
-			else if (selfcheck_eraseblocks(flash->chip))
+			else if (selfcheck_chip(flash->chip))
 				return ERROR_FLASHROM_PROBE_INTERNAL_ERROR;
 			else
 				msg_cinfo("All standard operations (read, "
@@ -1663,14 +1686,11 @@ int selfcheck(void)
 	} else {
 		for (i = 0; i < flashchips_size - 1; i++) {
 			const struct flashchip *chip = &flashchips[i];
-			if (chip->vendor == NULL || chip->name == NULL || chip->bustype == BUS_NONE) {
+			if (selfcheck_chip(chip)) {
 				ret = 1;
 				msg_gerr("ERROR: Some field of flash chip #%d (%s) is misconfigured.\n"
 					 "Please report a bug at flashrom@flashrom.org\n", i,
 					 chip->name == NULL ? "unnamed" : chip->name);
-			}
-			if (selfcheck_eraseblocks(chip)) {
-				ret = 1;
 			}
 		}
 	}
