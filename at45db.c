@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: GPL-2.0-only
  * SPDX-FileCopyrightText: 2012 Aidan Thornton
  * SPDX-FileCopyrightText: 2013 Stefan Tauner
+ * SPDX-FileCopyrightText: 2025 Marco Müller
  */
 
 #include <string.h>
@@ -36,6 +37,9 @@
 #define AT45DB_BUFFER2_PAGE_PROGRAM 0x89
 */
 
+/* Extended Device Information values */
+#define AT45DB_EDI_ESERIES 0x0100
+
 static uint8_t at45db_read_status_register(struct flashctx *flash, uint8_t *status)
 {
 	static const uint8_t cmd[] = { AT45DB_STATUS };
@@ -46,6 +50,53 @@ static uint8_t at45db_read_status_register(struct flashctx *flash, uint8_t *stat
 	else
 		msg_cspew("Status register: 0x%02x.\n", *status);
 	return ret;
+}
+
+/* Read Extended Device Information (EDI) from RDID response.
+ * E-series AT45DB chips have EDI = 0x0100 in bytes 3-4 of RDID response.
+ * Returns 0 on success, non-zero on failure. */
+static int at45db_read_edi(struct flashctx *flash, uint16_t *edi)
+{
+	static const uint8_t cmd[] = { JEDEC_RDID };
+	uint8_t readarr[5];
+
+	int ret = spi_send_command(flash, sizeof(cmd), sizeof(readarr), cmd, readarr);
+	if (ret != 0) {
+		msg_cerr("Reading Extended Device Information failed!\n");
+		return ret;
+	}
+
+	/* EDI is in bytes 3-4 (0-indexed), big-endian */
+	*edi = (readarr[3] << 8) | readarr[4];
+	msg_cdbg("AT45DB Extended Device Information (EDI): 0x%04x\n", *edi);
+	return 0;
+}
+
+/* Probe function for AT45DB E-series chips.
+ * E-series chips (e.g., AT45DB641E) share JEDEC IDs with D-series predecessors
+ * but can be distinguished by Extended Device Information (EDI) = 0x0100.
+ * This is necessary because AT45DB641E and AT45DB642D have the same JEDEC ID
+ * but fundamentally different page sizes (256/264 vs 1024/1056 bytes). */
+int probe_spi_at45db_e(struct flashctx *flash)
+{
+	uint16_t edi;
+
+	/* Use standard AT45DB probe first (RDID result is cached, fast fail for non-AT45DB) */
+	if (!probe_spi_at45db(flash))
+		return 0;
+
+	/* Verify this is an E-series chip by checking EDI */
+	if (at45db_read_edi(flash, &edi) != 0)
+		return 0;
+
+	if (edi != AT45DB_EDI_ESERIES) {
+		msg_cdbg("%s: EDI 0x%04x does not match E-series (expected 0x%04x)\n",
+			 __func__, edi, AT45DB_EDI_ESERIES);
+		return 0;
+	}
+
+	msg_cdbg("%s: E-series chip confirmed (EDI=0x%04x)\n", __func__, edi);
+	return 1;
 }
 
 int spi_disable_blockprotect_at45db(struct flashctx *flash)

@@ -1713,6 +1713,48 @@
 
 	{
 		.vendor		= "Atmel",
+		.name		= "AT45DB641E",
+		.bustype	= BUS_SPI,
+		.manufacture_id	= ATMEL_ID,
+		.model_id	= ATMEL_AT45DB642D, /* Same JEDEC ID, distinguished by EDI */
+		.total_size	= 8192, /* or 8448, determined from status register */
+		.page_size	= 256, /* or 264, determined from status register */
+		/* does not support EWSR nor WREN and has no writable status register bits */
+		/* OTP: 128B total, 64B pre-programmed; read 0x77; write 0x9B */
+		.feature_bits	= FEATURE_OTP,
+		.tested		= TEST_OK_PREW,
+		.probe		= PROBE_SPI_AT45DB_E,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {256, 32768} },
+				.block_erase = SPI_ERASE_AT45DB_PAGE,
+			}, {
+				.eraseblocks = { {8 * 256, 32768/8} },
+				.block_erase = SPI_ERASE_AT45DB_BLOCK,
+			}, {
+				.eraseblocks = {
+					{8 * 256, 1},       /* Sector 0a: 8 pages */
+					{1016 * 256, 1},    /* Sector 0b: 1016 pages */
+					{1024 * 256, 31},   /* Sectors 1-31: 1024 pages each */
+				},
+				.block_erase = SPI_ERASE_AT45DB_SECTOR
+			}, {
+				.eraseblocks = { {8192 * 1024, 1} },
+				.block_erase = SPI_ERASE_AT45DB_CHIP,
+			}
+		},
+		.printlock	= SPI_PRETTYPRINT_STATUS_REGISTER_AT45DB,
+		.unlock		= SPI_DISABLE_BLOCKPROTECT_AT45DB,
+		/* granularity will be set by the probing function. */
+		.write		= SPI_WRITE_AT45DB,
+		.read		= SPI_READ_AT45DB, /* Fast read (0x0B) supported */
+		.voltage	= {2300, 3600},
+	},
+
+	{
+		.vendor		= "Atmel",
 		.name		= "AT49(H)F010",
 		.bustype	= BUS_PARALLEL,
 		.manufacture_id	= ATMEL_ID,

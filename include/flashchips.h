@@ -185,7 +185,7 @@
 #define ATMEL_AT45DB321E	/* same as above but with EDI 0x0100 */
 #define ATMEL_AT45DB321D	0x2701 /* Buggy data sheet */
 #define ATMEL_AT45DB642		/* No ID (opcode) available for AT45DB642 */
-#define ATMEL_AT45DB642D	0x2800
+#define ATMEL_AT45DB642D	0x2800 /* Same for AT45DB641E but with EDI 0x0100 */
 #define ATMEL_AT49BV512		0x03	/* Same as AT49F512 */
 #define ATMEL_AT49F001N		0x05	/* Same as AT49F001 */
 #define ATMEL_AT49F001NT	0x04	/* Same as AT49F001T */

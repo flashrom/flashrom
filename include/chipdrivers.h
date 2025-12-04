@@ -66,6 +66,7 @@ int erase_opaque(struct flashctx *flash, unsigned int blockaddr, unsigned int bl
 
 /* at45db.c */
 int probe_spi_at45db(struct flashctx *flash);
+int probe_spi_at45db_e(struct flashctx *flash);
 int spi_prettyprint_status_register_at45db(struct flashctx *flash);
 int spi_disable_blockprotect_at45db(struct flashctx *flash);
 int spi_read_at45db(struct flashctx *flash, uint8_t *buf, unsigned int start, unsigned int len);
