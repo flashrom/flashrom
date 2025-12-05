@@ -3379,3 +3379,111 @@
 		.read		= SPI_CHIP_READ,
 		.voltage	= {1700, 1950},
 	},
+
+	{
+		.vendor 	= "Winbond",
+		.name		= "W77Q25NWS",
+		.bustype	= BUS_SPI,
+		.manufacture_id = WINBOND_NEX_ID,
+		.model_id	= WINBOND_NEX_W77Q25NWS,
+		.total_size	= 32 * 1024,
+		.page_size	= 256,
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_QPI | FEATURE_4BA,
+		.tested 	= {.probe = OK, .read = OK, .erase = OK, .write = OK, .wp = NA},
+		.probe		= PROBE_SPI_RDID,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 8192} },
+				.block_erase = SPI_BLOCK_ERASE_20,
+			}, {
+				.eraseblocks = { {32 * 1024, 1024} },
+				.block_erase = SPI_BLOCK_ERASE_52,
+			}, {
+				.eraseblocks = { {64 * 1024, 512} },
+				.block_erase = SPI_BLOCK_ERASE_D8,
+			}, {
+				.eraseblocks = { {32 * 1024 * 1024, 1} },
+				.block_erase = SPI_BLOCK_ERASE_60,
+			}, {
+				.eraseblocks = { {32 * 1024 * 1024, 1} },
+				.block_erase = SPI_BLOCK_ERASE_C7,
+			}
+		},
+		.write		= SPI_CHIP_WRITE256,
+		.read		= SPI_CHIP_READ,
+		.voltage	= {1700, 1950},
+	},
+
+	{
+		.vendor 	= "Winbond",
+		.name		= "W77Q51NWD",
+		.bustype	= BUS_SPI,
+		.manufacture_id = WINBOND_NEX_ID,
+		.model_id	= WINBOND_NEX_W77Q51NWD,
+		.total_size	= 64 * 1024,
+		.page_size	= 256,
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_QPI | FEATURE_4BA,
+		.tested 	= {.probe = OK, .read = OK, .erase = OK, .write = OK, .wp = NA},
+		.probe		= PROBE_SPI_RDID,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 16384} },
+				.block_erase = SPI_BLOCK_ERASE_20,
+			}, {
+				.eraseblocks = { {32 * 1024, 2048} },
+				.block_erase = SPI_BLOCK_ERASE_52,
+			}, {
+				.eraseblocks = { {64 * 1024, 1024} },
+				.block_erase = SPI_BLOCK_ERASE_D8,
+			}/*FIXME: opcode is supported but check for each die is required, {
+				.eraseblocks = { {32 * 1024 * 1024, 1} },
+				.block_erase = SPI_BLOCK_ERASE_60,
+			}, {
+				.eraseblocks = { {32 * 1024 * 1024, 1} },
+				.block_erase = SPI_BLOCK_ERASE_C7,
+			}*/
+		},
+		.write		= SPI_CHIP_WRITE256,
+		.read		= SPI_CHIP_READ,
+		.voltage	= {1700, 1950},
+	},
+
+	{
+		.vendor 	= "Winbond",
+		.name		= "W77Q01NWQ",
+		.bustype	= BUS_SPI,
+		.manufacture_id = WINBOND_NEX_ID,
+		.model_id	= WINBOND_NEX_W77Q01NWQ,
+		.total_size	= 128 * 1024,
+		.page_size	= 256,
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_QPI | FEATURE_4BA,
+		.tested 	= TEST_UNTESTED,
+		.probe		= PROBE_SPI_RDID,
+		.probe_timing	= TIMING_ZERO,
+		.block_erasers	=
+		{
+			{
+				.eraseblocks = { {4 * 1024, 32768} },
+				.block_erase = SPI_BLOCK_ERASE_20,
+			}, {
+				.eraseblocks = { {32 * 1024, 4096} },
+				.block_erase = SPI_BLOCK_ERASE_52,
+			}, {
+				.eraseblocks = { {64 * 1024, 2048} },
+				.block_erase = SPI_BLOCK_ERASE_D8,
+			}/*FIXME: opcode is supported but check for each die is required, {
+				.eraseblocks = { {32 * 1024 * 1024, 1} },
+				.block_erase = SPI_BLOCK_ERASE_60,
+			}, {
+				.eraseblocks = { {32 * 1024 * 1024, 1} },
+				.block_erase = SPI_BLOCK_ERASE_C7,
+			}*/
+		},
+		.write		= SPI_CHIP_WRITE256,
+		.read		= SPI_CHIP_READ,
+		.voltage	= {1700, 1950},
+	},
