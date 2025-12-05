@@ -1045,6 +1045,8 @@
  * W77Q/T chips are drop and replace to the w25Q series
  */
 #define WINBOND_NEX_W77Q32JW	0x8a16	/* W77Q16JW; W77Q32JW */
+#define WINBOND_NEX_W77Q64JV	0x4a17	/* W77Q64JV */
+#define WINBOND_NEX_W77Q128JV	0x4a18	/* W77Q128JV */
 
 #define WINBOND_ID		0xDA	/* Winbond */
 #define WINBOND_W19B160BB	0x49
