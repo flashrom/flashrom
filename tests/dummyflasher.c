@@ -73,6 +73,22 @@ void dummy_probe_v2_six_matches_for_MX25L6436(void **state)
 				expected_matched_names, 6);
 }
 
+void dummy_probe_v2_sfdp_detection_for_MX25L6436(void **state)
+{
+	struct io_mock_fallback_open_state dummy_fallback_open_state = {
+		.noc = 0,
+		.paths = { NULL },
+	};
+	const struct io_mock dummy_io = {
+		.fallback_open_state = &dummy_fallback_open_state,
+	};
+
+	const char *expected_matched_names[1] = {"SFDP-capable chip"};
+	run_probe_v2_lifecycle(state, &dummy_io, &programmer_dummy, "bus=spi,emulate=MX25L6436",
+				"SFDP-capable chip",
+				expected_matched_names, 1);
+}
+
 void dummy_probe_v2_no_matches_found(void **state)
 {
 	struct io_mock_fallback_open_state dummy_fallback_open_state = {
@@ -328,6 +344,7 @@ void dummy_probe_and_erase(void **state)
 	SKIP_TEST(dummy_probe_lifecycle_test_success)
 	SKIP_TEST(dummy_probe_v2_one_match_for_W25Q128FV)
 	SKIP_TEST(dummy_probe_v2_six_matches_for_MX25L6436)
+	SKIP_TEST(dummy_probe_v2_sfdp_detection_for_MX25L6436)
 	SKIP_TEST(dummy_probe_v2_no_matches_found)
 	SKIP_TEST(dummy_probe_variable_size_test_success)
 	SKIP_TEST(dummy_init_fails_unhandled_param_test_success)

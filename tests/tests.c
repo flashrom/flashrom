@@ -500,6 +500,7 @@ int main(int argc, char *argv[])
 		cmocka_unit_test(dummy_probe_lifecycle_test_success),
 		cmocka_unit_test(dummy_probe_v2_one_match_for_W25Q128FV),
 		cmocka_unit_test(dummy_probe_v2_six_matches_for_MX25L6436),
+		cmocka_unit_test(dummy_probe_v2_sfdp_detection_for_MX25L6436),
 		cmocka_unit_test(dummy_probe_v2_no_matches_found),
 		cmocka_unit_test(dummy_probe_variable_size_test_success),
 		cmocka_unit_test(dummy_init_fails_unhandled_param_test_success),
