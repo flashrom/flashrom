@@ -1080,6 +1080,82 @@ int write_flash(struct flashctx *flash, const uint8_t *buf,
 	return 0;
 }
 
+/* Even if an error is found, the function will keep going and check the rest. */
+static int selfcheck_eraseblocks(const struct flashchip *chip)
+{
+	int i, j, k;
+	int ret = 0;
+	unsigned int prev_eraseblock_count = chip->total_size * 1024;
+
+	for (k = 0; k < NUM_ERASEFUNCTIONS; k++) {
+		unsigned int done = 0;
+		struct block_eraser eraser = chip->block_erasers[k];
+		unsigned int curr_eraseblock_count = 0;
+
+		for (i = 0; i < NUM_ERASEREGIONS; i++) {
+			/* Blocks with zero size are bugs in flashchips.c. */
+			if (eraser.eraseblocks[i].count &&
+			    !eraser.eraseblocks[i].size) {
+				msg_gerr("ERROR: Flash chip %s erase function "
+					"%i region %i has size 0. Please report"
+					" a bug at flashrom@flashrom.org\n",
+					chip->name, k, i);
+				ret = 1;
+			}
+			/* Blocks with zero count are bugs in flashchips.c. */
+			if (!eraser.eraseblocks[i].count &&
+			    eraser.eraseblocks[i].size) {
+				msg_gerr("ERROR: Flash chip %s erase function "
+					"%i region %i has count 0. Please report"
+					" a bug at flashrom@flashrom.org\n",
+					chip->name, k, i);
+				ret = 1;
+			}
+			done += eraser.eraseblocks[i].count *
+				eraser.eraseblocks[i].size;
+			curr_eraseblock_count += eraser.eraseblocks[i].count;
+		}
+		/* Empty eraseblock definition with erase function.  */
+		if (!done && eraser.block_erase)
+			msg_gspew("Strange: Empty eraseblock definition with "
+				  "non-empty erase function. Not an error.\n");
+		if (!done)
+			continue;
+		if (done != chip->total_size * 1024) {
+			msg_gerr("ERROR: Flash chip %s erase function %i "
+				"region walking resulted in 0x%06x bytes total,"
+				" expected 0x%06x bytes. Please report a bug at"
+				" flashrom@flashrom.org\n", chip->name, k,
+				done, chip->total_size * 1024);
+			ret = 1;
+		}
+		if (!eraser.block_erase)
+			continue;
+		/* Check if there are identical erase functions for different
+		 * layouts. That would imply "magic" erase functions. The
+		 * easiest way to check this is with function pointers.
+		 */
+		for (j = k + 1; j < NUM_ERASEFUNCTIONS; j++) {
+			if (eraser.block_erase ==
+			    chip->block_erasers[j].block_erase) {
+				msg_gerr("ERROR: Flash chip %s erase function "
+					"%i and %i are identical. Please report"
+					" a bug at flashrom@flashrom.org\n",
+					chip->name, k, j);
+				ret = 1;
+			}
+		}
+		if (curr_eraseblock_count > prev_eraseblock_count) {
+			msg_gerr("ERROR: Flash chip %s erase function %i is not "
+					"in order. Please report a bug at flashrom@flashrom.org\n",
+					chip->name, k);
+			ret = 1;
+		}
+		prev_eraseblock_count = curr_eraseblock_count;
+	}
+	return ret;
+}
+
 typedef int (probe_func_t)(struct flashctx *flash);
 
 static probe_func_t *lookup_probe_func_ptr(const struct flashchip *chip)
@@ -1330,82 +1406,6 @@ static int read_by_layout(struct flashctx *const flashctx, uint8_t *const buffer
 			return 1;
 	}
 	return 0;
-}
-
-/* Even if an error is found, the function will keep going and check the rest. */
-static int selfcheck_eraseblocks(const struct flashchip *chip)
-{
-	int i, j, k;
-	int ret = 0;
-	unsigned int prev_eraseblock_count = chip->total_size * 1024;
-
-	for (k = 0; k < NUM_ERASEFUNCTIONS; k++) {
-		unsigned int done = 0;
-		struct block_eraser eraser = chip->block_erasers[k];
-		unsigned int curr_eraseblock_count = 0;
-
-		for (i = 0; i < NUM_ERASEREGIONS; i++) {
-			/* Blocks with zero size are bugs in flashchips.c. */
-			if (eraser.eraseblocks[i].count &&
-			    !eraser.eraseblocks[i].size) {
-				msg_gerr("ERROR: Flash chip %s erase function "
-					"%i region %i has size 0. Please report"
-					" a bug at flashrom@flashrom.org\n",
-					chip->name, k, i);
-				ret = 1;
-			}
-			/* Blocks with zero count are bugs in flashchips.c. */
-			if (!eraser.eraseblocks[i].count &&
-			    eraser.eraseblocks[i].size) {
-				msg_gerr("ERROR: Flash chip %s erase function "
-					"%i region %i has count 0. Please report"
-					" a bug at flashrom@flashrom.org\n",
-					chip->name, k, i);
-				ret = 1;
-			}
-			done += eraser.eraseblocks[i].count *
-				eraser.eraseblocks[i].size;
-			curr_eraseblock_count += eraser.eraseblocks[i].count;
-		}
-		/* Empty eraseblock definition with erase function.  */
-		if (!done && eraser.block_erase)
-			msg_gspew("Strange: Empty eraseblock definition with "
-				  "non-empty erase function. Not an error.\n");
-		if (!done)
-			continue;
-		if (done != chip->total_size * 1024) {
-			msg_gerr("ERROR: Flash chip %s erase function %i "
-				"region walking resulted in 0x%06x bytes total,"
-				" expected 0x%06x bytes. Please report a bug at"
-				" flashrom@flashrom.org\n", chip->name, k,
-				done, chip->total_size * 1024);
-			ret = 1;
-		}
-		if (!eraser.block_erase)
-			continue;
-		/* Check if there are identical erase functions for different
-		 * layouts. That would imply "magic" erase functions. The
-		 * easiest way to check this is with function pointers.
-		 */
-		for (j = k + 1; j < NUM_ERASEFUNCTIONS; j++) {
-			if (eraser.block_erase ==
-			    chip->block_erasers[j].block_erase) {
-				msg_gerr("ERROR: Flash chip %s erase function "
-					"%i and %i are identical. Please report"
-					" a bug at flashrom@flashrom.org\n",
-					chip->name, k, j);
-				ret = 1;
-			}
-		}
-		if (curr_eraseblock_count > prev_eraseblock_count) {
-			msg_gerr("ERROR: Flash chip %s erase function %i is not "
-					"in order. Please report a bug at flashrom@flashrom.org\n",
-					chip->name, k);
-			ret = 1;
-		}
-		prev_eraseblock_count = curr_eraseblock_count;
-	}
-	return ret;
 }
 
 static int erase_by_layout(struct flashctx *const flashctx)
