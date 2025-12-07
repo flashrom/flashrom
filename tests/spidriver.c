@@ -7,7 +7,7 @@
 
 #include "lifecycle.h"
 
-#if CONFIG_SPIDRIVER == 1
+#if CONFIG_SPIDRIVER == 1 && !IS_WINDOWS
 #define SPIDRIVER_TEST_DEBUG 0
 
 struct spidriver_state {
