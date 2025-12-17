@@ -401,7 +401,7 @@
 		.page_size	= 256,
 		/* supports 4B addressing */
 		/* OTP: 1024B total, 32B reserved; read 0x4B; write 0x42 */
-		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP,
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_WRSR_EXT2 | FEATURE_OTP,
 		.tested		= TEST_OK_PREW,
 		.probe		= PROBE_SPI_RDID,
 		.probe_timing	= TIMING_ZERO,
@@ -828,7 +828,7 @@
 		.model_id	= SPANSION_S25FL256S_UL,
 		.total_size	= 16384,  /* This is just half the size.... */
 		.page_size	= 256,
-		.feature_bits	= FEATURE_WRSR_WREN,
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_WRSR_EXT2,
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_SPI_BIG_SPANSION,
 		.probe_timing	= TIMING_ZERO,
@@ -886,7 +886,7 @@
 		.total_size	= 32768,
 		.page_size	= 256,
 		/* OTP: 1024B total, 32B reserved; read 0x4B; write 0x42 */
-		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP |
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_WRSR_EXT2 | FEATURE_OTP |
 				  FEATURE_4BA_NATIVE | FEATURE_4BA_ENTER_EAR7 | FEATURE_4BA_EAR_1716,
 		.tested		= TEST_OK_PREW,
 		.probe		= PROBE_SPI_RDID,
@@ -932,7 +932,7 @@
 		.total_size	= 65536, /* 512 Mb (=> 64 MB)) */
 		.page_size	= 256,
 		/* OTP: 1024B total, 32B reserved; read 0x4B; write 0x42 */
-		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP |
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_WRSR_EXT2 | FEATURE_OTP |
 				  FEATURE_4BA_NATIVE | FEATURE_4BA_ENTER_EAR7 | FEATURE_4BA_EAR_1716,
 		.tested		= TEST_UNTESTED,
 		.probe		= PROBE_SPI_BIG_SPANSION,
@@ -1031,7 +1031,7 @@
 		.total_size	= 65536,
 		.page_size	= 256, /* 256 or 512 bytes page programming buffer */
 		/* OTP: 1024B total, 32B reserved; read 0x4B; write 0x42 */
-		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_OTP | FEATURE_QPI |
+		.feature_bits	= FEATURE_WRSR_WREN | FEATURE_WRSR_EXT2 | FEATURE_OTP | FEATURE_QPI |
 				  FEATURE_4BA_NATIVE | FEATURE_4BA_ENTER,
 				  /* Note on FEATURE_4BA_ENTER: the command set only defines command 0xB7
 				     to enter 4BA mode, but there is no counterpart command "Exit 4BA mode",
