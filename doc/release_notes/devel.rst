@@ -19,18 +19,53 @@ Bugs fixed
 * Erasing generic SFDP chips was unreliable or could crash if the SFDP
   erase definitions were not in ascending order of sector sizes.
 
+  Eraseblocks definition detected from SFDP header are now sorted in ascending
+  order before proceeding further.
+
   See https://review.coreboot.org/c/flashrom/+/90131
+
+  To complete the bug fix, few more things are also added:
+
+  * selfcheck function now runs over a chip definition that was constructed from the SFDP header.
+    This way we assert that definition is valid before starting any further operations with the chip.
+
+  * Basic tests are added for sfdp probing flow.
+
 
 Added support
 =============
 
 * Intel Wildcat Lake chipset
 * EN25QX128A
+
 * MT25QU02G, MT25QL02G marked as tested
 * MT35XU02G
+
 * MX25U12873F
+* MX25R512F
+* MX25R1035F
+* MX25U12873F
+* MX66U1G45G
+* MX66L2G45G
+
 * P25D80H
+
+* S25FL116K/S25FL216K marked as tested
+
 * W35T02NW
+* W35T02NW
+* W25Q512JV_M
+* W25Q80_V
+* W25R256JW
+* W77Q{16,32}JW
+* W77Q{64,128}JW
+* W77Q{64,128}JV
+* W77Q{25,51,10}NW [#b1]_
+* W77T{25,51,10}NW [#b1]_
+
+* XM25QU64C/XM25LU64C write-protect support
+
+.. [#b1] | Will also be updated later when multi-die support added
 
 New features
 ============
@@ -104,13 +139,19 @@ Note there are still some remaining cases for non-spi chips,
 when ``--noverify`` is ignored, more details and disussion
 is here: https://ticket.coreboot.org/issues/605
 
-New programmers
-===============
+Programmers updates
+===================
 
-* Nvidia System Management Agent
+* New programmer: Nvidia System Management Agent
 
   System Management Agent (SMA) programmer is a SoC which is working as a side band management
   on Nvidia server board. One of its functions is to flash firmware to other components.
+
+* asm106x: Added device ID for IDE mode
+
+  Some boards are configured as IDE controller (class 0x0101); others even
+  have a physical switch to select between IDE and AHCI. For IDE the
+  device ID is 0x0611.
 
 libflashrom
 ===========
@@ -142,3 +183,22 @@ created with SPDX tags. For examples, look at any source file in the tree.
 Note that source files in directory ``subprojects/packagefiles/cmocka-1.1.5`` haven't been changed,
 and won't be. Those files are unpacked from cmocka wrap, so that's the exact copy from another project,
 and should stay as is.
+
+Misc updates
+============
+
+* tests: Add tests which run a chain of operations
+* cli_classic.c: Print runtime measurement in seconds in debug
+* Add guard for compare_region_with_dump()
+* build: only add git describe for git checkouts
+* pcidev.h: Extract pcidev declarations to a separate header
+* doc: Add page to publish license info on the website
+* sb600spi: Check if SPI BAR register has valid value
+* spi.h: Move SPI declarations from chipdrivers.h to spi.h
+* parallel.h: Extract parallel declarations to a separate header
+* doc: Disable auto-conversion of -- to en-dash on html pages
+* serial.h: Extract serial declarations to a separate header
+* helpers_fileio.c: fix fsync() check (fix compilation issue for Android)
+* flashchips: Add Spansion S25FL512S: pretty print status register 2
+* pcidev: support programmers that don't need the ROM BAR and use config space registers
+* tests/spidriver.c: Fix Windows compilation (see also https://ticket.coreboot.org/issues/602)
