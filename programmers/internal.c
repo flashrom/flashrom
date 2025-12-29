@@ -13,6 +13,7 @@
 #include "flash.h"
 #include "programmer.h"
 #include "pcidev.h"
+#include "dmi.h"
 
 #if defined(__i386__) || defined(__x86_64__)
 #include "hwaccess_x86_io.h"

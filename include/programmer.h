@@ -212,13 +212,6 @@ int processor_flash_enable(void);
 int cb_parse_table(const char **vendor, const char **model);
 int cb_check_image(const uint8_t *bios, unsigned int size);
 
-/* dmi.c */
-#if defined(__i386__) || defined(__x86_64__)
-void dmi_init(int *is_laptop);
-bool dmi_is_supported(void);
-int dmi_match(const char *pattern);
-#endif // defined(__i386__) || defined(__x86_64__)
-
 /* internal.c */
 struct superio {
 	uint16_t vendor;
