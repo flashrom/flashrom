@@ -285,7 +285,7 @@ static int nicintel_spi_init(const struct programmer_cfg *cfg)
 	if (!dev)
 		return 1;
 
-	uint32_t io_base_addr = pcidev_readbar(dev, PCI_BASE_ADDRESS_0);
+	uintptr_t io_base_addr = pcidev_readbar(dev, PCI_BASE_ADDRESS_0);
 	if (!io_base_addr)
 		return 1;
 
