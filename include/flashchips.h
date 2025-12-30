@@ -200,8 +200,9 @@
 #define ATMEL_AT49F080		0x23
 #define ATMEL_AT49F080T		0x27
 
-/* Boya/BoHong Microelectronics Inc. */
+/* Boya/BoHong Microelectronics Inc. / BYTe Semiconductor */
 #define BOYA_BOHONG_ID		0x68
+#define BOYA_BOHONG_BY25D40ES	0x4013
 #define BOYA_BOHONG_B__25D80A	0x4014
 #define BOYA_BOHONG_B_25D16A	0x4015
 #define BOYA_BOHONG_B_25Q64AS	0x4017
