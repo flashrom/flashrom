@@ -111,17 +111,17 @@ Windows
     from `ni.com <https://www.ni.com/en-us/support/downloads/drivers/download.ni-845x-driver-software.html>`_ and build flashrom
     for **32-bit**. Add ``-Dprogrammer=ni845x_spi`` to your meson configuration.
 
-  In the MINGW64 shell run::
+  In the MSYS2 UCRT64 shell run::
 
       pacman -Sy \
-      mingw-w64-x86_64-gcc mingw-w64-x86_64-meson mingw-w64-x86_64-ninja mingw-w64-x86_64-pkg-config mingw-w64-x86_64-python-sphinx \
-      mingw-w64-x86_64-cmocka mingw-w64-x86_64-libusb mingw-w64-x86_64-libftdi mingw-w64-x86_64-libjaylink-git
+      mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-meson mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-pkg-config mingw-w64-ucrt-x86_64-python-sphinx \
+      mingw-w64-ucrt-x86_64-cmocka mingw-w64-ucrt-x86_64-libusb mingw-w64-ucrt-x86_64-libftdi mingw-w64-ucrt-x86_64-libjaylink
 
   For building flashrom as 32-bit application, use the MSYS2 MINGW32 shell and run::
 
       pacman -Sy \
       mingw-w64-i686-gcc mingw-w64-i686-meson mingw-w64-i686-ninja mingw-w64-i686-pkg-config mingw-w64-i686-python-sphinx \
-      mingw-w64-i686-cmocka mingw-w64-i686-libusb mingw-w64-i686-libftdi mingw-w64-i686-libjaylink-git
+      mingw-w64-i686-cmocka mingw-w64-i686-libusb mingw-w64-i686-libftdi mingw-w64-i686-libjaylink
 
 MacOS
 """""
