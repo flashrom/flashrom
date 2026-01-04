@@ -9,17 +9,17 @@
 
 #if IS_WINDOWS
 #include <windows.h>
-typedef HANDLE fdtype;
-#define SER_INV_FD	INVALID_HANDLE_VALUE
+typedef HANDLE serialport_fdtype;
+#define SERIALPORT_INV_FD	INVALID_HANDLE_VALUE
 #else
-typedef int fdtype;
-#define SER_INV_FD	-1
+typedef int serialport_fdtype;
+#define SERIALPORT_INV_FD	-1
 #endif
 
-void sp_flush_incoming(void);
-fdtype sp_openserport(char *dev, int baud);
-extern fdtype sp_fd;
-int serialport_config(fdtype fd, int baud);
+void serialport_flush_incoming(void);
+serialport_fdtype serialport_openserport(char *dev, int baud);
+extern serialport_fdtype serialport_fd;
+int serialport_config(serialport_fdtype fd, int baud);
 int serialport_shutdown(void *data);
 int serialport_write(const unsigned char *buf, unsigned int writecnt);
 int serialport_write_nonblock(const unsigned char *buf, unsigned int writecnt, unsigned int timeout, unsigned int *really_wrote);
@@ -38,7 +38,7 @@ int serialport_read_nonblock(unsigned char *c, unsigned int readcnt, unsigned in
   8	CTS	<-
   9	RI	<-
 */
-enum SP_PIN {
+enum SERIALPORT_PIN {
 	PIN_CD = 1,
 	PIN_RXD,
 	PIN_TXD,
@@ -50,7 +50,7 @@ enum SP_PIN {
 	PIN_RI,
 };
 
-void sp_set_pin(enum SP_PIN pin, int val);
-int sp_get_pin(enum SP_PIN pin);
+void serialport_set_pin(enum SERIALPORT_PIN pin, int val);
+int serialport_get_pin(enum SERIALPORT_PIN pin);
 
 #endif /* __SERIAL_H__ */

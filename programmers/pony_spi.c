@@ -61,7 +61,7 @@ static void pony_bitbang_set_cs(int val, void *spi_data)
 	if (data->negate_cs)
 		val ^=  1;
 
-	sp_set_pin(PIN_TXD, val);
+	serialport_set_pin(PIN_TXD, val);
 }
 
 static void pony_bitbang_set_sck(int val, void *spi_data)
@@ -71,7 +71,7 @@ static void pony_bitbang_set_sck(int val, void *spi_data)
 	if (data->negate_sck)
 		val ^=  1;
 
-	sp_set_pin(PIN_RTS, val);
+	serialport_set_pin(PIN_RTS, val);
 }
 
 static void pony_bitbang_set_mosi(int val, void *spi_data)
@@ -81,13 +81,13 @@ static void pony_bitbang_set_mosi(int val, void *spi_data)
 	if (data->negate_mosi)
 		val ^=  1;
 
-	sp_set_pin(PIN_DTR, val);
+	serialport_set_pin(PIN_DTR, val);
 }
 
 static int pony_bitbang_get_miso(void *spi_data)
 {
 	struct pony_spi_data *data = spi_data;
-	int tmp = sp_get_pin(PIN_CTS);
+	int tmp = serialport_get_pin(PIN_CTS);
 
 	if (data->negate_miso)
 		tmp ^= 1;
@@ -128,8 +128,8 @@ static int get_params(const struct programmer_cfg *cfg, enum pony_type *type, bo
 	/* The parameter is in format "dev=/dev/device,type=serbang" */
 	arg = extract_programmer_param_str(cfg, "dev");
 	if (arg && strlen(arg)) {
-		sp_fd = sp_openserport(arg, 9600);
-		if (sp_fd == SER_INV_FD)
+		serialport_fd = serialport_openserport(arg, 9600);
+		if (serialport_fd == SERIALPORT_INV_FD)
 			ret = 1;
 		else
 			*have_device = true;
@@ -238,11 +238,11 @@ static int pony_spi_init(const struct programmer_cfg *cfg)
 		/* We toggle RTS/SCK a few times and see if DSR changes too. */
 		for (i = 1; i <= 10; i++) {
 			data_out = i & 1;
-			sp_set_pin(PIN_RTS, data_out);
+			serialport_set_pin(PIN_RTS, data_out);
 			default_delay(1000);
 
 			/* If DSR does not change, we are not connected to what we think */
-			if (data_out != sp_get_pin(PIN_DSR)) {
+			if (data_out != serialport_get_pin(PIN_DSR)) {
 				have_prog = false;
 				break;
 			}

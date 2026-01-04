@@ -31,12 +31,12 @@
 #include "platform/udelay.h"
 #include "log.h"
 
-fdtype sp_fd = SER_INV_FD;
+serialport_fdtype serialport_fd = SERIALPORT_INV_FD;
 
 /* There is no way defined by POSIX to use arbitrary baud rates. It only defines some macros that can be used to
  * specify respective baud rates and many implementations extend this list with further macros, cf. TERMIOS(3)
  * and http://git.kernel.org/?p=linux/kernel/git/torvalds/linux.git;a=blob;f=include/uapi/asm-generic/termbits.h
- * The code below creates a mapping in sp_baudtable between these macros and the numerical baud rates to deal
+ * The code below creates a mapping in serialport_baudtable between these macros and the numerical baud rates to deal
  * with numerical user input.
  *
  * On Linux there is a non-standard way to use arbitrary baud rates that we use if there is no
@@ -53,7 +53,7 @@ fdtype sp_fd = SER_INV_FD;
 #if !IS_WINDOWS
 #define BAUDENTRY(baud) { B##baud, baud },
 
-static const struct baudentry sp_baudtable[] = {
+static const struct baudentry serialport_baudtable[] = {
 	BAUDENTRY(9600) /* unconditional default */
 #ifdef B19200
 	BAUDENTRY(19200)
@@ -112,19 +112,19 @@ static const struct baudentry sp_baudtable[] = {
 static const struct baudentry *round_baud(unsigned int baud)
 {
 	int i;
-	/* Round baud rate to next lower entry in sp_baudtable if it exists, else use the lowest entry. */
-	for (i = ARRAY_SIZE(sp_baudtable) - 2; i >= 0 ; i--) {
-		if (sp_baudtable[i].baud == baud)
-			return &sp_baudtable[i];
+	/* Round baud rate to next lower entry in serialport_baudtable if it exists, else use the lowest entry. */
+	for (i = ARRAY_SIZE(serialport_baudtable) - 2; i >= 0 ; i--) {
+		if (serialport_baudtable[i].baud == baud)
+			return &serialport_baudtable[i];
 
-		if (sp_baudtable[i].baud < baud) {
+		if (serialport_baudtable[i].baud < baud) {
 			msg_pwarn("Warning: given baudrate %d rounded down to %d.\n",
-				  baud, sp_baudtable[i].baud);
-			return &sp_baudtable[i];
+				  baud, serialport_baudtable[i].baud);
+			return &serialport_baudtable[i];
 		}
 	}
-	msg_pinfo("Using slowest possible baudrate: %d.\n", sp_baudtable[0].baud);
-	return &sp_baudtable[0];
+	msg_pinfo("Using slowest possible baudrate: %d.\n", serialport_baudtable[0].baud);
+	return &serialport_baudtable[0];
 }
 #endif
 
@@ -149,9 +149,9 @@ static void msg_perr_strerror(const char *msg)
 #endif
 }
 
-int serialport_config(fdtype fd, int baud)
+int serialport_config(serialport_fdtype fd, int baud)
 {
-	if (fd == SER_INV_FD) {
+	if (fd == SERIALPORT_INV_FD) {
 		msg_perr("%s: File descriptor is invalid.\n", __func__);
 		return 1;
 	}
@@ -178,7 +178,7 @@ int serialport_config(fdtype fd, int baud)
 	}
 	msg_pdbg("Baud rate is %ld.\n", dcb.BaudRate);
 #else
-	int custom_baud = (baud >= 0 && use_custom_baud(baud, sp_baudtable));
+	int custom_baud = (baud >= 0 && use_custom_baud(baud, serialport_baudtable));
 	struct termios wanted, observed;
 	if (tcgetattr(fd, &observed) != 0) {
 		msg_perr_strerror("Could not fetch original serial port configuration: ");
@@ -257,9 +257,9 @@ int serialport_config(fdtype fd, int baud)
 	return 0;
 }
 
-fdtype sp_openserport(char *dev, int baud)
+serialport_fdtype serialport_openserport(char *dev, int baud)
 {
-	fdtype fd;
+	serialport_fdtype fd;
 #if IS_WINDOWS
 	char *dev2 = dev;
 	if ((strlen(dev) > 3) &&
@@ -269,7 +269,7 @@ fdtype sp_openserport(char *dev, int baud)
 		dev2 = malloc(strlen(dev) + 5);
 		if (!dev2) {
 			msg_perr_strerror("Out of memory: ");
-			return SER_INV_FD;
+			return SERIALPORT_INV_FD;
 		}
 		strcpy(dev2, "\\\\.\\");
 		strcpy(dev2 + 4, dev);
@@ -280,18 +280,18 @@ fdtype sp_openserport(char *dev, int baud)
 		free(dev2);
 	if (fd == INVALID_HANDLE_VALUE) {
 		msg_perr_strerror("Cannot open serial port: ");
-		return SER_INV_FD;
+		return SERIALPORT_INV_FD;
 	}
 	if (serialport_config(fd, baud) != 0) {
 		CloseHandle(fd);
-		return SER_INV_FD;
+		return SERIALPORT_INV_FD;
 	}
 	return fd;
 #else
 	fd = open(dev, O_RDWR | O_NOCTTY | O_NDELAY); // Use O_NDELAY to ignore DCD state
 	if (fd < 0) {
 		msg_perr_strerror("Cannot open serial port: ");
-		return SER_INV_FD;
+		return SERIALPORT_INV_FD;
 	}
 
 	/* Ensure that we use blocking I/O */
@@ -311,11 +311,11 @@ fdtype sp_openserport(char *dev, int baud)
 	return fd;
 err:
 	close(fd);
-	return SER_INV_FD;
+	return SERIALPORT_INV_FD;
 #endif
 }
 
-void sp_set_pin(enum SP_PIN pin, int val) {
+void serialport_set_pin(enum SERIALPORT_PIN pin, int val) {
 #if IS_WINDOWS
 	DWORD ctl;
 
@@ -328,16 +328,16 @@ void sp_set_pin(enum SP_PIN pin, int val) {
 	else {
 		ctl = val ? SETRTS: CLRRTS;
 	}
-	EscapeCommFunction(sp_fd, ctl);
+	EscapeCommFunction(serialport_fd, ctl);
 #else
 	int ctl, s;
 
 	if(pin == PIN_TXD) {
-		ioctl(sp_fd, val ? TIOCSBRK : TIOCCBRK, 0);
+		ioctl(serialport_fd, val ? TIOCSBRK : TIOCCBRK, 0);
 	}
 	else {
 		s = (pin == PIN_DTR) ? TIOCM_DTR : TIOCM_RTS;
-		ioctl(sp_fd, TIOCMGET, &ctl);
+		ioctl(serialport_fd, TIOCMGET, &ctl);
 
 		if (val) {
 			ctl |= s;
@@ -345,37 +345,37 @@ void sp_set_pin(enum SP_PIN pin, int val) {
 		else {
 			ctl &= ~s;
 		}
-		ioctl(sp_fd, TIOCMSET, &ctl);
+		ioctl(serialport_fd, TIOCMSET, &ctl);
 	}
 #endif
 }
 
-int sp_get_pin(enum SP_PIN pin) {
+int serialport_get_pin(enum SERIALPORT_PIN pin) {
 	int s;
 #if IS_WINDOWS
 	DWORD ctl;
 
 	s = (pin == PIN_CTS) ? MS_CTS_ON : MS_DSR_ON;
-	GetCommModemStatus(sp_fd, &ctl);
+	GetCommModemStatus(serialport_fd, &ctl);
 #else
 	int ctl;
 	s = (pin == PIN_CTS) ? TIOCM_CTS : TIOCM_DSR;
-	ioctl(sp_fd, TIOCMGET, &ctl);
+	ioctl(serialport_fd, TIOCMGET, &ctl);
 #endif
 
 	return ((ctl & s) ? 1 : 0);
 
 }
 
-void sp_flush_incoming(void)
+void serialport_flush_incoming(void)
 {
 #if IS_WINDOWS
-	PurgeComm(sp_fd, PURGE_RXCLEAR);
+	PurgeComm(serialport_fd, PURGE_RXCLEAR);
 #else
-	if (!tcflush(sp_fd, TCIFLUSH))
+	if (!tcflush(serialport_fd, TCIFLUSH))
 		return;
 
-	if (errno == ENOTTY) { // TCP socket case: sp_fd is not a terminal descriptor - tcflush is not supported
+	if (errno == ENOTTY) { // TCP socket case: serialport_fd is not a terminal descriptor - tcflush is not supported
 		unsigned char c;
 		int ret;
 
@@ -388,7 +388,7 @@ void sp_flush_incoming(void)
 		// negative error code indicates a permanent error
 		if (ret < 0)
 			msg_perr("Could not flush serial port incoming buffer: read has failed");
-	} else { // any other errno indicates an unrecoverable sp_fd state
+	} else { // any other errno indicates an unrecoverable serialport_fd state
 		msg_perr_strerror("Could not flush serial port incoming buffer: ");
 	}
 #endif
@@ -397,9 +397,9 @@ void sp_flush_incoming(void)
 int serialport_shutdown(void *data)
 {
 #if IS_WINDOWS
-	CloseHandle(sp_fd);
+	CloseHandle(serialport_fd);
 #else
-	close(sp_fd);
+	close(serialport_fd);
 #endif
 	return 0;
 }
@@ -415,12 +415,12 @@ int serialport_write(const unsigned char *buf, unsigned int writecnt)
 
 	while (writecnt > 0) {
 #if IS_WINDOWS
-		if (!WriteFile(sp_fd, buf, writecnt, &tmp, NULL)) {
+		if (!WriteFile(serialport_fd, buf, writecnt, &tmp, NULL)) {
 			msg_perr("Serial port write error!\n");
 			return 1;
 		}
 #else
-		tmp = write(sp_fd, buf, writecnt);
+		tmp = write(serialport_fd, buf, writecnt);
 		if (tmp == -1) {
 			msg_perr("Serial port write error!\n");
 			return 1;
@@ -452,12 +452,12 @@ int serialport_read(unsigned char *buf, unsigned int readcnt)
 
 	while (readcnt > 0) {
 #if IS_WINDOWS
-		if (!ReadFile(sp_fd, buf, readcnt, &tmp, NULL)) {
+		if (!ReadFile(serialport_fd, buf, readcnt, &tmp, NULL)) {
 			msg_perr("Serial port read error!\n");
 			return 1;
 		}
 #else
-		tmp = read(sp_fd, buf, readcnt);
+		tmp = read(serialport_fd, buf, readcnt);
 		if (tmp == -1) {
 			msg_perr("Serial port read error!\n");
 			return 1;
@@ -489,22 +489,22 @@ int serialport_read_nonblock(unsigned char *c, unsigned int readcnt, unsigned in
 		.WriteTotalTimeoutMultiplier = 0,
 		.WriteTotalTimeoutConstant = 0
 	};
-	if(!GetCommTimeouts(sp_fd, &oldTimeout)) {
+	if(!GetCommTimeouts(serialport_fd, &oldTimeout)) {
 		msg_perr_strerror("Could not get serial port timeout settings: ");
 		return -1;
 	}
-	if(!SetCommTimeouts(sp_fd, &newTimeout)) {
+	if(!SetCommTimeouts(serialport_fd, &newTimeout)) {
 		msg_perr_strerror("Could not set serial port timeout settings: ");
 		return -1;
 	}
 #else
 	ssize_t rv;
-	const int flags = fcntl(sp_fd, F_GETFL);
+	const int flags = fcntl(serialport_fd, F_GETFL);
 	if (flags == -1) {
 		msg_perr_strerror("Could not get serial port mode: ");
 		return -1;
 	}
-	if (fcntl(sp_fd, F_SETFL, flags | O_NONBLOCK) != 0) {
+	if (fcntl(serialport_fd, F_SETFL, flags | O_NONBLOCK) != 0) {
 		msg_perr_strerror("Could not set serial port mode to non-blocking: ");
 		return -1;
 	}
@@ -515,14 +515,14 @@ int serialport_read_nonblock(unsigned char *c, unsigned int readcnt, unsigned in
 	for (i = 0; i < timeout; i++) {
 		msg_pspew("readcnt %u rd_bytes %u\n", readcnt, rd_bytes);
 #if IS_WINDOWS
-		if (!ReadFile(sp_fd, c + rd_bytes, readcnt - rd_bytes, &rv, NULL)) {
+		if (!ReadFile(serialport_fd, c + rd_bytes, readcnt - rd_bytes, &rv, NULL)) {
 			msg_perr_strerror("Serial port read error: ");
 			ret = -1;
 			break;
 		}
 		msg_pspew("read %lu bytes\n", rv);
 #else
-		rv = read(sp_fd, c + rd_bytes, readcnt - rd_bytes);
+		rv = read(serialport_fd, c + rd_bytes, readcnt - rd_bytes);
 		msg_pspew("read %zd bytes\n", rv);
 		if ((rv == -1) && (errno != EAGAIN)) {
 			msg_perr_strerror("Serial port read error: ");
@@ -543,12 +543,12 @@ int serialport_read_nonblock(unsigned char *c, unsigned int readcnt, unsigned in
 
 	/* restore original blocking behavior */
 #if IS_WINDOWS
-	if (!SetCommTimeouts(sp_fd, &oldTimeout)) {
+	if (!SetCommTimeouts(serialport_fd, &oldTimeout)) {
 		msg_perr_strerror("Could not restore serial port timeout settings: ");
 		ret = -1;
 	}
 #else
-	if (fcntl(sp_fd, F_SETFL, flags) != 0) {
+	if (fcntl(serialport_fd, F_SETFL, flags) != 0) {
 		msg_perr_strerror("Could not restore serial port mode to blocking: ");
 		ret = -1;
 	}
@@ -573,22 +573,22 @@ int serialport_write_nonblock(const unsigned char *buf, unsigned int writecnt, u
 		.WriteTotalTimeoutMultiplier = 0,
 		.WriteTotalTimeoutConstant = 0
 	};
-	if(!GetCommTimeouts(sp_fd, &oldTimeout)) {
+	if(!GetCommTimeouts(serialport_fd, &oldTimeout)) {
 		msg_perr_strerror("Could not get serial port timeout settings: ");
 		return -1;
 	}
-	if(!SetCommTimeouts(sp_fd, &newTimeout)) {
+	if(!SetCommTimeouts(serialport_fd, &newTimeout)) {
 		msg_perr_strerror("Could not set serial port timeout settings: ");
 		return -1;
 	}
 #else
 	ssize_t rv;
-	const int flags = fcntl(sp_fd, F_GETFL);
+	const int flags = fcntl(serialport_fd, F_GETFL);
 	if (flags == -1) {
 		msg_perr_strerror("Could not get serial port mode: ");
 		return -1;
 	}
-	if (fcntl(sp_fd, F_SETFL, flags | O_NONBLOCK) != 0) {
+	if (fcntl(serialport_fd, F_SETFL, flags | O_NONBLOCK) != 0) {
 		msg_perr_strerror("Could not set serial port mode to non-blocking: ");
 		return -1;
 	}
@@ -599,14 +599,14 @@ int serialport_write_nonblock(const unsigned char *buf, unsigned int writecnt, u
 	for (i = 0; i < timeout; i++) {
 		msg_pspew("writecnt %u wr_bytes %u\n", writecnt, wr_bytes);
 #if IS_WINDOWS
-		if (!WriteFile(sp_fd, buf + wr_bytes, writecnt - wr_bytes, &rv, NULL)) {
+		if (!WriteFile(serialport_fd, buf + wr_bytes, writecnt - wr_bytes, &rv, NULL)) {
 			msg_perr_strerror("Serial port write error: ");
 			ret = -1;
 			break;
 		}
 		msg_pspew("wrote %lu bytes\n", rv);
 #else
-		rv = write(sp_fd, buf + wr_bytes, writecnt - wr_bytes);
+		rv = write(serialport_fd, buf + wr_bytes, writecnt - wr_bytes);
 		msg_pspew("wrote %zd bytes\n", rv);
 		if ((rv == -1) && (errno != EAGAIN)) {
 			msg_perr_strerror("Serial port write error: ");
@@ -629,12 +629,12 @@ int serialport_write_nonblock(const unsigned char *buf, unsigned int writecnt, u
 
 	/* restore original blocking behavior */
 #if IS_WINDOWS
-	if (!SetCommTimeouts(sp_fd, &oldTimeout)) {
+	if (!SetCommTimeouts(serialport_fd, &oldTimeout)) {
 		msg_perr_strerror("Could not restore serial port timeout settings: ");
 		return -1;
 	}
 #else
-	if (fcntl(sp_fd, F_SETFL, flags) != 0) {
+	if (fcntl(serialport_fd, F_SETFL, flags) != 0) {
 		msg_perr_strerror("Could not restore serial port blocking behavior: ");
 		return -1;
 	}

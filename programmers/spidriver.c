@@ -29,8 +29,8 @@
 static int spidriver_serialport_setup(char *dev)
 {
 	/* 460800bps, 8 databits, no parity, 1 stopbit */
-	sp_fd = sp_openserport(dev, 460800);
-	if (sp_fd == SER_INV_FD)
+	serialport_fd = serialport_openserport(dev, 460800);
+	if (serialport_fd == SERIALPORT_INV_FD)
 		return 1;
 	return 0;
 }
@@ -254,7 +254,7 @@ static int spidriver_spi_init(const struct programmer_cfg *cfg)
 		goto init_err_cleanup_exit;
 
 	default_delay(1400); /* Enough time to receive 64 bytes at 460800bps */
-	sp_flush_incoming();
+	serialport_flush_incoming();
 
 	memset(buf, 0, 81);
 	i = 0;

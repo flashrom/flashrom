@@ -154,7 +154,7 @@ static int sp_synchronize(void)
 	}
 	/* A second should be enough to get all the answers to the buffer */
 	default_delay(1000 * 1000);
-	sp_flush_incoming();
+	serialport_flush_incoming();
 
 	/* Then try up to 8 times to send syncnop and get the correct special *
 	 * return of NAK+ACK. Timing note: up to 10 characters, 10*50ms =     *
@@ -428,7 +428,7 @@ static int serprog_shutdown(void *data)
 			msg_pwarn(MSGHEADER "%s: Warning: could not disable output buffers\n", __func__);
 	}
 	/* FIXME: fix sockets on windows(?), especially closing */
-	serialport_shutdown(&sp_fd);
+	serialport_shutdown(&serialport_fd);
 	if (sp_max_write_n)
 		free(sp_write_n_buf);
 	return 0;
@@ -640,8 +640,8 @@ static int serprog_init(const struct programmer_cfg *cfg)
 			baud = atoi(baud_str); // FIXME: replace atoi with strtoul
 		}
 		if (strlen(device) > 0) {
-			sp_fd = sp_openserport(device, baud);
-			if (sp_fd == SER_INV_FD) {
+			serialport_fd = serialport_openserport(device, baud);
+			if (serialport_fd == SERIALPORT_INV_FD) {
 				free(device);
 				return 1;
 			}
@@ -679,8 +679,8 @@ static int serprog_init(const struct programmer_cfg *cfg)
 			return 1;
 		}
 		if (strlen(device)) {
-			sp_fd = sp_opensocket(device, atoi(port)); // FIXME: replace atoi with strtoul
-			if (sp_fd < 0) {
+			serialport_fd = sp_opensocket(device, atoi(port)); // FIXME: replace atoi with strtoul
+			if (serialport_fd < 0) {
 				free(device);
 				return 1;
 			}

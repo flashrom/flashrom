@@ -33,8 +33,8 @@ struct buspirate_speeds {
 static int buspirate_serialport_setup(char *dev)
 {
 	/* 115200bps, 8 databits, no parity, 1 stopbit */
-	sp_fd = sp_openserport(dev, BP_DEFAULTBAUD);
-	if (sp_fd == SER_INV_FD)
+	serialport_fd = serialport_openserport(dev, BP_DEFAULTBAUD);
+	if (serialport_fd == SERIALPORT_INV_FD)
 		return 1;
 	return 0;
 }
@@ -43,7 +43,7 @@ static int buspirate_serialport_setup(char *dev)
 #define serialport_shutdown(...) 0
 #define serialport_write(...) 0
 #define serialport_read(...) 0
-#define sp_flush_incoming(...) 0
+#define serialport_flush_incoming(...) 0
 #endif
 
 struct bp_spi_data {
@@ -466,7 +466,7 @@ static int buspirate_spi_init(const struct programmer_cfg *cfg)
 		 * response which came in over serial. Unfortunately that does not work reliably on Linux
 		 * with FTDI USB-serial.
 		 */
-		//sp_flush_incoming();
+		//serialport_flush_incoming();
 		/* The Bus Pirate can't handle UART input buffer overflow in BBIO mode, and sending a sequence
 		 * of 0x00 too fast apparently triggers such an UART input buffer overflow.
 		 */
@@ -625,7 +625,7 @@ static int buspirate_spi_init(const struct programmer_cfg *cfg)
 			sleep(1);
 
 			/* Reconfigure the host's serial baud rate to the new value */
-			if ((ret = serialport_config(sp_fd, serialspeeds[serialspeed_index].speed))) {
+			if ((ret = serialport_config(serialport_fd, serialspeeds[serialspeed_index].speed))) {
 				msg_perr("Unable to configure system baud rate to specified value.");
 				goto init_err_cleanup_exit;
 			}
