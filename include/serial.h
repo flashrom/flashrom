@@ -8,6 +8,7 @@
 #define __SERIAL_H__ 1
 
 #if IS_WINDOWS
+#include <windows.h>
 typedef HANDLE fdtype;
 #define SER_INV_FD	INVALID_HANDLE_VALUE
 #else
