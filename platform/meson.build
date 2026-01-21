@@ -1,6 +1,7 @@
+# Endian
 srcs += files(
-  ('endian_' + host_machine.endian() + '.c'),
-  'memaccess.c',
+  'endian_common.c',
+  'endian_' + host_machine.endian() + '.c',
 )
 
 if host_machine.endian() == 'little'
