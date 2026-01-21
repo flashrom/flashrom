@@ -27,6 +27,9 @@ option('rpmc', type : 'feature', value : 'auto', description : 'Support for Repl
 option('log_message_length_limit', type : 'integer', min : 64, max : 1024, value : 256,
        description : 'Log message length limit for v2 logging API')
 
+# Build system options
+option('use_git_version', type : 'feature', value : 'auto', description : 'Use git for versioning instead of the version file.')
+
 # Documentation options
 option('man-pages', type : 'feature', value : 'auto', description : 'build the man-page for classic_cli')
 option('documentation', type : 'feature', value : 'auto', description : 'build the html documentation')
