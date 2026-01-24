@@ -495,6 +495,14 @@ int main(int argc, char *argv[])
 	};
 	ret |= cmocka_run_group_tests_name("spi25.c tests", spi25_tests, NULL, NULL);
 
+	const struct CMUnitTest probe_spi_tests[] = {
+		cmocka_unit_test(probe_jedec_rdid3_fixed_chipname),
+		cmocka_unit_test(probe_jedec_rdid3_try_all_flashchips),
+		cmocka_unit_test(probe_jedec_rdid3_no_matches_found),
+		cmocka_unit_test(probe_jedec_res1_fixed_chipname),
+	};
+	ret |= cmocka_run_group_tests_name("probe_spi.c tests", probe_spi_tests, NULL, NULL);
+
 	const struct CMUnitTest lifecycle_tests[] = {
 		cmocka_unit_test(dummy_basic_lifecycle_test_success),
 		cmocka_unit_test(dummy_probe_lifecycle_test_success),

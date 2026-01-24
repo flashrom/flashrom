@@ -44,6 +44,12 @@ void probe_spi_res3_test_success(void **state);
 void probe_spi_at25f_test_success(void **state);
 void probe_spi_st95_test_success(void **state); /* spi95.c */
 
+/* probe_spi.c */
+void probe_jedec_rdid3_fixed_chipname(void **state);
+void probe_jedec_rdid3_try_all_flashchips(void **state);
+void probe_jedec_rdid3_no_matches_found(void **state);
+void probe_jedec_res1_fixed_chipname(void **state);
+
 /* lifecycle.c */
 void dummy_basic_lifecycle_test_success(void **state);
 void dummy_probe_lifecycle_test_success(void **state);

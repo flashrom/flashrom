@@ -10,6 +10,7 @@ test_srcs = files(
   'helpers.c',
   'flashrom.c',
   'libflashrom.c',
+  'probe_spi.c',
   'spi25.c',
   'lifecycle.c',
   'layout.c',
